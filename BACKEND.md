@@ -184,6 +184,8 @@ bun --filter @workspace/admin-api seed:admin
 
 DB 테이블과 컬럼 명명 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Better Auth 계열 테이블은 provider convention을 유지하고, 프로젝트가 직접 관리하는 테이블은 SQL 이름에 snake_case를 사용한다.
 
+어드민 공지와 법적 문서처럼 하나의 설정 명령이 여러 `admin_settings` 행을 바꾸는 경우 repository가 단일 SQLite transaction으로 모두 반영한다. 중간 쓰기가 실패하면 앞선 쓰기도 rollback되며, 호출자는 같은 aggregate 입력을 안전하게 재시도할 수 있다. 같은 명령의 모든 행은 command가 전달한 동일한 `updatedAt` 시점을 사용한다.
+
 인증과 학습자 상태 테이블은 다음 이름을 사용한다.
 
 - `user`, `session`, `account`, `verification`: Better Auth 테이블

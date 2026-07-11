@@ -51,10 +51,12 @@ function saveNoticeSettings(
   db: WritingAppDatabase,
   input: SaveAdminNoticeSettingsInput
 ): AdminSettingsDto {
-  saveSettingRows(db, input.now, [
-    [settingsKeys.announce, input.announce],
-    [settingsKeys.banner, input.banner],
-  ])
+  db.transaction((transaction) => {
+    saveSettingRows(transaction, input.now, [
+      [settingsKeys.announce, input.announce],
+      [settingsKeys.banner, input.banner],
+    ])
+  })
 
   return readSettings(db)
 }
@@ -63,16 +65,18 @@ function saveLegalSettings(
   db: WritingAppDatabase,
   input: SaveAdminLegalSettingsInput
 ): AdminSettingsDto {
-  saveSettingRows(db, input.now, [
-    [settingsKeys.privacy, input.privacy],
-    [settingsKeys.terms, input.terms],
-  ])
+  db.transaction((transaction) => {
+    saveSettingRows(transaction, input.now, [
+      [settingsKeys.privacy, input.privacy],
+      [settingsKeys.terms, input.terms],
+    ])
+  })
 
   return readSettings(db)
 }
 
 function saveSettingRows(
-  db: WritingAppDatabase,
+  db: Pick<WritingAppDatabase, "insert">,
   now: Date,
   rows: readonly (readonly [key: string, value: string])[]
 ): void {
