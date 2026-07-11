@@ -1,15 +1,9 @@
+import { adminApiOk, type AdminApiResult } from "@/lib/api/api-result"
 import {
-  contractAdminApiError,
-  networkAdminApiError,
-  toAdminApiError,
-} from "@/lib/api/api-error"
-import {
-  adminApiError,
-  adminApiOk,
-  type AdminApiResult,
-} from "@/lib/api/api-result"
-import { adminSessionCookieName } from "@/lib/auth/admin-session-token"
-import { buildAdminApiUrl, type AdminApiBaseUrl } from "@/runtime-config"
+  createAdminHttpTransport,
+  type AdminTokenProvider,
+} from "@/lib/api/admin-http-transport"
+import type { AdminApiBaseUrl } from "@/runtime-config"
 import type {
   AdminAnalytics,
   AdminApi,
@@ -112,7 +106,7 @@ import {
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
 } from "@workspace/contracts/admin"
-import { fetchHttpResponse, type HttpFetch } from "@workspace/http-client"
+import type { HttpFetch } from "@workspace/http-client"
 
 type ResponseSchema<TValue> = {
   readonly safeParse: (value: unknown) =>
@@ -184,7 +178,7 @@ export function parseAdminResourceRealtimeMessage(
 }
 
 export type AdminFetchLike = HttpFetch
-export type AdminTokenProvider = () => Promise<string | null> | string | null
+export type { AdminTokenProvider } from "@/lib/api/admin-http-transport"
 type AdminHttpMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
 type AdminHttpClient = {
   readonly requestMarkdown: (input: {
@@ -983,170 +977,27 @@ function createAdminHttpClient({
   readonly requestOrigin?: string
   readonly tokenProvider: AdminTokenProvider
 }): AdminHttpClient {
+  const transport = createAdminHttpTransport({
+    baseUrl,
+    fetch,
+    requestOrigin,
+    tokenProvider,
+  })
+
   return {
     async requestMarkdown(input) {
-      const request = await createAdminRequest({
-        baseUrl,
-        method: "GET",
+      const result = await transport.requestDownload({
+        contentType: "text/markdown",
         path: input.path,
-        requestOrigin,
-        tokenProvider,
       })
-      const fetchResult = await fetchHttpResponse(request, fetch)
-
-      if (fetchResult.kind === "network-error") {
-        return adminApiError(networkAdminApiError(fetchResult.error))
-      }
-
-      const { response } = fetchResult
-
-      if (!response.ok) {
-        const bodyResult = await readJson(response)
-
-        return bodyResult.kind === "ok"
-          ? adminApiError(toAdminApiError(response.status, bodyResult.value))
-          : adminApiError(contractAdminApiError(response.status))
-      }
-
-      const fileName = readMarkdownFileName(response)
-
-      if (fileName === null) {
-        return adminApiError(contractAdminApiError(response.status))
-      }
-
-      return adminApiOk({
-        fileName,
-        markdown: await response.text(),
-      })
+      return result.status === "error"
+        ? result
+        : adminApiOk({
+            fileName: result.value.fileName,
+            markdown: result.value.body,
+          })
     },
-    async requestJson<TValue>(input: {
-      readonly body?: unknown
-      readonly method: AdminHttpMethod
-      readonly path: string
-      readonly schema: ResponseSchema<TValue>
-    }) {
-      const request = await createAdminRequest({
-        baseUrl,
-        body: input.body,
-        method: input.method,
-        path: input.path,
-        requestOrigin,
-        tokenProvider,
-      })
-
-      const fetchResult = await fetchHttpResponse(request, fetch)
-
-      if (fetchResult.kind === "network-error") {
-        return adminApiError(networkAdminApiError(fetchResult.error))
-      }
-
-      const { response } = fetchResult
-      const bodyResult = await readJson(response)
-
-      if (bodyResult.kind === "err") {
-        return adminApiError(contractAdminApiError(response.status))
-      }
-
-      if (!response.ok) {
-        return adminApiError(toAdminApiError(response.status, bodyResult.value))
-      }
-
-      const parsedBody = input.schema.safeParse(bodyResult.value)
-
-      if (!parsedBody.success) {
-        return adminApiError(contractAdminApiError(response.status))
-      }
-
-      return adminApiOk(parsedBody.data)
-    },
-  }
-}
-
-async function createAdminRequest(input: {
-  readonly baseUrl: AdminApiBaseUrl
-  readonly body?: unknown
-  readonly method: AdminHttpMethod
-  readonly path: string
-  readonly requestOrigin?: string
-  readonly tokenProvider: AdminTokenProvider
-}): Promise<Request> {
-  const headers = new Headers()
-  const token = await input.tokenProvider()
-
-  if (token !== null) {
-    headers.set(
-      "Cookie",
-      `${adminSessionCookieName}=${encodeURIComponent(token)}`
-    )
-  }
-
-  if (input.requestOrigin !== undefined) {
-    headers.set("Origin", new URL(input.requestOrigin).origin)
-  }
-
-  if (input.body !== undefined) {
-    headers.set("Content-Type", "application/json")
-  }
-
-  return new Request(buildAdminApiUrl(input.baseUrl, input.path), {
-    body: input.body === undefined ? undefined : JSON.stringify(input.body),
-    credentials: "include",
-    headers,
-    method: input.method,
-  })
-}
-
-function readMarkdownFileName(response: Response): string | null {
-  const contentType = response.headers
-    .get("Content-Type")
-    ?.split(";", 1)[0]
-    ?.trim()
-    .toLowerCase()
-  const disposition = response.headers.get("Content-Disposition")
-  const encodedFileName = disposition?.match(
-    /^attachment;\s*filename\*=UTF-8''([^;]+)$/iu
-  )?.[1]
-
-  if (contentType !== "text/markdown" || encodedFileName === undefined) {
-    return null
-  }
-
-  try {
-    const fileName = decodeURIComponent(encodedFileName)
-
-    return fileName.length > 0 ? fileName : null
-  } catch {
-    return null
-  }
-}
-
-async function readJson(response: Response): Promise<
-  | {
-      readonly kind: "ok"
-      readonly value: unknown
-    }
-  | {
-      readonly kind: "err"
-    }
-> {
-  const text = await response.text()
-
-  if (text.length === 0) {
-    return {
-      kind: "ok",
-      value: null,
-    }
-  }
-
-  try {
-    return {
-      kind: "ok",
-      value: JSON.parse(text) as unknown,
-    }
-  } catch {
-    return {
-      kind: "err",
-    }
+    requestJson: transport.requestJson,
   }
 }
 

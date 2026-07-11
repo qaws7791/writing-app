@@ -212,3 +212,7 @@ bun run check:api-contract
 4. 웹 generated 타입과 mapper 테스트를 갱신한다.
 5. `bun run check:api-contract`로 OpenAPI JSON과 웹 generated 타입 drift가 없는지 확인한다.
 6. 관련 engineering 문서를 갱신한다.
+
+# 관리자 웹 API 경계 전환 (2026-07-12)
+
+관리자 웹의 API 클라이언트는 기능별 애플리케이션 계약과 HTTP 어댑터로 분리한다. 공통 계층은 URL, 인증 쿠키, 요청 헤더, JSON·빈 응답·다운로드 처리와 오류 변환만 담당하며 관리자 DTO나 기능 모델을 알지 않는다. 과정, 사용자, 설정, 대시보드, 분석, 채팅, 자료실 어댑터는 각 기능 디렉터리에서 자기 계약과 스키마만 소유한다.

@@ -178,3 +178,7 @@ AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 
 - `apps/admin`과 `apps/admin-api`가 중단되어도 학습자용 `apps/web`과 `apps/api`는 계속 동작해야 한다.
 - 관리자 인증과 학습자 인증은 테이블, 쿠키 이름, 로그인 방식, API origin을 분리한다.
 - 콘텐츠 seed는 안정적인 ID 기준으로 기존 콘텐츠를 갱신하고, seed에서 빠진 콘텐츠는 삭제가 아니라 `archived`로 전환한다.
+
+# 관리자 API 조립 경계 전환 (2026-07-12)
+
+`admin-api` 실행 진입점은 인증, WebSocket, Mastra처럼 애플리케이션 런타임에 속한 요소만 조립한다. 데이터베이스와 관리자·자료실 저장소, 유스케이스, 식별자 팩터리는 별도의 코어 조립 모듈이 소유하고 기능별 서비스와 단일 `close` 수명주기를 노출한다.
