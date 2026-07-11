@@ -11,7 +11,8 @@
 - API 적용: `apps/api`, `apps/admin-api`
 - 요청 ID header: `x-request-id`
 - 요청 완료 메시지: `request.completed`
-- 자료실 공동 편집: 작업 공간 WebSocket 인증 거부 이유, HTTP transaction 거부·재시도, projection issue와 SQLite busy를 구조화해 기록한다.
+- 자료실 본문 동기화: HTTP transaction 거부·재시도, sync 응답 종류, projection issue와 SQLite busy를 구조화해 기록한다.
+- 자료실 작업 공간 사건: `/resources/events` WebSocket의 인증 거부 이유, 연결·문서 구독·heartbeat 만료를 구조화해 기록하며 본문 Yjs binary는 기록하거나 전송하지 않는다.
 - 자료실 트리: event revision gap을 `resource-tree.revision-gap` performance mark로 기록하고 보이는 트리를 다시 조회한다.
 - 관리자 AI 채팅: 완료와 출력 byte 비용은 `admin.ai-chat.completed`, 요청 한도·동시 실행 거절은 `admin.ai-chat.request.rejected`, provider timeout은 `admin.ai-chat.provider.timeout`, 출력 상한 초과는 `admin.ai-chat.output.limit`, client 취소는 `admin.ai-chat.client.disconnected`로 기록한다.
 

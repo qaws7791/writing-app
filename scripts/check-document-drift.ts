@@ -10,7 +10,7 @@ type WorkspacePackage = {
   readonly scripts: ReadonlySet<string>
 }
 
-type Route = {
+export type Route = {
   readonly method: string
   readonly path: string
 }
@@ -25,39 +25,6 @@ const markdownRoots = [
   "GLOSSARY.md",
   "docs/design",
   "docs/engineering",
-] as const
-
-const adminRouteSources = [
-  {
-    filePath: "apps/admin-api/src/routes/health.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/dashboard.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/analytics.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/courses.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/curriculum-editor.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/users.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/settings.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/resource-tree.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/resource-documents.route.ts",
-  },
-  {
-    filePath: "apps/admin-api/src/routes/resource-search.route.ts",
-  },
 ] as const
 
 const repositoryRoot = process.cwd()
@@ -305,6 +272,11 @@ function validateBackendRouteDocumentation() {
     "## `apps/admin-api`",
     "## `packages/core`"
   )
+  const documentedAdminWebSocketRoutes = extractDocumentedWebSocketRoutes(
+    backendDocument,
+    "## `apps/admin-api`",
+    "## `packages/core`"
+  )
 
   reportRouteDrift({
     actualRoutes: readApiRoutes(),
@@ -315,6 +287,11 @@ function validateBackendRouteDocumentation() {
     actualRoutes: readAdminRoutes(),
     documentedRoutes: documentedAdminRoutes,
     label: "BACKEND.md apps/admin-api routes",
+  })
+  reportRouteDrift({
+    actualRoutes: readAdminWebSocketRoutes(),
+    documentedRoutes: documentedAdminWebSocketRoutes,
+    label: "BACKEND.md apps/admin-api WebSocket routes",
   })
 }
 
@@ -346,6 +323,26 @@ function normalizeRoutePath(routePath: string): string {
   return (
     pathWithoutQuery.replaceAll(/\{([^}]+)\}/g, ":$1").replace(/\/$/, "") || "/"
   )
+}
+
+function extractDocumentedWebSocketRoutes(
+  document: string,
+  startHeading: string,
+  endHeading: string
+): Route[] {
+  const startIndex = document.indexOf(startHeading)
+  const endIndex = document.indexOf(endHeading)
+
+  if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
+    return []
+  }
+
+  const section = document.slice(startIndex, endIndex)
+
+  return [...section.matchAll(/^- `WebSocket ([^`\n]+)`/gm)].map((match) => ({
+    method: "WebSocket",
+    path: normalizeRoutePath(match[1] ?? ""),
+  }))
 }
 
 function readApiRoutes(): Route[] {
@@ -393,12 +390,17 @@ function readAdminRoutes(): Route[] {
     },
   ]
   const routePattern = /^\s*method:\s*"([a-z]+)"[\s\S]*?^\s*path:\s*"([^"]+)"/gm
+  const appSource = fs.readFileSync(
+    path.join(repositoryRoot, "apps/admin-api/src/app.ts"),
+    "utf8"
+  )
+  const routeSourcePattern = /from "@\/routes\/([a-z0-9-]+\.route)"/g
+  const routeSourcePaths = [...appSource.matchAll(routeSourcePattern)].map(
+    (match) => `apps/admin-api/src/routes/${match[1] ?? ""}.ts`
+  )
 
-  for (const source of adminRouteSources) {
-    const content = fs.readFileSync(
-      path.join(repositoryRoot, source.filePath),
-      "utf8"
-    )
+  for (const filePath of routeSourcePaths) {
+    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
 
     for (const match of content.matchAll(routePattern)) {
       routes.push({
@@ -411,6 +413,26 @@ function readAdminRoutes(): Route[] {
   return routes
 }
 
+function readAdminWebSocketRoutes(): Route[] {
+  const appSource = fs.readFileSync(
+    path.join(repositoryRoot, "apps/admin-api/src/main.ts"),
+    "utf8"
+  )
+  const upgradeSourcePattern = /from "@\/collaboration\/([a-z0-9-]+-upgrade)"/g
+  const upgradeSourcePaths = [...appSource.matchAll(upgradeSourcePattern)].map(
+    (match) => `apps/admin-api/src/collaboration/${match[1] ?? ""}.ts`
+  )
+
+  return upgradeSourcePaths.flatMap((filePath) => {
+    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
+
+    return [...content.matchAll(/pathname !== "([^"]+)"/g)].map((match) => ({
+      method: "WebSocket",
+      path: normalizeRoutePath(match[1] ?? ""),
+    }))
+  })
+}
+
 function reportRouteDrift({
   actualRoutes,
   documentedRoutes,
@@ -420,19 +442,27 @@ function reportRouteDrift({
   readonly documentedRoutes: readonly Route[]
   readonly label: string
 }) {
+  const drift = findRouteDrift(actualRoutes, documentedRoutes)
+
+  for (const route of drift.missing) {
+    failures.push(`${label} is missing ${route}.`)
+  }
+
+  for (const route of drift.stale) {
+    failures.push(`${label} documents stale route ${route}.`)
+  }
+}
+
+export function findRouteDrift(
+  actualRoutes: readonly Route[],
+  documentedRoutes: readonly Route[]
+) {
   const actual = new Set(actualRoutes.map(formatRoute))
   const documented = new Set(documentedRoutes.map(formatRoute))
 
-  for (const route of [...actual].sort()) {
-    if (!documented.has(route)) {
-      failures.push(`${label} is missing ${route}.`)
-    }
-  }
-
-  for (const route of [...documented].sort()) {
-    if (!actual.has(route)) {
-      failures.push(`${label} documents stale route ${route}.`)
-    }
+  return {
+    missing: [...actual].filter((route) => !documented.has(route)).sort(),
+    stale: [...documented].filter((route) => !actual.has(route)).sort(),
   }
 }
 
@@ -440,21 +470,27 @@ function formatRoute(route: Route): string {
   return `${route.method} ${route.path}`
 }
 
-const markdownFiles = collectMarkdownFiles()
-const packages = discoverWorkspacePackages()
+function main() {
+  const markdownFiles = collectMarkdownFiles()
+  const packages = discoverWorkspacePackages()
 
-validateDocumentedCommands(markdownFiles, packages)
-validateDocumentedWorkspaceImports(markdownFiles, packages)
-validateBackendRouteDocumentation()
+  validateDocumentedCommands(markdownFiles, packages)
+  validateDocumentedWorkspaceImports(markdownFiles, packages)
+  validateBackendRouteDocumentation()
 
-if (failures.length > 0) {
-  console.error("Document drift check failed.")
+  if (failures.length > 0) {
+    console.error("Document drift check failed.")
 
-  for (const failure of failures) {
-    console.error(`- ${failure}`)
+    for (const failure of failures) {
+      console.error(`- ${failure}`)
+    }
+
+    process.exit(1)
   }
 
-  process.exit(1)
+  console.log("Document drift smoke checks passed.")
 }
 
-console.log("Document drift smoke checks passed.")
+if (import.meta.main) {
+  main()
+}
