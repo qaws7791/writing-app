@@ -71,19 +71,31 @@ export const WithBadge: Story = {
       <Avatar size="lg">
         <AvatarImage src="https://github.com/shadcn.png" alt="Online User" />
         <AvatarFallback>ON</AvatarFallback>
-        <AvatarBadge className="bg-emerald-500" aria-label="온라인" />
+        <AvatarBadge
+          className="bg-emerald-500"
+          aria-label="온라인"
+          role="status"
+        />
       </Avatar>
 
       <Avatar size="default">
         <AvatarImage src="https://github.com/shadcn.png" alt="Away User" />
         <AvatarFallback>AW</AvatarFallback>
-        <AvatarBadge className="bg-amber-500" aria-label="자리 비움" />
+        <AvatarBadge
+          className="bg-amber-500"
+          aria-label="자리 비움"
+          role="status"
+        />
       </Avatar>
 
       <Avatar size="sm">
         <AvatarImage src="https://github.com/shadcn.png" alt="Offline User" />
         <AvatarFallback>OF</AvatarFallback>
-        <AvatarBadge className="bg-slate-400" aria-label="오프라인" />
+        <AvatarBadge
+          className="bg-slate-400"
+          aria-label="오프라인"
+          role="status"
+        />
       </Avatar>
     </div>
   ),

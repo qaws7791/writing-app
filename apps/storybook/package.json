@@ -9,9 +9,12 @@
     "serve": "bunx http-server dist -p 6007 -c-1",
     "build:serve": "storybook build --output-dir dist && bunx http-server dist -p 6007 -c-1",
     "lint": "oxlint .",
+    "test:stories": "vitest run --config vitest.storybook.config.ts --project=storybook",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@headless-tree/core": "^1.7.0",
+    "@headless-tree/react": "^1.7.0",
     "@workspace/ui": "workspace:*",
     "lucide-react": "^1.8.0",
     "react": "^19.2.4",
@@ -20,17 +23,20 @@
   "devDependencies": {
     "@storybook/addon-a11y": "10.2.19",
     "@storybook/addon-docs": "10.2.19",
+    "@storybook/addon-vitest": "10.2.19",
     "@storybook/react-vite": "10.2.19",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/typography": "^0.5.20",
     "@types/bun": "^1.3.10",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
+    "@vitest/browser-playwright": "4.1.10",
     "@workspace/config": "workspace:*",
     "react-docgen-typescript": "^2.4.0",
     "storybook": "10.2.19",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "4.1.10"
   }
 }

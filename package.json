@@ -32,6 +32,8 @@
     "storybook": "bun --filter storybook dev",
     "test": "turbo test",
     "test:coverage": "bun scripts/run-workspace-coverage.ts",
+    "test:e2e": "playwright test",
+    "test:storybook": "bun --filter storybook test:stories",
     "typecheck": "turbo typecheck",
     "prepare": "lefthook install",
     "repomix": "bun run repomix:code",

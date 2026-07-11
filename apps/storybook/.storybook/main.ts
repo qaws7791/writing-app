@@ -87,7 +87,11 @@ function getStorybookManualChunk(id: string) {
 
 const config: StorybookConfig = {
   stories: ["../src/docs/**/*.mdx", "../src/stories/**/*.stories.@(ts|tsx)"],
-  addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
+  addons: [
+    "@storybook/addon-docs",
+    "@storybook/addon-a11y",
+    "@storybook/addon-vitest",
+  ],
   framework: {
     name: "@storybook/react-vite",
     options: {},

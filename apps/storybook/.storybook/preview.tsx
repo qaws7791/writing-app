@@ -60,6 +60,14 @@ const preview: Preview = {
     },
     layout: "centered",
     a11y: {
+      context: {
+        exclude: ["[data-base-ui-focus-guard]"],
+      },
+      options: {
+        rules: {
+          "color-contrast": { enabled: false },
+        },
+      },
       test: "error",
     },
     viewport: {

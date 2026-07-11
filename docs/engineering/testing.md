@@ -62,6 +62,8 @@ bun test scripts/check-document-drift.test.ts
 bun run check:workspace-inventory
 bun run test
 bun run test:coverage
+bun run test:e2e
+bun run test:storybook
 bun run typecheck
 bun run lint
 bun run build
@@ -173,6 +175,26 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - API는 기본 학습자 `learner@example.com`을 찾거나 생성하고 Google account row를 연결한 뒤 `learner_session_token` 세션 쿠키를 발급한다.
 - callback URL은 학습자 웹 origin 내부 URL만 허용하며, 외부 URL은 `/app`으로 되돌린다.
 - 이 경로는 로컬 smoke와 E2E 자동화를 위한 것이다. 제품 테스트에서는 Google OAuth 자체를 검증하지 않고, 인증 이후의 보호 route와 사용자 흐름을 검증한다.
+
+## 브라우저 E2E
+
+- `bun run test:e2e`는 저장소 전용 임시 SQLite DB와 `ENABLE_TEST_AUTH=true` web server를 사용한다.
+- fixture server가 DB 초기화를 마친 뒤 학습자 API·웹과 어드민 API·웹을 순서대로 기동하므로 실행 중인 API가 초기화 대상 DB를 먼저 열 수 없다.
+- 학습자 로그인·코스·레슨 완료, 관리자 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
+- Google OAuth 네트워크 요청은 허용하지 않는다. 실패 시 Playwright trace와 screenshot을 `output/playwright/`에 남긴다.
+
+## Storybook interaction과 접근성
+
+- Storybook build와 interaction·a11y 검증은 별도 명령과 CI 단계로 실행한다.
+- button play, lesson answer, dialog, menu, resource tree의 키보드 상호작용을 우선 검증한다.
+- `addon-a11y`의 error 설정과 axe 결과는 접근성 위반을 테스트 실패로 처리한다.
+- 색상 대비는 디자인 토큰 정비 범위와 분리해 현재 runner에서 제외하고, Base UI가 포털에 삽입하는 focus guard만 axe context에서 제외한다. 이름 없는 control, 잘못된 ARIA, landmark 등 나머지 규칙은 실패한다.
+
+## 테스트 console 정책
+
+- jsdom 테스트의 예상하지 않은 `console.error`와 `console.warn`은 즉시 실패한다.
+- React duplicate key, act, hydration 경고는 허용하지 않는다.
+- 의도한 경고를 검증하는 테스트만 해당 테스트 안에서 좁게 spy하고 메시지를 assertion한 뒤 복원한다.
 
 ## 실패 대응
 

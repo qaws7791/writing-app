@@ -1,5 +1,5 @@
 ﻿import type { Meta, StoryObj } from "@storybook/react-vite"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { AlertTriangle, Info } from "lucide-react"
 
 import {
@@ -155,7 +155,6 @@ export const FormInteraction: Story = {
     // 취소 버튼 클릭하여 대화상자 닫기
     await userEvent.click(cancelBtn)
 
-    // 대화상자가 정상적으로 닫혔는지 검증 (title이 화면에서 사라졌는지 확인)
-    await expect(title).not.toBeInTheDocument()
+    await waitFor(() => expect(title).not.toBeInTheDocument())
   },
 }
