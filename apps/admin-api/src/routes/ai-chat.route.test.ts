@@ -115,7 +115,8 @@ describe("어드민 API ai chat route", () => {
     expect(response.status).toBe(200)
     await expect(response.text()).resolves.toContain("event: done")
     expect(streamText).toHaveBeenCalledWith(
-      expect.stringContaining("소개 문구를 써줘")
+      expect.stringContaining("소개 문구를 써줘"),
+      expect.objectContaining({ maxOutputTokens: 2_000 })
     )
   })
 
@@ -135,6 +136,80 @@ describe("어드민 API ai chat route", () => {
 
     expect(response.status).toBe(200)
     await expect(response.text()).resolves.toContain("AI_PROVIDER_UNAVAILABLE")
+  })
+
+  it("요청 한도 초과 시 429와 Retry-After를 반환한다", async () => {
+    const app = createApp({
+      ...createDependencies(),
+      aiChatRequestGuard: {
+        acquire() {
+          return {
+            kind: "rejected",
+            reason: "rate-limit",
+            retryAfterSeconds: 30,
+          }
+        },
+      },
+    })
+
+    const response = await app.request("/ai-chat/messages/stream", {
+      body: JSON.stringify({ message: "소개 문구를 써줘" }),
+      headers: {
+        Authorization: "Bearer admin-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(429)
+    expect(response.headers.get("Retry-After")).toBe("30")
+  })
+
+  it("SSE 소비자가 취소하면 provider를 중단하고 assistant를 저장하지 않는다", async () => {
+    let providerSignal: AbortSignal | undefined
+    const streamText = vi.fn(
+      async (
+        _prompt: string,
+        options: {
+          readonly maxOutputTokens: number
+          readonly signal: AbortSignal
+        }
+      ) => {
+        providerSignal = options.signal
+
+        async function* stream() {
+          await new Promise<void>((resolve) => {
+            options.signal.addEventListener("abort", () => resolve(), {
+              once: true,
+            })
+          })
+          yield ""
+        }
+
+        return stream()
+      }
+    )
+    const dependencies = createDependencies({
+      aiChatAgent: { streamText },
+    })
+    const saveAssistant = vi.spyOn(
+      dependencies.adminServices.aiChat,
+      "saveAiChatAssistantMessage"
+    )
+    const app = createApp(dependencies)
+    const response = await app.request("/ai-chat/messages/stream", {
+      body: JSON.stringify({ message: "소개 문구를 써줘" }),
+      headers: {
+        Authorization: "Bearer admin-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    await vi.waitFor(() => expect(providerSignal).toBeDefined())
+    await response.body?.cancel()
+    await vi.waitFor(() => expect(providerSignal?.aborted).toBe(true))
+    expect(saveAssistant).not.toHaveBeenCalled()
   })
 })
 
@@ -159,11 +234,17 @@ function createDependencies({
           expect(input).toEqual({
             adminId: "admin-1",
             conversationId: "chat-1",
+            messagePage: 1,
+            messagePageSize: 100,
           })
           return completedConversationDetail
         },
         async getAiChatConversations(input) {
-          expect(input.adminId).toBe("admin-1")
+          expect(input).toEqual({
+            adminId: "admin-1",
+            page: 1,
+            pageSize: 50,
+          })
           return conversationList
         },
         async saveAiChatAssistantMessage(input) {

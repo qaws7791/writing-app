@@ -1,7 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { useMemo, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+
+import {
+  AdminAiChatStreamError,
+  readAdminAiChatSseEvents,
+} from "@/features/chat/admin-ai-chat-sse"
 
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
@@ -29,37 +35,12 @@ type PendingMessage = {
   readonly role: "assistant" | "user"
 }
 
-type StreamEvent =
-  | {
-      readonly data: {
-        readonly delta: string
-      }
-      readonly type: "chunk"
-    }
-  | {
-      readonly data: {
-        readonly conversation: AdminAiChatConversation
-        readonly message: AdminAiChatMessage
-      }
-      readonly type: "done"
-    }
-  | {
-      readonly data: {
-        readonly code: string
-        readonly message: string
-      }
-      readonly type: "error"
-    }
-
 const QUICK_PROMPTS = [
   "이 레슨 목표를 더 명확하게 다듬어 줘",
   "객관식 문제 3개 만들어줘",
   "이 개념을 초보자에게 어떻게 설명하면 좋을까?",
   "한국어 글쓰기 교육에 효과적인 스텝 구성은?",
 ] as const
-type DoneStreamData = Extract<StreamEvent, { readonly type: "done" }>["data"]
-type ErrorStreamData = Extract<StreamEvent, { readonly type: "error" }>["data"]
-
 export function AdminAiChatPage({
   activeConversationResult,
   conversationsResult,
@@ -67,13 +48,33 @@ export function AdminAiChatPage({
   readonly activeConversationResult: AdminApiResult<AdminAiChatConversationDetail> | null
   readonly conversationsResult: AdminApiResult<AdminAiChatConversationList>
 }) {
+  const conversationKey =
+    activeConversationResult?.status === "ok"
+      ? activeConversationResult.value.conversation.id
+      : "new-conversation"
+
+  return (
+    <AdminAiChatSession
+      activeConversationResult={activeConversationResult}
+      conversationsResult={conversationsResult}
+      key={conversationKey}
+    />
+  )
+}
+
+function AdminAiChatSession({
+  activeConversationResult,
+  conversationsResult,
+}: {
+  readonly activeConversationResult: AdminApiResult<AdminAiChatConversationDetail> | null
+  readonly conversationsResult: AdminApiResult<AdminAiChatConversationList>
+}) {
+  const router = useRouter()
   const initialConversation =
     activeConversationResult?.status === "ok"
       ? activeConversationResult.value
       : null
-  const [activeConversationId, setActiveConversationId] = useState(
-    initialConversation?.conversation.id ?? null
-  )
+  const activeConversationId = initialConversation?.conversation.id ?? null
   const [conversations, setConversations] = useState(
     conversationsResult.status === "ok" ? conversationsResult.value.items : []
   )
@@ -91,9 +92,19 @@ export function AdminAiChatPage({
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(
     null
   )
-  const [isPending, startTransition] = useTransition()
+  const [isPending, setIsPending] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const inFlightRef = useRef(false)
   const canSend = draft.trim().length > 0 && !isPending
-  const visibleMessages = useMemo(() => messages, [messages])
+  const visibleMessages = messages
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort()
+      abortControllerRef.current = null
+      inFlightRef.current = false
+    }
+  }, [])
 
   return (
     <div
@@ -129,7 +140,6 @@ export function AdminAiChatPage({
                 )}
                 href={`/chat?conversationId=${conversation.id}`}
                 key={conversation.id}
-                onClick={() => setActiveConversationId(conversation.id)}
               >
                 <div className="truncate pr-6 text-[0.8125rem] font-bold">
                   {conversation.title}
@@ -178,15 +188,7 @@ export function AdminAiChatPage({
               </p>
               <form
                 className="mb-4 flex w-full items-end gap-3 rounded-3xl bg-surface px-5 py-4 shadow-sm"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  const message = draft.trim()
-                  if (message.length === 0) {
-                    return
-                  }
-                  setDraft("")
-                  sendMessage(message)
-                }}
+                onSubmit={submitMessage}
               >
                 <Textarea
                   aria-label="AI 채팅 메시지"
@@ -195,12 +197,7 @@ export function AdminAiChatPage({
                   onKeyDown={(event) => {
                     if (event.key === "Enter" && !event.shiftKey) {
                       event.preventDefault()
-                      const message = draft.trim()
-                      if (message.length === 0) {
-                        return
-                      }
-                      setDraft("")
-                      sendMessage(message)
+                      event.currentTarget.form?.requestSubmit()
                     }
                   }}
                   placeholder="메시지를 입력하세요…"
@@ -292,15 +289,7 @@ export function AdminAiChatPage({
             </div>
             <form
               className="shrink-0 border-t border-surface-hover px-4 py-4"
-              onSubmit={(event) => {
-                event.preventDefault()
-                const message = draft.trim()
-                if (message.length === 0) {
-                  return
-                }
-                setDraft("")
-                sendMessage(message)
-              }}
+              onSubmit={submitMessage}
             >
               <div className="flex items-end gap-3 rounded-3xl bg-surface px-4 py-3">
                 <Textarea
@@ -310,12 +299,7 @@ export function AdminAiChatPage({
                   onKeyDown={(event) => {
                     if (event.key === "Enter" && !event.shiftKey) {
                       event.preventDefault()
-                      const message = draft.trim()
-                      if (message.length === 0) {
-                        return
-                      }
-                      setDraft("")
-                      sendMessage(message)
+                      event.currentTarget.form?.requestSubmit()
                     }
                   }}
                   placeholder="메시지를 입력하세요… (Enter 전송 / Shift+Enter 줄바꿈)"
@@ -337,7 +321,25 @@ export function AdminAiChatPage({
     </div>
   )
 
+  function submitMessage(event: React.FormEvent<HTMLFormElement>): void {
+    event.preventDefault()
+    const message = draft.trim()
+    if (message.length === 0 || inFlightRef.current) {
+      return
+    }
+    setDraft("")
+    sendMessage(message)
+  }
+
   function sendMessage(message: string): void {
+    if (inFlightRef.current) {
+      return
+    }
+
+    inFlightRef.current = true
+    setIsPending(true)
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
     const userMessage: PendingMessage = {
       content: message,
       createdAt: new Date().toISOString(),
@@ -359,28 +361,38 @@ export function AdminAiChatPage({
       },
     ])
 
-    startTransition(async () => {
+    void (async () => {
       const result = await streamMessage({
         assistantMessageId,
         conversationId: activeConversationId,
         message,
+        signal: abortController.signal,
       })
 
-      if (result.kind === "error") {
+      if (result.kind === "error" && !abortController.signal.aborted) {
         setErrorMessage(result.message)
         setLastFailedMessage(message)
       }
-    })
+      if (!abortController.signal.aborted) {
+        setIsPending(false)
+      }
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null
+        inFlightRef.current = false
+      }
+    })()
   }
 
   async function streamMessage({
     assistantMessageId,
     conversationId,
     message,
+    signal,
   }: {
     readonly assistantMessageId: string
     readonly conversationId: string | null
     readonly message: string
+    readonly signal: AbortSignal
   }): Promise<
     | {
         readonly kind: "ok"
@@ -390,56 +402,80 @@ export function AdminAiChatPage({
         readonly message: string
       }
   > {
-    const response = await fetch("/api/ai-chat/stream", {
-      body: JSON.stringify({
-        ...(conversationId === null ? {} : { conversationId }),
-        message,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    })
+    try {
+      const response = await fetch("/api/ai-chat/stream", {
+        body: JSON.stringify({
+          ...(conversationId === null ? {} : { conversationId }),
+          message,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        signal,
+      })
 
-    if (!response.ok || response.body === null) {
-      return {
-        kind: "error",
-        message: "AI 응답을 시작할 수 없습니다.",
+      if (!response.ok || response.body === null) {
+        return {
+          kind: "error",
+          message: "AI 응답을 시작할 수 없습니다.",
+        }
       }
-    }
 
-    for await (const event of readSseEvents(response.body)) {
-      if (event.type === "chunk") {
+      const deltaBatch = createDeltaBatch((delta) => {
+        if (signal.aborted) {
+          return
+        }
         setMessages((current) =>
           current.map((item) =>
             item.id === assistantMessageId
-              ? { ...item, content: `${item.content}${event.data.delta}` }
+              ? { ...item, content: `${item.content}${delta}` }
               : item
           )
         )
-      }
+      })
 
-      if (event.type === "done") {
-        setActiveConversationId(event.data.conversation.id)
-        setConversations((current) =>
-          upsertConversation(current, event.data.conversation)
-        )
-        setMessages((current) =>
-          current.map((item) =>
-            item.id === assistantMessageId ? event.data.message : item
+      for await (const event of readAdminAiChatSseEvents(response.body)) {
+        if (event.type === "chunk") {
+          deltaBatch.push(event.data.delta)
+        }
+        if (event.type === "done") {
+          deltaBatch.flush()
+          setConversations((current) =>
+            upsertConversation(current, event.data.conversation)
           )
-        )
-      }
+          setMessages((current) =>
+            current.map((item) =>
+              item.id === assistantMessageId ? event.data.message : item
+            )
+          )
+          if (conversationId === null) {
+            router.replace(
+              `/chat?conversationId=${encodeURIComponent(event.data.conversation.id)}`
+            )
+          }
+        }
 
-      if (event.type === "error") {
-        return {
-          kind: "error",
-          message: event.data.message,
+        if (event.type === "error") {
+          deltaBatch.cancel()
+          return { kind: "error", message: event.data.message }
         }
       }
-    }
 
-    return { kind: "ok" }
+      deltaBatch.cancel()
+      return { kind: "ok" }
+    } catch (error) {
+      if (signal.aborted) {
+        return { kind: "ok" }
+      }
+      return {
+        kind: "error",
+        message:
+          error instanceof AdminAiChatStreamError
+            ? error.message
+            : "AI 응답을 읽는 중 오류가 발생했습니다.",
+      }
+    }
   }
 }
 
@@ -452,93 +488,35 @@ function upsertConversation(
   return [conversation, ...next]
 }
 
-async function* readSseEvents(
-  body: ReadableStream<Uint8Array>
-): AsyncIterable<StreamEvent> {
-  const reader = body.getReader()
-  const decoder = new TextDecoder()
-  let buffer = ""
+function createDeltaBatch(apply: (delta: string) => void) {
+  let pending = ""
+  let frame: number | null = null
 
-  try {
-    while (true) {
-      const result = await reader.read()
-
-      if (result.done) {
-        break
-      }
-
-      buffer += decoder.decode(result.value, { stream: true })
-      const parts = buffer.split("\n\n")
-      buffer = parts.pop() ?? ""
-
-      for (const part of parts) {
-        const event = parseSseEvent(part)
-
-        if (event !== null) {
-          yield event
-        }
-      }
+  const flush = () => {
+    if (frame !== null) {
+      cancelAnimationFrame(frame)
+      frame = null
     }
-  } finally {
-    reader.releaseLock()
-  }
-}
-
-function parseSseEvent(value: string): StreamEvent | null {
-  const eventLine = value.split("\n").find((line) => line.startsWith("event: "))
-  const dataLine = value.split("\n").find((line) => line.startsWith("data: "))
-
-  if (eventLine === undefined || dataLine === undefined) {
-    return null
+    if (pending.length === 0) {
+      return
+    }
+    const delta = pending
+    pending = ""
+    apply(delta)
   }
 
-  const eventType = eventLine.slice("event: ".length)
-  const data = JSON.parse(dataLine.slice("data: ".length)) as unknown
-
-  if (eventType === "chunk" && isChunkData(data)) {
-    return { data, type: "chunk" }
+  return {
+    cancel() {
+      if (frame !== null) {
+        cancelAnimationFrame(frame)
+      }
+      frame = null
+      pending = ""
+    },
+    flush,
+    push(delta: string) {
+      pending += delta
+      frame ??= requestAnimationFrame(flush)
+    },
   }
-
-  if (eventType === "done" && isDoneData(data)) {
-    return { data, type: "done" }
-  }
-
-  if (eventType === "error" && isErrorData(data)) {
-    return { data, type: "error" }
-  }
-
-  return null
-}
-
-type ChunkStreamData = {
-  readonly delta: string
-}
-
-function isChunkData(value: unknown): value is ChunkStreamData {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "delta" in value &&
-    typeof value.delta === "string"
-  )
-}
-
-function isDoneData(value: unknown): value is DoneStreamData {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "conversation" in value &&
-    "message" in value
-  )
-}
-
-function isErrorData(value: unknown): value is ErrorStreamData {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "message" in value &&
-    typeof value.message === "string" &&
-    "code" in value &&
-    typeof value.code === "string"
-  )
 }

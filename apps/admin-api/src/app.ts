@@ -12,6 +12,10 @@ import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hu
 import { createOpenApiDocument } from "@/http/openapi"
 import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 import { createAiChatRoutes } from "@/routes/ai-chat.route"
+import {
+  createAiChatRequestGuard,
+  type AiChatRequestGuard,
+} from "@/routes/ai-chat-request-guard"
 import { createAnalyticsRoutes } from "@/routes/analytics.route"
 import { createCoursesRoutes } from "@/routes/courses.route"
 import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
@@ -65,6 +69,17 @@ export type AdminApiServices = {
 
 export type AdminApiDependencies = {
   readonly aiChatAgent?: AdminAiChatAgent
+  readonly aiChatEventLogger?: {
+    readonly info: (
+      event: Readonly<Record<string, unknown>>,
+      message: string
+    ) => void
+    readonly warn: (
+      event: Readonly<Record<string, unknown>>,
+      message: string
+    ) => void
+  }
+  readonly aiChatRequestGuard?: AiChatRequestGuard
   readonly adminServices: AdminApiServices
   readonly adminOrigin?: string
   readonly authHandler?: (request: Request) => Promise<Response>
@@ -78,6 +93,8 @@ export type AdminApiDependencies = {
 
 export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
   const now = dependencies.now ?? (() => new Date())
+  const aiChatRequestGuard =
+    dependencies.aiChatRequestGuard ?? createAiChatRequestGuard()
   const app = createHonoApp({
     middleware: createMiddleware(dependencies),
     routes: [
@@ -85,6 +102,8 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       createSessionRoute(dependencies.sessionResolver),
       ...createAiChatRoutes({
         aiChatAgent: dependencies.aiChatAgent,
+        aiChatEventLogger: dependencies.aiChatEventLogger,
+        aiChatRequestGuard,
         aiChatService: dependencies.adminServices.aiChat,
         now,
         sessionResolver: dependencies.sessionResolver,

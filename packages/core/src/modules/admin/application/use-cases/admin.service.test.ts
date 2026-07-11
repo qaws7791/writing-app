@@ -413,11 +413,17 @@ describe("어드민 서비스", () => {
           expect(input).toEqual({
             adminId: "admin-1",
             conversationId: "chat-1",
+            messagePage: 1,
+            messagePageSize: 100,
           })
           return aiChatConversationDetail
         },
         async readAiChatConversations(input) {
-          expect(input.adminId).toBe("admin-1")
+          expect(input).toEqual({
+            adminId: "admin-1",
+            page: 1,
+            pageSize: 50,
+          })
           return aiChatConversationList
         },
         async saveAiChatAssistantMessage(input) {
@@ -432,12 +438,18 @@ describe("어드민 서비스", () => {
     })
 
     await expect(
-      service.getAiChatConversations({ adminId: "admin-1" })
+      service.getAiChatConversations({
+        adminId: "admin-1",
+        page: 1,
+        pageSize: 50,
+      })
     ).resolves.toEqual(aiChatConversationList)
     await expect(
       service.getAiChatConversation({
         adminId: "admin-1",
         conversationId: "chat-1",
+        messagePage: 1,
+        messagePageSize: 100,
       })
     ).resolves.toEqual(aiChatConversationDetail)
     await expect(

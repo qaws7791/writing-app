@@ -51,6 +51,12 @@ CREATE TABLE IF NOT EXISTS admin_ai_chat_messages (
   content TEXT NOT NULL,
   created_at INTEGER NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS admin_ai_chat_conversations_admin_updated_idx
+ON admin_ai_chat_conversations(admin_id, updated_at);
+
+CREATE INDEX IF NOT EXISTS admin_ai_chat_messages_conversation_created_idx
+ON admin_ai_chat_messages(conversation_id, created_at);
 `)
 }
 

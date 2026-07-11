@@ -114,6 +114,7 @@ const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
 })
 const app = createApp({
   aiChatAgent,
+  aiChatEventLogger: logger,
   adminServices: {
     aiChat: adminService,
     analytics: adminService,

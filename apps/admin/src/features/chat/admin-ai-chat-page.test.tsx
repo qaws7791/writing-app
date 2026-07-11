@@ -1,4 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -8,6 +14,12 @@ import type {
   AdminAiChatConversationDetail,
   AdminAiChatConversationList,
 } from "@/lib/api/admin-api"
+
+const { replaceMock } = vi.hoisted(() => ({ replaceMock: vi.fn() }))
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: replaceMock }),
+}))
 
 const conversationDetail: AdminAiChatConversationDetail = {
   conversation: {
@@ -39,6 +51,7 @@ const conversationList: AdminAiChatConversationList = {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  replaceMock.mockClear()
 })
 
 describe("AdminAiChatPage", () => {
@@ -58,6 +71,81 @@ describe("AdminAiChatPage", () => {
     expect(
       within(log).getByText("학습 목표가 보이는 소개 문구입니다.")
     ).toBeVisible()
+  })
+
+  it("활성 대화 props가 바뀌면 이전 메시지 state를 남기지 않는다", () => {
+    const { rerender } = render(
+      <AdminAiChatPage
+        activeConversationResult={ok(conversationDetail)}
+        conversationsResult={ok(conversationList)}
+      />
+    )
+    const nextConversation = {
+      conversation: {
+        ...conversationDetail.conversation,
+        id: "chat-2",
+        title: "두 번째 대화",
+      },
+      messages: [
+        {
+          content: "두 번째 메시지",
+          createdAt: "2026-06-14T04:00:00.000Z",
+          id: "message-3",
+          role: "user" as const,
+        },
+      ],
+    }
+
+    rerender(
+      <AdminAiChatPage
+        activeConversationResult={ok(nextConversation)}
+        conversationsResult={ok({ items: [nextConversation.conversation] })}
+      />
+    )
+
+    expect(screen.getByText("두 번째 메시지")).toBeVisible()
+    expect(screen.queryByText("강의 소개 문구를 써줘")).not.toBeInTheDocument()
+  })
+
+  it("pending 중 반복 submit을 하나의 요청으로 제한하고 unmount에서 취소한다", async () => {
+    let capturedSignal: AbortSignal | undefined
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (_input, init) => {
+        capturedSignal = init?.signal as AbortSignal
+        return new Response(
+          new ReadableStream({
+            start(controller) {
+              capturedSignal?.addEventListener(
+                "abort",
+                () => controller.close(),
+                { once: true }
+              )
+            },
+          }),
+          { status: 200 }
+        )
+      })
+    const user = userEvent.setup()
+    const { unmount } = render(
+      <AdminAiChatPage
+        activeConversationResult={null}
+        conversationsResult={ok({ items: [] })}
+      />
+    )
+    const input = screen.getByLabelText("AI 채팅 메시지")
+    await user.type(input, "중복 요청")
+    const form = input.closest("form")
+    if (form === null) {
+      throw new Error("메시지 입력 form을 찾을 수 없습니다.")
+    }
+
+    fireEvent.submit(form)
+    fireEvent.submit(form)
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    unmount()
+    expect(capturedSignal?.aborted).toBe(true)
   })
 
   it("SSE chunk와 done 이벤트로 스트리밍 응답을 표시한다", async () => {

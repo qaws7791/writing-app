@@ -1,6 +1,7 @@
 import { AdminAiChatPage } from "@/features/chat/admin-ai-chat-page"
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import { redirect } from "next/navigation"
 
 export default async function AdminAiChatRoute({
   searchParams,
@@ -17,6 +18,13 @@ export default async function AdminAiChatRoute({
     conversationId === ""
       ? null
       : await api.getAiChatConversation(conversationId)
+
+  if (
+    activeConversationResult?.status === "error" &&
+    activeConversationResult.error.code === "not-found"
+  ) {
+    redirect("/chat")
+  }
 
   return (
     <AdminAiChatPage

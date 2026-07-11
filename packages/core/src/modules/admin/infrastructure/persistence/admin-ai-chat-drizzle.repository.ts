@@ -11,7 +11,7 @@ import type {
   ReadAdminAiChatConversationsInput,
   SaveAdminAiChatAssistantMessageInput,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
-import { asc, count, desc, eq } from "drizzle-orm"
+import { count, desc, eq } from "drizzle-orm"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
@@ -50,6 +50,8 @@ function readAiChatConversations(
     .from(adminAiChatConversations)
     .where(eq(adminAiChatConversations.adminId, input.adminId))
     .orderBy(desc(adminAiChatConversations.updatedAt))
+    .limit(input.pageSize)
+    .offset((input.page - 1) * input.pageSize)
     .all()
 
   return {
@@ -73,7 +75,7 @@ function readAiChatConversation(
     return null
   }
 
-  return toConversationDetailDto(db, conversation)
+  return toConversationDetailDto(db, conversation, input)
 }
 
 function createAiChatUserMessage(
@@ -111,6 +113,8 @@ function createAiChatUserMessage(
   return readAiChatConversation(db, {
     adminId: input.adminId,
     conversationId: conversation.id,
+    messagePage: 1,
+    messagePageSize: 100,
   })
 }
 
@@ -156,7 +160,7 @@ function createConversation(
 
 function readOwnedConversation(
   db: WritingAppDatabase,
-  input: ReadAdminAiChatConversationInput
+  input: Pick<ReadAdminAiChatConversationInput, "adminId" | "conversationId">
 ): AiChatConversationRow | null {
   const conversation = db
     .select()
@@ -173,14 +177,21 @@ function readOwnedConversation(
 
 function toConversationDetailDto(
   db: WritingAppDatabase,
-  conversation: AiChatConversationRow
+  conversation: AiChatConversationRow,
+  pagination: Pick<
+    ReadAdminAiChatConversationInput,
+    "messagePage" | "messagePageSize"
+  >
 ): AdminAiChatConversationDetailDto {
   const messages = db
     .select()
     .from(adminAiChatMessages)
     .where(eq(adminAiChatMessages.conversationId, conversation.id))
-    .orderBy(asc(adminAiChatMessages.createdAt))
+    .orderBy(desc(adminAiChatMessages.createdAt))
+    .limit(pagination.messagePageSize)
+    .offset((pagination.messagePage - 1) * pagination.messagePageSize)
     .all()
+    .reverse()
 
   return {
     conversation: toConversationDto(db, conversation),

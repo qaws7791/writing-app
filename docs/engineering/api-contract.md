@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-07-10
+- 기준일: 2026-07-12
 - 기준 파일:
   - `apps/api/src/routes/index.ts`
   - `apps/api/src/modules/*/*.routes.ts`
@@ -101,6 +101,10 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 | `GET`      | `/ai-chat/conversations`                         | 관리자      | AI 대화 목록              |
 | `GET`      | `/ai-chat/conversations/{conversationId}`        | 관리자      | AI 대화 상세              |
 | `POST`     | `/ai-chat/messages/stream`                       | 관리자      | AI 응답 stream            |
+
+`POST /ai-chat/messages/stream`은 관리자·클라이언트 IP별 요청 횟수와 관리자별 일일 요청 횟수, 대화별 단일 in-flight를 제한한다. 한도 초과는 `429`와 `Retry-After`를 반환한다. SSE stream은 `chunk` 뒤 반드시 `done` 또는 `error`로 종료하며, 요청 취소와 30초 provider timeout은 provider abort로 전달되고 assistant 메시지를 저장하지 않는다. prompt는 최근 20개 메시지와 12,000자, provider 출력은 2,000 token과 64 KiB를 상한으로 둔다.
+
+`GET /ai-chat/conversations`는 `page`와 최대 50인 `pageSize`, `GET /ai-chat/conversations/{conversationId}`는 `messagePage`와 최대 100인 `messagePageSize` query로 대화와 메시지를 페이지 단위로 조회한다.
 
 자료 본문 저장은 HTTP 동기화 경계를 사용한다. `POST /resources/documents/{documentId}/transactions`는 Base64 Yjs update와 멱등 transaction ID를 받아 snapshot, Markdown, 검색 색인과 version을 원자적으로 저장한다. `GET /resources/documents/{documentId}/sync?afterStateVersion={version}`는 연속된 최근 update를 반환하고 보존 구간이 없거나 응답이 1MiB를 넘으면 최신 snapshot을 반환한다. 아직 서버 Yjs identity가 없는 새 client는 같은 endpoint에 `mode=snapshot`을 지정해 증분 적용 전에 서버 snapshot을 강제로 받는다. 본문 전용 WebSocket endpoint와 room은 제거했으며 두 transport를 동시에 쓰지 않는다.
 

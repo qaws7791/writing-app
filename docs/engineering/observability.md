@@ -13,6 +13,7 @@
 - 요청 완료 메시지: `request.completed`
 - 자료실 공동 편집: 작업 공간 WebSocket 인증 거부 이유, HTTP transaction 거부·재시도, projection issue와 SQLite busy를 구조화해 기록한다.
 - 자료실 트리: event revision gap을 `resource-tree.revision-gap` performance mark로 기록하고 보이는 트리를 다시 조회한다.
+- 관리자 AI 채팅: 완료와 출력 byte 비용은 `admin.ai-chat.completed`, 요청 한도·동시 실행 거절은 `admin.ai-chat.request.rejected`, provider timeout은 `admin.ai-chat.provider.timeout`, 출력 상한 초과는 `admin.ai-chat.output.limit`, client 취소는 `admin.ai-chat.client.disconnected`로 기록한다.
 
 메트릭 수집기, tracing backend, alert manager, 운영 대시보드는 아직 코드로 구현되어 있지 않다. 이 문서의 메트릭/알림 항목은 도입 기준이다.
 

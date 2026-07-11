@@ -127,6 +127,8 @@ Better Auth adapter 계약을 따른다.
 | `admin_ai_chat_conversations`               | `id`, `title`, `admin_id`, timestamp                                                                         | 관리자별 AI 채팅 대화                    |
 | `admin_ai_chat_messages`                    | `id`, `conversation_id`, `role`, `content`, `created_at`                                                     | AI 채팅 사용자/어시스턴트 메시지         |
 
+관리자 AI 채팅 목록은 관리자별 최대 50개 대화, 상세는 최대 100개 메시지를 page query에 따라 시간순으로 반환한다. `admin_ai_chat_conversations(admin_id, updated_at)`와 `admin_ai_chat_messages(conversation_id, created_at)` 복합 index가 이 조회를 지원한다.
+
 자료 트리의 `active | archived` 상태와 `trash_root_id`는 함께 바뀐다. 폴더 휴지통 이동·복원은 연결된 전체 하위 트리에 같은 transaction으로 적용한다. `content_markdown`은 본문의 유일한 도메인 원본이며 `yjs_state`와 update log는 동시 편집 병합과 재접속을 위한 동기화 메타데이터다. update log는 문서별 200건·2MiB까지만 보존하지만 transaction 승인 기록은 별도로 유지해 오래된 재시도에도 최초 승인 version을 반환한다.
 
 ## 상태 머신
