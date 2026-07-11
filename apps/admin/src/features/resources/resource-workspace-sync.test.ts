@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { $isCodeNode } from "@lexical/code"
+import { $getRoot, $isTextNode } from "lexical"
 import { applyUpdate, Doc, mergeUpdates } from "yjs"
 
 import { createResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync"
@@ -90,6 +92,88 @@ describe("자료실 작업 공간 HTTP 동기화", () => {
     expect(getResourceDocumentSnapshot).toHaveBeenCalledTimes(1)
 
     secondLease.release()
+    sync.dispose()
+  })
+
+  it("승인된 update를 포함한 서버 snapshot으로 새 편집기를 초기화한다", async () => {
+    const initialSnapshot = expectSnapshot("초기 본문")
+    const remoteUpdate = createUpdate(initialSnapshot, "승인된 최신 본문")
+    const applied = applyResourceDocumentUpdate(initialSnapshot, remoteUpdate)
+    if (applied.status !== "valid") {
+      throw new Error("최신 snapshot fixture 생성 실패")
+    }
+    const sync = createResourceWorkspaceSync({
+      api: {
+        getResourceDocumentSnapshot: vi.fn(async () => ({
+          status: "ok" as const,
+          value: {
+            kind: "snapshot" as const,
+            snapshot: applied.snapshot,
+            stateVersion: 1,
+          },
+        })),
+        getResourceDocumentSync: vi.fn(),
+        saveResourceDocumentTransaction: vi.fn(),
+      },
+      realtime: createRealtimeFake(),
+    })
+    const editor = createResourceDocumentEditor()
+    const lease = sync.attachDocument({
+      documentId: "document-1",
+      editor,
+    })
+
+    await vi.waitFor(() => expect(editor.isEditable()).toBe(true))
+    expect(readResourceDocumentMarkdown(editor)).toMatchObject({
+      markdown: "승인된 최신 본문",
+    })
+
+    lease.release()
+    sync.dispose()
+  })
+
+  it("코드 블록의 승인된 update를 포함한 서버 snapshot으로 새 편집기를 초기화한다", async () => {
+    const initialSnapshot = expectSnapshot(
+      [
+        "## 가져온 제목",
+        "",
+        "```html",
+        "<script>window.__resourceRawHtmlExecuted = true</script>",
+        "```",
+      ].join("\n")
+    )
+    const remoteUpdate = appendToCodeBlock(initialSnapshot, " HTTP 최신 본문")
+    const applied = applyResourceDocumentUpdate(initialSnapshot, remoteUpdate)
+    if (applied.status !== "valid") {
+      throw new Error("코드 블록 최신 snapshot fixture 생성 실패")
+    }
+    const sync = createResourceWorkspaceSync({
+      api: {
+        getResourceDocumentSnapshot: vi.fn(async () => ({
+          status: "ok" as const,
+          value: {
+            kind: "snapshot" as const,
+            snapshot: applied.snapshot,
+            stateVersion: 1,
+          },
+        })),
+        getResourceDocumentSync: vi.fn(),
+        saveResourceDocumentTransaction: vi.fn(),
+      },
+      realtime: createRealtimeFake(),
+    })
+    const editor = createResourceDocumentEditor()
+    const lease = sync.attachDocument({
+      documentId: "document-1",
+      editor,
+    })
+
+    await vi.waitFor(() => expect(editor.isEditable()).toBe(true))
+    expect(readResourceDocumentMarkdown(editor)).toMatchObject({
+      markdown: expect.stringContaining("HTTP 최신 본문"),
+    })
+
+    lease.release()
     sync.dispose()
   })
 
@@ -602,6 +686,34 @@ function createUpdate(snapshot: Uint8Array, markdown: string): Uint8Array {
     markdown
   )
   if (replaced.status !== "valid") throw new Error("update fixture 생성 실패")
+  collaboration.disconnect()
+  document.destroy()
+  return mergeUpdates(updates)
+}
+
+function appendToCodeBlock(snapshot: Uint8Array, text: string): Uint8Array {
+  const document = new Doc()
+  const collaboration = createHeadlessResourceDocumentCollaboration({
+    document,
+    id: "resource-workspace-code-update-test",
+  })
+  applyUpdate(document, snapshot)
+  readResourceDocumentMarkdown(collaboration.editor)
+  const updates: Uint8Array[] = []
+  document.on("update", (update) => updates.push(update))
+  collaboration.editor.update(
+    () => {
+      const codeNode = $getRoot().getChildren().find($isCodeNode)
+      const textNode = codeNode?.getFirstChild()
+
+      if (!$isTextNode(textNode)) {
+        throw new Error("fixture의 코드 블록 텍스트를 찾지 못했습니다")
+      }
+
+      textNode.spliceText(textNode.getTextContentSize(), 0, text)
+    },
+    { discrete: true }
+  )
   collaboration.disconnect()
   document.destroy()
   return mergeUpdates(updates)

@@ -141,6 +141,7 @@ export function connectResourceDocumentCollaboration({
   document.on("update", onNetworkUpdate)
   editorDocument.on("update", onEditorUpdate)
   mirrorValidatedNetworkState(encodeStateAsUpdate(document))
+  editor.update(() => undefined, { discrete: true })
 
   return {
     binding: editorCollaboration.binding,

@@ -37,6 +37,9 @@
 - 서버 프로세스 재시작을 새 동기화 use case 조립으로 모사하는 fixture를 추가했다. 재시작 뒤에도 SQLite에 확정된 snapshot·update log·version에서 누락 pull을 제공하고 다음 transaction을 연속 version으로 승인한다.
 - 작업 공간 fixture는 자신의 version 알림이 HTTP 저장 응답보다 먼저 도착해 같은 update를 pull하더라도 중복 저장 없이 durable 응답 뒤에만 동기화 완료로 전환하는지 검증한다. 서버가 정리된 증분 구간 대신 최신 snapshot을 반환하면 같은 문서 Y.Doc에 적용해 현재 본문을 복구한다.
 - 문서 100회 전환 fixture는 실제 작업 공간 WebSocket Adapter를 한 번만 만들고, 기존 연결에서 문서 구독 100회와 이전 구독 해제 99회만 수행하는 채택 조건을 검증한다.
+- 초기 원격 Yjs 상태를 Lexical에 반영한 직후에는 이를 discrete update로 확정한다. 이 경계가 없으면 같은 틱의 첫 코드 블록 입력이 `collaboration` 태그에 합쳐져 HTTP transaction에서 제외될 수 있다.
+- 자료 문서 공동 편집 계약은 코드 블록 내부의 첫 로컬 입력이 네트워크 Y.Doc과 원격 편집기에 전파되는지 검증한다. 작업 공간 fixture는 승인된 증분 update를 포함한 snapshot으로 새 편집기를 초기화하는 경로도 검증한다.
+- 격리된 두 관리자 브라우저에서 코드 블록 변경을 HTTP transaction으로 승인한 뒤 다른 브라우저가 version 알림의 HTTP pull로 같은 변경을 표시하는 것을 확인했다.
 
 ## 결정 요약
 

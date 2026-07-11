@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import type { Provider, UserState } from "@lexical/yjs"
+import { $isCodeNode } from "@lexical/code"
 import {
   $createParagraphNode,
   $createTextNode,
@@ -161,6 +162,56 @@ describe("자료 문서 공동 편집 계약", () => {
     clientB.disconnect()
     documentA.destroy()
     documentB.destroy()
+  })
+
+  it("코드 블록 안의 로컬 변경을 네트워크 문서로 동기화한다", () => {
+    const snapshotResult = createResourceDocumentSnapshot(
+      [
+        "## 가져온 제목",
+        "",
+        "```html",
+        "<script>window.__resourceRawHtmlExecuted = true</script>",
+        "```",
+      ].join("\n")
+    )
+
+    if (snapshotResult.status !== "valid") {
+      throw new Error("유효한 Markdown fixture가 거부되었습니다.")
+    }
+
+    const networkDocument = new Doc()
+    const remote = createHeadlessResourceDocumentCollaboration({
+      document: networkDocument,
+      id: "resource-code-remote",
+    })
+    const editor = createResourceDocumentEditor()
+
+    applyUpdate(networkDocument, snapshotResult.snapshot)
+    const collaboration = connectResourceDocumentCollaboration({
+      document: networkDocument,
+      editor,
+      id: "resource-code-local",
+      onRemoteValidationChange() {},
+      provider: createTestProvider(),
+    })
+
+    try {
+      const networkUpdate = vi.fn()
+      networkDocument.on("update", networkUpdate)
+      appendToCodeBlockText(editor, " HTTP 최신 본문")
+
+      expect(readResourceDocumentMarkdown(editor)).toMatchObject({
+        markdown: expect.stringContaining("HTTP 최신 본문"),
+      })
+      expect(networkUpdate).toHaveBeenCalled()
+      expect(readResourceDocumentMarkdown(remote.editor)).toMatchObject({
+        markdown: expect.stringContaining("HTTP 최신 본문"),
+      })
+    } finally {
+      collaboration.disconnect()
+      remote.disconnect()
+      networkDocument.destroy()
+    }
   })
 
   it("undo는 현재 사용자의 변경만 되돌리고 원격 변경은 유지한다", () => {
@@ -693,6 +744,25 @@ function appendParagraph(
   editor.update(
     () => {
       $getRoot().append($createParagraphNode().append($createTextNode(text)))
+    },
+    { discrete: true }
+  )
+}
+
+function appendToCodeBlockText(
+  editor: ReturnType<typeof createResourceDocumentEditor>,
+  text: string
+): void {
+  editor.update(
+    () => {
+      const codeNode = $getRoot().getChildren().find($isCodeNode)
+      const textNode = codeNode?.getFirstChild()
+
+      if (!$isTextNode(textNode)) {
+        throw new Error("fixture의 코드 블록 텍스트를 찾지 못했습니다.")
+      }
+
+      textNode.spliceText(textNode.getTextContentSize(), 0, text)
     },
     { discrete: true }
   )
