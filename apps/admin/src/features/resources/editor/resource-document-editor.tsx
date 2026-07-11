@@ -55,7 +55,7 @@ import {
 } from "@/features/resources/resource-library-api"
 import { type ResourceWorkspaceDocumentSyncState } from "@/features/resources/resource-workspace-sync"
 import { useResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync-context"
-import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
+import type { AdminResourceActiveDocument } from "@/lib/api/admin-api"
 import type { AdminApiBaseUrl } from "@/runtime-config"
 
 const editorTransformers = [...resourceMarkdownTransformers]
@@ -103,7 +103,7 @@ export function ResourceDocumentEditor({
   document,
 }: {
   readonly apiBaseUrl: AdminApiBaseUrl
-  readonly document: AdminResourceLibraryDocument
+  readonly document: AdminResourceActiveDocument
 }) {
   const workspaceSync = useResourceWorkspaceSync()
   const api = useMemo(
@@ -173,7 +173,7 @@ export function ResourceDocumentEditorSurface({
   readonly api: ResourceDocumentEditorApi
   readonly collaborationServerUrl: string
   readonly connectCollaboration: ResourceDocumentCollaborationConnector
-  readonly document: AdminResourceLibraryDocument
+  readonly document: AdminResourceActiveDocument
   readonly writeClipboardText?: (text: string) => Promise<void>
 }) {
   const [anchorElement, setAnchorElement] = useState<HTMLDivElement | null>(

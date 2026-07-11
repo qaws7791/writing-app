@@ -6,7 +6,7 @@ import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 describe("자료 문서 Drizzle repository", () => {
-  it("활성 문서에 현재 협업 state version을 포함하고 snapshot이 없으면 0을 반환한다", async () => {
+  it("활성 문서 메타데이터와 Markdown 본문을 별도 조회한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     runBaselineMigration(client.sqlite)
     client.sqlite.exec(`
@@ -32,10 +32,33 @@ describe("자료 문서 Drizzle repository", () => {
 
     try {
       await expect(
-        repository.readDocument(toResourceDocumentId("document-1"))
-      ).resolves.toMatchObject({ stateVersion: 4 })
+        repository.readDocumentMetadata(toResourceDocumentId("document-1"))
+      ).resolves.toEqual({
+        contentRevision: 3,
+        createdAt: new Date(1),
+        createdBy: {
+          email: "admin@example.com",
+          id: "admin-1",
+          name: "관리자",
+        },
+        id: "document-1",
+        name: "문서 1",
+        parentId: null,
+        path: [],
+        stateVersion: 4,
+        status: "active",
+        updatedAt: new Date(1),
+        updatedBy: {
+          email: "admin@example.com",
+          id: "admin-1",
+          name: "관리자",
+        },
+      })
       await expect(
-        repository.readDocument(toResourceDocumentId("document-2"))
+        repository.readDocumentContent(toResourceDocumentId("document-1"))
+      ).resolves.toBe("본문 1")
+      await expect(
+        repository.readDocumentMetadata(toResourceDocumentId("document-2"))
       ).resolves.toMatchObject({ stateVersion: 0 })
     } finally {
       client.close()

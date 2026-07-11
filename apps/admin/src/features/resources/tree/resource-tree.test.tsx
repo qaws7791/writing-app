@@ -167,7 +167,6 @@ describe("자료 트리", () => {
       status: "ok",
       value: {
         document: {
-          contentMarkdown: "가져온 본문",
           contentRevision: 0,
           createdAt: "2026-07-10T00:00:00.000Z",
           createdBy: {

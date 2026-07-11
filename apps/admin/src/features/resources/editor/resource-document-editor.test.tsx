@@ -31,11 +31,12 @@ import { ResourceSlashMenuPlugin } from "@/features/resources/editor/resource-sl
 import type { ResourceDocumentEditorApi } from "@/features/resources/resource-library-api"
 import type { ResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync"
 import { ResourceWorkspaceSyncProvider } from "@/features/resources/resource-workspace-sync-context"
-import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
+import type { AdminResourceActiveDocument } from "@/lib/api/admin-api"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
-const documentFixture: AdminResourceLibraryDocument = {
-  contentMarkdown: "## 시작\n\n본문 **강조**",
+const documentMarkdownFixture = "## 시작\n\n본문 **강조**"
+
+const documentFixture: AdminResourceActiveDocument = {
   contentRevision: 0,
   createdAt: "2026-07-10T00:00:00.000Z",
   createdBy: {
@@ -62,7 +63,7 @@ describe("자료 Lexical 편집기", () => {
     const release = vi.fn()
     const attachDocument = vi.fn<ResourceWorkspaceSync["attachDocument"]>(
       ({ editor }) => {
-        replaceResourceDocumentMarkdown(editor, documentFixture.contentMarkdown)
+        replaceResourceDocumentMarkdown(editor, documentMarkdownFixture)
         return {
           release,
           retry: vi.fn(async () => undefined),
@@ -313,7 +314,7 @@ describe("자료 Lexical 편집기", () => {
       ({ editor, onSyncStateChange }) => {
         const result = replaceResourceDocumentMarkdown(
           editor,
-          documentFixture.contentMarkdown
+          documentMarkdownFixture
         )
 
         if (result.status === "invalid") {
@@ -344,9 +345,7 @@ describe("자료 Lexical 편집기", () => {
     await user.click(screen.getByRole("button", { name: "현재 Markdown 복사" }))
 
     expect(retry).toHaveBeenCalledTimes(1)
-    expect(writeClipboardText).toHaveBeenCalledWith(
-      documentFixture.contentMarkdown
-    )
+    expect(writeClipboardText).toHaveBeenCalledWith(documentMarkdownFixture)
     expect(
       await screen.findByText("현재 Markdown을 클립보드에 복사했습니다.")
     ).toBeVisible()
@@ -359,7 +358,7 @@ describe("자료 Lexical 편집기", () => {
       editor = input.editor
       const result = replaceResourceDocumentMarkdown(
         input.editor,
-        documentFixture.contentMarkdown
+        documentMarkdownFixture
       )
 
       if (result.status === "invalid") {
@@ -458,7 +457,7 @@ function createCollaborationConnector(
   return vi.fn(({ editor, onSyncStateChange }) => {
     const result = replaceResourceDocumentMarkdown(
       editor,
-      documentFixture.contentMarkdown
+      documentMarkdownFixture
     )
 
     if (result.status === "invalid") {

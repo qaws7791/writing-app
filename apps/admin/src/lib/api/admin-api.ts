@@ -324,8 +324,7 @@ export type AdminResourceRestoreResult = AdminResourceSubtreeMutation & {
   readonly node: AdminResourceTreeNode
 }
 
-export type AdminResourceLibraryDocument = {
-  readonly contentMarkdown: string
+type AdminResourceLibraryDocumentMetadata = {
   readonly contentRevision: number
   readonly createdAt: string
   readonly createdBy: AdminResourceActor
@@ -334,10 +333,24 @@ export type AdminResourceLibraryDocument = {
   readonly parentId: string | null
   readonly path: readonly AdminResourceBreadcrumbItem[]
   readonly stateVersion: number
-  readonly status: "active" | "archived"
   readonly updatedAt: string
   readonly updatedBy: AdminResourceActor
 }
+
+export type AdminResourceActiveDocument =
+  AdminResourceLibraryDocumentMetadata & {
+    readonly status: "active"
+  }
+
+export type AdminResourceArchivedDocument =
+  AdminResourceLibraryDocumentMetadata & {
+    readonly contentMarkdown: string
+    readonly status: "archived"
+  }
+
+export type AdminResourceLibraryDocument =
+  | AdminResourceActiveDocument
+  | AdminResourceArchivedDocument
 
 export type AdminResourceDocumentTransactionInput = {
   readonly knownStateVersion: number
@@ -374,7 +387,7 @@ export type AdminImportResourceDocumentInput = {
 }
 
 export type AdminImportResourceDocumentResult = {
-  readonly document: AdminResourceLibraryDocument
+  readonly document: AdminResourceActiveDocument
   readonly mutation: AdminResourceNodeMutation
 }
 

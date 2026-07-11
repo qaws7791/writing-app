@@ -36,8 +36,7 @@ const mutation: AdminResourceNodeMutationDto = {
   revision: 5,
 }
 
-const document: AdminResourceDocumentDto = {
-  contentMarkdown: "실시간 공동 편집 본문",
+const document: Extract<AdminResourceDocumentDto, { status: "active" }> = {
   contentRevision: 0,
   createdAt: "2026-06-14T03:00:00.000Z",
   createdBy: {
@@ -60,6 +59,47 @@ const document: AdminResourceDocumentDto = {
 }
 
 describe("어드민 API 자료실 트리 route", () => {
+  it("활성 문서는 본문 없이 편집 메타데이터만 반환한다", async () => {
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: {
+            documents: {
+              getDocument: vi.fn(async () => document),
+            },
+          },
+        },
+      })
+    )
+
+    const response = await app.request("/resources/documents/document-1", {
+      headers,
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      contentRevision: 0,
+      createdAt: "2026-06-14T03:00:00.000Z",
+      createdBy: {
+        email: "admin@example.com",
+        id: "admin-1",
+        name: "관리자",
+      },
+      id: "document-1",
+      name: "운영 안내",
+      parentId: "folder-1",
+      path: [{ id: "folder-1", name: "운영" }],
+      stateVersion: 0,
+      status: "active",
+      updatedAt: "2026-06-14T03:00:00.000Z",
+      updatedBy: {
+        email: "admin@example.com",
+        id: "admin-1",
+        name: "관리자",
+      },
+    })
+  })
+
   it("Yjs transaction을 HTTP로 저장하고 승인 version을 반환한다", async () => {
     const publishDocumentVersion = vi.fn()
     const saveTransaction = vi.fn(async () => ({

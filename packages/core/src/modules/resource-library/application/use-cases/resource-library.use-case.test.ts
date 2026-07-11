@@ -79,7 +79,6 @@ describe("자료실 use case", () => {
         kind: "ok",
         value: {
           document: {
-            contentMarkdown: "실시간 공동 편집 본문",
             id: "document-import",
             name: "운영 안내",
             path: [{ id: "folder-1", name: "새 폴더" }],
@@ -90,12 +89,15 @@ describe("자료실 use case", () => {
       await expect(
         fixture.tree.getSubtreeDocumentIds("folder-1")
       ).resolves.toEqual(["document-empty", "document-import"])
-      await expect(
-        fixture.document.getDocument({ documentId: "document-import" })
-      ).resolves.toMatchObject({
+      const activeDocument = await fixture.document.getDocument({
+        documentId: "document-import",
+      })
+      expect(activeDocument).toMatchObject({
         id: "document-import",
+        status: "active",
         updatedBy: { id: "admin-1", name: "관리자" },
       })
+      expect(activeDocument).not.toHaveProperty("contentMarkdown")
       await expect(
         fixture.document.exportDocument({ documentId: "document-import" })
       ).resolves.toEqual({
@@ -146,6 +148,13 @@ describe("자료실 use case", () => {
       await expect(
         fixture.tree.getSubtreeDocumentIds("document-import")
       ).resolves.toEqual([])
+      await expect(
+        fixture.document.getDocument({ documentId: "document-import" })
+      ).resolves.toMatchObject({
+        contentMarkdown: "실시간 공동 편집 본문",
+        id: "document-import",
+        status: "archived",
+      })
       await expect(
         fixture.search.search({ limit: 20, query: "공동", scope: "active" })
       ).resolves.toEqual({ items: [] })

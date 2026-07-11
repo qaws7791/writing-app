@@ -7,13 +7,11 @@ import {
   adminResourceFolderIdSchema,
   adminResourceMarkdownMaxLength,
   adminResourceNameSchema,
-  adminResourceNodeStatusSchema,
   adminResourceRevisionSchema,
 } from "@workspace/contracts/admin/admin-resource-library-shared"
 import { adminResourceNodeMutationDtoSchema } from "@workspace/contracts/admin/admin-resource-tree"
 
-export const adminResourceDocumentDtoSchema = z.object({
-  contentMarkdown: z.string().max(adminResourceMarkdownMaxLength),
+const adminResourceDocumentMetadataDtoSchema = z.object({
   contentRevision: adminResourceRevisionSchema,
   createdAt: z.iso.datetime(),
   createdBy: adminResourceActorDtoSchema,
@@ -22,10 +20,25 @@ export const adminResourceDocumentDtoSchema = z.object({
   parentId: adminResourceFolderIdSchema.nullable(),
   path: z.array(adminResourceBreadcrumbItemDtoSchema),
   stateVersion: adminResourceRevisionSchema,
-  status: adminResourceNodeStatusSchema,
   updatedAt: z.iso.datetime(),
   updatedBy: adminResourceActorDtoSchema,
 })
+
+export const adminResourceActiveDocumentDtoSchema =
+  adminResourceDocumentMetadataDtoSchema.extend({
+    status: z.literal("active"),
+  })
+
+export const adminResourceArchivedDocumentDtoSchema =
+  adminResourceDocumentMetadataDtoSchema.extend({
+    contentMarkdown: z.string().max(adminResourceMarkdownMaxLength),
+    status: z.literal("archived"),
+  })
+
+export const adminResourceDocumentDtoSchema = z.discriminatedUnion("status", [
+  adminResourceActiveDocumentDtoSchema,
+  adminResourceArchivedDocumentDtoSchema,
+])
 
 export const adminImportResourceDocumentRequestSchema = z.object({
   expectedRevision: adminResourceRevisionSchema,
@@ -40,7 +53,7 @@ export const adminImportResourceDocumentRequestSchema = z.object({
 })
 
 export const adminImportResourceDocumentResultDtoSchema = z.object({
-  document: adminResourceDocumentDtoSchema,
+  document: adminResourceActiveDocumentDtoSchema,
   mutation: adminResourceNodeMutationDtoSchema,
 })
 

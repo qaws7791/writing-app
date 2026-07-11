@@ -1,5 +1,6 @@
 import {
   adminImportResourceDocumentResultDtoSchema,
+  adminResourceActiveDocumentDtoSchema,
   adminResourceDocumentDtoSchema,
   type AdminImportResourceDocumentRequest,
   type AdminImportResourceDocumentResultDto,
@@ -12,6 +13,7 @@ import {
 } from "@workspace/resource-document/resource-markdown-import"
 
 import type {
+  ResourceDocumentMetadataRecord,
   ResourceDocumentRecord,
   ResourceDocumentRepository,
 } from "@workspace/core/modules/resource-library/application/ports/resource-document.repository"
@@ -69,11 +71,13 @@ export function createResourceDocumentUseCase({
 }: ResourceDocumentUseCaseDependencies): ResourceDocumentUseCase {
   return {
     async exportDocument({ documentId }) {
-      const document = await documentRepository.readDocument(
-        toResourceDocumentId(documentId)
-      )
+      const resourceDocumentId = toResourceDocumentId(documentId)
+      const [document, contentMarkdown] = await Promise.all([
+        documentRepository.readDocumentMetadata(resourceDocumentId),
+        documentRepository.readDocumentContent(resourceDocumentId),
+      ])
 
-      if (document === null) {
+      if (document === null || contentMarkdown === null) {
         return { kind: "not-found" }
       }
 
@@ -84,18 +88,26 @@ export function createResourceDocumentUseCase({
         value: {
           fileName: `${sanitizeMarkdownFileName(document.name)}.md`,
           markdown:
-            document.contentMarkdown.length === 0
+            contentMarkdown.length === 0
               ? heading
-              : `${heading}\n\n${document.contentMarkdown}`,
+              : `${heading}\n\n${contentMarkdown}`,
         },
       }
     },
     async getDocument({ documentId }) {
-      const document = await documentRepository.readDocument(
-        toResourceDocumentId(documentId)
-      )
+      const resourceDocumentId = toResourceDocumentId(documentId)
+      const document =
+        await documentRepository.readDocumentMetadata(resourceDocumentId)
 
-      return document === null ? null : toDocumentDto(document)
+      if (document === null) return null
+      if (document.status === "active") return toDocumentDto(document)
+
+      const contentMarkdown =
+        await documentRepository.readDocumentContent(resourceDocumentId)
+
+      return contentMarkdown === null
+        ? null
+        : toDocumentDto({ ...document, contentMarkdown })
     },
     async importDocument(input) {
       const fileNameTitle = readMarkdownFileNameTitle(input.fileName)
@@ -149,7 +161,7 @@ function mapImportResult(
   return {
     kind: "ok",
     value: adminImportResourceDocumentResultDtoSchema.parse({
-      document: toDocumentDto(result.value.document),
+      document: toActiveDocumentDto(result.value.document),
       mutation: {
         ...result.value.mutation,
         node: {
@@ -166,8 +178,22 @@ function mapImportResult(
   }
 }
 
-function toDocumentDto(
+function toActiveDocumentDto(
   document: ResourceDocumentRecord
+): AdminImportResourceDocumentResultDto["document"] {
+  if (document.status !== "active") {
+    throw new Error("가져온 자료 문서가 활성 상태가 아닙니다.")
+  }
+
+  return adminResourceActiveDocumentDtoSchema.parse({
+    ...document,
+    createdAt: document.createdAt.toISOString(),
+    updatedAt: document.updatedAt.toISOString(),
+  })
+}
+
+function toDocumentDto(
+  document: ResourceDocumentMetadataRecord | ResourceDocumentRecord
 ): AdminResourceDocumentDto {
   return adminResourceDocumentDtoSchema.parse({
     ...document,

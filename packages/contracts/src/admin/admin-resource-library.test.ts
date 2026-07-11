@@ -108,10 +108,9 @@ describe("자료실 트리·문서·검색 계약", () => {
     ).toMatchObject({ revision: 9 })
   })
 
-  it("문서는 Markdown 원본, 수정 메타데이터와 전체 경로를 반환한다", () => {
+  it("활성 문서는 본문 없이 수정 메타데이터와 전체 경로를 반환한다", () => {
     expect(
       adminResourceDocumentDtoSchema.parse({
-        contentMarkdown: "## 시작\n\n본문",
         contentRevision: 3,
         createdAt: "2026-07-10T00:00:00.000Z",
         createdBy: {

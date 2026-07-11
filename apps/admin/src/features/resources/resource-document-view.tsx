@@ -1,4 +1,4 @@
-import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
+import type { AdminResourceArchivedDocument } from "@/lib/api/admin-api"
 import {
   ResourceBreadcrumb,
   ResourceDocumentMetadata,
@@ -15,7 +15,7 @@ import {
 export function ResourceDocumentView({
   document,
 }: {
-  readonly document: AdminResourceLibraryDocument
+  readonly document: AdminResourceArchivedDocument
 }) {
   return (
     <article className="mx-auto grid w-full max-w-4xl gap-6 px-6 pt-16 pb-24 md:px-12 md:pt-12">

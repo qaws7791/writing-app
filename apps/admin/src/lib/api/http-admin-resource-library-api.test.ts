@@ -20,7 +20,6 @@ const mutation = {
 } as const
 
 const document = {
-  contentMarkdown: "공동 편집 본문",
   contentRevision: 2,
   createdAt: "2026-06-14T03:00:00.000Z",
   createdBy: {

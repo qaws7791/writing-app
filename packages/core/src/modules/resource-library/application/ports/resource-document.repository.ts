@@ -17,8 +17,7 @@ export type ResourceDocumentActor = {
   readonly name: string
 }
 
-export type ResourceDocumentRecord = {
-  readonly contentMarkdown: string
+export type ResourceDocumentMetadataRecord = {
   readonly contentRevision: number
   readonly createdAt: Date
   readonly createdBy: ResourceDocumentActor
@@ -30,6 +29,10 @@ export type ResourceDocumentRecord = {
   readonly status: ResourceNodeStatus
   readonly updatedAt: Date
   readonly updatedBy: ResourceDocumentActor
+}
+
+export type ResourceDocumentRecord = ResourceDocumentMetadataRecord & {
+  readonly contentMarkdown: string
 }
 
 export type ImportResourceDocumentInput = {
@@ -55,7 +58,10 @@ export type ResourceDocumentRepository = {
   readonly importDocument: (
     input: ImportResourceDocumentInput
   ) => Promise<ImportResourceDocumentResult>
-  readonly readDocument: (
+  readonly readDocumentContent: (
     documentId: ResourceDocumentId
-  ) => Promise<ResourceDocumentRecord | null>
+  ) => Promise<string | null>
+  readonly readDocumentMetadata: (
+    documentId: ResourceDocumentId
+  ) => Promise<ResourceDocumentMetadataRecord | null>
 }

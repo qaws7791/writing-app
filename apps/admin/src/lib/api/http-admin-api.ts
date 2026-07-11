@@ -857,8 +857,7 @@ function toAdminResourceSubtreeMutation(dto: AdminResourceTrashMutationDto) {
 function toAdminResourceLibraryDocument(
   dto: AdminResourceDocumentDto
 ): AdminResourceLibraryDocument {
-  return {
-    contentMarkdown: dto.contentMarkdown,
+  const document = {
     contentRevision: dto.contentRevision,
     createdAt: dto.createdAt,
     createdBy: { ...dto.createdBy },
@@ -867,10 +866,17 @@ function toAdminResourceLibraryDocument(
     parentId: dto.parentId,
     path: dto.path.map((item) => ({ ...item })),
     stateVersion: dto.stateVersion,
-    status: dto.status,
     updatedAt: dto.updatedAt,
     updatedBy: { ...dto.updatedBy },
   }
+
+  return dto.status === "archived"
+    ? {
+        ...document,
+        contentMarkdown: dto.contentMarkdown,
+        status: "archived",
+      }
+    : { ...document, status: "active" }
 }
 
 function toAdminResourceDocumentTransactionResult(
@@ -921,8 +927,14 @@ function decodeBase64(value: string): Uint8Array {
 function toAdminImportResourceDocumentResult(
   dto: AdminImportResourceDocumentResultDto
 ): AdminImportResourceDocumentResult {
+  const document = toAdminResourceLibraryDocument(dto.document)
+
+  if (document.status !== "active") {
+    throw new Error("가져온 자료 문서가 활성 상태가 아닙니다.")
+  }
+
   return {
-    document: toAdminResourceLibraryDocument(dto.document),
+    document,
     mutation: toAdminResourceNodeMutation(dto.mutation),
   }
 }

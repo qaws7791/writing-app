@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm"
 import type {
   ImportResourceDocumentInput,
   ImportResourceDocumentResult,
+  ResourceDocumentMetadataRecord,
   ResourceDocumentRecord,
   ResourceDocumentRepository,
 } from "@workspace/core/modules/resource-library/application/ports/resource-document.repository"
@@ -31,8 +32,7 @@ import {
   adminResourceNodes,
 } from "@workspace/db/schema"
 
-type ResourceDocumentQueryRow = {
-  readonly content_markdown: string
+type ResourceDocumentMetadataQueryRow = {
   readonly content_revision: number
   readonly created_at: number
   readonly created_by_email: string
@@ -57,8 +57,11 @@ export function createDrizzleResourceDocumentRepository(
     async importDocument(input) {
       return importDocument(db, input)
     },
-    async readDocument(documentId) {
-      return readResourceDocumentRecord(db, documentId)
+    async readDocumentContent(documentId) {
+      return readResourceDocumentContent(db, documentId)
+    },
+    async readDocumentMetadata(documentId) {
+      return readResourceDocumentMetadataRecord(db, documentId)
     },
   }
 }
@@ -177,7 +180,32 @@ function readResourceDocumentRecord(
   database: WritingAppDatabase | WritingAppDatabaseTransaction,
   documentId: ResourceDocumentId
 ): ResourceDocumentRecord | null {
-  const row = database.all<ResourceDocumentQueryRow>(sql`
+  const metadata = readResourceDocumentMetadataRecord(database, documentId)
+  const contentMarkdown = readResourceDocumentContent(database, documentId)
+
+  return metadata === null || contentMarkdown === null
+    ? null
+    : { ...metadata, contentMarkdown }
+}
+
+function readResourceDocumentContent(
+  database: WritingAppDatabase | WritingAppDatabaseTransaction,
+  documentId: ResourceDocumentId
+): string | null {
+  return (
+    database.all<{ readonly content_markdown: string }>(sql`
+      SELECT content_markdown
+      FROM admin_resource_documents
+      WHERE node_id = ${documentId}
+    `)[0]?.content_markdown ?? null
+  )
+}
+
+function readResourceDocumentMetadataRecord(
+  database: WritingAppDatabase | WritingAppDatabaseTransaction,
+  documentId: ResourceDocumentId
+): ResourceDocumentMetadataRecord | null {
+  const row = database.all<ResourceDocumentMetadataQueryRow>(sql`
     WITH RECURSIVE paths(id, path_json) AS (
       SELECT id, json_array()
       FROM admin_resource_nodes
@@ -203,7 +231,6 @@ function readResourceDocumentRecord(
       node.status,
       node.created_at,
       node.updated_at,
-      document.content_markdown,
       document.content_revision,
       COALESCE(collaboration.state_version, 0) AS state_version,
       creator.id AS created_by_id,
@@ -229,7 +256,6 @@ function readResourceDocumentRecord(
   }
 
   return {
-    contentMarkdown: row.content_markdown,
     contentRevision: row.content_revision,
     createdAt: new Date(row.created_at),
     createdBy: {

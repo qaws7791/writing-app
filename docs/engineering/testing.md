@@ -115,6 +115,8 @@ bun run --filter=@workspace/web test
 
 서버 operation coordinator 테스트는 같은 문서 작업의 순서, 다른 문서의 격리와 하위 문서 묶음의 선예약을 검증한다. Route 통합 테스트는 HTTP transaction 저장이 확정되기 전에 같은 문서의 Markdown 내보내기가 실행되지 않는지 확인한다.
 
+자료 문서 조회 통합 테스트는 활성 문서 응답과 저장소 메타데이터 조회에 Markdown이 포함되지 않고, 같은 문서를 휴지통으로 이동한 뒤에는 읽기 전용 durable Markdown이 반환되는지 검증한다.
+
 - baseline migration은 in-memory DB에 적용할 수 있어야 한다.
 - seed는 반복 실행해도 stable ID 기준으로 같은 결과를 내야 한다.
 - seed에서 빠진 콘텐츠는 삭제가 아니라 `archived` 전환으로 검증한다.
