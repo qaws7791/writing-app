@@ -1,24 +1,8 @@
-import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
+import type { EditorStep } from "@/features/courses/course-editor/step-forms/shared/editor-step"
 import { Badge } from "@workspace/ui/components/ui/badge"
 
-export type EditorStep =
-  AdminCourseDetail["units"][number]["lessons"][number]["steps"][number]
-
-export type StepFormComponent = (props: {
-  readonly step: EditorStep
-}) => React.ReactNode
-
-export function readStepContent(step: EditorStep): Record<string, unknown> {
-  const parsed = JSON.parse(step.contentJson) as unknown
-  if (isStepContentRecord(parsed)) {
-    return parsed
-  }
-
-  throw new Error(`레슨 스텝 contentJson은 객체여야 합니다. stepId=${step.id}`)
-}
-
-function isStepContentRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
+export type StepFormProps<TType extends EditorStep["type"]> = {
+  readonly step: Extract<EditorStep, { readonly type: TType }>
 }
 
 export function StepFormShell({

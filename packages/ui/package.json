@@ -20,7 +20,11 @@
     "./components/ui/*": "./src/components/ui/*.tsx",
     "./components/lesson/match-presentation": "./src/components/lesson/match-presentation.ts",
     "./components/lesson/lesson-step-checked-visual": "./src/components/lesson/lesson-step-checked-visual.ts",
-    "./components/lesson/*": "./src/components/lesson/*.tsx"
+    "./components/lesson/*": "./src/components/lesson/*.tsx",
+    "./lesson-runtime/types": "./src/lesson-runtime/types.ts",
+    "./lesson-runtime/logic": "./src/lesson-runtime/logic.ts",
+    "./lesson-runtime/policy": "./src/lesson-runtime/policy.ts",
+    "./lesson-runtime/renderer": "./src/lesson-runtime/renderer.tsx"
   },
   "scripts": {
     "lint": "oxlint .",
