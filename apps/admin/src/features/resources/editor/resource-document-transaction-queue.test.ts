@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { applyUpdate, Doc } from "yjs"
 
 import { createResourceDocumentTransactionQueue } from "@/features/resources/editor/resource-document-transaction-queue"
-import type { AdminResourceDocumentTransactionInput } from "@/lib/api/admin-api"
+import type { AdminResourceDocumentTransactionInput } from "@/features/resources/resource-library-model"
 
 describe("자료 문서 HTTP transaction queue", () => {
   beforeEach(() => {

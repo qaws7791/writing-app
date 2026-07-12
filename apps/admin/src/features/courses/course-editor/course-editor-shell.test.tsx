@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
-import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
 
 const course: AdminCourseDetail = {
   category: "입문자를 위한 코스",

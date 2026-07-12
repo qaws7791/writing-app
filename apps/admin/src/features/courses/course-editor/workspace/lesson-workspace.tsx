@@ -1,4 +1,4 @@
-import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import { SectionHeader } from "@workspace/ui/components/ui/section-header"

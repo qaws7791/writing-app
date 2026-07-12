@@ -2,7 +2,8 @@ import Link from "next/link"
 
 import { AdminChartPanel } from "@/components/admin-chart-panel"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminAnalytics, AdminDashboard } from "@/lib/api/admin-api"
+import type { AdminAnalytics } from "@/features/analytics/admin-analytics-api"
+import type { AdminDashboard } from "@/features/dashboard/admin-dashboard-api"
 import {
   BookOpenIcon,
   CheckCircleIcon,

@@ -1,7 +1,7 @@
 import type {
   AdminAiChatConversation,
   AdminAiChatMessage,
-} from "@/lib/api/admin-api"
+} from "@/features/chat/admin-ai-chat-api"
 
 export type AdminAiChatStreamEvent =
   | {

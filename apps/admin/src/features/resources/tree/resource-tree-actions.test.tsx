@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import { ResourceTreeActionDialog } from "@/features/resources/tree/resource-tree-actions"
-import type { AdminResourceTreeNode } from "@/lib/api/admin-api"
+import type { AdminResourceTreeNode } from "@/features/resources/resource-library-model"
 
 const documentNode: AdminResourceTreeNode = {
   hasChildren: false,

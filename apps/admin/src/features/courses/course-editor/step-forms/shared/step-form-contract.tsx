@@ -1,4 +1,4 @@
-import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
 import { Badge } from "@workspace/ui/components/ui/badge"
 
 export type EditorStep =

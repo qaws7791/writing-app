@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ChevronRightIcon, EllipsisIcon, InfoIcon } from "lucide-react"
 
-import type { AdminResourceBreadcrumbItem } from "@/lib/api/admin-api"
+import type { AdminResourceBreadcrumbItem } from "@/features/resources/resource-library-model"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Popover,

@@ -1,6 +1,9 @@
 import { AdminUsersPage } from "@/features/users/admin-users-page"
-import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
-import type { ReadAdminUsersInput } from "@/lib/api/admin-api"
+import {
+  createAdminUsersApi,
+  type ReadAdminUsersInput,
+} from "@/features/users/admin-users-api"
+import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import {
   learnerAccountStatusSchema,
@@ -14,9 +17,11 @@ export default async function AdminUsersRoute({
 }) {
   const resolvedSearchParams = await searchParams
   const filters = readUserFilters(resolvedSearchParams)
-  const api = getServerAdminApi({
-    tokenProvider: getServerAdminSessionToken,
-  })
+  const api = createAdminUsersApi(
+    getServerAdminHttpTransport({
+      tokenProvider: getServerAdminSessionToken,
+    })
+  )
   const usersResult = await api.getUsers(filters)
 
   async function updateUserStatus(input: {
@@ -25,9 +30,11 @@ export default async function AdminUsersRoute({
   }) {
     "use server"
 
-    const serverApi = getServerAdminApi({
-      tokenProvider: getServerAdminSessionToken,
-    })
+    const serverApi = createAdminUsersApi(
+      getServerAdminHttpTransport({
+        tokenProvider: getServerAdminSessionToken,
+      })
+    )
 
     return serverApi.updateUserStatus(input)
   }
@@ -35,9 +42,11 @@ export default async function AdminUsersRoute({
   async function deleteUser(userId: string) {
     "use server"
 
-    const serverApi = getServerAdminApi({
-      tokenProvider: getServerAdminSessionToken,
-    })
+    const serverApi = createAdminUsersApi(
+      getServerAdminHttpTransport({
+        tokenProvider: getServerAdminSessionToken,
+      })
+    )
 
     return serverApi.deleteUser(userId)
   }

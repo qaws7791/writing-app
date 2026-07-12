@@ -7,7 +7,7 @@ import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminContentResetResult,
   AdminSettings,
-} from "@/lib/api/admin-api"
+} from "@/features/settings/admin-settings-api"
 
 const settings: AdminSettings = {
   legal: {

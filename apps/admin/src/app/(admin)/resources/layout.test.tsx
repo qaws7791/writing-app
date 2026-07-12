@@ -21,11 +21,18 @@ vi.mock("@/lib/auth/server-admin-session-token", () => ({
   getServerAdminSessionToken: vi.fn(async () => "admin-token"),
 }))
 
-vi.mock("@/lib/api/get-server-admin-api", () => ({
-  getServerAdminApi: vi.fn(() => ({
-    getResourceTree: getResourceTreeMock,
+vi.mock("@/features/auth/admin-session-api", () => ({
+  createAdminSessionApi: vi.fn(() => ({
     getSession: getSessionMock,
   })),
+}))
+vi.mock("@/features/resources/resource-library-http-adapter", () => ({
+  createResourceLibraryHttpAdapter: vi.fn(() => ({
+    getResourceTree: getResourceTreeMock,
+  })),
+}))
+vi.mock("@/lib/api/get-server-admin-http-transport", () => ({
+  getServerAdminHttpTransport: vi.fn(() => ({})),
 }))
 
 vi.mock("@/runtime-config", () => ({

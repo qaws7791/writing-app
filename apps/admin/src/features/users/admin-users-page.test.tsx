@@ -9,7 +9,7 @@ import type {
   AdminUserDetail,
   AdminUserList,
   ReadAdminUsersInput,
-} from "@/lib/api/admin-api"
+} from "@/features/users/admin-users-api"
 
 const filters: ReadAdminUsersInput = {
   page: 1,

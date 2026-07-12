@@ -9,7 +9,7 @@ import {
 
 import { StatusBadge } from "@/components/status-badge"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminUserDetail } from "@/lib/api/admin-api"
+import type { AdminUserDetail } from "@/features/users/admin-users-api"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 
 export function AdminUserDetailPage({

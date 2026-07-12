@@ -1,5 +1,6 @@
 import { AdminAiChatPage } from "@/features/chat/admin-ai-chat-page"
-import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
+import { createAdminAiChatApi } from "@/features/chat/admin-ai-chat-api"
+import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import { redirect } from "next/navigation"
 
@@ -10,9 +11,11 @@ export default async function AdminAiChatRoute({
 }) {
   const resolvedSearchParams = await searchParams
   const conversationId = readString(resolvedSearchParams["conversationId"], "")
-  const api = getServerAdminApi({
-    tokenProvider: getServerAdminSessionToken,
-  })
+  const api = createAdminAiChatApi(
+    getServerAdminHttpTransport({
+      tokenProvider: getServerAdminSessionToken,
+    })
+  )
   const conversationsPromise = api.getAiChatConversations()
   const activeConversationPromise =
     conversationId === ""

@@ -31,7 +31,7 @@ import { ResourceSlashMenuPlugin } from "@/features/resources/editor/resource-sl
 import type { ResourceDocumentEditorApi } from "@/features/resources/resource-library-api"
 import type { ResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync"
 import { ResourceWorkspaceSyncProvider } from "@/features/resources/resource-workspace-sync-context"
-import type { AdminResourceActiveDocument } from "@/lib/api/admin-api"
+import type { AdminResourceActiveDocument } from "@/features/resources/resource-library-model"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
 const documentMarkdownFixture = "## 시작\n\n본문 **강조**"

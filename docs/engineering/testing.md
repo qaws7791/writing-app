@@ -119,7 +119,7 @@ bun run --filter=@workspace/web test
 - OpenAPI 생성 route는 실제 등록 route 기준으로 검증한다.
 - 어드민 서비스 테스트는 기능별 use case 조합과 repository port test double을 검증하고, 사용하지 않는 port 호출은 실패시켜 service 의존 범위를 고정한다.
 - 학습자 웹 앱은 `@workspace/core`를 직접 import하지 않는다는 아키텍처 테스트로 API 계약 경계를 고정한다.
-- 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 `@workspace/core`를 직접 import하지 않고, `@workspace/contracts/admin`은 `apps/admin/src/lib/api/http-admin-api.ts`에서만 사용한다는 아키텍처 테스트로 앱 모델 경계를 고정한다.
+- 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 `@workspace/core`를 직접 import하지 않고, 관리자 contract는 허용된 feature Adapter에서만 사용한다는 아키텍처 테스트로 앱 모델 seam을 고정한다. 삭제된 중앙 `AdminApi`와 `http-admin-api` import가 다시 생기지 않는지도 함께 검사한다.
 
 ## DB 테스트 기준
 
@@ -227,3 +227,7 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - 보호 route 매트릭스는 쿠키 인증 성공 시 `private, no-store`와 `Vary: Cookie`, Bearer 단독 요청의 `401`, 공개 route의 정책 비적용을 확인한다.
 - OpenAPI 테스트는 실제 인증 설정과 공유하는 쿠키 이름과 보호 route security scheme을 확인한다.
 - SSE와 파일 다운로드 테스트는 캐시 정책 적용 뒤에도 스트림 content type과 첨부 응답 계약이 유지되는지 확인한다.
+
+# 관리자 API 경계 검증 (2026-07-12)
+
+공통 HTTP 전송 계층은 정상 JSON, 빈 응답, 잘못된 JSON, 다운로드, 네트워크 실패를 표 기반으로 검증한다. 각 관리자 기능 어댑터는 독립 계약 테스트를 가지며, 구조 테스트는 기능 간 DTO 결합과 삭제된 중앙 API로의 회귀를 차단한다. 서버 조립 테스트는 기능별 서비스 연결과 데이터베이스 종료가 한 번만 수행됨을 검증한다.

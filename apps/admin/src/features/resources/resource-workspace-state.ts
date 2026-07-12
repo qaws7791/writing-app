@@ -1,4 +1,4 @@
-import type { AdminResourceTreeScope } from "@/lib/api/admin-api"
+import type { AdminResourceTreeScope } from "@/features/resources/resource-library-model"
 
 export type ResourceWorkspaceConnectionState =
   | "online"

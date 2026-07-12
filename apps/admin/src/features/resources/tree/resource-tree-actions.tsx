@@ -14,7 +14,7 @@ import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import type {
   AdminResourceTreeNode,
   AdminResourceTreeScope,
-} from "@/lib/api/admin-api"
+} from "@/features/resources/resource-library-model"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
   AlertDialog,

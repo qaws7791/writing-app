@@ -7,7 +7,7 @@ import { ResourceTree } from "@/features/resources/tree/resource-tree"
 import type {
   AdminResourceEvent,
   AdminResourceTreeNode,
-} from "@/lib/api/admin-api"
+} from "@/features/resources/resource-library-model"
 
 const { pushMock, refreshMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),

@@ -1,19 +1,21 @@
-import { createHttpAdminApi } from "@/lib/api/http-admin-api"
-import type { AdminApi } from "@/lib/api/admin-api"
+import {
+  createAdminHttpTransport,
+  type AdminHttpTransport,
+} from "@/lib/api/admin-http-transport"
 import {
   readAdminWebOrigin,
   readServerAdminApiBaseUrl,
 } from "@/runtime-config-server"
 import type { AdminApiBaseUrl } from "@/runtime-config"
 
-export function getServerAdminApi({
+export function getServerAdminHttpTransport({
   apiBaseUrl = readServerAdminApiBaseUrl(),
   tokenProvider,
 }: {
   readonly apiBaseUrl?: AdminApiBaseUrl
   readonly tokenProvider: () => Promise<string | null> | string | null
-}): AdminApi {
-  return createHttpAdminApi({
+}): AdminHttpTransport {
+  return createAdminHttpTransport({
     baseUrl: apiBaseUrl,
     fetch: globalThis.fetch.bind(globalThis),
     requestOrigin: readAdminWebOrigin(),

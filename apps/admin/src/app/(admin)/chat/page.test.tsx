@@ -7,11 +7,14 @@ const { getConversation, getConversations } = vi.hoisted(() => ({
   getConversations: vi.fn(),
 }))
 
-vi.mock("@/lib/api/get-server-admin-api", () => ({
-  getServerAdminApi: () => ({
+vi.mock("@/features/chat/admin-ai-chat-api", () => ({
+  createAdminAiChatApi: () => ({
     getAiChatConversation: getConversation,
     getAiChatConversations: getConversations,
   }),
+}))
+vi.mock("@/lib/api/get-server-admin-http-transport", () => ({
+  getServerAdminHttpTransport: () => ({}),
 }))
 
 vi.mock("@/features/chat/admin-ai-chat-page", () => ({

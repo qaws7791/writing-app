@@ -67,7 +67,7 @@ import type {
   AdminResourceTree,
   AdminResourceTreeNode,
   AdminResourceTreeScope,
-} from "@/lib/api/admin-api"
+} from "@/features/resources/resource-library-model"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 import { ScrollArea } from "@workspace/ui/components/ui/scroll-area"

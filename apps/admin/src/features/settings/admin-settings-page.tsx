@@ -9,7 +9,7 @@ import type {
   AdminLegalSettingsRequest,
   AdminNoticeSettingsRequest,
   AdminSettings,
-} from "@/lib/api/admin-api"
+} from "@/features/settings/admin-settings-api"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
   AlertDialog,

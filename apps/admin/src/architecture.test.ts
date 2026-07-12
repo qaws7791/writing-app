@@ -45,6 +45,21 @@ describe("apps/admin architecture", () => {
     expect(violations).toEqual([])
   })
 
+  it("삭제된 중앙 관리자 API로 되돌아가지 않는다", () => {
+    const legacyImports = [
+      "@/lib/api/admin-api",
+      "@/lib/api/http-admin-api",
+      "@/lib/api/get-server-admin-api",
+    ]
+    const violations = readSourceFiles(adminSourceRoot).flatMap((filePath) =>
+      readImports(filePath)
+        .filter((source) => legacyImports.includes(source))
+        .map((source) => formatViolation(filePath, source))
+    )
+
+    expect(violations).toEqual([])
+  })
+
   it("course editor step form registry는 step-forms barrel만 import한다", () => {
     const registryPath = resolve(
       courseEditorSourceRoot,
@@ -170,9 +185,18 @@ function isWorkspaceLessonImport(source: string): boolean {
 }
 
 function isAdminApiBoundaryFile(filePath: string): boolean {
+  const path = relative(adminSourceRoot, filePath).split(sep).join("/")
+
   return (
-    relative(adminSourceRoot, filePath).split(sep).join("/") ===
-    "lib/api/http-admin-api.ts"
+    path === "features/analytics/admin-analytics-api.ts" ||
+    path === "features/auth/admin-session-api.ts" ||
+    path === "features/chat/admin-ai-chat-api.ts" ||
+    path === "features/courses/admin-courses-api.ts" ||
+    path === "features/dashboard/admin-dashboard-api.ts" ||
+    path === "features/resources/resource-event-parser.ts" ||
+    path === "features/resources/resource-library-http-adapter.ts" ||
+    path === "features/settings/admin-settings-api.ts" ||
+    path === "features/users/admin-users-api.ts"
   )
 }
 

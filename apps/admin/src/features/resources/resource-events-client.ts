@@ -1,8 +1,8 @@
-import { parseAdminResourceRealtimeMessage } from "@/lib/api/http-admin-api"
+import { parseAdminResourceRealtimeMessage } from "@/features/resources/resource-event-parser"
 import type {
   AdminResourceDocumentRealtimeEvent,
   AdminResourceEvent,
-} from "@/lib/api/admin-api"
+} from "@/features/resources/resource-library-model"
 
 export type ResourceEventsSubscription = {
   readonly disconnect: () => void

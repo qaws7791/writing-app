@@ -1,20 +1,5 @@
 import { serve } from "bun"
-import { createAdminService } from "@workspace/core/admin"
-import { createDrizzleAdminRepository } from "@workspace/core/admin/admin-drizzle.repository"
-import {
-  createResourceDocumentUseCase,
-  createResourceDocumentSyncUseCase,
-  createResourceSearchUseCase,
-  createResourceTreeUseCase,
-  toResourceAuditEventId,
-  toResourceDocumentId,
-  toResourceFolderId,
-} from "@workspace/core/modules/resource-library/api"
-import { createDrizzleResourceDocumentRepository } from "@workspace/core/resource-library/resource-document-drizzle.repository"
-import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/resource-library/resource-document-sync-drizzle.repository"
-import { createDrizzleResourceSearchRepository } from "@workspace/core/resource-library/resource-search-drizzle.repository"
-import { createDrizzleResourceTreeRepository } from "@workspace/core/resource-library/resource-tree-drizzle.repository"
-import { createWritingAppDatabase } from "@workspace/db"
+import { toResourceDocumentId } from "@workspace/core/modules/resource-library/api"
 import { createResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 import {
   createAppLogger,
@@ -24,6 +9,7 @@ import {
 } from "@workspace/logger"
 
 import { createApp } from "@/app"
+import { createAdminApiCore } from "@/admin-api-core"
 import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
 import { createResourceEventsHub } from "@/collaboration/resource-events-hub"
 import { createResourceEventsUpgradeHandler } from "@/collaboration/resource-events-upgrade"
@@ -34,42 +20,15 @@ import {
 } from "@/mastra/admin-content-agent"
 
 const env = parseAdminApiEnv(process.env)
-const database = createWritingAppDatabase(env.databaseUrl)
 const logger = createAppLogger()
 const securityAuditLogger = createSecurityAuditLogger(logger)
-const adminRepository = createDrizzleAdminRepository(database.db)
-const resourceTreeRepository = createDrizzleResourceTreeRepository(database.db)
-const resourceDocumentRepository = createDrizzleResourceDocumentRepository(
-  database.db
-)
-const resourceDocumentSyncService = createResourceDocumentSyncUseCase(
-  createDrizzleResourceDocumentSyncRepository(database.db),
-  {
-    onRejected(event) {
-      logger.warn(event, "resource-document.sync.rejected")
-    },
-  }
-)
+const core = createAdminApiCore({
+  databaseUrl: env.databaseUrl,
+  onResourceSyncRejected(event) {
+    logger.warn(event, "resource-document.sync.rejected")
+  },
+})
 const resourceDocumentOperations = createResourceDocumentOperationCoordinator()
-const createResourceAuditEventId = () =>
-  toResourceAuditEventId(`resource-audit-${crypto.randomUUID()}`)
-const resourceTreeService = createResourceTreeUseCase({
-  createAuditEventId: createResourceAuditEventId,
-  createDocumentId: () =>
-    toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
-  createFolderId: () =>
-    toResourceFolderId(`resource-folder-${crypto.randomUUID()}`),
-  treeRepository: resourceTreeRepository,
-})
-const resourceDocumentService = createResourceDocumentUseCase({
-  createAuditEventId: createResourceAuditEventId,
-  createDocumentId: () =>
-    toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
-  documentRepository: resourceDocumentRepository,
-})
-const resourceSearchService = createResourceSearchUseCase(
-  createDrizzleResourceSearchRepository(database.db)
-)
 const aiChatAgent =
   env.openAiApiKey === undefined
     ? undefined
@@ -79,19 +38,10 @@ const aiChatAgent =
           openAiModel: env.openAiModel,
         })
       )
-const adminService = createAdminService({
-  aiChatRepository: adminRepository,
-  analyticsReader: adminRepository,
-  contentResetRepository: adminRepository,
-  courseRepository: adminRepository,
-  dashboardReader: adminRepository,
-  settingsRepository: adminRepository,
-  userRepository: adminRepository,
-})
 const auth = createAdminAuth({
   authBaseUrl: env.authBaseUrl,
   cookieDomain: env.cookieDomain,
-  db: database.db,
+  db: core.database,
   secret: env.betterAuthSecret,
   webOrigin: env.adminOrigin,
 })
@@ -109,7 +59,7 @@ const resourceEvents = createResourceEventsHub({
     })
   },
   async readDocumentStateVersion(documentId) {
-    const result = await resourceDocumentSyncService.readSync({
+    const result = await core.services.resourceLibrary.sync.readSync({
       afterStateVersion: 0,
       documentId: toResourceDocumentId(documentId),
       mode: "incremental",
@@ -137,21 +87,7 @@ const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
 const app = createApp({
   aiChatAgent,
   aiChatEventLogger: logger,
-  adminServices: {
-    aiChat: adminService,
-    analytics: adminService,
-    contentReset: adminService,
-    courses: adminService,
-    dashboard: adminService,
-    resourceLibrary: {
-      documents: resourceDocumentService,
-      search: resourceSearchService,
-      sync: resourceDocumentSyncService,
-      tree: resourceTreeService,
-    },
-    settings: adminService,
-    users: adminService,
-  },
+  adminServices: core.services,
   adminOrigin: env.adminOrigin,
   authHandler: auth.handler,
   errorLogger(event) {
@@ -190,7 +126,7 @@ if (import.meta.main) {
 
     shuttingDown = true
     server.stop(true)
-    database.close()
+    core.close()
   }
 
   process.once("SIGINT", () => void shutdown())

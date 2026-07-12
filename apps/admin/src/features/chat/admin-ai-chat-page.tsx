@@ -8,14 +8,14 @@ import {
   AdminAiChatStreamError,
   readAdminAiChatSseEvents,
 } from "@/features/chat/admin-ai-chat-sse"
-
-import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAiChatConversation,
   AdminAiChatConversationDetail,
   AdminAiChatConversationList,
   AdminAiChatMessage,
-} from "@/lib/api/admin-api"
+} from "@/features/chat/admin-ai-chat-api"
+
+import type { AdminApiResult } from "@/lib/api/api-result"
 import {
   BotIcon,
   MessageSquarePlusIcon,

@@ -21,7 +21,7 @@ import type {
   AdminCourseDetail,
   AdminCourseList,
   ReadAdminCoursesInput,
-} from "@/lib/api/admin-api"
+} from "@/features/courses/admin-courses-api"
 import { contentStatuses } from "@workspace/contracts/status"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {

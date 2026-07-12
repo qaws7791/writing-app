@@ -1,6 +1,9 @@
 import { AdminCoursesPage } from "@/features/courses/admin-courses-page"
-import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
-import type { ReadAdminCoursesInput } from "@/lib/api/admin-api"
+import {
+  createAdminCoursesApi,
+  type ReadAdminCoursesInput,
+} from "@/features/courses/admin-courses-api"
+import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import { contentStatusSchema } from "@workspace/contracts/status"
 
@@ -11,17 +14,21 @@ export default async function AdminCoursesRoute({
 }) {
   const resolvedSearchParams = await searchParams
   const filters = readCourseFilters(resolvedSearchParams)
-  const api = getServerAdminApi({
-    tokenProvider: getServerAdminSessionToken,
-  })
+  const api = createAdminCoursesApi(
+    getServerAdminHttpTransport({
+      tokenProvider: getServerAdminSessionToken,
+    })
+  )
   const coursesResult = await api.getCourses(filters)
 
   async function createCourse() {
     "use server"
 
-    const serverApi = getServerAdminApi({
-      tokenProvider: getServerAdminSessionToken,
-    })
+    const serverApi = createAdminCoursesApi(
+      getServerAdminHttpTransport({
+        tokenProvider: getServerAdminSessionToken,
+      })
+    )
 
     return serverApi.createCourse()
   }
@@ -29,9 +36,11 @@ export default async function AdminCoursesRoute({
   async function archiveCourse(courseId: string) {
     "use server"
 
-    const serverApi = getServerAdminApi({
-      tokenProvider: getServerAdminSessionToken,
-    })
+    const serverApi = createAdminCoursesApi(
+      getServerAdminHttpTransport({
+        tokenProvider: getServerAdminSessionToken,
+      })
+    )
 
     return serverApi.archiveCourse(courseId)
   }

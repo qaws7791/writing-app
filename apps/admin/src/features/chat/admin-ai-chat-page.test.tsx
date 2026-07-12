@@ -13,7 +13,7 @@ import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAiChatConversationDetail,
   AdminAiChatConversationList,
-} from "@/lib/api/admin-api"
+} from "@/features/chat/admin-ai-chat-api"
 
 const { replaceMock } = vi.hoisted(() => ({ replaceMock: vi.fn() }))
 

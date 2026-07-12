@@ -3,7 +3,7 @@ import { mergeUpdates } from "yjs"
 import type {
   AdminResourceDocumentTransactionInput,
   AdminResourceDocumentTransactionResult,
-} from "@/lib/api/admin-api"
+} from "@/features/resources/resource-library-model"
 import type { AdminApiError } from "@/lib/api/api-error"
 import type { AdminApiResult } from "@/lib/api/api-result"
 
