@@ -38,6 +38,7 @@ import {
   ResizablePanelGroup,
 } from "@workspace/ui/components/ui/resizable"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
+import type { AdminId } from "@/lib/api/admin-identity"
 
 const desktopMediaQuery = "(min-width: 768px)"
 const ResourceDocumentSyncBoundary = dynamic(
@@ -57,7 +58,7 @@ export function ResourceWorkspace({
   children,
   initialTree,
 }: {
-  readonly adminId: string
+  readonly adminId: AdminId
   readonly apiBaseUrl: AdminApiBaseUrl
   readonly children: ReactNode
   readonly initialTree: InitialResourceTreeState

@@ -10,12 +10,13 @@ import type {
   AdminAiChatConversationListDto,
   AdminAiChatMessageDto,
 } from "@workspace/contracts/admin"
+import { conversationIdSchema } from "@workspace/contracts/admin"
 import type { AdminAiChatAgent } from "@/mastra/admin-content-agent"
 
 const conversationDetail: AdminAiChatConversationDetailDto = {
   conversation: {
     createdAt: "2026-06-14T03:00:00.000Z",
-    id: "chat-1",
+    id: conversationIdSchema.parse("chat-1"),
     messageCount: 1,
     title: "소개 문구",
     updatedAt: "2026-06-14T03:00:00.000Z",

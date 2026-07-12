@@ -1,4 +1,5 @@
 import type { AdminRole } from "@workspace/core/admin"
+import type { AdminId } from "@workspace/contracts/admin"
 
 export type { AdminRole } from "@workspace/core/admin"
 
@@ -13,7 +14,7 @@ export type AdminAuthenticationAssurance =
 export type AdminAuthenticatedSession = {
   readonly admin: {
     readonly email: string
-    readonly id: string
+    readonly id: AdminId
     readonly name: string
     readonly role: AdminRole
     readonly twoFactorEnabled: boolean

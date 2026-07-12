@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { authorizeOwnerMutation } from "#core/modules/admin/application/policies/admin-actor-policy"
+import { adminIdSchema } from "@workspace/contracts/admin"
 
 describe("관리자 owner 변경 인증 보증", () => {
   it.each([
@@ -15,7 +16,7 @@ describe("관리자 owner 변경 인증 보증", () => {
       expect(
         authorizeOwnerMutation({
           authenticationAssurance,
-          id: "admin-1",
+          id: adminIdSchema.parse("admin-1"),
           role,
         })
       ).toBe(expected)

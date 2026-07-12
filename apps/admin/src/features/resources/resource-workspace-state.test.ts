@@ -5,6 +5,9 @@ import {
   readExpandedResourceIds,
   writeExpandedResourceIds,
 } from "@/features/resources/resource-workspace-state"
+import { adminIdSchema } from "@/lib/api/admin-identity"
+
+const adminId = adminIdSchema.parse("admin-1")
 
 describe("자료실 workspace 상태", () => {
   beforeEach(() => {
@@ -12,23 +15,27 @@ describe("자료실 workspace 상태", () => {
   })
 
   it("관리자와 active·trash 범위별로 펼친 폴더 ID만 저장한다", () => {
-    writeExpandedResourceIds(window.localStorage, "admin-1", "active", [
+    writeExpandedResourceIds(window.localStorage, adminId, "active", [
       "folder-1",
       "folder-1",
       "folder-2",
     ])
-    writeExpandedResourceIds(window.localStorage, "admin-1", "trash", [
+    writeExpandedResourceIds(window.localStorage, adminId, "trash", [
       "trash-folder",
     ])
 
     expect(
-      readExpandedResourceIds(window.localStorage, "admin-1", "active")
+      readExpandedResourceIds(window.localStorage, adminId, "active")
     ).toEqual(["folder-1", "folder-2"])
     expect(
-      readExpandedResourceIds(window.localStorage, "admin-1", "trash")
+      readExpandedResourceIds(window.localStorage, adminId, "trash")
     ).toEqual(["trash-folder"])
     expect(
-      readExpandedResourceIds(window.localStorage, "admin-2", "active")
+      readExpandedResourceIds(
+        window.localStorage,
+        adminIdSchema.parse("admin-2"),
+        "active"
+      )
     ).toEqual([])
   })
 
@@ -39,7 +46,7 @@ describe("자료실 workspace 상태", () => {
     )
 
     expect(
-      readExpandedResourceIds(window.localStorage, "admin-1", "active")
+      readExpandedResourceIds(window.localStorage, adminId, "active")
     ).toEqual([])
     expect(
       mergeExpandedResourceIds(["folder-1"], ["folder-1", "folder-2"])

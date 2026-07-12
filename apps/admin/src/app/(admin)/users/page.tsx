@@ -9,6 +9,7 @@ import {
   learnerAccountStatusSchema,
   type LearnerOperationalStatus,
 } from "@workspace/contracts/status"
+import type { UserId } from "@/lib/api/admin-identity"
 
 export default async function AdminUsersRoute({
   searchParams,
@@ -26,7 +27,7 @@ export default async function AdminUsersRoute({
 
   async function updateUserStatus(input: {
     readonly status: LearnerOperationalStatus
-    readonly userId: string
+    readonly userId: UserId
   }) {
     "use server"
 
@@ -39,7 +40,7 @@ export default async function AdminUsersRoute({
     return serverApi.updateUserStatus(input)
   }
 
-  async function deleteUser(userId: string) {
+  async function deleteUser(userId: UserId) {
     "use server"
 
     const serverApi = createAdminUsersApi(

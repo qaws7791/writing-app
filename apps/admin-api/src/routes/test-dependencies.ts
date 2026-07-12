@@ -11,6 +11,7 @@ import {
   type ResourceDocumentOperationCoordinator,
 } from "@/resource-library/resource-document-operation-coordinator"
 import { adminRoles } from "@workspace/core/admin"
+import { adminIdSchema } from "@workspace/contracts/admin"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
@@ -45,7 +46,7 @@ export const testAdminNow = new Date("2026-06-14T03:00:00.000Z")
 export const testAdminSession = {
   admin: {
     email: "admin@example.com",
-    id: "admin-1",
+    id: adminIdSchema.parse("admin-1"),
     name: "관리자",
     role: adminRoles.owner,
     twoFactorEnabled: true,

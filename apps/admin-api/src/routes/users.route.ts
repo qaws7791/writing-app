@@ -6,6 +6,7 @@ import {
   adminUserListDtoSchema,
   adminUserListStatusFilterSchema,
   adminUserSortSchema,
+  userIdSchema,
 } from "@workspace/contracts/admin"
 import type { AdminUserUseCase } from "@workspace/core/admin"
 import { z } from "@workspace/hono/zod"
@@ -46,7 +47,7 @@ const usersQuerySchema = z.object({
 })
 
 const userParamsSchema = z.object({
-  userId: z.string(),
+  userId: userIdSchema,
 })
 
 export type UsersRouteDependencies = {

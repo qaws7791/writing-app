@@ -1,8 +1,10 @@
+import type { AdminId, ConversationId } from "@workspace/contracts/admin"
+
 export type AiChatRequestGuard = {
   readonly acquire: (input: {
-    readonly adminId: string
+    readonly adminId: AdminId
     readonly clientIp: string
-    readonly conversationId: string | null
+    readonly conversationId: ConversationId | null
     readonly now: Date
   }) => AiChatRequestPermit
 }

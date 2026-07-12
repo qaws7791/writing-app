@@ -1,6 +1,7 @@
 import { hashPassword, verifyPassword } from "better-auth/crypto"
 
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
+import { adminIdSchema, type AdminId } from "@workspace/contracts/admin"
 
 const recoveryCodeCount = 10
 
@@ -16,7 +17,7 @@ export function createAdminMfaRecoveryService({
   readonly now?: () => Date
 }) {
   return {
-    async replaceRecoveryCodes(userId: string): Promise<readonly string[]> {
+    async replaceRecoveryCodes(adminId: AdminId): Promise<readonly string[]> {
       const codes = Array.from({ length: recoveryCodeCount }, () =>
         createRecoveryCode()
       )
@@ -26,7 +27,7 @@ export function createAdminMfaRecoveryService({
       database.sqlite.transaction(() => {
         database.sqlite
           .query("DELETE FROM admin_mfa_recovery_code WHERE user_id = ?")
-          .run(userId)
+          .run(adminId)
 
         const insert = database.sqlite.query(
           `INSERT INTO admin_mfa_recovery_code
@@ -34,7 +35,7 @@ export function createAdminMfaRecoveryService({
            VALUES (?, ?, ?, ?, NULL)`
         )
         hashes.forEach((codeHash) => {
-          insert.run(crypto.randomUUID(), userId, codeHash, createdAt)
+          insert.run(crypto.randomUUID(), adminId, codeHash, createdAt)
         })
       })()
 
@@ -68,6 +69,8 @@ export function createAdminMfaRecoveryService({
         await verifyPassword({ hash: dummyHash, password: input.password })
         return false
       }
+      const adminId = adminIdSchema.safeParse(account.userId)
+      if (!adminId.success) return false
 
       const passwordMatches = await verifyPassword({
         hash: account.password,
@@ -86,19 +89,19 @@ export function createAdminMfaRecoveryService({
              WHERE user_id = ? AND code_hash = ? AND used_at IS NULL
              RETURNING id`
           )
-          .get(usedAt, account.userId, codeHash)
+          .get(usedAt, adminId.data, codeHash)
 
         if (consumedRecoveryCode === null) return false
 
         database.sqlite
           .query("UPDATE admin_user SET two_factor_enabled = 0 WHERE id = ?")
-          .run(account.userId)
+          .run(adminId.data)
         database.sqlite
           .query("DELETE FROM admin_two_factor WHERE user_id = ?")
-          .run(account.userId)
+          .run(adminId.data)
         database.sqlite
           .query("DELETE FROM admin_session WHERE user_id = ?")
-          .run(account.userId)
+          .run(adminId.data)
 
         return true
       })()

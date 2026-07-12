@@ -1,8 +1,7 @@
 import { z } from "zod"
+import type { Brand } from "@workspace/contracts/brand"
 
-export type Brand<TValue, TBrand extends string> = TValue & {
-  readonly __brand: TBrand
-}
+export type { Brand } from "@workspace/contracts/brand"
 
 export type CourseId = Brand<string, "CourseId">
 export type UnitId = Brand<string, "UnitId">

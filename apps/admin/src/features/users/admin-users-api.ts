@@ -6,6 +6,7 @@ import {
   adminUserListDtoSchema,
   type AdminUserDetailDto,
   type AdminUserListDto,
+  type UserId,
 } from "@workspace/contracts/admin"
 
 export type AdminUserStatus = "active" | "deleted" | "suspended"
@@ -18,7 +19,7 @@ export type ReadAdminUsersInput = {
 }
 export type AdminUserListItem = {
   readonly email: string
-  readonly id: string
+  readonly id: UserId
   readonly joined: string
   readonly lastActive: string | null
   readonly lessonsDone: number
@@ -37,15 +38,15 @@ export type AdminUserDetail = AdminUserListItem & {
 export type AdminDeleteUserResult = { readonly deleted: true }
 export type AdminUsersApi = {
   readonly deleteUser: (
-    userId: string
+    userId: UserId
   ) => Promise<AdminApiResult<AdminDeleteUserResult>>
-  readonly getUser: (userId: string) => Promise<AdminApiResult<AdminUserDetail>>
+  readonly getUser: (userId: UserId) => Promise<AdminApiResult<AdminUserDetail>>
   readonly getUsers: (
     input: ReadAdminUsersInput
   ) => Promise<AdminApiResult<AdminUserList>>
   readonly updateUserStatus: (input: {
     readonly status: "active" | "suspended"
-    readonly userId: string
+    readonly userId: UserId
   }) => Promise<AdminApiResult<AdminUserDetail>>
 }
 

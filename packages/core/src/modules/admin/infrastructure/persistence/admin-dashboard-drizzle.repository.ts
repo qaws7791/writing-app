@@ -27,6 +27,7 @@ import {
 } from "drizzle-orm"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
+import { userIdSchema } from "@workspace/contracts/admin"
 import {
   calculateCurrentStreakDays,
   createActiveLearnerCondition,
@@ -233,6 +234,6 @@ function readRecentActivities(
     email: user.email,
     lastActiveDate: user.lastActiveDate,
     name: user.name,
-    userId: user.id,
+    userId: userIdSchema.parse(user.id),
   }))
 }

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import { AdminUserDetailPage } from "@/features/users/admin-user-detail-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type { AdminUserDetail } from "@/features/users/admin-users-api"
+import { userIdSchema } from "@/lib/api/admin-identity"
 
 describe("AdminUserDetailPage", () => {
   it("사용자 상세 통계를 렌더링한다", () => {
@@ -36,7 +37,7 @@ describe("AdminUserDetailPage", () => {
 
 const userDetail: AdminUserDetail = {
   email: "minji@example.com",
-  id: "user-1",
+  id: userIdSchema.parse("user-1"),
   joined: "2026-06-01",
   lastActive: "2026-06-14",
   lessonsDone: 12,

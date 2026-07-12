@@ -25,6 +25,7 @@ import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { cn } from "@workspace/ui/lib/utils"
+import type { ConversationId } from "@/lib/api/admin-identity"
 
 type UiMessage = AdminAiChatMessage | PendingMessage
 
@@ -390,7 +391,7 @@ function AdminAiChatSession({
     signal,
   }: {
     readonly assistantMessageId: string
-    readonly conversationId: string | null
+    readonly conversationId: ConversationId | null
     readonly message: string
     readonly signal: AbortSignal
   }): Promise<

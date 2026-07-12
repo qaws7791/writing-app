@@ -133,7 +133,8 @@ function isAdminApiBoundaryFile(filePath: string): boolean {
     path === "features/resources/resource-event-parser.ts" ||
     path === "features/resources/resource-library-http-adapter.ts" ||
     path === "features/settings/admin-settings-api.ts" ||
-    path === "features/users/admin-users-api.ts"
+    path === "features/users/admin-users-api.ts" ||
+    path === "lib/api/admin-identity.ts"
   )
 }
 

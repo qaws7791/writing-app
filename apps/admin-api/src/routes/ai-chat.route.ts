@@ -3,6 +3,8 @@ import {
   adminAiChatConversationDetailDtoSchema,
   adminAiChatConversationListDtoSchema,
   adminAiChatMessageRequestSchema,
+  adminIdSchema,
+  conversationIdSchema,
   type AdminAiChatConversationDetailDto,
 } from "@workspace/contracts/admin"
 import type { AdminAiChatUseCase } from "@workspace/core/admin"
@@ -24,7 +26,7 @@ import type { AiChatRequestGuard } from "@/routes/ai-chat-request-guard"
 import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 
 const aiChatParamsSchema = z.object({
-  conversationId: z.string(),
+  conversationId: conversationIdSchema,
 })
 
 const aiChatConversationPaginationSchema = z.object({
@@ -251,8 +253,8 @@ function createAiChatSseStream({
   readonly aiChatAgent: AdminAiChatAgent | undefined
   readonly aiChatEventLogger: AiChatRouteDependencies["aiChatEventLogger"]
   readonly aiChatService: AdminAiChatUseCase
-  readonly adminId: string
-  readonly conversationId: string | null
+  readonly adminId: z.infer<typeof adminIdSchema>
+  readonly conversationId: z.infer<typeof conversationIdSchema> | null
   readonly message: string
   readonly now: () => Date
   readonly permit: Extract<

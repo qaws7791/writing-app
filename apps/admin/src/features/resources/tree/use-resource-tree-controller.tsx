@@ -22,6 +22,7 @@ import {
   type Updater,
 } from "@headless-tree/core"
 import { useTree } from "@headless-tree/react"
+import type { AdminId } from "@/lib/api/admin-identity"
 import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import {
   classifyResourceEventRevision,
@@ -78,7 +79,7 @@ export function useResourceTreeController({
   scope,
   selectedDocumentId,
 }: {
-  readonly adminId: string
+  readonly adminId: AdminId
   readonly api: ResourceTreeApi
   readonly connectEvents: ResourceEventsConnector
   readonly eventsServerUrl: string

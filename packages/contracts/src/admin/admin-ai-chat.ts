@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { conversationIdSchema } from "@workspace/contracts/admin/admin-ids"
 
 export const adminAiChatMessageRoleSchema = z.enum(["assistant", "user"])
 
@@ -11,7 +12,7 @@ export const adminAiChatMessageDtoSchema = z.object({
 
 export const adminAiChatConversationDtoSchema = z.object({
   createdAt: z.string(),
-  id: z.string(),
+  id: conversationIdSchema,
   messageCount: z.number().int().nonnegative(),
   title: z.string(),
   updatedAt: z.string(),
@@ -27,7 +28,7 @@ export const adminAiChatConversationDetailDtoSchema = z.object({
 })
 
 export const adminAiChatMessageRequestSchema = z.object({
-  conversationId: z.string().optional(),
+  conversationId: conversationIdSchema.optional(),
   message: z.string().trim().min(1).max(4_000),
 })
 

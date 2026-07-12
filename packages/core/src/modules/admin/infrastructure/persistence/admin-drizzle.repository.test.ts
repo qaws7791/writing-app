@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 import { eq } from "drizzle-orm"
+import { userIdSchema } from "@workspace/contracts/admin"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
@@ -28,6 +29,7 @@ import {
 } from "@workspace/db/schema"
 
 describe("어드민 DB repository", () => {
+  const userId = userIdSchema.parse("user-1")
   it("사용자 목록 페이지네이션은 JS 배열 slice가 아니라 DB 쿼리 경계에서 처리한다", () => {
     const repositorySource = readFileSync(
       fileURLToPath(
@@ -274,7 +276,7 @@ describe("어드민 DB repository", () => {
         ],
       })
 
-      await expect(repository.readUser({ userId: "user-1" })).resolves.toEqual({
+      await expect(repository.readUser({ userId })).resolves.toEqual({
         email: "learner-one@example.com",
         id: "user-1",
         joined: "2026-06-14",
@@ -291,17 +293,17 @@ describe("어드민 DB repository", () => {
         repository.updateUserStatus({
           now,
           status: "suspended",
-          userId: "user-1",
+          userId,
         })
       ).resolves.toMatchObject({
         id: "user-1",
         status: "suspended",
       })
 
-      await expect(
-        repository.deleteUser({ now, userId: "user-1" })
-      ).resolves.toEqual({ deleted: true })
-      await expect(repository.readUser({ userId: "user-1" })).resolves.toEqual(
+      await expect(repository.deleteUser({ now, userId })).resolves.toEqual({
+        deleted: true,
+      })
+      await expect(repository.readUser({ userId })).resolves.toEqual(
         expect.objectContaining({
           id: "user-1",
           lessonsDone: 2,

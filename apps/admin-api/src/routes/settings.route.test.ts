@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { adminIdSchema } from "@workspace/contracts/admin"
 
 import { createApp, type AdminApiDependencies } from "@/app"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
@@ -236,7 +237,7 @@ function createDependencies({
           expect(input.actor).toEqual({
             authenticationAssurance:
               role === adminRoles.owner ? "mfa-step-up-verified" : "password",
-            id: "admin-1",
+            id: adminIdSchema.parse("admin-1"),
             role,
           })
           return { kind: "ok", value: contentResetResult }
@@ -250,7 +251,7 @@ function createDependencies({
           expect(input).toEqual({
             actor: {
               authenticationAssurance: "mfa-step-up-verified",
-              id: "admin-1",
+              id: adminIdSchema.parse("admin-1"),
               role,
             },
             now: testAdminNow,
@@ -264,7 +265,7 @@ function createDependencies({
           expect(input).toEqual({
             actor: {
               authenticationAssurance: "mfa-step-up-verified",
-              id: "admin-1",
+              id: adminIdSchema.parse("admin-1"),
               role,
             },
             announce: "공지 내용",
@@ -287,7 +288,7 @@ function createDependencies({
         return {
           admin: {
             email: "admin@example.com",
-            id: "admin-1",
+            id: adminIdSchema.parse("admin-1"),
             name: "관리자",
             role,
             twoFactorEnabled: role === adminRoles.owner,

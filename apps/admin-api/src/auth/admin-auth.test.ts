@@ -8,6 +8,7 @@ import {
 import { createAdminMfaRecoveryService } from "@/auth/admin-mfa-recovery"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
 import { adminRoles } from "@workspace/core/admin"
+import { adminIdSchema } from "@workspace/contracts/admin"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { seedAdminUser } from "@/scripts/seed-admin"
@@ -141,7 +142,9 @@ describe("Admin Better Auth session resolver", () => {
 
       const recovery = createAdminMfaRecoveryService({ database })
       const codes = await recovery.replaceRecoveryCodes(
-        (await database.db.select().from(adminAuthUsers))[0]?.id ?? ""
+        adminIdSchema.parse(
+          (await database.db.select().from(adminAuthUsers))[0]?.id
+        )
       )
       const recoveryInput = {
         code: codes[0] ?? "",

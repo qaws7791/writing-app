@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { adminIdSchema } from "@workspace/contracts/admin/admin-ids"
 
 export const adminRoles = {
   operator: "operator",
@@ -10,7 +11,7 @@ export const adminRoleSchema = z.enum(adminRoleValues)
 export const adminSessionDtoSchema = z.object({
   admin: z.object({
     email: z.email(),
-    id: z.string().min(1).max(200),
+    id: adminIdSchema,
     name: z.string().min(1).max(200),
     role: adminRoleSchema,
   }),

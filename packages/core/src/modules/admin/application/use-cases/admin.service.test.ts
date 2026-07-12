@@ -19,6 +19,15 @@ import {
   createAdminService,
   type AdminServicePorts,
 } from "#core/modules/admin/application/use-cases/admin.service"
+import {
+  adminIdSchema,
+  conversationIdSchema,
+  userIdSchema,
+} from "@workspace/contracts/admin"
+
+const adminId = adminIdSchema.parse("admin-1")
+const chatId = conversationIdSchema.parse("chat-1")
+const userId = userIdSchema.parse("user-1")
 
 const dashboard: AdminDashboardDto = {
   metrics: {
@@ -36,7 +45,7 @@ const dashboard: AdminDashboardDto = {
       email: "learner@example.com",
       lastActiveDate: "2026-06-14",
       name: "학습자",
-      userId: "user-1",
+      userId,
     },
   ],
 }
@@ -45,7 +54,7 @@ const userList: AdminUserListDto = {
   items: [
     {
       email: "learner@example.com",
-      id: "user-1",
+      id: userId,
       joined: "2026-06-01",
       lastActive: "2026-06-14",
       lessonsDone: 3,
@@ -64,7 +73,7 @@ const userList: AdminUserListDto = {
 
 const userDetail: AdminUserDetailDto = {
   email: "learner@example.com",
-  id: "user-1",
+  id: userId,
   joined: "2026-06-01",
   lastActive: "2026-06-14",
   lessonsDone: 3,
@@ -184,7 +193,7 @@ const aiChatAssistantMessage: AdminAiChatMessageDto = {
 const aiChatConversationDetail: AdminAiChatConversationDetailDto = {
   conversation: {
     createdAt: "2026-06-14T03:00:00.000Z",
-    id: "chat-1",
+    id: chatId,
     messageCount: 2,
     title: "강의 소개 문구",
     updatedAt: "2026-06-14T03:01:00.000Z",
@@ -280,12 +289,12 @@ const courseList: AdminCourseListDto = {
 describe("어드민 서비스", () => {
   const ownerActor = {
     authenticationAssurance: "mfa-step-up-verified",
-    id: "owner-1",
+    id: adminIdSchema.parse("owner-1"),
     role: "owner",
   } as const
   const operatorActor = {
     authenticationAssurance: "password",
-    id: "operator-1",
+    id: adminIdSchema.parse("operator-1"),
     role: "operator",
   } as const
 
@@ -347,15 +356,13 @@ describe("어드민 서비스", () => {
         status: "all",
       })
     ).resolves.toEqual(userList)
-    await expect(service.getUser({ userId: "user-1" })).resolves.toEqual(
-      userDetail
-    )
+    await expect(service.getUser({ userId })).resolves.toEqual(userDetail)
     await expect(
       service.updateUserStatus({
         actor: ownerActor,
         now: new Date("2026-06-14T03:00:00.000Z"),
         status: "suspended",
-        userId: "user-1",
+        userId,
       })
     ).resolves.toEqual({
       kind: "ok",
@@ -365,7 +372,7 @@ describe("어드민 서비스", () => {
       service.deleteUser({
         actor: ownerActor,
         now: new Date("2026-06-14T03:00:00.000Z"),
-        userId: "user-1",
+        userId,
       })
     ).resolves.toEqual({ kind: "ok", value: { deleted: true } })
   })
@@ -415,7 +422,7 @@ describe("어드민 서비스", () => {
       aiChatRepository: {
         async createAiChatUserMessage(input) {
           expect(input).toEqual({
-            adminId: "admin-1",
+            adminId,
             conversationId: null,
             message: "강의 소개 문구를 써줘",
             now: new Date("2026-06-14T03:00:00.000Z"),
@@ -424,8 +431,8 @@ describe("어드민 서비스", () => {
         },
         async readAiChatConversation(input) {
           expect(input).toEqual({
-            adminId: "admin-1",
-            conversationId: "chat-1",
+            adminId,
+            conversationId: chatId,
             messagePage: 1,
             messagePageSize: 100,
           })
@@ -433,7 +440,7 @@ describe("어드민 서비스", () => {
         },
         async readAiChatConversations(input) {
           expect(input).toEqual({
-            adminId: "admin-1",
+            adminId,
             page: 1,
             pageSize: 50,
           })
@@ -442,7 +449,7 @@ describe("어드민 서비스", () => {
         async saveAiChatAssistantMessage(input) {
           expect(input).toEqual({
             content: "학습자의 목표를 먼저 보여주는 문구를 제안합니다.",
-            conversationId: "chat-1",
+            conversationId: chatId,
             now: new Date("2026-06-14T03:01:00.000Z"),
           })
           return aiChatAssistantMessage
@@ -452,22 +459,22 @@ describe("어드민 서비스", () => {
 
     await expect(
       service.getAiChatConversations({
-        adminId: "admin-1",
+        adminId,
         page: 1,
         pageSize: 50,
       })
     ).resolves.toEqual(aiChatConversationList)
     await expect(
       service.getAiChatConversation({
-        adminId: "admin-1",
-        conversationId: "chat-1",
+        adminId,
+        conversationId: chatId,
         messagePage: 1,
         messagePageSize: 100,
       })
     ).resolves.toEqual(aiChatConversationDetail)
     await expect(
       service.createAiChatUserMessage({
-        adminId: "admin-1",
+        adminId,
         conversationId: null,
         message: "강의 소개 문구를 써줘",
         now: new Date("2026-06-14T03:00:00.000Z"),
@@ -476,7 +483,7 @@ describe("어드민 서비스", () => {
     await expect(
       service.saveAiChatAssistantMessage({
         content: "학습자의 목표를 먼저 보여주는 문구를 제안합니다.",
-        conversationId: "chat-1",
+        conversationId: chatId,
         now: new Date("2026-06-14T03:01:00.000Z"),
       })
     ).resolves.toEqual(aiChatAssistantMessage)
@@ -614,9 +621,9 @@ describe("어드민 서비스", () => {
           actor: operatorActor,
           now,
           status: "suspended",
-          userId: "user-1",
+          userId,
         }),
-        service.deleteUser({ actor: operatorActor, now, userId: "user-1" }),
+        service.deleteUser({ actor: operatorActor, now, userId }),
         service.updateNoticeSettings({
           actor: operatorActor,
           announce: "공지",
@@ -647,7 +654,7 @@ describe("어드민 서비스", () => {
         service.deleteUser({
           actor: expiredOwnerActor,
           now,
-          userId: "user-1",
+          userId,
         }),
         service.resetContent({ actor: expiredOwnerActor, now }),
       ])

@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { adminNonNegativeIntegerSchema } from "@workspace/contracts/admin/admin-shared"
+import { userIdSchema } from "@workspace/contracts/admin/admin-ids"
 
 export const adminDashboardDtoSchema = z.object({
   metrics: z.object({
@@ -17,7 +18,7 @@ export const adminDashboardDtoSchema = z.object({
       email: z.email(),
       lastActiveDate: z.string().nullable(),
       name: z.string(),
-      userId: z.string(),
+      userId: userIdSchema,
     })
   ),
 })

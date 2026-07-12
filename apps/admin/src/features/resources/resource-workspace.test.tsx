@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ResourceWorkspace } from "@/features/resources/resource-workspace"
 import { readAdminApiBaseUrl } from "@/runtime-config"
+import { adminIdSchema } from "@/lib/api/admin-identity"
 
 const {
   checkActiveDocumentMock,
@@ -215,7 +216,7 @@ describe("자료실 반응형 shell 포커스", () => {
 function renderWorkspace(): void {
   render(
     <ResourceWorkspace
-      adminId="admin-1"
+      adminId={adminIdSchema.parse("admin-1")}
       apiBaseUrl={apiBaseUrl}
       initialTree={initialTree}
     >

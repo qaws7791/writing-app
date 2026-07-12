@@ -16,6 +16,7 @@ import {
   learnerAccountStatuses,
   type LearnerOperationalStatus,
 } from "@workspace/contracts/status"
+import type { UserId } from "@/lib/api/admin-identity"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
   AlertDialog,
@@ -74,12 +75,12 @@ export function AdminUsersPage({
   usersResult,
 }: {
   readonly deleteUser: (
-    userId: string
+    userId: UserId
   ) => Promise<AdminApiResult<AdminDeleteUserResult>>
   readonly filters: ReadAdminUsersInput
   readonly updateUserStatus: (input: {
     readonly status: LearnerOperationalStatus
-    readonly userId: string
+    readonly userId: UserId
   }) => Promise<AdminApiResult<AdminUserDetail>>
   readonly usersResult: AdminApiResult<AdminUserList>
 }) {

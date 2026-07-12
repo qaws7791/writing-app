@@ -4,6 +4,7 @@ import {
   adminAiChatConversationDetailDtoSchema,
   adminAiChatConversationListDtoSchema,
   type AdminAiChatConversationDto,
+  type ConversationId,
 } from "@workspace/contracts/admin"
 
 export type AdminAiChatMessage = {
@@ -14,7 +15,7 @@ export type AdminAiChatMessage = {
 }
 export type AdminAiChatConversation = {
   readonly createdAt: string
-  readonly id: string
+  readonly id: ConversationId
   readonly messageCount: number
   readonly title: string
   readonly updatedAt: string
@@ -28,7 +29,7 @@ export type AdminAiChatConversationDetail = {
 }
 export type AdminAiChatApi = {
   readonly getAiChatConversation: (
-    conversationId: string
+    conversationId: ConversationId
   ) => Promise<AdminApiResult<AdminAiChatConversationDetail>>
   readonly getAiChatConversations: () => Promise<
     AdminApiResult<AdminAiChatConversationList>

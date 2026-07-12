@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react"
 
+import type { AdminId } from "@/lib/api/admin-identity"
+
 import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import type {
   ResourceEventRevisionGapRecorder,
@@ -18,7 +20,7 @@ export function ResourceTree({
   toolbarEnd,
   ...controllerInput
 }: {
-  readonly adminId: string
+  readonly adminId: AdminId
   readonly api: ResourceTreeApi
   readonly connectEvents: ResourceEventsConnector
   readonly eventsServerUrl: string
