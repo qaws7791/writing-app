@@ -387,6 +387,7 @@
         "react-dom": "catalog:",
         "tailwindcss": "^4.1.18",
         "typescript": "^5.9.3",
+        "vitest": "catalog:",
       },
       "peerDependencies": {
         "next-themes": "^0.4.6",

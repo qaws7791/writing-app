@@ -35,4 +35,20 @@ describe("workspace dependency version", () => {
       })
     ).toContain("catalog의 react는 exact version이어야 한다.")
   })
+
+  test("Vitest script의 transitive runtime 의존을 거부한다", () => {
+    expect(
+      findWorkspaceDependencyVersionDrift({
+        catalog,
+        manifests: [
+          {
+            path: "packages/ui/package.json",
+            value: { scripts: { test: "vitest run" } },
+          },
+        ],
+      })
+    ).toContain(
+      "packages/ui/package.json는 Vitest test script와 catalog: devDependency를 함께 선언해야 한다."
+    )
+  })
 })

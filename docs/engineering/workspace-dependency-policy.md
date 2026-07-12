@@ -17,7 +17,7 @@
 
 공통 version을 올릴 때는 root catalog 한 곳과 lockfile을 함께 변경하고 전체 테스트·빌드·audit를 실행한다. 서로 다른 version이 반드시 필요한 경우에는 호환성 근거, 영향 workspace, 제거 조건을 이 문서에 먼저 기록한 뒤 dependency drift 검사에 package 단위 예외를 추가한다. 현재 예외는 없다.
 
-`bun run check:workspace-dependency-versions`는 catalog가 exact version인지, 모든 workspace가 `catalog:`를 사용하는지 검사한다. 의도적인 개별 version drift fixture는 root tooling test가 고정한다.
+`bun run check:workspace-dependency-versions`는 catalog가 exact version인지, 모든 workspace가 `catalog:`를 사용하는지 검사한다. Vitest test script를 가진 workspace는 transitive 실행 파일에 기대지 않고 `catalog:` devDependency를 직접 선언해야 한다. 의도적인 개별 version drift와 누락된 test runtime fixture는 root tooling test가 고정한다.
 
 ## 디자인·lint ratchet
 

@@ -39,6 +39,20 @@ export function findWorkspaceDependencyVersionDrift({
   }
 
   for (const manifest of manifests) {
+    const scripts = manifest.value["scripts"]
+    const testScript = isObject(scripts) ? scripts["test"] : undefined
+    const devDependencies = manifest.value["devDependencies"]
+
+    if (
+      typeof testScript === "string" &&
+      testScript.includes("vitest") &&
+      (!isObject(devDependencies) || devDependencies["vitest"] !== "catalog:")
+    ) {
+      failures.push(
+        `${manifest.path}는 Vitest test script와 catalog: devDependency를 함께 선언해야 한다.`
+      )
+    }
+
     for (const sectionName of dependencySections) {
       const section = manifest.value[sectionName]
       if (!isObject(section)) continue
