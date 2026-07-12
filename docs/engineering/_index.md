@@ -40,6 +40,7 @@
 | `admin-mfa-step-up.md`                                    | owner 관리자 TOTP MFA 등록, 복구 코드와 민감 작업 step-up 인증 경계를 정의한다.                    |
 | `admin-transport-security.md`                             | 관리자 transport의 actor 구성, 이중 인가 경계와 오류 변환 기준을 정의한다.                         |
 | `testing.md`                                              | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.             |
+| `lesson-runtime.md`                                       | 학습자·관리자 공통 레슨 runtime과 관리자 스텝 편집 계약을 정의한다.                                |
 | `observability.md`                                        | 요청 로그, 런타임 로깅, 로그 정책, 메트릭과 알림과 대시보드 후보를 정의한다.                       |
 | `migration.md`                                            | 마이그레이션 모델, 명령, 기본 절차, seed 마이그레이션, 운영 원칙, 롤백 조건을 정의한다.            |
 | `database-backup-restore.md`                              | SQLite snapshot 백업, 독립 복구 검증, 운영 복구 훈련과 결과 기록 기준을 정의한다.                  |

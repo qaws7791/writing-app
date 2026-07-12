@@ -9,14 +9,14 @@ import { writeLessonDraftText } from "@workspace/ui/lib/lesson-draft-storage"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 describe("레슨 스텝 렌더러 답변 저장", () => {
-  it("스텝 타입별 콘텐츠는 앱 렌더러가 UI 패키지 컴포넌트로 조합한다", () => {
+  it("앱 Adapter는 공통 lesson runtime에 학습자 draft namespace를 전달한다", () => {
     const source = readFileSync(
       join(import.meta.dirname, "lesson-step-renderer.tsx"),
       "utf8"
     )
 
-    expect(source).toContain("@workspace/ui/components/lesson/")
-    expect(source).toContain("switch (step.type)")
+    expect(source).toContain("@workspace/ui/lesson-runtime/renderer")
+    expect(source).toContain("draftNamespace={learnerId}")
   })
 
   it("객관식 선택을 현재 제품 버튼 UI로 타입별 payload로 전달한다", async () => {

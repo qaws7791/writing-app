@@ -1,21 +1,18 @@
 import {
-  readStepContent,
   StepFormShell,
-  type EditorStep,
+  type StepFormProps,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
-export function CategorizeStepForm({ step }: { readonly step: EditorStep }) {
-  const content = readStepContent(step)
-
+export function CategorizeStepForm({ step }: StepFormProps<"CATEGORIZE">) {
   return (
     <StepFormShell step={step}>
       <Textarea
         aria-label="CATEGORIZE categories"
         defaultValue={JSON.stringify(
           {
-            categories: content["categories"] ?? [],
-            items: content["items"] ?? [],
+            categories: step.categories,
+            items: step.items,
           },
           null,
           2

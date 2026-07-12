@@ -1,6 +1,11 @@
 import type { AdminHttpTransport } from "@/lib/api/admin-http-transport"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import {
+  parseEditorStep,
+  type EditorStepParseResult,
+  type WireEditorStep,
+} from "@/features/courses/course-editor/step-forms/shared/editor-step"
+import {
   adminArchiveCourseResultSchema,
   adminCourseDetailDtoSchema,
   adminCourseListDtoSchema,
@@ -16,13 +21,7 @@ export type ReadAdminCoursesInput = {
   readonly query: string
   readonly status: "all" | AdminCourseStatus
 }
-export type AdminCourseStep = {
-  readonly contentJson: string
-  readonly id: string
-  readonly sortOrder: number
-  readonly status: AdminCourseStatus
-  readonly type: string
-}
+export type AdminCourseStep = WireEditorStep
 export type AdminCourseLesson = {
   readonly category: string | null
   readonly description: string | null
@@ -31,7 +30,7 @@ export type AdminCourseLesson = {
   readonly sortOrder: number
   readonly status: AdminCourseStatus
   readonly summary: readonly string[]
-  readonly steps: readonly AdminCourseStep[]
+  readonly steps: readonly EditorStepParseResult[]
   readonly title: string
 }
 export type AdminCourseUnit = {
@@ -138,7 +137,7 @@ function toCourse(dto: AdminCourseDetailDto): AdminCourseDetail {
       ...unit,
       lessons: unit.lessons.map((lesson) => ({
         ...lesson,
-        steps: lesson.steps.map((step) => ({ ...step })),
+        steps: lesson.steps.map(parseEditorStep),
         summary: [...lesson.summary],
       })),
     })),

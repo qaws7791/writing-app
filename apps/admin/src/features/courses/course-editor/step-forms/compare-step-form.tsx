@@ -1,14 +1,11 @@
 import {
-  readStepContent,
   StepFormShell,
-  type EditorStep,
+  type StepFormProps,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
-export function CompareStepForm({ step }: { readonly step: EditorStep }) {
-  const content = readStepContent(step)
-
+export function CompareStepForm({ step }: StepFormProps<"COMPARE">) {
   return (
     <StepFormShell step={step}>
       <div className="grid gap-4 md:grid-cols-2">
@@ -16,14 +13,14 @@ export function CompareStepForm({ step }: { readonly step: EditorStep }) {
           <FieldLabel htmlFor={`${step.id}-before`}>초안</FieldLabel>
           <Textarea
             id={`${step.id}-before`}
-            defaultValue={String(content["before"] ?? "")}
+            defaultValue={step.versions[0]?.text}
           />
         </Field>
         <Field>
           <FieldLabel htmlFor={`${step.id}-after`}>수정본</FieldLabel>
           <Textarea
             id={`${step.id}-after`}
-            defaultValue={String(content["after"] ?? "")}
+            defaultValue={step.versions[1]?.text}
           />
         </Field>
       </div>

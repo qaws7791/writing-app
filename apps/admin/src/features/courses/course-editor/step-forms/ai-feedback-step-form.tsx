@@ -1,7 +1,6 @@
 import {
-  readStepContent,
   StepFormShell,
-  type EditorStep,
+  type StepFormProps,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
 import {
   Field,
@@ -10,19 +9,15 @@ import {
 } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 
-export function AiFeedbackStepForm({ step }: { readonly step: EditorStep }) {
-  const content = readStepContent(step)
-  const sourceStepId = String(content["sourceStepId"] ?? "")
-  const retryLimit = Number(content["retryLimit"] ?? 3)
-
+export function AiFeedbackStepForm({ step }: StepFormProps<"AI_FEEDBACK">) {
   return (
     <StepFormShell step={step}>
       <FieldDescription>
-        source step: {sourceStepId} · retry {retryLimit}회
+        target step: {step.target} · score {step.score}/{step.scoreMax}
       </FieldDescription>
       <Field>
-        <FieldLabel htmlFor={`${step.id}-source-step`}>source step</FieldLabel>
-        <Input id={`${step.id}-source-step`} defaultValue={sourceStepId} />
+        <FieldLabel htmlFor={`${step.id}-target-step`}>target step</FieldLabel>
+        <Input id={`${step.id}-target-step`} defaultValue={step.target} />
       </Field>
     </StepFormShell>
   )
