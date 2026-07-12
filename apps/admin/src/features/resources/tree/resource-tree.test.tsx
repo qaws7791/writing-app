@@ -472,6 +472,34 @@ describe("자료 트리", () => {
     ).toBeVisible()
     expect(screen.getByRole("button", { name: "새 문서" })).toBeDisabled()
   })
+
+  it("휴지통 context에서는 생성 행동을 막고 최상위 자료 복원을 제공한다", async () => {
+    const archivedDocument: AdminResourceTreeNode = {
+      ...rootDocument,
+      status: "archived",
+    }
+
+    render(
+      <ResourceTree
+        adminId="admin-trash"
+        api={createResourceLibraryApi()}
+        connectEvents={connectTestResourceEvents}
+        eventsServerUrl="ws://admin-api.test/resources/events"
+        initialTree={{
+          status: "ok",
+          value: { nodes: [archivedDocument], revision: 2 },
+        }}
+        onDocumentOpen={vi.fn()}
+        scope="trash"
+      />
+    )
+
+    expect(await screen.findByText(archivedDocument.name)).toBeVisible()
+    expect(screen.getByRole("button", { name: "새 문서" })).toBeDisabled()
+    fireEvent.click(screen.getByRole("button", { name: "자료 메뉴" }))
+    fireEvent.click(await screen.findByRole("menuitem", { name: "복원" }))
+    expect(await screen.findByText("자료를 복원할까요?")).toBeVisible()
+  })
 })
 
 const expandedStorageKey =
