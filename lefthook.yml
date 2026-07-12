@@ -29,6 +29,10 @@ pre-commit:
       glob: "{package.json,apps/*/package.json,packages/*/package.json,apps/admin/src/features/courses/course-editor/**/*.{ts,tsx},packages/core/src/**/*.{ts,tsx},scripts/check-import-cycles.ts,docs/engineering/code-style.md}"
       run: bun run check:import-cycles
 
+    package-interfaces:
+      glob: "{package.json,apps/storybook/**/*.{ts,tsx,mdx},packages/{core,env,hono,ui}/**/*.{ts,tsx,json},scripts/check-package-interfaces.ts,docs/engineering/{code-style.md,package-interface-and-import-rules.md}}"
+      run: bun run check:package-interfaces
+
 pre-push:
   commands:
     workspace-lint:

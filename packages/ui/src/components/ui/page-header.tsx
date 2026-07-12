@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 type PageHeaderProps = React.ComponentProps<"header"> & {
   readonly actions?: React.ReactNode

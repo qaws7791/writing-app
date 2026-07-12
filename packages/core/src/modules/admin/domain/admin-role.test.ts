@@ -4,7 +4,7 @@ import {
   adminRoles,
   canAccessOwnerAdminRoute,
   parseAdminRole,
-} from "@workspace/core/modules/admin/domain/admin-role"
+} from "#core/modules/admin/domain/admin-role"
 
 describe("관리자 role 정책", () => {
   it("알려진 관리자 role만 parse한다", () => {

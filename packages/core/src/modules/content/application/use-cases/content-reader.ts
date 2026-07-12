@@ -1,7 +1,7 @@
 import type {
   CourseId,
   LessonId,
-} from "@workspace/core/modules/content/domain/content.ids"
+} from "#core/modules/content/domain/content.ids"
 import {
   courseDetailDtoSchema,
   courseListDtoSchema,
@@ -9,9 +9,9 @@ import {
   type CourseDetailDto,
   type CourseListDto,
   type LessonDto,
-} from "@workspace/core/modules/content/domain/content.dto"
-import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
-import { err, ok, type Result } from "@workspace/core/shared/result"
+} from "#core/modules/content/domain/content.dto"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
+import { err, ok, type Result } from "#core/shared/result"
 
 export type ContentReaderError =
   | {

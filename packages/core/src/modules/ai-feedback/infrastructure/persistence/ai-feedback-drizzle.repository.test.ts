@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/core/modules/content/domain/content.ids"
-import { learnerIdSchema } from "@workspace/core/modules/learning/domain/learning.ids"
+} from "#core/modules/content/domain/content.ids"
+import { learnerIdSchema } from "#core/modules/learning/domain/learning.ids"
 import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { createDrizzleAiFeedbackRepository } from "@workspace/core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
-import { createAiFeedbackAttemptCoordinator } from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
-import { defaultAiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
+import { createDrizzleAiFeedbackRepository } from "#core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
+import { createAiFeedbackAttemptCoordinator } from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
+import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import {
   aiFeedbackAttempts,
   authUsers,
@@ -20,9 +20,9 @@ import {
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
-import { err, ok } from "@workspace/core/shared/result"
-import type { AiFeedbackPayload } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.dto"
-import type { AiFeedbackProvider } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.provider"
+import { err, ok } from "#core/shared/result"
+import type { AiFeedbackPayload } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
 
 const now = new Date("2026-06-14T10:30:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")

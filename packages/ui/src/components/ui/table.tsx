@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Table` 컴포넌트는 데이터를 행과 열로 구성하여 표시하는 표를 제공합니다.

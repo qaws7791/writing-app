@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Label` 컴포넌트는 폼 요소에 대한 설명 텍스트를 제공하는 데 사용됩니다.

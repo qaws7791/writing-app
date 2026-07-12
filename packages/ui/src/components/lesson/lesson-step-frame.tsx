@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { LessonAnswerErrorMessage } from "./lesson-answer-error-message"
+import { LessonAnswerErrorMessage } from "#ui/components/lesson/lesson-answer-error-message"
 
 export function LessonStepFrame({
   answerError,

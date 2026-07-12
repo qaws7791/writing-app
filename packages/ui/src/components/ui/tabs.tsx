@@ -3,7 +3,7 @@
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Tabs` 컴포넌트는 여러 섹션을 탭으로 구분하여 한번에 하나의 섹션을 보여줍니다.

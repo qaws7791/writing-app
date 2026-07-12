@@ -1,17 +1,17 @@
 import {
   adminSettingsDtoSchema,
   type AdminSettingsDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   SaveAdminLegalSettingsInput,
   SaveAdminNoticeSettingsInput,
   SettingsRepository,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import {
   authorizeOwnerMutation,
   type AdminOwnerMutationResult,
   type OwnerAdminCommand,
-} from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
+} from "#core/modules/admin/application/policies/admin-actor-policy"
 
 export type AdminSettingsUseCase = {
   readonly getSettings: () => Promise<AdminSettingsDto>

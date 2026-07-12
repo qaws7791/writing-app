@@ -1,5 +1,5 @@
 import { serve } from "bun"
-import { toResourceDocumentId } from "@workspace/core/modules/resource-library/api"
+import { toResourceDocumentId } from "@workspace/core/resource-library"
 import { createResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 import {
   createAppLogger,

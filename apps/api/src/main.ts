@@ -1,5 +1,5 @@
 import { serve } from "bun"
-import { createLearnerApiCore } from "@workspace/core/modules/learner-api"
+import { createLearnerApiCore } from "@workspace/core/learner-api-core"
 import {
   createAppLogger,
   createRequestLogger,

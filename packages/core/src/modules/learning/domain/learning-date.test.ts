@@ -7,7 +7,7 @@ import {
   platformLearningTimeZone,
   toLearningDateKey,
   type LearningDateKey,
-} from "@/modules/learning/domain/learning-date"
+} from "#core/modules/learning/domain/learning-date"
 
 describe("학습 활동일 정책", () => {
   it("플랫폼 학습일은 명시된 학습 시간대를 사용한다", () => {

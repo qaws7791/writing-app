@@ -4,22 +4,22 @@ import type {
   AdminLessonAnalyticsSort,
   AdminSortDirection,
   AdminUserStatus,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   AnalyticsReader,
   ReadAdminAnalyticsInput,
   ReadAdminLessonAnalyticsInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import {
   addLearningCalendarDays,
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/domain/learning-date"
+} from "#core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   learnerAccountStatuses,
   lessonProgressStatuses,
-} from "@workspace/core/shared/kernel/status"
+} from "#core/shared/kernel/status"
 import { and, asc, countDistinct, desc, eq, or, sql } from "drizzle-orm"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -27,7 +27,7 @@ import {
   calculateCurrentStreakDays,
   createPageBounds,
   groupActivityDatesByUserId,
-} from "@workspace/core/modules/admin/infrastructure/persistence/admin-repository-shared"
+} from "#core/modules/admin/infrastructure/persistence/admin-repository-shared"
 import {
   authUsers,
   courses,

@@ -6,8 +6,14 @@ import {
   type AiFeedbackRequestOutcome,
 } from "@workspace/ui/components/lesson/ai-feedback-answer"
 
-import { aiFeedbackDefaults, aiFeedbackViewModel } from "./mock-data"
-import { lessonDecorators, lessonParameters } from "./lesson-story-shared"
+import {
+  aiFeedbackDefaults,
+  aiFeedbackViewModel,
+} from "#storybook/stories/components/lesson/mock-data"
+import {
+  lessonDecorators,
+  lessonParameters,
+} from "#storybook/stories/components/lesson/lesson-story-shared"
 
 type AiFeedbackStoryArgs = {
   readonly allowRetry: boolean

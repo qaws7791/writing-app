@@ -1,9 +1,9 @@
-import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import {
   lessonDtoSchema,
   type LessonDto,
   type LessonStepDto,
-} from "@workspace/core/modules/content/domain/content.dto"
+} from "#core/modules/content/domain/content.dto"
 import {
   completeLessonCommandSchema,
   completeLessonRecordSchema,
@@ -12,14 +12,14 @@ import {
   type CompleteLessonCommand,
   type SaveLessonProgressCommand,
   type SaveStepAnswerCommand,
-} from "@workspace/core/modules/learning/domain/learning.dto"
-import type { LearningRepository } from "@workspace/core/modules/learning/application/ports/learning.repository"
-import type { LearningAnswer } from "@workspace/core/modules/learning/domain/learning.dto"
+} from "#core/modules/learning/domain/learning.dto"
+import type { LearningRepository } from "#core/modules/learning/application/ports/learning.repository"
+import type { LearningAnswer } from "#core/modules/learning/domain/learning.dto"
 import {
   answerableStepTypes,
   validateStepAnswerForLesson,
-} from "@workspace/core/modules/learning/domain/step-answer-policy"
-import { err, ok, type Result } from "@workspace/core/shared/result"
+} from "#core/modules/learning/domain/step-answer-policy"
+import { err, ok, type Result } from "#core/shared/result"
 
 export type LearningServiceError =
   | {

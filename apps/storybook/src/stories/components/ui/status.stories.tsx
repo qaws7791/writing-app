@@ -1,15 +1,17 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-  Button,
+} from "@workspace/ui/components/ui/alert"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
   Callout,
   CalloutContent,
   CalloutTitle,
-  Spinner,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/callout"
+import { Spinner } from "@workspace/ui/components/ui/spinner"
 
 const tones = ["neutral", "success", "danger", "info"] as const
 

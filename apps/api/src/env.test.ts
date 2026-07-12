@@ -3,7 +3,7 @@ import {
   createLocalRuntimeUrl,
   localRuntimeDefaults,
   localRuntimePorts,
-} from "@workspace/env"
+} from "@workspace/env/local-runtime-defaults"
 
 import { parseApiEnv } from "@/env"
 

@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { AlertTriangle, Info } from "lucide-react"
 
@@ -13,8 +13,8 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-  Button,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/alert-dialog"
+import { Button } from "@workspace/ui/components/ui/button"
 
 const meta = {
   title: "Components/UI/AlertDialog",

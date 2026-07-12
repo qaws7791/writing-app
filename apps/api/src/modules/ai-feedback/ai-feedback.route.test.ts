@@ -5,7 +5,7 @@ import { createTestDependencies } from "@/routes/test-dependencies"
 import type {
   AiFeedbackService,
   CreateAiFeedbackCommand,
-} from "@workspace/core/modules/ai-feedback"
+} from "@workspace/core/ai-feedback"
 
 const now = new Date("2026-06-14T11:00:00.000Z")
 

@@ -4,7 +4,7 @@ import {
   adminImportResourceDocumentResultDtoSchema,
   adminResourceDocumentDtoSchema,
 } from "@workspace/contracts/admin"
-import { type ResourceDocumentUseCase } from "@workspace/core/modules/resource-library/api"
+import { type ResourceDocumentUseCase } from "@workspace/core/resource-library"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"

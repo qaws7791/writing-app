@@ -1,7 +1,7 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
+import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Button,
   Field,
   FieldDescription,
   FieldError,
@@ -9,16 +9,18 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-  Input,
+} from "@workspace/ui/components/ui/field"
+import { Input } from "@workspace/ui/components/ui/input"
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/select"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
-import { KeyboardTable } from "../../../blocks/keyboard-table"
+import { KeyboardTable } from "#storybook/blocks/keyboard-table"
 
 const meta = {
   title: "Components/UI/Field",

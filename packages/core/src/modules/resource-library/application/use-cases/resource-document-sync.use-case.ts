@@ -1,15 +1,15 @@
 import type {
   CommitResourceDocumentTransactionResult,
   ResourceDocumentSyncRepository,
-} from "@workspace/core/modules/resource-library/application/ports/resource-document-sync.repository"
+} from "#core/modules/resource-library/application/ports/resource-document-sync.repository"
 import {
   adminResourceDocumentMaxNodes,
   adminResourceDocumentProjectionTimeoutMilliseconds,
   adminResourceYjsSnapshotMaxBytes,
   adminResourceYjsUpdateMaxBytes,
 } from "@workspace/contracts/admin"
-import type { ResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
-import type { ResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+import type { ResourceDocumentTransactionId } from "#core/modules/resource-library/domain/resource-document-sync"
+import type { ResourceDocumentId } from "#core/modules/resource-library/domain/resource-tree-node"
 import {
   createResourceDocumentSnapshot,
   readResourceMarkdownPlainText,

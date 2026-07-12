@@ -3,8 +3,8 @@ import { or, isNull, ne } from "drizzle-orm"
 import {
   calculateCurrentStreakDays,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/domain/learning-date"
-import { learnerAccountStatuses } from "@workspace/core/shared/kernel/status"
+} from "#core/modules/learning/domain/learning-date"
+import { learnerAccountStatuses } from "#core/shared/kernel/status"
 import { learnerActivityDays, learnerProfiles } from "@workspace/db/schema"
 
 export type PageInput = {

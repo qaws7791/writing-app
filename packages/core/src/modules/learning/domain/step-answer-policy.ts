@@ -5,7 +5,7 @@ import {
   lessonStartedAnswerSchema,
   type LearningAnswer,
   type LessonStepAnswer,
-} from "@workspace/core/modules/learning/domain/learning.dto"
+} from "#core/modules/learning/domain/learning.dto"
 
 export const answerableStepTypes = answerableLessonStepTypes
 

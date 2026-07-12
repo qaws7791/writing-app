@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 import {
   localRuntimeDefaults,
   localRuntimePorts,
-} from "@/local-runtime-defaults"
-import { parseEnv } from "@/parse-env"
+} from "#env/local-runtime-defaults"
+import { parseEnv } from "#env/parse-env"
 
 const validSecret = "x".repeat(32)
 const learnerProductionSecret =

@@ -1,6 +1,6 @@
 import { and, asc, eq, getTableColumns, isNull, ne, sql } from "drizzle-orm"
 
-import type { ResourceTreeCommandRejection } from "@workspace/core/modules/resource-library/application/ports/resource-tree.repository"
+import type { ResourceTreeCommandRejection } from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import {
   toResourceDocumentId,
   toResourceFolderId,
@@ -12,7 +12,7 @@ import {
   type ResourceTreeEntry,
   type ResourceTreeNode,
   type ResourceTreeScope,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminResourceAuditEvents,

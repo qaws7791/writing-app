@@ -1,10 +1,15 @@
-﻿import * as React from "react"
+import * as React from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Play, RotateCcw } from "lucide-react"
 
-import { Progress, ProgressLabel, ProgressValue, Button } from "@workspace/ui"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/ui/progress"
 
-import { KeyboardTable } from "../../../blocks/keyboard-table"
+import { KeyboardTable } from "#storybook/blocks/keyboard-table"
 
 const meta = {
   title: "Components/UI/Progress",

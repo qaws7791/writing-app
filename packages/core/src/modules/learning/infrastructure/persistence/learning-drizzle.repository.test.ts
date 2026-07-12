@@ -11,10 +11,10 @@ import {
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/core/modules/content/domain/content.ids"
-import { learnerIdSchema } from "@workspace/core/modules/learning/domain/learning.ids"
+} from "#core/modules/content/domain/content.ids"
+import { learnerIdSchema } from "#core/modules/learning/domain/learning.ids"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { createDrizzleLearningRepository } from "@/modules/learning/infrastructure/persistence/learning-drizzle.repository"
+import { createDrizzleLearningRepository } from "#core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
 import {
   authUsers,
   courses,

@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Avatar` 컴포넌트는 사용자 프로필 이미지나 아이콘을 표시하는 데 사용됩니다.

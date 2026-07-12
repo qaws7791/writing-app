@@ -1,7 +1,7 @@
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion"
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Accordion` 컴포넌트는 여러 개의 섹션을 접고 펼쳐서 정보를 효율적으로 보여줄 때 사용합니다.

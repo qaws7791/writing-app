@@ -1,7 +1,7 @@
 import * as React from "react"
 
-import { fieldControlVariants } from "../../lib/field-control-variants"
-import { cn } from "../../lib/utils"
+import { fieldControlVariants } from "#ui/lib/field-control-variants"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Textarea` 컴포넌트는 사용자가 여러 줄의 텍스트를 입력할 수 있는 입력 필드를 제공합니다.

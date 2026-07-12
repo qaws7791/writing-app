@@ -112,7 +112,13 @@ const config: StorybookConfig = {
       },
       resolve: {
         alias: {
-          "@": path.resolve(workspaceRoot, "packages/ui/src"),
+          "#ui": path.resolve(workspaceRoot, "packages/ui/src"),
+          "#storybook": path.resolve(workspaceRoot, "apps/storybook/src"),
+          "#storybook-config": path.resolve(
+            workspaceRoot,
+            "apps/storybook/.storybook"
+          ),
+          "#storybook-root": path.resolve(workspaceRoot, "apps/storybook"),
         },
       },
       build: {

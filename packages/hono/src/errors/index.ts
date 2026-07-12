@@ -1,12 +1,12 @@
-export { AppError } from "./app-error"
-export { ErrorResponseSchema } from "./error-response"
-export type { ErrorResponse } from "./error-response"
-export { createErrorHandler } from "./error-handler"
+export { AppError } from "#hono/errors/app-error"
+export { ErrorResponseSchema } from "#hono/errors/error-response"
+export type { ErrorResponse } from "#hono/errors/error-response"
+export { createErrorHandler } from "#hono/errors/error-handler"
 export type {
   InternalErrorLogEvent,
   InternalErrorLogger,
-} from "./error-handler"
-export { createNotFoundHandler } from "./not-found-handler"
-export { HTTP_ERROR_MESSAGES } from "./status"
-export type { ErrorStatusCode } from "./status"
-export { createValidationErrorHook } from "./validation-error-hook"
+} from "#hono/errors/error-handler"
+export { createNotFoundHandler } from "#hono/errors/not-found-handler"
+export { HTTP_ERROR_MESSAGES } from "#hono/errors/status"
+export type { ErrorStatusCode } from "#hono/errors/status"
+export { createValidationErrorHook } from "#hono/errors/validation-error-hook"

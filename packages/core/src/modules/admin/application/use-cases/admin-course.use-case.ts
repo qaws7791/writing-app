@@ -5,19 +5,19 @@ import {
   type AdminArchiveCourseResultDto,
   type AdminCourseDetailDto,
   type AdminCourseListDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   ArchiveAdminCourseInput,
   CourseAdminRepository,
   CreateAdminCourseInput,
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import {
   authorizeOwnerMutation,
   type AdminOwnerMutationResult,
   type OwnerAdminCommand,
-} from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
+} from "#core/modules/admin/application/policies/admin-actor-policy"
 
 export type AdminCourseUseCase = {
   readonly archiveCourse: (

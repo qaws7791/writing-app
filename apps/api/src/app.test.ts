@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { localRuntimeDefaults } from "@workspace/env"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import { createApp, type ApiDependencies } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"

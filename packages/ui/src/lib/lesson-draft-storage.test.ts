@@ -4,7 +4,7 @@ import {
   clearLessonDraftsForUser,
   readLessonDraftText,
   writeLessonDraftText,
-} from "@workspace/ui/lib/lesson-draft-storage"
+} from "#ui/lib/lesson-draft-storage"
 
 describe("레슨 초안 저장소", () => {
   it("version key로 초안을 저장하고 읽는다", () => {

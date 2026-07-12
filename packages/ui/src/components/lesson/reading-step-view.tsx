@@ -1,4 +1,4 @@
-import { MarkdownContent } from "./markdown-content"
+import { MarkdownContent } from "#ui/components/lesson/markdown-content"
 
 export function ReadingStepView({
   body,

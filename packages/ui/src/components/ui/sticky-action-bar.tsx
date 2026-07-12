@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 const stickyActionBarVariants = cva(
   "w-full px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]",

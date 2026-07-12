@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react"
 
-import type { LessonDraftWriteResult } from "../../lib/lesson-draft-storage"
-import { cn } from "../../lib/utils"
-import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
-import { MarkdownContent } from "./markdown-content"
+import type { LessonDraftWriteResult } from "#ui/lib/lesson-draft-storage"
+import { cn } from "#ui/lib/utils"
+import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
+import { MarkdownContent } from "#ui/components/lesson/markdown-content"
 
 export function WriteAnswer({
   badge,

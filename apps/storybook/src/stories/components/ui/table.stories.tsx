@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import {
   Table,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableCell,
   TableCaption,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/table"
 
 const meta = {
   title: "Components/UI/Table",

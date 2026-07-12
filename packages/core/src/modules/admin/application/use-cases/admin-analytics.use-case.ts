@@ -3,12 +3,12 @@ import {
   adminLessonAnalyticsPageDtoSchema,
   type AdminAnalyticsDto,
   type AdminLessonAnalyticsPageDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   AnalyticsReader,
   ReadAdminAnalyticsInput,
   ReadAdminLessonAnalyticsInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 
 export type AdminAnalyticsUseCase = {
   readonly getAnalytics: (

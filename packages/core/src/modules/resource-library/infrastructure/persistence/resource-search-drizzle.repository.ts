@@ -3,12 +3,12 @@ import { sql } from "drizzle-orm"
 import type {
   ResourceSearchRecord,
   ResourceSearchRepository,
-} from "@workspace/core/modules/resource-library/application/ports/resource-search.repository"
+} from "#core/modules/resource-library/application/ports/resource-search.repository"
 import {
   toResourceDocumentId,
   toResourceFolderId,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import { parseResourceBreadcrumbPath } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
+} from "#core/modules/resource-library/domain/resource-tree-node"
+import { parseResourceBreadcrumbPath } from "#core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
 type ResourceSearchQueryRow = {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { createDrizzleResourceSearchRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-search-drizzle.repository"
-import { createDrizzleResourceTreeRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-tree-drizzle.repository"
-import { toResourceFolderId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+import { createDrizzleResourceSearchRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-search-drizzle.repository"
+import { createDrizzleResourceTreeRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-tree-drizzle.repository"
+import { toResourceFolderId } from "#core/modules/resource-library/domain/resource-tree-node"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 

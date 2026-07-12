@@ -5,19 +5,19 @@ import {
   type AdminDeleteUserResultDto,
   type AdminUserDetailDto,
   type AdminUserListDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   DeleteAdminUserInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
   UserAdminRepository,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import {
   authorizeOwnerMutation,
   type AdminOwnerMutationResult,
   type OwnerAdminCommand,
-} from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
+} from "#core/modules/admin/application/policies/admin-actor-policy"
 
 export type AdminUserUseCase = {
   readonly deleteUser: (

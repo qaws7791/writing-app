@@ -4,7 +4,7 @@ import {
   aiFeedbackAttemptPolicySchema,
   calculateRemainingAiFeedbackAttempts,
   defaultAiFeedbackAttemptPolicy,
-} from "@/modules/ai-feedback/domain/ai-feedback-attempt-policy"
+} from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 
 describe("AI 피드백 시도 정책", () => {
   it("기본 완료 시도 한도와 정책 shape를 명시한다", () => {

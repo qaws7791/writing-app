@@ -46,7 +46,7 @@ import type {
   ResourceDocumentSyncUseCase,
   ResourceSearchUseCase,
   ResourceTreeUseCase,
-} from "@workspace/core/modules/resource-library/api"
+} from "@workspace/core/resource-library"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,

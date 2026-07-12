@@ -4,10 +4,10 @@ import { join, resolve } from "node:path"
 
 import { applyUpdate, Doc, encodeStateAsUpdate, mergeUpdates } from "yjs"
 
-import { createResourceDocumentSyncUseCase } from "@workspace/core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
-import { toResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
-import { toResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
+import { createResourceDocumentSyncUseCase } from "#core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
+import { toResourceDocumentTransactionId } from "#core/modules/resource-library/domain/resource-document-sync"
+import { toResourceDocumentId } from "#core/modules/resource-library/domain/resource-tree-node"
+import { createDrizzleResourceDocumentSyncRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
 import {
   createHeadlessResourceDocumentCollaboration,
   createResourceDocumentSnapshot,

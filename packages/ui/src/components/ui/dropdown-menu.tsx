@@ -4,7 +4,7 @@ import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `DropdownMenu` 컴포넌트는 사용자가 클릭하거나 호버할 때 나타나는 드롭다운 메뉴를 제공합니다.

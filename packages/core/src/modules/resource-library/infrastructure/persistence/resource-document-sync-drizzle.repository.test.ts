@@ -4,9 +4,9 @@ import { join } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
-import { toResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import { toResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
-import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
+import { toResourceDocumentId } from "#core/modules/resource-library/domain/resource-tree-node"
+import { toResourceDocumentTransactionId } from "#core/modules/resource-library/domain/resource-document-sync"
+import { createDrizzleResourceDocumentSyncRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
 import {
   createInMemoryWritingAppDatabase,
   createWritingAppDatabase,

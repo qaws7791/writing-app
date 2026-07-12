@@ -1,8 +1,8 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 import { Bold, Italic, Underline } from "lucide-react"
 
-import { Toggle } from "@workspace/ui"
+import { Toggle } from "@workspace/ui/components/ui/toggle"
 
 const meta = {
   title: "Components/UI/Toggle",

@@ -1,12 +1,14 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
 
 import {
   SegmentedControl,
   SegmentedControlItem,
+} from "@workspace/ui/components/ui/segmented-control"
+import {
   ToggleGroup,
   ToggleGroupItem,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/toggle-group"
 
 const meta = {
   title: "Components/UI/Segmented Toggle",

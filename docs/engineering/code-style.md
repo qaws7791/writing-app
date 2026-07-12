@@ -15,7 +15,9 @@
 
 - 파일명은 kebab-case를 사용한다.
 - TypeScript import path에는 파일 확장자를 포함하지 않는다.
-- workspace 내부 import는 절대 경로를 사용한다.
+- workspace 간 import는 `@workspace/*`의 명시적인 공개 subpath를 사용한다.
+- 패키지 내부 Implementation은 package별 private alias를 사용한다. `core`, `ui`, `hono`, `env`는 각각 `#core/*`, `#ui/*`, `#hono/*`, `#env/*`, Storybook source는 `#storybook/*`를 사용한다.
+- 패키지 내부에서 자기 `@workspace/*` 공개 Interface를 역참조하거나 상대 경로로 우회하지 않는다.
 - 앱 간 상대 import를 만들지 않는다.
 - 레거시 실험 디렉터리의 구현 파일은 제품 런타임에서 import하지 않는다.
 

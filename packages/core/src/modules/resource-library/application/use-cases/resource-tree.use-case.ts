@@ -14,7 +14,7 @@ import {
 import type {
   ResourceTreeCommandResult,
   ResourceTreeRepository,
-} from "@workspace/core/modules/resource-library/application/ports/resource-tree.repository"
+} from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import {
   toResourceFolderId,
   toResourceNodeId,
@@ -22,7 +22,7 @@ import {
   type ResourceDocumentId,
   type ResourceFolderId,
   type ResourceTreeNode,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 
 type ResourceStructureCommandInput = {
   readonly actorId: string

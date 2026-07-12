@@ -5,12 +5,12 @@ import {
   lessonIdSchema,
   lessonStepIdSchema,
   unitIdSchema,
-} from "@/modules/content/domain/content.ids"
+} from "#core/modules/content/domain/content.ids"
 import {
   lessonDtoSchema,
   type LessonDto,
-} from "@/modules/content/domain/content.dto"
-import { resolveAiFeedbackStep } from "@/modules/ai-feedback/domain/ai-feedback-step-policy"
+} from "#core/modules/content/domain/content.dto"
+import { resolveAiFeedbackStep } from "#core/modules/ai-feedback/domain/ai-feedback-step-policy"
 
 describe("AI 피드백 스텝 정책", () => {
   it("AI_FEEDBACK 스텝을 피드백 대상 스텝으로 해석한다", () => {

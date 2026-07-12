@@ -32,7 +32,7 @@ const moduleCycleScopes: readonly ModuleCycleScope[] = [
   {
     aliases: [
       {
-        prefix: "@/",
+        prefix: "#core/",
         root: "packages/core/src",
       },
     ],

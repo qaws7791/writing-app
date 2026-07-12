@@ -14,7 +14,7 @@ import type {
 import {
   toResourceDocumentId,
   toResourceDocumentTransactionId,
-} from "@workspace/core/modules/resource-library/api"
+} from "@workspace/core/resource-library"
 
 const headers = {
   Cookie: "admin_session_token=admin-token",

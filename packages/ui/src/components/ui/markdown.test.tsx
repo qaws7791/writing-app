@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { Markdown } from "@/components/ui/markdown"
+import { Markdown } from "#ui/components/ui/markdown"
 
 describe("Markdown", () => {
   it("GFM 표와 안전한 링크·이미지를 읽기 전용으로 렌더링한다", () => {

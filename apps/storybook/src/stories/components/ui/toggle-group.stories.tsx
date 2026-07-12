@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 import {
   AlignLeft,
@@ -10,7 +10,10 @@ import {
   Underline,
 } from "lucide-react"
 
-import { ToggleGroup, ToggleGroupItem } from "@workspace/ui"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@workspace/ui/components/ui/toggle-group"
 
 const meta = {
   title: "Components/UI/ToggleGroup",

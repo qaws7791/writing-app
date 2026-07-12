@@ -15,7 +15,7 @@ import { useRender } from "@base-ui/react/use-render"
 import type { ItemInstance, TreeInstance } from "@headless-tree/core"
 import { ChevronDownIcon, MinusIcon, PlusIcon } from "lucide-react"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "#ui/lib/utils"
 
 type TreeToggleIconType = "chevron" | "plus-minus"
 

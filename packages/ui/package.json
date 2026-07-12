@@ -3,19 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "#ui/*": "./src/*"
+  },
   "sideEffects": [
     "*.css",
     "./src/styles/pretendard-font.ts"
   ],
   "exports": {
-    ".": "./src/index.ts",
     "./styles": "./src/styles/globals.css",
     "./pretendard-font": "./src/styles/pretendard-font.ts",
-    "./globals.css": "./src/styles/globals.css",
     "./postcss.config": "./postcss.config.mjs",
     "./lib/*": "./src/lib/*.ts",
-    "./utils": "./src/utils/index.ts",
-    "./utils/*": "./src/utils/*.ts",
     "./components/icons": "./src/components/icons.tsx",
     "./components/ui/*": "./src/components/ui/*.tsx",
     "./components/lesson/match-presentation": "./src/components/lesson/match-presentation.ts",

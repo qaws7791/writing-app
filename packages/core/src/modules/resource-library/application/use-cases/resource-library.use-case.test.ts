@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest"
 
-import { createResourceDocumentUseCase } from "@workspace/core/modules/resource-library/application/use-cases/resource-document.use-case"
-import { createResourceSearchUseCase } from "@workspace/core/modules/resource-library/application/use-cases/resource-search.use-case"
-import { createResourceTreeUseCase } from "@workspace/core/modules/resource-library/application/use-cases/resource-tree.use-case"
+import { createResourceDocumentUseCase } from "#core/modules/resource-library/application/use-cases/resource-document.use-case"
+import { createResourceSearchUseCase } from "#core/modules/resource-library/application/use-cases/resource-search.use-case"
+import { createResourceTreeUseCase } from "#core/modules/resource-library/application/use-cases/resource-tree.use-case"
 import {
   toResourceAuditEventId,
   toResourceDocumentId,
   toResourceFolderId,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import { createDrizzleResourceDocumentRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-document-drizzle.repository"
-import { createDrizzleResourceSearchRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-search-drizzle.repository"
-import { createDrizzleResourceTreeRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-tree-drizzle.repository"
+} from "#core/modules/resource-library/domain/resource-tree-node"
+import { createDrizzleResourceDocumentRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-drizzle.repository"
+import { createDrizzleResourceSearchRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-search-drizzle.repository"
+import { createDrizzleResourceTreeRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-tree-drizzle.repository"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 

@@ -1,4 +1,4 @@
-﻿import * as React from "react"
+import * as React from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import {
@@ -16,8 +16,8 @@ import {
   Users,
 } from "lucide-react"
 
+import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Button,
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -33,7 +33,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/dropdown-menu"
 
 const meta = {
   title: "Components/UI/DropdownMenu",

@@ -3,10 +3,10 @@ import { HTTPException } from "hono/http-exception"
 import type { RouteHandler } from "@hono/zod-openapi"
 import { describe, expect, it } from "vitest"
 
-import { createApp, defineRoute, defineRouteForEnv } from "@workspace/hono/core"
-import type { AnyRouteConfig } from "@workspace/hono/core"
-import { AppError, ErrorResponseSchema } from "@workspace/hono/errors"
-import { z } from "@workspace/hono/zod"
+import { createApp, defineRoute, defineRouteForEnv } from "#hono/core"
+import type { AnyRouteConfig } from "#hono/core"
+import { AppError, ErrorResponseSchema } from "#hono/errors"
+import { z } from "#hono/zod"
 
 const UserSchema = z.object({
   id: z.string(),

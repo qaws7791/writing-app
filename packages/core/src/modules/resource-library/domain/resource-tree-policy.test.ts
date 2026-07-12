@@ -8,12 +8,12 @@ import {
   restoreResourceSubtree,
   validateResourceMove,
   validateResourceNameChange,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-policy"
+} from "#core/modules/resource-library/domain/resource-tree-policy"
 import {
   toResourceDocumentId,
   toResourceFolderId,
   type ResourceTreeNode,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 
 describe("자료 트리 도메인 정책", () => {
   it("이름의 앞뒤 공백과 대소문자를 정규화하고 빈 이름을 거부한다", () => {

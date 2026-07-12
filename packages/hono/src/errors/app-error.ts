@@ -1,5 +1,5 @@
-import type { ErrorResponse } from "./error-response"
-import type { ErrorStatusCode } from "./status"
+import type { ErrorResponse } from "#hono/errors/error-response"
+import type { ErrorStatusCode } from "#hono/errors/status"
 
 export type AppErrorInput = {
   status: ErrorStatusCode

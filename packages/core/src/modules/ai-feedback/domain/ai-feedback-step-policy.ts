@@ -1,8 +1,8 @@
 import type {
   LessonDto,
   LessonStepDto,
-} from "@workspace/core/modules/content/domain/content.dto"
-import type { LessonStepId } from "@workspace/core/modules/content/domain/content.ids"
+} from "#core/modules/content/domain/content.dto"
+import type { LessonStepId } from "#core/modules/content/domain/content.ids"
 
 export type AiFeedbackLessonStep = Extract<
   LessonStepDto,

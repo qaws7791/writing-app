@@ -6,7 +6,7 @@ import type {
   ResourceTreeEntry,
   ResourceTreeNode,
   ResourceTreeScope,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 
 type ResourceTreeCommandContext = {
   readonly actorId: string

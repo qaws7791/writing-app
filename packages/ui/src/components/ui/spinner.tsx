@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { Loader2Icon } from "lucide-react"
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Spinner` 컴포넌트는 로딩 상태를 나타내는 회전하는 아이콘을 제공합니다.

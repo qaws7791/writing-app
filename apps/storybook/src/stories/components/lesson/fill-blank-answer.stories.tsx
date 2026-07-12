@@ -3,14 +3,14 @@ import { fn } from "storybook/test"
 
 import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer"
 
-import { fillBlankDefaults } from "./mock-data"
+import { fillBlankDefaults } from "#storybook/stories/components/lesson/mock-data"
 import {
   checkedArgType,
   createOnChangeArgType,
   lessonDecorators,
   lessonParameters,
   objectArgType,
-} from "./lesson-story-shared"
+} from "#storybook/stories/components/lesson/lesson-story-shared"
 
 const meta = {
   title: "Components/Lesson/FillBlankAnswer",

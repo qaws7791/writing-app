@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   aiFeedbackPromptPolicyVersion,
   createAiFeedbackPrompt,
-} from "@/modules/ai-feedback/domain/ai-feedback.prompt"
+} from "#core/modules/ai-feedback/domain/ai-feedback.prompt"
 
 describe("AI 피드백 프롬프트 정책", () => {
   it("AI 코칭 요청을 provider 독립적인 프롬프트로 만든다", () => {

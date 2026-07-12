@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import {
   AlertCircle,
   CheckCircle2,
@@ -12,8 +12,8 @@ import {
   AlertDescription,
   AlertTitle,
   AlertAction,
-  Button,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/alert"
+import { Button } from "@workspace/ui/components/ui/button"
 
 const meta = {
   title: "Components/UI/Alert",

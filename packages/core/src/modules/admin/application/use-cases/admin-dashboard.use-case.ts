@@ -1,11 +1,11 @@
 import {
   adminDashboardDtoSchema,
   type AdminDashboardDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   DashboardReader,
   ReadAdminDashboardInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 
 export type AdminDashboardUseCase = {
   readonly getDashboard: (

@@ -4,7 +4,7 @@ import {
   createLocalRuntimeUrl,
   localRuntimeDefaults,
   localRuntimePorts,
-} from "@/local-runtime-defaults"
+} from "#env/local-runtime-defaults"
 
 describe("local runtime defaults", () => {
   it("문서화된 로컬 포트 계약을 한 곳에서 제공한다", () => {

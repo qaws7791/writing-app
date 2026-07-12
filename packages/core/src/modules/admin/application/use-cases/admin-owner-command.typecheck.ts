@@ -1,8 +1,8 @@
-import type { AdminActor } from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
-import type { AdminContentResetUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-content-reset.use-case"
-import type { AdminCourseUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-course.use-case"
-import type { AdminSettingsUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-settings.use-case"
-import type { AdminUserUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-user.use-case"
+import type { AdminActor } from "#core/modules/admin/application/policies/admin-actor-policy"
+import type { AdminContentResetUseCase } from "#core/modules/admin/application/use-cases/admin-content-reset.use-case"
+import type { AdminCourseUseCase } from "#core/modules/admin/application/use-cases/admin-course.use-case"
+import type { AdminSettingsUseCase } from "#core/modules/admin/application/use-cases/admin-settings.use-case"
+import type { AdminUserUseCase } from "#core/modules/admin/application/use-cases/admin-user.use-case"
 
 type Assert<TValue extends true> = TValue
 type RequiresActor<TCommand> = TCommand extends { readonly actor: AdminActor }

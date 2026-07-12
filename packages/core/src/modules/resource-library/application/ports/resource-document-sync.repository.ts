@@ -1,5 +1,5 @@
-import type { ResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
-import type { ResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+import type { ResourceDocumentTransactionId } from "#core/modules/resource-library/domain/resource-document-sync"
+import type { ResourceDocumentId } from "#core/modules/resource-library/domain/resource-tree-node"
 
 export type ResourceDocumentSyncLoadResult =
   | { readonly kind: "not-found" }

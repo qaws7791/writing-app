@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
-import { fieldControlVariants } from "../../lib/field-control-variants"
-import { cn } from "../../lib/utils"
+import { fieldControlVariants } from "#ui/lib/field-control-variants"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Input` 컴포넌트는 사용자가 텍스트를 입력할 수 있는 필드입니다.

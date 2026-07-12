@@ -1,4 +1,4 @@
-import type { AdminRole } from "@workspace/core/modules/admin/domain/admin-role"
+import type { AdminRole } from "#core/modules/admin/domain/admin-role"
 
 export type AdminActor = {
   readonly authenticationAssurance:

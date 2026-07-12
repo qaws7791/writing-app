@@ -3,7 +3,7 @@ import { fn } from "storybook/test"
 
 import type { LessonStepCheckedVisual } from "@workspace/ui/components/lesson/lesson-step-checked-visual"
 
-import { StoryFrame } from "../../../blocks/story-frame"
+import { StoryFrame } from "#storybook/blocks/story-frame"
 
 export const CHECKED_OPTIONS = [false, "correct", "wrong"] as const
 

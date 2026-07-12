@@ -1,29 +1,35 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
+import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
+} from "@workspace/ui/components/ui/card"
+import {
   Field,
   FieldDescription,
   FieldLabel,
-  Input,
+} from "@workspace/ui/components/ui/field"
+import { Input } from "@workspace/ui/components/ui/input"
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/ui/progress"
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/select"
 
-import { RecipeFrame } from "../../blocks/recipe-frame"
-import { ViewportFrame } from "../../blocks/viewport-frame"
+import { RecipeFrame } from "#storybook/blocks/recipe-frame"
+import { ViewportFrame } from "#storybook/blocks/viewport-frame"
 
 const meta = {
   title: "Recipes/Course Management",

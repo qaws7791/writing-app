@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 
-import type { LearnerAccountStatus } from "@workspace/core/shared/kernel/status"
-import { learnerAccountStatuses } from "@workspace/core/shared/kernel/status"
+import type { LearnerAccountStatus } from "#core/shared/kernel/status"
+import { learnerAccountStatuses } from "#core/shared/kernel/status"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { learnerProfiles } from "@workspace/db/schema"
 

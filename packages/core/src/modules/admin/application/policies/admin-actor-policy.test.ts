@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { authorizeOwnerMutation } from "@workspace/core/admin"
+import { authorizeOwnerMutation } from "#core/modules/admin/application/policies/admin-actor-policy"
 
 describe("관리자 owner 변경 인증 보증", () => {
   it.each([

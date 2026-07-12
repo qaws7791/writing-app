@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 const choiceCardVariants = cva(
   "btn-squish flex w-full items-center gap-3 rounded-card border px-5 py-4 text-left text-body-md font-bold transition-colors outline-none focus-visible:border-focus focus-visible:ring-3 focus-visible:ring-focus/20 disabled:pointer-events-none disabled:opacity-50",

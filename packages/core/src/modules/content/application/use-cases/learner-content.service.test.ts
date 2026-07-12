@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest"
 
-import { createLearnerContentService } from "@/modules/content/application/use-cases/learner-content.service"
+import { createLearnerContentService } from "#core/modules/content/application/use-cases/learner-content.service"
 import {
   courseIdSchema,
   lessonIdSchema,
   unitIdSchema,
-} from "@/modules/content/domain/content.ids"
-import type { ContentRepository } from "@/modules/content/application/ports/content.repository"
+} from "#core/modules/content/domain/content.ids"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import type {
   CourseDetailDto,
   CourseSummaryDto,
   LessonDto,
-} from "@/modules/content/domain/content.dto"
-import type { ProgressReader } from "@/modules/learning/domain/learning-progress-read-model"
+} from "#core/modules/content/domain/content.dto"
+import type { ProgressReader } from "#core/modules/learning/domain/learning-progress-read-model"
 
 const courseId = courseIdSchema.parse("c1")
 const lessonId = lessonIdSchema.parse("l1")

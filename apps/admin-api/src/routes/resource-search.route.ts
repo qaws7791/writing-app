@@ -3,7 +3,7 @@ import {
   adminResourceSearchDtoSchema,
   adminResourceTreeScopeSchema,
 } from "@workspace/contracts/admin"
-import type { ResourceSearchUseCase } from "@workspace/core/modules/resource-library/api"
+import type { ResourceSearchUseCase } from "@workspace/core/resource-library"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { AdminDashboardDto } from "@workspace/contracts/admin"
-import { localRuntimeDefaults } from "@workspace/env"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
   createTestAdminApiDependencies,

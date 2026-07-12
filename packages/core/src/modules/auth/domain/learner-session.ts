@@ -1,6 +1,6 @@
-import type { LearnerAccountStatus } from "@workspace/core/shared/kernel/status"
+import type { LearnerAccountStatus } from "#core/shared/kernel/status"
 
-export type { LearnerAccountStatus } from "@workspace/core/shared/kernel/status"
+export type { LearnerAccountStatus } from "#core/shared/kernel/status"
 
 export type AuthenticatedSession = {
   readonly user: {

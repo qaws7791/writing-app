@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { ContrastPair } from "../../blocks/contrast-pair"
-import { StoryMatrix } from "../../blocks/story-matrix"
-import { TokenSwatch } from "../../blocks/token-swatch"
+import { ContrastPair } from "#storybook/blocks/contrast-pair"
+import { StoryMatrix } from "#storybook/blocks/story-matrix"
+import { TokenSwatch } from "#storybook/blocks/token-swatch"
 
 const semanticColors = [
   {

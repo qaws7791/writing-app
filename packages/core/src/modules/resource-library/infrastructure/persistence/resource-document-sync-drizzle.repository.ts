@@ -11,9 +11,9 @@ import type {
   CommitResourceDocumentTransactionResult,
   ResourceDocumentSyncLoadResult,
   ResourceDocumentSyncRepository,
-} from "@workspace/core/modules/resource-library/application/ports/resource-document-sync.repository"
-import type { ResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import { updateResourceSearchBody } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
+} from "#core/modules/resource-library/application/ports/resource-document-sync.repository"
+import type { ResourceDocumentId } from "#core/modules/resource-library/domain/resource-tree-node"
+import { updateResourceSearchBody } from "#core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminResourceCollaboration,

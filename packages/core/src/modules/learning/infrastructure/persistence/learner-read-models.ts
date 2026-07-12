@@ -3,14 +3,14 @@ import { and, count, desc, eq } from "drizzle-orm"
 import {
   calculateCurrentStreakDays,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/domain/learning-date"
-import { learnerProfileStatsDtoSchema } from "@workspace/core/modules/learning/domain/learner-read-model.dto"
-import type { ProfileReader } from "@workspace/core/modules/learning/domain/learner-profile-read-model"
-import type { ProgressReader } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
+} from "#core/modules/learning/domain/learning-date"
+import { learnerProfileStatsDtoSchema } from "#core/modules/learning/domain/learner-read-model.dto"
+import type { ProfileReader } from "#core/modules/learning/domain/learner-profile-read-model"
+import type { ProgressReader } from "#core/modules/learning/domain/learning-progress-read-model"
 import {
   contentStatuses,
   lessonProgressStatuses,
-} from "@workspace/core/shared/kernel/status"
+} from "#core/shared/kernel/status"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   learnerActivityDays,

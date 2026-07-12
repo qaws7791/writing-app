@@ -3,13 +3,13 @@ import { fn } from "storybook/test"
 
 import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
 
-import { writeDefaults } from "./mock-data"
+import { writeDefaults } from "#storybook/stories/components/lesson/mock-data"
 import {
   checkedArgType,
   createOnChangeArgType,
   lessonDecorators,
   lessonParameters,
-} from "./lesson-story-shared"
+} from "#storybook/stories/components/lesson/lesson-story-shared"
 
 const meta = {
   title: "Components/Lesson/WriteAnswer",

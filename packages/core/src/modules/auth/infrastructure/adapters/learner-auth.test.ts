@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   createLearnerAuth,
   createLearnerSessionResolver,
-} from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
-import { learnerAccountStatuses } from "@workspace/core/shared/kernel/status"
+} from "#core/modules/auth/infrastructure/adapters/learner-auth"
+import { learnerAccountStatuses } from "#core/shared/kernel/status"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {

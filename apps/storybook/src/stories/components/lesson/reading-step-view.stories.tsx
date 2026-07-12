@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
 
-import { readingDefaults } from "./mock-data"
+import { readingDefaults } from "#storybook/stories/components/lesson/mock-data"
 import {
   lessonDecorators,
   lessonParameters,
   objectArgType,
-} from "./lesson-story-shared"
+} from "#storybook/stories/components/lesson/lesson-story-shared"
 
 const meta = {
   title: "Components/Lesson/ReadingStepView",

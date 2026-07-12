@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from "hono"
 
-import { AppError } from "@workspace/hono/errors"
+import { AppError } from "#hono/errors"
 
 const stateChangingMethods = new Set(["DELETE", "PATCH", "POST", "PUT"])
 

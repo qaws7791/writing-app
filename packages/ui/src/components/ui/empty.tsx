@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Empty` 컴포넌트는 데이터가 없거나 표시할 내용이 없는 상태를 나타내는 UI 요소입니다.

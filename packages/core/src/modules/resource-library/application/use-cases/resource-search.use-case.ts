@@ -4,7 +4,7 @@ import {
   type AdminResourceTreeScope,
 } from "@workspace/contracts/admin"
 
-import type { ResourceSearchRepository } from "@workspace/core/modules/resource-library/application/ports/resource-search.repository"
+import type { ResourceSearchRepository } from "#core/modules/resource-library/application/ports/resource-search.repository"
 
 export type ResourceSearchUseCase = {
   readonly search: (input: {

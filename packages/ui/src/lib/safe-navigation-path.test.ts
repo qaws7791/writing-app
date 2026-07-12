@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveSafeInternalPath } from "@workspace/ui/lib/safe-navigation-path"
+import { resolveSafeInternalPath } from "#ui/lib/safe-navigation-path"
 
 describe("내부 이동 경로", () => {
   it("같은 출처의 절대 경로만 허용한다", () => {

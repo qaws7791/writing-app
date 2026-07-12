@@ -2,9 +2,9 @@
 
 import { useState } from "react"
 
-import { cn } from "../../lib/utils"
-import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
-import { MarkdownContent } from "./markdown-content"
+import { cn } from "#ui/lib/utils"
+import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
+import { MarkdownContent } from "#ui/components/lesson/markdown-content"
 
 const CATEGORY_PALETTE = [
   {

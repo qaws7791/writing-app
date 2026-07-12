@@ -3,16 +3,16 @@ import { describe, expect, it } from "vitest"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/core/modules/content/domain/content.ids"
-import { learnerIdSchema } from "@workspace/core/modules/learning/domain/learning.ids"
+} from "#core/modules/content/domain/content.ids"
+import { learnerIdSchema } from "#core/modules/learning/domain/learning.ids"
 import {
   createAiFeedbackAttemptCoordinator,
   type AiFeedbackAttemptTransitionEvent,
-} from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
-import { defaultAiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
-import type { AiFeedbackRepository } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.repository"
-import { err, ok } from "@workspace/core/shared/result"
-import type { AiFeedbackPayload } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.dto"
+} from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
+import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
+import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
+import { err, ok } from "#core/shared/result"
+import type { AiFeedbackPayload } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
 
 const occurredAt = new Date("2026-06-14T10:00:00.000Z")
 const command = {

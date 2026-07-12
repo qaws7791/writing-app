@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 
-import { cn } from "../../lib/utils"
-import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
+import { cn } from "#ui/lib/utils"
+import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 
 export function MultipleChoiceAnswer({
   checked = false,

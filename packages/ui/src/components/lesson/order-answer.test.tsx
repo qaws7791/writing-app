@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest"
 import {
   createDeterministicOrder,
   OrderAnswer,
-} from "@workspace/ui/components/lesson/order-answer"
+} from "#ui/components/lesson/order-answer"
 
 describe("ORDER 초기 순서", () => {
   it("같은 seed는 정답과 다른 동일한 순서를 만든다", () => {

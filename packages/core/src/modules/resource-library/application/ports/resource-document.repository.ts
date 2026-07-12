@@ -1,7 +1,7 @@
 import type {
   ResourceTreeCommandResult,
   ResourceTreeMutation,
-} from "@workspace/core/modules/resource-library/application/ports/resource-tree.repository"
+} from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import type {
   ResourceAuditEventId,
   ResourceBreadcrumbItem,
@@ -9,7 +9,7 @@ import type {
   ResourceFolderId,
   ResourceNodeStatus,
   ResourceTreeNode,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 
 export type ResourceDocumentActor = {
   readonly email: string

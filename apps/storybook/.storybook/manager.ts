@@ -1,7 +1,10 @@
 import { GLOBALS_UPDATED } from "storybook/internal/core-events"
 import { addons } from "storybook/manager-api"
 
-import { getStorybookTheme, type ThemeName } from "./storybook-theme"
+import {
+  getStorybookTheme,
+  type ThemeName,
+} from "#storybook-config/storybook-theme"
 
 function applyTheme(themeName?: ThemeName) {
   addons.setConfig({

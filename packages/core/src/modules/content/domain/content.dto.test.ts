@@ -8,7 +8,7 @@ import {
   lessonStepDefinitions,
   lessonStepDtoSchema,
   lessonStepTypeSchema,
-} from "@/modules/content/domain/content.dto"
+} from "#core/modules/content/domain/content.dto"
 
 const lessonSteps = [
   {

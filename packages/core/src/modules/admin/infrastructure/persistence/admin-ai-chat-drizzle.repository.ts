@@ -3,14 +3,14 @@ import type {
   AdminAiChatConversationDto,
   AdminAiChatConversationListDto,
   AdminAiChatMessageDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   AiChatAdminRepository,
   CreateAdminAiChatUserMessageInput,
   ReadAdminAiChatConversationInput,
   ReadAdminAiChatConversationsInput,
   SaveAdminAiChatAssistantMessageInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import { count, desc, eq } from "drizzle-orm"
 
 import type { WritingAppDatabase } from "@workspace/db/client"

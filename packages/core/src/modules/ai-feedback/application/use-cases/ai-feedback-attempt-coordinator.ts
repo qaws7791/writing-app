@@ -3,19 +3,19 @@ import {
   type AiFeedbackPayload,
   type AiFeedbackResultDto,
   type CreateAiFeedbackCommand,
-} from "@workspace/core/modules/ai-feedback/domain/ai-feedback.dto"
+} from "#core/modules/ai-feedback/domain/ai-feedback.dto"
 import {
   aiFeedbackAttemptPolicySchema,
   calculateRemainingAiFeedbackAttempts,
   type AiFeedbackAttemptPolicy,
-} from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
-import type { AiFeedbackProvider } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.provider"
-import { createAiFeedbackPrompt } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.prompt"
+} from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
+import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
+import { createAiFeedbackPrompt } from "#core/modules/ai-feedback/domain/ai-feedback.prompt"
 import type {
   AiFeedbackAttemptStatus,
   AiFeedbackRepository,
-} from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.repository"
-import { err, ok, type Result } from "@workspace/core/shared/result"
+} from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
+import { err, ok, type Result } from "#core/shared/result"
 
 export type AiFeedbackAttemptContext = {
   readonly focus: string

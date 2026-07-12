@@ -1,11 +1,11 @@
 import { Hono } from "hono"
 import { describe, expect, it, vi } from "vitest"
 
-import { createErrorHandler } from "@workspace/hono/errors"
+import { createErrorHandler } from "#hono/errors"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
-} from "@workspace/hono/security"
+} from "#hono/security"
 
 const trustedOrigin = "https://admin.example.test"
 
