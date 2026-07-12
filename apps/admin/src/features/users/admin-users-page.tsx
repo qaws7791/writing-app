@@ -11,7 +11,7 @@ import type {
   AdminUserDetail,
   AdminUserList,
   ReadAdminUsersInput,
-} from "@/lib/api/admin-api"
+} from "@/features/users/admin-users-api"
 import {
   learnerAccountStatuses,
   type LearnerOperationalStatus,

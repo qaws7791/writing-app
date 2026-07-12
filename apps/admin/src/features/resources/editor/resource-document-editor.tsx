@@ -55,7 +55,7 @@ import {
 } from "@/features/resources/resource-library-api"
 import { type ResourceWorkspaceDocumentSyncState } from "@/features/resources/resource-workspace-sync"
 import { useResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync-context"
-import type { AdminResourceActiveDocument } from "@/lib/api/admin-api"
+import type { AdminResourceActiveDocument } from "@/features/resources/resource-library-model"
 import type { AdminApiBaseUrl } from "@/runtime-config"
 
 const editorTransformers = [...resourceMarkdownTransformers]

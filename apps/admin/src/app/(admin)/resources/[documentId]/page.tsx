@@ -1,6 +1,7 @@
 import { ResourceDocumentEditor } from "@/features/resources/editor/resource-document-editor"
 import { ResourceDocumentView } from "@/features/resources/resource-document-view"
-import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
+import { createResourceLibraryHttpAdapter } from "@/features/resources/resource-library-http-adapter"
+import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import { readServerAdminApiBaseUrl } from "@/runtime-config-server"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
@@ -11,9 +12,9 @@ export default async function AdminResourceDocumentRoute({
   readonly params: Promise<{ readonly documentId: string }>
 }) {
   const { documentId } = await params
-  const result = await getServerAdminApi({
-    tokenProvider: getServerAdminSessionToken,
-  }).getResourceLibraryDocument(documentId)
+  const result = await createResourceLibraryHttpAdapter(
+    getServerAdminHttpTransport({ tokenProvider: getServerAdminSessionToken })
+  ).getResourceLibraryDocument(documentId)
 
   if (result.status === "error") {
     return (

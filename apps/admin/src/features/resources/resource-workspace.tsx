@@ -20,7 +20,7 @@ import {
   ResourceTree,
   type InitialResourceTreeState,
 } from "@/features/resources/tree/resource-tree"
-import type { AdminResourceTreeScope } from "@/lib/api/admin-api"
+import type { AdminResourceTreeScope } from "@/features/resources/resource-library-model"
 import {
   buildAdminApiWebSocketUrl,
   type AdminApiBaseUrl,

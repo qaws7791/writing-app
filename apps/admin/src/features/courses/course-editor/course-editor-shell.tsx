@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useMemo, useState } from "react"
 
-import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
 import {
   ChevronDownIcon,
   ChevronRightIcon,

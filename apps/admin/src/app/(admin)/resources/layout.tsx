@@ -2,10 +2,12 @@ import { Suspense, type ReactNode } from "react"
 import { redirect } from "next/navigation"
 
 import { ResourceWorkspace } from "@/features/resources/resource-workspace"
+import { createResourceLibraryHttpAdapter } from "@/features/resources/resource-library-http-adapter"
+import { createAdminSessionApi } from "@/features/auth/admin-session-api"
 import { AdminServiceUnavailable } from "@/components/admin-service-unavailable"
 import { isAdminAuthenticationError } from "@/lib/api/api-error"
 import type { InitialResourceTreeState } from "@/features/resources/tree/resource-tree"
-import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
+import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { createAdminLoginPath } from "@/lib/auth/admin-auth-navigation"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import { readServerAdminApiBaseUrl } from "@/runtime-config-server"
@@ -22,10 +24,12 @@ export default async function ResourceLayout({
     redirect(createAdminLoginPath("/resources"))
   }
 
-  const api = getServerAdminApi({ tokenProvider: () => token })
+  const transport = getServerAdminHttpTransport({ tokenProvider: () => token })
+  const sessionApi = createAdminSessionApi(transport)
+  const resourceApi = createResourceLibraryHttpAdapter(transport)
   const [sessionResult, treeResult] = await Promise.all([
-    api.getSession(),
-    api.getResourceTree({ parentId: null, scope: "active" }),
+    sessionApi.getSession(),
+    resourceApi.getResourceTree({ parentId: null, scope: "active" }),
   ])
 
   if (sessionResult.status === "error") {

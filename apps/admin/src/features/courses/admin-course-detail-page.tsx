@@ -1,6 +1,6 @@
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 

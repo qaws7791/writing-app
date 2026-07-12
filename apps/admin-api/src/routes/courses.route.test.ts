@@ -181,7 +181,10 @@ describe("어드민 API courses route", () => {
     )
 
     const response = await app.request("/courses", {
-      headers: { Authorization: "Bearer admin-token" },
+      headers: {
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
+      },
       method: "POST",
     })
 

@@ -7,10 +7,8 @@ import {
   type ResourceDocumentTransactionQueue,
 } from "@/features/resources/editor/resource-document-transaction-queue"
 import type { ResourceWorkspaceRealtime } from "@/features/resources/resource-workspace-realtime"
-import type {
-  AdminApi,
-  AdminResourceDocumentRealtimeEvent,
-} from "@/lib/api/admin-api"
+import type { AdminResourceDocumentRealtimeEvent } from "@/features/resources/resource-library-model"
+import type { ResourceWorkspaceSyncApi } from "@/features/resources/resource-library-api"
 import {
   connectResourceDocumentCollaboration,
   type ResourceDocumentCollaboration,
@@ -42,13 +40,6 @@ export type ResourceWorkspaceSync = {
   readonly dispose: () => void
   readonly start: () => void
 }
-
-type ResourceWorkspaceSyncApi = Pick<
-  AdminApi,
-  | "getResourceDocumentSnapshot"
-  | "getResourceDocumentSync"
-  | "saveResourceDocumentTransaction"
->
 
 type ResourceWorkspaceSyncRealtime = Pick<
   ResourceWorkspaceRealtime,

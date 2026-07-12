@@ -1,4 +1,4 @@
-import type { AdminCourseListItem } from "@/lib/api/admin-api"
+import type { AdminCourseListItem } from "@/features/courses/admin-courses-api"
 
 type AdminCourseVisualKey = AdminCourseListItem["visualKey"]
 

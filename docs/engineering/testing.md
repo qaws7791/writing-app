@@ -119,7 +119,7 @@ bun run --filter=@workspace/web test
 - OpenAPI 생성 route는 실제 등록 route 기준으로 검증한다.
 - 어드민 서비스 테스트는 기능별 use case 조합과 repository port test double을 검증하고, 사용하지 않는 port 호출은 실패시켜 service 의존 범위를 고정한다.
 - 학습자 웹 앱은 `@workspace/core`를 직접 import하지 않는다는 아키텍처 테스트로 API 계약 경계를 고정한다.
-- 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 `@workspace/core`를 직접 import하지 않고, `@workspace/contracts/admin`은 `apps/admin/src/lib/api/http-admin-api.ts`에서만 사용한다는 아키텍처 테스트로 앱 모델 경계를 고정한다.
+- 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 `@workspace/core`를 직접 import하지 않고, 관리자 contract는 허용된 feature Adapter에서만 사용한다는 아키텍처 테스트로 앱 모델 seam을 고정한다. 삭제된 중앙 `AdminApi`와 `http-admin-api` import가 다시 생기지 않는지도 함께 검사한다.
 
 ## DB 테스트 기준
 

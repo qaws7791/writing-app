@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { createHttpAdminApi } from "@/lib/api/http-admin-api"
+import { createAdminHttpTransport } from "@/lib/api/admin-http-transport"
+import { createResourceLibraryHttpAdapter } from "@/features/resources/resource-library-http-adapter"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
 const documentNode = {
@@ -41,25 +42,27 @@ const document = {
   },
 } as const
 
-describe("자료실 HTTP AdminApi", () => {
+describe("자료실 HTTP Adapter 계약", () => {
   it("트리·문서·검색 endpoint와 Markdown 내보내기를 새 계약으로 호출한다", async () => {
     const requests: Request[] = []
     const bodies: unknown[] = []
-    const api = createHttpAdminApi({
-      baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test/",
-      }),
-      fetch: async (request) => {
-        requests.push(request)
+    const api = createResourceLibraryHttpAdapter(
+      createAdminHttpTransport({
+        baseUrl: readAdminApiBaseUrl({
+          ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+        }),
+        fetch: async (request) => {
+          requests.push(request)
 
-        if (request.headers.has("Content-Type")) {
-          bodies.push(await request.clone().json())
-        }
+          if (request.headers.has("Content-Type")) {
+            bodies.push(await request.clone().json())
+          }
 
-        return responseFor(request)
-      },
-      tokenProvider: () => "admin-token",
-    })
+          return responseFor(request)
+        },
+        tokenProvider: () => "admin-token",
+      })
+    )
 
     await expect(
       api.getResourceTree({ parentId: "folder-1", scope: "active" })
@@ -257,23 +260,25 @@ describe("자료실 HTTP AdminApi", () => {
   })
 
   it("구조 명령 충돌 코드를 UI가 구분할 수 있는 오류로 보존한다", async () => {
-    const api = createHttpAdminApi({
-      baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test/",
-      }),
-      fetch: async () =>
-        new Response(
-          JSON.stringify({
-            code: "STALE_REVISION",
-            message: "Resource library conflict",
-          }),
-          {
-            headers: { "Content-Type": "application/json" },
-            status: 409,
-          }
-        ),
-      tokenProvider: () => "admin-token",
-    })
+    const api = createResourceLibraryHttpAdapter(
+      createAdminHttpTransport({
+        baseUrl: readAdminApiBaseUrl({
+          ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+        }),
+        fetch: async () =>
+          new Response(
+            JSON.stringify({
+              code: "STALE_REVISION",
+              message: "Resource library conflict",
+            }),
+            {
+              headers: { "Content-Type": "application/json" },
+              status: 409,
+            }
+          ),
+        tokenProvider: () => "admin-token",
+      })
+    )
 
     await expect(
       api.renameResourceNode("document-1", {

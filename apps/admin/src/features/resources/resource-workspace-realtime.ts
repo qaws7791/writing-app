@@ -3,7 +3,7 @@ import type {
   ResourceEventsConnector,
   ResourceEventsSubscription,
 } from "@/features/resources/resource-events-client"
-import type { AdminResourceDocumentRealtimeEvent } from "@/lib/api/admin-api"
+import type { AdminResourceDocumentRealtimeEvent } from "@/features/resources/resource-library-model"
 
 type ActiveResourceDocument = {
   readonly documentId: string

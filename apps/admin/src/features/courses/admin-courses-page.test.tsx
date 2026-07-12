@@ -8,7 +8,7 @@ import type {
   AdminCourseDetail,
   AdminCourseList,
   ReadAdminCoursesInput,
-} from "@/lib/api/admin-api"
+} from "@/features/courses/admin-courses-api"
 import { networkAdminApiError } from "@/lib/api/api-error"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import { createHttpNetworkError } from "@workspace/http-client"

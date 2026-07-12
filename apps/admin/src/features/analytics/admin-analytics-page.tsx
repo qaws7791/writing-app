@@ -7,7 +7,7 @@ import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAnalytics,
   AdminLessonAnalyticsPage,
-} from "@/lib/api/admin-api"
+} from "@/features/analytics/admin-analytics-api"
 import {
   ChevronDownIcon,
   ChevronLeftIcon,

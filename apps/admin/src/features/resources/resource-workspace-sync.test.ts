@@ -8,7 +8,7 @@ import type {
   AdminResourceDocumentTransactionInput,
   AdminResourceDocumentRealtimeEvent,
   AdminResourceDocumentSync,
-} from "@/lib/api/admin-api"
+} from "@/features/resources/resource-library-model"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import {
   applyResourceDocumentUpdate,

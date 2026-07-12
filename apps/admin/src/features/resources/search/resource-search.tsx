@@ -7,7 +7,7 @@ import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import type {
   AdminResourceSearchItem,
   AdminResourceTreeScope,
-} from "@/lib/api/admin-api"
+} from "@/features/resources/resource-library-model"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Input } from "@workspace/ui/components/ui/input"

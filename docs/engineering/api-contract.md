@@ -76,7 +76,7 @@ SSE와 파일 다운로드도 보호 응답 정책을 적용하되 각각 `text/
 
 기준 URL은 `ADMIN_API_BASE_URL`이 가리키는 `apps/admin-api` origin이다.
 
-어드민 request/response DTO와 route query/body contract는 `packages/contracts/admin`의 Zod schema를 기준으로 사용한다. `apps/admin-api` route는 `@workspace/hono/core`의 typed route definition으로 등록하고, 세션, 권한, service 호출을 담당한다. wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `packages/contracts/src/admin` 내부 schema는 dashboard, users, analytics, settings, content reset, courses, shared 파일로 나누고 `@workspace/contracts/admin` entrypoint가 이를 다시 노출한다. `apps/admin`은 core를 직접 import하지 않으며, `@workspace/contracts/admin`은 `apps/admin/src/lib/api/http-admin-api.ts`의 HTTP 응답 검증과 앱 모델 변환에만 사용한다. 화면과 API 포트는 `apps/admin/src/lib/api/admin-api.ts`가 노출하는 앱 모델 타입을 소비한다.
+어드민 request/response DTO와 route query/body contract는 `packages/contracts/admin`의 Zod schema를 기준으로 사용한다. `apps/admin-api` route는 `@workspace/hono/core`의 typed route definition으로 등록하고, 세션, 권한, service 호출을 담당한다. wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `packages/contracts/src/admin` 내부 schema는 dashboard, users, analytics, settings, content reset, courses, shared 파일로 나누고 `@workspace/contracts/admin` entrypoint가 이를 다시 노출한다. `apps/admin`은 core를 직접 import하지 않는다. 공통 HTTP transport는 관리자 DTO를 알지 않으며, 각 feature Adapter가 자기 contract만 검증해 feature 앱 모델로 변환한다. 화면은 해당 feature Interface만 소비한다.
 어드민 API의 query, path params, JSON body 검증은 route config의 zod-openapi `request` schema가 소유한다. Handler는 `context.req.valid("query" | "param" | "json")`로 검증된 값만 읽는다.
 Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `adminSessionRouteOptions()` 또는 `ownerAdminRouteOptions()`로 함께 선언한다. JSON body request content는 `jsonRequestBody()`를 사용해 반복되는 `application/json` shape를 숨긴다.
 

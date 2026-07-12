@@ -1,11 +1,14 @@
 import { AdminSettingsPage } from "@/features/settings/admin-settings-page"
-import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
+import { createAdminSettingsApi } from "@/features/settings/admin-settings-api"
+import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 
 export default async function AdminSettingsRoute() {
-  const api = getServerAdminApi({
-    tokenProvider: getServerAdminSessionToken,
-  })
+  const api = createAdminSettingsApi(
+    getServerAdminHttpTransport({
+      tokenProvider: getServerAdminSessionToken,
+    })
+  )
   const settingsResult = await api.getSettings()
 
   async function saveNoticeSettings(input: {
@@ -14,9 +17,11 @@ export default async function AdminSettingsRoute() {
   }) {
     "use server"
 
-    const serverApi = getServerAdminApi({
-      tokenProvider: getServerAdminSessionToken,
-    })
+    const serverApi = createAdminSettingsApi(
+      getServerAdminHttpTransport({
+        tokenProvider: getServerAdminSessionToken,
+      })
+    )
 
     return serverApi.saveNoticeSettings(input)
   }
@@ -27,9 +32,11 @@ export default async function AdminSettingsRoute() {
   }) {
     "use server"
 
-    const serverApi = getServerAdminApi({
-      tokenProvider: getServerAdminSessionToken,
-    })
+    const serverApi = createAdminSettingsApi(
+      getServerAdminHttpTransport({
+        tokenProvider: getServerAdminSessionToken,
+      })
+    )
 
     return serverApi.saveLegalSettings(input)
   }
@@ -37,9 +44,11 @@ export default async function AdminSettingsRoute() {
   async function resetContent() {
     "use server"
 
-    const serverApi = getServerAdminApi({
-      tokenProvider: getServerAdminSessionToken,
-    })
+    const serverApi = createAdminSettingsApi(
+      getServerAdminHttpTransport({
+        tokenProvider: getServerAdminSessionToken,
+      })
+    )
 
     return serverApi.resetContent()
   }

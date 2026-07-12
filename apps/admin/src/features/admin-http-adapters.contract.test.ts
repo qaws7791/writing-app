@@ -1,12 +1,21 @@
 import { describe, expect, it } from "vitest"
 
-import { createHttpAdminApi } from "@/lib/api/http-admin-api"
+import { createAdminHttpTransport } from "@/lib/api/admin-http-transport"
+import { createAdminSessionApi } from "@/features/auth/admin-session-api"
+import { createAdminAnalyticsApi } from "@/features/analytics/admin-analytics-api"
+import { createAdminAiChatApi } from "@/features/chat/admin-ai-chat-api"
+import { createAdminCoursesApi } from "@/features/courses/admin-courses-api"
+import { createAdminDashboardApi } from "@/features/dashboard/admin-dashboard-api"
+import { createAdminSettingsApi } from "@/features/settings/admin-settings-api"
+import { createAdminUsersApi } from "@/features/users/admin-users-api"
+import type { AdminApiBaseUrl } from "@/runtime-config"
+import type { HttpFetch } from "@workspace/http-client"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
-describe("HTTP AdminApi", () => {
+describe("관리자 feature HTTP Adapter 계약", () => {
   it("서버 요청에 검증된 Origin을 명시하고 세션 응답을 파싱한다", async () => {
     let capturedRequest: Request | undefined
-    const api = createHttpAdminApi({
+    const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
         ADMIN_API_BASE_URL: "https://admin-api.example.test/",
       }),
@@ -37,7 +46,7 @@ describe("HTTP AdminApi", () => {
   it("대시보드, 코스, 사용자, 분석, 설정 endpoint를 Better Auth 쿠키와 함께 호출한다", async () => {
     const requests: Request[] = []
     const bodies: unknown[] = []
-    const api = createHttpAdminApi({
+    const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
         ADMIN_API_BASE_URL: "https://admin-api.example.test/",
       }),
@@ -251,7 +260,7 @@ describe("HTTP AdminApi", () => {
   })
 
   it("실패 응답을 AdminApi 오류로 변환한다", async () => {
-    const api = createHttpAdminApi({
+    const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
         ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
@@ -277,7 +286,7 @@ describe("HTTP AdminApi", () => {
   })
 
   it("권한 실패 응답을 AdminApi 권한 오류로 변환한다", async () => {
-    const api = createHttpAdminApi({
+    const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
         ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
@@ -303,7 +312,7 @@ describe("HTTP AdminApi", () => {
   })
 
   it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
-    const api = createHttpAdminApi({
+    const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
         ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
@@ -329,7 +338,7 @@ describe("HTTP AdminApi", () => {
 
   it("fetch 예외를 원인이 보존된 네트워크 오류로 반환한다", async () => {
     const cause = new TypeError("Network unreachable")
-    const api = createHttpAdminApi({
+    const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
         ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
@@ -363,6 +372,24 @@ describe("HTTP AdminApi", () => {
     })
   })
 })
+
+function createTestAdminApis(input: {
+  readonly baseUrl: AdminApiBaseUrl
+  readonly fetch: HttpFetch
+  readonly requestOrigin?: string
+  readonly tokenProvider: () => Promise<string | null> | string | null
+}) {
+  const transport = createAdminHttpTransport(input)
+  return {
+    ...createAdminSessionApi(transport),
+    ...createAdminAnalyticsApi(transport),
+    ...createAdminAiChatApi(transport),
+    ...createAdminCoursesApi(transport),
+    ...createAdminDashboardApi(transport),
+    ...createAdminSettingsApi(transport),
+    ...createAdminUsersApi(transport),
+  }
+}
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

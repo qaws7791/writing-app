@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { AdminUserDetailPage } from "@/features/users/admin-user-detail-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminUserDetail } from "@/lib/api/admin-api"
+import type { AdminUserDetail } from "@/features/users/admin-users-api"
 
 describe("AdminUserDetailPage", () => {
   it("사용자 상세 통계를 렌더링한다", () => {

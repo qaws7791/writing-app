@@ -1,4 +1,4 @@
-import type { AdminResourceArchivedDocument } from "@/lib/api/admin-api"
+import type { AdminResourceArchivedDocument } from "@/features/resources/resource-library-model"
 import {
   ResourceBreadcrumb,
   ResourceDocumentMetadata,
