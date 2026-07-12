@@ -191,6 +191,23 @@ apps/admin/src/features/resources/
 - 서버 거부 또는 event gap은 영향받은 부모를 재조회해 rollback한다.
 - 모든 drag 행동은 항목 메뉴의 이동 dialog에서도 수행할 수 있다.
 
+### ARCH-04A 자료 트리 module 심화
+
+상태: 완료 (2026-07-12)
+
+- 현재 `resource-tree.tsx`에 함께 있는 조회·선택·mutation·event·라우팅 상태를 controller/reducer module로 모은다.
+- drag/drop의 허용 위치와 optimistic 이동 계산은 React가 없는 policy module의 table test로 고정한다.
+- rename, move, trash, restore dialog는 명령별 module로 나누고 행 렌더링은 표현 전용 view로 분리한다.
+- `ResourceTree`의 외부 Interface와 기존 두 사용 context는 유지하며 새 전역 state를 추가하지 않는다.
+
+완료 근거:
+
+- `ResourceTree`는 기존 props만 공개하고 조회·선택·mutation·event 순서는 `useResourceTreeController`가 숨긴다. 연결 경고·오류·pending action 전이는 순수 reducer로 고정했다.
+- drag/drop 허용 조건, drop destination 변환, 같은 부모 재정렬과 다른 부모 optimistic 이동은 React 없는 policy와 table test로 검증한다.
+- rename, move, trash·restore dialog와 표현 전용 row/view를 분리했다. 각 dialog의 오류 메시지와 활성 편집자 확인 UX는 기존 interaction test를 그대로 통과한다.
+- 활성 자료 context와 휴지통 context smoke, 지연 조회, 생성·가져오기, 제목 event, revision gap, 연결 복구·구조 잠금 테스트를 통과했다.
+- 새 전역 state나 추가 prop drilling 없이 기존 `ResourceTree` Interface를 유지했다.
+
 ## 구현 순서
 
 ### 0. 위험 검증과 계약 fixture

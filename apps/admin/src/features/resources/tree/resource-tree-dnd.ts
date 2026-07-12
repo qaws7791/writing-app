@@ -22,6 +22,45 @@ export type ResourceMoveDestination = {
   readonly destinationParentId: string | null
 }
 
+export type ResourceTreeDragPolicyInput = {
+  readonly itemCount: number
+  readonly itemKind: "document" | "folder" | "loading" | "root" | undefined
+  readonly mutationInFlight: boolean
+  readonly scope: "active" | "trash"
+  readonly structureMutationsAllowed: boolean
+}
+
+export type ResourceTreeDropPolicyInput = Omit<
+  ResourceTreeDragPolicyInput,
+  "mutationInFlight"
+> & {
+  readonly targetIsFolder: boolean
+  readonly targetKind: "ordered" | "parent"
+}
+
+export function canDragResourceTreeItem(
+  input: ResourceTreeDragPolicyInput
+): boolean {
+  return (
+    input.scope === "active" &&
+    input.structureMutationsAllowed &&
+    !input.mutationInFlight &&
+    input.itemCount === 1 &&
+    (input.itemKind === "document" || input.itemKind === "folder")
+  )
+}
+
+export function canDropResourceTreeItem(
+  input: ResourceTreeDropPolicyInput
+): boolean {
+  return (
+    input.scope === "active" &&
+    input.structureMutationsAllowed &&
+    input.itemCount === 1 &&
+    (input.targetKind === "ordered" || input.targetIsFolder)
+  )
+}
+
 export function readResourceMoveDestination(
   target: ResourceTreeDropTarget
 ): ResourceMoveDestination | null {

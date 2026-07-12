@@ -59,6 +59,7 @@
 학습자 공개 랜딩은 Open Graph·Twitter 기본 metadata와 manifest를 제공하고 sitemap에는 인증 없이 접근 가능한 route만 포함한다. 코스 상세의 metadata와 본문은 React request cache로 같은 조회를 공유하며, 조회할 수 없는 코스에는 canonical을 만들지 않는다. 관리자 앱은 root metadata와 `robots.txt` 양쪽에서 전체 색인을 차단한다.
 
 - `/resources`: 지연 로딩 자료 트리, 검색, 새 폴더·문서, Markdown 가져오기와 선택 안내.
+- 자료 트리의 공개 Interface는 `ResourceTree` 하나이며, 상태 전이와 명령 순서는 controller/reducer, drag/drop 판단은 순수 policy, 명령 dialog와 row 렌더링은 각 view module에 둔다.
 - `/resources/[documentId]`: breadcrumb, 제목, 동기화 상태와 Lexical GFM 공동 편집기.
 - `/resources/trash`: 직접 휴지통으로 이동한 최상위 항목과 전체 하위 트리 읽기·복원.
 - `/settings`: 공지, 약관, 개인정보처리방침, 콘텐츠 초기화.
