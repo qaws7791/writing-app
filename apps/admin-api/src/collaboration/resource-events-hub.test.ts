@@ -198,8 +198,10 @@ function createSocket(data: Partial<ResourceEventsConnectionData> = {}) {
   const socket = {
     binaryType: "nodebuffer" as const,
     close: vi.fn(),
-    cork<TResult>(callback: (websocket: TestSocket) => TResult): TResult {
-      return callback(socket)
+    cork<TResult = unknown>(
+      _callback: (websocket: Bun.ServerWebSocket<TResult>) => TResult
+    ): TResult {
+      throw new Error("이 테스트 더블은 cork 호출을 지원하지 않습니다.")
     },
     data: {
       actorId: "admin-1",
