@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+import { adminIdSchema } from "@workspace/contracts/admin"
 
 import { createApp } from "@/app"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
@@ -372,7 +373,7 @@ describe("어드민 API 자료실 트리 route", () => {
           session: {
             admin: {
               email: "operator@example.com",
-              id: "operator-1",
+              id: adminIdSchema.parse("operator-1"),
               name: "운영자",
               role: "operator",
               twoFactorEnabled: false,

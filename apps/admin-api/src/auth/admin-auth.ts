@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { twoFactor } from "better-auth/plugins"
+import { adminIdSchema } from "@workspace/contracts/admin"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import {
@@ -166,13 +167,14 @@ export function createAdminSessionResolver(
       }
 
       const role = parseAdminRole(session.user.role)
+      const adminId = adminIdSchema.safeParse(session.user.id)
 
-      return role === null
+      return role === null || !adminId.success
         ? null
         : {
             admin: {
               email: session.user.email,
-              id: session.user.id,
+              id: adminId.data,
               name: session.user.name,
               role,
               twoFactorEnabled: session.user.twoFactorEnabled === true,

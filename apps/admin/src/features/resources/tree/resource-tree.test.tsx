@@ -8,6 +8,7 @@ import type {
   AdminResourceEvent,
   AdminResourceTreeNode,
 } from "@/features/resources/resource-library-model"
+import { adminIdSchema } from "@/lib/api/admin-identity"
 
 const { pushMock, refreshMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
@@ -71,7 +72,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-1"
+        adminId={adminIdSchema.parse("admin-1")}
         api={api}
         connectEvents={connectTestResourceEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -128,7 +129,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-2"
+        adminId={adminIdSchema.parse("admin-2")}
         api={api}
         connectEvents={connectTestResourceEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -204,7 +205,7 @@ describe("자료 트리", () => {
     })
     const { container } = render(
       <ResourceTree
-        adminId="admin-3"
+        adminId={adminIdSchema.parse("admin-3")}
         api={api}
         connectEvents={connectTestResourceEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -252,7 +253,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-4"
+        adminId={adminIdSchema.parse("admin-4")}
         api={api}
         connectEvents={events.connector}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -293,7 +294,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-5"
+        adminId={adminIdSchema.parse("admin-5")}
         api={api}
         connectEvents={events.connector}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -338,7 +339,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-6"
+        adminId={adminIdSchema.parse("admin-6")}
         api={api}
         connectEvents={connectTestResourceEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -369,7 +370,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-7"
+        adminId={adminIdSchema.parse("admin-7")}
         api={api}
         connectEvents={connectTestResourceEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -409,7 +410,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-8"
+        adminId={adminIdSchema.parse("admin-8")}
         api={createResourceLibraryApi()}
         connectEvents={connectBrieflyDisconnectedEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"
@@ -452,7 +453,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-9"
+        adminId={adminIdSchema.parse("admin-9")}
         api={api}
         connectEvents={connectDisconnectedEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"

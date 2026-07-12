@@ -16,6 +16,7 @@ import type {
   AdminUserDetailDto,
   AdminUserListDto,
 } from "@workspace/contracts/admin"
+import { adminIdSchema, userIdSchema } from "@workspace/contracts/admin"
 import type { AdminRole } from "@workspace/core/admin"
 import { adminRoles } from "@workspace/core/admin"
 
@@ -26,6 +27,9 @@ type CapturedRequestLogEvent = {
   readonly requestId?: string
   readonly status: number
 }
+
+const adminId = adminIdSchema.parse("admin-1")
+const userId = userIdSchema.parse("user-1")
 
 const dashboard: AdminDashboardDto = {
   metrics: {
@@ -43,7 +47,7 @@ const dashboard: AdminDashboardDto = {
       email: "learner@example.com",
       lastActiveDate: "2026-06-14",
       name: "학습자",
-      userId: "user-1",
+      userId,
     },
   ],
 }
@@ -52,7 +56,7 @@ const userList: AdminUserListDto = {
   items: [
     {
       email: "learner@example.com",
-      id: "user-1",
+      id: userId,
       joined: "2026-06-01",
       lastActive: "2026-06-14",
       lessonsDone: 3,
@@ -71,7 +75,7 @@ const userList: AdminUserListDto = {
 
 const userDetail: AdminUserDetailDto = {
   email: "learner@example.com",
-  id: "user-1",
+  id: userId,
   joined: "2026-06-01",
   lastActive: "2026-06-14",
   lessonsDone: 3,
@@ -740,7 +744,7 @@ function createDependencies({
           expect(input.actor).toEqual({
             authenticationAssurance:
               role === adminRoles.owner ? "mfa-step-up-verified" : "password",
-            id: "admin-1",
+            id: adminId,
             role,
           })
           return { kind: "ok", value: { deleted: true } }
@@ -765,7 +769,7 @@ function createDependencies({
           expect(input.actor).toEqual({
             authenticationAssurance:
               role === adminRoles.owner ? "mfa-step-up-verified" : "password",
-            id: "admin-1",
+            id: adminId,
             role,
           })
 
@@ -787,7 +791,7 @@ function createDependencies({
         return {
           admin: {
             email: "admin@example.com",
-            id: "admin-1",
+            id: adminId,
             name: "관리자",
             role,
             twoFactorEnabled: role === adminRoles.owner,

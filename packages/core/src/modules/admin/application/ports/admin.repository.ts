@@ -22,6 +22,11 @@ import type {
   AdminUserSort,
   AdminUpdateUserStatusRequest,
 } from "@workspace/core/modules/admin/domain/admin.dto"
+import type {
+  AdminId,
+  ConversationId,
+  UserId,
+} from "@workspace/contracts/admin"
 
 export type ReadAdminDashboardInput = {
   readonly now: Date
@@ -82,43 +87,43 @@ export type ReadAdminUsersInput = {
 }
 
 export type ReadAdminUserInput = {
-  readonly userId: string
+  readonly userId: UserId
 }
 
 export type UpdateAdminUserStatusInput = {
   readonly now: Date
   readonly status: AdminUpdateUserStatusRequest["status"]
-  readonly userId: string
+  readonly userId: UserId
 }
 
 export type DeleteAdminUserInput = {
   readonly now: Date
-  readonly userId: string
+  readonly userId: UserId
 }
 
 export type ReadAdminAiChatConversationsInput = {
-  readonly adminId: string
+  readonly adminId: AdminId
   readonly page: number
   readonly pageSize: number
 }
 
 export type ReadAdminAiChatConversationInput = {
-  readonly adminId: string
-  readonly conversationId: string
+  readonly adminId: AdminId
+  readonly conversationId: ConversationId
   readonly messagePage: number
   readonly messagePageSize: number
 }
 
 export type CreateAdminAiChatUserMessageInput = {
-  readonly adminId: string
-  readonly conversationId: string | null
+  readonly adminId: AdminId
+  readonly conversationId: ConversationId | null
   readonly message: string
   readonly now: Date
 }
 
 export type SaveAdminAiChatAssistantMessageInput = {
   readonly content: string
-  readonly conversationId: string
+  readonly conversationId: ConversationId
   readonly now: Date
 }
 

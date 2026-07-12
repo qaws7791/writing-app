@@ -12,6 +12,7 @@ import {
 } from "@/resource-library/resource-document-operation-coordinator"
 import { adminRoles } from "@workspace/core/admin"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
+import { adminIdSchema } from "@workspace/contracts/admin"
 import { localRuntimeDefaults } from "@workspace/env"
 
 type TestAdminApiServicesOverrides = {
@@ -45,7 +46,7 @@ export const testAdminNow = new Date("2026-06-14T03:00:00.000Z")
 export const testAdminSession = {
   admin: {
     email: "admin@example.com",
-    id: "admin-1",
+    id: adminIdSchema.parse("admin-1"),
     name: "관리자",
     role: adminRoles.owner,
     twoFactorEnabled: true,

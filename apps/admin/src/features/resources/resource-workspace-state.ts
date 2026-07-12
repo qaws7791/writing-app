@@ -1,4 +1,5 @@
 import type { AdminResourceTreeScope } from "@/features/resources/resource-library-model"
+import type { AdminId } from "@/lib/api/admin-identity"
 
 export type ResourceWorkspaceConnectionState =
   | "online"
@@ -17,7 +18,7 @@ type ExpandedResourceIdsUpdater =
 
 export function readExpandedResourceIds(
   storage: Storage,
-  adminId: string,
+  adminId: AdminId,
   scope: AdminResourceTreeScope
 ): readonly string[] {
   try {
@@ -41,7 +42,7 @@ export function readExpandedResourceIds(
 
 export function writeExpandedResourceIds(
   storage: Storage,
-  adminId: string,
+  adminId: AdminId,
   scope: AdminResourceTreeScope,
   expandedIds: readonly string[]
 ): void {
@@ -63,7 +64,7 @@ export function mergeExpandedResourceIds(
 }
 
 export function getExpandedResourceIdsSnapshot(
-  adminId: string,
+  adminId: AdminId,
   scope: AdminResourceTreeScope
 ): string[] {
   const key = expandedResourceIdsStorageKey(adminId, scope)
@@ -80,7 +81,7 @@ export function getServerExpandedResourceIdsSnapshot(): string[] {
 }
 
 export function subscribeExpandedResourceIds(
-  adminId: string,
+  adminId: AdminId,
   scope: AdminResourceTreeScope,
   onChange: () => void
 ): () => void {
@@ -106,7 +107,7 @@ export function subscribeExpandedResourceIds(
 }
 
 export function updateExpandedResourceIds(
-  adminId: string,
+  adminId: AdminId,
   scope: AdminResourceTreeScope,
   updater: ExpandedResourceIdsUpdater
 ): void {
@@ -124,7 +125,7 @@ export function updateExpandedResourceIds(
 }
 
 function expandedResourceIdsStorageKey(
-  adminId: string,
+  adminId: AdminId,
   scope: AdminResourceTreeScope
 ): string {
   return `writing-app:resource-library:expanded:${expandedResourceIdsStorageVersion}:${adminId}:${scope}`

@@ -24,6 +24,7 @@ import {
   type Updater,
 } from "@headless-tree/core"
 import { useTree } from "@headless-tree/react"
+import type { AdminId } from "@/lib/api/admin-identity"
 import {
   FilePlus2Icon,
   FileTextIcon,
@@ -124,7 +125,7 @@ export function ResourceTree({
   selectedDocumentId,
   toolbarEnd,
 }: {
-  readonly adminId: string
+  readonly adminId: AdminId
   readonly api: ResourceTreeApi
   readonly connectEvents: ResourceEventsConnector
   readonly eventsServerUrl: string

@@ -4,6 +4,7 @@ import { hashPassword } from "better-auth/crypto"
 import { createAdminMfaRecoveryService } from "@/auth/admin-mfa-recovery"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { adminIdSchema } from "@workspace/contracts/admin"
 
 const now = new Date("2026-07-12T00:00:00.000Z")
 
@@ -19,7 +20,9 @@ describe("관리자 MFA 복구", () => {
         now: () => now,
       })
 
-      const recoveryCodes = await service.replaceRecoveryCodes("owner-1")
+      const recoveryCodes = await service.replaceRecoveryCodes(
+        adminIdSchema.parse("owner-1")
+      )
       const storedCodes = database.sqlite
         .query<{ readonly codeHash: string }, []>(
           "SELECT code_hash AS codeHash FROM admin_mfa_recovery_code"

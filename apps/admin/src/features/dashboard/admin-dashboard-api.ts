@@ -3,6 +3,7 @@ import type { AdminHttpTransport } from "@/lib/api/admin-http-transport"
 import {
   adminDashboardDtoSchema,
   type AdminDashboardDto,
+  type UserId,
 } from "@workspace/contracts/admin"
 
 export type AdminDashboard = {
@@ -20,7 +21,7 @@ export type AdminDashboard = {
     readonly email: string
     readonly lastActiveDate: string | null
     readonly name: string
-    readonly userId: string
+    readonly userId: UserId
   }[]
 }
 

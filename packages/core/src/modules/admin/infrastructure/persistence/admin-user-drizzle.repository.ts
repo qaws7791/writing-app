@@ -48,6 +48,7 @@ import {
   learnerProfiles,
   lessons,
 } from "@workspace/db/schema"
+import { userIdSchema, type UserId } from "@workspace/contracts/admin"
 
 export function createAdminUserRepository(
   db: WritingAppDatabase
@@ -70,7 +71,7 @@ export function createAdminUserRepository(
 
 type AdminUserSnapshot = {
   readonly email: string
-  readonly id: string
+  readonly id: UserId
   readonly joined: string
   readonly lastActive: string | null
   readonly lessonsDone: number
@@ -156,7 +157,7 @@ function readUsers(
   return {
     items: rows.map((user) => ({
       email: user.email,
-      id: user.id,
+      id: userIdSchema.parse(user.id),
       joined: toLearningDateKey(user.joinedAt),
       lastActive: user.lastActive,
       lessonsDone: user.lessonsDone,
@@ -311,7 +312,7 @@ function readUserSnapshots(db: WritingAppDatabase): AdminUserSnapshot[] {
 
     return {
       email: user.email,
-      id: user.id,
+      id: userIdSchema.parse(user.id),
       joined: toLearningDateKey(user.createdAt),
       lastActive: activityDates[0] ?? null,
       lessonsDone: completedLessonRows.filter(

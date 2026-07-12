@@ -14,6 +14,7 @@ import type {
   AdminAiChatConversationDetail,
   AdminAiChatConversationList,
 } from "@/features/chat/admin-ai-chat-api"
+import { conversationIdSchema } from "@/lib/api/admin-identity"
 
 const { replaceMock } = vi.hoisted(() => ({ replaceMock: vi.fn() }))
 
@@ -24,7 +25,7 @@ vi.mock("next/navigation", () => ({
 const conversationDetail: AdminAiChatConversationDetail = {
   conversation: {
     createdAt: "2026-06-14T03:00:00.000Z",
-    id: "chat-1",
+    id: conversationIdSchema.parse("chat-1"),
     messageCount: 2,
     title: "강의 소개 문구",
     updatedAt: "2026-06-14T03:01:00.000Z",
@@ -83,7 +84,7 @@ describe("AdminAiChatPage", () => {
     const nextConversation = {
       conversation: {
         ...conversationDetail.conversation,
-        id: "chat-2",
+        id: conversationIdSchema.parse("chat-2"),
         title: "두 번째 대화",
       },
       messages: [

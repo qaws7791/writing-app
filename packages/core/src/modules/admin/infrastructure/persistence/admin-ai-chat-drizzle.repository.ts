@@ -18,6 +18,7 @@ import {
   adminAiChatConversations,
   adminAiChatMessages,
 } from "@workspace/db/schema"
+import { conversationIdSchema } from "@workspace/contracts/admin"
 
 type AiChatConversationRow = typeof adminAiChatConversations.$inferSelect
 type AiChatMessageRow = typeof adminAiChatMessages.$inferSelect
@@ -112,7 +113,7 @@ function createAiChatUserMessage(
 
   return readAiChatConversation(db, {
     adminId: input.adminId,
-    conversationId: conversation.id,
+    conversationId: conversationIdSchema.parse(conversation.id),
     messagePage: 1,
     messagePageSize: 100,
   })
@@ -212,7 +213,7 @@ function toConversationDto(
 
   return {
     createdAt: conversation.createdAt.toISOString(),
-    id: conversation.id,
+    id: conversationIdSchema.parse(conversation.id),
     messageCount,
     title: conversation.title,
     updatedAt: conversation.updatedAt.toISOString(),

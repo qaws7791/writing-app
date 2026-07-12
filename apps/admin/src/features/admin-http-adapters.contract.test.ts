@@ -11,6 +11,9 @@ import { createAdminUsersApi } from "@/features/users/admin-users-api"
 import type { AdminApiBaseUrl } from "@/runtime-config"
 import type { HttpFetch } from "@workspace/http-client"
 import { readAdminApiBaseUrl } from "@/runtime-config"
+import { userIdSchema } from "@/lib/api/admin-identity"
+
+const userId = userIdSchema.parse("user-1")
 
 describe("관리자 feature HTTP Adapter 계약", () => {
   it("서버 요청에 검증된 Origin을 명시하고 세션 응답을 파싱한다", async () => {
@@ -124,7 +127,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
         ],
       },
     })
-    await expect(api.getUser("user-1")).resolves.toMatchObject({
+    await expect(api.getUser(userId)).resolves.toMatchObject({
       status: "ok",
       value: {
         id: "user-1",
@@ -134,7 +137,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     await expect(
       api.updateUserStatus({
         status: "suspended",
-        userId: "user-1",
+        userId,
       })
     ).resolves.toMatchObject({
       status: "ok",
@@ -142,7 +145,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
         status: "suspended",
       },
     })
-    await expect(api.deleteUser("user-1")).resolves.toEqual({
+    await expect(api.deleteUser(userId)).resolves.toEqual({
       status: "ok",
       value: {
         deleted: true,
@@ -279,7 +282,9 @@ describe("관리자 feature HTTP Adapter 계약", () => {
       tokenProvider: () => null,
     })
 
-    await expect(api.getUser("missing-user")).resolves.toEqual({
+    await expect(
+      api.getUser(userIdSchema.parse("missing-user"))
+    ).resolves.toEqual({
       error: {
         code: "not-found",
         message: "요청한 항목을 찾을 수 없습니다.",

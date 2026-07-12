@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import ResourceLayout from "@/app/(admin)/resources/layout"
 import type { InitialResourceTreeState } from "@/features/resources/tree/resource-tree"
+import { adminIdSchema, type AdminId } from "@/lib/api/admin-identity"
 
 const { getResourceTreeMock, getSessionMock, redirectMock } = vi.hoisted(
   () => ({
@@ -45,7 +46,7 @@ vi.mock("@/features/resources/resource-workspace", () => ({
     children,
     initialTree,
   }: {
-    readonly adminId: string
+    readonly adminId: AdminId
     readonly children: ReactNode
     readonly initialTree: InitialResourceTreeState
   }) {
@@ -69,7 +70,7 @@ describe("자료실 layout", () => {
       value: {
         admin: {
           email: "admin@example.com",
-          id: "admin-1",
+          id: adminIdSchema.parse("admin-1"),
           name: "관리자",
           role: "owner",
         },

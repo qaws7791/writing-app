@@ -1,11 +1,11 @@
 import type { AdminHttpTransport } from "@/lib/api/admin-http-transport"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import { adminSessionDtoSchema } from "@workspace/contracts/admin"
+import { adminSessionDtoSchema, type AdminId } from "@workspace/contracts/admin"
 
 export type AdminSession = {
   readonly admin: {
     readonly email: string
-    readonly id: string
+    readonly id: AdminId
     readonly name: string
     readonly role: "operator" | "owner"
   }

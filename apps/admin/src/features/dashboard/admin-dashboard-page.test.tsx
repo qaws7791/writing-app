@@ -5,6 +5,7 @@ import { AdminDashboardPage } from "@/features/dashboard/admin-dashboard-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type { AdminAnalytics } from "@/features/analytics/admin-analytics-api"
 import type { AdminDashboard } from "@/features/dashboard/admin-dashboard-api"
+import { userIdSchema } from "@/lib/api/admin-identity"
 
 const dashboard: AdminDashboard = {
   metrics: {
@@ -22,7 +23,7 @@ const dashboard: AdminDashboard = {
       email: "minji@example.com",
       lastActiveDate: "2026-06-14",
       name: "민지",
-      userId: "user-1",
+      userId: userIdSchema.parse("user-1"),
     },
   ],
 }

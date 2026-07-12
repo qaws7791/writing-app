@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { userIdSchema } from "@workspace/contracts/admin/admin-ids"
 import {
   adminNonNegativeIntegerSchema,
   adminPositiveIntegerSchema,
@@ -7,7 +8,7 @@ import {
 
 export const adminUserListItemDtoSchema = z.object({
   email: z.email(),
-  id: z.string(),
+  id: userIdSchema,
   joined: z.string(),
   lastActive: z.string().nullable(),
   lessonsDone: adminNonNegativeIntegerSchema,

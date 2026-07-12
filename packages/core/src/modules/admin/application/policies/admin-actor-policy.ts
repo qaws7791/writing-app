@@ -1,4 +1,5 @@
 import type { AdminRole } from "@workspace/core/modules/admin/domain/admin-role"
+import type { AdminId } from "@workspace/contracts/admin"
 
 export type AdminActor = {
   readonly authenticationAssurance:
@@ -6,7 +7,7 @@ export type AdminActor = {
     | "mfa-step-up-required"
     | "mfa-step-up-verified"
     | "password"
-  readonly id: string
+  readonly id: AdminId
   readonly role: AdminRole
 }
 

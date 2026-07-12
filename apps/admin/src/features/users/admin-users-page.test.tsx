@@ -10,6 +10,7 @@ import type {
   AdminUserList,
   ReadAdminUsersInput,
 } from "@/features/users/admin-users-api"
+import { userIdSchema } from "@/lib/api/admin-identity"
 
 const filters: ReadAdminUsersInput = {
   page: 1,
@@ -23,7 +24,7 @@ const users: AdminUserList = {
   items: [
     {
       email: "minji@example.com",
-      id: "user-1",
+      id: userIdSchema.parse("user-1"),
       joined: "2026-06-01",
       lastActive: "2026-06-14",
       lessonsDone: 12,
