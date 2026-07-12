@@ -2,7 +2,7 @@
 
 이 문서는 writing learning platform의 현재 구조를 빠르게 파악하기 위한 living guide다. 구조가 바뀌면 함께 갱신한다.
 
-현재 workspace의 정확한 경로는 `apps/admin`, `apps/admin-api`, `apps/api`, `apps/storybook`, `apps/web`, `packages/config`, `packages/contracts`, `packages/core`, `packages/db`, `packages/env`, `packages/hono`, `packages/http-client`, `packages/logger`, `packages/resource-document`, `packages/ui`다.
+현재 workspace의 정확한 경로는 `apps/admin`, `apps/admin-api`, `apps/api`, `apps/storybook`, `apps/web`, `packages/config`, `packages/contracts`, `packages/core`, `packages/db`, `packages/env`, `packages/hono`, `packages/http-client`, `packages/logger`, `packages/repository-tooling`, `packages/resource-document`, `packages/ui`다.
 
 ## 프로젝트 구조
 
@@ -155,6 +155,8 @@ core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 R
 ### resource-document
 
 `packages/resource-document`는 브라우저와 headless 서버가 공유하는 Lexical node, 정규 GFM AST import/export·검증, Yjs snapshot projection을 제공한다. GFM으로 의미 보존할 수 없는 상태는 기존 Markdown을 덮어쓰기 전에 거부한다.
+
+`packages/repository-tooling`은 앱과 패키지의 source inventory, TypeScript import·re-export·dynamic import·type-only reference 파싱, alias와 package export 해석, cycle chain과 architecture 정책 matcher를 제공한다. 제품 runtime은 이 패키지에 의존하지 않고 architecture test와 root quality tooling만 사용한다.
 
 ## 런타임 분리
 

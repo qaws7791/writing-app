@@ -232,6 +232,10 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 공통 HTTP 전송 계층은 정상 JSON, 빈 응답, 잘못된 JSON, 다운로드, 네트워크 실패를 표 기반으로 검증한다. 각 관리자 기능 어댑터는 독립 계약 테스트를 가지며, 구조 테스트는 기능 간 DTO 결합과 삭제된 중앙 API로의 회귀를 차단한다. 서버 조립 테스트는 기능별 서비스 연결과 데이터베이스 종료가 한 번만 수행됨을 검증한다.
 
+## Root tooling 회귀 테스트
+
+공통 dependency version drift와 디자인 baseline 증감은 `scripts/*.test.ts`의 negative fixture로 검증한다. CI tests job은 workspace 테스트와 별도로 이 tooling fixture를 먼저 실행한다. 정적 검증은 제품 lint warning을 오류로 취급한다.
+
 ## 관리자 MFA 회귀 테스트
 
 - 실제 Better Auth와 in-memory DB로 owner 등록, TOTP 활성화, 비밀번호 로그인 challenge, TOTP session 발급을 검증한다.

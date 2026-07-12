@@ -20,6 +20,7 @@
 - `packages/http-client`: HTTP result와 네트워크 오류 모델
 - `packages/logger`: API 런타임용 logger
 - `packages/resource-document`: Lexical GFM 문서 계약과 Yjs 투영
+- `packages/repository-tooling`: repository inventory, TypeScript module graph와 정책 matcher
 - `packages/config`: 공유 TypeScript 설정
 
 전체 workspace 인벤토리는 `docs/engineering/workspace-inventory.md`에서 확인한다.

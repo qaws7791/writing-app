@@ -1,7 +1,7 @@
 import fs from "node:fs"
 import path from "node:path"
 
-type Guardrail = {
+export type Guardrail = {
   readonly baseline: number
   readonly description: string
   readonly label: string
@@ -30,7 +30,11 @@ const ignoredDirectories = new Set([
   "node_modules",
 ])
 
-const ignoredHexPaths = ["apps/admin/src/features/step-debug"] as const
+const ignoredHexPaths = [
+  "apps/admin/src/features/step-debug",
+  // Web manifest 색상은 CSS token을 참조할 수 없어 정적 색상 문자열이 필요하다.
+  "apps/web/src/app/manifest.ts",
+] as const
 const scannedExtensions = new Set([".css", ".ts", ".tsx"])
 
 const guardrails: readonly Guardrail[] = [
@@ -51,7 +55,7 @@ const guardrails: readonly Guardrail[] = [
     roots: ["apps"],
   },
   {
-    baseline: 47,
+    baseline: 32,
     description: "apps/**의 raw hex color 기준선",
     label: "raw hex color",
     pattern: /#[0-9a-fA-F]{3,8}\b/g,
@@ -60,7 +64,6 @@ const guardrails: readonly Guardrail[] = [
 ] as const
 
 const repositoryRoot = process.cwd()
-const failures: string[] = []
 
 function collectFiles(directory: string): string[] {
   if (!fs.existsSync(directory)) {
@@ -78,9 +81,12 @@ function collectFiles(directory: string): string[] {
   })
 }
 
-function countMatches(guardrail: Guardrail): number {
-  const files = guardrail.roots.flatMap((root) =>
-    collectFiles(path.join(repositoryRoot, root))
+export function countGuardrailMatches(
+  guardrail: Guardrail,
+  root: string = repositoryRoot
+): number {
+  const files = guardrail.roots.flatMap((scanRoot) =>
+    collectFiles(path.join(root, scanRoot))
   )
 
   const scopedFiles =
@@ -101,28 +107,57 @@ function countMatches(guardrail: Guardrail): number {
   }, 0)
 }
 
-for (const guardrail of guardrails) {
-  const count = countMatches(guardrail)
+export function evaluateGuardrails(
+  configuredGuardrails: readonly Guardrail[],
+  root: string = repositoryRoot
+): {
+  readonly failures: readonly string[]
+  readonly summaries: readonly string[]
+} {
+  const failures: string[] = []
+  const summaries: string[] = []
 
-  if (count > guardrail.baseline) {
-    failures.push(
-      `${guardrail.label} increased from ${guardrail.baseline} to ${count}. ${guardrail.description}을 초과했다.`
-    )
-  } else {
-    console.log(
+  for (const guardrail of configuredGuardrails) {
+    const count = countGuardrailMatches(guardrail, root)
+
+    if (count > guardrail.baseline) {
+      failures.push(
+        `${guardrail.label} increased from ${guardrail.baseline} to ${count}. ${guardrail.description}을 초과했다.`
+      )
+      continue
+    }
+
+    if (count < guardrail.baseline) {
+      failures.push(
+        `${guardrail.label} decreased from ${guardrail.baseline} to ${count}. 실제 감소를 새 baseline으로 반영해야 한다.`
+      )
+      continue
+    }
+
+    summaries.push(
       `${guardrail.label}: ${count}/${guardrail.baseline} (${guardrail.description})`
     )
   }
+
+  return { failures, summaries }
 }
 
-if (failures.length > 0) {
-  console.error("Design system guardrail check failed.")
+if (import.meta.main) {
+  const result = evaluateGuardrails(guardrails)
 
-  for (const failure of failures) {
-    console.error(`- ${failure}`)
+  for (const summary of result.summaries) {
+    console.log(summary)
   }
 
-  process.exit(1)
-}
+  if (result.failures.length > 0) {
+    console.error("Design system guardrail check failed.")
 
-console.log("Design system guardrails are within baseline.")
+    for (const failure of result.failures) {
+      console.error(`- ${failure}`)
+    }
+
+    process.exit(1)
+  }
+
+  console.log("Design system guardrails are within baseline.")
+}

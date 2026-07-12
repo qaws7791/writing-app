@@ -56,6 +56,7 @@ export default defineConfig({
       "packages/http-client/vitest.config.ts",
       "packages/logger/vitest.config.ts",
       "packages/resource-document/vitest.config.ts",
+      "packages/repository-tooling/vitest.config.ts",
       "packages/ui/vitest.config.ts",
     ],
   },

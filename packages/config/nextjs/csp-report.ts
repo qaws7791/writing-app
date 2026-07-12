@@ -6,7 +6,8 @@ export type CspReportApplication = "admin" | "web"
 export async function recordCspViolation(
   request: Request,
   application: CspReportApplication,
-  writeLog: (value: string) => void = console.warn
+  writeLog: (value: string) => void = (value) =>
+    process.stderr.write(`${value}\n`)
 ): Promise<Response> {
   const contentLength = Number(request.headers.get("content-length") ?? "0")
   if (contentLength > MAX_CSP_REPORT_BYTES) {

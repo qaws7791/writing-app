@@ -2,6 +2,13 @@
   "name": "writing-app",
   "version": "0.0.1",
   "private": true,
+  "catalog": {
+    "@tailwindcss/postcss": "4.1.18",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "recharts": "3.9.2",
+    "vitest": "4.1.10"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -21,6 +28,7 @@
     "check:landing-route-bundle": "bun scripts/check-landing-route-bundle.ts",
     "check:resource-route-bundle": "bun scripts/check-resource-route-bundle.ts",
     "check:workspace-inventory": "bun scripts/check-workspace-inventory.ts",
+    "check:workspace-dependency-versions": "bun scripts/check-workspace-dependency-versions.ts",
     "dev": "turbo dev",
     "dev:admin": "bun run dev:admin:setup && turbo dev --filter=@workspace/admin --filter=@workspace/admin-api",
     "dev:admin:setup": "bun --filter @workspace/db db:migrate && bun --filter @workspace/db db:seed && bun --env-file=apps/admin-api/.env --filter @workspace/admin-api seed:admin",
@@ -29,7 +37,7 @@
     "dev:app:fresh": "bun run db:reset && bun run dev:app:setup && bun run dev:app",
     "db:backup": "bun packages/db/src/scripts/backup-database.ts",
     "db:reset": "bun --filter @workspace/db db:reset",
-    "lint": "bun run check:workspace-inventory && bun run check:document-drift && bun run check:api-contract && bun run check:components-config && bun run check:design-system-guardrails && bun run check:import-cycles && oxlint apps packages scripts",
+    "lint": "bun run check:workspace-inventory && bun run check:workspace-dependency-versions && bun run check:document-drift && bun run check:api-contract && bun run check:components-config && bun run check:design-system-guardrails && bun run check:import-cycles && oxlint apps packages scripts --deny-warnings",
     "lint:fix": "oxlint apps packages scripts --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
@@ -55,6 +63,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.0",
     "@workspace/config": "workspace:*",
+    "@workspace/repository-tooling": "workspace:*",
     "bun-types": "^1.3.11",
     "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-turbo": "^2.8.1",
@@ -66,7 +75,7 @@
     "turbo": "^2.8.8",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.0"
+    "vitest": "4.1.10"
   },
   "engines": {
     "node": "24.x"

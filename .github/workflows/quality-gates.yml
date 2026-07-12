@@ -32,6 +32,7 @@ jobs:
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
       - run: bun install --frozen-lockfile
       - run: bun run check:workspace-inventory
+      - run: bun run check:workspace-dependency-versions
       - run: bun run check:document-drift
       - run: bun run check:api-contract
       - run: bun run check:components-config
@@ -58,7 +59,7 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
       - run: bun install --frozen-lockfile
-      - run: bun test scripts/ci-workspace-inventory.test.ts
+      - run: bun test scripts/ci-workspace-inventory.test.ts scripts/check-design-system-guardrails.test.ts scripts/check-workspace-dependency-versions.test.ts scripts/lint-deny-warnings.test.ts
       - run: node scripts/oxlint/workspace-rules.test.mjs
       - run: bun run test:coverage
       - if: always()

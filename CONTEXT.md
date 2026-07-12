@@ -27,6 +27,7 @@
 - `packages/logger`: pino logger와 요청 로그 middleware를 제공한다.
 - `packages/http-client`: HTTP transport result와 네트워크 오류 모델을 제공한다.
 - `packages/resource-document`: 브라우저·서버 공용 Lexical GFM 문서 계약과 Yjs 투영을 제공한다.
+- `packages/repository-tooling`: repository source inventory, TypeScript import graph와 architecture 정책 matcher를 제공한다.
 - `packages/config`: workspace TypeScript 설정을 제공한다.
 
 ## 현재 구현 상태

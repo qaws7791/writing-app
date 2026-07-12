@@ -31,10 +31,11 @@
   "devDependencies": {
     "@types/bun": "^1.3.10",
     "@workspace/config": "workspace:*",
+    "@workspace/repository-tooling": "workspace:*",
     "@workspace/resource-document": "workspace:*",
     "lexical": "0.46.0",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.0"
+    "vitest": "catalog:"
   }
 }

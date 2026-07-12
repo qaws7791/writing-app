@@ -27,6 +27,8 @@
 | `_index.md`                                               | 엔지니어링 문서 전체의 진입점과 탐색 지도를 제공한다.                                              |
 | `system-overview.md`                                      | 시스템 목적, C4 모델, 서비스 경계, 라우트, API 런타임, 저장소, 배포 개요를 설명한다.               |
 | `workspace-inventory.md`                                  | 앱, 패키지, 스크립트 루트의 현재 인벤토리와 자동 검증 기준을 정의한다.                             |
+| `workspace-dependency-policy.md`                          | 공통 dependency catalog와 디자인·lint baseline ratchet 정책을 정의한다.                            |
+| `repository-architecture-tooling.md`                      | source inventory, TypeScript module graph와 architecture 정책 matcher를 정의한다.                  |
 | `tech-stack.md`                                           | 런타임, 패키지 관리, 프론트엔드, 백엔드, 데이터, 테스트 도구, 의존성 기준을 정의한다.              |
 | `runtime-configuration.md`                                | 로컬 포트, 환경 변수 파서, 앱별 설정, Turbo 환경 변수, `.env.example` 정책을 정의한다.             |
 | `api-contract.md`                                         | 학습자 API와 어드민 API의 공통 원칙, 인증 표면, 오류 응답, OpenAPI 생성 기준을 정의한다.           |
