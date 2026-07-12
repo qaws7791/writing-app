@@ -195,3 +195,9 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 - `turbo.json.globalEnv`를 갱신했는가?
 - 보안 문서와 운영 문서를 갱신했는가?
 - 테스트에서 기본 URL과 trailing slash 정규화를 확인했는가?
+
+## 학습자 API 종료 수명주기
+
+학습자 API는 `SIGINT` 또는 `SIGTERM`을 받으면 종료 상태를 한 번만 시작한다. 종료 상태에서 수명주기 fetch 경계에 도착한 신규 요청은 `503 SERVICE_UNAVAILABLE`를 받고, 이미 실행 중인 요청은 응답을 끝낼 때까지 drain한다. 이후 Bun server를 중지하고 `createLearnerApiCore()`가 반환한 `core.close()`를 정확히 한 번 호출해 SQLite 연결을 닫는다.
+
+여러 종료 신호가 연달아 와도 같은 종료 Promise를 재사용한다. server 중지와 core 종료 오류는 `server.shutdown.failed` 로그의 `phase` 필드로 구분한다. 단위 테스트와 실제 child process 신호 smoke test는 `apps/api/src/server-lifecycle.test.ts`, `apps/api/src/server-lifecycle.process.test.ts`에 있다.

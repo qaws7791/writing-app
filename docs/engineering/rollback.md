@@ -46,7 +46,7 @@ DB 롤백은 코드 롤백보다 위험하다. 아래 조건을 확인한다.
 
 절차:
 
-1. 현재 DB 파일을 추가 백업한다.
+1. `database-backup-restore.md` 절차로 현재 DB 파일의 검증된 추가 백업을 만든다.
 2. API 프로세스를 중지해 쓰기를 막는다.
 3. 직전 백업 DB 파일로 복구한다.
 4. WAL/SHM 파일 정합성을 확인한다.
@@ -56,7 +56,7 @@ DB 롤백은 코드 롤백보다 위험하다. 아래 조건을 확인한다.
 ## SQLite 파일 주의사항
 
 - SQLite 파일은 API 프로세스와 같은 로컬 디스크에 둔다.
-- WAL 모드를 사용하므로 백업/복구 시 `*.sqlite`, `*.sqlite-wal`, `*.sqlite-shm` 파일 상태를 함께 고려한다.
+- WAL 모드를 사용하므로 운영 파일의 단순 복사 대신 `database-backup-restore.md`의 SQLite snapshot 명령을 사용한다. 복구 전에는 `*.sqlite`, `*.sqlite-wal`, `*.sqlite-shm` 파일 상태를 함께 보존한다.
 - 운영 중 `db:reset`을 사용하지 않는다.
 - 네트워크 파일시스템에서 같은 SQLite 파일을 여러 서버가 공유하지 않는다.
 - 자료실 DB를 교체하기 전에 어드민 API의 신규 HTTP transaction과 작업 공간 WebSocket 수락을 중단하고 프로세스를 종료해 진행 중인 쓰기가 없음을 확인한다.

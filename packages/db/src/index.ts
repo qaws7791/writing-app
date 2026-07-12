@@ -1,4 +1,5 @@
 export * from "@workspace/db/client"
+export * from "@workspace/db/database-backup"
 export * from "@workspace/db/persisted-values"
 export * from "@workspace/db/schema"
 export * from "@workspace/db/seed"

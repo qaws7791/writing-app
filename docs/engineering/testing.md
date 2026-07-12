@@ -213,6 +213,13 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - flaky 테스트는 먼저 재현 조건과 시간/외부 의존성을 분리한다.
 - 테스트 수정이 실제 계약 변경인지, 오래된 기대값 수정인지 문서화한다.
 
+## 종료와 백업 복구 테스트
+
+- 학습자 API 수명주기 단위 테스트는 종료 중 신규 요청의 `503`, 진행 요청 drain, 중복 신호에서 한 번만 실행되는 `core.close()`를 확인한다.
+- process smoke test는 실제 Bun server에 진행 요청을 보낸 상태에서 종료 신호를 전달하고, 응답 완료와 DB 자원 종료 결과를 별도 보고서로 확인한다. Windows에서는 Node가 child process의 Unix signal handler를 전달하지 않으므로 동일한 종료 callback을 표준 입력으로 호출한다.
+- SQLite 백업 테스트는 공백이 포함된 file-backed WAL 경로를 snapshot으로 만들고, 원본 변경 뒤에도 백업이 독립적으로 열리는지 확인한다.
+- 복구 검증은 임시 경로에서 `integrity_check`, schema version, 필수 테이블 읽기를 수행한다. 손상 파일과 기존 출력 경로를 사용한 실패가 운영 파일을 바꾸지 않는지도 확인한다.
+
 ## HTTP 보안 계약 회귀 테스트
 
 - 운영 환경 표 기반 테스트는 HTTPS 공개 URL, 명시적 DB, 분리된 고엔트로피 인증 비밀값을 허용하고 누락·HTTP·localhost·동일하거나 약한 비밀값·운영 테스트 인증을 거부한다.

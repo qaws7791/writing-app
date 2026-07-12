@@ -295,6 +295,46 @@ function validateBackendRouteDocumentation() {
   })
 }
 
+function validateCanonicalOnboardingDocumentation() {
+  const stalePatterns = [
+    {
+      filePath: "apps/web/README.md",
+      patterns: [/same-origin 인증 프록시/u, /src\/app.*인증 프록시/u],
+    },
+    {
+      filePath: "DOMAIN.md",
+      patterns: [
+        /PUT \/courses\/(?:\{courseId\}|:courseId)\/editor/u,
+        /type CurriculumNodeStatus = .*deprecated/u,
+      ],
+    },
+    {
+      filePath: "GLOSSARY.md",
+      patterns: [/^- 챕터:/mu, /^- deprecated:/mu],
+    },
+    {
+      filePath: "apps/storybook/README.md",
+      patterns: [/^## Commands$/mu, /^## Scope$/mu, /^## Notes$/mu],
+    },
+  ] as const
+
+  for (const { filePath, patterns } of stalePatterns) {
+    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
+
+    for (const pattern of patterns) {
+      if (pattern.test(content)) {
+        failures.push(`${filePath} contains stale onboarding text: ${pattern}.`)
+      }
+    }
+  }
+
+  if (fs.existsSync(path.join(repositoryRoot, "docs/product/index.md"))) {
+    failures.push(
+      "docs/product/index.md duplicates the canonical docs/product/_index.md."
+    )
+  }
+}
+
 function extractDocumentedRoutes(
   document: string,
   startHeading: string,
@@ -477,6 +517,7 @@ function main() {
   validateDocumentedCommands(markdownFiles, packages)
   validateDocumentedWorkspaceImports(markdownFiles, packages)
   validateBackendRouteDocumentation()
+  validateCanonicalOnboardingDocumentation()
 
   if (failures.length > 0) {
     console.error("Document drift check failed.")

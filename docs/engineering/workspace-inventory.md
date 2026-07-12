@@ -34,5 +34,5 @@
 - `vitest.config.ts`를 가진 workspace는 루트 `vitest.workspace.ts`의 `projects`에 포함되어야 한다.
 - `apps/storybook`, `packages/config`, `scripts`는 분석 입력에 포함되어야 한다.
 - `scripts`는 workspace package가 아니지만 루트 `lint`와 분석 입력의 관리 대상이다.
-- `packages/auth-proxy`처럼 `package.json`이 없는 ignored/generated 디렉터리는 workspace 인벤토리에 포함하지 않는다.
+- `package.json`이 없는 ignored/generated 디렉터리는 workspace 인벤토리에 포함하지 않는다.
 - `exports`를 선언한 package는 public export target이 package 내부의 실제 파일을 가리켜야 한다. wildcard target은 기준 디렉터리와 매칭 파일이 있어야 하며, public export key는 `./src` 내부 경로를 직접 노출하지 않는다.
