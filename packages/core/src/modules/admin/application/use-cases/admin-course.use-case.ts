@@ -14,7 +14,7 @@ import type {
   ReadAdminCoursesInput,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
-  canExecuteOwnerMutation,
+  authorizeOwnerMutation,
   type AdminOwnerMutationResult,
   type OwnerAdminCommand,
 } from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
@@ -39,18 +39,16 @@ export function createAdminCourseUseCase(
 ): AdminCourseUseCase {
   return {
     async archiveCourse({ actor, ...input }) {
-      if (!canExecuteOwnerMutation(actor)) {
-        return { kind: "forbidden" }
-      }
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
       const value = adminArchiveCourseResultSchema
         .nullable()
         .parse(await courseRepository.archiveCourse(input))
       return value === null ? { kind: "not-found" } : { kind: "ok", value }
     },
     async createCourse({ actor, ...input }) {
-      if (!canExecuteOwnerMutation(actor)) {
-        return { kind: "forbidden" }
-      }
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
       const value = adminCourseDetailDtoSchema.parse(
         await courseRepository.createCourse(input)
       )

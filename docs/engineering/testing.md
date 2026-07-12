@@ -194,3 +194,11 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - 보호 route 매트릭스는 쿠키 인증 성공 시 `private, no-store`와 `Vary: Cookie`, Bearer 단독 요청의 `401`, 공개 route의 정책 비적용을 확인한다.
 - OpenAPI 테스트는 실제 인증 설정과 공유하는 쿠키 이름과 보호 route security scheme을 확인한다.
 - SSE와 파일 다운로드 테스트는 캐시 정책 적용 뒤에도 스트림 content type과 첨부 응답 계약이 유지되는지 확인한다.
+
+## 관리자 MFA 회귀 테스트
+
+- 실제 Better Auth와 in-memory DB로 owner 등록, TOTP 활성화, 비밀번호 로그인 challenge, TOTP session 발급을 검증한다.
+- MFA 미등록 activation session, 만료 step-up, operator, 최근 owner session의 route·application 권한 매트릭스를 검증한다.
+- 복구 코드 원문 비저장, 1회 소비, TOTP 초기화와 전체 session 폐기를 한 트랜잭션으로 검증한다.
+- 관리자 UI는 등록 key, TOTP challenge, 인증 앱 분실 복구, step-up 만료 재로그인 상태를 검증한다.
+- 비밀번호 변경 통합 테스트는 실제 Better Auth adapter가 교체 발급한 session과 기존 session이 모두 서버에서 폐기되는지 검증한다.

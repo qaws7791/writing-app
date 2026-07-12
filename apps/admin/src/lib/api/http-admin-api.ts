@@ -568,6 +568,7 @@ function toAdminSession(dto: AdminSessionDto): AdminSession {
       name: dto.admin.name,
       role: dto.admin.role,
     },
+    mfa: dto.mfa,
   }
 }
 

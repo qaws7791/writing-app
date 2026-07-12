@@ -7,7 +7,7 @@ import type {
   ResetAdminContentInput,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
-  canExecuteOwnerMutation,
+  authorizeOwnerMutation,
   type AdminOwnerMutationResult,
   type OwnerAdminCommand,
 } from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
@@ -23,9 +23,8 @@ export function createAdminContentResetUseCase(
 ): AdminContentResetUseCase {
   return {
     async resetContent({ actor, ...input }) {
-      if (!canExecuteOwnerMutation(actor)) {
-        return { kind: "forbidden" }
-      }
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
       const value = adminContentResetResultSchema.parse(
         await contentResetRepository.resetContent(input)
       )

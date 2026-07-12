@@ -14,7 +14,7 @@ import type {
   UserAdminRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
-  canExecuteOwnerMutation,
+  authorizeOwnerMutation,
   type AdminOwnerMutationResult,
   type OwnerAdminCommand,
 } from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
@@ -37,9 +37,8 @@ export function createAdminUserUseCase(
 ): AdminUserUseCase {
   return {
     async deleteUser({ actor, ...input }) {
-      if (!canExecuteOwnerMutation(actor)) {
-        return { kind: "forbidden" }
-      }
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
       const value = adminDeleteUserResultSchema
         .nullable()
         .parse(await userRepository.deleteUser(input))
@@ -54,9 +53,8 @@ export function createAdminUserUseCase(
       return adminUserListDtoSchema.parse(await userRepository.readUsers(input))
     },
     async updateUserStatus({ actor, ...input }) {
-      if (!canExecuteOwnerMutation(actor)) {
-        return { kind: "forbidden" }
-      }
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
       const value = adminUserDetailDtoSchema
         .nullable()
         .parse(await userRepository.updateUserStatus(input))

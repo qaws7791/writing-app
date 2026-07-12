@@ -31,5 +31,13 @@ export default async function AdminLayout({
     return <AdminServiceUnavailable retryHref="/" />
   }
 
+  if (sessionResult.value.mfa.enrollmentRequired) {
+    redirect("/mfa")
+  }
+
+  if (sessionResult.value.mfa.stepUpRequired) {
+    redirect(createAdminLoginPath("/"))
+  }
+
   return <AdminShell>{children}</AdminShell>
 }

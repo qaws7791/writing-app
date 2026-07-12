@@ -24,7 +24,12 @@ import {
 } from "@workspace/logger"
 
 import { createApp } from "@/app"
-import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
+import {
+  createAdminAuth,
+  createAdminAuthHandler,
+  createAdminSessionResolver,
+} from "@/auth/admin-auth"
+import { createAdminMfaRecoveryService } from "@/auth/admin-mfa-recovery"
 import { createResourceEventsHub } from "@/collaboration/resource-events-hub"
 import { createResourceEventsUpgradeHandler } from "@/collaboration/resource-events-upgrade"
 import { parseAdminApiEnv } from "@/env"
@@ -96,6 +101,12 @@ const auth = createAdminAuth({
   webOrigin: env.adminOrigin,
 })
 const sessionResolver = createAdminSessionResolver(auth)
+const authHandler = createAdminAuthHandler({
+  auth,
+  cookieDomain: env.cookieDomain,
+  database,
+})
+const adminMfaRecovery = createAdminMfaRecoveryService({ database })
 const resourceEvents = createResourceEventsHub({
   onPolicyViolation({ actorId, reason }) {
     securityAuditLogger({
@@ -152,8 +163,9 @@ const app = createApp({
     settings: adminService,
     users: adminService,
   },
+  adminMfaRecovery,
   adminOrigin: env.adminOrigin,
-  authHandler: auth.handler,
+  authHandler,
   errorLogger(event) {
     logger.error(event, "request.failed")
   },

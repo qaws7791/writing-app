@@ -47,6 +47,8 @@ describe("기준 migration", () => {
           "admin_resource_nodes",
           "admin_resource_search",
           "admin_resource_tree_state",
+          "admin_mfa_recovery_code",
+          "admin_two_factor",
         ])
       )
       expect(
@@ -63,6 +65,36 @@ describe("기준 migration", () => {
           )
           .get()
       ).toEqual({ integrity_check: "ok" })
+    } finally {
+      client.close()
+    }
+  })
+
+  it("기존 관리자 인증 schema에 MFA column과 table을 additive하게 추가한다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      client.sqlite.exec(`
+        CREATE TABLE admin_user (
+          id TEXT PRIMARY KEY NOT NULL,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          email_verified INTEGER NOT NULL,
+          image TEXT,
+          role TEXT NOT NULL DEFAULT 'operator',
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+      `)
+
+      runBaselineMigration(client.sqlite)
+
+      expect(readColumnNames(client.sqlite, "admin_user")).toContain(
+        "two_factor_enabled"
+      )
+      expect(readObjectNames(client.sqlite)).toEqual(
+        expect.arrayContaining(["admin_mfa_recovery_code", "admin_two_factor"])
+      )
     } finally {
       client.close()
     }

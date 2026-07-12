@@ -22,6 +22,10 @@ export type AdminSession = {
     readonly name: string
     readonly role: AdminRole
   }
+  readonly mfa: {
+    readonly enrollmentRequired: boolean
+    readonly stepUpRequired: boolean
+  }
 }
 
 export type AdminPagination = {

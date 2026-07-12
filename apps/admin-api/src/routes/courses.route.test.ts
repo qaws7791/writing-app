@@ -181,7 +181,10 @@ describe("어드민 API courses route", () => {
     )
 
     const response = await app.request("/courses", {
-      headers: { Authorization: "Bearer admin-token" },
+      headers: {
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
+      },
       method: "POST",
     })
 
@@ -274,7 +277,12 @@ function createDependencies({
       courses: {
         async archiveCourse(input) {
           expect(input.now).toEqual(testAdminNow)
-          expect(input.actor).toEqual({ id: "admin-1", role })
+          expect(input.actor).toEqual({
+            authenticationAssurance:
+              role === adminRoles.owner ? "mfa-step-up-verified" : "password",
+            id: "admin-1",
+            role,
+          })
 
           if (input.courseId === "missing") {
             return { kind: "not-found" }
@@ -285,7 +293,12 @@ function createDependencies({
         },
         async createCourse(input) {
           expect(input.now).toEqual(testAdminNow)
-          expect(input.actor).toEqual({ id: "admin-1", role })
+          expect(input.actor).toEqual({
+            authenticationAssurance:
+              role === adminRoles.owner ? "mfa-step-up-verified" : "password",
+            id: "admin-1",
+            role,
+          })
           if (denyCreateCourseAtApplication) {
             return { kind: "forbidden" }
           }
@@ -317,7 +330,10 @@ function createDependencies({
             id: "admin-1",
             name: "관리자",
             role,
+            twoFactorEnabled: role === adminRoles.owner,
           },
+          authenticationAssurance:
+            role === adminRoles.owner ? "mfa-step-up-verified" : "password",
           [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
         }
       },

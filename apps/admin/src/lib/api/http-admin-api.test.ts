@@ -19,6 +19,10 @@ describe("HTTP AdminApi", () => {
             name: "관리자",
             role: "owner",
           },
+          mfa: {
+            enrollmentRequired: false,
+            stepUpRequired: false,
+          },
         })
       },
       requestOrigin: "https://admin.example.test/path",

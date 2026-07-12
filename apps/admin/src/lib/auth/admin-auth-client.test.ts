@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { localRuntimeDefaults } from "@workspace/env"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
-import { requestAdminPasswordLogin } from "@/lib/auth/admin-auth-client"
+import {
+  requestAdminPasswordChange,
+  requestAdminPasswordLogin,
+} from "@/lib/auth/admin-auth-client"
 
 describe("admin auth client", () => {
   afterEach(() => {
@@ -22,7 +25,7 @@ describe("admin auth client", () => {
         nextPath: "/courses",
         password: "admin-password-123",
       })
-    ).resolves.toBe("/courses")
+    ).resolves.toEqual({ kind: "signed-in", nextPath: "/courses" })
 
     expect(fetch).toHaveBeenCalledWith(
       `${localRuntimeDefaults.adminApiBaseUrl}/api/auth/sign-in/email`,
@@ -36,6 +39,21 @@ describe("admin auth client", () => {
         method: "POST",
       })
     )
+  })
+
+  it("MFA owner의 1차 로그인 응답을 완전한 세션으로 취급하지 않는다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json({ twoFactorRedirect: true }))
+    )
+
+    await expect(
+      requestAdminPasswordLogin({
+        email: "owner@example.com",
+        nextPath: "/settings",
+        password: "owner-password",
+      })
+    ).resolves.toEqual({ kind: "mfa-required", nextPath: "/settings" })
   })
 
   it("관리자 로그인 실패를 예외로 반환한다", async () => {
@@ -57,5 +75,27 @@ describe("admin auth client", () => {
 
     expect(caughtError).toBeInstanceOf(Error)
     expect((caughtError as Error).message).toBe("Failed to sign in")
+  })
+
+  it("비밀번호 변경은 다른 모든 세션 폐기를 강제한다", async () => {
+    const fetch = vi.fn(async () => Response.json({ status: true }))
+    vi.stubGlobal("fetch", fetch)
+
+    await requestAdminPasswordChange({
+      currentPassword: "old-password",
+      newPassword: "new-password",
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/auth/change-password"),
+      expect.objectContaining({
+        body: JSON.stringify({
+          currentPassword: "old-password",
+          newPassword: "new-password",
+          revokeOtherSessions: true,
+        }),
+      })
+    )
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })
