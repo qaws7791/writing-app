@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { eq } from "drizzle-orm"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
-import { createLearnerAuth } from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
+import { createLearnerAuth } from "#core/modules/auth/infrastructure/adapters/learner-auth"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { authAccounts, authSessions, authUsers } from "@workspace/db/schema"

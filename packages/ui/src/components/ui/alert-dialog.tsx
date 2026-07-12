@@ -3,8 +3,8 @@
 import * as React from "react"
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog"
 
-import { cn } from "../../lib/utils"
-import { Button } from "./button"
+import { cn } from "#ui/lib/utils"
+import { Button } from "#ui/components/ui/button"
 
 /**
  * `AlertDialog` 컴포넌트는 사용자에게 중요한 정보를 전달하거나 확인을 요구할 때 사용합니다.
@@ -189,7 +189,7 @@ function AlertDialogCancel({
   size = "extra",
   ...props
 }: AlertDialogPrimitive.Close.Props &
-  Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
+  Partial<Pick<React.ComponentProps<typeof Button>, "variant" | "size">>) {
   return (
     <AlertDialogPrimitive.Close
       data-slot="alert-dialog-cancel"

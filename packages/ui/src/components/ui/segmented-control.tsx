@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { ToggleGroup, ToggleGroupItem } from "./toggle-group"
+import { ToggleGroup, ToggleGroupItem } from "#ui/components/ui/toggle-group"
 
 type SegmentedControlProps = Omit<
   React.ComponentProps<typeof ToggleGroup>,

@@ -16,14 +16,14 @@ import type {
   ResourceDocumentMetadataRecord,
   ResourceDocumentRecord,
   ResourceDocumentRepository,
-} from "@workspace/core/modules/resource-library/application/ports/resource-document.repository"
-import type { ResourceTreeCommandRejection } from "@workspace/core/modules/resource-library/application/ports/resource-tree.repository"
+} from "#core/modules/resource-library/application/ports/resource-document.repository"
+import type { ResourceTreeCommandRejection } from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import {
   toResourceDocumentId,
   toResourceFolderId,
   type ResourceAuditEventId,
   type ResourceDocumentId,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 
 export type ResourceDocumentImportResult =
   | {

@@ -1,12 +1,12 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-  Badge,
-  Separator,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/avatar"
+import { Badge } from "@workspace/ui/components/ui/badge"
+import { Separator } from "@workspace/ui/components/ui/separator"
 
 const badgeTones = ["neutral", "success", "danger", "info", "selected"] as const
 

@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
 import { applyUpdate, Doc, mergeUpdates } from "yjs"
 
-import { createResourceDocumentSyncUseCase } from "@workspace/core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
-import { toResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
-import { toResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
+import { createResourceDocumentSyncUseCase } from "#core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
+import { toResourceDocumentTransactionId } from "#core/modules/resource-library/domain/resource-document-sync"
+import { toResourceDocumentId } from "#core/modules/resource-library/domain/resource-tree-node"
+import { createDrizzleResourceDocumentSyncRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {

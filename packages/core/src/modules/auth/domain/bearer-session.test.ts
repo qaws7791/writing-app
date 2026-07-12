@@ -4,7 +4,7 @@ import {
   parseBearerToken,
   readBearerToken,
   resolveBearerSession,
-} from "@/modules/auth/domain/bearer-session"
+} from "#core/modules/auth/domain/bearer-session"
 
 describe("bearer session helpers", () => {
   it("Bearer authorization header에서 토큰을 읽는다", () => {

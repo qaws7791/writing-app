@@ -2,7 +2,7 @@ import type {
   ResourceFolderId,
   ResourceNodeId,
   ResourceTreeNode,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 
 export const RESOURCE_NAME_MAX_LENGTH = 120
 

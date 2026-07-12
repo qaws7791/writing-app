@@ -1,7 +1,7 @@
 import type { ZodError } from "zod"
-import { errorJson } from "./error-response"
-import type { ErrorResponse } from "./error-response"
-import { formatZodPath } from "./utils"
+import { errorJson } from "#hono/errors/error-response"
+import type { ErrorResponse } from "#hono/errors/error-response"
+import { formatZodPath } from "#hono/errors/utils"
 
 type ValidationHookResult =
   | {

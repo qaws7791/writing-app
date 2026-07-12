@@ -1,7 +1,7 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
+import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Button,
   Card,
   CardAction,
   CardContent,
@@ -9,12 +9,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  Input,
-  Label,
+} from "@workspace/ui/components/ui/card"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Label } from "@workspace/ui/components/ui/label"
+import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/progress"
 
 const meta = {
   title: "Components/UI/Card",

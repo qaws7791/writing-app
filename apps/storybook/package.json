@@ -3,6 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "imports": {
+    "#storybook-config/preview": "./.storybook/preview.tsx",
+    "#storybook-config/storybook-theme": "./.storybook/storybook-theme.ts",
+    "#storybook-config/viewports": "./.storybook/viewports.ts",
+    "#storybook-root/styles.css": "./styles.css"
+  },
   "scripts": {
     "dev": "storybook dev -p 6006 --ci",
     "build": "storybook build --output-dir dist",

@@ -31,7 +31,7 @@
 
 ## 공통 환경 변수 파서
 
-`@workspace/env`의 `parseEnv()`가 공통 schema를 제공한다.
+`@workspace/env/parse-env`의 `parseEnv()`가 공통 schema를 제공한다.
 
 주요 변수:
 

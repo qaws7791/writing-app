@@ -11,7 +11,7 @@ import {
   toResourceDocumentId,
   toResourceDocumentTransactionId,
   type ResourceDocumentSyncUseCase,
-} from "@workspace/core/modules/resource-library/api"
+} from "@workspace/core/resource-library"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"

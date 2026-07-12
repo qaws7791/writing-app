@@ -4,7 +4,7 @@ import {
   learnerProfileStatsDtoSchema,
   learnerProgressOverviewDtoSchema,
   lessonAvailabilityStatusValues,
-} from "@workspace/core/modules/learning/domain/learner-read-model.dto"
+} from "#core/modules/learning/domain/learner-read-model.dto"
 
 describe("학습자 read model DTO", () => {
   it("profile stats와 progress overview schema를 제공한다", () => {

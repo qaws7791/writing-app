@@ -14,11 +14,11 @@ import type {
   AdminSettingsDto,
   AdminUserDetailDto,
   AdminUserListDto,
-} from "@/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import {
   createAdminService,
   type AdminServicePorts,
-} from "@/modules/admin/application/use-cases/admin.service"
+} from "#core/modules/admin/application/use-cases/admin.service"
 
 const dashboard: AdminDashboardDto = {
   metrics: {

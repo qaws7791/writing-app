@@ -6,35 +6,35 @@ import type {
   DashboardReader,
   SettingsRepository,
   UserAdminRepository,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import {
   createAdminAnalyticsUseCase,
   type AdminAnalyticsUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-analytics.use-case"
+} from "#core/modules/admin/application/use-cases/admin-analytics.use-case"
 import {
   createAdminAiChatUseCase,
   type AdminAiChatUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-ai-chat.use-case"
+} from "#core/modules/admin/application/use-cases/admin-ai-chat.use-case"
 import {
   createAdminContentResetUseCase,
   type AdminContentResetUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-content-reset.use-case"
+} from "#core/modules/admin/application/use-cases/admin-content-reset.use-case"
 import {
   createAdminCourseUseCase,
   type AdminCourseUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-course.use-case"
+} from "#core/modules/admin/application/use-cases/admin-course.use-case"
 import {
   createAdminDashboardUseCase,
   type AdminDashboardUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-dashboard.use-case"
+} from "#core/modules/admin/application/use-cases/admin-dashboard.use-case"
 import {
   createAdminSettingsUseCase,
   type AdminSettingsUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-settings.use-case"
+} from "#core/modules/admin/application/use-cases/admin-settings.use-case"
 import {
   createAdminUserUseCase,
   type AdminUserUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-user.use-case"
+} from "#core/modules/admin/application/use-cases/admin-user.use-case"
 
 export type AdminService = AdminAnalyticsUseCase &
   AdminAiChatUseCase &

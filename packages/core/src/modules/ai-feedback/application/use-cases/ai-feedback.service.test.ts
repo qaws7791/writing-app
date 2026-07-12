@@ -5,24 +5,24 @@ import {
   lessonIdSchema,
   lessonStepIdSchema,
   unitIdSchema,
-} from "@workspace/core/modules/content/domain/content.ids"
+} from "#core/modules/content/domain/content.ids"
 import {
   lessonDtoSchema,
   type LessonDto,
-} from "@workspace/core/modules/content/domain/content.dto"
-import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
-import { learnerIdSchema } from "@workspace/core/modules/learning/domain/learning.ids"
+} from "#core/modules/content/domain/content.dto"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
+import { learnerIdSchema } from "#core/modules/learning/domain/learning.ids"
 import {
   createAiFeedbackService,
   type AiFeedbackService,
-} from "@/modules/ai-feedback/application/use-cases/ai-feedback.service"
-import { defaultAiFeedbackAttemptPolicy } from "@/modules/ai-feedback/domain/ai-feedback-attempt-policy"
-import type { AiFeedbackRepository } from "@/modules/ai-feedback/application/ports/ai-feedback.repository"
+} from "#core/modules/ai-feedback/application/use-cases/ai-feedback.service"
+import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
+import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
 import type {
   AiFeedbackProvider,
   AiFeedbackProviderInput,
-} from "@/modules/ai-feedback/application/ports/ai-feedback.provider"
-import { ok } from "@/shared/result"
+} from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
+import { ok } from "#core/shared/result"
 
 const occurredAt = new Date("2026-06-14T10:00:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")

@@ -6,25 +6,25 @@ import {
   lessonIdSchema,
   lessonStepIdSchema,
   unitIdSchema,
-} from "@workspace/core/modules/content/domain/content.ids"
+} from "#core/modules/content/domain/content.ids"
 import {
   lessonDtoSchema,
   type LessonDto,
-} from "@workspace/core/modules/content/domain/content.dto"
-import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
-import { learnerIdSchema } from "@/modules/learning/domain/learning.ids"
+} from "#core/modules/content/domain/content.dto"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
+import { learnerIdSchema } from "#core/modules/learning/domain/learning.ids"
 import {
   createLearningService,
   type LearningService,
-} from "@/modules/learning/application/use-cases/learning.service"
+} from "#core/modules/learning/application/use-cases/learning.service"
 import type {
   CompleteLessonRecord,
   LearningRepository,
   LessonProgressRecord,
   SaveLessonProgressResult,
   SaveStepAnswerCommand,
-} from "@/modules/learning/application/ports/learning.repository"
-import type { LearningAnswer } from "@/modules/learning/domain/learning.dto"
+} from "#core/modules/learning/application/ports/learning.repository"
+import type { LearningAnswer } from "#core/modules/learning/domain/learning.dto"
 
 const occurredAt = new Date("2026-06-14T09:30:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")

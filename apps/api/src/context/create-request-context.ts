@@ -1,11 +1,11 @@
-import type { SessionResolver } from "@workspace/core/modules/auth"
-import type { AiFeedbackService } from "@workspace/core/modules/ai-feedback"
-import type { LearnerContentService } from "@workspace/core/modules/content"
+import type { SessionResolver } from "@workspace/core/auth"
+import type { AiFeedbackService } from "@workspace/core/ai-feedback"
+import type { LearnerContentService } from "@workspace/core/content"
 import type {
   LearningService,
   ProfileReader,
   ProgressService,
-} from "@workspace/core/modules/learning"
+} from "@workspace/core/learning"
 import type {
   RequestLogger,
   RequestLoggingRuntime,

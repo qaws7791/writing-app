@@ -11,7 +11,7 @@ const allowedCoreModuleFacades = new Set([
   "ai-feedback",
   "auth",
   "content",
-  "learner-api",
+  "learner-api-core",
   "learning",
 ])
 
@@ -81,7 +81,7 @@ function isWorkspaceCoreImport(source: string): boolean {
 }
 
 function isAllowedCoreModuleFacadeImport(source: string): boolean {
-  const prefix = "@workspace/core/modules/"
+  const prefix = "@workspace/core/"
 
   if (!source.startsWith(prefix)) {
     return false
@@ -89,11 +89,7 @@ function isAllowedCoreModuleFacadeImport(source: string): boolean {
 
   const modulePath = source.slice(prefix.length)
 
-  return (
-    allowedCoreModuleFacades.has(modulePath) ||
-    (modulePath.endsWith("/api") &&
-      allowedCoreModuleFacades.has(modulePath.slice(0, -"/api".length)))
-  )
+  return allowedCoreModuleFacades.has(modulePath)
 }
 
 function isHttpContractSchemaFile(filePath: string): boolean {

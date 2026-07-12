@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  privateNoStoreCacheControl,
-  withPrivateNoStore,
-} from "@workspace/hono/security"
+import { privateNoStoreCacheControl, withPrivateNoStore } from "#hono/security"
 
 describe("민감 응답 캐시 정책", () => {
   it("기존 응답 계약을 보존하고 private no-store와 Cookie vary를 추가한다", async () => {

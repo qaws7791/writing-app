@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { readdirSync, readFileSync } from "node:fs"
+import { existsSync, readdirSync } from "node:fs"
 import { dirname, relative, resolve, sep } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
@@ -15,7 +15,6 @@ describe("core architecture", () => {
     const allowedEntries = new Set([
       "architecture.test.ts",
       "composition",
-      "index.ts",
       "modules",
       "shared",
     ])
@@ -26,17 +25,14 @@ describe("core architecture", () => {
     expect(violations).toEqual([])
   })
 
-  it("module root는 public api facade만 export한다", () => {
+  it("module root에는 중복 public api facade를 두지 않는다", () => {
     const violations = readdirSync(modulesRoot, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .flatMap((entry) => {
         const indexPath = resolve(modulesRoot, entry.name, "index.ts")
-        const content = readFileSync(indexPath, "utf8").trim()
-
-        return content ===
-          `export * from "@workspace/core/modules/${entry.name}/api"`
-          ? []
-          : [formatViolation(indexPath, content)]
+        return existsSync(indexPath)
+          ? [formatViolation(indexPath, "index.ts")]
+          : []
       })
 
     expect(violations).toEqual([])
@@ -101,11 +97,11 @@ function readImports(filePath: string): string[] {
 }
 
 function isFacadeFile(filePath: string): boolean {
-  return filePath.endsWith(`${sep}index.ts`)
+  return filePath.endsWith(`${sep}api${sep}index.ts`)
 }
 
 function isModuleApiFacadeImport(source: string): boolean {
-  return /^@workspace\/core\/modules\/[^/]+\/api$/.test(source)
+  return /^#\/modules\/[^/]+\/api$/.test(source)
 }
 
 function isRuntimeAdapterImport(source: string): boolean {
@@ -125,10 +121,8 @@ function isRuntimeAdapterImport(source: string): boolean {
 
 function isCoreContentModuleImport(source: string): boolean {
   return (
-    source === "@workspace/core/content" ||
-    source.startsWith("@workspace/core/content/") ||
-    source === "@workspace/core/modules/content" ||
-    source.startsWith("@workspace/core/modules/content/")
+    source === "#core/modules/content" ||
+    source.startsWith("#core/modules/content/")
   )
 }
 

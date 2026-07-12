@@ -6,7 +6,7 @@ import type {
   TypedResponse,
 } from "hono"
 import type { OpenAPIRoute, RouteConfig, RouteHandler } from "@hono/zod-openapi"
-import type { InternalErrorLogger } from "../errors/error-handler"
+import type { InternalErrorLogger } from "#hono/errors/error-handler"
 
 export type AnyRouteConfig = RouteConfig & {
   path: string

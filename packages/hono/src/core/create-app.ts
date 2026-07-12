@@ -3,8 +3,8 @@ import {
   createErrorHandler,
   createNotFoundHandler,
   createValidationErrorHook,
-} from "../errors"
-import type { CreateAppOptions } from "./types"
+} from "#hono/errors"
+import type { CreateAppOptions } from "#hono/core/types"
 
 export function createApp<const TRoutes extends CreateAppOptions["routes"]>(
   options: CreateAppOptions<TRoutes>

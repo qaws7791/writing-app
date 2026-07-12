@@ -1,4 +1,4 @@
-import type { LessonStepAnswerPayload } from "@workspace/ui/lesson-runtime/logic"
+import type { LessonStepAnswerPayload } from "#ui/lesson-runtime/logic"
 import type {
   CategorizeStep,
   FillBlankStep,
@@ -7,7 +7,7 @@ import type {
   OrderStep,
   SelectStep,
   LessonStep,
-} from "@workspace/ui/lesson-runtime/types"
+} from "#ui/lesson-runtime/types"
 
 type CheckableStepType =
   | "CATEGORIZE"

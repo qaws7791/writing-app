@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { saveStepAnswerCommandSchema } from "@/modules/learning/domain/learning.dto"
+import { saveStepAnswerCommandSchema } from "#core/modules/learning/domain/learning.dto"
 
 describe("학습 답변 DTO", () => {
   it("스텝 답변 저장 command는 정의된 학습 답변만 허용한다", () => {

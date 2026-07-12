@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { localRuntimeDefaults } from "@workspace/env"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   readLessonDraftText,
   writeLessonDraftText,

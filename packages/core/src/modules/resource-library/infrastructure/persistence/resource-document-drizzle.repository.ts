@@ -6,16 +6,16 @@ import type {
   ResourceDocumentMetadataRecord,
   ResourceDocumentRecord,
   ResourceDocumentRepository,
-} from "@workspace/core/modules/resource-library/application/ports/resource-document.repository"
+} from "#core/modules/resource-library/application/ports/resource-document.repository"
 import {
   createAvailableResourceName,
   normalizeResourceName,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-policy"
+} from "#core/modules/resource-library/domain/resource-tree-policy"
 import type {
   ResourceDocumentId,
   ResourceTreeNode,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import { toResourceFolderId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
+import { toResourceFolderId } from "#core/modules/resource-library/domain/resource-tree-node"
 import {
   insertAuditEvent,
   insertResourceSearchIndex,
@@ -25,7 +25,7 @@ import {
   validateActiveParent,
   validateTreeRevision,
   type WritingAppDatabaseTransaction,
-} from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
+} from "#core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminResourceDocuments,

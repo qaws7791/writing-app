@@ -46,6 +46,7 @@
 | `database-backup-restore.md`                              | SQLite snapshot 백업, 독립 복구 검증, 운영 복구 훈련과 결과 기록 기준을 정의한다.                  |
 | `rollback.md`                                             | 코드, DB, seed, 인증 장애의 롤백 판단 기준과 사후 기록 기준을 정의한다.                            |
 | `code-style.md`                                           | 파일과 import, 포맷, lint, TypeScript, React와 Next.js, API와 DB 경계, 금지 패턴을 정의한다.       |
+| `package-interface-and-import-rules.md`                   | 패키지 공개 subpath Interface와 private alias import 규칙 및 자동 검증 기준을 정의한다.            |
 | `code-review.md`                                          | 리뷰 우선순위, 공통 체크리스트, 경계와 인증과 데이터와 API와 프론트엔드 검토 기준을 정의한다.      |
 | `git-workflow.md`                                         | 브랜치, 커밋 메시지, 커밋 전 확인, Git hook, PR, 리뷰, 머지 정책을 정의한다.                       |
 | `resource-library-implementation-plan.md`                 | 완료된 자료실 구현 단계와 당시 검증 근거를 보존하는 역사 문서다. 현재 계약은 동기화 설계를 따른다. |

@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { CompareStepView } from "@workspace/ui/components/lesson/compare-step-view"
 
-import { compareDefaults } from "./mock-data"
+import { compareDefaults } from "#storybook/stories/components/lesson/mock-data"
 import {
   lessonDecorators,
   lessonParameters,
   objectArgType,
-} from "./lesson-story-shared"
+} from "#storybook/stories/components/lesson/lesson-story-shared"
 
 const meta = {
   title: "Components/Lesson/CompareStepView",

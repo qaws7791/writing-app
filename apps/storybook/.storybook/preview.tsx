@@ -7,9 +7,12 @@ import type { Preview } from "@storybook/react-vite"
 import "@workspace/ui/pretendard-font"
 import { addons } from "storybook/preview-api"
 
-import "../styles.css"
-import { getStorybookTheme, type ThemeName } from "./storybook-theme"
-import { viewports } from "./viewports"
+import "#storybook-root/styles.css"
+import {
+  getStorybookTheme,
+  type ThemeName,
+} from "#storybook-config/storybook-theme"
+import { viewports } from "#storybook-config/viewports"
 
 const GLOBALS_UPDATED = "globalsUpdated"
 type MotionName = "full" | "reduced"

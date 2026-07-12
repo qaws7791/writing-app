@@ -1,1 +1,1 @@
-export * from "@workspace/core/composition/bootstrap"
+export * from "#core/composition/bootstrap"

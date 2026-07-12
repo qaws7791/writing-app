@@ -3,7 +3,7 @@ import type {
   AdminContentResetResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import {
   courseVisualKeySchema,
   type CourseVisualKey,
@@ -16,8 +16,8 @@ import type {
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
   ResetAdminContentInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
-import { contentStatuses } from "@workspace/core/shared/kernel/status"
+} from "#core/modules/admin/application/ports/admin.repository"
+import { contentStatuses } from "#core/shared/kernel/status"
 import { and, asc, count, eq, inArray, or, sql } from "drizzle-orm"
 
 import { archiveContentRowsOutsideSeed } from "@workspace/db/content/content-archive-policy"
@@ -26,7 +26,7 @@ import {
   createDefaultAdminCourseContentIds,
   type CreateAdminCourseContentIds,
   type NewAdminCourseContentIds,
-} from "@workspace/core/modules/admin/infrastructure/persistence/admin-content-ids"
+} from "#core/modules/admin/infrastructure/persistence/admin-content-ids"
 import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
 import {
   courses,
@@ -34,7 +34,7 @@ import {
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
-import { createPageBounds } from "@workspace/core/modules/admin/infrastructure/persistence/admin-repository-shared"
+import { createPageBounds } from "#core/modules/admin/infrastructure/persistence/admin-repository-shared"
 
 const createCourseCollisionRetryLimit = 3
 type LessonRow = typeof lessons.$inferSelect

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { localRuntimeDefaults, localRuntimePorts } from "@workspace/env"
+import {
+  localRuntimeDefaults,
+  localRuntimePorts,
+} from "@workspace/env/local-runtime-defaults"
 
 import { parseAdminApiEnv } from "@/env"
 

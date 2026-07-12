@@ -1,7 +1,7 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { AlertCircle, CheckCircle, Info, Star } from "lucide-react"
 
-import { Badge } from "@workspace/ui"
+import { Badge } from "@workspace/ui/components/ui/badge"
 
 const variants = [
   "default",

@@ -9,7 +9,7 @@ import {
   learnerOperationalStatusValues,
   lessonProgressStatusSchema,
   lessonProgressStatusValues,
-} from "@workspace/core/shared/kernel/status"
+} from "#core/shared/kernel/status"
 
 describe("domain status values", () => {
   it("exposes shared content status values and schema", () => {

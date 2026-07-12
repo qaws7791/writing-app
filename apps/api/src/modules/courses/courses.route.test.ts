@@ -4,11 +4,11 @@ import {
   courseSummaryDtoSchema,
   createLearnerContentService,
   type ContentRepository,
-} from "@workspace/core/modules/content"
+} from "@workspace/core/content"
 import {
   createProgressService,
   type ProgressReader,
-} from "@workspace/core/modules/learning"
+} from "@workspace/core/learning"
 
 import { createApp, type ApiDependencies } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"

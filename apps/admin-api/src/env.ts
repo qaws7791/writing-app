@@ -1,8 +1,5 @@
-import {
-  createLocalRuntimeUrl,
-  parseEnv,
-  type AppEnvInput,
-} from "@workspace/env"
+import { createLocalRuntimeUrl } from "@workspace/env/local-runtime-defaults"
+import { parseEnv, type AppEnvInput } from "@workspace/env/parse-env"
 
 export type AdminApiEnv = {
   readonly adminOrigin: string

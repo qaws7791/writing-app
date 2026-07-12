@@ -1,14 +1,14 @@
-import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import {
   learnerProgressOverviewDtoSchema,
   type LearnerProgressOverviewDto,
-} from "@workspace/core/modules/learning/domain/learner-read-model.dto"
-import type { ProgressCourseStatusFilter } from "@workspace/core/modules/learning/domain/learner-read-model.dto"
+} from "#core/modules/learning/domain/learner-read-model.dto"
+import type { ProgressCourseStatusFilter } from "#core/modules/learning/domain/learner-read-model.dto"
 import {
   filterCoursesByProgressStatus,
   toCourseProgress,
   type ProgressReader,
-} from "@workspace/core/modules/learning/domain/learning-progress-read-model"
+} from "#core/modules/learning/domain/learning-progress-read-model"
 
 export type ReadProgressOptions = {
   readonly status?: ProgressCourseStatusFilter

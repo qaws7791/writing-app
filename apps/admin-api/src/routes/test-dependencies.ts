@@ -12,7 +12,7 @@ import {
 } from "@/resource-library/resource-document-operation-coordinator"
 import { adminRoles } from "@workspace/core/admin"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { localRuntimeDefaults } from "@workspace/env"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 type TestAdminApiServicesOverrides = {
   readonly [TKey in Exclude<

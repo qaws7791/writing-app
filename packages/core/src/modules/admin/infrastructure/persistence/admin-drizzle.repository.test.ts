@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { createDrizzleAdminRepository } from "@/modules/admin/infrastructure/persistence/admin-drizzle.repository"
+import { createDrizzleAdminRepository } from "#core/modules/admin/infrastructure/persistence/admin-drizzle.repository"
 import {
   toCourseId,
   toLessonId,
@@ -14,8 +14,8 @@ import {
   toUnitId,
   type CreateAdminCourseContentIds,
   type NewAdminCourseContentIds,
-} from "@/modules/admin/infrastructure/persistence/admin-content-ids"
-import { createDrizzleContentRepository } from "@/modules/content/infrastructure/persistence/content-drizzle.repository"
+} from "#core/modules/admin/infrastructure/persistence/admin-content-ids"
+import { createDrizzleContentRepository } from "#core/modules/content/infrastructure/persistence/content-drizzle.repository"
 import {
   authUsers,
   courseUnits,

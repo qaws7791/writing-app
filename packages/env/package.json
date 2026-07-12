@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "#env/*": "./src/*"
+  },
   "exports": {
-    ".": "./src/index.ts",
     "./local-runtime-defaults": "./src/local-runtime-defaults.ts",
     "./parse-env": "./src/parse-env.ts"
   },

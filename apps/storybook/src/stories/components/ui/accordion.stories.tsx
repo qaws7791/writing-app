@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
 import { Lock, HelpCircle, BookOpen } from "lucide-react"
 
@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/accordion"
 
 const meta = {
   title: "Components/UI/Accordion",

@@ -3,17 +3,17 @@ import type {
   CompleteLessonRecord,
   SaveLessonProgressCommand,
   SaveStepAnswerCommand,
-} from "@workspace/core/modules/learning/domain/learning.dto"
-import { learningAnswerSchema } from "@workspace/core/modules/learning/domain/learning.dto"
-import type { LearningRepository } from "@workspace/core/modules/learning/application/ports/learning.repository"
-import type { FindStepAnswerQuery } from "@workspace/core/modules/learning/application/ports/learning.repository"
+} from "#core/modules/learning/domain/learning.dto"
+import { learningAnswerSchema } from "#core/modules/learning/domain/learning.dto"
+import type { LearningRepository } from "#core/modules/learning/application/ports/learning.repository"
+import type { FindStepAnswerQuery } from "#core/modules/learning/application/ports/learning.repository"
 import type {
   FindLessonProgressQuery,
   LessonProgressRecord,
   SaveLessonProgressResult,
-} from "@workspace/core/modules/learning/application/ports/learning.repository"
-import { toLearningDateKey } from "@workspace/core/modules/learning/domain/learning-date"
-import { lessonProgressStatuses } from "@workspace/core/shared/kernel/status"
+} from "#core/modules/learning/application/ports/learning.repository"
+import { toLearningDateKey } from "#core/modules/learning/domain/learning-date"
+import { lessonProgressStatuses } from "#core/shared/kernel/status"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {

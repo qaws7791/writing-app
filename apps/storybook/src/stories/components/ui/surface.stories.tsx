@@ -1,6 +1,8 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Badge, Button, Surface } from "@workspace/ui"
+import { Badge } from "@workspace/ui/components/ui/badge"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Surface } from "@workspace/ui/components/ui/surface"
 
 const variants = ["default", "elevated", "panel"] as const
 const sizes = ["none", "sm", "md", "lg"] as const

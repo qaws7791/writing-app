@@ -1,7 +1,7 @@
 import { AppError } from "@workspace/hono/errors"
-import type { AiFeedbackServiceError } from "@workspace/core/modules/ai-feedback"
-import type { LearnerContentServiceError } from "@workspace/core/modules/content"
-import type { LearningServiceError } from "@workspace/core/modules/learning"
+import type { AiFeedbackServiceError } from "@workspace/core/ai-feedback"
+import type { LearnerContentServiceError } from "@workspace/core/content"
+import type { LearningServiceError } from "@workspace/core/learning"
 
 export type ApiCoreError =
   | AiFeedbackServiceError

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { createAdminSettingsRepository } from "@workspace/core/modules/admin/infrastructure/persistence/admin-settings-drizzle.repository"
+import { createAdminSettingsRepository } from "#core/modules/admin/infrastructure/persistence/admin-settings-drizzle.repository"
 
 describe.each(["메모리", "파일"] as const)(
   "어드민 설정 repository %s DB",

@@ -1,9 +1,9 @@
-import type { AdminSettingsDto } from "@workspace/core/modules/admin/domain/admin.dto"
+import type { AdminSettingsDto } from "#core/modules/admin/domain/admin.dto"
 import type {
   SaveAdminLegalSettingsInput,
   SaveAdminNoticeSettingsInput,
   SettingsRepository,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { adminSettings } from "@workspace/db/schema"

@@ -1,9 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Button, Field, FieldError, FieldLabel, Input } from "@workspace/ui"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
+import { Input } from "@workspace/ui/components/ui/input"
 
-import { DoDont } from "../../blocks/do-dont"
-import { KeyboardTable } from "../../blocks/keyboard-table"
+import { DoDont } from "#storybook/blocks/do-dont"
+import { KeyboardTable } from "#storybook/blocks/keyboard-table"
 
 const meta = {
   title: "Quality/Checklist",

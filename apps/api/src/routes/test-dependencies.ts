@@ -4,14 +4,14 @@ import {
   createLearnerContentService,
   lessonDtoSchema,
   type ContentRepository,
-} from "@workspace/core/modules/content"
-import type { AiFeedbackService } from "@workspace/core/modules/ai-feedback"
+} from "@workspace/core/content"
+import type { AiFeedbackService } from "@workspace/core/ai-feedback"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
   createProgressService,
   type LearningService,
   type ProgressReader,
-} from "@workspace/core/modules/learning"
+} from "@workspace/core/learning"
 
 import type { ApiDependencies } from "@/app"
 

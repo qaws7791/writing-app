@@ -1,41 +1,41 @@
 import OpenAI from "openai"
 
-import { defaultAiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
+import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import {
   createAiFeedbackService,
   type AiFeedbackService,
-} from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback.service"
+} from "#core/modules/ai-feedback/application/use-cases/ai-feedback.service"
 import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
   type OpenAiUsageEvent,
-} from "@workspace/core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
-import { createDrizzleAiFeedbackRepository } from "@workspace/core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
-import type { AiFeedbackAttemptTransitionEvent } from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
+} from "#core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
+import { createDrizzleAiFeedbackRepository } from "#core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
+import type { AiFeedbackAttemptTransitionEvent } from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
 import {
   createLearnerContentService,
   type LearnerContentService,
-} from "@workspace/core/modules/content/application/use-cases/learner-content.service"
-import { createDrizzleContentRepository } from "@workspace/core/modules/content/infrastructure/persistence/content-drizzle.repository"
+} from "#core/modules/content/application/use-cases/learner-content.service"
+import { createDrizzleContentRepository } from "#core/modules/content/infrastructure/persistence/content-drizzle.repository"
 import {
   createLearningService,
   type LearningService,
-} from "@workspace/core/modules/learning/application/use-cases/learning.service"
+} from "#core/modules/learning/application/use-cases/learning.service"
 import {
   createProgressService,
   type ProgressService,
-} from "@workspace/core/modules/learning/application/use-cases/learner-progress.service"
+} from "#core/modules/learning/application/use-cases/learner-progress.service"
 import {
   createDrizzleProfileReader,
   createDrizzleProgressReader,
-} from "@workspace/core/modules/learning/infrastructure/persistence/learner-read-models"
-import { createDrizzleLearningRepository } from "@workspace/core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
-import { type ProfileReader } from "@workspace/core/modules/learning/domain/learner-profile-read-model"
-import { type SessionResolver } from "@workspace/core/modules/auth/domain/learner-session"
+} from "#core/modules/learning/infrastructure/persistence/learner-read-models"
+import { createDrizzleLearningRepository } from "#core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
+import { type ProfileReader } from "#core/modules/learning/domain/learner-profile-read-model"
+import { type SessionResolver } from "#core/modules/auth/domain/learner-session"
 import {
   createLearnerAuth,
   createLearnerSessionResolver,
-} from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
+} from "#core/modules/auth/infrastructure/adapters/learner-auth"
 import { createWritingAppDatabase } from "@workspace/db"
 
 export type CreateLearnerApiCoreInput = {

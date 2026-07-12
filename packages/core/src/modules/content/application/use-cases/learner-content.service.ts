@@ -1,21 +1,21 @@
 import type {
   CourseId,
   LessonId,
-} from "@workspace/core/modules/content/domain/content.ids"
+} from "#core/modules/content/domain/content.ids"
 import {
   courseDetailDtoSchema,
   type CourseDetailDto,
   type CourseListDto,
   type LessonDto,
-} from "@workspace/core/modules/content/domain/content.dto"
-import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+} from "#core/modules/content/domain/content.dto"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import {
   createContentReader,
   type ContentReaderError,
-} from "@workspace/core/modules/content/application/use-cases/content-reader"
-import type { ProgressReader } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
-import { withLearnerCourseProgress } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
-import { ok, type Result } from "@workspace/core/shared/result"
+} from "#core/modules/content/application/use-cases/content-reader"
+import type { ProgressReader } from "#core/modules/learning/domain/learning-progress-read-model"
+import { withLearnerCourseProgress } from "#core/modules/learning/domain/learning-progress-read-model"
+import { ok, type Result } from "#core/shared/result"
 
 export type LearnerContentServiceError = ContentReaderError
 

@@ -1,15 +1,15 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
 
+import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Button,
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
-  Label,
-  Textarea,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/field"
+import { Label } from "@workspace/ui/components/ui/label"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 const meta = {
   title: "Components/UI/Textarea",

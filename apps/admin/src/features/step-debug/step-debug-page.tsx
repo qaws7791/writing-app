@@ -4,7 +4,9 @@ import { useState } from "react"
 import { RotateCcw } from "lucide-react"
 
 import { lessonStepDefinitions } from "@workspace/contracts/content/steps"
-import { Button, PageHeader, cn } from "@workspace/ui"
+import { Button } from "@workspace/ui/components/ui/button"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { cn } from "@workspace/ui/lib/utils"
 
 import type {
   LessonAiFeedbackOutcome,

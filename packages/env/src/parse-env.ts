@@ -3,7 +3,7 @@ import { z, type ZodError } from "zod"
 import {
   localRuntimeDefaults,
   localRuntimePorts,
-} from "@workspace/env/local-runtime-defaults"
+} from "#env/local-runtime-defaults"
 
 const nodeEnvSchema = z
   .enum(["development", "test", "production"])

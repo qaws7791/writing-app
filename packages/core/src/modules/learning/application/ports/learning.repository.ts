@@ -3,7 +3,7 @@ import type {
   LearningAnswer,
   SaveLessonProgressCommand,
   SaveStepAnswerCommand,
-} from "@workspace/core/modules/learning/domain/learning.dto"
+} from "#core/modules/learning/domain/learning.dto"
 
 export type LearningRepository = {
   readonly completeLesson: (record: CompleteLessonRecord) => Promise<void>

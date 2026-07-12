@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest"
-import {
-  lessonIdSchema,
-  lessonStepIdSchema,
-} from "@workspace/core/modules/content"
-import { learnerIdSchema } from "@workspace/core/modules/learning"
-import type { LearningService } from "@workspace/core/modules/learning"
+import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
+import { learnerIdSchema } from "@workspace/core/learning"
+import type { LearningService } from "@workspace/core/learning"
 
 import { createApp, type ApiDependencies } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"

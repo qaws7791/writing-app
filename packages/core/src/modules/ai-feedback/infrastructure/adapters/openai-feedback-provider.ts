@@ -1,6 +1,6 @@
-import type { AiFeedbackProvider } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.provider"
-import { aiFeedbackPayloadSchema } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.dto"
-import { err, ok } from "@workspace/core/shared/result"
+import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
+import { aiFeedbackPayloadSchema } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+import { err, ok } from "#core/shared/result"
 
 export type OpenAiResponseCreateRequest = {
   readonly input: string

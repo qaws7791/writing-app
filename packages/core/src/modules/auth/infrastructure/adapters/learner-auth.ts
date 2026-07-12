@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { learnerAccountStatuses } from "@workspace/core/shared/kernel/status"
+import { learnerAccountStatuses } from "#core/shared/kernel/status"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import {
@@ -8,12 +8,12 @@ import {
   createLearnerAuthHooks,
   createLearnerOnboardingService,
   type LearnerProfileRepository,
-} from "@workspace/core/modules/auth/application/use-cases/learner-onboarding"
+} from "#core/modules/auth/application/use-cases/learner-onboarding"
 import {
   createLearnerTestAuthPlugin,
   defaultLearnerTestAuthUser,
-} from "@workspace/core/modules/auth/infrastructure/adapters/learner-test-auth-plugin"
-import type { SessionResolver } from "@workspace/core/modules/auth/domain/learner-session"
+} from "#core/modules/auth/infrastructure/adapters/learner-test-auth-plugin"
+import type { SessionResolver } from "#core/modules/auth/domain/learner-session"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   authAccounts,

@@ -1,9 +1,9 @@
 export {
   createRequestBodyLimitMiddleware,
   defaultApiRequestBodyLimitBytes,
-} from "./request-body-limit.middleware"
-export { createTrustedOriginMiddleware } from "./trusted-origin.middleware"
+} from "#hono/security/request-body-limit.middleware"
+export { createTrustedOriginMiddleware } from "#hono/security/trusted-origin.middleware"
 export {
   privateNoStoreCacheControl,
   withPrivateNoStore,
-} from "./private-no-store"
+} from "#hono/security/private-no-store"

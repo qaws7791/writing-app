@@ -3,14 +3,14 @@ import { fn } from "storybook/test"
 
 import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
 
-import { orderDefaults } from "./mock-data"
+import { orderDefaults } from "#storybook/stories/components/lesson/mock-data"
 import {
   checkedArgType,
   createOnChangeArgType,
   lessonDecorators,
   lessonParameters,
   objectArgType,
-} from "./lesson-story-shared"
+} from "#storybook/stories/components/lesson/lesson-story-shared"
 
 const meta = {
   title: "Components/Lesson/OrderAnswer",

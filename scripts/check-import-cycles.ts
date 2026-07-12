@@ -32,8 +32,13 @@ const moduleCycleScopes: readonly ModuleCycleScope[] = [
   createAppScope("apps/api", "학습자 API runtime"),
   createAppScope("apps/admin-api", "관리자 API runtime"),
   {
-    aliases: [{ prefix: "@/", root: absolute("packages/core/src") }],
-    name: "core runtime",
+    aliases: [
+      {
+        prefix: "#core/",
+        root: absolute("packages/core/src"),
+      },
+    ],
+    name: "packages/core runtime modules",
     packages: [corePackage],
     root: "packages/core/src",
   },

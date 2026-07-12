@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { localRuntimeDefaults } from "@workspace/env"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import { createApp, type AdminApiDependencies } from "@/app"
 import { adminSessionExpiresAt } from "@/auth/admin-session"

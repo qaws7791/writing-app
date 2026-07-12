@@ -4,8 +4,8 @@ import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
   type OpenAiResponseCreateRequest,
-} from "@workspace/core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
-import { createAiFeedbackPrompt } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.prompt"
+} from "#core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
+import { createAiFeedbackPrompt } from "#core/modules/ai-feedback/domain/ai-feedback.prompt"
 
 describe("OpenAI AI feedback provider", () => {
   it("응답 token 사용량을 입력·출력 본문 없이 구조 이벤트로 전달한다", async () => {

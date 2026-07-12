@@ -3,11 +3,11 @@ import { eq } from "drizzle-orm"
 import {
   courseIdSchema,
   lessonIdSchema,
-} from "@workspace/core/modules/content/domain/content.ids"
+} from "#core/modules/content/domain/content.ids"
 
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { createDrizzleContentRepository } from "@/modules/content/infrastructure/persistence/content-drizzle.repository"
+import { createDrizzleContentRepository } from "#core/modules/content/infrastructure/persistence/content-drizzle.repository"
 import {
   courses,
   courseUnits,

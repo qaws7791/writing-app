@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
 
 import {
@@ -6,6 +6,8 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
+} from "@workspace/ui/components/ui/field"
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -14,7 +16,7 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/select"
 
 const meta = {
   title: "Components/UI/Select",

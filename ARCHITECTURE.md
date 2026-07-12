@@ -128,7 +128,7 @@
 
 core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 Result, 공통 오류, status kernel처럼 실제 런타임에서 쓰는 공통 값을 제공한다. `modules/*/api/index.ts`는 Hono와 다른 module이 사용할 좁은 public facade이며, `domain`, `application`, `infrastructure` 구현은 이 facade 뒤에 둔다. `composition`은 학습자 API 런타임 bootstrap을 담당한다.
 
-학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/modules/{auth,content,learning,ai-feedback,learner-api}` public facade만 import한다. 기존 `@workspace/core/{admin,auth,content,learning,ai-feedback,status}` public import는 source shim이 아니라 package export map으로 새 `modules`와 `shared` 위치에 직접 연결한다.
+학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/{auth,content,learning,ai-feedback,learner-api-core}` canonical Interface만 import한다. `modules/*`, `shared/*`, repository Implementation과 root barrel은 export map에 노출하지 않는다.
 
 자료실은 `packages/core/src/modules/resource-library`의 tree/document/search/document-sync use case와 repository 경계로 분리한다. 트리 구조 명령은 expected revision과 SQLite transaction으로 직렬화하고 본문 Yjs update는 멱등 HTTP transaction이 snapshot·Markdown·FTS·수정 메타데이터를 하나의 영속화 경계에서 갱신한다.
 

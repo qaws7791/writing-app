@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { LessonStepRenderer } from "@/lesson-runtime/renderer"
-import { getLessonStepCheckedResult } from "@/lesson-runtime/policy"
-import type { MultipleChoiceStep } from "@/lesson-runtime/types"
+import { LessonStepRenderer } from "#ui/lesson-runtime/renderer"
+import { getLessonStepCheckedResult } from "#ui/lesson-runtime/policy"
+import type { MultipleChoiceStep } from "#ui/lesson-runtime/types"
 
 const fixture: MultipleChoiceStep = {
   correct: "clear",

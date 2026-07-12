@@ -4,7 +4,7 @@
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "paths": { "@/*": ["./src/*"] },
+    "paths": { "#hono/*": ["./src/*"] },
     "types": ["bun"]
   },
   "include": ["src/**/*.ts", "vitest.config.ts"],

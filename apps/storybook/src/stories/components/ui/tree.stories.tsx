@@ -7,7 +7,7 @@ import {
 import { useTree } from "@headless-tree/react"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 
-import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "@workspace/ui/components/ui/tree"
 
 type ResourceTreeItem = {
   readonly children: readonly string[]

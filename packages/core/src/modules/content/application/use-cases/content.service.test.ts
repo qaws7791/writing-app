@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest"
 
-import { createContentService } from "@/modules/content/application/use-cases/content.service"
+import { createContentService } from "#core/modules/content/application/use-cases/content.service"
 import {
   courseIdSchema,
   lessonIdSchema,
   unitIdSchema,
-} from "@/modules/content/domain/content.ids"
-import type { ContentRepository } from "@/modules/content/application/ports/content.repository"
+} from "#core/modules/content/domain/content.ids"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import type {
   CourseDetailDto,
   CourseSummaryDto,
   LessonDto,
-} from "@/modules/content/domain/content.dto"
+} from "#core/modules/content/domain/content.dto"
 
 const courseSummary: CourseSummaryDto = {
   id: courseIdSchema.parse("c1"),

@@ -4,23 +4,23 @@ import type {
   AdminUserListDto,
   AdminUserSort,
   AdminUserStatus,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   DeleteAdminUserInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
   UserAdminRepository,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import {
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/domain/learning-date"
+} from "#core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   learnerAccountStatuses,
   lessonProgressStatuses,
-} from "@workspace/core/shared/kernel/status"
+} from "#core/shared/kernel/status"
 import {
   and,
   asc,
@@ -38,7 +38,7 @@ import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   calculateCurrentStreakDays,
   groupActivityDatesByUserId,
-} from "@workspace/core/modules/admin/infrastructure/persistence/admin-repository-shared"
+} from "#core/modules/admin/infrastructure/persistence/admin-repository-shared"
 import {
   authUsers,
   courses,

@@ -5,14 +5,14 @@ import {
   type AdminAiChatConversationDetailDto,
   type AdminAiChatConversationListDto,
   type AdminAiChatMessageDto,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 import type {
   AiChatAdminRepository,
   CreateAdminAiChatUserMessageInput,
   ReadAdminAiChatConversationInput,
   ReadAdminAiChatConversationsInput,
   SaveAdminAiChatAssistantMessageInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 
 export type AdminAiChatUseCase = {
   readonly createAiChatUserMessage: (

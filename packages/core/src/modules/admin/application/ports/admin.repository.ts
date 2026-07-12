@@ -21,7 +21,7 @@ import type {
   AdminUserListStatusFilter,
   AdminUserSort,
   AdminUpdateUserStatusRequest,
-} from "@workspace/core/modules/admin/domain/admin.dto"
+} from "#core/modules/admin/domain/admin.dto"
 
 export type ReadAdminDashboardInput = {
   readonly now: Date

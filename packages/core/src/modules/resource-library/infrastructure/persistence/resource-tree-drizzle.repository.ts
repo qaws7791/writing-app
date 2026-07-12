@@ -12,7 +12,7 @@ import type {
   RestoreResourceNodeResult,
   TrashResourceNodeInput,
   TrashResourceNodeResult,
-} from "@workspace/core/modules/resource-library/application/ports/resource-tree.repository"
+} from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import {
   archiveResourceSubtree,
   createAvailableResourceName,
@@ -21,8 +21,8 @@ import {
   restoreResourceSubtree,
   validateResourceMove,
   validateResourceNameChange,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-policy"
-import type { ResourceTreeNode } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-policy"
+import type { ResourceTreeNode } from "#core/modules/resource-library/domain/resource-tree-node"
 import {
   countResourceKinds,
   insertResourceSearchIndex,
@@ -42,7 +42,7 @@ import {
   validateActiveParent,
   validateTreeRevision,
   writeSortAssignments,
-} from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
+} from "#core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminResourceDocuments,

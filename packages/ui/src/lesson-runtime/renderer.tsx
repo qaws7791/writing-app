@@ -2,21 +2,21 @@
 
 import type { ReactNode } from "react"
 
-import { AiFeedbackAnswer } from "@workspace/ui/components/lesson/ai-feedback-answer"
-import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer"
-import { CompareStepView } from "@workspace/ui/components/lesson/compare-step-view"
-import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer"
-import { LessonStepFrame } from "@workspace/ui/components/lesson/lesson-step-frame"
-import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
-import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer"
-import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
-import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
-import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
-import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
+import { AiFeedbackAnswer } from "#ui/components/lesson/ai-feedback-answer"
+import { CategorizeAnswer } from "#ui/components/lesson/categorize-answer"
+import { CompareStepView } from "#ui/components/lesson/compare-step-view"
+import { FillBlankAnswer } from "#ui/components/lesson/fill-blank-answer"
+import { LessonStepFrame } from "#ui/components/lesson/lesson-step-frame"
+import { MatchAnswer } from "#ui/components/lesson/match-answer"
+import { MultipleChoiceAnswer } from "#ui/components/lesson/multiple-choice-answer"
+import { OrderAnswer } from "#ui/components/lesson/order-answer"
+import { ReadingStepView } from "#ui/components/lesson/reading-step-view"
+import { SelectAnswer } from "#ui/components/lesson/select-answer"
+import { WriteAnswer } from "#ui/components/lesson/write-answer"
 import {
   readLessonDraftText,
   writeLessonDraftText,
-} from "@workspace/ui/lib/lesson-draft-storage"
+} from "#ui/lib/lesson-draft-storage"
 
 import {
   createLessonStepAnswer,
@@ -24,9 +24,9 @@ import {
   type LessonAiFeedbackRequest,
   type LessonAnswerChange,
   type LessonStepAnswerPayload,
-} from "@workspace/ui/lesson-runtime/logic"
-import { type LessonStepCheckedState } from "@workspace/ui/lesson-runtime/policy"
-import type { LessonStep } from "@workspace/ui/lesson-runtime/types"
+} from "#ui/lesson-runtime/logic"
+import { type LessonStepCheckedState } from "#ui/lesson-runtime/policy"
+import type { LessonStep } from "#ui/lesson-runtime/types"
 
 export type LessonStepRendererProps = {
   readonly draftNamespace: string

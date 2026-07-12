@@ -1,4 +1,4 @@
-import type { Lesson, LessonStep } from "@workspace/ui/lesson-runtime/types"
+import type { Lesson, LessonStep } from "#ui/lesson-runtime/types"
 
 export type LessonStartedAnswer = {
   readonly kind: "lesson-started"

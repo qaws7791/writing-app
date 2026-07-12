@@ -8,7 +8,7 @@ import {
 import { useTree } from "@headless-tree/react"
 import { describe, expect, it } from "vitest"
 
-import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "#ui/components/ui/tree"
 
 type TestTreeItem = {
   readonly children: readonly string[]

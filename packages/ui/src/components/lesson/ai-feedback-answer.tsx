@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import { Button } from "../ui/button"
+import { Button } from "#ui/components/ui/button"
 
 export type AiFeedbackViewModel = {
   readonly improvements: readonly string[]

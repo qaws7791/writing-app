@@ -1,25 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { BookOpenIcon } from "@workspace/ui/components/icons"
 
+import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Button,
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@workspace/ui/components/ui/empty"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { SectionHeader } from "@workspace/ui/components/ui/section-header"
+import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
+import { Surface } from "@workspace/ui/components/ui/surface"
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  Empty,
-  EmptyHeader,
-  EmptyTitle,
-  EmptyDescription,
-  EmptyContent,
-  PageHeader,
-  SectionHeader,
-  StatCard,
-  StatGrid,
-  Surface,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/table"
 
 const meta = {
   title: "Patterns/Page Structure",

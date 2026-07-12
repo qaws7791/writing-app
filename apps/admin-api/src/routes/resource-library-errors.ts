@@ -1,4 +1,4 @@
-import type { ResourceTreeCommandRejection } from "@workspace/core/modules/resource-library/api"
+import type { ResourceTreeCommandRejection } from "@workspace/core/resource-library"
 
 import {
   invalidAdminRequestError,

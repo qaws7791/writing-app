@@ -5,7 +5,7 @@
     "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "#ui/*": ["src/*"]
     }
   },
   "include": ["."],

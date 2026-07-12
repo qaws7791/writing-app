@@ -5,8 +5,8 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cva, type VariantProps } from "class-variance-authority"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
-import { cn } from "../../lib/utils"
-import { fieldControlVariants } from "../../lib/field-control-variants"
+import { cn } from "#ui/lib/utils"
+import { fieldControlVariants } from "#ui/lib/field-control-variants"
 
 const selectTriggerVariants = cva(
   "flex h-11 w-fit min-w-36 items-center justify-between gap-2 text-sm whitespace-nowrap outline-none transition-[color,box-shadow,background-color,border-color] data-placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",

@@ -1,6 +1,6 @@
 import { and, asc, count, eq } from "drizzle-orm"
 import { z } from "zod"
-import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import {
   courseDetailDtoSchema,
   courseSummaryDtoSchema,
@@ -10,8 +10,8 @@ import {
   type CourseSummaryDto,
   type LessonDto,
   type LessonStepDto,
-} from "@workspace/core/modules/content/domain/content.dto"
-import { contentStatuses } from "@workspace/core/shared/kernel/status"
+} from "#core/modules/content/domain/content.dto"
+import { contentStatuses } from "#core/shared/kernel/status"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {

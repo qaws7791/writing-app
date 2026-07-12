@@ -2,7 +2,7 @@ import type {
   ResourceBreadcrumbItem,
   ResourceNodeId,
   ResourceTreeScope,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+} from "#core/modules/resource-library/domain/resource-tree-node"
 
 export type ResourceSearchRecord = {
   readonly excerpt: string | null

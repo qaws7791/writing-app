@@ -1,5 +1,5 @@
-import type { AuthenticatedSession } from "@workspace/core/modules/auth"
-import type { LearnerProfileStatsDto } from "@workspace/core/modules/learning"
+import type { AuthenticatedSession } from "@workspace/core/auth"
+import type { LearnerProfileStatsDto } from "@workspace/core/learning"
 
 export function presentProfile({
   session,

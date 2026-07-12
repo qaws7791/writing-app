@@ -1,4 +1,4 @@
-import { localRuntimeDefaults } from "@workspace/env"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 declare const serverApiBaseUrlBrand: unique symbol
 

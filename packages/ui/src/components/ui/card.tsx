@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "../../lib/utils"
+import { cn } from "#ui/lib/utils"
 
 /**
  * `Card` 컴포넌트는 콘텐츠를 그룹화하고 시각적으로 구분하는 데 사용됩니다.

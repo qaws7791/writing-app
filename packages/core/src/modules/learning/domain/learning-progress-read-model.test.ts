@@ -5,7 +5,7 @@ import {
   hasStartedCourse,
   isCourseCompleted,
   matchesProgressCourseStatusFilter,
-} from "@workspace/core/modules/learning/domain/learning-progress-read-model"
+} from "#core/modules/learning/domain/learning-progress-read-model"
 import { lessonIdSchema } from "@workspace/contracts/content"
 
 const inProgressCourse = {

@@ -5,9 +5,9 @@ import {
   lessonIdSchema,
   lessonStepIdSchema,
   unitIdSchema,
-} from "@/modules/content/domain/content.ids"
+} from "@workspace/contracts/content/content.ids"
 import { lessonDtoSchema, type LessonDto } from "@workspace/contracts/content"
-import { validateStepAnswerForLesson } from "@/modules/learning/domain/step-answer-policy"
+import { validateStepAnswerForLesson } from "#core/modules/learning/domain/step-answer-policy"
 
 describe("스텝 답변 정책", () => {
   it("레슨 시작 마커는 첫 스텝에서만 허용한다", () => {

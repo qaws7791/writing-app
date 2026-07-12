@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
+import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Button,
   Progress,
   ProgressLabel,
   ProgressValue,
-  Surface,
-} from "@workspace/ui"
+} from "@workspace/ui/components/ui/progress"
+import { Surface } from "@workspace/ui/components/ui/surface"
 
 const meta = {
   title: "Foundations/Motion",

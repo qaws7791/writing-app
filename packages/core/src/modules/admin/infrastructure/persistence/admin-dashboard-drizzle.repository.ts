@@ -1,18 +1,18 @@
-import type { AdminDashboardDto } from "@workspace/core/modules/admin/domain/admin.dto"
+import type { AdminDashboardDto } from "#core/modules/admin/domain/admin.dto"
 import type {
   DashboardReader,
   ReadAdminDashboardInput,
-} from "@workspace/core/modules/admin/application/ports/admin.repository"
+} from "#core/modules/admin/application/ports/admin.repository"
 import {
   addLearningCalendarDays,
   isLearningDateKeyInRange,
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/domain/learning-date"
+} from "#core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   lessonProgressStatuses,
-} from "@workspace/core/shared/kernel/status"
+} from "#core/shared/kernel/status"
 import {
   and,
   asc,
@@ -31,7 +31,7 @@ import {
   calculateCurrentStreakDays,
   createActiveLearnerCondition,
   groupActivityDatesByUserId,
-} from "@workspace/core/modules/admin/infrastructure/persistence/admin-repository-shared"
+} from "#core/modules/admin/infrastructure/persistence/admin-repository-shared"
 import {
   authUsers,
   courses,
