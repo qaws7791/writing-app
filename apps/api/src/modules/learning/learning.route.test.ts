@@ -256,8 +256,9 @@ describe("플랫폼 API learning route", () => {
     const response = await app.request("/learning/lessons/l1/progress", {
       body: JSON.stringify({ currentStepIndex: 1 }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })
