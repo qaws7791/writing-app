@@ -27,6 +27,7 @@
     "dev:app": "turbo dev --filter=@workspace/web --filter=@workspace/api",
     "dev:app:setup": "bun --filter @workspace/db db:migrate && bun --filter @workspace/db db:seed",
     "dev:app:fresh": "bun run db:reset && bun run dev:app:setup && bun run dev:app",
+    "db:backup": "bun packages/db/src/scripts/backup-database.ts",
     "db:reset": "bun --filter @workspace/db db:reset",
     "lint": "bun run check:workspace-inventory && bun run check:document-drift && bun run check:api-contract && bun run check:components-config && bun run check:design-system-guardrails && bun run check:import-cycles && oxlint apps packages scripts",
     "lint:fix": "oxlint apps packages scripts --fix",

@@ -51,7 +51,7 @@ CATEGORIZE
 
 - 완료 레슨은 `lesson_progress`에 레슨 ID 기준으로 남긴다.
 - 코스 진행률과 다음 레슨은 현재 커리큘럼의 active 유닛과 active 레슨 기준으로 계산한다.
-- 기존 레슨을 정리할 때는 실제 삭제보다 `deprecated` 또는 `archived` 상태 전환을 우선한다.
+- 기존 레슨을 정리할 때는 실제 삭제보다 `archived` 상태 전환을 우선한다.
 - 이미 저장된 완료 row는 레슨이 archived 상태가 되더라도 감사와 복구를 위해 남긴다.
 
 ## 현재 커리큘럼 모델
@@ -80,11 +80,10 @@ LearnerProgress
 코스, 유닛, 레슨, 스텝은 기본적으로 실제 삭제하지 않는다. 신규 학습 경로에서 숨기려면 상태를 변경한다.
 
 ```ts
-type CurriculumNodeStatus = "active" | "deprecated" | "archived"
+type CurriculumNodeStatus = "active" | "archived"
 ```
 
 - `active`: 신규 학습 경로에 포함한다.
-- `deprecated`: 대체 예정 상태다. 관리자 화면에서 정리 대상임을 표시할 수 있다.
 - `archived`: 신규 학습 경로에서는 숨긴다. 기존 진행 데이터와 복구 가능성을 위해 데이터는 보존한다.
 
 실제 삭제는 진행 데이터 참조, 복구 기간, 운영 감사 필요성을 확인한 뒤 별도 정리 작업에서만 다룬다.
@@ -103,17 +102,12 @@ type CurriculumNodeStatus = "active" | "deprecated" | "archived"
 
 ## 어드민 편집 정책
 
-어드민 코스 편집기는 현재 커리큘럼 전체 스냅샷을 저장한다. 저장 대상은 코스 기본 정보, 유닛, 레슨 배치, 스텝 본문이다.
+어드민 코스 편집기는 현재 커리큘럼을 읽기 전용으로 보여 준다.
 
 - 코스 편집 문서는 `GET /courses/:courseId/editor`로 조회한다.
-- 저장은 `PUT /courses/:courseId/editor`로 수행한다.
-- 코스 편집 문서는 `revision`을 포함하고, 저장 요청은 관리자가 읽은 기준 `expectedRevision`을 함께 보낸다.
-- 서버의 현재 revision과 저장 요청의 `expectedRevision`이 다르면 저장을 거절하고 `409 conflict`를 반환한다.
+- 현재 구현에는 코스 편집 저장 endpoint가 없으며 화면 입력과 추가·삭제 버튼도 비활성 상태다.
+- 코스 생성은 `POST /courses`, 코스 보관은 `POST /courses/:courseId/archive`를 사용한다.
 - 별도 draft, publish, discard, restore 단계는 없다.
-- 저장 payload에서 빠진 기존 유닛과 레슨은 삭제하지 않고 `archived`로 전환한다.
-- 저장 payload에서 빠진 기존 스텝은 삭제하지 않고 `archived`로 전환한다.
-
-유닛과 레슨은 삭제 후 재생성하지 않는다. 저장 요청에 포함된 항목은 ID 기준으로 갱신하고, 요청에서 빠진 기존 유닛과 레슨은 `archived` 상태로 전환해 추적 가능한 row ID를 유지한다.
 
 ## 현재 구현 상태
 

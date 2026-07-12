@@ -12,15 +12,30 @@
 - `apps/admin-api`: 관리자용 Hono API
 - `apps/storybook`: 공유 UI 컴포넌트 확인용 Storybook
 - `packages/ui`: 공유 UI 컴포넌트
+- `packages/contracts`: 학습자·관리자 HTTP DTO와 Zod 계약
 - `packages/core`: 도메인, DTO, 유스케이스, repository 구현
 - `packages/db`: Drizzle SQLite schema, migration, seed, DB client
 - `packages/hono`: Hono route, validation, error handling 표준
 - `packages/env`: 환경 변수 파싱 helper
 - `packages/http-client`: HTTP result와 네트워크 오류 모델
 - `packages/logger`: API 런타임용 logger
+- `packages/resource-document`: Lexical GFM 문서 계약과 Yjs 투영
 - `packages/config`: 공유 TypeScript 설정
 
 전체 workspace 인벤토리는 `docs/engineering/workspace-inventory.md`에서 확인한다.
+
+## 새 팀원 탐색 경로
+
+영역별 첫 문서에서 시작해 공개 Interface, 실제 Implementation, 가까운 테스트 순서로 읽는다.
+
+| 영역         | 첫 문서                                                                | Interface                                                                   | Implementation                                                                                                               | 테스트                                                                                                                              |
+| ------------ | ---------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 학습 콘텐츠  | [도메인 가이드](DOMAIN.md)                                             | [콘텐츠 공개 경계](packages/core/src/modules/content/api/index.ts)          | [학습자 콘텐츠 서비스](packages/core/src/modules/content/application/use-cases/learner-content.service.ts)                   | [서비스 테스트](packages/core/src/modules/content/application/use-cases/learner-content.service.test.ts)                            |
+| 학습 진행    | [시스템 개요](docs/engineering/system-overview.md)                     | [학습 공개 경계](packages/core/src/modules/learning/api/index.ts)           | [학습 서비스](packages/core/src/modules/learning/application/use-cases/learning.service.ts)                                  | [서비스 테스트](packages/core/src/modules/learning/application/use-cases/learning.service.test.ts)                                  |
+| 관리자 API   | [API 계약](docs/engineering/api-contract.md)                           | [관리자 계약](packages/contracts/src/admin/index.ts)                        | [관리자 앱 조립](apps/admin-api/src/app.ts)                                                                                  | [앱 테스트](apps/admin-api/src/app.test.ts)                                                                                         |
+| 자료실       | [자료실 동기화 설계](docs/engineering/resource-library-sync-design.md) | [자료실 공개 경계](packages/core/src/modules/resource-library/api/index.ts) | [문서 저장소](packages/core/src/modules/resource-library/infrastructure/persistence/resource-document-drizzle.repository.ts) | [저장소 테스트](packages/core/src/modules/resource-library/infrastructure/persistence/resource-document-drizzle.repository.test.ts) |
+| 공유 UI      | [프론트엔드 가이드](FRONTEND.md)                                       | [UI 패키지 공개 경계](packages/ui/package.json)                             | [UI 컴포넌트](packages/ui/src/components)                                                                                    | [Storybook](apps/storybook/src/stories)                                                                                             |
+| 데이터베이스 | [데이터 모델](docs/engineering/data-model.md)                          | [DB 패키지 공개 경계](packages/db/src/index.ts)                             | [DB 클라이언트](packages/db/src/client.ts)                                                                                   | [백업·복구 테스트](packages/db/src/database-backup.test.ts)                                                                         |
 
 ## 필요한 도구
 

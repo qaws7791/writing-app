@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
+    "./database-backup": "./src/database-backup.ts",
     "./content/*": "./src/content/*.ts",
     "./destructive-operation-guard": "./src/destructive-operation-guard.ts",
     "./migrations/*": "./src/migrations/*.ts",
@@ -17,6 +18,7 @@
   },
   "scripts": {
     "db:migrate": "bun src/migrations/migrate.ts",
+    "db:backup": "bun src/scripts/backup-database.ts",
     "db:reset": "bun src/scripts/reset-database.ts",
     "db:seed": "bun src/seeds/seed.ts",
     "lint": "oxlint .",

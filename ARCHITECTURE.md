@@ -2,6 +2,8 @@
 
 이 문서는 writing learning platform의 현재 구조를 빠르게 파악하기 위한 living guide다. 구조가 바뀌면 함께 갱신한다.
 
+현재 workspace의 정확한 경로는 `apps/admin`, `apps/admin-api`, `apps/api`, `apps/storybook`, `apps/web`, `packages/config`, `packages/contracts`, `packages/core`, `packages/db`, `packages/env`, `packages/hono`, `packages/http-client`, `packages/logger`, `packages/resource-document`, `packages/ui`다.
+
 ## 프로젝트 구조
 
 ```text
@@ -15,6 +17,7 @@
 ├── packages/
 │   ├── ui/      # 공유 UI 프리미티브와 순수 도메인 프레젠테이션
 │   ├── config/  # 공유 TypeScript 설정
+│   ├── contracts/ # 학습자·관리자 HTTP DTO와 Zod 계약
 │   ├── db/      # Drizzle schema, migration, seed, db client
 │   ├── hono/    # Hono OpenAPI route, validation, error handling 표준 패키지
 │   ├── http-client/ # HTTP transport result와 네트워크 오류 모델

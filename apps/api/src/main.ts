@@ -9,6 +9,10 @@ import {
 
 import { createApp } from "@/app"
 import { parseApiEnv } from "@/config/env"
+import {
+  createLearnerApiServerLifecycle,
+  registerLearnerApiShutdownSignals,
+} from "@/server-lifecycle"
 
 const env = parseApiEnv(process.env)
 const logger = createAppLogger()
@@ -49,10 +53,19 @@ const app = createApp({
 })
 
 if (import.meta.main) {
-  serve({
+  const lifecycle = createLearnerApiServerLifecycle({
+    closeCore: core.close,
     fetch: app.fetch,
+    onShutdownError(error, phase) {
+      logger.error({ error, phase }, "server.shutdown.failed")
+    },
+  })
+  const server = serve({
+    fetch: lifecycle.fetch,
     port: env.port,
   })
+  lifecycle.attachServer(server)
+  registerLearnerApiShutdownSignals(lifecycle.shutdown)
 }
 
 export { app }

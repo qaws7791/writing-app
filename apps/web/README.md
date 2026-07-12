@@ -10,11 +10,11 @@
 - `/app/courses`: 코스 카테고리와 코스 목록.
 - `/app/courses/[id]`: 코스 상세와 커리큘럼.
 - `/app/lesson?lesson_id=...`: step 기반 레슨 경험.
-- `/api/auth/*`: same-origin 인증 프록시. 실제 인증 처리는 `apps/api`의 Better Auth endpoint로 전달한다.
+- 인증 요청: `apps/api`의 `/api/auth/*` Better Auth endpoint를 직접 호출한다.
 
 ## 구조
 
-- `src/app`: App Router 라우트, layout, 인증 프록시.
+- `src/app`: App Router 라우트와 layout.
 - `src/features/auth`: 로그인 화면과 인증 UI.
 - `src/features/home`: 학습 홈과 진행 요약 표시.
 - `src/features/courses`: 코스 목록, 상세, 커리큘럼 UI와 API mapper.
