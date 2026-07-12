@@ -35,6 +35,7 @@
 | `schema-conventions.md`                                   | 데이터베이스 스키마 명명, Better Auth 테이블, 직접 관리 테이블, 새 스키마 체크리스트를 정의한다.   |
 | `security.md`                                             | 인증, 인가, CORS, 민감 데이터, 오류 응답, AI provider, 데이터 보존 보안 기준을 정의한다.           |
 | `admin-auth-security-operations.md`                       | 관리자 계정 감사, 세션 폐기와 안전한 owner provisioning 운영 절차를 정의한다.                      |
+| `admin-mfa-step-up.md`                                    | owner 관리자 TOTP MFA 등록, 복구 코드와 민감 작업 step-up 인증 경계를 정의한다.                    |
 | `admin-transport-security.md`                             | 관리자 transport의 actor 구성, 이중 인가 경계와 오류 변환 기준을 정의한다.                         |
 | `testing.md`                                              | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.             |
 | `observability.md`                                        | 요청 로그, 런타임 로깅, 로그 정책, 메트릭과 알림과 대시보드 후보를 정의한다.                       |
@@ -53,6 +54,7 @@
 | `adr/ADR-0004-resource-library-collaboration-boundary.md` | 부분 대체됨. Markdown 원본과 트리 명령 책임은 유지하고 본문 transport 결정은 ADR-0005가 대체한다.  |
 | `adr/ADR-0005-resource-library-http-transaction-sync.md`  | 채택됨. 자료실 HTTP transaction 동기화와 작업 공간 WebSocket 역할의 현재 결정을 기록한다.          |
 | `adr/ADR-0006-strict-content-security-policy.md`          | request nonce 기반 strict CSP와 report-only rollout 결정을 기록한다.                               |
+| `adr/ADR-0007-admin-mfa-step-up.md`                       | owner 관리자 TOTP MFA, 복구 코드와 최근 재인증 경계 결정을 기록한다.                               |
 | `contracts/writing-app-api-openapi.json`                  | Writing App API의 OpenAPI 계약을 기계 판독 가능한 형식으로 제공한다.                               |
 
 ## 관리 기준

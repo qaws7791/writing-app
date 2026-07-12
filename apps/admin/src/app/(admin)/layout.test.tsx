@@ -49,9 +49,39 @@ describe("어드민 layout", () => {
           name: "관리자",
           role: "owner",
         },
+        mfa: {
+          enrollmentRequired: false,
+          stepUpRequired: false,
+        },
       },
     })
   })
+
+  it.each([
+    [true, false, "/mfa"],
+    [false, true, "/login?next=%2F"],
+  ] as const)(
+    "MFA 등록=%s step-up=%s 상태는 %s로 보낸다",
+    async (enrollmentRequired, stepUpRequired, path) => {
+      getSessionMock.mockResolvedValueOnce({
+        status: "ok",
+        value: {
+          admin: {
+            email: "admin@example.com",
+            id: "admin-1",
+            name: "관리자",
+            role: "owner",
+          },
+          mfa: { enrollmentRequired, stepUpRequired },
+        },
+      })
+
+      await expect(
+        AdminLayout({ children: <h1>대시보드</h1> })
+      ).rejects.toBeInstanceOf(Error)
+      expect(redirectMock).toHaveBeenCalledWith(path)
+    }
+  )
 
   it("관리자 세션 토큰이 없으면 로그인 화면으로 보낸다", async () => {
     const { getServerAdminSessionToken } =

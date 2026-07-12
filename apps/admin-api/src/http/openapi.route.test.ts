@@ -23,5 +23,15 @@ describe("어드민 API OpenAPI 인증 계약", () => {
       ["paths", "/users", "get", "security"],
       [{ adminSessionCookie: [] }]
     )
+    expect(document).toHaveProperty(
+      ["paths", "/mfa/recovery-codes", "post", "security"],
+      [{ adminSessionCookie: [] }]
+    )
+    expect(document).not.toHaveProperty([
+      "paths",
+      "/mfa/recover",
+      "post",
+      "security",
+    ])
   })
 })

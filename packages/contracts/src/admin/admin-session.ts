@@ -14,6 +14,10 @@ export const adminSessionDtoSchema = z.object({
     name: z.string().min(1).max(200),
     role: adminRoleSchema,
   }),
+  mfa: z.object({
+    enrollmentRequired: z.boolean(),
+    stepUpRequired: z.boolean(),
+  }),
 })
 
 export type AdminRole = z.infer<typeof adminRoleSchema>

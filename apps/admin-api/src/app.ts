@@ -10,6 +10,7 @@ import {
 } from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
+import type { AdminMfaRecoveryService } from "@/auth/admin-mfa-recovery"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import { createOpenApiDocument } from "@/http/openapi"
 import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
@@ -19,6 +20,7 @@ import {
   type AiChatRequestGuard,
 } from "@/routes/ai-chat-request-guard"
 import { createAnalyticsRoutes } from "@/routes/analytics.route"
+import { createAdminMfaRoutes } from "@/routes/admin-mfa.route"
 import { createCoursesRoutes } from "@/routes/courses.route"
 import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
 import { createDashboardRoutes } from "@/routes/dashboard.route"
@@ -84,6 +86,7 @@ export type AdminApiDependencies = {
   }
   readonly aiChatRequestGuard?: AiChatRequestGuard
   readonly adminServices: AdminApiServices
+  readonly adminMfaRecovery: AdminMfaRecoveryService
   readonly adminOrigin?: string
   readonly authHandler?: (request: Request) => Promise<Response>
   readonly errorLogger?: InternalErrorLogger
@@ -105,6 +108,10 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
     middleware: createMiddleware(dependencies),
     routes: [
       healthRoute,
+      ...createAdminMfaRoutes({
+        recoveryService: dependencies.adminMfaRecovery,
+        sessionResolver: dependencies.sessionResolver,
+      }),
       createSessionRoute(dependencies.sessionResolver),
       ...createAiChatRoutes({
         aiChatAgent: dependencies.aiChatAgent,
@@ -175,14 +182,46 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
   if (dependencies.authHandler !== undefined) {
     const authHandler = dependencies.authHandler
 
-    app.on(["GET", "POST"], "/api/auth/*", (context) => {
-      return authHandler(context.req.raw).then(withPrivateNoStore)
+    app.on(["GET", "POST"], "/api/auth/*", async (context) => {
+      const request = await enforcePasswordChangeSessionRevocation(
+        context.req.raw
+      )
+
+      return authHandler(request).then(withPrivateNoStore)
     })
   }
 
   app.get("/openapi", (context) => context.json(createOpenApiDocument(app)))
 
   return app
+}
+
+async function enforcePasswordChangeSessionRevocation(
+  request: Request
+): Promise<Request> {
+  if (
+    request.method !== "POST" ||
+    new URL(request.url).pathname !== "/api/auth/change-password"
+  ) {
+    return request
+  }
+
+  let body: unknown
+  try {
+    body = await request.clone().json()
+  } catch {
+    return request
+  }
+  if (body === null || typeof body !== "object" || Array.isArray(body)) {
+    return request
+  }
+
+  return new Request(request, {
+    body: JSON.stringify({
+      ...body,
+      revokeOtherSessions: true,
+    }),
+  })
 }
 
 function createMiddleware(

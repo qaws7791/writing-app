@@ -9,6 +9,10 @@ export type AdminSession = {
     readonly name: string
     readonly role: "operator" | "owner"
   }
+  readonly mfa: {
+    readonly enrollmentRequired: boolean
+    readonly stepUpRequired: boolean
+  }
 }
 
 export type AdminSessionApi = {
@@ -27,7 +31,13 @@ export function createAdminSessionApi(
       })
       return result.status === "error"
         ? result
-        : { status: "ok", value: { admin: { ...result.value.admin } } }
+        : {
+            status: "ok",
+            value: {
+              admin: { ...result.value.admin },
+              mfa: { ...result.value.mfa },
+            },
+          }
     },
   }
 }

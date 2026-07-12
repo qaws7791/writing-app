@@ -40,6 +40,10 @@
 - owner seed는 명시적 이메일과 강한 비밀번호를 요구하고 운영 대상 DB와 승인 flag를 DB 연결 전에 확인한다.
 - 관리자 인증 감사는 read-only DB 연결을 사용하고 비밀번호 hash와 세션 token 원문을 출력하지 않는다.
 - 사고 대응 시 승인 명단과 실제 계정을 대조한 뒤 전체 관리자 세션을 폐기해 재로그인을 요구한다.
+- owner는 TOTP MFA를 반드시 등록한다. 비밀번호만 확인한 activation session은 MFA 등록과 session 상태 확인 외 관리자 기능에 접근할 수 없다.
+- owner 변경 작업은 10분 이내 TOTP로 생성된 session을 요구하며 transport와 `AdminActor` application 경계에서 모두 검증한다.
+- 신뢰 기기는 사용하지 않는다. 인증 앱 분실 복구 코드는 해시만 저장하고 한 번만 소비하며 성공 시 MFA와 모든 관리자 session을 폐기한다.
+- 관리자 비밀번호 변경은 Better Auth adapter 갱신 성공 뒤 교체 발급된 현재 session을 포함한 모든 session을 서버에서 폐기한다.
 
 ## 인가 보안
 

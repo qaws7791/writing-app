@@ -8,7 +8,7 @@ import type {
   SettingsRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
-  canExecuteOwnerMutation,
+  authorizeOwnerMutation,
   type AdminOwnerMutationResult,
   type OwnerAdminCommand,
 } from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
@@ -33,18 +33,16 @@ export function createAdminSettingsUseCase(
       )
     },
     async updateLegalSettings({ actor, ...input }) {
-      if (!canExecuteOwnerMutation(actor)) {
-        return { kind: "forbidden" }
-      }
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
       const value = adminSettingsDtoSchema.parse(
         await settingsRepository.saveLegalSettings(input)
       )
       return { kind: "ok", value }
     },
     async updateNoticeSettings({ actor, ...input }) {
-      if (!canExecuteOwnerMutation(actor)) {
-        return { kind: "forbidden" }
-      }
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
       const value = adminSettingsDtoSchema.parse(
         await settingsRepository.saveNoticeSettings(input)
       )

@@ -19,6 +19,49 @@ export function runBaselineMigration(sqlite: Database): void {
   ensureAiFeedbackAttemptStateModel(sqlite)
   ensureCourseVisualKeyColumn(sqlite)
   ensureAdminChatTables(sqlite)
+  ensureAdminMfaSchema(sqlite)
+}
+
+function ensureAdminMfaSchema(sqlite: Database): void {
+  const adminUserColumns = sqlite
+    .query<{ readonly name: string }, []>("PRAGMA table_info(admin_user)")
+    .all()
+    .map((row) => row.name)
+
+  if (
+    adminUserColumns.length > 0 &&
+    !adminUserColumns.includes("two_factor_enabled")
+  ) {
+    sqlite.exec(
+      "ALTER TABLE admin_user ADD COLUMN two_factor_enabled INTEGER NOT NULL DEFAULT 0"
+    )
+  }
+
+  sqlite.exec(`
+CREATE TABLE IF NOT EXISTS admin_two_factor (
+  id TEXT PRIMARY KEY NOT NULL,
+  user_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
+  secret TEXT NOT NULL,
+  backup_codes TEXT NOT NULL,
+  verified INTEGER NOT NULL DEFAULT 0,
+  failed_verification_count INTEGER NOT NULL DEFAULT 0,
+  locked_until INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS admin_two_factor_user_idx
+ON admin_two_factor(user_id);
+
+CREATE TABLE IF NOT EXISTS admin_mfa_recovery_code (
+  id TEXT PRIMARY KEY NOT NULL,
+  user_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
+  code_hash TEXT NOT NULL UNIQUE,
+  created_at INTEGER NOT NULL,
+  used_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS admin_mfa_recovery_code_user_idx
+ON admin_mfa_recovery_code(user_id, used_at);
+`)
 }
 
 function ensureAiFeedbackAttemptStateModel(sqlite: Database): void {

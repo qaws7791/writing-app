@@ -4,12 +4,14 @@ export type AdminApiErrorCode =
   | "contract-error"
   | "forbidden"
   | "invalid-request"
+  | "mfa-enrollment-required"
   | "move-cycle"
   | "name-conflict"
   | "network-error"
   | "not-found"
   | "position-conflict"
   | "stale-revision"
+  | "step-up-required"
   | "unauthorized"
 
 export type AdminApiError =
@@ -32,11 +34,13 @@ const serverCodeMap = {
   FORBIDDEN: "forbidden",
   HTTP_EXCEPTION: "invalid-request",
   INVALID_REQUEST: "invalid-request",
+  MFA_ENROLLMENT_REQUIRED: "mfa-enrollment-required",
   NOT_FOUND: "not-found",
   RESOURCE_MOVE_CYCLE: "move-cycle",
   RESOURCE_NAME_CONFLICT: "name-conflict",
   RESOURCE_POSITION_CONFLICT: "position-conflict",
   STALE_REVISION: "stale-revision",
+  STEP_UP_REQUIRED: "step-up-required",
   UNAUTHORIZED: "unauthorized",
   VALIDATION_FAILED: "invalid-request",
 } as const satisfies Record<string, ServerAdminApiErrorCode>
@@ -45,12 +49,14 @@ const messageByCode = {
   "contract-error": "API 응답을 해석할 수 없습니다.",
   forbidden: "관리자 권한이 필요합니다.",
   "invalid-request": "요청 내용을 확인해 주세요.",
+  "mfa-enrollment-required": "민감 작업 전에 MFA를 등록해 주세요.",
   "move-cycle": "폴더를 자신의 하위 경로로 이동할 수 없습니다.",
   "name-conflict": "같은 위치에 동일한 이름이 있습니다.",
   "network-error": "네트워크 연결을 확인해 주세요.",
   "not-found": "요청한 항목을 찾을 수 없습니다.",
   "position-conflict": "이동할 위치를 다시 확인해 주세요.",
   "stale-revision": "다른 사용자의 변경 사항을 다시 불러옵니다.",
+  "step-up-required": "민감 작업을 계속하려면 다시 로그인해 주세요.",
   unauthorized: "관리자 로그인이 필요합니다.",
 } as const satisfies Record<AdminApiErrorCode, string>
 
@@ -89,7 +95,12 @@ export function contractAdminApiError(status?: number): AdminApiError {
 }
 
 export function isAdminAuthenticationError(error: AdminApiError): boolean {
-  return error.code === "forbidden" || error.code === "unauthorized"
+  return (
+    error.code === "forbidden" ||
+    error.code === "mfa-enrollment-required" ||
+    error.code === "step-up-required" ||
+    error.code === "unauthorized"
+  )
 }
 
 function readServerErrorCode(body: unknown): ServerAdminApiErrorCode | null {

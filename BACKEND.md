@@ -96,6 +96,8 @@ bun --filter @workspace/api dev
 - `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
 - `GET /session`
+- `POST /mfa/recovery-codes`
+- `POST /mfa/recover`
 - `GET /dashboard`
 - `GET /courses?page=...&pageSize=...&query=...&status=...`
 - `POST /courses`
@@ -132,7 +134,7 @@ bun --filter @workspace/api dev
 
 자료실 본문은 `POST /resources/documents/{documentId}/transactions`가 멱등 Yjs update를 받아 GFM Markdown 원본·FTS 색인·수정 메타데이터와 함께 원자적으로 저장한다. 다른 편집자의 version 알림을 받으면 `GET /resources/documents/{documentId}/sync`가 연속 update 또는 최신 snapshot을 반환한다. `WebSocket /resources/events`는 작업 공간의 자료 트리 사건과 문서 version·무효화 알림만 전달하며 본문 Yjs binary를 전송하지 않는다. 이 WebSocket upgrade는 관리자 session cookie와 `ADMIN_ORIGIN`을 검증한다.
 
-관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 관리자 Better Auth 런타임에는 Google/OAuth social provider를 등록하지 않는다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다. 관리자 보호 API도 `auth.api.getSession({ headers })`로 관리자용 httpOnly 세션 쿠키를 검증하며, `ADMIN_BETTER_AUTH_SECRET`은 공통 `BETTER_AUTH_SECRET`보다 우선한다.
+관리자 인증은 Better Auth ID/password와 owner TOTP MFA를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`, `admin_two_factor`, `admin_mfa_recovery_code`를 사용한다. 복구 코드는 SHA-256 해시만 저장하고 한 번만 사용하며, 성공하면 MFA 설정과 모든 관리자 session을 폐기한다. 관리자 Better Auth 런타임에는 Google/OAuth social provider를 등록하지 않는다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다. 관리자 보호 API도 `auth.api.getSession({ headers })`로 관리자용 httpOnly 세션 쿠키를 검증하며, `ADMIN_BETTER_AUTH_SECRET`은 공통 `BETTER_AUTH_SECRET`보다 우선한다.
 
 어드민 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL` 기본 경로 위임, `ADMIN_ORIGIN` 기반 CORS 허용 origin, `ADMIN_API_PORT` 같은 앱별 의미 변환은 `apps/admin-api/src/env.ts`에 유지한다.
 SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용한다. 따라서 어드민 API도 마이그레이션과 런타임 쿼리 전에 WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 적용한다.
@@ -189,7 +191,8 @@ DB 테이블과 컬럼 명명 규칙은 `docs/engineering/schema-conventions.md`
 인증과 학습자 상태 테이블은 다음 이름을 사용한다.
 
 - `user`, `session`, `account`, `verification`: Better Auth 테이블
-- `admin_user`, `admin_session`, `admin_account`, `admin_verification`: 관리자 Better Auth 테이블
+- `admin_user`, `admin_session`, `admin_account`, `admin_verification`, `admin_two_factor`: 관리자 Better Auth 테이블
+- `admin_mfa_recovery_code`: owner MFA 일회용 복구 코드 해시
 - `courses`, `course_units`: 코스와 유닛
 - `lessons`, `lesson_steps`: 레슨 본문과 스텝
 - `learner_profiles`: 학습자 앱 소유 프로필과 상태

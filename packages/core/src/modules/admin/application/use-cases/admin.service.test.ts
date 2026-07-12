@@ -278,8 +278,16 @@ const courseList: AdminCourseListDto = {
 }
 
 describe("어드민 서비스", () => {
-  const ownerActor = { id: "owner-1", role: "owner" } as const
-  const operatorActor = { id: "operator-1", role: "operator" } as const
+  const ownerActor = {
+    authenticationAssurance: "mfa-step-up-verified",
+    id: "owner-1",
+    role: "owner",
+  } as const
+  const operatorActor = {
+    authenticationAssurance: "password",
+    id: "operator-1",
+    role: "operator",
+  } as const
 
   it("repository 대시보드 스냅샷을 관리자 dashboard DTO로 반환한다", async () => {
     const service = createService({
@@ -624,6 +632,29 @@ describe("어드민 서비스", () => {
         service.resetContent({ actor: operatorActor, now }),
       ])
     ).resolves.toEqual(Array.from({ length: 7 }, () => ({ kind: "forbidden" })))
+  })
+
+  it("step-up이 만료된 owner의 application 직접 호출을 repository 전에 거부한다", async () => {
+    const service = createService({})
+    const now = new Date("2026-06-14T03:00:00.000Z")
+    const expiredOwnerActor = {
+      ...ownerActor,
+      authenticationAssurance: "mfa-step-up-required",
+    } as const
+
+    await expect(
+      Promise.all([
+        service.deleteUser({
+          actor: expiredOwnerActor,
+          now,
+          userId: "user-1",
+        }),
+        service.resetContent({ actor: expiredOwnerActor, now }),
+      ])
+    ).resolves.toEqual([
+      { kind: "step-up-required" },
+      { kind: "step-up-required" },
+    ])
   })
 })
 

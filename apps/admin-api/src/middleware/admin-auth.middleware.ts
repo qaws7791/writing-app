@@ -1,16 +1,19 @@
 import type { MiddlewareHandler } from "hono"
-import { canAccessOwnerAdminRoute } from "@workspace/core/admin"
+import { authorizeOwnerMutation } from "@workspace/core/admin"
 import { withPrivateNoStore } from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import type { AdminHonoEnv } from "@/context/hono-env"
 import {
   forbiddenAdminError,
+  mfaEnrollmentRequiredAdminError,
+  stepUpRequiredAdminError,
   unauthorizedAdminError,
 } from "@/errors/admin-errors"
 
 export function createRequireAdminSessionMiddleware(
-  sessionResolver: AdminSessionResolver
+  sessionResolver: AdminSessionResolver,
+  options: { readonly allowMfaEnrollment?: boolean } = {}
 ): MiddlewareHandler<AdminHonoEnv> {
   return async (context, next) => {
     const session = await sessionResolver.resolveSession(
@@ -23,9 +26,17 @@ export function createRequireAdminSessionMiddleware(
 
     context.set("activeAdminSession", session)
     context.set("adminActor", {
+      authenticationAssurance: session.authenticationAssurance,
       id: session.admin.id,
       role: session.admin.role,
     })
+
+    if (
+      session.authenticationAssurance === "mfa-enrollment-required" &&
+      options.allowMfaEnrollment !== true
+    ) {
+      throw mfaEnrollmentRequiredAdminError()
+    }
 
     await next()
     context.res = withPrivateNoStore(context.res)
@@ -46,12 +57,20 @@ export function createRequireOwnerAdminSessionMiddleware(
 
     context.set("activeAdminSession", session)
     context.set("adminActor", {
+      authenticationAssurance: session.authenticationAssurance,
       id: session.admin.id,
       role: session.admin.role,
     })
 
-    if (!canAccessOwnerAdminRoute(session.admin.role)) {
-      throw forbiddenAdminError()
+    switch (authorizeOwnerMutation(context.var.adminActor)) {
+      case "allowed":
+        break
+      case "forbidden":
+        throw forbiddenAdminError()
+      case "mfa-enrollment-required":
+        throw mfaEnrollmentRequiredAdminError()
+      case "step-up-required":
+        throw stepUpRequiredAdminError()
     }
 
     await next()

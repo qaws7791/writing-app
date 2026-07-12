@@ -82,8 +82,10 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 - 관리자 로그인은 `POST /api/auth/sign-in/email`을 사용한다.
 - 관리자 공개 가입 `POST /api/auth/sign-up/email`은 `404`로 차단한다.
 - 관리자 계정은 승인된 운영자가 폐쇄형 owner seed 절차로만 생성한다.
+- seed된 owner의 최초 비밀번호 로그인은 activation session이며 MFA 등록을 마쳐야 완전한 관리자 session을 얻는다.
 - 조회 route는 관리자 세션만 요구한다.
 - 코스·사용자·운영 설정 변경 route는 owner 세션을 요구한다.
+- owner 변경 route는 추가로 10분 이내 TOTP step-up을 요구한다. operator는 MFA 의무 대상이 아니지만 owner 변경 권한도 얻지 않는다.
 - 자료실 REST와 WebSocket은 operator와 owner 모두 사용할 수 있다.
 
 ## 오류 정책

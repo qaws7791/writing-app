@@ -3,6 +3,7 @@ import type {
   AdminAuthenticatedSession,
   AdminSessionResolver,
 } from "@/auth/admin-session"
+import type { AdminMfaRecoveryService } from "@/auth/admin-mfa-recovery"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import {
@@ -30,6 +31,7 @@ type TestAdminApiServicesOverrides = {
 }
 
 type TestAdminApiDependencyOverrides = {
+  readonly adminMfaRecovery?: AdminMfaRecoveryService
   readonly adminOrigin?: string
   readonly adminServices?: TestAdminApiServicesOverrides
   readonly now?: () => Date
@@ -46,7 +48,9 @@ export const testAdminSession = {
     id: "admin-1",
     name: "관리자",
     role: adminRoles.owner,
+    twoFactorEnabled: true,
   },
+  authenticationAssurance: "mfa-step-up-verified",
   [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
 } as const satisfies AdminAuthenticatedSession
 
@@ -56,6 +60,8 @@ export function createTestAdminApiDependencies(
   const failingAdminServices = createFailingAdminApiServices()
 
   return {
+    adminMfaRecovery:
+      overrides.adminMfaRecovery ?? createFailingAdminMfaRecovery(),
     adminServices: {
       aiChat: {
         ...failingAdminServices.aiChat,
@@ -117,6 +123,17 @@ export function createTestAdminApiDependencies(
     },
     sessionResolver:
       overrides.sessionResolver ?? createTestAdminSessionResolver(),
+  }
+}
+
+function createFailingAdminMfaRecovery(): AdminMfaRecoveryService {
+  return {
+    async recover() {
+      throw new Error("Unexpected admin MFA recovery call")
+    },
+    async replaceRecoveryCodes() {
+      throw new Error("Unexpected admin MFA recovery code call")
+    },
   }
 }
 

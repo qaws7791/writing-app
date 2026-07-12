@@ -20,6 +20,7 @@ import type { AdminApiServices } from "@/app"
 export type AdminApiCore = {
   readonly close: () => void
   readonly database: ReturnType<typeof createWritingAppDatabase>["db"]
+  readonly databaseClient: ReturnType<typeof createWritingAppDatabase>
   readonly services: AdminApiServices
 }
 
@@ -54,6 +55,7 @@ export function createAdminApiCore({
   return {
     close,
     database: database.db,
+    databaseClient: database,
     services: {
       aiChat: adminService,
       analytics: adminService,
