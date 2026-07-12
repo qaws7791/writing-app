@@ -67,7 +67,7 @@
 ```bash
 bun --filter @workspace/ui test
 bun --filter @workspace/ui typecheck
-bun --filter storybook build
+bun --filter @workspace/storybook build
 bun run lint
 ```
 

@@ -32,7 +32,7 @@
 
 - `@tailwindcss/typography`를 Storybook의 직접 개발 의존성으로 선언해 Bun isolated install에서 공유 스타일 플러그인을 결정적으로 해석한다.
 - 공유 전역 스타일은 모든 `@import`를 `@plugin`보다 먼저 선언해 PostCSS import 순서 경고를 방지한다.
-- `bun --filter storybook build`와 `bun run build -- --force`로 Storybook 단독 빌드와 전체 워크스페이스 빌드를 검증했다.
+- `bun --filter @workspace/storybook build`와 `bun run build -- --force`로 Storybook 단독 빌드와 전체 워크스페이스 빌드를 검증했다.
 
 ## 완료된 작업 (2026-06-30)
 

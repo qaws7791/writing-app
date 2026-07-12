@@ -9,7 +9,7 @@
 | `apps/admin`                  | `@workspace/admin`              | app     | 관리자 Next.js 운영 대시보드                                |
 | `apps/admin-api`              | `@workspace/admin-api`          | app     | 관리자 Hono API                                             |
 | `apps/api`                    | `@workspace/api`                | app     | 학습자 Hono API                                             |
-| `apps/storybook`              | `storybook`                     | app     | 공유 UI 컴포넌트 개발 환경                                  |
+| `apps/storybook`              | `@workspace/storybook`          | app     | 공유 UI 컴포넌트 개발 환경                                  |
 | `apps/web`                    | `@workspace/web`                | app     | 학습자 Next.js 앱                                           |
 | `packages/config`             | `@workspace/config`             | package | 공유 TypeScript 설정                                        |
 | `packages/contracts`          | `@workspace/contracts`          | package | 학습자·관리자 request/response DTO와 Zod 계약               |
