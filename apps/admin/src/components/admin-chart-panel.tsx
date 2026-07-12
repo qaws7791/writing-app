@@ -1,72 +1,8 @@
-"use client"
-
-import dynamic from "next/dynamic"
-import { Component, useEffect, useRef, useState, type ReactNode } from "react"
-
-type DailySeriesPoint = {
-  readonly completions: number
-  readonly date: string
-  readonly signups: number
-}
-
-type StreakBucket = {
-  readonly count: number
-  readonly label: string
-}
-
-type AdminChartPanelProps =
-  | {
-      readonly data: readonly DailySeriesPoint[]
-      readonly kind: "completions" | "signups"
-    }
-  | {
-      readonly data: readonly StreakBucket[]
-      readonly kind: "streaks"
-    }
-
-const SignupTrendChart = dynamic(
-  () =>
-    import("@/components/admin-charts").then(
-      (module) => module.AdminSignupTrendChart
-    ),
-  { loading: ChartLoading, ssr: false }
-)
-const CompletionTrendChart = dynamic(
-  () =>
-    import("@/components/admin-charts").then(
-      (module) => module.AdminCompletionTrendChart
-    ),
-  { loading: ChartLoading, ssr: false }
-)
-const StreakDistributionChart = dynamic(
-  () =>
-    import("@/components/admin-charts").then(
-      (module) => module.AdminStreakDistributionChart
-    ),
-  { loading: ChartLoading, ssr: false }
-)
+import type { AdminChartPanelProps } from "@/components/admin-chart-types"
+import { AdminChartVisual } from "@/components/admin-chart-visual"
 
 export function AdminChartPanel(props: AdminChartPanelProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [shouldLoadChart, setShouldLoadChart] = useState(false)
   const title = readChartTitle(props.kind)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (container === null || shouldLoadChart) return
-    if (typeof IntersectionObserver === "undefined") return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return
-        setShouldLoadChart(true)
-        observer.disconnect()
-      },
-      { rootMargin: "200px" }
-    )
-    observer.observe(container)
-    return () => observer.disconnect()
-  }, [shouldLoadChart])
 
   return (
     <article className="rounded-4xl border border-surface-hover p-6">
@@ -75,27 +11,9 @@ export function AdminChartPanel(props: AdminChartPanelProps) {
       </h2>
       <ChartSummary props={props} />
       <ChartDataTable props={props} title={title} />
-      <div aria-hidden="true" className="mt-5 min-h-[260px]" ref={containerRef}>
-        {shouldLoadChart ? (
-          <ChartErrorBoundary>
-            <ChartVisual props={props} />
-          </ChartErrorBoundary>
-        ) : (
-          <ChartLoading />
-        )}
-      </div>
+      <AdminChartVisual {...props} />
     </article>
   )
-}
-
-function ChartVisual({ props }: { readonly props: AdminChartPanelProps }) {
-  if (props.kind === "streaks") {
-    return <StreakDistributionChart data={props.data} />
-  }
-  if (props.kind === "signups") {
-    return <SignupTrendChart data={props.data} />
-  }
-  return <CompletionTrendChart data={props.data} />
 }
 
 function ChartSummary({ props }: { readonly props: AdminChartPanelProps }) {
@@ -174,35 +92,4 @@ function readChartTitle(kind: AdminChartPanelProps["kind"]) {
   if (kind === "signups") return "최근 30일 가입 추이"
   if (kind === "completions") return "일별 레슨 완료"
   return "스트릭 유지 분포"
-}
-
-function ChartLoading() {
-  return (
-    <div
-      className="h-[260px] animate-pulse rounded-3xl bg-surface"
-      role="presentation"
-    />
-  )
-}
-
-class ChartErrorBoundary extends Component<
-  { readonly children: ReactNode },
-  { readonly failed: boolean }
-> {
-  override state = { failed: false }
-
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-
-  override render() {
-    return this.state.failed ? (
-      <p className="flex h-[260px] items-center justify-center text-sm font-medium text-muted-foreground">
-        차트를 표시하지 못했습니다. 위 요약과 표에서 같은 값을 확인할 수
-        있습니다.
-      </p>
-    ) : (
-      this.props.children
-    )
-  }
 }
