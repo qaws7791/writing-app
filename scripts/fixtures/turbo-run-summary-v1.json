@@ -1,0 +1,37 @@
+{
+  "id": "fixture-run",
+  "version": "1",
+  "turboVersion": "2.10.4",
+  "execution": {
+    "exitCode": 1
+  },
+  "tasks": [
+    {
+      "package": "@workspace/admin",
+      "task": "test",
+      "command": "vitest run --config vitest.config.ts",
+      "cache": { "status": "MISS" },
+      "execution": { "exitCode": 0 }
+    },
+    {
+      "package": "@workspace/repository-tooling",
+      "task": "test",
+      "command": "vitest run --config vitest.config.ts",
+      "cache": { "status": "HIT" },
+      "execution": { "exitCode": 0 }
+    },
+    {
+      "package": "@workspace/ui",
+      "task": "test",
+      "command": "vitest run --config vitest.config.ts",
+      "cache": { "status": "MISS" },
+      "execution": { "exitCode": 1 }
+    },
+    {
+      "package": "@workspace/config",
+      "task": "test",
+      "command": null,
+      "cache": { "status": "MISS" }
+    }
+  ]
+}

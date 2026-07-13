@@ -46,7 +46,7 @@ jobs:
         run: bun scripts/ci-workspace-inventory.ts lint typecheck
 
   tests:
-    name: 테스트 및 커버리지
+    name: 전체 테스트
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -59,11 +59,29 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
       - run: bun install --frozen-lockfile
-      - run: bun test scripts/ci-workspace-inventory.test.ts scripts/check-design-system-guardrails.test.ts scripts/check-workspace-dependency-versions.test.ts scripts/lint-deny-warnings.test.ts
-      - run: node scripts/oxlint/workspace-rules.test.mjs
-      - run: bun run test:coverage
+      - run: bun run test -- --summarize --continue=always
       - if: always()
-        run: bun scripts/ci-workspace-inventory.ts test
+        run: bun test ./scripts
+      - if: always()
+        run: node scripts/oxlint/workspace-rules.node-test.mjs
+      - if: always()
+        run: bun scripts/ci-workspace-inventory.ts test --summary-directory=.turbo/runs
+
+  coverage:
+    name: 커버리지
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - run: bun run test:coverage
       - if: always()
         uses: actions/upload-artifact@v4
         with:

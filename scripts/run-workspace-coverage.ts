@@ -1,11 +1,27 @@
-import { mkdirSync, readFileSync, rmSync } from "node:fs"
+import { mkdirSync, rmSync } from "node:fs"
 import { basename, join } from "node:path"
 
-type CoverageProject = {
+import {
+  aggregateLcovReports,
+  assertLineCoverageThresholds,
+  createRepositoryWorkspaceInventory,
+  formatWorkspaceInventoryError,
+  type LineCoverageThreshold,
+} from "@workspace/repository-tooling"
+
+type BunCoverageProject = {
+  readonly coverageTests: readonly string[]
   readonly path: string
-  readonly bunCoverageTests?: readonly string[]
-  readonly coverageTests?: readonly string[]
+  readonly runtime: "bun"
 }
+
+type NodeCoverageProject = {
+  readonly coverageTests?: readonly string[]
+  readonly path: string
+  readonly runtime: "node"
+}
+
+type CoverageProject = BunCoverageProject | NodeCoverageProject
 
 const projects: readonly CoverageProject[] = [
   {
@@ -14,41 +30,67 @@ const projects: readonly CoverageProject[] = [
       "src/lib/auth/admin-auth-navigation.test.ts",
     ],
     path: "apps/admin",
+    runtime: "node",
   },
-  { bunCoverageTests: ["src/architecture.test.ts"], path: "apps/admin-api" },
-  { bunCoverageTests: ["src/architecture.test.ts"], path: "apps/api" },
+  {
+    coverageTests: ["src/architecture.test.ts"],
+    path: "apps/admin-api",
+    runtime: "bun",
+  },
+  {
+    coverageTests: ["src/architecture.test.ts"],
+    path: "apps/api",
+    runtime: "bun",
+  },
   {
     coverageTests: [
       "src/runtime-config.test.ts",
       "src/lib/api/api-error.test.ts",
     ],
     path: "apps/web",
+    runtime: "node",
   },
-  { coverageTests: ["src/input-limits.test.ts"], path: "packages/contracts" },
   {
-    bunCoverageTests: [
+    coverageTests: ["src/input-limits.test.ts"],
+    path: "packages/contracts",
+    runtime: "node",
+  },
+  {
+    coverageTests: [
       "src/modules/admin/infrastructure/persistence/admin-drizzle.repository.test.ts",
     ],
     path: "packages/core",
+    runtime: "bun",
   },
   {
-    bunCoverageTests: [
+    coverageTests: [
       "src/client.test.ts",
       "src/destructive-operation-guard.test.ts",
       "src/migrations/baseline-migration.test.ts",
     ],
     path: "packages/db",
+    runtime: "bun",
   },
-  { path: "packages/env" },
+  { path: "packages/env", runtime: "node" },
   {
     coverageTests: ["src/security/request-security.test.ts"],
     path: "packages/hono",
+    runtime: "node",
   },
-  { coverageTests: ["src/index.test.ts"], path: "packages/http-client" },
-  { coverageTests: ["src/logger.test.ts"], path: "packages/logger" },
+  {
+    coverageTests: ["src/index.test.ts"],
+    path: "packages/http-client",
+    runtime: "node",
+  },
+  {
+    coverageTests: ["src/logger.test.ts"],
+    path: "packages/logger",
+    runtime: "node",
+  },
   {
     coverageTests: ["src/resource-collaboration.test.ts"],
     path: "packages/resource-document",
+    runtime: "node",
   },
   {
     coverageTests: [
@@ -56,38 +98,104 @@ const projects: readonly CoverageProject[] = [
       "src/lib/lesson-draft-storage.test.ts",
     ],
     path: "packages/ui",
+    runtime: "node",
+  },
+]
+
+const criticalCoverageThresholds: readonly LineCoverageThreshold[] = [
+  {
+    filePath: "src/lib/auth/admin-auth-navigation.ts",
+    minimum: 75,
+    reportDirectory: "apps-admin",
+  },
+  {
+    filePath:
+      "src/modules/admin/infrastructure/persistence/admin-drizzle.repository.ts",
+    minimum: 100,
+    reportDirectory: "packages-core",
+  },
+  {
+    filePath: "src/migrations/migrate.ts",
+    minimum: 87,
+    reportDirectory: "packages-db",
+  },
+  {
+    filePath: "src/resource-collaboration.ts",
+    minimum: 87,
+    reportDirectory: "packages-resource-document",
   },
 ]
 
 const coverageDirectory = join(process.cwd(), "coverage")
+const coverageStartedAt = performance.now()
+validateCoverageInventory()
 rmSync(coverageDirectory, { force: true, recursive: true })
 mkdirSync(coverageDirectory, { recursive: true })
 
 for (const project of projects) {
+  const startedAt = performance.now()
   const slug = `${project.path.split("/")[0]}-${basename(project.path)}`
   const reportsDirectory = join(coverageDirectory, slug)
   console.log(`\n[coverage] ${project.path}`)
 
-  if (project.bunCoverageTests !== undefined) {
-    await run(
-      ["bun", "--bun", "../../node_modules/vitest/vitest.mjs", "run"],
-      project.path
-    )
-    await run(
-      [
-        "bun",
-        "test",
-        ...project.bunCoverageTests,
-        "--coverage",
-        "--coverage-skip-test-files",
-        "--coverage-reporter=lcov",
-        `--coverage-dir=${reportsDirectory}`,
-      ],
-      project.path
-    )
-    continue
+  await runCoverageProject(project, reportsDirectory)
+  console.log(
+    `[coverage] ${project.path} ${formatDuration(performance.now() - startedAt)}`
+  )
+}
+
+aggregateLcovReports({
+  coverageDirectory,
+  reportDirectories: projects.map(
+    (project) => `${project.path.split("/")[0]}-${basename(project.path)}`
+  ),
+})
+assertLineCoverageThresholds({
+  coverageDirectory,
+  thresholds: criticalCoverageThresholds,
+})
+console.log(
+  `\n[coverage] ${projects.length}개 runtime workspace ${formatDuration(performance.now() - coverageStartedAt)} 완료`
+)
+
+async function runCoverageProject(
+  project: CoverageProject,
+  reportsDirectory: string
+): Promise<void> {
+  if (project.runtime === "bun") {
+    await runBunCoverage(project, reportsDirectory)
+    return
   }
 
+  await runNodeCoverage(project, reportsDirectory)
+}
+
+async function runBunCoverage(
+  project: BunCoverageProject,
+  reportsDirectory: string
+): Promise<void> {
+  await run(
+    ["bun", "--bun", "../../node_modules/vitest/vitest.mjs", "run"],
+    project.path
+  )
+  await run(
+    [
+      "bun",
+      "test",
+      ...project.coverageTests,
+      "--coverage",
+      "--coverage-skip-test-files",
+      "--coverage-reporter=lcov",
+      `--coverage-dir=${reportsDirectory}`,
+    ],
+    project.path
+  )
+}
+
+async function runNodeCoverage(
+  project: NodeCoverageProject,
+  reportsDirectory: string
+): Promise<void> {
   await run(
     [
       "node",
@@ -111,45 +219,26 @@ for (const project of projects) {
   )
 }
 
-assertCriticalCoverage()
-console.log(`\n[coverage] ${projects.length}개 runtime workspace 완료`)
-
-function assertCriticalCoverage(): void {
-  const thresholds = [
-    ["apps-admin", "src/lib/auth/admin-auth-navigation.ts", 1],
-    [
-      "packages-core",
-      "src/modules/admin/infrastructure/persistence/admin-drizzle.repository.ts",
-      1,
-    ],
-    ["packages-db", "src/migrations/migrate.ts", 1],
-    ["packages-resource-document", "src/resource-collaboration.ts", 1],
-  ] as const
-
-  for (const [slug, filePath, minimum] of thresholds) {
-    const lcov = readFileSync(
-      join(coverageDirectory, slug, "lcov.info"),
-      "utf8"
-    )
-    const normalizedPath = filePath.replaceAll("/", "\\")
-    const block = lcov
-      .split("end_of_record")
-      .find((record) => record.replaceAll("/", "\\").includes(normalizedPath))
-
-    if (block === undefined) {
-      throw new Error(`핵심 coverage 파일이 없습니다: ${filePath}`)
-    }
-
-    const found = Number(block.match(/\nLF:(\d+)/)?.[1] ?? 0)
-    const hit = Number(block.match(/\nLH:(\d+)/)?.[1] ?? 0)
-    const percentage = found === 0 ? 0 : (hit / found) * 100
-
-    if (percentage < minimum) {
-      throw new Error(
-        `${filePath} line coverage ${percentage.toFixed(2)}%가 ${minimum}% 미만입니다.`
-      )
-    }
+function validateCoverageInventory(): void {
+  const result = createRepositoryWorkspaceInventory(process.cwd())
+  if (result.status === "failure") {
+    throw new Error(result.errors.map(formatWorkspaceInventoryError).join("\n"))
   }
+
+  const expected = result.inventory.coverageTargets
+    .map(({ directory }) => directory)
+    .sort()
+  const actual = projects.map(({ path: projectPath }) => projectPath).sort()
+
+  if (expected.join("\n") !== actual.join("\n")) {
+    throw new Error(
+      `Coverage inventory가 일치하지 않습니다.\nexpected: ${expected.join(", ")}\nactual: ${actual.join(", ")}`
+    )
+  }
+}
+
+function formatDuration(milliseconds: number): string {
+  return `${(milliseconds / 1_000).toFixed(2)}s`
 }
 
 async function run(command: readonly string[], cwd: string): Promise<void> {

@@ -1,8 +1,20 @@
-import { describe, expect, it } from "vitest"
 import { spawnSync } from "node:child_process"
+import path from "node:path"
+import { describe, expect, it } from "bun:test"
+
+import {
+  createRepositoryWorkspaceInventory,
+  readTurboRunSummary,
+  resolveTaskExecutionStatus,
+  type WorkspaceManifest,
+} from "@workspace/repository-tooling"
 
 describe("CI workspace 인벤토리", () => {
-  it("15개 workspace의 실행 또는 제외 사유를 출력한다", () => {
+  it("현재 workspace의 지원 또는 제외 사유를 출력한다", () => {
+    const inventoryResult = createRepositoryWorkspaceInventory(process.cwd())
+    expect(inventoryResult.status).toBe("success")
+    if (inventoryResult.status === "failure") return
+
     const result = spawnSync(
       process.execPath,
       ["scripts/ci-workspace-inventory.ts", "test"],
@@ -10,8 +22,72 @@ describe("CI workspace 인벤토리", () => {
     )
 
     expect(result.status).toBe(0)
-    expect(result.stdout.match(/^\| `.+` \|/gm)).toHaveLength(15)
-    expect(result.stdout).toContain("실행: `test`")
+    expect(result.stdout.match(/^\| `.+` \|/gm)).toHaveLength(
+      inventoryResult.inventory.allWorkspaces.length
+    )
+    expect(result.stdout).toContain("지원: `test`")
     expect(result.stdout).toContain("제외: `test` 스크립트 없음")
   })
+
+  it("Turborepo 2.10.4 summary v1에서 실제 task 상태를 구분한다", () => {
+    const inventoryResult = createRepositoryWorkspaceInventory(process.cwd())
+    expect(inventoryResult.status).toBe("success")
+    if (inventoryResult.status === "failure") return
+
+    const summary = readTurboRunSummary(
+      path.join(process.cwd(), "scripts/fixtures/turbo-run-summary-v1.json")
+    )
+    const workspaces = new Map(
+      inventoryResult.inventory.allWorkspaces.map((workspace) => [
+        workspace.name,
+        workspace,
+      ])
+    )
+
+    expect(summary.turboVersion).toBe("2.10.4")
+    expect(
+      resolveTaskExecutionStatus({
+        requestedTask: "test",
+        summary,
+        workspace: getWorkspace(workspaces, "@workspace/admin"),
+      })
+    ).toBe("executed")
+    expect(
+      resolveTaskExecutionStatus({
+        requestedTask: "test",
+        summary,
+        workspace: getWorkspace(workspaces, "@workspace/repository-tooling"),
+      })
+    ).toBe("cache-hit")
+    expect(
+      resolveTaskExecutionStatus({
+        requestedTask: "test",
+        summary,
+        workspace: getWorkspace(workspaces, "@workspace/ui"),
+      })
+    ).toBe("failed")
+    expect(
+      resolveTaskExecutionStatus({
+        requestedTask: "test",
+        summary,
+        workspace: getWorkspace(workspaces, "@workspace/config"),
+      })
+    ).toBe("excluded")
+    expect(
+      resolveTaskExecutionStatus({
+        requestedTask: "test",
+        summary,
+        workspace: getWorkspace(workspaces, "@workspace/web"),
+      })
+    ).toBe("skipped")
+  })
 })
+
+function getWorkspace(
+  workspaces: ReadonlyMap<string, WorkspaceManifest>,
+  name: string
+): WorkspaceManifest {
+  const workspace = workspaces.get(name)
+  if (workspace === undefined) throw new Error(`${name} workspace가 없습니다.`)
+  return workspace
+}

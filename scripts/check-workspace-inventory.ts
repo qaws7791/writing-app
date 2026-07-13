@@ -1,13 +1,14 @@
 import fs from "node:fs"
 import path from "node:path"
 
-type JsonRecord = Record<string, unknown>
+import {
+  createRepositoryWorkspaceInventory,
+  formatWorkspaceInventoryError,
+  type WorkspaceInventory,
+  type WorkspaceManifest,
+} from "@workspace/repository-tooling"
 
-type WorkspaceEntry = {
-  readonly directory: string
-  readonly hasVitestConfig: boolean
-  readonly name: string
-}
+type JsonRecord = Record<string, unknown>
 
 const workspaceInventoryDocumentPath = "docs/engineering/workspace-inventory.md"
 const canonicalWorkspaceDocumentPaths = [
@@ -60,57 +61,6 @@ function normalizePath(filePath: string): string {
   return filePath.replaceAll(path.sep, "/")
 }
 
-function discoverWorkspaceEntries(): WorkspaceEntry[] {
-  const rootPackageJson = readJsonFile(
-    path.join(repositoryRoot, "package.json")
-  )
-  const workspaceGlobs = readStringArray(rootPackageJson["workspaces"])
-  const directories = workspaceGlobs.flatMap(expandWorkspaceGlob)
-
-  return directories
-    .map((directory) => {
-      const manifestPath = path.join(repositoryRoot, directory, "package.json")
-      const manifest = readJsonFile(manifestPath)
-      const packageName = manifest["name"]
-
-      if (typeof packageName !== "string" || packageName.length === 0) {
-        failures.push(`${directory}/package.json must declare a package name.`)
-      }
-
-      return {
-        directory,
-        hasVitestConfig: fs.existsSync(
-          path.join(repositoryRoot, directory, "vitest.config.ts")
-        ),
-        name: typeof packageName === "string" ? packageName : "",
-      }
-    })
-    .sort((left, right) => left.directory.localeCompare(right.directory))
-}
-
-function expandWorkspaceGlob(workspaceGlob: string): string[] {
-  if (!workspaceGlob.endsWith("/*")) {
-    failures.push(`Unsupported workspace glob: ${workspaceGlob}`)
-    return []
-  }
-
-  const rootDirectory = workspaceGlob.slice(0, -2)
-  const absoluteRootDirectory = path.join(repositoryRoot, rootDirectory)
-
-  if (!fs.existsSync(absoluteRootDirectory)) {
-    failures.push(`Workspace root does not exist: ${rootDirectory}`)
-    return []
-  }
-
-  return fs
-    .readdirSync(absoluteRootDirectory, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => normalizePath(path.join(rootDirectory, entry.name)))
-    .filter((directory) =>
-      fs.existsSync(path.join(repositoryRoot, directory, "package.json"))
-    )
-}
-
 function readVitestWorkspaceProjects(): string[] {
   const content = fs.readFileSync(
     path.join(repositoryRoot, "vitest.workspace.ts"),
@@ -147,9 +97,24 @@ function reportMissingOrExtra({
   }
 }
 
-function validateVitestWorkspace(workspaceEntries: readonly WorkspaceEntry[]) {
-  const expectedProjects = workspaceEntries
-    .filter((entry) => entry.hasVitestConfig)
+function validateVitestWorkspace(inventory: WorkspaceInventory) {
+  for (const workspace of inventory.testCapableWorkspaces) {
+    if (!workspace.hasVitestConfig) {
+      failures.push(
+        `${workspace.directory} has a test script but no vitest.config.ts.`
+      )
+    }
+  }
+
+  for (const workspace of inventory.allWorkspaces) {
+    if (workspace.hasVitestConfig && workspace.testRuntime === null) {
+      failures.push(
+        `${workspace.directory} has vitest.config.ts but no supported test script.`
+      )
+    }
+  }
+
+  const expectedProjects = inventory.testCapableWorkspaces
     .map((entry) => `${entry.directory}/vitest.config.ts`)
     .sort()
   const actualProjects = readVitestWorkspaceProjects()
@@ -233,7 +198,7 @@ function validateTurboTasks() {
 }
 
 function validateWorkspaceInventoryDocument(
-  workspaceEntries: readonly WorkspaceEntry[]
+  workspaceEntries: readonly WorkspaceManifest[]
 ) {
   const content = fs.readFileSync(
     path.join(repositoryRoot, workspaceInventoryDocumentPath),
@@ -261,7 +226,7 @@ function validateWorkspaceInventoryDocument(
 }
 
 function validateCanonicalWorkspaceDocuments(
-  workspaceEntries: readonly WorkspaceEntry[]
+  workspaceEntries: readonly WorkspaceManifest[]
 ) {
   for (const documentPath of canonicalWorkspaceDocumentPaths) {
     const content = fs.readFileSync(
@@ -277,12 +242,12 @@ function validateCanonicalWorkspaceDocuments(
   }
 }
 
-function validatePackageExports(workspaceEntries: readonly WorkspaceEntry[]) {
+function validatePackageExports(
+  workspaceEntries: readonly WorkspaceManifest[]
+) {
   for (const entry of workspaceEntries) {
     const packageDirectory = path.join(repositoryRoot, entry.directory)
-    const manifestPath = path.join(packageDirectory, "package.json")
-    const manifest = readJsonFile(manifestPath)
-    const exportsValue = manifest["exports"]
+    const exportsValue = entry.exportsValue
 
     if (exportsValue === undefined) {
       continue
@@ -529,9 +494,23 @@ function toMarkdownCode(value: string): string {
   return `\`${value}\``
 }
 
-const workspaceEntries = discoverWorkspaceEntries()
+const workspaceInventoryResult =
+  createRepositoryWorkspaceInventory(repositoryRoot)
 
-validateVitestWorkspace(workspaceEntries)
+if (workspaceInventoryResult.status === "failure") {
+  failures.push(
+    ...workspaceInventoryResult.errors.map(formatWorkspaceInventoryError)
+  )
+}
+
+const workspaceEntries =
+  workspaceInventoryResult.status === "success"
+    ? workspaceInventoryResult.inventory.allWorkspaces
+    : []
+
+if (workspaceInventoryResult.status === "success") {
+  validateVitestWorkspace(workspaceInventoryResult.inventory)
+}
 validateRootPackageScripts()
 validateTurboTasks()
 validateWorkspaceInventoryDocument(workspaceEntries)

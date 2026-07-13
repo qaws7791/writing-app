@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "catalog": {
+    "@better-auth/utils": "0.4.2",
     "@tailwindcss/postcss": "4.1.18",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -56,6 +57,7 @@
     "repomix:code": "bunx repomix --style markdown --output codebase.md --remove-empty-lines --ignore 'sonnet-to-react, .agents, apps/storybook, docs, packages/config, scripts, prototype, .worktrees, codebase.md, codebase-analysis.md, combined-codebase-improvements.md'"
   },
   "devDependencies": {
+    "@better-auth/utils": "catalog:",
     "@playwright/test": "^1.58.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",

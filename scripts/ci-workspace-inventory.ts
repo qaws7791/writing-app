@@ -1,59 +1,62 @@
-import { readdirSync, readFileSync, appendFileSync } from "node:fs"
-import { join } from "node:path"
+import { appendFileSync } from "node:fs"
 
-type WorkspaceManifest = {
-  readonly name: string
-  readonly scripts?: Readonly<Record<string, string>>
-}
+import {
+  createRepositoryWorkspaceInventory,
+  findLatestTurboRunSummary,
+  formatTaskExecutionStatus,
+  formatWorkspaceInventoryError,
+  readTurboRunSummary,
+  resolveTaskExecutionStatus,
+} from "@workspace/repository-tooling"
 
-const requestedScripts = process.argv.slice(2)
+const arguments_ = process.argv.slice(2)
+const summaryDirectoryArgument = arguments_.find((argument) =>
+  argument.startsWith("--summary-directory=")
+)
+const requestedScripts = arguments_.filter(
+  (argument) => !argument.startsWith("--summary-directory=")
+)
 const rows = ["| workspace | CI 범위 |", "| --- | --- |"]
 
-for (const workspace of readWorkspaces()) {
-  const supported = requestedScripts.filter(
-    (script) =>
-      script === "audit" || workspace.manifest.scripts?.[script] !== undefined
-  )
-  rows.push(
-    `| \`${workspace.manifest.name}\` | ${
-      supported.length > 0
-        ? `실행: ${supported.map((script) => `\`${script}\``).join(", ")}`
-        : `제외: ${requestedScripts.map((script) => `\`${script}\``).join(", ")} 스크립트 없음`
-    } |`
+const inventoryResult = createRepositoryWorkspaceInventory(process.cwd())
+
+if (inventoryResult.status === "failure") {
+  throw new Error(
+    inventoryResult.errors.map(formatWorkspaceInventoryError).join("\n")
   )
 }
 
-const summary = [`## 15개 workspace 검증 인벤토리`, "", ...rows, ""].join("\n")
-console.log(summary)
+const summary =
+  summaryDirectoryArgument === undefined
+    ? undefined
+    : readTurboRunSummary(
+        findLatestTurboRunSummary(summaryDirectoryArgument.split("=")[1] ?? "")
+      )
+
+for (const workspace of inventoryResult.inventory.allWorkspaces) {
+  const statuses = requestedScripts.map((script) =>
+    formatTaskExecutionStatus(
+      resolveTaskExecutionStatus({
+        requestedTask: script,
+        summary,
+        workspace,
+      }),
+      script
+    )
+  )
+  rows.push(`| \`${workspace.name}\` | ${statuses.join(", ")} |`)
+}
+
+const summaryMarkdown = [
+  `## ${inventoryResult.inventory.allWorkspaces.length}개 workspace 검증 인벤토리`,
+  "",
+  ...rows,
+  "",
+].join("\n")
+console.log(summaryMarkdown)
 
 const summaryPath = process.env["GITHUB_STEP_SUMMARY"]
 
 if (summaryPath !== undefined) {
-  appendFileSync(summaryPath, summary)
-}
-
-function readWorkspaces(): readonly {
-  readonly manifest: WorkspaceManifest
-  readonly path: string
-}[] {
-  return ["apps", "packages"].flatMap((root) =>
-    readdirSync(root, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .flatMap((entry) => {
-        const path = join(root, entry.name)
-
-        try {
-          return [
-            {
-              manifest: JSON.parse(
-                readFileSync(join(path, "package.json"), "utf8")
-              ) as WorkspaceManifest,
-              path,
-            },
-          ]
-        } catch {
-          return []
-        }
-      })
-  )
+  appendFileSync(summaryPath, summaryMarkdown)
 }

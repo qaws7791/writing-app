@@ -3,19 +3,15 @@ import path from "node:path"
 
 import {
   createModuleGraph,
+  createRepositoryWorkspaceInventory,
   findCycles,
+  formatWorkspaceInventoryError,
   formatPath,
   type ModuleAlias,
   type PackageModule,
 } from "@workspace/repository-tooling"
 
 type JsonRecord = Record<string, unknown>
-
-type WorkspacePackage = {
-  readonly dependencies: readonly string[]
-  readonly directory: string
-  readonly name: string
-}
 
 type ModuleCycleScope = {
   readonly aliases: readonly ModuleAlias[]
@@ -53,50 +49,11 @@ function createAppScope(directory: string, name: string): ModuleCycleScope {
   }
 }
 
-function discoverWorkspacePackages(): WorkspacePackage[] {
-  const rootPackageJson = readJsonFile("package.json")
-  const workspaceGlobs = readStringArray(rootPackageJson["workspaces"])
-
-  return workspaceGlobs.flatMap((workspaceGlob) => {
-    if (!workspaceGlob.endsWith("/*")) {
-      failures.push(`Unsupported workspace glob: ${workspaceGlob}`)
-      return []
-    }
-
-    const rootDirectory = workspaceGlob.slice(0, -2)
-    const absoluteRootDirectory = absolute(rootDirectory)
-    if (!fs.existsSync(absoluteRootDirectory)) return []
-
-    return fs
-      .readdirSync(absoluteRootDirectory, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .flatMap((entry) => {
-        const directory = formatPath(path.join(rootDirectory, entry.name))
-        const manifestPath = path.join(directory, "package.json")
-        if (!fs.existsSync(absolute(manifestPath))) return []
-
-        const manifest = readJsonFile(manifestPath)
-        const name = manifest["name"]
-        if (typeof name !== "string" || name.length === 0) {
-          failures.push(`${manifestPath} must declare a package name.`)
-          return []
-        }
-
-        return [
-          {
-            dependencies: isRecord(manifest["dependencies"])
-              ? Object.keys(manifest["dependencies"])
-              : [],
-            directory,
-            name,
-          },
-        ]
-      })
-  })
-}
-
 function validateWorkspacePackageCycles(
-  workspacePackages: readonly WorkspacePackage[]
+  workspacePackages: readonly {
+    readonly dependencies: readonly string[]
+    readonly name: string
+  }[]
 ): void {
   const names = new Set(workspacePackages.map((item) => item.name))
   const graph = new Map(
@@ -164,12 +121,6 @@ function readJsonFile(filePath: string): JsonRecord {
   return value
 }
 
-function readStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
-    : []
-}
-
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -178,7 +129,19 @@ function absolute(filePath: string): string {
   return path.join(repositoryRoot, filePath)
 }
 
-const workspacePackages = discoverWorkspacePackages()
+const workspaceInventoryResult =
+  createRepositoryWorkspaceInventory(repositoryRoot)
+
+if (workspaceInventoryResult.status === "failure") {
+  failures.push(
+    ...workspaceInventoryResult.errors.map(formatWorkspaceInventoryError)
+  )
+}
+
+const workspacePackages =
+  workspaceInventoryResult.status === "success"
+    ? workspaceInventoryResult.inventory.allWorkspaces
+    : []
 validateWorkspacePackageCycles(workspacePackages)
 moduleCycleScopes.forEach(validateModuleCycles)
 

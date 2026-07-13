@@ -28,12 +28,14 @@
 - `apps/admin-api`
 - `apps/api`
 - `apps/web`
+- `packages/contracts`
 - `packages/core`
 - `packages/db`
 - `packages/env`
 - `packages/hono`
 - `packages/http-client`
 - `packages/logger`
+- `packages/repository-tooling`
 - `packages/resource-document`
 - `packages/ui`
 
@@ -62,7 +64,8 @@
 bun run check:components-config
 bun run check:api-contract
 bun run check:document-drift
-bun test scripts/check-document-drift.test.ts
+bun test ./scripts
+node scripts/oxlint/workspace-rules.node-test.mjs
 bun run check:workspace-inventory
 bun run test
 bun run test:coverage
@@ -101,14 +104,27 @@ bun run --filter=@workspace/web test
 
 ## 커버리지 기준
 
-- `bun run test:coverage`는 13개 runtime workspace를 각각 해당 디렉터리에서 실행한다. `bun:sqlite` 경계는 Bun native coverage를 사용하고 나머지는 V8 coverage를 사용한다.
-- 루트 `vitest.workspace.ts`의 13개 프로젝트와 coverage 실행 목록은 일치해야 한다. `apps/storybook`과 `packages/config`는 runtime test 프로젝트가 아니므로 제외한다.
+- correctness는 `bun run test`가 소유하며 루트 `vitest.workspace.ts`의 test 가능 workspace 전체를 실행한다. CI는 root Bun tooling test와 Node 전용 Oxlint rule test도 별도로 실행한다.
+- `bun run test:coverage`는 canonical inventory의 13개 runtime coverage target을 각각 해당 디렉터리에서 실행한다. Bun runtime 경계는 Bun native coverage를 사용하고 나머지는 Node/Vitest V8 coverage를 사용한다.
+- `packages/repository-tooling`은 repository 실행 도구이므로 runtime coverage에서 제외한다. `apps/storybook`은 별도 interaction·접근성 job에서 실행하고 `packages/config`는 test script가 없어 제외한다.
+- workspace별 LCOV는 `coverage/<workspace>/lcov.info`에 보관하고 전체 LCOV는 `coverage/lcov.info`로 집계한다.
 - 각 runtime workspace는 `src`의 실행 코드를 `coverage.include`로 명시한다. 테스트, Storybook story, 타입 선언, 생성 파일, 설정 파일은 분모에서 제외한다.
-- 인증, repository, migration, 동기화처럼 보안·데이터 무결성에 직접 영향을 주는 모듈은 `run-workspace-coverage.ts`의 파일별 threshold를 통과해야 한다.
+- 인증, repository, migration, 동기화처럼 보안·데이터 무결성에 직접 영향을 주는 모듈은 측정 baseline 이하로 떨어지지 않아야 한다.
 - CI는 `coverage/<workspace>/`의 LCOV와 요약을 단일 artifact로 14일 보존한다. 새 runtime 파일은 테스트에서 import하지 않아도 분모에 포함되어 전체 coverage를 낮춘다.
 - 새 정책, 권한, 보안, 데이터 보존 로직은 threshold 유무와 관계없이 회귀 테스트를 추가한다.
 - 단순 markup 변경은 UI smoke 수준으로 충분할 수 있다.
 - 공유 package, repository, auth, migration 관련 변경은 테스트 범위를 넓힌다.
+
+2026-07-13 로컬 기준은 Bun `1.3.14`, Node.js `24.15.0`에서 측정했다.
+
+| 위험 파일                                                                                | 측정 line coverage | 최소 기준 |
+| ---------------------------------------------------------------------------------------- | -----------------: | --------: |
+| `apps/admin/src/lib/auth/admin-auth-navigation.ts`                                       |             75.00% |       75% |
+| `packages/core/src/modules/admin/infrastructure/persistence/admin-drizzle.repository.ts` |            100.00% |      100% |
+| `packages/db/src/migrations/migrate.ts`                                                  |             87.10% |       87% |
+| `packages/resource-document/src/resource-collaboration.ts`                               |             87.58% |       87% |
+
+같은 환경에서 전체 correctness는 46.34초, 순차 coverage는 33.98초였다. correctness와 coverage의 재실행은 독립 판정을 위한 의도된 비용이다. Bun 전체 테스트와 SQLite를 함께 사용하는 workspace의 경합 자료가 충분하지 않으므로 coverage는 순차 실행을 유지하며, runner가 workspace별 duration을 출력한다.
 
 ## API 테스트 기준
 
@@ -191,7 +207,7 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 - `bun run test:e2e`는 저장소 전용 임시 SQLite DB와 `ENABLE_TEST_AUTH=true` web server를 사용한다.
 - fixture server가 DB 초기화를 마친 뒤 학습자 API·웹과 어드민 API·웹을 순서대로 기동하므로 실행 중인 API가 초기화 대상 DB를 먼저 열 수 없다.
-- 학습자 로그인·코스·레슨 완료, 관리자 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
+- 학습자 로그인·코스·레슨 완료, owner의 실제 MFA 등록, 관리자 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
 - Google OAuth 네트워크 요청은 허용하지 않는다. 실패 시 Playwright trace와 screenshot을 `output/playwright/`에 남긴다.
 
 ## Storybook interaction과 접근성
@@ -234,7 +250,9 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 ## Root tooling 회귀 테스트
 
-공통 dependency version drift와 디자인 baseline 증감은 `scripts/*.test.ts`의 negative fixture로 검증한다. CI tests job은 workspace 테스트와 별도로 이 tooling fixture를 먼저 실행한다. 정적 검증은 제품 lint warning을 오류로 취급한다.
+공통 dependency version drift와 디자인 baseline 증감은 `scripts/*.test.ts`의 negative fixture로 검증한다. Bun 테스트는 exact directory path인 `bun test ./scripts`로 실행해 앱 내부 `src/scripts`를 선택하지 않는다. Oxlint plugin test는 Bun discovery와 겹치지 않는 `workspace-rules.node-test.mjs`를 Node.js로 실행한다. 정적 검증은 제품 lint warning을 오류로 취급한다.
+
+CI의 전체 test job은 `bun run test -- --summarize --continue=always` 결과와 Turborepo `2.10.4` summary v1을 사용한다. manifest에 명령이 있다는 사실은 `지원`으로만 표시하며 실제 summary가 있을 때만 `실행`, `cache hit`, `실패`, `건너뜀`, `제외`를 보고한다. correctness job과 coverage job은 서로 독립적으로 실패 원인을 판정한다.
 
 ## 관리자 MFA 회귀 테스트
 

@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
+import { base32 } from "@better-auth/utils/base32"
+import { createOTP } from "@better-auth/utils/otp"
 
 import {
   createAdminAuth,
@@ -66,7 +68,12 @@ describe("Admin Better Auth session resolver", () => {
       const enrollmentVerification = await postAuth(
         auth,
         "/api/auth/two-factor/verify-totp",
-        { code: await createCurrentTotp(secret), trustDevice: false },
+        {
+          code: await createOTP(
+            new TextDecoder().decode(base32.decode(secret))
+          ).totp(),
+          trustDevice: false,
+        },
         initialCookie
       )
       expect(enrollmentVerification.ok).toBe(true)
@@ -85,7 +92,12 @@ describe("Admin Better Auth session resolver", () => {
       const completedLogin = await postAuth(
         auth,
         "/api/auth/two-factor/verify-totp",
-        { code: await createCurrentTotp(secret), trustDevice: false },
+        {
+          code: await createOTP(
+            new TextDecoder().decode(base32.decode(secret))
+          ).totp(),
+          trustDevice: false,
+        },
         readSetCookiePair(login)
       )
       expect(completedLogin.headers.get("set-cookie")).toContain(
@@ -131,7 +143,12 @@ describe("Admin Better Auth session resolver", () => {
       const verification = await postAuth(
         auth,
         "/api/auth/two-factor/verify-totp",
-        { code: await createCurrentTotp(secret), trustDevice: false },
+        {
+          code: await createOTP(
+            new TextDecoder().decode(base32.decode(secret))
+          ).totp(),
+          trustDevice: false,
+        },
         initialCookie
       )
       const authenticatedCookie = readSetCookiePair(verification)
@@ -374,35 +391,4 @@ function readSetCookiePair(response: Response): string {
     .map((value) => value.trim().split(";")[0])
     .filter(Boolean)
     .join("; ")
-}
-
-async function createCurrentTotp(secret: string): Promise<string> {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-  let bits = ""
-  for (const character of secret.replaceAll("=", "").toUpperCase()) {
-    bits += alphabet.indexOf(character).toString(2).padStart(5, "0")
-  }
-  const secretBytes = Uint8Array.from(
-    bits.match(/.{8}/gu)?.map((byte) => Number.parseInt(byte, 2)) ?? []
-  )
-  const counter = Math.floor(Date.now() / 30_000)
-  const counterBytes = new Uint8Array(8)
-  new DataView(counterBytes.buffer).setBigUint64(0, BigInt(counter))
-  const key = await crypto.subtle.importKey(
-    "raw",
-    secretBytes,
-    { hash: "SHA-1", name: "HMAC" },
-    false,
-    ["sign"]
-  )
-  const digest = new Uint8Array(
-    await crypto.subtle.sign("HMAC", key, counterBytes)
-  )
-  const offset = (digest.at(-1) ?? 0) & 0x0f
-  const binary =
-    (((digest[offset] ?? 0) & 0x7f) << 24) |
-    ((digest[offset + 1] ?? 0) << 16) |
-    ((digest[offset + 2] ?? 0) << 8) |
-    (digest[offset + 3] ?? 0)
-  return String(binary % 1_000_000).padStart(6, "0")
 }

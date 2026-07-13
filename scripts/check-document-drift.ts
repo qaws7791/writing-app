@@ -1,6 +1,11 @@
 import fs from "node:fs"
 import path from "node:path"
 
+import {
+  createRepositoryWorkspaceInventory,
+  formatWorkspaceInventoryError,
+} from "@workspace/repository-tooling"
+
 type JsonRecord = Record<string, unknown>
 
 type WorkspacePackage = {
@@ -44,12 +49,6 @@ function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
-function readStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
-    : []
-}
-
 function readScripts(value: unknown): ReadonlySet<string> {
   if (!isRecord(value)) {
     return new Set()
@@ -90,63 +89,25 @@ function collectFiles(directory: string): string[] {
   })
 }
 
-function discoverWorkspacePackages(): Map<string, WorkspacePackage> {
-  const rootPackageJson = readJsonFile(
-    path.join(repositoryRoot, "package.json")
+function readWorkspacePackages(): Map<string, WorkspacePackage> {
+  const result = createRepositoryWorkspaceInventory(repositoryRoot)
+
+  if (result.status === "failure") {
+    failures.push(...result.errors.map(formatWorkspaceInventoryError))
+    return new Map()
+  }
+
+  return new Map(
+    result.inventory.allWorkspaces.map((workspace) => [
+      workspace.name,
+      {
+        directory: workspace.directory,
+        exports: workspace.exportEntries.map(({ key }) => key),
+        name: workspace.name,
+        scripts: new Set(Object.keys(workspace.scripts)),
+      },
+    ])
   )
-  const workspaceGlobs = readStringArray(rootPackageJson["workspaces"])
-  const packages = new Map<string, WorkspacePackage>()
-
-  for (const workspaceGlob of workspaceGlobs) {
-    if (!workspaceGlob.endsWith("/*")) {
-      failures.push(`Unsupported workspace glob: ${workspaceGlob}`)
-      continue
-    }
-
-    const rootDirectory = workspaceGlob.slice(0, -2)
-    const absoluteRootDirectory = path.join(repositoryRoot, rootDirectory)
-
-    if (!fs.existsSync(absoluteRootDirectory)) {
-      failures.push(`Workspace root does not exist: ${rootDirectory}`)
-      continue
-    }
-
-    for (const entry of fs.readdirSync(absoluteRootDirectory, {
-      withFileTypes: true,
-    })) {
-      const directory = normalizePath(path.join(rootDirectory, entry.name))
-      const manifestPath = path.join(repositoryRoot, directory, "package.json")
-
-      if (!entry.isDirectory() || !fs.existsSync(manifestPath)) {
-        continue
-      }
-
-      const manifest = readJsonFile(manifestPath)
-      const name = manifest["name"]
-
-      if (typeof name !== "string" || name.length === 0) {
-        failures.push(`${directory}/package.json must declare a package name.`)
-        continue
-      }
-
-      packages.set(name, {
-        directory,
-        exports: readExportKeys(manifest["exports"]),
-        name,
-        scripts: readScripts(manifest["scripts"]),
-      })
-    }
-  }
-
-  return packages
-}
-
-function readExportKeys(value: unknown): string[] {
-  if (!isRecord(value)) {
-    return []
-  }
-
-  return Object.keys(value)
 }
 
 function validateDocumentedCommands(
@@ -512,7 +473,7 @@ function formatRoute(route: Route): string {
 
 function main() {
   const markdownFiles = collectMarkdownFiles()
-  const packages = discoverWorkspacePackages()
+  const packages = readWorkspacePackages()
 
   validateDocumentedCommands(markdownFiles, packages)
   validateDocumentedWorkspaceImports(markdownFiles, packages)

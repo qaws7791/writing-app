@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test"
+import { base32 } from "@better-auth/utils/base32"
+import { createOTP } from "@better-auth/utils/otp"
 
 const learnerWebOrigin = "http://127.0.0.1:3100"
 const learnerApiOrigin = "http://127.0.0.1:4100"
@@ -58,7 +60,7 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   const ownerContext = await browser.newContext()
   const ownerPage = await ownerContext.newPage()
 
-  await loginAdmin(ownerPage, "owner@example.test")
+  await loginAdmin(ownerPage, "owner@example.test", { enrollMfa: true })
   await expect(
     ownerPage.getByRole("heading", { name: "대시보드" })
   ).toBeVisible()
@@ -68,7 +70,7 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   const operatorContext = await browser.newContext()
   const operatorPage = await operatorContext.newPage()
 
-  await loginAdmin(operatorPage, "operator@example.test")
+  await loginAdmin(operatorPage, "operator@example.test", { enrollMfa: false })
   await expect(
     operatorPage.getByRole("heading", { name: "대시보드" })
   ).toBeVisible()
@@ -76,7 +78,11 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   await operatorContext.close()
 })
 
-async function loginAdmin(page: Page, email: string): Promise<void> {
+async function loginAdmin(
+  page: Page,
+  email: string,
+  { enrollMfa }: { readonly enrollMfa: boolean }
+): Promise<void> {
   await page.goto(`${adminWebOrigin}/login`)
   await page.waitForLoadState("networkidle")
   await page.getByLabel("이메일").fill(email)
@@ -85,6 +91,21 @@ async function loginAdmin(page: Page, email: string): Promise<void> {
     page.waitForURL(`${adminWebOrigin}/`),
     page.getByRole("button", { name: "로그인" }).click(),
   ])
+
+  if (!enrollMfa) return
+
+  await page.getByLabel("현재 비밀번호").fill(adminPassword)
+  await page.getByRole("button", { name: "인증 앱 등록 시작" }).click()
+  const secret =
+    (await page.locator("code").first().textContent())?.trim() ?? ""
+  await page
+    .getByLabel("인증 코드")
+    .fill(
+      await createOTP(new TextDecoder().decode(base32.decode(secret))).totp()
+    )
+  await page.getByRole("button", { name: "MFA 등록 완료" }).click()
+  await page.getByRole("button", { name: "저장을 완료했어요" }).click()
+  await page.waitForURL(`${adminWebOrigin}/`)
 }
 
 function updateNotice(page: Page, announce: string): Promise<number> {

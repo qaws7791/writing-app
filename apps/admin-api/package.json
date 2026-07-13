@@ -29,6 +29,7 @@
     "zod": "^4.2.0"
   },
   "devDependencies": {
+    "@better-auth/utils": "catalog:",
     "@types/bun": "^1.3.10",
     "@workspace/config": "workspace:*",
     "@workspace/repository-tooling": "workspace:*",
