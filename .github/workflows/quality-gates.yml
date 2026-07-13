@@ -31,16 +31,8 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
       - run: bun install --frozen-lockfile
-      - run: bun run check:workspace-inventory
-      - run: bun run check:workspace-dependency-versions
-      - run: bun run check:document-drift
-      - run: bun run check:api-contract
-      - run: bun run check:components-config
-      - run: bun run check:design-system-guardrails
-      - run: bun run check:import-cycles
-      - run: bun run check:localhost-literals
+      - run: bun run lint
       - run: bun run format:check
-      - run: bunx oxlint apps packages scripts --deny-warnings
       - run: bun run typecheck
       - if: always()
         run: bun scripts/ci-workspace-inventory.ts lint typecheck

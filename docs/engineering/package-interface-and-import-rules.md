@@ -10,8 +10,8 @@
 - UI와 env root barrel 및 호환 pass-through를 제거하고 모든 소비자를 좁은 subpath로 이관했다.
 - core·UI·Hono·env·Storybook 내부 import를 package별 private alias로 통일했다.
 - export snapshot과 relative/self/deep import negative 검사를 pre-commit에 연결했다.
-- 전체 workspace typecheck 중 변경 범위 package와 소비 앱은 통과했다. 전체 명령은 기존 `resource-events-hub.test.ts`의 Bun `ServerWebSocket.cork` test-double 타입 불일치 때문에 admin-api에서 실패한다.
-- 전체 test 중 변경 범위 suite는 통과했다. 전체 명령은 기존 learning route fixture가 cookie 대신 bearer header를 보내 409 대신 401을 받는 한 건에서 실패한다.
+- Bun 1.3.10 기준 전체 workspace typecheck가 통과한다.
+- Bun 1.3.10 기준 전체 14개 test task가 통과한다.
 - Storybook production build는 성공했고 story별 subpath chunk와 `workspace-ui` chunk가 생성되는 것을 확인했다.
 
 ## 공개 Interface 원칙

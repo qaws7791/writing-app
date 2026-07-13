@@ -2,6 +2,8 @@
 
 이 문서는 테스트 범위, 검증 명령, 커버리지 기준, 테스트 환경을 설명하는 단일 진실 원천이다.
 
+2026-07-13 변경 단위 2의 정적 검증 계약 정렬을 완료했다. root `lint`가 저장소 전용 계약 검사와 warning 없는 Oxlint를 소유하고, CI 정적 검증은 root `lint`, `format:check`, `typecheck`를 그대로 호출한다.
+
 ## 테스트 원칙
 
 - 사용자에게 보이는 동작과 런타임 경계를 우선 검증한다.
@@ -78,6 +80,8 @@ bun run lint
 bun run build
 bun lefthook run pre-commit
 ```
+
+`check:package-interfaces`와 `check:localhost-literals`는 root `lint`의 필수 검사다. pre-commit은 staged 파일에 관련된 빠른 검사만 실행하고 전체 검증을 복제하지 않는다. document drift와 components config는 `quality-gates.yml`의 root `lint`에서 한 번만 실행하며 별도 workflow를 두지 않는다.
 
 `check:document-drift`는 실제 앱 route registry가 import한 HTTP route와 `main.ts`가 등록한 WebSocket upgrade 표면을 `BACKEND.md` 인벤토리와 양방향 비교한다. route 추가·삭제 fixture 테스트는 문서 누락과 오래된 문서가 모두 실패로 분류되는지 검증한다.
 

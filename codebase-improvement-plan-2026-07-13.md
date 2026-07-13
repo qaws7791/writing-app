@@ -7,7 +7,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 확인된 설치 버전: Bun `1.3.14`, Node.js `24.15.0`, Turborepo `2.10.4`, Vitest `4.1.10`, Playwright `1.61.1`
-- 상태: 변경 단위 1 완료, 변경 단위 2 대기
+- 상태: 변경 단위 1 완료, 변경 단위 2 단계 4 완료
 - 구현 단위: 독립적으로 병합·롤백 가능한 5개 변경 단위
 
 ## 목적
@@ -181,7 +181,7 @@ P0 복구가 P1·P2 작업에 종속되지 않도록 다음 변경 단위를 각
 | ✅        | 1    | workspace inventory Module 통합      | P0       | 없음                     |
 | ✅        | 2    | CI 전체 테스트 실행과 실행 보고 교정 | P0       | 단계 1                   |
 | ✅        | 3    | correctness와 coverage 책임 분리     | P0       | 단계 1, 2                |
-| ❌        | 4    | 정적 검증 Interface 정렬             | P1       | 단계 1                   |
+| ✅        | 4    | 정적 검증 Interface 정렬             | P1       | 단계 1                   |
 | ❌        | 5    | Turbo env와 cache hash 정밀화        | P1       | 단계 2, 4                |
 | ❌        | 6    | toolchain 재현성 고정                | P1       | 단계 2                   |
 | ❌        | 7    | admin 개발 lifecycle 정리            | P2       | 단계 2, 6                |
