@@ -1,14 +1,8 @@
-@import "tailwindcss";
-@import "tw-animate-css";
 @import "./tokens/reference.css";
 @import "./tokens/component.css";
 @import "./tokens/radius.css";
 @import "./tokens/motion.css";
 @import "./utilities.css";
-
-@plugin "@tailwindcss/typography";
-@custom-variant dark (&:is(.dark *));
-@source "../**/*.{ts,tsx}";
 
 @layer base {
   /* HeroUI Default Theme */

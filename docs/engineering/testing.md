@@ -88,6 +88,8 @@ bun lefthook run pre-commit
 
 `check:toolchain`은 루트 manifest의 Bun exact version과 Node major를 현재 runtime 및 모든 CI job의 install 전 setup 선언과 대조한다. `check:package-interfaces`와 `check:localhost-literals`는 root `lint`의 필수 검사다. pre-commit은 staged 파일에 관련된 빠른 검사만 실행하고 전체 검증을 복제하지 않는다. document drift와 components config는 `quality-gates.yml`의 root `lint`에서 한 번만 실행하며 별도 workflow를 두지 않는다.
 
+CI build job은 배포 산출물이 아닌 production build 검증을 위해 `.test` 예약 도메인의 web·admin·API origin을 명시한다. 이 job은 Bun `1.3.10`의 isolated linker로 설치한 뒤 Storybook, admin, web을 포함한 전체 build와 compiled UI CSS sentinel을 연속 검증한다.
+
 `check:document-drift`는 실제 앱 route registry가 import한 HTTP route와 `main.ts`가 등록한 WebSocket upgrade 표면을 `BACKEND.md` 인벤토리와 양방향 비교한다. route 추가·삭제 fixture 테스트는 문서 누락과 오래된 문서가 모두 실패로 분류되는지 검증한다.
 
 `packages/ui/tsconfig.lint.json`은 실제 TypeScript source와 Vitest 설정 파일만 포함한다. 존재하지 않는 생성기 경로나 빌드 출력 경로를 lint tsconfig에 추가하지 않는다.

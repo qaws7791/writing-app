@@ -70,7 +70,7 @@
 
 ## 파운데이션 메모
 
-- `@tailwindcss/typography`는 `packages/ui/src/styles/globals.css`에서 한 번만 로드한다. `MarkdownContent`·레슨 마크다운의 `prose-*` 클래스는 이 플러그인에 의존한다.
+- `@tailwindcss/typography`는 web, admin, Storybook의 Tailwind Adapter가 직접 로드한다. `MarkdownContent`·레슨 마크다운의 `prose-*` 클래스는 각 앱이 선언한 이 플러그인에 의존한다.
 - `--radius-3xl`은 Kwep 폰 프레임 기준 `1.5rem`(24px)이다.
 
 ## 화면별 visual checklist

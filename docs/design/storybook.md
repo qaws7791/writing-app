@@ -2,6 +2,8 @@
 
 이 문서는 `storybook-complete-story-design.md`의 실행 상태를 추적한다. 긴 설계 문서는 최종 목표와 story 카탈로그로 두고, 이 문서는 현재 구현된 Storybook 앱의 계약을 기록한다.
 
+2026-07-13 변경 단위 5 단계 9를 완료했다. Storybook은 자체 Tailwind Adapter, 직접 의존성, 명시적 source scan을 소유하며 compiled CSS·시각 회귀 계약으로 이 경계를 검증한다.
+
 ## 현재 목표
 
 - Storybook을 디자인 시스템의 실행 가능한 명세로 운영한다.
@@ -28,9 +30,17 @@
 - 새 public component를 추가할 때 동일한 범주의 story를 함께 추가한다.
 - `packages/ui`에 story 파일을 추가하지 않는다. Storybook 문서는 `apps/storybook/src/stories`에 둔다.
 
-## 빌드 안정화 (2026-07-11)
+## UI style build Seam (2026-07-13)
 
-- `@tailwindcss/typography`를 Storybook의 직접 개발 의존성으로 선언해 Bun isolated install에서 공유 스타일 플러그인을 결정적으로 해석한다.
+- `styles.css`가 Tailwind, typography, animation, dark variant와 Storybook·공유 UI source glob을 직접 선언한다.
+- `postcss.config.mjs`는 앱 로컬 `@tailwindcss/postcss` 설정이며 `packages/ui` 설정을 재노출하지 않는다.
+- `@tailwindcss/typography`, `tw-animate-css`, Tailwind, PostCSS는 Storybook의 직접 개발 의존성이다.
+- production CSS의 typography, animation, semantic token, custom utility sentinel을 web·admin과 함께 검사한다.
+- 테스트 인증 학습 화면의 Typography·Markdown·Dialog는 Playwright screenshot 기준선으로 시각 회귀를 검출한다.
+
+## 이전 빌드 안정화 (2026-07-11)
+
+- `@tailwindcss/typography`를 Storybook의 직접 개발 의존성으로 선언해 Bun isolated install에서 스타일 플러그인을 결정적으로 해석한다.
 - 공유 전역 스타일은 모든 `@import`를 `@plugin`보다 먼저 선언해 PostCSS import 순서 경고를 방지한다.
 - `bun --filter @workspace/storybook build`와 `bun run build -- --force`로 Storybook 단독 빌드와 전체 워크스페이스 빌드를 검증했다.
 

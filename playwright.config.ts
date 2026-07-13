@@ -12,16 +12,26 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: isCi,
   outputDir: "output/playwright/test-results",
+  snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: "output/playwright/report" }],
   ],
   retries: isCi ? 1 : 0,
   timeout: 30_000,
+  expect: {
+    toHaveScreenshot: {
+      animations: "disabled",
+      caret: "hide",
+      maxDiffPixelRatio: 0.02,
+      scale: "css",
+    },
+  },
   use: {
     baseURL: "http://127.0.0.1:3100",
     screenshot: "only-on-failure",
     trace: "on-first-retry",
+    viewport: { height: 720, width: 1280 },
   },
   workers: 1,
   webServer: [

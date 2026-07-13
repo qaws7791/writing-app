@@ -9,7 +9,7 @@
 - 목적지가 있는 UI는 버튼처럼 보여도 `Link`를 사용한다.
 - 화면 텍스트와 `aria-label`은 한국어로 작성한다.
 - destructive 동작은 즉시 실행하지 않고 확인 dialog를 거친다.
-- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. 공개 entrypoint는 `packages/ui/README.md`를 따른다.
+- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. `@workspace/ui/styles`는 token과 공통 style만 제공하며 Tailwind/PostCSS 실행은 각 앱 Adapter가 소유한다. 공개 entrypoint는 `packages/ui/README.md`를 따른다.
 - 앱 `tsconfig.json`은 `packages/ui/src` 내부를 직접 가리키는 source alias를 만들지 않는다. 공유 UI 소비는 `@workspace/ui/*` package export map을 통한다.
 - `packages/ui` 소스는 `@/`를 사용하지 않는다. 공유 UI 내부 참조는 `#lib/*`, `#components/*` 또는 상대 경로를 사용하고, 앱 소스는 `@/`를 유지한다.
 

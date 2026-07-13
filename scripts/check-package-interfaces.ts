@@ -43,7 +43,6 @@ const expectedExports = {
     "./lesson-runtime/renderer",
     "./lesson-runtime/types",
     "./lib/*",
-    "./postcss.config",
     "./pretendard-font",
     "./styles",
   ],

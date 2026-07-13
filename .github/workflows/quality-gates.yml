@@ -172,6 +172,14 @@ jobs:
     name: 빌드
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      ADMIN_API_BASE_URL: https://admin-api.example.test
+      ADMIN_ORIGIN: https://admin.example.test
+      NEXT_PUBLIC_ADMIN_API_BASE_URL: https://admin-api.example.test
+      NEXT_PUBLIC_API_BASE_URL: https://api.example.test
+      NEXT_PUBLIC_LEARNER_WEB_ORIGIN: https://web.example.test
+      WEB_API_BASE_URL: https://api.example.test
+      WEB_ORIGIN: https://web.example.test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v6
@@ -185,8 +193,9 @@ jobs:
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-      - run: bun install --frozen-lockfile
+      - run: bun install --linker isolated --frozen-lockfile
       - run: bun run build
+      - run: bun run check:ui-style-compiled-css
       - run: bun run check:resource-route-bundle
       - run: bun run check:admin-chart-route-bundle
       - run: bun run check:landing-route-bundle

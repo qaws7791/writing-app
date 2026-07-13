@@ -1,7 +1,12 @@
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
 @import "@workspace/ui/styles";
 
-@source "../../packages/ui/src";
-@source ".";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:is(.dark *));
+@source "./.storybook/**/*.{ts,tsx}";
+@source "./src/**/*.{ts,tsx,mdx}";
+@source "../../packages/ui/src/**/*.{ts,tsx}";
 
 .storybook-root {
   min-height: 100%;

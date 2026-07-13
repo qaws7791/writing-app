@@ -59,6 +59,9 @@
 - `packages/ui` token은 호환 alias를 유지한 채 reference, semantic, component token으로 재편한다.
 - 앱 migration은 pilot 화면 단위로 진행하고 전체 admin CSS를 한 번에 삭제하지 않는다.
 - 접근성 primitive는 Storybook과 interaction test를 추가한 뒤 앱에 적용한다.
+- Tailwind import, plugin, source scan, PostCSS 설정은 web, admin, Storybook의 앱 Adapter가 각각 소유한다.
+- `packages/ui`는 Tailwind build engine 설정을 공개하지 않고 token, 공통 utility, 도메인 비의존 style Implementation만 제공한다.
+- 각 앱은 `source(none)`과 명시적 `@source`로 자신의 소스와 `packages/ui/src`만 scan하며, CSS에서 해석하는 plugin을 직접 의존성으로 선언한다.
 
 ## 검증
 

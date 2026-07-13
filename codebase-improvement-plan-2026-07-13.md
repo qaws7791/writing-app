@@ -7,7 +7,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 확인된 설치 버전: Bun `1.3.14`, Node.js `24.15.0`, Turborepo `2.10.4`, Vitest `4.1.10`, Playwright `1.61.1`
-- 상태: 변경 단위 1~4 완료, 변경 단위 5 대기
+- 상태: 변경 단위 1~4와 변경 단위 5 단계 9 완료, 단계 10 대기
 - 구현 단위: 독립적으로 병합·롤백 가능한 5개 변경 단위
 
 ## 목적
@@ -602,6 +602,8 @@ bun run --filter=@workspace/ui typecheck
 bun run build
 bun run lint
 ```
+
+2026-07-13 완료했다. Storybook, admin, web은 `source(none)`과 명시적 source glob을 가진 Tailwind Adapter를 각각 소유하고 typography·animation plugin을 직접 의존한다. `packages/ui`에서는 Tailwind/PostCSS 실행 설정과 공개 PostCSS entrypoint를 제거하고 token·공통 utility·도메인 비의존 style만 유지했다. 세 production 산출물의 typography, animation, semantic token, custom utility를 검사하는 compile sentinel과 테스트 인증 학습 화면의 Typography·Markdown·Dialog snapshot을 CI 경계에 추가했다.
 
 ## 단계 10. 변경 단위별 전체 회귀 검증과 문서 동기화
 

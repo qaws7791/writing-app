@@ -2,7 +2,8 @@ import { expect, test, type Page } from "@playwright/test"
 import { base32 } from "@better-auth/utils/base32"
 import { createOTP } from "@better-auth/utils/otp"
 
-const learnerWebOrigin = "http://127.0.0.1:3100"
+import { learnerWebOrigin, loginLearner } from "#e2e/auth"
+
 const learnerApiOrigin = "http://127.0.0.1:4100"
 const adminWebOrigin = "http://127.0.0.1:3101"
 const adminApiOrigin = "http://127.0.0.1:4101"
@@ -25,11 +26,7 @@ test("학습자가 테스트 로그인 후 레슨을 완료하고 로그아웃�
     }
   })
 
-  await page.goto(`${learnerWebOrigin}/login?next=/app/courses`)
-  await Promise.all([
-    page.waitForURL(`${learnerWebOrigin}/app/courses`),
-    page.getByRole("button", { name: "테스트 계정으로 계속하기" }).click(),
-  ])
+  await loginLearner(page)
 
   await page.getByRole("link", { name: /글쓰기 첫걸음 30일/ }).click()
   await page.waitForLoadState("networkidle")
