@@ -18,6 +18,7 @@ apps/api/.generated/
 # Testing
 coverage
 /artifacts
+/output/
 playwright-report
 test-results
 

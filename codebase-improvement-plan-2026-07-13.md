@@ -7,7 +7,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 확인된 설치 버전: Bun `1.3.14`, Node.js `24.15.0`, Turborepo `2.10.4`, Vitest `4.1.10`, Playwright `1.61.1`
-- 상태: 변경 단위 1~3 완료, 변경 단위 4 대기
+- 상태: 변경 단위 1~4 완료, 변경 단위 5 대기
 - 구현 단위: 독립적으로 병합·롤백 가능한 5개 변경 단위
 
 ## 목적
@@ -185,7 +185,7 @@ P0 복구가 P1·P2 작업에 종속되지 않도록 다음 변경 단위를 각
 | ✅        | 5    | Turbo env와 cache hash 정밀화        | P1       | 단계 2, 4                |
 | ✅        | 6    | toolchain 재현성 고정                | P1       | 단계 2                   |
 | ✅        | 7    | admin 개발 lifecycle 정리            | P2       | 단계 2, 6                |
-| ❌        | 8    | Playwright flaky 관측성 추가         | P2       | 단계 2                   |
+| ✅        | 8    | Playwright flaky 관측성 추가         | P2       | 단계 2                   |
 | ❌        | 9    | UI style build Seam 이동             | P2       | 단계 2, 4                |
 | ❌        | 10   | 전체 회귀 검증과 문서 동기화         | P0       | 각 변경 단위의 포함 단계 |
 
@@ -537,9 +537,12 @@ CI에서 최초 실패 후 성공하는 테스트를 flaky로 분류하고 성�
 ### 검증
 
 ```bash
+bun run test:e2e:flaky-policy
 bun run test:e2e
 bun run test:storybook
 ```
+
+격리 fixture는 최초 실행에서 실패하고 첫 retry에서 성공한다. 검증 명령은 Playwright가 이를 flaky로 보고하면서 종료 코드 1을 반환하고 `output/playwright/` 아래 첫 retry `trace.zip`을 정확히 하나 생성하는지 판정한다. 정상 제품 E2E는 로컬과 CI에서 각각 한 번씩 실행해 불필요한 retry가 없음을 확인한다.
 
 ## 단계 9. UI style build Seam 이동
 

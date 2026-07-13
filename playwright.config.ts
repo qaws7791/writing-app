@@ -4,22 +4,24 @@ import { defineConfig } from "@playwright/test"
 
 const databaseUrl = path.resolve("data/e2e/writing-app.sqlite")
 const authSecret = "e2e-auth-secret-must-have-32-characters"
+const isCi = Boolean(process.env["CI"])
 
 export default defineConfig({
+  failOnFlakyTests: isCi,
   testDir: "./e2e",
   fullyParallel: false,
-  forbidOnly: Boolean(process.env["CI"]),
+  forbidOnly: isCi,
   outputDir: "output/playwright/test-results",
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: "output/playwright/report" }],
   ],
-  retries: 0,
+  retries: isCi ? 1 : 0,
   timeout: 30_000,
   use: {
     baseURL: "http://127.0.0.1:3100",
     screenshot: "only-on-failure",
-    trace: "retain-on-failure",
+    trace: "on-first-retry",
   },
   workers: 1,
   webServer: [

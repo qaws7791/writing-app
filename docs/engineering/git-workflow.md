@@ -89,7 +89,7 @@ PR은 가능한 작은 단위로 유지한다. 아키텍처, DB, 인증, UI를 �
 - CI는 모든 PR 경로에서 Bun 1.3.10과 Node.js 24.x를 setup하고, `check:toolchain`을 install 전 preflight로 실행한 뒤 frozen lockfile을 사용한다. canonical workspace inventory의 실행 또는 제외 사유는 job summary에 남긴다.
 - 정적 검증은 workspace 인벤토리와 계약 검사, localhost guard, Oxfmt check, warning을 허용하지 않는 Oxlint, typecheck를 포함한다.
 - 의존성 감사는 production 의존성과 전체 의존성을 분리해 실행한다.
-- Bun cache key는 운영체제와 `bun.lock` hash로 구성한다. coverage는 성공·실패와 무관하게 artifact 업로드를 시도하며 파일이 없으면 job을 실패시킨다.
+- Bun cache key는 운영체제와 `bun.lock` hash로 구성한다. coverage와 Playwright 결과는 성공·실패와 무관하게 artifact 업로드를 시도하며 파일이 없으면 job을 실패시킨다. Playwright artifact에는 최초 실패 진단과 첫 retry trace가 포함된다.
 - 실패한 검증이 있다면 PR에 이유와 영향 범위를 남긴다.
 - unrelated change를 같은 PR에 포함하지 않는다.
 - 기존 사용자 변경을 되돌리지 않는다.

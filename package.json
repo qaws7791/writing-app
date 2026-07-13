@@ -55,6 +55,7 @@
     "test:load:resource-library": "bun --filter @workspace/core test:load:resource-library",
     "test:coverage": "bun scripts/run-workspace-coverage.ts",
     "test:e2e": "playwright test",
+    "test:e2e:flaky-policy": "bun scripts/verify-playwright-flaky-policy.ts",
     "test:storybook": "bun --filter @workspace/storybook test:stories",
     "typecheck": "turbo typecheck",
     "prepare": "lefthook install",

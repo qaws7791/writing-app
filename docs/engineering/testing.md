@@ -4,6 +4,8 @@
 
 2026-07-13 변경 단위 2의 정적 검증·Turbo cache·Toolchain 계약 정렬을 완료했다. root `lint`가 install 전 Toolchain 검사, 저장소 전용 계약 검사, warning 없는 Oxlint를 소유하고 CI 정적 검증은 root `lint`, `format:check`, `typecheck`를 그대로 호출한다.
 
+2026-07-13 변경 단위 4 단계 8을 완료했다. CI Playwright retry와 flaky 실패 판정, 첫 retry trace 보존 계약을 자동 검증한다.
+
 ## 테스트 원칙
 
 - 사용자에게 보이는 동작과 런타임 경계를 우선 검증한다.
@@ -73,6 +75,7 @@ node scripts/oxlint/workspace-rules.node-test.mjs
 bun run check:workspace-inventory
 bun run test
 bun run test:coverage
+bun run test:e2e:flaky-policy
 bun run test:e2e
 bun run test:storybook
 bun run test:load:resource-library
@@ -215,7 +218,11 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - `bun run test:e2e`는 저장소 전용 임시 SQLite DB와 `ENABLE_TEST_AUTH=true` web server를 사용한다.
 - fixture server가 DB 초기화를 마친 뒤 학습자 API·웹과 어드민 API·웹을 순서대로 기동하므로 실행 중인 API가 초기화 대상 DB를 먼저 열 수 없다.
 - 학습자 로그인·코스·레슨 완료, owner의 실제 MFA 등록, 관리자 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
-- Google OAuth 네트워크 요청은 허용하지 않는다. 실패 시 Playwright trace와 screenshot을 `output/playwright/`에 남긴다.
+- 로컬은 retry 0으로 즉시 실패하고 CI만 retry 1회를 허용한다. 고정 port와 공유 SQLite를 격리하기 전까지 `workers: 1`을 유지한다.
+- CI는 `failOnFlakyTests`를 활성화해 최초 실패 뒤 retry 성공도 job 실패로 처리한다. list reporter는 최초 실패와 retry 결과를 함께 출력한다.
+- trace는 최초 실패 실행이 아니라 첫 retry 실행에만 생성한다. 실패 screenshot과 첫 retry trace는 `output/playwright/`에 남기며 CI가 성공·실패와 무관하게 14일 artifact로 보존한다.
+- `bun run test:e2e:flaky-policy`는 제품 E2E와 server를 사용하지 않는 격리 fixture로 최초 실패·retry 성공·flaky 실패 종료·단일 `trace.zip` 생성을 검증한다. CI는 실제 E2E보다 먼저 이 계약을 검증한다.
+- Google OAuth 네트워크 요청은 허용하지 않는다.
 
 ## Storybook interaction과 접근성
 
