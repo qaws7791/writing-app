@@ -2,9 +2,8 @@ import { expect, test, type Page } from "@playwright/test"
 import { base32 } from "@better-auth/utils/base32"
 import { createOTP } from "@better-auth/utils/otp"
 
-import { learnerWebOrigin, loginLearner } from "#e2e/auth"
+import { learnerApiOrigin, learnerWebOrigin, loginLearner } from "#e2e/auth"
 
-const learnerApiOrigin = "http://127.0.0.1:4100"
 const adminWebOrigin = "http://127.0.0.1:3101"
 const adminApiOrigin = "http://127.0.0.1:4101"
 const adminPassword = "e2e-password-123"

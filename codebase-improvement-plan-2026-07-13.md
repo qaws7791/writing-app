@@ -7,7 +7,8 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 확인된 설치 버전: Bun `1.3.14`, Node.js `24.15.0`, Turborepo `2.10.4`, Vitest `4.1.10`, Playwright `1.61.1`
-- 상태: 변경 단위 1~4와 변경 단위 5 단계 9 완료, 단계 10 대기
+- 최종 검증 Toolchain: Bun `1.3.10`, Node.js `24.15.0`
+- 상태: 단계 1~10 완료
 - 구현 단위: 독립적으로 병합·롤백 가능한 5개 변경 단위
 
 ## 목적
@@ -645,6 +646,8 @@ bun run check:toolchain
 문서는 실제 Interface, 실행 명령, 검증 기준이 바뀐 경우에만 같은 단계에서 갱신한다. 구현 중간 상태나 작업 일지는 추가하지 않는다.
 
 각 변경 단위를 시작할 때 영향받는 `/docs` 문서와 root guide의 현재 상태를 먼저 확인하고, 병합 전 같은 문서가 최종 Interface·명령·검증 기준을 설명하도록 갱신한다.
+
+2026-07-14 완료했다. 목표 Toolchain에서 필수 검증 전체와 root tooling·Node 전용 lint rule·compiled UI CSS·Playwright flaky 정책·Windows 관리자 개발 lifecycle 검증을 통과했다. 전체 E2E에서 UI style 시각 테스트가 공유 DB에 레슨 시작 상태를 남기는 격리 결함을 발견해, 해당 테스트의 시작 저장 요청만 브라우저 경계의 고정 응답으로 대체했다. 이후 시각 테스트와 correctness 시나리오가 초기 학습 진행 상태를 공유하지 않으며 전체 E2E 3개가 독립적으로 통과한다. production build는 CI와 같은 `.test` 예약 origin 환경에서 검증했다.
 
 ## 보류 항목과 도입 조건
 

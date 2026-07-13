@@ -219,6 +219,7 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 - `bun run test:e2e`는 저장소 전용 임시 SQLite DB와 `ENABLE_TEST_AUTH=true` web server를 사용한다.
 - fixture server가 DB 초기화를 마친 뒤 학습자 API·웹과 어드민 API·웹을 순서대로 기동하므로 실행 중인 API가 초기화 대상 DB를 먼저 열 수 없다.
+- UI style 시각 테스트는 레슨 시작 저장 요청을 브라우저 경계에서 고정 응답으로 대체해 공유 E2E DB의 학습 진행을 변경하지 않는다. 이후 correctness 시나리오는 초기 레슨 상태를 독립적으로 검증한다.
 - 학습자 로그인·코스·레슨 완료, owner의 실제 MFA 등록, 관리자 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
 - 로컬은 retry 0으로 즉시 실패하고 CI만 retry 1회를 허용한다. 고정 port와 공유 SQLite를 격리하기 전까지 `workers: 1`을 유지한다.
 - CI는 `failOnFlakyTests`를 활성화해 최초 실패 뒤 retry 성공도 job 실패로 처리한다. list reporter는 최초 실패와 retry 결과를 함께 출력한다.
