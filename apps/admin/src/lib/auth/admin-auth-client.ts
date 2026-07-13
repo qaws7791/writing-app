@@ -9,10 +9,7 @@ export async function requestAdminPasswordLogin({
   readonly email: string
   readonly nextPath: string
   readonly password: string
-}): Promise<
-  | { readonly kind: "mfa-required"; readonly nextPath: string }
-  | { readonly kind: "signed-in"; readonly nextPath: string }
-> {
+}): Promise<{ readonly nextPath: string }> {
   const safeNextPath = resolveSafeAdminNextPath(nextPath)
   const response = await fetch(
     buildAdminApiUrl(readAdminApiBaseUrl(), "/api/auth/sign-in/email"),
@@ -34,41 +31,7 @@ export async function requestAdminPasswordLogin({
     throw new Error("Failed to sign in")
   }
 
-  const body = (await response.json()) as {
-    readonly twoFactorRedirect?: unknown
-  }
-  return body.twoFactorRedirect === true
-    ? { kind: "mfa-required", nextPath: safeNextPath }
-    : { kind: "signed-in", nextPath: safeNextPath }
-}
-
-export async function requestAdminTotpVerification(
-  code: string
-): Promise<void> {
-  await requestAdminAuthJson("/api/auth/two-factor/verify-totp", {
-    code,
-    trustDevice: false,
-  })
-}
-
-export async function requestAdminMfaEnrollment(password: string): Promise<{
-  readonly totpURI: string
-}> {
-  return requestAdminAuthJson("/api/auth/two-factor/enable", { password })
-}
-
-export async function requestAdminRecoveryCodes(): Promise<{
-  readonly recoveryCodes: readonly string[]
-}> {
-  return requestAdminAuthJson("/mfa/recovery-codes", {})
-}
-
-export async function requestAdminMfaRecovery(input: {
-  readonly code: string
-  readonly email: string
-  readonly password: string
-}): Promise<void> {
-  await requestAdminAuthJson("/mfa/recover", input)
+  return { nextPath: safeNextPath }
 }
 
 export async function requestAdminPasswordChange(input: {

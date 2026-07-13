@@ -15,7 +15,6 @@ import {
   createAdminAuthHandler,
   createAdminSessionResolver,
 } from "@/auth/admin-auth"
-import { createAdminMfaRecoveryService } from "@/auth/admin-mfa-recovery"
 import { createResourceEventsHub } from "@/collaboration/resource-events-hub"
 import { createResourceEventsUpgradeHandler } from "@/collaboration/resource-events-upgrade"
 import { parseAdminApiEnv } from "@/env"
@@ -54,9 +53,6 @@ const sessionResolver = createAdminSessionResolver(auth)
 const authHandler = createAdminAuthHandler({
   auth,
   cookieDomain: env.cookieDomain,
-  database: core.databaseClient,
-})
-const adminMfaRecovery = createAdminMfaRecoveryService({
   database: core.databaseClient,
 })
 const resourceEvents = createResourceEventsHub({
@@ -101,7 +97,6 @@ const app = createApp({
   aiChatAgent,
   aiChatEventLogger: logger,
   adminServices: core.services,
-  adminMfaRecovery,
   adminOrigin: env.adminOrigin,
   authHandler,
   errorLogger(event) {

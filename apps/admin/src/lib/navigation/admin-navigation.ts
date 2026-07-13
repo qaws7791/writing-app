@@ -64,12 +64,6 @@ export const adminNavigationItems = [
     icon: SettingsIcon,
     label: "운영 설정",
   },
-  {
-    end: true,
-    href: "/mfa",
-    icon: SettingsIcon,
-    label: "보안",
-  },
 ] as const satisfies readonly AdminNavigationItem[]
 
 export function isAdminNavigationActive(

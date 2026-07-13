@@ -1,6 +1,4 @@
 import { expect, test, type Page } from "@playwright/test"
-import { base32 } from "@better-auth/utils/base32"
-import { createOTP } from "@better-auth/utils/otp"
 import { readFile } from "node:fs/promises"
 
 import { learnerApiOrigin, learnerWebOrigin, loginLearner } from "#e2e/auth"
@@ -62,7 +60,6 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   const ownerDiagnostics = observeBrowserDiagnostics(ownerPage)
 
   await loginAdmin(ownerPage, "owner@example.test", {
-    enrollMfa: true,
     nextPath: "/courses?page=2",
   })
   await expect(ownerPage).toHaveURL(`${adminWebOrigin}/courses?page=2`)
@@ -208,7 +205,6 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   const operatorDiagnostics = observeBrowserDiagnostics(operatorPage)
 
   await loginAdmin(operatorPage, "operator@example.test", {
-    enrollMfa: false,
     nextPath: "/users?status=suspended",
   })
   await expect(operatorPage).toHaveURL(
@@ -228,10 +224,7 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
 async function loginAdmin(
   page: Page,
   email: string,
-  {
-    enrollMfa,
-    nextPath = "/",
-  }: { readonly enrollMfa: boolean; readonly nextPath?: string }
+  { nextPath = "/" }: { readonly nextPath?: string }
 ): Promise<void> {
   await page.goto(
     nextPath === "/"
@@ -243,23 +236,6 @@ async function loginAdmin(
   await page.getByLabel("비밀번호").fill(adminPassword)
   await page.getByRole("button", { name: "로그인" }).click()
 
-  if (!enrollMfa) {
-    await page.waitForURL(`${adminWebOrigin}${nextPath}`)
-    return
-  }
-  await page.waitForURL(/\/mfa\?next=/)
-
-  await page.getByLabel("현재 비밀번호").fill(adminPassword)
-  await page.getByRole("button", { name: "인증 앱 등록 시작" }).click()
-  const secret =
-    (await page.locator("code").first().textContent())?.trim() ?? ""
-  await page
-    .getByLabel("인증 코드")
-    .fill(
-      await createOTP(new TextDecoder().decode(base32.decode(secret))).totp()
-    )
-  await page.getByRole("button", { name: "MFA 등록 완료" }).click()
-  await page.getByRole("button", { name: "저장을 완료했어요" }).click()
   await page.waitForURL(`${adminWebOrigin}${nextPath}`)
 }
 

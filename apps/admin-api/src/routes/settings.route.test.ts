@@ -235,8 +235,6 @@ function createDependencies({
         async resetContent(input) {
           expect(input.now).toEqual(testAdminNow)
           expect(input.actor).toEqual({
-            authenticationAssurance:
-              role === adminRoles.owner ? "mfa-step-up-verified" : "password",
             id: adminIdSchema.parse("admin-1"),
             role,
           })
@@ -249,11 +247,7 @@ function createDependencies({
         },
         async updateLegalSettings(input) {
           expect(input).toEqual({
-            actor: {
-              authenticationAssurance: "mfa-step-up-verified",
-              id: adminIdSchema.parse("admin-1"),
-              role,
-            },
+            actor: { id: adminIdSchema.parse("admin-1"), role },
             now: testAdminNow,
             privacy: "개인정보처리방침",
             terms: "이용약관",
@@ -263,11 +257,7 @@ function createDependencies({
         },
         async updateNoticeSettings(input) {
           expect(input).toEqual({
-            actor: {
-              authenticationAssurance: "mfa-step-up-verified",
-              id: adminIdSchema.parse("admin-1"),
-              role,
-            },
+            actor: { id: adminIdSchema.parse("admin-1"), role },
             announce: "공지 내용",
             banner: "새 강의가 추가되었어요!",
             now: testAdminNow,
@@ -291,10 +281,7 @@ function createDependencies({
             id: adminIdSchema.parse("admin-1"),
             name: "관리자",
             role,
-            twoFactorEnabled: role === adminRoles.owner,
           },
-          authenticationAssurance:
-            role === adminRoles.owner ? "mfa-step-up-verified" : "password",
           [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
         }
       },

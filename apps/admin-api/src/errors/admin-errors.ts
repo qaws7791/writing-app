@@ -26,36 +26,16 @@ export function forbiddenAdminError(): AppError {
   })
 }
 
-export function mfaEnrollmentRequiredAdminError(): AppError {
-  return new AppError({
-    code: "MFA_ENROLLMENT_REQUIRED",
-    message: "MFA enrollment required",
-    status: 403,
-  })
-}
-
-export function stepUpRequiredAdminError(): AppError {
-  return new AppError({
-    code: "STEP_UP_REQUIRED",
-    message: "Step-up authentication required",
-    status: 403,
-  })
-}
-
 export function unwrapAdminOwnerMutationResult<TValue>(
   result: AdminOwnerMutationResult<TValue>
 ): TValue {
   switch (result.kind) {
     case "forbidden":
       throw forbiddenAdminError()
-    case "mfa-enrollment-required":
-      throw mfaEnrollmentRequiredAdminError()
     case "not-found":
       throw notFoundAdminError()
     case "ok":
       return result.value
-    case "step-up-required":
-      throw stepUpRequiredAdminError()
   }
 }
 

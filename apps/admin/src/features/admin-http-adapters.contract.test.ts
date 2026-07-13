@@ -31,10 +31,6 @@ describe("관리자 feature HTTP Adapter 계약", () => {
             name: "관리자",
             role: "owner",
           },
-          mfa: {
-            enrollmentRequired: false,
-            stepUpRequired: false,
-          },
         })
       },
       requestOrigin: "https://admin.example.test/path",

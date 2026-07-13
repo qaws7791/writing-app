@@ -13,19 +13,6 @@ export function adminSessionRouteOptions(
   }
 }
 
-export function adminMfaEnrollmentSessionRouteOptions(
-  sessionResolver: AdminSessionResolver
-) {
-  return {
-    middleware: [
-      createRequireAdminSessionMiddleware(sessionResolver, {
-        allowMfaEnrollment: true,
-      }),
-    ],
-    security: [{ adminSessionCookie: [] }],
-  }
-}
-
 export function ownerAdminRouteOptions(sessionResolver: AdminSessionResolver) {
   return {
     middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],

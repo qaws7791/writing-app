@@ -220,7 +220,7 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - `bun run test:e2e`는 저장소 전용 임시 SQLite DB와 `ENABLE_TEST_AUTH=true` web server를 사용한다.
 - fixture server가 DB 초기화를 마친 뒤 학습자 API·웹과 어드민 API·웹을 순서대로 기동하므로 실행 중인 API가 초기화 대상 DB를 먼저 열 수 없다.
 - UI style 시각 테스트는 레슨 시작 저장 요청을 브라우저 경계에서 고정 응답으로 대체해 공유 E2E DB의 학습 진행을 변경하지 않는다. 이후 correctness 시나리오는 초기 레슨 상태를 독립적으로 검증한다.
-- 학습자 로그인·코스·레슨 완료, owner의 실제 MFA 등록, 관리자 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
+- 학습자 로그인·코스·레슨 완료, 관리자 owner/operator 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
 - 로컬은 retry 0으로 즉시 실패하고 CI만 retry 1회를 허용한다. 고정 port와 공유 SQLite를 격리하기 전까지 `workers: 1`을 유지한다.
 - CI는 `failOnFlakyTests`를 활성화해 최초 실패 뒤 retry 성공도 job 실패로 처리한다. list reporter는 최초 실패와 retry 결과를 함께 출력한다.
 - trace는 최초 실패 실행이 아니라 첫 retry 실행에만 생성한다. 실패 screenshot과 첫 retry trace는 `output/playwright/`에 남기며 CI가 성공·실패와 무관하게 14일 artifact로 보존한다.
@@ -271,10 +271,9 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 CI의 전체 test job은 `bun run test -- --summarize --continue=always` 결과와 Turborepo `2.10.4` summary v1을 사용한다. manifest에 명령이 있다는 사실은 `지원`으로만 표시하며 실제 summary가 있을 때만 `실행`, `cache hit`, `실패`, `건너뜀`, `제외`를 보고한다. correctness job과 coverage job은 서로 독립적으로 실패 원인을 판정한다.
 
-## 관리자 MFA 회귀 테스트
+## 관리자 인증·권한 회귀 테스트
 
-- 실제 Better Auth와 in-memory DB로 owner 등록, TOTP 활성화, 비밀번호 로그인 challenge, TOTP session 발급을 검증한다.
-- MFA 미등록 activation session, 만료 step-up, operator, 최근 owner session의 route·application 권한 매트릭스를 검증한다.
-- 복구 코드 원문 비저장, 1회 소비, TOTP 초기화와 전체 session 폐기를 한 트랜잭션으로 검증한다.
-- 관리자 UI는 등록 key, TOTP challenge, 인증 앱 분실 복구, step-up 만료 재로그인 상태를 검증한다.
+- 실제 Better Auth와 in-memory DB로 owner의 비밀번호 로그인과 세션 발급을 검증한다.
+- owner/operator의 route·application 권한 매트릭스와 owner 변경 작업의 역할 기반 거부를 검증한다.
+- 관리자 UI는 비밀번호 로그인 성공·실패와 안전한 다음 경로 이동을 검증한다.
 - 비밀번호 변경 통합 테스트는 실제 Better Auth adapter가 교체 발급한 session과 기존 session이 모두 서버에서 폐기되는지 검증한다.

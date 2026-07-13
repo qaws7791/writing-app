@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS admin_user (
   email_verified INTEGER NOT NULL DEFAULT 0,
   image TEXT,
   role TEXT NOT NULL DEFAULT 'operator',
-  two_factor_enabled INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -99,30 +98,6 @@ CREATE TABLE IF NOT EXISTS admin_settings (
   value TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS admin_two_factor (
-  id TEXT PRIMARY KEY NOT NULL,
-  user_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
-  secret TEXT NOT NULL,
-  backup_codes TEXT NOT NULL,
-  verified INTEGER NOT NULL DEFAULT 0,
-  failed_verification_count INTEGER NOT NULL DEFAULT 0,
-  locked_until INTEGER
-);
-
-CREATE INDEX IF NOT EXISTS admin_two_factor_user_idx
-ON admin_two_factor(user_id);
-
-CREATE TABLE IF NOT EXISTS admin_mfa_recovery_code (
-  id TEXT PRIMARY KEY NOT NULL,
-  user_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
-  code_hash TEXT NOT NULL UNIQUE,
-  created_at INTEGER NOT NULL,
-  used_at INTEGER
-);
-
-CREATE INDEX IF NOT EXISTS admin_mfa_recovery_code_user_idx
-ON admin_mfa_recovery_code(user_id, used_at);
 
 CREATE TABLE IF NOT EXISTS admin_resource_nodes (
   id TEXT PRIMARY KEY NOT NULL CHECK (length(id) BETWEEN 1 AND 128),

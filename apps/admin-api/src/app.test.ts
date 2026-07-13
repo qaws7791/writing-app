@@ -5,8 +5,6 @@ import { createApp, type AdminApiDependencies } from "@/app"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
 import {
   createTestAdminApiDependencies,
-  createTestAdminSessionResolver,
-  testAdminSession,
   testAdminNow,
 } from "@/routes/test-dependencies"
 import type {
@@ -176,10 +174,6 @@ describe("어드민 API dashboard route", () => {
         name: "관리자",
         role: "owner",
       },
-      mfa: {
-        enrollmentRequired: false,
-        stepUpRequired: false,
-      },
     })
   })
 
@@ -332,98 +326,6 @@ describe("어드민 API dashboard route", () => {
     await expect(response.json()).resolves.toEqual({
       code: "UNAUTHORIZED",
       message: "Unauthorized",
-    })
-  })
-
-  it.each([
-    ["mfa-enrollment-required", "MFA_ENROLLMENT_REQUIRED"],
-    ["mfa-step-up-required", "STEP_UP_REQUIRED"],
-  ] as const)(
-    "owner의 %s 세션은 민감 변경을 거부한다",
-    async (authenticationAssurance, code) => {
-      const app = createApp(
-        createTestAdminApiDependencies({
-          sessionResolver: createTestAdminSessionResolver({
-            session: {
-              ...testAdminSession,
-              authenticationAssurance,
-            },
-          }),
-        })
-      )
-
-      const response = await app.request("/settings/content-reset", {
-        headers: {
-          Cookie: "admin_session_token=admin-token",
-          Origin: localRuntimeDefaults.adminWebOrigin,
-        },
-        method: "POST",
-      })
-
-      expect(response.status).toBe(403)
-      await expect(response.json()).resolves.toEqual({
-        code,
-        message:
-          code === "STEP_UP_REQUIRED"
-            ? "Step-up authentication required"
-            : "MFA enrollment required",
-      })
-    }
-  )
-
-  it("MFA 미등록 owner의 password activation 세션은 session과 등록 경로 외 콘솔 접근을 거부한다", async () => {
-    const app = createApp(
-      createTestAdminApiDependencies({
-        sessionResolver: createTestAdminSessionResolver({
-          session: {
-            ...testAdminSession,
-            authenticationAssurance: "mfa-enrollment-required",
-            admin: {
-              ...testAdminSession.admin,
-              twoFactorEnabled: false,
-            },
-          },
-        }),
-      })
-    )
-    const headers = { Cookie: "admin_session_token=admin-token" }
-
-    const sessionResponse = await app.request("/session", { headers })
-    expect(sessionResponse.status).toBe(200)
-    await expect(sessionResponse.json()).resolves.toMatchObject({
-      mfa: { enrollmentRequired: true },
-    })
-
-    const dashboardResponse = await app.request("/dashboard", { headers })
-    expect(dashboardResponse.status).toBe(403)
-    await expect(dashboardResponse.json()).resolves.toMatchObject({
-      code: "MFA_ENROLLMENT_REQUIRED",
-    })
-  })
-
-  it("step-up이 만료된 owner는 사용자 삭제를 실행할 수 없다", async () => {
-    const app = createApp(
-      createTestAdminApiDependencies({
-        sessionResolver: createTestAdminSessionResolver({
-          session: {
-            ...testAdminSession,
-            authenticationAssurance: "mfa-step-up-required",
-          },
-        }),
-      })
-    )
-
-    const response = await app.request("/users/user-1", {
-      headers: {
-        Cookie: "admin_session_token=admin-token",
-        Origin: localRuntimeDefaults.adminWebOrigin,
-      },
-      method: "DELETE",
-    })
-
-    expect(response.status).toBe(403)
-    await expect(response.json()).resolves.toMatchObject({
-      code: "STEP_UP_REQUIRED",
     })
   })
 
@@ -744,12 +646,7 @@ function createDependencies({
       users: {
         async deleteUser(input) {
           expect(input.userId).toBe("user-1")
-          expect(input.actor).toEqual({
-            authenticationAssurance:
-              role === adminRoles.owner ? "mfa-step-up-verified" : "password",
-            id: adminId,
-            role,
-          })
+          expect(input.actor).toEqual({ id: adminId, role })
           return { kind: "ok", value: { deleted: true } }
         },
         async getUser(input) {
@@ -769,12 +666,7 @@ function createDependencies({
         async updateUserStatus(input) {
           expect(input.status).toBe("suspended")
           expect(input.userId).toBe("user-1")
-          expect(input.actor).toEqual({
-            authenticationAssurance:
-              role === adminRoles.owner ? "mfa-step-up-verified" : "password",
-            id: adminId,
-            role,
-          })
+          expect(input.actor).toEqual({ id: adminId, role })
 
           return {
             kind: "ok",
@@ -797,10 +689,7 @@ function createDependencies({
             id: adminId,
             name: "관리자",
             role,
-            twoFactorEnabled: role === adminRoles.owner,
           },
-          authenticationAssurance:
-            role === adminRoles.owner ? "mfa-step-up-verified" : "password",
           [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
         }
       },

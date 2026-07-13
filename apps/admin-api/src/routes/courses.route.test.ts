@@ -279,8 +279,6 @@ function createDependencies({
         async archiveCourse(input) {
           expect(input.now).toEqual(testAdminNow)
           expect(input.actor).toEqual({
-            authenticationAssurance:
-              role === adminRoles.owner ? "mfa-step-up-verified" : "password",
             id: adminIdSchema.parse("admin-1"),
             role,
           })
@@ -295,8 +293,6 @@ function createDependencies({
         async createCourse(input) {
           expect(input.now).toEqual(testAdminNow)
           expect(input.actor).toEqual({
-            authenticationAssurance:
-              role === adminRoles.owner ? "mfa-step-up-verified" : "password",
             id: adminIdSchema.parse("admin-1"),
             role,
           })
@@ -331,10 +327,7 @@ function createDependencies({
             id: adminIdSchema.parse("admin-1"),
             name: "관리자",
             role,
-            twoFactorEnabled: role === adminRoles.owner,
           },
-          authenticationAssurance:
-            role === adminRoles.owner ? "mfa-step-up-verified" : "password",
           [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
         }
       },

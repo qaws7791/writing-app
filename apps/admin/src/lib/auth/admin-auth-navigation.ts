@@ -10,7 +10,7 @@ export function createAdminLogoutPath(): string {
 
 export function resolveSafeAdminNextPath(nextPath: string): string {
   return resolveSafeInternalPath({
-    blockedPathnames: ["/login", "/mfa"],
+    blockedPathnames: ["/login"],
     candidate: nextPath,
     defaultPath: "/",
   })

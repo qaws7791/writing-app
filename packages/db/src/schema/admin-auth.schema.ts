@@ -18,35 +18,8 @@ export const adminAuthUsers = sqliteTable("admin_user", {
   role: text("role", { enum: adminRoleValues })
     .notNull()
     .default(adminRoles.operator),
-  twoFactorEnabled: integer("two_factor_enabled", { mode: "boolean" })
-    .notNull()
-    .default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-})
-
-export const adminAuthTwoFactors = sqliteTable("admin_two_factor", {
-  id: text("id").primaryKey().notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
-  secret: text("secret").notNull(),
-  backupCodes: text("backup_codes").notNull(),
-  verified: integer("verified", { mode: "boolean" }).notNull().default(false),
-  failedVerificationCount: integer("failed_verification_count")
-    .notNull()
-    .default(0),
-  lockedUntil: integer("locked_until", { mode: "timestamp_ms" }),
-})
-
-export const adminMfaRecoveryCodes = sqliteTable("admin_mfa_recovery_code", {
-  id: text("id").primaryKey().notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
-  codeHash: text("code_hash").notNull().unique(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  usedAt: integer("used_at", { mode: "timestamp_ms" }),
 })
 
 export const adminAuthSessions = sqliteTable("admin_session", {

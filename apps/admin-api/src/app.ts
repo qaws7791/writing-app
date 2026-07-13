@@ -10,7 +10,6 @@ import {
 } from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import type { AdminMfaRecoveryService } from "@/auth/admin-mfa-recovery"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import { createOpenApiDocument } from "@/http/openapi"
 import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
@@ -20,7 +19,6 @@ import {
   type AiChatRequestGuard,
 } from "@/routes/ai-chat-request-guard"
 import { createAnalyticsRoutes } from "@/routes/analytics.route"
-import { createAdminMfaRoutes } from "@/routes/admin-mfa.route"
 import { createCoursesRoutes } from "@/routes/courses.route"
 import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
 import { createDashboardRoutes } from "@/routes/dashboard.route"
@@ -86,7 +84,6 @@ export type AdminApiDependencies = {
   }
   readonly aiChatRequestGuard?: AiChatRequestGuard
   readonly adminServices: AdminApiServices
-  readonly adminMfaRecovery: AdminMfaRecoveryService
   readonly adminOrigin?: string
   readonly authHandler?: (request: Request) => Promise<Response>
   readonly errorLogger?: InternalErrorLogger
@@ -108,10 +105,6 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
     middleware: createMiddleware(dependencies),
     routes: [
       healthRoute,
-      ...createAdminMfaRoutes({
-        recoveryService: dependencies.adminMfaRecovery,
-        sessionResolver: dependencies.sessionResolver,
-      }),
       createSessionRoute(dependencies.sessionResolver),
       ...createAiChatRoutes({
         aiChatAgent: dependencies.aiChatAgent,

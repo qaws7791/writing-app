@@ -25,7 +25,7 @@ describe("admin auth client", () => {
         nextPath: "/courses",
         password: "admin-password-123",
       })
-    ).resolves.toEqual({ kind: "signed-in", nextPath: "/courses" })
+    ).resolves.toEqual({ nextPath: "/courses" })
 
     expect(fetch).toHaveBeenCalledWith(
       `${localRuntimeDefaults.adminApiBaseUrl}/api/auth/sign-in/email`,
@@ -39,21 +39,6 @@ describe("admin auth client", () => {
         method: "POST",
       })
     )
-  })
-
-  it("MFA owner의 1차 로그인 응답을 완전한 세션으로 취급하지 않는다", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => Response.json({ twoFactorRedirect: true }))
-    )
-
-    await expect(
-      requestAdminPasswordLogin({
-        email: "owner@example.com",
-        nextPath: "/settings",
-        password: "owner-password",
-      })
-    ).resolves.toEqual({ kind: "mfa-required", nextPath: "/settings" })
   })
 
   it("관리자 로그인 실패를 예외로 반환한다", async () => {

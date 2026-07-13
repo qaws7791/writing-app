@@ -14,7 +14,6 @@ describe("admin auth navigation", () => {
     expect(resolveSafeAdminNextPath("/\\evil.example")).toBe("/")
     expect(resolveSafeAdminNextPath("https://evil.example")).toBe("/")
     expect(resolveSafeAdminNextPath("/login?next=/courses")).toBe("/")
-    expect(resolveSafeAdminNextPath("/mfa?next=/courses")).toBe("/")
     expect(resolveSafeAdminNextPath("/courses%0Aevil")).toBe("/")
     expect(createAdminLoginPath("/courses")).toBe("/login?next=%2Fcourses")
   })

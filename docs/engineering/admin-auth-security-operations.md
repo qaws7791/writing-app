@@ -22,8 +22,8 @@
 - 운영에서는 `ADMIN_SEED_PRODUCTION_APPROVED=true`와 실제 `DATABASE_URL`과 같은 `ADMIN_SEED_EXPECTED_DATABASE_URL`을 함께 제공한다.
 - user와 credential account 저장은 한 트랜잭션에서 수행하며 account 저장 실패 시 user도 rollback한다.
 - 비밀번호를 명령 인자나 로그에 넣지 않고 비밀 저장소가 주입하는 환경 변수로 전달한다.
-- 최초 로그인 직후 일회성 전달 비밀번호를 별도의 강한 값으로 교체하고 TOTP MFA를 등록한다.
-- owner 비밀번호 변경은 교체 발급된 현재 session을 포함한 모든 관리자 session을 서버에서 폐기하며, MFA로 다시 로그인한다.
+- 최초 로그인 직후 일회성 전달 비밀번호를 별도의 강한 값으로 교체한다.
+- owner 비밀번호 변경은 교체 발급된 현재 session을 포함한 모든 관리자 session을 서버에서 폐기하며, 새 비밀번호로 다시 로그인한다.
 
 ## 로컬 owner 생성
 
