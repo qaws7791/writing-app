@@ -2,7 +2,7 @@
 
 이 문서는 테스트 범위, 검증 명령, 커버리지 기준, 테스트 환경을 설명하는 단일 진실 원천이다.
 
-2026-07-13 변경 단위 2의 정적 검증 계약 정렬을 완료했다. root `lint`가 저장소 전용 계약 검사와 warning 없는 Oxlint를 소유하고, CI 정적 검증은 root `lint`, `format:check`, `typecheck`를 그대로 호출한다.
+2026-07-13 변경 단위 2의 정적 검증·Turbo cache·Toolchain 계약 정렬을 완료했다. root `lint`가 install 전 Toolchain 검사, 저장소 전용 계약 검사, warning 없는 Oxlint를 소유하고 CI 정적 검증은 root `lint`, `format:check`, `typecheck`를 그대로 호출한다.
 
 ## 테스트 원칙
 
@@ -63,6 +63,7 @@
 ## 주요 명령
 
 ```bash
+bun run check:toolchain
 bun run check:components-config
 bun run check:api-contract
 bun run check:document-drift
@@ -81,7 +82,7 @@ bun run build
 bun lefthook run pre-commit
 ```
 
-`check:package-interfaces`와 `check:localhost-literals`는 root `lint`의 필수 검사다. pre-commit은 staged 파일에 관련된 빠른 검사만 실행하고 전체 검증을 복제하지 않는다. document drift와 components config는 `quality-gates.yml`의 root `lint`에서 한 번만 실행하며 별도 workflow를 두지 않는다.
+`check:toolchain`은 루트 manifest의 Bun exact version과 Node major를 현재 runtime 및 모든 CI job의 install 전 setup 선언과 대조한다. `check:package-interfaces`와 `check:localhost-literals`는 root `lint`의 필수 검사다. pre-commit은 staged 파일에 관련된 빠른 검사만 실행하고 전체 검증을 복제하지 않는다. document drift와 components config는 `quality-gates.yml`의 root `lint`에서 한 번만 실행하며 별도 workflow를 두지 않는다.
 
 `check:document-drift`는 실제 앱 route registry가 import한 HTTP route와 `main.ts`가 등록한 WebSocket upgrade 표면을 `BACKEND.md` 인벤토리와 양방향 비교한다. route 추가·삭제 fixture 테스트는 문서 누락과 오래된 문서가 모두 실패로 분류되는지 검증한다.
 
@@ -119,7 +120,7 @@ bun run --filter=@workspace/web test
 - 단순 markup 변경은 UI smoke 수준으로 충분할 수 있다.
 - 공유 package, repository, auth, migration 관련 변경은 테스트 범위를 넓힌다.
 
-2026-07-13 로컬 기준은 Bun `1.3.14`, Node.js `24.15.0`에서 측정했다.
+2026-07-13 변경 단위 2 회귀 검증은 목표 Toolchain인 Bun `1.3.10`, Node.js `24.15.0`에서 실행했다.
 
 | 위험 파일                                                                                | 측정 line coverage | 최소 기준 |
 | ---------------------------------------------------------------------------------------- | -----------------: | --------: |

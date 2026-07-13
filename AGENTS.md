@@ -27,8 +27,8 @@ Prefer explicitness over implicitness and choose simplicity over cleverness and 
 
 ### Prerequisites
 
-- bun 1310
-- node 24
+- Bun 1.3.10
+- Node.js 24.x
 
 ## Coding Guidelines
 

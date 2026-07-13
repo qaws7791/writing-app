@@ -104,6 +104,7 @@ bun run storybook
 ## 주요 검증
 
 ```bash
+bun run check:toolchain
 bun run check:components-config
 bun run check:api-contract
 bun run check:document-drift

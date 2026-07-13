@@ -36,7 +36,9 @@ describe("정적 검증 Interface", () => {
     expect(staticChecks).toContain("- run: bun run lint")
     expect(staticChecks).toContain("- run: bun run format:check")
     expect(staticChecks).toContain("- run: bun run typecheck")
-    expect(staticChecks).not.toContain("- run: bun run check:")
+    expect(
+      staticChecks.replace("- run: bun run check:toolchain", "")
+    ).not.toContain("- run: bun run check:")
     expect(staticChecks).not.toContain("bunx oxlint")
   })
 

@@ -86,7 +86,7 @@ PR은 가능한 작은 단위로 유지한다. 아키텍처, DB, 인증, UI를 �
 ## 머지 정책
 
 - 2026-07-13 기준 GitHub `main` branch protection과 ruleset은 설정되어 있지 않다. main으로 병합하기 전 `필수 품질 게이트` workflow의 정적 검증, 전체 테스트, 커버리지, Storybook, 브라우저 E2E, 빌드, 의존성 감사 job이 모두 통과해야 한다.
-- CI는 모든 PR 경로에서 Bun 1.3.10과 frozen lockfile을 사용하고, canonical workspace inventory의 실행 또는 제외 사유를 job summary에 남긴다.
+- CI는 모든 PR 경로에서 Bun 1.3.10과 Node.js 24.x를 setup하고, `check:toolchain`을 install 전 preflight로 실행한 뒤 frozen lockfile을 사용한다. canonical workspace inventory의 실행 또는 제외 사유는 job summary에 남긴다.
 - 정적 검증은 workspace 인벤토리와 계약 검사, localhost guard, Oxfmt check, warning을 허용하지 않는 Oxlint, typecheck를 포함한다.
 - 의존성 감사는 production 의존성과 전체 의존성을 분리해 실행한다.
 - Bun cache key는 운영체제와 `bun.lock` hash로 구성한다. coverage는 성공·실패와 무관하게 artifact 업로드를 시도하며 파일이 없으면 job을 실패시킨다.

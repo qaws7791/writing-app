@@ -67,7 +67,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:",
     "@turbo/gen": "^2.8.1",
-    "@types/bun": "^1.3.10",
+    "@types/bun": "catalog:",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@workspace/config": "workspace:*",

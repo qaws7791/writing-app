@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:",
-    "@types/bun": "^1.3.10",
+    "@types/bun": "catalog:",
     "@types/node": "^25.9.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",

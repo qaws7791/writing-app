@@ -10,7 +10,7 @@
       "#hono/*": ["../../packages/hono/src/*"],
       "@/*": ["./src/*"]
     },
-    "types": ["bun-types"]
+    "types": ["bun"]
   },
   "include": ["src/**/*.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]

@@ -2,8 +2,12 @@
   "name": "writing-app",
   "version": "0.0.1",
   "private": true,
+  "imports": {
+    "#scripts/*": "./scripts/*.ts"
+  },
   "catalog": {
     "@better-auth/utils": "0.4.2",
+    "@types/bun": "1.3.10",
     "@tailwindcss/postcss": "4.1.18",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -29,6 +33,7 @@
     "check:package-interfaces": "bun scripts/check-package-interfaces.ts",
     "check:landing-route-bundle": "bun scripts/check-landing-route-bundle.ts",
     "check:resource-route-bundle": "bun scripts/check-resource-route-bundle.ts",
+    "check:toolchain": "bun scripts/check-toolchain.ts",
     "check:workspace-inventory": "bun scripts/check-workspace-inventory.ts",
     "check:workspace-dependency-versions": "bun scripts/check-workspace-dependency-versions.ts",
     "dev": "turbo dev",
@@ -39,7 +44,7 @@
     "dev:app:fresh": "bun run db:reset && bun run dev:app:setup && bun run dev:app",
     "db:backup": "bun packages/db/src/scripts/backup-database.ts",
     "db:reset": "bun --filter @workspace/db db:reset",
-    "lint": "bun run check:workspace-inventory && bun run check:workspace-dependency-versions && bun run check:document-drift && bun run check:api-contract && bun run check:components-config && bun run check:design-system-guardrails && bun run check:import-cycles && bun run check:package-interfaces && bun run check:localhost-literals && oxlint apps packages scripts --deny-warnings",
+    "lint": "bun run check:toolchain && bun run check:workspace-inventory && bun run check:workspace-dependency-versions && bun run check:document-drift && bun run check:api-contract && bun run check:components-config && bun run check:design-system-guardrails && bun run check:import-cycles && bun run check:package-interfaces && bun run check:localhost-literals && oxlint apps packages scripts --deny-warnings",
     "lint:fix": "oxlint apps packages scripts --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
@@ -67,7 +72,6 @@
     "@vitest/coverage-v8": "^4.1.0",
     "@workspace/config": "workspace:*",
     "@workspace/repository-tooling": "workspace:*",
-    "bun-types": "^1.3.11",
     "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-turbo": "^2.8.1",
     "eslint-plugin-unused-imports": "^4.4.1",

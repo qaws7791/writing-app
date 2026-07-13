@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-07-10
+- 기준일: 2026-07-13
 - 기준 파일: 루트 `package.json`, 각 workspace `package.json`, `turbo.json`, `vitest.workspace.ts`
 
 ## 런타임과 패키지 관리
@@ -14,15 +14,17 @@
 | Node.js     | `24.x`                 | 루트 `engines.node`를 기준으로 고정한다.                                 |
 | Bun         | `1.3.10`               | 루트 `packageManager`를 기준으로 고정한다.                               |
 | Workspace   | `apps/*`, `packages/*` | Bun workspace로 관리한다.                                                |
-| 작업 실행기 | Turbo `^2.8.8`         | `build`, `dev`, `test`, `typecheck`, `lint`를 workspace 단위로 실행한다. |
+| 작업 실행기 | Turbo `2.10.4`         | `build`, `dev`, `test`, `typecheck`, `lint`를 workspace 단위로 실행한다. |
 
 패키지 매니저와 workspace 정책의 단일 출처는 루트 `package.json`이다. npm 설정이 실제로 필요하지 않으면 빈 `.npmrc` placeholder를 두지 않는다.
+
+2026-07-13 변경 단위 2 단계 6을 완료했다. 루트 `packageManager`와 `engines.node`가 Toolchain 버전의 단일 출처이며, `check:toolchain`이 현재 runtime과 모든 CI job의 setup 선언을 install 전에 검증한다. CI는 Bun `1.3.10`과 Node.js `24.x`를 명시하고, Bun 전역 타입은 catalog의 `@types/bun@1.3.10`과 TypeScript `types: ["bun"]` 관용으로 통일한다.
 
 ## 프론트엔드
 
 | 기술         | 버전                | 사용 위치                    | 선택 근거                                             |
 | ------------ | ------------------- | ---------------------------- | ----------------------------------------------------- |
-| Next.js      | `16.2.5`            | `apps/web`, `apps/admin`     | App Router 기반 서버/클라이언트 경계를 명시하기 쉽다. |
+| Next.js      | `16.2.6`            | `apps/web`, `apps/admin`     | App Router 기반 서버/클라이언트 경계를 명시하기 쉽다. |
 | React        | `19.2.4`            | 웹 앱, 어드민, UI 패키지     | Next.js 16과 맞춘 UI 런타임이다.                      |
 | Tailwind CSS | `^4` 또는 `^4.1.18` | 웹 앱, 어드민, UI, Storybook | 디자인 토큰과 UI primitive 스타일을 빠르게 공유한다.  |
 | Base UI      | `^1.4.0`            | `packages/ui`                | 접근성 있는 headless UI primitive 기반을 제공한다.    |
