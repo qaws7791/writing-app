@@ -218,7 +218,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             </Empty>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {visibleCourses.map((course) => (
+              {visibleCourses.map((course, index) => (
                 <Link
                   className="flex flex-row overflow-hidden rounded-2xl bg-surface btn-squish transition-transform duration-200 md:flex-col md:rounded-4xl"
                   href={`/app/courses/${course.id}`}
@@ -230,6 +230,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                       draggable="false"
                       className="object-cover select-none"
                       fill
+                      preload={index === 0}
                       sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
                       src={createCourseImageUrl(course.visualKey)}
                     />

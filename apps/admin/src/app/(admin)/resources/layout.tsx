@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react"
+import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { ResourceWorkspace } from "@/features/resources/resource-workspace"
@@ -8,7 +9,11 @@ import { AdminServiceUnavailable } from "@/components/admin-service-unavailable"
 import { isAdminAuthenticationError } from "@/lib/api/api-error"
 import type { InitialResourceTreeState } from "@/features/resources/tree/resource-tree"
 import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
-import { createAdminLoginPath } from "@/lib/auth/admin-auth-navigation"
+import {
+  createAdminLoginPath,
+  resolveSafeAdminNextPath,
+} from "@/lib/auth/admin-auth-navigation"
+import { adminRequestPathHeader } from "@/lib/auth/admin-request-path"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import { readServerAdminApiBaseUrl } from "@/runtime-config-server"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
@@ -18,10 +23,13 @@ export default async function ResourceLayout({
 }: {
   readonly children: ReactNode
 }) {
+  const requestPath = resolveSafeAdminNextPath(
+    (await headers()).get(adminRequestPathHeader) ?? "/resources"
+  )
   const token = await getServerAdminSessionToken()
 
   if (token === null) {
-    redirect(createAdminLoginPath("/resources"))
+    redirect(createAdminLoginPath(requestPath))
   }
 
   const transport = getServerAdminHttpTransport({ tokenProvider: () => token })
@@ -34,10 +42,10 @@ export default async function ResourceLayout({
 
   if (sessionResult.status === "error") {
     if (isAdminAuthenticationError(sessionResult.error)) {
-      redirect(createAdminLoginPath("/resources"))
+      redirect(createAdminLoginPath(requestPath))
     }
 
-    return <AdminServiceUnavailable retryHref="/resources" />
+    return <AdminServiceUnavailable retryHref={requestPath} />
   }
 
   const initialTree: InitialResourceTreeState =

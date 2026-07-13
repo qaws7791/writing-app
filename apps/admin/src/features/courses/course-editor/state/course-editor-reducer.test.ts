@@ -1,0 +1,64 @@
+import { describe, expect, it } from "vitest"
+import { adminCourseEditorSchema } from "@/features/courses/admin-courses-api"
+import { lessonIdSchema, unitIdSchema } from "@workspace/contracts/content"
+
+import {
+  courseEditorReducer,
+  createCourseEditorState,
+} from "@/features/courses/course-editor/state/course-editor-reducer"
+
+const document = adminCourseEditorSchema.parse({
+  category: "미분류",
+  description: "설명",
+  id: "course-1",
+  revision: 1,
+  status: "active",
+  title: "코스",
+  units: [],
+})
+
+describe("courseEditorReducer", () => {
+  it("배열 변경마다 1-based sortOrder를 다시 계산한다", () => {
+    const withUnits = courseEditorReducer(
+      courseEditorReducer(createCourseEditorState(document), {
+        type: "unit-added",
+        unitId: unitIdSchema.parse("unit-1"),
+      }),
+      { type: "unit-added", unitId: unitIdSchema.parse("unit-2") }
+    )
+    const withLesson = courseEditorReducer(withUnits, {
+      lessonId: lessonIdSchema.parse("lesson-1"),
+      type: "lesson-added",
+      unitId: unitIdSchema.parse("unit-2"),
+    })
+    const removed = courseEditorReducer(withLesson, {
+      type: "unit-removed",
+      unitId: unitIdSchema.parse("unit-1"),
+    })
+
+    expect(removed.draft.units).toMatchObject([
+      { lessons: [{ sortOrder: 1 }], sortOrder: 1 },
+    ])
+    expect(removed.status).toBe("dirty")
+  })
+
+  it("충돌에서 최신본 교체와 로컬 초안 revision 재기준을 구분한다", () => {
+    const dirty = courseEditorReducer(createCourseEditorState(document), {
+      field: "title",
+      type: "course-changed",
+      value: "로컬 제목",
+    })
+    const latest = { ...document, revision: 2, title: "서버 제목" }
+    const conflict = courseEditorReducer(dirty, {
+      latest,
+      type: "conflict-detected",
+    })
+
+    expect(
+      courseEditorReducer(conflict, { type: "latest-selected" }).draft
+    ).toEqual(latest)
+    expect(
+      courseEditorReducer(conflict, { type: "local-rebased" }).draft
+    ).toMatchObject({ revision: 2, title: "로컬 제목" })
+  })
+})

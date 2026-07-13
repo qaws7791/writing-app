@@ -1,5 +1,9 @@
 import { AdminCoursesPage } from "@/features/courses/admin-courses-page"
 import {
+  archiveAdminCourseAction,
+  createAdminCourseAction,
+} from "@/features/courses/admin-course-actions"
+import {
   createAdminCoursesApi,
   type ReadAdminCoursesInput,
 } from "@/features/courses/admin-courses-api"
@@ -21,35 +25,11 @@ export default async function AdminCoursesRoute({
   )
   const coursesResult = await api.getCourses(filters)
 
-  async function createCourse() {
-    "use server"
-
-    const serverApi = createAdminCoursesApi(
-      getServerAdminHttpTransport({
-        tokenProvider: getServerAdminSessionToken,
-      })
-    )
-
-    return serverApi.createCourse()
-  }
-
-  async function archiveCourse(courseId: string) {
-    "use server"
-
-    const serverApi = createAdminCoursesApi(
-      getServerAdminHttpTransport({
-        tokenProvider: getServerAdminSessionToken,
-      })
-    )
-
-    return serverApi.archiveCourse(courseId)
-  }
-
   return (
     <AdminCoursesPage
-      archiveCourse={archiveCourse}
+      archiveCourse={archiveAdminCourseAction}
       coursesResult={coursesResult}
-      createCourse={createCourse}
+      createCourse={createAdminCourseAction}
       filters={filters}
     />
   )

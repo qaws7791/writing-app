@@ -98,6 +98,7 @@ export function useResourceTreeController({
     new Map<string, Promise<{ data: ResourceTreeItemData; id: string }[]>>()
   )
   const mutationInFlightRef = useRef(false)
+  const mutationCompletionRef = useRef<Promise<void>>(Promise.resolve())
   const eventOperationRef = useRef(Promise.resolve())
   const markdownFileInputRef = useRef<HTMLInputElement>(null)
   const revisionRef = useRef(
@@ -160,6 +161,19 @@ export function useResourceTreeController({
   }, [])
   const structureMutationsAllowed = workspaceConnectionState === "online"
 
+  function beginResourceMutation(): () => void {
+    let completeMutation: () => void = () => {}
+    mutationCompletionRef.current = new Promise<void>((resolve) => {
+      completeMutation = resolve
+    })
+    mutationInFlightRef.current = true
+
+    return () => {
+      mutationInFlightRef.current = false
+      completeMutation()
+    }
+  }
+
   function acceptTree(treeValue: AdminResourceTree): void {
     revisionRef.current = treeValue.revision
     for (const node of treeValue.nodes) itemDataRef.current.set(node.id, node)
@@ -169,7 +183,11 @@ export function useResourceTreeController({
     const pendingRequest = childrenRequestRef.current.get(itemId)
     if (pendingRequest !== undefined) return pendingRequest
 
-    const request = requestChildren(itemId)
+    const request = requestChildren(itemId).finally(() => {
+      if (childrenRequestRef.current.get(itemId) === request) {
+        childrenRequestRef.current.delete(itemId)
+      }
+    })
     childrenRequestRef.current.set(itemId, request)
     return request
   }
@@ -373,39 +391,41 @@ export function useResourceTreeController({
     const parentId = readInsertionParentId(itemDataRef.current, selectedItems)
     const parentItemId = parentId ?? resourceTreeRootId
 
-    mutationInFlightRef.current = true
-    const existingIds = await tree.loadChildrenIds(parentItemId)
-    const result = await (kind === "folder"
-      ? api.createResourceFolder({ expectedRevision: revision, parentId })
-      : api.createResourceDocumentNode({
-          expectedRevision: revision,
-          parentId,
-        }))
-    mutationInFlightRef.current = false
+    const completeMutation = beginResourceMutation()
+    try {
+      const existingIds = await tree.loadChildrenIds(parentItemId)
+      const result = await (kind === "folder"
+        ? api.createResourceFolder({ expectedRevision: revision, parentId })
+        : api.createResourceDocumentNode({
+            expectedRevision: revision,
+            parentId,
+          }))
 
-    if (result.status === "error") {
-      if (result.error.code === "stale-revision") await reloadVisibleTree()
-      setErrorMessage(result.error.message)
-      return
+      if (result.status === "error") {
+        if (result.error.code === "stale-revision") await reloadVisibleTree()
+        setErrorMessage(result.error.message)
+        return
+      }
+
+      const node = acceptCreatedNode({
+        existingIds,
+        node: result.value.node,
+        parentId,
+        parentItemId,
+        revision: result.value.revision,
+      })
+      setExpandedItems((current) =>
+        parentId === null
+          ? current
+          : [...mergeExpandedResourceIds(current, [parentId])]
+      )
+      setSelectedItems([node.id])
+      setErrorMessage(null)
+
+      if (node.kind === "document") openDocument(node.id)
+    } finally {
+      completeMutation()
     }
-
-    const node = result.value.node
-    revisionRef.current = result.value.revision
-    itemDataRef.current.set(node.id, node)
-    tree.getItemInstance(node.id).updateCachedData(node, true)
-    tree
-      .getItemInstance(parentItemId)
-      .updateCachedChildrenIds([...existingIds, node.id])
-    markParentAsNonEmpty(parentId)
-    setExpandedItems((current) =>
-      parentId === null
-        ? current
-        : [...mergeExpandedResourceIds(current, [parentId])]
-    )
-    setSelectedItems([node.id])
-    setErrorMessage(null)
-
-    if (node.kind === "document") openDocument(node.id)
   }
 
   async function importMarkdownFile(file: File): Promise<void> {
@@ -428,37 +448,60 @@ export function useResourceTreeController({
     const existingIds = await tree.loadChildrenIds(parentItemId)
     const markdown = await file.text()
 
-    mutationInFlightRef.current = true
-    const result = await api.importResourceDocument({
-      expectedRevision: revision,
-      fileName: file.name,
-      markdown,
-      parentId,
-    })
-    mutationInFlightRef.current = false
+    const completeMutation = beginResourceMutation()
+    try {
+      const result = await api.importResourceDocument({
+        expectedRevision: revision,
+        fileName: file.name,
+        markdown,
+        parentId,
+      })
 
-    if (result.status === "error") {
-      if (result.error.code === "stale-revision") await reloadVisibleTree()
-      setErrorMessage(result.error.message)
-      return
+      if (result.status === "error") {
+        if (result.error.code === "stale-revision") await reloadVisibleTree()
+        setErrorMessage(result.error.message)
+        return
+      }
+
+      const node = acceptCreatedNode({
+        existingIds,
+        node: result.value.mutation.node,
+        parentId,
+        parentItemId,
+        revision: result.value.mutation.revision,
+      })
+      setExpandedItems((current) =>
+        parentId === null
+          ? current
+          : [...mergeExpandedResourceIds(current, [parentId])]
+      )
+      setSelectedItems([node.id])
+      setErrorMessage(null)
+      openDocument(node.id)
+    } finally {
+      completeMutation()
     }
+  }
 
-    const node = result.value.mutation.node
-    revisionRef.current = result.value.mutation.revision
-    itemDataRef.current.set(node.id, node)
-    tree.getItemInstance(node.id).updateCachedData(node, true)
+  function acceptCreatedNode(input: {
+    readonly existingIds: readonly string[]
+    readonly node: AdminResourceTreeNode
+    readonly parentId: string | null
+    readonly parentItemId: string
+    readonly revision: number
+  }): AdminResourceTreeNode {
+    revisionRef.current = input.revision
+    itemDataRef.current.set(input.node.id, input.node)
+    tree.getItemInstance(input.node.id).updateCachedData(input.node, true)
     tree
-      .getItemInstance(parentItemId)
-      .updateCachedChildrenIds([...existingIds, node.id])
-    markParentAsNonEmpty(parentId)
-    setExpandedItems((current) =>
-      parentId === null
-        ? current
-        : [...mergeExpandedResourceIds(current, [parentId])]
-    )
-    setSelectedItems([node.id])
-    setErrorMessage(null)
-    openDocument(node.id)
+      .getItemInstance(input.parentItemId)
+      .updateCachedChildrenIds(
+        [...new Set([...input.existingIds, input.node.id])],
+        true
+      )
+    markParentAsNonEmpty(input.parentId)
+    tree.rebuildTree()
+    return input.node
   }
 
   function markParentAsNonEmpty(parentId: string | null): void {
@@ -467,7 +510,7 @@ export function useResourceTreeController({
     if (parent?.kind !== "folder" || parent.hasChildren) return
     const updatedParent = { ...parent, hasChildren: true } as const
     itemDataRef.current.set(parentId, updatedParent)
-    tree.getItemInstance(parentId).updateCachedData(updatedParent)
+    tree.getItemInstance(parentId).updateCachedData(updatedParent, true)
   }
 
   async function renamePendingNode(name: string): Promise<string | null> {
@@ -693,7 +736,9 @@ export function useResourceTreeController({
           })
       },
       onEvent(event) {
+        const mutationCompletion = mutationCompletionRef.current
         eventOperationRef.current = eventOperationRef.current
+          .then(() => mutationCompletion)
           .then(() => onResourceEvent(event))
           .catch(() => {
             setErrorMessage("자료실 실시간 변경을 반영하지 못했습니다.")

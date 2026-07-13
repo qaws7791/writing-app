@@ -1,6 +1,6 @@
 import path from "node:path"
 
-const databaseUrl = path.resolve("data/e2e/writing-app.sqlite")
+const databaseUrl = readRequiredEnvironment("E2E_DATABASE_URL")
 const setupScripts = [
   "packages/db/src/scripts/setup-e2e-database.ts",
   "apps/admin-api/src/scripts/setup-e2e-database.ts",
@@ -28,3 +28,13 @@ Bun.serve({
   hostname: "127.0.0.1",
   port: 4199,
 })
+
+function readRequiredEnvironment(name: string): string {
+  const value = process.env[name]?.trim()
+
+  if (value === undefined || value.length === 0) {
+    throw new Error(`${name}이 없어 E2E fixture를 준비할 수 없습니다.`)
+  }
+
+  return path.resolve(value)
+}

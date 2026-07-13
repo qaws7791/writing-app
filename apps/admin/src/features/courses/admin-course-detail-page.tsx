@@ -6,8 +6,16 @@ import { PageHeader } from "@workspace/ui/components/ui/page-header"
 
 export function AdminCourseDetailPage({
   courseResult,
+  loadLatestCourse,
+  saveCourse,
 }: {
   readonly courseResult: AdminApiResult<AdminCourseDetail>
+  readonly loadLatestCourse: (
+    courseId: string
+  ) => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly saveCourse: (
+    course: AdminCourseDetail
+  ) => Promise<AdminApiResult<AdminCourseDetail>>
 }) {
   if (courseResult.status === "error") {
     return (
@@ -23,5 +31,11 @@ export function AdminCourseDetailPage({
     )
   }
 
-  return <CourseEditorShell course={courseResult.value} />
+  return (
+    <CourseEditorShell
+      course={courseResult.value}
+      loadLatestCourse={loadLatestCourse}
+      saveCourse={saveCourse}
+    />
+  )
 }

@@ -1,9 +1,11 @@
 import {
   adminArchiveCourseResultSchema,
   adminCourseDetailDtoSchema,
+  adminCourseEditorDocumentSchema,
   adminCourseListDtoSchema,
   type AdminArchiveCourseResultDto,
   type AdminCourseDetailDto,
+  type AdminCourseEditorDocument,
   type AdminCourseListDto,
 } from "#core/modules/admin/domain/admin.dto"
 import type {
@@ -12,6 +14,7 @@ import type {
   CreateAdminCourseInput,
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
+  SaveAdminCourseEditorInput,
 } from "#core/modules/admin/application/ports/admin.repository"
 import {
   authorizeOwnerMutation,
@@ -28,11 +31,20 @@ export type AdminCourseUseCase = {
   ) => Promise<AdminOwnerMutationResult<AdminCourseDetailDto>>
   readonly getCourseEditor: (
     input: ReadAdminCourseInput
-  ) => Promise<AdminCourseDetailDto | null>
+  ) => Promise<AdminCourseEditorDocument | null>
   readonly getCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminCourseListDto>
+  readonly saveCourseEditor: (
+    input: OwnerAdminCommand<SaveAdminCourseEditorInput>
+  ) => Promise<AdminCourseEditorSaveResult>
 }
+
+export type AdminCourseEditorSaveResult =
+  | Exclude<AdminOwnerMutationResult<AdminCourseEditorDocument>, { kind: "ok" }>
+  | { readonly kind: "invalid-reference" }
+  | { readonly kind: "ok"; readonly value: AdminCourseEditorDocument }
+  | { readonly kind: "stale-revision" }
 
 export function createAdminCourseUseCase(
   courseRepository: CourseAdminRepository
@@ -55,7 +67,7 @@ export function createAdminCourseUseCase(
       return { kind: "ok", value }
     },
     async getCourseEditor(input) {
-      return adminCourseDetailDtoSchema
+      return adminCourseEditorDocumentSchema
         .nullable()
         .parse(await courseRepository.readCourseEditor(input))
     },
@@ -63,6 +75,18 @@ export function createAdminCourseUseCase(
       return adminCourseListDtoSchema.parse(
         await courseRepository.readCourses(input)
       )
+    },
+    async saveCourseEditor({ actor, ...input }) {
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
+      const result = await courseRepository.saveCourseEditor(input)
+
+      return result.kind === "ok"
+        ? {
+            kind: "ok",
+            value: adminCourseEditorDocumentSchema.parse(result.value),
+          }
+        : result
     },
   }
 }

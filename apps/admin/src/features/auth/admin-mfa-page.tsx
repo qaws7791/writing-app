@@ -21,8 +21,10 @@ type Enrollment = {
 
 export function AdminMfaPage({
   enrollmentRequired,
+  nextPath,
 }: {
   readonly enrollmentRequired: boolean
+  readonly nextPath: string
 }) {
   const router = useRouter()
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null)
@@ -77,7 +79,7 @@ export function AdminMfaPage({
           currentPassword: String(form.get("currentPassword") ?? ""),
           newPassword: String(form.get("newPassword") ?? ""),
         })
-        router.replace("/login")
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`)
       } catch {
         setMessage("비밀번호를 변경하지 못했습니다.")
       }
@@ -93,7 +95,7 @@ export function AdminMfaPage({
             <li key={code}>{code}</li>
           ))}
         </ol>
-        <Button className="w-full" onClick={() => router.replace("/")}>
+        <Button className="w-full" onClick={() => router.replace(nextPath)}>
           저장을 완료했어요
         </Button>
       </MfaCard>

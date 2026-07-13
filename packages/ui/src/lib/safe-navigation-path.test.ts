@@ -18,5 +18,8 @@ describe("내부 이동 경로", () => {
     expect(resolve("/\\evil.example")).toBe("/")
     expect(resolve("https://evil.example")).toBe("/")
     expect(resolve("/login/again")).toBe("/")
+    expect(resolve("/courses%0Aevil")).toBe("/")
+    expect(resolve("/%5Cevil.example")).toBe("/")
+    expect(resolve("/courses%ZZ")).toBe("/")
   })
 })

@@ -4,7 +4,7 @@ import { createAdminHttpTransport } from "@/lib/api/admin-http-transport"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
 const baseUrl = readAdminApiBaseUrl({
-  ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+  NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
 })
 
 const unknownSchema = {
@@ -100,4 +100,46 @@ describe("관리자 HTTP 전송 계층", () => {
       status: "error",
     })
   })
+
+  it.each([
+    [
+      "parameter 순서와 대소문자",
+      "ATTACHMENT; size=12; FILENAME*=utf-8''%EB%AC%B8%EC%84%9C.md",
+      "TEXT/MARKDOWN; Charset=UTF-8",
+      "문서.md",
+    ],
+    [
+      "잘못된 UTF-8 percent encoding",
+      "attachment; filename*=UTF-8''%E0%A4%A",
+      "text/markdown",
+      null,
+    ],
+    ["빈 파일명", "attachment; filename*=UTF-8''", "text/markdown", null],
+  ] as const)(
+    "다운로드 헤더의 %s 계약을 검증한다",
+    async (_name, disposition, contentType, fileName) => {
+      const transport = createAdminHttpTransport({
+        baseUrl,
+        fetch: async () =>
+          new Response("본문", {
+            headers: {
+              "Content-Disposition": disposition,
+              "Content-Type": contentType,
+            },
+          }),
+        tokenProvider: () => null,
+      })
+
+      const result = await transport.requestDownload({
+        contentType: "text/markdown",
+        path: "/export",
+      })
+
+      if (fileName === null) {
+        expect(result.status).toBe("error")
+      } else {
+        expect(result).toMatchObject({ status: "ok", value: { fileName } })
+      }
+    }
+  )
 })

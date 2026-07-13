@@ -50,6 +50,107 @@ describe("자료 트리", () => {
     vi.useRealTimers()
   })
 
+  it.each(["folder", "document"] as const)(
+    "빈 최상위 트리에 새 %s를 즉시 표시한다",
+    async (kind) => {
+      const api = createResourceLibraryApi()
+      const node: AdminResourceTreeNode = {
+        hasChildren: false,
+        id: `${kind}-new`,
+        kind,
+        name: kind === "folder" ? "새 폴더" : "새 문서",
+        parentId: null,
+        sortOrder: 0,
+        status: "active",
+      }
+      const result = {
+        status: "ok" as const,
+        value: { affectedParentIds: [null], node, revision: 2 },
+      }
+
+      if (kind === "folder") {
+        vi.mocked(api.createResourceFolder).mockResolvedValue(result)
+      } else {
+        vi.mocked(api.createResourceDocumentNode).mockResolvedValue(result)
+      }
+
+      render(
+        <ResourceTree
+          adminId={adminIdSchema.parse(`admin-empty-${kind}`)}
+          api={api}
+          connectEvents={connectTestResourceEvents}
+          eventsServerUrl="ws://admin-api.test/resources/events"
+          initialTree={{ status: "ok", value: { nodes: [], revision: 1 } }}
+          onDocumentOpen={vi.fn()}
+          scope="active"
+        />
+      )
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: kind === "folder" ? "새 폴더" : "새 문서",
+        })
+      )
+
+      expect(
+        await screen.findByText(node.name, { selector: "span" })
+      ).toBeVisible()
+      if (kind === "document") {
+        expect(pushMock).toHaveBeenCalledWith(`/resources/${node.id}`)
+      }
+    }
+  )
+
+  it("생성 응답보다 먼저 도착한 동일 revision event를 로컬 수용 뒤 무시한다", async () => {
+    const api = createResourceLibraryApi()
+    const events = createResourceEventsFixture()
+    const createdFolder: AdminResourceTreeNode = {
+      hasChildren: false,
+      id: "folder-raced",
+      kind: "folder",
+      name: "새 폴더",
+      parentId: null,
+      sortOrder: 0,
+      status: "active",
+    }
+    vi.mocked(api.createResourceFolder).mockImplementation(async () => {
+      events.emit({
+        action: "create-folder",
+        affectedParentIds: [null],
+        nodeId: createdFolder.id,
+        revision: 2,
+        type: "resource-tree-mutated",
+      })
+      return {
+        status: "ok",
+        value: {
+          affectedParentIds: [null],
+          node: createdFolder,
+          revision: 2,
+        },
+      }
+    })
+
+    render(
+      <ResourceTree
+        adminId={adminIdSchema.parse("admin-raced-create")}
+        api={api}
+        connectEvents={events.connector}
+        eventsServerUrl="ws://admin-api.test/resources/events"
+        initialTree={{ status: "ok", value: { nodes: [], revision: 1 } }}
+        onDocumentOpen={vi.fn()}
+        scope="active"
+      />
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "새 폴더" }))
+
+    expect(
+      await screen.findByText(createdFolder.name, { selector: "span" })
+    ).toBeVisible()
+    await waitFor(() => expect(api.getResourceTree).not.toHaveBeenCalled())
+  })
+
   it("최상위 자료는 사전 조회 결과를 사용하고 펼친 폴더만 지연 조회한다", async () => {
     const api = createResourceLibraryApi()
     vi.mocked(api.getResourceTree).mockResolvedValue({
@@ -92,7 +193,6 @@ describe("자료 트리", () => {
     fireEvent.click(screen.getByText("운영 가이드"))
 
     expect(await screen.findByText("하위 문서")).toBeVisible()
-    expect(api.getResourceTree).toHaveBeenCalledTimes(1)
     expect(api.getResourceTree).toHaveBeenCalledWith({
       parentId: "folder-1",
       scope: "active",

@@ -1,5 +1,5 @@
 import React from "react"
-import { render, screen, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -87,6 +87,8 @@ describe("AdminShell", () => {
     expect(replaceMock).not.toHaveBeenCalled()
 
     await user.click(screen.getByRole("button", { name: "어드민 로그아웃" }))
-    expect(replaceMock).toHaveBeenCalledWith("/login")
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith("/login")
+    })
   })
 })

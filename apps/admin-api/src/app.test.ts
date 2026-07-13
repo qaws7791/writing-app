@@ -251,6 +251,9 @@ describe("어드민 API dashboard route", () => {
     expect(response.headers.get("access-control-allow-methods")).toContain(
       "PUT"
     )
+    expect(response.headers.get("access-control-expose-headers")).toContain(
+      "Content-Disposition"
+    )
   })
 
   it("관리자 API는 Google 로그인 전용 redirect helper를 제공하지 않는다", async () => {

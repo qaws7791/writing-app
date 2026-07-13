@@ -15,6 +15,14 @@ describe("AdminCourseDetailPage", () => {
           },
           status: "error",
         }}
+        loadLatestCourse={async () => ({
+          error: { code: "not-found", message: "없음" },
+          status: "error",
+        })}
+        saveCourse={async () => ({
+          error: { code: "not-found", message: "없음" },
+          status: "error",
+        })}
       />
     )
 

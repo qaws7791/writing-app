@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 
 import { createContentSecurityPolicy } from "@workspace/config/nextjs/security-headers"
 import { readAdminCspRuntimeConfig } from "@/runtime-config-server"
+import { adminRequestPathHeader } from "@/lib/auth/admin-request-path"
 
 export function proxy(request: NextRequest) {
   const runtime = readAdminCspRuntimeConfig()
@@ -15,6 +16,10 @@ export function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set("Content-Security-Policy", policy)
+  requestHeaders.set(
+    adminRequestPathHeader,
+    `${request.nextUrl.pathname}${request.nextUrl.search}`
+  )
   requestHeaders.set("x-nonce", nonce)
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })

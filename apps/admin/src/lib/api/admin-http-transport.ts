@@ -152,15 +152,28 @@ function readDownloadFileName(
     ?.split(";", 1)[0]
     ?.trim()
     .toLowerCase()
-  const encoded = response.headers
-    .get("Content-Disposition")
-    ?.match(/^attachment;\s*filename\*=UTF-8''([^;]+)$/iu)?.[1]
+  const disposition = response.headers.get("Content-Disposition")
+  const dispositionParts = disposition?.split(";").map((part) => part.trim())
+  const encoded = dispositionParts
+    ?.slice(1)
+    .find((part) => /^filename\*\s*=/iu.test(part))
+    ?.replace(/^filename\*\s*=\s*UTF-8''/iu, "")
 
-  if (contentType !== expectedContentType || encoded === undefined) return null
+  if (
+    contentType !== expectedContentType.trim().toLowerCase() ||
+    dispositionParts?.[0]?.toLowerCase() !== "attachment" ||
+    encoded === undefined ||
+    encoded.length === 0 ||
+    !dispositionParts
+      .slice(1)
+      .some((part) => /^filename\*\s*=\s*UTF-8''/iu.test(part))
+  ) {
+    return null
+  }
 
   try {
     const fileName = decodeURIComponent(encoded)
-    return fileName.length === 0 ? null : fileName
+    return fileName.trim().length === 0 ? null : fileName
   } catch {
     return null
   }

@@ -260,6 +260,7 @@ function createMiddleware(
       allowHeaders: ["Authorization", "Content-Type"],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
+      exposeHeaders: ["Content-Disposition"],
       origin: adminOrigin,
     }),
     createRequestBodyLimitMiddleware(),

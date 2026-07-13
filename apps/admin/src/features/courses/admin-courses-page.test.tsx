@@ -5,13 +5,18 @@ import { describe, expect, it, vi } from "vitest"
 import { AdminCoursesPage } from "@/features/courses/admin-courses-page"
 import type {
   AdminArchiveCourseResult,
-  AdminCourseDetail,
+  AdminCreatedCourse,
   AdminCourseList,
   ReadAdminCoursesInput,
 } from "@/features/courses/admin-courses-api"
 import { networkAdminApiError } from "@/lib/api/api-error"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import { createHttpNetworkError } from "@workspace/http-client"
+
+const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }))
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock }),
+}))
 
 const filters: ReadAdminCoursesInput = {
   category: "",
@@ -76,6 +81,7 @@ describe("AdminCoursesPage", () => {
     expect(screen.getByRole("heading", { name: "콘텐츠 관리" })).toBeVisible()
     expect(screen.getByLabelText("코스 검색")).toHaveValue("")
     expect(screen.getByLabelText("코스 검색")).toHaveAttribute("name", "query")
+    expect(screen.getByRole("button", { name: "검색" })).toBeVisible()
 
     const categoryInput = container.querySelector("input[name='category']")
     expect(categoryInput).toBeDefined()
@@ -104,12 +110,19 @@ describe("AdminCoursesPage", () => {
 
     expect(archiveCourse).toHaveBeenCalledWith("c1")
     expect(screen.getByText("코스를 보관했습니다.")).toBeVisible()
+
+    await user.click(screen.getByRole("combobox", { name: "상태" }))
+    await user.click(await screen.findByRole("option", { name: "활성" }))
+    expect(pushMock).toHaveBeenCalledWith(
+      expect.stringContaining("status=active")
+    )
+    expect(pushMock).toHaveBeenCalledWith(expect.stringContaining("page=1"))
   })
 
   it("새 코스 생성 결과를 알려준다", async () => {
     const user = userEvent.setup()
     const createCourse = vi.fn<
-      () => Promise<AdminApiResult<AdminCourseDetail>>
+      () => Promise<AdminApiResult<AdminCreatedCourse>>
     >(async () => ok(courseDetail("new-course")))
 
     render(
@@ -160,7 +173,7 @@ function networkError() {
   )
 }
 
-function courseDetail(id: string): AdminCourseDetail {
+function courseDetail(id: string): AdminCreatedCourse {
   return {
     category: "미분류",
     description: "강의 설명",

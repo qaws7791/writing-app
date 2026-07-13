@@ -264,10 +264,7 @@ function validateCanonicalOnboardingDocumentation() {
     },
     {
       filePath: "DOMAIN.md",
-      patterns: [
-        /PUT \/courses\/(?:\{courseId\}|:courseId)\/editor/u,
-        /type CurriculumNodeStatus = .*deprecated/u,
-      ],
+      patterns: [/type CurriculumNodeStatus = .*deprecated/u],
     },
     {
       filePath: "GLOSSARY.md",

@@ -49,7 +49,7 @@ describe("자료실 HTTP Adapter 계약", () => {
     const api = createResourceLibraryHttpAdapter(
       createAdminHttpTransport({
         baseUrl: readAdminApiBaseUrl({
-          ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+          NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
         }),
         fetch: async (request) => {
           requests.push(request)
@@ -263,7 +263,7 @@ describe("자료실 HTTP Adapter 계약", () => {
     const api = createResourceLibraryHttpAdapter(
       createAdminHttpTransport({
         baseUrl: readAdminApiBaseUrl({
-          ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+          NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
         }),
         fetch: async () =>
           new Response(

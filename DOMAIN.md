@@ -102,10 +102,13 @@ type CurriculumNodeStatus = "active" | "archived"
 
 ## 어드민 편집 정책
 
-어드민 코스 편집기는 현재 커리큘럼을 읽기 전용으로 보여 준다.
+어드민 코스 편집기는 현재 커리큘럼 전체 문서를 revision 조건으로 저장한다.
 
 - 코스 편집 문서는 `GET /courses/:courseId/editor`로 조회한다.
-- 현재 구현에는 코스 편집 저장 endpoint가 없으며 화면 입력과 추가·삭제 버튼도 비활성 상태다.
+- 코스 편집 문서는 `PUT /courses/:courseId/editor`로 원자적으로 저장한다.
+- 저장 문서는 branded 코스·유닛·레슨·스텝 ID와 구조화된 10종 step union을 사용한다.
+- 같은 revision에서만 저장하며 충돌은 `409 STALE_REVISION`으로 반환한다. 자동 병합하지 않는다.
+- 문서에서 빠진 유닛·레슨·스텝은 삭제하지 않고 `archived`로 전환한다. 레슨은 같은 코스의 유닛 사이에서 이동할 수 있지만 스텝은 레슨 사이에서 이동할 수 없다.
 - 코스 생성은 `POST /courses`, 코스 보관은 `POST /courses/:courseId/archive`를 사용한다.
 - 별도 draft, publish, discard, restore 단계는 없다.
 

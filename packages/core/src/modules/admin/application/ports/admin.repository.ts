@@ -6,6 +6,7 @@ import type {
   AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
   AdminCourseDetailDto,
+  AdminCourseEditorDocument,
   AdminCourseListDto,
   AdminCourseListStatusFilter,
   AdminDashboardDto,
@@ -72,6 +73,17 @@ export type ReadAdminCoursesInput = {
 export type ReadAdminCourseInput = {
   readonly courseId: string
 }
+
+export type SaveAdminCourseEditorInput = {
+  readonly courseId: string
+  readonly document: AdminCourseEditorDocument
+}
+
+export type SaveAdminCourseEditorPersistenceResult =
+  | { readonly kind: "invalid-reference" }
+  | { readonly kind: "not-found" }
+  | { readonly kind: "ok"; readonly value: AdminCourseEditorDocument }
+  | { readonly kind: "stale-revision" }
 
 export type ArchiveAdminCourseInput = {
   readonly courseId: string
@@ -151,10 +163,13 @@ export type CourseAdminRepository = {
   ) => Promise<AdminCourseDetailDto>
   readonly readCourseEditor: (
     input: ReadAdminCourseInput
-  ) => Promise<AdminCourseDetailDto | null>
+  ) => Promise<AdminCourseEditorDocument | null>
   readonly readCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminCourseListDto>
+  readonly saveCourseEditor: (
+    input: SaveAdminCourseEditorInput
+  ) => Promise<SaveAdminCourseEditorPersistenceResult>
 }
 
 export type UserAdminRepository = {

@@ -13,7 +13,7 @@ export function resolveSafeInternalPath({
     candidate === undefined ||
     candidate.length === 0 ||
     !candidate.startsWith("/") ||
-    candidate.includes("\\")
+    containsUnsafeCharacters(candidate)
   ) {
     return defaultPath
   }
@@ -34,5 +34,20 @@ export function resolveSafeInternalPath({
     return `${url.pathname}${url.search}${url.hash}`
   } catch {
     return defaultPath
+  }
+}
+
+function containsUnsafeCharacters(candidate: string): boolean {
+  try {
+    const decoded = decodeURIComponent(candidate)
+    return (
+      decoded.includes("\\") ||
+      Array.from(decoded).some((character) => {
+        const codePoint = character.codePointAt(0)
+        return codePoint !== undefined && (codePoint <= 31 || codePoint === 127)
+      })
+    )
+  } catch {
+    return true
   }
 }

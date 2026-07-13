@@ -23,6 +23,18 @@ describe("admin runtime config", () => {
         NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test///",
       })
     ).toBe("https://admin-api.example.test")
+    expect(
+      readAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://private.example.test",
+      })
+    ).toBe(localRuntimeDefaults.adminApiBaseUrl)
+    expect(readLearnerWebOrigin({})).toBe(localRuntimeDefaults.learnerWebOrigin)
+  })
+
+  it("브라우저 전역 없이 development 기본값을 읽는다", () => {
+    expect(
+      readFileSync(join(process.cwd(), "src/runtime-config.ts"), "utf8")
+    ).not.toContain("window")
   })
 
   it("production 브라우저 공개 주소의 로컬 fallback을 거부한다", () => {

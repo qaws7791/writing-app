@@ -1,5 +1,6 @@
 import { AppError } from "@workspace/hono/errors"
 import type { AdminOwnerMutationResult } from "@workspace/core/admin"
+import type { AdminCourseEditorSaveResult } from "@workspace/core/admin"
 
 export function invalidAdminRequestError(): AppError {
   return new AppError({
@@ -64,6 +65,23 @@ export function notFoundAdminError(): AppError {
     message: "Not Found",
     status: 404,
   })
+}
+
+export function unwrapAdminCourseEditorSaveResult(
+  result: AdminCourseEditorSaveResult
+) {
+  switch (result.kind) {
+    case "invalid-reference":
+      throw invalidAdminRequestError()
+    case "stale-revision":
+      throw new AppError({
+        code: "STALE_REVISION",
+        message: "Course editor revision conflict",
+        status: 409,
+      })
+    default:
+      return unwrapAdminOwnerMutationResult(result)
+  }
 }
 
 export function resourceCollaborationUnavailableAdminError(): AppError {

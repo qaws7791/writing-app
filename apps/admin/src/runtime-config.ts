@@ -1,3 +1,5 @@
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+
 declare const adminApiBaseUrlBrand: unique symbol
 
 export type AdminApiBaseUrl = string & {
@@ -12,7 +14,7 @@ export function readAdminApiBaseUrl(env?: AdminRuntimeEnv): AdminApiBaseUrl {
   return toApiBaseUrl(
     env === undefined
       ? process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL
-      : (env.NEXT_PUBLIC_ADMIN_API_BASE_URL ?? env.ADMIN_API_BASE_URL),
+      : env.NEXT_PUBLIC_ADMIN_API_BASE_URL,
     env === undefined ? process.env.NODE_ENV : env.NODE_ENV
   ) as AdminApiBaseUrl
 }
@@ -50,7 +52,7 @@ export function readLearnerWebOrigin(env?: AdminRuntimeEnv): string {
   }
 
   return candidate === undefined || candidate.trim() === ""
-    ? createDevelopmentLearnerWebOrigin()
+    ? localRuntimeDefaults.learnerWebOrigin
     : new URL(candidate).origin
 }
 
@@ -67,21 +69,9 @@ function toApiBaseUrl(
 
   const candidate =
     rawValue === undefined || rawValue.trim() === ""
-      ? createDevelopmentAdminApiBaseUrl()
+      ? localRuntimeDefaults.adminApiBaseUrl
       : rawValue
   const url = new URL(candidate)
 
   return url.toString().replace(/\/+$/, "")
-}
-
-function createDevelopmentAdminApiBaseUrl(): string {
-  const url = new URL(window.location.origin)
-  url.port = "4001"
-  return url.origin
-}
-
-function createDevelopmentLearnerWebOrigin(): string {
-  const url = new URL(window.location.origin)
-  url.port = "3000"
-  return url.origin
 }

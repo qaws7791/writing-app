@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { SearchIcon } from "@workspace/ui/components/icons"
 import { StatusBadge } from "@/components/status-badge"
@@ -12,10 +13,12 @@ import type {
   AdminUserList,
   ReadAdminUsersInput,
 } from "@/features/users/admin-users-api"
+import type { LearnerOperationalStatus } from "@workspace/contracts/status"
 import {
-  learnerAccountStatuses,
-  type LearnerOperationalStatus,
-} from "@workspace/contracts/status"
+  createGetFilterHref,
+  readGetFormFields,
+} from "@/features/shared/get-filter-url"
+import { readUserStatusTransition } from "@/features/users/user-status-transition"
 import type { UserId } from "@/lib/api/admin-identity"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
@@ -90,6 +93,7 @@ export function AdminUsersPage({
   const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
 
   if (usersResult.status === "error") {
     return (
@@ -102,6 +106,16 @@ export function AdminUsersPage({
     )
   }
 
+  const submitSelectValue = (name: string, value: string | null) => {
+    if (formRef.current === null || value === null) return
+    router.push(
+      createGetFilterHref(readGetFormFields(formRef.current), {
+        [name]: value,
+        page: 1,
+      })
+    )
+  }
+
   return (
     <>
       <UsersHeading totalUsers={usersResult.value.pagination.totalItems} />
@@ -111,6 +125,7 @@ export function AdminUsersPage({
         className="mb-4 flex flex-wrap items-center gap-3"
         method="get"
       >
+        <input name="page" type="hidden" value="1" />
         <FilterToolbarField className="relative min-w-[220px] flex-1 gap-0">
           <FilterToolbarLabel className="sr-only">
             사용자 검색
@@ -132,11 +147,11 @@ export function AdminUsersPage({
           <FilterToolbarLabel className="sr-only">상태</FilterToolbarLabel>
           <Select
             aria-label="상태"
-            defaultValue={filters.status}
+            value={filters.status}
             items={userStatusFilterItems}
             name="status"
-            onValueChange={() => {
-              formRef.current?.requestSubmit()
+            onValueChange={(value) => {
+              submitSelectValue("status", value)
             }}
           >
             <SelectTrigger
@@ -158,11 +173,11 @@ export function AdminUsersPage({
           <FilterToolbarLabel className="sr-only">정렬</FilterToolbarLabel>
           <Select
             aria-label="정렬"
-            defaultValue={filters.sort}
+            value={filters.sort}
             items={userSortItems}
             name="sort"
-            onValueChange={() => {
-              formRef.current?.requestSubmit()
+            onValueChange={(value) => {
+              submitSelectValue("sort", value)
             }}
           >
             <SelectTrigger
@@ -180,6 +195,9 @@ export function AdminUsersPage({
             </SelectContent>
           </Select>
         </FilterToolbarField>
+        <Button type="submit" variant="outline">
+          검색
+        </Button>
         <span className="ml-auto text-sm font-bold text-muted-foreground">
           {usersResult.value.pagination.totalItems}명
         </span>
@@ -233,78 +251,95 @@ export function AdminUsersPage({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {usersResult.value.items.map((user) => (
-              <TableRow
-                className="group border-b border-border/50 last:border-0"
-                key={user.id}
-              >
-                <TableCell className="px-5 py-4">
-                  <Link
-                    className="font-bold text-foreground hover:underline"
-                    href={`/users/${user.id}`}
-                  >
-                    {user.name}
-                  </Link>
-                  <span className="block text-[0.8125rem] font-medium text-muted-foreground">
-                    {user.email}
-                  </span>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <StatusBadge status={user.status} />
-                </TableCell>
-                <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
-                  {user.lastActive ?? "없음"}
-                </TableCell>
-                <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
-                  {user.lessonsDone}개 완료
-                </TableCell>
-                <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
-                  {user.streak}일
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button
-                      variant="outline"
-                      disabled={
-                        isPending ||
-                        user.status === learnerAccountStatuses.suspended
-                      }
-                      onClick={() => {
-                        startTransition(async () => {
-                          const result = await updateUserStatus({
-                            status: learnerAccountStatuses.suspended,
-                            userId: user.id,
-                          })
+            {usersResult.value.items.map((user) => {
+              const transition = readUserStatusTransition(user.status)
 
-                          setMessage(
-                            result.status === "ok"
-                              ? {
-                                  message: "사용자 상태를 변경했습니다.",
-                                  tone: "success",
-                                }
-                              : {
-                                  message: result.error.message,
-                                  tone: "danger",
-                                }
-                          )
-                        })
-                      }}
-                      type="button"
+              return (
+                <TableRow
+                  className="group border-b border-border/50 last:border-0"
+                  key={user.id}
+                >
+                  <TableCell className="px-5 py-4">
+                    <Link
+                      className="font-bold text-foreground hover:underline"
+                      href={`/users/${user.id}`}
                     >
-                      정지
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      disabled={isPending}
-                      onClick={() => setDeleteTarget(user)}
-                      type="button"
-                    >
-                      삭제 요청
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                      {user.name}
+                    </Link>
+                    <span className="block text-[0.8125rem] font-medium text-muted-foreground">
+                      {user.email}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <StatusBadge status={user.status} />
+                  </TableCell>
+                  <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
+                    {user.lastActive ?? "없음"}
+                  </TableCell>
+                  <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
+                    {user.lessonsDone}개 완료
+                  </TableCell>
+                  <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
+                    {user.streak}일
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                      {transition === null ? (
+                        <span className="text-sm font-semibold text-muted-foreground">
+                          읽기 전용
+                        </span>
+                      ) : (
+                        <>
+                          <Button
+                            variant="outline"
+                            disabled={isPending}
+                            onClick={() => {
+                              if (
+                                !window.confirm(
+                                  `${user.email} 사용자를 확인합니다. ${transition.confirmation}`
+                                )
+                              ) {
+                                return
+                              }
+
+                              startTransition(async () => {
+                                const result = await updateUserStatus({
+                                  status: transition.targetStatus,
+                                  userId: user.id,
+                                })
+
+                                setMessage(
+                                  result.status === "ok"
+                                    ? {
+                                        message: transition.successMessage,
+                                        tone: "success",
+                                      }
+                                    : {
+                                        message: result.error.message,
+                                        tone: "danger",
+                                      }
+                                )
+                              })
+                            }}
+                            type="button"
+                          >
+                            {transition.label}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            disabled={isPending}
+                            onClick={() => setDeleteTarget(user)}
+                            type="button"
+                          >
+                            삭제 요청
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>

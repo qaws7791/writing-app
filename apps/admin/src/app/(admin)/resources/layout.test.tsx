@@ -17,6 +17,9 @@ const { getResourceTreeMock, getSessionMock, redirectMock } = vi.hoisted(
 )
 
 vi.mock("next/navigation", () => ({ redirect: redirectMock }))
+vi.mock("next/headers", () => ({
+  headers: async () => new Headers(),
+}))
 
 vi.mock("@/lib/auth/server-admin-session-token", () => ({
   getServerAdminSessionToken: vi.fn(async () => "admin-token"),

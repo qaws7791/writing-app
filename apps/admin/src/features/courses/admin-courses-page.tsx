@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import {
   ArchiveIcon,
@@ -18,7 +19,7 @@ import {
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminArchiveCourseResult,
-  AdminCourseDetail,
+  AdminCreatedCourse,
   AdminCourseList,
   ReadAdminCoursesInput,
 } from "@/features/courses/admin-courses-api"
@@ -56,6 +57,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/ui/select"
 import { createAdminCourseImageUrl } from "@/features/courses/course-visual-assets"
+import {
+  createGetFilterHref,
+  readGetFormFields,
+} from "@/features/shared/get-filter-url"
 
 const courseStatusFilterItems = [
   { label: "전체 상태", value: "all" },
@@ -84,7 +89,7 @@ export function AdminCoursesPage({
     courseId: string
   ) => Promise<AdminApiResult<AdminArchiveCourseResult>>
   readonly coursesResult: AdminApiResult<AdminCourseList>
-  readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly createCourse: () => Promise<AdminApiResult<AdminCreatedCourse>>
   readonly filters: ReadAdminCoursesInput
 }) {
   const [archiveTarget, setArchiveTarget] = useState<
@@ -93,6 +98,7 @@ export function AdminCoursesPage({
   const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
 
   if (coursesResult.status === "error") {
     return (
@@ -111,15 +117,25 @@ export function AdminCoursesPage({
   const courses = coursesResult.value
 
   const createPageLink = (pageNumber: number) => {
-    const params = new URLSearchParams()
-    if (filters.query) params.set("query", filters.query)
-    if (filters.category) params.set("category", filters.category)
-    if (filters.status && filters.status !== "all") {
-      params.set("status", filters.status)
-    }
-    if (filters.pageSize) params.set("pageSize", String(filters.pageSize))
-    params.set("page", String(pageNumber))
-    return `?${params.toString()}`
+    return createGetFilterHref(
+      [
+        ["query", filters.query],
+        ["category", filters.category],
+        ["status", filters.status],
+        ["pageSize", filters.pageSize],
+      ],
+      { page: pageNumber }
+    )
+  }
+
+  const submitSelectValue = (name: string, value: string | null) => {
+    if (formRef.current === null || value === null) return
+    router.push(
+      createGetFilterHref(readGetFormFields(formRef.current), {
+        [name]: value,
+        page: 1,
+      })
+    )
   }
 
   return (
@@ -157,6 +173,7 @@ export function AdminCoursesPage({
       />
 
       <form ref={formRef} method="get" className="flex flex-col gap-4 w-full">
+        <input name="page" type="hidden" value="1" />
         {/* 검색 및 필터링 바 */}
         <div className="flex flex-wrap items-center gap-3 w-full">
           <FilterToolbarField className="relative flex-1 min-w-[240px] gap-0">
@@ -181,10 +198,10 @@ export function AdminCoursesPage({
             </FilterToolbarLabel>
             <Select
               aria-label="카테고리"
-              defaultValue={filters.category}
+              value={filters.category}
               name="category"
-              onValueChange={() => {
-                formRef.current?.requestSubmit()
+              onValueChange={(value) => {
+                submitSelectValue("category", value)
               }}
             >
               <SelectTrigger
@@ -210,11 +227,11 @@ export function AdminCoursesPage({
             <FilterToolbarLabel className="sr-only">상태</FilterToolbarLabel>
             <Select
               aria-label="상태"
-              defaultValue={filters.status}
+              value={filters.status}
               items={courseStatusFilterItems}
               name="status"
-              onValueChange={() => {
-                formRef.current?.requestSubmit()
+              onValueChange={(value) => {
+                submitSelectValue("status", value)
               }}
             >
               <SelectTrigger
@@ -232,6 +249,9 @@ export function AdminCoursesPage({
               </SelectContent>
             </Select>
           </FilterToolbarField>
+          <Button type="submit" variant="outline">
+            검색
+          </Button>
           <span className="text-muted-foreground font-bold ml-auto text-sm">
             {courses.pagination.totalItems}개 결과
           </span>
@@ -373,11 +393,11 @@ export function AdminCoursesPage({
                 </FilterToolbarLabel>
                 <Select
                   aria-label="페이지 크기"
-                  defaultValue={String(filters.pageSize)}
+                  value={String(filters.pageSize)}
                   items={coursePageSizeItems}
                   name="pageSize"
-                  onValueChange={() => {
-                    formRef.current?.requestSubmit()
+                  onValueChange={(value) => {
+                    submitSelectValue("pageSize", value)
                   }}
                 >
                   <SelectTrigger

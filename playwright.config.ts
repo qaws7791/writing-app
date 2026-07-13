@@ -2,7 +2,8 @@ import path from "node:path"
 
 import { defineConfig } from "@playwright/test"
 
-const databaseUrl = path.resolve("data/e2e/writing-app.sqlite")
+const databaseUrl = readRequiredEnvironment("E2E_DATABASE_URL")
+const e2eRunRoot = readRequiredEnvironment("E2E_RUN_ROOT")
 const authSecret = "e2e-auth-secret-must-have-32-characters"
 const isCi = Boolean(process.env["CI"])
 
@@ -29,6 +30,9 @@ export default defineConfig({
   },
   use: {
     baseURL: "http://127.0.0.1:3100",
+    launchOptions: {
+      downloadsPath: path.join(e2eRunRoot, "downloads"),
+    },
     screenshot: "only-on-failure",
     trace: "on-first-retry",
     viewport: { height: 720, width: 1280 },
@@ -89,6 +93,7 @@ export default defineConfig({
       cwd: path.resolve("apps/admin"),
       env: {
         ADMIN_API_BASE_URL: "http://127.0.0.1:4101",
+        ADMIN_ORIGIN: "http://127.0.0.1:3101",
         NEXT_PUBLIC_ADMIN_API_BASE_URL: "http://127.0.0.1:4101",
         NEXT_PUBLIC_LEARNER_WEB_ORIGIN: "http://127.0.0.1:3100",
       },
@@ -98,3 +103,15 @@ export default defineConfig({
     },
   ],
 })
+
+function readRequiredEnvironment(name: string): string {
+  const value = process.env[name]?.trim()
+
+  if (value === undefined || value.length === 0) {
+    throw new Error(
+      `${name}이 없습니다. 격리된 실행을 위해 bun run test:e2e를 사용해 주세요.`
+    )
+  }
+
+  return path.resolve(value)
+}

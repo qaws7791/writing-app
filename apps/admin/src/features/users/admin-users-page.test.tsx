@@ -12,6 +12,11 @@ import type {
 } from "@/features/users/admin-users-api"
 import { userIdSchema } from "@/lib/api/admin-identity"
 
+const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }))
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock }),
+}))
+
 const filters: ReadAdminUsersInput = {
   page: 1,
   pageSize: 20,
@@ -44,6 +49,7 @@ const users: AdminUserList = {
 describe("AdminUsersPage", () => {
   it("검색, 상태 필터, 정렬, 사용자 목록과 상태 변경을 렌더링한다", async () => {
     const user = userEvent.setup()
+    vi.spyOn(window, "confirm").mockReturnValue(true)
     const updateUserStatus = vi.fn<
       () => Promise<AdminApiResult<AdminUserDetail>>
     >(async () => ok(userDetail("suspended")))
@@ -61,6 +67,7 @@ describe("AdminUsersPage", () => {
     expect(screen.getByLabelText("사용자 검색")).toHaveValue("")
     expect(screen.getByRole("combobox", { name: "상태" })).toBeVisible()
     expect(screen.getByRole("combobox", { name: "정렬" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "검색" })).toBeVisible()
     expect(screen.getByLabelText("사용자 검색")).toHaveAttribute(
       "name",
       "query"
@@ -77,7 +84,14 @@ describe("AdminUsersPage", () => {
       status: "suspended",
       userId: "user-1",
     })
-    expect(screen.getByText("사용자 상태를 변경했습니다.")).toBeVisible()
+    expect(screen.getByText("사용자를 정지했습니다.")).toBeVisible()
+
+    await user.click(screen.getByRole("combobox", { name: "상태" }))
+    await user.click(await screen.findByRole("option", { name: "정지" }))
+    expect(pushMock).toHaveBeenCalledWith(
+      expect.stringContaining("status=suspended")
+    )
+    expect(pushMock).toHaveBeenCalledWith(expect.stringContaining("page=1"))
   })
 
   it("삭제 요청 확인 대화상자를 거쳐 삭제한다", async () => {
@@ -103,6 +117,45 @@ describe("AdminUsersPage", () => {
 
     expect(deleteUser).toHaveBeenCalledWith("user-1")
     expect(screen.getByText("삭제 요청을 처리했습니다.")).toBeVisible()
+  })
+
+  it("정지 사용자는 활성화하고 삭제 사용자는 읽기 전용으로 표시한다", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(window, "confirm").mockReturnValue(true)
+    const updateUserStatus = vi.fn(async () => ok(userDetail("active")))
+    const firstUser = users.items[0]
+    if (firstUser === undefined) throw new Error("사용자 fixture가 없습니다.")
+    const items: AdminUserList["items"] = [
+      { ...firstUser, status: "suspended" },
+      {
+        ...firstUser,
+        email: "deleted@example.com",
+        id: userIdSchema.parse("user-deleted"),
+        name: "삭제 사용자",
+        status: "deleted",
+      },
+    ]
+
+    render(
+      <AdminUsersPage
+        deleteUser={async () => ok({ deleted: true })}
+        filters={filters}
+        updateUserStatus={updateUserStatus}
+        usersResult={ok({ ...users, items })}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "활성화" }))
+    expect(updateUserStatus).toHaveBeenCalledWith({
+      status: "active",
+      userId: "user-1",
+    })
+    expect(screen.getByText("사용자를 활성화했습니다.")).toBeVisible()
+    expect(
+      within(screen.getByRole("row", { name: /삭제 사용자/ })).getByText(
+        "읽기 전용"
+      )
+    ).toBeVisible()
   })
 })
 

@@ -502,6 +502,12 @@ describe("어드민 API 자료실 트리 route", () => {
     expect(exportResponse.headers.get("Content-Disposition")).toContain(
       "attachment"
     )
+    expect(exportResponse.headers.get("Access-Control-Allow-Origin")).toBe(
+      "http://localhost:3001"
+    )
+    expect(
+      exportResponse.headers.get("Access-Control-Expose-Headers")
+    ).toContain("Content-Disposition")
     expect(exportResponse.headers.get("Cache-Control")).toBe(
       "private, no-store"
     )

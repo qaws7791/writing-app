@@ -158,7 +158,10 @@ Bun `1.3.10`의 Windows runtime에서는 `Bun.Terminal` PTY를 사용할 수 없
 | `ADMIN_ORIGIN`                   | `http://localhost:3001` | 서버 API 요청 origin과 CSP 기준    |
 
 base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildAdminApiUrl()`로 만든다.
+브라우저 reader는 공개 `NEXT_PUBLIC_ADMIN_API_BASE_URL`만 읽고, 서버 reader는 비공개 `ADMIN_API_BASE_URL`만 읽는다. development 기본값은 `@workspace/env/local-runtime-defaults`를 사용하며 SSR 중 `window`를 읽지 않는다.
 어드민 웹은 `ADMIN_DEV_SESSION_TOKEN` 같은 자동 세션 주입 환경 변수를 지원하지 않는다. 로컬 개발은 seed 관리자 로그인, 학습자 브라우저 자동화는 `ENABLE_TEST_AUTH=true`를 사용한다.
+
+`bun run dev:admin`은 서버를 열기 전에 `check:toolchain`을 실행한다. 저장소 고정 버전인 Bun 1.3.10과 다르면 요구 버전과 실행 버전을 출력하고 종료한다.
 
 ## 프론트엔드 보안 header 설정
 

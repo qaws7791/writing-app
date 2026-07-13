@@ -8,6 +8,7 @@ import type {
   AdminArchiveCourseResultDto,
   AdminCourseListDto,
   AdminCourseDetailDto,
+  AdminCourseEditorDocument,
   AdminContentResetResultDto,
   AdminDashboardDto,
   AdminLessonAnalyticsPageDto,
@@ -24,6 +25,7 @@ import {
   conversationIdSchema,
   userIdSchema,
 } from "@workspace/contracts/admin"
+import { adminCourseEditorDocumentSchema } from "@workspace/contracts/admin"
 
 const adminId = adminIdSchema.parse("admin-1")
 const chatId = conversationIdSchema.parse("chat-1")
@@ -260,6 +262,39 @@ const courseDetail: AdminCourseDetailDto = {
     },
   ],
 }
+
+const courseEditor: AdminCourseEditorDocument =
+  adminCourseEditorDocumentSchema.parse({
+    ...courseDetail,
+    units: courseDetail.units.map((unit) => ({
+      ...unit,
+      lessons: unit.lessons.map((lesson) => ({
+        ...lesson,
+        steps: [
+          {
+            body: "본문을 입력하세요.",
+            guide: "",
+            id: "cmock-l1-s1",
+            sortOrder: 1,
+            status: "active",
+            title: "새 읽기 스텝",
+            type: "READING",
+          },
+          {
+            goal: 150,
+            id: "cmock-l1-s2",
+            max: 500,
+            min: 50,
+            prompt: "주제를 입력하세요.",
+            sortOrder: 2,
+            status: "active",
+            title: "글쓰기",
+            type: "WRITE",
+          },
+        ],
+      })),
+    })),
+  })
 
 const archiveCourseResult: AdminArchiveCourseResultDto = {
   archived: true,
@@ -561,7 +596,7 @@ describe("어드민 서비스", () => {
         },
         async readCourseEditor(input) {
           expect(input.courseId).toBe("cmock")
-          return courseDetail
+          return courseEditor
         },
         async readCourses(input) {
           expect(input).toEqual({
@@ -572,6 +607,9 @@ describe("어드민 서비스", () => {
             status: "active",
           })
           return courseList
+        },
+        async saveCourseEditor() {
+          return { kind: "ok", value: courseEditor }
         },
       },
     })
@@ -595,7 +633,7 @@ describe("어드민 서비스", () => {
       service.getCourseEditor({
         courseId: "cmock",
       })
-    ).resolves.toEqual(courseDetail)
+    ).resolves.toEqual(courseEditor)
     await expect(
       service.archiveCourse({
         actor: ownerActor,
@@ -713,6 +751,9 @@ function createUnusedAdminServicePorts(): AdminServicePorts {
       },
       async readCourses() {
         return failUnexpectedPort("courseRepository.readCourses")
+      },
+      async saveCourseEditor() {
+        return failUnexpectedPort("courseRepository.saveCourseEditor")
       },
     },
     dashboardReader: {

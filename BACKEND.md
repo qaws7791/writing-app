@@ -102,6 +102,7 @@ bun --filter @workspace/api dev
 - `GET /courses?page=...&pageSize=...&query=...&status=...`
 - `POST /courses`
 - `GET /courses/{courseId}/editor`
+- `PUT /courses/{courseId}/editor`
 - `DELETE /courses/{courseId}`
 - `GET /users?page=...&pageSize=...&query=...&status=...&sort=...`
 - `GET /users/{userId}`
@@ -178,7 +179,7 @@ bun --filter @workspace/admin-api seed:admin
 
 레슨 답변 저장 command의 `answer`는 `learningAnswerSchema`를 통과한 값만 허용한다. API route, core service command, DB learning repository는 같은 학습 답변 계약을 사용하며, 임의 JSON 값은 application boundary 전에 거절한다.
 
-어드민 코스 상세는 현재 `GET /courses/{courseId}/editor` 기반 읽기 전용 미리보기다. 코스 기본 정보, 유닛, 레슨, 스텝을 조회해 운영자가 확인할 수 있게 하지만 저장형 편집 API는 제공하지 않는다.
+어드민 코스 상세는 `GET /courses/{courseId}/editor`로 branded ID와 구조화된 10종 step union을 포함한 전체 문서를 조회하고, owner가 `PUT /courses/{courseId}/editor`로 저장한다. 저장은 단일 SQLite transaction에서 현재 revision 비교, 경로·문서 ID와 row 소유권 검증, 포함 row upsert, 누락 하위 row 보관, revision 증가와 최종 projection 조회를 수행한다. revision 충돌은 `409 STALE_REVISION`, 잘못된 소유 ID와 step의 레슨 간 이동은 `400 INVALID_REQUEST`, 없는 코스와 보관 코스는 `404 NOT_FOUND`다.
 
 ## `packages/db`
 

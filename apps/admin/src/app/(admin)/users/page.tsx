@@ -1,15 +1,15 @@
 import { AdminUsersPage } from "@/features/users/admin-users-page"
 import {
+  deleteAdminUserAction,
+  updateAdminUserStatusAction,
+} from "@/features/users/admin-user-actions"
+import {
   createAdminUsersApi,
   type ReadAdminUsersInput,
 } from "@/features/users/admin-users-api"
 import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
-import {
-  learnerAccountStatusSchema,
-  type LearnerOperationalStatus,
-} from "@workspace/contracts/status"
-import type { UserId } from "@/lib/api/admin-identity"
+import { learnerAccountStatusSchema } from "@workspace/contracts/status"
 
 export default async function AdminUsersRoute({
   searchParams,
@@ -25,38 +25,11 @@ export default async function AdminUsersRoute({
   )
   const usersResult = await api.getUsers(filters)
 
-  async function updateUserStatus(input: {
-    readonly status: LearnerOperationalStatus
-    readonly userId: UserId
-  }) {
-    "use server"
-
-    const serverApi = createAdminUsersApi(
-      getServerAdminHttpTransport({
-        tokenProvider: getServerAdminSessionToken,
-      })
-    )
-
-    return serverApi.updateUserStatus(input)
-  }
-
-  async function deleteUser(userId: UserId) {
-    "use server"
-
-    const serverApi = createAdminUsersApi(
-      getServerAdminHttpTransport({
-        tokenProvider: getServerAdminSessionToken,
-      })
-    )
-
-    return serverApi.deleteUser(userId)
-  }
-
   return (
     <AdminUsersPage
-      deleteUser={deleteUser}
+      deleteUser={deleteAdminUserAction}
       filters={filters}
-      updateUserStatus={updateUserStatus}
+      updateUserStatus={updateAdminUserStatusAction}
       usersResult={usersResult}
     />
   )

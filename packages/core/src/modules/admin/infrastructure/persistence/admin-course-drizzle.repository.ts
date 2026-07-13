@@ -2,6 +2,7 @@ import type {
   AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
   AdminCourseDetailDto,
+  AdminCourseEditorDocument,
   AdminCourseListDto,
 } from "#core/modules/admin/domain/admin.dto"
 import {
@@ -16,9 +17,12 @@ import type {
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
   ResetAdminContentInput,
+  SaveAdminCourseEditorInput,
+  SaveAdminCourseEditorPersistenceResult,
 } from "#core/modules/admin/application/ports/admin.repository"
 import { contentStatuses } from "#core/shared/kernel/status"
 import { and, asc, count, eq, inArray, or, sql } from "drizzle-orm"
+import { adminCourseEditorDocumentSchema } from "@workspace/contracts/admin"
 
 import { archiveContentRowsOutsideSeed } from "@workspace/db/content/content-archive-policy"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -69,6 +73,9 @@ export function createAdminCourseRepository(
     },
     readCourses(input) {
       return Promise.resolve(readCourses(db, input))
+    },
+    saveCourseEditor(input) {
+      return Promise.resolve(saveCourseEditor(db, input))
     },
     resetContent(input) {
       return resetContent(db, input)
@@ -162,6 +169,7 @@ function insertCourseAggregate(
         {
           contentJson: JSON.stringify({
             body: "본문을 입력하세요.",
+            guide: "",
             title: "새 읽기 스텝",
             type: "reading",
           }),
@@ -190,7 +198,7 @@ function insertCourseAggregate(
       .run()
   })
 
-  const created = readCourseEditor(db, { courseId })
+  const created = readLegacyCourseEditor(db, { courseId })
 
   if (created === null) {
     throw new Error("Created course editor document was not found")
@@ -212,8 +220,10 @@ function isContentIdCollision(error: unknown): boolean {
   )
 }
 
-function readCourseEditor(
-  db: WritingAppDatabase,
+type CourseReadDatabase = Pick<WritingAppDatabase, "select">
+
+function readLegacyCourseEditor(
+  db: CourseReadDatabase,
   input: ReadAdminCourseInput
 ): AdminCourseDetailDto | null {
   const course = db
@@ -304,6 +314,264 @@ function readCourseEditor(
       title: unit.title,
     })),
   }
+}
+
+function readCourseEditor(
+  db: CourseReadDatabase,
+  input: ReadAdminCourseInput
+): AdminCourseEditorDocument | null {
+  const course = readLegacyCourseEditor(db, input)
+  if (course === null) return null
+
+  return adminCourseEditorDocumentSchema.parse({
+    ...course,
+    units: course.units.map((unit) => ({
+      ...unit,
+      lessons: unit.lessons.map((lesson) => ({
+        ...lesson,
+        steps: lesson.steps.map((step) => {
+          const parsedContent: unknown = JSON.parse(step.contentJson)
+          if (
+            typeof parsedContent !== "object" ||
+            parsedContent === null ||
+            Array.isArray(parsedContent)
+          ) {
+            throw new Error(`Invalid course editor step content: ${step.id}`)
+          }
+          const { type: _sourceType, ...content } = parsedContent as {
+            readonly type?: unknown
+            readonly [key: string]: unknown
+          }
+          return {
+            ...content,
+            id: step.id,
+            sortOrder: step.sortOrder,
+            status: step.status,
+            type: step.type,
+          }
+        }),
+      })),
+    })),
+  })
+}
+
+function saveCourseEditor(
+  db: WritingAppDatabase,
+  input: SaveAdminCourseEditorInput
+): SaveAdminCourseEditorPersistenceResult {
+  return db.transaction((transaction) => {
+    const currentCourse = transaction
+      .select()
+      .from(courses)
+      .where(eq(courses.id, input.courseId))
+      .get()
+
+    if (
+      currentCourse === undefined ||
+      currentCourse.status !== contentStatuses.active
+    ) {
+      return { kind: "not-found" }
+    }
+    if (currentCourse.curriculumRevision !== input.document.revision) {
+      return { kind: "stale-revision" }
+    }
+
+    for (const unit of input.document.units) {
+      const existingUnit = transaction
+        .select({ courseId: courseUnits.courseId })
+        .from(courseUnits)
+        .where(eq(courseUnits.id, unit.id))
+        .get()
+      if (
+        existingUnit !== undefined &&
+        existingUnit.courseId !== input.courseId
+      ) {
+        return { kind: "invalid-reference" }
+      }
+
+      for (const lesson of unit.lessons) {
+        const existingLesson = transaction
+          .select({ courseId: lessons.courseId })
+          .from(lessons)
+          .where(eq(lessons.id, lesson.id))
+          .get()
+        if (
+          existingLesson !== undefined &&
+          existingLesson.courseId !== input.courseId
+        ) {
+          return { kind: "invalid-reference" }
+        }
+
+        for (const step of lesson.steps) {
+          const existingStep = transaction
+            .select({ lessonId: lessonSteps.lessonId })
+            .from(lessonSteps)
+            .where(eq(lessonSteps.id, step.id))
+            .get()
+          if (
+            existingStep !== undefined &&
+            existingStep.lessonId !== lesson.id
+          ) {
+            return { kind: "invalid-reference" }
+          }
+        }
+      }
+    }
+
+    const currentUnits = transaction
+      .select({ id: courseUnits.id })
+      .from(courseUnits)
+      .where(eq(courseUnits.courseId, input.courseId))
+      .all()
+    const currentLessons = transaction
+      .select({ id: lessons.id })
+      .from(lessons)
+      .where(eq(lessons.courseId, input.courseId))
+      .all()
+    const currentLessonIds = currentLessons.map(({ id }) => id)
+    const currentSteps =
+      currentLessonIds.length === 0
+        ? []
+        : transaction
+            .select({ id: lessonSteps.id })
+            .from(lessonSteps)
+            .where(inArray(lessonSteps.lessonId, currentLessonIds))
+            .all()
+    const incomingUnitIds = new Set<string>(
+      input.document.units.map(({ id }) => id)
+    )
+    const incomingLessons = input.document.units.flatMap((unit) => unit.lessons)
+    const incomingLessonIds = new Set<string>(
+      incomingLessons.map(({ id }) => id)
+    )
+    const incomingSteps = incomingLessons.flatMap((lesson) => lesson.steps)
+    const incomingStepIds = new Set<string>(incomingSteps.map(({ id }) => id))
+
+    transaction
+      .update(courses)
+      .set({
+        category: input.document.category,
+        curriculumRevision: input.document.revision + 1,
+        description: input.document.description,
+        title: input.document.title,
+      })
+      .where(eq(courses.id, input.courseId))
+      .run()
+
+    for (const unit of input.document.units) {
+      transaction
+        .insert(courseUnits)
+        .values({
+          courseId: input.courseId,
+          id: unit.id,
+          sortOrder: unit.sortOrder,
+          status: contentStatuses.active,
+          title: unit.title,
+        })
+        .onConflictDoUpdate({
+          set: {
+            sortOrder: unit.sortOrder,
+            status: contentStatuses.active,
+            title: unit.title,
+          },
+          target: courseUnits.id,
+        })
+        .run()
+    }
+    for (const { id } of currentUnits) {
+      if (incomingUnitIds.has(id)) continue
+      transaction
+        .update(courseUnits)
+        .set({ status: contentStatuses.archived })
+        .where(eq(courseUnits.id, id))
+        .run()
+    }
+
+    for (const unit of input.document.units) {
+      for (const lesson of unit.lessons) {
+        transaction
+          .insert(lessons)
+          .values({
+            category: lesson.category,
+            courseId: input.courseId,
+            description: lesson.description,
+            estimatedMinutes: lesson.estimatedMinutes,
+            id: lesson.id,
+            sortOrder: lesson.sortOrder,
+            status: contentStatuses.active,
+            summaryJson: JSON.stringify(lesson.summary),
+            title: lesson.title,
+            unitId: unit.id,
+          })
+          .onConflictDoUpdate({
+            set: {
+              category: lesson.category,
+              description: lesson.description,
+              estimatedMinutes: lesson.estimatedMinutes,
+              sortOrder: lesson.sortOrder,
+              status: contentStatuses.active,
+              summaryJson: JSON.stringify(lesson.summary),
+              title: lesson.title,
+              unitId: unit.id,
+            },
+            target: lessons.id,
+          })
+          .run()
+      }
+    }
+    for (const { id } of currentLessons) {
+      if (incomingLessonIds.has(id)) continue
+      transaction
+        .update(lessons)
+        .set({ status: contentStatuses.archived })
+        .where(eq(lessons.id, id))
+        .run()
+    }
+
+    for (const lesson of incomingLessons) {
+      for (const step of lesson.steps) {
+        const { id, sortOrder, status: _status, type, ...content } = step
+        transaction
+          .insert(lessonSteps)
+          .values({
+            contentJson: JSON.stringify({
+              ...content,
+              type: type.toLocaleLowerCase("en-US"),
+            }),
+            id,
+            lessonId: lesson.id,
+            sortOrder,
+            status: contentStatuses.active,
+            type,
+          })
+          .onConflictDoUpdate({
+            set: {
+              contentJson: JSON.stringify({
+                ...content,
+                type: type.toLocaleLowerCase("en-US"),
+              }),
+              sortOrder,
+              status: contentStatuses.active,
+              type,
+            },
+            target: lessonSteps.id,
+          })
+          .run()
+      }
+    }
+    for (const { id } of currentSteps) {
+      if (incomingStepIds.has(id)) continue
+      transaction
+        .update(lessonSteps)
+        .set({ status: contentStatuses.archived })
+        .where(eq(lessonSteps.id, id))
+        .run()
+    }
+
+    const value = readCourseEditor(transaction, { courseId: input.courseId })
+    if (value === null) throw new Error("Saved course editor was not found")
+    return { kind: "ok", value }
+  })
 }
 
 function groupLessonsByUnitId(

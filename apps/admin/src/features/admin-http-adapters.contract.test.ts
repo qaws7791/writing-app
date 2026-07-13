@@ -20,7 +20,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     let capturedRequest: Request | undefined
     const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
       }),
       fetch: async (request) => {
         capturedRequest = request
@@ -55,7 +55,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     const bodies: unknown[] = []
     const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
       }),
       fetch: async (request) => {
         requests.push(request)
@@ -269,7 +269,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
   it("실패 응답을 AdminApi 오류로 변환한다", async () => {
     const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
       fetch: async () =>
         jsonResponse(
@@ -297,7 +297,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
   it("권한 실패 응답을 AdminApi 권한 오류로 변환한다", async () => {
     const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
       fetch: async () =>
         jsonResponse(
@@ -323,7 +323,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
   it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
     const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
       fetch: async () =>
         jsonResponse({
@@ -349,7 +349,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     const cause = new TypeError("Network unreachable")
     const api = createTestAdminApis({
       baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
       }),
       fetch: async () => {
         throw cause

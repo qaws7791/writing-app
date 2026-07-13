@@ -1,15 +1,25 @@
 "use client"
 
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useReducer, useState, useTransition } from "react"
+import { lessonIdSchema, unitIdSchema } from "@workspace/contracts/content"
 
-import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
 import {
-  ChevronDownIcon,
+  adminCourseEditorSchema,
+  type AdminCourseDetail,
+} from "@/features/courses/admin-courses-api"
+import {
+  courseEditorReducer,
+  createCourseEditorState,
+} from "@/features/courses/course-editor/state/course-editor-reducer"
+import type { AdminApiResult } from "@/lib/api/api-result"
+import {
   ChevronRightIcon,
   PlusIcon,
   TrashIcon,
 } from "@workspace/ui/components/icons"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
@@ -19,14 +29,87 @@ type EditorTab = "curriculum" | "info"
 
 export function CourseEditorShell({
   course,
+  loadLatestCourse,
+  saveCourse,
 }: {
   readonly course: AdminCourseDetail
+  readonly loadLatestCourse: (
+    courseId: string
+  ) => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly saveCourse: (
+    course: AdminCourseDetail
+  ) => Promise<AdminApiResult<AdminCourseDetail>>
 }) {
-  const [tab, setTab] = useState<EditorTab>("info")
-  const lessonCount = useMemo(
-    () => course.units.reduce((count, unit) => count + unit.lessons.length, 0),
-    [course.units]
+  const [state, dispatch] = useReducer(
+    courseEditorReducer,
+    course,
+    createCourseEditorState
   )
+  const [tab, setTab] = useState<EditorTab>("info")
+  const [isPending, startTransition] = useTransition()
+  const isUnsaved = [
+    "conflict",
+    "dirty",
+    "server-error",
+    "validation-error",
+  ].includes(state.status)
+  const lessonCount = useMemo(
+    () =>
+      state.draft.units.reduce((count, unit) => count + unit.lessons.length, 0),
+    [state.draft.units]
+  )
+
+  useEffect(() => {
+    if (!isUnsaved) return
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+    }
+    window.addEventListener("beforeunload", warnBeforeUnload)
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload)
+  }, [isUnsaved])
+
+  const changeTab = (nextTab: EditorTab) => {
+    if (
+      nextTab !== tab &&
+      isUnsaved &&
+      !window.confirm("저장하지 않은 변경이 있습니다. 편집 화면을 이동할까요?")
+    ) {
+      return
+    }
+    setTab(nextTab)
+  }
+
+  const save = () => {
+    const parsed = adminCourseEditorSchema.safeParse(state.draft)
+    if (!parsed.success) {
+      dispatch({
+        message:
+          parsed.error.issues[0]?.message ?? "입력 내용을 확인해 주세요.",
+        type: "validation-failed",
+      })
+      return
+    }
+
+    dispatch({ type: "save-started" })
+    startTransition(async () => {
+      const result = await saveCourse(parsed.data)
+      if (result.status === "ok") {
+        dispatch({ document: result.value, type: "save-succeeded" })
+        return
+      }
+      if (result.error.code !== "stale-revision") {
+        dispatch({ message: result.error.message, type: "server-failed" })
+        return
+      }
+
+      const latest = await loadLatestCourse(state.draft.id)
+      if (latest.status === "error") {
+        dispatch({ message: latest.error.message, type: "server-failed" })
+        return
+      }
+      dispatch({ latest: latest.value, type: "conflict-detected" })
+    })
+  }
 
   return (
     <div className="-mx-5 -mt-8 flex min-h-full flex-col md:-mx-10">
@@ -38,152 +121,229 @@ export function CourseEditorShell({
           <Link
             className="font-medium text-muted-foreground transition-colors hover:text-foreground"
             href="/courses"
+            onClick={(event) => {
+              if (
+                isUnsaved &&
+                !window.confirm(
+                  "저장하지 않은 변경을 버리고 목록으로 이동할까요?"
+                )
+              ) {
+                event.preventDefault()
+              }
+            }}
           >
             콘텐츠 관리
           </Link>
-          <ChevronRightIcon
-            aria-hidden="true"
-            className="text-muted-foreground"
-            size={13}
-          />
+          <ChevronRightIcon aria-hidden="true" size={13} />
           <span className="font-medium text-foreground">
-            {course.title || "제목 없음"}
+            {state.draft.title || "제목 없음"}
           </span>
         </nav>
-        <h1 className="mb-5 text-[1.375rem] font-bold text-foreground">
-          {course.title || "제목 없음"}
-        </h1>
-        <div className="-mb-px flex gap-0">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h1 className="text-[1.375rem] font-bold text-foreground">
+            {state.draft.title || "제목 없음"}
+          </h1>
+          <Button
+            disabled={isPending || state.status === "clean"}
+            onClick={save}
+          >
+            {state.status === "saving" ? "저장 중…" : "변경 저장"}
+          </Button>
+        </div>
+        <div className="-mb-px flex">
           <TabButton
             active={tab === "info"}
             label="강의 정보"
-            onClick={() => setTab("info")}
+            onClick={() => changeTab("info")}
           />
           <TabButton
             active={tab === "curriculum"}
             label="커리큘럼"
-            onClick={() => setTab("curriculum")}
+            onClick={() => changeTab("curriculum")}
           />
         </div>
       </div>
       <div className="flex-1 px-6 py-8 md:px-10">
+        {state.message === null ? null : (
+          <Alert
+            className="mb-5"
+            role="status"
+            tone={state.status === "saved" ? "success" : "danger"}
+          >
+            <AlertDescription>{state.message}</AlertDescription>
+          </Alert>
+        )}
+        {state.status === "conflict" ? (
+          <div
+            className="mb-5 flex flex-wrap gap-2"
+            role="group"
+            aria-label="충돌 해결"
+          >
+            <Button
+              onClick={() => dispatch({ type: "latest-selected" })}
+              variant="outline"
+            >
+              최신본으로 교체
+            </Button>
+            <Button
+              onClick={() => dispatch({ type: "local-rebased" })}
+              variant="outline"
+            >
+              로컬 초안 유지
+            </Button>
+          </div>
+        ) : null}
         {tab === "info" ? (
-          <fieldset className="m-0 max-w-xl border-0 p-0" disabled>
-            <legend className="sr-only">강의 정보 미리보기</legend>
+          <div className="max-w-xl">
             <Field>
               <FieldLabel htmlFor="course-editor-title">제목</FieldLabel>
               <Input
-                defaultValue={course.title}
                 id="course-editor-title"
-                readOnly
+                onChange={(event) =>
+                  dispatch({
+                    field: "title",
+                    type: "course-changed",
+                    value: event.target.value,
+                  })
+                }
+                value={state.draft.title}
               />
             </Field>
             <Field className="mt-4">
               <FieldLabel htmlFor="course-editor-description">설명</FieldLabel>
               <Textarea
-                defaultValue={course.description}
                 id="course-editor-description"
-                readOnly
+                onChange={(event) =>
+                  dispatch({
+                    field: "description",
+                    type: "course-changed",
+                    value: event.target.value,
+                  })
+                }
+                value={state.draft.description}
               />
             </Field>
             <Field className="mt-4">
               <FieldLabel htmlFor="course-editor-category">카테고리</FieldLabel>
               <Input
-                defaultValue={course.category}
                 id="course-editor-category"
-                readOnly
+                onChange={(event) =>
+                  dispatch({
+                    field: "category",
+                    type: "course-changed",
+                    value: event.target.value,
+                  })
+                }
+                value={state.draft.category}
               />
             </Field>
-          </fieldset>
+          </div>
         ) : (
           <div>
             <div className="mb-6 flex items-center justify-between">
-              <p className="m-0 text-[0.875rem] font-medium text-muted-foreground">
-                유닛 {course.units.length}개 · 레슨 {lessonCount}개
+              <p className="text-[0.875rem] font-medium text-muted-foreground">
+                유닛 {state.draft.units.length}개 · 레슨 {lessonCount}개
               </p>
-              <button
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-[0.875rem] font-bold text-primary-foreground opacity-60"
-                disabled
+              <Button
+                onClick={() =>
+                  dispatch({
+                    type: "unit-added",
+                    unitId: unitIdSchema.parse(`unit_${crypto.randomUUID()}`),
+                  })
+                }
                 type="button"
               >
-                <PlusIcon aria-hidden="true" size={15} />
-                유닛 추가
-              </button>
+                <PlusIcon aria-hidden="true" size={15} /> 유닛 추가
+              </Button>
             </div>
-            {course.units.length === 0 ? (
-              <div className="rounded-2xl border-2 border-dashed border-surface-hover py-16 text-center">
-                <p className="m-0 text-[0.9375rem] font-medium text-muted-foreground">
-                  유닛을 추가해 시작하세요.
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-6">
-                {course.units.map((unit, unitIndex) => (
-                  <div key={unit.id}>
-                    <div className="mb-2 flex items-center gap-3">
-                      <span className="text-[0.75rem] font-bold text-muted-foreground">
-                        UNIT {unitIndex + 1}
-                      </span>
-                      <div className="h-px flex-1 bg-surface-hover" />
-                      <button
-                        className="p-1 text-muted-foreground opacity-40"
-                        disabled
-                        type="button"
-                      >
-                        <TrashIcon aria-hidden="true" size={15} />
-                      </button>
-                    </div>
-                    <input
-                      className="mb-3 w-full border-b-2 border-transparent bg-transparent py-1 text-[1.0625rem] font-bold text-foreground outline-none"
-                      defaultValue={unit.title}
-                      readOnly
-                    />
-                    <div className="flex flex-col">
-                      {unit.lessons.map((lesson, lessonIndex) => (
-                        <div
-                          className="group flex items-center gap-3 border-b border-surface-hover py-3"
-                          key={lesson.id}
-                        >
-                          <div className="flex shrink-0 flex-col gap-0.5">
-                            <button
-                              className="p-0.5 text-muted-foreground opacity-30"
-                              disabled
-                              type="button"
-                            >
-                              <ChevronDownIcon aria-hidden="true" size={13} />
-                            </button>
-                          </div>
-                          <span className="w-5 shrink-0 text-right text-[0.8125rem] font-bold text-muted-foreground">
-                            {lessonIndex + 1}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-[0.9375rem] font-bold text-foreground">
-                              {lesson.title}
-                            </div>
-                            <div className="text-[0.75rem] font-medium text-muted-foreground">
-                              스텝 {lesson.steps.length}개
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 opacity-70 transition-opacity group-hover:opacity-100">
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-[0.8125rem] font-bold text-foreground">
-                              편집
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                      <button
-                        className="flex items-center gap-1.5 self-start py-3 text-[0.875rem] font-bold text-muted-foreground opacity-50"
-                        disabled
-                        type="button"
-                      >
-                        <PlusIcon aria-hidden="true" size={15} />
-                        레슨 추가
-                      </button>
-                    </div>
+            <div className="flex flex-col gap-6">
+              {state.draft.units.map((unit, unitIndex) => (
+                <section key={unit.id}>
+                  <div className="mb-2 flex items-center gap-3">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      UNIT {unitIndex + 1}
+                    </span>
+                    <div className="h-px flex-1 bg-surface-hover" />
+                    <Button
+                      aria-label={`${unit.title} 유닛 삭제`}
+                      onClick={() =>
+                        dispatch({ type: "unit-removed", unitId: unit.id })
+                      }
+                      size="icon"
+                      variant="ghost"
+                    >
+                      <TrashIcon aria-hidden="true" size={15} />
+                    </Button>
                   </div>
-                ))}
-              </div>
-            )}
+                  <Input
+                    aria-label={`유닛 ${unitIndex + 1} 제목`}
+                    className="mb-3 font-bold"
+                    onChange={(event) =>
+                      dispatch({
+                        title: event.target.value,
+                        type: "unit-title-changed",
+                        unitId: unit.id,
+                      })
+                    }
+                    value={unit.title}
+                  />
+                  <div className="flex flex-col gap-2">
+                    {unit.lessons.map((lesson, lessonIndex) => (
+                      <div className="flex items-center gap-2" key={lesson.id}>
+                        <span className="w-6 text-sm font-bold text-muted-foreground">
+                          {lessonIndex + 1}
+                        </span>
+                        <Input
+                          aria-label={`${unit.title} 레슨 ${lessonIndex + 1} 제목`}
+                          onChange={(event) =>
+                            dispatch({
+                              lessonId: lesson.id,
+                              title: event.target.value,
+                              type: "lesson-title-changed",
+                              unitId: unit.id,
+                            })
+                          }
+                          value={lesson.title}
+                        />
+                        <span className="whitespace-nowrap text-xs text-muted-foreground">
+                          스텝 {lesson.steps.length}개
+                        </span>
+                        <Button
+                          aria-label={`${lesson.title} 레슨 삭제`}
+                          onClick={() =>
+                            dispatch({
+                              lessonId: lesson.id,
+                              type: "lesson-removed",
+                              unitId: unit.id,
+                            })
+                          }
+                          size="icon"
+                          variant="ghost"
+                        >
+                          <TrashIcon aria-hidden="true" size={14} />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      className="self-start"
+                      onClick={() =>
+                        dispatch({
+                          lessonId: lessonIdSchema.parse(
+                            `lesson_${crypto.randomUUID()}`
+                          ),
+                          type: "lesson-added",
+                          unitId: unit.id,
+                        })
+                      }
+                      type="button"
+                      variant="ghost"
+                    >
+                      <PlusIcon aria-hidden="true" size={15} /> 레슨 추가
+                    </Button>
+                  </div>
+                </section>
+              ))}
+            </div>
           </div>
         )}
       </div>

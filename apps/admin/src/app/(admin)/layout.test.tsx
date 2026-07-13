@@ -16,6 +16,9 @@ const { getSessionMock } = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({
   redirect: redirectMock,
 }))
+vi.mock("next/headers", () => ({
+  headers: async () => new Headers(),
+}))
 
 vi.mock("@/components/admin-shell", () => ({
   AdminShell({ children }: { readonly children: ReactNode }) {
@@ -58,7 +61,7 @@ describe("어드민 layout", () => {
   })
 
   it.each([
-    [true, false, "/mfa"],
+    [true, false, "/mfa?next=%2F"],
     [false, true, "/login?next=%2F"],
   ] as const)(
     "MFA 등록=%s step-up=%s 상태는 %s로 보낸다",

@@ -38,7 +38,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             alt={course.title}
             className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
             height={128}
-            priority
+            preload
             sizes="(max-width: 768px) 96px, 128px"
             src={createCourseImageUrl(course.visualKey)}
             width={128}

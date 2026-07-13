@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url"
 
 import { eq } from "drizzle-orm"
 import { userIdSchema } from "@workspace/contracts/admin"
+import { lessonIdSchema } from "@workspace/contracts/content"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
@@ -711,7 +712,21 @@ describe("어드민 DB repository", () => {
 
       await expect(
         repository.readCourseEditor({ courseId: "cmqd74yo0" })
-      ).resolves.toEqual(created)
+      ).resolves.toMatchObject({
+        id: created.id,
+        units: [
+          {
+            lessons: [
+              {
+                steps: [
+                  { body: "본문을 입력하세요.", type: "READING" },
+                  { prompt: "주제를 입력하세요.", type: "WRITE" },
+                ],
+              },
+            ],
+          },
+        ],
+      })
       await expect(contentRepository.listCourses()).resolves.toEqual([
         expect.objectContaining({
           id: "cmqd74yo0",
@@ -728,6 +743,138 @@ describe("어드민 DB repository", () => {
       expect(
         (await contentRepository.listCourses()).map((course) => course.id)
       ).not.toContain("cmqd74yo0")
+    } finally {
+      client.close()
+    }
+  })
+
+  it("코스 editor 저장은 revision을 비교하고 누락 row를 보관한다", async () => {
+    const client = createWritingAppDatabase(":memory:")
+
+    try {
+      runBaselineMigration(client.sqlite)
+      const repository = createDrizzleAdminRepository(client.db, {
+        createCourseContentIds: createQueuedCourseContentIds("course-editor"),
+      })
+      await repository.createCourse({ now: new Date("2026-06-14T03:00:00Z") })
+      const editor = await repository.readCourseEditor({
+        courseId: "course-editor",
+      })
+      if (editor === null) throw new Error("editor fixture가 없습니다.")
+      const firstUnit = editor.units[0]
+      const firstLesson = firstUnit?.lessons[0]
+      if (firstUnit === undefined || firstLesson === undefined) {
+        throw new Error("editor 하위 fixture가 없습니다.")
+      }
+      const removedStep = firstLesson.steps[1]
+      const retainedStep = firstLesson.steps[0]
+      if (removedStep === undefined || retainedStep === undefined) {
+        throw new Error("보관할 step fixture가 없습니다.")
+      }
+
+      await expect(
+        repository.saveCourseEditor({
+          courseId: editor.id,
+          document: {
+            ...editor,
+            title: "저장된 코스",
+            units: [
+              {
+                ...firstUnit,
+                lessons: [{ ...firstLesson, steps: [retainedStep] }],
+              },
+            ],
+          },
+        })
+      ).resolves.toMatchObject({
+        kind: "ok",
+        value: { revision: editor.revision + 1, title: "저장된 코스" },
+      })
+      expect(
+        client.db
+          .select()
+          .from(lessonSteps)
+          .where(eq(lessonSteps.id, removedStep.id))
+          .get()?.status
+      ).toBe("archived")
+      await expect(
+        repository.saveCourseEditor({ courseId: editor.id, document: editor })
+      ).resolves.toEqual({ kind: "stale-revision" })
+    } finally {
+      client.close()
+    }
+  })
+
+  it("다른 코스 소유 ID와 step의 레슨 간 이동을 원자적으로 거부한다", async () => {
+    const client = createWritingAppDatabase(":memory:")
+
+    try {
+      runBaselineMigration(client.sqlite)
+      const repository = createDrizzleAdminRepository(client.db, {
+        createCourseContentIds: createQueuedCourseContentIds(
+          "course-owner-a",
+          "course-owner-b"
+        ),
+      })
+      const now = new Date("2026-06-14T03:00:00Z")
+      await repository.createCourse({ now })
+      await repository.createCourse({ now })
+      const first = await repository.readCourseEditor({
+        courseId: "course-owner-a",
+      })
+      const second = await repository.readCourseEditor({
+        courseId: "course-owner-b",
+      })
+      const firstUnit = first?.units[0]
+      const secondUnit = second?.units[0]
+      const firstLesson = firstUnit?.lessons[0]
+      const movingStep = firstLesson?.steps[0]
+      if (
+        first === null ||
+        firstUnit === undefined ||
+        secondUnit === undefined ||
+        firstLesson === undefined ||
+        movingStep === undefined
+      ) {
+        throw new Error("course ownership fixture가 없습니다.")
+      }
+
+      await expect(
+        repository.saveCourseEditor({
+          courseId: first.id,
+          document: {
+            ...first,
+            title: "반영되면 안 됨",
+            units: [{ ...firstUnit, id: secondUnit.id }],
+          },
+        })
+      ).resolves.toEqual({ kind: "invalid-reference" })
+      await expect(
+        repository.saveCourseEditor({
+          courseId: first.id,
+          document: {
+            ...first,
+            units: [
+              {
+                ...firstUnit,
+                lessons: [
+                  { ...firstLesson, steps: [] },
+                  {
+                    ...firstLesson,
+                    id: lessonIdSchema.parse("course-owner-a-l2"),
+                    sortOrder: 2,
+                    steps: [movingStep],
+                    title: "둘째 레슨",
+                  },
+                ],
+              },
+            ],
+          },
+        })
+      ).resolves.toEqual({ kind: "invalid-reference" })
+      await expect(
+        repository.readCourseEditor({ courseId: first.id })
+      ).resolves.toMatchObject({ revision: first.revision, title: first.title })
     } finally {
       client.close()
     }

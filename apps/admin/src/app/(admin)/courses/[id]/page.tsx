@@ -2,6 +2,10 @@ import { AdminCourseDetailPage } from "@/features/courses/admin-course-detail-pa
 import { createAdminCoursesApi } from "@/features/courses/admin-courses-api"
 import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import {
+  readAdminCourseEditorAction,
+  saveAdminCourseEditorAction,
+} from "@/features/courses/admin-course-actions"
 
 export default async function AdminCourseDetailRoute({
   params,
@@ -18,5 +22,11 @@ export default async function AdminCourseDetailRoute({
   )
   const courseResult = await api.getCourseEditor(id)
 
-  return <AdminCourseDetailPage courseResult={courseResult} />
+  return (
+    <AdminCourseDetailPage
+      courseResult={courseResult}
+      loadLatestCourse={readAdminCourseEditorAction}
+      saveCourse={saveAdminCourseEditorAction}
+    />
+  )
 }

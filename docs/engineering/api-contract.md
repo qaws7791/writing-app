@@ -98,6 +98,7 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 | `POST`     | `/courses`                                       | owner       | 코스 생성                 |
 | `DELETE`   | `/courses/{courseId}`                            | owner       | 코스 보관                 |
 | `GET`      | `/courses/{courseId}/editor`                     | 관리자      | 코스 편집 문서 조회       |
+| `PUT`      | `/courses/{courseId}/editor`                     | owner       | 전체 코스 편집 문서 저장  |
 | `GET`      | `/users`                                         | 관리자      | 사용자 목록               |
 | `GET`      | `/users/{userId}`                                | 관리자      | 사용자 상세               |
 | `PATCH`    | `/users/{userId}/status`                         | owner       | 사용자 상태 변경          |

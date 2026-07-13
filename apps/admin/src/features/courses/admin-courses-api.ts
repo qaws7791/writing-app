@@ -1,15 +1,12 @@
 import type { AdminHttpTransport } from "@/lib/api/admin-http-transport"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import {
-  parseEditorStep,
-  type EditorStepParseResult,
-  type WireEditorStep,
-} from "@/features/courses/course-editor/step-forms/shared/editor-step"
-import {
   adminArchiveCourseResultSchema,
   adminCourseDetailDtoSchema,
+  adminCourseEditorDocumentSchema,
   adminCourseListDtoSchema,
   type AdminCourseDetailDto,
+  type AdminCourseEditorDocument,
   type AdminCourseListDto,
 } from "@workspace/contracts/admin"
 
@@ -21,34 +18,9 @@ export type ReadAdminCoursesInput = {
   readonly query: string
   readonly status: "all" | AdminCourseStatus
 }
-export type AdminCourseStep = WireEditorStep
-export type AdminCourseLesson = {
-  readonly category: string | null
-  readonly description: string | null
-  readonly estimatedMinutes: number
-  readonly id: string
-  readonly sortOrder: number
-  readonly status: AdminCourseStatus
-  readonly summary: readonly string[]
-  readonly steps: readonly EditorStepParseResult[]
-  readonly title: string
-}
-export type AdminCourseUnit = {
-  readonly id: string
-  readonly lessons: readonly AdminCourseLesson[]
-  readonly sortOrder: number
-  readonly status: AdminCourseStatus
-  readonly title: string
-}
-export type AdminCourseDetail = {
-  readonly category: string
-  readonly description: string
-  readonly id: string
-  readonly revision: number
-  readonly status: AdminCourseStatus
-  readonly title: string
-  readonly units: readonly AdminCourseUnit[]
-}
+export type AdminCourseDetail = AdminCourseEditorDocument
+export type AdminCreatedCourse = AdminCourseDetailDto
+export const adminCourseEditorSchema = adminCourseEditorDocumentSchema
 export type AdminCourseListItem = {
   readonly category: string
   readonly id: string
@@ -73,28 +45,22 @@ export type AdminCoursesApi = {
   readonly archiveCourse: (
     courseId: string
   ) => Promise<AdminApiResult<AdminArchiveCourseResult>>
-  readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly createCourse: () => Promise<AdminApiResult<AdminCreatedCourse>>
   readonly getCourseEditor: (
     courseId: string
   ) => Promise<AdminApiResult<AdminCourseDetail>>
   readonly getCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminApiResult<AdminCourseList>>
+  readonly saveCourseEditor: (
+    courseId: string,
+    document: AdminCourseEditorDocument
+  ) => Promise<AdminApiResult<AdminCourseEditorDocument>>
 }
 
 export function createAdminCoursesApi(
   transport: AdminHttpTransport
 ): AdminCoursesApi {
-  const requestCourse = async (method: "GET" | "POST", path: string) => {
-    const result = await transport.requestJson({
-      method,
-      path,
-      schema: adminCourseDetailDtoSchema,
-    })
-    return result.status === "error"
-      ? result
-      : { status: "ok" as const, value: toCourse(result.value) }
-  }
   return {
     archiveCourse: (courseId) =>
       transport.requestJson({
@@ -102,9 +68,18 @@ export function createAdminCoursesApi(
         path: `/courses/${courseId}`,
         schema: adminArchiveCourseResultSchema,
       }),
-    createCourse: () => requestCourse("POST", "/courses"),
+    createCourse: () =>
+      transport.requestJson({
+        method: "POST",
+        path: "/courses",
+        schema: adminCourseDetailDtoSchema,
+      }),
     getCourseEditor: (courseId) =>
-      requestCourse("GET", `/courses/${courseId}/editor`),
+      transport.requestJson({
+        method: "GET",
+        path: `/courses/${courseId}/editor`,
+        schema: adminCourseEditorDocumentSchema,
+      }),
     async getCourses(input) {
       const params = new URLSearchParams()
       params.set("category", input.category)
@@ -127,19 +102,12 @@ export function createAdminCoursesApi(
             },
           }
     },
-  }
-}
-
-function toCourse(dto: AdminCourseDetailDto): AdminCourseDetail {
-  return {
-    ...dto,
-    units: dto.units.map((unit) => ({
-      ...unit,
-      lessons: unit.lessons.map((lesson) => ({
-        ...lesson,
-        steps: lesson.steps.map(parseEditorStep),
-        summary: [...lesson.summary],
-      })),
-    })),
+    saveCourseEditor: (courseId, document) =>
+      transport.requestJson({
+        body: document,
+        method: "PUT",
+        path: `/courses/${courseId}/editor`,
+        schema: adminCourseEditorDocumentSchema,
+      }),
   }
 }
