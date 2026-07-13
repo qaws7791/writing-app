@@ -1,0 +1,25 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "passThroughEnv": [
+        "ADMIN_BETTER_AUTH_SECRET",
+        "ADMIN_BETTER_AUTH_URL",
+        "ADMIN_ORIGIN",
+        "API_PORT",
+        "BETTER_AUTH_COOKIE_DOMAIN",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "CORS_ORIGIN",
+        "DATABASE_URL",
+        "ENABLE_TEST_AUTH",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "LOG_PRETTY",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "WEB_ORIGIN"
+      ]
+    }
+  }
+}

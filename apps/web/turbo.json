@@ -1,0 +1,25 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": [
+        "CSP_REPORT_ONLY",
+        "ENABLE_TEST_AUTH",
+        "NEXT_PUBLIC_API_BASE_URL",
+        "NODE_ENV",
+        "WEB_API_BASE_URL",
+        "WEB_ORIGIN"
+      ]
+    },
+    "dev": {
+      "passThroughEnv": [
+        "CSP_REPORT_ONLY",
+        "ENABLE_TEST_AUTH",
+        "NEXT_PUBLIC_API_BASE_URL",
+        "NODE_ENV",
+        "WEB_API_BASE_URL",
+        "WEB_ORIGIN"
+      ]
+    }
+  }
+}

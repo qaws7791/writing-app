@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "test:load:resource-library": {
+      "passThroughEnv": [
+        "RESOURCE_LIBRARY_LOAD_ARTIFACT",
+        "RESOURCE_LIBRARY_LOAD_RUNS"
+      ]
+    }
+  }
+}

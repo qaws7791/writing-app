@@ -164,21 +164,17 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 ## Turbo 환경 변수
 
-`turbo.json`의 `globalEnv`는 task cache와 실행에 영향을 주는 환경 변수를 선언한다. 새 runtime env를 추가하면 여기도 함께 갱신한다.
+2026-07-13 변경 전 기준선에서 `GITHUB_STEP_SUMMARY` 값만 바꿔도 `lint`, `typecheck`, `build`의 48개 task hash가 모두 달라졌다. 단계 5 완료 후에는 변경되는 hash가 없고, `WEB_ORIGIN` 변경은 `@workspace/web#build` hash 하나만 바꾼다.
+
+root `turbo.json`은 모든 task에 필요한 `CI`만 `globalPassThroughEnv`로 전달하며 값은 cache hash에 포함하지 않는다. 앱과 패키지는 자신의 `turbo.json`에서 다음 책임을 소유한다.
+
+- web과 admin `build`는 실제 production 산출물에 반영되는 URL, CSP, 테스트 인증 변수를 `env`로 선언한다.
+- 앱 `dev`와 DB·운영 보조 task는 실행에만 필요한 값을 `passThroughEnv`로 선언한다.
+- root CI 보조 스크립트의 `GITHUB_STEP_SUMMARY`는 Turborepo task 밖에서 소비하므로 Turbo 환경 변수 계약에 포함하지 않는다.
+- 자료실 부하 suite의 실행 횟수와 artifact 경로는 `packages/core`의 전용 load task만 전달받는다.
 
 `build` task output은 패키지 산출물 `dist/**`와 Next.js 산출물 `.next/**`를 포함하되, 재사용하면 안 되는 `.next/cache/**`는 제외한다. coverage, `.turbo`, `.next`, `dist` 같은 산출물과 캐시는 `.gitignore` 기준으로 Git에 포함하지 않는다.
-
-현재 포함 예:
-
-- API/auth origin 관련 변수
-- Better Auth 비밀값/url/cookie domain
-- DB reset 관련 변수
-- `DATABASE_URL`
-- `ENABLE_TEST_AUTH`
-- `NODE_ENV`
-- 웹/API base URL
-
-자료실 예약 부하 suite 전용 `RESOURCE_LIBRARY_LOAD_RUNS`와 `RESOURCE_LIBRARY_LOAD_ARTIFACT`도 task 입력과 artifact 위치를 결정하므로 `globalEnv`에 포함한다. 두 값은 제품 runtime 설정이 아니다.
+`tsc --noEmit`만 실행하는 admin-api `build`는 output을 빈 배열로 override해 존재하지 않는 산출물 경고를 만들지 않는다.
 
 ## `.env.example` 정책
 
@@ -192,7 +188,7 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 - parser schema를 갱신했는가?
 - 앱별 env 변환에서 alias와 기본값을 처리했는가?
 - `.env.example`을 갱신했는가?
-- `turbo.json.globalEnv`를 갱신했는가?
+- 실제 소비 package의 `turbo.json`에서 hash 입력은 `env`, 실행 전달값은 `passThroughEnv`로 구분했는가?
 - 보안 문서와 운영 문서를 갱신했는가?
 - 테스트에서 기본 URL과 trailing slash 정규화를 확인했는가?
 

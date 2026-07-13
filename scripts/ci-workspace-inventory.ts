@@ -55,6 +55,8 @@ const summaryMarkdown = [
 ].join("\n")
 console.log(summaryMarkdown)
 
+// root CI 보조 스크립트는 Turborepo task 밖에서 실행된다.
+// eslint-disable-next-line turbo/no-undeclared-env-vars
 const summaryPath = process.env["GITHUB_STEP_SUMMARY"]
 
 if (summaryPath !== undefined) {

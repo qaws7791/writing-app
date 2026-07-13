@@ -1,0 +1,22 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "db:backup": {
+      "passThroughEnv": ["DATABASE_URL"]
+    },
+    "db:migrate": {
+      "passThroughEnv": ["DATABASE_URL"]
+    },
+    "db:reset": {
+      "passThroughEnv": [
+        "ALLOW_DATABASE_RESET",
+        "DATABASE_RESET_TARGET_FINGERPRINT",
+        "DATABASE_URL",
+        "NODE_ENV"
+      ]
+    },
+    "db:seed": {
+      "passThroughEnv": ["ALLOW_DATABASE_RESET", "DATABASE_URL", "NODE_ENV"]
+    }
+  }
+}
