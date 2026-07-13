@@ -136,9 +136,15 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 ## 어드민 로컬 개발 감시
 
-`bun run dev:admin`은 setup을 마친 뒤 Turbo로 어드민 웹과 어드민 API를 실행한다. 어드민 웹 내부 변경은 Next.js watcher가 처리하고, 어드민 API는 Bun watcher가 workspace source 변경을 감지해 프로세스를 재시작한다.
+2026-07-13 변경 단위 3 단계 7을 완료했다. 일회성 DB setup과 장기 실행 watcher의 명령 경계를 분리하고, Windows·Linux에서 시작·workspace 변경 감지·process tree 종료를 검증하는 lifecycle smoke를 추가했다.
+
+`bun run dev:admin:setup`은 migration·콘텐츠 seed·관리자 seed를 실행하는 일회성 명령이다. `bun run dev:admin`은 DB를 변경하지 않고 Turbo로 어드민 웹과 어드민 API의 장기 실행 process만 시작한다. 어드민 웹 내부 변경은 Next.js watcher가 처리하고, 어드민 API는 Bun watcher가 workspace source 변경을 감지해 프로세스를 재시작한다. 이 Interface는 `dev:app:setup`과 `dev:app`의 분리 규칙과 같다.
 
 어드민 API Bun watcher는 저장소 루트에서 실행해 `apps/admin-api`와 import한 `packages/*` source를 함께 감시한다. `.env`는 `apps/admin-api/.env`를 명시적으로 읽고 preload에서 상대 `DATABASE_URL`만 `apps/admin-api` 기준 절대 경로로 정규화한다. Bun 작업 디렉터리는 저장소 루트로 유지한다.
+
+`bun run test:admin-dev-lifecycle`은 disposable DB와 `packages/env` 아래 전용 fixture를 사용한다. 어드민 API와 웹의 readiness, fixture 변경에 따른 API 재시작 정확히 1회, Bun project directory 경고 부재, 종료 후 3001·4001 port와 Next lock 해제를 검증한다. `ADMIN_DEV_LIFECYCLE_FIXTURE`는 이 smoke 전용 변수이며 사용자 runtime 설정이 아니다.
+
+Bun `1.3.10`의 Windows runtime에서는 `Bun.Terminal` PTY를 사용할 수 없음을 로컬 검증했다. 따라서 lifecycle Adapter는 POSIX에서 분리된 process group에 `SIGINT`를 보내고, Windows에서는 harness가 시작해 PID를 기록한 root process tree에만 `taskkill /T /F`를 적용한다. 실패 정리도 기록한 소유 PID만 대상으로 하며 이름이나 port만으로 다른 process를 종료하지 않는다. 이는 대상 버전의 검증된 platform 제약이며 Bun 버전 변경 시 재확인이 필요하다.
 
 ## 어드민 웹 설정
 

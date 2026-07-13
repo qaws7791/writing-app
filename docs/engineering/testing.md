@@ -68,6 +68,7 @@ bun run check:components-config
 bun run check:api-contract
 bun run check:document-drift
 bun test ./scripts
+bun run test:admin-dev-lifecycle
 node scripts/oxlint/workspace-rules.node-test.mjs
 bun run check:workspace-inventory
 bun run test
@@ -100,12 +101,13 @@ bun run --filter=@workspace/resource-document test
 bun run --filter=@workspace/web test
 ```
 
-개발 감시 설정을 변경할 때는 실제 dev server를 실행해 다음 조건을 확인한다.
+어드민 개발 감시 설정은 `bun run test:admin-dev-lifecycle`로 실제 dev server를 실행해 다음 조건을 확인한다. 이 smoke는 Windows·Linux CI matrix에서 실행한다.
 
 - 앱과 API가 표준 포트에서 모두 기동한다.
-- workspace package source를 변경하면 이를 import하는 API 프로세스가 재시작한다.
-- 임시 변경을 되돌린 뒤에도 재시작하며 디버그 표식이 남지 않는다.
+- disposable DB와 전용 workspace fixture만 사용하고 기존 source를 변경하지 않는다.
+- workspace fixture를 한 번 변경하면 이를 import하는 API process가 정확히 한 번 재시작한다.
 - Bun이 import한 workspace 파일을 프로젝트 디렉터리 밖으로 판정하는 경고가 발생하지 않는다.
+- harness가 소유한 process만 종료하고 3001·4001 port와 Next lock을 모두 해제한다.
 
 ## 커버리지 기준
 

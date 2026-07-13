@@ -7,7 +7,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 확인된 설치 버전: Bun `1.3.14`, Node.js `24.15.0`, Turborepo `2.10.4`, Vitest `4.1.10`, Playwright `1.61.1`
-- 상태: 변경 단위 1~2 완료, 변경 단위 3 대기
+- 상태: 변경 단위 1~3 완료, 변경 단위 4 대기
 - 구현 단위: 독립적으로 병합·롤백 가능한 5개 변경 단위
 
 ## 목적
@@ -184,7 +184,7 @@ P0 복구가 P1·P2 작업에 종속되지 않도록 다음 변경 단위를 각
 | ✅        | 4    | 정적 검증 Interface 정렬             | P1       | 단계 1                   |
 | ✅        | 5    | Turbo env와 cache hash 정밀화        | P1       | 단계 2, 4                |
 | ✅        | 6    | toolchain 재현성 고정                | P1       | 단계 2                   |
-| ❌        | 7    | admin 개발 lifecycle 정리            | P2       | 단계 2, 6                |
+| ✅        | 7    | admin 개발 lifecycle 정리            | P2       | 단계 2, 6                |
 | ❌        | 8    | Playwright flaky 관측성 추가         | P2       | 단계 2                   |
 | ❌        | 9    | UI style build Seam 이동             | P2       | 단계 2, 4                |
 | ❌        | 10   | 전체 회귀 검증과 문서 동기화         | P0       | 각 변경 단위의 포함 단계 |
@@ -479,7 +479,7 @@ bun run build
 2. `dev:admin`에서는 setup chain을 제거하고 admin과 admin-api 장기 process만 실행한다.
 3. `dev:app`과 같은 Interface 규칙을 문서화한다.
 4. Bun API watcher와 Next 자체 watcher는 교체하지 않는다.
-5. 자동 smoke harness는 disposable local DB로 `dev:admin`을 시작하고 health·page readiness를 기다린 뒤 정상 종료 신호를 보낸다.
+5. 자동 smoke harness는 disposable local DB로 `dev:admin`을 시작하고 health·page readiness를 기다린 뒤 platform Adapter로 소유 process tree를 종료한다.
 6. harness는 자신이 시작한 root PID와 child PID만 추적해 종료하고 제한시간 뒤 3001·4001 port와 `.next` lock이 해제되었는지 판정한다.
 7. harness는 watcher 시작 전에 `packages/env` 아래 전용 test fixture를 준비하고 readiness 이후 한 번만 변경한다. process 종료 뒤 fixture를 정리하고 admin-api restart log가 정확히 한 번인지 검증한다. 기존 source 파일은 변경하지 않는다.
 8. lifecycle smoke를 CI의 Windows·Linux matrix에서 실행하고 platform별 종료 방식은 Adapter로 격리한다.
@@ -504,7 +504,7 @@ bun run typecheck
 bun run lint
 ```
 
-개발 서버 검증은 `ENABLE_TEST_AUTH=true`와 disposable local DB를 사용하고 종료 후 관련 process를 정리한다.
+개발 서버 검증은 `ENABLE_TEST_AUTH=true`와 disposable local DB를 사용하고 종료 후 관련 process를 정리한다. Bun `1.3.10`의 Windows runtime은 PTY를 지원하지 않아 소유 root process tree에 `taskkill /T /F`를 적용하고, POSIX는 분리된 process group에 `SIGINT`를 전달한다. smoke는 기록한 소유 PID만 정리하고 3001·4001 port와 Next lock 해제를 판정한다.
 
 ## 단계 8. Playwright flaky 관측성 추가
 

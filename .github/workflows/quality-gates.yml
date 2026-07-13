@@ -67,6 +67,30 @@ jobs:
       - if: always()
         run: bun scripts/ci-workspace-inventory.ts test --summary-directory=.turbo/runs
 
+  admin-dev-lifecycle:
+    name: 관리자 개발 lifecycle (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - run: bun run test:admin-dev-lifecycle
+
   coverage:
     name: 커버리지
     runs-on: ubuntu-latest

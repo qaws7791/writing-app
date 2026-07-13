@@ -64,10 +64,10 @@ cp apps/admin/.env.example apps/admin/.env
 
 ```bash
 bun run dev:app:setup
-bun --filter @workspace/admin-api seed:admin
+bun run dev:admin:setup
 ```
 
-`dev:app:setup`은 baseline migration과 보존형 콘텐츠 seed를 실행한다. 기존 학습 진행과 답변은 삭제하지 않는다. 깨끗한 개발 DB가 필요할 때만 `bun run db:reset` 또는 `bun run dev:app:fresh`를 사용한다.
+`dev:app:setup`은 baseline migration과 보존형 콘텐츠 seed를 실행하고, `dev:admin:setup`은 여기에 관리자 seed를 추가로 실행한다. 두 setup 명령은 개발 서버를 시작하기 전에 필요한 경우 명시적으로 한 번 실행하며, `dev:app`과 `dev:admin`은 DB를 변경하지 않고 장기 실행 process만 시작한다. 기존 학습 진행과 답변은 삭제하지 않는다. 깨끗한 개발 DB가 필요할 때만 `bun run db:reset` 또는 `bun run dev:app:fresh`를 사용한다.
 
 ## 개발 서버
 
@@ -85,6 +85,8 @@ bun run dev:app
 ```bash
 bun run dev:admin
 ```
+
+이 명령은 어드민 웹의 Next.js watcher와 어드민 API의 Bun watcher만 시작한다.
 
 - 어드민 웹: `http://localhost:3001`
 - 어드민 API: `http://localhost:4001`

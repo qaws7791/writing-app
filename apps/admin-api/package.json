@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit",
-    "dev": "cd ../.. && bun --env-file=apps/admin-api/.env --preload ./apps/admin-api/src/dev-environment.ts --watch apps/admin-api/src/main.ts",
+    "dev": "cd ../.. && bun --no-clear-screen --env-file=apps/admin-api/.env --preload ./apps/admin-api/src/dev-environment.ts --watch apps/admin-api/src/main.ts",
     "start": "bun src/main.ts",
     "audit:admin-auth": "bun src/scripts/admin-auth-audit.ts",
     "lint": "oxlint .",
