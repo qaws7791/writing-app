@@ -112,6 +112,43 @@ describe("공개 랜딩 페이지", () => {
     ).toBeInTheDocument()
   })
 
+  it("footer는 실제 목적지가 있는 메뉴만 제공한다", () => {
+    const { container } = render(<LandingPage />)
+
+    const footer = screen.getByRole("contentinfo")
+    const features = container.querySelector("#features")
+
+    expect(features).toBeInTheDocument()
+    expect(within(footer).getByRole("link", { name: "코스" })).toHaveAttribute(
+      "href",
+      "/app/courses"
+    )
+    expect(
+      within(footer).getByRole("link", { name: "학습 통계" })
+    ).toHaveAttribute("href", "/app")
+    expect(within(footer).getByRole("link", { name: "소개" })).toHaveAttribute(
+      "href",
+      "/#features"
+    )
+    expect(footer.querySelector('a[href="#"]')).not.toBeInTheDocument()
+
+    for (const label of [
+      "레슨",
+      "요금제",
+      "블로그",
+      "채용",
+      "문의",
+      "도움말",
+      "커뮤니티",
+      "이용약관",
+      "개인정보",
+    ]) {
+      expect(
+        within(footer).queryByRole("link", { name: label })
+      ).not.toBeInTheDocument()
+    }
+  })
+
   it("motion listener를 passive로 등록하고 unmount에서 정리한다", () => {
     installReducedMotion(false)
     const addEventListener = vi.spyOn(window, "addEventListener")

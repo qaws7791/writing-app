@@ -23,7 +23,7 @@
 - 지표
 - 화면 미리보기
 - 최종 CTA
-- footer
+- footer: 코스, 학습 통계, 소개
 
 ## UI 기준
 
@@ -37,6 +37,8 @@
 
 - nav는 스크롤 시 반투명 cream 배경과 blur를 적용한다.
 - CTA는 `/app` 또는 `/app/courses`로 이동한다.
+- footer의 코스와 학습 통계는 각각 `/app/courses`, `/app`으로 이동하고, 소개는 랜딩의 특징 섹션 `/#features`로 이동한다.
+- 목적지가 확정되지 않은 메뉴는 footer에 노출하지 않는다.
 
 ## 접근성
 

@@ -187,10 +187,78 @@
 - 모든 링크의 `href`가 `#`다.
 - `이용약관` 클릭 후 URL만 `http://localhost:3000/#`로 바뀌고 콘텐츠는 변하지 않는다.
 
+해결 작업 상태: **구현 및 자동·브라우저 검증 완료**
+
+계획 기준:
+
+- `REQ-LRN-8`은 footer 제공을 요구하지만 12개 메뉴 자체를 계약으로 정하지 않는다.
+- 현재 학습자 정보 구조에서 연결 가능한 목적지는 학습 홈 `/app`, 코스 목록 `/app/courses`, 공개 랜딩 `/`뿐이다.
+- `요금제`는 `REQ-LRN-8`과 `US-LRN-9`의 명시적 비범위다. 블로그, 채용, 문의, 도움말, 커뮤니티의 내부 라우트나 확정된 외부 URL도 없다.
+- 이용약관과 개인정보처리방침은 어드민 저장 기능만 있고 학습자용 공개 조회 계약, 공개 라우트, 승인된 기본 본문이 없다. 현재 버그 수정에 임의의 문서나 URL을 만들지 않는다.
+- 따라서 표시된 모든 링크가 실제 목적지를 가져야 한다는 계약으로 수정하고, 목적지가 없는 메뉴는 노출하지 않는다. `#`, `javascript:void(0)`, 비활성 링크는 대체 수단으로 사용하지 않는다.
+
+목적지 결정:
+
+| 표시 항목  | 목적지           | 처리                                                                          |
+| ---------- | ---------------- | ----------------------------------------------------------------------------- |
+| 코스       | `/app/courses`   | 유지. 비로그인 사용자는 기존 인증 정책에 따라 로그인 후 원래 경로로 복귀한다. |
+| 학습 통계  | `/app`           | 유지. 학습 홈의 완료 수, 연속 학습일, 코스별 진행률로 연결한다.               |
+| 소개       | `/#features`     | 유지. 특징 섹션에 고유 `id`를 추가해 실제 페이지 내 목적지를 만든다.          |
+| 나머지 9개 | 확정 목적지 없음 | 제거. 목적지와 제품 범위가 문서로 확정되기 전에는 다시 노출하지 않는다.       |
+
+구현 순서:
+
+1. `footerLinks`를 라벨 문자열 배열이 아니라 `label`과 `href`를 함께 가진 읽기 전용 데이터로 바꾼다.
+2. `Features` 섹션에 `features` 앵커를 추가하고, footer의 내부 탐색을 Next.js 16.2.6의 `Link`로 통일한다.
+3. 목적지가 없는 메뉴와 빈 그룹을 제거하고, 남은 그룹 수에 맞게 footer grid만 국소적으로 조정한다.
+4. 랜딩 단위 테스트에 세 링크의 정확한 `href`, `#` 단독 링크 부재, 제거 대상 라벨 부재를 추가한다.
+5. `REQ-LRN-8`과 `SCR-001`에 “footer는 현재 지원하는 실제 목적지만 제공한다”는 기준을 반영하고, 구현 완료 후 이 보고서에 결과와 검증 기록을 갱신한다.
+
+검증 계획:
+
+- `@workspace/web` 단위 테스트에서 `코스`, `학습 통계`, `소개`의 목적지와 `a[href="#"]` 부재를 검증한다.
+- `ENABLE_TEST_AUTH=true` 격리 브라우저 테스트에서 `소개`가 특징 섹션으로 이동하고, 보호 경로 두 개가 로그인 `next`를 보존한 뒤 각각 `/app/courses`, `/app`으로 복귀하는지 확인한다.
+- 랜딩 전체에서 키보드 탐색, focus 표시, 브라우저 console 경고·오류가 회귀하지 않는지 확인한다.
+- `bun --filter @workspace/web test`, `bun run typecheck`, `bun run lint`, `bun run format:check`, 대상 E2E, `git diff --check`를 실행한다.
+
+완료 조건:
+
+- footer에 `href="#"` 또는 목적지 없는 링크가 하나도 없다.
+- 표시된 세 링크를 마우스와 키보드로 실행했을 때 각각 의도한 섹션 또는 경로에 도달한다.
+- 지원하지 않는 9개 메뉴가 화면과 접근성 트리에 노출되지 않는다.
+- 관련 제품·화면 문서와 본 보고서가 최종 동작과 일치하고 계획한 자동·브라우저 검증이 통과한다.
+
+후속 범위:
+
+- 이용약관·개인정보처리방침을 다시 노출하려면 승인된 본문, 비로그인 공개 조회 계약, `/terms`·`/privacy` 라우트, 빈 설정의 표시 정책을 먼저 확정해야 한다. 이 작업은 API·core·web·문서 경계를 함께 바꾸므로 별도 요구사항으로 관리한다.
+- 블로그, 채용, 문의, 도움말, 커뮤니티는 소유 팀과 실제 내부 또는 외부 URL이 확정된 항목만 같은 링크 계약에 추가한다.
+- 요금제는 제품 비범위가 변경되기 전에는 추가하지 않는다.
+
+구현 결과:
+
+- footer에는 코스, 학습 통계, 소개만 남기고 목적지가 없던 레슨, 요금제, 블로그, 채용, 문의, 도움말, 커뮤니티, 이용약관, 개인정보를 제거했다.
+- 남은 링크 데이터를 `label`과 `href`의 읽기 전용 구조로 바꾸고 각각 `/app/courses`, `/app`, `/#features`에 연결했다.
+- 특징 섹션에 `features` 앵커와 고정 nav 높이를 고려한 scroll margin을 추가했다.
+- footer의 내부 탐색을 Next.js `Link`로 통일하고, 남은 두 메뉴 그룹에 맞게 desktop grid를 세 열로 조정했다.
+- 랜딩 단위 테스트가 세 링크의 목적지, `href="#"` 부재, 제거한 9개 메뉴의 접근성 트리 부재를 고정한다.
+- `REQ-LRN-8`과 `SCR-001`을 실제 footer 계약과 일치시켰다.
+
+수정 후 검증:
+
+- `bun --filter @workspace/web test`: 통과. 35개 테스트 파일, 124개 테스트 통과, 기존 1개 skip
+- `bun run typecheck`: 통과. 15개 workspace 작업
+- `bun run lint`, `bun run format:check`, `bun run check:document-drift`, `git diff --check`: 통과
+- `ENABLE_TEST_AUTH=true`와 격리 SQLite를 사용한 Chromium 검증에서 footer에 세 링크만 노출되고 소개가 `/#features`로 이동하는 것을 확인했다.
+- 같은 브라우저 검증에서 코스와 학습 통계가 각각 `/login?next=%2Fapp%2Fcourses`, `/login?next=%2Fapp`을 거쳐 테스트 로그인 후 원래 목적지로 복귀하는 것을 확인했다.
+- 브라우저 console의 warning과 error는 0건이었다. 검증에 사용한 브라우저·API·web 프로세스와 격리 DB를 종료·삭제하고 포트 3100·4100 해제를 확인했다.
+
 관련 위치:
 
 - `apps/web/src/features/landing/landing-content.tsx:170`
 - `apps/web/src/features/landing/landing-sections.tsx:288`
+- `apps/web/src/features/landing/landing-page.test.tsx:115`
+- `docs/product/requirements/platform/req-lrn-8-public-landing.md:26`
+- `docs/design/screens/SCR-001-learner-landing.md:26`
 
 ### BUG-LRN-004: 쓰기 구조 가이드가 Markdown 문법을 그대로 노출한다
 

@@ -108,7 +108,10 @@ export function Marquee() {
 
 export function Features() {
   return (
-    <section className="py-24 max-w-6xl mx-auto px-5 md:px-10">
+    <section
+      className="scroll-mt-24 py-24 max-w-6xl mx-auto px-5 md:px-10"
+      id="features"
+    >
       <Reveal className="max-w-xl mb-14" y={20}>
         <p className="mb-3 text-label-md font-bold uppercase text-muted-foreground">
           왜 글결인가
@@ -262,7 +265,7 @@ export function Footer() {
   return (
     <footer className="bg-surface">
       <div className="max-w-6xl mx-auto px-5 md:px-10 py-16">
-        <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span
@@ -282,13 +285,13 @@ export function Footer() {
               </p>
               <ul className="flex flex-col gap-3">
                 {column.items.map((item) => (
-                  <li key={item}>
-                    <a
+                  <li key={item.label}>
+                    <Link
                       className="text-body-sm text-muted-foreground transition-colors hover:text-foreground"
-                      href="#"
+                      href={item.href}
                     >
-                      {item}
-                    </a>
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

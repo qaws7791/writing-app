@@ -168,7 +168,15 @@ export const stats = [
 ] as const
 
 export const footerLinks = [
-  { group: "제품", items: ["코스", "레슨", "학습 통계", "요금제"] },
-  { group: "회사", items: ["소개", "블로그", "채용", "문의"] },
-  { group: "리소스", items: ["도움말", "커뮤니티", "이용약관", "개인정보"] },
+  {
+    group: "제품",
+    items: [
+      { href: "/app/courses", label: "코스" },
+      { href: "/app", label: "학습 통계" },
+    ],
+  },
+  {
+    group: "회사",
+    items: [{ href: "/#features", label: "소개" }],
+  },
 ] as const
