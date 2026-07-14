@@ -10,7 +10,7 @@ describe("UI style compiled CSS sentinel", () => {
     .map((sentinel) => sentinel.marker)
     .join("\n")
 
-  it("typography, animation, token, custom utility가 모두 있으면 통과한다", () => {
+  it("typography, animation, token, button press 상태가 모두 있으면 통과한다", () => {
     expect(findMissingUiStyleSentinels(completeCss)).toEqual([])
   })
 

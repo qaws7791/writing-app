@@ -1,18 +1,27 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
+import { buttonVariants } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
 
 const choiceCardVariants = cva(
-  "btn-squish flex w-full items-center gap-3 rounded-card border px-5 py-4 text-left text-body-md font-bold transition-colors outline-none focus-visible:border-focus focus-visible:ring-3 focus-visible:ring-focus/20 disabled:pointer-events-none disabled:opacity-50",
+  buttonVariants({
+    className:
+      "h-auto w-full justify-start gap-3 rounded-card px-5 py-4 text-left text-body-md",
+    variant: "secondary",
+  }),
   {
     variants: {
       state: {
-        correct: "border-success-fg/20 bg-success text-success-foreground",
-        disabled: "bg-surface text-muted-foreground",
+        correct:
+          "border-success-fg/20 bg-success text-success-foreground hover:bg-success",
+        disabled:
+          "bg-surface text-muted-foreground hover:bg-surface disabled:opacity-50",
         idle: "bg-surface text-foreground hover:bg-surface-hover",
-        selected: "border-charcoal/20 bg-accent text-accent-foreground",
-        wrong: "border-danger-fg/20 bg-danger text-danger-foreground",
+        selected:
+          "border-charcoal/20 bg-accent text-accent-foreground hover:bg-accent",
+        wrong:
+          "border-danger-fg/20 bg-danger text-danger-foreground hover:bg-danger",
       },
     },
     defaultVariants: {

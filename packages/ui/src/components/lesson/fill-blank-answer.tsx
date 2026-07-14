@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import { buttonVariants } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
 import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 
@@ -90,12 +91,15 @@ export function FillBlankAnswer({
               key={word}
               disabled={used || checked !== false}
               onClick={() => handleSelectWord(word)}
-              className={cn(
-                "px-5 py-3 rounded-full font-bold btn-squish",
-                used
-                  ? "bg-surface text-muted-foreground"
-                  : "bg-surface text-charcoal hover:bg-accent hover:text-accent-foreground"
-              )}
+              className={buttonVariants({
+                className: cn(
+                  "h-auto rounded-full px-5 py-3 text-base disabled:opacity-100",
+                  used
+                    ? "bg-surface text-muted-foreground hover:bg-surface"
+                    : "bg-surface text-charcoal hover:bg-accent hover:text-accent-foreground"
+                ),
+                variant: "secondary",
+              })}
               style={{ fontSize: "1rem" }}
               type="button"
             >

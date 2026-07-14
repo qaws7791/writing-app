@@ -9,7 +9,7 @@ import { useTheme } from "next-themes"
 import type { LearnerProfile } from "@/features/profile/profile-types"
 import { requestLogout } from "@/lib/auth/auth-client"
 import { MonitorIcon, MoonIcon, SunIcon } from "@workspace/ui/components/icons"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -117,12 +117,15 @@ function ThemeToggle() {
         return (
           <button
             aria-pressed={isActive}
-            className={cn(
-              "btn-squish flex flex-col items-center gap-2 rounded-[1.75rem] py-4 text-body-sm font-bold transition-colors",
-              isActive
-                ? "bg-accent text-charcoal"
-                : "text-muted-foreground hover:bg-surface-hover"
-            )}
+            className={buttonVariants({
+              className: cn(
+                "h-auto flex-col gap-2 rounded-[1.75rem] py-4 text-body-sm",
+                isActive
+                  ? "bg-accent text-charcoal hover:bg-accent"
+                  : "text-muted-foreground hover:bg-surface-hover"
+              ),
+              variant: isActive ? "secondary" : "ghost",
+            })}
             key={value}
             onClick={() => setTheme(value)}
             type="button"

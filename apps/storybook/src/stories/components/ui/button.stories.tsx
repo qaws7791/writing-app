@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Loader2, Mail, Save, Trash2, ArrowRight } from "lucide-react"
 import { expect, fn, userEvent, within } from "storybook/test"
 
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 
 const variants = [
   "default",
@@ -205,6 +205,35 @@ export const AsChild: Story = {
         )}
         variant="secondary"
       />
+    </div>
+  ),
+}
+
+/**
+ * Link나 다른 primitive가 Button 시각 계약을 재사용하는 예제입니다.
+ */
+export const VariantReuse: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-3">
+      <a className={buttonVariants({ variant: "outline" })} href="#reuse">
+        링크에 스타일 재사용
+      </a>
+      <button
+        aria-expanded="true"
+        aria-haspopup="menu"
+        className={buttonVariants({ variant: "secondary" })}
+        type="button"
+      >
+        열린 메뉴 트리거
+      </button>
+      <button
+        className={buttonVariants({
+          className: "h-auto rounded-full px-2 py-1",
+        })}
+        type="button"
+      >
+        크기 재정의
+      </button>
     </div>
   ),
 }

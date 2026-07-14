@@ -10,7 +10,11 @@ export const uiStyleSentinels: readonly UiStyleSentinel[] = [
   { label: "typography plugin", marker: ".prose" },
   { label: "animation plugin", marker: "--tw-enter-opacity" },
   { label: "semantic token", marker: "--action-primary-bg:" },
-  { label: "custom utility", marker: ".btn-squish" },
+  {
+    label: "button press state",
+    marker:
+      ":active:not(:disabled):not([aria-haspopup=true]):not([aria-expanded=true]){transform:scale(var(--motion-press-scale))}",
+  },
 ]
 
 const buildTargets = [

@@ -45,7 +45,12 @@ export function LandingNavMotion() {
     >
       <div className="max-w-6xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
         <Link
-          className="flex items-center gap-2 text-foreground btn-squish cursor-pointer outline-none"
+          className={buttonVariants({
+            className:
+              "h-auto cursor-pointer rounded-sm border-0 bg-transparent p-0 text-foreground no-underline hover:bg-transparent hover:no-underline",
+            size: "sm",
+            variant: "link",
+          })}
           href="/"
         >
           <span

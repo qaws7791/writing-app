@@ -49,7 +49,7 @@
 | `icon-lg` | 48px 정사각 |
 
 아이콘은 `data-icon="inline-start"` 또는 `data-icon="inline-end"`로 padding 보정을 받는다.
-버튼은 기본적으로 `rounded-control`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다. `lg`·`extra` 크기는 레슨 CTA 기준의 `rounded-4xl`, `text-body-lg`(1.125rem), `py-5`를 사용한다.
+버튼과 버튼처럼 보이는 링크·trigger의 공통 시각 스타일은 `buttonVariants`로 재사용한다. 호출부에서 `.btn-squish`를 직접 붙이지 않는다. `buttonVariants`는 focus-visible, disabled, 아이콘, 텍스트 줄바꿈 방지와 누름 모션을 한 계약으로 제공한다. 상세 이관 범위와 완료 기준은 `button-variants-migration-plan.md`를 따른다. `lg`·`extra` 크기는 레슨 CTA 기준의 `rounded-4xl`, `text-body-lg`(1.125rem), `py-5`를 사용한다.
 
 ## Card
 

@@ -13,7 +13,7 @@
   [data-theme="default"] {
     color-scheme: light;
 
-    /* Motion Variables (Shared with btn-squish style) */
+    /* Button and entrance motion variables */
     --motion-duration-normal: 200ms;
     --motion-ease-press: cubic-bezier(0.4, 0, 0.2, 1);
     --motion-press-scale: 0.96;

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import { buttonVariants } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
 import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 
@@ -66,6 +67,12 @@ export function MultipleChoiceAnswer({
             variant = "selected"
 
           const c = MC_COLORS[variant]
+          const buttonVariant =
+            variant === "correct"
+              ? "correct"
+              : variant === "wrong"
+                ? "wrong"
+                : "secondary"
           const faded =
             checked !== false &&
             option.id !== correctOptionId &&
@@ -82,12 +89,16 @@ export function MultipleChoiceAnswer({
               }}
               disabled={faded}
               data-state={stateMap[variant]}
-              className={cn(
-                "w-full px-5 py-4 rounded-3xl text-left font-medium btn-squish transition-colors",
-                c.bg,
-                c.text,
-                faded && "opacity-40"
-              )}
+              className={buttonVariants({
+                className: cn(
+                  "h-auto w-full justify-start rounded-3xl px-5 py-4 text-left text-base font-medium",
+                  c.bg,
+                  c.text,
+                  variant === "selected" && "hover:bg-accent",
+                  faded && "opacity-40"
+                ),
+                variant: buttonVariant,
+              })}
               style={{ fontSize: "1rem" }}
               type="button"
             >

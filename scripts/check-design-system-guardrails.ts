@@ -47,6 +47,13 @@ const guardrails: readonly Guardrail[] = [
   },
   {
     baseline: 0,
+    description: "apps/**, packages/**의 legacy button motion class 기준선",
+    label: "legacy button motion class",
+    pattern: /\bbtn-squish\b/g,
+    roots: ["apps", "packages"],
+  },
+  {
+    baseline: 0,
     description:
       "apps/**의 fontSize, lineHeight, letterSpacing inline style 기준선",
     label: "inline typography style",

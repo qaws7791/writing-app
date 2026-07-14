@@ -3,6 +3,7 @@
 import Link from "next/link"
 
 import { globalNavAccountItems } from "@/components/layout/global-nav-routes"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,12 @@ export function GlobalNavAccountMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="계정 메뉴"
-        className="flex size-9 items-center justify-center rounded-full bg-accent font-black ring-2 ring-surface btn-squish hover:ring-surface-hover"
+        className={buttonVariants({
+          className:
+            "rounded-full bg-accent font-black text-foreground ring-2 ring-surface hover:bg-accent hover:ring-surface-hover",
+          size: "icon-sm",
+          variant: "secondary",
+        })}
         type="button"
       >
         ✍️

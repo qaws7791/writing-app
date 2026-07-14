@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import { buttonVariants } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
 import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 import { MarkdownContent } from "#ui/components/lesson/markdown-content"
@@ -10,22 +11,22 @@ const CATEGORY_PALETTE = [
   {
     activeRing: "ring-charcoal/50",
     base: "bg-charcoal text-cream",
-    cardBg: "bg-charcoal/10",
+    cardBg: "bg-charcoal/10 hover:bg-charcoal/10",
   },
   {
     activeRing: "ring-accent",
     base: "bg-accent text-accent-foreground",
-    cardBg: "bg-accent/25",
+    cardBg: "bg-accent/25 hover:bg-accent/25",
   },
   {
     activeRing: "ring-mint",
     base: "bg-mint text-ink",
-    cardBg: "bg-mint/20",
+    cardBg: "bg-mint/20 hover:bg-mint/20",
   },
   {
     activeRing: "ring-coral/60",
     base: "bg-coral text-ink",
-    cardBg: "bg-coral/10",
+    cardBg: "bg-coral/10 hover:bg-coral/10",
   },
 ] as const
 
@@ -173,20 +174,23 @@ export function CategorizeAnswer({
                 aria-pressed={
                   activeTagId !== null && assignedCategoryId === activeTagId
                 }
-                className={cn(
-                  "rounded-3xl px-4 py-3.5 transition-all duration-200",
-                  isCorrect
-                    ? "bg-mint-light"
-                    : isWrong
-                      ? "bg-coral-light"
-                      : isTagged && palette !== null
-                        ? palette.cardBg
-                        : "bg-surface",
-                  isClickable ? "cursor-pointer btn-squish" : "",
-                  isClickable && !isTagged
-                    ? "ring-2 ring-charcoal/20 ring-offset-1"
-                    : ""
-                )}
+                className={buttonVariants({
+                  className: cn(
+                    "h-auto w-full justify-start rounded-3xl px-4 py-3.5 text-left disabled:opacity-100",
+                    isCorrect
+                      ? "bg-mint-light hover:bg-mint-light"
+                      : isWrong
+                        ? "bg-coral-light hover:bg-coral-light"
+                        : isTagged && palette !== null
+                          ? palette.cardBg
+                          : "bg-surface hover:bg-surface",
+                    isClickable ? "cursor-pointer" : "",
+                    isClickable && !isTagged
+                      ? "ring-2 ring-charcoal/20 ring-offset-1"
+                      : ""
+                  ),
+                  variant: "secondary",
+                })}
                 key={item.id}
                 disabled={!isClickable}
                 onClick={() => handleItemTap(item.id)}
@@ -245,13 +249,16 @@ export function CategorizeAnswer({
                   aria-pressed={isActive}
                   key={category.id}
                   onClick={() => handleTagTap(category.id)}
-                  className={cn(
-                    "rounded-full px-4 py-2 font-bold btn-squish transition-all duration-150 text-body-sm cursor-pointer outline-none",
-                    palette.base,
-                    isActive
-                      ? cn("scale-95 ring-4 opacity-75", palette.activeRing)
-                      : ""
-                  )}
+                  className={buttonVariants({
+                    className: cn(
+                      "h-auto cursor-pointer rounded-full px-4 py-2 text-body-sm",
+                      palette.base,
+                      isActive
+                        ? cn("scale-95 ring-4 opacity-75", palette.activeRing)
+                        : ""
+                    ),
+                    size: "sm",
+                  })}
                   type="button"
                 >
                   {category.label}

@@ -7,7 +7,7 @@ import {
   isAdminNavigationActive,
 } from "@/lib/navigation/admin-navigation"
 import { readLearnerWebOrigin } from "@/runtime-config"
-import { cn } from "@workspace/ui/lib/utils"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
 
 const learnerWebOrigin = readLearnerWebOrigin()
 
@@ -40,12 +40,12 @@ export function AdminSidebar({
           return (
             <Link
               aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "btn-squish flex items-center gap-3 rounded-3xl px-4 py-3 text-body-md font-bold transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background"
-              )}
+              className={buttonVariants({
+                className: isActive
+                  ? "h-auto w-full justify-start gap-3 rounded-3xl bg-primary px-4 py-3 text-body-md text-primary-foreground hover:bg-primary"
+                  : "h-auto w-full justify-start gap-3 rounded-3xl px-4 py-3 text-body-md text-foreground hover:bg-background",
+                variant: isActive ? "secondary" : "ghost",
+              })}
               href={item.href}
               key={item.href}
             >
@@ -57,7 +57,11 @@ export function AdminSidebar({
       </nav>
       <div className="flex flex-col gap-1 pt-4">
         <a
-          className="btn-squish flex items-center gap-3 rounded-3xl px-4 py-3 text-[0.9375rem] font-bold text-muted-foreground transition-colors hover:bg-background"
+          className={buttonVariants({
+            className:
+              "h-auto w-full justify-start gap-3 rounded-3xl px-4 py-3 text-[0.9375rem] text-muted-foreground hover:bg-background",
+            variant: "ghost",
+          })}
           href={learnerWebOrigin}
           rel="noreferrer"
           target="_blank"
@@ -66,7 +70,11 @@ export function AdminSidebar({
           앱으로 이동
         </a>
         <button
-          className="btn-squish flex items-center gap-3 rounded-3xl px-4 py-3 text-left text-[0.9375rem] font-bold text-destructive transition-colors hover:bg-background disabled:opacity-60"
+          className={buttonVariants({
+            className:
+              "h-auto w-full justify-start gap-3 rounded-3xl bg-transparent px-4 py-3 text-left text-[0.9375rem] text-destructive hover:bg-background disabled:opacity-60",
+            variant: "destructive",
+          })}
           disabled={isSigningOut}
           onClick={onSignOut}
           type="button"

@@ -105,7 +105,7 @@
 - `--color-cream: #FDFBF7`, `--color-surface: #F4EFE6`, `--color-charcoal: #2A2621`
 - `--color-primary: #FFC800` (노란 악센트·진행률)
 - `--color-mint: #34C759`, `--color-mint-light: #52D86A`, `--color-coral-light: #FFADA7` (정답/오답 CTA·놓친 정답 `bg-mint/30`)
-- `.btn-squish:active { transform: scale(0.96) }`, `.an-fi` fade-up 0.4s
+- Kwep의 `.btn-squish:active { transform: scale(0.96) }` press 표현은 monorepo의 `buttonVariants` contract로 이관한다. `.an-fi`는 fade-up 0.4s를 유지한다.
 
 Btn variant (`Kwep/src/app/components/ui.tsx`):
 

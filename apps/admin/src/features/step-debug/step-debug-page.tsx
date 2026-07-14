@@ -222,31 +222,33 @@ export function StepDebugPage() {
               모든 스텝 타입의 UI/UX를 한 곳에서 확인하세요.
             </p>
           </div>
-          <button
-            className="w-full mb-6 flex items-center justify-center gap-2 bg-surface text-charcoal font-bold py-3 rounded-3xl btn-squish"
+          <Button
+            className="mb-6 h-auto w-full rounded-3xl bg-surface py-3 text-charcoal hover:bg-surface/70"
             onClick={handleReset}
             style={{ fontSize: "0.875rem" }}
             type="button"
+            variant="secondary"
           >
             <RotateCcw size={16} />
             현재 스텝 초기화
-          </button>
+          </Button>
           <div className="space-y-2">
             {STEP_DEBUG_ENTRIES.map((entry) => {
               const isActive = entry.type === selectedType
 
               return (
-                <button
+                <Button
                   className={cn(
-                    "w-full text-left px-4 py-3 rounded-3xl font-bold transition-colors flex items-start gap-3 btn-squish",
+                    "h-auto w-full items-start justify-start gap-3 rounded-3xl px-4 py-3 text-left",
                     isActive
-                      ? "bg-charcoal text-cream"
+                      ? "bg-charcoal text-cream hover:bg-charcoal"
                       : "bg-surface text-charcoal hover:bg-surface/70"
                   )}
                   key={entry.type}
                   onClick={() => setSelectedType(entry.type)}
                   style={{ fontSize: "0.9375rem" }}
                   type="button"
+                  variant={isActive ? "default" : "secondary"}
                 >
                   <span style={{ fontSize: "1.125rem" }}>{entry.icon}</span>
                   <span className="flex-1">
@@ -261,7 +263,7 @@ export function StepDebugPage() {
                       {entry.desc}
                     </span>
                   </span>
-                </button>
+                </Button>
               )
             })}
           </div>

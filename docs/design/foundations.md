@@ -101,7 +101,7 @@
 
 ## Motion
 
-- 학습자 앱의 기본 누름 반응은 `.btn-squish`를 사용한다. active 상태에서 `scale(0.96)`으로 눌림을 표현한다.
+- Button의 기본 누름 반응은 `buttonVariants`가 소유한다. active 상태에서 `scale(0.96)`으로 눌림을 표현하되 disabled, 열려 있는 disclosure trigger에는 적용하지 않는다. 호출부는 `.btn-squish`를 직접 사용하지 않는다.
 - 콘텐츠 진입은 `.an-fi`의 `0.4s cubic-bezier(0.16, 1, 0.3, 1)` fade-up을 사용한다.
 - 랜딩 장식 요소는 marquee와 pebble float을 사용할 수 있으나, 레슨 본문과 CTA 안정성을 해치면 제거한다.
 - 공용 motion token은 `prefers-reduced-motion`에서 duration을 1ms로 낮추고 press scale을 1로 둔다.

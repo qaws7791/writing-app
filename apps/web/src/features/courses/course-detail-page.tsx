@@ -22,7 +22,12 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
   return (
     <div className="max-w-3xl mx-auto">
       <Link
-        className="mb-8 flex w-fit items-center text-label-md font-bold text-muted-foreground btn-squish hover:text-foreground"
+        className={buttonVariants({
+          className:
+            "mb-8 h-auto w-fit justify-start rounded-sm border-0 bg-transparent p-0 text-label-md text-muted-foreground no-underline hover:bg-transparent hover:text-foreground hover:no-underline",
+          size: "sm",
+          variant: "link",
+        })}
         href="/app/courses"
       >
         <ChevronLeftIcon className="mr-1" size={20} />

@@ -12,7 +12,7 @@ import {
   globalNavPrimaryItems,
   isGlobalNavRouteActive,
 } from "@/components/layout/global-nav-routes"
-import { cn } from "@workspace/ui/lib/utils"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
 
 export { MobileNav } from "@/components/layout/mobile-nav"
 
@@ -32,12 +32,15 @@ export function GlobalNav({ currentPath }: GlobalNavPathProps) {
                     ? "page"
                     : undefined
                 }
-                className={cn(
-                  "rounded-full px-4 py-2 text-body-sm font-bold btn-squish",
-                  isGlobalNavRouteActive(pathname, item.key)
-                    ? "bg-surface text-foreground"
-                    : "text-muted-foreground hover:bg-surface/50"
-                )}
+                className={buttonVariants({
+                  className: isGlobalNavRouteActive(pathname, item.key)
+                    ? "h-auto rounded-full bg-surface px-4 py-2 text-body-sm text-foreground hover:bg-surface"
+                    : "h-auto rounded-full px-4 py-2 text-body-sm text-muted-foreground hover:bg-surface/50",
+                  size: "sm",
+                  variant: isGlobalNavRouteActive(pathname, item.key)
+                    ? "secondary"
+                    : "ghost",
+                })}
                 href={item.href}
                 key={item.key}
               >

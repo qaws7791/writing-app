@@ -3,8 +3,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "#ui/lib/utils"
 
-const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-4xl border border-transparent bg-clip-padding whitespace-nowrap btn-squish outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 transition-all duration-200",
+const buttonVariantClasses = cva(
+  "group/button inline-flex shrink-0 items-center justify-center rounded-4xl border border-transparent bg-clip-padding whitespace-nowrap outline-none select-none [transition:transform_var(--motion-duration-normal)_var(--motion-ease-press),background-color_var(--motion-duration-normal),border-color_var(--motion-duration-normal),color_var(--motion-duration-normal)] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&:active:not(:disabled):not([aria-haspopup='true']):not([aria-expanded='true'])]:[transform:scale(var(--motion-press-scale))] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -44,6 +44,14 @@ const buttonVariants = cva(
   }
 )
 
+type ButtonVariantsProps = NonNullable<
+  Parameters<typeof buttonVariantClasses>[0]
+>
+
+function buttonVariants(props?: ButtonVariantsProps): string {
+  return cn(buttonVariantClasses(props))
+}
+
 /**
  * `Button` 컴포넌트는 사용자가 클릭할 수 있는 버튼을 나타냅니다.
  *
@@ -57,11 +65,11 @@ function Button({
   variant = "default",
   size = "default",
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonPrimitive.Props & VariantProps<typeof buttonVariantClasses>) {
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={buttonVariants({ variant, size, className })}
       {...props}
     />
   )

@@ -220,7 +220,11 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {visibleCourses.map((course, index) => (
                 <Link
-                  className="flex flex-row overflow-hidden rounded-2xl bg-surface btn-squish transition-transform duration-200 md:flex-col md:rounded-4xl"
+                  className={buttonVariants({
+                    className:
+                      "h-auto w-full flex-row items-stretch justify-start overflow-hidden whitespace-normal rounded-2xl border-0 bg-surface p-0 text-left text-foreground hover:bg-surface md:flex-col md:rounded-4xl",
+                    variant: "secondary",
+                  })}
                   href={`/app/courses/${course.id}`}
                   key={course.id}
                 >

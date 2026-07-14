@@ -19,7 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "@workspace/ui/components/ui/alert-dialog"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
@@ -90,12 +90,15 @@ export function AdminSettingsPage({
       <div className="mb-6 flex flex-wrap gap-2">
         {tabs.map(({ icon: Icon, id, label }) => (
           <button
-            className={cn(
-              "btn-squish inline-flex items-center gap-2 rounded-3xl px-4 py-2.5 text-[0.875rem] font-bold transition-colors",
-              tab === id
-                ? "bg-primary text-primary-foreground"
-                : "bg-surface text-foreground"
-            )}
+            className={buttonVariants({
+              className: cn(
+                "h-auto rounded-3xl px-4 py-2.5 text-[0.875rem]",
+                tab === id
+                  ? "bg-primary text-primary-foreground hover:bg-primary"
+                  : "bg-surface text-foreground hover:bg-surface-hover"
+              ),
+              variant: tab === id ? "default" : "secondary",
+            })}
             key={id}
             onClick={() => setTab(id)}
             type="button"

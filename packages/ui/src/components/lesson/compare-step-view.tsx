@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import { buttonVariants } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
 
 export function CompareStepView({
@@ -26,12 +27,15 @@ export function CompareStepView({
       <div className="flex gap-2 mb-6">
         {versions.map((version, index) => (
           <button
-            className={cn(
-              "btn-squish flex-1 py-3 rounded-full font-bold transition-all outline-none",
-              tab === index
-                ? "bg-charcoal text-cream"
-                : "bg-surface text-charcoal hover:bg-surface/70"
-            )}
+            className={buttonVariants({
+              className: cn(
+                "h-auto flex-1 rounded-full py-3 text-body-sm",
+                tab === index
+                  ? "bg-charcoal text-cream"
+                  : "bg-surface text-charcoal hover:bg-surface/70"
+              ),
+              variant: tab === index ? "default" : "secondary",
+            })}
             key={version.label}
             onClick={() => setTab(index)}
             style={{ fontSize: "0.9375rem" }}
