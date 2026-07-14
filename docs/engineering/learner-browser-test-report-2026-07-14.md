@@ -402,10 +402,61 @@
 
 - 이 입력은 `@base-ui/react/select`가 생성한 form input으로 보인다. 실제 NVDA·VoiceOver에서 같은 중복 노출이 발생하는지는 별도 수동 검증이 필요하다.
 
+해결 작업 상태: **계획 수립 완료, 구현 전**
+
+원인과 제약:
+
+- 현재 lockfile에 설치된 `@base-ui/react` 버전은 1.6.0이다. 이 버전의 `Select.Root`는 폼 제출, 브라우저 자동 완성과 제약 검증을 지원하기 위해 `name` 유무와 관계없이 text input을 생성한다.
+- 라이브러리가 생성한 input에는 `aria-hidden="true"`와 `tabIndex="-1"`가 있고 시각적 숨김 스타일이 적용된다. [Base UI Select 문서](https://base-ui.com/react/components/select)와 [Base UI 폼 문서](https://base-ui.com/react/handbook/forms)도 이를 hidden input으로 정의한다.
+- WAI-ARIA 1.2는 포커스되지 않은 `aria-hidden="true"` 요소를 접근성 트리에서 제외하도록 사용자 에이전트에 권고한다. 따라서 Codex 인앱 브라우저에서 관찰한 이름 없는 textbox만으로 실제 보조 기술 노출이나 Base UI 결함을 확정하지 않는다.
+- 코스 정렬은 폼 제출, 브라우저 자동 완성, 사용자 입력 검색이 필요 없는 5개 고정 단일 선택이다. 저장소에는 추가 input 없이 네이티브 `<select>`를 렌더링하는 공용 `NativeSelect`가 이미 있으므로 새 primitive를 만들지 않는다.
+
+해결 기준:
+
+- `/app/courses`의 정렬 제어만 기존 `NativeSelect`와 `NativeSelectOption`으로 교체한다. 검색 input과 정렬 select 외의 form control을 만들지 않는다.
+- `course-sort` label 연결, 현재 URL에서 계산한 controlled value, 기본 순일 때 `sort` query를 생략하는 정책과 나머지 검색·카테고리 query 보존 동작은 유지한다.
+- 현재 학습자 툴바의 크기, 색상, focus indicator와 화살표 표현은 `NativeSelect`의 공개 `className` 경계에서 맞춘다. 네이티브 옵션 popup 자체는 운영체제와 브라우저의 접근성 동작을 따른다.
+- 공용 Base UI `Select`는 폼 참여와 조합형 popup이 필요한 다른 화면에서 계속 사용한다. 내부 input을 전역 CSS로 숨기거나 DOM을 사후 조작하지 않는다.
+- `@base-ui/react` 1.6.0은 현재 최신 설치 버전이고 관련 수정이 확인되지 않았으므로, 근거 없는 의존성 변경을 해결책으로 사용하지 않는다.
+
+구현 순서:
+
+1. `courses-page.tsx`에서 Base UI Select 조합을 기존 `NativeSelect` 조합으로 바꾸고, native `change` 이벤트의 값을 `CourseListFilters["sort"]`로 좁혀 기존 `updateUrl`에 전달한다.
+2. 숨은 `정렬` label과 `course-sort` id를 유지하고, 기존 Select trigger와 같은 학습자 툴바 시각 상태를 국소 스타일로 보존한다.
+3. `courses-page.test.tsx`에 접근 가능한 textbox가 `검색` 하나뿐이고 `정렬` combobox가 하나만 존재한다는 계약을 추가한다. 각 정렬 옵션과 선택값도 검증한다.
+4. 같은 단위 테스트에서 `레슨 많은 순` 선택 시 기존 검색·카테고리 query를 유지한 `router.replace`가 호출되고, `기본 순` 복귀 시 `sort`만 제거되는지 검증한다.
+5. 학습자 Playwright 시나리오에 실제 Chromium의 control 수, 키보드 선택, URL과 목록 순서 변경 검증을 추가한다.
+6. `REQ-LRN-3`, `SCR-004`와 공통 Select 문서를 실제 정렬·접근성 계약에 맞추고, 구현 완료 후 이 보고서에 결과와 검증 기록을 갱신한다.
+
+검증 계획:
+
+- DOM 검증에서 검색 `<input>` 하나와 정렬 `<select>` 하나만 존재하고, 이름 없는 text input과 `aria-hidden` form input이 정렬 제어 주변에 없는지 확인한다.
+- Testing Library와 Playwright의 기본 접근성 조회에서 `검색` textbox 1개, `정렬` combobox 1개만 조회되는지 확인한다.
+- 마우스와 키보드로 다섯 정렬 옵션을 선택하고 선택값, URL query, 코스 카드 순서가 일치하는지 확인한다. 검색 debounce, 검색어 초기화와 카테고리 링크도 회귀 확인한다.
+- Windows의 NVDA+Chrome과 macOS의 VoiceOver+Safari에서 form control 탐색 시 `검색`, `정렬`만 한 번씩 안내되는지 수동 확인한다. 검증 시점의 브라우저와 스크린 리더 버전을 결과에 기록한다.
+- `bun --filter @workspace/web test -- courses-page.test.tsx`, `bun run test:e2e`, `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run check:document-drift`, `git diff --check`를 실행한다.
+
+완료 조건:
+
+- `/app/courses`에 이름 없는 textbox가 DOM과 자동 접근성 조회에 존재하지 않는다.
+- 실제 스크린 리더의 form control 탐색에서 검색과 정렬이 중복 없이 구분된다.
+- 다섯 정렬 옵션의 마우스·키보드 조작, URL 상태와 목록 순서가 기존과 동일하게 동작한다.
+- 공용 Base UI Select 사용처에는 회귀가 없고 관련 제품·화면·컴포넌트 문서가 최종 구현과 일치한다.
+
+제외한 대안:
+
+- 공용 `Select`의 hidden input을 전역 CSS로 `display: none` 처리하면 폼 제출·자동 완성·제약 검증 계약을 훼손하므로 제외한다.
+- `inputRef`로 라이브러리 내부 DOM을 사후 변경하거나 `name`을 임의 추가하는 방식은 공개 계약으로 문제를 제거하지 못하고 구현 세부사항에 결합하므로 제외한다.
+- 전체 Select 교체나 별도 dropdown primitive 추가는 현재 한 화면의 낮은 심각도 문제보다 변경 범위가 크고 기존 `NativeSelect`와 중복되므로 제외한다.
+
 관련 위치:
 
 - `apps/web/src/features/courses/courses-page.tsx:164`
+- `apps/web/src/features/courses/courses-page.test.tsx:79`
 - `packages/ui/src/components/ui/select.tsx`
+- `packages/ui/src/components/ui/native-select.tsx`
+- `docs/product/requirements/platform/req-lrn-3-course-discovery.md`
+- `docs/design/screens/SCR-004-learner-courses.md`
 
 ## 진단 기록
 
