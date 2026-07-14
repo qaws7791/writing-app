@@ -34,6 +34,7 @@ export function ResourceTreeView({
     api,
     createNode,
     errorMessage,
+    expandedItems,
     importMarkdownFile,
     isCreating,
     isImporting,
@@ -198,6 +199,7 @@ export function ResourceTreeView({
             return (
               <ResourceTreeRow
                 item={item}
+                isExpanded={expandedItems.includes(item.getId())}
                 key={item.getId()}
                 onAction={(node, action) => {
                   setPendingAction({ action, node })

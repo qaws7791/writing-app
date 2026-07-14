@@ -163,12 +163,14 @@ function TreeItem<TItem>({
 }
 
 type TreeItemLabelProps<TItem> = HTMLAttributes<HTMLSpanElement> & {
+  readonly isExpanded?: boolean
   readonly item?: ItemInstance<TItem>
 }
 
 function TreeItemLabel<TItem>({
   children,
   className,
+  isExpanded: isExpandedProp,
   item: itemProp,
   ...props
 }: TreeItemLabelProps<TItem>) {
@@ -179,10 +181,12 @@ function TreeItemLabel<TItem>({
     throw new Error("TreeItemLabel은 TreeItem 내부에서 사용해야 합니다.")
   }
 
+  const isExpanded = isExpandedProp ?? item.isExpanded()
+
   return (
     <span
       className={cn(
-        "flex min-h-9 items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground transition-colors motion-reduce:transition-none in-focus-visible:ring-2 in-focus-visible:ring-ring/50 hover:bg-accent in-data-[drag-target=true]:bg-accent in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground not-in-data-[folder=true]:ps-7 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "flex min-h-9 items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground transition-colors motion-reduce:transition-none in-focus-visible:ring-2 in-focus-visible:ring-ring/50 hover:bg-accent in-data-[drag-target=true]:bg-accent in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className
       )}
       data-slot="tree-item-label"
@@ -190,7 +194,7 @@ function TreeItemLabel<TItem>({
     >
       {item.isFolder() ? (
         context.toggleIconType === "plus-minus" ? (
-          item.isExpanded() ? (
+          isExpanded ? (
             <MinusIcon aria-hidden="true" className="size-3.5" />
           ) : (
             <PlusIcon aria-hidden="true" className="size-3.5" />
@@ -200,7 +204,7 @@ function TreeItemLabel<TItem>({
             aria-hidden="true"
             className={cn(
               "size-4 transition-transform motion-reduce:transition-none",
-              item.isExpanded() ? "rotate-0" : "-rotate-90"
+              isExpanded ? "rotate-0" : "-rotate-90"
             )}
           />
         )

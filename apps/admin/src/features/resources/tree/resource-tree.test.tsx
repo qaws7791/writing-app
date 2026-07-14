@@ -190,9 +190,27 @@ describe("자료 트리", () => {
     expect(screen.getByText("시작 안내")).toBeVisible()
     expect(api.getResourceTree).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByText("운영 가이드"))
+    const resourceFolder = screen.getByRole("treeitem", { name: "운영 가이드" })
+    const resourceDocument = screen.getByRole("treeitem", { name: "시작 안내" })
+
+    expect(resourceFolder).toHaveAttribute("aria-expanded", "false")
+    expect(
+      resourceFolder.querySelector(".lucide-folder, .lucide-folder-open")
+    ).not.toBeInTheDocument()
+    expect(resourceFolder.querySelector(".lucide-chevron-down")).toHaveClass(
+      "-rotate-90"
+    )
+    expect(
+      resourceDocument.querySelector(".lucide-file-text")
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(resourceFolder)
 
     expect(await screen.findByText("하위 문서")).toBeVisible()
+    expect(resourceFolder).toHaveAttribute("aria-expanded", "true")
+    expect(resourceFolder.querySelector(".lucide-chevron-down")).toHaveClass(
+      "rotate-0"
+    )
     expect(api.getResourceTree).toHaveBeenCalledWith({
       parentId: "folder-1",
       scope: "active",
@@ -202,6 +220,15 @@ describe("자료 트리", () => {
         JSON.stringify(["folder-1"])
       )
     })
+
+    fireEvent.click(resourceFolder)
+
+    await waitFor(() => {
+      expect(resourceFolder).toHaveAttribute("aria-expanded", "false")
+    })
+    expect(resourceFolder.querySelector(".lucide-chevron-down")).toHaveClass(
+      "-rotate-90"
+    )
   })
 
   it("선택한 폴더 아래에 새 문서를 만들고 바로 연다", async () => {

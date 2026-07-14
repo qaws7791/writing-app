@@ -796,6 +796,7 @@ export function useResourceTreeController({
     api,
     createNode,
     errorMessage,
+    expandedItems,
     importMarkdownFile,
     isCreating,
     isImporting,

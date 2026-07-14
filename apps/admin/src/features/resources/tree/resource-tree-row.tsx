@@ -1,7 +1,6 @@
 "use client"
 
 import type { ItemInstance } from "@headless-tree/core"
-import { FileTextIcon, FolderIcon } from "lucide-react"
 
 import type {
   AdminResourceTreeNode,
@@ -19,11 +18,13 @@ import { cn } from "@workspace/ui/lib/utils"
 
 export function ResourceTreeRow({
   item,
+  isExpanded,
   onAction,
   scope,
   structureMutationsAllowed,
 }: {
   readonly item: ItemInstance<ResourceTreeItemData>
+  readonly isExpanded: boolean
   readonly onAction: (
     node: AdminResourceTreeNode,
     action: ResourceTreeAction
@@ -42,15 +43,10 @@ export function ResourceTreeRow({
     <TreeItem className="group/resource-tree-item" item={item} render={<div />}>
       <TreeItemLabel
         className={cn(isLoading && "text-muted-foreground")}
+        isExpanded={isExpanded}
         item={item}
       >
-        {isLoading ? (
-          <Spinner aria-hidden="true" className="size-4" />
-        ) : data.kind === "folder" ? (
-          <FolderIcon aria-hidden="true" className="size-4" />
-        ) : (
-          <FileTextIcon aria-hidden="true" className="size-4" />
-        )}
+        {isLoading ? <Spinner aria-hidden="true" className="size-4" /> : null}
         <span className="min-w-0 flex-1 truncate">{data.name}</span>
         {canShowActions ? (
           <ResourceTreeItemActions
