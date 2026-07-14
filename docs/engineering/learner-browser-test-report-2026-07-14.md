@@ -347,9 +347,38 @@
 
 - 버튼과 열린 menu의 접근성 이름이 모두 `✍️`다.
 
+해결 작업 상태: **구현 및 자동·브라우저 검증 완료**
+
+해결 계획:
+
+- 시각적 이모지와 메뉴 구조는 유지하고 계정 메뉴 trigger에 고정된 한국어 접근성 이름 `계정 메뉴`를 제공한다.
+- Base UI가 제공하는 `menu`, `aria-haspopup`, `aria-expanded` 계약은 유지하고 공통 DropdownMenu primitive는 변경하지 않는다.
+- 단위 테스트와 `ENABLE_TEST_AUTH=true` 브라우저 테스트에서 trigger와 열린 menu의 접근성 이름, 기존 메뉴 항목과 키보드 닫기를 검증한다.
+- 학습자 내비게이션 요구사항과 디자인 문서에 이모지 전용 trigger의 접근성 이름 계약을 반영한다.
+
+구현 결과:
+
+- 계정 메뉴 trigger에 `aria-label="계정 메뉴"`를 추가해 버튼과 열린 menu가 목적을 설명하는 동일한 접근성 이름을 갖게 했다.
+- 시각적 이모지, 메뉴 항목과 경로는 유지하고 Base UI의 `aria-haspopup`, `aria-expanded`와 키보드 동작을 그대로 사용했다.
+- 전역 내비게이션 단위 테스트가 이모지 이름의 버튼 부재, trigger와 menu의 이름, 열림 상태와 기존 menuitem을 고정한다.
+- Playwright 학습자 시나리오가 실제 Chromium에서 닫힘·열림 상태, trigger와 menu의 접근성 이름, 메뉴 항목과 `Escape` 닫기를 검증한다.
+- `REQ-LRN-9`와 공통 컴포넌트 디자인 문서에 이모지 전용 계정 메뉴 trigger의 접근성 이름 계약을 반영했다.
+
+수정 후 검증:
+
+- `bun --filter @workspace/web test -- global-nav.test.tsx`: 통과. 1개 테스트 파일, 2개 테스트
+- `bun --filter @workspace/web test`: 통과. 35개 테스트 파일, 125개 테스트 통과, 기존 1개 skip
+- `bun run test:e2e`: 통과. UI 시각 계약, 학습자 테스트 로그인, 관리자 권한 시나리오 3개 테스트
+- `bun run typecheck`: 통과. 15개 워크스페이스 작업
+- `bun run lint`, `bun run format:check`, `git diff --check`: 통과
+- 운영용 HTTPS origin과 API URL을 명시한 `@workspace/web` 프로덕션 빌드: 통과
+
 관련 위치:
 
 - `apps/web/src/components/layout/global-nav-account-menu.tsx:17`
+- `apps/web/src/components/layout/global-nav.test.tsx:31`
+- `e2e/writing-app.spec.ts:30`
+- `docs/product/requirements/platform/req-lrn-9-learner-navigation.md:34`
 
 ### BUG-LRN-006: 코스 정렬 Select가 이름 없는 텍스트 입력을 접근성 트리에 노출한다
 

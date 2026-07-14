@@ -28,7 +28,22 @@ describe("전역 내비게이션", () => {
       "/app/courses"
     )
 
-    await user.click(screen.getByRole("button", { name: "✍️" }))
+    const accountMenuTrigger = screen.getByRole("button", {
+      name: "계정 메뉴",
+    })
+
+    expect(screen.queryByRole("button", { name: "✍️" })).not.toBeInTheDocument()
+    expect(accountMenuTrigger).toHaveAttribute("aria-expanded", "false")
+
+    await user.click(accountMenuTrigger)
+
+    expect(
+      await screen.findByRole("menu", { name: "계정 메뉴" })
+    ).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "계정 메뉴" })).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    )
 
     expect(
       await screen.findByRole("menuitem", { name: "프로필" })

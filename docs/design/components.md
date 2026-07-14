@@ -241,6 +241,7 @@
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
 - 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
+- 이모지만 표시하는 계정 메뉴 trigger의 접근성 이름은 `계정 메뉴`로 제공한다.
 - 계정 메뉴 드롭다운은 Kwep `Chrome.tsx`와 같이 `bg-cream`, `border-2 border-surface`, `rounded-4xl`, `w-48`, `p-4`를 쓰고 그림자는 없다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
 - 메뉴 항목은 `w-full text-left`, `py-3 px-4`, `rounded-3xl`, `font-bold`이며 hover/focus/highlight 시 `bg-surface`를 쓴다. 로그아웃만 `text-coral-dark`로 구분한다.
 - `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.

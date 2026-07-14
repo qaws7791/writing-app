@@ -15,6 +15,7 @@ export function GlobalNavAccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        aria-label="계정 메뉴"
         className="flex size-9 items-center justify-center rounded-full bg-accent font-black ring-2 ring-surface btn-squish hover:ring-surface-hover"
         type="button"
       >

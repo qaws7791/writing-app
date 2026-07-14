@@ -27,6 +27,15 @@ test("학습자가 테스트 로그인 후 레슨을 완료하고 로그아웃�
 
   await loginLearner(page)
 
+  const accountMenuTrigger = page.getByRole("button", { name: "계정 메뉴" })
+  await expect(accountMenuTrigger).toHaveAttribute("aria-expanded", "false")
+  await accountMenuTrigger.click()
+  await expect(page.getByRole("menu", { name: "계정 메뉴" })).toBeVisible()
+  await expect(page.getByRole("menuitem", { name: "프로필" })).toBeVisible()
+  await expect(page.getByRole("menuitem", { name: "로그아웃" })).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(accountMenuTrigger).toHaveAttribute("aria-expanded", "false")
+
   await page.getByRole("link", { name: /글쓰기 첫걸음 30일/ }).click()
   await page.waitForLoadState("networkidle")
   await expect(
