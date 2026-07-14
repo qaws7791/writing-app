@@ -162,11 +162,30 @@
 - 완료 요약은 수행하지 않은 `자가 점검`을 다시 언급한다.
 - 완료 요약에 한국어 문맥과 맞지 않는 `mechanics`가 노출된다.
 
+해결 작업 상태: **구현 및 자동·브라우저 검증 완료**
+
+구현 결과:
+
+- 레슨 설명을 실제 매칭·분류·계획·교정 네 가지 활동과 일치시켰다.
+- 완료 요약에서 수행하지 않은 자가 점검을 제거하고, `mechanics`가 포함된 문장을 실제 띄어쓰기 교정 활동을 설명하는 한국어 문장으로 교체했다.
+- 기준 콘텐츠 변환 테스트에서 `l-new`의 설명, 완료 요약, `MATCH`·`CATEGORIZE`·`WRITE`·`WRITE` 스텝 구성을 고정했다.
+- 기존 DB의 오래된 설명과 요약은 seed 재실행으로 갱신하고, 기존 학습 진행과 답변은 보존하는 통합 테스트를 추가했다.
+
+수정 후 검증:
+
+- `bun --filter @workspace/db test`: 통과. 7개 테스트 파일, 37개 테스트
+- `bun run test`: 통과. 14개 워크스페이스 테스트 작업. 최초 실행에서 API 종료 수명주기 테스트가 일시적인 연결 거부로 실패했으나, 해당 테스트 단독 재실행과 전체 재실행은 모두 통과했다.
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `git diff --check`: 통과
+- 운영용 HTTPS origin과 API URL을 명시한 `bun run build`: 통과. 4개 빌드 작업
+- `ENABLE_TEST_AUTH=true`와 격리 SQLite를 사용한 브라우저 검증에서 시작 화면의 네 가지 활동과 `1/4`~`4/4` 진행률, 실제 활동만 포함한 완료 요약을 확인했다.
+- 브라우저 경고·오류와 서버 5xx는 0건이었고, 답변 저장·진행 저장·레슨 완료 요청은 모두 200을 반환했다.
+
 관련 위치:
 
 - `packages/db/src/seeds/content-seed-data.json:33`
-- `packages/db/src/seeds/content-seed-data.json:126`
-- `packages/db/src/seeds/content-seed-data.json:129`
+- `packages/db/src/seeds/content-seed-data.json:122`
+- `packages/db/src/seeds/seed-content.test.ts:68`
+- `packages/db/src/seeds/seed.test.ts:58`
 
 ### BUG-LRN-003: 랜딩 푸터의 링크 12개가 모두 빈 hash 링크다
 
@@ -280,10 +299,35 @@
 
 코드 대조 결과, seed는 Markdown 문자열을 제공하지만 `WriteAnswer`는 이를 Markdown renderer가 아닌 `<p className="whitespace-pre-line">`으로 출력한다.
 
+해결 작업 상태: **구현 및 자동 검증 완료, 브라우저 재확인 필요**
+
+구현 결과:
+
+- 쓰기 구조 가이드를 기존 공용 `MarkdownContent`로 렌더링해 CommonMark 목록과 강조를 의미 있는 `ul`, `li`, `strong` 요소로 표시한다.
+- Markdown 목록이 아닌 일반 여러 줄 구조 가이드도 `whitespace-pre-line`으로 줄바꿈을 유지한다.
+- API, 콘텐츠 스키마와 seed 데이터는 변경하지 않았고, 같은 공용 렌더러를 사용하는 학습자 화면과 어드민 스텝 미리보기에 동일하게 적용된다.
+- 쓰기 답변 요구사항과 레슨 화면 명세에 CommonMark 표시와 일반 텍스트 줄바꿈 보존 계약을 반영했다.
+
+수정 후 검증:
+
+- `bun --filter @workspace/web test -- lesson-step-renderer.test.tsx`: 통과. 1개 테스트 파일, 12개 테스트
+- `bun --filter @workspace/ui test`: 통과. 7개 테스트 파일, 29개 테스트
+- `bun run test`: 통과. 14개 워크스페이스 테스트 작업. 병렬 검증 중 어드민 자료실 비동기 로딩 테스트 1건이 일시 실패했으나 해당 테스트 단독 재실행과 전체 재실행은 모두 통과했다.
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `git diff --check`: 통과
+- 운영용 HTTPS origin과 API URL을 명시한 `bun run build`: 통과. 4개 빌드 작업
+
+남은 브라우저 확인:
+
+- `ENABLE_TEST_AUTH=true`와 격리 SQLite로 웹·API가 정상 기동되는 것까지 확인했으나, 현재 Codex 브라우저 런타임이 사용 가능한 브라우저를 반환하지 않아 화면 조작과 console 검증은 수행하지 못했다.
+- 브라우저가 제공되는 환경에서 `l-new` 3번째 스텝의 네 개 목록 항목과 굵은 라벨, 다른 번호형 구조 가이드의 순서 목록 표시를 재확인한다.
+- 검증에 사용한 개발 서버 프로세스, 격리 SQLite와 로그는 종료·삭제했다.
+
 관련 위치:
 
 - `packages/db/src/seeds/content-seed-data.json:105`
-- `packages/ui/src/components/lesson/write-answer.tsx:126`
+- `packages/ui/src/components/lesson/write-answer.tsx:134`
+- `apps/web/src/features/lessons/lesson-step-renderer.test.tsx:270`
+- `docs/product/requirements/platform/req-lrn-5-writing-answer.md:24`
 
 ### BUG-LRN-005: 데스크톱 계정 메뉴 버튼의 접근성 이름이 이모지만으로 구성된다
 

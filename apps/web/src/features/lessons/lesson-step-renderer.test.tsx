@@ -1,4 +1,10 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react"
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
@@ -264,6 +270,11 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     renderAnswerableStep(step, onAnswerChange)
 
     expect(screen.getByText("구조 가이드")).toBeInTheDocument()
+    const structureList = screen.getByRole("list")
+    expect(within(structureList).getAllByRole("listitem")).toHaveLength(2)
+    expect(within(structureList).getByText("독자").tagName).toBe("STRONG")
+    expect(within(structureList).getByText("목적").tagName).toBe("STRONG")
+    expect(structureList).not.toHaveTextContent("- **독자**")
     expect(
       screen.getByText("0자 · 최소 20 · 목표 80 · 최대 2000").parentElement
     ).toBeInTheDocument()
@@ -284,6 +295,26 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
         stepId: "write-1",
       })
     )
+  })
+
+  it("일반 여러 줄 쓰기 구조 가이드는 줄바꿈 표시를 유지한다", () => {
+    const step = {
+      id: "write-plain-structure",
+      min: 20,
+      order: 1,
+      structure: "주장: 핵심을 적습니다.\n근거: 이유를 적습니다.",
+      title: "구조에 맞춰 쓰기",
+      type: "WRITE",
+    } as LessonStep
+
+    renderAnswerableStep(step, vi.fn())
+
+    const structureText = screen.getByText(
+      (_, element) =>
+        element?.tagName === "P" &&
+        element.textContent === "주장: 핵심을 적습니다.\n근거: 이유를 적습니다."
+    )
+    expect(structureText.parentElement).toHaveClass("whitespace-pre-line")
   })
 
   it("초안 영구 저장 실패를 표시하되 답안 전달은 계속한다", async () => {

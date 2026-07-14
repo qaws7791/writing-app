@@ -55,7 +55,7 @@ describe("개발 DB seed 실행", () => {
     }
   })
 
-  it("seed 재실행 시 기존 학습 진행과 답변 기록을 보존한다", async () => {
+  it("seed 재실행 시 학습 기록을 보존하며 기준 레슨 콘텐츠를 갱신한다", async () => {
     const tempDirectory = mkdtempSync(
       join(tmpdir(), "writing-app-seed-preserve-")
     )
@@ -93,6 +93,16 @@ describe("개발 DB seed 실행", () => {
             userId: "user-1",
           })
           .run()
+
+        client.sqlite
+          .query(
+            "UPDATE lessons SET description = ?, summary_json = ? WHERE id = ?"
+          )
+          .run(
+            "매칭·분류·계획·교정·자가 점검 다섯 가지 활동",
+            JSON.stringify(["자가 점검", "mechanics"]),
+            "l-new"
+          )
       } finally {
         client.close()
       }
@@ -121,6 +131,21 @@ describe("개발 DB seed 실행", () => {
             userId: "user-1",
           }),
         ])
+        expect(
+          reseededClient.db
+            .select()
+            .from(lessons)
+            .all()
+            .find((lesson) => lesson.id === "l-new")
+        ).toMatchObject({
+          description:
+            "매칭·분류·계획·교정 네 가지 활동을 차례로 체험해보세요.",
+          summaryJson: JSON.stringify([
+            "매칭과 분류로 개념 사이의 관계를 익힌다",
+            "계획 단계에서 독자·목적·핵심을 정하면 본 쓰기가 가벼워진다",
+            "교정은 띄어쓰기와 같은 표기 오류를 바로잡는다",
+          ]),
+        })
       } finally {
         reseededClient.close()
       }

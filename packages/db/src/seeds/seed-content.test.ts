@@ -75,6 +75,24 @@ describe("기준 콘텐츠 seed 변환", () => {
       type: "reading",
       title: "명료성의 원칙",
     })
+
+    const newActivityLesson = rows.lessons.find(
+      (lesson) => lesson.id === "l-new"
+    )
+    expect(newActivityLesson).toMatchObject({
+      description: "매칭·분류·계획·교정 네 가지 활동을 차례로 체험해보세요.",
+      summaryJson: JSON.stringify([
+        "매칭과 분류로 개념 사이의 관계를 익힌다",
+        "계획 단계에서 독자·목적·핵심을 정하면 본 쓰기가 가벼워진다",
+        "교정은 띄어쓰기와 같은 표기 오류를 바로잡는다",
+      ]),
+    })
+    expect(
+      rows.steps
+        .filter((step) => step.lessonId === "l-new")
+        .map((step) => step.type)
+    ).toEqual(["MATCH", "CATEGORIZE", "WRITE", "WRITE"])
+
     expect(
       rows.steps
         .filter((step) => step.type === "AI_FEEDBACK")

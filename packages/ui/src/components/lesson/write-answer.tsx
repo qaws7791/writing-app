@@ -131,7 +131,9 @@ export function WriteAnswer({
           >
             구조 가이드
           </div>
-          <p className="font-medium whitespace-pre-line">{structure}</p>
+          <MarkdownContent className="whitespace-pre-line">
+            {structure}
+          </MarkdownContent>
         </div>
       ) : null}
       <textarea
