@@ -16,6 +16,14 @@ const rawHexGuardrail: Guardrail = {
   roots: ["apps"],
 }
 
+const semanticColorAliasGuardrail: Guardrail = {
+  baseline: 0,
+  description: "fixture semantic color alias 기준선",
+  label: "legacy semantic color alias",
+  pattern: /--semantic-color-[a-z0-9-]+/g,
+  roots: ["apps"],
+}
+
 describe("디자인 시스템 guardrail", () => {
   test("raw hex가 baseline보다 증가하면 실패한다", () => {
     using fixture = createFixture("#fff #000")
@@ -31,6 +39,14 @@ describe("디자인 시스템 guardrail", () => {
     expect(
       evaluateGuardrails([rawHexGuardrail], fixture.path).failures
     ).toEqual([expect.stringContaining("decreased from 1 to 0")])
+  })
+
+  test("미정의 semantic color alias를 검출한다", () => {
+    using fixture = createFixture("var(--semantic-color-bg-canvas)")
+
+    expect(
+      evaluateGuardrails([semanticColorAliasGuardrail], fixture.path).failures
+    ).toEqual([expect.stringContaining("increased from 0 to 1")])
   })
 })
 

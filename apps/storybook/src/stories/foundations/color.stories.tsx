@@ -7,43 +7,43 @@ import { TokenSwatch } from "#storybook/blocks/token-swatch"
 const semanticColors = [
   {
     name: "Canvas",
-    token: "--semantic-color-bg-canvas",
-    value: "var(--semantic-color-bg-canvas)",
+    token: "--bg-canvas",
+    value: "var(--bg-canvas)",
   },
   {
     name: "Surface",
-    token: "--semantic-color-bg-surface",
-    value: "var(--semantic-color-bg-surface)",
+    token: "--bg-surface",
+    value: "var(--bg-surface)",
   },
   {
     name: "Elevated",
-    token: "--semantic-color-bg-elevated",
-    value: "var(--semantic-color-bg-elevated)",
+    token: "--bg-elevated",
+    value: "var(--bg-elevated)",
   },
   {
     name: "Primary Action",
-    token: "--semantic-color-action-primary-bg",
-    value: "var(--semantic-color-action-primary-bg)",
+    token: "--action-primary-bg",
+    value: "var(--action-primary-bg)",
   },
   {
     name: "Selected",
-    token: "--semantic-color-action-selected-bg",
-    value: "var(--semantic-color-action-selected-bg)",
+    token: "--action-selected-bg",
+    value: "var(--action-selected-bg)",
   },
   {
     name: "Success",
-    token: "--semantic-color-success-bg",
-    value: "var(--semantic-color-success-bg)",
+    token: "--success-bg",
+    value: "var(--success-bg)",
   },
   {
     name: "Danger",
-    token: "--semantic-color-danger-bg",
-    value: "var(--semantic-color-danger-bg)",
+    token: "--danger-bg",
+    value: "var(--danger-bg)",
   },
   {
     name: "Info",
-    token: "--semantic-color-info-bg",
-    value: "var(--semantic-color-info-bg)",
+    token: "--info-bg",
+    value: "var(--info-bg)",
   },
 ] as const
 
@@ -83,8 +83,8 @@ export const ContrastPairs: Story = {
           title: "Primary action",
           children: (
             <ContrastPair
-              background="var(--semantic-color-action-primary-bg)"
-              foreground="var(--semantic-color-action-primary-fg)"
+              background="var(--action-primary-bg)"
+              foreground="var(--action-primary-fg)"
               label="Primary action"
               role="action-primary"
             />
@@ -94,8 +94,8 @@ export const ContrastPairs: Story = {
           title: "Selected",
           children: (
             <ContrastPair
-              background="var(--semantic-color-action-selected-bg)"
-              foreground="var(--semantic-color-action-selected-fg)"
+              background="var(--action-selected-bg)"
+              foreground="var(--action-selected-fg)"
               label="Selected"
               role="action-selected"
             />
@@ -105,8 +105,8 @@ export const ContrastPairs: Story = {
           title: "Success",
           children: (
             <ContrastPair
-              background="var(--semantic-color-success-bg)"
-              foreground="var(--semantic-color-success-fg)"
+              background="var(--success-bg)"
+              foreground="var(--success-fg)"
               label="Success"
               role="success"
             />
@@ -116,8 +116,8 @@ export const ContrastPairs: Story = {
           title: "Danger",
           children: (
             <ContrastPair
-              background="var(--semantic-color-danger-bg)"
-              foreground="var(--semantic-color-danger-fg)"
+              background="var(--danger-bg)"
+              foreground="var(--danger-fg)"
               label="Danger"
               role="danger"
             />

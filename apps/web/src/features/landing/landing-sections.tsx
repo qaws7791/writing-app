@@ -93,7 +93,7 @@ export function Marquee() {
                 key={`${label}-${index < row.items.length ? "a" : "b"}`}
                 style={{
                   backgroundColor: marqueeColors[index % marqueeColors.length],
-                  color: "var(--semantic-color-fg-default)",
+                  color: "var(--fg-default)",
                 }}
               >
                 {label}

@@ -54,6 +54,13 @@ const guardrails: readonly Guardrail[] = [
   },
   {
     baseline: 0,
+    description: "apps/**, packages/**의 미정의 semantic color alias 기준선",
+    label: "legacy semantic color alias",
+    pattern: /--semantic-color-[a-z0-9-]+/g,
+    roots: ["apps", "packages"],
+  },
+  {
+    baseline: 0,
     description:
       "apps/**의 fontSize, lineHeight, letterSpacing inline style 기준선",
     label: "inline typography style",

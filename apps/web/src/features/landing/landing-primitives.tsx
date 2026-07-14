@@ -4,18 +4,18 @@ import type { Pebble } from "@/features/landing/landing-content"
 
 const previewFrameTokens = {
   "글결 앱 홈 화면 미리보기": {
-    accent: "var(--semantic-color-action-selected-bg)",
-    secondary: "var(--semantic-color-success-bg)",
+    accent: "var(--action-selected-bg)",
+    secondary: "var(--success-bg)",
     title: "Home",
   },
   "글결 레슨 진행 화면": {
-    accent: "var(--semantic-color-success-bg)",
-    secondary: "var(--semantic-color-danger-bg)",
+    accent: "var(--success-bg)",
+    secondary: "var(--danger-bg)",
     title: "Lesson",
   },
   "글결 코스 대시보드 화면": {
-    accent: "var(--semantic-color-danger-bg)",
-    secondary: "var(--semantic-color-action-selected-bg)",
+    accent: "var(--danger-bg)",
+    secondary: "var(--action-selected-bg)",
     title: "Courses",
   },
 } as const
@@ -70,14 +70,9 @@ export function PreviewFrame({
       viewBox="0 0 900 1200"
       xmlns="http://www.w3.org/2000/svg"
     >
+      <rect fill="var(--action-primary-bg)" height="1200" rx="64" width="900" />
       <rect
-        fill="var(--semantic-color-bg-inverse)"
-        height="1200"
-        rx="64"
-        width="900"
-      />
-      <rect
-        fill="var(--semantic-color-bg-canvas)"
+        fill="var(--bg-canvas)"
         height="1040"
         rx="48"
         width="760"
@@ -86,7 +81,7 @@ export function PreviewFrame({
       />
       <circle cx="150" cy="165" fill={frame.accent} r="30" />
       <rect
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         height="24"
         rx="12"
         width="240"
@@ -94,7 +89,7 @@ export function PreviewFrame({
         y="140"
       />
       <rect
-        fill="var(--semantic-color-fg-muted)"
+        fill="var(--fg-muted)"
         height="18"
         rx="9"
         width="150"
@@ -110,7 +105,7 @@ export function PreviewFrame({
         y="270"
       />
       <rect
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         height="24"
         rx="12"
         width="300"
@@ -118,7 +113,7 @@ export function PreviewFrame({
         y="318"
       />
       <rect
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         height="18"
         opacity=".62"
         rx="9"
@@ -127,7 +122,7 @@ export function PreviewFrame({
         y="365"
       />
       <rect
-        fill="var(--semantic-color-bg-surface)"
+        fill="var(--bg-surface)"
         height="240"
         rx="38"
         width="315"
@@ -135,7 +130,7 @@ export function PreviewFrame({
         y="485"
       />
       <rect
-        fill="var(--semantic-color-bg-surface)"
+        fill="var(--bg-surface)"
         height="240"
         rx="38"
         width="315"
@@ -143,7 +138,7 @@ export function PreviewFrame({
         y="485"
       />
       <rect
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         height="22"
         rx="11"
         width="170"
@@ -151,7 +146,7 @@ export function PreviewFrame({
         y="545"
       />
       <rect
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         height="22"
         rx="11"
         width="160"
@@ -159,7 +154,7 @@ export function PreviewFrame({
         y="545"
       />
       <rect
-        fill="var(--semantic-color-fg-muted)"
+        fill="var(--fg-muted)"
         height="18"
         rx="9"
         width="210"
@@ -167,7 +162,7 @@ export function PreviewFrame({
         y="610"
       />
       <rect
-        fill="var(--semantic-color-fg-muted)"
+        fill="var(--fg-muted)"
         height="18"
         rx="9"
         width="200"
@@ -183,7 +178,7 @@ export function PreviewFrame({
         y="780"
       />
       <rect
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         height="24"
         rx="12"
         width="220"
@@ -191,7 +186,7 @@ export function PreviewFrame({
         y="838"
       />
       <rect
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         height="18"
         opacity=".62"
         rx="9"
@@ -201,7 +196,7 @@ export function PreviewFrame({
       />
       <text
         className="text-heading-lg font-black"
-        fill="var(--semantic-color-fg-default)"
+        fill="var(--fg-default)"
         fontFamily="Arial, sans-serif"
         x="160"
         y="1010"

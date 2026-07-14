@@ -15,20 +15,37 @@ export const uiStyleSentinels: readonly UiStyleSentinel[] = [
     marker:
       ":active:not(:disabled):not([aria-haspopup=true]):not([aria-expanded=true]){transform:scale(var(--motion-press-scale))}",
   },
+  { label: "danger background utility", marker: ".bg-danger" },
+  { label: "danger foreground border utility", marker: "border-danger-fg" },
+]
+
+export const adminUiStyleSentinels: readonly UiStyleSentinel[] = [
+  { label: "admin foreground background utility", marker: ".bg-fg-default{" },
 ]
 
 const buildTargets = [
-  { name: "web", outputDirectory: "apps/web/.next/static/chunks" },
-  { name: "admin", outputDirectory: "apps/admin/.next/static/chunks" },
-  { name: "storybook", outputDirectory: "apps/storybook/dist/assets" },
+  {
+    name: "web",
+    outputDirectory: "apps/web/.next/static/chunks",
+    sentinels: uiStyleSentinels,
+  },
+  {
+    name: "admin",
+    outputDirectory: "apps/admin/.next/static/chunks",
+    sentinels: [...uiStyleSentinels, ...adminUiStyleSentinels],
+  },
+  {
+    name: "storybook",
+    outputDirectory: "apps/storybook/dist/assets",
+    sentinels: uiStyleSentinels,
+  },
 ] as const
 
 export function findMissingUiStyleSentinels(
-  compiledCss: string
+  compiledCss: string,
+  sentinels: readonly UiStyleSentinel[] = uiStyleSentinels
 ): readonly UiStyleSentinel[] {
-  return uiStyleSentinels.filter(
-    (sentinel) => !compiledCss.includes(sentinel.marker)
-  )
+  return sentinels.filter((sentinel) => !compiledCss.includes(sentinel.marker))
 }
 
 if (import.meta.main) {
@@ -49,7 +66,7 @@ if (import.meta.main) {
     const compiledCss = cssFiles
       .map((filePath) => readFileSync(filePath, "utf8"))
       .join("\n")
-    const missing = findMissingUiStyleSentinels(compiledCss)
+    const missing = findMissingUiStyleSentinels(compiledCss, target.sentinels)
 
     if (missing.length > 0) {
       failures.push(
@@ -59,7 +76,7 @@ if (import.meta.main) {
     }
 
     console.log(
-      `${target.name}: compiled CSS ${cssFiles.length}개에서 UI style sentinel ${uiStyleSentinels.length}개 확인`
+      `${target.name}: compiled CSS ${cssFiles.length}개에서 UI style sentinel ${target.sentinels.length}개 확인`
     )
   }
 

@@ -7,7 +7,7 @@ type TokenSwatchProps = {
 
 function TokenSwatch({
   background,
-  foreground = "var(--semantic-color-fg-default)",
+  foreground = "var(--fg-default)",
   label,
   token,
 }: TokenSwatchProps) {

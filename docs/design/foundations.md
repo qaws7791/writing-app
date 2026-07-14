@@ -38,6 +38,17 @@
 
 기존 `cream`, `surface`, `charcoal`, `primary`, `destructive` 이름은 migration alias다. 새 구현은 `bg-*`, `fg-*`, `action-*`, `success-*`, `danger-*`, `info-*` 의미 토큰을 먼저 사용한다.
 
+의미 토큰은 같은 이름의 CSS 변수로 공개한다. 예를 들어 `danger-bg`는
+`--danger-bg`, `fg-default`는 `--fg-default`로 참조한다. Tailwind 색상
+namespace에는 역할 토큰과 기존 호환 API를 함께 연결한다. 따라서
+`bg-danger`, `text-danger-foreground`, `border-danger-fg`, `bg-fg-default`는
+모두 실제 CSS를 생성하며 각각 `danger-bg`, `danger-fg`, `fg-default`를
+참조한다.
+
+공용 Sidebar는 별도 색상 체계를 만들지 않는다. 배경은 `surface`와
+`surface-hover`, 전경은 `foreground`, 경계는 `border`, 포커스는 `focus`
+토큰을 조합한다.
+
 ## 제품 색상 규칙
 
 - 밝은 노랑, 민트, 코랄은 fill로 사용하고 텍스트는 진한 대응 `fg` 토큰을 사용한다.

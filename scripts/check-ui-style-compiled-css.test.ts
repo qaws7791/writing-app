@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  adminUiStyleSentinels,
   findMissingUiStyleSentinels,
   uiStyleSentinels,
 } from "#scripts/check-ui-style-compiled-css"
@@ -20,5 +21,13 @@ describe("UI style compiled CSS sentinel", () => {
     expect(findMissingUiStyleSentinels(incompleteCss)).toEqual([
       missingSentinel,
     ])
+  })
+
+  it("대상별 추가 sentinel 누락을 검출한다", () => {
+    const targetSentinels = [...uiStyleSentinels, ...adminUiStyleSentinels]
+
+    expect(findMissingUiStyleSentinels(completeCss, targetSentinels)).toEqual(
+      adminUiStyleSentinels
+    )
   })
 })

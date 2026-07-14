@@ -9,44 +9,44 @@ type ColorToken = {
 
 const colorTokens: ColorToken[] = [
   {
-    background: "var(--semantic-color-bg-canvas)",
-    foreground: "var(--semantic-color-fg-default)",
+    background: "var(--bg-canvas)",
+    foreground: "var(--fg-default)",
     label: "Canvas",
     token: "bg-canvas",
   },
   {
-    background: "var(--semantic-color-bg-surface)",
-    foreground: "var(--semantic-color-fg-default)",
+    background: "var(--bg-surface)",
+    foreground: "var(--fg-default)",
     label: "Surface",
     token: "bg-surface",
   },
   {
-    background: "var(--semantic-color-action-primary-bg)",
-    foreground: "var(--semantic-color-action-primary-fg)",
+    background: "var(--action-primary-bg)",
+    foreground: "var(--action-primary-fg)",
     label: "Primary Action",
     token: "action-primary",
   },
   {
-    background: "var(--semantic-color-action-selected-bg)",
-    foreground: "var(--semantic-color-action-selected-fg)",
+    background: "var(--action-selected-bg)",
+    foreground: "var(--action-selected-fg)",
     label: "Selected",
     token: "action-selected",
   },
   {
-    background: "var(--semantic-color-success-bg)",
-    foreground: "var(--semantic-color-success-fg)",
+    background: "var(--success-bg)",
+    foreground: "var(--success-fg)",
     label: "Success",
     token: "success",
   },
   {
-    background: "var(--semantic-color-danger-bg)",
-    foreground: "var(--semantic-color-danger-fg)",
+    background: "var(--danger-bg)",
+    foreground: "var(--danger-fg)",
     label: "Danger",
     token: "danger",
   },
   {
-    background: "var(--semantic-color-info-bg)",
-    foreground: "var(--semantic-color-info-fg)",
+    background: "var(--info-bg)",
+    foreground: "var(--info-fg)",
     label: "Info",
     token: "info",
   },
@@ -116,7 +116,7 @@ export const Colors: Story = {
             key={color.token}
             style={{
               background: color.background,
-              color: color.foreground ?? "var(--semantic-color-fg-default)",
+              color: color.foreground ?? "var(--fg-default)",
             }}
           >
             <span className="text-label-sm font-bold">{color.token}</span>

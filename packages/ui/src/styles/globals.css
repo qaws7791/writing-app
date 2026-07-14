@@ -1,4 +1,5 @@
 @import "./tokens/reference.css";
+@import "./tokens/semantic.css";
 @import "./tokens/component.css";
 @import "./tokens/radius.css";
 @import "./tokens/motion.css";
@@ -481,6 +482,8 @@
 
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-bg: var(--success-bg);
+  --color-success-fg: var(--success-fg);
 
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
@@ -488,8 +491,15 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
+  --color-danger: var(--danger-bg);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-foreground: var(--danger-fg);
+
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-info-bg: var(--info-bg);
+  --color-info-fg: var(--info-fg);
 
   --color-backdrop: var(--backdrop);
 
@@ -502,8 +512,12 @@
   --color-action-primary-bg: var(--action-primary-bg);
   --color-action-primary-fg: var(--action-primary-fg);
 
+  --color-fg-default: var(--fg-default);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
   --color-bg-elevated: var(--bg-elevated);
   --color-bg-canvas: var(--bg-canvas);
+  --color-bg-surface: var(--bg-surface);
   --color-cream: var(--cream);
   --color-charcoal: var(--charcoal);
   --color-ink: var(--ink);
@@ -667,121 +681,4 @@
   &::-webkit-scrollbar {
     display: none;
   }
-}
-
-/* Kwep semantic overrides — @layer base 이후 cascade */
-
-:root,
-.light,
-.default,
-[data-theme="light"],
-[data-theme="default"] {
-  --cream: var(--ref-cream);
-  --charcoal: var(--ref-charcoal);
-  --ink: var(--ref-ink);
-  --background: var(--ref-cream);
-  --foreground: var(--ref-charcoal);
-  --surface: var(--ref-surface);
-  --surface-foreground: var(--ref-charcoal);
-  --surface-hover: var(--ref-surface-hover);
-  --overlay: var(--ref-cream);
-  --overlay-foreground: var(--ref-charcoal);
-  --muted: var(--ref-default-soft);
-  --muted-foreground: var(--ref-muted);
-  --default: var(--ref-surface-hover);
-  --default-foreground: var(--ref-charcoal);
-  --default-soft: color-mix(in oklab, var(--ref-default-soft) 65%, transparent);
-  --primary: var(--ref-charcoal);
-  --primary-foreground: var(--ref-cream);
-  --primary-hover: color-mix(
-    in oklab,
-    var(--ref-charcoal) 92%,
-    var(--ref-cream) 8%
-  );
-  --secondary: var(--ref-surface);
-  --secondary-foreground: var(--ref-charcoal);
-  --accent: var(--ref-primary-yellow);
-  --accent-foreground: var(--ref-charcoal);
-  --accent-soft: color-mix(
-    in oklab,
-    var(--ref-primary-yellow) 22%,
-    transparent
-  );
-  --accent-soft-foreground: var(--ref-charcoal);
-  --success: var(--ref-mint-light);
-  --success-foreground: var(--ref-charcoal);
-  --warning: var(--ref-primary-yellow);
-  --warning-foreground: var(--ref-charcoal);
-  --destructive: var(--ref-coral);
-  --destructive-foreground: var(--ref-cream);
-  --info: var(--ref-info-bg);
-  --info-foreground: var(--ref-info-fg);
-  --border: color-mix(in oklab, var(--ref-charcoal) 12%, transparent);
-  --focus: var(--ref-charcoal);
-  --link: var(--ref-charcoal);
-  --field-background: transparent;
-  --field-foreground: var(--ref-charcoal);
-  --field-placeholder: var(--ref-muted);
-  --field-border: color-mix(in oklab, var(--ref-charcoal) 18%, transparent);
-  --mint: var(--ref-mint);
-  --mint-light: var(--ref-mint-light);
-  --coral: var(--ref-coral);
-  --coral-light: var(--ref-coral-light);
-  --mint-dark: var(--ref-mint-dark);
-  --coral-dark: var(--ref-coral-dark);
-  --action-primary-bg: var(--ref-charcoal);
-  --action-primary-fg: var(--ref-cream);
-  --action-selected-bg: var(--ref-primary-yellow);
-  --action-selected-fg: var(--ref-charcoal);
-  --fg-default: var(--ref-charcoal);
-  --fg-muted: var(--ref-muted);
-  --fg-subtle: #8c857a;
-  --bg-canvas: var(--ref-cream);
-  --bg-surface: var(--ref-surface);
-  --bg-elevated: #ffffff;
-}
-
-.dark,
-[data-theme="dark"] {
-  --cream: var(--ref-cream);
-  --charcoal: var(--ref-charcoal);
-  --ink: var(--ref-ink);
-  --background: var(--ref-cream);
-  --foreground: var(--ref-charcoal);
-  --surface: var(--ref-surface);
-  --surface-foreground: var(--ref-charcoal);
-  --surface-hover: var(--ref-surface-hover);
-  --overlay: var(--ref-cream);
-  --overlay-foreground: var(--ref-charcoal);
-  --muted: var(--ref-default-soft);
-  --muted-foreground: var(--ref-muted);
-  --default: var(--ref-surface-hover);
-  --default-foreground: var(--ref-charcoal);
-  --primary: var(--ref-charcoal);
-  --primary-foreground: var(--ref-cream);
-  --primary-hover: color-mix(
-    in oklab,
-    var(--ref-charcoal) 92%,
-    var(--ref-cream) 8%
-  );
-  --secondary: var(--ref-surface);
-  --secondary-foreground: var(--ref-charcoal);
-  --accent: var(--ref-primary-yellow);
-  --accent-foreground: var(--ref-charcoal);
-  --accent-soft: color-mix(
-    in oklab,
-    var(--ref-primary-yellow) 18%,
-    transparent
-  );
-  --destructive: var(--ref-coral);
-  --destructive-foreground: var(--ref-cream);
-  --border: color-mix(in oklab, var(--ref-charcoal) 14%, transparent);
-  --focus: var(--ref-primary-yellow);
-  --field-border: color-mix(in oklab, var(--ref-charcoal) 22%, transparent);
-  --action-primary-bg: var(--ref-charcoal);
-  --action-primary-fg: var(--ref-cream);
-  --bg-canvas: var(--ref-cream);
-  --bg-surface: var(--ref-surface);
-  --bg-elevated: #211f1c;
-  --fg-subtle: #7f766b;
 }

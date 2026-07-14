@@ -46,8 +46,10 @@
   );
   --accent-soft-foreground: var(--ref-charcoal);
 
-  --success: var(--ref-mint-light);
-  --success-foreground: var(--ref-charcoal);
+  --success-bg: var(--ref-mint-light);
+  --success-fg: var(--ref-mint-dark);
+  --success: var(--success-bg);
+  --success-foreground: var(--success-fg);
 
   --warning: var(--ref-primary-yellow);
   --warning-foreground: var(--ref-charcoal);
@@ -55,8 +57,15 @@
   --destructive: var(--ref-coral);
   --destructive-foreground: var(--ref-cream);
 
-  --info: var(--ref-info-bg);
-  --info-foreground: var(--ref-info-fg);
+  --danger-bg: var(--ref-coral-light);
+  --danger-fg: var(--ref-coral-dark);
+  --danger: var(--danger-bg);
+  --danger-foreground: var(--danger-fg);
+
+  --info-bg: var(--ref-info-bg);
+  --info-fg: var(--ref-info-fg);
+  --info: var(--info-bg);
+  --info-foreground: var(--info-fg);
 
   --border: color-mix(in oklab, var(--ref-charcoal) 12%, transparent);
   --focus: var(--ref-charcoal);
