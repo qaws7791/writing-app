@@ -43,6 +43,7 @@
 | `admin-transport-security.md`                             | 관리자 transport의 actor 구성, 이중 인가 경계와 오류 변환 기준을 정의한다.                         |
 | `testing.md`                                              | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.             |
 | `admin-browser-test-report-2026-07-14.md`                 | 2026-07-14 어드민 로컬 개발 환경의 브라우저 기능 검증 결과를 기록한다.                             |
+| `learner-browser-test-report-2026-07-14.md`               | 2026-07-14 학습자 플랫폼 로컬 개발 환경의 브라우저 기능 검증 결과를 기록한다.                      |
 | `lesson-runtime.md`                                       | 학습자·관리자 공통 레슨 runtime과 관리자 스텝 편집 계약을 정의한다.                                |
 | `observability.md`                                        | 요청 로그, 런타임 로깅, 로그 정책, 메트릭과 알림과 대시보드 후보를 정의한다.                       |
 | `migration.md`                                            | 마이그레이션 모델, 명령, 기본 절차, seed 마이그레이션, 운영 원칙, 롤백 조건을 정의한다.            |

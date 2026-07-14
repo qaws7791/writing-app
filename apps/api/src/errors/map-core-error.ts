@@ -55,6 +55,18 @@ export function mapCoreError(error: ApiCoreError): AppError {
         message: "Attempt already in progress",
         status: 409,
       })
+    case "feedback-answer-not-found":
+      return new AppError({
+        code: "AI_FEEDBACK_ANSWER_NOT_FOUND",
+        message: "AI feedback target answer not found",
+        status: 409,
+      })
+    case "feedback-target-invalid":
+      return new AppError({
+        code: "AI_FEEDBACK_TARGET_INVALID",
+        message: "AI feedback target is invalid",
+        status: 500,
+      })
     case "progress-conflict":
       return new AppError({
         code: "PROGRESS_CONFLICT",

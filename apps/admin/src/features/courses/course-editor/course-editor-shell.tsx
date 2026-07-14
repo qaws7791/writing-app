@@ -2,7 +2,12 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useReducer, useState, useTransition } from "react"
-import { lessonIdSchema, unitIdSchema } from "@workspace/contracts/content"
+import {
+  lessonIdSchema,
+  lessonStepIdSchema,
+  type LessonStepId,
+  unitIdSchema,
+} from "@workspace/contracts/content"
 
 import {
   adminCourseEditorSchema,
@@ -22,6 +27,13 @@ import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -289,39 +301,53 @@ export function CourseEditorShell({
                   />
                   <div className="flex flex-col gap-2">
                     {unit.lessons.map((lesson, lessonIndex) => (
-                      <div className="flex items-center gap-2" key={lesson.id}>
-                        <span className="w-6 text-sm font-bold text-muted-foreground">
-                          {lessonIndex + 1}
-                        </span>
-                        <Input
-                          aria-label={`${unit.title} 레슨 ${lessonIndex + 1} 제목`}
-                          onChange={(event) =>
+                      <div className="grid gap-2" key={lesson.id}>
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 text-sm font-bold text-muted-foreground">
+                            {lessonIndex + 1}
+                          </span>
+                          <Input
+                            aria-label={`${unit.title} 레슨 ${lessonIndex + 1} 제목`}
+                            onChange={(event) =>
+                              dispatch({
+                                lessonId: lesson.id,
+                                title: event.target.value,
+                                type: "lesson-title-changed",
+                                unitId: unit.id,
+                              })
+                            }
+                            value={lesson.title}
+                          />
+                          <span className="whitespace-nowrap text-xs text-muted-foreground">
+                            스텝 {lesson.steps.length}개
+                          </span>
+                          <Button
+                            aria-label={`${lesson.title} 레슨 삭제`}
+                            onClick={() =>
+                              dispatch({
+                                lessonId: lesson.id,
+                                type: "lesson-removed",
+                                unitId: unit.id,
+                              })
+                            }
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <TrashIcon aria-hidden="true" size={14} />
+                          </Button>
+                        </div>
+                        <AiFeedbackTargetFields
+                          lesson={lesson}
+                          onTargetChange={(stepId, targetStepId) =>
                             dispatch({
                               lessonId: lesson.id,
-                              title: event.target.value,
-                              type: "lesson-title-changed",
+                              stepId,
+                              targetStepId,
+                              type: "ai-feedback-target-changed",
                               unitId: unit.id,
                             })
                           }
-                          value={lesson.title}
                         />
-                        <span className="whitespace-nowrap text-xs text-muted-foreground">
-                          스텝 {lesson.steps.length}개
-                        </span>
-                        <Button
-                          aria-label={`${lesson.title} 레슨 삭제`}
-                          onClick={() =>
-                            dispatch({
-                              lessonId: lesson.id,
-                              type: "lesson-removed",
-                              unitId: unit.id,
-                            })
-                          }
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <TrashIcon aria-hidden="true" size={14} />
-                        </Button>
                       </div>
                     ))}
                     <Button
@@ -349,6 +375,72 @@ export function CourseEditorShell({
       </div>
     </div>
   )
+}
+
+type EditorLesson = AdminCourseDetail["units"][number]["lessons"][number]
+
+function AiFeedbackTargetFields({
+  lesson,
+  onTargetChange,
+}: {
+  readonly lesson: EditorLesson
+  readonly onTargetChange: (
+    stepId: LessonStepId,
+    targetStepId: LessonStepId
+  ) => void
+}) {
+  const aiSteps = lesson.steps.filter((step) => step.type === "AI_FEEDBACK")
+
+  if (aiSteps.length === 0) return null
+
+  return (
+    <div className="ml-8 grid gap-3 rounded-2xl bg-surface p-3">
+      {aiSteps.map((aiStep) => {
+        const targets = lesson.steps
+          .filter(
+            (step) => step.type === "WRITE" && step.sortOrder < aiStep.sortOrder
+          )
+          .map((step) => ({
+            label: `${step.sortOrder}. ${getWriteStepLabel(step)}`,
+            value: step.id,
+          }))
+        const inputId = `${aiStep.id}-target-step`
+
+        return (
+          <Field key={aiStep.id}>
+            <FieldLabel htmlFor={inputId}>AI 코칭 대상 쓰기 스텝</FieldLabel>
+            <Select
+              items={targets}
+              onValueChange={(value) => {
+                if (value === null) return
+                onTargetChange(
+                  lessonStepIdSchema.parse(aiStep.id),
+                  lessonStepIdSchema.parse(value)
+                )
+              }}
+              value={aiStep.target}
+            >
+              <SelectTrigger id={inputId}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {targets.map((target) => (
+                  <SelectItem key={target.value} value={target.value}>
+                    {target.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )
+      })}
+    </div>
+  )
+}
+
+function getWriteStepLabel(step: EditorLesson["steps"][number]): string {
+  if (step.type !== "WRITE") return "쓰기"
+  return step.title ?? step.prompt ?? "쓰기"
 }
 
 function TabButton({

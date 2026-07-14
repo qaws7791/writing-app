@@ -17,13 +17,17 @@ describe("AI 피드백 스텝 정책", () => {
     expect(
       resolveAiFeedbackStep({
         lesson,
-        stepId: lessonStepIdSchema.parse("l1-s2"),
+        stepId: lessonStepIdSchema.parse("l1-s3"),
       })
     ).toMatchObject({
       kind: "accepted",
       step: {
         focus: "명확성",
         type: "AI_FEEDBACK",
+      },
+      targetStep: {
+        id: "l1-s2",
+        type: "WRITE",
       },
     })
   })
@@ -69,15 +73,25 @@ const lesson: LessonDto = lessonDtoSchema.parse({
       type: "READING",
     },
     {
+      context: "주장과 근거를 한 문장으로 구성하세요.",
+      draft: true,
+      id: lessonStepIdSchema.parse("l1-s2"),
+      max: 300,
+      min: 20,
+      sortOrder: 2,
+      topic: "제품의 주장과 근거",
+      type: "WRITE",
+    },
+    {
       allowRetry: true,
       feedback: "주장과 근거가 명확히 구분되어 있습니다.",
       focus: "명확성",
-      id: lessonStepIdSchema.parse("l1-s2"),
+      id: lessonStepIdSchema.parse("l1-s3"),
       score: 92,
       scoreMax: 100,
       showScore: true,
-      sortOrder: 2,
-      target: "l1-s-write",
+      sortOrder: 3,
+      target: lessonStepIdSchema.parse("l1-s2"),
       type: "AI_FEEDBACK",
     },
   ],

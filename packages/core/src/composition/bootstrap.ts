@@ -100,6 +100,7 @@ export function createLearnerApiCore(
       attemptPolicy: defaultAiFeedbackAttemptPolicy,
       contentRepository,
       feedbackRepository,
+      learningRepository,
       onAttemptTransition: input.onAiFeedbackAttemptTransition,
       provider,
     }),

@@ -21,7 +21,6 @@ export type LessonAiFeedback = {
 }
 
 export type LessonAiFeedbackRequest = {
-  readonly answer: string
   readonly stepId: string
 }
 

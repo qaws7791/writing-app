@@ -644,7 +644,7 @@ const lesson: LessonDto = lessonDtoSchema.parse({
       id: "l1-s8",
       type: "AI_FEEDBACK",
       sortOrder: 8,
-      target: "wr",
+      target: "l1-s7",
       focus: "명확성",
       feedback: "주장과 근거가 명확히 구분되어 있습니다.",
       showScore: true,

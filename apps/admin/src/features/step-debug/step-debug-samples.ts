@@ -228,7 +228,7 @@ export const STEP_DEBUG_ENTRIES: readonly StepDebugEntry[] = [
       id: "debug-ai-1",
       order: 1,
       type: "AI_FEEDBACK",
-      target: "wr",
+      target: "debug-write-1",
       focus: "명확성",
       feedback:
         "주장과 근거가 명확히 구분되어 있습니다. 근거에 구체적인 수치가 포함되어 설득력이 높습니다.",

@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { lessonStepIdSchema } from "@workspace/contracts/content/content.ids"
 import {
   lessonStepBaseSchema,
   nonNegativeIntegerSchema,
@@ -7,7 +8,7 @@ import {
 
 export const aiFeedbackStepDtoSchema = lessonStepBaseSchema.extend({
   type: z.literal("AI_FEEDBACK"),
-  target: z.string(),
+  target: lessonStepIdSchema,
   focus: z.string(),
   feedback: z.string(),
   showScore: z.boolean(),

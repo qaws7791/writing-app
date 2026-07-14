@@ -4,14 +4,14 @@ import { createApp } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
 import type {
   AiFeedbackService,
-  CreateAiFeedbackCommand,
+  CreateAiFeedbackRequestCommand,
 } from "@workspace/core/ai-feedback"
 
 const now = new Date("2026-06-14T11:00:00.000Z")
 
 describe("플랫폼 API AI feedback route", () => {
   it("인증된 사용자의 AI 코칭 요청을 service로 전달한다", async () => {
-    const commands: CreateAiFeedbackCommand[] = []
+    const commands: CreateAiFeedbackRequestCommand[] = []
     const app = createApp({
       ...createTestDependencies(),
       aiFeedbackService: createService({
@@ -38,7 +38,6 @@ describe("플랫폼 API AI feedback route", () => {
 
     const response = await app.request("/ai-feedback", {
       body: JSON.stringify({
-        answer: "문장을 명확하게 고쳤습니다.",
         lessonId: "l1",
         stepId: "l1-s2",
       }),
@@ -64,7 +63,6 @@ describe("플랫폼 API AI feedback route", () => {
     })
     expect(commands).toEqual([
       {
-        answer: "문장을 명확하게 고쳤습니다.",
         idempotencyKey: "request-1",
         lessonId: "l1",
         occurredAt: now,
@@ -93,7 +91,6 @@ describe("플랫폼 API AI feedback route", () => {
 
     const response = await app.request("/ai-feedback", {
       body: JSON.stringify({
-        answer: "한 번 더 코칭을 요청합니다.",
         lessonId: "l1",
         stepId: "l1-s2",
       }),
@@ -131,7 +128,6 @@ describe("플랫폼 API AI feedback route", () => {
 
     const response = await app.request("/ai-feedback", {
       body: JSON.stringify({
-        answer: "처리 중인 코칭을 다시 요청합니다.",
         lessonId: "l1",
         stepId: "l1-s2",
       }),

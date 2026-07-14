@@ -21,7 +21,6 @@ export type AiFeedbackEffectOutcome =
 export type LessonSessionEffects = {
   readonly complete: () => Promise<EffectOutcome>
   readonly requestAiFeedback: (input: {
-    readonly answer: string
     readonly idempotencyKey: string
     readonly stepId: string
   }) => Promise<AiFeedbackEffectOutcome>
@@ -41,9 +40,8 @@ export function createLessonSessionEffects(
     async complete() {
       return toEffectOutcome(await api.completeLesson({ lessonId }))
     },
-    async requestAiFeedback({ answer, idempotencyKey, stepId }) {
+    async requestAiFeedback({ idempotencyKey, stepId }) {
       const result = await api.createAiFeedback({
-        answer,
         idempotencyKey,
         lessonId,
         stepId,

@@ -18,6 +18,8 @@ import {
 } from "#core/modules/ai-feedback/application/use-cases/ai-feedback.service"
 import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
+import type { LearningRepository } from "#core/modules/learning/application/ports/learning.repository"
+import type { LearningAnswer } from "#core/modules/learning/domain/learning.dto"
 import type {
   AiFeedbackProvider,
   AiFeedbackProviderInput,
@@ -27,7 +29,7 @@ import { ok } from "#core/shared/result"
 const occurredAt = new Date("2026-06-14T10:00:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")
 const lessonId = lessonIdSchema.parse("l1")
-const stepId = lessonStepIdSchema.parse("l1-s2")
+const stepId = lessonStepIdSchema.parse("l1-s3")
 
 describe("AI 피드백 서비스", () => {
   it("AI_FEEDBACK 스텝의 레슨 맥락으로 피드백 시도를 조정한다", async () => {
@@ -36,7 +38,6 @@ describe("AI 피드백 서비스", () => {
 
     await expect(
       service.createFeedback({
-        answer: "문장을 더 분명하게 고쳐 보았습니다.",
         idempotencyKey: "request-1",
         lessonId,
         occurredAt,
@@ -70,7 +71,6 @@ describe("AI 피드백 서비스", () => {
 
     await expect(
       service.createFeedback({
-        answer: "없는 레슨에 코칭을 요청합니다.",
         idempotencyKey: "request-2",
         lessonId,
         occurredAt,
@@ -93,7 +93,6 @@ describe("AI 피드백 서비스", () => {
 
     await expect(
       service.createFeedback({
-        answer: "읽기 스텝에 코칭을 요청합니다.",
         idempotencyKey: "request-3",
         lessonId,
         occurredAt,
@@ -117,7 +116,6 @@ describe("AI 피드백 서비스", () => {
 
     await expect(
       service.createFeedback({
-        answer: "없는 스텝에 코칭을 요청합니다.",
         idempotencyKey: "request-4",
         lessonId,
         occurredAt,
@@ -134,14 +132,76 @@ describe("AI 피드백 서비스", () => {
     })
     expect(providerInputs).toEqual([])
   })
+
+  it("target WRITE 답변이 저장되지 않았으면 provider를 호출하지 않는다", async () => {
+    const providerInputs: AiFeedbackProviderInput[] = []
+    const service = createService({ providerInputs, targetAnswer: null })
+
+    await expect(
+      service.createFeedback({
+        idempotencyKey: "request-5",
+        lessonId,
+        occurredAt,
+        stepId,
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "err",
+      error: {
+        kind: "feedback-answer-not-found",
+        targetStepId: lessonStepIdSchema.parse("l1-s2"),
+      },
+    })
+    expect(providerInputs).toEqual([])
+  })
+
+  it("AI_FEEDBACK target이 유효하지 않으면 명시적인 설정 오류를 반환한다", async () => {
+    const providerInputs: AiFeedbackProviderInput[] = []
+    const missingTargetId = lessonStepIdSchema.parse("missing-target")
+    const invalidLesson: LessonDto = {
+      ...lesson,
+      steps: lesson.steps.map((step) =>
+        step.type === "AI_FEEDBACK"
+          ? { ...step, target: missingTargetId }
+          : step
+      ),
+    }
+    const service = createService({
+      lessonResult: invalidLesson,
+      providerInputs,
+    })
+
+    await expect(
+      service.createFeedback({
+        idempotencyKey: "request-invalid-target",
+        lessonId,
+        occurredAt,
+        stepId,
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "err",
+      error: {
+        kind: "feedback-target-invalid",
+        reason: "target-step-not-found",
+        stepId,
+      },
+    })
+    expect(providerInputs).toEqual([])
+  })
 })
 
 function createService({
   lessonResult = lesson,
   providerInputs = [],
+  targetAnswer = {
+    text: "문장을 더 분명하게 고쳐 보았습니다.",
+    type: "WRITE",
+  },
 }: {
   readonly lessonResult?: LessonDto | null
   readonly providerInputs?: AiFeedbackProviderInput[]
+  readonly targetAnswer?: LearningAnswer | null
 } = {}): AiFeedbackService {
   const contentRepository: ContentRepository = {
     async findCourseDetail() {
@@ -171,6 +231,23 @@ function createService({
       }
     },
   }
+  const learningRepository: LearningRepository = {
+    async completeLesson() {},
+    async findLessonProgress() {
+      return null
+    },
+    async findStepAnswer(query) {
+      return query.stepId === "l1-s2" ? targetAnswer : null
+    },
+    async saveLessonProgress(command) {
+      return {
+        currentStepIndex: command.currentStepIndex,
+        kind: "saved",
+        status: "in_progress",
+      }
+    },
+    async saveStepAnswer() {},
+  }
   const provider: AiFeedbackProvider = {
     async createFeedback(input) {
       providerInputs.push(input)
@@ -190,6 +267,7 @@ function createService({
     attemptPolicy: defaultAiFeedbackAttemptPolicy,
     contentRepository,
     feedbackRepository,
+    learningRepository,
     provider,
   })
 }
@@ -210,6 +288,16 @@ const lesson: LessonDto = lessonDtoSchema.parse({
       type: "READING",
     },
     {
+      context: "주장과 근거를 한 문장으로 구성하세요.",
+      draft: true,
+      id: lessonStepIdSchema.parse("l1-s2"),
+      max: 300,
+      min: 20,
+      sortOrder: 2,
+      topic: "제품의 주장과 근거",
+      type: "WRITE",
+    },
+    {
       allowRetry: true,
       feedback: "주장과 근거가 명확히 구분되어 있습니다.",
       focus: "명확성",
@@ -217,8 +305,8 @@ const lesson: LessonDto = lessonDtoSchema.parse({
       score: 92,
       scoreMax: 100,
       showScore: true,
-      sortOrder: 2,
-      target: "l1-s-write",
+      sortOrder: 3,
+      target: lessonStepIdSchema.parse("l1-s2"),
       type: "AI_FEEDBACK",
     },
   ],

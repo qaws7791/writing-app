@@ -2,6 +2,8 @@ import type { HttpNetworkError } from "@workspace/http-client"
 
 export type ApiErrorCode =
   | "account-unavailable"
+  | "ai-feedback-answer-not-found"
+  | "ai-feedback-target-invalid"
   | "attempt-limit-exceeded"
   | "attempt-in-progress"
   | "contract-error"
@@ -30,6 +32,8 @@ type ServerApiErrorCode = Exclude<ApiErrorCode, "network-error">
 
 const serverCodeMap = {
   ACCOUNT_UNAVAILABLE: "account-unavailable",
+  AI_FEEDBACK_ANSWER_NOT_FOUND: "ai-feedback-answer-not-found",
+  AI_FEEDBACK_TARGET_INVALID: "ai-feedback-target-invalid",
   ATTEMPT_LIMIT_EXCEEDED: "attempt-limit-exceeded",
   ATTEMPT_IN_PROGRESS: "attempt-in-progress",
   HTTP_EXCEPTION: "invalid-request",
@@ -43,6 +47,10 @@ const serverCodeMap = {
 
 const messageByCode = {
   "account-unavailable": "사용할 수 없는 계정입니다.",
+  "ai-feedback-answer-not-found":
+    "코칭할 작성 답변을 찾을 수 없습니다. 쓰기 단계로 돌아가 답변을 다시 저장해 주세요.",
+  "ai-feedback-target-invalid":
+    "AI 코칭 대상 설정이 올바르지 않습니다. 관리자에게 문의해 주세요.",
   "attempt-limit-exceeded": "AI 코칭 시도 횟수를 모두 사용했습니다.",
   "attempt-in-progress": "AI 코칭 요청을 처리하고 있습니다.",
   "contract-error": "API 응답을 해석할 수 없습니다.",

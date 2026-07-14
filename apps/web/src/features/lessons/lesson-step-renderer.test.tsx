@@ -319,11 +319,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
 describe("레슨 스텝 렌더러 AI 코칭", () => {
   it("AI 코칭 요청 중 로딩을 보여주고 결과와 다시 받기 버튼을 표시한다", async () => {
-    writeLessonDraftText(
-      "learner-test",
-      "짧고 명확하게 쓴다",
-      "짧고 명확하게 쓴다"
-    )
+    writeLessonDraftText("learner-test", "write-step", "짧고 명확하게 쓴다")
     const user = userEvent.setup()
     const feedback = createPendingFeedback()
     const onAiFeedbackRequest = vi.fn(() => feedback.promise)
@@ -340,7 +336,6 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
 
     expect(screen.getByText("AI가 코칭 중입니다...")).toBeInTheDocument()
     expect(onAiFeedbackRequest).toHaveBeenCalledWith({
-      answer: "짧고 명확하게 쓴다",
       stepId: "ai-1",
     })
 
@@ -423,7 +418,7 @@ const aiFeedbackStep: LessonStep = {
   score: 0,
   scoreMax: 5,
   showScore: true,
-  target: "짧고 명확하게 쓴다",
+  target: "write-step",
   type: "AI_FEEDBACK",
 }
 

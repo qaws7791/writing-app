@@ -7,7 +7,7 @@ import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
   aiFeedbackResultDtoSchema,
-  createAiFeedbackCommandSchema,
+  createAiFeedbackRequestCommandSchema,
   createFeedbackBodySchema,
   createFeedbackHeadersSchema,
   learnerIdSchema,
@@ -35,15 +35,16 @@ const aiFeedbackRouteConfig = {
     ),
     400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
     404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
-    409: jsonResponse(
-      "동일한 AI 코칭 요청을 처리 중입니다.",
-      ErrorResponseSchema
-    ),
+    409: jsonResponse("AI 코칭 요청 상태가 충돌합니다.", ErrorResponseSchema),
     429: jsonResponse(
       "AI 코칭 시도 횟수를 모두 사용했습니다.",
       ErrorResponseSchema
     ),
     503: jsonResponse("AI provider를 사용할 수 없습니다.", ErrorResponseSchema),
+    500: jsonResponse(
+      "AI 코칭 콘텐츠 설정이 올바르지 않습니다.",
+      ErrorResponseSchema
+    ),
   },
   security: [{ learnerSessionCookie: [] }],
   summary: "AI 코칭 생성",
@@ -57,7 +58,7 @@ const aiFeedbackHandler: ApiRouteHandler<typeof aiFeedbackRouteConfig> = async (
   const body = context.req.valid("json")
   const headers = context.req.valid("header")
   const result = await aiFeedbackService.createFeedback(
-    createAiFeedbackCommandSchema.parse({
+    createAiFeedbackRequestCommandSchema.parse({
       ...body,
       idempotencyKey: headers["idempotency-key"] ?? crypto.randomUUID(),
       occurredAt: context.var.requestContext.now(),

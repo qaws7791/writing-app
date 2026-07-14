@@ -9,7 +9,7 @@ export function createCorsMiddleware({
   webOrigin,
 }: Pick<ApiDependencies, "webOrigin">): MiddlewareHandler<ApiHonoEnv> {
   return cors({
-    allowHeaders: ["Authorization", "Content-Type"],
+    allowHeaders: ["Authorization", "Content-Type", "Idempotency-Key"],
     allowMethods: ["GET", "POST", "OPTIONS"],
     credentials: true,
     origin: webOrigin ?? localRuntimeDefaults.learnerWebOrigin,

@@ -792,7 +792,7 @@ describe("레슨 경험", () => {
 
   it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {
     localStorage.setItem(
-      "writing-app:lesson-draft:v2:learner-test:%EC%A7%A7%EA%B3%A0%20%EB%AA%85%ED%99%95%ED%95%98%EA%B2%8C%20%EC%93%B4%EB%8B%A4",
+      "writing-app:lesson-draft:v2:learner-test:write-step",
       "짧고 명확하게 쓴다"
     )
     const user = userEvent.setup()
@@ -818,28 +818,40 @@ describe("레슨 경험", () => {
       id: "l-coaching",
       steps: [
         {
+          id: "write-step",
+          guide: "명확한 문장을 작성하세요.",
+          min: 10,
+          order: 1,
+          prompt: "명확한 문장 쓰기",
+          type: "WRITE",
+        },
+        {
           allowRetry: true,
           feedback: "작성한 답변을 바탕으로 코칭합니다.",
           focus: "문장이 선명한지 확인합니다.",
           id: "ai-step",
-          order: 1,
+          order: 2,
           score: 0,
           scoreMax: 5,
           showScore: true,
-          target: "짧고 명확하게 쓴다",
+          target: "write-step",
           type: "AI_FEEDBACK",
         },
       ],
     }
 
-    render(<LessonExperience api={api} lesson={coachingLesson} />)
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 1 }}
+        lesson={coachingLesson}
+      />
+    )
 
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
     await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
 
     await waitFor(() =>
       expect(createAiFeedback).toHaveBeenCalledWith({
-        answer: "짧고 명확하게 쓴다",
         idempotencyKey: expect.any(String),
         lessonId: "l-coaching",
         stepId: "ai-step",

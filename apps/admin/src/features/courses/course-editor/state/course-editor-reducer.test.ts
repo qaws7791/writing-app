@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { adminCourseEditorSchema } from "@/features/courses/admin-courses-api"
-import { lessonIdSchema, unitIdSchema } from "@workspace/contracts/content"
+import {
+  lessonIdSchema,
+  lessonStepIdSchema,
+  unitIdSchema,
+} from "@workspace/contracts/content"
 
 import {
   courseEditorReducer,
@@ -60,5 +64,84 @@ describe("courseEditorReducer", () => {
     expect(
       courseEditorReducer(conflict, { type: "local-rebased" }).draft
     ).toMatchObject({ revision: 2, title: "로컬 제목" })
+  })
+
+  it("AI 코칭 대상 변경을 해당 레슨의 AI_FEEDBACK 스텝에만 반영한다", () => {
+    const unitId = unitIdSchema.parse("unit-1")
+    const lessonId = lessonIdSchema.parse("lesson-1")
+    const writeStepId = lessonStepIdSchema.parse("write-1")
+    const nextWriteStepId = lessonStepIdSchema.parse("write-2")
+    const aiStepId = lessonStepIdSchema.parse("ai-1")
+    const editableDocument = adminCourseEditorSchema.parse({
+      ...document,
+      units: [
+        {
+          id: unitId,
+          lessons: [
+            {
+              category: null,
+              description: null,
+              estimatedMinutes: 5,
+              id: lessonId,
+              sortOrder: 1,
+              status: "active",
+              steps: [
+                {
+                  id: writeStepId,
+                  min: 1,
+                  prompt: "쓰기",
+                  sortOrder: 1,
+                  status: "active",
+                  type: "WRITE",
+                },
+                {
+                  id: nextWriteStepId,
+                  min: 1,
+                  prompt: "다시 쓰기",
+                  sortOrder: 2,
+                  status: "active",
+                  type: "WRITE",
+                },
+                {
+                  allowRetry: true,
+                  feedback: "피드백",
+                  focus: "명확성",
+                  id: aiStepId,
+                  score: 1,
+                  scoreMax: 5,
+                  showScore: true,
+                  sortOrder: 3,
+                  status: "active",
+                  target: writeStepId,
+                  type: "AI_FEEDBACK",
+                },
+              ],
+              summary: [],
+              title: "레슨",
+            },
+          ],
+          sortOrder: 1,
+          status: "active",
+          title: "유닛",
+        },
+      ],
+    })
+
+    const changed = courseEditorReducer(
+      createCourseEditorState(editableDocument),
+      {
+        lessonId,
+        stepId: aiStepId,
+        targetStepId: nextWriteStepId,
+        type: "ai-feedback-target-changed",
+        unitId,
+      }
+    )
+
+    expect(changed.draft.units[0]?.lessons[0]?.steps[2]).toMatchObject({
+      id: aiStepId,
+      target: nextWriteStepId,
+    })
+    expect(changed.status).toBe("dirty")
   })
 })

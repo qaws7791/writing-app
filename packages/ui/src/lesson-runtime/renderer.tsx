@@ -282,7 +282,6 @@ function renderStepContent(
             }
 
             return handlers.onAiFeedbackRequest({
-              answer: draftText,
               stepId: step.id,
             })
           }}

@@ -94,7 +94,8 @@ describe("플랫폼 API profile route", () => {
 
     const response = await app.request("/learning/answers", {
       headers: {
-        "Access-Control-Request-Headers": "authorization,content-type",
+        "Access-Control-Request-Headers":
+          "authorization,content-type,idempotency-key",
         "Access-Control-Request-Method": "POST",
         Origin: localRuntimeDefaults.learnerWebOrigin,
       },
@@ -107,6 +108,9 @@ describe("플랫폼 API profile route", () => {
     )
     expect(response.headers.get("access-control-allow-credentials")).toBe(
       "true"
+    )
+    expect(response.headers.get("access-control-allow-headers")).toBe(
+      "Authorization,Content-Type,Idempotency-Key"
     )
   })
 

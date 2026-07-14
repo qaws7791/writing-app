@@ -1,5 +1,9 @@
 import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
-import type { LessonId, UnitId } from "@workspace/contracts/content"
+import type {
+  LessonId,
+  LessonStepId,
+  UnitId,
+} from "@workspace/contracts/content"
 
 export type CourseEditorStatus =
   | "clean"
@@ -18,6 +22,13 @@ export type CourseEditorState = {
 }
 
 export type CourseEditorAction =
+  | {
+      readonly lessonId: LessonId
+      readonly stepId: LessonStepId
+      readonly targetStepId: LessonStepId
+      readonly type: "ai-feedback-target-changed"
+      readonly unitId: UnitId
+    }
   | {
       readonly field: "category" | "description" | "title"
       readonly type: "course-changed"
@@ -71,6 +82,30 @@ export function courseEditorReducer(
   action: CourseEditorAction
 ): CourseEditorState {
   switch (action.type) {
+    case "ai-feedback-target-changed":
+      return changed(state, {
+        ...state.draft,
+        units: state.draft.units.map((unit) =>
+          unit.id === action.unitId
+            ? {
+                ...unit,
+                lessons: unit.lessons.map((lesson) =>
+                  lesson.id === action.lessonId
+                    ? {
+                        ...lesson,
+                        steps: lesson.steps.map((step) =>
+                          step.id === action.stepId &&
+                          step.type === "AI_FEEDBACK"
+                            ? { ...step, target: action.targetStepId }
+                            : step
+                        ),
+                      }
+                    : lesson
+                ),
+              }
+            : unit
+        ),
+      })
     case "course-changed":
       return changed(state, { ...state.draft, [action.field]: action.value })
     case "unit-added":

@@ -873,7 +873,7 @@
               },
               {
                 "type": "ai_feedback",
-                "target": "wr",
+                "target": "l6-s3",
                 "focus": "명확성",
                 "feedback": "주장과 근거가 명확히 구분되어 있습니다. 근거에 구체적인 수치가 포함되어 설득력이 높습니다.",
                 "showScore": true,
@@ -1250,7 +1250,7 @@
               },
               {
                 "type": "ai_feedback",
-                "target": "wr",
+                "target": "l25-s3",
                 "focus": "감성과 이성의 균형",
                 "feedback": "구체적 일화로 시작해 독자의 공감을 이끌고, 데이터로 신뢰를 쌓았습니다. 결말의 행동 제안이 명확합니다.",
                 "showScore": true,

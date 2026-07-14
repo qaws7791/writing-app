@@ -28,9 +28,14 @@ export type StandardLessonStepType =
   | "MATCH"
   | "CATEGORIZE"
 
-export type ContentSeedStep = {
-  readonly type: ContentSeedStepType
-}
+export type ContentSeedStep =
+  | {
+      readonly type: Exclude<ContentSeedStepType, "ai_feedback">
+    }
+  | {
+      readonly target: string
+      readonly type: "ai_feedback"
+    }
 
 export type ContentSeedLesson = {
   readonly id: string
@@ -187,7 +192,7 @@ export function toStepSeedRows(course: ContentSeedCourse): LessonStepSeedRow[] {
 export function toLessonStepSeedRows(
   lesson: ContentSeedLesson
 ): LessonStepSeedRow[] {
-  return lesson.steps.map((step, stepIndex) => ({
+  const rows = lesson.steps.map((step, stepIndex) => ({
     contentJson: normalizeSeedStepContent(step),
     id: `${lesson.id}-s${stepIndex + 1}`,
     lessonId: lesson.id,
@@ -195,6 +200,41 @@ export function toLessonStepSeedRows(
     status: persistedContentStatuses.active,
     type: toStandardLessonStepType(step.type),
   }))
+
+  validateAiFeedbackSeedTargets(rows)
+
+  return rows
+}
+
+function validateAiFeedbackSeedTargets(
+  rows: readonly LessonStepSeedRow[]
+): void {
+  const rowsById = new Map(rows.map((row) => [row.id, row]))
+
+  for (const row of rows) {
+    if (row.type !== "AI_FEEDBACK") continue
+
+    const content = JSON.parse(row.contentJson) as { readonly target?: unknown }
+    const targetId = content.target
+    const target =
+      typeof targetId === "string" ? rowsById.get(targetId) : undefined
+
+    if (target === undefined) {
+      throw new Error(
+        `Invalid AI feedback target for ${row.id}: target must exist in the same lesson`
+      )
+    }
+    if (target.type !== "WRITE") {
+      throw new Error(
+        `Invalid AI feedback target for ${row.id}: target must be a WRITE step`
+      )
+    }
+    if (target.sortOrder >= row.sortOrder) {
+      throw new Error(
+        `Invalid AI feedback target for ${row.id}: target must precede the AI feedback step`
+      )
+    }
+  }
 }
 
 export function normalizeSeedStepContent(step: ContentSeedStep): string {

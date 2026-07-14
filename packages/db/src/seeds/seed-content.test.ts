@@ -75,6 +75,11 @@ describe("기준 콘텐츠 seed 변환", () => {
       type: "reading",
       title: "명료성의 원칙",
     })
+    expect(
+      rows.steps
+        .filter((step) => step.type === "AI_FEEDBACK")
+        .map((step) => JSON.parse(step.contentJson).target)
+    ).toEqual(["l6-s3", "l25-s3"])
   })
 
   it("표준 스텝 타입을 저장용 표준 타입으로 정규화한다", () => {
@@ -168,6 +173,39 @@ describe("기준 콘텐츠 seed 변환", () => {
         ],
       })
     ).toThrow("Invalid lesson time")
+  })
+
+  it.each([
+    {
+      name: "같은 레슨에 없는 target",
+      steps: [
+        { type: "write" as const },
+        { target: "missing", type: "ai_feedback" as const },
+      ],
+    },
+    {
+      name: "WRITE가 아닌 target",
+      steps: [
+        { type: "reading" as const },
+        { target: "lesson-a-s1", type: "ai_feedback" as const },
+      ],
+    },
+    {
+      name: "AI 스텝보다 뒤에 있는 target",
+      steps: [
+        { target: "lesson-a-s2", type: "ai_feedback" as const },
+        { type: "write" as const },
+      ],
+    },
+  ])("AI 코칭의 $name을 거절한다", ({ steps }) => {
+    expect(() =>
+      toLessonStepSeedRows({
+        id: "lesson-a",
+        steps,
+        time: "5분",
+        title: "레슨",
+      })
+    ).toThrow("Invalid AI feedback target")
   })
 
   it("표준 스텝 타입 분포를 보존한다", async () => {

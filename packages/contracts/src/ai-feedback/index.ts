@@ -53,8 +53,14 @@ export const createAiFeedbackCommandSchema = z.object({
   userId: learnerIdSchema,
 })
 
+export const createAiFeedbackRequestCommandSchema =
+  createAiFeedbackCommandSchema.omit({ answer: true })
+
 export type AiFeedbackPayload = z.infer<typeof aiFeedbackPayloadSchema>
 export type AiFeedbackResultDto = z.infer<typeof aiFeedbackResultDtoSchema>
 export type CreateAiFeedbackCommand = z.infer<
   typeof createAiFeedbackCommandSchema
+>
+export type CreateAiFeedbackRequestCommand = z.infer<
+  typeof createAiFeedbackRequestCommandSchema
 >

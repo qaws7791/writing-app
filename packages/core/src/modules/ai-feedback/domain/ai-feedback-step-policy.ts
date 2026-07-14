@@ -9,14 +9,23 @@ export type AiFeedbackLessonStep = Extract<
   { readonly type: "AI_FEEDBACK" }
 >
 
+export type AiFeedbackTargetStep = Extract<
+  LessonStepDto,
+  { readonly type: "WRITE" }
+>
+
 export type AiFeedbackStepPolicyRejectionReason =
   | "step-feedback-not-supported"
   | "step-not-found-in-lesson"
+  | "target-step-not-before-feedback"
+  | "target-step-not-found"
+  | "target-step-not-write"
 
 export type AiFeedbackStepPolicyResult =
   | {
       readonly kind: "accepted"
       readonly step: AiFeedbackLessonStep
+      readonly targetStep: AiFeedbackTargetStep
     }
   | {
       readonly kind: "rejected"
@@ -49,8 +58,37 @@ export function resolveAiFeedbackStep({
     }
   }
 
+  const targetStep = lesson.steps.find(
+    (candidate) => candidate.id === step.target
+  )
+
+  if (targetStep === undefined) {
+    return {
+      kind: "rejected",
+      reason: "target-step-not-found",
+      stepId,
+    }
+  }
+
+  if (targetStep.type !== "WRITE") {
+    return {
+      kind: "rejected",
+      reason: "target-step-not-write",
+      stepId,
+    }
+  }
+
+  if (targetStep.sortOrder >= step.sortOrder) {
+    return {
+      kind: "rejected",
+      reason: "target-step-not-before-feedback",
+      stepId,
+    }
+  }
+
   return {
     kind: "accepted",
     step,
+    targetStep,
   }
 }

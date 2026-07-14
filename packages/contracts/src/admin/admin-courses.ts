@@ -10,6 +10,7 @@ import {
   lessonIdSchema,
   lessonStepDtoSchema,
   unitIdSchema,
+  validateAiFeedbackTargets,
 } from "@workspace/contracts/content"
 
 export const adminCourseStepDtoSchema = z.object({
@@ -93,6 +94,7 @@ export const adminCourseEditorLessonSchema = z
   })
   .superRefine((lesson, context) => {
     validateContiguousSortOrders(lesson.steps, context)
+    validateAiFeedbackTargets(lesson.steps, context)
   })
 export const adminCourseEditorUnitSchema = z
   .object({

@@ -52,7 +52,7 @@ const stepContents = [
     score: 1,
     scoreMax: 5,
     showScore: true,
-    target: "대상",
+    target: "step-7",
     type: "AI_FEEDBACK",
   },
   {

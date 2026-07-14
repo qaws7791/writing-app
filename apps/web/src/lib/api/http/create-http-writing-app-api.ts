@@ -73,7 +73,6 @@ export function createHttpWritingAppApi({
       return mapApiResult(
         await client.requestJson<ApiAiFeedbackResponse>({
           body: {
-            answer: input.answer,
             lessonId: input.lessonId,
             stepId: input.stepId,
           },

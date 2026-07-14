@@ -61,7 +61,6 @@ describe("레슨 세션 effect Adapter", () => {
 
     await expect(
       effects.requestAiFeedback({
-        answer: "답안",
         idempotencyKey: "same-key",
         stepId: "step-1",
       })

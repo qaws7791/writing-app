@@ -84,7 +84,6 @@ export function useLessonSession({
   const sessionStateRef = useRef(sessionState)
   const answerRequestIdRef = useRef(0)
   const aiFeedbackRequestRef = useRef<{
-    readonly answer: string
     readonly idempotencyKey: string
     readonly stepId: string
   } | null>(null)
@@ -234,17 +233,15 @@ export function useLessonSession({
 
   const requestAiFeedback = useCallback(
     async ({
-      answer,
       stepId,
     }: LessonAiFeedbackRequest): Promise<LessonAiFeedbackOutcome> => {
       const previousRequest = aiFeedbackRequestRef.current
       const idempotencyKey =
-        previousRequest?.answer === answer && previousRequest.stepId === stepId
+        previousRequest?.stepId === stepId
           ? previousRequest.idempotencyKey
           : crypto.randomUUID()
-      aiFeedbackRequestRef.current = { answer, idempotencyKey, stepId }
+      aiFeedbackRequestRef.current = { idempotencyKey, stepId }
       const result = await effects.requestAiFeedback({
-        answer,
         idempotencyKey,
         stepId,
       })

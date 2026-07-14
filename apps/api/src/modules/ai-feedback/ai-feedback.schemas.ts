@@ -1,8 +1,7 @@
 import {
-  aiFeedbackAnswerMaxLength,
   aiFeedbackIdempotencyKeySchema,
   aiFeedbackResultDtoSchema,
-  createAiFeedbackCommandSchema,
+  createAiFeedbackRequestCommandSchema,
 } from "@workspace/contracts/ai-feedback"
 import {
   lessonIdSchema,
@@ -12,7 +11,6 @@ import { learnerIdSchema } from "@workspace/contracts/learning"
 import { z } from "@workspace/hono/zod"
 
 export const createFeedbackBodySchema = z.object({
-  answer: z.string().trim().min(1).max(aiFeedbackAnswerMaxLength),
   lessonId: lessonIdSchema,
   stepId: lessonStepIdSchema,
 })
@@ -23,6 +21,6 @@ export const createFeedbackHeadersSchema = z.object({
 
 export {
   aiFeedbackResultDtoSchema,
-  createAiFeedbackCommandSchema,
+  createAiFeedbackRequestCommandSchema,
   learnerIdSchema,
 }

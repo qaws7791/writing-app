@@ -1042,7 +1042,8 @@
                                 "enum": ["AI_FEEDBACK"]
                               },
                               "target": {
-                                "type": "string"
+                                "type": "string",
+                                "minLength": 1
                               },
                               "focus": {
                                 "type": "string"
@@ -1903,11 +1904,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "answer": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 20000
-                  },
                   "lessonId": {
                     "type": "string",
                     "minLength": 1
@@ -1917,7 +1913,7 @@
                     "minLength": 1
                   }
                 },
-                "required": ["answer", "lessonId", "stepId"]
+                "required": ["lessonId", "stepId"]
               }
             }
           }
@@ -2040,7 +2036,7 @@
             }
           },
           "409": {
-            "description": "동일한 AI 코칭 요청을 처리 중입니다.",
+            "description": "AI 코칭 요청 상태가 충돌합니다.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2051,6 +2047,16 @@
           },
           "429": {
             "description": "AI 코칭 시도 횟수를 모두 사용했습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "AI 코칭 콘텐츠 설정이 올바르지 않습니다.",
             "content": {
               "application/json": {
                 "schema": {

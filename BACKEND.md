@@ -211,7 +211,7 @@ DB 테이블과 컬럼 명명 규칙은 `docs/engineering/schema-conventions.md`
 
 DB migration은 피벗 기간 동안 누적 보정 migration이 아니라 `0000-writing-app-baseline.sql` 기준 새 baseline으로 관리한다. 운영 데이터 이전이 필요하면 별도 이전 계획을 작성하고 이 baseline 구현에 호환 adapter를 넣지 않는다.
 
-AI 피드백은 `packages/core`의 OpenAI provider adapter가 OpenAI Responses API와 Structured Outputs를 호출하고, core AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. 한국어 글쓰기 코칭 지침과 입력 프롬프트 조립은 `packages/core/src/ai-feedback/ai-feedback.prompt.ts`의 prompt policy가 단일 출처다. 완료 시도 한도는 `packages/core/src/ai-feedback/ai-feedback-attempt-policy.ts`의 attempt policy로 명시하고, core 런타임 factory가 기본 정책을 서비스에 주입한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
+AI 피드백은 `packages/core`의 OpenAI provider adapter가 OpenAI Responses API와 Structured Outputs를 호출하고, core AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. `AI_FEEDBACK.target`은 같은 레슨의 앞선 WRITE 스텝만 허용하며, seed 변환과 콘텐츠·어드민 계약에서 이 참조 무결성을 검증한다. 클라이언트 요청은 답변 본문을 받지 않고 레슨 ID와 AI 코칭 스텝 ID만 받는다. core 서비스는 로그인한 사용자와 target 스텝으로 저장된 WRITE 답변을 조회해 제공자 입력의 단일 출처로 사용한다. 학습자 API CORS는 실제 요청이 사용하는 `Authorization`, `Content-Type`, `Idempotency-Key` 헤더를 명시적으로 허용한다. 한국어 글쓰기 코칭 지침과 입력 프롬프트 조립은 `packages/core/src/ai-feedback/ai-feedback.prompt.ts`의 prompt policy가 단일 출처다. 완료 시도 한도는 `packages/core/src/ai-feedback/ai-feedback-attempt-policy.ts`의 attempt policy로 명시하고, core 런타임 factory가 기본 정책을 서비스에 주입한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
 
 학습 진행 read model 정책은 `packages/core/src/learning/learning-progress-read-model.ts`가 단일 출처다. 첫 미완료 레슨만 `available`로 열고 이후 레슨을 `locked`로 두는 규칙, 완료율 계산, 다음 레슨 projection은 API route가 아니라 core learning interface에서 계산한다.
 

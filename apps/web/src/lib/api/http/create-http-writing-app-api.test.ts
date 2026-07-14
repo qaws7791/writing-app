@@ -162,7 +162,6 @@ describe("HTTP WritingAppApi", () => {
     })
     await expect(
       api.createAiFeedback({
-        answer: "나의 답변",
         idempotencyKey: "feedback-request-1",
         lessonId: "l1",
         stepId: "s2",
@@ -188,7 +187,6 @@ describe("HTTP WritingAppApi", () => {
       },
       null,
       {
-        answer: "나의 답변",
         lessonId: "l1",
         stepId: "s2",
       },

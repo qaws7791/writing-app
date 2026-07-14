@@ -1029,7 +1029,6 @@ export interface operations {
     requestBody: {
       content: {
         "application/json": {
-          answer: string
           lessonId: string
           stepId: string
         }
@@ -1090,7 +1089,7 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"]
         }
       }
-      /** @description 동일한 AI 코칭 요청을 처리 중입니다. */
+      /** @description AI 코칭 요청 상태가 충돌합니다. */
       409: {
         headers: {
           [name: string]: unknown
@@ -1101,6 +1100,15 @@ export interface operations {
       }
       /** @description AI 코칭 시도 횟수를 모두 사용했습니다. */
       429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"]
+        }
+      }
+      /** @description AI 코칭 콘텐츠 설정이 올바르지 않습니다. */
+      500: {
         headers: {
           [name: string]: unknown
         }
