@@ -54,7 +54,6 @@
 
 ## 결과
 
-- `docs/design/design-system-migration.md`를 Phase 0부터 Phase 7까지의 실행 기준으로 둔다.
 - PR 템플릿은 디자인 시스템 변경 체크리스트를 포함한다.
 - `packages/ui` token은 호환 alias를 유지한 채 reference, semantic, component token으로 재편한다.
 - 앱 migration은 pilot 화면 단위로 진행하고 전체 admin CSS를 한 번에 삭제하지 않는다.
@@ -76,7 +75,6 @@ bun run lint
 
 ## 관련 문서
 
-- `docs/design/design-system-migration.md`
 - `docs/design/foundations.md`
 - `docs/design/components.md`
 - `docs/design/accessibility.md`
