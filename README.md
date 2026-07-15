@@ -135,6 +135,7 @@ bun run check:api-contract
 bun run check:document-drift
 bun run check:workspace-inventory
 bun run check:deployment-config
+bun run test:deployment-images
 bun run format:check
 bun run lint
 bun run typecheck
@@ -143,7 +144,7 @@ bun run build
 bun lefthook run pre-commit
 ```
 
-`check:deployment-config`는 임시 production fixture로 Compose 계약을 해석하고 고정된 Caddy와 Litestream image에서 설정을 검사하므로 실행 중인 Docker daemon이 필요하다. Ansible lint와 syntax 검사는 Linux 또는 WSL2에서 의존성을 설치한 뒤 `bun run check:deployment-ansible`로 실행한다. 자세한 준비 절차는 [배포 문서](docs/engineering/deployment.md)를 따른다.
+`check:deployment-config`는 임시 production fixture로 Compose 계약을 해석하고 고정된 Caddy와 Litestream image에서 설정을 검사한다. `test:deployment-images`는 네 production image를 `linux/amd64`로 빌드하고 비 root 실행, health와 Next.js 정적 자산을 smoke 검증한다. 두 명령 모두 실행 중인 Docker daemon이 필요하다. Ansible lint와 syntax 검사는 Linux 또는 WSL2에서 의존성을 설치한 뒤 `bun run check:deployment-ansible`로 실행한다. 자세한 준비 절차는 [배포 문서](docs/engineering/deployment.md)를 따른다.
 
 OpenAPI 계약과 웹 생성 타입을 갱신해야 할 때:
 

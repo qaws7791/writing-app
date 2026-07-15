@@ -5,7 +5,7 @@
 ## 구현 상태
 
 - 기준일: 2026-07-16
-- 상태: Compose·Caddy·Litestream·Ansible 검증 CI 편입 완료; Ubuntu CI 결과 확인과 image·통합 검증 필요
+- 상태: 배포 구성과 production image smoke CI 편입 완료; Ubuntu CI 결과 확인과 호스트 통합 검증 필요
 - 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible
 - 후속 범위: OpenTofu, cloud-init, GitHub Actions 배포 자동화
 - 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
@@ -112,6 +112,14 @@ docker build -f deploy/docker/admin-api.dockerfile -t "$REGISTRY/writing-app-adm
 
 web과 admin 이미지는 Dockerfile에 선언된 공개 URL build argument를 운영 origin으로 명시해야 한다. 기본 `.test` 값으로 만든 이미지는 운영에 배포하지 않는다.
 
+네 Dockerfile의 실제 build와 runtime smoke는 다음 canonical 명령으로 실행한다.
+
+```sh
+bun run test:deployment-images
+```
+
+이 명령은 Buildx로 네 image를 `linux/amd64` 대상의 task 전용 local tag로 빌드한다. image 설정과 실제 container UID가 모두 `10001`인지, 네 `/health` route가 응답하는지, web의 `public`과 web·admin의 `.next/static` 파일이 존재하는지 확인한다. host port를 공개하지 않고 `--network none`으로 실행하며 API에만 disposable SQLite 디렉터리를 연결한다. 성공·실패와 관계없이 이 task가 만든 container, image와 임시 데이터를 정리한다.
+
 ## Ansible 실행
 
 Ansible 제어 노드는 Linux 또는 WSL2를 사용한다. `infra/ansible/inventories/production/hosts.example.yaml`을 `hosts.yaml`로, `group_vars/all.example.yaml`을 `all.yaml`로, `group_vars/vault.example.yaml`을 `vault.yaml`로 복사한다. `all.yaml`의 비민감 변수를 환경에 맞게 수정하고 `vault.yaml`은 실제 값을 넣은 뒤 Ansible Vault로 암호화한다. 애플리케이션 image reference는 registry에 push한 뒤 확인한 `@sha256:` digest를 사용한다.
@@ -158,4 +166,4 @@ ansible-playbook playbooks/restore.yaml -e writing_app_allow_database_restore=tr
 - 실패한 신규 배포를 직전 정상 image reference로 되돌릴 수 있다.
 - Litestream 복제본에서 별도 경로로 복구하고 SQLite 무결성 검증을 통과한다.
 
-로컬 Windows 환경에서는 임시 fixture의 Compose 정적 해석과 계약 unit test를 검증했다. Docker daemon이 실행되지 않아 이번 변경의 Caddy·Litestream 컨테이너 검증은 로컬에서 실행할 수 없었으며 새 Ubuntu CI job의 결과 확인이 필요하다. Docker image build, Ansible lint·syntax와 두 번째 실행의 멱등성 검증도 Linux 제어 노드와 Ubuntu 24.04 대상 호스트에서 추가로 수행해야 한다.
+로컬 Windows 환경에서는 Compose 계약, image smoke 명령 조립·격리·비 root 판정 unit test를 검증했다. Docker daemon이 실행되지 않아 Caddy·Litestream 설정과 실제 네 image build·runtime smoke는 새 Ubuntu CI 결과 확인이 필요하다. Ansible lint·syntax와 두 번째 실행의 멱등성 검증도 Linux 제어 노드와 Ubuntu 24.04 대상 호스트에서 추가로 수행해야 한다.

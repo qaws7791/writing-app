@@ -8,6 +8,7 @@ interface RootPackageManifest {
     readonly "check:deployment-ansible"?: string
     readonly "check:deployment-config"?: string
     readonly lint?: string
+    readonly "test:deployment-images"?: string
   }
 }
 
@@ -62,7 +63,7 @@ describe("정적 검증 Interface", () => {
     )
     const deploymentChecks = workflow.slice(
       workflow.indexOf("  deployment-config:"),
-      workflow.indexOf("  tests:")
+      workflow.indexOf("  deployment-images:")
     )
 
     expect(manifest.scripts?.["check:deployment-config"]).toBe(
@@ -81,5 +82,25 @@ describe("정적 검증 Interface", () => {
     expect(deploymentChecks).toContain(
       "ansible-galaxy collection install -r infra/ansible/requirements.yaml"
     )
+  })
+
+  test("production image CI는 root smoke 명령과 Buildx를 사용한다", () => {
+    const manifest = JSON.parse(
+      readFileSync(path.join(repositoryRoot, "package.json"), "utf8")
+    ) as RootPackageManifest
+    const workflow = readFileSync(
+      path.join(repositoryRoot, ".github", "workflows", "quality-gates.yml"),
+      "utf8"
+    )
+    const imageChecks = workflow.slice(
+      workflow.indexOf("  deployment-images:"),
+      workflow.indexOf("  tests:")
+    )
+
+    expect(manifest.scripts?.["test:deployment-images"]).toBe(
+      "bun scripts/test-deployment-images.ts"
+    )
+    expect(imageChecks).toContain("uses: docker/setup-buildx-action@v3")
+    expect(imageChecks).toContain("- run: bun run test:deployment-images")
   })
 })
