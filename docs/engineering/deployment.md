@@ -5,9 +5,9 @@
 ## 구현 상태
 
 - 기준일: 2026-07-16
-- 상태: 배포 검증, GHCR release·취약점 차단과 base·운영 image digest 고정 구현 완료; 새 CI 결과 확인 필요
+- 상태: 배포 검증, GHCR candidate 검사·release 승격, image lock과 보존 정책 구현 완료; 권한·CI 결과 확인 필요
 - 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible, GitHub Actions image release
-- 후속 범위: registry 보존 정책, OpenTofu, cloud-init, 승인형 배포 자동화
+- 후속 범위: 승인형 candidate 정리, OpenTofu, cloud-init, 승인형 배포 자동화
 - 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
 
 ## 배포 기준
@@ -137,7 +137,13 @@ workflow는 `GITHUB_TOKEN`의 `packages: write`, attestation용 `attestations: w
 
 검사 예외의 단일 진실 원천은 `deploy/security/image-vulnerability-policy.json`이다. 기본 예외는 0건이다. 예외에는 CVE 또는 GHSA 식별자, 정확한 package 이름, 대상 service, 20자 이상의 사유, GitHub 사용자·팀 owner와 `YYYY-MM-DD` 만료일이 모두 필요하다. 만료일 다음 날부터 preflight가 실패한다. workflow는 이 정책을 service별 최소 Grype 설정으로 변환하고 정책 digest를 image label, digest record와 최종 manifest에 기록한다.
 
-검사 전에 candidate image가 GHCR에 push되므로 취약점 실패 image가 registry에 남을 수는 있지만, attestation과 배포 manifest가 없어 승인된 배포 입력으로 사용할 수 없다. 실패 candidate를 포함한 registry 보존·정리 정책은 아직 구현 전이다. 새 workflow의 실제 GHCR 게시, 스캔, attestation과 artifact 결과도 `main` 반영 후 확인해야 하므로 이 항목들이 끝나기 전에는 컨테이너 공급망 전체가 완료된 것으로 보지 않는다.
+workflow는 먼저 `candidate-<revision>-<run id>-<attempt>` tag로 image를 게시한다. 정확한 digest의 취약점 검사를 통과한 뒤에만 같은 digest에 `sha-<revision>-<공개 설정 digest>` release tag를 추가하고 attestation과 배포 manifest를 만든다. 따라서 실패 image는 candidate tag만 가지며 승인된 배포 입력으로 사용할 수 없다. 새 workflow의 실제 GHCR 게시, 스캔, 승격, attestation과 artifact 결과는 `main` 반영 후 확인해야 한다.
+
+## GHCR 보존과 정리
+
+`deploy/security/registry-retention-policy.json`은 candidate-only version을 최소 7일 보존하고 release tag가 있거나 tag가 없는 version은 자동 삭제하지 않는다. untagged version에는 SBOM·provenance·attestation 같은 OCI referrer가 포함될 수 있고, release version은 현재 또는 rollback 배포에서 사용 중일 수 있기 때문이다. `bun run check:registry-retention-policy`가 이 fail-safe 경계를 root lint에서 검증한다.
+
+현재 자동 삭제는 비활성화했다. GitHub Packages REST 삭제는 package admin 권한이 필요하고 Actions의 삭제·복구 지원이 public preview이므로, 저장소 소유자가 네 GHCR package의 workflow admin 권한과 복구 절차를 확인하기 전에는 실행 workflow를 추가하지 않는다. 후속 승인형 정리는 API가 반환한 package version 중 7일이 지난 candidate tag만 가진 항목을 plan으로 출력하고, production environment 승인 뒤 version ID를 삭제해야 한다. release tag 또는 untagged version을 삭제 범위로 넓히려면 실제 배포 digest 기록과 rollback 보존 수를 먼저 연결한다.
 
 ## Base와 운영 image lock
 

@@ -59,7 +59,7 @@ describe("production image release workflow", () => {
     expect(workflow).toContain("push: true")
     expect(workflow).toContain("platforms: linux/amd64")
     expect(workflow).toContain(
-      "type=raw,value=${{ needs.release-preflight.outputs.release-tag }}"
+      "type=raw,value=candidate-${{ github.event.workflow_run.head_sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
     )
     expect(workflow).toContain(
       "org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}"
@@ -111,10 +111,15 @@ describe("production image release workflow", () => {
     const build = workflow.indexOf("id: build")
     const scan = workflow.indexOf("id: vulnerability-scan")
     const attest = workflow.indexOf("name: GitHub artifact attestation 게시")
+    const promote = workflow.indexOf(
+      "name: 검사 통과 digest를 release tag로 승격"
+    )
     const record = workflow.indexOf("name: Image digest record 생성")
     expect(build).toBeGreaterThan(-1)
     expect(scan).toBeGreaterThan(build)
     expect(attest).toBeGreaterThan(scan)
+    expect(promote).toBeGreaterThan(scan)
+    expect(attest).toBeGreaterThan(promote)
     expect(record).toBeGreaterThan(scan)
   })
 

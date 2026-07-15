@@ -121,7 +121,7 @@ jobs:
         with:
           images: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ needs.release-preflight.outputs.release-tag }}
+            type=raw,value=candidate-${{ github.event.workflow_run.head_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           labels: |
             org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
             io.writing-app.configuration-digest=${{ needs.release-preflight.outputs.configuration-digest }}
@@ -174,6 +174,11 @@ jobs:
           path: output/vulnerability-reports/${{ matrix.service }}.json
           if-no-files-found: error
           retention-days: 90
+      - name: 검사 통과 digest를 release tag로 승격
+        run: >-
+          docker buildx imagetools create
+          --tag ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}:${{ needs.release-preflight.outputs.release-tag }}
+          ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}@${{ steps.build.outputs.digest }}
       - name: GitHub artifact attestation 게시
         uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
         with:

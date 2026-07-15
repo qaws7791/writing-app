@@ -6,7 +6,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 최초 배포 대상: Ubuntu `24.04 LTS`, `linux/amd64`
-- 상태: 변경 단위 2 완료, 변경 단위 3 CI 결과 확인 대기, 변경 단위 4 GHCR release·취약점 차단·image lock 구현 완료; registry 보존 정책 미완료
+- 상태: 변경 단위 2 완료, 변경 단위 3 CI 결과 확인 대기, 변경 단위 4 release·취약점 차단·image lock·보존 정책 구현 완료; GitHub package 권한과 실제 CI 결과 확인 필요
 - 기준 배포 구조: 단일 Ubuntu 서버, Docker Compose, Caddy, Cloudflare Tunnel, Litestream, Cloudflare R2, Ansible
 
 ## 목적
@@ -83,19 +83,19 @@ GitHub에서 저장소를 처음 발견한 사람이 `README.md`에서 프로젝
 
 ## 확인된 현재 상태와 격차
 
-| 영역        | 현재 상태                                                                              | 목표와의 격차                                                                            |
-| ----------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| README      | 제품 상태, clone, 한 번의 setup, 검증과 배포 진입점을 제공한다.                        | 화면 자료, 문제 해결 표, 라이선스와 지원·release 정책 보강이 필요하다.                   |
-| 로컬 setup  | env credential 생성, setup, doctor와 멱등성 fixture가 구현됐다.                        | Ubuntu CI 결과 확인과 실제 네 서비스 startup smoke 연결이 필요하다.                      |
-| 컨테이너    | 네 image의 GHCR 게시·취약점 차단·attestation과 base·운영 image digest lock이 구현됐다. | 실제 CI 결과 확인과 registry 보존·정리 정책이 필요하다.                                  |
-| Compose     | 전체 서비스와 임시 production fixture 기반 계약 검사가 있다.                           | 실제 image를 함께 기동하는 route·데이터 통합 smoke와 실패 주입 검증이 없다.              |
-| Ansible     | lint·syntax와 disposable Ubuntu bootstrap 멱등성 CI가 연결됐다.                        | CI 결과 확인, 실제 digest를 사용한 deploy 멱등성, 실패 주입과 복구 통합 검증이 없다.     |
-| 인프라      | 운영 구조와 지원 OS가 문서에 정의되어 있다.                                            | VM, firewall, SSH, DNS와 최초 host 준비를 생성하는 OpenTofu·cloud-init이 없다.           |
-| CI          | 앱 품질 게이트 뒤 exact SHA image release와 digest 집계를 실행한다.                    | 새 workflow 결과 확인, environment 승인과 CD workflow가 없다.                            |
-| 비밀값      | Ansible Vault 예시와 root 소유 환경 파일 정책이 있다.                                  | 초기 생성, 전달, rotation, CI 사용 경계와 운영자 절차가 하나의 계약으로 정리되지 않았다. |
-| 백업·롤백   | SQLite snapshot, Litestream/R2, rollback/restore 절차가 있다.                          | 실제 Ubuntu와 실제 R2 호환 endpoint에서 주기적으로 복구한 증거가 없다.                   |
-| 관측성      | 구조화 API 요청 로그와 이벤트 계약이 있다.                                             | 로그 수집기, metric backend, dashboard와 alert manager가 없다.                           |
-| 공개 저장소 | 코드와 엔지니어링 문서가 공개 사용을 전제로 탐색 가능하다.                             | LICENSE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT와 release 정책이 없다.                  |
+| 영역        | 현재 상태                                                                                   | 목표와의 격차                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| README      | 제품 상태, clone, 한 번의 setup, 검증과 배포 진입점을 제공한다.                             | 화면 자료, 문제 해결 표, 라이선스와 지원·release 정책 보강이 필요하다.                   |
+| 로컬 setup  | env credential 생성, setup, doctor와 멱등성 fixture가 구현됐다.                             | Ubuntu CI 결과 확인과 실제 네 서비스 startup smoke 연결이 필요하다.                      |
+| 컨테이너    | GHCR candidate 검사·release 승격, attestation, image lock과 fail-safe 보존 정책이 구현됐다. | 실제 CI 결과, package admin 권한과 승인형 candidate 삭제 실행 확인이 필요하다.           |
+| Compose     | 전체 서비스와 임시 production fixture 기반 계약 검사가 있다.                                | 실제 image를 함께 기동하는 route·데이터 통합 smoke와 실패 주입 검증이 없다.              |
+| Ansible     | lint·syntax와 disposable Ubuntu bootstrap 멱등성 CI가 연결됐다.                             | CI 결과 확인, 실제 digest를 사용한 deploy 멱등성, 실패 주입과 복구 통합 검증이 없다.     |
+| 인프라      | 운영 구조와 지원 OS가 문서에 정의되어 있다.                                                 | VM, firewall, SSH, DNS와 최초 host 준비를 생성하는 OpenTofu·cloud-init이 없다.           |
+| CI          | 앱 품질 게이트 뒤 exact SHA image release와 digest 집계를 실행한다.                         | 새 workflow 결과 확인, environment 승인과 CD workflow가 없다.                            |
+| 비밀값      | Ansible Vault 예시와 root 소유 환경 파일 정책이 있다.                                       | 초기 생성, 전달, rotation, CI 사용 경계와 운영자 절차가 하나의 계약으로 정리되지 않았다. |
+| 백업·롤백   | SQLite snapshot, Litestream/R2, rollback/restore 절차가 있다.                               | 실제 Ubuntu와 실제 R2 호환 endpoint에서 주기적으로 복구한 증거가 없다.                   |
+| 관측성      | 구조화 API 요청 로그와 이벤트 계약이 있다.                                                  | 로그 수집기, metric backend, dashboard와 alert manager가 없다.                           |
+| 공개 저장소 | 코드와 엔지니어링 문서가 공개 사용을 전제로 탐색 가능하다.                                  | LICENSE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT와 release 정책이 없다.                  |
 
 ## 필수 사용자 입력 계약
 
@@ -256,7 +256,9 @@ Linux 전용 `check:deployment-ansible`은 전체 `ansible-lint`와 저장소의
 
 `deploy/security/container-image-lock.json`은 Bun·Node base와 Caddy·Cloudflared·Litestream 운영 image의 tag, registry index digest와 `linux/amd64` 검증일을 기록한다. Dockerfile, Ansible 기본값과 배포 fixture의 tag-only 회귀는 root lint에서 거부한다. 같은 tag의 digest를 암묵적으로 따라가지 않고 월간·보안 공지 갱신 PR에서 manifest 조회, image smoke와 취약점 검사를 다시 수행한다.
 
-Windows에서 metadata, 취약점 정책, container image lock과 workflow contract unit test를 통과했다. 실제 GHCR package 게시, Grype DB 기반 검사, SBOM·provenance·attestation과 새 base digest build는 workflow가 기본 branch에 반영된 뒤 결과 확인이 필요하다. registry 보존·정리 정책은 다음 하위 작업으로 남아 있다.
+release workflow는 run별 candidate tag로 먼저 게시하고 Grype 검사를 통과한 같은 digest에만 release tag, attestation과 manifest를 부여한다. 보존 정책은 최소 7일이 지난 candidate-only version만 정리 후보로 선택하며 release와 untagged OCI referrer 자동 삭제를 금지한다. GitHub Packages REST 삭제는 package admin 권한이 필요하고 Actions 지원이 public preview이므로 실제 삭제 workflow는 저장소 소유자의 권한·복구 확인과 production environment 승인 뒤 연결한다.
+
+Windows에서 metadata, 취약점 정책, container image lock, registry 보존과 workflow contract unit test를 통과했다. 실제 GHCR package 게시, Grype DB 기반 검사, release tag 승격, SBOM·provenance·attestation과 새 base digest build는 workflow가 기본 branch에 반영된 뒤 결과 확인이 필요하다.
 
 ### 완료 조건
 

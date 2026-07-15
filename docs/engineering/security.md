@@ -137,7 +137,8 @@
 - 게시된 정확한 image digest를 Grype `0.110.0`으로 검사하고 수정 가능 여부와 무관하게 `HIGH` 이상 취약점을 차단한다. 스캔 또는 보고서 생성 실패도 fail-closed로 처리하며, 실패 image는 attestation·digest record·배포 manifest에 포함하지 않는다.
 - 취약점 예외는 CVE·GHSA 식별자, package, 대상 service, 구체적인 사유, GitHub owner와 만료일이 있는 검증된 정책만 허용한다. 만료된 예외와 중복 예외는 release preflight에서 거부한다.
 - Bun·Node base와 Caddy·Cloudflared·Litestream 운영 image는 tag와 registry manifest digest를 함께 고정한다. 중앙 lock과 실제 사용 경로의 drift는 root lint에서 거부하며, 갱신 때 `linux/amd64` manifest와 후속 취약점 검사를 다시 확인한다.
-- 취약점 검사 실패 candidate의 registry 보존·정리 정책은 아직 구현 전이다.
+- image는 candidate tag로 먼저 게시하고 취약점 검사를 통과한 digest에만 release tag와 attestation을 부여한다. 7일이 지난 candidate-only version만 향후 정리 대상으로 분류하며 release tag와 untagged OCI referrer는 자동 삭제하지 않는다.
+- GitHub Packages 삭제 자동화는 package admin 권한, public preview API와 복구 절차를 저장소 소유자가 확인한 뒤 production environment 승인 경계에서만 활성화한다.
 
 ## 브라우저 보안
 
