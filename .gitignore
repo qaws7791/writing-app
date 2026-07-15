@@ -56,5 +56,7 @@ docs/.obsidian/
 
 # secret credentials
 /credentials
+/infra/ansible/inventories/*/hosts.yaml
+/infra/ansible/inventories/*/group_vars/vault.yaml
 
 /Kwep

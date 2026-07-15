@@ -1,0 +1,45 @@
+---
+- name: Writing App 코드 롤백
+  hosts: writing_app
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../vars/defaults.yaml
+  tasks:
+    - name: 코드 롤백 승인 확인
+      ansible.builtin.assert:
+        that:
+          - writing_app_allow_code_rollback | default(false) | bool
+        fail_msg: writing_app_allow_code_rollback=true를 명시해야 합니다.
+
+    - name: 직전 Compose 환경 파일 확인
+      ansible.builtin.stat:
+        path: "{{ writing_app_compose_directory }}/.env.previous"
+      register: writing_app_previous_compose_environment
+
+    - name: 직전 배포 존재 확인
+      ansible.builtin.assert:
+        that:
+          - writing_app_previous_compose_environment.stat.exists
+        fail_msg: 롤백할 직전 Compose 환경 파일이 없습니다.
+
+    - name: 직전 image reference 복구
+      ansible.builtin.copy:
+        src: "{{ writing_app_compose_directory }}/.env.previous"
+        dest: "{{ writing_app_compose_directory }}/.env"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0640"
+
+    - name: 직전 서비스 기동
+      community.docker.docker_compose_v2:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        pull: missing
+        state: present
+        wait: true
+        wait_timeout: 120

@@ -1,0 +1,325 @@
+name: writing-app
+
+services:
+  web:
+    image: ${WEB_IMAGE:?WEB_IMAGE가 필요합니다}
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/web.env
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    networks:
+      - learner
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:3000/health').then((response)=>{
+          if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  api:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/api.env
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+    networks:
+      - learner
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - >-
+          fetch('http://127.0.0.1:4000/health').then((response)=>{
+          if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  admin:
+    image: ${ADMIN_IMAGE:?ADMIN_IMAGE가 필요합니다}
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/admin.env
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    networks:
+      - admin
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:3001/health').then((response)=>{
+          if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  admin-api:
+    image: ${ADMIN_API_IMAGE:?ADMIN_API_IMAGE가 필요합니다}
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/admin-api.env
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+    networks:
+      - admin
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - >-
+          fetch('http://127.0.0.1:4001/health').then((response)=>{
+          if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  caddy:
+    image: ${CADDY_IMAGE:?CADDY_IMAGE가 필요합니다}
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/caddy.env
+    command:
+      - caddy
+      - run
+      - --config
+      - /etc/caddy/caddyfile
+      - --adapter
+      - caddyfile
+    restart: unless-stopped
+    stop_grace_period: 10s
+    volumes:
+      - type: bind
+        source: ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/caddyfile
+        target: /etc/caddy/caddyfile
+        read_only: true
+    networks:
+      - edge
+      - learner
+      - admin
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
+      admin-api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - -O
+        - "-"
+        - http://127.0.0.1:8080/healthz
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  cloudflared:
+    image: ${CLOUDFLARED_IMAGE:?CLOUDFLARED_IMAGE가 필요합니다}
+    user: "65532:65532"
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token-file
+      - /run/secrets/cloudflare-tunnel-token
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      - type: bind
+        source: >-
+          ${SECRETS_DIRECTORY:?SECRETS_DIRECTORY가 필요합니다}/cloudflare-tunnel-token
+        target: /run/secrets/cloudflare-tunnel-token
+        read_only: true
+    networks:
+      - edge
+    depends_on:
+      caddy:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  litestream:
+    image: ${LITESTREAM_IMAGE:?LITESTREAM_IMAGE가 필요합니다}
+    user: "10001:10001"
+    command:
+      - replicate
+      - -config
+      - /etc/litestream.yaml
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/litestream.env
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      - type: bind
+        source: ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/litestream.yaml
+        target: /etc/litestream.yaml
+        read_only: true
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+    networks:
+      - backup
+    depends_on:
+      api:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  database-restore:
+    image: ${LITESTREAM_IMAGE:?LITESTREAM_IMAGE가 필요합니다}
+    user: "10001:10001"
+    profiles:
+      - operations
+    command:
+      - restore
+      - -config
+      - /etc/litestream.yaml
+      - -if-db-not-exists
+      - -if-replica-exists
+      - /var/lib/writing-app/api.sqlite
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/litestream.env
+    volumes:
+      - type: bind
+        source: ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/litestream.yaml
+        target: /etc/litestream.yaml
+        read_only: true
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+    networks:
+      - backup
+    restart: "no"
+
+  database-migrate:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    profiles:
+      - operations
+    working_dir: /workspace
+    command:
+      - bun
+      - --filter
+      - "@workspace/db"
+      - db:migrate
+    environment:
+      DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      NODE_ENV: production
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+    network_mode: none
+    restart: "no"
+
+  database-check:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    profiles:
+      - operations
+    command:
+      - bun
+      - -e
+      - >-
+        import { Database } from 'bun:sqlite';
+        const database = new Database(
+          '/var/lib/writing-app/api.sqlite', { readonly: true }
+        );
+        const result = database.query('PRAGMA integrity_check').values();
+        database.close();
+        if (result.length !== 1 || result[0]?.[0] !== 'ok') {
+          console.error(result);
+          process.exit(1);
+        }
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+        read_only: true
+    network_mode: none
+    restart: "no"
+
+  database-backup:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    profiles:
+      - operations
+    working_dir: /workspace
+    entrypoint:
+      - bun
+      - packages/db/src/scripts/backup-database.ts
+    environment:
+      DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      NODE_ENV: production
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+        read_only: true
+      - type: bind
+        source: ${BACKUP_DIRECTORY:?BACKUP_DIRECTORY가 필요합니다}
+        target: /var/backups/writing-app
+    network_mode: none
+    restart: "no"
+
+networks:
+  edge:
+  learner:
+  admin:
+  backup:

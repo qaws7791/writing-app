@@ -1,0 +1,49 @@
+# syntax=docker/dockerfile:1
+
+FROM oven/bun:1.3.10 AS builder
+
+WORKDIR /workspace
+
+ENV CI=true
+
+COPY . .
+
+RUN bun install --filter @workspace/web --linker isolated --frozen-lockfile
+
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG WEB_API_BASE_URL
+ARG WEB_ORIGIN
+ARG CSP_REPORT_ONLY=false
+
+ENV NODE_ENV=production \
+    NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} \
+    WEB_API_BASE_URL=${WEB_API_BASE_URL} \
+    WEB_ORIGIN=${WEB_ORIGIN} \
+    CSP_REPORT_ONLY=${CSP_REPORT_ONLY} \
+    ENABLE_TEST_AUTH=false
+
+RUN test -n "$NEXT_PUBLIC_API_BASE_URL" \
+    && test -n "$WEB_API_BASE_URL" \
+    && test -n "$WEB_ORIGIN"
+RUN bun --filter @workspace/web build
+
+FROM node:24-bookworm-slim AS runner
+
+RUN groupadd --system --gid 10001 writing-app \
+    && useradd --system --uid 10001 --gid 10001 writing-app
+
+WORKDIR /workspace
+
+ENV NODE_ENV=production \
+    HOSTNAME=0.0.0.0 \
+    PORT=3000
+
+COPY --from=builder --chown=10001:10001 /workspace/apps/web/.next/standalone ./
+COPY --from=builder --chown=10001:10001 /workspace/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=10001:10001 /workspace/apps/web/public ./apps/web/public
+
+USER 10001:10001
+
+EXPOSE 3000
+
+CMD ["node", "apps/web/server.js"]

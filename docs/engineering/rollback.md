@@ -27,13 +27,15 @@
 ## 코드 롤백
 
 1. 현재 배포 버전과 직전 정상 버전을 확인한다.
-2. systemd 서비스 상태와 로그를 확인한다.
-3. 직전 정상 artifact 또는 commit으로 되돌린다.
-4. 프로세스를 재시작한다.
+2. `docker compose ps`와 `docker compose logs`로 서비스 상태와 로그를 확인한다.
+3. Ansible rollback playbook에 직전 정상 image reference와 명시적 승인 변수를 전달한다.
+4. Compose가 직전 이미지로 컨테이너를 다시 생성할 때까지 기다린다.
 5. health check를 확인한다.
 6. 학습자 로그인, 코스 조회, 레슨 조회, 진행 저장을 smoke test한다.
 7. 어드민 로그인, 목록 조회, 설정 조회를 smoke test한다.
 8. 자료실 트리 조회, 문서 열기, HTTP transaction 저장·sync 조회, 작업 공간 사건 연결과 Markdown 내보내기를 smoke test한다.
+
+코드 롤백은 DB를 자동으로 되돌리지 않는다. 실행 예시는 `deployment.md`를 따른다.
 
 ## DB 롤백
 
@@ -47,10 +49,10 @@ DB 롤백은 코드 롤백보다 위험하다. 아래 조건을 확인한다.
 절차:
 
 1. `database-backup-restore.md` 절차로 현재 DB 파일의 검증된 추가 백업을 만든다.
-2. API 프로세스를 중지해 쓰기를 막는다.
-3. 직전 백업 DB 파일로 복구한다.
-4. WAL/SHM 파일 정합성을 확인한다.
-5. 이전 정상 코드 버전을 실행한다.
+2. Ansible restore playbook에 명시적 승인을 전달해 두 API와 Litestream을 중지한다.
+3. 현재 SQLite 파일과 WAL/SHM sidecar를 격리한다.
+4. Litestream이 R2에 저장한 최신 복제본을 별도 실행 컨테이너로 복구한다.
+5. 복구된 DB에 migration을 적용하고 Compose 서비스를 기동한다.
 6. 주요 읽기/쓰기 smoke test를 수행한다.
 
 ## SQLite 파일 주의사항

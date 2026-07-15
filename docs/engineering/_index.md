@@ -9,7 +9,7 @@
 1. 시스템의 큰 구조는 `system-overview.md`에서 확인한다.
 2. 기술 선택과 실행 환경은 `tech-stack.md`, `runtime-configuration.md`에서 확인한다.
 3. 구현 계약은 `api-contract.md`, `data-model.md`, `schema-conventions.md`, `contracts/`에서 확인한다.
-4. 운영 품질은 `testing.md`, `observability.md`, `security.md`, `migration.md`, `database-backup-restore.md`, `rollback.md`에서 확인한다.
+4. 운영 품질은 `testing.md`, `deployment.md`, `observability.md`, `security.md`, `migration.md`, `database-backup-restore.md`, `rollback.md`에서 확인한다.
 5. 변경 결정을 남길 때는 `adr/`를 사용한다.
 
 ## 디렉토리 지도
@@ -32,6 +32,7 @@
 | `codex-skill-invocation-policy.md`                        | Codex 워크플로 스킬의 명시 호출 전용 정책과 검증 기준을 정의한다.                                 |
 | `tech-stack.md`                                           | 런타임, 패키지 관리, 프론트엔드, 백엔드, 데이터, 테스트 도구, 의존성 기준을 정의한다.             |
 | `runtime-configuration.md`                                | 로컬 포트, 환경 변수 파서, 앱별 설정, Turbo 환경 변수, `.env.example` 정책을 정의한다.            |
+| `deployment.md`                                           | 단일 Ubuntu 서버의 Docker Compose 배포 계약과 Ansible 자동화 경계를 정의한다.                     |
 | `api-contract.md`                                         | 학습자 API와 어드민 API의 공통 원칙, 인증 표면, 오류 응답, OpenAPI 생성 기준을 정의한다.          |
 | `auth-permissions.md`                                     | 인증 경계, 학습자 권한, 관리자 역할, API별 권한 기준, 권한 변경 절차를 정의한다.                  |
 | `data-model.md`                                           | 데이터 모델 원칙, ERD, 인증과 콘텐츠와 학습 테이블, 상태 머신, seed 정책을 정의한다.              |

@@ -192,6 +192,15 @@ root `turbo.json`은 모든 task에 필요한 `CI`만 `globalPassThroughEnv`로 
 - 선택 변수는 주석 처리한다.
 - 앱별 `.env`는 해당 앱 디렉터리 기준으로 읽힌다.
 
+## 컨테이너 배포 설정
+
+- Next.js의 `NEXT_PUBLIC_*`, `WEB_ORIGIN`, `ADMIN_ORIGIN`, `BETTER_AUTH_URL`은 이미지 build 시점의 공개 URL과 일치해야 한다.
+- `NEXT_PUBLIC_*`는 브라우저 bundle에 포함되므로 secret을 전달하지 않는다.
+- 컨테이너 런타임 설정은 Ansible이 `/etc/writing-app` 아래의 root 소유 환경 파일로 렌더링한다.
+- 운영 SQLite 경로는 두 API와 Litestream에서 `/var/lib/writing-app/api.sqlite`로 통일한다.
+- Cloudflare Tunnel token과 R2 secret은 inventory 예시에 넣지 않고 Ansible Vault 또는 실행 시 주입한다.
+- 이미지 build 설정과 서버 inventory의 origin이 다르면 배포하지 않고 이미지를 다시 build한다.
+
 ## 설정 변경 체크리스트
 
 - parser schema를 갱신했는가?

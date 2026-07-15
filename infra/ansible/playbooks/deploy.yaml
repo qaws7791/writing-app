@@ -1,0 +1,10 @@
+---
+- name: Writing App 배포
+  hosts: writing_app
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../vars/defaults.yaml
+  roles:
+    - writing-app-host
+    - writing-app-deploy

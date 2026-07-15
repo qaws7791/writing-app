@@ -176,6 +176,8 @@ DB migration은 기존 schema를 누적 보정하지 않고 `0000-writing-app-ba
 
 ## 배포
 
-- Ubuntu server와 systemd로 프로세스를 관리한다.
-- Caddy로 reverse proxy와 TLS를 담당한다.
-- SQLite backup 전략으로 데이터 내구성을 보장한다.
+- Ubuntu 24.04 LTS 단일 서버에서 Docker Compose로 컨테이너를 관리한다.
+- Cloudflare Tunnel만 외부 연결을 만들고 Caddy는 내부 HTTP reverse proxy를 담당한다.
+- 외부 DNS, CDN, TLS 종료는 Cloudflare가 담당하며 애플리케이션 port는 호스트에 공개하지 않는다.
+- Litestream이 로컬 SQLite WAL을 Cloudflare R2에 연속 복제한다.
+- Ansible이 Docker 호스트 bootstrap, 설정 배치, migration, 기동, 검증, 코드 롤백과 DB 복구를 자동화한다.

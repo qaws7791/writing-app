@@ -1,0 +1,33 @@
+---
+- name: Writing App 시스템 디렉터리 생성
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - path: "{{ writing_app_compose_directory }}"
+      owner: root
+      group: root
+      mode: "0750"
+    - path: "{{ writing_app_config_directory }}"
+      owner: root
+      group: root
+      mode: "0750"
+    - path: "{{ writing_app_secrets_directory }}"
+      owner: root
+      group: root
+      mode: "0700"
+    - path: "{{ writing_app_data_directory }}"
+      owner: "{{ writing_app_container_uid }}"
+      group: "{{ writing_app_container_gid }}"
+      mode: "0750"
+    - path: "{{ writing_app_backup_directory }}"
+      owner: "{{ writing_app_container_uid }}"
+      group: "{{ writing_app_container_gid }}"
+      mode: "0750"
+    - path: "{{ writing_app_deployment_directory }}"
+      owner: root
+      group: root
+      mode: "0750"

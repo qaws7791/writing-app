@@ -1,0 +1,58 @@
+---
+- name: Writing App 배포 검증
+  hosts: writing_app
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../vars/defaults.yaml
+  tasks:
+    - name: Compose 서비스 health 대기
+      community.docker.docker_compose_v2:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        pull: never
+        state: present
+        wait: true
+        wait_timeout: 120
+
+    - name: Caddy 내부 route 검증
+      community.docker.docker_compose_v2_exec:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        service: caddy
+        argv:
+          - wget
+          - -q
+          - -O
+          - "-"
+          - "--header=Host: {{ item.host }}"
+          - "http://127.0.0.1:8080{{ item.path }}"
+      changed_when: false
+      loop:
+        - host: "{{ writing_app_web_host }}"
+          path: /health
+        - host: "{{ writing_app_api_host }}"
+          path: /health
+        - host: "{{ writing_app_admin_host }}"
+          path: /health
+        - host: "{{ writing_app_admin_api_host }}"
+          path: /health
+
+    - name: 공개 route 검증
+      ansible.builtin.uri:
+        url: "{{ item }}"
+        method: GET
+        status_code: 200
+        return_content: false
+      loop:
+        - "{{ writing_app_web_origin }}/health"
+        - "{{ writing_app_api_origin }}/health"
+        - "{{ writing_app_admin_origin }}/health"
+        - "{{ writing_app_admin_api_origin }}/health"
+      when: writing_app_verify_public_routes | bool

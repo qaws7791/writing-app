@@ -1,0 +1,170 @@
+---
+- name: Writing App SQLite 복구
+  hosts: writing_app
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../vars/defaults.yaml
+  tasks:
+    - name: 복구 작업 ID 계산
+      ansible.builtin.set_fact:
+        writing_app_restore_id: >-
+          restore-{{ ansible_date_time.iso8601_basic_short }}
+
+    - name: DB 복구 승인 확인
+      ansible.builtin.assert:
+        that:
+          - writing_app_allow_database_restore | default(false) | bool
+        fail_msg: writing_app_allow_database_restore=true를 명시해야 합니다.
+
+    - name: 현재 DB 확인
+      ansible.builtin.stat:
+        path: "{{ writing_app_data_directory }}/api.sqlite"
+      register: writing_app_database_before_restore
+
+    - name: 현재 DB snapshot 백업
+      community.docker.docker_compose_v2_run:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        profiles:
+          - operations
+        service: database-backup
+        argv:
+          - "--source=/var/lib/writing-app/api.sqlite"
+          - >-
+            --output=/var/backups/writing-app/
+            pre-{{ writing_app_restore_id }}.sqlite
+        cleanup: true
+        no_deps: true
+        interactive: false
+        tty: false
+      when: writing_app_database_before_restore.stat.exists
+
+    - name: DB 사용자와 Litestream 중지
+      community.docker.docker_compose_v2:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        services:
+          - api
+          - admin-api
+          - litestream
+        dependencies: false
+        state: stopped
+
+    - name: 복구 격리 디렉터리 생성
+      ansible.builtin.file:
+        path: "{{ writing_app_backup_directory }}/{{ writing_app_restore_id }}"
+        state: directory
+        owner: "{{ writing_app_container_uid }}"
+        group: "{{ writing_app_container_gid }}"
+        mode: "0750"
+
+    - name: SQLite 파일과 sidecar 확인
+      ansible.builtin.stat:
+        path: "{{ writing_app_data_directory }}/{{ item }}"
+      loop:
+        - api.sqlite
+        - api.sqlite-wal
+        - api.sqlite-shm
+      register: writing_app_database_files
+
+    - name: 현재 SQLite 파일 격리
+      ansible.builtin.command:
+        argv:
+          - mv
+          - "{{ item.stat.path }}"
+          - >-
+            {{ writing_app_backup_directory }}/
+            {{ writing_app_restore_id }}/{{ item.item }}
+      loop: "{{ writing_app_database_files.results }}"
+      when: item.stat.exists
+      changed_when: true
+
+    - name: R2 최신 복제본 복구
+      community.docker.docker_compose_v2_run:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        profiles:
+          - operations
+        service: database-restore
+        argv:
+          - restore
+          - -config
+          - /etc/litestream.yaml
+          - /var/lib/writing-app/api.sqlite
+        cleanup: true
+        no_deps: true
+        interactive: false
+        tty: false
+
+    - name: 복구된 DB 존재 확인
+      ansible.builtin.stat:
+        path: "{{ writing_app_data_directory }}/api.sqlite"
+      register: writing_app_restored_database
+
+    - name: 복구 결과 확인
+      ansible.builtin.assert:
+        that:
+          - writing_app_restored_database.stat.exists
+          - writing_app_restored_database.stat.isreg
+        fail_msg: R2 복제본에서 SQLite DB를 복구하지 못했습니다.
+
+    - name: 복구된 DB 소유권 정규화
+      ansible.builtin.file:
+        path: "{{ writing_app_data_directory }}"
+        state: directory
+        owner: "{{ writing_app_container_uid }}"
+        group: "{{ writing_app_container_gid }}"
+        mode: "0750"
+        recurse: true
+
+    - name: 복구 DB migration 적용
+      community.docker.docker_compose_v2_run:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        profiles:
+          - operations
+        service: database-migrate
+        cleanup: true
+        no_deps: true
+        interactive: false
+        tty: false
+
+    - name: 복구 DB 무결성 검증
+      community.docker.docker_compose_v2_run:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        profiles:
+          - operations
+        service: database-check
+        cleanup: true
+        no_deps: true
+        interactive: false
+        tty: false
+
+    - name: 복구된 서비스 기동
+      community.docker.docker_compose_v2:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        pull: never
+        state: present
+        wait: true
+        wait_timeout: 120

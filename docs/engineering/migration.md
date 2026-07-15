@@ -85,6 +85,8 @@ seed 실행 중 legacy DB 구조가 감지되면 DB 파일 재생성이 필요�
 - SQLite 파일을 백업한 뒤 migration을 실행한다.
 - 학습자 API와 어드민 API를 같은 DB 파일에 연결하므로, schema 변경은 두 API 호환성을 함께 확인한다.
 - 마이그레이션 중에는 쓰기 트래픽을 제한하거나 maintenance window를 둔다.
+- 운영 배포에서는 Ansible deploy playbook이 두 API를 중지한 뒤 Compose `database-migrate` 일회성 서비스를 실행한다.
+- 컨테이너 기동 명령에는 migration을 포함하지 않으며 migration 실패 시 신규 애플리케이션을 기동하지 않는다.
 
 ## 롤백 조건
 

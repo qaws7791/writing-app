@@ -1,0 +1,10 @@
+---
+- name: Ubuntu Docker 호스트 준비
+  hosts: writing_app
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../vars/defaults.yaml
+  roles:
+    - docker-host
+    - writing-app-host

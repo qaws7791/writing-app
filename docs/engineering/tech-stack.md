@@ -4,8 +4,8 @@
 
 ## 기준
 
-- 기준일: 2026-07-13
-- 기준 파일: 루트 `package.json`, 각 workspace `package.json`, `turbo.json`, `vitest.workspace.ts`
+- 기준일: 2026-07-15
+- 기준 파일: 루트 `package.json`, 각 workspace `package.json`, `turbo.json`, `vitest.workspace.ts`, `deploy/`, `infra/ansible/`
 
 ## 런타임과 패키지 관리
 
@@ -74,6 +74,20 @@
 | Oxlint          | `^1.70.0`                                            | lint                           |
 | Oxfmt           | `^0.55.0`                                            | formatting                     |
 | Lefthook        | `^2.1.3`                                             | Git hook                       |
+
+## 배포 인프라
+
+| 기술           | 기준 버전          | 역할                                                  |
+| -------------- | ------------------ | ----------------------------------------------------- |
+| Ubuntu         | 24.04 LTS, amd64   | 단일 운영 호스트                                      |
+| Docker Engine  | 공식 stable 저장소 | 애플리케이션과 운영 서비스의 컨테이너 런타임          |
+| Docker Compose | Compose plugin     | 서비스 수명주기, health check, 격리 network 관리      |
+| Caddy          | `2.11.4-alpine`    | Tunnel 뒤의 host 기반 내부 HTTP reverse proxy         |
+| cloudflared    | `2026.6.0`         | 외부 inbound port 없이 Cloudflare Tunnel 연결         |
+| Litestream     | `0.5.11`           | SQLite WAL을 Cloudflare R2로 연속 복제하고 복구       |
+| Ansible Core   | `2.21.2`           | Ubuntu bootstrap, 설정, 배포, 검증, 롤백, 복구 자동화 |
+
+컨테이너 image tag는 `deploy/compose/.env.example`의 검증 기준이며 운영 배포에서는 애플리케이션과 기반 이미지를 digest 또는 변경 불가능한 tag로 고정한다. 상세 계약은 `deployment.md`를 따른다.
 
 ## 버전 고정 정책
 

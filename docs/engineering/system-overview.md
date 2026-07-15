@@ -166,12 +166,14 @@ AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 
 
 현재 문서화된 목표 운영 인프라는 다음과 같다.
 
-- Ubuntu 서버에서 프로세스를 실행한다.
-- systemd로 `apps/web`, `apps/api`, `apps/admin`, `apps/admin-api` 프로세스를 관리한다.
-- Caddy가 reverse proxy와 TLS를 담당한다.
+- Ubuntu 24.04 LTS 단일 서버에서 Docker Compose로 네 애플리케이션 컨테이너를 관리한다.
+- Cloudflare Tunnel만 외부 연결을 만들며 호스트에는 애플리케이션 port를 공개하지 않는다.
+- Caddy가 Tunnel과 애플리케이션 사이의 내부 HTTP reverse proxy를 담당하고 외부 TLS는 Cloudflare가 종료한다.
 - SQLite 파일은 API 프로세스와 같은 로컬 디스크에 둔다.
 - 여러 서버나 네트워크 파일시스템에서 같은 SQLite 파일을 직접 공유하지 않는다.
-- SQLite 백업과 복구 절차는 배포 전 필수 운영 절차로 관리한다.
+- Litestream이 SQLite WAL을 Cloudflare R2에 연속 복제한다.
+- Ansible이 Docker 설치, 설정 배치, migration, 배포, 검증, 코드 롤백과 DB 복구를 수행한다.
+- 상세 실행 계약은 `deployment.md`를 단일 진실 원천으로 사용한다.
 
 ## 운영상 독립성
 

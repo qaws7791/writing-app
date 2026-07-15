@@ -1,0 +1,40 @@
+{
+	admin off
+	auto_https off
+
+	servers {
+		trusted_proxies static private_ranges
+		trusted_proxies_strict
+		client_ip_headers CF-Connecting-IP X-Forwarded-For
+	}
+}
+
+:8080 {
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	@learner-web host {$WEB_HOST}
+	handle @learner-web {
+		reverse_proxy web:3000
+	}
+
+	@learner-api host {$API_HOST}
+	handle @learner-api {
+		reverse_proxy api:4000
+	}
+
+	@admin-web host {$ADMIN_HOST}
+	handle @admin-web {
+		reverse_proxy admin:3001
+	}
+
+	@admin-api host {$ADMIN_API_HOST}
+	handle @admin-api {
+		reverse_proxy admin-api:4001
+	}
+
+	handle {
+		respond "not found" 404
+	}
+}

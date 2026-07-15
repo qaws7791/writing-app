@@ -1,0 +1,17 @@
+logging:
+  level: info
+
+validation:
+  interval: 5m
+
+dbs:
+  - path: /var/lib/writing-app/api.sqlite
+    checkpoint-interval: 1m
+    busy-timeout: 5s
+    replica:
+      type: s3
+      bucket: ${LITESTREAM_BUCKET}
+      path: ${LITESTREAM_PATH}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      region: auto
+      sync-interval: 10s
