@@ -5,6 +5,8 @@ import { describe, expect, test } from "bun:test"
 
 interface RootPackageManifest {
   readonly scripts?: {
+    readonly "check:deployment-ansible"?: string
+    readonly "check:deployment-config"?: string
     readonly lint?: string
   }
 }
@@ -30,7 +32,7 @@ describe("정적 검증 Interface", () => {
     )
     const staticChecks = workflow.slice(
       workflow.indexOf("  static-checks:"),
-      workflow.indexOf("  tests:")
+      workflow.indexOf("  deployment-config:")
     )
 
     expect(staticChecks).toContain("- run: bun run lint")
@@ -48,5 +50,36 @@ describe("정적 검증 Interface", () => {
         path.join(repositoryRoot, ".github", "workflows", "document-drift.yml")
       )
     ).toBe(false)
+  })
+
+  test("배포 구성 CI는 root의 canonical 검증 명령을 실행한다", () => {
+    const manifest = JSON.parse(
+      readFileSync(path.join(repositoryRoot, "package.json"), "utf8")
+    ) as RootPackageManifest
+    const workflow = readFileSync(
+      path.join(repositoryRoot, ".github", "workflows", "quality-gates.yml"),
+      "utf8"
+    )
+    const deploymentChecks = workflow.slice(
+      workflow.indexOf("  deployment-config:"),
+      workflow.indexOf("  tests:")
+    )
+
+    expect(manifest.scripts?.["check:deployment-config"]).toBe(
+      "bun scripts/check-deployment-config.ts"
+    )
+    expect(manifest.scripts?.["check:deployment-ansible"]).toBe(
+      "bun scripts/check-deployment-ansible.ts"
+    )
+    expect(deploymentChecks).toContain("- run: bun run check:deployment-config")
+    expect(deploymentChecks).toContain(
+      "- run: bun run check:deployment-ansible"
+    )
+    expect(deploymentChecks).toContain(
+      "python -m pip install -r infra/ansible/requirements.txt"
+    )
+    expect(deploymentChecks).toContain(
+      "ansible-galaxy collection install -r infra/ansible/requirements.yaml"
+    )
   })
 })

@@ -5,7 +5,7 @@
 ## 구현 상태
 
 - 기준일: 2026-07-16
-- 상태: Dockerfile, Compose, Ansible 구현 완료; 자동화 개선 계획 수립; Ubuntu 통합 검증 필요
+- 상태: Compose·Caddy·Litestream·Ansible 검증 CI 편입 완료; Ubuntu CI 결과 확인과 image·통합 검증 필요
 - 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible
 - 후속 범위: OpenTofu, cloud-init, GitHub Actions 배포 자동화
 - 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
@@ -47,6 +47,26 @@
 | `deploy/litestream/litestream.yaml` | SQLite와 R2 replica 계약                                         |
 | `infra/ansible/playbooks/`          | bootstrap, deploy, verify, rollback, restore 진입점              |
 | `infra/ansible/roles/`              | Docker 호스트와 writing-app 배포의 재사용 가능한 역할            |
+
+## 배포 구성 사전 검증
+
+실행 중인 Docker daemon이 있는 저장소 루트에서 다음 명령을 실행한다.
+
+```sh
+bun run check:deployment-config
+```
+
+이 명령은 임시 디렉터리에 비밀값이 아닌 production 형태의 fixture를 만들고 `operations` profile을 포함한 Compose JSON을 해석한다. 필수 서비스, host port 비공개, 앱 health check와 `init`, network 격리, 공유 SQLite volume을 검사한다. 이어서 고정된 Caddy `2.11.4`와 Litestream `0.5.11` image로 각 설정을 로드하고 성공·실패와 관계없이 fixture를 정리한다. `--skip-container-validation`은 Docker daemon을 사용할 수 없는 환경에서 Compose 해석만 진단하기 위한 선택지이며 전체 배포 품질 게이트를 충족하지 않는다.
+
+Ansible 제어 노드는 Linux 또는 WSL2를 사용한다.
+
+```sh
+python3 -m pip install -r infra/ansible/requirements.txt
+ansible-galaxy collection install -r infra/ansible/requirements.yaml
+bun run check:deployment-ansible
+```
+
+Ansible 검사는 저장소에 고정된 `ansible-core 2.21.2`, `ansible-lint 26.6.0`, `community.docker 5.2.1`을 기준으로 전체 lint와 모든 playbook의 syntax check를 실행한다. GitHub Actions의 `배포 구성 검증` job은 Docker가 제공되는 Ubuntu에서 두 canonical 명령을 모두 실행한다.
 
 ## 배포 순서
 
@@ -138,4 +158,4 @@ ansible-playbook playbooks/restore.yaml -e writing_app_allow_database_restore=tr
 - 실패한 신규 배포를 직전 정상 image reference로 되돌릴 수 있다.
 - Litestream 복제본에서 별도 경로로 복구하고 SQLite 무결성 검증을 통과한다.
 
-로컬 Windows 환경에서는 Compose 정적 해석, Caddy 2.11.4 설정 검증, Litestream 0.5.11 설정 로드, YAML 파싱, 앱 lint·test·typecheck·production build를 검증했다. Docker image build는 Hyper-V/WSL2가 없는 로컬 Docker daemon에서 실행할 수 없었고, Ansible syntax check와 두 번째 실행의 멱등성 검증은 Linux Ansible 제어 노드와 Ubuntu 24.04 대상 호스트에서 추가로 수행해야 한다.
+로컬 Windows 환경에서는 임시 fixture의 Compose 정적 해석과 계약 unit test를 검증했다. Docker daemon이 실행되지 않아 이번 변경의 Caddy·Litestream 컨테이너 검증은 로컬에서 실행할 수 없었으며 새 Ubuntu CI job의 결과 확인이 필요하다. Docker image build, Ansible lint·syntax와 두 번째 실행의 멱등성 검증도 Linux 제어 노드와 Ubuntu 24.04 대상 호스트에서 추가로 수행해야 한다.

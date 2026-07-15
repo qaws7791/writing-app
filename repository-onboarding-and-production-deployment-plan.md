@@ -6,7 +6,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 최초 배포 대상: Ubuntu `24.04 LTS`, `linux/amd64`
-- 상태: 변경 단위 2 로컬 구현·Windows 검증 완료, Ubuntu CI 확인 대기
+- 상태: 변경 단위 2 로컬 구현·Windows 검증 완료, 변경 단위 3 배포 구성 검증 작업 진행 중
 - 기준 배포 구조: 단일 Ubuntu 서버, Docker Compose, Caddy, Cloudflare Tunnel, Litestream, Cloudflare R2, Ansible
 
 ## 목적
@@ -205,13 +205,20 @@ Windows에서 멱등성 fixture, root tooling 전체 테스트, 전체 workspace
 6. 컨테이너 기동 후 내부 health와 Caddy host route smoke를 실행하고 종료 시 모든 task 소유 리소스를 정리한다.
 7. 검증을 root의 canonical 명령과 GitHub Actions quality gate에 연결한다.
 
-### 예정 검증 Interface
+### 검증 Interface
 
 - `bun run check:deployment-config`
+- `bun run check:deployment-ansible`
 - `bun run test:deployment-images`
 - `bun run test:deployment-integration`
 
-위 명령은 아직 존재하지 않는 저장소 전용 예정 Interface다. 구현 시 목적이 겹치면 더 작은 명령으로 통합한다.
+앞의 두 정적 검증 Interface는 구현됐다. image와 Ubuntu 통합 검증 Interface는 아직 존재하지 않는 예정 Interface이며 구현 시 목적이 겹치면 더 작은 명령으로 통합한다.
+
+### 구현 상태
+
+2026-07-16에 disposable production fixture를 만드는 `check:deployment-config`를 구현했다. 이 검사는 `operations` profile을 포함한 Compose 렌더링 결과에서 서비스, port 비공개, health check, network와 SQLite volume 계약을 확인하고 Docker daemon이 있는 환경에서는 고정된 Caddy와 Litestream image로 설정을 로드한다. 실패 경로에서도 임시 fixture를 정리한다.
+
+Linux 전용 `check:deployment-ansible`은 전체 `ansible-lint`와 저장소의 모든 playbook syntax check를 실행한다. 두 명령을 Ubuntu GitHub Actions 품질 게이트에 연결했다. Windows에서는 Compose 계약과 unit test를 통과했으며 Docker daemon 부재로 컨테이너 설정 검사와 Linux Ansible 검사는 새 CI 결과 확인이 필요하다. Dockerfile image smoke와 disposable Ubuntu 멱등성·통합 검증은 다음 하위 작업으로 남아 있다.
 
 ### 완료 조건
 
