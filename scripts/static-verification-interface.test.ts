@@ -8,6 +8,7 @@ interface RootPackageManifest {
     readonly "check:deployment-ansible"?: string
     readonly "check:deployment-config"?: string
     readonly lint?: string
+    readonly "test:deployment-bootstrap"?: string
     readonly "test:deployment-images"?: string
   }
 }
@@ -82,6 +83,14 @@ describe("정적 검증 Interface", () => {
     expect(deploymentChecks).toContain(
       "ansible-galaxy collection install -r infra/ansible/requirements.yaml"
     )
+    expect(manifest.scripts?.["test:deployment-bootstrap"]).toBe(
+      "bun scripts/test-deployment-bootstrap.ts"
+    )
+    expect(deploymentChecks).toContain("runs-on: ubuntu-24.04")
+    expect(deploymentChecks).toContain(
+      "- run: bun run test:deployment-bootstrap"
+    )
+    expect(deploymentChecks).toContain('WRITING_APP_DISPOSABLE_UBUNTU: "true"')
   })
 
   test("production image CI는 root smoke 명령과 Buildx를 사용한다", () => {

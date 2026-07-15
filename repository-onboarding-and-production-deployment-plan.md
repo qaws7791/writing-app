@@ -6,7 +6,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 최초 배포 대상: Ubuntu `24.04 LTS`, `linux/amd64`
-- 상태: 변경 단위 2 로컬 구현·Windows 검증 완료, 변경 단위 3 정적·image smoke CI 구현 완료 및 Ubuntu 결과 확인 대기
+- 상태: 변경 단위 2 완료, 변경 단위 3 정적·image smoke·Ubuntu bootstrap CI 구현 완료 및 결과 확인 대기
 - 기준 배포 구조: 단일 Ubuntu 서버, Docker Compose, Caddy, Cloudflare Tunnel, Litestream, Cloudflare R2, Ansible
 
 ## 목적
@@ -83,19 +83,19 @@ GitHub에서 저장소를 처음 발견한 사람이 `README.md`에서 프로젝
 
 ## 확인된 현재 상태와 격차
 
-| 영역        | 현재 상태                                                          | 목표와의 격차                                                                            |
-| ----------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| README      | 구조, 도구, 수동 env 복사, 개발과 검증 명령을 제공한다.            | clone 명령, 제품 소개, 한 번의 setup, 배포 진입점, 운영 제약과 지원 정책이 없다.         |
-| 로컬 setup  | 앱별 env 복사와 두 setup 명령을 사용자가 실행한다.                 | 비밀값 생성, 멱등성, 사전 점검과 성공 smoke가 하나의 흐름으로 연결되지 않는다.           |
-| 컨테이너    | 네 Dockerfile, Next.js standalone, 비 root 사용자가 구현되어 있다. | CI image build, 취약점 검사, SBOM, 게시와 실제 실행 smoke가 없다.                        |
-| Compose     | 앱, Caddy, cloudflared, Litestream과 운영 job이 정의되어 있다.     | 예제 env만으로 검증할 수 없고 Ansible이 만드는 설정 파일 fixture가 필요하다.             |
-| Ansible     | bootstrap, deploy, verify, rollback, restore playbook이 있다.      | Linux syntax/lint, Ubuntu 멱등성, 실패 주입과 복구 통합 검증이 없다.                     |
-| 인프라      | 운영 구조와 지원 OS가 문서에 정의되어 있다.                        | VM, firewall, SSH, DNS와 최초 host 준비를 생성하는 OpenTofu·cloud-init이 없다.           |
-| CI          | lint, format, typecheck, test, E2E, build, audit을 실행한다.       | 인프라 검증, image release, environment 승인과 CD workflow가 없다.                       |
-| 비밀값      | Ansible Vault 예시와 root 소유 환경 파일 정책이 있다.              | 초기 생성, 전달, rotation, CI 사용 경계와 운영자 절차가 하나의 계약으로 정리되지 않았다. |
-| 백업·롤백   | SQLite snapshot, Litestream/R2, rollback/restore 절차가 있다.      | 실제 Ubuntu와 실제 R2 호환 endpoint에서 주기적으로 복구한 증거가 없다.                   |
-| 관측성      | 구조화 API 요청 로그와 이벤트 계약이 있다.                         | 로그 수집기, metric backend, dashboard와 alert manager가 없다.                           |
-| 공개 저장소 | 코드와 엔지니어링 문서가 공개 사용을 전제로 탐색 가능하다.         | LICENSE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT와 release 정책이 없다.                  |
+| 영역        | 현재 상태                                                       | 목표와의 격차                                                                            |
+| ----------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| README      | 제품 상태, clone, 한 번의 setup, 검증과 배포 진입점을 제공한다. | 화면 자료, 문제 해결 표, 라이선스와 지원·release 정책 보강이 필요하다.                   |
+| 로컬 setup  | env credential 생성, setup, doctor와 멱등성 fixture가 구현됐다. | Ubuntu CI 결과 확인과 실제 네 서비스 startup smoke 연결이 필요하다.                      |
+| 컨테이너    | 네 Dockerfile과 비 root·health·정적 자산 image smoke CI가 있다. | Ubuntu 결과 확인, 취약점 검사, SBOM, provenance와 registry 게시가 없다.                  |
+| Compose     | 전체 서비스와 임시 production fixture 기반 계약 검사가 있다.    | 실제 image를 함께 기동하는 route·데이터 통합 smoke와 실패 주입 검증이 없다.              |
+| Ansible     | lint·syntax와 disposable Ubuntu bootstrap 멱등성 CI가 연결됐다. | CI 결과 확인, 실제 digest를 사용한 deploy 멱등성, 실패 주입과 복구 통합 검증이 없다.     |
+| 인프라      | 운영 구조와 지원 OS가 문서에 정의되어 있다.                     | VM, firewall, SSH, DNS와 최초 host 준비를 생성하는 OpenTofu·cloud-init이 없다.           |
+| CI          | 앱 품질 게이트와 배포 설정·image·bootstrap 검증을 실행한다.     | 검증 결과 확인, image release, environment 승인과 CD workflow가 없다.                    |
+| 비밀값      | Ansible Vault 예시와 root 소유 환경 파일 정책이 있다.           | 초기 생성, 전달, rotation, CI 사용 경계와 운영자 절차가 하나의 계약으로 정리되지 않았다. |
+| 백업·롤백   | SQLite snapshot, Litestream/R2, rollback/restore 절차가 있다.   | 실제 Ubuntu와 실제 R2 호환 endpoint에서 주기적으로 복구한 증거가 없다.                   |
+| 관측성      | 구조화 API 요청 로그와 이벤트 계약이 있다.                      | 로그 수집기, metric backend, dashboard와 alert manager가 없다.                           |
+| 공개 저장소 | 코드와 엔지니어링 문서가 공개 사용을 전제로 탐색 가능하다.      | LICENSE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT와 release 정책이 없다.                  |
 
 ## 필수 사용자 입력 계약
 
@@ -209,6 +209,7 @@ Windows에서 멱등성 fixture, root tooling 전체 테스트, 전체 workspace
 
 - `bun run check:deployment-config`
 - `bun run check:deployment-ansible`
+- `bun run test:deployment-bootstrap`
 - `bun run test:deployment-images`
 - `bun run test:deployment-integration`
 
@@ -220,7 +221,9 @@ Windows에서 멱등성 fixture, root tooling 전체 테스트, 전체 workspace
 
 Linux 전용 `check:deployment-ansible`은 전체 `ansible-lint`와 저장소의 모든 playbook syntax check를 실행한다. 두 명령을 Ubuntu GitHub Actions 품질 게이트에 연결했다.
 
-`test:deployment-images`는 Buildx로 네 Dockerfile을 `linux/amd64` image로 만들고 image·container의 비 root user, 네 health route, web `public`과 web·admin `.next/static`을 검사한다. container는 host port와 외부 network 없이 실행하고 API의 SQLite만 임시 bind mount에 격리하며 task 소유 container·image·데이터를 항상 정리한다. 별도 Ubuntu CI job에 연결했으며 Windows에서는 명령 조립과 격리 계약 unit test를 통과했다. Docker daemon 부재로 실제 설정·image smoke와 Linux Ansible 검사는 새 CI 결과 확인이 필요하다. disposable Ubuntu 호스트 멱등성·통합 검증은 다음 하위 작업으로 남아 있다.
+`test:deployment-images`는 Buildx로 네 Dockerfile을 `linux/amd64` image로 만들고 image·container의 비 root user, 네 health route, web `public`과 web·admin `.next/static`을 검사한다. container는 host port와 외부 network 없이 실행하고 API의 SQLite만 임시 bind mount에 격리하며 task 소유 container·image·데이터를 항상 정리한다. 별도 Ubuntu CI job에 연결했으며 Windows에서는 명령 조립과 격리 계약 unit test를 통과했다. Docker daemon 부재로 실제 설정·image smoke는 새 CI 결과 확인이 필요하다.
+
+`test:deployment-bootstrap`은 Ubuntu 24.04 `linux/amd64` 일회성 CI runner와 명시적 승인 플래그를 함께 요구한다. task 전용 호스트 디렉터리를 사용해 bootstrap을 두 번 적용하고 두 번째 Ansible recap의 `changed=0`을 검사한 뒤 해당 디렉터리를 정리한다. Docker package, apt repository와 daemon 설정은 runner 폐기로 격리한다. 실제 image digest와 Tunnel·R2 자격증명이 필요한 deploy 멱등성·통합 검증은 다음 하위 작업으로 남아 있다.
 
 ### 완료 조건
 

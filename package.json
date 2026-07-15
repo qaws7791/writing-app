@@ -58,6 +58,7 @@
     "test": "turbo test",
     "test:admin-dev-lifecycle": "bun test ./scripts/admin-dev-lifecycle.test.ts",
     "test:deployment-images": "bun scripts/test-deployment-images.ts",
+    "test:deployment-bootstrap": "bun scripts/test-deployment-bootstrap.ts",
     "test:e2e:resource-library-load": "bun --filter @workspace/core test:e2e:resource-library-load",
     "test:load:resource-library": "bun --filter @workspace/core test:load:resource-library",
     "test:coverage": "bun scripts/run-workspace-coverage.ts",

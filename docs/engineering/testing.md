@@ -271,7 +271,7 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 `scripts/local-onboarding.test.ts`는 누락된 `.env`의 credential 치환 생성, 기존 파일 보존, 두 번째 실행의 멱등성, toolchain·테스트 인증·공유 SQLite 진단을 disposable fixture에서 검증한다. 실제 사용자 `.env`와 `data/api.sqlite`는 테스트 대상으로 사용하거나 변경하지 않는다.
 
-배포 tooling unit test는 Compose의 필수 서비스·port·network·SQLite volume 계약, Ansible playbook 선택, 네 production image의 Buildx 인자·host port 비공개·DB volume 경계·비 root user 판정을 Docker daemon 없이 검증한다. 실제 Caddy·Litestream 설정과 image build·runtime smoke는 Docker가 제공되는 별도 Ubuntu CI job에서 실행한다.
+배포 tooling unit test는 Compose의 필수 서비스·port·network·SQLite volume 계약, Ansible playbook 선택, 네 production image의 Buildx 인자·host port 비공개·DB volume 경계·비 root user 판정을 Docker daemon 없이 검증한다. Ubuntu bootstrap 검사는 일회성 runner 플래그, OS·architecture와 두 번째 Ansible recap의 `changed=0` 판정을 unit test로 보호한다. 실제 Caddy·Litestream 설정, image build·runtime smoke와 bootstrap 두 번 실행은 Docker와 passwordless sudo가 제공되는 명시적인 Ubuntu 24.04 CI job에서 실행한다.
 
 CI의 전체 test job은 `bun run test -- --summarize --continue=always` 결과와 Turborepo `2.10.4` summary v1을 사용한다. manifest에 명령이 있다는 사실은 `지원`으로만 표시하며 실제 summary가 있을 때만 `실행`, `cache hit`, `실패`, `건너뜀`, `제외`를 보고한다. correctness job과 coverage job은 서로 독립적으로 실패 원인을 판정한다.
 

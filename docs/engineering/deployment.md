@@ -5,7 +5,7 @@
 ## 구현 상태
 
 - 기준일: 2026-07-16
-- 상태: 배포 구성과 production image smoke CI 편입 완료; Ubuntu CI 결과 확인과 호스트 통합 검증 필요
+- 상태: 배포 구성·production image smoke·Ubuntu bootstrap 멱등성 CI 편입 완료; CI 결과 확인과 deploy 통합 검증 필요
 - 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible
 - 후속 범위: OpenTofu, cloud-init, GitHub Actions 배포 자동화
 - 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
@@ -67,6 +67,8 @@ bun run check:deployment-ansible
 ```
 
 Ansible 검사는 저장소에 고정된 `ansible-core 2.21.2`, `ansible-lint 26.6.0`, `community.docker 5.2.1`을 기준으로 전체 lint와 모든 playbook의 syntax check를 실행한다. GitHub Actions의 `배포 구성 검증` job은 Docker가 제공되는 Ubuntu에서 두 canonical 명령을 모두 실행한다.
+
+`bun run test:deployment-bootstrap`은 Docker package와 daemon 설정을 실제 호스트에 적용하므로 일반 개발 장비나 운영 서버에서 실행하지 않는다. 이 명령은 `CI=true`, `WRITING_APP_DISPOSABLE_UBUNTU=true`, Ubuntu 24.04, `linux/amd64`, passwordless sudo를 모두 확인한 뒤에만 실행된다. CI는 task 전용 `/var/tmp/writing-app-bootstrap-*` 경로로 `bootstrap.yaml`을 두 번 실행해 두 번째 recap의 `changed=0`을 요구하고 task 전용 경로를 Ansible로 정리한다. Docker package, apt repository와 daemon 설정은 일회성 runner 폐기와 함께 정리되는 시스템 변경이다.
 
 ## 배포 순서
 
@@ -166,4 +168,4 @@ ansible-playbook playbooks/restore.yaml -e writing_app_allow_database_restore=tr
 - 실패한 신규 배포를 직전 정상 image reference로 되돌릴 수 있다.
 - Litestream 복제본에서 별도 경로로 복구하고 SQLite 무결성 검증을 통과한다.
 
-로컬 Windows 환경에서는 Compose 계약, image smoke 명령 조립·격리·비 root 판정 unit test를 검증했다. Docker daemon이 실행되지 않아 Caddy·Litestream 설정과 실제 네 image build·runtime smoke는 새 Ubuntu CI 결과 확인이 필요하다. Ansible lint·syntax와 두 번째 실행의 멱등성 검증도 Linux 제어 노드와 Ubuntu 24.04 대상 호스트에서 추가로 수행해야 한다.
+로컬 Windows 환경에서는 Compose 계약, image smoke 명령 조립·격리·비 root 판정, bootstrap 실행 환경·Ubuntu release·Ansible recap 파싱 unit test를 검증했다. Docker daemon이 실행되지 않아 Caddy·Litestream 설정과 실제 네 image build·runtime smoke는 새 Ubuntu CI 결과 확인이 필요하다. Ansible lint·syntax와 Ubuntu bootstrap 두 번째 실행의 `changed=0`도 새 CI 결과 확인이 필요하다. 실제 image digest와 외부 자격증명이 필요한 deploy 멱등성은 별도 disposable 배포 환경에서 추가로 수행해야 한다.
