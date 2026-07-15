@@ -5,9 +5,9 @@
 ## 구현 상태
 
 - 기준일: 2026-07-16
-- 상태: 배포 검증, GHCR image release·digest manifest와 취약점 차단 구현 완료; 새 CI 결과 확인 필요
+- 상태: 배포 검증, GHCR release·취약점 차단과 base·운영 image digest 고정 구현 완료; 새 CI 결과 확인 필요
 - 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible, GitHub Actions image release
-- 후속 범위: base image digest·registry 보존 정책, OpenTofu, cloud-init, 승인형 배포 자동화
+- 후속 범위: registry 보존 정책, OpenTofu, cloud-init, 승인형 배포 자동화
 - 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
 
 ## 배포 기준
@@ -137,7 +137,19 @@ workflow는 `GITHUB_TOKEN`의 `packages: write`, attestation용 `attestations: w
 
 검사 예외의 단일 진실 원천은 `deploy/security/image-vulnerability-policy.json`이다. 기본 예외는 0건이다. 예외에는 CVE 또는 GHSA 식별자, 정확한 package 이름, 대상 service, 20자 이상의 사유, GitHub 사용자·팀 owner와 `YYYY-MM-DD` 만료일이 모두 필요하다. 만료일 다음 날부터 preflight가 실패한다. workflow는 이 정책을 service별 최소 Grype 설정으로 변환하고 정책 digest를 image label, digest record와 최종 manifest에 기록한다.
 
-검사 전에 candidate image가 GHCR에 push되므로 취약점 실패 image가 registry에 남을 수는 있지만, attestation과 배포 manifest가 없어 승인된 배포 입력으로 사용할 수 없다. base image digest 고정·갱신과 실패 candidate를 포함한 registry 보존·정리 정책은 아직 구현 전이다. 새 workflow의 실제 GHCR 게시, 스캔, attestation과 artifact 결과도 `main` 반영 후 확인해야 하므로 이 항목들이 끝나기 전에는 컨테이너 공급망 전체가 완료된 것으로 보지 않는다.
+검사 전에 candidate image가 GHCR에 push되므로 취약점 실패 image가 registry에 남을 수는 있지만, attestation과 배포 manifest가 없어 승인된 배포 입력으로 사용할 수 없다. 실패 candidate를 포함한 registry 보존·정리 정책은 아직 구현 전이다. 새 workflow의 실제 GHCR 게시, 스캔, attestation과 artifact 결과도 `main` 반영 후 확인해야 하므로 이 항목들이 끝나기 전에는 컨테이너 공급망 전체가 완료된 것으로 보지 않는다.
+
+## Base와 운영 image lock
+
+`deploy/security/container-image-lock.json`은 `linux/amd64` 배포에 사용하는 Bun `1.3.10`, Node.js `24-bookworm-slim`, Caddy `2.11.4-alpine`, Cloudflared `2026.6.0`, Litestream `0.5.11`의 registry manifest digest를 기록한다. Dockerfile `FROM`, Ansible 기본값과 배포 검증 fixture는 사람이 읽을 수 있는 tag와 변경 불가능한 `@sha256:` digest를 함께 사용한다.
+
+```sh
+bun run check:container-image-lock
+```
+
+이 검사는 lock의 모든 사용 경로가 정확한 reference를 포함하고 같은 tag-only reference를 남기지 않았는지 확인하며 root lint에 포함된다. image 버전은 월 1회와 upstream 보안 공지 때 검토한다. 갱신 PR은 `docker buildx imagetools inspect <image:tag>`로 registry index digest와 `linux/amd64` manifest 존재를 확인하고 lock의 `verifiedOn`, lock reference와 모든 사용 경로를 한 변경으로 갱신한다. 이후 root lint, 배포 설정 검사, 네 image smoke와 취약점 release CI를 통과해야 한다. tag가 같은 상태에서 digest만 자동으로 이동하게 두지 않는다.
+
+검사 실패 candidate를 포함한 GHCR 보존·정리 자동화는 아직 구현 전이다. 새 digest의 실제 pull과 build 결과도 `main` 반영 후 Ubuntu CI에서 확인해야 한다.
 
 네 Dockerfile의 실제 build와 runtime smoke는 다음 canonical 명령으로 실행한다.
 

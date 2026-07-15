@@ -136,7 +136,8 @@
 - 릴리스 workflow의 외부 GitHub Action은 major tag가 아닌 검증한 full commit SHA로 고정하고, 버전 갱신 시 upstream tag ref와 변경 사항을 다시 확인한다.
 - 게시된 정확한 image digest를 Grype `0.110.0`으로 검사하고 수정 가능 여부와 무관하게 `HIGH` 이상 취약점을 차단한다. 스캔 또는 보고서 생성 실패도 fail-closed로 처리하며, 실패 image는 attestation·digest record·배포 manifest에 포함하지 않는다.
 - 취약점 예외는 CVE·GHSA 식별자, package, 대상 service, 구체적인 사유, GitHub owner와 만료일이 있는 검증된 정책만 허용한다. 만료된 예외와 중복 예외는 release preflight에서 거부한다.
-- base·배포용 third-party image digest 고정·갱신과 취약점 검사 실패 candidate의 registry 정리 정책은 아직 구현 전이다.
+- Bun·Node base와 Caddy·Cloudflared·Litestream 운영 image는 tag와 registry manifest digest를 함께 고정한다. 중앙 lock과 실제 사용 경로의 drift는 root lint에서 거부하며, 갱신 때 `linux/amd64` manifest와 후속 취약점 검사를 다시 확인한다.
+- 취약점 검사 실패 candidate의 registry 보존·정리 정책은 아직 구현 전이다.
 
 ## 브라우저 보안
 

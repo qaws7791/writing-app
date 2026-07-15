@@ -135,6 +135,7 @@ bun run check:api-contract
 bun run check:document-drift
 bun run check:workspace-inventory
 bun run check:deployment-config
+bun run check:container-image-lock
 bun run test:deployment-images
 bun run format:check
 bun run lint
@@ -144,7 +145,7 @@ bun run build
 bun lefthook run pre-commit
 ```
 
-`check:deployment-config`는 임시 production fixture로 Compose 계약을 해석하고 고정된 Caddy와 Litestream image에서 설정을 검사한다. `test:deployment-images`는 네 production image를 `linux/amd64`로 빌드하고 비 root 실행, health와 Next.js 정적 자산을 smoke 검증한다. 두 명령 모두 실행 중인 Docker daemon이 필요하다. Ansible lint와 syntax 검사는 Linux 또는 WSL2에서 의존성을 설치한 뒤 `bun run check:deployment-ansible`로 실행한다. 자세한 준비 절차는 [배포 문서](docs/engineering/deployment.md)를 따른다.
+`check:deployment-config`는 임시 production fixture로 Compose 계약을 해석하고 고정된 Caddy와 Litestream image에서 설정을 검사한다. `check:container-image-lock`은 Bun·Node base와 Caddy·Cloudflared·Litestream 운영 image의 tag+digest 고정을 검사한다. `test:deployment-images`는 네 production image를 `linux/amd64`로 빌드하고 비 root 실행, health와 Next.js 정적 자산을 smoke 검증한다. 배포 설정과 image smoke에는 실행 중인 Docker daemon이 필요하다. Ansible lint와 syntax 검사는 Linux 또는 WSL2에서 의존성을 설치한 뒤 `bun run check:deployment-ansible`로 실행한다. 자세한 준비 절차는 [배포 문서](docs/engineering/deployment.md)를 따른다.
 
 Ubuntu bootstrap 멱등성 검사는 운영 장비에서 실행하지 않는다. 저장소 CI는 명시적인 Ubuntu 24.04 일회성 runner에서만 `test:deployment-bootstrap`을 허용한다.
 
