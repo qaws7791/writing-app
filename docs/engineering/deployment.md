@@ -5,9 +5,9 @@
 ## 구현 상태
 
 - 기준일: 2026-07-16
-- 상태: 배포 구성·production image smoke·Ubuntu bootstrap 멱등성 CI 편입 완료; CI 결과 확인과 deploy 통합 검증 필요
-- 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible
-- 후속 범위: OpenTofu, cloud-init, GitHub Actions 배포 자동화
+- 상태: 배포 검증 CI와 GHCR image release·digest manifest 구현 완료; 새 CI 결과 확인 필요
+- 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible, GitHub Actions image release
+- 후속 범위: image 취약점 차단, base image digest 정책, OpenTofu, cloud-init, 승인형 배포 자동화
 - 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
 
 ## 배포 기준
@@ -113,6 +113,27 @@ docker build -f deploy/docker/admin-api.dockerfile -t "$REGISTRY/writing-app-adm
 ```
 
 web과 admin 이미지는 Dockerfile에 선언된 공개 URL build argument를 운영 origin으로 명시해야 한다. 기본 `.test` 값으로 만든 이미지는 운영에 배포하지 않는다.
+
+## GHCR 이미지 릴리스
+
+GitHub 저장소의 Actions variables에 다음 공개 build 입력을 등록한다. 이 값은 브라우저 bundle과 image metadata에 포함되므로 secret 저장소에 넣지 않지만, 네 값 모두 path 없는 실제 production HTTPS origin이어야 한다. localhost, IP loopback과 `.example`, `.invalid`, `.localhost`, `.test` 예약 hostname은 preflight에서 거부한다.
+
+| Repository variable           | 용도                   |
+| ----------------------------- | ---------------------- |
+| `PRODUCTION_WEB_ORIGIN`       | 학습자 웹 공개 origin  |
+| `PRODUCTION_API_ORIGIN`       | 학습자 API 공개 origin |
+| `PRODUCTION_ADMIN_ORIGIN`     | 관리자 웹 공개 origin  |
+| `PRODUCTION_ADMIN_API_ORIGIN` | 관리자 API 공개 origin |
+
+`.github/workflows/image-release.yml`은 `main` push의 `필수 품질 게이트`가 성공했을 때만 실행한다. 외부 fork 또는 다른 event의 `workflow_run`은 거부하고, 검증된 `head_sha`를 다시 checkout해 `linux/amd64` 네 이미지를 빌드한다. 수동 실행과 `latest` tag는 제공하지 않는다.
+
+이미지 이름은 `ghcr.io/<lowercase owner>/<lowercase repository>-<service>`이고 tag는 `sha-<40자리 revision>-<공개 설정 SHA-256>`이다. tag는 게시 충돌 방지와 탐색을 위한 값이며 배포 식별자가 아니다. 배포에는 workflow의 `production-image-digests-<revision>-<configuration digest>` artifact 안에 있는 `name@sha256:...` reference만 사용한다. artifact의 `image-release-manifest.json`은 source revision, 네 공개 origin, 공개 설정 digest와 네 image digest를 함께 기록한다.
+
+각 image에는 OCI source·revision·created label, runtime과 공개 origin label을 기록한다. BuildKit은 SBOM과 최대 provenance를 생성하고 GitHub artifact attestation을 GHCR subject digest에 연결한다. 릴리스 workflow의 외부 GitHub Action도 검증한 full commit SHA로 고정한다. 개별 digest record는 30일, 집계 manifest는 90일 보존한다.
+
+workflow는 `GITHUB_TOKEN`의 `packages: write`, attestation용 `attestations: write`와 `id-token: write`만 job 범위에서 추가한다. 저장소 소유자는 Actions의 package 쓰기 허용 여부, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한을 GitHub 설정에서 확인해야 한다. private package를 사용하는 운영 서버에는 별도의 최소 read 권한 credential 전달 경계가 필요하다.
+
+현재 image 취약점 검사와 차단 기준, base image digest 고정·갱신 정책은 구현 전이다. 새 릴리스 workflow의 실제 GHCR 게시·attestation 결과도 `main` 병합 후 확인해야 하므로 이 항목들이 끝나기 전에는 컨테이너 공급망 전체가 완료된 것으로 보지 않는다.
 
 네 Dockerfile의 실제 build와 runtime smoke는 다음 canonical 명령으로 실행한다.
 

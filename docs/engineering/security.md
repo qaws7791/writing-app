@@ -2,7 +2,7 @@
 
 이 문서는 인증, 인가, 민감 데이터 처리, 보안 요구사항을 설명하는 단일 진실 원천이다.
 
-- 기준일: 2026-07-12
+- 기준일: 2026-07-16
 
 ## 보안 원칙
 
@@ -124,6 +124,17 @@
 - 관리자 AI 채팅은 관리자와 클라이언트 IP별 요청 횟수, 관리자별 일일 요청 횟수, 대화별 동시 stream을 제한한다.
 - 관리자 AI 채팅은 provider timeout, prompt history 길이, 출력 token과 byte 상한을 적용하고 브라우저 연결이 끊기면 provider 작업을 취소한다.
 - 취소되거나 상한을 초과한 관리자 AI 응답은 assistant 메시지로 저장하지 않는다.
+
+## 컨테이너 공급망 보안
+
+- 프로덕션 image release는 동일 저장소 `main` push의 품질 게이트가 성공한 정확한 commit SHA만 checkout한다.
+- `NEXT_PUBLIC_*`와 공개 origin은 검증된 GitHub repository variable로 전달하며 secret을 Docker build argument, image label 또는 일반 artifact에 전달하지 않는다.
+- 네 image는 GHCR에 게시하고 BuildKit SBOM·최대 provenance와 GitHub artifact attestation을 각 image digest에 연결한다.
+- source revision과 공개 origin 설정 digest가 다른 build는 같은 tag를 덮어쓰지 않는다. `latest` tag는 만들지 않고 배포는 집계 manifest의 `name@sha256:...`만 사용한다.
+- 개별 matrix job의 digest record를 다시 검증한 뒤 네 service가 모두 같은 revision과 공개 설정일 때만 배포 manifest를 만든다.
+- workflow 권한은 기본 `contents: read`이고 게시 job에만 `packages: write`, `attestations: write`, `id-token: write`를 추가한다.
+- 릴리스 workflow의 외부 GitHub Action은 major tag가 아닌 검증한 full commit SHA로 고정하고, 버전 갱신 시 upstream tag ref와 변경 사항을 다시 확인한다.
+- image 취약점 검사의 차단 기준과 base·배포용 third-party image digest 고정·갱신 정책은 아직 구현 전이다. 취약점 예외를 도입할 때는 advisory 식별자, 적용 범위, 사유, 소유자와 만료일을 필수로 기록한다.
 
 ## 브라우저 보안
 

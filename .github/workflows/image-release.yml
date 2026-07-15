@@ -1,0 +1,202 @@
+name: 프로덕션 이미지 릴리스
+
+on:
+  workflow_run:
+    workflows:
+      - 필수 품질 게이트
+    types:
+      - completed
+    branches:
+      - main
+
+concurrency:
+  group: image-release-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release-preflight:
+    name: Release 입력 검증
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      configuration-digest: ${{ steps.inputs.outputs.configuration-digest }}
+      image-prefix: ${{ steps.inputs.outputs.image-prefix }}
+      release-tag: ${{ steps.inputs.outputs.release-tag }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - run: bun install --frozen-lockfile
+      - id: inputs
+        name: 공개 build 입력과 release 식별자 검증
+        run: bun scripts/image-release-metadata.ts preflight
+        env:
+          IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
+          PRODUCTION_ADMIN_API_ORIGIN: ${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
+          PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
+          PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
+          PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
+
+  release-images:
+    name: ${{ matrix.service }} image 게시
+    needs:
+      - release-preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: web
+            dockerfile: deploy/docker/web.dockerfile
+            runtime: node-24
+            build-args: |
+              NEXT_PUBLIC_API_BASE_URL=${{ vars.PRODUCTION_API_ORIGIN }}
+              WEB_API_BASE_URL=http://api:4000
+              WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
+          - service: api
+            dockerfile: deploy/docker/api.dockerfile
+            runtime: bun-1.3.10
+            build-args: ""
+          - service: admin
+            dockerfile: deploy/docker/admin.dockerfile
+            runtime: node-24
+            build-args: |
+              NEXT_PUBLIC_ADMIN_API_BASE_URL=${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
+              NEXT_PUBLIC_LEARNER_WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
+              ADMIN_API_BASE_URL=http://admin-api:4001
+              ADMIN_ORIGIN=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
+          - service: admin-api
+            dockerfile: deploy/docker/admin-api.dockerfile
+            runtime: bun-1.3.10
+            build-args: ""
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - run: bun install --frozen-lockfile
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+      - uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: metadata
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        with:
+          images: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}
+          tags: |
+            type=raw,value=${{ needs.release-preflight.outputs.release-tag }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
+            io.writing-app.configuration-digest=${{ needs.release-preflight.outputs.configuration-digest }}
+            io.writing-app.public-origin.admin=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
+            io.writing-app.public-origin.admin-api=${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
+            io.writing-app.public-origin.api=${{ vars.PRODUCTION_API_ORIGIN }}
+            io.writing-app.public-origin.web=${{ vars.PRODUCTION_WEB_ORIGIN }}
+            io.writing-app.runtime=${{ matrix.runtime }}
+      - id: build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          build-args: ${{ matrix.build-args }}
+          cache-from: type=gha,scope=release-${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=release-${{ matrix.service }}
+          context: .
+          file: ${{ matrix.dockerfile }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          platforms: linux/amd64
+          provenance: mode=max
+          pull: true
+          push: true
+          sbom: true
+          tags: ${{ steps.metadata.outputs.tags }}
+      - name: GitHub artifact attestation 게시
+        uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
+        with:
+          subject-name: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+      - name: Image digest record 생성
+        run: bun scripts/image-release-metadata.ts write-record
+        env:
+          IMAGE_RELEASE_CONFIGURATION_DIGEST: ${{ needs.release-preflight.outputs.configuration-digest }}
+          IMAGE_RELEASE_DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_RELEASE_NAME: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}
+          IMAGE_RELEASE_OUTPUT: output/image-release-records/${{ matrix.service }}.json
+          IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
+          IMAGE_RELEASE_SERVICE: ${{ matrix.service }}
+          PRODUCTION_ADMIN_API_ORIGIN: ${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
+          PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
+          PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
+          PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: image-release-record-${{ matrix.service }}-${{ github.event.workflow_run.head_sha }}
+          path: output/image-release-records/${{ matrix.service }}.json
+          if-no-files-found: error
+          retention-days: 30
+
+  release-manifest:
+    name: 배포 image digest manifest
+    needs:
+      - release-preflight
+      - release-images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: image-release-record-*-${{ github.event.workflow_run.head_sha }}
+          path: output/image-release-records
+          merge-multiple: true
+      - run: >-
+          bun scripts/image-release-metadata.ts aggregate
+          output/image-release-records
+          output/image-release-manifest.json
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: production-image-digests-${{ github.event.workflow_run.head_sha }}-${{ needs.release-preflight.outputs.configuration-digest }}
+          path: output/image-release-manifest.json
+          if-no-files-found: error
+          retention-days: 90

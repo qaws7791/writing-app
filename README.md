@@ -9,7 +9,7 @@
 - 학습자·관리자 웹과 API, SQLite migration·seed, 자동 테스트와 프로덕션 컨테이너 정의가 구현되어 있다.
 - 로컬 개발은 Windows, Linux와 macOS에서 Node.js `24.x`, Bun `1.3.10`을 지원 대상으로 삼는다.
 - 프로덕션은 Ubuntu 24.04 LTS `linux/amd64` 단일 서버와 로컬 SQLite 구성을 최초 범위로 삼는다.
-- Docker Compose와 Ansible은 구현되어 있지만 실제 Ubuntu 통합 검증, OpenTofu·cloud-init과 GitHub Actions 배포 자동화는 진행 중이다. 현재 상태는 [배포 문서](docs/engineering/deployment.md), 실행 순서는 [자동화 작업 계획](repository-onboarding-and-production-deployment-plan.md)에서 확인한다.
+- Docker Compose, Ansible과 GHCR 이미지 릴리스는 구현되어 있지만 실제 Ubuntu 통합 검증, OpenTofu·cloud-init과 승인형 GitHub Actions 배포는 진행 중이다. 현재 상태는 [배포 문서](docs/engineering/deployment.md), 실행 순서는 [자동화 작업 계획](repository-onboarding-and-production-deployment-plan.md)에서 확인한다.
 
 ## 프로젝트 구조
 
@@ -147,6 +147,14 @@ bun lefthook run pre-commit
 `check:deployment-config`는 임시 production fixture로 Compose 계약을 해석하고 고정된 Caddy와 Litestream image에서 설정을 검사한다. `test:deployment-images`는 네 production image를 `linux/amd64`로 빌드하고 비 root 실행, health와 Next.js 정적 자산을 smoke 검증한다. 두 명령 모두 실행 중인 Docker daemon이 필요하다. Ansible lint와 syntax 검사는 Linux 또는 WSL2에서 의존성을 설치한 뒤 `bun run check:deployment-ansible`로 실행한다. 자세한 준비 절차는 [배포 문서](docs/engineering/deployment.md)를 따른다.
 
 Ubuntu bootstrap 멱등성 검사는 운영 장비에서 실행하지 않는다. 저장소 CI는 명시적인 Ubuntu 24.04 일회성 runner에서만 `test:deployment-bootstrap`을 허용한다.
+
+## 프로덕션 이미지 릴리스
+
+GitHub 저장소의 Actions variables에 실제 HTTPS origin인 `PRODUCTION_WEB_ORIGIN`, `PRODUCTION_API_ORIGIN`, `PRODUCTION_ADMIN_ORIGIN`, `PRODUCTION_ADMIN_API_ORIGIN`을 등록한다. `main` push의 `필수 품질 게이트`가 성공하면 `프로덕션 이미지 릴리스` workflow가 같은 commit에서 web, api, admin, admin-api 이미지를 빌드해 GHCR에 게시한다.
+
+workflow 결과의 `production-image-digests-*` artifact에는 네 `ghcr.io/...@sha256:...` reference와 source revision, 공개 origin 설정 digest가 들어 있다. 운영 배포에는 이 digest reference만 사용하며 `latest` tag를 사용하지 않는다. 저장소의 Actions package 쓰기 권한, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한은 저장소 소유자가 GitHub 설정에서 확인해야 한다.
+
+현재 승인형 CD와 OpenTofu 기반 호스트 생성은 구현 전이다. 따라서 최초 서버 준비와 실제 digest 배포는 [배포 문서](docs/engineering/deployment.md)의 Ansible 절차를 따르며, 자동화되지 않은 단계를 완료된 것으로 가정하지 않는다.
 
 OpenAPI 계약과 웹 생성 타입을 갱신해야 할 때:
 
