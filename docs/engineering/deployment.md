@@ -5,9 +5,9 @@
 ## 구현 상태
 
 - 기준일: 2026-07-16
-- 상태: 배포 검증 CI와 GHCR image release·digest manifest 구현 완료; 새 CI 결과 확인 필요
+- 상태: 배포 검증, GHCR image release·digest manifest와 취약점 차단 구현 완료; 새 CI 결과 확인 필요
 - 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible, GitHub Actions image release
-- 후속 범위: image 취약점 차단, base image digest 정책, OpenTofu, cloud-init, 승인형 배포 자동화
+- 후속 범위: base image digest·registry 보존 정책, OpenTofu, cloud-init, 승인형 배포 자동화
 - 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
 
 ## 배포 기준
@@ -131,9 +131,13 @@ GitHub 저장소의 Actions variables에 다음 공개 build 입력을 등록한
 
 각 image에는 OCI source·revision·created label, runtime과 공개 origin label을 기록한다. BuildKit은 SBOM과 최대 provenance를 생성하고 GitHub artifact attestation을 GHCR subject digest에 연결한다. 릴리스 workflow의 외부 GitHub Action도 검증한 full commit SHA로 고정한다. 개별 digest record는 30일, 집계 manifest는 90일 보존한다.
 
-workflow는 `GITHUB_TOKEN`의 `packages: write`, attestation용 `attestations: write`와 `id-token: write`만 job 범위에서 추가한다. 저장소 소유자는 Actions의 package 쓰기 허용 여부, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한을 GitHub 설정에서 확인해야 한다. private package를 사용하는 운영 서버에는 별도의 최소 read 권한 credential 전달 경계가 필요하다.
+workflow는 `GITHUB_TOKEN`의 `packages: write`, attestation용 `attestations: write`, `artifact-metadata: write`와 `id-token: write`만 게시 job 범위에서 추가한다. 저장소 소유자는 Actions의 package 쓰기 허용 여부, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한을 GitHub 설정에서 확인해야 한다. private package를 사용하는 운영 서버에는 별도의 최소 read 권한 credential 전달 경계가 필요하다.
 
-현재 image 취약점 검사와 차단 기준, base image digest 고정·갱신 정책은 구현 전이다. 새 릴리스 workflow의 실제 GHCR 게시·attestation 결과도 `main` 병합 후 확인해야 하므로 이 항목들이 끝나기 전에는 컨테이너 공급망 전체가 완료된 것으로 보지 않는다.
+게시 직후 각 `name@digest`를 full SHA로 고정한 Anchore scan Action과 Grype `0.110.0`으로 검사한다. 수정 버전 존재 여부와 무관하게 `HIGH` 또는 `CRITICAL` 취약점이 하나라도 있으면 job이 실패하며 GitHub attestation, image digest record와 네 image manifest를 만들지 않는다. 검사 JSON은 성공·실패와 무관하게 `image-vulnerability-report-<service>-<revision>` artifact로 90일 보존한다. 스캐너 설치 또는 보고서 생성 자체가 실패해도 release는 실패한다.
+
+검사 예외의 단일 진실 원천은 `deploy/security/image-vulnerability-policy.json`이다. 기본 예외는 0건이다. 예외에는 CVE 또는 GHSA 식별자, 정확한 package 이름, 대상 service, 20자 이상의 사유, GitHub 사용자·팀 owner와 `YYYY-MM-DD` 만료일이 모두 필요하다. 만료일 다음 날부터 preflight가 실패한다. workflow는 이 정책을 service별 최소 Grype 설정으로 변환하고 정책 digest를 image label, digest record와 최종 manifest에 기록한다.
+
+검사 전에 candidate image가 GHCR에 push되므로 취약점 실패 image가 registry에 남을 수는 있지만, attestation과 배포 manifest가 없어 승인된 배포 입력으로 사용할 수 없다. base image digest 고정·갱신과 실패 candidate를 포함한 registry 보존·정리 정책은 아직 구현 전이다. 새 workflow의 실제 GHCR 게시, 스캔, attestation과 artifact 결과도 `main` 반영 후 확인해야 하므로 이 항목들이 끝나기 전에는 컨테이너 공급망 전체가 완료된 것으로 보지 않는다.
 
 네 Dockerfile의 실제 build와 runtime smoke는 다음 canonical 명령으로 실행한다.
 

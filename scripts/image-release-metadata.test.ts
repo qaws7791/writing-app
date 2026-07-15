@@ -19,6 +19,7 @@ const publicOrigins: ImageReleasePublicOrigins = {
 const revision = "a".repeat(40)
 const digest = `sha256:${"b".repeat(64)}`
 const repository = "Owner/Writing-App"
+const vulnerabilityPolicyDigest = "c".repeat(64)
 
 describe("image release metadata", () => {
   test("production origin과 revision 계약을 검증한다", () => {
@@ -63,11 +64,13 @@ describe("image release metadata", () => {
         repository,
         revision,
         service,
+        vulnerabilityPolicyDigest,
       })
     )
     const manifest = createImageReleaseManifest(records)
 
     expect(manifest.revision).toBe(revision)
+    expect(manifest.vulnerabilityPolicyDigest).toBe(vulnerabilityPolicyDigest)
     expect(manifest.images.web.reference).toBe(
       `ghcr.io/owner/writing-app-web@${digest}`
     )
@@ -88,6 +91,7 @@ describe("image release metadata", () => {
         repository,
         revision,
         service: "web",
+        vulnerabilityPolicyDigest,
       })
     ).toThrow("image digest")
     expect(() =>
@@ -98,6 +102,7 @@ describe("image release metadata", () => {
         repository,
         revision,
         service: "web",
+        vulnerabilityPolicyDigest,
       })
     ).toThrow("image name")
   })
@@ -110,6 +115,7 @@ describe("image release metadata", () => {
       repository,
       revision,
       service: "web",
+      vulnerabilityPolicyDigest,
     })
 
     expect(() =>

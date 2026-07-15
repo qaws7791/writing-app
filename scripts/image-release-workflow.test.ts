@@ -14,6 +14,7 @@ const actionPins = {
   "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
   "actions/setup-node": "249970729cb0ef3589644e2896645e5dc5ba9c38",
   "actions/upload-artifact": "b7c566a772e6b6bfb58ed0dc250532a479d7789f",
+  "anchore/scan-action": "e1165082ffb1fe366ebaf02d8526e7c4989ea9d2",
   "docker/build-push-action": "53b7df96c91f9c12dcc8a07bcb9ccacbed38856a",
   "docker/login-action": "af1e73f918a031802d376d3c8bbc3fe56130a9b0",
   "docker/metadata-action": "dc802804100637a589fabce1cb79ff13a1411302",
@@ -75,6 +76,7 @@ describe("production image release workflow", () => {
 
   test("SBOM, provenance, GitHub attestation과 네 digest manifest를 생성한다", () => {
     expect(workflow).toContain("attestations: write")
+    expect(workflow).toContain("artifact-metadata: write")
     expect(workflow).toContain("id-token: write")
     expect(workflow).toContain("provenance: mode=max")
     expect(workflow).toContain("sbom: true")
@@ -89,6 +91,31 @@ describe("production image release workflow", () => {
       "bun scripts/image-release-metadata.ts aggregate"
     )
     expect(workflow).toContain("output/image-release-manifest.json")
+  })
+
+  test("각 digest를 고정 Grype로 검사하고 HIGH 이상이면 manifest 생성을 차단한다", () => {
+    expect(workflow).toContain(
+      `uses: anchore/scan-action@${actionPins["anchore/scan-action"]}`
+    )
+    expect(workflow).toContain("grype-version: v0.110.0")
+    expect(workflow).toContain(
+      "severity-cutoff: ${{ needs.release-preflight.outputs.vulnerability-severity-cutoff }}"
+    )
+    expect(workflow).toContain("only-fixed: false")
+    expect(workflow).toContain("fail-build: true")
+    expect(workflow).toContain(
+      "if: ${{ always() && steps.build.outcome == 'success' }}"
+    )
+    expect(workflow).toContain("image-vulnerability-report-")
+
+    const build = workflow.indexOf("id: build")
+    const scan = workflow.indexOf("id: vulnerability-scan")
+    const attest = workflow.indexOf("name: GitHub artifact attestation 게시")
+    const record = workflow.indexOf("name: Image digest record 생성")
+    expect(build).toBeGreaterThan(-1)
+    expect(scan).toBeGreaterThan(build)
+    expect(attest).toBeGreaterThan(scan)
+    expect(record).toBeGreaterThan(scan)
   })
 
   test("production 공개 origin을 repository variable로만 전달한다", () => {

@@ -6,7 +6,7 @@
 - 대상 저장소: `writing-app`
 - 대상 런타임: Bun `1.3.10`, Node.js `24.x`
 - 최초 배포 대상: Ubuntu `24.04 LTS`, `linux/amd64`
-- 상태: 변경 단위 2 완료, 변경 단위 3 CI 결과 확인 대기, 변경 단위 4 GHCR release·digest manifest 구현 완료; 취약점 검사와 base image digest 정책 미완료
+- 상태: 변경 단위 2 완료, 변경 단위 3 CI 결과 확인 대기, 변경 단위 4 GHCR release·취약점 차단·digest manifest 구현 완료; base image digest와 registry 보존 정책 미완료
 - 기준 배포 구조: 단일 Ubuntu 서버, Docker Compose, Caddy, Cloudflare Tunnel, Litestream, Cloudflare R2, Ansible
 
 ## 목적
@@ -83,19 +83,19 @@ GitHub에서 저장소를 처음 발견한 사람이 `README.md`에서 프로젝
 
 ## 확인된 현재 상태와 격차
 
-| 영역        | 현재 상태                                                                       | 목표와의 격차                                                                            |
-| ----------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| README      | 제품 상태, clone, 한 번의 setup, 검증과 배포 진입점을 제공한다.                 | 화면 자료, 문제 해결 표, 라이선스와 지원·release 정책 보강이 필요하다.                   |
-| 로컬 setup  | env credential 생성, setup, doctor와 멱등성 fixture가 구현됐다.                 | Ubuntu CI 결과 확인과 실제 네 서비스 startup smoke 연결이 필요하다.                      |
-| 컨테이너    | 네 image의 GHCR 게시, SBOM·provenance·attestation과 digest manifest가 구현됐다. | 실제 CI 결과 확인, 취약점 검사와 base image digest 고정·갱신 정책이 필요하다.            |
-| Compose     | 전체 서비스와 임시 production fixture 기반 계약 검사가 있다.                    | 실제 image를 함께 기동하는 route·데이터 통합 smoke와 실패 주입 검증이 없다.              |
-| Ansible     | lint·syntax와 disposable Ubuntu bootstrap 멱등성 CI가 연결됐다.                 | CI 결과 확인, 실제 digest를 사용한 deploy 멱등성, 실패 주입과 복구 통합 검증이 없다.     |
-| 인프라      | 운영 구조와 지원 OS가 문서에 정의되어 있다.                                     | VM, firewall, SSH, DNS와 최초 host 준비를 생성하는 OpenTofu·cloud-init이 없다.           |
-| CI          | 앱 품질 게이트 뒤 exact SHA image release와 digest 집계를 실행한다.             | 새 workflow 결과 확인, environment 승인과 CD workflow가 없다.                            |
-| 비밀값      | Ansible Vault 예시와 root 소유 환경 파일 정책이 있다.                           | 초기 생성, 전달, rotation, CI 사용 경계와 운영자 절차가 하나의 계약으로 정리되지 않았다. |
-| 백업·롤백   | SQLite snapshot, Litestream/R2, rollback/restore 절차가 있다.                   | 실제 Ubuntu와 실제 R2 호환 endpoint에서 주기적으로 복구한 증거가 없다.                   |
-| 관측성      | 구조화 API 요청 로그와 이벤트 계약이 있다.                                      | 로그 수집기, metric backend, dashboard와 alert manager가 없다.                           |
-| 공개 저장소 | 코드와 엔지니어링 문서가 공개 사용을 전제로 탐색 가능하다.                      | LICENSE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT와 release 정책이 없다.                  |
+| 영역        | 현재 상태                                                                                              | 목표와의 격차                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| README      | 제품 상태, clone, 한 번의 setup, 검증과 배포 진입점을 제공한다.                                        | 화면 자료, 문제 해결 표, 라이선스와 지원·release 정책 보강이 필요하다.                   |
+| 로컬 setup  | env credential 생성, setup, doctor와 멱등성 fixture가 구현됐다.                                        | Ubuntu CI 결과 확인과 실제 네 서비스 startup smoke 연결이 필요하다.                      |
+| 컨테이너    | 네 image의 GHCR 게시, HIGH 이상 취약점 차단, SBOM·provenance·attestation과 digest manifest가 구현됐다. | 실제 CI 결과 확인, base image digest 고정·갱신과 registry 보존 정책이 필요하다.          |
+| Compose     | 전체 서비스와 임시 production fixture 기반 계약 검사가 있다.                                           | 실제 image를 함께 기동하는 route·데이터 통합 smoke와 실패 주입 검증이 없다.              |
+| Ansible     | lint·syntax와 disposable Ubuntu bootstrap 멱등성 CI가 연결됐다.                                        | CI 결과 확인, 실제 digest를 사용한 deploy 멱등성, 실패 주입과 복구 통합 검증이 없다.     |
+| 인프라      | 운영 구조와 지원 OS가 문서에 정의되어 있다.                                                            | VM, firewall, SSH, DNS와 최초 host 준비를 생성하는 OpenTofu·cloud-init이 없다.           |
+| CI          | 앱 품질 게이트 뒤 exact SHA image release와 digest 집계를 실행한다.                                    | 새 workflow 결과 확인, environment 승인과 CD workflow가 없다.                            |
+| 비밀값      | Ansible Vault 예시와 root 소유 환경 파일 정책이 있다.                                                  | 초기 생성, 전달, rotation, CI 사용 경계와 운영자 절차가 하나의 계약으로 정리되지 않았다. |
+| 백업·롤백   | SQLite snapshot, Litestream/R2, rollback/restore 절차가 있다.                                          | 실제 Ubuntu와 실제 R2 호환 endpoint에서 주기적으로 복구한 증거가 없다.                   |
+| 관측성      | 구조화 API 요청 로그와 이벤트 계약이 있다.                                                             | 로그 수집기, metric backend, dashboard와 alert manager가 없다.                           |
+| 공개 저장소 | 코드와 엔지니어링 문서가 공개 사용을 전제로 탐색 가능하다.                                             | LICENSE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT와 release 정책이 없다.                  |
 
 ## 필수 사용자 입력 계약
 
@@ -250,9 +250,11 @@ Linux 전용 `check:deployment-ansible`은 전체 `ansible-lint`와 저장소의
 
 2026-07-16에 `.github/workflows/image-release.yml`과 `scripts/image-release-metadata.ts`를 구현했다. 동일 저장소 `main` push의 `필수 품질 게이트`가 성공한 exact SHA만 release하며, 네 production origin을 repository variable에서 검증한다. release tag는 source SHA와 공개 설정 digest를 함께 사용해 같은 source의 서로 다른 공개 build가 tag를 덮어쓰지 않게 한다.
 
-네 `linux/amd64` image는 GHCR에 게시되며 OCI source·revision·created, runtime과 공개 origin metadata를 포함한다. BuildKit SBOM·최대 provenance와 GitHub artifact attestation을 각 digest에 연결하고 외부 GitHub Action은 검증한 full commit SHA로 고정한다. matrix job의 digest record는 schema와 GHCR name, revision, 공개 설정을 다시 검사하고 네 service가 모두 일치할 때만 `image-release-manifest.json`으로 집계한다. 배포 입력은 tag가 아니라 이 manifest의 digest reference다.
+네 `linux/amd64` image는 GHCR에 게시되며 OCI source·revision·created, runtime과 공개 origin metadata를 포함한다. BuildKit SBOM·최대 provenance와 GitHub artifact attestation을 각 digest에 연결하고 외부 GitHub Action은 검증한 full commit SHA로 고정한다. Grype `0.110.0`은 게시된 정확한 digest의 `HIGH` 이상 취약점을 수정 가능 여부와 무관하게 차단하며 JSON 보고서를 90일 보존한다. scanner 또는 보고서 생성 실패도 release를 중단한다. matrix job의 digest record는 schema와 GHCR name, revision, 공개 설정·취약점 정책을 다시 검사하고 네 service가 모두 일치할 때만 `image-release-manifest.json`으로 집계한다. 배포 입력은 tag가 아니라 이 manifest의 digest reference다.
 
-Windows에서 metadata와 workflow contract unit test를 통과했다. 실제 GHCR package 게시, SBOM·provenance·attestation과 artifact 생성은 workflow가 기본 branch에 반영된 뒤 결과 확인이 필요하다. OS·application image 취약점 검사와 차단 기준, base·third-party image digest 고정 및 갱신, registry 보존 정책은 다음 하위 작업으로 남아 있다.
+`deploy/security/image-vulnerability-policy.json`은 기본 예외 0건으로 시작한다. 예외를 추가하려면 CVE·GHSA 식별자, package, 대상 service, 구체적 사유, GitHub owner와 만료일이 모두 필요하며 만료·중복 예외는 preflight에서 거부한다. 검사 실패 candidate는 GHCR에 남을 수 있지만 attestation과 배포 manifest를 받지 못한다.
+
+Windows에서 metadata, 취약점 정책과 workflow contract unit test를 통과했다. 실제 GHCR package 게시, Grype DB 기반 검사, SBOM·provenance·attestation과 artifact 생성은 workflow가 기본 branch에 반영된 뒤 결과 확인이 필요하다. base·third-party image digest 고정 및 갱신과 registry 보존 정책은 다음 하위 작업으로 남아 있다.
 
 ### 완료 조건
 

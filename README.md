@@ -152,7 +152,7 @@ Ubuntu bootstrap 멱등성 검사는 운영 장비에서 실행하지 않는다.
 
 GitHub 저장소의 Actions variables에 실제 HTTPS origin인 `PRODUCTION_WEB_ORIGIN`, `PRODUCTION_API_ORIGIN`, `PRODUCTION_ADMIN_ORIGIN`, `PRODUCTION_ADMIN_API_ORIGIN`을 등록한다. `main` push의 `필수 품질 게이트`가 성공하면 `프로덕션 이미지 릴리스` workflow가 같은 commit에서 web, api, admin, admin-api 이미지를 빌드해 GHCR에 게시한다.
 
-workflow 결과의 `production-image-digests-*` artifact에는 네 `ghcr.io/...@sha256:...` reference와 source revision, 공개 origin 설정 digest가 들어 있다. 운영 배포에는 이 digest reference만 사용하며 `latest` tag를 사용하지 않는다. 저장소의 Actions package 쓰기 권한, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한은 저장소 소유자가 GitHub 설정에서 확인해야 한다.
+workflow는 게시된 각 digest를 고정된 Grype로 검사하고 `HIGH` 이상 취약점이 있으면 배포 manifest 생성을 차단한다. 결과의 `production-image-digests-*` artifact에는 검사를 통과한 네 `ghcr.io/...@sha256:...` reference와 source revision, 공개 origin·취약점 정책 digest가 들어 있다. 운영 배포에는 이 digest reference만 사용하며 `latest` tag를 사용하지 않는다. 저장소의 Actions package 쓰기 권한, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한은 저장소 소유자가 GitHub 설정에서 확인해야 한다.
 
 현재 승인형 CD와 OpenTofu 기반 호스트 생성은 구현 전이다. 따라서 최초 서버 준비와 실제 digest 배포는 [배포 문서](docs/engineering/deployment.md)의 Ansible 절차를 따르며, 자동화되지 않은 단계를 완료된 것으로 가정하지 않는다.
 

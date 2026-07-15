@@ -132,9 +132,11 @@
 - 네 image는 GHCR에 게시하고 BuildKit SBOM·최대 provenance와 GitHub artifact attestation을 각 image digest에 연결한다.
 - source revision과 공개 origin 설정 digest가 다른 build는 같은 tag를 덮어쓰지 않는다. `latest` tag는 만들지 않고 배포는 집계 manifest의 `name@sha256:...`만 사용한다.
 - 개별 matrix job의 digest record를 다시 검증한 뒤 네 service가 모두 같은 revision과 공개 설정일 때만 배포 manifest를 만든다.
-- workflow 권한은 기본 `contents: read`이고 게시 job에만 `packages: write`, `attestations: write`, `id-token: write`를 추가한다.
+- workflow 권한은 기본 `contents: read`이고 게시 job에만 `packages: write`, `attestations: write`, `artifact-metadata: write`, `id-token: write`를 추가한다.
 - 릴리스 workflow의 외부 GitHub Action은 major tag가 아닌 검증한 full commit SHA로 고정하고, 버전 갱신 시 upstream tag ref와 변경 사항을 다시 확인한다.
-- image 취약점 검사의 차단 기준과 base·배포용 third-party image digest 고정·갱신 정책은 아직 구현 전이다. 취약점 예외를 도입할 때는 advisory 식별자, 적용 범위, 사유, 소유자와 만료일을 필수로 기록한다.
+- 게시된 정확한 image digest를 Grype `0.110.0`으로 검사하고 수정 가능 여부와 무관하게 `HIGH` 이상 취약점을 차단한다. 스캔 또는 보고서 생성 실패도 fail-closed로 처리하며, 실패 image는 attestation·digest record·배포 manifest에 포함하지 않는다.
+- 취약점 예외는 CVE·GHSA 식별자, package, 대상 service, 구체적인 사유, GitHub owner와 만료일이 있는 검증된 정책만 허용한다. 만료된 예외와 중복 예외는 release preflight에서 거부한다.
+- base·배포용 third-party image digest 고정·갱신과 취약점 검사 실패 candidate의 registry 정리 정책은 아직 구현 전이다.
 
 ## 브라우저 보안
 

@@ -31,6 +31,7 @@ export interface ImageReleaseRecord {
   readonly revision: string
   readonly schemaVersion: 1
   readonly service: ImageReleaseService
+  readonly vulnerabilityPolicyDigest: string
 }
 
 export interface ImageReleaseManifest {
@@ -44,6 +45,7 @@ export interface ImageReleaseManifest {
   readonly publicOrigins: ImageReleasePublicOrigins
   readonly revision: string
   readonly schemaVersion: 1
+  readonly vulnerabilityPolicyDigest: string
 }
 
 interface ImageReleaseRecordInput {
@@ -53,6 +55,7 @@ interface ImageReleaseRecordInput {
   readonly repository: string
   readonly revision: string
   readonly service: ImageReleaseService
+  readonly vulnerabilityPolicyDigest: string
 }
 
 export function validateImageReleaseInputs(input: {
@@ -91,6 +94,9 @@ export function createImageReleaseRecord(
       "image digest는 sha256:<64 lowercase hex> 형식이어야 합니다."
     )
   }
+  if (!/^[0-9a-f]{64}$/u.test(input.vulnerabilityPolicyDigest)) {
+    throw new Error("취약점 정책 digest는 64자리 lowercase hex여야 합니다.")
+  }
 
   const expectedImageName = `${createImagePrefix(input.repository)}-${input.service}`
   if (input.imageName !== expectedImageName) {
@@ -110,6 +116,7 @@ export function createImageReleaseRecord(
     revision: input.revision,
     schemaVersion: 1,
     service: input.service,
+    vulnerabilityPolicyDigest: input.vulnerabilityPolicyDigest,
   }
 }
 
@@ -137,6 +144,9 @@ export function createImageReleaseManifest(
     if (record.configurationDigest !== first.configurationDigest) {
       throw new Error("모든 image record의 공개 설정 digest가 같아야 합니다.")
     }
+    if (record.vulnerabilityPolicyDigest !== first.vulnerabilityPolicyDigest) {
+      throw new Error("모든 image record의 취약점 정책 digest가 같아야 합니다.")
+    }
     if (
       JSON.stringify(record.publicOrigins) !==
       JSON.stringify(first.publicOrigins)
@@ -163,6 +173,7 @@ export function createImageReleaseManifest(
     publicOrigins: first.publicOrigins,
     revision: first.revision,
     schemaVersion: 1,
+    vulnerabilityPolicyDigest: first.vulnerabilityPolicyDigest,
   }
 }
 
@@ -202,6 +213,10 @@ export function parseImageReleaseRecord(input: unknown): ImageReleaseRecord {
     revision: readString(input.revision, "revision"),
     schemaVersion: input.schemaVersion === 1 ? 1 : invalidSchemaVersion(),
     service: service as ImageReleaseService,
+    vulnerabilityPolicyDigest: readString(
+      input.vulnerabilityPolicyDigest,
+      "vulnerabilityPolicyDigest"
+    ),
   }
   validateImageReleaseRecord(record)
   return record
@@ -213,6 +228,11 @@ function validateImageReleaseRecord(record: ImageReleaseRecord): void {
   }
   if (!/^[0-9a-f]{40}$/u.test(record.revision)) {
     throw new Error("revision은 40자리 lowercase Git SHA여야 합니다.")
+  }
+  if (!/^[0-9a-f]{64}$/u.test(record.vulnerabilityPolicyDigest)) {
+    throw new Error(
+      "vulnerabilityPolicyDigest는 64자리 lowercase hex여야 합니다."
+    )
   }
   if (!/^sha256:[0-9a-f]{64}$/u.test(record.image.digest)) {
     throw new Error("image digest 형식이 올바르지 않습니다.")
@@ -368,6 +388,9 @@ function runWriteRecord(): void {
     repository: requireEnvironment("GITHUB_REPOSITORY"),
     revision: requireEnvironment("IMAGE_RELEASE_REVISION"),
     service: requireEnvironment("IMAGE_RELEASE_SERVICE") as ImageReleaseService,
+    vulnerabilityPolicyDigest: requireEnvironment(
+      "IMAGE_RELEASE_VULNERABILITY_POLICY_DIGEST"
+    ),
   })
   const expectedConfigurationDigest = requireEnvironment(
     "IMAGE_RELEASE_CONFIGURATION_DIGEST"

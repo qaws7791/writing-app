@@ -30,6 +30,8 @@ jobs:
       configuration-digest: ${{ steps.inputs.outputs.configuration-digest }}
       image-prefix: ${{ steps.inputs.outputs.image-prefix }}
       release-tag: ${{ steps.inputs.outputs.release-tag }}
+      vulnerability-policy-digest: ${{ steps.vulnerability-policy.outputs.policy-digest }}
+      vulnerability-severity-cutoff: ${{ steps.vulnerability-policy.outputs.severity-cutoff }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -52,6 +54,9 @@ jobs:
           PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
           PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
           PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
+      - id: vulnerability-policy
+        name: Image 취약점 정책 검증
+        run: bun scripts/image-vulnerability-policy.ts validate
 
   release-images:
     name: ${{ matrix.service }} image 게시
@@ -60,6 +65,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
+      artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
@@ -124,6 +130,7 @@ jobs:
             io.writing-app.public-origin.api=${{ vars.PRODUCTION_API_ORIGIN }}
             io.writing-app.public-origin.web=${{ vars.PRODUCTION_WEB_ORIGIN }}
             io.writing-app.runtime=${{ matrix.runtime }}
+            io.writing-app.vulnerability-policy-digest=${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
       - id: build
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
@@ -139,6 +146,34 @@ jobs:
           push: true
           sbom: true
           tags: ${{ steps.metadata.outputs.tags }}
+      - name: Grype 예외 설정 생성
+        run: >-
+          bun scripts/image-vulnerability-policy.ts write-grype-config
+          ${{ matrix.service }}
+          output/vulnerability-reports/${{ matrix.service }}.grype.yaml
+        env:
+          IMAGE_RELEASE_VULNERABILITY_POLICY_DIGEST: ${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
+      - id: vulnerability-scan
+        name: Image 취약점 검사
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
+        with:
+          image: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}@${{ steps.build.outputs.digest }}
+          fail-build: true
+          severity-cutoff: ${{ needs.release-preflight.outputs.vulnerability-severity-cutoff }}
+          only-fixed: false
+          by-cve: true
+          grype-version: v0.110.0
+          config: output/vulnerability-reports/${{ matrix.service }}.grype.yaml
+          output-format: json
+          output-file: output/vulnerability-reports/${{ matrix.service }}.json
+      - name: Image 취약점 보고서 보존
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: image-vulnerability-report-${{ matrix.service }}-${{ github.event.workflow_run.head_sha }}
+          path: output/vulnerability-reports/${{ matrix.service }}.json
+          if-no-files-found: error
+          retention-days: 90
       - name: GitHub artifact attestation 게시
         uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
         with:
@@ -154,6 +189,7 @@ jobs:
           IMAGE_RELEASE_OUTPUT: output/image-release-records/${{ matrix.service }}.json
           IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
           IMAGE_RELEASE_SERVICE: ${{ matrix.service }}
+          IMAGE_RELEASE_VULNERABILITY_POLICY_DIGEST: ${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
           PRODUCTION_ADMIN_API_ORIGIN: ${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
           PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
           PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
