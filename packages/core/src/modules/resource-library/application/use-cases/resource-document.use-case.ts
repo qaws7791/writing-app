@@ -2,7 +2,6 @@ import {
   adminImportResourceDocumentResultDtoSchema,
   adminResourceActiveDocumentDtoSchema,
   adminResourceDocumentDtoSchema,
-  type AdminImportResourceDocumentRequest,
   type AdminImportResourceDocumentResultDto,
   type AdminResourceDocumentDto,
 } from "@workspace/contracts/admin"
@@ -39,6 +38,15 @@ export type ResourceDocumentImportResult =
       readonly value: AdminImportResourceDocumentResultDto
     }
 
+export type ImportResourceDocumentCommand = {
+  readonly actorId: string
+  readonly expectedRevision: number
+  readonly fileName: string
+  readonly markdown: string
+  readonly now: Date
+  readonly parentId: string | null
+}
+
 export type ResourceDocumentUseCase = {
   readonly exportDocument: (input: { readonly documentId: string }) => Promise<
     | { readonly kind: "not-found" }
@@ -51,10 +59,7 @@ export type ResourceDocumentUseCase = {
     readonly documentId: string
   }) => Promise<AdminResourceDocumentDto | null>
   readonly importDocument: (
-    input: AdminImportResourceDocumentRequest & {
-      readonly actorId: string
-      readonly now: Date
-    }
+    input: ImportResourceDocumentCommand
   ) => Promise<ResourceDocumentImportResult>
 }
 

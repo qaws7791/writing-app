@@ -246,8 +246,11 @@ Lexical과 Yjs 연결, transaction batching, HTTP Adapter와 WebSocket Adapter�
 - 증분 update 또는 snapshot 응답 선택
 - commit 뒤 실시간 Hub 발행
 - 같은 문서의 본문 저장, 휴지통 이동과 내보내기를 한 순서로 처리하는 문서별 operation queue
+- application이 의존하는 `ResourceDocumentProjector` 결과와 projection quota 판정
 
 기존 `packages/resource-document`의 정규 GFM mapper와 원격 Yjs 검증 구현을 재사용한다. transport 변경 때문에 동일한 검증 utility를 복제하지 않는다.
+
+Bun Worker 생성, worker URL 결정, deadline 시간 측정과 종료는 resource-library infrastructure adapter가 소유한다. production composition과 load fixture는 projector를 필수로 주입하며, use case 내부에는 runtime 기본 구현을 두지 않는다.
 
 문서별 operation queue는 Module 내부 seam이다. 본문 transaction, 휴지통 이동과 내보내기는 같은 문서 ID에서 한 번에 하나만 실행된다. SQLite `BEGIN IMMEDIATE`는 최종 저장 직렬화를 보장하고, operation queue는 비싼 Yjs 복구·검증·projection이 같은 문서에서 중복 실행되지 않게 한다.
 

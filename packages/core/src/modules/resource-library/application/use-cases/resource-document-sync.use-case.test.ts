@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { applyUpdate, Doc, mergeUpdates } from "yjs"
 
 import { createResourceDocumentSyncUseCase } from "#core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
+import type { ResourceDocumentProjector } from "#core/modules/resource-library/application/ports/resource-document-projector"
 import { toResourceDocumentTransactionId } from "#core/modules/resource-library/domain/resource-document-sync"
 import { toResourceDocumentId } from "#core/modules/resource-library/domain/resource-tree-node"
 import { createDrizzleResourceDocumentSyncRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
@@ -17,6 +18,14 @@ import {
 } from "@workspace/resource-document"
 
 const documentId = toResourceDocumentId("document-1")
+const resourceDocumentProjector: ResourceDocumentProjector = {
+  async project(input) {
+    return {
+      kind: "completed",
+      projection: applyResourceDocumentUpdate(input.snapshot, input.update),
+    }
+  },
+}
 
 describe("자료 문서 동기화 use case", () => {
   it("Yjs transaction을 검증·투영해 승인하고 같은 멱등 키를 재사용한다", async () => {
@@ -24,7 +33,10 @@ describe("자료 문서 동기화 use case", () => {
     if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
 
     const fixture = createFixture(initial.snapshot)
-    const useCase = createResourceDocumentSyncUseCase(fixture.repository)
+    const useCase = createResourceDocumentSyncUseCase(
+      fixture.repository,
+      resourceDocumentProjector
+    )
     const transactionId = toResourceDocumentTransactionId("transaction-1")
     const update = createUpdate(initial.snapshot, "변경된 **본문**")
     const input = {
@@ -90,7 +102,10 @@ describe("자료 문서 동기화 use case", () => {
     if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
 
     const fixture = createFixture(initial.snapshot)
-    const useCase = createResourceDocumentSyncUseCase(fixture.repository)
+    const useCase = createResourceDocumentSyncUseCase(
+      fixture.repository,
+      resourceDocumentProjector
+    )
     const firstUpdate = createUpdate(initial.snapshot, "첫 번째 관리자 본문")
     const secondUpdate = createUpdate(initial.snapshot, "두 번째 관리자 본문")
 
@@ -156,7 +171,10 @@ describe("자료 문서 동기화 use case", () => {
     if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
 
     const fixture = createFixture(initial.snapshot)
-    const firstServer = createResourceDocumentSyncUseCase(fixture.repository)
+    const firstServer = createResourceDocumentSyncUseCase(
+      fixture.repository,
+      resourceDocumentProjector
+    )
     const firstUpdate = createUpdate(initial.snapshot, "재시작 전 본문")
 
     try {
@@ -172,7 +190,8 @@ describe("자료 문서 동기화 use case", () => {
       ).resolves.toMatchObject({ kind: "accepted", stateVersion: 1 })
 
       const restartedServer = createResourceDocumentSyncUseCase(
-        fixture.repository
+        fixture.repository,
+        resourceDocumentProjector
       )
       await expect(
         restartedServer.readSync({ afterStateVersion: 0, documentId })
@@ -230,6 +249,7 @@ describe("자료 문서 동기화 use case", () => {
     try {
       const snapshotLimited = createResourceDocumentSyncUseCase(
         fixture.repository,
+        resourceDocumentProjector,
         { maxSnapshotBytes: 1, onRejected: rejected }
       )
       await expect(
@@ -249,6 +269,7 @@ describe("자료 문서 동기화 use case", () => {
 
       const nodeLimited = createResourceDocumentSyncUseCase(
         fixture.repository,
+        resourceDocumentProjector,
         { maxNodeCount: 1, onRejected: rejected }
       )
       await expect(
@@ -288,11 +309,18 @@ describe("자료 문서 동기화 use case", () => {
 
     const fixture = createFixture(initial.snapshot)
     const rejected = vi.fn()
-    const useCase = createResourceDocumentSyncUseCase(fixture.repository, {
-      onRejected: rejected,
-      projectUpdate: () => new Promise(() => undefined),
-      projectionTimeoutMilliseconds: 1,
-    })
+    const useCase = createResourceDocumentSyncUseCase(
+      fixture.repository,
+      {
+        async project() {
+          return { elapsedMilliseconds: 1, kind: "timeout" }
+        },
+      },
+      {
+        onRejected: rejected,
+        projectionTimeoutMilliseconds: 1,
+      }
+    )
 
     try {
       await expect(
@@ -315,6 +343,74 @@ describe("자료 문서 동기화 use case", () => {
           limitMilliseconds: 1,
         })
       )
+      expect(readDurableState(fixture.client.sqlite)).toMatchObject({
+        content_revision: 0,
+        receipt_count: 0,
+        state_version: 0,
+      })
+    } finally {
+      fixture.client.close()
+    }
+  })
+
+  it("projector의 invalid projection을 명시적 결과로 반환한다", async () => {
+    const initial = createResourceDocumentSnapshot("초기 본문")
+    if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
+
+    const fixture = createFixture(initial.snapshot)
+    const useCase = createResourceDocumentSyncUseCase(fixture.repository, {
+      async project() {
+        return {
+          kind: "completed",
+          projection: {
+            issues: [{ code: "invalid-collaboration-state" }],
+            status: "invalid",
+          },
+        }
+      },
+    })
+
+    try {
+      await expect(
+        useCase.saveTransaction({
+          actorId: "admin-1",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-12T00:00:00.000Z"),
+          transactionId: toResourceDocumentTransactionId("invalid-projection"),
+          update: Uint8Array.of(1),
+        })
+      ).resolves.toEqual({
+        issues: [{ code: "invalid-collaboration-state" }],
+        kind: "invalid-state",
+      })
+    } finally {
+      fixture.client.close()
+    }
+  })
+
+  it("projector 실패를 호출자에게 전파하고 저장 상태를 보존한다", async () => {
+    const initial = createResourceDocumentSnapshot("초기 본문")
+    if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
+
+    const fixture = createFixture(initial.snapshot)
+    const useCase = createResourceDocumentSyncUseCase(fixture.repository, {
+      async project() {
+        return { cause: new Error("projection failed"), kind: "failed" }
+      },
+    })
+
+    try {
+      await expect(
+        useCase.saveTransaction({
+          actorId: "admin-1",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-12T00:00:00.000Z"),
+          transactionId: toResourceDocumentTransactionId("failed-projection"),
+          update: Uint8Array.of(1),
+        })
+      ).rejects.toThrow("projection failed")
       expect(readDurableState(fixture.client.sqlite)).toMatchObject({
         content_revision: 0,
         receipt_count: 0,

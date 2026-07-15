@@ -2,6 +2,7 @@ import type {
   CommitResourceDocumentTransactionResult,
   ResourceDocumentSyncRepository,
 } from "#core/modules/resource-library/application/ports/resource-document-sync.repository"
+import type { ResourceDocumentProjector } from "#core/modules/resource-library/application/ports/resource-document-projector"
 import {
   adminResourceDocumentMaxNodes,
   adminResourceDocumentProjectionTimeoutMilliseconds,
@@ -13,7 +14,6 @@ import type { ResourceDocumentId } from "#core/modules/resource-library/domain/r
 import {
   createResourceDocumentSnapshot,
   readResourceMarkdownPlainText,
-  type ApplyResourceDocumentUpdateResult,
   type ResourceDocumentIssue,
 } from "@workspace/resource-document"
 
@@ -45,11 +45,6 @@ export type ResourceDocumentSyncPolicy = {
   readonly maxNodeCount?: number
   readonly maxSnapshotBytes?: number
   readonly onRejected?: (event: ResourceDocumentSyncRejection) => void
-  readonly projectUpdate?: (input: {
-    readonly signal: AbortSignal
-    readonly snapshot: Uint8Array
-    readonly update: Uint8Array
-  }) => Promise<ApplyResourceDocumentUpdateResult>
   readonly projectionTimeoutMilliseconds?: number
 }
 
@@ -86,6 +81,7 @@ export type ResourceDocumentSyncUseCase = {
 
 export function createResourceDocumentSyncUseCase(
   repository: ResourceDocumentSyncRepository,
+  projector: ResourceDocumentProjector,
   policy: ResourceDocumentSyncPolicy = {}
 ): ResourceDocumentSyncUseCase {
   const operations = new Map<string, Promise<void>>()
@@ -190,8 +186,7 @@ export function createResourceDocumentSyncUseCase(
             currentSnapshot instanceof Uint8Array
               ? currentSnapshot
               : currentSnapshot.snapshot
-          const projection = await projectUpdateWithDeadline({
-            projectUpdate: policy.projectUpdate ?? projectUpdateInWorker,
+          const projection = await projector.project({
             snapshot,
             timeoutMilliseconds: projectionTimeoutMilliseconds,
             update: input.update,
@@ -203,8 +198,9 @@ export function createResourceDocumentSyncUseCase(
               limitMilliseconds: projectionTimeoutMilliseconds,
             })
           }
+          if (projection.kind === "failed") throw projection.cause
 
-          const applied = projection.result
+          const applied = projection.projection
           if (applied.status === "invalid") {
             return { issues: applied.issues, kind: "invalid-state" }
           }
@@ -251,77 +247,6 @@ export function createResourceDocumentSyncUseCase(
       )
     },
   }
-}
-
-async function projectUpdateWithDeadline(input: {
-  readonly projectUpdate: NonNullable<
-    ResourceDocumentSyncPolicy["projectUpdate"]
-  >
-  readonly snapshot: Uint8Array
-  readonly timeoutMilliseconds: number
-  readonly update: Uint8Array
-}): Promise<
-  | { readonly elapsedMilliseconds: number; readonly kind: "timeout" }
-  | {
-      readonly kind: "completed"
-      readonly result: ApplyResourceDocumentUpdateResult
-    }
-> {
-  const controller = new AbortController()
-  const startedAt = performance.now()
-
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      controller.abort()
-      resolve({
-        elapsedMilliseconds: performance.now() - startedAt,
-        kind: "timeout",
-      })
-    }, input.timeoutMilliseconds)
-
-    void input
-      .projectUpdate({
-        signal: controller.signal,
-        snapshot: input.snapshot,
-        update: input.update,
-      })
-      .then((result) => {
-        clearTimeout(timeout)
-        resolve({ kind: "completed", result })
-      })
-      .catch((error: unknown) => {
-        clearTimeout(timeout)
-        reject(error)
-      })
-  })
-}
-
-function projectUpdateInWorker(input: {
-  readonly signal: AbortSignal
-  readonly snapshot: Uint8Array
-  readonly update: Uint8Array
-}): Promise<ApplyResourceDocumentUpdateResult> {
-  return new Promise((resolve, reject) => {
-    const worker = new Worker(
-      new URL("./resource-document-projection.worker.ts", import.meta.url).href
-    )
-    const abort = () => worker.terminate()
-
-    input.signal.addEventListener("abort", abort, { once: true })
-    worker.onmessage = (
-      event: MessageEvent<ApplyResourceDocumentUpdateResult>
-    ) => {
-      input.signal.removeEventListener("abort", abort)
-      worker.terminate()
-      resolve(event.data)
-    }
-    worker.onerror = (event) => {
-      input.signal.removeEventListener("abort", abort)
-      worker.terminate()
-      reject(event.error ?? new Error(event.message))
-    }
-    worker.postMessage({ snapshot: input.snapshot, update: input.update })
-  })
 }
 
 function rejectTransaction<

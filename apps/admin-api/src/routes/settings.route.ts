@@ -90,8 +90,9 @@ function createUpdateNoticeSettingsRoute({
     const body = context.req.valid("json")
 
     const result = await settingsService.updateNoticeSettings({
-      ...body,
+      announce: body.announce,
       actor: context.var.adminActor,
+      banner: body.banner,
       now: now(),
     })
     return context.json(unwrapAdminOwnerMutationResult(result), 200)
@@ -129,9 +130,10 @@ function createUpdateLegalSettingsRoute({
     const body = context.req.valid("json")
 
     const result = await settingsService.updateLegalSettings({
-      ...body,
       actor: context.var.adminActor,
       now: now(),
+      privacy: body.privacy,
+      terms: body.terms,
     })
     return context.json(unwrapAdminOwnerMutationResult(result), 200)
   }

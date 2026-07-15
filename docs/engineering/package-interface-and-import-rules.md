@@ -7,6 +7,7 @@
 ## 완료 결과
 
 - core 공개 export를 8개 canonical Interface로 축소하고 repository Implementation은 `admin-api-core` composition 뒤에 숨겼다.
+- `@workspace/core/auth`는 session과 status 계약만 공개하며 learner profile Drizzle factory, repository port와 Better Auth hook factory를 공개하지 않는다.
 - UI와 env root barrel 및 호환 pass-through를 제거하고 모든 소비자를 좁은 subpath로 이관했다.
 - core·UI·Hono·env·Storybook 내부 import를 package별 private alias로 통일했다.
 - export snapshot과 relative/self/deep import negative 검사를 pre-commit에 연결했다.
@@ -32,6 +33,6 @@
 
 ## 자동 검증
 
-- package export snapshot은 허용된 공개 subpath가 의도 없이 늘어나는 것을 막는다.
+- package export snapshot은 허용된 공개 subpath가 의도 없이 늘어나는 것을 막고 auth facade의 concrete 구현 re-export를 거부한다.
 - import architecture 검사는 내부 상대 import, 자기 공개 경로 역참조, 외부의 `core` Implementation deep import와 root barrel import를 거부한다.
 - `bun run check:package-interfaces`, package test, typecheck와 `bun run check:import-cycles`를 함께 실행한다.

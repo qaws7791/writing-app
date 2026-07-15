@@ -11,18 +11,16 @@ import type {
   AdminCourseListStatusFilter,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
-  AdminLegalSettingsRequest,
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
-  AdminNoticeSettingsRequest,
   AdminSettingsDto,
   AdminSortDirection,
   AdminUserDetailDto,
   AdminUserListDto,
   AdminUserListStatusFilter,
   AdminUserSort,
-  AdminUpdateUserStatusRequest,
 } from "#core/modules/admin/domain/admin.dto"
+import type { LearnerOperationalStatus } from "#core/shared/kernel/status"
 import type {
   AdminId,
   ConversationId,
@@ -46,12 +44,22 @@ export type ReadAdminLessonAnalyticsInput = {
   readonly sort: AdminLessonAnalyticsSort
 }
 
-export type SaveAdminNoticeSettingsInput = AdminNoticeSettingsRequest & {
+export type SaveAdminNoticeSettingsInput = {
+  readonly announce: string
+  readonly banner: string
   readonly now: Date
 }
 
-export type SaveAdminLegalSettingsInput = AdminLegalSettingsRequest & {
+export type SaveAdminLegalSettingsInput = {
   readonly now: Date
+  readonly privacy: string
+  readonly terms: string
+}
+
+export type UpdateAdminUserStatusInput = {
+  readonly now: Date
+  readonly status: LearnerOperationalStatus
+  readonly userId: UserId
 }
 
 export type ResetAdminContentInput = {
@@ -99,12 +107,6 @@ export type ReadAdminUsersInput = {
 }
 
 export type ReadAdminUserInput = {
-  readonly userId: UserId
-}
-
-export type UpdateAdminUserStatusInput = {
-  readonly now: Date
-  readonly status: AdminUpdateUserStatusRequest["status"]
   readonly userId: UserId
 }
 

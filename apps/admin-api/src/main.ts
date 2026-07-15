@@ -9,12 +9,7 @@ import {
 } from "@workspace/logger"
 
 import { createApp } from "@/app"
-import { createAdminApiCore } from "@/admin-api-core"
-import {
-  createAdminAuth,
-  createAdminAuthHandler,
-  createAdminSessionResolver,
-} from "@/auth/admin-auth"
+import { createAdminApiRuntime } from "@/admin-runtime"
 import { createResourceEventsHub } from "@/collaboration/resource-events-hub"
 import { createResourceEventsUpgradeHandler } from "@/collaboration/resource-events-upgrade"
 import { parseAdminApiEnv } from "@/env"
@@ -26,8 +21,8 @@ import {
 const env = parseAdminApiEnv(process.env)
 const logger = createAppLogger()
 const securityAuditLogger = createSecurityAuditLogger(logger)
-const core = createAdminApiCore({
-  databaseUrl: env.databaseUrl,
+const runtime = createAdminApiRuntime({
+  env,
   onResourceSyncRejected(event) {
     logger.warn(event, "resource-document.sync.rejected")
   },
@@ -42,19 +37,7 @@ const aiChatAgent =
           openAiModel: env.openAiModel,
         })
       )
-const auth = createAdminAuth({
-  authBaseUrl: env.authBaseUrl,
-  cookieDomain: env.cookieDomain,
-  db: core.database,
-  secret: env.betterAuthSecret,
-  webOrigin: env.adminOrigin,
-})
-const sessionResolver = createAdminSessionResolver(auth)
-const authHandler = createAdminAuthHandler({
-  auth,
-  cookieDomain: env.cookieDomain,
-  database: core.databaseClient,
-})
+const sessionResolver = runtime.sessionResolver
 const resourceEvents = createResourceEventsHub({
   onPolicyViolation({ actorId, reason }) {
     securityAuditLogger({
@@ -68,7 +51,7 @@ const resourceEvents = createResourceEventsHub({
     })
   },
   async readDocumentStateVersion(documentId) {
-    const result = await core.services.resourceLibrary.sync.readSync({
+    const result = await runtime.services.resourceLibrary.sync.readSync({
       afterStateVersion: 0,
       documentId: toResourceDocumentId(documentId),
       mode: "incremental",
@@ -96,9 +79,9 @@ const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
 const app = createApp({
   aiChatAgent,
   aiChatEventLogger: logger,
-  adminServices: core.services,
+  adminServices: runtime.services,
   adminOrigin: env.adminOrigin,
-  authHandler,
+  authHandler: runtime.authHandler,
   errorLogger(event) {
     logger.error(event, "request.failed")
   },
@@ -135,7 +118,7 @@ if (import.meta.main) {
 
     shuttingDown = true
     server.stop(true)
-    core.close()
+    runtime.close()
   }
 
   process.once("SIGINT", () => void shutdown())

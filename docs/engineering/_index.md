@@ -61,6 +61,7 @@
 | `adr/ADR-0006-strict-content-security-policy.md`          | request nonce 기반 strict CSP와 report-only rollout 결정을 기록한다.                              |
 | `adr/ADR-0007-admin-mfa-step-up.md`                       | owner 관리자 TOTP MFA, 복구 코드와 최근 재인증 경계 결정을 기록한다.                              |
 | `adr/ADR-0008-admin-password-only-auth.md`                | 채택됨. 관리자 비밀번호 전용 인증과 역할 기반 인가 유지 결정을 기록한다.                          |
+| `adr/ADR-0009-http-command-boundary.md`                   | 채택됨. HTTP 요청 계약과 core application command의 변경 수명 경계를 기록한다.                    |
 | `contracts/writing-app-api-openapi.json`                  | Writing App API의 OpenAPI 계약을 기계 판독 가능한 형식으로 제공한다.                              |
 
 ## 관리 기준

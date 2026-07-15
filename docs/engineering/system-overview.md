@@ -102,10 +102,10 @@ apps/api -> packages/core -> packages/db
 
 이 방향은 `scripts/oxlint/workspace-rules.mjs`의 `workspace/no-invalid-workspace-dependency` 규칙으로 강제한다.
 
-`@workspace/core/admin-api-core` composition Module은 `@workspace/db`와 관리자·자료실 repository Implementation을 내부에서 조립하고, 어드민 API 실행 진입점에는 기능별 use case와 데이터베이스 수명주기 Interface만 노출한다. 어드민 use case 구현은 `packages/core/modules/admin/application/use-cases`에 dashboard, analytics, course, user, settings, content reset 기능별 파일로 둔다. `admin.service.ts`는 기능별 use case를 조합하고 기능별 port를 명시적으로 받아 단일 mega service/repository 의존이 다시 숨지 않게 한다.
+`apps/admin-api/src/admin-runtime.ts`는 SQLite client를 한 번 생성해 Better Auth와 core 조립에 같은 connection을 전달하고, 조립 실패와 프로세스 종료에서 close-once 수명주기를 소유한다. `@workspace/core/admin-api-core` composition Module은 주입된 database handle로 관리자·자료실 repository Implementation과 기능별 use case만 조립하며 concrete DB client를 반환하지 않는다. 어드민 use case 구현은 `packages/core/modules/admin/application/use-cases`에 dashboard, analytics, course, user, settings, content reset 기능별 파일로 둔다.
 `packages/core`의 module public facade는 domain/application 계약을 노출하고, Drizzle·Better Auth·OpenAI 같은 infrastructure 어댑터는 composition 또는 명시적인 adapter subpath에서만 직접 의존한다.
 `packages/core` 내부 Implementation은 package `imports`의 `#/*` private alias로 필요한 domain·application port·use-case 선언 파일을 직접 import한다. 자기 공개 Interface 역참조와 외부의 Implementation deep import는 package Interface architecture 검사에서 차단한다.
-학습자·관리자 request/response DTO와 Zod schema는 `packages/contracts`가 원본으로 소유한다. 관리자 contract는 `packages/contracts/src/admin` 아래 기능별 파일과 shared schema 파일로 나누고 `@workspace/contracts/admin` entrypoint가 공개 계약을 다시 노출한다. 브라우저 앱은 feature Adapter에서 contract를 검증하고 화면은 feature 앱 모델을 소비한다. 공통 관리자 HTTP transport는 URL, 인증 쿠키, 응답 parsing과 공통 오류만 소유하고 관리자 DTO를 import하지 않는다. `apps/web`의 core 직접 import 금지는 아키텍처 테스트와 workspace lint rule로 고정하며, `packages/core`는 기존 public API 호환성을 위해 contracts를 re-export한다.
+학습자·관리자 request/response DTO와 Zod schema는 `packages/contracts`가 원본으로 소유한다. `*Request`, query와 header는 transport에서 검증하고, 변경 route는 검증된 값을 별도 application command로 명시적으로 구성한다. core use case와 repository port는 HTTP request 타입을 입력으로 사용하지 않는다. 브랜드 ID, 상태 값과 안정적인 조회 projection은 변경 이유가 같으면 공유한다. 이 결정은 ADR-0009를 따른다.
 매칭 스텝의 presentation choice id, deterministic shuffle, selection map은 `packages/ui`의 lesson match 컴포넌트 내부 util이 소유한다. 답안 payload 조립과 채점 정책은 `apps/web/src/features/lessons`가 소유한다. `packages/contracts`는 학습 DTO schema만 노출하고, core는 웹 UI 상호작용 모델을 재수출하지 않는다.
 Learning domain이 content DTO나 content id 타입을 참조해야 할 때는 content module facade가 아니라 `@workspace/contracts/content` 경계를 사용한다. content application service가 learning progress helper를 호출하는 방향은 허용하지만, learning domain이 content module public facade를 되물어 module facade 순환을 만들지 않는다.
 
@@ -146,7 +146,7 @@ learner route handler는 typed route가 검증한 transport 입력을 읽고, re
 학습 step answer 검증은 `packages/core/src/modules/learning/domain/step-answer-policy.ts`의 domain policy가 소유한다. `LearningService`는 command parse, lesson 조회, policy 판정, repository 저장 조정에 집중하고 step type별 answer validator를 직접 구현하지 않는다.
 AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 판정만 담당하고, 시도 한도 계산·prompt 기반 provider 호출·결과 저장은 `ai-feedback-attempt-coordinator.ts`가 조정한다. AI_FEEDBACK step 지원 여부는 `ai-feedback-step-policy.ts` domain policy가 소유한다.
 
-어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다. Route는 `@workspace/hono/core`의 typed route definition으로 등록하고, request/query/body wire contract는 `packages/contracts/admin`을 직접 참조한다. 관리자 세션과 owner 권한은 route middleware가 `AppError` 기반 표준 오류로 변환하며, `/openapi`는 등록된 typed route에서 OpenAPI 3.1 문서를 생성한다. `apps/admin-api`의 app 조립 경계는 core의 broad `AdminService`를 route에 직접 넘기지 않고 analytics, courses, dashboard, settings, content reset, users와 자료실 documents/search/tree use case 슬롯으로 나눠 주입한다. `apps/admin` 화면은 core나 admin wire DTO package를 직접 import하지 않는다.
+어드민 API는 `apps/admin-api/src/admin-runtime.ts`에서 SQLite DB, Better Auth, 관리자 세션 resolver와 core service를 조립하고 `main.ts`가 요청 로거, WebSocket과 서버 수명을 연결한다. Route는 `@workspace/hono/core`의 typed route definition으로 등록하고, request/query/body wire contract는 `packages/contracts/admin`을 직접 참조한다. 관리자 세션과 owner 권한은 route middleware가 `AppError` 기반 표준 오류로 변환하며, `/openapi`는 등록된 typed route에서 OpenAPI 3.1 문서를 생성한다.
 관리자 자료실과 관리자 AI 채팅은 어드민 API 경계에 속한다. 자료실 구조 명령과 조회·검색·가져오기·내보내기, 본문 Yjs transaction은 REST를 사용하고 작업 공간 WebSocket은 구조 변경·문서 version 알림만 전달한다. AI 채팅은 `admin_ai_chat_conversations`, `admin_ai_chat_messages`에 대화 내역을 저장하고, `apps/admin-api`에 내장한 Mastra `admin-content-agent`를 Hono route에서 호출해 `chunk`, `done`, `error` SSE 이벤트로 응답한다. Mastra Memory는 사용하지 않고 저장된 메시지를 프롬프트 컨텍스트로 구성한다.
 
 `packages/resource-document`는 브라우저·headless 서버 공용 Lexical 0.46.0 node, 정규 GFM AST import/export와 검증, Yjs snapshot 적용·투영을 제공한다. `/resources/events`는 작업 공간 수명의 지속 연결에서 활성 문서 구독과 heartbeat를 받고, 문서별 version·무효화 사건을 구독자에게만 전달하며 관리자 ID 기준 활성 편집자 수를 계산한다. `ResourceWorkspaceSync`는 서버 snapshot으로 문서별 Y.Doc을 초기화하고 HTTP transaction 저장, 최근 update pull, snapshot fallback과 승인 대기 cache를 관리한다. 활성 문서 route는 메타데이터와 `stateVersion`만 반환하고 본문은 sync snapshot에서 초기화하며, 휴지통 읽기와 내보내기만 durable Markdown을 조회한다. 서버의 문서별 operation coordinator는 본문 저장·sync 조회·내보내기·휴지통 이동을 직렬화하고 다른 문서의 실패와 지연을 격리한다. production 편집기는 이 작업 공간 lease만 사용하며 문서별 Yjs room과 전용 WebSocket endpoint는 제거됐다. `apps/admin` 자료실은 reui 기반 지연 로딩 트리와 Lexical WYSIWYG 편집기, 슬래시 메뉴, 블록 이동, 선택 서식 도구, 재연결 병합과 동기화 상태를 제공한다.
@@ -179,6 +179,6 @@ AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 
 - 관리자 인증과 학습자 인증은 테이블, 쿠키 이름, 로그인 방식, API origin을 분리한다.
 - 콘텐츠 seed는 안정적인 ID 기준으로 기존 콘텐츠를 갱신하고, seed에서 빠진 콘텐츠는 삭제가 아니라 `archived`로 전환한다.
 
-# 관리자 API 조립 경계 전환 (2026-07-12)
+## 관리자 API 조립 경계
 
-`admin-api` 실행 진입점은 인증, WebSocket, Mastra처럼 애플리케이션 런타임에 속한 요소만 조립한다. 데이터베이스와 관리자·자료실 저장소, 유스케이스, 식별자 팩터리는 별도의 코어 조립 모듈이 소유하고 기능별 서비스와 단일 `close` 수명주기를 노출한다.
+`admin-api` runtime composition은 데이터베이스 생성·공유·종료와 Better Auth를 소유한다. core 조립 모듈은 주입된 database handle로 저장소와 use case를 만들고 기능별 서비스만 반환한다. shutdown은 신규 요청 차단, Bun server 정지, close-once 데이터베이스 종료 순서다.

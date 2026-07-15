@@ -7,7 +7,6 @@ import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
   aiFeedbackResultDtoSchema,
-  createAiFeedbackRequestCommandSchema,
   createFeedbackBodySchema,
   createFeedbackHeadersSchema,
   learnerIdSchema,
@@ -57,14 +56,13 @@ const aiFeedbackHandler: ApiRouteHandler<typeof aiFeedbackRouteConfig> = async (
 
   const body = context.req.valid("json")
   const headers = context.req.valid("header")
-  const result = await aiFeedbackService.createFeedback(
-    createAiFeedbackRequestCommandSchema.parse({
-      ...body,
-      idempotencyKey: headers["idempotency-key"] ?? crypto.randomUUID(),
-      occurredAt: context.var.requestContext.now(),
-      userId: learnerIdSchema.parse(context.var.activeSession.user.id),
-    })
-  )
+  const result = await aiFeedbackService.createFeedback({
+    idempotencyKey: headers["idempotency-key"] ?? crypto.randomUUID(),
+    lessonId: body.lessonId,
+    occurredAt: context.var.requestContext.now(),
+    stepId: body.stepId,
+    userId: learnerIdSchema.parse(context.var.activeSession.user.id),
+  })
 
   return context.json(unwrapApiCoreResult(result), 200)
 }

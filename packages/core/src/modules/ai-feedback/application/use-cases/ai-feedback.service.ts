@@ -1,10 +1,8 @@
 import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import { lessonDtoSchema } from "#core/modules/content/domain/content.dto"
-import {
-  createAiFeedbackRequestCommandSchema,
-  type CreateAiFeedbackRequestCommand,
-  type AiFeedbackResultDto,
-} from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+import { type AiFeedbackResultDto } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+import type { LessonId, LessonStepId } from "@workspace/contracts/content"
+import type { LearnerId } from "@workspace/contracts/learning"
 import type { AiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
@@ -19,14 +17,14 @@ import { err, type Result } from "#core/shared/result"
 export type AiFeedbackServiceError =
   | {
       readonly kind: "lesson-not-found"
-      readonly lessonId: CreateAiFeedbackRequestCommand["lessonId"]
+      readonly lessonId: LessonId
     }
   | {
       readonly kind: "invalid-request"
       readonly reason:
         | "step-feedback-not-supported"
         | "step-not-found-in-lesson"
-      readonly stepId: CreateAiFeedbackRequestCommand["stepId"]
+      readonly stepId: LessonStepId
     }
   | {
       readonly kind: "feedback-target-invalid"
@@ -34,11 +32,11 @@ export type AiFeedbackServiceError =
         | "target-step-not-before-feedback"
         | "target-step-not-found"
         | "target-step-not-write"
-      readonly stepId: CreateAiFeedbackRequestCommand["stepId"]
+      readonly stepId: LessonStepId
     }
   | {
       readonly kind: "feedback-answer-not-found"
-      readonly targetStepId: CreateAiFeedbackRequestCommand["stepId"]
+      readonly targetStepId: LessonStepId
     }
   | {
       readonly kind: "attempt-limit-exceeded"
@@ -55,8 +53,16 @@ export type AiFeedbackServiceError =
 
 export type AiFeedbackService = {
   readonly createFeedback: (
-    command: CreateAiFeedbackRequestCommand
+    command: CreateAiFeedbackApplicationCommand
   ) => Promise<Result<AiFeedbackResultDto, AiFeedbackServiceError>>
+}
+
+export type CreateAiFeedbackApplicationCommand = {
+  readonly idempotencyKey: string
+  readonly lessonId: LessonId
+  readonly occurredAt: Date
+  readonly stepId: LessonStepId
+  readonly userId: LearnerId
 }
 
 export function createAiFeedbackService({
@@ -85,19 +91,18 @@ export function createAiFeedbackService({
 
   return {
     async createFeedback(command) {
-      const parsedCommand = createAiFeedbackRequestCommandSchema.parse(command)
-      const lesson = await contentRepository.findLesson(parsedCommand.lessonId)
+      const lesson = await contentRepository.findLesson(command.lessonId)
 
       if (lesson === null) {
         return err({
           kind: "lesson-not-found",
-          lessonId: parsedCommand.lessonId,
+          lessonId: command.lessonId,
         })
       }
 
       const stepResolution = resolveAiFeedbackStep({
         lesson,
-        stepId: parsedCommand.stepId,
+        stepId: command.stepId,
       })
 
       if (stepResolution.kind === "rejected") {
@@ -123,9 +128,9 @@ export function createAiFeedbackService({
       const parsedLesson = lessonDtoSchema.parse(lesson)
 
       const targetAnswer = await learningRepository.findStepAnswer({
-        lessonId: parsedCommand.lessonId,
+        lessonId: command.lessonId,
         stepId: stepResolution.targetStep.id,
-        userId: parsedCommand.userId,
+        userId: command.userId,
       })
 
       if (
@@ -141,7 +146,7 @@ export function createAiFeedbackService({
 
       return attemptCoordinator.createAttempt(
         {
-          ...parsedCommand,
+          ...command,
           answer: targetAnswer.text,
         },
         {

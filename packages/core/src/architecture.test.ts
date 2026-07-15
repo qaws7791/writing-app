@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { existsSync, readdirSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
 import { dirname, relative, resolve, sep } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
@@ -64,9 +64,9 @@ describe("core architecture", () => {
     expect(violations).toEqual([])
   })
 
-  it("domain 계층은 runtime adapter 의존성을 import하지 않는다", () => {
+  it("domain과 production application 계층은 runtime adapter 의존성을 import하지 않는다", () => {
     const violations = readSourceFiles(modulesRoot)
-      .filter((filePath) => filePath.split(sep).includes("domain"))
+      .filter(isDomainOrProductionApplicationSource)
       .flatMap((filePath) =>
         readImports(filePath)
           .filter(isRuntimeAdapterImport)
@@ -74,6 +74,51 @@ describe("core architecture", () => {
       )
 
     expect(violations).toEqual([])
+  })
+
+  it("domain과 production application 계층은 infrastructure 구현을 import하지 않는다", () => {
+    const violations = readSourceFiles(modulesRoot)
+      .filter(isDomainOrProductionApplicationSource)
+      .flatMap((filePath) =>
+        readImports(filePath)
+          .filter((source) => source.includes("/infrastructure/"))
+          .map((source) => formatViolation(filePath, source))
+      )
+
+    expect(violations).toEqual([])
+  })
+
+  it("production application 계층은 runtime I/O를 직접 생성하지 않는다", () => {
+    const forbiddenExpressions = [
+      { label: "Worker", pattern: /\bnew\s+Worker\s*\(/u },
+      { label: "WebSocket", pattern: /\bnew\s+WebSocket\s*\(/u },
+      { label: "fetch", pattern: /\bfetch\s*\(/u },
+      { label: "process.env", pattern: /\bprocess\.env\b/u },
+    ] as const
+    const violations = readSourceFiles(modulesRoot)
+      .filter(isProductionApplicationSource)
+      .flatMap((filePath) => {
+        const source = readFileSync(filePath, "utf8")
+
+        return forbiddenExpressions
+          .filter(({ pattern }) => pattern.test(source))
+          .map(({ label }) => formatViolation(filePath, label))
+      })
+
+    expect(violations).toEqual([])
+  })
+
+  it("auth facade는 infrastructure factory와 concrete DB 타입을 노출하지 않는다", () => {
+    const authFacadePath = resolve(modulesRoot, "auth", "api", "index.ts")
+    const facadeReferences = readImports(authFacadePath)
+    const facadeSource = readFileSync(authFacadePath, "utf8")
+
+    expect(facadeReferences).not.toContain(
+      "#core/modules/auth/application/use-cases/learner-onboarding"
+    )
+    expect(facadeSource).not.toMatch(
+      /createDrizzle|WritingAppDatabase|LearnerProfileRepository/u
+    )
   })
 
   it("learning domain은 content module facade나 domain 파일을 직접 import하지 않는다", () => {
@@ -90,6 +135,19 @@ describe("core architecture", () => {
 
 function readSourceFiles(rootPath: string): string[] {
   return createRepositoryInventory({ root: rootPath }).map((file) => file.path)
+}
+
+function isDomainOrProductionApplicationSource(filePath: string): boolean {
+  const segments = filePath.split(sep)
+
+  return segments.includes("domain") || isProductionApplicationSource(filePath)
+}
+
+function isProductionApplicationSource(filePath: string): boolean {
+  return (
+    filePath.split(sep).includes("application") &&
+    !filePath.endsWith(".test.ts")
+  )
 }
 
 function readImports(filePath: string): string[] {
@@ -114,8 +172,17 @@ function isRuntimeAdapterImport(source: string): boolean {
     source.startsWith("drizzle-orm/") ||
     source === "hono" ||
     source.startsWith("hono/") ||
+    source === "@workspace/hono" ||
+    source.startsWith("@workspace/hono/") ||
     source === "openai" ||
-    source.startsWith("openai/")
+    source.startsWith("openai/") ||
+    source.startsWith("@mastra/") ||
+    source.startsWith("bun:") ||
+    source === "node:fs" ||
+    source.startsWith("node:fs/") ||
+    source === "node:http" ||
+    source === "node:https" ||
+    source === "node:net"
   )
 }
 

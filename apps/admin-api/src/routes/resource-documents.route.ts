@@ -111,10 +111,14 @@ function createImportResourceDocumentRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const session = context.get("activeAdminSession")
+    const request = context.req.valid("json")
     const result = await documentService.importDocument({
-      ...context.req.valid("json"),
       actorId: session.admin.id,
+      expectedRevision: request.expectedRevision,
+      fileName: request.fileName,
+      markdown: request.markdown,
       now: now(),
+      parentId: request.parentId,
     })
 
     if (result.kind !== "ok") {

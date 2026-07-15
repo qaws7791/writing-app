@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import { createLearnerAuth } from "#core/modules/auth/infrastructure/adapters/learner-auth"
+import { createDrizzleLearnerProfileRepository } from "#core/modules/auth/infrastructure/persistence/learner-profile-drizzle.repository"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { authAccounts, authSessions, authUsers } from "@workspace/db/schema"
@@ -18,6 +19,7 @@ describe("학습자 테스트 인증", () => {
       const auth = createLearnerAuth({
         authBaseUrl,
         db: database.db,
+        profileRepository: createDrizzleLearnerProfileRepository(database.db),
         secret: "x".repeat(32),
         testAuthEnabled: true,
         webOrigin,
@@ -115,6 +117,7 @@ describe("학습자 테스트 인증", () => {
       const auth = createLearnerAuth({
         authBaseUrl,
         db: database.db,
+        profileRepository: createDrizzleLearnerProfileRepository(database.db),
         secret: "x".repeat(32),
         testAuthEnabled: true,
         webOrigin,
@@ -163,6 +166,7 @@ describe("학습자 테스트 인증", () => {
       const auth = createLearnerAuth({
         authBaseUrl: secureAuthBaseUrl,
         db: database.db,
+        profileRepository: createDrizzleLearnerProfileRepository(database.db),
         secret: "x".repeat(32),
         testAuthEnabled: true,
         webOrigin: secureWebOrigin,
@@ -190,6 +194,7 @@ describe("학습자 테스트 인증", () => {
       const auth = createLearnerAuth({
         authBaseUrl,
         db: database.db,
+        profileRepository: createDrizzleLearnerProfileRepository(database.db),
         secret: "x".repeat(32),
         testAuthEnabled: true,
         webOrigin,

@@ -35,6 +35,7 @@ test와 declaration 파일, type-only reference는 runtime cycle graph에서 제
 
 - tooling fixture는 type-only, re-export, dynamic import, private alias, package export와 의도적 cycle을 포함한다.
 - architecture 정책 오류와 cycle 오류는 `source -> target` chain을 출력한다.
+- core architecture 정책은 domain과 production application의 DB·ORM·인증·provider·Hono import, application→infrastructure import와 직접 Worker·WebSocket·fetch·`process.env` 사용을 거부한다.
 - `packages/repository-tooling/vitest.config.ts`는 root workspace test와 quality gate에 포함된다.
 - web, admin, api, admin-api, core architecture test와 root cycle script의 중복 source traversal·AST parser를 제거하고 이 Module로 이전했다.
 - workspace fixture는 추가·삭제·중복·누락·지원하지 않는 glob과 test runtime 변경을 검증한다.

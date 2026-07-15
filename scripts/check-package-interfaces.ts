@@ -47,6 +47,12 @@ const expectedExports = {
     "./styles",
   ],
 } as const
+const forbiddenCoreFacadeReferences = {
+  "packages/core/src/modules/auth/api/index.ts": [
+    "/infrastructure/",
+    "/application/use-cases/learner-onboarding",
+  ],
+} as const
 
 for (const [manifestPath, expected] of Object.entries(expectedExports)) {
   const manifest = JSON.parse(
@@ -58,6 +64,16 @@ for (const [manifestPath, expected] of Object.entries(expectedExports)) {
     failures.push(
       `${manifestPath} 공개 export snapshot 불일치: ${actual.join(", ")}`
     )
+  }
+}
+
+for (const [facadePath, forbiddenReferences] of Object.entries(
+  forbiddenCoreFacadeReferences
+)) {
+  for (const source of readImports(path.join(repositoryRoot, facadePath))) {
+    if (forbiddenReferences.some((reference) => source.includes(reference))) {
+      failures.push(`${facadePath} -> 공개 금지 구현 ${source}`)
+    }
   }
 }
 

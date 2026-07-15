@@ -126,11 +126,11 @@
 
 `packages/core`는 프레임워크와 HTTP transport에 의존하지 않는 비즈니스 로직 패키지다. 학습자 API 방향은 `apps/api -> packages/core -> packages/db`이며, core는 module facade, domain 규칙, usecase, repository port와 adapter, 학습자 API 런타임 조립을 소유한다.
 
-core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 Result, 공통 오류, status kernel처럼 실제 런타임에서 쓰는 공통 값을 제공한다. `modules/*/api/index.ts`는 Hono와 다른 module이 사용할 좁은 public facade이며, `domain`, `application`, `infrastructure` 구현은 이 facade 뒤에 둔다. `composition`은 학습자 API 런타임 bootstrap을 담당한다.
+core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 Result, 공통 오류, status kernel처럼 실제 런타임에서 쓰는 공통 값을 제공한다. `modules/*/api/index.ts`는 Hono와 다른 module이 사용할 좁은 public facade이며, `domain`, `application`, `infrastructure` 구현은 이 facade 뒤에 둔다. `domain`과 production `application`은 DB·ORM·인증 SDK·provider SDK·Hono와 runtime I/O를 직접 의존하지 않는다. `composition`만 application port와 infrastructure implementation을 함께 조립한다.
 
 학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/{auth,content,learning,ai-feedback,learner-api-core}` canonical Interface만 import한다. `modules/*`, `shared/*`, repository Implementation과 root barrel은 export map에 노출하지 않는다.
 
-자료실은 `packages/core/src/modules/resource-library`의 tree/document/search/document-sync use case와 repository 경계로 분리한다. 트리 구조 명령은 expected revision과 SQLite transaction으로 직렬화하고 본문 Yjs update는 멱등 HTTP transaction이 snapshot·Markdown·FTS·수정 메타데이터를 하나의 영속화 경계에서 갱신한다.
+자료실은 `packages/core/src/modules/resource-library`의 tree/document/search/document-sync use case와 repository 경계로 분리한다. 트리 구조 명령은 expected revision과 SQLite transaction으로 직렬화하고 본문 Yjs update는 멱등 HTTP transaction이 snapshot·Markdown·FTS·수정 메타데이터를 하나의 영속화 경계에서 갱신한다. document sync application은 projection port만 호출하며 Bun Worker 생성, 위치 결정, deadline 측정과 종료는 infrastructure adapter가 소유한다.
 
 ### hono
 

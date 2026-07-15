@@ -4,11 +4,10 @@ import { learnerAccountStatuses } from "#core/shared/kernel/status"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import {
-  createDrizzleLearnerProfileRepository,
-  createLearnerAuthHooks,
   createLearnerOnboardingService,
-  type LearnerProfileRepository,
+  type LearnerOnboardingService,
 } from "#core/modules/auth/application/use-cases/learner-onboarding"
+import type { LearnerProfileRepository } from "#core/modules/auth/application/ports/learner-profile.repository"
 import {
   createLearnerTestAuthPlugin,
   defaultLearnerTestAuthUser,
@@ -29,17 +28,15 @@ export type CreateLearnerAuthInput = {
   readonly db: WritingAppDatabase
   readonly googleClientId?: string
   readonly googleClientSecret?: string
+  readonly profileRepository: LearnerProfileRepository
   readonly secret: string
   readonly testAuthEnabled?: boolean
   readonly webOrigin: string
 }
 
 export function createLearnerAuth(input: CreateLearnerAuthInput) {
-  const learnerProfileRepository = createDrizzleLearnerProfileRepository(
-    input.db
-  )
   const learnerOnboardingService = createLearnerOnboardingService({
-    profileRepository: learnerProfileRepository,
+    profileRepository: input.profileRepository,
   })
 
   return betterAuth({
@@ -109,10 +106,7 @@ type LearnerBetterAuthSession = {
 
 export function createLearnerSessionResolver(
   auth: LearnerBetterAuthSessionApi,
-  db: WritingAppDatabase,
-  profileRepository: LearnerProfileRepository = createDrizzleLearnerProfileRepository(
-    db
-  )
+  profileRepository: LearnerProfileRepository
 ): SessionResolver {
   return {
     async resolveSession(headers) {
@@ -123,6 +117,25 @@ export function createLearnerSessionResolver(
       }
 
       return readUserSession(profileRepository, session.user)
+    },
+  }
+}
+
+function createLearnerAuthHooks({
+  onboardingService,
+}: {
+  readonly onboardingService: LearnerOnboardingService
+}) {
+  return {
+    user: {
+      create: {
+        after: async (user: { readonly id: string; readonly name: string }) => {
+          await onboardingService.ensureLearnerProfile({
+            displayName: user.name,
+            userId: user.id,
+          })
+        },
+      },
     },
   }
 }

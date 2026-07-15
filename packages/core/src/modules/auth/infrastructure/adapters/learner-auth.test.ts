@@ -4,6 +4,7 @@ import {
   createLearnerAuth,
   createLearnerSessionResolver,
 } from "#core/modules/auth/infrastructure/adapters/learner-auth"
+import { createDrizzleLearnerProfileRepository } from "#core/modules/auth/infrastructure/persistence/learner-profile-drizzle.repository"
 import { learnerAccountStatuses } from "#core/shared/kernel/status"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
@@ -56,6 +57,7 @@ describe("학습자 Better Auth", () => {
       createLearnerAuth({
         authBaseUrl: "https://api.example.test",
         db: database.db,
+        profileRepository: createDrizzleLearnerProfileRepository(database.db),
         secret: "x".repeat(32),
         webOrigin: "https://app.example.test",
       })
@@ -83,6 +85,7 @@ describe("학습자 Better Auth", () => {
       createLearnerAuth({
         authBaseUrl: "https://api.example.test",
         db: database.db,
+        profileRepository: createDrizzleLearnerProfileRepository(database.db),
         secret: "x".repeat(32),
         testAuthEnabled: true,
         webOrigin: "https://app.example.test",
@@ -102,6 +105,30 @@ describe("학습자 Better Auth", () => {
     })
   })
 
+  it("Better Auth 사용자 생성 hook을 프로필 저장소에 연결한다", async () => {
+    const database = createMigratedTestDatabase()
+
+    try {
+      seedSessionUser(database.db)
+      createLearnerAuth({
+        authBaseUrl: "https://api.example.test",
+        db: database.db,
+        profileRepository: createDrizzleLearnerProfileRepository(database.db),
+        secret: "x".repeat(32),
+        webOrigin: "https://app.example.test",
+      })
+      const authConfig = authMocks.betterAuth.mock.calls.at(0)?.at(0) as
+        | LearnerAuthHookConfig
+        | undefined
+
+      await authConfig?.databaseHooks.user.create.after(sessionUser)
+
+      expect(readLearnerProfileStatus(database.db, "user-1")).toBe("active")
+    } finally {
+      database.close()
+    }
+  })
+
   it("Better Auth getSession 결과를 학습자 세션으로 변환한다", async () => {
     const database = createMigratedTestDatabase()
     const getSession = vi.fn(async () => ({
@@ -116,7 +143,7 @@ describe("학습자 Better Auth", () => {
             getSession,
           },
         },
-        database.db
+        createDrizzleLearnerProfileRepository(database.db)
       )
       const headers = new Headers({
         Cookie: "learner_session_token=session-token-1.signature",
@@ -162,7 +189,7 @@ describe("학습자 Better Auth", () => {
             })),
           },
         },
-        database.db
+        createDrizzleLearnerProfileRepository(database.db)
       )
 
       await expect(
@@ -191,7 +218,7 @@ describe("학습자 Better Auth", () => {
             })),
           },
         },
-        database.db
+        createDrizzleLearnerProfileRepository(database.db)
       )
 
       await expect(
@@ -217,7 +244,7 @@ describe("학습자 Better Auth", () => {
             getSession: vi.fn(async () => null),
           },
         },
-        database.db
+        createDrizzleLearnerProfileRepository(database.db)
       )
 
       await expect(resolver.resolveSession(new Headers())).resolves.toBeNull()
@@ -226,6 +253,16 @@ describe("학습자 Better Auth", () => {
     }
   })
 })
+
+type LearnerAuthHookConfig = {
+  readonly databaseHooks: {
+    readonly user: {
+      readonly create: {
+        readonly after: (user: typeof sessionUser) => Promise<void>
+      }
+    }
+  }
+}
 
 function createMigratedTestDatabase() {
   const database = createInMemoryWritingAppDatabase()

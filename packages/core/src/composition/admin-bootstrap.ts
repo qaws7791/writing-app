@@ -24,7 +24,8 @@ import { createDrizzleResourceDocumentRepository } from "#core/modules/resource-
 import { createDrizzleResourceDocumentSyncRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
 import { createDrizzleResourceSearchRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-search-drizzle.repository"
 import { createDrizzleResourceTreeRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-tree-drizzle.repository"
-import { createWritingAppDatabase } from "@workspace/db"
+import { createResourceDocumentWorkerProjector } from "#core/modules/resource-library/infrastructure/adapters/resource-document-worker-projector"
+import type { WritingAppDatabase } from "@workspace/db/client"
 
 export type AdminApiCoreServices = {
   readonly aiChat: AdminAiChatUseCase
@@ -43,23 +44,19 @@ export type AdminApiCoreServices = {
 }
 
 export type AdminApiCore = {
-  readonly close: () => void
-  readonly database: ReturnType<typeof createWritingAppDatabase>["db"]
-  readonly databaseClient: ReturnType<typeof createWritingAppDatabase>
   readonly services: AdminApiCoreServices
 }
 
 export function createAdminApiCore({
-  databaseUrl,
+  database,
   onResourceSyncRejected,
 }: {
-  readonly databaseUrl: string | undefined
+  readonly database: WritingAppDatabase
   readonly onResourceSyncRejected: (
     event: Readonly<Record<string, unknown>>
   ) => void
 }): AdminApiCore {
-  const database = createWritingAppDatabase(databaseUrl)
-  const adminRepository = createDrizzleAdminRepository(database.db)
+  const adminRepository = createDrizzleAdminRepository(database)
   const createResourceAuditEventId = () =>
     toResourceAuditEventId(`resource-audit-${crypto.randomUUID()}`)
   const adminService = createAdminService({
@@ -71,12 +68,7 @@ export function createAdminApiCore({
     settingsRepository: adminRepository,
     userRepository: adminRepository,
   })
-  const close = createCloseOnce(database.close)
-
   return {
-    close,
-    database: database.db,
-    databaseClient: database,
     services: {
       aiChat: adminService,
       analytics: adminService,
@@ -88,15 +80,14 @@ export function createAdminApiCore({
           createAuditEventId: createResourceAuditEventId,
           createDocumentId: () =>
             toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
-          documentRepository: createDrizzleResourceDocumentRepository(
-            database.db
-          ),
+          documentRepository: createDrizzleResourceDocumentRepository(database),
         }),
         search: createResourceSearchUseCase(
-          createDrizzleResourceSearchRepository(database.db)
+          createDrizzleResourceSearchRepository(database)
         ),
         sync: createResourceDocumentSyncUseCase(
-          createDrizzleResourceDocumentSyncRepository(database.db),
+          createDrizzleResourceDocumentSyncRepository(database),
+          createResourceDocumentWorkerProjector(),
           { onRejected: onResourceSyncRejected }
         ),
         tree: createResourceTreeUseCase({
@@ -105,21 +96,11 @@ export function createAdminApiCore({
             toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
           createFolderId: () =>
             toResourceFolderId(`resource-folder-${crypto.randomUUID()}`),
-          treeRepository: createDrizzleResourceTreeRepository(database.db),
+          treeRepository: createDrizzleResourceTreeRepository(database),
         }),
       },
       settings: adminService,
       users: adminService,
     },
-  }
-}
-
-export function createCloseOnce(close: () => void): () => void {
-  let closed = false
-
-  return () => {
-    if (closed) return
-    closed = true
-    close()
   }
 }

@@ -4,14 +4,14 @@ import { createApp } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
 import type {
   AiFeedbackService,
-  CreateAiFeedbackRequestCommand,
+  CreateAiFeedbackApplicationCommand,
 } from "@workspace/core/ai-feedback"
 
 const now = new Date("2026-06-14T11:00:00.000Z")
 
 describe("플랫폼 API AI feedback route", () => {
   it("인증된 사용자의 AI 코칭 요청을 service로 전달한다", async () => {
-    const commands: CreateAiFeedbackRequestCommand[] = []
+    const commands: CreateAiFeedbackApplicationCommand[] = []
     const app = createApp({
       ...createTestDependencies(),
       aiFeedbackService: createService({

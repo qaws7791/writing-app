@@ -1,5 +1,5 @@
 export {
   createAdminApiCore,
-  createCloseOnce,
   type AdminApiCore,
+  type AdminApiCoreServices,
 } from "@workspace/core/admin-api-core"

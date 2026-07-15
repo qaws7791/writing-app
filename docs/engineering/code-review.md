@@ -31,6 +31,9 @@
 - 학습 step answer 검증은 learning domain policy에 있고 application service가 step type별 validator를 다시 구현하지 않는가?
 - AI feedback service가 attempt 계산, provider 호출, persistence 저장 세부사항을 직접 구현하지 않고 coordinator와 domain policy에 위임하는가?
 - 프론트엔드가 DB나 core infrastructure에 직접 의존하지 않는가?
+- domain과 production application이 runtime adapter나 infrastructure 구현을 import하거나 Worker·network·환경 변수를 직접 사용하지 않는가?
+- HTTP 변경 route가 검증된 `*Request`를 application command로 명시적으로 변환하고 repository port까지 request 타입을 전달하지 않는가?
+- 관리자 DB 생성·공유·종료는 `admin-runtime` 하나가 소유하고 core service 결과에 DB client가 노출되지 않는가?
 - generated OpenAPI 타입은 `writing-app-api-contract.ts`에 격리되고, feature mapper는 transport contract 타입만 참조하는가?
 - 매칭 스텝 presentation 상호작용 모델은 `apps/web` feature 내부에 있고 `packages/contracts`나 `packages/core` public API로 새어 나가지 않는가?
 - Learning domain이 content 타입을 필요로 할 때 content module facade가 아니라 `@workspace/contracts/content` 또는 구체적인 독립 경계를 import하는가?

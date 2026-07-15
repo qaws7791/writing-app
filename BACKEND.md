@@ -40,6 +40,8 @@
 
 `apps/api`는 학습자 HTTP transport 경계다. Hono 앱 생성, 라우트 등록, 미들웨어, 환경 변수 파싱, 인증 헤더 전달, request body 파싱, transport-level validation, core 호출, HTTP response 변환, 에러 매핑, 프로세스 시작만 이곳에서 수행한다.
 
+HTTP `*Request`, query와 header는 transport 계약이다. 변경 작업 route는 검증된 wire 값을 core application command로 명시적으로 변환하며, core command와 repository port는 HTTP request 타입이나 Hono 오류를 사용하지 않는다. 브랜드 ID, 상태 값과 안정적인 조회 projection은 변경 이유가 같을 때만 공유한다.
+
 현재 API 라우트는 `apps/api/src/modules/*`와 `apps/api/src/http`에 구현되어 있으며, 아래 라우트와 정책을 현재 계약으로 유지한다.
 
 현재 API 라우트는 버전 접두사 없이 노출한다. 사용자 정보가 필요하지 않은 콘텐츠 조회 API는 공개로 유지하고, 사용자별 데이터가 필요한 API만 Better Auth 세션 인증을 요구한다.
@@ -168,6 +170,8 @@ bun --filter @workspace/admin-api seed:admin
 ## `packages/core`
 
 `packages/core`는 도메인 중심 계약과 application implementation을 담는다. 콘텐츠, 학습 진행, AI 피드백, 자료실 트리·문서·검색·공동 편집, 브랜드 ID, repository port와 구현, 명시적 결과 변형, 도메인 서비스, 트랜잭션 경계, DB query, Better Auth profile onboarding, OpenAI feedback provider adapter를 둔다. HTTP transport에는 의존하지 않으며, DB 접근은 `packages/db`의 저수준 primitive를 통해 수행한다.
+
+학습자 profile repository port와 onboarding service는 auth application에 있고 Drizzle repository와 Better Auth hook은 auth infrastructure에 있다. learner composition은 repository instance 하나를 hook과 session resolver에 함께 주입한다. 자료 문서 sync use case는 필수 `ResourceDocumentProjector` port만 알고, Worker와 projection deadline 실행은 infrastructure adapter가 담당한다. 관리자 SQLite client는 `apps/admin-api/src/admin-runtime.ts`가 생성·공유·종료하며 core 관리자 factory는 주입된 Drizzle database handle로 서비스만 조립한다.
 
 ## 콘텐츠 변경 정책
 

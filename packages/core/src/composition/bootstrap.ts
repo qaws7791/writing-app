@@ -36,6 +36,7 @@ import {
   createLearnerAuth,
   createLearnerSessionResolver,
 } from "#core/modules/auth/infrastructure/adapters/learner-auth"
+import { createDrizzleLearnerProfileRepository } from "#core/modules/auth/infrastructure/persistence/learner-profile-drizzle.repository"
 import { createWritingAppDatabase } from "@workspace/db"
 
 export type CreateLearnerApiCoreInput = {
@@ -74,12 +75,16 @@ export function createLearnerApiCore(
   const feedbackRepository = createDrizzleAiFeedbackRepository(database.db)
   const learningRepository = createDrizzleLearningRepository(database.db)
   const progressReader = createDrizzleProgressReader(database.db)
+  const learnerProfileRepository = createDrizzleLearnerProfileRepository(
+    database.db
+  )
   const auth = createLearnerAuth({
     authBaseUrl: input.authBaseUrl,
     cookieDomain: input.cookieDomain,
     db: database.db,
     googleClientId: input.googleClientId,
     googleClientSecret: input.googleClientSecret,
+    profileRepository: learnerProfileRepository,
     secret: input.betterAuthSecret,
     testAuthEnabled: input.testAuthEnabled,
     webOrigin: input.webOrigin,
@@ -121,6 +126,9 @@ export function createLearnerApiCore(
       contentRepository,
       progressReader,
     }),
-    sessionResolver: createLearnerSessionResolver(auth, database.db),
+    sessionResolver: createLearnerSessionResolver(
+      auth,
+      learnerProfileRepository
+    ),
   }
 }

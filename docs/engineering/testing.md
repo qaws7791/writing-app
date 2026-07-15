@@ -155,7 +155,7 @@ bun run --filter=@workspace/web test
 
 작업 공간 연결 수명 테스트는 문서를 100회 전환해도 실제 연결 Adapter 생성은 한 번이고, 같은 연결에서 문서 구독·해제만 교체되는지 검증한다.
 
-자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. snapshot byte·node·transaction quota와 projection deadline fixture는 거부 뒤 snapshot, Markdown revision과 FTS가 변하지 않고 구조화 거부 사건이 발생하는지 확인한다. file-backed SQLite 통합 테스트는 snapshot, Markdown, FTS, 수정자, update log와 멱등 receipt가 같은 transaction에서 확정되며 7일 보존 경계보다 오래된 receipt만 정리되는지 확인한다.
+자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. use case 단위 테스트는 fake projector로 completed·invalid·timeout·failed 결과를 결정적으로 검증하고, infrastructure smoke는 실제 Bun Worker가 snapshot과 update를 투영한 뒤 종료되는지 확인한다. snapshot byte·node·transaction quota와 projection deadline fixture는 거부 뒤 snapshot, Markdown revision과 FTS가 변하지 않고 구조화 거부 사건이 발생하는지 확인한다.
 
 예약 부하 suite는 file-backed WAL connection 2개와 20개 논리 client를 사용해 latency p50·p95·p99, busy, retry, snapshot fallback과 최종 Yjs·Markdown 수렴을 artifact로 남긴다. Playwright smoke는 격리된 browser context 2개가 별도 Bun HTTP fixture process의 실제 file-backed transaction 경계를 거쳐 같은 상태로 수렴하는지 확인한다. 실행·threshold·정리 기준은 `resource-library-load-testing.md`를 따른다.
 
@@ -263,7 +263,7 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 ## 관리자 API 경계 검증 (2026-07-12)
 
-공통 HTTP 전송 계층은 정상 JSON, 빈 응답, 잘못된 JSON, 다운로드, 네트워크 실패를 표 기반으로 검증한다. 각 관리자 기능 어댑터는 독립 계약 테스트를 가지며, 구조 테스트는 기능 간 DTO 결합과 삭제된 중앙 API로의 회귀를 차단한다. 서버 조립 테스트는 기능별 서비스 연결과 데이터베이스 종료가 한 번만 수행됨을 검증한다.
+공통 HTTP 전송 계층은 정상 JSON, 빈 응답, 잘못된 JSON, 다운로드, 네트워크 실패를 표 기반으로 검증한다. 각 관리자 기능 어댑터는 독립 계약 테스트를 가지며, 구조 테스트는 기능 간 DTO 결합과 삭제된 중앙 API로의 회귀를 차단한다. route 테스트는 wire request가 application command로 변환되는 값을 확인한다. 서버 조립 테스트는 기능별 서비스 연결, 조립 실패 정리와 중복 종료에서도 데이터베이스 close가 한 번만 수행됨을 검증한다.
 
 ## Root tooling 회귀 테스트
 
