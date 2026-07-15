@@ -4,6 +4,13 @@
 
 상세 구조는 `ARCHITECTURE.md`, 환경 변수와 운영 값은 `docs/engineering/runtime-configuration.md`를 기준으로 확인한다.
 
+## 현재 상태
+
+- 학습자·관리자 웹과 API, SQLite migration·seed, 자동 테스트와 프로덕션 컨테이너 정의가 구현되어 있다.
+- 로컬 개발은 Windows, Linux와 macOS에서 Node.js `24.x`, Bun `1.3.10`을 지원 대상으로 삼는다.
+- 프로덕션은 Ubuntu 24.04 LTS `linux/amd64` 단일 서버와 로컬 SQLite 구성을 최초 범위로 삼는다.
+- Docker Compose와 Ansible은 구현되어 있지만 실제 Ubuntu 통합 검증, OpenTofu·cloud-init과 GitHub Actions 배포 자동화는 진행 중이다. 현재 상태는 [배포 문서](docs/engineering/deployment.md), 실행 순서는 [자동화 작업 계획](repository-onboarding-and-production-deployment-plan.md)에서 확인한다.
+
 ## 프로젝트 구조
 
 - `apps/web`: 학습자용 Next.js 앱
@@ -44,19 +51,35 @@
 - Bun `1.3.10`
 - Git
 
-## 로컬 준비
+Ansible 기반 운영 배포의 제어 노드는 Linux 또는 WSL2가 필요하지만 로컬 애플리케이션 개발은 Windows PowerShell에서도 지원한다.
+
+## 5분 빠른 시작
 
 ```bash
-bun install
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
-cp apps/admin-api/.env.example apps/admin-api/.env
-cp apps/admin/.env.example apps/admin/.env
+git clone https://github.com/qaws7791/writing-app.git
+cd writing-app
+bun run setup
+bun run dev
 ```
 
-`BETTER_AUTH_SECRET`과 `ADMIN_BETTER_AUTH_SECRET`은 서로 다른 32자 이상 문자열로 둔다. `OPENAI_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`은 해당 기능을 실제 호출할 때만 설정한다.
+`bun run setup`은 다음 작업을 순서대로 수행한다.
+
+1. Bun과 Node.js 버전을 확인한다.
+2. frozen lockfile로 의존성을 설치한다.
+3. 누락된 앱별 `.env`만 `.env.example`에서 생성한다.
+4. 학습자·관리자 인증 비밀값과 로컬 관리자 비밀번호를 서로 다른 난수로 생성한다.
+5. baseline migration, 콘텐츠 seed와 관리자 seed를 실행한다.
+6. `bun run doctor`로 로컬 준비 결과를 진단한다.
+
+기존 `.env`, 인증 비밀값과 SQLite 데이터는 덮어쓰지 않는다. 관리자의 초기 이메일과 비밀번호는 Git에 포함되지 않는 `apps/admin-api/.env`의 `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`에서 확인한다. `OPENAI_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`은 해당 기능을 실제 호출할 때만 설정한다.
 
 로컬에서 Google OAuth 대신 테스트 로그인 버튼을 쓰려면 `apps/api/.env`와 `apps/web/.env` 모두에 `ENABLE_TEST_AUTH=true`가 있어야 한다. API만 빠지면 `/api/auth/test/sign-in`이 404를 반환한다.
+
+준비 상태를 다시 확인할 때는 데이터나 설정을 변경하지 않는 진단 명령을 실행한다.
+
+```bash
+bun run doctor
+```
 
 ## 데이터 준비
 
@@ -67,7 +90,7 @@ bun run dev:app:setup
 bun run dev:admin:setup
 ```
 
-`dev:app:setup`은 baseline migration과 보존형 콘텐츠 seed를 실행하고, `dev:admin:setup`은 여기에 관리자 seed를 추가로 실행한다. 두 setup 명령은 개발 서버를 시작하기 전에 필요한 경우 명시적으로 한 번 실행하며, `dev:app`과 `dev:admin`은 DB를 변경하지 않고 장기 실행 process만 시작한다. 기존 학습 진행과 답변은 삭제하지 않는다. 깨끗한 개발 DB가 필요할 때만 `bun run db:reset` 또는 `bun run dev:app:fresh`를 사용한다.
+두 명령은 `bun run setup` 내부에서도 실행된다. `dev:app:setup`은 baseline migration과 보존형 콘텐츠 seed를 실행하고, `dev:admin:setup`은 관리자 seed를 추가한다. `dev:app`과 `dev:admin`은 DB를 변경하지 않고 장기 실행 process만 시작한다. 기존 학습 진행과 답변은 삭제하지 않는다. 깨끗한 개발 DB가 필요할 때만 `bun run db:reset` 또는 `bun run dev:app:fresh`를 사용한다.
 
 ## 개발 서버
 

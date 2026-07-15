@@ -4,10 +4,11 @@
 
 ## 구현 상태
 
-- 기준일: 2026-07-15
-- 상태: Dockerfile, Compose, Ansible 구현 완료; Ubuntu 통합 검증 필요
+- 기준일: 2026-07-16
+- 상태: Dockerfile, Compose, Ansible 구현 완료; 자동화 개선 계획 수립; Ubuntu 통합 검증 필요
 - 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible
 - 후속 범위: OpenTofu, cloud-init, GitHub Actions 배포 자동화
+- 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
 
 ## 배포 기준
 

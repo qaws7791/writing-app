@@ -4,9 +4,12 @@
 
 ## 기준
 
-- 기준일: 2026-07-12
+- 기준일: 2026-07-16
 - 기준 파일:
   - `package.json`
+  - `scripts/setup.ts`
+  - `scripts/doctor.ts`
+  - `scripts/local-onboarding.ts`
   - `apps/admin-api/package.json`
   - `apps/admin-api/src/dev-environment.ts`
   - `packages/env/src/parse-env.ts`
@@ -28,6 +31,32 @@
 | 어드민 API | `4001` | `ADMIN_API_PORT` |
 
 로컬 기본 URL은 `packages/env/src/local-runtime-defaults.ts`에서 정의한다.
+
+## 로컬 자동 준비와 진단
+
+`bun run setup`은 clean clone의 로컬 준비를 담당하는 멱등적 진입점이다. 다음 순서를 유지한다.
+
+1. `check:toolchain`으로 Bun exact version과 Node.js major를 확인한다.
+2. `bun install --frozen-lockfile`로 dependency를 설치한다.
+3. 네 앱의 `.env`가 없을 때만 대응하는 `.env.example`에서 생성한다.
+4. 새 학습자·관리자 API 환경 파일에 서로 다른 32-byte 난수 인증 비밀값을 넣는다.
+5. 새 어드민 API 환경 파일에 강한 난수 seed 비밀번호를 넣고 반복 setup이 기존 credential hash를 재설정하지 않도록 `ADMIN_SEED_RESET_PASSWORD=false`로 둔다.
+6. 기존 `dev:app:setup`, `dev:admin:setup`을 재사용해 migration과 seed를 실행한다.
+7. `bun run doctor`로 최종 상태를 검사한다.
+
+기존 `.env`는 내용이 잘못되었더라도 자동으로 수정하거나 덮어쓰지 않는다. 이 경우 setup은 진단 또는 기존 앱별 parser·seed validation에서 실패하고 사용자가 파일을 명시적으로 고쳐야 한다. 생성한 credential 원문은 setup log에 출력하지 않으며 관리자 로그인 값은 로컬 `apps/admin-api/.env`에서만 확인한다.
+
+`bun run doctor`는 파일이나 DB를 변경하지 않고 다음을 확인한다.
+
+- 현재 Bun·Node.js와 root manifest의 toolchain 계약
+- dependency 설치 여부와 네 앱의 `.env` 존재 여부
+- 학습자·관리자 인증 비밀값의 최소 길이, placeholder 여부와 상호 분리
+- `apps/api`와 `apps/web`의 `ENABLE_TEST_AUTH` 일치
+- 두 API의 `DATABASE_URL`이 같은 file-backed SQLite 파일을 가리키는지와 파일 존재 여부
+
+doctor는 비밀값 원문을 출력하지 않는다. DB schema와 seed 내용의 정확성은 doctor에 중복 구현하지 않고 기존 migration·seed와 DB 테스트가 소유한다.
+
+학습자 API 개발 명령은 저장소 루트에서 실행되므로 `apps/api/.env`의 로컬 DB 값은 `file:data/api.sqlite`를 사용한다. 어드민 API watcher는 아래의 개발 감시 계약대로 `apps/admin-api/.env`의 `file:../../data/api.sqlite`를 앱 디렉터리 기준 절대 경로로 정규화한다. doctor는 이 두 runtime 경계를 각각 적용한 뒤 같은 저장소 루트 DB인지 비교한다.
 
 ## 공통 환경 변수 파서
 
@@ -191,6 +220,8 @@ root `turbo.json`은 모든 task에 필요한 `CI`만 `globalPassThroughEnv`로 
 - placeholder는 명확히 쓴다.
 - 선택 변수는 주석 처리한다.
 - 앱별 `.env`는 해당 앱 디렉터리 기준으로 읽힌다.
+- 로컬 setup은 누락된 `.env`만 생성하고 기존 파일을 덮어쓰지 않는다.
+- 자동 생성한 credential은 일반 출력이나 Git 추적 파일에 기록하지 않는다.
 
 ## 컨테이너 배포 설정
 

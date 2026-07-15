@@ -269,6 +269,8 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 
 공통 dependency version drift와 디자인 baseline 증감은 `scripts/*.test.ts`의 negative fixture로 검증한다. Bun 테스트는 exact directory path인 `bun test ./scripts`로 실행해 앱 내부 `src/scripts`를 선택하지 않는다. Oxlint plugin test는 Bun discovery와 겹치지 않는 `workspace-rules.node-test.mjs`를 Node.js로 실행한다. 정적 검증은 제품 lint warning을 오류로 취급한다.
 
+`scripts/local-onboarding.test.ts`는 누락된 `.env`의 credential 치환 생성, 기존 파일 보존, 두 번째 실행의 멱등성, toolchain·테스트 인증·공유 SQLite 진단을 disposable fixture에서 검증한다. 실제 사용자 `.env`와 `data/api.sqlite`는 테스트 대상으로 사용하거나 변경하지 않는다.
+
 CI의 전체 test job은 `bun run test -- --summarize --continue=always` 결과와 Turborepo `2.10.4` summary v1을 사용한다. manifest에 명령이 있다는 사실은 `지원`으로만 표시하며 실제 summary가 있을 때만 `실행`, `cache hit`, `실패`, `건너뜀`, `제외`를 보고한다. correctness job과 coverage job은 서로 독립적으로 실패 원인을 판정한다.
 
 ## 관리자 인증·권한 회귀 테스트
