@@ -17,6 +17,7 @@
 - 레슨 시작은 `startLesson`, 일반 단계 제출은 `completeStep`, AI 코칭은 step-scoped AI feedback 요청으로 수행한다.
 - 웹은 서버의 `retry`, `advanced`, `lesson_completed` 결과와 `learning.currentStepId`를 그대로 소비한다.
 - 정답, 해설, 진도율, 다음 레슨과 완료 여부를 프론트엔드에서 다시 계산하지 않는다.
+- 코스의 다음 레슨과 잠금 상태는 active 유닛의 `sortOrder`, 그 안의 active 레슨 `sortOrder` 순으로 서버가 계산한다.
 - 코스와 진행 목록은 `{ items, nextCursor }`를 사용하며 다음 cursor가 있을 때만 추가 로딩을 제공한다.
 
 ## 검증

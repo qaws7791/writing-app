@@ -64,7 +64,7 @@
 
 학습자 상태 전이 repository 통합 테스트는 file-backed SQLite 연결 2개에서 같은 step 완료를 동시에 요청해 답안, step index와 완료 횟수가 한 번만 증가하는지 확인한다. version pin과 레슨 잠금, 오답 미저장, 미래 step conflict, 마지막 step 재요청의 자연 idempotency를 함께 검증한다. AI 전이 테스트는 provider 실패 시 진행 불변, 고정 version의 WRITE 답안 사용, 같은 idempotency key 결과 재사용과 피드백 성공 저장·step 전진의 단일 transaction을 고정한다.
 
-학습자 read model 통합 테스트는 in-memory SQLite에서 course 검색·category 정규화, 한글 정렬의 결정성, 같은 정렬 key의 ID tie-breaker cursor 경계를 검증한다. lesson 공개 JSON의 전체 key를 순회해 정답·해설·매칭 관계·분류 정답 field가 없는지 확인하고 직접 lesson 잠금도 함께 검증한다. cursor codec 단위 테스트는 signature, endpoint, query fingerprint와 학습자 scope가 하나라도 다르면 해석을 거부하는지 확인한다.
+학습자 read model 통합 테스트는 in-memory SQLite에서 course 검색·category 정규화, 한글 정렬의 결정성, 같은 정렬 key의 ID tie-breaker cursor 경계를 검증한다. 다중 유닛의 같은 레슨 sort order에서도 유닛 순서가 다음 레슨·잠금 상태와 직접 레슨 조회에 일관되게 적용되는지 확인한다. lesson 공개 JSON의 전체 key를 순회해 정답·해설·매칭 관계·분류 정답 field가 없는지 확인하고 직접 lesson 잠금도 함께 검증한다. cursor codec 단위 테스트는 signature, endpoint, query fingerprint와 학습자 scope가 하나라도 다르면 해석을 거부하는지 확인한다.
 
 ## 주요 명령
 

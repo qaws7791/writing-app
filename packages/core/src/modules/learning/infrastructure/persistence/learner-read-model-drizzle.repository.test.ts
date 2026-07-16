@@ -6,7 +6,13 @@ import {
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { courses } from "@workspace/db/schema"
+import {
+  courseCurriculumVersions,
+  courses,
+  courseUnitVersions,
+  lessonStepVersions,
+  lessonVersions,
+} from "@workspace/db/schema"
 import {
   createContentSeedRows,
   readContentSeedData,
@@ -119,6 +125,48 @@ describe("학습자 read model Drizzle repository", () => {
       client.close()
     }
   })
+
+  it("다중 유닛에서는 유닛 순서로 다음 레슨과 잠금 상태를 계산한다", async () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      runBaselineMigration(client.sqlite)
+      seedMultiUnitCourse(client)
+      const repository = createRepository(client)
+
+      const course = await repository.findCourseDetail({
+        courseId: "course-order",
+        userId: "user-1",
+      })
+      const firstLesson = await repository.findLesson({
+        lessonId: "z-first-unit-lesson",
+        userId: "user-1",
+      })
+      const secondLesson = await repository.findLesson({
+        lessonId: "a-second-unit-lesson",
+        userId: "user-1",
+      })
+
+      expect(course?.learning).toMatchObject({
+        nextLesson: { id: "z-first-unit-lesson" },
+        status: "not_started",
+      })
+      expect(
+        course?.units
+          .flatMap((unit) => unit.lessons)
+          .find((lesson) => lesson.id === "z-first-unit-lesson")?.learning
+      ).toMatchObject({ status: "not_started" })
+      expect(
+        course?.units
+          .flatMap((unit) => unit.lessons)
+          .find((lesson) => lesson.id === "a-second-unit-lesson")?.learning
+      ).toMatchObject({ status: "locked" })
+      expect(firstLesson.kind).toBe("found")
+      expect(secondLesson).toEqual({ kind: "locked" })
+    } finally {
+      client.close()
+    }
+  })
 })
 
 function createRepository(client: WritingAppDatabaseClient) {
@@ -133,6 +181,133 @@ async function seedContent(client: WritingAppDatabaseClient): Promise<void> {
 
   client.db.transaction((transaction) => {
     upsertContentSeedRows(transaction, rows)
+  })
+}
+
+function seedMultiUnitCourse(client: WritingAppDatabaseClient): void {
+  const now = new Date("2026-07-17T00:00:00.000Z")
+  const courseId = "course-order"
+  const curriculumVersionId = "curriculum:course-order:1"
+
+  client.db.transaction((transaction) => {
+    transaction
+      .insert(courses)
+      .values({
+        createdAt: now,
+        id: courseId,
+        publishedCurriculumVersionId: null,
+        sortOrder: 1,
+        status: "active",
+      })
+      .run()
+    transaction
+      .insert(courseCurriculumVersions)
+      .values({
+        category: "테스트",
+        courseId,
+        createdAt: now,
+        description: "다중 유닛 정렬 테스트",
+        editVersion: 0,
+        id: curriculumVersionId,
+        publishedAt: null,
+        revision: 1,
+        status: "draft",
+        title: "정렬 테스트 코스",
+        updatedAt: now,
+        visualKey: "basic-sentence-writing",
+      })
+      .run()
+    transaction
+      .insert(courseUnitVersions)
+      .values([
+        {
+          curriculumVersionId,
+          id: "first-unit",
+          sortOrder: 1,
+          status: "active",
+          title: "첫 번째 유닛",
+        },
+        {
+          curriculumVersionId,
+          id: "second-unit",
+          sortOrder: 2,
+          status: "active",
+          title: "두 번째 유닛",
+        },
+      ])
+      .run()
+    transaction
+      .insert(lessonVersions)
+      .values([
+        {
+          category: "테스트",
+          curriculumVersionId,
+          description: "첫 번째 레슨",
+          estimatedMinutes: 5,
+          id: "z-first-unit-lesson",
+          sortOrder: 1,
+          status: "active",
+          summaryJson: "[]",
+          title: "첫 번째 레슨",
+          unitId: "first-unit",
+        },
+        {
+          category: "테스트",
+          curriculumVersionId,
+          description: "두 번째 레슨",
+          estimatedMinutes: 5,
+          id: "a-second-unit-lesson",
+          sortOrder: 1,
+          status: "active",
+          summaryJson: "[]",
+          title: "두 번째 레슨",
+          unitId: "second-unit",
+        },
+      ])
+      .run()
+    transaction
+      .insert(lessonStepVersions)
+      .values([
+        {
+          contentJson: JSON.stringify({
+            body: "첫 번째 레슨 본문",
+            guide: "읽어 보세요.",
+            title: "첫 번째 스텝",
+            type: "reading",
+          }),
+          curriculumVersionId,
+          id: "first-unit-step",
+          lessonId: "z-first-unit-lesson",
+          sortOrder: 1,
+          status: "active",
+          type: "READING",
+        },
+        {
+          contentJson: JSON.stringify({
+            body: "두 번째 레슨 본문",
+            guide: "읽어 보세요.",
+            title: "두 번째 스텝",
+            type: "reading",
+          }),
+          curriculumVersionId,
+          id: "second-unit-step",
+          lessonId: "a-second-unit-lesson",
+          sortOrder: 1,
+          status: "active",
+          type: "READING",
+        },
+      ])
+      .run()
+    transaction
+      .update(courseCurriculumVersions)
+      .set({ publishedAt: now, status: "published", updatedAt: now })
+      .where(eq(courseCurriculumVersions.id, curriculumVersionId))
+      .run()
+    transaction
+      .update(courses)
+      .set({ publishedCurriculumVersionId: curriculumVersionId })
+      .where(eq(courses.id, courseId))
+      .run()
   })
 }
 

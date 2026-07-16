@@ -1,5 +1,17 @@
 import { createHmac } from "node:crypto"
-import { and, asc, count, desc, eq, gt, like, lt, or, sql } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gt,
+  like,
+  lt,
+  or,
+  sql,
+} from "drizzle-orm"
 import { z } from "zod"
 
 import type {
@@ -320,15 +332,30 @@ function findCourseDetail(
     .orderBy(asc(courseUnitVersions.sortOrder))
     .all()
   const lessons = db
-    .select()
+    .select(getTableColumns(lessonVersions))
     .from(lessonVersions)
+    .innerJoin(
+      courseUnitVersions,
+      and(
+        eq(
+          courseUnitVersions.curriculumVersionId,
+          lessonVersions.curriculumVersionId
+        ),
+        eq(courseUnitVersions.id, lessonVersions.unitId),
+        eq(courseUnitVersions.status, activeStatus)
+      )
+    )
     .where(
       and(
         eq(lessonVersions.curriculumVersionId, versionId),
         eq(lessonVersions.status, activeStatus)
       )
     )
-    .orderBy(asc(lessonVersions.sortOrder), asc(lessonVersions.id))
+    .orderBy(
+      asc(courseUnitVersions.sortOrder),
+      asc(lessonVersions.sortOrder),
+      asc(lessonVersions.id)
+    )
     .all()
   const steps = db
     .select({
