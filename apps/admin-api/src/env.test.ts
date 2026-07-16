@@ -18,6 +18,7 @@ describe("어드민 API env", () => {
       })
     ).toEqual({
       adminOrigin: localRuntimeDefaults.adminWebOrigin,
+      assetStore: undefined,
       authBaseUrl: "http://localhost:4102",
       betterAuthSecret: "x".repeat(32),
       cookieDomain: undefined,
@@ -40,6 +41,7 @@ describe("어드민 API env", () => {
       })
     ).toEqual({
       adminOrigin: localRuntimeDefaults.adminWebOrigin,
+      assetStore: undefined,
       authBaseUrl: localRuntimeDefaults.adminApiBaseUrl,
       betterAuthSecret: "x".repeat(32),
       cookieDomain: undefined,
@@ -79,6 +81,13 @@ describe("어드민 API env", () => {
   it("production startup은 관리자 전용 secret과 HTTPS URL을 사용한다", () => {
     expect(
       parseAdminApiEnv({
+        ADMIN_ASSET_PUBLIC_BASE_URL: "https://assets.example.com",
+        ADMIN_ASSET_S3_ACCESS_KEY: "r2-access-key",
+        ADMIN_ASSET_S3_BUCKET: "writing-app-public-assets",
+        ADMIN_ASSET_S3_ENDPOINT:
+          "https://example-account.r2.cloudflarestorage.com",
+        ADMIN_ASSET_S3_REGION: "auto",
+        ADMIN_ASSET_S3_SECRET_KEY: "r2-secret-key",
         ADMIN_BETTER_AUTH_SECRET:
           "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
         ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",

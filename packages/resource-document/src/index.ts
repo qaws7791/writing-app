@@ -35,19 +35,6 @@ export {
   type SerializedResourceImageNode,
 } from "#resource-document/resource-image-node"
 export {
-  applyResourceDocumentUpdate,
-  connectResourceDocumentCollaboration,
-  createHeadlessResourceDocumentCollaboration,
-  createResourceDocumentSnapshot,
-  projectResourceDocumentSnapshot,
-  type ConnectResourceDocumentCollaborationInput,
-  type ApplyResourceDocumentUpdateResult,
-  type CreateHeadlessResourceDocumentCollaborationInput,
-  type HeadlessResourceDocumentCollaboration,
-  type ResourceDocumentCollaboration,
-  type ResourceDocumentSnapshotResult,
-} from "#resource-document/resource-collaboration"
-export {
   $validateResourceDocumentStructure,
   type ResourceDocumentStructureIssue,
   type ResourceDocumentStructureValidation,

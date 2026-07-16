@@ -232,14 +232,20 @@ export function validateResourceMarkdownAst(
 }
 
 export function isAllowedResourceImageUrl(url: string): boolean {
-  if (!url.startsWith("https://") || /\s/.test(url)) {
+  if (/\s/.test(url)) {
     return false
   }
 
   try {
     const parsedUrl = new URL(url)
 
-    return parsedUrl.protocol === "https:" && parsedUrl.hostname.length > 0
+    return (
+      (parsedUrl.protocol === "https:" ||
+        (parsedUrl.protocol === "http:" &&
+          (parsedUrl.hostname === "localhost" ||
+            parsedUrl.hostname === "127.0.0.1"))) &&
+      parsedUrl.hostname.length > 0
+    )
   } catch {
     return false
   }

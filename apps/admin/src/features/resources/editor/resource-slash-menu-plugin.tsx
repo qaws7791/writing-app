@@ -31,7 +31,6 @@ import {
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
-  ImageIcon,
   ListChecksIcon,
   ListIcon,
   ListOrderedIcon,
@@ -42,8 +41,6 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { $createResourceHorizontalRuleNode } from "@workspace/resource-document/resource-horizontal-rule"
-import { $createResourceImageNode } from "@workspace/resource-document/resource-image"
-import { isAllowedResourceImageUrl } from "@workspace/resource-document/resource-markdown-validation"
 import { $createResourceTableNodeWithDimensions } from "@workspace/resource-document/resource-table"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -60,14 +57,14 @@ import { Label } from "@workspace/ui/components/ui/label"
 import { cn } from "@workspace/ui/lib/utils"
 
 type ResourceSlashAction =
-  | { readonly kind: "dialog"; readonly dialog: "image" | "table" }
+  | { readonly kind: "dialog"; readonly dialog: "table" }
   | {
       readonly execute: (editor: LexicalEditor, targetKey: string) => void
       readonly kind: "execute"
     }
 
 type ResourceSlashDialog = {
-  readonly kind: "image" | "table"
+  readonly kind: "table"
   readonly targetKey: string
 }
 
@@ -242,14 +239,6 @@ export function ResourceSlashMenuPlugin() {
         options={[...matchingOptions]}
         triggerFn={matchSlashCommand}
       />
-      <ResourceImageDialog
-        editor={editor}
-        onOpenChange={(open) => {
-          if (!open) setDialog(null)
-        }}
-        open={dialog?.kind === "image"}
-        targetKey={dialog?.kind === "image" ? dialog.targetKey : null}
-      />
       <ResourceTableDialog
         editor={editor}
         onOpenChange={(open) => {
@@ -350,13 +339,6 @@ function createSlashOptions(): readonly ResourceSlashOption[] {
       keywords: ["표", "table"],
       label: "표",
     }),
-    new ResourceSlashOption({
-      action: { dialog: "image", kind: "dialog" },
-      description: "HTTPS 이미지 URL을 삽입합니다.",
-      Icon: ImageIcon,
-      keywords: ["이미지", "사진", "image", "url"],
-      label: "이미지",
-    }),
   ]
 }
 
@@ -425,107 +407,6 @@ function createCommandOption({
     keywords,
     label,
   })
-}
-
-function ResourceImageDialog({
-  editor,
-  onOpenChange,
-  open,
-  targetKey,
-}: {
-  readonly editor: LexicalEditor
-  readonly onOpenChange: (open: boolean) => void
-  readonly open: boolean
-  readonly targetKey: string | null
-}) {
-  const [alt, setAlt] = useState("")
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [url, setUrl] = useState("")
-
-  function submit(event: FormEvent<HTMLFormElement>): void {
-    event.preventDefault()
-    const normalizedAlt = alt.trim()
-    const normalizedUrl = url.trim()
-
-    if (normalizedAlt === "") {
-      setErrorMessage("이미지 대체 텍스트를 입력해 주세요.")
-      return
-    }
-
-    if (!isAllowedResourceImageUrl(normalizedUrl)) {
-      setErrorMessage("이미지는 HTTPS URL만 사용할 수 있습니다.")
-      return
-    }
-
-    if (
-      targetKey === null ||
-      !replaceSlashParagraph(editor, targetKey, () =>
-        $createResourceImageNode({ alt: normalizedAlt, url: normalizedUrl })
-      )
-    ) {
-      setErrorMessage("이미지를 삽입할 문단을 찾을 수 없습니다.")
-      return
-    }
-    setAlt("")
-    setErrorMessage(null)
-    setUrl("")
-    onOpenChange(false)
-    editor.focus()
-  }
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>URL 이미지 삽입</DialogTitle>
-          <DialogDescription>
-            업로드 없이 공개 HTTPS 이미지 주소와 대체 텍스트를 입력합니다.
-          </DialogDescription>
-        </DialogHeader>
-        <form className="grid gap-4" onSubmit={submit}>
-          <div className="grid gap-2">
-            <Label htmlFor="resource-image-url">이미지 URL</Label>
-            <Input
-              id="resource-image-url"
-              onChange={(event) => {
-                setUrl(event.currentTarget.value)
-              }}
-              placeholder="https://example.com/image.png"
-              type="url"
-              value={url}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="resource-image-alt">대체 텍스트</Label>
-            <Input
-              id="resource-image-alt"
-              onChange={(event) => {
-                setAlt(event.currentTarget.value)
-              }}
-              value={alt}
-            />
-          </div>
-          {errorMessage === null ? null : (
-            <Alert role="alert" tone="danger">
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                onOpenChange(false)
-              }}
-              type="button"
-              variant="outline"
-            >
-              취소
-            </Button>
-            <Button type="submit">삽입</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
 }
 
 function ResourceTableDialog({

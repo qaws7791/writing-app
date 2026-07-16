@@ -4,11 +4,6 @@ import type {
   AdminSessionResolver,
 } from "@/auth/admin-session"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
-import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
-import {
-  createResourceDocumentOperationCoordinator,
-  type ResourceDocumentOperationCoordinator,
-} from "@/resource-library/resource-document-operation-coordinator"
 import { adminRoles } from "@workspace/core/admin"
 import { adminIdSchema } from "@workspace/contracts/admin"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
@@ -21,11 +16,11 @@ type TestAdminApiServicesOverrides = {
   >]?: Partial<AdminApiServices[TKey]>
 } & {
   readonly resourceLibrary?: {
+    readonly assets?: Partial<AdminApiServices["resourceLibrary"]["assets"]>
     readonly documents?: Partial<
       AdminApiServices["resourceLibrary"]["documents"]
     >
     readonly search?: Partial<AdminApiServices["resourceLibrary"]["search"]>
-    readonly sync?: Partial<AdminApiServices["resourceLibrary"]["sync"]>
     readonly tree?: Partial<AdminApiServices["resourceLibrary"]["tree"]>
   }
 }
@@ -34,8 +29,6 @@ type TestAdminApiDependencyOverrides = {
   readonly adminOrigin?: string
   readonly adminServices?: TestAdminApiServicesOverrides
   readonly now?: () => Date
-  readonly resourceDocumentOperations?: ResourceDocumentOperationCoordinator
-  readonly resourceEvents?: ResourceEventsWorkspace
   readonly sessionResolver?: AdminSessionResolver
 }
 
@@ -79,6 +72,10 @@ export function createTestAdminApiDependencies(
         ...overrides.adminServices?.dashboard,
       },
       resourceLibrary: {
+        assets: {
+          ...failingAdminServices.resourceLibrary.assets,
+          ...overrides.adminServices?.resourceLibrary?.assets,
+        },
         documents: {
           ...failingAdminServices.resourceLibrary.documents,
           ...overrides.adminServices?.resourceLibrary?.documents,
@@ -86,10 +83,6 @@ export function createTestAdminApiDependencies(
         search: {
           ...failingAdminServices.resourceLibrary.search,
           ...overrides.adminServices?.resourceLibrary?.search,
-        },
-        sync: {
-          ...failingAdminServices.resourceLibrary.sync,
-          ...overrides.adminServices?.resourceLibrary?.sync,
         },
         tree: {
           ...failingAdminServices.resourceLibrary.tree,
@@ -107,15 +100,6 @@ export function createTestAdminApiDependencies(
     },
     adminOrigin: overrides.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
     now: overrides.now ?? (() => testAdminNow),
-    resourceDocumentOperations:
-      overrides.resourceDocumentOperations ??
-      createResourceDocumentOperationCoordinator(),
-    resourceEvents: overrides.resourceEvents ?? {
-      countActiveEditors: () => 0,
-      publish() {},
-      publishDocumentInvalidated() {},
-      publishDocumentVersion() {},
-    },
     sessionResolver:
       overrides.sessionResolver ?? createTestAdminSessionResolver(),
   }
@@ -203,6 +187,18 @@ function createFailingAdminApiServices(): AdminApiServices {
       },
     },
     resourceLibrary: {
+      assets: {
+        createAssetId() {
+          return throwUnexpectedAdminServiceCall(
+            "resourceLibrary.assets.createAssetId"
+          )
+        },
+        async registerImage() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.assets.registerImage"
+          )
+        },
+      },
       documents: {
         async exportDocument() {
           throwUnexpectedAdminServiceCall(
@@ -219,20 +215,15 @@ function createFailingAdminApiServices(): AdminApiServices {
             "resourceLibrary.documents.importDocument"
           )
         },
+        async saveDocument() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.documents.saveDocument"
+          )
+        },
       },
       search: {
         async search() {
           throwUnexpectedAdminServiceCall("resourceLibrary.search.search")
-        },
-      },
-      sync: {
-        async readSync() {
-          throwUnexpectedAdminServiceCall("resourceLibrary.sync.readSync")
-        },
-        async saveTransaction() {
-          throwUnexpectedAdminServiceCall(
-            "resourceLibrary.sync.saveTransaction"
-          )
         },
       },
       tree: {
@@ -242,19 +233,19 @@ function createFailingAdminApiServices(): AdminApiServices {
         async createFolder() {
           throwUnexpectedAdminServiceCall("resourceLibrary.tree.createFolder")
         },
+        async deleteNodePermanently() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.tree.deleteNodePermanently"
+          )
+        },
         async getTree() {
           throwUnexpectedAdminServiceCall("resourceLibrary.tree.getTree")
-        },
-        async getSubtreeDocumentIds() {
-          throwUnexpectedAdminServiceCall(
-            "resourceLibrary.tree.getSubtreeDocumentIds"
-          )
         },
         async moveNode() {
           throwUnexpectedAdminServiceCall("resourceLibrary.tree.moveNode")
         },
-        async renameNode() {
-          throwUnexpectedAdminServiceCall("resourceLibrary.tree.renameNode")
+        async renameFolder() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.renameFolder")
         },
         async restoreNode() {
           throwUnexpectedAdminServiceCall("resourceLibrary.tree.restoreNode")

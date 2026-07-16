@@ -44,4 +44,4 @@
 | [REQ-ADM-4](./admin/req-adm-4-user-operations.md)     | 사용자 운영       | `US-ADM-4`       | `SCR-105`, `SCR-106`                                  | 기준 |
 | [REQ-ADM-5](./admin/req-adm-5-settings.md)            | 운영 설정         | `US-ADM-5`       | `SCR-108`                                             | 기준 |
 | [REQ-ADM-6](./admin/req-adm-6-admin-navigation.md)    | 어드민 내비게이션 | `US-ADM-6`       | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107`, `SCR-108` | 기준 |
-| [REQ-ADM-7](./admin/req-adm-7-resource-library.md)    | 자료실 공동 편집  | `US-ADM-7`       | `SCR-110`                                             | 기준 |
+| [REQ-ADM-7](./admin/req-adm-7-resource-library.md)    | 관리자 자료실     | `US-ADM-7`       | `SCR-110`                                             | 기준 |

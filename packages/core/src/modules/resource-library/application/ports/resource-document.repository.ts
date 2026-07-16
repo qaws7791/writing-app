@@ -1,9 +1,5 @@
+import type { ResourceTreeCommandRejection } from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import type {
-  ResourceTreeCommandResult,
-  ResourceTreeMutation,
-} from "#core/modules/resource-library/application/ports/resource-tree.repository"
-import type {
-  ResourceAuditEventId,
   ResourceBreadcrumbItem,
   ResourceDocumentId,
   ResourceFolderId,
@@ -17,51 +13,68 @@ export type ResourceDocumentActor = {
   readonly name: string
 }
 
-export type ResourceDocumentMetadataRecord = {
-  readonly contentRevision: number
+export type ResourceDocumentRecord = {
+  readonly contentMarkdown: string
   readonly createdAt: Date
   readonly createdBy: ResourceDocumentActor
   readonly id: ResourceDocumentId
   readonly name: string
   readonly parentId: ResourceFolderId | null
   readonly path: readonly ResourceBreadcrumbItem[]
-  readonly stateVersion: number
   readonly status: ResourceNodeStatus
   readonly updatedAt: Date
   readonly updatedBy: ResourceDocumentActor
-}
-
-export type ResourceDocumentRecord = ResourceDocumentMetadataRecord & {
-  readonly contentMarkdown: string
+  readonly version: number
 }
 
 export type ImportResourceDocumentInput = {
   readonly actorId: string
-  readonly auditEventId: ResourceAuditEventId
   readonly bodyText: string
   readonly documentId: ResourceDocumentId
-  readonly expectedRevision: number
   readonly markdown: string
   readonly name: string
   readonly now: Date
   readonly parentId: ResourceFolderId | null
 }
 
-export type ImportResourceDocumentResult = ResourceTreeCommandResult<{
-  readonly document: ResourceDocumentRecord
-  readonly mutation: ResourceTreeMutation & {
-    readonly node: ResourceTreeNode
-  }
-}>
+export type ImportResourceDocumentResult =
+  | ResourceTreeCommandRejection
+  | {
+      readonly kind: "ok"
+      readonly value: {
+        readonly document: ResourceDocumentRecord
+        readonly node: ResourceTreeNode
+      }
+    }
+
+export type SaveResourceDocumentInput = {
+  readonly actorId: string
+  readonly bodyText: string
+  readonly contentMarkdown: string
+  readonly documentId: ResourceDocumentId
+  readonly expectedVersion: number
+  readonly name: string
+  readonly now: Date
+}
+
+export type SaveResourceDocumentResult =
+  | { readonly kind: "not-found" }
+  | { readonly kind: "name-conflict" }
+  | {
+      readonly kind: "invalid-name"
+      readonly reason: "empty" | "invalid-character" | "too-long"
+    }
+  | { readonly kind: "conflict"; readonly document: ResourceDocumentRecord }
+  | { readonly kind: "ok"; readonly document: ResourceDocumentRecord }
 
 export type ResourceDocumentRepository = {
   readonly importDocument: (
     input: ImportResourceDocumentInput
   ) => Promise<ImportResourceDocumentResult>
-  readonly readDocumentContent: (
+  readonly readDocument: (
     documentId: ResourceDocumentId
-  ) => Promise<string | null>
-  readonly readDocumentMetadata: (
-    documentId: ResourceDocumentId
-  ) => Promise<ResourceDocumentMetadataRecord | null>
+  ) => Promise<ResourceDocumentRecord | null>
+  readonly saveDocument: (
+    input: SaveResourceDocumentInput
+  ) => Promise<SaveResourceDocumentResult>
 }

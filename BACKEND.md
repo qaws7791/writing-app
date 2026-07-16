@@ -121,39 +121,44 @@ bun --filter @workspace/api dev
 - `POST /resources/folders`
 - `POST /resources/documents`
 - `GET /resources/documents/{documentId}`
-- `POST /resources/documents/{documentId}/transactions`
-- `GET /resources/documents/{documentId}/sync`
+- `PUT /resources/documents/{documentId}`
 - `POST /resources/documents/import`
 - `GET /resources/documents/{documentId}/export`
+- `POST /resources/documents/{documentId}/images`
 - `GET /resources/search`
-- `GET /resources/nodes/{nodeId}/active-editors`
-- `PATCH /resources/nodes/{nodeId}/name`
+- `PATCH /resources/folders/{folderId}/name`
 - `PATCH /resources/nodes/{nodeId}/move`
 - `POST /resources/nodes/{nodeId}/trash`
 - `POST /resources/nodes/{nodeId}/restore`
-- `WebSocket /resources/events`
+- `DELETE /resources/nodes/{nodeId}`
 
-자료실 본문은 `POST /resources/documents/{documentId}/transactions`가 멱등 Yjs update를 받아 GFM Markdown 원본·FTS 색인·수정 메타데이터와 함께 원자적으로 저장한다. 다른 편집자의 version 알림을 받으면 `GET /resources/documents/{documentId}/sync`가 연속 update 또는 최신 snapshot을 반환한다. `WebSocket /resources/events`는 작업 공간의 자료 트리 사건과 문서 version·무효화 알림만 전달하며 본문 Yjs binary를 전송하지 않는다. 이 WebSocket upgrade는 관리자 session cookie와 `ADMIN_ORIGIN`을 검증한다.
+자료실 본문은 `PUT /resources/documents/{documentId}`가 `If-Match` 문서 버전을 받아 제목, GFM Markdown 원본, FTS 색인과 수정 메타데이터를 한 SQLite transaction에서 저장한다. 버전이 다르면 `412 Precondition Failed`와 최신 문서를 반환한다. 자료실은 WebSocket과 Yjs 상태를 사용하지 않으며, 브라우저 포커스 복귀 때 전체 트리와 열린 문서를 다시 조회한다. 이미지는 관리자 인증 뒤 JPEG·PNG·WebP와 5MB 제한을 검증해 R2 호환 S3 API에 저장한다.
 
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 관리자 Better Auth 런타임에는 Google/OAuth social provider를 등록하지 않는다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다. 관리자 보호 API도 `auth.api.getSession({ headers })`로 관리자용 httpOnly 세션 쿠키를 검증하며, `ADMIN_BETTER_AUTH_SECRET`은 공통 `BETTER_AUTH_SECRET`보다 우선한다.
 
 어드민 API 앱은 `@workspace/env/parse-env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL` 기본 경로 위임, `ADMIN_ORIGIN` 기반 CORS 허용 origin, `ADMIN_API_PORT` 같은 앱별 의미 변환은 `apps/admin-api/src/env.ts`에 유지한다.
 SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용한다. 따라서 어드민 API도 마이그레이션과 런타임 쿼리 전에 WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 적용한다.
 
-| 변수                              | 필수 여부 | 기본값 또는 예시                    | 용도                                                                                                     |
-| --------------------------------- | --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `ADMIN_BETTER_AUTH_SECRET`        | 필수      | `replace-with-admin-auth-secret`    | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                                               |
-| `ADMIN_BETTER_AUTH_URL`           | 필수      | `http://localhost:4001`             | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL                                          |
-| `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`             | 어드민 웹과 어드민 API가 같은 parent domain의 서로 다른 서브도메인일 때 관리자 세션 쿠키를 공유할 domain |
-| `ADMIN_ORIGIN`                    | 선택      | `http://localhost:3001`             | 자격 증명 포함 브라우저 API 요청을 허용할 어드민 웹 origin                                               |
-| `DATABASE_URL`                    | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치                                |
-| `LOG_LEVEL`                       | 선택      | `info`                              | Pino 로그 레벨                                                                                           |
-| `NODE_ENV`                        | 선택      | `development`                       | 실행 환경 이름                                                                                           |
-| `ADMIN_API_PORT`                  | 선택      | `4001`                              | 어드민 API 서버가 수신할 포트                                                                            |
-| `ADMIN_SEED_EMAIL`                | 시드 필수 | `admin@example.com`                 | 최초 관리자 계정 시드에 사용할 이메일                                                                    |
-| `ADMIN_SEED_PASSWORD`             | 시드 필수 | `replace-with-local-admin-password` | 최초 관리자 계정 시드에 사용할 비밀번호                                                                  |
-| `ADMIN_SEED_NAME`                 | 시드 선택 | `관리자`                            | 최초 관리자 계정 시드에 사용할 이름                                                                      |
-| `ADMIN_SEED_RESET_PASSWORD`       | 시드 선택 | `false`                             | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신                                       |
+| 변수                              | 필수 여부 | 기본값 또는 예시                                | 용도                                                                                                     |
+| --------------------------------- | --------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET`        | 필수      | `replace-with-admin-auth-secret`                | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                                               |
+| `ADMIN_BETTER_AUTH_URL`           | 필수      | `http://localhost:4001`                         | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL                                          |
+| `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`                         | 어드민 웹과 어드민 API가 같은 parent domain의 서로 다른 서브도메인일 때 관리자 세션 쿠키를 공유할 domain |
+| `ADMIN_ORIGIN`                    | 선택      | `http://localhost:3001`                         | 자격 증명 포함 브라우저 API 요청을 허용할 어드민 웹 origin                                               |
+| `DATABASE_URL`                    | 필수      | `file:../../data/api.sqlite`                    | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치                                |
+| `LOG_LEVEL`                       | 선택      | `info`                                          | Pino 로그 레벨                                                                                           |
+| `NODE_ENV`                        | 선택      | `development`                                   | 실행 환경 이름                                                                                           |
+| `ADMIN_API_PORT`                  | 선택      | `4001`                                          | 어드민 API 서버가 수신할 포트                                                                            |
+| `ADMIN_SEED_EMAIL`                | 시드 필수 | `admin@example.com`                             | 최초 관리자 계정 시드에 사용할 이메일                                                                    |
+| `ADMIN_SEED_PASSWORD`             | 시드 필수 | `replace-with-local-admin-password`             | 최초 관리자 계정 시드에 사용할 비밀번호                                                                  |
+| `ADMIN_SEED_NAME`                 | 시드 선택 | `관리자`                                        | 최초 관리자 계정 시드에 사용할 이름                                                                      |
+| `ADMIN_SEED_RESET_PASSWORD`       | 시드 선택 | `false`                                         | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신                                       |
+| `ADMIN_ASSET_S3_ENDPOINT`         | 운영 필수 | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` | Cloudflare R2 S3 호환 API endpoint                                                                       |
+| `ADMIN_ASSET_S3_REGION`           | 선택      | `auto`                                          | R2는 `auto`, 로컬 S3 호환 저장소는 해당 region 사용                                                      |
+| `ADMIN_ASSET_S3_BUCKET`           | 운영 필수 | `writing-app-public-assets`                     | 자료실 문서 종속 이미지를 저장할 bucket                                                                  |
+| `ADMIN_ASSET_PUBLIC_BASE_URL`     | 운영 필수 | `https://assets.example.com`                    | Markdown 이미지 URL에 사용할 R2 custom domain 기준 URL                                                   |
+| `ADMIN_ASSET_S3_ACCESS_KEY`       | 운영 필수 | 비밀값                                          | R2 API token의 Access Key ID                                                                             |
+| `ADMIN_ASSET_S3_SECRET_KEY`       | 운영 필수 | 비밀값                                          | R2 API token의 Secret Access Key                                                                         |
 
 ```bash
 bun --filter @workspace/admin-api dev
@@ -169,9 +174,9 @@ bun --filter @workspace/admin-api seed:admin
 
 ## `packages/core`
 
-`packages/core`는 도메인 중심 계약과 application implementation을 담는다. 콘텐츠, 학습 진행, AI 피드백, 자료실 트리·문서·검색·공동 편집, 브랜드 ID, repository port와 구현, 명시적 결과 변형, 도메인 서비스, 트랜잭션 경계, DB query, Better Auth profile onboarding, OpenAI feedback provider adapter를 둔다. HTTP transport에는 의존하지 않으며, DB 접근은 `packages/db`의 저수준 primitive를 통해 수행한다.
+`packages/core`는 도메인 중심 계약과 application implementation을 담는다. 콘텐츠, 학습 진행, AI 피드백, 자료실 트리·문서·검색·자산 메타데이터, 브랜드 ID, repository port와 구현, 명시적 결과 변형, 도메인 서비스, 트랜잭션 경계, DB query, Better Auth profile onboarding, OpenAI feedback provider adapter를 둔다. HTTP transport에는 의존하지 않으며, DB 접근은 `packages/db`의 저수준 primitive를 통해 수행한다.
 
-학습자 profile repository port와 onboarding service는 auth application에 있고 Drizzle repository와 Better Auth hook은 auth infrastructure에 있다. learner composition은 repository instance 하나를 hook과 session resolver에 함께 주입한다. 자료 문서 sync use case는 필수 `ResourceDocumentProjector` port만 알고, Worker와 projection deadline 실행은 infrastructure adapter가 담당한다. 관리자 SQLite client는 `apps/admin-api/src/admin-runtime.ts`가 생성·공유·종료하며 core 관리자 factory는 주입된 Drizzle database handle로 서비스만 조립한다.
+학습자 profile repository port와 onboarding service는 auth application에 있고 Drizzle repository와 Better Auth hook은 auth infrastructure에 있다. learner composition은 repository instance 하나를 hook과 session resolver에 함께 주입한다. 관리자 SQLite client는 `apps/admin-api/src/admin-runtime.ts`가 생성·공유·종료하며 core 관리자 factory는 주입된 Drizzle database handle로 자료 트리·문서·검색·자산 서비스를 조립한다.
 
 ## 콘텐츠 변경 정책
 

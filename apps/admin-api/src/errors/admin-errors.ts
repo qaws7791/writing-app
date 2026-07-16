@@ -47,6 +47,22 @@ export function notFoundAdminError(): AppError {
   })
 }
 
+export function preconditionRequiredAdminError(): AppError {
+  return new AppError({
+    code: "PRECONDITION_REQUIRED",
+    message: "If-Match precondition required",
+    status: 428,
+  })
+}
+
+export function payloadTooLargeAdminError(): AppError {
+  return new AppError({
+    code: "PAYLOAD_TOO_LARGE",
+    message: "Payload too large",
+    status: 413,
+  })
+}
+
 export function unwrapAdminCourseEditorSaveResult(
   result: AdminCourseEditorSaveResult
 ) {
@@ -64,18 +80,10 @@ export function unwrapAdminCourseEditorSaveResult(
   }
 }
 
-export function resourceCollaborationUnavailableAdminError(): AppError {
+export function resourceAssetStoreUnavailableAdminError(): AppError {
   return new AppError({
-    code: "RESOURCE_COLLABORATION_UNAVAILABLE",
-    message: "Resource collaboration unavailable",
-    status: 503,
-  })
-}
-
-export function resourceDocumentProjectionTimeoutAdminError(): AppError {
-  return new AppError({
-    code: "RESOURCE_DOCUMENT_PROJECTION_TIMEOUT",
-    message: "Resource document projection timeout",
+    code: "RESOURCE_ASSET_STORE_UNAVAILABLE",
+    message: "Resource asset store unavailable",
     status: 503,
   })
 }
@@ -90,14 +98,18 @@ export function resourceDocumentQuotaExceededAdminError(): AppError {
 
 export function resourceLibraryConflictAdminError(
   code:
+    | "RESOURCE_DEPTH_LIMIT"
     | "RESOURCE_MOVE_CYCLE"
     | "RESOURCE_NAME_CONFLICT"
-    | "RESOURCE_POSITION_CONFLICT"
+    | "RESOURCE_NODE_LIMIT"
     | "STALE_REVISION"
 ): AppError {
   return new AppError({
     code,
     message: "Resource library conflict",
-    status: 409,
+    status:
+      code === "RESOURCE_DEPTH_LIMIT" || code === "RESOURCE_NODE_LIMIT"
+        ? 422
+        : 409,
   })
 }

@@ -1,4 +1,4 @@
-import { ResourceDocumentEditor } from "@/features/resources/editor/resource-document-editor"
+import { ResourceDocumentEditor } from "@/features/resources/editor/resource-document-editor-loader"
 import { ResourceDocumentView } from "@/features/resources/resource-document-view"
 import { createResourceLibraryHttpAdapter } from "@/features/resources/resource-library-http-adapter"
 import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
@@ -14,7 +14,7 @@ export default async function AdminResourceDocumentRoute({
   const { documentId } = await params
   const result = await createResourceLibraryHttpAdapter(
     getServerAdminHttpTransport({ tokenProvider: getServerAdminSessionToken })
-  ).getResourceLibraryDocument(documentId)
+  ).getResourceDocument(documentId)
 
   if (result.status === "error") {
     return (
@@ -26,13 +26,13 @@ export default async function AdminResourceDocumentRoute({
     )
   }
 
-  return result.value.status === "archived" ? (
+  return result.value.status === "trashed" ? (
     <ResourceDocumentView document={result.value} />
   ) : (
     <ResourceDocumentEditor
       apiBaseUrl={readServerAdminApiBaseUrl()}
       document={result.value}
-      key={result.value.id}
+      key={`${result.value.id}:${result.value.version}`}
     />
   )
 }

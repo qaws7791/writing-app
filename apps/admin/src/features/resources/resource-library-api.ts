@@ -1,108 +1,102 @@
 "use client"
 
-import { createAdminHttpTransport } from "@/lib/api/admin-http-transport"
-import type { AdminApiResult } from "@/lib/api/api-result"
-import { createResourceLibraryHttpAdapter } from "@/features/resources/resource-library-http-adapter"
+import {
+  createResourceLibraryHttpAdapter,
+  parseResourceDocument,
+  parseResourceImage,
+} from "@/features/resources/resource-library-http-adapter"
 import type {
-  AdminExportResourceDocument,
-  AdminImportResourceDocumentInput,
-  AdminImportResourceDocumentResult,
-  AdminMoveResourceNodeInput,
-  AdminRenameResourceNodeInput,
-  AdminResourceActiveEditorCount,
-  AdminResourceDocumentSync,
-  AdminResourceDocumentTransactionInput,
-  AdminResourceDocumentTransactionResult,
-  AdminResourceLibraryDocument,
-  AdminResourceNodeMutation,
-  AdminResourceParentCommandInput,
-  AdminResourceRestoreResult,
-  AdminResourceRevisionCommandInput,
-  AdminResourceSearch,
-  AdminResourceTrashResult,
-  AdminResourceTree,
+  AdminSaveResourceDocumentInput,
+  ResourceLibraryHttpApi,
+  ResourceSaveResult,
+  ResourceUploadResult,
 } from "@/features/resources/resource-library-model"
-import type { AdminApiBaseUrl } from "@/runtime-config"
+import { createAdminHttpTransport } from "@/lib/api/admin-http-transport"
+import { buildAdminApiUrl, type AdminApiBaseUrl } from "@/runtime-config"
 
-export type ResourceTreeApi = {
-  readonly createResourceDocumentNode: (
-    input: AdminResourceParentCommandInput
-  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
-  readonly createResourceFolder: (
-    input: AdminResourceParentCommandInput
-  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
-  readonly getResourceActiveEditorCount: (
-    nodeId: string
-  ) => Promise<AdminApiResult<AdminResourceActiveEditorCount>>
-  readonly getResourceTree: (input: {
-    readonly parentId: string | null
-    readonly scope: "active" | "trash"
-  }) => Promise<AdminApiResult<AdminResourceTree>>
-  readonly importResourceDocument: (
-    input: AdminImportResourceDocumentInput
-  ) => Promise<AdminApiResult<AdminImportResourceDocumentResult>>
-  readonly moveResourceNode: (
-    nodeId: string,
-    input: AdminMoveResourceNodeInput
-  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
-  readonly renameResourceNode: (
-    nodeId: string,
-    input: AdminRenameResourceNodeInput
-  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
-  readonly restoreResourceNode: (
-    nodeId: string,
-    input: AdminResourceRevisionCommandInput
-  ) => Promise<AdminApiResult<AdminResourceRestoreResult>>
-  readonly searchResources: (input: {
-    readonly limit: number
-    readonly query: string
-    readonly scope: "active" | "trash"
-  }) => Promise<AdminApiResult<AdminResourceSearch>>
-  readonly trashResourceNode: (
-    nodeId: string,
-    input: AdminResourceRevisionCommandInput
-  ) => Promise<AdminApiResult<AdminResourceTrashResult>>
-}
-
-export type ResourceDocumentEditorApi = {
-  readonly exportResourceDocument: (
-    documentId: string
-  ) => Promise<AdminApiResult<AdminExportResourceDocument>>
-}
-
-export type ResourceDocumentReaderApi = {
-  readonly getResourceLibraryDocument: (
-    documentId: string
-  ) => Promise<AdminApiResult<AdminResourceLibraryDocument>>
-}
-
-export type ResourceWorkspaceSyncApi = {
-  readonly getResourceDocumentSnapshot: (
-    documentId: string
-  ) => Promise<AdminApiResult<AdminResourceDocumentSync>>
-  readonly getResourceDocumentSync: (
+export type ResourceLibraryBrowserApi = ResourceLibraryHttpApi & {
+  readonly saveResourceDocument: (
     documentId: string,
-    afterStateVersion: number
-  ) => Promise<AdminApiResult<AdminResourceDocumentSync>>
-  readonly saveResourceDocumentTransaction: (
+    version: number,
+    input: AdminSaveResourceDocumentInput
+  ) => Promise<ResourceSaveResult>
+  readonly uploadResourceImage: (
     documentId: string,
-    input: AdminResourceDocumentTransactionInput
-  ) => Promise<AdminApiResult<AdminResourceDocumentTransactionResult>>
+    file: File,
+    altText: string
+  ) => Promise<ResourceUploadResult>
 }
-
-export type ResourceLibraryApi = ResourceDocumentEditorApi &
-  ResourceDocumentReaderApi &
-  ResourceTreeApi &
-  ResourceWorkspaceSyncApi
 
 export function createBrowserResourceLibraryApi(
   apiBaseUrl: AdminApiBaseUrl
-): ResourceLibraryApi {
-  return createResourceLibraryHttpAdapter(
+): ResourceLibraryBrowserApi {
+  const httpApi = createResourceLibraryHttpAdapter(
     createAdminHttpTransport({
       baseUrl: apiBaseUrl,
       fetch: globalThis.fetch.bind(globalThis),
       tokenProvider: () => null,
     })
   )
+
+  return {
+    ...httpApi,
+    async saveResourceDocument(documentId, version, input) {
+      try {
+        const response = await fetch(
+          buildAdminApiUrl(apiBaseUrl, `/resources/documents/${documentId}`),
+          {
+            body: JSON.stringify(input),
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              "If-Match": `"${version}"`,
+            },
+            method: "PUT",
+          }
+        )
+        const parsed = parseResourceDocument(await readJson(response))
+        if (response.status === 412 && parsed !== null) {
+          return { latest: parsed, status: "conflict" }
+        }
+        if (!response.ok || parsed === null) {
+          return { message: "문서를 저장하지 못했습니다.", status: "error" }
+        }
+        return { status: "ok", value: parsed }
+      } catch {
+        return { message: "네트워크 연결을 확인해 주세요.", status: "error" }
+      }
+    },
+    async uploadResourceImage(documentId, file, altText) {
+      try {
+        const form = new FormData()
+        form.set("altText", altText)
+        form.set("file", file)
+        const response = await fetch(
+          buildAdminApiUrl(
+            apiBaseUrl,
+            `/resources/documents/${documentId}/images`
+          ),
+          { body: form, credentials: "include", method: "POST" }
+        )
+        const parsed = parseResourceImage(await readJson(response))
+        if (!response.ok || parsed === null) {
+          return {
+            message: "JPEG, PNG, WebP 이미지만 5MB까지 업로드할 수 있습니다.",
+            status: "error",
+          }
+        }
+        return { status: "ok", value: parsed }
+      } catch {
+        return { message: "이미지를 업로드하지 못했습니다.", status: "error" }
+      }
+    },
+  }
+}
+
+async function readJson(response: Response): Promise<unknown> {
+  try {
+    return (await response.json()) as unknown
+  } catch {
+    return null
+  }
 }

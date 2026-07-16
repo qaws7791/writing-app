@@ -4,16 +4,15 @@ import { adminNonNegativeIntegerSchema } from "@workspace/contracts/admin/admin-
 import {
   adminResourceFolderIdSchema,
   adminResourceIdSchema,
+  adminResourceMaxNodeCount,
   adminResourceNameSchema,
   adminResourceNodeStatusSchema,
-  adminResourceRevisionSchema,
 } from "@workspace/contracts/admin/admin-resource-library-shared"
 
 const adminResourceTreeNodeBaseDtoSchema = z.object({
   id: adminResourceIdSchema,
   name: adminResourceNameSchema,
   parentId: adminResourceFolderIdSchema.nullable(),
-  sortOrder: adminNonNegativeIntegerSchema,
   status: adminResourceNodeStatusSchema,
 })
 
@@ -35,69 +34,43 @@ export const adminResourceTreeNodeDtoSchema = z.discriminatedUnion("kind", [
 ])
 
 export const adminResourceTreeDtoSchema = z.object({
-  nodes: z.array(adminResourceTreeNodeDtoSchema),
-  revision: adminResourceRevisionSchema,
-})
-
-export const adminResourceActiveEditorCountDtoSchema = z.object({
-  activeEditorCount: adminNonNegativeIntegerSchema,
+  nodes: z.array(adminResourceTreeNodeDtoSchema).max(adminResourceMaxNodeCount),
 })
 
 export const adminCreateResourceNodeRequestSchema = z.object({
-  expectedRevision: adminResourceRevisionSchema,
   parentId: adminResourceFolderIdSchema.nullable(),
 })
 
-export const adminRenameResourceNodeRequestSchema = z.object({
-  expectedRevision: adminResourceRevisionSchema,
+export const adminRenameResourceFolderRequestSchema = z.object({
   name: adminResourceNameSchema,
 })
 
 export const adminMoveResourceNodeRequestSchema = z.object({
-  destinationIndex: adminNonNegativeIntegerSchema,
   destinationParentId: adminResourceFolderIdSchema.nullable(),
-  expectedRevision: adminResourceRevisionSchema,
 })
 
-export const adminResourceRevisionRequestSchema = z.object({
-  expectedRevision: adminResourceRevisionSchema,
+export const adminResourceNodeMutationDtoSchema = z.object({
+  node: adminResourceTreeNodeDtoSchema,
 })
 
-const adminResourceMutationBaseDtoSchema = z.object({
-  affectedParentIds: z.array(adminResourceFolderIdSchema.nullable()),
-  revision: adminResourceRevisionSchema,
+export const adminResourceTrashResultDtoSchema = z.object({
+  documentCount: adminNonNegativeIntegerSchema,
+  folderCount: adminNonNegativeIntegerSchema,
 })
-
-export const adminResourceNodeMutationDtoSchema =
-  adminResourceMutationBaseDtoSchema.extend({
-    node: adminResourceTreeNodeDtoSchema,
-  })
-
-export const adminResourceTrashMutationDtoSchema =
-  adminResourceMutationBaseDtoSchema.extend({
-    documentCount: adminNonNegativeIntegerSchema,
-    folderCount: adminNonNegativeIntegerSchema,
-  })
-
-export const adminResourceTrashResultDtoSchema =
-  adminResourceTrashMutationDtoSchema
 
 export const adminResourceRestoreResultDtoSchema =
-  adminResourceTrashMutationDtoSchema.extend({
+  adminResourceTrashResultDtoSchema.extend({
     node: adminResourceTreeNodeDtoSchema,
   })
 
 export type AdminCreateResourceNodeRequest = z.infer<
   typeof adminCreateResourceNodeRequestSchema
 >
-export type AdminResourceActiveEditorCountDto = z.infer<
-  typeof adminResourceActiveEditorCountDtoSchema
->
 export type AdminMoveResourceNodeRequest = z.infer<
   typeof adminMoveResourceNodeRequestSchema
 >
-export type AdminRenameResourceNodeRequest = z.infer<
-  typeof adminRenameResourceNodeRequestSchema
+export type AdminRenameResourceFolderRequest = z.infer<
+  typeof adminRenameResourceFolderRequestSchema
 >
 export type AdminResourceNodeMutationDto = z.infer<
   typeof adminResourceNodeMutationDtoSchema
@@ -105,14 +78,8 @@ export type AdminResourceNodeMutationDto = z.infer<
 export type AdminResourceRestoreResultDto = z.infer<
   typeof adminResourceRestoreResultDtoSchema
 >
-export type AdminResourceRevisionRequest = z.infer<
-  typeof adminResourceRevisionRequestSchema
->
 export type AdminResourceTrashResultDto = z.infer<
   typeof adminResourceTrashResultDtoSchema
->
-export type AdminResourceTrashMutationDto = z.infer<
-  typeof adminResourceTrashMutationDtoSchema
 >
 export type AdminResourceTreeDto = z.infer<typeof adminResourceTreeDtoSchema>
 export type AdminResourceTreeNodeDto = z.infer<

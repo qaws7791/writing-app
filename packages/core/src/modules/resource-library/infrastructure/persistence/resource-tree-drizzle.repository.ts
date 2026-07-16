@@ -1,53 +1,58 @@
-import { and, eq, sql } from "drizzle-orm"
+import { and, asc, eq, getTableColumns, isNull, ne, sql } from "drizzle-orm"
 
 import type {
   CreateResourceNodeInput,
-  CreateResourceNodeResult,
   MoveResourceNodeInput,
-  MoveResourceNodeResult,
-  RenameResourceNodeInput,
-  RenameResourceNodeResult,
+  RenameResourceFolderInput,
+  ResourceNodeCommandInput,
+  ResourcePermanentDeleteResult,
+  ResourceRestoreResult,
+  ResourceTrashResult,
+  ResourceTreeNodeResult,
   ResourceTreeRepository,
-  RestoreResourceNodeInput,
-  RestoreResourceNodeResult,
-  TrashResourceNodeInput,
-  TrashResourceNodeResult,
 } from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import {
-  archiveResourceSubtree,
   createAvailableResourceName,
-  createResourceSortAssignments,
-  normalizeResourceName,
   restoreResourceSubtree,
+  trashResourceSubtree,
   validateResourceMove,
   validateResourceNameChange,
 } from "#core/modules/resource-library/domain/resource-tree-policy"
-import type { ResourceTreeNode } from "#core/modules/resource-library/domain/resource-tree-node"
 import {
-  countResourceKinds,
-  insertResourceSearchIndex,
-  insertAuditEvent,
-  readActiveChildRows,
-  readActiveNodeRow,
-  readAncestorFolderIds,
-  readResourceSubtree,
-  readResourceChildren,
-  readTreeRevision,
-  reserveTreeRevision,
-  toParentId,
-  toResourceNodeIdFromRows,
-  toResourceTreeNode,
-  uniqueParentIds,
-  updateResourceSearchName,
-  validateActiveParent,
-  validateTreeRevision,
-  writeSortAssignments,
-} from "#core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
+  toResourceDocumentId,
+  toResourceFolderId,
+  toResourceNodeId,
+  type ResourceFolderId,
+  type ResourceNodeId,
+  type ResourceTreeEntry,
+  type ResourceTreeNode,
+  type ResourceTreeScope,
+} from "#core/modules/resource-library/domain/resource-tree-node"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
+  adminResourceAssets,
   adminResourceDocuments,
   adminResourceNodes,
 } from "@workspace/db/schema"
+
+const maxResourceNodeCount = 1_000
+const maxResourceFolderDepth = 3
+
+type DatabaseTransaction = Parameters<
+  Parameters<WritingAppDatabase["transaction"]>[0]
+>[0]
+type ResourceNodeRow = typeof adminResourceNodes.$inferSelect
+
+type RecursiveResourceNodeRow = {
+  readonly depth: number
+  readonly id: string
+  readonly kind: ResourceNodeRow["kind"]
+  readonly name: string
+  readonly normalized_name: string
+  readonly parent_id: string | null
+  readonly status: ResourceNodeRow["status"]
+  readonly trash_root_id: string | null
+}
 
 export function createDrizzleResourceTreeRepository(
   db: WritingAppDatabase
@@ -56,20 +61,20 @@ export function createDrizzleResourceTreeRepository(
     async createNode(input) {
       return createNode(db, input)
     },
+    async deleteNodePermanently(input) {
+      return deleteNodePermanently(db, input)
+    },
     async moveNode(input) {
       return moveNode(db, input)
-    },
-    async readChildren(input) {
-      return readResourceChildren(db, input)
-    },
-    async readRevision() {
-      return readTreeRevision(db)
     },
     async readSubtree(nodeId) {
       return readResourceSubtree(db, nodeId)
     },
-    async renameNode(input) {
-      return renameNode(db, input)
+    async readTree(scope) {
+      return readResourceTree(db, scope)
+    },
+    async renameFolder(input) {
+      return renameFolder(db, input)
     },
     async restoreNode(input) {
       return restoreNode(db, input)
@@ -83,55 +88,48 @@ export function createDrizzleResourceTreeRepository(
 function createNode(
   db: WritingAppDatabase,
   input: CreateResourceNodeInput
-): CreateResourceNodeResult {
+): ResourceTreeNodeResult {
   return db.transaction(
     (transaction) => {
-      const revisionRejection = validateTreeRevision(transaction, input)
-
-      if (revisionRejection !== null) {
-        return revisionRejection
+      const count = transaction
+        .select({ value: sql<number>`count(*)` })
+        .from(adminResourceNodes)
+        .get()?.value
+      if ((count ?? 0) >= maxResourceNodeCount) {
+        return { kind: "node-limit" } as const
       }
 
       const parentRejection = validateActiveParent(transaction, input.parentId)
+      if (parentRejection !== null) return parentRejection
 
-      if (parentRejection !== null) {
-        return parentRejection
-      }
-
-      const preferredName = normalizeResourceName(input.preferredName)
-
-      if (preferredName.status === "invalid") {
-        return {
-          kind: "invalid-name",
-          reason: preferredName.reason,
-        } as const
+      if (
+        input.kind === "folder" &&
+        readAncestorFolderIds(transaction, input.parentId).length >=
+          maxResourceFolderDepth
+      ) {
+        return { kind: "depth-limit" } as const
       }
 
       const siblings = readActiveChildRows(transaction, input.parentId)
-      const availableName = createAvailableResourceName(
-        preferredName.name,
+      const name = createAvailableResourceName(
+        input.preferredName,
         siblings.map(({ normalizedName }) => normalizedName)
       )
-      const nextRevision = reserveTreeRevision(transaction, input)
       const node: ResourceTreeNode =
         input.kind === "folder"
           ? {
+              ...name,
               id: input.nodeId,
-              kind: input.kind,
-              name: availableName.name,
-              normalizedName: availableName.normalizedName,
+              kind: "folder",
               parentId: input.parentId,
-              sortOrder: siblings.length,
               status: "active",
               trashRootId: null,
             }
           : {
+              ...name,
               id: input.nodeId,
-              kind: input.kind,
-              name: availableName.name,
-              normalizedName: availableName.normalizedName,
+              kind: "document",
               parentId: input.parentId,
-              sortOrder: siblings.length,
               status: "active",
               trashRootId: null,
             }
@@ -146,9 +144,8 @@ function createNode(
           name: node.name,
           normalizedName: node.normalizedName,
           parentId: node.parentId,
-          sortOrder: node.sortOrder,
           status: node.status,
-          trashRootId: node.trashRootId,
+          trashRootId: null,
           updatedAt: input.now,
           updatedBy: input.actorId,
         })
@@ -159,137 +156,71 @@ function createNode(
           .insert(adminResourceDocuments)
           .values({ nodeId: node.id })
           .run()
-      }
-
-      insertResourceSearchIndex(transaction, {
-        bodyText: "",
-        kind: node.kind,
-        name: node.name,
-        nodeId: node.id,
-      })
-
-      insertAuditEvent(transaction, {
-        actorId: input.actorId,
-        auditEventId: input.auditEventId,
-        eventType: "create",
-        nodeId: node.id,
-        now: input.now,
-        payload: {
-          kind: "create",
+        insertResourceSearch(transaction, {
+          bodyText: "",
           name: node.name,
-          nodeKind: node.kind,
-          parentId: node.parentId,
-        },
-      })
-
-      return {
-        kind: "ok",
-        value: {
-          affectedParentIds: [node.parentId],
-          node,
-          revision: nextRevision,
-        },
+          nodeId: node.id,
+        })
       }
+
+      return { kind: "ok", value: { node } } as const
     },
     { behavior: "immediate" }
   )
 }
 
-function renameNode(
+function renameFolder(
   db: WritingAppDatabase,
-  input: RenameResourceNodeInput
-): RenameResourceNodeResult {
+  input: RenameResourceFolderInput
+): ResourceTreeNodeResult {
   return db.transaction(
     (transaction) => {
-      const revisionRejection = validateTreeRevision(transaction, input)
-
-      if (revisionRejection !== null) {
-        return revisionRejection
-      }
-
-      const row = readActiveNodeRow(transaction, input.nodeId)
-
-      if (row === undefined) {
+      const row = readActiveNodeRow(transaction, input.folderId)
+      if (row === undefined || row.kind !== "folder") {
         return { kind: "not-found" } as const
       }
 
-      const nameValidation = validateResourceNameChange({
+      const validation = validateResourceNameChange({
         currentNormalizedName: row.normalizedName,
         name: input.name,
         occupiedNormalizedNames: readActiveChildRows(
           transaction,
           toParentId(row.parentId),
-          input.nodeId
+          input.folderId
         ).map(({ normalizedName }) => normalizedName),
       })
-
-      if (nameValidation.status === "invalid") {
-        return nameValidation.reason === "conflict"
+      if (validation.status === "invalid") {
+        return validation.reason === "conflict"
           ? ({ kind: "name-conflict" } as const)
           : ({
               kind: "invalid-name",
-              reason: nameValidation.reason,
+              reason: validation.reason,
             } as const)
-      }
-
-      const node = toResourceTreeNode(row)
-
-      if (
-        node.name === nameValidation.name &&
-        node.normalizedName === nameValidation.normalizedName
-      ) {
-        return {
-          kind: "ok",
-          value: {
-            affectedParentIds: [],
-            node,
-            revision: input.expectedRevision,
-          },
-        }
-      }
-
-      const nextRevision = reserveTreeRevision(transaction, input)
-      const renamedNode = {
-        ...node,
-        name: nameValidation.name,
-        normalizedName: nameValidation.normalizedName,
       }
 
       transaction
         .update(adminResourceNodes)
         .set({
-          name: renamedNode.name,
-          normalizedName: renamedNode.normalizedName,
+          name: validation.name,
+          normalizedName: validation.normalizedName,
           updatedAt: input.now,
           updatedBy: input.actorId,
         })
-        .where(eq(adminResourceNodes.id, input.nodeId))
+        .where(eq(adminResourceNodes.id, input.folderId))
         .run()
-      updateResourceSearchName(transaction, {
-        name: renamedNode.name,
-        nodeId: renamedNode.id,
-      })
-      insertAuditEvent(transaction, {
-        actorId: input.actorId,
-        auditEventId: input.auditEventId,
-        eventType: "rename",
-        nodeId: input.nodeId,
-        now: input.now,
-        payload: {
-          fromName: node.name,
-          kind: "rename",
-          toName: renamedNode.name,
-        },
-      })
 
       return {
         kind: "ok",
         value: {
-          affectedParentIds: [node.parentId],
-          node: renamedNode,
-          revision: nextRevision,
+          node: toResourceTreeNode({
+            ...row,
+            name: validation.name,
+            normalizedName: validation.normalizedName,
+            updatedAt: input.now,
+            updatedBy: input.actorId,
+          }),
         },
-      }
+      } as const
     },
     { behavior: "immediate" }
   )
@@ -298,28 +229,20 @@ function renameNode(
 function moveNode(
   db: WritingAppDatabase,
   input: MoveResourceNodeInput
-): MoveResourceNodeResult {
+): ResourceTreeNodeResult {
   return db.transaction(
     (transaction) => {
-      const revisionRejection = validateTreeRevision(transaction, input)
-
-      if (revisionRejection !== null) {
-        return revisionRejection
-      }
-
       const row = readActiveNodeRow(transaction, input.nodeId)
-
-      if (row === undefined) {
-        return { kind: "not-found" } as const
-      }
+      if (row === undefined) return { kind: "not-found" } as const
 
       const parentRejection = validateActiveParent(
         transaction,
         input.destinationParentId
       )
+      if (parentRejection !== null) return parentRejection
 
-      if (parentRejection !== null) {
-        return parentRejection
+      if (row.parentId === input.destinationParentId) {
+        return { kind: "ok", value: { node: toResourceTreeNode(row) } } as const
       }
 
       const destinationSiblings = readActiveChildRows(
@@ -327,7 +250,6 @@ function moveNode(
         input.destinationParentId,
         input.nodeId
       )
-
       if (
         destinationSiblings.some(
           ({ normalizedName }) => normalizedName === row.normalizedName
@@ -336,119 +258,57 @@ function moveNode(
         return { kind: "name-conflict" } as const
       }
 
+      const destinationAncestorIds = readAncestorFolderIds(
+        transaction,
+        input.destinationParentId
+      )
       const moveValidation = validateResourceMove({
-        destinationAncestorIds: readAncestorFolderIds(
-          transaction,
-          input.destinationParentId
-        ),
+        destinationAncestorIds,
         destinationParentId: input.destinationParentId,
         movingNodeId: input.nodeId,
       })
-
       if (moveValidation.status === "invalid") {
         return { kind: "cycle" } as const
       }
 
-      if (
-        !Number.isInteger(input.destinationIndex) ||
-        input.destinationIndex < 0 ||
-        input.destinationIndex > destinationSiblings.length
-      ) {
-        return { kind: "invalid-position" } as const
-      }
-
-      const sourceParentId = toParentId(row.parentId)
-      const sourceSiblings = readActiveChildRows(
-        transaction,
-        sourceParentId,
-        input.nodeId
-      )
-      const destinationNodeIds = destinationSiblings.map(({ id }) =>
-        toResourceNodeIdFromRows(id, destinationSiblings)
-      )
-      destinationNodeIds.splice(input.destinationIndex, 0, input.nodeId)
-      const destinationAssignments =
-        createResourceSortAssignments(destinationNodeIds)
-      const sourceAssignments =
-        sourceParentId === input.destinationParentId
-          ? []
-          : createResourceSortAssignments(
-              sourceSiblings.map(({ id }) =>
-                toResourceNodeIdFromRows(id, sourceSiblings)
-              )
-            )
-      const movingAssignment = destinationAssignments.find(
-        ({ nodeId }) => nodeId === input.nodeId
-      )
-
-      if (movingAssignment === undefined) {
-        throw new Error("이동할 자료의 새 정렬 위치를 계산하지 못했습니다.")
-      }
-
-      const node = toResourceTreeNode(row)
-      const movedNode: ResourceTreeNode = {
-        ...node,
-        parentId: input.destinationParentId,
-        sortOrder: movingAssignment.sortOrder,
-      }
-
-      if (
-        node.parentId === movedNode.parentId &&
-        node.sortOrder === movedNode.sortOrder
-      ) {
-        return {
-          kind: "ok",
-          value: {
-            affectedParentIds: [],
-            node,
-            revision: input.expectedRevision,
-          },
+      if (row.kind === "folder") {
+        const maximumRelativeFolderDepth = Math.max(
+          ...readResourceSubtree(transaction, input.nodeId)
+            .filter((node) => node.kind === "folder")
+            .map((node) =>
+              readRelativeDepth(transaction, input.nodeId, node.id)
+            ),
+          1
+        )
+        if (
+          destinationAncestorIds.length + maximumRelativeFolderDepth >
+          maxResourceFolderDepth
+        ) {
+          return { kind: "depth-limit" } as const
         }
       }
 
-      const nextRevision = reserveTreeRevision(transaction, input)
-
-      writeSortAssignments(transaction, sourceAssignments, input)
-      writeSortAssignments(transaction, destinationAssignments, input)
       transaction
         .update(adminResourceNodes)
         .set({
-          parentId: movedNode.parentId,
-          sortOrder: movedNode.sortOrder,
+          parentId: input.destinationParentId,
           updatedAt: input.now,
           updatedBy: input.actorId,
         })
-        .where(eq(adminResourceNodes.id, movedNode.id))
+        .where(eq(adminResourceNodes.id, input.nodeId))
         .run()
-
-      const eventType =
-        sourceParentId === input.destinationParentId ? "reorder" : "move"
-      insertAuditEvent(transaction, {
-        actorId: input.actorId,
-        auditEventId: input.auditEventId,
-        eventType,
-        nodeId: input.nodeId,
-        now: input.now,
-        payload: {
-          fromIndex: node.sortOrder,
-          fromParentId: node.parentId,
-          kind: eventType,
-          toIndex: movedNode.sortOrder,
-          toParentId: movedNode.parentId,
-        },
-      })
 
       return {
         kind: "ok",
         value: {
-          affectedParentIds: uniqueParentIds([
-            sourceParentId,
-            input.destinationParentId,
-          ]),
-          node: movedNode,
-          revision: nextRevision,
+          node: toResourceTreeNode({
+            ...row,
+            parentId: input.destinationParentId,
+            updatedAt: input.now,
+            updatedBy: input.actorId,
+          }),
         },
-      }
+      } as const
     },
     { behavior: "immediate" }
   )
@@ -456,39 +316,19 @@ function moveNode(
 
 function trashNode(
   db: WritingAppDatabase,
-  input: TrashResourceNodeInput
-): TrashResourceNodeResult {
+  input: ResourceNodeCommandInput
+): ResourceTrashResult {
   return db.transaction(
     (transaction) => {
-      const revisionRejection = validateTreeRevision(transaction, input)
-
-      if (revisionRejection !== null) {
-        return revisionRejection
-      }
-
-      const rootRow = readActiveNodeRow(transaction, input.nodeId)
-
-      if (rootRow === undefined) {
-        return { kind: "not-found" } as const
-      }
+      const root = readActiveNodeRow(transaction, input.nodeId)
+      if (root === undefined) return { kind: "not-found" } as const
 
       const subtree = readResourceSubtree(transaction, input.nodeId)
-      const transition = archiveResourceSubtree(subtree, input.nodeId)
-
+      const transition = trashResourceSubtree(subtree, input.nodeId)
       if (transition.status === "invalid") {
         throw new Error("자료 하위 트리의 휴지통 상태를 계산하지 못했습니다.")
       }
 
-      const sourceParentId = toParentId(rootRow.parentId)
-      const sourceAssignments = createResourceSortAssignments(
-        readActiveChildRows(transaction, sourceParentId, input.nodeId).map(
-          ({ id }, _index, rows) => toResourceNodeIdFromRows(id, rows)
-        )
-      )
-      const nextRevision = reserveTreeRevision(transaction, input)
-      const counts = countResourceKinds(transition.nodes)
-
-      writeSortAssignments(transaction, sourceAssignments, input)
       transaction.run(sql`
         WITH RECURSIVE subtree(id) AS (
           SELECT ${input.nodeId}
@@ -499,29 +339,17 @@ function trashNode(
         )
         UPDATE admin_resource_nodes
         SET
-          status = 'archived',
+          status = 'trashed',
           trash_root_id = ${input.nodeId},
           updated_by = ${input.actorId},
           updated_at = ${input.now.getTime()}
         WHERE id IN (SELECT id FROM subtree)
       `)
-      insertAuditEvent(transaction, {
-        actorId: input.actorId,
-        auditEventId: input.auditEventId,
-        eventType: "trash",
-        nodeId: input.nodeId,
-        now: input.now,
-        payload: { ...counts, kind: "trash" },
-      })
 
       return {
         kind: "ok",
-        value: {
-          affectedParentIds: [sourceParentId],
-          ...counts,
-          revision: nextRevision,
-        },
-      }
+        value: countResourceKinds(transition.nodes),
+      } as const
     },
     { behavior: "immediate" }
   )
@@ -529,49 +357,36 @@ function trashNode(
 
 function restoreNode(
   db: WritingAppDatabase,
-  input: RestoreResourceNodeInput
-): RestoreResourceNodeResult {
+  input: ResourceNodeCommandInput
+): ResourceRestoreResult {
   return db.transaction(
     (transaction) => {
-      const revisionRejection = validateTreeRevision(transaction, input)
-
-      if (revisionRejection !== null) {
-        return revisionRejection
-      }
-
       const rootRow = transaction
         .select()
         .from(adminResourceNodes)
         .where(
           and(
             eq(adminResourceNodes.id, input.nodeId),
-            eq(adminResourceNodes.status, "archived"),
+            eq(adminResourceNodes.status, "trashed"),
             eq(adminResourceNodes.trashRootId, input.nodeId)
           )
         )
         .get()
-
-      if (rootRow === undefined) {
-        return { kind: "not-found" } as const
-      }
+      if (rootRow === undefined) return { kind: "not-found" } as const
 
       const parentId = toParentId(rootRow.parentId)
       const parentRejection = validateActiveParent(transaction, parentId)
+      if (parentRejection !== null) return parentRejection
 
-      if (parentRejection !== null) {
-        return parentRejection
-      }
-
-      const archivedSubtree = readResourceSubtree(transaction, input.nodeId)
-      const activeSiblings = readActiveChildRows(transaction, parentId)
+      const subtree = readResourceSubtree(transaction, input.nodeId)
       const transition = restoreResourceSubtree({
-        nodes: archivedSubtree,
-        occupiedTargetSiblingNormalizedNames: activeSiblings.map(
-          ({ normalizedName }) => normalizedName
-        ),
+        nodes: subtree,
+        occupiedTargetSiblingNormalizedNames: readActiveChildRows(
+          transaction,
+          parentId
+        ).map(({ normalizedName }) => normalizedName),
         trashRootId: input.nodeId,
       })
-
       if (transition.status === "invalid") {
         throw new Error("자료 하위 트리의 복원 상태를 계산하지 못했습니다.")
       }
@@ -579,52 +394,18 @@ function restoreNode(
       const restoredRoot = transition.nodes.find(
         ({ id }) => id === input.nodeId
       )
-
       if (restoredRoot === undefined) {
         throw new Error("복원할 자료의 최상위 항목을 찾지 못했습니다.")
-      }
-
-      const restoredIndex = Math.min(
-        restoredRoot.sortOrder,
-        activeSiblings.length
-      )
-      const restoredSiblingIds = activeSiblings.map(({ id }, _index, rows) =>
-        toResourceNodeIdFromRows(id, rows)
-      )
-      restoredSiblingIds.splice(restoredIndex, 0, restoredRoot.id)
-      const restoredAssignments =
-        createResourceSortAssignments(restoredSiblingIds)
-      const rootAssignment = restoredAssignments.find(
-        ({ nodeId }) => nodeId === restoredRoot.id
-      )
-
-      if (rootAssignment === undefined) {
-        throw new Error("복원할 자료의 정렬 위치를 계산하지 못했습니다.")
-      }
-
-      const nextRevision = reserveTreeRevision(transaction, input)
-      const counts = countResourceKinds(transition.nodes)
-      const restoredNode = {
-        ...restoredRoot,
-        sortOrder: rootAssignment.sortOrder,
       }
 
       transaction
         .update(adminResourceNodes)
         .set({
-          name: restoredNode.name,
-          normalizedName: restoredNode.normalizedName,
-          sortOrder: restoredNode.sortOrder,
-          updatedAt: input.now,
-          updatedBy: input.actorId,
+          name: restoredRoot.name,
+          normalizedName: restoredRoot.normalizedName,
         })
-        .where(eq(adminResourceNodes.id, restoredNode.id))
+        .where(eq(adminResourceNodes.id, input.nodeId))
         .run()
-      updateResourceSearchName(transaction, {
-        name: restoredNode.name,
-        nodeId: restoredNode.id,
-      })
-      writeSortAssignments(transaction, restoredAssignments, input)
       transaction
         .update(adminResourceNodes)
         .set({
@@ -635,25 +416,280 @@ function restoreNode(
         })
         .where(eq(adminResourceNodes.trashRootId, input.nodeId))
         .run()
-      insertAuditEvent(transaction, {
-        actorId: input.actorId,
-        auditEventId: input.auditEventId,
-        eventType: "restore",
-        nodeId: input.nodeId,
-        now: input.now,
-        payload: { ...counts, kind: "restore" },
-      })
 
       return {
         kind: "ok",
         value: {
-          affectedParentIds: [parentId],
-          ...counts,
-          node: restoredNode,
-          revision: nextRevision,
+          ...countResourceKinds(transition.nodes),
+          node: restoredRoot,
         },
-      }
+      } as const
     },
     { behavior: "immediate" }
   )
+}
+
+function deleteNodePermanently(
+  db: WritingAppDatabase,
+  input: ResourceNodeCommandInput
+): ResourcePermanentDeleteResult {
+  return db.transaction(
+    (transaction) => {
+      const root = transaction
+        .select({ id: adminResourceNodes.id })
+        .from(adminResourceNodes)
+        .where(
+          and(
+            eq(adminResourceNodes.id, input.nodeId),
+            eq(adminResourceNodes.status, "trashed"),
+            eq(adminResourceNodes.trashRootId, input.nodeId)
+          )
+        )
+        .get()
+      if (root === undefined) return { kind: "not-found" } as const
+
+      const rows = readResourceSubtreeRows(transaction, input.nodeId)
+      const nodeIds = rows.map(({ id }) => id)
+      const placeholders = sql.join(
+        nodeIds.map((id) => sql`${id}`),
+        sql`, `
+      )
+      const r2ObjectKeys = transaction
+        .select({ r2ObjectKey: adminResourceAssets.r2ObjectKey })
+        .from(adminResourceAssets)
+        .innerJoin(
+          adminResourceDocuments,
+          eq(adminResourceDocuments.nodeId, adminResourceAssets.documentId)
+        )
+        .where(sql`${adminResourceDocuments.nodeId} IN (${placeholders})`)
+        .all()
+        .map(({ r2ObjectKey }) => r2ObjectKey)
+
+      transaction.run(sql`
+        DELETE FROM admin_resource_search
+        WHERE node_id IN (${placeholders})
+      `)
+      for (const row of [...rows].sort(
+        (left, right) => right.depth - left.depth
+      )) {
+        transaction
+          .delete(adminResourceNodes)
+          .where(eq(adminResourceNodes.id, row.id))
+          .run()
+      }
+
+      return {
+        kind: "ok",
+        value: {
+          ...countResourceKinds(rows.map(toResourceTreeNodeFromRecursiveRow)),
+          r2ObjectKeys,
+        },
+      } as const
+    },
+    { behavior: "immediate" }
+  )
+}
+
+function readResourceTree(
+  db: WritingAppDatabase,
+  scope: ResourceTreeScope
+): readonly ResourceTreeEntry[] {
+  const status = scope === "active" ? "active" : "trashed"
+  return db
+    .select({
+      ...getTableColumns(adminResourceNodes),
+      hasChildren: sql<number>`EXISTS (
+        SELECT 1 FROM admin_resource_nodes AS child
+        WHERE child.parent_id = ${sql.identifier("admin_resource_nodes")}.${sql.identifier("id")}
+          AND child.status = ${status}
+      )`.mapWith(Boolean),
+    })
+    .from(adminResourceNodes)
+    .where(eq(adminResourceNodes.status, status))
+    .orderBy(asc(adminResourceNodes.normalizedName), asc(adminResourceNodes.id))
+    .all()
+    .map((row) => ({
+      hasChildren: row.hasChildren,
+      node: toResourceTreeNode(row),
+    }))
+}
+
+function readActiveChildRows(
+  db: WritingAppDatabase | DatabaseTransaction,
+  parentId: ResourceFolderId | null,
+  excludedNodeId?: ResourceNodeId
+): readonly ResourceNodeRow[] {
+  return db
+    .select()
+    .from(adminResourceNodes)
+    .where(
+      and(
+        parentId === null
+          ? isNull(adminResourceNodes.parentId)
+          : eq(adminResourceNodes.parentId, parentId),
+        eq(adminResourceNodes.status, "active"),
+        excludedNodeId === undefined
+          ? undefined
+          : ne(adminResourceNodes.id, excludedNodeId)
+      )
+    )
+    .orderBy(asc(adminResourceNodes.normalizedName), asc(adminResourceNodes.id))
+    .all()
+}
+
+function validateActiveParent(
+  transaction: DatabaseTransaction,
+  parentId: ResourceFolderId | null
+): { readonly kind: "parent-not-found" } | null {
+  if (parentId === null) return null
+  const parent = transaction
+    .select({ id: adminResourceNodes.id })
+    .from(adminResourceNodes)
+    .where(
+      and(
+        eq(adminResourceNodes.id, parentId),
+        eq(adminResourceNodes.kind, "folder"),
+        eq(adminResourceNodes.status, "active")
+      )
+    )
+    .get()
+  return parent === undefined ? { kind: "parent-not-found" } : null
+}
+
+function readActiveNodeRow(
+  transaction: DatabaseTransaction,
+  nodeId: ResourceNodeId
+): ResourceNodeRow | undefined {
+  return transaction
+    .select()
+    .from(adminResourceNodes)
+    .where(
+      and(
+        eq(adminResourceNodes.id, nodeId),
+        eq(adminResourceNodes.status, "active")
+      )
+    )
+    .get()
+}
+
+function readAncestorFolderIds(
+  transaction: DatabaseTransaction,
+  parentId: ResourceFolderId | null
+): readonly ResourceFolderId[] {
+  if (parentId === null) return []
+  return transaction
+    .all<{ readonly id: string }>(sql`
+      WITH RECURSIVE ancestors(id, parent_id) AS (
+        SELECT id, parent_id FROM admin_resource_nodes WHERE id = ${parentId}
+        UNION ALL
+        SELECT parent.id, parent.parent_id
+        FROM admin_resource_nodes AS parent
+        INNER JOIN ancestors AS child ON child.parent_id = parent.id
+      )
+      SELECT id FROM ancestors
+    `)
+    .map(({ id }) => toResourceFolderId(id))
+}
+
+function readRelativeDepth(
+  transaction: DatabaseTransaction,
+  rootId: ResourceNodeId,
+  nodeId: ResourceNodeId
+): number {
+  return (
+    readResourceSubtreeRows(transaction, rootId).find(({ id }) => id === nodeId)
+      ?.depth ?? 1
+  )
+}
+
+function readResourceSubtree(
+  db: WritingAppDatabase | DatabaseTransaction,
+  nodeId: ResourceNodeId
+): readonly ResourceTreeNode[] {
+  return readResourceSubtreeRows(db, nodeId).map(
+    toResourceTreeNodeFromRecursiveRow
+  )
+}
+
+function readResourceSubtreeRows(
+  db: WritingAppDatabase | DatabaseTransaction,
+  nodeId: ResourceNodeId
+): readonly RecursiveResourceNodeRow[] {
+  return db.all<RecursiveResourceNodeRow>(sql`
+    WITH RECURSIVE subtree(
+      id, kind, parent_id, name, normalized_name, status, trash_root_id, depth
+    ) AS (
+      SELECT id, kind, parent_id, name, normalized_name, status, trash_root_id, 1
+      FROM admin_resource_nodes WHERE id = ${nodeId}
+      UNION ALL
+      SELECT child.id, child.kind, child.parent_id, child.name,
+        child.normalized_name, child.status, child.trash_root_id, parent.depth + 1
+      FROM admin_resource_nodes AS child
+      INNER JOIN subtree AS parent ON child.parent_id = parent.id
+    )
+    SELECT id, kind, parent_id, name, normalized_name, status, trash_root_id, depth
+    FROM subtree
+    ORDER BY depth, normalized_name, id
+  `)
+}
+
+function insertResourceSearch(
+  transaction: DatabaseTransaction,
+  input: {
+    readonly bodyText: string
+    readonly name: string
+    readonly nodeId: ResourceNodeId
+  }
+): void {
+  transaction.run(sql`
+    INSERT INTO admin_resource_search (node_id, name, body_text)
+    VALUES (${input.nodeId}, ${input.name}, ${input.bodyText})
+  `)
+}
+
+function countResourceKinds(nodes: readonly ResourceTreeNode[]): {
+  readonly documentCount: number
+  readonly folderCount: number
+} {
+  let documentCount = 0
+  let folderCount = 0
+  for (const node of nodes) {
+    if (node.kind === "document") documentCount += 1
+    else folderCount += 1
+  }
+  return { documentCount, folderCount }
+}
+
+function toResourceTreeNode(row: ResourceNodeRow): ResourceTreeNode {
+  const common = {
+    name: row.name,
+    normalizedName: row.normalizedName,
+    parentId: toParentId(row.parentId),
+    status: row.status,
+    trashRootId:
+      row.trashRootId === null ? null : toResourceNodeId(row.trashRootId),
+  }
+  return row.kind === "folder"
+    ? { ...common, id: toResourceFolderId(row.id), kind: "folder" }
+    : { ...common, id: toResourceDocumentId(row.id), kind: "document" }
+}
+
+function toResourceTreeNodeFromRecursiveRow(
+  row: RecursiveResourceNodeRow
+): ResourceTreeNode {
+  const common = {
+    name: row.name,
+    normalizedName: row.normalized_name,
+    parentId: toParentId(row.parent_id),
+    status: row.status,
+    trashRootId:
+      row.trash_root_id === null ? null : toResourceNodeId(row.trash_root_id),
+  }
+  return row.kind === "folder"
+    ? { ...common, id: toResourceFolderId(row.id), kind: "folder" }
+    : { ...common, id: toResourceDocumentId(row.id), kind: "document" }
+}
+
+function toParentId(value: string | null): ResourceFolderId | null {
+  return value === null ? null : toResourceFolderId(value)
 }

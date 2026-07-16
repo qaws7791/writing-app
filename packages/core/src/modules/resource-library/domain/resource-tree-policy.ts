@@ -71,8 +71,10 @@ export function createAvailableResourceName(
 
   while (true) {
     const suffix = ` (${suffixNumber})`
-    const availableBaseLength = RESOURCE_NAME_MAX_LENGTH - suffix.length
-    const candidateName = `${truncateResourceName(base.name, availableBaseLength)}${suffix}`
+    const candidateName = `${truncateResourceName(
+      base.name,
+      RESOURCE_NAME_MAX_LENGTH - suffix.length
+    )}${suffix}`
     const candidate = normalizeResourceName(candidateName)
 
     if (
@@ -124,49 +126,40 @@ export function validateResourceMove({
   readonly movingNodeId: ResourceNodeId
 }):
   | { readonly status: "valid" }
-  | { readonly reason: "cycle"; readonly status: "invalid" } {
-  if (
-    destinationParentId === movingNodeId ||
+  | {
+      readonly reason: "cycle"
+      readonly status: "invalid"
+    } {
+  return destinationParentId === movingNodeId ||
     destinationAncestorIds.some((ancestorId) => ancestorId === movingNodeId)
-  ) {
-    return { reason: "cycle", status: "invalid" }
-  }
-
-  return { status: "valid" }
-}
-
-export function createResourceSortAssignments(
-  orderedNodeIds: readonly ResourceNodeId[]
-): readonly { readonly nodeId: ResourceNodeId; readonly sortOrder: number }[] {
-  return orderedNodeIds.map((nodeId, sortOrder) => ({ nodeId, sortOrder }))
+    ? { reason: "cycle", status: "invalid" }
+    : { status: "valid" }
 }
 
 export type ResourceSubtreeTransition =
-  | {
-      readonly nodes: readonly ResourceTreeNode[]
-      readonly status: "valid"
-    }
+  | { readonly nodes: readonly ResourceTreeNode[]; readonly status: "valid" }
   | {
       readonly reason: "invalid-subtree" | "root-not-found"
       readonly status: "invalid"
     }
 
-export function archiveResourceSubtree(
+export function trashResourceSubtree(
   nodes: readonly ResourceTreeNode[],
   trashRootId: ResourceNodeId
 ): ResourceSubtreeTransition {
-  if (!nodes.some(({ id }) => id === trashRootId)) {
-    return { reason: "root-not-found", status: "invalid" }
-  }
-
   if (!isConnectedResourceSubtree(nodes, trashRootId)) {
-    return { reason: "invalid-subtree", status: "invalid" }
+    return {
+      reason: nodes.some(({ id }) => id === trashRootId)
+        ? "invalid-subtree"
+        : "root-not-found",
+      status: "invalid",
+    }
   }
 
   return {
     nodes: nodes.map((node) => ({
       ...node,
-      status: "archived",
+      status: "trashed",
       trashRootId,
     })),
     status: "valid",
@@ -191,7 +184,7 @@ export function restoreResourceSubtree({
   if (
     !isConnectedResourceSubtree(nodes, trashRootId) ||
     nodes.some(
-      (node) => node.status !== "archived" || node.trashRootId !== trashRootId
+      (node) => node.status !== "trashed" || node.trashRootId !== trashRootId
     )
   ) {
     return { reason: "invalid-subtree", status: "invalid" }
@@ -217,10 +210,7 @@ function truncateResourceName(name: string, maxLength: number): string {
   let truncatedName = ""
 
   for (const { segment } of resourceNameSegmenter.segment(name)) {
-    if (truncatedName.length + segment.length > maxLength) {
-      break
-    }
-
+    if (truncatedName.length + segment.length > maxLength) break
     truncatedName += segment
   }
 
@@ -232,40 +222,25 @@ function isConnectedResourceSubtree(
   rootId: ResourceNodeId
 ): boolean {
   const nodeIds = new Set(nodes.map(({ id }) => id))
-
-  if (nodeIds.size !== nodes.length) {
-    return false
-  }
+  if (nodeIds.size !== nodes.length || !nodeIds.has(rootId)) return false
 
   const childIdsByParentId = new Map<ResourceNodeId, ResourceNodeId[]>()
-
   for (const node of nodes) {
-    if (node.id === rootId) {
-      continue
-    }
-
-    if (node.parentId === null || !nodeIds.has(node.parentId)) {
-      return false
-    }
-
-    const childIds = childIdsByParentId.get(node.parentId) ?? []
-    childIds.push(node.id)
-    childIdsByParentId.set(node.parentId, childIds)
+    if (node.id === rootId) continue
+    if (node.parentId === null || !nodeIds.has(node.parentId)) return false
+    const children = childIdsByParentId.get(node.parentId) ?? []
+    children.push(node.id)
+    childIdsByParentId.set(node.parentId, children)
   }
 
-  const connectedNodeIds = new Set<ResourceNodeId>()
-  const pendingNodeIds: ResourceNodeId[] = [rootId]
-
-  while (pendingNodeIds.length > 0) {
-    const nodeId = pendingNodeIds.pop()
-
-    if (nodeId === undefined || connectedNodeIds.has(nodeId)) {
-      continue
-    }
-
-    connectedNodeIds.add(nodeId)
-    pendingNodeIds.push(...(childIdsByParentId.get(nodeId) ?? []))
+  const connected = new Set<ResourceNodeId>()
+  const pending: ResourceNodeId[] = [rootId]
+  while (pending.length > 0) {
+    const nodeId = pending.pop()
+    if (nodeId === undefined || connected.has(nodeId)) continue
+    connected.add(nodeId)
+    pending.push(...(childIdsByParentId.get(nodeId) ?? []))
   }
 
-  return connectedNodeIds.size === nodes.length
+  return connected.size === nodes.length
 }

@@ -85,56 +85,55 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 현재 route:
 
-| 메서드     | 경로                                             | 권한        | 설명                      |
-| ---------- | ------------------------------------------------ | ----------- | ------------------------- |
-| `GET`      | `/health`                                        | 없음        | API 상태                  |
-| `GET`      | `/openapi`                                       | 없음        | OpenAPI 3.1 문서          |
-| `GET/POST` | `/api/auth/*`                                    | Better Auth | 관리자 인증 handler       |
-| `GET`      | `/session`                                       | 관리자      | 현재 관리자 세션          |
-| `GET`      | `/dashboard`                                     | 관리자      | 대시보드                  |
-| `GET`      | `/analytics`                                     | 관리자      | 분석 요약                 |
-| `GET`      | `/analytics/lessons`                             | 관리자      | 레슨별 분석               |
-| `GET`      | `/courses`                                       | 관리자      | 코스 목록                 |
-| `POST`     | `/courses`                                       | owner       | 코스 생성                 |
-| `DELETE`   | `/courses/{courseId}`                            | owner       | 코스 보관                 |
-| `GET`      | `/courses/{courseId}/editor`                     | 관리자      | 코스 편집 문서 조회       |
-| `PUT`      | `/courses/{courseId}/editor`                     | owner       | 전체 코스 편집 문서 저장  |
-| `GET`      | `/users`                                         | 관리자      | 사용자 목록               |
-| `GET`      | `/users/{userId}`                                | 관리자      | 사용자 상세               |
-| `PATCH`    | `/users/{userId}/status`                         | owner       | 사용자 상태 변경          |
-| `DELETE`   | `/users/{userId}`                                | owner       | 사용자 삭제 상태 전환     |
-| `GET`      | `/settings`                                      | 관리자      | 설정 조회                 |
-| `PUT`      | `/settings/notice`                               | owner       | 공지 설정 저장            |
-| `PUT`      | `/settings/legal`                                | owner       | 법적 문서 저장            |
-| `POST`     | `/settings/content-reset`                        | owner       | 콘텐츠 초기화             |
-| `GET`      | `/resources/tree`                                | 관리자      | 자료 트리 지연 조회       |
-| `POST`     | `/resources/folders`                             | 관리자      | 자료 폴더 생성            |
-| `POST`     | `/resources/documents`                           | 관리자      | 빈 자료 문서 생성         |
-| `GET`      | `/resources/documents/{documentId}`              | 관리자      | Markdown 문서 조회        |
-| `POST`     | `/resources/documents/{documentId}/transactions` | 관리자      | Yjs transaction 저장      |
-| `GET`      | `/resources/documents/{documentId}/sync`         | 관리자      | 누락 update·snapshot 조회 |
-| `POST`     | `/resources/documents/import`                    | 관리자      | Markdown 단일 가져오기    |
-| `GET`      | `/resources/documents/{documentId}/export`       | 관리자      | Markdown 문서 내보내기    |
-| `GET`      | `/resources/search`                              | 관리자      | 제목·본문 FTS 검색        |
-| `GET`      | `/resources/nodes/{nodeId}/active-editors`       | 관리자      | 하위 활성 편집자 조회     |
-| `PATCH`    | `/resources/nodes/{nodeId}/name`                 | 관리자      | 자료 항목 이름 변경       |
-| `PATCH`    | `/resources/nodes/{nodeId}/move`                 | 관리자      | 자료 항목 이동·정렬       |
-| `POST`     | `/resources/nodes/{nodeId}/trash`                | 관리자      | 하위 트리 휴지통 이동     |
-| `POST`     | `/resources/nodes/{nodeId}/restore`              | 관리자      | 하위 트리 복원            |
-| WebSocket  | `/resources/events`                              | 관리자      | 작업 공간 사건·문서 구독  |
-| `GET`      | `/ai-chat/conversations`                         | 관리자      | AI 대화 목록              |
-| `GET`      | `/ai-chat/conversations/{conversationId}`        | 관리자      | AI 대화 상세              |
-| `POST`     | `/ai-chat/messages/stream`                       | 관리자      | AI 응답 stream            |
+| 메서드     | 경로                                       | 권한        | 설명                       |
+| ---------- | ------------------------------------------ | ----------- | -------------------------- |
+| `GET`      | `/health`                                  | 없음        | API 상태                   |
+| `GET`      | `/openapi`                                 | 없음        | OpenAPI 3.1 문서           |
+| `GET/POST` | `/api/auth/*`                              | Better Auth | 관리자 인증 handler        |
+| `GET`      | `/session`                                 | 관리자      | 현재 관리자 세션           |
+| `GET`      | `/dashboard`                               | 관리자      | 대시보드                   |
+| `GET`      | `/analytics`                               | 관리자      | 분석 요약                  |
+| `GET`      | `/analytics/lessons`                       | 관리자      | 레슨별 분석                |
+| `GET`      | `/courses`                                 | 관리자      | 코스 목록                  |
+| `POST`     | `/courses`                                 | owner       | 코스 생성                  |
+| `DELETE`   | `/courses/{courseId}`                      | owner       | 코스 보관                  |
+| `GET`      | `/courses/{courseId}/editor`               | 관리자      | 코스 편집 문서 조회        |
+| `PUT`      | `/courses/{courseId}/editor`               | owner       | 전체 코스 편집 문서 저장   |
+| `GET`      | `/users`                                   | 관리자      | 사용자 목록                |
+| `GET`      | `/users/{userId}`                          | 관리자      | 사용자 상세                |
+| `PATCH`    | `/users/{userId}/status`                   | owner       | 사용자 상태 변경           |
+| `DELETE`   | `/users/{userId}`                          | owner       | 사용자 삭제 상태 전환      |
+| `GET`      | `/settings`                                | 관리자      | 설정 조회                  |
+| `PUT`      | `/settings/notice`                         | owner       | 공지 설정 저장             |
+| `PUT`      | `/settings/legal`                          | owner       | 법적 문서 저장             |
+| `POST`     | `/settings/content-reset`                  | owner       | 콘텐츠 초기화              |
+| `GET`      | `/resources/tree`                          | 관리자      | 자료 트리 전체 조회        |
+| `POST`     | `/resources/folders`                       | 관리자      | 자료 폴더 생성             |
+| `POST`     | `/resources/documents`                     | 관리자      | 빈 자료 문서 생성          |
+| `GET`      | `/resources/documents/{documentId}`        | 관리자      | Markdown 문서 조회         |
+| `PUT`      | `/resources/documents/{documentId}`        | 관리자      | 제목·Markdown 조건부 저장  |
+| `POST`     | `/resources/documents/import`              | 관리자      | Markdown 단일 가져오기     |
+| `GET`      | `/resources/documents/{documentId}/export` | 관리자      | Markdown 문서 내보내기     |
+| `POST`     | `/resources/documents/{documentId}/images` | 관리자      | R2 문서 이미지 업로드      |
+| `GET`      | `/resources/search`                        | 관리자      | 제목·본문 FTS 검색         |
+| `PATCH`    | `/resources/folders/{folderId}/name`       | 관리자      | 자료 폴더 이름 변경        |
+| `PATCH`    | `/resources/nodes/{nodeId}/move`           | 관리자      | 자료 항목 폴더 이동        |
+| `POST`     | `/resources/nodes/{nodeId}/trash`          | 관리자      | 하위 트리 휴지통 이동      |
+| `POST`     | `/resources/nodes/{nodeId}/restore`        | 관리자      | 하위 트리 복원             |
+| `DELETE`   | `/resources/nodes/{nodeId}`                | 관리자      | 휴지통 하위 트리 영구 삭제 |
+| `GET`      | `/ai-chat/conversations`                   | 관리자      | AI 대화 목록               |
+| `GET`      | `/ai-chat/conversations/{conversationId}`  | 관리자      | AI 대화 상세               |
+| `POST`     | `/ai-chat/messages/stream`                 | 관리자      | AI 응답 stream             |
 
 `POST /ai-chat/messages/stream`은 관리자·클라이언트 IP별 요청 횟수와 관리자별 일일 요청 횟수, 대화별 단일 in-flight를 제한한다. 한도 초과는 `429`와 `Retry-After`를 반환한다. SSE stream은 `chunk` 뒤 반드시 `done` 또는 `error`로 종료하며, 요청 취소와 30초 provider timeout은 provider abort로 전달되고 assistant 메시지를 저장하지 않는다. prompt는 최근 20개 메시지와 12,000자, provider 출력은 2,000 token과 64 KiB를 상한으로 둔다.
 
 `GET /ai-chat/conversations`는 `page`와 최대 50인 `pageSize`, `GET /ai-chat/conversations/{conversationId}`는 `messagePage`와 최대 100인 `messagePageSize` query로 대화와 메시지를 페이지 단위로 조회한다.
 
-자료 본문 저장은 HTTP 동기화 경계를 사용한다. `POST /resources/documents/{documentId}/transactions`는 최대 512KiB decoded Base64 Yjs update와 멱등 transaction ID를 받아 snapshot, Markdown, 검색 색인과 version을 원자적으로 저장한다. 최종 snapshot 3,000,000byte, node 20,000개 또는 7일 receipt 10,000개를 넘으면 `RESOURCE_DOCUMENT_QUOTA_EXCEEDED`, projection 1초 deadline을 넘으면 `RESOURCE_DOCUMENT_PROJECTION_TIMEOUT`으로 거부한다. `GET /resources/documents/{documentId}/sync?afterStateVersion={version}`는 연속된 최근 update를 반환하고 보존 구간이 없거나 응답이 1MiB를 넘으면 최신 snapshot을 반환한다. 아직 서버 Yjs identity가 없는 새 client는 같은 endpoint에 `mode=snapshot`을 지정해 증분 적용 전에 서버 snapshot을 강제로 받는다. 본문 전용 WebSocket endpoint와 room은 제거했으며 두 transport를 동시에 쓰지 않는다. 모든 자료 문서 ID는 HTTP와 WebSocket 계약에서 128자 이하로 검증한다.
+`GET /resources/documents/{documentId}`는 제목, Markdown, 경로, 작성자·수정자·시각과 현재 `version`을 반환하고 같은 버전의 강한 ETag를 응답 header에 포함한다. `PUT /resources/documents/{documentId}`는 `If-Match`를 필수로 받아 제목, Markdown, 검색 색인, 수정 메타데이터와 버전 증가를 하나의 SQLite transaction에서 저장한다. 버전이 다르면 저장하지 않고 `412 Precondition Failed`와 최신 문서·ETag를 반환한다. 자동 병합, 강제 덮어쓰기와 Yjs 동기화 endpoint는 제공하지 않는다.
 
-활성 문서 `GET /resources/documents/{documentId}` 응답은 제목·경로·작성자·수정자·시각·revision과 현재 `stateVersion`만 반환하고 `contentMarkdown`은 포함하지 않는다. collaboration snapshot이 아직 없는 문서는 version 0이며, 활성 본문은 `mode=snapshot` HTTP sync로만 초기화한다. 같은 endpoint에서 휴지통 문서를 조회할 때는 읽기 전용 화면을 위해 durable `contentMarkdown`을 포함한다.
+`GET /resources/tree`는 활성 또는 휴지통 scope의 최대 1,000개 전체 트리를 이름순으로 반환한다. 폴더 중첩은 최대 3단계이며 이동은 대상 폴더만 지정하고 수동 순서를 받지 않는다. 자료실 WebSocket endpoint는 없으며 클라이언트는 포커스 복귀와 화면 재진입 때 HTTP로 재검증한다.
 
-`/resources/events`는 작업 공간 수명 동안 연결 하나를 유지한다. 클라이언트는 `resource-document-subscribe`, `resource-document-unsubscribe`, `resource-realtime-heartbeat` 메시지만 보낼 수 있다. 서버는 기존 트리·제목 사건과 함께 `resource-document-subscription-confirmed`, `resource-document-version-advanced`, `resource-document-invalidated`를 보낸다. 본문 Yjs update는 이 채널로 보내지 않고 version 알림 뒤 HTTP sync로 가져온다. 연결당 활성 문서는 최대 하나이고 45초 heartbeat 만료 또는 socket 종료에서 구독을 제거한다.
+`POST /resources/documents/{documentId}/images`는 JPEG·PNG·WebP, 5MB 이하와 대체 텍스트를 검증해 문서 종속 R2 객체를 만든다. SVG·GIF·변환·썸네일과 이미지 라이브러리는 제공하지 않는다.
 
 ## 인증 표면
 

@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨 — ADR-0004의 본문 transport 결정을 대체하는 현재 결정
+대체됨 — HTTP Yjs transaction과 작업 공간 WebSocket 결정은 `ADR-0010 관리자 자료실 단일 버전 저장`으로 대체됨
 
 ## 날짜
 

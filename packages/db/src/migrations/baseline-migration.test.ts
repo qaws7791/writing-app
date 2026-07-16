@@ -4,7 +4,7 @@ import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 describe("기준 migration", () => {
-  it("최종 자료실 트리·문서·협업·감사·검색 schema를 한 번에 만든다", () => {
+  it("최종 자료실 트리·문서·자산·검색 schema를 한 번에 만든다", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
@@ -12,50 +12,30 @@ describe("기준 migration", () => {
 
       expect(
         readColumnNames(client.sqlite, "admin_resource_documents")
-      ).toEqual(["node_id", "content_markdown", "content_revision"])
-      expect(
-        readColumnNames(client.sqlite, "admin_resource_collaboration_updates")
-      ).toEqual([
+      ).toEqual(["node_id", "content_markdown", "version"])
+      expect(readColumnNames(client.sqlite, "admin_resource_assets")).toEqual([
+        "id",
         "document_id",
-        "state_version",
-        "content_revision",
-        "transaction_id",
-        "actor_id",
-        "yjs_update",
-        "created_at",
-      ])
-      expect(
-        readColumnNames(
-          client.sqlite,
-          "admin_resource_collaboration_transactions"
-        )
-      ).toEqual([
-        "document_id",
-        "transaction_id",
-        "state_version",
-        "content_revision",
-        "actor_id",
+        "r2_object_key",
+        "content_type",
+        "byte_size",
         "created_at",
       ])
       expect(readObjectNames(client.sqlite)).toEqual(
         expect.arrayContaining([
-          "admin_resource_audit_events",
-          "admin_resource_collaboration",
-          "admin_resource_collaboration_updates",
-          "admin_resource_collaboration_transactions",
+          "admin_resource_assets",
           "admin_resource_documents",
           "admin_resource_nodes",
           "admin_resource_search",
+        ])
+      )
+      expect(readObjectNames(client.sqlite)).not.toEqual(
+        expect.arrayContaining([
+          "admin_resource_audit_events",
+          "admin_resource_collaboration",
           "admin_resource_tree_state",
         ])
       )
-      expect(
-        client.sqlite
-          .query<{ readonly revision: number }, []>(
-            "SELECT revision FROM admin_resource_tree_state WHERE singleton_id = 1"
-          )
-          .get()
-      ).toEqual({ revision: 0 })
       expect(
         client.sqlite
           .query<{ readonly integrity_check: string }, []>(

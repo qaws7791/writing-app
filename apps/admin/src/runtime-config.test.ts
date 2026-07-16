@@ -5,7 +5,6 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
   buildAdminApiUrl,
-  buildAdminApiWebSocketUrl,
   readAdminApiBaseUrl,
   readLearnerWebOrigin,
 } from "@/runtime-config"
@@ -87,14 +86,6 @@ describe("admin runtime config", () => {
         "settings"
       )
     ).toBe("https://admin-api.example.test/settings")
-    expect(
-      buildAdminApiWebSocketUrl(
-        readAdminApiBaseUrl({
-          NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test///",
-        }),
-        "/resources/events"
-      )
-    ).toBe("wss://admin-api.example.test/resources/events")
   })
 
   it("runtime config 밖의 실행 코드가 어드민 API base URL env를 직접 읽지 않는다", () => {

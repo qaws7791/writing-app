@@ -12,8 +12,6 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@headless-tree/core": "^1.7.0",
-    "@headless-tree/react": "^1.7.0",
     "@lexical/code": "0.46.0",
     "@lexical/link": "0.46.0",
     "@lexical/list": "0.46.0",
@@ -23,7 +21,6 @@
     "@lexical/selection": "0.46.0",
     "@lexical/table": "0.46.0",
     "@lexical/utils": "0.46.0",
-    "@lexical/yjs": "0.46.0",
     "@workspace/contracts": "workspace:*",
     "@workspace/env": "workspace:*",
     "@workspace/http-client": "workspace:*",
@@ -36,7 +33,6 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "recharts": "catalog:",
-    "yjs": "13.6.31",
     "zod": "^4.2.0"
   },
   "devDependencies": {

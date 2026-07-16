@@ -1,6 +1,4 @@
 import { serve } from "bun"
-import { toResourceDocumentId } from "@workspace/core/resource-library"
-import { createResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 import {
   createAppLogger,
   createRequestLogger,
@@ -8,26 +6,22 @@ import {
   defaultRequestLoggingRuntime,
 } from "@workspace/logger"
 
-import { createApp } from "@/app"
 import { createAdminApiRuntime } from "@/admin-runtime"
-import { createResourceEventsHub } from "@/collaboration/resource-events-hub"
-import { createResourceEventsUpgradeHandler } from "@/collaboration/resource-events-upgrade"
+import { createApp } from "@/app"
 import { parseAdminApiEnv } from "@/env"
 import {
   createAdminMastra,
   createMastraAdminAiChatAgent,
 } from "@/mastra/admin-content-agent"
+import { createR2ResourceAssetStore } from "@/resource-assets/resource-asset-store"
 
 const env = parseAdminApiEnv(process.env)
 const logger = createAppLogger()
-const securityAuditLogger = createSecurityAuditLogger(logger)
-const runtime = createAdminApiRuntime({
-  env,
-  onResourceSyncRejected(event) {
-    logger.warn(event, "resource-document.sync.rejected")
-  },
-})
-const resourceDocumentOperations = createResourceDocumentOperationCoordinator()
+const runtime = createAdminApiRuntime({ env })
+const resourceAssetStore =
+  env.assetStore === undefined
+    ? undefined
+    : createR2ResourceAssetStore(env.assetStore)
 const aiChatAgent =
   env.openAiApiKey === undefined
     ? undefined
@@ -35,47 +29,9 @@ const aiChatAgent =
         createAdminMastra({
           openAiApiKey: env.openAiApiKey,
           openAiModel: env.openAiModel,
+          resourceLibrary: runtime.services.resourceLibrary,
         })
       )
-const sessionResolver = runtime.sessionResolver
-const resourceEvents = createResourceEventsHub({
-  onPolicyViolation({ actorId, reason }) {
-    securityAuditLogger({
-      action: "websocket.authorization.rejected",
-      actorId,
-      actorType: "admin",
-      outcome: "denied",
-      reason,
-      requestId: crypto.randomUUID(),
-      target: "GET /resources/events",
-    })
-  },
-  async readDocumentStateVersion(documentId) {
-    const result = await runtime.services.resourceLibrary.sync.readSync({
-      afterStateVersion: 0,
-      documentId: toResourceDocumentId(documentId),
-      mode: "incremental",
-    })
-
-    return result.kind === "inactive" || result.kind === "not-found"
-      ? null
-      : result.stateVersion
-  },
-  sessionResolver,
-})
-const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
-  adminOrigin: env.adminOrigin,
-  onAuthorizationRejected(reason) {
-    securityAuditLogger({
-      action: "websocket.authorization.rejected",
-      outcome: "denied",
-      reason,
-      requestId: crypto.randomUUID(),
-      target: "GET /resources/events",
-    })
-  },
-  sessionResolver,
-})
 const app = createApp({
   aiChatAgent,
   aiChatEventLogger: logger,
@@ -87,42 +43,31 @@ const app = createApp({
   },
   requestLogger: createRequestLogger(logger),
   requestLoggingRuntime: defaultRequestLoggingRuntime,
-  securityAuditLogger,
-  resourceDocumentOperations,
-  resourceEvents,
-  sessionResolver,
+  resourceAssetStore,
+  resourceAssetEventLogger: logger,
+  securityAuditLogger: createSecurityAuditLogger(logger),
+  sessionResolver: runtime.sessionResolver,
 })
 
 if (import.meta.main) {
   let shuttingDown = false
   const server = serve({
-    async fetch(request, bunServer) {
-      if (shuttingDown) {
-        return new Response("서버가 종료 중입니다.", { status: 503 })
-      }
-
-      const eventsResponse = await eventsUpgradeHandler(
-        request,
-        (upgradeRequest, data) => bunServer.upgrade(upgradeRequest, { data }),
-        bunServer.requestIP(request)?.address ?? "unknown"
-      )
-
-      return eventsResponse === null ? app.fetch(request) : eventsResponse
+    fetch(request) {
+      return shuttingDown
+        ? new Response("서버가 종료 중입니다.", { status: 503 })
+        : app.fetch(request)
     },
     port: env.port,
-    websocket: resourceEvents.websocket,
   })
 
-  const shutdown = async () => {
+  const shutdown = () => {
     if (shuttingDown) return
-
     shuttingDown = true
     server.stop(true)
     runtime.close()
   }
-
-  process.once("SIGINT", () => void shutdown())
-  process.once("SIGTERM", () => void shutdown())
+  process.once("SIGINT", shutdown)
+  process.once("SIGTERM", shutdown)
 }
 
 export { app }

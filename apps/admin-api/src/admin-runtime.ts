@@ -17,19 +17,14 @@ export type AdminApiRuntime = {
 
 export function createAdminApiRuntime({
   env,
-  onResourceSyncRejected,
 }: {
   readonly env: AdminApiEnv
-  readonly onResourceSyncRejected: (
-    event: Readonly<Record<string, unknown>>
-  ) => void
 }): AdminApiRuntime {
   const database = createWritingAppDatabase(env.databaseUrl)
 
   return assembleAdminRuntime(database.close, (close) => {
     const core = createAdminApiCore({
       database: database.db,
-      onResourceSyncRejected,
     })
     const auth = createAdminAuth({
       authBaseUrl: env.authBaseUrl,

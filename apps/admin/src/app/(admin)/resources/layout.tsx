@@ -7,7 +7,7 @@ import { createResourceLibraryHttpAdapter } from "@/features/resources/resource-
 import { createAdminSessionApi } from "@/features/auth/admin-session-api"
 import { AdminServiceUnavailable } from "@/components/admin-service-unavailable"
 import { isAdminAuthenticationError } from "@/lib/api/api-error"
-import type { InitialResourceTreeState } from "@/features/resources/tree/resource-tree"
+import type { AdminResourceTree } from "@/features/resources/resource-library-model"
 import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
 import {
   createAdminLoginPath,
@@ -37,7 +37,7 @@ export default async function ResourceLayout({
   const resourceApi = createResourceLibraryHttpAdapter(transport)
   const [sessionResult, treeResult] = await Promise.all([
     sessionApi.getSession(),
-    resourceApi.getResourceTree({ parentId: null, scope: "active" }),
+    resourceApi.getResourceTree("active"),
   ])
 
   if (sessionResult.status === "error") {
@@ -48,15 +48,12 @@ export default async function ResourceLayout({
     return <AdminServiceUnavailable retryHref={requestPath} />
   }
 
-  const initialTree: InitialResourceTreeState =
-    treeResult.status === "ok"
-      ? treeResult
-      : { status: "error", message: treeResult.error.message }
+  const initialTree: AdminResourceTree | null =
+    treeResult.status === "ok" ? treeResult.value : null
 
   return (
     <Suspense fallback={<ResourceWorkspaceFallback />}>
       <ResourceWorkspace
-        adminId={sessionResult.value.admin.id}
         apiBaseUrl={readServerAdminApiBaseUrl()}
         initialTree={initialTree}
       >

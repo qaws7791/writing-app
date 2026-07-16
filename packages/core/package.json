@@ -19,8 +19,6 @@
   "scripts": {
     "lint": "oxlint .",
     "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
-    "test:e2e:resource-library-load": "playwright test --config playwright.load.config.ts",
-    "test:load:resource-library": "bun load/run-resource-document-sync-load.ts",
     "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -40,7 +38,6 @@
     "@workspace/repository-tooling": "workspace:*",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "catalog:",
-    "yjs": "13.6.31"
+    "vitest": "catalog:"
   }
 }

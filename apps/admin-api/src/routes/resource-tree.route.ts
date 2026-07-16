@@ -2,11 +2,9 @@ import type { AnyRouteConfig } from "@workspace/hono/core"
 import {
   adminCreateResourceNodeRequestSchema,
   adminMoveResourceNodeRequestSchema,
-  adminRenameResourceNodeRequestSchema,
-  adminResourceActiveEditorCountDtoSchema,
+  adminRenameResourceFolderRequestSchema,
   adminResourceNodeMutationDtoSchema,
   adminResourceRestoreResultDtoSchema,
-  adminResourceRevisionRequestSchema,
   adminResourceTrashResultDtoSchema,
   adminResourceTreeDtoSchema,
   adminResourceTreeScopeSchema,
@@ -15,10 +13,6 @@ import type { ResourceTreeUseCase } from "@workspace/core/resource-library"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import type {
-  ResourceEventsPublisher,
-  ResourceEventsWorkspace,
-} from "@/collaboration/resource-events-hub"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
 import {
   adminAuthenticatedResponses,
@@ -28,26 +22,20 @@ import {
 } from "@/http/openapi"
 import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 import { throwResourceLibraryRejection } from "@/routes/resource-library-errors"
-import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 
 const resourceTreeQuerySchema = z.object({
-  parentId: z
-    .string()
-    .trim()
-    .min(1)
-    .optional()
-    .transform((parentId) => parentId ?? null),
   scope: adminResourceTreeScopeSchema.optional().default("active"),
 })
-
 const resourceNodeParamsSchema = z.object({
   nodeId: z.string().trim().min(1),
 })
+const resourceFolderParamsSchema = z.object({
+  folderId: z.string().trim().min(1),
+})
 
 export type ResourceTreeRouteDependencies = {
-  readonly events: ResourceEventsWorkspace
-  readonly documentOperations: ResourceDocumentOperationCoordinator
   readonly now: () => Date
+  readonly onObjectsDeleted?: (objectKeys: readonly string[]) => Promise<void>
   readonly sessionResolver: AdminSessionResolver
   readonly treeService: ResourceTreeUseCase
 }
@@ -57,50 +45,14 @@ export function createResourceTreeRoutes(
 ) {
   return [
     createGetResourceTreeRoute(dependencies),
-    createGetResourceActiveEditorCountRoute(dependencies),
-    createCreateResourceFolderRoute(dependencies),
-    createCreateResourceDocumentRoute(dependencies),
-    createRenameResourceNodeRoute(dependencies),
+    createResourceFolderRoute(dependencies),
+    createResourceDocumentRoute(dependencies),
+    createRenameResourceFolderRoute(dependencies),
     createMoveResourceNodeRoute(dependencies),
     createTrashResourceNodeRoute(dependencies),
     createRestoreResourceNodeRoute(dependencies),
+    createDeleteResourceNodeRoute(dependencies),
   ] as const
-}
-
-function createGetResourceActiveEditorCountRoute({
-  events,
-  sessionResolver,
-  treeService,
-}: ResourceTreeRouteDependencies) {
-  const routeConfig = {
-    method: "get",
-    operationId: "getAdminResourceActiveEditorCount",
-    path: "/resources/nodes/{nodeId}/active-editors",
-    request: { params: resourceNodeParamsSchema },
-    responses: adminAuthenticatedResponses(
-      jsonResponse(
-        "자료실 하위 문서의 활성 편집자 수입니다.",
-        adminResourceActiveEditorCountDtoSchema
-      )
-    ),
-    summary: "자료실 하위 문서 활성 편집자 수 조회",
-    ...adminSessionRouteOptions(sessionResolver),
-  } satisfies AnyRouteConfig
-
-  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const documentIds = await treeService.getSubtreeDocumentIds(
-      context.req.valid("param").nodeId
-    )
-
-    return context.json(
-      {
-        activeEditorCount: events.countActiveEditors(documentIds),
-      },
-      200
-    )
-  }
-
-  return defineAdminRoute({ ...routeConfig, handler })
 }
 
 function createGetResourceTreeRoute({
@@ -113,9 +65,9 @@ function createGetResourceTreeRoute({
     path: "/resources/tree",
     request: { query: resourceTreeQuerySchema },
     responses: adminAuthenticatedResponses(
-      jsonResponse("자료실 트리의 자식 항목입니다.", adminResourceTreeDtoSchema)
+      jsonResponse("자료실 전체 트리입니다.", adminResourceTreeDtoSchema)
     ),
-    summary: "자료실 트리 지연 조회",
+    summary: "자료실 전체 트리 조회",
     ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
@@ -125,146 +77,100 @@ function createGetResourceTreeRoute({
   return defineAdminRoute({ ...routeConfig, handler })
 }
 
-function createCreateResourceFolderRoute(
+function createResourceFolderRoute(
   dependencies: ResourceTreeRouteDependencies
 ) {
-  return createResourceNodeRoute({
-    ...dependencies,
-    kind: "folder",
+  const routeConfig = {
     method: "post",
     operationId: "createAdminResourceFolder",
     path: "/resources/folders",
-    summary: "자료실 폴더 생성",
-  })
-}
-
-function createCreateResourceDocumentRoute(
-  dependencies: ResourceTreeRouteDependencies
-) {
-  return createResourceNodeRoute({
-    ...dependencies,
-    kind: "document",
-    method: "post",
-    operationId: "createAdminResourceDocumentNode",
-    path: "/resources/documents",
-    summary: "자료실 문서 생성",
-  })
-}
-
-function createResourceNodeRoute({
-  kind,
-  events,
-  method,
-  now,
-  operationId,
-  path,
-  sessionResolver,
-  summary,
-  treeService,
-}: ResourceTreeRouteDependencies & {
-  readonly kind: "document" | "folder"
-  readonly method: "post"
-  readonly operationId: string
-  readonly path: string
-  readonly summary: string
-}) {
-  const routeConfig = {
-    method,
-    operationId,
-    path,
     request: { body: jsonRequestBody(adminCreateResourceNodeRequestSchema) },
-    responses: resourceMutationResponses(
+    responses: mutationResponses(
       "생성된 자료실 항목입니다.",
       adminResourceNodeMutationDtoSchema
     ),
-    summary,
-    ...adminSessionRouteOptions(sessionResolver),
+    summary: "자료실 폴더 생성",
+    ...adminSessionRouteOptions(dependencies.sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const session = context.get("activeAdminSession")
     const command = {
       ...context.req.valid("json"),
-      actorId: session.admin.id,
-      now: now(),
+      actorId: context.get("activeAdminSession").admin.id,
+      now: dependencies.now(),
     }
-    const result =
-      kind === "folder"
-        ? await treeService.createFolder(command)
-        : await treeService.createDocument(command)
-
-    if (result.kind !== "ok") {
-      throwResourceLibraryRejection(result)
-    }
-
-    publishTreeMutation(events, {
-      action: kind === "folder" ? "create-folder" : "create-document",
-      ...result.value,
-      nodeId: result.value.node.id,
-    })
+    const result = await dependencies.treeService.createFolder(command)
+    if (result.kind !== "ok") throwResourceLibraryRejection(result)
     return context.json(result.value, 200)
   }
 
   return defineAdminRoute({ ...routeConfig, handler })
 }
 
-function createRenameResourceNodeRoute({
-  events,
+function createResourceDocumentRoute(
+  dependencies: ResourceTreeRouteDependencies
+) {
+  const routeConfig = {
+    method: "post",
+    operationId: "createAdminResourceDocumentNode",
+    path: "/resources/documents",
+    request: { body: jsonRequestBody(adminCreateResourceNodeRequestSchema) },
+    responses: mutationResponses(
+      "생성된 자료실 항목입니다.",
+      adminResourceNodeMutationDtoSchema
+    ),
+    summary: "자료실 문서 생성",
+    ...adminSessionRouteOptions(dependencies.sessionResolver),
+  } satisfies AnyRouteConfig
+
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const result = await dependencies.treeService.createDocument({
+      ...context.req.valid("json"),
+      actorId: context.get("activeAdminSession").admin.id,
+      now: dependencies.now(),
+    })
+    if (result.kind !== "ok") throwResourceLibraryRejection(result)
+    return context.json(result.value, 200)
+  }
+
+  return defineAdminRoute({ ...routeConfig, handler })
+}
+
+function createRenameResourceFolderRoute({
   now,
   sessionResolver,
   treeService,
 }: ResourceTreeRouteDependencies) {
   const routeConfig = {
     method: "patch",
-    operationId: "renameAdminResourceNode",
-    path: "/resources/nodes/{nodeId}/name",
+    operationId: "renameAdminResourceFolder",
+    path: "/resources/folders/{folderId}/name",
     request: {
-      body: jsonRequestBody(adminRenameResourceNodeRequestSchema),
-      params: resourceNodeParamsSchema,
+      body: jsonRequestBody(adminRenameResourceFolderRequestSchema),
+      params: resourceFolderParamsSchema,
     },
-    responses: resourceMutationResponses(
-      "이름이 변경된 자료실 항목입니다.",
+    responses: mutationResponses(
+      "이름이 변경된 자료실 폴더입니다.",
       adminResourceNodeMutationDtoSchema
     ),
-    summary: "자료실 항목 이름 변경",
+    summary: "자료실 폴더 이름 변경",
     ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const session = context.get("activeAdminSession")
-    const result = await treeService.renameNode({
+    const result = await treeService.renameFolder({
       ...context.req.valid("json"),
-      actorId: session.admin.id,
-      nodeId: context.req.valid("param").nodeId,
+      actorId: context.get("activeAdminSession").admin.id,
+      folderId: context.req.valid("param").folderId,
       now: now(),
     })
-
-    if (result.kind !== "ok") {
-      throwResourceLibraryRejection(result)
-    }
-
-    publishTreeMutation(events, {
-      action: "rename",
-      ...result.value,
-      nodeId: result.value.node.id,
-    })
-    if (result.value.node.kind === "document") {
-      events.publish({
-        documentId: result.value.node.id,
-        name: result.value.node.name,
-        revision: result.value.revision,
-        type: "resource-document-title-confirmed",
-      })
-    }
-
+    if (result.kind !== "ok") throwResourceLibraryRejection(result)
     return context.json(result.value, 200)
   }
-
   return defineAdminRoute({ ...routeConfig, handler })
 }
 
 function createMoveResourceNodeRoute({
-  events,
   now,
   sessionResolver,
   treeService,
@@ -277,182 +183,124 @@ function createMoveResourceNodeRoute({
       body: jsonRequestBody(adminMoveResourceNodeRequestSchema),
       params: resourceNodeParamsSchema,
     },
-    responses: resourceMutationResponses(
+    responses: mutationResponses(
       "이동한 자료실 항목입니다.",
       adminResourceNodeMutationDtoSchema
     ),
-    summary: "자료실 항목 이동",
+    summary: "자료실 항목 폴더 이동",
     ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const session = context.get("activeAdminSession")
     const result = await treeService.moveNode({
       ...context.req.valid("json"),
-      actorId: session.admin.id,
+      actorId: context.get("activeAdminSession").admin.id,
       nodeId: context.req.valid("param").nodeId,
       now: now(),
     })
-
-    if (result.kind !== "ok") {
-      throwResourceLibraryRejection(result)
-    }
-
-    publishTreeMutation(events, {
-      action: "move",
-      ...result.value,
-      nodeId: result.value.node.id,
-    })
+    if (result.kind !== "ok") throwResourceLibraryRejection(result)
     return context.json(result.value, 200)
   }
-
   return defineAdminRoute({ ...routeConfig, handler })
 }
 
 function createTrashResourceNodeRoute(
   dependencies: ResourceTreeRouteDependencies
 ) {
-  return createResourceRevisionRoute({
-    ...dependencies,
-    action: "trash",
-    description: "휴지통으로 이동한 자료실 하위 트리의 결과입니다.",
+  const routeConfig = {
     method: "post",
     operationId: "trashAdminResourceNode",
     path: "/resources/nodes/{nodeId}/trash",
-    responseSchema: adminResourceTrashResultDtoSchema,
-    summary: "자료실 항목 하위 트리 휴지통 이동",
-  })
+    request: { params: resourceNodeParamsSchema },
+    responses: mutationResponses(
+      "휴지통으로 이동한 하위 트리입니다.",
+      adminResourceTrashResultDtoSchema
+    ),
+    summary: "자료실 하위 트리 휴지통 이동",
+    ...adminSessionRouteOptions(dependencies.sessionResolver),
+  } satisfies AnyRouteConfig
+
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const result = await dependencies.treeService.trashNode({
+      actorId: context.get("activeAdminSession").admin.id,
+      nodeId: context.req.valid("param").nodeId,
+      now: dependencies.now(),
+    })
+    if (result.kind !== "ok") throwResourceLibraryRejection(result)
+    return context.json(result.value, 200)
+  }
+  return defineAdminRoute({ ...routeConfig, handler })
 }
 
 function createRestoreResourceNodeRoute(
   dependencies: ResourceTreeRouteDependencies
 ) {
-  return createResourceRevisionRoute({
-    ...dependencies,
-    action: "restore",
-    description: "복원한 자료실 하위 트리의 결과입니다.",
+  const routeConfig = {
     method: "post",
     operationId: "restoreAdminResourceNode",
     path: "/resources/nodes/{nodeId}/restore",
-    responseSchema: adminResourceRestoreResultDtoSchema,
-    summary: "자료실 항목 하위 트리 복원",
-  })
-}
-
-function createResourceRevisionRoute({
-  action,
-  documentOperations,
-  description,
-  events,
-  method,
-  now,
-  operationId,
-  path,
-  responseSchema,
-  sessionResolver,
-  summary,
-  treeService,
-}: ResourceTreeRouteDependencies & {
-  readonly action: "restore" | "trash"
-  readonly description: string
-  readonly method: "post"
-  readonly operationId: string
-  readonly path: string
-  readonly responseSchema: z.ZodType
-  readonly summary: string
-}) {
-  const routeConfig = {
-    method,
-    operationId,
-    path,
-    request: {
-      body: jsonRequestBody(adminResourceRevisionRequestSchema),
-      params: resourceNodeParamsSchema,
-    },
-    responses: resourceMutationResponses(description, responseSchema),
-    summary,
-    ...adminSessionRouteOptions(sessionResolver),
+    request: { params: resourceNodeParamsSchema },
+    responses: mutationResponses(
+      "복원한 하위 트리입니다.",
+      adminResourceRestoreResultDtoSchema
+    ),
+    summary: "자료실 하위 트리 복원",
+    ...adminSessionRouteOptions(dependencies.sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const session = context.get("activeAdminSession")
-    const command = {
-      ...context.req.valid("json"),
-      actorId: session.admin.id,
+    const result = await dependencies.treeService.restoreNode({
+      actorId: context.get("activeAdminSession").admin.id,
       nodeId: context.req.valid("param").nodeId,
-      now: now(),
-    }
-    if (action === "restore") {
-      const result = await treeService.restoreNode(command)
-
-      if (result.kind !== "ok") {
-        throwResourceLibraryRejection(result)
-      }
-
-      publishTreeMutation(events, {
-        action: "restore",
-        ...result.value,
-        nodeId: result.value.node.id,
-      })
-      return context.json(result.value, 200)
-    }
-
-    const documentIds = await treeService.getSubtreeDocumentIds(command.nodeId)
-    return documentOperations.runMany(documentIds, async () => {
-      const result = await treeService.trashNode(command)
-
-      if (result.kind !== "ok") {
-        throwResourceLibraryRejection(result)
-      }
-
-      publishTreeMutation(events, {
-        action: "trash",
-        ...result.value,
-        nodeId: command.nodeId,
-      })
-      for (const documentId of documentIds) {
-        events.publishDocumentInvalidated({
-          documentId,
-          reason: "archived",
-          type: "resource-document-invalidated",
-        })
-      }
-      return context.json(result.value, 200)
+      now: dependencies.now(),
     })
+    if (result.kind !== "ok") throwResourceLibraryRejection(result)
+    return context.json(result.value, 200)
   }
-
   return defineAdminRoute({ ...routeConfig, handler })
 }
 
-function publishTreeMutation(
-  events: ResourceEventsPublisher,
-  input: {
-    readonly action:
-      | "create-document"
-      | "create-folder"
-      | "move"
-      | "rename"
-      | "restore"
-      | "trash"
-    readonly affectedParentIds: readonly (string | null)[]
-    readonly nodeId: string
-    readonly revision: number
+function createDeleteResourceNodeRoute(
+  dependencies: ResourceTreeRouteDependencies
+) {
+  const routeConfig = {
+    method: "delete",
+    operationId: "deleteAdminResourceNodePermanently",
+    path: "/resources/nodes/{nodeId}",
+    request: { params: resourceNodeParamsSchema },
+    responses: mutationResponses(
+      "영구 삭제한 하위 트리입니다.",
+      adminResourceTrashResultDtoSchema
+    ),
+    summary: "자료실 하위 트리 영구 삭제",
+    ...adminSessionRouteOptions(dependencies.sessionResolver),
+  } satisfies AnyRouteConfig
+
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const result = await dependencies.treeService.deleteNodePermanently({
+      actorId: context.get("activeAdminSession").admin.id,
+      nodeId: context.req.valid("param").nodeId,
+      now: dependencies.now(),
+    })
+    if (result.kind !== "ok") throwResourceLibraryRejection(result)
+    await dependencies.onObjectsDeleted?.(result.value.r2ObjectKeys)
+    return context.json(
+      {
+        documentCount: result.value.documentCount,
+        folderCount: result.value.folderCount,
+      },
+      200
+    )
   }
-): void {
-  events.publish({
-    action: input.action,
-    affectedParentIds: [...input.affectedParentIds],
-    nodeId: input.nodeId,
-    revision: input.revision,
-    type: "resource-tree-mutated",
-  })
+  return defineAdminRoute({ ...routeConfig, handler })
 }
 
-function resourceMutationResponses(description: string, schema: z.ZodType) {
+function mutationResponses(description: string, schema: z.ZodType) {
   return {
     ...adminAuthenticatedResponses(jsonResponse(description, schema)),
     400: errorJsonResponse("잘못된 자료실 명령입니다."),
     404: errorJsonResponse("자료실 항목을 찾을 수 없습니다."),
     409: errorJsonResponse("자료실 변경 충돌이 발생했습니다."),
+    422: errorJsonResponse("자료실 제한을 초과했습니다."),
   }
 }

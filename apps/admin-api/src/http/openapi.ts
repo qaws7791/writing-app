@@ -59,6 +59,18 @@ export function jsonRequestBody<const TSchema extends z.ZodType>(
   }
 }
 
+export function multipartRequestBody<const TSchema extends z.ZodType>(
+  schema: TSchema
+) {
+  return {
+    content: {
+      "multipart/form-data": {
+        schema,
+      },
+    },
+  }
+}
+
 export function eventStreamResponse(description: string) {
   return {
     content: {

@@ -1,8 +1,5 @@
 import type { AnyRouteConfig } from "@workspace/hono/core"
-import {
-  adminResourceSearchDtoSchema,
-  adminResourceTreeScopeSchema,
-} from "@workspace/contracts/admin"
+import { adminResourceSearchDtoSchema } from "@workspace/contracts/admin"
 import type { ResourceSearchUseCase } from "@workspace/core/resource-library"
 import { z } from "@workspace/hono/zod"
 
@@ -15,7 +12,6 @@ import { positiveIntegerQuery } from "@/routes/query-schemas"
 const resourceSearchQuerySchema = z.object({
   limit: positiveIntegerQuery({ fallback: 20, max: 50 }),
   query: z.string().trim().min(1).max(200),
-  scope: adminResourceTreeScopeSchema.optional().default("active"),
 })
 
 export type ResourceSearchRouteDependencies = {

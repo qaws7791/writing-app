@@ -1,21 +1,19 @@
 import type {
   ResourceBreadcrumbItem,
-  ResourceNodeId,
-  ResourceTreeScope,
+  ResourceDocumentId,
 } from "#core/modules/resource-library/domain/resource-tree-node"
 
 export type ResourceSearchRecord = {
   readonly excerpt: string | null
-  readonly id: ResourceNodeId
-  readonly kind: "document" | "folder"
+  readonly id: ResourceDocumentId
   readonly name: string
   readonly path: readonly ResourceBreadcrumbItem[]
+  readonly version: number
 }
 
 export type ResourceSearchRepository = {
   readonly search: (input: {
     readonly limit: number
     readonly query: string
-    readonly scope: ResourceTreeScope
   }) => Promise<readonly ResourceSearchRecord[]>
 }

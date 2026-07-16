@@ -21,14 +21,14 @@ export function throwResourceLibraryRejection(
     case "invalid-markdown":
     case "invalid-name":
       throw invalidAdminRequestError()
-    case "invalid-position":
-      throw resourceLibraryConflictAdminError("RESOURCE_POSITION_CONFLICT")
+    case "depth-limit":
+      throw resourceLibraryConflictAdminError("RESOURCE_DEPTH_LIMIT")
     case "name-conflict":
       throw resourceLibraryConflictAdminError("RESOURCE_NAME_CONFLICT")
     case "not-found":
     case "parent-not-found":
       throw notFoundAdminError()
-    case "stale-revision":
-      throw resourceLibraryConflictAdminError("STALE_REVISION")
+    case "node-limit":
+      throw resourceLibraryConflictAdminError("RESOURCE_NODE_LIMIT")
   }
 }

@@ -1,18 +1,17 @@
 import {
   adminImportResourceDocumentResultDtoSchema,
-  adminResourceActiveDocumentDtoSchema,
   adminResourceDocumentDtoSchema,
   type AdminImportResourceDocumentResultDto,
   type AdminResourceDocumentDto,
 } from "@workspace/contracts/admin"
 import {
+  normalizeResourceMarkdown,
   prepareResourceMarkdownImport,
   readResourceMarkdownPlainText,
   type ResourceDocumentIssue,
-} from "@workspace/resource-document/resource-markdown-import"
+} from "@workspace/resource-document/resource-markdown"
 
 import type {
-  ResourceDocumentMetadataRecord,
   ResourceDocumentRecord,
   ResourceDocumentRepository,
 } from "#core/modules/resource-library/application/ports/resource-document.repository"
@@ -20,32 +19,33 @@ import type { ResourceTreeCommandRejection } from "#core/modules/resource-librar
 import {
   toResourceDocumentId,
   toResourceFolderId,
-  type ResourceAuditEventId,
   type ResourceDocumentId,
 } from "#core/modules/resource-library/domain/resource-tree-node"
 
+export type ResourceDocumentInvalidMarkdown = {
+  readonly issues: readonly ResourceDocumentIssue[]
+  readonly kind: "invalid-markdown"
+}
+
 export type ResourceDocumentImportResult =
-  | {
-      readonly issues: readonly ResourceDocumentIssue[]
-      readonly kind: "invalid-markdown"
-    }
-  | {
-      readonly kind: "invalid-file-name"
-    }
+  | ResourceDocumentInvalidMarkdown
+  | { readonly kind: "invalid-file-name" }
   | ResourceTreeCommandRejection
   | {
       readonly kind: "ok"
       readonly value: AdminImportResourceDocumentResultDto
     }
 
-export type ImportResourceDocumentCommand = {
-  readonly actorId: string
-  readonly expectedRevision: number
-  readonly fileName: string
-  readonly markdown: string
-  readonly now: Date
-  readonly parentId: string | null
-}
+export type ResourceDocumentSaveResult =
+  | ResourceDocumentInvalidMarkdown
+  | { readonly kind: "not-found" }
+  | { readonly kind: "name-conflict" }
+  | {
+      readonly kind: "invalid-name"
+      readonly reason: "empty" | "invalid-character" | "too-long"
+    }
+  | { readonly kind: "conflict"; readonly document: AdminResourceDocumentDto }
+  | { readonly kind: "ok"; readonly document: AdminResourceDocumentDto }
 
 export type ResourceDocumentUseCase = {
   readonly exportDocument: (input: { readonly documentId: string }) => Promise<
@@ -58,80 +58,63 @@ export type ResourceDocumentUseCase = {
   readonly getDocument: (input: {
     readonly documentId: string
   }) => Promise<AdminResourceDocumentDto | null>
-  readonly importDocument: (
-    input: ImportResourceDocumentCommand
-  ) => Promise<ResourceDocumentImportResult>
-}
-
-export type ResourceDocumentUseCaseDependencies = {
-  readonly createAuditEventId: () => ResourceAuditEventId
-  readonly createDocumentId: () => ResourceDocumentId
-  readonly documentRepository: ResourceDocumentRepository
+  readonly importDocument: (input: {
+    readonly actorId: string
+    readonly fileName: string
+    readonly markdown: string
+    readonly now: Date
+    readonly parentId: string | null
+  }) => Promise<ResourceDocumentImportResult>
+  readonly saveDocument: (input: {
+    readonly actorId: string
+    readonly contentMarkdown: string
+    readonly documentId: string
+    readonly expectedVersion: number
+    readonly name: string
+    readonly now: Date
+  }) => Promise<ResourceDocumentSaveResult>
 }
 
 export function createResourceDocumentUseCase({
-  createAuditEventId,
   createDocumentId,
   documentRepository,
-}: ResourceDocumentUseCaseDependencies): ResourceDocumentUseCase {
+}: {
+  readonly createDocumentId: () => ResourceDocumentId
+  readonly documentRepository: ResourceDocumentRepository
+}): ResourceDocumentUseCase {
   return {
     async exportDocument({ documentId }) {
-      const resourceDocumentId = toResourceDocumentId(documentId)
-      const [document, contentMarkdown] = await Promise.all([
-        documentRepository.readDocumentMetadata(resourceDocumentId),
-        documentRepository.readDocumentContent(resourceDocumentId),
-      ])
-
-      if (document === null || contentMarkdown === null) {
-        return { kind: "not-found" }
-      }
-
+      const document = await documentRepository.readDocument(
+        toResourceDocumentId(documentId)
+      )
+      if (document === null) return { kind: "not-found" }
       const heading = `# ${document.name}`
-
       return {
         kind: "ok",
         value: {
           fileName: `${sanitizeMarkdownFileName(document.name)}.md`,
           markdown:
-            contentMarkdown.length === 0
+            document.contentMarkdown.length === 0
               ? heading
-              : `${heading}\n\n${contentMarkdown}`,
+              : `${heading}\n\n${document.contentMarkdown}`,
         },
       }
     },
     async getDocument({ documentId }) {
-      const resourceDocumentId = toResourceDocumentId(documentId)
-      const document =
-        await documentRepository.readDocumentMetadata(resourceDocumentId)
-
-      if (document === null) return null
-      if (document.status === "active") return toDocumentDto(document)
-
-      const contentMarkdown =
-        await documentRepository.readDocumentContent(resourceDocumentId)
-
-      return contentMarkdown === null
-        ? null
-        : toDocumentDto({ ...document, contentMarkdown })
+      const document = await documentRepository.readDocument(
+        toResourceDocumentId(documentId)
+      )
+      return document === null ? null : toDocumentDto(document)
     },
     async importDocument(input) {
       const fileNameTitle = readMarkdownFileNameTitle(input.fileName)
-
-      if (fileNameTitle === null) {
-        return { kind: "invalid-file-name" }
-      }
+      if (fileNameTitle === null) return { kind: "invalid-file-name" }
 
       const preparation = prepareResourceMarkdownImport(input.markdown)
-
       if (preparation.status === "invalid") {
-        return {
-          issues: preparation.issues,
-          kind: "invalid-markdown",
-        }
+        return { issues: preparation.issues, kind: "invalid-markdown" }
       }
-
       const plainText = readResourceMarkdownPlainText(preparation.markdown)
-
       if (plainText.status === "invalid") {
         throw new Error(
           "정규화한 자료 Markdown에서 검색 텍스트를 만들지 못했습니다."
@@ -140,65 +123,59 @@ export function createResourceDocumentUseCase({
 
       const result = await documentRepository.importDocument({
         actorId: input.actorId,
-        auditEventId: createAuditEventId(),
         bodyText: plainText.text,
         documentId: createDocumentId(),
-        expectedRevision: input.expectedRevision,
         markdown: preparation.markdown,
         name: preparation.headingTitle ?? fileNameTitle,
         now: input.now,
         parentId:
           input.parentId === null ? null : toResourceFolderId(input.parentId),
       })
-
-      return mapImportResult(result)
+      return result.kind === "ok"
+        ? {
+            kind: "ok",
+            value: adminImportResourceDocumentResultDtoSchema.parse({
+              document: toDocumentDto(result.value.document),
+              mutation: {
+                node: {
+                  hasChildren: false,
+                  id: result.value.node.id,
+                  kind: "document",
+                  name: result.value.node.name,
+                  parentId: result.value.node.parentId,
+                  status: result.value.node.status,
+                },
+              },
+            }),
+          }
+        : result
+    },
+    async saveDocument(input) {
+      const normalized = normalizeResourceMarkdown(input.contentMarkdown)
+      if (normalized.status === "invalid") {
+        return { issues: normalized.issues, kind: "invalid-markdown" }
+      }
+      const plainText = readResourceMarkdownPlainText(normalized.markdown)
+      if (plainText.status === "invalid") {
+        throw new Error(
+          "정규화한 자료 Markdown에서 검색 텍스트를 만들지 못했습니다."
+        )
+      }
+      const result = await documentRepository.saveDocument({
+        ...input,
+        bodyText: plainText.text,
+        contentMarkdown: normalized.markdown,
+        documentId: toResourceDocumentId(input.documentId),
+      })
+      return result.kind === "ok" || result.kind === "conflict"
+        ? { ...result, document: toDocumentDto(result.document) }
+        : result
     },
   }
 }
 
-function mapImportResult(
-  result: Awaited<ReturnType<ResourceDocumentRepository["importDocument"]>>
-): ResourceDocumentImportResult {
-  if (result.kind !== "ok") {
-    return result
-  }
-
-  return {
-    kind: "ok",
-    value: adminImportResourceDocumentResultDtoSchema.parse({
-      document: toActiveDocumentDto(result.value.document),
-      mutation: {
-        ...result.value.mutation,
-        node: {
-          hasChildren: false,
-          id: result.value.mutation.node.id,
-          kind: "document",
-          name: result.value.mutation.node.name,
-          parentId: result.value.mutation.node.parentId,
-          sortOrder: result.value.mutation.node.sortOrder,
-          status: result.value.mutation.node.status,
-        },
-      },
-    }),
-  }
-}
-
-function toActiveDocumentDto(
-  document: ResourceDocumentRecord
-): AdminImportResourceDocumentResultDto["document"] {
-  if (document.status !== "active") {
-    throw new Error("가져온 자료 문서가 활성 상태가 아닙니다.")
-  }
-
-  return adminResourceActiveDocumentDtoSchema.parse({
-    ...document,
-    createdAt: document.createdAt.toISOString(),
-    updatedAt: document.updatedAt.toISOString(),
-  })
-}
-
 function toDocumentDto(
-  document: ResourceDocumentMetadataRecord | ResourceDocumentRecord
+  document: ResourceDocumentRecord
 ): AdminResourceDocumentDto {
   return adminResourceDocumentDtoSchema.parse({
     ...document,

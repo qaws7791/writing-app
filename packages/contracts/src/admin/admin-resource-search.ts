@@ -2,32 +2,18 @@ import { z } from "zod"
 
 import {
   adminResourceBreadcrumbItemDtoSchema,
-  adminResourceIdSchema,
+  adminResourceDocumentIdSchema,
   adminResourceNameSchema,
+  adminResourceVersionSchema,
 } from "@workspace/contracts/admin/admin-resource-library-shared"
 
-const adminResourceSearchItemBaseDtoSchema = z.object({
-  id: adminResourceIdSchema,
+export const adminResourceSearchItemDtoSchema = z.object({
+  excerpt: z.string().nullable(),
+  id: adminResourceDocumentIdSchema,
   name: adminResourceNameSchema,
   path: z.array(adminResourceBreadcrumbItemDtoSchema),
+  version: adminResourceVersionSchema,
 })
-
-export const adminResourceFolderSearchItemDtoSchema =
-  adminResourceSearchItemBaseDtoSchema.extend({
-    excerpt: z.null(),
-    kind: z.literal("folder"),
-  })
-
-export const adminResourceDocumentSearchItemDtoSchema =
-  adminResourceSearchItemBaseDtoSchema.extend({
-    excerpt: z.string().nullable(),
-    kind: z.literal("document"),
-  })
-
-export const adminResourceSearchItemDtoSchema = z.discriminatedUnion("kind", [
-  adminResourceFolderSearchItemDtoSchema,
-  adminResourceDocumentSearchItemDtoSchema,
-])
 
 export const adminResourceSearchDtoSchema = z.object({
   items: z.array(adminResourceSearchItemDtoSchema),

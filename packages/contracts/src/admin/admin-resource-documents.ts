@@ -5,43 +5,35 @@ import {
   adminResourceBreadcrumbItemDtoSchema,
   adminResourceDocumentIdSchema,
   adminResourceFolderIdSchema,
+  adminResourceImageAltTextSchema,
+  adminResourceImageMimeTypeSchema,
   adminResourceMarkdownMaxLength,
   adminResourceNameSchema,
-  adminResourceRevisionSchema,
+  adminResourceNodeStatusSchema,
+  adminResourceVersionSchema,
 } from "@workspace/contracts/admin/admin-resource-library-shared"
 import { adminResourceNodeMutationDtoSchema } from "@workspace/contracts/admin/admin-resource-tree"
 
-const adminResourceDocumentMetadataDtoSchema = z.object({
-  contentRevision: adminResourceRevisionSchema,
+export const adminResourceDocumentDtoSchema = z.object({
+  contentMarkdown: z.string().max(adminResourceMarkdownMaxLength),
   createdAt: z.iso.datetime(),
   createdBy: adminResourceActorDtoSchema,
   id: adminResourceDocumentIdSchema,
   name: adminResourceNameSchema,
   parentId: adminResourceFolderIdSchema.nullable(),
   path: z.array(adminResourceBreadcrumbItemDtoSchema),
-  stateVersion: adminResourceRevisionSchema,
+  status: adminResourceNodeStatusSchema,
   updatedAt: z.iso.datetime(),
   updatedBy: adminResourceActorDtoSchema,
+  version: adminResourceVersionSchema,
 })
 
-export const adminResourceActiveDocumentDtoSchema =
-  adminResourceDocumentMetadataDtoSchema.extend({
-    status: z.literal("active"),
-  })
-
-export const adminResourceArchivedDocumentDtoSchema =
-  adminResourceDocumentMetadataDtoSchema.extend({
-    contentMarkdown: z.string().max(adminResourceMarkdownMaxLength),
-    status: z.literal("archived"),
-  })
-
-export const adminResourceDocumentDtoSchema = z.discriminatedUnion("status", [
-  adminResourceActiveDocumentDtoSchema,
-  adminResourceArchivedDocumentDtoSchema,
-])
+export const adminSaveResourceDocumentRequestSchema = z.object({
+  contentMarkdown: z.string().max(adminResourceMarkdownMaxLength),
+  name: adminResourceNameSchema,
+})
 
 export const adminImportResourceDocumentRequestSchema = z.object({
-  expectedRevision: adminResourceRevisionSchema,
   fileName: z
     .string()
     .trim()
@@ -53,8 +45,16 @@ export const adminImportResourceDocumentRequestSchema = z.object({
 })
 
 export const adminImportResourceDocumentResultDtoSchema = z.object({
-  document: adminResourceActiveDocumentDtoSchema,
+  document: adminResourceDocumentDtoSchema,
   mutation: adminResourceNodeMutationDtoSchema,
+})
+
+export const adminResourceImageUploadDtoSchema = z.object({
+  altText: adminResourceImageAltTextSchema,
+  byteSize: z.number().int().positive(),
+  contentType: adminResourceImageMimeTypeSchema,
+  id: z.string().min(1),
+  url: z.url(),
 })
 
 export type AdminImportResourceDocumentRequest = z.infer<
@@ -65,4 +65,10 @@ export type AdminImportResourceDocumentResultDto = z.infer<
 >
 export type AdminResourceDocumentDto = z.infer<
   typeof adminResourceDocumentDtoSchema
+>
+export type AdminResourceImageUploadDto = z.infer<
+  typeof adminResourceImageUploadDtoSchema
+>
+export type AdminSaveResourceDocumentRequest = z.infer<
+  typeof adminSaveResourceDocumentRequestSchema
 >

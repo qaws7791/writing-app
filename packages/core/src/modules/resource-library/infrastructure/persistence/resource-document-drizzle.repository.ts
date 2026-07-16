@@ -1,39 +1,37 @@
-import { sql } from "drizzle-orm"
+import { and, asc, eq, isNull, ne, sql } from "drizzle-orm"
 
 import type {
   ImportResourceDocumentInput,
   ImportResourceDocumentResult,
-  ResourceDocumentMetadataRecord,
   ResourceDocumentRecord,
   ResourceDocumentRepository,
+  SaveResourceDocumentInput,
+  SaveResourceDocumentResult,
 } from "#core/modules/resource-library/application/ports/resource-document.repository"
 import {
   createAvailableResourceName,
   normalizeResourceName,
+  validateResourceNameChange,
 } from "#core/modules/resource-library/domain/resource-tree-policy"
-import type {
-  ResourceDocumentId,
-  ResourceTreeNode,
-} from "#core/modules/resource-library/domain/resource-tree-node"
-import { toResourceFolderId } from "#core/modules/resource-library/domain/resource-tree-node"
 import {
-  insertAuditEvent,
-  insertResourceSearchIndex,
   parseResourceBreadcrumbPath,
-  readActiveChildRows,
-  reserveTreeRevision,
-  validateActiveParent,
-  validateTreeRevision,
-  type WritingAppDatabaseTransaction,
-} from "#core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
+  toResourceDocumentId,
+  toResourceFolderId,
+  type ResourceDocumentId,
+  type ResourceFolderId,
+} from "#core/modules/resource-library/domain/resource-tree-node"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminResourceDocuments,
   adminResourceNodes,
 } from "@workspace/db/schema"
 
-type ResourceDocumentMetadataQueryRow = {
-  readonly content_revision: number
+type DatabaseTransaction = Parameters<
+  Parameters<WritingAppDatabase["transaction"]>[0]
+>[0]
+
+type DocumentQueryRow = {
+  readonly content_markdown: string
   readonly created_at: number
   readonly created_by_email: string
   readonly created_by_id: string
@@ -42,12 +40,12 @@ type ResourceDocumentMetadataQueryRow = {
   readonly name: string
   readonly parent_id: string | null
   readonly path_json: string
-  readonly state_version: number
   readonly status: ResourceDocumentRecord["status"]
   readonly updated_at: number
   readonly updated_by_email: string
   readonly updated_by_id: string
   readonly updated_by_name: string
+  readonly version: number
 }
 
 export function createDrizzleResourceDocumentRepository(
@@ -57,11 +55,11 @@ export function createDrizzleResourceDocumentRepository(
     async importDocument(input) {
       return importDocument(db, input)
     },
-    async readDocumentContent(documentId) {
-      return readResourceDocumentContent(db, documentId)
+    async readDocument(documentId) {
+      return readResourceDocument(db, documentId)
     },
-    async readDocumentMetadata(documentId) {
-      return readResourceDocumentMetadataRecord(db, documentId)
+    async saveDocument(input) {
+      return saveDocument(db, input)
     },
   }
 }
@@ -72,20 +70,17 @@ function importDocument(
 ): ImportResourceDocumentResult {
   return db.transaction(
     (transaction) => {
-      const revisionRejection = validateTreeRevision(transaction, input)
+      const nodeCount = transaction
+        .select({ value: sql<number>`count(*)` })
+        .from(adminResourceNodes)
+        .get()?.value
+      if ((nodeCount ?? 0) >= 1_000) return { kind: "node-limit" } as const
 
-      if (revisionRejection !== null) {
-        return revisionRejection
-      }
-
-      const parentRejection = validateActiveParent(transaction, input.parentId)
-
-      if (parentRejection !== null) {
-        return parentRejection
+      if (!isActiveFolder(transaction, input.parentId)) {
+        return { kind: "parent-not-found" } as const
       }
 
       const preferredName = normalizeResourceName(input.name)
-
       if (preferredName.status === "invalid") {
         return {
           kind: "invalid-name",
@@ -93,36 +88,23 @@ function importDocument(
         } as const
       }
 
-      const siblings = readActiveChildRows(transaction, input.parentId)
-      const availableName = createAvailableResourceName(
+      const siblings = readActiveSiblings(transaction, input.parentId)
+      const name = createAvailableResourceName(
         preferredName.name,
         siblings.map(({ normalizedName }) => normalizedName)
       )
-      const nextRevision = reserveTreeRevision(transaction, input)
-      const node: ResourceTreeNode = {
-        id: input.documentId,
-        kind: "document",
-        name: availableName.name,
-        normalizedName: availableName.normalizedName,
-        parentId: input.parentId,
-        sortOrder: siblings.length,
-        status: "active",
-        trashRootId: null,
-      }
-
       transaction
         .insert(adminResourceNodes)
         .values({
           createdAt: input.now,
           createdBy: input.actorId,
-          id: node.id,
-          kind: node.kind,
-          name: node.name,
-          normalizedName: node.normalizedName,
-          parentId: node.parentId,
-          sortOrder: node.sortOrder,
-          status: node.status,
-          trashRootId: node.trashRootId,
+          id: input.documentId,
+          kind: "document",
+          name: name.name,
+          normalizedName: name.normalizedName,
+          parentId: input.parentId,
+          status: "active",
+          trashRootId: null,
           updatedAt: input.now,
           updatedBy: input.actorId,
         })
@@ -131,31 +113,16 @@ function importDocument(
         .insert(adminResourceDocuments)
         .values({
           contentMarkdown: input.markdown,
-          contentRevision: 0,
-          nodeId: node.id,
+          nodeId: input.documentId,
+          version: 0,
         })
         .run()
-      insertResourceSearchIndex(transaction, {
-        bodyText: input.bodyText,
-        kind: node.kind,
-        name: node.name,
-        nodeId: node.id,
-      })
-      insertAuditEvent(transaction, {
-        actorId: input.actorId,
-        auditEventId: input.auditEventId,
-        eventType: "import",
-        nodeId: node.id,
-        now: input.now,
-        payload: {
-          kind: "import",
-          name: node.name,
-          parentId: node.parentId,
-        },
-      })
+      transaction.run(sql`
+        INSERT INTO admin_resource_search (node_id, name, body_text)
+        VALUES (${input.documentId}, ${name.name}, ${input.bodyText})
+      `)
 
-      const document = readResourceDocumentRecord(transaction, node.id)
-
+      const document = readResourceDocument(transaction, input.documentId)
       if (document === null) {
         throw new Error("가져온 자료 문서를 조회하지 못했습니다.")
       }
@@ -164,55 +131,122 @@ function importDocument(
         kind: "ok",
         value: {
           document,
-          mutation: {
-            affectedParentIds: [node.parentId],
-            node,
-            revision: nextRevision,
+          node: {
+            id: input.documentId,
+            kind: "document",
+            name: name.name,
+            normalizedName: name.normalizedName,
+            parentId: input.parentId,
+            status: "active",
+            trashRootId: null,
           },
         },
-      }
+      } as const
     },
     { behavior: "immediate" }
   )
 }
 
-function readResourceDocumentRecord(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction,
-  documentId: ResourceDocumentId
-): ResourceDocumentRecord | null {
-  const metadata = readResourceDocumentMetadataRecord(database, documentId)
-  const contentMarkdown = readResourceDocumentContent(database, documentId)
+function saveDocument(
+  db: WritingAppDatabase,
+  input: SaveResourceDocumentInput
+): SaveResourceDocumentResult {
+  return db.transaction(
+    (transaction) => {
+      const current = readResourceDocument(transaction, input.documentId)
+      if (current === null || current.status !== "active") {
+        return { kind: "not-found" } as const
+      }
+      if (current.version !== input.expectedVersion) {
+        return { document: current, kind: "conflict" } as const
+      }
 
-  return metadata === null || contentMarkdown === null
-    ? null
-    : { ...metadata, contentMarkdown }
-}
+      const node = transaction
+        .select({
+          normalizedName: adminResourceNodes.normalizedName,
+          parentId: adminResourceNodes.parentId,
+        })
+        .from(adminResourceNodes)
+        .where(eq(adminResourceNodes.id, input.documentId))
+        .get()
+      if (node === undefined) return { kind: "not-found" } as const
 
-function readResourceDocumentContent(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction,
-  documentId: ResourceDocumentId
-): string | null {
-  return (
-    database.all<{ readonly content_markdown: string }>(sql`
-      SELECT content_markdown
-      FROM admin_resource_documents
-      WHERE node_id = ${documentId}
-    `)[0]?.content_markdown ?? null
+      const nameValidation = validateResourceNameChange({
+        currentNormalizedName: node.normalizedName,
+        name: input.name,
+        occupiedNormalizedNames: readActiveSiblings(
+          transaction,
+          toParentId(node.parentId),
+          input.documentId
+        ).map(({ normalizedName }) => normalizedName),
+      })
+      if (nameValidation.status === "invalid") {
+        return nameValidation.reason === "conflict"
+          ? ({ kind: "name-conflict" } as const)
+          : ({
+              kind: "invalid-name",
+              reason: nameValidation.reason,
+            } as const)
+      }
+
+      transaction
+        .update(adminResourceDocuments)
+        .set({
+          contentMarkdown: input.contentMarkdown,
+          version: sql`${adminResourceDocuments.version} + 1`,
+        })
+        .where(
+          and(
+            eq(adminResourceDocuments.nodeId, input.documentId),
+            eq(adminResourceDocuments.version, input.expectedVersion)
+          )
+        )
+        .run()
+      const changed = transaction
+        .select({ value: sql<number>`changes()` })
+        .from(sql`(SELECT 1)`)
+        .get()?.value
+      if (changed !== 1) {
+        const latest = readResourceDocument(transaction, input.documentId)
+        if (latest === null) return { kind: "not-found" } as const
+        return { document: latest, kind: "conflict" } as const
+      }
+
+      transaction
+        .update(adminResourceNodes)
+        .set({
+          name: nameValidation.name,
+          normalizedName: nameValidation.normalizedName,
+          updatedAt: input.now,
+          updatedBy: input.actorId,
+        })
+        .where(eq(adminResourceNodes.id, input.documentId))
+        .run()
+      transaction.run(sql`
+        UPDATE admin_resource_search
+        SET name = ${nameValidation.name}, body_text = ${input.bodyText}
+        WHERE node_id = ${input.documentId}
+      `)
+
+      const saved = readResourceDocument(transaction, input.documentId)
+      if (saved === null)
+        throw new Error("저장한 자료 문서를 조회하지 못했습니다.")
+      return { document: saved, kind: "ok" } as const
+    },
+    { behavior: "immediate" }
   )
 }
 
-function readResourceDocumentMetadataRecord(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction,
+function readResourceDocument(
+  db: WritingAppDatabase | DatabaseTransaction,
   documentId: ResourceDocumentId
-): ResourceDocumentMetadataRecord | null {
-  const row = database.all<ResourceDocumentMetadataQueryRow>(sql`
+): ResourceDocumentRecord | null {
+  const row = db.all<DocumentQueryRow>(sql`
     WITH RECURSIVE paths(id, path_json) AS (
       SELECT id, json_array()
       FROM admin_resource_nodes
       WHERE parent_id IS NULL
-
       UNION ALL
-
       SELECT
         child.id,
         json_insert(
@@ -231,8 +265,8 @@ function readResourceDocumentMetadataRecord(
       node.status,
       node.created_at,
       node.updated_at,
-      document.content_revision,
-      COALESCE(collaboration.state_version, 0) AS state_version,
+      document.content_markdown,
+      document.version,
       creator.id AS created_by_id,
       creator.name AS created_by_name,
       creator.email AS created_by_email,
@@ -242,32 +276,26 @@ function readResourceDocumentMetadataRecord(
       paths.path_json
     FROM admin_resource_nodes AS node
     INNER JOIN admin_resource_documents AS document ON document.node_id = node.id
-    LEFT JOIN admin_resource_collaboration AS collaboration
-      ON collaboration.document_id = document.node_id
     INNER JOIN admin_user AS creator ON creator.id = node.created_by
     INNER JOIN admin_user AS editor ON editor.id = node.updated_by
     INNER JOIN paths ON paths.id = node.id
     WHERE node.id = ${documentId}
       AND node.kind = 'document'
   `)[0]
-
-  if (row === undefined) {
-    return null
-  }
+  if (row === undefined) return null
 
   return {
-    contentRevision: row.content_revision,
+    contentMarkdown: row.content_markdown,
     createdAt: new Date(row.created_at),
     createdBy: {
       email: row.created_by_email,
       id: row.created_by_id,
       name: row.created_by_name,
     },
-    id: documentId,
+    id: toResourceDocumentId(row.id),
     name: row.name,
-    parentId: row.parent_id === null ? null : toResourceFolderId(row.parent_id),
+    parentId: toParentId(row.parent_id),
     path: parseResourceBreadcrumbPath(row.path_json),
-    stateVersion: row.state_version,
     status: row.status,
     updatedAt: new Date(row.updated_at),
     updatedBy: {
@@ -275,5 +303,53 @@ function readResourceDocumentMetadataRecord(
       id: row.updated_by_id,
       name: row.updated_by_name,
     },
+    version: row.version,
   }
+}
+
+function readActiveSiblings(
+  transaction: DatabaseTransaction,
+  parentId: ResourceFolderId | null,
+  excludedDocumentId?: ResourceDocumentId
+): readonly { readonly normalizedName: string }[] {
+  return transaction
+    .select({ normalizedName: adminResourceNodes.normalizedName })
+    .from(adminResourceNodes)
+    .where(
+      and(
+        parentId === null
+          ? isNull(adminResourceNodes.parentId)
+          : eq(adminResourceNodes.parentId, parentId),
+        eq(adminResourceNodes.status, "active"),
+        excludedDocumentId === undefined
+          ? undefined
+          : ne(adminResourceNodes.id, excludedDocumentId)
+      )
+    )
+    .orderBy(asc(adminResourceNodes.normalizedName))
+    .all()
+}
+
+function isActiveFolder(
+  transaction: DatabaseTransaction,
+  parentId: ResourceFolderId | null
+): boolean {
+  if (parentId === null) return true
+  return (
+    transaction
+      .select({ id: adminResourceNodes.id })
+      .from(adminResourceNodes)
+      .where(
+        and(
+          eq(adminResourceNodes.id, parentId),
+          eq(adminResourceNodes.kind, "folder"),
+          eq(adminResourceNodes.status, "active")
+        )
+      )
+      .get() !== undefined
+  )
+}
+
+function toParentId(value: string | null): ResourceFolderId | null {
+  return value === null ? null : toResourceFolderId(value)
 }

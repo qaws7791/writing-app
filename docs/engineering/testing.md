@@ -54,9 +54,9 @@
 | UI 테스트         | 사용자 관점 화면 상태                 | 코스 목록, 레슨 진행, 관리자 화면                    |
 | 브라우저 스모크   | 실제 dev server와 브라우저            | 로그인, 학습 플로우, 어드민 주요 화면                |
 
-자료 문서 계약은 `packages/resource-document`에서 정규 GFM AST 기반 Markdown → Lexical → Markdown 의미 보존과 반복 정규화 안정성, 중복 reference definition의 first-wins 의미, 여러 줄 원시 HTML의 실행 불가 리터럴 코드 보존, 지원하지 않는 AST 구조의 명시적 거부, 위험 URL 검증, Yjs snapshot의 headless 투영과 정리를 검증한다. 저장 전에는 지원 node 계층과 Markdown에 투영되지 않는 Text·Element·Link·Heading·ListItem·Table 속성, 알 수 없는 format bit, NodeState와 slot이 구체적인 `invalid` issue로 거부되는지도 검증한다. 세 TextNode의 모든 서식 전이와 delimiter 문자 조합을 직렬화한 뒤 새 editor에 다시 입력해 문자별 서식과 `EditorState` 동등성을 확인하며, GFM으로 표현할 수 없는 상태는 `valid`로 반환하지 않는다. 원격 Yjs update는 검증용 headless 문서와 화면 문서를 분리한 상태에서 객체형·빈 이미지 속성, 비 HTTPS URL, 임의 node type·tag·NodeState가 화면 editor에 반영되지 않고 정상 상태로 회복한 뒤에만 미러링되는지 검증한다. 이미지 node는 jsdom에서 유효하지 않은 URL을 `<img>` 생성 전에 거부하는지도 확인한다. Bun WebSocket 호환성은 `apps/admin-api`에서 OS가 할당한 로컬 포트의 실제 Bun server, 공식 `WebsocketProvider`, Y.Doc에 연결한 두 Lexical binding을 함께 실행해 동시 편집 수렴으로 검증한다. transport failure-injection은 production adapter에 테스트용 공개 주입 지점을 추가하지 않고 fake Bun socket으로 `send` exception과 반환값 `0`, initial·reply·awareness 경로가 실패한 socket만 격리하는지 검증한다. React block drag 계약은 `apps/admin`의 jsdom 환경에서 실제 `DraggableBlockPlugin_EXPERIMENTAL` portal을 렌더링하고 두 Lexical block을 drag/drop해 순서가 바뀌는지 확인한다.
+자료 문서 계약은 `packages/resource-document`에서 정규 GFM AST 기반 Markdown → Lexical → Markdown 의미 보존과 반복 정규화 안정성, 중복 reference definition의 first-wins 의미, 원시 HTML의 실행 불가 리터럴 보존, 지원하지 않는 AST 구조의 명시적 거부와 위험 URL 검증을 확인한다. 저장 전에는 지원 node 계층과 Markdown에 투영되지 않는 Text·Element·Link·Heading·ListItem·Table 속성, 알 수 없는 format bit, NodeState와 slot이 구체적인 `invalid` issue로 거부되는지 검증한다. 기본 직사각형 GFM 표, R2 이미지 URL과 필수 대체 텍스트를 포함한 모든 지원 블록의 왕복 fixture를 유지한다. React block drag 계약은 `apps/admin`의 jsdom 환경에서 실제 `DraggableBlockPlugin_EXPERIMENTAL` portal을 렌더링해 순서 변경을 검증한다.
 
-본문 transport는 HTTP transaction이다. 자료 문서·core·관리자 작업 공간 fixture는 같은 snapshot의 동시 update 수렴, 고정 transaction 재시도, 문서 전환·서버 재시작·version 알림 순서 역전·snapshot fallback을 검증한다. 실제 두 브라우저 context는 코드 블록 변경을 transaction으로 승인하고 다른 브라우저가 version 알림 뒤 HTTP pull로 표시하는지 확인한다. Bun WebSocket 테스트는 작업 공간 사건 구독, heartbeat, version·무효화 알림과 실패한 socket 격리에 한정한다.
+자료 문서 저장 테스트는 같은 ETag를 읽은 두 요청 중 하나만 성공하고 다른 요청은 `412`와 최신 문서를 받는지 검증한다. 제목, Markdown, 수정 메타데이터, 검색 색인과 버전 증가가 하나의 SQLite transaction에서 확정되고 실패하면 모두 rollback되는지 확인한다. 관리자 UI는 충돌 뒤 로컬 Lexical 상태를 유지하고 최신 문서 불러오기와 Markdown 복사 행동을 제공하는지 검증한다. 자료 트리는 최대 깊이 3, 1,000개 상한, 이름순 전체 조회, 폴더 대상 이동과 재귀 휴지통을 검증한다.
 
 학습자 AI 피드백 repository 통합 테스트는 SQLite transaction에 50개 동시 요청을 입력해 provider 호출이 단일 in-flight 예약을 넘지 않는지 확인한다. 동일 idempotency key 결과 재사용, provider fault와 timeout의 `failed` 전이, TTL 만료의 `expired` 전이와 slot 재사용, 성공 3회 한도, 기존 완료 row의 `succeeded` migration을 함께 검증한다.
 
@@ -78,8 +78,6 @@ bun run test:coverage
 bun run test:e2e:flaky-policy
 bun run test:e2e
 bun run test:storybook
-bun run test:load:resource-library
-bun run test:e2e:resource-library-load
 bun run typecheck
 bun run lint
 bun run build
@@ -134,7 +132,6 @@ bun run --filter=@workspace/web test
 | `apps/admin/src/lib/auth/admin-auth-navigation.ts`                                       |             75.00% |       75% |
 | `packages/core/src/modules/admin/infrastructure/persistence/admin-drizzle.repository.ts` |            100.00% |      100% |
 | `packages/db/src/migrations/migrate.ts`                                                  |             87.10% |       87% |
-| `packages/resource-document/src/resource-collaboration.ts`                               |             87.58% |       87% |
 
 같은 환경에서 전체 correctness는 46.34초, 순차 coverage는 33.98초였다. correctness와 coverage의 재실행은 독립 판정을 위한 의도된 비용이다. Bun 전체 테스트와 SQLite를 함께 사용하는 workspace의 경합 자료가 충분하지 않으므로 coverage는 순차 실행을 유지하며, runner가 workspace별 duration을 출력한다.
 
@@ -151,13 +148,7 @@ bun run --filter=@workspace/web test
 
 ## DB 테스트 기준
 
-자료실 실시간 연결 테스트는 실제 Bun WebSocket 경계를 사용해 문서 구독 확인, 문서별 version 사건 격리, 빠른 구독 전환 순서, 관리자 ID 기준 활성 편집자 집계와 heartbeat 만료 정리를 검증한다. fake clock으로 세션 만료 1008 종료를, 폐기 resolver로 heartbeat 재검증을, fake socket으로 actor/IP N+1 연결과 message·subscribe burst를 검증한다. 실제 Bun transport fixture는 4KiB 초과 payload가 앱 message handler에 도달하지 않는지 확인하고 handler 설정으로 64KiB backpressure 종료를 고정한다. 브라우저 Adapter 테스트는 문서 전환에서 소켓을 다시 만들지 않고 재연결 뒤 마지막 활성 문서를 다시 구독하는지 확인한다.
-
-작업 공간 연결 수명 테스트는 문서를 100회 전환해도 실제 연결 Adapter 생성은 한 번이고, 같은 연결에서 문서 구독·해제만 교체되는지 검증한다.
-
-자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. use case 단위 테스트는 fake projector로 completed·invalid·timeout·failed 결과를 결정적으로 검증하고, infrastructure smoke는 실제 Bun Worker가 snapshot과 update를 투영한 뒤 종료되는지 확인한다. snapshot byte·node·transaction quota와 projection deadline fixture는 거부 뒤 snapshot, Markdown revision과 FTS가 변하지 않고 구조화 거부 사건이 발생하는지 확인한다.
-
-예약 부하 suite는 file-backed WAL connection 2개와 20개 논리 client를 사용해 latency p50·p95·p99, busy, retry, snapshot fallback과 최종 Yjs·Markdown 수렴을 artifact로 남긴다. Playwright smoke는 격리된 browser context 2개가 별도 Bun HTTP fixture process의 실제 file-backed transaction 경계를 거쳐 같은 상태로 수렴하는지 확인한다. 실행·threshold·정리 기준은 `resource-library-load-testing.md`를 따른다.
+자료실 DB 테스트는 같은 문서 버전의 조건부 갱신 경합, 최대 깊이 3, 이름 충돌, 폴더 대상 이동, 하위 트리 휴지통 이동·복원·영구 삭제와 활성 문서 전용 FTS를 검증한다. 이미지 경계는 JPEG·PNG·WebP MIME signature, 5MB 상한, 필수 대체 텍스트, 문서 소속과 R2 실패 로그를 확인한다. 브라우저 스모크는 `ENABLE_TEST_AUTH=true`로 로그인해 명시적 저장, 미저장 이탈 경고, 포커스 복귀 재검증과 충돌 복구를 확인한다.
 
 클라이언트 transaction queue 테스트는 500ms 유휴 batching, 연속 입력의 1초 상한과 일시적 실패 뒤 같은 transaction ID·Yjs payload 재시도를 가짜 타이머로 검증한다.
 

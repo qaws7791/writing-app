@@ -105,8 +105,7 @@ CREATE TABLE IF NOT EXISTS admin_resource_nodes (
   parent_id TEXT REFERENCES admin_resource_nodes(id) ON DELETE RESTRICT,
   name TEXT NOT NULL CHECK (length(trim(name)) BETWEEN 1 AND 120),
   normalized_name TEXT NOT NULL CHECK (length(normalized_name) > 0),
-  sort_order INTEGER NOT NULL CHECK (sort_order >= 0),
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'trashed')),
   trash_root_id TEXT REFERENCES admin_resource_nodes(id) ON DELETE RESTRICT,
   created_by TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
   updated_by TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
@@ -114,7 +113,7 @@ CREATE TABLE IF NOT EXISTS admin_resource_nodes (
   updated_at INTEGER NOT NULL,
   CHECK (
     (status = 'active' AND trash_root_id IS NULL) OR
-    (status = 'archived' AND trash_root_id IS NOT NULL)
+    (status = 'trashed' AND trash_root_id IS NOT NULL)
   )
 );
 
@@ -126,11 +125,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS admin_resource_nodes_active_child_name_uq
 ON admin_resource_nodes(parent_id, normalized_name)
 WHERE status = 'active' AND parent_id IS NOT NULL;
 
-CREATE INDEX IF NOT EXISTS admin_resource_nodes_parent_sort_idx
-ON admin_resource_nodes(parent_id, sort_order, id);
+CREATE INDEX IF NOT EXISTS admin_resource_nodes_parent_name_idx
+ON admin_resource_nodes(parent_id, normalized_name, id);
 
 CREATE INDEX IF NOT EXISTS admin_resource_nodes_trash_root_idx
-ON admin_resource_nodes(trash_root_id, sort_order, id);
+ON admin_resource_nodes(trash_root_id, normalized_name, id);
 
 CREATE TRIGGER IF NOT EXISTS admin_resource_nodes_parent_folder_insert
 BEFORE INSERT ON admin_resource_nodes
@@ -154,7 +153,7 @@ CREATE TABLE IF NOT EXISTS admin_resource_documents (
   node_id TEXT PRIMARY KEY NOT NULL
     REFERENCES admin_resource_nodes(id) ON DELETE CASCADE,
   content_markdown TEXT NOT NULL DEFAULT '' CHECK (length(content_markdown) <= 200000),
-  content_revision INTEGER NOT NULL DEFAULT 0 CHECK (content_revision >= 0)
+  version INTEGER NOT NULL DEFAULT 0 CHECK (version >= 0)
 );
 
 CREATE TRIGGER IF NOT EXISTS admin_resource_documents_kind_insert
@@ -175,67 +174,23 @@ BEGIN
   SELECT RAISE(ABORT, '본문이 있는 node의 종류를 변경할 수 없습니다.');
 END;
 
-CREATE TABLE IF NOT EXISTS admin_resource_collaboration (
-  document_id TEXT PRIMARY KEY NOT NULL
-    REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
-  yjs_state BLOB NOT NULL CHECK (length(yjs_state) <= 3000000),
-  state_version INTEGER NOT NULL DEFAULT 0 CHECK (state_version >= 0),
-  projected_at INTEGER
-);
-
-CREATE TABLE IF NOT EXISTS admin_resource_collaboration_updates (
-  document_id TEXT NOT NULL
-    REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
-  state_version INTEGER NOT NULL CHECK (state_version > 0),
-  content_revision INTEGER NOT NULL CHECK (content_revision > 0),
-  transaction_id TEXT NOT NULL CHECK (length(transaction_id) BETWEEN 1 AND 128),
-  actor_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
-  yjs_update BLOB NOT NULL CHECK (length(yjs_update) <= 524288),
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (document_id, state_version),
-  UNIQUE (document_id, transaction_id)
-);
-
-CREATE TABLE IF NOT EXISTS admin_resource_collaboration_transactions (
-  document_id TEXT NOT NULL
-    REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
-  transaction_id TEXT NOT NULL CHECK (length(transaction_id) BETWEEN 1 AND 128),
-  state_version INTEGER NOT NULL CHECK (state_version > 0),
-  content_revision INTEGER NOT NULL CHECK (content_revision > 0),
-  actor_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (document_id, transaction_id)
-);
-
-CREATE TABLE IF NOT EXISTS admin_resource_audit_events (
+CREATE TABLE IF NOT EXISTS admin_resource_assets (
   id TEXT PRIMARY KEY NOT NULL,
-  node_id TEXT NOT NULL REFERENCES admin_resource_nodes(id) ON DELETE RESTRICT,
-  event_type TEXT NOT NULL CHECK (
-    event_type IN ('create', 'import', 'move', 'rename', 'reorder', 'restore', 'trash')
+  document_id TEXT NOT NULL
+    REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
+  r2_object_key TEXT NOT NULL UNIQUE,
+  content_type TEXT NOT NULL CHECK (
+    content_type IN ('image/jpeg', 'image/png', 'image/webp')
   ),
-  actor_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
-  payload_json TEXT NOT NULL CHECK (json_valid(payload_json)),
+  byte_size INTEGER NOT NULL CHECK (byte_size BETWEEN 1 AND 5242880),
   created_at INTEGER NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS admin_resource_audit_events_node_created_idx
-ON admin_resource_audit_events(node_id, created_at);
-
-CREATE TABLE IF NOT EXISTS admin_resource_tree_state (
-  singleton_id INTEGER PRIMARY KEY NOT NULL DEFAULT 1 CHECK (singleton_id = 1),
-  revision INTEGER NOT NULL DEFAULT 0 CHECK (revision >= 0),
-  updated_at INTEGER NOT NULL
-);
-
-INSERT OR IGNORE INTO admin_resource_tree_state (
-  singleton_id,
-  revision,
-  updated_at
-) VALUES (1, 0, 0);
+CREATE INDEX IF NOT EXISTS admin_resource_assets_document_idx
+ON admin_resource_assets(document_id, id);
 
 CREATE VIRTUAL TABLE IF NOT EXISTS admin_resource_search USING fts5(
   node_id UNINDEXED,
-  kind UNINDEXED,
   name,
   body_text,
   tokenize = 'unicode61'

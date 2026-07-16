@@ -118,22 +118,20 @@ AI 피드백 attempt 상태 값은 `pending | succeeded | failed | expired`다. 
 
 관리자 전용 운영 도구는 다음 테이블을 사용한다.
 
-| 테이블                                      | 주요 컬럼                                                                                                    | 설명                                     |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
-| `admin_resource_nodes`                      | `id`, `kind`, `parent_id`, `name`, `normalized_name`, `sort_order`, `status`, `trash_root_id`                | 무제한 폴더·문서 트리와 휴지통 원래 위치 |
-| `admin_resource_documents`                  | `node_id`, `content_markdown`, `content_revision`                                                            | 문서별 GFM Markdown 도메인 원본          |
-| `admin_resource_collaboration`              | `document_id`, `yjs_state`, `state_version`, `projected_at`                                                  | 재연결 가능한 Yjs 동기화 상태            |
-| `admin_resource_collaboration_updates`      | `document_id`, `state_version`, `content_revision`, `transaction_id`, `actor_id`, `yjs_update`, `created_at` | HTTP 증분 동기화용 최근 Yjs update log   |
-| `admin_resource_collaboration_transactions` | `document_id`, `transaction_id`, `state_version`, `content_revision`, `actor_id`, `created_at`               | 7일 보존 transaction 멱등 승인 기록      |
-| `admin_resource_audit_events`               | `id`, `node_id`, `event_type`, `actor_id`, `payload_json`, `created_at`                                      | 자료 구조 변경 감사 이벤트               |
-| `admin_resource_tree_state`                 | `singleton_id`, `revision`, `updated_at`                                                                     | 구조 명령 직렬화용 전역 revision         |
-| `admin_resource_search`                     | `node_id`, `kind`, `name`, `body_text`                                                                       | 활성 자료 제목·본문 FTS5 색인            |
-| `admin_ai_chat_conversations`               | `id`, `title`, `admin_id`, timestamp                                                                         | 관리자별 AI 채팅 대화                    |
-| `admin_ai_chat_messages`                    | `id`, `conversation_id`, `role`, `content`, `created_at`                                                     | AI 채팅 사용자/어시스턴트 메시지         |
+| 테이블                        | 주요 컬럼                                                                                             | 설명                                    |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `admin_resource_nodes`        | `id`, `kind`, `parent_id`, `name`, `normalized_name`, `status`, `trash_root_id`, 생성·수정 메타데이터 | 최대 3단계 이름순 트리와 재귀 휴지통    |
+| `admin_resource_documents`    | `node_id`, `content_markdown`, `version`                                                              | 최신 GFM Markdown 원본과 충돌 감지 버전 |
+| `admin_resource_assets`       | `id`, `document_id`, `r2_object_key`, `content_type`, `byte_size`, `created_at`                       | 문서 종속 R2 이미지 메타데이터          |
+| `admin_resource_search`       | `node_id`, `name`, `body_text`                                                                        | 활성 문서 제목·본문 FTS5 색인           |
+| `admin_ai_chat_conversations` | `id`, `title`, `admin_id`, timestamp                                                                  | 관리자별 AI 채팅 대화                   |
+| `admin_ai_chat_messages`      | `id`, `conversation_id`, `role`, `content`, `created_at`                                              | AI 채팅 사용자/어시스턴트 메시지        |
 
 관리자 AI 채팅 목록은 관리자별 최대 50개 대화, 상세는 최대 100개 메시지를 page query에 따라 시간순으로 반환한다. `admin_ai_chat_conversations(admin_id, updated_at)`와 `admin_ai_chat_messages(conversation_id, created_at)` 복합 index가 이 조회를 지원한다.
 
-자료 트리의 `active | archived` 상태와 `trash_root_id`는 함께 바뀐다. 폴더 휴지통 이동·복원은 연결된 전체 하위 트리에 같은 transaction으로 적용한다. `content_markdown`은 본문의 유일한 도메인 원본이며 `yjs_state`와 update log는 동시 편집 병합과 재접속을 위한 동기화 메타데이터다. update log는 문서별 200건·2MiB까지만 보존한다. transaction 승인 receipt는 7일 동안 멱등 재시도를 보장하고 새 commit 안에서 보존 기간이 지난 행만 정리하며, 보존 구간 10,000개 상한을 넘는 새 transaction은 거부한다. `yjs_state`는 계약·repository·SQLite에서 동일하게 3,000,000byte 이하를 강제한다.
+자료 트리의 `active | trashed` 상태와 `trash_root_id`는 함께 바뀐다. 폴더 휴지통 이동·복원·영구 삭제는 연결된 최대 3단계 하위 트리에 같은 SQLite transaction으로 적용한다. `content_markdown`은 본문의 유일한 원본이고 `version`은 사용자용 이력이 아닌 조건부 저장 검증자다. 제목, Markdown, 검색 색인, 수정 메타데이터와 버전 증가는 한 transaction에서 확정한다. collaboration snapshot, update log, transaction receipt, 전역 tree revision과 자료실 전용 audit event는 저장하지 않는다.
+
+`admin_resource_assets`는 문서에서만 사용하는 R2 객체를 추적한다. JPEG·PNG·WebP와 5MB 상한을 API와 저장 경계에서 검증한다. R2와 SQLite는 같은 transaction을 공유하지 않으므로 객체 정리 실패는 구조화 로그로 관측하며, 이미지 라이브러리나 문서 간 재사용 계약은 만들지 않는다.
 
 ## 상태 머신
 

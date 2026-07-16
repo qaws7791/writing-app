@@ -10,9 +10,7 @@ import {
 } from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import { createOpenApiDocument } from "@/http/openapi"
-import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 import { createAiChatRoutes } from "@/routes/ai-chat.route"
 import {
   createAiChatRequestGuard,
@@ -24,9 +22,9 @@ import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
 import { createDashboardRoutes } from "@/routes/dashboard.route"
 import { healthRoute } from "@/routes/health.route"
 import { createResourceDocumentsRoutes } from "@/routes/resource-documents.route"
-import { createResourceDocumentSyncRoutes } from "@/routes/resource-document-sync.route"
 import { createResourceSearchRoutes } from "@/routes/resource-search.route"
 import { createResourceTreeRoutes } from "@/routes/resource-tree.route"
+import type { ResourceAssetStore } from "@/resource-assets/resource-asset-store"
 import { createSettingsRoutes } from "@/routes/settings.route"
 import { createSessionRoute } from "@/routes/session.route"
 import { createUsersRoutes } from "@/routes/users.route"
@@ -41,7 +39,7 @@ import type {
 } from "@workspace/core/admin"
 import type {
   ResourceDocumentUseCase,
-  ResourceDocumentSyncUseCase,
+  ResourceAssetUseCase,
   ResourceSearchUseCase,
   ResourceTreeUseCase,
 } from "@workspace/core/resource-library"
@@ -61,8 +59,8 @@ export type AdminApiServices = {
   readonly courses: AdminCourseUseCase
   readonly dashboard: AdminDashboardUseCase
   readonly resourceLibrary: {
+    readonly assets: ResourceAssetUseCase
     readonly documents: ResourceDocumentUseCase
-    readonly sync: ResourceDocumentSyncUseCase
     readonly search: ResourceSearchUseCase
     readonly tree: ResourceTreeUseCase
   }
@@ -90,9 +88,14 @@ export type AdminApiDependencies = {
   readonly now?: () => Date
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
+  readonly resourceAssetStore?: ResourceAssetStore
+  readonly resourceAssetEventLogger?: {
+    readonly error: (
+      event: Readonly<Record<string, unknown>>,
+      message: string
+    ) => void
+  }
   readonly securityAuditLogger?: SecurityAuditLogger
-  readonly resourceDocumentOperations: ResourceDocumentOperationCoordinator
-  readonly resourceEvents: ResourceEventsWorkspace
   readonly sessionResolver: AdminSessionResolver
 }
 
@@ -140,24 +143,34 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       }),
       ...createResourceTreeRoutes({
         now,
-        documentOperations: dependencies.resourceDocumentOperations,
-        events: dependencies.resourceEvents,
+        onObjectsDeleted:
+          dependencies.resourceAssetStore === undefined
+            ? undefined
+            : async (objectKeys) => {
+                try {
+                  await dependencies.resourceAssetStore?.deleteObjects(
+                    objectKeys
+                  )
+                } catch (error) {
+                  dependencies.resourceAssetEventLogger?.error(
+                    {
+                      error,
+                      objectCount: objectKeys.length,
+                    },
+                    "admin.resource-library.asset-delete.failed"
+                  )
+                }
+              },
         sessionResolver: dependencies.sessionResolver,
         treeService: dependencies.adminServices.resourceLibrary.tree,
       }),
       ...createResourceDocumentsRoutes({
+        assetEventLogger: dependencies.resourceAssetEventLogger,
+        assetService: dependencies.adminServices.resourceLibrary.assets,
+        assetStore: dependencies.resourceAssetStore,
         documentService: dependencies.adminServices.resourceLibrary.documents,
-        documentOperations: dependencies.resourceDocumentOperations,
-        events: dependencies.resourceEvents,
         now,
         sessionResolver: dependencies.sessionResolver,
-      }),
-      ...createResourceDocumentSyncRoutes({
-        documentOperations: dependencies.resourceDocumentOperations,
-        events: dependencies.resourceEvents,
-        now,
-        sessionResolver: dependencies.sessionResolver,
-        syncService: dependencies.adminServices.resourceLibrary.sync,
       }),
       ...createResourceSearchRoutes({
         searchService: dependencies.adminServices.resourceLibrary.search,
@@ -250,13 +263,13 @@ function createMiddleware(
 
   middleware.push(
     cors({
-      allowHeaders: ["Authorization", "Content-Type"],
+      allowHeaders: ["Authorization", "Content-Type", "If-Match"],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
-      exposeHeaders: ["Content-Disposition"],
+      exposeHeaders: ["Content-Disposition", "ETag"],
       origin: adminOrigin,
     }),
-    createRequestBodyLimitMiddleware(),
+    createRequestBodyLimitMiddleware({ maxSize: 6 * 1024 * 1024 }),
     createTrustedOriginMiddleware({ trustedOrigin: adminOrigin })
   )
 

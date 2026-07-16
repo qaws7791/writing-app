@@ -7,24 +7,23 @@ import type { AdminSettingsUseCase } from "#core/modules/admin/application/use-c
 import type { AdminUserUseCase } from "#core/modules/admin/application/use-cases/admin-user.use-case"
 import { createAdminService } from "#core/modules/admin/application/use-cases/admin.service"
 import { createDrizzleAdminRepository } from "#core/modules/admin/infrastructure/persistence/admin-drizzle.repository"
-import type { ResourceDocumentSyncUseCase } from "#core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
 import type { ResourceDocumentUseCase } from "#core/modules/resource-library/application/use-cases/resource-document.use-case"
+import type { ResourceAssetUseCase } from "#core/modules/resource-library/application/use-cases/resource-asset.use-case"
 import type { ResourceSearchUseCase } from "#core/modules/resource-library/application/use-cases/resource-search.use-case"
 import type { ResourceTreeUseCase } from "#core/modules/resource-library/application/use-cases/resource-tree.use-case"
-import { createResourceDocumentSyncUseCase } from "#core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
 import { createResourceDocumentUseCase } from "#core/modules/resource-library/application/use-cases/resource-document.use-case"
+import { createResourceAssetUseCase } from "#core/modules/resource-library/application/use-cases/resource-asset.use-case"
 import { createResourceSearchUseCase } from "#core/modules/resource-library/application/use-cases/resource-search.use-case"
 import { createResourceTreeUseCase } from "#core/modules/resource-library/application/use-cases/resource-tree.use-case"
 import {
-  toResourceAuditEventId,
+  toResourceAssetId,
   toResourceDocumentId,
   toResourceFolderId,
 } from "#core/modules/resource-library/domain/resource-tree-node"
 import { createDrizzleResourceDocumentRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-drizzle.repository"
-import { createDrizzleResourceDocumentSyncRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
+import { createDrizzleResourceAssetRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-asset-drizzle.repository"
 import { createDrizzleResourceSearchRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-search-drizzle.repository"
 import { createDrizzleResourceTreeRepository } from "#core/modules/resource-library/infrastructure/persistence/resource-tree-drizzle.repository"
-import { createResourceDocumentWorkerProjector } from "#core/modules/resource-library/infrastructure/adapters/resource-document-worker-projector"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
 export type AdminApiCoreServices = {
@@ -34,9 +33,9 @@ export type AdminApiCoreServices = {
   readonly courses: AdminCourseUseCase
   readonly dashboard: AdminDashboardUseCase
   readonly resourceLibrary: {
+    readonly assets: ResourceAssetUseCase
     readonly documents: ResourceDocumentUseCase
     readonly search: ResourceSearchUseCase
-    readonly sync: ResourceDocumentSyncUseCase
     readonly tree: ResourceTreeUseCase
   }
   readonly settings: AdminSettingsUseCase
@@ -49,16 +48,10 @@ export type AdminApiCore = {
 
 export function createAdminApiCore({
   database,
-  onResourceSyncRejected,
 }: {
   readonly database: WritingAppDatabase
-  readonly onResourceSyncRejected: (
-    event: Readonly<Record<string, unknown>>
-  ) => void
 }): AdminApiCore {
   const adminRepository = createDrizzleAdminRepository(database)
-  const createResourceAuditEventId = () =>
-    toResourceAuditEventId(`resource-audit-${crypto.randomUUID()}`)
   const adminService = createAdminService({
     aiChatRepository: adminRepository,
     analyticsReader: adminRepository,
@@ -76,8 +69,12 @@ export function createAdminApiCore({
       courses: adminService,
       dashboard: adminService,
       resourceLibrary: {
+        assets: createResourceAssetUseCase({
+          assetRepository: createDrizzleResourceAssetRepository(database),
+          createAssetId: () =>
+            toResourceAssetId(`resource-asset-${crypto.randomUUID()}`),
+        }),
         documents: createResourceDocumentUseCase({
-          createAuditEventId: createResourceAuditEventId,
           createDocumentId: () =>
             toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
           documentRepository: createDrizzleResourceDocumentRepository(database),
@@ -85,13 +82,7 @@ export function createAdminApiCore({
         search: createResourceSearchUseCase(
           createDrizzleResourceSearchRepository(database)
         ),
-        sync: createResourceDocumentSyncUseCase(
-          createDrizzleResourceDocumentSyncRepository(database),
-          createResourceDocumentWorkerProjector(),
-          { onRejected: onResourceSyncRejected }
-        ),
         tree: createResourceTreeUseCase({
-          createAuditEventId: createResourceAuditEventId,
           createDocumentId: () =>
             toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
           createFolderId: () =>

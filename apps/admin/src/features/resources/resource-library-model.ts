@@ -1,177 +1,146 @@
-export type AdminResourceTreeScope = "active" | "trash"
+import type { AdminApiResult } from "@/lib/api/api-result"
+
+export const resourceLibraryChangedEvent = "resource-library:changed"
 
 export type AdminResourceBreadcrumbItem = {
   readonly id: string
   readonly name: string
 }
-export type AdminResourceActor = {
-  readonly email: string
-  readonly id: string
-  readonly name: string
-}
+
 type AdminResourceTreeNodeBase = {
   readonly id: string
   readonly name: string
   readonly parentId: string | null
-  readonly sortOrder: number
-  readonly status: "active" | "archived"
+  readonly status: "active" | "trashed"
 }
+
 export type AdminResourceTreeNode =
-  | (AdminResourceTreeNodeBase & {
-      readonly hasChildren: boolean
-      readonly kind: "folder"
-    })
   | (AdminResourceTreeNodeBase & {
       readonly hasChildren: false
       readonly kind: "document"
     })
+  | (AdminResourceTreeNodeBase & {
+      readonly hasChildren: boolean
+      readonly kind: "folder"
+    })
+
 export type AdminResourceTree = {
   readonly nodes: readonly AdminResourceTreeNode[]
-  readonly revision: number
 }
-export type AdminResourceActiveEditorCount = {
-  readonly activeEditorCount: number
-}
-export type AdminResourceTreeMutationAction =
-  | "create-document"
-  | "create-folder"
-  | "import-document"
-  | "move"
-  | "rename"
-  | "restore"
-  | "trash"
-export type AdminResourceEvent =
-  | {
-      readonly action: AdminResourceTreeMutationAction
-      readonly affectedParentIds: readonly (string | null)[]
-      readonly nodeId: string
-      readonly revision: number
-      readonly type: "resource-tree-mutated"
-    }
-  | {
-      readonly documentId: string
-      readonly name: string
-      readonly revision: number
-      readonly type: "resource-document-title-confirmed"
-    }
-export type AdminResourceDocumentRealtimeEvent =
-  | {
-      readonly documentId: string
-      readonly stateVersion: number
-      readonly type: "resource-document-subscription-confirmed"
-    }
-  | {
-      readonly contentRevision: number
-      readonly documentId: string
-      readonly stateVersion: number
-      readonly type: "resource-document-version-advanced"
-    }
-  | {
-      readonly documentId: string
-      readonly reason: "archived" | "projection-failed"
-      readonly type: "resource-document-invalidated"
-    }
-export type AdminResourceRealtimeMessage =
-  | AdminResourceDocumentRealtimeEvent
-  | AdminResourceEvent
-export type AdminResourceNodeMutation = {
-  readonly affectedParentIds: readonly (string | null)[]
-  readonly node: AdminResourceTreeNode
-  readonly revision: number
-}
-type AdminResourceSubtreeMutation = {
-  readonly affectedParentIds: readonly (string | null)[]
-  readonly documentCount: number
-  readonly folderCount: number
-  readonly revision: number
-}
-export type AdminResourceTrashResult = AdminResourceSubtreeMutation
-export type AdminResourceRestoreResult = AdminResourceSubtreeMutation & {
-  readonly node: AdminResourceTreeNode
-}
-type AdminResourceLibraryDocumentMetadata = {
-  readonly contentRevision: number
+
+export type AdminResourceDocument = {
+  readonly contentMarkdown: string
   readonly createdAt: string
-  readonly createdBy: AdminResourceActor
+  readonly createdBy: {
+    readonly email: string
+    readonly id: string
+    readonly name: string
+  }
   readonly id: string
   readonly name: string
   readonly parentId: string | null
   readonly path: readonly AdminResourceBreadcrumbItem[]
-  readonly stateVersion: number
+  readonly status: "active" | "trashed"
   readonly updatedAt: string
-  readonly updatedBy: AdminResourceActor
-}
-export type AdminResourceActiveDocument =
-  AdminResourceLibraryDocumentMetadata & {
-    readonly status: "active"
+  readonly updatedBy: {
+    readonly email: string
+    readonly id: string
+    readonly name: string
   }
-export type AdminResourceArchivedDocument =
-  AdminResourceLibraryDocumentMetadata & {
-    readonly contentMarkdown: string
-    readonly status: "archived"
-  }
-export type AdminResourceLibraryDocument =
-  | AdminResourceActiveDocument
-  | AdminResourceArchivedDocument
-export type AdminResourceDocumentTransactionInput = {
-  readonly knownStateVersion: number
-  readonly transactionId: string
-  readonly update: Uint8Array
+  readonly version: number
 }
-export type AdminResourceDocumentTransactionResult = {
-  readonly contentRevision: number
-  readonly kind: "accepted" | "already-accepted"
-  readonly stateVersion: number
-  readonly transactionId: string
+
+export type AdminResourceImage = {
+  readonly altText: string
+  readonly byteSize: number
+  readonly contentType: "image/jpeg" | "image/png" | "image/webp"
+  readonly id: string
+  readonly url: string
 }
-export type AdminResourceDocumentSync =
-  | { readonly kind: "up-to-date"; readonly stateVersion: number }
-  | {
-      readonly fromStateVersion: number
-      readonly kind: "updates"
-      readonly stateVersion: number
-      readonly updates: readonly Uint8Array[]
-    }
-  | {
-      readonly kind: "snapshot"
-      readonly snapshot: Uint8Array
-      readonly stateVersion: number
-    }
+
+export type AdminResourceNodeMutation = { readonly node: AdminResourceTreeNode }
+export type AdminResourceTrashResult = {
+  readonly documentCount: number
+  readonly folderCount: number
+}
+export type AdminResourceRestoreResult = AdminResourceTrashResult & {
+  readonly node: AdminResourceTreeNode
+}
+export type AdminResourceSearch = {
+  readonly items: readonly {
+    readonly excerpt: string | null
+    readonly id: string
+    readonly name: string
+    readonly path: readonly AdminResourceBreadcrumbItem[]
+    readonly version: number
+  }[]
+}
 export type AdminImportResourceDocumentInput = {
-  readonly expectedRevision: number
   readonly fileName: string
   readonly markdown: string
   readonly parentId: string | null
 }
 export type AdminImportResourceDocumentResult = {
-  readonly document: AdminResourceActiveDocument
+  readonly document: AdminResourceDocument
   readonly mutation: AdminResourceNodeMutation
 }
-export type AdminExportResourceDocument = {
-  readonly fileName: string
-  readonly markdown: string
-}
-export type AdminResourceSearchItem = {
-  readonly excerpt: string | null
-  readonly id: string
-  readonly kind: "document" | "folder"
-  readonly name: string
-  readonly path: readonly AdminResourceBreadcrumbItem[]
-}
-export type AdminResourceSearch = {
-  readonly items: readonly AdminResourceSearchItem[]
-}
-export type AdminResourceParentCommandInput = {
-  readonly expectedRevision: number
-  readonly parentId: string | null
-}
-export type AdminResourceRevisionCommandInput = {
-  readonly expectedRevision: number
-}
-export type AdminMoveResourceNodeInput = AdminResourceRevisionCommandInput & {
-  readonly destinationIndex: number
+export type AdminMoveResourceNodeInput = {
   readonly destinationParentId: string | null
 }
-export type AdminRenameResourceNodeInput = AdminResourceRevisionCommandInput & {
+export type AdminRenameResourceFolderInput = { readonly name: string }
+export type AdminSaveResourceDocumentInput = {
+  readonly contentMarkdown: string
   readonly name: string
+}
+
+export type ResourceSaveResult =
+  | { readonly status: "conflict"; readonly latest: AdminResourceDocument }
+  | { readonly status: "error"; readonly message: string }
+  | { readonly status: "ok"; readonly value: AdminResourceDocument }
+
+export type ResourceUploadResult =
+  | { readonly status: "error"; readonly message: string }
+  | { readonly status: "ok"; readonly value: AdminResourceImage }
+
+export type ResourceLibraryHttpApi = {
+  readonly createResourceDocument: (
+    parentId: string | null
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
+  readonly createResourceFolder: (
+    parentId: string | null
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
+  readonly deleteResourceNode: (
+    nodeId: string
+  ) => Promise<AdminApiResult<AdminResourceTrashResult>>
+  readonly exportResourceDocument: (
+    documentId: string
+  ) => Promise<
+    AdminApiResult<{ readonly fileName: string; readonly markdown: string }>
+  >
+  readonly getResourceDocument: (
+    documentId: string
+  ) => Promise<AdminApiResult<AdminResourceDocument>>
+  readonly getResourceTree: (
+    scope: "active" | "trash"
+  ) => Promise<AdminApiResult<AdminResourceTree>>
+  readonly importResourceDocument: (
+    input: AdminImportResourceDocumentInput
+  ) => Promise<AdminApiResult<AdminImportResourceDocumentResult>>
+  readonly moveResourceNode: (
+    nodeId: string,
+    input: AdminMoveResourceNodeInput
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
+  readonly renameResourceFolder: (
+    folderId: string,
+    input: AdminRenameResourceFolderInput
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
+  readonly restoreResourceNode: (
+    nodeId: string
+  ) => Promise<AdminApiResult<AdminResourceRestoreResult>>
+  readonly searchResources: (
+    query: string
+  ) => Promise<AdminApiResult<AdminResourceSearch>>
+  readonly trashResourceNode: (
+    nodeId: string
+  ) => Promise<AdminApiResult<AdminResourceTrashResult>>
 }
