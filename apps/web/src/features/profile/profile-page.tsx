@@ -6,7 +6,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 
-import type { LearnerProfile } from "@/features/profile/profile-types"
+import type { LearnerProfileResponse } from "@workspace/contracts/learning"
 import { requestLogout } from "@/lib/auth/auth-client"
 import { MonitorIcon, MoonIcon, SunIcon } from "@workspace/ui/components/icons"
 import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
@@ -14,7 +14,7 @@ import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 import { cn } from "@workspace/ui/lib/utils"
 
 type ProfilePageProps = {
-  readonly profile: LearnerProfile
+  readonly profile: LearnerProfileResponse
 }
 
 const THEME_OPTIONS = [

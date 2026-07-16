@@ -19,6 +19,10 @@ describe("AdminCourseDetailPage", () => {
           error: { code: "not-found", message: "없음" },
           status: "error",
         })}
+        publishCourse={async () => ({
+          error: { code: "not-found", message: "없음" },
+          status: "error",
+        })}
         saveCourse={async () => ({
           error: { code: "not-found", message: "없음" },
           status: "error",

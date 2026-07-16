@@ -162,12 +162,6 @@ export function AdminCoursesPage({
             >
               <PlusIcon aria-hidden="true" size={16} />새 강의
             </Button>
-            <Link
-              className="text-xs font-bold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-              href="/debug/steps"
-            >
-              스텝 디버그 →
-            </Link>
           </div>
         }
       />

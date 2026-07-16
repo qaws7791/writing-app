@@ -1,5 +1,6 @@
 import { defineApiRoute } from "@/context/hono-env"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import { presentProfile } from "@/modules/profile/profile.presenter"
 import { profileResponseSchema } from "@/modules/profile/profile.schemas"
@@ -21,10 +22,15 @@ export const profileRoute = defineApiRoute({
       )
 
     return context.json(
-      presentProfile({
-        session: context.var.activeSession,
-        stats,
-      }),
+      parseLearnerRouteResponse(
+        context,
+        "LearnerProfileResponse",
+        profileResponseSchema,
+        presentProfile({
+          session: context.var.activeSession,
+          stats,
+        })
+      ),
       200
     )
   },

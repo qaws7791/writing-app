@@ -62,12 +62,15 @@
 
 학습 진행 repository 통합 테스트는 file-backed SQLite 연결 2개에서 index 1과 2 저장을 100회 동시에 실행한다. 최종 index가 2보다 작아지지 않고 낮은 요청이 `stale`로 구분되는지, 완료 뒤 늦은 저장에도 `completed` 상태와 index가 유지되는지 검증한다. 서비스 테스트는 현재 index와 같거나 정확히 1 큰 index만 허용하는 기존 순차 정책과 저장 시점 stale conflict를 함께 고정한다.
 
+학습자 상태 전이 repository 통합 테스트는 file-backed SQLite 연결 2개에서 같은 step 완료를 동시에 요청해 답안, step index와 완료 횟수가 한 번만 증가하는지 확인한다. version pin과 레슨 잠금, 오답 미저장, 미래 step conflict, 마지막 step 재요청의 자연 idempotency를 함께 검증한다. AI 전이 테스트는 provider 실패 시 진행 불변, 고정 version의 WRITE 답안 사용, 같은 idempotency key 결과 재사용과 피드백 성공 저장·step 전진의 단일 transaction을 고정한다.
+
+학습자 read model 통합 테스트는 in-memory SQLite에서 course 검색·category 정규화, 한글 정렬의 결정성, 같은 정렬 key의 ID tie-breaker cursor 경계를 검증한다. lesson 공개 JSON의 전체 key를 순회해 정답·해설·매칭 관계·분류 정답 field가 없는지 확인하고 직접 lesson 잠금도 함께 검증한다. cursor codec 단위 테스트는 signature, endpoint, query fingerprint와 학습자 scope가 하나라도 다르면 해석을 거부하는지 확인한다.
+
 ## 주요 명령
 
 ```bash
 bun run check:toolchain
 bun run check:components-config
-bun run check:api-contract
 bun run check:document-drift
 bun test ./scripts
 bun run test:admin-dev-lifecycle
@@ -182,7 +185,8 @@ bun run --filter=@workspace/web test
 - 같은 build 산출물에서 `check:admin-chart-route-bundle`을 실행해 대시보드와 `/analytics` 초기 chunk에 Recharts가 없는지 검사한다. 초기 JS gzip 예산은 각각 60,000 bytes와 75,000 bytes이며 요약·접근성 표는 서버에서 렌더링하고 차트 시각화 client island만 viewport 200px 이내에서 동적 로드한다.
 - web landing build는 `check:landing-route-bundle`로 정적 section이 client module에 들어가지 않았는지 검사한다. landing client module은 `landing-motion.tsx` island만 허용하고 초기 JS 합산 gzip은 50,000 bytes 이하로 제한한다.
 - API는 포트 mock 또는 명시적 test double로 대체한다.
-- generated OpenAPI 타입은 `apps/web/src/lib/api/writing-app-api-contract.ts`에 격리하고 feature mapper는 이 transport contract 타입만 참조한다.
+- 학습자 웹 HTTP adapter와 feature는 `@workspace/contracts/learning`의 schema와 추론 타입을 직접 사용한다. identity mapper, 복제 제품 타입, generated OpenAPI 타입과 `writing-app-api-contract` 파일은 아키텍처 테스트에서 금지한다.
+- 학습자 API route 테스트는 unknown request field의 `VALIDATION_ERROR`, 성공 응답 runtime parse 실패의 redacted `api.contract.response_invalid` event와 request ID가 포함된 `INTERNAL_SERVER_ERROR`를 검증한다.
 - `apps/web` 아키텍처 테스트는 `openapi-fetch` dependency/import가 없고 자체 HTTP adapter를 유지하는지 확인한다.
 - overlay 계열 컴포넌트는 테스트 mock을 사용해 포털 구현 세부사항에 묶이지 않게 한다.
 - 내부 탐색은 가능한 link role과 href로 검증한다.
@@ -211,7 +215,8 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - `bun run test:e2e`는 저장소 전용 임시 SQLite DB와 `ENABLE_TEST_AUTH=true` web server를 사용한다.
 - fixture server가 DB 초기화를 마친 뒤 학습자 API·웹과 어드민 API·웹을 순서대로 기동하므로 실행 중인 API가 초기화 대상 DB를 먼저 열 수 없다.
 - UI style 시각 테스트는 레슨 시작 저장 요청을 브라우저 경계에서 고정 응답으로 대체해 공유 E2E DB의 학습 진행을 변경하지 않는다. 이후 correctness 시나리오는 초기 레슨 상태를 독립적으로 검증한다.
-- 학습자 로그인·코스·레슨 완료, 관리자 owner/operator 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
+- 학습자 E2E fixture는 draft 콘텐츠를 넣은 뒤 실제 불변성 제약을 거쳐 published로 전환한 단일 레슨 코스를 사용한다. 실제 Chromium에서 레슨 시작, 객관식 오답 재시도와 정답, WRITE 답안, 결정적 test AI provider의 코칭, 레슨·코스 완료를 검증한다.
+- 관리자 owner/operator 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다.
 - 로컬은 retry 0으로 즉시 실패하고 CI만 retry 1회를 허용한다. 고정 port와 공유 SQLite를 격리하기 전까지 `workers: 1`을 유지한다.
 - CI는 `failOnFlakyTests`를 활성화해 최초 실패 뒤 retry 성공도 job 실패로 처리한다. list reporter는 최초 실패와 retry 결과를 함께 출력한다.
 - trace는 최초 실패 실행이 아니라 첫 retry 실행에만 생성한다. 실패 screenshot과 첫 retry trace는 `output/playwright/`에 남기며 CI가 성공·실패와 무관하게 14일 artifact로 보존한다.

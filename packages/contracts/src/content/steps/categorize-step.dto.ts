@@ -8,7 +8,7 @@ export const categorizeStepDtoSchema = lessonStepBaseSchema.extend({
   guide: z.string(),
   categories: z
     .array(
-      z.object({
+      z.strictObject({
         id: z.string(),
         label: z.string(),
       })
@@ -16,7 +16,7 @@ export const categorizeStepDtoSchema = lessonStepBaseSchema.extend({
     .min(1),
   items: z
     .array(
-      z.object({
+      z.strictObject({
         id: z.string(),
         text: z.string(),
         categoryId: z.string(),

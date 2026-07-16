@@ -1,7 +1,4 @@
 export {
-  learnerProgressOverviewDtoSchema as progressResponseSchema,
-  learnerProgressLessonDtoSchema as progressLessonSchema,
-  learnerProgressNextLessonDtoSchema as progressNextLessonSchema,
-  lessonAvailabilityStatusSchema as progressLessonStatusSchema,
-  progressCourseStatusFilterSchema,
+  learnerProgressQuerySchema as progressQuerySchema,
+  learnerProgressResponseSchema as progressResponseSchema,
 } from "@workspace/contracts/learning"

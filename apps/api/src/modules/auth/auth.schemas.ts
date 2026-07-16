@@ -1,6 +1,1 @@
-import { learnerUserSchema } from "@/http/learner-contract.schemas"
-import { z } from "@workspace/hono/zod"
-
-export const sessionResponseSchema = z.object({
-  user: learnerUserSchema,
-})
+export { learnerSessionResponseSchema as sessionResponseSchema } from "@workspace/contracts/learning"

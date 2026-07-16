@@ -1,8 +1,8 @@
 import type { SessionResolver } from "@workspace/core/auth"
-import type { AiFeedbackService } from "@workspace/core/ai-feedback"
+import type { LearnerAiFeedbackTransitionService } from "@workspace/core/ai-feedback"
 import type { LearnerContentService } from "@workspace/core/content"
 import type {
-  LearningService,
+  LearnerTransitionService,
   ProfileReader,
   ProgressService,
 } from "@workspace/core/learning"
@@ -13,12 +13,16 @@ import type {
 } from "@workspace/logger"
 import type { InternalErrorLogger } from "@workspace/hono/errors"
 
+import type { LearnerContractErrorLogger } from "@/http/learner-response"
+
 export type ApiDependencies = {
-  readonly aiFeedbackService: AiFeedbackService
   readonly authHandler?: (request: Request) => Promise<Response>
   readonly contentService: LearnerContentService
+  readonly contractErrorLogger?: LearnerContractErrorLogger
+  readonly deploymentVersion?: string
   readonly errorLogger?: InternalErrorLogger
-  readonly learningService: LearningService
+  readonly learnerAiFeedbackService: LearnerAiFeedbackTransitionService
+  readonly learnerTransitionService: LearnerTransitionService
   readonly now?: () => Date
   readonly profileReader: ProfileReader
   readonly progressService: ProgressService
@@ -30,6 +34,7 @@ export type ApiDependencies = {
 }
 
 export type ApiRequestContext = Omit<ApiDependencies, "now"> & {
+  readonly deploymentVersion: string
   readonly now: () => Date
 }
 
@@ -38,6 +43,7 @@ export function createRequestContext(
 ): ApiRequestContext {
   return {
     ...dependencies,
+    deploymentVersion: dependencies.deploymentVersion ?? "local",
     now: dependencies.now ?? (() => new Date()),
   }
 }

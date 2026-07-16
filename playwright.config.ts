@@ -46,7 +46,7 @@ export default defineConfig({
       url: "http://127.0.0.1:4199",
     },
     {
-      command: "bun apps/api/src/main.ts",
+      command: "bun apps/api/src/scripts/start-e2e-api.ts",
       env: {
         API_PORT: "4100",
         BETTER_AUTH_SECRET: authSecret,

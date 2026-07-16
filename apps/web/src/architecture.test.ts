@@ -45,14 +45,29 @@ describe("apps/web architecture", () => {
     expect(importViolations).toEqual([])
   })
 
-  it("generated OpenAPI 타입은 transport contract 파일에서만 import한다", () => {
+  it("generated OpenAPI 타입 경로를 다시 도입하지 않는다", () => {
+    const sourceFiles = readSourceFiles(webSourceRoot)
+    const packageDependencies = readPackageDependencies(webPackageJsonPath)
+    const violations = sourceFiles.flatMap((filePath) => {
+      return readImports(filePath)
+        .filter(isGeneratedOpenApiImport)
+        .map((source) => formatViolation(filePath, source))
+    })
+    const forbiddenFiles = sourceFiles.filter(isWritingAppApiContractFile)
+
+    expect(packageDependencies).not.toContain("openapi-typescript")
+    expect(forbiddenFiles).toEqual([])
+    expect(violations).toEqual([])
+  })
+
+  it("learner feature는 내부 content 계약을 import하지 않는다", () => {
     const violations = readSourceFiles(webSourceRoot)
-      .filter((filePath) => !isWritingAppApiContractFile(filePath))
-      .flatMap((filePath) => {
-        return readImports(filePath)
-          .filter(isGeneratedOpenApiImport)
+      .filter(isLearnerFeatureFile)
+      .flatMap((filePath) =>
+        readImports(filePath)
+          .filter(isWorkspaceContentContractImport)
           .map((source) => formatViolation(filePath, source))
-      })
+      )
 
     expect(violations).toEqual([])
   })
@@ -107,13 +122,18 @@ function isOpenApiFetchImport(source: string): boolean {
 }
 
 function isGeneratedOpenApiImport(source: string): boolean {
-  return source === "@/lib/api/generated/writing-app-api"
+  return (
+    source.startsWith("@/lib/api/generated/") ||
+    source === "@/lib/api/writing-app-api-contract"
+  )
 }
 
 function isWritingAppApiContractFile(filePath: string): boolean {
+  const path = relative(webSourceRoot, filePath).split(sep).join("/")
+
   return (
-    relative(webSourceRoot, filePath).split(sep).join("/") ===
-    "lib/api/writing-app-api-contract.ts"
+    path.startsWith("lib/api/generated/") ||
+    path === "lib/api/writing-app-api-contract.ts"
   )
 }
 
@@ -121,6 +141,20 @@ function isWorkspaceMatchPresentationImport(source: string): boolean {
   return (
     source === "@workspace/contracts/learning/learning-match-presentation" ||
     source === "@workspace/core/learning/learning-match-presentation"
+  )
+}
+
+function isLearnerFeatureFile(filePath: string): boolean {
+  return relative(webSourceRoot, filePath)
+    .split(sep)
+    .join("/")
+    .startsWith("features/")
+}
+
+function isWorkspaceContentContractImport(source: string): boolean {
+  return (
+    source === "@workspace/contracts/content" ||
+    source.startsWith("@workspace/contracts/content/")
   )
 }
 

@@ -4,6 +4,7 @@ import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-tra
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import {
   readAdminCourseEditorAction,
+  publishAdminCourseAction,
   saveAdminCourseEditorAction,
 } from "@/features/courses/admin-course-actions"
 
@@ -26,6 +27,7 @@ export default async function AdminCourseDetailRoute({
     <AdminCourseDetailPage
       courseResult={courseResult}
       loadLatestCourse={readAdminCourseEditorAction}
+      publishCourse={publishAdminCourseAction}
       saveCourse={saveAdminCourseEditorAction}
     />
   )

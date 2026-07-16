@@ -6,22 +6,22 @@
 
 - 기능 기준으로 파일을 모은다. 기술 종류별 `components`, `hooks`, `utils` 묶음보다 `features/courses`, `features/lessons`처럼 변경 이유가 같은 코드를 가까이 둔다.
 - 앱은 조립자 역할을 한다. 비즈니스 규칙은 가능한 한 `packages/core` 또는 feature 내부 순수 함수에 둔다.
-- 외부 API 응답은 화면에 바로 넘기지 않는다. API mapper 또는 runtime schema parse로 내부 모델에 맞춘다.
+- 외부 API 응답은 canonical runtime schema로 먼저 검증한다. 화면 모델과 의미가 같으면 canonical 타입을 직접 사용하고, 실제 UI 모델 차이가 있을 때만 mapper를 둔다.
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
 - 공유 UI는 `packages/ui`에 둔다. `components/ui`는 shadcn 프리미티브, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점, 라우팅은 각 앱 feature에서 조합한다.
-- 학습자 앱의 레슨 모델·답안 payload·채점 정책·`LessonStepRenderer`는 `apps/web/src/features/lessons`가 소유한다. OpenAPI 생성 타입은 `src/lib/api/generated`에 격리하고 feature는 mapper 결과만 사용한다.
+- 학습자 공개 모델과 답안 payload는 `@workspace/contracts/learning`을 직접 사용한다. `apps/web/src/features/lessons`는 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
 
 ## 2026-06-15 HTTP 클라이언트 응답 계약 검증 시작
 
 - 학습자 웹과 어드민 웹의 HTTP 클라이언트는 성공 응답 JSON을 타입 캐스팅만 하지 않고 endpoint별 런타임 스키마로 검증한다.
 - 성공 응답이 계약과 다르면 network 오류가 아니라 contract 오류로 분리한다.
-- 실패 응답의 서버 오류 코드 변환 계약은 기존 상태를 유지한다.
+- 실패 응답은 서버의 canonical `SCREAMING_SNAKE_CASE` code와 한국어 message를 그대로 사용한다.
 
 ## 2026-06-15 HTTP 클라이언트 응답 계약 검증 완료
 
 - 어드민 HTTP 클라이언트는 core/admin DTO 스키마로 모든 성공 응답을 검증한다.
-- 학습자 HTTP 클라이언트는 콘텐츠, 프로필, 진행, 저장, 완료, AI 코칭 성공 응답을 런타임 스키마로 검증한다.
-- JSON 파싱 실패와 스키마 불일치는 `contract-error`로 반환하고, fetch 실패만 `network-error`로 반환한다.
+- 학습자 HTTP 클라이언트는 콘텐츠, 프로필, 진행, 레슨 상태 전이와 AI 코칭 성공 응답을 런타임 스키마로 검증한다.
+- JSON 파싱 실패와 스키마 불일치는 `CONTRACT_ERROR`로 반환하고, fetch 실패만 `NETWORK_ERROR`로 반환한다.
 
 ## 2026-06-17 HTTP 네트워크 오류 값 처리
 
@@ -66,11 +66,11 @@
 
 ## 데이터 접근 경계
 
-`apps/web`는 `WritingAppApi` 포트만 사용한다. HTTP 구현은 `src/lib/api/http`에 있고, 테스트와 일부 로컬 흐름은 fake adapter로 같은 포트를 구현한다. OpenAPI 생성 타입은 `src/lib/api/generated`에 격리하고, feature 컴포넌트는 내부 mapper 결과만 사용한다.
+`apps/web`는 `WritingAppApi` 포트만 사용한다. HTTP 구현은 `src/lib/api/http`에 있고, 테스트와 일부 로컬 흐름은 fake adapter로 같은 포트를 구현한다. 정적 OpenAPI JSON과 generated TypeScript 타입은 사용하지 않는다. HTTP 응답은 `@workspace/contracts/learning`의 canonical runtime schema로 검증하며 course·progress·lesson·profile은 identity 변환 없이 화면에 전달한다. 코스 목록의 검색·분류·정렬은 URL 조건을 API query로 전달하고 `/course-categories` 결과를 별도로 사용한다.
 
 `apps/admin`은 `AdminApi` 포트만 사용한다. 서버 컴포넌트는 `getServerAdminApi()`로 현재 요청 쿠키를 어드민 API에 전달한다. 관리자 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다.
 
-서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 관리자 AI 채팅은 목록과 선택 대화를 병렬로 조회한다. 학습자 레슨은 정상 경로의 지연을 줄이기 위해 레슨·진행·프로필 조회를 함께 시작하고, 코스 상세는 레슨이 확인되어 `courseId`를 얻은 뒤 시작한다. 따라서 잘못된 레슨 ID에서도 이미 시작한 진행·프로필 요청은 발생할 수 있지만 코스 상세 요청은 발생하지 않는다. 각 요청의 기존 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
+서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 관리자 AI 채팅은 목록과 선택 대화를 병렬로 조회한다. 학습자 코스 목록은 course page와 category를 병렬 조회한다. 레슨 진입은 레슨과 프로필만 병렬 조회하고, 초기 step은 레슨 응답의 `learning`에서 읽는다. 별도 `/progress` join이나 course detail 조회를 시작하지 않는다. 각 요청의 기존 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
 
 ## 인증과 redirect
 
@@ -103,14 +103,14 @@
 - 공개 랜딩은 제품명, 가치 제안, 코스 미리보기, 학습 방식, 로그인 CTA를 제공한다.
 - 공개 랜딩 구현은 `features/landing/landing-page.tsx`가 라우팅과 최상위 조립만 맡고, section component, 정적 콘텐츠, motion hook, SVG/preview primitive를 같은 feature 폴더의 전용 파일로 분리한다.
 - 공개 랜딩의 정적 section은 Server Component로 렌더링하고 nav scroll, pointer glow, preview parallax, count-up만 client island로 둔다. pointer·scroll 값은 React 상위 state가 아니라 ref와 DOM transform으로 rAF당 한 번 갱신하며 listener는 passive/cleanup 규칙을 따른다. `prefers-reduced-motion: reduce`에서는 marquee·pebble·pointer·parallax·count-up animation을 비활성화한다.
-- 홈은 진행 중인 코스, 다음 레슨, 전체 학습 맥락, 현재 연속 학습일을 보여준다.
+- 홈은 진행 중인 코스, 다음 레슨, 전체 학습 맥락, 현재 연속 학습일을 보여주며 진행 중·완료 목록의 `nextCursor`로 다음 페이지를 추가 로딩한다.
 - 홈 코스 카드는 breakpoint별 복제 마크업을 만들지 않고 하나의 링크·이미지 DOM을 반응형 CSS로 배치한다. 첫 코스 이미지만 우선 로드하며 `sizes`는 모바일 전체 폭과 데스크톱 176px 폭을 함께 명시한다.
 - 코스 상세는 유닛별 커리큘럼과 레슨의 완료, 진행 가능, 잠금 상태를 보여준다.
 - 레슨은 시작 화면을 먼저 보여주고 사용자가 시작한 뒤 첫 스텝으로 진입한다.
-- 답변 가능 스텝은 타입별 JSON으로 자동 저장하며, 저장 실패는 한국어 오류로 노출한다.
+- 답변 가능 스텝은 stable item ID 기반 제출을 `completeStep`으로 보내며, 서버의 `retry | advanced | lesson_completed` 결과를 세션 event로 소비한다.
 - 글쓰기 초안은 메모리 캐시와 브라우저 영구 저장을 구분한다. 영구 저장 결과는 `saved`, `unavailable`, `quota-exceeded`로 전달하며 실제 `localStorage` 쓰기가 성공한 경우에만 저장 완료를 표시한다. 브라우저 저장 실패는 답안의 서버 제출을 막지 않는다.
-- 채점 가능한 스텝은 `isLessonStepCheckable` 타입 가드로 좁힌 뒤 채점하고, 잘못된 payload 타입은 오답으로 처리한다.
-- 매칭 스텝의 표시 순서, 선택 전이, 정답 판정, 저장 payload 변환은 `packages/core`의 순수 정책을 단일 출처로 사용한다.
+- 채점, 진도율, 다음 레슨과 완료 여부는 서버 결과를 표시하며 프론트엔드가 다시 계산하지 않는다.
+- 매칭 스텝의 로컬 선택 전이와 stable ID 제출 변환은 web feature가 소유하고, 정답 pair와 verdict는 제출 후 서버 evaluation만 사용한다.
 - AI 코칭 스텝은 `target`이 가리키는 같은 레슨의 앞선 WRITE 초안을 작성 내용으로 보여주고, 요청에는 레슨 ID와 AI 코칭 스텝 ID만 전달한다. 서버 저장 답변 없음, 콘텐츠 target 오류, 네트워크 실패, AI 제공자 실패는 서로 다른 한국어 오류로 표시한다.
 - AI 코칭 성공 결과는 총평, 잘된 점, 개선점, 다음 시도, 남은 재시도 횟수를 보여준다.
 
@@ -119,6 +119,8 @@
 - 어드민은 학습자 인증과 분리된 관리자 로그인을 사용한다.
 - 콘텐츠 관리는 코스 검색, 카테고리 필터, 페이지 크기, 페이지 이동, 새 코스 생성, 코스 보관을 제공한다.
 - 코스 편집은 유닛, 레슨 배치, 레슨 추가/보관, 순서 변경, 표준 10개 스텝 타입별 편집 폼을 제공한다. AI 코칭 대상은 같은 레슨에서 앞선 WRITE 스텝만 선택할 수 있다.
+- 코스 편집 저장은 draft의 `editVersion`을 `If-Match`로 전달한다. 저장과 발행을 분리하고 미저장 변경이 없을 때만 명시적 `초안 발행` 행동을 제공한다.
+- stale 저장·발행은 자동 병합하지 않는다. 최신 draft로 교체하거나 로컬 변경을 최신 `curriculumVersionId`, `editVersion`, `revision`에 재기준화해 다시 검토한다.
 - 사용자 관리는 검색, 상태 필터, 정렬, 페이지 이동, 정지/복구, 삭제 요청 처리를 제공한다.
 - 분석 화면의 차트는 새 의존성 없이 SVG 또는 CSS 기반 컴포넌트로 우선 구현한다.
 - 대시보드와 분석 화면의 Recharts 시각화는 viewport 200px 이내에서 동적으로 불러온다. 같은 데이터의 기간 합계와 semantic table을 먼저 렌더링해 JavaScript·차트 로딩 실패와 screen reader 환경에서도 핵심 값을 전달한다.

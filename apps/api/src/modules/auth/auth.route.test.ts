@@ -11,8 +11,9 @@ describe("플랫폼 API auth route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      code: "UNAUTHORIZED",
-      message: "Unauthorized",
+      code: "UNAUTHENTICATED",
+      message: "로그인이 필요합니다.",
+      requestId: response.headers.get("x-request-id"),
     })
   })
 

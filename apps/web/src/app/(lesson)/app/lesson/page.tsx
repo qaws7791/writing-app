@@ -1,14 +1,8 @@
 import { redirect } from "next/navigation"
 
 import { AppRouteNotice } from "@/components/app-route-notice"
-import type { ProgressCourseList } from "@/features/courses/course-types"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
-import {
-  describeRouteApiFailure,
-  readOptionalRouteApiValue,
-  toRouteApiOutcome,
-} from "@/lib/api/route-api-outcome"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 
@@ -46,77 +40,37 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   const api = getServerWritingAppApi({
     tokenProvider: () => token,
   })
-  const lessonPromise = api.getLesson(lessonId)
-  const progressPromise = api.getProgress()
-  const profilePromise = api.getProfile()
-  const lessonResult = await lessonPromise
-  const lessonOutcome = toRouteApiOutcome(lessonResult)
-
-  if (lessonOutcome.status === "error") {
-    if (lessonOutcome.failure.kind === "authentication") {
+  const [lessonResult, profileResult] = await Promise.all([
+    api.getLesson(lessonId),
+    api.getProfile(),
+  ])
+  if (lessonResult.status === "error") {
+    if (lessonResult.error.code === "UNAUTHENTICATED") {
       redirect(createLoginPagePath(nextPath))
     }
 
     return (
       <AppRouteNotice
-        description={describeRouteApiFailure(lessonOutcome.failure)}
+        description={lessonResult.error.message}
         title="레슨을 열 수 없습니다."
       />
     )
   }
 
-  const lesson = lessonOutcome.value
-  const [courseDetailResult, progressResult, profileResult] = await Promise.all(
-    [api.getCourseDetail(lesson.courseId), progressPromise, profilePromise]
-  )
-  const profileOutcome = toRouteApiOutcome(profileResult)
-
-  if (profileOutcome.status === "error") {
-    if (profileOutcome.failure.kind === "authentication") {
+  if (profileResult.status === "error") {
+    if (profileResult.error.code === "UNAUTHENTICATED") {
       redirect(createLoginPagePath(nextPath))
     }
 
     return (
       <AppRouteNotice
-        description={describeRouteApiFailure(profileOutcome.failure)}
+        description={profileResult.error.message}
         title="학습자 정보를 확인할 수 없습니다."
       />
     )
   }
-  const courseDetail = readOptionalRouteApiValue(courseDetailResult)
-  const progress = readOptionalRouteApiValue(progressResult)
-  const initialProgress =
-    progress !== undefined
-      ? resolveInitialLessonProgress(progress, lesson.id)
-      : undefined
-
+  const lesson = lessonResult.value
   return (
-    <LessonExperience
-      courseDetail={courseDetail}
-      initialProgress={initialProgress}
-      lesson={lesson}
-      learnerId={profileOutcome.value.user.id}
-    />
+    <LessonExperience lesson={lesson} learnerId={profileResult.value.user.id} />
   )
-}
-
-function resolveInitialLessonProgress(
-  progress: ProgressCourseList,
-  lessonId: string
-): { readonly currentStepIndex: number } | undefined {
-  const progressLesson = progress.courses
-    .flatMap((course) => course.lessons)
-    .find((lesson) => lesson.id === lessonId)
-
-  if (
-    progressLesson === undefined ||
-    progressLesson.status === "completed" ||
-    progressLesson.currentStepIndex === null
-  ) {
-    return undefined
-  }
-
-  return {
-    currentStepIndex: progressLesson.currentStepIndex,
-  }
 }

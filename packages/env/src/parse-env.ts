@@ -24,6 +24,7 @@ const appEnvBaseSchema = z.object({
   BETTER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
   BETTER_AUTH_URL: z.url().optional(),
   BETTER_AUTH_SECRET: z.string().min(32),
+  CURSOR_SIGNING_SECRET: z.string().min(32).optional(),
   DATABASE_URL: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
@@ -97,6 +98,20 @@ function validateProductionEnvironment(
     "BETTER_AUTH_SECRET",
     env.BETTER_AUTH_SECRET
   )
+  if (env.CURSOR_SIGNING_SECRET !== undefined) {
+    validateProductionSecret(
+      context,
+      "CURSOR_SIGNING_SECRET",
+      env.CURSOR_SIGNING_SECRET
+    )
+    if (env.CURSOR_SIGNING_SECRET === env.BETTER_AUTH_SECRET) {
+      addProductionIssue(
+        context,
+        "CURSOR_SIGNING_SECRET",
+        "Better Auth secret과 다른 값을 사용해야 합니다."
+      )
+    }
+  }
   if (env.ADMIN_BETTER_AUTH_SECRET === undefined) {
     addProductionIssue(
       context,
@@ -157,7 +172,10 @@ function isLocalHostname(hostname: string): boolean {
 
 function validateProductionSecret(
   context: z.RefinementCtx,
-  name: "ADMIN_BETTER_AUTH_SECRET" | "BETTER_AUTH_SECRET",
+  name:
+    | "ADMIN_BETTER_AUTH_SECRET"
+    | "BETTER_AUTH_SECRET"
+    | "CURSOR_SIGNING_SECRET",
   value: string
 ): void {
   const entropyBits = calculateShannonEntropyBits(value)

@@ -2,7 +2,7 @@ import { z } from "zod"
 
 import { courseVisualKeySchema } from "@workspace/contracts/content"
 
-export const learnerProfileStatsDtoSchema = z.object({
+export const learnerProfileStatsDtoSchema = z.strictObject({
   completedLessons: z.number().int().nonnegative(),
   currentStreakDays: z.number().int().nonnegative(),
   lastActiveDate: z.string().nullable(),
@@ -20,7 +20,7 @@ export const lessonAvailabilityStatusSchema = z.enum(
   lessonAvailabilityStatusValues
 )
 
-export const learnerProgressLessonDtoSchema = z.object({
+export const learnerProgressLessonDtoSchema = z.strictObject({
   currentStepIndex: z.number().int().nonnegative().nullable(),
   estimatedMinutes: z.number().int().positive(),
   id: z.string(),
@@ -33,7 +33,7 @@ export const learnerProgressNextLessonDtoSchema =
     courseId: z.string(),
   })
 
-export const learnerProgressCourseDtoSchema = z.object({
+export const learnerProgressCourseDtoSchema = z.strictObject({
   id: z.string(),
   lessons: z.array(learnerProgressLessonDtoSchema),
   nextLessons: z.array(learnerProgressNextLessonDtoSchema),
@@ -51,9 +51,9 @@ export const progressCourseStatusFilterSchema = z.enum(
   progressCourseStatusFilterValues
 )
 
-export const learnerProgressOverviewDtoSchema = z.object({
+export const learnerProgressOverviewDtoSchema = z.strictObject({
   courses: z.array(learnerProgressCourseDtoSchema),
-  user: z.object({
+  user: z.strictObject({
     currentStreakDays: z.number().int().nonnegative(),
   }),
 })

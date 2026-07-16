@@ -1,61 +1,107 @@
 import type {
-  CourseId,
-  LessonId,
-} from "#core/modules/content/domain/content.ids"
+  LearnerCourseDetail,
+  LearnerCourseListQuery,
+  LearnerCoursePage,
+  LearnerLesson,
+} from "@workspace/contracts/learning"
 import {
-  courseDetailDtoSchema,
-  type CourseDetailDto,
-  type CourseListDto,
-  type LessonDto,
-} from "#core/modules/content/domain/content.dto"
-import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
-import {
-  createContentReader,
-  type ContentReaderError,
-} from "#core/modules/content/application/use-cases/content-reader"
-import type { ProgressReader } from "#core/modules/learning/domain/learning-progress-read-model"
-import { withLearnerCourseProgress } from "#core/modules/learning/domain/learning-progress-read-model"
-import { ok, type Result } from "#core/shared/result"
+  learnerCourseDetailSchema,
+  learnerCoursePageSchema,
+  learnerLessonSchema,
+} from "@workspace/contracts/learning"
 
-export type LearnerContentServiceError = ContentReaderError
+import type { LearnerReadModelRepository } from "#core/modules/learning/application/ports/learner-read-model.repository"
+import type { LearnerCursorCodec } from "#core/modules/learning/application/learner-cursor"
+import { err, ok, type Result } from "#core/shared/result"
+
+export type LearnerContentServiceError =
+  | { readonly kind: "course-not-found" }
+  | { readonly kind: "invalid-cursor" }
+  | { readonly kind: "lesson-locked" }
+  | { readonly kind: "lesson-not-found" }
 
 export type LearnerContentService = {
-  readonly listCourses: () => Promise<CourseListDto>
   readonly getCourseDetail: (input: {
-    readonly courseId: CourseId
+    readonly courseId: string
     readonly userId: string
-  }) => Promise<Result<CourseDetailDto, LearnerContentServiceError>>
-  readonly getLesson: (
-    lessonId: LessonId
-  ) => Promise<Result<LessonDto, LearnerContentServiceError>>
+  }) => Promise<Result<LearnerCourseDetail, LearnerContentServiceError>>
+  readonly getLesson: (input: {
+    readonly lessonId: string
+    readonly userId: string
+  }) => Promise<Result<LearnerLesson, LearnerContentServiceError>>
+  readonly listCourseCategories: () => Promise<readonly string[]>
+  readonly listCourses: (
+    query: LearnerCourseListQuery
+  ) => Promise<Result<LearnerCoursePage, LearnerContentServiceError>>
 }
 
 export function createLearnerContentService({
-  contentRepository,
-  progressReader,
+  cursorCodec,
+  readModelRepository,
 }: {
-  readonly contentRepository: ContentRepository
-  readonly progressReader: ProgressReader
+  readonly cursorCodec: LearnerCursorCodec
+  readonly readModelRepository: LearnerReadModelRepository
 }): LearnerContentService {
-  const contentReader = createContentReader(contentRepository)
-
   return {
-    listCourses: contentReader.listCourses,
     async getCourseDetail(input) {
-      const courseDetail = await contentReader.getCourseDetail(input.courseId)
+      const course = await readModelRepository.findCourseDetail(input)
+      return course === null
+        ? err({ kind: "course-not-found" })
+        : ok(learnerCourseDetailSchema.parse(course))
+    },
+    async getLesson(input) {
+      const lesson = await readModelRepository.findLesson(input)
 
-      if (courseDetail.kind === "err") {
-        return courseDetail
+      switch (lesson.kind) {
+        case "found":
+          return ok(learnerLessonSchema.parse(lesson.value))
+        case "locked":
+          return err({ kind: "lesson-locked" })
+        case "not-found":
+          return err({ kind: "lesson-not-found" })
+      }
+    },
+    listCourseCategories() {
+      return readModelRepository.listCourseCategories()
+    },
+    async listCourses(query) {
+      const normalized = {
+        category: query.category?.normalize("NFC"),
+        query: query.query?.trim().normalize("NFC"),
+        sort: query.sort,
+      }
+      const fingerprint = cursorCodec.createFingerprint(normalized)
+      const after =
+        query.cursor === undefined
+          ? undefined
+          : cursorCodec.decode(query.cursor, {
+              endpoint: "courses",
+              fingerprint,
+            })
+
+      if (query.cursor !== undefined && after === null) {
+        return err({ kind: "invalid-cursor" })
       }
 
-      const progress = await progressReader.readLearnerProgress(input.userId)
+      const page = await readModelRepository.listCourses({
+        ...normalized,
+        after: after ?? undefined,
+        limit: query.limit,
+      })
 
       return ok(
-        courseDetailDtoSchema.parse(
-          withLearnerCourseProgress(courseDetail.value, progress.lessonProgress)
-        )
+        learnerCoursePageSchema.parse({
+          items: page.items,
+          nextCursor:
+            page.nextPosition === null
+              ? null
+              : cursorCodec.encode({
+                  endpoint: "courses",
+                  fingerprint,
+                  position: page.nextPosition,
+                }),
+        })
       )
     },
-    getLesson: contentReader.getLesson,
   }
 }

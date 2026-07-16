@@ -32,6 +32,7 @@ export type ReserveAiFeedbackAttemptResult =
       readonly kind: "reserved"
     })
   | (ReservationMetadata & {
+      readonly attemptId: string
       readonly attemptNumber: number
       readonly kind: "already-succeeded"
       readonly result: AiFeedbackPayload

@@ -9,6 +9,7 @@ export type CourseEditorStatus =
   | "clean"
   | "conflict"
   | "dirty"
+  | "publishing"
   | "saved"
   | "saving"
   | "server-error"
@@ -58,9 +59,14 @@ export type CourseEditorAction =
       readonly unitId: UnitId
     }
   | { readonly type: "save-started" }
+  | { readonly type: "publish-started" }
   | {
       readonly document: AdminCourseDetail
       readonly type: "save-succeeded"
+    }
+  | {
+      readonly document: AdminCourseDetail
+      readonly type: "publish-succeeded"
     }
   | { readonly message: string; readonly type: "validation-failed" }
   | {
@@ -193,11 +199,20 @@ export function courseEditorReducer(
       })
     case "save-started":
       return { ...state, message: null, status: "saving" }
+    case "publish-started":
+      return { ...state, message: null, status: "publishing" }
     case "save-succeeded":
       return {
         draft: action.document,
         latest: null,
         message: "코스를 저장했습니다.",
+        status: "saved",
+      }
+    case "publish-succeeded":
+      return {
+        draft: action.document,
+        latest: null,
+        message: `리비전 ${action.document.revision - 1}을 발행했습니다.`,
         status: "saved",
       }
     case "validation-failed":
@@ -225,7 +240,12 @@ export function courseEditorReducer(
         ? state
         : {
             ...state,
-            draft: { ...state.draft, revision: state.latest.revision },
+            draft: {
+              ...state.draft,
+              curriculumVersionId: state.latest.curriculumVersionId,
+              editVersion: state.latest.editVersion,
+              revision: state.latest.revision,
+            },
             latest: null,
             message: "로컬 초안을 유지했습니다. 검토 후 다시 저장해 주세요.",
             status: "dirty",

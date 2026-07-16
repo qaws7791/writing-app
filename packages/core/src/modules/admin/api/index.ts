@@ -7,6 +7,7 @@ export type { AdminAnalyticsUseCase } from "#core/modules/admin/application/use-
 export type { AdminContentResetUseCase } from "#core/modules/admin/application/use-cases/admin-content-reset.use-case"
 export type {
   AdminCourseEditorSaveResult,
+  AdminCoursePublishResult,
   AdminCourseUseCase,
 } from "#core/modules/admin/application/use-cases/admin-course.use-case"
 export type { AdminDashboardUseCase } from "#core/modules/admin/application/use-cases/admin-dashboard.use-case"

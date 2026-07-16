@@ -1,5 +1,6 @@
 import { and, asc, count, eq } from "drizzle-orm"
 import { z } from "zod"
+
 import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
 import {
   courseDetailDtoSchema,
@@ -15,10 +16,11 @@ import { contentStatuses } from "#core/shared/kernel/status"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
+  courseCurriculumVersions,
   courses,
-  courseUnits,
-  lessons,
-  lessonSteps,
+  courseUnitVersions,
+  lessonStepVersions,
+  lessonVersions,
 } from "@workspace/db/schema"
 
 const activeStatus = contentStatuses.active
@@ -48,21 +50,28 @@ export function createDrizzleContentRepository(
 function listCourses(db: WritingAppDatabase): readonly CourseSummaryDto[] {
   const rows = db
     .select({
+      category: courseCurriculumVersions.category,
+      description: courseCurriculumVersions.description,
       id: courses.id,
-      title: courses.title,
-      description: courses.description,
-      category: courses.category,
-      visualKey: courses.visualKey,
+      lessonCount: count(lessonVersions.id),
       status: courses.status,
-      lessonCount: count(lessons.id),
+      title: courseCurriculumVersions.title,
+      visualKey: courseCurriculumVersions.visualKey,
     })
     .from(courses)
+    .innerJoin(
+      courseCurriculumVersions,
+      eq(courseCurriculumVersions.id, courses.publishedCurriculumVersionId)
+    )
     .leftJoin(
-      lessons,
-      and(eq(lessons.courseId, courses.id), eq(lessons.status, activeStatus))
+      lessonVersions,
+      and(
+        eq(lessonVersions.curriculumVersionId, courseCurriculumVersions.id),
+        eq(lessonVersions.status, activeStatus)
+      )
     )
     .where(eq(courses.status, activeStatus))
-    .groupBy(courses.id)
+    .groupBy(courses.id, courseCurriculumVersions.id)
     .orderBy(asc(courses.sortOrder))
     .all()
 
@@ -74,36 +83,47 @@ function findCourseDetail(
   courseId: string
 ): CourseDetailDto | null {
   const course = db
-    .select()
+    .select({
+      category: courseCurriculumVersions.category,
+      curriculumVersionId: courseCurriculumVersions.id,
+      description: courseCurriculumVersions.description,
+      id: courses.id,
+      status: courses.status,
+      title: courseCurriculumVersions.title,
+      visualKey: courseCurriculumVersions.visualKey,
+    })
     .from(courses)
+    .innerJoin(
+      courseCurriculumVersions,
+      eq(courseCurriculumVersions.id, courses.publishedCurriculumVersionId)
+    )
     .where(and(eq(courses.id, courseId), eq(courses.status, activeStatus)))
     .get()
 
-  if (course === undefined) {
-    return null
-  }
+  if (course === undefined) return null
 
   const unitRows = db
     .select()
-    .from(courseUnits)
+    .from(courseUnitVersions)
     .where(
       and(
-        eq(courseUnits.courseId, courseId),
-        eq(courseUnits.status, activeStatus)
+        eq(courseUnitVersions.curriculumVersionId, course.curriculumVersionId),
+        eq(courseUnitVersions.status, activeStatus)
       )
     )
-    .orderBy(asc(courseUnits.sortOrder))
+    .orderBy(asc(courseUnitVersions.sortOrder))
     .all()
-  const activeUnitIds = new Set(unitRows.map((unit) => unit.id))
   const lessonRows = db
     .select()
-    .from(lessons)
+    .from(lessonVersions)
     .where(
-      and(eq(lessons.courseId, courseId), eq(lessons.status, activeStatus))
+      and(
+        eq(lessonVersions.curriculumVersionId, course.curriculumVersionId),
+        eq(lessonVersions.status, activeStatus)
+      )
     )
-    .orderBy(asc(lessons.sortOrder))
+    .orderBy(asc(lessonVersions.sortOrder))
     .all()
-    .filter((lesson) => activeUnitIds.has(lesson.unitId))
 
   return courseDetailDtoSchema.parse({
     id: course.id,
@@ -157,47 +177,58 @@ function findLesson(
   lessonId: string
 ): LessonDto | null {
   const lesson = db
-    .select()
-    .from(lessons)
-    .where(and(eq(lessons.id, lessonId), eq(lessons.status, activeStatus)))
-    .get()
-
-  if (lesson === undefined) {
-    return null
-  }
-
-  const course = db
-    .select()
-    .from(courses)
-    .where(
-      and(eq(courses.id, lesson.courseId), eq(courses.status, activeStatus))
+    .select({
+      category: lessonVersions.category,
+      courseId: courses.id,
+      curriculumVersionId: lessonVersions.curriculumVersionId,
+      description: lessonVersions.description,
+      estimatedMinutes: lessonVersions.estimatedMinutes,
+      id: lessonVersions.id,
+      summaryJson: lessonVersions.summaryJson,
+      title: lessonVersions.title,
+      unitId: lessonVersions.unitId,
+    })
+    .from(lessonVersions)
+    .innerJoin(
+      courses,
+      eq(
+        courses.publishedCurriculumVersionId,
+        lessonVersions.curriculumVersionId
+      )
     )
-    .get()
-  const unit = db
-    .select()
-    .from(courseUnits)
+    .innerJoin(
+      courseUnitVersions,
+      and(
+        eq(
+          courseUnitVersions.curriculumVersionId,
+          lessonVersions.curriculumVersionId
+        ),
+        eq(courseUnitVersions.id, lessonVersions.unitId)
+      )
+    )
     .where(
       and(
-        eq(courseUnits.id, lesson.unitId),
-        eq(courseUnits.status, activeStatus)
+        eq(lessonVersions.id, lessonId),
+        eq(lessonVersions.status, activeStatus),
+        eq(courseUnitVersions.status, activeStatus),
+        eq(courses.status, activeStatus)
       )
     )
     .get()
 
-  if (course === undefined || unit === undefined) {
-    return null
-  }
+  if (lesson === undefined) return null
 
   const steps = db
     .select()
-    .from(lessonSteps)
+    .from(lessonStepVersions)
     .where(
       and(
-        eq(lessonSteps.lessonId, lessonId),
-        eq(lessonSteps.status, activeStatus)
+        eq(lessonStepVersions.curriculumVersionId, lesson.curriculumVersionId),
+        eq(lessonStepVersions.lessonId, lessonId),
+        eq(lessonStepVersions.status, activeStatus)
       )
     )
-    .orderBy(asc(lessonSteps.sortOrder))
+    .orderBy(asc(lessonStepVersions.sortOrder))
     .all()
     .map(toLessonStepDto)
 
@@ -214,7 +245,9 @@ function findLesson(
   })
 }
 
-function toLessonStepDto(row: typeof lessonSteps.$inferSelect): LessonStepDto {
+function toLessonStepDto(
+  row: typeof lessonStepVersions.$inferSelect
+): LessonStepDto {
   const parsedContent = rawStepContentSchema
     .passthrough()
     .parse(JSON.parse(row.contentJson))

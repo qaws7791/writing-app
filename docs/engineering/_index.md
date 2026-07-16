@@ -27,6 +27,7 @@
 | `_index.md`                                                     | 엔지니어링 문서 전체의 진입점과 탐색 지도를 제공한다.                                            |
 | `system-overview.md`                                            | 시스템 목적, C4 모델, 서비스 경계, 라우트, API 런타임, 저장소, 배포 개요를 설명한다.             |
 | `workspace-inventory.md`                                        | 앱, 패키지, 스크립트 루트의 현재 인벤토리와 자동 검증 기준을 정의한다.                           |
+| `codebase-simplification-audit.md`                              | 제품 규모 대비 코드·패키지·런타임·검증 복잡성을 평가하고 축소 후보를 기록한다.                   |
 | `workspace-dependency-policy.md`                                | 공통 dependency catalog와 디자인·lint baseline ratchet 정책을 정의한다.                          |
 | `repository-architecture-tooling.md`                            | source inventory, TypeScript module graph와 architecture 정책 matcher를 정의한다.                |
 | `codex-skill-invocation-policy.md`                              | Codex 워크플로 스킬의 명시 호출 전용 정책과 검증 기준을 정의한다.                                |
@@ -43,7 +44,7 @@
 | `admin-mfa-removal-plan.md`                                     | 어드민 MFA·step-up 제거, DB 정리와 역할 기반 인가 유지 계획을 정의한다.                          |
 | `admin-transport-security.md`                                   | 관리자 transport의 actor 구성, 이중 인가 경계와 오류 변환 기준을 정의한다.                       |
 | `testing.md`                                                    | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.           |
-| `lesson-runtime.md`                                             | 학습자·관리자 공통 레슨 runtime과 관리자 스텝 편집 계약을 정의한다.                              |
+| `lesson-runtime.md`                                             | 학습자 레슨 세션, 서버 전이, 순수 시각 컴포넌트 경계를 정의한다.                                 |
 | `observability.md`                                              | 요청 로그, 런타임 로깅, 로그 정책, 메트릭과 알림과 대시보드 후보를 정의한다.                     |
 | `migration.md`                                                  | 마이그레이션 모델, 명령, 기본 절차, seed 마이그레이션, 운영 원칙, 롤백 조건을 정의한다.          |
 | `database-backup-restore.md`                                    | SQLite snapshot 백업, 독립 복구 검증, 운영 복구 훈련과 결과 기록 기준을 정의한다.                |
@@ -62,7 +63,7 @@
 | `adr/ADR-0008-admin-password-only-auth.md`                      | 채택됨. 관리자 비밀번호 전용 인증과 역할 기반 인가 유지 결정을 기록한다.                         |
 | `adr/ADR-0009-http-command-boundary.md`                         | 채택됨. HTTP 요청 계약과 core application command의 변경 수명 경계를 기록한다.                   |
 | `adr/ADR-0010-admin-resource-library-single-version-storage.md` | 채택됨. 자료실 Markdown 단일 버전, ETag 조건부 저장과 AI 읽기 경계를 기록한다.                   |
-| `contracts/writing-app-api-openapi.json`                        | Writing App API의 OpenAPI 계약을 기계 판독 가능한 형식으로 제공한다.                             |
+| `adr/ADR-0011-versioned-curriculum-storage.md`                  | 채택됨. 관계형 draft/published 커리큘럼 버전과 학습자 version 고정을 기록한다.                   |
 
 ## 관리 기준
 

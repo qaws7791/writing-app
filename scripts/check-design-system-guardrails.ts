@@ -31,7 +31,6 @@ const ignoredDirectories = new Set([
 ])
 
 const ignoredHexPaths = [
-  "apps/admin/src/features/step-debug",
   // Web manifest 색상은 CSS token을 참조할 수 없어 정적 색상 문자열이 필요하다.
   "apps/web/src/app/manifest.ts",
 ] as const

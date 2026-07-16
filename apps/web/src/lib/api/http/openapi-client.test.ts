@@ -27,7 +27,7 @@ describe("OpenAPI HTTP client", () => {
       })
     ).resolves.toEqual({
       error: {
-        code: "network-error",
+        code: "NETWORK_ERROR",
         message: "네트워크 연결을 확인해 주세요.",
         network: {
           cause,

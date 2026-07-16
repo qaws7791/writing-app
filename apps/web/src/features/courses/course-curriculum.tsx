@@ -1,15 +1,11 @@
 "use client"
 
-import { useMemo } from "react"
-
 import Link from "next/link"
 
 import type {
-  CourseDetail,
-  CourseLessonSummary,
-  CourseUnit,
-  LessonProgressStatus,
-} from "@/features/courses/course-types"
+  LearnerCourseDetail,
+  LessonLearningState,
+} from "@workspace/contracts/learning"
 import { CheckIcon, LockIcon, PlayIcon } from "@workspace/ui/components/icons"
 import {
   Accordion,
@@ -20,21 +16,13 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 
 type CourseCurriculumProps = {
-  readonly course: CourseDetail
+  readonly course: LearnerCourseDetail
 }
 
-export function CourseCurriculum({ course }: CourseCurriculumProps) {
-  const progressByLessonId = useMemo(
-    () =>
-      new Map(
-        course.progress.lessons.map((lesson) => [
-          lesson.lessonId,
-          lesson.status,
-        ])
-      ),
-    [course.progress.lessons]
-  )
+type CourseUnit = LearnerCourseDetail["units"][number]
+type CourseLessonSummary = CourseUnit["lessons"][number]
 
+export function CourseCurriculum({ course }: CourseCurriculumProps) {
   return (
     <section aria-labelledby="course-curriculum-title">
       <h3
@@ -48,12 +36,7 @@ export function CourseCurriculum({ course }: CourseCurriculumProps) {
         multiple
       >
         {course.units.map((unit, unitIndex) => (
-          <CurriculumUnit
-            key={unit.id}
-            progressByLessonId={progressByLessonId}
-            unit={unit}
-            unitIndex={unitIndex}
-          />
+          <CurriculumUnit key={unit.id} unit={unit} unitIndex={unitIndex} />
         ))}
       </Accordion>
     </section>
@@ -61,17 +44,14 @@ export function CourseCurriculum({ course }: CourseCurriculumProps) {
 }
 
 function CurriculumUnit({
-  progressByLessonId,
   unit,
   unitIndex,
 }: {
-  readonly progressByLessonId: ReadonlyMap<string, LessonProgressStatus>
   readonly unit: CourseUnit
   readonly unitIndex: number
 }) {
   const unitDone = unit.lessons.every(
-    (lesson) =>
-      resolveLessonStatus(progressByLessonId, lesson.id) === "completed"
+    (lesson) => lesson.learning.status === "completed"
   )
 
   return (
@@ -106,7 +86,7 @@ function CurriculumUnit({
             <CurriculumLesson
               key={lesson.id}
               lesson={lesson}
-              status={resolveLessonStatus(progressByLessonId, lesson.id)}
+              status={lesson.learning.status}
             />
           ))}
         </div>
@@ -120,7 +100,7 @@ function CurriculumLesson({
   status,
 }: {
   readonly lesson: CourseLessonSummary
-  readonly status: LessonProgressStatus
+  readonly status: LessonLearningState["status"]
 }) {
   const done = status === "completed"
   const locked = status === "locked"
@@ -182,11 +162,4 @@ function CurriculumLesson({
       {content}
     </Link>
   )
-}
-
-function resolveLessonStatus(
-  progressByLessonId: ReadonlyMap<string, LessonProgressStatus>,
-  lessonId: string
-): LessonProgressStatus {
-  return progressByLessonId.get(lessonId) ?? "locked"
 }

@@ -4,35 +4,54 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Database } from "bun:sqlite"
 
+import { and, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 
-import { createWritingAppDatabase } from "@/client"
+import { createWritingAppDatabase } from "@workspace/db/client"
 import {
   authUsers,
+  courseCurriculumVersions,
   courses,
-  courseUnits,
+  courseUnitVersions,
+  learnerCourseProgress,
   learnerLessonAnswers,
   learnerLessonProgress,
   learnerProfiles,
-  lessons,
-  lessonSteps,
-} from "@/schema"
-import { seedDatabase } from "@/seeds/seed"
+  lessonStepVersions,
+  lessonVersions,
+} from "@workspace/db/schema"
+import { seedDatabase } from "@workspace/db/seeds/seed"
 
 describe("개발 DB seed 실행", () => {
-  it("baseline migration을 적용하고 기준 콘텐츠를 삽입한다", async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), "writing-app-seed-"))
-    const databaseUrl = join(tempDirectory, "api.sqlite")
+  it("baseline migration을 적용하고 발행본과 다음 초안을 삽입한다", async () => {
+    const fixture = await createSeededDatabase("writing-app-seed-")
 
     try {
-      await seedDatabase(databaseUrl)
-
-      const client = createWritingAppDatabase(databaseUrl)
+      const client = createWritingAppDatabase(fixture.databaseUrl)
 
       try {
         expect(client.db.select().from(courses).all()).toHaveLength(5)
-        expect(client.db.select().from(lessons).all()).toHaveLength(44)
-        expect(client.db.select().from(lessonSteps).all()).toHaveLength(136)
+        expect(
+          client.db.select().from(courseCurriculumVersions).all()
+        ).toHaveLength(10)
+        expect(
+          client.db
+            .select()
+            .from(courseCurriculumVersions)
+            .where(eq(courseCurriculumVersions.status, "published"))
+            .all()
+        ).toHaveLength(5)
+        expect(
+          client.db
+            .select()
+            .from(courseCurriculumVersions)
+            .where(eq(courseCurriculumVersions.status, "draft"))
+            .all()
+        ).toHaveLength(5)
+        expect(client.db.select().from(lessonVersions).all()).toHaveLength(88)
+        expect(client.db.select().from(lessonStepVersions).all()).toHaveLength(
+          272
+        )
         expect(client.db.select().from(authUsers).all()).toMatchObject([
           {
             email: "learner@example.com",
@@ -51,256 +70,272 @@ describe("개발 DB seed 실행", () => {
         client.close()
       }
     } finally {
-      removeTempDirectory(tempDirectory)
+      removeTempDirectory(fixture.tempDirectory)
     }
   })
 
-  it("seed 재실행 시 학습 기록을 보존하며 기준 레슨 콘텐츠를 갱신한다", async () => {
-    const tempDirectory = mkdtempSync(
-      join(tmpdir(), "writing-app-seed-preserve-")
-    )
-    const databaseUrl = join(tempDirectory, "api.sqlite")
+  it("seed 재실행 시 발행본과 학습 기록을 보존하고 초안만 갱신한다", async () => {
+    const fixture = await createSeededDatabase("writing-app-seed-preserve-")
+    const client = createWritingAppDatabase(fixture.databaseUrl)
 
     try {
-      await seedDatabase(databaseUrl)
-
-      const client = createWritingAppDatabase(databaseUrl)
-
-      try {
-        const now = new Date("2026-06-15T00:00:00.000Z")
-
-        client.db
-          .insert(learnerLessonProgress)
-          .values({
-            completedAt: now,
-            currentStepIndex: 2,
-            lessonId: "l1",
-            startedAt: now,
-            status: "completed",
-            updatedAt: now,
-            userId: "user-1",
-          })
-          .run()
-
-        client.db
-          .insert(learnerLessonAnswers)
-          .values({
-            answeredAt: now,
-            answerJson: JSON.stringify({ kind: "test-answer" }),
-            lessonId: "l1",
-            stepId: "l1-s1",
-            updatedAt: now,
-            userId: "user-1",
-          })
-          .run()
-
-        client.sqlite
-          .query(
-            "UPDATE lessons SET description = ?, summary_json = ? WHERE id = ?"
+      const now = new Date("2026-06-15T00:00:00.000Z")
+      const course = client.db
+        .select()
+        .from(courses)
+        .where(eq(courses.id, "c1"))
+        .get()
+      const publishedVersionId = course?.publishedCurriculumVersionId
+      const draft = client.db
+        .select()
+        .from(courseCurriculumVersions)
+        .where(
+          and(
+            eq(courseCurriculumVersions.courseId, "c1"),
+            eq(courseCurriculumVersions.status, "draft")
           )
-          .run(
-            "매칭·분류·계획·교정·자가 점검 다섯 가지 활동",
-            JSON.stringify(["자가 점검", "mechanics"]),
-            "l-new"
-          )
-      } finally {
-        client.close()
+        )
+        .get()
+
+      expect(publishedVersionId).toBeTruthy()
+      expect(draft).toBeDefined()
+      if (
+        publishedVersionId === null ||
+        publishedVersionId === undefined ||
+        draft === undefined
+      ) {
+        throw new Error("테스트 코스 버전을 찾을 수 없습니다.")
       }
 
-      await seedDatabase(databaseUrl)
+      client.db
+        .insert(learnerCourseProgress)
+        .values({
+          courseId: "c1",
+          curriculumVersionId: publishedVersionId,
+          lastActivityAt: now,
+          startedAt: now,
+          status: "in_progress",
+          updatedAt: now,
+          userId: "user-1",
+        })
+        .run()
+      client.db
+        .insert(learnerLessonProgress)
+        .values({
+          completedAt: now,
+          courseId: "c1",
+          currentStepId: "l1-s1",
+          curriculumVersionId: publishedVersionId,
+          lessonId: "l1",
+          startedAt: now,
+          status: "completed",
+          updatedAt: now,
+          userId: "user-1",
+        })
+        .run()
+      client.db
+        .insert(learnerLessonAnswers)
+        .values({
+          answeredAt: now,
+          answerJson: JSON.stringify({ kind: "test-answer" }),
+          courseId: "c1",
+          curriculumVersionId: publishedVersionId,
+          lessonId: "l1",
+          stepId: "l1-s1",
+          updatedAt: now,
+          userId: "user-1",
+        })
+        .run()
+      client.db
+        .update(lessonVersions)
+        .set({ description: "변경된 초안", summaryJson: "[]" })
+        .where(
+          and(
+            eq(lessonVersions.curriculumVersionId, draft.id),
+            eq(lessonVersions.id, "l-new")
+          )
+        )
+        .run()
+    } finally {
+      client.close()
+    }
 
-      const reseededClient = createWritingAppDatabase(databaseUrl)
+    try {
+      await seedDatabase(fixture.databaseUrl)
+      const reseededClient = createWritingAppDatabase(fixture.databaseUrl)
 
       try {
+        const course = reseededClient.db
+          .select()
+          .from(courses)
+          .where(eq(courses.id, "c1"))
+          .get()
+        const draft = reseededClient.db
+          .select()
+          .from(courseCurriculumVersions)
+          .where(
+            and(
+              eq(courseCurriculumVersions.courseId, "c1"),
+              eq(courseCurriculumVersions.status, "draft")
+            )
+          )
+          .get()
+
+        expect(course?.publishedCurriculumVersionId).toBeTruthy()
+        expect(
+          reseededClient.db.select().from(learnerCourseProgress).all()
+        ).toEqual([
+          expect.objectContaining({
+            courseId: "c1",
+            curriculumVersionId: course?.publishedCurriculumVersionId,
+            userId: "user-1",
+          }),
+        ])
         expect(
           reseededClient.db.select().from(learnerLessonProgress).all()
         ).toEqual([
-          expect.objectContaining({
-            lessonId: "l1",
-            status: "completed",
-            userId: "user-1",
-          }),
+          expect.objectContaining({ currentStepId: "l1-s1", lessonId: "l1" }),
         ])
         expect(
           reseededClient.db.select().from(learnerLessonAnswers).all()
         ).toEqual([
-          expect.objectContaining({
-            answerJson: JSON.stringify({ kind: "test-answer" }),
-            lessonId: "l1",
-            stepId: "l1-s1",
-            userId: "user-1",
-          }),
+          expect.objectContaining({ lessonId: "l1", stepId: "l1-s1" }),
         ])
         expect(
           reseededClient.db
             .select()
-            .from(lessons)
-            .all()
-            .find((lesson) => lesson.id === "l-new")
-        ).toMatchObject({
-          description:
-            "매칭·분류·계획·교정 네 가지 활동을 차례로 체험해보세요.",
-          summaryJson: JSON.stringify([
-            "매칭과 분류로 개념 사이의 관계를 익힌다",
-            "계획 단계에서 독자·목적·핵심을 정하면 본 쓰기가 가벼워진다",
-            "교정은 띄어쓰기와 같은 표기 오류를 바로잡는다",
-          ]),
+            .from(lessonVersions)
+            .where(
+              and(
+                eq(lessonVersions.curriculumVersionId, draft?.id ?? "missing"),
+                eq(lessonVersions.id, "l-new")
+              )
+            )
+            .get()?.description
+        ).toBe("매칭·분류·계획·교정 네 가지 활동을 차례로 체험해보세요.")
+      } finally {
+        reseededClient.close()
+      }
+    } finally {
+      removeTempDirectory(fixture.tempDirectory)
+    }
+  })
+
+  it("seed 데이터 밖 코스는 보관하되 버전과 학습자 고정은 보존한다", async () => {
+    const fixture = await createSeededDatabase("writing-app-seed-archive-")
+    const client = createWritingAppDatabase(fixture.databaseUrl)
+
+    try {
+      const now = new Date("2026-07-17T00:00:00.000Z")
+      client.db
+        .insert(courses)
+        .values({ createdAt: now, id: "legacy-course", sortOrder: 999 })
+        .run()
+      client.db
+        .insert(courseCurriculumVersions)
+        .values({
+          category: "legacy",
+          courseId: "legacy-course",
+          createdAt: now,
+          description: "이전 콘텐츠",
+          id: "legacy-course-v1",
+          revision: 1,
+          status: "draft",
+          title: "이전 코스",
+          updatedAt: now,
+          visualKey: "basic-sentence-writing",
         })
-      } finally {
-        reseededClient.close()
-      }
+        .run()
+      client.db
+        .insert(courseUnitVersions)
+        .values({
+          curriculumVersionId: "legacy-course-v1",
+          id: "legacy-unit",
+          sortOrder: 1,
+          title: "이전 유닛",
+        })
+        .run()
+      client.db
+        .insert(lessonVersions)
+        .values({
+          curriculumVersionId: "legacy-course-v1",
+          estimatedMinutes: 5,
+          id: "legacy-lesson",
+          sortOrder: 1,
+          summaryJson: "[]",
+          title: "이전 레슨",
+          unitId: "legacy-unit",
+        })
+        .run()
+      client.db
+        .insert(lessonStepVersions)
+        .values({
+          contentJson: "{}",
+          curriculumVersionId: "legacy-course-v1",
+          id: "legacy-step",
+          lessonId: "legacy-lesson",
+          sortOrder: 1,
+          type: "READING",
+        })
+        .run()
+      client.db
+        .update(courseCurriculumVersions)
+        .set({ publishedAt: now, status: "published" })
+        .where(eq(courseCurriculumVersions.id, "legacy-course-v1"))
+        .run()
+      client.db
+        .update(courses)
+        .set({ publishedCurriculumVersionId: "legacy-course-v1" })
+        .where(eq(courses.id, "legacy-course"))
+        .run()
+      client.db
+        .insert(learnerCourseProgress)
+        .values({
+          courseId: "legacy-course",
+          curriculumVersionId: "legacy-course-v1",
+          lastActivityAt: now,
+          startedAt: now,
+          updatedAt: now,
+          userId: "user-1",
+        })
+        .run()
     } finally {
-      removeTempDirectory(tempDirectory)
+      client.close()
     }
-  })
-
-  it("seed 재실행 시 코스 visual key를 기준 콘텐츠 값으로 갱신한다", async () => {
-    const tempDirectory = mkdtempSync(
-      join(tmpdir(), "writing-app-seed-visual-key-")
-    )
-    const databaseUrl = join(tempDirectory, "api.sqlite")
 
     try {
-      await seedDatabase(databaseUrl)
-
-      const client = createWritingAppDatabase(databaseUrl)
-
-      try {
-        client.sqlite
-          .query("UPDATE courses SET visual_key = 'legacy-visual'")
-          .run()
-      } finally {
-        client.close()
-      }
-
-      await seedDatabase(databaseUrl)
-
-      const reseededClient = createWritingAppDatabase(databaseUrl)
+      await seedDatabase(fixture.databaseUrl)
+      const reseededClient = createWritingAppDatabase(fixture.databaseUrl)
 
       try {
         expect(
           reseededClient.db
             .select()
             .from(courses)
-            .all()
-            .map((course) => course.visualKey)
-        ).toEqual([
-          "basic-sentence-writing",
-          "grammar-complete",
-          "essay-writing",
-          "creative-writing",
-          "expression",
-        ])
+            .where(eq(courses.id, "legacy-course"))
+            .get()
+        ).toEqual(expect.objectContaining({ status: "archived" }))
+        expect(
+          reseededClient.db
+            .select()
+            .from(courseCurriculumVersions)
+            .where(eq(courseCurriculumVersions.id, "legacy-course-v1"))
+            .get()
+        ).toEqual(expect.objectContaining({ status: "published" }))
+        expect(
+          reseededClient.db
+            .select()
+            .from(learnerCourseProgress)
+            .where(eq(learnerCourseProgress.courseId, "legacy-course"))
+            .get()
+        ).toEqual(
+          expect.objectContaining({ curriculumVersionId: "legacy-course-v1" })
+        )
       } finally {
         reseededClient.close()
       }
     } finally {
-      removeTempDirectory(tempDirectory)
-    }
-  })
-
-  it("seed 데이터에 없는 기존 콘텐츠는 삭제하지 않고 archived 처리한다", async () => {
-    const tempDirectory = mkdtempSync(
-      join(tmpdir(), "writing-app-seed-archive-")
-    )
-    const databaseUrl = join(tempDirectory, "api.sqlite")
-
-    try {
-      await seedDatabase(databaseUrl)
-
-      const client = createWritingAppDatabase(databaseUrl)
-
-      try {
-        client.db
-          .insert(courses)
-          .values({
-            category: "legacy",
-            curriculumRevision: 0,
-            description: "이전 개발 콘텐츠",
-            id: "legacy-course",
-            sortOrder: 999,
-            status: "active",
-            title: "이전 코스",
-          })
-          .run()
-        client.db
-          .insert(courseUnits)
-          .values({
-            courseId: "legacy-course",
-            id: "legacy-unit",
-            sortOrder: 1,
-            status: "active",
-            title: "이전 유닛",
-          })
-          .run()
-        client.db
-          .insert(lessons)
-          .values({
-            category: null,
-            courseId: "legacy-course",
-            description: null,
-            estimatedMinutes: 5,
-            id: "legacy-lesson",
-            sortOrder: 1,
-            status: "active",
-            summaryJson: "[]",
-            title: "이전 레슨",
-            unitId: "legacy-unit",
-          })
-          .run()
-        client.db
-          .insert(lessonSteps)
-          .values({
-            contentJson: "{}",
-            id: "legacy-step",
-            lessonId: "legacy-lesson",
-            sortOrder: 1,
-            status: "active",
-            type: "READING",
-          })
-          .run()
-      } finally {
-        client.close()
-      }
-
-      await seedDatabase(databaseUrl)
-
-      const reseededClient = createWritingAppDatabase(databaseUrl)
-
-      try {
-        expect(
-          reseededClient.db
-            .select()
-            .from(courses)
-            .all()
-            .find((course) => course.id === "legacy-course")
-        ).toEqual(expect.objectContaining({ status: "archived" }))
-        expect(
-          reseededClient.db
-            .select()
-            .from(courseUnits)
-            .all()
-            .find((unit) => unit.id === "legacy-unit")
-        ).toEqual(expect.objectContaining({ status: "archived" }))
-        expect(
-          reseededClient.db
-            .select()
-            .from(lessons)
-            .all()
-            .find((lesson) => lesson.id === "legacy-lesson")
-        ).toEqual(expect.objectContaining({ status: "archived" }))
-        expect(
-          reseededClient.db
-            .select()
-            .from(lessonSteps)
-            .all()
-            .find((step) => step.id === "legacy-step")
-        ).toEqual(expect.objectContaining({ status: "archived" }))
-      } finally {
-        reseededClient.close()
-      }
-    } finally {
-      removeTempDirectory(tempDirectory)
+      removeTempDirectory(fixture.tempDirectory)
     }
   })
 
@@ -312,10 +347,7 @@ describe("개발 DB seed 실행", () => {
 
     try {
       await expect(
-        seedDatabase({
-          databaseUrl,
-          nodeEnv: "production",
-        })
+        seedDatabase({ databaseUrl, nodeEnv: "production" })
       ).rejects.toThrow(
         "저장소 data 디렉터리 밖의 DB 파일은 초기화할 수 없습니다."
       )
@@ -332,38 +364,9 @@ describe("개발 DB seed 실행", () => {
     const legacyClient = new Database(databaseUrl)
 
     try {
-      legacyClient.exec(`
-        PRAGMA foreign_keys = ON;
-        CREATE TABLE courses (
-          id TEXT PRIMARY KEY NOT NULL,
-          category_id TEXT,
-          title TEXT,
-          description TEXT,
-          sort_order INTEGER,
-          curriculum_revision INTEGER
-        );
-        CREATE TABLE lessons (
-          id TEXT PRIMARY KEY NOT NULL,
-          course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-          title TEXT,
-          category_id TEXT,
-          unit_number INTEGER,
-          next_lesson_id TEXT
-        );
-        CREATE TABLE lesson_steps (
-          id TEXT PRIMARY KEY NOT NULL,
-          lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-          type TEXT,
-          sort_order INTEGER,
-          points INTEGER,
-          required INTEGER,
-          content_json TEXT,
-          status TEXT
-        );
-        INSERT INTO courses (id) VALUES ('legacy-course');
-        INSERT INTO lessons (id, course_id) VALUES ('legacy-lesson', 'legacy-course');
-        INSERT INTO lesson_steps (id, lesson_id) VALUES ('legacy-step', 'legacy-lesson');
-      `)
+      legacyClient.exec(
+        "CREATE TABLE courses (id TEXT PRIMARY KEY NOT NULL); INSERT INTO courses (id) VALUES ('legacy-course');"
+      )
       legacyClient.close()
 
       await expect(
@@ -392,18 +395,13 @@ describe("개발 DB seed 실행", () => {
     const legacyClient = new Database(databaseUrl)
 
     try {
-      legacyClient.exec(`
-        CREATE TABLE courses (
-          id TEXT PRIMARY KEY NOT NULL
-        );
-        INSERT INTO courses (id) VALUES ('legacy-course');
-      `)
+      legacyClient.exec(
+        "CREATE TABLE courses (id TEXT PRIMARY KEY NOT NULL); INSERT INTO courses (id) VALUES ('legacy-course');"
+      )
       legacyClient.close()
-
       await expect(seedDatabase(databaseUrl)).rejects.toThrow(
         "DB 파일 재생성은 ALLOW_DATABASE_RESET=true와 --force가 필요합니다."
       )
-
       const existingClient = new Database(databaseUrl, { readonly: true })
 
       try {
@@ -432,46 +430,15 @@ describe("개발 DB seed 실행", () => {
     const legacyClient = new Database(databaseUrl)
 
     try {
-      legacyClient.exec(`
-        PRAGMA foreign_keys = ON;
-        CREATE TABLE courses (
-          id TEXT PRIMARY KEY NOT NULL,
-          category_id TEXT,
-          title TEXT,
-          description TEXT,
-          sort_order INTEGER,
-          curriculum_revision INTEGER
-        );
-        CREATE TABLE lessons (
-          id TEXT PRIMARY KEY NOT NULL,
-          course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-          title TEXT,
-          category_id TEXT,
-          unit_number INTEGER,
-          next_lesson_id TEXT
-        );
-        CREATE TABLE lesson_steps (
-          id TEXT PRIMARY KEY NOT NULL,
-          lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-          type TEXT,
-          sort_order INTEGER,
-          points INTEGER,
-          required INTEGER,
-          content_json TEXT,
-          status TEXT
-        );
-        INSERT INTO courses (id) VALUES ('legacy-course');
-        INSERT INTO lessons (id, course_id) VALUES ('legacy-lesson', 'legacy-course');
-        INSERT INTO lesson_steps (id, lesson_id) VALUES ('legacy-step', 'legacy-lesson');
-      `)
+      legacyClient.exec(
+        "CREATE TABLE courses (id TEXT PRIMARY KEY NOT NULL); INSERT INTO courses (id) VALUES ('legacy-course');"
+      )
       legacyClient.close()
-
       await seedDatabase({
         allowDatabaseReset: true,
         databaseUrl,
         forceDatabaseReset: true,
       })
-
       const client = createWritingAppDatabase(databaseUrl)
 
       try {
@@ -479,11 +446,12 @@ describe("개발 DB seed 실행", () => {
           .query<{ readonly name: string }, []>("PRAGMA table_info(courses)")
           .all()
           .map((row) => row.name)
-
-        expect(courseColumns).toContain("curriculum_revision")
+        expect(courseColumns).toContain("published_curriculum_version_id")
         expect(client.db.select().from(courses).all()).toHaveLength(5)
-        expect(client.db.select().from(lessons).all()).toHaveLength(44)
-        expect(client.db.select().from(lessonSteps).all()).toHaveLength(136)
+        expect(client.db.select().from(lessonVersions).all()).toHaveLength(88)
+        expect(client.db.select().from(lessonStepVersions).all()).toHaveLength(
+          272
+        )
       } finally {
         client.close()
       }
@@ -494,25 +462,28 @@ describe("개발 DB seed 실행", () => {
   })
 })
 
+async function createSeededDatabase(
+  prefix: string
+): Promise<{ readonly databaseUrl: string; readonly tempDirectory: string }> {
+  const tempDirectory = mkdtempSync(join(tmpdir(), prefix))
+  const databaseUrl = join(tempDirectory, "api.sqlite")
+  await seedDatabase(databaseUrl)
+  return { databaseUrl, tempDirectory }
+}
+
 function removeDatabaseFiles(databaseUrl: string): void {
   Bun.gc(true)
-
   for (const path of [
     databaseUrl,
     `${databaseUrl}-shm`,
     `${databaseUrl}-wal`,
   ]) {
-    rmSync(path, {
-      force: true,
-      maxRetries: 3,
-      retryDelay: 100,
-    })
+    rmSync(path, { force: true, maxRetries: 3, retryDelay: 100 })
   }
 }
 
 function removeTempDirectory(tempDirectory: string): void {
   Bun.gc(true)
-
   rmSync(tempDirectory, {
     force: true,
     maxRetries: 3,

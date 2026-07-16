@@ -9,15 +9,17 @@ import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { createDrizzleContentRepository } from "#core/modules/content/infrastructure/persistence/content-drizzle.repository"
 import {
+  courseCurriculumVersions,
+  courseUnitVersions,
   courses,
-  courseUnits,
-  lessons,
-  lessonSteps,
+  lessonStepVersions,
+  lessonVersions,
 } from "@workspace/db/schema"
 import {
   createContentSeedRows,
   readContentSeedData,
 } from "@workspace/db/seeds/seed-content"
+import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 
 describe("콘텐츠 baseline repository", () => {
@@ -28,9 +30,14 @@ describe("콘텐츠 baseline repository", () => {
       await seedContentRows(client)
 
       expect(client.db.select().from(courses).all()).toHaveLength(5)
-      expect(client.db.select().from(courseUnits).all()).toHaveLength(15)
-      expect(client.db.select().from(lessons).all()).toHaveLength(44)
-      expect(client.db.select().from(lessonSteps).all()).toHaveLength(136)
+      expect(
+        client.db.select().from(courseCurriculumVersions).all()
+      ).toHaveLength(10)
+      expect(client.db.select().from(courseUnitVersions).all()).toHaveLength(30)
+      expect(client.db.select().from(lessonVersions).all()).toHaveLength(88)
+      expect(client.db.select().from(lessonStepVersions).all()).toHaveLength(
+        272
+      )
     } finally {
       client.close()
     }
@@ -67,17 +74,10 @@ describe("콘텐츠 baseline repository", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
-      await seedContentRows(client)
-      client.db
-        .update(courseUnits)
-        .set({ status: "archived" })
-        .where(eq(courseUnits.id, "u1"))
-        .run()
-      client.db
-        .update(lessons)
-        .set({ status: "archived" })
-        .where(eq(lessons.id, "l9"))
-        .run()
+      await seedContentRows(client, {
+        archivedLessonIds: ["l9"],
+        archivedUnitIds: ["u1"],
+      })
 
       const repository = createDrizzleContentRepository(client.db)
       const courseDetail = await repository.findCourseDetail(
@@ -99,17 +99,10 @@ describe("콘텐츠 baseline repository", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
-      await seedContentRows(client)
-      client.db
-        .update(lessons)
-        .set({ status: "archived" })
-        .where(eq(lessons.id, "l9"))
-        .run()
-      client.db
-        .update(lessonSteps)
-        .set({ status: "archived" })
-        .where(eq(lessonSteps.id, "l8-s1"))
-        .run()
+      await seedContentRows(client, {
+        archivedLessonIds: ["l9"],
+        archivedStepIds: ["l8-s1"],
+      })
 
       const repository = createDrizzleContentRepository(client.db)
 
@@ -144,26 +137,39 @@ describe("콘텐츠 baseline repository", () => {
 })
 
 async function seedContentRows(
-  client: WritingAppDatabaseClient
+  client: WritingAppDatabaseClient,
+  archived: {
+    readonly archivedLessonIds?: readonly string[]
+    readonly archivedStepIds?: readonly string[]
+    readonly archivedUnitIds?: readonly string[]
+  } = {}
 ): Promise<void> {
   runBaselineMigration(client.sqlite)
 
-  const rows = createContentSeedRows(await readContentSeedData())
+  const sourceRows = createContentSeedRows(await readContentSeedData())
+  const rows = {
+    ...sourceRows,
+    lessons: sourceRows.lessons.map((lesson) => ({
+      ...lesson,
+      status: archived.archivedLessonIds?.includes(lesson.id)
+        ? ("archived" as const)
+        : lesson.status,
+    })),
+    steps: sourceRows.steps.map((step) => ({
+      ...step,
+      status: archived.archivedStepIds?.includes(step.id)
+        ? ("archived" as const)
+        : step.status,
+    })),
+    units: sourceRows.units.map((unit) => ({
+      ...unit,
+      status: archived.archivedUnitIds?.includes(unit.id)
+        ? ("archived" as const)
+        : unit.status,
+    })),
+  }
 
-  client.db
-    .insert(courses)
-    .values([...rows.courses])
-    .run()
-  client.db
-    .insert(courseUnits)
-    .values([...rows.units])
-    .run()
-  client.db
-    .insert(lessons)
-    .values([...rows.lessons])
-    .run()
-  client.db
-    .insert(lessonSteps)
-    .values([...rows.steps])
-    .run()
+  client.db.transaction((transaction) => {
+    upsertContentSeedRows(transaction, rows)
+  })
 }

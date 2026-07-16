@@ -15,11 +15,11 @@ import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain
 import {
   aiFeedbackAttempts,
   authUsers,
-  courses,
-  courseUnits,
-  lessons,
-  lessonSteps,
+  learnerCourseProgress,
 } from "@workspace/db/schema"
+import { createCurriculumVersionId } from "@workspace/db/content/curriculum-version-id"
+import type { ContentSeedRows } from "@workspace/db/seeds/seed-content"
+import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
 import { err, ok } from "#core/shared/result"
 import type { AiFeedbackPayload } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
 import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
@@ -202,35 +202,21 @@ describe("AI 피드백 repository", () => {
     }
   })
 
-  it("기존 완료 attempt schema를 succeeded 상태로 보존 migration한다", () => {
+  it("attempt를 학습자에게 고정된 커리큘럼 버전 범위로 저장한다", async () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
       seedFeedbackBaseline(client)
-      client.sqlite.exec(`
-DROP TABLE ai_feedback_attempts;
-CREATE TABLE ai_feedback_attempts (
-  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-  step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
-  attempt_number INTEGER NOT NULL,
-  answer_text TEXT NOT NULL,
-  result_json TEXT NOT NULL,
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (user_id, lesson_id, step_id, attempt_number)
-);
-INSERT INTO ai_feedback_attempts VALUES (
-  'user-1', 'l-ai', 'l-ai-s2', 1, '기존 답변', '${JSON.stringify(feedbackPayload)}', ${now.getTime()}
-);
-`)
-
-      runBaselineMigration(client.sqlite)
+      await createCoordinator(client).createAttempt(
+        command("versioned"),
+        context
+      )
 
       expect(client.db.select().from(aiFeedbackAttempts).all()).toEqual([
         expect.objectContaining({
-          answerText: "기존 답변",
+          courseId: "c-ai",
+          curriculumVersionId: createCurriculumVersionId("c-ai", 1),
           attemptNumber: 1,
-          idempotencyKey: "legacy:1",
           resultJson: JSON.stringify(feedbackPayload),
           status: "succeeded",
         }),
@@ -304,60 +290,82 @@ function seedFeedbackBaseline(client: WritingAppDatabaseClient): void {
       updatedAt: now,
     })
     .run()
+  const rows: ContentSeedRows = {
+    courses: [
+      {
+        category: "입문자를 위한 코스",
+        description: "매일 조금씩 씁니다.",
+        id: "c-ai",
+        sortOrder: 1,
+        status: "active",
+        title: "AI 코칭 코스",
+        visualKey: "basic-sentence-writing",
+      },
+    ],
+    lessons: [
+      {
+        category: "문장",
+        courseId: "c-ai",
+        description: "AI 피드백을 받습니다.",
+        estimatedMinutes: 5,
+        id: "l-ai",
+        sortOrder: 1,
+        status: "active",
+        summaryJson: JSON.stringify(["AI 피드백"]),
+        title: "AI 피드백 레슨",
+        unitId: "u-ai",
+      },
+    ],
+    steps: [
+      {
+        contentJson: JSON.stringify({ min: 1, prompt: "문장을 쓰세요." }),
+        id: "l-ai-s1",
+        lessonId: "l-ai",
+        sortOrder: 1,
+        status: "active",
+        type: "WRITE",
+      },
+      {
+        contentJson: JSON.stringify({
+          allowRetry: true,
+          feedback: "기본 피드백",
+          focus: "명확성",
+          score: 80,
+          scoreMax: 100,
+          showScore: true,
+          target: "l-ai-s1",
+        }),
+        id: "l-ai-s2",
+        lessonId: "l-ai",
+        sortOrder: 2,
+        status: "active",
+        type: "AI_FEEDBACK",
+      },
+    ],
+    units: [
+      {
+        courseId: "c-ai",
+        id: "u-ai",
+        sortOrder: 1,
+        status: "active",
+        title: "AI 코칭 유닛",
+      },
+    ],
+  }
+  client.db.transaction((transaction) => {
+    upsertContentSeedRows(transaction, rows)
+  })
+  const curriculumVersionId = createCurriculumVersionId("c-ai", 1)
   client.db
-    .insert(courses)
-    .values({
-      category: "입문자를 위한 코스",
-      curriculumRevision: 0,
-      description: "매일 조금씩 씁니다.",
-      id: "c-ai",
-      sortOrder: 1,
-      status: "active",
-      title: "AI 코칭 코스",
-    })
-    .run()
-  client.db
-    .insert(courseUnits)
+    .insert(learnerCourseProgress)
     .values({
       courseId: "c-ai",
-      id: "u-ai",
-      sortOrder: 1,
-      status: "active",
-      title: "AI 코칭 유닛",
-    })
-    .run()
-  client.db
-    .insert(lessons)
-    .values({
-      category: "문장",
-      courseId: "c-ai",
-      description: "AI 피드백을 받습니다.",
-      estimatedMinutes: 5,
-      id: "l-ai",
-      sortOrder: 1,
-      status: "active",
-      summaryJson: JSON.stringify(["AI 피드백"]),
-      title: "AI 피드백 레슨",
-      unitId: "u-ai",
-    })
-    .run()
-  client.db
-    .insert(lessonSteps)
-    .values({
-      contentJson: JSON.stringify({
-        allowRetry: true,
-        feedback: "기본 피드백",
-        focus: "명확성",
-        score: 80,
-        scoreMax: 100,
-        showScore: true,
-        target: "l-ai-s1",
-      }),
-      id: "l-ai-s2",
-      lessonId: "l-ai",
-      sortOrder: 2,
-      status: "active",
-      type: "AI_FEEDBACK",
+      curriculumVersionId,
+      lastActivityAt: now,
+      startedAt: now,
+      status: "in_progress",
+      updatedAt: now,
+      userId: "user-1",
     })
     .run()
 }

@@ -7,11 +7,11 @@ import { useCallback, useMemo, useState, type ReactNode } from "react"
 import { CompletedCourseCard } from "@/features/home/completed-course-card"
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type {
-  ProgressCourse,
-  ProgressCourseList,
-  ProgressNextLesson,
-} from "@/features/courses/course-types"
-import type { LearnerProfile } from "@/features/profile/profile-types"
+  LearnerLessonReference,
+  LearnerProfileResponse,
+  LearnerProgressCourse,
+  LearnerProgressResponse,
+} from "@workspace/contracts/learning"
 import { getBrowserLearnerSessionToken } from "@/lib/auth/session-token"
 import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
@@ -33,19 +33,28 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/ui/tabs"
 
-const CONTINUE_COURSE_LIMIT = 5
-
 type CompletedCoursesState =
   | { readonly status: "error" }
   | { readonly status: "idle" }
-  | { readonly status: "loaded"; readonly courses: readonly ProgressCourse[] }
+  | {
+      readonly status: "loaded"
+      readonly courses: readonly LearnerProgressCourse[]
+      readonly loadMoreStatus: "error" | "idle" | "loading"
+      readonly nextCursor: string | null
+    }
   | { readonly status: "loading" }
+
+type ProgressCourseState = {
+  readonly courses: readonly LearnerProgressCourse[]
+  readonly loadMoreStatus: "error" | "idle" | "loading"
+  readonly nextCursor: string | null
+}
 
 type HomePageProps = {
   readonly api?: WritingAppApi
-  readonly inProgress: ProgressCourseList
+  readonly inProgress: LearnerProgressResponse
   readonly learnerName: null | string | undefined
-  readonly profileStats: LearnerProfile["stats"]
+  readonly profileStats: LearnerProfileResponse["stats"]
 }
 
 export function HomePage({
@@ -55,7 +64,6 @@ export function HomePage({
   profileStats,
 }: HomePageProps) {
   const firstName = normalizeFirstName(learnerName)
-  const inProgressItems = inProgress.courses.slice(0, CONTINUE_COURSE_LIMIT)
   const resolvedApi = useMemo(
     () =>
       api ??
@@ -66,6 +74,11 @@ export function HomePage({
   )
   const [completedState, setCompletedState] = useState<CompletedCoursesState>({
     status: "idle",
+  })
+  const [inProgressState, setInProgressState] = useState<ProgressCourseState>({
+    courses: inProgress.items,
+    loadMoreStatus: "idle",
+    nextCursor: inProgress.nextCursor,
   })
 
   const loadCompletedCourses = useCallback(async () => {
@@ -78,10 +91,86 @@ export function HomePage({
     }
 
     setCompletedState({
-      courses: result.value.courses,
+      courses: result.value.items,
+      loadMoreStatus: "idle",
+      nextCursor: result.value.nextCursor,
       status: "loaded",
     })
   }, [resolvedApi])
+
+  const loadMoreInProgressCourses = useCallback(async () => {
+    if (
+      inProgressState.nextCursor === null ||
+      inProgressState.loadMoreStatus === "loading"
+    ) {
+      return
+    }
+
+    const cursor = inProgressState.nextCursor
+    setInProgressState((state) => ({
+      ...state,
+      loadMoreStatus: "loading",
+    }))
+    const result = await resolvedApi.getProgress({
+      cursor,
+      status: "in_progress",
+    })
+
+    if (result.status === "error") {
+      setInProgressState((state) => ({
+        ...state,
+        loadMoreStatus: "error",
+      }))
+      return
+    }
+
+    setInProgressState((state) => ({
+      courses: appendUniqueCourses(state.courses, result.value.items),
+      loadMoreStatus: "idle",
+      nextCursor: result.value.nextCursor,
+    }))
+  }, [inProgressState.loadMoreStatus, inProgressState.nextCursor, resolvedApi])
+
+  const loadMoreCompletedCourses = useCallback(async () => {
+    if (
+      completedState.status !== "loaded" ||
+      completedState.nextCursor === null ||
+      completedState.loadMoreStatus === "loading"
+    ) {
+      return
+    }
+
+    const cursor = completedState.nextCursor
+    setCompletedState((state) =>
+      state.status === "loaded"
+        ? { ...state, loadMoreStatus: "loading" }
+        : state
+    )
+    const result = await resolvedApi.getProgress({
+      cursor,
+      status: "completed",
+    })
+
+    if (result.status === "error") {
+      setCompletedState((state) =>
+        state.status === "loaded"
+          ? { ...state, loadMoreStatus: "error" }
+          : state
+      )
+      return
+    }
+
+    setCompletedState((state) =>
+      state.status === "loaded"
+        ? {
+            courses: appendUniqueCourses(state.courses, result.value.items),
+            loadMoreStatus: "idle",
+            nextCursor: result.value.nextCursor,
+            status: "loaded",
+          }
+        : state
+    )
+  }, [completedState, resolvedApi])
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -132,9 +221,15 @@ export function HomePage({
             <TabsTrigger value="completed">완료</TabsTrigger>
           </TabsList>
           <TabsContent className="w-full flex-none" value="in_progress">
-            {inProgressItems.length > 0 ? (
-              <CourseCardList
-                courses={inProgressItems}
+            {inProgressState.courses.length > 0 ? (
+              <ProgressCourseList
+                courses={inProgressState.courses}
+                loadMoreLabel="진행 중 코스 더 보기"
+                loadMoreStatus={inProgressState.loadMoreStatus}
+                nextCursor={inProgressState.nextCursor}
+                onLoadMore={() => {
+                  void loadMoreInProgressCourses()
+                }}
                 renderCard={(course, index) => (
                   <ContinueCourseCard
                     course={course}
@@ -150,6 +245,9 @@ export function HomePage({
 
           <TabsContent className="w-full flex-none" value="completed">
             <CompletedCoursesPanel
+              onLoadMore={() => {
+                void loadMoreCompletedCourses()
+              }}
               onRetry={() => {
                 void loadCompletedCourses()
               }}
@@ -163,9 +261,11 @@ export function HomePage({
 }
 
 function CompletedCoursesPanel({
+  onLoadMore,
   onRetry,
   state,
 }: {
+  readonly onLoadMore: () => void
   readonly onRetry: () => void
   readonly state: CompletedCoursesState
 }) {
@@ -195,8 +295,12 @@ function CompletedCoursesPanel({
   }
 
   return (
-    <CourseCardList
+    <ProgressCourseList
       courses={state.courses}
+      loadMoreLabel="완료한 코스 더 보기"
+      loadMoreStatus={state.loadMoreStatus}
+      nextCursor={state.nextCursor}
+      onLoadMore={onLoadMore}
       renderCard={(course, index) => (
         <CompletedCourseCard
           course={course}
@@ -208,12 +312,23 @@ function CompletedCoursesPanel({
   )
 }
 
-function CourseCardList({
+function ProgressCourseList({
   courses,
+  loadMoreLabel,
+  loadMoreStatus,
+  nextCursor,
+  onLoadMore,
   renderCard,
 }: {
-  readonly courses: readonly ProgressCourse[]
-  readonly renderCard: (course: ProgressCourse, index: number) => ReactNode
+  readonly courses: readonly LearnerProgressCourse[]
+  readonly loadMoreLabel: string
+  readonly loadMoreStatus: "error" | "idle" | "loading"
+  readonly nextCursor: string | null
+  readonly onLoadMore: () => void
+  readonly renderCard: (
+    course: LearnerProgressCourse,
+    index: number
+  ) => ReactNode
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -222,8 +337,33 @@ function CourseCardList({
           {renderCard(course, index)}
         </div>
       ))}
+      {nextCursor !== null ? (
+        <div className="flex flex-col items-center gap-2 pt-2">
+          {loadMoreStatus === "error" ? (
+            <p className="text-body-sm font-bold text-destructive">
+              코스를 더 불러오지 못했어요
+            </p>
+          ) : null}
+          <Button
+            disabled={loadMoreStatus === "loading"}
+            onClick={onLoadMore}
+            type="button"
+            variant="secondary"
+          >
+            {loadMoreStatus === "loading" ? "불러오는 중..." : loadMoreLabel}
+          </Button>
+        </div>
+      ) : null}
     </div>
   )
+}
+
+function appendUniqueCourses(
+  current: readonly LearnerProgressCourse[],
+  next: readonly LearnerProgressCourse[]
+): readonly LearnerProgressCourse[] {
+  const currentIds = new Set(current.map((course) => course.id))
+  return [...current, ...next.filter((course) => !currentIds.has(course.id))]
 }
 
 function CompletedCourseCardSkeletonList() {
@@ -284,7 +424,7 @@ function StartCourseCta() {
 }
 
 type ContinueCourseCardProps = {
-  readonly course: ProgressCourse
+  readonly course: LearnerProgressCourse
   readonly priority?: boolean
 }
 
@@ -292,12 +432,10 @@ function ContinueCourseCard({
   course,
   priority = false,
 }: ContinueCourseCardProps) {
-  const completedLessonCount = course.lessons.filter(
-    (lesson) => lesson.status === "completed"
-  ).length
-  const totalLessonCount = course.lessons.length
-  const progressPercent = clampProgressPercent(course.progressPercent)
-  const nextLessons = course.nextLessons.slice(0, 2)
+  const completedLessonCount = course.learning.completedLessons
+  const totalLessonCount = course.learning.totalLessons
+  const progressPercent = course.learning.progressPercent
+  const nextLesson = course.learning.nextLesson
   const courseHref = `/app/courses/${course.id}`
 
   return (
@@ -331,10 +469,8 @@ function ContinueCourseCard({
         </div>
       </Link>
       <div className="flex flex-col gap-1 px-3 pb-4 lg:gap-0.5 lg:py-3">
-        {nextLessons.length > 0 ? (
-          nextLessons.map((lesson) => (
-            <NextLessonLink key={lesson.id} lesson={lesson} />
-          ))
+        {nextLesson !== null ? (
+          <NextLessonLink lesson={nextLesson} />
         ) : (
           <div className="px-4 py-3 text-label-md font-bold text-muted-foreground">
             모든 레슨을 완료했어요
@@ -352,7 +488,7 @@ function ContinueCourseSummary({
   totalLessonCount,
 }: {
   readonly completedLessonCount: number
-  readonly course: ProgressCourse
+  readonly course: LearnerProgressCourse
   readonly progressPercent: number
   readonly totalLessonCount: number
 }) {
@@ -384,7 +520,11 @@ function ContinueCourseSummary({
   )
 }
 
-function NextLessonLink({ lesson }: { readonly lesson: ProgressNextLesson }) {
+function NextLessonLink({
+  lesson,
+}: {
+  readonly lesson: LearnerLessonReference
+}) {
   return (
     <Link
       className="flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left hover:bg-surface-hover lg:gap-3 lg:px-3 lg:py-3"
@@ -403,10 +543,6 @@ function NextLessonLink({ lesson }: { readonly lesson: ProgressNextLesson }) {
       </span>
     </Link>
   )
-}
-
-function clampProgressPercent(percent: number): number {
-  return Math.min(Math.max(percent, 0), 100)
 }
 
 function normalizeFirstName(name: null | string | undefined): string {

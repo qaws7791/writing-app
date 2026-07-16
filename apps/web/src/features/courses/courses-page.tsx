@@ -3,10 +3,12 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
-import type { CourseSummary } from "@/features/courses/course-types"
+import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
+import { getBrowserLearnerSessionToken } from "@/lib/auth/session-token"
+import type { LearnerCourseSummary } from "@workspace/contracts/learning"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   Empty,
@@ -25,48 +27,83 @@ import {
 import { SearchIcon, XIcon } from "@workspace/ui/components/icons"
 
 type CoursesPageProps = {
-  readonly courses: readonly CourseSummary[]
+  readonly categories: readonly string[]
+  readonly courses: readonly LearnerCourseSummary[]
   readonly filters: CourseListFilters
+  readonly nextCursor?: string | null
 }
 
 export type CourseListFilters = {
   readonly category: string
   readonly query: string
   readonly sort:
-    | "latest"
-    | "lessons-asc"
-    | "lessons-desc"
-    | "title"
+    | "lesson-count-asc"
+    | "lesson-count-desc"
+    | "recommended"
+    | "title-asc"
     | "title-desc"
 }
 
 const sortOptions = [
-  { label: "기본 순", value: "latest" },
-  { label: "제목 가나다순", value: "title" },
+  { label: "기본 순", value: "recommended" },
+  { label: "제목 가나다순", value: "title-asc" },
   { label: "제목 역순", value: "title-desc" },
-  { label: "레슨 많은 순", value: "lessons-desc" },
-  { label: "레슨 적은 순", value: "lessons-asc" },
+  { label: "레슨 많은 순", value: "lesson-count-desc" },
+  { label: "레슨 적은 순", value: "lesson-count-asc" },
 ] as const
 
-export function CoursesPage({ courses, filters }: CoursesPageProps) {
+export function CoursesPage({
+  categories,
+  courses,
+  filters,
+  nextCursor: initialNextCursor = null,
+}: CoursesPageProps) {
   const router = useRouter()
   const [query, setQuery] = useState(filters.query)
+  const [visibleCourses, setVisibleCourses] = useState(courses)
+  const [nextCursor, setNextCursor] = useState(initialNextCursor)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [prevFiltersQuery, setPrevFiltersQuery] = useState(filters.query)
   const searchRef = useRef<HTMLInputElement>(null)
+  const api = useMemo(
+    () =>
+      getBrowserWritingAppApi({
+        tokenProvider: getBrowserLearnerSessionToken,
+      }),
+    []
+  )
+
+  const loadMore = useCallback(async () => {
+    if (nextCursor === null || isLoadingMore) return
+    setIsLoadingMore(true)
+    const result = await api.listCourses({
+      category: filters.category || undefined,
+      cursor: nextCursor,
+      query: filters.query || undefined,
+      sort: filters.sort,
+    })
+    setIsLoadingMore(false)
+    if (result.status === "error") return
+    setVisibleCourses((current) => [
+      ...current,
+      ...result.value.items.filter(
+        (item) => !current.some((existing) => existing.id === item.id)
+      ),
+    ])
+    setNextCursor(result.value.nextCursor)
+  }, [
+    api,
+    filters.category,
+    filters.query,
+    filters.sort,
+    isLoadingMore,
+    nextCursor,
+  ])
 
   if (filters.query !== prevFiltersQuery) {
     setQuery(filters.query)
     setPrevFiltersQuery(filters.query)
   }
-
-  const categories = Array.from(
-    new Set(courses.map((course) => course.category))
-  )
-  const visibleCourses = sortCourses(
-    courses.filter((course) => matchesFilters(course, filters)),
-    filters.sort,
-    courses
-  )
 
   const updateUrl = useCallback(
     (overrides: Partial<CourseListFilters>) => {
@@ -86,7 +123,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
         params.set("query", nextFilters.query.trim())
       }
 
-      if (nextFilters.sort !== "latest") {
+      if (nextFilters.sort !== "recommended") {
         params.set("sort", nextFilters.sort)
       }
 
@@ -115,7 +152,9 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
         관심 있는 주제를 골라 매일 한 단락씩 글의 결을 다듬어 보세요.
       </p>
 
-      {courses.length === 0 ? (
+      {visibleCourses.length === 0 &&
+      filters.category === "" &&
+      filters.query === "" ? (
         <Empty role="status">
           <EmptyHeader>
             <EmptyTitle>아직 열려 있는 코스가 없습니다.</EmptyTitle>
@@ -217,95 +256,61 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
               </EmptyContent>
             </Empty>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {visibleCourses.map((course, index) => (
-                <Link
-                  className={buttonVariants({
-                    className:
-                      "h-auto w-full flex-row items-stretch justify-start overflow-hidden whitespace-normal rounded-2xl border-0 bg-surface p-0 text-left text-foreground hover:bg-surface md:flex-col md:rounded-4xl",
-                    variant: "secondary",
-                  })}
-                  href={`/app/courses/${course.id}`}
-                  key={course.id}
-                >
-                  <div className="relative w-28 shrink-0 md:w-full md:h-44">
-                    <Image
-                      alt={course.title}
-                      draggable="false"
-                      className="object-cover select-none"
-                      fill
-                      preload={index === 0}
-                      sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
-                      src={createCourseImageUrl(course.visualKey)}
-                    />
-                  </div>
-                  <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">
-                    <h2 className="mb-1 mt-3 text-title-md font-bold">
-                      {course.title}
-                    </h2>
-                    <p className="hidden text-body-sm font-medium text-foreground md:block">
-                      {course.description}
-                    </p>
-                    <div className="mt-auto pt-2 text-label-sm font-bold text-foreground">
-                      {course.lessonCount}개 레슨
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {visibleCourses.map((course, index) => (
+                  <Link
+                    className={buttonVariants({
+                      className:
+                        "h-auto w-full flex-row items-stretch justify-start overflow-hidden whitespace-normal rounded-2xl border-0 bg-surface p-0 text-left text-foreground hover:bg-surface md:flex-col md:rounded-4xl",
+                      variant: "secondary",
+                    })}
+                    href={`/app/courses/${course.id}`}
+                    key={course.id}
+                  >
+                    <div className="relative w-28 shrink-0 md:w-full md:h-44">
+                      <Image
+                        alt={course.title}
+                        draggable="false"
+                        className="object-cover select-none"
+                        fill
+                        preload={index === 0}
+                        sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
+                        src={createCourseImageUrl(course.visualKey)}
+                      />
                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">
+                      <h2 className="mb-1 mt-3 text-title-md font-bold">
+                        {course.title}
+                      </h2>
+                      <p className="hidden text-body-sm font-medium text-foreground md:block">
+                        {course.description}
+                      </p>
+                      <div className="mt-auto pt-2 text-label-sm font-bold text-foreground">
+                        {course.lessonCount}개 레슨
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {nextCursor === null ? null : (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    className={buttonVariants({ variant: "secondary" })}
+                    disabled={isLoadingMore}
+                    onClick={() => void loadMore()}
+                    type="button"
+                  >
+                    {isLoadingMore ? "불러오는 중" : "코스 더 보기"}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
     </div>
   )
-}
-
-function matchesFilters(
-  course: CourseSummary,
-  filters: CourseListFilters
-): boolean {
-  const query = filters.query.trim().toLowerCase()
-  const matchesCategory =
-    filters.category === "" || course.category === filters.category
-  const matchesQuery =
-    query === "" ||
-    [course.title, course.description, course.category].some((value) =>
-      value.toLowerCase().includes(query)
-    )
-
-  return matchesCategory && matchesQuery
-}
-
-function sortCourses(
-  courses: readonly CourseSummary[],
-  sort: CourseListFilters["sort"],
-  originalCourses: readonly CourseSummary[]
-): readonly CourseSummary[] {
-  const originalOrder = new Map(
-    originalCourses.map((course, index) => [course.id, index])
-  )
-
-  return [...courses].sort((left, right) => {
-    if (sort === "title") {
-      return left.title.localeCompare(right.title, "ko")
-    }
-
-    if (sort === "title-desc") {
-      return right.title.localeCompare(left.title, "ko")
-    }
-
-    if (sort === "lessons-desc") {
-      return right.lessonCount - left.lessonCount
-    }
-
-    if (sort === "lessons-asc") {
-      return left.lessonCount - right.lessonCount
-    }
-
-    return (
-      (originalOrder.get(left.id) ?? 0) - (originalOrder.get(right.id) ?? 0)
-    )
-  })
 }
 
 function createCoursesHref(
@@ -326,7 +331,7 @@ function createCoursesHref(
     params.set("query", nextFilters.query.trim())
   }
 
-  if (nextFilters.sort !== "latest") {
+  if (nextFilters.sort !== "recommended") {
     params.set("sort", nextFilters.sort)
   }
 

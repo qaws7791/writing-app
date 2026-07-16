@@ -2,6 +2,7 @@
 
 ## 작업 상태
 
+- 2026-07-16: 학습자 웹의 generated OpenAPI 타입 경로를 제거하고 `@workspace/contracts/learning` 직접 소비 경로로 전환했다.
 - 2026-07-12: `packages/core`, `packages/ui`, `packages/env` 공개 Interface와 패키지 내부 import 규칙 정비를 완료했다.
 
 ## 완료 결과
@@ -22,6 +23,7 @@
 - `packages/core`의 canonical 경로는 `@workspace/core/<module>`이다. `modules/*`, `shared/*`, repository Implementation 경로는 외부에 공개하지 않는다.
 - `packages/ui`는 `@workspace/ui/components/ui/<name>`, `@workspace/ui/components/lesson/<name>`, `@workspace/ui/lib/<name>`처럼 소유 module이 드러나는 경로를 사용한다.
 - `packages/env`는 parser와 로컬 기본값을 각각 `@workspace/env/parse-env`, `@workspace/env/local-runtime-defaults`에서 제공한다. client runtime config는 parser를 import하지 않는다.
+- 학습자 HTTP request·response·오류 타입은 `@workspace/contracts/learning`에서만 가져오며 generated OpenAPI 타입과 `writing-app-api-contract` 중간 계층을 만들지 않는다.
 
 ## 내부 import 원칙
 

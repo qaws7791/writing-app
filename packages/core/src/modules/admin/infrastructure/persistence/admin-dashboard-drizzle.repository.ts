@@ -35,12 +35,13 @@ import {
 } from "#core/modules/admin/infrastructure/persistence/admin-repository-shared"
 import {
   authUsers,
+  courseCurriculumVersions,
   courses,
-  courseUnits,
+  courseUnitVersions,
   learnerActivityDays,
   learnerLessonProgress,
   learnerProfiles,
-  lessons,
+  lessonVersions,
 } from "@workspace/db/schema"
 
 const recentActivityLimit = 5
@@ -99,14 +100,34 @@ function readActiveLessonCount(db: WritingAppDatabase): number {
   return (
     db
       .select({ value: count() })
-      .from(lessons)
-      .innerJoin(courses, eq(courses.id, lessons.courseId))
-      .innerJoin(courseUnits, eq(courseUnits.id, lessons.unitId))
+      .from(lessonVersions)
+      .innerJoin(
+        courses,
+        eq(
+          courses.publishedCurriculumVersionId,
+          lessonVersions.curriculumVersionId
+        )
+      )
+      .innerJoin(
+        courseCurriculumVersions,
+        eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
+      )
+      .innerJoin(
+        courseUnitVersions,
+        and(
+          eq(
+            courseUnitVersions.curriculumVersionId,
+            lessonVersions.curriculumVersionId
+          ),
+          eq(courseUnitVersions.id, lessonVersions.unitId)
+        )
+      )
       .where(
         and(
-          eq(lessons.status, contentStatuses.active),
+          eq(lessonVersions.status, contentStatuses.active),
           eq(courses.status, contentStatuses.active),
-          eq(courseUnits.status, contentStatuses.active)
+          eq(courseCurriculumVersions.status, "published"),
+          eq(courseUnitVersions.status, contentStatuses.active)
         )
       )
       .get()?.value ?? 0

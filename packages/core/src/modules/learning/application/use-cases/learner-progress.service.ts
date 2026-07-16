@@ -1,62 +1,69 @@
-import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
-import {
-  learnerProgressOverviewDtoSchema,
-  type LearnerProgressOverviewDto,
-} from "#core/modules/learning/domain/learner-read-model.dto"
-import type { ProgressCourseStatusFilter } from "#core/modules/learning/domain/learner-read-model.dto"
-import {
-  filterCoursesByProgressStatus,
-  toCourseProgress,
-  type ProgressReader,
-} from "#core/modules/learning/domain/learning-progress-read-model"
+import type {
+  LearnerProgressListQuery,
+  LearnerProgressPage,
+} from "@workspace/contracts/learning"
+import { learnerProgressPageSchema } from "@workspace/contracts/learning"
 
-export type ReadProgressOptions = {
-  readonly status?: ProgressCourseStatusFilter
-}
+import type { LearnerCursorCodec } from "#core/modules/learning/application/learner-cursor"
+import type { LearnerReadModelRepository } from "#core/modules/learning/application/ports/learner-read-model.repository"
+import { err, ok, type Result } from "#core/shared/result"
+
+export type ProgressServiceError = { readonly kind: "invalid-cursor" }
 
 export type ProgressService = {
   readonly readProgress: (
     userId: string,
-    options?: ReadProgressOptions
-  ) => Promise<LearnerProgressOverviewDto>
+    query: LearnerProgressListQuery
+  ) => Promise<Result<LearnerProgressPage, ProgressServiceError>>
 }
 
 export function createProgressService({
-  contentRepository,
-  progressReader,
+  cursorCodec,
+  readModelRepository,
 }: {
-  readonly contentRepository: ContentRepository
-  readonly progressReader: ProgressReader
+  readonly cursorCodec: LearnerCursorCodec
+  readonly readModelRepository: LearnerReadModelRepository
 }): ProgressService {
   return {
-    async readProgress(userId, options) {
-      const [courses, progress] = await Promise.all([
-        contentRepository.listCourses(),
-        progressReader.readLearnerProgress(userId),
-      ])
-      const courseProgress = await Promise.all(
-        courses.map(async (course) => {
-          const courseDetail = await contentRepository.findCourseDetail(
-            course.id
-          )
+    async readProgress(userId, query) {
+      const fingerprint = cursorCodec.createFingerprint({
+        status: query.status,
+      })
+      const learnerScope = cursorCodec.createLearnerScope(userId)
+      const after =
+        query.cursor === undefined
+          ? undefined
+          : cursorCodec.decode(query.cursor, {
+              endpoint: "progress",
+              fingerprint,
+              learnerScope,
+            })
 
-          if (courseDetail === null) {
-            return null
-          }
+      if (query.cursor !== undefined && after === null) {
+        return err({ kind: "invalid-cursor" })
+      }
 
-          return toCourseProgress(course, courseDetail, progress.lessonProgress)
+      const page = await readModelRepository.listProgress({
+        after: after ?? undefined,
+        limit: query.limit,
+        status: query.status,
+        userId,
+      })
+
+      return ok(
+        learnerProgressPageSchema.parse({
+          items: page.items,
+          nextCursor:
+            page.nextPosition === null
+              ? null
+              : cursorCodec.encode({
+                  endpoint: "progress",
+                  fingerprint,
+                  learnerScope,
+                  position: page.nextPosition,
+                }),
         })
       )
-
-      return learnerProgressOverviewDtoSchema.parse({
-        courses: filterCoursesByProgressStatus(
-          courseProgress.filter((course) => course !== null),
-          options?.status
-        ),
-        user: {
-          currentStreakDays: progress.currentStreakDays,
-        },
-      })
     },
   }
 }

@@ -32,52 +32,52 @@ CATEGORIZE
 
 ## 콘텐츠 변경 정책
 
-현재 플랫폼은 커리큘럼 버전, 마이그레이션 맵, 학습자 업그레이드 UX를 운영하지 않는다. 코스마다 하나의 현재 커리큘럼만 있고, 공개 콘텐츠 조회와 학습 진행 계산은 active 유닛, 레슨, 스텝의 현재 상태를 기준으로 한다.
-
-초기 운영 원칙은 단순하다. 오탈자 수정, 설명 보완, 기존 레슨의 스텝 보강, 유닛/레슨 제목 수정은 현재 커리큘럼에 직접 반영한다. 레슨 ID를 유지하는 범위의 변경은 기존 학습 진행을 그대로 사용할 수 있다.
+코스마다 변경 가능한 draft 하나와 변경할 수 없는 published revision들을 운영한다. 관리자의 저장은 draft에만 반영되고, 명시적 발행이 성공해야 신규 학습자 경로가 새 revision을 가리킨다. 기존 학습자는 코스 시작 시점의 published revision에 고정된다.
 
 ## 변경 유형
 
-| 변경 유형        | 예시                                     | 현재 정책                                                                 |
-| ---------------- | ---------------------------------------- | ------------------------------------------------------------------------- |
-| `minor-edit`     | 오탈자 수정, 설명 보완                   | 현재 커리큘럼에 즉시 반영한다.                                            |
-| `additive`       | 기존 레슨 안의 예제 추가, 보충 설명 추가 | 현재 커리큘럼에 반영한다.                                                 |
-| `structural`     | 새 레슨 삽입, 유닛 순서 변경, 레슨 이동  | 현재 커리큘럼에 직접 반영하되 기존 레슨 ID를 유지하는 변경을 우선한다.    |
-| `major-revision` | 다수 레슨 병합·분할, 커리큘럼 전면 개편  | 현재 구현 범위 밖이다. 필요해지면 버전/마이그레이션 모델을 다시 설계한다. |
+| 변경 유형        | 예시                                     | 현재 정책                                                       |
+| ---------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| `minor-edit`     | 오탈자 수정, 설명 보완                   | draft에 저장하고 검토 뒤 발행한다.                              |
+| `additive`       | 기존 레슨 안의 예제 추가, 보충 설명 추가 | draft에 저장하며 기존 published revision은 유지한다.            |
+| `structural`     | 새 레슨 삽입, 유닛 순서 변경, 레슨 이동  | 논리 ID를 가능한 한 유지해 다음 revision으로 발행한다.          |
+| `major-revision` | 다수 레슨 병합·분할, 커리큘럼 전면 개편  | 새 revision으로 발행한다. 기존 학습자를 자동 이동시키지 않는다. |
 
 ## 완료 성취 보존
 
 학습자가 이미 완료한 성취는 가능한 한 유지한다.
 
-- 완료 레슨은 `lesson_progress`에 레슨 ID 기준으로 남긴다.
-- 코스 진행률과 다음 레슨은 현재 커리큘럼의 active 유닛과 active 레슨 기준으로 계산한다.
-- 기존 레슨을 정리할 때는 실제 삭제보다 `archived` 상태 전환을 우선한다.
-- 이미 저장된 완료 row는 레슨이 archived 상태가 되더라도 감사와 복구를 위해 남긴다.
+- 학습 시작 시 `learner_course_progress`에 published curriculum version을 고정한다.
+- 완료 레슨, 현재 스텝과 답변은 해당 curriculum version 범위에 남긴다.
+- 코스 진행률과 다음 레슨은 학습자에게 고정된 version의 active 계층 기준으로 계산한다.
+- 새 revision 발행과 코스 보관은 기존 진행·답안·AI 시도를 이동하거나 삭제하지 않는다.
 
 ## 현재 커리큘럼 모델
 
-커리큘럼은 코스의 현재 구조로 표현한다.
+커리큘럼은 코스 identity와 관계형 version 구조로 표현한다.
 
 ```text
 Course
-  -> Unit
-    -> Lesson
-      -> Step
+  -> CurriculumVersion (draft | published)
+    -> UnitVersion
+      -> LessonVersion
+        -> StepVersion
 ```
 
-학습 진행은 코스와 레슨에 직접 귀속한다.
+학습 진행은 코스와 고정된 published version에 귀속한다.
 
 ```text
 LearnerProgress
   - userId
   - courseId
-  - lastLessonId
-  - completedLessonIds
+  - curriculumVersionId
+  - lessonId
+  - currentStepId
 ```
 
 ## 삭제 대신 아카이빙
 
-코스, 유닛, 레슨, 스텝은 기본적으로 실제 삭제하지 않는다. 신규 학습 경로에서 숨기려면 상태를 변경한다.
+코스 보관은 코스 identity를 `archived`로 바꾼다. published version과 학습자 참조는 실제 삭제하지 않는다. mutable draft 저장에서는 제거된 하위 row를 같은 draft 안에서 삭제하고 전체 문서를 다시 삽입할 수 있다.
 
 ```ts
 type CurriculumNodeStatus = "active" | "archived"
@@ -92,7 +92,7 @@ type CurriculumNodeStatus = "active" | "archived"
 
 ## 답변과 연속 학습일
 
-상호작용형 스텝 답변은 `lesson_answers`에 저장한다. 답변 본문은 스텝 타입별 JSON으로 저장하고, 타입별 파싱과 검증은 `packages/core`의 DTO와 서비스 계약에서 명시한다.
+상호작용형 스텝 답변은 `learner_lesson_answers`에 course·curriculum version·lesson·step 범위로 저장한다. 답변 본문은 스텝 타입별 JSON으로 저장하고, 타입별 파싱과 검증은 `packages/core`의 DTO와 서비스 계약에서 명시한다.
 
 매칭 스텝은 학습 콘텐츠의 텍스트와 화면 선택지 식별자를 분리한다. 왼쪽과 오른쪽 선택지는 pair index에서 만든 stable choice id를 갖고, 오른쪽 표시 순서는 `packages/core`의 매칭 표시 정책이 결정적으로 섞는다. 중복 텍스트가 있어도 화면 key, 선택 전이, 정답 판정은 텍스트가 아니라 choice id를 기준으로 처리하고, 저장 payload만 기존 `left`, `right` 텍스트 pair로 변환한다.
 
@@ -102,20 +102,18 @@ type CurriculumNodeStatus = "active" | "archived"
 
 ## 어드민 편집 정책
 
-어드민 코스 편집기는 현재 커리큘럼 전체 문서를 revision 조건으로 저장한다.
+어드민 코스 편집기는 현재 mutable draft 전체 문서를 `editVersion` 조건으로 저장하고 별도 행동으로 발행한다.
 
 - 코스 편집 문서는 `GET /courses/:courseId/editor`로 조회한다.
 - 코스 편집 문서는 `PUT /courses/:courseId/editor`로 원자적으로 저장한다.
 - 저장 문서는 branded 코스·유닛·레슨·스텝 ID와 구조화된 10종 step union을 사용한다.
-- 같은 revision에서만 저장하며 충돌은 `409 STALE_REVISION`으로 반환한다. 자동 병합하지 않는다.
-- 문서에서 빠진 유닛·레슨·스텝은 삭제하지 않고 `archived`로 전환한다. 레슨은 같은 코스의 유닛 사이에서 이동할 수 있지만 스텝은 레슨 사이에서 이동할 수 없다.
-- 코스 생성은 `POST /courses`, 코스 보관은 `POST /courses/:courseId/archive`를 사용한다.
-- 별도 draft, publish, discard, restore 단계는 없다.
+- `If-Match`가 현재 draft의 `editVersion`과 같을 때만 저장하며 충돌은 `409 STALE_REVISION`으로 반환한다. 자동 병합하지 않는다.
+- 저장은 `editVersion`만 증가시키고 발행 순서인 `revision`은 바꾸지 않는다.
+- `POST /courses/:courseId/publish`는 draft 전체를 검증해 published로 전환하고 같은 내용의 다음 revision draft를 복제한다.
+- 코스 생성은 `POST /courses`, 코스 보관은 `DELETE /courses/:courseId`를 사용한다. 새 코스는 빈 revision `1` draft로 시작해 발행 전까지 학습자에게 보이지 않는다.
 
 ## 현재 구현 상태
 
-현재 도메인 계약, DTO, repository port, baseline schema, seed loader는 기준 콘텐츠 baseline으로 구현되어 있다. 런타임은 변환된 DB seed와 repository를 통해 콘텐츠를 조회하고, 단일 현재 커리큘럼 모델을 기준으로 학습 진행과 어드민 편집을 처리한다.
+현재 baseline schema, seed, content·admin·learning repository는 관계형 curriculum version을 기준으로 구현되어 있다. 기존 mutable DB는 revision `1` published와 revision `2` draft로 일회성 이관하며 진행·답안·AI 시도는 revision `1`에 고정한다.
 
-목표 모델은 단일 현재 커리큘럼 모델이다. 커리큘럼 버전 테이블, 버전별 유닛/레슨/스텝 snapshot, 마이그레이션 맵, 마이그레이션 적용 기록, 학습자 업그레이드 숨김 기록은 재도입하지 않는다.
-
-버전 모델이 다시 필요해지는 기준은 명확하다. 실제 학습자가 많고, 기존 학습자의 진행 경로를 고정한 채 새 커리큘럼을 병렬 운영해야 하며, 구조 변경을 학습자 선택 또는 운영자 매핑으로 이전해야 할 때만 재도입한다.
+재수강, 학습자 version 업그레이드 선택, published version 자동 정리와 둘 이상의 mutable branch는 현재 범위 밖이다.

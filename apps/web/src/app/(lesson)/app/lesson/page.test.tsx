@@ -3,20 +3,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import LessonRoute from "@/app/(lesson)/app/lesson/page"
 import { networkApiError } from "@/lib/api/api-error"
-import { apiFailure } from "@/lib/api/api-result"
+import { httpApiFailure as apiFailure } from "@workspace/http-client"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {
-  completeLesson: vi.fn(),
-  createAiFeedback: vi.fn(),
+  completeStep: vi.fn(),
   getCourseDetail: vi.fn(),
+  getCourseCategories: vi.fn(),
   getLesson: vi.fn(),
   getProfile: vi.fn(),
   getProgress: vi.fn(),
   listCourses: vi.fn(),
-  saveLessonAnswer: vi.fn(),
-  saveLessonProgress: vi.fn(),
+  requestAiFeedback: vi.fn(),
+  startLesson: vi.fn(),
 }
 
 const { redirectMock, sessionTokenMock } = vi.hoisted(() => ({
@@ -59,7 +59,6 @@ describe("레슨 route", () => {
 
   it("레슨 조회 실패를 fallback 콘텐츠로 숨기지 않는다", async () => {
     vi.mocked(api.getLesson).mockResolvedValue(apiFailure(networkError()))
-    vi.mocked(api.getCourseDetail).mockResolvedValue(apiFailure(networkError()))
 
     render(
       await LessonRoute({
@@ -75,7 +74,7 @@ describe("레슨 route", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("레슨·진행·프로필 조회를 함께 시작하고 코스 조회는 레슨 확인 뒤 시작한다", async () => {
+  it("레슨과 프로필만 병렬 조회하고 progress와 course detail은 조회하지 않는다", async () => {
     const lesson =
       createDeferred<Awaited<ReturnType<WritingAppApi["getLesson"]>>>()
     vi.mocked(api.getLesson).mockReturnValueOnce(lesson.promise)
@@ -87,8 +86,8 @@ describe("레슨 route", () => {
     await Promise.resolve()
 
     expect(api.getLesson).toHaveBeenCalledWith("l1")
-    expect(api.getProgress).toHaveBeenCalledOnce()
     expect(api.getProfile).toHaveBeenCalledOnce()
+    expect(api.getProgress).not.toHaveBeenCalled()
     expect(api.getCourseDetail).not.toHaveBeenCalled()
 
     lesson.resolve(apiFailure(networkError()))

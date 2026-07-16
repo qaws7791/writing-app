@@ -2,10 +2,13 @@ import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import AppHomeRoute from "@/app/(learner)/app/page"
-import type { ProgressCourseList } from "@/features/courses/course-types"
-import type { LearnerProfile } from "@/features/profile/profile-types"
+import { learnerProgressPageSchema } from "@workspace/contracts/learning"
+import type { LearnerProfileResponse } from "@workspace/contracts/learning"
 import type { ApiError } from "@/lib/api/api-error"
-import { apiFailure, apiOk } from "@/lib/api/api-result"
+import {
+  httpApiFailure as apiFailure,
+  httpApiOk as apiOk,
+} from "@workspace/http-client"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 
 const { redirectMock } = vi.hoisted(() => ({
@@ -15,18 +18,18 @@ const { redirectMock } = vi.hoisted(() => ({
 }))
 
 const api: WritingAppApi = {
-  completeLesson: vi.fn(),
-  createAiFeedback: vi.fn(),
+  completeStep: vi.fn(),
   getCourseDetail: vi.fn(),
+  getCourseCategories: vi.fn(),
   getLesson: vi.fn(),
   getProfile: vi.fn(),
   getProgress: vi.fn(),
   listCourses: vi.fn(),
-  saveLessonAnswer: vi.fn(),
-  saveLessonProgress: vi.fn(),
+  requestAiFeedback: vi.fn(),
+  startLesson: vi.fn(),
 }
 
-const profile: LearnerProfile = {
+const profile: LearnerProfileResponse = {
   stats: {
     completedLessons: 0,
     currentStreakDays: 0,
@@ -44,10 +47,10 @@ const profile: LearnerProfile = {
   },
 }
 
-const emptyProgress: ProgressCourseList = {
-  courses: [],
-  currentStreakDays: 0,
-}
+const emptyProgress = learnerProgressPageSchema.parse({
+  items: [],
+  nextCursor: null,
+})
 
 vi.mock("next/navigation", () => ({
   redirect: redirectMock,
@@ -120,16 +123,18 @@ describe("앱 홈 route", () => {
 
 function authenticationError(): ApiError {
   return {
-    code: "unauthorized",
+    code: "UNAUTHENTICATED",
     message: "로그인이 필요합니다.",
+    requestId: "request-authentication",
     status: 401,
   }
 }
 
 function serviceError(message: string): ApiError {
   return {
-    code: "provider-unavailable",
+    code: "PROVIDER_UNAVAILABLE",
     message,
+    requestId: "request-service",
     status: 503,
   }
 }

@@ -2,39 +2,30 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
-import type { CourseDetail } from "@/features/courses/course-types"
+import { learnerCourseDetailSchema } from "@workspace/contracts/learning"
 
-const course: CourseDetail = {
+const version = { curriculumVersionId: "c1-v1", revision: 1 }
+const course = learnerCourseDetailSchema.parse({
   category: "입문자를 위한 코스",
   description:
     "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
   lessonCount: 2,
-  progress: {
+  contentStatus: "active",
+  learning: {
     completedLessons: 0,
-    lessons: [
-      {
-        currentStepIndex: null,
-        lessonId: "l1",
-        status: "available",
-      },
-      {
-        currentStepIndex: null,
-        lessonId: "l2",
-        status: "locked",
-      },
-    ],
     nextLesson: {
-      currentStepIndex: null,
+      currentStepId: "l1-s1",
+      currentStepIndex: 0,
       estimatedMinutes: 5,
       id: "l1",
-      status: "available",
       title: "좋은 문장이란 무엇인가",
     },
+    progressPercent: 0,
+    status: "not_started",
     totalLessons: 2,
+    version,
   },
-  progressPercent: 0,
-  status: "active",
   title: "글쓰기 첫걸음 30일",
   visualKey: "basic-sentence-writing",
   units: [
@@ -46,8 +37,9 @@ const course: CourseDetail = {
           description: "좋은 문장을 배웁니다.",
           estimatedMinutes: 5,
           id: "l1",
-          order: 1,
-          status: "active",
+          contentStatus: "active",
+          learning: { status: "not_started", totalSteps: 1, version },
+          sortOrder: 1,
           title: "좋은 문장이란 무엇인가",
         },
         {
@@ -55,16 +47,18 @@ const course: CourseDetail = {
           description: "짧게 써봅니다.",
           estimatedMinutes: 7,
           id: "l2",
-          order: 2,
-          status: "active",
+          contentStatus: "active",
+          learning: { status: "locked", version },
+          sortOrder: 2,
           title: "짧게 쓰기",
         },
       ],
-      order: 1,
+      sortOrder: 1,
       title: "문장의 기본기",
     },
   ],
-}
+  version,
+})
 
 describe("코스 상세 화면", () => {
   it("현재 제품 코스 상세처럼 hero, 진행률, 첫 레슨 링크를 표시한다", () => {

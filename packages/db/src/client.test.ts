@@ -104,14 +104,16 @@ describe("Writing App DB client", () => {
         "admin_user",
         "admin_verification",
         "ai_feedback_attempts",
-        "course_units",
+        "course_curriculum_versions",
+        "course_unit_versions",
         "courses",
         "learner_activity_days",
+        "learner_course_progress",
         "learner_lesson_answers",
         "learner_lesson_progress",
         "learner_profiles",
-        "lesson_steps",
-        "lessons",
+        "lesson_step_versions",
+        "lesson_versions",
         "session",
         "user",
         "verification",
@@ -149,13 +151,17 @@ describe("Writing App DB client", () => {
 
       const lessonForeignKeys = client.sqlite
         .query<{ readonly table: string }, []>(
-          "PRAGMA foreign_key_list(lessons)"
+          "PRAGMA foreign_key_list(lesson_versions)"
         )
         .all()
         .map((row) => row.table)
         .sort()
 
-      expect(lessonForeignKeys).toEqual(["course_units", "courses"])
+      expect(lessonForeignKeys).toEqual([
+        "course_curriculum_versions",
+        "course_unit_versions",
+        "course_unit_versions",
+      ])
     } finally {
       client.close()
     }
@@ -195,7 +201,7 @@ describe("Writing App DB client", () => {
     }
   })
 
-  it("기존 courses 테이블에 visual_key가 없으면 보존 가능한 마이그레이션으로 추가한다", () => {
+  it("필수 legacy 테이블이 빠진 DB는 변경하지 않고 이관을 실패시킨다", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
@@ -224,20 +230,22 @@ describe("Writing App DB client", () => {
         );
       `)
 
-      runBaselineMigration(client.sqlite)
+      expect(() => runBaselineMigration(client.sqlite)).toThrow(
+        "legacy curriculum tables are missing"
+      )
 
       const courseColumns = client.sqlite
         .query<{ readonly name: string }, []>("PRAGMA table_info(courses)")
         .all()
         .map((row) => row.name)
-      const legacyCourse = client.sqlite
-        .query<{ readonly visual_key: string }, []>(
-          "SELECT visual_key FROM courses WHERE id = 'legacy-course'"
-        )
-        .get()
-
-      expect(courseColumns).toContain("visual_key")
-      expect(legacyCourse?.visual_key).toBe("basic-sentence-writing")
+      expect(courseColumns).not.toContain("published_curriculum_version_id")
+      expect(
+        client.sqlite
+          .query<{ readonly id: string }, []>(
+            "SELECT id FROM courses WHERE id = 'legacy-course'"
+          )
+          .get()
+      ).toEqual({ id: "legacy-course" })
     } finally {
       client.close()
     }

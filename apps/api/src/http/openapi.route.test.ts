@@ -53,5 +53,46 @@ describe("플랫폼 API openapi route", () => {
       ["paths", "/profile", "get", "security"],
       [{ learnerSessionCookie: [] }]
     )
+    expect(document).toHaveProperty(
+      [
+        "paths",
+        "/learning/lessons/{lessonId}/steps/{stepId}/complete",
+        "post",
+        "requestBody",
+        "content",
+        "application/json",
+        "schema",
+        "oneOf",
+        0,
+        "additionalProperties",
+      ],
+      false
+    )
+    expect(document.paths).toHaveProperty("/learning/lessons/{lessonId}/start")
+    expect(document.paths).toHaveProperty(
+      "/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback"
+    )
+    for (const path of [
+      "/learning/answers",
+      "/learning/lessons/{lessonId}/progress",
+      "/learning/lessons/{lessonId}/complete",
+      "/ai-feedback",
+    ]) {
+      expect(document.paths).not.toHaveProperty(path)
+    }
+    expect(document).toHaveProperty(
+      [
+        "paths",
+        "/profile",
+        "get",
+        "responses",
+        "200",
+        "content",
+        "application/json",
+        "schema",
+        "additionalProperties",
+      ],
+      false
+    )
   })
 })

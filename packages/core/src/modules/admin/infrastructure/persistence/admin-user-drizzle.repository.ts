@@ -41,12 +41,13 @@ import {
 } from "#core/modules/admin/infrastructure/persistence/admin-repository-shared"
 import {
   authUsers,
+  courseCurriculumVersions,
   courses,
-  courseUnits,
+  courseUnitVersions,
   learnerActivityDays,
   learnerLessonProgress,
   learnerProfiles,
-  lessons,
+  lessonVersions,
 } from "@workspace/db/schema"
 import { userIdSchema, type UserId } from "@workspace/contracts/admin"
 
@@ -326,35 +327,39 @@ function readUserSnapshots(db: WritingAppDatabase): AdminUserSnapshot[] {
 }
 
 function countActiveLessons(db: WritingAppDatabase): number {
-  const activeCourseIds = new Set(
+  return (
     db
-      .select()
-      .from(courses)
-      .all()
-      .filter((course) => course.status === contentStatuses.active)
-      .map((course) => course.id)
-  )
-  const activeUnitIds = new Set(
-    db
-      .select()
-      .from(courseUnits)
-      .all()
-      .filter(
-        (unit) =>
-          unit.status === contentStatuses.active &&
-          activeCourseIds.has(unit.courseId)
+      .select({ value: count() })
+      .from(lessonVersions)
+      .innerJoin(
+        courses,
+        eq(
+          courses.publishedCurriculumVersionId,
+          lessonVersions.curriculumVersionId
+        )
       )
-      .map((unit) => unit.id)
+      .innerJoin(
+        courseCurriculumVersions,
+        eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
+      )
+      .innerJoin(
+        courseUnitVersions,
+        and(
+          eq(
+            courseUnitVersions.curriculumVersionId,
+            lessonVersions.curriculumVersionId
+          ),
+          eq(courseUnitVersions.id, lessonVersions.unitId)
+        )
+      )
+      .where(
+        and(
+          eq(courses.status, contentStatuses.active),
+          eq(courseCurriculumVersions.status, "published"),
+          eq(courseUnitVersions.status, contentStatuses.active),
+          eq(lessonVersions.status, contentStatuses.active)
+        )
+      )
+      .get()?.value ?? 0
   )
-
-  return db
-    .select()
-    .from(lessons)
-    .all()
-    .filter(
-      (lesson) =>
-        lesson.status === contentStatuses.active &&
-        activeCourseIds.has(lesson.courseId) &&
-        activeUnitIds.has(lesson.unitId)
-    ).length
 }

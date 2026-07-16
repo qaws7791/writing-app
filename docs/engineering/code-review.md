@@ -34,7 +34,8 @@
 - domain과 production application이 runtime adapter나 infrastructure 구현을 import하거나 Worker·network·환경 변수를 직접 사용하지 않는가?
 - HTTP 변경 route가 검증된 `*Request`를 application command로 명시적으로 변환하고 repository port까지 request 타입을 전달하지 않는가?
 - 관리자 DB 생성·공유·종료는 `admin-runtime` 하나가 소유하고 core service 결과에 DB client가 노출되지 않는가?
-- generated OpenAPI 타입은 `writing-app-api-contract.ts`에 격리되고, feature mapper는 transport contract 타입만 참조하는가?
+- 학습자 HTTP 경계가 `@workspace/contracts/learning`의 strict schema와 추론 타입을 직접 사용하고 generated OpenAPI 타입이나 `writing-app-api-contract`를 다시 만들지 않는가?
+- 학습자 성공 응답이 전송 직전에 runtime parse되고 계약 실패 로그에서 본문·답안·Zod message가 제외되는가?
 - 매칭 스텝 presentation 상호작용 모델은 `apps/web` feature 내부에 있고 `packages/contracts`나 `packages/core` public API로 새어 나가지 않는가?
 - Learning domain이 content 타입을 필요로 할 때 content module facade가 아니라 `@workspace/contracts/content` 또는 구체적인 독립 경계를 import하는가?
 - 레거시 실험 디렉터리의 구현 파일을 제품 런타임에서 import하지 않는가?

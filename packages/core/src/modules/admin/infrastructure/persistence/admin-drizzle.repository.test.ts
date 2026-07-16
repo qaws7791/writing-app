@@ -2,12 +2,19 @@ import { describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
-import { eq } from "drizzle-orm"
-import { userIdSchema } from "@workspace/contracts/admin"
-import { lessonIdSchema } from "@workspace/contracts/content"
+import { and, eq } from "drizzle-orm"
+import {
+  adminCourseEditorDocumentSchema,
+  userIdSchema,
+  type AdminCourseDetailDto,
+  type AdminCourseEditorDocument,
+} from "@workspace/contracts/admin"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { createCurriculumVersionId } from "@workspace/db/content/curriculum-version-id"
+import type { ContentSeedRows } from "@workspace/db/seeds/seed-content"
+import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
 import { createDrizzleAdminRepository } from "#core/modules/admin/infrastructure/persistence/admin-drizzle.repository"
 import {
   toCourseId,
@@ -20,13 +27,15 @@ import {
 import { createDrizzleContentRepository } from "#core/modules/content/infrastructure/persistence/content-drizzle.repository"
 import {
   authUsers,
-  courseUnits,
+  courseCurriculumVersions,
+  courseUnitVersions,
   courses,
   learnerActivityDays,
+  learnerCourseProgress,
   learnerLessonProgress,
   learnerProfiles,
-  lessonSteps,
-  lessons,
+  lessonStepVersions,
+  lessonVersions,
 } from "@workspace/db/schema"
 
 describe("어드민 DB repository", () => {
@@ -129,7 +138,7 @@ describe("어드민 DB repository", () => {
       "utf8"
     )
 
-    expect(repositorySource).toContain("archiveContentRowsOutsideSeed")
+    expect(repositorySource).toContain("upsertContentSeedRows")
     expect(repositorySource).not.toContain("function archiveContentOutsideSeed")
   })
 
@@ -339,7 +348,7 @@ describe("어드민 DB repository", () => {
             category: "입문",
             id: "course-1",
             lessonCount: 2,
-            revision: 0,
+            revision: 2,
             status: "active",
             title: "활성 코스",
             unitCount: 1,
@@ -368,7 +377,7 @@ describe("어드민 DB repository", () => {
             category: "입문",
             id: "course-1",
             lessonCount: 2,
-            revision: 0,
+            revision: 2,
             status: "active",
             title: "활성 코스",
             unitCount: 1,
@@ -587,7 +596,7 @@ describe("어드민 DB repository", () => {
           steps: 136,
           units: 15,
         },
-        revision: 1,
+        revision: 2,
       })
       expect(
         client.db
@@ -599,24 +608,24 @@ describe("어드민 DB repository", () => {
       expect(
         client.db
           .select()
-          .from(courseUnits)
+          .from(courseUnitVersions)
           .all()
           .filter((unit) => unit.status === "active")
-      ).toHaveLength(15)
+      ).toHaveLength(30)
       expect(
         client.db
           .select()
-          .from(lessons)
+          .from(lessonVersions)
           .all()
           .filter((lesson) => lesson.status === "active")
-      ).toHaveLength(44)
+      ).toHaveLength(88)
       expect(
         client.db
           .select()
-          .from(lessonSteps)
+          .from(lessonStepVersions)
           .all()
           .filter((step) => step.status === "active")
-      ).toHaveLength(136)
+      ).toHaveLength(272)
     } finally {
       client.close()
     }
@@ -634,13 +643,13 @@ describe("어드민 DB repository", () => {
 
       await expect(repository.resetContent({ now })).resolves.toEqual({
         changed: {
-          archived: 4,
+          archived: 1,
           courses: 5,
           lessons: 44,
           steps: 136,
           units: 15,
         },
-        revision: 1,
+        revision: 2,
       })
       expect(
         client.db
@@ -652,24 +661,10 @@ describe("어드민 DB repository", () => {
       expect(
         client.db
           .select()
-          .from(courseUnits)
-          .where(eq(courseUnits.id, "outside-unit"))
-          .get()?.status
-      ).toBe("archived")
-      expect(
-        client.db
-          .select()
-          .from(lessons)
-          .where(eq(lessons.id, "outside-lesson"))
-          .get()?.status
-      ).toBe("archived")
-      expect(
-        client.db
-          .select()
-          .from(lessonSteps)
-          .where(eq(lessonSteps.id, "outside-step"))
-          .get()?.status
-      ).toBe("archived")
+          .from(courseCurriculumVersions)
+          .where(eq(courseCurriculumVersions.courseId, "outside-course"))
+          .all()
+      ).toHaveLength(2)
     } finally {
       client.close()
     }
@@ -697,23 +692,29 @@ describe("어드민 DB repository", () => {
         status: "active",
         title: "새 강의",
       })
-      expect(created.units).toHaveLength(1)
-      expect(created.units[0]?.title).toBe("새 유닛")
-      expect(created.units[0]?.lessons).toHaveLength(1)
-      expect(created.units[0]?.lessons[0]).toMatchObject({
+      expect(created.units).toHaveLength(0)
+      const populated = createPopulatedEditor(created)
+      const saved = await repository.saveCourseEditor({
+        courseId: created.id,
+        document: populated,
+        expectedEditVersion: created.editVersion,
+        now,
+      })
+      if (saved.kind !== "ok") throw new Error("코스 초기 저장에 실패했습니다.")
+      expect(saved.value.units[0]?.lessons[0]).toMatchObject({
         estimatedMinutes: 5,
         id: "cmqd74yo0-l1",
         summary: [],
         title: "새 레슨",
       })
       expect(
-        created.units[0]?.lessons[0]?.steps.map((step) => step.type)
+        saved.value.units[0]?.lessons[0]?.steps.map((step) => step.type)
       ).toEqual(["READING", "WRITE"])
 
       await expect(
         repository.readCourseEditor({ courseId: "cmqd74yo0" })
       ).resolves.toMatchObject({
-        id: created.id,
+        id: saved.value.id,
         units: [
           {
             lessons: [
@@ -727,12 +728,49 @@ describe("어드민 DB repository", () => {
           },
         ],
       })
+      await expect(contentRepository.listCourses()).resolves.toEqual([])
+
+      await expect(
+        repository.publishCourse({
+          courseId: created.id,
+          expectedEditVersion: saved.value.editVersion,
+          now,
+        })
+      ).resolves.toMatchObject({
+        kind: "ok",
+        value: {
+          curriculumVersionId: created.curriculumVersionId,
+          revision: 1,
+        },
+      })
       await expect(contentRepository.listCourses()).resolves.toEqual([
-        expect.objectContaining({
-          id: "cmqd74yo0",
-          lessonCount: 1,
-        }),
+        expect.objectContaining({ id: "cmqd74yo0", lessonCount: 1 }),
       ])
+      await expect(
+        repository.publishCourse({
+          courseId: created.id,
+          expectedEditVersion: saved.value.editVersion,
+          now: new Date(now.getTime() + 1),
+        })
+      ).resolves.toEqual({ kind: "stale-revision" })
+      await expect(
+        repository.readCourseEditor({ courseId: created.id })
+      ).resolves.toMatchObject({
+        editVersion: 0,
+        revision: 2,
+        units: [
+          { lessons: [{ steps: [{ type: "READING" }, { type: "WRITE" }] }] },
+        ],
+      })
+      expect(
+        client.db
+          .select({ status: courseCurriculumVersions.status })
+          .from(courseCurriculumVersions)
+          .where(eq(courseCurriculumVersions.courseId, created.id))
+          .all()
+          .map(({ status }) => status)
+          .sort()
+      ).toEqual(["draft", "published"])
 
       await expect(
         repository.archiveCourse({ courseId: "cmqd74yo0", now })
@@ -756,10 +794,19 @@ describe("어드민 DB repository", () => {
       const repository = createDrizzleAdminRepository(client.db, {
         createCourseContentIds: createQueuedCourseContentIds("course-editor"),
       })
-      await repository.createCourse({ now: new Date("2026-06-14T03:00:00Z") })
-      const editor = await repository.readCourseEditor({
-        courseId: "course-editor",
+      const created = await repository.createCourse({
+        now: new Date("2026-06-14T03:00:00Z"),
       })
+      const initialSave = await repository.saveCourseEditor({
+        courseId: created.id,
+        document: createPopulatedEditor(created),
+        expectedEditVersion: created.editVersion,
+        now: new Date("2026-06-14T03:30:00Z"),
+      })
+      if (initialSave.kind !== "ok") {
+        throw new Error("editor fixture 저장에 실패했습니다.")
+      }
+      const editor = initialSave.value
       if (editor === null) throw new Error("editor fixture가 없습니다.")
       const firstUnit = editor.units[0]
       const firstLesson = firstUnit?.lessons[0]
@@ -785,27 +832,46 @@ describe("어드민 DB repository", () => {
               },
             ],
           },
+          expectedEditVersion: editor.editVersion,
+          now: new Date("2026-06-14T04:00:00Z"),
         })
       ).resolves.toMatchObject({
         kind: "ok",
-        value: { revision: editor.revision + 1, title: "저장된 코스" },
+        value: {
+          editVersion: editor.editVersion + 1,
+          revision: editor.revision,
+          title: "저장된 코스",
+        },
       })
       expect(
         client.db
           .select()
-          .from(lessonSteps)
-          .where(eq(lessonSteps.id, removedStep.id))
-          .get()?.status
-      ).toBe("archived")
+          .from(lessonStepVersions)
+          .where(
+            and(
+              eq(
+                lessonStepVersions.curriculumVersionId,
+                editor.curriculumVersionId
+              ),
+              eq(lessonStepVersions.id, removedStep.id)
+            )
+          )
+          .get()
+      ).toBeUndefined()
       await expect(
-        repository.saveCourseEditor({ courseId: editor.id, document: editor })
+        repository.saveCourseEditor({
+          courseId: editor.id,
+          document: editor,
+          expectedEditVersion: editor.editVersion,
+          now: new Date("2026-06-14T05:00:00Z"),
+        })
       ).resolves.toEqual({ kind: "stale-revision" })
     } finally {
       client.close()
     }
   })
 
-  it("다른 코스 소유 ID와 step의 레슨 간 이동을 원자적으로 거부한다", async () => {
+  it("다른 코스의 draft version 문서를 원자적으로 거부한다", async () => {
     const client = createWritingAppDatabase(":memory:")
 
     try {
@@ -817,59 +883,19 @@ describe("어드민 DB repository", () => {
         ),
       })
       const now = new Date("2026-06-14T03:00:00Z")
-      await repository.createCourse({ now })
-      await repository.createCourse({ now })
-      const first = await repository.readCourseEditor({
-        courseId: "course-owner-a",
-      })
-      const second = await repository.readCourseEditor({
-        courseId: "course-owner-b",
-      })
-      const firstUnit = first?.units[0]
-      const secondUnit = second?.units[0]
-      const firstLesson = firstUnit?.lessons[0]
-      const movingStep = firstLesson?.steps[0]
-      if (
-        first === null ||
-        firstUnit === undefined ||
-        secondUnit === undefined ||
-        firstLesson === undefined ||
-        movingStep === undefined
-      ) {
-        throw new Error("course ownership fixture가 없습니다.")
-      }
+      const first = await repository.createCourse({ now })
+      const second = await repository.createCourse({ now })
 
       await expect(
         repository.saveCourseEditor({
           courseId: first.id,
           document: {
-            ...first,
+            ...createPopulatedEditor(first),
+            curriculumVersionId: second.curriculumVersionId,
             title: "반영되면 안 됨",
-            units: [{ ...firstUnit, id: secondUnit.id }],
           },
-        })
-      ).resolves.toEqual({ kind: "invalid-reference" })
-      await expect(
-        repository.saveCourseEditor({
-          courseId: first.id,
-          document: {
-            ...first,
-            units: [
-              {
-                ...firstUnit,
-                lessons: [
-                  { ...firstLesson, steps: [] },
-                  {
-                    ...firstLesson,
-                    id: lessonIdSchema.parse("course-owner-a-l2"),
-                    sortOrder: 2,
-                    steps: [movingStep],
-                    title: "둘째 레슨",
-                  },
-                ],
-              },
-            ],
-          },
+          expectedEditVersion: first.editVersion,
+          now,
         })
       ).resolves.toEqual({ kind: "invalid-reference" })
       await expect(
@@ -964,6 +990,58 @@ function createQueuedCourseContentIds(
   }
 }
 
+function createPopulatedEditor(
+  course: AdminCourseDetailDto
+): AdminCourseEditorDocument {
+  const lessonId = `${course.id}-l1`
+
+  return adminCourseEditorDocumentSchema.parse({
+    ...course,
+    units: [
+      {
+        id: `${course.id}-u1`,
+        lessons: [
+          {
+            category: "미분류",
+            description: "레슨 설명을 입력하세요.",
+            estimatedMinutes: 5,
+            id: lessonId,
+            sortOrder: 1,
+            status: "active",
+            steps: [
+              {
+                body: "본문을 입력하세요.",
+                guide: "",
+                id: `${lessonId}-s1`,
+                sortOrder: 1,
+                status: "active",
+                title: "새 읽기 스텝",
+                type: "READING",
+              },
+              {
+                goal: 150,
+                id: `${lessonId}-s2`,
+                max: 500,
+                min: 50,
+                prompt: "주제를 입력하세요.",
+                sortOrder: 2,
+                status: "active",
+                title: "글쓰기",
+                type: "WRITE",
+              },
+            ],
+            summary: [],
+            title: "새 레슨",
+          },
+        ],
+        sortOrder: 1,
+        status: "active",
+        title: "새 유닛",
+      },
+    ],
+  })
+}
+
 function createTestCourseContentIds(
   courseId: string
 ): NewAdminCourseContentIds {
@@ -981,50 +1059,54 @@ function createTestCourseContentIds(
 function seedOutsideContentRows(
   db: ReturnType<typeof createWritingAppDatabase>["db"]
 ): void {
-  db.insert(courses)
-    .values({
-      category: "임시",
-      curriculumRevision: 0,
-      description: "seed 밖 코스",
-      id: "outside-course",
-      sortOrder: 1,
-      status: "active",
-      title: "Seed 밖 코스",
+  db.transaction((transaction) => {
+    upsertContentSeedRows(transaction, {
+      courses: [
+        {
+          category: "임시",
+          description: "seed 밖 코스",
+          id: "outside-course",
+          sortOrder: 1,
+          status: "active",
+          title: "Seed 밖 코스",
+          visualKey: "basic-sentence-writing",
+        },
+      ],
+      lessons: [
+        {
+          category: "임시",
+          courseId: "outside-course",
+          description: "seed 밖 레슨",
+          estimatedMinutes: 5,
+          id: "outside-lesson",
+          sortOrder: 1,
+          status: "active",
+          summaryJson: "[]",
+          title: "Seed 밖 레슨",
+          unitId: "outside-unit",
+        },
+      ],
+      steps: [
+        {
+          contentJson: "{}",
+          id: "outside-step",
+          lessonId: "outside-lesson",
+          sortOrder: 1,
+          status: "active",
+          type: "READING",
+        },
+      ],
+      units: [
+        {
+          courseId: "outside-course",
+          id: "outside-unit",
+          sortOrder: 1,
+          status: "active",
+          title: "Seed 밖 유닛",
+        },
+      ],
     })
-    .run()
-  db.insert(courseUnits)
-    .values({
-      courseId: "outside-course",
-      id: "outside-unit",
-      sortOrder: 1,
-      status: "active",
-      title: "Seed 밖 유닛",
-    })
-    .run()
-  db.insert(lessons)
-    .values({
-      category: "임시",
-      courseId: "outside-course",
-      description: "seed 밖 레슨",
-      estimatedMinutes: 5,
-      id: "outside-lesson",
-      sortOrder: 1,
-      status: "active",
-      summaryJson: "[]",
-      title: "Seed 밖 레슨",
-      unitId: "outside-unit",
-    })
-    .run()
-  db.insert(lessonSteps)
-    .values({
-      contentJson: "{}",
-      id: "outside-step",
-      lessonId: "outside-lesson",
-      sortOrder: 1,
-      status: "active",
-      type: "READING",
-    })
-    .run()
+  })
 }
 
 function readFunctionSource(source: string, name: string): string | undefined {
@@ -1091,6 +1173,39 @@ function readFunctionSource(source: string, name: string): string | undefined {
   return undefined
 }
 
+function createDashboardLesson(
+  id: string,
+  title: string,
+  sortOrder: number,
+  status: "active" | "archived"
+): ContentSeedRows["lessons"][number] {
+  return {
+    category: "기본",
+    courseId: "course-1",
+    description: title,
+    estimatedMinutes: 5,
+    id,
+    sortOrder,
+    status,
+    summaryJson: "[]",
+    title,
+    unitId: "unit-1",
+  }
+}
+
+function createDashboardStep(
+  lessonId: string
+): ContentSeedRows["steps"][number] {
+  return {
+    contentJson: "{}",
+    id: `${lessonId}-s1`,
+    lessonId,
+    sortOrder: 1,
+    status: "active",
+    type: "READING",
+  }
+}
+
 function seedDashboardRows(
   db: ReturnType<typeof createWritingAppDatabase>["db"]
 ) {
@@ -1154,74 +1269,71 @@ function seedDashboardRows(
     ])
     .run()
 
-  db.insert(courses)
-    .values([
+  const contentRows: ContentSeedRows = {
+    courses: [
       {
         category: "입문",
-        curriculumRevision: 0,
         description: "활성 코스",
         id: "course-1",
         sortOrder: 1,
         status: "active",
         title: "활성 코스",
+        visualKey: "basic-sentence-writing",
       },
       {
         category: "입문",
-        curriculumRevision: 0,
         description: "보관 코스",
         id: "course-2",
         sortOrder: 2,
         status: "archived",
         title: "보관 코스",
+        visualKey: "grammar-complete",
       },
-    ])
-    .run()
-  db.insert(courseUnits)
-    .values({
-      courseId: "course-1",
-      id: "unit-1",
-      sortOrder: 1,
-      status: "active",
-      title: "기본 유닛",
-    })
-    .run()
-  db.insert(lessons)
-    .values([
+    ],
+    lessons: [
+      createDashboardLesson("lesson-1", "첫 레슨", 1, "active"),
+      createDashboardLesson("lesson-2", "둘째 레슨", 2, "active"),
+      createDashboardLesson("lesson-3", "보관 레슨", 3, "archived"),
+    ],
+    steps: [
+      createDashboardStep("lesson-1"),
+      createDashboardStep("lesson-2"),
+      createDashboardStep("lesson-3"),
+    ],
+    units: [
       {
-        category: "기본",
         courseId: "course-1",
-        description: "첫 레슨",
-        estimatedMinutes: 5,
-        id: "lesson-1",
+        id: "unit-1",
         sortOrder: 1,
         status: "active",
-        summaryJson: "[]",
-        title: "첫 레슨",
-        unitId: "unit-1",
+        title: "기본 유닛",
+      },
+    ],
+  }
+  db.transaction((transaction) => {
+    upsertContentSeedRows(transaction, contentRows)
+  })
+
+  const curriculumVersionId = createCurriculumVersionId("course-1", 1)
+  db.insert(learnerCourseProgress)
+    .values([
+      {
+        courseId: "course-1",
+        curriculumVersionId,
+        lastActivityAt: today,
+        startedAt: twoDaysAgo,
+        status: "in_progress",
+        updatedAt: today,
+        userId: "user-1",
       },
       {
-        category: "기본",
         courseId: "course-1",
-        description: "둘째 레슨",
-        estimatedMinutes: 5,
-        id: "lesson-2",
-        sortOrder: 2,
-        status: "active",
-        summaryJson: "[]",
-        title: "둘째 레슨",
-        unitId: "unit-1",
-      },
-      {
-        category: "기본",
-        courseId: "course-1",
-        description: "보관 레슨",
-        estimatedMinutes: 5,
-        id: "lesson-3",
-        sortOrder: 3,
-        status: "archived",
-        summaryJson: "[]",
-        title: "보관 레슨",
-        unitId: "unit-1",
+        curriculumVersionId,
+        lastActivityAt: today,
+        startedAt: older,
+        status: "in_progress",
+        updatedAt: today,
+        userId: "user-2",
       },
     ])
     .run()
@@ -1230,7 +1342,9 @@ function seedDashboardRows(
     .values([
       {
         completedAt: today,
-        currentStepIndex: 3,
+        courseId: "course-1",
+        currentStepId: "lesson-1-s1",
+        curriculumVersionId,
         lessonId: "lesson-1",
         startedAt: twoDaysAgo,
         status: "completed",
@@ -1239,7 +1353,9 @@ function seedDashboardRows(
       },
       {
         completedAt: yesterday,
-        currentStepIndex: 2,
+        courseId: "course-1",
+        currentStepId: "lesson-2-s1",
+        curriculumVersionId,
         lessonId: "lesson-2",
         startedAt: yesterday,
         status: "completed",
@@ -1248,7 +1364,9 @@ function seedDashboardRows(
       },
       {
         completedAt: older,
-        currentStepIndex: 2,
+        courseId: "course-1",
+        currentStepId: "lesson-1-s1",
+        curriculumVersionId,
         lessonId: "lesson-1",
         startedAt: older,
         status: "completed",
@@ -1257,7 +1375,9 @@ function seedDashboardRows(
       },
       {
         completedAt: null,
-        currentStepIndex: 1,
+        courseId: "course-1",
+        currentStepId: "lesson-2-s1",
+        curriculumVersionId,
         lessonId: "lesson-2",
         startedAt: today,
         status: "in_progress",

@@ -14,6 +14,7 @@ import {
 const credentials: LocalCredentials = {
   adminAuthSecret: "admin-auth-secret-abcdefghijklmnopqrstuvwxyz-123456",
   adminSeedPassword: "LocalAdminPassword123!",
+  cursorSigningSecret: "cursor-signing-secret-abcdefghijklmnopqrstuvwxyz-12",
   learnerAuthSecret: "learner-auth-secret-abcdefghijklmnopqrstuvwxyz-1234",
 }
 
@@ -36,6 +37,13 @@ describe("로컬 온보딩", () => {
     expect(
       readEnvironmentValue(fixture.path, "apps/api/.env", "BETTER_AUTH_SECRET")
     ).toBe(credentials.learnerAuthSecret)
+    expect(
+      readEnvironmentValue(
+        fixture.path,
+        "apps/api/.env",
+        "CURSOR_SIGNING_SECRET"
+      )
+    ).toBe(credentials.cursorSigningSecret)
     expect(
       readEnvironmentValue(
         fixture.path,
@@ -101,6 +109,11 @@ describe("로컬 온보딩", () => {
 
     expect(hasLocalOnboardingFailures(checks)).toBe(false)
     expect(checks).toContainEqual({
+      detail: "학습자 인증과 cursor 서명 비밀값이 분리되어 있습니다.",
+      kind: "pass",
+      label: "cursor 비밀값 분리",
+    })
+    expect(checks).toContainEqual({
       detail: "학습자와 관리자 인증 비밀값이 분리되어 있습니다.",
       kind: "pass",
       label: "인증 비밀값 분리",
@@ -160,6 +173,7 @@ function createFixture(): Disposable & { readonly path: string } {
     "apps/api/.env.example",
     [
       "BETTER_AUTH_SECRET=replace-with-32-byte-local-api-secret",
+      "CURSOR_SIGNING_SECRET=replace-with-distinct-32-byte-cursor-secret",
       "DATABASE_URL=file:data/api.sqlite",
       "ENABLE_TEST_AUTH=true",
     ].join("\n")

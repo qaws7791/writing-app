@@ -20,6 +20,7 @@ const core = createLearnerApiCore({
   authBaseUrl: env.authBaseUrl,
   betterAuthSecret: env.betterAuthSecret,
   cookieDomain: env.cookieDomain,
+  cursorSigningSecret: env.cursorSigningSecret,
   databaseUrl: env.databaseUrl,
   googleClientId: env.googleClientId,
   googleClientSecret: env.googleClientSecret,
@@ -36,13 +37,17 @@ const core = createLearnerApiCore({
   webOrigin: env.webOrigin,
 })
 const app = createApp({
-  aiFeedbackService: core.aiFeedbackService,
   authHandler: core.authHandler,
   contentService: core.contentService,
+  contractErrorLogger(event) {
+    logger.error(event, "api.contract.response_invalid")
+  },
+  deploymentVersion: env.deploymentVersion,
   errorLogger(event) {
     logger.error(event, "request.failed")
   },
-  learningService: core.learningService,
+  learnerAiFeedbackService: core.learnerAiFeedbackService,
+  learnerTransitionService: core.learnerTransitionService,
   profileReader: core.profileReader,
   progressService: core.progressService,
   requestLogger: createRequestLogger(logger),

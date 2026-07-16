@@ -3,10 +3,6 @@ import { notFound, redirect } from "next/navigation"
 
 import { AppRouteNotice } from "@/components/app-route-notice"
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
-import {
-  describeRouteApiFailure,
-  toRouteApiOutcome,
-} from "@/lib/api/route-api-outcome"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getCachedCourseDetail } from "@/lib/api/cached-course-detail"
@@ -26,12 +22,12 @@ export async function generateMetadata({
     return unavailableCourseMetadata()
   }
 
-  const outcome = toRouteApiOutcome(await getCachedCourseDetail(id, token))
-  if (outcome.status === "error") {
+  const result = await getCachedCourseDetail(id, token)
+  if (result.status === "error") {
     return unavailableCourseMetadata()
   }
 
-  const course = outcome.value
+  const course = result.value
   const coursePath = `/app/courses/${encodeURIComponent(course.id)}`
   const imagePath = `/course-thumbnails/${course.visualKey}.png`
 
@@ -67,26 +63,24 @@ export default async function CourseDetailRoute({
   }
 
   const courseResult = await getCachedCourseDetail(id, token)
-  const courseOutcome = toRouteApiOutcome(courseResult)
-
-  if (courseOutcome.status === "error") {
-    if (courseOutcome.failure.kind === "authentication") {
+  if (courseResult.status === "error") {
+    if (courseResult.error.code === "UNAUTHENTICATED") {
       redirect(createLoginPagePath(nextPath))
     }
 
-    if (courseOutcome.failure.kind === "not-found") {
+    if (courseResult.error.code === "COURSE_NOT_FOUND") {
       notFound()
     }
 
     return (
       <AppRouteNotice
-        description={describeRouteApiFailure(courseOutcome.failure)}
+        description={courseResult.error.message}
         title="코스를 열 수 없습니다."
       />
     )
   }
 
-  return <CourseDetailPage course={courseOutcome.value} />
+  return <CourseDetailPage course={courseResult.value} />
 }
 
 function unavailableCourseMetadata(): Metadata {

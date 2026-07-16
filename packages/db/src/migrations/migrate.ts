@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs"
 import type { Database } from "bun:sqlite"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
+import {
+  hasLegacyCurriculumSchema,
+  migrateLegacyCurriculumSchema,
+} from "@workspace/db/migrations/curriculum-migration"
 
 const baselineMigrationUrl = new URL(
   "./0000-writing-app-baseline.sql",
@@ -14,10 +18,15 @@ export function readBaselineMigrationSql(): string {
 }
 
 export function runBaselineMigration(sqlite: Database): void {
-  ensureAiFeedbackAttemptStateModel(sqlite)
-  sqlite.exec(readBaselineMigrationSql())
-  ensureAiFeedbackAttemptStateModel(sqlite)
-  ensureCourseVisualKeyColumn(sqlite)
+  const baselineSql = readBaselineMigrationSql()
+
+  if (hasLegacyCurriculumSchema(sqlite)) {
+    ensureAiFeedbackAttemptStateModel(sqlite)
+    migrateLegacyCurriculumSchema(sqlite, baselineSql)
+  } else {
+    sqlite.exec(baselineSql)
+  }
+
   ensureAdminChatTables(sqlite)
   removeAdminMfaSchema(sqlite)
 }
@@ -115,21 +124,6 @@ CREATE INDEX ai_feedback_attempts_expiry_idx
 ON ai_feedback_attempts(status, expires_at);
 COMMIT;
 `)
-}
-
-function ensureCourseVisualKeyColumn(sqlite: Database): void {
-  const courseColumns = sqlite
-    .query<{ readonly name: string }, []>("PRAGMA table_info(courses)")
-    .all()
-    .map((row) => row.name)
-
-  if (courseColumns.includes("visual_key")) {
-    return
-  }
-
-  sqlite.exec(
-    "ALTER TABLE courses ADD COLUMN visual_key TEXT NOT NULL DEFAULT 'basic-sentence-writing'"
-  )
 }
 
 function ensureAdminChatTables(sqlite: Database): void {

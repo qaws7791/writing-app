@@ -30,12 +30,13 @@ import {
 } from "#core/modules/admin/infrastructure/persistence/admin-repository-shared"
 import {
   authUsers,
+  courseCurriculumVersions,
   courses,
-  courseUnits,
+  courseUnitVersions,
   learnerActivityDays,
   learnerLessonProgress,
   learnerProfiles,
-  lessons,
+  lessonVersions,
 } from "@workspace/db/schema"
 
 export function createAdminAnalyticsRepository(
@@ -105,10 +106,29 @@ function readLessonAnalytics(
   const whereCondition = createReadLessonAnalyticsWhereCondition(query)
   const totalItems =
     db
-      .select({ value: countDistinct(lessons.id) })
-      .from(lessons)
-      .innerJoin(courses, eq(courses.id, lessons.courseId))
-      .innerJoin(courseUnits, eq(courseUnits.id, lessons.unitId))
+      .select({ value: countDistinct(lessonVersions.id) })
+      .from(lessonVersions)
+      .innerJoin(
+        courses,
+        eq(
+          courses.publishedCurriculumVersionId,
+          lessonVersions.curriculumVersionId
+        )
+      )
+      .innerJoin(
+        courseCurriculumVersions,
+        eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
+      )
+      .innerJoin(
+        courseUnitVersions,
+        and(
+          eq(
+            courseUnitVersions.curriculumVersionId,
+            lessonVersions.curriculumVersionId
+          ),
+          eq(courseUnitVersions.id, lessonVersions.unitId)
+        )
+      )
       .where(whereCondition)
       .get()?.value ?? 0
   const pagination = createPageBounds(input, totalItems)
@@ -117,29 +137,53 @@ function readLessonAnalytics(
       completed: completedExpression,
       completionRate: completionRateExpression,
       courseId: courses.id,
-      courseTitle: courses.title,
+      courseTitle: courseCurriculumVersions.title,
       dropOffRate: dropOffRateExpression,
-      lessonId: lessons.id,
-      lessonTitle: lessons.title,
+      lessonId: lessonVersions.id,
+      lessonTitle: lessonVersions.title,
       started: startedExpression,
     })
-    .from(lessons)
-    .innerJoin(courses, eq(courses.id, lessons.courseId))
-    .innerJoin(courseUnits, eq(courseUnits.id, lessons.unitId))
+    .from(lessonVersions)
+    .innerJoin(
+      courses,
+      eq(
+        courses.publishedCurriculumVersionId,
+        lessonVersions.curriculumVersionId
+      )
+    )
+    .innerJoin(
+      courseCurriculumVersions,
+      eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
+    )
+    .innerJoin(
+      courseUnitVersions,
+      and(
+        eq(
+          courseUnitVersions.curriculumVersionId,
+          lessonVersions.curriculumVersionId
+        ),
+        eq(courseUnitVersions.id, lessonVersions.unitId)
+      )
+    )
     .leftJoin(
       learnerLessonProgress,
-      eq(learnerLessonProgress.lessonId, lessons.id)
+      eq(learnerLessonProgress.lessonId, lessonVersions.id)
     )
     .leftJoin(authUsers, eq(authUsers.id, learnerLessonProgress.userId))
     .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
     .where(whereCondition)
-    .groupBy(lessons.id, lessons.title, courses.id, courses.title)
+    .groupBy(
+      lessonVersions.id,
+      lessonVersions.title,
+      courses.id,
+      courseCurriculumVersions.title
+    )
     .orderBy(
       ...createReadLessonAnalyticsOrder(input.sort, input.direction, {
         completionRate: completionRateExpression,
-        courseTitle: courses.title,
+        courseTitle: courseCurriculumVersions.title,
         dropOffRate: dropOffRateExpression,
-        lessonTitle: lessons.title,
+        lessonTitle: lessonVersions.title,
       })
     )
     .limit(pagination.pageSize)
@@ -162,14 +206,15 @@ function createReadLessonAnalyticsWhereCondition(query: string) {
     query.length === 0
       ? undefined
       : or(
-          sql`lower(${lessons.title}) like ${`%${query}%`}`,
-          sql`lower(${courses.title}) like ${`%${query}%`}`
+          sql`lower(${lessonVersions.title}) like ${`%${query}%`}`,
+          sql`lower(${courseCurriculumVersions.title}) like ${`%${query}%`}`
         )
 
   return and(
-    eq(lessons.status, contentStatuses.active),
+    eq(lessonVersions.status, contentStatuses.active),
     eq(courses.status, contentStatuses.active),
-    eq(courseUnits.status, contentStatuses.active),
+    eq(courseCurriculumVersions.status, "published"),
+    eq(courseUnitVersions.status, contentStatuses.active),
     queryCondition
   )
 }
@@ -197,9 +242,9 @@ function createReadLessonAnalyticsOrder(
   direction: AdminSortDirection,
   expressions: {
     readonly completionRate: ReturnType<typeof sql<number>>
-    readonly courseTitle: typeof courses.title
+    readonly courseTitle: typeof courseCurriculumVersions.title
     readonly dropOffRate: ReturnType<typeof sql<number>>
-    readonly lessonTitle: typeof lessons.title
+    readonly lessonTitle: typeof lessonVersions.title
   }
 ) {
   const applyDirection = direction === "asc" ? asc : desc
@@ -339,43 +384,44 @@ function readActiveLessonSnapshots(db: WritingAppDatabase): {
   readonly lessonId: string
   readonly lessonTitle: string
 }[] {
-  const activeCourses = db
-    .select()
-    .from(courses)
-    .all()
-    .filter((course) => course.status === contentStatuses.active)
-  const activeCourseById = new Map(
-    activeCourses.map((course) => [course.id, course])
-  )
-  const activeUnitIds = new Set(
-    db
-      .select()
-      .from(courseUnits)
-      .all()
-      .filter(
-        (unit) =>
-          unit.status === contentStatuses.active &&
-          activeCourseById.has(unit.courseId)
-      )
-      .map((unit) => unit.id)
-  )
-
   return db
-    .select()
-    .from(lessons)
-    .all()
-    .filter(
-      (lesson) =>
-        lesson.status === contentStatuses.active &&
-        activeCourseById.has(lesson.courseId) &&
-        activeUnitIds.has(lesson.unitId)
+    .select({
+      courseId: courses.id,
+      courseTitle: courseCurriculumVersions.title,
+      lessonId: lessonVersions.id,
+      lessonTitle: lessonVersions.title,
+    })
+    .from(lessonVersions)
+    .innerJoin(
+      courses,
+      eq(
+        courses.publishedCurriculumVersionId,
+        lessonVersions.curriculumVersionId
+      )
     )
-    .map((lesson) => ({
-      courseId: lesson.courseId,
-      courseTitle: activeCourseById.get(lesson.courseId)?.title ?? "",
-      lessonId: lesson.id,
-      lessonTitle: lesson.title,
-    }))
+    .innerJoin(
+      courseCurriculumVersions,
+      eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
+    )
+    .innerJoin(
+      courseUnitVersions,
+      and(
+        eq(
+          courseUnitVersions.curriculumVersionId,
+          lessonVersions.curriculumVersionId
+        ),
+        eq(courseUnitVersions.id, lessonVersions.unitId)
+      )
+    )
+    .where(
+      and(
+        eq(courses.status, contentStatuses.active),
+        eq(courseCurriculumVersions.status, "published"),
+        eq(courseUnitVersions.status, contentStatuses.active),
+        eq(lessonVersions.status, contentStatuses.active)
+      )
+    )
+    .all()
 }
 
 function countByDate(

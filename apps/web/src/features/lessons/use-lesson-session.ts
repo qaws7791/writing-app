@@ -11,92 +11,52 @@ import {
   type LessonAnswerChange,
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
-import {
-  createLessonSessionEffects,
-  type LessonSessionEffects,
-} from "@/features/lessons/lesson-session-effect-adapter"
+import { createLessonSessionEffects } from "@/features/lessons/lesson-session-effect-adapter"
 import {
   createLessonSessionState,
   transitionLessonSession,
   type LessonSessionEvent,
   type LessonSessionState,
 } from "@/features/lessons/lesson-session-machine"
-import {
-  getLessonStepCheckedResult,
-  isLessonStepCheckable,
-  isLessonStepCheckedCorrect,
-  isLessonStepSubmittable,
-} from "@/features/lessons/lesson-step-policy"
-import type { Lesson } from "@/features/lessons/lesson-types"
+import { isLessonStepSubmittable } from "@/features/lessons/lesson-step-policy"
+import type {
+  LearnerLesson as Lesson,
+  LearnerLessonStep as LessonStep,
+} from "@workspace/contracts/learning"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 
 const LESSON_START_ERROR =
   "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
-const LESSON_ANSWER_ERROR =
-  "답변을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
-const LESSON_COMPLETE_ERROR =
-  "레슨 완료를 저장하지 못했습니다. 다시 시도해 주세요."
-const LESSON_PROGRESS_ERROR =
-  "레슨 진행을 저장하지 못했습니다. 다시 시도해 주세요."
-
-type UseLessonSessionInput = {
-  readonly api: WritingAppApi
-  readonly initialProgress?: {
-    readonly currentStepIndex: number
-  }
-  readonly lesson: Lesson
-}
-
-type LessonAnswerPayloadChange = {
-  readonly payload: LessonStepAnswerPayload
-  readonly stepId: string
-}
-
-type AnswerSaveOutcome = {
-  readonly requestId: number
-  readonly status: "error" | "ok"
-  readonly stepId: string
-}
-
-type LatestAnswerSave = {
-  promise: Promise<AnswerSaveOutcome>
-  requestId: number
-  status: "error" | "ok" | "pending"
-  stepId: string
-}
+const LESSON_STEP_ERROR =
+  "학습 단계를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
 
 export function useLessonSession({
   api,
-  initialProgress,
   lesson,
-}: UseLessonSessionInput) {
-  const initialStepIndex = clampLessonStepIndex(
-    lesson,
-    initialProgress?.currentStepIndex ?? 0
-  )
+}: {
+  readonly api: WritingAppApi
+  readonly lesson: Lesson
+}) {
+  const initialState = resolveInitialSessionState(lesson)
   const effects = useMemo(
-    () => createLessonSessionEffects(api, lesson.id),
-    [api, lesson.id]
+    () =>
+      createLessonSessionEffects(api, {
+        expectedCurriculumVersionId: lesson.version.curriculumVersionId,
+        lessonId: lesson.id,
+      }),
+    [api, lesson.id, lesson.version.curriculumVersionId]
   )
-  const [sessionState, setSessionState] = useState<LessonSessionState>(() =>
-    createLessonSessionState(initialStepIndex, initialProgress !== undefined)
-  )
+  const [sessionState, setSessionState] =
+    useState<LessonSessionState>(initialState)
   const sessionStateRef = useRef(sessionState)
-  const answerRequestIdRef = useRef(0)
   const aiFeedbackRequestRef = useRef<{
     readonly idempotencyKey: string
     readonly stepId: string
   } | null>(null)
   const isMountedRef = useRef(false)
-  const latestAnswerSaveRef = useRef<LatestAnswerSave | null>(null)
-  const pendingAnswerRef = useRef<{
-    readonly answer: LessonAnswerChange["answer"]
-    readonly stepId: string
-  } | null>(null)
 
   useEffect(() => {
     isMountedRef.current = true
-
     return () => {
       isMountedRef.current = false
     }
@@ -112,120 +72,68 @@ export function useLessonSession({
   const currentStepIndex =
     sessionState.status === "active" || sessionState.status === "complete"
       ? sessionState.currentStepIndex
-      : initialStepIndex
+      : 0
   const currentStep = getLessonStep(lesson, currentStepIndex)
-  const answerPayloads = isActive ? sessionState.answerPayloads : {}
   const currentAnswerPayload =
-    currentStep === null ? undefined : answerPayloads[currentStep.id]
+    isActive && currentStep !== null
+      ? sessionState.answerPayloads[currentStep.id]
+      : undefined
   const checked = isActive ? sessionState.checked : false
-  const isLastStep = isLastLessonStep(lesson, currentStepIndex)
-  const isQuizStep =
-    currentStep === null ? false : isLessonStepCheckable(currentStep)
+  const hasPendingTransition =
+    isActive && sessionState.pendingTransition !== null
   const isReady =
-    currentStep === null
-      ? false
-      : isLessonStepSubmittable(currentStep, currentAnswerPayload)
-  const visibleStepNumber = Math.min(currentStepIndex + 1, lesson.steps.length)
-  const progress = lesson.steps.length
-    ? Math.min(
-        100,
-        Math.max(0, (visibleStepNumber / lesson.steps.length) * 100)
-      )
-    : 0
-  const answerError =
-    isActive &&
     currentStep !== null &&
-    sessionState.answerSave.status === "error" &&
-    sessionState.answerSave.stepId === currentStep.id
-      ? sessionState.answerSave.message
-      : null
+    (hasPendingTransition ||
+      isLessonStepSubmittable(currentStep, currentAnswerPayload))
+  const visibleStepNumber = currentStepIndex + 1
+  const progress = (visibleStepNumber / lesson.steps.length) * 100
 
   const startLesson = useCallback(async (): Promise<void> => {
-    if (sessionStateRef.current.status !== "not-started") {
-      return
-    }
-
-    const firstStep = getFirstLessonStep(lesson)
-
-    if (firstStep === null) {
+    if (sessionStateRef.current.status !== "not-started") return
+    if (getFirstLessonStep(lesson) === null) {
       send({ type: "START_REQUESTED" })
       send({ message: "시작할 학습 스텝이 없습니다.", type: "START_FAILED" })
       return
     }
 
     send({ type: "START_REQUESTED" })
-    const result = await effects.start(firstStep.id)
+    const result = await effects.start()
+    if (!isMountedRef.current) return
 
-    if (!isMountedRef.current) {
+    if (result.status === "error") {
+      send({
+        message: result.message || LESSON_START_ERROR,
+        type: "START_FAILED",
+      })
       return
     }
 
-    if (result.status === "error") {
+    if (result.learning.status !== "in_progress") {
       send({ message: LESSON_START_ERROR, type: "START_FAILED" })
       return
     }
 
-    send({ currentStepIndex: 0, type: "START_SUCCEEDED" })
+    send({
+      currentStepIndex: result.learning.currentStepIndex,
+      type: "START_SUCCEEDED",
+    })
   }, [effects, lesson, send])
-
-  const persistAnswerToServer = useCallback(
-    async (
-      stepId: string,
-      answer: LessonAnswerChange["answer"]
-    ): Promise<boolean> => {
-      const requestId = answerRequestIdRef.current + 1
-      answerRequestIdRef.current = requestId
-      send({ requestId, stepId, type: "ANSWER_SAVE_REQUESTED" })
-
-      const latestSave: LatestAnswerSave = {
-        promise: Promise.resolve({ requestId, status: "ok", stepId }),
-        requestId,
-        status: "pending",
-        stepId,
-      }
-      latestSave.promise = saveLessonAnswer({
-        answer,
-        effects,
-        requestId,
-        stepId,
-      })
-      latestAnswerSaveRef.current = latestSave
-
-      const outcome = await latestSave.promise
-      latestSave.status = outcome.status
-
-      if (
-        !isMountedRef.current ||
-        latestAnswerSaveRef.current?.requestId !== requestId
-      ) {
-        return outcome.status === "ok"
-      }
-
-      send(
-        outcome.status === "error"
-          ? {
-              message: LESSON_ANSWER_ERROR,
-              requestId,
-              stepId,
-              type: "ANSWER_SAVE_FAILED",
-            }
-          : { requestId, stepId, type: "ANSWER_SAVE_SUCCEEDED" }
-      )
-
-      return outcome.status === "ok"
-    },
-    [effects, send]
-  )
 
   const saveAnswer = useCallback(
     async ({ answer, stepId }: LessonAnswerChange): Promise<void> => {
-      pendingAnswerRef.current = { answer, stepId }
+      send({ payload: answer, stepId, type: "ANSWER_PAYLOAD_CHANGED" })
     },
-    []
+    [send]
   )
 
   const setAnswerPayload = useCallback(
-    ({ payload, stepId }: LessonAnswerPayloadChange): void => {
+    ({
+      payload,
+      stepId,
+    }: {
+      readonly payload: LessonStepAnswerPayload
+      readonly stepId: string
+    }) => {
       send({ payload, stepId, type: "ANSWER_PAYLOAD_CHANGED" })
     },
     [send]
@@ -241,194 +149,94 @@ export function useLessonSession({
           ? previousRequest.idempotencyKey
           : crypto.randomUUID()
       aiFeedbackRequestRef.current = { idempotencyKey, stepId }
-      const result = await effects.requestAiFeedback({
-        idempotencyKey,
-        stepId,
-      })
+      const result = await effects.requestAiFeedback({ idempotencyKey, stepId })
 
       if (result.status === "error") {
-        if (!result.retryable) {
-          aiFeedbackRequestRef.current = null
-        }
+        if (!result.retryable) aiFeedbackRequestRef.current = null
         return { message: result.message, status: "error" }
       }
 
-      aiFeedbackRequestRef.current = null
-      const saved = await persistAnswerToServer(stepId, {
-        requested: true,
-        type: "AI_FEEDBACK",
-      })
+      if (result.transition.status === "retry") {
+        aiFeedbackRequestRef.current = null
+        return { message: LESSON_STEP_ERROR, status: "error" }
+      }
 
-      return saved
-        ? { feedback: result.feedback, status: "ok" }
-        : { message: LESSON_ANSWER_ERROR, status: "error" }
+      aiFeedbackRequestRef.current = null
+      send({ transition: result.transition, type: "STEP_ACCEPTED" })
+      return { feedback: result.feedback, status: "ok" }
     },
-    [effects, persistAnswerToServer]
+    [effects, send]
   )
 
   async function submitCurrentStep(): Promise<void> {
-    const currentState = sessionStateRef.current
+    const state = sessionStateRef.current
+    if (state.status !== "active" || state.activity !== "idle") return
 
-    if (currentState.status !== "active" || currentState.activity !== "idle") {
+    if (state.pendingTransition !== null) {
+      send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
       return
     }
 
-    const step = getLessonStep(lesson, currentState.currentStepIndex)
-
-    if (step === null) {
+    if (state.checked !== false) {
+      send({ type: "RETRY_EDIT_REQUESTED" })
       return
     }
 
-    const answerPayload = currentState.answerPayloads[step.id]
+    const step = getLessonStep(lesson, state.currentStepIndex)
+    if (step === null || step.type === "AI_FEEDBACK") return
 
-    if (currentState.checked === false && isLessonStepCheckable(step)) {
-      send({
-        checked: getLessonStepCheckedResult(step, answerPayload),
-        type: "CHECKED_CHANGED",
-      })
-      persistPendingAnswer(step.id)
-      return
-    }
-
-    if (
-      currentState.checked !== false &&
-      !isLessonStepCheckedCorrect(currentState.checked)
-    ) {
-      send({ checked: false, type: "CHECKED_CHANGED" })
-      return
-    }
-
-    send({ checked: false, type: "CHECKED_CHANGED" })
-    persistPendingAnswer(step.id)
-
-    if (!isLastLessonStep(lesson, currentState.currentStepIndex)) {
-      send({ type: "PROGRESS_SAVE_REQUESTED" })
-      const canAdvance = await waitForLatestAnswerSave(step.id)
-
-      if (!canAdvance || !isMountedRef.current) {
-        if (isMountedRef.current) {
-          send({ type: "PROGRESS_SAVE_BLOCKED" })
-        }
-        return
-      }
-
-      const nextStepIndex = Math.min(
-        lesson.steps.length - 1,
-        currentState.currentStepIndex + 1
-      )
-      const progressResult = await effects.saveProgress(nextStepIndex)
-
-      if (!isMountedRef.current) {
-        return
-      }
-
-      send(
-        progressResult.status === "error"
-          ? { message: LESSON_PROGRESS_ERROR, type: "PROGRESS_SAVE_FAILED" }
-          : {
-              currentStepIndex: nextStepIndex,
-              type: "PROGRESS_SAVE_SUCCEEDED",
-            }
-      )
-      return
-    }
-
-    await completeCurrentLesson(step.id)
-  }
-
-  function persistPendingAnswer(stepId: string): void {
-    if (
-      pendingAnswerRef.current === null ||
-      pendingAnswerRef.current.stepId !== stepId
-    ) {
-      return
-    }
-
-    void persistAnswerToServer(stepId, pendingAnswerRef.current.answer)
-    pendingAnswerRef.current = null
-  }
-
-  async function completeCurrentLesson(currentStepId: string): Promise<void> {
-    send({ type: "COMPLETE_REQUESTED" })
-    const canComplete = await waitForLatestAnswerSave(currentStepId)
-
-    if (!isMountedRef.current) {
-      return
-    }
-
-    if (!canComplete) {
-      send({ type: "COMPLETE_BLOCKED" })
-      return
-    }
-
-    const result = await effects.complete()
-
-    if (!isMountedRef.current) {
-      return
-    }
-
-    send(
-      result.status === "error"
-        ? { message: LESSON_COMPLETE_ERROR, type: "COMPLETE_FAILED" }
-        : { type: "COMPLETE_SUCCEEDED" }
+    const request = createCompleteStepRequest(
+      step,
+      state.answerPayloads[step.id]
     )
-  }
+    if (request === null) return
 
-  async function waitForLatestAnswerSave(stepId: string): Promise<boolean> {
-    while (true) {
-      const latestSave = latestAnswerSaveRef.current
+    send({ type: "SUBMIT_REQUESTED" })
+    const result = await effects.completeStep({ request, stepId: step.id })
+    if (!isMountedRef.current) return
 
-      if (latestSave === null || latestSave.stepId !== stepId) {
-        return true
-      }
+    if (result.status === "error") {
+      send({
+        message: result.message || LESSON_STEP_ERROR,
+        type: "SUBMIT_FAILED",
+      })
+      return
+    }
 
-      if (latestSave.status === "pending") {
-        const outcome = await latestSave.promise
+    if (result.transition.status === "retry") {
+      send({ evaluation: result.transition.evaluation, type: "STEP_RETRY" })
+      return
+    }
 
-        if (!isMountedRef.current) {
-          return false
-        }
-
-        if (latestAnswerSaveRef.current?.requestId !== outcome.requestId) {
-          continue
-        }
-      }
-
-      const currentLatestSave = latestAnswerSaveRef.current
-
-      if (currentLatestSave === null || currentLatestSave.stepId !== stepId) {
-        return true
-      }
-
-      if (currentLatestSave.status === "error") {
-        send({
-          message: LESSON_ANSWER_ERROR,
-          requestId: currentLatestSave.requestId,
-          stepId,
-          type: "ANSWER_SAVE_FAILED",
-        })
-        return false
-      }
-
-      return true
+    send({ transition: result.transition, type: "STEP_ACCEPTED" })
+    if (result.transition.evaluation === null) {
+      send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
     }
   }
 
   return {
-    answerError,
+    answerError: null,
     canStart: getFirstLessonStep(lesson) !== null,
     checked,
-    completeError: isActive ? sessionState.completeError : null,
+    completeError: isActive ? sessionState.submitError : null,
+    completion:
+      sessionState.status === "complete" ? sessionState.completion : null,
     currentAnswerPayload,
     currentStep,
     currentStepIndex,
     hasStarted: isActive || sessionState.status === "complete",
     isComplete: sessionState.status === "complete",
-    isCompleting: isActive && sessionState.activity === "completing",
-    isLastStep,
-    isQuizStep,
+    isCompleting:
+      isActive &&
+      sessionState.activity === "submitting" &&
+      isLastLessonStep(lesson, currentStepIndex),
+    isLastStep: isLastLessonStep(lesson, currentStepIndex),
+    isQuizStep: currentStep !== null && isEvaluatedChoiceStep(currentStep),
     isReady,
-    isSavingProgress: isActive && sessionState.activity === "saving-progress",
+    isSavingProgress:
+      isActive &&
+      sessionState.activity === "submitting" &&
+      !isLastLessonStep(lesson, currentStepIndex),
     isSavingStart: sessionState.status === "starting",
     progress,
     requestAiFeedback,
@@ -442,30 +250,38 @@ export function useLessonSession({
   }
 }
 
-async function saveLessonAnswer({
-  answer,
-  effects,
-  requestId,
-  stepId,
-}: {
-  readonly answer: LessonAnswerChange["answer"]
-  readonly effects: LessonSessionEffects
-  readonly requestId: number
-  readonly stepId: string
-}): Promise<AnswerSaveOutcome> {
-  const result = await effects.saveAnswer({ answer, stepId })
-
-  return {
-    requestId,
-    status: result.status,
-    stepId,
+function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
+  switch (lesson.learning.status) {
+    case "not_started":
+      return createLessonSessionState(0, false)
+    case "in_progress":
+      return createLessonSessionState(lesson.learning.currentStepIndex, true)
+    case "completed":
+      return createLessonSessionState(lesson.steps.length - 1, true, true)
+    case "locked":
+      return createLessonSessionState(0, false)
   }
 }
 
-function clampLessonStepIndex(lesson: Lesson, stepIndex: number): number {
-  if (lesson.steps.length === 0) {
-    return 0
+function createCompleteStepRequest(
+  step: LessonStep,
+  answer: LessonStepAnswerPayload | undefined
+) {
+  if (step.type === "READING" || step.type === "COMPARE") {
+    return { kind: "acknowledge" as const }
   }
 
-  return Math.min(lesson.steps.length - 1, Math.max(0, stepIndex))
+  if (answer === undefined) return null
+  return { answer, kind: "answer" as const }
+}
+
+function isEvaluatedChoiceStep(step: LessonStep): boolean {
+  return (
+    step.type === "CATEGORIZE" ||
+    step.type === "FILL_BLANK" ||
+    step.type === "MATCH" ||
+    step.type === "MULTIPLE_CHOICE" ||
+    step.type === "ORDER" ||
+    step.type === "SELECT"
+  )
 }

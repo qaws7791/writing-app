@@ -25,7 +25,7 @@
 ## UI 기준
 
 - 화면 제목은 현재 코스 제목이다.
-- reducer 기반 draft는 `clean`, `dirty`, `saving`, `saved`, `validation-error`, `conflict`, `server-error` 상태를 구분한다.
+- reducer 기반 draft는 `clean`, `dirty`, `saving`, `publishing`, `saved`, `validation-error`, `conflict`, `server-error` 상태를 구분한다.
 - 코스 정보는 제목, 설명, 카테고리 form control을 제공한다.
 - 커리큘럼은 유닛과 레슨 계층을 보여 주고 추가·제목 변경·삭제를 지원한다. 배열 변경 뒤 `sortOrder`는 1부터 다시 계산한다.
 - 레슨 작업대는 제목, 예상 시간, 설명, 요약을 보여준다.
@@ -48,8 +48,10 @@
 ## 저장과 충돌
 
 - `PUT /courses/{courseId}/editor`에 branded ID와 구조화된 10종 step union을 포함한 전체 문서를 저장한다.
+- 저장은 현재 `editVersion`의 `If-Match`를 보내고 성공 시 증가한 `editVersion`을 반영한다. `revision`은 저장으로 증가하지 않는다.
+- 저장되지 않은 변경이 없을 때 `초안 발행`을 실행할 수 있다. 발행 성공 뒤 서버가 복제한 다음 `revision` draft를 다시 읽는다.
 - 브라우저 새로고침·창 닫기와 목록 또는 편집 탭 이동 전에 미저장 경고를 제공한다.
-- 충돌 시 자동 병합하지 않는다. 사용자는 최신 서버 문서로 교체하거나, 로컬 초안에 최신 revision만 적용해 다시 검토한 뒤 명시적으로 재저장한다.
+- 충돌 시 자동 병합하지 않는다. 사용자는 최신 서버 문서로 교체하거나, 로컬 초안에 최신 `curriculumVersionId`, `editVersion`, `revision`을 적용해 다시 검토한 뒤 명시적으로 재저장한다.
 
 ## 접근성
 

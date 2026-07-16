@@ -1,8 +1,9 @@
 import { defineApiRoute } from "@/context/hono-env"
 import { jsonResponse } from "@/http/openapi"
+import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { z } from "@workspace/hono/zod"
 
-const healthResponseSchema = z.object({
+const healthResponseSchema = z.strictObject({
   ok: z.boolean(),
 })
 
@@ -16,9 +17,14 @@ export const healthRoute = defineApiRoute({
   summary: "API 상태 조회",
   handler: (context) =>
     context.json(
-      {
-        ok: true,
-      },
+      parseLearnerRouteResponse(
+        context,
+        "HealthResponse",
+        healthResponseSchema,
+        {
+          ok: true,
+        }
+      ),
       200
     ),
 })

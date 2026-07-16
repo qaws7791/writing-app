@@ -1,6 +1,7 @@
 import { AppError } from "@workspace/hono/errors"
 import type { AdminOwnerMutationResult } from "@workspace/core/admin"
 import type { AdminCourseEditorSaveResult } from "@workspace/core/admin"
+import type { AdminCoursePublishResult } from "@workspace/core/admin"
 
 export function invalidAdminRequestError(): AppError {
   return new AppError({
@@ -69,6 +70,27 @@ export function unwrapAdminCourseEditorSaveResult(
   switch (result.kind) {
     case "invalid-reference":
       throw invalidAdminRequestError()
+    case "stale-revision":
+      throw new AppError({
+        code: "STALE_REVISION",
+        message: "Course editor revision conflict",
+        status: 409,
+      })
+    default:
+      return unwrapAdminOwnerMutationResult(result)
+  }
+}
+
+export function unwrapAdminCoursePublishResult(
+  result: AdminCoursePublishResult
+) {
+  switch (result.kind) {
+    case "invalid-draft":
+      throw new AppError({
+        code: "INVALID_REQUEST",
+        message: "Course draft is not publishable",
+        status: 422,
+      })
     case "stale-revision":
       throw new AppError({
         code: "STALE_REVISION",

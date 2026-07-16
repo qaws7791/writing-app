@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ProfilePage } from "@/features/profile/profile-page"
-import type { LearnerProfile } from "@/features/profile/profile-types"
+import type { LearnerProfileResponse } from "@workspace/contracts/learning"
 
 const { requestLogout, routerPush, setTheme } = vi.hoisted(() => ({
   requestLogout: vi.fn(async () => "/"),
@@ -28,7 +28,7 @@ vi.mock("@/lib/auth/auth-client", () => ({
   requestLogout,
 }))
 
-const profile: LearnerProfile = {
+const profile: LearnerProfileResponse = {
   stats: {
     completedLessons: 12,
     currentStreakDays: 4,

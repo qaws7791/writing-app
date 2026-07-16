@@ -4,7 +4,7 @@ import { adminLegalSettingsRequestSchema } from "@workspace/contracts/admin"
 import { createAiFeedbackCommandSchema } from "@workspace/contracts/ai-feedback"
 import {
   jsonValueSchema,
-  lessonStepAnswerSchema,
+  learnerStepSubmissionSchema,
 } from "@workspace/contracts/learning"
 
 const oversizedText = "가".repeat(1_000_000)
@@ -22,7 +22,7 @@ describe("외부 입력 크기 제한", () => {
       }).success
     ).toBe(false)
     expect(
-      lessonStepAnswerSchema.safeParse({
+      learnerStepSubmissionSchema.safeParse({
         text: oversizedText,
         type: "WRITE",
       }).success

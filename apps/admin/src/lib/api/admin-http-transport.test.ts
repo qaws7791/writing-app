@@ -101,6 +101,27 @@ describe("관리자 HTTP 전송 계층", () => {
     })
   })
 
+  it("호출자가 지정한 조건부 요청 헤더를 전달한다", async () => {
+    let request: Request | undefined
+    const transport = createAdminHttpTransport({
+      baseUrl,
+      fetch: async (input) => {
+        request = input
+        return new Response('{"value":1}')
+      },
+      tokenProvider: () => null,
+    })
+
+    await transport.requestJson({
+      headers: { "If-Match": '"3"' },
+      method: "PUT",
+      path: "/test",
+      schema: valueSchema,
+    })
+
+    expect(request?.headers.get("If-Match")).toBe('"3"')
+  })
+
   it.each([
     [
       "parameter 순서와 대소문자",

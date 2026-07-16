@@ -13,7 +13,9 @@ import {
 
 const document = adminCourseEditorSchema.parse({
   category: "미분류",
+  curriculumVersionId: "course-1-v1",
   description: "설명",
+  editVersion: 0,
   id: "course-1",
   revision: 1,
   status: "active",
@@ -46,13 +48,19 @@ describe("courseEditorReducer", () => {
     expect(removed.status).toBe("dirty")
   })
 
-  it("충돌에서 최신본 교체와 로컬 초안 revision 재기준을 구분한다", () => {
+  it("충돌에서 최신본 교체와 로컬 초안 편집 버전 재기준을 구분한다", () => {
     const dirty = courseEditorReducer(createCourseEditorState(document), {
       field: "title",
       type: "course-changed",
       value: "로컬 제목",
     })
-    const latest = { ...document, revision: 2, title: "서버 제목" }
+    const latest = {
+      ...document,
+      curriculumVersionId: "course-1-v2",
+      editVersion: 3,
+      revision: 2,
+      title: "서버 제목",
+    }
     const conflict = courseEditorReducer(dirty, {
       latest,
       type: "conflict-detected",
@@ -63,7 +71,12 @@ describe("courseEditorReducer", () => {
     ).toEqual(latest)
     expect(
       courseEditorReducer(conflict, { type: "local-rebased" }).draft
-    ).toMatchObject({ revision: 2, title: "로컬 제목" })
+    ).toMatchObject({
+      curriculumVersionId: "course-1-v2",
+      editVersion: 3,
+      revision: 2,
+      title: "로컬 제목",
+    })
   })
 
   it("AI 코칭 대상 변경을 해당 레슨의 AI_FEEDBACK 스텝에만 반영한다", () => {

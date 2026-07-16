@@ -10,12 +10,15 @@ const validSecret = "x".repeat(32)
 const learnerProductionSecret =
   "0123456789abcdef0123456789abcdef0123456789abcdef"
 const adminProductionSecret = "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210"
+const cursorProductionSecret =
+  "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB"
 const validProductionEnv = {
   ADMIN_BETTER_AUTH_SECRET: adminProductionSecret,
   ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
   ADMIN_ORIGIN: "https://admin.example.com",
   BETTER_AUTH_SECRET: learnerProductionSecret,
   BETTER_AUTH_URL: "https://api.example.com",
+  CURSOR_SIGNING_SECRET: cursorProductionSecret,
   DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
   NODE_ENV: "production",
   WEB_ORIGIN: "https://app.example.com",
@@ -54,6 +57,7 @@ describe("env parser", () => {
       API_PORT: 4001,
       BETTER_AUTH_URL: undefined,
       BETTER_AUTH_SECRET: validSecret,
+      CURSOR_SIGNING_SECRET: undefined,
       DATABASE_URL: ":memory:",
       GOOGLE_CLIENT_ID: undefined,
       GOOGLE_CLIENT_SECRET: undefined,
@@ -124,6 +128,7 @@ describe("env parser", () => {
     ["localhost", { ADMIN_ORIGIN: "https://localhost" }],
     ["memory DB", { DATABASE_URL: ":memory:" }],
     ["동일 secret", { ADMIN_BETTER_AUTH_SECRET: learnerProductionSecret }],
+    ["동일 cursor secret", { CURSOR_SIGNING_SECRET: learnerProductionSecret }],
     ["낮은 entropy", { BETTER_AUTH_SECRET: "x".repeat(48) }],
     [
       "placeholder",

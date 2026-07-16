@@ -3,21 +3,20 @@ import Link from "next/link"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
-import type { CourseDetail } from "@/features/courses/course-types"
+import type { LearnerCourseDetail } from "@workspace/contracts/learning"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CourseDetailPageProps = {
-  readonly course: CourseDetail
+  readonly course: LearnerCourseDetail
 }
 
 export function CourseDetailPage({ course }: CourseDetailPageProps) {
-  const completedLessonCount = course.progress.completedLessons
-  const totalLessonCount = course.progress.totalLessons
-  const progressPercent =
-    totalLessonCount === 0 ? 0 : (completedLessonCount / totalLessonCount) * 100
-  const nextLesson = course.progress.nextLesson
+  const completedLessonCount = course.learning.completedLessons
+  const totalLessonCount = course.learning.totalLessons
+  const progressPercent = course.learning.progressPercent
+  const nextLesson = course.learning.nextLesson
 
   return (
     <div className="max-w-3xl mx-auto">

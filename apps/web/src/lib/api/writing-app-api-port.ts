@@ -1,74 +1,65 @@
-import type {
-  CourseDetail,
-  CourseSummary,
-  ProgressCourseList,
-} from "@/features/courses/course-types"
-import type {
-  LessonAiFeedback,
-  LessonStartedAnswer,
-  LessonStepAnswerPayload,
-} from "@/features/lessons/lesson-logic"
-import type { Lesson } from "@/features/lessons/lesson-types"
-import type { LearnerProfile } from "@/features/profile/profile-types"
 import type { ApiResult } from "@/lib/api/api-result"
-
-export type SaveLessonAnswerInput = {
-  readonly answer: LessonStartedAnswer | LessonStepAnswerPayload
-  readonly lessonId: string
-  readonly stepId: string
-}
-
-export type CompleteLessonInput = {
-  readonly lessonId: string
-}
-
-export type SaveLessonProgressInput = {
-  readonly currentStepIndex: number
-  readonly lessonId: string
-}
-
-export type CreateAiFeedbackInput = {
-  readonly idempotencyKey: string
-  readonly lessonId: string
-  readonly stepId: string
-}
-
-export type SaveLessonAnswerResult = {
-  readonly saved: boolean
-}
-
-export type CompleteLessonResult = {
-  readonly saved: boolean
-}
-
-export type SaveLessonProgressResult = {
-  readonly saved: boolean
-}
+import type {
+  CompleteLearnerStepBody,
+  CompleteLearnerStepResult,
+  LearnerAiFeedbackTransitionResult,
+  LearnerCourseCategoriesResponse,
+  LearnerCourseDetailResponse,
+  LearnerCourseListResponse,
+  LearnerLessonResponse,
+  LearnerProfileResponse,
+  LearnerProgressResponse,
+  LessonLearningState,
+} from "@workspace/contracts/learning"
 
 export type GetProgressOptions = {
+  readonly cursor?: string
+  readonly limit?: number
   readonly status?: "completed" | "in_progress"
 }
 
+export type ListCoursesOptions = {
+  readonly category?: string
+  readonly cursor?: string
+  readonly limit?: number
+  readonly query?: string
+  readonly sort?:
+    | "lesson-count-asc"
+    | "lesson-count-desc"
+    | "recommended"
+    | "title-asc"
+    | "title-desc"
+}
+
 export type WritingAppApi = {
-  readonly completeLesson: (
-    input: CompleteLessonInput
-  ) => Promise<ApiResult<CompleteLessonResult>>
-  readonly createAiFeedback: (
-    input: CreateAiFeedbackInput
-  ) => Promise<ApiResult<LessonAiFeedback>>
+  readonly completeStep: (input: {
+    readonly lessonId: string
+    readonly request: CompleteLearnerStepBody
+    readonly stepId: string
+  }) => Promise<ApiResult<CompleteLearnerStepResult>>
+  readonly getCourseCategories: () => Promise<
+    ApiResult<LearnerCourseCategoriesResponse>
+  >
   readonly getCourseDetail: (
     courseId: string
-  ) => Promise<ApiResult<CourseDetail>>
-  readonly getLesson: (lessonId: string) => Promise<ApiResult<Lesson>>
-  readonly getProfile: () => Promise<ApiResult<LearnerProfile>>
+  ) => Promise<ApiResult<LearnerCourseDetailResponse>>
+  readonly getLesson: (
+    lessonId: string
+  ) => Promise<ApiResult<LearnerLessonResponse>>
+  readonly getProfile: () => Promise<ApiResult<LearnerProfileResponse>>
   readonly getProgress: (
     options?: GetProgressOptions
-  ) => Promise<ApiResult<ProgressCourseList>>
-  readonly listCourses: () => Promise<ApiResult<readonly CourseSummary[]>>
-  readonly saveLessonAnswer: (
-    input: SaveLessonAnswerInput
-  ) => Promise<ApiResult<SaveLessonAnswerResult>>
-  readonly saveLessonProgress: (
-    input: SaveLessonProgressInput
-  ) => Promise<ApiResult<SaveLessonProgressResult>>
+  ) => Promise<ApiResult<LearnerProgressResponse>>
+  readonly listCourses: (
+    options?: ListCoursesOptions
+  ) => Promise<ApiResult<LearnerCourseListResponse>>
+  readonly requestAiFeedback: (input: {
+    readonly idempotencyKey: string
+    readonly lessonId: string
+    readonly stepId: string
+  }) => Promise<ApiResult<LearnerAiFeedbackTransitionResult>>
+  readonly startLesson: (input: {
+    readonly expectedCurriculumVersionId: string
+    readonly lessonId: string
+  }) => Promise<ApiResult<LessonLearningState>>
 }

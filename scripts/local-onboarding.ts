@@ -13,9 +13,13 @@ const localEnvironmentFiles = [
     path: "apps/api/.env",
     prepare: (template: string, credentials: LocalCredentials) =>
       replaceEnvironmentValue(
-        template,
-        "BETTER_AUTH_SECRET",
-        credentials.learnerAuthSecret
+        replaceEnvironmentValue(
+          template,
+          "BETTER_AUTH_SECRET",
+          credentials.learnerAuthSecret
+        ),
+        "CURSOR_SIGNING_SECRET",
+        credentials.cursorSigningSecret
       ),
   },
   {
@@ -51,6 +55,7 @@ const localEnvironmentFiles = [
 export interface LocalCredentials {
   readonly adminAuthSecret: string
   readonly adminSeedPassword: string
+  readonly cursorSigningSecret: string
   readonly learnerAuthSecret: string
 }
 
@@ -97,6 +102,7 @@ export function createLocalCredentials(): LocalCredentials {
   return {
     adminAuthSecret: randomBytes(32).toString("base64url"),
     adminSeedPassword: `${randomBytes(24).toString("base64url")}Aa1!`,
+    cursorSigningSecret: randomBytes(32).toString("base64url"),
     learnerAuthSecret: randomBytes(32).toString("base64url"),
   }
 }
@@ -112,9 +118,10 @@ export function createLocalEnvironmentFiles({
 
   if (
     credentials !== undefined &&
-    credentials.adminAuthSecret === credentials.learnerAuthSecret
+    (credentials.adminAuthSecret === credentials.learnerAuthSecret ||
+      credentials.cursorSigningSecret === credentials.learnerAuthSecret)
   ) {
-    throw new Error("학습자와 관리자 인증 비밀값은 서로 달라야 합니다.")
+    throw new Error("인증과 cursor 서명 비밀값은 서로 달라야 합니다.")
   }
 
   return localEnvironmentFiles.map((file) => {
@@ -271,14 +278,22 @@ function inspectAuthSecrets(
   const adminSecret = environments
     .get("apps/admin-api/.env")
     ?.get("ADMIN_BETTER_AUTH_SECRET")
+  const cursorSecret = environments
+    .get("apps/api/.env")
+    ?.get("CURSOR_SIGNING_SECRET")
 
-  if (learnerSecret === undefined || adminSecret === undefined) {
+  if (
+    learnerSecret === undefined ||
+    adminSecret === undefined ||
+    cursorSecret === undefined
+  ) {
     return []
   }
 
   const checks: LocalOnboardingCheck[] = []
   checks.push(inspectSecret("학습자 인증 비밀값", learnerSecret))
   checks.push(inspectSecret("관리자 인증 비밀값", adminSecret))
+  checks.push(inspectSecret("cursor 서명 비밀값", cursorSecret))
   checks.push(
     learnerSecret === adminSecret
       ? {
@@ -290,6 +305,19 @@ function inspectAuthSecrets(
           detail: "학습자와 관리자 인증 비밀값이 분리되어 있습니다.",
           kind: "pass",
           label: "인증 비밀값 분리",
+        }
+  )
+  checks.push(
+    learnerSecret === cursorSecret
+      ? {
+          detail: "학습자 인증과 cursor 서명 비밀값이 같습니다.",
+          kind: "failure",
+          label: "cursor 비밀값 분리",
+        }
+      : {
+          detail: "학습자 인증과 cursor 서명 비밀값이 분리되어 있습니다.",
+          kind: "pass",
+          label: "cursor 비밀값 분리",
         }
   )
 

@@ -36,11 +36,11 @@
 - owner와 operator가 이메일·비밀번호 로그인만으로 각 권한 범위에 접근한다.
 - owner는 MFA 등록 또는 재인증 없이 기존 변경 작업을 수행하고, operator는 계속 `403 forbidden`을 받는다.
 - MFA 관련 HTTP endpoint, DTO 필드, UI route, DB table·column, 런타임 코드 참조가 남지 않는다. 단, 기존 DB를 정리하는 migration과 제거를 검증하는 음성 회귀 테스트의 참조는 유지한다.
-- `bun run check:api-contract`, `bun run check:document-drift`, 관련 workspace test, `bun run typecheck`, `bun run lint`, `bun run build`, `bun run test:e2e`가 통과한다.
+- 문서 drift, 관련 workspace test, typecheck, lint, build와 E2E 품질 게이트가 통과한다.
 
 ## 검증 결과
 
 - `@workspace/db`, `@workspace/core`, `@workspace/admin-api`, `@workspace/admin`의 단위·route·계약 테스트가 통과했다.
 - `bunx bun@1.3.10 run test:e2e`에서 UI 시각 계약, 학습자 테스트 로그인, MFA 없는 어드민 owner/operator 권한 시나리오 3건이 통과했다.
-- `bunx bun@1.3.10 run check:api-contract`, `check:document-drift`, `typecheck`, `lint`, `format:check`가 통과했다.
+- 당시 API 계약 drift 검사와 document drift, typecheck, lint, format 검사가 통과했다. API 계약 drift 명령은 2026-07-16 학습자 계약 단순화 단계 1에서 정적 생성 경로와 함께 제거되었다.
 - `@workspace/admin` production build가 통과했다. 전체 build는 변경 범위 밖인 `@workspace/web`가 필요한 production web origin 환경값 없이 실행되어 중단됐다.

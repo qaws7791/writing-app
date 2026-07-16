@@ -13,6 +13,7 @@ import type {
   AdminDeleteUserResultDto,
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
+  AdminPublishCourseResult,
   AdminSettingsDto,
   AdminSortDirection,
   AdminUserDetailDto,
@@ -85,6 +86,8 @@ export type ReadAdminCourseInput = {
 export type SaveAdminCourseEditorInput = {
   readonly courseId: string
   readonly document: AdminCourseEditorDocument
+  readonly expectedEditVersion: number
+  readonly now: Date
 }
 
 export type SaveAdminCourseEditorPersistenceResult =
@@ -97,6 +100,18 @@ export type ArchiveAdminCourseInput = {
   readonly courseId: string
   readonly now: Date
 }
+
+export type PublishAdminCourseInput = {
+  readonly courseId: string
+  readonly expectedEditVersion: number
+  readonly now: Date
+}
+
+export type PublishAdminCoursePersistenceResult =
+  | { readonly kind: "invalid-draft" }
+  | { readonly kind: "not-found" }
+  | { readonly kind: "ok"; readonly value: AdminPublishCourseResult }
+  | { readonly kind: "stale-revision" }
 
 export type ReadAdminUsersInput = {
   readonly page: number
@@ -169,6 +184,9 @@ export type CourseAdminRepository = {
   readonly readCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminCourseListDto>
+  readonly publishCourse: (
+    input: PublishAdminCourseInput
+  ) => Promise<PublishAdminCoursePersistenceResult>
   readonly saveCourseEditor: (
     input: SaveAdminCourseEditorInput
   ) => Promise<SaveAdminCourseEditorPersistenceResult>

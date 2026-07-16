@@ -3,12 +3,12 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { HomePage } from "@/features/home/home-page"
-import type { ProgressCourseList } from "@/features/courses/course-types"
-import type { LearnerProfile } from "@/features/profile/profile-types"
-import { apiOk } from "@/lib/api/api-result"
+import { learnerProgressPageSchema } from "@workspace/contracts/learning"
+import type { LearnerProfileResponse } from "@workspace/contracts/learning"
+import { httpApiOk as apiOk } from "@workspace/http-client"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 
-const profileStats: LearnerProfile["stats"] = {
+const profileStats: LearnerProfileResponse["stats"] = {
   completedLessons: 0,
   currentStreakDays: 0,
   lastActiveDate: null,
@@ -16,77 +16,58 @@ const profileStats: LearnerProfile["stats"] = {
   totalLessons: 0,
 }
 
-const emptyInProgress: ProgressCourseList = {
-  courses: [],
-  currentStreakDays: 0,
-}
+const version = { curriculumVersionId: "c1-v1", revision: 1 }
+const emptyInProgress = learnerProgressPageSchema.parse({
+  items: [],
+  nextCursor: null,
+})
 
-const progressWithActiveCourse: ProgressCourseList = {
-  courses: [
+const progressWithActiveCourse = learnerProgressPageSchema.parse({
+  items: [
     {
       id: "c1",
-      lessons: [
-        {
-          currentStepIndex: null,
-          estimatedMinutes: 5,
-          id: "l1",
-          status: "completed",
-          title: "좋은 문장이란 무엇인가",
-        },
-        {
-          currentStepIndex: null,
+      learning: {
+        completedLessons: 1,
+        lastActivityAt: "2026-06-14T00:00:00.000Z",
+        nextLesson: {
+          currentStepId: "l2-s1",
+          currentStepIndex: 0,
           estimatedMinutes: 7,
           id: "l2",
-          status: "available",
           title: "짧게 쓰기",
         },
-        {
-          currentStepIndex: null,
-          estimatedMinutes: 8,
-          id: "l3",
-          status: "locked",
-          title: "문단 다듬기",
-        },
-      ],
-      nextLessons: [
-        {
-          courseId: "c1",
-          currentStepIndex: null,
-          estimatedMinutes: 7,
-          id: "l2",
-          status: "available",
-          title: "짧게 쓰기",
-        },
-      ],
-      progressPercent: 33,
+        progressPercent: 33,
+        status: "in_progress",
+        totalLessons: 3,
+        version,
+      },
       title: "글쓰기 첫걸음 30일",
       visualKey: "basic-sentence-writing",
     },
   ],
-  currentStreakDays: 2,
-}
+  nextCursor: null,
+})
 
-const completedProgress: ProgressCourseList = {
-  courses: [
+const completedProgress = learnerProgressPageSchema.parse({
+  items: [
     {
       id: "c2",
-      lessons: [
-        {
-          currentStepIndex: null,
-          estimatedMinutes: 5,
-          id: "l4",
-          status: "completed",
-          title: "완료한 레슨",
-        },
-      ],
-      nextLessons: [],
-      progressPercent: 100,
+      learning: {
+        completedAt: "2026-06-14T00:00:00.000Z",
+        completedLessons: 1,
+        lastActivityAt: "2026-06-14T00:00:00.000Z",
+        nextLesson: null,
+        progressPercent: 100,
+        status: "completed",
+        totalLessons: 1,
+        version: { curriculumVersionId: "c2-v1", revision: 1 },
+      },
       title: "완료한 코스",
       visualKey: "expression",
     },
   ],
-  currentStreakDays: 5,
-}
+  nextCursor: null,
+})
 
 describe("홈 화면", () => {
   it("fresh 상태의 인사, 통계, 진행중 탭 CTA를 보여준다", () => {
@@ -184,6 +165,62 @@ describe("홈 화면", () => {
       })
     ).not.toBeInTheDocument()
   })
+
+  it("진행 중 코스의 다음 cursor 페이지를 이어 붙인다", async () => {
+    const user = userEvent.setup()
+    const initialPage = learnerProgressPageSchema.parse({
+      items: progressWithActiveCourse.items,
+      nextCursor: "progress-cursor-2",
+    })
+    const nextPage = learnerProgressPageSchema.parse({
+      items: [
+        {
+          id: "c3",
+          learning: {
+            completedLessons: 0,
+            lastActivityAt: "2026-06-15T00:00:00.000Z",
+            nextLesson: {
+              currentStepId: "l3-s1",
+              currentStepIndex: 0,
+              estimatedMinutes: 5,
+              id: "l3",
+              title: "문장 다듬기",
+            },
+            progressPercent: 0,
+            status: "in_progress",
+            totalLessons: 2,
+            version: { curriculumVersionId: "c3-v1", revision: 1 },
+          },
+          title: "표현 확장",
+          visualKey: "expression",
+        },
+      ],
+      nextCursor: null,
+    })
+    const getProgress = vi.fn(async () => apiOk(nextPage))
+
+    render(
+      <HomePage
+        api={createApi({ getProgress })}
+        inProgress={initialPage}
+        learnerName="몽쉘"
+        profileStats={profileStats}
+      />
+    )
+
+    await user.click(
+      screen.getByRole("button", { name: "진행 중 코스 더 보기" })
+    )
+
+    expect(getProgress).toHaveBeenCalledWith({
+      cursor: "progress-cursor-2",
+      status: "in_progress",
+    })
+    expect(await screen.findByText("표현 확장")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "진행 중 코스 더 보기" })
+    ).not.toBeInTheDocument()
+  })
 })
 
 function createApi({
@@ -192,14 +229,14 @@ function createApi({
   readonly getProgress: WritingAppApi["getProgress"]
 }): WritingAppApi {
   return {
-    completeLesson: vi.fn(),
-    createAiFeedback: vi.fn(),
+    completeStep: vi.fn(),
     getCourseDetail: vi.fn(),
+    getCourseCategories: vi.fn(),
     getLesson: vi.fn(),
     getProfile: vi.fn(),
     getProgress,
     listCourses: vi.fn(),
-    saveLessonAnswer: vi.fn(),
-    saveLessonProgress: vi.fn(),
+    requestAiFeedback: vi.fn(),
+    startLesson: vi.fn(),
   }
 }

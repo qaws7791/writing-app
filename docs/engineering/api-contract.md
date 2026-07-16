@@ -4,11 +4,15 @@
 
 ## 기준
 
-- 기준일: 2026-07-12
+- 작업 상태: 2026-07-17 학습자 API 응답 계약 단순화 단계 5 완료
+- 기준일: 2026-07-17
 - 기준 파일:
   - `apps/api/src/routes/index.ts`
   - `apps/api/src/modules/*/*.routes.ts`
   - `apps/api/src/http/openapi.ts`
+  - `apps/api/src/http/learner-response.ts`
+  - `packages/contracts/src/learning/learner-api.ts`
+  - `packages/contracts/src/learning/api-error.ts`
   - `apps/admin-api/src/app.ts`
   - `apps/admin-api/src/routes/*.route.ts`
 
@@ -17,6 +21,8 @@
 - API route는 transport 경계다.
 - 비즈니스 규칙은 core service 또는 domain policy에 둔다.
 - 요청 body와 params는 runtime schema로 검증한다.
+- 학습자 공개 request·response object는 strict Zod schema로 알 수 없는 필드를 거절한다. 표준 HTTP header 전체를 입력으로 받는 header schema만 명시적으로 loose object를 사용한다.
+- 학습자 route는 성공 응답을 보내기 직전에 canonical response schema로 검증한다.
 - 사용자 노출 오류 메시지는 한국어를 기본으로 한다.
 - Better Auth raw route는 앱의 OpenAPI route registry와 분리될 수 있다.
 
@@ -43,34 +49,38 @@ SSE와 파일 다운로드도 보호 응답 정책을 적용하되 각각 `text/
 
 기준 URL은 환경별 `NEXT_PUBLIC_API_BASE_URL` 또는 `WEB_API_BASE_URL`이 가리키는 `apps/api` origin이다.
 
-학습자 request/response DTO와 status enum은 `packages/contracts`의 Zod schema를 단일 기준으로 사용한다. `apps/api`의 route schema는 `@workspace/contracts/*`를 직접 import해 OpenAPI 문서를 생성하고, `apps/web`은 같은 정적 OpenAPI JSON에서 generated 타입을 만들며 런타임 응답 파싱은 가능한 범위에서 같은 contracts schema를 사용한다. API module은 인증 사용자 shape와 route response 조합만 담당한다.
+학습자 request/response DTO와 status enum은 `@workspace/contracts/learning`의 Zod schema와 추론 타입을 HTTP 경계의 단일 entrypoint로 사용한다. `apps/api` route와 `apps/web` HTTP adapter는 같은 schema를 직접 import해 요청·응답을 runtime 검증한다. API module은 인증, use case 호출, 성공 응답 검증과 오류 정규화를 담당한다.
 
-`apps/web` feature model은 앱 내부 타입으로 유지하며 `@workspace/core`를 직접 import하지 않는다. API wire DTO와 contracts schema는 `apps/web/src/lib/api` 경계에서 검증·변환한다.
+`apps/web`의 course·progress·lesson·profile 조회는 canonical 계약 타입을 직접 사용하며 identity mapper나 복제 제품 타입을 두지 않는다. 레슨의 일시적인 UI 입력 모델 변환은 feature에만 유지한다. 학습자 feature는 `@workspace/core`와 내부 `@workspace/contracts/content`를 import하지 않는다.
 매칭 스텝의 presentation choice id, selection map, deterministic shuffle, answer pair 변환은 HTTP request/response 계약이 아니므로 `packages/contracts`에서 노출하지 않는다. 해당 상호작용 모델은 `apps/web/src/features/lessons/lesson-match-presentation.ts`가 소유한다.
 
 현재 route:
 
-| 메서드     | 경로                                    | 인증          | 설명                                             |
-| ---------- | --------------------------------------- | ------------- | ------------------------------------------------ |
-| `GET`      | `/health`                               | 없음          | API 상태                                         |
-| `GET`      | `/openapi`                              | 없음          | OpenAPI 3.1 문서                                 |
-| `GET/POST` | `/api/auth/*`                           | Better Auth   | 인증 handler                                     |
-| `GET`      | `/api/auth/sign-in/google`              | 없음          | Google sign-in redirect helper                   |
-| `GET`      | `/auth/session`                         | active 학습자 | 현재 세션                                        |
-| `GET`      | `/profile`                              | active 학습자 | 프로필과 통계                                    |
-| `GET`      | `/courses`                              | active 학습자 | 코스 목록                                        |
-| `GET`      | `/courses/{courseId}`                   | active 학습자 | 코스 상세                                        |
-| `GET`      | `/lessons/{lessonId}`                   | active 학습자 | 레슨 상세                                        |
-| `GET`      | `/progress`                             | active 학습자 | 학습 진행 (`status=in_progress\|completed` 선택) |
-| `POST`     | `/learning/answers`                     | active 학습자 | 스텝 답변 저장                                   |
-| `POST`     | `/learning/lessons/{lessonId}/progress` | active 학습자 | 순차 레슨 진행 index 저장                        |
-| `POST`     | `/learning/lessons/{lessonId}/complete` | active 학습자 | 레슨 완료                                        |
-| `POST`     | `/ai-feedback`                          | active 학습자 | AI 코칭 생성                                     |
+| 메서드     | 경로                                                      | 인증          | 설명                                             |
+| ---------- | --------------------------------------------------------- | ------------- | ------------------------------------------------ |
+| `GET`      | `/health`                                                 | 없음          | API 상태                                         |
+| `GET`      | `/openapi`                                                | 없음          | OpenAPI 3.1 문서                                 |
+| `GET/POST` | `/api/auth/*`                                             | Better Auth   | 인증 handler                                     |
+| `GET`      | `/api/auth/sign-in/google`                                | 없음          | Google sign-in redirect helper                   |
+| `GET`      | `/auth/session`                                           | active 학습자 | 현재 세션                                        |
+| `GET`      | `/profile`                                                | active 학습자 | 프로필과 통계                                    |
+| `GET`      | `/course-categories`                                      | active 학습자 | 정규화·중복 제거된 코스 분류                     |
+| `GET`      | `/courses`                                                | active 학습자 | cursor 코스 목록과 서버 검색·분류·정렬           |
+| `GET`      | `/courses/{courseId}`                                     | active 학습자 | 코스 상세                                        |
+| `GET`      | `/lessons/{lessonId}`                                     | active 학습자 | 레슨 상세                                        |
+| `GET`      | `/progress`                                               | active 학습자 | 학습 진행 (`status=in_progress\|completed` 선택) |
+| `POST`     | `/learning/lessons/{lessonId}/start`                      | active 학습자 | 고정 version으로 레슨 시작                       |
+| `POST`     | `/learning/lessons/{lessonId}/steps/{stepId}/complete`    | active 학습자 | 서버 채점과 원자적 step 전이                     |
+| `POST`     | `/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback` | active 학습자 | AI 피드백 생성과 원자적 step 전이                |
 
-`POST /learning/answers`의 transport schema는 학습 답변 union을 검증하고, core의 `LearningService`는 lesson 조회 뒤 `step-answer-policy`에 step type별 answer 검증을 위임한다. 따라서 route나 service가 콘텐츠 후보, unsupported step, lesson-started marker 규칙을 중복 구현하지 않는다.
-`POST /learning/lessons/{lessonId}/progress`는 현재 저장된 index와 같거나 정확히 1 큰 index만 허용한다. `POST /learning/lessons/{lessonId}/complete`는 body에서 index를 받지 않으며 core가 마지막 index 도달과 필수 답안 저장을 확인한 뒤 완료 index를 계산한다.
-진행 저장은 DB에서 기존 index와 요청 index의 최댓값만 확정한다. 서비스 검증 뒤 다른 요청이 더 높은 index를 저장한 경우 `409 PROGRESS_CONFLICT`를 반환하며 자동 재시도하지 않는다. 클라이언트는 최신 진행을 다시 조회하고 다음 순차 요청을 만든다. 완료 상태는 늦은 진행 저장으로 `in_progress`로 후퇴하지 않는다.
-`POST /ai-feedback`의 route는 인증 학습자 command를 core에 전달한다. 클라이언트는 재시도할 때 동일한 `Idempotency-Key` header를 보내며, header가 없으면 서버가 요청 단위 key를 생성한다. core의 `AiFeedbackService`는 lesson과 AI_FEEDBACK step 판정에 집중하고, attempt 원자 예약·한도 계산·provider 호출·상태 저장은 AI feedback attempt coordinator가 처리한다. 같은 학습자·레슨·스텝의 provider 호출은 한 번에 하나만 진행하며 동일 key의 성공 재시도는 저장된 결과를 반환한다.
+`POST /learning/lessons/{lessonId}/start`는 클라이언트가 조회한 `expectedCurriculumVersionId`와 현재 또는 기존 pin을 대조하고 이전 레슨 잠금을 검증한다. step 완료 route는 stable ID 기반 제출만 받고 서버의 type별 grading policy로 평가한다. 오답은 저장하지 않고 `retry`를 반환하며, accepted 답안 저장, 정확히 한 step 전진, 마지막 lesson·course 완료와 활동 집계를 하나의 `IMMEDIATE` transaction에서 처리한다. 과거 step의 동일 요청은 현재 상태를 반환하고 미래 step 요청은 `409 STEP_SEQUENCE_CONFLICT`다.
+
+lesson-scoped AI 피드백 route는 `Idempotency-Key`를 필수로 받고 요청 body에 답안, lesson ID나 step ID를 중복해서 받지 않는다. 서버가 고정 version의 선행 WRITE 답안을 조회한 뒤 provider를 transaction 밖에서 호출하고, 성공 결과 저장과 step 전이를 하나의 짧은 transaction에서 확정한다. provider 실패는 진행 상태를 바꾸지 않으며 같은 key의 성공 재시도는 저장된 피드백을 반환한다.
+
+`GET /courses`는 `cursor`, `limit`, `query`, `category`, `sort`를 받고 `GET /progress`는 `cursor`, `limit`, 선택 `status`를 받는다. 두 응답은 모두 `{ items, nextCursor }`다. 코스 정렬은 `recommended`, `title-asc`, `title-desc`, `lesson-count-asc`, `lesson-count-desc`만 허용한다. cursor는 endpoint, 정규화된 query fingerprint, 위치를 HMAC-SHA256으로 서명하고 `/progress`에는 학습자 scope를 추가한다. 서명·endpoint·query·학습자 scope가 일치하지 않으면 `400 INVALID_CURSOR`다.
+
+코스 상세는 `units[].lessons[].learning`과 코스 단위 `learning`을 함께 반환한다. 레슨 상세는 인증 학습자의 고정 curriculum version과 잠금 상태를 적용하고, 10개 step type별 allowlist로 정답·해설·분류 정답·매칭 관계를 직렬화하지 않는다. 잠긴 직접 레슨 조회는 `403 LESSON_LOCKED`다.
+기존 답안 저장, index 진행 저장, 별도 레슨 완료와 root AI 피드백 route는 제거했다. 해당 경로는 `404 NOT_FOUND`를 반환하며 runtime OpenAPI에도 등록되지 않는다.
 
 ## 어드민 API
 
@@ -99,6 +109,7 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 | `DELETE`   | `/courses/{courseId}`                      | owner       | 코스 보관                  |
 | `GET`      | `/courses/{courseId}/editor`               | 관리자      | 코스 편집 문서 조회        |
 | `PUT`      | `/courses/{courseId}/editor`               | owner       | 전체 코스 편집 문서 저장   |
+| `POST`     | `/courses/{courseId}/publish`              | owner       | 현재 draft 발행            |
 | `GET`      | `/users`                                   | 관리자      | 사용자 목록                |
 | `GET`      | `/users/{userId}`                          | 관리자      | 사용자 상세                |
 | `PATCH`    | `/users/{userId}/status`                   | owner       | 사용자 상태 변경           |
@@ -127,6 +138,15 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 `POST /ai-chat/messages/stream`은 관리자·클라이언트 IP별 요청 횟수와 관리자별 일일 요청 횟수, 대화별 단일 in-flight를 제한한다. 한도 초과는 `429`와 `Retry-After`를 반환한다. SSE stream은 `chunk` 뒤 반드시 `done` 또는 `error`로 종료하며, 요청 취소와 30초 provider timeout은 provider abort로 전달되고 assistant 메시지를 저장하지 않는다. prompt는 최근 20개 메시지와 12,000자, provider 출력은 2,000 token과 64 KiB를 상한으로 둔다.
 
+### 관리자 커리큘럼 draft 저장과 발행
+
+- `GET /courses/{courseId}/editor`는 mutable draft만 반환하고 `editVersion`의 강한 ETag를 응답한다.
+- `PUT /courses/{courseId}/editor`는 `If-Match: "<editVersion>"`를 필수로 받고 같은 draft version과 edit version일 때만 전체 문서를 저장한다.
+- `POST /courses/{courseId}/publish`도 같은 `If-Match`를 요구한다. 빈 유닛·레슨·스텝, 잘못된 AI 대상이나 stable selectable item ID가 있으면 발행하지 않는다.
+- 저장 성공은 같은 `revision`에서 `editVersion`만 증가시킨다. 발행 성공은 `{ curriculumVersionId, revision, publishedAt }`을 반환하고 서버가 다음 revision draft를 복제한다.
+- 누락된 `If-Match`는 `428`, 잘못된 형식은 `400`, stale 값은 `409 STALE_REVISION`, 발행 불가 draft는 `422`다.
+- 관리자 웹은 충돌을 자동 병합하지 않는다. 최신 draft로 교체하거나 최신 `curriculumVersionId/editVersion/revision`에 로컬 변경을 재기준화한 뒤 다시 저장한다.
+
 `GET /ai-chat/conversations`는 `page`와 최대 50인 `pageSize`, `GET /ai-chat/conversations/{conversationId}`는 `messagePage`와 최대 100인 `messagePageSize` query로 대화와 메시지를 페이지 단위로 조회한다.
 
 `GET /resources/documents/{documentId}`는 제목, Markdown, 경로, 작성자·수정자·시각과 현재 `version`을 반환하고 같은 버전의 강한 ETag를 응답 header에 포함한다. `PUT /resources/documents/{documentId}`는 `If-Match`를 필수로 받아 제목, Markdown, 검색 색인, 수정 메타데이터와 버전 증가를 하나의 SQLite transaction에서 저장한다. 버전이 다르면 저장하지 않고 `412 Precondition Failed`와 최신 문서·ETag를 반환한다. 자동 병합, 강제 덮어쓰기와 Yjs 동기화 endpoint는 제공하지 않는다.
@@ -146,36 +166,36 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 ## 오류 응답
 
-학습자 API와 어드민 API는 `@workspace/hono/errors`의 표준 오류 응답을 사용한다.
+학습자 API 오류 계약은 `@workspace/contracts/learning`이 소유한다. `@workspace/hono/errors`는 transport 내부의 범용 오류와 Zod issue를 제공하고, `apps/api`가 이를 canonical 학습자 오류로 정규화한다.
 
 기본 shape:
 
 ```json
 {
-  "code": "ERROR_CODE",
+  "code": "UNAUTHENTICATED",
   "message": "오류 메시지",
-  "errors": []
+  "requestId": "서버 요청 ID"
 }
 ```
 
+검증 오류만 `code: "VALIDATION_ERROR"`와 `{ path, message }[]` 형태의 `violations`를 추가한다. 입력값, Zod issue code와 stack은 응답에 포함하지 않는다.
+
 주요 상태:
 
-- `400 INVALID_REQUEST` 또는 `VALIDATION_FAILED`
-- `401 UNAUTHORIZED`
-- `403 FORBIDDEN`
-- `404 NOT_FOUND`
-- `409 ATTEMPT_IN_PROGRESS` 동일 AI 피드백 범위의 요청 처리 중
-- `409 PROGRESS_CONFLICT` 저장된 레슨 진행보다 오래된 요청
-- `429` AI 피드백 시도 한도
-- `413 PAYLOAD_TOO_LARGE`
+- `400 VALIDATION_ERROR`, `INVALID_CURSOR`
+- `401 UNAUTHENTICATED`
+- `403 FORBIDDEN`, `LESSON_LOCKED`
+- `404 COURSE_NOT_FOUND`, `LESSON_NOT_FOUND`
+- `409 STEP_SEQUENCE_CONFLICT`, `CURRICULUM_VERSION_CHANGED`, `ATTEMPT_IN_PROGRESS`, `AI_FEEDBACK_ANSWER_NOT_FOUND`
+- `429 ATTEMPT_LIMIT_EXCEEDED`
 - `500 INTERNAL_SERVER_ERROR`
-- `503` AI provider unavailable
+- `503 PROVIDER_UNAVAILABLE`
 
 ## 클라이언트 API Result 경계
 
 - `@workspace/http-client`는 HTTP fetch 실행, 네트워크 예외 분류, 클라이언트 API result의 공통 `status: "ok" | "error"` shape를 소유한다.
-- `apps/web`과 `apps/admin`은 각 앱의 사용자 메시지, 서버 오류 코드 매핑, 인증 cookie 정책을 소유한다.
-- 앱별 `api-result.ts`는 앱 API 포트의 이름을 유지하는 얇은 alias와 factory만 제공한다.
+- `apps/web`은 서버 오류의 canonical code와 message를 그대로 사용하고 `NETWORK_ERROR`, `CONTRACT_ERROR`만 자체 생성한다.
+- 학습자 웹의 `api-result.ts`는 앱 API 포트 이름을 유지하는 타입 alias만 제공하며 factory는 `@workspace/http-client`를 직접 사용한다.
 - `packages/core/shared/result`는 `{ kind: "ok" | "err" }` discriminated union으로 도메인 use case의 성공/실패 값을 표현하며 HTTP transport, UI 메시지, neverthrow wrapper를 알지 않는다.
 
 ## OpenAPI 생성
@@ -184,20 +204,11 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 - route 정의는 `@hono/zod-openapi` 기반이다.
 - route spec과 handler를 같은 파일 가까이에 둔다.
-- route schema 파일과 `apps/api/src/http/openapi.ts`는 HTTP 계약 원천인 `@workspace/contracts/*`를 직접 import한다.
+- 학습자 HTTP 경계와 웹의 canonical entrypoint는 `@workspace/contracts/learning`의 Zod schema와 `z.infer` 타입이다. 단계 1의 기존 course·lesson shape는 내부 content schema를 이 entrypoint에서 재사용하며, solution을 제거한 독립 learner read model은 후속 단계에서 교체한다.
 - `/openapi`는 실제 Hono 앱에 등록된 route에서 OpenAPI 3.1 문서를 생성한다.
-- 정적 계약 파일은 `docs/engineering/contracts/writing-app-api-openapi.json`이다.
-- 웹 generated 타입은 이 정적 JSON을 기준으로 생성하고, `apps/web/src/lib/api/writing-app-api-contract.ts`에서 transport contract 타입으로만 감싼다.
+- 정적 OpenAPI JSON과 generated TypeScript 타입은 추적하지 않는다.
+- strict object가 runtime OpenAPI에 `additionalProperties: false`로 표현되는지 route 테스트로 검증한다.
 - `apps/web` 런타임 HTTP 호출은 `src/lib/api/http/openapi-client.ts`의 자체 adapter가 담당하며, `openapi-fetch`는 도입하지 않는다.
-- `bun run check:api-contract`는 임시 OpenAPI JSON과 웹 generated 타입을 다시 생성해 추적 파일과 비교하므로 schema drift를 한 곳에서 감지한다.
-
-명령:
-
-```bash
-bun --filter=@workspace/api openapi:generate
-bun --filter=@workspace/web api:generate
-bun run check:api-contract
-```
 
 어드민 API:
 
@@ -209,12 +220,11 @@ bun run check:api-contract
 
 ## 계약 변경 절차
 
-1. route schema와 handler를 변경한다.
-2. route 테스트를 갱신한다.
-3. OpenAPI 정적 JSON을 갱신한다.
-4. 웹 generated 타입과 mapper 테스트를 갱신한다.
-5. `bun run check:api-contract`로 OpenAPI JSON과 웹 generated 타입 drift가 없는지 확인한다.
-6. 관련 engineering 문서를 갱신한다.
+1. `@workspace/contracts/learning`의 canonical schema와 추론 타입을 변경한다.
+2. route handler와 웹 HTTP adapter를 같은 계약으로 갱신한다.
+3. strict request, response runtime parse, 오류 request ID와 redacted log 테스트를 갱신한다.
+4. runtime `/openapi` route에서 실제 문서와 `additionalProperties: false`를 확인한다.
+5. 관련 engineering 문서를 갱신한다.
 
 # 관리자 웹 API 경계 전환 (2026-07-12)
 

@@ -2,60 +2,42 @@ import { describe, expect, it } from "vitest"
 
 import { toApiError } from "@/lib/api/api-error"
 
-describe("API 오류 매핑", () => {
-  it("서버 error code를 화면용 오류로 변환한다", () => {
+describe("API 오류 계약", () => {
+  it("canonical 서버 오류의 code와 message를 그대로 사용한다", () => {
     expect(
       toApiError(401, {
-        code: "UNAUTHORIZED",
-        message: "Unauthorized",
+        code: "UNAUTHENTICATED",
+        message: "로그인이 필요합니다.",
+        requestId: "request-1",
       })
     ).toEqual({
-      code: "unauthorized",
+      code: "UNAUTHENTICATED",
       message: "로그인이 필요합니다.",
+      requestId: "request-1",
       status: 401,
     })
   })
 
-  it("검증과 HTTP 예외는 invalid-request 화면 오류로 변환한다", () => {
+  it("검증 오류의 violations를 보존한다", () => {
     expect(
       toApiError(400, {
-        code: "VALIDATION_FAILED",
-        message: "Request validation failed",
+        code: "VALIDATION_ERROR",
+        message: "요청 내용을 확인해 주세요.",
+        requestId: "request-2",
+        violations: [{ message: "필수 값입니다.", path: "stepId" }],
       })
     ).toEqual({
-      code: "invalid-request",
+      code: "VALIDATION_ERROR",
       message: "요청 내용을 확인해 주세요.",
+      requestId: "request-2",
       status: 400,
-    })
-
-    expect(
-      toApiError(400, {
-        code: "HTTP_EXCEPTION",
-        message: "Bad Request",
-      })
-    ).toEqual({
-      code: "invalid-request",
-      message: "요청 내용을 확인해 주세요.",
-      status: 400,
+      violations: [{ message: "필수 값입니다.", path: "stepId" }],
     })
   })
 
-  it("stale 진행 저장 conflict를 최신 진행 재조회 안내로 변환한다", () => {
-    expect(
-      toApiError(409, {
-        code: "PROGRESS_CONFLICT",
-        message: "Lesson progress is stale",
-      })
-    ).toEqual({
-      code: "progress-conflict",
-      message: "다른 요청에서 학습 진행이 갱신되었습니다.",
-      status: 409,
-    })
-  })
-
-  it("알 수 없는 응답은 contract-error로 변환한다", () => {
+  it("알 수 없는 응답은 CONTRACT_ERROR로 변환한다", () => {
     expect(toApiError(500, { message: "boom" })).toEqual({
-      code: "contract-error",
+      code: "CONTRACT_ERROR",
       message: "API 응답을 해석할 수 없습니다.",
       status: 500,
     })

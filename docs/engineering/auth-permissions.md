@@ -90,13 +90,25 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 
 ## 오류 정책
 
-| 상황           | HTTP status | 코드                                   |
-| -------------- | ----------- | -------------------------------------- |
-| 세션 없음      | `401`       | `unauthorized` 또는 표준 오류 응답     |
-| 계정 사용 불가 | `403`       | `ACCOUNT_UNAVAILABLE` 또는 `forbidden` |
-| 권한 부족      | `403`       | `forbidden`                            |
-| 요청 형식 오류 | `400`       | `invalid_request`                      |
-| 대상 없음      | `404`       | `not_found`                            |
+학습자 API는 `@workspace/contracts/learning`의 canonical 오류 응답을 사용하며 모든 오류에 `requestId`를 포함한다.
+
+| 상황           | HTTP status | 학습자 API 코드        |
+| -------------- | ----------- | ---------------------- |
+| 세션 없음      | `401`       | `UNAUTHENTICATED`      |
+| 계정 사용 불가 | `403`       | `FORBIDDEN`            |
+| 권한 부족      | `403`       | `FORBIDDEN`            |
+| 요청 형식 오류 | `400`       | `VALIDATION_ERROR`     |
+| 대상 없음      | `404`       | 리소스별 `*_NOT_FOUND` |
+
+어드민 API는 기존 어드민 오류 계약을 유지한다.
+
+| 상황           | HTTP status | 어드민 API 코드   |
+| -------------- | ----------- | ----------------- |
+| 세션 없음      | `401`       | `UNAUTHORIZED`    |
+| 계정 사용 불가 | `403`       | `FORBIDDEN`       |
+| 권한 부족      | `403`       | `FORBIDDEN`       |
+| 요청 형식 오류 | `400`       | `INVALID_REQUEST` |
+| 대상 없음      | `404`       | `NOT_FOUND`       |
 
 ## 권한 변경 절차
 

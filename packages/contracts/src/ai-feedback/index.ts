@@ -20,7 +20,7 @@ const nonEmptyTextSchema = z
   .min(1)
   .max(aiFeedbackOutputTextMaxLength)
 
-export const aiFeedbackPayloadSchema = z.object({
+export const aiFeedbackPayloadSchema = z.strictObject({
   improvements: z
     .array(nonEmptyTextSchema)
     .min(1)
@@ -44,7 +44,7 @@ export const aiFeedbackResultDtoSchema = aiFeedbackPayloadSchema.extend({
   remainingAttempts: z.number().int().nonnegative(),
 })
 
-export const createAiFeedbackCommandSchema = z.object({
+export const createAiFeedbackCommandSchema = z.strictObject({
   answer: z.string().trim().min(1).max(aiFeedbackAnswerMaxLength),
   idempotencyKey: aiFeedbackIdempotencyKeySchema,
   lessonId: lessonIdSchema,

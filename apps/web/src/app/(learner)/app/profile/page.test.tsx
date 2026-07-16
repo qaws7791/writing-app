@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import ProfileRoute from "@/app/(learner)/app/profile/page"
 import type { ApiError } from "@/lib/api/api-error"
-import { apiFailure } from "@/lib/api/api-result"
+import { httpApiFailure as apiFailure } from "@workspace/http-client"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 
 const { redirectMock } = vi.hoisted(() => ({
@@ -13,15 +13,15 @@ const { redirectMock } = vi.hoisted(() => ({
 }))
 
 const api: WritingAppApi = {
-  completeLesson: vi.fn(),
-  createAiFeedback: vi.fn(),
+  completeStep: vi.fn(),
   getCourseDetail: vi.fn(),
+  getCourseCategories: vi.fn(),
   getLesson: vi.fn(),
   getProfile: vi.fn(),
   getProgress: vi.fn(),
   listCourses: vi.fn(),
-  saveLessonAnswer: vi.fn(),
-  saveLessonProgress: vi.fn(),
+  requestAiFeedback: vi.fn(),
+  startLesson: vi.fn(),
 }
 
 vi.mock("next/navigation", () => ({
@@ -70,16 +70,18 @@ describe("프로필 route", () => {
 
 function authenticationError(): ApiError {
   return {
-    code: "unauthorized",
+    code: "UNAUTHENTICATED",
     message: "로그인이 필요합니다.",
+    requestId: "request-authentication",
     status: 401,
   }
 }
 
 function serviceError(): ApiError {
   return {
-    code: "provider-unavailable",
+    code: "PROVIDER_UNAVAILABLE",
     message: "프로필 서비스를 잠시 사용할 수 없습니다.",
+    requestId: "request-service",
     status: 503,
   }
 }

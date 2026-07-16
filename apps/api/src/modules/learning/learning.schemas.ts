@@ -1,25 +1,12 @@
 import {
-  lessonIdSchema,
-  lessonStepIdSchema,
-} from "@workspace/contracts/content"
-import {
-  learningAnswerSchema,
+  completeLearnerStepBodySchema,
+  completeLearnerStepParamsSchema,
   learnerIdSchema,
+  startLearnerLessonBodySchema,
 } from "@workspace/contracts/learning"
-import { z } from "@workspace/hono/zod"
 
-export const saveAnswerBodySchema = z.object({
-  answer: learningAnswerSchema,
-  lessonId: lessonIdSchema,
-  stepId: lessonStepIdSchema,
-})
-
-export const completeLessonParamsSchema = z.object({
-  lessonId: lessonIdSchema,
-})
-
-export const saveLessonProgressBodySchema = z.object({
-  currentStepIndex: z.number().int().nonnegative(),
-})
+export const startLessonBodySchema = startLearnerLessonBodySchema
+export const completeStepBodySchema = completeLearnerStepBodySchema
+export const completeStepParamsSchema = completeLearnerStepParamsSchema
 
 export { learnerIdSchema }

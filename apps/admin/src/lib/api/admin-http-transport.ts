@@ -35,6 +35,7 @@ export type AdminHttpTransport = {
   }) => Promise<AdminApiResult<AdminDownload>>
   readonly requestJson: <TValue>(input: {
     readonly body?: unknown
+    readonly headers?: Readonly<Record<string, string>>
     readonly method: AdminHttpMethod
     readonly path: string
     readonly schema: AdminResponseSchema<TValue>
@@ -84,6 +85,7 @@ export function createAdminHttpTransport({
       const request = await createRequest({
         baseUrl,
         body: input.body,
+        headers: input.headers,
         method: input.method,
         path: input.path,
         requestOrigin,
@@ -116,12 +118,13 @@ export function createAdminHttpTransport({
 async function createRequest(input: {
   readonly baseUrl: AdminApiBaseUrl
   readonly body?: unknown
+  readonly headers?: Readonly<Record<string, string>>
   readonly method: AdminHttpMethod
   readonly path: string
   readonly requestOrigin?: string
   readonly tokenProvider: AdminTokenProvider
 }): Promise<Request> {
-  const headers = new Headers()
+  const headers = new Headers(input.headers)
   const token = await input.tokenProvider()
 
   if (token !== null) {

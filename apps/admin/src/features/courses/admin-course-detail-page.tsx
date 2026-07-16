@@ -1,18 +1,25 @@
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
+import type {
+  AdminCourseDetail,
+  AdminCoursePublishResult,
+} from "@/features/courses/admin-courses-api"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 
 export function AdminCourseDetailPage({
   courseResult,
   loadLatestCourse,
+  publishCourse,
   saveCourse,
 }: {
   readonly courseResult: AdminApiResult<AdminCourseDetail>
   readonly loadLatestCourse: (
     courseId: string
   ) => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly publishCourse: (
+    course: AdminCourseDetail
+  ) => Promise<AdminApiResult<AdminCoursePublishResult>>
   readonly saveCourse: (
     course: AdminCourseDetail
   ) => Promise<AdminApiResult<AdminCourseDetail>>
@@ -35,6 +42,7 @@ export function AdminCourseDetailPage({
     <CourseEditorShell
       course={courseResult.value}
       loadLatestCourse={loadLatestCourse}
+      publishCourse={publishCourse}
       saveCourse={saveCourse}
     />
   )

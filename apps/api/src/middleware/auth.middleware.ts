@@ -16,8 +16,8 @@ export const requireActiveSession: MiddlewareHandler<ApiHonoEnv> = async (
 
   if (session === null) {
     throw new AppError({
-      code: "UNAUTHORIZED",
-      message: "Unauthorized",
+      code: "UNAUTHENTICATED",
+      message: "로그인이 필요합니다.",
       status: 401,
     })
   }
@@ -26,8 +26,8 @@ export const requireActiveSession: MiddlewareHandler<ApiHonoEnv> = async (
 
   if (session.user.status !== learnerAccountStatuses.active) {
     throw new AppError({
-      code: "ACCOUNT_UNAVAILABLE",
-      message: "Account unavailable",
+      code: "FORBIDDEN",
+      message: "사용할 수 없는 계정입니다.",
       status: 403,
     })
   }

@@ -7,7 +7,7 @@ export const multipleChoiceStepDtoSchema = lessonStepBaseSchema.extend({
   question: z.string(),
   options: z
     .array(
-      z.object({
+      z.strictObject({
         id: z.string(),
         text: z.string(),
       })

@@ -1,162 +1,169 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
+import {
+  learnerCourseDetailSchema,
+  learnerCourseSummarySchema,
+  learnerLessonSchema,
+} from "@workspace/contracts/learning"
 
 import { createLearnerContentService } from "#core/modules/content/application/use-cases/learner-content.service"
-import {
-  courseIdSchema,
-  lessonIdSchema,
-  unitIdSchema,
-} from "#core/modules/content/domain/content.ids"
-import type { ContentRepository } from "#core/modules/content/application/ports/content.repository"
-import type {
-  CourseDetailDto,
-  CourseSummaryDto,
-  LessonDto,
-} from "#core/modules/content/domain/content.dto"
-import type { ProgressReader } from "#core/modules/learning/domain/learning-progress-read-model"
+import { createLearnerCursorCodec } from "#core/modules/learning/application/learner-cursor"
+import type { LearnerReadModelRepository } from "#core/modules/learning/application/ports/learner-read-model.repository"
 
-const courseId = courseIdSchema.parse("c1")
-const lessonId = lessonIdSchema.parse("l1")
-
-const courseSummary: CourseSummaryDto = {
-  id: courseId,
-  title: "글쓰기 첫걸음 30일",
-  description: "매일 조금씩 쓰는 습관을 만듭니다.",
-  category: "입문자를 위한 코스",
+const cursorCodec = createLearnerCursorCodec(
+  "test-cursor-signing-secret-with-32-bytes"
+)
+const version = {
+  curriculumVersionId: "course-1-v1",
+  revision: 1,
+} as const
+const summary = learnerCourseSummarySchema.parse({
+  category: "입문",
+  contentStatus: "active",
+  description: "설명",
+  id: "course-1",
   lessonCount: 1,
-  status: "active",
+  title: "글쓰기 입문",
+  version,
   visualKey: "basic-sentence-writing",
-}
-
-const courseDetail: CourseDetailDto = {
-  ...courseSummary,
-  progress: {
+})
+const detail = learnerCourseDetailSchema.parse({
+  ...summary,
+  learning: {
     completedLessons: 0,
-    lessons: [],
-    nextLesson: null,
-    totalLessons: 1,
-    percentage: 0,
-  },
-  units: [
-    {
-      id: unitIdSchema.parse("u1"),
-      title: "문장의 기본기",
-      sortOrder: 1,
-      lessons: [
-        {
-          id: lessonId,
-          title: "좋은 문장이란 무엇인가",
-          category: "문장의 기본기",
-          description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
-          estimatedMinutes: 5,
-          status: "active",
-          sortOrder: 1,
-        },
-      ],
+    nextLesson: {
+      currentStepId: "step-1",
+      currentStepIndex: 0,
+      estimatedMinutes: 5,
+      id: "lesson-1",
+      title: "첫 레슨",
     },
-  ],
-}
-
-const lesson: LessonDto = {
-  id: lessonId,
-  courseId,
-  unitId: unitIdSchema.parse("u1"),
-  title: "좋은 문장이란 무엇인가",
-  category: "문장의 기본기",
-  description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
+    progressPercent: 0,
+    status: "not_started",
+    totalLessons: 1,
+    version,
+  },
+  units: [],
+})
+const lesson = learnerLessonSchema.parse({
+  category: "입문",
+  courseId: "course-1",
+  description: "설명",
   estimatedMinutes: 5,
-  summary: ["좋은 문장은 모호하지 않다"],
+  id: "lesson-1",
+  learning: { status: "not_started", totalSteps: 0, version },
   steps: [],
-}
-
-const repository: ContentRepository = {
-  async findCourseDetail(inputCourseId) {
-    return inputCourseId === courseId ? courseDetail : null
-  },
-  async findLesson(inputLessonId) {
-    return inputLessonId === lessonId ? lesson : null
-  },
-  async listCourses() {
-    return [courseSummary]
-  },
-}
+  summary: [],
+  title: "첫 레슨",
+  unitId: "unit-1",
+  version,
+})
 
 describe("학습자 콘텐츠 서비스", () => {
-  it("공통 콘텐츠 조회 결과에 학습자 진행률을 합성한다", async () => {
-    const progressReader: ProgressReader = {
-      async readLearnerProgress() {
-        return {
-          currentStreakDays: 0,
-          lessonProgress: [],
-        }
-      },
-    }
+  it("검색 조건을 정규화하고 다음 위치를 서명 cursor로 반환한다", async () => {
+    const listCourses = vi.fn(async () => ({
+      items: [summary],
+      nextPosition: { courseId: "course-1", primary: "글쓰기 입문" },
+    }))
     const service = createLearnerContentService({
-      contentRepository: repository,
-      progressReader,
+      cursorCodec,
+      readModelRepository: createRepository({ listCourses }),
     })
 
-    await expect(
-      service.getCourseDetail({
-        courseId,
-        userId: "user-1",
-      })
-    ).resolves.toEqual({
-      kind: "ok",
-      value: {
-        ...courseDetail,
-        progress: {
-          completedLessons: 0,
-          lessons: [
-            {
-              currentStepIndex: null,
-              lessonId,
-              status: "available",
-            },
-          ],
-          nextLesson: {
-            currentStepIndex: null,
-            estimatedMinutes: 5,
-            id: lessonId,
-            status: "available",
-            title: "좋은 문장이란 무엇인가",
-          },
-          percentage: 0,
-          totalLessons: 1,
-        },
-      },
+    const result = await service.listCourses({
+      category: "입문",
+      limit: 1,
+      query: "  글쓰기  ",
+      sort: "title-asc",
     })
+
+    expect(listCourses).toHaveBeenCalledWith({
+      after: undefined,
+      category: "입문",
+      limit: 1,
+      query: "글쓰기",
+      sort: "title-asc",
+    })
+    expect(result.kind).toBe("ok")
+    if (result.kind === "ok") {
+      expect(result.value.items).toEqual([summary])
+      expect(result.value.nextCursor).toEqual(expect.any(String))
+    }
   })
 
-  it("코스가 없으면 progress reader를 호출하지 않고 not-found를 반환한다", async () => {
-    let progressReadCount = 0
-    const progressReader: ProgressReader = {
-      async readLearnerProgress() {
-        progressReadCount += 1
-
-        return {
-          currentStreakDays: 0,
-          lessonProgress: [],
-        }
-      },
-    }
+  it("변조되거나 조건과 일치하지 않는 cursor를 거부한다", async () => {
+    const listCourses = vi.fn()
     const service = createLearnerContentService({
-      contentRepository: repository,
-      progressReader,
+      cursorCodec,
+      readModelRepository: createRepository({ listCourses }),
     })
-    const missingCourseId = courseIdSchema.parse("missing-course")
 
     await expect(
-      service.getCourseDetail({
-        courseId: missingCourseId,
-        userId: "user-1",
+      service.listCourses({
+        cursor: "invalid",
+        limit: 20,
+        sort: "recommended",
       })
     ).resolves.toEqual({
-      error: {
-        courseId: missingCourseId,
-        kind: "course-not-found",
-      },
+      error: { kind: "invalid-cursor" },
       kind: "err",
     })
-    expect(progressReadCount).toBe(0)
+    expect(listCourses).not.toHaveBeenCalled()
+  })
+
+  it("공개 course와 lesson read model을 그대로 검증해 반환한다", async () => {
+    const service = createLearnerContentService({
+      cursorCodec,
+      readModelRepository: createRepository(),
+    })
+
+    await expect(
+      service.getCourseDetail({ courseId: "course-1", userId: "user-1" })
+    ).resolves.toEqual({ kind: "ok", value: detail })
+    await expect(
+      service.getLesson({ lessonId: "lesson-1", userId: "user-1" })
+    ).resolves.toEqual({ kind: "ok", value: lesson })
+  })
+
+  it("잠긴 lesson은 공개 본문 없이 lesson-locked 오류를 반환한다", async () => {
+    const service = createLearnerContentService({
+      cursorCodec,
+      readModelRepository: createRepository({
+        async findLesson() {
+          return { kind: "locked" }
+        },
+      }),
+    })
+
+    await expect(
+      service.getLesson({ lessonId: "lesson-2", userId: "user-1" })
+    ).resolves.toEqual({
+      error: { kind: "lesson-locked" },
+      kind: "err",
+    })
   })
 })
+
+function createRepository(
+  overrides: Partial<LearnerReadModelRepository> = {}
+): LearnerReadModelRepository {
+  return {
+    async findCourseDetail({ courseId }) {
+      return courseId === "course-1" ? detail : null
+    },
+    async findLesson({ lessonId }) {
+      return lessonId === "lesson-1"
+        ? { kind: "found", value: lesson }
+        : { kind: "not-found" }
+    },
+    async listCourseCategories() {
+      return ["입문"]
+    },
+    async listCourses() {
+      return { items: [summary], nextPosition: null }
+    },
+    async listProgress() {
+      return { items: [], nextPosition: null }
+    },
+    ...overrides,
+  }
+}

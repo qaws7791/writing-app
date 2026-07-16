@@ -148,6 +148,7 @@ export function createRuntimeEnvironment(
     ["BETTER_AUTH_URL", "https://api.example.test"],
     ["ADMIN_BETTER_AUTH_URL", "https://admin-api.example.test"],
     ["BETTER_AUTH_SECRET", learnerSecret],
+    ["CURSOR_SIGNING_SECRET", `${learnerSecret}-cursor-distinct`],
     ["ADMIN_BETTER_AUTH_SECRET", adminSecret],
     ["OPENAI_MODEL", "gpt-5.2"],
     ["LOG_PRETTY", "false"],

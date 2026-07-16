@@ -37,6 +37,7 @@ bun --filter @workspace/web test
 - 앱 코드는 `src` 아래에 둔다.
 - import는 절대 경로를 사용한다.
 - 화면과 feature 코드는 `WritingAppApi` 포트에 의존하고, HTTP 세부 구현에는 직접 의존하지 않는다.
-- OpenAPI 생성 타입은 `src/lib/api/writing-app-api-contract.ts`에서 transport contract 타입으로만 감싼다.
+- 학습자 HTTP 계약은 `@workspace/contracts/learning`의 strict Zod schema와 추론 타입을 직접 사용한다.
+- runtime OpenAPI 문서는 API의 `/openapi`에서 확인하며 정적 JSON과 generated TypeScript 타입은 추적하지 않는다.
 - 런타임 HTTP 호출은 `src/lib/api/http/openapi-client.ts`의 자체 adapter가 담당하며 `openapi-fetch`를 의존성으로 두지 않는다.
 - 사용자 화면 텍스트와 접근성 텍스트는 한국어로 작성한다.

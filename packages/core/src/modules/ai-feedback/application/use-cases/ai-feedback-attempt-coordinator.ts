@@ -55,8 +55,17 @@ export type AiFeedbackAttemptCoordinatorError =
 export type AiFeedbackAttemptCoordinator = {
   readonly createAttempt: (
     command: CreateAiFeedbackCommand,
-    context: AiFeedbackAttemptContext
+    context: AiFeedbackAttemptContext,
+    options?: AiFeedbackAttemptOptions
   ) => Promise<Result<AiFeedbackResultDto, AiFeedbackAttemptCoordinatorError>>
+}
+
+export type AiFeedbackAttemptOptions = {
+  readonly finalizeSucceededAttempt?: (input: {
+    readonly attemptId: string
+    readonly occurredAt: Date
+    readonly result: AiFeedbackPayload
+  }) => Promise<boolean>
 }
 
 export function createAiFeedbackAttemptCoordinator({
@@ -79,7 +88,7 @@ export function createAiFeedbackAttemptCoordinator({
   const parsedAttemptPolicy = aiFeedbackAttemptPolicySchema.parse(attemptPolicy)
 
   return {
-    async createAttempt(command, context) {
+    async createAttempt(command, context, options) {
       const reservation = await feedbackRepository.reserveAttempt({
         ...command,
         attemptId: createAttemptId(),
@@ -106,6 +115,16 @@ export function createAiFeedbackAttemptCoordinator({
       })
 
       if (reservation.kind === "already-succeeded") {
+        const finalized =
+          options?.finalizeSucceededAttempt === undefined ||
+          (await options.finalizeSucceededAttempt({
+            attemptId: reservation.attemptId,
+            occurredAt: now(),
+            result: reservation.result,
+          }))
+        if (!finalized) {
+          return err({ kind: "provider-failed", remainingAttempts })
+        }
         return ok({
           ...reservation.result,
           remainingAttempts,
@@ -165,11 +184,15 @@ export function createAiFeedbackAttemptCoordinator({
         return err({ kind: "provider-failed", remainingAttempts })
       }
 
-      const transitioned = await feedbackRepository.markAttemptSucceeded({
-        attemptId: reservation.attemptId,
-        occurredAt: now(),
-        result: providerResult.value,
-      })
+      const transitioned = await finalizeSucceededAttempt(
+        options,
+        feedbackRepository,
+        {
+          attemptId: reservation.attemptId,
+          occurredAt: now(),
+          result: providerResult.value,
+        }
+      )
 
       if (!transitioned) {
         return err({ kind: "provider-failed", remainingAttempts })
@@ -194,6 +217,20 @@ export function createAiFeedbackAttemptCoordinator({
       })
     },
   }
+}
+
+async function finalizeSucceededAttempt(
+  options: AiFeedbackAttemptOptions | undefined,
+  repository: AiFeedbackRepository,
+  input: {
+    readonly attemptId: string
+    readonly occurredAt: Date
+    readonly result: AiFeedbackPayload
+  }
+): Promise<boolean> {
+  return options?.finalizeSucceededAttempt === undefined
+    ? repository.markAttemptSucceeded(input)
+    : options.finalizeSucceededAttempt(input)
 }
 
 async function requestAiFeedback({

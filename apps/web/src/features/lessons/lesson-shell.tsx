@@ -3,11 +3,9 @@
 import type { ReactNode, Ref } from "react"
 
 import {
-  getLessonStepExplanation,
-  getLessonStepWrongText,
+  isLessonStepCheckedCorrect,
   type LessonStepCheckedState,
 } from "@/features/lessons/lesson-step-policy"
-import type { LessonStep } from "@/features/lessons/lesson-types"
 import { XIcon } from "@workspace/ui/components/icons"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
@@ -124,13 +122,11 @@ export function LessonProgressHeader({
 export function LessonCheckedFooter({
   checked,
   onNext,
-  step,
 }: {
   readonly checked: Exclude<LessonCheckedState, false>
   readonly onNext: () => void
-  readonly step: LessonStep
 }) {
-  const feedback = getCheckedFeedback(step, checked)
+  const feedback = getCheckedFeedback(checked)
 
   return (
     <StickyActionBar
@@ -165,40 +161,30 @@ export function LessonCheckedFooter({
   )
 }
 
-function getCheckedFeedback(
-  step: LessonStep,
-  checked: Exclude<LessonCheckedState, false>
-): {
+function getCheckedFeedback(checked: Exclude<LessonCheckedState, false>): {
   readonly body: string
   readonly isCorrect: boolean
   readonly title: string
 } {
-  if (checked === "correct") {
-    return {
-      body: getLessonStepExplanation(step),
-      isCorrect: true,
-      title: "완벽해요!",
-    }
-  }
-
-  if (checked === "wrong") {
-    return {
-      body:
-        getLessonStepWrongText(step) ??
-        getLessonStepExplanation(step) ??
-        "다시 생각해보세요.",
-      isCorrect: false,
-      title: "아쉽지만 달라요",
-    }
-  }
-
-  const isCorrect = checked.wrong.length === 0 && checked.missed.length === 0
+  const isCorrect = isLessonStepCheckedCorrect(checked)
+  const explanation = "explanation" in checked ? checked.explanation : ""
+  const wrongCount =
+    "items" in checked
+      ? checked.items.filter((item) => item.verdict === "incorrect").length
+      : 0
+  const missedCount =
+    "items" in checked
+      ? checked.items.filter((item) => item.verdict === "missed").length
+      : 0
 
   return {
     body: isCorrect
-      ? (checked.explanation ?? "")
-      : `잘못 선택: ${checked.wrong.length}개, 놓침: ${checked.missed.length}개`,
+      ? explanation
+      : explanation ||
+        (wrongCount + missedCount > 0
+          ? `잘못 선택: ${wrongCount}개, 놓침: ${missedCount}개`
+          : "다시 생각해보세요."),
     isCorrect,
-    title: isCorrect ? "정확해요!" : "다시 확인해보세요",
+    title: isCorrect ? "완벽해요!" : "다시 확인해보세요",
   }
 }

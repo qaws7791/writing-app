@@ -1,71 +1,96 @@
-import { describe, expect, it } from "vitest"
-import {
-  courseDetailDtoSchema,
-  courseSummaryDtoSchema,
-  createLearnerContentService,
-  type ContentRepository,
-} from "@workspace/core/content"
-import {
-  createProgressService,
-  type ProgressReader,
-} from "@workspace/core/learning"
+import { describe, expect, it, vi } from "vitest"
 
-import { createApp, type ApiDependencies } from "@/app"
-import { createTestDependencies } from "@/routes/test-dependencies"
+import { createApp } from "@/app"
+import {
+  createTestDependencies,
+  testCourseDetail,
+} from "@/routes/test-dependencies"
 
-const activeSession = {
-  user: {
-    email: "learner@example.com",
-    id: "user-1",
-    image: null,
-    joinedAt: "2026-06-14T00:00:00.000Z",
-    name: "학습자",
-    status: "active",
-  },
-} as const
+const authenticatedHeaders = {
+  Cookie: "learner_session_token=active-token",
+}
 
 describe("플랫폼 API courses route", () => {
-  it("인증된 사용자가 active course 목록을 조회한다", async () => {
+  it("인증된 사용자가 cursor page 형식으로 course 목록을 조회한다", async () => {
     const app = createApp(createTestDependencies())
 
     const response = await app.request("/courses", {
-      headers: {
-        Cookie: "learner_session_token=active-token",
-      },
+      headers: authenticatedHeaders,
     })
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toMatchObject({
-      courses: [
+      items: [
         {
           id: "c1",
           lessonCount: 3,
           title: "글쓰기 첫걸음 30일",
+          version: {
+            curriculumVersionId: "c1-v1",
+            revision: 1,
+          },
           visualKey: "basic-sentence-writing",
         },
       ],
+      nextCursor: null,
     })
   })
 
-  it("인증된 사용자가 course 상세를 조회한다", async () => {
+  it("검색·분류·정렬·limit query를 content service에 전달한다", async () => {
+    const dependencies = createTestDependencies()
+    const listCourses = vi.fn(dependencies.contentService.listCourses)
+    const app = createApp({
+      ...dependencies,
+      contentService: { ...dependencies.contentService, listCourses },
+    })
+
+    const response = await app.request(
+      "/courses?query=%EA%B8%80%EC%93%B0%EA%B8%B0&category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC%20%EC%9C%84%ED%95%9C%20%EC%BD%94%EC%8A%A4&sort=title-asc&limit=10",
+      { headers: authenticatedHeaders }
+    )
+
+    expect(response.status).toBe(200)
+    expect(listCourses).toHaveBeenCalledWith({
+      category: "입문자를 위한 코스",
+      limit: 10,
+      query: "글쓰기",
+      sort: "title-asc",
+    })
+  })
+
+  it("인증된 사용자가 정규화된 course category 목록을 조회한다", async () => {
+    const app = createApp(createTestDependencies())
+
+    const response = await app.request("/course-categories", {
+      headers: authenticatedHeaders,
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual(["입문자를 위한 코스"])
+  })
+
+  it("인증된 사용자가 학습 상태가 포함된 course 상세를 조회한다", async () => {
     const app = createApp(createTestDependencies())
 
     const response = await app.request("/courses/c1", {
-      headers: {
-        Cookie: "learner_session_token=active-token",
-      },
+      headers: authenticatedHeaders,
     })
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toMatchObject({
       id: "c1",
+      learning: {
+        completedLessons: 0,
+        progressPercent: 0,
+        status: "not_started",
+      },
       units: [
         {
           id: "u1",
           lessons: [
             {
               id: "l1",
-              estimatedMinutes: 5,
+              learning: { status: "not_started" },
             },
           ],
         },
@@ -73,245 +98,96 @@ describe("플랫폼 API courses route", () => {
     })
   })
 
-  it("course 상세 progress를 현재 학습자 기준으로 반환한다", async () => {
-    const app = createApp(
-      createCourseDetailDependencies([
-        {
-          currentStepIndex: 0,
-          lessonId: "l1",
-          status: "completed",
-        },
-        {
-          currentStepIndex: 2,
-          lessonId: "l-new",
-          status: "in_progress",
-        },
-      ])
-    )
-
-    const response = await app.request("/courses/c1", {
-      headers: {
-        Cookie: "learner_session_token=active-token",
-      },
-    })
-
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
-      id: "c1",
-      progress: {
-        completedLessons: 1,
-        lessons: [
-          {
-            currentStepIndex: 0,
-            lessonId: "l1",
-            status: "completed",
-          },
-          {
-            currentStepIndex: 2,
-            lessonId: "l-new",
-            status: "available",
-          },
-          {
-            currentStepIndex: null,
-            lessonId: "l2",
-            status: "locked",
-          },
-        ],
-        nextLesson: {
-          currentStepIndex: 2,
-          estimatedMinutes: 10,
-          id: "l-new",
-          status: "available",
-          title: "새 학습 활동 둘러보기",
-        },
-        percentage: 33,
+  it("완료한 course 상세는 nextLesson을 null로 반환한다", async () => {
+    const dependencies = createTestDependencies()
+    const completedDetail = {
+      ...testCourseDetail,
+      learning: {
+        completedAt: "2026-06-14T00:00:00.000Z",
+        completedLessons: 3,
+        lastActivityAt: "2026-06-14T00:00:00.000Z",
+        nextLesson: null,
+        progressPercent: 100 as const,
+        status: "completed" as const,
         totalLessons: 3,
+        version: testCourseDetail.version,
+      },
+    }
+    const app = createApp({
+      ...dependencies,
+      contentService: {
+        ...dependencies.contentService,
+        async getCourseDetail() {
+          return { kind: "ok" as const, value: completedDetail }
+        },
       },
     })
-  })
-
-  it("모든 lesson을 완료한 course 상세의 nextLesson은 null이다", async () => {
-    const app = createApp(
-      createCourseDetailDependencies([
-        {
-          currentStepIndex: 0,
-          lessonId: "l1",
-          status: "completed",
-        },
-        {
-          currentStepIndex: 2,
-          lessonId: "l-new",
-          status: "completed",
-        },
-        {
-          currentStepIndex: 0,
-          lessonId: "l2",
-          status: "completed",
-        },
-      ])
-    )
 
     const response = await app.request("/courses/c1", {
-      headers: {
-        Cookie: "learner_session_token=active-token",
-      },
+      headers: authenticatedHeaders,
     })
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toMatchObject({
-      progress: {
+      learning: {
         completedLessons: 3,
         nextLesson: null,
-        percentage: 100,
-        totalLessons: 3,
+        progressPercent: 100,
+        status: "completed",
       },
     })
   })
-})
 
-function createCourseDetailDependencies(
-  lessonProgress: readonly {
-    readonly currentStepIndex: number
-    readonly lessonId: string
-    readonly status: "completed" | "in_progress"
-  }[]
-): ApiDependencies {
-  const contentRepository: ContentRepository = {
-    async findCourseDetail(courseId) {
-      if (courseId !== "c1") {
-        return null
-      }
-
-      return courseDetailDtoSchema.parse({
-        category: "입문자를 위한 코스",
-        description: "매일 조금씩 쓰는 습관을 만듭니다.",
-        id: "c1",
-        lessonCount: 3,
-        progress: {
-          completedLessons: 0,
-          lessons: [
-            {
-              currentStepIndex: null,
-              lessonId: "l1",
-              status: "available",
+  it("응답 계약 위반은 본문을 노출하지 않고 redacted event를 남긴다", async () => {
+    const dependencies = createTestDependencies()
+    const contractEvents: unknown[] = []
+    const app = createApp({
+      ...dependencies,
+      contentService: {
+        ...dependencies.contentService,
+        async listCourses() {
+          return {
+            kind: "ok" as const,
+            value: {
+              internalSolution: "노출되면 안 되는 값",
+              items: [],
+              nextCursor: null,
             },
-            {
-              currentStepIndex: null,
-              lessonId: "l-new",
-              status: "locked",
-            },
-            {
-              currentStepIndex: null,
-              lessonId: "l2",
-              status: "locked",
-            },
-          ],
-          nextLesson: {
-            currentStepIndex: null,
-            estimatedMinutes: 5,
-            id: "l1",
-            status: "available",
-            title: "좋은 문장이란 무엇인가",
-          },
-          percentage: 0,
-          totalLessons: 3,
+          }
         },
-        status: "active",
-        title: "글쓰기 첫걸음 30일",
-        visualKey: "basic-sentence-writing",
-        units: [
-          {
-            id: "u1",
-            lessons: [
-              {
-                category: "문장의 기본기",
-                description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
-                estimatedMinutes: 5,
-                id: "l1",
-                sortOrder: 1,
-                status: "active",
-                title: "좋은 문장이란 무엇인가",
-              },
-              {
-                category: "문장의 기본기",
-                description: "새 학습 활동을 살펴봅니다.",
-                estimatedMinutes: 10,
-                id: "l-new",
-                sortOrder: 2,
-                status: "active",
-                title: "새 학습 활동 둘러보기",
-              },
-              {
-                category: "문장의 기본기",
-                description: "한 문장에는 한 생각만 담습니다.",
-                estimatedMinutes: 5,
-                id: "l2",
-                sortOrder: 3,
-                status: "active",
-                title: "한 문장에 한 생각만 담기",
-              },
-            ],
-            sortOrder: 1,
-            title: "문장의 기본기",
-          },
-        ],
-      })
-    },
-    async findLesson() {
-      return null
-    },
-    async listCourses() {
-      return [
-        courseSummaryDtoSchema.parse({
-          category: "입문자를 위한 코스",
-          description: "매일 조금씩 쓰는 습관을 만듭니다.",
-          id: "c1",
-          lessonCount: 3,
-          status: "active",
-          title: "글쓰기 첫걸음 30일",
-          visualKey: "basic-sentence-writing",
-        }),
-      ]
-    },
-  }
-  const progressReader: ProgressReader = {
-    async readLearnerProgress() {
-      return {
-        currentStreakDays: 2,
-        lessonProgress,
-      }
-    },
-  }
+      },
+      contractErrorLogger(event) {
+        contractEvents.push(event)
+      },
+      deploymentVersion: "test-deployment",
+      requestLoggingRuntime: {
+        createRequestId: () => "request-contract-failure",
+        readMonotonicTimeMs: () => 0,
+      },
+    })
 
-  return {
-    ...createTestDependencies(),
-    contentService: createLearnerContentService({
-      contentRepository,
-      progressReader,
-    }),
-    profileReader: {
-      async readProfileStats() {
-        return {
-          completedLessons: 1,
-          currentStreakDays: 2,
-          lastActiveDate: "2026-06-14",
-          progressPercent: 33,
-          totalLessons: 3,
-        }
+    const response = await app.request("/courses", {
+      headers: authenticatedHeaders,
+    })
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+      requestId: "request-contract-failure",
+    })
+    expect(contractEvents).toEqual([
+      {
+        classification: "response-schema-invalid",
+        contractName: "LearnerCourseListResponse",
+        deploymentVersion: "test-deployment",
+        event: "api.contract.response_invalid",
+        fieldPaths: ["$"],
+        method: "GET",
+        requestId: "request-contract-failure",
+        route: "/courses",
       },
-    },
-    progressService: createProgressService({
-      contentRepository,
-      progressReader,
-    }),
-    sessionResolver: {
-      async resolveSession(headers) {
-        return headers
-          .get("Cookie")
-          ?.includes("learner_session_token=active-token")
-          ? activeSession
-          : null
-      },
-    },
-  }
-}
+    ])
+    expect(JSON.stringify(contractEvents)).not.toContain("노출되면 안 되는 값")
+  })
+})

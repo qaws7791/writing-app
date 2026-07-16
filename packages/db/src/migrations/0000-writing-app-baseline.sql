@@ -220,48 +220,221 @@ ON admin_ai_chat_messages(conversation_id, created_at);
 
 CREATE TABLE IF NOT EXISTS courses (
   id TEXT PRIMARY KEY NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  sort_order INTEGER NOT NULL CHECK (sort_order > 0),
+  published_curriculum_version_id TEXT REFERENCES course_curriculum_versions(id) ON DELETE RESTRICT,
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS course_curriculum_versions (
+  id TEXT PRIMARY KEY NOT NULL,
+  course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL CHECK (revision > 0),
+  edit_version INTEGER NOT NULL DEFAULT 0 CHECK (edit_version >= 0),
+  status TEXT NOT NULL CHECK (status IN ('draft', 'published')),
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   category TEXT NOT NULL,
-  visual_key TEXT NOT NULL DEFAULT 'basic-sentence-writing',
-  status TEXT NOT NULL DEFAULT 'active',
-  sort_order INTEGER NOT NULL,
-  curriculum_revision INTEGER NOT NULL DEFAULT 0
+  visual_key TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  published_at INTEGER,
+  CHECK (
+    (status = 'published' AND published_at IS NOT NULL)
+    OR (status = 'draft' AND published_at IS NULL)
+  ),
+  UNIQUE (course_id, revision),
+  UNIQUE (course_id, id)
 );
 
-CREATE TABLE IF NOT EXISTS course_units (
-  id TEXT PRIMARY KEY NOT NULL,
-  course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+CREATE UNIQUE INDEX IF NOT EXISTS course_curriculum_versions_single_draft_idx
+ON course_curriculum_versions(course_id)
+WHERE status = 'draft';
+
+CREATE INDEX IF NOT EXISTS course_curriculum_versions_course_status_idx
+ON course_curriculum_versions(course_id, status);
+
+CREATE TABLE IF NOT EXISTS course_unit_versions (
+  curriculum_version_id TEXT NOT NULL REFERENCES course_curriculum_versions(id) ON DELETE CASCADE,
+  id TEXT NOT NULL,
   title TEXT NOT NULL,
-  sort_order INTEGER NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active'
+  sort_order INTEGER NOT NULL CHECK (sort_order > 0),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  PRIMARY KEY (curriculum_version_id, id),
+  UNIQUE (curriculum_version_id, sort_order)
 );
 
-CREATE TABLE IF NOT EXISTS lessons (
-  id TEXT PRIMARY KEY NOT NULL,
-  course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-  unit_id TEXT NOT NULL REFERENCES course_units(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS lesson_versions (
+  curriculum_version_id TEXT NOT NULL REFERENCES course_curriculum_versions(id) ON DELETE CASCADE,
+  id TEXT NOT NULL,
+  unit_id TEXT NOT NULL,
   title TEXT NOT NULL,
   category TEXT,
   description TEXT,
-  estimated_minutes INTEGER NOT NULL,
+  estimated_minutes INTEGER NOT NULL CHECK (estimated_minutes > 0),
   summary_json TEXT NOT NULL,
-  sort_order INTEGER NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active'
+  sort_order INTEGER NOT NULL CHECK (sort_order > 0),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  PRIMARY KEY (curriculum_version_id, id),
+  UNIQUE (curriculum_version_id, unit_id, sort_order),
+  UNIQUE (curriculum_version_id, id),
+  FOREIGN KEY (curriculum_version_id, unit_id)
+    REFERENCES course_unit_versions(curriculum_version_id, id)
+    ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS lesson_steps (
-  id TEXT PRIMARY KEY NOT NULL,
-  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS lesson_step_versions (
+  curriculum_version_id TEXT NOT NULL REFERENCES course_curriculum_versions(id) ON DELETE CASCADE,
+  id TEXT NOT NULL,
+  lesson_id TEXT NOT NULL,
   type TEXT NOT NULL,
-  sort_order INTEGER NOT NULL,
+  sort_order INTEGER NOT NULL CHECK (sort_order > 0),
   content_json TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active'
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  PRIMARY KEY (curriculum_version_id, id),
+  UNIQUE (curriculum_version_id, lesson_id, sort_order),
+  UNIQUE (curriculum_version_id, lesson_id, id),
+  FOREIGN KEY (curriculum_version_id, lesson_id)
+    REFERENCES lesson_versions(curriculum_version_id, id)
+    ON DELETE CASCADE
 );
+
+CREATE TRIGGER IF NOT EXISTS course_unit_versions_published_insert_guard
+BEFORE INSERT ON course_unit_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id = NEW.curriculum_version_id AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS course_unit_versions_published_update_guard
+BEFORE UPDATE ON course_unit_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id IN (OLD.curriculum_version_id, NEW.curriculum_version_id)
+    AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS course_unit_versions_published_delete_guard
+BEFORE DELETE ON course_unit_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id = OLD.curriculum_version_id AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lesson_versions_published_insert_guard
+BEFORE INSERT ON lesson_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id = NEW.curriculum_version_id AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lesson_versions_published_update_guard
+BEFORE UPDATE ON lesson_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id IN (OLD.curriculum_version_id, NEW.curriculum_version_id)
+    AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lesson_versions_published_delete_guard
+BEFORE DELETE ON lesson_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id = OLD.curriculum_version_id AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lesson_step_versions_published_insert_guard
+BEFORE INSERT ON lesson_step_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id = NEW.curriculum_version_id AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lesson_step_versions_published_update_guard
+BEFORE UPDATE ON lesson_step_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id IN (OLD.curriculum_version_id, NEW.curriculum_version_id)
+    AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lesson_step_versions_published_delete_guard
+BEFORE DELETE ON lesson_step_versions
+WHEN EXISTS (
+  SELECT 1 FROM course_curriculum_versions
+  WHERE id = OLD.curriculum_version_id AND status = 'published'
+)
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum content is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS courses_published_version_insert_check
+BEFORE INSERT ON courses
+WHEN NEW.published_curriculum_version_id IS NOT NULL
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1
+    FROM course_curriculum_versions version
+    WHERE version.id = NEW.published_curriculum_version_id
+      AND version.course_id = NEW.id
+      AND version.status = 'published'
+  ) THEN RAISE(ABORT, 'published curriculum version must belong to the course and be published') END;
+END;
+
+CREATE TRIGGER IF NOT EXISTS courses_published_version_update_check
+BEFORE UPDATE OF published_curriculum_version_id ON courses
+WHEN NEW.published_curriculum_version_id IS NOT NULL
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1
+    FROM course_curriculum_versions version
+    WHERE version.id = NEW.published_curriculum_version_id
+      AND version.course_id = NEW.id
+      AND version.status = 'published'
+  ) THEN RAISE(ABORT, 'published curriculum version must belong to the course and be published') END;
+END;
+
+CREATE TRIGGER IF NOT EXISTS course_curriculum_versions_published_update_guard
+BEFORE UPDATE ON course_curriculum_versions
+WHEN OLD.status = 'published'
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum version is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS course_curriculum_versions_published_delete_guard
+BEFORE DELETE ON course_curriculum_versions
+WHEN OLD.status = 'published'
+BEGIN
+  SELECT RAISE(ABORT, 'published curriculum version is immutable');
+END;
 
 CREATE TABLE IF NOT EXISTS learner_profiles (
   user_id TEXT PRIMARY KEY NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'active',
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'deleted')),
   display_name TEXT,
   deleted_at INTEGER
 );
@@ -271,56 +444,108 @@ CREATE TABLE IF NOT EXISTS learner_activity_days (
   activity_date TEXT NOT NULL,
   first_activity_at INTEGER NOT NULL,
   last_activity_at INTEGER NOT NULL,
-  completed_lessons INTEGER NOT NULL DEFAULT 0,
-  saved_answers INTEGER NOT NULL DEFAULT 0,
+  completed_lessons INTEGER NOT NULL DEFAULT 0 CHECK (completed_lessons >= 0),
+  saved_answers INTEGER NOT NULL DEFAULT 0 CHECK (saved_answers >= 0),
   PRIMARY KEY (user_id, activity_date)
 );
 
+CREATE TABLE IF NOT EXISTS learner_course_progress (
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE RESTRICT,
+  curriculum_version_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed')),
+  started_at INTEGER NOT NULL,
+  completed_at INTEGER,
+  last_activity_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, course_id),
+  UNIQUE (user_id, course_id, curriculum_version_id),
+  FOREIGN KEY (course_id, curriculum_version_id)
+    REFERENCES course_curriculum_versions(course_id, id)
+    ON DELETE RESTRICT
+);
+
+CREATE INDEX IF NOT EXISTS learner_course_progress_activity_idx
+ON learner_course_progress(user_id, last_activity_at, course_id);
+
 CREATE TABLE IF NOT EXISTS learner_lesson_progress (
   user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-  current_step_index INTEGER NOT NULL DEFAULT 0,
-  status TEXT NOT NULL DEFAULT 'in_progress',
+  course_id TEXT NOT NULL,
+  curriculum_version_id TEXT NOT NULL,
+  lesson_id TEXT NOT NULL,
+  current_step_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed')),
   started_at INTEGER NOT NULL,
   completed_at INTEGER,
   updated_at INTEGER NOT NULL,
-  PRIMARY KEY (user_id, lesson_id)
+  PRIMARY KEY (user_id, curriculum_version_id, lesson_id),
+  FOREIGN KEY (user_id, course_id, curriculum_version_id)
+    REFERENCES learner_course_progress(user_id, course_id, curriculum_version_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (curriculum_version_id, lesson_id)
+    REFERENCES lesson_versions(curriculum_version_id, id)
+    ON DELETE RESTRICT,
+  FOREIGN KEY (curriculum_version_id, lesson_id, current_step_id)
+    REFERENCES lesson_step_versions(curriculum_version_id, lesson_id, id)
+    ON DELETE RESTRICT
 );
+
+CREATE INDEX IF NOT EXISTS learner_lesson_progress_user_course_idx
+ON learner_lesson_progress(user_id, course_id);
 
 CREATE TABLE IF NOT EXISTS learner_lesson_answers (
   user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-  step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
+  course_id TEXT NOT NULL,
+  curriculum_version_id TEXT NOT NULL,
+  lesson_id TEXT NOT NULL,
+  step_id TEXT NOT NULL,
   answer_json TEXT NOT NULL,
   answered_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  PRIMARY KEY (user_id, step_id)
+  PRIMARY KEY (user_id, curriculum_version_id, step_id),
+  FOREIGN KEY (user_id, course_id, curriculum_version_id)
+    REFERENCES learner_course_progress(user_id, course_id, curriculum_version_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (curriculum_version_id, lesson_id, step_id)
+    REFERENCES lesson_step_versions(curriculum_version_id, lesson_id, id)
+    ON DELETE RESTRICT
 );
+
+CREATE INDEX IF NOT EXISTS learner_lesson_answers_lesson_idx
+ON learner_lesson_answers(user_id, curriculum_version_id, lesson_id);
 
 CREATE TABLE IF NOT EXISTS ai_feedback_attempts (
   id TEXT PRIMARY KEY NOT NULL,
   user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-  step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
-  attempt_number INTEGER NOT NULL,
+  course_id TEXT NOT NULL,
+  curriculum_version_id TEXT NOT NULL,
+  lesson_id TEXT NOT NULL,
+  step_id TEXT NOT NULL,
+  attempt_number INTEGER NOT NULL CHECK (attempt_number > 0),
   idempotency_key TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('pending', 'succeeded', 'failed', 'expired')),
   answer_text TEXT NOT NULL,
   result_json TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL
+  expires_at INTEGER NOT NULL,
+  FOREIGN KEY (user_id, course_id, curriculum_version_id)
+    REFERENCES learner_course_progress(user_id, course_id, curriculum_version_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (curriculum_version_id, lesson_id, step_id)
+    REFERENCES lesson_step_versions(curriculum_version_id, lesson_id, id)
+    ON DELETE RESTRICT
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS ai_feedback_attempts_idempotency_idx
-ON ai_feedback_attempts(user_id, lesson_id, step_id, idempotency_key);
+ON ai_feedback_attempts(user_id, curriculum_version_id, lesson_id, step_id, idempotency_key);
 
 CREATE UNIQUE INDEX IF NOT EXISTS ai_feedback_attempts_active_slot_idx
-ON ai_feedback_attempts(user_id, lesson_id, step_id, attempt_number)
+ON ai_feedback_attempts(user_id, curriculum_version_id, lesson_id, step_id, attempt_number)
 WHERE status IN ('pending', 'succeeded');
 
 CREATE UNIQUE INDEX IF NOT EXISTS ai_feedback_attempts_pending_idx
-ON ai_feedback_attempts(user_id, lesson_id, step_id)
+ON ai_feedback_attempts(user_id, curriculum_version_id, lesson_id, step_id)
 WHERE status = 'pending';
 
 CREATE INDEX IF NOT EXISTS ai_feedback_attempts_expiry_idx

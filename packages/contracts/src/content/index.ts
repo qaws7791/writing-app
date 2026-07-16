@@ -24,7 +24,7 @@ export const courseVisualKeyValues = [
 ] as const
 export const courseVisualKeySchema = z.enum(courseVisualKeyValues)
 
-export const lessonSummaryDtoSchema = z.object({
+export const lessonSummaryDtoSchema = z.strictObject({
   id: lessonIdSchema,
   title: z.string(),
   category: z.string().nullable(),
@@ -34,14 +34,14 @@ export const lessonSummaryDtoSchema = z.object({
   sortOrder: positiveSortOrderSchema,
 })
 
-export const courseUnitDtoSchema = z.object({
+export const courseUnitDtoSchema = z.strictObject({
   id: unitIdSchema,
   title: z.string(),
   sortOrder: positiveSortOrderSchema,
   lessons: z.array(lessonSummaryDtoSchema),
 })
 
-export const courseSummaryDtoSchema = z.object({
+export const courseSummaryDtoSchema = z.strictObject({
   id: courseIdSchema,
   title: z.string(),
   description: z.string(),
@@ -51,7 +51,7 @@ export const courseSummaryDtoSchema = z.object({
   visualKey: courseVisualKeySchema,
 })
 
-export const courseListDtoSchema = z.object({
+export const courseListDtoSchema = z.strictObject({
   courses: z.array(courseSummaryDtoSchema),
 })
 
@@ -61,13 +61,13 @@ const learnerCourseLessonStatusSchema = z.enum([
   "locked",
 ])
 
-const learnerCourseProgressLessonDtoSchema = z.object({
+const learnerCourseProgressLessonDtoSchema = z.strictObject({
   lessonId: lessonIdSchema,
   status: learnerCourseLessonStatusSchema,
   currentStepIndex: nonNegativeIntegerSchema.nullable(),
 })
 
-const learnerCourseNextLessonDtoSchema = z.object({
+const learnerCourseNextLessonDtoSchema = z.strictObject({
   id: lessonIdSchema,
   title: z.string(),
   estimatedMinutes: z.number().int().positive(),
@@ -76,7 +76,7 @@ const learnerCourseNextLessonDtoSchema = z.object({
 })
 
 export const courseDetailDtoSchema = courseSummaryDtoSchema.extend({
-  progress: z.object({
+  progress: z.strictObject({
     completedLessons: nonNegativeIntegerSchema,
     lessons: z.array(learnerCourseProgressLessonDtoSchema),
     nextLesson: learnerCourseNextLessonDtoSchema.nullable(),
@@ -87,7 +87,7 @@ export const courseDetailDtoSchema = courseSummaryDtoSchema.extend({
 })
 
 export const lessonDtoSchema = z
-  .object({
+  .strictObject({
     id: lessonIdSchema,
     courseId: courseIdSchema,
     unitId: unitIdSchema,

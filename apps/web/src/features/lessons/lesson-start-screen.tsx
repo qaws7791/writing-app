@@ -1,6 +1,6 @@
 "use client"
 
-import type { Lesson } from "@/features/lessons/lesson-types"
+import type { LearnerLesson as Lesson } from "@workspace/contracts/learning"
 import { LessonIntroHeader, LessonShell } from "@/features/lessons/lesson-shell"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Callout, CalloutContent } from "@workspace/ui/components/ui/callout"

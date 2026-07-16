@@ -131,7 +131,6 @@ bun run storybook
 ```bash
 bun run check:toolchain
 bun run check:components-config
-bun run check:api-contract
 bun run check:document-drift
 bun run check:workspace-inventory
 bun run check:deployment-config
@@ -157,14 +156,7 @@ workflow는 게시된 각 digest를 고정된 Grype로 검사하고 `HIGH` 이�
 
 현재 승인형 CD와 OpenTofu 기반 호스트 생성은 구현 전이다. 따라서 최초 서버 준비와 실제 digest 배포는 [배포 문서](docs/engineering/deployment.md)의 Ansible 절차를 따르며, 자동화되지 않은 단계를 완료된 것으로 가정하지 않는다.
 
-OpenAPI 계약과 웹 생성 타입을 갱신해야 할 때:
-
-```bash
-bun --filter=@workspace/api openapi:generate
-bun --filter=@workspace/web api:generate
-```
-
-정적 OpenAPI 계약 파일은 `docs/engineering/contracts/writing-app-api-openapi.json`이다.
+학습자 HTTP 계약은 `@workspace/contracts/learning`의 strict Zod schema와 추론 타입을 API와 웹이 직접 사용한다. OpenAPI 3.1 문서는 실행 중인 학습자 API의 `/openapi`에서 확인하며 정적 JSON과 웹 생성 타입은 추적하지 않는다.
 
 ## 문서
 

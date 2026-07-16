@@ -11,7 +11,10 @@ import type {
 import type { LessonStepCheckedState } from "@/features/lessons/lesson-step-policy"
 import { getLessonStepActionLabel } from "@/features/lessons/lesson-step-policy"
 import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
-import type { Lesson, LessonStep } from "@/features/lessons/lesson-types"
+import type {
+  LearnerLesson as Lesson,
+  LearnerLessonStep as LessonStep,
+} from "@workspace/contracts/learning"
 import {
   LessonCheckedFooter,
   LessonProgressHeader,
@@ -95,11 +98,7 @@ export function LessonActiveScreen({
             </Button>
           </StickyActionBar>
         ) : (
-          <LessonCheckedFooter
-            checked={checked}
-            onNext={onSubmitCurrentStep}
-            step={currentStep}
-          />
+          <LessonCheckedFooter checked={checked} onNext={onSubmitCurrentStep} />
         )
       }
       header={

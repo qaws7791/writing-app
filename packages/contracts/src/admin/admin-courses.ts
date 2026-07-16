@@ -43,9 +43,11 @@ export const adminCourseUnitDtoSchema = z.object({
 
 export const adminCourseDetailDtoSchema = z.object({
   category: z.string(),
+  curriculumVersionId: z.string(),
   description: z.string(),
+  editVersion: adminNonNegativeIntegerSchema,
   id: z.string(),
-  revision: adminNonNegativeIntegerSchema,
+  revision: adminPositiveIntegerSchema,
   status: adminContentStatusSchema,
   title: z.string(),
   units: z.array(adminCourseUnitDtoSchema),
@@ -110,9 +112,11 @@ export const adminCourseEditorUnitSchema = z
 export const adminCourseEditorDocumentSchema = z
   .object({
     category: z.string(),
+    curriculumVersionId: z.string(),
     description: z.string(),
+    editVersion: adminNonNegativeIntegerSchema,
     id: courseIdSchema,
-    revision: adminNonNegativeIntegerSchema,
+    revision: adminPositiveIntegerSchema,
     status: activeEditorStatusSchema,
     title: z.string().min(1),
     units: z.array(adminCourseEditorUnitSchema),
@@ -121,6 +125,12 @@ export const adminCourseEditorDocumentSchema = z
     validateContiguousSortOrders(document.units, context)
     validateUniqueEditorIds(document, context)
   })
+
+export const adminPublishCourseResultSchema = z.object({
+  curriculumVersionId: z.string(),
+  publishedAt: z.iso.datetime(),
+  revision: adminPositiveIntegerSchema,
+})
 
 function validateContiguousSortOrders(
   items: readonly { readonly sortOrder: number }[],
@@ -172,4 +182,7 @@ export type AdminCourseDetailDto = z.infer<typeof adminCourseDetailDtoSchema>
 export type AdminCourseListDto = z.infer<typeof adminCourseListDtoSchema>
 export type AdminCourseEditorDocument = z.infer<
   typeof adminCourseEditorDocumentSchema
+>
+export type AdminPublishCourseResult = z.infer<
+  typeof adminPublishCourseResultSchema
 >

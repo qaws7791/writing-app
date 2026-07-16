@@ -20,6 +20,8 @@ Course
 
 - 코스는 하나의 학습 주제다.
 - 코스는 제목, 설명, 카테고리, 상태, 정렬 순서를 가진다.
+- 코스의 표시 내용과 하위 계층은 관계형 커리큘럼 버전에 속한다. 코스당 변경 가능한 draft는 하나이고 published revision은 변경하지 않는다.
+- 학습자는 코스 시작 시점의 published revision에 고정되며 새 revision 발행으로 자동 이동하지 않는다.
 - 학습자에게는 active 코스만 노출한다.
 - archived 코스는 학습자 경로에서 숨긴다.
 
@@ -42,6 +44,7 @@ Course
 
 - 스텝은 레슨을 구성하는 가장 작은 활동 단위다.
 - 스텝은 타입, 정렬 순서, 상태, 콘텐츠 JSON을 가진다.
+- 선택형 스텝의 option·segment·item·pair는 버전 사이에서 유지되는 stable ID를 가지며 정답 참조는 배열 위치나 문구 대신 ID를 사용한다.
 - 스텝 상태는 코스 상태와 같은 `active`, `archived`를 사용한다.
 - core DTO 계약은 `packages/core/src/content/steps`의 타입별 파일과 `steps/index.ts`의 명시 조합으로 관리한다.
 - 새 스텝 타입을 추가할 때는 DTO schema, 답변 가능 정책, 학습 답변 schema, DB seed 정규화, API OpenAPI schema, web mapper와 renderer, admin 편집 폼을 함께 검토한다.

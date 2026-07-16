@@ -4,11 +4,11 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
-import type { ProgressCourse } from "@/features/courses/course-types"
+import type { LearnerProgressCourse } from "@workspace/contracts/learning"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CompletedCourseCardProps = {
-  readonly course: ProgressCourse
+  readonly course: LearnerProgressCourse
   readonly priority?: boolean
 }
 

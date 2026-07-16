@@ -15,7 +15,9 @@ import { adminRoles } from "@workspace/core/admin"
 const courseDetail: AdminCourseEditorDocument =
   adminCourseEditorDocumentSchema.parse({
     category: "미분류",
+    curriculumVersionId: "cmock-v1",
     description: "강의 설명을 입력하세요.",
+    editVersion: 0,
     id: "cmock",
     revision: 1,
     status: "active",
@@ -87,6 +89,7 @@ describe("어드민 API curriculum editor route", () => {
     })
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("ETag")).toBe('"0"')
     await expect(response.json()).resolves.toEqual(courseDetail)
   })
 
@@ -106,7 +109,7 @@ describe("어드민 API curriculum editor route", () => {
     })
   })
 
-  it("owner가 전체 editor 문서를 저장하면 revision이 증가한 문서를 반환한다", async () => {
+  it("owner가 If-Match로 editor 문서를 저장하면 editVersion이 증가한다", async () => {
     const app = createApp(createDependencies())
 
     const response = await app.request("/courses/cmock/editor", {
@@ -114,14 +117,17 @@ describe("어드민 API curriculum editor route", () => {
       headers: {
         "Content-Type": "application/json",
         Cookie: "admin_session_token=admin-token",
+        "If-Match": '"0"',
         Origin: "http://localhost:3001",
       },
       method: "PUT",
     })
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("ETag")).toBe('"1"')
     await expect(response.json()).resolves.toMatchObject({
-      revision: 2,
+      editVersion: 1,
+      revision: 1,
       title: "저장한 강의",
     })
   })
@@ -131,6 +137,7 @@ describe("어드민 API curriculum editor route", () => {
     const headers = {
       "Content-Type": "application/json",
       Cookie: "admin_session_token=admin-token",
+      "If-Match": '"0"',
       Origin: "http://localhost:3001",
     }
 
@@ -140,8 +147,8 @@ describe("어드민 API curriculum editor route", () => {
       method: "PUT",
     })
     const stale = await app.request("/courses/cmock/editor", {
-      body: JSON.stringify({ ...courseDetail, revision: 0 }),
-      headers,
+      body: JSON.stringify(courseDetail),
+      headers: { ...headers, "If-Match": '"9"' },
       method: "PUT",
     })
 
@@ -149,6 +156,40 @@ describe("어드민 API curriculum editor route", () => {
     expect(stale.status).toBe(409)
     await expect(stale.json()).resolves.toMatchObject({
       code: "STALE_REVISION",
+    })
+  })
+
+  it("If-Match 없이 저장하면 428을 반환한다", async () => {
+    const app = createApp(createDependencies())
+    const response = await app.request("/courses/cmock/editor", {
+      body: JSON.stringify(courseDetail),
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
+      },
+      method: "PUT",
+    })
+
+    expect(response.status).toBe(428)
+  })
+
+  it("owner가 현재 초안을 발행하면 발행 리비전을 반환한다", async () => {
+    const app = createApp(createDependencies())
+    const response = await app.request("/courses/cmock/publish", {
+      headers: {
+        Cookie: "admin_session_token=admin-token",
+        "If-Match": '"0"',
+        Origin: "http://localhost:3001",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      curriculumVersionId: "cmock-v1",
+      publishedAt: "2026-06-14T00:00:00.000Z",
+      revision: 1,
     })
   })
 
@@ -169,6 +210,7 @@ describe("어드민 API curriculum editor route", () => {
       headers: {
         "Content-Type": "application/json",
         Cookie: "admin_session_token=admin-token",
+        "If-Match": '"0"',
         Origin: "http://localhost:3001",
       },
       method: "PUT",
@@ -191,12 +233,28 @@ function createDependencies() {
           return courseDetail
         },
         async saveCourseEditor(input) {
-          if (input.document.revision === 0) {
+          if (input.expectedEditVersion !== courseDetail.editVersion) {
             return { kind: "stale-revision" }
           }
           return {
             kind: "ok",
-            value: { ...input.document, revision: input.document.revision + 1 },
+            value: {
+              ...input.document,
+              editVersion: input.document.editVersion + 1,
+            },
+          }
+        },
+        async publishCourse(input) {
+          if (input.expectedEditVersion !== courseDetail.editVersion) {
+            return { kind: "stale-revision" }
+          }
+          return {
+            kind: "ok",
+            value: {
+              curriculumVersionId: courseDetail.curriculumVersionId,
+              publishedAt: "2026-06-14T00:00:00.000Z",
+              revision: courseDetail.revision,
+            },
           }
         },
       },

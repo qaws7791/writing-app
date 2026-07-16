@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "cd ../.. && bun --env-file=apps/api/.env --watch apps/api/src/main.ts",
     "start": "bun src/main.ts",
-    "openapi:generate": "bun src/scripts/generate-openapi.ts",
     "lint": "oxlint .",
     "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
     "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",

@@ -5,11 +5,13 @@ const {
   archiveCourseMock,
   createCourseMock,
   revalidatePathMock,
+  publishCourseMock,
   saveCourseMock,
 } = vi.hoisted(() => ({
   archiveCourseMock: vi.fn(),
   createCourseMock: vi.fn(),
   revalidatePathMock: vi.fn(),
+  publishCourseMock: vi.fn(),
   saveCourseMock: vi.fn(),
 }))
 
@@ -19,6 +21,7 @@ vi.mock("@/features/courses/admin-courses-api", () => ({
   createAdminCoursesApi: () => ({
     archiveCourse: archiveCourseMock,
     createCourse: createCourseMock,
+    publishCourse: publishCourseMock,
     saveCourseEditor: saveCourseMock,
   }),
 }))
@@ -67,7 +70,9 @@ describe("admin course actions", () => {
   it("editor 저장 성공 시 목록과 상세를 재검증한다", async () => {
     const document = adminCourseEditorSchema.parse({
       category: "미분류",
+      curriculumVersionId: "course-1-v2",
       description: "설명",
+      editVersion: 0,
       id: "course-1",
       revision: 2,
       status: "active",
@@ -80,6 +85,38 @@ describe("admin course actions", () => {
 
     await saveAdminCourseEditorAction(document)
 
+    expect(revalidatePathMock.mock.calls).toEqual([
+      ["/courses"],
+      ["/courses/course-1"],
+    ])
+  })
+
+  it("editor 발행 성공 시 목록과 상세를 재검증한다", async () => {
+    const document = adminCourseEditorSchema.parse({
+      category: "미분류",
+      curriculumVersionId: "course-1-v2",
+      description: "설명",
+      editVersion: 1,
+      id: "course-1",
+      revision: 2,
+      status: "active",
+      title: "코스",
+      units: [],
+    })
+    publishCourseMock.mockResolvedValue({
+      status: "ok",
+      value: {
+        curriculumVersionId: "course-1-v2",
+        publishedAt: "2026-07-17T00:00:00.000Z",
+        revision: 2,
+      },
+    })
+    const { publishAdminCourseAction } =
+      await import("@/features/courses/admin-course-actions")
+
+    await publishAdminCourseAction(document)
+
+    expect(publishCourseMock).toHaveBeenCalledWith("course-1", document)
     expect(revalidatePathMock.mock.calls).toEqual([
       ["/courses"],
       ["/courses/course-1"],

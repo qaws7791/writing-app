@@ -1,17 +1,14 @@
-import { z } from "zod"
 import type { AnyRouteConfig } from "@workspace/hono/core"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
+import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
-  progressCourseStatusFilterSchema,
+  progressQuerySchema,
   progressResponseSchema,
 } from "@/modules/progress/progress.schemas"
-
-const progressQuerySchema = z.object({
-  status: progressCourseStatusFilterSchema.optional(),
-})
 
 const progressRouteConfig = {
   method: "get",
@@ -32,12 +29,20 @@ const progressHandler: ApiRouteHandler<typeof progressRouteConfig> = async (
   context
 ) => {
   const progressService = context.var.requestContext.progressService
-  const { status } = context.req.valid("query")
+  const query = context.req.valid("query")
 
   return context.json(
-    await progressService.readProgress(context.var.activeSession.user.id, {
-      status,
-    }),
+    parseLearnerRouteResponse(
+      context,
+      "LearnerProgressResponse",
+      progressResponseSchema,
+      unwrapApiCoreResult(
+        await progressService.readProgress(
+          context.var.activeSession.user.id,
+          query
+        )
+      )
+    ),
     200
   )
 }

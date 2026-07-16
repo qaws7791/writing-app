@@ -3,6 +3,7 @@ import {
   type PersistedContentStatus,
   type PersistedCourseVisualKey,
 } from "@workspace/db/persisted-values"
+import { normalizeVersionedStepContent } from "@workspace/db/content/normalize-versioned-step-content"
 
 export type ContentSeedStepType =
   | "reading"
@@ -70,7 +71,6 @@ export type CourseSeedRow = {
   readonly visualKey: PersistedCourseVisualKey
   readonly status: PersistedContentStatus
   readonly sortOrder: number
-  readonly curriculumRevision: number
 }
 
 export type CourseUnitSeedRow = {
@@ -146,7 +146,6 @@ export function toCourseSeedRow(
 ): CourseSeedRow {
   return {
     category: course.cat,
-    curriculumRevision: 0,
     description: course.desc,
     id: course.id,
     sortOrder: courseIndex + 1,
@@ -192,14 +191,23 @@ export function toStepSeedRows(course: ContentSeedCourse): LessonStepSeedRow[] {
 export function toLessonStepSeedRows(
   lesson: ContentSeedLesson
 ): LessonStepSeedRow[] {
-  const rows = lesson.steps.map((step, stepIndex) => ({
-    contentJson: normalizeSeedStepContent(step),
-    id: `${lesson.id}-s${stepIndex + 1}`,
-    lessonId: lesson.id,
-    sortOrder: stepIndex + 1,
-    status: persistedContentStatuses.active,
-    type: toStandardLessonStepType(step.type),
-  }))
+  const rows = lesson.steps.map((step, stepIndex) => {
+    const id = `${lesson.id}-s${stepIndex + 1}`
+    const type = toStandardLessonStepType(step.type)
+
+    return {
+      contentJson: normalizeVersionedStepContent(
+        id,
+        type,
+        normalizeSeedStepContent(step)
+      ),
+      id,
+      lessonId: lesson.id,
+      sortOrder: stepIndex + 1,
+      status: persistedContentStatuses.active,
+      type,
+    }
+  })
 
   validateAiFeedbackSeedTargets(rows)
 

@@ -209,7 +209,9 @@ const aiChatConversationList: AdminAiChatConversationListDto = {
 
 const courseDetail: AdminCourseDetailDto = {
   category: "미분류",
+  curriculumVersionId: "cmock-v1",
   description: "강의 설명을 입력하세요.",
+  editVersion: 0,
   id: "cmock",
   revision: 1,
   status: "active",
@@ -606,6 +608,9 @@ describe("어드민 서비스", () => {
           })
           return courseList
         },
+        async publishCourse() {
+          return failUnexpectedPort("courseRepository.publishCourse")
+        },
         async saveCourseEditor() {
           return { kind: "ok", value: courseEditor }
         },
@@ -726,6 +731,9 @@ function createUnusedAdminServicePorts(): AdminServicePorts {
       },
       async readCourses() {
         return failUnexpectedPort("courseRepository.readCourses")
+      },
+      async publishCourse() {
+        return failUnexpectedPort("courseRepository.publishCourse")
       },
       async saveCourseEditor() {
         return failUnexpectedPort("courseRepository.saveCourseEditor")

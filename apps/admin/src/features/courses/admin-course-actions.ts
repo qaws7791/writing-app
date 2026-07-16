@@ -31,6 +31,16 @@ export async function saveAdminCourseEditorAction(document: AdminCourseDetail) {
   return result
 }
 
+export async function publishAdminCourseAction(document: AdminCourseDetail) {
+  const result = await createServerApi().publishCourse(document.id, document)
+
+  if (result.status === "ok") {
+    revalidatePath("/courses")
+    revalidatePath(`/courses/${document.id}`)
+  }
+  return result
+}
+
 export async function readAdminCourseEditorAction(courseId: string) {
   return createServerApi().getCourseEditor(courseId)
 }

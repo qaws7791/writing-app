@@ -3,10 +3,12 @@ import {
   adminCourseDetailDtoSchema,
   adminCourseEditorDocumentSchema,
   adminCourseListDtoSchema,
+  adminPublishCourseResultSchema,
   type AdminArchiveCourseResultDto,
   type AdminCourseDetailDto,
   type AdminCourseEditorDocument,
   type AdminCourseListDto,
+  type AdminPublishCourseResult,
 } from "#core/modules/admin/domain/admin.dto"
 import type {
   ArchiveAdminCourseInput,
@@ -14,6 +16,7 @@ import type {
   CreateAdminCourseInput,
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
+  PublishAdminCourseInput,
   SaveAdminCourseEditorInput,
 } from "#core/modules/admin/application/ports/admin.repository"
 import {
@@ -35,6 +38,9 @@ export type AdminCourseUseCase = {
   readonly getCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminCourseListDto>
+  readonly publishCourse: (
+    input: OwnerAdminCommand<PublishAdminCourseInput>
+  ) => Promise<AdminCoursePublishResult>
   readonly saveCourseEditor: (
     input: OwnerAdminCommand<SaveAdminCourseEditorInput>
   ) => Promise<AdminCourseEditorSaveResult>
@@ -44,6 +50,12 @@ export type AdminCourseEditorSaveResult =
   | Exclude<AdminOwnerMutationResult<AdminCourseEditorDocument>, { kind: "ok" }>
   | { readonly kind: "invalid-reference" }
   | { readonly kind: "ok"; readonly value: AdminCourseEditorDocument }
+  | { readonly kind: "stale-revision" }
+
+export type AdminCoursePublishResult =
+  | Exclude<AdminOwnerMutationResult<AdminPublishCourseResult>, { kind: "ok" }>
+  | { readonly kind: "invalid-draft" }
+  | { readonly kind: "ok"; readonly value: AdminPublishCourseResult }
   | { readonly kind: "stale-revision" }
 
 export function createAdminCourseUseCase(
@@ -75,6 +87,18 @@ export function createAdminCourseUseCase(
       return adminCourseListDtoSchema.parse(
         await courseRepository.readCourses(input)
       )
+    },
+    async publishCourse({ actor, ...input }) {
+      const authorization = authorizeOwnerMutation(actor)
+      if (authorization !== "allowed") return { kind: authorization }
+      const result = await courseRepository.publishCourse(input)
+
+      return result.kind === "ok"
+        ? {
+            kind: "ok",
+            value: adminPublishCourseResultSchema.parse(result.value),
+          }
+        : result
     },
     async saveCourseEditor({ actor, ...input }) {
       const authorization = authorizeOwnerMutation(actor)

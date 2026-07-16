@@ -23,7 +23,9 @@ describe("API env", () => {
       authBaseUrl: createLocalRuntimeUrl(4101),
       betterAuthSecret: "x".repeat(32),
       cookieDomain: undefined,
+      cursorSigningSecret: `${"x".repeat(32)}:cursor-signing`,
       databaseUrl: ":memory:",
+      deploymentVersion: "local",
       googleClientId: undefined,
       googleClientSecret: undefined,
       nodeEnv: "test",
@@ -50,7 +52,9 @@ describe("API env", () => {
       authBaseUrl: localRuntimeDefaults.learnerApiBaseUrl,
       betterAuthSecret: "x".repeat(32),
       cookieDomain: undefined,
+      cursorSigningSecret: `${"x".repeat(32)}:cursor-signing`,
       databaseUrl: ":memory:",
+      deploymentVersion: "local",
       googleClientId: undefined,
       googleClientSecret: undefined,
       nodeEnv: "test",
@@ -78,7 +82,10 @@ describe("API env", () => {
         ADMIN_ORIGIN: "https://admin.example.com",
         BETTER_AUTH_SECRET: "x".repeat(32),
         BETTER_AUTH_URL: "https://api.example.com",
+        CURSOR_SIGNING_SECRET:
+          "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
         DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
+        DEPLOYMENT_VERSION: "api@sha256:test",
         ENABLE_TEST_AUTH: "true",
         NODE_ENV: "production",
         WEB_ORIGIN: "https://app.example.com",
@@ -95,16 +102,38 @@ describe("API env", () => {
         ADMIN_ORIGIN: "https://admin.example.com",
         BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
         BETTER_AUTH_URL: "https://api.example.com",
+        CURSOR_SIGNING_SECRET:
+          "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
         DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
+        DEPLOYMENT_VERSION: "api@sha256:test",
         NODE_ENV: "production",
         WEB_ORIGIN: "https://app.example.com",
       })
     ).toMatchObject({
       authBaseUrl: "https://api.example.com",
       databaseUrl: "file:/var/lib/writing-app/api.sqlite",
+      cursorSigningSecret: "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
+      deploymentVersion: "api@sha256:test",
       nodeEnv: "production",
       webOrigin: "https://app.example.com",
     })
+  })
+
+  it("production startup은 cursor 서명 전용 secret을 필수로 요구한다", () => {
+    expect(() =>
+      parseApiEnv({
+        ADMIN_BETTER_AUTH_SECRET:
+          "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
+        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
+        ADMIN_ORIGIN: "https://admin.example.com",
+        BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
+        BETTER_AUTH_URL: "https://api.example.com",
+        DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
+        DEPLOYMENT_VERSION: "api@sha256:test",
+        NODE_ENV: "production",
+        WEB_ORIGIN: "https://app.example.com",
+      })
+    ).toThrow(/CURSOR_SIGNING_SECRET/)
   })
 
   it("선택 Better Auth 쿠키 도메인을 읽는다", () => {

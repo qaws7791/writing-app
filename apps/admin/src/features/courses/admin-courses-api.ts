@@ -5,9 +5,11 @@ import {
   adminCourseDetailDtoSchema,
   adminCourseEditorDocumentSchema,
   adminCourseListDtoSchema,
+  adminPublishCourseResultSchema,
   type AdminCourseDetailDto,
   type AdminCourseEditorDocument,
   type AdminCourseListDto,
+  type AdminPublishCourseResult,
 } from "@workspace/contracts/admin"
 
 export type AdminCourseStatus = "active" | "archived"
@@ -41,6 +43,7 @@ export type AdminCourseList = {
   readonly pagination: AdminCourseListDto["pagination"]
 }
 export type AdminArchiveCourseResult = { readonly archived: true }
+export type AdminCoursePublishResult = AdminPublishCourseResult
 export type AdminCoursesApi = {
   readonly archiveCourse: (
     courseId: string
@@ -56,6 +59,10 @@ export type AdminCoursesApi = {
     courseId: string,
     document: AdminCourseEditorDocument
   ) => Promise<AdminApiResult<AdminCourseEditorDocument>>
+  readonly publishCourse: (
+    courseId: string,
+    document: AdminCourseEditorDocument
+  ) => Promise<AdminApiResult<AdminCoursePublishResult>>
 }
 
 export function createAdminCoursesApi(
@@ -105,9 +112,17 @@ export function createAdminCoursesApi(
     saveCourseEditor: (courseId, document) =>
       transport.requestJson({
         body: document,
+        headers: { "If-Match": `"${document.editVersion}"` },
         method: "PUT",
         path: `/courses/${courseId}/editor`,
         schema: adminCourseEditorDocumentSchema,
+      }),
+    publishCourse: (courseId, document) =>
+      transport.requestJson({
+        headers: { "If-Match": `"${document.editVersion}"` },
+        method: "POST",
+        path: `/courses/${courseId}/publish`,
+        schema: adminPublishCourseResultSchema,
       }),
   }
 }

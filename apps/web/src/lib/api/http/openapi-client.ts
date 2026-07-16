@@ -1,4 +1,4 @@
-import { apiFailure, apiOk, type ApiResult } from "@/lib/api/api-result"
+import type { ApiResult } from "@/lib/api/api-result"
 import {
   contractApiError,
   networkApiError,
@@ -9,6 +9,8 @@ import { buildApiUrl, type BrowserApiBaseUrl } from "@/runtime-config"
 import type { ServerApiBaseUrl } from "@/runtime-config-server"
 import {
   fetchHttpResponse,
+  httpApiFailure as apiFailure,
+  httpApiOk as apiOk,
   type HttpFetch,
   type HttpNetworkError,
 } from "@workspace/http-client"

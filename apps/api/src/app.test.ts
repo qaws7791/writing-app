@@ -92,15 +92,18 @@ describe("플랫폼 API profile route", () => {
       webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
 
-    const response = await app.request("/learning/answers", {
-      headers: {
-        "Access-Control-Request-Headers":
-          "authorization,content-type,idempotency-key",
-        "Access-Control-Request-Method": "POST",
-        Origin: localRuntimeDefaults.learnerWebOrigin,
-      },
-      method: "OPTIONS",
-    })
+    const response = await app.request(
+      "/learning/lessons/lesson-1/steps/step-1/complete",
+      {
+        headers: {
+          "Access-Control-Request-Headers":
+            "authorization,content-type,idempotency-key",
+          "Access-Control-Request-Method": "POST",
+          Origin: localRuntimeDefaults.learnerWebOrigin,
+        },
+        method: "OPTIONS",
+      }
+    )
 
     expect(response.status).toBe(204)
     expect(response.headers.get("access-control-allow-origin")).toBe(
@@ -157,8 +160,9 @@ describe("플랫폼 API profile route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      code: "UNAUTHORIZED",
-      message: "Unauthorized",
+      code: "UNAUTHENTICATED",
+      message: "로그인이 필요합니다.",
+      requestId: response.headers.get("x-request-id"),
     })
   })
 
@@ -215,43 +219,103 @@ describe("플랫폼 API profile route", () => {
 
       expect(response.status).toBe(403)
       await expect(response.json()).resolves.toEqual({
-        code: "ACCOUNT_UNAVAILABLE",
-        message: "Account unavailable",
+        code: "FORBIDDEN",
+        message: "요청한 작업을 수행할 권한이 없습니다.",
+        requestId: response.headers.get("x-request-id"),
       })
     }
   })
 
-  it("transport validation 실패를 VALIDATION_FAILED 오류로 변환한다", async () => {
+  it("단계 완료 transport validation 실패를 VALIDATION_ERROR 오류로 변환한다", async () => {
     const app = createApp(createDependencies())
 
-    const response = await app.request("/learning/answers", {
-      body: JSON.stringify({
-        answer: {
-          type: "UNSUPPORTED",
+    const response = await app.request(
+      "/learning/lessons/lesson-1/steps/step-1/complete",
+      {
+        body: JSON.stringify({
+          answer: {
+            type: "UNSUPPORTED",
+          },
+          kind: "answer",
+        }),
+        headers: {
+          Cookie: "learner_session_token=active-token",
+          "Content-Type": "application/json",
+          Origin: localRuntimeDefaults.learnerWebOrigin,
         },
-        lessonId: "lesson-1",
-      }),
-      headers: {
-        Cookie: "learner_session_token=active-token",
-        "Content-Type": "application/json",
-        Origin: localRuntimeDefaults.learnerWebOrigin,
-      },
-      method: "POST",
-    })
+        method: "POST",
+      }
+    )
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toMatchObject({
-      code: "VALIDATION_FAILED",
-      message: "Request validation failed",
-      errors: expect.arrayContaining([
+      code: "VALIDATION_ERROR",
+      message: "요청 내용을 확인해 주세요.",
+      requestId: response.headers.get("x-request-id"),
+      violations: expect.arrayContaining([
         expect.objectContaining({
-          path: "answer",
-        }),
-        expect.objectContaining({
-          path: "stepId",
+          path: "answer.type",
         }),
       ]),
     })
+  })
+
+  it("요청 계약에 없는 JSON 필드를 VALIDATION_ERROR로 거절한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request(
+      "/learning/lessons/lesson-1/steps/step-1/complete",
+      {
+        body: JSON.stringify({
+          answer: {
+            selectedOptionId: "option-1",
+            type: "MULTIPLE_CHOICE",
+          },
+          kind: "answer",
+          unknown: true,
+        }),
+        headers: {
+          Cookie: "learner_session_token=active-token",
+          "Content-Type": "application/json",
+          Origin: localRuntimeDefaults.learnerWebOrigin,
+        },
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_ERROR",
+      requestId: response.headers.get("x-request-id"),
+      violations: [
+        expect.objectContaining({
+          path: "",
+        }),
+      ],
+    })
+  })
+
+  it("제거한 학습 쓰기 endpoint는 404를 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    for (const path of [
+      "/learning/answers",
+      "/learning/lessons/lesson-1/progress",
+      "/learning/lessons/lesson-1/complete",
+      "/ai-feedback",
+    ]) {
+      const response = await app.request(path, {
+        body: "{}",
+        headers: {
+          Cookie: "learner_session_token=active-token",
+          "Content-Type": "application/json",
+          Origin: localRuntimeDefaults.learnerWebOrigin,
+        },
+        method: "POST",
+      })
+
+      expect(response.status).toBe(404)
+    }
   })
 })
 

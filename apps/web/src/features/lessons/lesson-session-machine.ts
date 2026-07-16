@@ -1,88 +1,57 @@
-import type { LessonStepAnswerPayload } from "@/features/lessons/lesson-logic"
-import type { LessonStepCheckedState } from "@/features/lessons/lesson-step-policy"
+import type {
+  CompleteLearnerStepResult,
+  LearnerStepSubmission,
+  StepEvaluation,
+} from "@workspace/contracts/learning"
 
-export type LessonAnswerSaveState =
-  | { readonly status: "idle" }
-  | {
-      readonly requestId: number
-      readonly status: "ok" | "pending"
-      readonly stepId: string
-    }
-  | {
-      readonly message: string
-      readonly requestId: number
-      readonly status: "error"
-      readonly stepId: string
-    }
+type PendingAcceptedTransition = Exclude<
+  CompleteLearnerStepResult,
+  { readonly status: "retry" }
+>
 
 type ActiveLessonSession = {
-  readonly answerPayloads: Readonly<Record<string, LessonStepAnswerPayload>>
-  readonly answerSave: LessonAnswerSaveState
-  readonly checked: false | LessonStepCheckedState
-  readonly completeError: null | string
+  readonly activity: "idle" | "submitting"
+  readonly answerPayloads: Readonly<Record<string, LearnerStepSubmission>>
+  readonly checked: false | StepEvaluation
   readonly currentStepIndex: number
+  readonly pendingTransition: PendingAcceptedTransition | null
+  readonly submitError: null | string
 }
 
 export type LessonSessionState =
+  | { readonly startError: null | string; readonly status: "not-started" }
+  | { readonly status: "starting" }
+  | (ActiveLessonSession & { readonly status: "active" })
   | {
-      readonly startError: null | string
-      readonly status: "not-started"
-    }
-  | {
-      readonly status: "starting"
-    }
-  | (ActiveLessonSession & {
-      readonly activity: "idle" | "saving-progress" | "completing"
-      readonly status: "active"
-    })
-  | {
+      readonly completion: Extract<
+        CompleteLearnerStepResult,
+        { readonly status: "lesson_completed" }
+      > | null
       readonly currentStepIndex: number
       readonly status: "complete"
     }
 
 export type LessonSessionEvent =
   | { readonly type: "START_REQUESTED" }
-  | {
-      readonly currentStepIndex: number
-      readonly type: "START_SUCCEEDED"
-    }
+  | { readonly currentStepIndex: number; readonly type: "START_SUCCEEDED" }
   | { readonly message: string; readonly type: "START_FAILED" }
   | {
-      readonly payload: LessonStepAnswerPayload
+      readonly payload: LearnerStepSubmission
       readonly stepId: string
       readonly type: "ANSWER_PAYLOAD_CHANGED"
     }
+  | { readonly type: "SUBMIT_REQUESTED" }
+  | { readonly message: string; readonly type: "SUBMIT_FAILED" }
   | {
-      readonly checked: false | LessonStepCheckedState
-      readonly type: "CHECKED_CHANGED"
+      readonly evaluation: StepEvaluation
+      readonly type: "STEP_RETRY"
     }
   | {
-      readonly requestId: number
-      readonly stepId: string
-      readonly type: "ANSWER_SAVE_REQUESTED"
+      readonly transition: PendingAcceptedTransition
+      readonly type: "STEP_ACCEPTED"
     }
-  | {
-      readonly requestId: number
-      readonly stepId: string
-      readonly type: "ANSWER_SAVE_SUCCEEDED"
-    }
-  | {
-      readonly message: string
-      readonly requestId: number
-      readonly stepId: string
-      readonly type: "ANSWER_SAVE_FAILED"
-    }
-  | { readonly type: "PROGRESS_SAVE_REQUESTED" }
-  | { readonly type: "PROGRESS_SAVE_BLOCKED" }
-  | {
-      readonly currentStepIndex: number
-      readonly type: "PROGRESS_SAVE_SUCCEEDED"
-    }
-  | { readonly message: string; readonly type: "PROGRESS_SAVE_FAILED" }
-  | { readonly type: "COMPLETE_REQUESTED" }
-  | { readonly type: "COMPLETE_BLOCKED" }
-  | { readonly type: "COMPLETE_SUCCEEDED" }
-  | { readonly message: string; readonly type: "COMPLETE_FAILED" }
+  | { readonly type: "RETRY_EDIT_REQUESTED" }
+  | { readonly type: "ACCEPTED_CONTINUE_REQUESTED" }
 
 export class LessonSessionTransitionError extends Error {
   constructor(state: LessonSessionState, event: LessonSessionEvent) {
@@ -95,8 +64,12 @@ export class LessonSessionTransitionError extends Error {
 
 export function createLessonSessionState(
   currentStepIndex: number,
-  hasStarted: boolean
+  hasStarted: boolean,
+  isComplete = false
 ): LessonSessionState {
+  if (isComplete) {
+    return { completion: null, currentStepIndex, status: "complete" }
+  }
   return hasStarted
     ? createActiveLessonSession(currentStepIndex)
     : { startError: null, status: "not-started" }
@@ -106,138 +79,83 @@ export function transitionLessonSession(
   state: LessonSessionState,
   event: LessonSessionEvent
 ): LessonSessionState {
-  switch (state.status) {
-    case "not-started":
-      if (event.type === "START_REQUESTED") {
-        return { status: "starting" }
-      }
-      throw new LessonSessionTransitionError(state, event)
-
-    case "starting":
-      if (event.type === "START_SUCCEEDED") {
-        return createActiveLessonSession(event.currentStepIndex)
-      }
-      if (event.type === "START_FAILED") {
-        return { startError: event.message, status: "not-started" }
-      }
-      throw new LessonSessionTransitionError(state, event)
-
-    case "active":
-      return transitionActiveLessonSession(state, event)
-
-    case "complete":
-      throw new LessonSessionTransitionError(state, event)
+  if (state.status === "not-started") {
+    if (event.type === "START_REQUESTED") return { status: "starting" }
+    throw new LessonSessionTransitionError(state, event)
   }
-}
 
-function transitionActiveLessonSession(
-  state: Extract<LessonSessionState, { readonly status: "active" }>,
-  event: LessonSessionEvent
-): LessonSessionState {
-  if (event.type === "ANSWER_PAYLOAD_CHANGED") {
+  if (state.status === "starting") {
+    if (event.type === "START_SUCCEEDED") {
+      return createActiveLessonSession(event.currentStepIndex)
+    }
+    if (event.type === "START_FAILED") {
+      return { startError: event.message, status: "not-started" }
+    }
+    throw new LessonSessionTransitionError(state, event)
+  }
+
+  if (state.status === "complete") {
+    throw new LessonSessionTransitionError(state, event)
+  }
+
+  if (event.type === "ANSWER_PAYLOAD_CHANGED" && state.activity === "idle") {
     return {
       ...state,
       answerPayloads: {
         ...state.answerPayloads,
         [event.stepId]: event.payload,
       },
+      checked: false,
+      submitError: null,
     }
   }
 
-  if (event.type === "ANSWER_SAVE_REQUESTED") {
+  if (event.type === "SUBMIT_REQUESTED" && state.activity === "idle") {
+    return { ...state, activity: "submitting", submitError: null }
+  }
+
+  if (event.type === "SUBMIT_FAILED" && state.activity === "submitting") {
+    return { ...state, activity: "idle", submitError: event.message }
+  }
+
+  if (event.type === "STEP_RETRY" && state.activity === "submitting") {
     return {
       ...state,
-      answerSave: {
-        requestId: event.requestId,
-        status: "pending",
-        stepId: event.stepId,
-      },
+      activity: "idle",
+      checked: event.evaluation,
+      pendingTransition: null,
     }
+  }
+
+  if (event.type === "STEP_ACCEPTED") {
+    return {
+      ...state,
+      activity: "idle",
+      checked: event.transition.evaluation ?? false,
+      pendingTransition: event.transition,
+      submitError: null,
+    }
+  }
+
+  if (event.type === "RETRY_EDIT_REQUESTED" && state.checked !== false) {
+    return { ...state, checked: false, submitError: null }
   }
 
   if (
-    event.type === "ANSWER_SAVE_SUCCEEDED" ||
-    event.type === "ANSWER_SAVE_FAILED"
+    event.type === "ACCEPTED_CONTINUE_REQUESTED" &&
+    state.pendingTransition !== null
   ) {
-    if (
-      state.answerSave.status === "idle" ||
-      state.answerSave.requestId !== event.requestId
-    ) {
-      throw new LessonSessionTransitionError(state, event)
-    }
-
-    return {
-      ...state,
-      answerSave:
-        event.type === "ANSWER_SAVE_SUCCEEDED"
-          ? {
-              requestId: event.requestId,
-              status: "ok",
-              stepId: event.stepId,
-            }
-          : {
-              message: event.message,
-              requestId: event.requestId,
-              status: "error",
-              stepId: event.stepId,
-            },
-    }
-  }
-
-  if (state.activity === "idle") {
-    if (event.type === "CHECKED_CHANGED") {
-      return { ...state, checked: event.checked }
-    }
-    if (event.type === "PROGRESS_SAVE_REQUESTED") {
+    if (state.pendingTransition.status === "lesson_completed") {
       return {
-        ...state,
-        activity: "saving-progress",
-        completeError: null,
-      }
-    }
-    if (event.type === "COMPLETE_REQUESTED") {
-      return { ...state, activity: "completing", completeError: null }
-    }
-  }
-
-  if (state.activity === "saving-progress") {
-    if (event.type === "PROGRESS_SAVE_BLOCKED") {
-      return { ...state, activity: "idle" }
-    }
-    if (event.type === "PROGRESS_SAVE_SUCCEEDED") {
-      return {
-        ...state,
-        activity: "idle",
-        checked: false,
-        currentStepIndex: event.currentStepIndex,
-      }
-    }
-    if (event.type === "PROGRESS_SAVE_FAILED") {
-      return {
-        ...state,
-        activity: "idle",
-        completeError: event.message,
-      }
-    }
-  }
-
-  if (state.activity === "completing") {
-    if (event.type === "COMPLETE_BLOCKED") {
-      return { ...state, activity: "idle" }
-    }
-    if (event.type === "COMPLETE_SUCCEEDED") {
-      return {
+        completion: state.pendingTransition,
         currentStepIndex: state.currentStepIndex,
         status: "complete",
       }
     }
-    if (event.type === "COMPLETE_FAILED") {
-      return {
-        ...state,
-        activity: "idle",
-        completeError: event.message,
-      }
-    }
+
+    return createActiveLessonSession(
+      state.pendingTransition.learning.currentStepIndex
+    )
   }
 
   throw new LessonSessionTransitionError(state, event)
@@ -249,10 +167,10 @@ function createActiveLessonSession(
   return {
     activity: "idle",
     answerPayloads: {},
-    answerSave: { status: "idle" },
     checked: false,
-    completeError: null,
     currentStepIndex,
+    pendingTransition: null,
     status: "active",
+    submitError: null,
   }
 }

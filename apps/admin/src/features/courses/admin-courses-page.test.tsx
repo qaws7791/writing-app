@@ -176,7 +176,9 @@ function networkError() {
 function courseDetail(id: string): AdminCreatedCourse {
   return {
     category: "미분류",
+    curriculumVersionId: `${id}-v1`,
     description: "강의 설명",
+    editVersion: 0,
     id,
     revision: 1,
     status: "active",

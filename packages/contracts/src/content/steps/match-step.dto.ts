@@ -8,9 +8,11 @@ export const matchStepDtoSchema = lessonStepBaseSchema.extend({
   guide: z.string(),
   pairs: z
     .array(
-      z.object({
+      z.strictObject({
         left: z.string(),
+        leftId: z.string().optional(),
         right: z.string(),
+        rightId: z.string().optional(),
       })
     )
     .min(1),

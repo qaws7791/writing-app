@@ -1,102 +1,72 @@
 "use client"
 
-import type { CourseDetail } from "@/features/courses/course-types"
-import { getNextCourseLesson } from "@/features/lessons/lesson-next-course-lesson"
-import type { Lesson } from "@/features/lessons/lesson-types"
+import type {
+  CompleteLearnerStepResult,
+  LearnerLesson as Lesson,
+} from "@workspace/contracts/learning"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
+type LessonCompletionTransition = Extract<
+  CompleteLearnerStepResult,
+  { readonly status: "lesson_completed" }
+>
+
 export function LessonCompleteScreen({
-  courseDetail,
+  completion,
   lesson,
   onCourse,
   onNext,
 }: {
-  readonly courseDetail?: CourseDetail
+  readonly completion: LessonCompletionTransition | null
   readonly lesson: Lesson
   readonly onCourse: () => void
   readonly onNext: (nextLessonId: string) => void
 }) {
-  const points = lesson.summary
-  const nextLesson = getNextCourseLesson(courseDetail, lesson.id)
-  const totalLessons = courseDetail?.progress.totalLessons ?? 1
-  const completedLessons = Math.min(
-    totalLessons,
-    (courseDetail?.progress.completedLessons ?? 0) + 1
-  )
+  const nextLesson = completion?.courseLearning.nextLesson ?? null
 
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen w-full flex-col overflow-y-auto bg-background text-foreground">
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center text-center px-6 py-16 my-auto an-fi">
-        <div className="mb-4 text-display-lg" aria-hidden="true">
-          🙌
+        <div className="mb-6 text-6xl" aria-hidden>
+          🎉
         </div>
-        <h1 className="mb-3 text-display-md font-black">완료!</h1>
-        <p className="mb-10 text-body-lg font-bold">
-          오늘의 학습이 저장되었습니다.
+        <h1 className="mb-3 text-heading-lg font-black">레슨을 완료했어요!</h1>
+        <p className="mb-8 text-body-lg font-medium text-muted-foreground">
+          {lesson.title}
         </p>
-        {points.length > 0 ? (
-          <Surface
-            className="mb-6 w-full rounded-4xl text-left"
-            size="lg"
-            variant="panel"
-          >
-            <p className="mb-5 text-label-md font-black uppercase text-muted-foreground">
-              이번 레슨 핵심 요약
-            </p>
-            <ul className="space-y-4">
-              {points.map((point, index) => (
-                <li className="flex items-start gap-4" key={point}>
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-charcoal text-cream text-label-md font-black">
-                    {index + 1}
-                  </div>
-                  <p className="text-body-md font-medium">{point}</p>
+
+        {lesson.summary.length === 0 ? null : (
+          <Surface className="mb-8 w-full p-6 text-left">
+            <h2 className="mb-3 text-title-md font-bold">이번 레슨 요약</h2>
+            <ul className="space-y-2">
+              {lesson.summary.map((point) => (
+                <li className="font-medium" key={point}>
+                  · {point}
                 </li>
               ))}
             </ul>
           </Surface>
-        ) : null}
-        <Surface
-          className="mb-10 flex w-full flex-row items-center justify-around rounded-4xl text-center"
-          size="lg"
-          variant="panel"
-        >
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-label-md font-bold text-muted-foreground">
-              완료한 레슨
-            </span>
-            <span className="text-heading-lg font-black text-foreground">
-              +1
-            </span>
-          </div>
-          <div className="h-12 w-px rounded-full bg-border" />
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-label-md font-bold text-muted-foreground">
-              코스 진행률
-            </span>
-            <span className="text-heading-lg font-black text-foreground">
-              {completedLessons}/{totalLessons}
-            </span>
-          </div>
-        </Surface>
-        <div className="flex flex-col gap-3 w-full max-w-sm">
-          {nextLesson === null ? null : (
-            <Button
-              className="w-full"
-              onClick={() => onNext(nextLesson.id)}
-              size="extra"
-            >
-              다음 레슨 →
-            </Button>
-          )}
+        )}
+
+        <div className="flex w-full flex-col gap-3 sm:flex-row">
           <Button
-            className="w-full"
+            className="flex-1"
             onClick={onCourse}
-            size="extra"
+            size="lg"
             variant="secondary"
           >
             코스로 돌아가기
           </Button>
+          {nextLesson === null ? null : (
+            <Button
+              className="flex-1"
+              onClick={() => onNext(nextLesson.id)}
+              size="lg"
+            >
+              다음 레슨
+            </Button>
+          )}
         </div>
       </div>
     </div>

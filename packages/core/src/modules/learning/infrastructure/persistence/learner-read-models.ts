@@ -13,9 +13,13 @@ import {
 } from "#core/shared/kernel/status"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
+  courseCurriculumVersions,
+  courses,
+  courseUnitVersions,
   learnerActivityDays,
   learnerLessonProgress,
-  lessons,
+  lessonStepVersions,
+  lessonVersions,
 } from "@workspace/db/schema"
 
 export function createDrizzleProfileReader(
@@ -54,13 +58,29 @@ export function createDrizzleProgressReader(
         Promise.resolve(
           db
             .select({
-              currentStepIndex: learnerLessonProgress.currentStepIndex,
+              currentStepSortOrder: lessonStepVersions.sortOrder,
               lessonId: learnerLessonProgress.lessonId,
               status: learnerLessonProgress.status,
             })
             .from(learnerLessonProgress)
+            .innerJoin(
+              lessonStepVersions,
+              and(
+                eq(
+                  lessonStepVersions.curriculumVersionId,
+                  learnerLessonProgress.curriculumVersionId
+                ),
+                eq(lessonStepVersions.lessonId, learnerLessonProgress.lessonId),
+                eq(lessonStepVersions.id, learnerLessonProgress.currentStepId)
+              )
+            )
             .where(eq(learnerLessonProgress.userId, userId))
             .all()
+            .map((progress) => ({
+              currentStepIndex: progress.currentStepSortOrder - 1,
+              lessonId: progress.lessonId,
+              status: progress.status,
+            }))
         ),
         readActivity(db, userId),
       ])
@@ -97,8 +117,36 @@ function countActiveLessons(db: WritingAppDatabase): Promise<number> {
   return Promise.resolve(
     db
       .select({ value: count() })
-      .from(lessons)
-      .where(eq(lessons.status, contentStatuses.active))
+      .from(lessonVersions)
+      .innerJoin(
+        courses,
+        eq(
+          courses.publishedCurriculumVersionId,
+          lessonVersions.curriculumVersionId
+        )
+      )
+      .innerJoin(
+        courseCurriculumVersions,
+        eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
+      )
+      .innerJoin(
+        courseUnitVersions,
+        and(
+          eq(
+            courseUnitVersions.curriculumVersionId,
+            lessonVersions.curriculumVersionId
+          ),
+          eq(courseUnitVersions.id, lessonVersions.unitId)
+        )
+      )
+      .where(
+        and(
+          eq(courses.status, contentStatuses.active),
+          eq(courseCurriculumVersions.status, "published"),
+          eq(courseUnitVersions.status, contentStatuses.active),
+          eq(lessonVersions.status, contentStatuses.active)
+        )
+      )
       .get()?.value ?? 0
   )
 }

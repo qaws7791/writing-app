@@ -9,6 +9,7 @@ export type ApiHonoEnv = {
   Variables: {
     activeSession: AuthenticatedSession
     requestContext: ApiRequestContext
+    requestId: string
   }
 }
 

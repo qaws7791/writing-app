@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
 
 describe("기준 migration", () => {
   it("최종 자료실 트리·문서·자산·검색 schema를 한 번에 만든다", () => {
@@ -109,7 +110,368 @@ describe("기준 migration", () => {
       client.close()
     }
   })
+
+  it("기존 mutable 커리큘럼과 progress를 revision 1 published와 다음 draft로 변환한다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      createLegacyCurriculumFixture(client.sqlite, 0)
+
+      runBaselineMigration(client.sqlite)
+
+      expect(readColumnNames(client.sqlite, "courses")).toEqual([
+        "id",
+        "status",
+        "sort_order",
+        "published_curriculum_version_id",
+        "created_at",
+      ])
+      expect(
+        client.sqlite
+          .query<
+            {
+              readonly editVersion: number
+              readonly id: string
+              readonly revision: number
+              readonly status: string
+            },
+            []
+          >(`
+            SELECT id, revision, edit_version AS editVersion, status
+            FROM course_curriculum_versions
+            ORDER BY revision
+          `)
+          .all()
+      ).toEqual([
+        {
+          editVersion: 0,
+          id: "curriculum:course-1:1",
+          revision: 1,
+          status: "published",
+        },
+        {
+          editVersion: 0,
+          id: "curriculum:course-1:2",
+          revision: 2,
+          status: "draft",
+        },
+      ])
+      expect(
+        client.sqlite
+          .query<
+            {
+              readonly currentStepId: string
+              readonly curriculumVersionId: string
+            },
+            []
+          >(`
+            SELECT current_step_id AS currentStepId,
+                   curriculum_version_id AS curriculumVersionId
+            FROM learner_lesson_progress
+          `)
+          .get()
+      ).toEqual({
+        currentStepId: "step-1",
+        curriculumVersionId: "curriculum:course-1:1",
+      })
+      expect(
+        client.sqlite
+          .query<
+            {
+              readonly answerVersionId: string
+              readonly attemptVersionId: string
+            },
+            []
+          >(`
+            SELECT answers.curriculum_version_id AS answerVersionId,
+                   attempts.curriculum_version_id AS attemptVersionId
+            FROM learner_lesson_answers answers
+            JOIN ai_feedback_attempts attempts
+              ON attempts.user_id = answers.user_id
+          `)
+          .get()
+      ).toEqual({
+        answerVersionId: "curriculum:course-1:1",
+        attemptVersionId: "curriculum:course-1:1",
+      })
+      expect(
+        client.sqlite
+          .query<{ readonly table: string }, []>("PRAGMA foreign_key_check")
+          .all()
+      ).toEqual([])
+    } finally {
+      client.close()
+    }
+  })
+
+  it("범위를 벗어난 progress가 있으면 기존 schema를 유지하고 migration을 실패시킨다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      createLegacyCurriculumFixture(client.sqlite, 2)
+
+      expect(() => runBaselineMigration(client.sqlite)).toThrow(
+        "out-of-range currentStepIndex"
+      )
+      expect(readColumnNames(client.sqlite, "courses")).toContain(
+        "curriculum_revision"
+      )
+      expect(readObjectNames(client.sqlite)).not.toContain(
+        "course_curriculum_versions"
+      )
+    } finally {
+      client.close()
+    }
+  })
+
+  it("새 baseline과 기존 DB migration이 같은 커리큘럼 schema를 만든다", () => {
+    const baselineClient = createInMemoryWritingAppDatabase()
+    const migratedClient = createInMemoryWritingAppDatabase()
+
+    try {
+      runBaselineMigration(baselineClient.sqlite)
+      createLegacyCurriculumFixture(migratedClient.sqlite, 0)
+      runBaselineMigration(migratedClient.sqlite)
+
+      expect(readCurriculumSchema(migratedClient.sqlite)).toEqual(
+        readCurriculumSchema(baselineClient.sqlite)
+      )
+    } finally {
+      migratedClient.close()
+      baselineClient.close()
+    }
+  })
+
+  it("course당 draft 하나만 허용하고 published 콘텐츠 변경을 거부한다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      runBaselineMigration(client.sqlite)
+      seedVersionedCurriculum(client)
+
+      expect(() =>
+        client.sqlite
+          .query(`
+            INSERT INTO course_curriculum_versions (
+              id, course_id, revision, edit_version, status, title,
+              description, category, visual_key, created_at, updated_at, published_at
+            ) VALUES (
+              'curriculum:course-1:3', 'course-1', 3, 0, 'draft', '코스',
+              '설명', '기초', 'basic-sentence-writing', 0, 0, NULL
+            )
+          `)
+          .run()
+      ).toThrow(/UNIQUE constraint failed/)
+      expect(() =>
+        client.sqlite
+          .query(`
+            UPDATE lesson_step_versions
+            SET content_json = '{"body":"변경"}'
+            WHERE curriculum_version_id = 'curriculum:course-1:1'
+              AND id = 'step-1'
+          `)
+          .run()
+      ).toThrow("published curriculum content is immutable")
+    } finally {
+      client.close()
+    }
+  })
 })
+
+function createLegacyCurriculumFixture(
+  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"],
+  currentStepIndex: number
+): void {
+  sqlite.exec(`
+CREATE TABLE user (id TEXT PRIMARY KEY NOT NULL);
+INSERT INTO user (id) VALUES ('learner-1');
+
+CREATE TABLE courses (
+  id TEXT PRIMARY KEY NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  category TEXT NOT NULL,
+  visual_key TEXT NOT NULL,
+  status TEXT NOT NULL,
+  sort_order INTEGER NOT NULL,
+  curriculum_revision INTEGER NOT NULL
+);
+CREATE TABLE course_units (
+  id TEXT PRIMARY KEY NOT NULL,
+  course_id TEXT NOT NULL REFERENCES courses(id),
+  title TEXT NOT NULL,
+  sort_order INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+CREATE TABLE lessons (
+  id TEXT PRIMARY KEY NOT NULL,
+  course_id TEXT NOT NULL REFERENCES courses(id),
+  unit_id TEXT NOT NULL REFERENCES course_units(id),
+  title TEXT NOT NULL,
+  category TEXT,
+  description TEXT,
+  estimated_minutes INTEGER NOT NULL,
+  summary_json TEXT NOT NULL,
+  sort_order INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+CREATE TABLE lesson_steps (
+  id TEXT PRIMARY KEY NOT NULL,
+  lesson_id TEXT NOT NULL REFERENCES lessons(id),
+  type TEXT NOT NULL,
+  sort_order INTEGER NOT NULL,
+  content_json TEXT NOT NULL,
+  status TEXT NOT NULL
+);
+CREATE TABLE learner_lesson_progress (
+  user_id TEXT NOT NULL REFERENCES user(id),
+  lesson_id TEXT NOT NULL REFERENCES lessons(id),
+  current_step_index INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  started_at INTEGER NOT NULL,
+  completed_at INTEGER,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, lesson_id)
+);
+CREATE TABLE learner_lesson_answers (
+  user_id TEXT NOT NULL REFERENCES user(id),
+  lesson_id TEXT NOT NULL REFERENCES lessons(id),
+  step_id TEXT NOT NULL REFERENCES lesson_steps(id),
+  answer_json TEXT NOT NULL,
+  answered_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, step_id)
+);
+CREATE TABLE ai_feedback_attempts (
+  id TEXT PRIMARY KEY NOT NULL,
+  user_id TEXT NOT NULL REFERENCES user(id),
+  lesson_id TEXT NOT NULL REFERENCES lessons(id),
+  step_id TEXT NOT NULL REFERENCES lesson_steps(id),
+  attempt_number INTEGER NOT NULL,
+  idempotency_key TEXT NOT NULL,
+  status TEXT NOT NULL,
+  answer_text TEXT NOT NULL,
+  result_json TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+
+INSERT INTO courses VALUES (
+  'course-1', '코스', '설명', '기초', 'basic-sentence-writing', 'active', 1, 4
+);
+INSERT INTO course_units VALUES ('unit-1', 'course-1', '유닛', 1, 'active');
+INSERT INTO lessons VALUES (
+  'lesson-1', 'course-1', 'unit-1', '레슨', NULL, NULL, 5, '[]', 1, 'active'
+);
+INSERT INTO lesson_steps VALUES (
+  'step-1', 'lesson-1', 'WRITE', 1,
+  '{"type":"write","prompt":"쓰기","min":1}',
+  'active'
+);
+INSERT INTO lesson_steps VALUES (
+  'step-2', 'lesson-1', 'AI_FEEDBACK', 2,
+  '{"type":"ai_feedback","target":"step-1","focus":"명확성","feedback":"피드백","score":1,"scoreMax":5,"showScore":true,"allowRetry":true}',
+  'active'
+);
+INSERT INTO learner_lesson_progress VALUES (
+  'learner-1', 'lesson-1', ${currentStepIndex}, 'in_progress', 10, NULL, 20
+);
+INSERT INTO learner_lesson_answers VALUES (
+  'learner-1', 'lesson-1', 'step-1', '{"kind":"answer"}', 15, 15
+);
+INSERT INTO ai_feedback_attempts VALUES (
+  'attempt-1', 'learner-1', 'lesson-1', 'step-2', 1, 'key-1', 'succeeded',
+  '답안', NULL, 15, 15, 15
+);
+`)
+}
+
+function seedVersionedCurriculum(
+  client: ReturnType<typeof createInMemoryWritingAppDatabase>
+): void {
+  client.db.transaction((transaction) => {
+    upsertContentSeedRows(transaction, {
+      courses: [
+        {
+          category: "기초",
+          description: "설명",
+          id: "course-1",
+          sortOrder: 1,
+          status: "active",
+          title: "코스",
+          visualKey: "basic-sentence-writing",
+        },
+      ],
+      lessons: [
+        {
+          category: null,
+          courseId: "course-1",
+          description: null,
+          estimatedMinutes: 5,
+          id: "lesson-1",
+          sortOrder: 1,
+          status: "active",
+          summaryJson: "[]",
+          title: "레슨",
+          unitId: "unit-1",
+        },
+      ],
+      steps: [
+        {
+          contentJson: '{"body":"본문"}',
+          id: "step-1",
+          lessonId: "lesson-1",
+          sortOrder: 1,
+          status: "active",
+          type: "READING",
+        },
+      ],
+      units: [
+        {
+          courseId: "course-1",
+          id: "unit-1",
+          sortOrder: 1,
+          status: "active",
+          title: "유닛",
+        },
+      ],
+    })
+  })
+}
+
+function readCurriculumSchema(
+  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
+) {
+  const ownedNames = [
+    "ai_feedback_attempts",
+    "course_curriculum_versions",
+    "course_unit_versions",
+    "courses",
+    "learner_course_progress",
+    "learner_lesson_answers",
+    "learner_lesson_progress",
+    "lesson_step_versions",
+    "lesson_versions",
+  ] as const
+
+  return sqlite
+    .query<
+      {
+        readonly name: string
+        readonly sql: string | null
+        readonly type: string
+      },
+      [string, string, string, string, string, string, string, string, string]
+    >(`
+      SELECT name, type, sql
+      FROM sqlite_master
+      WHERE tbl_name IN (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        AND name NOT LIKE 'sqlite_%'
+      ORDER BY type, name
+    `)
+    .all(...ownedNames)
+}
 
 function readColumnNames(
   sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"],

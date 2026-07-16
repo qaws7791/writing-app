@@ -2,94 +2,59 @@ import { describe, expect, it } from "vitest"
 
 import {
   createLessonSessionState,
-  LessonSessionTransitionError,
   transitionLessonSession,
-  type LessonSessionEvent,
-  type LessonSessionState,
 } from "@/features/lessons/lesson-session-machine"
+import {
+  learnerCompleteStepResponseSchema,
+  stepEvaluationSchema,
+} from "@workspace/contracts/learning"
 
-describe("레슨 세션 상태 전이", () => {
-  it("시작 실패 후 같은 세션에서 다시 시작할 수 있다", () => {
-    const starting = transitionLessonSession(
-      createLessonSessionState(0, false),
-      { type: "START_REQUESTED" }
-    )
-    const failed = transitionLessonSession(starting, {
-      message: "시작 실패",
-      type: "START_FAILED",
+describe("lesson session machine", () => {
+  it("서버 retry 평가에서는 index를 유지한다", () => {
+    const active = createLessonSessionState(0, true)
+    const submitting = transitionLessonSession(active, {
+      type: "SUBMIT_REQUESTED",
+    })
+    const retry = transitionLessonSession(submitting, {
+      evaluation: stepEvaluationSchema.parse({
+        correct: false,
+        correctItemIds: ["option-2"],
+        explanation: "다시 시도하세요.",
+        items: [
+          { id: "option-1", verdict: "incorrect" },
+          { id: "option-2", verdict: "missed" },
+        ],
+        type: "MULTIPLE_CHOICE",
+      }),
+      type: "STEP_RETRY",
     })
 
-    expect(failed).toEqual({
-      startError: "시작 실패",
-      status: "not-started",
-    })
-    expect(
-      transitionLessonSession(failed, { type: "START_REQUESTED" })
-    ).toEqual({ status: "starting" })
+    expect(retry).toMatchObject({ currentStepIndex: 0, status: "active" })
   })
 
-  it.each<{
-    readonly event: LessonSessionEvent
-    readonly name: string
-    readonly state: LessonSessionState
-  }>([
-    {
-      event: { type: "START_REQUESTED" },
-      name: "중복 시작",
-      state: { status: "starting" },
-    },
-    {
-      event: { type: "PROGRESS_SAVE_REQUESTED" },
-      name: "중복 진행 저장",
-      state: {
-        ...activeState(),
-        activity: "saving-progress",
+  it("accepted 전이를 확인한 뒤 서버가 준 index로 이동한다", () => {
+    const transition = learnerCompleteStepResponseSchema.parse({
+      evaluation: null,
+      learning: {
+        completedSteps: 1,
+        currentStepId: "step-2",
+        currentStepIndex: 1,
+        progressPercent: 50,
+        status: "in_progress",
+        totalSteps: 2,
+        version: { curriculumVersionId: "version-1", revision: 1 },
       },
-    },
-    {
-      event: { type: "COMPLETE_REQUESTED" },
-      name: "중복 완료 저장",
-      state: {
-        ...activeState(),
-        activity: "completing",
-      },
-    },
-  ])("$name event를 명시적으로 거부한다", ({ event, state }) => {
-    expect(() => transitionLessonSession(state, event)).toThrow(
-      LessonSessionTransitionError
+      status: "advanced",
+    })
+    if (transition.status === "retry") throw new Error("advanced가 필요합니다.")
+    const accepted = transitionLessonSession(
+      createLessonSessionState(0, true),
+      { transition, type: "STEP_ACCEPTED" }
     )
-  })
-
-  it("진행 저장과 완료 전이를 순서대로 고정한다", () => {
-    const savingProgress = transitionLessonSession(activeState(), {
-      type: "PROGRESS_SAVE_REQUESTED",
-    })
-    const nextStep = transitionLessonSession(savingProgress, {
-      currentStepIndex: 1,
-      type: "PROGRESS_SAVE_SUCCEEDED",
-    })
-    const completing = transitionLessonSession(nextStep, {
-      type: "COMPLETE_REQUESTED",
-    })
-    const complete = transitionLessonSession(completing, {
-      type: "COMPLETE_SUCCEEDED",
+    const continued = transitionLessonSession(accepted, {
+      type: "ACCEPTED_CONTINUE_REQUESTED",
     })
 
-    expect(nextStep).toMatchObject({
-      activity: "idle",
-      currentStepIndex: 1,
-      status: "active",
-    })
-    expect(complete).toEqual({ currentStepIndex: 1, status: "complete" })
+    expect(continued).toMatchObject({ currentStepIndex: 1, status: "active" })
   })
 })
-
-function activeState(): Extract<
-  LessonSessionState,
-  { readonly status: "active" }
-> {
-  return createLessonSessionState(0, true) as Extract<
-    LessonSessionState,
-    { readonly status: "active" }
-  >
-}

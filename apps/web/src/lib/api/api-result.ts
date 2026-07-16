@@ -1,6 +1,4 @@
 import {
-  httpApiFailure,
-  httpApiOk,
   type HttpApiFailure,
   type HttpApiOk,
   type HttpApiResult,
@@ -13,11 +11,3 @@ export type ApiOk<TValue> = HttpApiOk<TValue>
 export type ApiFailure = HttpApiFailure<ApiError>
 
 export type ApiResult<TValue> = HttpApiResult<TValue, ApiError>
-
-export function apiOk<TValue>(value: TValue): ApiOk<TValue> {
-  return httpApiOk(value)
-}
-
-export function apiFailure(error: ApiError): ApiFailure {
-  return httpApiFailure(error)
-}

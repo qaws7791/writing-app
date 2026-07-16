@@ -15,6 +15,10 @@ import {
 import { createCorsMiddleware } from "@/middleware/cors.middleware"
 import { createRequestContextMiddleware } from "@/middleware/request-context.middleware"
 import { registerApiBootstrapRoutes, routes } from "@/routes"
+import {
+  createLearnerErrorHandler,
+  createLearnerErrorResponseMiddleware,
+} from "@/http/learner-error-response"
 
 export type { ApiDependencies, ApiRequestContext }
 export { createOpenApiDocument } from "@/http/openapi"
@@ -26,6 +30,8 @@ export function createApp(dependencies: ApiDependencies): OpenAPIHono {
     middleware: createMiddleware(dependencies),
     routes,
   })
+
+  app.onError(createLearnerErrorHandler(dependencies.errorLogger))
 
   registerApiBootstrapRoutes(app, dependencies)
 
@@ -39,24 +45,23 @@ function createMiddleware(
     createRequestContextMiddleware(dependencies),
   ]
 
-  if (dependencies.requestLogger !== undefined) {
-    middleware.push(
-      createRequestLoggingMiddleware({
-        createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
-        logRequest: dependencies.requestLogger,
-        logSecurityAudit: dependencies.securityAuditLogger,
-        readActor(context) {
-          const session = context.get("activeSession")
+  middleware.push(
+    createRequestLoggingMiddleware({
+      createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
+      logRequest: dependencies.requestLogger ?? ignoreRequestLog,
+      logSecurityAudit: dependencies.securityAuditLogger,
+      readActor(context) {
+        const session = context.get("activeSession")
 
-          return session === undefined
-            ? undefined
-            : { id: session.user.id, type: "learner" }
-        },
-        readMonotonicTimeMs:
-          dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
-      })
-    )
-  }
+        return session === undefined
+          ? undefined
+          : { id: session.user.id, type: "learner" }
+      },
+      readMonotonicTimeMs:
+        dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
+    }),
+    createLearnerErrorResponseMiddleware()
+  )
 
   const webOrigin =
     dependencies.webOrigin ?? localRuntimeDefaults.learnerWebOrigin
@@ -69,3 +74,5 @@ function createMiddleware(
 
   return middleware
 }
+
+function ignoreRequestLog(): void {}

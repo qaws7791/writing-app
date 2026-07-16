@@ -30,6 +30,8 @@ services:
 
   api:
     image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    environment:
+      DEPLOYMENT_VERSION: ${API_IMAGE:?API_IMAGE가 필요합니다}
     env_file:
       - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/api.env
     init: true

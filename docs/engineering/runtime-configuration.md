@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-07-16
+- 기준일: 2026-07-17
 - 기준 파일:
   - `package.json`
   - `scripts/setup.ts`
@@ -39,7 +39,7 @@
 1. `check:toolchain`으로 Bun exact version과 Node.js major를 확인한다.
 2. `bun install --frozen-lockfile`로 dependency를 설치한다.
 3. 네 앱의 `.env`가 없을 때만 대응하는 `.env.example`에서 생성한다.
-4. 새 학습자·관리자 API 환경 파일에 서로 다른 32-byte 난수 인증 비밀값을 넣는다.
+4. 새 학습자·관리자 API 환경 파일에 서로 다른 32-byte 난수 인증 비밀값을 넣고, 학습자 API에는 인증 비밀값과 다른 cursor 서명 비밀값을 넣는다.
 5. 새 어드민 API 환경 파일에 강한 난수 seed 비밀번호를 넣고 반복 setup이 기존 credential hash를 재설정하지 않도록 `ADMIN_SEED_RESET_PASSWORD=false`로 둔다.
 6. 기존 `dev:app:setup`, `dev:admin:setup`을 재사용해 migration과 seed를 실행한다.
 7. `bun run doctor`로 최종 상태를 검사한다.
@@ -66,6 +66,7 @@ doctor는 비밀값 원문을 출력하지 않는다. DB schema와 seed 내용�
 
 - `NODE_ENV`
 - `BETTER_AUTH_SECRET`
+- `CURSOR_SIGNING_SECRET`
 - `ADMIN_BETTER_AUTH_SECRET`
 - `BETTER_AUTH_URL`
 - `ADMIN_BETTER_AUTH_URL`
@@ -92,6 +93,7 @@ doctor는 비밀값 원문을 출력하지 않는다. DB schema와 seed 내용�
 | 인증 기준 URL | `BETTER_AUTH_URL`, `ADMIN_BETTER_AUTH_URL` | `https`이며 localhost 또는 loopback이 아님             |
 | 데이터베이스  | `DATABASE_URL`                             | 명시적으로 설정하며 in-memory DB가 아님                |
 | 학습자 비밀값 | `BETTER_AUTH_SECRET`                       | 32자 이상, placeholder가 아니며 충분한 엔트로피를 가짐 |
+| cursor 비밀값 | `CURSOR_SIGNING_SECRET`                    | 학습자 인증 비밀값과 다르고 동일한 강도 조건을 만족함  |
 | 관리자 비밀값 | `ADMIN_BETTER_AUTH_SECRET`                 | 학습자 비밀값과 다르고 동일한 강도 조건을 만족함       |
 | 테스트 인증   | `ENABLE_TEST_AUTH`                         | `false`                                                |
 
@@ -101,20 +103,24 @@ doctor는 비밀값 원문을 출력하지 않는다. DB schema와 seed 내용�
 
 파일: `apps/api/src/config/env.ts`
 
-| 변수                        | 필수       | 기본값                         | 설명                                       |
-| --------------------------- | ---------- | ------------------------------ | ------------------------------------------ |
-| `BETTER_AUTH_SECRET`        | 필수       | 없음                           | 학습자 Better Auth 비밀값                  |
-| `BETTER_AUTH_URL`           | 선택       | `http://localhost:${API_PORT}` | 학습자 API 인증 기준 URL                   |
-| `BETTER_AUTH_COOKIE_DOMAIN` | 선택       | 없음                           | cross-subdomain 쿠키 domain                |
-| `DATABASE_URL`              | 선택       | `data/api.sqlite`              | SQLite 경로                                |
-| `API_PORT`                  | 선택       | `4000`                         | API listen port                            |
-| `WEB_ORIGIN`                | 선택       | `http://localhost:3000`        | 학습자 웹 origin                           |
-| `CORS_ORIGIN`               | 선택 alias | 없음                           | 첫 origin을 `WEB_ORIGIN` fallback으로 사용 |
-| `GOOGLE_CLIENT_ID`          | 선택       | 없음                           | Google OAuth client id                     |
-| `GOOGLE_CLIENT_SECRET`      | 선택       | 없음                           | Google OAuth 비밀값                        |
-| `ENABLE_TEST_AUTH`          | 선택       | `false`                        | 로컬 자동화용 학습자 테스트 인증 활성화    |
-| `OPENAI_API_KEY`            | 선택       | 없음                           | OpenAI API key                             |
-| `OPENAI_MODEL`              | 선택       | `gpt-5.2`                      | AI 피드백 모델                             |
+| 변수                        | 필수       | 기본값                          | 설명                                       |
+| --------------------------- | ---------- | ------------------------------- | ------------------------------------------ |
+| `BETTER_AUTH_SECRET`        | 필수       | 없음                            | 학습자 Better Auth 비밀값                  |
+| `CURSOR_SIGNING_SECRET`     | 운영 필수  | 비운영: 인증 비밀값 기반 파생값 | cursor HMAC 서명과 presentation scope      |
+| `BETTER_AUTH_URL`           | 선택       | `http://localhost:${API_PORT}`  | 학습자 API 인증 기준 URL                   |
+| `BETTER_AUTH_COOKIE_DOMAIN` | 선택       | 없음                            | cross-subdomain 쿠키 domain                |
+| `DATABASE_URL`              | 선택       | `data/api.sqlite`               | SQLite 경로                                |
+| `API_PORT`                  | 선택       | `4000`                          | API listen port                            |
+| `WEB_ORIGIN`                | 선택       | `http://localhost:3000`         | 학습자 웹 origin                           |
+| `CORS_ORIGIN`               | 선택 alias | 없음                            | 첫 origin을 `WEB_ORIGIN` fallback으로 사용 |
+| `GOOGLE_CLIENT_ID`          | 선택       | 없음                            | Google OAuth client id                     |
+| `GOOGLE_CLIENT_SECRET`      | 선택       | 없음                            | Google OAuth 비밀값                        |
+| `ENABLE_TEST_AUTH`          | 선택       | `false`                         | 로컬 자동화용 학습자 테스트 인증 활성화    |
+| `OPENAI_API_KEY`            | 선택       | 없음                            | OpenAI API key                             |
+| `OPENAI_MODEL`              | 선택       | `gpt-5.2`                       | AI 피드백 모델                             |
+| `DEPLOYMENT_VERSION`        | 운영 필수  | 로컬 `local`                    | 계약 오류 로그의 배포 버전                 |
+
+`DEPLOYMENT_VERSION`과 `CURSOR_SIGNING_SECRET`은 production에서 누락되면 학습자 API 시작을 실패시킨다. cursor 비밀값은 `BETTER_AUTH_SECRET`과 같을 수 없으며 placeholder가 아닌 128bit 이상 entropy를 요구한다. Compose 배포는 immutable `API_IMAGE` 참조를 배포 버전으로 주입하고 cursor 비밀값은 보호된 `api.env`에서 전달한다.
 
 ## 학습자 웹 설정
 

@@ -134,6 +134,7 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       }),
       ...createCurriculumEditorRoutes({
         courseService: dependencies.adminServices.courses,
+        now,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createUsersRoutes({

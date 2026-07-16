@@ -17,7 +17,9 @@ import { adminRoles } from "@workspace/core/admin"
 
 const courseDetail: AdminCourseDetailDto = {
   category: "미분류",
+  curriculumVersionId: "cmock-v1",
   description: "강의 설명을 입력하세요.",
+  editVersion: 1,
   id: "cmock",
   revision: 1,
   status: "active",

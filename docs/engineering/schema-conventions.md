@@ -27,11 +27,13 @@
 
 예시는 다음과 같다.
 
-- `courses.visual_key`
-- `courses.curriculum_revision`
-- `course_units.sort_order`
-- `lessons.summary_json`
-- `lesson_steps.content_json`
+- `courses.published_curriculum_version_id`
+- `course_curriculum_versions.edit_version`
+- `course_unit_versions.sort_order`
+- `lesson_versions.summary_json`
+- `lesson_step_versions.content_json`
+- `learner_course_progress.curriculum_version_id`
+- `learner_lesson_progress.current_step_id`
 - `learner_lesson_answers.answer_json`
 - `ai_feedback_attempts.result_json`
 - `admin_settings.updated_at`
@@ -54,3 +56,5 @@ export const learnerLessonAnswers = sqliteTable("learner_lesson_answers", {
 - TypeScript 속성은 기존 Drizzle schema 관습처럼 camelCase로 작성한다.
 - repository test에서 새 컬럼의 read/write mapping을 검증한다.
 - 마이그레이션 SQL과 Drizzle schema의 SQL 이름이 일치하는지 확인한다.
+- version 범위 콘텐츠 FK는 `curriculum_version_id`와 논리 ID의 복합 키로 같은 version 안의 부모만 참조하게 한다.
+- published 콘텐츠 변경 금지와 course당 단일 draft처럼 DB에서 보장할 수 있는 불변조건은 trigger·partial unique index와 통합 테스트로 고정한다.

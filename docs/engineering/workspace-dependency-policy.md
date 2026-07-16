@@ -23,7 +23,6 @@
 
 - 제품 lint는 warning도 실패로 처리한다. 로컬 root `lint`와 CI가 모두 Oxlint `--deny-warnings`를 사용한다.
 - raw hex color baseline은 현재 검출값인 32다. 검출이 증가하면 실패하고, 감소해도 baseline을 같은 변경에서 낮추지 않으면 실패한다.
-- `apps/admin/src/features/step-debug`는 legacy debug fixture라 raw hex 검사에서 제외한다.
 - `apps/web/src/app/manifest.ts`는 CSS token을 참조할 수 없는 Web Manifest 정적 색상 필드만 포함하므로 제외한다.
 - 미정의 `--semantic-color-*` 호환 별칭 baseline은 0이다. 앱과 패키지는 `--bg-*`, `--fg-*`, `--action-*`, `--success-*`, `--danger-*`, `--info-*` 공식 의미 토큰을 직접 참조한다.
 - baseline이나 allowlist 변경에는 실제 검출 근거, owner, 제거 조건이 필요하다. 제품 소스 전체를 가리는 디렉터리 예외는 허용하지 않는다.

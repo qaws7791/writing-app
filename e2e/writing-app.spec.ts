@@ -7,7 +7,7 @@ const adminWebOrigin = "http://127.0.0.1:3101"
 const adminApiOrigin = "http://127.0.0.1:4101"
 const adminPassword = "e2e-password-123"
 
-test("학습자가 테스트 로그인 후 레슨을 완료하고 로그아웃한다", async ({
+test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완료한다", async ({
   page,
 }) => {
   const diagnostics = observeBrowserDiagnostics(page)
@@ -36,18 +36,58 @@ test("학습자가 테스트 로그인 후 레슨을 완료하고 로그아웃�
   await page.keyboard.press("Escape")
   await expect(accountMenuTrigger).toHaveAttribute("aria-expanded", "false")
 
-  await page.getByRole("link", { name: /글쓰기 첫걸음 30일/ }).click()
+  await page.getByRole("link", { name: /E2E 상태 전이 코스/ }).click()
   await page.waitForLoadState("networkidle")
-  await expect(
-    page.getByRole("heading", { name: "글쓰기 첫걸음 30일" })
-  ).toBeVisible()
   await page.getByRole("link", { name: "학습 시작하기" }).click()
   await page.waitForLoadState("networkidle")
   await page.getByRole("button", { name: "시작하기" }).click()
-  await expect(page.getByRole("button", { name: "이해했어요" })).toBeVisible()
-  await page.getByRole("button", { name: "이해했어요" }).click()
 
-  await expect(page.getByRole("heading", { name: "완료!" })).toBeVisible()
+  await page.getByRole("button", { name: "클라이언트가 채점한다" }).click()
+  await page.getByRole("button", { name: "확인하기" }).click()
+  await expect(page.getByText("다시 확인해보세요")).toBeVisible()
+  await page.getByRole("button", { name: "계속하기" }).click()
+  await page.getByRole("button", { name: "서버가 채점한다" }).click()
+  await page.getByRole("button", { name: "확인하기" }).click()
+  await expect(page.getByText("완벽해요!")).toBeVisible()
+  await page.getByRole("button", { name: "계속하기" }).click()
+
+  await page
+    .getByRole("textbox")
+    .fill("서버가 모든 학습 상태를 일관되게 계산합니다.")
+  await page.getByRole("button", { name: "확인하기" }).click()
+  await expect(page.getByText("완벽해요!")).toBeVisible()
+  await page.getByRole("button", { name: "계속하기" }).click()
+
+  await page.getByRole("button", { name: "AI 코칭 받기" }).click()
+  await expect(
+    page.getByText("서버 상태 전이의 장점을 잘 설명했습니다.")
+  ).toBeVisible()
+  await page.getByRole("button", { name: "다음으로 →", exact: true }).click()
+  await expect(
+    page.getByRole("heading", { name: "레슨을 완료했어요!" })
+  ).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "다음 레슨" })
+  ).not.toBeVisible()
+
+  const completedProgressResponse = await page.request.get(
+    `${learnerApiOrigin}/progress?status=completed`
+  )
+  expect(completedProgressResponse.status()).toBe(200)
+  const completedProgress = (await completedProgressResponse.json()) as {
+    readonly items: readonly {
+      readonly id: string
+      readonly learning: { readonly status: string }
+    }[]
+  }
+  expect(completedProgress.items).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "e2e-transition-course",
+        learning: expect.objectContaining({ status: "completed" }),
+      }),
+    ])
+  )
   expect(apiRequests.length).toBeGreaterThan(0)
   expect(googleRequests).toEqual([])
 
@@ -170,8 +210,8 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   await ownerPage.keyboard.press("Enter")
   await expect(ownerPage).toHaveURL(/\/resources\/[^/]+$/)
   await expect(
-    ownerPage.getByRole("heading", { name: "제목 없음" })
-  ).toBeVisible()
+    ownerPage.getByRole("textbox", { name: "문서 제목" })
+  ).toHaveValue("제목 없음")
   const emptyDocumentUrl = ownerPage.url()
   await ownerPage.locator('input[type="file"]').setInputFiles({
     buffer: Buffer.from("# 한글 제목\n\nE2E resource body", "utf8"),
@@ -180,23 +220,19 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   })
   await ownerPage.waitForURL((url) => url.href !== emptyDocumentUrl)
   await expect(
-    ownerPage.getByRole("heading", { name: "한글 제목" })
-  ).toBeVisible()
+    ownerPage.getByRole("textbox", { name: "문서 제목" })
+  ).toHaveValue("한글 제목")
   const resourceBody = ownerPage.getByLabel("자료 본문")
   await expect(resourceBody).toContainText("E2E resource body")
-  await expect(
-    ownerPage.getByRole("status", { name: "모든 변경 사항이 동기화됨" })
-  ).toBeVisible()
+  await expect(ownerPage.getByText("저장됨", { exact: true })).toBeVisible()
   await ownerPage.reload()
   await expect(ownerPage.getByLabel("자료 본문")).toContainText(
     "E2E resource body"
   )
-  await expect(
-    ownerPage.getByRole("status", { name: "모든 변경 사항이 동기화됨" })
-  ).toBeVisible()
+  await expect(ownerPage.getByText("저장됨", { exact: true })).toBeVisible()
   const [download] = await Promise.all([
     ownerPage.waitForEvent("download"),
-    ownerPage.getByRole("button", { name: "Markdown 내보내기" }).click(),
+    ownerPage.getByRole("button", { name: "내보내기", exact: true }).click(),
   ])
   expect(download.suggestedFilename()).toBe("한글 제목.md")
   const downloadPath = await download.path()

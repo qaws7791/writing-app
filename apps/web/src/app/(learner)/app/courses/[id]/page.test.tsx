@@ -4,22 +4,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import CourseDetailRoute, {
   generateMetadata,
 } from "@/app/(learner)/app/courses/[id]/page"
-import type { CourseDetail } from "@/features/courses/course-types"
+import { learnerCourseDetailSchema } from "@workspace/contracts/learning"
 import { networkApiError } from "@/lib/api/api-error"
-import { apiFailure, apiOk } from "@/lib/api/api-result"
+import {
+  httpApiFailure as apiFailure,
+  httpApiOk as apiOk,
+} from "@workspace/http-client"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {
-  completeLesson: vi.fn(),
-  createAiFeedback: vi.fn(),
+  completeStep: vi.fn(),
   getCourseDetail: vi.fn(),
+  getCourseCategories: vi.fn(),
   getLesson: vi.fn(),
   getProfile: vi.fn(),
   getProgress: vi.fn(),
   listCourses: vi.fn(),
-  saveLessonAnswer: vi.fn(),
-  saveLessonProgress: vi.fn(),
+  requestAiFeedback: vi.fn(),
+  startLesson: vi.fn(),
 }
 
 vi.mock("next/navigation", () => ({
@@ -42,31 +45,27 @@ vi.mock("@/lib/api/get-server-writing-app-api", () => ({
   getServerWritingAppApi: vi.fn(() => api),
 }))
 
-const course: CourseDetail = {
+const version = { curriculumVersionId: "c1-v1", revision: 1 }
+const course = learnerCourseDetailSchema.parse({
   category: "입문자를 위한 코스",
   description: "매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
   lessonCount: 1,
-  progress: {
+  contentStatus: "active",
+  learning: {
     completedLessons: 0,
-    lessons: [
-      {
-        currentStepIndex: null,
-        lessonId: "l1",
-        status: "available",
-      },
-    ],
     nextLesson: {
-      currentStepIndex: null,
+      currentStepId: "l1-s1",
+      currentStepIndex: 0,
       estimatedMinutes: 5,
       id: "l1",
-      status: "available",
       title: "좋은 문장이란 무엇인가",
     },
+    progressPercent: 0,
+    status: "not_started",
     totalLessons: 1,
+    version,
   },
-  progressPercent: 0,
-  status: "active",
   title: "글쓰기 첫걸음 30일",
   visualKey: "basic-sentence-writing",
   units: [
@@ -78,16 +77,18 @@ const course: CourseDetail = {
           description: "좋은 문장을 배웁니다.",
           estimatedMinutes: 5,
           id: "l1",
-          order: 1,
-          status: "active",
+          contentStatus: "active",
+          learning: { status: "not_started", totalSteps: 1, version },
+          sortOrder: 1,
           title: "좋은 문장이란 무엇인가",
         },
       ],
-      order: 1,
+      sortOrder: 1,
       title: "문장의 기본기",
     },
   ],
-}
+  version,
+})
 
 describe("코스 상세 route", () => {
   beforeEach(() => {

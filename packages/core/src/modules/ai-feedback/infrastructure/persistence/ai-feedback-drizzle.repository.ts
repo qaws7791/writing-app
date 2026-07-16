@@ -3,7 +3,11 @@ import { and, count, eq, inArray, lte } from "drizzle-orm"
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
 import { aiFeedbackPayloadSchema } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { aiFeedbackAttempts } from "@workspace/db/schema"
+import {
+  aiFeedbackAttempts,
+  learnerCourseProgress,
+  lessonStepVersions,
+} from "@workspace/db/schema"
 
 export function createDrizzleAiFeedbackRepository(
   db: WritingAppDatabase
@@ -12,8 +16,34 @@ export function createDrizzleAiFeedbackRepository(
     async reserveAttempt(input) {
       return db.transaction(
         (tx) => {
+          const curriculumScope = tx
+            .select({
+              courseId: learnerCourseProgress.courseId,
+              curriculumVersionId: learnerCourseProgress.curriculumVersionId,
+            })
+            .from(learnerCourseProgress)
+            .innerJoin(
+              lessonStepVersions,
+              and(
+                eq(
+                  lessonStepVersions.curriculumVersionId,
+                  learnerCourseProgress.curriculumVersionId
+                ),
+                eq(lessonStepVersions.lessonId, input.lessonId),
+                eq(lessonStepVersions.id, input.stepId)
+              )
+            )
+            .where(eq(learnerCourseProgress.userId, input.userId))
+            .get()
+          if (curriculumScope === undefined) {
+            throw new Error("Pinned AI feedback step was not found")
+          }
           const scope = and(
             eq(aiFeedbackAttempts.userId, input.userId),
+            eq(
+              aiFeedbackAttempts.curriculumVersionId,
+              curriculumScope.curriculumVersionId
+            ),
             eq(aiFeedbackAttempts.lessonId, input.lessonId),
             eq(aiFeedbackAttempts.stepId, input.stepId)
           )
@@ -38,6 +68,7 @@ export function createDrizzleAiFeedbackRepository(
 
           const existingAttempt = tx
             .select({
+              attemptId: aiFeedbackAttempts.id,
               attemptNumber: aiFeedbackAttempts.attemptNumber,
               resultJson: aiFeedbackAttempts.resultJson,
               status: aiFeedbackAttempts.status,
@@ -56,6 +87,7 @@ export function createDrizzleAiFeedbackRepository(
           if (existingAttempt?.status === "succeeded") {
             return {
               ...metadata,
+              attemptId: existingAttempt.attemptId,
               attemptNumber: existingAttempt.attemptNumber,
               kind: "already-succeeded",
               result: aiFeedbackPayloadSchema.parse(
@@ -115,7 +147,9 @@ export function createDrizzleAiFeedbackRepository(
             .values({
               answerText: input.answer,
               attemptNumber,
+              courseId: curriculumScope.courseId,
               createdAt: input.occurredAt,
+              curriculumVersionId: curriculumScope.curriculumVersionId,
               expiresAt: input.expiresAt,
               id: input.attemptId,
               idempotencyKey: input.idempotencyKey,

@@ -1,8 +1,10 @@
 import { existsSync, mkdirSync } from "node:fs"
 import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
+import { and, eq, sql } from "drizzle-orm"
 
-import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
+import { archiveContentRowsOutsideSeed } from "@workspace/db/content/content-archive-policy"
+import { createCurriculumVersionId } from "@workspace/db/content/curriculum-version-id"
 import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
@@ -17,18 +19,17 @@ import {
 } from "@workspace/db/destructive-operation-guard"
 import {
   authUsers,
+  courseCurriculumVersions,
   courses,
-  courseUnits,
+  courseUnitVersions,
   learnerProfiles,
-  lessons,
-  lessonSteps,
+  lessonStepVersions,
+  lessonVersions,
 } from "@workspace/db/schema"
 import {
   createDefaultContentSeedRows,
+  type ContentSeedRows,
   type CourseSeedRow,
-  type CourseUnitSeedRow,
-  type LessonSeedRow,
-  type LessonStepSeedRow,
 } from "@workspace/db/seeds/seed-content"
 import { persistedLearnerAccountStatuses } from "@workspace/db/persisted-values"
 
@@ -147,24 +148,38 @@ function shouldRecreateLegacyDatabase(
     return false
   }
 
-  const requiredTables = [
+  const courseColumns = readTableColumns(client, "courses")
+  const hasSharedTables = [
     "user",
-    "course_units",
     "learner_profiles",
     "learner_lesson_progress",
     "learner_lesson_answers",
-  ]
+  ].every((tableName) => tableNames.has(tableName))
+  const hasVersionedSchema = [
+    "course_curriculum_versions",
+    "course_unit_versions",
+    "lesson_versions",
+    "lesson_step_versions",
+    "learner_course_progress",
+  ].every((tableName) => tableNames.has(tableName))
+  const hasMigratableLegacySchema = [
+    "course_units",
+    "lessons",
+    "lesson_steps",
+  ].every((tableName) => tableNames.has(tableName))
 
-  if (requiredTables.some((tableName) => !tableNames.has(tableName))) {
-    return true
+  if (!hasSharedTables) return true
+  if (
+    hasVersionedSchema &&
+    courseColumns.includes("published_curriculum_version_id")
+  ) {
+    return false
   }
 
-  const courseColumns = readTableColumns(client, "courses")
-
-  return (
-    courseColumns.length > 0 &&
-    (!courseColumns.includes("category") ||
-      !courseColumns.includes("curriculum_revision"))
+  return !(
+    hasMigratableLegacySchema &&
+    courseColumns.includes("category") &&
+    courseColumns.includes("curriculum_revision")
   )
 }
 
@@ -268,105 +283,213 @@ async function upsertContentRows(
   const rows = await createDefaultContentSeedRows()
 
   client.db.transaction((transaction) => {
-    archiveContentRowsOutsideSeed(transaction, rows)
-    upsertCourses(transaction, rows.courses)
-    upsertCourseUnits(transaction, rows.units)
-    upsertLessons(transaction, rows.lessons)
-    upsertLessonSteps(transaction, rows.steps)
+    upsertContentSeedRows(transaction, rows)
   })
 }
 
-function upsertCourses(
+export function upsertContentSeedRows(
   transaction: WritingAppDatabaseTransaction,
-  rows: readonly CourseSeedRow[]
+  rows: ContentSeedRows
 ): void {
-  for (const row of rows) {
+  archiveContentRowsOutsideSeed(transaction, rows)
+
+  for (const course of rows.courses) {
+    const existingCourse = transaction
+      .select({ id: courses.id })
+      .from(courses)
+      .where(eq(courses.id, course.id))
+      .get()
+
+    if (existingCourse === undefined) {
+      insertSeedCourse(transaction, rows, course)
+    } else {
+      replaceSeedDraft(transaction, rows, course)
+    }
+  }
+}
+
+function insertSeedCourse(
+  transaction: WritingAppDatabaseTransaction,
+  rows: ContentSeedRows,
+  course: CourseSeedRow
+): void {
+  const createdAt = new Date("2026-06-14T00:00:00.000Z")
+  const publishedVersionId = createCurriculumVersionId(course.id, 1)
+  const draftVersionId = createCurriculumVersionId(course.id, 2)
+
+  transaction
+    .insert(courses)
+    .values({
+      createdAt,
+      id: course.id,
+      publishedCurriculumVersionId: null,
+      sortOrder: course.sortOrder,
+      status: course.status,
+    })
+    .run()
+  insertCurriculumVersion(transaction, course, {
+    createdAt,
+    id: publishedVersionId,
+    revision: 1,
+  })
+  insertVersionContent(transaction, rows, course.id, publishedVersionId)
+  transaction
+    .update(courseCurriculumVersions)
+    .set({ publishedAt: createdAt, status: "published", updatedAt: createdAt })
+    .where(eq(courseCurriculumVersions.id, publishedVersionId))
+    .run()
+  transaction
+    .update(courses)
+    .set({ publishedCurriculumVersionId: publishedVersionId })
+    .where(eq(courses.id, course.id))
+    .run()
+
+  insertCurriculumVersion(transaction, course, {
+    createdAt,
+    id: draftVersionId,
+    revision: 2,
+  })
+  insertVersionContent(transaction, rows, course.id, draftVersionId)
+}
+
+function replaceSeedDraft(
+  transaction: WritingAppDatabaseTransaction,
+  rows: ContentSeedRows,
+  course: CourseSeedRow
+): void {
+  transaction
+    .update(courses)
+    .set({ sortOrder: course.sortOrder, status: course.status })
+    .where(eq(courses.id, course.id))
+    .run()
+
+  const existingDraft = transaction
+    .select()
+    .from(courseCurriculumVersions)
+    .where(
+      and(
+        eq(courseCurriculumVersions.courseId, course.id),
+        eq(courseCurriculumVersions.status, "draft")
+      )
+    )
+    .get()
+  const now = new Date("2026-06-14T00:00:00.000Z")
+
+  if (existingDraft === undefined) {
+    const nextRevision =
+      transaction
+        .select({
+          value: sql<number>`COALESCE(MAX(${courseCurriculumVersions.revision}), 0) + 1`,
+        })
+        .from(courseCurriculumVersions)
+        .where(eq(courseCurriculumVersions.courseId, course.id))
+        .get()?.value ?? 1
+    const draftVersionId = createCurriculumVersionId(course.id, nextRevision)
+    insertCurriculumVersion(transaction, course, {
+      createdAt: now,
+      id: draftVersionId,
+      revision: nextRevision,
+    })
+    insertVersionContent(transaction, rows, course.id, draftVersionId)
+    return
+  }
+
+  deleteVersionContent(transaction, existingDraft.id)
+  transaction
+    .update(courseCurriculumVersions)
+    .set({
+      category: course.category,
+      description: course.description,
+      editVersion: existingDraft.editVersion + 1,
+      title: course.title,
+      updatedAt: now,
+      visualKey: course.visualKey,
+    })
+    .where(eq(courseCurriculumVersions.id, existingDraft.id))
+    .run()
+  insertVersionContent(transaction, rows, course.id, existingDraft.id)
+}
+
+function insertCurriculumVersion(
+  transaction: WritingAppDatabaseTransaction,
+  course: CourseSeedRow,
+  input: {
+    readonly createdAt: Date
+    readonly id: string
+    readonly revision: number
+  }
+): void {
+  transaction
+    .insert(courseCurriculumVersions)
+    .values({
+      category: course.category,
+      courseId: course.id,
+      createdAt: input.createdAt,
+      description: course.description,
+      editVersion: 0,
+      id: input.id,
+      publishedAt: null,
+      revision: input.revision,
+      status: "draft",
+      title: course.title,
+      updatedAt: input.createdAt,
+      visualKey: course.visualKey,
+    })
+    .run()
+}
+
+function insertVersionContent(
+  transaction: WritingAppDatabaseTransaction,
+  rows: ContentSeedRows,
+  courseId: string,
+  curriculumVersionId: string
+): void {
+  const units = rows.units.filter((unit) => unit.courseId === courseId)
+  const lessons = rows.lessons.filter((lesson) => lesson.courseId === courseId)
+  const lessonIds = new Set(lessons.map((lesson) => lesson.id))
+  const steps = rows.steps.filter((step) => lessonIds.has(step.lessonId))
+
+  if (units.length > 0) {
     transaction
-      .insert(courses)
-      .values(row)
-      .onConflictDoUpdate({
-        set: {
-          category: row.category,
-          curriculumRevision: row.curriculumRevision,
-          description: row.description,
-          sortOrder: row.sortOrder,
-          status: row.status,
-          title: row.title,
-          visualKey: row.visualKey,
-        },
-        target: courses.id,
-      })
+      .insert(courseUnitVersions)
+      .values(units.map((unit) => ({ ...unit, curriculumVersionId })))
+      .run()
+  }
+  if (lessons.length > 0) {
+    transaction
+      .insert(lessonVersions)
+      .values(
+        lessons.map(({ courseId: _courseId, ...lesson }) => ({
+          ...lesson,
+          curriculumVersionId,
+        }))
+      )
+      .run()
+  }
+  if (steps.length > 0) {
+    transaction
+      .insert(lessonStepVersions)
+      .values(steps.map((step) => ({ ...step, curriculumVersionId })))
       .run()
   }
 }
 
-function upsertCourseUnits(
+function deleteVersionContent(
   transaction: WritingAppDatabaseTransaction,
-  rows: readonly CourseUnitSeedRow[]
+  curriculumVersionId: string
 ): void {
-  for (const row of rows) {
-    transaction
-      .insert(courseUnits)
-      .values(row)
-      .onConflictDoUpdate({
-        set: {
-          courseId: row.courseId,
-          sortOrder: row.sortOrder,
-          status: row.status,
-          title: row.title,
-        },
-        target: courseUnits.id,
-      })
-      .run()
-  }
-}
-
-function upsertLessons(
-  transaction: WritingAppDatabaseTransaction,
-  rows: readonly LessonSeedRow[]
-): void {
-  for (const row of rows) {
-    transaction
-      .insert(lessons)
-      .values(row)
-      .onConflictDoUpdate({
-        set: {
-          category: row.category,
-          courseId: row.courseId,
-          description: row.description,
-          estimatedMinutes: row.estimatedMinutes,
-          sortOrder: row.sortOrder,
-          status: row.status,
-          summaryJson: row.summaryJson,
-          title: row.title,
-          unitId: row.unitId,
-        },
-        target: lessons.id,
-      })
-      .run()
-  }
-}
-
-function upsertLessonSteps(
-  transaction: WritingAppDatabaseTransaction,
-  rows: readonly LessonStepSeedRow[]
-): void {
-  for (const row of rows) {
-    transaction
-      .insert(lessonSteps)
-      .values(row)
-      .onConflictDoUpdate({
-        set: {
-          contentJson: row.contentJson,
-          lessonId: row.lessonId,
-          sortOrder: row.sortOrder,
-          status: row.status,
-          type: row.type,
-        },
-        target: lessonSteps.id,
-      })
-      .run()
-  }
+  transaction
+    .delete(lessonStepVersions)
+    .where(eq(lessonStepVersions.curriculumVersionId, curriculumVersionId))
+    .run()
+  transaction
+    .delete(lessonVersions)
+    .where(eq(lessonVersions.curriculumVersionId, curriculumVersionId))
+    .run()
+  transaction
+    .delete(courseUnitVersions)
+    .where(eq(courseUnitVersions.curriculumVersionId, curriculumVersionId))
+    .run()
 }
 
 if (import.meta.main) {

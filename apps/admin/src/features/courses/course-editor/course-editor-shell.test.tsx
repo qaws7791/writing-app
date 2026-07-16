@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { adminCourseEditorSchema } from "@/features/courses/admin-courses-api"
 
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
@@ -8,7 +8,9 @@ import type { AdminCourseDetail } from "@/features/courses/admin-courses-api"
 
 const course: AdminCourseDetail = adminCourseEditorSchema.parse({
   category: "입문자를 위한 코스",
+  curriculumVersionId: "c1-v3",
   description: "글쓰기 입문 과정",
+  editVersion: 2,
   id: "c1",
   revision: 3,
   status: "active",
@@ -44,9 +46,17 @@ describe("CourseEditorShell", () => {
       <CourseEditorShell
         course={course}
         loadLatestCourse={async () => ({ status: "ok", value: course })}
+        publishCourse={async () => ({
+          status: "ok",
+          value: {
+            curriculumVersionId: course.curriculumVersionId,
+            publishedAt: "2026-07-17T00:00:00.000Z",
+            revision: course.revision,
+          },
+        })}
         saveCourse={async (draft) => ({
           status: "ok",
-          value: { ...draft, revision: draft.revision + 1 },
+          value: { ...draft, editVersion: draft.editVersion + 1 },
         })}
       />
     )
@@ -57,6 +67,7 @@ describe("CourseEditorShell", () => {
     expect(screen.getByRole("link", { name: "콘텐츠 관리" })).toBeVisible()
     expect(screen.getByRole("button", { name: "강의 정보" })).toBeVisible()
     expect(screen.getByRole("button", { name: "커리큘럼" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "초안 발행" })).toBeVisible()
     expect(screen.getByLabelText("제목")).toHaveValue("글쓰기 첫걸음 30일")
 
     await user.click(screen.getByRole("button", { name: "커리큘럼" }))
@@ -65,5 +76,43 @@ describe("CourseEditorShell", () => {
     expect(screen.getByText("UNIT 1")).toBeVisible()
     expect(screen.getByDisplayValue("1주차")).toBeVisible()
     expect(screen.getByDisplayValue("첫 레슨")).toBeVisible()
+  })
+
+  it("저장된 draft를 확인 뒤 발행하고 다음 draft를 다시 읽는다", async () => {
+    const user = userEvent.setup()
+    const nextDraft = {
+      ...course,
+      curriculumVersionId: "c1-v4",
+      editVersion: 0,
+      revision: 4,
+    }
+    const publishCourse = vi.fn(async () => ({
+      status: "ok" as const,
+      value: {
+        curriculumVersionId: course.curriculumVersionId,
+        publishedAt: "2026-07-17T00:00:00.000Z",
+        revision: course.revision,
+      },
+    }))
+    const loadLatestCourse = vi.fn(async () => ({
+      status: "ok" as const,
+      value: nextDraft,
+    }))
+    vi.spyOn(window, "confirm").mockReturnValue(true)
+
+    render(
+      <CourseEditorShell
+        course={course}
+        loadLatestCourse={loadLatestCourse}
+        publishCourse={publishCourse}
+        saveCourse={async (draft) => ({ status: "ok", value: draft })}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "초안 발행" }))
+
+    expect(publishCourse).toHaveBeenCalledWith(course)
+    expect(loadLatestCourse).toHaveBeenCalledWith(course.id)
+    expect(await screen.findByText("리비전 3을 발행했습니다.")).toBeVisible()
   })
 })

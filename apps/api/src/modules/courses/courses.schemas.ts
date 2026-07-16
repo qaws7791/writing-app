@@ -1,12 +1,7 @@
-import {
-  courseDetailDtoSchema,
-  courseIdSchema,
-  courseListDtoSchema,
-} from "@workspace/contracts/content"
-import { z } from "@workspace/hono/zod"
-
-export const courseParamsSchema = z.object({
-  courseId: courseIdSchema,
-})
-
-export { courseDetailDtoSchema, courseListDtoSchema }
+export {
+  learnerCourseCategoriesResponseSchema as courseCategoriesSchema,
+  learnerCourseDetailResponseSchema as courseDetailDtoSchema,
+  learnerCourseListResponseSchema as courseListDtoSchema,
+  learnerCourseParamsSchema as courseParamsSchema,
+  learnerCourseQuerySchema as courseQuerySchema,
+} from "@workspace/contracts/learning"

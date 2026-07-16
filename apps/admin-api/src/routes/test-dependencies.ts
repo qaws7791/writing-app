@@ -177,6 +177,9 @@ function createFailingAdminApiServices(): AdminApiServices {
       async getCourses() {
         throwUnexpectedAdminServiceCall("courses.getCourses")
       },
+      async publishCourse() {
+        throwUnexpectedAdminServiceCall("courses.publishCourse")
+      },
       async saveCourseEditor() {
         throwUnexpectedAdminServiceCall("courses.saveCourseEditor")
       },

@@ -4,7 +4,10 @@ import { createAdminHttpTransport } from "@/lib/api/admin-http-transport"
 import { createAdminSessionApi } from "@/features/auth/admin-session-api"
 import { createAdminAnalyticsApi } from "@/features/analytics/admin-analytics-api"
 import { createAdminAiChatApi } from "@/features/chat/admin-ai-chat-api"
-import { createAdminCoursesApi } from "@/features/courses/admin-courses-api"
+import {
+  adminCourseEditorSchema,
+  createAdminCoursesApi,
+} from "@/features/courses/admin-courses-api"
 import { createAdminDashboardApi } from "@/features/dashboard/admin-dashboard-api"
 import { createAdminSettingsApi } from "@/features/settings/admin-settings-api"
 import { createAdminUsersApi } from "@/features/users/admin-users-api"
@@ -97,6 +100,15 @@ describe("관리자 feature HTTP Adapter 계약", () => {
       value: {
         id: "new-course",
       },
+    })
+    const editor = adminCourseEditorSchema.parse(courseDetail("c1"))
+    await expect(api.saveCourseEditor("c1", editor)).resolves.toEqual({
+      status: "ok",
+      value: editor,
+    })
+    await expect(api.publishCourse("c1", editor)).resolves.toMatchObject({
+      status: "ok",
+      value: { revision: 1 },
     })
     await expect(api.archiveCourse("c1")).resolves.toEqual({
       status: "ok",
@@ -223,6 +235,8 @@ describe("관리자 feature HTTP Adapter 계약", () => {
         "https://admin-api.example.test/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4&page=2&pageSize=10&query=%EA%B8%80%EC%93%B0%EA%B8%B0&status=active",
       ],
       ["POST", "https://admin-api.example.test/courses"],
+      ["PUT", "https://admin-api.example.test/courses/c1/editor"],
+      ["POST", "https://admin-api.example.test/courses/c1/publish"],
       ["DELETE", "https://admin-api.example.test/courses/c1"],
       [
         "GET",
@@ -246,7 +260,10 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     )
     expect(requests[0]?.headers.has("Authorization")).toBe(false)
     expect(requests[0]?.credentials).toBe("include")
+    expect(requests[3]?.headers.get("If-Match")).toBe('"0"')
+    expect(requests[4]?.headers.get("If-Match")).toBe('"0"')
     expect(bodies).toEqual([
+      courseDetail("c1"),
       {
         status: "suspended",
       },
@@ -448,6 +465,21 @@ function responseFor(request: Request): unknown {
     return courseDetail("new-course")
   }
 
+  if (request.method === "PUT" && request.url.endsWith("/courses/c1/editor")) {
+    return courseDetail("c1")
+  }
+
+  if (
+    request.method === "POST" &&
+    request.url.endsWith("/courses/c1/publish")
+  ) {
+    return {
+      curriculumVersionId: "c1-v1",
+      publishedAt: "2026-07-17T00:00:00.000Z",
+      revision: 1,
+    }
+  }
+
   if (request.method === "DELETE" && request.url.endsWith("/courses/c1")) {
     return {
       archived: true,
@@ -598,7 +630,9 @@ function settings(
 function courseDetail(id: string) {
   return {
     category: "미분류",
+    curriculumVersionId: `${id}-v1`,
     description: "강의 설명",
+    editVersion: 0,
     id,
     revision: 1,
     status: "active",

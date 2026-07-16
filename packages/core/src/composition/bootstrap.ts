@@ -2,8 +2,8 @@ import OpenAI from "openai"
 
 import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import {
-  createAiFeedbackService,
-  type AiFeedbackService,
+  createLearnerAiFeedbackTransitionService,
+  type LearnerAiFeedbackTransitionService,
 } from "#core/modules/ai-feedback/application/use-cases/ai-feedback.service"
 import {
   createOpenAiFeedbackProvider,
@@ -12,24 +12,23 @@ import {
 } from "#core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
 import { createDrizzleAiFeedbackRepository } from "#core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
 import type { AiFeedbackAttemptTransitionEvent } from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
+import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
 import {
   createLearnerContentService,
   type LearnerContentService,
 } from "#core/modules/content/application/use-cases/learner-content.service"
-import { createDrizzleContentRepository } from "#core/modules/content/infrastructure/persistence/content-drizzle.repository"
-import {
-  createLearningService,
-  type LearningService,
-} from "#core/modules/learning/application/use-cases/learning.service"
 import {
   createProgressService,
   type ProgressService,
 } from "#core/modules/learning/application/use-cases/learner-progress.service"
+import { createLearnerCursorCodec } from "#core/modules/learning/application/learner-cursor"
+import { createDrizzleLearnerReadModelRepository } from "#core/modules/learning/infrastructure/persistence/learner-read-model-drizzle.repository"
+import { createDrizzleProfileReader } from "#core/modules/learning/infrastructure/persistence/learner-read-models"
+import { createDrizzleLearnerTransitionRepository } from "#core/modules/learning/infrastructure/persistence/learner-transition-drizzle.repository"
 import {
-  createDrizzleProfileReader,
-  createDrizzleProgressReader,
-} from "#core/modules/learning/infrastructure/persistence/learner-read-models"
-import { createDrizzleLearningRepository } from "#core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
+  createLearnerTransitionService,
+  type LearnerTransitionService,
+} from "#core/modules/learning/application/use-cases/learner-transition.service"
 import { type ProfileReader } from "#core/modules/learning/domain/learner-profile-read-model"
 import { type SessionResolver } from "#core/modules/auth/domain/learner-session"
 import {
@@ -40,9 +39,11 @@ import { createDrizzleLearnerProfileRepository } from "#core/modules/auth/infras
 import { createWritingAppDatabase } from "@workspace/db"
 
 export type CreateLearnerApiCoreInput = {
+  readonly aiFeedbackProvider?: AiFeedbackProvider
   readonly authBaseUrl: string
   readonly betterAuthSecret: string
   readonly cookieDomain?: string
+  readonly cursorSigningSecret: string
   readonly databaseUrl?: string
   readonly googleClientId?: string
   readonly googleClientSecret?: string
@@ -57,11 +58,11 @@ export type CreateLearnerApiCoreInput = {
 }
 
 export type LearnerApiCore = {
-  readonly aiFeedbackService: AiFeedbackService
   readonly authHandler: (request: Request) => Promise<Response>
   readonly close: () => void
   readonly contentService: LearnerContentService
-  readonly learningService: LearningService
+  readonly learnerAiFeedbackService: LearnerAiFeedbackTransitionService
+  readonly learnerTransitionService: LearnerTransitionService
   readonly profileReader: ProfileReader
   readonly progressService: ProgressService
   readonly sessionResolver: SessionResolver
@@ -71,10 +72,15 @@ export function createLearnerApiCore(
   input: CreateLearnerApiCoreInput
 ): LearnerApiCore {
   const database = createWritingAppDatabase(input.databaseUrl)
-  const contentRepository = createDrizzleContentRepository(database.db)
   const feedbackRepository = createDrizzleAiFeedbackRepository(database.db)
-  const learningRepository = createDrizzleLearningRepository(database.db)
-  const progressReader = createDrizzleProgressReader(database.db)
+  const learnerTransitionRepository = createDrizzleLearnerTransitionRepository(
+    database.db
+  )
+  const cursorCodec = createLearnerCursorCodec(input.cursorSigningSecret)
+  const readModelRepository = createDrizzleLearnerReadModelRepository(
+    database.db,
+    { presentationSecret: input.cursorSigningSecret }
+  )
   const learnerProfileRepository = createDrizzleLearnerProfileRepository(
     database.db
   )
@@ -90,7 +96,8 @@ export function createLearnerApiCore(
     webOrigin: input.webOrigin,
   })
   const provider =
-    input.openAiApiKey === undefined
+    input.aiFeedbackProvider ??
+    (input.openAiApiKey === undefined
       ? createUnavailableAiFeedbackProvider()
       : createOpenAiFeedbackProvider({
           client: new OpenAI({
@@ -98,33 +105,31 @@ export function createLearnerApiCore(
           }),
           model: input.openAiModel,
           onUsage: input.onOpenAiUsage,
-        })
+        }))
 
   return {
-    aiFeedbackService: createAiFeedbackService({
-      attemptPolicy: defaultAiFeedbackAttemptPolicy,
-      contentRepository,
-      feedbackRepository,
-      learningRepository,
-      onAttemptTransition: input.onAiFeedbackAttemptTransition,
-      provider,
-    }),
     authHandler: auth.handler,
     close() {
       database.close()
     },
     contentService: createLearnerContentService({
-      contentRepository,
-      progressReader,
+      cursorCodec,
+      readModelRepository,
     }),
-    learningService: createLearningService({
-      contentRepository,
-      learningRepository,
+    learnerAiFeedbackService: createLearnerAiFeedbackTransitionService({
+      attemptPolicy: defaultAiFeedbackAttemptPolicy,
+      feedbackRepository,
+      learnerTransitionRepository,
+      onAttemptTransition: input.onAiFeedbackAttemptTransition,
+      provider,
     }),
+    learnerTransitionService: createLearnerTransitionService(
+      learnerTransitionRepository
+    ),
     profileReader: createDrizzleProfileReader(database.db),
     progressService: createProgressService({
-      contentRepository,
-      progressReader,
+      cursorCodec,
+      readModelRepository,
     }),
     sessionResolver: createLearnerSessionResolver(
       auth,

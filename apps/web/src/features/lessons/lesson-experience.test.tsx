@@ -1,993 +1,180 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import type { ComponentProps } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-import type { CourseDetail } from "@/features/courses/course-types"
-import { LessonExperience as LessonExperienceView } from "@/features/lessons/lesson-experience"
-import type { Lesson } from "@/features/lessons/lesson-types"
-import { networkApiError, type ApiError } from "@/lib/api/api-error"
-import { apiFailure, apiOk } from "@/lib/api/api-result"
-import type { ApiResult } from "@/lib/api/api-result"
-import type {
-  CompleteLessonResult,
-  SaveLessonAnswerResult,
-  WritingAppApi,
-} from "@/lib/api/writing-app-api-port"
-import { createHttpNetworkError } from "@workspace/http-client"
-
-function LessonExperience(
-  props: Omit<ComponentProps<typeof LessonExperienceView>, "learnerId">
-) {
-  return <LessonExperienceView learnerId="learner-test" {...props} />
-}
-
-const push = vi.fn()
+import { LessonExperience } from "@/features/lessons/lesson-experience"
+import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
+import {
+  learnerCompleteStepResponseSchema,
+  learnerLessonResponseSchema,
+  learnerStartLessonResponseSchema,
+} from "@workspace/contracts/learning"
+import { httpApiOk as apiOk } from "@workspace/http-client"
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push,
-  }),
+  useRouter: () => ({ push: vi.fn() }),
 }))
 
-const lesson: Lesson = {
-  category: "문장의 기본기",
-  courseId: "c1",
-  description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
+const lesson = learnerLessonResponseSchema.parse({
+  category: "기초",
+  courseId: "course-1",
+  description: "설명",
   estimatedMinutes: 5,
-  id: "l1",
+  id: "lesson-1",
+  learning: {
+    status: "not_started",
+    totalSteps: 2,
+    version: { curriculumVersionId: "version-1", revision: 1 },
+  },
   steps: [
     {
-      body: "좋은 문장은 독자가 바로 이해할 수 있는 문장입니다.",
-      guide: "핵심 문장을 천천히 읽어보세요.",
-      id: "s1",
-      order: 1,
-      title: "좋은 문장이란 무엇인가",
+      id: "step-1",
+      options: [
+        { id: "option-1", text: "오답" },
+        { id: "option-2", text: "정답" },
+      ],
+      question: "정답을 고르세요",
+      sortOrder: 1,
+      type: "MULTIPLE_CHOICE",
+    },
+    {
+      body: "본문",
+      guide: "가이드",
+      id: "step-2",
+      sortOrder: 2,
+      title: "읽기",
       type: "READING",
     },
-    {
-      guide: "한 문장으로 정리해 보세요.",
-      id: "s2",
-      min: 10,
-      order: 2,
-      title: "내 문장으로 정리하기",
-      type: "WRITE",
-    },
   ],
-  summary: ["읽기", "쓰기"],
-  title: "좋은 문장이란 무엇인가",
-  unitId: "u1",
-}
+  summary: [],
+  title: "테스트 레슨",
+  unitId: "unit-1",
+  version: { curriculumVersionId: "version-1", revision: 1 },
+})
 
-const courseDetail: CourseDetail = {
-  category: "입문자를 위한 코스",
-  description: "문장의 기본부터 한 문단을 완성하기까지.",
-  id: "c1",
-  lessonCount: 2,
-  progress: {
-    completedLessons: 0,
-    lessons: [
-      {
-        currentStepIndex: null,
-        lessonId: "l1",
-        status: "available",
-      },
-      {
-        currentStepIndex: null,
-        lessonId: "l2",
-        status: "locked",
-      },
-    ],
-    nextLesson: {
-      currentStepIndex: null,
-      estimatedMinutes: 5,
-      id: "l1",
-      status: "available",
-      title: "좋은 문장이란 무엇인가",
-    },
-    totalLessons: 2,
-  },
+const started = learnerStartLessonResponseSchema.parse({
+  completedSteps: 0,
+  currentStepId: "step-1",
+  currentStepIndex: 0,
   progressPercent: 0,
-  status: "active",
-  title: "글쓰기 첫걸음 30일",
-  visualKey: "basic-sentence-writing",
-  units: [
-    {
-      id: "u1",
-      lessons: [
-        {
-          category: "문장의 기본기",
-          description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
-          estimatedMinutes: 5,
-          id: "l1",
-          order: 1,
-          status: "active",
-          title: "좋은 문장이란 무엇인가",
-        },
-        {
-          category: "문장의 기본기",
-          description: "주제문과 뒷받침 문장으로 단단한 문단을 만듭니다.",
-          estimatedMinutes: 8,
-          id: "l2",
-          order: 2,
-          status: "active",
-          title: "한 문단의 구조",
-        },
-      ],
-      order: 1,
-      title: "문장의 기본기",
-    },
-  ],
-}
+  status: "in_progress",
+  totalSteps: 2,
+  version: { curriculumVersionId: "version-1", revision: 1 },
+})
 
-describe("레슨 경험", () => {
-  it("처음 들어온 레슨의 시작 정보를 보여주고 시작 저장 후 첫 스텝으로 진입한다", async () => {
-    const user = userEvent.setup()
-    const api = createApi({
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
-    })
+describe("LessonExperience", () => {
+  it("고정 curriculum version으로 레슨을 시작한다", async () => {
+    const api = createApi()
+    render(<LessonExperience api={api} learnerId="learner-1" lesson={lesson} />)
 
-    render(<LessonExperience api={api} lesson={lesson} />)
+    await userEvent.click(screen.getByRole("button", { name: /시작/ }))
 
-    expect(
-      screen.getByRole("heading", { name: "좋은 문장이란 무엇인가" })
-    ).toBeInTheDocument()
-    expect(screen.getByText("문장의 기본기")).toBeInTheDocument()
-    expect(
-      screen.getByText("명료하고 군더더기 없는 문장을 살펴봅니다.")
-    ).toBeInTheDocument()
-    expect(screen.getByText("⏱ 5분")).toBeInTheDocument()
-    expect(screen.getByText("📚 2개 스텝")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "나가기" })).toBeEnabled()
-    const startContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
-
-    expect(startContent).toBeInTheDocument()
-    expect(
-      screen.getByRole("contentinfo", { name: "레슨 행동" })
-    ).toBeInTheDocument()
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-
-    expect(api.saveLessonAnswer).toHaveBeenCalledWith({
-      answer: { kind: "lesson-started" },
-      lessonId: "l1",
-      stepId: "s1",
-    })
-    expect(
-      screen.getByRole("heading", { name: "좋은 문장이란 무엇인가" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText("핵심 문장을 천천히 읽어보세요.")
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText("좋은 문장은 독자가 바로 이해할 수 있는 문장입니다.")
-    ).toBeInTheDocument()
-    expect(screen.getByText("1/2")).toBeInTheDocument()
-    const stepContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
-
-    expect(stepContent).toBeInTheDocument()
-    expect(
-      screen.getByRole("progressbar", { name: "레슨 진행률" })
-    ).toHaveAttribute("aria-valuenow", "50")
-    expect(screen.getByRole("button", { name: "이해했어요" })).toBeEnabled()
-  })
-
-  it("진행 중 나가기를 누르면 확인 dialog를 보여주고 계속 학습 또는 나가기를 선택할 수 있다", async () => {
-    const user = userEvent.setup()
-    const api = createApi({
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
-    })
-
-    render(<LessonExperience api={api} lesson={lesson} />)
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-    await user.click(screen.getByRole("button", { name: "나가기" }))
-
-    expect(
-      screen.getByRole("alertdialog", { name: "학습을 중단할까요?" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText("진행 상황은 자동으로 저장되어 있어요.")
-    ).toBeInTheDocument()
-
-    await user.click(screen.getByRole("button", { name: "계속 학습" }))
-
-    expect(
-      screen.queryByRole("alertdialog", { name: "학습을 중단할까요?" })
-    ).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole("button", { name: "나가기" }))
-    await user.click(
-      within(screen.getByRole("alertdialog")).getByRole("button", {
-        name: "나가기",
+    await waitFor(() => {
+      expect(api.startLesson).toHaveBeenCalledWith({
+        expectedCurriculumVersionId: "version-1",
+        lessonId: "lesson-1",
       })
-    )
-
-    expect(push).toHaveBeenCalledWith("/app/courses/c1")
+    })
+    expect(await screen.findByText("정답을 고르세요")).toBeInTheDocument()
   })
 
-  it("시작 저장이 실패하면 한국어 오류를 보여주고 시작 화면에 머문다", async () => {
-    const user = userEvent.setup()
-    const api = createApi({
-      saveLessonAnswer: vi.fn(async () =>
-        apiFailure(networkError("네트워크 연결을 확인해 주세요."))
-      ),
+  it("서버 retry 평가를 표시하고 현재 step에 머문다", async () => {
+    const retry = learnerCompleteStepResponseSchema.parse({
+      evaluation: {
+        correct: false,
+        correctItemIds: ["option-2"],
+        explanation: "다시 생각해 보세요.",
+        items: [
+          { id: "option-1", verdict: "incorrect" },
+          { id: "option-2", verdict: "missed" },
+        ],
+        type: "MULTIPLE_CHOICE",
+      },
+      learning: started,
+      status: "retry",
     })
-
-    render(<LessonExperience api={api} lesson={lesson} />)
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-
-    expect(
-      screen.getByText("레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요.")
-    ).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "시작하기" })).toBeEnabled()
-  })
-
-  it("저장된 진행 단계가 있으면 시작 화면 없이 해당 스텝으로 재개한다", () => {
     const api = createApi({
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+      completeStep: vi.fn(async () => apiOk(retry)),
     })
-
     render(
       <LessonExperience
         api={api}
-        initialProgress={{ currentStepIndex: 1 }}
-        lesson={lesson}
+        learnerId="learner-1"
+        lesson={{ ...lesson, learning: started }}
       />
     )
 
-    expect(
-      screen.queryByRole("button", { name: "시작하기" })
-    ).not.toBeInTheDocument()
-    expect(
-      screen.getByRole("heading", { name: "내 문장으로 정리하기" })
-    ).toBeInTheDocument()
-    expect(screen.getByText("2/2")).toBeInTheDocument()
-    expect(
-      screen.getByRole("progressbar", { name: "레슨 진행률" })
-    ).toHaveAttribute("aria-valuenow", "100")
+    await userEvent.click(screen.getByRole("button", { name: "오답" }))
+    await userEvent.click(screen.getByRole("button", { name: "확인하기" }))
+
+    expect(await screen.findByText("다시 확인해보세요")).toBeInTheDocument()
+    expect(screen.getByText("정답을 고르세요")).toBeInTheDocument()
+    expect(api.completeStep).toHaveBeenCalledWith({
+      lessonId: "lesson-1",
+      request: {
+        answer: { selectedOptionId: "option-1", type: "MULTIPLE_CHOICE" },
+        kind: "answer",
+      },
+      stepId: "step-1",
+    })
   })
 
-  it("첫 스텝 답변 변경 후 확인 버튼 클릭 시 saveLessonAnswer를 호출한다", async () => {
-    const user = userEvent.setup()
-    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
-    const api = createApi({ saveLessonAnswer })
-    const answerableLesson: Lesson = {
-      ...lesson,
-      id: "l-answer",
-      steps: [
-        {
-          correct: "clear",
-          explanation: "구체적인 문장이 더 잘 읽힙니다.",
-          id: "mc-answer",
-          options: [
-            { id: "vague", text: "좋은 글을 씁니다." },
-            { id: "clear", text: "독자가 바로 이해하는 문장을 씁니다." },
-          ],
-          order: 1,
-          question: "더 좋은 문장은 무엇인가요?",
-          type: "MULTIPLE_CHOICE",
-        },
-      ],
-    }
-
-    render(<LessonExperience api={api} lesson={answerableLesson} />)
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-    await waitFor(() => expect(saveLessonAnswer).toHaveBeenCalledTimes(1))
-    saveLessonAnswer.mockClear()
-    await user.click(
-      screen.getByRole("button", {
-        name: "독자가 바로 이해하는 문장을 씁니다.",
-      })
-    )
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-
-    await waitFor(() =>
-      expect(saveLessonAnswer).toHaveBeenCalledWith({
-        answer: {
-          selectedOptionId: "clear",
-          type: "MULTIPLE_CHOICE",
-        },
-        lessonId: "l-answer",
-        stepId: "mc-answer",
-      })
-    )
-  })
-
-  it.skip("늦게 실패한 이전 답변 저장은 최신 성공 상태를 덮어쓰지 않는다", async () => {
-    const user = userEvent.setup()
-    const firstSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
-    const secondSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
-    const saveLessonAnswer = vi
-      .fn()
-      .mockReturnValueOnce(firstSave.promise)
-      .mockReturnValueOnce(secondSave.promise)
-    const api = createApi({ saveLessonAnswer })
-    const answerableLesson = createSingleChoiceLesson()
-
+  it("서버 advanced 결과를 확인한 뒤 다음 step으로 이동한다", async () => {
+    const advanced = learnerCompleteStepResponseSchema.parse({
+      evaluation: {
+        correct: true,
+        correctItemIds: ["option-2"],
+        explanation: "정확합니다.",
+        items: [
+          { id: "option-1", verdict: "correct" },
+          { id: "option-2", verdict: "correct" },
+        ],
+        type: "MULTIPLE_CHOICE",
+      },
+      learning: {
+        ...started,
+        completedSteps: 1,
+        currentStepId: "step-2",
+        currentStepIndex: 1,
+        progressPercent: 50,
+      },
+      status: "advanced",
+    })
+    const api = createApi({
+      completeStep: vi.fn(async () => apiOk(advanced)),
+    })
     render(
       <LessonExperience
         api={api}
-        initialProgress={{ currentStepIndex: 0 }}
-        lesson={answerableLesson}
+        learnerId="learner-1"
+        lesson={{ ...lesson, learning: started }}
       />
     )
 
-    await user.click(screen.getByRole("button", { name: "좋은 글을 씁니다." }))
-    await user.click(
-      screen.getByRole("button", {
-        name: "독자가 바로 이해하는 문장을 씁니다.",
-      })
-    )
-
-    await waitFor(() => expect(saveLessonAnswer).toHaveBeenCalledTimes(2))
-    secondSave.resolve(apiOk({ saved: true }))
-    await waitFor(() =>
-      expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
-    )
-
-    firstSave.resolve(apiFailure(networkError("첫 요청 실패")))
-
-    await waitFor(() =>
-      expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
-    )
-  })
-
-  it("현재 스텝 답변 저장에 실패하면 다음 스텝으로 진행하지 않는다", async () => {
-    const user = userEvent.setup()
-    const answerSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
-    const api = createApi({
-      saveLessonAnswer: vi.fn(() => answerSave.promise),
-    })
-    const answerableLesson: Lesson = {
-      ...createSingleChoiceLesson(),
-      steps: [
-        ...createSingleChoiceLesson().steps,
-        {
-          body: "다음 스텝입니다.",
-          guide: "읽고 넘어가세요.",
-          id: "reading-after-choice",
-          order: 2,
-          title: "다음 읽기",
-          type: "READING",
-        },
-      ],
-    }
-
-    render(
-      <LessonExperience
-        api={api}
-        initialProgress={{ currentStepIndex: 0 }}
-        lesson={answerableLesson}
-      />
-    )
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "독자가 바로 이해하는 문장을 씁니다.",
-      })
-    )
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-    await user.click(screen.getByRole("button", { name: "계속하기" }))
-
-    expect(
-      screen.queryByRole("heading", { name: "다음 읽기" })
-    ).not.toBeInTheDocument()
-
-    answerSave.resolve(apiFailure(networkError("이전 스텝 저장 실패")))
-
-    await waitFor(() =>
-      expect(screen.getByText(LESSON_ANSWER_ERROR)).toBeInTheDocument()
-    )
-    expect(
-      screen.getByRole("heading", { name: "더 좋은 문장은 무엇인가요?" })
-    ).toBeInTheDocument()
-  })
-
-  it("마지막 스텝 완료는 최신 답변 저장이 끝난 뒤 저장한다", async () => {
-    const user = userEvent.setup()
-    const answerSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
-    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
-    const api = createApi({
-      completeLesson,
-      saveLessonAnswer: vi.fn(() => answerSave.promise),
-    })
-
-    render(
-      <LessonExperience
-        api={api}
-        initialProgress={{ currentStepIndex: 0 }}
-        lesson={createSingleChoiceLesson()}
-      />
-    )
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "독자가 바로 이해하는 문장을 씁니다.",
-      })
-    )
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-    await user.click(screen.getByRole("button", { name: "계속하기" }))
-
-    expect(completeLesson).not.toHaveBeenCalled()
-
-    answerSave.resolve(apiOk({ saved: true }))
-
-    await waitFor(() =>
-      expect(completeLesson).toHaveBeenCalledWith({
-        lessonId: "l-answer",
-      })
-    )
-  })
-
-  it("최신 답변 저장이 실패하면 레슨 완료를 저장하지 않는다", async () => {
-    const user = userEvent.setup()
-    const answerSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
-    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
-    const api = createApi({
-      completeLesson,
-      saveLessonAnswer: vi.fn(() => answerSave.promise),
-    })
-
-    render(
-      <LessonExperience
-        api={api}
-        initialProgress={{ currentStepIndex: 0 }}
-        lesson={createSingleChoiceLesson()}
-      />
-    )
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "독자가 바로 이해하는 문장을 씁니다.",
-      })
-    )
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-    await user.click(screen.getByRole("button", { name: "계속하기" }))
-
-    answerSave.resolve(apiFailure(networkError("최신 답변 저장 실패")))
-
-    await waitFor(() =>
-      expect(screen.getByText(LESSON_ANSWER_ERROR)).toBeInTheDocument()
-    )
-    expect(completeLesson).not.toHaveBeenCalled()
-  })
-
-  it("완료 버튼을 빠르게 여러 번 눌러도 완료 저장은 한 번만 호출한다", async () => {
-    const user = userEvent.setup()
-    const completeSave = createDeferred<ApiResult<CompleteLessonResult>>()
-    const completeLesson = vi.fn(() => completeSave.promise)
-    const api = createApi({
-      completeLesson,
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
-    })
-    const readingOnlyLesson: Lesson = {
-      ...lesson,
-      id: "l-reading-only",
-      steps: [
-        {
-          body: "좋은 문장은 독자가 바로 이해할 수 있는 문장입니다.",
-          guide: "핵심 문장을 천천히 읽어보세요.",
-          id: "reading-only-step",
-          order: 1,
-          title: "좋은 문장이란 무엇인가",
-          type: "READING",
-        },
-      ],
-    }
-
-    render(
-      <LessonExperience
-        api={api}
-        initialProgress={{ currentStepIndex: 0 }}
-        lesson={readingOnlyLesson}
-      />
-    )
-
-    await user.dblClick(screen.getByRole("button", { name: "이해했어요" }))
-
-    expect(completeLesson).toHaveBeenCalledTimes(1)
-  })
-
-  it("스텝을 이동하고 마지막 스텝에서 레슨 완료를 저장한다", async () => {
-    const user = userEvent.setup()
-    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
-    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
-    const api = createApi({ completeLesson, saveLessonAnswer })
-
-    render(
-      <LessonExperience api={api} courseDetail={courseDetail} lesson={lesson} />
-    )
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-    await user.click(screen.getByRole("button", { name: "이해했어요" }))
-
-    expect(screen.getByText("2/2")).toBeInTheDocument()
-    expect(
-      screen.getByRole("heading", { name: "내 문장으로 정리하기" })
-    ).toBeInTheDocument()
-
-    await user.type(
-      screen.getByPlaceholderText("여기에 작성하세요..."),
-      "좋은 문장은 바로 이해됩니다."
-    )
-    await user.click(screen.getByRole("button", { name: "다음으로 →" }))
-
-    await waitFor(() =>
-      expect(saveLessonAnswer).toHaveBeenLastCalledWith({
-        answer: {
-          text: "좋은 문장은 바로 이해됩니다.",
-          type: "WRITE",
-        },
-        lessonId: "l1",
-        stepId: "s2",
-      })
-    )
-
-    expect(completeLesson).toHaveBeenCalledWith({
-      lessonId: "l1",
-    })
-    expect(
-      await screen.findByRole("heading", { name: "완료!" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText("오늘의 학습이 저장되었습니다.")
-    ).toBeInTheDocument()
-    expect(screen.getByText("이번 레슨 핵심 요약")).toBeInTheDocument()
-    expect(screen.getByText("읽기")).toBeInTheDocument()
-    expect(screen.getByText("쓰기")).toBeInTheDocument()
-    expect(screen.getByText("+1")).toBeInTheDocument()
-    expect(screen.getByText("1/2")).toBeInTheDocument()
-
-    await user.click(screen.getByRole("button", { name: "다음 레슨 →" }))
-    expect(push).toHaveBeenLastCalledWith("/app/lesson?lesson_id=l2")
-
-    await user.click(screen.getByRole("button", { name: "코스로 돌아가기" }))
-    expect(push).toHaveBeenLastCalledWith("/app/courses/c1")
-  })
-
-  it("다음 레슨으로 soft navigation하면 완료 화면이 아니라 시작 화면을 연다", async () => {
-    const user = userEvent.setup()
-    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
-    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
-    const api = createApi({ completeLesson, saveLessonAnswer })
-    const nextLesson: Lesson = {
-      category: "문장의 기본기",
-      courseId: "c1",
-      description: "주제문과 뒷받침 문장으로 단단한 문단을 만듭니다.",
-      estimatedMinutes: 8,
-      id: "l2",
-      steps: [
-        {
-          body: "한 문단은 주제문과 뒷받침으로 구성됩니다.",
-          guide: "핵심 구조를 읽어보세요.",
-          id: "l2-s1",
-          order: 1,
-          title: "한 문단의 구조",
-          type: "READING",
-        },
-      ],
-      summary: ["문단"],
-      title: "한 문단의 구조",
-      unitId: "u1",
-    }
-
-    const { rerender } = render(
-      <LessonExperience api={api} courseDetail={courseDetail} lesson={lesson} />
-    )
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-    await user.click(screen.getByRole("button", { name: "이해했어요" }))
-    await user.type(
-      screen.getByPlaceholderText("여기에 작성하세요..."),
-      "좋은 문장은 바로 이해됩니다."
-    )
-    await user.click(screen.getByRole("button", { name: "다음으로 →" }))
-
-    expect(
-      await screen.findByRole("heading", { name: "완료!" })
-    ).toBeInTheDocument()
-
-    await user.click(screen.getByRole("button", { name: "다음 레슨 →" }))
-    expect(push).toHaveBeenLastCalledWith("/app/lesson?lesson_id=l2")
-
-    rerender(
-      <LessonExperience
-        api={api}
-        courseDetail={courseDetail}
-        lesson={nextLesson}
-      />
-    )
-
-    expect(
-      screen.getByRole("heading", { name: "한 문단의 구조" })
-    ).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "시작하기" })).toBeInTheDocument()
-    expect(
-      screen.queryByRole("heading", { name: "완료!" })
-    ).not.toBeInTheDocument()
-  })
-
-  it("매칭과 분류가 현재 제품 확인 흐름으로 다음 스텝을 연다", async () => {
-    const user = userEvent.setup()
-    const api = createApi({
-      completeLesson: vi.fn(async () => apiOk({ saved: true })),
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
-    })
-    const newActivityLesson = {
-      ...lesson,
-      category: "기능 소개",
-      description:
-        "매칭·분류·계획·교정·자가 점검 다섯 가지 활동을 차례로 체험해보세요.",
-      estimatedMinutes: 10,
-      id: "l-new",
-      steps: [
-        {
-          explanation: "접속사는 문장 사이의 논리 관계를 신호로 보여줍니다.",
-          guide: "왼쪽 접속사와 오른쪽 기능을 짝지어 보세요.",
-          id: "match-step",
-          order: 1,
-          pairs: [
-            { left: "그러나", right: "역접" },
-            { left: "따라서", right: "인과" },
-          ],
-          title: "접속사와 기능 짝짓기",
-          type: "MATCH",
-        },
-        {
-          categories: [{ id: "A", label: "주제문" }],
-          explanation:
-            "단락은 주제문 1개, 뒷받침 1~2개, 구체 예시로 구성하면 단단해집니다.",
-          guide: "각 문장이 단락에서 어떤 역할을 하는지 분류하세요.",
-          id: "categorize-step",
-          items: [
-            {
-              categoryId: "A",
-              id: "i1",
-              text: "꾸준한 글쓰기는 사고를 정돈한다.",
-            },
-          ],
-          order: 2,
-          title: "문장 분류하기",
-          type: "CATEGORIZE",
-        },
-        {
-          goal: 80,
-          guide:
-            '"최근 새롭게 도전한 일"에 대해 짧은 글을 쓰려 합니다. 본격 쓰기 전에 재료를 모아보세요.',
-          id: "write-step",
-          min: 20,
-          order: 3,
-          structure:
-            "- **독자**: 이 글을 읽을 대상은 누구인가요?\n- **목적**: 이 글의 목적은 무엇인가요?",
-          title: "쓰기 전 5분 계획",
-          type: "WRITE",
-        },
-      ],
-      summary: ["매칭", "분류", "쓰기"],
-      title: "새 학습 활동 둘러보기",
-    } as Lesson
-
-    render(<LessonExperience api={api} lesson={newActivityLesson} />)
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-
-    expect(screen.getByRole("button", { name: "확인하기" })).toBeDisabled()
-    await user.click(screen.getByRole("button", { name: "그러나" }))
-    await user.click(screen.getByRole("button", { name: "역접" }))
-    await user.click(screen.getByRole("button", { name: "따라서" }))
-    await user.click(screen.getByRole("button", { name: "인과" }))
-
-    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-
-    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
-    expect(
-      screen.getAllByText("접속사는 문장 사이의 논리 관계를 신호로 보여줍니다.")
-    ).toHaveLength(2)
-
-    await user.click(screen.getByRole("button", { name: "계속하기" }))
-
-    expect(screen.getByText("태그 선택")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "확인하기" })).toBeDisabled()
-
-    await user.click(screen.getByRole("button", { name: "주제문" }))
-    await user.click(screen.getByText("꾸준한 글쓰기는 사고를 정돈한다."))
-
-    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-
-    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
-    expect(
-      screen.getAllByText(
-        "단락은 주제문 1개, 뒷받침 1~2개, 구체 예시로 구성하면 단단해집니다."
-      )
-    ).toHaveLength(2)
-
-    await user.click(screen.getByRole("button", { name: "계속하기" }))
-
-    expect(screen.getByText("구조 가이드")).toBeInTheDocument()
-  })
-
-  it("읽기 후 객관식을 현재 제품 확인 footer로 채점한다", async () => {
-    const user = userEvent.setup()
-    const api = createApi({
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
-    })
-    const multipleChoiceLesson: Lesson = {
-      ...lesson,
-      description: "주제문과 뒷받침 문장으로 단단한 문단을 만드는 법.",
-      estimatedMinutes: 8,
-      id: "l2",
-      steps: [
-        {
-          body: "문단은 보통 주제문, 뒷받침 문장, 마무리 문장으로 이루어집니다.",
-          guide: "문단의 세 요소를 읽고 각각의 역할이 무엇인지 파악하세요.",
-          id: "l2-reading-1",
-          order: 1,
-          title: "주제문과 뒷받침",
-          type: "READING",
-        },
-        {
-          body: "꾸준한 글쓰기 연습은 사고를 정돈하는 가장 효과적인 방법이다.",
-          guide: "아래 문단에서 주제문이 어디에 있는지 찾아보세요.",
-          id: "l2-reading-2",
-          order: 2,
-          source: "글쓰기 입문 교재",
-          title: "예문 읽기",
-          type: "READING",
-        },
-        {
-          body: "**흐린 주제문**\n\n> 꾸준한 글쓰기 연습은 좋은 점이 많다.\n\n**명확한 주제문**\n\n> 꾸준한 글쓰기 연습은 사고를 정돈하는 가장 효과적인 방법이다.",
-          guide: "두 예시의 주제문을 비교하며 구체성의 차이를 살펴보세요.",
-          id: "l2-reading-3",
-          order: 3,
-          title: "주제문 위치 비교",
-          type: "READING",
-        },
-        {
-          correct: "b",
-          explanation: "하나의 문단에는 단 하나의 핵심 주제문이 들어갑니다.",
-          id: "l2-mc",
-          options: [
-            { id: "a", text: "2개 이상" },
-            { id: "b", text: "정확히 1개" },
-            { id: "c", text: "없어도 된다" },
-          ],
-          order: 4,
-          question: "한 문단에 들어가야 할 주제문의 수는?",
-          type: "MULTIPLE_CHOICE",
-          wrong: "주제가 두 개라면 문단을 나누는 편이 좋습니다.",
-        },
-      ],
-      summary: ["한 문단에는 한 가지 주제만 담는다"],
-      title: "한 문단의 구조",
-    }
-
-    render(<LessonExperience api={api} lesson={multipleChoiceLesson} />)
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-    await user.click(screen.getByRole("button", { name: "이해했어요" }))
-    await user.click(screen.getByRole("button", { name: "이해했어요" }))
-    await user.click(screen.getByRole("button", { name: "이해했어요" }))
-
-    expect(screen.getByText("4/4")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "확인하기" })).toBeDisabled()
-    await user.click(screen.getByRole("button", { name: "정확히 1개" }))
-
-    expect(screen.getByRole("button", { name: "정확히 1개" })).toHaveAttribute(
-      "data-state",
-      "selected"
-    )
-    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-
-    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
-    expect(
-      screen.getAllByText("하나의 문단에는 단 하나의 핵심 주제문이 들어갑니다.")
-    ).toHaveLength(1)
-  })
-
-  it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {
-    localStorage.setItem(
-      "writing-app:lesson-draft:v2:learner-test:write-step",
-      "짧고 명확하게 쓴다"
-    )
-    const user = userEvent.setup()
-    const createAiFeedback = vi.fn(async () =>
-      apiOk({
-        improvements: ["근거를 더해보세요."],
-        nextAction: "예시를 추가해 다시 시도하세요.",
-        remainingAttempts: 0,
-        score: 3,
-        scoreRange: [0, 5] as const,
-        showScore: true,
-        strengths: ["핵심이 보입니다."],
-        summary: "좋은 출발입니다.",
-      })
-    )
-    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
-    const api = createApi({
-      createAiFeedback,
-      saveLessonAnswer,
-    })
-    const coachingLesson: Lesson = {
-      ...lesson,
-      id: "l-coaching",
-      steps: [
-        {
-          id: "write-step",
-          guide: "명확한 문장을 작성하세요.",
-          min: 10,
-          order: 1,
-          prompt: "명확한 문장 쓰기",
-          type: "WRITE",
-        },
-        {
-          allowRetry: true,
-          feedback: "작성한 답변을 바탕으로 코칭합니다.",
-          focus: "문장이 선명한지 확인합니다.",
-          id: "ai-step",
-          order: 2,
-          score: 0,
-          scoreMax: 5,
-          showScore: true,
-          target: "write-step",
-          type: "AI_FEEDBACK",
-        },
-      ],
-    }
-
-    render(
-      <LessonExperience
-        api={api}
-        initialProgress={{ currentStepIndex: 1 }}
-        lesson={coachingLesson}
-      />
-    )
-
-    await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
-
-    await waitFor(() =>
-      expect(createAiFeedback).toHaveBeenCalledWith({
-        idempotencyKey: expect.any(String),
-        lessonId: "l-coaching",
-        stepId: "ai-step",
-      })
-    )
-    await waitFor(() =>
-      expect(saveLessonAnswer).toHaveBeenLastCalledWith({
-        answer: { requested: true, type: "AI_FEEDBACK" },
-        lessonId: "l-coaching",
-        stepId: "ai-step",
-      })
-    )
-    expect(await screen.findByText("좋은 출발입니다.")).toBeInTheDocument()
-    localStorage.clear()
-  })
-
-  it("객관식 문제에서 오답을 제출할 경우 계속하기를 누르면 다음 스텝으로 넘어가지 않고 동일 스텝에서 재시도할 수 있다", async () => {
-    const user = userEvent.setup()
-    const api = createApi({
-      completeLesson: vi.fn(async () => apiOk({ saved: true })),
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
-    })
-
-    render(
-      <LessonExperience
-        api={api}
-        initialProgress={{ currentStepIndex: 0 }}
-        lesson={createSingleChoiceLesson()}
-      />
-    )
-
-    // 1. 오답 선택 ("좋은 글을 씁니다.")
-    await user.click(screen.getByRole("button", { name: "좋은 글을 씁니다." }))
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-
-    // 2. 오답 피드백 표시 확인
-    expect(screen.getByText("아쉽지만 달라요")).toBeInTheDocument()
-
-    // 3. "계속하기" 클릭
-    await user.click(screen.getByRole("button", { name: "계속하기" }))
-
-    // 4. 다음 단계로 안 넘어가고 동일한 단계에 머무르고 있는지 검증 ("더 좋은 문장은 무엇인가요?")
-    expect(
-      screen.getByRole("heading", { name: "더 좋은 문장은 무엇인가요?" })
-    ).toBeInTheDocument()
-    // 피드백 영역이 닫혀서 "아쉽지만 달라요"가 사라졌는지 확인
-    expect(screen.queryByText("아쉽지만 달라요")).not.toBeInTheDocument()
-
-    // 5. 다시 문제 풀기 가능 상태 확인: 이전 오답이 여전히 선택된 상태이므로 "확인하기" 버튼이 활성화되어 있어야 함
-    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
-
-    // 6. 정답 선택 ("독자가 바로 이해하는 문장을 씁니다.")
-    await user.click(
-      screen.getByRole("button", {
-        name: "독자가 바로 이해하는 문장을 씁니다.",
-      })
-    )
-    await user.click(screen.getByRole("button", { name: "확인하기" }))
-
-    // 7. 정답 피드백 표시 확인
-    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
+    await userEvent.click(screen.getByRole("button", { name: "정답" }))
+    await userEvent.click(screen.getByRole("button", { name: "확인하기" }))
+    expect(await screen.findByText("완벽해요!")).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole("button", { name: "계속하기" }))
+    expect(await screen.findByText("읽기")).toBeInTheDocument()
   })
 })
 
-const LESSON_ANSWER_ERROR =
-  "답변을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
-
-function createSingleChoiceLesson(): Lesson {
-  return {
-    ...lesson,
-    id: "l-answer",
-    steps: [
-      {
-        correct: "clear",
-        explanation: "구체적인 문장이 더 잘 읽힙니다.",
-        id: "mc-answer",
-        options: [
-          { id: "vague", text: "좋은 글을 씁니다." },
-          { id: "clear", text: "독자가 바로 이해하는 문장을 씁니다." },
-        ],
-        order: 1,
-        question: "더 좋은 문장은 무엇인가요?",
-        type: "MULTIPLE_CHOICE",
-      },
-    ],
+function createApi(overrides: Partial<WritingAppApi> = {}): WritingAppApi {
+  const unavailable = async () => {
+    throw new Error("이 테스트에서 호출하지 않는 API입니다.")
   }
-}
-
-function createDeferred<T>(): {
-  readonly promise: Promise<T>
-  readonly reject: (error: unknown) => void
-  readonly resolve: (value: T) => void
-} {
-  let reject: (error: unknown) => void = () => {}
-  let resolve: (value: T) => void = () => {}
-  const promise = new Promise<T>((promiseResolve, promiseReject) => {
-    resolve = promiseResolve
-    reject = promiseReject
-  })
 
   return {
-    promise,
-    reject,
-    resolve,
-  }
-}
-
-function createApi(overrides: Partial<WritingAppApi>): WritingAppApi {
-  const unavailable = async () =>
-    apiFailure({
-      code: "contract-error",
-      message: "테스트에서 사용하지 않는 API입니다.",
-    })
-
-  return {
-    completeLesson: vi.fn(unavailable),
-    createAiFeedback: vi.fn(unavailable),
+    completeStep: vi.fn(unavailable),
+    getCourseCategories: vi.fn(unavailable),
     getCourseDetail: vi.fn(unavailable),
     getLesson: vi.fn(unavailable),
     getProfile: vi.fn(unavailable),
     getProgress: vi.fn(unavailable),
     listCourses: vi.fn(unavailable),
-    saveLessonAnswer: vi.fn(unavailable),
-    saveLessonProgress: vi.fn(async () => apiOk({ saved: true })),
+    requestAiFeedback: vi.fn(unavailable),
+    startLesson: vi.fn(async () => apiOk(started)),
     ...overrides,
-  }
-}
-
-function networkError(message: string): ApiError {
-  return {
-    ...networkApiError(
-      createHttpNetworkError(
-        new Request("https://api.example.test/test"),
-        new TypeError("test network failure")
-      )
-    ),
-    message,
   }
 }

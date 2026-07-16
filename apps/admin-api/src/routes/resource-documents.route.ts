@@ -31,6 +31,7 @@ import {
   markdownResponse,
   multipartRequestBody,
 } from "@/http/openapi"
+import { parseIntegerEtag, toIntegerEtag } from "@/http/integer-etag"
 import type { ResourceAssetStore } from "@/resource-assets/resource-asset-store"
 import {
   createResourceImageObjectKey,
@@ -214,7 +215,7 @@ function createGetResourceDocumentRoute({
     )
     if (document === null) throw notFoundAdminError()
     return context.json(document, 200, {
-      ETag: toResourceEtag(document.version),
+      ETag: toIntegerEtag(document.version),
     })
   }
   return defineAdminRoute({ ...routeConfig, handler })
@@ -257,7 +258,7 @@ function createSaveResourceDocumentRoute({
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const ifMatch = context.req.valid("header")["if-match"]
     if (ifMatch === undefined) throw preconditionRequiredAdminError()
-    const expectedVersion = parseResourceEtag(ifMatch)
+    const expectedVersion = parseIntegerEtag(ifMatch)
     if (expectedVersion === null) throw invalidAdminRequestError()
 
     const result = await documentService.saveDocument({
@@ -269,12 +270,12 @@ function createSaveResourceDocumentRoute({
     })
     if (result.kind === "conflict") {
       return context.json(result.document, 412, {
-        ETag: toResourceEtag(result.document.version),
+        ETag: toIntegerEtag(result.document.version),
       })
     }
     if (result.kind !== "ok") throwResourceLibraryRejection(result)
     return context.json(result.document, 200, {
-      ETag: toResourceEtag(result.document.version),
+      ETag: toIntegerEtag(result.document.version),
     })
   }
   return defineAdminRoute({ ...routeConfig, handler })
@@ -350,15 +351,4 @@ function createExportResourceDocumentRoute({
     })
   }
   return defineAdminRoute({ ...routeConfig, handler })
-}
-
-function toResourceEtag(version: number): string {
-  return `"${version}"`
-}
-
-function parseResourceEtag(value: string): number | null {
-  const match = /^"(\d+)"$/u.exec(value.trim())
-  if (match === null) return null
-  const version = Number(match[1])
-  return Number.isSafeInteger(version) ? version : null
 }

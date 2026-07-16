@@ -15,7 +15,11 @@
     "./content/steps": "./src/content/steps/index.ts",
     "./content/steps/*": "./src/content/steps/*.ts",
     "./learning": "./src/learning/index.ts",
+    "./learning/api-error": "./src/learning/api-error.ts",
+    "./learning/learner-api": "./src/learning/learner-api.ts",
+    "./learning/learner-content": "./src/learning/learner-content.ts",
     "./learning/learner-read-model": "./src/learning/learner-read-model.ts",
+    "./learning/learner-transition": "./src/learning/learner-transition.ts",
     "./learning/learning": "./src/learning/learning.ts",
     "./learning/learning.ids": "./src/learning/learning.ids.ts",
     "./status": "./src/status.ts"

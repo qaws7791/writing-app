@@ -4,7 +4,8 @@
 
 ## 기준
 
-- 기준일: 2026-07-12
+- 기준일: 2026-07-17
+- 작업 상태: 관계형 커리큘럼 버전과 기존 데이터 migration 단계 2 구현 완료
 - 기준 파일:
   - `packages/db/src/schema/*.schema.ts`
   - `packages/db/src/persisted-values.ts`
@@ -14,9 +15,9 @@
 ## 모델 원칙
 
 - 콘텐츠는 `Course -> Unit -> Lesson -> Step` 계층이다.
-- 현재는 커리큘럼 버전 모델을 운영하지 않는다.
-- 콘텐츠 row는 기본적으로 삭제하지 않고 `archived` 상태로 숨긴다.
-- 학습 진행과 답변은 사용자와 레슨/스텝 ID에 직접 연결한다.
+- 커리큘럼은 ADR-0011의 관계형 `draft | published` 버전 모델을 사용한다.
+- 코스 보관은 코스 identity만 `archived`로 바꾸며 published 버전과 학습자 고정은 삭제하지 않는다.
+- 학습 진행, 답변과 AI 시도는 학습자에게 고정된 커리큘럼 버전 범위의 레슨·스텝을 참조한다.
 - 학습자 인증 테이블과 관리자 인증 테이블은 분리한다.
 - DB row 이름은 API DTO로 그대로 노출하지 않는다.
 
@@ -37,15 +38,18 @@ erDiagram
   admin_user ||--o{ admin_resource_documents : authors
   admin_user ||--o{ admin_ai_chat_conversations : owns
 
-  courses ||--o{ course_units : contains
-  courses ||--o{ lessons : contains
-  course_units ||--o{ lessons : contains
-  lessons ||--o{ lesson_steps : contains
-  lessons ||--o{ learner_lesson_progress : tracked_by
-  lessons ||--o{ learner_lesson_answers : answered_by
-  lessons ||--o{ ai_feedback_attempts : feedback_for
-  lesson_steps ||--o{ learner_lesson_answers : answer_for
-  lesson_steps ||--o{ ai_feedback_attempts : feedback_step
+  courses ||--o{ course_curriculum_versions : versions
+  courses ||--o{ learner_course_progress : pinned_by
+  course_curriculum_versions ||--o{ course_unit_versions : contains
+  course_unit_versions ||--o{ lesson_versions : contains
+  lesson_versions ||--o{ lesson_step_versions : contains
+  course_curriculum_versions ||--o{ learner_course_progress : pins
+  learner_course_progress ||--o{ learner_lesson_progress : scopes
+  learner_course_progress ||--o{ learner_lesson_answers : scopes
+  learner_course_progress ||--o{ ai_feedback_attempts : scopes
+  lesson_versions ||--o{ learner_lesson_progress : tracked_by
+  lesson_step_versions ||--o{ learner_lesson_answers : answer_for
+  lesson_step_versions ||--o{ ai_feedback_attempts : feedback_step
   admin_ai_chat_conversations ||--o{ admin_ai_chat_messages : contains
 ```
 
@@ -68,12 +72,15 @@ Better Auth adapter 계약을 따른다.
 
 ## 콘텐츠 테이블
 
-| 테이블         | 주요 컬럼                                                                                                                     | 설명           |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| `courses`      | `id`, `title`, `description`, `category`, `visual_key`, `status`, `sort_order`, `curriculum_revision`                         | 코스           |
-| `course_units` | `id`, `course_id`, `title`, `sort_order`, `status`                                                                            | 코스 하위 유닛 |
-| `lessons`      | `id`, `course_id`, `unit_id`, `title`, `category`, `description`, `estimated_minutes`, `summary_json`, `sort_order`, `status` | 레슨           |
-| `lesson_steps` | `id`, `lesson_id`, `type`, `sort_order`, `content_json`, `status`                                                             | 레슨 스텝      |
+| 테이블                       | 주요 컬럼                                                                                   | 설명                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `courses`                    | `id`, `status`, `sort_order`, `published_curriculum_version_id`, `created_at`               | 코스 identity, 보관 상태, 발행 포인터   |
+| `course_curriculum_versions` | `id`, `course_id`, `revision`, `edit_version`, `status`, 코스 표시 metadata, `published_at` | 변경 가능한 단일 draft와 불변 published |
+| `course_unit_versions`       | `curriculum_version_id`, `id`, `title`, `sort_order`, `status`                              | 버전 범위 유닛                          |
+| `lesson_versions`            | `curriculum_version_id`, `id`, `unit_id`, 제목·설명·요약·시간·순서·상태                     | 버전 범위 레슨                          |
+| `lesson_step_versions`       | `curriculum_version_id`, `id`, `lesson_id`, `type`, `sort_order`, `content_json`, `status`  | 버전 범위 스텝                          |
+
+하위 콘텐츠의 영속 identity는 `(curriculum_version_id, 논리 ID)` 복합 키다. 코스당 `draft`는 partial unique index로 하나만 허용하며 baseline trigger가 published 버전과 하위 콘텐츠의 수정·삭제를 거절한다. `revision`은 발행 순서이고 `edit_version`은 draft 저장의 `If-Match` 검증자다.
 
 현재 content status 값은 코드 기준 `active | archived`다. 과거 문서의 `deprecated`는 현재 persisted 값에 없다.
 
@@ -92,19 +99,22 @@ Better Auth adapter 계약을 따른다.
 
 ## 학습 테이블
 
-| 테이블                    | 주요 컬럼                                                                                                                                                      | 설명                           |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `learner_profiles`        | `user_id`, `status`, `display_name`, `deleted_at`                                                                                                              | 앱 소유 학습자 프로필          |
-| `learner_activity_days`   | `user_id`, `activity_date`, `first_activity_at`, `last_activity_at`, `completed_lessons`, `saved_answers`                                                      | Asia/Seoul 기준 학습 활동 날짜 |
-| `learner_lesson_progress` | `user_id`, `lesson_id`, `current_step_index`, `status`, `started_at`, `completed_at`, `updated_at`                                                             | 레슨 진행                      |
-| `learner_lesson_answers`  | `user_id`, `lesson_id`, `step_id`, `answer_json`, `answered_at`, `updated_at`                                                                                  | 스텝 답변                      |
-| `ai_feedback_attempts`    | `id`, `user_id`, `lesson_id`, `step_id`, `attempt_number`, `idempotency_key`, `status`, `answer_text`, `result_json`, `created_at`, `updated_at`, `expires_at` | AI 피드백 예약과 결과          |
+| 테이블                    | 주요 컬럼                                                                                                      | 설명                            |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `learner_profiles`        | `user_id`, `status`, `display_name`, `deleted_at`                                                              | 앱 소유 학습자 프로필           |
+| `learner_activity_days`   | `user_id`, `activity_date`, `first_activity_at`, `last_activity_at`, `completed_lessons`, `saved_answers`      | Asia/Seoul 기준 학습 활동 날짜  |
+| `learner_course_progress` | `user_id`, `course_id`, `curriculum_version_id`, `status`, 활동·시작·완료 시각                                 | 코스별 immutable 버전 고정      |
+| `learner_lesson_progress` | `user_id`, `course_id`, `curriculum_version_id`, `lesson_id`, `current_step_id`, `status`, 시작·완료·수정 시각 | 버전 범위 레슨 진행             |
+| `learner_lesson_answers`  | `user_id`, `course_id`, `curriculum_version_id`, `lesson_id`, `step_id`, `answer_json`, 답변·수정 시각         | 버전 범위 스텝 답변             |
+| `ai_feedback_attempts`    | `id`, `user_id`, `course_id`, `curriculum_version_id`, `lesson_id`, `step_id`, 시도·상태·결과·시각             | 버전 범위 AI 피드백 예약과 결과 |
 
 학습자 상태 값은 `active | suspended | deleted`다.
 
 레슨 진행 상태 값은 `in_progress | completed`다.
 
-레슨 진행 index는 DB 단조 증가 정책을 따른다. `learner_lesson_progress` upsert는 기존 값과 요청 값의 `MAX`만 저장하고 `completed` 상태를 `in_progress`로 되돌리지 않는다. 더 낮은 index를 저장한 stale 요청은 현재 index를 포함한 명시적 결과를 반환하며, 같은 index 재저장은 멱등 성공으로 처리한다.
+`current_step_id`가 영속 기준이다. 현재 전환 API가 사용하는 `currentStepIndex`는 고정된 버전의 스텝 `sort_order`로 변환하거나 조회 시 파생하며 DB에는 저장하지 않는다. 완료 상태는 `in_progress`로 후퇴하지 않는다.
+
+학습자 read model은 시작 전 코스에는 현재 published version을, 시작한 코스에는 `learner_course_progress.curriculum_version_id`를 사용한다. `/progress` keyset은 `last_activity_at DESC, course_id ASC` 순서이며 cursor에는 마지막 두 값을 넣는다. 코스 목록은 선택한 정렬값 뒤에 항상 `course_id ASC`를 tie-breaker로 사용해 같은 key의 페이지 경계에서도 중복이나 누락을 만들지 않는다.
 
 AI 피드백 attempt 상태 값은 `pending | succeeded | failed | expired`다. `pending`과 `succeeded`만 완료 한도 slot을 점유하고, 같은 학습자·레슨·스텝에는 `pending` row를 하나만 허용한다. 같은 범위의 `idempotency_key`는 유일하며 `succeeded` 재요청은 저장된 결과를 재사용한다. provider 실패는 즉시 `failed`, TTL을 넘긴 미완료 예약은 다음 예약 transaction에서 `expired`로 전이해 slot을 반환한다.
 
@@ -166,10 +176,10 @@ stateDiagram-v2
 
 ## Seed 정책
 
-- 기본 seed는 기준 콘텐츠 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 생성한다.
+- 기본 seed는 코스마다 revision `1` published와 revision `2` draft를 만들며 각 버전에 기준 콘텐츠 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 저장한다.
 - `packages/db/src/seeds/content-seed-data.json`가 콘텐츠 seed 원천이다.
-- `db:seed`는 baseline migration을 적용한 뒤 stable ID 기준으로 upsert한다.
-- seed에서 사라진 콘텐츠 row는 삭제하지 않고 `archived`로 전환한다.
+- `db:seed`는 baseline migration을 적용한 뒤 기존 published 버전과 학습자 고정을 보존하고 mutable draft만 stable ID 기준으로 교체한다.
+- seed에서 사라진 코스 identity만 `archived`로 전환하며 과거 버전은 보존한다.
 - 기본 학습자 `user-1`과 `learner_profiles` row를 보장한다.
 
 ## 스키마 명명 규칙

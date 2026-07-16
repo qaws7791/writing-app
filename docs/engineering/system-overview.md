@@ -121,7 +121,7 @@ Learning domain이 content DTO나 content id 타입을 참조해야 할 때는 c
 - `/app/lesson?lesson_id=...`: 레슨 진행
 - `/app/profile`: 프로필
 
-학습자 웹의 server route는 API 호출 결과를 `apps/web/src/lib/api/route-api-outcome.ts`의 route-level outcome으로 분류한다. 인증 실패는 로그인 redirect, not-found는 route별 notFound 또는 notice, 네트워크·서버 실패는 `AppRouteNotice`로 처리하며, empty state는 성공 응답의 빈 값일 때만 화면 컴포넌트가 다룬다. 앱 홈 route는 profile과 progress를 모두 필수 데이터로 보고, 둘 중 하나의 API 실패도 빈 홈이나 부분 홈으로 변환하지 않는다. 코스 목록 화면은 API 실패를 빈 목록으로 변환하지 않고, 성공 응답의 빈 목록만 별도 empty state로 렌더링한다. 프로필 route는 세션 부재나 API 401만 로그인 이동으로 처리하고, 프로필 API의 네트워크·서버 실패는 장애 notice로 유지한다.
+학습자 웹의 server route는 `ApiResult`에서 직접 분기한다. 인증 실패는 로그인 redirect, not-found는 route별 notFound 또는 notice, 네트워크·서버 실패는 `AppRouteNotice`로 처리하며, empty state는 성공 응답의 빈 값일 때만 화면 컴포넌트가 다룬다. 앱 홈 route는 profile과 progress를 모두 필수 데이터로 보고, 둘 중 하나의 API 실패도 빈 홈이나 부분 홈으로 변환하지 않는다. 코스 목록 화면은 API 실패를 빈 목록으로 변환하지 않고, 성공 응답의 빈 목록만 별도 empty state로 렌더링한다. 프로필 route는 세션 부재나 API 401만 로그인 이동으로 처리하고, 프로필 API의 네트워크·서버 실패는 장애 notice로 유지한다.
 
 ### 어드민 웹
 
@@ -133,18 +133,17 @@ Learning domain이 content DTO나 content id 타입을 참조해야 할 때는 c
 - `/users/[id]`: 사용자 상세
 - `/analytics`: 분석
 - `/settings`: 운영 설정
-- `/debug/steps`: 내부 QA용 스텝 디버그
 - `/resources`: 관리자 자료실
 - `/chat`: 관리자 AI 채팅
 
 ## API 런타임
 
-학습자 API는 `apps/api/src/main.ts`에서 `createLearnerApiCore()`를 통해 core 서비스를 조립하고 Hono 앱에 주입한다. 요청 context의 route 서비스 의존성은 route 등록과 같은 app 조립 경계에서 required로 제공하며, 테스트는 사용하지 않는 서비스를 명시적 failing fake로 채운다. `apps/api/src/routes/index.ts`는 typed route 배열과 auth proxy, `/openapi` bootstrap 등록을 함께 소유한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로 생성하며, route schema는 `packages/contracts`의 Zod 계약을 직접 참조한다. OpenAPI document/response helper는 `apps/api/src/http/openapi.ts`, learner wire contract schema는 `apps/api/src/http/learner-contract.schemas.ts`가 소유한다. 정적 OpenAPI JSON과 웹 generated 타입의 drift는 `bun run check:api-contract`에서 함께 검증한다.
+학습자 API는 `apps/api/src/main.ts`에서 `createLearnerApiCore()`를 통해 core 서비스를 조립하고 Hono 앱에 주입한다. 요청 context의 route 서비스 의존성은 route 등록과 같은 app 조립 경계에서 required로 제공하며, 테스트는 사용하지 않는 서비스를 명시적 failing fake로 채운다. `apps/api/src/routes/index.ts`는 typed route 배열과 auth proxy, `/openapi` bootstrap 등록을 함께 소유한다. 학습자 HTTP 경계는 `@workspace/contracts/learning`의 strict Zod schema와 추론 타입을 직접 사용한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로만 생성하며 정적 JSON과 generated TypeScript 타입은 추적하지 않는다. `apps/api/src/http/learner-response.ts`는 성공 응답 runtime 검증을, `learner-error-response.ts`는 canonical 오류와 request ID 정규화를 담당한다.
 learner route handler는 typed route가 검증한 transport 입력을 읽고, request context의 use case를 호출한 뒤 성공 응답만 mapping한다. core result의 오류 정규화는 `apps/api/src/errors/map-core-error.ts`의 `unwrapApiCoreResult()`가 담당한다.
 
 콘텐츠 조회는 core의 공통 content reader가 repository 조회, DTO 검증, not-found result를 담당한다. `LearnerContentService`는 이 조회 결과에 학습자 진행률을 합성하는 책임만 추가한다.
-학습 step answer 검증은 `packages/core/src/modules/learning/domain/step-answer-policy.ts`의 domain policy가 소유한다. `LearningService`는 command parse, lesson 조회, policy 판정, repository 저장 조정에 집중하고 step type별 answer validator를 직접 구현하지 않는다.
-AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 판정만 담당하고, 시도 한도 계산·prompt 기반 provider 호출·결과 저장은 `ai-feedback-attempt-coordinator.ts`가 조정한다. AI_FEEDBACK step 지원 여부는 `ai-feedback-step-policy.ts` domain policy가 소유한다.
+학습 step 채점은 `packages/core/src/modules/learning/domain/step-grading-policy.ts`가 소유한다. learner transition service와 repository는 고정 curriculum version, 잠금, 순서, 답안·진행·완료·활동일의 원자적 저장을 조정한다.
+AI 피드백 전이 service는 고정 version의 선행 WRITE 답안을 준비하고, 시도 한도·prompt 기반 provider 호출·결과 저장은 AI feedback attempt coordinator와 learner transition repository를 통해 조정한다.
 
 어드민 API는 `apps/admin-api/src/admin-runtime.ts`에서 SQLite DB, Better Auth, 관리자 세션 resolver와 core service를 조립하고 `main.ts`가 요청 로거, WebSocket과 서버 수명을 연결한다. Route는 `@workspace/hono/core`의 typed route definition으로 등록하고, request/query/body wire contract는 `packages/contracts/admin`을 직접 참조한다. 관리자 세션과 owner 권한은 route middleware가 `AppError` 기반 표준 오류로 변환하며, `/openapi`는 등록된 typed route에서 OpenAPI 3.1 문서를 생성한다.
 관리자 자료실과 관리자 AI 채팅은 어드민 API 경계에 속한다. 자료실 구조 명령과 조회·검색·가져오기·내보내기, 본문 Yjs transaction은 REST를 사용하고 작업 공간 WebSocket은 구조 변경·문서 version 알림만 전달한다. AI 채팅은 `admin_ai_chat_conversations`, `admin_ai_chat_messages`에 대화 내역을 저장하고, `apps/admin-api`에 내장한 Mastra `admin-content-agent`를 Hono route에서 호출해 `chunk`, `done`, `error` SSE 이벤트로 응답한다. Mastra Memory는 사용하지 않고 저장된 메시지를 프롬프트 컨텍스트로 구성한다.

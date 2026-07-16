@@ -76,7 +76,9 @@ describe("admin course editor contract", () => {
   it("10종 step discriminated union을 전체 문서에서 검증한다", () => {
     const result = adminCourseEditorDocumentSchema.safeParse({
       category: "미분류",
+      curriculumVersionId: "course-1-v1",
       description: "설명",
+      editVersion: 1,
       id: "course-1",
       revision: 1,
       status: "active",
@@ -115,7 +117,9 @@ describe("admin course editor contract", () => {
   it("중복 ID와 비연속 sortOrder를 거부한다", () => {
     const result = adminCourseEditorDocumentSchema.safeParse({
       category: "",
+      curriculumVersionId: "course-1-v1",
       description: "",
+      editVersion: 1,
       id: "course-1",
       revision: 0,
       status: "active",

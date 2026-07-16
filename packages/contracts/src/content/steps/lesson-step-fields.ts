@@ -5,12 +5,12 @@ import { lessonStepIdSchema } from "@workspace/contracts/content/content.ids"
 export const positiveSortOrderSchema = z.number().int().positive()
 export const nonNegativeIntegerSchema = z.number().int().nonnegative()
 export const optionalTextSchema = z.string().optional()
-export const labeledTextSchema = z.object({
+export const labeledTextSchema = z.strictObject({
   label: z.string(),
   text: z.string(),
 })
 
-export const lessonStepBaseSchema = z.object({
+export const lessonStepBaseSchema = z.strictObject({
   id: lessonStepIdSchema,
   sortOrder: positiveSortOrderSchema,
 })

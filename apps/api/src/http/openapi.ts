@@ -1,6 +1,6 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
-import { ErrorResponseSchema } from "@workspace/hono/errors"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
+import { learnerApiErrorSchema } from "@workspace/contracts/learning"
 import { z } from "@workspace/hono/zod"
 
 export const openApiDocumentConfig = {
@@ -47,8 +47,8 @@ export function authenticatedResponses(
 ) {
   return {
     200: successResponse,
-    401: jsonResponse("인증이 필요합니다.", ErrorResponseSchema),
-    403: jsonResponse("계정을 사용할 수 없습니다.", ErrorResponseSchema),
+    401: jsonResponse("인증이 필요합니다.", learnerApiErrorSchema),
+    403: jsonResponse("계정을 사용할 수 없습니다.", learnerApiErrorSchema),
   }
 }
 

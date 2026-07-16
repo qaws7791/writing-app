@@ -1,9 +1,10 @@
 import type { AnyRouteConfig } from "@workspace/hono/core"
-import { ErrorResponseSchema } from "@workspace/hono/errors"
+import { learnerApiErrorSchema } from "@workspace/contracts/learning"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
 import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
   lessonDtoSchema,
@@ -22,7 +23,7 @@ const getLessonRouteConfig = {
     ...authenticatedResponses(
       jsonResponse("레슨 상세입니다.", lessonDtoSchema)
     ),
-    404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
+    404: jsonResponse("레슨을 찾을 수 없습니다.", learnerApiErrorSchema),
   },
   security: [{ learnerSessionCookie: [] }],
   summary: "레슨 상세 조회",
@@ -34,9 +35,20 @@ const getLessonHandler: ApiRouteHandler<typeof getLessonRouteConfig> = async (
   const contentService = context.var.requestContext.contentService
 
   const { lessonId } = context.req.valid("param")
-  const result = await contentService.getLesson(lessonId)
+  const result = await contentService.getLesson({
+    lessonId,
+    userId: context.var.activeSession.user.id,
+  })
 
-  return context.json(unwrapApiCoreResult(result), 200)
+  return context.json(
+    parseLearnerRouteResponse(
+      context,
+      "LearnerLessonResponse",
+      lessonDtoSchema,
+      unwrapApiCoreResult(result)
+    ),
+    200
+  )
 }
 
 export const getLessonRoute = defineApiRoute({

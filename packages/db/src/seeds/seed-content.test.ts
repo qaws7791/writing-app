@@ -37,7 +37,6 @@ describe("기준 콘텐츠 seed 변환", () => {
       visualKey: "basic-sentence-writing",
       status: "active",
       sortOrder: 1,
-      curriculumRevision: 0,
     })
 
     expect(rows.units[0]).toMatchObject({

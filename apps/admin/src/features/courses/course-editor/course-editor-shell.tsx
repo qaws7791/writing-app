@@ -12,6 +12,7 @@ import {
 import {
   adminCourseEditorSchema,
   type AdminCourseDetail,
+  type AdminCoursePublishResult,
 } from "@/features/courses/admin-courses-api"
 import {
   courseEditorReducer,
@@ -42,12 +43,16 @@ type EditorTab = "curriculum" | "info"
 export function CourseEditorShell({
   course,
   loadLatestCourse,
+  publishCourse,
   saveCourse,
 }: {
   readonly course: AdminCourseDetail
   readonly loadLatestCourse: (
     courseId: string
   ) => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly publishCourse: (
+    course: AdminCourseDetail
+  ) => Promise<AdminApiResult<AdminCoursePublishResult>>
   readonly saveCourse: (
     course: AdminCourseDetail
   ) => Promise<AdminApiResult<AdminCourseDetail>>
@@ -123,6 +128,36 @@ export function CourseEditorShell({
     })
   }
 
+  const publish = () => {
+    if (!window.confirm("현재 초안을 학습자에게 발행할까요?")) return
+
+    dispatch({ type: "publish-started" })
+    startTransition(async () => {
+      const result = await publishCourse(state.draft)
+      if (result.status === "error") {
+        if (result.error.code !== "stale-revision") {
+          dispatch({ message: result.error.message, type: "server-failed" })
+          return
+        }
+
+        const latest = await loadLatestCourse(state.draft.id)
+        if (latest.status === "error") {
+          dispatch({ message: latest.error.message, type: "server-failed" })
+          return
+        }
+        dispatch({ latest: latest.value, type: "conflict-detected" })
+        return
+      }
+
+      const latest = await loadLatestCourse(state.draft.id)
+      if (latest.status === "error") {
+        dispatch({ message: latest.error.message, type: "server-failed" })
+        return
+      }
+      dispatch({ document: latest.value, type: "publish-succeeded" })
+    })
+  }
+
   return (
     <div className="-mx-5 -mt-8 flex min-h-full flex-col md:-mx-10">
       <div className="border-b border-surface-hover px-6 pb-0 pt-8 md:px-10">
@@ -155,12 +190,23 @@ export function CourseEditorShell({
           <h1 className="text-[1.375rem] font-bold text-foreground">
             {state.draft.title || "제목 없음"}
           </h1>
-          <Button
-            disabled={isPending || state.status === "clean"}
-            onClick={save}
-          >
-            {state.status === "saving" ? "저장 중…" : "변경 저장"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              disabled={
+                isPending ||
+                !["dirty", "server-error", "validation-error"].includes(
+                  state.status
+                )
+              }
+              onClick={save}
+              variant="outline"
+            >
+              {state.status === "saving" ? "저장 중…" : "변경 저장"}
+            </Button>
+            <Button disabled={isPending || isUnsaved} onClick={publish}>
+              {state.status === "publishing" ? "발행 중…" : "초안 발행"}
+            </Button>
+          </div>
         </div>
         <div className="-mb-px flex">
           <TabButton

@@ -4,24 +4,19 @@ import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
-import type { CourseDetail } from "@/features/courses/course-types"
 import {
   LessonActiveScreen,
   LessonCompleteScreen,
   LessonStartScreen,
 } from "@/features/lessons/lesson-experience-screens"
 import { useLessonSession } from "@/features/lessons/use-lesson-session"
-import type { Lesson } from "@/features/lessons/lesson-types"
+import type { LearnerLesson as Lesson } from "@workspace/contracts/learning"
 import { getBrowserLearnerSessionToken } from "@/lib/auth/session-token"
 import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 
 type LessonExperienceProps = {
   readonly api?: WritingAppApi
-  readonly courseDetail?: CourseDetail
-  readonly initialProgress?: {
-    readonly currentStepIndex: number
-  }
   readonly lesson: Lesson
   readonly learnerId: string
 }
@@ -32,8 +27,6 @@ export function LessonExperience(props: LessonExperienceProps) {
 
 function LessonExperienceSession({
   api,
-  courseDetail,
-  initialProgress,
   lesson,
   learnerId,
 }: LessonExperienceProps) {
@@ -50,7 +43,6 @@ function LessonExperienceSession({
   )
   const session = useLessonSession({
     api: resolvedApi,
-    initialProgress,
     lesson,
   })
 
@@ -66,7 +58,7 @@ function LessonExperienceSession({
   if (session.isComplete) {
     return (
       <LessonCompleteScreen
-        courseDetail={courseDetail}
+        completion={session.completion}
         lesson={lesson}
         onCourse={() => router.push(`/app/courses/${lesson.courseId}`)}
         onNext={(nextLessonId) =>

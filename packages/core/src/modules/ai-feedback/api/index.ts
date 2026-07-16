@@ -1,7 +1,6 @@
 export * from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 export * from "#core/modules/ai-feedback/domain/ai-feedback.dto"
 export * from "#core/modules/ai-feedback/domain/ai-feedback.prompt"
-export * from "#core/modules/ai-feedback/domain/ai-feedback-step-policy"
 export * from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
 export * from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
 export * from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
