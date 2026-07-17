@@ -1,40 +1,72 @@
-import {
-  adminImportResourceDocumentResultDtoSchema,
-  adminResourceDocumentDtoSchema,
-  type AdminImportResourceDocumentResultDto,
-  type AdminResourceDocumentDto,
-} from "@workspace/contracts/admin"
+import type {
+  AdminResourceDocumentDto,
+  AdminResourceTreeNodeDto,
+} from "@workspace/contracts/admin/resource-library-data"
 import {
   normalizeResourceMarkdown,
   prepareResourceMarkdownImport,
   readResourceMarkdownPlainText,
-  type ResourceDocumentIssue,
 } from "@workspace/resource-document/resource-markdown"
 
 import type {
   ResourceDocumentRecord,
   ResourceDocumentRepository,
 } from "#core/modules/resource-library/application/ports/resource-document.repository"
-import type { ResourceTreeCommandRejection } from "#core/modules/resource-library/application/ports/resource-tree.repository"
+import type {
+  ResourceDocumentInputRejection,
+  ResourceDocumentInvalidMarkdown,
+  ResourceTreeCommandRejection,
+} from "#core/modules/resource-library/application/resource-library-error"
 import {
   toResourceDocumentId,
   toResourceFolderId,
   type ResourceDocumentId,
 } from "#core/modules/resource-library/domain/resource-tree-node"
 
-export type ResourceDocumentInvalidMarkdown = {
-  readonly issues: readonly ResourceDocumentIssue[]
-  readonly kind: "invalid-markdown"
+export type ExportResourceDocumentQuery = {
+  readonly documentId: string
+}
+
+export type ExportResourceDocumentResult =
+  | { readonly kind: "not-found" }
+  | {
+      readonly kind: "ok"
+      readonly value: { readonly fileName: string; readonly markdown: string }
+    }
+
+export type GetResourceDocumentQuery = {
+  readonly documentId: string
+}
+
+export type ImportResourceDocumentCommand = {
+  readonly actorId: string
+  readonly fileName: string
+  readonly markdown: string
+  readonly now: Date
+  readonly parentId: string | null
+}
+
+export type ImportedResourceDocument = {
+  readonly document: AdminResourceDocumentDto
+  readonly node: AdminResourceTreeNodeDto
 }
 
 export type ResourceDocumentImportResult =
-  | ResourceDocumentInvalidMarkdown
-  | { readonly kind: "invalid-file-name" }
+  | ResourceDocumentInputRejection
   | ResourceTreeCommandRejection
   | {
       readonly kind: "ok"
-      readonly value: AdminImportResourceDocumentResultDto
+      readonly value: ImportedResourceDocument
     }
+
+export type SaveResourceDocumentCommand = {
+  readonly actorId: string
+  readonly contentMarkdown: string
+  readonly documentId: string
+  readonly expectedVersion: number
+  readonly name: string
+  readonly now: Date
+}
 
 export type ResourceDocumentSaveResult =
   | ResourceDocumentInvalidMarkdown
@@ -48,31 +80,18 @@ export type ResourceDocumentSaveResult =
   | { readonly kind: "ok"; readonly document: AdminResourceDocumentDto }
 
 export type ResourceDocumentUseCase = {
-  readonly exportDocument: (input: { readonly documentId: string }) => Promise<
-    | { readonly kind: "not-found" }
-    | {
-        readonly kind: "ok"
-        readonly value: { readonly fileName: string; readonly markdown: string }
-      }
-  >
-  readonly getDocument: (input: {
-    readonly documentId: string
-  }) => Promise<AdminResourceDocumentDto | null>
-  readonly importDocument: (input: {
-    readonly actorId: string
-    readonly fileName: string
-    readonly markdown: string
-    readonly now: Date
-    readonly parentId: string | null
-  }) => Promise<ResourceDocumentImportResult>
-  readonly saveDocument: (input: {
-    readonly actorId: string
-    readonly contentMarkdown: string
-    readonly documentId: string
-    readonly expectedVersion: number
-    readonly name: string
-    readonly now: Date
-  }) => Promise<ResourceDocumentSaveResult>
+  readonly exportDocument: (
+    query: ExportResourceDocumentQuery
+  ) => Promise<ExportResourceDocumentResult>
+  readonly getDocument: (
+    query: GetResourceDocumentQuery
+  ) => Promise<AdminResourceDocumentDto | null>
+  readonly importDocument: (
+    command: ImportResourceDocumentCommand
+  ) => Promise<ResourceDocumentImportResult>
+  readonly saveDocument: (
+    command: SaveResourceDocumentCommand
+  ) => Promise<ResourceDocumentSaveResult>
 }
 
 export function createResourceDocumentUseCase({
@@ -104,7 +123,7 @@ export function createResourceDocumentUseCase({
       const document = await documentRepository.readDocument(
         toResourceDocumentId(documentId)
       )
-      return document === null ? null : toDocumentDto(document)
+      return document === null ? null : toDocumentData(document)
     },
     async importDocument(input) {
       const fileNameTitle = readMarkdownFileNameTitle(input.fileName)
@@ -134,19 +153,17 @@ export function createResourceDocumentUseCase({
       return result.kind === "ok"
         ? {
             kind: "ok",
-            value: adminImportResourceDocumentResultDtoSchema.parse({
-              document: toDocumentDto(result.value.document),
-              mutation: {
-                node: {
-                  hasChildren: false,
-                  id: result.value.node.id,
-                  kind: "document",
-                  name: result.value.node.name,
-                  parentId: result.value.node.parentId,
-                  status: result.value.node.status,
-                },
+            value: {
+              document: toDocumentData(result.value.document),
+              node: {
+                hasChildren: false,
+                id: result.value.node.id,
+                kind: "document",
+                name: result.value.node.name,
+                parentId: result.value.node.parentId,
+                status: result.value.node.status,
               },
-            }),
+            },
           }
         : result
     },
@@ -168,20 +185,21 @@ export function createResourceDocumentUseCase({
         documentId: toResourceDocumentId(input.documentId),
       })
       return result.kind === "ok" || result.kind === "conflict"
-        ? { ...result, document: toDocumentDto(result.document) }
+        ? { ...result, document: toDocumentData(result.document) }
         : result
     },
   }
 }
 
-function toDocumentDto(
+function toDocumentData(
   document: ResourceDocumentRecord
 ): AdminResourceDocumentDto {
-  return adminResourceDocumentDtoSchema.parse({
+  return {
     ...document,
     createdAt: document.createdAt.toISOString(),
+    path: [...document.path],
     updatedAt: document.updatedAt.toISOString(),
-  })
+  }
 }
 
 function readMarkdownFileNameTitle(fileName: string): string | null {

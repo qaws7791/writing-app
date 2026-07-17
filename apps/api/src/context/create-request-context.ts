@@ -1,17 +1,18 @@
 import type { SessionResolver } from "@workspace/core/auth"
 import type { LearnerAiFeedbackTransitionService } from "@workspace/core/ai-feedback"
-import type { LearnerContentService } from "@workspace/core/content"
 import type {
-  LearnerTransitionService,
+  CompleteLearnerStepTransitionResult,
+  LearnerContentService,
+  LearnerCursorCodec,
+  LearnerTransitionError,
+  LearnerTransitionRepository,
   ProfileReader,
   ProgressService,
 } from "@workspace/core/learning"
-import type {
-  RequestLogger,
-  RequestLoggingRuntime,
-  SecurityAuditLogger,
-} from "@workspace/logger"
-import type { InternalErrorLogger } from "@workspace/hono/errors"
+import type { InternalErrorLogger } from "@/http/platform/errors"
+import type { RequestLoggingRuntime } from "@/http/platform/request-logging.middleware"
+import type { RequestLogger } from "@/observability/request-logger"
+import type { SecurityAuditLogger } from "@/observability/security-audit-logger"
 
 import type { LearnerContractErrorLogger } from "@/http/learner-response"
 
@@ -21,8 +22,15 @@ export type ApiDependencies = {
   readonly contractErrorLogger?: LearnerContractErrorLogger
   readonly deploymentVersion?: string
   readonly errorLogger?: InternalErrorLogger
-  readonly learnerAiFeedbackService: LearnerAiFeedbackTransitionService
-  readonly learnerTransitionService: LearnerTransitionService
+  readonly learnerAiFeedbackService: LearnerAiFeedbackTransitionService<
+    LearnerTransitionError,
+    CompleteLearnerStepTransitionResult
+  >
+  readonly learnerCursorCodec: LearnerCursorCodec
+  readonly learnerTransitionRepository: Pick<
+    LearnerTransitionRepository,
+    "completeStep" | "startLesson"
+  >
   readonly now?: () => Date
   readonly profileReader: ProfileReader
   readonly progressService: ProgressService

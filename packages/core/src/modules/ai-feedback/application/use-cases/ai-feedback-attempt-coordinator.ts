@@ -3,7 +3,7 @@ import {
   type AiFeedbackPayload,
   type AiFeedbackResultDto,
   type CreateAiFeedbackCommand,
-} from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+} from "@workspace/contracts/ai-feedback"
 import {
   aiFeedbackAttemptPolicySchema,
   calculateRemainingAiFeedbackAttempts,
@@ -66,11 +66,13 @@ export type AiFeedbackAttemptOptions = {
     readonly occurredAt: Date
     readonly result: AiFeedbackPayload
   }) => Promise<boolean>
+  readonly signal?: AbortSignal
 }
 
 export function createAiFeedbackAttemptCoordinator({
   attemptPolicy,
   createAttemptId = () => crypto.randomUUID(),
+  createProviderTimeoutSignal = (timeoutMs) => AbortSignal.timeout(timeoutMs),
   feedbackRepository,
   now = () => new Date(),
   onAttemptTransition,
@@ -78,6 +80,7 @@ export function createAiFeedbackAttemptCoordinator({
 }: {
   readonly attemptPolicy: AiFeedbackAttemptPolicy
   readonly createAttemptId?: () => string
+  readonly createProviderTimeoutSignal?: (timeoutMs: number) => AbortSignal
   readonly feedbackRepository: AiFeedbackRepository
   readonly now?: () => Date
   readonly onAttemptTransition?: (
@@ -160,7 +163,10 @@ export function createAiFeedbackAttemptCoordinator({
         command,
         context,
         provider,
-        timeoutMs: parsedAttemptPolicy.providerTimeoutMs,
+        signal: options?.signal,
+        timeoutSignal: createProviderTimeoutSignal(
+          parsedAttemptPolicy.providerTimeoutMs
+        ),
       })
 
       if (providerResult.kind === "err") {
@@ -237,30 +243,43 @@ async function requestAiFeedback({
   command,
   context,
   provider,
-  timeoutMs,
+  signal,
+  timeoutSignal,
 }: {
   readonly command: CreateAiFeedbackCommand
   readonly context: AiFeedbackAttemptContext
   readonly provider: AiFeedbackProvider
-  readonly timeoutMs: number
+  readonly signal?: AbortSignal
+  readonly timeoutSignal: AbortSignal
 }): Promise<Result<AiFeedbackPayload, { readonly kind: "provider-failed" }>> {
-  let timeout: ReturnType<typeof setTimeout> | undefined
+  const providerSignal =
+    signal === undefined
+      ? timeoutSignal
+      : AbortSignal.any([signal, timeoutSignal])
+  let removeAbortListener: () => void = () => undefined
 
   try {
+    const aborted = new Promise<never>((_, reject) => {
+      if (providerSignal.aborted) {
+        reject(providerSignal.reason)
+        return
+      }
+
+      const onAbort = () => reject(providerSignal.reason)
+      providerSignal.addEventListener("abort", onAbort, { once: true })
+      removeAbortListener = () =>
+        providerSignal.removeEventListener("abort", onAbort)
+    })
     const providerResult = await Promise.race([
       provider.createFeedback(
         createAiFeedbackPrompt({
           answer: command.answer,
           focus: context.focus,
           lessonTitle: context.lessonTitle,
-        })
+        }),
+        { signal: providerSignal }
       ),
-      new Promise<never>((_, reject) => {
-        timeout = setTimeout(
-          () => reject(new Error("AI feedback provider timeout")),
-          timeoutMs
-        )
-      }),
+      aborted,
     ])
 
     if (providerResult.kind === "err") {
@@ -271,7 +290,7 @@ async function requestAiFeedback({
   } catch {
     return err({ kind: "provider-failed" })
   } finally {
-    if (timeout !== undefined) clearTimeout(timeout)
+    removeAbortListener()
   }
 }
 

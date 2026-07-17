@@ -1,5 +1,6 @@
-import type { AnyRouteConfig } from "@workspace/hono/core"
+import type { AnyRouteConfig } from "@/http/platform/core"
 import { learnerApiErrorSchema } from "@workspace/contracts/learning"
+import { learnerIdSchema } from "@workspace/contracts/learning/read-data"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
 import { unwrapApiCoreResult } from "@/errors/map-core-error"
@@ -37,7 +38,7 @@ const getLessonHandler: ApiRouteHandler<typeof getLessonRouteConfig> = async (
   const { lessonId } = context.req.valid("param")
   const result = await contentService.getLesson({
     lessonId,
-    userId: context.var.activeSession.user.id,
+    userId: learnerIdSchema.parse(context.var.activeSession.user.id),
   })
 
   return context.json(

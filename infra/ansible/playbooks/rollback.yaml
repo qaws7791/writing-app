@@ -12,34 +12,63 @@
           - writing_app_allow_code_rollback | default(false) | bool
         fail_msg: writing_app_allow_code_rollback=true를 명시해야 합니다.
 
-    - name: 직전 Compose 환경 파일 확인
-      ansible.builtin.stat:
-        path: "{{ writing_app_compose_directory }}/.env.previous"
-      register: writing_app_previous_compose_environment
+    - name: 코드 롤백 작업 공유 락 획득
+      ansible.builtin.command:
+        argv:
+          - mkdir
+          - -m
+          - "0700"
+          - "{{ writing_app_operation_lock_directory }}"
+      register: writing_app_rollback_operation_lock
+      changed_when: writing_app_rollback_operation_lock.rc == 0
+      failed_when: false
 
-    - name: 직전 배포 존재 확인
+    - name: 코드 롤백 작업 공유 락 획득 결과 검증
       ansible.builtin.assert:
         that:
-          - writing_app_previous_compose_environment.stat.exists
-        fail_msg: 롤백할 직전 Compose 환경 파일이 없습니다.
+          - writing_app_rollback_operation_lock.rc == 0
+        fail_msg: >-
+          다른 Writing App deploy 또는 rollback 작업이 이미 실행 중이거나
+          {{ writing_app_operation_lock_directory }}를 생성할 수 없습니다. 안전을 위해 코드 롤백을
+          시작하지 않습니다. stale lock은 자동 삭제하지 않으므로, 실행 중인 작업이 없음을 확인한
+          운영자가 수동으로 점검·해제해야 합니다.
 
-    - name: 직전 image reference 복구
-      ansible.builtin.copy:
-        src: "{{ writing_app_compose_directory }}/.env.previous"
-        dest: "{{ writing_app_compose_directory }}/.env"
-        remote_src: true
-        owner: root
-        group: root
-        mode: "0640"
+    - name: 공유 락 아래 코드 롤백 실행
+      block:
+        - name: 직전 Compose 환경 파일 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_compose_directory }}/.env.previous"
+          register: writing_app_previous_compose_environment
 
-    - name: 직전 서비스 기동
-      community.docker.docker_compose_v2:
-        project_src: "{{ writing_app_compose_directory }}"
-        env_files:
-          - .env
-        files:
-          - compose.yaml
-        pull: missing
-        state: present
-        wait: true
-        wait_timeout: 120
+        - name: 직전 배포 존재 확인
+          ansible.builtin.assert:
+            that:
+              - writing_app_previous_compose_environment.stat.exists
+            fail_msg: 롤백할 직전 Compose 환경 파일이 없습니다.
+
+        - name: 직전 image reference 복구
+          ansible.builtin.copy:
+            src: "{{ writing_app_compose_directory }}/.env.previous"
+            dest: "{{ writing_app_compose_directory }}/.env"
+            remote_src: true
+            owner: root
+            group: root
+            mode: "0640"
+
+        - name: 직전 서비스 기동
+          community.docker.docker_compose_v2:
+            project_src: "{{ writing_app_compose_directory }}"
+            env_files:
+              - .env
+            files:
+              - compose.yaml
+            pull: missing
+            state: present
+            wait: true
+            wait_timeout: 120
+      always:
+        - name: 이 코드 롤백 실행이 획득한 공유 락 해제
+          ansible.builtin.file:
+            path: "{{ writing_app_operation_lock_directory }}"
+            state: absent
+          when: writing_app_rollback_operation_lock.rc == 0

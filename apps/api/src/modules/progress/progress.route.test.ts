@@ -36,7 +36,7 @@ const progressPage = learnerProgressPageSchema.parse({
       visualKey: "basic-sentence-writing",
     },
   ],
-  nextCursor: "next-page",
+  nextCursor: null,
 })
 
 describe("플랫폼 API progress route", () => {
@@ -46,7 +46,7 @@ describe("플랫폼 API progress route", () => {
       ...dependencies,
       progressService: {
         async readProgress() {
-          return { kind: "ok", value: progressPage }
+          return { items: progressPage.items, nextPosition: null }
         },
       },
     })
@@ -61,9 +61,19 @@ describe("플랫폼 API progress route", () => {
 
   it("status와 cursor query를 현재 학습자 범위로 전달한다", async () => {
     const dependencies = createTestDependencies()
+    const nextPosition = { courseId: "c0", primary: 0 }
+    const cursor = dependencies.learnerCursorCodec.encode({
+      endpoint: "progress",
+      fingerprint: dependencies.learnerCursorCodec.createFingerprint({
+        status: "in_progress",
+      }),
+      learnerScope:
+        dependencies.learnerCursorCodec.createLearnerScope("user-1"),
+      position: nextPosition,
+    })
     const readProgress = vi.fn(async () => ({
-      kind: "ok" as const,
-      value: progressPage,
+      items: progressPage.items,
+      nextPosition: null,
     }))
     const app = createApp({
       ...dependencies,
@@ -71,30 +81,25 @@ describe("플랫폼 API progress route", () => {
     })
 
     const response = await app.request(
-      "/progress?status=in_progress&cursor=next-page&limit=10",
+      `/progress?status=in_progress&cursor=${encodeURIComponent(cursor)}&limit=10`,
       { headers: authenticatedHeaders }
     )
 
     expect(response.status).toBe(200)
-    expect(readProgress).toHaveBeenCalledWith("user-1", {
-      cursor: "next-page",
+    expect(readProgress).toHaveBeenCalledWith({
+      after: nextPosition,
       limit: 10,
       status: "in_progress",
+      userId: "user-1",
     })
   })
 
   it("유효하지 않은 cursor는 400 INVALID_CURSOR로 반환한다", async () => {
     const dependencies = createTestDependencies()
+    const readProgress = vi.fn(dependencies.progressService.readProgress)
     const app = createApp({
       ...dependencies,
-      progressService: {
-        async readProgress() {
-          return {
-            error: { kind: "invalid-cursor" as const },
-            kind: "err" as const,
-          }
-        },
-      },
+      progressService: { readProgress },
     })
 
     const response = await app.request("/progress?cursor=invalid", {
@@ -105,5 +110,6 @@ describe("플랫폼 API progress route", () => {
     await expect(response.json()).resolves.toMatchObject({
       code: "INVALID_CURSOR",
     })
+    expect(readProgress).not.toHaveBeenCalled()
   })
 })

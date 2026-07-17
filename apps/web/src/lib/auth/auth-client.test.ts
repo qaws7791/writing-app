@@ -3,7 +3,7 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   readLessonDraftText,
   writeLessonDraftText,
-} from "@workspace/ui/lib/lesson-draft-storage"
+} from "@/features/lessons/lesson-draft-storage"
 
 import { createWebAuthClient } from "@/lib/auth/auth-client"
 import { readBrowserApiBaseUrl, type BrowserApiBaseUrl } from "@/runtime-config"

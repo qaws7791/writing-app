@@ -6,53 +6,207 @@
   vars_files:
     - ../vars/defaults.yaml
   tasks:
-    - name: Compose 서비스 health 대기
-      community.docker.docker_compose_v2:
-        project_src: "{{ writing_app_compose_directory }}"
-        env_files:
-          - .env
-        files:
-          - compose.yaml
-        pull: never
-        state: present
-        wait: true
-        wait_timeout: 120
-
-    - name: Caddy 내부 route 검증
-      community.docker.docker_compose_v2_exec:
-        project_src: "{{ writing_app_compose_directory }}"
-        env_files:
-          - .env
-        files:
-          - compose.yaml
-        service: caddy
+    - name: 배포 검증 작업 공유 락 획득
+      ansible.builtin.command:
         argv:
-          - wget
-          - -q
-          - -O
-          - "-"
-          - "--header=Host: {{ item.host }}"
-          - "http://127.0.0.1:8080{{ item.path }}"
-      changed_when: false
-      loop:
-        - host: "{{ writing_app_web_host }}"
-          path: /health
-        - host: "{{ writing_app_api_host }}"
-          path: /health
-        - host: "{{ writing_app_admin_host }}"
-          path: /health
-        - host: "{{ writing_app_admin_api_host }}"
-          path: /health
+          - mkdir
+          - -m
+          - "0700"
+          - "{{ writing_app_operation_lock_directory }}"
+      register: writing_app_verify_operation_lock
+      changed_when: writing_app_verify_operation_lock.rc == 0
+      failed_when: false
 
-    - name: 공개 route 검증
-      ansible.builtin.uri:
-        url: "{{ item }}"
-        method: GET
-        status_code: 200
-        return_content: false
-      loop:
-        - "{{ writing_app_web_origin }}/health"
-        - "{{ writing_app_api_origin }}/health"
-        - "{{ writing_app_admin_origin }}/health"
-        - "{{ writing_app_admin_api_origin }}/health"
-      when: writing_app_verify_public_routes | bool
+    - name: 배포 검증 작업 공유 락 획득 결과 검증
+      ansible.builtin.assert:
+        that:
+          - writing_app_verify_operation_lock.rc == 0
+        fail_msg: >-
+          다른 Writing App deploy, rollback 또는 복구 작업이 이미 실행 중이거나
+          {{ writing_app_operation_lock_directory }}를 생성할 수 없습니다. 안전을 위해 배포 검증을
+          시작하지 않습니다. stale lock은 자동 삭제하지 않으므로, 실행 중인 작업이 없음을 확인한
+          운영자가 수동으로 점검·해제해야 합니다.
+
+    - name: 공유 락 아래 배포 검증 실행
+      block:
+        - name: Compose 서비스 health 대기
+          community.docker.docker_compose_v2:
+            project_src: "{{ writing_app_compose_directory }}"
+            env_files:
+              - .env
+            files:
+              - compose.yaml
+            pull: never
+            state: present
+            wait: true
+            wait_timeout: 120
+
+        - name: 통합 API process 상태 조회
+          ansible.builtin.command:
+            argv:
+              - docker
+              - compose
+              - --env-file
+              - .env
+              - -f
+              - compose.yaml
+              - ps
+              - --services
+              - --status
+              - running
+          args:
+            chdir: "{{ writing_app_compose_directory }}"
+          changed_when: false
+          register: writing_app_running_services
+
+        - name: 통합 API runtime 상태 검증
+          ansible.builtin.assert:
+            that:
+              - "'api' in writing_app_running_services.stdout_lines"
+            fail_msg: 정상 배포에는 통합 api가 실행 중이어야 합니다.
+
+        - name: Caddy 내부 web audience probe
+          community.docker.docker_compose_v2_exec:
+            project_src: "{{ writing_app_compose_directory }}"
+            env_files:
+              - .env
+            files:
+              - compose.yaml
+            service: caddy
+            argv:
+              - wget
+              - -q
+              - -O
+              - "-"
+              - "--header=Host: {{ item.host }}"
+              - "http://127.0.0.1:8080{{ item.path }}"
+          changed_when: false
+          loop:
+            - audience: learner
+              expected:
+                ok: true
+                service: web
+              host: "{{ writing_app_web_host }}"
+              path: /health
+            - audience: admin
+              expected:
+                ok: true
+                service: admin
+              host: "{{ writing_app_admin_host }}"
+              path: /health
+          register: writing_app_caddy_web_health
+
+        - name: Caddy 내부 web audience 응답 검증
+          ansible.builtin.assert:
+            that:
+              - (item.stdout | from_json) == item.item.expected
+            fail_msg: >-
+              {{ item.item.audience }} web Host가 기대한 service health 응답을 반환하지 않았습니다.
+          loop: "{{ writing_app_caddy_web_health.results }}"
+          loop_control:
+            label: "{{ item.item.audience }}"
+
+        - name: Caddy 내부 API audience probe
+          community.docker.docker_compose_v2_exec:
+            project_src: "{{ writing_app_compose_directory }}"
+            env_files:
+              - .env
+            files:
+              - compose.yaml
+            service: caddy
+            argv:
+              - wget
+              - -q
+              - -O
+              - "-"
+              - "--header=Host: {{ item.host }}"
+              - http://127.0.0.1:8080/health
+          changed_when: false
+          loop:
+            - audience: learner
+              expected:
+                ok: true
+              host: "{{ writing_app_api_host }}"
+            - audience: admin
+              expected:
+                ok: true
+                service: admin-api
+              host: "{{ writing_app_admin_api_host }}"
+          register: writing_app_caddy_api_health
+
+        - name: Caddy 내부 API audience 응답 검증
+          ansible.builtin.assert:
+            that:
+              - (item.stdout | from_json) == item.item.expected
+            fail_msg: >-
+              {{ item.item.audience }} API Host가 기대한 sub-app health 응답을 반환하지 않았습니다.
+          loop: "{{ writing_app_caddy_api_health.results }}"
+          loop_control:
+            label: "{{ item.item.audience }}"
+
+        - name: 공개 web audience probe
+          ansible.builtin.uri:
+            url: "{{ item.origin }}/health"
+            method: GET
+            status_code: 200
+            return_content: true
+          loop:
+            - audience: learner
+              expected:
+                ok: true
+                service: web
+              origin: "{{ writing_app_web_origin }}"
+            - audience: admin
+              expected:
+                ok: true
+                service: admin
+              origin: "{{ writing_app_admin_origin }}"
+          register: writing_app_public_web_health
+          when: writing_app_verify_public_routes | bool
+
+        - name: 공개 web audience 응답 검증
+          ansible.builtin.assert:
+            that:
+              - item.json == item.item.expected
+            fail_msg: >-
+              {{ item.item.audience }} public web Host가 기대한 service health 응답을 반환하지 않았습니다.
+          loop: "{{ writing_app_public_web_health.results }}"
+          loop_control:
+            label: "{{ item.item.audience }}"
+          when: writing_app_verify_public_routes | bool
+
+        - name: 공개 API audience probe
+          ansible.builtin.uri:
+            url: "{{ item.origin }}/health"
+            method: GET
+            status_code: 200
+            return_content: true
+          loop:
+            - audience: learner
+              expected:
+                ok: true
+              origin: "{{ writing_app_api_origin }}"
+            - audience: admin
+              expected:
+                ok: true
+                service: admin-api
+              origin: "{{ writing_app_admin_api_origin }}"
+          register: writing_app_public_api_health
+          when: writing_app_verify_public_routes | bool
+
+        - name: 공개 API audience 응답 검증
+          ansible.builtin.assert:
+            that:
+              - item.json == item.item.expected
+            fail_msg: >-
+              {{ item.item.audience }} public API Host가 기대한 sub-app health 응답을 반환하지 않았습니다.
+          loop: "{{ writing_app_public_api_health.results }}"
+          loop_control:
+            label: "{{ item.item.audience }}"
+          when: writing_app_verify_public_routes | bool
+      always:
+        - name: 이 배포 검증 실행이 획득한 공유 락 해제
+          ansible.builtin.file:
+            path: "{{ writing_app_operation_lock_directory }}"
+            state: absent
+          when: writing_app_verify_operation_lock.rc == 0

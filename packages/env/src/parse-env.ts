@@ -15,7 +15,6 @@ const booleanFlagSchema = z
   .transform((value) => value === "true")
 
 const appEnvBaseSchema = z.object({
-  ADMIN_API_PORT: portSchema.default(localRuntimePorts.adminApi),
   ADMIN_BETTER_AUTH_SECRET: z.string().min(32).optional(),
   ADMIN_BETTER_AUTH_URL: z.url().optional(),
   ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
@@ -145,13 +144,13 @@ function validateProductionEnvironment(
     context,
     "BETTER_AUTH_COOKIE_DOMAIN",
     env.BETTER_AUTH_COOKIE_DOMAIN,
-    env.WEB_ORIGIN
+    [env.WEB_ORIGIN, env.BETTER_AUTH_URL]
   )
   validateCookieDomain(
     context,
     "ADMIN_BETTER_AUTH_COOKIE_DOMAIN",
     env.ADMIN_BETTER_AUTH_COOKIE_DOMAIN,
-    env.ADMIN_ORIGIN
+    [env.ADMIN_ORIGIN, env.ADMIN_BETTER_AUTH_URL]
   )
 }
 
@@ -211,20 +210,24 @@ function validateCookieDomain(
   context: z.RefinementCtx,
   name: "ADMIN_BETTER_AUTH_COOKIE_DOMAIN" | "BETTER_AUTH_COOKIE_DOMAIN",
   value: string | undefined,
-  origin: string
+  origins: readonly (string | undefined)[]
 ): void {
   if (value === undefined) return
 
   const domain = value.replace(/^\./u, "").toLowerCase()
-  const hostname = new URL(origin).hostname.toLowerCase()
   if (
     isLocalHostname(domain) ||
-    (hostname !== domain && !hostname.endsWith(`.${domain}`))
+    origins.some((origin) => {
+      if (origin === undefined) return true
+
+      const hostname = new URL(origin).hostname.toLowerCase()
+      return hostname !== domain && !hostname.endsWith(`.${domain}`)
+    })
   ) {
     addProductionIssue(
       context,
       name,
-      "cookie domain은 해당 HTTPS origin의 parent domain이어야 합니다."
+      "cookie domain은 cookie 발급·소비 HTTPS origin의 parent domain이어야 합니다."
     )
   }
 }

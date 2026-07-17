@@ -4,12 +4,7 @@ import path from "node:path"
 
 type JsonObject = Record<string, unknown>
 
-export const imageReleaseServices = [
-  "web",
-  "api",
-  "admin",
-  "admin-api",
-] as const
+export const imageReleaseServices = ["web", "api", "admin"] as const
 
 export type ImageReleaseService = (typeof imageReleaseServices)[number]
 
@@ -38,7 +33,6 @@ export interface ImageReleaseManifest {
   readonly configurationDigest: string
   readonly images: {
     readonly admin: ImageReleaseRecord["image"]
-    readonly "admin-api": ImageReleaseRecord["image"]
     readonly api: ImageReleaseRecord["image"]
     readonly web: ImageReleaseRecord["image"]
   }
@@ -124,7 +118,7 @@ export function createImageReleaseManifest(
   records: readonly ImageReleaseRecord[]
 ): ImageReleaseManifest {
   if (records.length !== imageReleaseServices.length) {
-    throw new Error("release manifest에는 네 image record가 모두 필요합니다.")
+    throw new Error("release manifest에는 세 image record가 모두 필요합니다.")
   }
 
   const byService = new Map<ImageReleaseService, ImageReleaseRecord>()
@@ -166,7 +160,6 @@ export function createImageReleaseManifest(
     configurationDigest: first.configurationDigest,
     images: {
       admin: requireRecord(byService, "admin").image,
-      "admin-api": requireRecord(byService, "admin-api").image,
       api: requireRecord(byService, "api").image,
       web: requireRecord(byService, "web").image,
     },

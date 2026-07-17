@@ -2,7 +2,7 @@
 
 이 문서는 인증, 인가, 민감 데이터 처리, 보안 요구사항을 설명하는 단일 진실 원천이다.
 
-- 기준일: 2026-07-16
+- 기준일: 2026-07-17
 
 ## 보안 원칙
 
@@ -58,10 +58,9 @@
 - `Authorization`, `Content-Type` header를 허용한다.
 - origin 값은 환경 변수 파서와 앱별 env 변환에서 URL로 검증한다.
 - CORS 응답 header는 CSRF 방어로 사용하지 않는다.
-- 쿠키가 포함된 `POST`, `PUT`, `PATCH`, `DELETE` 요청은 공통 middleware가 `Origin`과 Fetch Metadata를 검사하고 신뢰하지 않은 요청을 side effect 전에 `403`으로 종료한다.
+- 쿠키가 포함된 `POST`, `PUT`, `PATCH`, `DELETE` 요청은 공통 middleware가 `Origin`과 Fetch Metadata를 검사하고 신뢰하지 않은 요청을 side effect 전에 거절한다. 공통 middleware와 관리자 API의 최종 응답은 `403 FORBIDDEN_ORIGIN`이다. 학습자 API는 현재 오류 정규화 때문에 최종 응답이 `500 INTERNAL_SERVER_ERROR`가 되지만 application side effect가 실행되지 않는다는 사실을 characterization test로 고정한다. 이 상태는 목표 정책 승인이 아니라 후속 오류 mapping 변경 시 호환성을 판단할 기준선이다.
 - Server Action과 Next.js Route Handler는 공개 HTTP 진입점으로 취급한다. 어드민 AI chat proxy도 요청 origin, 세션, 본문 크기를 직접 검증한다.
-- 자료실 이벤트 WebSocket upgrade는 `ADMIN_ORIGIN`, 실제 관리자 세션 cookie, `GET`과 `Upgrade: websocket`을 연결 전에 검증하며 URL query token을 허용하지 않는다. 연결 data에는 최초 세션 만료 시각과 cookie header만 보관하고 만료 timer 및 heartbeat·구독 시 재검증으로 폐기·만료 세션을 1008로 종료한다.
-- 자료실 이벤트 WebSocket은 관리자당 5개, IP당 20개 연결과 10초당 관리자별 메시지 60개·구독 20개를 허용한다. payload는 4KiB, 송신 backpressure는 64KiB로 제한하고 초과 연결은 transport 또는 1008 정책 위반으로 종료한다.
+- 자료실은 관리자 cookie를 사용하는 HTTP route만 제공한다. 조회는 실제 관리자 세션을 확인하고, 저장·구조 변경은 다른 변경 요청과 같은 origin·Fetch Metadata 검증을 통과해야 한다.
 
 ## 학습 진행 무결성
 
@@ -73,20 +72,32 @@
 
 ## 입력과 요청 크기
 
-- 학습자 API와 어드민 API는 요청 본문을 최대 `1 MiB`로 제한하고 초과 요청을 `413 PAYLOAD_TOO_LARGE`로 거부한다.
+- 학습자 API는 요청 본문을 최대 `1 MiB`, 어드민 API는 이미지 업로드를 포함한 현재 app 전역 요청 본문을 최대 `6 MiB`로 제한한다. 공통 middleware는 정확히 상한인 본문을 다음 단계로 전달하고 1 byte 초과를 application handler 전에 `413 PAYLOAD_TOO_LARGE`로 거절한다.
+- 어드민 API는 초과 응답을 그대로 `413 PAYLOAD_TOO_LARGE`로 반환한다. 학습자 API는 현재 오류 정규화 때문에 최종 응답이 `500 INTERNAL_SERVER_ERROR`가 되지만 side effect는 실행하지 않는다. 이는 검증된 현재 차이이며 body-limit 정책 변경이나 오류 mapping 수정은 별도 작업에서 결정한다.
 - AI 답안, 학습 답안 배열과 텍스트, 공지, 법적 문구, 자료실 이름과 Markdown은 contracts schema에서 용도별 최대 길이와 개수를 검증한다.
 - 자료실 GFM Markdown 원본은 문서 전체 길이를 제한하고 저장 투영 전에 지원 node·속성·URL과 의미 왕복을 검증한다.
-- 자료실 HTTP transaction은 decoded update 512KiB, 최종 Yjs snapshot 3,000,000byte, Lexical node 20,000개와 7일 보존 구간의 transaction receipt 10,000개를 최종 commit 전에 제한한다. projection은 1초 deadline을 넘기면 명시적으로 거부하며 거부된 transaction은 기존 snapshot·revision·검색 색인을 변경하지 않는다.
+- 자료실 문서 저장은 `If-Match`를 필수로 검증하고, 버전이 다르면 `412 Precondition Failed`와 최신 문서를 반환한 뒤 기존 Markdown·버전·검색 색인을 변경하지 않는다.
 - 일반 JSON 값은 깊이, 전체 node 수, 배열·객체 크기와 문자열 길이를 반복 방식으로 검증한다.
 
 ## 민감 데이터 처리
+
+### 학습 콘텐츠 공개 경계
+
+- 학습자 레슨 응답은 `packages/core/src/modules/learning/application/learner-step-presenter.ts`의 10개 step variant별 object literal allowlist만 직렬화한다.
+- presenter는 내부 step과 중첩 item을 spread하거나 blacklist로 제거하지 않는다. 새 internal field와 중첩 field는 명시적으로 허용 목록에 추가하지 않는 한 공개 응답에 포함되지 않는다.
+- 객관식·빈칸·선택·순서의 정답과 해설, AI feedback 내부 결과·점수 설정, 매칭 pair와 분류 category 관계는 제출 전 응답에서 제거한다.
+- 선택지·항목의 결정적 HMAC 순서는 안정적인 표시와 제출 ID 매핑을 위한 것이며 암호화나 인가를 대신하지 않는다. 관리자 전체 콘텐츠 표현과 학습자 redacted 표현은 합치지 않는다.
+- 순수 presenter 테스트는 10개 variant의 정확한 공개 projection, top-level·중첩 미래 필드 기본 거부, 동일 context의 결정적 순서, 미지원 variant와 stable item ID 누락의 fail-closed 동작을 고정한다. 실제 SQLite repository와 lesson route fixture가 공개 응답 parity를 추가로 확인한다.
 
 ### HTTP 캐시와 프록시
 
 - 인증 handler와 세션·프로필·사용자·AI 대화 등 모든 보호 응답은 `Cache-Control: private, no-store`와 `Vary: Cookie`를 반환한다.
 - reverse proxy와 CDN은 `private` 또는 `no-store` 응답을 저장하지 않아야 한다. 쿠키가 포함된 요청을 공개 cache key로 축약하거나 다른 사용자에게 재사용하면 안 된다.
 - `/health`와 `/openapi`는 공개 route로 분리하며 보호 응답 middleware를 적용하지 않는다.
+- `/course-thumbnails/<visual-key>.png`는 release에 포함된 공개 정적 자산이며 1년 immutable cache를 사용한다. Admin image에는 canonical web 자산과 hash가 같은 허용 key 5개만 포함하고 외부 host나 sibling runtime 파일시스템을 읽지 않는다.
 - SSE와 다운로드 응답은 동일한 비저장 정책을 따르면서 스트림 및 첨부 헤더를 유지한다.
+
+공통 request logger는 method, query를 제외한 path, status, duration, 서버 request ID와 검증된 외부 request ID만 기본 기록한다. 인증 뒤에는 actor ID/type만 보강하며 Authorization, Cookie, password, token, raw body와 query string을 request·감사 이벤트에 포함하지 않는다. 내부 오류 이벤트도 예외 message와 요청 원문을 기록하지 않는다.
 
 저장소에 커밋하면 안 되는 값은 다음과 같다.
 
@@ -100,8 +111,8 @@
 
 ## 오류 응답 보안
 
-- JSON 파싱 실패는 `malformed_json` 같은 안전한 detail code로만 구분한다.
-- schema 검증 실패는 `invalid_body`로 구분한다.
+- 빈 body와 잘못된 JSON은 application service 전에 `400`으로 거절한다. 학습자 API는 둘을 `VALIDATION_ERROR`로 정규화하고 관리자 API는 기존 `HTTP_EXCEPTION` 응답을 유지한다.
+- schema 검증 실패는 학습자 API의 `VALIDATION_ERROR`, 관리자 API의 `VALIDATION_FAILED`로 구분한다.
 - raw request body와 parser stack trace는 응답에 노출하지 않는다.
 - 내부 예외는 표준 500 오류 응답으로 변환한다.
 - 사용자 노출 메시지는 한국어로 작성한다.
@@ -147,7 +158,7 @@
 - CSP는 `frame-ancestors 'none'`으로 clickjacking을 차단하고 앱별 API origin만 `connect-src`에 추가한다.
 - production CSP는 요청별 nonce와 `strict-dynamic`, `script-src-attr 'none'`을 사용한다. `CSP_REPORT_ONLY=true`는 위반 수집과 긴급 rollback에만 사용하며, 보고서는 `/api/csp-report`에서 제한된 구조화 로그로 기록한다.
 - 내부 이동 경로는 URL parser로 같은 origin의 절대 경로인지 확인하고 역슬래시, 외부 origin과 로그인 순환 경로를 거부한다.
-- 레슨 초안은 `version + 학습자 ID + step ID` namespace의 localStorage key와 동일한 메모리 cache 경계를 사용한다. 로그아웃은 현재 학습자의 초안만 제거하고, 소유자를 확인할 수 없는 legacy key는 새 계정으로 승격하지 않고 폐기한다.
+- `apps/web`의 레슨 초안 adapter는 `version + 학습자 ID + step ID` namespace의 localStorage key와 동일한 메모리 cache 경계를 사용한다. 로그아웃은 현재 학습자의 초안만 제거하고, 소유자를 확인할 수 없는 legacy key는 새 계정으로 승격하지 않고 폐기한다.
 - 레슨 초안 key와 값에는 token·이메일·서버 응답 전체를 저장하지 않는다. 초안은 최대 20,000자로 제한하고 저장소 접근 실패 시 현재 사용자 namespace의 메모리 값으로만 후퇴한다.
 
 ## 데이터 보존과 삭제
@@ -157,7 +168,7 @@
 - 앱 소유 `learner_profiles.status`를 `deleted`로 전환한다.
 - 학습 진행, 답변, 피드백 row는 감사와 복구 판단을 위해 보존한다.
 - 콘텐츠 삭제는 기본적으로 `archived` 상태 전환으로 처리한다.
-- 자료실 휴지통 이동은 폴더의 전체 하위 트리를 `archived`로 전환하고 복원은 반대로 적용한다. 영구 삭제 endpoint는 제공하지 않는다.
+- 자료실 휴지통 이동과 복원은 폴더의 전체 하위 트리에 적용한다. 영구 삭제는 휴지통의 최상위 항목에 대한 명시적 확인 뒤 같은 하위 트리를 제거한다.
 
 ## DB 안전장치
 

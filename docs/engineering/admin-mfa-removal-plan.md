@@ -16,7 +16,7 @@
 
 1. 배포 전 관리자 DB를 백업하고, 현재 관리자 세션의 유지·폐기 정책을 확정한다. MFA 복구 코드와 TOTP secret은 제거 대상이며 복구하지 않는다.
 2. DB 기준 schema와 migration에서 `admin_user.two_factor_enabled`, `admin_two_factor`, `admin_mfa_recovery_code`를 제거한다. 기존 SQLite DB는 `ALTER TABLE ... DROP COLUMN`과 MFA table 삭제로 정리하며, 관리자 user·account·session row는 보존한다.
-3. `apps/admin-api`에서 Better Auth `twoFactor` plugin, MFA recovery service, `/mfa/*` route, MFA 전용 route option과 의존성 주입을 제거한다. 세션 resolver는 관리자 id·이름·이메일·role과 만료 시각만 반환한다.
+3. 당시 관리자 API에서 Better Auth `twoFactor` plugin, MFA recovery service, `/mfa/*` route, MFA 전용 route option과 의존성 주입을 제거한다. 세션 resolver는 관리자 id·이름·이메일·role과 만료 시각만 반환한다.
 4. `packages/core`의 `AdminActor`에서 `authenticationAssurance`를 제거하고, owner 변경 인가 결과를 `allowed` 또는 `forbidden`으로 단순화한다. API middleware와 오류 변환에서도 MFA/step-up 오류를 제거한다.
 5. `packages/contracts`의 어드민 session DTO에서 `mfa` 필드를 제거하고, `apps/admin`의 session adapter·보호 layout·API 오류 매핑을 같은 계약으로 갱신한다.
 6. `apps/admin`의 `/mfa` route, MFA 화면, 로그인 TOTP·복구 모드와 MFA client 요청 함수를 삭제한다. 로그인 성공은 안전한 `next` 경로 또는 대시보드로 바로 이동하며, 사이드바의 보안 메뉴도 제거한다.
@@ -25,7 +25,7 @@
 
 ## 영향 파일군
 
-- 서버: `apps/admin-api/src/auth`, `middleware`, `routes`, `app.ts`, `main.ts`, `errors`
+- 서버: 당시 관리자 API의 auth, middleware, routes, app, main, errors source
 - 도메인: `packages/core/src/modules/admin/application/policies`
 - 계약·DB: `packages/contracts/src/admin`, `packages/db/src/schema`, `packages/db/src/migrations`
 - 웹: `apps/admin/src/app`, `features/auth`, `lib/auth`, `lib/api`, `lib/navigation`
@@ -40,7 +40,7 @@
 
 ## 검증 결과
 
-- `@workspace/db`, `@workspace/core`, `@workspace/admin-api`, `@workspace/admin`의 단위·route·계약 테스트가 통과했다.
+- 당시 DB, core, 관리자 API, 관리자 웹 workspace의 단위·route·계약 테스트가 통과했다.
 - `bunx bun@1.3.10 run test:e2e`에서 UI 시각 계약, 학습자 테스트 로그인, MFA 없는 어드민 owner/operator 권한 시나리오 3건이 통과했다.
 - 당시 API 계약 drift 검사와 document drift, typecheck, lint, format 검사가 통과했다. API 계약 drift 명령은 2026-07-16 학습자 계약 단순화 단계 1에서 정적 생성 경로와 함께 제거되었다.
 - `@workspace/admin` production build가 통과했다. 전체 build는 변경 범위 밖인 `@workspace/web`가 필요한 production web origin 환경값 없이 실행되어 중단됐다.

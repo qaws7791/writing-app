@@ -20,6 +20,8 @@
 - `use-lesson-session.ts`는 state machine과 Adapter를 React 생명주기에 조립하고 최신 답안 저장 순서만 관리한다.
 - 시작 재시도, 중복 submit, 진행·완료 전이는 table test로 고정하고 Adapter의 부분 실패와 AI 피드백 재시도 분류는 fault test로 고정했다.
 
+클라이언트 state machine은 서버 저장 원자성을 재구현하지 않는다. 서버의 일반 단계 완료는 순수 effect plan이 답안, step/lesson, course와 activity 순서를 결정하고 SQLite interpreter가 한 transaction에서 적용한다. SQLite characterization은 retry·잠금·version·순서 거절에서 학습 row가 바뀌지 않고, accepted·lesson/course 완료·replay에서 답안과 활동 집계가 한 번만 확정되며, 일반 완료와 AI finalize 저장 실패가 각각 관련 상태 전체를 rollback하는지를 고정한다.
+
 ## 검증
 
 - `bun run test -- src/features/lessons/lesson-session-machine.test.ts src/features/lessons/lesson-session-effect-adapter.test.ts src/features/lessons/lesson-experience.test.tsx`

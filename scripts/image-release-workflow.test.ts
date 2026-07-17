@@ -38,16 +38,16 @@ describe("production image release workflow", () => {
     expect(workflow).not.toContain("pull_request:")
   })
 
-  test("네 image를 GHCR에 SHA와 공개 설정 digest tag로 게시한다", () => {
+  test("세 image를 GHCR에 SHA와 공개 설정 digest tag로 게시한다", () => {
     for (const [service, dockerfile] of [
       ["web", "deploy/docker/web.dockerfile"],
       ["api", "deploy/docker/api.dockerfile"],
       ["admin", "deploy/docker/admin.dockerfile"],
-      ["admin-api", "deploy/docker/admin-api.dockerfile"],
     ] as const) {
       expect(workflow).toContain("service: " + service)
       expect(workflow).toContain("dockerfile: " + dockerfile)
     }
+    expect(workflow).not.toContain("service: admin-api")
 
     expect(workflow).toContain("packages: write")
     expect(workflow).toContain(
@@ -74,7 +74,7 @@ describe("production image release workflow", () => {
     expect(workflow).not.toMatch(/\blatest\b/u)
   })
 
-  test("SBOM, provenance, GitHub attestation과 네 digest manifest를 생성한다", () => {
+  test("SBOM, provenance, GitHub attestation과 세 digest manifest를 생성한다", () => {
     expect(workflow).toContain("attestations: write")
     expect(workflow).toContain("artifact-metadata: write")
     expect(workflow).toContain("id-token: write")

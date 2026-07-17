@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { lessonStepDtoSchema } from "@workspace/contracts/content"
-import { completeLearnerStepBodySchema } from "@workspace/contracts/learning"
+import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/step-data"
 
 import { gradeLearnerStep } from "#core/modules/learning/domain/step-grading-policy"
 
@@ -16,12 +16,11 @@ describe("학습 단계 서버 채점 정책", () => {
       type: "READING",
     })
 
-    expect(
-      gradeLearnerStep(
-        reading,
-        completeLearnerStepBodySchema.parse({ kind: "acknowledge" })
-      )
-    ).toEqual({ answer: null, evaluation: null, kind: "accepted" })
+    expect(gradeLearnerStep(reading, { kind: "acknowledge" })).toEqual({
+      answer: null,
+      evaluation: null,
+      kind: "accepted",
+    })
   })
 
   it.each([
@@ -121,10 +120,10 @@ describe("학습 단계 서버 채점 정책", () => {
       },
     },
   ])("$step.type 정답을 accepted로 판정한다", ({ answer, step }) => {
-    const result = gradeLearnerStep(
-      lessonStepDtoSchema.parse(step),
-      completeLearnerStepBodySchema.parse({ answer, kind: "answer" })
-    )
+    const result = gradeLearnerStep(lessonStepDtoSchema.parse(step), {
+      kind: "answer",
+      submission: learnerStepSubmissionSchema.parse(answer),
+    })
 
     expect(result.kind).toBe("accepted")
     if (result.kind === "accepted") {
@@ -149,20 +148,20 @@ describe("학습 단계 서버 채점 정책", () => {
       type: "MULTIPLE_CHOICE",
     })
 
-    const retry = gradeLearnerStep(
-      step,
-      completeLearnerStepBodySchema.parse({
-        answer: { selectedOptionId: "option-a", type: "MULTIPLE_CHOICE" },
-        kind: "answer",
-      })
-    )
-    const invalid = gradeLearnerStep(
-      step,
-      completeLearnerStepBodySchema.parse({
-        answer: { selectedOptionId: "unknown", type: "MULTIPLE_CHOICE" },
-        kind: "answer",
-      })
-    )
+    const retry = gradeLearnerStep(step, {
+      kind: "answer",
+      submission: learnerStepSubmissionSchema.parse({
+        selectedOptionId: "option-a",
+        type: "MULTIPLE_CHOICE",
+      }),
+    })
+    const invalid = gradeLearnerStep(step, {
+      kind: "answer",
+      submission: learnerStepSubmissionSchema.parse({
+        selectedOptionId: "unknown",
+        type: "MULTIPLE_CHOICE",
+      }),
+    })
 
     expect(retry).toMatchObject({
       evaluation: { correct: false, type: "MULTIPLE_CHOICE" },

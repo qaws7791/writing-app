@@ -1,6 +1,6 @@
 import type { RouteHandler } from "@hono/zod-openapi"
-import type { AnyRouteConfig } from "@workspace/hono/core"
-import { defineRouteForEnv } from "@workspace/hono/core"
+import type { AnyRouteConfig } from "@/http/platform/core"
+import { defineRouteForEnv } from "@/http/platform/core"
 import type { AuthenticatedSession } from "@workspace/core/auth"
 
 import type { ApiRequestContext } from "@/context/create-request-context"

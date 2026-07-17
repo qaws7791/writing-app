@@ -1,25 +1,35 @@
-import {
-  adminResourceSearchDtoSchema,
-  type AdminResourceSearchDto,
-} from "@workspace/contracts/admin"
+import type { AdminResourceSearchItemDto } from "@workspace/contracts/admin/resource-library-data"
 
 import type { ResourceSearchRepository } from "#core/modules/resource-library/application/ports/resource-search.repository"
 
+export type SearchResourcesQuery = {
+  readonly limit: number
+  readonly query: string
+}
+
+export type ResourceSearchResult = {
+  readonly items: readonly AdminResourceSearchItemDto[]
+}
+
 export type ResourceSearchUseCase = {
-  readonly search: (input: {
-    readonly limit: number
-    readonly query: string
-  }) => Promise<AdminResourceSearchDto>
+  readonly search: (
+    query: SearchResourcesQuery
+  ) => Promise<ResourceSearchResult>
 }
 
 export function createResourceSearchUseCase(
   repository: ResourceSearchRepository
 ): ResourceSearchUseCase {
   return {
-    async search(input) {
-      const records = await repository.search(input)
+    async search(query) {
+      const records = await repository.search(query)
 
-      return adminResourceSearchDtoSchema.parse({ items: records })
+      return {
+        items: records.map((record) => ({
+          ...record,
+          path: [...record.path],
+        })),
+      }
     },
   }
 }

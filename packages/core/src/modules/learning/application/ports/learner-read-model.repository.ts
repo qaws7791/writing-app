@@ -1,14 +1,17 @@
 import type {
+  CourseId,
   LearnerCourseDetail,
   LearnerCourseSort,
   LearnerCourseSummary,
+  LearnerId,
   LearnerLesson,
   LearnerProgressCourse,
-} from "@workspace/contracts/learning"
+  LessonId,
+} from "@workspace/contracts/learning/read-data"
 
 import type { LearnerCursorPosition } from "#core/modules/learning/application/learner-cursor"
 
-export type LearnerCourseListRepositoryQuery = {
+export type LearnerCourseReadQuery = {
   readonly after?: LearnerCursorPosition
   readonly category?: string
   readonly limit: number
@@ -16,11 +19,11 @@ export type LearnerCourseListRepositoryQuery = {
   readonly sort: LearnerCourseSort
 }
 
-export type LearnerProgressListRepositoryQuery = {
+export type LearnerProgressReadQuery = {
   readonly after?: LearnerCursorPosition
   readonly limit: number
   readonly status?: "completed" | "in_progress"
-  readonly userId: string
+  readonly userId: LearnerId
 }
 
 export type LearnerReadModelPage<TItem> = {
@@ -35,18 +38,18 @@ export type LearnerLessonReadResult =
 
 export type LearnerReadModelRepository = {
   readonly findCourseDetail: (input: {
-    readonly courseId: string
-    readonly userId: string
+    readonly courseId: CourseId
+    readonly userId: LearnerId
   }) => Promise<LearnerCourseDetail | null>
   readonly findLesson: (input: {
-    readonly lessonId: string
-    readonly userId: string
+    readonly lessonId: LessonId
+    readonly userId: LearnerId
   }) => Promise<LearnerLessonReadResult>
   readonly listCourseCategories: () => Promise<readonly string[]>
   readonly listCourses: (
-    query: LearnerCourseListRepositoryQuery
+    query: LearnerCourseReadQuery
   ) => Promise<LearnerReadModelPage<LearnerCourseSummary>>
   readonly listProgress: (
-    query: LearnerProgressListRepositoryQuery
+    query: LearnerProgressReadQuery
   ) => Promise<LearnerReadModelPage<LearnerProgressCourse>>
 }

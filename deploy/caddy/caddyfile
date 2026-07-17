@@ -1,5 +1,5 @@
 {
-	admin off
+	admin 127.0.0.1:2019
 	auto_https off
 
 	servers {
@@ -31,7 +31,7 @@
 
 	@admin-api host {$ADMIN_API_HOST}
 	handle @admin-api {
-		reverse_proxy admin-api:4001
+		reverse_proxy api:4000
 	}
 
 	handle {

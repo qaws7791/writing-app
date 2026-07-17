@@ -1,11 +1,12 @@
 import type { LessonStepDto } from "@workspace/contracts/content"
 import {
   stepEvaluationSchema,
-  type CompleteLearnerStepBody,
   type LearnerStepSubmission,
   type StepEvaluation,
   type StepItemVerdict,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/step-data"
+
+import type { LearnerStepCompletion } from "#core/modules/learning/domain/learner-transition"
 
 export type StepGradingResult =
   | { readonly kind: "invalid" }
@@ -18,42 +19,42 @@ export type StepGradingResult =
 
 export function gradeLearnerStep(
   step: LessonStepDto,
-  request: CompleteLearnerStepBody
+  completion: LearnerStepCompletion
 ): StepGradingResult {
-  if (request.kind === "acknowledge") {
+  if (completion.kind === "acknowledge") {
     return step.type === "READING" || step.type === "COMPARE"
       ? { answer: null, evaluation: null, kind: "accepted" }
       : { kind: "invalid" }
   }
 
-  switch (request.answer.type) {
+  switch (completion.submission.type) {
     case "MULTIPLE_CHOICE":
-      return step.type === request.answer.type
-        ? gradeMultipleChoice(step, request.answer)
+      return step.type === completion.submission.type
+        ? gradeMultipleChoice(step, completion.submission)
         : { kind: "invalid" }
     case "FILL_BLANK":
-      return step.type === request.answer.type
-        ? gradeFillBlank(step, request.answer)
+      return step.type === completion.submission.type
+        ? gradeFillBlank(step, completion.submission)
         : { kind: "invalid" }
     case "SELECT":
-      return step.type === request.answer.type
-        ? gradeSelect(step, request.answer)
+      return step.type === completion.submission.type
+        ? gradeSelect(step, completion.submission)
         : { kind: "invalid" }
     case "ORDER":
-      return step.type === request.answer.type
-        ? gradeOrder(step, request.answer)
+      return step.type === completion.submission.type
+        ? gradeOrder(step, completion.submission)
         : { kind: "invalid" }
     case "MATCH":
-      return step.type === request.answer.type
-        ? gradeMatch(step, request.answer)
+      return step.type === completion.submission.type
+        ? gradeMatch(step, completion.submission)
         : { kind: "invalid" }
     case "CATEGORIZE":
-      return step.type === request.answer.type
-        ? gradeCategorize(step, request.answer)
+      return step.type === completion.submission.type
+        ? gradeCategorize(step, completion.submission)
         : { kind: "invalid" }
     case "WRITE":
-      return step.type === request.answer.type
-        ? gradeWrite(step, request.answer)
+      return step.type === completion.submission.type
+        ? gradeWrite(step, completion.submission)
         : { kind: "invalid" }
   }
 }

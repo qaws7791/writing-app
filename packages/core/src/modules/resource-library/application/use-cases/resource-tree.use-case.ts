@@ -1,21 +1,10 @@
-import {
-  adminResourceNodeMutationDtoSchema,
-  adminResourceRestoreResultDtoSchema,
-  adminResourceTrashResultDtoSchema,
-  adminResourceTreeDtoSchema,
-  type AdminResourceNodeMutationDto,
-  type AdminResourceRestoreResultDto,
-  type AdminResourceTrashResultDto,
-  type AdminResourceTreeDto,
-  type AdminResourceTreeNodeDto,
-  type AdminResourceTreeScope,
-} from "@workspace/contracts/admin"
-
 import type {
-  ResourcePermanentDeleteResult,
-  ResourceTreeCommandResult,
-  ResourceTreeRepository,
-} from "#core/modules/resource-library/application/ports/resource-tree.repository"
+  AdminResourceTreeNodeDto,
+  AdminResourceTreeScope,
+} from "@workspace/contracts/admin/resource-library-data"
+
+import type { ResourceTreeRepository } from "#core/modules/resource-library/application/ports/resource-tree.repository"
+import type { ResourceTreeCommandResult } from "#core/modules/resource-library/application/resource-library-error"
 import {
   toResourceFolderId,
   toResourceNodeId,
@@ -24,42 +13,79 @@ import {
   type ResourceTreeNode,
 } from "#core/modules/resource-library/domain/resource-tree-node"
 
-type ResourceCommandInput = {
+export type ResourceTreeCommandContext = {
   readonly actorId: string
   readonly now: Date
 }
 
+export type CreateResourceNodeCommand = ResourceTreeCommandContext & {
+  readonly parentId: string | null
+}
+
+export type DeleteResourceNodeCommand = ResourceTreeCommandContext & {
+  readonly nodeId: string
+}
+
+export type GetResourceTreeQuery = {
+  readonly scope: AdminResourceTreeScope
+}
+
+export type MoveResourceNodeCommand = ResourceTreeCommandContext & {
+  readonly destinationParentId: string | null
+  readonly nodeId: string
+}
+
+export type RenameResourceFolderCommand = ResourceTreeCommandContext & {
+  readonly folderId: string
+  readonly name: string
+}
+
+export type ResourceNodeMutationResult = {
+  readonly node: AdminResourceTreeNodeDto
+}
+
+export type ResourceTrashCommandValue = {
+  readonly documentCount: number
+  readonly folderCount: number
+}
+
+export type ResourceRestoreCommandValue = ResourceTrashCommandValue & {
+  readonly node: AdminResourceTreeNodeDto
+}
+
+export type ResourcePermanentDeleteCommandValue = ResourceTrashCommandValue & {
+  readonly r2ObjectKeys: readonly string[]
+}
+
+export type ResourceTreeQueryResult = {
+  readonly nodes: readonly AdminResourceTreeNodeDto[]
+}
+
 export type ResourceTreeUseCase = {
   readonly createDocument: (
-    input: ResourceCommandInput & { readonly parentId: string | null }
-  ) => Promise<ResourceTreeCommandResult<AdminResourceNodeMutationDto>>
+    command: CreateResourceNodeCommand
+  ) => Promise<ResourceTreeCommandResult<ResourceNodeMutationResult>>
   readonly createFolder: (
-    input: ResourceCommandInput & { readonly parentId: string | null }
-  ) => Promise<ResourceTreeCommandResult<AdminResourceNodeMutationDto>>
+    command: CreateResourceNodeCommand
+  ) => Promise<ResourceTreeCommandResult<ResourceNodeMutationResult>>
   readonly deleteNodePermanently: (
-    input: ResourceCommandInput & { readonly nodeId: string }
-  ) => Promise<ResourcePermanentDeleteResult>
-  readonly getTree: (input: {
-    readonly scope: AdminResourceTreeScope
-  }) => Promise<AdminResourceTreeDto>
+    command: DeleteResourceNodeCommand
+  ) => Promise<ResourceTreeCommandResult<ResourcePermanentDeleteCommandValue>>
+  readonly getTree: (
+    query: GetResourceTreeQuery
+  ) => Promise<ResourceTreeQueryResult>
   readonly moveNode: (
-    input: ResourceCommandInput & {
-      readonly destinationParentId: string | null
-      readonly nodeId: string
-    }
-  ) => Promise<ResourceTreeCommandResult<AdminResourceNodeMutationDto>>
+    command: MoveResourceNodeCommand
+  ) => Promise<ResourceTreeCommandResult<ResourceNodeMutationResult>>
   readonly renameFolder: (
-    input: ResourceCommandInput & {
-      readonly folderId: string
-      readonly name: string
-    }
-  ) => Promise<ResourceTreeCommandResult<AdminResourceNodeMutationDto>>
+    command: RenameResourceFolderCommand
+  ) => Promise<ResourceTreeCommandResult<ResourceNodeMutationResult>>
   readonly restoreNode: (
-    input: ResourceCommandInput & { readonly nodeId: string }
-  ) => Promise<ResourceTreeCommandResult<AdminResourceRestoreResultDto>>
+    command: DeleteResourceNodeCommand
+  ) => Promise<ResourceTreeCommandResult<ResourceRestoreCommandValue>>
   readonly trashNode: (
-    input: ResourceCommandInput & { readonly nodeId: string }
-  ) => Promise<ResourceTreeCommandResult<AdminResourceTrashResultDto>>
+    command: DeleteResourceNodeCommand
+  ) => Promise<ResourceTreeCommandResult<ResourceTrashCommandValue>>
 }
 
 export type ResourceTreeUseCaseDependencies = {
@@ -104,11 +130,11 @@ export function createResourceTreeUseCase({
     },
     async getTree({ scope }) {
       const nodes = await treeRepository.readTree(scope)
-      return adminResourceTreeDtoSchema.parse({
+      return {
         nodes: nodes.map(({ hasChildren, node }) =>
-          toTreeNodeDto(node, hasChildren)
+          toTreeNodeData(node, hasChildren)
         ),
-      })
+      }
     },
     async moveNode(input) {
       return mapNodeResult(
@@ -135,13 +161,13 @@ export function createResourceTreeUseCase({
       return result.kind === "ok"
         ? {
             kind: "ok",
-            value: adminResourceRestoreResultDtoSchema.parse({
+            value: {
               ...result.value,
-              node: toTreeNodeDto(
+              node: toTreeNodeData(
                 result.value.node,
                 result.value.folderCount + result.value.documentCount > 1
               ),
-            }),
+            },
           }
         : result
     },
@@ -153,7 +179,7 @@ export function createResourceTreeUseCase({
       return result.kind === "ok"
         ? {
             kind: "ok",
-            value: adminResourceTrashResultDtoSchema.parse(result.value),
+            value: result.value,
           }
         : result
     },
@@ -168,18 +194,16 @@ function mapNodeResult(
       | ResourceTreeRepository["renameFolder"]
     >
   >
-): ResourceTreeCommandResult<AdminResourceNodeMutationDto> {
+): ResourceTreeCommandResult<ResourceNodeMutationResult> {
   return result.kind === "ok"
     ? {
         kind: "ok",
-        value: adminResourceNodeMutationDtoSchema.parse({
-          node: toTreeNodeDto(result.value.node, false),
-        }),
+        value: { node: toTreeNodeData(result.value.node, false) },
       }
     : result
 }
 
-function toTreeNodeDto(
+function toTreeNodeData(
   node: ResourceTreeNode,
   hasChildren: boolean
 ): AdminResourceTreeNodeDto {

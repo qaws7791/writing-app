@@ -109,18 +109,18 @@ FROM ai_feedback_attempts_legacy;
 
 DROP TABLE ai_feedback_attempts_legacy;
 
-CREATE UNIQUE INDEX ai_feedback_attempts_idempotency_idx
+CREATE UNIQUE INDEX ai_feedback_attempts_legacy_state_idempotency_idx
 ON ai_feedback_attempts(user_id, lesson_id, step_id, idempotency_key);
 
-CREATE UNIQUE INDEX ai_feedback_attempts_active_slot_idx
+CREATE UNIQUE INDEX ai_feedback_attempts_legacy_state_active_slot_idx
 ON ai_feedback_attempts(user_id, lesson_id, step_id, attempt_number)
 WHERE status IN ('pending', 'succeeded');
 
-CREATE UNIQUE INDEX ai_feedback_attempts_pending_idx
+CREATE UNIQUE INDEX ai_feedback_attempts_legacy_state_pending_idx
 ON ai_feedback_attempts(user_id, lesson_id, step_id)
 WHERE status = 'pending';
 
-CREATE INDEX ai_feedback_attempts_expiry_idx
+CREATE INDEX ai_feedback_attempts_legacy_state_expiry_idx
 ON ai_feedback_attempts(status, expires_at);
 COMMIT;
 `)

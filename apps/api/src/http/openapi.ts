@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { learnerApiErrorSchema } from "@workspace/contracts/learning"
-import { z } from "@workspace/hono/zod"
+import { z } from "@/http/platform/zod"
 
 export const openApiDocumentConfig = {
   info: {

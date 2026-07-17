@@ -6,11 +6,11 @@ import type {
 import {
   lessonProgressStatuses,
   type LessonProgressStatus as PersistedLessonProgressStatus,
-} from "#core/shared/kernel/status"
+} from "@workspace/contracts/status"
 import type {
   LessonAvailabilityStatus,
   ProgressCourseStatusFilter,
-} from "#core/modules/learning/domain/learner-read-model.dto"
+} from "@workspace/contracts/learning/read-data"
 
 export type LearnerProgressSnapshot = {
   readonly currentStreakDays: number

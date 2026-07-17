@@ -1,20 +1,32 @@
 "use client"
 
-import type { ReactNode } from "react"
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react"
 
+import {
+  readLessonDraftText,
+  subscribeToLessonDraftText,
+  writeLessonDraftText,
+} from "@/features/lessons/lesson-draft-storage"
 import type {
   LessonAiFeedbackOutcome,
   LessonAiFeedbackRequest,
   LessonAnswerChange,
   LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
+import { LessonMatchAnswer } from "@/features/lessons/lesson-match-answer"
 import type { LessonStepCheckedState } from "@/features/lessons/lesson-step-policy"
 import { AiFeedbackAnswer } from "@workspace/ui/components/lesson/ai-feedback-answer"
 import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer"
 import { CompareStepView } from "@workspace/ui/components/lesson/compare-step-view"
 import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer"
 import { LessonStepFrame } from "@workspace/ui/components/lesson/lesson-step-frame"
-import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
 import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer"
 import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
@@ -25,10 +37,6 @@ import type {
   LearnerLessonStep as LessonStep,
   LessonStepItemId,
 } from "@workspace/contracts/learning"
-import {
-  readLessonDraftText,
-  writeLessonDraftText,
-} from "@workspace/ui/lib/lesson-draft-storage"
 
 export type LessonStepRendererProps = {
   readonly answerError?: null | string
@@ -54,10 +62,13 @@ export function LessonStepRenderer({
   onAnswerPayloadChange,
   step,
 }: LessonStepRendererProps) {
-  const emitAnswer = (payload: LessonStepAnswerPayload) => {
-    onAnswerPayloadChange?.({ payload, stepId: step.id })
-    void onAnswerChange?.({ answer: payload, stepId: step.id })
-  }
+  const emitAnswer = useCallback(
+    (payload: LessonStepAnswerPayload) => {
+      onAnswerPayloadChange?.({ payload, stepId: step.id })
+      void onAnswerChange?.({ answer: payload, stepId: step.id })
+    },
+    [onAnswerChange, onAnswerPayloadChange, step.id]
+  )
 
   return (
     <LessonStepFrame answerError={answerError} stepId={step.id}>
@@ -173,31 +184,47 @@ function renderStep(
     case "MATCH": {
       const evaluatedPairs =
         checked !== false && checked.type === "MATCH"
-          ? checked.items.map((item) => ({
-              left:
-                step.leftItems.find(
-                  (candidate) => candidate.id === item.leftItemId
-                )?.text ?? "",
-              right:
-                step.rightItems.find(
-                  (candidate) => candidate.id === item.expectedRightItemId
-                )?.text ?? "",
-            }))
-          : step.leftItems.map((leftItem, index) => ({
-              left: leftItem.text,
-              right: step.rightItems[index]?.text ?? "",
-            }))
+          ? step.leftItems.map((leftItem, index) => {
+              const evaluatedItem = checked.items.find(
+                (item) => item.leftItemId === leftItem.id
+              )
+              const expectedRightItem = step.rightItems.find(
+                (item) => item.id === evaluatedItem?.expectedRightItemId
+              )
+              const fallbackRightItem = step.rightItems[index]
+
+              return {
+                left: leftItem,
+                right: expectedRightItem ??
+                  fallbackRightItem ?? {
+                    id: `missing-right-${index}`,
+                    text: "",
+                  },
+              }
+            })
+          : step.leftItems.map((leftItem, index) => {
+              const rightItem = step.rightItems[index]
+
+              return {
+                left: leftItem,
+                right: rightItem ?? {
+                  id: `missing-right-${index}`,
+                  text: "",
+                },
+              }
+            })
 
       return (
-        <MatchAnswer
+        <LessonMatchAnswer
           checked={checkedVisual}
           explanation={getEvaluationExplanation(checked)}
           guide={step.guide}
+          key={step.id}
           onChange={(pairs) =>
             emitAnswer({
               pairs: pairs.map((pair) => ({
-                leftItemId: findItemIdByText(step.leftItems, pair.left),
-                rightItemId: findItemIdByText(step.rightItems, pair.right),
+                leftItemId: findItemIdById(step.leftItems, pair.leftItemId),
+                rightItemId: findItemIdById(step.rightItems, pair.rightItemId),
               })),
               type: "MATCH",
             })
@@ -248,45 +275,131 @@ function renderStep(
       )
     }
     case "WRITE": {
-      const title = step.title ?? step.prompt ?? ""
       return (
-        <WriteAnswer
-          badge={step.badge}
+        <LessonWriteAnswer
           checked={checkedVisual}
-          claim={step.claim}
-          draft={step.draft}
-          goal={step.goal}
-          guide={step.guide ?? step.context}
-          initialText={readLessonDraftText(learnerId, step.id)}
-          max={step.max}
-          min={step.min}
-          onChange={(text) => {
-            writeLessonDraftText(learnerId, step.id, text)
-            emitAnswer({ text, type: "WRITE" })
-          }}
-          onDraftSave={(text) => writeLessonDraftText(learnerId, step.id, text)}
-          placeholder={step.placeholder}
-          reference={step.reference}
-          sample={step.sample}
-          structure={step.structure}
-          title={title}
+          emitAnswer={emitAnswer}
+          key={JSON.stringify([learnerId, step.id])}
+          learnerId={learnerId}
+          step={step}
         />
       )
     }
     case "AI_FEEDBACK":
       return (
-        <AiFeedbackAnswer
-          allowRetry
-          draftText={readLessonDraftText(learnerId, step.target)}
-          focus={step.focus}
-          onRequest={async () =>
-            onAiFeedbackRequest === undefined
-              ? { message: "AI 코칭을 사용할 수 없습니다.", status: "error" }
-              : onAiFeedbackRequest({ stepId: step.id })
-          }
+        <LessonAiFeedbackAnswer
+          key={JSON.stringify([learnerId, step.target])}
+          learnerId={learnerId}
+          onAiFeedbackRequest={onAiFeedbackRequest}
+          step={step}
         />
       )
   }
+}
+
+type WriteLessonStep = Extract<LessonStep, { readonly type: "WRITE" }>
+
+function LessonWriteAnswer({
+  checked,
+  emitAnswer,
+  learnerId,
+  step,
+}: {
+  readonly checked: LessonStepCheckedVisual
+  readonly emitAnswer: (payload: LessonStepAnswerPayload) => void
+  readonly learnerId: string
+  readonly step: WriteLessonStep
+}) {
+  const storedDraftText = useLessonDraftText(learnerId, step.id)
+  const [editedText, setEditedText] = useState<null | string>(null)
+  const emittedRestoredText = useRef<null | string>(null)
+  const text = editedText ?? storedDraftText
+
+  useEffect(() => {
+    if (
+      editedText !== null ||
+      storedDraftText === "" ||
+      emittedRestoredText.current === storedDraftText
+    ) {
+      return
+    }
+
+    emittedRestoredText.current = storedDraftText
+    emitAnswer({ text: storedDraftText, type: "WRITE" })
+  }, [editedText, emitAnswer, storedDraftText])
+
+  return (
+    <WriteAnswer
+      badge={step.badge}
+      checked={checked}
+      claim={step.claim}
+      draft={step.draft}
+      goal={step.goal}
+      guide={step.guide ?? step.context}
+      max={step.max}
+      min={step.min}
+      onChange={(text) => {
+        setEditedText(text)
+        writeLessonDraftText(learnerId, step.id, text)
+        emitAnswer({ text, type: "WRITE" })
+      }}
+      onDraftSave={(text) => writeLessonDraftText(learnerId, step.id, text)}
+      placeholder={step.placeholder}
+      reference={step.reference}
+      sample={step.sample}
+      structure={step.structure}
+      text={text}
+      title={step.title ?? step.prompt ?? ""}
+    />
+  )
+}
+
+type AiFeedbackLessonStep = Extract<
+  LessonStep,
+  { readonly type: "AI_FEEDBACK" }
+>
+
+function LessonAiFeedbackAnswer({
+  learnerId,
+  onAiFeedbackRequest,
+  step,
+}: {
+  readonly learnerId: string
+  readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
+  readonly step: AiFeedbackLessonStep
+}) {
+  const draftText = useLessonDraftText(learnerId, step.target)
+
+  return (
+    <AiFeedbackAnswer
+      allowRetry
+      draftText={draftText}
+      focus={step.focus}
+      onRequest={async () =>
+        onAiFeedbackRequest === undefined
+          ? { message: "AI 코칭을 사용할 수 없습니다.", status: "error" }
+          : onAiFeedbackRequest({ stepId: step.id })
+      }
+    />
+  )
+}
+
+function useLessonDraftText(learnerId: string, stepId: string): string {
+  const subscribe = useCallback(
+    (listener: () => void) =>
+      subscribeToLessonDraftText(learnerId, stepId, listener),
+    [learnerId, stepId]
+  )
+  const getSnapshot = useCallback(
+    () => readLessonDraftText(learnerId, stepId),
+    [learnerId, stepId]
+  )
+
+  return useSyncExternalStore(subscribe, getSnapshot, readEmptyLessonDraftText)
+}
+
+function readEmptyLessonDraftText(): string {
+  return ""
 }
 
 function toCheckedVisual(
@@ -342,16 +455,6 @@ function mapTextsToItemIds<TId extends string>(
       throw new Error(`선택 항목을 찾을 수 없습니다: ${text}`)
     return item.id
   })
-}
-
-function findItemIdByText<TId extends string>(
-  items: readonly { readonly id: TId; readonly text: string }[],
-  text: string
-): TId {
-  const item = items.find((candidate) => candidate.text === text)
-  if (item === undefined)
-    throw new Error(`선택 항목을 찾을 수 없습니다: ${text}`)
-  return item.id
 }
 
 function findItemIdById<TId extends string>(

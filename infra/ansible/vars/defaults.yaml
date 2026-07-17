@@ -6,6 +6,9 @@ writing_app_secrets_directory: /etc/writing-app/secrets
 writing_app_data_directory: /var/lib/writing-app
 writing_app_backup_directory: /var/backups/writing-app
 writing_app_deployment_directory: /var/lib/writing-app/deployments
+writing_app_operation_lock_directory: /var/lock/writing-app-operation.lock
+writing_app_public_hostname_pattern: >-
+  ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+\Z
 writing_app_container_uid: 10001
 writing_app_container_gid: 10001
 
@@ -19,9 +22,17 @@ writing_app_admin_origin: "https://{{ writing_app_admin_host }}"
 writing_app_admin_api_origin: "https://{{ writing_app_admin_api_host }}"
 
 writing_app_openai_model: gpt-5.2
+writing_app_better_auth_cookie_domain: ""
+writing_app_admin_better_auth_cookie_domain: ""
 writing_app_google_client_id: ""
 writing_app_google_client_secret: ""
 writing_app_openai_api_key: ""
 writing_app_registry_username: ""
 writing_app_registry_token: ""
 writing_app_verify_public_routes: false
+writing_app_admin_asset_s3_access_key: ""
+writing_app_admin_asset_s3_secret_key: ""
+writing_app_admin_asset_s3_bucket: ""
+writing_app_admin_asset_s3_endpoint: ""
+writing_app_admin_asset_s3_region: auto
+writing_app_admin_asset_public_base_url: ""

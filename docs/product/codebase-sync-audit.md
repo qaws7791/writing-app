@@ -87,4 +87,4 @@
 
 ## 남은 비문서화 대상
 
-현재 점검 기준에서 제품 요구사항으로 승격해야 할 미문서화 비즈니스 로직은 없다. `packages/env`, `packages/hono`, `packages/http-client`, `packages/logger`, `packages/ui`, `packages/config`, Storybook은 제품 요구사항이 아니라 런타임, 인프라, UI 기반 패키지로 분류한다.
+현재 점검 기준에서 제품 요구사항으로 승격해야 할 미문서화 비즈니스 로직은 없다. `packages/env`, `packages/http-client`, `packages/ui`, `packages/config`, Storybook과 `apps/api`의 platform·observability 경계는 제품 요구사항이 아니라 런타임, 인프라, UI 기반 구성으로 분류한다.

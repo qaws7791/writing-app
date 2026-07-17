@@ -1,12 +1,14 @@
 # 한글쓰기 학습 플랫폼
 
-한글쓰기 학습 플랫폼 모노레포다. 학습자 웹, 학습자 API, 어드민 웹, 어드민 API, Storybook, 공유 패키지를 Bun workspace로 관리한다.
+한글쓰기 학습 플랫폼 모노레포다. 학습자 웹, Host로 분리된 학습자·관리자 API sub-app, 어드민 웹, Storybook, 공유 패키지를 Bun workspace로 관리한다.
 
 상세 구조는 `ARCHITECTURE.md`, 환경 변수와 운영 값은 `docs/engineering/runtime-configuration.md`를 기준으로 확인한다.
 
 ## 현재 상태
 
 - 학습자·관리자 웹과 API, SQLite migration·seed, 자동 테스트와 프로덕션 컨테이너 정의가 구현되어 있다.
+- 저장소의 target 구성에서 `apps/api`는 learner/admin Host sub-app과 content·identity·dashboard/analytics·settings·AI chat·자료실의 여섯 관리자 capability adapter·route를 함께 조립한다.
+- Compose/Caddy source는 두 public API hostname을 `apps/api`로 향하게 하며 별도 관리자 API service·image·rollback source는 제거했다. 실제 production 적용·관찰 증적은 사용자 승인으로 이번 완료 범위에서 제외했으므로 운영 성공으로 주장하지 않는다.
 - 로컬 개발은 Windows, Linux와 macOS에서 Node.js `24.x`, Bun `1.3.10`을 지원 대상으로 삼는다.
 - 프로덕션은 Ubuntu 24.04 LTS `linux/amd64` 단일 서버와 로컬 SQLite 구성을 최초 범위로 삼는다.
 - Docker Compose, Ansible과 GHCR 이미지 릴리스는 구현되어 있지만 실제 Ubuntu 통합 검증, OpenTofu·cloud-init과 승인형 GitHub Actions 배포는 진행 중이다. 현재 상태는 [배포 문서](docs/engineering/deployment.md), 실행 순서는 [자동화 작업 계획](repository-onboarding-and-production-deployment-plan.md)에서 확인한다.
@@ -14,19 +16,16 @@
 ## 프로젝트 구조
 
 - `apps/web`: 학습자용 Next.js 앱
-- `apps/api`: 학습자 플랫폼 Hono API
+- `apps/api`: 학습자·관리자 Host sub-app을 가진 target Hono API와 여섯 관리자 capability adapter·route
 - `apps/admin`: 관리자용 Next.js 운영 대시보드
-- `apps/admin-api`: 관리자용 Hono API
 - `apps/storybook`: 공유 UI 컴포넌트 확인용 Storybook
 - `packages/ui`: 공유 UI 컴포넌트
 - `packages/contracts`: 학습자·관리자 HTTP DTO와 Zod 계약
-- `packages/core`: 도메인, DTO, 유스케이스, repository 구현
+- `packages/core`: 도메인, DTO, 유스케이스와 repository port
 - `packages/db`: Drizzle SQLite schema, migration, seed, DB client
-- `packages/hono`: Hono route, validation, error handling 표준
 - `packages/env`: 환경 변수 파싱 helper
 - `packages/http-client`: HTTP result와 네트워크 오류 모델
-- `packages/logger`: API 런타임용 logger
-- `packages/resource-document`: Lexical GFM 문서 계약과 Yjs 투영
+- `packages/resource-document`: Lexical node와 GFM Markdown 변환·검증 계약
 - `packages/repository-tooling`: repository inventory, TypeScript module graph와 정책 matcher
 - `packages/config`: 공유 TypeScript 설정
 
@@ -36,14 +35,14 @@
 
 영역별 첫 문서에서 시작해 공개 Interface, 실제 Implementation, 가까운 테스트 순서로 읽는다.
 
-| 영역         | 첫 문서                                                                | Interface                                                                   | Implementation                                                                                                               | 테스트                                                                                                                              |
-| ------------ | ---------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 학습 콘텐츠  | [도메인 가이드](DOMAIN.md)                                             | [콘텐츠 공개 경계](packages/core/src/modules/content/api/index.ts)          | [학습자 콘텐츠 서비스](packages/core/src/modules/content/application/use-cases/learner-content.service.ts)                   | [서비스 테스트](packages/core/src/modules/content/application/use-cases/learner-content.service.test.ts)                            |
-| 학습 진행    | [시스템 개요](docs/engineering/system-overview.md)                     | [학습 공개 경계](packages/core/src/modules/learning/api/index.ts)           | [학습 서비스](packages/core/src/modules/learning/application/use-cases/learning.service.ts)                                  | [서비스 테스트](packages/core/src/modules/learning/application/use-cases/learning.service.test.ts)                                  |
-| 관리자 API   | [API 계약](docs/engineering/api-contract.md)                           | [관리자 계약](packages/contracts/src/admin/index.ts)                        | [관리자 앱 조립](apps/admin-api/src/app.ts)                                                                                  | [앱 테스트](apps/admin-api/src/app.test.ts)                                                                                         |
-| 자료실       | [자료실 동기화 설계](docs/engineering/resource-library-sync-design.md) | [자료실 공개 경계](packages/core/src/modules/resource-library/api/index.ts) | [문서 저장소](packages/core/src/modules/resource-library/infrastructure/persistence/resource-document-drizzle.repository.ts) | [저장소 테스트](packages/core/src/modules/resource-library/infrastructure/persistence/resource-document-drizzle.repository.test.ts) |
-| 공유 UI      | [프론트엔드 가이드](FRONTEND.md)                                       | [UI 패키지 공개 경계](packages/ui/package.json)                             | [UI 컴포넌트](packages/ui/src/components)                                                                                    | [Storybook](apps/storybook/src/stories)                                                                                             |
-| 데이터베이스 | [데이터 모델](docs/engineering/data-model.md)                          | [DB 패키지 공개 경계](packages/db/src/index.ts)                             | [DB 클라이언트](packages/db/src/client.ts)                                                                                   | [백업·복구 테스트](packages/db/src/database-backup.test.ts)                                                                         |
+| 영역         | 첫 문서                                             | Interface                                                                   | Implementation                                                                                              | 테스트                                                                                                     |
+| ------------ | --------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 학습 콘텐츠  | [도메인 가이드](DOMAIN.md)                          | [학습 공개 경계](packages/core/src/modules/learning/api/index.ts)           | [학습자 콘텐츠 서비스](packages/core/src/modules/learning/application/use-cases/learner-content.service.ts) | [서비스 테스트](packages/core/src/modules/learning/application/use-cases/learner-content.service.test.ts)  |
+| 학습 진행    | [시스템 개요](docs/engineering/system-overview.md)  | [학습 공개 경계](packages/core/src/modules/learning/api/index.ts)           | [진행 조회 서비스](packages/core/src/modules/learning/application/use-cases/learner-progress.service.ts)    | [서비스 테스트](packages/core/src/modules/learning/application/use-cases/learner-progress.service.test.ts) |
+| 관리자 API   | [API 계약](docs/engineering/api-contract.md)        | [관리자 계약](packages/contracts/src/admin/index.ts)                        | [관리자 route 조립](apps/api/src/composition/admin-route-composition.ts)                                    | [target 앱 테스트](apps/api/src/http/admin-app.test.ts)                                                    |
+| 자료실       | [자료실 API 계약](docs/engineering/api-contract.md) | [자료실 공개 경계](packages/core/src/modules/resource-library/api/index.ts) | [target 자료실 조립](apps/api/src/modules/admin-resource-library/admin-resource-library.composition.ts)     | [target 저장소 테스트](apps/api/src/adapters/resource-library/resource-library-drizzle.repository.test.ts) |
+| 공유 UI      | [프론트엔드 가이드](FRONTEND.md)                    | [UI 패키지 공개 경계](packages/ui/package.json)                             | [UI 컴포넌트](packages/ui/src/components)                                                                   | [Storybook](apps/storybook/src/stories)                                                                    |
+| 데이터베이스 | [데이터 모델](docs/engineering/data-model.md)       | [DB 패키지 공개 경계](packages/db/src/index.ts)                             | [DB 클라이언트](packages/db/src/client.ts)                                                                  | [백업·복구 테스트](packages/db/src/database-backup.test.ts)                                                |
 
 ## 필요한 도구
 
@@ -71,7 +70,7 @@ bun run dev
 5. baseline migration, 콘텐츠 seed와 관리자 seed를 실행한다.
 6. `bun run doctor`로 로컬 준비 결과를 진단한다.
 
-기존 `.env`, 인증 비밀값과 SQLite 데이터는 덮어쓰지 않는다. 관리자의 초기 이메일과 비밀번호는 Git에 포함되지 않는 `apps/admin-api/.env`의 `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`에서 확인한다. `OPENAI_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`은 해당 기능을 실제 호출할 때만 설정한다.
+기존 `.env`, 인증 비밀값과 SQLite 데이터는 덮어쓰지 않는다. 관리자 seed/audit script는 Git에 포함되지 않는 `apps/api/.env`의 `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`를 사용한다. `OPENAI_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`은 해당 기능을 실제 호출할 때만 설정한다.
 
 로컬에서 Google OAuth 대신 테스트 로그인 버튼을 쓰려면 `apps/api/.env`와 `apps/web/.env` 모두에 `ENABLE_TEST_AUTH=true`가 있어야 한다. API만 빠지면 `/api/auth/test/sign-in`이 404를 반환한다.
 
@@ -83,7 +82,7 @@ bun run doctor
 
 ## 데이터 준비
 
-학습자 API와 어드민 API는 로컬에서 저장소 루트의 `data/api.sqlite`를 공유한다.
+`apps/api`는 로컬과 production source 구성에서 SQLite lifecycle을 단독 소유하며 로컬 DB는 저장소 루트의 `data/api.sqlite`를 사용한다.
 
 ```bash
 bun run dev:app:setup
@@ -109,7 +108,7 @@ bun run dev:app
 bun run dev:admin
 ```
 
-이 명령은 어드민 웹의 Next.js watcher와 어드민 API의 Bun watcher만 시작한다.
+이 명령은 MTA-41 전 parity·로컬 개발을 위해 어드민 웹의 Next.js watcher와 legacy 어드민 API의 Bun watcher를 시작한다. production target source 구성은 이 로컬 포트 조합과 다르게 admin Host를 `apps/api`의 admin sub-app으로 전달한다.
 
 - 어드민 웹: `http://localhost:3001`
 - 어드민 API: `http://localhost:4001`
@@ -150,7 +149,7 @@ Ubuntu bootstrap 멱등성 검사는 운영 장비에서 실행하지 않는다.
 
 ## 프로덕션 이미지 릴리스
 
-GitHub 저장소의 Actions variables에 실제 HTTPS origin인 `PRODUCTION_WEB_ORIGIN`, `PRODUCTION_API_ORIGIN`, `PRODUCTION_ADMIN_ORIGIN`, `PRODUCTION_ADMIN_API_ORIGIN`을 등록한다. `main` push의 `필수 품질 게이트`가 성공하면 `프로덕션 이미지 릴리스` workflow가 같은 commit에서 web, api, admin, admin-api 이미지를 빌드해 GHCR에 게시한다.
+GitHub 저장소의 Actions variables에 실제 HTTPS origin인 `PRODUCTION_WEB_ORIGIN`, `PRODUCTION_API_ORIGIN`, `PRODUCTION_ADMIN_ORIGIN`, `PRODUCTION_ADMIN_API_ORIGIN`을 등록한다. `main` push의 `필수 품질 게이트`가 성공하면 `프로덕션 이미지 릴리스` workflow가 같은 commit에서 web, api, admin, admin-api 이미지를 빌드해 GHCR에 게시한다. `admin-api` image는 MTA-41의 제거 조건이 충족될 때까지 explicit rollback 자산으로 보존한다.
 
 workflow는 게시된 각 digest를 고정된 Grype로 검사하고 `HIGH` 이상 취약점이 있으면 배포 manifest 생성을 차단한다. 결과의 `production-image-digests-*` artifact에는 검사를 통과한 네 `ghcr.io/...@sha256:...` reference와 source revision, 공개 origin·취약점 정책 digest가 들어 있다. 운영 배포에는 이 digest reference만 사용하며 `latest` tag를 사용하지 않는다. 저장소의 Actions package 쓰기 권한, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한은 저장소 소유자가 GitHub 설정에서 확인해야 한다.
 

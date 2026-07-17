@@ -8,11 +8,25 @@ import {
 
 const apiSourceRoot = dirname(fileURLToPath(import.meta.url))
 const allowedCoreModuleFacades = new Set([
+  "admin",
   "ai-feedback",
   "auth",
   "content",
-  "learner-api-core",
   "learning",
+  "resource-library",
+])
+const targetRouteTestPaths = [
+  "modules/admin-ai-chat/admin-ai-chat.routes.test.ts",
+  "modules/admin-content/admin-content.routes.test.ts",
+  "modules/admin-dashboard-analytics/admin-dashboard-analytics.routes.test.ts",
+  "modules/admin-identity/admin-identity.routes.test.ts",
+  "modules/admin-resource-library/admin-resource-library.routes.test.ts",
+  "modules/admin-settings/admin-settings.routes.test.ts",
+]
+const targetContractHarnessSources = new Set([
+  "@/test-support/admin-target-contract-fixtures",
+  "@/test-support/admin-target-contract-harness",
+  "@/test-support/admin-target-contract-runner",
 ])
 
 describe("apps/api architecture", () => {
@@ -66,6 +80,61 @@ describe("apps/api architecture", () => {
 
     expect(violations).toEqual([])
   })
+
+  it("direct target route test는 subprocess target contract harness를 import하지 않는다", () => {
+    const violations = targetRouteTestPaths.flatMap((relativePath) => {
+      const filePath = resolve(apiSourceRoot, relativePath)
+
+      return readImports(filePath)
+        .filter((source) => targetContractHarnessSources.has(source))
+        .map((source) => formatViolation(filePath, source))
+    })
+
+    expect(violations).toEqual([])
+  })
+
+  it("production database client 생성은 api-runtime composition root만 소유한다", () => {
+    const violations = createRepositoryInventory({ root: apiSourceRoot })
+      .filter((file) => isProductionApiSource(file.relativePath))
+      .flatMap((file) =>
+        file.references
+          .filter(
+            (reference) =>
+              reference.source.startsWith("@workspace/db") &&
+              reference.importedNames.includes("createWritingAppDatabase") &&
+              file.relativePath !== "api-runtime.ts"
+          )
+          .map((reference) => formatViolation(file.path, reference.source))
+      )
+
+    expect(violations).toEqual([])
+  })
+
+  it("AI chat persistence adapter는 provider를 import하지 않는다", () => {
+    const violations = readSourceFiles(
+      resolve(apiSourceRoot, "adapters/ai-chat")
+    )
+      .filter((filePath) => filePath.endsWith(".repository.ts"))
+      .flatMap((filePath) =>
+        readImports(filePath)
+          .filter(isAiProviderSource)
+          .map((source) => formatViolation(filePath, source))
+      )
+
+    expect(violations).toEqual([])
+  })
+
+  it("AI chat route는 persistence adapter를 직접 import하지 않는다", () => {
+    const routePath = resolve(
+      apiSourceRoot,
+      "modules/admin-ai-chat/admin-ai-chat.routes.ts"
+    )
+    const violations = readImports(routePath)
+      .filter((source) => source.startsWith("@/adapters/ai-chat/"))
+      .map((source) => formatViolation(routePath, source))
+
+    expect(violations).toEqual([])
+  })
 })
 
 function readSourceFiles(rootPath: string): string[] {
@@ -90,6 +159,24 @@ function isAllowedCoreModuleFacadeImport(source: string): boolean {
   const modulePath = source.slice(prefix.length)
 
   return allowedCoreModuleFacades.has(modulePath)
+}
+
+function isProductionApiSource(relativePath: string): boolean {
+  return (
+    !relativePath.endsWith(".test.ts") &&
+    !relativePath.endsWith(".typecheck.ts") &&
+    !relativePath.startsWith("scripts/") &&
+    !relativePath.startsWith("test-support/")
+  )
+}
+
+function isAiProviderSource(source: string): boolean {
+  return (
+    source === "openai" ||
+    source.startsWith("openai/") ||
+    source.startsWith("@mastra/") ||
+    source.startsWith("@/adapters/ai-chat/admin-content-agent")
+  )
 }
 
 function isHttpContractSchemaFile(filePath: string): boolean {

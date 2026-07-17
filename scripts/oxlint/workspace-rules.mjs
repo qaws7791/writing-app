@@ -1,3 +1,8 @@
+import {
+  isForbiddenCoreCapabilityContractSource,
+  readCoreCapabilityImportViolation,
+} from "../architecture/core-capability-policy.mjs"
+
 const noUnsafeUnknownCastRule = {
   meta: {
     type: "problem",
@@ -24,16 +29,30 @@ const noUnsafeUnknownCastRule = {
 }
 
 const workspaceDependencyMessages = {
-  apiCannotImportDb:
-    "apps/api must depend on packages/core, not packages/db. Move DB access behind the core interface.",
-  apiCannotImportDrizzle:
-    "apps/api must not import Drizzle directly. DB implementation belongs behind packages/core -> packages/db.",
+  apiTransportCannotImportDb:
+    "API transport modules must not import packages/db. Inject an application port from the executable composition root.",
+  apiTransportCannotImportDrizzle:
+    "API transport modules must not import Drizzle. Keep persistence in an executable adapter.",
   browserCannotImportCore:
     "Browser apps must import request/response contracts from packages/contracts, not packages/core runtime modules.",
+  browserCannotImportDb:
+    "Browser apps must not import packages/db. Access data through an HTTP application boundary.",
+  browserCannotImportDrizzle:
+    "Browser apps must not import Drizzle. Access data through an HTTP application boundary.",
   contractsCannotImportCore:
     "packages/contracts must stay independent from packages/core runtime modules.",
+  coreCannotImportUnapprovedCapability:
+    "packages/core capability modules must not import another capability through an unapproved #core/modules path. Use canonical shared contracts or an exact reviewed public API/application port edge.",
+  coreCannotImportNonCanonicalCapabilityContract:
+    "packages/core must import learning and admin contracts only from canonical data entrypoints. Keep transport and legacy contract sources in executable HTTP adapters.",
+  coreCannotUseComputedDynamicImport:
+    "packages/core must not use computed dynamic imports. Use a static module specifier so dependency boundaries remain enforceable.",
+  coreCannotImportDb:
+    "packages/core must depend on application ports, not packages/db runtime primitives. Compose persistence in an executable app.",
+  coreCannotImportRuntimeFramework:
+    "packages/core must stay independent from runtime frameworks and SDKs. Keep concrete runtime adapters in an executable app.",
   dbCannotImportCore:
-    "packages/db must not import packages/core when enforcing apps/api -> packages/core -> packages/db.",
+    "packages/db must stay a stable storage primitive and must not import packages/core business policy.",
 }
 
 export const noInvalidWorkspaceDependencyRule = {
@@ -41,7 +60,7 @@ export const noInvalidWorkspaceDependencyRule = {
     type: "problem",
     docs: {
       description:
-        "Enforce the apps/api -> packages/core -> packages/db dependency direction.",
+        "Enforce browser, transport, application, and persistence dependency boundaries.",
     },
     messages: workspaceDependencyMessages,
   },
@@ -50,6 +69,19 @@ export const noInvalidWorkspaceDependencyRule = {
       const source = readModuleSpecifier(node)
 
       if (source === null) {
+        if (
+          node.type === "ImportExpression" &&
+          isInWorkspacePath(
+            context.filename.replaceAll("\\", "/"),
+            "packages/core/"
+          )
+        ) {
+          context.report({
+            node,
+            messageId: "coreCannotUseComputedDynamicImport",
+          })
+        }
+
         return
       }
 
@@ -73,6 +105,8 @@ export const noInvalidWorkspaceDependencyRule = {
       ExportNamedDeclaration: reportInvalidDependency,
       ImportDeclaration: reportInvalidDependency,
       ImportExpression: reportInvalidDependency,
+      TSImportEqualsDeclaration: reportInvalidDependency,
+      TSImportType: reportInvalidDependency,
     }
   },
 }
@@ -80,22 +114,31 @@ export const noInvalidWorkspaceDependencyRule = {
 export function readWorkspaceDependencyMessageId({ filename, source }) {
   const normalizedFilename = filename.replaceAll("\\", "/")
 
-  if (isInWorkspacePath(normalizedFilename, "apps/api/")) {
+  if (isApiTransportPath(normalizedFilename)) {
     if (isWorkspaceDbImport(source)) {
-      return "apiCannotImportDb"
+      return "apiTransportCannotImportDb"
     }
 
     if (isDrizzleImport(source)) {
-      return "apiCannotImportDrizzle"
+      return "apiTransportCannotImportDrizzle"
     }
   }
 
   if (
-    (isInWorkspacePath(normalizedFilename, "apps/web/") ||
-      isInWorkspacePath(normalizedFilename, "apps/admin/")) &&
-    isWorkspaceCoreImport(source)
+    isInWorkspacePath(normalizedFilename, "apps/web/") ||
+    isInWorkspacePath(normalizedFilename, "apps/admin/")
   ) {
-    return "browserCannotImportCore"
+    if (isWorkspaceCoreImport(source)) {
+      return "browserCannotImportCore"
+    }
+
+    if (isWorkspaceDbImport(source)) {
+      return "browserCannotImportDb"
+    }
+
+    if (isDrizzleImport(source)) {
+      return "browserCannotImportDrizzle"
+    }
   }
 
   if (
@@ -103,6 +146,29 @@ export function readWorkspaceDependencyMessageId({ filename, source }) {
     isWorkspaceCoreImport(source)
   ) {
     return "contractsCannotImportCore"
+  }
+
+  if (isInWorkspacePath(normalizedFilename, "packages/core/")) {
+    if (
+      readCoreCapabilityImportViolation({
+        moduleSource: source,
+        sourcePath: normalizedFilename,
+      }) !== null
+    ) {
+      return "coreCannotImportUnapprovedCapability"
+    }
+
+    if (isForbiddenCoreCapabilityContractSource(source)) {
+      return "coreCannotImportNonCanonicalCapabilityContract"
+    }
+
+    if (isWorkspaceDbImport(source)) {
+      return "coreCannotImportDb"
+    }
+
+    if (isCoreRuntimeFrameworkImport(source)) {
+      return "coreCannotImportRuntimeFramework"
+    }
   }
 
   if (
@@ -113,6 +179,25 @@ export function readWorkspaceDependencyMessageId({ filename, source }) {
   }
 
   return null
+}
+
+function isApiTransportPath(filename) {
+  const sourcePath = filename.match(
+    /\/(?:apps\/)?(?:admin-api|api)\/src\/(.+)$/u
+  )?.[1]
+
+  if (sourcePath === undefined) {
+    return false
+  }
+
+  return (
+    sourcePath === "app.ts" ||
+    sourcePath.startsWith("admin/") ||
+    sourcePath.startsWith("http/") ||
+    sourcePath.startsWith("middleware/") ||
+    sourcePath.startsWith("routes/") ||
+    /^modules\/[^/]+\/[^/]+\.routes?\.ts$/u.test(sourcePath)
+  )
 }
 
 function isInWorkspacePath(filename, workspacePath) {
@@ -133,11 +218,41 @@ function isDrizzleImport(source) {
   return source === "drizzle-orm" || source.startsWith("drizzle-orm/")
 }
 
+function isCoreRuntimeFrameworkImport(source) {
+  return [
+    "better-auth",
+    "drizzle-orm",
+    "hono",
+    "@hono",
+    "@mastra",
+    "@workspace/ui",
+    "next",
+    "openai",
+    "react",
+  ].some(
+    (packageName) =>
+      source === packageName || source.startsWith(`${packageName}/`)
+  )
+}
+
 function readModuleSpecifier(node) {
-  const source = node.source
+  const source =
+    node.type === "TSImportEqualsDeclaration"
+      ? node.moduleReference?.expression
+      : node.source
 
   if (typeof source?.value === "string") {
     return source.value
+  }
+
+  if (
+    source?.type === "TemplateLiteral" &&
+    source.expressions.length === 0 &&
+    source.quasis.length === 1
+  ) {
+    const value = source.quasis[0]?.value.cooked
+
+    return typeof value === "string" ? value : null
   }
 
   if (typeof source?.raw === "string") {

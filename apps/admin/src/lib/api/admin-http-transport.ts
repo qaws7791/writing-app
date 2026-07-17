@@ -3,14 +3,15 @@ import {
   networkAdminApiError,
   toAdminApiError,
 } from "@/lib/api/api-error"
-import {
-  adminApiError,
-  adminApiOk,
-  type AdminApiResult,
-} from "@/lib/api/api-result"
+import type { AdminApiResult } from "@/lib/api/api-result"
 import { adminSessionCookieName } from "@/lib/auth/admin-session-token"
 import { buildAdminApiUrl, type AdminApiBaseUrl } from "@/runtime-config"
-import { fetchHttpResponse, type HttpFetch } from "@workspace/http-client"
+import {
+  fetchHttpResponse,
+  httpApiFailure,
+  httpApiOk,
+  type HttpFetch,
+} from "@workspace/http-client"
 
 export type AdminResponseSchema<TValue> = {
   readonly safeParse: (
@@ -65,21 +66,21 @@ export function createAdminHttpTransport({
       const result = await fetchHttpResponse(request, fetch)
 
       if (result.kind === "network-error") {
-        return adminApiError(networkAdminApiError(result.error))
+        return httpApiFailure(networkAdminApiError(result.error))
       }
       if (!result.response.ok) {
         const body = await readJson(result.response)
         return body.kind === "ok"
-          ? adminApiError(toAdminApiError(result.response.status, body.value))
-          : adminApiError(contractAdminApiError(result.response.status))
+          ? httpApiFailure(toAdminApiError(result.response.status, body.value))
+          : httpApiFailure(contractAdminApiError(result.response.status))
       }
 
       const fileName = readDownloadFileName(result.response, input.contentType)
       if (fileName === null) {
-        return adminApiError(contractAdminApiError(result.response.status))
+        return httpApiFailure(contractAdminApiError(result.response.status))
       }
 
-      return adminApiOk({ body: await result.response.text(), fileName })
+      return httpApiOk({ body: await result.response.text(), fileName })
     },
     async requestJson(input) {
       const request = await createRequest({
@@ -94,23 +95,23 @@ export function createAdminHttpTransport({
       const result = await fetchHttpResponse(request, fetch)
 
       if (result.kind === "network-error") {
-        return adminApiError(networkAdminApiError(result.error))
+        return httpApiFailure(networkAdminApiError(result.error))
       }
 
       const body = await readJson(result.response)
       if (body.kind === "error") {
-        return adminApiError(contractAdminApiError(result.response.status))
+        return httpApiFailure(contractAdminApiError(result.response.status))
       }
       if (!result.response.ok) {
-        return adminApiError(
+        return httpApiFailure(
           toAdminApiError(result.response.status, body.value)
         )
       }
 
       const parsed = input.schema.safeParse(body.value)
       return parsed.success
-        ? adminApiOk(parsed.data)
-        : adminApiError(contractAdminApiError(result.response.status))
+        ? httpApiOk(parsed.data)
+        : httpApiFailure(contractAdminApiError(result.response.status))
     },
   }
 }

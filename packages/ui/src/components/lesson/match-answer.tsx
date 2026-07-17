@@ -1,29 +1,30 @@
 "use client"
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useLayoutEffect, useRef, useState } from "react"
 
 import { cn } from "#ui/lib/utils"
 import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 import { MarkdownContent } from "#ui/components/lesson/markdown-content"
-import {
-  createMatchStepPresentation,
-  findMatchedLeftChoiceIdForRightChoiceId,
-  isCorrectMatchChoice,
-  toMatchAnswerPairs,
-  toggleMatchSelection,
-  type MatchAnswerPair,
-  type MatchChoiceId,
-  type MatchSelectionMap,
-  type MatchStepPresentation,
-} from "#ui/components/lesson/match-presentation"
 
-type PendingMatchChoice =
-  | { readonly id: MatchChoiceId; readonly side: "left" }
-  | { readonly id: MatchChoiceId; readonly side: "right" }
+export type MatchAnswerChoice = {
+  readonly id: string
+  readonly text: string
+}
+
+export type MatchAnswerChoiceSelection = {
+  readonly id: string
+  readonly side: "left" | "right"
+}
+
+export type MatchAnswerConnection = {
+  readonly leftChoiceId: string
+  readonly rightChoiceId: string
+  readonly tone: "correct" | "default" | "wrong"
+}
 
 type MatchConnectionLine = {
   readonly id: string
-  readonly tone: "correct" | "default" | "wrong"
+  readonly tone: MatchAnswerConnection["tone"]
   readonly x1: number
   readonly x2: number
   readonly y1: number
@@ -33,19 +34,17 @@ type MatchConnectionLine = {
 function getMatchButtonClassName({
   checked,
   isActive,
-  isCorrect,
   isPaired,
-  isWrong,
+  tone,
 }: {
   readonly checked: LessonStepCheckedVisual | false
   readonly isActive: boolean
-  readonly isCorrect: boolean
   readonly isPaired: boolean
-  readonly isWrong: boolean
+  readonly tone?: MatchAnswerConnection["tone"]
 }) {
   if (checked !== false) {
-    if (isCorrect) return "bg-mint-light text-charcoal"
-    if (isWrong) return "bg-coral-light text-charcoal"
+    if (tone === "correct") return "bg-mint-light text-charcoal"
+    if (tone === "wrong") return "bg-coral-light text-charcoal"
   }
 
   if (isActive) {
@@ -60,23 +59,19 @@ function getMatchButtonClassName({
 }
 
 function measureMatchConnectionLines({
-  checked,
-  gridElement,
-  matchMap,
-  presentation,
   choiceElements,
+  connections,
+  gridElement,
 }: {
-  readonly checked: LessonStepCheckedVisual | false
-  readonly choiceElements: ReadonlyMap<MatchChoiceId, HTMLButtonElement>
+  readonly choiceElements: ReadonlyMap<string, HTMLButtonElement>
+  readonly connections: readonly MatchAnswerConnection[]
   readonly gridElement: HTMLElement
-  readonly matchMap: MatchSelectionMap
-  readonly presentation: MatchStepPresentation
 }): readonly MatchConnectionLine[] {
   const gridRect = gridElement.getBoundingClientRect()
 
-  return Object.entries(matchMap).flatMap(([leftId, rightId]) => {
-    const leftElement = choiceElements.get(leftId as MatchChoiceId)
-    const rightElement = choiceElements.get(rightId)
+  return connections.flatMap((connection) => {
+    const leftElement = choiceElements.get(connection.leftChoiceId)
+    const rightElement = choiceElements.get(connection.rightChoiceId)
 
     if (leftElement === undefined || rightElement === undefined) {
       return []
@@ -84,15 +79,11 @@ function measureMatchConnectionLines({
 
     const leftRect = leftElement.getBoundingClientRect()
     const rightRect = rightElement.getBoundingClientRect()
-    const isCorrect =
-      checked !== false &&
-      isCorrectMatchChoice(presentation, leftId as MatchChoiceId, rightId)
-    const isWrong = checked !== false && !isCorrect
 
     return [
       {
-        id: `${leftId}-${rightId}`,
-        tone: isCorrect ? "correct" : isWrong ? "wrong" : "default",
+        id: `${connection.leftChoiceId}-${connection.rightChoiceId}`,
+        tone: connection.tone,
         x1: leftRect.right - gridRect.left,
         x2: rightRect.left - gridRect.left,
         y1: leftRect.top + leftRect.height / 2 - gridRect.top,
@@ -138,38 +129,33 @@ function MatchConnectionOverlay({
 
 export function MatchAnswer({
   checked = false,
+  connections,
   explanation,
   guide,
-  onChange,
-  pairs,
+  leftChoices,
+  onChoiceSelect,
+  pendingChoice = null,
+  rightChoices,
   title,
 }: {
   readonly checked?: LessonStepCheckedVisual
+  readonly connections: readonly MatchAnswerConnection[]
   readonly explanation?: string
   readonly guide: string
-  readonly onChange?: (_pairs: readonly MatchAnswerPair[]) => void
-  readonly pairs: readonly {
-    readonly left: string
-    readonly right: string
-  }[]
+  readonly leftChoices: readonly MatchAnswerChoice[]
+  readonly onChoiceSelect?: (selection: MatchAnswerChoiceSelection) => void
+  readonly pendingChoice?: MatchAnswerChoiceSelection | null
+  readonly rightChoices: readonly MatchAnswerChoice[]
   readonly title: string
 }) {
-  const [matchMap, setMatchMap] = useState<MatchSelectionMap>({})
-  const [pendingChoice, setPendingChoice] = useState<PendingMatchChoice | null>(
-    null
-  )
   const [connectionLines, setConnectionLines] = useState<
     readonly MatchConnectionLine[]
   >([])
   const gridRef = useRef<HTMLDivElement>(null)
-  const choiceRefs = useRef(new Map<MatchChoiceId, HTMLButtonElement>())
-  const presentation = useMemo(
-    () => createMatchStepPresentation({ pairs }),
-    [pairs]
-  )
+  const choiceRefs = useRef(new Map<string, HTMLButtonElement>())
 
   const registerChoiceRef = useCallback(
-    (choiceId: MatchChoiceId, node: HTMLButtonElement | null) => {
+    (choiceId: string, node: HTMLButtonElement | null) => {
       if (node === null) {
         choiceRefs.current.delete(choiceId)
         return
@@ -190,14 +176,12 @@ export function MatchAnswer({
 
     setConnectionLines(
       measureMatchConnectionLines({
-        checked,
         choiceElements: choiceRefs.current,
+        connections,
         gridElement,
-        matchMap,
-        presentation,
       })
     )
-  }, [checked, matchMap, presentation])
+  }, [connections])
 
   useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks-js/set-state-in-effect
@@ -230,66 +214,6 @@ export function MatchAnswer({
     }
   }, [updateConnectionLines])
 
-  function applyMatchSelection(nextMap: MatchSelectionMap) {
-    setMatchMap(nextMap)
-    onChange?.(toMatchAnswerPairs(presentation, nextMap))
-    setPendingChoice(null)
-  }
-
-  function handleLeftTap(leftChoiceId: MatchChoiceId) {
-    if (checked !== false) {
-      return
-    }
-
-    if (pendingChoice === null) {
-      setPendingChoice({ id: leftChoiceId, side: "left" })
-      return
-    }
-
-    if (pendingChoice.side === "left") {
-      setPendingChoice(
-        pendingChoice.id === leftChoiceId
-          ? null
-          : { id: leftChoiceId, side: "left" }
-      )
-      return
-    }
-
-    applyMatchSelection(
-      toggleMatchSelection(matchMap, {
-        leftChoiceId,
-        rightChoiceId: pendingChoice.id,
-      })
-    )
-  }
-
-  function handleRightTap(rightChoiceId: MatchChoiceId) {
-    if (checked !== false) {
-      return
-    }
-
-    if (pendingChoice === null) {
-      setPendingChoice({ id: rightChoiceId, side: "right" })
-      return
-    }
-
-    if (pendingChoice.side === "right") {
-      setPendingChoice(
-        pendingChoice.id === rightChoiceId
-          ? null
-          : { id: rightChoiceId, side: "right" }
-      )
-      return
-    }
-
-    applyMatchSelection(
-      toggleMatchSelection(matchMap, {
-        leftChoiceId: pendingChoice.id,
-        rightChoiceId,
-      })
-    )
-  }
-
   return (
     <div className="an-fi">
       <h2
@@ -309,103 +233,61 @@ export function MatchAnswer({
       <div className="relative" ref={gridRef}>
         <MatchConnectionOverlay lines={connectionLines} />
         <div className="relative z-10 grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-3">
-            {presentation.leftChoices.map((leftChoice) => {
-              const matchedRightChoiceId = matchMap[leftChoice.id]
-              const isCorrect =
-                checked !== false &&
-                matchedRightChoiceId !== undefined &&
-                isCorrectMatchChoice(
-                  presentation,
-                  leftChoice.id,
-                  matchedRightChoiceId
-                )
-              const isWrong =
-                checked !== false &&
-                matchedRightChoiceId !== undefined &&
-                !isCorrectMatchChoice(
-                  presentation,
-                  leftChoice.id,
-                  matchedRightChoiceId
-                )
+          <div
+            aria-label="왼쪽 선택지"
+            className="flex flex-col gap-3"
+            role="group"
+          >
+            {leftChoices.map((leftChoice) => {
+              const connection = connections.find(
+                (candidate) => candidate.leftChoiceId === leftChoice.id
+              )
               const isActive =
                 pendingChoice?.side === "left" &&
                 pendingChoice.id === leftChoice.id
-              const isPaired = matchedRightChoiceId !== undefined
+              const isPaired = connection !== undefined
 
               return (
-                <button
-                  className={cn(
-                    "w-full rounded-3xl p-4 font-bold text-center transition-all duration-150 active:scale-95",
-                    getMatchButtonClassName({
-                      checked,
-                      isActive,
-                      isCorrect,
-                      isPaired,
-                      isWrong,
-                    })
-                  )}
-                  disabled={checked !== false}
+                <MatchChoiceButton
+                  checked={checked}
+                  choice={leftChoice}
+                  isActive={isActive}
+                  isPaired={isPaired}
                   key={leftChoice.id}
-                  onClick={() => handleLeftTap(leftChoice.id)}
-                  ref={(node) => registerChoiceRef(leftChoice.id, node)}
-                  style={{ fontSize: "1rem", minHeight: "3.5rem" }}
-                  type="button"
-                >
-                  {leftChoice.text}
-                </button>
+                  onChoiceSelect={onChoiceSelect}
+                  registerChoiceRef={registerChoiceRef}
+                  side="left"
+                  tone={connection?.tone}
+                />
               )
             })}
           </div>
-          <div className="flex flex-col gap-3">
-            {presentation.rightChoices.map((rightChoice) => {
-              const pairedLeftChoiceId =
-                findMatchedLeftChoiceIdForRightChoiceId(
-                  matchMap,
-                  rightChoice.id
-                )
+          <div
+            aria-label="오른쪽 선택지"
+            className="flex flex-col gap-3"
+            role="group"
+          >
+            {rightChoices.map((rightChoice) => {
+              const connection = connections.find(
+                (candidate) => candidate.rightChoiceId === rightChoice.id
+              )
               const isActive =
                 pendingChoice?.side === "right" &&
                 pendingChoice.id === rightChoice.id
-              const isCorrect =
-                checked !== false &&
-                pairedLeftChoiceId !== null &&
-                isCorrectMatchChoice(
-                  presentation,
-                  pairedLeftChoiceId,
-                  rightChoice.id
-                )
-              const isWrong =
-                checked !== false &&
-                pairedLeftChoiceId !== null &&
-                !isCorrectMatchChoice(
-                  presentation,
-                  pairedLeftChoiceId,
-                  rightChoice.id
-                )
-              const isPaired = pairedLeftChoiceId !== null
+              const isPaired = connection !== undefined
 
               return (
-                <button
-                  className={cn(
-                    "w-full rounded-3xl p-4 font-bold text-center transition-all duration-150 active:scale-95",
-                    getMatchButtonClassName({
-                      checked,
-                      isActive,
-                      isCorrect,
-                      isPaired,
-                      isWrong,
-                    })
-                  )}
-                  disabled={checked !== false}
+                <MatchChoiceButton
+                  checked={checked}
+                  choice={rightChoice}
+                  isActive={isActive}
+                  isPaired={isPaired}
                   key={rightChoice.id}
-                  onClick={() => handleRightTap(rightChoice.id)}
-                  ref={(node) => registerChoiceRef(rightChoice.id, node)}
-                  style={{ fontSize: "1rem", minHeight: "3.5rem" }}
-                  type="button"
-                >
-                  {rightChoice.text}
-                </button>
+                  onChoiceSelect={onChoiceSelect}
+                  registerChoiceRef={registerChoiceRef}
+                  side="right"
+                  tone={connection?.tone}
+                />
               )
             })}
           </div>
@@ -418,5 +300,55 @@ export function MatchAnswer({
         </div>
       ) : null}
     </div>
+  )
+}
+
+function MatchChoiceButton({
+  checked,
+  choice,
+  isActive,
+  isPaired,
+  onChoiceSelect,
+  registerChoiceRef,
+  side,
+  tone,
+}: {
+  readonly checked: LessonStepCheckedVisual
+  readonly choice: MatchAnswerChoice
+  readonly isActive: boolean
+  readonly isPaired: boolean
+  readonly onChoiceSelect?: (selection: MatchAnswerChoiceSelection) => void
+  readonly registerChoiceRef: (
+    choiceId: string,
+    node: HTMLButtonElement | null
+  ) => void
+  readonly side: "left" | "right"
+  readonly tone?: MatchAnswerConnection["tone"]
+}) {
+  return (
+    <button
+      aria-pressed={isActive || isPaired}
+      className={cn(
+        "w-full rounded-3xl p-4 font-bold text-center transition-all duration-150 active:scale-95",
+        getMatchButtonClassName({
+          checked,
+          isActive,
+          isPaired,
+          tone,
+        })
+      )}
+      data-state={
+        isActive ? "active" : (tone ?? (isPaired ? "paired" : "idle"))
+      }
+      data-choice-id={choice.id}
+      data-side={side}
+      disabled={checked !== false}
+      onClick={() => onChoiceSelect?.({ id: choice.id, side })}
+      ref={(node) => registerChoiceRef(choice.id, node)}
+      style={{ fontSize: "1rem", minHeight: "3.5rem" }}
+      type="button"
+    >
+      {choice.text}
+    </button>
   )
 }

@@ -7,7 +7,7 @@
 - 현재 DB baseline은 `packages/db/src/migrations/0000-writing-app-baseline.sql`이다.
 - 마이그레이션 실행 진입점은 `packages/db/src/migrations/migrate.ts`다.
 - 신규 DB는 baseline SQL을 적용하고, 기존 mutable 커리큘럼 DB는 같은 진입점에서 일회성 관계형 버전 이관을 수행한다.
-- 최종 자료실 트리·Markdown·Yjs·감사·FTS5 schema도 같은 baseline에 포함하며 별도 자료실 migration 명령은 두지 않는다.
+- 최종 자료실 트리·Markdown·자산 메타데이터·FTS5 schema도 같은 baseline에 포함하며 별도 자료실 migration 명령은 두지 않는다.
 - 운영 데이터 이전이 필요해지면 별도 migration 계획과 ADR을 작성한다.
 
 ## 명령
@@ -48,7 +48,7 @@
 4. 기존 테이블을 transaction 안에서 임시 이름으로 바꾸고 최종 baseline schema를 만든다.
 5. 각 코스를 revision `1` published와 revision `2` draft로 복제한다.
 6. 기존 진행 index를 revision `1`의 `current_step_id`로 변환하고 `learner_course_progress` 고정을 만든다.
-7. 답안과 AI 시도를 같은 course·curriculum version 범위로 복사한다.
+7. 상태 모델 이전의 AI 시도는 먼저 결정적 legacy ID·idempotency key, `succeeded` 상태와 `created_at` 기준 timestamp로 보정한 뒤, 답안과 함께 같은 course·curriculum version 범위로 복사한다.
 8. 복사와 검증이 끝난 뒤에만 legacy 테이블을 삭제하고 commit한다.
 9. commit 뒤 `foreign_keys`를 다시 켜고 무결성 검사를 반복한다.
 

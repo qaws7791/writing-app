@@ -1,4 +1,5 @@
 import {
+  chmodSync,
   copyFileSync,
   closeSync,
   existsSync,
@@ -89,6 +90,7 @@ export function verifyDatabaseBackup(
 
   try {
     copyFileSync(backupPath, restoredPath)
+    chmodSync(restoredPath, 0o600)
     return inspectRestoredDatabase(restoredPath)
   } finally {
     rmSync(temporaryDirectory, { force: true, recursive: true })
@@ -98,9 +100,14 @@ export function verifyDatabaseBackup(
 function inspectRestoredDatabase(
   restoredPath: string
 ): DatabaseBackupVerification {
-  const restored = new Database(restoredPath, { readonly: true, strict: true })
+  const restored = new Database(restoredPath, {
+    create: false,
+    readwrite: true,
+    strict: true,
+  })
 
   try {
+    restored.exec("PRAGMA query_only = ON")
     const integrityCheck = restored
       .query<{ readonly integrity_check: string }, []>("PRAGMA integrity_check")
       .get()?.integrity_check

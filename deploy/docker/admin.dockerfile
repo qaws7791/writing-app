@@ -4,7 +4,8 @@ FROM oven/bun:1.3.10@sha256:b86c67b531d87b4db11470d9b2bd0c519b1976eee6fcd71634e7
 
 WORKDIR /workspace
 
-ENV CI=true
+ENV CI=true \
+    NEXT_TELEMETRY_DISABLED=1
 
 COPY . .
 
@@ -27,7 +28,7 @@ RUN test -n "$NEXT_PUBLIC_ADMIN_API_BASE_URL" \
     && test -n "$NEXT_PUBLIC_LEARNER_WEB_ORIGIN" \
     && test -n "$ADMIN_API_BASE_URL" \
     && test -n "$ADMIN_ORIGIN"
-RUN bun --filter @workspace/admin build
+RUN bun --filter @workspace/admin build --webpack
 
 FROM node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d AS runner
 
@@ -42,6 +43,7 @@ ENV NODE_ENV=production \
 
 COPY --from=builder --chown=10001:10001 /workspace/apps/admin/.next/standalone ./
 COPY --from=builder --chown=10001:10001 /workspace/apps/admin/.next/static ./apps/admin/.next/static
+COPY --from=builder --chown=10001:10001 /workspace/apps/admin/public ./apps/admin/public
 
 USER 10001:10001
 

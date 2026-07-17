@@ -1,4 +1,4 @@
-import type { ResourceTreeCommandRejection } from "#core/modules/resource-library/application/ports/resource-tree.repository"
+import type { ResourceTreeCommandRejection } from "#core/modules/resource-library/application/resource-library-error"
 import type {
   ResourceBreadcrumbItem,
   ResourceDocumentId,

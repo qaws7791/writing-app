@@ -1,0 +1,142 @@
+import type {
+  CompleteLearnerStepResult,
+  LearnerAiFeedbackTransitionResult as LearnerAiFeedbackTransitionResponse,
+} from "@workspace/contracts/learning"
+import type {
+  AiFeedbackServiceError,
+  LearnerAiFeedbackTransitionResult,
+} from "@workspace/core/ai-feedback"
+import type {
+  CompleteLearnerStepTransitionResult,
+  LearnerTransitionError,
+  Result,
+  StartLearnerLessonResult,
+} from "@workspace/core/learning"
+import { AppError } from "@/http/platform/errors"
+
+type LearnerCommandError = AiFeedbackServiceError | LearnerTransitionError
+
+export function unwrapLearnerStartLessonResult(
+  result: Result<StartLearnerLessonResult, LearnerTransitionError>
+): StartLearnerLessonResult {
+  return unwrapLearnerCommandResult(result)
+}
+
+export function unwrapLearnerCompleteStepResult(
+  result: Result<CompleteLearnerStepTransitionResult, LearnerTransitionError>
+): CompleteLearnerStepResult {
+  return toCompleteStepResponse(unwrapLearnerCommandResult(result))
+}
+
+export function unwrapLearnerAiFeedbackTransitionResult(
+  result: Result<
+    LearnerAiFeedbackTransitionResult<CompleteLearnerStepTransitionResult>,
+    LearnerCommandError
+  >
+): LearnerAiFeedbackTransitionResponse {
+  const applicationResult = unwrapLearnerCommandResult(result)
+
+  return {
+    feedback: applicationResult.feedback,
+    transition: toCompleteStepResponse(applicationResult.transition),
+  }
+}
+
+function unwrapLearnerCommandResult<TValue>(
+  result: Result<TValue, LearnerCommandError>
+): TValue {
+  if (result.kind === "err") throw mapLearnerCommandError(result.error)
+
+  return result.value
+}
+
+function toCompleteStepResponse(
+  result: CompleteLearnerStepTransitionResult
+): CompleteLearnerStepResult {
+  switch (result.kind) {
+    case "retry":
+      return {
+        evaluation: result.evaluation,
+        learning: result.learning,
+        status: "retry",
+      }
+    case "advanced":
+      return {
+        evaluation: result.evaluation,
+        learning: result.learning,
+        status: "advanced",
+      }
+    case "lesson-completed":
+      return {
+        courseLearning: result.courseLearning,
+        evaluation: result.evaluation,
+        lessonCompletion: result.lessonCompletion,
+        status: "lesson_completed",
+      }
+  }
+}
+
+function mapLearnerCommandError(error: LearnerCommandError): AppError {
+  switch (error.kind) {
+    case "invalid-request":
+      return new AppError({
+        code: "VALIDATION_ERROR",
+        message: "요청 내용을 확인해 주세요.",
+        status: 400,
+      })
+    case "lesson-not-found":
+      return new AppError({
+        code: "LESSON_NOT_FOUND",
+        message: "레슨을 찾을 수 없습니다.",
+        status: 404,
+      })
+    case "lesson-locked":
+      return new AppError({
+        code: "LESSON_LOCKED",
+        message: "아직 학습할 수 없는 레슨입니다.",
+        status: 403,
+      })
+    case "curriculum-version-changed":
+      return new AppError({
+        code: "CURRICULUM_VERSION_CHANGED",
+        message: "학습 콘텐츠 버전이 변경되었습니다.",
+        status: 409,
+      })
+    case "attempt-limit-exceeded":
+      return new AppError({
+        code: "ATTEMPT_LIMIT_EXCEEDED",
+        message: "AI 코칭 시도 횟수를 모두 사용했습니다.",
+        status: 429,
+      })
+    case "attempt-in-progress":
+      return new AppError({
+        code: "ATTEMPT_IN_PROGRESS",
+        message: "AI 코칭 요청을 처리하고 있습니다.",
+        status: 409,
+      })
+    case "feedback-answer-not-found":
+      return new AppError({
+        code: "AI_FEEDBACK_ANSWER_NOT_FOUND",
+        message: "코칭할 작성 답변을 찾을 수 없습니다.",
+        status: 409,
+      })
+    case "feedback-target-invalid":
+      return new AppError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "AI 코칭 대상 설정이 올바르지 않습니다.",
+        status: 500,
+      })
+    case "step-sequence-conflict":
+      return new AppError({
+        code: "STEP_SEQUENCE_CONFLICT",
+        message: "현재 학습 순서와 요청한 단계가 다릅니다.",
+        status: 409,
+      })
+    case "provider-failed":
+      return new AppError({
+        code: "PROVIDER_UNAVAILABLE",
+        message: "AI 코칭을 잠시 사용할 수 없습니다.",
+        status: 503,
+      })
+  }
+}

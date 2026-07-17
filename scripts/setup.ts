@@ -30,13 +30,12 @@ async function runSetup(): Promise<void> {
     throw new Error("로컬 환경 사전 점검에 실패했습니다.")
   }
 
-  await runCommand(["bun", "run", "dev:app:setup"])
   await runCommand(["bun", "run", "dev:admin:setup"])
   await runCommand(["bun", "run", "doctor"])
 
   console.log("로컬 준비가 완료되었습니다. bun run dev를 실행하세요.")
   console.log(
-    "관리자 로그인 값은 apps/admin-api/.env의 ADMIN_SEED_EMAIL과 ADMIN_SEED_PASSWORD에서 확인하세요."
+    "관리자 로그인 값은 apps/api/.env의 ADMIN_SEED_EMAIL과 ADMIN_SEED_PASSWORD에서 확인하세요."
   )
 }
 

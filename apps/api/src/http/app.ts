@@ -1,11 +1,10 @@
 import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
-import { createApp as createHonoApp } from "@workspace/hono/core"
+import { createApp as createHonoApp } from "@/http/platform/core"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
-} from "@workspace/hono/security"
-import { createRequestLoggingMiddleware } from "@workspace/logger"
+} from "@/http/platform/security"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
@@ -19,6 +18,7 @@ import {
   createLearnerErrorHandler,
   createLearnerErrorResponseMiddleware,
 } from "@/http/learner-error-response"
+import { createRequestLoggingMiddleware } from "@/http/platform/request-logging.middleware"
 
 export type { ApiDependencies, ApiRequestContext }
 export { createOpenApiDocument } from "@/http/openapi"
@@ -47,6 +47,7 @@ function createMiddleware(
 
   middleware.push(
     createRequestLoggingMiddleware({
+      audience: "learner",
       createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
       logRequest: dependencies.requestLogger ?? ignoreRequestLog,
       logSecurityAudit: dependencies.securityAuditLogger,

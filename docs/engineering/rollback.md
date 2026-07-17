@@ -1,96 +1,51 @@
-# 롤백
-
-이 문서는 배포 실패 또는 장애 발생 시 이전 버전으로 되돌리는 절차와 판단 기준을 설명하는 단일 진실 원천이다.
+# 롤백 운영 계약
 
 ## 원칙
 
-- 롤백은 숨겨진 복구가 아니라 명시적 운영 절차다.
-- 코드 롤백과 데이터 롤백을 분리해 판단한다.
-- DB 변경 전에는 백업을 확보한다.
-- 사용자 데이터 삭제나 schema 파괴가 포함된 변경은 배포 전에 별도 계획을 세운다.
-- 원인 분석보다 서비스 안정화가 먼저인 상황에서는 빠르게 이전 안정 버전으로 되돌린다.
+제품 backend executable은 learner/admin Host sub-app을 함께 실행하는 `apps/api` 하나다.
+따라서 코드 롤백도 두 API audience를 같은 immutable API image로 되돌린다. 관리자
+traffic만 별도 runtime으로 분기하는 rollback 경로는 유지하지 않는다.
 
-## 롤백 판단 기준
+- 코드 롤백과 DB 복구를 구분한다. schema·데이터가 호환되면 코드 image만 되돌린다.
+- 모든 변경 작업은 host-local operation lock으로 직렬화한다.
+- 배포, 코드 롤백, DB 복구를 동시에 실행하지 않는다.
+- 실패 시 원래 writer와 Caddy topology를 확인한 뒤 public health를 다시 검증한다.
+- 실제 운영 실행에는 별도 승인, maintenance/drain, backup 확인이 필요하다.
 
-다음 상황에서는 롤백을 검토한다.
+## 통합 API 코드 롤백
 
-- health check 실패
-- 로그인 또는 세션 확인 실패
-- 주요 학습 flow 실패
-- 관리자 변경성 작업 오동작
-- 5xx 급증
-- migration 또는 seed 실패
-- DB 파일 손상 또는 schema mismatch
-- AI provider 오류가 전체 레슨 flow를 막음
-- 배포 직후 latency 급증
+`infra/ansible/playbooks/rollback.yaml`은 web, 통합 API, admin image를 승인된 이전
+digest로 전환한다. API image는 learner/admin route와 하나의 SQLite lifecycle을 함께
+소유하므로 둘을 분리해 선택할 수 없다.
 
-## 코드 롤백
+```bash
+ansible-playbook infra/ansible/playbooks/rollback.yaml \
+  -i infra/ansible/inventories/production/hosts.yaml \
+  --ask-vault-pass \
+  -e writing_app_rollback_approved=true \
+  -e writing_app_rollback_api_image=ghcr.io/example/writing-app-api@sha256:replace-me \
+  -e writing_app_rollback_web_image=ghcr.io/example/writing-app-web@sha256:replace-me \
+  -e writing_app_rollback_admin_image=ghcr.io/example/writing-app-admin@sha256:replace-me
+```
 
-1. 현재 배포 버전과 직전 정상 버전을 확인한다.
-2. `docker compose ps`와 `docker compose logs`로 서비스 상태와 로그를 확인한다.
-3. Ansible rollback playbook에 직전 정상 image reference와 명시적 승인 변수를 전달한다.
-4. Compose가 직전 이미지로 컨테이너를 다시 생성할 때까지 기다린다.
-5. health check를 확인한다.
-6. 학습자 로그인, 코스 조회, 레슨 조회, 진행 저장을 smoke test한다.
-7. 어드민 로그인, 목록 조회, 설정 조회를 smoke test한다.
-8. 자료실 트리 조회, 문서 열기, HTTP transaction 저장·sync 조회, 작업 공간 사건 연결과 Markdown 내보내기를 smoke test한다.
+실행 전에는 현재 revision, 대상 digest, DB schema 호환성, 최신 backup을 확인한다.
+실행 뒤에는 learner/admin public Host의 `/health`, 인증 경계, 관리자 핵심 변경 route를
+검증한다. Caddy의 두 API upstream은 모두 `api:4000`이어야 한다.
 
-코드 롤백은 DB를 자동으로 되돌리지 않는다. 실행 예시는 `deployment.md`를 따른다.
+## DB 복구
 
-## DB 롤백
+DB 복구는 코드 롤백과 별도 승인 작업이다. 통합 API와 Litestream을 중지하고 단일
+SQLite writer가 없는 상태에서만 수행한다. 절차와 fail-closed 조건은
+[데이터베이스 백업·복구](./database-backup-restore.md)를 따른다.
 
-DB 롤백은 코드 롤백보다 위험하다. 아래 조건을 확인한다.
+복구 뒤에는 migration 상태, `foreign_key_check`, learner/admin 인증 테이블, 자료실
+문서 ETag와 학습 진행을 확인한 다음 통합 API를 다시 시작한다.
 
-- migration이 destructive change였는가?
-- 새 코드가 작성한 데이터가 이전 코드와 호환되는가?
-- 백업 시점 이후 사용자 데이터 손실을 수용할 수 있는가?
-- 복구 대신 forward fix가 더 안전한가?
+## 작업 잠금과 실패 복구
 
-절차:
+배포·verify·rollback·restore는 같은 operation lock을 사용한다. controller 종료나 host
+단절로 stale lock이 남았다면 자동 삭제하지 않는다. 실행 중인 writer와 Compose 상태,
+SQLite integrity, lock metadata를 확인하고 운영 승인 뒤 수동으로 회수한다.
 
-1. `database-backup-restore.md` 절차로 현재 DB 파일의 검증된 추가 백업을 만든다.
-2. Ansible restore playbook에 명시적 승인을 전달해 두 API와 Litestream을 중지한다.
-3. 현재 SQLite 파일과 WAL/SHM sidecar를 격리한다.
-4. Litestream이 R2에 저장한 최신 복제본을 별도 실행 컨테이너로 복구한다.
-5. 복구된 DB에 migration을 적용하고 Compose 서비스를 기동한다.
-6. 주요 읽기/쓰기 smoke test를 수행한다.
-
-## SQLite 파일 주의사항
-
-- SQLite 파일은 API 프로세스와 같은 로컬 디스크에 둔다.
-- WAL 모드를 사용하므로 운영 파일의 단순 복사 대신 `database-backup-restore.md`의 SQLite snapshot 명령을 사용한다. 복구 전에는 `*.sqlite`, `*.sqlite-wal`, `*.sqlite-shm` 파일 상태를 함께 보존한다.
-- 운영 중 `db:reset`을 사용하지 않는다.
-- 네트워크 파일시스템에서 같은 SQLite 파일을 여러 서버가 공유하지 않는다.
-- 자료실 DB를 교체하기 전에 어드민 API의 신규 HTTP transaction과 작업 공간 WebSocket 수락을 중단하고 프로세스를 종료해 진행 중인 쓰기가 없음을 확인한다.
-
-## Seed 롤백
-
-콘텐츠 seed는 삭제 대신 `archived` 전환을 사용한다. 잘못된 seed 배포 시 우선순위는 다음과 같다.
-
-1. 잘못된 seed 데이터를 수정한 뒤 다시 seed를 실행한다.
-2. 영향이 크면 DB 백업으로 되돌린다.
-3. 학습 진행/답변 손실 가능성이 있으면 DB 롤백보다 forward fix를 우선 검토한다.
-
-## 인증 장애 롤백
-
-인증 장애 시 확인 순서:
-
-- `BETTER_AUTH_SECRET` 또는 관리자 비밀값 변경 여부
-- `BETTER_AUTH_URL`과 OAuth callback origin
-- `WEB_ORIGIN`, `ADMIN_ORIGIN`
-- 쿠키 domain 설정
-- Better Auth table migration 여부
-
-비밀값 변경으로 기존 세션이 무효화될 수 있다. 의도하지 않은 변경이면 이전 비밀값으로 복구한다.
-
-## 사후 기록
-
-롤백 후 다음을 기록한다.
-
-- 발생 시각
-- 배포 버전
-- 증상
-- 롤백 결정 이유
-- 실행한 명령
-- 데이터 복구 여부
-- 재발 방지 작업
+외부 운영 리허설은 사용자 승인으로 이번 아키텍처 작업 범위에서 제외했다. 따라서 이
+문서는 source와 실행 계약을 설명하지만 실제 대상 환경의 롤백 성공 증적을 주장하지 않는다.

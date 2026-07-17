@@ -58,9 +58,9 @@
 
 학습자 공개 랜딩은 Open Graph·Twitter 기본 metadata와 manifest를 제공하고 sitemap에는 인증 없이 접근 가능한 route만 포함한다. 코스 상세의 metadata와 본문은 React request cache로 같은 조회를 공유하며, 조회할 수 없는 코스에는 canonical을 만들지 않는다. 관리자 앱은 root metadata와 `robots.txt` 양쪽에서 전체 색인을 차단한다.
 
-- `/resources`: 지연 로딩 자료 트리, 검색, 새 폴더·문서, Markdown 가져오기와 선택 안내.
+- `/resources`: 최대 1,000개의 전체 자료 트리, 검색, 새 폴더·문서, Markdown 가져오기와 선택 안내.
 - 자료 트리의 공개 Interface는 `ResourceTree` 하나이며, 상태 전이와 명령 순서는 controller/reducer, drag/drop 판단은 순수 policy, 명령 dialog와 row 렌더링은 각 view module에 둔다.
-- `/resources/[documentId]`: breadcrumb, 제목, 동기화 상태와 Lexical GFM 공동 편집기.
+- `/resources/[documentId]`: breadcrumb, 제목, 저장 상태와 Lexical GFM 편집기.
 - `/resources/trash`: 직접 휴지통으로 이동한 최상위 항목과 전체 하위 트리 읽기·복원.
 - `/settings`: 공지, 약관, 개인정보처리방침, 콘텐츠 초기화.
 
@@ -124,10 +124,10 @@
 - 사용자 관리는 검색, 상태 필터, 정렬, 페이지 이동, 정지/복구, 삭제 요청 처리를 제공한다.
 - 분석 화면의 차트는 새 의존성 없이 SVG 또는 CSS 기반 컴포넌트로 우선 구현한다.
 - 대시보드와 분석 화면의 Recharts 시각화는 viewport 200px 이내에서 동적으로 불러온다. 같은 데이터의 기간 합계와 semantic table을 먼저 렌더링해 JavaScript·차트 로딩 실패와 screen reader 환경에서도 핵심 값을 전달한다.
-- 자료실은 reui 기반 Tree 프리미티브로 무제한 폴더·문서 계층을 지연 로딩하고 데스크톱 조절 사이드바와 모바일 drawer를 제공한다.
-- 자료실 트리 shell은 문서 동기화 모듈을 정적 import하지 않는다. Lexical·Yjs 동기화 boundary는 `/resources/[documentId]`에서만 동적으로 불러오며, 빈 자료실과 휴지통의 초기 chunk는 CI에서 Lexical/Yjs 부재와 275,000 bytes gzip 예산을 검증한다.
-- 자료 본문은 Lexical에서 최종 문서 형태로 GFM을 편집하며 분할 미리보기나 저장 버튼을 두지 않는다. 슬래시 메뉴, Markdown shortcut, 블록 이동, 선택 서식 도구와 URL 이미지 입력을 제공한다.
-- Yjs 연결·동기화·저장·재연결·오류 상태를 아이콘 애니메이션과 한국어 텍스트로 항상 표시하고, offline 동안 구조 변경은 잠그되 현재 본문은 재연결 후 병합한다.
+- 자료실은 reui 기반 Tree 프리미티브로 최대 3단계 폴더·문서 계층을 이름순으로 한 번에 조회하고 데스크톱 사이드바를 제공한다. 작은 화면에서는 데스크톱 브라우저 사용 안내를 표시한다.
+- 자료실 트리 shell은 문서 편집기 모듈을 정적 import하지 않는다. Lexical 편집기 경계는 `/resources/[documentId]`에서만 동적으로 불러오며, 빈 자료실과 휴지통의 초기 chunk는 CI에서 편집기 런타임 부재와 275,000 bytes gzip 예산을 검증한다.
+- 자료 본문은 Lexical에서 최종 문서 형태로 GFM을 편집하고 제목과 본문을 저장 버튼으로 함께 확정한다. 슬래시 메뉴, Markdown shortcut, 블록 이동, 선택 서식 도구와 R2 이미지 업로드를 제공한다.
+- 문서를 열 때 받은 버전을 `If-Match`로 보내고 `412 Precondition Failed`이면 로컬 편집본을 유지한 채 최신 저장본을 함께 제시한다. 자동 병합하지 않으며 브라우저 포커스 복귀 때 전체 트리와 열린 문서를 HTTP로 재검증한다.
 
 ## 상태 관리
 

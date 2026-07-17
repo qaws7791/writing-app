@@ -55,12 +55,6 @@ describe("Turbo cache 계약", () => {
     expect(readChangedTaskIds(first, second)).toEqual(["@workspace/web#build"])
   })
 
-  test("산출물이 없는 admin-api build는 output cache를 선언하지 않는다", () => {
-    const build = readTask(readDryRun(["build"]), "@workspace/admin-api#build")
-
-    expect(build.resolvedTaskDefinition.outputs).toEqual([])
-  })
-
   test("앱 dev task는 cache 없이 runtime env만 전달한다", () => {
     const dev = readTask(readDryRun(["dev"]), "@workspace/web#dev")
 

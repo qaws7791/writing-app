@@ -34,6 +34,18 @@ interface WorkflowJob {
   readonly name: string
 }
 
+const qualityGatesActionReferences = [
+  "actions/cache@caa296126883cff596d87d8935842f9db880ef25",
+  "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10",
+  "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+  "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
+  "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f",
+  "docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c",
+  "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6",
+] as const
+
+const immutableActionReferencePattern = /^[^@\s]+@[0-9a-f]{40}$/u
+
 export function readToolchainContract(input: unknown): ToolchainContractResult {
   if (typeof input !== "object" || input === null) {
     return { errors: ["root package.json은 객체여야 합니다."], kind: "invalid" }
@@ -103,6 +115,33 @@ export function validateQualityGatesToolchain(
   return jobs.flatMap((job) => validateWorkflowJob(contract, job))
 }
 
+export function validateQualityGatesActionReferences(
+  workflow: string
+): readonly string[] {
+  const actionReferences = workflow.split(/\r?\n/u).flatMap((line) => {
+    const match = /^\s*(?:-\s+)?uses:\s+([^\s#]+)/u.exec(line)
+    return match === null ? [] : [match[1] ?? ""]
+  })
+  const errors: string[] = []
+
+  for (const actionReference of qualityGatesActionReferences) {
+    if (!actionReferences.includes(actionReference)) {
+      errors.push(
+        `quality-gates.yml: required immutable action pin이 없습니다: ${actionReference}`
+      )
+    }
+  }
+  for (const actionReference of actionReferences) {
+    if (!immutableActionReferencePattern.test(actionReference)) {
+      errors.push(
+        `quality-gates.yml: action은 full commit SHA로 고정해야 합니다: ${actionReference}`
+      )
+    }
+  }
+
+  return errors
+}
+
 function readWorkflowJobs(workflow: string): readonly WorkflowJob[] {
   const lines = workflow.split(/\r?\n/u)
   const jobsStart = lines.findIndex((line) => line === "jobs:")
@@ -137,9 +176,13 @@ function validateWorkflowJob(
   job: WorkflowJob
 ): readonly string[] {
   const errors: string[] = []
-  const nodeSetup = job.body.indexOf("uses: actions/setup-node@v6")
+  const nodeSetup = job.body.indexOf(
+    "uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38"
+  )
   const nodeVersion = job.body.indexOf(`node-version: ${contract.nodeRange}`)
-  const bunSetup = job.body.indexOf("uses: oven-sh/setup-bun@v2")
+  const bunSetup = job.body.indexOf(
+    "uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+  )
   const bunVersion = job.body.indexOf(`bun-version: ${contract.bunVersion}`)
   const preflight = job.body.indexOf("run: bun run check:toolchain")
   const install = job.body.indexOf("run: bun install")
@@ -192,6 +235,7 @@ function runToolchainCheck(): void {
       nodeVersion: process.versions.node,
     }),
     ...validateQualityGatesToolchain(contractResult.contract, workflow),
+    ...validateQualityGatesActionReferences(workflow),
   ]
 
   if (errors.length > 0) failToolchainCheck(errors)

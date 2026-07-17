@@ -1,5 +1,5 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
-import { withPrivateNoStore } from "@workspace/hono/security"
+import { withPrivateNoStore } from "@/http/platform/security"
 
 export function registerAuthProxy(
   app: OpenAPIHono,

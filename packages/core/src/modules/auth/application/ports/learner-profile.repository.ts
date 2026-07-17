@@ -1,4 +1,4 @@
-import type { LearnerAccountStatus } from "#core/shared/kernel/status"
+import type { LearnerAccountStatus } from "@workspace/contracts/status"
 
 export type LearnerProfileRepository = {
   readonly ensureActiveProfile: (input: {

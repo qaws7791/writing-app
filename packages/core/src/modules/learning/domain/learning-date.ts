@@ -52,6 +52,25 @@ export function compareLearningDateKey(
   return left.localeCompare(right)
 }
 
+export function groupLearningActivityDatesByUserId(
+  activities: readonly {
+    readonly activityDate: string
+    readonly userId: string
+  }[]
+): Map<string, LearningDateKey[]> {
+  const activityDatesByUserId = new Map<string, LearningDateKey[]>()
+
+  for (const activity of activities) {
+    const activityDates = activityDatesByUserId.get(activity.userId) ?? []
+
+    activityDates.push(activity.activityDate as LearningDateKey)
+    activityDates.sort((left, right) => right.localeCompare(left))
+    activityDatesByUserId.set(activity.userId, activityDates)
+  }
+
+  return activityDatesByUserId
+}
+
 export function calculateCurrentStreakDays(
   activityDates: readonly LearningDateKey[]
 ): number {

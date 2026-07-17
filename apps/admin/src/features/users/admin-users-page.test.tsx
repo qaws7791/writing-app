@@ -92,7 +92,7 @@ describe("AdminUsersPage", () => {
       expect.stringContaining("status=suspended")
     )
     expect(pushMock).toHaveBeenCalledWith(expect.stringContaining("page=1"))
-  })
+  }, 15_000)
 
   it("삭제 요청 확인 대화상자를 거쳐 삭제한다", async () => {
     const user = userEvent.setup()

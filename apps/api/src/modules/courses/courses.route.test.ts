@@ -58,6 +58,56 @@ describe("플랫폼 API courses route", () => {
     })
   })
 
+  it("같은 조회 조건으로 서명한 cursor를 다음 위치로 전달한다", async () => {
+    const dependencies = createTestDependencies()
+    const nextPosition = { courseId: "c0", primary: "가나다" }
+    const cursor = dependencies.learnerCursorCodec.encode({
+      endpoint: "courses",
+      fingerprint: dependencies.learnerCursorCodec.createFingerprint({
+        category: undefined,
+        query: undefined,
+        sort: "title-asc",
+      }),
+      position: nextPosition,
+    })
+    const listCourses = vi.fn(dependencies.contentService.listCourses)
+    const app = createApp({
+      ...dependencies,
+      contentService: { ...dependencies.contentService, listCourses },
+    })
+
+    const response = await app.request(
+      `/courses?sort=title-asc&cursor=${encodeURIComponent(cursor)}&limit=10`,
+      { headers: authenticatedHeaders }
+    )
+
+    expect(response.status).toBe(200)
+    expect(listCourses).toHaveBeenCalledWith({
+      after: nextPosition,
+      limit: 10,
+      sort: "title-asc",
+    })
+  })
+
+  it("유효하지 않은 cursor는 400 INVALID_CURSOR로 반환한다", async () => {
+    const dependencies = createTestDependencies()
+    const listCourses = vi.fn(dependencies.contentService.listCourses)
+    const app = createApp({
+      ...dependencies,
+      contentService: { ...dependencies.contentService, listCourses },
+    })
+
+    const response = await app.request("/courses?cursor=invalid", {
+      headers: authenticatedHeaders,
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "INVALID_CURSOR",
+    })
+    expect(listCourses).not.toHaveBeenCalled()
+  })
+
   it("인증된 사용자가 정규화된 course category 목록을 조회한다", async () => {
     const app = createApp(createTestDependencies())
 
@@ -147,12 +197,13 @@ describe("플랫폼 API courses route", () => {
         ...dependencies.contentService,
         async listCourses() {
           return {
-            kind: "ok" as const,
-            value: {
-              internalSolution: "노출되면 안 되는 값",
-              items: [],
-              nextCursor: null,
-            },
+            items: [
+              {
+                ...testCourseDetail,
+                internalSolution: "노출되면 안 되는 값",
+              },
+            ],
+            nextPosition: null,
           }
         },
       },
@@ -182,7 +233,7 @@ describe("플랫폼 API courses route", () => {
         contractName: "LearnerCourseListResponse",
         deploymentVersion: "test-deployment",
         event: "api.contract.response_invalid",
-        fieldPaths: ["$"],
+        fieldPaths: ["items.0"],
         method: "GET",
         requestId: "request-contract-failure",
         route: "/courses",

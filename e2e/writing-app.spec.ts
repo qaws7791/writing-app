@@ -3,8 +3,8 @@ import { readFile } from "node:fs/promises"
 
 import { learnerApiOrigin, learnerWebOrigin, loginLearner } from "#e2e/auth"
 
-const adminWebOrigin = "http://127.0.0.1:3101"
-const adminApiOrigin = "http://127.0.0.1:4101"
+const adminWebOrigin = "http://admin-api.localhost:3101"
+const adminApiOrigin = "http://admin-api.localhost:4100"
 const adminPassword = "e2e-password-123"
 
 test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완료한다", async ({
@@ -107,11 +107,23 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   const ownerContext = await browser.newContext()
   const ownerPage = await ownerContext.newPage()
   const ownerDiagnostics = observeBrowserDiagnostics(ownerPage)
+  const targetAdminRequests: string[] = []
+
+  ownerPage.on("request", (request) => {
+    const url = request.url()
+
+    if (url.startsWith(adminApiOrigin)) targetAdminRequests.push(url)
+  })
 
   await loginAdmin(ownerPage, "owner@example.test", {
     nextPath: "/courses?page=2",
   })
   await expect(ownerPage).toHaveURL(`${adminWebOrigin}/courses?page=2`)
+  expect(
+    targetAdminRequests.some((url) =>
+      url.startsWith(`${adminApiOrigin}/api/auth/sign-in/email`)
+    )
+  ).toBe(true)
   await ownerPage.goto(`${adminWebOrigin}/`)
   await expect(
     ownerPage.getByRole("heading", { name: "대시보드" })
@@ -125,15 +137,22 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   )
   await ownerPage.getByLabel("코스 검색").fill("")
   await ownerPage.getByLabel("코스 검색").press("Enter")
-  await ownerPage.waitForLoadState("networkidle")
-  await ownerPage.getByRole("combobox", { name: "상태" }).click()
-  await ownerPage.getByRole("option", { name: "활성", exact: true }).click()
+  await expect(ownerPage).toHaveURL(/\/courses\?[^#]*query=&/)
+  await expect(ownerPage.getByText("5개 결과")).toBeVisible()
+  await ownerPage.goto(
+    `${adminWebOrigin}/courses?query=&category=&status=active&pageSize=20&page=1`
+  )
   await expect(ownerPage).toHaveURL(/[^#]*status=active/)
-  await ownerPage.waitForLoadState("networkidle")
-  await ownerPage.getByRole("combobox", { name: "상태" }).click()
-  await ownerPage.getByRole("option", { name: "전체 상태" }).click()
+  await expect(ownerPage.getByRole("combobox", { name: "상태" })).toContainText(
+    "활성"
+  )
+  await ownerPage.goto(
+    `${adminWebOrigin}/courses?query=&category=&status=all&pageSize=20&page=1`
+  )
   await expect(ownerPage).toHaveURL(/[^#]*status=all/)
-  await ownerPage.waitForLoadState("networkidle")
+  await expect(ownerPage.getByRole("combobox", { name: "상태" })).toContainText(
+    "전체 상태"
+  )
   await ownerPage.getByRole("button", { name: "새 강의" }).click()
   await expect(ownerPage.getByText("새 코스를 만들었습니다.")).toBeVisible()
   const createdCourseLink = ownerPage.getByRole("link", {
@@ -172,8 +191,8 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
     .getByLabel("코스 편집 경로")
     .getByRole("link", { name: "콘텐츠 관리" })
     .click()
-  await ownerPage.waitForLoadState("networkidle")
   const savedCourseRow = ownerPage.getByRole("row", { name: /E2E 저장 코스/ })
+  await expect(savedCourseRow).toBeVisible()
   await savedCourseRow.hover()
   await savedCourseRow.getByRole("button", { name: "보관" }).click()
   await ownerPage.getByRole("button", { name: "보관하기" }).click()
@@ -276,7 +295,7 @@ async function loginAdmin(
       ? `${adminWebOrigin}/login`
       : `${adminWebOrigin}${nextPath}`
   )
-  await page.waitForLoadState("networkidle")
+  await expect(page.getByLabel("이메일")).toBeVisible()
   await page.getByLabel("이메일").fill(email)
   await page.getByLabel("비밀번호").fill(adminPassword)
   await page.getByRole("button", { name: "로그인" }).click()

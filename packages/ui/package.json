@@ -16,7 +16,6 @@
     "./lib/*": "./src/lib/*.ts",
     "./components/icons": "./src/components/icons.tsx",
     "./components/ui/*": "./src/components/ui/*.tsx",
-    "./components/lesson/match-presentation": "./src/components/lesson/match-presentation.ts",
     "./components/lesson/lesson-step-checked-visual": "./src/components/lesson/lesson-step-checked-visual.ts",
     "./components/lesson/*": "./src/components/lesson/*.tsx"
   },

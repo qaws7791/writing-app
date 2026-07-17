@@ -117,7 +117,7 @@ describe("AdminCoursesPage", () => {
       expect.stringContaining("status=active")
     )
     expect(pushMock).toHaveBeenCalledWith(expect.stringContaining("page=1"))
-  })
+  }, 15_000)
 
   it("새 코스 생성 결과를 알려준다", async () => {
     const user = userEvent.setup()

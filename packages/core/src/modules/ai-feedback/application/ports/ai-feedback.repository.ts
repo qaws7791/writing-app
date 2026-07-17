@@ -1,7 +1,7 @@
 import type {
   AiFeedbackPayload,
   CreateAiFeedbackCommand,
-} from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+} from "@workspace/contracts/ai-feedback"
 
 export type AiFeedbackAttemptStatus =
   | "expired"

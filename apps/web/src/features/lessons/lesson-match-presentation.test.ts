@@ -1,43 +1,47 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  createMatchInteractionState,
   createMatchStepPresentation,
   findMatchedLeftChoiceIdForRightChoiceId,
   isCorrectMatchChoice,
+  toMatchAnswerConnections,
   toMatchAnswerPairs,
+  transitionMatchChoiceSelection,
   toggleMatchSelection,
   type MatchSelectionMap,
 } from "@/features/lessons/lesson-match-presentation"
 
 describe("매칭 스텝 표시와 상호작용 정책", () => {
   it("오른쪽 선택지 순서는 같은 입력에서 결정적으로 고정한다", () => {
-    const first = createMatchStepPresentation({
-      pairs: [
-        { left: "도입", right: "관심" },
-        { left: "전개", right: "근거" },
-        { left: "마무리", right: "정리" },
-      ],
-    })
-    const second = createMatchStepPresentation({
-      pairs: [
-        { left: "도입", right: "관심" },
-        { left: "전개", right: "근거" },
-        { left: "마무리", right: "정리" },
-      ],
-    })
+    const first = createPresentation([
+      { left: "도입", right: "관심" },
+      { left: "전개", right: "근거" },
+      { left: "마무리", right: "정리" },
+    ])
+    const second = createPresentation([
+      { left: "도입", right: "관심" },
+      { left: "전개", right: "근거" },
+      { left: "마무리", right: "정리" },
+    ])
 
-    expect(first.rightChoices.map((choice) => choice.id)).toEqual(
-      second.rightChoices.map((choice) => choice.id)
-    )
+    expect(first.rightChoices.map((choice) => choice.id)).toEqual([
+      "right-3",
+      "right-2",
+      "right-1",
+    ])
+    expect(second.rightChoices.map((choice) => choice.id)).toEqual([
+      "right-3",
+      "right-2",
+      "right-1",
+    ])
   })
 
   it("중복 텍스트도 stable choice id로 구분한다", () => {
-    const presentation = createMatchStepPresentation({
-      pairs: [
-        { left: "문장 A", right: "강조" },
-        { left: "문장 B", right: "강조" },
-      ],
-    })
+    const presentation = createPresentation([
+      { left: "문장 A", right: "강조" },
+      { left: "문장 B", right: "강조" },
+    ])
 
     expect(presentation.leftChoices.map((choice) => choice.id)).toEqual([
       "left-1",
@@ -49,12 +53,10 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
   })
 
   it("오른쪽 선택지는 하나의 왼쪽 선택지에만 배정한다", () => {
-    const presentation = createMatchStepPresentation({
-      pairs: [
-        { left: "간결함", right: "짧게" },
-        { left: "정확함", right: "분명하게" },
-      ],
-    })
+    const presentation = createPresentation([
+      { left: "간결함", right: "짧게" },
+      { left: "정확함", right: "분명하게" },
+    ])
     const [firstLeft, secondLeft] = presentation.leftChoices
     const firstRight = presentation.rightChoices.find(
       (choice) => choice.id === "right-1"
@@ -88,9 +90,9 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
   })
 
   it("같은 짝을 다시 선택하면 해당 배정을 해제한다", () => {
-    const presentation = createMatchStepPresentation({
-      pairs: [{ left: "원인", right: "결과를 만든다" }],
-    })
+    const presentation = createPresentation([
+      { left: "원인", right: "결과를 만든다" },
+    ])
     const leftChoice = presentation.leftChoices[0]
     const rightChoice = presentation.rightChoices[0]
 
@@ -110,13 +112,11 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     expect(unselected[leftChoice.id]).toBeUndefined()
   })
 
-  it("저장 payload는 stable id가 아니라 학습 콘텐츠 텍스트로 만든다", () => {
-    const presentation = createMatchStepPresentation({
-      pairs: [
-        { left: "그러나", right: "역접" },
-        { left: "따라서", right: "결론" },
-      ],
-    })
+  it("저장 payload는 학습 콘텐츠의 stable item ID와 표시 텍스트로 만든다", () => {
+    const presentation = createPresentation([
+      { left: "그러나", right: "역접" },
+      { left: "따라서", right: "결론" },
+    ])
     const leftChoice = presentation.leftChoices[0]
     const rightChoice = presentation.rightChoices.find(
       (choice) => choice.id === "right-1"
@@ -132,17 +132,20 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     })
 
     expect(toMatchAnswerPairs(presentation, selectionMap)).toEqual([
-      { left: "그러나", right: "역접" },
+      {
+        left: "그러나",
+        leftItemId: "left-item-1",
+        right: "역접",
+        rightItemId: "right-item-1",
+      },
     ])
   })
 
   it("정답 여부는 표시 텍스트가 아니라 choice id pair로 판정한다", () => {
-    const presentation = createMatchStepPresentation({
-      pairs: [
-        { left: "문장 A", right: "강조" },
-        { left: "문장 B", right: "강조" },
-      ],
-    })
+    const presentation = createPresentation([
+      { left: "문장 A", right: "강조" },
+      { left: "문장 B", right: "강조" },
+    ])
     const firstLeft = presentation.leftChoices[0]
     const secondRight = presentation.rightChoices.find(
       (choice) => choice.id === "right-2"
@@ -155,9 +158,66 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     expect(
       isCorrectMatchChoice(presentation, firstLeft.id, secondRight.id)
     ).toBe(false)
+    expect(
+      toMatchAnswerConnections(
+        presentation,
+        { [firstLeft.id]: secondRight.id },
+        true
+      )
+    ).toEqual([
+      {
+        leftChoiceId: firstLeft.id,
+        rightChoiceId: secondRight.id,
+        tone: "wrong",
+      },
+    ])
+  })
+
+  it("양쪽 선택 순서와 같은 항목 재선택을 web interaction state로 전이한다", () => {
+    const presentation = createPresentation([{ left: "원인", right: "결과" }])
+    const leftChoice = presentation.leftChoices[0]
+    const rightChoice = presentation.rightChoices[0]
+
+    if (leftChoice === undefined || rightChoice === undefined) {
+      throw new Error("테스트 매칭 선택지가 준비되지 않았습니다.")
+    }
+
+    const pending = transitionMatchChoiceSelection(
+      createMatchInteractionState(),
+      { id: rightChoice.id, side: "right" }
+    )
+    const connected = transitionMatchChoiceSelection(pending.state, {
+      id: leftChoice.id,
+      side: "left",
+    })
+    const pendingAgain = transitionMatchChoiceSelection(connected.state, {
+      id: leftChoice.id,
+      side: "left",
+    })
+    const disconnected = transitionMatchChoiceSelection(pendingAgain.state, {
+      id: rightChoice.id,
+      side: "right",
+    })
+
+    expect(pending.type).toBe("pending-changed")
+    expect(connected.type).toBe("answer-changed")
+    expect(connected.state.selectionMap[leftChoice.id]).toBe(rightChoice.id)
+    expect(disconnected.type).toBe("answer-changed")
+    expect(disconnected.state.selectionMap[leftChoice.id]).toBeUndefined()
   })
 })
 
 function emptySelectionMap(): MatchSelectionMap {
   return {}
+}
+
+function createPresentation(
+  pairs: readonly { readonly left: string; readonly right: string }[]
+) {
+  return createMatchStepPresentation({
+    pairs: pairs.map((pair, index) => ({
+      left: { id: `left-item-${index + 1}`, text: pair.left },
+      right: { id: `right-item-${index + 1}`, text: pair.right },
+    })),
+  })
 }

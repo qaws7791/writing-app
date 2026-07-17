@@ -14,7 +14,6 @@ describe("core architecture", () => {
   it("src 직하위에는 core 구조 entrypoint만 둔다", () => {
     const allowedEntries = new Set([
       "architecture.test.ts",
-      "composition",
       "modules",
       "shared",
     ])
@@ -64,6 +63,17 @@ describe("core architecture", () => {
     expect(violations).toEqual([])
   })
 
+  it("module public api facade의 canonical private alias를 판별한다", () => {
+    expect(isModuleApiFacadeImport("#core/modules/admin/api/index")).toBe(true)
+    expect(isModuleApiFacadeImport("#core/modules/admin/api")).toBe(false)
+    expect(isModuleApiFacadeImport("#/modules/admin/api/index")).toBe(false)
+    expect(
+      isModuleApiFacadeImport(
+        "#core/modules/admin/application/ports/admin-user.reader"
+      )
+    ).toBe(false)
+  })
+
   it("domain과 production application 계층은 runtime adapter 의존성을 import하지 않는다", () => {
     const violations = readSourceFiles(modulesRoot)
       .filter(isDomainOrProductionApplicationSource)
@@ -108,19 +118,6 @@ describe("core architecture", () => {
     expect(violations).toEqual([])
   })
 
-  it("auth facade는 infrastructure factory와 concrete DB 타입을 노출하지 않는다", () => {
-    const authFacadePath = resolve(modulesRoot, "auth", "api", "index.ts")
-    const facadeReferences = readImports(authFacadePath)
-    const facadeSource = readFileSync(authFacadePath, "utf8")
-
-    expect(facadeReferences).not.toContain(
-      "#core/modules/auth/application/use-cases/learner-onboarding"
-    )
-    expect(facadeSource).not.toMatch(
-      /createDrizzle|WritingAppDatabase|LearnerProfileRepository/u
-    )
-  })
-
   it("learning domain은 content module facade나 domain 파일을 직접 import하지 않는다", () => {
     const learningDomainRoot = resolve(modulesRoot, "learning", "domain")
     const violations = readSourceFiles(learningDomainRoot).flatMap((filePath) =>
@@ -159,7 +156,7 @@ function isFacadeFile(filePath: string): boolean {
 }
 
 function isModuleApiFacadeImport(source: string): boolean {
-  return /^#\/modules\/[^/]+\/api$/.test(source)
+  return /^#core\/modules\/[^/]+\/api\/index$/u.test(source)
 }
 
 function isRuntimeAdapterImport(source: string): boolean {
@@ -172,11 +169,13 @@ function isRuntimeAdapterImport(source: string): boolean {
     source.startsWith("drizzle-orm/") ||
     source === "hono" ||
     source.startsWith("hono/") ||
-    source === "@workspace/hono" ||
-    source.startsWith("@workspace/hono/") ||
+    source === "@hono" ||
+    source.startsWith("@hono/") ||
     source === "openai" ||
     source.startsWith("openai/") ||
     source.startsWith("@mastra/") ||
+    source === "@workspace/ui" ||
+    source.startsWith("@workspace/ui/") ||
     source.startsWith("bun:") ||
     source === "node:fs" ||
     source.startsWith("node:fs/") ||

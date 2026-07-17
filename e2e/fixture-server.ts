@@ -3,7 +3,7 @@ import path from "node:path"
 const databaseUrl = readRequiredEnvironment("E2E_DATABASE_URL")
 const setupScripts = [
   "packages/db/src/scripts/setup-e2e-database.ts",
-  "apps/admin-api/src/scripts/setup-e2e-database.ts",
+  "apps/api/src/scripts/setup-e2e-database.ts",
 ] as const
 
 for (const setupScript of setupScripts) {

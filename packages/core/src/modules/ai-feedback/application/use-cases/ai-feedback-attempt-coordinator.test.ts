@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "#core/modules/content/domain/content.ids"
-import { learnerIdSchema } from "#core/modules/learning/domain/learning.ids"
+} from "@workspace/contracts/content/content.ids"
+import { learnerIdSchema } from "@workspace/contracts/learning/step-data"
 import {
   createAiFeedbackAttemptCoordinator,
   type AiFeedbackAttemptTransitionEvent,
@@ -12,7 +12,7 @@ import {
 import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
 import { err, ok } from "#core/shared/result"
-import type { AiFeedbackPayload } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback"
 
 const occurredAt = new Date("2026-06-14T10:00:00.000Z")
 const command = {
@@ -92,13 +92,62 @@ describe("AI 피드백 시도 coordinator", () => {
     expect(failed).toBe(true)
   })
 
-  it("provider timeout을 failed로 전이한다", async () => {
+  it("호출자가 취소하면 provider가 신호를 무시해도 즉시 failed로 전이한다", async () => {
     let failed = false
+    let providerSignal: AbortSignal | undefined
+    const providerStarted = createDeferred<void>()
+    const callerController = new AbortController()
+    const inactiveTimeoutController = new AbortController()
+    const coordinator = createAiFeedbackAttemptCoordinator({
+      attemptPolicy: defaultAiFeedbackAttemptPolicy,
+      createProviderTimeoutSignal: () => inactiveTimeoutController.signal,
+      feedbackRepository: repository({
+        markFailed() {
+          failed = true
+        },
+      }),
+      provider: {
+        async createFeedback(_input, options) {
+          providerSignal = options?.signal
+          providerStarted.resolve()
+          return new Promise<never>(() => undefined)
+        },
+      },
+    })
+
+    const attempt = coordinator.createAttempt(command, context, {
+      signal: callerController.signal,
+    })
+    await providerStarted.promise
+    expect(providerSignal?.aborted).toBe(false)
+
+    callerController.abort(
+      new DOMException("요청이 취소되었습니다.", "AbortError")
+    )
+
+    expect(providerSignal?.aborted).toBe(true)
+    await expect(attempt).resolves.toEqual({
+      error: { kind: "provider-failed", remainingAttempts: 3 },
+      kind: "err",
+    })
+    expect(failed).toBe(true)
+  })
+
+  it("provider timeout 신호가 실제 provider 호출을 취소하고 failed로 전이한다", async () => {
+    let failed = false
+    let providerSignal: AbortSignal | undefined
+    let requestedTimeoutMs: number | undefined
+    const providerStarted = createDeferred<void>()
+    const timeoutController = new AbortController()
     const coordinator = createAiFeedbackAttemptCoordinator({
       attemptPolicy: {
         maxCompletedAttempts: 3,
         pendingTtlMs: 100,
         providerTimeoutMs: 10,
+      },
+      createProviderTimeoutSignal(timeoutMs) {
+        requestedTimeoutMs = timeoutMs
+        return timeoutController.signal
       },
       feedbackRepository: repository({
         markFailed() {
@@ -106,13 +155,25 @@ describe("AI 피드백 시도 coordinator", () => {
         },
       }),
       provider: {
-        async createFeedback() {
-          return new Promise(() => undefined)
+        async createFeedback(_input, options) {
+          providerSignal = options?.signal
+          providerStarted.resolve()
+          return new Promise<never>(() => undefined)
         },
       },
     })
 
-    await expect(coordinator.createAttempt(command, context)).resolves.toEqual({
+    const attempt = coordinator.createAttempt(command, context)
+    await providerStarted.promise
+    expect(requestedTimeoutMs).toBe(10)
+    expect(providerSignal?.aborted).toBe(false)
+
+    timeoutController.abort(
+      new DOMException("AI feedback provider timeout", "TimeoutError")
+    )
+
+    expect(providerSignal?.aborted).toBe(true)
+    await expect(attempt).resolves.toEqual({
       error: { kind: "provider-failed", remainingAttempts: 3 },
       kind: "err",
     })
@@ -192,4 +253,12 @@ function repository(
       )
     },
   }
+}
+
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise
+  })
+  return { promise, resolve }
 }

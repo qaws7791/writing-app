@@ -204,6 +204,84 @@ describe("기준 migration", () => {
     }
   })
 
+  it("상태 모델 이전의 AI feedback attempt를 결정적으로 보정해 보존한다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      createLegacyCurriculumFixture(client.sqlite, 0)
+      replaceWithPreStateModelAiFeedbackAttempts(client.sqlite)
+
+      runBaselineMigration(client.sqlite)
+
+      expect(
+        client.sqlite
+          .query<
+            {
+              readonly answerText: string
+              readonly courseId: string
+              readonly createdAt: number
+              readonly curriculumVersionId: string
+              readonly expiresAt: number
+              readonly id: string
+              readonly idempotencyKey: string
+              readonly resultJson: string | null
+              readonly status: string
+              readonly updatedAt: number
+            },
+            []
+          >(
+            `
+              SELECT id,
+                     course_id AS courseId,
+                     curriculum_version_id AS curriculumVersionId,
+                     idempotency_key AS idempotencyKey,
+                     status,
+                     answer_text AS answerText,
+                     result_json AS resultJson,
+                     created_at AS createdAt,
+                     updated_at AS updatedAt,
+                     expires_at AS expiresAt
+              FROM ai_feedback_attempts
+            `
+          )
+          .get()
+      ).toEqual({
+        answerText: "이전 답안",
+        courseId: "course-1",
+        createdAt: 15,
+        curriculumVersionId: "curriculum:course-1:1",
+        expiresAt: 15,
+        id: "legacy:learner-1:lesson-1:step-2:1",
+        idempotencyKey: "legacy:1",
+        resultJson: '{"score":4}',
+        status: "succeeded",
+        updatedAt: 15,
+      })
+      expect(readIndexNames(client.sqlite, "ai_feedback_attempts")).toEqual(
+        expect.arrayContaining([
+          "ai_feedback_attempts_active_slot_idx",
+          "ai_feedback_attempts_expiry_idx",
+          "ai_feedback_attempts_idempotency_idx",
+          "ai_feedback_attempts_pending_idx",
+        ])
+      )
+      expect(
+        client.sqlite
+          .query<{ readonly integrity_check: string }, []>(
+            "PRAGMA integrity_check"
+          )
+          .get()
+      ).toEqual({ integrity_check: "ok" })
+      expect(
+        client.sqlite
+          .query<{ readonly table: string }, []>("PRAGMA foreign_key_check")
+          .all()
+      ).toEqual([])
+    } finally {
+      client.close()
+    }
+  })
+
   it("범위를 벗어난 progress가 있으면 기존 schema를 유지하고 migration을 실패시킨다", () => {
     const client = createInMemoryWritingAppDatabase()
 
@@ -387,6 +465,29 @@ INSERT INTO ai_feedback_attempts VALUES (
 `)
 }
 
+function replaceWithPreStateModelAiFeedbackAttempts(
+  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
+): void {
+  sqlite.exec(`
+DROP TABLE ai_feedback_attempts;
+
+CREATE TABLE ai_feedback_attempts (
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
+  attempt_number INTEGER NOT NULL,
+  answer_text TEXT NOT NULL,
+  result_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, lesson_id, step_id, attempt_number)
+);
+
+INSERT INTO ai_feedback_attempts VALUES (
+  'learner-1', 'lesson-1', 'step-2', 1, '이전 답안', '{"score":4}', 15
+);
+`)
+}
+
 function seedVersionedCurriculum(
   client: ReturnType<typeof createInMemoryWritingAppDatabase>
 ): void {
@@ -479,6 +580,16 @@ function readColumnNames(
 ): readonly string[] {
   return sqlite
     .query<{ readonly name: string }, []>(`PRAGMA table_info(${tableName})`)
+    .all()
+    .map(({ name }) => name)
+}
+
+function readIndexNames(
+  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"],
+  tableName: string
+): readonly string[] {
+  return sqlite
+    .query<{ readonly name: string }, []>(`PRAGMA index_list(${tableName})`)
     .all()
     .map(({ name }) => name)
 }

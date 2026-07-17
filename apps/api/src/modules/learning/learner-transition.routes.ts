@@ -1,4 +1,4 @@
-import type { AnyRouteConfig } from "@workspace/hono/core"
+import type { AnyRouteConfig } from "@/http/platform/core"
 import {
   learnerApiErrorSchema,
   learnerCompleteStepResponseSchema,
@@ -7,8 +7,11 @@ import {
 } from "@workspace/contracts/learning"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
-import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import {
+  unwrapLearnerCompleteStepResult,
+  unwrapLearnerStartLessonResult,
+} from "@/http/learner-command-route-mapper"
 import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
@@ -52,8 +55,8 @@ const startLessonHandler: ApiRouteHandler<
   const { lessonId } = context.req.valid("param")
   const body = context.req.valid("json")
   const result =
-    await context.var.requestContext.learnerTransitionService.startLesson({
-      ...body,
+    await context.var.requestContext.learnerTransitionRepository.startLesson({
+      expectedCurriculumVersionId: body.expectedCurriculumVersionId,
       lessonId,
       occurredAt: context.var.requestContext.now(),
       userId: learnerIdSchema.parse(context.var.activeSession.user.id),
@@ -64,7 +67,7 @@ const startLessonHandler: ApiRouteHandler<
       context,
       "LearnerStartLessonResponse",
       learnerStartLessonResponseSchema,
-      unwrapApiCoreResult(result)
+      unwrapLearnerStartLessonResult(result)
     ),
     200
   )
@@ -111,11 +114,15 @@ const completeStepHandler: ApiRouteHandler<
   typeof completeStepRouteConfig
 > = async (context) => {
   const { lessonId, stepId } = context.req.valid("param")
+  const body = context.req.valid("json")
   const result =
-    await context.var.requestContext.learnerTransitionService.completeStep({
+    await context.var.requestContext.learnerTransitionRepository.completeStep({
+      completion:
+        body.kind === "acknowledge"
+          ? { kind: "acknowledge" }
+          : { kind: "answer", submission: body.answer },
       lessonId,
       occurredAt: context.var.requestContext.now(),
-      request: context.req.valid("json"),
       stepId,
       userId: learnerIdSchema.parse(context.var.activeSession.user.id),
     })
@@ -125,7 +132,7 @@ const completeStepHandler: ApiRouteHandler<
       context,
       "LearnerCompleteStepResponse",
       learnerCompleteStepResponseSchema,
-      unwrapApiCoreResult(result)
+      unwrapLearnerCompleteStepResult(result)
     ),
     200
   )

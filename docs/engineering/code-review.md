@@ -32,6 +32,7 @@
 - AI feedback service가 attempt 계산, provider 호출, persistence 저장 세부사항을 직접 구현하지 않고 coordinator와 domain policy에 위임하는가?
 - 프론트엔드가 DB나 core infrastructure에 직접 의존하지 않는가?
 - domain과 production application이 runtime adapter나 infrastructure 구현을 import하거나 Worker·network·환경 변수를 직접 사용하지 않는가?
+- 기존 architecture allowance에 연결된 import를 제거했다면 같은 변경에서 exact ratchet도 축소했는가? 새 allowance나 wildcard 예외를 추가하지 않았는가?
 - HTTP 변경 route가 검증된 `*Request`를 application command로 명시적으로 변환하고 repository port까지 request 타입을 전달하지 않는가?
 - 관리자 DB 생성·공유·종료는 `admin-runtime` 하나가 소유하고 core service 결과에 DB client가 노출되지 않는가?
 - 학습자 HTTP 경계가 `@workspace/contracts/learning`의 strict schema와 추론 타입을 직접 사용하고 generated OpenAPI 타입이나 `writing-app-api-contract`를 다시 만들지 않는가?
@@ -66,7 +67,8 @@
 
 ## 프론트엔드 체크
 
-- 화면은 API DTO를 직접 소비하지 않고 mapper를 통과하는가?
+- wire 응답은 schema로 검증되는가? 검증된 DTO와 화면 의미가 같으면 identity mapper 없이 canonical 타입을 사용하고, 실제 표시 의미가 다를 때만 명시적 projection을 두는가?
+- HTTP 성공·실패 shape와 생성자는 `@workspace/http-client`를 직접 사용하고 앱 local result는 오류 type specialization 외의 runtime wrapper를 만들지 않는가?
 - 내부 탐색 UI는 link semantics를 지키는가?
 - Client Component가 필요한 곳에만 사용되는가?
 - 오류는 `role="alert"`, 상태 안내는 `role="status"`를 사용하는가?

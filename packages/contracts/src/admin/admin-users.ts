@@ -39,5 +39,6 @@ export const adminDeleteUserResultSchema = z.object({
 export type AdminDeleteUserResultDto = z.infer<
   typeof adminDeleteUserResultSchema
 >
+export type AdminUserListItemDto = z.infer<typeof adminUserListItemDtoSchema>
 export type AdminUserDetailDto = z.infer<typeof adminUserDetailDtoSchema>
 export type AdminUserListDto = z.infer<typeof adminUserListDtoSchema>

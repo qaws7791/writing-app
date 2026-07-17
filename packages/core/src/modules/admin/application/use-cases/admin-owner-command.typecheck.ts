@@ -1,8 +1,5 @@
-import type { AdminActor } from "#core/modules/admin/application/policies/admin-actor-policy"
-import type { AdminContentResetUseCase } from "#core/modules/admin/application/use-cases/admin-content-reset.use-case"
-import type { AdminCourseUseCase } from "#core/modules/admin/application/use-cases/admin-course.use-case"
 import type { AdminSettingsUseCase } from "#core/modules/admin/application/use-cases/admin-settings.use-case"
-import type { AdminUserUseCase } from "#core/modules/admin/application/use-cases/admin-user.use-case"
+import type { AdminActor } from "#core/shared/admin-owner-authorization"
 
 type Assert<TValue extends true> = TValue
 type RequiresActor<TCommand> = TCommand extends { readonly actor: AdminActor }
@@ -10,23 +7,20 @@ type RequiresActor<TCommand> = TCommand extends { readonly actor: AdminActor }
   : false
 
 export type AdminOwnerCommandsRequireActor = [
-  Assert<RequiresActor<Parameters<AdminCourseUseCase["createCourse"]>[0]>>,
-  Assert<RequiresActor<Parameters<AdminCourseUseCase["archiveCourse"]>[0]>>,
-  Assert<RequiresActor<Parameters<AdminUserUseCase["updateUserStatus"]>[0]>>,
-  Assert<RequiresActor<Parameters<AdminUserUseCase["deleteUser"]>[0]>>,
   Assert<
     RequiresActor<Parameters<AdminSettingsUseCase["updateNoticeSettings"]>[0]>
   >,
   Assert<
     RequiresActor<Parameters<AdminSettingsUseCase["updateLegalSettings"]>[0]>
   >,
-  Assert<
-    RequiresActor<Parameters<AdminContentResetUseCase["resetContent"]>[0]>
-  >,
 ]
 
 // @ts-expect-error owner 변경 command에는 인증된 actor가 반드시 필요하다.
-const commandWithoutActor: Parameters<AdminCourseUseCase["createCourse"]>[0] = {
+const commandWithoutActor: Parameters<
+  AdminSettingsUseCase["updateNoticeSettings"]
+>[0] = {
+  announce: "공지",
+  banner: "배너",
   now: new Date("2026-06-14T03:00:00.000Z"),
 }
 

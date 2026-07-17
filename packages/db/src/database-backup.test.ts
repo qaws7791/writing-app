@@ -1,4 +1,13 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  chmodSync,
+  copyFileSync,
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -31,18 +40,18 @@ describe("SQLite 백업과 복구 검증", () => {
       source.sqlite.exec(
         "INSERT INTO backup_probe (value) VALUES ('source-after')"
       )
-      const backup = new Database(backupPath, { readonly: true, strict: true })
-      try {
-        expect(
-          backup
-            .query<{ readonly value: string }, []>(
-              "SELECT value FROM backup_probe ORDER BY rowid"
-            )
-            .all()
-        ).toEqual([{ value: "backup-before" }])
-      } finally {
-        backup.close()
-      }
+      chmodSync(backupPath, 0o444)
+      const backupBeforeVerification = readFileSync(backupPath)
+      const isolatedInspection = inspectIsolatedBackup(backupPath)
+
+      expect(isolatedInspection.probeRows).toEqual([{ value: "backup-before" }])
+      expect(isolatedInspection.sidecarsCreated).toBe(true)
+      expect(isolatedInspection.queryOnlyEnabled).toBe(true)
+      expect(isolatedInspection.temporaryDirectoryRemoved).toBe(true)
+      expect(readFileSync(backupPath)).toEqual(backupBeforeVerification)
+      expect(statSync(backupPath).mode & 0o777).toBe(0o444)
+      expect(existsSync(`${backupPath}-wal`)).toBe(false)
+      expect(existsSync(`${backupPath}-shm`)).toBe(false)
 
       expect(report).toMatchObject({
         backupPath,
@@ -56,11 +65,15 @@ describe("SQLite 백업과 복구 검증", () => {
       expect(report.backupBytes).toBeGreaterThan(0)
       expect(report.verification.schemaVersion).toBeGreaterThan(0)
       expect(verifyDatabaseBackup(backupPath)).toEqual(report.verification)
+      expect(readFileSync(backupPath)).toEqual(backupBeforeVerification)
+      expect(statSync(backupPath).mode & 0o777).toBe(0o444)
+      expect(existsSync(`${backupPath}-wal`)).toBe(false)
+      expect(existsSync(`${backupPath}-shm`)).toBe(false)
     } finally {
       source.close()
       rmSync(directory, { force: true, recursive: true })
     }
-  })
+  }, 15_000)
 
   it("손상 backup을 거부하고 기존 운영 파일과 산출물을 덮어쓰지 않는다", () => {
     const directory = mkdtempSync(join(tmpdir(), "writing app restore "))
@@ -89,3 +102,52 @@ describe("SQLite 백업과 복구 검증", () => {
     }
   })
 })
+
+function inspectIsolatedBackup(backupPath: string): {
+  readonly probeRows: readonly { readonly value: string }[]
+  readonly queryOnlyEnabled: boolean
+  readonly sidecarsCreated: boolean
+  readonly temporaryDirectoryRemoved: boolean
+} {
+  const temporaryDirectory = mkdtempSync(
+    join(tmpdir(), "writing app isolated restore ")
+  )
+  const restoredPath = join(temporaryDirectory, "restored.sqlite")
+  let restored: Database | undefined
+  let probeRows: readonly { readonly value: string }[] = []
+  let queryOnlyEnabled = false
+  let sidecarsCreated = false
+
+  try {
+    copyFileSync(backupPath, restoredPath)
+    chmodSync(restoredPath, 0o600)
+    restored = new Database(restoredPath, {
+      create: false,
+      readwrite: true,
+      strict: true,
+    })
+    restored.exec("PRAGMA query_only = ON")
+    queryOnlyEnabled =
+      restored
+        .query<{ readonly query_only: number }, []>("PRAGMA query_only")
+        .get()?.query_only === 1
+    restored.query("PRAGMA integrity_check").get()
+    probeRows = restored
+      .query<{ readonly value: string }, []>(
+        "SELECT value FROM backup_probe ORDER BY rowid"
+      )
+      .all()
+    sidecarsCreated =
+      existsSync(`${restoredPath}-wal`) && existsSync(`${restoredPath}-shm`)
+  } finally {
+    restored?.close()
+    rmSync(temporaryDirectory, { force: true, recursive: true })
+  }
+
+  return {
+    probeRows,
+    queryOnlyEnabled,
+    sidecarsCreated,
+    temporaryDirectoryRemoved: !existsSync(temporaryDirectory),
+  }
+}

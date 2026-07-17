@@ -43,6 +43,9 @@ export const adminLessonAnalyticsPageDtoSchema = z.object({
 })
 
 export type AdminAnalyticsDto = z.infer<typeof adminAnalyticsDtoSchema>
+export type AdminLessonAnalyticsItemDto = z.infer<
+  typeof adminLessonAnalyticsItemDtoSchema
+>
 export type AdminLessonAnalyticsPageDto = z.infer<
   typeof adminLessonAnalyticsPageDtoSchema
 >

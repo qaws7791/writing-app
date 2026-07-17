@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import type { LearnerTransitionService } from "@workspace/core/learning"
+import type { LearnerTransitionRepository } from "@workspace/core/learning"
 import {
-  completeLearnerStepResultSchema,
+  inProgressLessonLearningStateSchema,
   lessonLearningStateSchema,
-} from "@workspace/contracts/learning"
+  stepEvaluationSchema,
+} from "@workspace/contracts/learning/step-data"
 
 import { createApp } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
@@ -62,13 +63,15 @@ describe("학습자 서버 권위 상태 전이 route", () => {
   })
 
   it("유효한 오답을 200 retry evaluation으로 반환한다", async () => {
+    const commands: unknown[] = []
     const app = createApp(
       createDependencies({
-        async completeStep() {
+        async completeStep(command) {
+          commands.push(command)
           return {
             kind: "ok",
-            value: completeLearnerStepResultSchema.parse({
-              evaluation: {
+            value: {
+              evaluation: stepEvaluationSchema.parse({
                 correct: false,
                 correctItemIds: ["option-b"],
                 explanation: "둘째가 정답입니다.",
@@ -77,8 +80,8 @@ describe("학습자 서버 권위 상태 전이 route", () => {
                   { id: "option-b", verdict: "missed" },
                 ],
                 type: "MULTIPLE_CHOICE",
-              },
-              learning: {
+              }),
+              learning: inProgressLessonLearningStateSchema.parse({
                 completedSteps: 0,
                 currentStepId: "l1-s1",
                 currentStepIndex: 0,
@@ -86,9 +89,9 @@ describe("학습자 서버 권위 상태 전이 route", () => {
                 status: "in_progress",
                 totalSteps: 2,
                 version,
-              },
-              status: "retry",
-            }),
+              }),
+              kind: "retry",
+            },
           }
         },
         async startLesson() {
@@ -117,6 +120,21 @@ describe("학습자 서버 권위 상태 전이 route", () => {
       evaluation: { correct: false },
       status: "retry",
     })
+    expect(commands).toEqual([
+      {
+        completion: {
+          kind: "answer",
+          submission: {
+            selectedOptionId: "option-a",
+            type: "MULTIPLE_CHOICE",
+          },
+        },
+        lessonId: "l1",
+        occurredAt,
+        stepId: "l1-s1",
+        userId: "user-1",
+      },
+    ])
   })
 
   it("미래 단계 요청을 canonical 409 오류로 변환한다", async () => {
@@ -154,6 +172,36 @@ describe("학습자 서버 권위 상태 전이 route", () => {
       requestId: response.headers.get("x-request-id"),
     })
   })
+
+  it("잘못된 body는 전이 서비스를 호출하기 전에 400으로 거부한다", async () => {
+    let transitionWasCalled = false
+    const app = createApp(
+      createDependencies({
+        async completeStep() {
+          transitionWasCalled = true
+          throw new Error("Unexpected completeStep")
+        },
+        async startLesson() {
+          throw new Error("Unexpected startLesson")
+        },
+      })
+    )
+
+    const response = await app.request(
+      "/learning/lessons/l1/steps/l1-s1/complete",
+      {
+        body: JSON.stringify({ kind: "answer" }),
+        headers: requestHeaders,
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_ERROR",
+    })
+    expect(transitionWasCalled).toBe(false)
+  })
 })
 
 const requestHeaders = {
@@ -163,11 +211,14 @@ const requestHeaders = {
 }
 
 function createDependencies(
-  learnerTransitionService: LearnerTransitionService
+  learnerTransitionRepository: Pick<
+    LearnerTransitionRepository,
+    "completeStep" | "startLesson"
+  >
 ) {
   return {
     ...createTestDependencies(),
-    learnerTransitionService,
+    learnerTransitionRepository,
     now: () => occurredAt,
   }
 }

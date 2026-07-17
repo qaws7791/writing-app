@@ -9,6 +9,8 @@ export type ModuleReference = {
   readonly source: string
 }
 
+export type ModuleGraphReferenceKinds = "all" | "runtime"
+
 export type RepositoryFile = {
   readonly path: string
   readonly references: readonly ModuleReference[]
@@ -67,6 +69,21 @@ export function readModuleReferences(filePath: string): ModuleReference[] {
           importedNames: readImportedNames(node.importClause),
           kind: "import",
           runtime: isRuntimeImport(node),
+          source,
+        })
+      }
+    }
+
+    if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference)
+    ) {
+      const source = readStringLiteral(node.moduleReference.expression)
+      if (source !== null) {
+        references.push({
+          importedNames: [node.name.text],
+          kind: "import",
+          runtime: !node.isTypeOnly,
           source,
         })
       }
@@ -145,10 +162,12 @@ export function collectImportViolations({
 export function createModuleGraph({
   aliases = [],
   packages = [],
+  referenceKinds = "runtime",
   root,
 }: {
   readonly aliases?: readonly ModuleAlias[]
   readonly packages?: readonly PackageModule[]
+  readonly referenceKinds?: ModuleGraphReferenceKinds
   readonly root: string
 }): ReadonlyMap<string, readonly string[]> {
   const files = createRepositoryInventory({ includeTests: false, root })
@@ -157,7 +176,7 @@ export function createModuleGraph({
   return new Map(
     files.map((file) => {
       const dependencies = file.references
-        .filter((reference) => reference.runtime)
+        .filter((reference) => referenceKinds === "all" || reference.runtime)
         .map((reference) =>
           resolveModuleReference({
             aliases,

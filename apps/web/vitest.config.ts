@@ -14,6 +14,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: "react-dom/server",
+        replacement: require.resolve("react-dom/server"),
+      },
+      {
         find: "react/jsx-dev-runtime",
         replacement: require.resolve("react/jsx-dev-runtime"),
       },

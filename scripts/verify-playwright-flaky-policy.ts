@@ -1,4 +1,4 @@
-import { deepStrictEqual, equal, match } from "node:assert/strict"
+import { deepStrictEqual, equal, match, notEqual } from "node:assert/strict"
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { pathToFileURL } from "node:url"
@@ -6,6 +6,8 @@ import { pathToFileURL } from "node:url"
 const repositoryRoot = path.resolve(import.meta.dir, "..")
 const playwrightOutput = path.join(repositoryRoot, "output", "playwright")
 const policyResults = path.join(playwrightOutput, "flaky-policy-test-results")
+
+await verifyRunnerOnlyGuard()
 
 const [localConfiguration, ciConfiguration] = await Promise.all([
   loadConfiguration(false),
@@ -90,14 +92,44 @@ interface PlaywrightFlakyPolicy {
   readonly workers: number | string | undefined
 }
 
+async function verifyRunnerOnlyGuard(): Promise<void> {
+  const environment = { ...process.env }
+  delete environment["E2E_RUN_ROOT"]
+
+  const evaluation = Bun.spawn({
+    cmd: [
+      process.execPath,
+      "--eval",
+      `await import(${JSON.stringify(playwrightConfigUrl())})`,
+    ],
+    cwd: repositoryRoot,
+    env: environment,
+    stderr: "pipe",
+    stdout: "pipe",
+    windowsHide: true,
+  })
+  const [exitCode, stdout, stderr] = await Promise.all([
+    evaluation.exited,
+    new Response(evaluation.stdout).text(),
+    new Response(evaluation.stderr).text(),
+  ])
+
+  notEqual(
+    exitCode,
+    0,
+    "E2E runner guard 없이 Playwright 설정을 읽으면 안 됩니다."
+  )
+  match(`${stdout}${stderr}`, /E2E_RUN_ROOT이 없습니다/u)
+}
+
 async function loadConfiguration(
   isCi: boolean
 ): Promise<PlaywrightFlakyPolicy> {
   const marker = "playwright-flaky-policy:"
-  const configUrl = pathToFileURL(
-    path.join(repositoryRoot, "playwright.config.ts")
-  ).href
-  const environment = { ...process.env }
+  const environment = {
+    ...process.env,
+    E2E_RUN_ROOT: path.join(playwrightOutput, "flaky-policy-config"),
+  }
   delete environment["CI"]
   if (isCi) environment["CI"] = "true"
 
@@ -105,7 +137,7 @@ async function loadConfiguration(
     cmd: [
       process.execPath,
       "--eval",
-      `const config = (await import(${JSON.stringify(configUrl)})).default;
+      `const config = (await import(${JSON.stringify(playwrightConfigUrl())})).default;
 process.stdout.write(${JSON.stringify(marker)} + JSON.stringify({
   failOnFlakyTests: config.failOnFlakyTests,
   retries: config.retries,
@@ -135,6 +167,10 @@ process.stdout.write(${JSON.stringify(marker)} + JSON.stringify({
   }
 
   return policy
+}
+
+function playwrightConfigUrl(): string {
+  return pathToFileURL(path.join(repositoryRoot, "playwright.config.ts")).href
 }
 
 function createFixtureConfig(

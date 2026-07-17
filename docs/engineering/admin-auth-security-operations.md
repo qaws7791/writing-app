@@ -27,7 +27,7 @@
 
 ## 로컬 owner 생성
 
-`apps/admin-api/.env`에 다음 값을 직접 설정한다. `.env`는 커밋하지 않는다.
+`apps/api/.env`에 다음 값을 직접 설정한다. `.env`는 커밋하지 않는다.
 
 ```dotenv
 ADMIN_SEED_EMAIL=owner@example.com
@@ -63,7 +63,7 @@ PowerShell 예시:
 ```powershell
 $env:DATABASE_URL = "file:D:/absolute/path/to/admin.sqlite"
 $env:ADMIN_AUDIT_APPROVED_ADMINS_JSON = '[{"email":"owner@example.com","role":"owner"}]'
-bun --filter @workspace/admin-api audit:admin-auth
+bun --filter @workspace/api audit:admin-auth
 ```
 
 출력의 `differences`가 빈 배열이고 `missingApprovedAdmins`가 비어 있어야 승인 명단과 실제 row가 일치한다. `role_mismatch`는 owner 이메일 선점 또는 잘못된 역할 부여 가능성을 포함하므로 세션 폐기 전에 반드시 조사한다.
@@ -86,7 +86,7 @@ bun --filter @workspace/admin-api audit:admin-auth
 $env:DATABASE_URL = "file:D:/absolute/path/to/admin.sqlite"
 $env:ADMIN_SESSION_EXPECTED_DATABASE_URL = $env:DATABASE_URL
 $env:ADMIN_SESSION_REVOCATION_APPROVED = "true"
-bun --filter @workspace/admin-api revoke:admin-sessions
+bun --filter @workspace/api revoke:admin-sessions
 ```
 
 명령은 대상 DB 일치와 명시적 승인을 확인한 뒤 `admin_session`만 삭제하고 폐기 건수만 출력한다. 토큰 원문은 출력하지 않는다.

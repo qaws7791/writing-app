@@ -2,13 +2,16 @@ import { serve } from "bun"
 
 import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback"
 import type { AiFeedbackProvider } from "@workspace/core/ai-feedback"
-import { createLearnerApiCore } from "@workspace/core/learner-api-core"
 
+import { createApiRuntime } from "@/api-runtime"
 import { createApp } from "@/app"
 import { parseApiEnv } from "@/config/env"
+import { createAdminApp } from "@/http/admin-app"
+import { createHostDispatcher } from "@/http/host-dispatcher"
+import { createAppLogger } from "@/observability/app-logger"
 import {
-  createLearnerApiServerLifecycle,
-  registerLearnerApiShutdownSignals,
+  createUnifiedApiServerLifecycle,
+  registerUnifiedApiShutdownSignals,
 } from "@/server-lifecycle"
 
 const env = parseApiEnv(process.env)
@@ -35,37 +38,60 @@ const provider: AiFeedbackProvider = {
     }
   },
 }
-const core = createLearnerApiCore({
+const runtime = createApiRuntime({
   aiFeedbackProvider: provider,
-  authBaseUrl: env.authBaseUrl,
-  betterAuthSecret: env.betterAuthSecret,
-  cookieDomain: env.cookieDomain,
-  cursorSigningSecret: env.cursorSigningSecret,
-  databaseUrl: env.databaseUrl,
-  googleClientId: env.googleClientId,
-  googleClientSecret: env.googleClientSecret,
-  openAiModel: env.openAiModel,
-  testAuthEnabled: env.testAuthEnabled,
-  webOrigin: env.webOrigin,
+  env,
+  logger: createAppLogger(),
 })
-const app = createApp({
-  authHandler: core.authHandler,
-  contentService: core.contentService,
-  learnerAiFeedbackService: core.learnerAiFeedbackService,
-  learnerTransitionService: core.learnerTransitionService,
-  profileReader: core.profileReader,
-  progressService: core.progressService,
-  sessionResolver: core.sessionResolver,
-  webOrigin: env.webOrigin,
-})
+const unifiedFetch = (() => {
+  try {
+    const app = createApp({
+      authHandler: runtime.learnerCore.authHandler,
+      contentService: runtime.learnerCore.contentService,
+      learnerAiFeedbackService: runtime.learnerCore.learnerAiFeedbackService,
+      learnerCursorCodec: runtime.learnerCore.learnerCursorCodec,
+      learnerTransitionRepository:
+        runtime.learnerCore.learnerTransitionRepository,
+      profileReader: runtime.learnerCore.profileReader,
+      progressService: runtime.learnerCore.progressService,
+      sessionResolver: runtime.learnerCore.sessionResolver,
+      webOrigin: env.webOrigin,
+    })
+    const adminApp = createAdminApp({
+      adminOrigin: env.adminOrigin,
+      authHandler: runtime.adminAuth.authHandler,
+      capabilityRoutes: runtime.adminCapabilityRoutes,
+      sessionResolver: runtime.adminAuth.sessionResolver,
+    })
 
-const lifecycle = createLearnerApiServerLifecycle({
-  closeCore: core.close,
-  fetch: app.fetch,
+    return createHostDispatcher({
+      adminFetch: adminApp.fetch,
+      hosts: env.apiHosts,
+      learnerFetch: app.fetch,
+    })
+  } catch (error) {
+    runtime.dispose()
+    throw error
+  }
+})()
+
+const lifecycle = createUnifiedApiServerLifecycle({
+  closeDatabase: runtime.dispose,
+  fetch: unifiedFetch,
   onShutdownError(error, phase) {
     process.stderr.write(`E2E API 종료 실패 (${phase}): ${String(error)}\n`)
   },
 })
-const server = serve({ fetch: lifecycle.fetch, port: env.port })
-lifecycle.attachServer(server)
-registerLearnerApiShutdownSignals(lifecycle.shutdown)
+let server: ReturnType<typeof serve> | undefined
+try {
+  server = serve({ fetch: lifecycle.fetch, port: env.port })
+  lifecycle.attachServer(server)
+  registerUnifiedApiShutdownSignals(lifecycle.shutdown)
+} catch (error) {
+  try {
+    await server?.stop(true)
+  } finally {
+    runtime.dispose()
+  }
+  throw error
+}

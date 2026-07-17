@@ -4,40 +4,47 @@
 
 ## 현재 구현 상태
 
-> 2026-07-16: 학습자 API 응답 계약 단순화 단계 1에서 응답 계약 실패 로그와 오류 본문 request ID 적용을 완료했다.
+> 2026-07-18: MTA-40 저장소 구성에서 통합 API의 learner/admin request log에 고정 `audience`를 추가했고, source·정적 계약과 target E2E 재배선까지 완료했다. 실제 Docker·운영 관찰은 아직 별도 승인 게이트다.
 
 현재 코드에 구현된 관측성은 구조화 요청 로그가 중심이다.
 
-- logger: `packages/logger`
+- logger: `apps/api/src/observability`
 - runtime: Pino
-- API 적용: `apps/api`, `apps/admin-api`
+- target API 적용: `apps/api`의 learner/admin Host sub-app
 - 요청 ID header: `x-request-id`
 - 요청 완료 메시지: `request.completed`
-- 자료실 본문 동기화: HTTP transaction의 snapshot byte·node·receipt quota 거부와 projection deadline 초과를 `resource-document.sync.rejected`로 구조화해 기록한다. 문서 ID, 실제 값, 상한과 지연만 포함하고 Markdown·Yjs binary는 기록하지 않는다.
-- 자료실 작업 공간 사건: `/resources/events` WebSocket의 upgrade 인증 거부와 세션 만료·폐기, actor/IP 연결·메시지·구독 quota 위반을 기존 `security.audit`의 `websocket.authorization.rejected` action으로 기록한다. 본문 Yjs binary는 기록하거나 전송하지 않는다.
-- 자료실 트리: event revision gap을 `resource-tree.revision-gap` performance mark로 기록하고 보이는 트리를 다시 조회한다.
+- 자료실 HTTP: 문서 저장 성공과 `412` 충돌을 포함한 route·status·duration은 공통 `request.completed`로 관측한다. 제목과 Markdown 본문은 요청 로그에 포함하지 않는다.
+- 자료실 자산: R2 업로드 뒤 DB 등록 rollback 정리 실패는 `admin.resource-library.asset-rollback.failed`, 영구 삭제 뒤 객체 정리 실패는 `admin.resource-library.asset-delete.failed`로 기록한다.
 - 관리자 AI 채팅: 완료와 출력 byte 비용은 `admin.ai-chat.completed`, 요청 한도·동시 실행 거절은 `admin.ai-chat.request.rejected`, provider timeout은 `admin.ai-chat.provider.timeout`, 출력 상한 초과는 `admin.ai-chat.output.limit`, client 취소는 `admin.ai-chat.client.disconnected`로 기록한다.
 - 학습자 AI 피드백: 예약과 `pending -> succeeded | failed | expired` 전이는 `ai.feedback.attempt.transition`으로 기록한다.
 - 학습자 응답 계약 실패: `api.contract.response_invalid`로 계약명, field path, route, method, request ID, 배포 버전과 `response-schema-invalid` 분류만 기록한다. 응답 본문, 답안과 Zod message는 기록하지 않는다.
 
 메트릭 수집기, tracing backend, alert manager, 운영 대시보드는 아직 코드로 구현되어 있지 않다. 이 문서의 메트릭/알림 항목은 도입 기준이다.
 
+[ADR-0012](./adr/ADR-0012-single-api-runtime.md)에 따라 backend runtime을 통합했고, 저장소의 Compose·Caddy source configuration은 learner/admin public Host를 모두 `apps/api:4000`으로 보낸다. 요청 로그와 security audit event는 `apps/api/src/observability`, Hono logging middleware는 `apps/api/src/http/platform`이 소유한다. 외부 운영 관찰은 사용자 승인으로 이번 작업 범위에서 제외했으므로 실제 production 지표 성공을 주장하지 않는다.
+
+`apps/api`의 통합 lifecycle은 SIGINT/SIGTERM 뒤 신규 요청을 `503`으로 닫고 response body와 명시적 장기 작업 lease까지 최대 20초 drain한다. 이후 요청 signal·body를 취소하고 server stop과 외부 provider cleanup을 공유 5초 deadline 안에서 시도한 뒤 SQLite client를 정확히 한 번 닫는다. 각 실패는 `cancel-activity`, `force-stop-server`, `cleanup-external`, `close-database` phase와 함께 기록한다. 학습자 AI 피드백은 caller abort와 provider timeout을 결합해 OpenAI 요청까지 전달하며, provider가 signal을 무시해도 시도 상태를 `failed`로 수렴시킨다.
+
 ## 요청 로그
 
 요청 로그 필드는 다음과 같다.
 
-| 필드         | 설명                                       |
-| ------------ | ------------------------------------------ |
-| `time`       | Pino timestamp                             |
-| `level`      | Pino log level                             |
-| `msg`        | `request.completed`                        |
-| `requestId`  | 외부 `x-request-id` 또는 runtime 생성 UUID |
-| `method`     | HTTP method                                |
-| `path`       | 요청 path                                  |
-| `status`     | 응답 status                                |
-| `durationMs` | monotonic clock 기준 duration              |
-| `userId`     | 필요한 경우 학습자 식별자                  |
-| `adminId`    | 필요한 경우 관리자 식별자                  |
+| 필드                | 설명                                                                     |
+| ------------------- | ------------------------------------------------------------------------ |
+| `time`              | Pino timestamp                                                           |
+| `level`             | Pino log level                                                           |
+| `msg`               | `request.completed`                                                      |
+| `requestId`         | runtime이 생성해 응답 header에도 넣는 server request ID                  |
+| `externalRequestId` | 형식·길이 검증을 통과한 외부 `x-request-id`, 없거나 유효하지 않으면 생략 |
+| `audience`          | route 실행 전 app이 고정한 `learner` 또는 `admin` sub-app 분류           |
+| `method`            | HTTP method                                                              |
+| `path`              | query를 제외한 요청 path                                                 |
+| `status`            | 응답 status                                                              |
+| `durationMs`        | monotonic clock 기준 duration                                            |
+| `actorId`           | 인증이 완료된 경우의 learner 또는 admin 식별자                           |
+| `actorType`         | 인증이 완료된 경우 `learner` 또는 `admin`                                |
+
+`audience`는 raw public `Host`를 기록하는 값이 아니라 Host dispatcher 뒤의 sub-app 분류다. production role이 learner/admin public API Host를 서로 다르게 강제하므로 해당 환경에서 audience별 오류율·p95는 각 public API audience의 관찰 단위가 된다. internal alias와 literal hostname까지 분리해야 하는 조사에는 Caddy 또는 proxy access log를 별도로 사용한다.
 
 ## RequestLoggingRuntime
 
@@ -58,9 +65,9 @@
 
 ## 구조 이벤트 계약
 
-- `request.completed`: method, path, status, duration, server request ID와 인증 후 actor만 기록한다.
+- `request.completed`: audience, method, path, status, duration, server request ID와 인증 후 actor만 기록한다.
 - `request.failed`: 5xx의 오류 class, message를 제거한 stack frame, cause class와 server request ID만 기록한다.
-- `security.audit`: 가입·로그인 실패, 401/403, owner 변경 작업, AI quota 초과, WebSocket 인증 거절을 기록한다.
+- `security.audit`: 가입·로그인 실패, 401/403, owner 변경 작업과 AI quota 초과를 기록한다.
 - `ai.usage`: model, input/output/total token 수만 기록한다. prompt와 provider 응답 본문은 기록하지 않는다.
 - `ai.feedback.attempt.transition`: attempt ID와 번호, 학습자·레슨·스텝 ID, 이전/다음 상태, `reserved | provider-succeeded | provider-failed | ttl-expired` 이유를 기록한다. idempotency key, 답안, provider 결과는 기록하지 않는다.
 - `api.contract.response_invalid`: contract name, 실패 field path, route, method, request ID와 `DEPLOYMENT_VERSION`만 기록한다. 클라이언트에는 같은 request ID를 가진 `500 INTERNAL_SERVER_ERROR`만 반환한다.
@@ -70,6 +77,8 @@
 ## 로그 레벨
 
 현재 `createAppLogger()` 기본 level은 `info`다.
+
+`LOG_PRETTY=true`은 어느 환경에서나 사람이 읽기 쉬운 출력 transport를 강제한다. `LOG_PRETTY=false`은 `NODE_ENV=development`여도 JSON 로그를 강제하며, 값이 없을 때만 development 기본값이 pretty 출력이다. CI·container·수명주기 test는 명시적 `false`로 transport 해석과 구조 로그 형식을 결정적으로 유지한다.
 
 권장:
 
@@ -89,7 +98,7 @@
 - AI 피드백 요청 수, 429 수, provider unavailable 수, model별 input/output token 합계와 모델 단가를 적용한 예상 비용
 - SQLite busy/lock 관련 실패 수
 - seed/migration 성공/실패
-- 작업 공간 actor/IP 연결 quota와 메시지·구독 rate 거부 수, HTTP transaction quota·projection deadline 거부 수, snapshot 크기와 node 수
+- 자료실 문서 저장의 성공·`412`·5xx 수와 R2 객체 정리 실패 수
 
 ## 초기 경보 기준
 
@@ -113,7 +122,7 @@
 ## 대시보드 후보
 
 - API별 요청량, 오류율, latency
-- 학습자 API와 어드민 API health
+- learner/admin Host sub-app health
 - AI 피드백 성공/실패
 - 관리자 변경성 작업 이력
 - SQLite 파일 크기와 백업 상태

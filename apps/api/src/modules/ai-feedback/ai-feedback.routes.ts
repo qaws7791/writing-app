@@ -1,12 +1,12 @@
-import type { AnyRouteConfig } from "@workspace/hono/core"
+import type { AnyRouteConfig } from "@/http/platform/core"
 import {
   learnerApiErrorSchema,
   learnerIdSchema,
 } from "@workspace/contracts/learning"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
-import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import { unwrapLearnerAiFeedbackTransitionResult } from "@/http/learner-command-route-mapper"
 import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
@@ -57,20 +57,23 @@ const learnerAiFeedbackHandler: ApiRouteHandler<
   const { lessonId, stepId } = context.req.valid("param")
   const headers = context.req.valid("header")
   const result =
-    await context.var.requestContext.learnerAiFeedbackService.createFeedback({
-      idempotencyKey: headers["idempotency-key"],
-      lessonId,
-      occurredAt: context.var.requestContext.now(),
-      stepId,
-      userId: learnerIdSchema.parse(context.var.activeSession.user.id),
-    })
+    await context.var.requestContext.learnerAiFeedbackService.createFeedback(
+      {
+        idempotencyKey: headers["idempotency-key"],
+        lessonId,
+        occurredAt: context.var.requestContext.now(),
+        stepId,
+        userId: learnerIdSchema.parse(context.var.activeSession.user.id),
+      },
+      { signal: context.req.raw.signal }
+    )
 
   return context.json(
     parseLearnerRouteResponse(
       context,
       "LearnerAiFeedbackTransitionResponse",
       aiFeedbackTransitionResultSchema,
-      unwrapApiCoreResult(result)
+      unwrapLearnerAiFeedbackTransitionResult(result)
     ),
     200
   )

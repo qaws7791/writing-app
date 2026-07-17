@@ -72,13 +72,73 @@ describe("repository graph", () => {
       ["a.ts", "b.ts", "c.ts", "a.ts"]
     )
   })
+
+  it("runtime 기본값은 type-only edge를 제외하고 all은 포함한다", () => {
+    const root = createFixture({
+      "entry.ts": 'import type { TypeValue } from "./type-only"',
+      "type-only.ts": "export type TypeValue = string",
+    })
+
+    const runtimeGraph = createModuleGraph({ root })
+    const allReferencesGraph = createModuleGraph({
+      referenceKinds: "all",
+      root,
+    })
+
+    expect(runtimeGraph.get(path.join(root, "entry.ts"))).toEqual([])
+    expect(allReferencesGraph.get(path.join(root, "entry.ts"))).toEqual([
+      path.join(root, "type-only.ts"),
+    ])
+  })
+
+  it("외부 module import-equals를 이름과 runtime edge로 수집한다", () => {
+    const root = createFixture({
+      "entry.ts": 'import runtimeModule = require("./runtime")',
+      "runtime.ts": "export const value = true",
+      "type-entry.ts":
+        'import type RuntimeModule = require("./runtime")\nexport type Value = RuntimeModule',
+    })
+
+    const inventory = createRepositoryInventory({ root })
+    const entry = inventory.find((file) => file.relativePath === "entry.ts")
+    const typeEntry = inventory.find(
+      (file) => file.relativePath === "type-entry.ts"
+    )
+    const runtimeGraph = createModuleGraph({ root })
+    const allReferencesGraph = createModuleGraph({
+      referenceKinds: "all",
+      root,
+    })
+
+    expect(entry?.references).toContainEqual({
+      importedNames: ["runtimeModule"],
+      kind: "import",
+      runtime: true,
+      source: "./runtime",
+    })
+    expect(typeEntry?.references).toContainEqual({
+      importedNames: ["RuntimeModule"],
+      kind: "import",
+      runtime: false,
+      source: "./runtime",
+    })
+    expect(runtimeGraph.get(path.join(root, "entry.ts"))).toEqual([
+      path.join(root, "runtime.ts"),
+    ])
+    expect(runtimeGraph.get(path.join(root, "type-entry.ts"))).toEqual([])
+    expect(allReferencesGraph.get(path.join(root, "type-entry.ts"))).toEqual([
+      path.join(root, "runtime.ts"),
+    ])
+  })
 })
 
 function createFixture(files: Readonly<Record<string, string>>): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "repository-graph-"))
   fixtureRoots.push(root)
-  Object.entries(files).forEach(([fileName, content]) =>
-    fs.writeFileSync(path.join(root, fileName), content)
-  )
+  Object.entries(files).forEach(([fileName, content]) => {
+    const filePath = path.join(root, fileName)
+    fs.mkdirSync(path.dirname(filePath), { recursive: true })
+    fs.writeFileSync(filePath, content)
+  })
   return root
 }

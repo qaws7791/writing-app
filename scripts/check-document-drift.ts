@@ -30,6 +30,98 @@ const markdownRoots = [
   "GLOSSARY.md",
   "docs/design",
   "docs/engineering",
+  "docs/product",
+] as const
+
+const historicalOrAnalysisDocumentPatterns = [
+  /^docs\/engineering\/adr\//u,
+  /^docs\/engineering\/monorepo-target-architecture-plan\//u,
+  /^docs\/engineering\/.*(?:-audit|-plan)\.md$/u,
+  /^monorepo-target-architecture-\d{4}-\d{2}-\d{2}\.md$/u,
+] as const
+
+const staleResourceLibraryPatterns = [
+  { marker: "Yjs 투영", pattern: /Yjs (?:snapshot )?투영/u },
+  {
+    marker: "Yjs transaction",
+    pattern: /(?:Yjs HTTP transaction|본문 Yjs transaction)/u,
+  },
+  {
+    marker: "Yjs 동기화 런타임",
+    pattern: /(?:Yjs 연결·|Yjs 동기화 boundary|Yjs payload|Y\.Doc)/u,
+  },
+  {
+    marker: "자료실 작업 공간 연결",
+    pattern:
+      /(?:ResourceWorkspaceSync|\/resources\/events|자료실 이벤트 WebSocket|작업 공간 사건 WebSocket|WebSocket connector)/u,
+  },
+  {
+    marker: "자료실 동기화 이벤트",
+    pattern:
+      /(?:resource-document\.sync\.rejected|resource-tree\.revision-gap|transaction receipt 10,000개|snapshot fallback|sync snapshot)/u,
+  },
+  {
+    marker: "깊이 제한 없는 트리",
+    pattern: /(?:무제한 자료 트리|무제한 폴더|깊이 제한 없이)/u,
+  },
+  {
+    marker: "자동 공동 편집",
+    pattern:
+      /(?:저장 버튼 없이 공동 편집|공동 편집할 수 있다|GFM 공동 편집기)/u,
+  },
+] as const
+
+const capabilityOwnershipNavigationSectionMarker =
+  "## capability 소유권·대표 탐색 경로"
+
+const capabilityOwnershipNavigationScenarios = [
+  {
+    label: "학습 단계 완료",
+    rowPattern: /^\|\s*학습 단계 완료\s*\|/mu,
+    sourceMarkers: [
+      "[공개 계약](../../packages/contracts/src/learning/learner-api.ts)",
+      "[순수 policy](../../packages/core/src/modules/learning/domain/complete-step-effect-plan.ts)",
+      "[app-owned adapter](../../apps/api/src/adapters/learning/learner-transition-drizzle.repository.ts)",
+      "[composition](../../apps/api/src/learner-api-core.ts)",
+      "[route](../../apps/api/src/modules/learning/learner-transition.routes.ts)",
+    ],
+  },
+  {
+    label: "관리자 content 발행",
+    rowPattern: /^\|\s*관리자 content 발행\s*\|/mu,
+    sourceMarkers: [
+      "[공개 계약](../../packages/contracts/src/admin/content-data.ts)",
+      "[순수 use case](../../packages/core/src/modules/content/application/use-cases/admin-course.use-case.ts)",
+      "[app-owned adapter](../../apps/api/src/adapters/content/admin-course-drizzle.repository.ts)",
+      "[composition](../../apps/api/src/modules/admin-content/admin-content.composition.ts)",
+      "[route](../../apps/api/src/modules/admin-content/curriculum-editor.routes.ts)",
+    ],
+  },
+  {
+    label: "자료실 문서 조회",
+    rowPattern: /^\|\s*자료실 문서 조회\s*\|/mu,
+    sourceMarkers: [
+      "[공개 계약](../../packages/contracts/src/admin/resource-library-data.ts)",
+      "[문서 wire 계약](../../packages/contracts/src/admin/admin-resource-documents.ts)",
+      "[순수 use case](../../packages/core/src/modules/resource-library/application/use-cases/resource-document.use-case.ts)",
+      "[app-owned adapter](../../apps/api/src/adapters/resource-library/resource-document-drizzle.repository.ts)",
+      "[composition](../../apps/api/src/modules/admin-resource-library/admin-resource-library.composition.ts)",
+      "[route](../../apps/api/src/modules/admin-resource-library/resource-documents.routes.ts)",
+    ],
+  },
+] as const
+
+const capabilityOwnershipNavigationRequiredMarkers = [
+  {
+    label: "단일 backend executable 상태",
+    marker:
+      "product backend executable은 `apps/api` 하나이며 learner/admin Host sub-app을 함께 소유한다.",
+  },
+  {
+    label: "target-only 계약 상태",
+    marker:
+      "관리자 foundation과 여섯 capability는 legacy subprocess 없이 target-only 계약 suite로 검증한다.",
+  },
 ] as const
 
 const repositoryRoot = process.cwd()
@@ -59,6 +151,94 @@ function readScripts(value: unknown): ReadonlySet<string> {
 
 function normalizePath(filePath: string): string {
   return filePath.replaceAll(path.sep, "/")
+}
+
+export function isDocumentDriftMarkdownPath(filePath: string): boolean {
+  const normalizedPath = normalizePath(filePath)
+
+  if (!normalizedPath.endsWith(".md")) {
+    return false
+  }
+
+  return markdownRoots.some((rootPath) =>
+    rootPath.endsWith(".md")
+      ? normalizedPath === rootPath
+      : normalizedPath.startsWith(`${rootPath}/`)
+  )
+}
+
+export function isHistoricalOrAnalysisDocumentPath(filePath: string): boolean {
+  const normalizedPath = normalizePath(filePath)
+
+  return historicalOrAnalysisDocumentPatterns.some((pattern) =>
+    pattern.test(normalizedPath)
+  )
+}
+
+export function findStaleResourceLibraryStatements(
+  filePath: string,
+  content: string
+): ReadonlyArray<{ readonly line: number; readonly marker: string }> {
+  const normalizedPath = normalizePath(filePath)
+
+  if (isHistoricalOrAnalysisDocumentPath(normalizedPath)) {
+    return []
+  }
+
+  return content
+    .split(/\r?\n/u)
+    .flatMap((line, index) =>
+      staleResourceLibraryPatterns
+        .filter(({ pattern }) => pattern.test(line))
+        .map(({ marker }) => ({ line: index + 1, marker }))
+    )
+}
+
+export function findCapabilityOwnershipNavigationDrift(
+  content: string
+): readonly string[] {
+  const findings = capabilityOwnershipNavigationRequiredMarkers
+    .filter(({ marker }) => !content.includes(marker))
+    .map(({ label }) => `${label} marker`)
+
+  if (!content.includes(capabilityOwnershipNavigationSectionMarker)) {
+    findings.push("capability 소유권·대표 탐색 경로 section")
+  }
+
+  for (const scenario of capabilityOwnershipNavigationScenarios) {
+    const scenarioIndex = content.search(scenario.rowPattern)
+
+    if (scenarioIndex === -1) {
+      findings.push(`${scenario.label} scenario`)
+    }
+
+    const sourceMarkerIndexes = scenario.sourceMarkers.map((marker) =>
+      content.indexOf(marker)
+    )
+
+    for (const [index, markerIndex] of sourceMarkerIndexes.entries()) {
+      if (markerIndex === -1) {
+        findings.push(
+          `${scenario.label} ${scenario.sourceMarkers[index] ?? "unknown"} source link`
+        )
+      }
+    }
+
+    if (
+      scenarioIndex !== -1 &&
+      sourceMarkerIndexes.every((markerIndex) => markerIndex !== -1) &&
+      [scenarioIndex, ...sourceMarkerIndexes].some(
+        (markerIndex, index) =>
+          index > 0 &&
+          markerIndex <=
+            ([scenarioIndex, ...sourceMarkerIndexes][index - 1] ?? -1)
+      )
+    ) {
+      findings.push(`${scenario.label} source link order`)
+    }
+  }
+
+  return findings
 }
 
 function collectMarkdownFiles(): string[] {
@@ -121,6 +301,10 @@ function validateDocumentedCommands(
   const packageNames = new Set(packages.keys())
 
   for (const filePath of markdownFiles) {
+    if (isHistoricalOrAnalysisDocumentPath(filePath)) {
+      continue
+    }
+
     const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
 
     for (const command of content.matchAll(/\bbun run ([\w:.-]+)/g)) {
@@ -163,6 +347,10 @@ function validateDocumentedWorkspaceImports(
   packages: ReadonlyMap<string, WorkspacePackage>
 ) {
   for (const filePath of markdownFiles) {
+    if (isHistoricalOrAnalysisDocumentPath(filePath)) {
+      continue
+    }
+
     const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
 
     for (const match of content.matchAll(
@@ -226,16 +414,6 @@ function validateBackendRouteDocumentation() {
   const documentedApiRoutes = extractDocumentedRoutes(
     backendDocument,
     "## `apps/api`",
-    "## `apps/admin-api`"
-  )
-  const documentedAdminRoutes = extractDocumentedRoutes(
-    backendDocument,
-    "## `apps/admin-api`",
-    "## `packages/core`"
-  )
-  const documentedAdminWebSocketRoutes = extractDocumentedWebSocketRoutes(
-    backendDocument,
-    "## `apps/admin-api`",
     "## `packages/core`"
   )
 
@@ -243,16 +421,6 @@ function validateBackendRouteDocumentation() {
     actualRoutes: readApiRoutes(),
     documentedRoutes: documentedApiRoutes,
     label: "BACKEND.md apps/api routes",
-  })
-  reportRouteDrift({
-    actualRoutes: readAdminRoutes(),
-    documentedRoutes: documentedAdminRoutes,
-    label: "BACKEND.md apps/admin-api routes",
-  })
-  reportRouteDrift({
-    actualRoutes: readAdminWebSocketRoutes(),
-    documentedRoutes: documentedAdminWebSocketRoutes,
-    label: "BACKEND.md apps/admin-api WebSocket routes",
   })
 }
 
@@ -293,6 +461,32 @@ function validateCanonicalOnboardingDocumentation() {
   }
 }
 
+function validateCurrentResourceLibraryDocumentation(
+  markdownFiles: readonly string[]
+) {
+  for (const filePath of markdownFiles) {
+    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
+
+    for (const finding of findStaleResourceLibraryStatements(
+      filePath,
+      content
+    )) {
+      failures.push(
+        `${filePath}:${finding.line} contains stale resource library current-state marker: ${finding.marker}.`
+      )
+    }
+  }
+}
+
+function validateCapabilityOwnershipNavigationDocumentation() {
+  const filePath = "docs/engineering/system-overview.md"
+  const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
+
+  for (const finding of findCapabilityOwnershipNavigationDrift(content)) {
+    failures.push(`${filePath} is missing ${finding}.`)
+  }
+}
+
 function extractDocumentedRoutes(
   document: string,
   startHeading: string,
@@ -323,26 +517,6 @@ function normalizeRoutePath(routePath: string): string {
   )
 }
 
-function extractDocumentedWebSocketRoutes(
-  document: string,
-  startHeading: string,
-  endHeading: string
-): Route[] {
-  const startIndex = document.indexOf(startHeading)
-  const endIndex = document.indexOf(endHeading)
-
-  if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
-    return []
-  }
-
-  const section = document.slice(startIndex, endIndex)
-
-  return [...section.matchAll(/^- `WebSocket ([^`\n]+)`/gm)].map((match) => ({
-    method: "WebSocket",
-    path: normalizeRoutePath(match[1] ?? ""),
-  }))
-}
-
 function readApiRoutes(): Route[] {
   const routeFiles = collectFiles(path.join(repositoryRoot, "apps/api/src"))
     .filter((filePath) => filePath.endsWith(".routes.ts"))
@@ -369,66 +543,11 @@ function readApiRoutes(): Route[] {
       method: "POST",
       path: "/api/auth/*",
     },
-  ]
-}
-
-function readAdminRoutes(): Route[] {
-  const routes: Route[] = [
     {
       method: "GET",
-      path: "/api/auth/*",
-    },
-    {
-      method: "POST",
-      path: "/api/auth/*",
-    },
-    {
-      method: "GET",
-      path: "/openapi",
+      path: "/session",
     },
   ]
-  const routePattern = /^\s*method:\s*"([a-z]+)"[\s\S]*?^\s*path:\s*"([^"]+)"/gm
-  const appSource = fs.readFileSync(
-    path.join(repositoryRoot, "apps/admin-api/src/app.ts"),
-    "utf8"
-  )
-  const routeSourcePattern = /from "@\/routes\/([a-z0-9-]+\.route)"/g
-  const routeSourcePaths = [...appSource.matchAll(routeSourcePattern)].map(
-    (match) => `apps/admin-api/src/routes/${match[1] ?? ""}.ts`
-  )
-
-  for (const filePath of routeSourcePaths) {
-    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
-
-    for (const match of content.matchAll(routePattern)) {
-      routes.push({
-        method: (match[1] ?? "").toUpperCase(),
-        path: normalizeRoutePath(match[2] ?? ""),
-      })
-    }
-  }
-
-  return routes
-}
-
-function readAdminWebSocketRoutes(): Route[] {
-  const appSource = fs.readFileSync(
-    path.join(repositoryRoot, "apps/admin-api/src/main.ts"),
-    "utf8"
-  )
-  const upgradeSourcePattern = /from "@\/collaboration\/([a-z0-9-]+-upgrade)"/g
-  const upgradeSourcePaths = [...appSource.matchAll(upgradeSourcePattern)].map(
-    (match) => `apps/admin-api/src/collaboration/${match[1] ?? ""}.ts`
-  )
-
-  return upgradeSourcePaths.flatMap((filePath) => {
-    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
-
-    return [...content.matchAll(/pathname !== "([^"]+)"/g)].map((match) => ({
-      method: "WebSocket",
-      path: normalizeRoutePath(match[1] ?? ""),
-    }))
-  })
 }
 
 function reportRouteDrift({
@@ -476,6 +595,8 @@ function main() {
   validateDocumentedWorkspaceImports(markdownFiles, packages)
   validateBackendRouteDocumentation()
   validateCanonicalOnboardingDocumentation()
+  validateCurrentResourceLibraryDocumentation(markdownFiles)
+  validateCapabilityOwnershipNavigationDocumentation()
 
   if (failures.length > 0) {
     console.error("Document drift check failed.")

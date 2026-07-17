@@ -76,9 +76,9 @@ function AdminAiChatSession({
       ? activeConversationResult.value
       : null
   const activeConversationId = initialConversation?.conversation.id ?? null
-  const [conversations, setConversations] = useState(
-    conversationsResult.status === "ok" ? conversationsResult.value.items : []
-  )
+  const [conversations, setConversations] = useState<
+    readonly AdminAiChatConversation[]
+  >(conversationsResult.status === "ok" ? conversationsResult.value.items : [])
   const [messages, setMessages] = useState<readonly UiMessage[]>(
     initialConversation?.messages ?? []
   )

@@ -4,16 +4,26 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 
-export type DeploymentServiceName = "admin" | "admin-api" | "api" | "web"
+import { courseVisualKeyValues } from "@workspace/contracts/content"
+
+export type DeploymentServiceName = "admin" | "api" | "web"
 
 export interface DeploymentImageSpec {
   readonly buildArguments: readonly (readonly [name: string, value: string])[]
   readonly dockerfile: string
+  readonly healthHostEnvironment?: "BETTER_AUTH_URL"
   readonly healthPort: number
   readonly name: DeploymentServiceName
   readonly runtime: "bun" | "node"
   readonly staticPaths: readonly string[]
+  readonly staticResponses: readonly StaticResponseSpec[]
   readonly usesDatabase: boolean
+}
+
+interface StaticResponseSpec {
+  readonly cacheControl: string
+  readonly contentType: string
+  readonly path: string
 }
 
 interface CommandResult {
@@ -26,7 +36,61 @@ interface ImageSmokeFixture extends Disposable {
   readonly dataDirectory: string
 }
 
+export interface ComposeSmokeImageReferences {
+  readonly admin: string
+  readonly api: string
+  readonly web: string
+}
+
+export interface ComposeSmokeEnvironmentInput {
+  readonly backupDirectory: string
+  readonly caddyImage: string
+  readonly configDirectory: string
+  readonly dataDirectory: string
+  readonly images: ComposeSmokeImageReferences
+  readonly runId: string
+  readonly secretsDirectory: string
+}
+
+interface ComposeSmokeFixture extends Disposable {
+  readonly command: ComposeSmokeCommand
+}
+
+export interface ComposeSmokeCommand {
+  readonly composeEnvironmentPath: string
+  readonly composePath: string
+  readonly projectName: string
+}
+
 const expectedRuntimeUser = "10001:10001"
+const caddyImageReference =
+  "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648"
+const courseThumbnailFileNames = courseVisualKeyValues.map(
+  (visualKey) => `${visualKey}.png`
+)
+
+export const composeSmokeRoutes = [
+  {
+    expectedResponse: { ok: true, service: "web" },
+    host: "web.example.test",
+    path: "/health",
+  },
+  {
+    expectedResponse: { ok: true },
+    host: "api.example.test",
+    path: "/health",
+  },
+  {
+    expectedResponse: { ok: true, service: "admin-api" },
+    host: "admin-api.example.test",
+    path: "/health",
+  },
+  {
+    expectedResponse: { ok: true, service: "admin" },
+    host: "admin.example.test",
+    path: "/health",
+  },
+] as const
 
 export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   {
@@ -43,39 +107,44 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
       "/workspace/apps/web/.next/static",
       "/workspace/apps/web/public/course-thumbnails/vocabulary-basics.png",
     ],
+    staticResponses: [],
     usesDatabase: false,
   },
   {
     buildArguments: [],
     dockerfile: "deploy/docker/api.dockerfile",
+    healthHostEnvironment: "BETTER_AUTH_URL",
     healthPort: 4000,
     name: "api",
     runtime: "bun",
     staticPaths: [],
+    staticResponses: [],
     usesDatabase: true,
   },
   {
     buildArguments: [
       ["NEXT_PUBLIC_ADMIN_API_BASE_URL", "https://admin-api.example.test"],
       ["NEXT_PUBLIC_LEARNER_WEB_ORIGIN", "https://web.example.test"],
-      ["ADMIN_API_BASE_URL", "http://admin-api:4001"],
+      ["ADMIN_API_BASE_URL", "http://admin-api-unified:4000"],
       ["ADMIN_ORIGIN", "https://admin.example.test"],
     ],
     dockerfile: "deploy/docker/admin.dockerfile",
     healthPort: 3001,
     name: "admin",
     runtime: "node",
-    staticPaths: ["/workspace/apps/admin/.next/static"],
+    staticPaths: [
+      "/workspace/apps/admin/.next/static",
+      ...courseThumbnailFileNames.map(
+        (fileName) =>
+          `/workspace/apps/admin/public/course-thumbnails/${fileName}`
+      ),
+    ],
+    staticResponses: courseThumbnailFileNames.map((fileName) => ({
+      cacheControl: "public, max-age=31536000, immutable",
+      contentType: "image/png",
+      path: `/course-thumbnails/${fileName}`,
+    })),
     usesDatabase: false,
-  },
-  {
-    buildArguments: [],
-    dockerfile: "deploy/docker/admin-api.dockerfile",
-    healthPort: 4001,
-    name: "admin-api",
-    runtime: "bun",
-    staticPaths: [],
-    usesDatabase: true,
   },
 ]
 
@@ -145,11 +214,19 @@ export function createRuntimeEnvironment(
   ] as const
   const apiEnvironment = [
     ...publicEnvironment,
+    ["ADMIN_ASSET_PUBLIC_BASE_URL", "https://assets.example.test"],
+    ["ADMIN_ASSET_S3_ACCESS_KEY", "asset-access-key"],
+    ["ADMIN_ASSET_S3_BUCKET", "writing-app-assets"],
+    ["ADMIN_ASSET_S3_ENDPOINT", "https://r2.example.test"],
+    ["ADMIN_ASSET_S3_REGION", "auto"],
+    ["ADMIN_ASSET_S3_SECRET_KEY", "asset-secret-key"],
     ["BETTER_AUTH_URL", "https://api.example.test"],
     ["ADMIN_BETTER_AUTH_URL", "https://admin-api.example.test"],
     ["BETTER_AUTH_SECRET", learnerSecret],
+    ["BETTER_AUTH_COOKIE_DOMAIN", "example.test"],
     ["CURSOR_SIGNING_SECRET", `${learnerSecret}-cursor-distinct`],
     ["ADMIN_BETTER_AUTH_SECRET", adminSecret],
+    ["ADMIN_BETTER_AUTH_COOKIE_DOMAIN", "example.test"],
     ["OPENAI_MODEL", "gpt-5.2"],
     ["LOG_PRETTY", "false"],
   ] as const
@@ -168,21 +245,243 @@ export function createRuntimeEnvironment(
         ["PORT", "3001"],
         ["NEXT_PUBLIC_ADMIN_API_BASE_URL", "https://admin-api.example.test"],
         ["NEXT_PUBLIC_LEARNER_WEB_ORIGIN", "https://web.example.test"],
-        ["ADMIN_API_BASE_URL", "http://admin-api:4001"],
+        ["ADMIN_API_BASE_URL", "http://admin-api-unified:4000"],
       ]
     case "api":
       return [
         ...apiEnvironment,
         ["API_PORT", "4000"],
-        ["DATABASE_URL", "file:/var/lib/writing-app/api.sqlite"],
-      ]
-    case "admin-api":
-      return [
-        ...apiEnvironment,
-        ["ADMIN_API_PORT", "4001"],
+        ["LEARNER_API_ALLOWED_HOSTS", "api.example.test,api:4000"],
+        [
+          "ADMIN_API_ALLOWED_HOSTS",
+          "admin-api.example.test,admin-api-unified:4000",
+        ],
         ["DATABASE_URL", "file:/var/lib/writing-app/api.sqlite"],
       ]
   }
+}
+
+export function createComposeCommandArguments(
+  command: ComposeSmokeCommand,
+  operation: readonly string[]
+): readonly string[] {
+  return [
+    "compose",
+    "--project-name",
+    command.projectName,
+    "--env-file",
+    command.composeEnvironmentPath,
+    "--file",
+    command.composePath,
+    ...operation,
+  ]
+}
+
+export function createComposeUpArguments(
+  command: ComposeSmokeCommand
+): readonly string[] {
+  return createComposeCommandArguments(command, [
+    "up",
+    "--detach",
+    "--wait",
+    "--wait-timeout",
+    "90",
+    "--no-build",
+    "--pull",
+    "never",
+    "caddy",
+  ])
+}
+
+export function createComposeDownArguments(
+  command: ComposeSmokeCommand
+): readonly string[] {
+  return createComposeCommandArguments(command, [
+    "down",
+    "--remove-orphans",
+    "--volumes",
+  ])
+}
+
+export function createCaddyRequestArguments(
+  command: ComposeSmokeCommand,
+  host: string,
+  requestPath: string
+): readonly string[] {
+  return createComposeCommandArguments(command, [
+    "exec",
+    "-T",
+    "caddy",
+    "wget",
+    "-q",
+    "-O",
+    "-",
+    "--header",
+    `Host: ${host}`,
+    `http://127.0.0.1:8080${requestPath}`,
+  ])
+}
+
+export function createAdminSsrHealthCheckArguments(
+  command: ComposeSmokeCommand
+): readonly string[] {
+  return createComposeCommandArguments(command, [
+    "exec",
+    "-T",
+    "admin",
+    "node",
+    "-e",
+    createAdminSsrHealthCheckScript(),
+  ])
+}
+
+export function createAdminSsrHealthCheckScript(): string {
+  return [
+    "(async()=>{",
+    "const baseUrl=process.env.ADMIN_API_BASE_URL;",
+    "if(baseUrl!=='http://admin-api-unified:4000')throw new Error('unexpected ADMIN_API_BASE_URL');",
+    "const response=await fetch(baseUrl+'/health');",
+    "const body=await response.json();",
+    "if(!response.ok||body?.ok!==true||body?.service!=='admin-api')throw new Error(`unexpected admin API response: ${JSON.stringify(body)}`);",
+    "})().catch((error)=>{console.error(error);process.exit(1)})",
+  ].join("")
+}
+
+export function validateComposeSmokeServices(
+  serviceOutput: string
+): readonly string[] {
+  const activeServices = new Set(
+    serviceOutput
+      .split(/\r?\n/u)
+      .map((serviceName) => serviceName.trim())
+      .filter((serviceName) => serviceName.length > 0)
+  )
+  const errors: string[] = []
+  const expectedServices = new Set(["api", "admin", "caddy", "web"])
+
+  for (const serviceName of expectedServices) {
+    if (!activeServices.has(serviceName)) {
+      errors.push(`${serviceName}: Compose smoke 실행 중이어야 합니다.`)
+    }
+  }
+  for (const serviceName of activeServices) {
+    if (expectedServices.has(serviceName)) continue
+    errors.push(
+      `${serviceName}: Compose smoke 외부 service를 실행하면 안 됩니다.`
+    )
+  }
+
+  return errors
+}
+
+function createComposeSmokeFixture(input: {
+  readonly adminSecret: string
+  readonly caddyImage: string
+  readonly dataDirectory: string
+  readonly images: ComposeSmokeImageReferences
+  readonly learnerSecret: string
+  readonly projectName: string
+  readonly repositoryRoot: string
+  readonly runId: string
+}): ComposeSmokeFixture {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "writing-app-compose-smoke-")
+  )
+  const configDirectory = path.join(root, "config")
+  const secretsDirectory = path.join(root, "secrets")
+  const backupDirectory = path.join(root, "backups")
+  fs.mkdirSync(configDirectory)
+  fs.mkdirSync(secretsDirectory)
+  fs.mkdirSync(backupDirectory)
+
+  for (const spec of deploymentImageSpecs) {
+    writeEnvironmentFile(
+      path.join(configDirectory, `${spec.name}.env`),
+      createRuntimeEnvironment(spec, input.learnerSecret, input.adminSecret)
+    )
+  }
+  writeEnvironmentFile(path.join(configDirectory, "caddy.env"), [
+    ["WEB_HOST", "web.example.test"],
+    ["API_HOST", "api.example.test"],
+    ["ADMIN_HOST", "admin.example.test"],
+    ["ADMIN_API_HOST", "admin-api.example.test"],
+  ])
+  writeEnvironmentFile(path.join(configDirectory, "litestream.env"), [
+    ["LITESTREAM_BUCKET", "writing-app-smoke"],
+    ["LITESTREAM_PATH", "api.sqlite"],
+    ["LITESTREAM_ENDPOINT", "https://example.invalid"],
+    ["LITESTREAM_ACCESS_KEY_ID", "smoke-access-key"],
+    ["LITESTREAM_SECRET_ACCESS_KEY", "smoke-secret-key"],
+  ])
+  fs.copyFileSync(
+    path.join(input.repositoryRoot, "deploy", "caddy", "caddyfile"),
+    path.join(configDirectory, "caddyfile")
+  )
+  fs.copyFileSync(
+    path.join(input.repositoryRoot, "deploy", "litestream", "litestream.yaml"),
+    path.join(configDirectory, "litestream.yaml")
+  )
+  fs.writeFileSync(
+    path.join(secretsDirectory, "cloudflare-tunnel-token"),
+    "smoke-token\n"
+  )
+
+  const composeEnvironmentPath = path.join(root, "compose.env")
+  fs.writeFileSync(
+    composeEnvironmentPath,
+    `${createComposeSmokeEnvironment({
+      backupDirectory: toDockerPath(backupDirectory),
+      caddyImage: input.caddyImage,
+      configDirectory: toDockerPath(configDirectory),
+      dataDirectory: input.dataDirectory,
+      images: input.images,
+      runId: input.runId,
+      secretsDirectory: toDockerPath(secretsDirectory),
+    }).join("\n")}\n`
+  )
+
+  return {
+    command: {
+      composeEnvironmentPath,
+      composePath: path.join(
+        input.repositoryRoot,
+        "deploy",
+        "compose",
+        "compose.yaml"
+      ),
+      projectName: input.projectName,
+    },
+    [Symbol.dispose]() {
+      fs.rmSync(root, { force: true, recursive: true })
+    },
+  }
+}
+
+export function createComposeSmokeEnvironment(
+  input: ComposeSmokeEnvironmentInput
+): readonly string[] {
+  return [
+    `WEB_IMAGE=${input.images.web}`,
+    `API_IMAGE=${input.images.api}`,
+    `ADMIN_IMAGE=${input.images.admin}`,
+    `CADDY_IMAGE=${input.caddyImage}`,
+    `CLOUDFLARED_IMAGE=writing-app-smoke-cloudflared-unused:${input.runId}`,
+    `LITESTREAM_IMAGE=writing-app-smoke-litestream-unused:${input.runId}`,
+    `CONFIG_DIRECTORY=${input.configDirectory}`,
+    `SECRETS_DIRECTORY=${input.secretsDirectory}`,
+    `DATA_DIRECTORY=${input.dataDirectory}`,
+    `BACKUP_DIRECTORY=${input.backupDirectory}`,
+  ]
+}
+
+function writeEnvironmentFile(
+  filePath: string,
+  environment: readonly (readonly [name: string, value: string])[]
+): void {
+  fs.writeFileSync(
+    filePath,
+    `${environment.map(([name, value]) => `${name}=${value}`).join("\n")}\n`
+  )
 }
 
 function createImageSmokeFixture(): ImageSmokeFixture {
@@ -268,10 +567,7 @@ async function waitForContainerHealth(
   containerName: string
 ): Promise<void> {
   const runtime = spec.runtime === "node" ? "node" : "bun"
-  const healthScript = [
-    `const response=await fetch('http://127.0.0.1:${spec.healthPort}/health');`,
-    "if(!response.ok)process.exit(1);",
-  ].join("")
+  const healthScript = createHealthRequestScript(spec)
 
   for (let attempt = 0; attempt < 90; attempt += 1) {
     const result = runDocker(
@@ -297,6 +593,18 @@ async function waitForContainerHealth(
   )
 }
 
+export function createHealthRequestScript(spec: DeploymentImageSpec): string {
+  const requestOptions =
+    spec.healthHostEnvironment === undefined
+      ? ""
+      : `,{headers:{Host:new URL(process.env.${spec.healthHostEnvironment}).host}}`
+
+  return [
+    `const response=await fetch('http://127.0.0.1:${spec.healthPort}/health'${requestOptions});`,
+    "if(!response.ok)process.exit(1);",
+  ].join("")
+}
+
 function assertContainerUser(containerName: string): void {
   const result = runDocker(["exec", containerName, "id", "-u"], {
     capture: true,
@@ -304,6 +612,155 @@ function assertContainerUser(containerName: string): void {
   if (result.stdout.trim() !== "10001") {
     throw new Error(`${containerName}: runtime UID가 10001이 아닙니다.`)
   }
+}
+
+function assertStaticResponses(
+  spec: DeploymentImageSpec,
+  containerName: string
+): void {
+  const runtime = spec.runtime === "node" ? "node" : "bun"
+
+  for (const staticResponse of spec.staticResponses) {
+    const url = `http://127.0.0.1:${spec.healthPort}${staticResponse.path}`
+    const assertionScript = [
+      `const response=await fetch(${JSON.stringify(url)});`,
+      "if(!response.ok)throw new Error(`status=${response.status}`);",
+      `if(response.headers.get('cache-control')!==${JSON.stringify(staticResponse.cacheControl)})throw new Error('cache-control mismatch');`,
+      `if(response.headers.get('content-type')!==${JSON.stringify(staticResponse.contentType)})throw new Error('content-type mismatch');`,
+    ].join("")
+
+    runDocker(["exec", containerName, runtime, "-e", assertionScript])
+  }
+}
+
+function createComposeImageReferences(
+  images: readonly {
+    readonly imageReference: string
+    readonly name: DeploymentServiceName
+  }[]
+): ComposeSmokeImageReferences {
+  return {
+    admin: findImageReference(images, "admin"),
+    api: findImageReference(images, "api"),
+    web: findImageReference(images, "web"),
+  }
+}
+
+function findImageReference(
+  images: readonly {
+    readonly imageReference: string
+    readonly name: DeploymentServiceName
+  }[],
+  name: DeploymentServiceName
+): string {
+  const image = images.find((candidate) => candidate.name === name)
+  if (image === undefined) {
+    throw new Error(`${name}: Compose smoke image를 찾지 못했습니다.`)
+  }
+  return image.imageReference
+}
+
+function assertComposeSmokeRoute(
+  route: (typeof composeSmokeRoutes)[number],
+  responseText: string
+): void {
+  let response: unknown
+  try {
+    response = JSON.parse(responseText) as unknown
+  } catch {
+    throw new Error(
+      `${route.host}${route.path}: JSON 응답이 아닙니다. ${responseText.trim()}`
+    )
+  }
+
+  if (JSON.stringify(response) !== JSON.stringify(route.expectedResponse)) {
+    throw new Error(
+      `${route.host}${route.path}: 예상 응답과 다릅니다. ${JSON.stringify(response)}`
+    )
+  }
+}
+
+function createComposeServiceListArguments(
+  command: ComposeSmokeCommand
+): readonly string[] {
+  return createComposeCommandArguments(command, ["ps", "--all", "--services"])
+}
+
+function createComposeLogsArguments(
+  command: ComposeSmokeCommand
+): readonly string[] {
+  return createComposeCommandArguments(command, [
+    "logs",
+    "--no-color",
+    "api",
+    "admin",
+    "caddy",
+    "web",
+  ])
+}
+
+function runComposeTrafficSmoke(input: {
+  readonly adminSecret: string
+  readonly caddyImage: string
+  readonly dataDirectory: string
+  readonly images: ComposeSmokeImageReferences
+  readonly learnerSecret: string
+  readonly projectName: string
+  readonly repositoryRoot: string
+  readonly runId: string
+}): void {
+  using fixture = createComposeSmokeFixture(input)
+  let smokeError: unknown
+  let cleanupError: Error | undefined
+
+  try {
+    console.log("Caddy와 target API/Admin SSR Compose smoke를 시작합니다.")
+    runDocker(createComposeUpArguments(fixture.command))
+
+    const serviceResult = runDocker(
+      createComposeServiceListArguments(fixture.command),
+      { capture: true }
+    )
+    const serviceErrors = validateComposeSmokeServices(serviceResult.stdout)
+    if (serviceErrors.length > 0) {
+      throw new Error(serviceErrors.map((error) => `- ${error}`).join("\n"))
+    }
+
+    for (const route of composeSmokeRoutes) {
+      const response = runDocker(
+        createCaddyRequestArguments(fixture.command, route.host, route.path),
+        { capture: true }
+      )
+      assertComposeSmokeRoute(route, response.stdout)
+    }
+    runDocker(createAdminSsrHealthCheckArguments(fixture.command))
+  } catch (error) {
+    const logs = runDocker(createComposeLogsArguments(fixture.command), {
+      capture: true,
+      required: false,
+    })
+    const detail = error instanceof Error ? error.message : String(error)
+    smokeError = new Error(
+      `${detail}\nCompose smoke 로그:\n${logs.stdout}${logs.stderr}`
+    )
+  } finally {
+    const cleanup = runDocker(createComposeDownArguments(fixture.command), {
+      capture: true,
+      required: false,
+    })
+    if (!cleanup.success) {
+      cleanupError = new Error(
+        `Compose smoke project 정리에 실패했습니다.\n${cleanup.stdout}${cleanup.stderr}`
+      )
+    }
+  }
+
+  if (smokeError !== undefined) throw smokeError
+  if (cleanupError !== undefined) throw cleanupError
+
+  console.log(
+    "Caddy public Host, target API dispatcher와 Admin SSR internal alias를 확인했습니다."
+  )
 }
 
 async function runDeploymentImageTests(): Promise<void> {
@@ -314,6 +771,10 @@ async function runDeploymentImageTests(): Promise<void> {
   while (adminSecret === learnerSecret) adminSecret = createSmokeSecret()
   const ownedContainers = new Set<string>()
   const ownedImages = new Set<string>()
+  const builtImages: {
+    readonly imageReference: string
+    readonly name: DeploymentServiceName
+  }[] = []
 
   runDocker(["info", "--format", "{{.ServerVersion}}"])
 
@@ -326,6 +787,7 @@ async function runDeploymentImageTests(): Promise<void> {
 
       console.log(`${spec.name}: linux/amd64 image를 빌드합니다.`)
       runDocker(createImageBuildArguments(spec, imageReference, repositoryRoot))
+      builtImages.push({ imageReference, name: spec.name })
       assertImageUser(imageReference)
       assertStaticPaths(spec, imageReference)
 
@@ -341,12 +803,29 @@ async function runDeploymentImageTests(): Promise<void> {
       )
       await waitForContainerHealth(spec, containerName)
       assertContainerUser(containerName)
+      assertStaticResponses(spec, containerName)
       runDocker(["rm", "--force", containerName])
       ownedContainers.delete(containerName)
       console.log(
         `${spec.name}: 비 root runtime과 /health 검증을 통과했습니다.`
       )
     }
+
+    const caddySmokeImage = `writing-app-smoke-caddy:${runId}`
+    ownedImages.add(caddySmokeImage)
+    console.log("Caddy locked image를 Compose smoke local tag로 준비합니다.")
+    runDocker(["pull", caddyImageReference])
+    runDocker(["image", "tag", caddyImageReference, caddySmokeImage])
+    runComposeTrafficSmoke({
+      adminSecret,
+      caddyImage: caddySmokeImage,
+      dataDirectory: fixture.dataDirectory,
+      images: createComposeImageReferences(builtImages),
+      learnerSecret,
+      projectName: `writing-app-smoke-${runId}`,
+      repositoryRoot,
+      runId,
+    })
   } finally {
     for (const containerName of ownedContainers) {
       runDocker(["rm", "--force", containerName], { required: false })
@@ -358,7 +837,7 @@ async function runDeploymentImageTests(): Promise<void> {
     }
   }
 
-  console.log("네 production image smoke 검증을 통과했습니다.")
+  console.log("세 production image smoke 검증을 통과했습니다.")
 }
 
 function createSmokeSecret(): string {

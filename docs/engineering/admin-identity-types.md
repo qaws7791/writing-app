@@ -30,4 +30,4 @@
 - contracts parser 테스트가 유효 ID, 빈 값, 공백, 금지 문자, 한글, 최대 길이 초과를 검증한다.
 - compile-time negative fixture가 `AdminId`, `ConversationId`, `UserId`의 교차 전달을 거부한다.
 - core repository/use case 계약 테스트가 브랜드 입력과 DTO 결과를 검증한다.
-- admin HTTP Adapter 계약과 admin-api route 테스트가 기존 문자열 wire format을 유지하는지 검증한다.
+- `apps/api/src/modules/admin-identity` HTTP Adapter 계약과 target-only route 테스트가 기존 문자열 wire format을 유지하는지 검증한다.

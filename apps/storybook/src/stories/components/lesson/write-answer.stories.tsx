@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { useState, type ComponentProps } from "react"
 import { fn } from "storybook/test"
 
 import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
@@ -19,6 +20,7 @@ const meta = {
     ...writeDefaults,
     onChange: fn(),
     onDraftSave: fn(),
+    text: "",
   },
   argTypes: {
     title: {
@@ -73,12 +75,17 @@ const meta = {
       control: "text",
       description: "채점 후 참조 답안입니다.",
     },
+    text: {
+      control: "text",
+      description: "현재 입력 본문입니다.",
+    },
     checked: checkedArgType,
     onChange: createOnChangeArgType("본문이 바뀔 때 호출됩니다."),
     onDraftSave: createOnChangeArgType("드래프트 저장 시 호출됩니다."),
   },
   decorators: lessonDecorators,
   parameters: lessonParameters,
+  render: (args) => <ControlledWriteAnswer key={args.text} {...args} />,
 } satisfies Meta<typeof WriteAnswer>
 
 export default meta
@@ -120,4 +127,19 @@ export const CheckedWithSample: Story = {
   args: {
     checked: "correct",
   },
+}
+
+function ControlledWriteAnswer(args: ComponentProps<typeof WriteAnswer>) {
+  const [text, setText] = useState(args.text)
+
+  return (
+    <WriteAnswer
+      {...args}
+      onChange={(nextText) => {
+        setText(nextText)
+        args.onChange?.(nextText)
+      }}
+      text={text}
+    />
+  )
 }

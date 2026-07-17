@@ -1,10 +1,15 @@
-import type { AnyRouteConfig } from "@workspace/hono/core"
+import type { AnyRouteConfig } from "@/http/platform/core"
+import { learnerIdSchema } from "@workspace/contracts/learning/read-data"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
 import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { requireActiveSession } from "@/middleware/auth.middleware"
+import {
+  decodeLearnerProgressListQuery,
+  encodeLearnerProgressPage,
+} from "@/http/learner-read-route-mapper"
 import {
   progressQuerySchema,
   progressResponseSchema,
@@ -29,19 +34,22 @@ const progressHandler: ApiRouteHandler<typeof progressRouteConfig> = async (
   context
 ) => {
   const progressService = context.var.requestContext.progressService
-  const query = context.req.valid("query")
+  const cursorCodec = context.var.requestContext.learnerCursorCodec
+  const query = unwrapApiCoreResult(
+    decodeLearnerProgressListQuery(
+      cursorCodec,
+      learnerIdSchema.parse(context.var.activeSession.user.id),
+      context.req.valid("query")
+    )
+  )
+  const page = await progressService.readProgress(query)
 
   return context.json(
     parseLearnerRouteResponse(
       context,
       "LearnerProgressResponse",
       progressResponseSchema,
-      unwrapApiCoreResult(
-        await progressService.readProgress(
-          context.var.activeSession.user.id,
-          query
-        )
-      )
+      encodeLearnerProgressPage(cursorCodec, query, page)
     ),
     200
   )

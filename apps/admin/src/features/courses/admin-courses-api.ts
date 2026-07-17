@@ -6,6 +6,7 @@ import {
   adminCourseEditorDocumentSchema,
   adminCourseListDtoSchema,
   adminPublishCourseResultSchema,
+  type AdminArchiveCourseResultDto,
   type AdminCourseDetailDto,
   type AdminCourseEditorDocument,
   type AdminCourseListDto,
@@ -23,26 +24,9 @@ export type ReadAdminCoursesInput = {
 export type AdminCourseDetail = AdminCourseEditorDocument
 export type AdminCreatedCourse = AdminCourseDetailDto
 export const adminCourseEditorSchema = adminCourseEditorDocumentSchema
-export type AdminCourseListItem = {
-  readonly category: string
-  readonly id: string
-  readonly lessonCount: number
-  readonly revision: number
-  readonly status: AdminCourseStatus
-  readonly title: string
-  readonly unitCount: number
-  readonly visualKey:
-    | "basic-sentence-writing"
-    | "creative-writing"
-    | "essay-writing"
-    | "expression"
-    | "grammar-complete"
-}
-export type AdminCourseList = {
-  readonly items: readonly AdminCourseListItem[]
-  readonly pagination: AdminCourseListDto["pagination"]
-}
-export type AdminArchiveCourseResult = { readonly archived: true }
+export type AdminCourseListItem = AdminCourseListDto["items"][number]
+export type AdminCourseList = AdminCourseListDto
+export type AdminArchiveCourseResult = AdminArchiveCourseResultDto
 export type AdminCoursePublishResult = AdminPublishCourseResult
 export type AdminCoursesApi = {
   readonly archiveCourse: (
@@ -94,20 +78,11 @@ export function createAdminCoursesApi(
       params.set("pageSize", String(input.pageSize))
       params.set("query", input.query)
       params.set("status", input.status)
-      const result = await transport.requestJson({
+      return transport.requestJson({
         method: "GET",
         path: `/courses?${params.toString()}`,
         schema: adminCourseListDtoSchema,
       })
-      return result.status === "error"
-        ? result
-        : {
-            status: "ok",
-            value: {
-              items: result.value.items.map((item) => ({ ...item })),
-              pagination: { ...result.value.pagination },
-            },
-          }
     },
     saveCourseEditor: (courseId, document) =>
       transport.requestJson({

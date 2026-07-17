@@ -5,6 +5,7 @@ import {
   learnerLessonSchema,
   learnerProgressPageSchema,
 } from "@workspace/contracts/learning"
+import { createLearnerCursorCodec } from "@workspace/core/learning"
 
 import type { ApiDependencies } from "@/app"
 
@@ -18,6 +19,10 @@ const activeSession = {
     status: "active",
   },
 } as const
+
+const learnerCursorCodec = createLearnerCursorCodec(
+  "test-cursor-signing-secret-with-32-bytes"
+)
 
 const version = {
   curriculumVersionId: "c1-v1",
@@ -130,7 +135,7 @@ export function createTestDependencies(): ApiDependencies {
         return ["입문자를 위한 코스"]
       },
       async listCourses() {
-        return { kind: "ok", value: testCoursePage }
+        return { items: testCoursePage.items, nextPosition: null }
       },
     },
     learnerAiFeedbackService: {
@@ -140,15 +145,16 @@ export function createTestDependencies(): ApiDependencies {
         )
       },
     },
-    learnerTransitionService: {
+    learnerCursorCodec,
+    learnerTransitionRepository: {
       async completeStep() {
         throwUnexpectedTestDependencyCall(
-          "learnerTransitionService.completeStep"
+          "learnerTransitionRepository.completeStep"
         )
       },
       async startLesson() {
         throwUnexpectedTestDependencyCall(
-          "learnerTransitionService.startLesson"
+          "learnerTransitionRepository.startLesson"
         )
       },
     },
@@ -165,7 +171,7 @@ export function createTestDependencies(): ApiDependencies {
     },
     progressService: {
       async readProgress() {
-        return { kind: "ok", value: testProgressPage }
+        return { items: testProgressPage.items, nextPosition: null }
       },
     },
     sessionResolver: {

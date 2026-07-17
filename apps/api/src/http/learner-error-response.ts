@@ -3,7 +3,7 @@ import {
   createErrorHandler,
   ErrorResponseSchema,
   type InternalErrorLogger,
-} from "@workspace/hono/errors"
+} from "@/http/platform/errors"
 import {
   learnerApiErrorSchema,
   type LearnerApiError,

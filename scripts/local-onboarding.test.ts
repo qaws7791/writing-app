@@ -30,7 +30,6 @@ describe("로컬 온보딩", () => {
     ).toEqual([
       { kind: "created", path: "apps/api/.env" },
       { kind: "created", path: "apps/web/.env" },
-      { kind: "created", path: "apps/admin-api/.env" },
       { kind: "created", path: "apps/admin/.env" },
     ])
 
@@ -47,21 +46,17 @@ describe("로컬 온보딩", () => {
     expect(
       readEnvironmentValue(
         fixture.path,
-        "apps/admin-api/.env",
+        "apps/api/.env",
         "ADMIN_BETTER_AUTH_SECRET"
       )
     ).toBe(credentials.adminAuthSecret)
     expect(
-      readEnvironmentValue(
-        fixture.path,
-        "apps/admin-api/.env",
-        "ADMIN_SEED_PASSWORD"
-      )
+      readEnvironmentValue(fixture.path, "apps/api/.env", "ADMIN_SEED_PASSWORD")
     ).toBe(credentials.adminSeedPassword)
     expect(
       readEnvironmentValue(
         fixture.path,
-        "apps/admin-api/.env",
+        "apps/api/.env",
         "ADMIN_SEED_RESET_PASSWORD"
       )
     ).toBe("false")
@@ -85,7 +80,6 @@ describe("로컬 온보딩", () => {
     ).toEqual([
       { kind: "preserved", path: "apps/api/.env" },
       { kind: "preserved", path: "apps/web/.env" },
-      { kind: "preserved", path: "apps/admin-api/.env" },
       { kind: "preserved", path: "apps/admin/.env" },
     ])
     expect(readEnvironmentFiles(fixture.path)).toEqual(before)
@@ -151,7 +145,7 @@ describe("로컬 온보딩", () => {
       label: "테스트 인증",
     })
     expect(checks).toContainEqual({
-      detail: "bun run dev:app:setup과 bun run dev:admin:setup을 실행하세요.",
+      detail: "bun run dev:admin:setup을 실행하세요.",
       kind: "failure",
       label: "로컬 데이터베이스",
     })
@@ -174,21 +168,14 @@ function createFixture(): Disposable & { readonly path: string } {
     [
       "BETTER_AUTH_SECRET=replace-with-32-byte-local-api-secret",
       "CURSOR_SIGNING_SECRET=replace-with-distinct-32-byte-cursor-secret",
+      "ADMIN_BETTER_AUTH_SECRET=replace-with-32-byte-local-admin-secret",
       "DATABASE_URL=file:data/api.sqlite",
       "ENABLE_TEST_AUTH=true",
-    ].join("\n")
-  )
-  writeExample(root, "apps/web/.env.example", "ENABLE_TEST_AUTH=true\n")
-  writeExample(
-    root,
-    "apps/admin-api/.env.example",
-    [
-      "ADMIN_BETTER_AUTH_SECRET=replace-with-32-byte-local-admin-secret",
-      "DATABASE_URL=file:../../data/api.sqlite",
       "ADMIN_SEED_PASSWORD=replace-with-strong-local-admin-password",
       "ADMIN_SEED_RESET_PASSWORD=true",
     ].join("\n")
   )
+  writeExample(root, "apps/web/.env.example", "ENABLE_TEST_AUTH=true\n")
   writeExample(
     root,
     "apps/admin/.env.example",
@@ -214,12 +201,9 @@ function writeExample(
 }
 
 function readEnvironmentFiles(root: string): readonly string[] {
-  return [
-    "apps/api/.env",
-    "apps/web/.env",
-    "apps/admin-api/.env",
-    "apps/admin/.env",
-  ].map((filePath) => fs.readFileSync(path.join(root, filePath), "utf8"))
+  return ["apps/api/.env", "apps/web/.env", "apps/admin/.env"].map((filePath) =>
+    fs.readFileSync(path.join(root, filePath), "utf8")
+  )
 }
 
 function readEnvironmentValue(

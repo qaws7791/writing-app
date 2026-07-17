@@ -1,4 +1,4 @@
-import type { AdminResourceImageMimeType } from "@workspace/contracts/admin"
+import type { AdminResourceImageMimeType } from "@workspace/contracts/admin/resource-library-data"
 
 import type {
   ResourceAssetId,

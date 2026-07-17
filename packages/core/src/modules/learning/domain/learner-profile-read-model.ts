@@ -1,4 +1,4 @@
-import type { LearnerProfileStatsDto } from "#core/modules/learning/domain/learner-read-model.dto"
+import type { LearnerProfileStatsDto } from "@workspace/contracts/learning/read-data"
 
 export type ProfileReader = {
   readonly readProfileStats: (userId: string) => Promise<LearnerProfileStatsDto>

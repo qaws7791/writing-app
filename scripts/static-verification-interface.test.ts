@@ -15,6 +15,16 @@ interface RootPackageManifest {
 
 const repositoryRoot = path.resolve(import.meta.dir, "..")
 
+const qualityGatesNode24ActionReferences = [
+  "actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5",
+  "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6",
+  "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6",
+  "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6",
+  "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6",
+  "docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4",
+  "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2",
+] as const
+
 describe("정적 검증 Interface", () => {
   test("root lint가 로컬과 CI의 필수 검사를 모두 소유한다", () => {
     const manifest = JSON.parse(
@@ -109,7 +119,21 @@ describe("정적 검증 Interface", () => {
     expect(manifest.scripts?.["test:deployment-images"]).toBe(
       "bun scripts/test-deployment-images.ts"
     )
-    expect(imageChecks).toContain("uses: docker/setup-buildx-action@v3")
+    expect(imageChecks).toContain(
+      "uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4"
+    )
     expect(imageChecks).toContain("- run: bun run test:deployment-images")
+  })
+
+  test("quality gate 외부 action은 Node.js 24 runtime full SHA를 사용한다", () => {
+    const workflow = readFileSync(
+      path.join(repositoryRoot, ".github", "workflows", "quality-gates.yml"),
+      "utf8"
+    )
+
+    for (const actionReference of qualityGatesNode24ActionReferences) {
+      expect(workflow).toContain(`uses: ${actionReference}`)
+    }
+    expect(workflow).not.toMatch(/uses:\s+[^\s]+@v\d+/u)
   })
 })

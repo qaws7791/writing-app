@@ -14,36 +14,35 @@
 ## 현재 앱 구성
 
 - `apps/web`: 학습자용 Next.js 앱이다. 랜딩, 로그인, 보호된 학습 홈, 코스 목록, 코스 상세, 레슨 경험을 제공한다.
-- `apps/api`: 학습자용 Hono API다. 라우팅, 미들웨어, 인증 토큰/헤더 추출, HTTP 요청/응답 매핑, 에러 매핑을 담당한다.
+- `apps/api`: 학습자·관리자 Host를 분리한 Hono API다. 라우팅, 미들웨어, 인증 토큰/헤더 추출, HTTP 요청/응답 매핑, 에러 매핑과 단일 SQLite lifecycle을 담당한다.
 - `apps/admin`: 관리자용 Next.js 앱이다. 로그인, 대시보드, 콘텐츠 관리, 사용자 관리, 분석, 운영 설정을 제공한다.
-- `apps/admin-api`: 관리자용 Hono API다. 관리자 세션, 커리큘럼 편집, 사용자 운영, 분석, 운영 설정, 관리자 계정 seed를 담당한다.
 - `apps/storybook`: 공유 UI 컴포넌트와 디자인 시스템 상태를 확인하는 Storybook이다.
-- `packages/core`: DTO, Zod schema, 도메인 서비스, repository port와 구현, 트랜잭션 경계, DB query, 학습자 API 런타임 조립을 둔다.
+- `packages/core`: transport·infrastructure에 독립적인 domain 정책, application use case와 repository port를 둔다.
 - `packages/contracts`: 학습자·관리자 HTTP request/response DTO와 Zod 계약을 둔다.
 - `packages/db`: Drizzle SQLite client, schema, migration, seed 같은 저수준 영속성 primitive를 둔다.
 - `packages/ui`: shadcn/Base UI 기반 공유 primitive, 아이콘, 스타일 entrypoint를 제공한다.
-- `packages/hono`: Hono route, validation, error handling 표준을 제공한다.
 - `packages/env`: 환경 변수 파싱과 로컬 기본값을 제공한다.
-- `packages/logger`: pino logger와 요청 로그 middleware를 제공한다.
 - `packages/http-client`: HTTP transport result와 네트워크 오류 모델을 제공한다.
-- `packages/resource-document`: 브라우저·서버 공용 Lexical GFM 문서 계약과 Yjs 투영을 제공한다.
+- `packages/resource-document`: 브라우저·서버 공용 Lexical node와 GFM Markdown 변환·검증 계약을 제공한다.
 - `packages/repository-tooling`: repository source inventory, TypeScript import graph와 architecture 정책 matcher를 제공한다.
 - `packages/config`: workspace TypeScript 설정을 제공한다.
 
 ## 현재 구현 상태
 
-현재 제품 baseline은 현재 `apps/*/src`와 `packages/*/src`에 구현되어 있다. 학습자 웹/API, 어드민 웹/API, 공유 UI, core 도메인 계약, DB schema/seed, 환경 변수 파서, logger, HTTP client result 모델을 같은 Bun workspace에서 관리한다.
+현재 제품 baseline은 `apps/*/src`와 `packages/*/src`에 구현되어 있다. 학습자 웹/API, 어드민 웹, 관리자 Host sub-app, 공유 UI, core 도메인 계약, DB schema/seed, 환경 변수 파서와 HTTP client result 모델을 같은 Bun workspace에서 관리한다. API transport platform과 observability 구현은 단일 consumer인 `apps/api`가 직접 소유한다.
+
+검증된 저장소 구성상 여섯 관리자 capability route는 모두 `apps/api`의 관리자 Host sub-app에 등록되고 Compose·Caddy도 두 public API Host를 `apps/api:4000`으로 향하게 한다. 별도 관리자 API workspace·image·service·rollback source는 제거했다. Caddy 관리 API는 container loopback `127.0.0.1:2019`에만 있고 host에는 노출하지 않는다. source 구성·정적 계약과 `ENABLE_TEST_AUTH=true` target E2E를 검증했다. 실제 Docker/production 적용·관찰 증적은 사용자 승인으로 이번 완료 범위에서 제외했으므로 운영 성공으로 주장하지 않는다.
 
 루트 workspace 인벤토리와 검증 기준은 `docs/engineering/workspace-inventory.md`를 단일 기준으로 둔다. 제품 런타임은 레거시 실험 디렉터리의 구현 파일을 import하지 않는다.
 
 ## 핵심 런타임 경계
 
-- 학습자 웹은 `apps/api`만 호출한다.
-- 어드민 웹은 `apps/admin-api`만 호출한다.
+- 학습자 웹은 learner public Host의 `apps/api` sub-app을 호출한다.
+- 어드민 웹은 admin public Host의 `apps/api` sub-app을 호출한다. 저장소의 production Compose에서는 admin SSR도 `admin-api-unified:4000` alias를 사용한다.
 - 인증 요청은 각 프론트엔드에서 Hono API의 `/api/auth/*` endpoint로 직접 보낸다.
-- 운영에서 웹과 API가 서로 다른 서브도메인을 쓰는 경우 Better Auth cookie domain을 parent domain으로 명시한다.
-- 학습자 API 의존성 방향은 `apps/api -> packages/core -> packages/db`다.
-- `packages/core`는 HTTP transport를 모르지만 DB primitive를 사용해 도메인 규칙, 유스케이스, repository 구현을 제공한다.
+- 앱 parser에서는 local Host의 Better Auth cookie domain을 생략할 수 있고, production에서 값이 주어지면 frontend 소비 origin과 API 발급 origin의 공통 parent인지 검증한다. production Ansible은 그에 더해 충돌하지 않는 learner `web/API`와 관리자 `admin/admin-api` Host 쌍마다 SSR 세션 전달용 공통 parent cookie domain을 명시적으로 요구한다.
+- 실행 앱 composition은 `apps/api -> packages/core`와 `apps/api -> packages/db`를 함께 사용한다. `packages/core -> packages/db` 의존은 없다.
+- `packages/core`는 HTTP transport와 DB primitive를 모르며 도메인 규칙, use case와 repository port만 제공한다.
 - `packages/db`는 `packages/core`를 import하지 않는 저수준 영속성 패키지다.
 - 런타임 코드는 레거시 실험 디렉터리의 파일을 import하거나 직접 참조하지 않는다.
 - 기준 콘텐츠는 새 DB baseline seed로 승격하고, 개발 DB는 누적 보정 migration이 아니라 새 baseline schema로 재생성한다.

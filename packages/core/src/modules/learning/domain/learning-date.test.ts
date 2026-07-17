@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   addLearningCalendarDays,
   calculateCurrentStreakDays,
+  groupLearningActivityDatesByUserId,
   isLearningDateKeyInRange,
   platformLearningTimeZone,
   toLearningDateKey,
@@ -35,6 +36,21 @@ describe("학습 활동일 정책", () => {
         key("2026-06-11"),
       ])
     ).toBe(3)
+  })
+
+  it("학습 활동일을 사용자별 최신순으로 그룹화한다", () => {
+    expect(
+      groupLearningActivityDatesByUserId([
+        { activityDate: "2026-06-13", userId: "user-1" },
+        { activityDate: "2026-06-15", userId: "user-1" },
+        { activityDate: "2026-06-14", userId: "user-2" },
+      ])
+    ).toEqual(
+      new Map([
+        ["user-1", ["2026-06-15", "2026-06-13"]],
+        ["user-2", ["2026-06-14"]],
+      ])
+    )
   })
 
   it("학습일 range 비교는 문자열 포맷의 정렬 가능성에만 의존한다", () => {

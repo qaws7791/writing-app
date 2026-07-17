@@ -3,7 +3,7 @@ import {
   adminRoleSchema,
   adminRoleValues,
   type AdminRole,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/admin/identity-data"
 
 export { adminRoles, adminRoleSchema, adminRoleValues }
 export type { AdminRole }

@@ -55,7 +55,7 @@ describe("image release metadata", () => {
     ).not.toBe(current)
   })
 
-  test("네 image가 모두 같은 revision과 설정일 때만 manifest를 만든다", () => {
+  test("세 image가 모두 같은 revision과 설정일 때만 manifest를 만든다", () => {
     const records = imageReleaseServices.map((service) =>
       createImageReleaseRecord({
         digest,
@@ -74,11 +74,8 @@ describe("image release metadata", () => {
     expect(manifest.images.web.reference).toBe(
       `ghcr.io/owner/writing-app-web@${digest}`
     )
-    expect(manifest.images["admin-api"].reference).toBe(
-      `ghcr.io/owner/writing-app-admin-api@${digest}`
-    )
     expect(() => createImageReleaseManifest(records.slice(1))).toThrow(
-      "네 image record가 모두 필요합니다."
+      "세 image record가 모두 필요합니다."
     )
   })
 

@@ -6,7 +6,6 @@ writing_app_admin_api_host: admin-api.example.com
 writing_app_web_image: ghcr.io/example/writing-app-web@sha256:replace-me
 writing_app_api_image: ghcr.io/example/writing-app-api@sha256:replace-me
 writing_app_admin_image: ghcr.io/example/writing-app-admin@sha256:replace-me
-writing_app_admin_api_image: ghcr.io/example/writing-app-admin-api@sha256:replace-me
 
 # private GHCR package를 사용할 때만 Vault 값이 사용된다.
 writing_app_registry_username: ""
@@ -23,8 +22,14 @@ writing_app_openai_api_key: >-
 
 # 아래 민감 값은 Ansible Vault로 암호화한 vault.yaml에서 관리한다.
 writing_app_better_auth_secret: "{{ vault_writing_app_better_auth_secret }}"
+writing_app_cursor_signing_secret: >-
+  {{ vault_writing_app_cursor_signing_secret }}
 writing_app_admin_better_auth_secret: >-
   {{ vault_writing_app_admin_better_auth_secret }}
+
+# public web/API Host가 분리되므로 각 session cookie는 공통 parent domain을 명시한다.
+writing_app_better_auth_cookie_domain: example.com
+writing_app_admin_better_auth_cookie_domain: example.com
 writing_app_cloudflare_tunnel_token: >-
   {{ vault_writing_app_cloudflare_tunnel_token }}
 writing_app_r2_access_key_id: "{{ vault_writing_app_r2_access_key_id }}"
@@ -32,3 +37,14 @@ writing_app_r2_secret_access_key: "{{ vault_writing_app_r2_secret_access_key }}"
 writing_app_r2_bucket: replace-with-r2-bucket
 writing_app_r2_endpoint: https://replace-with-account-id.r2.cloudflarestorage.com
 writing_app_r2_path: writing-app/production/api.sqlite
+
+# 자료실 이미지는 backup replica와 분리한 public R2 bucket에 저장한다.
+writing_app_admin_asset_s3_access_key: >-
+  {{ vault_writing_app_admin_asset_s3_access_key }}
+writing_app_admin_asset_s3_secret_key: >-
+  {{ vault_writing_app_admin_asset_s3_secret_key }}
+writing_app_admin_asset_s3_bucket: replace-with-r2-public-assets-bucket
+writing_app_admin_asset_s3_endpoint: >-
+  https://replace-with-account-id.r2.cloudflarestorage.com
+writing_app_admin_asset_s3_region: auto
+writing_app_admin_asset_public_base_url: https://replace-with-assets-domain

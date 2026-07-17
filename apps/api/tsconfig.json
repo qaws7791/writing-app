@@ -7,7 +7,6 @@
     "paths": {
       "#core/*": ["../../packages/core/src/*"],
       "#env/*": ["../../packages/env/src/*"],
-      "#hono/*": ["../../packages/hono/src/*"],
       "@/*": ["./src/*"]
     },
     "types": ["bun"]

@@ -69,6 +69,12 @@ describe("코스 목록 화면", () => {
     )
     expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
     expect(screen.getByText("10개 레슨")).toBeInTheDocument()
+    expect(
+      screen.getByRole("img", { name: "글쓰기 첫걸음 30일" })
+    ).toHaveAttribute("loading", "eager")
+    expect(
+      screen.getByRole("img", { name: "문장의 기본 문법" })
+    ).toHaveAttribute("loading", "eager")
 
     const grammarCourseCard = screen.getByText("문장의 기본 문법").closest("a")
 

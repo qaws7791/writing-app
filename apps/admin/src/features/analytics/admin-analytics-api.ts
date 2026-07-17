@@ -14,39 +14,8 @@ export type AdminLessonAnalyticsSort =
   | "lessonTitle"
 export type AdminSortDirection = "asc" | "desc"
 
-export type AdminLessonAnalyticsItem = {
-  readonly completed: number
-  readonly completionRate: number
-  readonly courseId: string
-  readonly courseTitle: string
-  readonly dropOffRate: number
-  readonly lessonId: string
-  readonly lessonTitle: string
-  readonly started: number
-}
-
-export type AdminAnalytics = {
-  readonly dailySeries: readonly {
-    readonly completions: number
-    readonly date: string
-    readonly signups: number
-  }[]
-  readonly streakBuckets: readonly {
-    readonly count: number
-    readonly label: string
-  }[]
-  readonly worstLessons: readonly AdminLessonAnalyticsItem[]
-}
-
-export type AdminLessonAnalyticsPage = {
-  readonly items: readonly AdminLessonAnalyticsItem[]
-  readonly pagination: {
-    readonly page: number
-    readonly pageSize: number
-    readonly totalItems: number
-    readonly totalPages: number
-  }
-}
+export type AdminAnalytics = AdminAnalyticsDto
+export type AdminLessonAnalyticsPage = AdminLessonAnalyticsPageDto
 
 export type AdminAnalyticsApi = {
   readonly getAnalytics: (input: {
@@ -66,14 +35,11 @@ export function createAdminAnalyticsApi(
 ): AdminAnalyticsApi {
   return {
     async getAnalytics(input) {
-      const result = await transport.requestJson({
+      return transport.requestJson({
         method: "GET",
         path: `/analytics?days=${input.days}`,
         schema: adminAnalyticsDtoSchema,
       })
-      return result.status === "error"
-        ? result
-        : { status: "ok", value: toAnalytics(result.value) }
     },
     async getLessonAnalytics(input) {
       const params = new URLSearchParams()
@@ -82,37 +48,11 @@ export function createAdminAnalyticsApi(
       params.set("pageSize", String(input.pageSize))
       params.set("query", input.query)
       params.set("sort", input.sort)
-      const result = await transport.requestJson({
+      return transport.requestJson({
         method: "GET",
         path: `/analytics/lessons?${params.toString()}`,
         schema: adminLessonAnalyticsPageDtoSchema,
       })
-      return result.status === "error"
-        ? result
-        : { status: "ok", value: toLessonPage(result.value) }
     },
   }
-}
-
-function toAnalytics(dto: AdminAnalyticsDto): AdminAnalytics {
-  return {
-    dailySeries: dto.dailySeries.map((item) => ({ ...item })),
-    streakBuckets: dto.streakBuckets.map((item) => ({ ...item })),
-    worstLessons: dto.worstLessons.map(toLesson),
-  }
-}
-
-function toLessonPage(
-  dto: AdminLessonAnalyticsPageDto
-): AdminLessonAnalyticsPage {
-  return {
-    items: dto.items.map(toLesson),
-    pagination: { ...dto.pagination },
-  }
-}
-
-function toLesson(
-  dto: AdminAnalyticsDto["worstLessons"][number]
-): AdminLessonAnalyticsItem {
-  return { ...dto }
 }

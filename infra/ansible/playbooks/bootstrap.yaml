@@ -6,5 +6,5 @@
   vars_files:
     - ../vars/defaults.yaml
   roles:
-    - docker-host
-    - writing-app-host
+    - docker_host
+    - writing_app_host

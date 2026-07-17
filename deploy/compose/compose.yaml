@@ -42,14 +42,18 @@ services:
         source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
         target: /var/lib/writing-app
     networks:
-      - learner
+      learner: {}
+      admin:
+        aliases:
+          - admin-api-unified
     healthcheck:
       test:
         - CMD
         - bun
         - -e
         - >-
-          fetch('http://127.0.0.1:4000/health').then((response)=>{
+          fetch('http://127.0.0.1:4000/health',{headers:{
+          Host:new URL(process.env.BETTER_AUTH_URL).host}}).then((response)=>{
           if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
       interval: 30s
       timeout: 5s
@@ -77,37 +81,6 @@ services:
         - -e
         - >-
           fetch('http://127.0.0.1:3001/health').then((response)=>{
-          if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: "5"
-
-  admin-api:
-    image: ${ADMIN_API_IMAGE:?ADMIN_API_IMAGE가 필요합니다}
-    env_file:
-      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/admin-api.env
-    init: true
-    restart: unless-stopped
-    stop_grace_period: 30s
-    volumes:
-      - type: bind
-        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
-        target: /var/lib/writing-app
-    networks:
-      - admin
-    healthcheck:
-      test:
-        - CMD
-        - bun
-        - -e
-        - >-
-          fetch('http://127.0.0.1:4001/health').then((response)=>{
           if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
       interval: 30s
       timeout: 5s
@@ -147,8 +120,6 @@ services:
       api:
         condition: service_healthy
       admin:
-        condition: service_healthy
-      admin-api:
         condition: service_healthy
     healthcheck:
       test:

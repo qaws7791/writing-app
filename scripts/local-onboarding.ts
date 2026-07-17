@@ -14,27 +14,16 @@ const localEnvironmentFiles = [
     prepare: (template: string, credentials: LocalCredentials) =>
       replaceEnvironmentValue(
         replaceEnvironmentValue(
-          template,
-          "BETTER_AUTH_SECRET",
-          credentials.learnerAuthSecret
-        ),
-        "CURSOR_SIGNING_SECRET",
-        credentials.cursorSigningSecret
-      ),
-  },
-  {
-    examplePath: "apps/web/.env.example",
-    path: "apps/web/.env",
-    prepare: (template: string) => template,
-  },
-  {
-    examplePath: "apps/admin-api/.env.example",
-    path: "apps/admin-api/.env",
-    prepare: (template: string, credentials: LocalCredentials) =>
-      replaceEnvironmentValue(
-        replaceEnvironmentValue(
           replaceEnvironmentValue(
-            template,
+            replaceEnvironmentValue(
+              replaceEnvironmentValue(
+                template,
+                "BETTER_AUTH_SECRET",
+                credentials.learnerAuthSecret
+              ),
+              "CURSOR_SIGNING_SECRET",
+              credentials.cursorSigningSecret
+            ),
             "ADMIN_BETTER_AUTH_SECRET",
             credentials.adminAuthSecret
           ),
@@ -44,6 +33,11 @@ const localEnvironmentFiles = [
         "ADMIN_SEED_RESET_PASSWORD",
         "false"
       ),
+  },
+  {
+    examplePath: "apps/web/.env.example",
+    path: "apps/web/.env",
+    prepare: (template: string) => template,
   },
   {
     examplePath: "apps/admin/.env.example",
@@ -276,7 +270,7 @@ function inspectAuthSecrets(
     .get("apps/api/.env")
     ?.get("BETTER_AUTH_SECRET")
   const adminSecret = environments
-    .get("apps/admin-api/.env")
+    .get("apps/api/.env")
     ?.get("ADMIN_BETTER_AUTH_SECRET")
   const cursorSecret = environments
     .get("apps/api/.env")
@@ -381,29 +375,15 @@ function inspectDatabase(
   environments: ReadonlyMap<string, ReadonlyMap<string, string>>,
   requireDatabase: boolean
 ): readonly LocalOnboardingCheck[] {
-  const learnerDatabaseUrl = environments
-    .get("apps/api/.env")
-    ?.get("DATABASE_URL")
-  const adminDatabaseUrl = environments
-    .get("apps/admin-api/.env")
-    ?.get("DATABASE_URL")
+  const databaseUrl = environments.get("apps/api/.env")?.get("DATABASE_URL")
 
-  if (learnerDatabaseUrl === undefined || adminDatabaseUrl === undefined) {
+  if (databaseUrl === undefined) {
     return []
   }
 
-  const learnerPath = resolveLocalDatabasePath(
-    repositoryRoot,
-    "apps/api/.env",
-    learnerDatabaseUrl
-  )
-  const adminPath = resolveLocalDatabasePath(
-    repositoryRoot,
-    "apps/admin-api/.env",
-    adminDatabaseUrl
-  )
+  const databasePath = resolveLocalDatabasePath(repositoryRoot, databaseUrl)
 
-  if (learnerPath === null || adminPath === null) {
+  if (databasePath === null) {
     return [
       {
         detail: "로컬 setup은 file-backed SQLite DATABASE_URL이 필요합니다.",
@@ -413,20 +393,10 @@ function inspectDatabase(
     ]
   }
 
-  if (learnerPath !== adminPath) {
+  if (existsSync(databasePath)) {
     return [
       {
-        detail: "학습자 API와 어드민 API의 DATABASE_URL 대상이 다릅니다.",
-        kind: "failure",
-        label: "로컬 데이터베이스",
-      },
-    ]
-  }
-
-  if (existsSync(learnerPath)) {
-    return [
-      {
-        detail: `${path.relative(repositoryRoot, learnerPath).replaceAll(path.sep, "/")} 파일이 있습니다.`,
+        detail: `${path.relative(repositoryRoot, databasePath).replaceAll(path.sep, "/")} 파일이 있습니다.`,
         kind: "pass",
         label: "로컬 데이터베이스",
       },
@@ -436,8 +406,7 @@ function inspectDatabase(
   return [
     requireDatabase
       ? {
-          detail:
-            "bun run dev:app:setup과 bun run dev:admin:setup을 실행하세요.",
+          detail: "bun run dev:admin:setup을 실행하세요.",
           kind: "failure",
           label: "로컬 데이터베이스",
         }
@@ -451,7 +420,6 @@ function inspectDatabase(
 
 function resolveLocalDatabasePath(
   repositoryRoot: string,
-  environmentPath: string,
   databaseUrl: string
 ): string | null {
   if (
@@ -464,12 +432,7 @@ function resolveLocalDatabasePath(
   const filePath = databaseUrl.startsWith("file:")
     ? databaseUrl.slice("file:".length)
     : databaseUrl
-  const workingDirectory =
-    environmentPath === "apps/api/.env"
-      ? repositoryRoot
-      : path.join(repositoryRoot, path.dirname(environmentPath))
-
-  return path.resolve(workingDirectory, filePath)
+  return path.resolve(repositoryRoot, filePath)
 }
 
 function parseEnvironmentFile(filePath: string): ReadonlyMap<string, string> {

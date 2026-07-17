@@ -33,12 +33,12 @@ const projects: readonly CoverageProject[] = [
     runtime: "node",
   },
   {
-    coverageTests: ["src/architecture.test.ts"],
-    path: "apps/admin-api",
-    runtime: "bun",
-  },
-  {
-    coverageTests: ["src/architecture.test.ts"],
+    coverageTests: [
+      "src/architecture.test.ts",
+      "src/adapters/ai-chat/admin-ai-chat-drizzle.repository.test.ts",
+      "src/http/platform/security/request-security.test.ts",
+      "src/observability/app-logger.test.ts",
+    ],
     path: "apps/api",
     runtime: "bun",
   },
@@ -46,6 +46,8 @@ const projects: readonly CoverageProject[] = [
     coverageTests: [
       "src/runtime-config.test.ts",
       "src/lib/api/api-error.test.ts",
+      "src/features/lessons/lesson-draft-storage.test.ts",
+      "src/features/lessons/lesson-match-presentation.test.ts",
     ],
     path: "apps/web",
     runtime: "node",
@@ -56,9 +58,7 @@ const projects: readonly CoverageProject[] = [
     runtime: "node",
   },
   {
-    coverageTests: [
-      "src/modules/admin/infrastructure/persistence/admin-drizzle.repository.test.ts",
-    ],
+    coverageTests: ["src/architecture.test.ts"],
     path: "packages/core",
     runtime: "bun",
   },
@@ -73,29 +73,23 @@ const projects: readonly CoverageProject[] = [
   },
   { path: "packages/env", runtime: "node" },
   {
-    coverageTests: ["src/security/request-security.test.ts"],
-    path: "packages/hono",
-    runtime: "node",
-  },
-  {
     coverageTests: ["src/index.test.ts"],
     path: "packages/http-client",
     runtime: "node",
   },
   {
-    coverageTests: ["src/logger.test.ts"],
-    path: "packages/logger",
-    runtime: "node",
-  },
-  {
-    coverageTests: ["src/resource-collaboration.test.ts"],
+    coverageTests: [
+      "src/resource-markdown.test.ts",
+      "src/resource-markdown-import.test.ts",
+      "src/resource-image-node.test.ts",
+    ],
     path: "packages/resource-document",
     runtime: "node",
   },
   {
     coverageTests: [
+      "src/components/lesson/match-answer.test.tsx",
       "src/lib/safe-navigation-path.test.ts",
-      "src/lib/lesson-draft-storage.test.ts",
     ],
     path: "packages/ui",
     runtime: "node",
@@ -109,10 +103,9 @@ const criticalCoverageThresholds: readonly LineCoverageThreshold[] = [
     reportDirectory: "apps-admin",
   },
   {
-    filePath:
-      "src/modules/admin/infrastructure/persistence/admin-drizzle.repository.ts",
+    filePath: "src/adapters/ai-chat/admin-ai-chat-drizzle.repository.ts",
     minimum: 100,
-    reportDirectory: "packages-core",
+    reportDirectory: "apps-api",
   },
   {
     filePath: "src/migrations/migrate.ts",
@@ -120,7 +113,7 @@ const criticalCoverageThresholds: readonly LineCoverageThreshold[] = [
     reportDirectory: "packages-db",
   },
   {
-    filePath: "src/resource-collaboration.ts",
+    filePath: "src/resource-markdown.ts",
     minimum: 87,
     reportDirectory: "packages-resource-document",
   },

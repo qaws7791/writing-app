@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/react"
-import { clearLessonDraftsForUser } from "@workspace/ui/lib/lesson-draft-storage"
 
+import { clearLessonDraftsForUser } from "@/features/lessons/lesson-draft-storage"
 import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
 import {
   buildApiUrl,

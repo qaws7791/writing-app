@@ -1,149 +1,198 @@
 import { describe, expect, it } from "vitest"
-import {
-  createLocalRuntimeUrl,
-  localRuntimeDefaults,
-  localRuntimePorts,
-} from "@workspace/env/local-runtime-defaults"
 
 import { parseApiEnv } from "@/env"
 
-describe("API env", () => {
-  it("공통 env에서 API 실행 설정을 만든다", () => {
-    expect(
-      parseApiEnv({
-        API_PORT: "4101",
-        BETTER_AUTH_SECRET: "x".repeat(32),
-        DATABASE_URL: ":memory:",
-        NODE_ENV: "test",
-        OPENAI_API_KEY: "sk-test",
-        OPENAI_MODEL: "gpt-5.4-mini",
-        WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
-      })
-    ).toEqual({
-      authBaseUrl: createLocalRuntimeUrl(4101),
-      betterAuthSecret: "x".repeat(32),
-      cookieDomain: undefined,
-      cursorSigningSecret: `${"x".repeat(32)}:cursor-signing`,
-      databaseUrl: ":memory:",
-      deploymentVersion: "local",
-      googleClientId: undefined,
-      googleClientSecret: undefined,
-      nodeEnv: "test",
-      openAiApiKey: "sk-test",
-      openAiModel: "gpt-5.4-mini",
-      port: 4101,
-      testAuthEnabled: false,
-      webOrigin: localRuntimeDefaults.learnerWebOrigin,
-    })
-  })
+const learnerSecret = "learner-test-secret-0123456789abcdef"
+const adminSecret = "admin-test-secret-0123456789abcdef"
 
-  it("기존 로컬 API origin 이름을 새 실행 설정으로 정규화한다", () => {
-    expect(
-      parseApiEnv({
-        BETTER_AUTH_SECRET: "x".repeat(32),
-        CORS_ORIGIN: [
-          localRuntimeDefaults.learnerWebOrigin,
-          localRuntimeDefaults.adminWebOrigin,
-        ].join(","),
-        DATABASE_URL: ":memory:",
-        NODE_ENV: "test",
-      })
-    ).toEqual({
-      authBaseUrl: localRuntimeDefaults.learnerApiBaseUrl,
-      betterAuthSecret: "x".repeat(32),
+describe("통합 API env", () => {
+  it("두 audience의 독립 실행 설정을 명시적으로 만든다", () => {
+    const env = parseApiEnv(createTestEnvironment())
+
+    expect(env).toMatchObject({
+      adminAuthBaseUrl: "http://admin-api.localhost:4000",
+      adminAssetStore: undefined,
+      adminBetterAuthSecret: adminSecret,
+      adminCookieDomain: undefined,
+      adminOrigin: "http://localhost:3001",
+      authBaseUrl: "http://localhost:4000",
+      betterAuthSecret: learnerSecret,
       cookieDomain: undefined,
-      cursorSigningSecret: `${"x".repeat(32)}:cursor-signing`,
+      cursorSigningSecret: `${learnerSecret}:cursor-signing`,
       databaseUrl: ":memory:",
       deploymentVersion: "local",
-      googleClientId: undefined,
-      googleClientSecret: undefined,
       nodeEnv: "test",
       openAiApiKey: undefined,
       openAiModel: "gpt-5.2",
-      port: localRuntimePorts.learnerApi,
+      port: 4000,
       testAuthEnabled: false,
-      webOrigin: localRuntimeDefaults.learnerWebOrigin,
+      webOrigin: "http://localhost:3000",
     })
+    expect([...env.apiHosts.learner]).toEqual(["localhost:4000", "api:4000"])
+    expect([...env.apiHosts.admin]).toEqual([
+      "admin-api.localhost:4000",
+      "admin-api:4000",
+    ])
   })
 
-  it("로컬 테스트 인증 플래그를 읽되 production에서는 거부한다", () => {
+  it.each([
+    "ADMIN_BETTER_AUTH_SECRET",
+    "ADMIN_BETTER_AUTH_URL",
+    "ADMIN_ORIGIN",
+    "ADMIN_API_ALLOWED_HOSTS",
+    "LEARNER_API_ALLOWED_HOSTS",
+  ] as const)("%s는 모든 실행 환경에서 필수다", (name) => {
+    expect(() =>
+      parseApiEnv({ ...createTestEnvironment(), [name]: undefined })
+    ).toThrow(name)
+  })
+
+  it("learner와 admin secret 및 origin을 공유하지 못하게 한다", () => {
+    expect(() =>
+      parseApiEnv({
+        ...createTestEnvironment(),
+        ADMIN_BETTER_AUTH_SECRET: learnerSecret,
+      })
+    ).toThrow(/학습자 secret과 다른 값/u)
+    expect(() =>
+      parseApiEnv({
+        ...createTestEnvironment(),
+        ADMIN_ORIGIN: "http://localhost:3000",
+      })
+    ).toThrow(/학습자 origin과 다른 값/u)
+  })
+
+  it.each([
+    ["BETTER_AUTH_URL", "http://unknown.localhost:4000"],
+    ["ADMIN_BETTER_AUTH_URL", "http://unknown.localhost:4000"],
+  ] as const)("%s host가 audience allowlist 밖이면 거부한다", (name, value) => {
+    expect(() =>
+      parseApiEnv({ ...createTestEnvironment(), [name]: value })
+    ).toThrow(new RegExp(name))
+  })
+
+  it("admin cookie domain은 learner cookie 설정에서 fallback하지 않는다", () => {
+    const learnerOnly = parseApiEnv({
+      ...createTestEnvironment(),
+      BETTER_AUTH_COOKIE_DOMAIN: "localhost",
+    })
+    const separated = parseApiEnv({
+      ...createTestEnvironment(),
+      ADMIN_BETTER_AUTH_COOKIE_DOMAIN: "admin.localhost",
+      BETTER_AUTH_COOKIE_DOMAIN: "localhost",
+    })
+
+    expect(learnerOnly.cookieDomain).toBe("localhost")
+    expect(learnerOnly.adminCookieDomain).toBeUndefined()
+    expect(separated.cookieDomain).toBe("localhost")
+    expect(separated.adminCookieDomain).toBe("admin.localhost")
+  })
+
+  it("development에서만 학습자 test auth를 활성화한다", () => {
     expect(
       parseApiEnv({
-        BETTER_AUTH_SECRET: "x".repeat(32),
+        ...createTestEnvironment(),
         ENABLE_TEST_AUTH: "true",
         NODE_ENV: "development",
       }).testAuthEnabled
     ).toBe(true)
     expect(() =>
       parseApiEnv({
-        ADMIN_BETTER_AUTH_SECRET:
-          "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
-        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
-        ADMIN_ORIGIN: "https://admin.example.com",
-        BETTER_AUTH_SECRET: "x".repeat(32),
-        BETTER_AUTH_URL: "https://api.example.com",
-        CURSOR_SIGNING_SECRET:
-          "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
-        DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
-        DEPLOYMENT_VERSION: "api@sha256:test",
+        ...createProductionEnvironment(),
         ENABLE_TEST_AUTH: "true",
-        NODE_ENV: "production",
-        WEB_ORIGIN: "https://app.example.com",
       })
-    ).toThrow(/ENABLE_TEST_AUTH/)
+    ).toThrow(/ENABLE_TEST_AUTH/u)
   })
 
-  it("production startup은 명시적 HTTPS·DB·분리 secret을 사용한다", () => {
-    expect(
-      parseApiEnv({
-        ADMIN_BETTER_AUTH_SECRET:
-          "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
-        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
-        ADMIN_ORIGIN: "https://admin.example.com",
-        BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
-        BETTER_AUTH_URL: "https://api.example.com",
-        CURSOR_SIGNING_SECRET:
-          "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
-        DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
-        DEPLOYMENT_VERSION: "api@sha256:test",
-        NODE_ENV: "production",
-        WEB_ORIGIN: "https://app.example.com",
-      })
-    ).toMatchObject({
+  it("production은 영구 DB, 배포 버전과 cursor 전용 secret을 요구한다", () => {
+    expect(parseApiEnv(createProductionEnvironment())).toMatchObject({
+      adminAuthBaseUrl: "https://admin-api.example.com",
+      adminAssetStore: {
+        accessKeyId: "asset-access-key",
+        bucket: "writing-app-assets",
+        endpoint: "https://r2.example.com",
+        publicBaseUrl: "https://assets.example.com",
+        region: "auto",
+        secretAccessKey: "asset-secret-key",
+      },
+      adminOrigin: "https://admin.example.com",
       authBaseUrl: "https://api.example.com",
-      databaseUrl: "file:/var/lib/writing-app/api.sqlite",
       cursorSigningSecret: "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
+      databaseUrl: "file:/var/lib/writing-app/api.sqlite",
       deploymentVersion: "api@sha256:test",
       nodeEnv: "production",
       webOrigin: "https://app.example.com",
     })
-  })
-
-  it("production startup은 cursor 서명 전용 secret을 필수로 요구한다", () => {
     expect(() =>
       parseApiEnv({
-        ADMIN_BETTER_AUTH_SECRET:
-          "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
-        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
-        ADMIN_ORIGIN: "https://admin.example.com",
-        BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
-        BETTER_AUTH_URL: "https://api.example.com",
-        DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
-        DEPLOYMENT_VERSION: "api@sha256:test",
-        NODE_ENV: "production",
-        WEB_ORIGIN: "https://app.example.com",
+        ...createProductionEnvironment(),
+        CURSOR_SIGNING_SECRET: undefined,
       })
-    ).toThrow(/CURSOR_SIGNING_SECRET/)
+    ).toThrow(/CURSOR_SIGNING_SECRET/u)
+    expect(() =>
+      parseApiEnv({
+        ...createProductionEnvironment(),
+        DEPLOYMENT_VERSION: undefined,
+      })
+    ).toThrow(/DEPLOYMENT_VERSION/u)
   })
 
-  it("선택 Better Auth 쿠키 도메인을 읽는다", () => {
-    expect(
+  it("자료 이미지 저장소는 원자적으로 설정하고 production에서는 HTTPS 구성을 요구한다", () => {
+    expect(() =>
       parseApiEnv({
-        BETTER_AUTH_COOKIE_DOMAIN: "example.com",
-        BETTER_AUTH_SECRET: "x".repeat(32),
-        DATABASE_URL: ":memory:",
-        NODE_ENV: "test",
-      }).cookieDomain
-    ).toBe("example.com")
+        ...createTestEnvironment(),
+        ADMIN_ASSET_S3_BUCKET: "writing-app-assets",
+      })
+    ).toThrow(/자료 이미지 저장소 환경 변수/u)
+    expect(() =>
+      parseApiEnv({
+        ...createProductionEnvironment(),
+        ADMIN_ASSET_S3_ENDPOINT: "http://r2.example.com",
+      })
+    ).toThrow(/HTTPS/u)
+    expect(() => {
+      const environment = createProductionEnvironment()
+      delete environment.ADMIN_ASSET_S3_ACCESS_KEY
+      return parseApiEnv(environment)
+    }).toThrow(/자료 이미지 저장소 환경 변수/u)
   })
 })
+
+function createTestEnvironment(): Record<string, string | undefined> {
+  return {
+    ADMIN_API_ALLOWED_HOSTS: "admin-api.localhost:4000,admin-api:4000",
+    ADMIN_BETTER_AUTH_SECRET: adminSecret,
+    ADMIN_BETTER_AUTH_URL: "http://admin-api.localhost:4000",
+    ADMIN_ORIGIN: "http://localhost:3001",
+    API_PORT: "4000",
+    BETTER_AUTH_SECRET: learnerSecret,
+    BETTER_AUTH_URL: "http://localhost:4000",
+    DATABASE_URL: ":memory:",
+    LEARNER_API_ALLOWED_HOSTS: "localhost:4000,api:4000",
+    NODE_ENV: "test",
+    WEB_ORIGIN: "http://localhost:3000",
+  }
+}
+
+function createProductionEnvironment(): Record<string, string | undefined> {
+  return {
+    ADMIN_API_ALLOWED_HOSTS: "admin-api.example.com,admin-api-unified:4000",
+    ADMIN_ASSET_PUBLIC_BASE_URL: "https://assets.example.com",
+    ADMIN_ASSET_S3_ACCESS_KEY: "asset-access-key",
+    ADMIN_ASSET_S3_BUCKET: "writing-app-assets",
+    ADMIN_ASSET_S3_ENDPOINT: "https://r2.example.com",
+    ADMIN_ASSET_S3_SECRET_KEY: "asset-secret-key",
+    ADMIN_BETTER_AUTH_SECRET:
+      "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
+    ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
+    ADMIN_ORIGIN: "https://admin.example.com",
+    BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
+    BETTER_AUTH_URL: "https://api.example.com",
+    CURSOR_SIGNING_SECRET: "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
+    DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
+    DEPLOYMENT_VERSION: "api@sha256:test",
+    LEARNER_API_ALLOWED_HOSTS: "api.example.com,api:4000",
+    NODE_ENV: "production",
+    WEB_ORIGIN: "https://app.example.com",
+  }
+}

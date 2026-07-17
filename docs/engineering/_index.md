@@ -10,15 +10,17 @@
 2. 기술 선택과 실행 환경은 `tech-stack.md`, `runtime-configuration.md`에서 확인한다.
 3. 구현 계약은 `api-contract.md`, `data-model.md`, `schema-conventions.md`, `contracts/`에서 확인한다.
 4. 운영 품질은 `testing.md`, `deployment.md`, `observability.md`, `security.md`, `migration.md`, `database-backup-restore.md`, `rollback.md`에서 확인한다.
-5. 변경 결정을 남길 때는 `adr/`를 사용한다.
+5. 목표 모노레포 아키텍처의 단계별 실행 계획은 `monorepo-target-architecture-plan/`에서 확인한다.
+6. 변경 결정을 남길 때는 `adr/`를 사용한다.
 
 ## 디렉토리 지도
 
-| 경로                          | 목적                                                                      |
-| ----------------------------- | ------------------------------------------------------------------------- |
-| `docs/engineering/`           | 엔지니어링 기준, 시스템 구조, 구현 계약, 운영 절차를 관리한다.            |
-| `docs/engineering/adr/`       | 되돌리기 어렵거나 구조에 영향을 주는 기술 결정을 ADR 형식으로 기록한다.   |
-| `docs/engineering/contracts/` | 코드와 외부 소비자가 함께 참조하는 기계 판독 가능한 계약 파일을 보관한다. |
+| 경로                                                  | 목적                                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| `docs/engineering/`                                   | 엔지니어링 기준, 시스템 구조, 구현 계약, 운영 절차를 관리한다.            |
+| `docs/engineering/adr/`                               | 되돌리기 어렵거나 구조에 영향을 주는 기술 결정을 ADR 형식으로 기록한다.   |
+| `docs/engineering/contracts/`                         | 코드와 외부 소비자가 함께 참조하는 기계 판독 가능한 계약 파일을 보관한다. |
+| `docs/engineering/monorepo-target-architecture-plan/` | 목표 아키텍처 제안을 의존성 기반 소규모 작업 계획으로 관리한다.           |
 
 ## 파일 지도
 
@@ -28,6 +30,7 @@
 | `system-overview.md`                                            | 시스템 목적, C4 모델, 서비스 경계, 라우트, API 런타임, 저장소, 배포 개요를 설명한다.             |
 | `workspace-inventory.md`                                        | 앱, 패키지, 스크립트 루트의 현재 인벤토리와 자동 검증 기준을 정의한다.                           |
 | `codebase-simplification-audit.md`                              | 제품 규모 대비 코드·패키지·런타임·검증 복잡성을 평가하고 축소 후보를 기록한다.                   |
+| `monorepo-target-architecture-plan/_index.md`                   | 목표 모노레포 아키텍처를 독립 실행·검증·롤백 작업으로 분해한 계획의 진입점이다.                  |
 | `workspace-dependency-policy.md`                                | 공통 dependency catalog와 디자인·lint baseline ratchet 정책을 정의한다.                          |
 | `repository-architecture-tooling.md`                            | source inventory, TypeScript module graph와 architecture 정책 matcher를 정의한다.                |
 | `codex-skill-invocation-policy.md`                              | Codex 워크플로 스킬의 명시 호출 전용 정책과 검증 기준을 정의한다.                                |
@@ -64,6 +67,9 @@
 | `adr/ADR-0009-http-command-boundary.md`                         | 채택됨. HTTP 요청 계약과 core application command의 변경 수명 경계를 기록한다.                   |
 | `adr/ADR-0010-admin-resource-library-single-version-storage.md` | 채택됨. 자료실 Markdown 단일 버전, ETag 조건부 저장과 AI 읽기 경계를 기록한다.                   |
 | `adr/ADR-0011-versioned-curriculum-storage.md`                  | 채택됨. 관계형 draft/published 커리큘럼 버전과 학습자 version 고정을 기록한다.                   |
+| `adr/ADR-0012-single-api-runtime.md`                            | 채택됨. learner/admin 보안 경계를 유지한 단일 API runtime 전환을 기록한다.                       |
+| `adr/ADR-0013-build-time-course-thumbnails.md`                  | 채택됨. 코스 썸네일의 build-time mirror와 불변 URL 계약을 기록한다.                              |
+| `adr/ADR-0014-app-owned-persistence-adapters.md`                | 채택됨. core→DB를 실행 앱 소유 adapter로 단조 전환하는 topology를 기록한다.                      |
 
 ## 관리 기준
 

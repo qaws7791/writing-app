@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest"
 
 import type { LearnerAiFeedbackTransitionService } from "@workspace/core/ai-feedback"
-import { learnerAiFeedbackTransitionResultSchema } from "@workspace/contracts/learning"
+import type {
+  CompleteLearnerStepTransitionResult,
+  LearnerTransitionError,
+} from "@workspace/core/learning"
+import { inProgressLessonLearningStateSchema } from "@workspace/contracts/learning/step-data"
 
 import { createApp } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
@@ -11,12 +15,18 @@ const now = new Date("2026-07-17T10:00:00.000Z")
 describe("학습자 AI 피드백 상태 전이 route", () => {
   it("path scope와 필수 idempotency key를 서비스에 전달한다", async () => {
     const commands: unknown[] = []
-    const service: LearnerAiFeedbackTransitionService = {
-      async createFeedback(command) {
+    const signals: Array<AbortSignal | undefined> = []
+    const abortController = new AbortController()
+    const service: LearnerAiFeedbackTransitionService<
+      LearnerTransitionError,
+      CompleteLearnerStepTransitionResult
+    > = {
+      async createFeedback(command, options) {
         commands.push(command)
+        signals.push(options?.signal)
         return {
           kind: "ok",
-          value: learnerAiFeedbackTransitionResultSchema.parse({
+          value: {
             feedback: {
               improvements: ["근거를 보강하세요."],
               nextAction: "예시를 추가하세요.",
@@ -29,7 +39,8 @@ describe("학습자 AI 피드백 상태 전이 route", () => {
             },
             transition: {
               evaluation: null,
-              learning: {
+              kind: "advanced",
+              learning: inProgressLessonLearningStateSchema.parse({
                 completedSteps: 2,
                 currentStepId: "l1-s4",
                 currentStepIndex: 3,
@@ -40,10 +51,9 @@ describe("학습자 AI 피드백 상태 전이 route", () => {
                   curriculumVersionId: "curriculum:c1:1",
                   revision: 1,
                 },
-              },
-              status: "advanced",
+              }),
             },
-          }),
+          },
         }
       },
     }
@@ -62,6 +72,7 @@ describe("학습자 AI 피드백 상태 전이 route", () => {
           "Idempotency-Key": "feedback-request-1",
         },
         method: "POST",
+        signal: abortController.signal,
       }
     )
 
@@ -79,6 +90,9 @@ describe("학습자 AI 피드백 상태 전이 route", () => {
         userId: "user-1",
       },
     ])
+    expect(signals[0]?.aborted).toBe(false)
+    abortController.abort()
+    expect(signals[0]?.aborted).toBe(true)
   })
 
   it("idempotency key가 없으면 provider를 호출하기 전에 400이다", async () => {

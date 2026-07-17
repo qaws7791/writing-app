@@ -1,28 +1,35 @@
 import { serve } from "bun"
 import { Database } from "bun:sqlite"
-import { writeFileSync } from "node:fs"
 
 import {
-  createLearnerApiServerLifecycle,
-  registerLearnerApiShutdownSignals,
+  createUnifiedApiServerLifecycle,
+  registerUnifiedApiShutdownSignals,
 } from "@/server-lifecycle"
 
+type ShutdownProcessEvent =
+  | { readonly event: "ready"; readonly port: number }
+  | { readonly event: "request-started" }
+  | { readonly event: "shutdown-started" }
+  | {
+      readonly closeCount: number
+      readonly databaseClosed: boolean
+      readonly event: "shutdown-complete"
+      readonly port: number
+    }
+
 let closeCount = 0
-let reportStarted = false
+let shutdownStarted = false
+const releaseRequest = createDeferred()
 const database = new Database(":memory:")
-const reportPath = process.argv[2]
-if (reportPath === undefined) {
-  throw new Error("수명주기 보고서 경로 인자가 필요합니다.")
-}
-const lifecycleReportPath = reportPath
-const lifecycle = createLearnerApiServerLifecycle({
-  closeCore() {
+const lifecycle = createUnifiedApiServerLifecycle({
+  closeDatabase() {
     closeCount += 1
     database.close()
   },
   async fetch(request) {
     if (new URL(request.url).pathname === "/slow") {
-      await Bun.sleep(150)
+      writeEvent({ event: "request-started" })
+      await releaseRequest.promise
       return new Response("진행 요청 완료")
     }
     return new Response("ok")
@@ -31,34 +38,78 @@ const lifecycle = createLearnerApiServerLifecycle({
     process.stderr.write(`${phase}: ${String(error)}\n`)
   },
 })
-const server = serve({ fetch: lifecycle.fetch, port: 0 })
+const server = serve({
+  fetch: lifecycle.fetch,
+  hostname: "127.0.0.1",
+  port: 0,
+})
 const port = server.port
+if (port === undefined) {
+  throw new Error("lifecycle process server port가 할당되지 않았습니다.")
+}
 lifecycle.attachServer(server)
 
-function requestShutdown(): void {
-  if (reportStarted) return
-  reportStarted = true
-  void lifecycle.shutdown().then(() => {
-    let databaseClosed = false
-    try {
-      database.query("SELECT 1").get()
-    } catch {
-      databaseClosed = true
-    }
-    writeFileSync(
-      lifecycleReportPath,
-      JSON.stringify({ closeCount, databaseClosed, port }),
-      "utf8"
-    )
-    process.exit(0)
-  })
+async function requestShutdown(): Promise<void> {
+  if (shutdownStarted) return
+
+  shutdownStarted = true
+  writeEvent({ event: "shutdown-started" })
+  await lifecycle.shutdown()
+
+  let databaseClosed = false
+  try {
+    database.query("SELECT 1").get()
+  } catch {
+    databaseClosed = true
+  }
+
+  process.stdout.write(
+    `${JSON.stringify({
+      closeCount,
+      databaseClosed,
+      event: "shutdown-complete",
+      port,
+    })}\n`,
+    () => process.exit(0)
+  )
 }
 
-registerLearnerApiShutdownSignals(async () => {
-  requestShutdown()
-  await lifecycle.shutdown()
-})
+registerUnifiedApiShutdownSignals(requestShutdown)
+
+let inputBuffer = ""
+process.stdin.setEncoding("utf8")
 process.stdin.on("data", (chunk) => {
-  if (chunk.toString().trim() === "SIGTERM") requestShutdown()
+  inputBuffer += chunk
+
+  while (inputBuffer.includes("\n")) {
+    const newlineIndex = inputBuffer.indexOf("\n")
+    const command = inputBuffer.slice(0, newlineIndex).trim()
+    inputBuffer = inputBuffer.slice(newlineIndex + 1)
+
+    if (command === "release-request") releaseRequest.resolve()
+    if (command === "shutdown") void requestShutdown()
+  }
 })
-writeFileSync(lifecycleReportPath, JSON.stringify({ port }), "utf8")
+
+writeEvent({ event: "ready", port })
+
+function writeEvent(event: ShutdownProcessEvent): void {
+  process.stdout.write(`${JSON.stringify(event)}\n`)
+}
+
+function createDeferred(): {
+  readonly promise: Promise<void>
+  readonly resolve: () => void
+} {
+  let resolve: (() => void) | undefined
+  const promise = new Promise<void>((resolvePromise) => {
+    resolve = resolvePromise
+  })
+
+  return {
+    promise,
+    resolve() {
+      resolve?.()
+    },
+  }
+}

@@ -1,4 +1,4 @@
-import type { AdminResourceImageMimeType } from "@workspace/contracts/admin"
+import type { AdminResourceImageMimeType } from "@workspace/contracts/admin/resource-library-data"
 
 import type { ResourceAssetRepository } from "#core/modules/resource-library/application/ports/resource-asset.repository"
 import {
@@ -7,16 +7,24 @@ import {
   type ResourceAssetId,
 } from "#core/modules/resource-library/domain/resource-tree-node"
 
+export type RegisterResourceImageCommand = {
+  readonly assetId: string
+  readonly byteSize: number
+  readonly contentType: AdminResourceImageMimeType
+  readonly createdAt: Date
+  readonly documentId: string
+  readonly objectKey: string
+}
+
+export type RegisterResourceImageResult =
+  | { readonly kind: "not-found" }
+  | { readonly kind: "ok" }
+
 export type ResourceAssetUseCase = {
   readonly createAssetId: () => ResourceAssetId
-  readonly registerImage: (input: {
-    readonly assetId: string
-    readonly byteSize: number
-    readonly contentType: AdminResourceImageMimeType
-    readonly createdAt: Date
-    readonly documentId: string
-    readonly objectKey: string
-  }) => Promise<{ readonly kind: "not-found" } | { readonly kind: "ok" }>
+  readonly registerImage: (
+    command: RegisterResourceImageCommand
+  ) => Promise<RegisterResourceImageResult>
 }
 
 export function createResourceAssetUseCase({

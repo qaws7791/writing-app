@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import { createApp, type ApiDependencies } from "@/app"
@@ -7,6 +7,7 @@ import { createTestDependencies } from "@/routes/test-dependencies"
 type CapturedRequestLogEvent = {
   readonly actorId?: string
   readonly actorType?: "admin" | "learner"
+  readonly audience: "admin" | "learner"
   readonly durationMs: number
   readonly method: string
   readonly path: string
@@ -53,6 +54,7 @@ describe("플랫폼 API profile route", () => {
     expect(response.headers.get("x-request-id")).not.toBe("request-1")
     expect(requestEvents).toHaveLength(1)
     expect(requestEvents[0]).toMatchObject({
+      audience: "learner",
       method: "GET",
       path: "/profile",
       externalRequestId: "request-1",
@@ -79,6 +81,7 @@ describe("플랫폼 API profile route", () => {
     expect(requestEvents[0]).toMatchObject({
       actorId: "user-1",
       actorType: "learner",
+      audience: "learner",
       status: 200,
     })
     expect(JSON.stringify(requestEvents[0])).not.toMatch(
@@ -115,6 +118,99 @@ describe("플랫폼 API profile route", () => {
     expect(response.headers.get("access-control-allow-headers")).toBe(
       "Authorization,Content-Type,Idempotency-Key"
     )
+  })
+
+  it("신뢰하지 않은 Origin의 쿠키 인증 변경 요청을 side effect 전에 거절한다", async () => {
+    const dependencies = createDependencies()
+    const completeStep = vi.fn(
+      dependencies.learnerTransitionRepository.completeStep
+    )
+    const app = createApp({
+      ...dependencies,
+      learnerTransitionRepository: {
+        ...dependencies.learnerTransitionRepository,
+        completeStep,
+      },
+    })
+
+    const response = await app.request(
+      "/learning/lessons/lesson-1/steps/step-1/complete",
+      {
+        body: "{}",
+        headers: {
+          Cookie: "learner_session_token=active-token",
+          "Content-Type": "application/json",
+          Origin: "https://attacker.example.test",
+          "Sec-Fetch-Site": "same-site",
+        },
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+      requestId: response.headers.get("x-request-id"),
+    })
+    expect(completeStep).not.toHaveBeenCalled()
+  })
+
+  it("학습자 API는 실제 1 MiB 본문을 전달하고 1 byte 초과를 side effect 전에 거절한다", async () => {
+    const dependencies = createDependencies()
+    const completeStep = vi.fn(
+      dependencies.learnerTransitionRepository.completeStep
+    )
+    const app = createApp({
+      ...dependencies,
+      learnerTransitionRepository: {
+        ...dependencies.learnerTransitionRepository,
+        completeStep,
+      },
+    })
+    const bodyLimitBytes = 1024 * 1024
+    const emptyPaddingJson = JSON.stringify({ padding: "" })
+
+    for (const fixture of [
+      {
+        byteLength: bodyLimitBytes,
+        expectedCode: "VALIDATION_ERROR",
+        expectedStatus: 400,
+      },
+      {
+        byteLength: bodyLimitBytes + 1,
+        expectedCode: "INTERNAL_SERVER_ERROR",
+        expectedStatus: 500,
+      },
+    ] as const) {
+      const body = JSON.stringify({
+        padding: "x".repeat(fixture.byteLength - emptyPaddingJson.length),
+      })
+
+      expect(new TextEncoder().encode(body)).toHaveLength(fixture.byteLength)
+
+      const response = await app.request(
+        "/learning/lessons/lesson-1/steps/step-1/complete",
+        {
+          body,
+          headers: {
+            Cookie: "learner_session_token=active-token",
+            "Content-Length": String(fixture.byteLength),
+            "Content-Type": "application/json",
+            Origin: localRuntimeDefaults.learnerWebOrigin,
+          },
+          method: "POST",
+        }
+      )
+
+      expect(response.status).toBe(fixture.expectedStatus)
+      await expect(response.json()).resolves.toMatchObject({
+        code: fixture.expectedCode,
+        requestId: response.headers.get("x-request-id"),
+      })
+    }
+
+    expect(completeStep).not.toHaveBeenCalled()
   })
 
   it("기존 Google 로그인 시작 경로를 Better Auth social sign-in으로 위임한다", async () => {
@@ -258,6 +354,43 @@ describe("플랫폼 API profile route", () => {
         }),
       ]),
     })
+  })
+
+  it("빈 body와 잘못된 JSON을 같은 transport 오류로 거절한다", async () => {
+    const dependencies = createDependencies()
+    const completeStep = vi.fn(
+      dependencies.learnerTransitionRepository.completeStep
+    )
+    const app = createApp({
+      ...dependencies,
+      learnerTransitionRepository: {
+        ...dependencies.learnerTransitionRepository,
+        completeStep,
+      },
+    })
+
+    for (const body of ["", "{"] as const) {
+      const response = await app.request(
+        "/learning/lessons/lesson-1/steps/step-1/complete",
+        {
+          body,
+          headers: {
+            Cookie: "learner_session_token=active-token",
+            "Content-Type": "application/json",
+            Origin: localRuntimeDefaults.learnerWebOrigin,
+          },
+          method: "POST",
+        }
+      )
+
+      expect(response.status).toBe(400)
+      await expect(response.json()).resolves.toMatchObject({
+        code: "VALIDATION_ERROR",
+        requestId: response.headers.get("x-request-id"),
+      })
+    }
+
+    expect(completeStep).not.toHaveBeenCalled()
   })
 
   it("요청 계약에 없는 JSON 필드를 VALIDATION_ERROR로 거절한다", async () => {

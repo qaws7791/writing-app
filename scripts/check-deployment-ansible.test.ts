@@ -14,6 +14,55 @@ describe("Ansible 배포 검증", () => {
       path.join("playbooks", "verify.yaml"),
     ])
   })
+
+  test("role 식별자와 playbook 참조가 Ansible lint 이름 규칙을 따른다", () => {
+    const repositoryRoot = path.resolve(import.meta.dir, "..")
+    const rolesDirectory = path.join(
+      repositoryRoot,
+      "infra",
+      "ansible",
+      "roles"
+    )
+    const roleNames = fs
+      .readdirSync(rolesDirectory, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort()
+
+    expect(roleNames).toEqual([
+      "docker_host",
+      "writing_app_deploy",
+      "writing_app_host",
+    ])
+    for (const roleName of roleNames) {
+      expect(roleName).toMatch(/^[a-z][a-z0-9_]*$/u)
+    }
+
+    const bootstrapPlaybook = fs.readFileSync(
+      path.join(
+        repositoryRoot,
+        "infra",
+        "ansible",
+        "playbooks",
+        "bootstrap.yaml"
+      ),
+      "utf8"
+    )
+    const deployPlaybook = fs.readFileSync(
+      path.join(repositoryRoot, "infra", "ansible", "playbooks", "deploy.yaml"),
+      "utf8"
+    )
+    const dockerHostTasks = fs.readFileSync(
+      path.join(rolesDirectory, "docker_host", "tasks", "main.yaml"),
+      "utf8"
+    )
+
+    expect(bootstrapPlaybook).toContain("    - docker_host")
+    expect(bootstrapPlaybook).toContain("    - writing_app_host")
+    expect(deployPlaybook).toContain("name: writing_app_host")
+    expect(deployPlaybook).toContain("name: writing_app_deploy")
+    expect(dockerHostTasks).toContain("- name: APT keyring 디렉터리 생성")
+  })
 })
 
 function createFixture(): Disposable & { readonly path: string } {

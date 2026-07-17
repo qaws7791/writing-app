@@ -1,15 +1,34 @@
 import type {
+  CourseId,
   LessonId,
   LessonStepId,
 } from "@workspace/contracts/content/content.ids"
 import type {
-  CompleteLearnerStepBody,
-  CompleteLearnerStepResult,
+  CourseLearningState,
   CurriculumVersionId,
   LearnerId,
+  LearnerStepSubmission,
   LessonLearningState,
-} from "@workspace/contracts/learning"
+  StepEvaluation,
+} from "@workspace/contracts/learning/step-data"
 import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback"
+
+type InProgressLessonLearningState = Extract<
+  LessonLearningState,
+  { readonly status: "in_progress" }
+>
+
+type LessonCompletion = Extract<
+  LessonLearningState,
+  { readonly status: "completed" }
+>["completion"]
+
+export type LearnerLessonScope = {
+  readonly courseId: CourseId
+  readonly curriculumVersionId: CurriculumVersionId
+  readonly lessonId: LessonId
+  readonly revision: number
+}
 
 export type StartLearnerLessonCommand = {
   readonly expectedCurriculumVersionId: CurriculumVersionId
@@ -19,12 +38,19 @@ export type StartLearnerLessonCommand = {
 }
 
 export type CompleteLearnerStepCommand = {
+  readonly completion: LearnerStepCompletion
   readonly lessonId: LessonId
   readonly occurredAt: Date
-  readonly request: CompleteLearnerStepBody
   readonly stepId: LessonStepId
   readonly userId: LearnerId
 }
+
+export type LearnerStepCompletion =
+  | { readonly kind: "acknowledge" }
+  | {
+      readonly kind: "answer"
+      readonly submission: LearnerStepSubmission
+    }
 
 export type CompleteLearnerAiFeedbackCommand = {
   readonly attemptId: string
@@ -77,4 +103,20 @@ export type LearnerTransitionError =
     }
 
 export type StartLearnerLessonResult = LessonLearningState
-export type CompleteLearnerStepTransitionResult = CompleteLearnerStepResult
+export type CompleteLearnerStepTransitionResult =
+  | {
+      readonly evaluation: StepEvaluation
+      readonly kind: "retry"
+      readonly learning: InProgressLessonLearningState
+    }
+  | {
+      readonly evaluation: StepEvaluation | null
+      readonly kind: "advanced"
+      readonly learning: InProgressLessonLearningState
+    }
+  | {
+      readonly courseLearning: CourseLearningState
+      readonly evaluation: StepEvaluation | null
+      readonly kind: "lesson-completed"
+      readonly lessonCompletion: LessonCompletion
+    }

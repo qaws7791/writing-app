@@ -32,36 +32,37 @@
 
 `packages/ui`의 primitive는 shadcn/Base UI 파일 관례를 따르지만, 런타임 dependency는 현재 source 또는 stylesheet에서 직접 import하는 패키지만 둔다.
 
-## 문서 편집과 공동 편집
+## 문서 편집
 
-| 기술    | 버전      | 사용 위치                                     | 선택 근거                                                                                                     |
-| ------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Lexical | `0.46.0`  | `packages/resource-document`, `apps/admin`    | 브라우저와 headless 서버가 같은 node·GFM AST 계약을 사용하고 admin이 공식 React block drag plugin을 격리한다. |
-| Yjs     | `13.6.31` | `packages/resource-document`, `packages/core` | 문서 본문의 CRDT snapshot·HTTP transaction update와 동시 변경 수렴을 담당한다.                                |
+| 기술                    | 버전                      | 사용 위치                                  | 선택 근거                                                                                                     |
+| ----------------------- | ------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Lexical                 | `0.46.0`                  | `packages/resource-document`, `apps/admin` | 브라우저와 headless 서버가 같은 node·GFM AST 계약을 사용하고 admin이 공식 React block drag plugin을 격리한다. |
+| `mdast-util-*` GFM 도구 | `2.0.3`, `3.1.0`, `2.1.2` | `packages/resource-document`               | Markdown을 유일한 영속 원본으로 유지하면서 결정적인 GFM import/export와 검증을 수행한다.                      |
 
 모든 직접 사용하는 `lexical`, `@lexical/*` 패키지는 정확히 `0.46.0`으로 함께 고정한다. 저장 경계는 `mdast-util-from-markdown`, `mdast-util-gfm`, `mdast-util-to-markdown`의 정규 GFM AST를 사용한다. `@lexical/markdown` transformer는 편집 shortcut에만 사용하고 저장 import/export를 담당하지 않는다. 실험적 `DraggableBlockPlugin_EXPERIMENTAL`은 `apps/admin`의 client component 하나에서만 사용한다.
 
-본문 Yjs binary는 HTTP transaction과 sync 응답으로만 교환한다. Bun WebSocket은 작업 공간 사건과 version 알림에 한정하며 Yjs binary protocol 의존성을 추가하지 않는다.
+자료실은 협업 런타임이나 지속 연결을 두지 않는다. 문서를 열 때 받은 강한 ETag를 `If-Match`로 보내 명시적으로 저장하고, 다른 탭·기기의 저장은 포커스 복귀와 화면 재진입 때 HTTP로 재검증한다.
 
 ## 백엔드
 
-| 기술                | 버전      | 사용 위치                                     | 선택 근거                                                            |
-| ------------------- | --------- | --------------------------------------------- | -------------------------------------------------------------------- |
-| Hono                | `^4.10.0` | `apps/api`, `apps/admin-api`, `packages/hono` | Bun 런타임에서 작은 HTTP transport 경계를 만든다.                    |
-| `@hono/zod-openapi` | `^1.4.0`  | `apps/api`, `packages/hono`                   | route 정의와 OpenAPI 생성을 같은 위치에 둔다.                        |
-| `hono-openapi`      | `^1.1.0`  | `apps/admin-api`                              | 어드민 API 의존성에 남아 있다.                                       |
-| Zod                 | `^4.2.0`  | 전 영역                                       | 런타임 validation과 DTO schema를 명시한다.                           |
-| Better Auth         | `^1.6.0`  | 인증                                          | 학습자 Google OAuth와 관리자 아이디/패스워드 인증을 분리해 조립한다. |
-| OpenAI SDK          | `^6.39.0` | `packages/core`                               | AI 피드백 provider adapter에서 사용한다.                             |
-| Mastra              | `^1.46.0` | `apps/admin-api`                              | 관리자 AI 채팅 에이전트를 어드민 API 안에 내장 실행한다.             |
+| 기술                | 버전       | 사용 위치                    | 선택 근거                                                                                             |
+| ------------------- | ---------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Hono                | `^4.12.25` | `apps/api`                   | Bun 런타임의 learner/admin Host HTTP transport를 `apps/api/src/http/platform`이 app-local로 소유한다. |
+| `@hono/zod-openapi` | `^1.4.0`   | `apps/api`                   | route 정의와 OpenAPI 생성을 API HTTP platform에 함께 둔다.                                            |
+| Pino                | `^10.2.0`  | `apps/api/src/observability` | 구조화된 request와 security audit event를 API 실행 owner 가까이에서 기록한다.                         |
+| Zod                 | `^4.2.0`   | 전 영역                      | 런타임 validation과 DTO schema를 명시한다.                                                            |
+| Better Auth         | `^1.6.0`   | 인증                         | 학습자 Google OAuth와 관리자 아이디/패스워드 인증을 분리해 조립한다.                                  |
+| OpenAI SDK          | `^6.39.0`  | `apps/api`                   | 실행 앱 소유 AI 피드백 provider adapter에서 사용한다.                                                 |
+| Mastra              | `^1.46.0`  | `apps/api`                   | 관리자 AI chat agent를 API edge에서 조립한다.                                                         |
+| AWS SDK S3 client   | `3.1088.0` | `apps/api`                   | 자료실 R2 asset store의 S3 호환 object storage adapter다.                                             |
 
 ## 데이터
 
-| 기술        | 버전                  | 사용 위치                                             | 선택 근거                                              |
-| ----------- | --------------------- | ----------------------------------------------------- | ------------------------------------------------------ |
-| SQLite      | Bun 내장 `bun:sqlite` | 로컬/운영 DB                                          | 초기 운영 복잡도를 낮추고 단일 파일 백업으로 시작한다. |
-| Drizzle ORM | `^0.45.0`             | `packages/db`, `packages/core`, `apps/admin-api` 조립 | schema와 query를 TypeScript로 명시한다.                |
-| drizzle-kit | `^0.31.0`             | `packages/db` devDependency                           | Drizzle 관련 개발 도구로 유지한다.                     |
+| 기술        | 버전                  | 사용 위치                   | 선택 근거                                                                        |
+| ----------- | --------------------- | --------------------------- | -------------------------------------------------------------------------------- |
+| SQLite      | Bun 내장 `bun:sqlite` | 로컬/운영 DB                | 초기 운영 복잡도를 낮추고 단일 파일 백업으로 시작한다.                           |
+| Drizzle ORM | `^0.45.0`             | `packages/db`, `apps/api`   | schema와 query를 TypeScript로 명시하고 concrete adapter는 `apps/api`가 소유한다. |
+| drizzle-kit | `^0.31.0`             | `packages/db` devDependency | Drizzle 관련 개발 도구로 유지한다.                                               |
 
 ## 테스트와 품질 도구
 
@@ -89,6 +90,8 @@
 
 컨테이너 image tag는 `deploy/compose/.env.example`의 검증 기준이며 운영 배포에서는 애플리케이션과 기반 이미지를 digest 또는 변경 불가능한 tag로 고정한다. 상세 계약은 `deployment.md`를 따른다.
 
+2026-07-18 저장소 source 구성에서 Compose/Caddy는 learner/admin public API Host를 모두 `apps/api`로 전달한다. 외부 운영 검증은 범위에서 제외했으므로 실제 production 적용·관찰 성공을 뜻하지 않는다.
+
 ## 버전 고정 정책
 
 - Node와 Bun은 루트 선언을 기준으로 맞춘다.
@@ -112,6 +115,6 @@
 ## 금지 또는 지양
 
 - 백엔드 DB 접근을 프론트엔드로 끌어올리지 않는다.
-- `apps/api`에서 `@workspace/db` 또는 Drizzle을 직접 import하지 않는다.
+- API 실행 앱의 composition과 app-owned adapter만 `@workspace/db` 또는 Drizzle을 import한다. route·middleware·HTTP response 경계는 직접 import하지 않는다.
 - 같은 목적의 utility 패키지를 중복 생성하지 않는다.
 - 단일 앱에서만 필요한 의존성을 루트 정책처럼 문서화하지 않는다.

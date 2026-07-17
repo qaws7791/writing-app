@@ -1,11 +1,16 @@
-import type { AnyRouteConfig } from "@workspace/hono/core"
+import type { AnyRouteConfig } from "@/http/platform/core"
 import { learnerApiErrorSchema } from "@workspace/contracts/learning"
+import { learnerIdSchema } from "@workspace/contracts/learning/read-data"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
 import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { parseLearnerRouteResponse } from "@/http/learner-response"
 import { requireActiveSession } from "@/middleware/auth.middleware"
+import {
+  decodeLearnerCourseListQuery,
+  encodeLearnerCoursePage,
+} from "@/http/learner-read-route-mapper"
 import {
   courseCategoriesSchema,
   courseDetailDtoSchema,
@@ -33,14 +38,18 @@ const listCoursesHandler: ApiRouteHandler<
   typeof listCoursesRouteConfig
 > = async (context) => {
   const contentService = context.var.requestContext.contentService
-  const query = context.req.valid("query")
+  const cursorCodec = context.var.requestContext.learnerCursorCodec
+  const query = unwrapApiCoreResult(
+    decodeLearnerCourseListQuery(cursorCodec, context.req.valid("query"))
+  )
+  const page = await contentService.listCourses(query)
 
   return context.json(
     parseLearnerRouteResponse(
       context,
       "LearnerCourseListResponse",
       courseListDtoSchema,
-      unwrapApiCoreResult(await contentService.listCourses(query))
+      encodeLearnerCoursePage(cursorCodec, query, page)
     ),
     200
   )
@@ -110,7 +119,7 @@ const getCourseDetailHandler: ApiRouteHandler<
   const { courseId } = context.req.valid("param")
   const result = await contentService.getCourseDetail({
     courseId,
-    userId: context.var.activeSession.user.id,
+    userId: learnerIdSchema.parse(context.var.activeSession.user.id),
   })
 
   return context.json(

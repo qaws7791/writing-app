@@ -1,6 +1,7 @@
 export * from "#core/modules/resource-library/application/ports/resource-document.repository"
 export * from "#core/modules/resource-library/application/ports/resource-search.repository"
 export * from "#core/modules/resource-library/application/ports/resource-tree.repository"
+export * from "#core/modules/resource-library/application/resource-library-error"
 export * from "#core/modules/resource-library/application/use-cases/resource-document.use-case"
 export * from "#core/modules/resource-library/application/use-cases/resource-search.use-case"
 export * from "#core/modules/resource-library/application/use-cases/resource-tree.use-case"

@@ -3,27 +3,9 @@ import type { AdminHttpTransport } from "@/lib/api/admin-http-transport"
 import {
   adminDashboardDtoSchema,
   type AdminDashboardDto,
-  type UserId,
 } from "@workspace/contracts/admin"
 
-export type AdminDashboard = {
-  readonly metrics: {
-    readonly activeCourses: number
-    readonly activeLessons: number
-    readonly activeUsersLast7Days: number
-    readonly completedLessons: number
-    readonly signupsLast7Days: number
-    readonly signupsToday: number
-    readonly totalUsers: number
-  }
-  readonly recentActivities: readonly {
-    readonly currentStreakDays: number
-    readonly email: string
-    readonly lastActiveDate: string | null
-    readonly name: string
-    readonly userId: UserId
-  }[]
-}
+export type AdminDashboard = AdminDashboardDto
 
 export type AdminDashboardApi = {
   readonly getDashboard: () => Promise<AdminApiResult<AdminDashboard>>
@@ -34,21 +16,11 @@ export function createAdminDashboardApi(
 ): AdminDashboardApi {
   return {
     async getDashboard() {
-      const result = await transport.requestJson({
+      return transport.requestJson({
         method: "GET",
         path: "/dashboard",
         schema: adminDashboardDtoSchema,
       })
-      return result.status === "error"
-        ? result
-        : { status: "ok", value: toDashboard(result.value) }
     },
-  }
-}
-
-function toDashboard(dto: AdminDashboardDto): AdminDashboard {
-  return {
-    metrics: { ...dto.metrics },
-    recentActivities: dto.recentActivities.map((activity) => ({ ...activity })),
   }
 }

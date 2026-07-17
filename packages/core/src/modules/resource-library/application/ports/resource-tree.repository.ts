@@ -6,6 +6,7 @@ import type {
   ResourceTreeNode,
   ResourceTreeScope,
 } from "#core/modules/resource-library/domain/resource-tree-node"
+import type { ResourceTreeCommandResult } from "#core/modules/resource-library/application/resource-library-error"
 
 type ResourceTreeCommandContext = {
   readonly actorId: string
@@ -40,22 +41,6 @@ export type MoveResourceNodeInput = ResourceTreeCommandContext & {
 export type ResourceNodeCommandInput = ResourceTreeCommandContext & {
   readonly nodeId: ResourceNodeId
 }
-
-export type ResourceTreeCommandRejection =
-  | { readonly kind: "not-found" }
-  | { readonly kind: "parent-not-found" }
-  | { readonly kind: "name-conflict" }
-  | {
-      readonly kind: "invalid-name"
-      readonly reason: "empty" | "invalid-character" | "too-long"
-    }
-  | { readonly kind: "cycle" }
-  | { readonly kind: "depth-limit" }
-  | { readonly kind: "node-limit" }
-
-export type ResourceTreeCommandResult<TValue> =
-  | { readonly kind: "ok"; readonly value: TValue }
-  | ResourceTreeCommandRejection
 
 export type ResourceTreeNodeResult = ResourceTreeCommandResult<{
   readonly node: ResourceTreeNode

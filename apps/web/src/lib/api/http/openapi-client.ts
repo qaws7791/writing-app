@@ -9,8 +9,8 @@ import { buildApiUrl, type BrowserApiBaseUrl } from "@/runtime-config"
 import type { ServerApiBaseUrl } from "@/runtime-config-server"
 import {
   fetchHttpResponse,
-  httpApiFailure as apiFailure,
-  httpApiOk as apiOk,
+  httpApiFailure,
+  httpApiOk,
   type HttpFetch,
   type HttpNetworkError,
 } from "@workspace/http-client"
@@ -91,27 +91,27 @@ export function createOpenApiClient({
       const fetchResult = await fetchJson(request, fetch, reportNetworkError)
 
       if (fetchResult.kind === "network-error") {
-        return apiFailure(networkApiError(fetchResult.error))
+        return httpApiFailure(networkApiError(fetchResult.error))
       }
 
       const { response } = fetchResult
       const bodyResult = await readJson(response)
 
       if (bodyResult.kind === "err") {
-        return apiFailure(contractApiError(response.status))
+        return httpApiFailure(contractApiError(response.status))
       }
 
       if (!response.ok) {
-        return apiFailure(toApiError(response.status, bodyResult.value))
+        return httpApiFailure(toApiError(response.status, bodyResult.value))
       }
 
       const parsedBody = input.schema.safeParse(bodyResult.value)
 
       if (!parsedBody.success) {
-        return apiFailure(contractApiError(response.status))
+        return httpApiFailure(contractApiError(response.status))
       }
 
-      return apiOk(parsedBody.data)
+      return httpApiOk(parsedBody.data)
     },
   }
 }

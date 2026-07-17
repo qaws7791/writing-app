@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs"
-import { mkdtemp, rm, writeFile } from "node:fs/promises"
+import { mkdtemp, rm } from "node:fs/promises"
 import { createConnection } from "node:net"
 import { tmpdir } from "node:os"
 import path from "node:path"
@@ -15,26 +15,19 @@ const adminNextLock = path.join(
   "dev",
   "lock"
 )
-const lifecycleFixture = path.join(
-  repositoryRoot,
-  "packages",
-  "env",
-  ".admin-dev-lifecycle-fixture.ts"
-)
-const fixtureLoadedMarker = "admin-dev-lifecycle.fixture-loaded"
 const adminWebPort = 3001
-const adminApiPort = 4001
+const apiPort = 4000
+const adminApiBaseUrl = `http://admin-api.localhost:${apiPort}`
 
 interface ProcessPair {
   readonly parentPid: number
   readonly pid: number
 }
 
-test("dev:admin은 workspace 변경을 한 번 감지하고 소유 process와 port를 정리한다", async () => {
+test("dev:admin은 admin web과 통합 API만 실행하고 소유 process와 port를 정리한다", async () => {
   expect(await isPortListening(adminWebPort)).toBe(false)
-  expect(await isPortListening(adminApiPort)).toBe(false)
+  expect(await isPortListening(apiPort)).toBe(false)
   expect(existsSync(adminNextLock)).toBe(false)
-  expect(existsSync(lifecycleFixture)).toBe(false)
 
   const temporaryDirectory = await mkdtemp(
     path.join(tmpdir(), "writing-app-admin-dev-")
@@ -43,18 +36,21 @@ test("dev:admin은 workspace 변경을 한 번 감지하고 소유 process와 po
   const databaseUrl = `file:${databasePath}`
   const environment = {
     ...process.env,
-    ADMIN_API_BASE_URL: `http://127.0.0.1:${adminApiPort}`,
-    ADMIN_API_PORT: String(adminApiPort),
+    ADMIN_API_ALLOWED_HOSTS: `admin-api.localhost:${apiPort}`,
+    ADMIN_API_BASE_URL: adminApiBaseUrl,
     ADMIN_BETTER_AUTH_SECRET: "admin-dev-lifecycle-secret-value-0001",
-    ADMIN_BETTER_AUTH_URL: `http://127.0.0.1:${adminApiPort}`,
-    ADMIN_DEV_LIFECYCLE_FIXTURE: lifecycleFixture,
+    ADMIN_BETTER_AUTH_URL: adminApiBaseUrl,
     ADMIN_ORIGIN: `http://127.0.0.1:${adminWebPort}`,
+    API_PORT: String(apiPort),
+    BETTER_AUTH_URL: `http://localhost:${apiPort}`,
     BETTER_AUTH_SECRET: "learner-dev-lifecycle-secret-value-01",
     CI: "true",
+    CURSOR_SIGNING_SECRET: "cursor-signing-secret-value-for-lifecycle-01",
     DATABASE_URL: databaseUrl,
     ENABLE_TEST_AUTH: "true",
     LOG_PRETTY: "false",
-    NEXT_PUBLIC_ADMIN_API_BASE_URL: `http://127.0.0.1:${adminApiPort}`,
+    LEARNER_API_ALLOWED_HOSTS: `localhost:${apiPort}`,
+    NEXT_PUBLIC_ADMIN_API_BASE_URL: adminApiBaseUrl,
     NEXT_PUBLIC_LEARNER_WEB_ORIGIN: "http://127.0.0.1:3000",
     NODE_ENV: "development",
   }
@@ -65,11 +61,6 @@ test("dev:admin은 workspace 변경을 한 번 감지하고 소유 process와 po
   let output = ""
 
   try {
-    await writeFile(
-      lifecycleFixture,
-      "export const adminDevLifecycleFixtureVersion = 1\n",
-      "utf8"
-    )
     migrateDisposableDatabase(environment)
 
     devProcess = Bun.spawn({
@@ -94,36 +85,18 @@ test("dev:admin은 workspace 변경을 한 번 감지하고 소유 process와 po
     await waitFor(
       "admin API와 admin web readiness",
       async () =>
-        (await isHttpReady(`http://127.0.0.1:${adminApiPort}/health`)) &&
+        (await isHttpReady(`${adminApiBaseUrl}/health`)) &&
         (await isHttpReady(`http://127.0.0.1:${adminWebPort}/login`)),
       90_000
     )
     expect(existsSync(adminNextLock)).toBe(true)
-    expect(countOccurrences(output, fixtureLoadedMarker)).toBe(1)
+    expect(output).toContain("@workspace/api:dev")
+    expect(output).toContain("@workspace/admin:dev")
     addOwnedProcessIds(
       ownedProcessIds,
       await readProcessTable(),
       devProcess.pid
     )
-
-    await writeFile(
-      lifecycleFixture,
-      "export const adminDevLifecycleFixtureVersion = 2\n",
-      "utf8"
-    )
-    await waitFor(
-      "admin-api workspace fixture restart",
-      () => countOccurrences(output, fixtureLoadedMarker) >= 2,
-      30_000
-    )
-    await waitFor(
-      "restarted admin API readiness",
-      () => isHttpReady(`http://127.0.0.1:${adminApiPort}/health`),
-      30_000
-    )
-    await Bun.sleep(1_500)
-
-    expect(countOccurrences(output, fixtureLoadedMarker)).toBe(2)
     expect(output).not.toMatch(/outside (?:of )?(?:the )?project directory/iu)
     addOwnedProcessIds(
       ownedProcessIds,
@@ -143,7 +116,7 @@ test("dev:admin은 workspace 변경을 한 번 감지하고 소유 process와 po
       "admin dev port와 Next lock 해제",
       async () =>
         !(await isPortListening(adminWebPort)) &&
-        !(await isPortListening(adminApiPort)) &&
+        !(await isPortListening(apiPort)) &&
         !existsSync(adminNextLock),
       15_000
     )
@@ -172,7 +145,6 @@ test("dev:admin은 workspace 변경을 한 번 감지하고 소유 process와 po
       }
     }
     await Promise.all(outputTasks)
-    await rm(lifecycleFixture, { force: true })
     await rm(temporaryDirectory, { force: true, recursive: true })
   }
 }, 180_000)
@@ -381,10 +353,6 @@ async function collectProcessOutput(
 
   const finalChunk = decoder.decode()
   if (finalChunk.length > 0) append(finalChunk)
-}
-
-function countOccurrences(value: string, search: string): number {
-  return value.split(search).length - 1
 }
 
 function isMissingProcessError(error: unknown): boolean {

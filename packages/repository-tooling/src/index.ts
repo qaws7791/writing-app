@@ -7,6 +7,7 @@ export {
   readModuleReferences,
   type ModuleAlias,
   type ModuleCycle,
+  type ModuleGraphReferenceKinds,
   type ModuleReference,
   type PackageModule,
   type RepositoryFile,
@@ -42,3 +43,10 @@ export {
   type LineCoverage,
   type LineCoverageThreshold,
 } from "#repository-tooling/coverage-report"
+
+export {
+  evaluateImportRatchet,
+  formatImportEdge,
+  type ImportEdge,
+  type ImportRatchetResult,
+} from "#repository-tooling/import-ratchet"

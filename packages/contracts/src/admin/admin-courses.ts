@@ -178,7 +178,13 @@ function validateUniqueEditorIds(
 export type AdminArchiveCourseResultDto = z.infer<
   typeof adminArchiveCourseResultSchema
 >
+export type AdminCourseStepDto = z.infer<typeof adminCourseStepDtoSchema>
+export type AdminCourseLessonDto = z.infer<typeof adminCourseLessonDtoSchema>
+export type AdminCourseUnitDto = z.infer<typeof adminCourseUnitDtoSchema>
 export type AdminCourseDetailDto = z.infer<typeof adminCourseDetailDtoSchema>
+export type AdminCourseListItemDto = z.infer<
+  typeof adminCourseListItemDtoSchema
+>
 export type AdminCourseListDto = z.infer<typeof adminCourseListDtoSchema>
 export type AdminCourseEditorDocument = z.infer<
   typeof adminCourseEditorDocumentSchema

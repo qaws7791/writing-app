@@ -1,11 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
-import type { LessonDraftWriteResult } from "#ui/lib/lesson-draft-storage"
 import { cn } from "#ui/lib/utils"
 import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 import { MarkdownContent } from "#ui/components/lesson/markdown-content"
+
+export type WriteAnswerDraftSaveResult =
+  | { readonly status: "quota-exceeded" }
+  | { readonly status: "saved" }
+  | { readonly status: "unavailable" }
 
 export function WriteAnswer({
   badge,
@@ -15,7 +19,6 @@ export function WriteAnswer({
   draft = false,
   goal,
   guide,
-  initialText = "",
   max = 2000,
   min = 20,
   onChange,
@@ -24,6 +27,7 @@ export function WriteAnswer({
   reference,
   sample,
   structure,
+  text = "",
   title,
 }: {
   readonly badge?: string
@@ -33,22 +37,21 @@ export function WriteAnswer({
   readonly draft?: boolean
   readonly goal?: number
   readonly guide?: string
-  readonly initialText?: string
   readonly max?: number
   readonly min?: number
   readonly onChange?: (text: string) => void
   readonly onDraftSave?: (
     text: string
-  ) => LessonDraftWriteResult | Promise<LessonDraftWriteResult>
+  ) => WriteAnswerDraftSaveResult | Promise<WriteAnswerDraftSaveResult>
   readonly placeholder?: string
   readonly reference?: string
   readonly sample?: string
   readonly structure?: string
+  readonly text?: string
   readonly title: string
 }) {
-  const [text, setText] = useState(initialText)
   const [draftSaveStatus, setDraftSaveStatus] = useState<
-    "idle" | "pending" | LessonDraftWriteResult["status"]
+    "idle" | "pending" | WriteAnswerDraftSaveResult["status"]
   >("idle")
   const minHeight = goal
     ? "min-h-[280px]"
@@ -56,17 +59,8 @@ export function WriteAnswer({
       ? "min-h-[200px]"
       : "min-h-[150px]"
 
-  useEffect(() => {
-    if (initialText) {
-      onChange?.(initialText)
-    }
-    // Emit initial draft once on mount when present.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   function handleChange(nextText: string) {
     const slicedText = nextText.slice(0, max)
-    setText(slicedText)
     onChange?.(slicedText)
   }
 

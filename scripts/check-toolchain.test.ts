@@ -5,6 +5,7 @@ import { describe, expect, test } from "bun:test"
 
 import {
   readToolchainContract,
+  validateQualityGatesActionReferences,
   validateQualityGatesToolchain,
   validateToolchainRuntime,
 } from "#scripts/check-toolchain"
@@ -68,5 +69,25 @@ describe("toolchain 계약", () => {
     expect(
       validateQualityGatesToolchain(contractResult.contract, workflow)
     ).toEqual([])
+    expect(validateQualityGatesActionReferences(workflow)).toEqual([])
+  })
+
+  test("외부 action의 tag 참조와 필수 pin 누락을 함께 거부한다", () => {
+    const workflow = readFileSync(
+      path.join(repositoryRoot, ".github", "workflows", "quality-gates.yml"),
+      "utf8"
+    ).replaceAll(
+      "actions/cache@caa296126883cff596d87d8935842f9db880ef25",
+      "actions/cache@v5"
+    )
+
+    const errors = validateQualityGatesActionReferences(workflow)
+
+    expect(errors).toContain(
+      "quality-gates.yml: required immutable action pin이 없습니다: actions/cache@caa296126883cff596d87d8935842f9db880ef25"
+    )
+    expect(errors).toContain(
+      "quality-gates.yml: action은 full commit SHA로 고정해야 합니다: actions/cache@v5"
+    )
   })
 })

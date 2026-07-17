@@ -105,6 +105,25 @@ describe("workspace inventory", () => {
     ])
   })
 
+  it("생성 산출물만 남은 디렉터리를 workspace에서 제외한다", () => {
+    const repositoryRoot = createFixtureRepository({
+      "apps/web": { name: "@fixture/web" },
+    })
+    const removedWorkspaceRoot = path.join(repositoryRoot, "packages/removed")
+    fs.mkdirSync(path.join(removedWorkspaceRoot, ".turbo"), { recursive: true })
+    fs.mkdirSync(path.join(removedWorkspaceRoot, "node_modules"), {
+      recursive: true,
+    })
+
+    const inventory = expectSuccess(
+      createWorkspaceInventory({ repositoryRoot })
+    )
+
+    expect(inventory.allWorkspaces.map(({ name }) => name)).toEqual([
+      "@fixture/web",
+    ])
+  })
+
   it("test script 변경을 capability와 runtime에 반영한다", () => {
     const repositoryRoot = createFixtureRepository({
       "apps/web": { name: "@fixture/web" },

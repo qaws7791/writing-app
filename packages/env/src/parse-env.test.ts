@@ -31,7 +31,6 @@ describe("env parser", () => {
         BETTER_AUTH_SECRET: validSecret,
       })
     ).toMatchObject({
-      ADMIN_API_PORT: localRuntimePorts.adminApi,
       ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
       API_PORT: localRuntimePorts.learnerApi,
       WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
@@ -41,7 +40,6 @@ describe("env parser", () => {
   it("문자열 환경 변수를 런타임 설정으로 검증하고 변환한다", () => {
     expect(
       parseEnv({
-        ADMIN_API_PORT: "4002",
         ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
         API_PORT: "4001",
         BETTER_AUTH_SECRET: validSecret,
@@ -50,7 +48,6 @@ describe("env parser", () => {
         WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
       })
     ).toEqual({
-      ADMIN_API_PORT: 4002,
       ADMIN_BETTER_AUTH_SECRET: undefined,
       ADMIN_BETTER_AUTH_URL: undefined,
       ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
@@ -112,6 +109,19 @@ describe("env parser", () => {
     expect(parseEnv(validProductionEnv)).toMatchObject(validProductionEnv)
   })
 
+  it("production cookie domain은 API 발급과 frontend 소비 host의 공통 parent를 허용한다", () => {
+    expect(
+      parseEnv({
+        ...validProductionEnv,
+        ADMIN_BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+        BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+      })
+    ).toMatchObject({
+      ADMIN_BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+      BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+    })
+  })
+
   it.each([
     "ADMIN_BETTER_AUTH_SECRET",
     "ADMIN_BETTER_AUTH_URL",
@@ -136,6 +146,14 @@ describe("env parser", () => {
     ],
     ["test auth", { ENABLE_TEST_AUTH: "true" }],
     ["cookie domain", { BETTER_AUTH_COOKIE_DOMAIN: "attacker.example" }],
+    [
+      "cookie domain learner API 발급 host",
+      { BETTER_AUTH_COOKIE_DOMAIN: "app.example.com" },
+    ],
+    [
+      "cookie domain admin API 발급 host",
+      { ADMIN_BETTER_AUTH_COOKIE_DOMAIN: "admin.example.com" },
+    ],
   ])("production에서 %s 설정을 거부한다", (_, override) => {
     expect(() => parseEnv({ ...validProductionEnv, ...override })).toThrow()
   })

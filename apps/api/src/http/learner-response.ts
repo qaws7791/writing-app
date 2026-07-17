@@ -1,4 +1,4 @@
-import { AppError } from "@workspace/hono/errors"
+import { AppError } from "@/http/platform/errors"
 import type { Context, Input } from "hono"
 import type { z } from "zod"
 

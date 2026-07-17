@@ -1,15 +1,15 @@
 import type { LessonId, LessonStepId } from "@workspace/contracts/content"
+import type { LearnerId } from "@workspace/contracts/learning/step-data"
 import type {
-  LearnerAiFeedbackTransitionResult,
-  LearnerId,
-} from "@workspace/contracts/learning"
+  AiFeedbackPayload,
+  AiFeedbackResultDto,
+} from "@workspace/contracts/ai-feedback"
 import type { AiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
-import type { LearnerTransitionRepository } from "#core/modules/learning/application/ports/learner-transition.repository"
-import type { LearnerTransitionError } from "#core/modules/learning/domain/learner-transition"
 import {
   createAiFeedbackAttemptCoordinator,
+  type AiFeedbackAttemptContext,
   type AiFeedbackAttemptTransitionEvent,
 } from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
 import { err, type Result } from "#core/shared/result"
@@ -28,13 +28,22 @@ export type AiFeedbackServiceError =
       readonly remainingAttempts: number
     }
 
-export type LearnerAiFeedbackTransitionService = {
+export type LearnerAiFeedbackTransitionResult<TTransitionResult> = {
+  readonly feedback: AiFeedbackResultDto
+  readonly transition: TTransitionResult
+}
+
+export type LearnerAiFeedbackTransitionService<
+  TTransitionError,
+  TTransitionResult,
+> = {
   readonly createFeedback: (
-    command: CreateAiFeedbackApplicationCommand
+    command: CreateAiFeedbackApplicationCommand,
+    options?: { readonly signal?: AbortSignal }
   ) => Promise<
     Result<
-      LearnerAiFeedbackTransitionResult,
-      AiFeedbackServiceError | LearnerTransitionError
+      LearnerAiFeedbackTransitionResult<TTransitionResult>,
+      AiFeedbackServiceError | TTransitionError
     >
   >
 }
@@ -47,7 +56,30 @@ export type CreateAiFeedbackApplicationCommand = {
   readonly userId: LearnerId
 }
 
-export function createLearnerAiFeedbackTransitionService({
+export type AiFeedbackLearningTransition<TTransitionError, TTransitionResult> =
+  {
+    readonly completeAiFeedbackStep: (command: {
+      readonly attemptId: string
+      readonly feedback: AiFeedbackPayload
+      readonly lessonId: LessonId
+      readonly occurredAt: Date
+      readonly stepId: LessonStepId
+      readonly userId: LearnerId
+    }) => Promise<Result<TTransitionResult, TTransitionError>>
+    readonly prepareAiFeedback: (
+      command: CreateAiFeedbackApplicationCommand
+    ) => Promise<
+      Result<
+        AiFeedbackAttemptContext & { readonly answer: string },
+        TTransitionError
+      >
+    >
+  }
+
+export function createLearnerAiFeedbackTransitionService<
+  TTransitionError,
+  TTransitionResult,
+>({
   attemptPolicy,
   feedbackRepository,
   learnerTransitionRepository,
@@ -56,12 +88,15 @@ export function createLearnerAiFeedbackTransitionService({
 }: {
   readonly attemptPolicy: AiFeedbackAttemptPolicy
   readonly feedbackRepository: AiFeedbackRepository
-  readonly learnerTransitionRepository: LearnerTransitionRepository
+  readonly learnerTransitionRepository: AiFeedbackLearningTransition<
+    TTransitionError,
+    TTransitionResult
+  >
   readonly onAttemptTransition?: (
     event: AiFeedbackAttemptTransitionEvent
   ) => void
   readonly provider: AiFeedbackProvider
-}): LearnerAiFeedbackTransitionService {
+}): LearnerAiFeedbackTransitionService<TTransitionError, TTransitionResult> {
   const attemptCoordinator = createAiFeedbackAttemptCoordinator({
     attemptPolicy,
     feedbackRepository,
@@ -70,13 +105,12 @@ export function createLearnerAiFeedbackTransitionService({
   })
 
   return {
-    async createFeedback(command) {
+    async createFeedback(command, options) {
       const preparation =
         await learnerTransitionRepository.prepareAiFeedback(command)
       if (preparation.kind === "err") return preparation
-      let transition: LearnerAiFeedbackTransitionResult["transition"] | null =
-        null
-      let transitionError: LearnerTransitionError | null = null
+      let transition: TTransitionResult | null = null
+      let transitionError: TTransitionError | null = null
       const feedback = await attemptCoordinator.createAttempt(
         { ...command, answer: preparation.value.answer },
         {
@@ -84,6 +118,7 @@ export function createLearnerAiFeedbackTransitionService({
           lessonTitle: preparation.value.lessonTitle,
         },
         {
+          signal: options?.signal,
           async finalizeSucceededAttempt(input) {
             const result =
               await learnerTransitionRepository.completeAiFeedbackStep({

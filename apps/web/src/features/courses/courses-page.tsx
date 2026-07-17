@@ -26,6 +26,8 @@ import {
 } from "@workspace/ui/components/ui/select"
 import { SearchIcon, XIcon } from "@workspace/ui/components/icons"
 
+const eagerCourseImageCount = 3
+
 type CoursesPageProps = {
   readonly categories: readonly string[]
   readonly courses: readonly LearnerCourseSummary[]
@@ -274,6 +276,9 @@ export function CoursesPage({
                         draggable="false"
                         className="object-cover select-none"
                         fill
+                        loading={
+                          index < eagerCourseImageCount ? "eager" : "lazy"
+                        }
                         preload={index === 0}
                         sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
                         src={createCourseImageUrl(course.visualKey)}

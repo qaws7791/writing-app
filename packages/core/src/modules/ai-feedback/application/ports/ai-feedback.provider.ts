@@ -1,4 +1,4 @@
-import type { AiFeedbackPayload } from "#core/modules/ai-feedback/domain/ai-feedback.dto"
+import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback"
 import type { AiFeedbackPrompt } from "#core/modules/ai-feedback/domain/ai-feedback.prompt"
 import type { Result } from "#core/shared/result"
 
@@ -10,6 +10,7 @@ export type AiFeedbackProviderError = {
 
 export type AiFeedbackProvider = {
   readonly createFeedback: (
-    input: AiFeedbackProviderInput
+    input: AiFeedbackProviderInput,
+    options?: { readonly signal?: AbortSignal }
   ) => Promise<Result<AiFeedbackPayload, AiFeedbackProviderError>>
 }

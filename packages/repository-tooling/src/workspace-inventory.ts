@@ -97,6 +97,14 @@ const repositoryCoverageExclusions = {
   "@workspace/repository-tooling": "repository-tooling",
 } as const satisfies WorkspaceInventoryOptions["coverageExclusions"]
 
+const generatedWorkspaceDirectoryEntries = new Set([
+  ".next",
+  ".turbo",
+  "coverage",
+  "dist",
+  "node_modules",
+])
+
 export function createRepositoryWorkspaceInventory(
   repositoryRoot: string
 ): WorkspaceInventoryResult {
@@ -245,7 +253,21 @@ function expandWorkspaceGlob({
   return fs
     .readdirSync(absoluteRootDirectory, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
+    .filter((entry) =>
+      hasWorkspaceManifestOrSourceEntry(
+        path.join(absoluteRootDirectory, entry.name)
+      )
+    )
     .map((entry) => normalizePath(path.join(rootDirectory, entry.name)))
+}
+
+function hasWorkspaceManifestOrSourceEntry(directory: string): boolean {
+  const entries = fs.readdirSync(directory, { withFileTypes: true })
+
+  return (
+    entries.length === 0 ||
+    entries.some((entry) => !generatedWorkspaceDirectoryEntries.has(entry.name))
+  )
 }
 
 function readWorkspaceManifest({
