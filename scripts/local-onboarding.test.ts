@@ -19,7 +19,7 @@ const credentials: LocalCredentials = {
 }
 
 describe("로컬 온보딩", () => {
-  test("누락된 환경 파일만 credential을 치환해 생성한다", () => {
+  test("누락된 환경 파일을 credential을 치환해 생성한다", () => {
     using fixture = createFixture()
 
     expect(
@@ -85,6 +85,81 @@ describe("로컬 온보딩", () => {
     expect(readEnvironmentFiles(fixture.path)).toEqual(before)
   })
 
+  test("기존 값은 보존하면서 누락 키를 보충하고 폐기된 로컬 기본값만 이전한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+    const apiPath = path.join(fixture.path, "apps/api/.env")
+    const adminPath = path.join(fixture.path, "apps/admin/.env")
+    removeFileValue(apiPath, "ADMIN_SEED_NAME")
+    replaceFileValue(
+      apiPath,
+      "ADMIN_BETTER_AUTH_URL",
+      "http://admin-api.localhost:4000"
+    )
+    replaceFileValue(apiPath, "ADMIN_ORIGIN", "http://localhost:3001")
+    replaceFileValue(
+      apiPath,
+      "ADMIN_API_ALLOWED_HOSTS",
+      "admin-api.localhost:4000,admin-api-unified:4000"
+    )
+    replaceFileValue(
+      adminPath,
+      "NEXT_PUBLIC_ADMIN_API_BASE_URL",
+      "http://admin-api.localhost:4000"
+    )
+    replaceFileValue(
+      adminPath,
+      "ADMIN_API_BASE_URL",
+      "http://admin-api.localhost:4000"
+    )
+    replaceFileValue(adminPath, "ADMIN_ORIGIN", "http://localhost:3001")
+
+    expect(
+      createLocalEnvironmentFiles({
+        createCredentials: () => credentials,
+        repositoryRoot: fixture.path,
+      })
+    ).toEqual([
+      {
+        addedKeys: ["ADMIN_SEED_NAME"],
+        kind: "updated",
+        migratedKeys: [
+          "ADMIN_API_ALLOWED_HOSTS",
+          "ADMIN_BETTER_AUTH_URL",
+          "ADMIN_ORIGIN",
+        ],
+        path: "apps/api/.env",
+      },
+      { kind: "preserved", path: "apps/web/.env" },
+      {
+        addedKeys: [],
+        kind: "updated",
+        migratedKeys: [
+          "ADMIN_API_BASE_URL",
+          "ADMIN_ORIGIN",
+          "NEXT_PUBLIC_ADMIN_API_BASE_URL",
+        ],
+        path: "apps/admin/.env",
+      },
+    ])
+    expect(
+      readEnvironmentValue(fixture.path, "apps/api/.env", "ADMIN_ORIGIN")
+    ).toBe("http://127.0.0.1:3001")
+    expect(
+      readEnvironmentValue(
+        fixture.path,
+        "apps/admin/.env",
+        "ADMIN_API_BASE_URL"
+      )
+    ).toBe("http://127.0.0.1:4000")
+    expect(
+      readEnvironmentValue(fixture.path, "apps/api/.env", "BETTER_AUTH_SECRET")
+    ).toBe(credentials.learnerAuthSecret)
+  })
+
   test("도구, 환경 파일, 비밀값 분리와 공유 DB를 진단한다", () => {
     using fixture = createFixture()
     createLocalEnvironmentFiles({
@@ -106,6 +181,11 @@ describe("로컬 온보딩", () => {
       detail: "학습자 인증과 cursor 서명 비밀값이 분리되어 있습니다.",
       kind: "pass",
       label: "cursor 비밀값 분리",
+    })
+    expect(checks).toContainEqual({
+      detail: "관리자 인증과 cursor 서명 비밀값이 분리되어 있습니다.",
+      kind: "pass",
+      label: "관리자 cursor 비밀값 분리",
     })
     expect(checks).toContainEqual({
       detail: "학습자와 관리자 인증 비밀값이 분리되어 있습니다.",
@@ -150,6 +230,63 @@ describe("로컬 온보딩", () => {
       label: "로컬 데이터베이스",
     })
   })
+
+  test("환경 파일이 있어도 필수 키가 누락되면 실패로 보고한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+    fs.mkdirSync(path.join(fixture.path, "node_modules"))
+    removeFileValue(path.join(fixture.path, "apps/api/.env"), "API_PORT")
+
+    const checks = inspectLocalOnboarding({
+      bunVersion: "1.3.10",
+      nodeVersion: "24.15.0",
+      repositoryRoot: fixture.path,
+      requireDatabase: false,
+    })
+
+    expect(hasLocalOnboardingFailures(checks)).toBe(true)
+    expect(checks).toContainEqual({
+      detail: "필수 환경 변수가 없거나 비어 있습니다: API_PORT",
+      kind: "failure",
+      label: "apps/api/.env 필수 환경 변수",
+    })
+  })
+
+  test("비어 있는 필수 키도 중복 선언 없이 보충한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+    const apiPath = path.join(fixture.path, "apps/api/.env")
+    replaceFileValue(apiPath, "ADMIN_BETTER_AUTH_SECRET", "")
+
+    const results = createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+
+    expect(results[0]).toEqual({
+      addedKeys: ["ADMIN_BETTER_AUTH_SECRET"],
+      kind: "updated",
+      migratedKeys: [],
+      path: "apps/api/.env",
+    })
+    expect(
+      readEnvironmentValue(
+        fixture.path,
+        "apps/api/.env",
+        "ADMIN_BETTER_AUTH_SECRET"
+      )
+    ).toBe(credentials.adminAuthSecret)
+    expect(
+      fs.readFileSync(apiPath, "utf8").match(/^ADMIN_BETTER_AUTH_SECRET=/gmu)
+        ?.length
+    ).toBe(1)
+  })
 })
 
 function createFixture(): Disposable & { readonly path: string } {
@@ -168,18 +305,46 @@ function createFixture(): Disposable & { readonly path: string } {
     [
       "BETTER_AUTH_SECRET=replace-with-32-byte-local-api-secret",
       "CURSOR_SIGNING_SECRET=replace-with-distinct-32-byte-cursor-secret",
+      "BETTER_AUTH_URL=http://localhost:4000",
+      "LEARNER_API_ALLOWED_HOSTS=localhost:4000,api:4000",
       "ADMIN_BETTER_AUTH_SECRET=replace-with-32-byte-local-admin-secret",
+      "ADMIN_BETTER_AUTH_URL=http://127.0.0.1:4000",
+      "ADMIN_ORIGIN=http://127.0.0.1:3001",
+      "ADMIN_API_ALLOWED_HOSTS=127.0.0.1:4000,admin-api-unified:4000",
       "DATABASE_URL=file:data/api.sqlite",
+      "NODE_ENV=development",
+      "DEPLOYMENT_VERSION=local",
+      "API_PORT=4000",
+      "WEB_ORIGIN=http://localhost:3000",
       "ENABLE_TEST_AUTH=true",
+      "ADMIN_SEED_EMAIL=owner@example.com",
+      "ADMIN_SEED_NAME=관리자",
       "ADMIN_SEED_PASSWORD=replace-with-strong-local-admin-password",
       "ADMIN_SEED_RESET_PASSWORD=true",
+      "OPENAI_MODEL=gpt-5.2",
     ].join("\n")
   )
-  writeExample(root, "apps/web/.env.example", "ENABLE_TEST_AUTH=true\n")
+  writeExample(
+    root,
+    "apps/web/.env.example",
+    [
+      "NEXT_PUBLIC_API_BASE_URL=http://localhost:4000",
+      "WEB_API_BASE_URL=http://localhost:4000",
+      "WEB_ORIGIN=http://localhost:3000",
+      "ENABLE_TEST_AUTH=true",
+      "CSP_REPORT_ONLY=false",
+    ].join("\n")
+  )
   writeExample(
     root,
     "apps/admin/.env.example",
-    "ADMIN_ORIGIN=http://localhost:3001\n"
+    [
+      "NEXT_PUBLIC_ADMIN_API_BASE_URL=http://127.0.0.1:4000",
+      "NEXT_PUBLIC_LEARNER_WEB_ORIGIN=http://localhost:3000",
+      "ADMIN_API_BASE_URL=http://127.0.0.1:4000",
+      "ADMIN_ORIGIN=http://127.0.0.1:3001",
+      "CSP_REPORT_ONLY=false",
+    ].join("\n")
   )
 
   return {
@@ -220,5 +385,13 @@ function replaceFileValue(filePath: string, key: string, value: string): void {
   fs.writeFileSync(
     filePath,
     content.replace(new RegExp(`^${key}=.*$`, "mu"), `${key}=${value}`)
+  )
+}
+
+function removeFileValue(filePath: string, key: string): void {
+  const content = fs.readFileSync(filePath, "utf8")
+  fs.writeFileSync(
+    filePath,
+    content.replace(new RegExp(`^${key}=.*(?:\\r?\\n|$)`, "mu"), "")
   )
 }

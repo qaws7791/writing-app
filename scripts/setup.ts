@@ -15,7 +15,12 @@ async function runSetup(): Promise<void> {
 
   const files = createLocalEnvironmentFiles({ repositoryRoot })
   for (const file of files) {
-    const action = file.kind === "created" ? "생성" : "보존"
+    const action =
+      file.kind === "created"
+        ? "생성"
+        : file.kind === "updated"
+          ? "보충"
+          : "보존"
     console.log(`- ${action}: ${file.path}`)
   }
 

@@ -65,9 +65,11 @@ export function findAdminApiRuntimeResiduals(
 }
 
 export function isCurrentArchitectureFile(relativePath: string): boolean {
+  const normalizedPath = relativePath.replaceAll("\\", "/")
+
   if (
-    relativePath === "scripts/check-admin-api-runtime-removal.ts" ||
-    relativePath === "scripts/check-admin-api-runtime-removal.test.ts"
+    normalizedPath === "scripts/check-admin-api-runtime-removal.ts" ||
+    normalizedPath === "scripts/check-admin-api-runtime-removal.test.ts"
   ) {
     return false
   }
@@ -79,7 +81,7 @@ export function isCurrentArchitectureFile(relativePath: string): boolean {
     "/node_modules/",
     "docs/engineering/adr/",
     "docs/engineering/monorepo-target-architecture-plan/",
-  ].some((segment) => `/${relativePath}`.includes(segment))
+  ].some((segment) => `/${normalizedPath}`.includes(segment))
 }
 
 export function readCurrentArchitectureFiles(
@@ -99,7 +101,8 @@ export function readCurrentArchitectureFiles(
           dot: true,
           onlyFiles: true,
         }),
-        (relativePath) => path.posix.join(directory, relativePath)
+        (relativePath) =>
+          path.posix.join(directory, relativePath.replaceAll("\\", "/"))
       )
     }),
   ]

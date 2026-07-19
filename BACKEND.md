@@ -123,10 +123,10 @@ API 앱은 `@workspace/env/parse-env`의 `parseEnv`로 시작 단계 환경 변�
 | `BETTER_AUTH_COOKIE_DOMAIN`       | 선택      | 비움 또는 `example.com`             | 로컬 선택; production parser는 learner 소비·발급 Host parent를 검증하고 role은 값을 요구 |
 | `LEARNER_API_ALLOWED_HOSTS`       | 필수      | `localhost:4000,api:4000`           | 학습자 Host dispatcher allowlist                                                         |
 | `ADMIN_BETTER_AUTH_SECRET`        | 필수      | 학습자 값과 다른 비밀값             | 관리자 Better Auth 전용 서명 비밀값                                                      |
-| `ADMIN_BETTER_AUTH_URL`           | 필수      | `http://admin-api.localhost:4000`   | 관리자 인증 URL 및 admin Host allowlist 기준                                             |
-| `ADMIN_ORIGIN`                    | 필수      | `http://localhost:3001`             | 관리자 CORS·trusted origin                                                               |
+| `ADMIN_BETTER_AUTH_URL`           | 필수      | `http://127.0.0.1:4000`             | 관리자 인증 URL 및 admin Host allowlist 기준                                             |
+| `ADMIN_ORIGIN`                    | 필수      | `http://127.0.0.1:3001`             | 관리자 CORS·trusted origin                                                               |
 | `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`             | 로컬 선택; production parser는 admin 소비·발급 Host parent를 검증하고 role은 값을 요구   |
-| `ADMIN_API_ALLOWED_HOSTS`         | 필수      | `admin-api.localhost:4000,...`      | 관리자 Host dispatcher allowlist                                                         |
+| `ADMIN_API_ALLOWED_HOSTS`         | 필수      | `127.0.0.1:4000,...`                | 관리자 Host dispatcher allowlist                                                         |
 | `ADMIN_ASSET_*`                   | 운영 필수 | HTTPS endpoint·public URL·별도 권한 | 자료실 이미지 R2 bucket 설정; backup R2 권한과 분리                                      |
 | `WEB_ORIGIN`                      | 선택      | `http://localhost:3000`             | 자격 증명 포함 브라우저 API 요청을 허용할 학습자 웹 origin                               |
 | `DATABASE_URL`                    | 필수      | `file:data/api.sqlite`              | 저장소 루트 `data/api.sqlite` SQLite 데이터베이스 위치                                   |

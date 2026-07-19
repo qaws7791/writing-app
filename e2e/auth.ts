@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
 
-export const learnerApiOrigin = "http://127.0.0.1:4100"
-export const learnerWebOrigin = "http://127.0.0.1:3100"
+export const learnerApiOrigin = "http://localhost:4100"
+export const learnerWebOrigin = "http://localhost:3100"
 
 export async function loginLearner(
   page: Page,

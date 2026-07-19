@@ -1,4 +1,7 @@
-import { createLocalRuntimeUrl } from "@workspace/env/local-runtime-defaults"
+import {
+  createLocalRuntimeUrl,
+  localRuntimeHosts,
+} from "@workspace/env/local-runtime-defaults"
 import { parseEnv, type AppEnvInput } from "@workspace/env/parse-env"
 import { z } from "@/http/platform/zod"
 
@@ -61,7 +64,9 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
       input["WEB_ORIGIN"] ?? input["CORS_ORIGIN"]?.split(",")[0]?.trim(),
   })
   const cursorSigningSecret = readCursorSigningSecret(env)
-  const authBaseUrl = env.BETTER_AUTH_URL ?? createLocalRuntimeUrl(env.API_PORT)
+  const authBaseUrl =
+    env.BETTER_AUTH_URL ??
+    createLocalRuntimeUrl(localRuntimeHosts.learner, env.API_PORT)
   const apiHosts = parseApiHostConfiguration({
     adminAllowedHosts: input["ADMIN_API_ALLOWED_HOSTS"],
     learnerAllowedHosts: input["LEARNER_API_ALLOWED_HOSTS"],

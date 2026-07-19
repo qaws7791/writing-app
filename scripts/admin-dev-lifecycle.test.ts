@@ -17,7 +17,7 @@ const adminNextLock = path.join(
 )
 const adminWebPort = 3001
 const apiPort = 4000
-const adminApiBaseUrl = `http://admin-api.localhost:${apiPort}`
+const adminApiBaseUrl = `http://127.0.0.1:${apiPort}`
 
 interface ProcessPair {
   readonly parentPid: number
@@ -36,7 +36,7 @@ test("dev:admin은 admin web과 통합 API만 실행하고 소유 process와 por
   const databaseUrl = `file:${databasePath}`
   const environment = {
     ...process.env,
-    ADMIN_API_ALLOWED_HOSTS: `admin-api.localhost:${apiPort}`,
+    ADMIN_API_ALLOWED_HOSTS: `127.0.0.1:${apiPort}`,
     ADMIN_API_BASE_URL: adminApiBaseUrl,
     ADMIN_BETTER_AUTH_SECRET: "admin-dev-lifecycle-secret-value-0001",
     ADMIN_BETTER_AUTH_URL: adminApiBaseUrl,

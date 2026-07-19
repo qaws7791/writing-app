@@ -50,6 +50,16 @@ describe("legacy admin-api runtime 제거 검사", () => {
       )
     ).toBe(false)
     expect(
+      isCurrentArchitectureFile(
+        "docs\\engineering\\adr\\ADR-0012-single-api-runtime.md"
+      )
+    ).toBe(false)
+    expect(
+      isCurrentArchitectureFile(
+        "docs\\engineering\\monorepo-target-architecture-plan\\mta-40-api-traffic-switch.md"
+      )
+    ).toBe(false)
+    expect(
       isCurrentArchitectureFile("scripts/check-admin-api-runtime-removal.ts")
     ).toBe(false)
     expect(isCurrentArchitectureFile("BACKEND.md")).toBe(true)

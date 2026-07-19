@@ -20,9 +20,10 @@ admin Hono sub-app을 실행하고 SQLite client와 종료 lifecycle을 한 번 
 | 통합 learner/admin API | 4000 | `API_PORT`                                    |
 | E2E fixture readiness  | 4199 | `scripts/run-e2e.ts`가 소유하는 임시 listener |
 
-learner API는 `localhost:4000`, admin API는 `admin-api.localhost:4000`을 사용한다.
-두 hostname은 같은 process로 연결되지만 allowlist, Better Auth instance, secret, cookie,
-table, trusted origin이 분리된다.
+learner 웹/API는 `localhost:3000`·`localhost:4000`, admin 웹/API는
+`127.0.0.1:3001`·`127.0.0.1:4000`을 사용한다. 두 hostname은 OS별 wildcard DNS나
+hosts 파일 설정 없이 같은 API process로 연결되지만 allowlist, Better Auth instance,
+secret, host-only cookie, table, trusted origin이 분리된다.
 
 ## 로컬 자동 준비
 
@@ -34,35 +35,36 @@ setup은 다음을 수행한다.
 
 1. Bun 1.3.10과 Node.js 24.x를 확인한다.
 2. lockfile 기준 의존성을 설치한다.
-3. 없는 `.env`만 각 `.env.example`에서 생성한다.
+3. 없는 `.env`를 생성하고 기존 파일에는 누락된 활성 환경 변수만 보충한다.
 4. learner auth, admin auth, cursor signing secret을 서로 다른 값으로 생성한다.
 5. migration, 콘텐츠 seed, 관리자 owner seed를 실행한다.
 6. `bun run doctor`로 환경 파일과 DB 경로를 검사한다.
 
-기존 `.env`는 덮어쓰지 않는다. learner/admin API 설정과 관리자 seed credential은
-`apps/api/.env` 하나에 둔다. credential 원문은 setup과 doctor 출력에 노출하지 않는다.
+기존 사용자 값은 덮어쓰지 않는다. 저장소가 제공했던 이전 로컬 기본 Host 값만 현재
+계약으로 이전한다. learner/admin API 설정과 관리자 seed credential은 `apps/api/.env`
+하나에 둔다. credential 원문은 setup과 doctor 출력에 노출하지 않는다.
 
 ## 통합 API 환경
 
-| 변수                              | 필수 조건 | 설명                                                    |
-| --------------------------------- | --------- | ------------------------------------------------------- |
-| `API_PORT`                        | 선택      | 통합 API listen port, 기본값 `4000`                     |
-| `LEARNER_API_ALLOWED_HOSTS`       | 필수      | learner Host authority allowlist                        |
-| `ADMIN_API_ALLOWED_HOSTS`         | 필수      | admin Host authority allowlist                          |
-| `BETTER_AUTH_SECRET`              | 필수      | learner Better Auth secret                              |
-| `ADMIN_BETTER_AUTH_SECRET`        | 필수      | learner secret과 다른 admin Better Auth secret          |
-| `BETTER_AUTH_URL`                 | 운영 필수 | learner public API URL                                  |
-| `ADMIN_BETTER_AUTH_URL`           | 필수      | admin API URL, 로컬은 `http://admin-api.localhost:4000` |
-| `WEB_ORIGIN`                      | 필수      | learner web origin                                      |
-| `ADMIN_ORIGIN`                    | 필수      | admin web origin                                        |
-| `BETTER_AUTH_COOKIE_DOMAIN`       | 운영 필수 | learner web/API의 공통 parent cookie domain             |
-| `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 운영 필수 | admin web/API의 공통 parent cookie domain               |
-| `CURSOR_SIGNING_SECRET`           | 운영 필수 | learner auth secret과 다른 cursor signing secret        |
-| `DATABASE_URL`                    | 운영 필수 | 로컬 기본값 `file:data/api.sqlite`                      |
-| `DEPLOYMENT_VERSION`              | 운영 필수 | 응답과 로그에 사용할 immutable 배포 식별자              |
-| `ENABLE_TEST_AUTH`                | 테스트만  | production에서는 반드시 `false`                         |
-| `OPENAI_API_KEY`                  | 기능 선택 | AI provider 호출 시 사용                                |
-| `OPENAI_MODEL`                    | 선택      | OpenAI model, 기본값 `gpt-5.2`                          |
+| 변수                              | 필수 조건 | 설명                                             |
+| --------------------------------- | --------- | ------------------------------------------------ |
+| `API_PORT`                        | 선택      | 통합 API listen port, 기본값 `4000`              |
+| `LEARNER_API_ALLOWED_HOSTS`       | 필수      | learner Host authority allowlist                 |
+| `ADMIN_API_ALLOWED_HOSTS`         | 필수      | admin Host authority allowlist                   |
+| `BETTER_AUTH_SECRET`              | 필수      | learner Better Auth secret                       |
+| `ADMIN_BETTER_AUTH_SECRET`        | 필수      | learner secret과 다른 admin Better Auth secret   |
+| `BETTER_AUTH_URL`                 | 운영 필수 | learner public API URL                           |
+| `ADMIN_BETTER_AUTH_URL`           | 필수      | admin API URL, 로컬은 `http://127.0.0.1:4000`    |
+| `WEB_ORIGIN`                      | 필수      | learner web origin                               |
+| `ADMIN_ORIGIN`                    | 필수      | admin web origin                                 |
+| `BETTER_AUTH_COOKIE_DOMAIN`       | 운영 필수 | learner web/API의 공통 parent cookie domain      |
+| `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 운영 필수 | admin web/API의 공통 parent cookie domain        |
+| `CURSOR_SIGNING_SECRET`           | 운영 필수 | learner auth secret과 다른 cursor signing secret |
+| `DATABASE_URL`                    | 운영 필수 | 로컬 기본값 `file:data/api.sqlite`               |
+| `DEPLOYMENT_VERSION`              | 운영 필수 | 응답과 로그에 사용할 immutable 배포 식별자       |
+| `ENABLE_TEST_AUTH`                | 테스트만  | production에서는 반드시 `false`                  |
+| `OPENAI_API_KEY`                  | 기능 선택 | AI provider 호출 시 사용                         |
+| `OPENAI_MODEL`                    | 선택      | OpenAI model, 기본값 `gpt-5.2`                   |
 
 자료실 image upload를 production에서 사용하려면
 `ADMIN_ASSET_S3_ENDPOINT`, `ADMIN_ASSET_S3_REGION`, `ADMIN_ASSET_S3_BUCKET`,
@@ -107,7 +109,8 @@ learner/admin route를 한 process에서 재시작하고 어드민 웹은 Next.j
 
 ## Frontend 공개 설정
 
-- 학습자 웹: `NEXT_PUBLIC_API_BASE_URL`, `WEB_API_BASE_URL`, `ENABLE_TEST_AUTH`
+- 학습자 웹: `NEXT_PUBLIC_API_BASE_URL`, `WEB_API_BASE_URL`, `WEB_ORIGIN`,
+  `ENABLE_TEST_AUTH`
 - 어드민 웹: `NEXT_PUBLIC_ADMIN_API_BASE_URL`, `ADMIN_API_BASE_URL`,
   `NEXT_PUBLIC_LEARNER_WEB_ORIGIN`, `ADMIN_ORIGIN`
 

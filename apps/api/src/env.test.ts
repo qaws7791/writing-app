@@ -10,11 +10,11 @@ describe("통합 API env", () => {
     const env = parseApiEnv(createTestEnvironment())
 
     expect(env).toMatchObject({
-      adminAuthBaseUrl: "http://admin-api.localhost:4000",
+      adminAuthBaseUrl: "http://127.0.0.1:4000",
       adminAssetStore: undefined,
       adminBetterAuthSecret: adminSecret,
       adminCookieDomain: undefined,
-      adminOrigin: "http://localhost:3001",
+      adminOrigin: "http://127.0.0.1:3001",
       authBaseUrl: "http://localhost:4000",
       betterAuthSecret: learnerSecret,
       cookieDomain: undefined,
@@ -30,7 +30,7 @@ describe("통합 API env", () => {
     })
     expect([...env.apiHosts.learner]).toEqual(["localhost:4000", "api:4000"])
     expect([...env.apiHosts.admin]).toEqual([
-      "admin-api.localhost:4000",
+      "127.0.0.1:4000",
       "admin-api:4000",
     ])
   })
@@ -160,10 +160,10 @@ describe("통합 API env", () => {
 
 function createTestEnvironment(): Record<string, string | undefined> {
   return {
-    ADMIN_API_ALLOWED_HOSTS: "admin-api.localhost:4000,admin-api:4000",
+    ADMIN_API_ALLOWED_HOSTS: "127.0.0.1:4000,admin-api:4000",
     ADMIN_BETTER_AUTH_SECRET: adminSecret,
-    ADMIN_BETTER_AUTH_URL: "http://admin-api.localhost:4000",
-    ADMIN_ORIGIN: "http://localhost:3001",
+    ADMIN_BETTER_AUTH_URL: "http://127.0.0.1:4000",
+    ADMIN_ORIGIN: "http://127.0.0.1:3001",
     API_PORT: "4000",
     BETTER_AUTH_SECRET: learnerSecret,
     BETTER_AUTH_URL: "http://localhost:4000",

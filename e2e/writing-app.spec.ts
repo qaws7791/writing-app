@@ -3,8 +3,8 @@ import { readFile } from "node:fs/promises"
 
 import { learnerApiOrigin, learnerWebOrigin, loginLearner } from "#e2e/auth"
 
-const adminWebOrigin = "http://admin-api.localhost:3101"
-const adminApiOrigin = "http://admin-api.localhost:4100"
+const adminWebOrigin = "http://127.0.0.1:3101"
+const adminApiOrigin = "http://127.0.0.1:4100"
 const adminPassword = "e2e-password-123"
 
 test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완료한다", async ({

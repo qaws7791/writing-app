@@ -27,7 +27,7 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: "http://localhost:3100",
     launchOptions: {
       downloadsPath: path.join(e2eRunRoot, "downloads"),
     },

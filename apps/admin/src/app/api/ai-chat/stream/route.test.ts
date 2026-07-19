@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { POST } from "@/app/api/ai-chat/stream/route"
 
 const { getTokenMock } = vi.hoisted(() => ({
@@ -39,7 +40,7 @@ describe("어드민 AI chat proxy", () => {
         const resolvedRequest =
           request instanceof Request ? request : new Request(request, init)
         expect(resolvedRequest.headers.get("Origin")).toBe(
-          "http://localhost:3001"
+          localRuntimeDefaults.adminWebOrigin
         )
         return new Response("data", {
           headers: { "Content-Type": "text/event-stream" },
@@ -49,9 +50,9 @@ describe("어드민 AI chat proxy", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const response = await POST(
-      new Request("http://localhost:3001/api/ai-chat/stream", {
+      new Request(`${localRuntimeDefaults.adminWebOrigin}/api/ai-chat/stream`, {
         body: JSON.stringify({ message: "요청" }),
-        headers: { Origin: "http://localhost:3001" },
+        headers: { Origin: localRuntimeDefaults.adminWebOrigin },
         method: "POST",
       })
     )

@@ -5,6 +5,7 @@ import { adminRoles, type AdminRole } from "@workspace/core/admin"
 import type { AdminContentResetUseCase } from "@workspace/core/content"
 import type { AdminSettingsDto } from "@workspace/contracts/admin/settings-data"
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
   adminSessionExpiresAt,
@@ -290,13 +291,13 @@ function mutationHeaders() {
   return {
     Cookie: `${adminSessionCookieName}=admin-token`,
     "Content-Type": "application/json",
-    Origin: "http://localhost:3001",
+    Origin: localRuntimeDefaults.adminWebOrigin,
   }
 }
 
 function ownerMutationHeaders() {
   return {
     Cookie: `${adminSessionCookieName}=admin-token`,
-    Origin: "http://localhost:3001",
+    Origin: localRuntimeDefaults.adminWebOrigin,
   }
 }

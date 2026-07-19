@@ -10,6 +10,12 @@ import {
 const localEnvironmentFiles = [
   {
     examplePath: "apps/api/.env.example",
+    legacyValues: {
+      ADMIN_API_ALLOWED_HOSTS:
+        "admin-api.localhost:4000,admin-api-unified:4000",
+      ADMIN_BETTER_AUTH_URL: "http://admin-api.localhost:4000",
+      ADMIN_ORIGIN: "http://localhost:3001",
+    },
     path: "apps/api/.env",
     prepare: (template: string, credentials: LocalCredentials) =>
       replaceEnvironmentValue(
@@ -36,11 +42,17 @@ const localEnvironmentFiles = [
   },
   {
     examplePath: "apps/web/.env.example",
+    legacyValues: {},
     path: "apps/web/.env",
     prepare: (template: string) => template,
   },
   {
     examplePath: "apps/admin/.env.example",
+    legacyValues: {
+      ADMIN_API_BASE_URL: "http://admin-api.localhost:4000",
+      ADMIN_ORIGIN: "http://localhost:3001",
+      NEXT_PUBLIC_ADMIN_API_BASE_URL: "http://admin-api.localhost:4000",
+    },
     path: "apps/admin/.env",
     prepare: (template: string) => template,
   },
@@ -60,6 +72,12 @@ export type LocalEnvironmentFileResult =
     }
   | {
       readonly kind: "preserved"
+      readonly path: string
+    }
+  | {
+      readonly addedKeys: readonly string[]
+      readonly kind: "updated"
+      readonly migratedKeys: readonly string[]
       readonly path: string
     }
 
@@ -105,14 +123,15 @@ export function createLocalEnvironmentFiles({
   createCredentials = createLocalCredentials,
   repositoryRoot,
 }: CreateLocalEnvironmentOptions): readonly LocalEnvironmentFileResult[] {
-  const missingFiles = localEnvironmentFiles.filter(
-    (file) => !existsSync(path.join(repositoryRoot, file.path))
+  const changesRequired = localEnvironmentFiles.some((file) =>
+    environmentFileNeedsUpdate(repositoryRoot, file)
   )
-  const credentials = missingFiles.length > 0 ? createCredentials() : undefined
+  const credentials = changesRequired ? createCredentials() : undefined
 
   if (
     credentials !== undefined &&
     (credentials.adminAuthSecret === credentials.learnerAuthSecret ||
+      credentials.adminAuthSecret === credentials.cursorSigningSecret ||
       credentials.cursorSigningSecret === credentials.learnerAuthSecret)
   ) {
     throw new Error("인증과 cursor 서명 비밀값은 서로 달라야 합니다.")
@@ -120,28 +139,61 @@ export function createLocalEnvironmentFiles({
 
   return localEnvironmentFiles.map((file) => {
     const targetPath = path.join(repositoryRoot, file.path)
-    if (existsSync(targetPath)) {
-      return { kind: "preserved", path: file.path }
-    }
-
-    if (credentials === undefined) {
-      throw new Error("로컬 credential 생성 결과가 없습니다.")
-    }
-
     const examplePath = path.join(repositoryRoot, file.examplePath)
     if (!existsSync(examplePath)) {
       throw new Error(`${file.examplePath} 파일이 없습니다.`)
     }
 
-    const content = file.prepare(readFileSync(examplePath, "utf8"), credentials)
-    mkdirSync(path.dirname(targetPath), { recursive: true })
-    writeFileSync(targetPath, content, {
+    if (!existsSync(targetPath)) {
+      if (credentials === undefined) {
+        throw new Error("로컬 credential 생성 결과가 없습니다.")
+      }
+
+      const content = file.prepare(
+        readFileSync(examplePath, "utf8"),
+        credentials
+      )
+      mkdirSync(path.dirname(targetPath), { recursive: true })
+      writeFileSync(targetPath, content, {
+        encoding: "utf8",
+        flag: "wx",
+        mode: 0o600,
+      })
+
+      return { kind: "created", path: file.path }
+    }
+
+    if (credentials === undefined) {
+      return { kind: "preserved", path: file.path }
+    }
+
+    const template = file.prepare(
+      readFileSync(examplePath, "utf8"),
+      credentials
+    )
+    const reconciliation = reconcileEnvironmentFile(
+      readFileSync(targetPath, "utf8"),
+      template,
+      file.legacyValues
+    )
+    if (
+      reconciliation.addedKeys.length === 0 &&
+      reconciliation.migratedKeys.length === 0
+    ) {
+      return { kind: "preserved", path: file.path }
+    }
+
+    writeFileSync(targetPath, reconciliation.content, {
       encoding: "utf8",
-      flag: "wx",
       mode: 0o600,
     })
 
-    return { kind: "created", path: file.path }
+    return {
+      addedKeys: reconciliation.addedKeys,
+      kind: "updated",
+      migratedKeys: reconciliation.migratedKeys,
+      path: file.path,
+    }
   })
 }
 
@@ -169,8 +221,21 @@ export function inspectLocalOnboarding({
   }
 
   const environments = new Map<string, ReadonlyMap<string, string>>()
+  const examples = new Map<string, ReadonlyMap<string, string>>()
   for (const file of localEnvironmentFiles) {
     const absolutePath = path.join(repositoryRoot, file.path)
+    const examplePath = path.join(repositoryRoot, file.examplePath)
+    if (!existsSync(examplePath)) {
+      checks.push({
+        detail: `${file.examplePath} 파일이 없습니다.`,
+        kind: "failure",
+        label: file.examplePath,
+      })
+      continue
+    }
+
+    const example = parseEnvironmentContent(readFileSync(examplePath, "utf8"))
+    examples.set(file.path, example)
     if (!existsSync(absolutePath)) {
       checks.push({
         detail: `${file.examplePath}에서 ${file.path}을 준비하세요.`,
@@ -180,14 +245,19 @@ export function inspectLocalOnboarding({
       continue
     }
 
-    environments.set(file.path, parseEnvironmentFile(absolutePath))
+    const environment = parseEnvironmentFile(absolutePath)
+    environments.set(file.path, environment)
     checks.push({
       detail: "환경 파일이 있습니다.",
       kind: "pass",
       label: file.path,
     })
+    checks.push(
+      inspectRequiredEnvironmentValues(file.path, environment, example)
+    )
   }
 
+  checks.push(...inspectLocalRuntimeContract(environments, examples))
   checks.push(...inspectAuthSecrets(environments))
   checks.push(...inspectTestAuthentication(environments))
   checks.push(...inspectDatabase(repositoryRoot, environments, requireDatabase))
@@ -314,6 +384,19 @@ function inspectAuthSecrets(
           label: "cursor 비밀값 분리",
         }
   )
+  checks.push(
+    adminSecret === cursorSecret
+      ? {
+          detail: "관리자 인증과 cursor 서명 비밀값이 같습니다.",
+          kind: "failure",
+          label: "관리자 cursor 비밀값 분리",
+        }
+      : {
+          detail: "관리자 인증과 cursor 서명 비밀값이 분리되어 있습니다.",
+          kind: "pass",
+          label: "관리자 cursor 비밀값 분리",
+        }
+  )
 
   return checks
 }
@@ -436,9 +519,13 @@ function resolveLocalDatabasePath(
 }
 
 function parseEnvironmentFile(filePath: string): ReadonlyMap<string, string> {
+  return parseEnvironmentContent(readFileSync(filePath, "utf8"))
+}
+
+function parseEnvironmentContent(content: string): ReadonlyMap<string, string> {
   const values = new Map<string, string>()
 
-  for (const rawLine of readFileSync(filePath, "utf8").split(/\r?\n/u)) {
+  for (const rawLine of content.split(/\r?\n/u)) {
     const line = rawLine.trim()
     if (line.length === 0 || line.startsWith("#")) continue
 
@@ -451,6 +538,163 @@ function parseEnvironmentFile(filePath: string): ReadonlyMap<string, string> {
   }
 
   return values
+}
+
+function environmentFileNeedsUpdate(
+  repositoryRoot: string,
+  file: (typeof localEnvironmentFiles)[number]
+): boolean {
+  const targetPath = path.join(repositoryRoot, file.path)
+  const examplePath = path.join(repositoryRoot, file.examplePath)
+  if (!existsSync(targetPath)) return true
+  if (!existsSync(examplePath)) {
+    throw new Error(`${file.examplePath} 파일이 없습니다.`)
+  }
+
+  const environment = parseEnvironmentFile(targetPath)
+  const example = parseEnvironmentFile(examplePath)
+  if (
+    [...example.keys()].some(
+      (key) => (environment.get(key)?.trim().length ?? 0) === 0
+    )
+  ) {
+    return true
+  }
+
+  return Object.entries(file.legacyValues).some(
+    ([key, legacyValue]) => environment.get(key) === legacyValue
+  )
+}
+
+function reconcileEnvironmentFile(
+  content: string,
+  template: string,
+  legacyValues: Readonly<Record<string, string>>
+): {
+  readonly addedKeys: readonly string[]
+  readonly content: string
+  readonly migratedKeys: readonly string[]
+} {
+  const currentValues = parseEnvironmentContent(content)
+  const templateValues = parseEnvironmentContent(template)
+  const addedKeys = [...templateValues.keys()].filter(
+    (key) => (currentValues.get(key)?.trim().length ?? 0) === 0
+  )
+  const absentKeys = addedKeys.filter((key) => !currentValues.has(key))
+  const emptyKeys = addedKeys.filter((key) => currentValues.has(key))
+  const migratedKeys = Object.entries(legacyValues)
+    .filter(([key, legacyValue]) => currentValues.get(key) === legacyValue)
+    .map(([key]) => key)
+
+  let nextContent = content
+  for (const key of emptyKeys) {
+    const desiredValue = templateValues.get(key)
+    if (desiredValue === undefined) {
+      throw new Error(`환경 변수 예시에 ${key}가 없습니다.`)
+    }
+    nextContent = replaceEnvironmentValue(nextContent, key, desiredValue)
+  }
+  for (const key of migratedKeys) {
+    const desiredValue = templateValues.get(key)
+    if (desiredValue === undefined) {
+      throw new Error(`환경 변수 예시에 ${key}가 없습니다.`)
+    }
+    nextContent = replaceEnvironmentValue(nextContent, key, desiredValue)
+  }
+
+  if (absentKeys.length > 0) {
+    const separator = nextContent.endsWith("\n") ? "" : "\n"
+    const additions = absentKeys
+      .map((key) => `${key}=${templateValues.get(key) ?? ""}`)
+      .join("\n")
+    nextContent = `${nextContent}${separator}${additions}\n`
+  }
+
+  return { addedKeys, content: nextContent, migratedKeys }
+}
+
+function inspectRequiredEnvironmentValues(
+  filePath: string,
+  environment: ReadonlyMap<string, string>,
+  example: ReadonlyMap<string, string>
+): LocalOnboardingCheck {
+  const missingKeys = [...example.keys()].filter(
+    (key) => (environment.get(key)?.trim().length ?? 0) === 0
+  )
+
+  if (missingKeys.length > 0) {
+    return {
+      detail: `필수 환경 변수가 없거나 비어 있습니다: ${missingKeys.join(", ")}`,
+      kind: "failure",
+      label: `${filePath} 필수 환경 변수`,
+    }
+  }
+
+  return {
+    detail: `${example.size}개 필수 환경 변수가 채워져 있습니다.`,
+    kind: "pass",
+    label: `${filePath} 필수 환경 변수`,
+  }
+}
+
+function inspectLocalRuntimeContract(
+  environments: ReadonlyMap<string, ReadonlyMap<string, string>>,
+  examples: ReadonlyMap<string, ReadonlyMap<string, string>>
+): readonly LocalOnboardingCheck[] {
+  const contractKeys = new Map<string, readonly string[]>([
+    [
+      "apps/api/.env",
+      [
+        "ADMIN_API_ALLOWED_HOSTS",
+        "ADMIN_BETTER_AUTH_URL",
+        "ADMIN_ORIGIN",
+        "BETTER_AUTH_URL",
+        "LEARNER_API_ALLOWED_HOSTS",
+        "WEB_ORIGIN",
+      ],
+    ],
+    [
+      "apps/web/.env",
+      ["NEXT_PUBLIC_API_BASE_URL", "WEB_API_BASE_URL", "WEB_ORIGIN"],
+    ],
+    [
+      "apps/admin/.env",
+      [
+        "ADMIN_API_BASE_URL",
+        "ADMIN_ORIGIN",
+        "NEXT_PUBLIC_ADMIN_API_BASE_URL",
+        "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
+      ],
+    ],
+  ])
+  const mismatches: string[] = []
+
+  for (const [filePath, keys] of contractKeys) {
+    const environment = environments.get(filePath)
+    const example = examples.get(filePath)
+    if (environment === undefined || example === undefined) continue
+
+    for (const key of keys) {
+      if (environment.get(key) !== example.get(key)) {
+        mismatches.push(`${filePath}:${key}`)
+      }
+    }
+  }
+
+  return [
+    mismatches.length > 0
+      ? {
+          detail: `로컬 표준값과 다릅니다: ${mismatches.join(", ")}`,
+          kind: "failure",
+          label: "로컬 런타임 계약",
+        }
+      : {
+          detail:
+            "관리자와 학습자 origin 및 API Host가 로컬 표준과 일치합니다.",
+          kind: "pass",
+          label: "로컬 런타임 계약",
+        },
+  ]
 }
 
 function unwrapEnvironmentValue(value: string): string {
