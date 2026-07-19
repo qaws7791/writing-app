@@ -29,12 +29,9 @@
 | `_index.md`                                                     | 엔지니어링 문서 전체의 진입점과 탐색 지도를 제공한다.                                            |
 | `system-overview.md`                                            | 시스템 목적, C4 모델, 서비스 경계, 라우트, API 런타임, 저장소, 배포 개요를 설명한다.             |
 | `workspace-inventory.md`                                        | 앱, 패키지, 스크립트 루트의 현재 인벤토리와 자동 검증 기준을 정의한다.                           |
-| `codebase-simplification-audit.md`                              | 제품 규모 대비 코드·패키지·런타임·검증 복잡성을 평가하고 축소 후보를 기록한다.                   |
 | `monorepo-target-architecture-plan/_index.md`                   | 목표 모노레포 아키텍처를 독립 실행·검증·롤백 작업으로 분해한 계획의 진입점이다.                  |
 | `workspace-dependency-policy.md`                                | 공통 dependency catalog와 디자인·lint baseline ratchet 정책을 정의한다.                          |
 | `repository-architecture-tooling.md`                            | source inventory, TypeScript module graph와 architecture 정책 matcher를 정의한다.                |
-| `web-nextjs-architecture-migration.md`                          | 학습자 웹 기능 슬라이스 전환의 불변 조건, 목표 구조, 실행 순서와 검증 상태를 기록한다.           |
-| `admin-nextjs-architecture-migration.md`                        | 관리자 웹 기능 슬라이스 전환의 불변 조건, 목표 구조, 실행 순서와 검증 상태를 기록한다.           |
 | `codex-skill-invocation-policy.md`                              | Codex 워크플로 스킬의 명시 호출 전용 정책과 검증 기준을 정의한다.                                |
 | `tech-stack.md`                                                 | 런타임, 패키지 관리, 프론트엔드, 백엔드, 데이터, 테스트 도구, 의존성 기준을 정의한다.            |
 | `runtime-configuration.md`                                      | 로컬 포트, 환경 변수 파서, 앱별 설정, Turbo 환경 변수, `.env.example` 정책을 정의한다.           |
@@ -45,8 +42,6 @@
 | `schema-conventions.md`                                         | 데이터베이스 스키마 명명, Better Auth 테이블, 직접 관리 테이블, 새 스키마 체크리스트를 정의한다. |
 | `security.md`                                                   | 인증, 인가, CORS, 민감 데이터, 오류 응답, AI provider, 데이터 보존 보안 기준을 정의한다.         |
 | `admin-auth-security-operations.md`                             | 관리자 계정 감사, 세션 폐기와 안전한 owner provisioning 운영 절차를 정의한다.                    |
-| `admin-mfa-step-up.md`                                          | 폐기된 owner 관리자 TOTP MFA와 step-up 인증의 역사 기록이다.                                     |
-| `admin-mfa-removal-plan.md`                                     | 어드민 MFA·step-up 제거, DB 정리와 역할 기반 인가 유지 계획을 정의한다.                          |
 | `admin-transport-security.md`                                   | 관리자 transport의 actor 구성, 이중 인가 경계와 오류 변환 기준을 정의한다.                       |
 | `testing.md`                                                    | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.           |
 | `admin-development-browser-verification.md`                     | 로컬 어드민·API 개발 서버의 브라우저 수동 검증 범위와 실행 결과를 기록한다.                      |

@@ -30,18 +30,15 @@ describe("문서 route drift fixture", () => {
 })
 
 describe("문서 검사 범위 fixture", () => {
-  test("product 문서는 검사하고 목표 제안은 현재 문서 범위에서 제외한다", async () => {
+  test("product 문서는 현재 문서 범위로 검사한다", async () => {
     const { isDocumentDriftMarkdownPath } = await import(documentDriftModuleUrl)
 
     expect(
       isDocumentDriftMarkdownPath("docs/product/admin-operations.md")
     ).toBe(true)
-    expect(
-      isDocumentDriftMarkdownPath("monorepo-target-architecture-2026-07-17.md")
-    ).toBe(false)
   })
 
-  test("ADR와 목표 계획은 삭제된 workspace의 역사 기록을 보존한다", async () => {
+  test("ADR와 단계별 실행 계획은 삭제된 workspace의 역사 기록을 보존한다", async () => {
     const { isHistoricalOrAnalysisDocumentPath } = await import(
       documentDriftModuleUrl
     )
@@ -101,7 +98,7 @@ describe("자료실 현재 문서 stale sentinel fixture", () => {
     ).toEqual([])
   })
 
-  test("ADR, 감사와 계획 문서는 역사·분석 범위로 보존한다", async () => {
+  test("ADR와 단계별 실행 계획은 역사·분석 범위로 보존한다", async () => {
     const { findStaleResourceLibraryStatements } = await import(
       documentDriftModuleUrl
     )
@@ -111,12 +108,6 @@ describe("자료실 현재 문서 stale sentinel fixture", () => {
     expect(
       findStaleResourceLibraryStatements(
         "docs/engineering/adr/ADR-0004-resource-library-collaboration-boundary.md",
-        historicalStatement
-      )
-    ).toEqual([])
-    expect(
-      findStaleResourceLibraryStatements(
-        "docs/engineering/codebase-simplification-audit.md",
         historicalStatement
       )
     ).toEqual([])

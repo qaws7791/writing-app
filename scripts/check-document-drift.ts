@@ -36,8 +36,6 @@ const markdownRoots = [
 const historicalOrAnalysisDocumentPatterns = [
   /^docs\/engineering\/adr\//u,
   /^docs\/engineering\/monorepo-target-architecture-plan\//u,
-  /^docs\/engineering\/.*(?:-audit|-plan)\.md$/u,
-  /^monorepo-target-architecture-\d{4}-\d{2}-\d{2}\.md$/u,
 ] as const
 
 const staleResourceLibraryPatterns = [
