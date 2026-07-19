@@ -2,7 +2,10 @@
   "extends": "@workspace/config/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "exactOptionalPropertyTypes": true,
     "incremental": true,
+    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": true,
     "types": ["bun", "@testing-library/jest-dom"],
     "paths": {
       "#env/*": ["../../packages/env/src/*"],

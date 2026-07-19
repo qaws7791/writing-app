@@ -1,12 +1,14 @@
-import { AdminCourseDetailPage } from "@/features/courses/admin-course-detail-page"
-import { createAdminCoursesApi } from "@/features/courses/admin-courses-api"
-import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
-import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import { AdminCourseDetailPage } from "@/features/course-editor/ui/admin-course-detail-page"
+import { courseIdSchema } from "@/entities/course/model/course-id"
+import { createAdminCourseEditorApi } from "@/features/course-editor/api/admin-course-editor-api"
+import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
+import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 import {
-  readAdminCourseEditorAction,
   publishAdminCourseAction,
   saveAdminCourseEditorAction,
-} from "@/features/courses/admin-course-actions"
+} from "@/features/course-editor/server/admin-course-actions"
+import { notFound } from "next/navigation"
+import { readServerAdminApiBaseUrl } from "@/server/env/admin-runtime-config"
 
 export default async function AdminCourseDetailRoute({
   params,
@@ -15,18 +17,19 @@ export default async function AdminCourseDetailRoute({
     readonly id: string
   }>
 }) {
-  const { id } = await params
-  const api = createAdminCoursesApi(
+  const parsedCourseId = courseIdSchema.safeParse((await params).id)
+  if (!parsedCourseId.success) notFound()
+  const api = createAdminCourseEditorApi(
     getServerAdminHttpTransport({
       tokenProvider: getServerAdminSessionToken,
     })
   )
-  const courseResult = await api.getCourseEditor(id)
+  const courseResult = await api.getCourseEditor(parsedCourseId.data)
 
   return (
     <AdminCourseDetailPage
       courseResult={courseResult}
-      loadLatestCourse={readAdminCourseEditorAction}
+      apiBaseUrl={readServerAdminApiBaseUrl()}
       publishCourse={publishAdminCourseAction}
       saveCourse={saveAdminCourseEditorAction}
     />

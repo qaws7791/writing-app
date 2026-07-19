@@ -45,14 +45,14 @@
 
 ### 어드민 웹
 
-- `/`: `/courses`로 redirect한다.
+- `/`: 운영 대시보드.
 - `/login`: 관리자 로그인 페이지.
-- `/dashboard` 또는 `/`: 운영 대시보드.
 - `/courses`: 코스 목록.
 - `/courses/[id]`: 현재 공개 커리큘럼을 직접 편집하는 코스/레슨/스텝 편집기.
 - `/users`: 사용자 목록.
 - `/users/[id]`: 사용자 상세, 상태 변경, 삭제 요청 처리.
 - `/analytics`: 가입, 완료, 연속 학습일, 레슨별 완료율과 이탈률 분석.
+- `/chat`: 관리자 AI 에이전트 대화.
 
 관리자 코스 썸네일 route는 계약의 `visualKey` 허용 목록만 처리한다. 정상 파일은 프로세스 수명 동안 읽기 Promise를 재사용하고 장기 immutable cache header를 반환하며, 허용되지 않은 이름·경로 탐색·배포 누락 파일은 모두 404로 응답한다.
 
@@ -68,7 +68,9 @@
 
 `apps/web`의 공통 HTTP transport는 `src/shared/http`에 있고, 서버 요청 factory는 `src/server/http`가 소유한다. 각 브라우저 화면은 자기 `features/*/api`의 좁은 포트를 사용하고, Server Component는 `features/*/server/dal`을 직접 호출한다. 정적 OpenAPI JSON과 generated TypeScript 타입은 사용하지 않는다. HTTP 응답은 `@workspace/contracts/learning`의 canonical runtime schema로 검증하며 course·progress·lesson·profile은 identity 변환 없이 화면에 전달한다. 코스 목록의 검색·분류·정렬은 Zod로 파싱한 URL 조건을 API query로 전달하고 `/course-categories` 결과를 별도로 사용한다.
 
-`apps/admin`은 `AdminApi` 포트만 사용한다. 서버 컴포넌트는 `getServerAdminApi()`로 현재 요청 쿠키를 어드민 API에 전달한다. 관리자 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다.
+`apps/admin`의 공통 HTTP result와 transport는 `src/shared/http`, 요청별 인증 transport factory는 `src/server/http`가 소유한다. Server Component는 자기 `features/*/server`의 좁은 DAL을 호출하고, 브라우저 재조회가 필요한 코스 편집기와 자료실만 자기 `features/*/api` adapter를 사용한다. 각 DAL과 adapter는 `@workspace/contracts/admin`의 canonical schema로 응답을 검증한다. 중앙 `AdminApi`와 조회용 Server Action은 사용하지 않는다.
+
+관리자 공개 런타임 설정은 `src/shared/config/admin-runtime-config.ts`에서 Zod로 검증한 뒤 Server Component가 직렬화 가능한 값만 Client Component에 전달한다. 클라이언트에는 URL 브랜드와 순수 조립 함수가 있는 `admin-api-url.ts`만 포함해 Zod parser가 초기 번들에 들어가지 않게 한다.
 
 서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 관리자 AI 채팅은 목록과 선택 대화를 병렬로 조회한다. 학습자 코스 목록은 course page와 category를 병렬 조회한다. 레슨 진입은 레슨과 프로필만 병렬 조회하고, 초기 step은 레슨 응답의 `learning`에서 읽는다. 별도 `/progress` join이나 course detail 조회를 시작하지 않는다. 각 요청의 기존 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
 
@@ -82,7 +84,7 @@
 
 두 앱은 root `loading.tsx`, `error.tsx`, `global-error.tsx`와 보호 route group skeleton을 제공한다. error boundary의 다시 시도는 Next `reset()`을 호출한다. 어드민은 세션 응답의 `unauthorized | forbidden`만 로그인으로 보내고 network·contract·5xx 오류는 로그인 상태를 유지한 서비스 오류 UI로 표시한다. 로그아웃 요청 실패는 화면 alert와 같은 버튼의 재시도로 처리하며 unhandled rejection을 만들지 않는다. 어드민은 알 수 없는 경로에 전용 not-found 화면을 제공한다.
 
-관리자 로그인은 ID/password만 지원하고 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/sign-in/email` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, 어드민 API는 `ADMIN_CORS_ORIGIN`과 Better Auth `trustedOrigins`로 어드민 웹 origin을 허용한다. 로그인 `next` 경로 검증은 `admin-auth-navigation.ts`가 단일 출처이며, 로그인 성공 후 이동은 `next/navigation`의 router를 사용한다. 어드민 앱 source에서 `window.location.*` 직접 이동은 금지한다.
+관리자 로그인은 ID/password만 지원하고 `NEXT_PUBLIC_ADMIN_API_BASE_URL`의 Hono API `/api/auth/sign-in/email` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, 어드민 API는 `ADMIN_CORS_ORIGIN`과 Better Auth `trustedOrigins`로 어드민 웹 origin을 허용한다. 로그인 `next` 경로 검증은 `src/features/authentication/model/admin-auth-navigation.ts`가 단일 출처이며, 로그인 성공 후 이동은 `next/navigation`의 router를 사용한다. 어드민 앱 source에서 `window.location.*` 직접 이동은 금지한다.
 
 ## UI와 접근성
 

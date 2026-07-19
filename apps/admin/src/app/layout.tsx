@@ -34,7 +34,7 @@ export default async function RootLayout({
           defaultTheme="system"
           disableTransitionOnChange
           enableSystem
-          nonce={nonce}
+          {...(nonce === undefined ? {} : { nonce })}
         >
           {children}
         </ThemeProvider>

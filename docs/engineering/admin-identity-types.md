@@ -19,7 +19,8 @@
 - 식별자는 1~200자이며 영문 대소문자, 숫자, `.`, `_`, `:`, `-`만 허용한다. 첫 문자는 영문 또는 숫자여야 한다.
 - 관리자 인증 Adapter, HTTP path/body Adapter, DB 조회 Adapter가 외부 문자열을 parser로 검증한다.
 - core의 관리자 actor, use case 입력, repository Interface에는 브랜드 타입만 전달한다.
-- admin 앱은 `lib/api/admin-identity.ts`를 wire Adapter로 사용하고 화면 Module은 contracts DTO를 직접 import하지 않는다.
+- admin 앱은 학습자 식별자를 `entities/learner-account/model/learner-account-id.ts`, AI 대화 식별자를 `features/ai-chat/model/conversation-id.ts`에서 canonical contract schema와 브랜드 타입으로 노출한다.
+- App Router의 동적 route와 Server Action은 이 schema로 외부 문자열을 DAL 호출 전에 검증한다. 화면 Module은 entity·feature model 타입을 사용하고 wire DTO는 허용된 `api | model | server` 경계에서만 import한다.
 
 ## 호환성
 
@@ -30,4 +31,5 @@
 - contracts parser 테스트가 유효 ID, 빈 값, 공백, 금지 문자, 한글, 최대 길이 초과를 검증한다.
 - compile-time negative fixture가 `AdminId`, `ConversationId`, `UserId`의 교차 전달을 거부한다.
 - core repository/use case 계약 테스트가 브랜드 입력과 DTO 결과를 검증한다.
-- `apps/api/src/modules/admin-identity` HTTP Adapter 계약과 target-only route 테스트가 기존 문자열 wire format을 유지하는지 검증한다.
+- `apps/api`의 관리자 identity HTTP Adapter 계약과 target-only route 테스트가 기존 문자열 wire format을 유지하는지 검증한다.
+- `apps/admin/src/architecture.test.ts`가 contract import 경계, feature 격리와 제거된 `lib/api/admin-identity.ts` 경로의 재도입 금지를 검증한다.

@@ -1,9 +1,9 @@
-import { AdminAiChatPage } from "@/features/chat/admin-ai-chat-page"
-import { createAdminAiChatApi } from "@/features/chat/admin-ai-chat-api"
-import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
-import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import { AdminAiChatPage } from "@/features/ai-chat/ui/admin-ai-chat-page"
+import { createAdminAiChatDal } from "@/features/ai-chat/server/admin-ai-chat-dal"
+import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
+import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 import { redirect } from "next/navigation"
-import { conversationIdSchema } from "@/lib/api/admin-identity"
+import { conversationIdSchema } from "@/features/ai-chat/model/conversation-id"
 
 export default async function AdminAiChatRoute({
   searchParams,
@@ -14,7 +14,7 @@ export default async function AdminAiChatRoute({
   const conversationId = conversationIdSchema.safeParse(
     readString(resolvedSearchParams["conversationId"], "")
   )
-  const api = createAdminAiChatApi(
+  const api = createAdminAiChatDal(
     getServerAdminHttpTransport({
       tokenProvider: getServerAdminSessionToken,
     })

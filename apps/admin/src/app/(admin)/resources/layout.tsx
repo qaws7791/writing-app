@@ -2,20 +2,21 @@ import { Suspense, type ReactNode } from "react"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { ResourceWorkspace } from "@/features/resources/resource-workspace"
-import { createResourceLibraryHttpAdapter } from "@/features/resources/resource-library-http-adapter"
-import { createAdminSessionApi } from "@/features/auth/admin-session-api"
-import { AdminServiceUnavailable } from "@/components/admin-service-unavailable"
-import { isAdminAuthenticationError } from "@/lib/api/api-error"
-import type { AdminResourceTree } from "@/features/resources/resource-library-model"
-import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
+import { ResourceWorkspace } from "@/features/resource-library/ui/resource-workspace"
+import { resolveResourceLibraryScope } from "@/features/resource-library/model/resource-library-scope"
+import { createResourceLibraryHttpAdapter } from "@/features/resource-library/api/resource-library-http-adapter"
+import { createAdminSessionDal } from "@/features/authentication/server/admin-session-dal"
+import { AdminServiceUnavailable } from "@/app/(admin)/_views/admin-service-unavailable"
+import { isAdminAuthenticationError } from "@/shared/http/admin-api-error"
+import type { AdminResourceTree } from "@/entities/resource-document/model/resource-document"
+import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
 import {
   createAdminLoginPath,
   resolveSafeAdminNextPath,
-} from "@/lib/auth/admin-auth-navigation"
-import { adminRequestPathHeader } from "@/lib/auth/admin-request-path"
-import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
-import { readServerAdminApiBaseUrl } from "@/runtime-config-server"
+} from "@/features/authentication/model/admin-auth-navigation"
+import { adminRequestPathHeader } from "@/shared/auth/admin-request-path"
+import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
+import { readServerAdminApiBaseUrl } from "@/server/env/admin-runtime-config"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
 
 export default async function ResourceLayout({
@@ -27,17 +28,18 @@ export default async function ResourceLayout({
     (await headers()).get(adminRequestPathHeader) ?? "/resources"
   )
   const token = await getServerAdminSessionToken()
+  const initialScope = resolveResourceLibraryScope(requestPath)
 
   if (token === null) {
     redirect(createAdminLoginPath(requestPath))
   }
 
   const transport = getServerAdminHttpTransport({ tokenProvider: () => token })
-  const sessionApi = createAdminSessionApi(transport)
+  const sessionApi = createAdminSessionDal(transport)
   const resourceApi = createResourceLibraryHttpAdapter(transport)
   const [sessionResult, treeResult] = await Promise.all([
     sessionApi.getSession(),
-    resourceApi.getResourceTree("active"),
+    resourceApi.getResourceTree(initialScope),
   ])
 
   if (sessionResult.status === "error") {
@@ -55,6 +57,7 @@ export default async function ResourceLayout({
     <Suspense fallback={<ResourceWorkspaceFallback />}>
       <ResourceWorkspace
         apiBaseUrl={readServerAdminApiBaseUrl()}
+        initialScope={initialScope}
         initialTree={initialTree}
       >
         {children}

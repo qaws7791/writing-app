@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import AdminLoginRoute from "@/app/login/page"
 
-vi.mock("@/features/auth/admin-auth-page", () => ({
+vi.mock("@/features/authentication/ui/admin-auth-page", () => ({
   AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
     return <div data-testid="next-path">{nextPath}</div>
   },

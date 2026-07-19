@@ -132,12 +132,12 @@ bun run --filter=@workspace/web test
 
 2026-07-13 변경 단위 2 회귀 검증은 목표 Toolchain인 Bun `1.3.10`, Node.js `24.15.0`에서 실행했다.
 
-| 위험 파일                                                           | 측정 line coverage | 최소 기준 |
-| ------------------------------------------------------------------- | -----------------: | --------: |
-| `apps/admin/src/lib/auth/admin-auth-navigation.ts`                  |             75.00% |       75% |
-| `apps/api/src/adapters/ai-chat/admin-ai-chat-drizzle.repository.ts` |            100.00% |      100% |
-| `packages/db/src/migrations/migrate.ts`                             |             89.80% |       87% |
-| `packages/resource-document/src/resource-markdown.ts`               |             87.84% |       87% |
+| 위험 파일                                                               | 측정 line coverage | 최소 기준 |
+| ----------------------------------------------------------------------- | -----------------: | --------: |
+| `apps/admin/src/features/authentication/model/admin-auth-navigation.ts` |             75.00% |       75% |
+| `apps/api/src/adapters/ai-chat/admin-ai-chat-drizzle.repository.ts`     |            100.00% |      100% |
+| `packages/db/src/migrations/migrate.ts`                                 |             89.80% |       87% |
+| `packages/resource-document/src/resource-markdown.ts`                   |             87.84% |       87% |
 
 같은 환경에서 전체 correctness는 46.34초, 순차 coverage는 33.98초였다. correctness와 coverage의 재실행은 독립 판정을 위한 의도된 비용이다. Bun 전체 테스트와 SQLite를 함께 사용하는 workspace의 경합 자료가 충분하지 않으므로 coverage는 순차 실행을 유지하며, runner가 workspace별 duration을 출력한다.
 
@@ -160,7 +160,7 @@ bun run --filter=@workspace/web test
 - 관리자 자료실 transport fixture는 tree/search request와 세션 actor의 application mapping, `400`·`404`·`409`·`422` rejection, 문서 ETag와 stale `412`, import envelope, Markdown 다운로드 header, 이미지 signature·인증·asset command와 영구 삭제 object key 비노출을 고정한다. core가 잘못된 성공값을 반환하면 route response schema validation이 외부 응답 전에 `500`으로 격리하는지도 확인한다.
 - MTA-48 회귀 검증은 위 learner/admin/resource route fixture와 OpenAPI fixture를 재사용한다. 별도 중복 parity harness를 만들지 않으며 AI chat의 JSON·SSE route와 전용 OpenAPI fixture도 함께 실행한다.
 - 학습자 웹 앱은 `@workspace/core`를 직접 import하지 않는다는 아키텍처 테스트로 API 계약 경계를 고정한다.
-- 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 `@workspace/core`를 직접 import하지 않고, 관리자 contract는 허용된 feature Adapter에서만 사용한다는 아키텍처 테스트로 앱 모델 seam을 고정한다. feature HTTP 계약 테스트는 schema가 잘못된 성공 응답을 거절하고 검증된 canonical DTO를 identity mapper 없이 전달하는 성공 경로를 확인한다. 삭제된 중앙 `AdminApi`와 `http-admin-api` import가 다시 생기지 않는지도 함께 검사한다.
+- 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 `@workspace/core`를 직접 import하지 않고, 관리자 contract는 feature의 `api | model | server`와 entity canonical model에서만 사용한다. Admin 아키텍처 테스트는 허용된 최상위 계층, 절대 경로 import, 단방향 의존, feature 격리, model 순수성, Client→server·UI→DAL 금지, Client runtime config parser 금지와 구 중앙 API 재도입 금지를 함께 검사한다. feature HTTP 계약 테스트는 schema가 잘못된 성공 응답을 거절하고 검증된 canonical DTO를 identity mapper 없이 전달하는 성공 경로를 확인한다.
 
 ## DB 테스트 기준
 

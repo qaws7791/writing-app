@@ -1,10 +1,10 @@
-import { AdminAnalyticsPage } from "@/features/analytics/admin-analytics-page"
-import { createAdminAnalyticsApi } from "@/features/analytics/admin-analytics-api"
-import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
-import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import { AdminAnalyticsPage } from "@/features/analytics/ui/admin-analytics-page"
+import { createAdminAnalyticsDal } from "@/features/analytics/server/admin-analytics-dal"
+import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
+import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 
 export default async function AdminAnalyticsRoute() {
-  const api = createAdminAnalyticsApi(
+  const api = createAdminAnalyticsDal(
     getServerAdminHttpTransport({
       tokenProvider: getServerAdminSessionToken,
     })

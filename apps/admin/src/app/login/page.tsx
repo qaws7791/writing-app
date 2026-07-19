@@ -1,4 +1,8 @@
-import { AdminAuthPage } from "@/features/auth/admin-auth-page"
+import { AdminAuthPage } from "@/features/authentication/ui/admin-auth-page"
+import {
+  readAdminApiBaseUrl,
+  readLearnerWebOrigin,
+} from "@/shared/config/admin-runtime-config"
 
 type AdminLoginRouteProps = {
   readonly searchParams?: Promise<{
@@ -15,5 +19,11 @@ export default async function AdminLoginRoute({
     ? (nextParameter[0] ?? "/")
     : (nextParameter ?? "/")
 
-  return <AdminAuthPage nextPath={nextPath} />
+  return (
+    <AdminAuthPage
+      apiBaseUrl={readAdminApiBaseUrl()}
+      learnerWebOrigin={readLearnerWebOrigin()}
+      nextPath={nextPath}
+    />
+  )
 }

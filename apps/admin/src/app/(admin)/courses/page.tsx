@@ -1,29 +1,24 @@
-import { AdminCoursesPage } from "@/features/courses/admin-courses-page"
+import { parseAdminCourseFilters } from "@/features/course-catalog/model/admin-course-filters"
 import {
   archiveAdminCourseAction,
   createAdminCourseAction,
-} from "@/features/courses/admin-course-actions"
-import {
-  createAdminCoursesApi,
-  type ReadAdminCoursesInput,
-} from "@/features/courses/admin-courses-api"
-import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
-import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
-import { contentStatusSchema } from "@workspace/contracts/status"
+} from "@/features/course-catalog/server/admin-course-actions"
+import { createAdminCourseCatalogDal } from "@/features/course-catalog/server/admin-course-catalog-dal"
+import { AdminCoursesPage } from "@/features/course-catalog/ui/admin-courses-page"
+import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
+import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
 
 export default async function AdminCoursesRoute({
   searchParams,
 }: {
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const resolvedSearchParams = await searchParams
-  const filters = readCourseFilters(resolvedSearchParams)
-  const api = createAdminCoursesApi(
+  const filters = parseAdminCourseFilters(await searchParams)
+  const coursesResult = await createAdminCourseCatalogDal(
     getServerAdminHttpTransport({
       tokenProvider: getServerAdminSessionToken,
     })
-  )
-  const coursesResult = await api.getCourses(filters)
+  ).getCourses(filters)
 
   return (
     <AdminCoursesPage
@@ -33,35 +28,4 @@ export default async function AdminCoursesRoute({
       filters={filters}
     />
   )
-}
-
-function readCourseFilters(
-  searchParams: Record<string, string | string[] | undefined>
-): ReadAdminCoursesInput {
-  return {
-    category: readString(searchParams["category"], ""),
-    page: readPositiveInteger(searchParams["page"], 1),
-    pageSize: readPositiveInteger(searchParams["pageSize"], 20),
-    query: readString(searchParams["query"], ""),
-    status: readCourseStatus(readString(searchParams["status"], "all")),
-  }
-}
-
-function readString(value: string | string[] | undefined, fallback: string) {
-  return typeof value === "string" ? value : fallback
-}
-
-function readPositiveInteger(
-  value: string | string[] | undefined,
-  fallback: number
-) {
-  const parsed = Number(readString(value, ""))
-
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
-}
-
-function readCourseStatus(value: string): ReadAdminCoursesInput["status"] {
-  const status = contentStatusSchema.safeParse(value)
-
-  return status.success ? status.data : "all"
 }

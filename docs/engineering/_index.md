@@ -34,6 +34,7 @@
 | `workspace-dependency-policy.md`                                | 공통 dependency catalog와 디자인·lint baseline ratchet 정책을 정의한다.                          |
 | `repository-architecture-tooling.md`                            | source inventory, TypeScript module graph와 architecture 정책 matcher를 정의한다.                |
 | `web-nextjs-architecture-migration.md`                          | 학습자 웹 기능 슬라이스 전환의 불변 조건, 목표 구조, 실행 순서와 검증 상태를 기록한다.           |
+| `admin-nextjs-architecture-migration.md`                        | 관리자 웹 기능 슬라이스 전환의 불변 조건, 목표 구조, 실행 순서와 검증 상태를 기록한다.           |
 | `codex-skill-invocation-policy.md`                              | Codex 워크플로 스킬의 명시 호출 전용 정책과 검증 기준을 정의한다.                                |
 | `tech-stack.md`                                                 | 런타임, 패키지 관리, 프론트엔드, 백엔드, 데이터, 테스트 도구, 의존성 기준을 정의한다.            |
 | `runtime-configuration.md`                                      | 로컬 포트, 환경 변수 파서, 앱별 설정, Turbo 환경 변수, `.env.example` 정책을 정의한다.           |
@@ -73,6 +74,7 @@
 | `adr/ADR-0013-build-time-course-thumbnails.md`                  | 채택됨. 코스 썸네일의 build-time mirror와 불변 URL 계약을 기록한다.                              |
 | `adr/ADR-0014-app-owned-persistence-adapters.md`                | 채택됨. core→DB를 실행 앱 소유 adapter로 단조 전환하는 topology를 기록한다.                      |
 | `adr/ADR-0016-web-feature-sliced-architecture.md`               | 채택됨. 학습자 웹의 기능 슬라이스, RSC와 원격 API adapter 경계 결정을 기록한다.                  |
+| `adr/ADR-0017-admin-feature-sliced-architecture.md`             | 채택됨. 관리자 웹의 기능 슬라이스, RSC와 원격 API adapter 경계 결정을 기록한다.                  |
 
 ## 관리 기준
 

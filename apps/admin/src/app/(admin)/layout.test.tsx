@@ -20,23 +20,23 @@ vi.mock("next/headers", () => ({
   headers: async () => new Headers(),
 }))
 
-vi.mock("@/components/admin-shell", () => ({
+vi.mock("@/app/(admin)/_views/admin-shell", () => ({
   AdminShell({ children }: { readonly children: ReactNode }) {
     return <section aria-label="관리자 콘솔">{children}</section>
   },
 }))
 
-vi.mock("@/lib/auth/server-admin-session-token", () => ({
+vi.mock("@/server/auth/get-admin-session-token", () => ({
   getServerAdminSessionToken: vi.fn(async () => "admin-token"),
 }))
 
-vi.mock("@/features/auth/admin-session-api", () => ({
-  createAdminSessionApi: vi.fn(() => ({
+vi.mock("@/features/authentication/server/admin-session-dal", () => ({
+  createAdminSessionDal: vi.fn(() => ({
     getSession: getSessionMock,
   })),
 }))
 
-vi.mock("@/lib/api/get-server-admin-http-transport", () => ({
+vi.mock("@/server/http/get-admin-http-transport", () => ({
   getServerAdminHttpTransport: vi.fn(() => ({})),
 }))
 
@@ -58,7 +58,7 @@ describe("어드민 layout", () => {
 
   it("관리자 세션 토큰이 없으면 로그인 화면으로 보낸다", async () => {
     const { getServerAdminSessionToken } =
-      await import("@/lib/auth/server-admin-session-token")
+      await import("@/server/auth/get-admin-session-token")
     vi.mocked(getServerAdminSessionToken).mockResolvedValueOnce(null)
 
     await expect(

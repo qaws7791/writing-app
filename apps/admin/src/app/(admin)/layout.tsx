@@ -2,17 +2,21 @@ import type { ReactNode } from "react"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { AdminShell } from "@/components/admin-shell"
-import { AdminServiceUnavailable } from "@/components/admin-service-unavailable"
-import { createAdminSessionApi } from "@/features/auth/admin-session-api"
-import { isAdminAuthenticationError } from "@/lib/api/api-error"
-import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
+import { AdminShell } from "@/app/(admin)/_views/admin-shell"
+import { AdminServiceUnavailable } from "@/app/(admin)/_views/admin-service-unavailable"
+import { createAdminSessionDal } from "@/features/authentication/server/admin-session-dal"
+import { isAdminAuthenticationError } from "@/shared/http/admin-api-error"
+import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
 import {
   createAdminLoginPath,
   resolveSafeAdminNextPath,
-} from "@/lib/auth/admin-auth-navigation"
-import { adminRequestPathHeader } from "@/lib/auth/admin-request-path"
-import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+} from "@/features/authentication/model/admin-auth-navigation"
+import { adminRequestPathHeader } from "@/shared/auth/admin-request-path"
+import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
+import {
+  readAdminApiBaseUrl,
+  readLearnerWebOrigin,
+} from "@/shared/config/admin-runtime-config"
 
 export default async function AdminLayout({
   children,
@@ -28,7 +32,7 @@ export default async function AdminLayout({
     redirect(createAdminLoginPath(requestPath))
   }
 
-  const sessionResult = await createAdminSessionApi(
+  const sessionResult = await createAdminSessionDal(
     getServerAdminHttpTransport({ tokenProvider: () => token })
   ).getSession()
 
@@ -40,5 +44,12 @@ export default async function AdminLayout({
     return <AdminServiceUnavailable retryHref={requestPath} />
   }
 
-  return <AdminShell>{children}</AdminShell>
+  return (
+    <AdminShell
+      apiBaseUrl={readAdminApiBaseUrl()}
+      learnerWebOrigin={readLearnerWebOrigin()}
+    >
+      {children}
+    </AdminShell>
+  )
 }

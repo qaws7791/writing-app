@@ -1,15 +1,15 @@
-import { AdminDashboardPage } from "@/features/dashboard/admin-dashboard-page"
-import { createAdminAnalyticsApi } from "@/features/analytics/admin-analytics-api"
-import { createAdminDashboardApi } from "@/features/dashboard/admin-dashboard-api"
-import { getServerAdminHttpTransport } from "@/lib/api/get-server-admin-http-transport"
-import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import { AdminDashboardPage } from "@/features/dashboard/ui/admin-dashboard-page"
+import { createAdminAnalyticsDal } from "@/features/analytics/server/admin-analytics-dal"
+import { createAdminDashboardDal } from "@/features/dashboard/server/admin-dashboard-dal"
+import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
+import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 
 export default async function AdminDashboardRoute() {
   const transport = getServerAdminHttpTransport({
     tokenProvider: getServerAdminSessionToken,
   })
-  const analyticsApi = createAdminAnalyticsApi(transport)
-  const dashboardApi = createAdminDashboardApi(transport)
+  const analyticsApi = createAdminAnalyticsDal(transport)
+  const dashboardApi = createAdminDashboardDal(transport)
   const [dashboardResult, analyticsResult] = await Promise.all([
     dashboardApi.getDashboard(),
     analyticsApi.getAnalytics({ days: 30 }),

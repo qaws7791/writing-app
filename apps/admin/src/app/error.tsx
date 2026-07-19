@@ -1,7 +1,5 @@
 "use client"
 
-import { Button } from "@workspace/ui/components/ui/button"
-
 export default function AdminRouteError({
   reset,
 }: {
@@ -17,9 +15,13 @@ export default function AdminRouteError({
         <p className="mt-3 text-body-md text-muted-foreground">
           잠시 후 다시 시도해 주세요.
         </p>
-        <Button className="mt-6" onClick={reset} type="button">
+        <button
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-4xl bg-charcoal px-5 py-2.5 font-bold text-cream hover:opacity-90"
+          onClick={reset}
+          type="button"
+        >
           다시 시도
-        </Button>
+        </button>
       </div>
     </main>
   )
