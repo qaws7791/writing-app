@@ -44,6 +44,7 @@ npm-debug.log*
 *.pem
 codebase.md
 codebase-analysis.md
+combined-docs.md
 docs/.obsidian/
 
 # Agent skills (Antigravity)
