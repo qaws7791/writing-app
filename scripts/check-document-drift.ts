@@ -22,12 +22,9 @@ export type Route = {
 
 const markdownRoots = [
   "README.md",
-  "CONTEXT.md",
-  "ARCHITECTURE.md",
-  "BACKEND.md",
-  "FRONTEND.md",
-  "DOMAIN.md",
-  "GLOSSARY.md",
+  "docs/_index.md",
+  "docs/authority-map.md",
+  "docs/glossary.md",
   "docs/design",
   "docs/engineering",
   "docs/product",
@@ -35,7 +32,8 @@ const markdownRoots = [
 
 const historicalOrAnalysisDocumentPatterns = [
   /^docs\/engineering\/adr\//u,
-  /^docs\/engineering\/monorepo-target-architecture-plan\//u,
+  /^docs\/archive\//u,
+  /^docs\/work\//u,
 ] as const
 
 const staleResourceLibraryPatterns = [
@@ -113,12 +111,12 @@ const capabilityOwnershipNavigationRequiredMarkers = [
   {
     label: "단일 backend executable 상태",
     marker:
-      "product backend executable은 `apps/api` 하나이며 learner/admin Host sub-app을 함께 소유한다.",
+      "product backend executable은 `apps/api` 하나이며 학습자 경로와 `/api/admin/*` 관리자 경로를 함께 소유한다.",
   },
   {
     label: "target-only 계약 상태",
     marker:
-      "관리자 foundation과 여섯 capability는 legacy subprocess 없이 target-only 계약 suite로 검증한다.",
+      "관리자 foundation과 여섯 capability는 별도 subprocess 없이 계약 suite로 검증한다.",
   },
 ] as const
 
@@ -406,19 +404,19 @@ function hasExport(exports: readonly string[], exportKey: string): boolean {
 
 function validateBackendRouteDocumentation() {
   const backendDocument = fs.readFileSync(
-    path.join(repositoryRoot, "BACKEND.md"),
+    path.join(repositoryRoot, "docs/engineering/api-contract.md"),
     "utf8"
   )
   const documentedApiRoutes = extractDocumentedRoutes(
     backendDocument,
-    "## `apps/api`",
-    "## `packages/core`"
+    "## 학습자 API",
+    "## 관리자 경로"
   )
 
   reportRouteDrift({
     actualRoutes: readApiRoutes(),
     documentedRoutes: documentedApiRoutes,
-    label: "BACKEND.md apps/api routes",
+    label: "docs/engineering/api-contract.md 학습자 API routes",
   })
 }
 
@@ -429,11 +427,11 @@ function validateCanonicalOnboardingDocumentation() {
       patterns: [/same-origin 인증 프록시/u, /src\/app.*인증 프록시/u],
     },
     {
-      filePath: "DOMAIN.md",
+      filePath: "docs/product/content-model.md",
       patterns: [/type CurriculumNodeStatus = .*deprecated/u],
     },
     {
-      filePath: "GLOSSARY.md",
+      filePath: "docs/glossary.md",
       patterns: [/^- 챕터:/mu, /^- deprecated:/mu],
     },
     {
@@ -499,12 +497,31 @@ function extractDocumentedRoutes(
   }
 
   const section = document.slice(startIndex, endIndex)
-  const routePattern = /\b(GET|POST|PUT|PATCH|DELETE) ([^`,\n]+)/g
-
-  return [...section.matchAll(routePattern)].map((match) => ({
+  const inlineRoutes = [
+    ...section.matchAll(/\b(GET|POST|PUT|PATCH|DELETE) ([^`,\n]+)/gu),
+  ].map((match) => ({
     method: match[1] ?? "",
     path: normalizeRoutePath(match[2] ?? ""),
   }))
+  const tableRoutes = [
+    ...section.matchAll(
+      /^\|\s*`(GET(?:\/POST)?|POST|PUT|PATCH|DELETE)`\s*\|\s*`([^`]+)`/gmu
+    ),
+  ].flatMap((match) =>
+    (match[1] ?? "").split("/").map((method) => ({
+      method,
+      path: normalizeRoutePath(match[2] ?? ""),
+    }))
+  )
+
+  return [
+    ...new Map(
+      [...inlineRoutes, ...tableRoutes].map((route) => [
+        formatRoute(route),
+        route,
+      ])
+    ).values(),
+  ]
 }
 
 function normalizeRoutePath(routePath: string): string {
@@ -517,7 +534,12 @@ function normalizeRoutePath(routePath: string): string {
 
 function readApiRoutes(): Route[] {
   const routeFiles = collectFiles(path.join(repositoryRoot, "apps/api/src"))
-    .filter((filePath) => filePath.endsWith(".routes.ts"))
+    .filter(
+      (filePath) =>
+        filePath.endsWith(".routes.ts") &&
+        !normalizePath(filePath).includes("/modules/admin-") &&
+        !normalizePath(filePath).includes("/admin/admin-foundation.routes.ts")
+    )
     .map((filePath) => fs.readFileSync(filePath, "utf8"))
   const routePattern = /^\s*method:\s*"([a-z]+)"[\s\S]*?^\s*path:\s*"([^"]+)"/gm
   const routes = routeFiles.flatMap((content) =>
@@ -543,9 +565,54 @@ function readApiRoutes(): Route[] {
     },
     {
       method: "GET",
-      path: "/session",
+      path: "/api/auth/sign-in/google",
     },
   ]
+}
+
+export function isValidTaskDocumentDirectoryName(name: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})-[a-z0-9]+(?:-[a-z0-9]+)*$/u.exec(name)
+  if (match === null) return false
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const date = new Date(Date.UTC(year, month - 1, day))
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  )
+}
+
+function validateKnowledgeDocumentStructure(): void {
+  const allowedRootMarkdown = new Set(["AGENTS.md", "README.md"])
+  const rootMarkdown = fs
+    .readdirSync(repositoryRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+    .map((entry) => entry.name)
+
+  for (const fileName of rootMarkdown) {
+    if (!allowedRootMarkdown.has(fileName)) {
+      failures.push(
+        `repository root에 허용되지 않은 Markdown이 있습니다: ${fileName}.`
+      )
+    }
+  }
+
+  for (const category of ["work", "archive"] as const) {
+    const directory = path.join(repositoryRoot, "docs", category)
+    if (!fs.existsSync(directory)) continue
+
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue
+      if (!isValidTaskDocumentDirectoryName(entry.name)) {
+        failures.push(
+          `docs/${category}/${entry.name} 작업 디렉터리는 yyyy-mm-dd-kebab-case 형식이어야 합니다.`
+        )
+      }
+    }
+  }
 }
 
 function reportRouteDrift({
@@ -595,6 +662,7 @@ function main() {
   validateCanonicalOnboardingDocumentation()
   validateCurrentResourceLibraryDocumentation(markdownFiles)
   validateCapabilityOwnershipNavigationDocumentation()
+  validateKnowledgeDocumentStructure()
 
   if (failures.length > 0) {
     console.error("Document drift check failed.")

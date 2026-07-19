@@ -10,12 +10,7 @@ import {
 const localEnvironmentFiles = [
   {
     examplePath: "apps/api/.env.example",
-    legacyValues: {
-      ADMIN_API_ALLOWED_HOSTS:
-        "admin-api.localhost:4000,admin-api-unified:4000",
-      ADMIN_BETTER_AUTH_URL: "http://admin-api.localhost:4000",
-      ADMIN_ORIGIN: "http://localhost:3001",
-    },
+    legacyValues: {},
     path: "apps/api/.env",
     prepare: (template: string, credentials: LocalCredentials) =>
       replaceEnvironmentValue(
@@ -24,13 +19,13 @@ const localEnvironmentFiles = [
             replaceEnvironmentValue(
               replaceEnvironmentValue(
                 template,
-                "BETTER_AUTH_SECRET",
+                "LEARNER_AUTH_SECRET",
                 credentials.learnerAuthSecret
               ),
               "CURSOR_SIGNING_SECRET",
               credentials.cursorSigningSecret
             ),
-            "ADMIN_BETTER_AUTH_SECRET",
+            "ADMIN_AUTH_SECRET",
             credentials.adminAuthSecret
           ),
           "ADMIN_SEED_PASSWORD",
@@ -48,11 +43,7 @@ const localEnvironmentFiles = [
   },
   {
     examplePath: "apps/admin/.env.example",
-    legacyValues: {
-      ADMIN_API_BASE_URL: "http://admin-api.localhost:4000",
-      ADMIN_ORIGIN: "http://localhost:3001",
-      NEXT_PUBLIC_ADMIN_API_BASE_URL: "http://admin-api.localhost:4000",
-    },
+    legacyValues: {},
     path: "apps/admin/.env",
     prepare: (template: string) => template,
   },
@@ -338,10 +329,10 @@ function inspectAuthSecrets(
 ): readonly LocalOnboardingCheck[] {
   const learnerSecret = environments
     .get("apps/api/.env")
-    ?.get("BETTER_AUTH_SECRET")
+    ?.get("LEARNER_AUTH_SECRET")
   const adminSecret = environments
     .get("apps/api/.env")
-    ?.get("ADMIN_BETTER_AUTH_SECRET")
+    ?.get("ADMIN_AUTH_SECRET")
   const cursorSecret = environments
     .get("apps/api/.env")
     ?.get("CURSOR_SIGNING_SECRET")
@@ -644,25 +635,18 @@ function inspectLocalRuntimeContract(
   const contractKeys = new Map<string, readonly string[]>([
     [
       "apps/api/.env",
-      [
-        "ADMIN_API_ALLOWED_HOSTS",
-        "ADMIN_BETTER_AUTH_URL",
-        "ADMIN_ORIGIN",
-        "BETTER_AUTH_URL",
-        "LEARNER_API_ALLOWED_HOSTS",
-        "WEB_ORIGIN",
-      ],
+      ["API_ALLOWED_HOSTS", "API_ORIGIN", "ADMIN_ORIGIN", "WEB_ORIGIN"],
     ],
     [
       "apps/web/.env",
-      ["NEXT_PUBLIC_API_BASE_URL", "WEB_API_BASE_URL", "WEB_ORIGIN"],
+      ["NEXT_PUBLIC_API_BASE_URL", "API_BASE_URL", "WEB_ORIGIN"],
     ],
     [
       "apps/admin/.env",
       [
-        "ADMIN_API_BASE_URL",
+        "API_BASE_URL",
         "ADMIN_ORIGIN",
-        "NEXT_PUBLIC_ADMIN_API_BASE_URL",
+        "NEXT_PUBLIC_API_BASE_URL",
         "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
       ],
     ],

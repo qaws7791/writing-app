@@ -1,6 +1,7 @@
 .git
 .github
 .agents
+.artifacts
 .fallow
 .next
 .turbo
@@ -12,8 +13,6 @@
 *.log
 backups
 artifacts
-codebase-analysis.md
-codebase.md
 coverage
 data
 deploy

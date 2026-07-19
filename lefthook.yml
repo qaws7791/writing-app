@@ -14,12 +14,16 @@ pre-commit:
       run: bun run scripts/lint-staged-workspaces.ts {staged_files}
 
     workspace-inventory:
-      glob: "{package.json,turbo.json,vitest.workspace.ts,docs/engineering/workspace-inventory.md,docs/engineering/testing.md,ARCHITECTURE.md,CONTEXT.md,docs/engineering/system-overview.md,scripts/check-workspace-inventory.ts}"
+      glob: "{package.json,turbo.json,vitest.workspace.ts,README.md,docs/**/*.md,scripts/check-workspace-inventory.ts}"
       run: bun run check:workspace-inventory
 
     document-drift:
-      glob: "{README.md,CONTEXT.md,ARCHITECTURE.md,BACKEND.md,FRONTEND.md,DOMAIN.md,GLOSSARY.md,docs/**/*.md,apps/api/src/**/*.ts,package.json,apps/*/package.json,packages/*/package.json,scripts/check-document-drift.ts}"
+      glob: "{AGENTS.md,README.md,docs/**/*.md,apps/api/src/**/*.ts,package.json,apps/*/package.json,packages/*/package.json,scripts/check-document-drift.ts}"
       run: bun run check:document-drift
+
+    workflow-skill-invocation-policy:
+      glob: "{.agents/skills/workflows/**/SKILL.md,.agents/skills/workflows/**/agents/openai.yaml,docs/engineering/codex-skill-invocation-policy.md,scripts/check-workflow-skill-invocation-policy.ts,package.json}"
+      run: bun run check:workflow-skill-invocation-policy
 
     components-config:
       glob: "{apps/*/components.json,packages/*/components.json,package.json,README.md,docs/engineering/testing.md,scripts/check-components-config.ts}"

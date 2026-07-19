@@ -1,21 +1,21 @@
 # 인증과 권한
 
-이 문서는 인증 경계, 역할별 접근 범위, 리소스별 허용 행위를 설명하는 단일 진실 원천이다.
+이 문서는 인증 경계, 역할별 접근 범위와 리소스별 허용 행위를 설명한다. 실제 middleware·인증 설정과 `packages/contracts`가 실행 계약을 소유하며 `docs/authority-map.md`가 권위 관계를 안내한다.
 
 ## 인증 경계
 
-| 영역   | 사용자         | 인증 방식                   | API                                                                | 쿠키/테이블                                                                        |
-| ------ | -------------- | --------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| 학습자 | 일반 학습자    | Better Auth Google OAuth    | `apps/api` learner Host sub-app                                    | `learner_session_token`, `user/session/account/verification`                       |
-| 관리자 | 운영자, 소유자 | Better Auth 아이디/패스워드 | `apps/api` admin Host sub-app; legacy는 local/rollback/parity 전용 | `admin_session_token`, `admin_user/admin_session/admin_account/admin_verification` |
+| 영역   | 사용자         | 인증 방식                   | API                                    | 쿠키/테이블                                                                        |
+| ------ | -------------- | --------------------------- | -------------------------------------- | ---------------------------------------------------------------------------------- |
+| 학습자 | 일반 학습자    | Better Auth Google OAuth    | `apps/api` 학습자 HTTP 표면            | `learner_session_token`, `user/session/account/verification`                       |
+| 관리자 | 운영자, 소유자 | Better Auth 아이디/패스워드 | `apps/api`의 `/api/admin` 경로 sub-app | `admin_session_token`, `admin_user/admin_session/admin_account/admin_verification` |
 
-학습자와 관리자는 인증 테이블, 쿠키 이름, 로그인 방식, API origin을 공유하지 않는다.
-`apps/api`는 하나의 SQLite client만 공유할 뿐 learner/admin Better Auth instance, secret, cookie, table binding, trusted origin과 session resolver를 별도로 생성한다. 저장소의 Compose·Caddy source configuration은 두 public API Host를 `apps/api:4000`으로 보낸다.
+학습자와 관리자는 하나의 `API_ORIGIN`과 `API_HOST`를 공유하지만 인증 테이블, 쿠키 이름, 로그인 방식과 권한 realm은 공유하지 않는다.
+`apps/api`는 하나의 SQLite client와 HTTP runtime 안에서 learner/admin Better Auth instance, secret, cookie, table binding, trusted origin과 session resolver를 별도로 생성한다. Compose·Caddy는 하나의 public `API_HOST`를 `apps/api:4000`으로 보낸다.
 
-앱 parser는 로컬 Host에서 cookie domain을 생략할 수 있고, production에서 값이 주어지면 learner `WEB_ORIGIN`·`BETTER_AUTH_URL` 및 관리자 `ADMIN_ORIGIN`·`ADMIN_BETTER_AUTH_URL`의 cookie 소비·발급 Host 모두를 포함하는 공통 parent인지 검증한다. production Ansible role은 여기에 더해 네 public Host의 충돌을 즉시 거부하고, learner `WEB_HOST`·`API_HOST`와 관리자 `ADMIN_HOST`·`ADMIN_API_HOST`가 각각 비어 있지 않은 공통 parent cookie domain에 속하도록 요구한다. 이 조건은 API Host가 발급한 `HttpOnly` 세션 쿠키를 대응하는 web Host의 SSR이 전달하게 하기 위한 것이며, 두 인증 영역의 cookie 이름·secret·table을 합치는 설정이 아니다.
-`apps/admin`의 `(admin)` route group은 서버 layout에서 `admin_session_token`이 없으면 콘솔 shell을 렌더링하지 않고 `/login`으로 보낸다. 어드민 API는 기존처럼 모든 보호 route에서 실제 관리자 세션을 검증한다.
+앱 parser는 로컬 Host에서 cookie domain을 생략할 수 있고, production에서 값이 주어지면 학습자 `WEB_ORIGIN`·`API_ORIGIN`과 관리자 `ADMIN_ORIGIN`·`API_ORIGIN`의 cookie 소비·발급 Host를 각각 포함하는 공통 parent인지 검증한다. production Ansible role은 `WEB_HOST`, `ADMIN_HOST`, `API_HOST`의 충돌을 거부하고 각 웹과 공통 API가 자신의 비어 있지 않은 cookie domain에 속하도록 요구한다. 이 조건은 API가 발급한 `HttpOnly` 세션 쿠키를 대응하는 웹의 SSR이 전달하게 하기 위한 것이며, 두 인증 영역의 cookie 이름·secret·table을 합치는 설정이 아니다.
+`apps/admin`의 `(admin)` route group은 서버 layout에서 `admin_session_token`이 없으면 콘솔 shell을 렌더링하지 않고 `/login`으로 보낸다. API의 `/api/admin/*` 보호 경로는 모두 실제 관리자 세션을 검증한다.
 
-두 API의 보호 route는 자기 영역의 세션 쿠키만 인증 입력으로 사용한다. `Authorization: Bearer ...`만 보낸 요청은 학습자와 관리자 모두 `401`이며, 테스트 session resolver도 Bearer fallback을 제공하지 않는다. 이 기준선은 브라우저가 `credentials: "include"`로 서로 다른 쿠키를 보내야 한다는 계약을 고정하며 두 인증 경계를 합치지 않는다.
+두 HTTP 표면의 보호 route는 자기 인증 realm의 세션 쿠키만 입력으로 사용한다. `Authorization: Bearer ...`만 보낸 요청은 학습자와 관리자 모두 `401`이며, 테스트 session resolver도 Bearer fallback을 제공하지 않는다. 브라우저는 같은 API origin에 `credentials: "include"`로 요청하되 경로별로 서로 다른 쿠키를 사용한다.
 
 ## 학습자 권한
 
@@ -83,12 +83,12 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 - 보호 route는 `requireActiveSession` middleware를 사용한다.
 - 브라우저 JavaScript가 세션 쿠키를 읽어 Bearer token으로 변환하지 않는다.
 
-### 어드민 API
+### 관리자 경로
 
 - 관리자 Better Auth와 session resolver는 `apps/api/src/adapters/auth`가 소유하며 learner adapter와 secret·cookie·table·origin을 공유하지 않는다.
-- 인증 처리는 Better Auth handler가 `/api/auth/*`에서 담당한다.
-- 관리자 로그인은 `POST /api/auth/sign-in/email`을 사용한다.
-- 관리자 공개 가입 `POST /api/auth/sign-up/email`은 `404`로 차단한다.
+- 인증 처리는 Better Auth handler가 최종 public 경로 `/api/admin/auth/*`에서 담당한다. 관리자 sub-app 내부의 상대 경로는 `/auth/*`이며 문서와 클라이언트 계약에는 상대 경로를 노출하지 않는다.
+- 관리자 로그인은 `POST /api/admin/auth/sign-in/email`을 사용한다.
+- 관리자 공개 가입 `POST /api/admin/auth/sign-up/email`은 `404`로 차단한다.
 - 관리자 계정은 승인된 운영자가 폐쇄형 owner seed 절차로만 생성한다.
 - seed된 owner는 이메일·비밀번호 로그인으로 관리자 session을 얻는다.
 - 조회 route는 관리자 세션만 요구한다.
@@ -108,9 +108,9 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 | 요청 형식 오류 | `400`       | `VALIDATION_ERROR`     |
 | 대상 없음      | `404`       | 리소스별 `*_NOT_FOUND` |
 
-어드민 API는 기존 어드민 오류 계약을 유지한다.
+관리자 경로는 기존 관리자 오류 계약을 유지한다.
 
-| 상황                  | HTTP status | 어드민 API 코드     |
+| 상황                  | HTTP status | 관리자 경로 코드    |
 | --------------------- | ----------- | ------------------- |
 | 세션 없음             | `401`       | `UNAUTHORIZED`      |
 | 계정 사용 불가        | `403`       | `FORBIDDEN`         |

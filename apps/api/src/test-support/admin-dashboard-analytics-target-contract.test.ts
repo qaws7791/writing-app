@@ -150,7 +150,11 @@ const adminDashboardAnalyticsTargetContractInput = {
             section: "securitySchemes",
           },
         ],
-        paths: ["/analytics", "/analytics/lessons", "/dashboard"],
+        paths: [
+          "/api/admin/analytics",
+          "/api/admin/analytics/lessons",
+          "/api/admin/dashboard",
+        ],
       },
       request: { method: "GET", path: "/openapi" },
       responseBody: "openapi",

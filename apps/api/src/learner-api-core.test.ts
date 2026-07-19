@@ -12,8 +12,8 @@ describe("학습자 API 코어 조립", () => {
     try {
       const core = createLearnerApiCore({
         aiFeedbackProvider: createUnavailableAiFeedbackProvider(),
-        authBaseUrl: "http://localhost:4000",
-        betterAuthSecret:
+        apiOrigin: "http://localhost:4000",
+        learnerAuthSecret:
           "learner-api-core-test-secret-0123456789abcdef0123456789abcdef",
         cursorSigningSecret:
           "learner-api-core-cursor-0123456789abcdef0123456789abcdef",

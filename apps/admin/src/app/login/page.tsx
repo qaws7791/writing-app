@@ -1,6 +1,6 @@
 import { AdminAuthPage } from "@/features/authentication/ui/admin-auth-page"
 import {
-  readAdminApiBaseUrl,
+  readApiBaseUrl,
   readLearnerWebOrigin,
 } from "@/shared/config/admin-runtime-config"
 
@@ -21,7 +21,7 @@ export default async function AdminLoginRoute({
 
   return (
     <AdminAuthPage
-      apiBaseUrl={readAdminApiBaseUrl()}
+      apiBaseUrl={readApiBaseUrl()}
       learnerWebOrigin={readLearnerWebOrigin()}
       nextPath={nextPath}
     />

@@ -51,7 +51,7 @@ export function createAdminApp(
   if (dependencies.authHandler !== undefined) {
     const authHandler = dependencies.authHandler
 
-    app.on(["GET", "POST"], "/api/auth/*", async (context) => {
+    app.on(["GET", "POST"], "/auth/*", async (context) => {
       const request = await enforcePasswordChangeSessionRevocation(
         context.req.raw
       )
@@ -72,7 +72,7 @@ async function enforcePasswordChangeSessionRevocation(
 ): Promise<Request> {
   if (
     request.method !== "POST" ||
-    new URL(request.url).pathname !== "/api/auth/change-password"
+    !isAdminPasswordChangePath(new URL(request.url).pathname)
   ) {
     return request
   }
@@ -94,6 +94,13 @@ async function enforcePasswordChangeSessionRevocation(
       revokeOtherSessions: true,
     }),
   })
+}
+
+function isAdminPasswordChangePath(path: string): boolean {
+  return (
+    path === "/auth/change-password" ||
+    path === "/api/admin/auth/change-password"
+  )
 }
 
 function createAdminMiddleware(

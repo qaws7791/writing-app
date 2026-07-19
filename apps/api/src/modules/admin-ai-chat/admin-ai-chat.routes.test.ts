@@ -319,13 +319,13 @@ describe("통합 runtime 관리자 AI chat route", () => {
         },
       },
       paths: {
-        "/ai-chat/conversations": {
+        "/api/admin/ai-chat/conversations": {
           get: { operationId: "getAdminAiChatConversations" },
         },
-        "/ai-chat/conversations/{conversationId}": {
+        "/api/admin/ai-chat/conversations/{conversationId}": {
           get: { operationId: "getAdminAiChatConversation" },
         },
-        "/ai-chat/messages/stream": {
+        "/api/admin/ai-chat/messages/stream": {
           post: { operationId: "streamAdminAiChatMessage" },
         },
       },

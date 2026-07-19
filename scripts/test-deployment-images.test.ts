@@ -78,12 +78,12 @@ describe("production image smoke 계약", () => {
         "admin-fixture"
       ).map(([name]) => name)
 
-      expect(names.includes("BETTER_AUTH_SECRET")).toBe(spec.usesDatabase)
-      expect(names.includes("ADMIN_BETTER_AUTH_SECRET")).toBe(spec.usesDatabase)
+      expect(names.includes("LEARNER_AUTH_SECRET")).toBe(spec.usesDatabase)
+      expect(names.includes("ADMIN_AUTH_SECRET")).toBe(spec.usesDatabase)
     }
   })
 
-  test("통합 API smoke는 configured learner Host로 health를 요청한다", () => {
+  test("통합 API smoke는 configured API Host로 health를 요청한다", () => {
     const apiSpec = deploymentImageSpecs.find((spec) => spec.name === "api")
     expect(apiSpec).toBeDefined()
     if (apiSpec === undefined) return
@@ -93,31 +93,22 @@ describe("production image smoke 계약", () => {
     )
     const healthScript = createHealthRequestScript(apiSpec)
 
-    expect(environment.get("LEARNER_API_ALLOWED_HOSTS")).toBe(
+    expect(environment.get("API_ALLOWED_HOSTS")).toBe(
       "api.example.test,api:4000"
     )
-    expect(environment.get("ADMIN_API_ALLOWED_HOSTS")).toBe(
-      "admin-api.example.test,admin-api-unified:4000"
-    )
-    expect(environment.get("ADMIN_BETTER_AUTH_SECRET")).toBe("admin-fixture")
+    expect(environment.get("ADMIN_AUTH_SECRET")).toBe("admin-fixture")
     expect(environment.get("ADMIN_ASSET_PUBLIC_BASE_URL")).toBe(
       "https://assets.example.test"
     )
-    expect(environment.get("ADMIN_BETTER_AUTH_URL")).toBe(
-      "https://admin-api.example.test"
-    )
+    expect(environment.get("API_ORIGIN")).toBe("https://api.example.test")
     expect(environment.get("ADMIN_ORIGIN")).toBe("https://admin.example.test")
-    expect(environment.get("BETTER_AUTH_COOKIE_DOMAIN")).toBe("example.test")
-    expect(environment.get("ADMIN_BETTER_AUTH_COOKIE_DOMAIN")).toBe(
-      "example.test"
-    )
-    expect(healthScript).toContain(
-      "Host:new URL(process.env.BETTER_AUTH_URL).host"
-    )
+    expect(environment.get("LEARNER_AUTH_COOKIE_DOMAIN")).toBe("example.test")
+    expect(environment.get("ADMIN_AUTH_COOKIE_DOMAIN")).toBe("example.test")
+    expect(healthScript).toContain("Host:new URL(process.env.API_ORIGIN).host")
     expect(healthScript).toContain("http://127.0.0.1:4000/health")
   })
 
-  test("Admin SSR은 분리된 admin 내부 alias로 단일 API를 호출한다", () => {
+  test("Admin SSR은 단일 API upstream을 호출한다", () => {
     const adminSpec = deploymentImageSpecs.find((spec) => spec.name === "admin")
     expect(adminSpec).toBeDefined()
     if (adminSpec === undefined) return
@@ -126,9 +117,7 @@ describe("production image smoke 계약", () => {
       createRuntimeEnvironment(adminSpec, "learner-fixture", "admin-fixture")
     )
 
-    expect(environment.get("ADMIN_API_BASE_URL")).toBe(
-      "http://admin-api-unified:4000"
-    )
+    expect(environment.get("API_BASE_URL")).toBe("http://api:4000")
   })
 
   test("Compose smoke는 task 전용 project에서 local image만 기동하고 정리한다", () => {
@@ -215,11 +204,6 @@ describe("production image smoke 계약", () => {
         path: "/health",
       },
       {
-        expectedResponse: { ok: true, service: "admin-api" },
-        host: "admin-api.example.test",
-        path: "/health",
-      },
-      {
         expectedResponse: { ok: true, service: "admin" },
         host: "admin.example.test",
         path: "/health",
@@ -236,7 +220,7 @@ describe("production image smoke 계약", () => {
     }
   })
 
-  test("Admin SSR 내부 health 요청은 admin 전용 alias와 target dispatcher를 사용한다", () => {
+  test("Admin SSR 내부 health 요청은 단일 API의 관리자 namespace를 사용한다", () => {
     const command = {
       composeEnvironmentPath: "/fixture/compose.env",
       composePath: "/fixture/compose.yaml",
@@ -248,8 +232,9 @@ describe("production image smoke 계약", () => {
     expect(args).toEqual(
       expect.arrayContaining(["exec", "-T", "admin", "node", "-e", script])
     )
-    expect(script).toContain("http://admin-api-unified:4000")
-    expect(script).toContain("body?.service!=='admin-api'")
+    expect(script).toContain("http://api:4000")
+    expect(script).toContain("/api/admin/health")
+    expect(script).toContain("body?.service!=='api'")
   })
 
   test("Compose smoke는 정의 밖 service가 실행되면 실패한다", () => {

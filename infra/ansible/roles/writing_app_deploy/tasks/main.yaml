@@ -5,37 +5,31 @@
       - writing_app_web_host | length > 0
       - writing_app_api_host | length > 0
       - writing_app_admin_host | length > 0
-      - writing_app_admin_api_host | length > 0
       - writing_app_web_host is match(writing_app_public_hostname_pattern)
       - writing_app_api_host is match(writing_app_public_hostname_pattern)
       - writing_app_admin_host is match(writing_app_public_hostname_pattern)
-      - writing_app_admin_api_host is match(writing_app_public_hostname_pattern)
       - writing_app_web_host | lower != writing_app_api_host | lower
       - writing_app_web_host | lower != writing_app_admin_host | lower
-      - writing_app_web_host | lower != writing_app_admin_api_host | lower
       - writing_app_api_host | lower != writing_app_admin_host | lower
-      - writing_app_api_host | lower != writing_app_admin_api_host | lower
-      - writing_app_admin_host | lower != writing_app_admin_api_host | lower
-      - writing_app_web_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001', 'admin-api', 'admin-api-unified', 'admin-api-unified:4000']
-      - writing_app_api_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001', 'admin-api', 'admin-api-unified', 'admin-api-unified:4000']
-      - writing_app_admin_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001', 'admin-api', 'admin-api-unified', 'admin-api-unified:4000']
-      - writing_app_admin_api_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001', 'admin-api', 'admin-api-unified', 'admin-api-unified:4000']
-      - writing_app_better_auth_cookie_domain | length > 0
-      - writing_app_admin_better_auth_cookie_domain | length > 0
-      - writing_app_better_auth_cookie_domain is match(writing_app_public_hostname_pattern)
-      - writing_app_admin_better_auth_cookie_domain is match(writing_app_public_hostname_pattern)
+      - writing_app_web_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001']
+      - writing_app_api_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001']
+      - writing_app_admin_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001']
+      - writing_app_learner_auth_cookie_domain | length > 0
+      - writing_app_admin_auth_cookie_domain | length > 0
+      - writing_app_learner_auth_cookie_domain is match(writing_app_public_hostname_pattern)
+      - writing_app_admin_auth_cookie_domain is match(writing_app_public_hostname_pattern)
       - >-
-        writing_app_web_host | lower == writing_app_better_auth_cookie_domain | lower
-        or (writing_app_web_host | lower).endswith('.' ~ (writing_app_better_auth_cookie_domain | lower))
+        writing_app_web_host | lower == writing_app_learner_auth_cookie_domain | lower
+        or (writing_app_web_host | lower).endswith('.' ~ (writing_app_learner_auth_cookie_domain | lower))
       - >-
-        writing_app_api_host | lower == writing_app_better_auth_cookie_domain | lower
-        or (writing_app_api_host | lower).endswith('.' ~ (writing_app_better_auth_cookie_domain | lower))
+        writing_app_api_host | lower == writing_app_learner_auth_cookie_domain | lower
+        or (writing_app_api_host | lower).endswith('.' ~ (writing_app_learner_auth_cookie_domain | lower))
       - >-
-        writing_app_admin_host | lower == writing_app_admin_better_auth_cookie_domain | lower
-        or (writing_app_admin_host | lower).endswith('.' ~ (writing_app_admin_better_auth_cookie_domain | lower))
+        writing_app_admin_host | lower == writing_app_admin_auth_cookie_domain | lower
+        or (writing_app_admin_host | lower).endswith('.' ~ (writing_app_admin_auth_cookie_domain | lower))
       - >-
-        writing_app_admin_api_host | lower == writing_app_admin_better_auth_cookie_domain | lower
-        or (writing_app_admin_api_host | lower).endswith('.' ~ (writing_app_admin_better_auth_cookie_domain | lower))
+        writing_app_api_host | lower == writing_app_admin_auth_cookie_domain | lower
+        or (writing_app_api_host | lower).endswith('.' ~ (writing_app_admin_auth_cookie_domain | lower))
       - writing_app_web_image is match('^.+@sha256:[0-9a-f]{64}\Z')
       - writing_app_api_image is match('^.+@sha256:[0-9a-f]{64}\Z')
       - writing_app_admin_image is match('^.+@sha256:[0-9a-f]{64}\Z')
@@ -48,15 +42,15 @@
       - writing_app_caddy_image is match('^[^\x00-\x1F\x7F]+\Z')
       - writing_app_cloudflared_image is match('^[^\x00-\x1F\x7F]+\Z')
       - writing_app_litestream_image is match('^[^\x00-\x1F\x7F]+\Z')
-      - writing_app_better_auth_secret | length >= 32
+      - writing_app_learner_auth_secret | length >= 32
       - writing_app_cursor_signing_secret | length >= 32
-      - writing_app_admin_better_auth_secret | length >= 32
-      - writing_app_better_auth_secret != writing_app_cursor_signing_secret
-      - writing_app_better_auth_secret != writing_app_admin_better_auth_secret
-      - writing_app_cursor_signing_secret != writing_app_admin_better_auth_secret
-      - not writing_app_better_auth_secret.startswith('replace-with')
+      - writing_app_admin_auth_secret | length >= 32
+      - writing_app_learner_auth_secret != writing_app_cursor_signing_secret
+      - writing_app_learner_auth_secret != writing_app_admin_auth_secret
+      - writing_app_cursor_signing_secret != writing_app_admin_auth_secret
+      - not writing_app_learner_auth_secret.startswith('replace-with')
       - not writing_app_cursor_signing_secret.startswith('replace-with')
-      - not writing_app_admin_better_auth_secret.startswith('replace-with')
+      - not writing_app_admin_auth_secret.startswith('replace-with')
       - writing_app_cloudflare_tunnel_token | length > 0
       - not writing_app_cloudflare_tunnel_token.startswith('replace-with')
       - writing_app_r2_access_key_id | length > 0

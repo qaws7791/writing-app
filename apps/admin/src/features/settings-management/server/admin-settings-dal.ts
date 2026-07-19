@@ -37,18 +37,18 @@ export function createAdminSettingsDal(
       schema: adminSettingsDtoSchema,
     })
   return {
-    getSettings: () => requestSettings("GET", "/settings"),
+    getSettings: () => requestSettings("GET", "/api/admin/settings"),
     async resetContent() {
       return transport.requestJson({
         body: {},
         method: "POST",
-        path: "/settings/content-reset",
+        path: "/api/admin/settings/content-reset",
         schema: adminContentResetResultSchema,
       })
     },
     saveLegalSettings: (input) =>
-      requestSettings("PUT", "/settings/legal", input),
+      requestSettings("PUT", "/api/admin/settings/legal", input),
     saveNoticeSettings: (input) =>
-      requestSettings("PUT", "/settings/notice", input),
+      requestSettings("PUT", "/api/admin/settings/notice", input),
   }
 }

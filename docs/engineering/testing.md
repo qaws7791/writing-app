@@ -94,7 +94,7 @@ MTA-48 core contract hard-fail은 두 계층에서 검증한다. root architectu
 
 CI build job은 배포 산출물이 아닌 production build 검증을 위해 `.test` 예약 도메인의 web·admin·API origin을 명시한다. 이 job은 Bun `1.3.10`의 isolated linker로 설치한 뒤 Storybook, admin, web을 포함한 전체 build와 compiled UI CSS sentinel을 연속 검증한다.
 
-`check:document-drift`는 실제 앱 route registry가 import한 HTTP route와 `main.ts`에서 발견되는 WebSocket upgrade 표면을 `BACKEND.md` 인벤토리와 양방향 비교한다. 현재 자료실에는 WebSocket upgrade 표면이 없다. route 추가·삭제 fixture 테스트는 문서 누락과 오래된 문서가 모두 실패로 분류되는지 검증하고, root·engineering·product current 문서의 고신호 자료실 설명도 역사·분석 문서를 제외해 검사한다.
+`check:document-drift`는 실제 앱 route registry가 import한 HTTP route와 `main.ts`에서 발견되는 WebSocket upgrade 표면을 `api-contract.md` 인벤토리와 양방향 비교한다. 현재 자료실에는 WebSocket upgrade 표면이 없다. route 추가·삭제 fixture 테스트는 문서 누락과 오래된 문서가 모두 실패로 분류되는지 검증하고, engineering·product의 현재 문서만 검사하며 `work`, `archive`와 ADR은 현재 사실 판정에서 제외한다.
 
 `packages/ui/tsconfig.lint.json`은 실제 TypeScript source와 Vitest 설정 파일만 포함한다. 존재하지 않는 생성기 경로나 빌드 출력 경로를 lint tsconfig에 추가하지 않는다.
 앱 `tsconfig.json`의 test alias는 실제 테스트 지원 디렉터리가 있을 때만 둔다.
@@ -115,7 +115,7 @@ bun run --filter=@workspace/web test
 - disposable DB와 전용 workspace fixture만 사용하고 기존 source를 변경하지 않는다.
 - workspace fixture를 한 번 변경하면 이를 import하는 API process가 정확히 한 번 재시작한다.
 - Bun이 import한 workspace 파일을 프로젝트 디렉터리 밖으로 판정하는 경고가 발생하지 않는다.
-- harness가 소유한 process만 종료하고 3001·4001 port와 Next lock을 모두 해제한다.
+- harness가 소유한 process만 종료하고 3001·4000 port와 Next lock을 모두 해제한다.
 
 ## 커버리지 기준
 
@@ -276,7 +276,7 @@ bunx bun@1.3.10 run --filter=@workspace/contracts test
 
 `scripts/local-onboarding.test.ts`는 누락된 `.env`의 credential 치환 생성, 기존 파일 보존, 두 번째 실행의 멱등성, toolchain·테스트 인증·공유 SQLite 진단을 disposable fixture에서 검증한다. 실제 사용자 `.env`와 `data/api.sqlite`는 테스트 대상으로 사용하거나 변경하지 않는다.
 
-배포 tooling unit test는 Compose의 필수 서비스·port·network·SQLite volume 계약, Ansible playbook 선택, 네 production image의 Buildx 인자·host port 비공개·DB volume 경계·비 root user 판정을 Docker daemon 없이 검증한다. MTA-40 저장소 구성 계약은 `api`의 `admin-api-unified` alias, `admin-api`의 rollback profile, 두 public API host를 `api:4000`으로 보내는 Caddy upstream을 함께 확인한다. 이는 저장소 정적 구성 검증일 뿐 실제 production 적용·관찰 결과는 아니다. Container image lock test는 Bun·Node base와 Caddy·Cloudflared·Litestream 운영 image의 중앙 tag+digest와 실제 사용 경로가 일치하는지 검증한다. Registry 보존 test는 7일이 지난 candidate-only version만 정리 대상으로 분류하고 release·untagged·최근 candidate와 자동 삭제 설정을 거부하는지 확인한다. Ubuntu bootstrap 검사는 일회성 runner 플래그, OS·architecture와 두 번째 Ansible recap의 `changed=0` 판정을 unit test로 보호한다. Image release metadata test는 production origin, source SHA, GHCR image name·digest, 공개 설정·취약점 정책 digest와 네 service manifest의 동일성을 검증한다. 취약점 정책 test는 `HIGH` 이상 차단, 예외 필수 metadata·만료·중복과 service별 최소 Grype 설정 생성을 검증한다. Workflow contract test는 성공한 동일 저장소 `main` 품질 게이트만 exact SHA로 candidate를 만들고 고정 Grype 검사 뒤 release tag, SBOM·provenance·attestation과 digest artifact를 생성하는지 정적으로 검사한다. 실제 Caddy·Litestream 설정, image build·runtime smoke와 bootstrap 두 번 실행은 Docker와 passwordless sudo가 제공되는 명시적인 Ubuntu 24.04 CI job에서 실행한다.
+배포 tooling unit test는 Compose의 필수 서비스·port·network·SQLite volume 계약, Ansible playbook 선택, `web`, `api`, `admin` 세 production image의 Buildx 인자·host port 비공개·DB volume 경계·비 root user 판정을 Docker daemon 없이 검증한다. 현재 저장소 구성 계약은 하나의 public API Host를 `api:4000`으로 보내는 Caddy upstream과 관리자 `/api/admin/*` 경로를 함께 확인한다. 이는 저장소 정적 구성 검증일 뿐 실제 production 적용·관찰 결과는 아니다. Container image lock test는 Bun·Node base와 Caddy·Cloudflared·Litestream 운영 image의 중앙 tag+digest와 실제 사용 경로가 일치하는지 검증한다. Registry 보존 test는 7일이 지난 candidate-only version만 정리 대상으로 분류하고 release·untagged·최근 candidate와 자동 삭제 설정을 거부하는지 확인한다. Ubuntu bootstrap 검사는 일회성 runner 플래그, OS·architecture와 두 번째 Ansible recap의 `changed=0` 판정을 unit test로 보호한다. Image release metadata test는 production origin, source SHA, GHCR image name·digest, 공개 설정·취약점 정책 digest와 세 service manifest의 동일성을 검증한다. 취약점 정책 test는 `HIGH` 이상 차단, 예외 필수 metadata·만료·중복과 service별 최소 Grype 설정 생성을 검증한다. Workflow contract test는 성공한 동일 저장소 `main` 품질 게이트만 exact SHA로 candidate를 만들고 고정 Grype 검사 뒤 release tag, SBOM·provenance·attestation과 digest artifact를 생성하는지 정적으로 검사한다. 실제 Caddy·Litestream 설정, image build·runtime smoke와 bootstrap 두 번 실행은 Docker와 passwordless sudo가 제공되는 명시적인 Ubuntu 24.04 CI job에서 실행한다.
 
 CI의 전체 test job은 `bun run test -- --summarize --continue=always` 결과와 Turborepo `2.10.4` summary v1을 사용한다. manifest에 명령이 있다는 사실은 `지원`으로만 표시하며 실제 summary가 있을 때만 `실행`, `cache hit`, `실패`, `건너뜀`, `제외`를 보고한다. correctness job과 coverage job은 서로 독립적으로 실패 원인을 판정한다.
 

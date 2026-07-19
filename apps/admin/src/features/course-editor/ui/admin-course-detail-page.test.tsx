@@ -2,13 +2,13 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { AdminCourseDetailPage } from "@/features/course-editor/ui/admin-course-detail-page"
-import { readAdminApiBaseUrl } from "@/shared/config/admin-runtime-config"
+import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 
 describe("AdminCourseDetailPage", () => {
   it("API 오류를 코스 편집 화면에서 보여준다", () => {
     render(
       <AdminCourseDetailPage
-        apiBaseUrl={readAdminApiBaseUrl({})}
+        apiBaseUrl={readApiBaseUrl({})}
         courseResult={{
           error: {
             code: "not-found",

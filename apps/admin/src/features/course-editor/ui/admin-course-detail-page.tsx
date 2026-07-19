@@ -13,7 +13,7 @@ export function AdminCourseDetailPage({
   publishCourse,
   saveCourse,
 }: {
-  readonly apiBaseUrl: import("@/shared/config/admin-api-url").AdminApiBaseUrl
+  readonly apiBaseUrl: import("@/shared/config/api-base-url").ApiBaseUrl
   readonly courseResult: AdminApiResult<AdminCourseDetail>
   readonly publishCourse: (
     course: AdminCourseDetail

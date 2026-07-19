@@ -27,6 +27,8 @@
 
 ## 아키텍처 용어
 
+- API: `apps/api`가 제공하는 하나의 public HTTP Interface. 학습자 경로와 `/api/admin/*` 관리자 경로를 포함한다.
+- 관리자 경로: 단일 API 안에서 관리자 인증과 권한을 요구하는 `/api/admin/*` 경로. 별도 runtime이나 image를 뜻하지 않는다.
 - 공개 경계: 패키지의 `exports`로 외부에 허용한 import 경로.
 - 내부 경로: `src` 아래 구현 파일을 직접 가리키는 경로. 앱 간 직접 참조를 피한다.
 - 포트: core가 정의하는 interface 또는 추상 계약.
@@ -36,7 +38,9 @@
 
 ## 문서 용어
 
-- 설계 문서: `ARCHITECTURE.md`, `DOMAIN.md`, `FRONTEND.md`, `BACKEND.md`처럼 구조와 원칙을 설명하는 문서.
+- 권위 소유자: 특정 사실의 최종 값을 결정하는 코드, 설정 또는 영구 문서. `docs/authority-map.md`가 사실별 위치를 안내한다.
 - 제품 문서: `docs/product`처럼 제품 판단, 기능, 사용자 흐름을 설명하는 문서.
 - 디자인 문서: `docs/design`처럼 화면, 컴포넌트, 접근성, 문구 기준을 설명하는 문서.
 - 엔지니어링 문서: `docs/engineering`처럼 시스템, API, DB, 런타임, 테스트, 운영 값을 설명하는 문서.
+- 작업 문서: `docs/work/<yyyy-mm-dd-name>`에 있는 진행 중 계획, 조사, 감사와 검증. 현재 사실의 권위 소스가 아니다.
+- 보관 문서: `docs/archive/<yyyy-mm-dd-name>`에 있는 완료·폐기 기록. 과거 증거가 필요할 때만 사용한다.

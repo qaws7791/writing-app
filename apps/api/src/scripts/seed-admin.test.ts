@@ -96,7 +96,7 @@ describe("통합 API 관리자 seed", () => {
         password: "admin-password-123",
       })
       const auth = createAdminAuth({
-        authBaseUrl: "http://admin-api.localhost:4000",
+        apiOrigin: "http://api.localhost:4000",
         db: database.db,
         secret: "x".repeat(32),
         webOrigin: "http://localhost:3001",
@@ -126,7 +126,7 @@ describe("통합 API 관리자 seed", () => {
         password: "changed-password-123",
       })
       const auth = createAdminAuth({
-        authBaseUrl: "http://admin-api.localhost:4000",
+        apiOrigin: "http://api.localhost:4000",
         db: database.db,
         secret: "x".repeat(32),
         webOrigin: "http://localhost:3001",
@@ -185,7 +185,7 @@ async function requestAdminEmailSignIn(
 ): Promise<number> {
   return auth
     .handler(
-      new Request("http://admin-api.localhost:4000/api/auth/sign-in/email", {
+      new Request("http://api.localhost:4000/api/admin/auth/sign-in/email", {
         body: JSON.stringify({ email: "admin@example.com", password }),
         headers: {
           "Content-Type": "application/json",

@@ -127,7 +127,7 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   await expect(ownerPage).toHaveURL(`${adminWebOrigin}/courses?page=2`)
   expect(
     targetAdminRequests.some((url) =>
-      url.startsWith(`${adminApiOrigin}/api/auth/sign-in/email`)
+      url.startsWith(`${adminApiOrigin}/api/admin/auth/sign-in/email`)
     )
   ).toBe(true)
   await ownerPage.goto(`${adminWebOrigin}/`)
@@ -310,13 +310,16 @@ async function loginAdmin(
 }
 
 async function updateNotice(page: Page, announce: string): Promise<number> {
-  const response = await page.request.put(`${adminApiOrigin}/settings/notice`, {
-    data: {
-      announce,
-      banner: "E2E 배너",
-    },
-    headers: { Origin: adminWebOrigin },
-  })
+  const response = await page.request.put(
+    `${adminApiOrigin}/api/admin/settings/notice`,
+    {
+      data: {
+        announce,
+        banner: "E2E 배너",
+      },
+      headers: { Origin: adminWebOrigin },
+    }
+  )
 
   return response.status()
 }

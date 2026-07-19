@@ -26,14 +26,14 @@ export function createAdminAiChatDal(
     async getAiChatConversation(conversationId) {
       return transport.requestJson({
         method: "GET",
-        path: `/ai-chat/conversations/${conversationId}`,
+        path: `/api/admin/ai-chat/conversations/${conversationId}`,
         schema: adminAiChatConversationDetailDtoSchema,
       })
     },
     async getAiChatConversations() {
       return transport.requestJson({
         method: "GET",
-        path: "/ai-chat/conversations",
+        path: "/api/admin/ai-chat/conversations",
         schema: adminAiChatConversationListDtoSchema,
       })
     },

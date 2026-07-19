@@ -1,13 +1,12 @@
 const localRuntimeProtocol = "http"
 
 export const localRuntimeHosts = Object.freeze({
-  admin: "127.0.0.1",
-  learner: "localhost",
+  api: "localhost",
 })
 
 export const localRuntimePorts = Object.freeze({
   adminWeb: 3001,
-  learnerApi: 4000,
+  api: 4000,
   learnerWeb: 3000,
 })
 
@@ -16,20 +15,16 @@ export function createLocalRuntimeUrl(host: string, port: number): string {
 }
 
 export const localRuntimeDefaults = Object.freeze({
-  adminApiBaseUrl: createLocalRuntimeUrl(
-    localRuntimeHosts.admin,
-    localRuntimePorts.learnerApi
-  ),
   adminWebOrigin: createLocalRuntimeUrl(
-    localRuntimeHosts.admin,
+    "localhost",
     localRuntimePorts.adminWeb
   ),
-  learnerApiBaseUrl: createLocalRuntimeUrl(
-    localRuntimeHosts.learner,
-    localRuntimePorts.learnerApi
+  apiBaseUrl: createLocalRuntimeUrl(
+    localRuntimeHosts.api,
+    localRuntimePorts.api
   ),
   learnerWebOrigin: createLocalRuntimeUrl(
-    localRuntimeHosts.learner,
+    "localhost",
     localRuntimePorts.learnerWeb
   ),
 })

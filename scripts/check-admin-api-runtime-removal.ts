@@ -19,13 +19,28 @@ const forbiddenRuntimeTokens = [
   "@workspace/admin-api",
   "apps/admin-api",
   "ADMIN_API_IMAGE",
+  "ADMIN_API_ALLOWED_HOSTS",
+  "ADMIN_API_BASE_URL",
+  "ADMIN_API_HOST",
   "ADMIN_API_PORT",
+  "ADMIN_BETTER_AUTH_COOKIE_DOMAIN",
+  "ADMIN_BETTER_AUTH_SECRET",
+  "ADMIN_BETTER_AUTH_URL",
+  "BETTER_AUTH_COOKIE_DOMAIN",
+  "BETTER_AUTH_SECRET",
+  "BETTER_AUTH_URL",
+  "LEARNER_API_ALLOWED_HOSTS",
+  "NEXT_PUBLIC_ADMIN_API_BASE_URL",
+  "PRODUCTION_ADMIN_API_ORIGIN",
+  "WEB_API_BASE_URL",
   "admin-api:4101",
+  "admin-api-unified",
   "admin-api.dockerfile",
   "admin-api.env",
   "admin-traffic-rollback",
   "admin.rollback.env",
   "writing_app_admin_api_image",
+  "writing_app_admin_api_host",
 ] as const
 
 const scannedDirectories = [
@@ -41,12 +56,7 @@ const scannedDirectories = [
 ] as const
 
 const scannedRootFiles = [
-  "ARCHITECTURE.md",
-  "BACKEND.md",
-  "CONTEXT.md",
-  "DOMAIN.md",
-  "FRONTEND.md",
-  "GLOSSARY.md",
+  "AGENTS.md",
   "README.md",
   "bun.lock",
   "lefthook.yml",
@@ -79,8 +89,9 @@ export function isCurrentArchitectureFile(relativePath: string): boolean {
     "/.turbo/",
     "/coverage/",
     "/node_modules/",
+    "docs/archive/",
     "docs/engineering/adr/",
-    "docs/engineering/monorepo-target-architecture-plan/",
+    "docs/work/",
   ].some((segment) => `/${normalizedPath}`.includes(segment))
 }
 

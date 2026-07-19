@@ -33,14 +33,12 @@ const requiredUnifiedApiEnvironment = [
   "ADMIN_ASSET_S3_ENDPOINT",
   "ADMIN_ASSET_S3_REGION",
   "ADMIN_ASSET_S3_SECRET_KEY",
-  "ADMIN_BETTER_AUTH_SECRET",
-  "ADMIN_BETTER_AUTH_URL",
+  "ADMIN_AUTH_SECRET",
   "ADMIN_ORIGIN",
-  "BETTER_AUTH_SECRET",
-  "BETTER_AUTH_URL",
+  "API_ALLOWED_HOSTS",
+  "API_ORIGIN",
   "CURSOR_SIGNING_SECRET",
-  "LEARNER_API_ALLOWED_HOSTS",
-  "ADMIN_API_ALLOWED_HOSTS",
+  "LEARNER_AUTH_SECRET",
 ] as const
 
 interface CommandResult {
@@ -117,25 +115,17 @@ export function validateComposeContract(input: unknown): readonly string[] {
   const apiService = services.api
   if (isJsonObject(apiService)) {
     errors.push(...validateUnifiedApiEnvironment(apiService))
-    if (!hasNetworkAlias(apiService, "admin", "admin-api-unified")) {
-      errors.push("api: admin network에 admin-api-unified alias가 필요합니다.")
-    }
-    if (!healthcheckUsesConfiguredLearnerHost(apiService)) {
-      errors.push(
-        "api: healthcheck는 configured learner Host를 명시해야 합니다."
-      )
+    if (!healthcheckUsesConfiguredApiHost(apiService)) {
+      errors.push("api: healthcheck는 configured API Host를 명시해야 합니다.")
     }
   }
 
   const adminService = services.admin
   if (
     isJsonObject(adminService) &&
-    readEnvironmentValue(adminService, "ADMIN_API_BASE_URL") !==
-      "http://admin-api-unified:4000"
+    readEnvironmentValue(adminService, "API_BASE_URL") !== "http://api:4000"
   ) {
-    errors.push(
-      "admin: 단일 API의 admin-api-unified:4000 upstream을 사용해야 합니다."
-    )
+    errors.push("admin: 단일 API의 api:4000 upstream을 사용해야 합니다.")
   }
 
   const caddyService = services.caddy
@@ -151,16 +141,15 @@ export function validateUnifiedApiCaddyContract(
 ): readonly string[] {
   const errors: string[] = []
   const learnerWebHandler = readCaddyHandler(caddyfile, "@learner-web")
-  const learnerHandler = readCaddyHandler(caddyfile, "@learner-api")
+  const apiHandler = readCaddyHandler(caddyfile, "@api")
   const adminWebHandler = readCaddyHandler(caddyfile, "@admin-web")
-  const adminHandler = readCaddyHandler(caddyfile, "@admin-api")
 
   if (!hasLoopbackCaddyAdminEndpoint(caddyfile)) {
     errors.push("Caddy 관리 endpoint는 127.0.0.1:2019로 제한해야 합니다.")
   }
 
-  if (!learnerHandler.includes("reverse_proxy api:4000")) {
-    errors.push("Caddy learner API upstream은 api:4000이어야 합니다.")
+  if (!apiHandler.includes("reverse_proxy api:4000")) {
+    errors.push("Caddy API upstream은 api:4000이어야 합니다.")
   }
   if (!learnerWebHandler.includes("reverse_proxy web:3000")) {
     errors.push("Caddy learner web upstream은 web:3000이어야 합니다.")
@@ -168,24 +157,15 @@ export function validateUnifiedApiCaddyContract(
   if (!adminWebHandler.includes("reverse_proxy admin:3001")) {
     errors.push("Caddy admin web upstream은 admin:3001이어야 합니다.")
   }
-  if (!adminHandler.includes("reverse_proxy api:4000")) {
-    errors.push("Caddy admin API upstream은 api:4000이어야 합니다.")
+  if ((caddyfile.match(/\breverse_proxy\s+api:4000\b/gu) ?? []).length !== 1) {
+    errors.push("Caddy topology는 단일 API handler만 둘 수 있습니다.")
   }
-  if ((caddyfile.match(/\breverse_proxy\s+api:4000\b/gu) ?? []).length !== 2) {
+  if (/\breverse_proxy\s+(?!api:4000\b)[^\s]+/iu.test(apiHandler)) {
     errors.push(
-      "Caddy normal topology는 learner/admin API handler에 api:4000 upstream을 각각 하나만 둘 수 있습니다."
+      "Caddy API handler는 api:4000 외의 upstream을 포함하면 안 됩니다."
     )
   }
-  if (/\breverse_proxy\s+admin-api:4001\b/iu.test(caddyfile)) {
-    errors.push(
-      "Caddy normal topology는 legacy admin-api:4001 upstream을 포함하면 안 됩니다."
-    )
-  }
-  if (
-    [learnerHandler, adminHandler].some((handler) =>
-      /\bheader_up\s+Host\b/iu.test(handler)
-    )
-  ) {
+  if (/\bheader_up\s+Host\b/iu.test(apiHandler)) {
     errors.push(
       "Caddy API upstream은 public Host를 내부 Host로 덮어쓰면 안 됩니다."
     )
@@ -216,30 +196,15 @@ function validateUnifiedApiEnvironment(service: JsonObject): readonly string[] {
     }
   }
 
-  const learnerHosts = readAllowedHostnames(
-    readEnvironmentValue(service, "LEARNER_API_ALLOWED_HOSTS")
+  const apiHosts = readAllowedHostnames(
+    readEnvironmentValue(service, "API_ALLOWED_HOSTS")
   )
-  const adminHosts = readAllowedHostnames(
-    readEnvironmentValue(service, "ADMIN_API_ALLOWED_HOSTS")
-  )
-  if (learnerHosts === undefined || adminHosts === undefined) {
+  if (apiHosts === undefined) {
     errors.push("api: Host allowlist authority가 유효해야 합니다.")
     return errors
   }
-  if (!learnerHosts.authorities.has("api:4000")) {
-    errors.push("api: learner 내부 authority api:4000이 필요합니다.")
-  }
-  if (!adminHosts.authorities.has("admin-api-unified:4000")) {
-    errors.push(
-      "api: admin preview 내부 authority admin-api-unified:4000이 필요합니다."
-    )
-  }
-  if (
-    [...learnerHosts.hostnames].some((host) => adminHosts.hostnames.has(host))
-  ) {
-    errors.push(
-      "api: learner/admin Host allowlist hostname이 겹치면 안 됩니다."
-    )
+  if (!apiHosts.authorities.has("api:4000")) {
+    errors.push("api: 내부 authority api:4000이 필요합니다.")
   }
 
   return errors
@@ -273,7 +238,7 @@ function readAllowedHostnames(value: string | undefined):
   }
 }
 
-function healthcheckUsesConfiguredLearnerHost(service: JsonObject): boolean {
+function healthcheckUsesConfiguredApiHost(service: JsonObject): boolean {
   if (!isJsonObject(service.healthcheck)) return false
   const test = service.healthcheck.test
   return (
@@ -282,7 +247,7 @@ function healthcheckUsesConfiguredLearnerHost(service: JsonObject): boolean {
       (entry) =>
         typeof entry === "string" &&
         entry.includes("Host") &&
-        entry.includes("BETTER_AUTH_URL")
+        entry.includes("API_ORIGIN")
     )
   )
 }
@@ -317,20 +282,6 @@ function hasVolumeTarget(service: JsonObject, target: string): boolean {
   if (!Array.isArray(service.volumes)) return false
   return service.volumes.some(
     (volume) => isJsonObject(volume) && volume.target === target
-  )
-}
-
-function hasNetworkAlias(
-  service: JsonObject,
-  networkName: string,
-  alias: string
-): boolean {
-  if (!isJsonObject(service.networks)) return false
-  const network = service.networks[networkName]
-  return (
-    isJsonObject(network) &&
-    Array.isArray(network.aliases) &&
-    network.aliases.includes(alias)
   )
 }
 
@@ -374,11 +325,10 @@ function createDeploymentFixture(repositoryRoot: string): DeploymentFixture {
       "api.env",
       [
         "NODE_ENV=production",
-        "BETTER_AUTH_URL=https://api.example.test",
-        "ADMIN_BETTER_AUTH_URL=https://admin-api.example.test",
-        "BETTER_AUTH_SECRET=learner-fixture-secret",
+        "API_ORIGIN=https://api.example.test",
+        "LEARNER_AUTH_SECRET=learner-fixture-secret",
         "CURSOR_SIGNING_SECRET=cursor-fixture-secret",
-        "ADMIN_BETTER_AUTH_SECRET=admin-fixture-secret",
+        "ADMIN_AUTH_SECRET=admin-fixture-secret",
         "ADMIN_ASSET_PUBLIC_BASE_URL=https://assets.example.test",
         "ADMIN_ASSET_S3_ACCESS_KEY=asset-access-key",
         "ADMIN_ASSET_S3_BUCKET=writing-app-assets",
@@ -387,17 +337,10 @@ function createDeploymentFixture(repositoryRoot: string): DeploymentFixture {
         "ADMIN_ASSET_S3_SECRET_KEY=asset-secret-key",
         "WEB_ORIGIN=https://app.example.test",
         "ADMIN_ORIGIN=https://admin.example.test",
-        "LEARNER_API_ALLOWED_HOSTS=api.example.test,api:4000",
-        "ADMIN_API_ALLOWED_HOSTS=admin-api.example.test,admin-api-unified:4000",
+        "API_ALLOWED_HOSTS=api.example.test,api:4000",
       ],
     ],
-    [
-      "admin.env",
-      [
-        "NODE_ENV=production",
-        "ADMIN_API_BASE_URL=http://admin-api-unified:4000",
-      ],
-    ],
+    ["admin.env", ["NODE_ENV=production", "API_BASE_URL=http://api:4000"]],
   ] as const)
   for (const [fileName, lines] of environmentFiles) {
     fs.writeFileSync(
@@ -417,7 +360,6 @@ function createDeploymentFixture(repositoryRoot: string): DeploymentFixture {
       "WEB_HOST=app.example.test",
       "API_HOST=api.example.test",
       "ADMIN_HOST=admin.example.test",
-      "ADMIN_API_HOST=admin-api.example.test",
       "",
     ].join("\n")
   )

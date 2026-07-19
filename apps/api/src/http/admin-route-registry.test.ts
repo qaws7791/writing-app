@@ -182,7 +182,7 @@ describe("관리자 capability route registry", () => {
     }
   )
 
-  it.each(["/api/auth", "/api/auth/*", "/api/auth/change-password"])(
+  it.each(["/auth", "/auth/*", "/auth/change-password"])(
     "인증 namespace %s를 feature route가 소유하지 못하게 한다",
     (path) => {
       expectAssemblyFailure(

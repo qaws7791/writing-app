@@ -38,7 +38,7 @@ describe("문서 검사 범위 fixture", () => {
     ).toBe(true)
   })
 
-  test("ADR와 단계별 실행 계획은 삭제된 workspace의 역사 기록을 보존한다", async () => {
+  test("ADR와 work/archive 문서는 현재 사실 검사에서 제외한다", async () => {
     const { isHistoricalOrAnalysisDocumentPath } = await import(
       documentDriftModuleUrl
     )
@@ -50,7 +50,12 @@ describe("문서 검사 범위 fixture", () => {
     ).toBe(true)
     expect(
       isHistoricalOrAnalysisDocumentPath(
-        "docs/engineering/monorepo-target-architecture-plan/mta-41-admin-api-runtime-removal.md"
+        "docs/work/2026-07-20-api-unification/plan.md"
+      )
+    ).toBe(true)
+    expect(
+      isHistoricalOrAnalysisDocumentPath(
+        "docs/archive/2026-07-20-api-unification/audit.md"
       )
     ).toBe(true)
     expect(
@@ -113,10 +118,29 @@ describe("자료실 현재 문서 stale sentinel fixture", () => {
     ).toEqual([])
     expect(
       findStaleResourceLibraryStatements(
-        "docs/engineering/monorepo-target-architecture-plan/mta-6-current-docs-drift-sync.md",
+        "docs/work/2026-07-20-resource-library-sync/audit.md",
         historicalStatement
       )
     ).toEqual([])
+  })
+})
+
+describe("작업 문서 디렉터리 이름 fixture", () => {
+  test("유효한 날짜와 kebab-case 작업 이름만 허용한다", async () => {
+    const { isValidTaskDocumentDirectoryName } = await import(
+      documentDriftModuleUrl
+    )
+
+    expect(isValidTaskDocumentDirectoryName("2026-07-20-api-unification")).toBe(
+      true
+    )
+    expect(isValidTaskDocumentDirectoryName("2026-02-30-api-unification")).toBe(
+      false
+    )
+    expect(isValidTaskDocumentDirectoryName("api-unification")).toBe(false)
+    expect(isValidTaskDocumentDirectoryName("2026-07-20-API-unification")).toBe(
+      false
+    )
   })
 })
 
@@ -142,8 +166,8 @@ describe("capability 소유권 대표 탐색 경로 fixture", () => {
     "[app-owned adapter](../../apps/api/src/adapters/resource-library/resource-document-drizzle.repository.ts)",
     "[composition](../../apps/api/src/modules/admin-resource-library/admin-resource-library.composition.ts)",
     "[route](../../apps/api/src/modules/admin-resource-library/resource-documents.routes.ts)",
-    "product backend executable은 `apps/api` 하나이며 learner/admin Host sub-app을 함께 소유한다.",
-    "관리자 foundation과 여섯 capability는 legacy subprocess 없이 target-only 계약 suite로 검증한다.",
+    "product backend executable은 `apps/api` 하나이며 학습자 경로와 `/api/admin/*` 관리자 경로를 함께 소유한다.",
+    "관리자 foundation과 여섯 capability는 별도 subprocess 없이 계약 suite로 검증한다.",
   ].join("\n")
 
   test("세 시나리오의 source link가 순서대로 있으면 통과한다", async () => {
@@ -165,7 +189,7 @@ describe("capability 소유권 대표 탐색 경로 fixture", () => {
       ""
     )
     const withoutTargetContract = withoutResourceRoute.replace(
-      "관리자 foundation과 여섯 capability는 legacy subprocess 없이 target-only 계약 suite로 검증한다.",
+      "관리자 foundation과 여섯 capability는 별도 subprocess 없이 계약 suite로 검증한다.",
       ""
     )
 

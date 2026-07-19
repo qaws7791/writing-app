@@ -9,14 +9,11 @@ import {
   parseResourceDocument,
   parseResourceImage,
 } from "@/features/resource-document-editor/api/resource-document-http-adapter"
-import {
-  buildAdminApiUrl,
-  type AdminApiBaseUrl,
-} from "@/shared/config/admin-api-url"
+import { buildApiUrl, type ApiBaseUrl } from "@/shared/config/api-base-url"
 import { createAdminHttpTransport } from "@/shared/http/admin-http-transport"
 
 export function createBrowserResourceDocumentApi(
-  apiBaseUrl: AdminApiBaseUrl
+  apiBaseUrl: ApiBaseUrl
 ): ResourceDocumentApi {
   const httpApi = createResourceDocumentHttpAdapter(
     createAdminHttpTransport({
@@ -35,7 +32,10 @@ export function createBrowserResourceDocumentApi(
     ) {
       try {
         const response = await fetch(
-          buildAdminApiUrl(apiBaseUrl, `/resources/documents/${documentId}`),
+          buildApiUrl(
+            apiBaseUrl,
+            `/api/admin/resources/documents/${documentId}`
+          ),
           {
             body: JSON.stringify(input),
             credentials: "include",
@@ -64,9 +64,9 @@ export function createBrowserResourceDocumentApi(
         form.set("altText", altText)
         form.set("file", file)
         const response = await fetch(
-          buildAdminApiUrl(
+          buildApiUrl(
             apiBaseUrl,
-            `/resources/documents/${documentId}/images`
+            `/api/admin/resources/documents/${documentId}/images`
           ),
           { body: form, credentials: "include", method: "POST" }
         )

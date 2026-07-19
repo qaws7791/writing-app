@@ -13,12 +13,12 @@ describe("통합 관리자 Content route", () => {
     const operatorFixture = createAdminContentTargetRouteFixture("operator")
 
     const ownerResponse = await ownerFixture.fetch(
-      new Request("http://admin-api.test/courses/course-1/editor", {
+      new Request("http://api.test/courses/course-1/editor", {
         headers: { Cookie: adminCookie },
       })
     )
     const operatorResponse = await operatorFixture.fetch(
-      new Request("http://admin-api.test/courses", {
+      new Request("http://api.test/courses", {
         headers: {
           Cookie: adminCookie,
           Origin: adminOrigin,
@@ -42,12 +42,12 @@ describe("통합 관리자 Content route", () => {
 
     const listResponse = await fixture.fetch(
       new Request(
-        "http://admin-api.test/courses?category=%EB%AF%B8%EB%B6%84%EB%A5%98&page=2&pageSize=5&query=%EC%BD%94%EC%8A%A4&status=active",
+        "http://api.test/courses?category=%EB%AF%B8%EB%B6%84%EB%A5%98&page=2&pageSize=5&query=%EC%BD%94%EC%8A%A4&status=active",
         { headers: { Cookie: adminCookie } }
       )
     )
     const createResponse = await fixture.fetch(
-      new Request("http://admin-api.test/courses", {
+      new Request("http://api.test/courses", {
         headers: {
           Cookie: adminCookie,
           Origin: adminOrigin,
@@ -97,9 +97,7 @@ describe("통합 관리자 Content route", () => {
 
   it("Content OpenAPI가 target route의 여섯 operation을 공개한다", async () => {
     const fixture = createAdminContentTargetRouteFixture("owner")
-    const response = await fixture.fetch(
-      new Request("http://admin-api.test/openapi")
-    )
+    const response = await fixture.fetch(new Request("http://api.test/openapi"))
     const document = await response.json()
 
     expect(response.status).toBe(200)
@@ -114,18 +112,18 @@ describe("통합 관리자 Content route", () => {
         },
       },
       paths: {
-        "/courses": {
+        "/api/admin/courses": {
           get: { operationId: "getAdminCourses" },
           post: { operationId: "createAdminCourse" },
         },
-        "/courses/{courseId}": {
+        "/api/admin/courses/{courseId}": {
           delete: { operationId: "archiveAdminCourse" },
         },
-        "/courses/{courseId}/editor": {
+        "/api/admin/courses/{courseId}/editor": {
           get: { operationId: "getAdminCourseEditor" },
           put: { operationId: "saveAdminCourseEditor" },
         },
-        "/courses/{courseId}/publish": {
+        "/api/admin/courses/{courseId}/publish": {
           post: { operationId: "publishAdminCourse" },
         },
       },

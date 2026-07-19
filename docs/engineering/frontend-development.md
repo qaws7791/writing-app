@@ -66,20 +66,15 @@
 - 예상 가능한 실패는 호출자가 분기할 수 있는 값으로, 예상하지 못한 인프라 실패와 불변식 위반은 throw로 구분한다. Result를 복구가 필요하지 않은 모든 함수에 일괄 적용하지 않는다.
 - 날짜는 직렬화 경계에서 ISO 8601 문자열, 금액은 통화와 정수 최소 단위를 기본 표현으로 사용한다. 배열과 객체는 불변으로 다루고 원본을 직접 변경하지 않는다.
 
-## 2026-06-15 HTTP 클라이언트 응답 계약 검증 시작
+## HTTP 응답 계약
 
 - 학습자 웹과 어드민 웹의 HTTP 클라이언트는 성공 응답 JSON을 타입 캐스팅만 하지 않고 endpoint별 런타임 스키마로 검증한다.
 - 성공 응답이 계약과 다르면 network 오류가 아니라 contract 오류로 분리한다.
 - 실패 응답은 서버의 canonical `SCREAMING_SNAKE_CASE` code와 한국어 message를 그대로 사용한다.
 
-## 2026-06-15 HTTP 클라이언트 응답 계약 검증 완료
-
 - 어드민 HTTP 클라이언트는 core/admin DTO 스키마로 모든 성공 응답을 검증한다.
 - 학습자 HTTP 클라이언트는 콘텐츠, 프로필, 진행, 레슨 상태 전이와 AI 코칭 성공 응답을 런타임 스키마로 검증한다.
 - JSON 파싱 실패와 스키마 불일치는 `CONTRACT_ERROR`로 반환하고, fetch 실패만 `NETWORK_ERROR`로 반환한다.
-
-## 2026-06-17 HTTP 네트워크 오류 값 처리
-
 - 학습자 웹과 어드민 웹의 HTTP adapter는 `fetch` 예외를 `null`로 병합하지 않고 `@workspace/http-client`의 명시적 result로 처리한다.
 - `network-error`는 사용자 메시지와 별개로 원인, method, query가 제거된 URL, 실패 분류를 보존한다.
 - 화면은 네트워크 오류 원인을 직접 노출하지 않는다. 로깅, 리포팅, 재시도 정책만 구조화된 `network` 값을 사용한다.
@@ -125,7 +120,7 @@
 
 `apps/admin`의 공통 HTTP result와 transport는 `src/shared/http`, 요청별 인증 transport factory는 `src/server/http`가 소유한다. Server Component는 자기 `features/*/server`의 좁은 DAL을 호출하고, 브라우저 재조회가 필요한 코스 편집기와 자료실만 자기 `features/*/api` adapter를 사용한다. 각 DAL과 adapter는 `@workspace/contracts/admin`의 canonical schema로 응답을 검증한다. 중앙 `AdminApi`와 조회용 Server Action은 사용하지 않는다.
 
-관리자 공개 런타임 설정은 `src/shared/config/admin-runtime-config.ts`에서 Zod로 검증한 뒤 Server Component가 직렬화 가능한 값만 Client Component에 전달한다. 클라이언트에는 URL 브랜드와 순수 조립 함수가 있는 `admin-api-url.ts`만 포함해 Zod parser가 초기 번들에 들어가지 않게 한다.
+어드민의 공개 런타임 설정도 공통 `NEXT_PUBLIC_API_BASE_URL`을 Zod로 검증한 뒤 Server Component가 직렬화 가능한 값만 Client Component에 전달한다. 클라이언트에는 URL 브랜드와 순수 조립 함수만 포함해 Zod parser가 초기 번들에 들어가지 않게 한다.
 
 서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 관리자 AI 채팅은 목록과 선택 대화를 병렬로 조회한다. 학습자 코스 목록은 course page와 category를 병렬 조회한다. 레슨 진입은 레슨과 프로필만 병렬 조회하고, 초기 step은 레슨 응답의 `learning`에서 읽는다. 별도 `/progress` join이나 course detail 조회를 시작하지 않는다. 각 요청의 기존 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
 
@@ -163,11 +158,11 @@
 
 학습자 로그인은 `NEXT_PUBLIC_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 `CORS_ORIGIN`과 Better Auth `trustedOrigins`로 학습자 웹 origin을 허용한다.
 
-어드민 앱의 보호 라우트는 `apps/admin/src/app/(admin)/layout.tsx`에서 `GET /session` 결과를 확인한다. 인증·인가 실패만 어드민 로그인 경로로 redirect한다.
+어드민 앱의 보호 라우트는 `apps/admin/src/app/(admin)/layout.tsx`에서 `GET /api/admin/session` 결과를 확인한다. 인증·인가 실패만 어드민 로그인 경로로 redirect한다.
 
 두 앱은 root `loading.tsx`, `error.tsx`, `global-error.tsx`와 보호 route group skeleton을 제공한다. error boundary의 다시 시도는 Next `reset()`을 호출한다. 어드민은 세션 응답의 `unauthorized | forbidden`만 로그인으로 보내고 network·contract·5xx 오류는 로그인 상태를 유지한 서비스 오류 UI로 표시한다. 로그아웃 요청 실패는 화면 alert와 같은 버튼의 재시도로 처리하며 unhandled rejection을 만들지 않는다. 어드민은 알 수 없는 경로에 전용 not-found 화면을 제공한다.
 
-관리자 로그인은 ID/password만 지원하고 `NEXT_PUBLIC_ADMIN_API_BASE_URL`의 Hono API `/api/auth/sign-in/email` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, 어드민 API는 `ADMIN_CORS_ORIGIN`과 Better Auth `trustedOrigins`로 어드민 웹 origin을 허용한다. 로그인 `next` 경로 검증은 `src/features/authentication/model/admin-auth-navigation.ts`가 단일 출처이며, 로그인 성공 후 이동은 `next/navigation`의 router를 사용한다. 어드민 앱 source에서 `window.location.*` 직접 이동은 금지한다.
+관리자 로그인은 ID/password만 지원하고 `NEXT_PUBLIC_API_BASE_URL`의 `/api/admin/auth/sign-in/email` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 공통 CORS 설정과 관리자 인증의 `trustedOrigins`로 어드민 웹 origin을 허용한다. 로그인 `next` 경로 검증은 `src/features/authentication/model/admin-auth-navigation.ts`가 단일 출처이며, 로그인 성공 후 이동은 `next/navigation`의 router를 사용한다. 어드민 앱 source에서 `window.location.*` 직접 이동은 금지한다.
 
 ## 오류 처리
 
@@ -275,9 +270,9 @@
 
 ## 관련 문서
 
-- `CONTEXT.md`: 제품과 런타임 경계.
-- `ARCHITECTURE.md`: 모노레포 구조와 공개 경계.
-- `DOMAIN.md`: 도메인 모델과 불변식.
-- `BACKEND.md`: API, DB, 인증, 운영 경계.
-- `docs/design`: 브랜드, foundation, component, pattern, asset, accessibility, IA, 화면 UX의 단일 진실 원천.
-- `docs/design/text-localization-policy.md`: 텍스트 현지화 원칙.
+- `../product/problem-definition.md`: 제품 문제와 범위.
+- `system-overview.md`: 모노레포 구조와 runtime 경계.
+- `../product/content-model.md`: 콘텐츠 도메인 모델과 불변식.
+- `api-contract.md`, `data-model.md`, `auth-permissions.md`: API, DB와 인증 경계.
+- `../design`: 브랜드, foundation, component, pattern, asset, accessibility, IA, 화면 UX의 기준.
+- `../design/text-localization-policy.md`: 텍스트 현지화 원칙.

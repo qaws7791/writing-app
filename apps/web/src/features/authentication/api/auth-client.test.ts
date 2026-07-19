@@ -22,7 +22,7 @@ describe("auth client", () => {
     )
 
     expect(fetch).toHaveBeenCalledWith(
-      `${localRuntimeDefaults.learnerApiBaseUrl}/api/auth/sign-out`,
+      `${localRuntimeDefaults.apiBaseUrl}/api/auth/sign-out`,
       {
         credentials: "include",
         method: "POST",
@@ -56,7 +56,7 @@ describe("auth client", () => {
     await authClient.requestGoogleLogin("/app/courses")
 
     expect(betterAuthClientFactory).toHaveBeenCalledWith({
-      baseURL: localRuntimeDefaults.learnerApiBaseUrl,
+      baseURL: localRuntimeDefaults.apiBaseUrl,
     })
     expect(social).toHaveBeenCalledWith({
       callbackURL: "http://localhost:3000/app/courses",

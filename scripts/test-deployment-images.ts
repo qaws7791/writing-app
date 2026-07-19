@@ -11,7 +11,7 @@ export type DeploymentServiceName = "admin" | "api" | "web"
 export interface DeploymentImageSpec {
   readonly buildArguments: readonly (readonly [name: string, value: string])[]
   readonly dockerfile: string
-  readonly healthHostEnvironment?: "BETTER_AUTH_URL"
+  readonly healthHostEnvironment?: "API_ORIGIN"
   readonly healthPort: number
   readonly name: DeploymentServiceName
   readonly runtime: "bun" | "node"
@@ -81,11 +81,6 @@ export const composeSmokeRoutes = [
     path: "/health",
   },
   {
-    expectedResponse: { ok: true, service: "admin-api" },
-    host: "admin-api.example.test",
-    path: "/health",
-  },
-  {
     expectedResponse: { ok: true, service: "admin" },
     host: "admin.example.test",
     path: "/health",
@@ -96,7 +91,7 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   {
     buildArguments: [
       ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
-      ["WEB_API_BASE_URL", "http://api:4000"],
+      ["API_BASE_URL", "http://api:4000"],
       ["WEB_ORIGIN", "https://web.example.test"],
     ],
     dockerfile: "deploy/docker/web.dockerfile",
@@ -113,7 +108,7 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   {
     buildArguments: [],
     dockerfile: "deploy/docker/api.dockerfile",
-    healthHostEnvironment: "BETTER_AUTH_URL",
+    healthHostEnvironment: "API_ORIGIN",
     healthPort: 4000,
     name: "api",
     runtime: "bun",
@@ -123,9 +118,9 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   },
   {
     buildArguments: [
-      ["NEXT_PUBLIC_ADMIN_API_BASE_URL", "https://admin-api.example.test"],
+      ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
       ["NEXT_PUBLIC_LEARNER_WEB_ORIGIN", "https://web.example.test"],
-      ["ADMIN_API_BASE_URL", "http://admin-api-unified:4000"],
+      ["API_BASE_URL", "http://api:4000"],
       ["ADMIN_ORIGIN", "https://admin.example.test"],
     ],
     dockerfile: "deploy/docker/admin.dockerfile",
@@ -220,13 +215,12 @@ export function createRuntimeEnvironment(
     ["ADMIN_ASSET_S3_ENDPOINT", "https://r2.example.test"],
     ["ADMIN_ASSET_S3_REGION", "auto"],
     ["ADMIN_ASSET_S3_SECRET_KEY", "asset-secret-key"],
-    ["BETTER_AUTH_URL", "https://api.example.test"],
-    ["ADMIN_BETTER_AUTH_URL", "https://admin-api.example.test"],
-    ["BETTER_AUTH_SECRET", learnerSecret],
-    ["BETTER_AUTH_COOKIE_DOMAIN", "example.test"],
+    ["API_ORIGIN", "https://api.example.test"],
+    ["LEARNER_AUTH_SECRET", learnerSecret],
+    ["LEARNER_AUTH_COOKIE_DOMAIN", "example.test"],
     ["CURSOR_SIGNING_SECRET", `${learnerSecret}-cursor-distinct`],
-    ["ADMIN_BETTER_AUTH_SECRET", adminSecret],
-    ["ADMIN_BETTER_AUTH_COOKIE_DOMAIN", "example.test"],
+    ["ADMIN_AUTH_SECRET", adminSecret],
+    ["ADMIN_AUTH_COOKIE_DOMAIN", "example.test"],
     ["OPENAI_MODEL", "gpt-5.2"],
     ["LOG_PRETTY", "false"],
   ] as const
@@ -237,25 +231,21 @@ export function createRuntimeEnvironment(
         ...publicEnvironment,
         ["PORT", "3000"],
         ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
-        ["WEB_API_BASE_URL", "http://api:4000"],
+        ["API_BASE_URL", "http://api:4000"],
       ]
     case "admin":
       return [
         ...publicEnvironment,
         ["PORT", "3001"],
-        ["NEXT_PUBLIC_ADMIN_API_BASE_URL", "https://admin-api.example.test"],
+        ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
         ["NEXT_PUBLIC_LEARNER_WEB_ORIGIN", "https://web.example.test"],
-        ["ADMIN_API_BASE_URL", "http://admin-api-unified:4000"],
+        ["API_BASE_URL", "http://api:4000"],
       ]
     case "api":
       return [
         ...apiEnvironment,
         ["API_PORT", "4000"],
-        ["LEARNER_API_ALLOWED_HOSTS", "api.example.test,api:4000"],
-        [
-          "ADMIN_API_ALLOWED_HOSTS",
-          "admin-api.example.test,admin-api-unified:4000",
-        ],
+        ["API_ALLOWED_HOSTS", "api.example.test,api:4000"],
         ["DATABASE_URL", "file:/var/lib/writing-app/api.sqlite"],
       ]
   }
@@ -338,11 +328,11 @@ export function createAdminSsrHealthCheckArguments(
 export function createAdminSsrHealthCheckScript(): string {
   return [
     "(async()=>{",
-    "const baseUrl=process.env.ADMIN_API_BASE_URL;",
-    "if(baseUrl!=='http://admin-api-unified:4000')throw new Error('unexpected ADMIN_API_BASE_URL');",
-    "const response=await fetch(baseUrl+'/health');",
+    "const baseUrl=process.env.API_BASE_URL;",
+    "if(baseUrl!=='http://api:4000')throw new Error('unexpected API_BASE_URL');",
+    "const response=await fetch(baseUrl+'/api/admin/health');",
     "const body=await response.json();",
-    "if(!response.ok||body?.ok!==true||body?.service!=='admin-api')throw new Error(`unexpected admin API response: ${JSON.stringify(body)}`);",
+    "if(!response.ok||body?.ok!==true||body?.service!=='api')throw new Error(`unexpected admin API response: ${JSON.stringify(body)}`);",
     "})().catch((error)=>{console.error(error);process.exit(1)})",
   ].join("")
 }
@@ -404,7 +394,6 @@ function createComposeSmokeFixture(input: {
     ["WEB_HOST", "web.example.test"],
     ["API_HOST", "api.example.test"],
     ["ADMIN_HOST", "admin.example.test"],
-    ["ADMIN_API_HOST", "admin-api.example.test"],
   ])
   writeEnvironmentFile(path.join(configDirectory, "litestream.env"), [
     ["LITESTREAM_BUCKET", "writing-app-smoke"],
@@ -759,7 +748,7 @@ function runComposeTrafficSmoke(input: {
   if (cleanupError !== undefined) throw cleanupError
 
   console.log(
-    "Caddy public Host, target API dispatcher와 Admin SSR internal alias를 확인했습니다."
+    "Caddy public Host와 단일 API namespace, Admin SSR upstream을 확인했습니다."
   )
 }
 

@@ -8,7 +8,7 @@ import { useState } from "react"
 
 import { AdminSidebar } from "@/app/(admin)/_views/admin-sidebar"
 import { requestAdminSignOut } from "@/features/authentication/api/admin-auth-client"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   adminNavigationItems,
   isAdminNavigationActive,
@@ -22,7 +22,7 @@ export function AdminShell({
   learnerWebOrigin,
 }: {
   readonly activePath?: string
-  readonly apiBaseUrl: AdminApiBaseUrl
+  readonly apiBaseUrl: ApiBaseUrl
   readonly children: ReactNode
   readonly learnerWebOrigin: string
 }) {

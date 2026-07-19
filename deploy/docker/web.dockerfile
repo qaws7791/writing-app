@@ -11,19 +11,19 @@ COPY . .
 RUN bun install --filter @workspace/web --linker isolated --frozen-lockfile
 
 ARG NEXT_PUBLIC_API_BASE_URL
-ARG WEB_API_BASE_URL
+ARG API_BASE_URL
 ARG WEB_ORIGIN
 ARG CSP_REPORT_ONLY=false
 
 ENV NODE_ENV=production \
     NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} \
-    WEB_API_BASE_URL=${WEB_API_BASE_URL} \
+    API_BASE_URL=${API_BASE_URL} \
     WEB_ORIGIN=${WEB_ORIGIN} \
     CSP_REPORT_ONLY=${CSP_REPORT_ONLY} \
     ENABLE_TEST_AUTH=false
 
 RUN test -n "$NEXT_PUBLIC_API_BASE_URL" \
-    && test -n "$WEB_API_BASE_URL" \
+    && test -n "$API_BASE_URL" \
     && test -n "$WEB_ORIGIN"
 RUN bun --filter @workspace/web build
 

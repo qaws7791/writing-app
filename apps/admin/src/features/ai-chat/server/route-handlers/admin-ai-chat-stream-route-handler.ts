@@ -3,10 +3,10 @@ import { adminAiChatMessageRequestSchema } from "@workspace/contracts/admin"
 import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 import {
   readAdminWebOrigin,
-  readServerAdminApiBaseUrl,
+  readServerApiBaseUrl,
 } from "@/server/env/admin-runtime-config"
 import { adminSessionCookieName } from "@/shared/auth/admin-session-token"
-import { buildAdminApiUrl } from "@/shared/config/admin-api-url"
+import { buildApiUrl } from "@/shared/config/api-base-url"
 
 const maximumRequestBodyBytes = 64 * 1024
 
@@ -37,7 +37,7 @@ export async function handleAdminAiChatStream(
   }
 
   const response = await fetch(
-    buildAdminApiUrl(readServerAdminApiBaseUrl(), "/ai-chat/messages/stream"),
+    buildApiUrl(readServerApiBaseUrl(), "/api/admin/ai-chat/messages/stream"),
     {
       body: JSON.stringify(parsedBody.data),
       headers: {

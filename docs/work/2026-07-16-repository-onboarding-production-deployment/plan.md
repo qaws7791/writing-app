@@ -228,7 +228,7 @@ Linux 전용 `check:deployment-ansible`은 전체 `ansible-lint`와 저장소의
 ### 완료 조건
 
 - example 값만 사용하는 clean checkout에서 Compose와 Ansible 정적 검증이 통과한다.
-- 네 image가 `linux/amd64`에서 빌드되고 비 root 사용자로 실행된다.
+- `web`, `api`, `admin` 세 image가 `linux/amd64`에서 빌드되고 비 root 사용자로 실행된다.
 - Next.js standalone의 `public`과 `.next/static` asset이 실제 image smoke에서 제공된다.
 - Ubuntu bootstrap/deploy 두 번째 실행이 허용된 runtime 조회 외에 불필요한 변경을 만들지 않는다.
 - 배포 파일 변경 PR은 관련 검증을 통과하지 않으면 병합할 수 없다.
@@ -248,7 +248,7 @@ Linux 전용 `check:deployment-ansible`은 전체 `ansible-lint`와 저장소의
 
 ### 구현 상태
 
-2026-07-16에 `.github/workflows/image-release.yml`과 `scripts/image-release-metadata.ts`를 구현했다. 동일 저장소 `main` push의 `필수 품질 게이트`가 성공한 exact SHA만 release하며, 네 production origin을 repository variable에서 검증한다. release tag는 source SHA와 공개 설정 digest를 함께 사용해 같은 source의 서로 다른 공개 build가 tag를 덮어쓰지 않게 한다.
+2026-07-16에 `.github/workflows/image-release.yml`과 `scripts/image-release-metadata.ts`를 구현했다. 동일 저장소 `main` push의 `필수 품질 게이트`가 성공한 exact SHA만 release하며, 학습자 웹·API·어드민 웹의 세 production origin을 repository variable에서 검증한다. release tag는 source SHA와 공개 설정 digest를 함께 사용해 같은 source의 서로 다른 공개 build가 tag를 덮어쓰지 않게 한다.
 
 네 `linux/amd64` image는 GHCR에 게시되며 OCI source·revision·created, runtime과 공개 origin metadata를 포함한다. BuildKit SBOM·최대 provenance와 GitHub artifact attestation을 각 digest에 연결하고 외부 GitHub Action은 검증한 full commit SHA로 고정한다. Grype `0.110.0`은 게시된 정확한 digest의 `HIGH` 이상 취약점을 수정 가능 여부와 무관하게 차단하며 JSON 보고서를 90일 보존한다. scanner 또는 보고서 생성 실패도 release를 중단한다. matrix job의 digest record는 schema와 GHCR name, revision, 공개 설정·취약점 정책을 다시 검사하고 네 service가 모두 일치할 때만 `image-release-manifest.json`으로 집계한다. 배포 입력은 tag가 아니라 이 manifest의 digest reference다.
 
@@ -273,7 +273,7 @@ Windows에서 metadata, 취약점 정책, container image lock, registry 보존�
 ### 작업
 
 1. 확정된 cloud provider의 network, Ubuntu instance, volume, firewall과 최소 metadata를 OpenTofu module로 정의한다.
-2. inbound는 확정된 SSH 관리 경계만 허용하고 애플리케이션 port 80, 443, 3000, 3001, 4000, 4001은 공개하지 않는다.
+2. inbound는 확정된 SSH 관리 경계만 허용하고 애플리케이션 port 80, 443, 3000, 3001, 4000은 공개하지 않는다.
 3. cloud-init은 deploy 사용자, SSH key, 시간 동기화와 Ansible 연결에 필요한 최소 bootstrap만 수행한다.
 4. 애플리케이션 설치와 Docker 구성은 기존 Ansible role이 소유하게 해 cloud-init과 책임을 중복하지 않는다.
 5. production state backend, state locking, encryption, 접근 권한과 복구 절차를 정의한다.
@@ -296,7 +296,7 @@ Windows에서 metadata, 취약점 정책, container image lock, registry 보존�
 ### 작업
 
 1. image release와 production deploy workflow를 분리한다.
-2. deploy workflow는 네 image digest, 공개 origin, 대상 inventory와 현재 정상 배포 기록을 입력으로 받는다.
+2. deploy workflow는 세 image digest, 공개 origin, 대상 inventory와 현재 정상 배포 기록을 입력으로 받는다.
 3. GitHub environment 승인 뒤 Ansible deploy를 실행한다.
 4. 배포 전에 image metadata와 inventory origin 일치, secret 존재, DB와 disk 상태, backup 대상과 SSH 연결을 preflight한다.
 5. 기존 SQLite snapshot 백업, API 쓰기 중지, migration, integrity check, Compose 기동과 verify 순서를 유지한다.
@@ -360,7 +360,7 @@ Windows에서 metadata, 취약점 정책, container image lock, registry 보존�
 | ------------------------ | ------------------------------- | ---------------------------------- | ----------------------------- |
 | 문서                     | 링크, 명령 존재, document drift | clean checkout README smoke        | 신규 사용자 인수              |
 | 로컬 setup               | unit, fixture, 멱등성           | Windows·Ubuntu setup smoke         | 지원 toolchain 변경 시 재검증 |
-| Docker                   | lint/build, non-root, health    | 네 image 게시와 취약점 검사        | base image 갱신               |
+| Docker                   | lint/build, non-root, health    | 세 image 게시와 취약점 검사        | base image 갱신               |
 | Compose/Caddy/Litestream | config validation               | production-like smoke              | dependency 갱신               |
 | Ansible                  | lint, syntax                    | Ubuntu bootstrap/deploy 멱등성     | 분기별 재배포 훈련            |
 | OpenTofu                 | fmt, validate, plan             | 승인 apply와 drift 확인            | 정기 drift 탐지               |
@@ -418,7 +418,7 @@ Windows에서 metadata, 취약점 정책, container image lock, registry 보존�
 - clean clone에서 예정된 setup과 doctor Interface가 Windows와 Ubuntu에서 통과한다.
 - Docker, Compose, Caddy, Litestream과 Ansible 변경이 CI에서 검증된다.
 - OpenTofu plan/apply로 새 Ubuntu host를 재현하고 Ansible로 멱등 배포할 수 있다.
-- GitHub Actions가 검사된 네 image를 게시하고 승인된 digest를 배포한다.
+- GitHub Actions가 검사된 세 image를 게시하고 승인된 digest를 배포한다.
 - 배포 전 백업, migration, integrity, health와 smoke가 자동으로 연결된다.
 - 실패한 배포는 정상 상태로 기록되지 않으며 검증된 코드 롤백 경로가 있다.
 - R2 복구 훈련 결과로 RPO와 RTO가 기록된다.

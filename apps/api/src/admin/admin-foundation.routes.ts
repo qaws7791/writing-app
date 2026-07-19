@@ -21,7 +21,7 @@ export const adminHealthRoute = defineAdminRoute({
     context.json(
       {
         ok: true,
-        service: "admin-api",
+        service: "api",
       },
       200
     ),

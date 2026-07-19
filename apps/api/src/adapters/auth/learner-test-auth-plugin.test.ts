@@ -17,7 +17,7 @@ describe("학습자 테스트 인증", () => {
 
     try {
       const auth = createLearnerAuth({
-        authBaseUrl,
+        apiOrigin: authBaseUrl,
         db: database.db,
         profileRepository: createTestLearnerProfileRepository(),
         secret: "x".repeat(32),
@@ -115,7 +115,7 @@ describe("학습자 테스트 인증", () => {
         .run()
 
       const auth = createLearnerAuth({
-        authBaseUrl,
+        apiOrigin: authBaseUrl,
         db: database.db,
         profileRepository: createTestLearnerProfileRepository(),
         secret: "x".repeat(32),
@@ -164,7 +164,7 @@ describe("학습자 테스트 인증", () => {
 
     try {
       const auth = createLearnerAuth({
-        authBaseUrl: secureAuthBaseUrl,
+        apiOrigin: secureAuthBaseUrl,
         db: database.db,
         profileRepository: createTestLearnerProfileRepository(),
         secret: "x".repeat(32),
@@ -192,7 +192,7 @@ describe("학습자 테스트 인증", () => {
 
     try {
       const auth = createLearnerAuth({
-        authBaseUrl,
+        apiOrigin: authBaseUrl,
         db: database.db,
         profileRepository: createTestLearnerProfileRepository(),
         secret: "x".repeat(32),

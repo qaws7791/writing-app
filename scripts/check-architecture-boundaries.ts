@@ -159,7 +159,6 @@ function isUiApplicationDependency(source: string): boolean {
   return (
     source.startsWith("@/") ||
     isWorkspacePackage(source, "admin") ||
-    isWorkspacePackage(source, "admin-api") ||
     isWorkspacePackage(source, "api") ||
     isWorkspacePackage(source, "core") ||
     isWorkspacePackage(source, "db") ||
@@ -177,7 +176,7 @@ function isFrontendFile(sourcePath: string): boolean {
 }
 
 export function isApiTransportFile(sourcePath: string): boolean {
-  const appSourcePath = sourcePath.match(/^(?:admin-api|api)\/src\/(.+)$/u)?.[1]
+  const appSourcePath = sourcePath.match(/^api\/src\/(.+)$/u)?.[1]
 
   if (appSourcePath === undefined) return false
 

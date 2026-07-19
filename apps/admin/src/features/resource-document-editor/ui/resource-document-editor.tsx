@@ -57,7 +57,7 @@ import {
   resourceLibraryChangedEvent,
   type AdminResourceDocument,
 } from "@/entities/resource-document/model/resource-document"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 const resourceEditorTheme = {
   code: "my-5 block overflow-x-auto rounded-xl bg-muted px-4 py-3 font-mono text-sm leading-6",
@@ -94,7 +94,7 @@ export function ResourceDocumentEditor({
   apiBaseUrl,
   document,
 }: {
-  readonly apiBaseUrl: AdminApiBaseUrl
+  readonly apiBaseUrl: ApiBaseUrl
   readonly document: AdminResourceDocument
 }) {
   const api = useMemo(

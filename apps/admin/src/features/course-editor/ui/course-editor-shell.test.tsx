@@ -5,7 +5,7 @@ import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-co
 
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
-import { readAdminApiBaseUrl } from "@/shared/config/admin-runtime-config"
+import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 
 const { getCourseEditorMock } = vi.hoisted(() => ({
   getCourseEditorMock: vi.fn(),
@@ -63,7 +63,7 @@ describe("CourseEditorShell", () => {
 
     render(
       <CourseEditorShell
-        apiBaseUrl={readAdminApiBaseUrl({})}
+        apiBaseUrl={readApiBaseUrl({})}
         course={course}
         publishCourse={async () => ({
           status: "ok",
@@ -122,7 +122,7 @@ describe("CourseEditorShell", () => {
 
     render(
       <CourseEditorShell
-        apiBaseUrl={readAdminApiBaseUrl({})}
+        apiBaseUrl={readApiBaseUrl({})}
         course={course}
         publishCourse={publishCourse}
         saveCourse={async (draft) => ({ status: "ok", value: draft })}

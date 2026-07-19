@@ -1,244 +1,105 @@
 # 단일 Ubuntu 서버 배포
 
-이 문서는 단일 Ubuntu 서버에서 Docker Compose로 writing-app을 실행하는 배포 계약과 자동화 경계를 정의한다.
-
-## 구현 상태
-
-- 기준일: 2026-07-18
-- 상태: 배포 검증, GHCR candidate 검사·release 승격, image lock과 보존 정책 구현 완료; MTA-40 통합 API 저장소 구성·정적 계약과 target E2E 재배선은 완료됐고, 실제 Docker/운영 적용·관찰·rollback 리허설은 승인 및 운영 증거 대기
-- 현재 범위: 애플리케이션 Docker 이미지, Docker Compose, Ansible, GitHub Actions image release
-- 후속 범위: 승인형 candidate 정리, OpenTofu, cloud-init, 승인형 배포 자동화
-- 실행 계획: [`repository-onboarding-and-production-deployment-plan.md`](../../repository-onboarding-and-production-deployment-plan.md)
+이 문서는 단일 Ubuntu 서버에서 Docker Compose로 writing-app을 실행하는 현재 배포 계약과 운영 절차를 정의한다. 실제 운영 적용과 관찰이 끝났다는 증거는 별도 작업 기록으로 남기며 이 문서에서 추정하지 않는다.
 
 ## 배포 기준
 
-- 최초 지원 운영체제는 Ubuntu 24.04 LTS다.
-- 최초 지원 아키텍처는 `linux/amd64`다.
-- 하나의 서버와 로컬 SQLite 파일을 사용한다.
-- 애플리케이션 이미지는 변경 불가능한 tag 또는 digest로 배포한다.
-- 프로덕션 서버에서 애플리케이션 이미지를 빌드하지 않는다.
-- Cloudflare Tunnel만 외부 연결을 만들며 호스트에 애플리케이션 port를 공개하지 않는다.
-- Caddy는 Tunnel과 애플리케이션 사이의 단일 reverse proxy다.
-- Caddy 내부 구간은 HTTP이며 외부 TLS는 Cloudflare가 종료한다.
+- 최초 지원 운영체제와 architecture는 Ubuntu 24.04 LTS, `linux/amd64`다.
+- 애플리케이션 image는 `web`, `api`, `admin` 세 개다.
+- public API는 하나이며 Caddy는 API Host의 모든 요청을 `api:4000`으로 전달한다.
+- 관리자 HTTP 표면은 같은 API의 `/api/admin/*`에 있고 별도 service, image, port 또는 traffic rollback runtime은 없다.
+- 애플리케이션 port를 host에 공개하지 않고 Cloudflare Tunnel만 외부 연결을 만든다.
+- SQLite는 API와 같은 서버의 로컬 디스크에 두고 네트워크 파일시스템에서 공유하지 않는다.
+- 운영 image는 변경 불가능한 `name@sha256:...` reference만 사용하고 production 서버에서 빌드하지 않는다.
 
-호스트 또는 cloud 방화벽은 SSH 관리 port만 inbound로 허용하고 80, 443과 애플리케이션 port는 열지 않는다. SSH key, 관리 port, root 로그인 차단 같은 접근 정책은 호스트 접근을 끊을 수 있으므로 OpenTofu와 cloud-init의 명시적 입력으로 관리한다.
+## Compose topology
 
-## 서비스 경계
+| service       | 내부 port | 책임                                               |
+| ------------- | --------: | -------------------------------------------------- |
+| `web`         |    `3000` | 학습자 Next.js 앱                                  |
+| `api`         |    `4000` | 학습자 경로, `/api/admin/*`, 단일 SQLite lifecycle |
+| `admin`       |    `3001` | 관리자 Next.js 앱                                  |
+| `caddy`       |    `8080` | 내부 reverse proxy                                 |
+| `cloudflared` |      없음 | Cloudflare Tunnel 연결                             |
+| `litestream`  |      없음 | SQLite WAL을 R2로 연속 복제                        |
 
-| 서비스        | 내부 port | 역할                                           |
-| ------------- | --------: | ---------------------------------------------- |
-| `web`         |    `3000` | 학습자 Next.js 웹                              |
-| `admin`       |    `3001` | 관리자 Next.js 웹                              |
-| `api`         |    `4000` | 학습자·관리자 Host sub-app Bun API             |
-| `admin-api`   |    `4001` | legacy 관리자 Bun HTTP API, `rollback` profile |
-| `caddy`       |    `8080` | host 기반 reverse proxy                        |
-| `cloudflared` |      없음 | Cloudflare Tunnel connector                    |
-| `litestream`  |      없음 | SQLite WAL 연속 복제                           |
+`database-restore`, `database-migrate`, `database-check`, `database-backup`은 운영 작업용 Compose service다. 모두 같은 operation lock과 명시적 lifecycle 아래에서만 실행한다.
 
-정상 Compose profile에서는 `api`와 Litestream만 `/var/lib/writing-app/api.sqlite`를 사용한다. `admin-api`는 명시적인 rollback profile에서만 같은 데이터 디렉터리에 연결하는 legacy runtime이므로, 정상 traffic에서 두 runtime이 관리자 쓰기를 동시에 처리하게 두지 않는다. 배포 시 rollback profile image도 미리 pull하지만 service는 시작하지 않는다. SQLite 파일은 네트워크 파일시스템에 두지 않는다.
+정상 실행에서 `api`와 Litestream만 `/var/lib/writing-app/api.sqlite`를 사용한다. `apps/api`가 유일한 SQLite writer와 close owner이며 migration, 복구와 backup 작업은 API 쓰기 중지와 operation lock을 전제로 한다.
 
-### 관리자 API 통합 배포 구성
+## 네트워크
 
-[ADR-0012](./adr/ADR-0012-single-api-runtime.md)는 두 API hostname을 `apps/api` 단일 backend 프로세스의 격리된 sub-app으로 전달하도록 채택했다. 저장소의 Compose와 Caddy 구성은 이제 학습자·관리자 public Host를 모두 `api:4000`으로 전달하며, `admin-api`는 정상 배포에서 기동하지 않는 `rollback` profile로 남긴다. MTA-41은 실제 운영 관찰을 마친 뒤에만 legacy image·service·설정을 제거할 수 있다.
+- `edge`: Caddy와 Cloudflared만 연결하는 외부 전달 경계.
+- `learner`: Caddy, web과 api의 학습자 내부 통신 경계.
+- `admin`: Caddy, admin과 같은 api의 관리자 내부 통신 경계.
+- `backup`: api 데이터와 Litestream·복구 작업 경계.
 
-MTA-38 기반에서 `api` container는 learner/admin Better Auth 설정, 서로 겹치지 않는 `LEARNER_API_ALLOWED_HOSTS`·`ADMIN_API_ALLOWED_HOSTS`와 별도 cursor secret을 모두 받는다. health check는 `BETTER_AUTH_URL`의 learner authority를 명시적 `Host`로 보낸다. Caddy는 public `Host`를 내부 hostname으로 덮어쓰지 않고 두 Host를 `api:4000`으로 전달한다. 관리자 SSR의 비공개 내부 URL은 admin network의 `http://admin-api-unified:4000`이고, 브라우저는 계속 public 관리자 API origin을 사용한다.
+학습자와 어드민 SSR은 모두 `API_BASE_URL=http://api:4000`을 사용한다. 브라우저는 같은 public `NEXT_PUBLIC_API_BASE_URL`을 사용한다. 네트워크 분리는 frontend의 접근 범위를 제한하지만 별도 API runtime을 만들지 않는다.
 
-Caddy 관리 API는 Caddy container 안의 loopback `127.0.0.1:2019`에만 bind하며 Compose는 이 port를 host에 노출하지 않는다. normal topology의 정적 계약은 learner/admin API handler가 각각 정확히 하나의 `api:4000` upstream만 두고 `admin-api:4001`을 전혀 포함하지 않게 한다. Ansible은 배포 변경마다 image pull 직후 현재 Caddy image·env·설정 조합을 DB snapshot·복구·migration 같은 stateful 단계 전에 별도 Caddy container로 먼저 validate한다. Caddyfile은 단일 file bind mount이므로 Ansible의 원자적 파일 교체 뒤 기존 container가 이전 inode를 계속 볼 수 있다. 따라서 Caddyfile이 바뀌면 reload하지 않고 검증을 통과한 설정으로 Caddy service만 force recreate해 새 mount와 health를 확인한다.
+## Caddy와 public Host
 
-Ansible은 `web`, learner API, `admin`, 관리자 API public Host 네 개가 서로 겹치거나 내부 service/alias 이름을 쓰면 즉시 실패한다. public Host와 cookie domain은 port·경로·공백·trailing dot 없이 label당 최대 63자인 소문자 DNS FQDN이어야 한다. 이 검증은 Caddy 환경 파일을 렌더링하고 SQLite stateful 단계를 시작하기 전에 잘못된 Host를 거부한다. 애플리케이션 parser에서 cookie domain은 로컬 개발에 선택 사항이지만, production에서 값이 주어지면 각 frontend 소비 origin과 API 발급 origin 모두의 공통 parent인지 검증한다. production role은 그에 더해 서로 다른 web/API Host에서 SSR 세션을 전달할 수 있도록 학습자와 관리자 각각의 공통 parent cookie domain을 비어 있지 않게 요구하고 두 Host가 그 domain 범위에 있는지 검증한다.
+Caddy는 다음 세 public Host만 구분한다.
 
-위 내용은 저장소 구성과 정적 검증에서 확인한 사실이다. 실제 production 서버에 이 구성이 적용되었는지, Host별 인증·CORS·쓰기·자료 자산 요청이 관찰 구간을 통과했는지, 그리고 legacy traffic rollback을 리허설했는지는 이 저장소만으로 확인할 수 없으므로 MTA-40의 운영 완료로 기록하지 않는다.
+- 학습자 웹 Host → `web:3000`
+- API Host → `api:4000`
+- 어드민 웹 Host → `admin:3001`
 
-## 저장소 구성
+Caddy 관리 API는 container loopback `127.0.0.1:2019`에만 bind하고 host에 노출하지 않는다. 설정 변경은 stateful 작업 전에 고정 Caddy image로 검증하며, file bind mount가 바뀌면 Caddy service를 force recreate해 새 inode를 사용하게 한다.
 
-| 경로                                | 책임                                                             |
-| ----------------------------------- | ---------------------------------------------------------------- |
-| `deploy/docker/`                    | 네 애플리케이션의 production image 정의                          |
-| `deploy/compose/compose.yaml`       | 애플리케이션, Caddy, Tunnel, Litestream, 일회성 운영 서비스 정의 |
-| `deploy/caddy/caddyfile`            | 네 host route와 trusted proxy 처리                               |
-| `deploy/litestream/litestream.yaml` | SQLite와 R2 replica 계약                                         |
-| `infra/ansible/playbooks/`          | bootstrap, deploy, verify, rollback, restore 진입점              |
-| `infra/ansible/roles/`              | Docker 호스트와 writing-app 배포의 재사용 가능한 역할            |
+## 필수 운영 입력
 
-## 배포 구성 사전 검증
+| 입력                      | 의미                           |
+| ------------------------- | ------------------------------ |
+| `PRODUCTION_WEB_ORIGIN`   | 학습자 웹 HTTPS origin         |
+| `PRODUCTION_API_ORIGIN`   | 하나의 public API HTTPS origin |
+| `PRODUCTION_ADMIN_ORIGIN` | 어드민 웹 HTTPS origin         |
+| `WEB_IMAGE`               | 학습자 웹 digest reference     |
+| `API_IMAGE`               | API digest reference           |
+| `ADMIN_IMAGE`             | 어드민 웹 digest reference     |
 
-실행 중인 Docker daemon이 있는 저장소 루트에서 다음 명령을 실행한다.
+운영 inventory에는 세 public Host, 학습자·관리자 cookie domain, 서로 다른 학습자 인증·관리자 인증·cursor secret, registry credential, Cloudflare Tunnel token과 R2 설정을 제공한다. secret은 Git에 저장하지 않고 Ansible Vault 또는 승인된 secret store로 관리한다.
 
-```sh
+## 설정 검증
+
+```bash
 bun run check:deployment-config
-```
-
-이 명령은 임시 디렉터리에 비밀값이 아닌 production 형태의 fixture를 만들고 `operations` profile을 포함한 Compose JSON을 해석한다. 필수 서비스, host port 비공개, 앱 health check와 `init`, network 격리, 공유 SQLite volume을 검사한다. 통합 `api`의 admin network alias `admin-api-unified`, `admin-api`의 `rollback` profile, 관리자 SSR의 내부 base URL, 자료 자산 R2 설정도 함께 확인한다. 이어서 고정된 Caddy `2.11.4`와 Litestream `0.5.11` image로 각 설정을 로드하고 성공·실패와 관계없이 fixture를 정리한다. `--skip-container-validation`은 Docker daemon을 사용할 수 없는 환경에서 Compose 해석만 진단하기 위한 선택지이며 전체 배포 품질 게이트를 충족하지 않는다.
-
-Ansible 제어 노드는 Linux 또는 WSL2를 사용한다.
-
-```sh
-python3 -m pip install -r infra/ansible/requirements.txt
-ansible-galaxy collection install -r infra/ansible/requirements.yaml
-bun run check:deployment-ansible
-```
-
-Ansible 검사는 저장소에 고정된 `ansible-core 2.21.2`, `ansible-lint 26.6.0`, `community.docker 5.2.1`을 기준으로 전체 lint와 모든 playbook의 syntax check를 실행한다. GitHub Actions의 `배포 구성 검증` job은 Docker가 제공되는 Ubuntu에서 두 canonical 명령을 모두 실행한다.
-
-`bun run test:deployment-bootstrap`은 Docker package와 daemon 설정을 실제 호스트에 적용하므로 일반 개발 장비나 운영 서버에서 실행하지 않는다. 이 명령은 `CI=true`, `WRITING_APP_DISPOSABLE_UBUNTU=true`, Ubuntu 24.04, `linux/amd64`, passwordless sudo를 모두 확인한 뒤에만 실행된다. CI는 task 전용 `/var/tmp/writing-app-bootstrap-*` 경로로 `bootstrap.yaml`을 두 번 실행해 두 번째 recap의 `changed=0`을 요구하고 task 전용 경로를 Ansible로 정리한다. Docker package, apt repository와 daemon 설정은 일회성 runner 폐기와 함께 정리되는 시스템 변경이다.
-
-## 배포 순서
-
-1. 대상 서버의 `/var/lock/writing-app-operation.lock`을 원자적으로 획득한다. `deploy`, `verify`, 코드 rollback, DB restore, 관리자 traffic rollback은 같은 host-local lock으로 직렬화하며, 강제 종료 뒤 남은 stale lock은 실행 중 작업이 없음을 확인한 운영자만 해제한다. DB restore는 SQLite/WAL/SHM 격리 뒤 실패하면 `recovery.txt`와 lock을 보존하며, DB 무결성과 서비스 health가 확인된 성공에서만 lock을 해제한다.
-2. 대상 이미지와 설정을 검증한다.
-3. 정상·rollback profile의 신규 이미지를 모두 pull하되, legacy `admin-api` service는 시작하지 않는다.
-4. 배포 변경마다 image pull 직후 DB stateful 단계 전에 별도 Caddy container에서 현재 image·env·설정 조합을 validate한다.
-5. 기존 SQLite snapshot 백업을 생성하고 검증한다.
-6. `api`의 신규 쓰기를 중지하고, 수동으로 시작된 `admin-api` rollback service가 있다면 함께 중지한다.
-7. 배포할 API 이미지로 migration을 한 번 실행한다.
-8. SQLite `PRAGMA integrity_check`가 `ok`인지 확인한다.
-9. 정상 Compose profile의 서비스를 기동한다. 이 profile은 `admin-api`를 기동하지 않는다.
-10. Caddyfile이 변경됐으면 validate를 통과한 Caddy service만 force recreate해 새 file bind mount를 사용하게 한다. 이후 컨테이너 health check, `api` 실행·legacy `admin-api` 비실행, learner/admin의 네 web/API Host가 각각 기대한 service identity를 담은 strict health JSON을 반환하는지 검증한다.
-11. 배포 image reference를 기록한다.
-
-서버 프로세스 시작은 migration이나 seed를 암묵적으로 실행하지 않는다. 운영 seed는 배포와 분리된 명시적 승인 절차를 사용한다.
-
-## 설정과 비밀값
-
-- 공개 URL과 port 같은 비민감 설정은 Ansible inventory 변수로 관리한다.
-- 비밀값은 Git에 평문으로 저장하지 않는다.
-- 현재 애플리케이션은 환경 변수 계약을 사용하므로 Ansible이 root 소유 `0600` 환경 파일을 대상 서버에 만든다.
-- 비밀값을 포함하는 Ansible task에는 `no_log: true`를 적용한다.
-- `NEXT_PUBLIC_*` 값은 Next.js build 시 이미지에 포함되는 공개 설정이며 secret을 build argument로 전달하지 않는다.
-- 관리자 자료실 자산의 R2 access key·secret은 Litestream SQLite backup R2 자격증명과 분리한다. 자산 credential은 해당 자산 bucket의 최소 권한만 갖고 Ansible Vault로 전달한다.
-- production role은 네 public Host를 pairwise distinct하게 요구한다. learner `WEB_HOST`·`API_HOST`와 관리자 `ADMIN_HOST`·`ADMIN_API_HOST`는 각각 자신들의 공통 parent cookie domain에 속해야 하며 cookie domain을 비워 두면 배포를 시작하지 않는다.
-- production role의 web·api·admin·legacy admin-api·Caddy·Cloudflared·Litestream image reference와 승인형 traffic rollback legacy image는 정확히 끝나는 `@sha256:` 뒤 64자 소문자 hex digest여야 한다. digest 뒤 suffix나 제어 문자가 있으면 배포를 시작하지 않는다.
-
-## 이미지 build
-
-저장소 루트에서 다음 Dockerfile을 사용한다. 실제 registry와 변경 불가능한 tag는 CI/CD가 결정한다.
-
-```sh
-docker build -f deploy/docker/web.dockerfile \
-  --build-arg NEXT_PUBLIC_API_BASE_URL="$API_ORIGIN" \
-  --build-arg WEB_API_BASE_URL=http://api:4000 \
-  --build-arg WEB_ORIGIN="$WEB_ORIGIN" \
-  -t "$REGISTRY/writing-app-web:$IMAGE_TAG" .
-docker build -f deploy/docker/admin.dockerfile \
-  --build-arg NEXT_PUBLIC_ADMIN_API_BASE_URL="$ADMIN_API_ORIGIN" \
-  --build-arg NEXT_PUBLIC_LEARNER_WEB_ORIGIN="$WEB_ORIGIN" \
-  --build-arg ADMIN_API_BASE_URL=http://admin-api-unified:4000 \
-  --build-arg ADMIN_ORIGIN="$ADMIN_ORIGIN" \
-  -t "$REGISTRY/writing-app-admin:$IMAGE_TAG" .
-docker build -f deploy/docker/api.dockerfile -t "$REGISTRY/writing-app-api:$IMAGE_TAG" .
-```
-
-web과 admin 이미지는 Dockerfile에 선언된 공개 URL build argument를 운영 origin으로 명시해야 한다. 기본 `.test` 값으로 만든 이미지는 운영에 배포하지 않는다.
-
-Admin production Docker build는 Next.js Webpack builder와 `experimental.cpus: 1`을 사용한다. 제한된 builder에서 Turbopack의 OOM·IPC timeout을 관찰한 뒤 image build의 결정성을 우선한 선택이며, `ignoreBuildErrors` 없이 Next.js 내장 TypeScript 검사를 그대로 수행한다. 개발과 package 기본 `next build`는 Turbopack을 유지하므로 Dockerfile 변경 시에는 아래 `linux/amd64` image smoke로 실제 production 산출물의 차이를 반드시 검증한다. 충분한 CI 자원에서 Turbopack 종료 시간이 결정적으로 검증되면 bundler 통일을 다시 평가한다.
-
-## GHCR 이미지 릴리스
-
-GitHub 저장소의 Actions variables에 다음 공개 build 입력을 등록한다. 이 값은 브라우저 bundle과 image metadata에 포함되므로 secret 저장소에 넣지 않지만, 네 값 모두 path 없는 실제 production HTTPS origin이어야 한다. localhost, IP loopback과 `.example`, `.invalid`, `.localhost`, `.test` 예약 hostname은 preflight에서 거부한다.
-
-| Repository variable           | 용도                   |
-| ----------------------------- | ---------------------- |
-| `PRODUCTION_WEB_ORIGIN`       | 학습자 웹 공개 origin  |
-| `PRODUCTION_API_ORIGIN`       | 학습자 API 공개 origin |
-| `PRODUCTION_ADMIN_ORIGIN`     | 관리자 웹 공개 origin  |
-| `PRODUCTION_ADMIN_API_ORIGIN` | 관리자 API 공개 origin |
-
-`.github/workflows/image-release.yml`은 `main` push의 `필수 품질 게이트`가 성공했을 때만 실행한다. 외부 fork 또는 다른 event의 `workflow_run`은 거부하고, 검증된 `head_sha`를 다시 checkout해 `linux/amd64` 네 이미지를 빌드한다. 수동 실행과 `latest` tag는 제공하지 않는다.
-
-이미지 이름은 `ghcr.io/<lowercase owner>/<lowercase repository>-<service>`이고 tag는 `sha-<40자리 revision>-<공개 설정 SHA-256>`이다. tag는 게시 충돌 방지와 탐색을 위한 값이며 배포 식별자가 아니다. 배포에는 workflow의 `production-image-digests-<revision>-<configuration digest>` artifact 안에 있는 `name@sha256:...` reference만 사용한다. artifact의 `image-release-manifest.json`은 source revision, 네 공개 origin, 공개 설정 digest와 네 image digest를 함께 기록한다.
-
-각 image에는 OCI source·revision·created label, runtime과 공개 origin label을 기록한다. BuildKit은 SBOM과 최대 provenance를 생성하고 GitHub artifact attestation을 GHCR subject digest에 연결한다. 릴리스 workflow의 외부 GitHub Action도 검증한 full commit SHA로 고정한다. 개별 digest record는 30일, 집계 manifest는 90일 보존한다.
-
-workflow는 `GITHUB_TOKEN`의 `packages: write`, attestation용 `attestations: write`, `artifact-metadata: write`와 `id-token: write`만 게시 job 범위에서 추가한다. 저장소 소유자는 Actions의 package 쓰기 허용 여부, 생성된 GHCR package 공개 범위와 운영 서버의 pull 권한을 GitHub 설정에서 확인해야 한다. private package를 사용하는 운영 서버에는 별도의 최소 read 권한 credential 전달 경계가 필요하다.
-
-게시 직후 각 `name@digest`를 full SHA로 고정한 Anchore scan Action과 Grype `0.110.0`으로 검사한다. 수정 버전 존재 여부와 무관하게 `HIGH` 또는 `CRITICAL` 취약점이 하나라도 있으면 job이 실패하며 GitHub attestation, image digest record와 네 image manifest를 만들지 않는다. 검사 JSON은 성공·실패와 무관하게 `image-vulnerability-report-<service>-<revision>` artifact로 90일 보존한다. 스캐너 설치 또는 보고서 생성 자체가 실패해도 release는 실패한다.
-
-검사 예외의 단일 진실 원천은 `deploy/security/image-vulnerability-policy.json`이다. 기본 예외는 0건이다. 예외에는 CVE 또는 GHSA 식별자, 정확한 package 이름, 대상 service, 20자 이상의 사유, GitHub 사용자·팀 owner와 `YYYY-MM-DD` 만료일이 모두 필요하다. 만료일 다음 날부터 preflight가 실패한다. workflow는 이 정책을 service별 최소 Grype 설정으로 변환하고 정책 digest를 image label, digest record와 최종 manifest에 기록한다.
-
-workflow는 먼저 `candidate-<revision>-<run id>-<attempt>` tag로 image를 게시한다. 정확한 digest의 취약점 검사를 통과한 뒤에만 같은 digest에 `sha-<revision>-<공개 설정 digest>` release tag를 추가하고 attestation과 배포 manifest를 만든다. 따라서 실패 image는 candidate tag만 가지며 승인된 배포 입력으로 사용할 수 없다. 새 workflow의 실제 GHCR 게시, 스캔, 승격, attestation과 artifact 결과는 `main` 반영 후 확인해야 한다.
-
-## GHCR 보존과 정리
-
-`deploy/security/registry-retention-policy.json`은 candidate-only version을 최소 7일 보존하고 release tag가 있거나 tag가 없는 version은 자동 삭제하지 않는다. untagged version에는 SBOM·provenance·attestation 같은 OCI referrer가 포함될 수 있고, release version은 현재 또는 rollback 배포에서 사용 중일 수 있기 때문이다. `bun run check:registry-retention-policy`가 이 fail-safe 경계를 root lint에서 검증한다.
-
-현재 자동 삭제는 비활성화했다. GitHub Packages REST 삭제는 package admin 권한이 필요하고 Actions의 삭제·복구 지원이 public preview이므로, 저장소 소유자가 네 GHCR package의 workflow admin 권한과 복구 절차를 확인하기 전에는 실행 workflow를 추가하지 않는다. 후속 승인형 정리는 API가 반환한 package version 중 7일이 지난 candidate tag만 가진 항목을 plan으로 출력하고, production environment 승인 뒤 version ID를 삭제해야 한다. release tag 또는 untagged version을 삭제 범위로 넓히려면 실제 배포 digest 기록과 rollback 보존 수를 먼저 연결한다.
-
-## Base와 운영 image lock
-
-`deploy/security/container-image-lock.json`은 `linux/amd64` 배포에 사용하는 Bun `1.3.10`, Node.js `24-bookworm-slim`, Caddy `2.11.4-alpine`, Cloudflared `2026.6.0`, Litestream `0.5.11`의 registry manifest digest를 기록한다. Dockerfile `FROM`, Ansible 기본값과 배포 검증 fixture는 사람이 읽을 수 있는 tag와 변경 불가능한 `@sha256:` digest를 함께 사용한다.
-
-```sh
 bun run check:container-image-lock
-```
-
-이 검사는 lock의 모든 사용 경로가 정확한 reference를 포함하고 같은 tag-only reference를 남기지 않았는지 확인하며 root lint에 포함된다. image 버전은 월 1회와 upstream 보안 공지 때 검토한다. 갱신 PR은 `docker buildx imagetools inspect <image:tag>`로 registry index digest와 `linux/amd64` manifest 존재를 확인하고 lock의 `verifiedOn`, lock reference와 모든 사용 경로를 한 변경으로 갱신한다. 이후 root lint, 배포 설정 검사, 네 image smoke와 취약점 release CI를 통과해야 한다. tag가 같은 상태에서 digest만 자동으로 이동하게 두지 않는다.
-
-검사 실패 candidate를 포함한 GHCR 보존·정리 자동화는 아직 구현 전이다. 새 digest의 실제 pull과 build 결과도 `main` 반영 후 Ubuntu CI에서 확인해야 한다.
-
-네 Dockerfile의 실제 build와 runtime smoke는 다음 canonical 명령으로 실행한다.
-
-```sh
 bun run test:deployment-images
 ```
 
-이 명령은 Buildx로 네 image를 `linux/amd64` 대상의 task 전용 local tag로 빌드한다. image 설정과 실제 container UID가 모두 `10001`인지, 네 `/health` route가 응답하는지, web·admin의 `public`과 `.next/static` 파일이 존재하는지 확인한다. Admin image는 `CourseVisualKey` 5개 PNG의 실제 파일, HTTP `200`, `image/png`과 `public, max-age=31536000, immutable`도 검증한다. host port를 공개하지 않고 개별 runtime은 `--network none`으로 실행하며 API에만 disposable SQLite 디렉터리를 연결한다.
+`check:deployment-config`는 Compose service, host port 비공개, network, SQLite volume, Caddy와 Litestream 설정을 검사한다. `test:deployment-images`는 `web`, `api`, `admin` 세 image를 `linux/amd64`로 빌드해 non-root UID/GID, health와 frontend 정적 자산을 검증한다. container 검증에는 Docker daemon이 필요하다.
 
-개별 image 검증 뒤에는 같은 local tag와 고정 Caddy image의 task 전용 local tag로 `docker compose` project를 기동한다. Compose는 `caddy`와 그 의존성인 `web`·`api`·`admin`만 `--no-build --pull never`로 시작하고 Cloudflared·Litestream·legacy `admin-api`는 시작하지 않는다. Caddy container 내부 요청으로 learner/admin public API Host와 admin web `/health`를 확인하고, admin container 환경에서 `ADMIN_API_BASE_URL=http://admin-api-unified:4000`이 target admin dispatcher의 `/health`에 도달하는지도 확인한다. 이 alias 검사는 Next.js SSR handler 자체의 요청은 아니며 target E2E가 SSR 경로를 별도로 검증한다. smoke는 실행 service 목록에서 legacy `admin-api`가 없음을 검사하며 host port를 열거나 Cloudflare·R2·Litestream 외부 endpoint를 호출하지 않는다. 성공·실패와 관계없이 task 전용 Compose project는 `down --remove-orphans --volumes`로, task가 만든 container·local image tag·임시 데이터는 `finally`에서 정리한다.
+## Image release
 
-코스 썸네일은 release에 포함하는 build-time asset이다. canonical source는 `apps/web/public/course-thumbnails`, admin 배포 mirror는 `apps/admin/public/course-thumbnails`이며 admin Dockerfile은 standalone 산출물과 함께 자신의 `public`을 명시적으로 복사한다. 아래 검사는 현재 visual key 5개의 파일 집합과 SHA-256이 같은지 확인하고 root lint에도 포함된다. 기존 filename의 byte를 교체하지 않고 visual 변경은 새 key와 새 filename으로 수행한다.
+`main`의 필수 품질 게이트가 성공하면 같은 commit에서 세 application image를 빌드한다. 각 image는 고정 Grype 정책으로 검사하고 `HIGH` 이상 취약점이 있으면 release manifest 생성을 차단한다. 성공한 세 digest와 source revision, 세 public origin, 공개 설정 digest를 하나의 `production-image-digests-*` artifact에 기록한다.
 
-```sh
-bun run check:course-thumbnail-assets
-```
+각 image에는 OCI revision, source, version과 public origin label을 기록하고 BuildKit SBOM·provenance와 GitHub artifact attestation을 digest에 연결한다. `latest` tag는 배포 입력으로 사용하지 않는다.
 
-## Ansible 실행
+## 배포 순서
 
-Ansible 제어 노드는 Linux 또는 WSL2를 사용한다. `infra/ansible/inventories/production/hosts.example.yaml`을 `hosts.yaml`로, `group_vars/all.example.yaml`을 `all.yaml`로, `group_vars/vault.example.yaml`을 `vault.yaml`로 복사한다. `all.yaml`의 비민감 변수를 환경에 맞게 수정하고 `vault.yaml`은 실제 값을 넣은 뒤 Ansible Vault로 암호화한다. 애플리케이션 image reference는 registry에 push한 뒤 확인한 `@sha256:` digest를 사용한다.
+1. operation lock을 획득하고 현재 배포와 DB 경로를 기록한다.
+2. 고정 digest의 `web`, `api`, `admin` image를 pull한다.
+3. 현재 Caddy 설정과 environment 조합을 별도 container로 검증한다.
+4. API의 신규 쓰기를 중지하고 WAL checkpoint 뒤 SQLite snapshot을 만든다.
+5. migration service를 한 번 실행하고 schema check를 통과시킨다.
+6. 정상 Compose service를 기동한다.
+7. Caddy 설정이 바뀌었으면 Caddy만 force recreate한다.
+8. 세 application container health와 public web, API, `/api/admin/health`를 확인한다.
+9. Litestream 상태와 배포 digest를 확인한 뒤 operation lock을 해제한다.
 
-```sh
-cd infra/ansible
-python3 -m pip install -r requirements.txt
-ansible-galaxy collection install -r requirements.yaml
-ansible-vault encrypt inventories/production/group_vars/vault.yaml
-ansible-playbook playbooks/bootstrap.yaml
-ansible-playbook playbooks/deploy.yaml --ask-vault-pass
-ansible-playbook playbooks/verify.yaml
-```
+stateful 단계가 시작된 뒤 실패하면 자동으로 다음 단계를 계속하지 않는다. 실패 단계, DB snapshot, 현재·목표 digest와 수동 복구 절차를 남기고 incident 책임자가 코드 rollback 또는 DB restore를 결정한다.
 
-직전 정상 이미지로 코드만 롤백할 때는 `writing_app_allow_code_rollback=true`와 네 이미지 reference를 명시한다. R2 복제본에서 DB를 복구할 때는 데이터 손실 범위를 확인한 뒤 `writing_app_allow_database_restore=true`를 명시한다.
+## Rollback
 
-```sh
-ansible-playbook playbooks/rollback.yaml -e writing_app_allow_code_rollback=true --ask-vault-pass
-ansible-playbook playbooks/restore.yaml -e writing_app_allow_database_restore=true --ask-vault-pass
-```
+코드 rollback은 이전에 검증된 `web`, `api`, `admin` digest로 Compose를 다시 기동하는 절차다. schema 호환이 확인되지 않으면 코드만 되돌리지 않고 배포 직전 snapshot을 새 경로에 복구한 뒤 `DATABASE_URL`을 전환한다.
 
-`verify.yaml`도 Compose service를 `state: present`로 만들 수 있으므로 단순 조회 작업이 아니다. deploy·rollback·restore·관리자 traffic rollback과 동시에 실행하지 말고, lock 충돌 시 현재 작업의 결과를 먼저 기록한 뒤 재시도한다.
+제거된 별도 관리자 runtime을 다시 시작하는 traffic rollback은 지원하지 않는다. 인증, 관리자 경로 또는 API 장애도 같은 단일 API image의 이전 digest와 검증된 DB snapshot을 사용한다. 상세 판단 기준은 `rollback.md`, DB 절차는 `database-backup-restore.md`를 따른다.
 
-## Cloudflare 선행 설정
+## 아직 외부 확인이 필요한 항목
 
-- Tunnel public hostname 네 개가 동일한 origin `http://caddy:8080`을 가리키도록 구성한다.
-- Cloudflare에서 각 hostname의 DNS proxy와 외부 TLS를 활성화한다.
-- Tunnel token은 Ansible Vault 변수 `vault_writing_app_cloudflare_tunnel_token`으로 전달한다.
-- Litestream backup R2 credential은 SQLite 복제 bucket에 필요한 최소 권한만 부여한다.
-- 관리자 자료실 자산 R2 credential은 backup credential과 분리하고, 자산 bucket에 필요한 최소 권한만 부여한다.
+- 실제 Ubuntu 24.04 runner에서 세 image build·smoke와 Ansible lint·syntax 검증
+- bootstrap 두 번째 실행의 `changed=0`
+- 실제 registry 권한, Cloudflare와 R2 credential을 사용한 배포 멱등성
+- public Host별 운영 관찰과 코드 rollback·DB restore rehearsal
 
-## 롤백 경계
-
-- 코드 롤백은 직전 정상 image reference로 Compose 서비스를 다시 만든다.
-- 코드 롤백은 SQLite 파일을 자동으로 되돌리지 않는다.
-- DB 복구는 통합 `api`와 Litestream을 중지하고 별도 승인을 받은 뒤 `database-backup-restore.md` 절차로 수행한다.
-- migration이 이전 코드와 호환되지 않으면 배포 전에 별도 migration 및 rollback 계획을 작성한다.
-- `rollback.yaml`은 learner/admin API를 함께 포함한 하나의 immutable `api` image를 되돌린다. 관리자 traffic만 별도 runtime으로 분기하는 rollback 경로는 제공하지 않는다. 부분 rollback이 필요하면 먼저 새 아키텍처 결정과 데이터 안전성 검토를 수행한다.
-
-## 완료 기준
-
-- 네 애플리케이션 이미지가 비 root 사용자로 실행된다.
-- Next.js standalone 산출물이 정적 asset을 포함해 실행된다.
-- `docker compose config --quiet`가 성공한다.
-- 애플리케이션 port가 호스트에 공개되지 않는다.
-- 컨테이너 재생성 및 서버 재부팅 뒤 SQLite 데이터가 유지된다.
-- Ansible bootstrap과 deploy playbook을 두 번 실행했을 때 두 번째 실행은 불필요한 변경을 만들지 않는다.
-- 승인된 운영 리허설에서 실패한 신규 배포를 직전 정상 image reference와 일관된 traffic 설정으로 되돌릴 수 있다.
-- Litestream 복제본에서 별도 경로로 복구하고 SQLite 무결성 검증을 통과한다.
-
-로컬 환경에서는 Compose·Caddy·Litestream 설정, 통합 API alias와 legacy rollback profile의 정적 계약, image smoke 명령 조립·격리·비 root 판정, bootstrap 실행 환경·Ubuntu release·Ansible recap 파싱 unit test를 검증했다. macOS arm64의 사용자 범위 임시 VM에서는 `linux/amd64` Alpine container가 `x86_64`로 실행되는 것도 확인했다. 같은 VM에서 고정된 Bun `1.3.10`·Node.js `24-bookworm-slim` base digest와 Webpack 단일 worker로 Admin production image를 실제 build·export했다. `--network none` container의 runtime UID/GID는 `10001:10001`이었고 `/health`, 5개 thumbnail의 PNG·immutable cache 계약, 미허용 파일과 raw·encoded traversal의 `404`를 모두 확인했다. Turbopack은 제한된 로컬 builder에서 OOM과 loader IPC timeout을 각각 보였으나 이는 해당 환경의 관찰 결과이며 일반적인 최소 builder 사양의 근거는 아니다. MTA-40 target E2E 재배선은 완료됐고 `ENABLE_TEST_AUTH=true` 3개 E2E가 통과했지만, 이를 Docker 또는 운영 실행 증거로 해석하지 않는다. 나머지 web·api·admin-api image를 포함한 네 image 일괄 smoke, Ansible lint·syntax와 Ubuntu bootstrap 두 번째 실행의 `changed=0`은 새 Ubuntu CI에서도 확인해야 한다. 실제 image digest와 외부 자격증명이 필요한 deploy 멱등성, 운영 Host별 관찰, legacy traffic rollback 리허설은 별도 승인된 환경에서 수행해야 한다.
+진행 순서와 미완료 작업은 [`docs/work/2026-07-16-repository-onboarding-production-deployment/plan.md`](../work/2026-07-16-repository-onboarding-production-deployment/plan.md)에서 관리한다. 완료된 검증 결과는 해당 작업 단위를 `docs/archive`로 이동해 보존한다.

@@ -5,12 +5,12 @@ import { describe, expect, it, vi } from "vitest"
 
 import { AdminShell } from "@/app/(admin)/_views/admin-shell"
 import {
-  readAdminApiBaseUrl,
+  readApiBaseUrl,
   readLearnerWebOrigin,
 } from "@/shared/config/admin-runtime-config"
 
 const shellProps = {
-  apiBaseUrl: readAdminApiBaseUrl({}),
+  apiBaseUrl: readApiBaseUrl({}),
   learnerWebOrigin: readLearnerWebOrigin({}),
 } as const
 

@@ -11,11 +11,6 @@ import {
 type JsonRecord = Record<string, unknown>
 
 const workspaceInventoryDocumentPath = "docs/engineering/workspace-inventory.md"
-const canonicalWorkspaceDocumentPaths = [
-  "README.md",
-  "CONTEXT.md",
-  "ARCHITECTURE.md",
-] as const
 const requiredAnalysisRoots = [
   "apps/storybook/**",
   "packages/config/**",
@@ -222,23 +217,6 @@ function validateWorkspaceInventoryDocument(
 
   if (!rows.some(([directory]) => directory === toMarkdownCode("scripts"))) {
     failures.push(`${workspaceInventoryDocumentPath} must include scripts.`)
-  }
-}
-
-function validateCanonicalWorkspaceDocuments(
-  workspaceEntries: readonly WorkspaceManifest[]
-) {
-  for (const documentPath of canonicalWorkspaceDocumentPaths) {
-    const content = fs.readFileSync(
-      path.join(repositoryRoot, documentPath),
-      "utf8"
-    )
-
-    for (const entry of workspaceEntries) {
-      if (!content.includes(entry.directory)) {
-        failures.push(`${documentPath} is missing ${entry.directory}.`)
-      }
-    }
   }
 }
 
@@ -514,7 +492,6 @@ if (workspaceInventoryResult.status === "success") {
 validateRootPackageScripts()
 validateTurboTasks()
 validateWorkspaceInventoryDocument(workspaceEntries)
-validateCanonicalWorkspaceDocuments(workspaceEntries)
 validatePackageExports(workspaceEntries)
 
 if (failures.length > 0) {

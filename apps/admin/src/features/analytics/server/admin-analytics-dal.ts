@@ -36,7 +36,7 @@ export function createAdminAnalyticsDal(
     async getAnalytics(input) {
       return transport.requestJson({
         method: "GET",
-        path: `/analytics?days=${input.days}`,
+        path: `/api/admin/analytics?days=${input.days}`,
         schema: adminAnalyticsDtoSchema,
       })
     },
@@ -49,7 +49,7 @@ export function createAdminAnalyticsDal(
       params.set("sort", input.sort)
       return transport.requestJson({
         method: "GET",
-        path: `/analytics/lessons?${params.toString()}`,
+        path: `/api/admin/analytics/lessons?${params.toString()}`,
         schema: adminLessonAnalyticsPageDtoSchema,
       })
     },

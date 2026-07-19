@@ -7,7 +7,7 @@ import { createApiRuntime } from "@/api-runtime"
 import { createApp } from "@/app"
 import { parseApiEnv } from "@/config/env"
 import { createAdminApp } from "@/http/admin-app"
-import { createHostDispatcher } from "@/http/host-dispatcher"
+import { createUnifiedApp } from "@/http/unified-app"
 import { createAppLogger } from "@/observability/app-logger"
 import {
   createUnifiedApiServerLifecycle,
@@ -64,11 +64,11 @@ const unifiedFetch = (() => {
       sessionResolver: runtime.adminAuth.sessionResolver,
     })
 
-    return createHostDispatcher({
-      adminFetch: adminApp.fetch,
-      hosts: env.apiHosts,
-      learnerFetch: app.fetch,
-    })
+    return createUnifiedApp({
+      adminApp,
+      allowedHosts: env.allowedHosts,
+      learnerApp: app,
+    }).fetch
   } catch (error) {
     runtime.dispose()
     throw error

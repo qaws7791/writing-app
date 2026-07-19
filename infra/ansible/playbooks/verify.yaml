@@ -106,7 +106,7 @@
           loop_control:
             label: "{{ item.item.audience }}"
 
-        - name: Caddy 내부 API audience probe
+        - name: Caddy 내부 API endpoint probe
           community.docker.docker_compose_v2_exec:
             project_src: "{{ writing_app_compose_directory }}"
             env_files:
@@ -120,26 +120,28 @@
               - -O
               - "-"
               - "--header=Host: {{ item.host }}"
-              - http://127.0.0.1:8080/health
+              - "http://127.0.0.1:8080{{ item.path }}"
           changed_when: false
           loop:
             - audience: learner
               expected:
                 ok: true
               host: "{{ writing_app_api_host }}"
+              path: /health
             - audience: admin
               expected:
                 ok: true
-                service: admin-api
-              host: "{{ writing_app_admin_api_host }}"
+                service: api
+              host: "{{ writing_app_api_host }}"
+              path: /api/admin/health
           register: writing_app_caddy_api_health
 
-        - name: Caddy 내부 API audience 응답 검증
+        - name: Caddy 내부 API endpoint 응답 검증
           ansible.builtin.assert:
             that:
               - (item.stdout | from_json) == item.item.expected
             fail_msg: >-
-              {{ item.item.audience }} API Host가 기대한 sub-app health 응답을 반환하지 않았습니다.
+              통합 API Host가 {{ item.item.audience }} health 응답을 반환하지 않았습니다.
           loop: "{{ writing_app_caddy_api_health.results }}"
           loop_control:
             label: "{{ item.item.audience }}"
@@ -175,9 +177,9 @@
             label: "{{ item.item.audience }}"
           when: writing_app_verify_public_routes | bool
 
-        - name: 공개 API audience probe
+        - name: 공개 API endpoint probe
           ansible.builtin.uri:
-            url: "{{ item.origin }}/health"
+            url: "{{ writing_app_api_origin }}{{ item.path }}"
             method: GET
             status_code: 200
             return_content: true
@@ -185,21 +187,21 @@
             - audience: learner
               expected:
                 ok: true
-              origin: "{{ writing_app_api_origin }}"
+              path: /health
             - audience: admin
               expected:
                 ok: true
-                service: admin-api
-              origin: "{{ writing_app_admin_api_origin }}"
+                service: api
+              path: /api/admin/health
           register: writing_app_public_api_health
           when: writing_app_verify_public_routes | bool
 
-        - name: 공개 API audience 응답 검증
+        - name: 공개 API endpoint 응답 검증
           ansible.builtin.assert:
             that:
               - item.json == item.item.expected
             fail_msg: >-
-              {{ item.item.audience }} public API Host가 기대한 sub-app health 응답을 반환하지 않았습니다.
+              통합 public API Host가 {{ item.item.audience }} health 응답을 반환하지 않았습니다.
           loop: "{{ writing_app_public_api_health.results }}"
           loop_control:
             label: "{{ item.item.audience }}"

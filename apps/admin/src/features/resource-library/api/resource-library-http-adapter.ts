@@ -23,48 +23,48 @@ export function createResourceLibraryHttpAdapter(
 
   return {
     createResourceDocument: (parentId) =>
-      mutation("POST", "/resources/documents", { parentId }),
+      mutation("POST", "/api/admin/resources/documents", { parentId }),
     createResourceFolder: (parentId) =>
-      mutation("POST", "/resources/folders", { parentId }),
+      mutation("POST", "/api/admin/resources/folders", { parentId }),
     deleteResourceNode: (nodeId) =>
       transport.requestJson({
         method: "DELETE",
-        path: `/resources/nodes/${nodeId}`,
+        path: `/api/admin/resources/nodes/${nodeId}`,
         schema: adminResourceTrashResultDtoSchema,
       }),
     getResourceTree: (scope) =>
       transport.requestJson({
         method: "GET",
-        path: `/resources/tree?scope=${scope}`,
+        path: `/api/admin/resources/tree?scope=${scope}`,
         schema: adminResourceTreeDtoSchema,
       }),
     importResourceDocument: (input) =>
       transport.requestJson({
         body: input,
         method: "POST",
-        path: "/resources/documents/import",
+        path: "/api/admin/resources/documents/import",
         schema: adminImportResourceDocumentResultDtoSchema,
       }),
     moveResourceNode: (nodeId, input) =>
-      mutation("PATCH", `/resources/nodes/${nodeId}/move`, input),
+      mutation("PATCH", `/api/admin/resources/nodes/${nodeId}/move`, input),
     renameResourceFolder: (folderId, input) =>
-      mutation("PATCH", `/resources/folders/${folderId}/name`, input),
+      mutation("PATCH", `/api/admin/resources/folders/${folderId}/name`, input),
     restoreResourceNode: (nodeId) =>
       transport.requestJson({
         method: "POST",
-        path: `/resources/nodes/${nodeId}/restore`,
+        path: `/api/admin/resources/nodes/${nodeId}/restore`,
         schema: adminResourceRestoreResultDtoSchema,
       }),
     searchResources: (query) =>
       transport.requestJson({
         method: "GET",
-        path: `/resources/search?query=${encodeURIComponent(query)}&limit=20`,
+        path: `/api/admin/resources/search?query=${encodeURIComponent(query)}&limit=20`,
         schema: adminResourceSearchDtoSchema,
       }),
     trashResourceNode: (nodeId) =>
       transport.requestJson({
         method: "POST",
-        path: `/resources/nodes/${nodeId}/trash`,
+        path: `/api/admin/resources/nodes/${nodeId}/trash`,
         schema: adminResourceTrashResultDtoSchema,
       }),
   }

@@ -171,7 +171,7 @@ function ok<TValue>(value: TValue): AdminApiResult<TValue> {
 function networkError() {
   return networkAdminApiError(
     createHttpNetworkError(
-      new Request("https://admin-api.example.test/test"),
+      new Request("https://api.example.test/api/admin/test"),
       new TypeError("test network failure")
     )
   )

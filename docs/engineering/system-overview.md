@@ -1,6 +1,6 @@
 # 시스템 개요
 
-이 문서는 writing-app의 엔지니어링 관점 시스템 구조, 서비스 경계, 배포 인프라를 설명하는 단일 진실 원천이다.
+이 문서는 writing-app의 엔지니어링 관점 시스템 구조, 서비스 경계와 배포 인프라를 설명한다. 실제 workspace, route와 배포 topology의 권위 소스는 `docs/authority-map.md`가 지정한 manifest와 실행 설정이다.
 
 ## 기준
 
@@ -20,7 +20,7 @@ writing-app은 한국어 글쓰기 학습 플랫폼이다. 학습자는 코스�
 flowchart LR
   learner["학습자"] --> web["학습자 웹 apps/web"]
   admin["운영자/소유자 관리자"] --> adminWeb["어드민 웹 apps/admin"]
-  web --> api["통합 API apps/api\nlearner/admin Host sub-app"]
+  web --> api["단일 API apps/api\n학습자 + /api/admin/*"]
   adminWeb --> api
   api --> google["Google OAuth"]
   api --> openai["OpenAI Responses API"]
@@ -42,7 +42,7 @@ flowchart TB
   end
 
   subgraph backend["백엔드"]
-    api["apps/api\nHono learner/admin Host sub-app"]
+    api["apps/api\n단일 Hono API"]
   end
 
   subgraph packages["워크스페이스 패키지"]
@@ -71,7 +71,7 @@ flowchart TB
 | 경계                         | 책임                                                                                               | 금지                                                            |
 | ---------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `apps/web`                   | 학습자 화면, 인증 시작, API 포트 호출, canonical API DTO 검증                                      | DB 직접 접근, 레거시 실험 디렉터리 import, 무검증 API 응답 소비 |
-| `apps/api`                   | 단일 DB 수명주기, learner/admin Host sub-app 조립, app-owned adapter, HTTP transport·guard·OpenAPI | route·middleware·HTTP response 경계의 DB·Drizzle 직접 import    |
+| `apps/api`                   | 단일 DB 수명주기, 학습자·`/api/admin/*` 경로 조립, app-owned adapter, HTTP transport·guard·OpenAPI | route·middleware·HTTP response 경계의 DB·Drizzle 직접 import    |
 | `apps/admin`                 | 관리자 화면, 관리자 로그인, 기능별 API schema 검증과 의미 있는 화면 projection                     | 학습자 API 호출, DB 직접 접근, 무변환 DTO 복제                  |
 | `packages/core`              | 도메인 DTO, 브랜드 타입, 상태 정책, 유스케이스, port                                               | HTTP transport 의존, concrete adapter 소유                      |
 | `packages/db`                | SQLite client, Drizzle schema, migration, seed, persisted 값                                       | `@workspace/core` import                                        |
@@ -114,7 +114,7 @@ Learning domain이 content DTO나 content id 타입을 참조해야 할 때는 c
 | 관리자 content 발행 | [공개 계약](../../packages/contracts/src/admin/content-data.ts) → [순수 use case](../../packages/core/src/modules/content/application/use-cases/admin-course.use-case.ts) → [app-owned adapter](../../apps/api/src/adapters/content/admin-course-drizzle.repository.ts) → [composition](../../apps/api/src/modules/admin-content/admin-content.composition.ts) → [route](../../apps/api/src/modules/admin-content/curriculum-editor.routes.ts)                                                                                                                                                   | use case는 owner authorization을, adapter는 draft version·SQL을, route는 `If-Match`·OpenAPI mapping을 소유한다.                         |
 | 자료실 문서 조회    | [공개 계약](../../packages/contracts/src/admin/resource-library-data.ts)·[문서 wire 계약](../../packages/contracts/src/admin/admin-resource-documents.ts) → [순수 use case](../../packages/core/src/modules/resource-library/application/use-cases/resource-document.use-case.ts) → [app-owned adapter](../../apps/api/src/adapters/resource-library/resource-document-drizzle.repository.ts) → [composition](../../apps/api/src/modules/admin-resource-library/admin-resource-library.composition.ts) → [route](../../apps/api/src/modules/admin-resource-library/resource-documents.routes.ts) | use case는 Markdown 정규화·result variant를, adapter는 ETag version·FTS·SQLite transaction을, route는 관리자 세션·HTTP ETag를 소유한다. |
 
-product backend executable은 `apps/api` 하나이며 learner/admin Host sub-app을 함께 소유한다. 관리자 foundation과 여섯 capability는 legacy subprocess 없이 target-only 계약 suite로 검증한다.
+product backend executable은 `apps/api` 하나이며 학습자 경로와 `/api/admin/*` 관리자 경로를 함께 소유한다. 관리자 foundation과 여섯 capability는 별도 subprocess 없이 계약 suite로 검증한다.
 
 ## 현재 앱 라우트
 
@@ -147,7 +147,7 @@ product backend executable은 `apps/api` 하나이며 learner/admin Host sub-app
 
 ## API 런타임
 
-`apps/api/src/main.ts`와 E2E 진입점은 `createApiRuntime()`으로 하나의 SQLite client와 close-once 수명주기를 만들고 learner/admin Hono sub-app을 Host dispatcher에 등록한다. learner sub-app의 `createLearnerApiCore()`는 주입된 DB에 core의 공개 policy·use case·port와 app-owned adapter를 조립한다. 요청 context의 route 서비스 의존성은 route 등록과 같은 app 조립 경계에서 required로 제공하며, 테스트는 사용하지 않는 서비스를 명시적 failing fake로 채운다. `apps/api/src/routes/index.ts`는 typed route 배열과 auth proxy, `/openapi` bootstrap 등록을 함께 소유한다. 학습자 HTTP 경계는 `@workspace/contracts/learning`의 strict Zod schema와 추론 타입을 직접 사용한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로만 생성하며 정적 JSON과 generated TypeScript 타입은 추적하지 않는다. `apps/api/src/http/learner-response.ts`는 성공 응답 runtime 검증을, `learner-error-response.ts`는 canonical 오류와 request ID 정규화를 담당한다.
+`apps/api/src/main.ts`와 E2E 진입점은 `createApiRuntime()`으로 하나의 SQLite client와 close-once 수명주기를 만들고 학습자 Hono 앱과 `/api/admin`에 mount한 관리자 Hono 앱을 하나의 API로 조립한다. 공통 Host guard는 `API_ALLOWED_HOSTS`만 검증한다. `createLearnerApiCore()`는 주입된 DB에 core의 공개 policy·use case·port와 app-owned adapter를 조립한다. 요청 context의 route 서비스 의존성은 route 등록과 같은 app 조립 경계에서 required로 제공하며, 테스트는 사용하지 않는 서비스를 명시적 failing fake로 채운다. `apps/api/src/routes/index.ts`는 typed route 배열과 auth proxy, `/openapi` bootstrap 등록을 함께 소유한다. 학습자 HTTP 경계는 `@workspace/contracts/learning`의 strict Zod schema와 추론 타입을 직접 사용한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로만 생성하며 정적 JSON과 generated TypeScript 타입은 추적하지 않는다. `apps/api/src/http/learner-response.ts`는 성공 응답 runtime 검증을, `learner-error-response.ts`는 canonical 오류와 request ID 정규화를 담당한다.
 learner route handler는 typed route가 검증한 transport 입력을 읽고 request context의 use case를 호출한다. read route의 공통 결과 정규화는 `apps/api/src/errors/map-core-error.ts`가 담당하고, 학습 command route의 application 결과·expected rejection은 `apps/api/src/http/learner-command-route-mapper.ts`가 기존 성공 wire와 public 오류로 변환한다. 모든 성공 응답은 전송 직전 canonical response schema로 검증한다.
 
 학습자 콘텐츠 조회는 `LearnerContentService`와 `ProgressService`가 `LearnerReadModelRepository`를 호출해 코스 목록·분류·상세, 레슨과 진행 상태를 조회하고 `@workspace/contracts/learning/read-data`의 canonical schema로 검증한다. `apps/api/src/http/learner-read-route-mapper.ts`가 HTTP query의 정규화, opaque cursor decode·encode와 `{ items, nextCursor }` wire mapping을 소유하고 core service·repository에는 decoded cursor 위치와 canonical item page만 전달한다. 잘못된 cursor는 이 app transport 경계에서 `INVALID_CURSOR`로 변환하며 course not-found와 lesson 잠금은 core application result로 유지한다.
@@ -156,7 +156,7 @@ learner route handler는 typed route가 검증한 transport 입력을 읽고 req
 학습 step 채점은 `packages/core/src/modules/learning/domain/step-grading-policy.ts`가 소유한다. learner transition service와 repository는 HTTP body/response를 참조하지 않고 `@workspace/contracts/learning/step-data`의 canonical submission·evaluation·learning state와 transport-neutral command/result variant만 사용해 고정 curriculum version, 잠금, 순서, 답안·진행·완료·활동일의 원자적 저장을 조정한다. 시작·완료·AI finalize route가 wire 입력을 command로, application 결과와 rejection을 기존 HTTP 응답·오류로 매핑한다.
 AI 피드백 전이 service는 고정 version의 선행 WRITE 답안을 준비하고, 시도 한도·prompt 기반 provider 호출·결과 저장은 AI feedback attempt coordinator와 consumer-owned learning transition port를 통해 조정한다. target·sequence·attempt 상태와 replay/finalize 분기는 core의 순수 decision이 결정하고, app learning adapter는 snapshot 조회와 짧은 `IMMEDIATE` transaction effect만 적용한다.
 
-`apps/api/src/api-runtime.ts`는 단일 SQLite client에 learner core, 별도 관리자 Better Auth/session resolver, 여섯 capability route group을 한 composition root에서 조립한다. Host dispatcher는 서로 겹치지 않는 learner/admin allowlist로 두 Hono sub-app을 분리한다. target admin sub-app은 health, session, `/api/auth/*`, CORS·trusted origin·6 MiB body limit·no-store·OpenAPI와 immutable capability registry를 가지며 AI chat, dashboard analytics, content, identity, resource library, settings group이 모두 등록돼 있다.
+`apps/api/src/api-runtime.ts`는 단일 SQLite client에 learner core, 별도 관리자 Better Auth/session resolver, 여섯 capability route group을 한 composition root에서 조립한다. 통합 Hono 앱은 관리자 앱을 `/api/admin` 아래에 mount한다. 관리자 경로는 health, session, 최종 public `/api/admin/auth/*`, CORS·trusted origin·6 MiB body limit·no-store·OpenAPI와 immutable capability registry를 가지며 AI chat, dashboard analytics, content, identity, resource library, settings group이 모두 등록돼 있다. sub-app 내부 `/auth/*`는 구현 상대 경로이며 외부 계약이 아니다.
 
 관리자 route는 `apps/api/src/http/platform/core`의 typed route definition과 `packages/contracts/admin` wire contract를 사용한다. 관리자 세션과 owner 권한은 route middleware가 표준 오류로 변환하며, `/openapi`는 등록된 typed route에서 OpenAPI 3.1 문서를 생성한다. 자료실 트리·문서·검색·자산·가져오기·내보내기는 REST를 사용하고 지속 연결 endpoint를 두지 않는다. 자료실 core는 transport-neutral command/query/result/rejection과 canonical data만 공개하며 HTTP request/query/response wrapper·error schema를 참조하지 않는다. target route가 parse, 관리자 actor mapping, status/error mapping과 응답 직전 schema validation을 소유한다.
 
@@ -186,22 +186,22 @@ AI chat core는 `admin/ai-chat-data`의 canonical conversation ID·conversation�
 - 여러 서버나 네트워크 파일시스템에서 같은 SQLite 파일을 직접 공유하지 않는다.
 - Litestream이 SQLite WAL을 Cloudflare R2에 연속 복제한다.
 - Ansible이 Docker 설치, 설정 배치, migration, 배포, 검증, 코드 롤백과 DB 복구를 수행한다.
-- 상세 실행 계약은 `deployment.md`를 단일 진실 원천으로 사용한다.
+- 실제 production topology는 Compose·Caddy 설정이 소유하며 상세 운영 절차는 `deployment.md`에서 설명한다.
 
 ## 운영상 독립성
 
-- `apps/admin`의 SSR 또는 화면 장애가 학습자용 `apps/web`과 `apps/api`를 중단시키지 않아야 한다. 반면 통합 `apps/api` process 장애는 learner/admin Host 모두에 영향을 줄 수 있으므로 Host별 sub-app failure isolation, readiness와 운영 관찰로 완화한다.
-- 관리자 인증과 학습자 인증은 테이블, 쿠키 이름, 로그인 방식, API origin을 분리한다.
+- `apps/admin`의 SSR 또는 화면 장애가 학습자용 `apps/web`과 `apps/api`를 중단시키지 않아야 한다. 반면 `apps/api` process 장애는 학습자와 관리자 경로 모두에 영향을 줄 수 있으므로 경로별 middleware 격리, readiness와 운영 관찰로 완화한다.
+- 관리자 인증과 학습자 인증은 하나의 API origin을 사용하되 테이블, 쿠키 이름, secret, 로그인 방식과 권한을 분리한다.
 - 콘텐츠 seed는 안정적인 ID 기준으로 기존 콘텐츠를 갱신하고, seed에서 빠진 콘텐츠는 삭제가 아니라 `archived`로 전환한다.
 
 ## 채택된 목표 런타임과 어댑터 경계
 
-[ADR-0012](./adr/ADR-0012-single-api-runtime.md)는 backend를 `apps/api` 단일 프로세스로 통합하고 learner/admin hostname·cookie·secret·table·origin·권한은 별도 sub-app으로 유지하도록 채택했다. 저장소에는 strict Host dispatcher, 두 독립 auth instance, 단일 DB·종료 owner와 여섯 관리자 capability route가 구현돼 있고 Compose·Caddy도 두 public API Host를 `apps/api:4000`으로 전달한다. 외부 운영 증적은 사용자 승인으로 범위에서 제외했으며 실제 production 배포·관찰 성공으로 해석하지 않는다.
+[ADR-0012](./adr/ADR-0012-single-api-runtime.md)는 backend를 `apps/api` 단일 프로세스로 통합하는 결정을 기록한다. 현재 저장소는 여기서 더 단순화해 하나의 public API origin, 학습자 경로와 `/api/admin/*` 관리자 경로, 두 독립 auth instance, 단일 DB·종료 owner를 사용한다. Compose·Caddy도 public API를 `apps/api:4000`으로 전달한다. 외부 운영 증적은 사용자 승인으로 범위에서 제외했으며 실제 production 배포·관찰 성공으로 해석하지 않는다.
 
 [ADR-0014](./adr/ADR-0014-app-owned-persistence-adapters.md)는 composition, SDK와 concrete persistence adapter를 실행 앱이 소유하고 `packages/core`에는 순수 policy·use case·port만, `packages/db`에는 client·schema·migration·seed·persisted primitive만 남기는 목표를 채택했다. MTA-15~26에서 capability별 이동과 bootstrap 제거를 끝내 core runtime allowance를 0으로 닫았으며, 단일 API runtime 전환 시에도 이 경계를 유지한다.
 
-## 관리자 API 조립 경계
+## 관리자 경로 조립 경계
 
 `apps/api/src/api-runtime.ts`가 database 생성·공유·종료와 learner core, 별도 관리자 Better Auth, 관리자 capability composition을 소유한다. content reset·identity·dashboard analytics·settings·AI chat·자료실 adapter를 만들고 query reader/repository는 route에 직접 전달하며 정책이 있는 use case만 factory로 조립한다. shutdown은 신규 요청 차단, Bun server 정지, close-once 데이터베이스 종료 순서다.
 
-top-level Host dispatcher는 raw `Host`와 `Request.url` authority가 일치하고 정확히 한 allowlist에 속할 때만 해당 sub-app을 호출한다. Origin과 forwarded host는 dispatch 입력이 아니다. 여섯 capability route는 `apps/api`에 모두 등록됐다.
+top-level API Host guard는 raw `Host`와 `Request.url` authority가 일치하고 `API_ALLOWED_HOSTS`에 속할 때만 요청을 처리한다. Origin과 forwarded host는 Host 검증 입력이 아니다. 관리자 앱은 `/api/admin` 아래에 mount하며 여섯 capability route는 `apps/api`에 모두 등록됐다.

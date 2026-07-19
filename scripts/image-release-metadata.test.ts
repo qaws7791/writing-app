@@ -12,7 +12,6 @@ import {
 
 const publicOrigins: ImageReleasePublicOrigins = {
   admin: "https://admin.writing.example.com",
-  "admin-api": "https://admin-api.writing.example.com",
   api: "https://api.writing.example.com",
   web: "https://writing.example.com",
 }

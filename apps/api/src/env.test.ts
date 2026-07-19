@@ -6,21 +6,20 @@ const learnerSecret = "learner-test-secret-0123456789abcdef"
 const adminSecret = "admin-test-secret-0123456789abcdef"
 
 describe("통합 API env", () => {
-  it("두 audience의 독립 실행 설정을 명시적으로 만든다", () => {
+  it("단일 API 주소와 두 auth realm 설정을 명시적으로 만든다", () => {
     const env = parseApiEnv(createTestEnvironment())
 
     expect(env).toMatchObject({
-      adminAuthBaseUrl: "http://127.0.0.1:4000",
       adminAssetStore: undefined,
-      adminBetterAuthSecret: adminSecret,
+      adminAuthSecret: adminSecret,
       adminCookieDomain: undefined,
-      adminOrigin: "http://127.0.0.1:3001",
-      authBaseUrl: "http://localhost:4000",
-      betterAuthSecret: learnerSecret,
-      cookieDomain: undefined,
+      adminOrigin: "http://localhost:3001",
+      apiOrigin: "http://localhost:4000",
       cursorSigningSecret: `${learnerSecret}:cursor-signing`,
       databaseUrl: ":memory:",
       deploymentVersion: "local",
+      learnerAuthSecret: learnerSecret,
+      learnerCookieDomain: undefined,
       nodeEnv: "test",
       openAiApiKey: undefined,
       openAiModel: "gpt-5.2",
@@ -28,19 +27,13 @@ describe("통합 API env", () => {
       testAuthEnabled: false,
       webOrigin: "http://localhost:3000",
     })
-    expect([...env.apiHosts.learner]).toEqual(["localhost:4000", "api:4000"])
-    expect([...env.apiHosts.admin]).toEqual([
-      "127.0.0.1:4000",
-      "admin-api:4000",
-    ])
+    expect([...env.allowedHosts]).toEqual(["localhost:4000", "api:4000"])
   })
 
   it.each([
-    "ADMIN_BETTER_AUTH_SECRET",
-    "ADMIN_BETTER_AUTH_URL",
-    "ADMIN_ORIGIN",
-    "ADMIN_API_ALLOWED_HOSTS",
-    "LEARNER_API_ALLOWED_HOSTS",
+    "ADMIN_AUTH_SECRET",
+    "API_ALLOWED_HOSTS",
+    "LEARNER_AUTH_SECRET",
   ] as const)("%s는 모든 실행 환경에서 필수다", (name) => {
     expect(() =>
       parseApiEnv({ ...createTestEnvironment(), [name]: undefined })
@@ -51,7 +44,7 @@ describe("통합 API env", () => {
     expect(() =>
       parseApiEnv({
         ...createTestEnvironment(),
-        ADMIN_BETTER_AUTH_SECRET: learnerSecret,
+        ADMIN_AUTH_SECRET: learnerSecret,
       })
     ).toThrow(/학습자 secret과 다른 값/u)
     expect(() =>
@@ -62,29 +55,29 @@ describe("통합 API env", () => {
     ).toThrow(/학습자 origin과 다른 값/u)
   })
 
-  it.each([
-    ["BETTER_AUTH_URL", "http://unknown.localhost:4000"],
-    ["ADMIN_BETTER_AUTH_URL", "http://unknown.localhost:4000"],
-  ] as const)("%s host가 audience allowlist 밖이면 거부한다", (name, value) => {
+  it("API_ORIGIN host가 allowlist 밖이면 거부한다", () => {
     expect(() =>
-      parseApiEnv({ ...createTestEnvironment(), [name]: value })
-    ).toThrow(new RegExp(name))
+      parseApiEnv({
+        ...createTestEnvironment(),
+        API_ORIGIN: "http://unknown.localhost:4000",
+      })
+    ).toThrow(/API_ORIGIN/u)
   })
 
   it("admin cookie domain은 learner cookie 설정에서 fallback하지 않는다", () => {
     const learnerOnly = parseApiEnv({
       ...createTestEnvironment(),
-      BETTER_AUTH_COOKIE_DOMAIN: "localhost",
+      LEARNER_AUTH_COOKIE_DOMAIN: "localhost",
     })
     const separated = parseApiEnv({
       ...createTestEnvironment(),
-      ADMIN_BETTER_AUTH_COOKIE_DOMAIN: "admin.localhost",
-      BETTER_AUTH_COOKIE_DOMAIN: "localhost",
+      ADMIN_AUTH_COOKIE_DOMAIN: "admin.localhost",
+      LEARNER_AUTH_COOKIE_DOMAIN: "localhost",
     })
 
-    expect(learnerOnly.cookieDomain).toBe("localhost")
+    expect(learnerOnly.learnerCookieDomain).toBe("localhost")
     expect(learnerOnly.adminCookieDomain).toBeUndefined()
-    expect(separated.cookieDomain).toBe("localhost")
+    expect(separated.learnerCookieDomain).toBe("localhost")
     expect(separated.adminCookieDomain).toBe("admin.localhost")
   })
 
@@ -106,7 +99,6 @@ describe("통합 API env", () => {
 
   it("production은 영구 DB, 배포 버전과 cursor 전용 secret을 요구한다", () => {
     expect(parseApiEnv(createProductionEnvironment())).toMatchObject({
-      adminAuthBaseUrl: "https://admin-api.example.com",
       adminAssetStore: {
         accessKeyId: "asset-access-key",
         bucket: "writing-app-assets",
@@ -116,7 +108,7 @@ describe("통합 API env", () => {
         secretAccessKey: "asset-secret-key",
       },
       adminOrigin: "https://admin.example.com",
-      authBaseUrl: "https://api.example.com",
+      apiOrigin: "https://api.example.com",
       cursorSigningSecret: "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
       databaseUrl: "file:/var/lib/writing-app/api.sqlite",
       deploymentVersion: "api@sha256:test",
@@ -160,15 +152,13 @@ describe("통합 API env", () => {
 
 function createTestEnvironment(): Record<string, string | undefined> {
   return {
-    ADMIN_API_ALLOWED_HOSTS: "127.0.0.1:4000,admin-api:4000",
-    ADMIN_BETTER_AUTH_SECRET: adminSecret,
-    ADMIN_BETTER_AUTH_URL: "http://127.0.0.1:4000",
-    ADMIN_ORIGIN: "http://127.0.0.1:3001",
+    ADMIN_AUTH_SECRET: adminSecret,
+    ADMIN_ORIGIN: "http://localhost:3001",
+    API_ALLOWED_HOSTS: "localhost:4000,api:4000",
+    API_ORIGIN: "http://localhost:4000",
     API_PORT: "4000",
-    BETTER_AUTH_SECRET: learnerSecret,
-    BETTER_AUTH_URL: "http://localhost:4000",
     DATABASE_URL: ":memory:",
-    LEARNER_API_ALLOWED_HOSTS: "localhost:4000,api:4000",
+    LEARNER_AUTH_SECRET: learnerSecret,
     NODE_ENV: "test",
     WEB_ORIGIN: "http://localhost:3000",
   }
@@ -176,22 +166,19 @@ function createTestEnvironment(): Record<string, string | undefined> {
 
 function createProductionEnvironment(): Record<string, string | undefined> {
   return {
-    ADMIN_API_ALLOWED_HOSTS: "admin-api.example.com,admin-api-unified:4000",
+    ADMIN_AUTH_SECRET: "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
     ADMIN_ASSET_PUBLIC_BASE_URL: "https://assets.example.com",
     ADMIN_ASSET_S3_ACCESS_KEY: "asset-access-key",
     ADMIN_ASSET_S3_BUCKET: "writing-app-assets",
     ADMIN_ASSET_S3_ENDPOINT: "https://r2.example.com",
     ADMIN_ASSET_S3_SECRET_KEY: "asset-secret-key",
-    ADMIN_BETTER_AUTH_SECRET:
-      "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
-    ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
     ADMIN_ORIGIN: "https://admin.example.com",
-    BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
-    BETTER_AUTH_URL: "https://api.example.com",
+    API_ALLOWED_HOSTS: "api.example.com,api:4000",
+    API_ORIGIN: "https://api.example.com",
     CURSOR_SIGNING_SECRET: "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
     DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
     DEPLOYMENT_VERSION: "api@sha256:test",
-    LEARNER_API_ALLOWED_HOSTS: "api.example.com,api:4000",
+    LEARNER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
     NODE_ENV: "production",
     WEB_ORIGIN: "https://app.example.com",
   }

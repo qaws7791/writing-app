@@ -4,13 +4,11 @@
 
 ## 현재 구현 상태
 
-> 2026-07-18: MTA-40 저장소 구성에서 통합 API의 learner/admin request log에 고정 `audience`를 추가했고, source·정적 계약과 target E2E 재배선까지 완료했다. 실제 Docker·운영 관찰은 아직 별도 승인 게이트다.
-
 현재 코드에 구현된 관측성은 구조화 요청 로그가 중심이다.
 
 - logger: `apps/api/src/observability`
 - runtime: Pino
-- target API 적용: `apps/api`의 learner/admin Host sub-app
+- 적용 범위: `apps/api`의 학습자 HTTP 표면과 `/api/admin` 경로 sub-app
 - 요청 ID header: `x-request-id`
 - 요청 완료 메시지: `request.completed`
 - 자료실 HTTP: 문서 저장 성공과 `412` 충돌을 포함한 route·status·duration은 공통 `request.completed`로 관측한다. 제목과 Markdown 본문은 요청 로그에 포함하지 않는다.
@@ -21,7 +19,7 @@
 
 메트릭 수집기, tracing backend, alert manager, 운영 대시보드는 아직 코드로 구현되어 있지 않다. 이 문서의 메트릭/알림 항목은 도입 기준이다.
 
-[ADR-0012](./adr/ADR-0012-single-api-runtime.md)에 따라 backend runtime을 통합했고, 저장소의 Compose·Caddy source configuration은 learner/admin public Host를 모두 `apps/api:4000`으로 보낸다. 요청 로그와 security audit event는 `apps/api/src/observability`, Hono logging middleware는 `apps/api/src/http/platform`이 소유한다. 외부 운영 관찰은 사용자 승인으로 이번 작업 범위에서 제외했으므로 실제 production 지표 성공을 주장하지 않는다.
+backend는 하나의 `API_ORIGIN`과 `API_HOST`를 사용하는 `apps/api` runtime이다. 요청 로그와 security audit event는 `apps/api/src/observability`, Hono logging middleware는 `apps/api/src/http/platform`이 소유한다. 외부 운영 관찰은 사용자 승인으로 이번 작업 범위에서 제외했으므로 실제 production 지표 성공을 주장하지 않는다.
 
 `apps/api`의 통합 lifecycle은 SIGINT/SIGTERM 뒤 신규 요청을 `503`으로 닫고 response body와 명시적 장기 작업 lease까지 최대 20초 drain한다. 이후 요청 signal·body를 취소하고 server stop과 외부 provider cleanup을 공유 5초 deadline 안에서 시도한 뒤 SQLite client를 정확히 한 번 닫는다. 각 실패는 `cancel-activity`, `force-stop-server`, `cleanup-external`, `close-database` phase와 함께 기록한다. 학습자 AI 피드백은 caller abort와 provider timeout을 결합해 OpenAI 요청까지 전달하며, provider가 signal을 무시해도 시도 상태를 `failed`로 수렴시킨다.
 
@@ -36,7 +34,7 @@
 | `msg`               | `request.completed`                                                      |
 | `requestId`         | runtime이 생성해 응답 header에도 넣는 server request ID                  |
 | `externalRequestId` | 형식·길이 검증을 통과한 외부 `x-request-id`, 없거나 유효하지 않으면 생략 |
-| `audience`          | route 실행 전 app이 고정한 `learner` 또는 `admin` sub-app 분류           |
+| `audience`          | route 실행 전 정한 `learner` 또는 `admin` 인증 realm·경로 분류           |
 | `method`            | HTTP method                                                              |
 | `path`              | query를 제외한 요청 path                                                 |
 | `status`            | 응답 status                                                              |
@@ -44,7 +42,7 @@
 | `actorId`           | 인증이 완료된 경우의 learner 또는 admin 식별자                           |
 | `actorType`         | 인증이 완료된 경우 `learner` 또는 `admin`                                |
 
-`audience`는 raw public `Host`를 기록하는 값이 아니라 Host dispatcher 뒤의 sub-app 분류다. production role이 learner/admin public API Host를 서로 다르게 강제하므로 해당 환경에서 audience별 오류율·p95는 각 public API audience의 관찰 단위가 된다. internal alias와 literal hostname까지 분리해야 하는 조사에는 Caddy 또는 proxy access log를 별도로 사용한다.
+`audience`는 public Host 분류가 아니라 하나의 API 안에서 학습자 HTTP 표면과 `/api/admin` 경로를 구분하는 값이다. audience별 오류율·p95는 인증 realm과 경로 표면의 관찰 단위이며 Host 자체의 조사가 필요하면 Caddy 또는 proxy access log를 사용한다.
 
 ## RequestLoggingRuntime
 
@@ -122,7 +120,7 @@
 ## 대시보드 후보
 
 - API별 요청량, 오류율, latency
-- learner/admin Host sub-app health
+- 같은 `API_HOST`의 `/health`와 `/api/admin/health`
 - AI 피드백 성공/실패
 - 관리자 변경성 작업 이력
 - SQLite 파일 크기와 백업 상태

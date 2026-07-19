@@ -59,7 +59,7 @@ function createAdminFoundationFixture(
         path: new URL(request.url).pathname,
       })
 
-      if (new URL(request.url).pathname === "/api/auth/failure") {
+      if (new URL(request.url).pathname === "/auth/failure") {
         throw new Error("admin foundation target contract sentinel")
       }
 

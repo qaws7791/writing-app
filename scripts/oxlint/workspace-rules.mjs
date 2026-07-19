@@ -182,9 +182,7 @@ export function readWorkspaceDependencyMessageId({ filename, source }) {
 }
 
 function isApiTransportPath(filename) {
-  const sourcePath = filename.match(
-    /\/(?:apps\/)?(?:admin-api|api)\/src\/(.+)$/u
-  )?.[1]
+  const sourcePath = filename.match(/\/(?:apps\/)?api\/src\/(.+)$/u)?.[1]
 
   if (sourcePath === undefined) {
     return false

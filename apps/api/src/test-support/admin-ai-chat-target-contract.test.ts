@@ -121,9 +121,9 @@ const adminAiChatTargetContractInput = {
           },
         ],
         paths: [
-          "/ai-chat/conversations",
-          "/ai-chat/conversations/{conversationId}",
-          "/ai-chat/messages/stream",
+          "/api/admin/ai-chat/conversations",
+          "/api/admin/ai-chat/conversations/{conversationId}",
+          "/api/admin/ai-chat/messages/stream",
         ],
       },
       request: { method: "GET", path: "/openapi" },

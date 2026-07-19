@@ -11,7 +11,7 @@ const reservedFoundationOperationIds = [
   "getAdminHealth",
   "getAdminSession",
 ] as const
-const reservedAdminAuthPath = "/api/auth"
+const reservedAdminAuthPath = "/auth"
 
 export type AdminRouteSource = {
   readonly group: AdminRouteGroupName

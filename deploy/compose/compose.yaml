@@ -43,9 +43,7 @@ services:
         target: /var/lib/writing-app
     networks:
       learner: {}
-      admin:
-        aliases:
-          - admin-api-unified
+      admin: {}
     healthcheck:
       test:
         - CMD
@@ -53,7 +51,7 @@ services:
         - -e
         - >-
           fetch('http://127.0.0.1:4000/health',{headers:{
-          Host:new URL(process.env.BETTER_AUTH_URL).host}}).then((response)=>{
+          Host:new URL(process.env.API_ORIGIN).host}}).then((response)=>{
           if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
       interval: 30s
       timeout: 5s

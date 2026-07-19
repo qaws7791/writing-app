@@ -1,25 +1,25 @@
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { z } from "zod/mini"
 
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
-export { buildAdminApiUrl } from "@/shared/config/admin-api-url"
-export type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
+export { buildApiUrl } from "@/shared/config/api-base-url"
+export type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 const optionalUrlSchema = z.optional(z.union([z.url(), z.literal("")]))
 const adminRuntimeEnvSchema = z.looseObject({
-  NEXT_PUBLIC_ADMIN_API_BASE_URL: optionalUrlSchema,
+  NEXT_PUBLIC_API_BASE_URL: optionalUrlSchema,
   NEXT_PUBLIC_LEARNER_WEB_ORIGIN: optionalUrlSchema,
   NODE_ENV: z.optional(z.string()),
 })
 
 type AdminRuntimeEnv = z.input<typeof adminRuntimeEnvSchema>
 
-export function readAdminApiBaseUrl(env?: AdminRuntimeEnv): AdminApiBaseUrl {
+export function readApiBaseUrl(env?: AdminRuntimeEnv): ApiBaseUrl {
   const runtimeEnv = adminRuntimeEnvSchema.parse(env ?? process.env)
   return toApiBaseUrl(
-    runtimeEnv.NEXT_PUBLIC_ADMIN_API_BASE_URL,
+    runtimeEnv.NEXT_PUBLIC_API_BASE_URL,
     runtimeEnv.NODE_ENV
-  ) as AdminApiBaseUrl
+  ) as ApiBaseUrl
 }
 
 export function readLearnerWebOrigin(env?: AdminRuntimeEnv): string {
@@ -47,12 +47,12 @@ function toApiBaseUrl(
     nodeEnvironment === "production" &&
     (rawValue === undefined || rawValue.trim() === "")
   ) {
-    throw new Error("production admin API base URL is required")
+    throw new Error("production API base URL is required")
   }
 
   const candidate =
     rawValue === undefined || rawValue.trim() === ""
-      ? localRuntimeDefaults.adminApiBaseUrl
+      ? localRuntimeDefaults.apiBaseUrl
       : rawValue
   const url = new URL(candidate)
 

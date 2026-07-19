@@ -14,38 +14,35 @@ function createValidComposeConfig(): unknown {
   return {
     services: {
       admin: {
-        environment: { ADMIN_API_BASE_URL: "http://admin-api-unified:4000" },
+        environment: { API_BASE_URL: "http://api:4000" },
         healthcheck,
         init: true,
         networks: { admin: null },
       },
       api: {
         environment: {
-          ADMIN_API_ALLOWED_HOSTS:
-            "admin-api.example.test,admin-api-unified:4000",
+          API_ALLOWED_HOSTS: "api.example.test,api:4000",
           ADMIN_ASSET_PUBLIC_BASE_URL: "https://assets.example.test",
           ADMIN_ASSET_S3_ACCESS_KEY: "asset-access-key",
           ADMIN_ASSET_S3_BUCKET: "writing-app-assets",
           ADMIN_ASSET_S3_ENDPOINT: "https://r2.example.test",
           ADMIN_ASSET_S3_REGION: "auto",
           ADMIN_ASSET_S3_SECRET_KEY: "asset-secret-key",
-          ADMIN_BETTER_AUTH_SECRET: "admin-fixture",
-          ADMIN_BETTER_AUTH_URL: "https://admin-api.example.test",
+          ADMIN_AUTH_SECRET: "admin-fixture",
           ADMIN_ORIGIN: "https://admin.example.test",
-          BETTER_AUTH_SECRET: "learner-fixture",
-          BETTER_AUTH_URL: "https://api.example.test",
+          API_ORIGIN: "https://api.example.test",
           CURSOR_SIGNING_SECRET: "cursor-fixture",
-          LEARNER_API_ALLOWED_HOSTS: "api.example.test,api:4000",
+          LEARNER_AUTH_SECRET: "learner-fixture",
         },
         healthcheck: {
           test: [
             "CMD",
             "bun",
-            "fetch(url,{headers:{Host:new URL(process.env.BETTER_AUTH_URL).host}})",
+            "fetch(url,{headers:{Host:new URL(process.env.API_ORIGIN).host}})",
           ],
         },
         init: true,
-        networks: { admin: { aliases: ["admin-api-unified"] }, learner: null },
+        networks: { admin: null, learner: null },
         volumes: sqliteVolume,
       },
       caddy: { networks: { admin: null, edge: null, learner: null } },
@@ -112,14 +109,13 @@ describe("배포 Compose 계약", () => {
         api: { environment: Record<string, string>; healthcheck: unknown }
       }
     }
-    config.services.api.environment.ADMIN_API_ALLOWED_HOSTS =
-      "api.example.test:4001,admin-api-unified:4000"
+    config.services.api.environment.API_ALLOWED_HOSTS = "api.example.test"
     config.services.api.healthcheck = healthcheck
 
     expect(validateComposeContract(config)).toEqual(
       expect.arrayContaining([
-        "api: learner/admin Host allowlist hostname이 겹치면 안 됩니다.",
-        "api: healthcheck는 configured learner Host를 명시해야 합니다.",
+        "api: 내부 authority api:4000이 필요합니다.",
+        "api: healthcheck는 configured API Host를 명시해야 합니다.",
       ])
     )
   })
@@ -128,10 +124,10 @@ describe("배포 Compose 계약", () => {
     const config = createValidComposeConfig() as {
       services: { admin: { environment: Record<string, string> } }
     }
-    config.services.admin.environment.ADMIN_API_BASE_URL = "http://api:4000"
+    config.services.admin.environment.API_BASE_URL = "http://wrong-api:4000"
 
     expect(validateComposeContract(config)).toContain(
-      "admin: 단일 API의 admin-api-unified:4000 upstream을 사용해야 합니다."
+      "admin: 단일 API의 api:4000 upstream을 사용해야 합니다."
     )
   })
 })
@@ -144,18 +140,15 @@ describe("배포 Caddy 계약", () => {
     "handle @learner-web {",
     "\treverse_proxy web:3000",
     "\t}",
-    "handle @learner-api {",
+    "handle @api {",
     "\treverse_proxy api:4000",
     "\t}",
     "handle @admin-web {",
     "\treverse_proxy admin:3001",
     "\t}",
-    "handle @admin-api {",
-    "\treverse_proxy api:4000",
-    "\t}",
   ].join("\n")
 
-  test("learner와 admin public Host를 통합 target upstream에 전달한다", () => {
+  test("단일 public API Host를 api upstream에 전달한다", () => {
     expect(validateUnifiedApiCaddyContract(validCaddyfile)).toEqual([])
   })
 
@@ -168,18 +161,19 @@ describe("배포 Caddy 계약", () => {
     expect(
       validateUnifiedApiCaddyContract(
         validCaddyfile.replace(
-          "handle @admin-api {\n\treverse_proxy api:4000",
-          "handle @admin-api {\n\treverse_proxy admin-api:4001"
+          "handle @api {\n\treverse_proxy api:4000",
+          "handle @api {\n\treverse_proxy wrong-api:4000"
         )
       )
-    ).toContain("Caddy admin API upstream은 api:4000이어야 합니다.")
+    ).toContain("Caddy API upstream은 api:4000이어야 합니다.")
     expect(
       validateUnifiedApiCaddyContract(
-        `${validCaddyfile}\nhandle /legacy {\n\treverse_proxy admin-api:4001\n\t}`
+        validCaddyfile.replace(
+          "reverse_proxy api:4000",
+          "reverse_proxy api:4001"
+        )
       )
-    ).toContain(
-      "Caddy normal topology는 legacy admin-api:4001 upstream을 포함하면 안 됩니다."
-    )
+    ).toContain("Caddy API upstream은 api:4000이어야 합니다.")
   })
 
   test("upstream Host 덮어쓰기를 거부한다", () => {
@@ -240,17 +234,15 @@ describe("repository 배포 source", () => {
       "utf8"
     )
 
-    expect(compose).toContain("admin-api-unified")
+    expect(compose).toContain("API_ORIGIN")
     expect(compose).not.toMatch(/^ {2}admin-api:/mu)
     expect(validateUnifiedApiCaddyContract(caddyfile)).toEqual([])
     expect(apiEnvironmentTemplate).toContain(
-      "ADMIN_API_ALLOWED_HOSTS={{ ([writing_app_admin_api_host, 'admin-api-unified:4000'] | join(',')) | to_json }}"
+      "API_ALLOWED_HOSTS={{ ([writing_app_api_host, 'api:4000'] | join(',')) | to_json }}"
     )
-    expect(adminEnvironmentTemplate).toContain(
-      "ADMIN_API_BASE_URL=http://admin-api-unified:4000"
-    )
+    expect(adminEnvironmentTemplate).toContain("API_BASE_URL=http://api:4000")
     expect(caddyEnvironmentTemplate).toContain(
-      "ADMIN_API_HOST={{ writing_app_admin_api_host | to_json }}"
+      "API_HOST={{ writing_app_api_host | to_json }}"
     )
   })
 
@@ -321,7 +313,7 @@ describe("repository 배포 source", () => {
 
     for (const hostname of [
       "api.example.test",
-      "admin-api.example.co.kr",
+      "api-admin.example.co.kr",
       "example.test",
     ]) {
       expect(hostname).toMatch(publicHostname)

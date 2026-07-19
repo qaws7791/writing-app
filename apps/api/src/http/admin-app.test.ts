@@ -30,7 +30,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     expect(healthResponse.status).toBe(200)
     await expect(healthResponse.json()).resolves.toEqual({
       ok: true,
-      service: "admin-api",
+      service: "api",
     })
     expect(sessionResponse.status).toBe(401)
     await expect(sessionResponse.json()).resolves.toEqual({
@@ -54,7 +54,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
         Cookie: `${adminSessionCookieName}=admin-token`,
       },
     })
-    const authResponse = await app.request("/api/auth/get-session")
+    const authResponse = await app.request("/auth/get-session")
 
     expect(sessionResponse.status).toBe(200)
     expect(sessionResponse.headers.get("Cache-Control")).toBe(
@@ -100,7 +100,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
       })
     )
 
-    const response = await app.request("/api/auth/change-password", {
+    const response = await app.request("/auth/change-password", {
       body: JSON.stringify({
         currentPassword: "old-password",
         newPassword: "new-password",
@@ -125,7 +125,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     const authHandler = vi.fn(async () => Response.json({ ok: true }))
     const app = createAdminApp(createDependencies({ authHandler }))
 
-    const response = await app.request("/api/auth/change-password", {
+    const response = await app.request("/auth/change-password", {
       body: JSON.stringify({
         currentPassword: "old-password",
         newPassword: "new-password",
@@ -156,7 +156,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
       { expectedStatus: 200, size: bodyLimitBytes },
       { expectedStatus: 413, size: bodyLimitBytes + 1 },
     ] as const) {
-      const response = await app.request("/api/auth/test", {
+      const response = await app.request("/auth/test", {
         body: "x".repeat(fixture.size),
         headers: {
           "Content-Length": String(fixture.size),
@@ -358,7 +358,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
       }
     )
     expect(document).toHaveProperty(
-      ["paths", "/session", "get", "security"],
+      ["paths", "/api/admin/session", "get", "security"],
       [{ adminSessionCookie: [] }]
     )
   })

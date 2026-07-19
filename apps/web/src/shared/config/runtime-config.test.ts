@@ -10,9 +10,7 @@ import {
 
 describe("web runtime config", () => {
   it("브라우저 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
-    expect(readBrowserApiBaseUrl({})).toBe(
-      localRuntimeDefaults.learnerApiBaseUrl
-    )
+    expect(readBrowserApiBaseUrl({})).toBe(localRuntimeDefaults.apiBaseUrl)
     expect(
       readBrowserApiBaseUrl({
         NEXT_PUBLIC_API_BASE_URL: "https://api.example.test///",
@@ -28,7 +26,7 @@ describe("web runtime config", () => {
 
   it("API path를 같은 규칙으로 조합한다", () => {
     expect(buildApiUrl(readBrowserApiBaseUrl({}), "/api/auth/sign-out")).toBe(
-      `${localRuntimeDefaults.learnerApiBaseUrl}/api/auth/sign-out`
+      `${localRuntimeDefaults.apiBaseUrl}/api/auth/sign-out`
     )
     expect(
       buildApiUrl(
@@ -55,7 +53,7 @@ describe("web runtime config", () => {
 
       const source = readFileSync(filePath, "utf8")
 
-      return /process\.env(?:\[['"](?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL|ENABLE_TEST_AUTH)['"]\]|\.(?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL|ENABLE_TEST_AUTH))/.test(
+      return /process\.env(?:\[['"](?:NEXT_PUBLIC_API_BASE_URL|API_BASE_URL|ENABLE_TEST_AUTH)['"]\]|\.(?:NEXT_PUBLIC_API_BASE_URL|API_BASE_URL|ENABLE_TEST_AUTH))/.test(
         source
       )
     })

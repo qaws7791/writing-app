@@ -20,13 +20,13 @@ import type { AdminRouteGroup } from "@/http/admin-route-group"
 import { createLearnerApiCore, type LearnerApiCore } from "@/learner-api-core"
 import type { AppLogger } from "@/observability/app-logger"
 
-export type AdminApiAuth = {
+export type AdminAuth = {
   readonly authHandler: (request: Request) => Promise<Response>
   readonly sessionResolver: AdminSessionResolver
 }
 
 export type ApiRuntime = {
-  readonly adminAuth: AdminApiAuth
+  readonly adminAuth: AdminAuth
   readonly adminCapabilityRoutes: AdminRouteGroup
   readonly dispose: () => void
   readonly learnerCore: LearnerApiCore
@@ -49,10 +49,10 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
     closeDatabase: databaseClient.close,
     createAdminAuth(database) {
       const auth = createAdminAuth({
-        authBaseUrl: input.env.adminAuthBaseUrl,
+        apiOrigin: input.env.apiOrigin,
         cookieDomain: input.env.adminCookieDomain,
         db: database,
-        secret: input.env.adminBetterAuthSecret,
+        secret: input.env.adminAuthSecret,
         webOrigin: input.env.adminOrigin,
       })
 
@@ -77,13 +77,13 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
     createLearnerCore(database) {
       return createLearnerApiCore({
         aiFeedbackProvider: input.aiFeedbackProvider,
-        authBaseUrl: input.env.authBaseUrl,
-        betterAuthSecret: input.env.betterAuthSecret,
-        cookieDomain: input.env.cookieDomain,
+        apiOrigin: input.env.apiOrigin,
         cursorSigningSecret: input.env.cursorSigningSecret,
         database,
         googleClientId: input.env.googleClientId,
         googleClientSecret: input.env.googleClientSecret,
+        learnerAuthSecret: input.env.learnerAuthSecret,
+        learnerCookieDomain: input.env.learnerCookieDomain,
         onAiFeedbackAttemptTransition: input.onAiFeedbackAttemptTransition,
         testAuthEnabled: input.env.testAuthEnabled,
         webOrigin: input.env.webOrigin,

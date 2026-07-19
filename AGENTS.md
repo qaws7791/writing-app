@@ -11,19 +11,24 @@ Prefer explicitness over implicitness and choose simplicity over cleverness and 
 
 ## Overview
 
-- apps/web: nextjs fullstack server
-- packages/ui: base-ui,reactjs,tailwindcss based shadcn library
-- CONTEXT.md: project context
-- ARCHITECTURE.md: project architecture
-- DOMAIN.md: project domain
-- GLOSSARY.md: project glossary
-- FRONTEND.md: frontend development guide
-- BACKEND.md: backend development guide
+- `README.md`: 프로젝트 소개와 실행 진입점
+- `docs/_index.md`: 프로젝트 지식 탐색의 단일 진입점
+- `docs/authority-map.md`: 사실별 권위 소유자와 설명 문서의 관계
+- `docs/product/`: 제품 문제, 요구사항과 도메인 규칙
+- `docs/design/`: 화면, UI와 접근성 기준
+- `docs/engineering/`: 현재 시스템 구조, 구현과 운영 계약
+- `docs/work/`: 진행 중인 한시적 작업 문서
+- `docs/archive/`: 완료되거나 폐기된 기록. 현재 사실의 근거로 사용하지 않음
 
 ## Task Guide
 
 - Always update the documentation (/docs) to the latest version for changes when starting and finishing a task.
 - 로컬 브라우저 테스트나 E2E 테스트는 Google OAuth 대신 `ENABLE_TEST_AUTH=true` 테스트 전용 로그인을 사용한다.
+- 프로젝트 사실을 확인할 때는 `docs/_index.md`, `docs/authority-map.md`, 해당 권위 소스 순서로 읽는다.
+- `docs/work`는 진행 중 작업의 범위와 판단을 이해할 때만 사용하며 현재 구조의 권위 소스로 인용하지 않는다.
+- `docs/archive`와 ADR은 현재 사실 판정에서 제외하고, 과거 결정이나 증거가 필요한 경우에만 읽는다.
+- 새 계획·조사·감사 문서는 `docs/work/<yyyy-mm-dd-name>/`에 만들고 완료 시 같은 작업 단위를 `docs/archive/<yyyy-mm-dd-name>/`로 이동한다.
+- 한시 문서의 영구 결론은 완료 전에 관련 제품·디자인·엔지니어링 권위 문서에 반영한다.
 
 ### Prerequisites
 

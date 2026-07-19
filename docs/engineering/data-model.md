@@ -1,11 +1,9 @@
 # 데이터 모델
 
-이 문서는 writing-app의 엔티티, DB 스키마, 관계, 상태 값을 설명하는 단일 진실 원천이다.
+이 문서는 writing-app의 엔티티, DB 관계와 상태 값을 설명한다. 제품 불변식은 `docs/product/content-model.md`, 실제 DB schema와 migration은 `packages/db`가 권위 소스이며 `docs/authority-map.md`가 소유 관계를 안내한다.
 
 ## 기준
 
-- 기준일: 2026-07-17
-- 작업 상태: 관계형 커리큘럼 버전과 기존 데이터 migration 단계 2 구현 완료
 - 기준 파일:
   - `packages/db/src/schema/*.schema.ts`
   - `packages/db/src/persisted-values.ts`
@@ -15,7 +13,7 @@
 ## 모델 원칙
 
 - 콘텐츠는 `Course -> Unit -> Lesson -> Step` 계층이다.
-- 커리큘럼은 ADR-0011의 관계형 `draft | published` 버전 모델을 사용한다.
+- 커리큘럼은 `docs/product/content-model.md`와 현재 `packages/db` schema가 정의한 관계형 `draft | published` 버전 모델을 사용한다. ADR-0011은 이 모델을 채택한 배경 결정이며 현재 값의 권위 소스가 아니다.
 - 코스 보관은 코스 identity만 `archived`로 바꾸며 published 버전과 학습자 고정은 삭제하지 않는다.
 - 학습 진행, 답변과 AI 시도는 학습자에게 고정된 커리큘럼 버전 범위의 레슨·스텝을 참조한다.
 - 학습자 인증 테이블과 관리자 인증 테이블은 분리한다.

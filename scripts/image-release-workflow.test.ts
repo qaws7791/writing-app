@@ -128,7 +128,6 @@ describe("production image release workflow", () => {
       "PRODUCTION_WEB_ORIGIN",
       "PRODUCTION_API_ORIGIN",
       "PRODUCTION_ADMIN_ORIGIN",
-      "PRODUCTION_ADMIN_API_ORIGIN",
     ]) {
       expect(workflow).toContain("vars." + variable)
     }

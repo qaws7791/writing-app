@@ -16,7 +16,7 @@ import {
 } from "@/features/course-editor/model/admin-course-editor"
 import { courseIdSchema } from "@/entities/course/model/course-id"
 import { createBrowserCourseEditorApi } from "@/features/course-editor/api/create-browser-course-editor-api"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   courseEditorReducer,
   createCourseEditorState,
@@ -49,7 +49,7 @@ export function CourseEditorShell({
   publishCourse,
   saveCourse,
 }: {
-  readonly apiBaseUrl: AdminApiBaseUrl
+  readonly apiBaseUrl: ApiBaseUrl
   readonly course: AdminCourseDetail
   readonly publishCourse: (
     course: AdminCourseDetail

@@ -16,7 +16,7 @@ export function createResourceDocumentHttpAdapter(
     async exportResourceDocument(documentId: string) {
       const result = await transport.requestDownload({
         contentType: "text/markdown",
-        path: `/resources/documents/${documentId}/export`,
+        path: `/api/admin/resources/documents/${documentId}/export`,
       })
       return result.status === "error"
         ? result
@@ -31,7 +31,7 @@ export function createResourceDocumentHttpAdapter(
     getResourceDocument: (documentId: string) =>
       transport.requestJson({
         method: "GET",
-        path: `/resources/documents/${documentId}`,
+        path: `/api/admin/resources/documents/${documentId}`,
         schema: adminResourceDocumentDtoSchema,
       }),
   }

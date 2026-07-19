@@ -12,7 +12,7 @@ const webServerRuntimeEnvSchema = z.object({
   ENABLE_TEST_AUTH: z.string().optional(),
   NEXT_PUBLIC_API_BASE_URL: z.string().trim().min(1).optional(),
   NODE_ENV: z.string().optional(),
-  WEB_API_BASE_URL: z.string().trim().min(1).optional(),
+  API_BASE_URL: z.string().trim().min(1).optional(),
   WEB_ORIGIN: z.string().trim().min(1).optional(),
 })
 
@@ -24,7 +24,7 @@ export function readServerApiBaseUrl(
   const parsedEnv = webServerRuntimeEnvSchema.parse(env)
 
   return toServerApiBaseUrl(
-    parsedEnv.WEB_API_BASE_URL,
+    parsedEnv.API_BASE_URL,
     parsedEnv.NODE_ENV
   ) as ServerApiBaseUrl
 }
@@ -63,7 +63,7 @@ export function readWebCspRuntimeConfig(
     apiOrigin: toServerOrigin(
       parsedEnv.NEXT_PUBLIC_API_BASE_URL,
       parsedEnv.NODE_ENV,
-      localRuntimeDefaults.learnerApiBaseUrl,
+      localRuntimeDefaults.apiBaseUrl,
       "production public API base URL is required"
     ),
     development: parsedEnv.NODE_ENV !== "production",
@@ -84,7 +84,7 @@ function toServerApiBaseUrl(
 
   const candidate =
     rawValue === undefined || rawValue.trim() === ""
-      ? localRuntimeDefaults.learnerApiBaseUrl
+      ? localRuntimeDefaults.apiBaseUrl
       : rawValue
 
   return urlSchema.parse(candidate).toString().replace(/\/+$/, "")

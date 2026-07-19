@@ -11,8 +11,7 @@
 3. 사용자 가치와 인수 기준은 `user-stories/_index.md`에서 시작해 개별 유저 스토리 문서에서 확인한다.
 4. 개발자를 위한 제품 규칙은 `requirements/_index.md`에서 시작해 개별 요구사항 문서에서 확인한다.
 5. 화면 목적과 UI 기준은 `docs/design/screens/`의 개별 화면 문서에서 확인한다.
-6. 콘텐츠, 운영, 지표 기준은 `content-model.md`, `admin-operations.md`, `metrics.md`, `product-research.md`에서 확인한다.
-7. 코드베이스 역추적 결과와 문서 반영 위치는 `codebase-sync-audit.md`에서 확인한다.
+6. 콘텐츠, 운영, 지표 기준은 `content-model.md`, `admin-operations.md`, `metrics.md`에서 확인한다.
 
 ## 디렉토리 지도
 
@@ -37,8 +36,6 @@
 | `content-model.md`         | 콘텐츠 계층, 기준 콘텐츠, 코스와 유닛과 레슨과 스텝, 확정 스텝 타입을 정의한다.    |
 | `admin-operations.md`      | 관리자 유형, 읽기와 변경 권한, 콘텐츠와 사용자와 설정 운영 기준을 정의한다.        |
 | `metrics.md`               | 현재 표시 지표, 분석 지표, 학습자 화면 지표, 운영 판단 기준, 후보 지표를 정의한다. |
-| `product-research.md`      | 조사 범위, 확인된 제품 사실, 문서 충돌과 작성 기준을 정리한다.                     |
-| `codebase-sync-audit.md`   | 코드베이스 순회 결과와 유저 스토리, 요구사항 문서 반영 위치를 정리한다.            |
 
 ## 관리 기준
 

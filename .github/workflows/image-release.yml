@@ -50,7 +50,6 @@ jobs:
         run: bun scripts/image-release-metadata.ts preflight
         env:
           IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
-          PRODUCTION_ADMIN_API_ORIGIN: ${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
           PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
           PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
           PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
@@ -79,7 +78,7 @@ jobs:
             runtime: node-24
             build-args: |
               NEXT_PUBLIC_API_BASE_URL=${{ vars.PRODUCTION_API_ORIGIN }}
-              WEB_API_BASE_URL=http://api:4000
+              API_BASE_URL=http://api:4000
               WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
           - service: api
             dockerfile: deploy/docker/api.dockerfile
@@ -89,9 +88,9 @@ jobs:
             dockerfile: deploy/docker/admin.dockerfile
             runtime: node-24
             build-args: |
-              NEXT_PUBLIC_ADMIN_API_BASE_URL=${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
+              NEXT_PUBLIC_API_BASE_URL=${{ vars.PRODUCTION_API_ORIGIN }}
               NEXT_PUBLIC_LEARNER_WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
-              ADMIN_API_BASE_URL=http://admin-api-unified:4000
+              API_BASE_URL=http://api:4000
               ADMIN_ORIGIN=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -122,7 +121,6 @@ jobs:
             org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
             io.writing-app.configuration-digest=${{ needs.release-preflight.outputs.configuration-digest }}
             io.writing-app.public-origin.admin=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
-            io.writing-app.public-origin.admin-api=${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
             io.writing-app.public-origin.api=${{ vars.PRODUCTION_API_ORIGIN }}
             io.writing-app.public-origin.web=${{ vars.PRODUCTION_WEB_ORIGIN }}
             io.writing-app.runtime=${{ matrix.runtime }}
@@ -191,7 +189,6 @@ jobs:
           IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
           IMAGE_RELEASE_SERVICE: ${{ matrix.service }}
           IMAGE_RELEASE_VULNERABILITY_POLICY_DIGEST: ${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
-          PRODUCTION_ADMIN_API_ORIGIN: ${{ vars.PRODUCTION_ADMIN_API_ORIGIN }}
           PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
           PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
           PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}

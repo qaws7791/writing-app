@@ -225,12 +225,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      ADMIN_API_BASE_URL: https://admin-api.example.test
+      API_BASE_URL: https://api.example.test
       ADMIN_ORIGIN: https://admin.example.test
-      NEXT_PUBLIC_ADMIN_API_BASE_URL: https://admin-api.example.test
       NEXT_PUBLIC_API_BASE_URL: https://api.example.test
       NEXT_PUBLIC_LEARNER_WEB_ORIGIN: https://web.example.test
-      WEB_API_BASE_URL: https://api.example.test
       WEB_ORIGIN: https://web.example.test
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6

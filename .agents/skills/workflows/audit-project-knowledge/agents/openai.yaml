@@ -1,0 +1,6 @@
+interface:
+  display_name: "프로젝트 지식 감사"
+  short_description: "권위 소스와 영구 문서의 사실 충돌을 검사합니다"
+  default_prompt: "$audit-project-knowledge를 사용해 권위 소스와 현재 문서의 충돌을 감사해 주세요."
+policy:
+  allow_implicit_invocation: false

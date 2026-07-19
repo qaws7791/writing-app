@@ -1,7 +1,6 @@
 writing_app_web_host: app.example.com
 writing_app_api_host: api.example.com
 writing_app_admin_host: admin.example.com
-writing_app_admin_api_host: admin-api.example.com
 
 writing_app_web_image: ghcr.io/example/writing-app-web@sha256:replace-me
 writing_app_api_image: ghcr.io/example/writing-app-api@sha256:replace-me
@@ -21,15 +20,13 @@ writing_app_openai_api_key: >-
   {{ vault_writing_app_openai_api_key | default('') }}
 
 # 아래 민감 값은 Ansible Vault로 암호화한 vault.yaml에서 관리한다.
-writing_app_better_auth_secret: "{{ vault_writing_app_better_auth_secret }}"
+writing_app_learner_auth_secret: "{{ vault_writing_app_learner_auth_secret }}"
 writing_app_cursor_signing_secret: >-
   {{ vault_writing_app_cursor_signing_secret }}
-writing_app_admin_better_auth_secret: >-
-  {{ vault_writing_app_admin_better_auth_secret }}
-
+writing_app_admin_auth_secret: "{{ vault_writing_app_admin_auth_secret }}"
 # public web/API Host가 분리되므로 각 session cookie는 공통 parent domain을 명시한다.
-writing_app_better_auth_cookie_domain: example.com
-writing_app_admin_better_auth_cookie_domain: example.com
+writing_app_learner_auth_cookie_domain: example.com
+writing_app_admin_auth_cookie_domain: example.com
 writing_app_cloudflare_tunnel_token: >-
   {{ vault_writing_app_cloudflare_tunnel_token }}
 writing_app_r2_access_key_id: "{{ vault_writing_app_r2_access_key_id }}"

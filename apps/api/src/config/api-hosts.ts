@@ -4,35 +4,12 @@ export type ApiHostAuthority = string & {
   readonly [apiHostAuthorityBrand]: "ApiHostAuthority"
 }
 
-export type ApiHostConfiguration = {
-  readonly admin: ReadonlySet<ApiHostAuthority>
-  readonly learner: ReadonlySet<ApiHostAuthority>
-}
+export type ApiHostConfiguration = ReadonlySet<ApiHostAuthority>
 
-export function parseApiHostConfiguration(input: {
-  readonly adminAllowedHosts: string | undefined
-  readonly learnerAllowedHosts: string | undefined
-}): ApiHostConfiguration {
-  const learner = parseHostList(
-    "LEARNER_API_ALLOWED_HOSTS",
-    input.learnerAllowedHosts
-  )
-  const admin = parseHostList(
-    "ADMIN_API_ALLOWED_HOSTS",
-    input.adminAllowedHosts
-  )
-  const learnerHostnames = new Set([...learner].map(readHostname))
-  const collision = [...admin].find((authority) =>
-    learnerHostnames.has(readHostname(authority))
-  )
-
-  if (collision !== undefined) {
-    throw new Error(
-      "API Host 설정 오류: learner와 admin allowlist는 같은 hostname을 공유할 수 없습니다."
-    )
-  }
-
-  return { admin, learner }
+export function parseApiHostConfiguration(
+  allowedHosts: string | undefined
+): ApiHostConfiguration {
+  return parseHostList(allowedHosts)
 }
 
 export function normalizeApiHostAuthority(value: string): ApiHostAuthority {
@@ -66,11 +43,12 @@ export function normalizeApiHostAuthority(value: string): ApiHostAuthority {
 }
 
 function parseHostList(
-  name: "ADMIN_API_ALLOWED_HOSTS" | "LEARNER_API_ALLOWED_HOSTS",
   value: string | undefined
 ): ReadonlySet<ApiHostAuthority> {
   if (value === undefined || value.trim().length === 0) {
-    throw new Error(`API Host 설정 오류: ${name}는 비어 있을 수 없습니다.`)
+    throw new Error(
+      "API Host 설정 오류: API_ALLOWED_HOSTS는 비어 있을 수 없습니다."
+    )
   }
 
   const authorities = value.split(",").map((entry) => {
@@ -78,21 +56,19 @@ function parseHostList(
       return normalizeApiHostAuthority(entry)
     } catch {
       throw new Error(
-        `API Host 설정 오류: ${name}에 유효하지 않은 authority가 있습니다.`
+        "API Host 설정 오류: API_ALLOWED_HOSTS에 유효하지 않은 authority가 있습니다."
       )
     }
   })
   const uniqueAuthorities = new Set(authorities)
 
   if (uniqueAuthorities.size !== authorities.length) {
-    throw new Error(`API Host 설정 오류: ${name}에 중복 authority가 있습니다.`)
+    throw new Error(
+      "API Host 설정 오류: API_ALLOWED_HOSTS에 중복 authority가 있습니다."
+    )
   }
 
   return uniqueAuthorities
-}
-
-function readHostname(authority: ApiHostAuthority): string {
-  return new URL(`http://${authority}/`).hostname
 }
 
 function isValidHostname(hostname: string): boolean {

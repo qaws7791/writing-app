@@ -10,6 +10,7 @@
 2. 라우트와 화면 구조는 `ia-spec.md`와 `screens/` 문서에서 확인한다.
 3. 구현에 필요한 공통 기준은 `foundations.md`, `components.md`, `patterns.md`에서 확인한다.
 4. 품질 기준은 `accessibility.md`, `assets.md`, `text-localization-policy.md`에서 확인한다.
+5. 공유 UI의 격리된 예제와 검증 기준은 `storybook.md`에서 확인한다.
 
 ## 디렉토리 지도
 
@@ -31,6 +32,7 @@
 | `accessibility.md`                         | 키보드 탐색, 레슨 접근성, Form, motion, 언어 기준을 정의한다.                         |
 | `assets.md`                                | 아이콘, 이미지, SVG, 어드민 에셋, 파일 관리 기준을 정의한다.                          |
 | `text-localization-policy.md`              | 화면 문구의 한국어 현지화 원칙, 적용 범위, 예외, 구현 규칙을 정의한다.                |
+| `storybook.md`                             | 공유 UI 스토리의 작성, interaction과 접근성 검증 기준을 정의한다.                     |
 | `screens/SCR-001-learner-landing.md`       | 학습자 랜딩 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
 | `screens/SCR-002-learner-login.md`         | 학습자 로그인 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
 | `screens/SCR-003-learner-home.md`          | 학습 홈 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                     |

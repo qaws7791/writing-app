@@ -148,7 +148,11 @@ const adminIdentityTargetContractInput = {
             section: "securitySchemes",
           },
         ],
-        paths: ["/users", "/users/{userId}", "/users/{userId}/status"],
+        paths: [
+          "/api/admin/users",
+          "/api/admin/users/{userId}",
+          "/api/admin/users/{userId}/status",
+        ],
       },
       request: { method: "GET", path: "/openapi" },
       responseBody: "openapi",

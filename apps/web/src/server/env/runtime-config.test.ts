@@ -17,12 +17,10 @@ describe("web server runtime config", () => {
   })
 
   it("서버 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
-    expect(readServerApiBaseUrl({})).toBe(
-      localRuntimeDefaults.learnerApiBaseUrl
-    )
+    expect(readServerApiBaseUrl({})).toBe(localRuntimeDefaults.apiBaseUrl)
     expect(
       readServerApiBaseUrl({
-        WEB_API_BASE_URL: "https://internal-api.example.test/",
+        API_BASE_URL: "https://internal-api.example.test/",
       })
     ).toBe("https://internal-api.example.test")
   })

@@ -19,19 +19,14 @@
 		reverse_proxy web:3000
 	}
 
-	@learner-api host {$API_HOST}
-	handle @learner-api {
+	@api host {$API_HOST}
+	handle @api {
 		reverse_proxy api:4000
 	}
 
 	@admin-web host {$ADMIN_HOST}
 	handle @admin-web {
 		reverse_proxy admin:3001
-	}
-
-	@admin-api host {$ADMIN_API_HOST}
-	handle @admin-api {
-		reverse_proxy api:4000
 	}
 
 	handle {

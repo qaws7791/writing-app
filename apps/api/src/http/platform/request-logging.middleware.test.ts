@@ -137,9 +137,15 @@ describe("Hono request logging middleware", () => {
     failureApp.post("/api/auth/sign-in/email", (context) =>
       context.text("no", 401)
     )
+    failureApp.post("/api/admin/auth/sign-in/email", (context) =>
+      context.text("no", 401)
+    )
     failureApp.post("/ai-feedback", (context) => context.text("limit", 429))
 
     await failureApp.request("/api/auth/sign-in/email", { method: "POST" })
+    await failureApp.request("/api/admin/auth/sign-in/email", {
+      method: "POST",
+    })
     await failureApp.request("/ai-feedback", { method: "POST" })
 
     expect(audits).toEqual([
@@ -156,6 +162,12 @@ describe("Hono request logging middleware", () => {
         outcome: "denied",
         requestId: "failure-request-id",
         target: "POST /api/auth/sign-in/email",
+      },
+      {
+        action: "authentication.failed",
+        outcome: "denied",
+        requestId: "failure-request-id",
+        target: "POST /api/admin/auth/sign-in/email",
       },
       {
         action: "ai.quota.exceeded",

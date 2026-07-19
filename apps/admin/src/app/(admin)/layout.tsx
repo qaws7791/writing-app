@@ -14,7 +14,7 @@ import {
 import { adminRequestPathHeader } from "@/shared/auth/admin-request-path"
 import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 import {
-  readAdminApiBaseUrl,
+  readApiBaseUrl,
   readLearnerWebOrigin,
 } from "@/shared/config/admin-runtime-config"
 
@@ -46,7 +46,7 @@ export default async function AdminLayout({
 
   return (
     <AdminShell
-      apiBaseUrl={readAdminApiBaseUrl()}
+      apiBaseUrl={readApiBaseUrl()}
       learnerWebOrigin={readLearnerWebOrigin()}
     >
       {children}

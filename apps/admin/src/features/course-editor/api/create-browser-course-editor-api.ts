@@ -2,9 +2,9 @@
 
 import { createAdminCourseEditorApi } from "@/features/course-editor/api/admin-course-editor-api"
 import { createAdminHttpTransport } from "@/shared/http/admin-http-transport"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
-export function createBrowserCourseEditorApi(apiBaseUrl: AdminApiBaseUrl) {
+export function createBrowserCourseEditorApi(apiBaseUrl: ApiBaseUrl) {
   return createAdminCourseEditorApi(
     createAdminHttpTransport({
       baseUrl: apiBaseUrl,

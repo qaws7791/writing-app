@@ -31,13 +31,13 @@ export function createAdminCourseCatalogDal(
     archiveCourse: (courseId) =>
       transport.requestJson({
         method: "DELETE",
-        path: `/courses/${courseId}`,
+        path: `/api/admin/courses/${courseId}`,
         schema: adminArchiveCourseResultSchema,
       }),
     createCourse: () =>
       transport.requestJson({
         method: "POST",
-        path: "/courses",
+        path: "/api/admin/courses",
         schema: adminCourseDetailDtoSchema,
       }),
     async getCourses(input) {
@@ -49,7 +49,7 @@ export function createAdminCourseCatalogDal(
       params.set("status", input.status)
       return transport.requestJson({
         method: "GET",
-        path: `/courses?${params.toString()}`,
+        path: `/api/admin/courses?${params.toString()}`,
         schema: adminCourseListDtoSchema,
       })
     },

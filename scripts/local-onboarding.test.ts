@@ -34,7 +34,7 @@ describe("로컬 온보딩", () => {
     ])
 
     expect(
-      readEnvironmentValue(fixture.path, "apps/api/.env", "BETTER_AUTH_SECRET")
+      readEnvironmentValue(fixture.path, "apps/api/.env", "LEARNER_AUTH_SECRET")
     ).toBe(credentials.learnerAuthSecret)
     expect(
       readEnvironmentValue(
@@ -44,11 +44,7 @@ describe("로컬 온보딩", () => {
       )
     ).toBe(credentials.cursorSigningSecret)
     expect(
-      readEnvironmentValue(
-        fixture.path,
-        "apps/api/.env",
-        "ADMIN_BETTER_AUTH_SECRET"
-      )
+      readEnvironmentValue(fixture.path, "apps/api/.env", "ADMIN_AUTH_SECRET")
     ).toBe(credentials.adminAuthSecret)
     expect(
       readEnvironmentValue(fixture.path, "apps/api/.env", "ADMIN_SEED_PASSWORD")
@@ -85,37 +81,14 @@ describe("로컬 온보딩", () => {
     expect(readEnvironmentFiles(fixture.path)).toEqual(before)
   })
 
-  test("기존 값은 보존하면서 누락 키를 보충하고 폐기된 로컬 기본값만 이전한다", () => {
+  test("기존 값은 보존하면서 누락 키를 보충한다", () => {
     using fixture = createFixture()
     createLocalEnvironmentFiles({
       createCredentials: () => credentials,
       repositoryRoot: fixture.path,
     })
     const apiPath = path.join(fixture.path, "apps/api/.env")
-    const adminPath = path.join(fixture.path, "apps/admin/.env")
     removeFileValue(apiPath, "ADMIN_SEED_NAME")
-    replaceFileValue(
-      apiPath,
-      "ADMIN_BETTER_AUTH_URL",
-      "http://admin-api.localhost:4000"
-    )
-    replaceFileValue(apiPath, "ADMIN_ORIGIN", "http://localhost:3001")
-    replaceFileValue(
-      apiPath,
-      "ADMIN_API_ALLOWED_HOSTS",
-      "admin-api.localhost:4000,admin-api-unified:4000"
-    )
-    replaceFileValue(
-      adminPath,
-      "NEXT_PUBLIC_ADMIN_API_BASE_URL",
-      "http://admin-api.localhost:4000"
-    )
-    replaceFileValue(
-      adminPath,
-      "ADMIN_API_BASE_URL",
-      "http://admin-api.localhost:4000"
-    )
-    replaceFileValue(adminPath, "ADMIN_ORIGIN", "http://localhost:3001")
 
     expect(
       createLocalEnvironmentFiles({
@@ -126,37 +99,20 @@ describe("로컬 온보딩", () => {
       {
         addedKeys: ["ADMIN_SEED_NAME"],
         kind: "updated",
-        migratedKeys: [
-          "ADMIN_API_ALLOWED_HOSTS",
-          "ADMIN_BETTER_AUTH_URL",
-          "ADMIN_ORIGIN",
-        ],
+        migratedKeys: [],
         path: "apps/api/.env",
       },
       { kind: "preserved", path: "apps/web/.env" },
-      {
-        addedKeys: [],
-        kind: "updated",
-        migratedKeys: [
-          "ADMIN_API_BASE_URL",
-          "ADMIN_ORIGIN",
-          "NEXT_PUBLIC_ADMIN_API_BASE_URL",
-        ],
-        path: "apps/admin/.env",
-      },
+      { kind: "preserved", path: "apps/admin/.env" },
     ])
     expect(
       readEnvironmentValue(fixture.path, "apps/api/.env", "ADMIN_ORIGIN")
     ).toBe("http://127.0.0.1:3001")
     expect(
-      readEnvironmentValue(
-        fixture.path,
-        "apps/admin/.env",
-        "ADMIN_API_BASE_URL"
-      )
-    ).toBe("http://127.0.0.1:4000")
+      readEnvironmentValue(fixture.path, "apps/admin/.env", "API_BASE_URL")
+    ).toBe("http://localhost:4000")
     expect(
-      readEnvironmentValue(fixture.path, "apps/api/.env", "BETTER_AUTH_SECRET")
+      readEnvironmentValue(fixture.path, "apps/api/.env", "LEARNER_AUTH_SECRET")
     ).toBe(credentials.learnerAuthSecret)
   })
 
@@ -262,7 +218,7 @@ describe("로컬 온보딩", () => {
       repositoryRoot: fixture.path,
     })
     const apiPath = path.join(fixture.path, "apps/api/.env")
-    replaceFileValue(apiPath, "ADMIN_BETTER_AUTH_SECRET", "")
+    replaceFileValue(apiPath, "ADMIN_AUTH_SECRET", "")
 
     const results = createLocalEnvironmentFiles({
       createCredentials: () => credentials,
@@ -270,21 +226,16 @@ describe("로컬 온보딩", () => {
     })
 
     expect(results[0]).toEqual({
-      addedKeys: ["ADMIN_BETTER_AUTH_SECRET"],
+      addedKeys: ["ADMIN_AUTH_SECRET"],
       kind: "updated",
       migratedKeys: [],
       path: "apps/api/.env",
     })
     expect(
-      readEnvironmentValue(
-        fixture.path,
-        "apps/api/.env",
-        "ADMIN_BETTER_AUTH_SECRET"
-      )
+      readEnvironmentValue(fixture.path, "apps/api/.env", "ADMIN_AUTH_SECRET")
     ).toBe(credentials.adminAuthSecret)
     expect(
-      fs.readFileSync(apiPath, "utf8").match(/^ADMIN_BETTER_AUTH_SECRET=/gmu)
-        ?.length
+      fs.readFileSync(apiPath, "utf8").match(/^ADMIN_AUTH_SECRET=/gmu)?.length
     ).toBe(1)
   })
 })
@@ -303,14 +254,12 @@ function createFixture(): Disposable & { readonly path: string } {
     root,
     "apps/api/.env.example",
     [
-      "BETTER_AUTH_SECRET=replace-with-32-byte-local-api-secret",
+      "LEARNER_AUTH_SECRET=replace-with-32-byte-local-api-secret",
       "CURSOR_SIGNING_SECRET=replace-with-distinct-32-byte-cursor-secret",
-      "BETTER_AUTH_URL=http://localhost:4000",
-      "LEARNER_API_ALLOWED_HOSTS=localhost:4000,api:4000",
-      "ADMIN_BETTER_AUTH_SECRET=replace-with-32-byte-local-admin-secret",
-      "ADMIN_BETTER_AUTH_URL=http://127.0.0.1:4000",
+      "API_ORIGIN=http://localhost:4000",
+      "API_ALLOWED_HOSTS=localhost:4000,127.0.0.1:4000,api:4000",
+      "ADMIN_AUTH_SECRET=replace-with-32-byte-local-admin-secret",
       "ADMIN_ORIGIN=http://127.0.0.1:3001",
-      "ADMIN_API_ALLOWED_HOSTS=127.0.0.1:4000,admin-api-unified:4000",
       "DATABASE_URL=file:data/api.sqlite",
       "NODE_ENV=development",
       "DEPLOYMENT_VERSION=local",
@@ -329,7 +278,7 @@ function createFixture(): Disposable & { readonly path: string } {
     "apps/web/.env.example",
     [
       "NEXT_PUBLIC_API_BASE_URL=http://localhost:4000",
-      "WEB_API_BASE_URL=http://localhost:4000",
+      "API_BASE_URL=http://localhost:4000",
       "WEB_ORIGIN=http://localhost:3000",
       "ENABLE_TEST_AUTH=true",
       "CSP_REPORT_ONLY=false",
@@ -339,9 +288,9 @@ function createFixture(): Disposable & { readonly path: string } {
     root,
     "apps/admin/.env.example",
     [
-      "NEXT_PUBLIC_ADMIN_API_BASE_URL=http://127.0.0.1:4000",
+      "NEXT_PUBLIC_API_BASE_URL=http://localhost:4000",
       "NEXT_PUBLIC_LEARNER_WEB_ORIGIN=http://localhost:3000",
-      "ADMIN_API_BASE_URL=http://127.0.0.1:4000",
+      "API_BASE_URL=http://localhost:4000",
       "ADMIN_ORIGIN=http://127.0.0.1:3001",
       "CSP_REPORT_ONLY=false",
     ].join("\n")

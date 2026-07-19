@@ -10,7 +10,6 @@ export type ImageReleaseService = (typeof imageReleaseServices)[number]
 
 export interface ImageReleasePublicOrigins {
   readonly admin: string
-  readonly "admin-api": string
   readonly api: string
   readonly web: string
 }
@@ -196,10 +195,6 @@ export function parseImageReleaseRecord(input: unknown): ImageReleaseRecord {
     },
     publicOrigins: {
       admin: readString(input.publicOrigins.admin, "publicOrigins.admin"),
-      "admin-api": readString(
-        input.publicOrigins["admin-api"],
-        "publicOrigins.admin-api"
-      ),
       api: readString(input.publicOrigins.api, "publicOrigins.api"),
       web: readString(input.publicOrigins.web, "publicOrigins.web"),
     },
@@ -332,7 +327,6 @@ function invalidSchemaVersion(): never {
 function readPublicOriginsFromEnvironment(): ImageReleasePublicOrigins {
   return {
     admin: requireEnvironment("PRODUCTION_ADMIN_ORIGIN"),
-    "admin-api": requireEnvironment("PRODUCTION_ADMIN_API_ORIGIN"),
     api: requireEnvironment("PRODUCTION_API_ORIGIN"),
     web: requireEnvironment("PRODUCTION_WEB_ORIGIN"),
   }
@@ -411,7 +405,7 @@ function runAggregateRecords(inputDirectory: string, outputPath: string): void {
   const manifest = createImageReleaseManifest(records)
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
   fs.writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`)
-  console.log(`네 image digest manifest를 생성했습니다: ${outputPath}`)
+  console.log(`세 image digest manifest를 생성했습니다: ${outputPath}`)
 }
 
 function runImageReleaseMetadataCommand(): void {

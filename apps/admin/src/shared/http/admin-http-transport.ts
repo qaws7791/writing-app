@@ -5,10 +5,7 @@ import {
 } from "@/shared/http/admin-api-error"
 import type { AdminApiResult } from "@/shared/http/admin-api-result"
 import { adminSessionCookieName } from "@/shared/auth/admin-session-token"
-import {
-  buildAdminApiUrl,
-  type AdminApiBaseUrl,
-} from "@/shared/config/admin-api-url"
+import { buildApiUrl, type ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   fetchHttpResponse,
   httpApiFailure,
@@ -52,7 +49,7 @@ export function createAdminHttpTransport({
   requestOrigin,
   tokenProvider,
 }: {
-  readonly baseUrl: AdminApiBaseUrl
+  readonly baseUrl: ApiBaseUrl
   readonly fetch: HttpFetch
   readonly requestOrigin?: string
   readonly tokenProvider: AdminTokenProvider
@@ -120,7 +117,7 @@ export function createAdminHttpTransport({
 }
 
 async function createRequest(input: {
-  readonly baseUrl: AdminApiBaseUrl
+  readonly baseUrl: ApiBaseUrl
   readonly body?: unknown
   readonly headers?: Readonly<Record<string, string>>
   readonly method: AdminHttpMethod
@@ -142,7 +139,7 @@ async function createRequest(input: {
   }
   if (input.body !== undefined) headers.set("Content-Type", "application/json")
 
-  return new Request(buildAdminApiUrl(input.baseUrl, input.path), {
+  return new Request(buildApiUrl(input.baseUrl, input.path), {
     ...(input.body === undefined ? {} : { body: JSON.stringify(input.body) }),
     credentials: "include",
     headers,

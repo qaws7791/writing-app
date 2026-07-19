@@ -19,11 +19,10 @@ writing_app_litestream_image: litestream/litestream:0.5.11@sha256:79e3bfce6ed758
 writing_app_web_origin: "https://{{ writing_app_web_host }}"
 writing_app_api_origin: "https://{{ writing_app_api_host }}"
 writing_app_admin_origin: "https://{{ writing_app_admin_host }}"
-writing_app_admin_api_origin: "https://{{ writing_app_admin_api_host }}"
 
 writing_app_openai_model: gpt-5.2
-writing_app_better_auth_cookie_domain: ""
-writing_app_admin_better_auth_cookie_domain: ""
+writing_app_learner_auth_cookie_domain: ""
+writing_app_admin_auth_cookie_domain: ""
 writing_app_google_client_id: ""
 writing_app_google_client_secret: ""
 writing_app_openai_api_key: ""

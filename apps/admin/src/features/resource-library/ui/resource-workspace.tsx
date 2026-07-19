@@ -38,7 +38,7 @@ import type {
   AdminResourceTreeNode,
 } from "@/entities/resource-document/model/resource-document"
 import { resourceLibraryChangedEvent } from "@/entities/resource-document/model/resource-document"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 export function ResourceWorkspace({
   apiBaseUrl,
@@ -46,7 +46,7 @@ export function ResourceWorkspace({
   initialScope,
   initialTree,
 }: {
-  readonly apiBaseUrl: AdminApiBaseUrl
+  readonly apiBaseUrl: ApiBaseUrl
   readonly children: ReactNode
   readonly initialScope: ResourceLibraryScope
   readonly initialTree: AdminResourceTree | null

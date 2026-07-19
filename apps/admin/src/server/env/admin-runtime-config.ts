@@ -1,31 +1,31 @@
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { z } from "zod"
 
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 const optionalUrlSchema = z.union([z.url(), z.literal("")]).optional()
 const adminServerRuntimeEnvSchema = z
   .object({
-    ADMIN_API_BASE_URL: optionalUrlSchema,
+    API_BASE_URL: optionalUrlSchema,
     ADMIN_ORIGIN: optionalUrlSchema,
     CSP_REPORT_ONLY: z.enum(["true", "false"]).optional(),
-    NEXT_PUBLIC_ADMIN_API_BASE_URL: optionalUrlSchema,
+    NEXT_PUBLIC_API_BASE_URL: optionalUrlSchema,
     NODE_ENV: z.string().optional(),
   })
   .loose()
 
 type AdminServerRuntimeEnv = z.input<typeof adminServerRuntimeEnvSchema>
 
-export function readServerAdminApiBaseUrl(
+export function readServerApiBaseUrl(
   env: AdminServerRuntimeEnv = process.env
-): AdminApiBaseUrl {
+): ApiBaseUrl {
   const runtimeEnv = adminServerRuntimeEnvSchema.parse(env)
   return toServerOrigin(
-    runtimeEnv.ADMIN_API_BASE_URL,
+    runtimeEnv.API_BASE_URL,
     runtimeEnv.NODE_ENV,
-    localRuntimeDefaults.adminApiBaseUrl,
-    "production admin API base URL is required"
-  ) as AdminApiBaseUrl
+    localRuntimeDefaults.apiBaseUrl,
+    "production API base URL is required"
+  ) as ApiBaseUrl
 }
 
 export function readAdminWebOrigin(
@@ -50,10 +50,10 @@ export function readAdminCspRuntimeConfig(
   const runtimeEnv = adminServerRuntimeEnvSchema.parse(env)
   return {
     apiOrigin: toServerOrigin(
-      runtimeEnv.NEXT_PUBLIC_ADMIN_API_BASE_URL,
+      runtimeEnv.NEXT_PUBLIC_API_BASE_URL,
       runtimeEnv.NODE_ENV,
-      localRuntimeDefaults.adminApiBaseUrl,
-      "production public admin API base URL is required"
+      localRuntimeDefaults.apiBaseUrl,
+      "production public API base URL is required"
     ),
     development: runtimeEnv.NODE_ENV !== "production",
     reportOnly: runtimeEnv.CSP_REPORT_ONLY === "true",

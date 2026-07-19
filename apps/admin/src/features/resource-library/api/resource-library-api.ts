@@ -2,9 +2,9 @@
 
 import { createResourceLibraryHttpAdapter } from "@/features/resource-library/api/resource-library-http-adapter"
 import { createAdminHttpTransport } from "@/shared/http/admin-http-transport"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
-export function createBrowserResourceLibraryApi(apiBaseUrl: AdminApiBaseUrl) {
+export function createBrowserResourceLibraryApi(apiBaseUrl: ApiBaseUrl) {
   return createResourceLibraryHttpAdapter(
     createAdminHttpTransport({
       baseUrl: apiBaseUrl,

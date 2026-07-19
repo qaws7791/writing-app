@@ -17,7 +17,7 @@ vi.mock("@/server/http/get-admin-http-transport", () => ({
   getServerAdminHttpTransport: vi.fn(),
 }))
 vi.mock("@/server/env/admin-runtime-config", () => ({
-  readServerAdminApiBaseUrl: vi.fn(() => "http://localhost:4000"),
+  readServerApiBaseUrl: vi.fn(() => "http://localhost:4000"),
 }))
 
 import AdminCourseDetailRoute from "@/app/(admin)/courses/[id]/page"

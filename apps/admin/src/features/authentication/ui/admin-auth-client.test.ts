@@ -5,13 +5,13 @@ import {
   requestAdminPasswordChange,
   requestAdminPasswordLogin,
 } from "@/features/authentication/api/admin-auth-client"
-import { readAdminApiBaseUrl } from "@/shared/config/admin-runtime-config"
+import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 
-const apiBaseUrl = readAdminApiBaseUrl({})
+const apiBaseUrl = readApiBaseUrl({})
 
 describe("admin auth client", () => {
   afterEach(() => {
-    delete process.env["NEXT_PUBLIC_ADMIN_API_BASE_URL"]
+    delete process.env["NEXT_PUBLIC_API_BASE_URL"]
     vi.unstubAllGlobals()
   })
 
@@ -29,7 +29,7 @@ describe("admin auth client", () => {
     ).resolves.toEqual({ nextPath: "/courses" })
 
     expect(fetch).toHaveBeenCalledWith(
-      `${localRuntimeDefaults.adminApiBaseUrl}/api/auth/sign-in/email`,
+      `${localRuntimeDefaults.apiBaseUrl}/api/admin/auth/sign-in/email`,
       expect.objectContaining({
         body: JSON.stringify({
           callbackURL: "/courses",
@@ -73,7 +73,7 @@ describe("admin auth client", () => {
     })
 
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/auth/change-password"),
+      expect.stringContaining("/api/admin/auth/change-password"),
       expect.objectContaining({
         body: JSON.stringify({
           currentPassword: "old-password",

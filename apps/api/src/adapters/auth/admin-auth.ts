@@ -23,7 +23,7 @@ import {
 } from "@/adapters/auth/admin-session"
 
 export type CreateAdminAuthInput = {
-  readonly authBaseUrl: string
+  readonly apiOrigin: string
   readonly cookieDomain?: string
   readonly db: WritingAppDatabase
   readonly secret: string
@@ -37,7 +37,8 @@ export type AdminSessionRevoker = {
 export function createAdminAuth(input: CreateAdminAuthInput) {
   return betterAuth({
     advanced: createAdminAdvancedOptions(input.cookieDomain),
-    baseURL: input.authBaseUrl,
+    basePath: "/api/admin/auth",
+    baseURL: input.apiOrigin,
     database: drizzleAdapter(input.db, {
       provider: "sqlite",
       schema: {
@@ -166,7 +167,7 @@ export function createAdminSessionResolver(
 function isPasswordChangeRequest(request: Request): boolean {
   return (
     request.method === "POST" &&
-    new URL(request.url).pathname === "/api/auth/change-password"
+    new URL(request.url).pathname === "/api/admin/auth/change-password"
   )
 }
 

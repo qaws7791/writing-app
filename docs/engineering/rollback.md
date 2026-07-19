@@ -2,8 +2,8 @@
 
 ## 원칙
 
-제품 backend executable은 learner/admin Host sub-app을 함께 실행하는 `apps/api` 하나다.
-따라서 코드 롤백도 두 API audience를 같은 immutable API image로 되돌린다. 관리자
+제품 backend executable은 학습자 HTTP 표면과 `/api/admin` 경로 sub-app을 함께 실행하는 `apps/api` 하나다.
+따라서 코드 롤백도 두 인증 realm을 같은 immutable API image로 되돌린다. 관리자
 traffic만 별도 runtime으로 분기하는 rollback 경로는 유지하지 않는다.
 
 - 코드 롤백과 DB 복구를 구분한다. schema·데이터가 호환되면 코드 image만 되돌린다.
@@ -29,8 +29,8 @@ ansible-playbook infra/ansible/playbooks/rollback.yaml \
 ```
 
 실행 전에는 현재 revision, 대상 digest, DB schema 호환성, 최신 backup을 확인한다.
-실행 뒤에는 learner/admin public Host의 `/health`, 인증 경계, 관리자 핵심 변경 route를
-검증한다. Caddy의 두 API upstream은 모두 `api:4000`이어야 한다.
+실행 뒤에는 같은 `API_HOST`의 `/health`, `/api/admin/health`, 두 인증 realm과 관리자 핵심 변경 route를
+검증한다. Caddy의 API upstream은 `api:4000` 하나여야 한다.
 
 ## DB 복구
 

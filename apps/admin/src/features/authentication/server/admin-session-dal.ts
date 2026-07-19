@@ -18,7 +18,7 @@ export function createAdminSessionDal(
     async getSession() {
       return transport.requestJson({
         method: "GET",
-        path: "/session",
+        path: "/api/admin/session",
         schema: adminSessionDtoSchema,
       })
     },

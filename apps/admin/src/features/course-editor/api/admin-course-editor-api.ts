@@ -32,7 +32,7 @@ export function createAdminCourseEditorApi(
     getCourseEditor: (courseId) =>
       transport.requestJson({
         method: "GET",
-        path: `/courses/${courseId}/editor`,
+        path: `/api/admin/courses/${courseId}/editor`,
         schema: adminCourseEditorDocumentSchema,
       }),
     saveCourseEditor: (courseId, document) =>
@@ -40,14 +40,14 @@ export function createAdminCourseEditorApi(
         body: document,
         headers: { "If-Match": `"${document.editVersion}"` },
         method: "PUT",
-        path: `/courses/${courseId}/editor`,
+        path: `/api/admin/courses/${courseId}/editor`,
         schema: adminCourseEditorDocumentSchema,
       }),
     publishCourse: (courseId, document) =>
       transport.requestJson({
         headers: { "If-Match": `"${document.editVersion}"` },
         method: "POST",
-        path: `/courses/${courseId}/publish`,
+        path: `/api/admin/courses/${courseId}/publish`,
         schema: adminPublishCourseResultSchema,
       }),
   }

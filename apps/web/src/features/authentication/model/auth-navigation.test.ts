@@ -8,8 +8,7 @@ import {
 
 describe("auth navigation", () => {
   it("로그인 callback 경로를 안전하게 만든다", () => {
-    process.env["NEXT_PUBLIC_API_BASE_URL"] =
-      localRuntimeDefaults.learnerApiBaseUrl
+    process.env["NEXT_PUBLIC_API_BASE_URL"] = localRuntimeDefaults.apiBaseUrl
 
     expect(resolveSafeNextPath("/app/profile")).toBe("/app/profile")
     expect(resolveSafeNextPath("https://example.com/app")).toBe("/app")

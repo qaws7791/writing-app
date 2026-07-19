@@ -14,7 +14,7 @@ export function createAdminDashboardDal(
     async getDashboard() {
       return transport.requestJson({
         method: "GET",
-        path: "/dashboard",
+        path: "/api/admin/dashboard",
         schema: adminDashboardDtoSchema,
       })
     },

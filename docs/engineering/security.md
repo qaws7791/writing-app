@@ -19,8 +19,8 @@
 
 - Google OAuth를 사용한다.
 - Better Auth 세션은 `learner_session_token` 쿠키를 사용한다.
-- `BETTER_AUTH_SECRET`은 32자 이상 랜덤 문자열이어야 한다.
-- 웹과 API가 다른 서브도메인에 있으면 `BETTER_AUTH_COOKIE_DOMAIN`을 명시한다.
+- `LEARNER_AUTH_SECRET`은 32자 이상 랜덤 문자열이어야 한다.
+- 웹과 API가 다른 서브도메인에 있으면 `LEARNER_AUTH_COOKIE_DOMAIN`을 명시한다.
 - API는 `WEB_ORIGIN`을 trusted origin/CORS 기준으로 사용한다.
 - 로컬 자동화용 `ENABLE_TEST_AUTH`는 non-production에서만 동작하며, 운영 인증 경로로 사용하지 않는다.
 - 운영의 인증 기준 URL과 공개 origin은 HTTPS여야 하며 세션 쿠키는 `Secure`, `HttpOnly`, `SameSite=Lax`로 발급한다.
@@ -32,9 +32,9 @@
 - 관리자 세션은 `admin_session_token` 쿠키를 사용한다.
 - 관리자 인증 테이블은 `admin_*` prefix를 사용한다.
 - 관리자 비밀값은 학습자 비밀값과 공유하지 않는다.
-- 운영에서는 `ADMIN_BETTER_AUTH_SECRET`과 `ADMIN_BETTER_AUTH_URL`을 별도로 명시하며 약한 값, placeholder, 학습자와 같은 비밀값을 거부한다.
+- 운영에서는 `ADMIN_AUTH_SECRET`을 별도로 명시하며 약한 값, placeholder, 학습자와 같은 비밀값을 거부한다. 학습자와 관리자는 같은 `API_ORIGIN`을 사용하되 인증 secret, cookie와 테이블을 분리한다.
 - API는 `ADMIN_ORIGIN`을 trusted origin/CORS 기준으로 사용한다.
-- 어드민 보호 layout은 쿠키 존재 여부만 보지 않고 `GET /session`으로 실제 관리자 세션과 역할을 확인한다.
+- 어드민 보호 layout은 쿠키 존재 여부만 보지 않고 `GET /api/admin/session`으로 실제 관리자 세션과 역할을 확인한다.
 - 어드민 웹은 환경 변수의 세션 token을 방문자에게 자동 주입하는 개발용 fallback을 지원하지 않는다.
 - 관리자 이메일 공개 가입 endpoint는 비활성화하며 관리자 계정은 승인된 owner seed 절차로만 생성한다.
 - owner seed는 명시적 이메일과 강한 비밀번호를 요구하고 운영 대상 DB와 승인 flag를 DB 연결 전에 확인한다.
@@ -93,7 +93,7 @@
 
 - 인증 handler와 세션·프로필·사용자·AI 대화 등 모든 보호 응답은 `Cache-Control: private, no-store`와 `Vary: Cookie`를 반환한다.
 - reverse proxy와 CDN은 `private` 또는 `no-store` 응답을 저장하지 않아야 한다. 쿠키가 포함된 요청을 공개 cache key로 축약하거나 다른 사용자에게 재사용하면 안 된다.
-- `/health`와 `/openapi`는 공개 route로 분리하며 보호 응답 middleware를 적용하지 않는다.
+- `/health`, `/openapi`, `/api/admin/health`, `/api/admin/openapi`는 공개 route로 분리하며 보호 응답 middleware를 적용하지 않는다.
 - `/course-thumbnails/<visual-key>.png`는 release에 포함된 공개 정적 자산이며 1년 immutable cache를 사용한다. Admin image에는 canonical web 자산과 hash가 같은 허용 key 5개만 포함하고 외부 host나 sibling runtime 파일시스템을 읽지 않는다.
 - SSE와 다운로드 응답은 동일한 비저장 정책을 따르면서 스트림 및 첨부 헤더를 유지한다.
 
@@ -101,8 +101,8 @@
 
 저장소에 커밋하면 안 되는 값은 다음과 같다.
 
-- `BETTER_AUTH_SECRET`
-- `ADMIN_BETTER_AUTH_SECRET` 또는 관리자용 `BETTER_AUTH_SECRET`
+- `LEARNER_AUTH_SECRET`
+- `ADMIN_AUTH_SECRET`
 - `GOOGLE_CLIENT_SECRET`
 - `OPENAI_API_KEY`
 - 운영 `DATABASE_URL` 중 민감 경로나 credential이 포함된 값
@@ -140,9 +140,9 @@
 
 - 프로덕션 image release는 동일 저장소 `main` push의 품질 게이트가 성공한 정확한 commit SHA만 checkout한다.
 - `NEXT_PUBLIC_*`와 공개 origin은 검증된 GitHub repository variable로 전달하며 secret을 Docker build argument, image label 또는 일반 artifact에 전달하지 않는다.
-- 네 image는 GHCR에 게시하고 BuildKit SBOM·최대 provenance와 GitHub artifact attestation을 각 image digest에 연결한다.
+- `web`, `api`, `admin` 세 image는 GHCR에 게시하고 BuildKit SBOM·최대 provenance와 GitHub artifact attestation을 각 image digest에 연결한다.
 - source revision과 공개 origin 설정 digest가 다른 build는 같은 tag를 덮어쓰지 않는다. `latest` tag는 만들지 않고 배포는 집계 manifest의 `name@sha256:...`만 사용한다.
-- 개별 matrix job의 digest record를 다시 검증한 뒤 네 service가 모두 같은 revision과 공개 설정일 때만 배포 manifest를 만든다.
+- 개별 matrix job의 digest record를 다시 검증한 뒤 세 service가 모두 같은 revision과 공개 설정일 때만 배포 manifest를 만든다.
 - workflow 권한은 기본 `contents: read`이고 게시 job에만 `packages: write`, `attestations: write`, `artifact-metadata: write`, `id-token: write`를 추가한다.
 - 릴리스 workflow의 외부 GitHub Action은 major tag가 아닌 검증한 full commit SHA로 고정하고, 버전 갱신 시 upstream tag ref와 변경 사항을 다시 확인한다.
 - 게시된 정확한 image digest를 Grype `0.110.0`으로 검사하고 수정 가능 여부와 무관하게 `HIGH` 이상 취약점을 차단한다. 스캔 또는 보고서 생성 실패도 fail-closed로 처리하며, 실패 image는 attestation·digest record·배포 manifest에 포함하지 않는다.

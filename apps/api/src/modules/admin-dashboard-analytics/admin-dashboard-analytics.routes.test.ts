@@ -211,11 +211,11 @@ describe("통합 관리자 dashboard·analytics route", () => {
         },
       },
       paths: {
-        "/analytics": { get: { operationId: "getAdminAnalytics" } },
-        "/analytics/lessons": {
+        "/api/admin/analytics": { get: { operationId: "getAdminAnalytics" } },
+        "/api/admin/analytics/lessons": {
           get: { operationId: "getAdminLessonAnalytics" },
         },
-        "/dashboard": { get: { operationId: "getAdminDashboard" } },
+        "/api/admin/dashboard": { get: { operationId: "getAdminDashboard" } },
       },
     })
   })

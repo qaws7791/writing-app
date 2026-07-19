@@ -99,7 +99,10 @@ function logSecurityEvent(input: {
     target: `${method} ${path}`,
   } as const
 
-  if (path.startsWith("/api/auth/") && status >= 400) {
+  if (
+    (path.startsWith("/api/auth/") || path.startsWith("/api/admin/auth/")) &&
+    status >= 400
+  ) {
     input.logSecurityAudit({
       ...common,
       action: "authentication.failed",

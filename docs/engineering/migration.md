@@ -92,19 +92,19 @@ seed 실행 중 legacy DB 구조가 감지되면 DB 파일 재생성이 필요�
 - 서버 프로세스 시작이 DB 변경을 수행하지 않는다.
 - 배포 전 또는 배포 단계에서 migration을 명시적으로 실행한다.
 - SQLite 파일을 백업한 뒤 migration을 실행한다.
-- 학습자 API와 어드민 API를 같은 DB 파일에 연결하므로, schema 변경은 두 API 호환성을 함께 확인한다.
+- 단일 `api` 서비스가 학습자 HTTP 표면과 `/api/admin` 경로에서 같은 DB를 사용하므로 schema 변경은 두 표면의 호환성을 함께 확인한다.
 - 마이그레이션 중에는 쓰기 트래픽을 제한하거나 maintenance window를 둔다.
-- 운영 배포에서는 Ansible deploy playbook이 두 API를 중지한 뒤 Compose `database-migrate` 일회성 서비스를 실행한다.
+- 운영 배포에서는 Ansible deploy playbook이 단일 `api` 서비스를 중지한 뒤 Compose `database-migrate` 일회성 서비스를 실행한다.
 - 컨테이너 기동 명령에는 migration을 포함하지 않으며 migration 실패 시 신규 애플리케이션을 기동하지 않는다.
 
 ### maintenance window 순서
 
-1. 학습자 API와 어드민 API의 쓰기 트래픽을 중지한다.
+1. 단일 `api` 서비스의 신규 쓰기 트래픽을 중지하고 진행 중 요청을 drain한다.
 2. WAL checkpoint와 SQLite 파일·sidecar 백업을 수행한다.
 3. 백업과 원본의 무결성을 확인한다.
 4. `database-migrate` 일회성 서비스를 실행한다.
 5. revision `1` pointer, course pin, 진행·답안·AI row 수와 `PRAGMA integrity_check`, `foreign_key_check`를 확인한다.
-6. 어드민 draft 조회·`If-Match` 저장·발행과 기존 학습자 고정 조회를 smoke test한 뒤 트래픽을 연다.
+6. 같은 `API_HOST`의 `/health`, `/api/admin/health`, 관리자 draft 조회·`If-Match` 저장·발행과 기존 학습자 고정 조회를 smoke test한 뒤 트래픽을 연다.
 
 ## 롤백 조건
 

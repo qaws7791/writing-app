@@ -22,7 +22,7 @@ describe("legacy admin-api runtime 제거 검사", () => {
     ).not.toEqual([])
   })
 
-  it("public admin API와 unified target 식별자는 유지한다", () => {
+  it("제거된 public admin API 환경 변수와 alias를 거절한다", () => {
     expect(
       findAdminApiRuntimeResiduals([
         {
@@ -35,13 +35,13 @@ describe("legacy admin-api runtime 제거 검사", () => {
           path: "fixture.txt",
         },
       ])
-    ).toEqual([])
+    ).not.toEqual([])
   })
 
   it("historical ADR·MTA와 검사 자체는 current source scan에서 제외한다", () => {
     expect(
       isCurrentArchitectureFile(
-        "docs/engineering/monorepo-target-architecture-plan/mta-40-api-traffic-switch.md"
+        "docs/work/2026-07-20-api-traffic-switch/plan.md"
       )
     ).toBe(false)
     expect(
@@ -56,12 +56,12 @@ describe("legacy admin-api runtime 제거 검사", () => {
     ).toBe(false)
     expect(
       isCurrentArchitectureFile(
-        "docs\\engineering\\monorepo-target-architecture-plan\\mta-40-api-traffic-switch.md"
+        "docs\\archive\\2026-07-20-api-traffic-switch\\plan.md"
       )
     ).toBe(false)
     expect(
       isCurrentArchitectureFile("scripts/check-admin-api-runtime-removal.ts")
     ).toBe(false)
-    expect(isCurrentArchitectureFile("BACKEND.md")).toBe(true)
+    expect(isCurrentArchitectureFile("README.md")).toBe(true)
   })
 })

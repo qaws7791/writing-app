@@ -114,31 +114,31 @@ describe("통합 관리자 identity route", () => {
 
     expect(response.status).toBe(200)
     expect(document).toHaveProperty(
-      ["paths", "/users", "get", "operationId"],
+      ["paths", "/api/admin/users", "get", "operationId"],
       "getAdminUsers"
     )
     expect(document).toHaveProperty(
-      ["paths", "/users/{userId}", "get", "operationId"],
+      ["paths", "/api/admin/users/{userId}", "get", "operationId"],
       "getAdminUser"
     )
     expect(document).toHaveProperty(
-      ["paths", "/users/{userId}/status", "patch", "operationId"],
+      ["paths", "/api/admin/users/{userId}/status", "patch", "operationId"],
       "updateAdminUserStatus"
     )
     expect(document).toHaveProperty(
-      ["paths", "/users/{userId}", "delete", "operationId"],
+      ["paths", "/api/admin/users/{userId}", "delete", "operationId"],
       "deleteAdminUser"
     )
     expect(document).toHaveProperty([
       "paths",
-      "/users/{userId}/status",
+      "/api/admin/users/{userId}/status",
       "patch",
       "responses",
       "400",
     ])
     expect(document).toHaveProperty([
       "paths",
-      "/users/{userId}",
+      "/api/admin/users/{userId}",
       "delete",
       "responses",
       "404",
@@ -147,5 +147,5 @@ describe("통합 관리자 identity route", () => {
 })
 
 function createRequest(path: string, init: RequestInit = {}): Request {
-  return new Request(new URL(path, "http://admin-api.localhost:4000"), init)
+  return new Request(new URL(path, "http://api.localhost:4000"), init)
 }

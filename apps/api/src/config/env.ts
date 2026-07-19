@@ -1,7 +1,4 @@
-import {
-  createLocalRuntimeUrl,
-  localRuntimeHosts,
-} from "@workspace/env/local-runtime-defaults"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { parseEnv, type AppEnvInput } from "@workspace/env/parse-env"
 import { z } from "@/http/platform/zod"
 
@@ -13,19 +10,18 @@ import {
 
 export type ApiEnv = {
   readonly adminAssetStore: AdminAssetStoreEnv | undefined
-  readonly adminAuthBaseUrl: string
-  readonly adminBetterAuthSecret: string
+  readonly adminAuthSecret: string
   readonly adminCookieDomain: string | undefined
   readonly adminOrigin: string
-  readonly apiHosts: ApiHostConfiguration
-  readonly authBaseUrl: string
-  readonly betterAuthSecret: string
-  readonly cookieDomain: string | undefined
+  readonly allowedHosts: ApiHostConfiguration
+  readonly apiOrigin: string
   readonly cursorSigningSecret: string
   readonly databaseUrl: string | undefined
   readonly deploymentVersion: string
   readonly googleClientId: string | undefined
   readonly googleClientSecret: string | undefined
+  readonly learnerAuthSecret: string
+  readonly learnerCookieDomain: string | undefined
   readonly nodeEnv: "development" | "test" | "production"
   readonly openAiApiKey: string | undefined
   readonly openAiModel: string
@@ -46,52 +42,31 @@ const adminAssetStoreEnvSchema = z.object({
 export type AdminAssetStoreEnv = z.infer<typeof adminAssetStoreEnvSchema>
 
 export function parseApiEnv(input: AppEnvInput): ApiEnv {
-  const adminBetterAuthSecret = readRequiredAdminValue(
-    input,
-    "ADMIN_BETTER_AUTH_SECRET"
-  )
-  const adminAuthBaseUrl = readRequiredAdminValue(
-    input,
-    "ADMIN_BETTER_AUTH_URL"
-  )
-  const adminOrigin = readRequiredAdminValue(input, "ADMIN_ORIGIN")
   const env = parseEnv({
     ...input,
-    ADMIN_BETTER_AUTH_SECRET: adminBetterAuthSecret,
-    ADMIN_BETTER_AUTH_URL: adminAuthBaseUrl,
-    ADMIN_ORIGIN: adminOrigin,
     WEB_ORIGIN:
       input["WEB_ORIGIN"] ?? input["CORS_ORIGIN"]?.split(",")[0]?.trim(),
   })
   const cursorSigningSecret = readCursorSigningSecret(env)
-  const authBaseUrl =
-    env.BETTER_AUTH_URL ??
-    createLocalRuntimeUrl(localRuntimeHosts.learner, env.API_PORT)
-  const apiHosts = parseApiHostConfiguration({
-    adminAllowedHosts: input["ADMIN_API_ALLOWED_HOSTS"],
-    learnerAllowedHosts: input["LEARNER_API_ALLOWED_HOSTS"],
-  })
+  const apiOrigin = env.API_ORIGIN ?? localRuntimeDefaults.apiBaseUrl
+  const allowedHosts = parseApiHostConfiguration(input["API_ALLOWED_HOSTS"])
   const adminAssetStore = parseAdminAssetStore(input, env.NODE_ENV)
 
   validateSeparatedAuthConfiguration({
-    adminBetterAuthSecret,
-    adminOrigin,
-    learnerBetterAuthSecret: env.BETTER_AUTH_SECRET,
+    adminAuthSecret: env.ADMIN_AUTH_SECRET,
+    adminOrigin: env.ADMIN_ORIGIN,
+    learnerAuthSecret: env.LEARNER_AUTH_SECRET,
     learnerOrigin: env.WEB_ORIGIN,
   })
-  validateAuthUrlHost("BETTER_AUTH_URL", authBaseUrl, apiHosts.learner)
-  validateAuthUrlHost("ADMIN_BETTER_AUTH_URL", adminAuthBaseUrl, apiHosts.admin)
+  validateApiOriginHost(apiOrigin, allowedHosts)
 
   return {
     adminAssetStore,
-    adminAuthBaseUrl,
-    adminBetterAuthSecret,
-    adminCookieDomain: env.ADMIN_BETTER_AUTH_COOKIE_DOMAIN,
-    adminOrigin,
-    apiHosts,
-    authBaseUrl,
-    betterAuthSecret: env.BETTER_AUTH_SECRET,
-    cookieDomain: env.BETTER_AUTH_COOKIE_DOMAIN,
+    adminAuthSecret: env.ADMIN_AUTH_SECRET,
+    adminCookieDomain: env.ADMIN_AUTH_COOKIE_DOMAIN,
+    adminOrigin: env.ADMIN_ORIGIN,
+    allowedHosts,
+    apiOrigin,
     cursorSigningSecret,
     databaseUrl: env.DATABASE_URL,
     deploymentVersion: parseDeploymentVersion(
@@ -100,6 +75,8 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     ),
     googleClientId: env.GOOGLE_CLIENT_ID,
     googleClientSecret: env.GOOGLE_CLIENT_SECRET,
+    learnerAuthSecret: env.LEARNER_AUTH_SECRET,
+    learnerCookieDomain: env.LEARNER_AUTH_COOKIE_DOMAIN,
     nodeEnv: env.NODE_ENV,
     openAiApiKey: env.OPENAI_API_KEY,
     openAiModel: env.OPENAI_MODEL,
@@ -157,30 +134,15 @@ function parseAdminAssetStore(
   return assetStore
 }
 
-function readRequiredAdminValue(
-  input: AppEnvInput,
-  name: "ADMIN_BETTER_AUTH_SECRET" | "ADMIN_BETTER_AUTH_URL" | "ADMIN_ORIGIN"
-): string {
-  const value = input[name]
-
-  if (value === undefined || value.trim().length === 0) {
-    throw new Error(
-      `Invalid environment variables: ${name}: 통합 API에서는 관리자 전용 값을 명시해야 합니다.`
-    )
-  }
-
-  return value
-}
-
 function validateSeparatedAuthConfiguration(input: {
-  readonly adminBetterAuthSecret: string
+  readonly adminAuthSecret: string
   readonly adminOrigin: string
-  readonly learnerBetterAuthSecret: string
+  readonly learnerAuthSecret: string
   readonly learnerOrigin: string
 }): void {
-  if (input.adminBetterAuthSecret === input.learnerBetterAuthSecret) {
+  if (input.adminAuthSecret === input.learnerAuthSecret) {
     throw new Error(
-      "Invalid environment variables: ADMIN_BETTER_AUTH_SECRET: 학습자 secret과 다른 값을 사용해야 합니다."
+      "Invalid environment variables: ADMIN_AUTH_SECRET: 학습자 secret과 다른 값을 사용해야 합니다."
     )
   }
 
@@ -193,8 +155,7 @@ function validateSeparatedAuthConfiguration(input: {
   }
 }
 
-function validateAuthUrlHost(
-  name: "ADMIN_BETTER_AUTH_URL" | "BETTER_AUTH_URL",
+function validateApiOriginHost(
   value: string,
   allowedHosts: ReadonlySet<string>
 ): void {
@@ -202,7 +163,7 @@ function validateAuthUrlHost(
 
   if (!allowedHosts.has(authority)) {
     throw new Error(
-      `Invalid environment variables: ${name}: URL host가 해당 API Host allowlist에 포함되어야 합니다.`
+      "Invalid environment variables: API_ORIGIN: URL host가 API Host allowlist에 포함되어야 합니다."
     )
   }
 }
@@ -217,7 +178,7 @@ function readCursorSigningSecret(env: ReturnType<typeof parseEnv>): string {
     )
   }
 
-  return `${env.BETTER_AUTH_SECRET}:cursor-signing`
+  return `${env.LEARNER_AUTH_SECRET}:cursor-signing`
 }
 
 function parseDeploymentVersion(

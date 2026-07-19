@@ -49,10 +49,10 @@ writing-app은 한국어 글쓰기 학습 플랫폼이다. 학습자는 작은 �
 
 ## 참고 기준
 
-- `CONTEXT.md`
-- `DOMAIN.md`
-- `ARCHITECTURE.md`
-- `FRONTEND.md`
+- `docs/product/problem-definition.md`
+- `docs/product/content-model.md`
+- `docs/engineering/system-overview.md`
+- `docs/engineering/frontend-development.md`
 - `docs/product/user-stories/_index.md`
 - `docs/product/requirements/_index.md`
 - `docs/design/text-localization-policy.md`

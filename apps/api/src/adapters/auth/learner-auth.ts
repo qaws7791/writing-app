@@ -21,7 +21,7 @@ import {
 import * as dbSchema from "@workspace/db/schema"
 
 export type CreateLearnerAuthInput = {
-  readonly authBaseUrl: string
+  readonly apiOrigin: string
   readonly cookieDomain?: string
   readonly db: WritingAppDatabase
   readonly googleClientId?: string
@@ -35,7 +35,8 @@ export type CreateLearnerAuthInput = {
 export function createLearnerAuth(input: CreateLearnerAuthInput) {
   return betterAuth({
     advanced: createLearnerAdvancedOptions(input.cookieDomain),
-    baseURL: input.authBaseUrl,
+    basePath: "/api/auth",
+    baseURL: input.apiOrigin,
     database: drizzleAdapter(input.db, {
       provider: "sqlite",
       schema: {

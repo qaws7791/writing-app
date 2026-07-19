@@ -45,16 +45,16 @@
 
 ## 백엔드
 
-| 기술                | 버전       | 사용 위치                    | 선택 근거                                                                                             |
-| ------------------- | ---------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Hono                | `^4.12.25` | `apps/api`                   | Bun 런타임의 learner/admin Host HTTP transport를 `apps/api/src/http/platform`이 app-local로 소유한다. |
-| `@hono/zod-openapi` | `^1.4.0`   | `apps/api`                   | route 정의와 OpenAPI 생성을 API HTTP platform에 함께 둔다.                                            |
-| Pino                | `^10.2.0`  | `apps/api/src/observability` | 구조화된 request와 security audit event를 API 실행 owner 가까이에서 기록한다.                         |
-| Zod                 | `^4.2.0`   | 전 영역                      | 런타임 validation과 DTO schema를 명시한다.                                                            |
-| Better Auth         | `^1.6.0`   | 인증                         | 학습자 Google OAuth와 관리자 아이디/패스워드 인증을 분리해 조립한다.                                  |
-| OpenAI SDK          | `^6.39.0`  | `apps/api`                   | 실행 앱 소유 AI 피드백 provider adapter에서 사용한다.                                                 |
-| Mastra              | `^1.46.0`  | `apps/api`                   | 관리자 AI chat agent를 API edge에서 조립한다.                                                         |
-| AWS SDK S3 client   | `3.1088.0` | `apps/api`                   | 자료실 R2 asset store의 S3 호환 object storage adapter다.                                             |
+| 기술                | 버전       | 사용 위치                    | 선택 근거                                                                                                |
+| ------------------- | ---------- | ---------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Hono                | `^4.12.25` | `apps/api`                   | 단일 runtime의 학습자 HTTP 표면과 `/api/admin` 경로 transport를 `apps/api/src/http/platform`이 소유한다. |
+| `@hono/zod-openapi` | `^1.4.0`   | `apps/api`                   | route 정의와 OpenAPI 생성을 API HTTP platform에 함께 둔다.                                               |
+| Pino                | `^10.2.0`  | `apps/api/src/observability` | 구조화된 request와 security audit event를 API 실행 owner 가까이에서 기록한다.                            |
+| Zod                 | `^4.2.0`   | 전 영역                      | 런타임 validation과 DTO schema를 명시한다.                                                               |
+| Better Auth         | `^1.6.0`   | 인증                         | 학습자 Google OAuth와 관리자 아이디/패스워드 인증을 분리해 조립한다.                                     |
+| OpenAI SDK          | `^6.39.0`  | `apps/api`                   | 실행 앱 소유 AI 피드백 provider adapter에서 사용한다.                                                    |
+| Mastra              | `^1.46.0`  | `apps/api`                   | 관리자 AI chat agent를 API edge에서 조립한다.                                                            |
+| AWS SDK S3 client   | `3.1088.0` | `apps/api`                   | 자료실 R2 asset store의 S3 호환 object storage adapter다.                                                |
 
 ## 데이터
 
@@ -88,9 +88,9 @@
 | Litestream     | `0.5.11`           | SQLite WAL을 Cloudflare R2로 연속 복제하고 복구       |
 | Ansible Core   | `2.21.2`           | Ubuntu bootstrap, 설정, 배포, 검증, 롤백, 복구 자동화 |
 
-컨테이너 image tag는 `deploy/compose/.env.example`의 검증 기준이며 운영 배포에서는 애플리케이션과 기반 이미지를 digest 또는 변경 불가능한 tag로 고정한다. 상세 계약은 `deployment.md`를 따른다.
+`deploy/compose/.env.example`은 로컬 형식 예제일 뿐 운영 고정 기준이 아니다. production application image와 기반 image는 모두 digest로 고정하며 상세 계약은 `deployment.md`를 따른다.
 
-2026-07-18 저장소 source 구성에서 Compose/Caddy는 learner/admin public API Host를 모두 `apps/api`로 전달한다. 외부 운영 검증은 범위에서 제외했으므로 실제 production 적용·관찰 성공을 뜻하지 않는다.
+Compose/Caddy는 하나의 public `API_HOST`를 `apps/api:4000`으로 전달한다. 학습자 HTTP 표면과 `/api/admin` 경로는 같은 runtime 안에서 분리된다. 외부 운영 검증은 범위에서 제외했으므로 실제 production 적용·관찰 성공을 뜻하지 않는다.
 
 ## 버전 고정 정책
 

@@ -10,7 +10,7 @@ describe("API transport persistence boundary", () => {
     expect(isApiTransportFile("api/src/admin/admin-openapi.ts")).toBe(true)
   })
 
-  test("composition, adapter와 legacy auth implementation은 transport로 분류하지 않는다", () => {
+  test("composition과 adapter는 transport로 분류하지 않는다", () => {
     expect(
       isApiTransportFile(
         "api/src/composition/admin-route-composition-context.ts"
@@ -21,6 +21,6 @@ describe("API transport persistence boundary", () => {
         "api/src/adapters/auth/admin-session-drizzle.repository.ts"
       )
     ).toBe(false)
-    expect(isApiTransportFile("admin-api/src/auth/admin-auth.ts")).toBe(false)
+    expect(isApiTransportFile("admin/src/auth/admin-auth.ts")).toBe(false)
   })
 })

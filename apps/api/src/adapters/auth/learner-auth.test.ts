@@ -54,7 +54,7 @@ describe("학습자 Better Auth", () => {
 
     try {
       createLearnerAuth({
-        authBaseUrl: "https://api.example.test",
+        apiOrigin: "https://api.example.test",
         db: database.db,
         profileRepository: createTestLearnerProfileRepository(),
         secret: "x".repeat(32),
@@ -83,7 +83,7 @@ describe("학습자 Better Auth", () => {
 
     try {
       createLearnerAuth({
-        authBaseUrl: "https://api.example.test",
+        apiOrigin: "https://api.example.test",
         cookieDomain: "example.test",
         db: database.db,
         profileRepository: createTestLearnerProfileRepository(),
@@ -118,7 +118,7 @@ describe("학습자 Better Auth", () => {
 
     try {
       createLearnerAuth({
-        authBaseUrl: "https://api.example.test",
+        apiOrigin: "https://api.example.test",
         db: database.db,
         profileRepository: createTestLearnerProfileRepository(),
         secret: "x".repeat(32),
@@ -146,7 +146,7 @@ describe("학습자 Better Auth", () => {
 
     try {
       createLearnerAuth({
-        authBaseUrl: "https://api.example.test",
+        apiOrigin: "https://api.example.test",
         db: database.db,
         profileRepository,
         secret: "x".repeat(32),

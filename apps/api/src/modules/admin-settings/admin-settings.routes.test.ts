@@ -210,14 +210,14 @@ describe("통합 runtime 관리자 settings route", () => {
         },
       },
       paths: {
-        "/settings": { get: { operationId: "getAdminSettings" } },
-        "/settings/content-reset": {
+        "/api/admin/settings": { get: { operationId: "getAdminSettings" } },
+        "/api/admin/settings/content-reset": {
           post: { operationId: "resetAdminContent" },
         },
-        "/settings/legal": {
+        "/api/admin/settings/legal": {
           put: { operationId: "updateAdminLegalSettings" },
         },
-        "/settings/notice": {
+        "/api/admin/settings/notice": {
           put: { operationId: "updateAdminNoticeSettings" },
         },
       },

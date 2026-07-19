@@ -13,13 +13,15 @@ export const adminOpenApiDocumentConfig = {
   openapi: "3.1.0",
 } as const
 
+export const adminRoutePrefix = "/api/admin" as const
+
 export const adminSessionCookieSecurityScheme = {
   in: "cookie",
   name: adminSessionCookieName,
   type: "apiKey",
 } as const
 
-export type AdminApiOpenApiDocument = {
+export type AdminOpenApiDocument = {
   readonly components: {
     readonly securitySchemes: {
       readonly adminSessionCookie: typeof adminSessionCookieSecurityScheme
@@ -35,7 +37,7 @@ export type AdminApiOpenApiDocument = {
 
 export const adminHealthResponseSchema = z.object({
   ok: z.boolean(),
-  service: z.literal("admin-api"),
+  service: z.literal("api"),
 })
 
 export function jsonResponse(description: string, schema: z.ZodType) {
@@ -102,7 +104,7 @@ export function adminAuthenticatedResponses(
 
 export function createAdminOpenApiDocument(
   app: OpenAPIHono<AdminHonoEnv>
-): AdminApiOpenApiDocument {
+): AdminOpenApiDocument {
   const document = app.getOpenAPI31Document(adminOpenApiDocumentConfig)
 
   return {
@@ -114,5 +116,11 @@ export function createAdminOpenApiDocument(
         adminSessionCookie: adminSessionCookieSecurityScheme,
       },
     },
+    paths: Object.fromEntries(
+      Object.entries(document.paths ?? {}).map(([path, item]) => [
+        `${adminRoutePrefix}${path}`,
+        item,
+      ])
+    ),
   }
 }

@@ -4,7 +4,7 @@ import { createApiRuntime } from "@/api-runtime"
 import { createApp } from "@/app"
 import { parseApiEnv } from "@/config/env"
 import { createAdminApp } from "@/http/admin-app"
-import { createHostDispatcher } from "@/http/host-dispatcher"
+import { createUnifiedApp } from "@/http/unified-app"
 import { defaultRequestLoggingRuntime } from "@/http/platform/request-logging.middleware"
 import { createAppLogger } from "@/observability/app-logger"
 import { createRequestLogger } from "@/observability/request-logger"
@@ -68,14 +68,14 @@ const { adminApp, learnerApp, unifiedFetch } = (() => {
       securityAuditLogger: createSecurityAuditLogger(logger),
       sessionResolver: runtime.adminAuth.sessionResolver,
     })
-    const unifiedFetch = createHostDispatcher({
-      adminFetch: adminApp.fetch,
-      hosts: env.apiHosts,
-      learnerFetch: learnerApp.fetch,
+    const unifiedFetch = createUnifiedApp({
+      adminApp,
+      allowedHosts: env.allowedHosts,
+      learnerApp,
       onRejectedHost(event) {
         logger.warn(event, "request.host.rejected")
       },
-    })
+    }).fetch
 
     return { adminApp, learnerApp, unifiedFetch }
   } catch (error) {

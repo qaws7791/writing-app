@@ -21,8 +21,7 @@ const scannedExtensions = new Set([
   ".ts",
   ".tsx",
 ])
-const rawLocalhostUrlPattern =
-  /http:\/\/localhost:(3000|3001|3002|3003|4000|4001)/g
+const rawLocalhostUrlPattern = /http:\/\/localhost:(3000|3001|3002|3003|4000)/g
 
 type Match = {
   readonly filePath: string

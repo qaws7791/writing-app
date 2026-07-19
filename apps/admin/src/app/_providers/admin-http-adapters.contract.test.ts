@@ -10,9 +10,9 @@ import { createAdminCourseCatalogDal } from "@/features/course-catalog/server/ad
 import { createAdminDashboardDal } from "@/features/dashboard/server/admin-dashboard-dal"
 import { createAdminSettingsDal } from "@/features/settings-management/server/admin-settings-dal"
 import { createAdminUsersDal } from "@/features/user-management/server/admin-users-dal"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-runtime-config"
+import type { ApiBaseUrl } from "@/shared/config/admin-runtime-config"
 import type { HttpFetch } from "@workspace/http-client"
-import { readAdminApiBaseUrl } from "@/shared/config/admin-runtime-config"
+import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 import { userIdSchema } from "@/entities/learner-account/model/learner-account-id"
 import { courseIdSchema } from "@/entities/course/model/course-id"
 
@@ -23,8 +23,8 @@ describe("관리자 feature HTTP Adapter 계약", () => {
   it("서버 요청에 검증된 Origin을 명시하고 세션 응답을 파싱한다", async () => {
     let capturedRequest: Request | undefined
     const api = createTestAdminApis({
-      baseUrl: readAdminApiBaseUrl({
-        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+      baseUrl: readApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/",
       }),
       fetch: async (request) => {
         capturedRequest = request
@@ -54,8 +54,8 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     const requests: Request[] = []
     const bodies: unknown[] = []
     const api = createTestAdminApis({
-      baseUrl: readAdminApiBaseUrl({
-        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+      baseUrl: readApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/",
       }),
       fetch: async (request) => {
         requests.push(request)
@@ -230,31 +230,31 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     })
 
     expect(requests.map((request) => [request.method, request.url])).toEqual([
-      ["GET", "https://admin-api.example.test/dashboard"],
+      ["GET", "https://api.example.test/api/admin/dashboard"],
       [
         "GET",
-        "https://admin-api.example.test/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4&page=2&pageSize=10&query=%EA%B8%80%EC%93%B0%EA%B8%B0&status=active",
+        "https://api.example.test/api/admin/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4&page=2&pageSize=10&query=%EA%B8%80%EC%93%B0%EA%B8%B0&status=active",
       ],
-      ["POST", "https://admin-api.example.test/courses"],
-      ["PUT", "https://admin-api.example.test/courses/c1/editor"],
-      ["POST", "https://admin-api.example.test/courses/c1/publish"],
-      ["DELETE", "https://admin-api.example.test/courses/c1"],
+      ["POST", "https://api.example.test/api/admin/courses"],
+      ["PUT", "https://api.example.test/api/admin/courses/c1/editor"],
+      ["POST", "https://api.example.test/api/admin/courses/c1/publish"],
+      ["DELETE", "https://api.example.test/api/admin/courses/c1"],
       [
         "GET",
-        "https://admin-api.example.test/users?page=1&pageSize=20&query=%EB%AF%BC%EC%A7%80&sort=lastActive&status=all",
+        "https://api.example.test/api/admin/users?page=1&pageSize=20&query=%EB%AF%BC%EC%A7%80&sort=lastActive&status=all",
       ],
-      ["GET", "https://admin-api.example.test/users/user-1"],
-      ["PATCH", "https://admin-api.example.test/users/user-1/status"],
-      ["DELETE", "https://admin-api.example.test/users/user-1"],
-      ["GET", "https://admin-api.example.test/analytics?days=30"],
+      ["GET", "https://api.example.test/api/admin/users/user-1"],
+      ["PATCH", "https://api.example.test/api/admin/users/user-1/status"],
+      ["DELETE", "https://api.example.test/api/admin/users/user-1"],
+      ["GET", "https://api.example.test/api/admin/analytics?days=30"],
       [
         "GET",
-        "https://admin-api.example.test/analytics/lessons?direction=asc&page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5&sort=completionRate",
+        "https://api.example.test/api/admin/analytics/lessons?direction=asc&page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5&sort=completionRate",
       ],
-      ["GET", "https://admin-api.example.test/settings"],
-      ["PUT", "https://admin-api.example.test/settings/notice"],
-      ["PUT", "https://admin-api.example.test/settings/legal"],
-      ["POST", "https://admin-api.example.test/settings/content-reset"],
+      ["GET", "https://api.example.test/api/admin/settings"],
+      ["PUT", "https://api.example.test/api/admin/settings/notice"],
+      ["PUT", "https://api.example.test/api/admin/settings/legal"],
+      ["POST", "https://api.example.test/api/admin/settings/content-reset"],
     ])
     expect(requests[0]?.headers.get("Cookie")).toBe(
       "admin_session_token=admin-token"
@@ -282,8 +282,8 @@ describe("관리자 feature HTTP Adapter 계약", () => {
 
   it("실패 응답을 AdminApi 오류로 변환한다", async () => {
     const api = createTestAdminApis({
-      baseUrl: readAdminApiBaseUrl({
-        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      baseUrl: readApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
       }),
       fetch: async () =>
         jsonResponse(
@@ -310,8 +310,8 @@ describe("관리자 feature HTTP Adapter 계약", () => {
 
   it("권한 실패 응답을 AdminApi 권한 오류로 변환한다", async () => {
     const api = createTestAdminApis({
-      baseUrl: readAdminApiBaseUrl({
-        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      baseUrl: readApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
       }),
       fetch: async () =>
         jsonResponse(
@@ -336,8 +336,8 @@ describe("관리자 feature HTTP Adapter 계약", () => {
 
   it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
     const api = createTestAdminApis({
-      baseUrl: readAdminApiBaseUrl({
-        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      baseUrl: readApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
       }),
       fetch: async () =>
         jsonResponse({
@@ -362,8 +362,8 @@ describe("관리자 feature HTTP Adapter 계약", () => {
   it("fetch 예외를 원인이 보존된 네트워크 오류로 반환한다", async () => {
     const cause = new TypeError("Network unreachable")
     const api = createTestAdminApis({
-      baseUrl: readAdminApiBaseUrl({
-        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      baseUrl: readApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
       }),
       fetch: async () => {
         throw cause
@@ -388,7 +388,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
           code: "network-error",
           kind: "failed",
           method: "GET",
-          url: "https://admin-api.example.test/users",
+          url: "https://api.example.test/api/admin/users",
         },
       },
       status: "error",
@@ -397,7 +397,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
 })
 
 function createTestAdminApis(input: {
-  readonly baseUrl: AdminApiBaseUrl
+  readonly baseUrl: ApiBaseUrl
   readonly fetch: HttpFetch
   readonly requestOrigin?: string
   readonly tokenProvider: () => Promise<string | null> | string | null

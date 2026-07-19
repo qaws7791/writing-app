@@ -4,7 +4,7 @@ import { adminTargetContractFixtureFactories } from "@/test-support/admin-target
 
 const protocolVersion = 1 as const
 const resultMarker = "ADMIN_TARGET_CONTRACT_RESULT:"
-const requestOrigin = "http://admin-api.target-contract.test"
+const requestOrigin = "http://api.target-contract.test"
 
 type RunnerInput = {
   readonly cases: readonly RunnerCase[]

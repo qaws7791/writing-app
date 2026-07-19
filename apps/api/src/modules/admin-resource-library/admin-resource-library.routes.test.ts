@@ -151,13 +151,13 @@ describe("통합 관리자 자료실 target route", () => {
       ["/resources/search", "get", "searchAdminResourceLibrary"],
     ] as const) {
       expect(document).toHaveProperty(
-        ["paths", path, method, "operationId"],
+        ["paths", `/api/admin${path}`, method, "operationId"],
         operationId
       )
     }
     expect(document).toHaveProperty([
       "paths",
-      "/resources/documents/{documentId}",
+      "/api/admin/resources/documents/{documentId}",
       "put",
       "responses",
       "428",
@@ -166,7 +166,7 @@ describe("통합 관리자 자료실 target route", () => {
 })
 
 function createRequest(path: string, init: RequestInit = {}): Request {
-  return new Request(new URL(path, "http://admin-api.localhost:4000"), init)
+  return new Request(new URL(path, "http://api.localhost:4000"), init)
 }
 
 function mutationHeaders(): Record<string, string> {

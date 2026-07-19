@@ -8,7 +8,7 @@
 - fixture는 지원하지 않는 glob, 누락된 manifest, 중복 package 이름, workspace 추가·삭제와 test task capability 변경을 검증한다.
 - 아래 워크스페이스 표가 현재 기준이며, 고정된 workspace 개수는 검증 계약으로 사용하지 않는다.
 - 제거된 workspace 경로에 `.next`, `.turbo`, `coverage`, `dist`, `node_modules`만 남은 경우 manifest 누락으로 오인하지 않고 생성 산출물로 제외한다. 그 밖의 source entry가 있거나 빈 디렉터리이면 누락된 manifest 오류를 유지한다.
-- 2026-07-18 source 기준으로 `apps/api`는 learner/admin Host sub-app과 여섯 관리자 capability(content, identity, dashboard/analytics, settings, AI chat, 자료실)의 target adapter·route를 소유한다.
+- `apps/api`는 학습자 HTTP 표면, `/api/admin` 경로 sub-app과 여섯 관리자 capability(content, identity, dashboard/analytics, settings, AI chat, 자료실)의 adapter·route를 소유한다.
 - ADR-0015에 따라 `packages/hono`와 `packages/logger`를 제거하고 HTTP platform과 observability source·test를 단일 runtime owner인 `apps/api`로 흡수했다. `packages/env`는 API·학습자 웹·관리자 웹의 공유 환경 계약으로 유지한다.
 - 위 topology는 저장소 구성으로 검증된 사실이다. 실제 production 배포 적용과 관찰 결과는 이 인벤토리에서 확인할 수 없으므로 완료된 운영 traffic으로 해석하지 않는다.
 
@@ -28,21 +28,21 @@ test runtime은 manifest 명령에서 Bun 또는 Node/Vitest로 명시적으로 
 
 ## 워크스페이스
 
-| 경로                          | 패키지 이름                     | 분류    | 책임                                                                  |
-| ----------------------------- | ------------------------------- | ------- | --------------------------------------------------------------------- |
-| `apps/admin`                  | `@workspace/admin`              | app     | 관리자 Next.js 운영 대시보드                                          |
-| `apps/api`                    | `@workspace/api`                | app     | learner/admin Host API, HTTP platform·관측성과 여섯 관리자 capability |
-| `apps/storybook`              | `@workspace/storybook`          | app     | 공유 UI 컴포넌트 개발 환경                                            |
-| `apps/web`                    | `@workspace/web`                | app     | 학습자 Next.js 앱                                                     |
-| `packages/config`             | `@workspace/config`             | package | 공유 TypeScript 설정                                                  |
-| `packages/contracts`          | `@workspace/contracts`          | package | 학습자·관리자 request/response DTO와 Zod 계약                         |
-| `packages/core`               | `@workspace/core`               | package | 도메인 정책, application use case와 repository port                   |
-| `packages/db`                 | `@workspace/db`                 | package | Drizzle schema, migration, seed, SQLite client                        |
-| `packages/env`                | `@workspace/env`                | package | 환경 변수 파싱과 로컬 기본값                                          |
-| `packages/http-client`        | `@workspace/http-client`        | package | HTTP transport result와 네트워크 오류 모델                            |
-| `packages/repository-tooling` | `@workspace/repository-tooling` | package | source inventory, TypeScript module graph와 정책 matcher              |
-| `packages/resource-document`  | `@workspace/resource-document`  | package | 브라우저·서버 공용 Lexical node와 GFM Markdown 변환·검증              |
-| `packages/ui`                 | `@workspace/ui`                 | package | 공유 UI primitive, 도메인 순수 프레젠테이션, 아이콘, 스타일           |
+| 경로                          | 패키지 이름                     | 분류    | 책임                                                                       |
+| ----------------------------- | ------------------------------- | ------- | -------------------------------------------------------------------------- |
+| `apps/admin`                  | `@workspace/admin`              | app     | 관리자 Next.js 운영 대시보드                                               |
+| `apps/api`                    | `@workspace/api`                | app     | 단일 API, `/api/admin` 경로, HTTP platform·관측성과 여섯 관리자 capability |
+| `apps/storybook`              | `@workspace/storybook`          | app     | 공유 UI 컴포넌트 개발 환경                                                 |
+| `apps/web`                    | `@workspace/web`                | app     | 학습자 Next.js 앱                                                          |
+| `packages/config`             | `@workspace/config`             | package | 공유 TypeScript 설정                                                       |
+| `packages/contracts`          | `@workspace/contracts`          | package | 학습자·관리자 request/response DTO와 Zod 계약                              |
+| `packages/core`               | `@workspace/core`               | package | 도메인 정책, application use case와 repository port                        |
+| `packages/db`                 | `@workspace/db`                 | package | Drizzle schema, migration, seed, SQLite client                             |
+| `packages/env`                | `@workspace/env`                | package | 환경 변수 파싱과 로컬 기본값                                               |
+| `packages/http-client`        | `@workspace/http-client`        | package | HTTP transport result와 네트워크 오류 모델                                 |
+| `packages/repository-tooling` | `@workspace/repository-tooling` | package | source inventory, TypeScript module graph와 정책 matcher                   |
+| `packages/resource-document`  | `@workspace/resource-document`  | package | 브라우저·서버 공용 Lexical node와 GFM Markdown 변환·검증                   |
+| `packages/ui`                 | `@workspace/ui`                 | package | 공유 UI primitive, 도메인 순수 프레젠테이션, 아이콘, 스타일                |
 
 ## 비워크스페이스 도구 루트
 

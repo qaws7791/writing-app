@@ -3,20 +3,20 @@
   "tasks": {
     "build": {
       "env": [
-        "ADMIN_API_BASE_URL",
+        "API_BASE_URL",
         "ADMIN_ORIGIN",
         "CSP_REPORT_ONLY",
-        "NEXT_PUBLIC_ADMIN_API_BASE_URL",
+        "NEXT_PUBLIC_API_BASE_URL",
         "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
         "NODE_ENV"
       ]
     },
     "dev": {
       "passThroughEnv": [
-        "ADMIN_API_BASE_URL",
+        "API_BASE_URL",
         "ADMIN_ORIGIN",
         "CSP_REPORT_ONLY",
-        "NEXT_PUBLIC_ADMIN_API_BASE_URL",
+        "NEXT_PUBLIC_API_BASE_URL",
         "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
         "NODE_ENV"
       ]

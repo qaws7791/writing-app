@@ -14,6 +14,8 @@ vi.mock("@/server/auth/get-admin-session-token", () => ({
 describe("어드민 AI chat proxy", () => {
   beforeEach(() => {
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+    vi.stubEnv("ADMIN_ORIGIN", localRuntimeDefaults.adminWebOrigin)
     vi.clearAllMocks()
     getTokenMock.mockResolvedValue("admin-token")
   })

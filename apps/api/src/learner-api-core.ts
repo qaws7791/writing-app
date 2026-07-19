@@ -32,13 +32,13 @@ import { createDrizzleLearnerTransitionRepository } from "@/adapters/learning/le
 
 export type CreateLearnerApiCoreInput = {
   readonly aiFeedbackProvider: AiFeedbackProvider
-  readonly authBaseUrl: string
-  readonly betterAuthSecret: string
-  readonly cookieDomain?: string
+  readonly apiOrigin: string
   readonly cursorSigningSecret: string
   readonly database: WritingAppDatabase
   readonly googleClientId?: string
   readonly googleClientSecret?: string
+  readonly learnerAuthSecret: string
+  readonly learnerCookieDomain?: string
   readonly onAiFeedbackAttemptTransition?: (
     event: AiFeedbackAttemptTransitionEvent
   ) => void
@@ -67,14 +67,14 @@ export function createLearnerApiCore(
   input: CreateLearnerApiCoreInput
 ): LearnerApiCore {
   const {
-    authBaseUrl,
     aiFeedbackProvider,
-    betterAuthSecret,
-    cookieDomain,
+    apiOrigin,
     cursorSigningSecret,
     database,
     googleClientId,
     googleClientSecret,
+    learnerAuthSecret,
+    learnerCookieDomain,
     onAiFeedbackAttemptTransition,
     testAuthEnabled,
     webOrigin,
@@ -91,13 +91,13 @@ export function createLearnerApiCore(
     createDrizzleLearnerTransitionRepository(database)
   const cursorCodec = createLearnerCursorCodec(cursorSigningSecret)
   const auth = createLearnerAuth({
-    authBaseUrl,
-    cookieDomain,
+    apiOrigin,
     db: database,
     googleClientId,
     googleClientSecret,
     profileRepository: learnerProfileRepository,
-    secret: betterAuthSecret,
+    secret: learnerAuthSecret,
+    cookieDomain: learnerCookieDomain,
     testAuthEnabled,
     webOrigin,
   })

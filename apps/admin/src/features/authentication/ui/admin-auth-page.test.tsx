@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { AdminAuthPage } from "@/features/authentication/ui/admin-auth-page"
 import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
 import {
-  readAdminApiBaseUrl,
+  readApiBaseUrl,
   readLearnerWebOrigin,
 } from "@/shared/config/admin-runtime-config"
 
@@ -20,7 +20,7 @@ vi.mock("@/features/authentication/api/admin-auth-client", () => ({
 
 const requestAdminPasswordLoginMock = vi.mocked(requestAdminPasswordLogin)
 const authPageProps = {
-  apiBaseUrl: readAdminApiBaseUrl({}),
+  apiBaseUrl: readApiBaseUrl({}),
   learnerWebOrigin: readLearnerWebOrigin({}),
 } as const
 

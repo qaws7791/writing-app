@@ -8,7 +8,7 @@ import {
   saveAdminCourseEditorAction,
 } from "@/features/course-editor/server/admin-course-actions"
 import { notFound } from "next/navigation"
-import { readServerAdminApiBaseUrl } from "@/server/env/admin-runtime-config"
+import { readServerApiBaseUrl } from "@/server/env/admin-runtime-config"
 
 export default async function AdminCourseDetailRoute({
   params,
@@ -29,7 +29,7 @@ export default async function AdminCourseDetailRoute({
   return (
     <AdminCourseDetailPage
       courseResult={courseResult}
-      apiBaseUrl={readServerAdminApiBaseUrl()}
+      apiBaseUrl={readServerApiBaseUrl()}
       publishCourse={publishAdminCourseAction}
       saveCourse={saveAdminCourseEditorAction}
     />

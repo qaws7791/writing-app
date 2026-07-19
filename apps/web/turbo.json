@@ -7,7 +7,7 @@
         "ENABLE_TEST_AUTH",
         "NEXT_PUBLIC_API_BASE_URL",
         "NODE_ENV",
-        "WEB_API_BASE_URL",
+        "API_BASE_URL",
         "WEB_ORIGIN"
       ]
     },
@@ -17,7 +17,7 @@
         "ENABLE_TEST_AUTH",
         "NEXT_PUBLIC_API_BASE_URL",
         "NODE_ENV",
-        "WEB_API_BASE_URL",
+        "API_BASE_URL",
         "WEB_ORIGIN"
       ]
     }

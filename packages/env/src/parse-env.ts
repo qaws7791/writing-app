@@ -15,18 +15,17 @@ const booleanFlagSchema = z
   .transform((value) => value === "true")
 
 const appEnvBaseSchema = z.object({
-  ADMIN_BETTER_AUTH_SECRET: z.string().min(32).optional(),
-  ADMIN_BETTER_AUTH_URL: z.url().optional(),
+  ADMIN_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
+  ADMIN_AUTH_SECRET: z.string().min(32),
   ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
-  API_PORT: portSchema.default(localRuntimePorts.learnerApi),
-  ADMIN_BETTER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
-  BETTER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
-  BETTER_AUTH_URL: z.url().optional(),
-  BETTER_AUTH_SECRET: z.string().min(32),
+  API_ORIGIN: z.url().optional(),
+  API_PORT: portSchema.default(localRuntimePorts.api),
   CURSOR_SIGNING_SECRET: z.string().min(32).optional(),
   DATABASE_URL: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  LEARNER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
+  LEARNER_AUTH_SECRET: z.string().min(32),
   ENABLE_TEST_AUTH: booleanFlagSchema,
   NODE_ENV: nodeEnvSchema,
   OPENAI_API_KEY: z.string().min(1).optional(),
@@ -70,8 +69,7 @@ function validateProductionEnvironment(
   const requiredUrls = [
     ["WEB_ORIGIN", env.WEB_ORIGIN],
     ["ADMIN_ORIGIN", env.ADMIN_ORIGIN],
-    ["BETTER_AUTH_URL", env.BETTER_AUTH_URL],
-    ["ADMIN_BETTER_AUTH_URL", env.ADMIN_BETTER_AUTH_URL],
+    ["API_ORIGIN", env.API_ORIGIN],
   ] as const
 
   for (const [name, value] of requiredUrls) {
@@ -94,8 +92,8 @@ function validateProductionEnvironment(
 
   validateProductionSecret(
     context,
-    "BETTER_AUTH_SECRET",
-    env.BETTER_AUTH_SECRET
+    "LEARNER_AUTH_SECRET",
+    env.LEARNER_AUTH_SECRET
   )
   if (env.CURSOR_SIGNING_SECRET !== undefined) {
     validateProductionSecret(
@@ -103,7 +101,7 @@ function validateProductionEnvironment(
       "CURSOR_SIGNING_SECRET",
       env.CURSOR_SIGNING_SECRET
     )
-    if (env.CURSOR_SIGNING_SECRET === env.BETTER_AUTH_SECRET) {
+    if (env.CURSOR_SIGNING_SECRET === env.LEARNER_AUTH_SECRET) {
       addProductionIssue(
         context,
         "CURSOR_SIGNING_SECRET",
@@ -111,25 +109,13 @@ function validateProductionEnvironment(
       )
     }
   }
-  if (env.ADMIN_BETTER_AUTH_SECRET === undefined) {
+  validateProductionSecret(context, "ADMIN_AUTH_SECRET", env.ADMIN_AUTH_SECRET)
+  if (env.ADMIN_AUTH_SECRET === env.LEARNER_AUTH_SECRET) {
     addProductionIssue(
       context,
-      "ADMIN_BETTER_AUTH_SECRET",
-      "production에서는 관리자 전용 secret이 필요합니다."
+      "ADMIN_AUTH_SECRET",
+      "학습자 secret과 다른 값을 사용해야 합니다."
     )
-  } else {
-    validateProductionSecret(
-      context,
-      "ADMIN_BETTER_AUTH_SECRET",
-      env.ADMIN_BETTER_AUTH_SECRET
-    )
-    if (env.ADMIN_BETTER_AUTH_SECRET === env.BETTER_AUTH_SECRET) {
-      addProductionIssue(
-        context,
-        "ADMIN_BETTER_AUTH_SECRET",
-        "학습자 secret과 다른 값을 사용해야 합니다."
-      )
-    }
   }
 
   if (env.ENABLE_TEST_AUTH) {
@@ -142,15 +128,15 @@ function validateProductionEnvironment(
 
   validateCookieDomain(
     context,
-    "BETTER_AUTH_COOKIE_DOMAIN",
-    env.BETTER_AUTH_COOKIE_DOMAIN,
-    [env.WEB_ORIGIN, env.BETTER_AUTH_URL]
+    "LEARNER_AUTH_COOKIE_DOMAIN",
+    env.LEARNER_AUTH_COOKIE_DOMAIN,
+    [env.WEB_ORIGIN, env.API_ORIGIN]
   )
   validateCookieDomain(
     context,
-    "ADMIN_BETTER_AUTH_COOKIE_DOMAIN",
-    env.ADMIN_BETTER_AUTH_COOKIE_DOMAIN,
-    [env.ADMIN_ORIGIN, env.ADMIN_BETTER_AUTH_URL]
+    "ADMIN_AUTH_COOKIE_DOMAIN",
+    env.ADMIN_AUTH_COOKIE_DOMAIN,
+    [env.ADMIN_ORIGIN, env.API_ORIGIN]
   )
 }
 
@@ -171,10 +157,7 @@ function isLocalHostname(hostname: string): boolean {
 
 function validateProductionSecret(
   context: z.RefinementCtx,
-  name:
-    | "ADMIN_BETTER_AUTH_SECRET"
-    | "BETTER_AUTH_SECRET"
-    | "CURSOR_SIGNING_SECRET",
+  name: "ADMIN_AUTH_SECRET" | "CURSOR_SIGNING_SECRET" | "LEARNER_AUTH_SECRET",
   value: string
 ): void {
   const entropyBits = calculateShannonEntropyBits(value)
@@ -208,7 +191,7 @@ function calculateShannonEntropyBits(value: string): number {
 
 function validateCookieDomain(
   context: z.RefinementCtx,
-  name: "ADMIN_BETTER_AUTH_COOKIE_DOMAIN" | "BETTER_AUTH_COOKIE_DOMAIN",
+  name: "ADMIN_AUTH_COOKIE_DOMAIN" | "LEARNER_AUTH_COOKIE_DOMAIN",
   value: string | undefined,
   origins: readonly (string | undefined)[]
 ): void {

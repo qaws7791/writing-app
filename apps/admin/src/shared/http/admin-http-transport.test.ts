@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 
 import { createAdminHttpTransport } from "@/shared/http/admin-http-transport"
-import { readAdminApiBaseUrl } from "@/shared/config/admin-runtime-config"
+import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 
-const baseUrl = readAdminApiBaseUrl({
-  NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+const baseUrl = readApiBaseUrl({
+  NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/",
 })
 
 const unknownSchema = {
@@ -40,7 +40,7 @@ describe("관리자 HTTP 전송 계층", () => {
 
     const result = await transport.requestJson({
       method: "GET",
-      path: "/test",
+      path: "/api/admin/test",
       schema,
     })
     expect(result.status).toBe(status)
@@ -67,7 +67,7 @@ describe("관리자 HTTP 전송 계층", () => {
     await expect(
       transport.requestDownload({
         contentType: "text/markdown",
-        path: "/export",
+        path: "/api/admin/export",
       })
     ).resolves.toEqual({
       status: "ok",
@@ -91,12 +91,12 @@ describe("관리자 HTTP 전송 계층", () => {
 
     const result = await transport.requestJson({
       method: "GET",
-      path: "/test?token=secret#fragment",
+      path: "/api/admin/test?token=secret#fragment",
       schema: unknownSchema,
     })
 
     expect(result).toMatchObject({
-      error: { network: { url: "https://admin-api.example.test/test" } },
+      error: { network: { url: "https://api.example.test/api/admin/test" } },
       status: "error",
     })
   })
@@ -115,7 +115,7 @@ describe("관리자 HTTP 전송 계층", () => {
     await transport.requestJson({
       headers: { "If-Match": '"3"' },
       method: "PUT",
-      path: "/test",
+      path: "/api/admin/test",
       schema: valueSchema,
     })
 
@@ -153,7 +153,7 @@ describe("관리자 HTTP 전송 계층", () => {
 
       const result = await transport.requestDownload({
         contentType: "text/markdown",
-        path: "/export",
+        path: "/api/admin/export",
       })
 
       if (fileName === null) {

@@ -45,11 +45,11 @@ export function createAdminUsersDal(
     async deleteUser(userId) {
       return transport.requestJson({
         method: "DELETE",
-        path: `/users/${userId}`,
+        path: `/api/admin/users/${userId}`,
         schema: adminDeleteUserResultSchema,
       })
     },
-    getUser: (userId) => requestUser("GET", `/users/${userId}`),
+    getUser: (userId) => requestUser("GET", `/api/admin/users/${userId}`),
     async getUsers(input) {
       const params = new URLSearchParams()
       params.set("page", String(input.page))
@@ -59,12 +59,12 @@ export function createAdminUsersDal(
       params.set("status", input.status)
       return transport.requestJson({
         method: "GET",
-        path: `/users?${params.toString()}`,
+        path: `/api/admin/users?${params.toString()}`,
         schema: adminUserListDtoSchema,
       })
     },
     updateUserStatus: (input) =>
-      requestUser("PATCH", `/users/${input.userId}/status`, {
+      requestUser("PATCH", `/api/admin/users/${input.userId}/status`, {
         status: input.status,
       }),
   }

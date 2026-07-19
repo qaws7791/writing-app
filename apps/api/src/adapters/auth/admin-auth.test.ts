@@ -28,7 +28,7 @@ describe("통합 API 관리자 인증 adapter", () => {
       await seedOwner(database.db)
       const response = await postAuth(
         createTestAuth(database.db),
-        "/api/auth/sign-in/email",
+        "/api/admin/auth/sign-in/email",
         {
           email: "owner@example.com",
           password: "Owner-password-123!",
@@ -61,7 +61,7 @@ describe("통합 API 관리자 인증 adapter", () => {
     try {
       runBaselineMigration(database.sqlite)
       const auth = createTestAuth(database.db)
-      const signUp = await postAuth(auth, "/api/auth/sign-up/email", {
+      const signUp = await postAuth(auth, "/api/admin/auth/sign-up/email", {
         email: "new-admin@example.com",
         name: "새 관리자",
         password: "Admin-password-123!",
@@ -85,11 +85,11 @@ describe("통합 API 관리자 인증 adapter", () => {
       runBaselineMigration(database.sqlite)
       await seedOwner(database.db)
       const auth = createTestAuth(database.db)
-      const firstLogin = await postAuth(auth, "/api/auth/sign-in/email", {
+      const firstLogin = await postAuth(auth, "/api/admin/auth/sign-in/email", {
         email: "owner@example.com",
         password: "Owner-password-123!",
       })
-      await postAuth(auth, "/api/auth/sign-in/email", {
+      await postAuth(auth, "/api/admin/auth/sign-in/email", {
         email: "owner@example.com",
         password: "Owner-password-123!",
       })
@@ -99,7 +99,7 @@ describe("통합 API 관리자 인증 adapter", () => {
         sessionRevoker: createAdminSessionRevoker(database.db),
       })(
         createAuthRequest(
-          "/api/auth/change-password",
+          "/api/admin/auth/change-password",
           {
             currentPassword: "Owner-password-123!",
             newPassword: "New-owner-password-123!",
@@ -180,7 +180,7 @@ type Database = ReturnType<typeof createInMemoryWritingAppDatabase>["db"]
 
 function createTestAuth(database: Database) {
   return createAdminAuth({
-    authBaseUrl: "http://admin-api.localhost:4000",
+    apiOrigin: "http://api.localhost:4000",
     db: database,
     secret: "admin-test-secret-0123456789abcdef",
     webOrigin: "http://localhost:3001",
@@ -231,7 +231,7 @@ function createAuthRequest(
   body: Readonly<Record<string, unknown>>,
   options: { readonly cookie?: string; readonly origin?: string } = {}
 ): Request {
-  return new Request(`http://admin-api.localhost:4000${path}`, {
+  return new Request(`http://api.localhost:4000${path}`, {
     body: JSON.stringify(body),
     headers: {
       ...(options.cookie === undefined ? {} : { Cookie: options.cookie }),

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition, type FormEvent } from "react"
 
 import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
-import type { AdminApiBaseUrl } from "@/shared/config/admin-api-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
@@ -16,7 +16,7 @@ export function AdminAuthPage({
   learnerWebOrigin,
   nextPath,
 }: {
-  readonly apiBaseUrl: AdminApiBaseUrl
+  readonly apiBaseUrl: ApiBaseUrl
   readonly learnerWebOrigin: string
   readonly nextPath: string
 }) {

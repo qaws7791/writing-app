@@ -10,7 +10,7 @@
 
 - `apps/web`의 학습자 화면 텍스트.
 - `apps/admin`의 관리자 화면 텍스트.
-- target `apps/api`가 learner/admin Host sub-app에서 반환하는 사용자 대상 오류 메시지. 관리자 capability는 content·identity·dashboard/analytics·settings·AI chat·자료실 여섯 경계를 포함한다.
+- `apps/api`가 학습자 HTTP 표면과 `/api/admin` 경로 sub-app에서 반환하는 사용자 대상 오류 메시지. 관리자 capability는 content·identity·dashboard/analytics·settings·AI chat·자료실 여섯 경계를 포함한다.
 - `packages/core`와 `packages/db`에서 생성하는 도메인 오류 메시지.
 - `packages/ui`의 기본 접근성 텍스트와 보조 텍스트.
 - 생성된 API 타입과 문서에 포함되는 사용자 대상 메시지.
