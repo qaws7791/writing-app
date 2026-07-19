@@ -19,7 +19,7 @@ ADR-0002는 도메인 이름을 가진 module을 공용 UI API로 올리지 않�
 - lesson 공유 패키지를 제거한다.
 - `packages/ui/src/components/ui`는 shadcn/Base UI 프리미티브를 유지한다.
 - `packages/ui/src/components/lesson`은 순수 도메인 프레젠테이션만 둔다. 표시 props, 로컬 인터랙션 상태, 단순 변경 콜백만 허용한다.
-- 레슨 공개 모델과 답안 payload는 `@workspace/contracts/learning`, 채점과 학습 전이는 `packages/core`, 세션·API 호출과 `LessonStepRenderer` 타입 분기는 `apps/web/src/features/lessons`가 소유한다.
+- 레슨 공개 모델과 답안 payload는 `@workspace/contracts/learning`, 채점과 학습 전이는 `packages/core`, 세션·API 호출과 `LessonStepRenderer` 타입 분기는 `apps/web/src/features/lesson-session`이 소유한다.
 - 어드민의 별도 스텝 QA 제품 화면은 두지 않는다. 시각 회귀는 Storybook fixture, 채점 규칙은 core 단위 테스트로 검증한다.
 - 학습자 프론트 wire 타입은 앱의 HTTP 경계에 격리한다. 2026-07-16 계약 단순화 단계 1에서 openapi-typescript 생성물과 `writing-app-api-contract.ts`는 제거했고, `@workspace/contracts/learning`의 schema와 추론 타입을 직접 소비하도록 이 세부 결정을 대체했다. `packages/core`는 백엔드만 의존한다.
 - ADR-0002의 “도메인 이름 module을 공용 UI API로 올리지 않는다”는 **비즈니스 로직·라우팅·데이터 조회가 섞인 feature module**에 적용한다. 순수 프레젠테이션은 `components/<domain>` 경로 import로 허용한다.

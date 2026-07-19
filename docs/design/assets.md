@@ -75,7 +75,7 @@
 - `sentence-structure.png`
 - `vocabulary-basics.png`
 
-이미지 URL 생성은 `apps/web/src/features/courses/course-visual-assets.ts`의 `createCourseImageUrl`을 사용한다. 화면에서 경로를 직접 조합하지 않는다.
+이미지 URL 생성은 `apps/web/src/entities/course/model/course-visual-assets.ts`의 `createCourseImageUrl`을 사용한다. 화면에서 경로를 직접 조합하지 않는다.
 
 ## 이미지 사용 원칙
 

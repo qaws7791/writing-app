@@ -16,7 +16,9 @@ export function LessonStepFrame({
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-5">
       {children}
-      <LessonAnswerErrorMessage answerError={answerError} />
+      <LessonAnswerErrorMessage
+        {...(answerError === undefined ? {} : { answerError })}
+      />
     </section>
   )
 }

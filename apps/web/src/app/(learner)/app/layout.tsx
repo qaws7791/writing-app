@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { AppShell } from "@/components/layout/app-shell"
+import { AppShell } from "@/app/(learner)/app/_views/app-shell"
 
 export const dynamic = "force-dynamic"
 

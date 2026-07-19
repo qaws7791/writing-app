@@ -3,11 +3,11 @@ import { headers } from "next/headers"
 import { connection } from "next/server"
 import type { ReactNode } from "react"
 
-import { ThemeProvider } from "next-themes"
 import "@workspace/ui/pretendard-font"
 
 import "@/app/globals.css"
-import { readWebOrigin } from "@/runtime-config-server"
+import { AppProviders } from "@/app/_providers/app-providers"
+import { readWebOrigin } from "@/server/env/runtime-config"
 
 export const metadata: Metadata = {
   description:
@@ -44,15 +44,9 @@ export default async function RootLayout({
   return (
     <html data-density="comfortable" lang="ko" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-          nonce={nonce}
-        >
+        <AppProviders {...(nonce === undefined ? {} : { nonce })}>
           {children}
-        </ThemeProvider>
+        </AppProviders>
       </body>
     </html>
   )

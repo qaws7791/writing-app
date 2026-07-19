@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next"
 
-import { readWebOrigin } from "@/runtime-config-server"
+import { readWebOrigin } from "@/server/env/runtime-config"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

@@ -1,9 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server"
 
 import { createContentSecurityPolicy } from "@workspace/config/nextjs/security-headers"
-import { readWebCspRuntimeConfig } from "@/runtime-config-server"
+import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
+import { readWebCspRuntimeConfig } from "@/server/env/runtime-config"
+import { readLearnerSessionTokenFromCookieHeader } from "@/shared/auth/session-token"
 
 export function proxy(request: NextRequest) {
+  const loginRedirect = createLearnerLoginRedirect(request)
+  if (loginRedirect !== null) {
+    return NextResponse.redirect(loginRedirect)
+  }
+
   const runtime = readWebCspRuntimeConfig()
   const nonce = crypto.randomUUID()
   const policy = createContentSecurityPolicy({
@@ -28,6 +35,19 @@ export function proxy(request: NextRequest) {
     policy
   )
   return response
+}
+
+function createLearnerLoginRedirect(request: NextRequest): null | URL {
+  const { pathname, search } = request.nextUrl
+  const protectedRoute = pathname === "/app" || pathname.startsWith("/app/")
+  if (!protectedRoute) return null
+
+  const sessionToken = readLearnerSessionTokenFromCookieHeader(
+    request.headers.get("cookie")
+  )
+  if (sessionToken !== null) return null
+
+  return new URL(createLoginPagePath(`${pathname}${search}`), request.url)
 }
 
 export const config = {

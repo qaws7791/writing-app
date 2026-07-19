@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation"
 
-import { AppRouteNotice } from "@/components/app-route-notice"
-import { ProfilePage } from "@/features/profile/profile-page"
-import { createLoginPagePath } from "@/lib/auth/auth-navigation"
-import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
-import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
+import { AppRouteNotice } from "@/shared/ui/app-route-notice"
+import { ProfileLogoutButton } from "@/app/(learner)/app/profile/_views/profile-logout-button"
+import { ProfilePage } from "@/features/learner-profile/ui/profile-page"
+import { getLearnerProfile } from "@/features/learner-profile/server/dal/get-learner-profile"
+import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
+import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
 
 export default async function ProfileRoute() {
   const token = await getServerLearnerSessionToken()
@@ -13,10 +14,7 @@ export default async function ProfileRoute() {
     redirect(createLoginPagePath("/app/profile"))
   }
 
-  const api = getServerWritingAppApi({
-    tokenProvider: () => token,
-  })
-  const profileResult = await api.getProfile()
+  const profileResult = await getLearnerProfile(token)
   if (profileResult.status === "error") {
     if (profileResult.error.code === "UNAUTHENTICATED") {
       redirect(createLoginPagePath("/app/profile"))
@@ -30,5 +28,12 @@ export default async function ProfileRoute() {
     )
   }
 
-  return <ProfilePage profile={profileResult.value} />
+  return (
+    <ProfilePage
+      logoutAction={
+        <ProfileLogoutButton learnerId={profileResult.value.user.id} />
+      }
+      profile={profileResult.value}
+    />
+  )
 }

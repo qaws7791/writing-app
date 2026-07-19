@@ -17,7 +17,7 @@ writing-app
 
 target 구성에서 학습자 웹과 어드민 웹은 각각의 public API Host를 통해 하나의 `apps/api` 안 learner/admin Host sub-app을 호출한다. `apps/api`는 content·identity·dashboard/analytics·settings·AI chat·자료실의 여섯 관리자 capability route·adapter를 소유한다.
 
-로컬 `bun run dev:admin`은 어드민 웹과 `apps/api`를 시작하고 관리자 API는 `admin-api.localhost:4000` Host로 접근한다. Compose/Caddy source도 admin public Host를 같은 통합 API로 전달한다.
+로컬 `bun run dev:admin`은 어드민 웹과 `apps/api`를 시작하고 관리자 웹/API는 `127.0.0.1:3001`·`127.0.0.1:4000` Host로 접근한다. 학습자 웹/API의 `localhost`와 hostname을 분리해 인증 경계를 유지하며, Compose/Caddy source도 admin public Host를 같은 통합 API로 전달한다.
 
 ## 학습자 라우트
 

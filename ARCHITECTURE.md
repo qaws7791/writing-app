@@ -48,6 +48,10 @@
 - port: `3000`
 - auth: Better Auth 기반 Google 단일 로그인
 - backend: `apps/api`
+- source 계층: `app → features → entities → shared`, 서버 플랫폼은 `server`에 둔다.
+- `app`은 URL·metadata·redirect·feature DAL과 화면 조립만 담당한다. 기능 규칙, 브라우저 API와 UI는 `features/{기능}/{model,server,api,hooks,ui}`에 공배치한다.
+- 공통 HTTP·설정·표현은 `shared`, 서버 인증·환경·API factory는 `server`, 여러 feature가 공유하는 안정된 코스 표현은 `entities`가 소유한다.
+- Server Component를 기본값으로 사용하고 상호작용이 필요한 nav link, 필터, 테마, 레슨 화면만 Client Component 경계로 둔다.
 - 주요 기능:
   - 공개 랜딩과 Google 로그인
   - 학습 홈과 연속 학습일 표시

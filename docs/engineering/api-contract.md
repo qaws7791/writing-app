@@ -73,7 +73,7 @@ MTA-4는 production 정책을 바꾸지 않고 공통 Hono middleware와 학습�
 학습자 request/response DTO와 status enum은 `@workspace/contracts/learning`의 Zod schema와 추론 타입을 HTTP 경계의 단일 entrypoint로 사용한다. `apps/api` route와 `apps/web` HTTP adapter는 같은 schema를 직접 import해 요청·응답을 runtime 검증한다. API module은 인증, use case 호출, 성공 응답 검증과 오류 정규화를 담당한다.
 
 `apps/web`의 course·progress·lesson·profile 조회는 canonical 계약 타입을 직접 사용하며 identity mapper나 복제 제품 타입을 두지 않는다. 레슨의 일시적인 UI 입력 모델 변환은 feature에만 유지한다. 학습자 feature는 `@workspace/core`와 내부 `@workspace/contracts/content`를 import하지 않는다.
-매칭 스텝의 presentation choice id, selection map, deterministic shuffle, answer pair 변환은 HTTP request/response 계약이 아니므로 `packages/contracts`에서 노출하지 않는다. 해당 상호작용 모델은 `apps/web/src/features/lessons/lesson-match-presentation.ts`가 소유한다.
+매칭 스텝의 presentation choice id, selection map, deterministic shuffle, answer pair 변환은 HTTP request/response 계약이 아니므로 `packages/contracts`에서 노출하지 않는다. 해당 상호작용 모델은 `apps/web/src/features/lesson-session/model/lesson-match-presentation.ts`가 소유한다.
 
 현재 route:
 
@@ -243,7 +243,7 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 - `/openapi`는 실제 Hono 앱에 등록된 route에서 OpenAPI 3.1 문서를 생성한다.
 - 정적 OpenAPI JSON과 generated TypeScript 타입은 추적하지 않는다.
 - strict object가 runtime OpenAPI에 `additionalProperties: false`로 표현되는지 route 테스트로 검증한다.
-- `apps/web` 런타임 HTTP 호출은 `src/lib/api/http/openapi-client.ts`의 자체 adapter가 담당하며, `openapi-fetch`는 도입하지 않는다.
+- `apps/web` 런타임 HTTP 호출은 `src/shared/http/openapi-client.ts`의 자체 adapter가 담당하며, `openapi-fetch`는 도입하지 않는다. 브라우저 소비자는 `features/*/api`, 서버 소비자는 `features/*/server/dal`의 좁은 경계를 사용한다.
 
 어드민 API:
 

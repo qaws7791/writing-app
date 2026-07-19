@@ -5,12 +5,12 @@ import CourseDetailRoute, {
   generateMetadata,
 } from "@/app/(learner)/app/courses/[id]/page"
 import { learnerCourseDetailSchema } from "@workspace/contracts/learning"
-import { networkApiError } from "@/lib/api/api-error"
+import { networkApiError } from "@/shared/http/api-error"
 import {
   httpApiFailure as apiFailure,
   httpApiOk as apiOk,
 } from "@workspace/http-client"
-import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
+import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {
@@ -37,11 +37,11 @@ vi.mock("next/navigation", () => ({
   }),
 }))
 
-vi.mock("@/lib/auth/server-session-token", () => ({
+vi.mock("@/server/auth/server-session-token", () => ({
   getServerLearnerSessionToken: vi.fn(async () => "learner-token"),
 }))
 
-vi.mock("@/lib/api/get-server-writing-app-api", () => ({
+vi.mock("@/server/http/get-server-writing-app-api", () => ({
   getServerWritingAppApi: vi.fn(() => api),
 }))
 

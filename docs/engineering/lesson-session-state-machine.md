@@ -10,7 +10,7 @@
 - 학습 event: 시작 요청·성공·실패, 답안 payload 변경, 채점 결과 변경, 진행 저장 요청·성공·실패, 완료 저장 요청·성공·실패.
 - 외부 effect: 시작 답안 저장, 진행 위치 저장, 스텝 답안 저장, AI 피드백 요청, 레슨 완료 저장.
 
-`apps/web/src/features/lessons`가 레슨 세션 정책을 소유한다는 ADR-0003을 유지한다. 상태 전이 Module은 network와 router를 import하지 않고, 외부 effect는 `WritingAppApi`를 감싼 Adapter를 통해 실행한다.
+`apps/web/src/features/lesson-session/model`이 레슨 세션 정책을 소유한다는 ADR-0003을 유지한다. 상태 전이 Module은 network와 router를 import하지 않고, 외부 effect는 `features/lesson-session/api`의 좁은 포트를 감싼 Adapter를 통해 실행한다.
 
 ## 구현 결과
 
@@ -24,7 +24,7 @@
 
 ## 검증
 
-- `bun run test -- src/features/lessons/lesson-session-machine.test.ts src/features/lessons/lesson-session-effect-adapter.test.ts src/features/lessons/lesson-experience.test.tsx`
+- `bun --filter @workspace/web test -- src/features/lesson-session/model/lesson-session-machine.test.ts src/features/lesson-session/api/lesson-session-effect-adapter.test.ts src/features/lesson-session/ui/lesson-experience.test.tsx`
 - `bun run typecheck`
 - `bun run lint`
 - `bun run build`

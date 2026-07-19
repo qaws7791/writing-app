@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation"
 
-import { AppRouteNotice } from "@/components/app-route-notice"
-import { HomePage } from "@/features/home/home-page"
-import { createLoginPagePath } from "@/lib/auth/auth-navigation"
-import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
-import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
+import { AppRouteNotice } from "@/shared/ui/app-route-notice"
+import { HomePage } from "@/features/learner-home/ui/home-page"
+import { getLearnerHome } from "@/features/learner-home/server/dal/get-learner-home"
+import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
+import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
 
 export default async function AppHomeRoute() {
   const token = await getServerLearnerSessionToken()
@@ -13,13 +13,7 @@ export default async function AppHomeRoute() {
     redirect(createLoginPagePath("/app"))
   }
 
-  const api = getServerWritingAppApi({
-    tokenProvider: () => token,
-  })
-  const [profileResult, inProgressResult] = await Promise.all([
-    api.getProfile(),
-    api.getProgress({ status: "in_progress" }),
-  ])
+  const { inProgressResult, profileResult } = await getLearnerHome(token)
   if (profileResult.status === "error") {
     if (profileResult.error.code === "UNAUTHENTICATED") {
       redirect(createLoginPagePath("/app"))

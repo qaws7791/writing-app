@@ -185,7 +185,7 @@ bun run --filter=@workspace/web test
 - 학습자 웹 HTTP adapter와 feature는 `@workspace/contracts/learning`의 schema와 추론 타입을 직접 사용한다. identity mapper, 복제 제품 타입, generated OpenAPI 타입과 `writing-app-api-contract` 파일은 아키텍처 테스트에서 금지한다.
 - 학습자·관리자 HTTP transport 테스트는 `@workspace/http-client`의 canonical result 생성자를 직접 사용한 뒤에도 앱별 오류 union narrowing, network/contract 오류 분류와 `status: "ok" | "error"` 분기가 유지되는지 검증한다. 앱 local result 파일은 type-only 오류 specialization만 소유한다.
 - 학습자 API route 테스트는 unknown request field의 `VALIDATION_ERROR`, 성공 응답 runtime parse 실패의 redacted `api.contract.response_invalid` event와 request ID가 포함된 `INTERNAL_SERVER_ERROR`를 검증한다.
-- `apps/web` 아키텍처 테스트는 `openapi-fetch` dependency/import가 없고 자체 HTTP adapter를 유지하는지 확인한다.
+- `apps/web` 아키텍처 테스트는 허용된 source 계층, 절대 경로 import, 단방향 계층, feature 격리, model 순수성, Client Component→server와 UI→DAL 금지, `openapi-fetch` dependency/import 부재를 함께 확인한다. 순환 import는 루트 `check:import-cycles`가 별도로 차단한다.
 - overlay 계열 컴포넌트는 테스트 mock을 사용해 포털 구현 세부사항에 묶이지 않게 한다.
 - 내부 탐색은 가능한 link role과 href로 검증한다.
 
@@ -214,7 +214,7 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - fixture server가 DB 초기화를 마친 뒤 단일 `apps/api` process와 학습자·관리자 Next.js 웹을 순서대로 기동하므로 실행 중인 API가 초기화 대상 DB를 먼저 열 수 없다.
 - UI style 시각 테스트는 레슨 시작 저장 요청을 브라우저 경계에서 고정 응답으로 대체해 공유 E2E DB의 학습 진행을 변경하지 않는다. 이후 correctness 시나리오는 초기 레슨 상태를 독립적으로 검증한다.
 - 학습자 E2E fixture는 draft 콘텐츠를 넣은 뒤 실제 불변성 제약을 거쳐 published로 전환한 단일 레슨 코스를 사용한다. 실제 Chromium에서 레슨 시작, 객관식 오답 재시도와 정답, WRITE 답안, 결정적 test AI provider의 코칭, 레슨·코스 완료를 검증한다.
-- 관리자 owner/operator 로그인·역할, 보호 route·logout·비로컬 API origin을 실제 Chromium에서 검증한다. 관리자 웹과 통합 API는 각각 `admin-api.localhost:3101`·`admin-api.localhost:4100`을 사용하므로 host-only session cookie가 관리자 SSR에도 전달된다.
+- 관리자 owner/operator 로그인·역할, 보호 route·logout·분리된 API origin을 실제 Chromium에서 검증한다. 학습자 웹/API는 `localhost:3100`·`localhost:4100`, 관리자 웹/API는 `127.0.0.1:3101`·`127.0.0.1:4100`을 사용하므로 OS별 DNS 설정 없이 audience와 host-only session cookie 경계를 유지한다.
 - runner는 시작 전 점유 port·lock을 fail-fast하고, 종료 후에는 종료된 PID가 기록된 stale Next lock만 회수한다. 3100·3101·4100·4199 listener와 lock이 남으면 E2E를 실패로 처리한다.
 - 로컬은 retry 0으로 즉시 실패하고 CI만 retry 1회를 허용한다. 고정 port와 공유 SQLite를 격리하기 전까지 `workers: 1`을 유지한다.
 - CI는 `failOnFlakyTests`를 활성화해 최초 실패 뒤 retry 성공도 job 실패로 처리한다. list reporter는 최초 실패와 retry 결과를 함께 출력한다.

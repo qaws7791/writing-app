@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation"
 
-import { AppRouteNotice } from "@/components/app-route-notice"
-import { LessonExperience } from "@/features/lessons/lesson-experience"
-import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
-import { createLoginPagePath } from "@/lib/auth/auth-navigation"
-import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
+import { AppRouteNotice } from "@/shared/ui/app-route-notice"
+import { LessonExperience } from "@/features/lesson-session/ui/lesson-experience"
+import { parseLessonRouteSearchParams } from "@/features/lesson-session/model/lesson-route-search-params"
+import { getLessonExperience } from "@/features/lesson-session/server/dal/get-lesson-experience"
+import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
+import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
 
 type LessonRouteProps = {
   readonly searchParams: Promise<{
@@ -13,21 +14,18 @@ type LessonRouteProps = {
 }
 
 export default async function LessonRoute({ searchParams }: LessonRouteProps) {
-  const { lesson_id: lessonIdParameter } = await searchParams
-  const lessonId = Array.isArray(lessonIdParameter)
-    ? lessonIdParameter[0]
-    : lessonIdParameter
+  const { lessonId } = parseLessonRouteSearchParams(await searchParams)
   const token = await getServerLearnerSessionToken()
 
   if (token === null) {
     const requestedLessonPath =
-      lessonId === undefined || lessonId.trim() === ""
+      lessonId === undefined
         ? "/app/lesson"
         : `/app/lesson?lesson_id=${encodeURIComponent(lessonId)}`
     redirect(createLoginPagePath(requestedLessonPath))
   }
 
-  if (lessonId === undefined || lessonId.trim() === "") {
+  if (lessonId === undefined) {
     return (
       <AppRouteNotice
         description="코스에서 이어갈 레슨을 선택해 주세요."
@@ -37,13 +35,10 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   }
 
   const nextPath = `/app/lesson?lesson_id=${encodeURIComponent(lessonId)}`
-  const api = getServerWritingAppApi({
-    tokenProvider: () => token,
+  const { lessonResult, profileResult } = await getLessonExperience({
+    lessonId,
+    sessionToken: token,
   })
-  const [lessonResult, profileResult] = await Promise.all([
-    api.getLesson(lessonId),
-    api.getProfile(),
-  ])
   if (lessonResult.status === "error") {
     if (lessonResult.error.code === "UNAUTHENTICATED") {
       redirect(createLoginPagePath(nextPath))

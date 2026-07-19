@@ -33,6 +33,7 @@
 | `monorepo-target-architecture-plan/_index.md`                   | 목표 모노레포 아키텍처를 독립 실행·검증·롤백 작업으로 분해한 계획의 진입점이다.                  |
 | `workspace-dependency-policy.md`                                | 공통 dependency catalog와 디자인·lint baseline ratchet 정책을 정의한다.                          |
 | `repository-architecture-tooling.md`                            | source inventory, TypeScript module graph와 architecture 정책 matcher를 정의한다.                |
+| `web-nextjs-architecture-migration.md`                          | 학습자 웹 기능 슬라이스 전환의 불변 조건, 목표 구조, 실행 순서와 검증 상태를 기록한다.           |
 | `codex-skill-invocation-policy.md`                              | Codex 워크플로 스킬의 명시 호출 전용 정책과 검증 기준을 정의한다.                                |
 | `tech-stack.md`                                                 | 런타임, 패키지 관리, 프론트엔드, 백엔드, 데이터, 테스트 도구, 의존성 기준을 정의한다.            |
 | `runtime-configuration.md`                                      | 로컬 포트, 환경 변수 파서, 앱별 설정, Turbo 환경 변수, `.env.example` 정책을 정의한다.           |
@@ -47,6 +48,7 @@
 | `admin-mfa-removal-plan.md`                                     | 어드민 MFA·step-up 제거, DB 정리와 역할 기반 인가 유지 계획을 정의한다.                          |
 | `admin-transport-security.md`                                   | 관리자 transport의 actor 구성, 이중 인가 경계와 오류 변환 기준을 정의한다.                       |
 | `testing.md`                                                    | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.           |
+| `admin-development-browser-verification.md`                     | 로컬 어드민·API 개발 서버의 브라우저 수동 검증 범위와 실행 결과를 기록한다.                      |
 | `lesson-runtime.md`                                             | 학습자 레슨 세션, 서버 전이, 순수 시각 컴포넌트 경계를 정의한다.                                 |
 | `observability.md`                                              | 요청 로그, 런타임 로깅, 로그 정책, 메트릭과 알림과 대시보드 후보를 정의한다.                     |
 | `migration.md`                                                  | 마이그레이션 모델, 명령, 기본 절차, seed 마이그레이션, 운영 원칙, 롤백 조건을 정의한다.          |
@@ -70,6 +72,7 @@
 | `adr/ADR-0012-single-api-runtime.md`                            | 채택됨. learner/admin 보안 경계를 유지한 단일 API runtime 전환을 기록한다.                       |
 | `adr/ADR-0013-build-time-course-thumbnails.md`                  | 채택됨. 코스 썸네일의 build-time mirror와 불변 URL 계약을 기록한다.                              |
 | `adr/ADR-0014-app-owned-persistence-adapters.md`                | 채택됨. core→DB를 실행 앱 소유 adapter로 단조 전환하는 topology를 기록한다.                      |
+| `adr/ADR-0016-web-feature-sliced-architecture.md`               | 채택됨. 학습자 웹의 기능 슬라이스, RSC와 원격 API adapter 경계 결정을 기록한다.                  |
 
 ## 관리 기준
 

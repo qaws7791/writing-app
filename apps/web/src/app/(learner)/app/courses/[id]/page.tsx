@@ -1,11 +1,12 @@
 import type { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
 
-import { AppRouteNotice } from "@/components/app-route-notice"
-import { CourseDetailPage } from "@/features/courses/course-detail-page"
-import { createLoginPagePath } from "@/lib/auth/auth-navigation"
-import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
-import { getCachedCourseDetail } from "@/lib/api/cached-course-detail"
+import { AppRouteNotice } from "@/shared/ui/app-route-notice"
+import { CourseDetailPage } from "@/features/course-detail/ui/course-detail-page"
+import { parseCourseDetailRouteParams } from "@/features/course-detail/model/course-detail-route-params"
+import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
+import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
+import { getCachedCourseDetail } from "@/features/course-detail/server/dal/cached-course-detail"
 
 type CourseDetailRouteProps = {
   readonly params: Promise<{
@@ -16,7 +17,9 @@ type CourseDetailRouteProps = {
 export async function generateMetadata({
   params,
 }: CourseDetailRouteProps): Promise<Metadata> {
-  const { id } = await params
+  const parsedParams = parseCourseDetailRouteParams(await params)
+  if (parsedParams === null) return unavailableCourseMetadata()
+  const { id } = parsedParams
   const token = await getServerLearnerSessionToken()
   if (token === null) {
     return unavailableCourseMetadata()
@@ -54,7 +57,9 @@ export async function generateMetadata({
 export default async function CourseDetailRoute({
   params,
 }: CourseDetailRouteProps) {
-  const { id } = await params
+  const parsedParams = parseCourseDetailRouteParams(await params)
+  if (parsedParams === null) notFound()
+  const { id } = parsedParams
   const nextPath = `/app/courses/${id}`
   const token = await getServerLearnerSessionToken()
 

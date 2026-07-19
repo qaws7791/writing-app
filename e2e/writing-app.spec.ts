@@ -46,6 +46,7 @@ test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완�
   await page.getByRole("button", { name: "확인하기" }).click()
   await expect(page.getByText("다시 확인해보세요")).toBeVisible()
   await page.getByRole("button", { name: "계속하기" }).click()
+  await expect(page.getByRole("button", { name: "확인하기" })).toBeDisabled()
   await page.getByRole("button", { name: "서버가 채점한다" }).click()
   await page.getByRole("button", { name: "확인하기" }).click()
   await expect(page.getByText("완벽해요!")).toBeVisible()
@@ -95,8 +96,13 @@ test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완�
   await page.getByRole("button", { name: "로그아웃" }).click()
   await expect(page).toHaveURL(`${learnerWebOrigin}/`)
 
-  await page.goto(`${learnerWebOrigin}/app/courses`)
-  await expect(page).toHaveURL(/\/login\?next=%2Fapp%2Fcourses$/)
+  const protectedDetailResponse = await page.goto(
+    `${learnerWebOrigin}/app/courses/e2e-transition-course`
+  )
+  expect(protectedDetailResponse?.url()).toBe(
+    `${learnerWebOrigin}/login?next=%2Fapp%2Fcourses%2Fe2e-transition-course`
+  )
+  await expect(page).toHaveTitle("로그인 | 글결")
   expect(diagnostics).toEqual([])
 })
 

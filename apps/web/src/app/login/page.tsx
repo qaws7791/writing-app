@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 
-import { AuthPage } from "@/features/auth/auth-page"
-import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
-import { readTestAuthEnabled } from "@/runtime-config-server"
+import { AuthPage } from "@/features/authentication/ui/auth-page"
+import { resolveSafeNextPath } from "@/features/authentication/model/auth-navigation"
+import { parseLoginSearchParams } from "@/features/authentication/model/login-search-params"
+import { readTestAuthEnabled } from "@/server/env/runtime-config"
 
 export const metadata: Metadata = {
   title: "로그인",
@@ -15,8 +16,8 @@ type LoginPageProps = {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const query = await searchParams
-  const nextPath = resolveSafeNextPath(query?.next)
+  const query = parseLoginSearchParams(await searchParams)
+  const nextPath = resolveSafeNextPath(query.next)
 
   return (
     <AuthPage nextPath={nextPath} testAuthEnabled={readTestAuthEnabled()} />

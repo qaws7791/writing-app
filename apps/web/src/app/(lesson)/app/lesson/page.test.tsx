@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import LessonRoute from "@/app/(lesson)/app/lesson/page"
-import { networkApiError } from "@/lib/api/api-error"
+import { networkApiError } from "@/shared/http/api-error"
 import { httpApiFailure as apiFailure } from "@workspace/http-client"
-import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
+import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {
@@ -33,11 +33,11 @@ vi.mock("next/navigation", () => ({
   }),
 }))
 
-vi.mock("@/lib/auth/server-session-token", () => ({
+vi.mock("@/server/auth/server-session-token", () => ({
   getServerLearnerSessionToken: sessionTokenMock,
 }))
 
-vi.mock("@/lib/api/get-server-writing-app-api", () => ({
+vi.mock("@/server/http/get-server-writing-app-api", () => ({
   getServerWritingAppApi: vi.fn(() => api),
 }))
 

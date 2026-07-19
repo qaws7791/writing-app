@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import ProfileRoute from "@/app/(learner)/app/profile/page"
-import type { ApiError } from "@/lib/api/api-error"
+import type { ApiError } from "@/shared/http/api-error"
 import { httpApiFailure as apiFailure } from "@workspace/http-client"
-import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
+import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
 
 const { redirectMock } = vi.hoisted(() => ({
   redirectMock: vi.fn((path: string) => {
@@ -31,11 +31,11 @@ vi.mock("next/navigation", () => ({
   }),
 }))
 
-vi.mock("@/lib/auth/server-session-token", () => ({
+vi.mock("@/server/auth/server-session-token", () => ({
   getServerLearnerSessionToken: vi.fn(async () => "learner-token"),
 }))
 
-vi.mock("@/lib/api/get-server-writing-app-api", () => ({
+vi.mock("@/server/http/get-server-writing-app-api", () => ({
   getServerWritingAppApi: vi.fn(() => api),
 }))
 

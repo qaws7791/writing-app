@@ -1,13 +1,11 @@
 import { redirect } from "next/navigation"
 
-import { AppRouteNotice } from "@/components/app-route-notice"
-import {
-  CoursesPage,
-  type CourseListFilters,
-} from "@/features/courses/courses-page"
-import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
-import { createLoginPagePath } from "@/lib/auth/auth-navigation"
-import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
+import { AppRouteNotice } from "@/shared/ui/app-route-notice"
+import { CoursesPage } from "@/features/course-catalog/ui/courses-page"
+import { parseCourseListFilters } from "@/features/course-catalog/model/course-list-filters"
+import { getCourseCatalog } from "@/features/course-catalog/server/dal/get-course-catalog"
+import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
+import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
 
 export default async function CoursesRoute({
   searchParams,
@@ -21,18 +19,11 @@ export default async function CoursesRoute({
     redirect(createLoginPagePath("/app/courses"))
   }
 
-  const api = getServerWritingAppApi({
-    tokenProvider: () => token,
+  const filters = parseCourseListFilters(resolvedSearchParams)
+  const { categoriesResult, coursesResult } = await getCourseCatalog({
+    filters,
+    sessionToken: token,
   })
-  const filters = readCourseListFilters(resolvedSearchParams)
-  const [coursesResult, categoriesResult] = await Promise.all([
-    api.listCourses({
-      category: filters.category || undefined,
-      query: filters.query || undefined,
-      sort: filters.sort,
-    }),
-    api.getCourseCategories(),
-  ])
   if (coursesResult.status === "error") {
     if (coursesResult.error.code === "UNAUTHENTICATED") {
       redirect(createLoginPagePath("/app/courses"))
@@ -68,31 +59,4 @@ export default async function CoursesRoute({
       nextCursor={coursesResult.value.nextCursor}
     />
   )
-}
-
-function readCourseListFilters(
-  searchParams: Record<string, string | string[] | undefined>
-): CourseListFilters {
-  return {
-    category: readString(searchParams["category"], ""),
-    query: readString(searchParams["query"], ""),
-    sort: readCourseSort(readString(searchParams["sort"], "recommended")),
-  }
-}
-
-function readString(value: string | string[] | undefined, fallback: string) {
-  return typeof value === "string" ? value : fallback
-}
-
-function readCourseSort(value: string): CourseListFilters["sort"] {
-  if (
-    value === "title-asc" ||
-    value === "title-desc" ||
-    value === "lesson-count-desc" ||
-    value === "lesson-count-asc"
-  ) {
-    return value
-  }
-
-  return "recommended"
 }

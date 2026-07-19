@@ -254,10 +254,12 @@ export function MatchAnswer({
                   isActive={isActive}
                   isPaired={isPaired}
                   key={leftChoice.id}
-                  onChoiceSelect={onChoiceSelect}
+                  {...(onChoiceSelect === undefined ? {} : { onChoiceSelect })}
                   registerChoiceRef={registerChoiceRef}
                   side="left"
-                  tone={connection?.tone}
+                  {...(connection === undefined
+                    ? {}
+                    : { tone: connection.tone })}
                 />
               )
             })}
@@ -283,10 +285,12 @@ export function MatchAnswer({
                   isActive={isActive}
                   isPaired={isPaired}
                   key={rightChoice.id}
-                  onChoiceSelect={onChoiceSelect}
+                  {...(onChoiceSelect === undefined ? {} : { onChoiceSelect })}
                   registerChoiceRef={registerChoiceRef}
                   side="right"
-                  tone={connection?.tone}
+                  {...(connection === undefined
+                    ? {}
+                    : { tone: connection.tone })}
                 />
               )
             })}
@@ -334,7 +338,7 @@ function MatchChoiceButton({
           checked,
           isActive,
           isPaired,
-          tone,
+          ...(tone === undefined ? {} : { tone }),
         })
       )}
       data-state={

@@ -22,6 +22,8 @@
 - 패키지 내부에서 자기 `@workspace/*` 공개 Interface를 역참조하거나 상대 경로로 우회하지 않는다.
 - 앱 간 상대 import를 만들지 않는다.
 - 레거시 실험 디렉터리의 구현 파일은 제품 런타임에서 import하지 않는다.
+- `apps/web/src`는 `app`, `features`, `entities`, `shared`, `server` 계층만 사용한다. `app`은 route와 조립, `features`는 사용자 능력, `entities`는 feature 간 안정된 도메인 표현, `shared`는 도메인 중립 코드, `server`는 서버 플랫폼을 소유한다.
+- `apps/web`의 feature는 다른 feature 내부를 import하지 않는다. Client Component와 feature UI는 `server` 또는 feature DAL을 import하지 않는다.
 
 ## 포맷
 
@@ -69,6 +71,7 @@ Architecture test는 계층 규칙을 검사할 때 TypeScript AST 기반 import
 
 - `strict`를 유지한다.
 - `noUncheckedIndexedAccess`를 유지한다.
+- `apps/web`은 `exactOptionalPropertyTypes`, `useUnknownInCatchVariables`, `noFallthroughCasesInSwitch`를 함께 유지한다.
 - 도메인 ID와 중요한 값에는 브랜드 타입을 사용한다.
 - `any`를 사용하지 않는다.
 - `as unknown as T`로 타입 안전성을 우회하지 않는다.
@@ -79,6 +82,8 @@ Architecture test는 계층 규칙을 검사할 때 TypeScript AST 기반 import
 
 - Client Component는 상호작용 상태가 필요할 때만 사용한다.
 - 서버에서 조회 가능한 데이터는 Server Component에서 먼저 처리한다.
+- `apps/web/src/app`의 page와 layout은 URL 입력 파싱, 인증·redirect, feature DAL 호출과 화면 조립만 담당한다.
+- route 전용 조립은 `_views`, provider 조립은 `app/_providers`에 둔다.
 - 내부 이동 UI는 `next/link`의 `Link`를 사용한다.
 - 명령형 이동은 로그인 완료, 저장 완료, 모달 종료 같은 이벤트 결과에만 사용한다.
 - `window.location.*` 직접 이동은 어드민 인증 source에서 금지한다.

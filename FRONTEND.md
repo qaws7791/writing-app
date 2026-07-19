@@ -4,12 +4,12 @@
 
 ## 기본 원칙
 
-- 기능 기준으로 파일을 모은다. 기술 종류별 `components`, `hooks`, `utils` 묶음보다 `features/courses`, `features/lessons`처럼 변경 이유가 같은 코드를 가까이 둔다.
+- 기능 기준으로 파일을 모은다. 기술 종류별 전역 `components`, `hooks`, `utils` 묶음보다 `features/course-catalog`, `features/lesson-session`처럼 변경 이유가 같은 코드를 가까이 둔다.
 - 앱은 조립자 역할을 한다. 비즈니스 규칙은 가능한 한 `packages/core` 또는 feature 내부 순수 함수에 둔다.
 - 외부 API 응답은 canonical runtime schema로 먼저 검증한다. 화면 모델과 의미가 같으면 canonical 타입을 직접 사용하고, 실제 UI 모델 차이가 있을 때만 mapper를 둔다.
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
 - 공유 UI는 `packages/ui`에 둔다. `components/ui`는 shadcn 프리미티브, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점, 라우팅은 각 앱 feature에서 조합한다.
-- 학습자 공개 모델과 답안 payload는 `@workspace/contracts/learning`을 직접 사용한다. `apps/web/src/features/lessons`는 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
+- 학습자 공개 모델과 답안 payload는 `@workspace/contracts/learning`을 직접 사용한다. `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
 
 ## 2026-06-15 HTTP 클라이언트 응답 계약 검증 시작
 
@@ -66,7 +66,7 @@
 
 ## 데이터 접근 경계
 
-`apps/web`는 `WritingAppApi` 포트만 사용한다. HTTP 구현은 `src/lib/api/http`에 있고, 테스트와 일부 로컬 흐름은 fake adapter로 같은 포트를 구현한다. 정적 OpenAPI JSON과 generated TypeScript 타입은 사용하지 않는다. HTTP 응답은 `@workspace/contracts/learning`의 canonical runtime schema로 검증하며 course·progress·lesson·profile은 identity 변환 없이 화면에 전달한다. 코스 목록의 검색·분류·정렬은 URL 조건을 API query로 전달하고 `/course-categories` 결과를 별도로 사용한다.
+`apps/web`의 공통 HTTP transport는 `src/shared/http`에 있고, 서버 요청 factory는 `src/server/http`가 소유한다. 각 브라우저 화면은 자기 `features/*/api`의 좁은 포트를 사용하고, Server Component는 `features/*/server/dal`을 직접 호출한다. 정적 OpenAPI JSON과 generated TypeScript 타입은 사용하지 않는다. HTTP 응답은 `@workspace/contracts/learning`의 canonical runtime schema로 검증하며 course·progress·lesson·profile은 identity 변환 없이 화면에 전달한다. 코스 목록의 검색·분류·정렬은 Zod로 파싱한 URL 조건을 API query로 전달하고 `/course-categories` 결과를 별도로 사용한다.
 
 `apps/admin`은 `AdminApi` 포트만 사용한다. 서버 컴포넌트는 `getServerAdminApi()`로 현재 요청 쿠키를 어드민 API에 전달한다. 관리자 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다.
 
@@ -74,7 +74,7 @@
 
 ## 인증과 redirect
 
-학습자 앱의 보호 라우트는 `apps/web/src/app/app/layout.tsx`에서 현재 사용자를 확인하고, 없으면 `/login`으로 보낸다. 로그인 `next` 값은 `src/lib/auth/auth-navigation.ts`의 허용 규칙을 통과해야 한다.
+학습자 앱의 보호 라우트는 `apps/web/src/server/auth/server-session-token.ts`로 현재 세션을 확인하고, 각 데이터 접근 직전에 인증 실패를 `/login`으로 보낸다. 로그인 `next` 값은 `src/features/authentication/model/auth-navigation.ts`의 허용 규칙을 통과해야 한다. `app`의 page와 layout은 URL·redirect·DAL 호출·화면 조립만 담당한다.
 
 학습자 로그인은 `NEXT_PUBLIC_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 `CORS_ORIGIN`과 Better Auth `trustedOrigins`로 학습자 웹 origin을 허용한다.
 
@@ -101,7 +101,7 @@
 ## 학습자 경험
 
 - 공개 랜딩은 제품명, 가치 제안, 코스 미리보기, 학습 방식, 로그인 CTA를 제공한다.
-- 공개 랜딩 구현은 `features/landing/landing-page.tsx`가 라우팅과 최상위 조립만 맡고, section component, 정적 콘텐츠, motion hook, SVG/preview primitive를 같은 feature 폴더의 전용 파일로 분리한다.
+- 공개 랜딩 구현은 `features/landing/ui/landing-page.tsx`가 최상위 조립만 맡고, section component, 정적 콘텐츠, motion hook, SVG/preview primitive를 같은 feature의 `ui`에 분리한다.
 - 공개 랜딩의 정적 section은 Server Component로 렌더링하고 nav scroll, pointer glow, preview parallax, count-up만 client island로 둔다. pointer·scroll 값은 React 상위 state가 아니라 ref와 DOM transform으로 rAF당 한 번 갱신하며 listener는 passive/cleanup 규칙을 따른다. `prefers-reduced-motion: reduce`에서는 marquee·pebble·pointer·parallax·count-up animation을 비활성화한다.
 - 홈은 진행 중인 코스, 다음 레슨, 전체 학습 맥락, 현재 연속 학습일을 보여주며 진행 중·완료 목록의 `nextCursor`로 다음 페이지를 추가 로딩한다.
 - 홈 코스 카드는 breakpoint별 복제 마크업을 만들지 않고 하나의 링크·이미지 DOM을 반응형 CSS로 배치한다. 첫 코스 이미지만 우선 로드하며 `sizes`는 모바일 전체 폭과 데스크톱 176px 폭을 함께 명시한다.
