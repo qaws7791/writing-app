@@ -2,43 +2,47 @@
 
 ## 목적
 
-이 문서는 프로젝트 사실의 값을 다시 선언하지 않고, 각 사실을 최종적으로 소유하는 소스와 사람이 읽는 설명 문서를 연결한다. 설명 문서와 권위 소스가 충돌하면 권위 소스를 먼저 확인하고 같은 변경에서 설명 문서를 바로잡는다.
+이 문서는 프로젝트 사실의 값을 다시 선언하지 않고, 각 사실을 최종적으로 소유하는 소스를 연결한다. 사람이 작성한 문서는 의도·정책·절차를 소유하며, 코드와 설정이 소유하는 현재 값·구조·목록을 복제하지 않는다.
 
 ## 권위 원칙
 
 - 하나의 사실에는 하나의 권위 소유자만 둔다.
-- 실행 가능한 코드와 설정이 자연스럽게 소유하는 사실은 별도 문서나 중앙 manifest에 복제하지 않는다.
+- 실행 가능한 코드와 설정이 자연스럽게 소유하는 사실은 별도 문서나 생성 문서에 복제하지 않는다.
 - 제품 정책처럼 코드만으로 의도를 판정할 수 없는 사실은 제품 문서가 소유한다.
 - ADR은 결정의 이유를, `docs/work`는 진행 중 작업을, `docs/archive`는 과거 증거를 기록한다. 셋 모두 현재 topology의 권위 소유자가 아니다.
-- 설명 문서는 권위 소스를 사람이 이해하기 쉽게 투영하되, 같은 값을 여러 문서가 독립적으로 소유한다고 선언하지 않는다.
+- 문서는 권위 소스를 찾는 경로와 그 변경의 의도를 설명할 수 있지만, 같은 값을 다시 선언하지 않는다.
 
 ## 사실별 소유자
 
-| 사실 영역                         | 권위 소유자                                                            | 설명과 탐색 문서                                                        |
-| --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| 제품 문제와 목표                  | `docs/product/problem-definition.md`, `docs/product/product-vision.md` | `docs/product/_index.md`                                                |
-| 사용자 가치와 인수 기준           | `docs/product/user-stories/`                                           | `docs/product/user-stories/_index.md`                                   |
-| 구현할 제품 규칙                  | `docs/product/requirements/`                                           | `docs/product/requirements/_index.md`                                   |
-| 콘텐츠 계층과 불변식              | `docs/product/content-model.md`                                        | `docs/engineering/data-model.md`                                        |
-| 관리자 운영 정책                  | `docs/product/admin-operations.md`                                     | `docs/engineering/auth-permissions.md`                                  |
-| 화면 목적과 정보 구조             | `docs/design/screens/`, `docs/design/ia-spec.md`                       | `docs/design/_index.md`                                                 |
-| workspace 집합과 패키지 이름      | 루트와 각 workspace의 `package.json`                                   | `docs/engineering/workspace-inventory.md`                               |
-| 로컬 URL과 port 기본값            | `packages/env/src/local-runtime-defaults.ts`                           | `README.md`, `docs/engineering/runtime-configuration.md`                |
-| 환경 변수 계약                    | 각 앱의 환경 parser와 `.env.example`                                   | `docs/engineering/runtime-configuration.md`                             |
-| API path, method와 wire schema    | `apps/api` route registry와 `packages/contracts`                       | `docs/engineering/api-contract.md`                                      |
-| 인증과 권한 구현 경계             | API 인증·인가 middleware와 contract                                    | `docs/engineering/auth-permissions.md`, `docs/engineering/security.md`  |
-| 데이터 schema와 migration         | `packages/db` schema와 migration                                       | `docs/engineering/data-model.md`, `docs/engineering/migration.md`       |
-| production service topology       | `deploy/compose/compose.yaml`, Caddy 설정                              | `docs/engineering/system-overview.md`, `docs/engineering/deployment.md` |
-| production application image 집합 | image release metadata와 workflow matrix                               | `README.md`, `docs/engineering/deployment.md`                           |
-| 테스트 실행 계약                  | workspace test 설정과 루트 task                                        | `docs/engineering/testing.md`                                           |
-| 되돌리기 어려운 기술 결정의 이유  | `docs/engineering/adr/`                                                | `docs/engineering/_index.md`                                            |
+| 사실 영역                                 | 권위 소유자                                                               | 문서가 소유하는 내용           |
+| ----------------------------------------- | ------------------------------------------------------------------------- | ------------------------------ |
+| 제품 문제와 목표                          | `docs/product/problem-definition.md`, `docs/product/product-vision.md`    | 제품 의도와 우선순위           |
+| 사용자 가치와 인수 기준                   | `docs/product/user-stories/`                                              | 사용자 관점의 수용 기준        |
+| 구현할 제품 규칙                          | `docs/product/requirements/`                                              | 제품 정책과 예외               |
+| 콘텐츠 계층과 불변식                      | `docs/product/content-model.md`                                           | 도메인 의미와 불변식           |
+| 관리자 운영 정책                          | `docs/product/admin-operations.md`                                        | 운영자의 권한·책임 정책        |
+| 화면 목적과 정보 구조                     | `docs/design/screens/`, `docs/design/ia-spec.md`                          | 화면 목적, 흐름, 접근성 기준   |
+| workspace 집합·패키지 이름·script         | 루트와 각 workspace의 `package.json`                                      | 없음                           |
+| 로컬 URL·port·환경 변수 기본값            | 환경 parser, `.env.example`, `packages/env/src/local-runtime-defaults.ts` | 설정 분류와 변경 원칙          |
+| API path·method·wire schema               | `apps/api` route registry, runtime OpenAPI, `packages/contracts`          | 호환성·오류·인증 정책          |
+| 인증·권한의 현재 middleware 배치          | API 인증·인가 middleware와 contract                                       | 권한 정책과 보안 원칙          |
+| 데이터 schema·migration                   | `packages/db` schema와 migration                                          | 데이터 불변식과 migration 절차 |
+| production service·image·network topology | `deploy/compose/compose.yaml`, Caddy 설정, release workflow               | 배포 승인·복구·안전 절차       |
+| 테스트 명령·실행 대상                     | workspace test 설정과 루트 task                                           | 테스트 전략과 품질 기준        |
+| 검증 실행 결과                            | commit, 실행 명령, 환경, artifact가 고정된 archive 보고서                 | 과거 증거                      |
+| 되돌리기 어려운 기술 결정의 이유          | `docs/engineering/adr/`                                                   | 결정의 이유와 대안             |
 
-## API 용어 계약
+## 현재 코드 사실 탐색
 
-- 실행 앱, service와 image 이름은 모두 `api`를 사용한다.
-- public API는 하나이며 학습자 경로와 `/api/admin/*` 관리자 경로를 같은 `apps/api` runtime이 제공한다.
-- 관리자라는 말은 사용자·권한·경로의 논리적 범위를 나타낼 때만 사용하고 별도 API runtime, service 또는 image를 뜻하지 않는다.
-- 제거된 구조를 설명해야 하는 과거 기록에서는 `legacy`를 명시하며 현재형으로 서술하지 않는다.
+현재 값을 확인할 때는 문서의 서술을 신뢰하지 말고 다음 권위 소스를 직접 읽는다.
+
+1. workspace, package, script와 tool 버전은 루트와 각 workspace의 `package.json`을 확인한다.
+2. 로컬 runtime 기본값과 환경 변수는 `packages/env`, 각 앱의 parser와 `.env.example`을 확인한다.
+3. API path·method·schema는 `apps/api` route registry, `packages/contracts`, 실행 중인 OpenAPI를 확인한다.
+4. 배포 service, image, port, network와 proxy는 `deploy/compose/`, Caddy 설정과 release workflow를 확인한다.
+5. schema와 migration은 `packages/db`를, 테스트 실행 대상은 root task와 workspace test 설정을 확인한다.
+
+제거된 구조를 설명해야 하는 과거 기록에서는 `legacy`를 명시하며 현재형으로 서술하지 않는다.
 
 ## 충돌 처리
 

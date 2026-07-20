@@ -1,8 +1,8 @@
 # SCR-002 학습자 로그인
 
-## 라우트
+## 구현 탐색
 
-- `apps/web`: `/login`
+현재 route는 [학습자 앱 route source](../../../apps/web/src/app)에서 확인한다.
 
 ## 목적
 

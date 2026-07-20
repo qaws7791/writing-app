@@ -1,8 +1,8 @@
 # SCR-101 관리자 로그인
 
-## 라우트
+## 구현 탐색
 
-- `apps/admin`: `/login`
+현재 route는 [관리자 앱 route source](../../../apps/admin/src/app)에서 확인한다.
 
 ## 목적
 

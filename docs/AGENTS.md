@@ -15,7 +15,7 @@
 
 ## 기능 추가 플로우
 
-1. `docs/_index.md`와 `docs/authority-map.md`에서 관련 문서와 사실 소유자를 확인한다.
+1. `docs/_index.md`와 `docs/authority-map.md`에서 질문의 종류와 사실 소유자를 확인한다.
 2. 제품 기준을 먼저 확인한다.
    - 사용자 가치: `docs/product/user-stories/`
    - 구현 요구사항: `docs/product/requirements/`
@@ -23,7 +23,7 @@
    - 라우트와 정보 구조: `docs/design/ia-spec.md`
    - 화면 명세: `docs/design/screens/`
    - 공통 UI 기준: `docs/design/components.md`, `docs/design/patterns.md`
-4. API, 데이터, 권한, 운영 방식이 바뀌면 엔지니어링 문서를 확인한다.
+4. API, 데이터, 권한, 운영 방식이 바뀌면 엔지니어링 문서와 코드 권위 소스를 확인한다.
    - 시스템 경계: `docs/engineering/system-overview.md`
    - API 계약: `docs/engineering/api-contract.md`
    - 데이터 모델: `docs/engineering/data-model.md`
@@ -41,3 +41,5 @@
 - 새 계획·조사·감사 문서는 `docs/work/<yyyy-mm-dd-name>/`에 두고 완료하면 같은 디렉터리 이름으로 `docs/archive`에 이동한다.
 - `docs/work`, `docs/archive`와 ADR을 현재 topology의 권위 소스로 사용하지 않는다.
 - 한시 문서에서 확인한 영구 결론은 완료 전에 권위 지도에 지정된 현재 문서에 반영한다.
+- package, port, 환경 변수 기본값, route, service, image, network, schema, 테스트 대상처럼 코드·설정이 소유하는 현재 사실을 living 문서에 복제하지 않는다. 필요한 경우 권위 소스에 직접 링크한다.
+- 검증 보고서는 기준 commit, 실행 시각·환경, 명령, 결과와 artifact 위치를 고정한다.

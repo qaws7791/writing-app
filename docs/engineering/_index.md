@@ -2,74 +2,37 @@
 
 ## 목적
 
-이 문서는 엔지니어링 문서의 진입점이다. 시스템 구조, 기술 선택, 런타임 설정, API와 데이터 계약, 인증과 보안, 테스트와 운영 기준을 찾기 위해 사용한다.
+이 문서는 설계 원칙, 구현 경계, 운영 절차와 품질 기준의 진입점이다. 현재 package, runtime, route, 환경 변수, schema, deployment topology는 [사실별 권위 지도](../authority-map.md)의 코드 권위 소스에서 확인한다.
 
 ## 탐색 순서
 
-1. 시스템의 큰 구조는 `system-overview.md`에서 확인한다.
-2. 기술 선택과 실행 환경은 `tech-stack.md`, `runtime-configuration.md`에서 확인한다.
-3. 구현 계약은 `api-contract.md`, `data-model.md`, `schema-conventions.md`에서 확인한다. 기계 판독 계약은 `packages/contracts`가 소유한다.
-4. 운영 품질은 `testing.md`, `deployment.md`, `observability.md`, `security.md`, `migration.md`, `database-backup-restore.md`, `rollback.md`에서 확인한다.
-5. 변경 결정을 남길 때는 `adr/`를 사용한다. 진행 중 구현 계획은 `docs/work/`에서 관리한다.
-
-## 디렉토리 지도
-
-| 경로                    | 목적                                                                    |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `docs/engineering/`     | 엔지니어링 기준, 시스템 구조, 구현 계약, 운영 절차를 관리한다.          |
-| `docs/engineering/adr/` | 되돌리기 어렵거나 구조에 영향을 주는 기술 결정을 ADR 형식으로 기록한다. |
+1. 시스템 경계와 책임 원칙은 `system-overview.md`에서 확인한다.
+2. 기술 선택 기준과 설정 변경 원칙은 `tech-stack.md`, `runtime-configuration.md`에서 확인한다.
+3. API·데이터·권한의 호환성과 변경 규칙은 `api-contract.md`, `data-model.md`, `schema-conventions.md`, `auth-permissions.md`에서 확인한다.
+4. 테스트, 배포, 관측, 보안, migration, backup과 rollback 절차는 각 운영 문서에서 확인한다.
+5. 되돌리기 어려운 기술 결정은 `adr/`에서, 한시적 계획은 `docs/work/`에서 확인한다.
 
 ## 파일 지도
 
-| 파일                                                            | 목적                                                                                             |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `_index.md`                                                     | 엔지니어링 문서 전체의 진입점과 탐색 지도를 제공한다.                                            |
-| `system-overview.md`                                            | 시스템 목적, C4 모델, 서비스 경계, 라우트, API 런타임, 저장소, 배포 개요를 설명한다.             |
-| `workspace-inventory.md`                                        | 앱, 패키지, 스크립트 루트의 현재 인벤토리와 자동 검증 기준을 정의한다.                           |
-| `workspace-dependency-policy.md`                                | 공통 dependency catalog와 디자인·lint baseline ratchet 정책을 정의한다.                          |
-| `repository-architecture-tooling.md`                            | source inventory, TypeScript module graph와 architecture 정책 matcher를 정의한다.                |
-| `codex-skill-invocation-policy.md`                              | Codex 워크플로 스킬의 명시 호출 전용 정책과 검증 기준을 정의한다.                                |
-| `frontend-development.md`                                       | Next.js 앱의 컴포넌트, 데이터, 상태, 성능과 UI 구현 경계를 정의한다.                             |
-| `tech-stack.md`                                                 | 런타임, 패키지 관리, 프론트엔드, 백엔드, 데이터, 테스트 도구, 의존성 기준을 정의한다.            |
-| `runtime-configuration.md`                                      | 로컬 포트, 환경 변수 파서, 앱별 설정, Turbo 환경 변수, `.env.example` 정책을 정의한다.           |
-| `deployment.md`                                                 | 단일 Ubuntu 서버의 Docker Compose 배포 계약과 Ansible 자동화 경계를 정의한다.                    |
-| `api-contract.md`                                               | 학습자 API와 어드민 API의 공통 원칙, 인증 표면, 오류 응답, OpenAPI 생성 기준을 정의한다.         |
-| `auth-permissions.md`                                           | 인증 경계, 학습자 권한, 관리자 역할, API별 권한 기준, 권한 변경 절차를 정의한다.                 |
-| `data-model.md`                                                 | 데이터 모델 원칙, ERD, 인증과 콘텐츠와 학습 테이블, 상태 머신, seed 정책을 정의한다.             |
-| `schema-conventions.md`                                         | 데이터베이스 스키마 명명, Better Auth 테이블, 직접 관리 테이블, 새 스키마 체크리스트를 정의한다. |
-| `security.md`                                                   | 인증, 인가, CORS, 민감 데이터, 오류 응답, AI provider, 데이터 보존 보안 기준을 정의한다.         |
-| `admin-auth-security-operations.md`                             | 관리자 계정 감사, 세션 폐기와 안전한 owner provisioning 운영 절차를 정의한다.                    |
-| `admin-transport-security.md`                                   | 관리자 transport의 actor 구성, 이중 인가 경계와 오류 변환 기준을 정의한다.                       |
-| `admin-identity-types.md`                                       | 관리자와 학습자 계정, AI 대화 식별자의 브랜드 타입 경계를 정의한다.                              |
-| `testing.md`                                                    | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.           |
-| `lesson-runtime.md`                                             | 학습자 레슨 세션, 서버 전이, 순수 시각 컴포넌트 경계를 정의한다.                                 |
-| `lesson-session-state-machine.md`                               | 학습자 웹 레슨 세션 상태와 이벤트 전이 경계를 정의한다.                                          |
-| `observability.md`                                              | 요청 로그, 런타임 로깅, 로그 정책, 메트릭과 알림과 대시보드 후보를 정의한다.                     |
-| `migration.md`                                                  | 마이그레이션 모델, 명령, 기본 절차, seed 마이그레이션, 운영 원칙, 롤백 조건을 정의한다.          |
-| `database-backup-restore.md`                                    | SQLite snapshot 백업, 독립 복구 검증, 운영 복구 훈련과 결과 기록 기준을 정의한다.                |
-| `rollback.md`                                                   | 코드, DB, seed, 인증 장애의 롤백 판단 기준과 사후 기록 기준을 정의한다.                          |
-| `code-style.md`                                                 | 파일과 import, 포맷, lint, TypeScript, React와 Next.js, API와 DB 경계, 금지 패턴을 정의한다.     |
-| `package-interface-and-import-rules.md`                         | 패키지 공개 subpath Interface와 private alias import 규칙 및 자동 검증 기준을 정의한다.          |
-| `code-review.md`                                                | 리뷰 우선순위, 공통 체크리스트, 경계와 인증과 데이터와 API와 프론트엔드 검토 기준을 정의한다.    |
-| `git-workflow.md`                                               | 브랜치, 커밋 메시지, 커밋 전 확인, Git hook, PR, 리뷰, 머지 정책을 정의한다.                     |
-| `adr/ADR-0001-example.md`                                       | ADR 작성 형식과 결정 기록의 예시를 제공한다.                                                     |
-| `adr/ADR-0002-ui-design-system-contract.md`                     | 공유 UI 디자인 시스템의 공용화 범위, 밀도, naming 계약을 기록한다.                               |
-| `adr/ADR-0003-lesson-ui-orchestration-boundary.md`              | 레슨 순수 UI와 앱 오케스트레이션 경계를 기록한다.                                                |
-| `adr/ADR-0004-resource-library-collaboration-boundary.md`       | 대체됨. 이전 자료실 Markdown·Yjs 공동 편집 경계 결정을 기록한다.                                 |
-| `adr/ADR-0005-resource-library-http-transaction-sync.md`        | 대체됨. 이전 자료실 HTTP Yjs transaction과 작업 공간 WebSocket 결정을 기록한다.                  |
-| `adr/ADR-0006-strict-content-security-policy.md`                | request nonce 기반 strict CSP와 report-only rollout 결정을 기록한다.                             |
-| `adr/ADR-0007-admin-mfa-step-up.md`                             | owner 관리자 TOTP MFA, 복구 코드와 최근 재인증 경계 결정을 기록한다.                             |
-| `adr/ADR-0008-admin-password-only-auth.md`                      | 채택됨. 관리자 비밀번호 전용 인증과 역할 기반 인가 유지 결정을 기록한다.                         |
-| `adr/ADR-0009-http-command-boundary.md`                         | 채택됨. HTTP 요청 계약과 core application command의 변경 수명 경계를 기록한다.                   |
-| `adr/ADR-0010-admin-resource-library-single-version-storage.md` | 채택됨. 자료실 Markdown 단일 버전, ETag 조건부 저장과 AI 읽기 경계를 기록한다.                   |
-| `adr/ADR-0011-versioned-curriculum-storage.md`                  | 채택됨. 관계형 draft/published 커리큘럼 버전과 학습자 version 고정을 기록한다.                   |
-| `adr/ADR-0012-single-api-runtime.md`                            | 채택됨. learner/admin 보안 경계를 유지한 단일 API runtime 전환을 기록한다.                       |
-| `adr/ADR-0013-build-time-course-thumbnails.md`                  | 채택됨. 코스 썸네일의 build-time mirror와 불변 URL 계약을 기록한다.                              |
-| `adr/ADR-0014-app-owned-persistence-adapters.md`                | 채택됨. core→DB를 실행 앱 소유 adapter로 단조 전환하는 topology를 기록한다.                      |
-| `adr/ADR-0015-platform-runtime-package-ownership.md`            | 채택됨. 단일 API runtime의 HTTP platform과 observability 소유권을 기록한다.                      |
-| `adr/ADR-0016-web-feature-sliced-architecture.md`               | 채택됨. 학습자 웹의 기능 슬라이스, RSC와 원격 API adapter 경계 결정을 기록한다.                  |
-| `adr/ADR-0017-admin-feature-sliced-architecture.md`             | 채택됨. 관리자 웹의 기능 슬라이스, RSC와 원격 API adapter 경계 결정을 기록한다.                  |
+| 파일                                 | 목적                                                  |
+| ------------------------------------ | ----------------------------------------------------- |
+| `system-overview.md`                 | 시스템 책임 경계와 의존성 원칙을 정의한다.            |
+| `workspace-dependency-policy.md`     | 의존성 추가·갱신의 정책을 정의한다.                   |
+| `repository-architecture-tooling.md` | architecture 검증 도구의 책임과 사용 원칙을 정의한다. |
+| `frontend-development.md`            | 프론트엔드 구현 경계와 성능 원칙을 정의한다.          |
+| `tech-stack.md`                      | 기술 선택과 교체 판단 기준을 정의한다.                |
+| `runtime-configuration.md`           | 설정 소유권·변경·보안 원칙을 정의한다.                |
+| `deployment.md`                      | 배포 승인, 실행, 복구 절차를 정의한다.                |
+| `api-contract.md`                    | HTTP 호환성, 인증, 오류와 계약 변경 원칙을 정의한다.  |
+| `auth-permissions.md`                | 인증·인가 정책과 권한 변경 절차를 정의한다.           |
+| `data-model.md`                      | 데이터 불변식과 모델 변경 원칙을 정의한다.            |
+| `testing.md`                         | 테스트 전략과 품질 기준을 정의한다.                   |
+| `observability.md`                   | 관찰 가능성, 경보와 기록 기준을 정의한다.             |
+| `migration.md`                       | migration 실행과 호환성 판단 기준을 정의한다.         |
+| `database-backup-restore.md`         | 백업·독립 복구 검증 절차를 정의한다.                  |
+| `rollback.md`                        | 장애 시 코드·데이터 롤백 판단 기준을 정의한다.        |
+| `adr/`                               | 되돌리기 어려운 기술 결정의 이유와 대안을 기록한다.   |
 
 ## 관리 기준
 
-구현 경계나 운영 절차가 바뀌면 관련 엔지니어링 문서를 함께 갱신한다. 되돌리기 어렵거나 여러 패키지의 책임을 바꾸는 결정은 ADR로 남긴다.
+구현 경계나 운영 절차가 바뀌면 관련 원칙 문서를 함께 갱신한다. 현재 코드 사실은 문서에 복제하지 않고 권위 소스에 직접 연결한다. 되돌리기 어렵거나 여러 경계를 바꾸는 결정은 ADR로 남긴다.

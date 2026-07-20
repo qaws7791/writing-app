@@ -9,15 +9,8 @@ import {
 type JsonRecord = Record<string, unknown>
 
 type WorkspacePackage = {
-  readonly directory: string
   readonly exports: readonly string[]
-  readonly name: string
   readonly scripts: ReadonlySet<string>
-}
-
-export type Route = {
-  readonly method: string
-  readonly path: string
 }
 
 const markdownRoots = [
@@ -67,61 +60,12 @@ const staleResourceLibraryPatterns = [
   },
 ] as const
 
-const capabilityOwnershipNavigationSectionMarker =
-  "## capability 소유권·대표 탐색 경로"
-
-const capabilityOwnershipNavigationScenarios = [
-  {
-    label: "학습 단계 완료",
-    rowPattern: /^\|\s*학습 단계 완료\s*\|/mu,
-    sourceMarkers: [
-      "[공개 계약](../../packages/contracts/src/learning/learner-api.ts)",
-      "[순수 policy](../../packages/core/src/modules/learning/domain/complete-step-effect-plan.ts)",
-      "[app-owned adapter](../../apps/api/src/adapters/learning/learner-transition-drizzle.repository.ts)",
-      "[composition](../../apps/api/src/learner-api-core.ts)",
-      "[route](../../apps/api/src/modules/learning/learner-transition.routes.ts)",
-    ],
-  },
-  {
-    label: "관리자 content 발행",
-    rowPattern: /^\|\s*관리자 content 발행\s*\|/mu,
-    sourceMarkers: [
-      "[공개 계약](../../packages/contracts/src/admin/content-data.ts)",
-      "[순수 use case](../../packages/core/src/modules/content/application/use-cases/admin-course.use-case.ts)",
-      "[app-owned adapter](../../apps/api/src/adapters/content/admin-course-drizzle.repository.ts)",
-      "[composition](../../apps/api/src/modules/admin-content/admin-content.composition.ts)",
-      "[route](../../apps/api/src/modules/admin-content/curriculum-editor.routes.ts)",
-    ],
-  },
-  {
-    label: "자료실 문서 조회",
-    rowPattern: /^\|\s*자료실 문서 조회\s*\|/mu,
-    sourceMarkers: [
-      "[공개 계약](../../packages/contracts/src/admin/resource-library-data.ts)",
-      "[문서 wire 계약](../../packages/contracts/src/admin/admin-resource-documents.ts)",
-      "[순수 use case](../../packages/core/src/modules/resource-library/application/use-cases/resource-document.use-case.ts)",
-      "[app-owned adapter](../../apps/api/src/adapters/resource-library/resource-document-drizzle.repository.ts)",
-      "[composition](../../apps/api/src/modules/admin-resource-library/admin-resource-library.composition.ts)",
-      "[route](../../apps/api/src/modules/admin-resource-library/resource-documents.routes.ts)",
-    ],
-  },
-] as const
-
-const capabilityOwnershipNavigationRequiredMarkers = [
-  {
-    label: "단일 backend executable 상태",
-    marker:
-      "product backend executable은 `apps/api` 하나이며 학습자 경로와 `/api/admin/*` 관리자 경로를 함께 소유한다.",
-  },
-  {
-    label: "target-only 계약 상태",
-    marker:
-      "관리자 foundation과 여섯 capability는 별도 subprocess 없이 계약 suite로 검증한다.",
-  },
-] as const
-
 const repositoryRoot = process.cwd()
 const failures: string[] = []
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
 
 function readJsonFile(filePath: string): JsonRecord {
   const value: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"))
@@ -133,16 +77,8 @@ function readJsonFile(filePath: string): JsonRecord {
   return value
 }
 
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-}
-
 function readScripts(value: unknown): ReadonlySet<string> {
-  if (!isRecord(value)) {
-    return new Set()
-  }
-
-  return new Set(Object.keys(value))
+  return isRecord(value) ? new Set(Object.keys(value)) : new Set()
 }
 
 function normalizePath(filePath: string): string {
@@ -190,51 +126,12 @@ export function findStaleResourceLibraryStatements(
     )
 }
 
-export function findCapabilityOwnershipNavigationDrift(
-  content: string
-): readonly string[] {
-  const findings = capabilityOwnershipNavigationRequiredMarkers
-    .filter(({ marker }) => !content.includes(marker))
-    .map(({ label }) => `${label} marker`)
+function collectFiles(directory: string): string[] {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directory, entry.name)
 
-  if (!content.includes(capabilityOwnershipNavigationSectionMarker)) {
-    findings.push("capability 소유권·대표 탐색 경로 section")
-  }
-
-  for (const scenario of capabilityOwnershipNavigationScenarios) {
-    const scenarioIndex = content.search(scenario.rowPattern)
-
-    if (scenarioIndex === -1) {
-      findings.push(`${scenario.label} scenario`)
-    }
-
-    const sourceMarkerIndexes = scenario.sourceMarkers.map((marker) =>
-      content.indexOf(marker)
-    )
-
-    for (const [index, markerIndex] of sourceMarkerIndexes.entries()) {
-      if (markerIndex === -1) {
-        findings.push(
-          `${scenario.label} ${scenario.sourceMarkers[index] ?? "unknown"} source link`
-        )
-      }
-    }
-
-    if (
-      scenarioIndex !== -1 &&
-      sourceMarkerIndexes.every((markerIndex) => markerIndex !== -1) &&
-      [scenarioIndex, ...sourceMarkerIndexes].some(
-        (markerIndex, index) =>
-          index > 0 &&
-          markerIndex <=
-            ([scenarioIndex, ...sourceMarkerIndexes][index - 1] ?? -1)
-      )
-    ) {
-      findings.push(`${scenario.label} source link order`)
-    }
-  }
-
-  return findings
+    return entry.isDirectory() ? collectFiles(entryPath) : [entryPath]
+  })
 }
 
 function collectMarkdownFiles(): string[] {
@@ -257,14 +154,6 @@ function collectMarkdownFiles(): string[] {
   })
 }
 
-function collectFiles(directory: string): string[] {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name)
-
-    return entry.isDirectory() ? collectFiles(entryPath) : [entryPath]
-  })
-}
-
 function readWorkspacePackages(): Map<string, WorkspacePackage> {
   const result = createRepositoryWorkspaceInventory(repositoryRoot)
 
@@ -277,9 +166,7 @@ function readWorkspacePackages(): Map<string, WorkspacePackage> {
     result.inventory.allWorkspaces.map((workspace) => [
       workspace.name,
       {
-        directory: workspace.directory,
         exports: workspace.exportEntries.map(({ key }) => key),
-        name: workspace.name,
         scripts: new Set(Object.keys(workspace.scripts)),
       },
     ])
@@ -294,7 +181,6 @@ function validateDocumentedCommands(
     path.join(repositoryRoot, "package.json")
   )
   const rootScripts = readScripts(rootPackageJson["scripts"])
-  const packageNames = new Set(packages.keys())
 
   for (const filePath of markdownFiles) {
     if (isHistoricalOrAnalysisDocumentPath(filePath)) {
@@ -306,11 +192,7 @@ function validateDocumentedCommands(
     for (const command of content.matchAll(/\bbun run ([\w:.-]+)/g)) {
       const scriptName = command[1] ?? ""
 
-      if (scriptName.startsWith("--")) {
-        continue
-      }
-
-      if (!rootScripts.has(scriptName)) {
+      if (!scriptName.startsWith("--") && !rootScripts.has(scriptName)) {
         failures.push(
           `${filePath} references missing root script ${scriptName}.`
         )
@@ -324,12 +206,9 @@ function validateDocumentedCommands(
       const scriptName = command[2] ?? ""
       const workspacePackage = packages.get(packageName)
 
-      if (!packageNames.has(packageName) || workspacePackage === undefined) {
+      if (workspacePackage === undefined) {
         failures.push(`${filePath} references missing package ${packageName}.`)
-        continue
-      }
-
-      if (!workspacePackage.scripts.has(scriptName)) {
+      } else if (!workspacePackage.scripts.has(scriptName)) {
         failures.push(
           `${filePath} references missing ${packageName} script ${scriptName}.`
         )
@@ -358,102 +237,57 @@ function validateDocumentedWorkspaceImports(
         continue
       }
 
-      validateWorkspaceImport(filePath, specifier, packages)
-    }
-  }
-}
+      const [, packageSegment = "", subpath = ""] =
+        specifier.match(/^(@workspace\/[a-z0-9-]+)(?:\/(.+))?$/) ?? []
+      const workspacePackage = packages.get(packageSegment)
 
-function validateWorkspaceImport(
-  filePath: string,
-  specifier: string,
-  packages: ReadonlyMap<string, WorkspacePackage>
-) {
-  const [, packageSegment = "", subpath = ""] =
-    specifier.match(/^(@workspace\/[a-z0-9-]+)(?:\/(.+))?$/) ?? []
-  const workspacePackage = packages.get(packageSegment)
+      if (workspacePackage === undefined) {
+        failures.push(
+          `${filePath} references missing package ${packageSegment}.`
+        )
+        continue
+      }
 
-  if (workspacePackage === undefined) {
-    failures.push(`${filePath} references missing package ${packageSegment}.`)
-    return
-  }
-
-  if (subpath.length === 0) {
-    return
-  }
-
-  const exportKey = `./${subpath}`
-
-  if (!hasExport(workspacePackage.exports, exportKey)) {
-    failures.push(`${filePath} references missing export ${specifier}.`)
-  }
-}
-
-function hasExport(exports: readonly string[], exportKey: string): boolean {
-  return exports.some((candidate) => {
-    if (candidate === exportKey) {
-      return true
-    }
-
-    if (!candidate.endsWith("*")) {
-      return false
-    }
-
-    return exportKey.startsWith(candidate.slice(0, -1))
-  })
-}
-
-function validateBackendRouteDocumentation() {
-  const backendDocument = fs.readFileSync(
-    path.join(repositoryRoot, "docs/engineering/api-contract.md"),
-    "utf8"
-  )
-  const documentedApiRoutes = extractDocumentedRoutes(
-    backendDocument,
-    "## 학습자 API",
-    "## 관리자 경로"
-  )
-
-  reportRouteDrift({
-    actualRoutes: readApiRoutes(),
-    documentedRoutes: documentedApiRoutes,
-    label: "docs/engineering/api-contract.md 학습자 API routes",
-  })
-}
-
-function validateCanonicalOnboardingDocumentation() {
-  const stalePatterns = [
-    {
-      filePath: "apps/web/README.md",
-      patterns: [/same-origin 인증 프록시/u, /src\/app.*인증 프록시/u],
-    },
-    {
-      filePath: "docs/product/content-model.md",
-      patterns: [/type CurriculumNodeStatus = .*deprecated/u],
-    },
-    {
-      filePath: "docs/glossary.md",
-      patterns: [/^- 챕터:/mu, /^- deprecated:/mu],
-    },
-    {
-      filePath: "apps/storybook/README.md",
-      patterns: [/^## Commands$/mu, /^## Scope$/mu, /^## Notes$/mu],
-    },
-  ] as const
-
-  for (const { filePath, patterns } of stalePatterns) {
-    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
-
-    for (const pattern of patterns) {
-      if (pattern.test(content)) {
-        failures.push(`${filePath} contains stale onboarding text: ${pattern}.`)
+      if (
+        subpath.length > 0 &&
+        !workspacePackage.exports.some((candidate) =>
+          candidate.endsWith("*")
+            ? `./${subpath}`.startsWith(candidate.slice(0, -1))
+            : candidate === `./${subpath}`
+        )
+      ) {
+        failures.push(`${filePath} references missing export ${specifier}.`)
       }
     }
   }
+}
 
-  if (fs.existsSync(path.join(repositoryRoot, "docs/product/index.md"))) {
-    failures.push(
-      "docs/product/index.md duplicates the canonical docs/product/_index.md."
-    )
+function validateMarkdownLinks(markdownFiles: readonly string[]) {
+  for (const filePath of markdownFiles) {
+    const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
+
+    for (const match of content.matchAll(/!?\[[^\]]*\]\(([^)]+)\)/g)) {
+      const rawTarget = match[1]?.trim() ?? ""
+      const target = rawTarget.replace(/^<|>$/g, "").split(/[?#]/, 1)[0] ?? ""
+
+      if (
+        target.length === 0 ||
+        target.startsWith("http:") ||
+        target.startsWith("https:") ||
+        target.startsWith("mailto:")
+      ) {
+        continue
+      }
+
+      const absoluteTarget = path.resolve(
+        repositoryRoot,
+        path.dirname(filePath),
+        target
+      )
+      if (!fs.existsSync(absoluteTarget)) {
+        failures.push(`${filePath} references missing local link ${rawTarget}.`)
+      }
+    }
   }
 }
 
@@ -474,102 +308,6 @@ function validateCurrentResourceLibraryDocumentation(
   }
 }
 
-function validateCapabilityOwnershipNavigationDocumentation() {
-  const filePath = "docs/engineering/system-overview.md"
-  const content = fs.readFileSync(path.join(repositoryRoot, filePath), "utf8")
-
-  for (const finding of findCapabilityOwnershipNavigationDrift(content)) {
-    failures.push(`${filePath} is missing ${finding}.`)
-  }
-}
-
-function extractDocumentedRoutes(
-  document: string,
-  startHeading: string,
-  endHeading: string
-): Route[] {
-  const startIndex = document.indexOf(startHeading)
-  const endIndex = document.indexOf(endHeading)
-
-  if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
-    failures.push(`Could not find route section ${startHeading}.`)
-    return []
-  }
-
-  const section = document.slice(startIndex, endIndex)
-  const inlineRoutes = [
-    ...section.matchAll(/\b(GET|POST|PUT|PATCH|DELETE) ([^`,\n]+)/gu),
-  ].map((match) => ({
-    method: match[1] ?? "",
-    path: normalizeRoutePath(match[2] ?? ""),
-  }))
-  const tableRoutes = [
-    ...section.matchAll(
-      /^\|\s*`(GET(?:\/POST)?|POST|PUT|PATCH|DELETE)`\s*\|\s*`([^`]+)`/gmu
-    ),
-  ].flatMap((match) =>
-    (match[1] ?? "").split("/").map((method) => ({
-      method,
-      path: normalizeRoutePath(match[2] ?? ""),
-    }))
-  )
-
-  return [
-    ...new Map(
-      [...inlineRoutes, ...tableRoutes].map((route) => [
-        formatRoute(route),
-        route,
-      ])
-    ).values(),
-  ]
-}
-
-function normalizeRoutePath(routePath: string): string {
-  const pathWithoutQuery = routePath.trim().split("?")[0] ?? ""
-
-  return (
-    pathWithoutQuery.replaceAll(/\{([^}]+)\}/g, ":$1").replace(/\/$/, "") || "/"
-  )
-}
-
-function readApiRoutes(): Route[] {
-  const routeFiles = collectFiles(path.join(repositoryRoot, "apps/api/src"))
-    .filter(
-      (filePath) =>
-        filePath.endsWith(".routes.ts") &&
-        !normalizePath(filePath).includes("/modules/admin-") &&
-        !normalizePath(filePath).includes("/admin/admin-foundation.routes.ts")
-    )
-    .map((filePath) => fs.readFileSync(filePath, "utf8"))
-  const routePattern = /^\s*method:\s*"([a-z]+)"[\s\S]*?^\s*path:\s*"([^"]+)"/gm
-  const routes = routeFiles.flatMap((content) =>
-    [...content.matchAll(routePattern)].map((match) => ({
-      method: (match[1] ?? "").toUpperCase(),
-      path: normalizeRoutePath(match[2] ?? ""),
-    }))
-  )
-
-  return [
-    ...routes,
-    {
-      method: "GET",
-      path: "/openapi",
-    },
-    {
-      method: "GET",
-      path: "/api/auth/*",
-    },
-    {
-      method: "POST",
-      path: "/api/auth/*",
-    },
-    {
-      method: "GET",
-      path: "/api/auth/sign-in/google",
-    },
-  ]
-}
-
 export function isValidTaskDocumentDirectoryName(name: string): boolean {
   const match = /^(\d{4})-(\d{2})-(\d{2})-[a-z0-9]+(?:-[a-z0-9]+)*$/u.exec(name)
   if (match === null) return false
@@ -585,7 +323,7 @@ export function isValidTaskDocumentDirectoryName(name: string): boolean {
   )
 }
 
-function validateKnowledgeDocumentStructure(): void {
+function validateKnowledgeDocumentStructure() {
   const allowedRootMarkdown = new Set(["AGENTS.md", "README.md"])
   const rootMarkdown = fs
     .readdirSync(repositoryRoot, { withFileTypes: true })
@@ -605,8 +343,10 @@ function validateKnowledgeDocumentStructure(): void {
     if (!fs.existsSync(directory)) continue
 
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue
-      if (!isValidTaskDocumentDirectoryName(entry.name)) {
+      if (
+        entry.isDirectory() &&
+        !isValidTaskDocumentDirectoryName(entry.name)
+      ) {
         failures.push(
           `docs/${category}/${entry.name} 작업 디렉터리는 yyyy-mm-dd-kebab-case 형식이어야 합니다.`
         )
@@ -615,53 +355,14 @@ function validateKnowledgeDocumentStructure(): void {
   }
 }
 
-function reportRouteDrift({
-  actualRoutes,
-  documentedRoutes,
-  label,
-}: {
-  readonly actualRoutes: readonly Route[]
-  readonly documentedRoutes: readonly Route[]
-  readonly label: string
-}) {
-  const drift = findRouteDrift(actualRoutes, documentedRoutes)
-
-  for (const route of drift.missing) {
-    failures.push(`${label} is missing ${route}.`)
-  }
-
-  for (const route of drift.stale) {
-    failures.push(`${label} documents stale route ${route}.`)
-  }
-}
-
-export function findRouteDrift(
-  actualRoutes: readonly Route[],
-  documentedRoutes: readonly Route[]
-) {
-  const actual = new Set(actualRoutes.map(formatRoute))
-  const documented = new Set(documentedRoutes.map(formatRoute))
-
-  return {
-    missing: [...actual].filter((route) => !documented.has(route)).sort(),
-    stale: [...documented].filter((route) => !actual.has(route)).sort(),
-  }
-}
-
-function formatRoute(route: Route): string {
-  return `${route.method} ${route.path}`
-}
-
 function main() {
   const markdownFiles = collectMarkdownFiles()
   const packages = readWorkspacePackages()
 
   validateDocumentedCommands(markdownFiles, packages)
   validateDocumentedWorkspaceImports(markdownFiles, packages)
-  validateBackendRouteDocumentation()
-  validateCanonicalOnboardingDocumentation()
+  validateMarkdownLinks(markdownFiles)
   validateCurrentResourceLibraryDocumentation(markdownFiles)
-  validateCapabilityOwnershipNavigationDocumentation()
   validateKnowledgeDocumentStructure()
 
   if (failures.length > 0) {
@@ -674,7 +375,7 @@ function main() {
     process.exit(1)
   }
 
-  console.log("Document drift smoke checks passed.")
+  console.log("Document structure and reference checks passed.")
 }
 
 if (import.meta.main) {

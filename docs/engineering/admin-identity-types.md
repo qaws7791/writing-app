@@ -1,35 +1,16 @@
-# 어드민 식별자 타입 계약
+# 관리자 식별자 타입 계약
 
-## 작업 상태
+## 목적
 
-`CONS-01B` 구현을 완료했다.
+관리자, 학습자 계정과 관리자 대화처럼 서로 다른 도메인의 식별자를 type level에서 구분한다. 현재 parser, 브랜드 타입과 wire schema는 contracts source가 소유한다.
 
-## 대상 식별자
+## 원칙
 
-- `AdminId`: 인증된 관리자 계정 식별자
-- `ConversationId`: 관리자 AI 채팅 대화 식별자
-- `UserId`: 관리자가 조회·상태 변경·삭제하는 학습자 계정 식별자
-
-세 식별자는 wire format에서 문자열을 유지하되 transport 입력에서 검증한 뒤 서로 다른 브랜드 타입으로 전달한다.
-
-## Interface와 Adapter
-
-- `packages/contracts/src/brand.ts`가 workspace의 `Brand` 타입을 단일 소유한다.
-- `packages/contracts/src/admin/admin-ids.ts`가 세 식별자 타입과 parser를 단일 소유한다.
-- 식별자는 1~200자이며 영문 대소문자, 숫자, `.`, `_`, `:`, `-`만 허용한다. 첫 문자는 영문 또는 숫자여야 한다.
-- 관리자 인증 Adapter, HTTP path/body Adapter, DB 조회 Adapter가 외부 문자열을 parser로 검증한다.
-- core의 관리자 actor, use case 입력, repository Interface에는 브랜드 타입만 전달한다.
-- admin 앱은 학습자 식별자를 `entities/learner-account/model/learner-account-id.ts`, AI 대화 식별자를 `features/ai-chat/model/conversation-id.ts`에서 canonical contract schema와 브랜드 타입으로 노출한다.
-- App Router의 동적 route와 Server Action은 이 schema로 외부 문자열을 DAL 호출 전에 검증한다. 화면 Module은 entity·feature model 타입을 사용하고 wire DTO는 허용된 `api | model | server` 경계에서만 import한다.
-
-## 호환성
-
-브랜드는 TypeScript의 compile-time 정보이므로 HTTP path, JSON request/response, DB column의 문자열 wire format은 변경하지 않는다. 기존 ID 값도 위 형식 규칙을 만족하면 변환 없이 유지된다.
+- 외부 문자열은 HTTP·UI 입력 경계에서 검증한 뒤 의미 있는 식별자 타입으로 변환한다.
+- domain과 application 경계는 raw string이 아닌 식별자 타입을 사용한다.
+- HTTP와 persistence의 wire 표현을 바꾸지 않는 type 강화는 consumer 호환성을 깨지 않아야 한다.
+- 화면은 feature 또는 entity model을 통해 식별자를 소비하고, 내부 wire schema를 넓게 재수출하지 않는다.
 
 ## 검증
 
-- contracts parser 테스트가 유효 ID, 빈 값, 공백, 금지 문자, 한글, 최대 길이 초과를 검증한다.
-- compile-time negative fixture가 `AdminId`, `ConversationId`, `UserId`의 교차 전달을 거부한다.
-- core repository/use case 계약 테스트가 브랜드 입력과 DTO 결과를 검증한다.
-- `apps/api`의 관리자 identity HTTP Adapter 계약과 target-only route 테스트가 기존 문자열 wire format을 유지하는지 검증한다.
-- `apps/admin/src/architecture.test.ts`가 contract import 경계, feature 격리와 제거된 `lib/api/admin-identity.ts` 경로의 재도입 금지를 검증한다.
+유효·무효 입력, 도메인 간 식별자 교차 전달, route·repository 경계의 검증은 contracts와 consumer test가 소유한다. 현재 형식·길이 제한과 test file은 해당 source에서 확인한다.

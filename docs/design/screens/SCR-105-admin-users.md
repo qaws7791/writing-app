@@ -1,8 +1,8 @@
 # SCR-105 사용자 관리
 
-## 라우트
+## 구현 탐색
 
-- `apps/admin`: `/users`
+현재 route는 [관리자 앱 route source](../../../apps/admin/src/app)에서 확인한다.
 
 ## 목적
 

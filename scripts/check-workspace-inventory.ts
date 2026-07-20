@@ -5,12 +5,10 @@ import {
   createRepositoryWorkspaceInventory,
   formatWorkspaceInventoryError,
   type WorkspaceInventory,
-  type WorkspaceManifest,
 } from "@workspace/repository-tooling"
 
 type JsonRecord = Record<string, unknown>
 
-const workspaceInventoryDocumentPath = "docs/engineering/workspace-inventory.md"
 const requiredAnalysisRoots = [
   "apps/storybook/**",
   "packages/config/**",
@@ -189,34 +187,6 @@ function validateTurboTasks() {
     if (!outputs.includes(output)) {
       failures.push(`turbo.json build outputs must include ${output}.`)
     }
-  }
-}
-
-function validateWorkspaceInventoryDocument(
-  workspaceEntries: readonly WorkspaceManifest[]
-) {
-  const content = fs.readFileSync(
-    path.join(repositoryRoot, workspaceInventoryDocumentPath),
-    "utf8"
-  )
-  const rows = readMarkdownTableRows(content)
-
-  for (const entry of workspaceEntries) {
-    const hasWorkspaceRow = rows.some(
-      ([directory, name]) =>
-        directory === toMarkdownCode(entry.directory) &&
-        name === toMarkdownCode(entry.name)
-    )
-
-    if (!hasWorkspaceRow) {
-      failures.push(
-        `${workspaceInventoryDocumentPath} must include ${entry.directory} (${entry.name}).`
-      )
-    }
-  }
-
-  if (!rows.some(([directory]) => directory === toMarkdownCode("scripts"))) {
-    failures.push(`${workspaceInventoryDocumentPath} must include scripts.`)
   }
 }
 
@@ -456,22 +426,6 @@ function isPathInsideDirectory(filePath: string, directory: string): boolean {
   )
 }
 
-function readMarkdownTableRows(content: string): string[][] {
-  return content
-    .split(/\r?\n/)
-    .filter((line) => line.trim().startsWith("|"))
-    .map((line) =>
-      line
-        .split("|")
-        .slice(1, -1)
-        .map((cell) => cell.trim())
-    )
-}
-
-function toMarkdownCode(value: string): string {
-  return `\`${value}\``
-}
-
 const workspaceInventoryResult =
   createRepositoryWorkspaceInventory(repositoryRoot)
 
@@ -491,7 +445,6 @@ if (workspaceInventoryResult.status === "success") {
 }
 validateRootPackageScripts()
 validateTurboTasks()
-validateWorkspaceInventoryDocument(workspaceEntries)
 validatePackageExports(workspaceEntries)
 
 if (failures.length > 0) {

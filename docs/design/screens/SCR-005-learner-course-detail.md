@@ -1,8 +1,8 @@
 # SCR-005 코스 상세
 
-## 라우트
+## 구현 탐색
 
-- `apps/web`: `/app/courses/[id]`
+현재 route는 [학습자 앱 route source](../../../apps/web/src/app)에서 확인한다.
 
 ## 목적
 

@@ -79,40 +79,14 @@
 - `network-error`는 사용자 메시지와 별개로 원인, method, query가 제거된 URL, 실패 분류를 보존한다.
 - 화면은 네트워크 오류 원인을 직접 노출하지 않는다. 로깅, 리포팅, 재시도 정책만 구조화된 `network` 값을 사용한다.
 
-## 현재 앱 라우트
+## 화면 구현 탐색
 
-아래 라우트는 현재 `apps/web/src/app`과 `apps/admin/src/app`에 구현된 화면 계약이다.
+화면 목적과 정보 구조는 [IA 명세](../design/ia-spec.md)와 screen 문서가 소유한다. 현재 URL과 route file은 각 앱의 route source가 소유한다. 화면 구현은 URL 목록을 이 문서에 복제하지 않고, 화면 식별자·feature 경계·공개 contract를 따라 탐색한다.
 
-### 학습자 웹
-
-- `/`: 랜딩 페이지.
-- `/login`: 로그인 페이지.
-- `/app`: 인증이 필요한 학습 홈.
-- `/app/courses`: 코스 목록과 카테고리.
-- `/app/courses/[id]`: 코스 상세와 커리큘럼.
-- `/app/lesson?lesson_id=...`: 시작 화면을 포함한 step 기반 레슨 진행 화면.
-- `/app/profile`: 사용자 정보, 가입일, 완료 레슨, 연속 학습일, 라이트/다크/시스템 테마 전환.
-
-### 어드민 웹
-
-- `/`: 운영 대시보드.
-- `/login`: 관리자 로그인 페이지.
-- `/courses`: 코스 목록.
-- `/courses/[id]`: 현재 공개 커리큘럼을 직접 편집하는 코스/레슨/스텝 편집기.
-- `/users`: 사용자 목록.
-- `/users/[id]`: 사용자 상세, 상태 변경, 삭제 요청 처리.
-- `/analytics`: 가입, 완료, 연속 학습일, 레슨별 완료율과 이탈률 분석.
-- `/chat`: 관리자 AI 에이전트 대화.
-
-관리자 코스 썸네일 route는 계약의 `visualKey` 허용 목록만 처리한다. 정상 파일은 프로세스 수명 동안 읽기 Promise를 재사용하고 장기 immutable cache header를 반환하며, 허용되지 않은 이름·경로 탐색·배포 누락 파일은 모두 404로 응답한다.
-
-학습자 공개 랜딩은 Open Graph·Twitter 기본 metadata와 manifest를 제공하고 sitemap에는 인증 없이 접근 가능한 route만 포함한다. 코스 상세의 metadata와 본문은 React request cache로 같은 조회를 공유하며, 조회할 수 없는 코스에는 canonical을 만들지 않는다. 관리자 앱은 root metadata와 `robots.txt` 양쪽에서 전체 색인을 차단한다.
-
-- `/resources`: 최대 1,000개의 전체 자료 트리, 검색, 새 폴더·문서, Markdown 가져오기와 선택 안내.
-- 자료 트리의 공개 Interface는 `ResourceTree` 하나이며, 상태 전이와 명령 순서는 controller/reducer, drag/drop 판단은 순수 policy, 명령 dialog와 row 렌더링은 각 view module에 둔다.
-- `/resources/[documentId]`: breadcrumb, 제목, 저장 상태와 Lexical GFM 편집기.
-- `/resources/trash`: 직접 휴지통으로 이동한 최상위 항목과 전체 하위 트리 읽기·복원.
-- `/settings`: 공지, 약관, 개인정보처리방침, 콘텐츠 초기화.
+- 화면은 metadata, 접근성, 오류·loading·not-found 상태를 사용자 흐름의 일부로 구현한다.
+- 공개 화면과 보호 화면은 검색 노출, cache와 인증 실패 처리를 목적에 맞게 분리한다.
+- 자산 경로와 cache header의 현재 값은 route·asset source에서 확인하고, 화면은 허용된 식별자만 소비한다.
+- 자료실은 tree 상태, 편집 상태와 명령 UI를 분리하고, 화면 목적·편집 정책은 `SCR-110`과 제품 요구사항을 따른다.
 
 ## 데이터 접근 경계
 

@@ -4,12 +4,9 @@
 
 운영자가 프로젝트 소유의 GFM 문서를 최대 3단계 폴더로 정리하고 Notion형 편집기에서 명시적으로 저장한다. 저장된 활성 문서는 관리자 AI의 읽기 전용 지식 원본이 된다.
 
-## 라우트
+## 구현 탐색
 
-- `/resources`: 활성 자료 트리와 문서 선택 안내
-- `/resources/[documentId]`: 활성 문서 편집
-- `/resources/trash`: 휴지통 트리
-- `/resources/[documentId]?scope=trash`: 휴지통 문서 읽기
+현재 route와 query는 [관리자 앱 route source](../../../apps/admin/src/app)에서 확인한다. 이 화면은 활성 자료 트리, 문서 편집, 휴지통 자료 읽기라는 세 사용자 상태를 제공한다.
 
 ## 레이아웃
 

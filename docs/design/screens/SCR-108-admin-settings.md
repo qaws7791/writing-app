@@ -1,8 +1,8 @@
 # SCR-108 운영 설정
 
-## 라우트
+## 구현 탐색
 
-- `apps/admin`: `/settings`
+현재 route는 [관리자 앱 route source](../../../apps/admin/src/app)에서 확인한다.
 
 ## 목적
 

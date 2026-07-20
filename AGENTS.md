@@ -25,6 +25,7 @@ Prefer explicitness over implicitness and choose simplicity over cleverness and 
 - Always update the documentation (/docs) to the latest version for changes when starting and finishing a task.
 - 로컬 브라우저 테스트나 E2E 테스트는 Google OAuth 대신 `ENABLE_TEST_AUTH=true` 테스트 전용 로그인을 사용한다.
 - 프로젝트 사실을 확인할 때는 `docs/_index.md`, `docs/authority-map.md`, 해당 권위 소스 순서로 읽는다.
+- package, route, port, 환경 변수 기본값, schema, service, image, network와 테스트 실행 대상은 코드·설정이 소유한다. living 문서에는 값을 복제하지 않고 권위 소스로 연결한다.
 - `docs/work`는 진행 중 작업의 범위와 판단을 이해할 때만 사용하며 현재 구조의 권위 소스로 인용하지 않는다.
 - `docs/archive`와 ADR은 현재 사실 판정에서 제외하고, 과거 결정이나 증거가 필요한 경우에만 읽는다.
 - 새 계획·조사·감사 문서는 `docs/work/<yyyy-mm-dd-name>/`에 만들고 완료 시 같은 작업 단위를 `docs/archive/<yyyy-mm-dd-name>/`로 이동한다.
