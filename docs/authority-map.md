@@ -9,6 +9,8 @@
 - 하나의 사실에는 하나의 권위 소유자만 둔다.
 - 실행 가능한 코드와 설정이 자연스럽게 소유하는 사실은 별도 문서나 생성 문서에 복제하지 않는다.
 - 제품 정책처럼 코드만으로 의도를 판정할 수 없는 사실은 제품 문서가 소유한다.
+- 관리자 자료실은 코스 제작에 사용하는 학습 참고자료만 소유하며 프로젝트 문서 저장소나 어드민 위키로 사용하지 않는다.
+- 제품 요구사항, 설계, 아키텍처, 보안, 운영·개발 정책은 Git 문서가 소유하며 관리자 자료실에 복제하지 않는다.
 - ADR은 결정의 이유를, `docs/work`는 진행 중 작업을, `docs/archive`는 과거 증거를 기록한다. 셋 모두 현재 topology의 권위 소유자가 아니다.
 - 문서는 권위 소스를 찾는 경로와 그 변경의 의도를 설명할 수 있지만, 같은 값을 다시 선언하지 않는다.
 
@@ -20,6 +22,8 @@
 | 사용자 가치와 인수 기준                   | `docs/product/user-stories/`                                              | 사용자 관점의 수용 기준        |
 | 구현할 제품 규칙                          | `docs/product/requirements/`                                              | 제품 정책과 예외               |
 | 콘텐츠 계층과 불변식                      | `docs/product/content-model.md`                                           | 도메인 의미와 불변식           |
+| 현재 코스 draft·published 콘텐츠          | curriculum repository가 관리하는 persisted data                           | 콘텐츠 의미와 발행 정책        |
+| 코스 제작용 학습 참고자료                 | 관리자 자료실의 활성 문서                                                 | 없음                           |
 | 관리자 운영 정책                          | `docs/product/admin-operations.md`                                        | 운영자의 권한·책임 정책        |
 | 화면 목적과 정보 구조                     | `docs/design/screens/`, `docs/design/ia-spec.md`                          | 화면 목적, 흐름, 접근성 기준   |
 | workspace 집합·패키지 이름·script         | 루트와 각 workspace의 `package.json`                                      | 없음                           |
@@ -43,6 +47,8 @@
 5. schema와 migration은 `packages/db`를, 테스트 실행 대상은 root task와 workspace test 설정을 확인한다.
 
 제거된 구조를 설명해야 하는 과거 기록에서는 `legacy`를 명시하며 현재형으로 서술하지 않는다.
+
+어드민 사이트의 AI 에이전트 페이지는 코스와 관리자 자료실 도메인만 사용한다. Git, 코드와 `docs`를 검색하거나 프로젝트 개발 사실을 추정하지 않는다.
 
 ## 충돌 처리
 
