@@ -1,62 +1,55 @@
 import { betterAuth } from "better-auth"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { learnerAccountStatuses } from "@workspace/contracts/status"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-
+import { learnerAccountStatuses } from "@workspace/contracts/status"
 import type {
   LearnerProfileRepository,
   SessionResolver,
 } from "@workspace/core/auth"
-import {
-  createLearnerTestAuthPlugin,
-  defaultLearnerTestAuthUser,
-} from "@/adapters/auth/learner-test-auth-plugin"
-import type { WritingAppDatabase } from "@workspace/db/client"
-import {
-  authAccounts,
-  authSessions,
-  authUsers,
-  authVerifications,
-} from "@workspace/db/schema"
-import * as dbSchema from "@workspace/db/schema"
 
-export type CreateLearnerAuthInput = {
+import type { AuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
+import { readAuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
+import { createLearnerTestAuthPlugin } from "#auth/learner/test-auth-plugin"
+import type { LearnerTestAuthConfiguration } from "#auth/learner/test-auth-types"
+
+export type {
+  LearnerTestAuthConfiguration,
+  LearnerTestAuthDisplayNameSynchronizer,
+} from "#auth/learner/test-auth-types"
+
+export type CreateLearnerAuthRuntimeInput = {
   readonly apiOrigin: string
   readonly cookieDomain?: string
-  readonly db: WritingAppDatabase
+  readonly database: AuthDatabaseAdapter
   readonly googleClientId?: string
   readonly googleClientSecret?: string
   readonly profileRepository: LearnerProfileRepository
   readonly secret: string
-  readonly testAuthEnabled?: boolean
+  readonly testAuth: LearnerTestAuthConfiguration
   readonly webOrigin: string
 }
 
-export function createLearnerAuth(input: CreateLearnerAuthInput) {
-  return betterAuth({
+export type LearnerAuthRuntime = {
+  readonly authHandler: (request: Request) => Promise<Response>
+  readonly sessionResolver: SessionResolver
+}
+
+export function createLearnerAuthRuntime(
+  input: CreateLearnerAuthRuntimeInput
+): LearnerAuthRuntime {
+  const auth = betterAuth({
     advanced: createLearnerAdvancedOptions(input.cookieDomain),
     basePath: "/api/auth",
     baseURL: input.apiOrigin,
-    database: drizzleAdapter(input.db, {
-      provider: "sqlite",
-      schema: {
-        ...dbSchema,
-        account: authAccounts,
-        session: authSessions,
-        user: authUsers,
-        verification: authVerifications,
-      },
-    }),
+    database: readAuthDatabaseAdapter(input.database),
     databaseHooks: createLearnerAuthHooks({
       profileRepository: input.profileRepository,
     }),
     plugins:
-      input.testAuthEnabled === true
+      input.testAuth.kind === "enabled"
         ? [
             createLearnerTestAuthPlugin({
               callbackOrigin: input.webOrigin,
-              database: input.db,
-              user: defaultLearnerTestAuthUser,
+              displayNameSynchronizer: input.testAuth,
             }),
           ]
         : [],
@@ -79,6 +72,14 @@ export function createLearnerAuth(input: CreateLearnerAuthInput) {
           },
     trustedOrigins: [input.webOrigin],
   })
+
+  return {
+    authHandler: auth.handler,
+    sessionResolver: createLearnerSessionResolver(
+      auth,
+      input.profileRepository
+    ),
+  }
 }
 
 type LearnerBetterAuthSessionApi = {
@@ -99,7 +100,7 @@ type LearnerBetterAuthSession = {
   }
 }
 
-export function createLearnerSessionResolver(
+function createLearnerSessionResolver(
   auth: LearnerBetterAuthSessionApi,
   profileRepository: LearnerProfileRepository
 ): SessionResolver {

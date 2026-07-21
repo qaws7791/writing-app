@@ -1,5 +1,5 @@
 import type { WritingAppDatabase } from "@workspace/db"
-import type { AdminSessionResolver } from "@/adapters/auth/admin-session"
+import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import type { ApiEnv } from "@/config/env"
 import type { AppLogger } from "@/observability/app-logger"
 

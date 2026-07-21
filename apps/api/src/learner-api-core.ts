@@ -19,12 +19,13 @@ import {
   type ProgressService,
 } from "@workspace/core/learning"
 import type { WritingAppDatabase } from "@workspace/db"
+import { createLearnerAuthRuntime } from "@workspace/auth/learner/server"
 
+import { createLearnerAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
 import {
-  createLearnerAuth,
-  createLearnerSessionResolver,
-} from "@/adapters/auth/learner-auth"
-import { createDrizzleLearnerProfileRepository } from "@/adapters/auth/learner-profile-drizzle.repository"
+  createDrizzleLearnerProfileRepository,
+  createDrizzleLearnerTestAuthDisplayNameSynchronizer,
+} from "@/adapters/auth/learner-profile-drizzle.repository"
 import { createDrizzleAiFeedbackRepository } from "@/adapters/ai-feedback/ai-feedback-drizzle.repository"
 import { createDrizzleLearnerReadModelRepository } from "@/adapters/learning/learner-read-model-drizzle.repository"
 import { createDrizzleProfileReader } from "@/adapters/learning/learner-read-models"
@@ -90,20 +91,26 @@ export function createLearnerApiCore(
   const learnerTransitionRepository =
     createDrizzleLearnerTransitionRepository(database)
   const cursorCodec = createLearnerCursorCodec(cursorSigningSecret)
-  const auth = createLearnerAuth({
+  const auth = createLearnerAuthRuntime({
     apiOrigin,
-    db: database,
+    database: createLearnerAuthDatabase(database),
     googleClientId,
     googleClientSecret,
     profileRepository: learnerProfileRepository,
     secret: learnerAuthSecret,
     cookieDomain: learnerCookieDomain,
-    testAuthEnabled,
+    testAuth:
+      testAuthEnabled === true
+        ? {
+            kind: "enabled",
+            ...createDrizzleLearnerTestAuthDisplayNameSynchronizer(database),
+          }
+        : { kind: "disabled" },
     webOrigin,
   })
 
   return {
-    authHandler: auth.handler,
+    authHandler: auth.authHandler,
     contentService: createLearnerContentService({
       readModelRepository: learnerReadModelRepository,
     }),
@@ -120,9 +127,6 @@ export function createLearnerApiCore(
     progressService: createProgressService({
       readModelRepository: learnerReadModelRepository,
     }),
-    sessionResolver: createLearnerSessionResolver(
-      auth,
-      learnerProfileRepository
-    ),
+    sessionResolver: auth.sessionResolver,
   }
 }

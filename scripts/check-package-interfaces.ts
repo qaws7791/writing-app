@@ -30,6 +30,7 @@ const coreCapabilityPublicSurfaceFixture =
 const sourceExtensions = new Set([".ts", ".tsx", ".mdx"])
 const failures: string[] = []
 const privateImportScopes: readonly PrivateImportScope[] = [
+  { packageName: "@workspace/auth", root: "packages/auth/src" },
   { packageName: "@workspace/core", root: "packages/core/src" },
   { packageName: "@workspace/ui", root: "packages/ui/src" },
   { packageName: "@workspace/env", root: "packages/env/src" },
@@ -38,6 +39,15 @@ const privateImportScopes: readonly PrivateImportScope[] = [
 ]
 
 const expectedExports = {
+  "packages/auth/package.json": [
+    "./admin/client",
+    "./admin/server",
+    "./learner/client",
+    "./learner/server",
+    "./password",
+    "./session-token",
+    "./sqlite-database",
+  ],
   "packages/contracts/package.json": [
     ".",
     "./admin",
@@ -239,7 +249,11 @@ for (const filePath of collectSourceFiles(repositoryRoot)) {
       failures.push(`${relative} -> 허용되지 않은 core Interface ${source}`)
     }
 
-    if (source === "@workspace/ui" || source === "@workspace/env") {
+    if (
+      source === "@workspace/auth" ||
+      source === "@workspace/ui" ||
+      source === "@workspace/env"
+    ) {
       failures.push(`${relative} -> root barrel ${source}`)
     }
   }

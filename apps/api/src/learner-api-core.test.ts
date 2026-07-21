@@ -30,7 +30,7 @@ describe("학습자 API 코어 조립", () => {
     }
   })
 
-  it("auth hook과 session resolver가 같은 profile repository instance를 사용한다", async () => {
+  it("auth runtime에 app-owned mapping과 profile repository를 주입한다", async () => {
     const source = await readFile(
       new URL("./learner-api-core.ts", import.meta.url),
       "utf8"
@@ -42,9 +42,11 @@ describe("학습자 API 코어 조립", () => {
     expect(source).toContain("createDrizzleLearnerReadModelRepository")
     expect(source).toContain("createDrizzleProfileReader")
     expect(source).toContain("createDrizzleLearnerTransitionRepository")
-    expect(source).toMatch(
-      /createLearnerSessionResolver\(\s*auth,\s*learnerProfileRepository\s*\)/u
+    expect(source).toContain("createLearnerAuthDatabase(database)")
+    expect(source).toContain(
+      "createDrizzleLearnerTestAuthDisplayNameSynchronizer(database)"
     )
+    expect(source).toContain("sessionResolver: auth.sessionResolver")
   })
 
   it("production과 E2E가 같은 통합 runtime root를 사용한다", async () => {

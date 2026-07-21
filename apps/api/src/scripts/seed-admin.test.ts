@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest"
+import {
+  createAdminAuthRuntime,
+  type AdminAuthRuntime,
+} from "@workspace/auth/admin/server"
 import { adminRoles } from "@workspace/core/admin"
-import { adminAuthUsers } from "@workspace/db"
+import { adminAuthUsers, type WritingAppDatabase } from "@workspace/db"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
-import { createAdminAuth } from "@/adapters/auth/admin-auth"
+import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
+import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
 import {
   createSeedAdminRows,
   createSeedAdminUserRow,
@@ -95,12 +100,7 @@ describe("통합 API 관리자 seed", () => {
         now: new Date("2026-06-14T00:00:00.000Z"),
         password: "admin-password-123",
       })
-      const auth = createAdminAuth({
-        apiOrigin: "http://api.localhost:4000",
-        db: database.db,
-        secret: "x".repeat(32),
-        webOrigin: "http://localhost:3001",
-      })
+      const auth = createTestAdminAuth(database.db)
       expect(await requestAdminEmailSignIn(auth, "admin-password-123")).toBe(
         200
       )
@@ -125,12 +125,7 @@ describe("통합 API 관리자 seed", () => {
         now: new Date("2026-06-15T00:00:00.000Z"),
         password: "changed-password-123",
       })
-      const auth = createAdminAuth({
-        apiOrigin: "http://api.localhost:4000",
-        db: database.db,
-        secret: "x".repeat(32),
-        webOrigin: "http://localhost:3001",
-      })
+      const auth = createTestAdminAuth(database.db)
       expect(await requestAdminEmailSignIn(auth, "admin-password-123")).toBe(
         200
       )
@@ -180,11 +175,11 @@ describe("통합 API 관리자 seed", () => {
 })
 
 async function requestAdminEmailSignIn(
-  auth: ReturnType<typeof createAdminAuth>,
+  auth: AdminAuthRuntime,
   password: string
 ): Promise<number> {
   return auth
-    .handler(
+    .authHandler(
       new Request("http://api.localhost:4000/api/admin/auth/sign-in/email", {
         body: JSON.stringify({ email: "admin@example.com", password }),
         headers: {
@@ -195,4 +190,14 @@ async function requestAdminEmailSignIn(
       })
     )
     .then((response) => response.status)
+}
+
+function createTestAdminAuth(database: WritingAppDatabase): AdminAuthRuntime {
+  return createAdminAuthRuntime({
+    apiOrigin: "http://api.localhost:4000",
+    database: createAdminAuthDatabase(database),
+    secret: "x".repeat(32),
+    sessionRevoker: createDrizzleAdminSessionRevoker(database),
+    webOrigin: "http://localhost:3001",
+  })
 }

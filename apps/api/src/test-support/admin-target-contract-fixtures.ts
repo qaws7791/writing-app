@@ -8,7 +8,7 @@ import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@/adapters/auth/admin-session"
+} from "@workspace/auth/admin/server"
 import { defineAdminRoute } from "@/admin/admin-hono-env"
 import { jsonResponse } from "@/admin/admin-openapi"
 import { ownerAdminRouteOptions } from "@/admin/admin-route-options"

@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+채택됨. 단, Better Auth integration 위치 결정은 ADR-0018이 대체하며 app-owned persistence adapter 결정은 유지한다.
 
 ## 날짜
 

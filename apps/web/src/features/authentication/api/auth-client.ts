@@ -1,8 +1,10 @@
-import { createAuthClient } from "better-auth/react"
+import {
+  createLearnerAuthClient,
+  type LearnerAuthClient,
+} from "@workspace/auth/learner/client"
 
 import { resolveSafeNextPath } from "@/features/authentication/model/auth-navigation"
 import {
-  buildApiUrl,
   readBrowserApiBaseUrl,
   type BrowserApiBaseUrl,
 } from "@/shared/config/runtime-config"
@@ -25,15 +27,6 @@ export type WebAuthClient = {
   readonly requestTestLogin: (nextPath: string) => void
 }
 
-type BetterAuthClientFactory = (input: { readonly baseURL: string }) => {
-  readonly signIn: {
-    readonly social: (input: {
-      readonly callbackURL: string
-      readonly provider: "google"
-    }) => Promise<unknown>
-  }
-}
-
 type FetchImplementation = (
   input: RequestInfo | URL,
   init?: RequestInit
@@ -41,45 +34,35 @@ type FetchImplementation = (
 
 export function createWebAuthClient({
   apiBaseUrl,
-  betterAuthClientFactory = createAuthClient,
   fetchImplementation = globalThis.fetch.bind(globalThis),
+  learnerAuthClientFactory = createLearnerAuthClient,
+  navigate = (url) => window.location.assign(url),
 }: {
   readonly apiBaseUrl: BrowserApiBaseUrl
-  readonly betterAuthClientFactory?: BetterAuthClientFactory
   readonly fetchImplementation?: FetchImplementation
+  readonly learnerAuthClientFactory?: (input: {
+    readonly baseURL: string
+    readonly fetch: FetchImplementation
+    readonly navigate: (url: string) => void
+  }) => LearnerAuthClient
+  readonly navigate?: (url: string) => void
 }): WebAuthClient {
+  const authClient = learnerAuthClientFactory({
+    baseURL: apiBaseUrl,
+    fetch: fetchImplementation,
+    navigate,
+  })
+
   return {
     async requestGoogleLogin(nextPath) {
-      await betterAuthClientFactory({
-        baseURL: apiBaseUrl,
-      }).signIn.social({
-        callbackURL: createCallbackUrl(nextPath),
-        provider: "google",
-      })
+      await authClient.signInWithGoogle(createCallbackUrl(nextPath))
     },
     requestTestLogin(nextPath) {
-      window.location.assign(
-        buildApiUrl(
-          apiBaseUrl,
-          `/api/auth/test/sign-in?callbackURL=${encodeURIComponent(
-            createCallbackUrl(nextPath)
-          )}`
-        )
-      )
+      authClient.signInForTest(createCallbackUrl(nextPath))
     },
     async requestLogout(callbackPath) {
       const safeCallbackPath = resolveSafeNextPath(callbackPath)
-      const response = await fetchImplementation(
-        buildApiUrl(apiBaseUrl, "/api/auth/sign-out"),
-        {
-          credentials: "include",
-          method: "POST",
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error("Failed to sign out")
-      }
+      await authClient.signOut()
 
       return safeCallbackPath
     },

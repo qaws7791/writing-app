@@ -4,7 +4,7 @@ import {
   networkApiError,
   toApiError,
 } from "@/shared/http/api-error"
-import { learnerSessionCookieName } from "@/shared/auth/session-token"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import { buildApiUrl } from "@/shared/config/runtime-config"
 import {

@@ -10,7 +10,7 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   adminSessionExpiresAt,
   type AdminSessionResolver,
-} from "@/adapters/auth/admin-session"
+} from "@workspace/auth/admin/server"
 import { createAdminApp } from "@/http/admin-app"
 import {
   createAdminSettingsRoutes,

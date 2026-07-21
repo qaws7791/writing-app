@@ -1,15 +1,13 @@
 import type { BetterAuthPlugin } from "better-auth"
 import { createAuthEndpoint } from "better-auth/api"
 import { setSessionCookie } from "better-auth/cookies"
-import { eq } from "drizzle-orm"
 import { z } from "zod"
 
-import type { WritingAppDatabase } from "@workspace/db/client"
-import { authUsers, learnerProfiles } from "@workspace/db/schema"
+import type { LearnerTestAuthDisplayNameSynchronizer } from "#auth/learner/test-auth-types"
 
 const googleProviderId = "google"
 
-export type LearnerTestAuthUser = {
+type LearnerTestAuthUser = {
   readonly accountId: string
   readonly email: string
   readonly id: string
@@ -17,13 +15,7 @@ export type LearnerTestAuthUser = {
   readonly name: string
 }
 
-export type LearnerTestAuthConfig = {
-  readonly callbackOrigin: string
-  readonly database?: WritingAppDatabase
-  readonly user: LearnerTestAuthUser
-}
-
-export const defaultLearnerTestAuthUser: LearnerTestAuthUser = {
+const defaultLearnerTestAuthUser: LearnerTestAuthUser = {
   accountId: "test-google-user-1",
   email: "learner@example.com",
   id: "user-1",
@@ -31,9 +23,10 @@ export const defaultLearnerTestAuthUser: LearnerTestAuthUser = {
   name: "글쓰기 탐험가",
 }
 
-export function createLearnerTestAuthPlugin(
-  config: LearnerTestAuthConfig
-): BetterAuthPlugin {
+export function createLearnerTestAuthPlugin(input: {
+  readonly callbackOrigin: string
+  readonly displayNameSynchronizer: LearnerTestAuthDisplayNameSynchronizer
+}): BetterAuthPlugin {
   return {
     id: "learner-test-auth",
     endpoints: {
@@ -45,18 +38,23 @@ export function createLearnerTestAuthPlugin(
             callbackURL: z.string().optional(),
           }),
         },
-        async (ctx) => {
-          const adapter = ctx.context.internalAdapter as LearnerInternalAdapter
-          const user = await findOrCreateTestUser(adapter, config)
+        async (context) => {
+          const adapter = context.context
+            .internalAdapter as LearnerInternalAdapter
+          const user = await findOrCreateTestUser(
+            adapter,
+            defaultLearnerTestAuthUser,
+            input.displayNameSynchronizer
+          )
           const session = await adapter.createSession(user.id)
 
-          await setSessionCookie(ctx, {
+          await setSessionCookie(context, {
             session,
             user,
           })
 
-          throw ctx.redirect(
-            resolveCallbackUrl(ctx.query.callbackURL, config.callbackOrigin)
+          throw context.redirect(
+            resolveCallbackUrl(context.query.callbackURL, input.callbackOrigin)
           )
         }
       ),
@@ -110,9 +108,9 @@ type LearnerInternalAdapter = {
 
 async function findOrCreateTestUser(
   adapter: LearnerInternalAdapter,
-  config: LearnerTestAuthConfig
-) {
-  const user = config.user
+  user: LearnerTestAuthUser,
+  displayNameSynchronizer: LearnerTestAuthDisplayNameSynchronizer
+): Promise<BetterAuthUser> {
   const existingUser = await adapter.findUserByEmail(user.email, {
     includeAccounts: true,
   })
@@ -124,7 +122,11 @@ async function findOrCreateTestUser(
       userId: existingUser.user.id,
     })
 
-    return syncExistingTestUser(config.database, existingUser.user, user)
+    return synchronizeExistingTestUser(
+      existingUser.user,
+      user,
+      displayNameSynchronizer
+    )
   }
 
   const createdUser = await adapter.createUser({
@@ -144,36 +146,22 @@ async function findOrCreateTestUser(
   return createdUser
 }
 
-async function syncExistingTestUser(
-  database: WritingAppDatabase | undefined,
+async function synchronizeExistingTestUser(
   existingUser: BetterAuthUser,
-  expectedUser: LearnerTestAuthUser
+  expectedUser: LearnerTestAuthUser,
+  displayNameSynchronizer: LearnerTestAuthDisplayNameSynchronizer
 ): Promise<BetterAuthUser> {
-  if (existingUser.name === expectedUser.name || database === undefined) {
+  if (existingUser.name === expectedUser.name) {
     return existingUser
   }
 
   const updatedAt = new Date()
 
-  await Promise.resolve(
-    database
-      .update(authUsers)
-      .set({
-        name: expectedUser.name,
-        updatedAt,
-      })
-      .where(eq(authUsers.id, existingUser.id))
-      .run()
-  )
-  await Promise.resolve(
-    database
-      .update(learnerProfiles)
-      .set({
-        displayName: expectedUser.name,
-      })
-      .where(eq(learnerProfiles.userId, existingUser.id))
-      .run()
-  )
+  await displayNameSynchronizer.synchronizeDisplayName({
+    displayName: expectedUser.name,
+    updatedAt,
+    userId: existingUser.id,
+  })
 
   return {
     ...existingUser,

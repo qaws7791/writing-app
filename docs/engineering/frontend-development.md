@@ -16,7 +16,7 @@
 - 학습자 웹과 어드민 웹은 Next.js 16 App Router와 React 19를 사용한다. 기본 런타임은 Node.js이며, Edge runtime은 지연 개선이 실측되고 모든 의존성이 호환되는 좁은 경계에서만 검토한다.
 - 패키지 관리와 workspace 실행은 Bun과 Turborepo, 정적 타입 검사는 TypeScript strict, 런타임 신뢰 경계 검증은 Zod를 사용한다.
 - 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
-- 인증은 Better Auth, 영속성과 도메인 실행은 `apps/api`가 소유한다. Next.js 앱은 DB나 ORM에 직접 접근하지 않고 학습자 또는 관리자 Hono API를 호출한다.
+- Better Auth integration은 `packages/auth`, 인증 영속성 mapping·lifecycle과 도메인 실행은 `apps/api`가 소유한다. Next.js 앱은 DB나 ORM에 직접 접근하지 않고 학습자 또는 관리자 Hono API를 호출한다.
 - TanStack Query, Zustand, React Hook Form, `next-intl` 같은 라이브러리는 기본 전제가 아니다. 현재 feature의 요구와 기존 도구로 해결할 수 없는 문제가 확인되고 소유권·번들·운영 비용이 정당화될 때만 별도 결정으로 도입한다.
 
 ## 소스 구조와 의존성
@@ -130,13 +130,13 @@
 
 학습자 앱의 보호 라우트는 `apps/web/src/server/auth/server-session-token.ts`로 현재 세션을 확인하고, 각 데이터 접근 직전에 인증 실패를 `/login`으로 보낸다. 로그인 `next` 값은 `src/features/authentication/model/auth-navigation.ts`의 허용 규칙을 통과해야 한다. `app`의 page와 layout은 URL·redirect·DAL 호출·화면 조립만 담당한다.
 
-학습자 로그인은 `NEXT_PUBLIC_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 `CORS_ORIGIN`과 Better Auth `trustedOrigins`로 학습자 웹 origin을 허용한다.
+학습자 feature adapter는 안전한 `next` 검증, runtime URL과 Next.js navigation만 소유하고 `@workspace/auth/learner/client`에 인증 요청을 위임한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 `CORS_ORIGIN`과 Better Auth `trustedOrigins`로 학습자 웹 origin을 허용한다.
 
 어드민 앱의 보호 라우트는 `apps/admin/src/app/(admin)/layout.tsx`에서 `GET /api/admin/session` 결과를 확인한다. 인증·인가 실패만 어드민 로그인 경로로 redirect한다.
 
 두 앱은 root `loading.tsx`, `error.tsx`, `global-error.tsx`와 보호 route group skeleton을 제공한다. error boundary의 다시 시도는 Next `reset()`을 호출한다. 어드민은 세션 응답의 `unauthorized | forbidden`만 로그인으로 보내고 network·contract·5xx 오류는 로그인 상태를 유지한 서비스 오류 UI로 표시한다. 로그아웃 요청 실패는 화면 alert와 같은 버튼의 재시도로 처리하며 unhandled rejection을 만들지 않는다. 어드민은 알 수 없는 경로에 전용 not-found 화면을 제공한다.
 
-관리자 로그인은 ID/password만 지원하고 `NEXT_PUBLIC_API_BASE_URL`의 `/api/admin/auth/sign-in/email` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 공통 CORS 설정과 관리자 인증의 `trustedOrigins`로 어드민 웹 origin을 허용한다. 로그인 `next` 경로 검증은 `src/features/authentication/model/admin-auth-navigation.ts`가 단일 출처이며, 로그인 성공 후 이동은 `next/navigation`의 router를 사용한다. 어드민 앱 source에서 `window.location.*` 직접 이동은 금지한다.
+관리자 feature adapter는 안전한 `next` 검증과 runtime URL만 소유하고 `@workspace/auth/admin/client`에 ID/password 로그인·비밀번호 변경·로그아웃을 위임한다. 다른 관리자 세션 폐기 옵션은 auth client가 강제한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 공통 CORS 설정과 관리자 인증의 `trustedOrigins`로 어드민 웹 origin을 허용한다. 로그인 `next` 경로 검증은 `src/features/authentication/model/admin-auth-navigation.ts`가 단일 출처이며, 로그인 성공 후 이동은 `next/navigation`의 router를 사용한다. 어드민 앱 source에서 `window.location.*` 직접 이동은 금지한다.
 
 ## 오류 처리
 

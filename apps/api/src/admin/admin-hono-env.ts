@@ -4,7 +4,7 @@ import type { AdminActor } from "@workspace/core/admin"
 import type { AnyRouteConfig } from "@/http/platform/core"
 import { defineRouteForEnv } from "@/http/platform/core"
 
-import type { AdminAuthenticatedSession } from "@/adapters/auth/admin-session"
+import type { AdminAuthenticatedSession } from "@workspace/auth/admin/server"
 
 export type AdminHonoEnv = {
   Variables: {

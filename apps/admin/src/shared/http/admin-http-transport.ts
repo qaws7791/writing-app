@@ -4,7 +4,7 @@ import {
   toAdminApiError,
 } from "@/shared/http/admin-api-error"
 import type { AdminApiResult } from "@/shared/http/admin-api-result"
-import { adminSessionCookieName } from "@/shared/auth/admin-session-token"
+import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { buildApiUrl, type ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   fetchHttpResponse,

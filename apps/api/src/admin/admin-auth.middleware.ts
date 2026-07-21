@@ -2,7 +2,7 @@ import type { MiddlewareHandler } from "hono"
 import { authorizeOwnerMutation } from "@workspace/core/admin"
 import { withPrivateNoStore } from "@/http/platform/security"
 
-import type { AdminSessionResolver } from "@/adapters/auth/admin-session"
+import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {
   forbiddenAdminError,
   unauthorizedAdminError,

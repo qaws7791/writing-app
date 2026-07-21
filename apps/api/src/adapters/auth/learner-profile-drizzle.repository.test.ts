@@ -4,7 +4,10 @@ import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { authUsers, learnerProfiles } from "@workspace/db/schema"
 
-import { createDrizzleLearnerProfileRepository } from "@/adapters/auth/learner-profile-drizzle.repository"
+import {
+  createDrizzleLearnerProfileRepository,
+  createDrizzleLearnerTestAuthDisplayNameSynchronizer,
+} from "@/adapters/auth/learner-profile-drizzle.repository"
 
 describe("학습자 profile SQLite repository", () => {
   it("profile ensure를 멱등하게 처리하고 기존 표시 이름을 덮어쓰지 않는다", async () => {
@@ -63,6 +66,44 @@ describe("학습자 profile SQLite repository", () => {
       await expect(
         repository.findProfileByUserId("learner-2")
       ).resolves.toEqual({ status: "suspended" })
+    } finally {
+      database.close()
+    }
+  })
+
+  it("테스트 사용자 표시 이름을 auth user와 learner profile에 동기화한다", async () => {
+    const database = createInMemoryWritingAppDatabase()
+
+    try {
+      runBaselineMigration(database.sqlite)
+      insertAuthUser(database.db, "learner-3")
+      database.db
+        .insert(learnerProfiles)
+        .values({
+          deletedAt: null,
+          displayName: "이전 이름",
+          status: "active",
+          userId: "learner-3",
+        })
+        .run()
+
+      await createDrizzleLearnerTestAuthDisplayNameSynchronizer(
+        database.db
+      ).synchronizeDisplayName({
+        displayName: "글쓰기 탐험가",
+        updatedAt: new Date("2026-07-22T00:00:00.000Z"),
+        userId: "learner-3",
+      })
+
+      expect(
+        database.db.select({ name: authUsers.name }).from(authUsers).get()
+      ).toEqual({ name: "글쓰기 탐험가" })
+      expect(
+        database.db
+          .select({ displayName: learnerProfiles.displayName })
+          .from(learnerProfiles)
+          .get()
+      ).toEqual({ displayName: "글쓰기 탐험가" })
     } finally {
       database.close()
     }

@@ -1,5 +1,7 @@
+import { createAdminAuthClient } from "@workspace/auth/admin/client"
+
 import { resolveSafeAdminNextPath } from "@/features/authentication/model/admin-auth-navigation"
-import { buildApiUrl, type ApiBaseUrl } from "@/shared/config/api-base-url"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 export async function requestAdminPasswordLogin(
   apiBaseUrl: ApiBaseUrl,
@@ -14,25 +16,11 @@ export async function requestAdminPasswordLogin(
   }
 ): Promise<{ readonly nextPath: string }> {
   const safeNextPath = resolveSafeAdminNextPath(nextPath)
-  const response = await fetch(
-    buildApiUrl(apiBaseUrl, "/api/admin/auth/sign-in/email"),
-    {
-      body: JSON.stringify({
-        callbackURL: safeNextPath,
-        email,
-        password,
-      }),
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error("Failed to sign in")
-  }
+  await getAdminAuthClient(apiBaseUrl).signInWithPassword({
+    callbackURL: safeNextPath,
+    email,
+    password,
+  })
 
   return { nextPath: safeNextPath }
 }
@@ -44,40 +32,18 @@ export async function requestAdminPasswordChange(
     readonly newPassword: string
   }
 ): Promise<void> {
-  await requestAdminAuthJson(apiBaseUrl, "/api/admin/auth/change-password", {
-    ...input,
-    revokeOtherSessions: true,
-  })
+  await getAdminAuthClient(apiBaseUrl).changePassword(input)
 }
 
 export async function requestAdminSignOut(
   apiBaseUrl: ApiBaseUrl
 ): Promise<void> {
-  const response = await fetch(
-    buildApiUrl(apiBaseUrl, "/api/admin/auth/sign-out"),
-    {
-      credentials: "include",
-      method: "POST",
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error("Failed to sign out")
-  }
+  await getAdminAuthClient(apiBaseUrl).signOut()
 }
 
-async function requestAdminAuthJson<TResponse>(
-  apiBaseUrl: ApiBaseUrl,
-  path: string,
-  body: Readonly<Record<string, unknown>>
-): Promise<TResponse> {
-  const response = await fetch(buildApiUrl(apiBaseUrl, path), {
-    body: JSON.stringify(body),
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    method: "POST",
+function getAdminAuthClient(apiBaseUrl: ApiBaseUrl) {
+  return createAdminAuthClient({
+    baseURL: apiBaseUrl,
+    fetch: globalThis.fetch.bind(globalThis),
   })
-
-  if (!response.ok) throw new Error("Admin authentication request failed")
-  return (await response.json()) as TResponse
 }

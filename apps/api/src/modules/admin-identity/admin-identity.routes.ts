@@ -21,7 +21,7 @@ import type {
 } from "@workspace/core/auth"
 import { z } from "@/http/platform/zod"
 
-import type { AdminSessionResolver } from "@/adapters/auth/admin-session"
+import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import { forbiddenAdminError, notFoundAdminError } from "@/admin/admin-errors"
 import {
   defineAdminRoute,

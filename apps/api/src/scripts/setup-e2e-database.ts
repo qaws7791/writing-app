@@ -1,4 +1,4 @@
-import { hashPassword } from "better-auth/crypto"
+import { hashAuthPassword } from "@workspace/auth/password"
 import {
   adminAuthAccounts,
   adminAuthUsers,
@@ -18,7 +18,7 @@ async function seedE2eAdmins(databaseUrl: string): Promise<void> {
   const database = createWritingAppDatabase(databaseUrl)
   try {
     const now = new Date("2026-07-12T00:00:00.000Z")
-    const password = await hashPassword(adminPassword)
+    const password = await hashAuthPassword(adminPassword)
     const admins = [
       {
         email: "owner@example.test",

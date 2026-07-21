@@ -3,17 +3,16 @@ import type {
   AiFeedbackProvider,
 } from "@workspace/core/ai-feedback"
 import {
+  createAdminAuthRuntime,
+  type AdminSessionResolver,
+} from "@workspace/auth/admin/server"
+import {
   createWritingAppDatabase,
   type WritingAppDatabase,
 } from "@workspace/db"
 
-import {
-  createAdminAuth,
-  createAdminAuthHandler,
-  createAdminSessionRevoker,
-  createAdminSessionResolver,
-} from "@/adapters/auth/admin-auth"
-import type { AdminSessionResolver } from "@/adapters/auth/admin-session"
+import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
+import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
 import { createAdminCapabilityRoutes } from "@/composition/admin-route-composition"
 import type { ApiEnv } from "@/config/env"
 import type { AdminRouteGroup } from "@/http/admin-route-group"
@@ -48,22 +47,14 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
   return assembleApiRuntime({
     closeDatabase: databaseClient.close,
     createAdminAuth(database) {
-      const auth = createAdminAuth({
+      return createAdminAuthRuntime({
         apiOrigin: input.env.apiOrigin,
         cookieDomain: input.env.adminCookieDomain,
-        db: database,
+        database: createAdminAuthDatabase(database),
         secret: input.env.adminAuthSecret,
+        sessionRevoker: createDrizzleAdminSessionRevoker(database),
         webOrigin: input.env.adminOrigin,
       })
-
-      return {
-        authHandler: createAdminAuthHandler({
-          auth,
-          cookieDomain: input.env.adminCookieDomain,
-          sessionRevoker: createAdminSessionRevoker(database),
-        }),
-        sessionResolver: createAdminSessionResolver(auth),
-      }
     },
     createAdminCapabilityRoutes({ adminAuth, database }) {
       return createAdminCapabilityRoutes({

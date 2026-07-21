@@ -47,6 +47,7 @@ export default defineConfig({
       "apps/admin/vitest.config.ts",
       "apps/api/vitest.config.ts",
       "apps/web/vitest.config.ts",
+      "packages/auth/vitest.config.ts",
       "packages/contracts/vitest.config.ts",
       "packages/core/vitest.config.ts",
       "packages/db/vitest.config.ts",

@@ -1,6 +1,6 @@
 import { adminSessionDtoSchema } from "@workspace/contracts/admin"
 
-import type { AdminSessionResolver } from "@/adapters/auth/admin-session"
+import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import { defineAdminRoute } from "@/admin/admin-hono-env"
 import {
   adminAuthenticatedResponses,

@@ -8,7 +8,7 @@ import { adminSettingsDtoSchema } from "@workspace/contracts/admin/settings-data
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
 import type { AdminContentResetUseCase } from "@workspace/core/content"
 
-import type { AdminSessionResolver } from "@/adapters/auth/admin-session"
+import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {
   defineAdminRoute,
   type AdminRouteHandler,

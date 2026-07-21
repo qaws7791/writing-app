@@ -5,7 +5,7 @@ import {
   readAdminWebOrigin,
   readServerApiBaseUrl,
 } from "@/server/env/admin-runtime-config"
-import { adminSessionCookieName } from "@/shared/auth/admin-session-token"
+import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { buildApiUrl } from "@/shared/config/api-base-url"
 
 const maximumRequestBodyBytes = 64 * 1024

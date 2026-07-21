@@ -8,6 +8,7 @@
     "useUnknownInCatchVariables": true,
     "types": ["bun", "@testing-library/jest-dom"],
     "paths": {
+      "#auth/*": ["../../packages/auth/src/*"],
       "#env/*": ["../../packages/env/src/*"],
       "#ui/*": ["../../packages/ui/src/*"],
       "@/*": ["./src/*"]

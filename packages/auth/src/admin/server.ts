@@ -1,54 +1,61 @@
 import { betterAuth } from "better-auth"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { eq } from "drizzle-orm"
 import { adminIdSchema, type AdminId } from "@workspace/contracts/admin"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
   adminRoles,
   adminRoleValues,
   parseAdminRole,
+  type AdminRole,
 } from "@workspace/core/admin"
-import type { WritingAppDatabase } from "@workspace/db"
-import {
-  adminAuthAccounts,
-  adminAuthSessions,
-  adminAuthUsers,
-  adminAuthVerifications,
-} from "@workspace/db/schema"
-import * as dbSchema from "@workspace/db/schema"
 
-import {
-  adminSessionExpiresAt,
-  type AdminSessionResolver,
-} from "@/adapters/auth/admin-session"
+import type { AuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
+import { readAuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
 
-export type CreateAdminAuthInput = {
-  readonly apiOrigin: string
-  readonly cookieDomain?: string
-  readonly db: WritingAppDatabase
-  readonly secret: string
-  readonly webOrigin: string
+export const adminSessionExpiresAt = Symbol("admin-session-expires-at")
+
+export type AdminAuthenticatedSession = {
+  readonly admin: {
+    readonly email: string
+    readonly id: AdminId
+    readonly name: string
+    readonly role: AdminRole
+  }
+  readonly [adminSessionExpiresAt]: Date
+}
+
+export type AdminSessionResolver = {
+  readonly resolveSession: (
+    headers: Headers
+  ) => Promise<AdminAuthenticatedSession | null>
 }
 
 export type AdminSessionRevoker = {
   readonly revokeAllForAdmin: (_adminId: AdminId) => Promise<void> | void
 }
 
-export function createAdminAuth(input: CreateAdminAuthInput) {
-  return betterAuth({
+export type CreateAdminAuthRuntimeInput = {
+  readonly apiOrigin: string
+  readonly cookieDomain?: string
+  readonly database: AuthDatabaseAdapter
+  readonly secret: string
+  readonly sessionRevoker: AdminSessionRevoker
+  readonly webOrigin: string
+}
+
+export type AdminAuthRuntime = {
+  readonly authHandler: (request: Request) => Promise<Response>
+  readonly sessionResolver: AdminSessionResolver
+}
+
+export function createAdminAuthRuntime(
+  input: CreateAdminAuthRuntimeInput
+): AdminAuthRuntime {
+  const auth = betterAuth({
+    account: { modelName: "admin_account" },
     advanced: createAdminAdvancedOptions(input.cookieDomain),
     basePath: "/api/admin/auth",
     baseURL: input.apiOrigin,
-    database: drizzleAdapter(input.db, {
-      provider: "sqlite",
-      schema: {
-        ...dbSchema,
-        admin_account: adminAuthAccounts,
-        admin_session: adminAuthSessions,
-        admin_user: adminAuthUsers,
-        admin_verification: adminAuthVerifications,
-      },
-    }),
+    database: readAuthDatabaseAdapter(input.database),
     disabledPaths: ["/sign-up/email"],
     emailAndPassword: {
       disableSignUp: true,
@@ -56,7 +63,7 @@ export function createAdminAuth(input: CreateAdminAuthInput) {
     },
     secret: input.secret,
     session: { modelName: "admin_session" },
-    account: { modelName: "admin_account" },
+    trustedOrigins: [input.webOrigin],
     user: {
       additionalFields: {
         role: {
@@ -69,52 +76,17 @@ export function createAdminAuth(input: CreateAdminAuthInput) {
       modelName: "admin_user",
     },
     verification: { modelName: "admin_verification" },
-    trustedOrigins: [input.webOrigin],
   })
-}
+  const sessionResolver = createAdminSessionResolver(auth)
 
-export function createAdminAuthHandler(input: {
-  readonly auth: ReturnType<typeof createAdminAuth>
-  readonly cookieDomain?: string
-  readonly sessionRevoker: AdminSessionRevoker
-}): (request: Request) => Promise<Response> {
-  const sessionResolver = createAdminSessionResolver(input.auth)
-
-  return async (request) => {
-    if (!isPasswordChangeRequest(request)) {
-      return input.auth.handler(request)
-    }
-
-    const session = await sessionResolver.resolveSession(request.headers)
-    const response = await input.auth.handler(request)
-    if (!response.ok || session === null) return response
-
-    await input.sessionRevoker.revokeAllForAdmin(session.admin.id)
-
-    const headers = new Headers(response.headers)
-    headers.append(
-      "Set-Cookie",
-      createExpiredAdminSessionCookie(input.cookieDomain, request.url)
-    )
-
-    return new Response(response.body, {
-      headers,
-      status: response.status,
-      statusText: response.statusText,
-    })
-  }
-}
-
-export function createAdminSessionRevoker(
-  database: WritingAppDatabase
-): AdminSessionRevoker {
   return {
-    revokeAllForAdmin(adminId) {
-      database
-        .delete(adminAuthSessions)
-        .where(eq(adminAuthSessions.userId, adminId))
-        .run()
-    },
+    authHandler: createAdminAuthHandler({
+      auth,
+      cookieDomain: input.cookieDomain,
+      sessionResolver,
+      sessionRevoker: input.sessionRevoker,
+    }),
+    sessionResolver,
   }
 }
 
@@ -138,7 +110,7 @@ type AdminBetterAuthSession = {
   }
 }
 
-export function createAdminSessionResolver(
+function createAdminSessionResolver(
   auth: AdminBetterAuthSessionApi
 ): AdminSessionResolver {
   return {
@@ -161,6 +133,37 @@ export function createAdminSessionResolver(
             [adminSessionExpiresAt]: session.session.expiresAt,
           }
     },
+  }
+}
+
+function createAdminAuthHandler(input: {
+  readonly auth: { readonly handler: (request: Request) => Promise<Response> }
+  readonly cookieDomain?: string
+  readonly sessionResolver: AdminSessionResolver
+  readonly sessionRevoker: AdminSessionRevoker
+}): (request: Request) => Promise<Response> {
+  return async (request) => {
+    if (!isPasswordChangeRequest(request)) {
+      return input.auth.handler(request)
+    }
+
+    const session = await input.sessionResolver.resolveSession(request.headers)
+    const response = await input.auth.handler(request)
+    if (!response.ok || session === null) return response
+
+    await input.sessionRevoker.revokeAllForAdmin(session.admin.id)
+
+    const headers = new Headers(response.headers)
+    headers.append(
+      "Set-Cookie",
+      createExpiredAdminSessionCookie(input.cookieDomain, request.url)
+    )
+
+    return new Response(response.body, {
+      headers,
+      status: response.status,
+      statusText: response.statusText,
+    })
   }
 }
 

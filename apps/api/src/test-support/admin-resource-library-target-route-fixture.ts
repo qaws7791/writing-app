@@ -18,7 +18,7 @@ import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@/adapters/auth/admin-session"
+} from "@workspace/auth/admin/server"
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminResourceLibraryRoutes } from "@/modules/admin-resource-library/admin-resource-library.routes"
 import type { ResourceAssetStore } from "@/resource-assets/resource-asset-store"

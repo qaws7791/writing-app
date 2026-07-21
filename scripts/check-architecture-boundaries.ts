@@ -43,6 +43,17 @@ const appFiles = createRepositoryInventory({
   includeTests: false,
   root: "apps",
 })
+const authFiles = createRepositoryInventory({
+  includeTests: false,
+  root: "packages/auth/src",
+})
+const directBetterAuthForbiddenFiles = [
+  ...createRepositoryInventory({ includeTests: true, root: "apps" }),
+  ...createRepositoryInventory({ includeTests: true, root: "scripts" }),
+  ...createRepositoryInventory({ includeTests: true, root: "packages" }).filter(
+    (file) => !file.path.replaceAll("\\", "/").includes("/packages/auth/")
+  ),
+]
 
 const coreRuntimeAllowances =
   [] as const satisfies readonly ScheduledImportEdge[]
@@ -100,6 +111,21 @@ const rules: readonly ArchitectureRule[] = [
     matches: ({ file, reference }) =>
       isApiTransportFile(file.relativePath) &&
       isPersistenceDependency(reference.source),
+  },
+  {
+    allowances: [],
+    files: directBetterAuthForbiddenFiles,
+    id: "better-auth-vendor-boundary",
+    matches: ({ reference }) =>
+      isPackageImport(reference.source, "better-auth"),
+  },
+  {
+    allowances: [],
+    files: authFiles,
+    id: "auth-client-server-boundary",
+    matches: ({ file, reference }) =>
+      isAuthClientFile(file.relativePath) &&
+      isAuthClientServerDependency(reference.source),
   },
 ]
 
@@ -172,6 +198,26 @@ function isUiApplicationDependency(source: string): boolean {
 function isFrontendFile(sourcePath: string): boolean {
   return (
     sourcePath.startsWith("admin/src/") || sourcePath.startsWith("web/src/")
+  )
+}
+
+export function isAuthClientFile(sourcePath: string): boolean {
+  return ["admin/client.ts", "learner/client.ts", "shared/client.ts"].includes(
+    sourcePath
+  )
+}
+
+export function isAuthClientServerDependency(source: string): boolean {
+  return (
+    isWorkspacePackage(source, "core") ||
+    isWorkspacePackage(source, "db") ||
+    isPackageImport(source, "drizzle-orm") ||
+    source === "bun:sqlite" ||
+    (isPackageImport(source, "better-auth") &&
+      source !== "better-auth/client") ||
+    (source.startsWith("#auth/") &&
+      (source.includes("/server") ||
+        source === "#auth/shared/auth-database-adapter"))
   )
 }
 

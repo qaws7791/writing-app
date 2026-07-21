@@ -21,6 +21,7 @@
     "@lexical/selection": "0.46.0",
     "@lexical/table": "0.46.0",
     "@lexical/utils": "0.46.0",
+    "@workspace/auth": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/env": "workspace:*",
     "@workspace/http-client": "workspace:*",

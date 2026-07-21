@@ -26,8 +26,8 @@ type CoverageProject = BunCoverageProject | NodeCoverageProject
 const projects: readonly CoverageProject[] = [
   {
     coverageTests: [
-      "src/runtime-config.test.ts",
-      "src/lib/auth/admin-auth-navigation.test.ts",
+      "src/app/_providers/admin-runtime-config.test.ts",
+      "src/features/authentication/model/admin-auth-navigation.test.ts",
     ],
     path: "apps/admin",
     runtime: "node",
@@ -44,13 +44,22 @@ const projects: readonly CoverageProject[] = [
   },
   {
     coverageTests: [
-      "src/runtime-config.test.ts",
-      "src/lib/api/api-error.test.ts",
-      "src/features/lessons/lesson-draft-storage.test.ts",
-      "src/features/lessons/lesson-match-presentation.test.ts",
+      "src/shared/config/runtime-config.test.ts",
+      "src/shared/http/api-error.test.ts",
+      "src/features/lesson-session/api/lesson-draft-storage.test.ts",
+      "src/features/lesson-session/model/lesson-match-presentation.test.ts",
     ],
     path: "apps/web",
     runtime: "node",
+  },
+  {
+    coverageTests: [
+      "src/learner/test-auth-plugin.test.ts",
+      "src/admin/server-integration.test.ts",
+      "src/session-token.test.ts",
+    ],
+    path: "packages/auth",
+    runtime: "bun",
   },
   {
     coverageTests: ["src/input-limits.test.ts"],
@@ -98,7 +107,7 @@ const projects: readonly CoverageProject[] = [
 
 const criticalCoverageThresholds: readonly LineCoverageThreshold[] = [
   {
-    filePath: "src/lib/auth/admin-auth-navigation.ts",
+    filePath: "src/features/authentication/model/admin-auth-navigation.ts",
     minimum: 75,
     reportDirectory: "apps-admin",
   },

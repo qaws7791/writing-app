@@ -1,9 +1,6 @@
 import { cookies } from "next/headers"
-
-import {
-  adminSessionCookieName,
-  normalizeAdminSessionToken,
-} from "@/shared/auth/admin-session-token"
+import { normalizeAdminSessionToken } from "@workspace/auth/session-token"
+import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 export async function getServerAdminSessionToken(): Promise<null | string> {
   const cookieStore = await cookies()

@@ -10,6 +10,7 @@
 - HTTP transport는 입력·세션·권한·응답 변환을 소유하고, 도메인 정책과 persistence 구현을 혼합하지 않는다.
 - 도메인 policy와 use case는 HTTP framework·ORM·특정 provider에 의존하지 않는다.
 - concrete persistence adapter와 실행 의존성 조립은 실행 경계가 소유한다.
+- 여러 runtime이 공유하는 인증 vendor integration은 좁은 내부 package가 소유하되, DB lifecycle·schema mapping과 app 전용 repository는 실행 경계가 주입한다.
 - 데이터 schema, migration과 seed는 도메인 의미를 우회해 application 정책을 소유하지 않는다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.

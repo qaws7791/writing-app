@@ -94,23 +94,23 @@ describe("통합 API runtime composition root", () => {
   )
 
   it("database client 생성은 production composition root 하나에만 둔다", async () => {
-    const [runtimeSource, learnerSource, mainSource, adminAuthSource] =
+    const [runtimeSource, learnerSource, mainSource, authDatabaseSource] =
       await Promise.all([
         readFile(new URL("./api-runtime.ts", import.meta.url), "utf8"),
         readFile(new URL("./learner-api-core.ts", import.meta.url), "utf8"),
         readFile(new URL("./main.ts", import.meta.url), "utf8"),
         readFile(
-          new URL("./adapters/auth/admin-auth.ts", import.meta.url),
+          new URL("./adapters/auth/auth-sqlite-database.ts", import.meta.url),
           "utf8"
         ),
       ])
 
     expect(runtimeSource).toContain("createWritingAppDatabase")
-    for (const source of [learnerSource, mainSource, adminAuthSource]) {
+    for (const source of [learnerSource, mainSource, authDatabaseSource]) {
       expect(source).not.toContain("createWritingAppDatabase")
     }
     expect(learnerSource).not.toContain("databaseUrl")
     expect(learnerSource).not.toMatch(/\bclose\b/u)
-    expect(adminAuthSource).not.toContain("WritingAppDatabaseClient")
+    expect(authDatabaseSource).not.toContain("WritingAppDatabaseClient")
   })
 })

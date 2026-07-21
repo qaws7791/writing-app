@@ -1,4 +1,4 @@
-import { hashPassword } from "better-auth/crypto"
+import { hashAuthPassword } from "@workspace/auth/password"
 import {
   adminAuthAccounts,
   adminAuthUsers,
@@ -20,7 +20,7 @@ export function seedAdminUser(
 ): Promise<void> {
   validateSeedAdminInput(input)
 
-  return hashPassword(input.password).then((passwordHash) =>
+  return hashAuthPassword(input.password).then((passwordHash) =>
     db.transaction((transaction) => {
       const rows = createSeedAdminRows({ ...input, passwordHash })
 

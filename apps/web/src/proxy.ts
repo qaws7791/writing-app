@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { createContentSecurityPolicy } from "@workspace/config/nextjs/security-headers"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import { readWebCspRuntimeConfig } from "@/server/env/runtime-config"
-import { readLearnerSessionTokenFromCookieHeader } from "@/shared/auth/session-token"
+import { readLearnerSessionTokenFromCookieHeader } from "@workspace/auth/session-token"
 
 export function proxy(request: NextRequest) {
   const loginRedirect = createLearnerLoginRedirect(request)

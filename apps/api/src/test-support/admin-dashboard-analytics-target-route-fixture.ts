@@ -15,7 +15,7 @@ import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@/adapters/auth/admin-session"
+} from "@workspace/auth/admin/server"
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminDashboardAnalyticsRoutes } from "@/modules/admin-dashboard-analytics/admin-dashboard-analytics.routes"
 

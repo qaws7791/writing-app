@@ -1,4 +1,4 @@
-export const learnerSessionCookieName = "learner_session_token"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 export function readLearnerSessionTokenFromCookieHeader(
   cookieHeader: null | string
@@ -20,10 +20,6 @@ export function readLearnerSessionTokenFromCookieHeader(
   return null
 }
 
-export function getBrowserLearnerSessionToken(): null {
-  return null
-}
-
 export function normalizeLearnerSessionToken(
   token: null | string | undefined
 ): null | string {
@@ -39,4 +35,14 @@ export function normalizeLearnerSessionToken(
   }
 
   return normalizedToken.length === 0 ? null : normalizedToken
+}
+
+export function normalizeAdminSessionToken(
+  value: string | undefined
+): string | null {
+  if (value === undefined || value.trim() === "") {
+    return null
+  }
+
+  return value.trim()
 }

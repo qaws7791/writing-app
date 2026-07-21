@@ -1,9 +1,6 @@
 import { cookies } from "next/headers"
-
-import {
-  learnerSessionCookieName,
-  normalizeLearnerSessionToken,
-} from "@/shared/auth/session-token"
+import { normalizeLearnerSessionToken } from "@workspace/auth/session-token"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 export async function getServerLearnerSessionToken(): Promise<null | string> {
   const cookieStore = await cookies()

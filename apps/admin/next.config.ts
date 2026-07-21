@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: join(appDirectory, "../.."),
   },
-  transpilePackages: ["@workspace/ui"],
+  transpilePackages: ["@workspace/auth", "@workspace/ui"],
 }
 
 export default nextConfig

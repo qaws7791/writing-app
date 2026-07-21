@@ -14,7 +14,7 @@ import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@/adapters/auth/admin-session"
+} from "@workspace/auth/admin/server"
 import { createAdminApp } from "@/http/admin-app"
 import type { AdminAiChatAgent } from "@/modules/admin-ai-chat/admin-ai-chat-agent"
 import {
