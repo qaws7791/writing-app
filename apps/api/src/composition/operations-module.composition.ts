@@ -20,31 +20,30 @@ import type { AppLogger } from "@workspace/observability/logger"
 import type { ResourceLibraryModule } from "@workspace/resource-library/module"
 import type { ResourceCommandResult } from "@workspace/resource-library/ports"
 import type { OperationsError } from "@workspace/operations/application"
-
-import type { ApiEnv } from "@/config/env"
+import type { Clock, IdGenerator } from "@workspace/kernel/clock"
+import type { AiChangeProposalId } from "@workspace/types/ids"
 
 export function composeOperationsModule(
   input: Readonly<{
+    aiConfig: Readonly<{ apiKey: string; model: string }> | null
     content: ContentModule
+    clock: Clock
     database: WritingAppDatabase
-    env: ApiEnv
     identity: IdentityModule
     learningReporting: LearningReportingQuery
     logger: AppLogger
-    now: () => Date
+    proposalIdGenerator: IdGenerator<AiChangeProposalId>
     resourceLibrary: ResourceLibraryModule
     sqlite: Database
   }>
 ): OperationsModule {
   return createOperationsModule({
-    aiConfig:
-      input.env.openAiApiKey === undefined
-        ? null
-        : { apiKey: input.env.openAiApiKey, model: input.env.openAiModel },
+    aiConfig: input.aiConfig,
     audit: createOperationsAuditPort(input.logger),
-    clock: { now: input.now },
+    clock: input.clock,
     database: input.database,
     knowledge: createOperationsKnowledgePort(input.resourceLibrary),
+    proposalIdGenerator: input.proposalIdGenerator,
     reporting: {
       content: input.content.operationsReportingQuery,
       identity: input.identity.operationsReportingQuery,

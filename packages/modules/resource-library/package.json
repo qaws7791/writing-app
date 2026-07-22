@@ -25,6 +25,7 @@
     "@hono/zod-openapi": "catalog:",
     "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/event-contracts": "workspace:*",
     "@workspace/http-platform": "workspace:*",
     "@workspace/kernel": "workspace:*",
     "@workspace/resource-document": "workspace:*",

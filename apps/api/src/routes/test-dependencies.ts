@@ -17,7 +17,7 @@ import {
 import type { LearningQueries } from "@workspace/learning/queries"
 import { err, ok } from "@workspace/kernel/result"
 
-import type { ApiDependencies } from "@/app"
+import type { ApiDependencies } from "@/http/learner-app"
 
 const activeSession = {
   user: {
@@ -173,6 +173,7 @@ export function createTestDependencies(
       },
       sessionResolver,
     }),
+    health: { isDatabaseReady: () => true },
     learningRoutes: createLearningRoutes({
       application,
       cursor: createLearnerCursorCodec(
@@ -181,6 +182,7 @@ export function createTestDependencies(
       queries,
       session: learningSession,
     }),
+    now: () => new Date("2026-07-23T00:00:00.000Z"),
     sessionResolver,
   }
 }

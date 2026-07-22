@@ -1,4 +1,5 @@
 import { Hono, type Env, type Schema } from "hono"
+import { defaultRequestLoggingRuntime } from "@workspace/http-platform/request-logging"
 
 import { adminRoutePrefix } from "@/admin/admin-openapi"
 import {
@@ -10,6 +11,10 @@ export type ApiHostRejection = {
   readonly reason: "invalid" | "mismatch" | "missing" | "unknown"
 }
 
+type UnifiedApiEnv = {
+  Variables: { readonly requestId: string }
+}
+
 export function createUnifiedApp<
   TAdminEnv extends Env,
   TAdminSchema extends Schema,
@@ -18,10 +23,20 @@ export function createUnifiedApp<
 >(input: {
   readonly adminApp: Hono<TAdminEnv, TAdminSchema>
   readonly allowedHosts: ApiHostConfiguration
+  readonly createRequestId?: () => string
   readonly learnerApp: Hono<TLearnerEnv, TLearnerSchema>
   readonly onRejectedHost?: (event: ApiHostRejection) => void
-}): Hono {
-  const app = new Hono()
+}): Hono<UnifiedApiEnv> {
+  const app = new Hono<UnifiedApiEnv>()
+
+  app.use("*", async (context, next) => {
+    const requestId =
+      input.createRequestId?.() ??
+      defaultRequestLoggingRuntime.createRequestId()
+    context.set("requestId", requestId)
+    context.header("x-request-id", requestId)
+    await next()
+  })
 
   app.use("*", async (context, next) => {
     const reason = readHostRejectionReason(context.req.raw, input.allowedHosts)

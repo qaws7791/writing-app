@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9 완료, P10 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10 완료, P11 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -57,7 +57,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P7. `learning` 모듈을 전환한다. 증거: [P7 구현 증거](./p7-validation.md)
 - [x] P8. `resource-library` 모듈을 전환한다. 증거: [P8 구현 증거](./p8-validation.md)
 - [x] P9. `operations` 모듈을 전환한다. 증거: [P9 구현 증거](./p9-validation.md)
-- [ ] P10. API composition root와 lifecycle을 완성한다.
+- [x] P10. API composition root와 lifecycle을 완성한다. 증거: [P10 구현 증거](./p10-validation.md)
 - [ ] P11. 통합 schema, migration과 seed 경계를 완성한다.
 - [ ] P12. web, admin과 Storybook 소비 경계를 전환한다.
 - [ ] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다.
@@ -652,51 +652,51 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 14.1 config와 runtime adapter
 
-- [ ] P10-001 apps/api의 env parser가 실제 runtime 입력을 한 번만 검증하게 한다. 증거:
-- [ ] P10-002 원문 env가 module·infra 경계 너머로 전달되지 않게 한다. 증거:
-- [ ] P10-003 system Clock adapter를 apps/api runtime에 둔다. 증거:
-- [ ] P10-004 UUID generator adapter를 apps/api runtime에 둔다. 증거:
-- [ ] P10-005 import 시점 singleton과 side effect를 제거한다. 증거:
+- [x] P10-001 apps/api의 env parser가 실제 runtime 입력을 한 번만 검증하게 한다. 증거: `apps/api/src/main.ts`, package interface gate
+- [x] P10-002 원문 env가 module·infra 경계 너머로 전달되지 않게 한다. 증거: `create-container.ts`, package interface gate
+- [x] P10-003 system Clock adapter를 apps/api runtime에 둔다. 증거: `runtime/system-clock.ts`
+- [x] P10-004 UUID generator adapter를 apps/api runtime에 둔다. 증거: `runtime/uuid-generator.ts`
+- [x] P10-005 import 시점 singleton과 side effect를 제거한다. 증거: `main.ts`의 `import.meta.main`, container factory test
 
 ### 14.2 container
 
-- [ ] P10-006 logger, DB, event bus, AI, storage와 auth의 생성 순서를 정의한다. 증거:
-- [ ] P10-007 identity module에 auth, DB, Clock, ID와 event bus를 주입한다. 증거:
-- [ ] P10-008 content module에 DB, Clock, ID와 event bus를 주입한다. 증거:
-- [ ] P10-009 ai-feedback module에 AI, DB, Clock과 ID를 주입한다. 증거:
-- [ ] P10-010 learning module에 content·identity query와 ai-feedback application port를 주입한다. 증거:
-- [ ] P10-011 resource-library module에 storage, DB, Clock, ID와 event bus를 주입한다. 증거:
-- [ ] P10-012 operations module에 reporting, 대상 command, AI와 DB port를 주입한다. 증거:
-- [ ] P10-013 module이 다른 module factory나 내부 source를 직접 import하지 않는지 검사한다. 증거:
-- [ ] P10-014 partial initialization 실패 시 생성 역순으로 resource를 정리한다. 증거:
-- [ ] P10-015 container test에서 각 실패 지점의 cleanup 호출을 검증한다. 증거:
+- [x] P10-006 logger, DB, event bus, AI, storage와 auth의 생성 순서를 정의한다. 증거: `composition/create-container.ts`
+- [x] P10-007 identity module에 auth, DB, Clock, ID와 event bus를 주입한다. 증거: `identity-module.composition.ts`, auth identity bridge
+- [x] P10-008 content module에 DB, Clock, ID와 event bus를 주입한다. 증거: `content-module.composition.ts`
+- [x] P10-009 ai-feedback module에 AI, DB, Clock과 ID를 주입한다. 증거: `ai-feedback-module.composition.ts`
+- [x] P10-010 learning module에 content·identity query와 ai-feedback application port를 주입한다. 증거: `learning-module.composition.ts`
+- [x] P10-011 resource-library module에 storage, DB, Clock, ID와 event bus를 주입한다. 증거: `resource-library-module.composition.ts`, resource document event test
+- [x] P10-012 operations module에 reporting, 대상 command, AI와 DB port를 주입한다. 증거: `operations-module.composition.ts`
+- [x] P10-013 module이 다른 module factory나 내부 source를 직접 import하지 않는지 검사한다. 증거: dependency-cruiser와 package interface gate
+- [x] P10-014 partial initialization 실패 시 생성 역순으로 resource를 정리한다. 증거: `composition/container-cleanup.ts`
+- [x] P10-015 container test에서 각 실패 지점의 cleanup 호출을 검증한다. 증거: `composition/container-cleanup.test.ts`
 
 ### 14.3 Hono app 조립
 
-- [ ] P10-016 공통 request context와 request ID middleware를 가장 먼저 적용한다. 증거:
-- [ ] P10-017 body limit, trusted origin, Host·CORS·no-store 경계를 audience에 맞게 적용한다. 증거:
-- [ ] P10-018 learner와 admin auth route를 분리된 realm으로 mount한다. 증거:
-- [ ] P10-019 각 module route를 기존 public path와 method에 맞게 mount한다. 증거:
-- [ ] P10-020 global handler가 예상하지 못한 결함만 500으로 처리하게 한다. 증거:
-- [ ] P10-021 expected Result가 global handler로 새지 않는 test를 추가한다. 증거:
-- [ ] P10-022 runtime OpenAPI를 실제 등록 route에서 생성한다. 증거:
-- [ ] P10-023 기준선 OpenAPI와 route parity 차이를 승인된 변경과 결함으로 분류한다. 증거:
-- [ ] P10-024 frontend가 사용하는 route의 method·path·wire schema parity를 100% 확인한다. 증거:
+- [x] P10-016 공통 request context와 request ID middleware를 가장 먼저 적용한다. 증거: `http/unified-app.ts`, request ID 회귀 test
+- [x] P10-017 body limit, trusted origin, Host·CORS·no-store 경계를 audience에 맞게 적용한다. 증거: learner·admin·unified app HTTP test
+- [x] P10-018 learner와 admin auth route를 분리된 realm으로 mount한다. 증거: `composition/create-app.ts`, auth proxy·unified app test
+- [x] P10-019 각 module route를 기존 public path와 method에 맞게 mount한다. 증거: runtime OpenAPI exact parity test
+- [x] P10-020 global handler가 예상하지 못한 결함만 500으로 처리하게 한다. 증거: `http/learner-error-response.ts`, expected security error test
+- [x] P10-021 expected Result가 global handler로 새지 않는 test를 추가한다. 증거: module HTTP error test와 learner expected error logger test
+- [x] P10-022 runtime OpenAPI를 실제 등록 route에서 생성한다. 증거: learner·admin OpenAPI route test
+- [x] P10-023 기준선 OpenAPI와 route parity 차이를 승인된 변경과 결함으로 분류한다. 증거: `test-support/p10-route-parity.ts`, [P10 parity](./p10-validation.md#routeopenapifrontend-parity)
+- [x] P10-024 frontend가 사용하는 route의 method·path·wire schema parity를 100% 확인한다. 증거: Web·Admin HTTP adapter contract test, [P10 parity](./p10-validation.md#routeopenapifrontend-parity)
 
 ### 14.4 health와 shutdown
 
-- [ ] P10-025 health가 process 생존과 DB readiness를 구분하게 한다. 증거:
-- [ ] P10-026 learner·admin health surface가 같은 API runtime 상태를 반영하게 한다. 증거:
-- [ ] P10-027 shutdown 시 새 요청 수락을 먼저 중단한다. 증거:
-- [ ] P10-028 진행 요청 drain의 timeout과 결과를 기록한다. 증거:
-- [ ] P10-029 모든 event subscription을 해제한다. 증거:
-- [ ] P10-030 AI runtime을 정리한다. 증거:
-- [ ] P10-031 DB connection을 닫는다. 증거:
-- [ ] P10-032 log를 flush하고 각 cleanup 실패를 구조화해 기록한다. 증거:
-- [ ] P10-033 signal 중복 수신에서 cleanup을 중복 실행하지 않게 한다. 증거:
-- [ ] P10-034 factory test가 실제 process를 시작하지 않게 한다. 증거:
-- [ ] P10-035 기존 apps/api app-owned repository, module과 platform 중복 구현을 제거한다. 증거:
-- [ ] P10-036 P10 게이트: API unit·integration·HTTP·lifecycle test, OpenAPI parity와 API build가 통과한다. 증거:
+- [x] P10-025 health가 process 생존과 DB readiness를 구분하게 한다. 증거: `runtime/api-health.ts`, learner·admin health routes
+- [x] P10-026 learner·admin health surface가 같은 API runtime 상태를 반영하게 한다. 증거: unified app shared-readiness test
+- [x] P10-027 shutdown 시 새 요청 수락을 먼저 중단한다. 증거: lifecycle 신규 요청 503 test
+- [x] P10-028 진행 요청 drain의 timeout과 결과를 기록한다. 증거: lifecycle drain·timeout observation test
+- [x] P10-029 모든 event subscription을 해제한다. 증거: container subscription cleanup과 lifecycle 순서 test
+- [x] P10-030 AI runtime을 정리한다. 증거: operations `closeAi`와 lifecycle cleanup test
+- [x] P10-031 DB connection을 닫는다. 증거: lifecycle unit·child process test
+- [x] P10-032 log를 flush하고 각 cleanup 실패를 구조화해 기록한다. 증거: lifecycle phase failure test, `main.ts`
+- [x] P10-033 signal 중복 수신에서 cleanup을 중복 실행하지 않게 한다. 증거: lifecycle·signal 멱등 test
+- [x] P10-034 factory test가 실제 process를 시작하지 않게 한다. 증거: `composition/create-container.test.ts`, `import.meta.main` guard
+- [x] P10-035 기존 apps/api app-owned repository, module과 platform 중복 구현을 제거한다. 증거: package interface ownership guard와 제거 source 목록
+- [x] P10-036 P10 게이트: API unit·integration·HTTP·lifecycle test, OpenAPI parity와 API build가 통과한다. 증거: [P10 자동 검증](./p10-validation.md#자동-검증)
 
 ## 15. P11 — 통합 schema, migration과 seed
 

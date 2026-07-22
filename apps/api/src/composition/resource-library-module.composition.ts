@@ -1,7 +1,10 @@
 import type { Database } from "bun:sqlite"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { AdminSessionResolver } from "@workspace/identity/sessions"
+import type { InMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
+import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import type { AppLogger } from "@workspace/observability/logger"
+import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import {
   createResourceLibraryModule,
   type ResourceLibraryModule,
@@ -24,31 +27,41 @@ import { createResourceActorDirectory } from "@/adapters/auth/resource-actor-dir
 import type { AdminAssetStoreEnv } from "@/config/env"
 
 export function composeResourceLibraryModule(input: {
-  readonly assetStore: AdminAssetStoreEnv | undefined
+  readonly assetIdGenerator: IdGenerator<ResourceAssetId>
+  readonly clock: Clock
   readonly database: WritingAppDatabase
+  readonly documentIdGenerator: IdGenerator<ResourceDocumentId>
+  readonly eventBus: InMemoryEventBus<WorkspaceEventMap>
+  readonly eventIdGenerator: IdGenerator<string>
+  readonly folderIdGenerator: IdGenerator<ResourceFolderId>
   readonly logger: AppLogger
-  readonly now: () => Date
   readonly sqlite: Database
+  readonly storage: ResourceObjectStoragePort | null
 }): ResourceLibraryModule {
   return createResourceLibraryModule({
     actorDirectory: createResourceActorDirectory(input.database),
     assetAuditObserver(event) {
       input.logger.error(event, `admin.${event.kind}`)
     },
-    assetIdGenerator: {
-      next: () => `resource-asset-${crypto.randomUUID()}` as ResourceAssetId,
-    },
-    clock: { now: input.now },
+    assetIdGenerator: input.assetIdGenerator,
+    clock: input.clock,
     database: input.database,
-    documentIdGenerator: {
-      next: () =>
-        `resource-document-${crypto.randomUUID()}` as ResourceDocumentId,
+    documentIdGenerator: input.documentIdGenerator,
+    eventFailureObserver(event) {
+      input.logger.warn(event, "resource-library.event.publish_failed")
     },
-    folderIdGenerator: {
-      next: () => `resource-folder-${crypto.randomUUID()}` as ResourceFolderId,
+    eventIdGenerator: input.eventIdGenerator,
+    eventPublisher: {
+      async publishDocumentSaved(event) {
+        const published = await input.eventBus.publish(event.type, event)
+        return published.mapErr(() => ({
+          kind: "resource-document-event-publish-failed" as const,
+        }))
+      },
     },
+    folderIdGenerator: input.folderIdGenerator,
     sqlite: input.sqlite,
-    storage: createResourceObjectStorage(input.assetStore),
+    storage: input.storage,
   })
 }
 
@@ -70,7 +83,7 @@ export function createResourceAdminSessionPort(
   })
 }
 
-function createResourceObjectStorage(
+export function createResourceObjectStorage(
   config: AdminAssetStoreEnv | undefined
 ): ResourceObjectStoragePort | null {
   if (config === undefined) return null

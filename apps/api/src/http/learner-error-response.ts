@@ -11,6 +11,7 @@ import {
 } from "@workspace/contracts/learning/api-error"
 
 import type { ApiHonoEnv } from "@/context/hono-env"
+import { defaultRequestLoggingRuntime } from "@workspace/http-platform/request-logging"
 
 const statusByCode = {
   AI_FEEDBACK_ANSWER_NOT_FOUND: 409,
@@ -19,11 +20,13 @@ const statusByCode = {
   COURSE_NOT_FOUND: 404,
   CURRICULUM_VERSION_CHANGED: 409,
   FORBIDDEN: 403,
+  FORBIDDEN_ORIGIN: 403,
   INTERNAL_SERVER_ERROR: 500,
   INVALID_CURSOR: 400,
   LESSON_LOCKED: 403,
   LESSON_NOT_FOUND: 404,
   NOT_FOUND: 404,
+  PAYLOAD_TOO_LARGE: 413,
   PROVIDER_UNAVAILABLE: 503,
   STEP_SEQUENCE_CONFLICT: 409,
   UNAUTHENTICATED: 401,
@@ -39,11 +42,13 @@ const messageByCode = {
   CURRICULUM_VERSION_CHANGED:
     "학습 과정 버전이 변경되었습니다. 다시 시도해 주세요.",
   FORBIDDEN: "요청한 작업을 수행할 권한이 없습니다.",
+  FORBIDDEN_ORIGIN: "허용되지 않은 요청 출처입니다.",
   INTERNAL_SERVER_ERROR: "서버 오류가 발생했습니다.",
   INVALID_CURSOR: "목록 조회 위치가 올바르지 않습니다.",
   LESSON_LOCKED: "아직 학습할 수 없는 레슨입니다.",
   LESSON_NOT_FOUND: "레슨을 찾을 수 없습니다.",
   NOT_FOUND: "요청한 경로를 찾을 수 없습니다.",
+  PAYLOAD_TOO_LARGE: "요청 본문의 크기가 허용 범위를 초과했습니다.",
   PROVIDER_UNAVAILABLE: "AI 코칭을 잠시 사용할 수 없습니다.",
   STEP_SEQUENCE_CONFLICT: "현재 학습 순서와 요청한 단계가 다릅니다.",
   UNAUTHENTICATED: "로그인이 필요합니다.",
@@ -54,7 +59,7 @@ export function createLearnerErrorResponseMiddleware(): MiddlewareHandler<ApiHon
   return async (context, next) => {
     await next()
 
-    if (context.res.status < 400) return
+    if (context.req.path === "/health" || context.res.status < 400) return
 
     context.res = await normalizeLearnerErrorResponse({
       path: context.req.path,
@@ -65,7 +70,8 @@ export function createLearnerErrorResponseMiddleware(): MiddlewareHandler<ApiHon
 }
 
 export function createLearnerErrorHandler(
-  logInternalError?: InternalErrorLogger
+  logInternalError?: InternalErrorLogger,
+  createRequestId: () => string = defaultRequestLoggingRuntime.createRequestId
 ): ErrorHandler {
   const defaultErrorHandler = createErrorHandler(logInternalError)
 
@@ -74,16 +80,16 @@ export function createLearnerErrorHandler(
 
     return normalizeLearnerErrorResponse({
       path: context.req.path,
-      requestId: readRequestId(context.get("requestId")),
+      requestId: readRequestId(context.get("requestId"), createRequestId),
       response,
     })
   }
 }
 
-function readRequestId(value: unknown): string {
+function readRequestId(value: unknown, createRequestId: () => string): string {
   return typeof value === "string" && value.length > 0
     ? value
-    : crypto.randomUUID()
+    : createRequestId()
 }
 
 async function normalizeLearnerErrorResponse(input: {
@@ -165,6 +171,8 @@ function mapLegacyCode(
   switch (code) {
     case "FORBIDDEN":
       return "FORBIDDEN"
+    case "FORBIDDEN_ORIGIN":
+      return "FORBIDDEN_ORIGIN"
     case "AI_FEEDBACK_ANSWER_NOT_FOUND":
       return "AI_FEEDBACK_ANSWER_NOT_FOUND"
     case "ATTEMPT_IN_PROGRESS":
@@ -193,6 +201,8 @@ function mapLegacyCode(
       if (path.startsWith("/courses")) return "COURSE_NOT_FOUND"
       if (path.startsWith("/lessons")) return "LESSON_NOT_FOUND"
       return "NOT_FOUND"
+    case "PAYLOAD_TOO_LARGE":
+      return "PAYLOAD_TOO_LARGE"
     default:
       return status === 401 ? "UNAUTHENTICATED" : "INTERNAL_SERVER_ERROR"
   }

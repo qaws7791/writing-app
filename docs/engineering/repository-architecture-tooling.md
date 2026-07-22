@@ -27,7 +27,7 @@ Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표�
 - generated output만 제외하고 source directory 전체를 숨기는 예외는 두지 않는다.
 - private alias, 공개 subpath, type-only cycle과 금지 edge는 `scripts/fixtures/dependency-cruiser/`의 허용·금지 fixture로 함께 검증한다.
 
-기존 flat package를 전환하는 동안 `dependency-cruiser.config.mjs`의 `legacy-*` 규칙이 같은 정책을 적용한다. identity, content, ai-feedback, learning, resource-library와 operations 전환은 완료됐고 빈 core workspace와 `legacy-core-*`의 제거는 P15가 소유한다. `legacy-ui-*`와 `legacy-frontends-*`는 P12, 나머지 API 경계 규칙은 P10에서 대상 package 규칙으로 흡수한 뒤 P15에서 제거한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
+기존 flat package를 전환하는 동안 `dependency-cruiser.config.mjs`의 `legacy-*` 규칙이 같은 정책을 적용한다. identity, content, ai-feedback, learning, resource-library, operations와 API composition 전환은 완료됐다. API transport→persistence 금지와 app-owned module·검증 전 env·private import 재도입은 대상 규칙으로 고정했으며, 빈 core workspace와 `legacy-core-*`의 제거는 P15가 소유한다. `legacy-ui-*`와 `legacy-frontends-*`는 P12가 소유한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
 
 operations repository의 module schema 직접 조회 예외는 제거하고 identity·content·learning reporting query port로 치환했다. learning과 ai-feedback의 예외도 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다.
 

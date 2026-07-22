@@ -4,7 +4,7 @@ import { Database } from "bun:sqlite"
 import {
   createUnifiedApiServerLifecycle,
   registerUnifiedApiShutdownSignals,
-} from "@/server-lifecycle"
+} from "@/lifecycle/server-lifecycle"
 
 type ShutdownProcessEvent =
   | { readonly event: "ready"; readonly port: number }

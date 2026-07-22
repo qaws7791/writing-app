@@ -2,20 +2,22 @@ import type { WritingAppDatabase } from "@workspace/db/client"
 import type { IdentityModule } from "@workspace/identity/module"
 import type { ContentModule } from "@workspace/content/module"
 import type { AdminSessionResolver } from "@workspace/identity/sessions"
-import type { ApiEnv } from "@/config/env"
 import type { AppLogger } from "@workspace/observability/logger"
 import type { ResourceLibraryModule } from "@workspace/resource-library/module"
 import type { Database } from "bun:sqlite"
 import type { LearningReportingQuery } from "@workspace/learning/reporting"
+import type { Clock, IdGenerator } from "@workspace/kernel/clock"
+import type { AiChangeProposalId } from "@workspace/types/ids"
 
 export type AdminRouteCompositionContext = {
+  readonly aiConfig: Readonly<{ apiKey: string; model: string }> | null
+  readonly clock: Clock
   readonly content: ContentModule
   readonly database: WritingAppDatabase
-  readonly env: ApiEnv
   readonly identity: IdentityModule
   readonly learningReporting: LearningReportingQuery
   readonly logger: AppLogger
-  readonly now: () => Date
+  readonly proposalIdGenerator: IdGenerator<AiChangeProposalId>
   readonly resourceLibrary: ResourceLibraryModule
   readonly sessionResolver: AdminSessionResolver
   readonly sqlite: Database

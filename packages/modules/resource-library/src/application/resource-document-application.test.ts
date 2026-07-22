@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+import { err, ok } from "@workspace/kernel/result"
 import type { AdminId } from "@workspace/types/ids"
 
 import { createResourceDocumentApplication } from "#resource-library/application/resource-document-application"
@@ -35,6 +36,40 @@ const record: ResourceDocumentRecord = Object.freeze({
 })
 
 describe("resource document application", () => {
+  it("저장 후 공유 event를 발행하고 발행 실패는 성공한 저장과 격리한다", async () => {
+    const eventFailureObserver = vi.fn()
+    const publishDocumentSaved = vi.fn(async () =>
+      err({ kind: "resource-document-event-publish-failed" as const })
+    )
+    const application = createResourceDocumentApplication(
+      createDependencies({
+        eventFailureObserver,
+        eventPublisher: { publishDocumentSaved },
+      })
+    )
+
+    await expect(
+      application.saveDocument({
+        actor,
+        contentMarkdown: "새 본문",
+        documentId,
+        expectedVersion: 2,
+        name: "새 제목",
+      })
+    ).resolves.toMatchObject({ kind: "ok" })
+    expect(publishDocumentSaved).toHaveBeenCalledWith({
+      id: "event-1",
+      occurredAt: now,
+      payload: { documentId, version: 3 },
+      type: "resource-library.document-saved",
+    })
+    expect(eventFailureObserver).toHaveBeenCalledWith({
+      eventId: "event-1",
+      eventName: "resource-library.document-saved",
+      kind: "resource-document-event-publish-failed",
+    })
+  })
+
   it("stale 저장을 최신 hydrated document가 있는 conflict로 반환한다", async () => {
     const application = createResourceDocumentApplication(
       createDependencies({
@@ -193,6 +228,9 @@ function createDependencies(
     },
     documentIdGenerator: { next: () => documentId },
     documentRepository: createDocumentRepository(),
+    eventFailureObserver: () => undefined,
+    eventIdGenerator: { next: () => "event-1" },
+    eventPublisher: { publishDocumentSaved: async () => ok(undefined) },
     ...overrides,
   }
 }

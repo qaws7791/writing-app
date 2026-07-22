@@ -46,7 +46,11 @@ export function createRequestLoggingMiddleware({
 }: RequestLoggingMiddlewareOptions): MiddlewareHandler {
   return async (context, next) => {
     const startedAt = readMonotonicTimeMs()
-    const requestId = createRequestId()
+    const currentRequestId = context.get("requestId")
+    const requestId =
+      typeof currentRequestId === "string" && currentRequestId.length > 0
+        ? currentRequestId
+        : createRequestId()
     const externalRequestId = normalizeExternalRequestId(
       context.req.header("x-request-id")
     )

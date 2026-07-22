@@ -40,6 +40,7 @@ import {
   type OperationsHttpRouteGroup,
 } from "#operations/interface/http/operations-http"
 import type { AiChangeProposalId } from "@workspace/types/ids"
+import type { IdGenerator } from "@workspace/kernel/clock"
 
 export type OperationsModule = Readonly<{
   ai: Readonly<{
@@ -62,6 +63,7 @@ export function createOperationsModule(
     clock: OperationsClock
     database: WritingAppDatabase
     knowledge: OperationsAiKnowledgePort
+    proposalIdGenerator: IdGenerator<AiChangeProposalId>
     reporting: OperationsReportingPorts
     reportingFailureObserver: OperationsReportingFailureObserver
     sqlite: Database
@@ -72,10 +74,7 @@ export function createOperationsModule(
   const proposalRepository = createAiChangeProposalRepository(input.database)
   const proposals = createAiChangeProposalApplication({
     clock: input.clock,
-    idGenerator: {
-      next: () =>
-        `operations-ai-proposal-${crypto.randomUUID()}` as AiChangeProposalId,
-    },
+    idGenerator: input.proposalIdGenerator,
     repository: proposalRepository,
     target: input.target,
   })

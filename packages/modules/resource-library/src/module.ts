@@ -25,6 +25,8 @@ import type {
   ResourceActorDirectoryPort,
   ResourceAdminSessionPort,
   ResourceAssetAuditObserver,
+  ResourceDocumentEventFailureObserver,
+  ResourceDocumentEventPublisher,
   ResourceObjectStoragePort,
 } from "#resource-library/application/ports/resource-library-ports"
 import {
@@ -73,6 +75,9 @@ export function createResourceLibraryModule(
     clock: Clock
     database: WritingAppDatabase
     documentIdGenerator: IdGenerator<ResourceDocumentId>
+    eventFailureObserver: ResourceDocumentEventFailureObserver
+    eventIdGenerator: IdGenerator<string>
+    eventPublisher: ResourceDocumentEventPublisher
     folderIdGenerator: IdGenerator<ResourceFolderId>
     sqlite: Database
     storage: ResourceObjectStoragePort | null

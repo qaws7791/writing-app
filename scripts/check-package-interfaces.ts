@@ -498,6 +498,7 @@ verifyP6AiFeedbackOwnership()
 verifyP7LearningOwnership()
 verifyP8ResourceLibraryOwnership()
 verifyP9OperationsOwnership()
+verifyP10ApiCompositionOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -1317,6 +1318,80 @@ function verifyP9OperationsOwnership(): void {
     failures.push(
       `${aiAdapterPath} -> repository·filesystem AI context 도구 금지`
     )
+  }
+}
+
+function verifyP10ApiCompositionOwnership(): void {
+  const requiredApiSources = [
+    "apps/api/src/composition/create-app.ts",
+    "apps/api/src/composition/create-container.ts",
+    "apps/api/src/lifecycle/server-lifecycle.ts",
+    "apps/api/src/runtime/system-clock.ts",
+    "apps/api/src/runtime/uuid-generator.ts",
+  ] as const
+  const removedApiSources = [
+    "apps/api/src/api-runtime.ts",
+    "apps/api/src/app.ts",
+    "apps/api/src/learner-api-core.ts",
+    "apps/api/src/http/app.ts",
+    "apps/api/src/server-lifecycle.ts",
+    "apps/api/src/test-support/learner-api-shutdown-process.ts",
+  ] as const
+
+  for (const sourcePath of requiredApiSources) {
+    if (!fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(`${sourcePath} -> P10 API composition source 누락`)
+    }
+  }
+  for (const sourcePath of removedApiSources) {
+    if (fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(`${sourcePath} -> 제거된 API runtime 중복 source 재도입`)
+    }
+  }
+
+  const appOwnedModuleRoot = path.join(repositoryRoot, "apps/api/src/modules")
+  if (
+    fs.existsSync(appOwnedModuleRoot) &&
+    collectSourceFiles(appOwnedModuleRoot).length > 0
+  ) {
+    failures.push(
+      "apps/api/src/modules -> module HTTP interface 이전 뒤 app-owned module source 금지"
+    )
+  }
+
+  const apiSourceRoot = path.join(repositoryRoot, "apps/api/src")
+  for (const filePath of collectSourceFiles(apiSourceRoot)) {
+    const relative = relativePath(filePath)
+    if (
+      relative.includes(".test.") ||
+      relative.includes("/scripts/") ||
+      relative.includes("/test-support/") ||
+      relative.includes("/runtime/")
+    ) {
+      continue
+    }
+
+    const source = fs.readFileSync(filePath, "utf8")
+    for (const importedSource of readImports(filePath)) {
+      if (importedSource.startsWith("#")) {
+        failures.push(
+          `${relative} -> API는 dependency package private alias ${importedSource}를 import할 수 없음`
+        )
+      }
+    }
+    if (/\b(?:crypto\.randomUUID|Date\.now|new Date\(\s*\))/u.test(source)) {
+      failures.push(
+        `${relative} -> Clock·UUID production adapter는 apps/api runtime만 소유해야 함`
+      )
+    }
+    if (
+      relative !== "apps/api/src/main.ts" &&
+      /\b(?:Bun\.env|process\.env)\b/u.test(source)
+    ) {
+      failures.push(
+        `${relative} -> 검증 전 원문 env는 API main 경계를 넘을 수 없음`
+      )
+    }
   }
 }
 

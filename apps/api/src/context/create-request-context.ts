@@ -6,6 +6,7 @@ import type { RequestLoggingRuntime } from "@workspace/http-platform/request-log
 import type { RequestLogger } from "@workspace/observability/request-logger"
 import type { SecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 import type { HttpRequestContext } from "@workspace/http-platform/context"
+import type { ApiHealthProbe } from "@/runtime/api-health"
 
 import type { LearnerContractErrorLogger } from "@/http/learner-response"
 
@@ -15,12 +16,13 @@ export type ApiDependencies = {
   readonly contractErrorLogger?: LearnerContractErrorLogger
   readonly deploymentVersion?: string
   readonly errorLogger?: InternalErrorLogger
+  readonly health: ApiHealthProbe
   readonly learningRoutes: LearningHttpRouteGroup
   readonly identityRoutes: readonly {
     readonly handler: unknown
     readonly route: import("@workspace/http-platform/core").AnyRouteConfig
   }[]
-  readonly now?: () => Date
+  readonly now: () => Date
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly securityAuditLogger?: SecurityAuditLogger
@@ -29,9 +31,8 @@ export type ApiDependencies = {
 }
 
 export type ApiRequestContext = HttpRequestContext<
-  Omit<ApiDependencies, "now"> & {
+  ApiDependencies & {
     readonly deploymentVersion: string
-    readonly now: () => Date
   }
 >
 
@@ -41,6 +42,6 @@ export function createRequestContext(
   return {
     ...dependencies,
     deploymentVersion: dependencies.deploymentVersion ?? "local",
-    now: dependencies.now ?? (() => new Date()),
+    now: dependencies.now,
   }
 }

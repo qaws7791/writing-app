@@ -4,7 +4,7 @@ import type { AiFeedbackApplication } from "@workspace/ai-feedback/application"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { ContentModule } from "@workspace/content/module"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { createInMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
+import type { InMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
 import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import type { IdentityModule } from "@workspace/identity/module"
 import {
@@ -18,34 +18,35 @@ import type {
   LearningIdentityQueryPort,
 } from "@workspace/learning/ports"
 import type { AppLogger } from "@workspace/observability/logger"
+import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 
 export function composeLearningModule(input: {
   readonly aiFeedback: AiFeedbackApplication
+  readonly clock: Clock
   readonly content: ContentModule
   readonly cursorSigningSecret: string
   readonly database: WritingAppDatabase
+  readonly eventBus: InMemoryEventBus<WorkspaceEventMap>
+  readonly eventIdGenerator: IdGenerator<string>
   readonly identity: IdentityModule
   readonly logger: AppLogger
-  readonly now: () => Date
   readonly sqlite: Database
 }): LearningModule {
-  const eventBus = createInMemoryEventBus<WorkspaceEventMap>()
-
   return createLearningModule({
     aiFeedback: input.aiFeedback,
-    clock: { now: input.now },
+    clock: input.clock,
     content: createLearningContentQueryPort(input.content),
     cursorSigningSecret: input.cursorSigningSecret,
     database: input.database,
     eventFailureObserver(event: Parameters<LearningEventFailureObserver>[0]) {
       input.logger.warn(event, "learning.event.publish_failed")
     },
-    eventIdGenerator: { next: () => crypto.randomUUID() },
+    eventIdGenerator: input.eventIdGenerator,
     eventPublisher: {
       async publishLessonCompleted(
         event: WorkspaceEventMap["learning.lesson-completed"]
       ) {
-        const published = await eventBus.publish(event.type, event)
+        const published = await input.eventBus.publish(event.type, event)
         return published.mapErr(() => ({
           kind: "learning-event-publish-failed" as const,
         }))

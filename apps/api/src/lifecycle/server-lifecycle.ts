@@ -4,12 +4,13 @@ type UnifiedApiServer = {
 
 export type UnifiedApiShutdownPhase =
   | "cancel-activity"
-  | "cleanup-external"
+  | "close-ai"
   | "close-database"
   | "force-stop-server"
+  | "flush-logger"
+  | "observe-drain"
   | "stop-server"
-
-export type LearnerApiShutdownPhase = "close-core" | "stop-server"
+  | "unsubscribe-events"
 
 type ServerLifecycleScheduledTask = {
   readonly cancel: () => void
@@ -34,6 +35,12 @@ export type UnifiedApiServerLifecycle = {
   readonly fetch: (_request: Request) => Promise<Response>
   readonly shutdown: () => Promise<void>
 }
+
+export type ApiDrainObservation = Readonly<{
+  activeActivities: number
+  result: "drained" | "timed-out"
+  timeoutMilliseconds: number
+}>
 
 type ActiveActivity = {
   abortController: AbortController
@@ -103,22 +110,24 @@ const defaultScheduler: ServerLifecycleScheduler = {
 }
 
 export function createUnifiedApiServerLifecycle(input: {
+  readonly closeAi?: () => Promise<void> | void
   readonly closeDatabase: () => Promise<void> | void
   readonly drainTimeoutMilliseconds?: number
-  readonly externalCleanups?: readonly (() => Promise<void> | void)[]
   readonly fetch: (_request: Request) => Promise<Response> | Response
+  readonly flushLogger?: () => Promise<void> | void
   readonly forcedPhaseTimeoutMilliseconds?: number
+  readonly onDrainResult?: (observation: ApiDrainObservation) => void
   readonly onShutdownError?: (
     _error: unknown,
     _phase: UnifiedApiShutdownPhase
   ) => void
   readonly scheduler?: ServerLifecycleScheduler
+  readonly unsubscribeEvents?: () => Promise<void> | void
 }): UnifiedApiServerLifecycle {
   const activeActivities = new Set<ActiveActivity>()
   const drainWaiters = new Set<() => void>()
   const drainTimeoutMilliseconds =
     input.drainTimeoutMilliseconds ?? defaultDrainTimeoutMilliseconds
-  const externalCleanups = input.externalCleanups ?? []
   const forcedPhaseTimeoutMilliseconds =
     input.forcedPhaseTimeoutMilliseconds ??
     defaultForcedPhaseTimeoutMilliseconds
@@ -276,7 +285,11 @@ export function createUnifiedApiServerLifecycle(input: {
   async function waitWithinForcedPhaseDeadline(
     operation: Promise<void>,
     deadline: { readonly expiration: Promise<void> },
-    phase: "cancel-activity" | "cleanup-external" | "force-stop-server"
+    phase:
+      | "cancel-activity"
+      | "close-ai"
+      | "force-stop-server"
+      | "unsubscribe-events"
   ): Promise<void> {
     const result = await waitForOperationWithinDeadline(operation, deadline)
 
@@ -338,23 +351,39 @@ export function createUnifiedApiServerLifecycle(input: {
     }
   }
 
-  async function runExternalCleanups(): Promise<void> {
-    const cleanupResults = await Promise.allSettled(
-      externalCleanups.map((cleanup) => Promise.resolve().then(cleanup))
-    )
-
-    for (const result of cleanupResults) {
-      if (result.status === "rejected") {
-        reportShutdownError(result.reason, "cleanup-external")
-      }
-    }
-  }
-
   async function closeDatabase(): Promise<void> {
     try {
       await input.closeDatabase()
     } catch (error) {
       reportShutdownError(error, "close-database")
+    }
+  }
+
+  async function flushLogger(): Promise<void> {
+    try {
+      await input.flushLogger?.()
+    } catch (error) {
+      reportShutdownError(error, "flush-logger")
+    }
+  }
+
+  async function runCleanup(
+    cleanup: (() => Promise<void> | void) | undefined,
+    phase: "close-ai" | "unsubscribe-events"
+  ): Promise<void> {
+    if (cleanup === undefined) return
+    try {
+      await cleanup()
+    } catch (error) {
+      reportShutdownError(error, phase)
+    }
+  }
+
+  function reportDrainResult(observation: ApiDrainObservation): void {
+    try {
+      input.onDrainResult?.(observation)
+    } catch (error) {
+      reportShutdownError(error, "observe-drain")
     }
   }
 
@@ -471,8 +500,14 @@ export function createUnifiedApiServerLifecycle(input: {
     shutdown(): Promise<void> {
       shutdownPromise ??= (async () => {
         acceptingRequests = false
+        const activeActivitiesAtShutdown = activeActivities.size
         const gracefulStop = stopServer(false, "stop-server")
         const drainResult = await waitForDrainDeadline()
+        reportDrainResult({
+          activeActivities: activeActivitiesAtShutdown,
+          result: drainResult,
+          timeoutMilliseconds: drainTimeoutMilliseconds,
+        })
         const forcedPhaseDeadline = createForcedPhaseDeadline()
 
         if (drainResult === "timed-out") {
@@ -504,46 +539,24 @@ export function createUnifiedApiServerLifecycle(input: {
           )
         }
 
-        if (externalCleanups.length > 0) {
-          await waitWithinForcedPhaseDeadline(
-            runExternalCleanups(),
-            forcedPhaseDeadline,
-            "cleanup-external"
-          )
-        }
+        await waitWithinForcedPhaseDeadline(
+          runCleanup(input.unsubscribeEvents, "unsubscribe-events"),
+          forcedPhaseDeadline,
+          "unsubscribe-events"
+        )
+        await waitWithinForcedPhaseDeadline(
+          runCleanup(input.closeAi, "close-ai"),
+          forcedPhaseDeadline,
+          "close-ai"
+        )
         forcedPhaseDeadline.cancel()
         await closeDatabase()
+        await flushLogger()
       })()
 
       return shutdownPromise
     },
   }
-}
-
-export function createLearnerApiServerLifecycle(input: {
-  readonly closeCore: () => Promise<void> | void
-  readonly drainTimeoutMilliseconds?: number
-  readonly fetch: (_request: Request) => Promise<Response> | Response
-  readonly forcedPhaseTimeoutMilliseconds?: number
-  readonly onShutdownError: (
-    _error: unknown,
-    _phase: LearnerApiShutdownPhase
-  ) => void
-  readonly scheduler?: ServerLifecycleScheduler
-}): UnifiedApiServerLifecycle {
-  return createUnifiedApiServerLifecycle({
-    closeDatabase: input.closeCore,
-    drainTimeoutMilliseconds: input.drainTimeoutMilliseconds,
-    fetch: input.fetch,
-    forcedPhaseTimeoutMilliseconds: input.forcedPhaseTimeoutMilliseconds,
-    onShutdownError(error, phase) {
-      input.onShutdownError(
-        error,
-        phase === "close-database" ? "close-core" : "stop-server"
-      )
-    },
-    scheduler: input.scheduler,
-  })
 }
 
 export function registerUnifiedApiShutdownSignals(
@@ -572,12 +585,4 @@ export function registerUnifiedApiShutdownSignals(
 
   register("SIGINT", listener)
   register("SIGTERM", listener)
-}
-
-export function registerLearnerApiShutdownSignals(
-  shutdown: () => Promise<void>,
-  register?: (_signal: "SIGINT" | "SIGTERM", _listener: () => void) => void,
-  onShutdownError?: (_error: unknown) => void
-): void {
-  registerUnifiedApiShutdownSignals(shutdown, register, onShutdownError)
 }

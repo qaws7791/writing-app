@@ -6,21 +6,22 @@ import type {
   AdminRouteGroup,
   AdminRouteGroupRegistry,
 } from "@/http/admin-route-group"
-import { composeAdminContentRouteGroup } from "@/modules/admin-content/admin-content.composition"
-import { composeAdminIdentityRouteGroup } from "@/modules/admin-identity/admin-identity.composition"
+import { composeAdminContentRouteGroup } from "@/composition/content-routes.composition"
+import { composeAdminIdentityRouteGroup } from "@/composition/identity-routes.composition"
 import type { AdminRouteCompositionContext } from "@/composition/admin-route-composition-context"
 import { createResourceAdminSessionPort } from "@/composition/resource-library-module.composition"
 import {
   composeOperationsModule,
   createOperationsAdminSessionPort,
 } from "@/composition/operations-module.composition"
+import type { OperationsModule } from "@workspace/operations/module"
 
 export type { AdminRouteCompositionContext } from "@/composition/admin-route-composition-context"
 
 export function createAdminCapabilityRouteGroupRegistry(
-  context: AdminRouteCompositionContext
+  context: AdminRouteCompositionContext,
+  operations: OperationsModule = composeOperationsModule(context)
 ): AdminRouteGroupRegistry {
-  const operations = composeOperationsModule(context)
   return createAdminRouteGroupRegistry({
     content: composeAdminContentRouteGroup(context),
     identity: composeAdminIdentityRouteGroup(context),
@@ -34,9 +35,10 @@ export function createAdminCapabilityRouteGroupRegistry(
 }
 
 export function createAdminCapabilityRoutes(
-  context: AdminRouteCompositionContext
+  context: AdminRouteCompositionContext,
+  operations?: OperationsModule
 ): AdminRouteGroup {
   return assembleAdminCapabilityRoutes(
-    createAdminCapabilityRouteGroupRegistry(context)
+    createAdminCapabilityRouteGroupRegistry(context, operations)
   )
 }

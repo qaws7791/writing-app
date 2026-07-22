@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
-import { createApp } from "@/app"
+import { createLearnerApp as createApp } from "@/http/learner-app"
 import { createTestDependencies } from "@/routes/test-dependencies"
+import {
+  expectedOpenApiRouteKeys,
+  readOpenApiRouteKeys,
+} from "@/test-support/p10-route-parity"
 
 describe("플랫폼 API openapi route", () => {
   it("OpenAPI 3.1 baseline document를 반환한다", async () => {
@@ -100,6 +104,9 @@ describe("플랫폼 API openapi route", () => {
         "additionalProperties",
       ],
       false
+    )
+    expect(readOpenApiRouteKeys(document)).toEqual(
+      expectedOpenApiRouteKeys("learner")
     )
   })
 })

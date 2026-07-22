@@ -1,13 +1,43 @@
-import { Hono } from "hono"
+import { Hono, type Env, type Schema } from "hono"
 import { describe, expect, it, vi } from "vitest"
 
 import { parseApiHostConfiguration } from "@/config/api-hosts"
 import { createAdminApp } from "@/http/admin-app"
+import { createLearnerApp } from "@/http/learner-app"
 import { createUnifiedApp } from "@/http/unified-app"
+import { createTestDependencies } from "@/routes/test-dependencies"
 
 const allowedHosts = parseApiHostConfiguration("api.example.test,api:4000")
 
 describe("단일 API app", () => {
+  it("learner와 admin readiness는 같은 DB 상태를 반영하고 liveness와 분리한다", async () => {
+    let databaseReady = false
+    const health = { isDatabaseReady: () => databaseReady }
+    const app = createUnifiedApp({
+      adminApp: createAdminApp({
+        health,
+        sessionResolver: { resolveSession: () => Promise.resolve(null) },
+      }),
+      allowedHosts,
+      learnerApp: createLearnerApp({
+        ...createTestDependencies(),
+        health,
+      }),
+    })
+
+    for (const path of ["/health", "/api/admin/health"]) {
+      expect((await request(app, path)).status).toBe(503)
+    }
+    for (const path of ["/health/live", "/api/admin/health/live"]) {
+      expect((await request(app, path)).status).toBe(200)
+    }
+
+    databaseReady = true
+    for (const path of ["/health", "/api/admin/health"]) {
+      expect((await request(app, path)).status).toBe(200)
+    }
+  })
+
   it("learner 경로는 유지하고 관리자 경로만 /api/admin namespace로 격리한다", async () => {
     const learnerApp = new Hono().get("/courses", (context) =>
       context.text("learner")
@@ -77,17 +107,24 @@ describe("단일 API app", () => {
 
     expect(response.status).toBe(421)
     expect(response.headers.get("cache-control")).toBe("no-store")
+    expect(response.headers.get("x-request-id")).toMatch(/^[0-9a-f-]{36}$/u)
     expect(onRejectedHost).toHaveBeenCalledWith({ reason })
   })
 })
 
-async function read(app: Hono, path: string): Promise<string> {
+async function read<TEnv extends Env, TSchema extends Schema>(
+  app: Hono<TEnv, TSchema>,
+  path: string
+): Promise<string> {
   const response = await request(app, path)
 
   return response.text()
 }
 
-function request(app: Hono, path: string): Promise<Response> | Response {
+function request<TEnv extends Env, TSchema extends Schema>(
+  app: Hono<TEnv, TSchema>,
+  path: string
+): Promise<Response> | Response {
   return app.fetch(
     new Request(`http://api.example.test${path}`, {
       headers: { Host: "api.example.test" },

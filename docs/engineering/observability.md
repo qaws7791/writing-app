@@ -8,7 +8,8 @@
 
 - 요청과 운영 작업은 correlation 가능한 식별자, 결과, 지연, 오류 분류와 실행 revision을 남긴다.
 - 로그는 구조화하고, secret·credential·원문 답안·불필요한 개인 정보를 기록하지 않는다.
-- health는 process 생존이 아니라 의존성 준비 상태와 사용자 영향 판단에 필요한 신호를 제공해야 한다.
+- liveness는 process 생존만, readiness는 DB를 포함한 요청 처리 준비 상태를 나타내며 두 신호를 혼합하지 않는다.
+- graceful shutdown은 drain 결과·timeout과 cleanup phase별 실패를 구조화해 남기고, logger flush는 다른 resource 정리 뒤 수행한다.
 - alert는 사용자가 신고하기 전에 핵심 기능 불능, 데이터 보호 실패와 용량 위험을 알려야 한다.
 - metric과 alert의 현재 값·임계값은 코드·설정이 소유하며, 문서는 그 선택 원칙만 기록한다.
 

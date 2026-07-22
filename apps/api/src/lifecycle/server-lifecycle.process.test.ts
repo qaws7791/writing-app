@@ -25,11 +25,11 @@ it("SIGTERM 뒤 진행 body를 drain하고 DB close 1회와 port 해제를 보�
     [
       resolve(
         import.meta.dirname,
-        "test-support/learner-api-shutdown-process.ts"
+        "../test-support/unified-api-shutdown-process.ts"
       ),
     ],
     {
-      cwd: resolve(import.meta.dirname, ".."),
+      cwd: resolve(import.meta.dirname, "../.."),
       stdio: "pipe",
     }
   )

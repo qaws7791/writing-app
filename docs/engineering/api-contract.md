@@ -36,6 +36,7 @@
 - OpenAPI는 실제 등록 route에서 runtime에 생성한다. 정적 사본과 generated client를 저장소에 추적하지 않는다.
 - route와 contract test는 request·response schema, 인증·인가, 오류 변환과 호환성 규칙을 검증한다.
 - API 소비자는 공개 contracts와 좁은 app adapter를 사용하고 transport 구현 세부 사항을 도메인이나 화면에 누출하지 않는다.
+- process liveness와 DB readiness는 서로 다른 운영 계약이다. readiness 실패 응답은 learner domain 오류 정규화 대상이 아니며 learner·admin 표면은 같은 DB probe를 공유한다.
 
 ## 계약 변경 절차
 

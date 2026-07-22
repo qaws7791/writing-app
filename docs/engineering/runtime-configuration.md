@@ -14,6 +14,7 @@
 ## 설정 원칙
 
 - 환경 변수는 runtime 경계에서 schema로 parse하고, parse 결과만 내부에 전달한다.
+- 실행 진입점은 환경 원문을 한 번만 parse하고, app·container factory에는 검증된 runtime 설정만 전달한다. factory import는 process 시작이나 외부 자원 생성을 유발하지 않는다.
 - `packages/infra/*`는 `process.env`를 직접 읽지 않고 조립 경계가 전달한 검증 완료 설정만 소비한다.
 - 기본값은 한 source에서만 선언하고, 문서·test fixture·deployment script에 다시 적지 않는다.
 - secret, cookie, public origin과 데이터 저장소 설정은 서로 다른 목적과 회전 수명을 가진 값으로 분리한다.

@@ -14,13 +14,15 @@
 - content module은 draft 편집, immutable published revision, 발행·보관·reset과 콘텐츠 schema·seed를 함께 소유한다. learning과 operations에는 table이 아니라 공개 query port를 제공하고 AI 변경안에는 기존 command port를 제공한다.
 - ai-feedback module은 coaching prompt, provider 응답 검증, 완료 attempt 제한과 기록, module-local provider adapter와 HTTP interface를 소유한다. API composition은 learning의 저장 답안 문맥·진행 전이와 ai-feedback application port를 연결하며 어느 쪽도 상대 table을 읽지 않는다.
 - learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query, identity의 상태 query와 ai-feedback application port는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
-- resource-library module은 자료 tree·Markdown version·FTS·휴지통과 이미지 metadata lifecycle을 함께 소유한다. API composition은 관리자 actor directory와 object storage port를 주입하고, SQLite와 object storage의 비원자적 변경은 보상 삭제·삭제 대기·reconciliation으로 격리한다.
+- resource-library module은 자료 tree·Markdown version·FTS·휴지통과 이미지 metadata lifecycle을 함께 소유한다. API composition은 관리자 actor directory, object storage와 공유 event publisher port를 주입하고, SQLite와 object storage의 비원자적 변경은 보상 삭제·삭제 대기·reconciliation으로 격리한다.
 - operations module은 대시보드·분석 조합, 운영 설정, 관리자 AI 대화·quota·변경안 검토와 관리자 HTTP interface를 소유한다. reporting은 identity·content·learning의 공개 port를 병렬 호출하고 하나라도 실패하면 불완전한 수치를 성공으로 공개하지 않는다. AI 변경안 승인은 API composition이 주입한 content·resource-library의 기존 command port만 호출한다.
 - learning의 완료 event는 transaction 결과에서 commit 이후 발행 대상으로 반환한다. 전달 실패는 이미 확정된 학습 상태를 rollback으로 오표현하지 않고 별도 관찰 실패로 격리한다.
 - 외부 provider SDK, HTTP framework, logger와 DB runtime은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다.
 - 각 module의 데이터 schema, migration과 seed는 자기 도메인 데이터만 소유하며 도메인 의미를 우회해 application 정책을 소유하지 않는다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.
+- API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, event bus, 외부 I/O와 여섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
+- API 종료는 신규 요청 차단과 진행 응답 drain 뒤 event subscription, AI, DB, logger를 순서대로 정리한다. 각 실패는 격리해 기록하고 signal 중복 수신은 같은 종료 작업으로 수렴시킨다.
 
 ## 의존성 판단
 

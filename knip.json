@@ -29,9 +29,10 @@
     },
     "apps/api": {
       "entry": [
+        "src/scripts/start-e2e-api.ts",
         "src/scripts/setup-e2e-content-database.ts",
         "src/scripts/setup-e2e-database.ts",
-        "src/test-support/learner-api-shutdown-process.ts"
+        "src/test-support/unified-api-shutdown-process.ts"
       ]
     },
     "apps/admin": {

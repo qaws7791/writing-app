@@ -1,107 +1,81 @@
 import { serve } from "bun"
-import { createApiRuntime } from "@/api-runtime"
-import { createApp } from "@/app"
-import { parseApiEnv } from "@/config/env"
-import { createAdminApp } from "@/http/admin-app"
-import { createUnifiedApp } from "@/http/unified-app"
-import { defaultRequestLoggingRuntime } from "@workspace/http-platform/request-logging"
-import { createAppLogger } from "@workspace/observability/logger"
-import { createRequestLogger } from "@workspace/observability/request-logger"
-import { createSecurityAuditLogger } from "@workspace/observability/security-audit-logger"
+import type { AppEnvInput } from "@workspace/env/parse-env"
+
+import {
+  createContainer,
+  type ApiContainer,
+  type CreateContainerOptions,
+} from "@/composition/create-container"
+import { createApp, type ApiApp } from "@/composition/create-app"
+import { parseApiEnv, type ApiEnv } from "@/config/env"
 import {
   createUnifiedApiServerLifecycle,
   registerUnifiedApiShutdownSignals,
-} from "@/server-lifecycle"
+  type UnifiedApiServerLifecycle,
+} from "@/lifecycle/server-lifecycle"
 
-const env = parseApiEnv(process.env)
-const logger = createAppLogger({ level: env.logLevel, pretty: env.logPretty })
-const runtime = createApiRuntime({
-  env,
-  logger,
-  onAiFeedbackAttemptTransition(event) {
-    const write = event.toStatus === "failed" ? logger.warn : logger.info
-    write.call(logger, event, "ai.feedback.attempt.transition")
-  },
-  onAiFeedbackUsage(event) {
-    logger.info(event, "ai.usage")
-  },
-})
-const { adminApp, learnerApp, unifiedFetch } = (() => {
-  try {
-    const learnerApp = createApp({
-      authHandler: runtime.learnerCore.authHandler,
-      contractErrorLogger(event) {
-        logger.error(event, "api.contract.response_invalid")
-      },
-      deploymentVersion: env.deploymentVersion,
-      errorLogger(event) {
-        logger.error(event, "request.failed")
-      },
-      aiFeedbackRoutes: runtime.learnerCore.aiFeedbackRoutes,
-      identityRoutes: runtime.learnerCore.identityRoutes,
-      learningRoutes: runtime.learnerCore.learningRoutes,
-      requestLogger: createRequestLogger(logger),
-      requestLoggingRuntime: defaultRequestLoggingRuntime,
-      securityAuditLogger: createSecurityAuditLogger(logger),
-      sessionResolver: runtime.learnerCore.sessionResolver,
-      webOrigin: env.webOrigin,
-    })
-    const adminApp = createAdminApp({
-      adminOrigin: env.adminOrigin,
-      authHandler: runtime.adminAuth.authHandler,
-      capabilityRoutes: runtime.adminCapabilityRoutes,
-      errorLogger(event) {
-        logger.error(event, "request.failed")
-      },
-      requestLogger: createRequestLogger(logger),
-      requestLoggingRuntime: defaultRequestLoggingRuntime,
-      securityAuditLogger: createSecurityAuditLogger(logger),
-      sessionResolver: runtime.adminSessionResolver,
-    })
-    const unifiedFetch = createUnifiedApp({
-      adminApp,
-      allowedHosts: env.allowedHosts,
-      learnerApp,
-      onRejectedHost(event) {
-        logger.warn(event, "request.host.rejected")
-      },
-    }).fetch
+export type ApiServerRuntime = Readonly<{
+  app: ApiApp
+  container: ApiContainer
+  lifecycle: UnifiedApiServerLifecycle
+  server: ReturnType<typeof serve>
+}>
 
-    return { adminApp, learnerApp, unifiedFetch }
-  } catch (error) {
-    runtime.dispose()
-    throw error
-  }
-})()
+export type StartApiServerOptions = Readonly<{
+  container?: CreateContainerOptions
+  validateEnv?: (env: ApiEnv) => void
+}>
 
-if (import.meta.main) {
-  const lifecycle = createUnifiedApiServerLifecycle({
-    closeDatabase: runtime.dispose,
-    fetch: unifiedFetch,
-    onShutdownError(error, phase) {
-      logger.error({ error, phase }, "server.shutdown.failed")
-    },
-  })
+export async function startApiServer(
+  rawEnv: AppEnvInput,
+  options: StartApiServerOptions = {}
+): Promise<ApiServerRuntime> {
+  const env = parseApiEnv(rawEnv)
+  options.validateEnv?.(env)
+  const container = await createContainer(env, options.container)
   let server: ReturnType<typeof serve> | undefined
+
   try {
-    server = serve({
-      fetch: lifecycle.fetch,
-      port: env.port,
+    const app = createApp(container)
+    const logger = container.platform.logger
+    const lifecycle = createUnifiedApiServerLifecycle({
+      closeAi: container.lifecycle.closeAi,
+      closeDatabase: container.lifecycle.closeDatabase,
+      fetch: app.fetch,
+      flushLogger: container.lifecycle.flushLogger,
+      onDrainResult(observation) {
+        logger.info(observation, "server.shutdown.drain")
+      },
+      onShutdownError(error, phase) {
+        logger.error({ error, phase }, "server.shutdown.failed")
+      },
+      unsubscribeEvents: container.lifecycle.unsubscribeEvents,
     })
+    server = serve({ fetch: lifecycle.fetch, port: env.port })
     lifecycle.attachServer(server)
-    registerUnifiedApiShutdownSignals(lifecycle.shutdown)
-  } catch (error) {
+    registerUnifiedApiShutdownSignals(lifecycle.shutdown, undefined, (error) =>
+      logger.error({ error }, "server.shutdown.unhandled")
+    )
+
+    return Object.freeze({ app, container, lifecycle, server })
+  } catch (cause) {
     try {
       await server?.stop(true)
-    } catch (stopError) {
-      logger.error(
-        { error: stopError, phase: "force-stop-server" },
+    } catch (error) {
+      container.platform.logger.error(
+        { error, phase: "force-stop-server" },
         "server.shutdown.failed"
       )
     }
-    runtime.dispose()
-    throw error
+    try {
+      await container.dispose()
+    } catch {
+      // container가 각 resource 정리 실패를 이미 구조화해 기록한다.
+    }
+    throw cause
   }
 }
 
-export { learnerApp as app, adminApp, unifiedFetch }
+if (import.meta.main) {
+  await startApiServer(process.env)
+}

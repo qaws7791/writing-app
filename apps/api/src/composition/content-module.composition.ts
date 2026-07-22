@@ -1,4 +1,4 @@
-import { createInMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
+import type { InMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
 import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import {
   authorizeContentReset,
@@ -11,28 +11,28 @@ import {
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { AppLogger } from "@workspace/observability/logger"
 import type { CourseId } from "@workspace/types/ids"
+import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 
 export function composeContentModule(input: {
+  readonly clock: Clock
+  readonly courseIdGenerator: IdGenerator<CourseId>
   readonly database: WritingAppDatabase
   readonly environment: ContentRuntimeEnvironment
+  readonly eventBus: InMemoryEventBus<WorkspaceEventMap>
+  readonly eventIdGenerator: IdGenerator<string>
   readonly logger: AppLogger
-  readonly now: () => Date
 }): ContentModule {
-  const eventBus = createInMemoryEventBus<WorkspaceEventMap>()
-
   return createContentModule({
-    clock: { now: input.now },
-    courseIdGenerator: {
-      next: () => `course-${crypto.randomUUID()}` as CourseId,
-    },
+    clock: input.clock,
+    courseIdGenerator: input.courseIdGenerator,
     database: input.database,
     eventFailureObserver(event) {
       input.logger.warn(event, "content.event.publish_failed")
     },
-    eventIdGenerator: { next: () => crypto.randomUUID() },
+    eventIdGenerator: input.eventIdGenerator,
     eventPublisher: {
       async publishCurriculumPublished(event) {
-        const published = await eventBus.publish(event.type, event)
+        const published = await input.eventBus.publish(event.type, event)
         return published.mapErr(() => ({
           kind: "content-event-publish-failed" as const,
         }))

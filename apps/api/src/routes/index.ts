@@ -2,10 +2,14 @@ import type { OpenAPIHono } from "@hono/zod-openapi"
 
 import type { ApiDependencies } from "@/context/create-request-context"
 import { createOpenApiDocument } from "@/http/openapi"
-import { registerAuthProxy } from "@/modules/auth/auth-proxy"
-import { healthRoute } from "@/modules/health/health.routes"
+import { registerAuthProxy } from "@/http/auth-proxy"
+import { createHealthRoutes } from "@/http/health-routes"
 
-export const routes = [healthRoute] as const
+export function createApiFoundationRoutes(
+  dependencies: Pick<ApiDependencies, "health">
+) {
+  return createHealthRoutes(dependencies.health)
+}
 
 export function registerApiBootstrapRoutes(
   app: OpenAPIHono,

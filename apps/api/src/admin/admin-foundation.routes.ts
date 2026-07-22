@@ -8,24 +8,45 @@ import {
   jsonResponse,
 } from "@/admin/admin-openapi"
 import { adminSessionRouteOptions } from "@workspace/identity/http"
+import type { ApiHealthProbe } from "@/runtime/api-health"
 
-export const adminHealthRoute = defineAdminRoute({
-  method: "get",
-  operationId: "getAdminHealth",
-  path: "/health",
-  responses: {
-    200: jsonResponse("어드민 API 상태입니다.", adminHealthResponseSchema),
-  },
-  summary: "어드민 API 상태 조회",
-  handler: (context) =>
-    context.json(
-      {
-        ok: true,
-        service: "api",
+export function createAdminHealthRoutes(health: ApiHealthProbe) {
+  return [
+    defineAdminRoute({
+      method: "get",
+      operationId: "getAdminHealth",
+      path: "/health",
+      responses: {
+        200: jsonResponse(
+          "어드민 API가 요청을 처리할 준비가 됐습니다.",
+          adminHealthResponseSchema
+        ),
+        503: jsonResponse(
+          "API 데이터베이스가 준비되지 않았습니다.",
+          adminHealthResponseSchema
+        ),
       },
-      200
-    ),
-})
+      summary: "어드민 API readiness 조회",
+      handler: (context) => {
+        const ready = health.isDatabaseReady()
+        return context.json({ ok: ready, service: "api" }, ready ? 200 : 503)
+      },
+    }),
+    defineAdminRoute({
+      method: "get",
+      operationId: "getAdminLiveness",
+      path: "/health/live",
+      responses: {
+        200: jsonResponse(
+          "API process가 실행 중입니다.",
+          adminHealthResponseSchema
+        ),
+      },
+      summary: "어드민 API liveness 조회",
+      handler: (context) => context.json({ ok: true, service: "api" }, 200),
+    }),
+  ] as const
+}
 
 export function createAdminSessionRoute(sessionResolver: AdminSessionResolver) {
   return defineAdminRoute({

@@ -11,7 +11,7 @@ import {
 } from "@workspace/http-platform/security"
 import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
-  adminHealthRoute,
+  createAdminHealthRoutes,
   createAdminSessionRoute,
 } from "@/admin/admin-foundation.routes"
 import type { AdminHonoEnv } from "@/admin/admin-hono-env"
@@ -24,12 +24,14 @@ import {
 import { createSecurityAuditRequestObserver } from "@/observability/security-audit-request-observer"
 import type { RequestLogger } from "@workspace/observability/request-logger"
 import type { SecurityAuditLogger } from "@workspace/observability/security-audit-logger"
+import type { ApiHealthProbe } from "@/runtime/api-health"
 
 export type AdminAppDependencies = {
   readonly adminOrigin?: string
   readonly authHandler?: (request: Request) => Promise<Response>
   readonly capabilityRoutes?: AdminRouteGroup
   readonly errorLogger?: InternalErrorLogger
+  readonly health?: ApiHealthProbe
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly securityAuditLogger?: SecurityAuditLogger
@@ -43,7 +45,9 @@ export function createAdminApp(
     errorLogger: dependencies.errorLogger,
     middleware: createAdminMiddleware(dependencies),
     routes: [
-      adminHealthRoute,
+      ...createAdminHealthRoutes(
+        dependencies.health ?? { isDatabaseReady: () => true }
+      ),
       createAdminSessionRoute(dependencies.sessionResolver),
       ...(dependencies.capabilityRoutes ?? []),
     ],

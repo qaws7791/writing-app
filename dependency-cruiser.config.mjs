@@ -252,9 +252,8 @@ const config = {
       severity: "error",
       from: {
         path: [
-          "^apps/api/src/app\\.ts$",
+          "^apps/api/src/composition/create-app\\.ts$",
           "^apps/api/src/(admin|http|middleware|routes)/",
-          "^apps/api/src/modules/[^/]+/[^/]+\\.routes?\\.ts$",
         ],
       },
       to: {
@@ -328,15 +327,6 @@ const config = {
       to: {
         path: "^packages/core/src/",
         pathNot: "^packages/core/src/modules/admin/api/index\\.ts$",
-      },
-    },
-    {
-      name: "api-http-modules-do-not-import-siblings",
-      severity: "error",
-      from: { path: "^apps/api/src/modules/([^/]+)/" },
-      to: {
-        path: "^apps/api/src/modules/",
-        pathNot: "^apps/api/src/modules/$1/",
       },
     },
     {

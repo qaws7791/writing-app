@@ -1,14 +1,87 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  createLearnerApiServerLifecycle,
   createUnifiedApiServerLifecycle,
-  registerLearnerApiShutdownSignals,
   registerUnifiedApiShutdownSignals,
   type ServerLifecycleScheduler,
-} from "@/server-lifecycle"
+} from "@/lifecycle/server-lifecycle"
 
 describe("통합 API server lifecycle", () => {
+  it("drain 결과를 기록하고 event, AI, DB, logger 순서로 resource를 정리한다", async () => {
+    const events: string[] = []
+    const lifecycle = createUnifiedApiServerLifecycle({
+      closeAi() {
+        events.push("ai")
+      },
+      closeDatabase() {
+        events.push("database")
+      },
+      fetch: () => new Response(null),
+      flushLogger() {
+        events.push("logger")
+      },
+      onDrainResult(observation) {
+        events.push(
+          `drain:${observation.result}:${observation.activeActivities}:${observation.timeoutMilliseconds}`
+        )
+      },
+      unsubscribeEvents() {
+        events.push("events")
+      },
+    })
+    lifecycle.attachServer({
+      stop(force) {
+        events.push(`stop:${String(force)}`)
+      },
+    })
+
+    await lifecycle.shutdown()
+
+    expect(events).toEqual([
+      "stop:false",
+      "drain:drained:0:20000",
+      "events",
+      "ai",
+      "database",
+      "logger",
+    ])
+  })
+
+  it("각 cleanup 실패를 구조화 phase로 격리하고 logger flush까지 계속한다", async () => {
+    const failures = {
+      ai: new Error("ai close failed"),
+      database: new Error("database close failed"),
+      events: new Error("event unsubscribe failed"),
+      logger: new Error("logger flush failed"),
+    }
+    const onShutdownError = vi.fn()
+    const lifecycle = createUnifiedApiServerLifecycle({
+      closeAi() {
+        throw failures.ai
+      },
+      closeDatabase() {
+        throw failures.database
+      },
+      fetch: () => new Response(null),
+      flushLogger() {
+        throw failures.logger
+      },
+      onShutdownError,
+      unsubscribeEvents() {
+        throw failures.events
+      },
+    })
+    lifecycle.attachServer({ stop: vi.fn() })
+
+    await expect(lifecycle.shutdown()).resolves.toBeUndefined()
+    expect(onShutdownError.mock.calls).toEqual([
+      [failures.events, "unsubscribe-events"],
+      [failures.ai, "close-ai"],
+      [failures.database, "close-database"],
+      [failures.logger, "flush-logger"],
+    ])
+  })
+
   it("learner와 admin 응답 body가 모두 소비될 때까지 자연 drain하고 새 요청은 503으로 거절한다", async () => {
     const learnerStream = createControlledStream()
     const adminStream = createControlledStream()
@@ -172,11 +245,9 @@ describe("통합 API server lifecycle", () => {
         events.push("database")
       },
       drainTimeoutMilliseconds: 125,
-      externalCleanups: [
-        () => {
-          events.push("cleanup")
-        },
-      ],
+      unsubscribeEvents() {
+        events.push("cleanup")
+      },
       fetch(request) {
         linkedSignal = request.signal
         return stream.response
@@ -368,12 +439,10 @@ describe("통합 API server lifecycle", () => {
     const lifecycle = createUnifiedApiServerLifecycle({
       closeDatabase,
       drainTimeoutMilliseconds: 125,
-      externalCleanups: [
-        () => {
-          events.push("cleanup")
-          return neverSettles
-        },
-      ],
+      unsubscribeEvents() {
+        events.push("cleanup")
+        return neverSettles
+      },
       fetch: () => stream.response,
       forcedPhaseTimeoutMilliseconds: 50,
       onShutdownError,
@@ -400,7 +469,7 @@ describe("통합 API server lifecycle", () => {
       }))
     ).toEqual([
       { name: "TimeoutError", phase: "cancel-activity" },
-      { name: "TimeoutError", phase: "cleanup-external" },
+      { name: "TimeoutError", phase: "unsubscribe-events" },
     ])
   })
 
@@ -427,7 +496,7 @@ describe("통합 API server lifecycle", () => {
     expect(scheduler.tasks[0]?.cancelled).toBe(true)
   })
 
-  it("external cleanup 오류를 allSettled로 격리하고 모두 끝난 뒤 DB를 한 번만 닫는다", async () => {
+  it("event와 AI cleanup을 순서대로 격리하고 모두 끝난 뒤 DB를 한 번만 닫는다", async () => {
     const firstCleanup = createDeferred<void>()
     const events: string[] = []
     const cleanupError = new Error("provider cleanup failed")
@@ -436,17 +505,15 @@ describe("통합 API server lifecycle", () => {
       closeDatabase() {
         events.push("database")
       },
-      externalCleanups: [
-        async () => {
-          events.push("cleanup:first")
-          await firstCleanup.promise
-          events.push("cleanup:first:done")
-        },
-        () => {
-          events.push("cleanup:second")
-          throw cleanupError
-        },
-      ],
+      async unsubscribeEvents() {
+        events.push("cleanup:first")
+        await firstCleanup.promise
+        events.push("cleanup:first:done")
+      },
+      closeAi() {
+        events.push("cleanup:second")
+        throw cleanupError
+      },
       fetch: () => new Response(null),
       onShutdownError,
     })
@@ -461,7 +528,7 @@ describe("통합 API server lifecycle", () => {
     await waitForMicrotasks()
 
     expect(firstShutdown).toBe(repeatedShutdown)
-    expect(events).toEqual(["stop:false", "cleanup:first", "cleanup:second"])
+    expect(events).toEqual(["stop:false", "cleanup:first"])
 
     firstCleanup.resolve()
     await firstShutdown
@@ -470,86 +537,49 @@ describe("통합 API server lifecycle", () => {
     expect(events).toEqual([
       "stop:false",
       "cleanup:first",
-      "cleanup:second",
       "cleanup:first:done",
+      "cleanup:second",
       "database",
     ])
-    expect(onShutdownError).toHaveBeenCalledWith(
-      cleanupError,
-      "cleanup-external"
-    )
-  })
-
-  it("기존 learner adapter는 stop과 close 오류 phase 이름을 유지한다", async () => {
-    const onShutdownError = vi.fn()
-    const lifecycle = createLearnerApiServerLifecycle({
-      closeCore() {
-        throw new Error("close 실패")
-      },
-      fetch: () => new Response(null),
-      onShutdownError,
-    })
-    lifecycle.attachServer({
-      stop() {
-        throw new Error("stop 실패")
-      },
-    })
-
-    await lifecycle.shutdown()
-    expect(onShutdownError.mock.calls.map(([, phase]) => phase)).toEqual([
-      "stop-server",
-      "close-core",
-    ])
+    expect(onShutdownError).toHaveBeenCalledWith(cleanupError, "close-ai")
   })
 })
 
 describe("API shutdown signal 등록", () => {
-  it.each([
-    ["canonical", registerUnifiedApiShutdownSignals],
-    ["learner compatibility", registerLearnerApiShutdownSignals],
-  ])(
-    "%s listener는 SIGINT와 SIGTERM 중 최초 신호만 실행한다",
-    async (_, registerSignals) => {
-      const listeners = new Map<string, () => void>()
-      const shutdown = vi.fn(async () => undefined)
-      registerSignals(shutdown, (signal, listener) => {
+  it("SIGINT와 SIGTERM 중 최초 신호만 실행한다", async () => {
+    const listeners = new Map<string, () => void>()
+    const shutdown = vi.fn(async () => undefined)
+    registerUnifiedApiShutdownSignals(shutdown, (signal, listener) => {
+      listeners.set(signal, listener)
+    })
+
+    listeners.get("SIGINT")?.()
+    listeners.get("SIGTERM")?.()
+    await waitForMicrotasks()
+
+    expect(shutdown).toHaveBeenCalledTimes(1)
+  })
+
+  it("shutdown rejection을 catch hook으로 보고한다", async () => {
+    const listeners = new Map<string, () => void>()
+    const shutdownError = new Error("shutdown failed")
+    const onShutdownError = vi.fn()
+    registerUnifiedApiShutdownSignals(
+      async () => {
+        throw shutdownError
+      },
+      (signal, listener) => {
         listeners.set(signal, listener)
-      })
+      },
+      onShutdownError
+    )
 
-      listeners.get("SIGINT")?.()
-      listeners.get("SIGTERM")?.()
-      await waitForMicrotasks()
+    listeners.get("SIGTERM")?.()
+    await waitForMicrotasks()
 
-      expect(shutdown).toHaveBeenCalledTimes(1)
-    }
-  )
-
-  it.each([
-    ["canonical", registerUnifiedApiShutdownSignals],
-    ["learner compatibility", registerLearnerApiShutdownSignals],
-  ])(
-    "%s listener는 shutdown rejection을 catch hook으로 보고한다",
-    async (_, registerSignals) => {
-      const listeners = new Map<string, () => void>()
-      const shutdownError = new Error("shutdown failed")
-      const onShutdownError = vi.fn()
-      registerSignals(
-        async () => {
-          throw shutdownError
-        },
-        (signal, listener) => {
-          listeners.set(signal, listener)
-        },
-        onShutdownError
-      )
-
-      listeners.get("SIGTERM")?.()
-      await waitForMicrotasks()
-
-      expect(onShutdownError).toHaveBeenCalledOnce()
-      expect(onShutdownError).toHaveBeenCalledWith(shutdownError)
-    }
-  )
+    expect(onShutdownError).toHaveBeenCalledOnce()
+    expect(onShutdownError).toHaveBeenCalledWith(shutdownError)
+  })
 })
 
 function createRedirectResponseFixture(): Response {

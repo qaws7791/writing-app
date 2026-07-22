@@ -6,9 +6,15 @@ import {
   type AdminRouteRegistration,
 } from "@/http/admin-route-group"
 
-const reservedFoundationPaths = ["/health", "/openapi", "/session"] as const
+const reservedFoundationPaths = [
+  "/health",
+  "/health/live",
+  "/openapi",
+  "/session",
+] as const
 const reservedFoundationOperationIds = [
   "getAdminHealth",
+  "getAdminLiveness",
   "getAdminSession",
 ] as const
 const reservedAdminAuthPath = "/auth"

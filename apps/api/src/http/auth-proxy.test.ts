@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createApp } from "@/app"
+import { createLearnerApp as createApp } from "@/http/learner-app"
 import { createTestDependencies } from "@/routes/test-dependencies"
 
 describe("플랫폼 API auth route", () => {

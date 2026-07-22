@@ -10,14 +10,18 @@ import {
   createAdminCapabilityRoutes,
   type AdminRouteCompositionContext,
 } from "@/composition/admin-route-composition"
-import { parseApiEnv } from "@/config/env"
 import { adminRouteGroupOrder } from "@/http/admin-route-group"
+import { createAdminApp } from "@/http/admin-app"
 import { createAppLogger } from "@workspace/observability/logger"
+import {
+  expectedOpenApiRouteKeys,
+  readOpenApiRouteKeys,
+} from "@/test-support/p10-route-parity"
 
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
 
 describe("관리자 capability route composition", () => {
-  it("하나의 app-owned context로 네 capability factory를 매번 독립 조립한다", () => {
+  it("하나의 app-owned context로 네 capability factory를 매번 독립 조립한다", async () => {
     const databaseClient = createInMemoryWritingAppDatabase()
 
     try {
@@ -88,6 +92,16 @@ describe("관리자 capability route composition", () => {
         "searchAdminResourceLibrary",
       ])
       expect(Object.isFrozen(routes)).toBe(true)
+      const app = createAdminApp({
+        capabilityRoutes: routes,
+        health: { isDatabaseReady: () => true },
+        sessionResolver: context.sessionResolver,
+      })
+      const document = await (await app.request("/openapi")).json()
+
+      expect(readOpenApiRouteKeys(document)).toEqual(
+        expectedOpenApiRouteKeys("admin")
+      )
     } finally {
       databaseClient.close()
     }
@@ -99,6 +113,8 @@ function createCompositionContext(
   sqlite: Parameters<typeof createResourceLibraryModule>[0]["sqlite"]
 ): AdminRouteCompositionContext {
   return {
+    aiConfig: null,
+    clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
     content: createContentModule({
       clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
       courseIdGenerator: { next: () => "course-1" as never },
@@ -111,17 +127,6 @@ function createCompositionContext(
       resetGuard: { authorize: () => ok(undefined) },
     }),
     database,
-    env: parseApiEnv({
-      ADMIN_AUTH_SECRET: "admin-test-secret-0123456789abcdef",
-      ADMIN_ORIGIN: "http://localhost:3001",
-      API_ALLOWED_HOSTS: "localhost:4000,api:4000",
-      API_ORIGIN: "http://localhost:4000",
-      API_PORT: "4000",
-      DATABASE_URL: ":memory:",
-      LEARNER_AUTH_SECRET: "learner-test-secret-0123456789abcdef",
-      NODE_ENV: "test",
-      WEB_ORIGIN: "http://localhost:3000",
-    }),
     logger: createAppLogger({ level: "silent" }),
     identity: createIdentityModule({
       clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
@@ -149,7 +154,9 @@ function createCompositionContext(
         lessonProgress: [],
       }),
     },
-    now: () => new Date("2026-07-18T00:00:00.000Z"),
+    proposalIdGenerator: {
+      next: () => "operations-ai-proposal-1" as never,
+    },
     resourceLibrary: createResourceLibraryModule({
       actorDirectory: { readActors: async () => [] },
       assetAuditObserver: () => undefined,
@@ -157,6 +164,11 @@ function createCompositionContext(
       clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
       database,
       documentIdGenerator: { next: () => "resource-document-1" as never },
+      eventFailureObserver: () => undefined,
+      eventIdGenerator: { next: () => "event-1" },
+      eventPublisher: {
+        publishDocumentSaved: async () => ok(undefined),
+      },
       folderIdGenerator: { next: () => "resource-folder-1" as never },
       sqlite,
       storage: null,

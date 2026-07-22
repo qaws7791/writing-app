@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { createLearnerIdentityRoutes } from "@workspace/identity/http"
 
-import { createApp, type ApiDependencies } from "@/app"
+import {
+  createLearnerApp as createApp,
+  type ApiDependencies,
+} from "@/http/learner-app"
 import { createTestDependencies } from "@/routes/test-dependencies"
 
 type CapturedRequestLogEvent = {
@@ -141,10 +144,10 @@ describe("플랫폼 API profile route", () => {
       }
     )
 
-    expect(response.status).toBe(500)
+    expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "서버 오류가 발생했습니다.",
+      code: "FORBIDDEN_ORIGIN",
+      message: "허용되지 않은 요청 출처입니다.",
       requestId: response.headers.get("x-request-id"),
     })
     expect(completeStep).not.toHaveBeenCalled()
@@ -166,8 +169,8 @@ describe("플랫폼 API profile route", () => {
       },
       {
         byteLength: bodyLimitBytes + 1,
-        expectedCode: "INTERNAL_SERVER_ERROR",
-        expectedStatus: 500,
+        expectedCode: "PAYLOAD_TOO_LARGE",
+        expectedStatus: 413,
       },
     ] as const) {
       const body = JSON.stringify({
@@ -198,6 +201,33 @@ describe("플랫폼 API profile route", () => {
     }
 
     expect(completeStep).not.toHaveBeenCalled()
+  })
+
+  it("예상된 security와 body-limit 거절은 내부 결함 logger로 전달하지 않는다", async () => {
+    const errorLogger = vi.fn()
+    const app = createApp({ ...createDependencies(), errorLogger })
+
+    const forbiddenOrigin = await app.request(
+      "/learning/lessons/lesson-1/steps/step-1/complete",
+      {
+        body: "{}",
+        headers: {
+          Cookie: "learner_session_token=active-token",
+          "Content-Type": "application/json",
+          Origin: "https://attacker.example.test",
+        },
+        method: "POST",
+      }
+    )
+    const oversized = await app.request("/api/auth/test", {
+      body: "x".repeat(1024 * 1024 + 1),
+      headers: { "Content-Length": String(1024 * 1024 + 1) },
+      method: "POST",
+    })
+
+    expect(forbiddenOrigin.status).toBe(403)
+    expect(oversized.status).toBe(413)
+    expect(errorLogger).not.toHaveBeenCalled()
   })
 
   it("기존 Google 로그인 시작 경로를 Better Auth social sign-in으로 위임한다", async () => {

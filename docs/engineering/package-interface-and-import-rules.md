@@ -7,9 +7,9 @@
 - `packages/modules/content`는 curriculum draft, immutable published revision, 발행·보관·reset 정책, persistence·seed와 관리자 HTTP interface를 하나의 수직 module로 소유한다.
 - `packages/modules/ai-feedback`은 coaching prompt·provider 검증, attempt 정책·persistence, provider adapter와 학습자 HTTP interface를 하나의 수직 module로 소유한다.
 - `packages/modules/learning`은 학습 진행·채점·활동일 정책, read/command application, persistence·reporting과 학습자 HTTP interface를 하나의 수직 module로 소유한다.
-- `packages/modules/resource-library`는 자료 tree·Markdown 문서·검색·휴지통과 자산 metadata, persistence·reconciliation과 관리자 HTTP interface를 하나의 수직 module로 소유한다. object storage 구현과 관리자 actor 조회는 API composition이 port로 주입한다.
+- `packages/modules/resource-library`는 자료 tree·Markdown 문서·검색·휴지통과 자산 metadata, persistence·reconciliation과 관리자 HTTP interface를 하나의 수직 module로 소유한다. object storage 구현, 관리자 actor 조회와 document 저장 event publisher는 API composition이 port로 주입한다.
 - `packages/modules/operations`는 대시보드·분석 reporting 조합, 공지·법적 문서 설정, 관리자 AI 대화·quota·변경안, persistence와 관리자 HTTP interface를 하나의 수직 module로 소유한다. identity role은 capability로 변환하고 세 reporting query와 content·resource command는 API composition이 port로 주입한다.
-- 실행 앱 전용 bootstrap, concrete repository와 infrastructure 구현은 core에서 공개하지 않는다.
+- 실행 앱 전용 bootstrap과 infrastructure 조립은 API의 명시적 app·container factory가 소유한다. app-owned module·platform facade를 별도로 두지 않으며 module은 공개 subpath로만 소비한다.
 - `packages/infra/http-platform`은 Hono/OpenAPI 공통 helper·error·request security와 middleware를 소유하고 endpoint contract와 제품 정책은 API에 남긴다.
 - `packages/infra/observability`는 Pino logger와 공통 관측 event 계약을 소유하고 제품별 audit 분류는 API에 남긴다.
 - `packages/infra/auth`는 Better Auth server/client integration, credential·session schema와 migration, 비밀번호와 session token 정규화를 소유한다. 제품 profile·status·role은 소유하지 않고 인증된 vendor-neutral identity를 identity module에 제공한다.
@@ -76,6 +76,6 @@
 
 - `bun run check:architecture`가 runtime cycle, 계층, vendor와 client/server import 경계를 검사한다.
 - `bun run check:dead-code`가 사용되지 않는 file·export·dependency를 읽기 전용으로 검사한다.
-- `bun run check:package-interfaces`가 shared·infra·identity·content·ai-feedback·learning·resource-library·operations의 exact export, canonical ID·schema 소비, provider 소유권, infra의 환경 변수·제품 정책 비의존, module 간 직접 의존, 빈 core symbol snapshot, 내부 상대 import, 자기 공개 경로 역참조, `src` deep import와 제거된 module source 재도입을 검사한다.
+- `bun run check:package-interfaces`가 shared·infra·identity·content·ai-feedback·learning·resource-library·operations의 exact export, canonical ID·schema 소비, provider 소유권, infra의 환경 변수·제품 정책 비의존, module 간 직접 의존, API의 검증 전 env·Clock·ID·private import 경계, 빈 core symbol snapshot, 내부 상대 import, 자기 공개 경로 역참조, `src` deep import와 제거된 module source 재도입을 검사한다.
 - module의 `./schema`와 `./seed`는 migration·seed 조립 source만 소비할 수 있다.
 - package test와 typecheck는 정적 graph가 판정할 수 없는 runtime 계약과 type 계약을 검증한다.

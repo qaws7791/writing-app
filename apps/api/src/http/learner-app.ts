@@ -10,7 +10,7 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import type { ApiDependencies } from "@/context/create-request-context"
 import { createCorsMiddleware } from "@/middleware/cors.middleware"
 import { createRequestContextMiddleware } from "@/middleware/request-context.middleware"
-import { registerApiBootstrapRoutes, routes } from "@/routes"
+import { createApiFoundationRoutes, registerApiBootstrapRoutes } from "@/routes"
 import {
   createLearnerErrorHandler,
   createLearnerErrorResponseMiddleware,
@@ -20,19 +20,24 @@ import { createSecurityAuditRequestObserver } from "@/observability/security-aud
 
 export type { ApiDependencies }
 
-export function createApp(dependencies: ApiDependencies): OpenAPIHono {
+export function createLearnerApp(dependencies: ApiDependencies): OpenAPIHono {
   const app = createHonoApp({
     errorLogger: dependencies.errorLogger,
     middleware: createMiddleware(dependencies),
     routes: [
-      ...routes,
+      ...createApiFoundationRoutes(dependencies),
       ...dependencies.aiFeedbackRoutes,
       ...dependencies.identityRoutes,
       ...dependencies.learningRoutes,
     ],
   })
 
-  app.onError(createLearnerErrorHandler(dependencies.errorLogger))
+  app.onError(
+    createLearnerErrorHandler(
+      dependencies.errorLogger,
+      dependencies.requestLoggingRuntime?.createRequestId
+    )
+  )
 
   registerApiBootstrapRoutes(app, dependencies)
 
