@@ -4,6 +4,16 @@ import {
   messageIdSchema,
 } from "#contracts/identity/admin-ids"
 
+export const adminAiChatConversationQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).max(10_000).default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(50),
+})
+
+export const adminAiChatMessageQuerySchema = z.object({
+  messagePage: z.coerce.number().int().min(1).max(10_000).default(1),
+  messagePageSize: z.coerce.number().int().min(1).max(100).default(100),
+})
+
 export const adminAiChatMessageRoleSchema = z.enum(["assistant", "user"])
 
 export const adminAiChatMessageDtoSchema = z.object({
@@ -44,8 +54,14 @@ export const adminAiChatStreamDoneEventSchema = z.object({
   message: adminAiChatMessageDtoSchema,
 })
 
+export const adminAiChatStreamErrorCodeSchema = z.enum([
+  "AI_PROVIDER_UNAVAILABLE",
+  "AI_STREAM_FAILED",
+  "NOT_FOUND",
+])
+
 export const adminAiChatStreamErrorEventSchema = z.object({
-  code: z.string(),
+  code: adminAiChatStreamErrorCodeSchema,
   message: z.string(),
 })
 
@@ -85,4 +101,7 @@ export type AdminAiChatStreamDoneEventDto = z.infer<
 >
 export type AdminAiChatStreamEventDto = z.infer<
   typeof adminAiChatStreamEventSchema
+>
+export type AdminAiChatStreamErrorCode = z.infer<
+  typeof adminAiChatStreamErrorCodeSchema
 >

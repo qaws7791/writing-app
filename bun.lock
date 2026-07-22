@@ -84,7 +84,6 @@
         "@workspace/auth": "workspace:*",
         "@workspace/content": "workspace:*",
         "@workspace/contracts": "workspace:*",
-        "@workspace/core": "workspace:*",
         "@workspace/db": "workspace:*",
         "@workspace/env": "workspace:*",
         "@workspace/event-bus": "workspace:*",
@@ -94,6 +93,7 @@
         "@workspace/kernel": "workspace:*",
         "@workspace/learning": "workspace:*",
         "@workspace/observability": "workspace:*",
+        "@workspace/operations": "workspace:*",
         "@workspace/resource-library": "workspace:*",
         "@workspace/storage": "workspace:*",
         "@workspace/types": "workspace:*",
@@ -207,17 +207,6 @@
     "packages/core": {
       "name": "@workspace/core",
       "version": "0.0.0",
-      "dependencies": {
-        "@workspace/contracts": "workspace:*",
-        "@workspace/identity": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-        "@workspace/typescript-config": "workspace:*",
-        "typescript": "catalog:",
-        "vite-tsconfig-paths": "catalog:",
-        "vitest": "catalog:",
-      },
     },
     "packages/infra/ai": {
       "name": "@workspace/ai",
@@ -416,6 +405,29 @@
         "@workspace/contracts": "workspace:*",
         "@workspace/db": "workspace:*",
         "@workspace/event-contracts": "workspace:*",
+        "@workspace/http-platform": "workspace:*",
+        "@workspace/kernel": "workspace:*",
+        "@workspace/types": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "catalog:",
+        "vite-tsconfig-paths": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/modules/operations": {
+      "name": "@workspace/operations",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hono/zod-openapi": "catalog:",
+        "@workspace/ai": "workspace:*",
+        "@workspace/contracts": "workspace:*",
+        "@workspace/db": "workspace:*",
         "@workspace/http-platform": "workspace:*",
         "@workspace/kernel": "workspace:*",
         "@workspace/types": "workspace:*",
@@ -1526,6 +1538,8 @@
     "@workspace/nextjs-config": ["@workspace/nextjs-config@workspace:packages/config/nextjs-config"],
 
     "@workspace/observability": ["@workspace/observability@workspace:packages/infra/observability"],
+
+    "@workspace/operations": ["@workspace/operations@workspace:packages/modules/operations"],
 
     "@workspace/resource-document": ["@workspace/resource-document@workspace:packages/shared/resource-document"],
 

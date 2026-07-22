@@ -44,7 +44,6 @@ export function runBaselineMigration(
     sqlite.exec(baselineSql)
   }
 
-  ensureAdminChatTables(sqlite)
   runAuthSchemaMigration(sqlite)
   removeAdminMfaSchema(sqlite)
 }
@@ -141,31 +140,5 @@ WHERE status = 'pending';
 CREATE INDEX ai_feedback_attempts_legacy_state_expiry_idx
 ON ai_feedback_attempts(status, expires_at);
 COMMIT;
-`)
-}
-
-function ensureAdminChatTables(sqlite: Database): void {
-  sqlite.exec(`
-CREATE TABLE IF NOT EXISTS admin_ai_chat_conversations (
-  id TEXT PRIMARY KEY NOT NULL,
-  title TEXT NOT NULL,
-  admin_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS admin_ai_chat_messages (
-  id TEXT PRIMARY KEY NOT NULL,
-  conversation_id TEXT NOT NULL REFERENCES admin_ai_chat_conversations(id) ON DELETE CASCADE,
-  role TEXT NOT NULL,
-  content TEXT NOT NULL,
-  created_at INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS admin_ai_chat_conversations_admin_updated_idx
-ON admin_ai_chat_conversations(admin_id, updated_at);
-
-CREATE INDEX IF NOT EXISTS admin_ai_chat_messages_conversation_created_idx
-ON admin_ai_chat_messages(conversation_id, created_at);
 `)
 }

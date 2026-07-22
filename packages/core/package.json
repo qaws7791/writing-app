@@ -3,27 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "imports": {
-    "#core/*": "./src/*"
-  },
-  "exports": {
-    "./admin": "./src/modules/admin/api/index.ts"
-  },
   "scripts": {
-    "lint": "oxlint .",
-    "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
-    "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@workspace/contracts": "workspace:*",
-    "@workspace/identity": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/bun": "catalog:",
-    "@workspace/typescript-config": "workspace:*",
-    "typescript": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
-    "vitest": "catalog:"
+    "lint": "oxlint ."
   }
 }

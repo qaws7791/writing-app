@@ -51,7 +51,7 @@ export {
   markdownResponse,
 } from "@workspace/http-platform/openapi"
 
-export function errorJsonResponse(description: string) {
+function errorJsonResponse(description: string) {
   return jsonResponse(description, ErrorResponseSchema)
 }
 

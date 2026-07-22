@@ -69,12 +69,10 @@ export function createAdminRouteGroupRegistry(
   assertExactRouteGroupSlots(groups)
 
   return Object.freeze({
-    aiChat: Object.freeze([...groups.aiChat]),
-    dashboardAnalytics: Object.freeze([...groups.dashboardAnalytics]),
     content: Object.freeze([...groups.content]),
     identity: Object.freeze([...groups.identity]),
+    operations: Object.freeze([...groups.operations]),
     resourceLibrary: Object.freeze([...groups.resourceLibrary]),
-    settings: Object.freeze([...groups.settings]),
   })
 }
 

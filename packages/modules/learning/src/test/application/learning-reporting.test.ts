@@ -24,9 +24,14 @@ describe("learning reporting query", () => {
       },
     ])
     const readOperationsReport = vi.fn(async () => ({
-      activeLearners: 4,
-      completedLessons: 5,
-      learningDays: 6,
+      learnerActivities: [
+        {
+          currentStreakDays: 3,
+          lastActiveDate: "2026-07-23",
+          userId: learnerId,
+        },
+      ],
+      lessonProgress: [],
     }))
     const reporting = createLearningReportingQuery({
       content: {
@@ -45,9 +50,14 @@ describe("learning reporting query", () => {
       expect.objectContaining({ userId: learnerId }),
     ])
     await expect(reporting.readOperationsReport()).resolves.toEqual({
-      activeLearners: 4,
-      completedLessons: 5,
-      learningDays: 6,
+      learnerActivities: [
+        {
+          currentStreakDays: 3,
+          lastActiveDate: "2026-07-23",
+          userId: learnerId,
+        },
+      ],
+      lessonProgress: [],
     })
     expect(readLearnerReports).toHaveBeenCalledWith([learnerId])
   })
@@ -70,9 +80,8 @@ describe("learning reporting query", () => {
         },
         async readOperationsReport() {
           return {
-            activeLearners: 0,
-            completedLessons: 0,
-            learningDays: 0,
+            learnerActivities: [],
+            lessonProgress: [],
           }
         },
       },

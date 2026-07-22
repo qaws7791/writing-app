@@ -7,9 +7,7 @@ type PrivateImportScope = {
   readonly root: string
 }
 
-const coreCapabilityFacades = [
-  ["admin", "packages/core/src/modules/admin/api/index.ts"],
-] as const
+const coreCapabilityFacades = [] as const
 
 type CoreCapabilityName = (typeof coreCapabilityFacades)[number][0]
 type CoreCapabilityPublicSurface = Readonly<
@@ -49,6 +47,10 @@ const privateImportScopes: readonly PrivateImportScope[] = [
   {
     packageName: "@workspace/learning",
     root: "packages/modules/learning/src",
+  },
+  {
+    packageName: "@workspace/operations",
+    root: "packages/modules/operations/src",
   },
   {
     packageName: "@workspace/resource-library",
@@ -148,20 +150,19 @@ const expectedExports = {
     "./learning/status",
     "./learning/step-data",
     "./operations/admin-ai-chat",
+    "./operations/admin-ai-proposals",
     "./operations/admin-analytics",
     "./operations/admin-api-error",
     "./operations/admin-dashboard",
     "./operations/admin-settings",
-    "./operations/ai-chat-data",
-    "./operations/dashboard-analytics-data",
-    "./operations/settings-data",
+    "./operations/analytics-query",
     "./resource-library/admin-resource-documents",
     "./resource-library/admin-resource-search",
     "./resource-library/admin-resource-tree",
     "./resource-library/data",
     "./resource-library/shared",
   ],
-  "packages/core/package.json": ["./admin"],
+  "packages/core/package.json": [],
   "packages/config/env/package.json": [
     "./local-runtime-defaults",
     "./parse-env",
@@ -227,6 +228,14 @@ const expectedExports = {
     "./reporting",
     "./schema",
   ],
+  "packages/modules/operations/package.json": [
+    "./application",
+    "./http",
+    "./migration",
+    "./module",
+    "./ports",
+    "./schema",
+  ],
   "packages/modules/resource-library/package.json": [
     "./commands",
     "./http",
@@ -246,13 +255,7 @@ const expectedExports = {
   ],
   "packages/shared/types/package.json": ["./brand", "./ids"],
 } as const
-const forbiddenCoreFacadeReferences = {
-  "packages/core/src/modules/admin/api/index.ts": [
-    "/domain/admin.dto",
-    "/ports/admin.repository",
-    "/use-cases/admin.service",
-  ],
-} as const
+const forbiddenCoreFacadeReferences = {} as const
 const forbiddenAdminApplicationFacadeFiles = [
   "packages/core/src/modules/admin/application/policies/admin-actor-policy.ts",
   "packages/core/src/modules/admin/application/ports/admin.repository.ts",
@@ -320,6 +323,7 @@ const forbiddenSharedUiIoPattern =
   /\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(|["']use server["']/u
 const canonicalIdNames = new Set([
   "AdminId",
+  "AiChangeProposalId",
   "ConversationId",
   "CourseId",
   "CurriculumVersionId",
@@ -372,9 +376,13 @@ for (const facadeFile of forbiddenAdminApplicationFacadeFiles) {
   }
 }
 
-for (const filePath of collectSourceFiles(
-  path.join(repositoryRoot, "packages/core/src/modules/admin/application")
-)) {
+const legacyAdminApplicationRoot = path.join(
+  repositoryRoot,
+  "packages/core/src/modules/admin/application"
+)
+for (const filePath of fs.existsSync(legacyAdminApplicationRoot)
+  ? collectSourceFiles(legacyAdminApplicationRoot)
+  : []) {
   for (const symbol of readTopLevelDeclarationNames(filePath)) {
     if (forbiddenAdminApplicationFacadeSymbols.has(symbol)) {
       failures.push(
@@ -489,6 +497,7 @@ verifyP5ContentOwnership()
 verifyP6AiFeedbackOwnership()
 verifyP7LearningOwnership()
 verifyP8ResourceLibraryOwnership()
+verifyP9OperationsOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -1217,6 +1226,100 @@ function verifyP8ResourceLibraryOwnership(): void {
   }
 }
 
+function verifyP9OperationsOwnership(): void {
+  const removedOperationsSources = [
+    "apps/api/src/adapters/ai-chat/admin-ai-chat-drizzle.repository.ts",
+    "apps/api/src/adapters/ai-chat/admin-content-agent.ts",
+    "apps/api/src/adapters/analytics/admin-analytics-drizzle.repository.ts",
+    "apps/api/src/adapters/dashboard/admin-dashboard-drizzle.repository.ts",
+    "apps/api/src/adapters/settings/admin-settings-drizzle.repository.ts",
+    "apps/api/src/modules/admin-ai-chat/admin-ai-chat.routes.ts",
+    "apps/api/src/modules/admin-dashboard-analytics/admin-dashboard-analytics.routes.ts",
+    "apps/api/src/modules/admin-settings/admin-settings.routes.ts",
+    "packages/core/src/modules/admin/api/index.ts",
+    "packages/infra/db/src/schema/admin.schema.ts",
+  ] as const
+
+  for (const sourcePath of removedOperationsSources) {
+    if (fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(`${sourcePath} -> 제거된 operations 소유권 source 재도입`)
+    }
+  }
+
+  const moduleRoot = path.join(
+    repositoryRoot,
+    "packages/modules/operations/src"
+  )
+  for (const filePath of collectSourceFiles(moduleRoot)) {
+    for (const imported of readImports(filePath)) {
+      if (
+        imported.startsWith("@workspace/auth") ||
+        imported.startsWith("@workspace/content") ||
+        imported.startsWith("@workspace/core") ||
+        imported.startsWith("@workspace/identity") ||
+        imported.startsWith("@workspace/learning") ||
+        imported.startsWith("@workspace/resource-library")
+      ) {
+        failures.push(
+          `${relativePath(filePath)} -> operations module의 다른 비즈니스 module 직접 의존 ${imported}`
+        )
+      }
+    }
+  }
+
+  const schemaPath =
+    "packages/modules/operations/src/infrastructure/persistence/schema.ts"
+  const schema = fs.readFileSync(path.join(repositoryRoot, schemaPath), "utf8")
+  if (/adminAuth|admin_user|@workspace\/auth/u.test(schema)) {
+    failures.push(
+      `${schemaPath} -> auth table·schema cross-module FK 소유 금지`
+    )
+  }
+  const referencedTables = [
+    ...schema.matchAll(/\.references\(\s*\(\)\s*=>\s*([A-Za-z0-9_]+)/gu),
+  ].map((match) => match[1] ?? "")
+  if (
+    referencedTables.length === 0 ||
+    referencedTables.some((table) => table !== "operationsAiConversations")
+  ) {
+    failures.push(`${schemaPath} -> operations module 내부 FK만 허용`)
+  }
+
+  const dbSchemaIndex = fs.readFileSync(
+    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
+    "utf8"
+  )
+  if (/adminAiChat|adminSettings|operationsAi/u.test(dbSchemaIndex)) {
+    failures.push(
+      "packages/infra/db/src/schema/index.ts -> operations schema 재공개 금지"
+    )
+  }
+
+  const aiAdapterPath =
+    "packages/modules/operations/src/infrastructure/ai/operations-mastra-provider.ts"
+  const aiAdapter = fs.readFileSync(
+    path.join(repositoryRoot, aiAdapterPath),
+    "utf8"
+  )
+  for (const requiredGuard of [
+    "Git",
+    "저장소 코드",
+    "프로젝트 문서",
+    "파일 시스템",
+  ]) {
+    if (!aiAdapter.includes(requiredGuard)) {
+      failures.push(
+        `${aiAdapterPath} -> AI context 제외 guard ${requiredGuard} 누락`
+      )
+    }
+  }
+  if (/node:fs|node:child_process|exec_command|readFile/u.test(aiAdapter)) {
+    failures.push(
+      `${aiAdapterPath} -> repository·filesystem AI context 도구 금지`
+    )
+  }
+}
+
 function verifyDbModuleSchemaTransitionInventory(): void {
   const fixturePath = path.join(
     repositoryRoot,
@@ -1333,6 +1436,7 @@ function readTopLevelDeclarationNames(filePath: string): string[] {
 }
 
 function verifyCoreCapabilityPublicSurface(): void {
+  if (coreCapabilityFacades.length === 0) return
   const expected = readCoreCapabilityPublicSurfaceFixture()
   const actual = readCoreCapabilityPublicSurface()
 

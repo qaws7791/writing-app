@@ -1,5 +1,6 @@
 import { Agent } from "@mastra/core/agent"
 import { Mastra } from "@mastra/core"
+import { RequestContext } from "@mastra/core/request-context"
 import { createTool } from "@mastra/core/tools"
 import { err, type Result } from "@workspace/kernel/result"
 import { z } from "zod"
@@ -13,6 +14,7 @@ const mastraRuntimeConfigSchema = z.object({
 })
 
 export const createMastraTool = createTool
+export { RequestContext as MastraRequestContext }
 
 export function createMastraAgent(
   input: ConstructorParameters<typeof Agent>[0]

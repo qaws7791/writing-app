@@ -8,7 +8,6 @@
       "#ai/*": ["../../packages/infra/ai/src/*"],
       "#ai-feedback/*": ["../../packages/modules/ai-feedback/src/*"],
       "#auth/*": ["../../packages/infra/auth/src/*"],
-      "#core/*": ["../../packages/core/src/*"],
       "#content/*": ["../../packages/modules/content/src/*"],
       "#db/*": ["../../packages/infra/db/src/*"],
       "#env/*": ["../../packages/config/env/src/*"],
@@ -16,6 +15,7 @@
       "#identity/*": ["../../packages/modules/identity/src/*"],
       "#learning/*": ["../../packages/modules/learning/src/*"],
       "#observability/*": ["../../packages/infra/observability/src/*"],
+      "#operations/*": ["../../packages/modules/operations/src/*"],
       "#resource-library/*": ["../../packages/modules/resource-library/src/*"],
       "@/*": ["./src/*"]
     },

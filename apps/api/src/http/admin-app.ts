@@ -143,7 +143,7 @@ function createAdminMiddleware(
       allowHeaders: ["Authorization", "Content-Type", "If-Match"],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
-      exposeHeaders: ["Content-Disposition", "ETag"],
+      exposeHeaders: ["Content-Disposition", "ETag", "Retry-After"],
       origin: adminOrigin,
     }),
     createRequestBodyLimitMiddleware({ maxSize: 6 * 1024 * 1024 }),

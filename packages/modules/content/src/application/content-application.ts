@@ -56,3 +56,4 @@ export {
   authorizeContentReset,
   type ContentRuntimeEnvironment,
 } from "#content/domain/content-admin-policy"
+export type { ContentError } from "#content/domain/content-error"

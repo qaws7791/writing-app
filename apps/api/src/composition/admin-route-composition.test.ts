@@ -17,7 +17,7 @@ import { createAppLogger } from "@workspace/observability/logger"
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
 
 describe("관리자 capability route composition", () => {
-  it("하나의 app-owned context로 여섯 capability factory를 매번 독립 조립한다", () => {
+  it("하나의 app-owned context로 네 capability factory를 매번 독립 조립한다", () => {
     const databaseClient = createInMemoryWritingAppDatabase()
 
     try {
@@ -31,34 +31,24 @@ describe("관리자 capability route composition", () => {
 
       expect(Object.keys(first)).toEqual(adminRouteGroupOrder)
       expect(first).not.toBe(second)
-      expect(first.aiChat).not.toBe(second.aiChat)
-      expect(first.dashboardAnalytics).not.toBe(second.dashboardAnalytics)
       expect(first.content).not.toBe(second.content)
       expect(first.identity).not.toBe(second.identity)
+      expect(first.operations).not.toBe(second.operations)
       expect(first.resourceLibrary).not.toBe(second.resourceLibrary)
-      expect(first.settings).not.toBe(second.settings)
       expect(Object.values(first).every(Object.isFrozen)).toBe(true)
       expect(
         Object.fromEntries(
           adminRouteGroupOrder.map((group) => [group, first[group].length])
         )
       ).toEqual({
-        aiChat: 3,
         content: 7,
-        dashboardAnalytics: 3,
         identity: 4,
+        operations: 12,
         resourceLibrary: 14,
-        settings: 3,
       })
       expect(
         routes.map((registration) => registration.route.operationId)
       ).toEqual([
-        "getAdminAiChatConversations",
-        "getAdminAiChatConversation",
-        "streamAdminAiChatMessage",
-        "getAdminDashboard",
-        "getAdminAnalytics",
-        "getAdminLessonAnalytics",
         "getAdminCourses",
         "createAdminCourse",
         "archiveAdminCourse",
@@ -70,6 +60,18 @@ describe("관리자 capability route composition", () => {
         "getAdminUser",
         "updateAdminUserStatus",
         "deleteAdminUser",
+        "getAdminAiChatConversations",
+        "getAdminAiChatConversation",
+        "streamAdminAiChatMessage",
+        "getAdminAiChangeProposal",
+        "approveAdminAiChangeProposal",
+        "rejectAdminAiChangeProposal",
+        "getAdminDashboard",
+        "getAdminAnalytics",
+        "getAdminLessonAnalytics",
+        "getAdminSettings",
+        "updateAdminNoticeSettings",
+        "updateAdminLegalSettings",
         "getAdminResourceTree",
         "createAdminResourceFolder",
         "createAdminResourceDocumentNode",
@@ -84,9 +86,6 @@ describe("관리자 capability route composition", () => {
         "exportAdminResourceLibraryDocument",
         "uploadAdminResourceLibraryImage",
         "searchAdminResourceLibrary",
-        "getAdminSettings",
-        "updateAdminNoticeSettings",
-        "updateAdminLegalSettings",
       ])
       expect(Object.isFrozen(routes)).toBe(true)
     } finally {
@@ -142,6 +141,14 @@ function createCompositionContext(
         revokeLearnerSessions: async () => ok(undefined),
       },
     }),
+    learningReporting: {
+      readActiveLessonCount: async () => 0,
+      readLearnerReports: async () => [],
+      readOperationsReport: async () => ({
+        learnerActivities: [],
+        lessonProgress: [],
+      }),
+    },
     now: () => new Date("2026-07-18T00:00:00.000Z"),
     resourceLibrary: createResourceLibraryModule({
       actorDirectory: { readActors: async () => [] },
@@ -157,5 +164,6 @@ function createCompositionContext(
     sessionResolver: {
       resolveSession: () => Promise.resolve(null),
     },
+    sqlite,
   }
 }

@@ -1,4 +1,4 @@
-import type { UserId } from "@workspace/types/ids"
+import type { LessonId, UserId } from "@workspace/types/ids"
 
 import type {
   LearningContentQueryPort,
@@ -6,9 +6,17 @@ import type {
 } from "#learning/application/ports/learning-ports"
 
 export type LearningOperationsReport = Readonly<{
-  activeLearners: number
-  completedLessons: number
-  learningDays: number
+  learnerActivities: readonly Readonly<{
+    currentStreakDays: number
+    lastActiveDate: string
+    userId: UserId
+  }>[]
+  lessonProgress: readonly Readonly<{
+    completedAt: string | null
+    lessonId: LessonId
+    status: "completed" | "in_progress"
+    userId: UserId
+  }>[]
 }>
 
 export type LearningReportingRepository = Readonly<{

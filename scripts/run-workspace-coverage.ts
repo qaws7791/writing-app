@@ -35,9 +35,7 @@ const projects: readonly CoverageProject[] = [
     runtime: "node",
   },
   {
-    coverageTests: [
-      "src/adapters/ai-chat/admin-ai-chat-drizzle.repository.test.ts",
-    ],
+    coverageTests: ["src/composition/admin-route-composition.test.ts"],
     path: "apps/api",
     runtime: "bun",
   },
@@ -66,9 +64,9 @@ const projects: readonly CoverageProject[] = [
     runtime: "node",
   },
   {
-    coverageTests: [],
-    path: "packages/core",
-    runtime: "bun",
+    coverageTests: ["src/error-vocabulary.test.ts"],
+    path: "packages/shared/errors",
+    runtime: "node",
   },
   {
     coverageTests: [
@@ -77,6 +75,39 @@ const projects: readonly CoverageProject[] = [
       "src/migrations/baseline-migration.test.ts",
     ],
     path: "packages/infra/db",
+    runtime: "bun",
+  },
+  {
+    coverageTests: [
+      "src/infrastructure/persistence/operations-repositories.test.ts",
+      "src/interface/http/operations-http.test.ts",
+    ],
+    path: "packages/modules/operations",
+    runtime: "bun",
+  },
+  {
+    coverageTests: ["src/application/ai-feedback-application.test.ts"],
+    path: "packages/modules/ai-feedback",
+    runtime: "bun",
+  },
+  {
+    coverageTests: ["src/application/content-application.test.ts"],
+    path: "packages/modules/content",
+    runtime: "bun",
+  },
+  {
+    coverageTests: ["src/application/identity-service.test.ts"],
+    path: "packages/modules/identity",
+    runtime: "bun",
+  },
+  {
+    coverageTests: ["src/test/application/learning-reporting.test.ts"],
+    path: "packages/modules/learning",
+    runtime: "bun",
+  },
+  {
+    coverageTests: ["src/application/resource-tree-application.test.ts"],
+    path: "packages/modules/resource-library",
     runtime: "bun",
   },
   { path: "packages/config/env", runtime: "node" },
@@ -139,11 +170,6 @@ const criticalCoverageThresholds: readonly LineCoverageThreshold[] = [
     reportDirectory: "apps-admin",
   },
   {
-    filePath: "src/adapters/ai-chat/admin-ai-chat-drizzle.repository.ts",
-    minimum: 100,
-    reportDirectory: "apps-api",
-  },
-  {
     filePath: "src/migrations/migrate.ts",
     minimum: 87,
     reportDirectory: "packages-db",
@@ -156,6 +182,12 @@ const criticalCoverageThresholds: readonly LineCoverageThreshold[] = [
 ]
 
 const coverageDirectory = join(process.cwd(), "coverage")
+const vitestExecutable = join(
+  process.cwd(),
+  "node_modules",
+  "vitest",
+  "vitest.mjs"
+)
 const coverageStartedAt = performance.now()
 validateCoverageInventory()
 rmSync(coverageDirectory, { force: true, recursive: true })
@@ -203,10 +235,7 @@ async function runBunCoverage(
   project: BunCoverageProject,
   reportsDirectory: string
 ): Promise<void> {
-  await run(
-    ["bun", "--bun", "../../node_modules/vitest/vitest.mjs", "run"],
-    project.path
-  )
+  await run(["bun", "--bun", vitestExecutable, "run"], project.path)
   await run(
     [
       "bun",
@@ -228,7 +257,7 @@ async function runNodeCoverage(
   await run(
     [
       "node",
-      "../../node_modules/vitest/vitest.mjs",
+      vitestExecutable,
       "run",
       ...(project.coverageTests ?? []),
       "--coverage",

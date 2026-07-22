@@ -1,12 +1,13 @@
 import { and, count, eq, inArray } from "drizzle-orm"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
-import type { UserId } from "@workspace/types/ids"
+import type { LessonId, UserId } from "@workspace/types/ids"
 
 import type { LearningReportingRepository } from "#learning/application/learning-reporting"
 import {
   calculateCurrentStreakDays,
   groupLearningActivityDatesByUserId,
+  toLearningDateKey,
 } from "#learning/domain/learning-date"
 import {
   learnerActivityDays,
@@ -63,30 +64,59 @@ export function createDrizzleLearningReportingRepository(
       })
     },
     async readOperationsReport() {
-      const [completedLessons, learningDays, learners] = await Promise.all([
+      const [activityRows, progressRows] = await Promise.all([
         Promise.resolve(
           database
-            .select({ value: count() })
-            .from(learnerLessonProgress)
-            .where(eq(learnerLessonProgress.status, "completed"))
-            .get()?.value ?? 0
-        ),
-        Promise.resolve(
-          database.select({ value: count() }).from(learnerActivityDays).get()
-            ?.value ?? 0
-        ),
-        Promise.resolve(
-          database
-            .selectDistinct({ userId: learnerActivityDays.userId })
+            .select({
+              activityDate: learnerActivityDays.activityDate,
+              userId: learnerActivityDays.userId,
+            })
             .from(learnerActivityDays)
-            .all().length
+            .all()
+        ),
+        Promise.resolve(
+          database
+            .select({
+              completedAt: learnerLessonProgress.completedAt,
+              lessonId: learnerLessonProgress.lessonId,
+              status: learnerLessonProgress.status,
+              userId: learnerLessonProgress.userId,
+            })
+            .from(learnerLessonProgress)
+            .all()
         ),
       ])
+      const activitiesByUserId =
+        groupLearningActivityDatesByUserId(activityRows)
 
       return Object.freeze({
-        activeLearners: learners,
-        completedLessons,
-        learningDays,
+        learnerActivities: Object.freeze(
+          [...activitiesByUserId].flatMap(([userId, dates]) => {
+            const lastActiveDate = dates[0]
+            return lastActiveDate === undefined
+              ? []
+              : [
+                  Object.freeze({
+                    currentStreakDays: calculateCurrentStreakDays(dates),
+                    lastActiveDate,
+                    userId: userId as UserId,
+                  }),
+                ]
+          })
+        ),
+        lessonProgress: Object.freeze(
+          progressRows.map((row) =>
+            Object.freeze({
+              completedAt:
+                row.completedAt === null
+                  ? null
+                  : toLearningDateKey(row.completedAt),
+              lessonId: row.lessonId as LessonId,
+              status: row.status,
+              userId: row.userId as UserId,
+            })
+          )
+        ),
       })
     },
   })

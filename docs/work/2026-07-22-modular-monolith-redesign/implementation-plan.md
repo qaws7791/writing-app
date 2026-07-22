@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8 완료, P9 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9 완료, P10 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -56,7 +56,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P6. `ai-feedback` 모듈을 전환한다. 증거: [P6 구현 증거](./p6-validation.md)
 - [x] P7. `learning` 모듈을 전환한다. 증거: [P7 구현 증거](./p7-validation.md)
 - [x] P8. `resource-library` 모듈을 전환한다. 증거: [P8 구현 증거](./p8-validation.md)
-- [ ] P9. `operations` 모듈을 전환한다.
+- [x] P9. `operations` 모듈을 전환한다. 증거: [P9 구현 증거](./p9-validation.md)
 - [ ] P10. API composition root와 lifecycle을 완성한다.
 - [ ] P11. 통합 schema, migration과 seed 경계를 완성한다.
 - [ ] P12. web, admin과 Storybook 소비 경계를 전환한다.
@@ -608,45 +608,45 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 13.1 경계와 domain
 
-- [ ] P9-001 기존 admin dashboard, analytics, settings, AI chat와 공지·법적 문서 source를 확정한다. 증거:
-- [ ] P9-002 identity 소유 role policy와 operations 소유 운영 use case를 분리한다. 증거:
-- [ ] P9-003 operations가 소유할 route, contract, table, rate limit과 consumer를 확정한다. 증거:
-- [ ] P9-004 `packages/modules/operations` manifest, private alias, test config와 explicit exports를 만든다. 증거:
-- [ ] P9-005 settings, notice·legal document와 AI conversation entity를 정의한다. 증거:
-- [ ] P9-006 관리자 AI 제안, 검토와 승인 상태 전이를 정의한다. 증거:
-- [ ] P9-007 AI가 발행, 영구 삭제, 권한과 운영 설정을 직접 바꾸지 못하는 policy를 정의한다. 증거:
-- [ ] P9-008 관리자·IP별 limit와 in-flight 중복 정책을 정의한다. 증거:
-- [ ] P9-009 expected failure를 permission, quota, provider, validation과 conflict union으로 정의한다. 증거:
-- [ ] P9-010 domain test에 승인 경계, 금지 command와 rate-limit decision을 포함한다. 증거:
+- [x] P9-001 기존 admin dashboard, analytics, settings, AI chat와 공지·법적 문서 source를 확정한다. 증거: [P9 경계와 소유권](./p9-validation.md#경계와-소유권)
+- [x] P9-002 identity 소유 role policy와 operations 소유 운영 use case를 분리한다. 증거: identity capability adapter와 [P9 경계](./p9-validation.md#경계와-소유권)
+- [x] P9-003 operations가 소유할 route, contract, table, rate limit과 consumer를 확정한다. 증거: [P9 ownership inventory](./p9-validation.md#경계와-소유권)
+- [x] P9-004 `packages/modules/operations` manifest, private alias, test config와 explicit exports를 만든다. 증거: operations manifest·tsconfig·Vitest config
+- [x] P9-005 settings, notice·legal document와 AI conversation entity를 정의한다. 증거: operations domain과 [검증된 구현](./p9-validation.md#검증된-구현)
+- [x] P9-006 관리자 AI 제안, 검토와 승인 상태 전이를 정의한다. 증거: `ai-change-proposal.ts`와 domain test
+- [x] P9-007 AI가 발행, 영구 삭제, 권한과 운영 설정을 직접 바꾸지 못하는 policy를 정의한다. 증거: AI command policy·Mastra tool inventory
+- [x] P9-008 관리자·IP별 limit와 in-flight 중복 정책을 정의한다. 증거: quota repository·request guard와 동시성 test
+- [x] P9-009 expected failure를 permission, quota, provider, validation과 conflict union으로 정의한다. 증거: `operations-error.ts`
+- [x] P9-010 domain test에 승인 경계, 금지 command와 rate-limit decision을 포함한다. 증거: `operations-domain.test.ts`
 
 ### 13.2 application과 reporting
 
-- [ ] P9-011 dashboard query가 identity·content·learning reporting port를 병렬 호출하게 한다. 증거:
-- [ ] P9-012 operations가 다른 module repository와 table을 직접 읽지 않게 한다. 증거:
-- [ ] P9-013 부분 reporting 실패의 public 의미와 관측 방식을 정한다. 증거:
-- [ ] P9-014 settings·notice·legal command와 query를 분리한다. 증거:
-- [ ] P9-015 AI conversation·streaming·approval use case를 분리한다. 증거:
-- [ ] P9-016 content와 resource 변경안 승인이 대상 module의 기존 command port를 호출하게 한다. 증거:
-- [ ] P9-017 Git, repository code와 docs를 AI context source에서 제외하는 guard를 유지한다. 증거:
-- [ ] P9-018 provider key 부재 시 conversation을 저장하지 않게 한다. 증거:
-- [ ] P9-019 application test에 reporting partial failure, quota, provider 부재와 승인 거부를 포함한다. 증거:
-- [ ] P9-020 operations-owned table과 rate-limit counter를 module schema로 이동한다. 증거:
-- [ ] P9-021 dashboard projection용 cross-module table과 in-memory event projection을 제거한다. 증거:
-- [ ] P9-022 settings·AI conversation repository와 module-local AI adapter를 이동한다. 증거:
-- [ ] P9-023 temporary SQLite와 provider fake로 repository·streaming 통합 test를 분리한다. 증거:
+- [x] P9-011 dashboard query가 identity·content·learning reporting port를 병렬 호출하게 한다. 증거: reporting parallel-start test
+- [x] P9-012 operations가 다른 module repository와 table을 직접 읽지 않게 한다. 증거: architecture·P9 package interface gate
+- [x] P9-013 부분 reporting 실패의 public 의미와 관측 방식을 정한다. 증거: fail-closed 503·source observer test와 [trade-off](./p9-validation.md#선택과-trade-off)
+- [x] P9-014 settings·notice·legal command와 query를 분리한다. 증거: `operations-settings.ts`
+- [x] P9-015 AI conversation·streaming·approval use case를 분리한다. 증거: operations application public surface
+- [x] P9-016 content와 resource 변경안 승인이 대상 module의 기존 command port를 호출하게 한다. 증거: operations API composition·approval application test
+- [x] P9-017 Git, repository code와 docs를 AI context source에서 제외하는 guard를 유지한다. 증거: module-local Mastra adapter·package interface guard
+- [x] P9-018 provider key 부재 시 conversation을 저장하지 않게 한다. 증거: application·HTTP provider 부재 test
+- [x] P9-019 application test에 reporting partial failure, quota, provider 부재와 승인 거부를 포함한다. 증거: operations application·reporting test
+- [x] P9-020 operations-owned table과 rate-limit counter를 module schema로 이동한다. 증거: operations schema·migration과 temporary SQLite test
+- [x] P9-021 dashboard projection용 cross-module table과 in-memory event projection을 제거한다. 증거: 요청 시 reporting join과 architecture gate
+- [x] P9-022 settings·AI conversation repository와 module-local AI adapter를 이동한다. 증거: operations infrastructure와 제거 경로 guard
+- [x] P9-023 temporary SQLite와 provider fake로 repository·streaming 통합 test를 분리한다. 증거: operations repository·provider fake test
 
 ### 13.3 HTTP, 조립과 제거
 
-- [ ] P9-024 operations canonical contract에 dashboard, analytics, settings와 AI streaming variant를 정의한다. 증거:
-- [ ] P9-025 dashboard, analytics, settings와 AI route를 module HTTP interface로 이동한다. 증거:
-- [ ] P9-026 streaming이 canonical contract의 허용 event만 전송하게 한다. 증거:
-- [ ] P9-027 limit response에 안정된 error code와 `Retry-After`를 제공한다. 증거:
-- [ ] P9-028 owner mutation, AI quota와 승인 동작을 security audit event로 기록한다. 증거:
-- [ ] P9-029 HTTP contract test에 auth, owner, quota, streaming error와 no-store를 포함한다. 증거:
-- [ ] P9-030 `module.ts`에서 reporting port, repository, AI runtime, use case와 route를 조립한다. 증거:
-- [ ] P9-031 apps/api에서 세 reporting port와 resource·content command port를 주입한다. 증거:
-- [ ] P9-032 기존 core admin, API dashboard·analytics·settings·AI adapter와 중복 route를 제거한다. 증거:
-- [ ] P9-033 P9 게이트: domain·application·repository·AI·HTTP·interface·architecture test와 admin operations flow가 통과한다. 증거:
+- [x] P9-024 operations canonical contract에 dashboard, analytics, settings와 AI streaming variant를 정의한다. 증거: `@workspace/contracts/operations/*` exact export gate
+- [x] P9-025 dashboard, analytics, settings와 AI route를 module HTTP interface로 이동한다. 증거: operations HTTP route group·API registry test
+- [x] P9-026 streaming이 canonical contract의 허용 event만 전송하게 한다. 증거: SSE schema·HTTP success/error test
+- [x] P9-027 limit response에 안정된 error code와 `Retry-After`를 제공한다. 증거: operations HTTP quota contract test
+- [x] P9-028 owner mutation, AI quota와 승인 동작을 security audit event로 기록한다. 증거: settings·AI HTTP audit adapter와 contract test
+- [x] P9-029 HTTP contract test에 auth, owner, quota, streaming error와 no-store를 포함한다. 증거: `operations-http.test.ts`
+- [x] P9-030 `module.ts`에서 reporting port, repository, AI runtime, use case와 route를 조립한다. 증거: operations `module.ts`
+- [x] P9-031 apps/api에서 세 reporting port와 resource·content command port를 주입한다. 증거: `operations-module.composition.ts`
+- [x] P9-032 기존 core admin, API dashboard·analytics·settings·AI adapter와 중복 route를 제거한다. 증거: P9 ownership guard·dead-code gate
+- [x] P9-033 P9 게이트: domain·application·repository·AI·HTTP·interface·architecture test와 admin operations flow가 통과한다. 증거: [P9 자동 검증](./p9-validation.md#자동-검증)
 
 ## 14. P10 — API composition root와 lifecycle
 

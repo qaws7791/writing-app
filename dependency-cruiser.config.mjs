@@ -143,7 +143,6 @@ const config = {
         path: "^(apps|packages)/",
         pathNot: [
           "^apps/api/src/(composition|scripts)/",
-          "^apps/api/src/adapters/(?:analytics/admin-analytics|dashboard/admin-dashboard)-drizzle\\.repository(?:\\.test)?\\.ts$",
           "^packages/infra/db/src/(migrations|seeds)/",
           "^packages/modules/[^/]+/src/infrastructure/persistence/",
         ],

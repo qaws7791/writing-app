@@ -15,11 +15,8 @@ import { ownerAdminRouteOptions } from "@workspace/identity/http"
 import { createAdminApp } from "@/http/admin-app"
 import { defineAdminRouteGroup } from "@/http/admin-route-group"
 import { createAdminContentTargetRouteFixture } from "@/test-support/admin-content-target-route-fixture"
-import { createAdminDashboardAnalyticsTargetRouteFixture } from "@/test-support/admin-dashboard-analytics-target-route-fixture"
-import { createAdminAiChatTargetRouteFixture } from "@/test-support/admin-ai-chat-target-route-fixture"
 import { createAdminIdentityTargetRouteFixture } from "@/test-support/admin-identity-target-route-fixture"
 import { createAdminResourceLibraryTargetRouteFixture } from "@/test-support/admin-resource-library-target-route-fixture"
-import { createAdminSettingsTargetRouteFixture } from "@/test-support/admin-settings-target-route-fixture"
 import type {
   AdminTargetRouteFixture as AdminTargetContractFixture,
   AdminTargetRouteFixtureJson as AdminTargetContractFixtureJson,
@@ -32,13 +29,10 @@ export type AdminTargetContractFixtureFactory = (
 export const adminTargetContractFixtureFactories: Readonly<
   Record<string, AdminTargetContractFixtureFactory>
 > = {
-  "admin-ai-chat": createAdminAiChatTargetRouteFixture,
   "admin-content": createAdminContentTargetRouteFixture,
-  "admin-dashboard-analytics": createAdminDashboardAnalyticsTargetRouteFixture,
   "admin-foundation": createAdminFoundationFixture,
   "admin-identity": createAdminIdentityTargetRouteFixture,
   "admin-resource-library": createAdminResourceLibraryTargetRouteFixture,
-  "admin-settings": createAdminSettingsTargetRouteFixture,
   "harness-self-test": createHarnessSelfTestFixture,
   "harness-timeout-self-test": createHarnessTimeoutSelfTestFixture,
 }

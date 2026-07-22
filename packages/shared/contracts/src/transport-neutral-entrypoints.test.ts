@@ -1,16 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import * as adminAiChatData from "#contracts/operations/ai-chat-data"
 import * as adminContentData from "#contracts/content/admin-data"
-import * as adminDashboardAnalyticsData from "#contracts/operations/dashboard-analytics-data"
 import * as adminIdentityData from "#contracts/identity/data"
 import * as adminResourceLibraryData from "#contracts/resource-library/data"
-import * as adminSettingsData from "#contracts/operations/settings-data"
-import { adminAiChatMessageDtoSchema } from "#contracts/operations/admin-ai-chat"
 import { adminCourseEditorDocumentSchema } from "#contracts/content/admin-courses"
-import { adminDashboardDtoSchema } from "#contracts/operations/admin-dashboard"
 import { adminRoleSchema } from "#contracts/identity/admin-session"
-import { adminSettingsDtoSchema } from "#contracts/operations/admin-settings"
 import { adminUserDetailDtoSchema } from "#contracts/identity/admin-users"
 import { adminResourceDocumentDtoSchema } from "#contracts/resource-library/admin-resource-documents"
 import { lessonStepDtoSchema } from "#contracts/content/course"
@@ -39,15 +33,6 @@ describe("transport-neutral 공개 entrypoint", () => {
       adminUserDetailDtoSchema
     )
     expect(adminIdentityData.adminRoleSchema).toBe(adminRoleSchema)
-    expect(adminDashboardAnalyticsData.adminDashboardDtoSchema).toBe(
-      adminDashboardDtoSchema
-    )
-    expect(adminSettingsData.adminSettingsDtoSchema).toBe(
-      adminSettingsDtoSchema
-    )
-    expect(adminAiChatData.adminAiChatMessageDtoSchema).toBe(
-      adminAiChatMessageDtoSchema
-    )
     expect(adminResourceLibraryData.adminResourceDocumentDtoSchema).toBe(
       adminResourceDocumentDtoSchema
     )
@@ -82,23 +67,6 @@ describe("transport-neutral 공개 entrypoint", () => {
         "adminDeleteUserResultSchema",
         "adminUpdateUserStatusRequestSchema",
         "adminUserListDtoSchema",
-      ])
-    ).toBe(false)
-    expect(
-      hasAny(adminDashboardAnalyticsData, ["adminLessonAnalyticsPageDtoSchema"])
-    ).toBe(false)
-    expect(
-      hasAny(adminSettingsData, [
-        "adminLegalSettingsRequestSchema",
-        "adminNoticeSettingsRequestSchema",
-      ])
-    ).toBe(false)
-    expect(
-      hasAny(adminAiChatData, [
-        "adminAiChatConversationDetailDtoSchema",
-        "adminAiChatConversationListDtoSchema",
-        "adminAiChatMessageRequestSchema",
-        "adminAiChatStreamEventSchema",
       ])
     ).toBe(false)
     expect(

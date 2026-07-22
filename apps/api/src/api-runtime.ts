@@ -87,10 +87,15 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
         database,
         env: input.env,
         identity,
+        learningReporting: createLearningReportingQuery({
+          content: createLearningContentQueryPort(content),
+          database,
+        }),
         logger: input.logger,
         now,
         resourceLibrary,
         sessionResolver: adminSessionResolver,
+        sqlite: databaseClient.sqlite,
       })
     },
     createAdminSessionResolver({ adminAuth, identity }) {

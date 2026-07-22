@@ -16,19 +16,17 @@ import {
 } from "@/http/admin-route-group"
 
 describe("관리자 capability route registry", () => {
-  it("정확한 여섯 slot을 타입과 고정 순서로 유지한다", () => {
+  it("정확한 네 slot을 타입과 고정 순서로 유지한다", () => {
     const registry = createAdminRouteGroupRegistry(createRouteGroups())
 
     expectTypeOf<
       keyof AdminRouteGroupRegistry
     >().toEqualTypeOf<AdminRouteGroupName>()
     expect(adminRouteGroupOrder).toEqual([
-      "aiChat",
-      "dashboardAnalytics",
       "content",
       "identity",
+      "operations",
       "resourceLibrary",
-      "settings",
     ])
     expect(Object.keys(registry)).toEqual(adminRouteGroupOrder)
     expect(assembleAdminCapabilityRoutes(registry)).toEqual([])
@@ -76,13 +74,13 @@ describe("관리자 capability route registry", () => {
   })
 
   it("누락되거나 정의되지 않은 slot을 시작 시 거절한다", () => {
-    const missingSettings = createRouteGroups()
+    const missingOperations = createRouteGroups()
     const unexpected = createRouteGroups()
-    Reflect.deleteProperty(missingSettings, "settings")
+    Reflect.deleteProperty(missingOperations, "operations")
     Reflect.set(unexpected, "audit", defineAdminRouteGroup([]))
 
     expectAssemblyFailure(
-      () => createAdminRouteGroupRegistry(missingSettings),
+      () => createAdminRouteGroupRegistry(missingOperations),
       "missing-route-group"
     )
     expectAssemblyFailure(
@@ -108,7 +106,7 @@ describe("관리자 capability route registry", () => {
         assembleAdminCapabilityRoutes(
           createRouteGroups({
             content: [first],
-            settings: [second],
+            operations: [second],
           })
         ),
       "duplicate-method-path"
@@ -148,7 +146,7 @@ describe("관리자 capability route registry", () => {
                 path: "/courses",
               }),
             ],
-            dashboardAnalytics: [
+            operations: [
               createTestRoute({
                 method: "get",
                 operationId: "getAdminOverview",
@@ -226,7 +224,7 @@ describe("관리자 capability route registry", () => {
         () =>
           assembleAdminCapabilityRoutes(
             createRouteGroups({
-              settings: [
+              operations: [
                 createTestRoute({
                   method: "get",
                   operationId,
@@ -247,12 +245,10 @@ function createRouteGroups(
   const empty = defineAdminRouteGroup([])
 
   return {
-    aiChat: empty,
-    dashboardAnalytics: empty,
     content: empty,
     identity: empty,
+    operations: empty,
     resourceLibrary: empty,
-    settings: empty,
     ...overrides,
   }
 }

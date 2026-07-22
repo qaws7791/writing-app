@@ -1,12 +1,10 @@
 import type { AnyRouteConfig } from "@workspace/http-platform/core"
 
 export const adminRouteGroupOrder = Object.freeze([
-  "aiChat",
-  "dashboardAnalytics",
   "content",
   "identity",
+  "operations",
   "resourceLibrary",
-  "settings",
 ] as const)
 
 export type AdminRouteGroupName = (typeof adminRouteGroupOrder)[number]
