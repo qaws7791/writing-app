@@ -6,7 +6,8 @@ import { createTestDependencies } from "@/routes/test-dependencies"
 
 describe("플랫폼 API openapi route", () => {
   it("OpenAPI 3.1 baseline document를 반환한다", async () => {
-    const app = createApp(createTestDependencies())
+    const dependencies = createTestDependencies()
+    const app = createApp(dependencies)
 
     const response = await app.request("/openapi")
 
@@ -72,6 +73,12 @@ describe("플랫폼 API openapi route", () => {
     expect(document.paths).toHaveProperty(
       "/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback"
     )
+    for (const { route } of dependencies.learningRoutes) {
+      expect(document).toHaveProperty(
+        ["paths", route.path, route.method, "operationId"],
+        route.operationId
+      )
+    }
     for (const path of [
       "/learning/answers",
       "/learning/lessons/{lessonId}/progress",

@@ -30,7 +30,6 @@ const { adminApp, learnerApp, unifiedFetch } = (() => {
   try {
     const learnerApp = createApp({
       authHandler: runtime.learnerCore.authHandler,
-      contentService: runtime.learnerCore.contentService,
       contractErrorLogger(event) {
         logger.error(event, "api.contract.response_invalid")
       },
@@ -39,11 +38,8 @@ const { adminApp, learnerApp, unifiedFetch } = (() => {
         logger.error(event, "request.failed")
       },
       aiFeedbackRoutes: runtime.learnerCore.aiFeedbackRoutes,
-      learnerCursorCodec: runtime.learnerCore.learnerCursorCodec,
-      learnerTransitionRepository:
-        runtime.learnerCore.learnerTransitionRepository,
       identityRoutes: runtime.learnerCore.identityRoutes,
-      progressService: runtime.learnerCore.progressService,
+      learningRoutes: runtime.learnerCore.learningRoutes,
       requestLogger: createRequestLogger(logger),
       requestLoggingRuntime: defaultRequestLoggingRuntime,
       securityAuditLogger: createSecurityAuditLogger(logger),

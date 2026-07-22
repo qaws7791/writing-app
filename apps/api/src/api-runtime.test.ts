@@ -43,12 +43,14 @@ describe("통합 API runtime composition root", () => {
           contentDatabase(db)
           return "content"
         },
-        createIdentity(db) {
+        createIdentity({ content, database: db }) {
+          expect(content).toBe("content")
           identityDatabase(db)
           return "identity"
         },
-        createLearnerCore({ database: db, identity }) {
+        createLearnerCore({ content, database: db, identity }) {
           learnerDatabase(db)
+          expect(content).toBe("content")
           expect(identity).toBe("identity")
           return "learner-core"
         },
@@ -97,8 +99,8 @@ describe("통합 API runtime composition root", () => {
   })
 
   it.each([
-    "identity",
     "content",
+    "identity",
     "learner",
     "admin",
     "session",

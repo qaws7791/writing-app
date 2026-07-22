@@ -14,6 +14,7 @@
       "#env/*": ["../../packages/config/env/src/*"],
       "#http-platform/*": ["../../packages/infra/http-platform/src/*"],
       "#identity/*": ["../../packages/modules/identity/src/*"],
+      "#learning/*": ["../../packages/modules/learning/src/*"],
       "#observability/*": ["../../packages/infra/observability/src/*"],
       "@/*": ["./src/*"]
     },

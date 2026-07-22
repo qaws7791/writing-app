@@ -12,7 +12,7 @@ import {
   isLearningDateKeyInRange,
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/learning"
+} from "@workspace/learning/reporting"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type {
   OperationsIdentityReportingQuery,
@@ -21,7 +21,7 @@ import type {
 import {
   learnerActivityDays,
   learnerLessonProgress,
-} from "@workspace/db/schema"
+} from "@workspace/learning/schema"
 import {
   courseCurriculumVersions,
   courses,

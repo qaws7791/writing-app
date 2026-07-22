@@ -1,11 +1,14 @@
 import { readFile } from "node:fs/promises"
 import { describe, expect, it } from "vitest"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { createIdentityModule } from "@workspace/identity/module"
 import { ok } from "@workspace/kernel/result"
 import { createUnavailableAiFeedbackProvider } from "@workspace/ai-feedback/provider"
+import { createAppLogger } from "@workspace/observability/logger"
 
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
+import { composeContentModule } from "@/composition/content-module.composition"
 import { createLearnerApiCore } from "@/learner-api-core"
 
 describe("학습자 API 코어 조립", () => {
@@ -13,6 +16,8 @@ describe("학습자 API 코어 조립", () => {
     const database = createInMemoryWritingAppDatabase()
 
     try {
+      runBaselineMigration(database.sqlite)
+      const logger = createAppLogger({ level: "silent" })
       const core = createLearnerApiCore({
         aiFeedbackModel: "test-model",
         aiFeedbackProvider: createUnavailableAiFeedbackProvider(),
@@ -21,15 +26,22 @@ describe("학습자 API 코어 조립", () => {
           "learner-api-core-test-secret-0123456789abcdef0123456789abcdef",
         cursorSigningSecret:
           "learner-api-core-cursor-0123456789abcdef0123456789abcdef",
+        content: composeContentModule({
+          database: database.db,
+          environment: "test",
+          logger,
+          now: () => new Date("2026-07-18T00:00:00.000Z"),
+        }),
         database: database.db,
         identity: createTestIdentity(database.db),
+        logger,
         sqlite: database.sqlite,
         webOrigin: "http://localhost:3000",
       })
 
       expect(core.authHandler).toBeTypeOf("function")
-      expect(core.learnerCursorCodec).toBeDefined()
-      expect(core.learnerTransitionRepository).toBeDefined()
+      expect(core.learningRoutes).toHaveLength(7)
+      expect(core.aiFeedbackRoutes).toHaveLength(1)
       expect(core).not.toHaveProperty("close")
     } finally {
       database.close()
@@ -44,10 +56,11 @@ describe("학습자 API 코어 조립", () => {
 
     expect(source).toContain("identityProvisioner: createIdentityProvisioner")
     expect(source).toContain("composeAiFeedbackModule")
-    expect(source).toContain("createDrizzleLearnerReadModelRepository")
-    expect(source).toContain("createDrizzleProfileReader")
-    expect(source).toContain("createDrizzleLearnerTransitionRepository")
-    expect(source).toContain("createLearnerAuthDatabase(database)")
+    expect(source).toContain("composeLearningModule")
+    expect(source).not.toContain("createDrizzleLearnerReadModelRepository")
+    expect(source).not.toContain("createDrizzleProfileReader")
+    expect(source).not.toContain("createDrizzleLearnerTransitionRepository")
+    expect(source).toContain("createLearnerAuthDatabase(input.database)")
     expect(source).toContain("createLearnerTestAuthDisplayNameSynchronizer(")
     expect(source).toContain("createLearnerSessionResolver")
     expect(source).not.toContain("createDrizzleLearnerProfileRepository")

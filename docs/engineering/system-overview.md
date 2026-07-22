@@ -13,6 +13,8 @@
 - 여러 runtime이 공유하는 인증 vendor integration과 credential·session schema는 좁은 auth infra package가 소유한다. 제품 profile·사용자 상태·role policy는 identity module이 소유하며, API의 auth adapter가 vendor-neutral identity directory port를 구현한다. identity module은 auth runtime·schema를 직접 읽지 않는다.
 - content module은 draft 편집, immutable published revision, 발행·보관·reset과 콘텐츠 schema·seed를 함께 소유한다. learning과 operations에는 table이 아니라 공개 query port를 제공하고 AI 변경안에는 기존 command port를 제공한다.
 - ai-feedback module은 coaching prompt, provider 응답 검증, 완료 attempt 제한과 기록, module-local provider adapter와 HTTP interface를 소유한다. API composition은 learning의 저장 답안 문맥·진행 전이와 ai-feedback application port를 연결하며 어느 쪽도 상대 table을 읽지 않는다.
+- learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query, identity의 상태 query와 ai-feedback application port는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
+- learning의 완료 event는 transaction 결과에서 commit 이후 발행 대상으로 반환한다. 전달 실패는 이미 확정된 학습 상태를 rollback으로 오표현하지 않고 별도 관찰 실패로 격리한다.
 - 외부 provider SDK, HTTP framework, logger와 DB runtime은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다.
 - 각 module의 데이터 schema, migration과 seed는 자기 도메인 데이터만 소유하며 도메인 의미를 우회해 application 정책을 소유하지 않는다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.

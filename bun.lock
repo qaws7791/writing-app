@@ -92,6 +92,7 @@
         "@workspace/http-platform": "workspace:*",
         "@workspace/identity": "workspace:*",
         "@workspace/kernel": "workspace:*",
+        "@workspace/learning": "workspace:*",
         "@workspace/observability": "workspace:*",
         "@workspace/storage": "workspace:*",
         "@workspace/types": "workspace:*",
@@ -208,7 +209,6 @@
       "dependencies": {
         "@workspace/contracts": "workspace:*",
         "@workspace/identity": "workspace:*",
-        "@workspace/kernel": "workspace:*",
         "@workspace/resource-document": "workspace:*",
         "@workspace/types": "workspace:*",
       },
@@ -400,6 +400,29 @@
         "@workspace/types": "workspace:*",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "catalog:",
+        "vite-tsconfig-paths": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/modules/learning": {
+      "name": "@workspace/learning",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hono/zod-openapi": "catalog:",
+        "@workspace/contracts": "workspace:*",
+        "@workspace/db": "workspace:*",
+        "@workspace/event-contracts": "workspace:*",
+        "@workspace/http-platform": "workspace:*",
+        "@workspace/kernel": "workspace:*",
+        "@workspace/types": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -1475,6 +1498,8 @@
     "@workspace/identity": ["@workspace/identity@workspace:packages/modules/identity"],
 
     "@workspace/kernel": ["@workspace/kernel@workspace:packages/shared/kernel"],
+
+    "@workspace/learning": ["@workspace/learning@workspace:packages/modules/learning"],
 
     "@workspace/nextjs-config": ["@workspace/nextjs-config@workspace:packages/config/nextjs-config"],
 

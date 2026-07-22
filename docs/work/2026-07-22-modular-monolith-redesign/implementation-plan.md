@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6 완료, P7 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7 완료, P8 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -54,7 +54,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P4. `identity` 모듈을 전환한다.
 - [x] P5. `content` 모듈을 전환한다.
 - [x] P6. `ai-feedback` 모듈을 전환한다. 증거: [P6 구현 증거](./p6-validation.md)
-- [ ] P7. `learning` 모듈을 전환한다.
+- [x] P7. `learning` 모듈을 전환한다. 증거: [P7 구현 증거](./p7-validation.md)
 - [ ] P8. `resource-library` 모듈을 전환한다.
 - [ ] P9. `operations` 모듈을 전환한다.
 - [ ] P10. API composition root와 lifecycle을 완성한다.
@@ -516,51 +516,51 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 11.1 경계와 domain
 
-- [ ] P7-001 기존 learning core, course·lesson·progress·transition route와 adapter를 확정한다. 증거:
-- [ ] P7-002 learning이 소유할 route, contract, table, seed와 frontend consumer를 확정한다. 증거:
-- [ ] P7-003 `packages/modules/learning` manifest, private alias, test config와 explicit exports를 만든다. 증거:
-- [ ] P7-004 lesson progress, attempt와 submission entity·value object를 정의한다. 증거:
-- [ ] P7-005 start, answer, complete와 AI feedback 상태 전이 invariant를 정의한다. 증거:
-- [ ] P7-006 step grading policy를 transport와 persistence에서 분리한다. 증거:
-- [ ] P7-007 `Asia/Seoul` 학습 활동일 계산을 Clock 기반 policy로 이동한다. 증거:
-- [ ] P7-008 expected failure를 answer rejected, not-found, conflict와 invalid transition union으로 정의한다. 증거:
-- [ ] P7-009 모든 aggregate 전이가 immutable `DomainDecision`을 반환하게 한다. 증거:
-- [ ] P7-010 domain에서 `new Date`, `Date.now`, random UUID 직접 호출을 제거한다. 증거:
-- [ ] P7-011 domain test에 경계 시각, 중복 완료, 오답, conflict와 event payload를 포함한다. 증거:
+- [x] P7-001 기존 learning core, course·lesson·progress·transition route와 adapter를 확정한다. 증거: [P7 경계와 제거 목록](./p7-validation.md#경계와-소유권)
+- [x] P7-002 learning이 소유할 route, contract, table, seed와 frontend consumer를 확정한다. 증거: [P7 경계와 소유권](./p7-validation.md#경계와-소유권)
+- [x] P7-003 `packages/modules/learning` manifest, private alias, test config와 explicit exports를 만든다. 증거: `packages/modules/learning/package.json`, `tsconfig.json`, `vitest.config.ts`
+- [x] P7-004 lesson progress, attempt와 submission entity·value object를 정의한다. 증거: `domain/lesson-progress.ts`, `domain/learning-types.ts`
+- [x] P7-005 start, answer, complete와 AI feedback 상태 전이 invariant를 정의한다. 증거: `domain/start-lesson-decision.ts`, `complete-step-effect-plan.ts`, `ai-feedback-transition-decision.ts`
+- [x] P7-006 step grading policy를 transport와 persistence에서 분리한다. 증거: `domain/step-grading-policy.ts`
+- [x] P7-007 `Asia/Seoul` 학습 활동일 계산을 Clock 기반 policy로 이동한다. 증거: `domain/learning-date.ts`, 경계 시각 test
+- [x] P7-008 expected failure를 answer rejected, not-found, conflict와 invalid transition union으로 정의한다. 증거: `domain/learning-error.ts`, `learner-transition.ts`
+- [x] P7-009 모든 aggregate 전이가 immutable `DomainDecision`을 반환하게 한다. 증거: start·complete·AI finalize decision과 freeze 회귀 test
+- [x] P7-010 domain에서 `new Date`, `Date.now`, random UUID 직접 호출을 제거한다. 증거: architecture·package interface gate와 domain source 검색
+- [x] P7-011 domain test에 경계 시각, 중복 완료, 오답, conflict와 event payload를 포함한다. 증거: `src/test/domain/`, SQLite repository·application event test
 
 ### 11.2 application과 module 협력
 
-- [ ] P7-012 course·lesson read query를 learning 사용자 관점 projection으로 정의한다. 증거:
-- [ ] P7-013 lesson start, answer, complete와 AI feedback request command를 분리한다. 증거:
-- [ ] P7-014 content published curriculum query port를 주입받는다. 증거:
-- [ ] P7-015 identity status·profile query port를 주입받는다. 증거:
-- [ ] P7-016 ai-feedback application port를 주입받는다. 증거:
-- [ ] P7-017 operations용 learning reporting query port를 공개한다. 증거:
-- [ ] P7-018 transaction port가 learning table만 변경하게 한다. 증거:
-- [ ] P7-019 commit 뒤 `learning.lesson-completed` event를 발행 대상으로 반환한다. 증거:
-- [ ] P7-020 event dispatch 실패가 commit을 rollback한 것으로 표현되지 않게 한다. 증거:
-- [ ] P7-021 application test에 모든 port의 성공·거부·실패 조합을 포함한다. 증거:
+- [x] P7-012 course·lesson read query를 learning 사용자 관점 projection으로 정의한다. 증거: `application/learning-queries.ts`, `learner-read-projection.ts`
+- [x] P7-013 lesson start, answer, complete와 AI feedback request command를 분리한다. 증거: `application/learning-application.ts`
+- [x] P7-014 content published curriculum query port를 주입받는다. 증거: `application/ports/learning-ports.ts`, API learning composition
+- [x] P7-015 identity status·profile query port를 주입받는다. 증거: learning identity query port와 learning profile stats query 조립
+- [x] P7-016 ai-feedback application port를 주입받는다. 증거: learning AI application port와 API learning composition
+- [x] P7-017 operations용 learning reporting query port를 공개한다. 증거: `@workspace/learning/reporting`, reporting application test
+- [x] P7-018 transaction port가 learning table만 변경하게 한다. 증거: module-local transition repository와 architecture·interface gate
+- [x] P7-019 commit 뒤 `learning.lesson-completed` event를 발행 대상으로 반환한다. 증거: immutable domain event intent, repository·application test
+- [x] P7-020 event dispatch 실패가 commit을 rollback한 것으로 표현되지 않게 한다. 증거: event publish·observer 실패 application test
+- [x] P7-021 application test에 모든 port의 성공·거부·실패 조합을 포함한다. 증거: `src/test/application/learning-application.test.ts`
 
 ### 11.3 persistence와 HTTP
 
-- [ ] P7-022 learning table, index와 module 내부 FK를 module schema로 이동한다. 증거:
-- [ ] P7-023 content·identity·feedback reference를 branded ID로 저장하고 cross-module FK를 제거한다. 증거:
-- [ ] P7-024 read model과 transition repository를 module infrastructure로 이동한다. 증거:
-- [ ] P7-025 cursor, sorting과 persisted value mapping을 module persistence에 둔다. 증거:
-- [ ] P7-026 temporary SQLite에서 read, transition, conflict와 transaction rollback을 test한다. 증거:
-- [ ] P7-027 learning canonical contract를 request·response·error schema로 정리한다. 증거:
-- [ ] P7-028 course, lesson, progress와 transition route를 module HTTP interface로 이동한다. 증거:
-- [ ] P7-029 route에서 domain entity를 직접 직렬화하지 않고 presenter·contract mapper를 사용한다. 증거:
-- [ ] P7-030 HTTP contract test에 auth, validation, not-found, conflict와 provider failure를 포함한다. 증거:
+- [x] P7-022 learning table, index와 module 내부 FK를 module schema로 이동한다. 증거: `infrastructure/persistence/schema.ts`, schema migration test
+- [x] P7-023 content·identity·feedback reference를 branded ID로 저장하고 cross-module FK를 제거한다. 증거: module schema·migration과 FK 회귀 test
+- [x] P7-024 read model과 transition repository를 module infrastructure로 이동한다. 증거: `learning-read-drizzle-repository.ts`, `learning-transition-drizzle-repository.ts`
+- [x] P7-025 cursor, sorting과 persisted value mapping을 module persistence에 둔다. 증거: `learner-cursor.ts`, `published-curriculum-mapper.ts`, read repository
+- [x] P7-026 temporary SQLite에서 read, transition, conflict와 transaction rollback을 test한다. 증거: `learning-drizzle-repository.test.ts`
+- [x] P7-027 learning canonical contract를 request·response·error schema로 정리한다. 증거: `@workspace/contracts/learning/*`, learning HTTP mapper
+- [x] P7-028 course, lesson, progress와 transition route를 module HTTP interface로 이동한다. 증거: `interface/http/learning-routes.ts`
+- [x] P7-029 route에서 domain entity를 직접 직렬화하지 않고 presenter·contract mapper를 사용한다. 증거: step presenter, read projection, `learning-http-mapper.ts`
+- [x] P7-030 HTTP contract test에 auth, validation, not-found, conflict와 provider failure를 포함한다. 증거: learning·ai-feedback HTTP test와 API contract test
 
 ### 11.4 조립과 제거
 
-- [ ] P7-031 `module.ts`에서 repository, command, query, route와 reporting port를 조립한다. 증거:
-- [ ] P7-032 apps/api에서 content query, identity query와 ai-feedback application port를 주입한다. 증거:
-- [ ] P7-033 learner route registry와 runtime OpenAPI parity를 확인한다. 증거:
-- [ ] P7-034 web의 핵심 학습 흐름을 새 module route로 실행한다. 증거:
-- [ ] P7-035 기존 core learning, API learning adapter와 course·lesson·progress·transition 중복 route를 제거한다. 증거:
-- [ ] P7-036 P7 게이트: domain·application·repository·HTTP·interface·architecture test, web build와 핵심 learner E2E가 통과한다. 증거:
+- [x] P7-031 `module.ts`에서 repository, command, query, route와 reporting port를 조립한다. 증거: `packages/modules/learning/src/module.ts`
+- [x] P7-032 apps/api에서 content query, identity query와 ai-feedback application port를 주입한다. 증거: `apps/api/src/composition/learning-module.composition.ts`
+- [x] P7-033 learner route registry와 runtime OpenAPI parity를 확인한다. 증거: learning HTTP registry test, API runtime OpenAPI parity test
+- [x] P7-034 web의 핵심 학습 흐름을 새 module route로 실행한다. 증거: test auth 핵심 learner E2E와 Web production build
+- [x] P7-035 기존 core learning, API learning adapter와 course·lesson·progress·transition 중복 route를 제거한다. 증거: package interface ownership guard와 dead-code gate
+- [x] P7-036 P7 게이트: domain·application·repository·HTTP·interface·architecture test, web build와 핵심 learner E2E가 통과한다. 증거: [P7 구현 증거](./p7-validation.md)
 
 ## 12. P8 — `resource-library` 모듈 전환
 

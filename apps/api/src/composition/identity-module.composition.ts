@@ -6,16 +6,17 @@ import {
   createIdentityModule,
   type IdentityModule,
 } from "@workspace/identity/module"
+import type { IdentityLearningReportPort } from "@workspace/identity/ports"
 import type { AppLogger } from "@workspace/observability/logger"
 
 import { createIdentitySessionRevocation } from "@/adapters/auth/identity-session-revocation"
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
-import { createIdentityLearningReport } from "@/adapters/learning/identity-learning-report"
 import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 
 export function composeIdentityModule(input: {
   readonly database: WritingAppDatabase
   readonly logger: AppLogger
+  readonly learningReport: IdentityLearningReportPort
   readonly now: () => Date
   readonly sqlite: Database
 }): IdentityModule {
@@ -37,7 +38,7 @@ export function composeIdentityModule(input: {
         }))
       },
     },
-    learningReport: createIdentityLearningReport(input.database),
+    learningReport: input.learningReport,
     learnerIdentityDirectory: createLearnerIdentityDirectory(input.database),
     sessionRevocation: createIdentitySessionRevocation(input.database),
   })

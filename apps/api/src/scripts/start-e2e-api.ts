@@ -43,12 +43,8 @@ const unifiedFetch = (() => {
     const app = createApp({
       aiFeedbackRoutes: runtime.learnerCore.aiFeedbackRoutes,
       authHandler: runtime.learnerCore.authHandler,
-      contentService: runtime.learnerCore.contentService,
-      learnerCursorCodec: runtime.learnerCore.learnerCursorCodec,
-      learnerTransitionRepository:
-        runtime.learnerCore.learnerTransitionRepository,
       identityRoutes: runtime.learnerCore.identityRoutes,
-      progressService: runtime.learnerCore.progressService,
+      learningRoutes: runtime.learnerCore.learningRoutes,
       sessionResolver: runtime.learnerCore.sessionResolver,
       webOrigin: env.webOrigin,
     })

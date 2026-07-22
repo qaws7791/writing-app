@@ -27,15 +27,15 @@ Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표�
 - generated output만 제외하고 source directory 전체를 숨기는 예외는 두지 않는다.
 - private alias, 공개 subpath, type-only cycle과 금지 edge는 `scripts/fixtures/dependency-cruiser/`의 허용·금지 fixture로 함께 검증한다.
 
-기존 flat package를 전환하는 동안 `dependency-cruiser.config.mjs`의 `legacy-*` 규칙이 같은 정책을 적용한다. identity, content와 ai-feedback 전환은 완료됐고 `legacy-core-*`의 나머지 범위는 P7~P9와 P15가 소유한다. `legacy-ui-*`는 P12, `legacy-frontends-*`는 P12, 나머지 API 경계 규칙은 P7~P10에서 대상 package 규칙으로 흡수한 뒤 P15에서 제거한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
+기존 flat package를 전환하는 동안 `dependency-cruiser.config.mjs`의 `legacy-*` 규칙이 같은 정책을 적용한다. identity, content, ai-feedback과 learning 전환은 완료됐고 `legacy-core-*`의 나머지 범위는 P8·P9와 P15가 소유한다. `legacy-ui-*`와 `legacy-frontends-*`는 P12, 나머지 API 경계 규칙은 P8~P10에서 대상 package 규칙으로 흡수한 뒤 P15에서 제거한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
 
-P6 이후 아직 전환되지 않은 learning과 operations repository의 content schema 직접 조회만 파일 단위로 허용한다. 각각 P7, P9에서 공개 query port로 치환하면 같은 단계에서 예외를 제거한다. ai-feedback의 예외는 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다.
+아직 전환되지 않은 operations repository의 module schema 직접 조회만 파일 단위로 허용하며 P9에서 reporting query port로 치환한다. learning과 ai-feedback의 예외는 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다.
 
 ## Dead code와 공개 표면
 
 Knip gate는 읽기 전용이며 `--fix`를 실행하지 않는다. 실제 runtime·tooling 진입점만 `knip.json`에 선언하고 generated output은 Git ignore 경계로 제외한다. cycle은 dependency-cruiser, 의미상 중복 schema는 계약 검사가 소유하므로 Knip의 해당 reporter는 중복 실행하지 않는다.
 
-package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 symbol의 추가·삭제는 소유 package의 export 목록과 core symbol fixture를 함께 갱신해야 하며, broad root barrel, `src` deep import, 자기 공개 경로 역참조와 제거된 forwarding/runtime의 재도입은 `check:package-interfaces`가 거부한다. 같은 검사는 shared·identity·content·ai-feedback package의 exact export, canonical ID 중복, canonical 오류 schema 소비, 성공 response runtime parse와 제거된 module 소유권 source의 재유입도 고정한다.
+package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 symbol의 추가·삭제는 소유 package의 export 목록과 core symbol fixture를 함께 갱신해야 하며, broad root barrel, `src` deep import, 자기 공개 경로 역참조와 제거된 forwarding/runtime의 재도입은 `check:package-interfaces`가 거부한다. 같은 검사는 shared·identity·content·ai-feedback·learning package의 exact export, canonical ID 중복, canonical 오류 schema 소비, 성공 response runtime parse와 제거된 module 소유권 source의 재유입도 고정한다.
 
 module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`와 `./seed` subpath는 API migration·seed composition만 소비하며 다른 module이나 app repository가 module table을 직접 읽지 않는다.
 

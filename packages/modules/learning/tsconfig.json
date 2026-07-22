@@ -1,0 +1,17 @@
+{
+  "extends": "@workspace/typescript-config/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "#auth/*": ["../../infra/auth/src/*"],
+      "#db/*": ["../../infra/db/src/*"],
+      "#http-platform/*": ["../../infra/http-platform/src/*"],
+      "#learning/*": ["./src/*"]
+    },
+    "types": ["bun"]
+  },
+  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

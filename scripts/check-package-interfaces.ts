@@ -9,7 +9,6 @@ type PrivateImportScope = {
 
 const coreCapabilityFacades = [
   ["admin", "packages/core/src/modules/admin/api/index.ts"],
-  ["learning", "packages/core/src/modules/learning/api/index.ts"],
   [
     "resource-library",
     "packages/core/src/modules/resource-library/api/index.ts",
@@ -50,6 +49,10 @@ const privateImportScopes: readonly PrivateImportScope[] = [
   {
     packageName: "@workspace/identity",
     root: "packages/modules/identity/src",
+  },
+  {
+    packageName: "@workspace/learning",
+    root: "packages/modules/learning/src",
   },
   {
     packageName: "@workspace/resource-document",
@@ -158,7 +161,7 @@ const expectedExports = {
     "./resource-library/data",
     "./resource-library/shared",
   ],
-  "packages/core/package.json": ["./admin", "./learning", "./resource-library"],
+  "packages/core/package.json": ["./admin", "./resource-library"],
   "packages/config/env/package.json": [
     "./local-runtime-defaults",
     "./parse-env",
@@ -211,6 +214,17 @@ const expectedExports = {
     "./module",
     "./ports",
     "./provider",
+    "./schema",
+  ],
+  "packages/modules/learning/package.json": [
+    "./application",
+    "./http",
+    "./mapping",
+    "./migration",
+    "./module",
+    "./ports",
+    "./queries",
+    "./reporting",
     "./schema",
   ],
   "packages/shared/resource-document/package.json": [
@@ -463,6 +477,7 @@ verifyP3InfrastructureOwnership()
 verifyP4IdentityOwnership()
 verifyP5ContentOwnership()
 verifyP6AiFeedbackOwnership()
+verifyP7LearningOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -856,7 +871,7 @@ function verifyP4IdentityOwnership(): void {
 
   const forbiddenOwnershipReferences = [
     [
-      "packages/infra/db/src/schema/learning.schema.ts",
+      "packages/modules/learning/src/infrastructure/persistence/schema.ts",
       /\blearnerProfiles\b/u,
       "learning schema의 identity table 소유",
     ],
@@ -995,7 +1010,7 @@ function verifyP6AiFeedbackOwnership(): void {
   const learningRepository = fs.readFileSync(
     path.join(
       repositoryRoot,
-      "apps/api/src/adapters/learning/learner-transition-drizzle.repository.ts"
+      "packages/modules/learning/src/infrastructure/persistence/learning-transition-drizzle-repository.ts"
     ),
     "utf8"
   )
@@ -1005,7 +1020,86 @@ function verifyP6AiFeedbackOwnership(): void {
     )
   ) {
     failures.push(
-      "apps/api/src/adapters/learning/learner-transition-drizzle.repository.ts -> AI attempt table 직접 접근 금지"
+      "packages/modules/learning/src/infrastructure/persistence/learning-transition-drizzle-repository.ts -> AI attempt table 직접 접근 금지"
+    )
+  }
+}
+
+function verifyP7LearningOwnership(): void {
+  const removedLearningSources = [
+    "apps/api/src/adapters/learning/identity-learning-report.ts",
+    "apps/api/src/adapters/learning/learner-read-cursor-drizzle.ts",
+    "apps/api/src/adapters/learning/learner-read-model-drizzle.repository.ts",
+    "apps/api/src/adapters/learning/learner-transition-drizzle.repository.ts",
+    "apps/api/src/modules/courses/courses.routes.ts",
+    "apps/api/src/modules/learning/learner-transition.routes.ts",
+    "apps/api/src/modules/lessons/lessons.routes.ts",
+    "apps/api/src/modules/progress/progress.routes.ts",
+    "packages/core/src/modules/learning/api/index.ts",
+    "packages/infra/db/src/schema/learning.schema.ts",
+  ] as const
+
+  for (const sourcePath of removedLearningSources) {
+    if (fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(`${sourcePath} -> 제거된 learning 소유권 source 재도입`)
+    }
+  }
+
+  const learningRoot = path.join(
+    repositoryRoot,
+    "packages/modules/learning/src"
+  )
+  for (const filePath of collectSourceFiles(learningRoot)) {
+    for (const imported of readImports(filePath)) {
+      if (
+        imported.startsWith("@workspace/ai-feedback") ||
+        imported.startsWith("@workspace/auth") ||
+        imported.startsWith("@workspace/content") ||
+        imported.startsWith("@workspace/core") ||
+        imported.startsWith("@workspace/identity")
+      ) {
+        failures.push(
+          `${relativePath(filePath)} -> learning module의 다른 비즈니스 module 직접 의존 ${imported}`
+        )
+      }
+    }
+  }
+
+  const moduleSchema = fs.readFileSync(
+    path.join(
+      repositoryRoot,
+      "packages/modules/learning/src/infrastructure/persistence/schema.ts"
+    ),
+    "utf8"
+  )
+  if (/\.references\s*\(/u.test(moduleSchema)) {
+    failures.push(
+      "packages/modules/learning/src/infrastructure/persistence/schema.ts -> cross-module 단일-column FK 금지"
+    )
+  }
+  const foreignColumnOwners = [
+    ...moduleSchema.matchAll(/foreignColumns:\s*\[([\s\S]*?)\]/gu),
+  ].map((match) => match[1] ?? "")
+  if (
+    foreignColumnOwners.length === 0 ||
+    foreignColumnOwners.some(
+      (columns) => !columns.includes("learnerCourseProgress")
+    )
+  ) {
+    failures.push(
+      "packages/modules/learning/src/infrastructure/persistence/schema.ts -> module 내부 FK만 허용"
+    )
+  }
+
+  const dbSchemaIndex = fs.readFileSync(
+    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
+    "utf8"
+  )
+  if (
+    /learning\.schema|learner(?:Activity|Course|Lesson)/u.test(dbSchemaIndex)
+  ) {
+    failures.push(
+      "packages/infra/db/src/schema/index.ts -> learning schema 재공개 금지"
     )
   }
 }

@@ -144,7 +144,6 @@ const config = {
         pathNot: [
           "^apps/api/src/(composition|scripts)/",
           "^apps/api/src/adapters/(?:analytics/admin-analytics|dashboard/admin-dashboard)-drizzle\\.repository(?:\\.test)?\\.ts$",
-          "^apps/api/src/adapters/learning/(?:learner-read-model-drizzle\\.repository|learner-read-models|learner-transition-drizzle\\.repository)(?:\\.test)?\\.ts$",
           "^packages/infra/db/src/(migrations|seeds)/",
           "^packages/modules/[^/]+/src/infrastructure/persistence/",
         ],

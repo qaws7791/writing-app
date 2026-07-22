@@ -8,7 +8,6 @@
   },
   "exports": {
     "./admin": "./src/modules/admin/api/index.ts",
-    "./learning": "./src/modules/learning/api/index.ts",
     "./resource-library": "./src/modules/resource-library/api/index.ts"
   },
   "scripts": {
@@ -20,7 +19,6 @@
   "dependencies": {
     "@workspace/contracts": "workspace:*",
     "@workspace/identity": "workspace:*",
-    "@workspace/kernel": "workspace:*",
     "@workspace/resource-document": "workspace:*",
     "@workspace/types": "workspace:*"
   },

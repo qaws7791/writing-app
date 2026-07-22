@@ -28,6 +28,7 @@ export function createApp(dependencies: ApiDependencies): OpenAPIHono {
       ...routes,
       ...dependencies.aiFeedbackRoutes,
       ...dependencies.identityRoutes,
+      ...dependencies.learningRoutes,
     ],
   })
 

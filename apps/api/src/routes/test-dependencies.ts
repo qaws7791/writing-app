@@ -5,12 +5,17 @@ import {
   learnerLessonSchema,
   learnerProgressPageSchema,
 } from "@workspace/contracts/learning/learner-content"
-import { createLearnerCursorCodec } from "@workspace/core/learning"
-import { createAiFeedbackRoutes } from "@workspace/ai-feedback/http"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
-import { err, ok } from "@workspace/kernel/result"
+import { createAiFeedbackRoutes } from "@workspace/ai-feedback/http"
 import { createLearnerIdentityRoutes } from "@workspace/identity/http"
 import type { SessionResolver } from "@workspace/identity/sessions"
+import type { LearningApplication } from "@workspace/learning/application"
+import {
+  createLearnerCursorCodec,
+  createLearningRoutes,
+} from "@workspace/learning/http"
+import type { LearningQueries } from "@workspace/learning/queries"
+import { err, ok } from "@workspace/kernel/result"
 
 import type { ApiDependencies } from "@/app"
 
@@ -25,23 +30,15 @@ const activeSession = {
   },
 } as const
 
-const learnerCursorCodec = createLearnerCursorCodec(
-  "test-cursor-signing-secret-with-32-bytes"
-)
-
-const version = {
-  curriculumVersionId: "c1-v1",
-  revision: 1,
-} as const
-
-const testCoursePage = learnerCoursePageSchema.parse({
+const version = { curriculumVersionId: "c1-v1", revision: 1 } as const
+const coursePage = learnerCoursePageSchema.parse({
   items: [
     {
       category: "입문자를 위한 코스",
       contentStatus: "active",
       description: "매일 조금씩 쓰는 습관을 만듭니다.",
       id: "c1",
-      lessonCount: 3,
+      lessonCount: 1,
       title: "글쓰기 첫걸음 30일",
       version,
       visualKey: "basic-sentence-writing",
@@ -49,9 +46,8 @@ const testCoursePage = learnerCoursePageSchema.parse({
   ],
   nextCursor: null,
 })
-
-export const testCourseDetail = learnerCourseDetailSchema.parse({
-  ...testCoursePage.items[0],
+const courseDetail = learnerCourseDetailSchema.parse({
+  ...coursePage.items[0],
   learning: {
     completedLessons: 0,
     nextLesson: {
@@ -63,72 +59,94 @@ export const testCourseDetail = learnerCourseDetailSchema.parse({
     },
     progressPercent: 0,
     status: "not_started",
-    totalLessons: 3,
+    totalLessons: 1,
     version,
   },
-  units: [
-    {
-      id: "u1",
-      lessons: [
-        {
-          category: "문장의 기본기",
-          contentStatus: "active",
-          description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
-          estimatedMinutes: 5,
-          id: "l1",
-          learning: {
-            status: "not_started",
-            totalSteps: 1,
-            version,
-          },
-          sortOrder: 1,
-          title: "좋은 문장이란 무엇인가",
-        },
-      ],
-      sortOrder: 1,
-      title: "문장의 기본기",
-    },
-  ],
+  units: [],
 })
-
-const testLearnerLesson = learnerLessonSchema.parse({
+const lesson = learnerLessonSchema.parse({
   category: "문장의 기본기",
   courseId: "c1",
-  description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
+  description: "명료한 문장을 살펴봅니다.",
   estimatedMinutes: 5,
   id: "l1",
-  learning: {
-    status: "not_started",
-    totalSteps: 1,
-    version,
-  },
+  learning: { status: "not_started", totalSteps: 1, version },
   steps: [
     {
-      body: "좋은 문장은 한 가지 의미를 분명히 전달합니다.",
-      guide: "좋은 문장의 기준을 읽습니다.",
+      body: "좋은 문장은 의미를 분명히 전달합니다.",
+      guide: "기준을 읽습니다.",
       id: "l1-s1",
       sortOrder: 1,
       title: "명료성의 원칙",
       type: "READING",
     },
   ],
-  summary: ["좋은 문장은 모호하지 않다"],
+  summary: [],
   title: "좋은 문장이란 무엇인가",
   unitId: "u1",
   version,
 })
-
-const testProgressPage = learnerProgressPageSchema.parse({
+const progressPage = learnerProgressPageSchema.parse({
   items: [],
   nextCursor: null,
 })
 
-export function createTestDependencies(): ApiDependencies {
-  const sessionResolver: SessionResolver = {
-    async resolveSession(headers) {
-      const token = readTestSessionToken(headers)
-
-      return token === "active-token" ? activeSession : null
+export function createTestDependencies(
+  input: {
+    readonly completeStep?: LearningApplication["completeStep"]
+    readonly sessionResolver?: SessionResolver
+  } = {}
+): ApiDependencies {
+  const sessionResolver = input.sessionResolver ?? createTestSessionResolver()
+  const application: LearningApplication = {
+    answerStep: async () => {
+      throw new Error("Unexpected test dependency call: answerStep")
+    },
+    completeStep:
+      input.completeStep ??
+      (async () => {
+        throw new Error("Unexpected test dependency call: completeStep")
+      }),
+    requestAiFeedback: async () =>
+      err({ kind: "provider-unavailable", remainingAttempts: 1 }),
+    startLesson: async () => {
+      throw new Error("Unexpected test dependency call: startLesson")
+    },
+  }
+  const queries: LearningQueries = {
+    content: {
+      async getCourseDetail({ courseId }) {
+        return courseId === "c1"
+          ? ok(courseDetail)
+          : err({ kind: "course-not-found" })
+      },
+      async getLesson({ lessonId }) {
+        return lessonId === "l1"
+          ? ok(lesson)
+          : err({ kind: "lesson-not-found" })
+      },
+      async listCourseCategories() {
+        return ["입문자를 위한 코스"]
+      },
+      async listCourses() {
+        return { items: coursePage.items, nextPosition: null }
+      },
+    },
+    progress: {
+      async readProgress() {
+        return { items: progressPage.items, nextPosition: null }
+      },
+    },
+  }
+  const learningSession = {
+    async resolveLearner(headers: Headers) {
+      const session = await sessionResolver.resolveSession(headers)
+      if (session === null) return null
+      if (session.user.status !== "active") return { kind: "inactive" as const }
+      return {
+        kind: "active" as const,
+        learnerId: learnerIdSchema.parse(session.user.id),
+      }
     },
   }
 
@@ -136,52 +154,11 @@ export function createTestDependencies(): ApiDependencies {
     aiFeedbackRoutes: createAiFeedbackRoutes({
       command: {
         async requestFeedback() {
-          throwUnexpectedTestDependencyCall("aiFeedbackCommand.requestFeedback")
+          throw new Error("Unexpected test dependency call: AI feedback")
         },
       },
-      session: {
-        async resolveLearner(headers) {
-          const session = await sessionResolver.resolveSession(headers)
-          return session === null
-            ? null
-            : {
-                kind: "active",
-                learnerId: learnerIdSchema.parse(session.user.id),
-              }
-        },
-      },
+      session: learningSession,
     }),
-    contentService: {
-      async getCourseDetail({ courseId }) {
-        return courseId === "c1"
-          ? ok(testCourseDetail)
-          : err({ kind: "course-not-found" })
-      },
-      async getLesson({ lessonId }) {
-        return lessonId === "l1"
-          ? ok(testLearnerLesson)
-          : err({ kind: "lesson-not-found" })
-      },
-      async listCourseCategories() {
-        return ["입문자를 위한 코스"]
-      },
-      async listCourses() {
-        return { items: testCoursePage.items, nextPosition: null }
-      },
-    },
-    learnerCursorCodec,
-    learnerTransitionRepository: {
-      async completeStep() {
-        throwUnexpectedTestDependencyCall(
-          "learnerTransitionRepository.completeStep"
-        )
-      },
-      async startLesson() {
-        throwUnexpectedTestDependencyCall(
-          "learnerTransitionRepository.startLesson"
-        )
-      },
-    },
     identityRoutes: createLearnerIdentityRoutes({
       profileStatsQuery: {
         async readProfileStats() {
@@ -196,29 +173,33 @@ export function createTestDependencies(): ApiDependencies {
       },
       sessionResolver,
     }),
-    progressService: {
-      async readProgress() {
-        return { items: testProgressPage.items, nextPosition: null }
-      },
-    },
+    learningRoutes: createLearningRoutes({
+      application,
+      cursor: createLearnerCursorCodec(
+        "test-cursor-signing-secret-with-32-bytes"
+      ),
+      queries,
+      session: learningSession,
+    }),
     sessionResolver,
   }
 }
 
+function createTestSessionResolver(): SessionResolver {
+  return {
+    async resolveSession(headers) {
+      return readTestSessionToken(headers) === "active-token"
+        ? activeSession
+        : null
+    },
+  }
+}
+
 function readTestSessionToken(headers: Headers): string | null {
-  const cookieToken = headers
+  const token = headers
     .get("Cookie")
     ?.split(";")
     .map((cookie) => cookie.trim().split("="))
     .find(([name]) => name === learnerSessionCookieName)?.[1]
-
-  if (cookieToken !== undefined) {
-    return decodeURIComponent(cookieToken)
-  }
-
-  return null
-}
-
-function throwUnexpectedTestDependencyCall(methodName: string): never {
-  throw new Error(`Unexpected test dependency call: ${methodName}`)
+  return token === undefined ? null : decodeURIComponent(token)
 }

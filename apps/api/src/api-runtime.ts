@@ -13,12 +13,15 @@ import {
 import type { IdentityModule } from "@workspace/identity/module"
 import type { ContentModule } from "@workspace/content/module"
 import type { AdminSessionResolver } from "@workspace/identity/sessions"
+import { runLearningSchemaMigration } from "@workspace/learning/migration"
+import { createLearningReportingQuery } from "@workspace/learning/reporting"
 
 import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
 import { createAdminCapabilityRoutes } from "@/composition/admin-route-composition"
 import { composeIdentityModule } from "@/composition/identity-module.composition"
 import { composeContentModule } from "@/composition/content-module.composition"
+import { createLearningContentQueryPort } from "@/composition/learning-module.composition"
 import type { ApiEnv } from "@/config/env"
 import type { AdminRouteGroup } from "@/http/admin-route-group"
 import { createLearnerApiCore, type LearnerApiCore } from "@/learner-api-core"
@@ -55,6 +58,7 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
     input.env.databaseUrl ?? getDefaultDatabaseUrl()
   )
   const now = input.now ?? (() => new Date())
+  runLearningSchemaMigration(databaseClient.sqlite)
 
   return assembleApiRuntime({
     closeDatabase: databaseClient.close,
@@ -95,27 +99,34 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
         now,
       })
     },
-    createIdentity(database) {
+    createIdentity({ content, database }) {
       return composeIdentityModule({
         database,
+        learningReport: createLearningReportingQuery({
+          content: createLearningContentQueryPort(content),
+          database,
+        }),
         logger: input.logger,
         now,
         sqlite: databaseClient.sqlite,
       })
     },
-    createLearnerCore({ database, identity }) {
+    createLearnerCore({ content, database, identity }) {
       return createLearnerApiCore({
         aiFeedbackApiKey: input.env.openAiApiKey,
         aiFeedbackModel: input.env.openAiModel,
         aiFeedbackProvider: input.aiFeedbackProvider,
         apiOrigin: input.env.apiOrigin,
         cursorSigningSecret: input.env.cursorSigningSecret,
+        content,
         database,
         googleClientId: input.env.googleClientId,
         googleClientSecret: input.env.googleClientSecret,
         identity,
         learnerAuthSecret: input.env.learnerAuthSecret,
         learnerCookieDomain: input.env.learnerCookieDomain,
+        logger: input.logger,
+        now,
         onAiFeedbackAttemptTransition: input.onAiFeedbackAttemptTransition,
         onAiFeedbackUsage: input.onAiFeedbackUsage,
         sqlite: databaseClient.sqlite,
@@ -149,8 +160,12 @@ export function assembleApiRuntime<
     readonly identity: TIdentity
   }) => TAdminSessionResolver
   readonly createContent: (database: WritingAppDatabase) => TContent
-  readonly createIdentity: (database: WritingAppDatabase) => TIdentity
+  readonly createIdentity: (input: {
+    readonly content: TContent
+    readonly database: WritingAppDatabase
+  }) => TIdentity
   readonly createLearnerCore: (input: {
+    readonly content: TContent
     readonly database: WritingAppDatabase
     readonly identity: TIdentity
   }) => TLearnerCore
@@ -167,9 +182,13 @@ export function assembleApiRuntime<
   const dispose = createCloseOnce(input.closeDatabase)
 
   try {
-    const identity = input.createIdentity(input.database)
     const content = input.createContent(input.database)
+    const identity = input.createIdentity({
+      content,
+      database: input.database,
+    })
     const learnerCore = input.createLearnerCore({
+      content,
       database: input.database,
       identity,
     })

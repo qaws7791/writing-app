@@ -122,17 +122,10 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("신뢰하지 않은 Origin의 쿠키 인증 변경 요청을 side effect 전에 거절한다", async () => {
-    const dependencies = createDependencies()
-    const completeStep = vi.fn(
-      dependencies.learnerTransitionRepository.completeStep
-    )
-    const app = createApp({
-      ...dependencies,
-      learnerTransitionRepository: {
-        ...dependencies.learnerTransitionRepository,
-        completeStep,
-      },
+    const completeStep = vi.fn(async () => {
+      throw new Error("completeStep must not be called")
     })
+    const app = createApp(createDependencies({ completeStep }))
 
     const response = await app.request(
       "/learning/lessons/lesson-1/steps/step-1/complete",
@@ -158,17 +151,10 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("학습자 API는 실제 1 MiB 본문을 전달하고 1 byte 초과를 side effect 전에 거절한다", async () => {
-    const dependencies = createDependencies()
-    const completeStep = vi.fn(
-      dependencies.learnerTransitionRepository.completeStep
-    )
-    const app = createApp({
-      ...dependencies,
-      learnerTransitionRepository: {
-        ...dependencies.learnerTransitionRepository,
-        completeStep,
-      },
+    const completeStep = vi.fn(async () => {
+      throw new Error("completeStep must not be called")
     })
+    const app = createApp(createDependencies({ completeStep }))
     const bodyLimitBytes = 1024 * 1024
     const emptyPaddingJson = JSON.stringify({ padding: "" })
 
@@ -358,17 +344,10 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("빈 body와 잘못된 JSON을 같은 transport 오류로 거절한다", async () => {
-    const dependencies = createDependencies()
-    const completeStep = vi.fn(
-      dependencies.learnerTransitionRepository.completeStep
-    )
-    const app = createApp({
-      ...dependencies,
-      learnerTransitionRepository: {
-        ...dependencies.learnerTransitionRepository,
-        completeStep,
-      },
+    const completeStep = vi.fn(async () => {
+      throw new Error("completeStep must not be called")
     })
+    const app = createApp(createDependencies({ completeStep }))
 
     for (const body of ["", "{"] as const) {
       const response = await app.request(
@@ -453,7 +432,9 @@ describe("플랫폼 API profile route", () => {
   })
 })
 
-function createDependencies(): ApiDependencies {
+function createDependencies(
+  input: Parameters<typeof createTestDependencies>[0] = {}
+): ApiDependencies {
   const sessionResolver: ApiDependencies["sessionResolver"] = {
     async resolveSession(headers) {
       const token = readTestSessionToken(headers)
@@ -471,7 +452,7 @@ function createDependencies(): ApiDependencies {
   }
 
   return {
-    ...createTestDependencies(),
+    ...createTestDependencies({ ...input, sessionResolver }),
     identityRoutes: createLearnerIdentityRoutes({
       profileStatsQuery: {
         async readProfileStats() {

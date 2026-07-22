@@ -35,6 +35,13 @@
 - attempt 예약과 terminal 저장은 짧은 개별 transaction이며 provider I/O 중에는 transaction을 열지 않는다. AI 결과 저장 뒤 learning 진행 전이가 실패하면 저장 결과를 권위 상태로 유지하고 같은 key 재시도에서 learning 전이만 다시 수행한다.
 - 기존 cross-module FK 제거 migration은 row와 index를 보존하고 사전 orphan 검사를 통과해야 한다. baseline SQL은 적용 이력으로 유지하고 통합 migration 계보는 P11에서 정리한다.
 
+## Learning 데이터 경계
+
+- learning module은 코스·레슨 진행, 단계 답안과 학습 활동일 schema·repository를 소유한다. 사용자·코스·curriculum version·lesson·step 식별자는 branded reference로 취급하고 다른 module table에 물리 FK를 만들지 않는다.
+- 코스 진행을 부모로 하는 레슨 진행·답안 관계만 module 내부 FK로 유지한다. content와 identity의 현재 상태는 각 module의 공개 query port에서 확인하며 learning persistence가 상대 schema를 join하지 않는다.
+- 단계 완료는 답안 저장, 진행 전이, 레슨·코스 완료와 활동 집계를 하나의 learning transaction에서 적용한다. 완료 event intent는 commit 결과에 포함하고 application이 commit 뒤 발행한다.
+- 기존 learning row·index를 보존하면서 cross-module FK를 제거하는 idempotent migration은 learning module이 소유한다. baseline SQL은 적용 이력으로 유지하고 통합 migration 계보는 P11에서 정리한다.
+
 ## 변경 원칙
 
 1. 제품 불변식과 사용자 영향부터 정의한다.
