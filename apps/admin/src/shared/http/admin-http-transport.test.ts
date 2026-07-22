@@ -122,6 +122,32 @@ describe("관리자 HTTP 전송 계층", () => {
     expect(request?.headers.get("If-Match")).toBe('"3"')
   })
 
+  it("content version 충돌을 편집기 stale revision으로 변환한다", async () => {
+    const transport = createAdminHttpTransport({
+      baseUrl,
+      fetch: async () =>
+        Response.json(
+          {
+            code: "CONTENT_CONFLICT",
+            message: "Content revision conflict",
+          },
+          { status: 409 }
+        ),
+      tokenProvider: () => null,
+    })
+
+    await expect(
+      transport.requestJson({
+        method: "PUT",
+        path: "/api/admin/courses/course-1/editor",
+        schema: valueSchema,
+      })
+    ).resolves.toMatchObject({
+      error: { code: "stale-revision", status: 409 },
+      status: "error",
+    })
+  })
+
   it.each([
     [
       "parameter 순서와 대소문자",

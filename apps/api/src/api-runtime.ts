@@ -13,6 +13,7 @@ import {
 import type { IdentityModule } from "@workspace/identity/module"
 import type { ContentModule } from "@workspace/content/module"
 import type { AdminSessionResolver } from "@workspace/identity/sessions"
+import type { ResourceLibraryModule } from "@workspace/resource-library/module"
 import { runLearningSchemaMigration } from "@workspace/learning/migration"
 import { createLearningReportingQuery } from "@workspace/learning/reporting"
 
@@ -22,6 +23,7 @@ import { createAdminCapabilityRoutes } from "@/composition/admin-route-compositi
 import { composeIdentityModule } from "@/composition/identity-module.composition"
 import { composeContentModule } from "@/composition/content-module.composition"
 import { createLearningContentQueryPort } from "@/composition/learning-module.composition"
+import { composeResourceLibraryModule } from "@/composition/resource-library-module.composition"
 import type { ApiEnv } from "@/config/env"
 import type { AdminRouteGroup } from "@/http/admin-route-group"
 import { createLearnerApiCore, type LearnerApiCore } from "@/learner-api-core"
@@ -40,6 +42,7 @@ export type ApiRuntime = {
   readonly dispose: () => void
   readonly identity: IdentityModule
   readonly learnerCore: LearnerApiCore
+  readonly resourceLibrary: ResourceLibraryModule
 }
 
 export type CreateApiRuntimeInput = {
@@ -77,6 +80,7 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
       content,
       database,
       identity,
+      resourceLibrary,
     }) {
       return createAdminCapabilityRoutes({
         content,
@@ -85,6 +89,7 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
         identity,
         logger: input.logger,
         now,
+        resourceLibrary,
         sessionResolver: adminSessionResolver,
       })
     },
@@ -134,6 +139,15 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
         webOrigin: input.env.webOrigin,
       })
     },
+    createResourceLibrary(database) {
+      return composeResourceLibraryModule({
+        assetStore: input.env.adminAssetStore,
+        database,
+        logger: input.logger,
+        now,
+        sqlite: databaseClient.sqlite,
+      })
+    },
     database: databaseClient.db,
   })
 }
@@ -145,6 +159,7 @@ export function assembleApiRuntime<
   TAdminCapabilityRoutes,
   TIdentity,
   TContent,
+  TResourceLibrary,
 >(input: {
   readonly closeDatabase: () => void
   readonly createAdminAuth: (database: WritingAppDatabase) => TAdminAuth
@@ -154,6 +169,7 @@ export function assembleApiRuntime<
     readonly content: TContent
     readonly database: WritingAppDatabase
     readonly identity: TIdentity
+    readonly resourceLibrary: TResourceLibrary
   }) => TAdminCapabilityRoutes
   readonly createAdminSessionResolver: (input: {
     readonly adminAuth: TAdminAuth
@@ -169,6 +185,9 @@ export function assembleApiRuntime<
     readonly database: WritingAppDatabase
     readonly identity: TIdentity
   }) => TLearnerCore
+  readonly createResourceLibrary: (
+    database: WritingAppDatabase
+  ) => TResourceLibrary
   readonly database: WritingAppDatabase
 }): {
   readonly adminAuth: TAdminAuth
@@ -178,6 +197,7 @@ export function assembleApiRuntime<
   readonly dispose: () => void
   readonly identity: TIdentity
   readonly learnerCore: TLearnerCore
+  readonly resourceLibrary: TResourceLibrary
 } {
   const dispose = createCloseOnce(input.closeDatabase)
 
@@ -192,6 +212,7 @@ export function assembleApiRuntime<
       database: input.database,
       identity,
     })
+    const resourceLibrary = input.createResourceLibrary(input.database)
     const adminAuth = input.createAdminAuth(input.database)
     const adminSessionResolver = input.createAdminSessionResolver({
       adminAuth,
@@ -203,6 +224,7 @@ export function assembleApiRuntime<
       content,
       database: input.database,
       identity,
+      resourceLibrary,
     })
 
     return {
@@ -213,6 +235,7 @@ export function assembleApiRuntime<
       dispose,
       identity,
       learnerCore,
+      resourceLibrary,
     }
   } catch (error) {
     dispose()

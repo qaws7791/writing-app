@@ -17,6 +17,7 @@ import { seedContentDatabase } from "@workspace/content/seed"
 import { seedDatabase } from "@workspace/db/seeds/seed"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { seedLearnerIdentity } from "@workspace/identity/seed"
+import { runResourceLibrarySchemaMigration } from "@workspace/resource-library/migration"
 
 import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 
@@ -39,6 +40,7 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
     runAiFeedbackSchemaMigration(database.sqlite)
     await seedContentDatabase(database.db)
     runApiIdentitySchemaMigration(database.sqlite)
+    runResourceLibrarySchemaMigration(database.sqlite)
     seedLearnerIdentity(database.db, {
       displayName: "글쓰기 탐험가",
       userId: userIdSchema.parse("user-1"),

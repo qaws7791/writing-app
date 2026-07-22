@@ -16,6 +16,7 @@
       "#identity/*": ["../../packages/modules/identity/src/*"],
       "#learning/*": ["../../packages/modules/learning/src/*"],
       "#observability/*": ["../../packages/infra/observability/src/*"],
+      "#resource-library/*": ["../../packages/modules/resource-library/src/*"],
       "@/*": ["./src/*"]
     },
     "types": ["bun"]

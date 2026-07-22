@@ -64,6 +64,7 @@ export default defineConfig({
       "packages/modules/content/vitest.config.ts",
       "packages/modules/identity/vitest.config.ts",
       "packages/modules/learning/vitest.config.ts",
+      "packages/modules/resource-library/vitest.config.ts",
       "packages/infra/observability/vitest.config.ts",
       "packages/infra/storage/vitest.config.ts",
       "packages/shared/errors/vitest.config.ts",

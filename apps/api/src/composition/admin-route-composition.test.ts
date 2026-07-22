@@ -3,6 +3,7 @@ import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { createIdentityModule } from "@workspace/identity/module"
 import { createContentModule } from "@workspace/content/module"
 import { ok } from "@workspace/kernel/result"
+import { createResourceLibraryModule } from "@workspace/resource-library/module"
 
 import {
   createAdminCapabilityRouteGroupRegistry,
@@ -20,7 +21,10 @@ describe("관리자 capability route composition", () => {
     const databaseClient = createInMemoryWritingAppDatabase()
 
     try {
-      const context = createCompositionContext(databaseClient.db)
+      const context = createCompositionContext(
+        databaseClient.db,
+        databaseClient.sqlite
+      )
       const first = createAdminCapabilityRouteGroupRegistry(context)
       const second = createAdminCapabilityRouteGroupRegistry(context)
       const routes = createAdminCapabilityRoutes(context)
@@ -92,7 +96,8 @@ describe("관리자 capability route composition", () => {
 })
 
 function createCompositionContext(
-  database: AdminRouteCompositionContext["database"]
+  database: AdminRouteCompositionContext["database"],
+  sqlite: Parameters<typeof createResourceLibraryModule>[0]["sqlite"]
 ): AdminRouteCompositionContext {
   return {
     content: createContentModule({
@@ -138,6 +143,17 @@ function createCompositionContext(
       },
     }),
     now: () => new Date("2026-07-18T00:00:00.000Z"),
+    resourceLibrary: createResourceLibraryModule({
+      actorDirectory: { readActors: async () => [] },
+      assetAuditObserver: () => undefined,
+      assetIdGenerator: { next: () => "resource-asset-1" as never },
+      clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
+      database,
+      documentIdGenerator: { next: () => "resource-document-1" as never },
+      folderIdGenerator: { next: () => "resource-folder-1" as never },
+      sqlite,
+      storage: null,
+    }),
     sessionResolver: {
       resolveSession: () => Promise.resolve(null),
     },

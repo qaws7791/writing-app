@@ -5,10 +5,8 @@ import {
   createMastraTool,
   type ManagedMastraRuntime,
 } from "@workspace/ai/mastra-runtime"
-import type {
-  ResourceDocumentUseCase,
-  ResourceSearchUseCase,
-} from "@workspace/core/resource-library"
+import type { ResourceLibraryKnowledgeQuery } from "@workspace/resource-library/queries"
+import { adminResourceDocumentIdSchema } from "@workspace/contracts/resource-library/shared"
 import { z } from "zod"
 
 import type { AdminAiChatAgent } from "@/modules/admin-ai-chat/admin-ai-chat-agent"
@@ -24,10 +22,7 @@ export function createAdminMastra({
 }: {
   readonly openAiApiKey: string
   readonly openAiModel: string
-  readonly resourceLibrary: {
-    readonly documents: ResourceDocumentUseCase
-    readonly search: ResourceSearchUseCase
-  }
+  readonly resourceLibrary: ResourceLibraryKnowledgeQuery
 }) {
   const searchResources = createMastraTool({
     description:
@@ -40,7 +35,7 @@ export function createAdminMastra({
     execute: async ({ limit, query }) => {
       const result = await resourceLibrary.search.search({ limit, query })
       return {
-        documents: result.items.map((item) => ({
+        documents: result.map((item) => ({
           excerpt: item.excerpt,
           id: item.id,
           link: `/resources/${item.id}`,
@@ -57,10 +52,10 @@ export function createAdminMastra({
     id: "read_resource_document",
     inputSchema: z.object({ documentId: z.string().trim().min(1).max(128) }),
     execute: async ({ documentId }) => {
-      const document = await resourceLibrary.documents.getDocument({
-        documentId,
-      })
-      if (document === null || document.status !== "active") {
+      const document = await resourceLibrary.documents.readDocument(
+        adminResourceDocumentIdSchema.parse(documentId)
+      )
+      if (document === null) {
         return { found: false }
       }
       return {

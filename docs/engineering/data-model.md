@@ -42,6 +42,13 @@
 - 단계 완료는 답안 저장, 진행 전이, 레슨·코스 완료와 활동 집계를 하나의 learning transaction에서 적용한다. 완료 event intent는 commit 결과에 포함하고 application이 commit 뒤 발행한다.
 - 기존 learning row·index를 보존하면서 cross-module FK를 제거하는 idempotent migration은 learning module이 소유한다. baseline SQL은 적용 이력으로 유지하고 통합 migration 계보는 P11에서 정리한다.
 
+## Resource Library 데이터 경계
+
+- resource-library module은 폴더·문서 node, Markdown 본문과 version, FTS 색인, 문서 종속 이미지 metadata를 소유한다. 생성자·수정자 ID는 identity 참조 값으로 저장하되 물리 FK나 persistence join을 만들지 않는다.
+- 같은 부모의 활성 이름 고유성, 최대 깊이·항목 수, 문서 말단 구조와 휴지통 하위 트리 상태는 module transaction과 내부 FK·index·trigger가 함께 지킨다. 문서 제목·본문·검색 색인·수정자·version 증가는 하나의 transaction에서 확정한다.
+- 이미지 metadata는 실제 MIME, byte 크기, 필수 대체 텍스트와 결정적 object key를 저장한다. 영구 삭제는 metadata를 `delete-pending`으로 먼저 전이한 뒤 object 삭제 성공 시 하위 트리와 metadata를 완료 삭제하며, 실패 상태는 reconciliation 대상으로 남긴다.
+- 기존 resource row와 FTS를 보존하면서 관리자 credential FK를 제거하는 idempotent migration은 resource-library module이 소유한다. actor·문서·자산 orphan을 사전 검사하며 baseline SQL은 적용 이력으로 유지하고 통합 migration 계보는 P11에서 정리한다.
+
 ## 변경 원칙
 
 1. 제품 불변식과 사용자 영향부터 정의한다.

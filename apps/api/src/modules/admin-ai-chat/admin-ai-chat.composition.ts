@@ -1,18 +1,10 @@
 import {
-  createResourceDocumentUseCase,
-  createResourceSearchUseCase,
-  toResourceDocumentId,
-} from "@workspace/core/resource-library"
-
-import {
   createAdminMastra,
   createMastraAdminAiChatAgent,
 } from "@/adapters/ai-chat/admin-content-agent"
 import type { AdminRouteCompositionContext } from "@/composition/admin-route-composition-context"
 import type { AdminRouteGroup } from "@/http/admin-route-group"
 import { createAdminAiChatRepository } from "@/adapters/ai-chat/admin-ai-chat-drizzle.repository"
-import { createDrizzleResourceDocumentRepository } from "@/adapters/resource-library/resource-document-drizzle.repository"
-import { createDrizzleResourceSearchRepository } from "@/adapters/resource-library/resource-search-drizzle.repository"
 import { createAiChatRequestGuard } from "@/modules/admin-ai-chat/ai-chat-request-guard"
 import { createAdminAiChatRoutes } from "@/modules/admin-ai-chat/admin-ai-chat.routes"
 
@@ -38,18 +30,7 @@ function createConfiguredAdminAiChatAgent(
     createAdminMastra({
       openAiApiKey: context.env.openAiApiKey,
       openAiModel: context.env.openAiModel,
-      resourceLibrary: {
-        documents: createResourceDocumentUseCase({
-          createDocumentId: () =>
-            toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
-          documentRepository: createDrizzleResourceDocumentRepository(
-            context.database
-          ),
-        }),
-        search: createResourceSearchUseCase(
-          createDrizzleResourceSearchRepository(context.database)
-        ),
-      },
+      resourceLibrary: context.resourceLibrary.knowledgeQuery,
     })
   )
 }

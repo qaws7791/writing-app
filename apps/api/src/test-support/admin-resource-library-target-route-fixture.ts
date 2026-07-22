@@ -1,89 +1,91 @@
-import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { adminResourceDocumentDtoSchema } from "@workspace/contracts/resource-library/admin-resource-documents"
-import { adminResourceSearchItemDtoSchema } from "@workspace/contracts/resource-library/admin-resource-search"
-import { adminResourceTreeNodeDtoSchema } from "@workspace/contracts/resource-library/admin-resource-tree"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles } from "@workspace/identity/admin-actor"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import {
-  toResourceAssetId,
-  toResourceFolderId,
-} from "@workspace/core/resource-library"
-import type {
-  ResourceAssetUseCase,
-  ResourceDocumentUseCase,
-  ResourceSearchUseCase,
-  ResourceTreeUseCase,
-} from "@workspace/core/resource-library"
-
+  adminResourceAssetIdSchema,
+  adminResourceDocumentIdSchema,
+  adminResourceFolderIdSchema,
+} from "@workspace/contracts/resource-library/shared"
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
 } from "@workspace/identity/sessions"
+import { adminRoles } from "@workspace/identity/admin-actor"
+import { createResourceLibraryRoutes } from "@workspace/resource-library/http"
+
 import { createAdminApp } from "@/http/admin-app"
-import { createAdminResourceLibraryRoutes } from "@/modules/admin-resource-library/admin-resource-library.routes"
-import type { ResourceAssetStore } from "@/resource-assets/resource-asset-store"
 import type {
   AdminTargetRouteFixture,
   AdminTargetRouteFixtureJson,
 } from "@/test-support/admin-target-route-fixture"
 
+type ResourceRouteDependencies = Parameters<
+  typeof createResourceLibraryRoutes
+>[0]
+
 const fixtureNow = new Date("2026-07-18T00:00:00.000Z")
-const folderNode = adminResourceTreeNodeDtoSchema.parse({
-  hasChildren: true,
-  id: "folder-1",
-  kind: "folder",
-  name: "운영 자료",
-  parentId: null,
-  status: "active",
-})
-const documentNode = adminResourceTreeNodeDtoSchema.parse({
-  hasChildren: false,
-  id: "document-1",
-  kind: "document",
-  name: "운영 기준",
-  parentId: "folder-1",
-  status: "active",
-})
-const document = adminResourceDocumentDtoSchema.parse({
-  contentMarkdown: "본문",
-  createdAt: "2026-07-16T00:00:00.000Z",
-  createdBy: { email: "admin@example.com", id: "admin-1", name: "관리자" },
-  id: "document-1",
-  name: "운영 기준",
-  parentId: "folder-1",
-  path: [{ id: "folder-1", name: "운영 자료" }],
-  status: "active",
-  updatedAt: "2026-07-16T00:00:00.000Z",
-  updatedBy: { email: "admin@example.com", id: "admin-1", name: "관리자" },
-  version: 3,
-})
-const searchItem = adminResourceSearchItemDtoSchema.parse({
-  excerpt: "검색 결과",
-  id: "document-1",
-  name: "운영 기준",
-  path: [{ id: "folder-1", name: "운영 자료" }],
-  version: 3,
-})
-const assetId = toResourceAssetId("resource-asset-1")
+const adminId = adminIdSchema.parse("admin-1")
+const folderId = adminResourceFolderIdSchema.parse("folder-1")
+const documentId = adminResourceDocumentIdSchema.parse("document-1")
+const assetId = adminResourceAssetIdSchema.parse("resource-asset-1")
 const deletedObjectKey = "resource-library/document-1/resource-asset-1.png"
+const actorProfile = Object.freeze({
+  email: "admin@example.com",
+  id: adminId,
+  name: "관리자",
+})
+const folderNode = Object.freeze({
+  id: folderId,
+  kind: "folder" as const,
+  name: "운영 자료",
+  normalizedName: "운영 자료",
+  parentId: null,
+  status: "active" as const,
+  trashRootId: null,
+})
+const documentNode = Object.freeze({
+  id: documentId,
+  kind: "document" as const,
+  name: "운영 기준",
+  normalizedName: "운영 기준",
+  parentId: folderId,
+  status: "active" as const,
+  trashRootId: null,
+})
+const document = Object.freeze({
+  contentMarkdown: "본문",
+  createdAt: new Date("2026-07-16T00:00:00.000Z"),
+  createdBy: actorProfile,
+  id: documentId,
+  name: "운영 기준",
+  parentId: folderId,
+  path: Object.freeze([{ id: folderId, name: "운영 자료" }]),
+  status: "active" as const,
+  updatedAt: new Date("2026-07-16T00:00:00.000Z"),
+  updatedBy: actorProfile,
+  version: 3,
+})
+const searchItem = Object.freeze({
+  excerpt: "검색 결과",
+  id: documentId,
+  name: "운영 기준",
+  path: Object.freeze([{ id: folderId, name: "운영 자료" }]),
+  version: 3,
+})
 
 export function createAdminResourceLibraryTargetRouteFixture(
   scenario: string
 ): AdminTargetRouteFixture {
   const journal = createEffectJournal()
   const sessionResolver = createSessionResolver(scenario)
-  const assetStore = createAssetStore(journal)
   const app = createAdminApp({
-    capabilityRoutes: createAdminResourceLibraryRoutes({
-      assetService: createAssetService(journal),
-      assetStore,
-      documentService: createDocumentService(journal),
-      now: () => fixtureNow,
-      onObjectsDeleted: (objectKeys) => assetStore.deleteObjects(objectKeys),
-      searchService: createSearchService(journal),
-      sessionResolver,
-      treeService: createTreeService(journal),
+    capabilityRoutes: createResourceLibraryRoutes({
+      assetApplication: createAssetApplication(journal),
+      documentApplication: createDocumentApplication(journal),
+      documentQuery: createDocumentQuery(journal),
+      searchQuery: createSearchQuery(journal),
+      sessionPort: createResourceSessionPort(scenario),
+      treeApplication: createTreeApplication(journal),
     }),
     sessionResolver,
   })
@@ -98,103 +100,93 @@ export function createAdminResourceLibraryTargetRouteFixture(
   }
 }
 
-function createTreeService(journal: EffectJournal): ResourceTreeUseCase {
+function createTreeApplication(
+  journal: EffectJournal
+): ResourceRouteDependencies["treeApplication"] {
   return {
     async createDocument(input) {
       journal.record("tree.create-document", {
-        actorId: input.actorId,
-        now: input.now.toISOString(),
+        actorId: input.actor.id,
+        now: fixtureNow.toISOString(),
         parentId: input.parentId,
       })
-
       return { kind: "ok", value: { node: documentNode } }
     },
     async createFolder(input) {
       journal.record("tree.create-folder", {
-        actorId: input.actorId,
-        now: input.now.toISOString(),
+        actorId: input.actor.id,
+        now: fixtureNow.toISOString(),
         parentId: input.parentId,
       })
-
       return { kind: "ok", value: { node: folderNode } }
     },
     async deleteNodePermanently(input) {
       journal.record("tree.delete-permanently", {
-        actorId: input.actorId,
+        actorId: input.actor.id,
         nodeId: input.nodeId,
-        now: input.now.toISOString(),
+        now: fixtureNow.toISOString(),
       })
-
+      journal.record("assets.delete-objects", {
+        objectKeys: [deletedObjectKey],
+      })
       return {
         kind: "ok",
-        value: {
-          documentCount: 1,
-          folderCount: 2,
-          r2ObjectKeys: [deletedObjectKey],
-        },
+        value: { documentCount: 1, folderCount: 2 },
       }
-    },
-    async getTree(input) {
-      journal.record("tree.read", { scope: input.scope })
-      return { nodes: [folderNode, documentNode] }
     },
     async moveNode(input) {
       journal.record("tree.move", {
-        actorId: input.actorId,
+        actorId: input.actor.id,
         destinationParentId: input.destinationParentId,
         nodeId: input.nodeId,
-        now: input.now.toISOString(),
+        now: fixtureNow.toISOString(),
       })
-
       return {
         kind: "ok",
         value: {
-          node: {
+          node: Object.freeze({
             ...documentNode,
-            parentId:
-              input.destinationParentId === null
-                ? null
-                : toResourceFolderId(input.destinationParentId),
-          },
+            parentId: input.destinationParentId,
+          }),
         },
       }
     },
+    async readTree(scope) {
+      journal.record("tree.read", { scope })
+      return [
+        { hasChildren: true, node: folderNode },
+        { hasChildren: false, node: documentNode },
+      ]
+    },
     async renameFolder(input) {
       journal.record("tree.rename-folder", {
-        actorId: input.actorId,
+        actorId: input.actor.id,
         folderId: input.folderId,
         name: input.name,
-        now: input.now.toISOString(),
+        now: fixtureNow.toISOString(),
       })
-
       return {
         kind: "ok",
-        value: { node: { ...folderNode, name: input.name } },
+        value: { node: Object.freeze({ ...folderNode, name: input.name }) },
       }
     },
     async restoreNode(input) {
       journal.record("tree.restore", {
-        actorId: input.actorId,
+        actorId: input.actor.id,
         nodeId: input.nodeId,
-        now: input.now.toISOString(),
+        now: fixtureNow.toISOString(),
       })
-
       return {
         kind: "ok",
-        value: {
-          documentCount: 1,
-          folderCount: 1,
-          node: folderNode,
-        },
+        value: { documentCount: 1, folderCount: 1, node: folderNode },
       }
     },
     async trashNode(input) {
       journal.record("tree.trash", {
-        actorId: input.actorId,
+        actorId: input.actor.id,
         nodeId: input.nodeId,
-        now: input.now.toISOString(),
+        now: fixtureNow.toISOString(),
       })
-
       return {
         kind: "ok",
         value: { documentCount: 1, folderCount: 1 },
@@ -203,127 +195,135 @@ function createTreeService(journal: EffectJournal): ResourceTreeUseCase {
   }
 }
 
-function createDocumentService(
+function createDocumentApplication(
   journal: EffectJournal
-): ResourceDocumentUseCase {
+): ResourceRouteDependencies["documentApplication"] {
   return {
-    async exportDocument(input) {
-      journal.record("documents.export", { documentId: input.documentId })
-
-      return input.documentId === "missing"
-        ? { kind: "not-found" as const }
+    async exportDocument(requestedDocumentId) {
+      journal.record("documents.export", { documentId: requestedDocumentId })
+      return requestedDocumentId === "missing"
+        ? { kind: "resource-not-found", target: "document" }
         : {
-            kind: "ok" as const,
+            kind: "ok",
             value: {
               fileName: "운영 기준.md",
               markdown: "# 운영 기준\n\n본문",
             },
           }
     },
-    async getDocument(input) {
-      journal.record("documents.get", { documentId: input.documentId })
-      return input.documentId === "missing" ? null : document
-    },
     async importDocument(input) {
       journal.record("documents.import", {
-        actorId: input.actorId,
+        actorId: input.actor.id,
         fileName: input.fileName,
         markdown: input.markdown,
-        now: input.now.toISOString(),
+        now: fixtureNow.toISOString(),
         parentId: input.parentId,
       })
-
       return {
-        kind: "ok" as const,
+        kind: "ok",
         value: { document, node: documentNode },
       }
     },
     async saveDocument(input) {
       journal.record("documents.save", {
-        actorId: input.actorId,
+        actorId: input.actor.id,
         contentMarkdown: input.contentMarkdown,
         documentId: input.documentId,
         expectedVersion: input.expectedVersion,
         name: input.name,
-        now: input.now.toISOString(),
+        now: fixtureNow.toISOString(),
       })
-
       return {
-        document: {
+        kind: "ok",
+        value: Object.freeze({
           ...document,
           contentMarkdown: input.contentMarkdown,
           name: input.name,
-          updatedAt: fixtureNow.toISOString(),
+          updatedAt: fixtureNow,
           version: input.expectedVersion + 1,
-        },
-        kind: "ok" as const,
+        }),
       }
     },
   }
 }
 
-function createAssetService(journal: EffectJournal): ResourceAssetUseCase {
+function createDocumentQuery(
+  journal: EffectJournal
+): ResourceRouteDependencies["documentQuery"] {
   return {
-    createAssetId() {
-      return assetId
-    },
-    async registerImage(input) {
-      journal.record("assets.register-image", {
-        assetId: input.assetId,
-        byteSize: input.byteSize,
-        contentType: input.contentType,
-        createdAt: input.createdAt.toISOString(),
-        documentId: input.documentId,
-        objectKey: input.objectKey,
-      })
-
-      return { kind: "ok" as const }
+    async readDocument(requestedDocumentId) {
+      journal.record("documents.get", { documentId: requestedDocumentId })
+      return requestedDocumentId === "missing" ? null : document
     },
   }
 }
 
-function createSearchService(journal: EffectJournal): ResourceSearchUseCase {
+function createAssetApplication(
+  journal: EffectJournal
+): ResourceRouteDependencies["assetApplication"] {
+  return {
+    async uploadImage(input) {
+      journal.record("documents.get", { documentId: input.documentId })
+      journal.record("assets.put-object", {
+        byteSize: input.bytes.byteLength,
+        contentType: "image/png",
+        objectKey: deletedObjectKey,
+      })
+      journal.record("assets.register-image", {
+        assetId,
+        byteSize: input.bytes.byteLength,
+        contentType: "image/png",
+        createdAt: fixtureNow.toISOString(),
+        documentId: input.documentId,
+        objectKey: deletedObjectKey,
+      })
+      return {
+        kind: "ok",
+        value: {
+          asset: Object.freeze({
+            altText: input.altText,
+            byteSize: input.bytes.byteLength,
+            contentType: "image/png",
+            createdAt: fixtureNow,
+            documentId: input.documentId,
+            id: assetId,
+            objectKey: deletedObjectKey,
+            status: "active",
+          }),
+          url: "https://assets.example.test/resource-library/resource-asset-1.png",
+        },
+      }
+    },
+  }
+}
+
+function createSearchQuery(
+  journal: EffectJournal
+): ResourceRouteDependencies["searchQuery"] {
   return {
     async search(input) {
-      journal.record("search.resources", {
-        limit: input.limit,
-        query: input.query,
-      })
-
-      return { items: [searchItem] }
+      journal.record("search.resources", input)
+      return [searchItem]
     },
   }
 }
 
-function createAssetStore(journal: EffectJournal): ResourceAssetStore {
+function createResourceSessionPort(
+  scenario: string
+): ResourceRouteDependencies["sessionPort"] {
+  readScenarioRole(scenario)
   return {
-    async deleteObjects(objectKeys) {
-      journal.record("assets.delete-objects", {
-        objectKeys: [...objectKeys],
-      })
-    },
-    async putObject(input) {
-      journal.record("assets.put-object", {
-        byteSize: input.body.byteLength,
-        contentType: input.contentType,
-        objectKey: input.objectKey,
-      })
-
-      return {
-        url: "https://assets.example.test/resource-library/resource-asset-1.png",
-      }
+    async resolveActor(headers) {
+      return readAdminSessionToken(headers) === "admin-token"
+        ? Object.freeze({ ...actorProfile, access: "allowed" as const })
+        : null
     },
   }
 }
 
 function createSessionResolver(scenario: string): AdminSessionResolver {
   const session = {
-    admin: {
-      email: "admin@example.com",
-      id: adminIdSchema.parse("admin-1"),
-      name: "관리자",
-      role: readScenarioRole(scenario),
-    },
+    admin: { ...actorProfile, role: readScenarioRole(scenario) },
     [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
   } as const satisfies AdminAuthenticatedSession
 

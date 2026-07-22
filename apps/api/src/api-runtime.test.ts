@@ -12,6 +12,7 @@ describe("통합 API runtime composition root", () => {
     const capabilityDatabase = vi.fn()
     const contentDatabase = vi.fn()
     const identityDatabase = vi.fn()
+    const resourceLibraryDatabase = vi.fn()
 
     try {
       const runtime = assembleApiRuntime({
@@ -26,12 +27,14 @@ describe("통합 API runtime composition root", () => {
           content,
           database: db,
           identity,
+          resourceLibrary,
         }) {
           capabilityDatabase(db)
           expect(adminAuth).toBe("admin-auth")
           expect(adminSessionResolver).toBe("admin-session-resolver")
           expect(content).toBe("content")
           expect(identity).toBe("identity")
+          expect(resourceLibrary).toBe("resource-library")
           return "admin-capability-routes"
         },
         createAdminSessionResolver({ adminAuth, identity }) {
@@ -54,6 +57,10 @@ describe("통합 API runtime composition root", () => {
           expect(identity).toBe("identity")
           return "learner-core"
         },
+        createResourceLibrary(db) {
+          resourceLibraryDatabase(db)
+          return "resource-library"
+        },
         database: database.db,
       })
 
@@ -64,11 +71,13 @@ describe("통합 API runtime composition root", () => {
         content: "content",
         identity: "identity",
         learnerCore: "learner-core",
+        resourceLibrary: "resource-library",
       })
       expect(learnerDatabase).toHaveBeenCalledWith(database.db)
       expect(adminDatabase).toHaveBeenCalledWith(database.db)
       expect(identityDatabase).toHaveBeenCalledWith(database.db)
       expect(contentDatabase).toHaveBeenCalledWith(database.db)
+      expect(resourceLibraryDatabase).toHaveBeenCalledWith(database.db)
       expect(learnerDatabase.mock.calls[0]?.[0]).toBe(
         adminDatabase.mock.calls[0]?.[0]
       )
@@ -89,6 +98,7 @@ describe("통합 API runtime composition root", () => {
       createContent: () => ({}),
       createIdentity: () => ({}),
       createLearnerCore: () => ({}),
+      createResourceLibrary: () => ({}),
       database: database.db,
     })
 
@@ -102,6 +112,7 @@ describe("통합 API runtime composition root", () => {
     "content",
     "identity",
     "learner",
+    "resource",
     "admin",
     "session",
     "capability",
@@ -138,6 +149,12 @@ describe("통합 API runtime composition root", () => {
           },
           createLearnerCore() {
             if (failurePoint === "learner") throw new Error("learner 실패")
+            return {}
+          },
+          createResourceLibrary() {
+            if (failurePoint === "resource") {
+              throw new Error("resource 실패")
+            }
             return {}
           },
           database: database.db,

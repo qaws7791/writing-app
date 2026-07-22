@@ -30,6 +30,7 @@ type AdminNetworkApiError = {
 type ServerAdminApiErrorCode = Exclude<AdminApiErrorCode, "network-error">
 
 const serverCodeMap = {
+  CONTENT_CONFLICT: "stale-revision",
   FORBIDDEN: "forbidden",
   HTTP_EXCEPTION: "invalid-request",
   INVALID_REQUEST: "invalid-request",

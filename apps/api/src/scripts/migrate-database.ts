@@ -6,6 +6,7 @@ import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { normalizeVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import { runContentSchemaMigration } from "@workspace/content/schema"
 import { runAiFeedbackSchemaMigration } from "@workspace/ai-feedback/schema"
+import { runResourceLibrarySchemaMigration } from "@workspace/resource-library/migration"
 
 import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 
@@ -19,6 +20,7 @@ try {
   runContentSchemaMigration(client.sqlite)
   runAiFeedbackSchemaMigration(client.sqlite)
   runApiIdentitySchemaMigration(client.sqlite)
+  runResourceLibrarySchemaMigration(client.sqlite)
 } finally {
   client.close()
 }

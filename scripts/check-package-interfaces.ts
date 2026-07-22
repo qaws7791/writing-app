@@ -9,10 +9,6 @@ type PrivateImportScope = {
 
 const coreCapabilityFacades = [
   ["admin", "packages/core/src/modules/admin/api/index.ts"],
-  [
-    "resource-library",
-    "packages/core/src/modules/resource-library/api/index.ts",
-  ],
 ] as const
 
 type CoreCapabilityName = (typeof coreCapabilityFacades)[number][0]
@@ -53,6 +49,10 @@ const privateImportScopes: readonly PrivateImportScope[] = [
   {
     packageName: "@workspace/learning",
     root: "packages/modules/learning/src",
+  },
+  {
+    packageName: "@workspace/resource-library",
+    root: "packages/modules/resource-library/src",
   },
   {
     packageName: "@workspace/resource-document",
@@ -161,7 +161,7 @@ const expectedExports = {
     "./resource-library/data",
     "./resource-library/shared",
   ],
-  "packages/core/package.json": ["./admin", "./resource-library"],
+  "packages/core/package.json": ["./admin"],
   "packages/config/env/package.json": [
     "./local-runtime-defaults",
     "./parse-env",
@@ -225,6 +225,16 @@ const expectedExports = {
     "./ports",
     "./queries",
     "./reporting",
+    "./schema",
+  ],
+  "packages/modules/resource-library/package.json": [
+    "./commands",
+    "./http",
+    "./migration",
+    "./module",
+    "./ports",
+    "./queries",
+    "./reconciliation",
     "./schema",
   ],
   "packages/shared/resource-document/package.json": [
@@ -478,6 +488,7 @@ verifyP4IdentityOwnership()
 verifyP5ContentOwnership()
 verifyP6AiFeedbackOwnership()
 verifyP7LearningOwnership()
+verifyP8ResourceLibraryOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -1100,6 +1111,108 @@ function verifyP7LearningOwnership(): void {
   ) {
     failures.push(
       "packages/infra/db/src/schema/index.ts -> learning schema 재공개 금지"
+    )
+  }
+}
+
+function verifyP8ResourceLibraryOwnership(): void {
+  const removedResourceLibrarySources = [
+    "apps/api/src/adapters/resource-library/resource-asset-drizzle.repository.ts",
+    "apps/api/src/adapters/resource-library/resource-document-drizzle.repository.ts",
+    "apps/api/src/adapters/resource-library/resource-search-drizzle.repository.ts",
+    "apps/api/src/adapters/resource-library/resource-tree-drizzle.repository.ts",
+    "apps/api/src/modules/admin-resource-library/admin-resource-library.routes.ts",
+    "apps/api/src/modules/admin-resource-library/resource-documents.routes.ts",
+    "apps/api/src/modules/admin-resource-library/resource-search.routes.ts",
+    "apps/api/src/modules/admin-resource-library/resource-tree.routes.ts",
+    "apps/api/src/resource-assets/resource-asset-store.ts",
+    "apps/api/src/resource-assets/resource-image-file.ts",
+    "packages/core/src/modules/resource-library/api/index.ts",
+    "packages/infra/db/src/schema/resource.schema.ts",
+  ] as const
+
+  for (const sourcePath of removedResourceLibrarySources) {
+    if (fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(
+        `${sourcePath} -> 제거된 resource-library 소유권 source 재도입`
+      )
+    }
+  }
+
+  const moduleRoot = path.join(
+    repositoryRoot,
+    "packages/modules/resource-library/src"
+  )
+  for (const filePath of collectSourceFiles(moduleRoot)) {
+    for (const imported of readImports(filePath)) {
+      if (
+        imported.startsWith("@workspace/ai-feedback") ||
+        imported.startsWith("@workspace/auth") ||
+        imported.startsWith("@workspace/content") ||
+        imported.startsWith("@workspace/core") ||
+        imported.startsWith("@workspace/identity") ||
+        imported.startsWith("@workspace/learning") ||
+        imported.startsWith("@workspace/operations")
+      ) {
+        failures.push(
+          `${relativePath(filePath)} -> resource-library module의 다른 비즈니스 module 직접 의존 ${imported}`
+        )
+      }
+    }
+  }
+
+  const moduleSchemaPath =
+    "packages/modules/resource-library/src/infrastructure/persistence/schema.ts"
+  const moduleSchema = fs.readFileSync(
+    path.join(repositoryRoot, moduleSchemaPath),
+    "utf8"
+  )
+  if (/adminAuth|admin_user|@workspace\/auth/u.test(moduleSchema)) {
+    failures.push(
+      `${moduleSchemaPath} -> auth table·schema cross-module FK 소유 금지`
+    )
+  }
+  const referencedTables = [
+    ...moduleSchema.matchAll(/\.references\(\s*\(\)\s*=>\s*([A-Za-z0-9_]+)/gu),
+  ].map((match) => match[1] ?? "")
+  if (
+    referencedTables.length === 0 ||
+    referencedTables.some(
+      (table) =>
+        table !== "adminResourceNodes" && table !== "adminResourceDocuments"
+    )
+  ) {
+    failures.push(`${moduleSchemaPath} -> module 내부 FK만 허용`)
+  }
+
+  const dbSchemaIndex = fs.readFileSync(
+    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
+    "utf8"
+  )
+  if (
+    /resource\.schema|adminResource(?:Nodes|Documents|Assets)/u.test(
+      dbSchemaIndex
+    )
+  ) {
+    failures.push(
+      "packages/infra/db/src/schema/index.ts -> resource-library schema 재공개 금지"
+    )
+  }
+
+  const commandPortPath =
+    "packages/modules/resource-library/src/application/resource-document-command-port.ts"
+  const commandPortSource = fs.readFileSync(
+    path.join(repositoryRoot, commandPortPath),
+    "utf8"
+  )
+  if (
+    !commandPortSource.includes(
+      "export type { ResourceDocumentCommandPort }"
+    ) ||
+    /export\s*\{(?!\s*type)/u.test(commandPortSource)
+  ) {
+    failures.push(
+      `${commandPortPath} -> 관리자 AI에는 기존 document command type만 공개해야 함`
     )
   }
 }

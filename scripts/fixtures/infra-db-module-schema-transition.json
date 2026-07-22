@@ -1,4 +1,3 @@
 {
-  "packages/infra/db/src/schema/admin.schema.ts": "P9-020",
-  "packages/infra/db/src/schema/resource.schema.ts": "P8-019"
+  "packages/infra/db/src/schema/admin.schema.ts": "P9-020"
 }

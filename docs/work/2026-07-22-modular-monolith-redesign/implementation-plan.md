@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7 완료, P8 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8 완료, P9 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -55,7 +55,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P5. `content` 모듈을 전환한다.
 - [x] P6. `ai-feedback` 모듈을 전환한다. 증거: [P6 구현 증거](./p6-validation.md)
 - [x] P7. `learning` 모듈을 전환한다. 증거: [P7 구현 증거](./p7-validation.md)
-- [ ] P8. `resource-library` 모듈을 전환한다.
+- [x] P8. `resource-library` 모듈을 전환한다. 증거: [P8 구현 증거](./p8-validation.md)
 - [ ] P9. `operations` 모듈을 전환한다.
 - [ ] P10. API composition root와 lifecycle을 완성한다.
 - [ ] P11. 통합 schema, migration과 seed 경계를 완성한다.
@@ -566,43 +566,43 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 12.1 경계와 domain
 
-- [ ] P8-001 기존 resource core, route, repository, asset runtime과 document codec 소비를 확정한다. 증거:
-- [ ] P8-002 resource-library가 소유할 route, contract, table, asset metadata와 consumer를 확정한다. 증거:
-- [ ] P8-003 `packages/modules/resource-library` manifest, private alias, test config와 explicit exports를 만든다. 증거:
-- [ ] P8-004 tree node, document, asset와 trash 상태 entity를 정의한다. 증거:
-- [ ] P8-005 tree cycle, parent, sort와 ownership policy를 정의한다. 증거:
-- [ ] P8-006 Markdown 저장, ETag와 version conflict invariant를 정의한다. 증거:
-- [ ] P8-007 deterministic object key, MIME, byte size와 alt text policy를 정의한다. 증거:
-- [ ] P8-008 upload, delete와 reconciliation 상태 전이를 정의한다. 증거:
-- [ ] P8-009 not-found, forbidden, validation, conflict와 storage failure union을 정의한다. 증거:
-- [ ] P8-010 domain test에 tree cycle, stale ETag, trash와 asset policy를 포함한다. 증거:
+- [x] P8-001 기존 resource core, route, repository, asset runtime과 document codec 소비를 확정한다. 증거: [P8 경계와 소유권](./p8-validation.md#경계와-소유권)
+- [x] P8-002 resource-library가 소유할 route, contract, table, asset metadata와 consumer를 확정한다. 증거: [P8 경계와 소유권](./p8-validation.md#경계와-소유권)
+- [x] P8-003 `packages/modules/resource-library` manifest, private alias, test config와 explicit exports를 만든다. 증거: module `package.json`, `tsconfig.json`, `vitest.config.ts`
+- [x] P8-004 tree node, document, asset와 trash 상태 entity를 정의한다. 증거: `domain/resource-tree-node.ts`, `resource-document.ts`, `resource-asset.ts`
+- [x] P8-005 tree cycle, parent, sort와 ownership policy를 정의한다. 증거: `resource-tree-policy.ts`, `resource-access-policy.ts`
+- [x] P8-006 Markdown 저장, ETag와 version conflict invariant를 정의한다. 증거: document domain·application, `resource-library-etag.ts`
+- [x] P8-007 deterministic object key, MIME, byte size와 alt text policy를 정의한다. 증거: `resource-asset.ts`
+- [x] P8-008 upload, delete와 reconciliation 상태 전이를 정의한다. 증거: asset·tree application과 reconciliation
+- [x] P8-009 not-found, forbidden, validation, conflict와 storage failure union을 정의한다. 증거: `resource-library-error.ts`
+- [x] P8-010 domain test에 tree cycle, stale ETag, trash와 asset policy를 포함한다. 증거: resource tree·document·asset domain test
 
 ### 12.2 application과 persistence
 
-- [ ] P8-011 tree, document, search, asset와 reconciliation use case를 각각 분리한다. 증거:
-- [ ] P8-012 storage를 application port로 선언한다. 증거:
-- [ ] P8-013 upload를 `검증 → R2 → DB → 실패 시 보상 삭제` 순서로 구현한다. 증거:
-- [ ] P8-014 DB와 보상 삭제가 모두 실패할 때 orphan audit event를 기록한다. 증거:
-- [ ] P8-015 delete를 pending 상태, object 삭제와 metadata 완료 단계로 분리한다. 증거:
-- [ ] P8-016 reconciliation의 dry-run과 mutation command를 분리한다. 증거:
-- [ ] P8-017 관리자 AI가 기존 document command만 호출할 공개 application port를 제공한다. 증거:
-- [ ] P8-018 application test에 upload·DB·보상·delete 각 실패 조합을 포함한다. 증거:
-- [ ] P8-019 resource table, index와 module 내부 FK를 module schema로 이동한다. 증거:
-- [ ] P8-020 resource repository를 module infrastructure로 이동한다. 증거:
-- [ ] P8-021 storage adapter와 repository 통합 test를 외부 provider fake와 임시 SQLite로 분리한다. 증거:
+- [x] P8-011 tree, document, search, asset와 reconciliation use case를 각각 분리한다. 증거: application tree·document·asset·query·reconciliation source
+- [x] P8-012 storage를 application port로 선언한다. 증거: `application/ports/resource-library-ports.ts`
+- [x] P8-013 upload를 `검증 → R2 → DB → 실패 시 보상 삭제` 순서로 구현한다. 증거: asset application 순서·보상 test
+- [x] P8-014 DB와 보상 삭제가 모두 실패할 때 orphan audit event를 기록한다. 증거: asset application failure test와 API 구조화 logger composition
+- [x] P8-015 delete를 pending 상태, object 삭제와 metadata 완료 단계로 분리한다. 증거: tree application 순서·실패 test와 repository transaction
+- [x] P8-016 reconciliation의 dry-run과 mutation command를 분리한다. 증거: `resource-reconciliation.ts`와 test
+- [x] P8-017 관리자 AI가 기존 document command만 호출할 공개 application port를 제공한다. 증거: `./commands`의 `ResourceDocumentCommandPort`와 module `commands`
+- [x] P8-018 application test에 upload·DB·보상·delete 각 실패 조합을 포함한다. 증거: asset·tree application test
+- [x] P8-019 resource table, index와 module 내부 FK를 module schema로 이동한다. 증거: module `schema.ts`, `schema-migration.ts`
+- [x] P8-020 resource repository를 module infrastructure로 이동한다. 증거: module persistence의 tree·document·search·asset repository
+- [x] P8-021 storage adapter와 repository 통합 test를 외부 provider fake와 임시 SQLite로 분리한다. 증거: API storage adapter test, module temporary SQLite repository test
 
 ### 12.3 HTTP, 조립과 제거
 
-- [ ] P8-022 resource-library canonical contract를 context subpath로 전환한다. 증거:
-- [ ] P8-023 tree, document, search와 asset route를 module HTTP interface로 이동한다. 증거:
-- [ ] P8-024 모든 read·write에 admin authorization과 private no-store를 적용한다. 증거:
-- [ ] P8-025 ETag와 `If-Match` conflict를 canonical status·error로 mapping한다. 증거:
-- [ ] P8-026 upload의 MIME, size와 alt text validation을 HTTP와 domain 경계에서 검증한다. 증거:
-- [ ] P8-027 HTTP contract test에 stale ETag, forbidden, storage failure와 compensation 결과를 포함한다. 증거:
-- [ ] P8-028 `module.ts`에서 repository, storage, codec, use case, route와 command port를 조립한다. 증거:
-- [ ] P8-029 apps/api에서 storage infra와 validated config를 주입한다. 증거:
-- [ ] P8-030 기존 core resource-library, API adapter, resource-assets와 중복 route를 제거한다. 증거:
-- [ ] P8-031 P8 게이트: domain·application·repository·storage·HTTP·interface·architecture test와 admin resource flow가 통과한다. 증거:
+- [x] P8-022 resource-library canonical contract를 context subpath로 전환한다. 증거: `@workspace/contracts/resource-library/*` exports와 contract test
+- [x] P8-023 tree, document, search와 asset route를 module HTTP interface로 이동한다. 증거: module `interface/http`의 14개 route
+- [x] P8-024 모든 read·write에 admin authorization과 private no-store를 적용한다. 증거: 공통 resource session middleware와 전체 route metadata·response test
+- [x] P8-025 ETag와 `If-Match` conflict를 canonical status·error로 mapping한다. 증거: document route stale `412`·최신 ETag test
+- [x] P8-026 upload의 MIME, size와 alt text validation을 HTTP와 domain 경계에서 검증한다. 증거: asset domain test와 HTTP 선행 검증 test
+- [x] P8-027 HTTP contract test에 stale ETag, forbidden, storage failure와 compensation 결과를 포함한다. 증거: `resource-library-http.test.ts`
+- [x] P8-028 `module.ts`에서 repository, storage, codec, use case, route와 command port를 조립한다. 증거: resource-library `module.ts`
+- [x] P8-029 apps/api에서 storage infra와 validated config를 주입한다. 증거: `resource-library-module.composition.ts`와 adapter test
+- [x] P8-030 기존 core resource-library, API adapter, resource-assets와 중복 route를 제거한다. 증거: package interface 제거 경로 guard와 dead-code gate
+- [x] P8-031 P8 게이트: domain·application·repository·storage·HTTP·interface·architecture test와 admin resource flow가 통과한다. 증거: [P8 구현 증거](./p8-validation.md)
 
 ## 13. P9 — `operations` 모듈 전환
 

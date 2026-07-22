@@ -10,9 +10,9 @@ import { composeAdminAiChatRouteGroup } from "@/modules/admin-ai-chat/admin-ai-c
 import { composeAdminContentRouteGroup } from "@/modules/admin-content/admin-content.composition"
 import { composeAdminDashboardAnalyticsRouteGroup } from "@/modules/admin-dashboard-analytics/admin-dashboard-analytics.composition"
 import { composeAdminIdentityRouteGroup } from "@/modules/admin-identity/admin-identity.composition"
-import { composeAdminResourceLibraryRouteGroup } from "@/modules/admin-resource-library/admin-resource-library.composition"
 import { composeAdminSettingsRouteGroup } from "@/modules/admin-settings/admin-settings.composition"
 import type { AdminRouteCompositionContext } from "@/composition/admin-route-composition-context"
+import { createResourceAdminSessionPort } from "@/composition/resource-library-module.composition"
 
 export type { AdminRouteCompositionContext } from "@/composition/admin-route-composition-context"
 
@@ -24,7 +24,9 @@ export function createAdminCapabilityRouteGroupRegistry(
     dashboardAnalytics: composeAdminDashboardAnalyticsRouteGroup(context),
     content: composeAdminContentRouteGroup(context),
     identity: composeAdminIdentityRouteGroup(context),
-    resourceLibrary: composeAdminResourceLibraryRouteGroup(context),
+    resourceLibrary: context.resourceLibrary.createAdminRoutes(
+      createResourceAdminSessionPort(context.sessionResolver)
+    ),
     settings: composeAdminSettingsRouteGroup(context),
   })
 }

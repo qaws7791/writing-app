@@ -35,6 +35,7 @@
     "@workspace/http-platform": "workspace:*",
     "@workspace/identity": "workspace:*",
     "@workspace/observability": "workspace:*",
+    "@workspace/resource-library": "workspace:*",
     "@workspace/storage": "workspace:*",
     "@workspace/types": "workspace:*",
     "drizzle-orm": "catalog:",

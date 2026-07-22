@@ -94,6 +94,7 @@
         "@workspace/kernel": "workspace:*",
         "@workspace/learning": "workspace:*",
         "@workspace/observability": "workspace:*",
+        "@workspace/resource-library": "workspace:*",
         "@workspace/storage": "workspace:*",
         "@workspace/types": "workspace:*",
         "drizzle-orm": "catalog:",
@@ -209,8 +210,6 @@
       "dependencies": {
         "@workspace/contracts": "workspace:*",
         "@workspace/identity": "workspace:*",
-        "@workspace/resource-document": "workspace:*",
-        "@workspace/types": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -419,6 +418,29 @@
         "@workspace/event-contracts": "workspace:*",
         "@workspace/http-platform": "workspace:*",
         "@workspace/kernel": "workspace:*",
+        "@workspace/types": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "catalog:",
+        "vite-tsconfig-paths": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/modules/resource-library": {
+      "name": "@workspace/resource-library",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hono/zod-openapi": "catalog:",
+        "@workspace/contracts": "workspace:*",
+        "@workspace/db": "workspace:*",
+        "@workspace/http-platform": "workspace:*",
+        "@workspace/kernel": "workspace:*",
+        "@workspace/resource-document": "workspace:*",
         "@workspace/types": "workspace:*",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
@@ -1506,6 +1528,8 @@
     "@workspace/observability": ["@workspace/observability@workspace:packages/infra/observability"],
 
     "@workspace/resource-document": ["@workspace/resource-document@workspace:packages/shared/resource-document"],
+
+    "@workspace/resource-library": ["@workspace/resource-library@workspace:packages/modules/resource-library"],
 
     "@workspace/storage": ["@workspace/storage@workspace:packages/infra/storage"],
 

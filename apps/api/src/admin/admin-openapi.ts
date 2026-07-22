@@ -49,7 +49,6 @@ export {
   eventStreamResponse,
   jsonResponse,
   markdownResponse,
-  multipartRequestBody,
 } from "@workspace/http-platform/openapi"
 
 export function errorJsonResponse(description: string) {

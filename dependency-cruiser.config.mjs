@@ -178,12 +178,11 @@ const config = {
       severity: "error",
       from: { path: "^packages/core/src/" },
       to: {
-        path: "^packages/shared/contracts/src/(identity|learning|operations|resource-library)/",
+        path: "^packages/shared/contracts/src/(identity|learning|operations)/",
         pathNot: [
           "^packages/shared/contracts/src/identity/(data|status)\\.ts$",
           "^packages/shared/contracts/src/learning/(read-data|status|step-data)\\.ts$",
           "^packages/shared/contracts/src/operations/(ai-chat-data|content-reset-data|dashboard-analytics-data|settings-data)\\.ts$",
-          "^packages/shared/contracts/src/resource-library/data\\.ts$",
         ],
       },
     },
@@ -329,8 +328,7 @@ const config = {
       from: { path: "^apps/api/src/" },
       to: {
         path: "^packages/core/src/",
-        pathNot:
-          "^packages/core/src/modules/(admin|auth|content|learning|resource-library)/api/index\\.ts$",
+        pathNot: "^packages/core/src/modules/admin/api/index\\.ts$",
       },
     },
     {

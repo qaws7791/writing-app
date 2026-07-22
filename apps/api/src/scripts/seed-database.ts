@@ -9,6 +9,7 @@ import { seedContentDatabase } from "@workspace/content/seed"
 import { normalizeVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import { runContentSchemaMigration } from "@workspace/content/schema"
 import { runAiFeedbackSchemaMigration } from "@workspace/ai-feedback/schema"
+import { runResourceLibrarySchemaMigration } from "@workspace/resource-library/migration"
 
 import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 
@@ -30,6 +31,7 @@ try {
   runAiFeedbackSchemaMigration(client.sqlite)
   await seedContentDatabase(client.db)
   runApiIdentitySchemaMigration(client.sqlite)
+  runResourceLibrarySchemaMigration(client.sqlite)
   seedLearnerIdentity(client.db, {
     displayName: "글쓰기 탐험가",
     userId: userIdSchema.parse("user-1"),
