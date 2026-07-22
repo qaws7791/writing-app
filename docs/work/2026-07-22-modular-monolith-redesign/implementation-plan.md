@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5 완료, P6 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6 완료, P7 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -53,7 +53,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P3. infra package 기반을 구축한다.
 - [x] P4. `identity` 모듈을 전환한다.
 - [x] P5. `content` 모듈을 전환한다.
-- [ ] P6. `ai-feedback` 모듈을 전환한다.
+- [x] P6. `ai-feedback` 모듈을 전환한다. 증거: [P6 구현 증거](./p6-validation.md)
 - [ ] P7. `learning` 모듈을 전환한다.
 - [ ] P8. `resource-library` 모듈을 전환한다.
 - [ ] P9. `operations` 모듈을 전환한다.
@@ -477,40 +477,40 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 10.1 경계와 domain
 
-- [ ] P6-001 기존 AI feedback core, provider adapter, attempt repository와 route를 확정한다. 증거:
-- [ ] P6-002 ai-feedback이 소유할 contract, table, 제한 정책과 consumer를 확정한다. 증거:
-- [ ] P6-003 `packages/modules/ai-feedback` manifest, private alias, test config와 explicit exports를 만든다. 증거:
-- [ ] P6-004 coaching prompt policy와 입력 최소화 규칙을 domain으로 이동한다. 증거:
-- [ ] P6-005 attempt 제한, 상태와 재시도 가능성 invariant를 정의한다. 증거:
-- [ ] P6-006 provider response validation과 허용 결과를 정의한다. 증거:
-- [ ] P6-007 quota, provider unavailable, timeout과 invalid response 오류 union을 정의한다. 증거:
-- [ ] P6-008 domain test에 attempt 허용·거부와 prompt 최소화를 포함한다. 증거:
+- [x] P6-001 기존 AI feedback core, provider adapter, attempt repository와 route를 확정한다. 증거: [P6 경계와 소유권](./p6-validation.md#경계와-소유권)
+- [x] P6-002 ai-feedback이 소유할 contract, table, 제한 정책과 consumer를 확정한다. 증거: [P6 경계와 소유권](./p6-validation.md#경계와-소유권)
+- [x] P6-003 `packages/modules/ai-feedback` manifest, private alias, test config와 explicit exports를 만든다. 증거: `packages/modules/ai-feedback/package.json`, `tsconfig.json`, `vitest.config.ts`
+- [x] P6-004 coaching prompt policy와 입력 최소화 규칙을 domain으로 이동한다. 증거: `ai-feedback-prompt.ts`와 prompt 최소화 test
+- [x] P6-005 attempt 제한, 상태와 재시도 가능성 invariant를 정의한다. 증거: `ai-feedback-attempt.ts`
+- [x] P6-006 provider response validation과 허용 결과를 정의한다. 증거: `ai-feedback.ts`와 strict response test
+- [x] P6-007 quota, provider unavailable, timeout과 invalid response 오류 union을 정의한다. 증거: `ai-feedback-error.ts`
+- [x] P6-008 domain test에 attempt 허용·거부와 prompt 최소화를 포함한다. 증거: `ai-feedback.test.ts`, `ai-feedback-prompt.test.ts`
 
 ### 10.2 application과 persistence
 
-- [ ] P6-009 AI provider를 application port로 선언한다. 증거:
-- [ ] P6-010 learning이 주입받을 `requestFeedback` application port를 공개한다. 증거:
-- [ ] P6-011 provider I/O와 DB transaction을 분리한 orchestration을 구현한다. 증거:
-- [ ] P6-012 provider 성공 뒤 attempt 저장 실패의 의미와 보상 가능성을 명시한다. 증거:
-- [ ] P6-013 provider SDK retry, module retry와 quota 영향이 중복되지 않게 한다. 증거:
-- [ ] P6-014 application test에 timeout, abort, provider error, invalid response와 persistence error를 포함한다. 증거:
-- [ ] P6-015 feedback attempt table과 index를 module schema로 이동한다. 증거:
-- [ ] P6-016 branded learner·lesson ID만 저장하고 cross-module FK를 제거한다. 증거:
-- [ ] P6-017 attempt repository를 module infrastructure로 이동한다. 증거:
-- [ ] P6-018 `@workspace/ai`를 사용하는 module-local provider adapter를 이동한다. 증거:
-- [ ] P6-019 repository와 provider adapter 통합 test를 각각 격리한다. 증거:
+- [x] P6-009 AI provider를 application port로 선언한다. 증거: `application/ports/ai-feedback-provider.ts`
+- [x] P6-010 learning이 주입받을 `requestFeedback` application port를 공개한다. 증거: `application/ai-feedback-application.ts`, `@workspace/ai-feedback/application`
+- [x] P6-011 provider I/O와 DB transaction을 분리한 orchestration을 구현한다. 증거: application orchestration과 provider-I/O transaction 격리 test
+- [x] P6-012 provider 성공 뒤 attempt 저장 실패의 의미와 보상 가능성을 명시한다. 증거: [P6 선택과 trade-off](./p6-validation.md#선택과-trade-off), persistence 실패·composition replay test
+- [x] P6-013 provider SDK retry, module retry와 quota 영향이 중복되지 않게 한다. 증거: `createOpenAiClient({ maxRetries: 0 })` composition과 AI infra test
+- [x] P6-014 application test에 timeout, abort, provider error, invalid response와 persistence error를 포함한다. 증거: `ai-feedback-application.test.ts`
+- [x] P6-015 feedback attempt table과 index를 module schema로 이동한다. 증거: `infrastructure/persistence/schema.ts`
+- [x] P6-016 branded learner·lesson ID만 저장하고 cross-module FK를 제거한다. 증거: module schema migration·repository 통합 test와 package interface guard
+- [x] P6-017 attempt repository를 module infrastructure로 이동한다. 증거: `ai-feedback-drizzle-repository.ts`
+- [x] P6-018 `@workspace/ai`를 사용하는 module-local provider adapter를 이동한다. 증거: `infrastructure/adapters/openai-feedback-provider.ts`
+- [x] P6-019 repository와 provider adapter 통합 test를 각각 격리한다. 증거: `ai-feedback-drizzle-repository.test.ts`, `openai-feedback-provider.test.ts`
 
 ### 10.3 HTTP, 조립과 제거
 
-- [ ] P6-020 ai-feedback canonical contract와 안정된 제한 error code를 확정한다. 증거:
-- [ ] P6-021 독립 route가 제품 요구상 필요한지 확인하고 learning command와 중복되지 않게 한다. 증거:
-- [ ] P6-022 유지되는 route를 module HTTP interface로 이동한다. 증거:
-- [ ] P6-023 제한 응답에 올바른 `Retry-After`를 제공한다. 증거:
-- [ ] P6-024 provider 원문과 prompt가 HTTP response·log에 노출되지 않는 test를 추가한다. 증거:
-- [ ] P6-025 `module.ts`에서 provider adapter, repository, use case와 공개 application port를 조립한다. 증거:
-- [ ] P6-026 apps/api에서 AI infra와 validated config를 주입한다. 증거:
-- [ ] P6-027 기존 core ai-feedback, API adapter와 중복 route를 제거한다. 증거:
-- [ ] P6-028 P6 게이트: domain·application·repository·provider·HTTP·interface·architecture test와 관련 API build가 통과한다. 증거:
+- [x] P6-020 ai-feedback canonical contract와 안정된 제한 error code를 확정한다. 증거: `@workspace/contracts/ai-feedback/*`와 learner API contract test
+- [x] P6-021 독립 route가 제품 요구상 필요한지 확인하고 learning command와 중복되지 않게 한다. 증거: [REQ-LRN-6](../../product/requirements/platform/req-lrn-6-ai-coaching.md)과 기존 step-scoped canonical path parity test
+- [x] P6-022 유지되는 route를 module HTTP interface로 이동한다. 증거: `interface/http/ai-feedback-routes.ts`
+- [x] P6-023 제한 응답에 올바른 `Retry-After`를 제공한다. 증거: pending lease HTTP contract test와 [API contract](../../engineering/api-contract.md)
+- [x] P6-024 provider 원문과 prompt가 HTTP response·log에 노출되지 않는 test를 추가한다. 증거: application observer·provider adapter·HTTP 비노출 test
+- [x] P6-025 `module.ts`에서 provider adapter, repository, use case와 공개 application port를 조립한다. 증거: `packages/modules/ai-feedback/src/module.ts`
+- [x] P6-026 apps/api에서 AI infra와 validated config를 주입한다. 증거: `ai-feedback-module.composition.ts`, API runtime과 composition replay test
+- [x] P6-027 기존 core ai-feedback, API adapter와 중복 route를 제거한다. 증거: P6 ownership interface guard, dependency graph와 dead-code gate
+- [x] P6-028 P6 게이트: domain·application·repository·provider·HTTP·interface·architecture test와 관련 API build가 통과한다. 증거: [P6 구현 증거](./p6-validation.md)
 
 ## 11. P7 — `learning` 모듈 전환
 

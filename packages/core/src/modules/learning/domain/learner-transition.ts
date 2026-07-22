@@ -11,8 +11,6 @@ import type {
   LessonLearningState,
   StepEvaluation,
 } from "@workspace/contracts/learning/step-data"
-import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback/feedback"
-
 type InProgressLessonLearningState = Extract<
   LessonLearningState,
   { readonly status: "in_progress" }
@@ -53,8 +51,6 @@ export type LearnerStepCompletion =
     }
 
 export type CompleteLearnerAiFeedbackCommand = {
-  readonly attemptId: string
-  readonly feedback: AiFeedbackPayload
   readonly lessonId: LessonId
   readonly occurredAt: Date
   readonly stepId: LessonStepId
@@ -68,8 +64,11 @@ export type PrepareLearnerAiFeedbackCommand = Pick<
 
 export type LearnerAiFeedbackContext = {
   readonly answer: string
+  readonly courseId: CourseId
+  readonly curriculumVersionId: CurriculumVersionId
   readonly focus: string
   readonly lessonTitle: string
+  readonly showScore: boolean
 }
 
 export type LearnerTransitionError =

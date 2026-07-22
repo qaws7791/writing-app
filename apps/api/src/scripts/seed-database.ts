@@ -8,6 +8,7 @@ import { seedLearnerIdentity } from "@workspace/identity/seed"
 import { seedContentDatabase } from "@workspace/content/seed"
 import { normalizeVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import { runContentSchemaMigration } from "@workspace/content/schema"
+import { runAiFeedbackSchemaMigration } from "@workspace/ai-feedback/schema"
 
 import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 
@@ -26,6 +27,7 @@ await seedDatabase({
 const client = createWritingAppDatabase(databaseUrl)
 try {
   runContentSchemaMigration(client.sqlite)
+  runAiFeedbackSchemaMigration(client.sqlite)
   await seedContentDatabase(client.db)
   runApiIdentitySchemaMigration(client.sqlite)
   seedLearnerIdentity(client.db, {

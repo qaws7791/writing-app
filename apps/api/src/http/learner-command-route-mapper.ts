@@ -1,11 +1,4 @@
-import type {
-  CompleteLearnerStepResult,
-  LearnerAiFeedbackTransitionResult as LearnerAiFeedbackTransitionResponse,
-} from "@workspace/contracts/learning/learner-transition"
-import type {
-  AiFeedbackServiceError,
-  LearnerAiFeedbackTransitionResult,
-} from "@workspace/core/ai-feedback"
+import type { CompleteLearnerStepResult } from "@workspace/contracts/learning/learner-transition"
 import type {
   CompleteLearnerStepTransitionResult,
   LearnerTransitionError,
@@ -14,7 +7,7 @@ import type {
 import type { Result } from "@workspace/kernel/result"
 import { AppError } from "@workspace/http-platform/errors"
 
-type LearnerCommandError = AiFeedbackServiceError | LearnerTransitionError
+type LearnerCommandError = LearnerTransitionError
 
 export function unwrapLearnerStartLessonResult(
   result: Result<StartLearnerLessonResult, LearnerTransitionError>
@@ -26,20 +19,6 @@ export function unwrapLearnerCompleteStepResult(
   result: Result<CompleteLearnerStepTransitionResult, LearnerTransitionError>
 ): CompleteLearnerStepResult {
   return toCompleteStepResponse(unwrapLearnerCommandResult(result))
-}
-
-export function unwrapLearnerAiFeedbackTransitionResult(
-  result: Result<
-    LearnerAiFeedbackTransitionResult<CompleteLearnerStepTransitionResult>,
-    LearnerCommandError
-  >
-): LearnerAiFeedbackTransitionResponse {
-  const applicationResult = unwrapLearnerCommandResult(result)
-
-  return {
-    feedback: applicationResult.feedback,
-    transition: toCompleteStepResponse(applicationResult.transition),
-  }
 }
 
 function unwrapLearnerCommandResult<TValue>(
@@ -102,18 +81,6 @@ function mapLearnerCommandError(error: LearnerCommandError): AppError {
         message: "학습 콘텐츠 버전이 변경되었습니다.",
         status: 409,
       })
-    case "attempt-limit-exceeded":
-      return new AppError({
-        code: "ATTEMPT_LIMIT_EXCEEDED",
-        message: "AI 코칭 시도 횟수를 모두 사용했습니다.",
-        status: 429,
-      })
-    case "attempt-in-progress":
-      return new AppError({
-        code: "ATTEMPT_IN_PROGRESS",
-        message: "AI 코칭 요청을 처리하고 있습니다.",
-        status: 409,
-      })
     case "feedback-answer-not-found":
       return new AppError({
         code: "AI_FEEDBACK_ANSWER_NOT_FOUND",
@@ -131,12 +98,6 @@ function mapLearnerCommandError(error: LearnerCommandError): AppError {
         code: "STEP_SEQUENCE_CONFLICT",
         message: "현재 학습 순서와 요청한 단계가 다릅니다.",
         status: 409,
-      })
-    case "provider-failed":
-      return new AppError({
-        code: "PROVIDER_UNAVAILABLE",
-        message: "AI 코칭을 잠시 사용할 수 없습니다.",
-        status: 503,
       })
   }
 }

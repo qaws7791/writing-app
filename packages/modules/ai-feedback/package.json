@@ -1,0 +1,40 @@
+{
+  "name": "@workspace/ai-feedback",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#ai-feedback/*": "./src/*"
+  },
+  "exports": {
+    "./application": "./src/application/ai-feedback-application.ts",
+    "./http": "./src/interface/http/ai-feedback-http.ts",
+    "./module": "./src/module.ts",
+    "./ports": "./src/application/ports/ai-feedback-provider.ts",
+    "./provider": "./src/infrastructure/adapters/openai-feedback-provider.ts",
+    "./schema": "./src/infrastructure/persistence/schema.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "catalog:",
+    "@workspace/ai": "workspace:*",
+    "@workspace/contracts": "workspace:*",
+    "@workspace/db": "workspace:*",
+    "@workspace/http-platform": "workspace:*",
+    "@workspace/kernel": "workspace:*",
+    "@workspace/types": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  }
+}

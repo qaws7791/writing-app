@@ -23,7 +23,6 @@ import {
 } from "@workspace/contracts/content/ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
-  aiFeedbackAttempts,
   learnerActivityDays,
   learnerCourseProgress,
   learnerLessonAnswers,
@@ -53,6 +52,7 @@ import {
   type CompleteLearnerStepCommand,
   type CompleteLearnerStepTransitionResult,
   type LearnerLessonScope,
+  type LearnerAiFeedbackContext,
   type LearnerTransitionError,
   type LearnerTransitionRepository,
   type LearningDateKey,
@@ -114,14 +114,7 @@ export function createDrizzleLearnerTransitionRepository(
 function prepareAiFeedback(
   db: WritingAppDatabase,
   command: PrepareLearnerAiFeedbackCommand
-): Result<
-  {
-    readonly answer: string
-    readonly focus: string
-    readonly lessonTitle: string
-  },
-  LearnerTransitionError
-> {
+): Result<LearnerAiFeedbackContext, LearnerTransitionError> {
   const scope = findPinnedLessonScope(db, command)
   const snapshot: PrepareAiFeedbackTargetSnapshot =
     scope === null
@@ -173,6 +166,8 @@ function prepareAiFeedback(
     .get()
   return decidePrepareAiFeedbackContext(command, target, {
     answer: parseStoredAnswer(answerRow?.answerJson),
+    courseId: scope.courseId,
+    curriculumVersionId: scope.curriculumVersionId,
     lessonTitle: lesson?.title ?? null,
   })
 }
@@ -502,24 +497,7 @@ function completeAiFeedbackStep(
   const lessons = readOrderedLessons(transaction, scope)
   const steps = readLessonSteps(transaction, scope)
   const progress = readLessonProgress(transaction, command.userId, scope)
-  const attempt = transaction
-    .select({ status: aiFeedbackAttempts.status })
-    .from(aiFeedbackAttempts)
-    .where(
-      and(
-        eq(aiFeedbackAttempts.id, command.attemptId),
-        eq(aiFeedbackAttempts.userId, command.userId),
-        eq(aiFeedbackAttempts.curriculumVersionId, scope.curriculumVersionId),
-        eq(aiFeedbackAttempts.lessonId, command.lessonId),
-        eq(aiFeedbackAttempts.stepId, command.stepId)
-      )
-    )
-    .get()
   const snapshot: FinalizeAiFeedbackSnapshot = {
-    attempt:
-      attempt?.status === "pending" || attempt?.status === "succeeded"
-        ? "finalizable"
-        : "not-finalizable",
     isUnlocked: isLessonUnlocked(transaction, command.userId, scope, lessons),
     kind: "lesson",
     progress: toAiFeedbackProgressSnapshot(progress),
@@ -527,21 +505,6 @@ function completeAiFeedbackStep(
   }
   const decision = decideFinalizeAiFeedback(command, snapshot)
   if (decision.kind === "rejected") return err(decision.error)
-
-  transaction
-    .update(aiFeedbackAttempts)
-    .set({
-      resultJson: JSON.stringify(command.feedback),
-      status: "succeeded",
-      updatedAt: command.occurredAt,
-    })
-    .where(
-      and(
-        eq(aiFeedbackAttempts.id, command.attemptId),
-        eq(aiFeedbackAttempts.status, "pending")
-      )
-    )
-    .run()
 
   switch (decision.kind) {
     case "replay-completed":

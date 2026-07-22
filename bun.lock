@@ -80,6 +80,7 @@
       "dependencies": {
         "@hono/zod-openapi": "catalog:",
         "@workspace/ai": "workspace:*",
+        "@workspace/ai-feedback": "workspace:*",
         "@workspace/auth": "workspace:*",
         "@workspace/content": "workspace:*",
         "@workspace/contracts": "workspace:*",
@@ -210,7 +211,6 @@
         "@workspace/kernel": "workspace:*",
         "@workspace/resource-document": "workspace:*",
         "@workspace/types": "workspace:*",
-        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -340,6 +340,28 @@
       "devDependencies": {
         "@workspace/typescript-config": "workspace:*",
         "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/modules/ai-feedback": {
+      "name": "@workspace/ai-feedback",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hono/zod-openapi": "catalog:",
+        "@workspace/ai": "workspace:*",
+        "@workspace/contracts": "workspace:*",
+        "@workspace/db": "workspace:*",
+        "@workspace/http-platform": "workspace:*",
+        "@workspace/kernel": "workspace:*",
+        "@workspace/types": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "catalog:",
+        "vite-tsconfig-paths": "catalog:",
         "vitest": "catalog:",
       },
     },
@@ -1423,6 +1445,8 @@
     "@workspace/admin": ["@workspace/admin@workspace:apps/admin"],
 
     "@workspace/ai": ["@workspace/ai@workspace:packages/infra/ai"],
+
+    "@workspace/ai-feedback": ["@workspace/ai-feedback@workspace:packages/modules/ai-feedback"],
 
     "@workspace/api": ["@workspace/api@workspace:apps/api"],
 

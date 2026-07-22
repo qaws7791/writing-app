@@ -1,16 +1,12 @@
 import { sql } from "drizzle-orm"
 import {
   check,
-  foreignKey,
   index,
   integer,
   sqliteTable,
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core"
-
-import { authUsers } from "@workspace/auth/schema"
-import { learnerCourseProgress } from "#db/schema/learning.schema"
 
 export const aiFeedbackAttempts = sqliteTable(
   "ai_feedback_attempts",
@@ -30,20 +26,9 @@ export const aiFeedbackAttempts = sqliteTable(
     }).notNull(),
     stepId: text("step_id").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
   },
   (table) => [
-    foreignKey({
-      columns: [table.userId, table.courseId, table.curriculumVersionId],
-      foreignColumns: [
-        learnerCourseProgress.userId,
-        learnerCourseProgress.courseId,
-        learnerCourseProgress.curriculumVersionId,
-      ],
-      name: "ai_feedback_attempts_course_progress_fk",
-    }).onDelete("cascade"),
     check(
       "ai_feedback_attempts_status_check",
       sql`${table.status} IN ('pending', 'succeeded', 'failed', 'expired')`
@@ -74,3 +59,8 @@ export const aiFeedbackAttempts = sqliteTable(
     index("ai_feedback_attempts_expiry_idx").on(table.status, table.expiresAt),
   ]
 )
+
+export {
+  assertAiFeedbackMigrationPrerequisites,
+  runAiFeedbackSchemaMigration,
+} from "#ai-feedback/infrastructure/persistence/schema-migration"

@@ -9,7 +9,6 @@ type PrivateImportScope = {
 
 const coreCapabilityFacades = [
   ["admin", "packages/core/src/modules/admin/api/index.ts"],
-  ["ai-feedback", "packages/core/src/modules/ai-feedback/api/index.ts"],
   ["learning", "packages/core/src/modules/learning/api/index.ts"],
   [
     "resource-library",
@@ -30,6 +29,10 @@ const failures: string[] = []
 const privateImportScopes: readonly PrivateImportScope[] = [
   { packageName: "@workspace/auth", root: "packages/infra/auth/src" },
   { packageName: "@workspace/core", root: "packages/core/src" },
+  {
+    packageName: "@workspace/ai-feedback",
+    root: "packages/modules/ai-feedback/src",
+  },
   {
     packageName: "@workspace/content",
     root: "packages/modules/content/src",
@@ -155,12 +158,7 @@ const expectedExports = {
     "./resource-library/data",
     "./resource-library/shared",
   ],
-  "packages/core/package.json": [
-    "./admin",
-    "./ai-feedback",
-    "./learning",
-    "./resource-library",
-  ],
+  "packages/core/package.json": ["./admin", "./learning", "./resource-library"],
   "packages/config/env/package.json": [
     "./local-runtime-defaults",
     "./parse-env",
@@ -206,6 +204,14 @@ const expectedExports = {
     "./queries",
     "./schema",
     "./seed",
+  ],
+  "packages/modules/ai-feedback/package.json": [
+    "./application",
+    "./http",
+    "./module",
+    "./ports",
+    "./provider",
+    "./schema",
   ],
   "packages/shared/resource-document/package.json": [
     "./resource-horizontal-rule",
@@ -456,6 +462,7 @@ if (!httpJsonTransportSource.includes("input.schema.safeParse")) {
 verifyP3InfrastructureOwnership()
 verifyP4IdentityOwnership()
 verifyP5ContentOwnership()
+verifyP6AiFeedbackOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -923,6 +930,82 @@ function verifyP5ContentOwnership(): void {
   if (/content\.schema/u.test(dbSchemaIndex)) {
     failures.push(
       "packages/infra/db/src/schema/index.ts -> content schema 재공개 금지"
+    )
+  }
+}
+
+function verifyP6AiFeedbackOwnership(): void {
+  const removedAiFeedbackSources = [
+    "apps/api/src/adapters/ai-feedback/ai-feedback-drizzle.repository.ts",
+    "apps/api/src/adapters/ai-feedback/openai-feedback-provider.ts",
+    "apps/api/src/modules/ai-feedback/ai-feedback.routes.ts",
+    "apps/api/src/modules/ai-feedback/ai-feedback.schemas.ts",
+    "packages/core/src/modules/ai-feedback/api/index.ts",
+    "packages/infra/db/src/schema/feedback.schema.ts",
+  ] as const
+
+  for (const sourcePath of removedAiFeedbackSources) {
+    if (fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(`${sourcePath} -> 제거된 ai-feedback 소유권 source 재도입`)
+    }
+  }
+
+  const moduleRoot = path.join(
+    repositoryRoot,
+    "packages/modules/ai-feedback/src"
+  )
+  for (const filePath of collectSourceFiles(moduleRoot)) {
+    for (const imported of readImports(filePath)) {
+      if (
+        imported.startsWith("@workspace/auth") ||
+        imported.startsWith("@workspace/content") ||
+        imported.startsWith("@workspace/core") ||
+        imported.startsWith("@workspace/identity")
+      ) {
+        failures.push(
+          `${relativePath(filePath)} -> ai-feedback module의 다른 비즈니스 module 직접 의존 ${imported}`
+        )
+      }
+    }
+  }
+
+  const moduleSchema = fs.readFileSync(
+    path.join(
+      repositoryRoot,
+      "packages/modules/ai-feedback/src/infrastructure/persistence/schema.ts"
+    ),
+    "utf8"
+  )
+  if (/\bforeignKey\s*\(|\.references\s*\(/u.test(moduleSchema)) {
+    failures.push(
+      "packages/modules/ai-feedback/src/infrastructure/persistence/schema.ts -> cross-module FK 금지"
+    )
+  }
+
+  const dbSchemaIndex = fs.readFileSync(
+    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
+    "utf8"
+  )
+  if (/feedback\.schema|aiFeedbackAttempts/u.test(dbSchemaIndex)) {
+    failures.push(
+      "packages/infra/db/src/schema/index.ts -> AI feedback schema 재공개 금지"
+    )
+  }
+
+  const learningRepository = fs.readFileSync(
+    path.join(
+      repositoryRoot,
+      "apps/api/src/adapters/learning/learner-transition-drizzle.repository.ts"
+    ),
+    "utf8"
+  )
+  if (
+    /aiFeedbackAttempts|@workspace\/ai-feedback\/schema/u.test(
+      learningRepository
+    )
+  ) {
+    failures.push(
+      "apps/api/src/adapters/learning/learner-transition-drizzle.repository.ts -> AI attempt table 직접 접근 금지"
     )
   }
 }

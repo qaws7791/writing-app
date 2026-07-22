@@ -1,14 +1,13 @@
 import { z } from "zod"
 
 import { lessonIdSchema, lessonStepIdSchema } from "#contracts/content/ids"
-import { learnerIdSchema } from "#contracts/learning/ids"
 
-export const aiFeedbackAnswerMaxLength = 20_000
 export const aiFeedbackIdempotencyKeySchema = z
   .string()
   .min(1)
   .max(128)
   .regex(/^[A-Za-z0-9._:-]+$/)
+
 const aiFeedbackOutputTextMaxLength = 4_000
 const aiFeedbackOutputCollectionMaxLength = 20
 const nonEmptyTextSchema = z
@@ -23,12 +22,8 @@ export const aiFeedbackPayloadSchema = z.strictObject({
     .min(1)
     .max(aiFeedbackOutputCollectionMaxLength),
   nextAction: nonEmptyTextSchema,
-  score: z.number().int().nonnegative(),
-  scoreRange: z
-    .tuple([z.number().int().nonnegative(), z.number().int().positive()])
-    .refine(([min, max]) => min < max, {
-      message: "scoreRange는 최소값이 최대값보다 작아야 합니다.",
-    }),
+  score: z.number().int().min(0).max(100),
+  scoreRange: z.tuple([z.literal(0), z.literal(100)]),
   showScore: z.boolean(),
   strengths: z
     .array(nonEmptyTextSchema)
@@ -41,23 +36,27 @@ export const aiFeedbackResultDtoSchema = aiFeedbackPayloadSchema.extend({
   remainingAttempts: z.number().int().nonnegative(),
 })
 
-export const createAiFeedbackCommandSchema = z.strictObject({
-  answer: z.string().trim().min(1).max(aiFeedbackAnswerMaxLength),
-  idempotencyKey: aiFeedbackIdempotencyKeySchema,
+export const createAiFeedbackParamsSchema = z.strictObject({
   lessonId: lessonIdSchema,
-  occurredAt: z.date(),
   stepId: lessonStepIdSchema,
-  userId: learnerIdSchema,
 })
 
-export const createAiFeedbackRequestCommandSchema =
-  createAiFeedbackCommandSchema.omit({ answer: true })
+export const createAiFeedbackHeadersSchema = z.looseObject({
+  "idempotency-key": aiFeedbackIdempotencyKeySchema,
+})
+
+export const aiFeedbackPublicErrorCodeValues = [
+  "ATTEMPT_IN_PROGRESS",
+  "ATTEMPT_LIMIT_EXCEEDED",
+  "PROVIDER_UNAVAILABLE",
+] as const
+
+export const aiFeedbackPublicErrorCodeSchema = z.enum(
+  aiFeedbackPublicErrorCodeValues
+)
 
 export type AiFeedbackPayload = z.infer<typeof aiFeedbackPayloadSchema>
 export type AiFeedbackResultDto = z.infer<typeof aiFeedbackResultDtoSchema>
-export type CreateAiFeedbackCommand = z.infer<
-  typeof createAiFeedbackCommandSchema
->
-export type CreateAiFeedbackRequestCommand = z.infer<
-  typeof createAiFeedbackRequestCommandSchema
+export type AiFeedbackPublicErrorCode = z.infer<
+  typeof aiFeedbackPublicErrorCodeSchema
 >

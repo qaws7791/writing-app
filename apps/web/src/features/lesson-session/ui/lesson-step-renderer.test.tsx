@@ -76,7 +76,7 @@ describe("LessonStepRenderer", () => {
         nextAction: "다음 행동",
         remainingAttempts: 1,
         score: 0,
-        scoreRange: [0, 100] as [number, number],
+        scoreRange: [0, 100] as [0, 100],
         showScore: false,
         strengths: [],
         summary: "코칭 결과",

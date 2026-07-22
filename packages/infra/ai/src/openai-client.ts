@@ -4,6 +4,7 @@ import { z } from "zod"
 
 const openAiClientConfigSchema = z.object({
   apiKey: z.string().min(1),
+  maxRetries: z.number().int().nonnegative(),
   timeoutMs: z.number().int().positive(),
 })
 
@@ -21,12 +22,14 @@ export type AiInfrastructureError = Readonly<{
 
 export type OpenAiClientRuntime = {
   readonly client: OpenAI
+  readonly maxRetries: number
   readonly signal?: AbortSignal
   readonly timeoutMs: number
 }
 
 export function createOpenAiClient(input: {
   readonly apiKey?: string
+  readonly maxRetries: number
   readonly signal?: AbortSignal
   readonly timeoutMs: number
 }): Result<OpenAiClientRuntime, AiInfrastructureError> {
@@ -43,8 +46,10 @@ export function createOpenAiClient(input: {
   return ok({
     client: new OpenAI({
       apiKey: parsed.data.apiKey,
+      maxRetries: parsed.data.maxRetries,
       timeout: parsed.data.timeoutMs,
     }),
+    maxRetries: parsed.data.maxRetries,
     ...(input.signal === undefined ? {} : { signal: input.signal }),
     timeoutMs: parsed.data.timeoutMs,
   })

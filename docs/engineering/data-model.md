@@ -28,6 +28,13 @@
 - 현재 Drizzle schema와 idempotent trigger 설치는 content module이 소유한다. 이미 적용됐을 수 있는 baseline SQL은 migration 이력으로 보존하며, 물리 cross-module FK 제거와 통합 migration 계보 이동은 P11의 append-only migration에서 수행한다.
 - 기존 curriculum 이관의 step 정규화 정책은 content domain이 소유하고 API 조립 지점이 DB migration primitive에 주입한다. 정책이 없으면 legacy 이관은 데이터 변경 전에 실패한다.
 
+## AI feedback 데이터 경계
+
+- ai-feedback module은 learner·course·curriculum version·lesson·step의 branded ID, idempotency key, attempt 번호·상태·lease와 coaching 결과를 저장한다. 다른 module row는 참조 값일 뿐 물리 FK를 만들지 않으며 runtime repository도 다른 module table을 조회하지 않는다.
+- 완료된 attempt만 사용자·curriculum version·lesson·step 범위의 한도를 차감한다. provider 실패와 만료는 완료 quota를 차감하지 않고, 동일 idempotency key의 성공 결과는 provider 재호출 없이 재생한다.
+- attempt 예약과 terminal 저장은 짧은 개별 transaction이며 provider I/O 중에는 transaction을 열지 않는다. AI 결과 저장 뒤 learning 진행 전이가 실패하면 저장 결과를 권위 상태로 유지하고 같은 key 재시도에서 learning 전이만 다시 수행한다.
+- 기존 cross-module FK 제거 migration은 row와 index를 보존하고 사전 orphan 검사를 통과해야 한다. baseline SQL은 적용 이력으로 유지하고 통합 migration 계보는 P11에서 정리한다.
+
 ## 변경 원칙
 
 1. 제품 불변식과 사용자 영향부터 정의한다.

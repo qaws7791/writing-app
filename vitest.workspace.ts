@@ -60,6 +60,7 @@ export default defineConfig({
       "packages/config/env/vitest.config.ts",
       "packages/infra/http-client/vitest.config.ts",
       "packages/infra/http-platform/vitest.config.ts",
+      "packages/modules/ai-feedback/vitest.config.ts",
       "packages/modules/content/vitest.config.ts",
       "packages/modules/identity/vitest.config.ts",
       "packages/infra/observability/vitest.config.ts",

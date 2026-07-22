@@ -22,7 +22,6 @@ import {
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
   authUsers,
-  aiFeedbackAttempts,
   learnerActivityDays,
   learnerCourseProgress,
   learnerLessonAnswers,
@@ -629,36 +628,28 @@ describe("학습자 상태 전이 Drizzle repository", () => {
     }
   })
 
-  it("AI 성공 feedback 저장과 단계 전진을 같은 transaction에서 확정한다", async () => {
+  it("AI 성공 뒤 학습 진행을 멱등하게 전진시킨다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
       await seedLearning(client)
       const repository = createDrizzleLearnerTransitionRepository(client.db)
-      const command = seedPendingAiFeedbackAttempt(client)
+      const command = seedAiFeedbackLearningContext(client)
 
       await expect(
         repository.prepareAiFeedback(command)
       ).resolves.toMatchObject({
-        value: { answer: "학습자가 작성한 문장" },
+        value: {
+          answer: "학습자가 작성한 문장",
+          courseId: expect.any(String),
+          curriculumVersionId: expect.any(String),
+          showScore: expect.any(Boolean),
+        },
       })
       const result = await repository.completeAiFeedbackStep(command)
       const repeated = await repository.completeAiFeedbackStep(command)
 
       expect(result.isOk()).toBe(true)
       expect(repeated).toEqual(result)
-      expect(
-        client.db
-          .select({
-            resultJson: aiFeedbackAttempts.resultJson,
-            status: aiFeedbackAttempts.status,
-          })
-          .from(aiFeedbackAttempts)
-          .where(eq(aiFeedbackAttempts.id, command.attemptId))
-          .get()
-      ).toEqual({
-        resultJson: JSON.stringify(command.feedback),
-        status: "succeeded",
-      })
       const progress = client.db
         .select({
           currentStepId: learnerLessonProgress.currentStepId,
@@ -691,13 +682,12 @@ describe("학습자 상태 전이 Drizzle repository", () => {
     }
   })
 
-  it("AI finalize의 학습 진행 저장이 실패하면 feedback과 진행을 함께 rollback한다", async () => {
+  it("AI finalize의 학습 진행 저장이 실패하면 학습 상태를 rollback한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
       await seedLearning(client)
       const repository = createDrizzleLearnerTransitionRepository(client.db)
-      const command = seedPendingAiFeedbackAttempt(client)
-      const attemptBefore = readAiFeedbackAttempt(client, command.attemptId)
+      const command = seedAiFeedbackLearningContext(client)
       const learningBefore = readLearnerTransitionState(client)
       client.sqlite.exec(`
         CREATE TRIGGER fail_ai_feedback_learning_advance
@@ -711,9 +701,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         "injected AI finalize failure"
       )
 
-      expect(readAiFeedbackAttempt(client, command.attemptId)).toEqual(
-        attemptBefore
-      )
       expect(readLearnerTransitionState(client)).toEqual(learningBefore)
     } finally {
       client.close()
@@ -806,17 +793,6 @@ function readLearnerTransitionState(client: WritingAppDatabaseClient) {
   }
 }
 
-function readAiFeedbackAttempt(
-  client: WritingAppDatabaseClient,
-  attemptId: string
-) {
-  return client.db
-    .select()
-    .from(aiFeedbackAttempts)
-    .where(eq(aiFeedbackAttempts.id, attemptId))
-    .get()
-}
-
 function seedProgressBeforeLesson(
   client: WritingAppDatabaseClient,
   input: {
@@ -904,7 +880,7 @@ function seedProgressBeforeLesson(
   }
 }
 
-function seedPendingAiFeedbackAttempt(client: WritingAppDatabaseClient) {
+function seedAiFeedbackLearningContext(client: WritingAppDatabaseClient) {
   const aiStep = client.db
     .select()
     .from(lessonStepVersions)
@@ -952,36 +928,7 @@ function seedPendingAiFeedbackAttempt(client: WritingAppDatabaseClient) {
       userId,
     })
     .run()
-  client.db
-    .insert(aiFeedbackAttempts)
-    .values({
-      answerText: "학습자가 작성한 문장",
-      attemptNumber: 1,
-      courseId: fixture.courseId,
-      createdAt: now,
-      curriculumVersionId: aiStep.curriculumVersionId,
-      expiresAt: new Date(now.getTime() + 60_000),
-      id: "attempt-1",
-      idempotencyKey: "feedback-1",
-      lessonId: aiStep.lessonId,
-      resultJson: null,
-      status: "pending",
-      stepId: aiStep.id,
-      updatedAt: now,
-      userId,
-    })
-    .run()
   return {
-    attemptId: "attempt-1",
-    feedback: {
-      improvements: ["근거를 보강하세요."],
-      nextAction: "예시를 추가하세요.",
-      score: 80,
-      scoreRange: [0, 100] as [number, number],
-      showScore: true,
-      strengths: ["주장이 명확합니다."],
-      summary: "좋은 초안입니다.",
-    },
     lessonId: lessonIdSchema.parse(aiStep.lessonId),
     occurredAt: now,
     stepId: lessonStepIdSchema.parse(aiStep.id),

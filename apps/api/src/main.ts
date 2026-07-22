@@ -1,5 +1,4 @@
 import { serve } from "bun"
-import { createConfiguredAiFeedbackProvider } from "@/adapters/ai-feedback/openai-feedback-provider"
 import { createApiRuntime } from "@/api-runtime"
 import { createApp } from "@/app"
 import { parseApiEnv } from "@/config/env"
@@ -16,20 +15,15 @@ import {
 
 const env = parseApiEnv(process.env)
 const logger = createAppLogger({ level: env.logLevel, pretty: env.logPretty })
-const aiFeedbackProvider = createConfiguredAiFeedbackProvider({
-  apiKey: env.openAiApiKey,
-  model: env.openAiModel,
-  onUsage(event) {
-    logger.info(event, "ai.usage")
-  },
-})
 const runtime = createApiRuntime({
-  aiFeedbackProvider,
   env,
   logger,
   onAiFeedbackAttemptTransition(event) {
     const write = event.toStatus === "failed" ? logger.warn : logger.info
     write.call(logger, event, "ai.feedback.attempt.transition")
+  },
+  onAiFeedbackUsage(event) {
+    logger.info(event, "ai.usage")
   },
 })
 const { adminApp, learnerApp, unifiedFetch } = (() => {
@@ -44,7 +38,7 @@ const { adminApp, learnerApp, unifiedFetch } = (() => {
       errorLogger(event) {
         logger.error(event, "request.failed")
       },
-      learnerAiFeedbackService: runtime.learnerCore.learnerAiFeedbackService,
+      aiFeedbackRoutes: runtime.learnerCore.aiFeedbackRoutes,
       learnerCursorCodec: runtime.learnerCore.learnerCursorCodec,
       learnerTransitionRepository:
         runtime.learnerCore.learnerTransitionRepository,

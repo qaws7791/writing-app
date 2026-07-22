@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-import type { AiFeedbackServiceError } from "@workspace/core/ai-feedback"
 import type { LearnerTransitionError } from "@workspace/core/learning"
 import {
   lessonIdSchema,
@@ -9,7 +8,7 @@ import {
 import { err } from "@workspace/kernel/result"
 import { AppError } from "@workspace/http-platform/errors"
 
-import { unwrapLearnerAiFeedbackTransitionResult } from "@/http/learner-command-route-mapper"
+import { unwrapLearnerCompleteStepResult } from "@/http/learner-command-route-mapper"
 
 const lessonId = lessonIdSchema.parse("lesson-1")
 const stepId = lessonStepIdSchema.parse("step-1")
@@ -36,16 +35,6 @@ const errorCases = [
     expectedStatus: 409,
   },
   {
-    error: { kind: "attempt-limit-exceeded", remainingAttempts: 0 },
-    expectedCode: "ATTEMPT_LIMIT_EXCEEDED",
-    expectedStatus: 429,
-  },
-  {
-    error: { kind: "attempt-in-progress", remainingAttempts: 2 },
-    expectedCode: "ATTEMPT_IN_PROGRESS",
-    expectedStatus: 409,
-  },
-  {
     error: { kind: "feedback-answer-not-found", targetStepId: stepId },
     expectedCode: "AI_FEEDBACK_ANSWER_NOT_FOUND",
     expectedStatus: 409,
@@ -64,13 +53,8 @@ const errorCases = [
     expectedCode: "STEP_SEQUENCE_CONFLICT",
     expectedStatus: 409,
   },
-  {
-    error: { kind: "provider-failed", remainingAttempts: 2 },
-    expectedCode: "PROVIDER_UNAVAILABLE",
-    expectedStatus: 503,
-  },
 ] as const satisfies readonly {
-  readonly error: AiFeedbackServiceError | LearnerTransitionError
+  readonly error: LearnerTransitionError
   readonly expectedCode: string
   readonly expectedStatus: number
 }[]
@@ -80,7 +64,7 @@ describe("학습 command HTTP 경계 매퍼", () => {
     "$error.kind expected rejection을 $expectedStatus $expectedCode로 변환한다",
     ({ error, expectedCode, expectedStatus }) => {
       const mapped = captureAppError(() =>
-        unwrapLearnerAiFeedbackTransitionResult(err(error))
+        unwrapLearnerCompleteStepResult(err(error))
       )
 
       expect(mapped).toMatchObject({

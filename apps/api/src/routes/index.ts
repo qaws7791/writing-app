@@ -2,7 +2,6 @@ import type { OpenAPIHono } from "@hono/zod-openapi"
 
 import type { ApiDependencies } from "@/context/create-request-context"
 import { createOpenApiDocument } from "@/http/openapi"
-import { learnerAiFeedbackRoute } from "@/modules/ai-feedback/ai-feedback.routes"
 import { registerAuthProxy } from "@/modules/auth/auth-proxy"
 import {
   getCourseDetailRoute,
@@ -26,7 +25,6 @@ export const routes = [
   progressRoute,
   startLessonRoute,
   completeStepRoute,
-  learnerAiFeedbackRoute,
 ] as const
 
 export function registerApiBootstrapRoutes(

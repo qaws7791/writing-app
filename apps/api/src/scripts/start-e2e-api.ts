@@ -1,7 +1,6 @@
 import { serve } from "bun"
 
-import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
-import type { AiFeedbackProvider } from "@workspace/core/ai-feedback"
+import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
 import { ok } from "@workspace/kernel/result"
 
 import { createApiRuntime } from "@/api-runtime"
@@ -25,17 +24,13 @@ if (env.nodeEnv !== "test" || !env.testAuthEnabled) {
 
 const provider: AiFeedbackProvider = {
   async createFeedback() {
-    return ok(
-      aiFeedbackPayloadSchema.parse({
-        improvements: ["근거를 한 문장 더 구체화해 보세요."],
-        nextAction: "같은 주장을 더 짧게 다시 써보세요.",
-        score: 90,
-        scoreRange: [0, 100],
-        showScore: true,
-        strengths: ["핵심 장점을 명확하게 표현했습니다."],
-        summary: "서버 상태 전이의 장점을 잘 설명했습니다.",
-      })
-    )
+    return ok({
+      improvements: ["근거를 한 문장 더 구체화해 보세요."],
+      nextAction: "같은 주장을 더 짧게 다시 써보세요.",
+      score: 90,
+      strengths: ["핵심 장점을 명확하게 표현했습니다."],
+      summary: "서버 상태 전이의 장점을 잘 설명했습니다.",
+    })
   },
 }
 const runtime = createApiRuntime({
@@ -46,9 +41,9 @@ const runtime = createApiRuntime({
 const unifiedFetch = (() => {
   try {
     const app = createApp({
+      aiFeedbackRoutes: runtime.learnerCore.aiFeedbackRoutes,
       authHandler: runtime.learnerCore.authHandler,
       contentService: runtime.learnerCore.contentService,
-      learnerAiFeedbackService: runtime.learnerCore.learnerAiFeedbackService,
       learnerCursorCodec: runtime.learnerCore.learnerCursorCodec,
       learnerTransitionRepository:
         runtime.learnerCore.learnerTransitionRepository,

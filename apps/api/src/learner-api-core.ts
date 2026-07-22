@@ -1,19 +1,15 @@
-import {
-  createLearnerAiFeedbackTransitionService,
-  defaultAiFeedbackAttemptPolicy,
-  type AiFeedbackAttemptTransitionEvent,
-  type AiFeedbackProvider,
-  type LearnerAiFeedbackTransitionService,
-} from "@workspace/core/ai-feedback"
+import type { Database } from "bun:sqlite"
+import type { AiFeedbackAttemptTransition } from "@workspace/ai-feedback/application"
+import type { AiFeedbackHttpRouteGroup } from "@workspace/ai-feedback/http"
+import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
+import type { OpenAiUsageEvent } from "@workspace/ai-feedback/provider"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import {
   createLearnerContentService,
   createLearnerCursorCodec,
   createProgressService,
-  type CompleteLearnerStepTransitionResult,
   type LearnerContentService,
   type LearnerCursorCodec,
-  type LearnerTransitionError,
   type LearnerTransitionRepository,
   type ProgressService,
 } from "@workspace/core/learning"
@@ -28,13 +24,15 @@ import type { SessionResolver } from "@workspace/identity/sessions"
 
 import { createLearnerAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
 import { createLearnerTestAuthDisplayNameSynchronizer } from "@/adapters/auth/learner-test-auth-display-name-synchronizer"
-import { createDrizzleAiFeedbackRepository } from "@/adapters/ai-feedback/ai-feedback-drizzle.repository"
 import { createDrizzleLearnerReadModelRepository } from "@/adapters/learning/learner-read-model-drizzle.repository"
 import { createDrizzleProfileReader } from "@/adapters/learning/learner-read-models"
 import { createDrizzleLearnerTransitionRepository } from "@/adapters/learning/learner-transition-drizzle.repository"
+import { composeAiFeedbackModule } from "@/composition/ai-feedback-module.composition"
 
 export type CreateLearnerApiCoreInput = {
-  readonly aiFeedbackProvider: AiFeedbackProvider
+  readonly aiFeedbackProvider?: AiFeedbackProvider
+  readonly aiFeedbackModel: string
+  readonly aiFeedbackApiKey?: string
   readonly apiOrigin: string
   readonly cursorSigningSecret: string
   readonly database: WritingAppDatabase
@@ -44,19 +42,18 @@ export type CreateLearnerApiCoreInput = {
   readonly learnerCookieDomain?: string
   readonly identity: IdentityModule
   readonly onAiFeedbackAttemptTransition?: (
-    event: AiFeedbackAttemptTransitionEvent
+    event: AiFeedbackAttemptTransition
   ) => void
+  readonly onAiFeedbackUsage?: (event: OpenAiUsageEvent) => void
+  readonly sqlite: Database
   readonly testAuthEnabled?: boolean
   readonly webOrigin: string
 }
 
 export type LearnerApiCore = {
+  readonly aiFeedbackRoutes: AiFeedbackHttpRouteGroup
   readonly authHandler: (request: Request) => Promise<Response>
   readonly contentService: LearnerContentService
-  readonly learnerAiFeedbackService: LearnerAiFeedbackTransitionService<
-    LearnerTransitionError,
-    CompleteLearnerStepTransitionResult
-  >
   readonly learnerCursorCodec: LearnerCursorCodec
   readonly learnerTransitionRepository: Pick<
     LearnerTransitionRepository,
@@ -71,6 +68,8 @@ export function createLearnerApiCore(
   input: CreateLearnerApiCoreInput
 ): LearnerApiCore {
   const {
+    aiFeedbackApiKey,
+    aiFeedbackModel,
     aiFeedbackProvider,
     apiOrigin,
     cursorSigningSecret,
@@ -80,6 +79,8 @@ export function createLearnerApiCore(
     learnerAuthSecret,
     learnerCookieDomain,
     onAiFeedbackAttemptTransition,
+    onAiFeedbackUsage,
+    sqlite,
     testAuthEnabled,
     webOrigin,
   } = input
@@ -116,18 +117,23 @@ export function createLearnerApiCore(
   const sessionResolver = input.identity.createLearnerSessionResolver(
     createLearnerAuthenticationPort(auth.identityResolver)
   )
+  const aiFeedback = composeAiFeedbackModule({
+    apiKey: aiFeedbackApiKey,
+    database,
+    learnerTransitionRepository,
+    model: aiFeedbackModel,
+    onAttemptTransition: onAiFeedbackAttemptTransition,
+    onUsage: onAiFeedbackUsage,
+    provider: aiFeedbackProvider,
+    sessionResolver,
+    sqlite,
+  })
 
   return {
+    aiFeedbackRoutes: aiFeedback.routes,
     authHandler: auth.authHandler,
     contentService: createLearnerContentService({
       readModelRepository: learnerReadModelRepository,
-    }),
-    learnerAiFeedbackService: createLearnerAiFeedbackTransitionService({
-      attemptPolicy: defaultAiFeedbackAttemptPolicy,
-      feedbackRepository: createDrizzleAiFeedbackRepository(database),
-      learnerTransitionRepository,
-      onAttemptTransition: onAiFeedbackAttemptTransition,
-      provider: aiFeedbackProvider,
     }),
     learnerCursorCodec: cursorCodec,
     learnerTransitionRepository,

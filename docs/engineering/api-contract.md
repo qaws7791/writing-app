@@ -20,6 +20,7 @@
 - application 결과와 HTTP status·body·header 변환 책임은 route가 소유한다.
 - 인증·인가 실패, 검증 실패, domain rejection, provider 실패와 예상하지 못한 내부 오류는 구분 가능한 안정된 공개 오류 계약을 가진다.
 - 민감 입력, 내부 stack, provider 원문과 persistence 세부 사항을 오류 응답에 노출하지 않는다.
+- 재시도 가능한 임시 제한에 만료 시각을 알 수 있을 때만 정확한 `Retry-After`를 제공한다. 영구 attempt 상한처럼 시간만 기다려서는 해소되지 않는 제한에는 오해를 만드는 값을 넣지 않는다.
 - 예상하지 못한 내부 오류는 원인을 숨기고 응답과 구조화 로그에 같은 request ID를 남긴다.
 - HTTP contract 변경은 consumer와 server를 같은 변경에서 갱신하며, 호환되지 않는 변경은 명시적인 migration 경로를 제공한다.
 

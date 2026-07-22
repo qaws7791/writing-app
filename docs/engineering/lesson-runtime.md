@@ -11,7 +11,7 @@
 ## 경계
 
 - `@workspace/contracts/learning/learner-content`와 `@workspace/contracts/learning/learner-transition`은 공개 레슨, stable item ID 제출, 서버 평가와 학습 상태 전이 계약을 소유한다.
-- `packages/core`는 채점, 순서, 잠금, 진도, 레슨·코스 완료와 AI 피드백 전이를 소유한다.
+- `packages/core`의 learning capability는 채점, 순서, 잠금, 진도, 레슨·코스 완료와 AI 단계의 저장 답안 문맥·진행 전이를 소유한다. `@workspace/ai-feedback`은 prompt, provider 호출·검증과 attempt 정책·기록을 소유하며 API composition이 두 공개 port를 연결한다.
 - 학습 시작 정책은 lesson scope, 잠금, 기존 진행과 정렬된 step ID snapshot만 받아 rejection·start·replay와 readonly effect를 결정한다. Drizzle repository는 한 transaction에서 load → decide → apply만 수행한다.
 - 일반 단계 완료 정책은 rejection·retry·replay·step/lesson acceptance를 구분하고, 답안 저장 → step/lesson 전진 → 필요한 course 완료 → 활동 집계 effect를 SQL·table 이름 없이 계획한다. interpreter는 이 순서를 한 transaction에서 적용한다.
 - `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event, 화면 전환과 시각 컴포넌트 조립만 소유한다.
@@ -23,6 +23,7 @@
 ## 학습자 동작
 
 - 레슨 시작은 `startLesson`, 일반 단계 제출은 `completeStep`, AI 코칭은 step-scoped AI feedback 요청으로 수행한다.
+- AI 코칭 요청은 서버가 고정된 curriculum의 레슨 제목·coaching 초점·저장된 WRITE 답안만 provider 입력으로 만든다. provider 성공 결과를 attempt에 먼저 저장한 뒤 learning 진행을 전이하며, 후자가 실패한 동일 key 재시도는 저장 결과를 재생한다.
 - 웹은 서버의 `retry`, `advanced`, `lesson_completed` 결과와 `learning.currentStepId`를 그대로 소비한다.
 - 정답, 해설, 진도율, 다음 레슨과 완료 여부를 프론트엔드에서 다시 계산하지 않는다.
 - 코스의 다음 레슨과 잠금 상태는 active 유닛의 `sortOrder`, 그 안의 active 레슨 `sortOrder` 순으로 서버가 계산한다.
@@ -35,7 +36,8 @@
 
 - 10개 공개 step schema가 제출 전에 solution을 노출하지 않는지 계약 테스트로 확인한다.
 - stable ID 제출과 타입별 평가, 오답 재시도, 원자적 전이와 동시성은 core 테스트로 확인한다.
-- 학습 전이 SQLite characterization은 잠금·version·순서 거절의 무변경, accepted/replay의 단일 답안·활동 집계, 마지막 활성 레슨의 코스 완료와 AI finalize 실패 rollback을 반환 결과와 영속 row 양쪽에서 확인한다.
+- 학습 전이 SQLite characterization은 잠금·version·순서 거절의 무변경, accepted/replay의 단일 답안·활동 집계, 마지막 활성 레슨의 코스 완료와 AI 진행 전이 실패 시 learning 상태 rollback을 반환 결과와 영속 row 양쪽에서 확인한다.
+- AI feedback 테스트는 provider I/O 중 DB transaction 비점유, 완료 quota·pending lease, timeout·abort·provider·persistence 오류, 성공 저장 뒤 learning 실패와 동일 key 재생을 확인한다.
 - 학습 시작 테스트는 별도 SQLite connection의 동시 요청이 unique conflict 뒤 같은 진행으로 수렴하는지, replay가 row·counter를 중복하지 않고 활동 시각만 갱신하는지, activity 저장 실패가 course·lesson 시작 전체를 rollback하는지 확인한다.
 - 일반 단계 완료 테스트는 순수 plan의 effect 순서, rejection·retry·replay의 빈 effect, lesson/course/activity 결과와 마지막 activity fault에서 답안·lesson·course·activity 전체 rollback을 확인한다.
 - 레슨 세션이 서버 전이 결과만으로 이동하는지 web 테스트로 확인한다.

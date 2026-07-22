@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest"
 
 import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 import {
+  courseIdSchema,
   lessonIdSchema,
   lessonStepIdSchema,
 } from "@workspace/contracts/content/ids"
-import { learnerIdSchema } from "@workspace/contracts/learning/step-data"
-import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
+import {
+  curriculumVersionIdSchema,
+  learnerIdSchema,
+} from "@workspace/contracts/learning/step-data"
 import { err, ok } from "@workspace/kernel/result"
 
 import {
@@ -24,16 +27,6 @@ const command = {
 }
 const completeCommand = {
   ...command,
-  attemptId: "attempt-1",
-  feedback: aiFeedbackPayloadSchema.parse({
-    improvements: ["개선점"],
-    nextAction: "다음 행동",
-    score: 0,
-    scoreRange: [0, 100],
-    showScore: false,
-    strengths: ["강점"],
-    summary: "요약",
-  }),
   occurredAt: new Date("2026-07-17T00:00:00.000Z"),
 }
 const writeStep = {
@@ -73,6 +66,7 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     expect(target).toEqual({
       focus: "명확성",
       kind: "load-context",
+      showScore: true,
       targetStepId: "write-step",
     })
     if (target.kind === "rejected") throw new Error("target rejected")
@@ -80,13 +74,18 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     expect(
       decidePrepareAiFeedbackContext(command, target, {
         answer: { text: "저장된 답안", type: "WRITE" },
+        courseId: courseIdSchema.parse("course-1"),
+        curriculumVersionId: curriculumVersionIdSchema.parse("version-1"),
         lessonTitle: "레슨 제목",
       })
     ).toEqual(
       ok({
         answer: "저장된 답안",
+        courseId: "course-1",
+        curriculumVersionId: "version-1",
         focus: "명확성",
         lessonTitle: "레슨 제목",
+        showScore: true,
       })
     )
   })
@@ -137,6 +136,8 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     expect(
       decidePrepareAiFeedbackContext(command, target, {
         answer: null,
+        courseId: courseIdSchema.parse("course-1"),
+        curriculumVersionId: curriculumVersionIdSchema.parse("version-1"),
         lessonTitle: "레슨 제목",
       })
     ).toEqual(
@@ -163,9 +164,9 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     expect(
       decideFinalizeAiFeedback(completeCommand, {
         ...finalizableSnapshot(),
-        attempt: "not-finalizable",
+        isUnlocked: false,
       })
-    ).toMatchObject({ error: { kind: "invalid-request" }, kind: "rejected" })
+    ).toMatchObject({ error: { kind: "lesson-locked" }, kind: "rejected" })
   })
 })
 
@@ -190,7 +191,6 @@ function finalizableSnapshot(): Extract<
 > {
   const snapshot = readySnapshot()
   return {
-    attempt: "finalizable",
     isUnlocked: snapshot.isUnlocked,
     kind: snapshot.kind,
     progress: snapshot.progress,

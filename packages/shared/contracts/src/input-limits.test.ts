@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-import { createAiFeedbackCommandSchema } from "#contracts/ai-feedback/feedback"
 import { jsonValueSchema } from "#contracts/learning/answer"
 import { learnerStepSubmissionSchema } from "#contracts/learning/learner-transition"
 import { adminLegalSettingsRequestSchema } from "#contracts/operations/admin-settings"
@@ -8,17 +7,7 @@ import { adminLegalSettingsRequestSchema } from "#contracts/operations/admin-set
 const oversizedText = "가".repeat(1_000_000)
 
 describe("외부 입력 크기 제한", () => {
-  it("AI 답안과 쓰기 답안을 제한한다", () => {
-    expect(
-      createAiFeedbackCommandSchema.safeParse({
-        answer: oversizedText,
-        idempotencyKey: "request-1",
-        lessonId: "lesson-1",
-        occurredAt: new Date("2026-07-10T00:00:00.000Z"),
-        stepId: "step-1",
-        userId: "user-1",
-      }).success
-    ).toBe(false)
+  it("쓰기 답안을 제한한다", () => {
     expect(
       learnerStepSubmissionSchema.safeParse({
         text: oversizedText,

@@ -1,7 +1,6 @@
-import type {
-  AiFeedbackAttemptTransitionEvent,
-  AiFeedbackProvider,
-} from "@workspace/core/ai-feedback"
+import type { AiFeedbackAttemptTransition } from "@workspace/ai-feedback/application"
+import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
+import type { OpenAiUsageEvent } from "@workspace/ai-feedback/provider"
 import {
   createAdminAuthRuntime,
   type AdminAuthIdentityResolver,
@@ -41,13 +40,14 @@ export type ApiRuntime = {
 }
 
 export type CreateApiRuntimeInput = {
-  readonly aiFeedbackProvider: AiFeedbackProvider
+  readonly aiFeedbackProvider?: AiFeedbackProvider
   readonly env: ApiEnv
   readonly logger: AppLogger
   readonly now?: () => Date
   readonly onAiFeedbackAttemptTransition?: (
-    event: AiFeedbackAttemptTransitionEvent
+    event: AiFeedbackAttemptTransition
   ) => void
+  readonly onAiFeedbackUsage?: (event: OpenAiUsageEvent) => void
 }
 
 export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
@@ -105,6 +105,8 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
     },
     createLearnerCore({ database, identity }) {
       return createLearnerApiCore({
+        aiFeedbackApiKey: input.env.openAiApiKey,
+        aiFeedbackModel: input.env.openAiModel,
         aiFeedbackProvider: input.aiFeedbackProvider,
         apiOrigin: input.env.apiOrigin,
         cursorSigningSecret: input.env.cursorSigningSecret,
@@ -115,6 +117,8 @@ export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
         learnerAuthSecret: input.env.learnerAuthSecret,
         learnerCookieDomain: input.env.learnerCookieDomain,
         onAiFeedbackAttemptTransition: input.onAiFeedbackAttemptTransition,
+        onAiFeedbackUsage: input.onAiFeedbackUsage,
+        sqlite: databaseClient.sqlite,
         testAuthEnabled: input.env.testAuthEnabled,
         webOrigin: input.env.webOrigin,
       })

@@ -1,10 +1,8 @@
 import type { SessionResolver } from "@workspace/identity/sessions"
-import type { LearnerAiFeedbackTransitionService } from "@workspace/core/ai-feedback"
+import type { AiFeedbackHttpRouteGroup } from "@workspace/ai-feedback/http"
 import type {
-  CompleteLearnerStepTransitionResult,
   LearnerContentService,
   LearnerCursorCodec,
-  LearnerTransitionError,
   LearnerTransitionRepository,
   ProgressService,
 } from "@workspace/core/learning"
@@ -17,15 +15,12 @@ import type { HttpRequestContext } from "@workspace/http-platform/context"
 import type { LearnerContractErrorLogger } from "@/http/learner-response"
 
 export type ApiDependencies = {
+  readonly aiFeedbackRoutes: AiFeedbackHttpRouteGroup
   readonly authHandler?: (request: Request) => Promise<Response>
   readonly contentService: LearnerContentService
   readonly contractErrorLogger?: LearnerContractErrorLogger
   readonly deploymentVersion?: string
   readonly errorLogger?: InternalErrorLogger
-  readonly learnerAiFeedbackService: LearnerAiFeedbackTransitionService<
-    LearnerTransitionError,
-    CompleteLearnerStepTransitionResult
-  >
   readonly learnerCursorCodec: LearnerCursorCodec
   readonly learnerTransitionRepository: Pick<
     LearnerTransitionRepository,

@@ -1,4 +1,4 @@
-import { aiFeedbackIdempotencyKeySchema } from "#contracts/ai-feedback/feedback"
+import { createAiFeedbackHeadersSchema } from "#contracts/ai-feedback/feedback"
 import { courseIdSchema, lessonIdSchema } from "#contracts/content/ids"
 import {
   learnerCourseCategoriesSchema,
@@ -39,9 +39,8 @@ export const learnerLessonParamsSchema = z.strictObject({
 export const learnerCourseQuerySchema = learnerCourseListQuerySchema
 export const learnerProgressQuerySchema = learnerProgressListQuerySchema
 
-export const createLearnerAiFeedbackTransitionHeadersSchema = z.looseObject({
-  "idempotency-key": aiFeedbackIdempotencyKeySchema,
-})
+export const createLearnerAiFeedbackTransitionHeadersSchema =
+  createAiFeedbackHeadersSchema
 
 export type LearnerProgressResponse = z.infer<
   typeof learnerProgressResponseSchema

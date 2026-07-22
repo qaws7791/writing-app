@@ -1580,7 +1580,7 @@ export function createApp(container: ApiContainer) {
 - 관리자 AI의 관리자·IP별 counter는 `operations` schema가 소유한다.
 - 같은 AI 대화의 in-flight 중복은 API instance의 memory lock으로 막는다.
 - 학습자 코칭 attempt 제한은 `ai-feedback` domain과 persistence가 소유한다.
-- 제한 응답은 안정된 공개 code와 `Retry-After`를 제공한다.
+- 제한 응답은 안정된 공개 code를 제공한다. 만료를 계산할 수 있는 pending lease에는 정확한 `Retry-After`를 제공하고, 시간 경과로 해소되지 않는 완료 attempt 상한에는 잘못된 값을 제공하지 않는다.
 - Redis 기반 generic limiter를 만들지 않는다.
 
 ### 12.3 보안 원칙

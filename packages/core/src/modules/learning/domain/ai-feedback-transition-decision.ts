@@ -1,6 +1,9 @@
 import type { LessonStepDto } from "@workspace/contracts/content/course"
-import type { LessonStepId } from "@workspace/contracts/content/ids"
-import type { LearnerStepSubmission } from "@workspace/contracts/learning/step-data"
+import type { CourseId, LessonStepId } from "@workspace/contracts/content/ids"
+import type {
+  CurriculumVersionId,
+  LearnerStepSubmission,
+} from "@workspace/contracts/learning/step-data"
 
 import type {
   CompleteLearnerAiFeedbackCommand,
@@ -41,19 +44,20 @@ export type PrepareAiFeedbackTargetDecision =
   | {
       readonly focus: string
       readonly kind: "load-context"
+      readonly showScore: boolean
       readonly targetStepId: LessonStepId
     }
 
 export type PrepareAiFeedbackContextSnapshot = {
   readonly answer: LearnerStepSubmission | null
+  readonly courseId: CourseId
+  readonly curriculumVersionId: CurriculumVersionId
   readonly lessonTitle: string | null
 }
 
 export type FinalizeAiFeedbackSnapshot =
   | { readonly kind: "lesson-locked" }
-  | ({
-      readonly attempt: "finalizable" | "not-finalizable"
-    } & Extract<AiFeedbackLessonSnapshot, { readonly kind: "lesson" }>)
+  | Extract<AiFeedbackLessonSnapshot, { readonly kind: "lesson" }>
 
 export type FinalizeAiFeedbackDecision =
   | { readonly error: LearnerTransitionError; readonly kind: "rejected" }
@@ -137,6 +141,7 @@ export function decidePrepareAiFeedbackTarget(
   return {
     focus: aiStep.focus,
     kind: "load-context",
+    showScore: aiStep.showScore,
     targetStepId: targetStep.content.id,
   }
 }
@@ -158,8 +163,11 @@ export function decidePrepareAiFeedbackContext(
 
   return ok({
     answer: snapshot.answer.text,
+    courseId: snapshot.courseId,
+    curriculumVersionId: snapshot.curriculumVersionId,
     focus: target.focus,
     lessonTitle: snapshot.lessonTitle,
+    showScore: target.showScore,
   })
 }
 
@@ -194,9 +202,6 @@ export function decideFinalizeAiFeedback(
     requestedStepIndex > currentStepIndex
   ) {
     return reject("step-sequence-conflict", command)
-  }
-  if (snapshot.attempt !== "finalizable") {
-    return reject("invalid-request", command)
   }
   if (snapshot.progress.kind === "completed") {
     return { kind: "replay-completed" }

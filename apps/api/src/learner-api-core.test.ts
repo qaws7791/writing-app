@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { createIdentityModule } from "@workspace/identity/module"
 import { ok } from "@workspace/kernel/result"
+import { createUnavailableAiFeedbackProvider } from "@workspace/ai-feedback/provider"
 
-import { createUnavailableAiFeedbackProvider } from "@/adapters/ai-feedback/openai-feedback-provider"
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
 import { createLearnerApiCore } from "@/learner-api-core"
 
@@ -14,6 +14,7 @@ describe("학습자 API 코어 조립", () => {
 
     try {
       const core = createLearnerApiCore({
+        aiFeedbackModel: "test-model",
         aiFeedbackProvider: createUnavailableAiFeedbackProvider(),
         apiOrigin: "http://localhost:4000",
         learnerAuthSecret:
@@ -22,6 +23,7 @@ describe("학습자 API 코어 조립", () => {
           "learner-api-core-cursor-0123456789abcdef0123456789abcdef",
         database: database.db,
         identity: createTestIdentity(database.db),
+        sqlite: database.sqlite,
         webOrigin: "http://localhost:3000",
       })
 
@@ -41,7 +43,7 @@ describe("학습자 API 코어 조립", () => {
     )
 
     expect(source).toContain("identityProvisioner: createIdentityProvisioner")
-    expect(source).toContain("createDrizzleAiFeedbackRepository")
+    expect(source).toContain("composeAiFeedbackModule")
     expect(source).toContain("createDrizzleLearnerReadModelRepository")
     expect(source).toContain("createDrizzleProfileReader")
     expect(source).toContain("createDrizzleLearnerTransitionRepository")

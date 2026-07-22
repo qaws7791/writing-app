@@ -6,6 +6,8 @@ import {
   learnerProgressPageSchema,
 } from "@workspace/contracts/learning/learner-content"
 import { createLearnerCursorCodec } from "@workspace/core/learning"
+import { createAiFeedbackRoutes } from "@workspace/ai-feedback/http"
+import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 import { err, ok } from "@workspace/kernel/result"
 import { createLearnerIdentityRoutes } from "@workspace/identity/http"
 import type { SessionResolver } from "@workspace/identity/sessions"
@@ -131,6 +133,24 @@ export function createTestDependencies(): ApiDependencies {
   }
 
   return {
+    aiFeedbackRoutes: createAiFeedbackRoutes({
+      command: {
+        async requestFeedback() {
+          throwUnexpectedTestDependencyCall("aiFeedbackCommand.requestFeedback")
+        },
+      },
+      session: {
+        async resolveLearner(headers) {
+          const session = await sessionResolver.resolveSession(headers)
+          return session === null
+            ? null
+            : {
+                kind: "active",
+                learnerId: learnerIdSchema.parse(session.user.id),
+              }
+        },
+      },
+    }),
     contentService: {
       async getCourseDetail({ courseId }) {
         return courseId === "c1"
@@ -147,13 +167,6 @@ export function createTestDependencies(): ApiDependencies {
       },
       async listCourses() {
         return { items: testCoursePage.items, nextPosition: null }
-      },
-    },
-    learnerAiFeedbackService: {
-      async createFeedback() {
-        throwUnexpectedTestDependencyCall(
-          "learnerAiFeedbackService.createFeedback"
-        )
       },
     },
     learnerCursorCodec,

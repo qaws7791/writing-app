@@ -143,7 +143,6 @@ const config = {
         path: "^(apps|packages)/",
         pathNot: [
           "^apps/api/src/(composition|scripts)/",
-          "^apps/api/src/adapters/ai-feedback/ai-feedback-drizzle\\.repository(?:\\.test)?\\.ts$",
           "^apps/api/src/adapters/(?:analytics/admin-analytics|dashboard/admin-dashboard)-drizzle\\.repository(?:\\.test)?\\.ts$",
           "^apps/api/src/adapters/learning/(?:learner-read-model-drizzle\\.repository|learner-read-models|learner-transition-drizzle\\.repository)(?:\\.test)?\\.ts$",
           "^packages/infra/db/src/(migrations|seeds)/",
@@ -332,7 +331,7 @@ const config = {
       to: {
         path: "^packages/core/src/",
         pathNot:
-          "^packages/core/src/modules/(admin|ai-feedback|auth|content|learning|resource-library)/api/index\\.ts$",
+          "^packages/core/src/modules/(admin|auth|content|learning|resource-library)/api/index\\.ts$",
       },
     },
     {

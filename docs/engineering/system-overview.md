@@ -12,6 +12,7 @@
 - concrete persistence adapter는 해당 module infrastructure가 소유하고 실행 의존성 조립은 API composition이 맡는다.
 - 여러 runtime이 공유하는 인증 vendor integration과 credential·session schema는 좁은 auth infra package가 소유한다. 제품 profile·사용자 상태·role policy는 identity module이 소유하며, API의 auth adapter가 vendor-neutral identity directory port를 구현한다. identity module은 auth runtime·schema를 직접 읽지 않는다.
 - content module은 draft 편집, immutable published revision, 발행·보관·reset과 콘텐츠 schema·seed를 함께 소유한다. learning과 operations에는 table이 아니라 공개 query port를 제공하고 AI 변경안에는 기존 command port를 제공한다.
+- ai-feedback module은 coaching prompt, provider 응답 검증, 완료 attempt 제한과 기록, module-local provider adapter와 HTTP interface를 소유한다. API composition은 learning의 저장 답안 문맥·진행 전이와 ai-feedback application port를 연결하며 어느 쪽도 상대 table을 읽지 않는다.
 - 외부 provider SDK, HTTP framework, logger와 DB runtime은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다.
 - 각 module의 데이터 schema, migration과 seed는 자기 도메인 데이터만 소유하며 도메인 의미를 우회해 application 정책을 소유하지 않는다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.

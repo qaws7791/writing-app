@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { aiFeedbackPublicErrorCodeValues } from "#contracts/ai-feedback/feedback"
 
 export const learnerApiErrorCodeValues = [
   "VALIDATION_ERROR",
@@ -11,10 +12,8 @@ export const learnerApiErrorCodeValues = [
   "NOT_FOUND",
   "STEP_SEQUENCE_CONFLICT",
   "CURRICULUM_VERSION_CHANGED",
-  "ATTEMPT_IN_PROGRESS",
+  ...aiFeedbackPublicErrorCodeValues,
   "AI_FEEDBACK_ANSWER_NOT_FOUND",
-  "ATTEMPT_LIMIT_EXCEEDED",
-  "PROVIDER_UNAVAILABLE",
   "INTERNAL_SERVER_ERROR",
 ] as const
 
@@ -30,10 +29,8 @@ const learnerApiStandardErrorCodeSchema = z.enum([
   "NOT_FOUND",
   "STEP_SEQUENCE_CONFLICT",
   "CURRICULUM_VERSION_CHANGED",
-  "ATTEMPT_IN_PROGRESS",
+  ...aiFeedbackPublicErrorCodeValues,
   "AI_FEEDBACK_ANSWER_NOT_FOUND",
-  "ATTEMPT_LIMIT_EXCEEDED",
-  "PROVIDER_UNAVAILABLE",
   "INTERNAL_SERVER_ERROR",
 ])
 

@@ -6,6 +6,7 @@
     "moduleResolution": "Bundler",
     "paths": {
       "#ai/*": ["../../packages/infra/ai/src/*"],
+      "#ai-feedback/*": ["../../packages/modules/ai-feedback/src/*"],
       "#auth/*": ["../../packages/infra/auth/src/*"],
       "#core/*": ["../../packages/core/src/*"],
       "#content/*": ["../../packages/modules/content/src/*"],

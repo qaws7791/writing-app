@@ -1,21 +1,21 @@
 export const aiFeedbackPromptPolicyVersion = "writing-coach-v1"
 
-export type AiFeedbackPromptInput = {
-  readonly answer: string
-  readonly focus: string
-  readonly lessonTitle: string
-}
+export type AiFeedbackPromptInput = Readonly<{
+  answer: string
+  focus: string
+  lessonTitle: string
+}>
 
-export type AiFeedbackPrompt = {
-  readonly input: string
-  readonly instructions: string
-  readonly policyVersion: typeof aiFeedbackPromptPolicyVersion
-}
+export type AiFeedbackPrompt = Readonly<{
+  input: string
+  instructions: string
+  policyVersion: typeof aiFeedbackPromptPolicyVersion
+}>
 
 export function createAiFeedbackPrompt(
   input: AiFeedbackPromptInput
 ): AiFeedbackPrompt {
-  return {
+  return Object.freeze({
     input: [
       `레슨 제목: ${input.lessonTitle}`,
       `코칭 초점: ${input.focus}`,
@@ -29,5 +29,5 @@ export function createAiFeedbackPrompt(
       "점수는 0부터 100 사이 정수로 판단합니다.",
     ].join("\n"),
     policyVersion: aiFeedbackPromptPolicyVersion,
-  }
+  })
 }

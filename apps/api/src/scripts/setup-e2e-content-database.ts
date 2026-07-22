@@ -12,6 +12,7 @@ import {
   lessonVersions,
   runContentSchemaMigration,
 } from "@workspace/content/schema"
+import { runAiFeedbackSchemaMigration } from "@workspace/ai-feedback/schema"
 import { seedContentDatabase } from "@workspace/content/seed"
 import { seedDatabase } from "@workspace/db/seeds/seed"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
@@ -35,6 +36,7 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
 
   try {
     runContentSchemaMigration(database.sqlite)
+    runAiFeedbackSchemaMigration(database.sqlite)
     await seedContentDatabase(database.db)
     runApiIdentitySchemaMigration(database.sqlite)
     seedLearnerIdentity(database.db, {

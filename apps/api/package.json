@@ -21,6 +21,7 @@
   "dependencies": {
     "@hono/zod-openapi": "catalog:",
     "@workspace/ai": "workspace:*",
+    "@workspace/ai-feedback": "workspace:*",
     "@workspace/auth": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/content": "workspace:*",
