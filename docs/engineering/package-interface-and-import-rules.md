@@ -62,7 +62,7 @@
 - `packages/shared/ui`는 app, module, core, DB, HTTP client, auth SDK와 Next.js navigation을 import하지 않는다.
 - `packages/shared/kernel`은 workspace runtime package, framework, DB, provider와 `process.env`에 의존하지 않는다. `packages/shared/event-contracts`는 kernel과 types만 의존한다.
 - module의 domain·application은 `packages/shared/contracts`의 HTTP DTO를 import하지 않는다.
-- `apps/web`과 `apps/admin`은 core, DB와 Drizzle을 import하지 않는다.
+- `apps/web`과 `apps/admin`은 module, core, DB와 Drizzle을 import하지 않는다. 앱 내부 의존은 `app → features → entities → shared` 방향을 지키며 client-facing source는 `server` 또는 feature `server` 경계를 import하지 않는다.
 - `better-auth` 직접 import는 `packages/infra/auth` 안에서만 허용한다. auth client subpath는 server, core, DB와 ORM module을 import하지 않는다.
 - identity module은 `@workspace/auth` runtime·schema를 직접 import하지 않는다. API auth adapter가 credential table을 읽어 vendor-neutral learner identity directory port를 구현하고, legacy role backfill은 API 통합 migration이 수행한다.
 - DB infra는 content module을 import하지 않는다. 기존 curriculum 이관에 필요한 정규화 정책은 API migration 조립 지점이 content 공개 normalization port에서 API-owned legacy 이관으로 주입한다.

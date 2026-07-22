@@ -1,3 +1,5 @@
+import "server-only"
+
 import { cache } from "react"
 
 import { getServerWritingAppApi } from "@/server/http/get-server-writing-app-api"

@@ -1,3 +1,5 @@
+import "server-only"
+
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { z } from "zod"
 

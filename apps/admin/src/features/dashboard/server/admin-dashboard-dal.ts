@@ -1,3 +1,5 @@
+import "server-only"
+
 import type { AdminApiResult } from "@/shared/http/admin-api-result"
 import type { AdminHttpTransport } from "@/shared/http/admin-http-transport"
 import { adminDashboardDtoSchema } from "@workspace/contracts/operations/admin-dashboard"

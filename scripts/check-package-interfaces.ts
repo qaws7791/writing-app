@@ -504,6 +504,7 @@ verifyP8ResourceLibraryOwnership()
 verifyP9OperationsOwnership()
 verifyP10ApiCompositionOwnership()
 verifyP11SchemaOwnership()
+verifyP12FrontendOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -1553,6 +1554,63 @@ function verifyP11SchemaOwnership(): void {
     failures.push(
       "apps/api/src/db/schema-reconciliation.ts -> cross-module SQL JOIN 대신 독립 조회·application 조정 필요"
     )
+  }
+}
+
+function verifyP12FrontendOwnership(): void {
+  for (const appName of ["admin", "web"] as const) {
+    const appRoot = path.join(repositoryRoot, `apps/${appName}/src`)
+    const serverFiles = [
+      ...collectSourceFiles(path.join(appRoot, "server")),
+      ...fs
+        .readdirSync(path.join(appRoot, "features"), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .flatMap((entry) => {
+          const serverDirectory = path.join(
+            appRoot,
+            "features",
+            entry.name,
+            "server"
+          )
+          return fs.existsSync(serverDirectory)
+            ? collectSourceFiles(serverDirectory)
+            : []
+        }),
+    ]
+
+    for (const filePath of serverFiles) {
+      if (/\.(?:test|spec)\.[jt]sx?$/u.test(filePath)) continue
+      if (!readImports(filePath).includes("server-only")) {
+        failures.push(
+          `${relativePath(filePath)} -> frontend server 경계의 server-only marker 누락`
+        )
+      }
+    }
+  }
+
+  const storybookManifest = JSON.parse(
+    fs.readFileSync(
+      path.join(repositoryRoot, "apps/storybook/package.json"),
+      "utf8"
+    )
+  ) as {
+    readonly dependencies?: Readonly<Record<string, string>>
+    readonly devDependencies?: Readonly<Record<string, string>>
+  }
+  const internalDependencies = [
+    ...Object.keys(storybookManifest.dependencies ?? {}),
+    ...Object.keys(storybookManifest.devDependencies ?? {}),
+  ].filter((dependency) => dependency.startsWith("@workspace/"))
+
+  for (const dependency of internalDependencies) {
+    if (
+      dependency !== "@workspace/typescript-config" &&
+      dependency !== "@workspace/ui"
+    ) {
+      failures.push(
+        `apps/storybook/package.json -> Storybook 내부 dependency ${dependency} 금지`
+      )
+    }
   }
 }
 

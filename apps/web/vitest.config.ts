@@ -1,9 +1,14 @@
 import { createRequire } from "node:module"
+import path from "node:path"
 
 import { defineConfig } from "vitest/config"
 import tsconfigPaths from "vite-tsconfig-paths"
 
 const require = createRequire(import.meta.url)
+const serverOnlyEmptyPath = path.join(
+  path.dirname(require.resolve("server-only")),
+  "empty.js"
+)
 
 export default defineConfig({
   esbuild: {
@@ -13,6 +18,10 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   resolve: {
     alias: [
+      {
+        find: "server-only",
+        replacement: serverOnlyEmptyPath,
+      },
       {
         find: "react-dom/server",
         replacement: require.resolve("react-dom/server"),

@@ -17,7 +17,9 @@ type DependencyCruiserResult = {
   readonly summary?: {
     readonly error?: number
     readonly violations?: readonly {
+      readonly from?: string
       readonly rule?: { readonly name?: string }
+      readonly to?: string
     }[]
   }
 }
@@ -132,25 +134,50 @@ async function verifyArchitectureFixtures(): Promise<void> {
     "application-does-not-import-concrete-adapters",
     "domain-is-layer-pure",
     "domain-does-not-import-runtime-frameworks",
+    "frontend-client-facing-code-does-not-import-server-boundaries",
+    "frontend-entities-do-not-import-upper-layers",
+    "frontend-features-do-not-import-app",
+    "frontend-features-do-not-import-other-feature-internals",
+    "frontend-server-platform-does-not-import-product-layers",
+    "frontend-shared-does-not-import-upper-layers",
     "module-schema-and-seed-are-tooling-only",
     "module-domain-and-application-do-not-import-http-contracts",
     "modules-do-not-import-other-module-internals",
     "no-circular-runtime-dependencies",
     "no-unlisted-dependencies",
+    "storybook-only-consumes-ui-and-config",
   ]
   const missingRuleNames = expectedRuleNames.filter(
     (ruleName) => !actualRuleNames.has(ruleName)
   )
+  const expectedStorybookTargets = [
+    "apps/web/src/features/beta/model/value.ts",
+    "packages/infra/auth/src/client.ts",
+    "packages/modules/alpha/src/domain/alpha-domain.ts",
+  ] as const
+  const actualStorybookTargets = new Set(
+    forbiddenReport.summary?.violations?.flatMap((violation) =>
+      violation.rule?.name === "storybook-only-consumes-ui-and-config" &&
+      violation.from === "apps/storybook/src/product-story.ts" &&
+      violation.to !== undefined
+        ? [violation.to]
+        : []
+    ) ?? []
+  )
+  const missingStorybookTargets = expectedStorybookTargets.filter(
+    (target) => !actualStorybookTargets.has(target)
+  )
 
   if (
     (forbiddenReport.summary?.error ?? 0) === 0 ||
-    missingRuleNames.length > 0
+    missingRuleNames.length > 0 ||
+    missingStorybookTargets.length > 0
   ) {
     const transitiveTypes = forbiddenReport.modules
       ?.flatMap(({ dependencies }) => dependencies ?? [])
       .find(({ module }) => module === "transitive-fixture")?.dependencyTypes
     throw new Error(
-      `dependency-cruiser 금지 fixture가 필요한 규칙을 검증하지 못했습니다: ${missingRuleNames.join(", ")} (actual: ${[...actualRuleNames].sort().join(", ")}; transitive: ${transitiveTypes?.join(", ") ?? "not-found"})`
+      `dependency-cruiser 금지 fixture가 필요한 규칙을 검증하지 못했습니다: rules=[${missingRuleNames.join(", ")}], storybook-targets=[${missingStorybookTargets.join(", ")}] (actual rules: ${[...actualRuleNames].sort().join(", ")}; actual storybook targets: ${[...actualStorybookTargets].sort().join(", ")}; transitive: ${transitiveTypes?.join(", ") ?? "not-found"})`
     )
   }
 }

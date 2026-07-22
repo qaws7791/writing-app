@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11 완료, P12 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12 완료, P13 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -59,7 +59,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P9. `operations` 모듈을 전환한다. 증거: [P9 구현 증거](./p9-validation.md)
 - [x] P10. API composition root와 lifecycle을 완성한다. 증거: [P10 구현 증거](./p10-validation.md)
 - [x] P11. 통합 schema, migration과 seed 경계를 완성한다. 증거: [P11 구현 증거](./p11-validation.md)
-- [ ] P12. web, admin과 Storybook 소비 경계를 전환한다.
+- [x] P12. web, admin과 Storybook 소비 경계를 전환한다. 증거: [P12 구현 증거](./p12-validation.md)
 - [ ] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다.
 - [ ] P14. 배포·운영 automation을 새 경로에 맞춘다.
 - [ ] P15. 이전 구조와 모든 임시 호환 계층을 제거한다.
@@ -743,51 +743,51 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 16.1 공통 frontend 경계
 
-- [ ] P12-001 web과 admin의 module, DB, Drizzle import를 0개로 만든다. 증거:
-- [ ] P12-002 feature 간 내부 path import를 public feature interface 또는 상위 조립으로 치환한다. 증거:
-- [ ] P12-003 `app → features → entities → shared` 의존 방향을 architecture fixture로 고정한다. 증거:
-- [ ] P12-004 server-only auth·env·request client가 client bundle에 포함되지 않게 한다. 증거:
-- [ ] P12-005 최초 조회와 SEO 화면은 Server Component가 feature DAL을 호출하게 한다. 증거:
-- [ ] P12-006 Server Component가 자기 Next Route Handler를 다시 fetch하지 않게 한다. 증거:
-- [ ] P12-007 browser interaction 이후 요청만 client HTTP adapter를 사용하게 한다. 증거:
-- [ ] P12-008 server→client boundary에 serializable props만 전달한다. 증거:
-- [ ] P12-009 URL, server data, local draft와 theme 상태의 owner를 화면별로 확인한다. 증거:
-- [ ] P12-010 같은 server response를 cache와 local state에 중복 저장하지 않게 한다. 증거:
-- [ ] P12-011 성공 response를 endpoint별 canonical Zod schema로 parse한다. 증거:
-- [ ] P12-012 network, HTTP와 contract error를 서로 다른 UI 처리 경로로 유지한다. 증거:
-- [ ] P12-013 error는 `role="alert"`, 일반 status는 `role="status"` 기준을 적용한다. 증거:
-- [ ] P12-014 destructive action에 확인 UI와 server-side authorization을 함께 적용한다. 증거:
+- [x] P12-001 web과 admin의 module, DB, Drizzle import를 0개로 만든다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-002 feature 간 내부 path import를 public feature interface 또는 상위 조립으로 치환한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-003 `app → features → entities → shared` 의존 방향을 architecture fixture로 고정한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-004 server-only auth·env·request client가 client bundle에 포함되지 않게 한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-005 최초 조회와 SEO 화면은 Server Component가 feature DAL을 호출하게 한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-006 Server Component가 자기 Next Route Handler를 다시 fetch하지 않게 한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-007 browser interaction 이후 요청만 client HTTP adapter를 사용하게 한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-008 server→client boundary에 serializable props만 전달한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-009 URL, server data, local draft와 theme 상태의 owner를 화면별로 확인한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-010 같은 server response를 cache와 local state에 중복 저장하지 않게 한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-011 성공 response를 endpoint별 canonical Zod schema로 parse한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-012 network, HTTP와 contract error를 서로 다른 UI 처리 경로로 유지한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-013 error는 `role="alert"`, 일반 status는 `role="status"` 기준을 적용한다. 증거: [공통 frontend 경계](./p12-validation.md#공통-frontend-경계)
+- [x] P12-014 destructive action에 확인 UI와 server-side authorization을 함께 적용한다. 증거: [admin](./p12-validation.md#admin)
 
 ### 16.2 web
 
-- [ ] P12-015 학습자 auth client·server import를 새 infra 경로로 전환한다. 증거:
-- [ ] P12-016 course·lesson·progress feature DAL을 새 learning contract에 맞춘다. 증거:
-- [ ] P12-017 AI feedback mutation과 제한·provider 오류 UI를 새 contract에 맞춘다. 증거:
-- [ ] P12-018 학습 상태 전이 후 navigation을 router API로 처리한다. 증거:
-- [ ] P12-019 landing과 핵심 학습 route의 bundle guard를 유지한다. 증거:
-- [ ] P12-020 learner UI test에 loading, empty, validation, contract error와 auth expiry를 포함한다. 증거:
-- [ ] P12-021 `ENABLE_TEST_AUTH=true`로 learner 핵심 E2E를 통과시킨다. 증거:
+- [x] P12-015 학습자 auth client·server import를 새 infra 경로로 전환한다. 증거: [web](./p12-validation.md#web)
+- [x] P12-016 course·lesson·progress feature DAL을 새 learning contract에 맞춘다. 증거: [web](./p12-validation.md#web)
+- [x] P12-017 AI feedback mutation과 제한·provider 오류 UI를 새 contract에 맞춘다. 증거: [web](./p12-validation.md#web)
+- [x] P12-018 학습 상태 전이 후 navigation을 router API로 처리한다. 증거: [web](./p12-validation.md#web)
+- [x] P12-019 landing과 핵심 학습 route의 bundle guard를 유지한다. 증거: [web](./p12-validation.md#web)
+- [x] P12-020 learner UI test에 loading, empty, validation, contract error와 auth expiry를 포함한다. 증거: [web](./p12-validation.md#web)
+- [x] P12-021 `ENABLE_TEST_AUTH=true`로 learner 핵심 E2E를 통과시킨다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
 
 ### 16.3 admin
 
-- [ ] P12-022 admin auth client·server import를 새 infra 경로로 전환한다. 증거:
-- [ ] P12-023 identity, content, resource와 operations feature adapter를 새 contract에 맞춘다. 증거:
-- [ ] P12-024 owner-only mutation의 disabled UI와 server 거부를 독립 검증한다. 증거:
-- [ ] P12-025 Lexical React editor를 admin resource feature 안에 둔다. 증거:
-- [ ] P12-026 shared resource-document에는 headless codec만 남긴다. 증거:
-- [ ] P12-027 Lexical, chart와 무거운 client runtime을 실제 route에서 dynamic import한다. 증거:
-- [ ] P12-028 resource와 chart route의 bundle guard를 유지한다. 증거:
-- [ ] P12-029 admin UI test에 version conflict, permission, provider error와 destructive confirm을 포함한다. 증거:
-- [ ] P12-030 `ENABLE_TEST_AUTH=true`로 admin 핵심 E2E를 통과시킨다. 증거:
+- [x] P12-022 admin auth client·server import를 새 infra 경로로 전환한다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-023 identity, content, resource와 operations feature adapter를 새 contract에 맞춘다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-024 owner-only mutation의 disabled UI와 server 거부를 독립 검증한다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-025 Lexical React editor를 admin resource feature 안에 둔다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-026 shared resource-document에는 headless codec만 남긴다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-027 Lexical, chart와 무거운 client runtime을 실제 route에서 dynamic import한다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-028 resource와 chart route의 bundle guard를 유지한다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-029 admin UI test에 version conflict, permission, provider error와 destructive confirm을 포함한다. 증거: [admin](./p12-validation.md#admin)
+- [x] P12-030 `ENABLE_TEST_AUTH=true`로 admin 핵심 E2E를 통과시킨다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
 
 ### 16.4 Storybook
 
-- [ ] P12-031 Storybook manifest가 UI와 config만 내부 dependency로 선언하게 한다. 증거:
-- [ ] P12-032 story에서 제품 API, auth와 module import를 제거한다. 증거:
-- [ ] P12-033 shared UI state·variant story를 새 public subpath로 전환한다. 증거:
-- [ ] P12-034 interaction과 a11y test를 통과시킨다. 증거:
-- [ ] P12-035 static Storybook build를 통과시킨다. 증거:
-- [ ] P12-036 P12 게이트: frontend architecture, unit·UI·Storybook test, 두 Next build와 핵심 E2E가 통과한다. 증거:
+- [x] P12-031 Storybook manifest가 UI와 config만 내부 dependency로 선언하게 한다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
+- [x] P12-032 story에서 제품 API, auth와 module import를 제거한다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
+- [x] P12-033 shared UI state·variant story를 새 public subpath로 전환한다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
+- [x] P12-034 interaction과 a11y test를 통과시킨다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
+- [x] P12-035 static Storybook build를 통과시킨다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
+- [x] P12-036 P12 게이트: frontend architecture, unit·UI·Storybook test, 두 Next build와 핵심 E2E가 통과한다. 증거: [Storybook과 자동 검증](./p12-validation.md#storybook과-자동-검증)
 
 ## 17. P13 — 오류, 보안, 관측성과 외부 I/O 통합 검증
 

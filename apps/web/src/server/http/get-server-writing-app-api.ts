@@ -1,3 +1,5 @@
+import "server-only"
+
 import { createHttpWritingAppApi } from "@/shared/http/create-http-writing-app-api"
 import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
 import type { ServerApiBaseUrl } from "@/shared/config/api-base-url"

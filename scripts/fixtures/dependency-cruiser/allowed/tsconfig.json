@@ -5,6 +5,7 @@
     "moduleResolution": "Bundler",
     "paths": {
       "#alpha/*": ["packages/modules/alpha/src/*"],
+      "@/*": ["apps/web/src/*"],
       "@fixture/alpha/api": ["packages/modules/alpha/src/interface/api.ts"],
       "@fixture/types/id": ["packages/shared/types/src/id.ts"]
     }

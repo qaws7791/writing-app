@@ -5,7 +5,7 @@
 ## 기본 원칙
 
 - 기능 기준으로 파일을 모은다. 기술 종류별 전역 `components`, `hooks`, `utils` 묶음보다 `features/course-catalog`, `features/lesson-session`처럼 변경 이유가 같은 코드를 가까이 둔다.
-- 앱은 조립자 역할을 한다. 비즈니스 규칙은 가능한 한 `packages/core` 또는 feature 내부 순수 함수에 둔다.
+- 앱은 조립자 역할을 한다. 서버 비즈니스 규칙은 소유 module에, 화면에만 필요한 상태 전이는 feature 내부 순수 함수에 둔다.
 - 외부 API 응답은 canonical runtime schema로 먼저 검증한다. 화면 모델과 의미가 같으면 canonical 타입을 직접 사용하고, 실제 UI 모델 차이가 있을 때만 mapper를 둔다.
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
 - 공유 UI는 `packages/shared/ui`에 둔다. `components/ui`는 shadcn 프리미티브, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점, 라우팅은 각 앱 feature에서 조합한다.
@@ -32,6 +32,7 @@
 | `server`   | 서버 인증, 환경 변수, 요청별 API client factory            | Client Component, UI, 브라우저 API               |
 
 - 의존성은 `app → features → entities → shared` 방향으로 흐르고 `server`는 서버 전용 플랫폼 경계다. 순환 의존, 하위 계층의 상위 계층 import, Client Component의 `server` import는 허용하지 않는다.
+- `server`와 feature의 `server` source는 `server-only` marker를 사용한다. 단위 테스트는 package의 빈 server 구현만 대체하며 production build의 client graph 차단은 완화하지 않는다.
 - feature 내부 `model`은 React, fetch, 세션과 I/O를 모르는 순수 규칙·상태 전이·schema를 소유한다. `server`는 Server Component용 DAL, `api`는 브라우저 HTTP adapter, `hooks`는 React lifecycle 연결, `ui`는 표현을 소유한다.
 - Server Component는 자기 앱의 Route Handler를 다시 `fetch`하지 않는다. 각 feature의 server DAL을 통해 `apps/api`를 직접 호출한다.
 - 파일과 디렉터리는 Next.js 예약 파일을 제외하고 kebab-case를 사용한다. 앱 내부 import는 각 앱의 절대 경로 alias를 사용하고 package 간 import는 공개 subpath만 사용한다.
@@ -72,7 +73,7 @@
 - 성공 응답이 계약과 다르면 network 오류가 아니라 contract 오류로 분리한다.
 - 실패 응답은 서버의 canonical `SCREAMING_SNAKE_CASE` code와 한국어 message를 그대로 사용한다.
 
-- 어드민 HTTP 클라이언트는 core/admin DTO 스키마로 모든 성공 응답을 검증한다.
+- 어드민 HTTP 클라이언트는 context별 canonical contract 스키마로 모든 성공 응답을 검증한다.
 - 학습자 HTTP 클라이언트는 콘텐츠, 프로필, 진행, 레슨 상태 전이와 AI 코칭 성공 응답을 런타임 스키마로 검증한다.
 - JSON 파싱 실패와 스키마 불일치는 `CONTRACT_ERROR`로 반환하고, fetch 실패만 `NETWORK_ERROR`로 반환한다.
 - 학습자 웹과 어드민 웹의 HTTP adapter는 `fetch` 예외를 `null`로 병합하지 않고 `@workspace/http-client`의 명시적 result로 처리한다.

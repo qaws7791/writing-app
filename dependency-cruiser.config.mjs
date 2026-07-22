@@ -128,12 +128,60 @@ const config = {
       },
     },
     {
+      name: "frontend-features-do-not-import-app",
+      severity: "error",
+      from: { path: "^apps/(web|admin)/src/features/" },
+      to: { path: "^apps/(web|admin)/src/app/" },
+    },
+    {
+      name: "frontend-features-do-not-import-other-feature-internals",
+      severity: "error",
+      from: { path: "^apps/(web|admin)/src/features/([^/]+)/" },
+      to: {
+        path: "^apps/$1/src/features/",
+        pathNot: "^apps/$1/src/features/$2/",
+      },
+    },
+    {
+      name: "frontend-entities-do-not-import-upper-layers",
+      severity: "error",
+      from: { path: "^apps/(web|admin)/src/entities/" },
+      to: { path: "^apps/(web|admin)/src/(app|features)/" },
+    },
+    {
+      name: "frontend-shared-does-not-import-upper-layers",
+      severity: "error",
+      from: { path: "^apps/(web|admin)/src/shared/" },
+      to: { path: "^apps/(web|admin)/src/(app|entities|features)/" },
+    },
+    {
+      name: "frontend-server-platform-does-not-import-product-layers",
+      severity: "error",
+      from: { path: "^apps/(web|admin)/src/server/" },
+      to: { path: "^apps/(web|admin)/src/(app|entities|features)/" },
+    },
+    {
+      name: "frontend-client-facing-code-does-not-import-server-boundaries",
+      severity: "error",
+      from: {
+        path: "^apps/(web|admin)/src/(?:app/(?:_providers|.*_views)|entities|features/[^/]+/(?:api|hooks|model|ui)|shared)/",
+        pathNot: "\\.(?:test|spec)\\.[cm]?[jt]sx?$",
+      },
+      to: {
+        path: "^apps/(web|admin)/src/(?:server|features/[^/]+/server)/",
+      },
+    },
+    {
       name: "storybook-only-consumes-ui-and-config",
       severity: "error",
       from: { path: "^apps/storybook/" },
       to: {
-        path: "^packages/",
-        pathNot: ["^packages/shared/ui/", "^packages/config/"],
+        path: "^(apps|packages)/",
+        pathNot: [
+          "^apps/storybook/",
+          "^packages/shared/ui/",
+          "^packages/config/",
+        ],
       },
     },
     {

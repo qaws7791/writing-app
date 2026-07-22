@@ -1,3 +1,5 @@
+import "server-only"
+
 import { cookies } from "next/headers"
 import { normalizeAdminSessionToken } from "@workspace/auth/session-token"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"

@@ -1,5 +1,7 @@
 "use server"
 
+import "server-only"
+
 import { revalidatePath } from "next/cache"
 
 import { courseIdSchema } from "@/entities/course/model/course-id"
