@@ -1,108 +1,134 @@
 # Project Structure Guide
 
-- This repository is monorepo for writing learning platform project.
-- This repository is a bun-managed monorepo with the following structure:
-- Don't edit the legacy experimental directory at the repository root; it is not part of the main project structure.
-- All documents must be written in Korean.
+## Repository Overview
 
-## First Principle
-
-Prefer explicitness over implicitness and choose simplicity over cleverness and favor consistency over convenience and prioritize local change over widespread impact and pursue immutability over mutable state and value clear intent over clever optimization and trust convention over reinventing decisions and choose transparent behavior over hidden magic and aim for small cohesive units over large all-purpose modules and consider reversible decisions before irreversible ones and build observable systems over black boxes and guarantee deterministic behavior over unpredictable outcomes and design isolated failures over cascading ones and write expressive code over code that depends on comments and trust resilient structures over those that rely solely on perfect prevention.
-
-## Overview
-
-- `README.md`: 프로젝트 소개와 실행 진입점
-- `docs/_index.md`: 프로젝트 지식 탐색의 단일 진입점
-- `docs/authority-map.md`: 사실별 권위 소유자와 설명 문서의 관계
-- `docs/product/`: 제품 문제, 요구사항과 도메인 규칙
-- `docs/design/`: 화면, UI와 접근성 기준
-- `docs/engineering/`: 현재 시스템 구조, 구현과 운영 계약
-- `docs/work/`: 진행 중인 한시적 작업 문서
-- `docs/archive/`: 완료되거나 폐기된 기록. 현재 사실의 근거로 사용하지 않음
-
-## Task Guide
-
-- Always update the documentation (/docs) to the latest version for changes when starting and finishing a task.
-- 로컬 브라우저 테스트나 E2E 테스트는 Google OAuth 대신 `ENABLE_TEST_AUTH=true` 테스트 전용 로그인을 사용한다.
-- 프로젝트 사실을 확인할 때는 `docs/_index.md`, `docs/authority-map.md`, 해당 권위 소스 순서로 읽는다.
-- package, route, port, 환경 변수 기본값, schema, service, image, network와 테스트 실행 대상은 코드·설정이 소유한다. living 문서에는 값을 복제하지 않고 권위 소스로 연결한다.
-- `docs/work`는 진행 중 작업의 범위와 판단을 이해할 때만 사용하며 현재 구조의 권위 소스로 인용하지 않는다.
-- `docs/archive`와 ADR은 현재 사실 판정에서 제외하고, 과거 결정이나 증거가 필요한 경우에만 읽는다.
-- 새 계획·조사·감사 문서는 `docs/work/<yyyy-mm-dd-name>/`에 만들고 완료 시 같은 작업 단위를 `docs/archive/<yyyy-mm-dd-name>/`로 이동한다.
-- 한시 문서의 영구 결론은 완료 전에 관련 제품·디자인·엔지니어링 권위 문서에 반영한다.
+- This repository is a Bun-managed monorepo for a writing-focused learning platform.
+- Do not edit the legacy experimental directory at the repository root — **replace this line with the exact path** (e.g. `/legacy`); it is not part of the main project structure.
+- Documentation under `/docs` must be written in Korean. This file and other agent-instruction files are not subject to that rule.
 
 ### Prerequisites
 
-- Bun 1.3.10
+Treat the versions below as a reference floor — the authoritative versions are defined in the repository's `package.json` (`engines`) or `.tool-versions`.
+
+- Bun 1.3.10 or later
 - Node.js 24.x
+
+## First Principles
+
+The following principles guide technical decisions in this repository:
+
+- Prefer explicitness over implicitness.
+- Choose simplicity over cleverness.
+- Favor consistency over convenience.
+- Prioritize local change over widespread impact.
+- Pursue immutability over mutable state.
+- Value clear intent over clever optimization.
+- Trust convention over reinventing decisions.
+- Choose transparent behavior over hidden magic.
+- Aim for small, cohesive units over large, all-purpose modules.
+- Consider reversible decisions before irreversible ones.
+- Build observable systems over black boxes.
+- Guarantee deterministic behavior over unpredictable outcomes.
+- Design isolated failures over cascading ones.
+- Write expressive code over code that depends on comments.
+- Trust resilient structures over those that rely solely on perfect prevention.
+
+## Documentation Map
+
+- `docs/_index.md` — single entry point for exploring project knowledge. Start here.
+- `docs/authority-map.md` — maps which source owns which facts.
+- `docs/product/` — product issues, requirements, domain rules.
+- `docs/design/` — screens, UI, accessibility standards.
+- `docs/engineering/` — current system structure, implementation and operational contracts.
+- `docs/work/` — documents for work in progress.
+- `docs/archive/` — records of completed or discarded work.
+
+This map is a quick reference — `docs/_index.md` is the authoritative, up-to-date index.
+
+## Working with the Repository
+
+- Before starting a task, read `docs/_index.md`, `docs/authority-map.md`, and the relevant authority document, in that order, to confirm current facts.
+- Package names, routes, ports, environment variable defaults, schemas, services, images, networks, and test execution targets are owned by code and configuration — link to the authority source rather than restating the value in a document.
+- Treat `docs/work/` as scope/judgment context only, never as an authority source for current structure.
+- Treat `docs/archive/` and ADRs as historical record only — exclude them from current-fact determination, and read them only when you need past decisions or evidence.
+- New planning, investigation, and audit documents go in `docs/work/<yyyy-mm-dd-name>/`. On completion, move the same work unit to `docs/archive/<yyyy-mm-dd-name>/`, folding any permanent conclusions into the relevant product/design/engineering authority documents first.
+- Whenever a change affects a fact that a doc describes, update the relevant `/docs` file: check it's current before starting, and update it again before finishing.
+- For local browser or E2E tests, use the test-specific login (`ENABLE_TEST_AUTH=true`) instead of Google OAuth. If this file is out of date, confirm the flag against its source.
 
 ## Coding Guidelines
 
-- All files use kebab-case
-- Avoid unrelated refactoring, large-scale renaming, and formatting-only changes
-- Code is readable and maintainable
-- Every package must have a narrow and obvious purpose
-- Limit changes to the smallest possible diff as much as possible
-- Related files keep close to each other
-- Prefer self-describing code over explanatory comments
-- Prefer declarative and functional,predictable code
-- Prefer domain language over technical filler words
-- Keep runtime boundaries explicit
-- Use Tsdoc to add explanations only for complex code.
+- All files use kebab-case.
+- Avoid unrelated refactoring, large-scale renaming, and formatting-only changes.
+- Keep code readable and maintainable.
+- Every package has a narrow, obvious purpose.
+- Limit changes to the smallest possible diff.
+- Keep related files close to each other.
+- Prefer self-describing code over explanatory comments.
+- Prefer declarative, functional, predictable code.
+- Prefer domain language over technical filler words.
+- Keep runtime boundaries explicit.
+- Use TSDoc only to explain complex code.
 
-### Typescript Principles
+### Scope Discipline
 
-- use brand type for domain entities
-- Make types carry meaning
-- Prefer discriminated unions or explicit result variants over vague success flags
-- Avoid:
-  - `any`
-  - weak `Record<string, unknown>` usage where a real type should exist
-  - generic `{ success: boolean, data?: unknown, error?: string }` result shapes
-- Do not include the file extension in the import path.
-- Always use absolute paths when importing.
+- Implement exactly what is requested. Do not add features, options, exception handling, or extension points that aren't part of the request.
+- Do not write code "that might be needed later" (YAGNI) — add it only when it's actually needed.
+- Follow existing code styles and patterns. Do not create new abstraction layers, helper functions, or utility modules without reason.
+- Do not refactor, reformat, or move files unrelated to the request.
+- If scope is uncertain, don't write code first — ask a question or present a plan.
 
-### Code Style
+### TypeScript Principles
 
-- Use Oxfmt for formatting only
-- Keep one Oxfmt configuration at the repository root
-- Use Oxlint for linting across the monorepo
-- Do not bikeshed formatting in reviews
-- Optimize reviews for correctness, naming, coupling, and boundary clarity
+- Use brand types for domain entities.
+- Make types carry meaning.
+- Prefer discriminated unions or explicit result variants over vague success flags.
+- Avoid `any`, weak `Record<string, unknown>` where a real type should exist, and generic `{ success: boolean, data?: unknown, error?: string }` result shapes.
+- Do not include the file extension in import paths.
+- Always use absolute paths for imports.
 
-When editing code:
+### Formatting & Linting
 
-- preserve existing repository formatting
-- avoid unrelated reformatting in touched files
-- keep diffs focused on the requested change
+- Use Oxfmt for formatting only, with one Oxfmt configuration at the repository root.
+- Use Oxlint for linting across the monorepo.
+- Don't bikeshed formatting in review — spend review time on correctness, naming, coupling, and boundary clarity.
 
-### Forbidden patterns
+### Editing Existing Code
 
-- Duplicate utility creation for the same purpose
-- Misuse of relative path imports between apps
-- Add conditionals to bypass test failures
-- Leave dead code behind and defer “later cleanup”
-- Unrelated file touch
+- Preserve existing repository formatting.
+- Avoid unrelated reformatting in touched files.
+- Keep diffs focused on the requested change.
 
-### Validation checklist
+### Forbidden Patterns
 
-- After the change, it must pass build, lint, typecheck, etc. to the extent possible.
-- `bun lefthook run pre-commit` can be used to lint,formatting before commit
+- Duplicate utility creation for the same purpose.
+- Relative-path imports between apps.
+- Conditionals added to bypass test failures.
+- Dead code left behind for "later cleanup."
+- Unrelated file touches.
+
+## Documentation Guidelines
+
+- Write only the requested content — don't add sections automatically; add them only when explicitly requested.
+- Keep documentation short. If it exceeds a single screen, double-check whether all of it is necessary.
+- Before creating a new file, check whether adding to an existing document is enough.
+- Add code comments only to explain "why." Don't restate the "what" if it's already clear from the code.
+
+## Definition of Done
+
+- [ ] Build, lint, and typecheck pass. `bun lefthook run pre-commit` covers lint/format.
+- [ ] `/docs` reflects the change, including moving finished `docs/work/` items to `docs/archive/` with conclusions folded into the relevant authority docs.
+- [ ] All processes started for the task (Node.js, bash, dev servers, etc.) are safely terminated.
 
 ## Commit Guidelines
 
-- Use Korean for commit messages
-- Keep summary under 80 characters
-- Commit message format:
+- Use Korean for commit messages.
+- Keep the summary under 80 characters.
+- Format:
 
 ```
 <short summary of changes>
 
-- [detailed description of changes 1(optional)]
-- [detailed description of changes 2(optional)]
+- [detailed description of changes 1 (optional)]
+- [detailed description of changes 2 (optional)]
 -
 ```
-
-## After the task is finished
-
-- Safely terminate all processes used for the task, such as Node.js and the bash.
