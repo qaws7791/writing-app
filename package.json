@@ -75,6 +75,8 @@
     "repomix:analysis": "bunx repomix --style markdown --output .artifacts/repomix/codebase-analysis.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md,docs/engineering/contracts/**/*.json,packages/config/**,scripts/**,apps/storybook/**' --ignore 'docs/work/**,docs/archive/**,prototype/**,.worktrees/**,.artifacts/**,apps/storybook/dist/**,apps/storybook/.turbo/**,apps/storybook/build-output.log'",
     "repomix:code": "bunx repomix --style markdown --output .artifacts/repomix/codebase.md --remove-empty-lines --ignore 'sonnet-to-react,.agents,apps/storybook,docs,packages/config,scripts,prototype,.worktrees,.artifacts'",
     "repomix:docs": "bunx repomix --style markdown --output .artifacts/repomix/combined-docs.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md' --ignore 'docs/work/**,docs/archive/**'",
+    "repomix:apps": "bunx repomix --style markdown --output .artifacts/repomix/apps.md --remove-empty-lines --include 'apps/**/*.ts,apps/**/*' --ignore 'apps/storybook/**'",
+    "repomix:packages": "bunx repomix --style markdown --output .artifacts/repomix/packages.md --remove-empty-lines --include 'packages/**/*.ts,packages/**/*.tsx' --ignore 'packages/config/**'",
     "setup": "bun scripts/setup.ts"
   },
   "devDependencies": {
