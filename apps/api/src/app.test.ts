@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import { createLearnerIdentityRoutes } from "@workspace/identity/http"
 
 import { createApp, type ApiDependencies } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
@@ -453,42 +454,33 @@ describe("플랫폼 API profile route", () => {
 })
 
 function createDependencies(): ApiDependencies {
+  const sessionResolver: ApiDependencies["sessionResolver"] = {
+    async resolveSession(headers) {
+      const token = readTestSessionToken(headers)
+
+      if (token === "active-token") return activeSession
+      if (token === "suspended-token") {
+        return { user: { ...activeSession.user, status: "suspended" } }
+      }
+      if (token === "deleted-token") {
+        return { user: { ...activeSession.user, status: "deleted" } }
+      }
+
+      return null
+    },
+  }
+
   return {
     ...createTestDependencies(),
-    profileReader: {
-      async readProfileStats() {
-        return profileStats
+    identityRoutes: createLearnerIdentityRoutes({
+      profileStatsQuery: {
+        async readProfileStats() {
+          return profileStats
+        },
       },
-    },
-    sessionResolver: {
-      async resolveSession(headers) {
-        const token = readTestSessionToken(headers)
-
-        if (token === "active-token") {
-          return activeSession
-        }
-
-        if (token === "suspended-token") {
-          return {
-            user: {
-              ...activeSession.user,
-              status: "suspended",
-            },
-          }
-        }
-
-        if (token === "deleted-token") {
-          return {
-            user: {
-              ...activeSession.user,
-              status: "deleted",
-            },
-          }
-        }
-
-        return null
-      },
-    },
+      sessionResolver,
+    }),
+    sessionResolver,
   }
 }
 

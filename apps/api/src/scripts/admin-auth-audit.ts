@@ -1,6 +1,8 @@
-import { asc } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 import { z } from "zod"
-import { adminRoleSchema, type AdminRole } from "@workspace/core/admin"
+import { adminRoleSchema } from "@workspace/contracts/identity/admin-session"
+import type { AdminRole } from "@workspace/identity/admin-actor"
+import { adminIdentityProfiles } from "@workspace/identity/schema"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { createReadOnlyWritingAppDatabase } from "@workspace/db/client"
 import {
@@ -43,9 +45,13 @@ export async function auditAdminAuth(
       createdAt: adminAuthUsers.createdAt,
       email: adminAuthUsers.email,
       id: adminAuthUsers.id,
-      role: adminAuthUsers.role,
+      role: adminIdentityProfiles.role,
     })
     .from(adminAuthUsers)
+    .innerJoin(
+      adminIdentityProfiles,
+      eq(adminIdentityProfiles.adminId, adminAuthUsers.id)
+    )
     .orderBy(asc(adminAuthUsers.email))
   const accounts = await db
     .select({

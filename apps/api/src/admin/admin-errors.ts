@@ -1,9 +1,4 @@
 import { AppError } from "@workspace/http-platform/errors"
-import type { AdminOwnerMutationResult } from "@workspace/core/admin"
-import type {
-  AdminCourseEditorSaveResult,
-  AdminCoursePublishResult,
-} from "@workspace/core/content"
 
 export function invalidAdminRequestError(): AppError {
   return new AppError({
@@ -13,71 +8,12 @@ export function invalidAdminRequestError(): AppError {
   })
 }
 
-export function unauthorizedAdminError(): AppError {
-  return new AppError({
-    code: "UNAUTHORIZED",
-    message: "Unauthorized",
-    status: 401,
-  })
-}
-
 export function forbiddenAdminError(): AppError {
   return new AppError({
     code: "FORBIDDEN",
     message: "Forbidden",
     status: 403,
   })
-}
-
-export function unwrapAdminOwnerMutationResult<TValue>(
-  result: AdminOwnerMutationResult<TValue>
-): TValue {
-  switch (result.kind) {
-    case "forbidden":
-      throw forbiddenAdminError()
-    case "not-found":
-      throw notFoundAdminError()
-    case "ok":
-      return result.value
-  }
-}
-
-export function unwrapAdminCourseEditorSaveResult(
-  result: AdminCourseEditorSaveResult
-) {
-  switch (result.kind) {
-    case "invalid-reference":
-      throw invalidAdminRequestError()
-    case "stale-revision":
-      throw new AppError({
-        code: "STALE_REVISION",
-        message: "Course editor revision conflict",
-        status: 409,
-      })
-    default:
-      return unwrapAdminOwnerMutationResult(result)
-  }
-}
-
-export function unwrapAdminCoursePublishResult(
-  result: AdminCoursePublishResult
-) {
-  switch (result.kind) {
-    case "invalid-draft":
-      throw new AppError({
-        code: "INVALID_REQUEST",
-        message: "Course draft is not publishable",
-        status: 422,
-      })
-    case "stale-revision":
-      throw new AppError({
-        code: "STALE_REVISION",
-        message: "Course editor revision conflict",
-        status: 409,
-      })
-    default:
-      return unwrapAdminOwnerMutationResult(result)
-  }
 }
 
 export function notFoundAdminError(): AppError {

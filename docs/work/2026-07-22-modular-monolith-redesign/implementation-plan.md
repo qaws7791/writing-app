@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3 완료, P4 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5 완료, P6 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -51,8 +51,8 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P1. workspace, task graph와 architecture 도구 기반을 전환한다.
 - [x] P2. shared package 기반을 구축한다.
 - [x] P3. infra package 기반을 구축한다.
-- [ ] P4. `identity` 모듈을 전환한다.
-- [ ] P5. `content` 모듈을 전환한다.
+- [x] P4. `identity` 모듈을 전환한다.
+- [x] P5. `content` 모듈을 전환한다.
 - [ ] P6. `ai-feedback` 모듈을 전환한다.
 - [ ] P7. `learning` 모듈을 전환한다.
 - [ ] P8. `resource-library` 모듈을 전환한다.
@@ -389,89 +389,89 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 8.1 경계와 domain
 
-- [ ] P4-001 기존 auth capability, learner profile, admin identity·role source를 identity 후보로 확정한다. 증거:
-- [ ] P4-002 auth-owned credential·session source와 identity-owned 제품 사용자 source를 분리한다. 증거:
-- [ ] P4-003 identity가 소유할 route, contract, table, seed와 consumer를 확정한다. 증거:
-- [ ] P4-004 `packages/modules/identity` manifest, private alias, test config와 explicit exports를 만든다. 증거:
-- [ ] P4-005 learner profile entity와 invariant를 정의한다. 증거:
-- [ ] P4-006 user `active | suspended | deleted` 상태 전이를 정의한다. 증거:
-- [ ] P4-007 admin role과 owner authorization policy를 정의한다. 증거:
-- [ ] P4-008 비식별화 정책과 삭제 이후 허용 동작을 정의한다. 증거:
-- [ ] P4-009 예상 가능한 identity 실패를 discriminated union으로 정의한다. 증거:
-- [ ] P4-010 상태 전이가 새 aggregate와 immutable event를 반환하게 한다. 증거:
-- [ ] P4-011 domain unit test에 성공, 권한 거부, 잘못된 상태 전이와 비식별화를 포함한다. 증거:
+- [x] P4-001 기존 auth capability, learner profile, admin identity·role source를 identity 후보로 확정한다. 증거: [P4 구현 증거](./p4-validation.md)
+- [x] P4-002 auth-owned credential·session source와 identity-owned 제품 사용자 source를 분리한다. 증거: API auth directory adapter의 neutral identity port와 identity의 auth package 무의존 guard
+- [x] P4-003 identity가 소유할 route, contract, table, seed와 consumer를 확정한다. 증거: identity manifest·schema·HTTP interface와 [P4 구현 증거](./p4-validation.md)
+- [x] P4-004 `packages/modules/identity` manifest, private alias, test config와 explicit exports를 만든다. 증거: `packages/modules/identity/package.json`, `vitest.config.ts`
+- [x] P4-005 learner profile entity와 invariant를 정의한다. 증거: `learner-profile.ts`
+- [x] P4-006 user `active | suspended | deleted` 상태 전이를 정의한다. 증거: `user-status.ts`, learner profile domain test
+- [x] P4-007 admin role과 owner authorization policy를 정의한다. 증거: `admin-role.ts`와 3개 domain test
+- [x] P4-008 비식별화 정책과 삭제 이후 허용 동작을 정의한다. 증거: deleted profile 변경 거부·owner 상태 복구·비식별화 domain test
+- [x] P4-009 예상 가능한 identity 실패를 discriminated union으로 정의한다. 증거: `identity-error.ts`
+- [x] P4-010 상태 전이가 새 aggregate와 immutable event를 반환하게 한다. 증거: `DomainDecision`과 `identity.user-status-changed`
+- [x] P4-011 domain unit test에 성공, 권한 거부, 잘못된 상태 전이와 비식별화를 포함한다. 증거: identity domain 2 files·7 tests
 
 ### 8.2 application과 persistence
 
-- [ ] P4-012 인증 identity를 제품 사용자로 provisioning하는 command를 만든다. 증거:
-- [ ] P4-013 profile 조회·변경 query와 command를 분리한다. 증거:
-- [ ] P4-014 user status·admin role 변경 command에 owner policy를 적용한다. 증거:
-- [ ] P4-015 session 폐기를 auth port로 선언하고 concrete auth type을 노출하지 않는다. 증거:
-- [ ] P4-016 learning용 identity query port를 공개한다. 증거:
-- [ ] P4-017 operations용 identity reporting query port를 공개한다. 증거:
-- [ ] P4-018 application test에서 repository, auth와 clock port fake를 사용한다. 증거:
-- [ ] P4-019 identity table과 같은 module 내부 FK를 module schema로 이동한다. 증거:
-- [ ] P4-020 Better Auth table을 identity schema에서 제외한다. 증거:
-- [ ] P4-021 identity Drizzle repository를 module infrastructure로 이동한다. 증거:
-- [ ] P4-022 suspended·deleted 상태와 role 변경의 optimistic conflict를 Result로 반환한다. 증거:
-- [ ] P4-023 임시 SQLite에서 repository와 transaction 통합 test를 통과시킨다. 증거:
+- [x] P4-012 인증 identity를 제품 사용자로 provisioning하는 command를 만든다. 증거: identity application `provisionLearner`, auth hook 주입 test
+- [x] P4-013 profile 조회·변경 query와 command를 분리한다. 증거: identity application·query 공개 표면
+- [x] P4-014 user status·admin role 변경 command에 owner policy를 적용한다. 증거: identity service와 admin role policy test
+- [x] P4-015 session 폐기를 auth port로 선언하고 concrete auth type을 노출하지 않는다. 증거: `IdentitySessionRevocationPort`, API auth adapter test
+- [x] P4-016 learning용 identity query port를 공개한다. 증거: `IdentityLearningQuery`
+- [x] P4-017 operations용 identity reporting query port를 공개한다. 증거: `OperationsIdentityReportingQuery`, dashboard·analytics adapter
+- [x] P4-018 application test에서 repository, auth와 clock port fake를 사용한다. 증거: identity application 2 files·10 tests
+- [x] P4-019 identity table과 같은 module 내부 FK를 module schema로 이동한다. 증거: DB baseline table 제거, legacy cross-module FK 재구성 test와 identity `schema.ts`
+- [x] P4-020 Better Auth table을 identity schema에서 제외한다. 증거: identity auth package 무의존·schema exact export와 package interface gate
+- [x] P4-021 identity Drizzle repository를 module infrastructure로 이동한다. 증거: 자체 profile·role table만 읽는 `identity-drizzle-repository.ts`
+- [x] P4-022 suspended·deleted 상태와 role 변경의 optimistic conflict를 Result로 반환한다. 증거: version 조건 update와 repository·application test
+- [x] P4-023 임시 SQLite에서 repository와 transaction 통합 test를 통과시킨다. 증거: identity repository 3 tests
 
 ### 8.3 HTTP, 조립과 제거
 
-- [ ] P4-024 identity canonical request·response·public error schema를 확정한다. 증거:
-- [ ] P4-025 profile과 admin identity route를 module HTTP interface로 이동한다. 증거:
-- [ ] P4-026 learner와 admin actor 추출을 auth platform에서 받아 제품 identity로 변환한다. 증거:
-- [ ] P4-027 모든 protected read·write에 server-side authorization을 적용한다. 증거:
-- [ ] P4-028 identity Result를 status와 public error code로 exhaustive mapping한다. 증거:
-- [ ] P4-029 HTTP contract test에 unauthenticated, forbidden, conflict와 success를 포함한다. 증거:
-- [ ] P4-030 `module.ts`에서 repository, use case, route와 public port를 조립한다. 증거:
-- [ ] P4-031 apps/api에서 auth hook과 identity provisioning port를 주입한다. 증거:
-- [ ] P4-032 기존 profile·admin identity route와 새 route의 parity를 확인한다. 증거:
-- [ ] P4-033 기존 core auth/admin role, API identity adapter와 중복 route source를 제거한다. 증거:
-- [ ] P4-034 `identity.user-status-changed` event 발행과 실패 관측을 검증한다. 증거:
-- [ ] P4-035 P4 게이트: domain·application·repository·HTTP·interface·architecture test와 관련 앱 build가 통과한다. 증거:
+- [x] P4-024 identity canonical request·response·public error schema를 확정한다. 증거: `@workspace/contracts/identity/*`
+- [x] P4-025 profile과 admin identity route를 module HTTP interface로 이동한다. 증거: learner/admin identity route factory
+- [x] P4-026 learner와 admin actor 추출을 auth platform에서 받아 제품 identity로 변환한다. 증거: identity session resolver와 API composition
+- [x] P4-027 모든 protected read·write에 server-side authorization을 적용한다. 증거: learner active-session·admin owner middleware test
+- [x] P4-028 identity Result를 status와 public error code로 exhaustive mapping한다. 증거: identity HTTP route switch mapping
+- [x] P4-029 HTTP contract test에 unauthenticated, forbidden, conflict와 success를 포함한다. 증거: identity HTTP 6 tests, API parity target
+- [x] P4-030 `module.ts`에서 repository, use case, route와 public port를 조립한다. 증거: `packages/modules/identity/src/module.ts`
+- [x] P4-031 apps/api에서 auth hook과 identity provisioning port를 주입한다. 증거: `learner-api-core.ts`, identity composition
+- [x] P4-032 기존 profile·admin identity route와 새 route의 parity를 확인한다. 증거: API app·admin identity target contract test
+- [x] P4-033 기존 core auth/admin role, API identity adapter와 중복 route source를 제거한다. 증거: package interface P4 ownership gate와 dead-code 통과
+- [x] P4-034 `identity.user-status-changed` event 발행과 실패 관측을 검증한다. 증거: identity service publish·observer test
+- [x] P4-035 P4 게이트: domain·application·repository·HTTP·interface·architecture test와 관련 앱 build가 통과한다. 증거: [P4 구현 증거](./p4-validation.md)
 
 ## 9. P5 — `content` 모듈 전환
 
 ### 9.1 경계와 domain
 
-- [ ] P5-001 기존 content core, DB content policy, admin content와 learner curriculum read source를 확정한다. 증거:
-- [ ] P5-002 content가 소유할 route, contract, table, seed와 consumer를 확정한다. 증거:
-- [ ] P5-003 `packages/modules/content` manifest, private alias, test config와 explicit exports를 만든다. 증거:
-- [ ] P5-004 course, curriculum draft와 published revision의 entity·value object를 정의한다. 증거:
-- [ ] P5-005 course당 단일 draft invariant를 domain과 DB 보장으로 나눈다. 증거:
-- [ ] P5-006 published revision 불변성과 archive 정책을 정의한다. 증거:
-- [ ] P5-007 version 범위 lesson·step reference invariant를 정의한다. 증거:
-- [ ] P5-008 content normalization policy를 DB primitive에서 domain으로 이동한다. 증거:
-- [ ] P5-009 예상 가능한 not-found, conflict, validation과 immutable revision 실패를 union으로 정의한다. 증거:
-- [ ] P5-010 publish decision이 새 상태와 `content.curriculum-published` event를 반환하게 한다. 증거:
-- [ ] P5-011 domain unit test에 draft, publish, archive, reset과 version conflict를 포함한다. 증거:
+- [x] P5-001 기존 content core, DB content policy, admin content와 learner curriculum read source를 확정한다. 증거: [P5 경계 inventory](./p5-validation.md)
+- [x] P5-002 content가 소유할 route, contract, table, seed와 consumer를 확정한다. 증거: [P5 경계 inventory](./p5-validation.md)
+- [x] P5-003 `packages/modules/content` manifest, private alias, test config와 explicit exports를 만든다. 증거: `packages/modules/content/package.json`, `tsconfig.json`, `vitest.config.ts`
+- [x] P5-004 course, curriculum draft와 published revision의 entity·value object를 정의한다. 증거: `content-model.ts`, `curriculum.ts`
+- [x] P5-005 course당 단일 draft invariant를 domain과 DB 보장으로 나눈다. 증거: `selectSingleDraft`, partial unique index와 SQLite 통합 test
+- [x] P5-006 published revision 불변성과 archive 정책을 정의한다. 증거: domain decision, module-owned trigger와 archive 보존 통합 test
+- [x] P5-007 version 범위 lesson·step reference invariant를 정의한다. 증거: version 복합 key·FK, stable ID와 target validation test
+- [x] P5-008 content normalization policy를 DB primitive에서 domain으로 이동한다. 증거: `@workspace/content/normalization`, API가 DB legacy migration에 정책을 주입하는 fail-closed test
+- [x] P5-009 예상 가능한 not-found, conflict, validation과 immutable revision 실패를 union으로 정의한다. 증거: `content-error.ts`와 exhaustive HTTP mapping
+- [x] P5-010 publish decision이 새 상태와 `content.curriculum-published` event를 반환하게 한다. 증거: immutable `DomainDecision` test
+- [x] P5-011 domain unit test에 draft, publish, archive, reset과 version conflict를 포함한다. 증거: content domain 2 files·10 tests
 
 ### 9.2 application과 persistence
 
-- [ ] P5-012 course·curriculum command와 query를 파일별 단일 use case로 분리한다. 증거:
-- [ ] P5-013 published curriculum을 learning에 제공하는 query port를 공개한다. 증거:
-- [ ] P5-014 operations용 content reporting query port를 공개한다. 증거:
-- [ ] P5-015 admin AI 변경안이 기존 content command만 호출하게 application port를 제공한다. 증거:
-- [ ] P5-016 reset command에 명시적 환경 확인과 destructive guard port를 적용한다. 증거:
-- [ ] P5-017 application test에 owner 거부, optimistic conflict와 event 발행 전후를 포함한다. 증거:
-- [ ] P5-018 content table, index, trigger와 module 내부 FK를 module schema로 이동한다. 증거:
-- [ ] P5-019 cross-module FK와 join을 제거할 migration 전제 검사를 추가한다. 증거:
-- [ ] P5-020 content Drizzle repository를 module infrastructure로 이동한다. 증거:
-- [ ] P5-021 transaction이 content table만 변경하고 commit 뒤 event를 반환하게 한다. 증거:
-- [ ] P5-022 published content 불변식을 임시 SQLite 통합 test로 검증한다. 증거:
+- [x] P5-012 course·curriculum command와 query를 파일별 단일 use case로 분리한다. 증거: `application/use-cases/`의 7개 use case
+- [x] P5-013 published curriculum을 learning에 제공하는 query port를 공개한다. 증거: `ContentLearningQuery`
+- [x] P5-014 operations용 content reporting query port를 공개한다. 증거: `OperationsContentReportingQuery`
+- [x] P5-015 admin AI 변경안이 기존 content command만 호출하게 application port를 제공한다. 증거: `ContentChangeCommandPort`
+- [x] P5-016 reset command에 명시적 환경 확인과 destructive guard port를 적용한다. 증거: `ContentResetGuardPort`, production·확인 거부 domain/application test
+- [x] P5-017 application test에 owner 거부, optimistic conflict와 event 발행 전후를 포함한다. 증거: content application 5 tests
+- [x] P5-018 content table, index, trigger와 module 내부 FK를 module schema로 이동한다. 증거: `@workspace/content/schema`, idempotent trigger 복구 test
+- [x] P5-019 cross-module FK와 join을 제거할 migration 전제 검사를 추가한다. 증거: duplicate draft·learning/AI orphan 사전 검사와 fail-closed test
+- [x] P5-020 content Drizzle repository를 module infrastructure로 이동한다. 증거: `content-drizzle-repository.ts`
+- [x] P5-021 transaction이 content table만 변경하고 commit 뒤 event를 반환하게 한다. 증거: publish rollback과 `commit → publish → observe` test
+- [x] P5-022 published content 불변식을 임시 SQLite 통합 test로 검증한다. 증거: published version·계층 trigger 통합 test
 
 ### 9.3 HTTP, 조립과 제거
 
-- [ ] P5-023 content canonical contract를 context subpath로 전환한다. 증거:
-- [ ] P5-024 admin course·curriculum·archive·reset route를 module interface로 이동한다. 증거:
-- [ ] P5-025 request parse, actor 확인, command·query 호출과 Result mapping만 route에 남긴다. 증거:
-- [ ] P5-026 HTTP contract test에 ETag, version conflict, forbidden과 immutable revision 거부를 포함한다. 증거:
-- [ ] P5-027 `module.ts`에서 schema, repository, use case, route와 공개 port를 조립한다. 증거:
-- [ ] P5-028 apps/api에서 identity authorization과 content module을 주입한다. 증거:
-- [ ] P5-029 기존 admin content와 learner content route의 parity를 확인한다. 증거:
-- [ ] P5-030 기존 core content, DB content policy, API content adapter와 중복 route를 제거한다. 증거:
-- [ ] P5-031 P5 게이트: domain·application·repository·HTTP·interface·architecture test와 관련 앱 build가 통과한다. 증거:
+- [x] P5-023 content canonical contract를 context subpath로 전환한다. 증거: `@workspace/contracts/content/*`, operations reset 계약 제거 guard
+- [x] P5-024 admin course·curriculum·archive·reset route를 module interface로 이동한다. 증거: content HTTP interface 7개 operation
+- [x] P5-025 request parse, actor 확인, command·query 호출과 Result mapping만 route에 남긴다. 증거: content route factory와 HTTP architecture gate
+- [x] P5-026 HTTP contract test에 ETag, version conflict, forbidden과 immutable revision 거부를 포함한다. 증거: content HTTP 5 tests와 API target contract
+- [x] P5-027 `module.ts`에서 schema, repository, use case, route와 공개 port를 조립한다. 증거: `packages/modules/content/src/module.ts`
+- [x] P5-028 apps/api에서 identity authorization과 content module을 주입한다. 증거: `content-module.composition.ts`, `admin-content.composition.ts`, API runtime
+- [x] P5-029 기존 admin content와 learner content route의 parity를 확인한다. 증거: admin target contract와 전체 API 회귀 test
+- [x] P5-030 기존 core content, DB content policy, API content adapter와 중복 route를 제거한다. 증거: P5 ownership interface guard와 dead-code gate
+- [x] P5-031 P5 게이트: domain·application·repository·HTTP·interface·architecture test와 관련 앱 build가 통과한다. 증거: [P5 구현 증거](./p5-validation.md)
 
 ## 10. P6 — `ai-feedback` 모듈 전환
 

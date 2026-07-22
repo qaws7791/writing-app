@@ -15,11 +15,12 @@ import {
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import * as databaseSchema from "@workspace/db/schema"
+import * as contentSchema from "@workspace/content/schema"
 import {
   createContentSeedRows,
   readContentSeedData,
-} from "@workspace/db/seeds/seed-content"
-import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
+  upsertContentSeedRows,
+} from "@workspace/content/seed"
 import type { LearnerCursorPosition } from "@workspace/core/learning"
 
 import { createDrizzleLearnerReadModelRepository } from "@/adapters/learning/learner-read-model-drizzle.repository"
@@ -34,7 +35,7 @@ const {
   learnerCourseProgress,
   lessonStepVersions,
   lessonVersions,
-} = databaseSchema
+} = { ...databaseSchema, ...contentSchema }
 
 describe("학습자 read model Drizzle repository", () => {
   it("검색·분류를 DB에서 적용하고 한글 category를 결정적으로 반환한다", async () => {
@@ -414,7 +415,7 @@ function createObservedRepository(client: WritingAppDatabaseClient) {
         queries.push(query)
       },
     },
-    schema: databaseSchema,
+    schema: { ...databaseSchema, ...contentSchema },
   })
 
   return {
@@ -502,7 +503,11 @@ async function seedContent(
   }
 
   client.db.transaction((transaction) => {
-    upsertContentSeedRows(transaction, fixtureRows)
+    upsertContentSeedRows(
+      transaction,
+      fixtureRows,
+      new Date("2026-06-14T00:00:00.000Z")
+    )
   })
 }
 

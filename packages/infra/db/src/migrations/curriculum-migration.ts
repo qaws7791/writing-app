@@ -6,7 +6,12 @@ import {
   validateAiFeedbackTargets,
   type LessonStepDto,
 } from "@workspace/contracts/content/course"
-import { normalizeVersionedStepContent } from "#db/content/normalize-versioned-step-content"
+
+export type NormalizeVersionedStepContent = (
+  stepId: string,
+  stepType: string,
+  contentJson: string
+) => string
 
 type LegacyCourseRow = {
   readonly id: string
@@ -61,10 +66,14 @@ export function hasLegacyCurriculumSchema(sqlite: Database): boolean {
 
 export function migrateLegacyCurriculumSchema(
   sqlite: Database,
-  baselineSql: string
+  baselineSql: string,
+  normalizeVersionedStepContent: NormalizeVersionedStepContent
 ): void {
   assertPreMigrationDatabaseIntegrity(sqlite)
-  const normalizedStepContent = validateLegacyCurriculum(sqlite)
+  const normalizedStepContent = validateLegacyCurriculum(
+    sqlite,
+    normalizeVersionedStepContent
+  )
 
   sqlite.exec("PRAGMA foreign_keys = OFF")
   try {
@@ -86,7 +95,8 @@ export function migrateLegacyCurriculumSchema(
 }
 
 function validateLegacyCurriculum(
-  sqlite: Database
+  sqlite: Database,
+  normalizeVersionedStepContent: NormalizeVersionedStepContent
 ): ReadonlyMap<string, string> {
   assertRequiredLegacyTables(sqlite)
 
@@ -144,7 +154,10 @@ function validateLegacyCurriculum(
   assertContiguousSortOrders(lessons, (row) => row.unitId, "lesson")
   assertContiguousSortOrders(steps, (row) => row.lessonId, "lesson step")
 
-  const normalizedStepContent = normalizeAndValidateSteps(steps)
+  const normalizedStepContent = normalizeAndValidateSteps(
+    steps,
+    normalizeVersionedStepContent
+  )
   validateLegacyProgress(sqlite, lessons, steps)
   validateLegacyAnswers(sqlite, lessons, steps)
   validateLegacyAttempts(sqlite, lessons, steps)
@@ -153,7 +166,8 @@ function validateLegacyCurriculum(
 }
 
 function normalizeAndValidateSteps(
-  steps: readonly LegacyStepRow[]
+  steps: readonly LegacyStepRow[],
+  normalizeVersionedStepContent: NormalizeVersionedStepContent
 ): ReadonlyMap<string, string> {
   const normalized = new Map<string, string>()
   const stepsByLessonId = new Map<string, LessonStepDto[]>()

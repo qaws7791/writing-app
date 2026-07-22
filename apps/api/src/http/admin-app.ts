@@ -9,7 +9,7 @@ import {
   createTrustedOriginMiddleware,
   withPrivateNoStore,
 } from "@workspace/http-platform/security"
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
   adminHealthRoute,
   createAdminSessionRoute,

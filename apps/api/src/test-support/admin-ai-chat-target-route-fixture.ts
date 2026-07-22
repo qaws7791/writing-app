@@ -11,16 +11,16 @@ import {
 } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
-  adminRoles,
   type AdminAiChatConversationHistory,
   type AiChatRepository,
 } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { createAdminApp } from "@/http/admin-app"
 import type { AdminAiChatAgent } from "@/modules/admin-ai-chat/admin-ai-chat-agent"
 import {

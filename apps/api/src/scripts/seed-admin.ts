@@ -1,11 +1,14 @@
 import { hashAuthPassword } from "@workspace/auth/password"
 import { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
   type WritingAppDatabase,
 } from "@workspace/db/client"
+import { seedOwnerIdentity } from "@workspace/identity/seed"
 
+import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 import {
   createSeedAdminRows,
   type SeedAdminUserInput,
@@ -30,12 +33,13 @@ export function seedAdminUser(
             emailVerified: rows.user.emailVerified,
             image: rows.user.image,
             name: rows.user.name,
-            role: rows.user.role,
             updatedAt: rows.user.updatedAt,
           },
           target: adminAuthUsers.id,
         })
         .run()
+
+      seedOwnerIdentity(transaction, adminIdSchema.parse(rows.user.id))
 
       if (input.resetPassword !== true) {
         transaction
@@ -149,6 +153,7 @@ if (import.meta.main) {
   const command = parseSeedAdminEnvironment(process.env)
   const client = createWritingAppDatabase(command.databaseUrl)
   try {
+    runApiIdentitySchemaMigration(client.sqlite)
     await seedAdminUser(client.db, command.input)
   } finally {
     client.close()

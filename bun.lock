@@ -81,11 +81,15 @@
         "@hono/zod-openapi": "catalog:",
         "@workspace/ai": "workspace:*",
         "@workspace/auth": "workspace:*",
+        "@workspace/content": "workspace:*",
         "@workspace/contracts": "workspace:*",
         "@workspace/core": "workspace:*",
         "@workspace/db": "workspace:*",
         "@workspace/env": "workspace:*",
+        "@workspace/event-bus": "workspace:*",
+        "@workspace/event-contracts": "workspace:*",
         "@workspace/http-platform": "workspace:*",
+        "@workspace/identity": "workspace:*",
         "@workspace/kernel": "workspace:*",
         "@workspace/observability": "workspace:*",
         "@workspace/storage": "workspace:*",
@@ -202,6 +206,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@workspace/contracts": "workspace:*",
+        "@workspace/identity": "workspace:*",
         "@workspace/kernel": "workspace:*",
         "@workspace/resource-document": "workspace:*",
         "@workspace/types": "workspace:*",
@@ -235,7 +240,6 @@
       "version": "0.0.0",
       "dependencies": {
         "@workspace/contracts": "workspace:*",
-        "@workspace/core": "workspace:*",
         "better-auth": "^1.6.13",
         "zod": "catalog:",
       },
@@ -257,7 +261,6 @@
       "dependencies": {
         "@workspace/auth": "workspace:*",
         "@workspace/contracts": "workspace:*",
-        "@workspace/types": "workspace:*",
         "drizzle-orm": "catalog:",
         "zod": "catalog:",
       },
@@ -337,6 +340,50 @@
       "devDependencies": {
         "@workspace/typescript-config": "workspace:*",
         "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/modules/content": {
+      "name": "@workspace/content",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hono/zod-openapi": "catalog:",
+        "@workspace/contracts": "workspace:*",
+        "@workspace/db": "workspace:*",
+        "@workspace/event-contracts": "workspace:*",
+        "@workspace/http-platform": "workspace:*",
+        "@workspace/kernel": "workspace:*",
+        "@workspace/types": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "catalog:",
+        "vite-tsconfig-paths": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/modules/identity": {
+      "name": "@workspace/identity",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hono/zod-openapi": "catalog:",
+        "@workspace/contracts": "workspace:*",
+        "@workspace/db": "workspace:*",
+        "@workspace/event-contracts": "workspace:*",
+        "@workspace/http-platform": "workspace:*",
+        "@workspace/kernel": "workspace:*",
+        "@workspace/types": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "catalog:",
+        "vite-tsconfig-paths": "catalog:",
         "vitest": "catalog:",
       },
     },
@@ -1381,6 +1428,8 @@
 
     "@workspace/auth": ["@workspace/auth@workspace:packages/infra/auth"],
 
+    "@workspace/content": ["@workspace/content@workspace:packages/modules/content"],
+
     "@workspace/contracts": ["@workspace/contracts@workspace:packages/shared/contracts"],
 
     "@workspace/core": ["@workspace/core@workspace:packages/core"],
@@ -1398,6 +1447,8 @@
     "@workspace/http-client": ["@workspace/http-client@workspace:packages/infra/http-client"],
 
     "@workspace/http-platform": ["@workspace/http-platform@workspace:packages/infra/http-platform"],
+
+    "@workspace/identity": ["@workspace/identity@workspace:packages/modules/identity"],
 
     "@workspace/kernel": ["@workspace/kernel@workspace:packages/shared/kernel"],
 

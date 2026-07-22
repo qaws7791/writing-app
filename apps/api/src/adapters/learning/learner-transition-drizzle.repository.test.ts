@@ -23,20 +23,22 @@ import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
   authUsers,
   aiFeedbackAttempts,
-  courseCurriculumVersions,
-  courseUnitVersions,
   learnerActivityDays,
   learnerCourseProgress,
   learnerLessonAnswers,
   learnerLessonProgress,
+} from "@workspace/db/schema"
+import {
+  courseCurriculumVersions,
+  courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/db/schema"
+} from "@workspace/content/schema"
 import {
   createContentSeedRows,
   readContentSeedData,
-} from "@workspace/db/seeds/seed-content"
-import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
+  upsertContentSeedRows,
+} from "@workspace/content/seed"
 
 import { createDrizzleLearnerTransitionRepository } from "@/adapters/learning/learner-transition-drizzle.repository"
 
@@ -1003,6 +1005,6 @@ async function seedLearning(client: WritingAppDatabaseClient): Promise<void> {
     .run()
   const rows = createContentSeedRows(await readContentSeedData())
   client.db.transaction((transaction) =>
-    upsertContentSeedRows(transaction, rows)
+    upsertContentSeedRows(transaction, rows, now)
   )
 }

@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 
 import Image from "next/image"
 
-import type { LearnerProfileResponse } from "@workspace/contracts/learning/learner-api"
+import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 
 import { ThemeToggle } from "@/features/learner-profile/ui/theme-toggle"

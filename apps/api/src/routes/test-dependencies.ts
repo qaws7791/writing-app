@@ -7,6 +7,8 @@ import {
 } from "@workspace/contracts/learning/learner-content"
 import { createLearnerCursorCodec } from "@workspace/core/learning"
 import { err, ok } from "@workspace/kernel/result"
+import { createLearnerIdentityRoutes } from "@workspace/identity/http"
+import type { SessionResolver } from "@workspace/identity/sessions"
 
 import type { ApiDependencies } from "@/app"
 
@@ -120,6 +122,14 @@ const testProgressPage = learnerProgressPageSchema.parse({
 })
 
 export function createTestDependencies(): ApiDependencies {
+  const sessionResolver: SessionResolver = {
+    async resolveSession(headers) {
+      const token = readTestSessionToken(headers)
+
+      return token === "active-token" ? activeSession : null
+    },
+  }
+
   return {
     contentService: {
       async getCourseDetail({ courseId }) {
@@ -159,29 +169,26 @@ export function createTestDependencies(): ApiDependencies {
         )
       },
     },
-    profileReader: {
-      async readProfileStats() {
-        return {
-          completedLessons: 1,
-          currentStreakDays: 2,
-          lastActiveDate: "2026-06-14",
-          progressPercent: 33,
-          totalLessons: 3,
-        }
+    identityRoutes: createLearnerIdentityRoutes({
+      profileStatsQuery: {
+        async readProfileStats() {
+          return {
+            completedLessons: 1,
+            currentStreakDays: 2,
+            lastActiveDate: "2026-06-14",
+            progressPercent: 33,
+            totalLessons: 3,
+          }
+        },
       },
-    },
+      sessionResolver,
+    }),
     progressService: {
       async readProgress() {
         return { items: testProgressPage.items, nextPosition: null }
       },
     },
-    sessionResolver: {
-      async resolveSession(headers) {
-        const token = readTestSessionToken(headers)
-
-        return token === "active-token" ? activeSession : null
-      },
-    },
+    sessionResolver,
   }
 }
 

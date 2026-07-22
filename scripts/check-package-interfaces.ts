@@ -10,8 +10,6 @@ type PrivateImportScope = {
 const coreCapabilityFacades = [
   ["admin", "packages/core/src/modules/admin/api/index.ts"],
   ["ai-feedback", "packages/core/src/modules/ai-feedback/api/index.ts"],
-  ["auth", "packages/core/src/modules/auth/api/index.ts"],
-  ["content", "packages/core/src/modules/content/api/index.ts"],
   ["learning", "packages/core/src/modules/learning/api/index.ts"],
   [
     "resource-library",
@@ -33,6 +31,10 @@ const privateImportScopes: readonly PrivateImportScope[] = [
   { packageName: "@workspace/auth", root: "packages/infra/auth/src" },
   { packageName: "@workspace/core", root: "packages/core/src" },
   {
+    packageName: "@workspace/content",
+    root: "packages/modules/content/src",
+  },
+  {
     packageName: "@workspace/contracts",
     root: "packages/shared/contracts/src",
   },
@@ -42,6 +44,10 @@ const privateImportScopes: readonly PrivateImportScope[] = [
     root: "packages/shared/event-contracts/src",
   },
   { packageName: "@workspace/kernel", root: "packages/shared/kernel/src" },
+  {
+    packageName: "@workspace/identity",
+    root: "packages/modules/identity/src",
+  },
   {
     packageName: "@workspace/resource-document",
     root: "packages/shared/resource-document/src",
@@ -75,9 +81,6 @@ const expectedExports = {
   ],
   "packages/infra/db/package.json": [
     "./client",
-    "./content/content-archive-policy",
-    "./content/curriculum-version-id",
-    "./content/normalize-versioned-step-content",
     "./database-backup",
     "./destructive-operation-guard",
     "./migrations/curriculum-migration",
@@ -86,7 +89,6 @@ const expectedExports = {
     "./schema",
     "./seed",
     "./seeds/seed",
-    "./seeds/seed-content",
     "./sqlite-database",
   ],
   "packages/infra/event-bus/package.json": ["./in-memory-event-bus"],
@@ -115,7 +117,10 @@ const expectedExports = {
     "./ai-feedback/feedback",
     "./auth-session-cookie",
     "./content/admin-courses",
+    "./content/admin-content-reset",
     "./content/admin-data",
+    "./content/admin-routes",
+    "./content/api-error",
     "./content/course",
     "./content/ids",
     "./content/status",
@@ -123,7 +128,9 @@ const expectedExports = {
     "./identity/admin-ids",
     "./identity/admin-session",
     "./identity/admin-users",
+    "./identity/api-error",
     "./identity/data",
+    "./identity/learner-profile",
     "./identity/status",
     "./learning/api-error",
     "./learning/ids",
@@ -137,11 +144,9 @@ const expectedExports = {
     "./operations/admin-ai-chat",
     "./operations/admin-analytics",
     "./operations/admin-api-error",
-    "./operations/admin-content-reset",
     "./operations/admin-dashboard",
     "./operations/admin-settings",
     "./operations/ai-chat-data",
-    "./operations/content-reset-data",
     "./operations/dashboard-analytics-data",
     "./operations/settings-data",
     "./resource-library/admin-resource-documents",
@@ -153,8 +158,6 @@ const expectedExports = {
   "packages/core/package.json": [
     "./admin",
     "./ai-feedback",
-    "./auth",
-    "./content",
     "./learning",
     "./resource-library",
   ],
@@ -181,6 +184,29 @@ const expectedExports = {
     "./domain-event",
     "./result",
   ],
+  "packages/modules/identity/package.json": [
+    "./admin-actor",
+    "./application",
+    "./http",
+    "./module",
+    "./ports",
+    "./queries",
+    "./schema",
+    "./seed",
+    "./sessions",
+    "./user-status",
+  ],
+  "packages/modules/content/package.json": [
+    "./application",
+    "./commands",
+    "./http",
+    "./module",
+    "./normalization",
+    "./ports",
+    "./queries",
+    "./schema",
+    "./seed",
+  ],
   "packages/shared/resource-document/package.json": [
     "./resource-horizontal-rule",
     "./resource-image",
@@ -196,7 +222,6 @@ const forbiddenCoreFacadeReferences = {
     "/ports/admin.repository",
     "/use-cases/admin.service",
   ],
-  "packages/core/src/modules/auth/api/index.ts": ["/infrastructure/"],
 } as const
 const forbiddenAdminApplicationFacadeFiles = [
   "packages/core/src/modules/admin/application/policies/admin-actor-policy.ts",
@@ -429,6 +454,8 @@ if (!httpJsonTransportSource.includes("input.schema.safeParse")) {
 }
 
 verifyP3InfrastructureOwnership()
+verifyP4IdentityOwnership()
+verifyP5ContentOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -755,6 +782,148 @@ function verifyP3InfrastructureOwnership(): void {
         )
       }
     }
+  }
+}
+
+function verifyP4IdentityOwnership(): void {
+  const removedIdentitySources = [
+    "apps/api/src/adapters/auth/learner-profile-drizzle.repository.ts",
+    "apps/api/src/adapters/identity/admin-user-drizzle.repository.ts",
+    "apps/api/src/modules/admin-identity/admin-identity.routes.ts",
+    "apps/api/src/modules/auth/auth.routes.ts",
+    "apps/api/src/modules/profile/profile.routes.ts",
+    "packages/core/src/modules/auth/api/index.ts",
+    "packages/core/src/modules/admin/domain/admin-role.ts",
+    "packages/core/src/shared/admin-owner-authorization.ts",
+  ] as const
+
+  for (const sourcePath of removedIdentitySources) {
+    if (fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(`${sourcePath} -> 제거된 identity 소유권 source 재도입`)
+    }
+  }
+
+  const identityRoot = path.join(
+    repositoryRoot,
+    "packages/modules/identity/src"
+  )
+  for (const filePath of collectSourceFiles(identityRoot)) {
+    for (const imported of readImports(filePath)) {
+      if (imported.startsWith("@workspace/auth")) {
+        failures.push(
+          `${relativePath(filePath)} -> identity module의 auth schema·runtime 직접 의존 ${imported}`
+        )
+      }
+    }
+  }
+
+  const identityManifestPath = path.join(
+    repositoryRoot,
+    "packages/modules/identity/package.json"
+  )
+  const identityManifest = JSON.parse(
+    fs.readFileSync(identityManifestPath, "utf8")
+  ) as {
+    readonly dependencies?: Readonly<Record<string, string>>
+  }
+  if (identityManifest.dependencies?.["@workspace/auth"] !== undefined) {
+    failures.push(
+      "packages/modules/identity/package.json -> identity module의 auth package 직접 의존 금지"
+    )
+  }
+
+  const baselineMigration = fs.readFileSync(
+    path.join(
+      repositoryRoot,
+      "packages/infra/db/src/migrations/0000-writing-app-baseline.sql"
+    ),
+    "utf8"
+  )
+  if (
+    /CREATE TABLE IF NOT EXISTS learner_profiles\b/u.test(baselineMigration)
+  ) {
+    failures.push(
+      "packages/infra/db/src/migrations/0000-writing-app-baseline.sql -> DB baseline의 identity table 소유 금지"
+    )
+  }
+
+  const forbiddenOwnershipReferences = [
+    [
+      "packages/infra/db/src/schema/learning.schema.ts",
+      /\blearnerProfiles\b/u,
+      "learning schema의 identity table 소유",
+    ],
+    [
+      "packages/infra/auth/src/admin/server.ts",
+      /additionalFields[\s\S]*\brole\b/u,
+      "auth runtime의 제품 role 소유",
+    ],
+    [
+      "packages/shared/contracts/src/learning/learner-api.ts",
+      /learner(?:Profile|Session)ResponseSchema/u,
+      "learning contract의 identity response 소유",
+    ],
+  ] as const
+
+  for (const [
+    sourcePath,
+    pattern,
+    description,
+  ] of forbiddenOwnershipReferences) {
+    const source = fs.readFileSync(
+      path.join(repositoryRoot, sourcePath),
+      "utf8"
+    )
+    if (pattern.test(source)) {
+      failures.push(`${sourcePath} -> ${description} 금지`)
+    }
+  }
+}
+
+function verifyP5ContentOwnership(): void {
+  const removedContentSources = [
+    "apps/api/src/adapters/content/admin-course-drizzle.repository.ts",
+    "apps/api/src/modules/admin-content/admin-content.routes.ts",
+    "apps/api/src/modules/admin-content/courses.routes.ts",
+    "apps/api/src/modules/admin-content/curriculum-editor.routes.ts",
+    "packages/core/src/modules/content/api/index.ts",
+    "packages/infra/db/src/content/content-archive-policy.ts",
+    "packages/infra/db/src/content/curriculum-version-id.ts",
+    "packages/infra/db/src/content/normalize-versioned-step-content.ts",
+    "packages/infra/db/src/schema/content.schema.ts",
+    "packages/infra/db/src/seeds/seed-content.ts",
+    "packages/shared/contracts/src/operations/admin-content-reset.ts",
+    "packages/shared/contracts/src/operations/content-reset-data.ts",
+  ] as const
+
+  for (const sourcePath of removedContentSources) {
+    if (fs.existsSync(path.join(repositoryRoot, sourcePath))) {
+      failures.push(`${sourcePath} -> 제거된 content 소유권 source 재도입`)
+    }
+  }
+
+  const contentRoot = path.join(repositoryRoot, "packages/modules/content/src")
+  for (const filePath of collectSourceFiles(contentRoot)) {
+    for (const imported of readImports(filePath)) {
+      if (
+        imported.startsWith("@workspace/auth") ||
+        imported.startsWith("@workspace/identity")
+      ) {
+        failures.push(
+          `${relativePath(filePath)} -> content module의 auth·identity 직접 의존 ${imported}`
+        )
+      }
+    }
+  }
+
+  const dbSchemaIndex = fs.readFileSync(
+    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
+    "utf8"
+  )
+  if (/content\.schema/u.test(dbSchemaIndex)) {
+    failures.push(
+      "packages/infra/db/src/schema/index.ts -> content schema 재공개 금지"
+    )
   }
 }
 

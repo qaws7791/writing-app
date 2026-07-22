@@ -3,7 +3,6 @@ import type { OpenAPIHono } from "@hono/zod-openapi"
 import type { ApiDependencies } from "@/context/create-request-context"
 import { createOpenApiDocument } from "@/http/openapi"
 import { learnerAiFeedbackRoute } from "@/modules/ai-feedback/ai-feedback.routes"
-import { authSessionRoute } from "@/modules/auth/auth.routes"
 import { registerAuthProxy } from "@/modules/auth/auth-proxy"
 import {
   getCourseDetailRoute,
@@ -16,13 +15,10 @@ import {
   completeStepRoute,
   startLessonRoute,
 } from "@/modules/learning/learner-transition.routes"
-import { profileRoute } from "@/modules/profile/profile.routes"
 import { progressRoute } from "@/modules/progress/progress.routes"
 
 export const routes = [
   healthRoute,
-  authSessionRoute,
-  profileRoute,
   listCoursesRoute,
   listCourseCategoriesRoute,
   getCourseDetailRoute,

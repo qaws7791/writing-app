@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@workspace/contracts": "workspace:*",
-    "@workspace/core": "workspace:*",
     "better-auth": "^1.6.13",
     "zod": "catalog:"
   },

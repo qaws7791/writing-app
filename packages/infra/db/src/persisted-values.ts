@@ -7,17 +7,6 @@ export const persistedContentStatusValues = [
   persistedContentStatuses.archived,
 ] as const
 
-export const persistedLearnerAccountStatuses = {
-  active: "active",
-  deleted: "deleted",
-  suspended: "suspended",
-} as const
-export const persistedLearnerAccountStatusValues = [
-  persistedLearnerAccountStatuses.active,
-  persistedLearnerAccountStatuses.suspended,
-  persistedLearnerAccountStatuses.deleted,
-] as const
-
 export const persistedLessonProgressStatuses = {
   completed: "completed",
   inProgress: "in_progress",
@@ -46,8 +35,6 @@ export const persistedCourseVisualKeyValues = [
 
 export type PersistedContentStatus =
   (typeof persistedContentStatusValues)[number]
-export type PersistedLearnerAccountStatus =
-  (typeof persistedLearnerAccountStatusValues)[number]
 export type PersistedLessonProgressStatus =
   (typeof persistedLessonProgressStatusValues)[number]
 export type PersistedAdminRole = (typeof persistedAdminRoleValues)[number]

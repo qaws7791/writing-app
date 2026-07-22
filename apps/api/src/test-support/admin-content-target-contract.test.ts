@@ -238,6 +238,34 @@ const adminContentTargetContractInput = {
       scenario: "owner",
     },
     {
+      id: "content-reset-owner",
+      request: {
+        headers: [
+          ["Cookie", adminCookie],
+          ["Origin", adminOrigin],
+          ["Sec-Fetch-Site", "same-origin"],
+        ],
+        method: "POST",
+        path: "/settings/content-reset",
+      },
+      responseBody: "json",
+      scenario: "owner",
+    },
+    {
+      id: "content-reset-operator",
+      request: {
+        headers: [
+          ["Cookie", adminCookie],
+          ["Origin", adminOrigin],
+          ["Sec-Fetch-Site", "same-origin"],
+        ],
+        method: "POST",
+        path: "/settings/content-reset",
+      },
+      responseBody: "json",
+      scenario: "operator",
+    },
+    {
       id: "openapi-content",
       openApiProjection: {
         components: [
@@ -251,6 +279,7 @@ const adminContentTargetContractInput = {
           "/api/admin/courses/{courseId}",
           "/api/admin/courses/{courseId}/editor",
           "/api/admin/courses/{courseId}/publish",
+          "/api/admin/settings/content-reset",
         ],
       },
       request: { method: "GET", path: "/openapi" },
@@ -263,7 +292,7 @@ const adminContentTargetContractInput = {
 } as const satisfies AdminTargetContractRunInput
 
 describe("관리자 Content delivery의 통합 runtime target 계약", () => {
-  it("course, curriculum editor, 권한, validation, version conflict와 OpenAPI 계약을 보존한다", async () => {
+  it("course, curriculum editor, reset, 권한, version conflict와 OpenAPI 계약을 보존한다", async () => {
     const evidence = await assertAdminTargetContract(
       adminContentTargetContractInput
     )
@@ -383,8 +412,8 @@ describe("관리자 Content delivery의 통합 runtime target 계약", () => {
       body: {
         kind: "json",
         value: {
-          code: "STALE_REVISION",
-          message: "Course editor revision conflict",
+          code: "CONTENT_CONFLICT",
+          message: "Content revision conflict",
         },
       },
       status: 409,
@@ -411,11 +440,32 @@ describe("관리자 Content delivery의 통합 runtime target 계약", () => {
       body: {
         kind: "json",
         value: {
-          code: "INVALID_REQUEST",
-          message: "Course draft is not publishable",
+          code: "VALIDATION_FAILED",
+          message: "Content validation failed: empty-unit",
         },
       },
       status: 422,
+    })
+    expect(readObservation(evidence, "content-reset-owner")).toMatchObject({
+      effectJournal: [
+        {
+          effect: "content.reset",
+          input: {
+            actor: { id: "admin-1", role: "owner" },
+            now: "2026-06-14T03:00:00.000Z",
+          },
+          sequence: 1,
+        },
+      ],
+      status: 200,
+    })
+    expect(readObservation(evidence, "content-reset-operator")).toMatchObject({
+      body: {
+        kind: "json",
+        value: { code: "FORBIDDEN", message: "Forbidden" },
+      },
+      effectJournal: [],
+      status: 403,
     })
   }, 15_000)
 })

@@ -21,7 +21,7 @@ import type {
 import { privateNoStoreCacheControl } from "@workspace/http-platform/security"
 import { z } from "@workspace/http-platform/zod"
 
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
   defineAdminRoute,
   type AdminRouteHandler,
@@ -33,7 +33,7 @@ import {
   eventStreamResponse,
   jsonResponse,
 } from "@/admin/admin-openapi"
-import { adminSessionRouteOptions } from "@/admin/admin-route-options"
+import { adminSessionRouteOptions } from "@workspace/identity/http"
 import {
   defineAdminRouteGroup,
   type AdminRouteGroup,

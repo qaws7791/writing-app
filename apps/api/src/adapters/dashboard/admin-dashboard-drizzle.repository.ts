@@ -1,7 +1,5 @@
 import type { AdminDashboardDto } from "@workspace/contracts/operations/dashboard-analytics-data"
-import { userIdSchema } from "@workspace/contracts/identity/data"
 import { contentStatuses } from "@workspace/contracts/content/status"
-import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
 import { lessonProgressStatuses } from "@workspace/contracts/learning/status"
 import type {
   AdminDashboardReader,
@@ -16,84 +14,83 @@ import {
   type LearningDateKey,
 } from "@workspace/core/learning"
 import type { WritingAppDatabase } from "@workspace/db/client"
+import type {
+  OperationsIdentityReportingQuery,
+  OperationsIdentitySnapshot,
+} from "@workspace/identity/queries"
 import {
-  authUsers,
+  learnerActivityDays,
+  learnerLessonProgress,
+} from "@workspace/db/schema"
+import {
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
-  learnerActivityDays,
-  learnerLessonProgress,
-  learnerProfiles,
   lessonVersions,
-} from "@workspace/db/schema"
-import {
-  and,
-  asc,
-  count,
-  countDistinct,
-  desc,
-  eq,
-  gte,
-  inArray,
-  isNull,
-  lte,
-  ne,
-  or,
-  sql,
-} from "drizzle-orm"
+} from "@workspace/content/schema"
+import { and, count, eq } from "drizzle-orm"
 
 const recentActivityLimit = 5
 
 export function createAdminDashboardRepository(
-  db: WritingAppDatabase
+  database: WritingAppDatabase,
+  identityReporting: OperationsIdentityReportingQuery
 ): AdminDashboardReader {
   return {
-    readDashboard(input) {
-      return Promise.resolve(readDashboard(db, input))
+    async readDashboard(input) {
+      const learners = await identityReporting.readNonDeletedLearners()
+      return readDashboard(database, input, learners)
     },
   }
 }
 
 function readDashboard(
-  db: WritingAppDatabase,
-  input: ReadAdminDashboardInput
+  database: WritingAppDatabase,
+  input: ReadAdminDashboardInput,
+  learners: readonly OperationsIdentitySnapshot[]
 ): AdminDashboardDto {
   const todayKey = toLearningDateKey(input.now)
   const last7DaysStart = addLearningCalendarDays(todayKey, -6)
+  const learnerIds = new Set<string>(learners.map(({ id }) => id))
+  const activityRows = database.select().from(learnerActivityDays).all()
+  const progressRows = database.select().from(learnerLessonProgress).all()
 
   return {
     metrics: {
-      activeCourses: readActiveCourseCount(db),
-      activeLessons: readActiveLessonCount(db),
-      activeUsersLast7Days: readActiveUsersLast7DaysCount(db, {
-        last7DaysStart,
-        todayKey,
-      }),
-      completedLessons: readCompletedLessonCount(db),
-      signupsLast7Days: readSignupCountByLearningDate(db, {
+      activeCourses: readActiveCourseCount(database),
+      activeLessons: readActiveLessonCount(database),
+      activeUsersLast7Days: new Set(
+        activityRows
+          .filter(
+            (row) =>
+              learnerIds.has(row.userId) &&
+              row.activityDate >= last7DaysStart &&
+              row.activityDate <= todayKey
+          )
+          .map(({ userId }) => userId)
+      ).size,
+      completedLessons: progressRows.filter(
+        (row) =>
+          learnerIds.has(row.userId) &&
+          row.status === lessonProgressStatuses.completed
+      ).length,
+      signupsLast7Days: countSignups(learners, {
         end: todayKey,
         start: last7DaysStart,
       }),
-      signupsToday: readSignupCountByLearningDate(db, {
+      signupsToday: countSignups(learners, {
         end: todayKey,
         start: todayKey,
       }),
-      totalUsers: readLearnerCount(db),
+      totalUsers: learners.length,
     },
-    recentActivities: readRecentActivities(db),
+    recentActivities: readRecentActivities(learners, activityRows),
   }
 }
 
-function createActiveLearnerCondition() {
-  return or(
-    isNull(learnerProfiles.status),
-    ne(learnerProfiles.status, learnerAccountStatuses.deleted)
-  )
-}
-
-function readActiveCourseCount(db: WritingAppDatabase): number {
+function readActiveCourseCount(database: WritingAppDatabase): number {
   return (
-    db
+    database
       .select({ value: count() })
       .from(courses)
       .where(eq(courses.status, contentStatuses.active))
@@ -101,9 +98,9 @@ function readActiveCourseCount(db: WritingAppDatabase): number {
   )
 }
 
-function readActiveLessonCount(db: WritingAppDatabase): number {
+function readActiveLessonCount(database: WritingAppDatabase): number {
   return (
-    db
+    database
       .select({ value: count() })
       .from(lessonVersions)
       .innerJoin(
@@ -139,127 +136,43 @@ function readActiveLessonCount(db: WritingAppDatabase): number {
   )
 }
 
-function readActiveUsersLast7DaysCount(
-  db: WritingAppDatabase,
-  input: {
-    readonly last7DaysStart: string
-    readonly todayKey: string
-  }
+function countSignups(
+  learners: readonly OperationsIdentitySnapshot[],
+  range: { readonly end: LearningDateKey; readonly start: LearningDateKey }
 ): number {
-  return (
-    db
-      .select({ value: countDistinct(learnerActivityDays.userId) })
-      .from(learnerActivityDays)
-      .innerJoin(authUsers, eq(authUsers.id, learnerActivityDays.userId))
-      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-      .where(
-        and(
-          createActiveLearnerCondition(),
-          gte(learnerActivityDays.activityDate, input.last7DaysStart),
-          lte(learnerActivityDays.activityDate, input.todayKey)
-        )
-      )
-      .get()?.value ?? 0
-  )
-}
-
-function readCompletedLessonCount(db: WritingAppDatabase): number {
-  return (
-    db
-      .select({ value: count() })
-      .from(learnerLessonProgress)
-      .innerJoin(authUsers, eq(authUsers.id, learnerLessonProgress.userId))
-      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-      .where(
-        and(
-          createActiveLearnerCondition(),
-          eq(learnerLessonProgress.status, lessonProgressStatuses.completed)
-        )
-      )
-      .get()?.value ?? 0
-  )
-}
-
-function readSignupCountByLearningDate(
-  db: WritingAppDatabase,
-  range: {
-    readonly end: LearningDateKey
-    readonly start: LearningDateKey
-  }
-): number {
-  return db
-    .select({ createdAt: authUsers.createdAt })
-    .from(authUsers)
-    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-    .where(createActiveLearnerCondition())
-    .all()
-    .filter((user) =>
-      isLearningDateKeyInRange(toLearningDateKey(user.createdAt), range)
-    ).length
-}
-
-function readLearnerCount(db: WritingAppDatabase): number {
-  return (
-    db
-      .select({ value: count() })
-      .from(authUsers)
-      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-      .where(createActiveLearnerCondition())
-      .get()?.value ?? 0
-  )
+  return learners.filter(({ createdAt }) =>
+    isLearningDateKeyInRange(toLearningDateKey(createdAt), range)
+  ).length
 }
 
 function readRecentActivities(
-  db: WritingAppDatabase
+  learners: readonly OperationsIdentitySnapshot[],
+  activityRows: readonly (typeof learnerActivityDays.$inferSelect)[]
 ): AdminDashboardDto["recentActivities"] {
-  const nameExpression = sql<string>`coalesce(${learnerProfiles.displayName}, ${authUsers.name})`
-  const lastActiveExpression = sql<string>`max(${learnerActivityDays.activityDate})`
-  const rows = db
-    .select({
-      email: authUsers.email,
-      id: authUsers.id,
-      lastActiveDate: lastActiveExpression,
-      name: nameExpression,
-    })
-    .from(authUsers)
-    .innerJoin(
-      learnerActivityDays,
-      eq(learnerActivityDays.userId, authUsers.id)
-    )
-    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-    .where(createActiveLearnerCondition())
-    .groupBy(
-      authUsers.id,
-      authUsers.email,
-      authUsers.name,
-      learnerProfiles.displayName
-    )
-    .orderBy(desc(lastActiveExpression), asc(nameExpression))
-    .limit(recentActivityLimit)
-    .all()
-  const activityDatesByUserId =
-    rows.length === 0
-      ? new Map<string, LearningDateKey[]>()
-      : groupLearningActivityDatesByUserId(
-          db
-            .select()
-            .from(learnerActivityDays)
-            .where(
-              inArray(
-                learnerActivityDays.userId,
-                rows.map((user) => user.id)
-              )
-            )
-            .all()
-        )
+  const activityDatesByUserId = groupLearningActivityDatesByUserId(activityRows)
 
-  return rows.map((user) => ({
-    currentStreakDays: calculateCurrentStreakDays(
-      activityDatesByUserId.get(user.id) ?? []
-    ),
-    email: user.email,
-    lastActiveDate: user.lastActiveDate,
-    name: user.name,
-    userId: userIdSchema.parse(user.id),
-  }))
+  return learners
+    .flatMap((learner) => {
+      const dates = activityDatesByUserId.get(learner.id) ?? []
+      const lastActiveDate = [...dates].sort((left, right) =>
+        right.localeCompare(left)
+      )[0]
+      return lastActiveDate === undefined
+        ? []
+        : [
+            {
+              currentStreakDays: calculateCurrentStreakDays(dates),
+              email: learner.email,
+              lastActiveDate,
+              name: learner.name,
+              userId: learner.id,
+            },
+          ]
+    })
+    .sort(
+      (left, right) =>
+        right.lastActiveDate.localeCompare(left.lastActiveDate) ||
+        left.name.localeCompare(right.name)
+    )
+    .slice(0, recentActivityLimit)
 }

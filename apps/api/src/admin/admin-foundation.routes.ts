@@ -1,13 +1,13 @@
 import { adminSessionDtoSchema } from "@workspace/contracts/identity/admin-session"
 
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import { defineAdminRoute } from "@/admin/admin-hono-env"
 import {
   adminAuthenticatedResponses,
   adminHealthResponseSchema,
   jsonResponse,
 } from "@/admin/admin-openapi"
-import { adminSessionRouteOptions } from "@/admin/admin-route-options"
+import { adminSessionRouteOptions } from "@workspace/identity/http"
 
 export const adminHealthRoute = defineAdminRoute({
   method: "get",

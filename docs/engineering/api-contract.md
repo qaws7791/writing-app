@@ -6,8 +6,8 @@
 
 ## 권위 소스
 
-- 학습자 HTTP 표면: 학습자 route registry와 runtime OpenAPI
-- 관리자 HTTP 표면: 관리자 route registry와 runtime OpenAPI
+- 학습자 HTTP 표면: module HTTP interface, 학습자 route registry와 runtime OpenAPI
+- 관리자 HTTP 표면: module HTTP interface, 관리자 route registry와 runtime OpenAPI
 - wire schema: `packages/shared/contracts`
 - transport 오류 변환과 인증 middleware: API runtime source
 

@@ -1,20 +1,27 @@
-import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import {
-  adminCourseDetailDtoSchema,
-  adminCourseEditorDocumentSchema,
-} from "@workspace/contracts/content/admin-data"
-import { courseIdSchema } from "@workspace/contracts/content/ids"
-import { adminRoles } from "@workspace/core/admin"
-import type { AdminCourseUseCase } from "@workspace/core/content"
-
+  courseIdSchema,
+  curriculumVersionIdSchema,
+  lessonIdSchema,
+  lessonStepIdSchema,
+  unitIdSchema,
+} from "@workspace/contracts/content/ids"
+import type { ContentApplication } from "@workspace/content/application"
+import type {
+  ContentAdminSessionPort,
+  CourseEditorDocument,
+} from "@workspace/content/ports"
+import { createAdminContentRoutes } from "@workspace/content/http"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
+import { err, ok } from "@workspace/kernel/result"
+
 import { createAdminApp } from "@/http/admin-app"
-import { createAdminContentRoutes } from "@/modules/admin-content/admin-content.routes"
 
 type AdminContentTargetRouteFixtureJson =
   | null
@@ -30,45 +37,38 @@ export type AdminContentTargetRouteFixture = {
 }
 
 const fixtureNow = new Date("2026-06-14T03:00:00.000Z")
-const courseDetail = adminCourseDetailDtoSchema.parse({
+const courseId = courseIdSchema.parse("course-1")
+const curriculumVersionId = curriculumVersionIdSchema.parse("course-1-v1")
+const courseEditorDocument: CourseEditorDocument = {
   category: "미분류",
-  curriculumVersionId: "course-1-v1",
+  courseId,
+  curriculumVersionId,
   description: "강의 설명",
   editVersion: 3,
-  id: "course-1",
   revision: 1,
-  status: "active",
-  title: "코스 1",
-  units: [],
-})
-const courseEditorDocument = adminCourseEditorDocumentSchema.parse({
-  category: "미분류",
-  curriculumVersionId: "course-1-v1",
-  description: "강의 설명",
-  editVersion: 3,
-  id: "course-1",
-  revision: 1,
-  status: "active",
   title: "코스 1",
   units: [
     {
-      id: "course-1-unit-1",
+      id: unitIdSchema.parse("course-1-unit-1"),
       lessons: [
         {
           category: "미분류",
           description: "레슨 설명",
           estimatedMinutes: 5,
-          id: "course-1-lesson-1",
+          id: lessonIdSchema.parse("course-1-lesson-1"),
           sortOrder: 1,
           status: "active",
           steps: [
             {
-              body: "본문",
-              guide: "",
-              id: "course-1-step-1",
+              contentJson: JSON.stringify({
+                body: "본문",
+                guide: "",
+                title: "읽기",
+                type: "reading",
+              }),
+              id: lessonStepIdSchema.parse("course-1-step-1"),
               sortOrder: 1,
               status: "active",
-              title: "읽기",
               type: "READING",
             },
           ],
@@ -81,7 +81,7 @@ const courseEditorDocument = adminCourseEditorDocumentSchema.parse({
       title: "유닛 1",
     },
   ],
-})
+}
 
 export function createAdminContentTargetRouteFixture(
   scenario: string
@@ -90,9 +90,8 @@ export function createAdminContentTargetRouteFixture(
   const sessionResolver = createSessionResolver(scenario)
   const app = createAdminApp({
     capabilityRoutes: createAdminContentRoutes({
-      courseService: createCourseService(journal),
-      now: () => fixtureNow,
-      sessionResolver,
+      application: createContentApplication(journal),
+      sessionPort: createContentSessionPort(sessionResolver),
     }),
     sessionResolver,
   })
@@ -107,55 +106,37 @@ export function createAdminContentTargetRouteFixture(
   }
 }
 
-function createCourseService(
+function createContentApplication(
   journal: ReturnType<typeof createEffectJournal>
-): AdminCourseUseCase {
+): ContentApplication {
   return {
-    async archiveCourse(input) {
+    async archiveCourse(command) {
       journal.record("courses.archive", {
-        actor: {
-          id: input.actor.id,
-          role: input.actor.role,
-        },
-        courseId: input.courseId,
+        actor: toJournalActor(command.actor),
+        courseId: command.courseId,
       })
-
-      return input.courseId === "missing"
-        ? { kind: "not-found" }
-        : { kind: "ok" }
+      return command.courseId === "missing"
+        ? err({ kind: "content-not-found" })
+        : ok(undefined)
     },
-    async createCourse(input) {
+    async createCourse(actor) {
       journal.record("courses.create", {
-        actor: {
-          id: input.actor.id,
-          role: input.actor.role,
-        },
-        now: input.now.toISOString(),
+        actor: toJournalActor(actor),
+        now: fixtureNow.toISOString(),
       })
-
-      return { kind: "ok", value: courseDetail }
+      return ok(courseEditorDocument)
     },
-    async getCourseEditor(input) {
-      journal.record("courses.editor.read", {
-        courseId: input.courseId,
-      })
-
-      return input.courseId === "missing" ? null : courseEditorDocument
+    async getCourseEditor(requestedCourseId) {
+      journal.record("courses.editor.read", { courseId: requestedCourseId })
+      return requestedCourseId === "missing" ? null : courseEditorDocument
     },
     async getCourses(input) {
-      journal.record("courses.list", {
-        category: input.category,
-        page: input.page,
-        pageSize: input.pageSize,
-        query: input.query,
-        status: input.status,
-      })
-
+      journal.record("courses.list", input)
       return {
         items: [
           {
             category: "미분류",
-            id: courseIdSchema.parse("course-1"),
+            id: courseId,
             lessonCount: 1,
             revision: 1,
             status: "active",
@@ -170,54 +151,84 @@ function createCourseService(
         totalPages: 1,
       }
     },
-    async publishCourse(input) {
+    async publishCourse(command) {
       journal.record("courses.publish", {
-        actor: {
-          id: input.actor.id,
-          role: input.actor.role,
-        },
-        courseId: input.courseId,
-        expectedEditVersion: input.expectedEditVersion,
-        now: input.now.toISOString(),
+        actor: toJournalActor(command.actor),
+        courseId: command.courseId,
+        expectedEditVersion: command.expectedEditVersion,
+        now: fixtureNow.toISOString(),
       })
-
-      if (input.courseId === "unpublishable") return { kind: "invalid-draft" }
-      if (input.expectedEditVersion !== courseEditorDocument.editVersion) {
-        return { kind: "stale-revision" }
+      if (command.courseId === "unpublishable") {
+        return err({
+          kind: "content-validation-failed",
+          reason: "empty-unit",
+        })
       }
-
-      return {
-        kind: "ok",
-        value: {
-          curriculumVersionId: courseEditorDocument.curriculumVersionId,
-          publishedAt: fixtureNow.toISOString(),
-          revision: courseEditorDocument.revision,
-        },
+      if (command.expectedEditVersion !== courseEditorDocument.editVersion) {
+        return err({ kind: "content-conflict" })
       }
+      return ok({
+        curriculumVersionId,
+        publishedAt: fixtureNow,
+        revision: 1,
+      })
     },
-    async saveCourseEditor(input) {
+    async resetContent(command) {
+      journal.record("content.reset", {
+        actor: toJournalActor(command.actor),
+        now: fixtureNow.toISOString(),
+      })
+      return ok({
+        changed: {
+          archived: 0,
+          courses: 5,
+          lessons: 44,
+          steps: 136,
+          units: 15,
+        },
+        revision: 1,
+      })
+    },
+    async saveCourseEditor(command) {
       journal.record("courses.editor.save", {
-        actor: {
-          id: input.actor.id,
-          role: input.actor.role,
-        },
-        courseId: input.courseId,
-        expectedEditVersion: input.expectedEditVersion,
-        now: input.now.toISOString(),
+        actor: toJournalActor(command.actor),
+        courseId: command.document.courseId,
+        expectedEditVersion: command.expectedEditVersion,
+        now: fixtureNow.toISOString(),
       })
-
-      if (input.expectedEditVersion !== courseEditorDocument.editVersion) {
-        return { kind: "stale-revision" }
+      if (command.expectedEditVersion !== courseEditorDocument.editVersion) {
+        return err({ kind: "content-conflict" })
       }
+      return ok({
+        ...command.document,
+        editVersion: command.document.editVersion + 1,
+      })
+    },
+  }
+}
 
+function createContentSessionPort(
+  sessionResolver: AdminSessionResolver
+): ContentAdminSessionPort {
+  return {
+    async resolveActor(headers) {
+      const session = await sessionResolver.resolveSession(headers)
+      if (session === null) return null
       return {
-        kind: "ok",
-        value: {
-          ...input.document,
-          editVersion: input.document.editVersion + 1,
-        },
+        adminId: session.admin.id,
+        mutation:
+          session.admin.role === adminRoles.owner ? "allowed" : "forbidden",
       }
     },
+  }
+}
+
+function toJournalActor(
+  actor: Parameters<ContentApplication["createCourse"]>[0]
+): AdminContentTargetRouteFixtureJson {
+  return {
+    id: actor.adminId,
+    role: actor.mutation === "allowed" ? "owner" : "operator",
   }
 }
 

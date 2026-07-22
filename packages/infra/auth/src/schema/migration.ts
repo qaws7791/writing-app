@@ -62,7 +62,6 @@ CREATE TABLE IF NOT EXISTS admin_user (
   email TEXT NOT NULL UNIQUE,
   email_verified INTEGER NOT NULL DEFAULT 0,
   image TEXT,
-  role TEXT NOT NULL DEFAULT 'operator',
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );

@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
-import type { LearnerProfileRepository } from "@workspace/core/auth"
 import {
   authAccounts,
   authRateLimits,
@@ -58,7 +56,7 @@ describe("학습자 Better Auth runtime", () => {
         database: createTestDatabaseAdapter(database.db),
         googleClientId: "google-client",
         googleClientSecret: "google-secret",
-        profileRepository: createTestLearnerProfileRepository(),
+        identityProvisioner: createTestIdentityProvisioner(),
         secret: "learner-secret-0123456789abcdef",
         testAuth: { kind: "enabled", synchronizeDisplayName },
         webOrigin: "https://app.example.test",
@@ -93,13 +91,13 @@ describe("학습자 Better Auth runtime", () => {
 
   it("Better Auth 사용자 생성 hook을 프로필 저장소에 연결한다", async () => {
     const database = createAuthTestDatabase()
-    const profileRepository = createTestLearnerProfileRepository()
+    const identityProvisioner = createTestIdentityProvisioner()
 
     try {
       createLearnerAuthRuntime({
         apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
-        profileRepository,
+        identityProvisioner,
         secret: "x".repeat(32),
         testAuth: { kind: "disabled" },
         webOrigin: "https://app.example.test",
@@ -110,9 +108,12 @@ describe("학습자 Better Auth runtime", () => {
 
       await authConfig?.databaseHooks.user.create.after(sessionUser)
 
-      expect(profileRepository.ensureActiveProfile).toHaveBeenCalledWith({
-        displayName: "학습자",
-        userId: "user-1",
+      expect(identityProvisioner.provision).toHaveBeenCalledWith({
+        email: "learner@example.com",
+        id: "user-1",
+        image: null,
+        joinedAt: now,
+        name: "학습자",
       })
     } finally {
       database.close()
@@ -127,54 +128,41 @@ describe("학습자 Better Auth runtime", () => {
       const runtime = createLearnerAuthRuntime({
         apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
-        profileRepository: createTestLearnerProfileRepository({
-          status: learnerAccountStatuses.suspended,
-        }),
+        identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),
         testAuth: { kind: "disabled" },
         webOrigin: "https://app.example.test",
       })
 
       await expect(
-        runtime.sessionResolver.resolveSession(new Headers())
+        runtime.identityResolver.resolveIdentity(new Headers())
       ).resolves.toEqual({
-        user: {
-          email: "learner@example.com",
-          id: "user-1",
-          image: null,
-          joinedAt: now.toISOString(),
-          name: "학습자",
-          status: "suspended",
-        },
+        email: "learner@example.com",
+        id: "user-1",
+        image: null,
+        joinedAt: now,
+        name: "학습자",
       })
     } finally {
       database.close()
     }
   })
 
-  it("프로필 누락과 Better Auth session 누락을 구분한다", async () => {
+  it("Better Auth session 누락을 인증 identity 부재로 반환한다", async () => {
     const database = createAuthTestDatabase()
-    const profileRepository = createTestLearnerProfileRepository(null)
 
     try {
       const runtime = createLearnerAuthRuntime({
         apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
-        profileRepository,
+        identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),
         testAuth: { kind: "disabled" },
         webOrigin: "https://app.example.test",
       })
-      authMocks.getSession.mockResolvedValueOnce({ user: sessionUser })
-
-      await expect(
-        runtime.sessionResolver.resolveSession(new Headers())
-      ).resolves.toMatchObject({ user: { status: "active" } })
-      expect(profileRepository.ensureActiveProfile).toHaveBeenCalledOnce()
-
       authMocks.getSession.mockResolvedValueOnce(null)
       await expect(
-        runtime.sessionResolver.resolveSession(new Headers())
+        runtime.identityResolver.resolveIdentity(new Headers())
       ).resolves.toBeNull()
     } finally {
       database.close()
@@ -205,13 +193,8 @@ function createTestDatabaseAdapter(database: AuthTestDatabase) {
   })
 }
 
-function createTestLearnerProfileRepository(
-  profile: Awaited<
-    ReturnType<LearnerProfileRepository["findProfileByUserId"]>
-  > = { status: learnerAccountStatuses.active }
-) {
+function createTestIdentityProvisioner() {
   return {
-    ensureActiveProfile: vi.fn(async () => undefined),
-    findProfileByUserId: vi.fn(async () => profile),
-  } satisfies LearnerProfileRepository
+    provision: vi.fn(async () => undefined),
+  }
 }

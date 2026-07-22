@@ -1,6 +1,10 @@
 import { hashAuthPassword } from "@workspace/auth/password"
 import { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
 import { createWritingAppDatabase } from "@workspace/db/client"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { adminIdentityProfiles } from "@workspace/identity/schema"
+
+import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 
 const e2eDatabaseUrl = process.env["DATABASE_URL"]
 const adminPassword = "e2e-password-123"
@@ -14,6 +18,7 @@ await seedE2eAdmins(e2eDatabaseUrl)
 async function seedE2eAdmins(databaseUrl: string): Promise<void> {
   const database = createWritingAppDatabase(databaseUrl)
   try {
+    runApiIdentitySchemaMigration(database.sqlite)
     const now = new Date("2026-07-12T00:00:00.000Z")
     const password = await hashAuthPassword(adminPassword)
     const admins = [
@@ -32,7 +37,7 @@ async function seedE2eAdmins(databaseUrl: string): Promise<void> {
     ] as const
 
     await database.db.insert(adminAuthUsers).values(
-      admins.map((admin) => ({
+      admins.map(({ role: _role, ...admin }) => ({
         ...admin,
         createdAt: now,
         emailVerified: true,
@@ -40,6 +45,16 @@ async function seedE2eAdmins(databaseUrl: string): Promise<void> {
         updatedAt: now,
       }))
     )
+    await database.db
+      .insert(adminIdentityProfiles)
+      .values(
+        admins.map((admin) => ({
+          adminId: adminIdSchema.parse(admin.id),
+          role: admin.role,
+          version: 0,
+        }))
+      )
+      .onConflictDoNothing({ target: adminIdentityProfiles.adminId })
     await database.db.insert(adminAuthAccounts).values(
       admins.map((admin) => ({
         accountId: admin.id,

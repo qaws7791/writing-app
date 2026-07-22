@@ -1,6 +1,6 @@
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { z } from "@workspace/http-platform/zod"
 
@@ -8,10 +8,10 @@ import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { defineAdminRoute } from "@/admin/admin-hono-env"
 import { jsonResponse } from "@/admin/admin-openapi"
-import { ownerAdminRouteOptions } from "@/admin/admin-route-options"
+import { ownerAdminRouteOptions } from "@workspace/identity/http"
 import { createAdminApp } from "@/http/admin-app"
 import { defineAdminRouteGroup } from "@/http/admin-route-group"
 import { createAdminContentTargetRouteFixture } from "@/test-support/admin-content-target-route-fixture"

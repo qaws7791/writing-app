@@ -5,6 +5,22 @@ import {
   nonNegativeIntegerSchema as adminNonNegativeIntegerSchema,
   positiveIntegerSchema as adminPositiveIntegerSchema,
 } from "#contracts/shared/integer"
+import {
+  adminUserListStatusFilterSchema,
+  adminUserSortSchema,
+} from "#contracts/identity/status"
+
+export const adminUsersQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).optional().default(20),
+  query: z.string().optional().default(""),
+  sort: adminUserSortSchema.optional().default("lastActive"),
+  status: adminUserListStatusFilterSchema.optional().default("all"),
+})
+
+export const adminUserParamsSchema = z.object({
+  userId: userIdSchema,
+})
 
 export const adminUserListItemDtoSchema = z.object({
   email: z.email(),
@@ -42,3 +58,4 @@ export type AdminDeleteUserResultDto = z.infer<
 export type AdminUserListItemDto = z.infer<typeof adminUserListItemDtoSchema>
 export type AdminUserDetailDto = z.infer<typeof adminUserDetailDtoSchema>
 export type AdminUserListDto = z.infer<typeof adminUserListDtoSchema>
+export type AdminUsersQuery = z.infer<typeof adminUsersQuerySchema>

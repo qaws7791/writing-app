@@ -8,8 +8,14 @@ export function composeAdminDashboardAnalyticsRouteGroup(
   context: AdminRouteCompositionContext
 ): AdminRouteGroup {
   return createAdminDashboardAnalyticsRoutes({
-    analyticsReader: createAdminAnalyticsRepository(context.database),
-    dashboardReader: createAdminDashboardRepository(context.database),
+    analyticsReader: createAdminAnalyticsRepository(
+      context.database,
+      context.identity.operationsReportingQuery
+    ),
+    dashboardReader: createAdminDashboardRepository(
+      context.database,
+      context.identity.operationsReportingQuery
+    ),
     now: context.now,
     sessionResolver: context.sessionResolver,
   })

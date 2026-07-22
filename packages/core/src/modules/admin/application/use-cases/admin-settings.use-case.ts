@@ -7,7 +7,7 @@ import type {
 import {
   authorizeOwnerMutation,
   type OwnerAdminCommand,
-} from "#core/shared/admin-owner-authorization"
+} from "@workspace/identity/admin-actor"
 
 export type AdminSettingsUpdateResult =
   | { readonly kind: "forbidden" }

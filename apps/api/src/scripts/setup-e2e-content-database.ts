@@ -3,23 +3,29 @@ import path from "node:path"
 import { eq } from "drizzle-orm"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { normalizeVersionedStepContent } from "@workspace/db/content/normalize-versioned-step-content"
+import { normalizeVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import {
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/db/schema"
+  runContentSchemaMigration,
+} from "@workspace/content/schema"
+import { seedContentDatabase } from "@workspace/content/seed"
 import { seedDatabase } from "@workspace/db/seeds/seed"
+import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { seedLearnerIdentity } from "@workspace/identity/seed"
+
+import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 
 const e2eDatabaseUrl = requireE2eDatabaseUrl(process.env)
 
 removeE2eDatabaseFiles(e2eDatabaseUrl)
 await seedDatabase({ databaseUrl: e2eDatabaseUrl, nodeEnv: "test" })
-seedLearnerTransitionCourse(e2eDatabaseUrl)
+await seedLearnerTransitionCourse(e2eDatabaseUrl)
 
-function seedLearnerTransitionCourse(databaseUrl: string): void {
+async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
   const database = createWritingAppDatabase(databaseUrl)
   const now = new Date("2026-07-17T00:00:00.000Z")
   const courseId = "e2e-transition-course"
@@ -28,6 +34,13 @@ function seedLearnerTransitionCourse(databaseUrl: string): void {
   const lessonId = "e2e-transition-lesson"
 
   try {
+    runContentSchemaMigration(database.sqlite)
+    await seedContentDatabase(database.db)
+    runApiIdentitySchemaMigration(database.sqlite)
+    seedLearnerIdentity(database.db, {
+      displayName: "글쓰기 탐험가",
+      userId: userIdSchema.parse("user-1"),
+    })
     database.db
       .insert(courses)
       .values({
@@ -84,7 +97,7 @@ function seedLearnerTransitionCourse(databaseUrl: string): void {
       .insert(lessonStepVersions)
       .values([
         {
-          contentJson: normalizeVersionedStepContent(
+          contentJson: normalizeVersionedStepContentOrThrow(
             `${lessonId}-s1`,
             "MULTIPLE_CHOICE",
             JSON.stringify({

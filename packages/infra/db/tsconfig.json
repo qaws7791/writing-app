@@ -6,6 +6,7 @@
     "moduleResolution": "Bundler",
     "paths": {
       "#auth/*": ["../auth/src/*"],
+      "#content/*": ["../../modules/content/src/*"],
       "#db/*": ["./src/*"]
     },
     "types": ["bun"]

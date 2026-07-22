@@ -1,4 +1,4 @@
-import type { SessionResolver } from "@workspace/core/auth"
+import type { SessionResolver } from "@workspace/identity/sessions"
 import type { LearnerAiFeedbackTransitionService } from "@workspace/core/ai-feedback"
 import type {
   CompleteLearnerStepTransitionResult,
@@ -6,7 +6,6 @@ import type {
   LearnerCursorCodec,
   LearnerTransitionError,
   LearnerTransitionRepository,
-  ProfileReader,
   ProgressService,
 } from "@workspace/core/learning"
 import type { InternalErrorLogger } from "@workspace/http-platform/errors"
@@ -32,8 +31,11 @@ export type ApiDependencies = {
     LearnerTransitionRepository,
     "completeStep" | "startLesson"
   >
+  readonly identityRoutes: readonly {
+    readonly handler: unknown
+    readonly route: import("@workspace/http-platform/core").AnyRouteConfig
+  }[]
   readonly now?: () => Date
-  readonly profileReader: ProfileReader
   readonly progressService: ProgressService
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime

@@ -18,14 +18,16 @@ import type {
 import { learnerLessonSchema } from "@workspace/contracts/learning/read-data"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
+  learnerCourseProgress,
+  learnerLessonProgress,
+} from "@workspace/db/schema"
+import {
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
-  learnerCourseProgress,
-  learnerLessonProgress,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/db/schema"
+} from "@workspace/content/schema"
 
 import type {
   LearnerCourseReadQuery,

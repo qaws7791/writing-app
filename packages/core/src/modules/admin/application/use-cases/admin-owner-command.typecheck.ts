@@ -1,5 +1,5 @@
 import type { AdminSettingsUseCase } from "#core/modules/admin/application/use-cases/admin-settings.use-case"
-import type { AdminActor } from "#core/shared/admin-owner-authorization"
+import type { AdminActor } from "@workspace/identity/admin-actor"
 
 type Assert<TValue extends true> = TValue
 type RequiresActor<TCommand> = TCommand extends { readonly actor: AdminActor }

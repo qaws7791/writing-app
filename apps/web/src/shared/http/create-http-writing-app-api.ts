@@ -5,16 +5,18 @@ import {
   learnerCourseDetailResponseSchema,
   learnerCourseListResponseSchema,
   learnerLessonResponseSchema,
-  learnerProfileResponseSchema,
   learnerProgressResponseSchema,
   learnerStartLessonResponseSchema,
   type LearnerCourseCategoriesResponse,
   type LearnerCourseDetailResponse,
   type LearnerCourseListResponse,
   type LearnerLessonResponse,
-  type LearnerProfileResponse,
   type LearnerProgressResponse,
 } from "@workspace/contracts/learning/learner-api"
+import {
+  learnerProfileResponseSchema,
+  type LearnerProfileResponse,
+} from "@workspace/contracts/identity/learner-profile"
 import { type LearnerAiFeedbackTransitionResult } from "@workspace/contracts/learning/learner-transition"
 
 import {

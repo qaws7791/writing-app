@@ -28,7 +28,6 @@ describe("통합 runtime 관리자 AI chat SQLite repository", () => {
             emailVerified: true,
             id: adminId,
             name: "첫 관리자",
-            role: "owner",
             updatedAt: startedAt,
           },
           {
@@ -37,7 +36,6 @@ describe("통합 runtime 관리자 AI chat SQLite repository", () => {
             emailVerified: true,
             id: otherAdminId,
             name: "다른 관리자",
-            role: "operator",
             updatedAt: startedAt,
           },
         ])

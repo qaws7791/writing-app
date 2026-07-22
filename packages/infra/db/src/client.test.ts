@@ -13,6 +13,16 @@ import {
 } from "#db/client"
 import { runBaselineMigration } from "#db/migrations/migrate"
 
+const legacyCurriculumMigrationPolicy = {
+  normalizeVersionedStepContent(
+    _stepId: string,
+    _stepType: string,
+    contentJson: string
+  ) {
+    return contentJson
+  },
+}
+
 describe("Writing App DB client", () => {
   it("기본 SQLite DB 경로는 실행 위치와 무관하게 저장소 루트 data를 가리킨다", () => {
     const expectedPath = fileURLToPath(
@@ -121,7 +131,6 @@ describe("Writing App DB client", () => {
         "learner_course_progress",
         "learner_lesson_answers",
         "learner_lesson_progress",
-        "learner_profiles",
         "lesson_step_versions",
         "lesson_versions",
         "session",
@@ -240,9 +249,9 @@ describe("Writing App DB client", () => {
         );
       `)
 
-      expect(() => runBaselineMigration(client.sqlite)).toThrow(
-        "legacy curriculum tables are missing"
-      )
+      expect(() =>
+        runBaselineMigration(client.sqlite, legacyCurriculumMigrationPolicy)
+      ).toThrow("legacy curriculum tables are missing")
 
       const courseColumns = client.sqlite
         .query<{ readonly name: string }, []>("PRAGMA table_info(courses)")

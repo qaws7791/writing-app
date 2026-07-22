@@ -432,13 +432,6 @@ BEGIN
   SELECT RAISE(ABORT, 'published curriculum version is immutable');
 END;
 
-CREATE TABLE IF NOT EXISTS learner_profiles (
-  user_id TEXT PRIMARY KEY NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'deleted')),
-  display_name TEXT,
-  deleted_at INTEGER
-);
-
 CREATE TABLE IF NOT EXISTS learner_activity_days (
   user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   activity_date TEXT NOT NULL,

@@ -11,45 +11,14 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 import {
-  persistedLearnerAccountStatuses,
-  persistedLearnerAccountStatusValues,
   persistedLessonProgressStatuses,
   persistedLessonProgressStatusValues,
 } from "#db/persisted-values"
 import { authUsers } from "@workspace/auth/schema"
-import {
-  courseCurriculumVersions,
-  courses,
-  lessonStepVersions,
-  lessonVersions,
-} from "#db/schema/content.schema"
 
-const learnerAccountStatuses = persistedLearnerAccountStatuses
 const learningProgressStatuses = persistedLessonProgressStatuses
-export const learnerProfileStatusValues = persistedLearnerAccountStatusValues
 export const lessonProgressStatusValues = persistedLessonProgressStatusValues
 export const courseProgressStatusValues = persistedLessonProgressStatusValues
-
-export const learnerProfiles = sqliteTable(
-  "learner_profiles",
-  {
-    deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
-    displayName: text("display_name"),
-    status: text("status", { enum: learnerProfileStatusValues })
-      .notNull()
-      .default(learnerAccountStatuses.active),
-    userId: text("user_id")
-      .primaryKey()
-      .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
-  },
-  (table) => [
-    check(
-      "learner_profiles_status_check",
-      sql`${table.status} IN ('active', 'suspended', 'deleted')`
-    ),
-  ]
-)
 
 export const learnerActivityDays = sqliteTable(
   "learner_activity_days",
@@ -84,9 +53,7 @@ export const learnerCourseProgress = sqliteTable(
   "learner_course_progress",
   {
     completedAt: integer("completed_at", { mode: "timestamp_ms" }),
-    courseId: text("course_id")
-      .notNull()
-      .references(() => courses.id, { onDelete: "restrict" }),
+    courseId: text("course_id").notNull(),
     curriculumVersionId: text("curriculum_version_id").notNull(),
     lastActivityAt: integer("last_activity_at", {
       mode: "timestamp_ms",
@@ -102,14 +69,6 @@ export const learnerCourseProgress = sqliteTable(
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.courseId] }),
-    foreignKey({
-      columns: [table.courseId, table.curriculumVersionId],
-      foreignColumns: [
-        courseCurriculumVersions.courseId,
-        courseCurriculumVersions.id,
-      ],
-      name: "learner_course_progress_curriculum_version_fk",
-    }).onDelete("restrict"),
     check(
       "learner_course_progress_status_check",
       sql`${table.status} IN ('in_progress', 'completed')`
@@ -157,20 +116,6 @@ export const learnerLessonProgress = sqliteTable(
       ],
       name: "learner_lesson_progress_course_progress_fk",
     }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.curriculumVersionId, table.lessonId],
-      foreignColumns: [lessonVersions.curriculumVersionId, lessonVersions.id],
-      name: "learner_lesson_progress_lesson_fk",
-    }).onDelete("restrict"),
-    foreignKey({
-      columns: [table.curriculumVersionId, table.lessonId, table.currentStepId],
-      foreignColumns: [
-        lessonStepVersions.curriculumVersionId,
-        lessonStepVersions.lessonId,
-        lessonStepVersions.id,
-      ],
-      name: "learner_lesson_progress_current_step_fk",
-    }).onDelete("restrict"),
     check(
       "learner_lesson_progress_status_check",
       sql`${table.status} IN ('in_progress', 'completed')`
@@ -209,15 +154,6 @@ export const learnerLessonAnswers = sqliteTable(
       ],
       name: "learner_lesson_answers_course_progress_fk",
     }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.curriculumVersionId, table.lessonId, table.stepId],
-      foreignColumns: [
-        lessonStepVersions.curriculumVersionId,
-        lessonStepVersions.lessonId,
-        lessonStepVersions.id,
-      ],
-      name: "learner_lesson_answers_step_fk",
-    }).onDelete("restrict"),
     index("learner_lesson_answers_lesson_idx").on(
       table.userId,
       table.curriculumVersionId,

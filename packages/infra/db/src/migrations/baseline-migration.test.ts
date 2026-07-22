@@ -2,7 +2,16 @@ import { describe, expect, it } from "vitest"
 
 import { createInMemoryWritingAppDatabase } from "#db/client"
 import { runBaselineMigration } from "#db/migrations/migrate"
-import { upsertContentSeedRows } from "#db/seeds/seed"
+
+const legacyCurriculumMigrationPolicy = {
+  normalizeVersionedStepContent(
+    _stepId: string,
+    _stepType: string,
+    contentJson: string
+  ) {
+    return contentJson
+  },
+}
 
 describe("기준 migration", () => {
   it("최종 자료실 트리·문서·자산·검색 schema를 한 번에 만든다", () => {
@@ -117,7 +126,7 @@ describe("기준 migration", () => {
     try {
       createLegacyCurriculumFixture(client.sqlite, 0)
 
-      runBaselineMigration(client.sqlite)
+      runBaselineMigration(client.sqlite, legacyCurriculumMigrationPolicy)
 
       expect(readColumnNames(client.sqlite, "courses")).toEqual([
         "id",
@@ -204,6 +213,23 @@ describe("기준 migration", () => {
     }
   })
 
+  it("기존 커리큘럼 migration은 content 정규화 정책 주입 없이는 실패한다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      createLegacyCurriculumFixture(client.sqlite, 0)
+
+      expect(() => runBaselineMigration(client.sqlite)).toThrow(
+        "Legacy curriculum migration requires a content normalization policy"
+      )
+      expect(readColumnNames(client.sqlite, "courses")).toContain(
+        "curriculum_revision"
+      )
+    } finally {
+      client.close()
+    }
+  })
+
   it("상태 모델 이전의 AI feedback attempt를 결정적으로 보정해 보존한다", () => {
     const client = createInMemoryWritingAppDatabase()
 
@@ -211,7 +237,7 @@ describe("기준 migration", () => {
       createLegacyCurriculumFixture(client.sqlite, 0)
       replaceWithPreStateModelAiFeedbackAttempts(client.sqlite)
 
-      runBaselineMigration(client.sqlite)
+      runBaselineMigration(client.sqlite, legacyCurriculumMigrationPolicy)
 
       expect(
         client.sqlite
@@ -288,9 +314,9 @@ describe("기준 migration", () => {
     try {
       createLegacyCurriculumFixture(client.sqlite, 2)
 
-      expect(() => runBaselineMigration(client.sqlite)).toThrow(
-        "out-of-range currentStepIndex"
-      )
+      expect(() =>
+        runBaselineMigration(client.sqlite, legacyCurriculumMigrationPolicy)
+      ).toThrow("out-of-range currentStepIndex")
       expect(readColumnNames(client.sqlite, "courses")).toContain(
         "curriculum_revision"
       )
@@ -309,7 +335,10 @@ describe("기준 migration", () => {
     try {
       runBaselineMigration(baselineClient.sqlite)
       createLegacyCurriculumFixture(migratedClient.sqlite, 0)
-      runBaselineMigration(migratedClient.sqlite)
+      runBaselineMigration(
+        migratedClient.sqlite,
+        legacyCurriculumMigrationPolicy
+      )
 
       expect(readCurriculumSchema(migratedClient.sqlite)).toEqual(
         readCurriculumSchema(baselineClient.sqlite)
@@ -491,54 +520,34 @@ INSERT INTO ai_feedback_attempts VALUES (
 function seedVersionedCurriculum(
   client: ReturnType<typeof createInMemoryWritingAppDatabase>
 ): void {
-  client.db.transaction((transaction) => {
-    upsertContentSeedRows(transaction, {
-      courses: [
-        {
-          category: "기초",
-          description: "설명",
-          id: "course-1",
-          sortOrder: 1,
-          status: "active",
-          title: "코스",
-          visualKey: "basic-sentence-writing",
-        },
-      ],
-      lessons: [
-        {
-          category: null,
-          courseId: "course-1",
-          description: null,
-          estimatedMinutes: 5,
-          id: "lesson-1",
-          sortOrder: 1,
-          status: "active",
-          summaryJson: "[]",
-          title: "레슨",
-          unitId: "unit-1",
-        },
-      ],
-      steps: [
-        {
-          contentJson: '{"body":"본문"}',
-          id: "step-1",
-          lessonId: "lesson-1",
-          sortOrder: 1,
-          status: "active",
-          type: "READING",
-        },
-      ],
-      units: [
-        {
-          courseId: "course-1",
-          id: "unit-1",
-          sortOrder: 1,
-          status: "active",
-          title: "유닛",
-        },
-      ],
-    })
-  })
+  client.sqlite.exec(`
+INSERT INTO courses VALUES ('course-1', 'active', 1, NULL, 0);
+INSERT INTO course_curriculum_versions VALUES (
+  'curriculum:course-1:1', 'course-1', 1, 0, 'draft',
+  '코스', '설명', '기초', 'basic-sentence-writing', 0, 0, NULL
+);
+INSERT INTO course_unit_versions VALUES (
+  'curriculum:course-1:1', 'unit-1', '유닛', 1, 'active'
+);
+INSERT INTO lesson_versions VALUES (
+  'curriculum:course-1:1', 'lesson-1', 'unit-1', '레슨', NULL, NULL,
+  5, '[]', 1, 'active'
+);
+INSERT INTO lesson_step_versions VALUES (
+  'curriculum:course-1:1', 'step-1', 'lesson-1', 'READING', 1,
+  '{"body":"본문"}', 'active'
+);
+UPDATE course_curriculum_versions
+SET status = 'published', published_at = 1, updated_at = 1
+WHERE id = 'curriculum:course-1:1';
+UPDATE courses
+SET published_curriculum_version_id = 'curriculum:course-1:1'
+WHERE id = 'course-1';
+INSERT INTO course_curriculum_versions VALUES (
+  'curriculum:course-1:2', 'course-1', 2, 0, 'draft',
+  '코스', '설명', '기초', 'basic-sentence-writing', 1, 1, NULL
+);
+`)
 }
 
 function readCurriculumSchema(

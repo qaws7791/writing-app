@@ -5,17 +5,21 @@ import {
   userIdSchema,
 } from "@workspace/contracts/identity/data"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles, type AdminUserReader } from "@workspace/core/admin"
-import type { AdminUserMutationUseCase } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import { adminRoles } from "@workspace/identity/admin-actor"
+import type {
+  AdminUserMutationUseCase,
+  AdminUserReader,
+} from "@workspace/identity/queries"
+import { err, ok } from "@workspace/kernel/result"
 
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
+import { createAdminIdentityRoutes } from "@workspace/identity/http"
 import { createAdminApp } from "@/http/admin-app"
-import { createAdminIdentityRoutes } from "@/modules/admin-identity/admin-identity.routes"
 import type {
   AdminTargetRouteFixture,
   AdminTargetRouteFixtureJson,
@@ -47,7 +51,6 @@ export function createAdminIdentityTargetRouteFixture(
   const app = createAdminApp({
     adminOrigin: localRuntimeDefaults.adminWebOrigin,
     capabilityRoutes: createAdminIdentityRoutes({
-      now: () => identityNow,
       sessionResolver,
       userMutationService: createIdentityMutationService(journal),
       userReader: createIdentityReader(journal),
@@ -90,29 +93,28 @@ function createIdentityMutationService(
   journal: EffectJournal
 ): AdminUserMutationUseCase {
   return {
-    async deleteUser({ actor, now, userId }) {
+    async deleteUser({ actor, userId }) {
       journal.record("identity.delete-user", {
         actor: { id: actor.id, role: actor.role },
-        now: now.toISOString(),
+        now: identityNow.toISOString(),
         userId,
       })
 
-      return userId === "missing" ? { kind: "not-found" } : { kind: "ok" }
+      return userId === "missing"
+        ? err({ kind: "identity-not-found" })
+        : ok(undefined)
     },
-    async updateUserStatus({ actor, now, status, userId }) {
+    async updateUserStatus({ actor, status, userId }) {
       journal.record("identity.update-user-status", {
         actor: { id: actor.id, role: actor.role },
-        now: now.toISOString(),
+        now: identityNow.toISOString(),
         status,
         userId,
       })
 
-      if (userId === "missing") return { kind: "not-found" }
+      if (userId === "missing") return err({ kind: "identity-not-found" })
 
-      return {
-        kind: "ok",
-        value: adminUserDetailDtoSchema.parse({ ...identityDetail, status }),
-      }
+      return ok(adminUserDetailDtoSchema.parse({ ...identityDetail, status }))
     },
   }
 }

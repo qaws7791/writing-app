@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { eq } from "drizzle-orm"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import type { LearnerProfileRepository } from "@workspace/core/auth"
 import {
   authAccounts,
   authRateLimits,
@@ -41,15 +40,13 @@ describe("학습자 테스트 인증", () => {
       const cookieHeader = readCookieHeader(response)
       expect(cookieHeader).toContain(`${learnerSessionCookieName}=`)
       await expect(
-        runtime.sessionResolver.resolveSession(
+        runtime.identityResolver.resolveIdentity(
           new Headers({ Cookie: cookieHeader })
         )
       ).resolves.toMatchObject({
-        user: {
-          email: "learner@example.com",
-          id: "user-1",
-          name: "글쓰기 탐험가",
-        },
+        email: "learner@example.com",
+        id: "user-1",
+        name: "글쓰기 탐험가",
       })
       expect(
         database.db
@@ -94,10 +91,10 @@ describe("학습자 테스트 인증", () => {
       )
 
       await expect(
-        runtime.sessionResolver.resolveSession(
+        runtime.identityResolver.resolveIdentity(
           new Headers({ Cookie: readCookieHeader(response) })
         )
-      ).resolves.toMatchObject({ user: { name: "글쓰기 탐험가" } })
+      ).resolves.toMatchObject({ name: "글쓰기 탐험가" })
       expect(
         database.db
           .select({ name: authUsers.name })
@@ -166,7 +163,7 @@ function createTestRuntime(
         verification: authVerifications,
       },
     }),
-    profileRepository: createTestLearnerProfileRepository(),
+    identityProvisioner: { async provision() {} },
     secret: "x".repeat(32),
     testAuth: {
       kind: "enabled",
@@ -192,13 +189,4 @@ function readCookieHeader(response: Response): string {
       .map((cookie) => cookie.split(";")[0])
       .join("; ") ?? ""
   )
-}
-
-function createTestLearnerProfileRepository(): LearnerProfileRepository {
-  return {
-    async ensureActiveProfile() {},
-    async findProfileByUserId() {
-      return null
-    },
-  }
 }

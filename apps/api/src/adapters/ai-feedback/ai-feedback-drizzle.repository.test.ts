@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import {
+  curriculumVersionIdSchema,
   lessonIdSchema,
   lessonStepIdSchema,
 } from "@workspace/contracts/content/ids"
@@ -25,9 +26,8 @@ import {
   authUsers,
   learnerCourseProgress,
 } from "@workspace/db/schema"
-import { createCurriculumVersionId } from "@workspace/db/content/curriculum-version-id"
-import type { ContentSeedRows } from "@workspace/db/seeds/seed-content"
-import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
+import type { ContentSeedRows } from "@workspace/content/seed"
+import { upsertContentSeedRows } from "@workspace/content/seed"
 import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback/feedback"
 
 const now = new Date("2026-06-14T10:30:00.000Z")
@@ -264,7 +264,8 @@ describe("AI 피드백 repository", () => {
       expect(client.db.select().from(aiFeedbackAttempts).all()).toEqual([
         expect.objectContaining({
           courseId: "c-ai",
-          curriculumVersionId: createCurriculumVersionId("c-ai", 1),
+          curriculumVersionId:
+            curriculumVersionIdSchema.parse("curriculum:c-ai:1"),
           attemptNumber: 1,
           resultJson: JSON.stringify(feedbackPayload),
           status: "succeeded",
@@ -402,9 +403,10 @@ function seedFeedbackBaseline(client: WritingAppDatabaseClient): void {
     ],
   }
   client.db.transaction((transaction) => {
-    upsertContentSeedRows(transaction, rows)
+    upsertContentSeedRows(transaction, rows, now)
   })
-  const curriculumVersionId = createCurriculumVersionId("c-ai", 1)
+  const curriculumVersionId =
+    curriculumVersionIdSchema.parse("curriculum:c-ai:1")
   client.db
     .insert(learnerCourseProgress)
     .values({

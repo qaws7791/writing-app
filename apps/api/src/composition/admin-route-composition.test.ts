@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { createIdentityModule } from "@workspace/identity/module"
+import { createContentModule } from "@workspace/content/module"
+import { ok } from "@workspace/kernel/result"
 
 import {
   createAdminCapabilityRouteGroupRegistry,
@@ -9,6 +12,8 @@ import {
 import { parseApiEnv } from "@/config/env"
 import { adminRouteGroupOrder } from "@/http/admin-route-group"
 import { createAppLogger } from "@workspace/observability/logger"
+
+import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
 
 describe("관리자 capability route composition", () => {
   it("하나의 app-owned context로 여섯 capability factory를 매번 독립 조립한다", () => {
@@ -35,11 +40,11 @@ describe("관리자 capability route composition", () => {
         )
       ).toEqual({
         aiChat: 3,
-        content: 6,
+        content: 7,
         dashboardAnalytics: 3,
         identity: 4,
         resourceLibrary: 14,
-        settings: 4,
+        settings: 3,
       })
       expect(
         routes.map((registration) => registration.route.operationId)
@@ -56,6 +61,7 @@ describe("관리자 capability route composition", () => {
         "getAdminCourseEditor",
         "saveAdminCourseEditor",
         "publishAdminCourse",
+        "resetAdminContent",
         "getAdminUsers",
         "getAdminUser",
         "updateAdminUserStatus",
@@ -77,7 +83,6 @@ describe("관리자 capability route composition", () => {
         "getAdminSettings",
         "updateAdminNoticeSettings",
         "updateAdminLegalSettings",
-        "resetAdminContent",
       ])
       expect(Object.isFrozen(routes)).toBe(true)
     } finally {
@@ -90,6 +95,17 @@ function createCompositionContext(
   database: AdminRouteCompositionContext["database"]
 ): AdminRouteCompositionContext {
   return {
+    content: createContentModule({
+      clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
+      courseIdGenerator: { next: () => "course-1" as never },
+      database,
+      eventFailureObserver: () => undefined,
+      eventIdGenerator: { next: () => "event-1" },
+      eventPublisher: {
+        publishCurriculumPublished: async () => ok(undefined),
+      },
+      resetGuard: { authorize: () => ok(undefined) },
+    }),
     database,
     env: parseApiEnv({
       ADMIN_AUTH_SECRET: "admin-test-secret-0123456789abcdef",
@@ -103,6 +119,24 @@ function createCompositionContext(
       WEB_ORIGIN: "http://localhost:3000",
     }),
     logger: createAppLogger({ level: "silent" }),
+    identity: createIdentityModule({
+      clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
+      database,
+      eventFailureObserver: () => undefined,
+      eventIdGenerator: { next: () => "event-1" },
+      eventPublisher: {
+        publishUserStatusChanged: async () => ok(undefined),
+      },
+      learningReport: {
+        readActiveLessonCount: async () => 0,
+        readLearnerReports: async () => [],
+      },
+      learnerIdentityDirectory: createLearnerIdentityDirectory(database),
+      sessionRevocation: {
+        revokeAdminSessions: async () => ok(undefined),
+        revokeLearnerSessions: async () => ok(undefined),
+      },
+    }),
     now: () => new Date("2026-07-18T00:00:00.000Z"),
     sessionResolver: {
       resolveSession: () => Promise.resolve(null),

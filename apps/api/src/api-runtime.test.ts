@@ -10,6 +10,8 @@ describe("통합 API runtime composition root", () => {
     const learnerDatabase = vi.fn()
     const adminDatabase = vi.fn()
     const capabilityDatabase = vi.fn()
+    const contentDatabase = vi.fn()
+    const identityDatabase = vi.fn()
 
     try {
       const runtime = assembleApiRuntime({
@@ -18,13 +20,36 @@ describe("통합 API runtime composition root", () => {
           adminDatabase(db)
           return "admin-auth"
         },
-        createAdminCapabilityRoutes({ adminAuth, database: db }) {
+        createAdminCapabilityRoutes({
+          adminAuth,
+          adminSessionResolver,
+          content,
+          database: db,
+          identity,
+        }) {
           capabilityDatabase(db)
           expect(adminAuth).toBe("admin-auth")
+          expect(adminSessionResolver).toBe("admin-session-resolver")
+          expect(content).toBe("content")
+          expect(identity).toBe("identity")
           return "admin-capability-routes"
         },
-        createLearnerCore(db) {
+        createAdminSessionResolver({ adminAuth, identity }) {
+          expect(adminAuth).toBe("admin-auth")
+          expect(identity).toBe("identity")
+          return "admin-session-resolver"
+        },
+        createContent(db) {
+          contentDatabase(db)
+          return "content"
+        },
+        createIdentity(db) {
+          identityDatabase(db)
+          return "identity"
+        },
+        createLearnerCore({ database: db, identity }) {
           learnerDatabase(db)
+          expect(identity).toBe("identity")
           return "learner-core"
         },
         database: database.db,
@@ -33,10 +58,15 @@ describe("통합 API runtime composition root", () => {
       expect(runtime).toMatchObject({
         adminAuth: "admin-auth",
         adminCapabilityRoutes: "admin-capability-routes",
+        adminSessionResolver: "admin-session-resolver",
+        content: "content",
+        identity: "identity",
         learnerCore: "learner-core",
       })
       expect(learnerDatabase).toHaveBeenCalledWith(database.db)
       expect(adminDatabase).toHaveBeenCalledWith(database.db)
+      expect(identityDatabase).toHaveBeenCalledWith(database.db)
+      expect(contentDatabase).toHaveBeenCalledWith(database.db)
       expect(learnerDatabase.mock.calls[0]?.[0]).toBe(
         adminDatabase.mock.calls[0]?.[0]
       )
@@ -53,6 +83,9 @@ describe("통합 API runtime composition root", () => {
       closeDatabase,
       createAdminAuth: () => ({}),
       createAdminCapabilityRoutes: () => [],
+      createAdminSessionResolver: () => ({}),
+      createContent: () => ({}),
+      createIdentity: () => ({}),
       createLearnerCore: () => ({}),
       database: database.db,
     })
@@ -63,7 +96,14 @@ describe("통합 API runtime composition root", () => {
     expect(closeDatabase).toHaveBeenCalledTimes(1)
   })
 
-  it.each(["learner", "admin", "capability"] as const)(
+  it.each([
+    "identity",
+    "content",
+    "learner",
+    "admin",
+    "session",
+    "capability",
+  ] as const)(
     "%s 조립이 실패하면 database를 한 번만 닫는다",
     (failurePoint) => {
       const database = createInMemoryWritingAppDatabase()
@@ -81,6 +121,18 @@ describe("통합 API runtime composition root", () => {
               throw new Error("capability 실패")
             }
             return []
+          },
+          createAdminSessionResolver() {
+            if (failurePoint === "session") throw new Error("session 실패")
+            return {}
+          },
+          createContent() {
+            if (failurePoint === "content") throw new Error("content 실패")
+            return {}
+          },
+          createIdentity() {
+            if (failurePoint === "identity") throw new Error("identity 실패")
+            return {}
           },
           createLearnerCore() {
             if (failurePoint === "learner") throw new Error("learner 실패")

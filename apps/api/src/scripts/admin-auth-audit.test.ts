@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest"
-import { adminRoles } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { adminIdentityProfiles } from "@workspace/identity/schema"
 import {
   adminAuthAccounts,
   adminAuthSessions,
   adminAuthUsers,
 } from "@workspace/db/schema"
 
+import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 import { auditAdminAuth } from "@/scripts/admin-auth-audit"
 import {
   requireAdminSessionRevocationApproval,
@@ -20,6 +22,7 @@ describe("통합 API 관리자 인증 운영 명령", () => {
     const now = new Date("2026-07-12T00:00:00.000Z")
     try {
       runBaselineMigration(database.sqlite)
+      runApiIdentitySchemaMigration(database.sqlite)
       await database.db.insert(adminAuthUsers).values([
         {
           createdAt: now,
@@ -27,7 +30,6 @@ describe("통합 API 관리자 인증 운영 명령", () => {
           emailVerified: true,
           id: "approved",
           name: "승인 관리자",
-          role: adminRoles.owner,
           updatedAt: now,
         },
         {
@@ -36,9 +38,12 @@ describe("통합 API 관리자 인증 운영 명령", () => {
           emailVerified: true,
           id: "rogue",
           name: "미승인 관리자",
-          role: adminRoles.operator,
           updatedAt: now,
         },
+      ])
+      await database.db.insert(adminIdentityProfiles).values([
+        { adminId: "approved", role: adminRoles.owner, version: 0 },
+        { adminId: "rogue", role: adminRoles.operator, version: 0 },
       ])
       await database.db.insert(adminAuthAccounts).values({
         accountId: "rogue",
@@ -88,6 +93,7 @@ describe("통합 API 관리자 인증 운영 명령", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
       runBaselineMigration(database.sqlite)
+      runApiIdentitySchemaMigration(database.sqlite)
       const now = new Date("2026-07-12T00:00:00.000Z")
       await database.db.insert(adminAuthUsers).values({
         createdAt: now,
@@ -95,7 +101,6 @@ describe("통합 API 관리자 인증 운영 명령", () => {
         emailVerified: true,
         id: "owner",
         name: "소유자",
-        role: adminRoles.owner,
         updatedAt: now,
       })
       await database.db.insert(adminAuthSessions).values({

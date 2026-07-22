@@ -8,9 +8,7 @@
   },
   "exports": {
     "./admin": "./src/modules/admin/api/index.ts",
-    "./auth": "./src/modules/auth/api/index.ts",
     "./ai-feedback": "./src/modules/ai-feedback/api/index.ts",
-    "./content": "./src/modules/content/api/index.ts",
     "./learning": "./src/modules/learning/api/index.ts",
     "./resource-library": "./src/modules/resource-library/api/index.ts"
   },
@@ -22,6 +20,7 @@
   },
   "dependencies": {
     "@workspace/contracts": "workspace:*",
+    "@workspace/identity": "workspace:*",
     "@workspace/kernel": "workspace:*",
     "@workspace/resource-document": "workspace:*",
     "@workspace/types": "workspace:*",

@@ -3,16 +3,18 @@ import {
   createAdminAuthRuntime,
   type AdminAuthRuntime,
 } from "@workspace/auth/admin/server"
-import { adminRoles } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import { adminAuthUsers } from "@workspace/auth/schema"
 import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabase,
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { adminIdentityProfiles } from "@workspace/identity/schema"
 
 import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
+import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
 import {
   createSeedAdminRows,
   createSeedAdminUserRow,
@@ -63,7 +65,7 @@ describe("통합 API 관리자 seed", () => {
     ).toThrow("확인값")
   })
 
-  it("owner user와 credential row를 결정적으로 만든다", () => {
+  it("auth user와 credential row를 결정적으로 만든다", () => {
     const now = new Date("2026-06-14T00:00:00.000Z")
     expect(
       createSeedAdminUserRow({
@@ -75,7 +77,6 @@ describe("통합 API 관리자 seed", () => {
       email: "admin@example.com",
       id: "admin-1",
       name: "관리자",
-      role: adminRoles.owner,
     })
     expect(
       createSeedAdminRows({
@@ -97,12 +98,16 @@ describe("통합 API 관리자 seed", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
       runBaselineMigration(database.sqlite)
+      runApiIdentitySchemaMigration(database.sqlite)
       await seedAdminUser(database.db, {
         email: "admin@example.com",
         name: "관리자",
         now: new Date("2026-06-14T00:00:00.000Z"),
         password: "admin-password-123",
       })
+      expect(database.db.select().from(adminIdentityProfiles).all()).toEqual([
+        { adminId: "admin-1", role: adminRoles.owner, version: 0 },
+      ])
       const auth = createTestAdminAuth(database.db)
       expect(await requestAdminEmailSignIn(auth, "admin-password-123")).toBe(
         200
@@ -116,6 +121,7 @@ describe("통합 API 관리자 seed", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
       runBaselineMigration(database.sqlite)
+      runApiIdentitySchemaMigration(database.sqlite)
       await seedAdminUser(database.db, {
         email: "admin@example.com",
         name: "관리자",
@@ -155,6 +161,7 @@ describe("통합 API 관리자 seed", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
       runBaselineMigration(database.sqlite)
+      runApiIdentitySchemaMigration(database.sqlite)
       database.sqlite.exec(`
         CREATE TRIGGER reject_admin_account_insert
         BEFORE INSERT ON admin_account

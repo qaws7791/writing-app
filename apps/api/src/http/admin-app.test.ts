@@ -1,17 +1,17 @@
 import { describe, expect, it, vi } from "vitest"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { z } from "@workspace/http-platform/zod"
 
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { defineAdminRoute } from "@/admin/admin-hono-env"
 import { jsonResponse } from "@/admin/admin-openapi"
-import { ownerAdminRouteOptions } from "@/admin/admin-route-options"
+import { ownerAdminRouteOptions } from "@workspace/identity/http"
 import { createAdminApp, type AdminAppDependencies } from "@/http/admin-app"
 import { defineAdminRouteGroup } from "@/http/admin-route-group"
 

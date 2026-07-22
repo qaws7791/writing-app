@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ProfilePage } from "@/features/learner-profile/ui/profile-page"
-import type { LearnerProfileResponse } from "@workspace/contracts/learning/learner-api"
+import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 
 const { onLogout, setTheme } = vi.hoisted(() => ({

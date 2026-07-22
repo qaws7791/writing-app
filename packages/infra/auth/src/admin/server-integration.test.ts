@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 import { eq } from "drizzle-orm"
-import { adminRoles } from "@workspace/core/admin"
 import {
   adminAuthAccounts,
   adminAuthRateLimits,
@@ -160,7 +159,6 @@ async function seedOwner(database: Database): Promise<void> {
       id: "admin-1",
       image: null,
       name: "소유자",
-      role: adminRoles.owner,
       updatedAt: now,
     })
     .run()

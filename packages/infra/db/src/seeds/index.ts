@@ -1,1 +1,1 @@
-export * from "#db/seeds/seed-content"
+export { seedDatabase, type SeedDatabaseOptions } from "#db/seeds/seed"

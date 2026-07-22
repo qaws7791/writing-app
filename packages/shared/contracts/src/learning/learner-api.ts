@@ -1,7 +1,5 @@
 import { aiFeedbackIdempotencyKeySchema } from "#contracts/ai-feedback/feedback"
 import { courseIdSchema, lessonIdSchema } from "#contracts/content/ids"
-import { userIdSchema } from "#contracts/identity/admin-ids"
-import { learnerAccountStatusSchema } from "#contracts/identity/status"
 import {
   learnerCourseCategoriesSchema,
   learnerCourseDetailSchema,
@@ -11,31 +9,12 @@ import {
   learnerProgressListQuerySchema,
   learnerProgressPageSchema,
 } from "#contracts/learning/learner-content"
-import { learnerProfileStatsDtoSchema } from "#contracts/learning/learner-read-model"
 import {
   completeLearnerStepResponseSchema,
   learnerAiFeedbackTransitionResultSchema,
   startLearnerLessonResponseSchema,
 } from "#contracts/learning/learner-transition"
 import { z } from "zod"
-
-export const learnerUserSchema = z.strictObject({
-  email: z.email(),
-  id: userIdSchema,
-  image: z.string().nullable(),
-  joinedAt: z.string().datetime(),
-  name: z.string(),
-  status: learnerAccountStatusSchema,
-})
-
-export const learnerProfileResponseSchema = z.strictObject({
-  stats: learnerProfileStatsDtoSchema,
-  user: learnerUserSchema,
-})
-
-export const learnerSessionResponseSchema = z.strictObject({
-  user: learnerUserSchema,
-})
 
 export const learnerProgressResponseSchema = learnerProgressPageSchema
 export const learnerCourseListResponseSchema = learnerCoursePageSchema
@@ -64,12 +43,6 @@ export const createLearnerAiFeedbackTransitionHeadersSchema = z.looseObject({
   "idempotency-key": aiFeedbackIdempotencyKeySchema,
 })
 
-export type LearnerProfileResponse = z.infer<
-  typeof learnerProfileResponseSchema
->
-export type LearnerSessionResponse = z.infer<
-  typeof learnerSessionResponseSchema
->
 export type LearnerProgressResponse = z.infer<
   typeof learnerProgressResponseSchema
 >

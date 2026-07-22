@@ -11,14 +11,16 @@ import { contentStatuses } from "@workspace/contracts/content/status"
 import { lessonProgressStatuses } from "@workspace/contracts/learning/status"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
+  learnerActivityDays,
+  learnerLessonProgress,
+} from "@workspace/db/schema"
+import {
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
-  learnerActivityDays,
-  learnerLessonProgress,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/db/schema"
+} from "@workspace/content/schema"
 
 export function createDrizzleProfileReader(
   db: WritingAppDatabase
@@ -27,7 +29,7 @@ export function createDrizzleProfileReader(
     async readProfileStats(userId) {
       const [completedLessons, totalLessons, activity] = await Promise.all([
         countCompletedLessons(db, userId),
-        countActiveLessons(db),
+        readActiveLessonCount(db),
         readActivity(db, userId),
       ])
 
@@ -111,7 +113,7 @@ function countCompletedLessons(
   )
 }
 
-function countActiveLessons(db: WritingAppDatabase): Promise<number> {
+export function readActiveLessonCount(db: WritingAppDatabase): Promise<number> {
   return Promise.resolve(
     db
       .select({ value: count() })

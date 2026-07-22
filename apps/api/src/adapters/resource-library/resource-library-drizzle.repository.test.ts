@@ -33,7 +33,6 @@ describe("통합 API 관리자 자료실 SQLite adapter", () => {
           emailVerified: true,
           id: "admin-1",
           name: "관리자",
-          role: "owner",
           updatedAt: now,
         })
         .run()

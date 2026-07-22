@@ -10,7 +10,6 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 import { authUsers } from "@workspace/auth/schema"
-import { lessonStepVersions } from "#db/schema/content.schema"
 import { learnerCourseProgress } from "#db/schema/learning.schema"
 
 export const aiFeedbackAttempts = sqliteTable(
@@ -45,15 +44,6 @@ export const aiFeedbackAttempts = sqliteTable(
       ],
       name: "ai_feedback_attempts_course_progress_fk",
     }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.curriculumVersionId, table.lessonId, table.stepId],
-      foreignColumns: [
-        lessonStepVersions.curriculumVersionId,
-        lessonStepVersions.lessonId,
-        lessonStepVersions.id,
-      ],
-      name: "ai_feedback_attempts_step_fk",
-    }).onDelete("restrict"),
     check(
       "ai_feedback_attempts_status_check",
       sql`${table.status} IN ('pending', 'succeeded', 'failed', 'expired')`

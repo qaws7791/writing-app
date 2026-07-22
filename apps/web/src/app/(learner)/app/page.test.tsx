@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import AppHomeRoute from "@/app/(learner)/app/page"
 import { learnerProgressPageSchema } from "@workspace/contracts/learning/learner-content"
-import type { LearnerProfileResponse } from "@workspace/contracts/learning/learner-api"
+import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { ApiError } from "@/shared/http/api-error"
 import {

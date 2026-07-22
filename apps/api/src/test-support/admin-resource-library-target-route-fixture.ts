@@ -3,7 +3,7 @@ import { adminResourceDocumentDtoSchema } from "@workspace/contracts/resource-li
 import { adminResourceSearchItemDtoSchema } from "@workspace/contracts/resource-library/admin-resource-search"
 import { adminResourceTreeNodeDtoSchema } from "@workspace/contracts/resource-library/admin-resource-tree"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import {
   toResourceAssetId,
   toResourceFolderId,
@@ -19,7 +19,7 @@ import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminResourceLibraryRoutes } from "@/modules/admin-resource-library/admin-resource-library.routes"
 import type { ResourceAssetStore } from "@/resource-assets/resource-asset-store"

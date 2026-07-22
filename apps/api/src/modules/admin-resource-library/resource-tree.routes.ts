@@ -12,7 +12,7 @@ import { adminResourceTreeScopeSchema } from "@workspace/contracts/resource-libr
 import type { ResourceTreeUseCase } from "@workspace/core/resource-library"
 import { z } from "@workspace/http-platform/zod"
 
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
   defineAdminRoute,
   type AdminRouteHandler,
@@ -22,7 +22,7 @@ import {
   errorJsonResponse,
   jsonResponse,
 } from "@/admin/admin-openapi"
-import { adminSessionRouteOptions } from "@/admin/admin-route-options"
+import { adminSessionRouteOptions } from "@workspace/identity/http"
 import { throwResourceLibraryRejection } from "@/modules/admin-resource-library/resource-library-errors"
 
 const resourceTreeQuerySchema = z.object({

@@ -3,7 +3,7 @@ import { adminResourceSearchDtoSchema } from "@workspace/contracts/resource-libr
 import type { ResourceSearchUseCase } from "@workspace/core/resource-library"
 import { z } from "@workspace/http-platform/zod"
 
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
   defineAdminRoute,
   type AdminRouteHandler,
@@ -12,7 +12,7 @@ import {
   adminAuthenticatedResponses,
   jsonResponse,
 } from "@/admin/admin-openapi"
-import { adminSessionRouteOptions } from "@/admin/admin-route-options"
+import { adminSessionRouteOptions } from "@workspace/identity/http"
 import { positiveIntegerQuery } from "@/modules/admin-resource-library/admin-query-schemas"
 
 const resourceSearchQuerySchema = z.object({

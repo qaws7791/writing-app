@@ -1,8 +1,11 @@
 import { readFile } from "node:fs/promises"
 import { describe, expect, it } from "vitest"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { createIdentityModule } from "@workspace/identity/module"
+import { ok } from "@workspace/kernel/result"
 
 import { createUnavailableAiFeedbackProvider } from "@/adapters/ai-feedback/openai-feedback-provider"
+import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
 import { createLearnerApiCore } from "@/learner-api-core"
 
 describe("학습자 API 코어 조립", () => {
@@ -18,6 +21,7 @@ describe("학습자 API 코어 조립", () => {
         cursorSigningSecret:
           "learner-api-core-cursor-0123456789abcdef0123456789abcdef",
         database: database.db,
+        identity: createTestIdentity(database.db),
         webOrigin: "http://localhost:3000",
       })
 
@@ -30,23 +34,21 @@ describe("학습자 API 코어 조립", () => {
     }
   })
 
-  it("auth runtime에 app-owned mapping과 profile repository를 주입한다", async () => {
+  it("auth runtime에 identity provisioning과 제품 세션 변환 경계를 주입한다", async () => {
     const source = await readFile(
       new URL("./learner-api-core.ts", import.meta.url),
       "utf8"
     )
 
-    expect(source).toContain("profileRepository: learnerProfileRepository")
-    expect(source).toContain("createDrizzleLearnerProfileRepository")
+    expect(source).toContain("identityProvisioner: createIdentityProvisioner")
     expect(source).toContain("createDrizzleAiFeedbackRepository")
     expect(source).toContain("createDrizzleLearnerReadModelRepository")
     expect(source).toContain("createDrizzleProfileReader")
     expect(source).toContain("createDrizzleLearnerTransitionRepository")
     expect(source).toContain("createLearnerAuthDatabase(database)")
-    expect(source).toContain(
-      "createDrizzleLearnerTestAuthDisplayNameSynchronizer(database)"
-    )
-    expect(source).toContain("sessionResolver: auth.sessionResolver")
+    expect(source).toContain("createLearnerTestAuthDisplayNameSynchronizer(")
+    expect(source).toContain("createLearnerSessionResolver")
+    expect(source).not.toContain("createDrizzleLearnerProfileRepository")
   })
 
   it("production과 E2E가 같은 통합 runtime root를 사용한다", async () => {
@@ -64,3 +66,26 @@ describe("학습자 API 코어 조립", () => {
     expect(e2eSource).not.toContain("@workspace/core/learner-api-core")
   })
 })
+
+function createTestIdentity(
+  database: Parameters<typeof createIdentityModule>[0]["database"]
+) {
+  return createIdentityModule({
+    clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
+    database,
+    eventFailureObserver: () => undefined,
+    eventIdGenerator: { next: () => "event-1" },
+    eventPublisher: {
+      publishUserStatusChanged: async () => ok(undefined),
+    },
+    learningReport: {
+      readActiveLessonCount: async () => 0,
+      readLearnerReports: async () => [],
+    },
+    learnerIdentityDirectory: createLearnerIdentityDirectory(database),
+    sessionRevocation: {
+      revokeAdminSessions: async () => ok(undefined),
+      revokeLearnerSessions: async () => ok(undefined),
+    },
+  })
+}

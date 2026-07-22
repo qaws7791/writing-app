@@ -16,7 +16,7 @@ import type {
 } from "@workspace/core/resource-library"
 import { z } from "@workspace/http-platform/zod"
 
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
   defineAdminRoute,
   type AdminRouteHandler,
@@ -35,7 +35,7 @@ import {
   markdownResponse,
   multipartRequestBody,
 } from "@/admin/admin-openapi"
-import { adminSessionRouteOptions } from "@/admin/admin-route-options"
+import { adminSessionRouteOptions } from "@workspace/identity/http"
 import {
   parseIntegerEtag,
   toIntegerEtag,

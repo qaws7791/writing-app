@@ -8,9 +8,11 @@
       "#ai/*": ["../../packages/infra/ai/src/*"],
       "#auth/*": ["../../packages/infra/auth/src/*"],
       "#core/*": ["../../packages/core/src/*"],
+      "#content/*": ["../../packages/modules/content/src/*"],
       "#db/*": ["../../packages/infra/db/src/*"],
       "#env/*": ["../../packages/config/env/src/*"],
       "#http-platform/*": ["../../packages/infra/http-platform/src/*"],
+      "#identity/*": ["../../packages/modules/identity/src/*"],
       "#observability/*": ["../../packages/infra/observability/src/*"],
       "@/*": ["./src/*"]
     },

@@ -2,7 +2,7 @@
 
 ## 목적
 
-이 문서는 사용자 역할, 접근 정책과 권한 변경 절차를 정의한다. 현재 인증 handler, session, cookie, middleware, endpoint와 schema는 API source와 contracts가 소유한다.
+이 문서는 사용자 역할, 접근 정책과 권한 변경 절차를 정의한다. credential·session handler와 schema는 auth infra, 제품 사용자 상태·관리자 role policy는 identity module, endpoint 조립과 wire schema는 API source와 contracts가 소유한다.
 
 ## 역할과 접근
 
@@ -16,10 +16,12 @@
 ## 정책 원칙
 
 - 학습자 인증과 관리자 인증은 credential, session, cookie, 권한 해석과 감사 수명을 분리한다.
+- 인증 성공은 제품 접근 허용과 같지 않다. identity가 학습자의 현재 상태와 관리자의 현재 role을 해석하며 suspended·deleted 학습자는 보호 API에서 거부한다.
 - 모든 보호 요청은 현재 session과 필요한 역할을 서버에서 다시 검증한다.
 - UI의 메뉴 숨김은 보안 경계가 아니며, command와 query 모두 서버 인가를 거친다.
 - 권한이 없는 요청은 존재 여부나 내부 상태를 불필요하게 노출하지 않는 안정된 오류로 거부한다.
 - test-only 인증은 production에서 활성화할 수 없다.
+- 사용자 상태·삭제와 관리자 role 변경은 owner 정책을 application command와 HTTP 경계에서 모두 적용하며 optimistic conflict를 성공으로 숨기지 않는다.
 
 ## 권한 변경 절차
 

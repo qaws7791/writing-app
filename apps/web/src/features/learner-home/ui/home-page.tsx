@@ -1,7 +1,5 @@
-import type {
-  LearnerProfileResponse,
-  LearnerProgressResponse,
-} from "@workspace/contracts/learning/learner-api"
+import type { LearnerProgressResponse } from "@workspace/contracts/learning/learner-api"
+import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
 import { BookOpenIcon, FlameIcon } from "@workspace/ui/components/icons"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 

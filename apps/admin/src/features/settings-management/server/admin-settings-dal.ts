@@ -1,6 +1,6 @@
 import type { AdminHttpTransport } from "@/shared/http/admin-http-transport"
 import type { AdminApiResult } from "@/shared/http/admin-api-result"
-import { adminContentResetResultSchema } from "@workspace/contracts/operations/admin-content-reset"
+import { adminContentResetResultSchema } from "@workspace/contracts/content/admin-content-reset"
 import { adminSettingsDtoSchema } from "@workspace/contracts/operations/admin-settings"
 import type {
   AdminContentResetResult,

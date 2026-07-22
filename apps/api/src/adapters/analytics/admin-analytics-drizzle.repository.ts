@@ -4,9 +4,7 @@ import type {
   AdminLessonAnalyticsSort,
   AdminSortDirection,
 } from "@workspace/contracts/operations/dashboard-analytics-data"
-import type { AdminUserStatus } from "@workspace/contracts/identity/data"
 import { contentStatuses } from "@workspace/contracts/content/status"
-import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
 import { lessonProgressStatuses } from "@workspace/contracts/learning/status"
 import {
   courseIdSchema,
@@ -27,17 +25,21 @@ import {
   type LearningDateKey,
 } from "@workspace/core/learning"
 import type { WritingAppDatabase } from "@workspace/db/client"
+import type {
+  OperationsIdentityReportingQuery,
+  OperationsIdentitySnapshot,
+} from "@workspace/identity/queries"
 import {
-  authUsers,
+  learnerActivityDays,
+  learnerLessonProgress,
+} from "@workspace/db/schema"
+import {
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
-  learnerActivityDays,
-  learnerLessonProgress,
-  learnerProfiles,
   lessonVersions,
-} from "@workspace/db/schema"
-import { and, asc, countDistinct, desc, eq, or, sql } from "drizzle-orm"
+} from "@workspace/content/schema"
+import { and, eq } from "drizzle-orm"
 
 const streakBucketRanges = [
   { label: "0일", max: 0, min: 0 },
@@ -47,146 +49,53 @@ const streakBucketRanges = [
   { label: "15일+", max: Number.POSITIVE_INFINITY, min: 15 },
 ] as const
 
-type AdminLearnerSnapshot = {
-  readonly createdAt: Date
-  readonly id: string
-  readonly status: AdminUserStatus | null
-}
-
 type AdminLessonAnalyticsSnapshot = AdminLessonAnalyticsItemDto
 
 export function createAdminAnalyticsRepository(
-  db: WritingAppDatabase
+  database: WritingAppDatabase,
+  identityReporting: OperationsIdentityReportingQuery
 ): AdminAnalyticsReader {
   return {
-    readAnalytics(input) {
-      return Promise.resolve(readAnalytics(db, input))
-    },
-    readLessonAnalytics(input) {
-      return Promise.resolve(readLessonAnalytics(db, input))
-    },
-  }
-}
+    async readAnalytics(input) {
+      const learners = await identityReporting.readNonDeletedLearners()
+      const lessonAnalytics = createLessonAnalyticsSnapshots(database, learners)
 
-function readAnalytics(
-  db: WritingAppDatabase,
-  input: ReadAdminAnalyticsInput
-): AdminAnalyticsDto {
-  const lessonAnalytics = createLessonAnalyticsSnapshots(db)
-
-  return {
-    dailySeries: createDailySeries(db, input),
-    streakBuckets: createStreakBuckets(db),
-    worstLessons: [...lessonAnalytics].sort(compareWorstLessons).slice(0, 8),
+      return {
+        dailySeries: createDailySeries(database, input, learners),
+        streakBuckets: createStreakBuckets(database, learners),
+        worstLessons: [...lessonAnalytics]
+          .sort(compareWorstLessons)
+          .slice(0, 8),
+      }
+    },
+    async readLessonAnalytics(input) {
+      const learners = await identityReporting.readNonDeletedLearners()
+      return readLessonAnalytics(database, input, learners)
+    },
   }
 }
 
 function readLessonAnalytics(
-  db: WritingAppDatabase,
-  input: ReadAdminLessonAnalyticsInput
+  database: WritingAppDatabase,
+  input: ReadAdminLessonAnalyticsInput,
+  learners: readonly OperationsIdentitySnapshot[]
 ): ReadAdminLessonAnalyticsResult {
   const query = input.query.trim().toLowerCase()
-  const startedExpression = createLessonAnalyticsStartedExpression()
-  const completedExpression = createLessonAnalyticsCompletedExpression()
-  const completionRateExpression =
-    createLessonAnalyticsCompletionRateExpression({
-      completed: completedExpression,
-      started: startedExpression,
-    })
-  const dropOffRateExpression = sql<number>`100 - ${completionRateExpression}`
-  const whereCondition = createReadLessonAnalyticsWhereCondition(query)
-  const totalItems =
-    db
-      .select({ value: countDistinct(lessonVersions.id) })
-      .from(lessonVersions)
-      .innerJoin(
-        courses,
-        eq(
-          courses.publishedCurriculumVersionId,
-          lessonVersions.curriculumVersionId
-        )
-      )
-      .innerJoin(
-        courseCurriculumVersions,
-        eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
-      )
-      .innerJoin(
-        courseUnitVersions,
-        and(
-          eq(
-            courseUnitVersions.curriculumVersionId,
-            lessonVersions.curriculumVersionId
-          ),
-          eq(courseUnitVersions.id, lessonVersions.unitId)
-        )
-      )
-      .where(whereCondition)
-      .get()?.value ?? 0
-  const pagination = createAdminPageBounds(input, totalItems)
-  const rows = db
-    .select({
-      completed: completedExpression,
-      completionRate: completionRateExpression,
-      courseId: courses.id,
-      courseTitle: courseCurriculumVersions.title,
-      dropOffRate: dropOffRateExpression,
-      lessonId: lessonVersions.id,
-      lessonTitle: lessonVersions.title,
-      started: startedExpression,
-    })
-    .from(lessonVersions)
-    .innerJoin(
-      courses,
-      eq(
-        courses.publishedCurriculumVersionId,
-        lessonVersions.curriculumVersionId
-      )
+  const items = createLessonAnalyticsSnapshots(database, learners)
+    .filter(
+      (item) =>
+        query.length === 0 ||
+        item.lessonTitle.toLowerCase().includes(query) ||
+        item.courseTitle.toLowerCase().includes(query)
     )
-    .innerJoin(
-      courseCurriculumVersions,
-      eq(courseCurriculumVersions.id, lessonVersions.curriculumVersionId)
-    )
-    .innerJoin(
-      courseUnitVersions,
-      and(
-        eq(
-          courseUnitVersions.curriculumVersionId,
-          lessonVersions.curriculumVersionId
-        ),
-        eq(courseUnitVersions.id, lessonVersions.unitId)
-      )
-    )
-    .leftJoin(
-      learnerLessonProgress,
-      eq(learnerLessonProgress.lessonId, lessonVersions.id)
-    )
-    .leftJoin(authUsers, eq(authUsers.id, learnerLessonProgress.userId))
-    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-    .where(whereCondition)
-    .groupBy(
-      lessonVersions.id,
-      lessonVersions.title,
-      courses.id,
-      courseCurriculumVersions.title
-    )
-    .orderBy(
-      ...createReadLessonAnalyticsOrder(input.sort, input.direction, {
-        completionRate: completionRateExpression,
-        courseTitle: courseCurriculumVersions.title,
-        dropOffRate: dropOffRateExpression,
-        lessonTitle: lessonVersions.title,
-      })
-    )
-    .limit(pagination.pageSize)
-    .offset(pagination.offset)
-    .all()
+    .sort(createLessonAnalyticsComparator(input.sort, input.direction))
+  const pagination = createAdminPageBounds(input, items.length)
 
   return {
-    items: rows.map((row) => ({
-      ...row,
-      courseId: courseIdSchema.parse(row.courseId),
-      lessonId: lessonIdSchema.parse(row.lessonId),
-    })),
+    items: items.slice(
+      pagination.offset,
+      pagination.offset + pagination.pageSize
+    ),
     page: pagination.page,
     pageSize: pagination.pageSize,
     totalItems: pagination.totalItems,
@@ -194,85 +103,17 @@ function readLessonAnalytics(
   }
 }
 
-function createReadLessonAnalyticsWhereCondition(query: string) {
-  const queryCondition =
-    query.length === 0
-      ? undefined
-      : or(
-          sql`lower(${lessonVersions.title}) like ${`%${query}%`}`,
-          sql`lower(${courseCurriculumVersions.title}) like ${`%${query}%`}`
-        )
-
-  return and(
-    eq(lessonVersions.status, contentStatuses.active),
-    eq(courses.status, contentStatuses.active),
-    eq(courseCurriculumVersions.status, "published"),
-    eq(courseUnitVersions.status, contentStatuses.active),
-    queryCondition
-  )
-}
-
-function createLessonAnalyticsStartedExpression() {
-  return sql<number>`count(distinct case when ${authUsers.id} is not null and (${learnerProfiles.status} is null or ${learnerProfiles.status} <> ${learnerAccountStatuses.deleted}) then ${learnerLessonProgress.userId} end)`
-}
-
-function createLessonAnalyticsCompletedExpression() {
-  return sql<number>`count(distinct case when ${authUsers.id} is not null and (${learnerProfiles.status} is null or ${learnerProfiles.status} <> ${learnerAccountStatuses.deleted}) and ${learnerLessonProgress.status} = ${lessonProgressStatuses.completed} then ${learnerLessonProgress.userId} end)`
-}
-
-function createLessonAnalyticsCompletionRateExpression({
-  completed,
-  started,
-}: {
-  readonly completed: ReturnType<typeof sql<number>>
-  readonly started: ReturnType<typeof sql<number>>
-}) {
-  return sql<number>`case when ${started} = 0 then 0 else round((${completed} * 100.0) / ${started}) end`
-}
-
-function createReadLessonAnalyticsOrder(
-  sort: AdminLessonAnalyticsSort,
-  direction: AdminSortDirection,
-  expressions: {
-    readonly completionRate: ReturnType<typeof sql<number>>
-    readonly courseTitle: typeof courseCurriculumVersions.title
-    readonly dropOffRate: ReturnType<typeof sql<number>>
-    readonly lessonTitle: typeof lessonVersions.title
-  }
-) {
-  const applyDirection = direction === "asc" ? asc : desc
-
-  switch (sort) {
-    case "course":
-      return [
-        applyDirection(expressions.courseTitle),
-        asc(expressions.lessonTitle),
-      ] as const
-    case "completionRate":
-      return [
-        applyDirection(expressions.completionRate),
-        asc(expressions.lessonTitle),
-      ] as const
-    case "dropOff":
-      return [
-        applyDirection(expressions.dropOffRate),
-        asc(expressions.lessonTitle),
-      ] as const
-    case "lesson":
-      return [applyDirection(expressions.lessonTitle)] as const
-  }
-}
-
 function createDailySeries(
-  db: WritingAppDatabase,
-  input: ReadAdminAnalyticsInput
+  database: WritingAppDatabase,
+  input: ReadAdminAnalyticsInput,
+  learners: readonly OperationsIdentitySnapshot[]
 ): AdminAnalyticsDto["dailySeries"] {
-  const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
+  const learnerIds = new Set<string>(learners.map(({ id }) => id))
   const signupsByDate = countByDate(
-    readActiveLearners(db).map((user) => toLearningDateKey(user.createdAt))
+    learners.map(({ createdAt }) => toLearningDateKey(createdAt))
   )
   const completionsByDate = countByDate(
-    db
+    database
       .select()
       .from(learnerLessonProgress)
       .all()
@@ -301,16 +142,17 @@ function createDailySeries(
 }
 
 function createStreakBuckets(
-  db: WritingAppDatabase
+  database: WritingAppDatabase,
+  learners: readonly OperationsIdentitySnapshot[]
 ): AdminAnalyticsDto["streakBuckets"] {
   const activitiesByUserId = groupLearningActivityDatesByUserId(
-    db.select().from(learnerActivityDays).all()
+    database.select().from(learnerActivityDays).all()
   )
   const counts = new Map(streakBucketRanges.map((bucket) => [bucket.label, 0]))
 
-  for (const user of readActiveLearners(db)) {
+  for (const learner of learners) {
     const streak = calculateCurrentStreakDays(
-      activitiesByUserId.get(user.id) ?? []
+      activitiesByUserId.get(learner.id) ?? []
     )
     const bucket = streakBucketRanges.find(
       (range) => streak >= range.min && streak <= range.max
@@ -328,23 +170,28 @@ function createStreakBuckets(
 }
 
 function createLessonAnalyticsSnapshots(
-  db: WritingAppDatabase
+  database: WritingAppDatabase,
+  learners: readonly OperationsIdentitySnapshot[]
 ): AdminLessonAnalyticsSnapshot[] {
-  const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
-  const progressRows = db
+  const learnerIds = new Set<string>(learners.map(({ id }) => id))
+  const progressRows = database
     .select()
     .from(learnerLessonProgress)
     .all()
     .filter((progress) => learnerIds.has(progress.userId))
 
-  return readActiveLessonSnapshots(db).map((lesson) => {
+  return readActiveLessonSnapshots(database).map((lesson) => {
     const lessonProgressRows = progressRows.filter(
       (progress) => progress.lessonId === lesson.lessonId
     )
-    const started = lessonProgressRows.length
-    const completed = lessonProgressRows.filter(
-      (progress) => progress.status === lessonProgressStatuses.completed
-    ).length
+    const started = new Set(lessonProgressRows.map(({ userId }) => userId)).size
+    const completed = new Set(
+      lessonProgressRows
+        .filter(
+          (progress) => progress.status === lessonProgressStatuses.completed
+        )
+        .map(({ userId }) => userId)
+    ).size
     const completionRate =
       started === 0 ? 0 : Math.round((completed / started) * 100)
 
@@ -358,26 +205,13 @@ function createLessonAnalyticsSnapshots(
   })
 }
 
-function readActiveLearners(db: WritingAppDatabase): AdminLearnerSnapshot[] {
-  return db
-    .select({
-      createdAt: authUsers.createdAt,
-      id: authUsers.id,
-      status: learnerProfiles.status,
-    })
-    .from(authUsers)
-    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-    .all()
-    .filter((user) => user.status !== learnerAccountStatuses.deleted)
-}
-
-function readActiveLessonSnapshots(db: WritingAppDatabase): {
+function readActiveLessonSnapshots(database: WritingAppDatabase): {
   readonly courseId: AdminLessonAnalyticsItemDto["courseId"]
   readonly courseTitle: string
   readonly lessonId: AdminLessonAnalyticsItemDto["lessonId"]
   readonly lessonTitle: string
 }[] {
-  return db
+  return database
     .select({
       courseId: courses.id,
       courseTitle: courseCurriculumVersions.title,
@@ -432,6 +266,33 @@ function countByDate(
   }
 
   return counts
+}
+
+function createLessonAnalyticsComparator(
+  sort: AdminLessonAnalyticsSort,
+  direction: AdminSortDirection
+) {
+  const factor = direction === "asc" ? 1 : -1
+
+  return (
+    left: AdminLessonAnalyticsSnapshot,
+    right: AdminLessonAnalyticsSnapshot
+  ): number => {
+    const primary = (() => {
+      switch (sort) {
+        case "course":
+          return left.courseTitle.localeCompare(right.courseTitle)
+        case "completionRate":
+          return left.completionRate - right.completionRate
+        case "dropOff":
+          return left.dropOffRate - right.dropOffRate
+        case "lesson":
+          return left.lessonTitle.localeCompare(right.lessonTitle)
+      }
+    })()
+
+    return primary * factor || left.lessonTitle.localeCompare(right.lessonTitle)
+  }
 }
 
 function compareWorstLessons(

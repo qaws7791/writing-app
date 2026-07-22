@@ -48,7 +48,7 @@ const { adminApp, learnerApp, unifiedFetch } = (() => {
       learnerCursorCodec: runtime.learnerCore.learnerCursorCodec,
       learnerTransitionRepository:
         runtime.learnerCore.learnerTransitionRepository,
-      profileReader: runtime.learnerCore.profileReader,
+      identityRoutes: runtime.learnerCore.identityRoutes,
       progressService: runtime.learnerCore.progressService,
       requestLogger: createRequestLogger(logger),
       requestLoggingRuntime: defaultRequestLoggingRuntime,
@@ -66,7 +66,7 @@ const { adminApp, learnerApp, unifiedFetch } = (() => {
       requestLogger: createRequestLogger(logger),
       requestLoggingRuntime: defaultRequestLoggingRuntime,
       securityAuditLogger: createSecurityAuditLogger(logger),
-      sessionResolver: runtime.adminAuth.sessionResolver,
+      sessionResolver: runtime.adminSessionResolver,
     })
     const unifiedFetch = createUnifiedApp({
       adminApp,

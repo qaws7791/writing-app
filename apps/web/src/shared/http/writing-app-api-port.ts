@@ -9,9 +9,9 @@ import type {
   LearnerCourseDetailResponse,
   LearnerCourseListResponse,
   LearnerLessonResponse,
-  LearnerProfileResponse,
   LearnerProgressResponse,
 } from "@workspace/contracts/learning/learner-api"
+import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
 import type { LessonLearningState } from "@workspace/contracts/learning/learner-content"
 
 type GetProgressOptions = {

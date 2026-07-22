@@ -3,12 +3,10 @@ import {
   adminLegalSettingsRequestSchema,
   adminNoticeSettingsRequestSchema,
 } from "@workspace/contracts/operations/admin-settings"
-import { adminContentResetResultSchema } from "@workspace/contracts/operations/content-reset-data"
 import { adminSettingsDtoSchema } from "@workspace/contracts/operations/settings-data"
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
-import type { AdminContentResetUseCase } from "@workspace/core/content"
 
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
   defineAdminRoute,
   type AdminRouteHandler,
@@ -22,14 +20,13 @@ import {
 import {
   adminSessionRouteOptions,
   ownerAdminRouteOptions,
-} from "@/admin/admin-route-options"
+} from "@workspace/identity/http"
 import {
   defineAdminRouteGroup,
   type AdminRouteGroup,
 } from "@/http/admin-route-group"
 
 export type AdminSettingsRouteDependencies = {
-  readonly contentResetService: AdminContentResetUseCase
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
   readonly settingsService: AdminSettingsUseCase
@@ -42,7 +39,6 @@ export function createAdminSettingsRoutes(
     createGetSettingsRoute(dependencies),
     createUpdateNoticeSettingsRoute(dependencies),
     createUpdateLegalSettingsRoute(dependencies),
-    createResetContentRoute(dependencies),
   ])
 }
 
@@ -156,38 +152,6 @@ function createUpdateLegalSettingsRoute({
           now: now(),
           privacy: body.privacy,
           terms: body.terms,
-        })
-      )
-    )
-
-    return context.json(response, 200)
-  }
-
-  return defineAdminRoute({ ...routeConfig, handler })
-}
-
-function createResetContentRoute({
-  contentResetService,
-  now,
-  sessionResolver,
-}: AdminSettingsRouteDependencies) {
-  const routeConfig = {
-    method: "post",
-    operationId: "resetAdminContent",
-    path: "/settings/content-reset",
-    responses: adminAuthenticatedResponses(
-      jsonResponse("콘텐츠 초기화 결과입니다.", adminContentResetResultSchema)
-    ),
-    summary: "어드민 콘텐츠 초기화",
-    ...ownerAdminRouteOptions(sessionResolver),
-  } satisfies AnyRouteConfig
-
-  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const response = adminContentResetResultSchema.parse(
-      unwrapAdminOwnerMutationResult(
-        await contentResetService.resetContent({
-          actor: context.var.adminActor,
-          now: now(),
         })
       )
     )

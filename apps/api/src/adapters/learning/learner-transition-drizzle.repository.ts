@@ -23,17 +23,19 @@ import {
 } from "@workspace/contracts/content/ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
-  courseCurriculumVersions,
-  courses,
-  courseUnitVersions,
   aiFeedbackAttempts,
   learnerActivityDays,
   learnerCourseProgress,
   learnerLessonAnswers,
   learnerLessonProgress,
+} from "@workspace/db/schema"
+import {
+  courseCurriculumVersions,
+  courses,
+  courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/db/schema"
+} from "@workspace/content/schema"
 
 import {
   decideFinalizeAiFeedback,

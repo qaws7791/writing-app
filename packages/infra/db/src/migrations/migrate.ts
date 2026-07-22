@@ -6,6 +6,7 @@ import { runAuthSchemaMigration } from "@workspace/auth/schema"
 import {
   hasLegacyCurriculumSchema,
   migrateLegacyCurriculumSchema,
+  type NormalizeVersionedStepContent,
 } from "#db/migrations/curriculum-migration"
 
 const baselineMigrationUrl = new URL(
@@ -17,12 +18,28 @@ export function readBaselineMigrationSql(): string {
   return readFileSync(baselineMigrationUrl, "utf8")
 }
 
-export function runBaselineMigration(sqlite: Database): void {
+export type BaselineMigrationPolicy = Readonly<{
+  normalizeVersionedStepContent?: NormalizeVersionedStepContent
+}>
+
+export function runBaselineMigration(
+  sqlite: Database,
+  policy: BaselineMigrationPolicy = {}
+): void {
   const baselineSql = readBaselineMigrationSql()
 
   if (hasLegacyCurriculumSchema(sqlite)) {
+    if (policy.normalizeVersionedStepContent === undefined) {
+      throw new Error(
+        "Legacy curriculum migration requires a content normalization policy"
+      )
+    }
     ensureAiFeedbackAttemptStateModel(sqlite)
-    migrateLegacyCurriculumSchema(sqlite, baselineSql)
+    migrateLegacyCurriculumSchema(
+      sqlite,
+      baselineSql,
+      policy.normalizeVersionedStepContent
+    )
   } else {
     sqlite.exec(baselineSql)
   }

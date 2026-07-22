@@ -1,16 +1,14 @@
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminContentResetResultSchema } from "@workspace/contracts/operations/content-reset-data"
 import { adminSettingsDtoSchema } from "@workspace/contracts/operations/settings-data"
-import { adminRoles } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
-import type { AdminContentResetUseCase } from "@workspace/core/content"
 
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminSettingsRoutes } from "@/modules/admin-settings/admin-settings.routes"
 
@@ -38,17 +36,6 @@ const settings = adminSettingsDtoSchema.parse({
     banner: "새 강의가 추가되었어요!",
   },
 })
-const contentResetResult = adminContentResetResultSchema.parse({
-  changed: {
-    archived: 0,
-    courses: 5,
-    lessons: 44,
-    steps: 136,
-    units: 15,
-  },
-  revision: 1,
-})
-
 export function createAdminSettingsTargetRouteFixture(
   scenario: string
 ): AdminSettingsTargetRouteFixture {
@@ -56,7 +43,6 @@ export function createAdminSettingsTargetRouteFixture(
   const sessionResolver = createSessionResolver(scenario)
   const app = createAdminApp({
     capabilityRoutes: createAdminSettingsRoutes({
-      contentResetService: createContentResetService(journal),
       now: () => fixtureNow,
       sessionResolver,
       settingsService: createSettingsService(journal),
@@ -107,24 +93,6 @@ function createSettingsService(
       })
 
       return { kind: "ok", value: settings }
-    },
-  }
-}
-
-function createContentResetService(
-  journal: ReturnType<typeof createEffectJournal>
-): AdminContentResetUseCase {
-  return {
-    async resetContent(input) {
-      journal.record("content.reset", {
-        actor: {
-          id: input.actor.id,
-          role: input.actor.role,
-        },
-        now: input.now.toISOString(),
-      })
-
-      return { kind: "ok", value: contentResetResult }
     },
   }
 }

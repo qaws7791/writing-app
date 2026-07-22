@@ -24,7 +24,7 @@ export function createApp(dependencies: ApiDependencies): OpenAPIHono {
   const app = createHonoApp({
     errorLogger: dependencies.errorLogger,
     middleware: createMiddleware(dependencies),
-    routes,
+    routes: [...routes, ...dependencies.identityRoutes],
   })
 
   app.onError(createLearnerErrorHandler(dependencies.errorLogger))

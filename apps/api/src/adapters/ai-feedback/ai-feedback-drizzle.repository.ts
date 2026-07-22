@@ -3,11 +3,8 @@ import { and, count, eq, inArray, lte } from "drizzle-orm"
 import type { AiFeedbackRepository } from "@workspace/core/ai-feedback"
 import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import {
-  aiFeedbackAttempts,
-  learnerCourseProgress,
-  lessonStepVersions,
-} from "@workspace/db/schema"
+import { aiFeedbackAttempts, learnerCourseProgress } from "@workspace/db/schema"
+import { lessonStepVersions } from "@workspace/content/schema"
 
 export function createDrizzleAiFeedbackRepository(
   db: WritingAppDatabase

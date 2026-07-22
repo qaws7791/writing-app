@@ -10,16 +10,14 @@ import type {
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { userIdSchema } from "@workspace/contracts/identity/data"
 import type { AdminLessonAnalyticsPageDto } from "@workspace/contracts/operations/admin-analytics"
-import {
-  adminRoles,
-  type ReadAdminLessonAnalyticsResult,
-} from "@workspace/core/admin"
+import { type ReadAdminLessonAnalyticsResult } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminDashboardAnalyticsRoutes } from "@/modules/admin-dashboard-analytics/admin-dashboard-analytics.routes"
 

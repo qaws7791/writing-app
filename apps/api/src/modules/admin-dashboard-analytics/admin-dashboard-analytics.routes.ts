@@ -13,7 +13,7 @@ import type {
 } from "@workspace/core/admin"
 import { z } from "@workspace/http-platform/zod"
 
-import type { AdminSessionResolver } from "@workspace/auth/admin/server"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import {
   defineAdminRoute,
   type AdminRouteHandler,
@@ -22,7 +22,7 @@ import {
   adminAuthenticatedResponses,
   jsonResponse,
 } from "@/admin/admin-openapi"
-import { adminSessionRouteOptions } from "@/admin/admin-route-options"
+import { adminSessionRouteOptions } from "@workspace/identity/http"
 import {
   defineAdminRouteGroup,
   type AdminRouteGroup,

@@ -12,8 +12,17 @@ describe("통합 API 어드민 dashboard·analytics DB adapter", () => {
 
     try {
       runBaselineMigration(client.sqlite)
-      const dashboardRepository = createAdminDashboardRepository(client.db)
-      const analyticsRepository = createAdminAnalyticsRepository(client.db)
+      const identityReporting = {
+        readNonDeletedLearners: async () => [],
+      }
+      const dashboardRepository = createAdminDashboardRepository(
+        client.db,
+        identityReporting
+      )
+      const analyticsRepository = createAdminAnalyticsRepository(
+        client.db,
+        identityReporting
+      )
 
       await expect(dashboardRepository.readDashboard({ now })).resolves.toEqual(
         {

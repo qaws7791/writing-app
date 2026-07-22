@@ -4,33 +4,20 @@ import {
   type AdminId,
 } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import {
-  adminRoles,
-  adminRoleValues,
-  parseAdminRole,
-  type AdminRole,
-} from "@workspace/core/admin"
 
 import type { AuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
 import { readAuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
 
-export const adminSessionExpiresAt = Symbol("admin-session-expires-at")
+export type AdminAuthIdentity = Readonly<{
+  email: string
+  expiresAt: Date
+  id: AdminId
+  name: string
+}>
 
-export type AdminAuthenticatedSession = {
-  readonly admin: {
-    readonly email: string
-    readonly id: AdminId
-    readonly name: string
-    readonly role: AdminRole
-  }
-  readonly [adminSessionExpiresAt]: Date
-}
-
-export type AdminSessionResolver = {
-  readonly resolveSession: (
-    headers: Headers
-  ) => Promise<AdminAuthenticatedSession | null>
-}
+export type AdminAuthIdentityResolver = Readonly<{
+  resolveIdentity: (headers: Headers) => Promise<AdminAuthIdentity | null>
+}>
 
 export type AdminSessionRevoker = {
   readonly revokeAllForAdmin: (_adminId: AdminId) => Promise<void> | void
@@ -47,7 +34,7 @@ export type CreateAdminAuthRuntimeInput = {
 
 export type AdminAuthRuntime = {
   readonly authHandler: (request: Request) => Promise<Response>
-  readonly sessionResolver: AdminSessionResolver
+  readonly identityResolver: AdminAuthIdentityResolver
 }
 
 export function createAdminAuthRuntime(
@@ -69,28 +56,20 @@ export function createAdminAuthRuntime(
     session: { modelName: "admin_session" },
     trustedOrigins: [input.webOrigin],
     user: {
-      additionalFields: {
-        role: {
-          defaultValue: adminRoles.operator,
-          input: false,
-          required: false,
-          type: [...adminRoleValues],
-        },
-      },
       modelName: "admin_user",
     },
     verification: { modelName: "admin_verification" },
   })
-  const sessionResolver = createAdminSessionResolver(auth)
+  const identityResolver = createAdminIdentityResolver(auth)
 
   return {
     authHandler: createAdminAuthHandler({
       auth,
       cookieDomain: input.cookieDomain,
-      sessionResolver,
+      identityResolver,
       sessionRevoker: input.sessionRevoker,
     }),
-    sessionResolver,
+    identityResolver,
   }
 }
 
@@ -110,31 +89,26 @@ type AdminBetterAuthSession = {
     readonly email: string
     readonly id: string
     readonly name: string
-    readonly role?: unknown
   }
 }
 
-function createAdminSessionResolver(
+function createAdminIdentityResolver(
   auth: AdminBetterAuthSessionApi
-): AdminSessionResolver {
+): AdminAuthIdentityResolver {
   return {
-    async resolveSession(headers) {
+    async resolveIdentity(headers) {
       const session = await auth.api.getSession({ headers })
       if (session === null) return null
 
-      const role = parseAdminRole(session.user.role)
       const adminId = adminIdSchema.safeParse(session.user.id)
 
-      return role === null || !adminId.success
+      return !adminId.success
         ? null
         : {
-            admin: {
-              email: session.user.email,
-              id: adminId.data,
-              name: session.user.name,
-              role,
-            },
-            [adminSessionExpiresAt]: session.session.expiresAt,
+            email: session.user.email,
+            expiresAt: session.session.expiresAt,
+            id: adminId.data,
+            name: session.user.name,
           }
     },
   }
@@ -143,7 +117,7 @@ function createAdminSessionResolver(
 function createAdminAuthHandler(input: {
   readonly auth: { readonly handler: (request: Request) => Promise<Response> }
   readonly cookieDomain?: string
-  readonly sessionResolver: AdminSessionResolver
+  readonly identityResolver: AdminAuthIdentityResolver
   readonly sessionRevoker: AdminSessionRevoker
 }): (request: Request) => Promise<Response> {
   return async (request) => {
@@ -151,11 +125,13 @@ function createAdminAuthHandler(input: {
       return input.auth.handler(request)
     }
 
-    const session = await input.sessionResolver.resolveSession(request.headers)
+    const identity = await input.identityResolver.resolveIdentity(
+      request.headers
+    )
     const response = await input.auth.handler(request)
-    if (!response.ok || session === null) return response
+    if (!response.ok || identity === null) return response
 
-    await input.sessionRevoker.revokeAllForAdmin(session.admin.id)
+    await input.sessionRevoker.revokeAllForAdmin(identity.id)
 
     const headers = new Headers(response.headers)
     headers.append(

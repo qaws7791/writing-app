@@ -1,11 +1,9 @@
-import { adminRoles } from "@workspace/core/admin"
 import type { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
 
 export type SeedAdminUserRow = typeof adminAuthUsers.$inferInsert & {
   readonly emailVerified: true
   readonly id: "admin-1"
   readonly image: null
-  readonly role: typeof adminRoles.owner
 }
 
 export type SeedAdminAccountRow = typeof adminAuthAccounts.$inferInsert & {
@@ -38,7 +36,6 @@ export function createSeedAdminUserRow({
     id: "admin-1",
     image: null,
     name,
-    role: adminRoles.owner,
     updatedAt: now,
   }
 }

@@ -7,15 +7,17 @@ import {
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
   authUsers,
-  courseCurriculumVersions,
-  courses,
-  courseUnitVersions,
   learnerActivityDays,
   learnerCourseProgress,
   learnerLessonProgress,
+} from "@workspace/db/schema"
+import {
+  courseCurriculumVersions,
+  courses,
+  courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/db/schema"
+} from "@workspace/content/schema"
 
 import {
   createDrizzleProfileReader,

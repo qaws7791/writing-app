@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles, type AdminRole } from "@workspace/core/admin"
-import type { AdminContentResetUseCase } from "@workspace/core/content"
+import { adminRoles, type AdminRole } from "@workspace/identity/admin-actor"
 import type { AdminSettingsDto } from "@workspace/contracts/operations/settings-data"
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
@@ -10,7 +9,7 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   adminSessionExpiresAt,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { createAdminApp } from "@/http/admin-app"
 import {
   createAdminSettingsRoutes,
@@ -27,17 +26,6 @@ const settings: AdminSettingsDto = {
     banner: "새 강의가 추가되었어요!",
   },
 }
-const contentResetResult = {
-  changed: {
-    archived: 0,
-    courses: 5,
-    lessons: 44,
-    steps: 136,
-    units: 15,
-  },
-  revision: 1,
-} as const
-
 describe("통합 runtime 관리자 settings route", () => {
   it("세션 없는 조회는 401이고 cookie 세션 조회는 기존 snapshot을 반환한다", async () => {
     const app = createSettingsApp(createDependencies())
@@ -85,44 +73,31 @@ describe("통합 runtime 관리자 settings route", () => {
     })
   })
 
-  it("operator는 모든 owner mutation에서 service 호출 전 403을 받는다", async () => {
+  it("operator는 owner mutation에서 service 호출 전 403을 받는다", async () => {
     const dependencies = createDependencies({ role: adminRoles.operator })
     const updateNoticeSettings = vi.fn(
       dependencies.settingsService.updateNoticeSettings
     )
-    const resetContent = vi.fn(dependencies.contentResetService.resetContent)
     const app = createSettingsApp({
       ...dependencies,
-      contentResetService: {
-        resetContent,
-      },
       settingsService: {
         ...dependencies.settingsService,
         updateNoticeSettings,
       },
     })
 
-    const [notice, reset] = await Promise.all([
-      app.request("/settings/notice", {
-        body: JSON.stringify(settings.notice),
-        headers: mutationHeaders(),
-        method: "PUT",
-      }),
-      app.request("/settings/content-reset", {
-        headers: ownerMutationHeaders(),
-        method: "POST",
-      }),
-    ])
+    const response = await app.request("/settings/notice", {
+      body: JSON.stringify(settings.notice),
+      headers: mutationHeaders(),
+      method: "PUT",
+    })
 
-    for (const response of [notice, reset]) {
-      expect(response.status).toBe(403)
-      await expect(response.json()).resolves.toEqual({
-        code: "FORBIDDEN",
-        message: "Forbidden",
-      })
-    }
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      code: "FORBIDDEN",
+      message: "Forbidden",
+    })
     expect(updateNoticeSettings).not.toHaveBeenCalled()
-    expect(resetContent).not.toHaveBeenCalled()
   })
 
   it("invalid body는 settings service 전에 400으로 거절한다", async () => {
@@ -181,19 +156,7 @@ describe("통합 runtime 관리자 settings route", () => {
     })
   })
 
-  it("content reset의 성공값도 공개 schema를 통과한 뒤 반환한다", async () => {
-    const app = createSettingsApp(createDependencies())
-
-    const response = await app.request("/settings/content-reset", {
-      headers: ownerMutationHeaders(),
-      method: "POST",
-    })
-
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual(contentResetResult)
-  })
-
-  it("Settings OpenAPI가 네 target operation과 owner 응답을 등록한다", async () => {
+  it("Settings OpenAPI가 세 target operation과 owner 응답을 등록한다", async () => {
     const app = createSettingsApp(createDependencies())
     const response = await app.request("/openapi")
     const document = await response.json()
@@ -211,9 +174,6 @@ describe("통합 runtime 관리자 settings route", () => {
       },
       paths: {
         "/api/admin/settings": { get: { operationId: "getAdminSettings" } },
-        "/api/admin/settings/content-reset": {
-          post: { operationId: "resetAdminContent" },
-        },
         "/api/admin/settings/legal": {
           put: { operationId: "updateAdminLegalSettings" },
         },
@@ -249,14 +209,7 @@ function createDependencies({
       return { kind: "ok", value: settings }
     },
   }
-  const contentResetService: AdminContentResetUseCase = {
-    async resetContent() {
-      return { kind: "ok", value: contentResetResult }
-    },
-  }
-
   return {
-    contentResetService,
     now: () => new Date("2026-06-14T03:00:00.000Z"),
     sessionResolver,
     settingsService,
@@ -291,13 +244,6 @@ function mutationHeaders() {
   return {
     Cookie: `${adminSessionCookieName}=admin-token`,
     "Content-Type": "application/json",
-    Origin: localRuntimeDefaults.adminWebOrigin,
-  }
-}
-
-function ownerMutationHeaders() {
-  return {
-    Cookie: `${adminSessionCookieName}=admin-token`,
     Origin: localRuntimeDefaults.adminWebOrigin,
   }
 }

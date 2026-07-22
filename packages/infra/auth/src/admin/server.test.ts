@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles } from "@workspace/core/admin"
 import {
   adminAuthAccounts,
   adminAuthRateLimits,
@@ -9,10 +8,7 @@ import {
   adminAuthVerifications,
 } from "#auth/schema/index"
 
-import {
-  adminSessionExpiresAt,
-  createAdminAuthRuntime,
-} from "#auth/admin/server"
+import { createAdminAuthRuntime } from "#auth/admin/server"
 import { createSqliteAuthDatabaseAdapter } from "#auth/sqlite-database"
 import {
   createAuthTestDatabase,
@@ -88,7 +84,6 @@ describe("관리자 Better Auth runtime", () => {
         email: "owner@example.com",
         id: "admin-1",
         name: "소유자",
-        role: adminRoles.owner,
       },
     })
 
@@ -102,22 +97,19 @@ describe("관리자 Better Auth runtime", () => {
       })
 
       await expect(
-        runtime.sessionResolver.resolveSession(new Headers())
+        runtime.identityResolver.resolveIdentity(new Headers())
       ).resolves.toEqual({
-        admin: {
-          email: "owner@example.com",
-          id: "admin-1",
-          name: "소유자",
-          role: adminRoles.owner,
-        },
-        [adminSessionExpiresAt]: expiresAt,
+        email: "owner@example.com",
+        expiresAt,
+        id: "admin-1",
+        name: "소유자",
       })
     } finally {
       database.close()
     }
   })
 
-  it("잘못된 관리자 id, role과 누락 session을 인증으로 승격하지 않는다", async () => {
+  it("잘못된 관리자 id와 누락 session을 인증 identity로 승격하지 않는다", async () => {
     const database = createAuthTestDatabase()
 
     try {
@@ -135,11 +127,10 @@ describe("관리자 Better Auth runtime", () => {
           email: "admin@example.com",
           id: "",
           name: "관리자",
-          role: adminRoles.owner,
         },
       })
       await expect(
-        runtime.sessionResolver.resolveSession(new Headers())
+        runtime.identityResolver.resolveIdentity(new Headers())
       ).resolves.toBeNull()
 
       authMocks.getSession.mockResolvedValueOnce({
@@ -148,16 +139,15 @@ describe("관리자 Better Auth runtime", () => {
           email: "admin@example.com",
           id: "admin-1",
           name: "관리자",
-          role: "learner",
         },
       })
       await expect(
-        runtime.sessionResolver.resolveSession(new Headers())
-      ).resolves.toBeNull()
+        runtime.identityResolver.resolveIdentity(new Headers())
+      ).resolves.toMatchObject({ id: "admin-1" })
 
       authMocks.getSession.mockResolvedValueOnce(null)
       await expect(
-        runtime.sessionResolver.resolveSession(new Headers())
+        runtime.identityResolver.resolveIdentity(new Headers())
       ).resolves.toBeNull()
     } finally {
       database.close()

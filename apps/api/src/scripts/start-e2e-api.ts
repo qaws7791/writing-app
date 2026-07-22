@@ -52,7 +52,7 @@ const unifiedFetch = (() => {
       learnerCursorCodec: runtime.learnerCore.learnerCursorCodec,
       learnerTransitionRepository:
         runtime.learnerCore.learnerTransitionRepository,
-      profileReader: runtime.learnerCore.profileReader,
+      identityRoutes: runtime.learnerCore.identityRoutes,
       progressService: runtime.learnerCore.progressService,
       sessionResolver: runtime.learnerCore.sessionResolver,
       webOrigin: env.webOrigin,
@@ -61,7 +61,7 @@ const unifiedFetch = (() => {
       adminOrigin: env.adminOrigin,
       authHandler: runtime.adminAuth.authHandler,
       capabilityRoutes: runtime.adminCapabilityRoutes,
-      sessionResolver: runtime.adminAuth.sessionResolver,
+      sessionResolver: runtime.adminSessionResolver,
     })
 
     return createUnifiedApp({

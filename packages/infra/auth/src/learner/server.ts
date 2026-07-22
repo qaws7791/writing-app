@@ -1,10 +1,5 @@
 import { betterAuth } from "better-auth"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
-import type {
-  LearnerProfileRepository,
-  SessionResolver,
-} from "@workspace/core/auth"
 
 import type { AuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
 import { readAuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
@@ -22,7 +17,7 @@ export type CreateLearnerAuthRuntimeInput = {
   readonly database: AuthDatabaseAdapter
   readonly googleClientId?: string
   readonly googleClientSecret?: string
-  readonly profileRepository: LearnerProfileRepository
+  readonly identityProvisioner: LearnerIdentityProvisioner
   readonly secret: string
   readonly testAuth: LearnerTestAuthConfiguration
   readonly webOrigin: string
@@ -30,8 +25,24 @@ export type CreateLearnerAuthRuntimeInput = {
 
 export type LearnerAuthRuntime = {
   readonly authHandler: (request: Request) => Promise<Response>
-  readonly sessionResolver: SessionResolver
+  readonly identityResolver: LearnerAuthIdentityResolver
 }
+
+export type LearnerAuthIdentity = Readonly<{
+  email: string
+  id: string
+  image: string | null
+  joinedAt: Date
+  name: string
+}>
+
+export type LearnerAuthIdentityResolver = Readonly<{
+  resolveIdentity: (headers: Headers) => Promise<LearnerAuthIdentity | null>
+}>
+
+export type LearnerIdentityProvisioner = Readonly<{
+  provision: (identity: LearnerAuthIdentity) => Promise<void>
+}>
 
 export function createLearnerAuthRuntime(
   input: CreateLearnerAuthRuntimeInput
@@ -42,7 +53,7 @@ export function createLearnerAuthRuntime(
     baseURL: input.apiOrigin,
     database: readAuthDatabaseAdapter(input.database),
     databaseHooks: createLearnerAuthHooks({
-      profileRepository: input.profileRepository,
+      identityProvisioner: input.identityProvisioner,
     }),
     plugins:
       input.testAuth.kind === "enabled"
@@ -76,10 +87,7 @@ export function createLearnerAuthRuntime(
 
   return {
     authHandler: auth.handler,
-    sessionResolver: createLearnerSessionResolver(
-      auth,
-      input.profileRepository
-    ),
+    identityResolver: createLearnerIdentityResolver(auth),
   }
 }
 
@@ -101,36 +109,27 @@ type LearnerBetterAuthSession = {
   }
 }
 
-function createLearnerSessionResolver(
-  auth: LearnerBetterAuthSessionApi,
-  profileRepository: LearnerProfileRepository
-): SessionResolver {
+function createLearnerIdentityResolver(
+  auth: LearnerBetterAuthSessionApi
+): LearnerAuthIdentityResolver {
   return {
-    async resolveSession(headers) {
+    async resolveIdentity(headers) {
       const session = await auth.api.getSession({ headers })
-
-      if (session === null) {
-        return null
-      }
-
-      return readUserSession(profileRepository, session.user)
+      return session === null ? null : toLearnerAuthIdentity(session.user)
     },
   }
 }
 
 function createLearnerAuthHooks({
-  profileRepository,
+  identityProvisioner,
 }: {
-  readonly profileRepository: LearnerProfileRepository
+  readonly identityProvisioner: LearnerIdentityProvisioner
 }) {
   return {
     user: {
       create: {
-        after: async (user: { readonly id: string; readonly name: string }) => {
-          await profileRepository.ensureActiveProfile({
-            displayName: user.name,
-            userId: user.id,
-          })
+        after: async (user: SessionUserRow) => {
+          await identityProvisioner.provision(toLearnerAuthIdentity(user))
         },
       },
     },
@@ -167,27 +166,12 @@ type SessionUserRow = {
   readonly name: string
 }
 
-async function readUserSession(
-  profileRepository: LearnerProfileRepository,
-  user: SessionUserRow
-) {
-  const profile = await profileRepository.findProfileByUserId(user.id)
-
-  if (profile === null) {
-    await profileRepository.ensureActiveProfile({
-      displayName: user.name,
-      userId: user.id,
-    })
-  }
-
+function toLearnerAuthIdentity(user: SessionUserRow): LearnerAuthIdentity {
   return {
-    user: {
-      email: user.email,
-      id: user.id,
-      image: user.image ?? null,
-      joinedAt: new Date(user.createdAt).toISOString(),
-      name: user.name,
-      status: profile?.status ?? learnerAccountStatuses.active,
-    },
+    email: user.email,
+    id: user.id,
+    image: user.image ?? null,
+    joinedAt: new Date(user.createdAt),
+    name: user.name,
   }
 }

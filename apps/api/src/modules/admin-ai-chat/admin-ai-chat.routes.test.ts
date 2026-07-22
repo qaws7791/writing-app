@@ -8,14 +8,15 @@ import {
 import { conversationIdSchema } from "@workspace/contracts/operations/ai-chat-data"
 import { messageIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminIdSchema } from "@workspace/contracts/identity/data"
-import { adminRoles, type AiChatRepository } from "@workspace/core/admin"
+import type { AiChatRepository } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/identity/admin-actor"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/auth/admin/server"
+} from "@workspace/identity/sessions"
 import { createAdminApp } from "@/http/admin-app"
 import type { AdminAiChatAgent } from "@/modules/admin-ai-chat/admin-ai-chat-agent"
 import {

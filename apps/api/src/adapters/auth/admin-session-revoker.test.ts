@@ -53,7 +53,6 @@ function createAdminUser(id: string, now: Date) {
     id,
     image: null,
     name: id,
-    role: "operator" as const,
     updatedAt: now,
   }
 }
