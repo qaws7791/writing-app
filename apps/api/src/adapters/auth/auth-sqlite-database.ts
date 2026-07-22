@@ -12,13 +12,11 @@ import {
   authVerifications,
 } from "@workspace/auth/schema"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import * as dbSchema from "@workspace/db/schema"
 
 export function createLearnerAuthDatabase(database: WritingAppDatabase) {
   return createSqliteAuthDatabaseAdapter({
     database,
     schema: {
-      ...dbSchema,
       account: authAccounts,
       rateLimit: authRateLimits,
       session: authSessions,
@@ -32,7 +30,6 @@ export function createAdminAuthDatabase(database: WritingAppDatabase) {
   return createSqliteAuthDatabaseAdapter({
     database,
     schema: {
-      ...dbSchema,
       admin_account: adminAuthAccounts,
       rateLimit: adminAuthRateLimits,
       admin_session: adminAuthSessions,

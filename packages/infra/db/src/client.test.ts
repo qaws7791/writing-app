@@ -11,17 +11,7 @@ import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
 } from "#db/client"
-import { runBaselineMigration } from "#db/migrations/migrate"
-
-const legacyCurriculumMigrationPolicy = {
-  normalizeVersionedStepContent(
-    _stepId: string,
-    _stepType: string,
-    contentJson: string
-  ) {
-    return contentJson
-  },
-}
+import { runBaselineTestMigration } from "#db/test-support/application-migration"
 
 describe("Writing App DB client", () => {
   it("기본 SQLite DB 경로는 실행 위치와 무관하게 저장소 루트 data를 가리킨다", () => {
@@ -94,7 +84,7 @@ describe("Writing App DB client", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
 
       const tableNames = client.sqlite
         .query<{ readonly name: string }, []>(
@@ -108,7 +98,6 @@ describe("Writing App DB client", () => {
         "admin_account",
         "admin_ai_chat_conversations",
         "admin_ai_chat_messages",
-        "admin_auth_rate_limit",
         "admin_resource_assets",
         "admin_resource_documents",
         "admin_resource_nodes",
@@ -123,7 +112,6 @@ describe("Writing App DB client", () => {
         "admin_user",
         "admin_verification",
         "ai_feedback_attempts",
-        "auth_rate_limit",
         "course_curriculum_versions",
         "course_unit_versions",
         "courses",
@@ -131,6 +119,7 @@ describe("Writing App DB client", () => {
         "learner_course_progress",
         "learner_lesson_answers",
         "learner_lesson_progress",
+        "learner_profiles",
         "lesson_step_versions",
         "lesson_versions",
         "session",
@@ -194,7 +183,7 @@ describe("Writing App DB client", () => {
     const writableClient = createWritingAppDatabase(databasePath)
 
     try {
-      runBaselineMigration(writableClient.sqlite)
+      runBaselineTestMigration(writableClient.sqlite)
     } finally {
       writableClient.close()
     }
@@ -217,56 +206,6 @@ describe("Writing App DB client", () => {
     } finally {
       readOnlyClient.close()
       rmSync(tempDirectory, { force: true, recursive: true })
-    }
-  })
-
-  it("필수 legacy 테이블이 빠진 DB는 변경하지 않고 이관을 실패시킨다", () => {
-    const client = createInMemoryWritingAppDatabase()
-
-    try {
-      client.sqlite.exec(`
-        CREATE TABLE courses (
-          id TEXT PRIMARY KEY NOT NULL,
-          title TEXT NOT NULL,
-          description TEXT NOT NULL,
-          category TEXT NOT NULL,
-          status TEXT NOT NULL DEFAULT 'active',
-          sort_order INTEGER NOT NULL,
-          curriculum_revision INTEGER NOT NULL DEFAULT 0
-        );
-        INSERT INTO courses (
-          id,
-          title,
-          description,
-          category,
-          sort_order
-        ) VALUES (
-          'legacy-course',
-          '기존 코스',
-          '기존 설명',
-          'writing',
-          1
-        );
-      `)
-
-      expect(() =>
-        runBaselineMigration(client.sqlite, legacyCurriculumMigrationPolicy)
-      ).toThrow("legacy curriculum tables are missing")
-
-      const courseColumns = client.sqlite
-        .query<{ readonly name: string }, []>("PRAGMA table_info(courses)")
-        .all()
-        .map((row) => row.name)
-      expect(courseColumns).not.toContain("published_curriculum_version_id")
-      expect(
-        client.sqlite
-          .query<{ readonly id: string }, []>(
-            "SELECT id FROM courses WHERE id = 'legacy-course'"
-          )
-          .get()
-      ).toEqual({ id: "legacy-course" })
-    } finally {
-      client.close()
     }
   })
 })

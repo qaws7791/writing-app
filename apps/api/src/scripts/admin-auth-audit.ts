@@ -1,15 +1,15 @@
-import { asc, eq } from "drizzle-orm"
+import { asc } from "drizzle-orm"
 import { z } from "zod"
 import { adminRoleSchema } from "@workspace/contracts/identity/admin-session"
 import type { AdminRole } from "@workspace/identity/admin-actor"
-import { adminIdentityProfiles } from "@workspace/identity/schema"
+import { readAdminIdentityRoles } from "@workspace/identity/reporting"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { createReadOnlyWritingAppDatabase } from "@workspace/db/client"
 import {
   adminAuthAccounts,
   adminAuthSessions,
   adminAuthUsers,
-} from "@workspace/db/schema"
+} from "@workspace/auth/schema"
 
 const approvedAdminSchema = z.object({
   email: z.email(),
@@ -40,19 +40,27 @@ export async function auditAdminAuth(
   approvedAdmins: readonly ApprovedAdmin[],
   now: Date
 ) {
-  const users = await db
+  const authUsers = await db
     .select({
       createdAt: adminAuthUsers.createdAt,
       email: adminAuthUsers.email,
       id: adminAuthUsers.id,
-      role: adminIdentityProfiles.role,
     })
     .from(adminAuthUsers)
-    .innerJoin(
-      adminIdentityProfiles,
-      eq(adminIdentityProfiles.adminId, adminAuthUsers.id)
-    )
     .orderBy(asc(adminAuthUsers.email))
+  const identityRoles = new Map<string, AdminRole>(
+    readAdminIdentityRoles(db).map((identity) => [
+      identity.adminId,
+      identity.role,
+    ])
+  )
+  const users = authUsers.map((user) => {
+    const role = identityRoles.get(user.id)
+    if (role === undefined) {
+      throw new Error(`관리자 identity profile이 없습니다: ${user.id}`)
+    }
+    return { ...user, role }
+  })
   const accounts = await db
     .select({
       createdAt: adminAuthAccounts.createdAt,

@@ -29,7 +29,7 @@ Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표�
 
 기존 flat package를 전환하는 동안 `dependency-cruiser.config.mjs`의 `legacy-*` 규칙이 같은 정책을 적용한다. identity, content, ai-feedback, learning, resource-library, operations와 API composition 전환은 완료됐다. API transport→persistence 금지와 app-owned module·검증 전 env·private import 재도입은 대상 규칙으로 고정했으며, 빈 core workspace와 `legacy-core-*`의 제거는 P15가 소유한다. `legacy-ui-*`와 `legacy-frontends-*`는 P12가 소유한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
 
-operations repository의 module schema 직접 조회 예외는 제거하고 identity·content·learning reporting query port로 치환했다. learning과 ai-feedback의 예외도 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다.
+operations repository의 module schema 직접 조회 예외는 제거하고 identity·content·learning reporting query port로 치환했다. learning과 ai-feedback의 예외도 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다. legacy curriculum 정규화는 반대 방향 의존을 만들지 않고 API migration composition이 content 공개 정책을 API-owned 이관에 주입한다.
 
 ## Dead code와 공개 표면
 
@@ -37,7 +37,9 @@ Knip gate는 읽기 전용이며 `--fix`를 실행하지 않는다. 실제 runti
 
 package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 symbol의 추가·삭제는 소유 package의 export 목록과 core symbol fixture를 함께 갱신해야 하며, broad root barrel, `src` deep import, 자기 공개 경로 역참조와 제거된 forwarding/runtime의 재도입은 `check:package-interfaces`가 거부한다. 같은 검사는 shared·identity·content·ai-feedback·learning·resource-library·operations package의 exact export, canonical ID 중복, canonical 오류 schema 소비, 성공 response runtime parse와 제거된 module 소유권 source의 재유입도 고정한다.
 
-module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`와 `./seed` subpath는 API migration·seed composition만 소비하며 다른 module이나 app repository가 module table을 직접 읽지 않는다.
+module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`는 API의 단일 Drizzle schema entry와 격리된 E2E content seed fixture만 소비하고, 공개 `./migration`은 API migration composition과 호환성 test만 소비한다. 실제 seed가 있는 package의 `./seed`는 API seed composition과 seed tooling만 소비한다. Better Auth schema는 공식 adapter mapping과 API 인증 persistence adapter가 사용하는 별도 infra 예외다. 다른 module이나 app repository가 module table을 직접 읽는 예외는 두지 않는다.
+
+package interface 검사는 이 allowlist와 함께 API Drizzle config의 schema·output 경로, immutable migration의 정규화 checksum, 통합 migration 선실행, 제거된 DB schema·migration·seed 경로와 DB infra의 business dependency 부재를 검사한다. schema ownership 검사는 context table 이름, cross-module FK 부재와 reconciliation 구현의 SQL join 부재를 runtime test와 나눠 검증한다.
 
 ## 실행
 

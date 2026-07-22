@@ -8,6 +8,8 @@
 
 - provider가 생성하거나 런타임 계약으로 요구하는 테이블은 provider convention을 따른다.
 - 프로젝트가 직접 설계하고 마이그레이션하는 테이블은 SQL 컬럼과 인덱스 이름에 snake_case를 사용한다.
+- auth infra와 각 module은 자기 최종 Drizzle schema를 소유하고, API의 schema entry는 migration 생성용으로만 이 export를 조립한다.
+- 한 module의 FK와 cascade는 그 module이 소유한 table 사이에만 둔다. 다른 module의 식별자는 branded reference 값으로 저장하고 존재 여부는 공개 query port나 reconciliation으로 확인한다.
 - Drizzle 객체 속성은 TypeScript 경계의 가독성을 위해 camelCase를 유지할 수 있다.
 - 도메인 코드와 API DTO는 DB 컬럼 이름을 그대로 노출하지 않는다.
 - repository가 DB row와 도메인 계약 사이를 변환한다.
@@ -24,6 +26,8 @@
 ## 직접 관리 테이블
 
 콘텐츠, 학습 진행, AI 피드백, 운영 설정처럼 프로젝트가 직접 소유한 테이블은 SQL 이름에 snake_case를 사용한다.
+
+새 table은 가능한 한 소유 context를 드러내는 prefix를 사용한다. 기존 provider 이름이나 제품의 오래된 canonical 이름처럼 rename 비용이 의미를 개선하는 이점보다 큰 경우에는 기존 이름을 보존하고 schema ownership 검사에 명시적으로 배정한다. prefix만 보고 소유권을 추측하지 않고 module schema와 API의 ownership 검사를 권위로 삼는다.
 
 예시는 다음과 같다.
 
@@ -56,5 +60,7 @@ export const learnerLessonAnswers = sqliteTable("learner_lesson_answers", {
 - TypeScript 속성은 기존 Drizzle schema 관습처럼 camelCase로 작성한다.
 - repository test에서 새 컬럼의 read/write mapping을 검증한다.
 - 마이그레이션 SQL과 Drizzle schema의 SQL 이름이 일치하는지 확인한다.
+- FK의 양쪽 table이 같은 auth/module owner인지 확인하고, owner가 다르면 reference 값과 application 검증으로 바꾼다.
+- FK를 제거한 reference는 사전 migration 검사와 운영 reconciliation에서 dangling 상태를 관측할 수 있게 한다.
 - version 범위 콘텐츠 FK는 `curriculum_version_id`와 논리 ID의 복합 키로 같은 version 안의 부모만 참조하게 한다.
 - published 콘텐츠 변경 금지와 course당 단일 draft처럼 DB에서 보장할 수 있는 불변조건은 trigger·partial unique index와 통합 테스트로 고정한다.

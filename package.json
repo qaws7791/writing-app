@@ -83,7 +83,7 @@
     "dev:app:setup": "bun --filter @workspace/api db:migrate && bun --filter @workspace/api db:seed",
     "dev:app:fresh": "bun run db:reset && bun run dev:app:setup && bun run dev:app",
     "db:backup": "bun --filter @workspace/api db:backup",
-    "db:reset": "bun --filter @workspace/api db:reset",
+    "db:reset": "ALLOW_DATABASE_RESET=true bun --filter @workspace/api db:reset --force",
     "doctor": "bun scripts/doctor.ts",
     "lint": "bun run check:toolchain && bun run check:workspace-inventory && bun run check:workspace-dependency-versions && bun run check:document-drift && bun run check:admin-api-runtime-removal && bun run check:workflow-skill-invocation-policy && bun run check:components-config && bun run check:container-image-lock && bun run check:course-thumbnail-assets && bun run check:registry-retention-policy && bun run check:design-system-guardrails && bun run check:architecture && bun run check:dead-code && bun run check:package-interfaces && bun run check:localhost-literals && oxlint apps packages scripts --deny-warnings",
     "lint:fix": "oxlint apps packages scripts --fix",

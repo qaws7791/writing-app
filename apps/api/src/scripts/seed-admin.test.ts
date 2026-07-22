@@ -9,12 +9,11 @@ import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabase,
 } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { adminIdentityProfiles } from "@workspace/identity/schema"
+import { readAdminIdentityRoles } from "@workspace/identity/reporting"
 
 import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
-import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
+import { runApplicationMigrations } from "@/db/migrate"
 import {
   createSeedAdminRows,
   createSeedAdminUserRow,
@@ -97,16 +96,15 @@ describe("통합 API 관리자 seed", () => {
   it("seed한 계정은 통합 API 관리자 인증으로 로그인할 수 있다", async () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
-      runApiIdentitySchemaMigration(database.sqlite)
+      runApplicationMigrations(database.sqlite)
       await seedAdminUser(database.db, {
         email: "admin@example.com",
         name: "관리자",
         now: new Date("2026-06-14T00:00:00.000Z"),
         password: "admin-password-123",
       })
-      expect(database.db.select().from(adminIdentityProfiles).all()).toEqual([
-        { adminId: "admin-1", role: adminRoles.owner, version: 0 },
+      expect(readAdminIdentityRoles(database.db)).toEqual([
+        { adminId: "admin-1", role: adminRoles.owner },
       ])
       const auth = createTestAdminAuth(database.db)
       expect(await requestAdminEmailSignIn(auth, "admin-password-123")).toBe(
@@ -120,8 +118,7 @@ describe("통합 API 관리자 seed", () => {
   it("resetPassword가 true일 때만 기존 credential을 갱신한다", async () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
-      runApiIdentitySchemaMigration(database.sqlite)
+      runApplicationMigrations(database.sqlite)
       await seedAdminUser(database.db, {
         email: "admin@example.com",
         name: "관리자",
@@ -160,8 +157,7 @@ describe("통합 API 관리자 seed", () => {
   it("credential 저장 실패 시 같은 transaction의 user 저장도 rollback한다", async () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
-      runApiIdentitySchemaMigration(database.sqlite)
+      runApplicationMigrations(database.sqlite)
       database.sqlite.exec(`
         CREATE TRIGGER reject_admin_account_insert
         BEFORE INSERT ON admin_account

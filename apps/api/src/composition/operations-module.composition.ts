@@ -1,4 +1,3 @@
-import type { Database } from "bun:sqlite"
 import type { ContentModule } from "@workspace/content/module"
 import type { ContentError } from "@workspace/content/application"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -34,7 +33,6 @@ export function composeOperationsModule(
     logger: AppLogger
     proposalIdGenerator: IdGenerator<AiChangeProposalId>
     resourceLibrary: ResourceLibraryModule
-    sqlite: Database
   }>
 ): OperationsModule {
   return createOperationsModule({
@@ -52,7 +50,6 @@ export function composeOperationsModule(
     reportingFailureObserver(event) {
       input.logger.warn(event, "operations.reporting.source_failed")
     },
-    sqlite: input.sqlite,
     target: createOperationsChangeTarget(input.content, input.resourceLibrary),
   })
 }

@@ -6,7 +6,7 @@ import {
   createInMemoryWritingAppDatabase,
   createWritingAppDatabase,
 } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 import { ok } from "@workspace/kernel/result"
 import {
   courseIdSchema,
@@ -19,10 +19,8 @@ import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 import { createAiFeedbackApplication } from "#ai-feedback/application/ai-feedback-application"
 import { createAiFeedbackAttemptId } from "#ai-feedback/domain/ai-feedback-attempt"
 import { createDrizzleAiFeedbackRepository } from "#ai-feedback/infrastructure/persistence/ai-feedback-drizzle-repository"
-import {
-  aiFeedbackAttempts,
-  runAiFeedbackSchemaMigration,
-} from "#ai-feedback/infrastructure/persistence/schema"
+import { runAiFeedbackSchemaMigration } from "#ai-feedback/infrastructure/persistence/schema-migration"
+import { aiFeedbackAttempts } from "#ai-feedback/infrastructure/persistence/schema"
 
 const now = new Date("2026-07-23T01:00:00.000Z")
 const input = {
@@ -49,7 +47,7 @@ describe("AI feedback Drizzle repository", () => {
   it("module schema migration이 기존 row를 보존하고 cross-module FK를 제거한다", () => {
     const client = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       expect(
         client.sqlite
           .query<unknown, []>("PRAGMA foreign_key_list(ai_feedback_attempts)")
@@ -72,7 +70,7 @@ describe("AI feedback Drizzle repository", () => {
   it("다른 module row를 조회하지 않고 branded scope로 예약·완료·멱등 재생한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       runAiFeedbackSchemaMigration(client.sqlite)
       let providerCalls = 0
       const application = createAiFeedbackApplication({
@@ -116,7 +114,7 @@ describe("AI feedback Drizzle repository", () => {
   it("pending lease가 있으면 남은 TTL을 Retry-After 초 단위로 반환한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       runAiFeedbackSchemaMigration(client.sqlite)
       const repository = createDrizzleAiFeedbackRepository(client.db)
       const reservation = await repository.reserveAttempt({
@@ -156,7 +154,7 @@ describe("AI feedback Drizzle repository", () => {
   it("succeeded attempt만 quota를 차감하고 한도 뒤 새 예약을 거절한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       runAiFeedbackSchemaMigration(client.sqlite)
       const repository = createDrizzleAiFeedbackRepository(client.db)
 
@@ -229,7 +227,7 @@ describe("AI feedback Drizzle repository", () => {
     const client = createWritingAppDatabase(databasePath)
     const observer = createWritingAppDatabase(databasePath)
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       runAiFeedbackSchemaMigration(client.sqlite)
       observer.sqlite.exec("PRAGMA busy_timeout = 50")
       let lockAcquired = false

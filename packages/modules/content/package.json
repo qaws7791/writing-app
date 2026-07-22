@@ -10,6 +10,7 @@
     "./application": "./src/application/content-application.ts",
     "./commands": "./src/application/content-commands.ts",
     "./http": "./src/interface/http/content-http.ts",
+    "./migration": "./src/infrastructure/persistence/schema-migration.ts",
     "./module": "./src/module.ts",
     "./normalization": "./src/domain/content-normalization.ts",
     "./ports": "./src/application/ports/content-ports.ts",

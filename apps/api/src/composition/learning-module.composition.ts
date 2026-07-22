@@ -1,5 +1,3 @@
-import type { Database } from "bun:sqlite"
-
 import type { AiFeedbackApplication } from "@workspace/ai-feedback/application"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { ContentModule } from "@workspace/content/module"
@@ -30,7 +28,6 @@ export function composeLearningModule(input: {
   readonly eventIdGenerator: IdGenerator<string>
   readonly identity: IdentityModule
   readonly logger: AppLogger
-  readonly sqlite: Database
 }): LearningModule {
   return createLearningModule({
     aiFeedback: input.aiFeedback,
@@ -54,7 +51,6 @@ export function composeLearningModule(input: {
     },
     identity: createLearningIdentityQueryPort(input.identity),
     presentationSecret: input.cursorSigningSecret,
-    sqlite: input.sqlite,
   })
 }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 
 import { runLearningSchemaMigration } from "#learning/infrastructure/persistence/schema-migration"
 
@@ -9,7 +9,7 @@ describe("learning schema migration", () => {
   it("cross-module FK를 제거하고 module 내부 FK와 index만 유지하며 재실행 가능하다", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
+      runBaselineTestMigration(database.sqlite)
       runLearningSchemaMigration(database.sqlite)
       runLearningSchemaMigration(database.sqlite)
 
@@ -51,7 +51,7 @@ describe("learning schema migration", () => {
   it("기존 learning row를 보존하면서 FK 소유권만 전환한다", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
+      runBaselineTestMigration(database.sqlite)
       database.sqlite.exec("PRAGMA foreign_keys = OFF")
       database.sqlite.exec(`
         INSERT INTO learner_activity_days (

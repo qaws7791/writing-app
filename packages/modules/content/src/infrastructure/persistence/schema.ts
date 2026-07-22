@@ -213,8 +213,3 @@ export const lessonStepVersions = sqliteTable(
     ),
   ]
 )
-
-export {
-  assertContentMigrationPrerequisites,
-  runContentSchemaMigration,
-} from "#content/infrastructure/persistence/schema-migration"

@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 
 import { createDrizzleResourceAssetRepository } from "#resource-library/infrastructure/persistence/resource-asset-drizzle-repository"
 import { createDrizzleResourceDocumentRepository } from "#resource-library/infrastructure/persistence/resource-document-drizzle-repository"
@@ -246,7 +246,7 @@ async function withTemporaryResourceDatabase(
   const directory = mkdtempSync(join(tmpdir(), "writing-app-resource-library-"))
   const client = createWritingAppDatabase(join(directory, "resource.sqlite"))
   try {
-    runBaselineMigration(client.sqlite)
+    runBaselineTestMigration(client.sqlite)
     insertAdmin(client.sqlite)
     runResourceLibrarySchemaMigration(client.sqlite)
     await run({ database: client.db, sqlite: client.sqlite })

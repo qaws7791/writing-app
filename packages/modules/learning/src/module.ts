@@ -1,5 +1,3 @@
-import type { Database } from "bun:sqlite"
-
 import type { LearnerAiFeedbackTransitionResult } from "@workspace/contracts/learning/learner-transition"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { err, ok, type Result } from "@workspace/kernel/result"
@@ -28,7 +26,6 @@ import {
   toLearningUserId,
 } from "#learning/infrastructure/persistence/learning-reporting-drizzle-repository"
 import { createDrizzleLearnerTransitionRepository } from "#learning/infrastructure/persistence/learning-transition-drizzle-repository"
-import { runLearningSchemaMigration } from "#learning/infrastructure/persistence/schema-migration"
 import {
   createLearningRoutes,
   type LearningHttpRouteGroup,
@@ -95,10 +92,8 @@ export function createLearningModule(
       cursorSigningSecret: string
       database: WritingAppDatabase
       presentationSecret: string
-      sqlite: Database
     }>
 ): LearningModule {
-  runLearningSchemaMigration(input.sqlite)
   const transitionRepository = createDrizzleLearnerTransitionRepository(
     input.database
   )

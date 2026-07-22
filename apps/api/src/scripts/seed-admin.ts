@@ -8,7 +8,7 @@ import {
 } from "@workspace/db/client"
 import { seedOwnerIdentity } from "@workspace/identity/seed"
 
-import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
+import { runApplicationMigrations } from "@/db/migrate"
 import {
   createSeedAdminRows,
   type SeedAdminUserInput,
@@ -153,7 +153,7 @@ if (import.meta.main) {
   const command = parseSeedAdminEnvironment(process.env)
   const client = createWritingAppDatabase(command.databaseUrl)
   try {
-    runApiIdentitySchemaMigration(client.sqlite)
+    runApplicationMigrations(client.sqlite)
     await seedAdminUser(client.db, command.input)
   } finally {
     client.close()

@@ -10,13 +10,10 @@
     "./client": "./src/client.ts",
     "./database-backup": "./src/database-backup.ts",
     "./destructive-operation-guard": "./src/destructive-operation-guard.ts",
-    "./migrations/curriculum-migration": "./src/migrations/curriculum-migration.ts",
-    "./migrations/migrate": "./src/migrations/migrate.ts",
+    "./migration-runner": "./src/migration-runner.ts",
     "./persisted-values": "./src/persisted-values.ts",
-    "./schema": "./src/schema/index.ts",
-    "./seed": "./src/seeds/index.ts",
-    "./seeds/seed": "./src/seeds/seed.ts",
-    "./sqlite-database": "./src/sqlite-database.ts"
+    "./sqlite-database": "./src/sqlite-database.ts",
+    "./test-support/application-migration": "./src/test-support/application-migration.ts"
   },
   "scripts": {
     "lint": "oxlint .",
@@ -25,15 +22,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/auth": "workspace:*",
-    "@workspace/contracts": "workspace:*",
-    "drizzle-orm": "catalog:",
-    "zod": "catalog:"
+    "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
     "@workspace/typescript-config": "workspace:*",
-    "drizzle-kit": "^0.31.0",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"

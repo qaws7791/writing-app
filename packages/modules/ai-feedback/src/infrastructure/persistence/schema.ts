@@ -59,8 +59,3 @@ export const aiFeedbackAttempts = sqliteTable(
     index("ai_feedback_attempts_expiry_idx").on(table.status, table.expiresAt),
   ]
 )
-
-export {
-  assertAiFeedbackMigrationPrerequisites,
-  runAiFeedbackSchemaMigration,
-} from "#ai-feedback/infrastructure/persistence/schema-migration"

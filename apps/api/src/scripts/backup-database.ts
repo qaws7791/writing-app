@@ -3,6 +3,8 @@ import { resolve } from "node:path"
 import { createVerifiedDatabaseBackup } from "@workspace/db/database-backup"
 import { getDefaultDatabaseUrl } from "@workspace/db/client"
 
+import { requiredDatabaseBackupTables } from "@/db/schema-architecture"
+
 const argumentsMap = new Map(
   process.argv.slice(2).map((argument) => {
     const [key, ...value] = argument.split("=")
@@ -21,13 +23,7 @@ if (output === undefined || output.length === 0) {
 
 const report = createVerifiedDatabaseBackup({
   backupPath: resolve(output),
-  requiredTables: [
-    "admin_resource_documents",
-    "admin_user",
-    "courses",
-    "learner_profiles",
-    "user",
-  ],
+  requiredTables: requiredDatabaseBackupTables,
   sourcePath,
 })
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`)

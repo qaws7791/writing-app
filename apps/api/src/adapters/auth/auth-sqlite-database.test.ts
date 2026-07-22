@@ -9,7 +9,7 @@ import {
   authSessions,
   authUsers,
   authVerifications,
-} from "@workspace/db/schema"
+} from "@workspace/auth/schema"
 
 import {
   createAdminAuthDatabase,

@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminRoles } from "@workspace/identity/admin-actor"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { adminIdentityProfiles } from "@workspace/identity/schema"
+import { seedAdminIdentity } from "@workspace/identity/seed"
 import {
   adminAuthAccounts,
   adminAuthSessions,
   adminAuthUsers,
-} from "@workspace/db/schema"
+} from "@workspace/auth/schema"
 
-import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
+import { runApplicationMigrations } from "@/db/migrate"
 import { auditAdminAuth } from "@/scripts/admin-auth-audit"
 import {
   requireAdminSessionRevocationApproval,
@@ -21,8 +21,7 @@ describe("통합 API 관리자 인증 운영 명령", () => {
     const database = createInMemoryWritingAppDatabase()
     const now = new Date("2026-07-12T00:00:00.000Z")
     try {
-      runBaselineMigration(database.sqlite)
-      runApiIdentitySchemaMigration(database.sqlite)
+      runApplicationMigrations(database.sqlite)
       await database.db.insert(adminAuthUsers).values([
         {
           createdAt: now,
@@ -41,10 +40,14 @@ describe("통합 API 관리자 인증 운영 명령", () => {
           updatedAt: now,
         },
       ])
-      await database.db.insert(adminIdentityProfiles).values([
-        { adminId: "approved", role: adminRoles.owner, version: 0 },
-        { adminId: "rogue", role: adminRoles.operator, version: 0 },
-      ])
+      seedAdminIdentity(database.db, {
+        adminId: adminIdSchema.parse("approved"),
+        role: adminRoles.owner,
+      })
+      seedAdminIdentity(database.db, {
+        adminId: adminIdSchema.parse("rogue"),
+        role: adminRoles.operator,
+      })
       await database.db.insert(adminAuthAccounts).values({
         accountId: "rogue",
         createdAt: now,
@@ -92,8 +95,7 @@ describe("통합 API 관리자 인증 운영 명령", () => {
   it("세션 전체 폐기와 실행 승인을 강제한다", async () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
-      runApiIdentitySchemaMigration(database.sqlite)
+      runApplicationMigrations(database.sqlite)
       const now = new Date("2026-07-12T00:00:00.000Z")
       await database.db.insert(adminAuthUsers).values({
         createdAt: now,

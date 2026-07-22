@@ -13,7 +13,7 @@ import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 
 import type { LearningContentQueryPort } from "#learning/application/ports/learning-ports"
 import type { LearningCurriculum } from "#learning/domain/learning-types"
@@ -297,7 +297,7 @@ function createFixture(): {
   database: WritingAppDatabaseClient
 } {
   const database = createInMemoryWritingAppDatabase()
-  runBaselineMigration(database.sqlite)
+  runBaselineTestMigration(database.sqlite)
   runLearningSchemaMigration(database.sqlite)
   const summary = {
     category: curriculum.category,

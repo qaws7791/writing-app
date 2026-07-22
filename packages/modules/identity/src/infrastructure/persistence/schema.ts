@@ -39,8 +39,3 @@ export const adminIdentityProfiles = sqliteTable(
     check("admin_identity_profiles_version_check", sql`${table.version} >= 0`),
   ]
 )
-
-export {
-  runIdentitySchemaMigration,
-  type LegacyAdminIdentity,
-} from "#identity/infrastructure/persistence/schema-migration"

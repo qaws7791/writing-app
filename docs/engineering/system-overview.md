@@ -18,7 +18,7 @@
 - operations module은 대시보드·분석 조합, 운영 설정, 관리자 AI 대화·quota·변경안 검토와 관리자 HTTP interface를 소유한다. reporting은 identity·content·learning의 공개 port를 병렬 호출하고 하나라도 실패하면 불완전한 수치를 성공으로 공개하지 않는다. AI 변경안 승인은 API composition이 주입한 content·resource-library의 기존 command port만 호출한다.
 - learning의 완료 event는 transaction 결과에서 commit 이후 발행 대상으로 반환한다. 전달 실패는 이미 확정된 학습 상태를 rollback으로 오표현하지 않고 별도 관찰 실패로 격리한다.
 - 외부 provider SDK, HTTP framework, logger와 DB runtime은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다.
-- 각 module의 데이터 schema, migration과 seed는 자기 도메인 데이터만 소유하며 도메인 의미를 우회해 application 정책을 소유하지 않는다.
+- 각 module과 auth infra는 자기 최종 schema와 migration 사전 조건을 소유하고, 실제 seed가 있는 경계만 seed provider를 공개한다. API는 이 provider를 하나의 schema·migration·seed 실행 지점에서 조립하며 DB infra는 application table을 알지 않는다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.
 - API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, event bus, 외부 I/O와 여섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
@@ -36,13 +36,13 @@
 
 ## 변경 탐색
 
-| 질문                        | 먼저 확인할 권위 소스                                                                  |
-| --------------------------- | -------------------------------------------------------------------------------------- |
-| 현재 workspace·package 책임 | root와 workspace `package.json`, source import graph                                   |
-| 현재 API·schema             | route registry, `packages/shared/contracts`, runtime OpenAPI                           |
-| 현재 persistence·migration  | module schema·repository, `packages/infra/db`, `packages/infra/auth`와 API composition |
-| 현재 배포 topology          | `deploy/compose/`, proxy 설정, release workflow                                        |
-| 설계 이유                   | 관련 ADR와 이 문서의 경계 원칙                                                         |
+| 질문                        | 먼저 확인할 권위 소스                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 현재 workspace·package 책임 | root와 workspace `package.json`, source import graph                                                                   |
+| 현재 API·schema             | route registry, `packages/shared/contracts`, runtime OpenAPI                                                           |
+| 현재 persistence·migration  | module schema·repository, `packages/infra/auth`, `apps/api/src/db`, `apps/api/drizzle`과 `packages/infra/db` primitive |
+| 현재 배포 topology          | `deploy/compose/`, proxy 설정, release workflow                                                                        |
+| 설계 이유                   | 관련 ADR와 이 문서의 경계 원칙                                                                                         |
 
 ## 독립성과 실패 격리
 

@@ -1,4 +1,3 @@
-import type { Database } from "bun:sqlite"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import type { InMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
@@ -35,7 +34,6 @@ export function composeResourceLibraryModule(input: {
   readonly eventIdGenerator: IdGenerator<string>
   readonly folderIdGenerator: IdGenerator<ResourceFolderId>
   readonly logger: AppLogger
-  readonly sqlite: Database
   readonly storage: ResourceObjectStoragePort | null
 }): ResourceLibraryModule {
   return createResourceLibraryModule({
@@ -60,7 +58,6 @@ export function composeResourceLibraryModule(input: {
       },
     },
     folderIdGenerator: input.folderIdGenerator,
-    sqlite: input.sqlite,
     storage: input.storage,
   })
 }

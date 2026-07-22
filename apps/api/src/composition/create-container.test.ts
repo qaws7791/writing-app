@@ -5,7 +5,6 @@ import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { createUnavailableAiFeedbackProvider } from "@workspace/ai-feedback/provider"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 import { createApp } from "@/composition/create-app"
 import { createContainer } from "@/composition/create-container"
@@ -25,7 +24,6 @@ describe("API container", () => {
     temporaryDirectories.push(directory)
     const databasePath = join(directory, "api.sqlite")
     const migrationDatabase = createWritingAppDatabase(databasePath)
-    runBaselineMigration(migrationDatabase.sqlite)
     migrationDatabase.close()
     let sequence = 0
     const container = await createContainer(

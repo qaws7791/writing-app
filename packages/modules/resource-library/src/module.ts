@@ -1,4 +1,3 @@
-import type { Database } from "bun:sqlite"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import {
@@ -47,7 +46,6 @@ import { createDrizzleResourceAssetRepository } from "#resource-library/infrastr
 import { createDrizzleResourceDocumentRepository } from "#resource-library/infrastructure/persistence/resource-document-drizzle-repository"
 import { createDrizzleResourceSearchRepository } from "#resource-library/infrastructure/persistence/resource-search-drizzle-repository"
 import { createDrizzleResourceTreeRepository } from "#resource-library/infrastructure/persistence/resource-tree-drizzle-repository"
-import { runResourceLibrarySchemaMigration } from "#resource-library/infrastructure/persistence/schema-migration"
 import {
   createResourceLibraryRoutes,
   type ResourceLibraryHttpRouteGroup,
@@ -79,11 +77,9 @@ export function createResourceLibraryModule(
     eventIdGenerator: IdGenerator<string>
     eventPublisher: ResourceDocumentEventPublisher
     folderIdGenerator: IdGenerator<ResourceFolderId>
-    sqlite: Database
     storage: ResourceObjectStoragePort | null
   }>
 ): ResourceLibraryModule {
-  runResourceLibrarySchemaMigration(input.sqlite)
   const assetRepository = createDrizzleResourceAssetRepository(input.database)
   const documentRepository = createDrizzleResourceDocumentRepository(
     input.database

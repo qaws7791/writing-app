@@ -10,21 +10,13 @@ import {
   courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
-  runContentSchemaMigration,
 } from "@workspace/content/schema"
-import { runAiFeedbackSchemaMigration } from "@workspace/ai-feedback/schema"
-import { seedContentDatabase } from "@workspace/content/seed"
-import { seedDatabase } from "@workspace/db/seeds/seed"
-import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { seedLearnerIdentity } from "@workspace/identity/seed"
-import { runResourceLibrarySchemaMigration } from "@workspace/resource-library/migration"
 
-import { runApiIdentitySchemaMigration } from "@/composition/identity-schema-migration"
+import { seedApplicationDatabase } from "@/db/seed"
 
 const e2eDatabaseUrl = requireE2eDatabaseUrl(process.env)
 
 removeE2eDatabaseFiles(e2eDatabaseUrl)
-await seedDatabase({ databaseUrl: e2eDatabaseUrl, nodeEnv: "test" })
 await seedLearnerTransitionCourse(e2eDatabaseUrl)
 
 async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
@@ -36,15 +28,7 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
   const lessonId = "e2e-transition-lesson"
 
   try {
-    runContentSchemaMigration(database.sqlite)
-    runAiFeedbackSchemaMigration(database.sqlite)
-    await seedContentDatabase(database.db)
-    runApiIdentitySchemaMigration(database.sqlite)
-    runResourceLibrarySchemaMigration(database.sqlite)
-    seedLearnerIdentity(database.db, {
-      displayName: "글쓰기 탐험가",
-      userId: userIdSchema.parse("user-1"),
-    })
+    await seedApplicationDatabase(database)
     database.db
       .insert(courses)
       .values({

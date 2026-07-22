@@ -56,6 +56,7 @@ export function createVerifiedDatabaseBackup(input: {
 
   try {
     writeFileSync(partialPath, source.serialize())
+    normalizeBackupJournalMode(partialPath)
     const verification = verifyDatabaseBackup(partialPath, {
       requiredTables: input.requiredTables,
     })
@@ -70,6 +71,27 @@ export function createVerifiedDatabaseBackup(input: {
   } finally {
     source.close()
     rmSync(partialPath, { force: true })
+  }
+}
+
+function normalizeBackupJournalMode(backupPath: string): void {
+  const backup = new Database(backupPath, {
+    create: false,
+    readwrite: true,
+    strict: true,
+  })
+
+  try {
+    const journalMode = backup
+      .query<{ readonly journal_mode: string }, []>(
+        "PRAGMA journal_mode = DELETE"
+      )
+      .get()?.journal_mode
+    if (journalMode !== "delete") {
+      throw new Error(`백업 DB journal_mode 전환 실패: ${journalMode}`)
+    }
+  } finally {
+    backup.close()
   }
 }
 

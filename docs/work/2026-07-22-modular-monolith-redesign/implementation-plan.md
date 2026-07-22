@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10 완료, P11 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11 완료, P12 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -58,7 +58,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P8. `resource-library` 모듈을 전환한다. 증거: [P8 구현 증거](./p8-validation.md)
 - [x] P9. `operations` 모듈을 전환한다. 증거: [P9 구현 증거](./p9-validation.md)
 - [x] P10. API composition root와 lifecycle을 완성한다. 증거: [P10 구현 증거](./p10-validation.md)
-- [ ] P11. 통합 schema, migration과 seed 경계를 완성한다.
+- [x] P11. 통합 schema, migration과 seed 경계를 완성한다. 증거: [P11 구현 증거](./p11-validation.md)
 - [ ] P12. web, admin과 Storybook 소비 경계를 전환한다.
 - [ ] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다.
 - [ ] P14. 배포·운영 automation을 새 경로에 맞춘다.
@@ -702,42 +702,42 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 15.1 schema composition
 
-- [ ] P11-001 auth와 6개 module의 schema export를 apps/api tooling consumer에 연결한다. 증거:
-- [ ] P11-002 `@workspace/db`의 module schema re-export를 제거한다. 증거:
-- [ ] P11-003 apps/api Drizzle config가 허용된 `./schema` subpath만 수집하게 한다. 증거:
-- [ ] P11-004 tooling 외 consumer의 `./schema` import를 거부한다. 증거:
-- [ ] P11-005 table 이름이 context prefix와 snake_case 규칙을 따르는지 검사한다. 증거:
-- [ ] P11-006 module 내부 FK만 남기고 cross-module FK·cascade를 0개로 만든다. 증거:
-- [ ] P11-007 cross-module SQL join을 0개로 만들고 공개 query·reporting port로 치환한다. 증거:
-- [ ] P11-008 제거된 FK가 만들 수 있는 dangling reference를 reconciliation query로 관측한다. 증거:
-- [ ] P11-009 DB에서 보장할 invariant와 application에서 보장할 invariant를 test로 분리한다. 증거:
+- [x] P11-001 auth와 6개 module의 schema export를 apps/api tooling consumer에 연결한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-002 `@workspace/db`의 module schema re-export를 제거한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-003 apps/api Drizzle config가 허용된 `./schema` subpath만 수집하게 한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-004 tooling 외 consumer의 `./schema` import를 거부한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-005 table 이름이 context prefix와 snake_case 규칙을 따르는지 검사한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-006 module 내부 FK만 남기고 cross-module FK·cascade를 0개로 만든다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-007 cross-module SQL join을 0개로 만들고 공개 query·reporting port로 치환한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-008 제거된 FK가 만들 수 있는 dangling reference를 reconciliation query로 관측한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
+- [x] P11-009 DB에서 보장할 invariant와 application에서 보장할 invariant를 test로 분리한다. 증거: [P11 schema composition](./p11-validation.md#schema-composition과-불변식)
 
 ### 15.2 migration 계보
 
-- [ ] P11-010 기존 적용 migration과 production 호환 범위를 다시 확인한다. 증거:
-- [ ] P11-011 migration directory를 apps/api의 통합 실행 지점으로 이동하되 순서와 내용을 보존한다. 증거:
-- [ ] P11-012 이미 적용된 migration을 수정·재정렬하지 않았는지 checksum 또는 diff로 검증한다. 증거:
-- [ ] P11-013 schema 소유권 변경에 필요한 새 append-only migration을 생성한다. 증거:
-- [ ] P11-014 생성 SQL의 table, index, trigger, FK drop과 data copy를 사람이 review한다. 증거:
-- [ ] P11-015 migration 전 데이터 사전 검사에서 orphan·중복·invalid state를 fail-closed한다. 증거:
-- [ ] P11-016 빈 DB에 전체 migration을 적용한다. 증거:
-- [ ] P11-017 기준선 버전 DB에 incremental migration을 적용한다. 증거:
-- [ ] P11-018 migration 전후 schema와 핵심 row count·invariant를 비교한다. 증거:
-- [ ] P11-019 새 code와 이전 schema, 이전 code와 새 schema의 호환 한계를 기록한다. 증거:
-- [ ] P11-020 destructive 변경이 code rollback만으로 복구되지 않음을 명시한다. 증거:
+- [x] P11-010 기존 적용 migration과 production 호환 범위를 다시 확인한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-011 migration directory를 apps/api의 통합 실행 지점으로 이동하되 순서와 내용을 보존한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-012 이미 적용된 migration을 수정·재정렬하지 않았는지 checksum 또는 diff로 검증한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-013 schema 소유권 변경에 필요한 새 append-only migration을 생성한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-014 생성 SQL의 table, index, trigger, FK drop과 data copy를 사람이 review한다. 증거: [P11 SQL 검토](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-015 migration 전 데이터 사전 검사에서 orphan·중복·invalid state를 fail-closed한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-016 빈 DB에 전체 migration을 적용한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-017 기준선 버전 DB에 incremental migration을 적용한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-018 migration 전후 schema와 핵심 row count·invariant를 비교한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성)
+- [x] P11-019 새 code와 이전 schema, 이전 code와 새 schema의 호환 한계를 기록한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성), [롤백 계약](../../engineering/rollback.md#통합-schema-이후-호환성)
+- [x] P11-020 destructive 변경이 code rollback만으로 복구되지 않음을 명시한다. 증거: [P11 migration 계보](./p11-validation.md#migration-계보와-호환성), [ADR-0019](../../engineering/adr/ADR-0019-unified-application-migration-lineage.md#호환성과-롤백)
 
 ### 15.3 seed, backup과 restore
 
-- [ ] P11-021 실제 seed가 있는 module만 `./seed`를 export하게 한다. 증거:
-- [ ] P11-022 apps/api seed composition이 module seed provider를 명시적으로 호출하게 한다. 증거:
-- [ ] P11-023 seed가 기존 사용자 학습 기록을 암묵적으로 삭제하지 않게 한다. 증거:
-- [ ] P11-024 reset이 환경 확인과 destructive-operation guard를 통과하게 한다. 증거:
-- [ ] P11-025 production reset이 별도 승인 없이는 fail-closed하는지 test한다. 증거:
-- [ ] P11-026 새 schema에서 backup snapshot을 생성하고 독립 경로에서 연다. 증거:
-- [ ] P11-027 restore fixture에서 integrity, 필수 table과 application read smoke를 검증한다. 증거:
-- [ ] P11-028 WAL·SHM과 원본 파일 불변성 회귀 test를 통과시킨다. 증거:
-- [ ] P11-029 migration 실패, backup 실패와 restore 실패의 운영 중단 조건을 runbook과 대조한다. 증거:
-- [ ] P11-030 P11 게이트: fresh·upgrade migration, seed, backup·restore와 schema architecture 검사가 통과한다. 증거:
+- [x] P11-021 실제 seed가 있는 module만 `./seed`를 export하게 한다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-022 apps/api seed composition이 module seed provider를 명시적으로 호출하게 한다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-023 seed가 기존 사용자 학습 기록을 암묵적으로 삭제하지 않게 한다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-024 reset이 환경 확인과 destructive-operation guard를 통과하게 한다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-025 production reset이 별도 승인 없이는 fail-closed하는지 test한다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-026 새 schema에서 backup snapshot을 생성하고 독립 경로에서 연다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-027 restore fixture에서 integrity, 필수 table과 application read smoke를 검증한다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-028 WAL·SHM과 원본 파일 불변성 회귀 test를 통과시킨다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore)
+- [x] P11-029 migration 실패, backup 실패와 restore 실패의 운영 중단 조건을 runbook과 대조한다. 증거: [P11 seed·reset·backup](./p11-validation.md#seedresetbackuprestore), [롤백 계약](../../engineering/rollback.md)
+- [x] P11-030 P11 게이트: fresh·upgrade migration, seed, backup·restore와 schema architecture 검사가 통과한다. 증거: [P11 자동 검증](./p11-validation.md#자동-검증)
 
 ## 16. P12 — web, admin과 Storybook 소비 경계
 

@@ -1,5 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
+import { createHash } from "node:crypto"
 import ts from "typescript"
 
 type PrivateImportScope = {
@@ -82,8 +83,10 @@ const expectedExports = {
     "./admin/server",
     "./learner/client",
     "./learner/server",
+    "./migration",
     "./password",
     "./schema",
+    "./seed",
     "./session-token",
     "./sqlite-database",
   ],
@@ -91,13 +94,10 @@ const expectedExports = {
     "./client",
     "./database-backup",
     "./destructive-operation-guard",
-    "./migrations/curriculum-migration",
-    "./migrations/migrate",
+    "./migration-runner",
     "./persisted-values",
-    "./schema",
-    "./seed",
-    "./seeds/seed",
     "./sqlite-database",
+    "./test-support/application-migration",
   ],
   "packages/infra/event-bus/package.json": ["./in-memory-event-bus"],
   "packages/infra/http-client/package.json": [
@@ -190,9 +190,11 @@ const expectedExports = {
     "./admin-actor",
     "./application",
     "./http",
+    "./migration",
     "./module",
     "./ports",
     "./queries",
+    "./reporting",
     "./schema",
     "./seed",
     "./sessions",
@@ -202,6 +204,7 @@ const expectedExports = {
     "./application",
     "./commands",
     "./http",
+    "./migration",
     "./module",
     "./normalization",
     "./ports",
@@ -212,6 +215,7 @@ const expectedExports = {
   "packages/modules/ai-feedback/package.json": [
     "./application",
     "./http",
+    "./migration",
     "./module",
     "./ports",
     "./provider",
@@ -499,6 +503,7 @@ verifyP7LearningOwnership()
 verifyP8ResourceLibraryOwnership()
 verifyP9OperationsOwnership()
 verifyP10ApiCompositionOwnership()
+verifyP11SchemaOwnership()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -875,21 +880,6 @@ function verifyP4IdentityOwnership(): void {
     )
   }
 
-  const baselineMigration = fs.readFileSync(
-    path.join(
-      repositoryRoot,
-      "packages/infra/db/src/migrations/0000-writing-app-baseline.sql"
-    ),
-    "utf8"
-  )
-  if (
-    /CREATE TABLE IF NOT EXISTS learner_profiles\b/u.test(baselineMigration)
-  ) {
-    failures.push(
-      "packages/infra/db/src/migrations/0000-writing-app-baseline.sql -> DB baseline의 identity table 소유 금지"
-    )
-  }
-
   const forbiddenOwnershipReferences = [
     [
       "packages/modules/learning/src/infrastructure/persistence/schema.ts",
@@ -959,9 +949,8 @@ function verifyP5ContentOwnership(): void {
     }
   }
 
-  const dbSchemaIndex = fs.readFileSync(
-    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
-    "utf8"
+  const dbSchemaIndex = readOptionalSource(
+    "packages/infra/db/src/schema/index.ts"
   )
   if (/content\.schema/u.test(dbSchemaIndex)) {
     failures.push(
@@ -1018,9 +1007,8 @@ function verifyP6AiFeedbackOwnership(): void {
     )
   }
 
-  const dbSchemaIndex = fs.readFileSync(
-    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
-    "utf8"
+  const dbSchemaIndex = readOptionalSource(
+    "packages/infra/db/src/schema/index.ts"
   )
   if (/feedback\.schema|aiFeedbackAttempts/u.test(dbSchemaIndex)) {
     failures.push(
@@ -1112,9 +1100,8 @@ function verifyP7LearningOwnership(): void {
     )
   }
 
-  const dbSchemaIndex = fs.readFileSync(
-    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
-    "utf8"
+  const dbSchemaIndex = readOptionalSource(
+    "packages/infra/db/src/schema/index.ts"
   )
   if (
     /learning\.schema|learner(?:Activity|Course|Lesson)/u.test(dbSchemaIndex)
@@ -1195,9 +1182,8 @@ function verifyP8ResourceLibraryOwnership(): void {
     failures.push(`${moduleSchemaPath} -> module 내부 FK만 허용`)
   }
 
-  const dbSchemaIndex = fs.readFileSync(
-    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
-    "utf8"
+  const dbSchemaIndex = readOptionalSource(
+    "packages/infra/db/src/schema/index.ts"
   )
   if (
     /resource\.schema|adminResource(?:Nodes|Documents|Assets)/u.test(
@@ -1286,9 +1272,8 @@ function verifyP9OperationsOwnership(): void {
     failures.push(`${schemaPath} -> operations module 내부 FK만 허용`)
   }
 
-  const dbSchemaIndex = fs.readFileSync(
-    path.join(repositoryRoot, "packages/infra/db/src/schema/index.ts"),
-    "utf8"
+  const dbSchemaIndex = readOptionalSource(
+    "packages/infra/db/src/schema/index.ts"
   )
   if (/adminAiChat|adminSettings|operationsAi/u.test(dbSchemaIndex)) {
     failures.push(
@@ -1395,6 +1380,182 @@ function verifyP10ApiCompositionOwnership(): void {
   }
 }
 
+function verifyP11SchemaOwnership(): void {
+  const applicationSchemaPath = "apps/api/src/db/schema.ts"
+  const applicationMigrationPath = "apps/api/src/db/migrate.ts"
+  const modulePackages = [
+    "ai-feedback",
+    "content",
+    "identity",
+    "learning",
+    "operations",
+    "resource-library",
+  ] as const
+  const schemaImports = [
+    "@workspace/auth/schema",
+    ...modulePackages.map((packageName) => `@workspace/${packageName}/schema`),
+  ]
+  const actualSchemaImports = readImports(
+    path.join(repositoryRoot, applicationSchemaPath)
+  ).sort()
+
+  if (
+    JSON.stringify(actualSchemaImports) !==
+    JSON.stringify([...schemaImports].sort())
+  ) {
+    failures.push(
+      `${applicationSchemaPath} -> auth와 여섯 module schema의 명시적 합성 필요`
+    )
+  }
+
+  const allowedModuleSchemaConsumers = new Set([
+    applicationSchemaPath,
+    "apps/api/src/scripts/setup-e2e-content-database.ts",
+  ])
+  const moduleSchemaImports = new Set(schemaImports.slice(1))
+  const migrationImports = new Set(
+    ["auth", ...modulePackages].map(
+      (packageName) => `@workspace/${packageName}/migration`
+    )
+  )
+
+  for (const filePath of collectSourceFiles(repositoryRoot)) {
+    if (filePath.includes(`${path.sep}node_modules${path.sep}`)) continue
+    const relative = relativePath(filePath)
+
+    for (const imported of readImports(filePath)) {
+      if (
+        moduleSchemaImports.has(imported) &&
+        !allowedModuleSchemaConsumers.has(relative)
+      ) {
+        failures.push(
+          `${relative} -> module schema는 application schema·seed tooling 밖에서 import할 수 없음: ${imported}`
+        )
+      }
+      if (
+        migrationImports.has(imported) &&
+        !relative.endsWith(".test.ts") &&
+        relative !== applicationMigrationPath
+      ) {
+        failures.push(
+          `${relative} -> module migration은 application migration composition 밖에서 실행할 수 없음: ${imported}`
+        )
+      }
+      if (
+        imported === "@workspace/db/test-support/application-migration" &&
+        !relative.endsWith(".test.ts")
+      ) {
+        failures.push(
+          `${relative} -> baseline test helper의 runtime import 금지`
+        )
+      }
+    }
+  }
+
+  const expectedSeedOwners = new Set(["content", "identity"])
+  for (const packageName of modulePackages) {
+    const manifestPath = `packages/modules/${packageName}/package.json`
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(repositoryRoot, manifestPath), "utf8")
+    ) as { readonly exports?: Readonly<Record<string, unknown>> }
+    const exportsSeed = manifest.exports?.["./seed"] !== undefined
+    if (exportsSeed !== expectedSeedOwners.has(packageName)) {
+      failures.push(
+        `${manifestPath} -> 실제 seed 소유 module만 ./seed를 export해야 함`
+      )
+    }
+  }
+
+  const drizzleConfigPath = "apps/api/drizzle.config.ts"
+  const drizzleConfig = readOptionalSource(drizzleConfigPath)
+  if (
+    !drizzleConfig.includes('schema: "./src/db/schema.ts"') ||
+    !drizzleConfig.includes('out: "./drizzle"')
+  ) {
+    failures.push(
+      `${drizzleConfigPath} -> application schema와 migration directory만 사용해야 함`
+    )
+  }
+
+  for (const removedPath of [
+    "packages/infra/db/drizzle.config.ts",
+    "packages/infra/db/src/migrations/0000-writing-app-baseline.sql",
+    "packages/infra/db/src/migrations/migrate.ts",
+    "packages/infra/db/src/schema/index.ts",
+    "packages/infra/db/src/seeds/index.ts",
+    "packages/infra/db/src/seeds/seed.ts",
+  ]) {
+    if (fs.existsSync(path.join(repositoryRoot, removedPath))) {
+      failures.push(
+        `${removedPath} -> P11 application tooling 이전 뒤 재도입 금지`
+      )
+    }
+  }
+
+  const migrations = [
+    [
+      "apps/api/drizzle/0000-writing-app-baseline.sql",
+      "ca744dd3c34bdd604cfd3de4e57c44dc4299e67bb6685926e4d89aa5821bee25",
+    ],
+    [
+      "apps/api/drizzle/0001-module-schema-ownership.sql",
+      "20b1b8a424d4916b565f5b991f221ddc0708a1a654f0cfbeaf6627b53b2636b0",
+    ],
+  ] as const
+  for (const [migrationPath, expectedChecksum] of migrations) {
+    const migration = readOptionalSource(migrationPath).replace(/\r\n?/gu, "\n")
+    const checksum = createHash("sha256").update(migration).digest("hex")
+    if (checksum !== expectedChecksum) {
+      failures.push(
+        `${migrationPath} -> 고정 migration checksum 불일치: ${checksum}`
+      )
+    }
+  }
+
+  const dbManifest = JSON.parse(
+    fs.readFileSync(
+      path.join(repositoryRoot, "packages/infra/db/package.json"),
+      "utf8"
+    )
+  ) as {
+    readonly dependencies?: Readonly<Record<string, string>>
+    readonly exports?: Readonly<Record<string, unknown>>
+  }
+  if (dbManifest.exports?.["./schema"] !== undefined) {
+    failures.push("packages/infra/db/package.json -> schema 재공개 금지")
+  }
+  for (const dependency of Object.keys(dbManifest.dependencies ?? {})) {
+    if (
+      dependency === "@workspace/auth" ||
+      modulePackages.some(
+        (packageName) => dependency === `@workspace/${packageName}`
+      )
+    ) {
+      failures.push(
+        `packages/infra/db/package.json -> auth·business module 의존 금지: ${dependency}`
+      )
+    }
+  }
+
+  const createContainer = readOptionalSource(
+    "apps/api/src/composition/create-container.ts"
+  )
+  if (!createContainer.includes("runApplicationMigrations(database.sqlite")) {
+    failures.push(
+      "apps/api/src/composition/create-container.ts -> 중앙 application migration 실행 누락"
+    )
+  }
+
+  const reconciliation = readOptionalSource(
+    "apps/api/src/db/schema-reconciliation.ts"
+  )
+  if (/\b(?:INNER|LEFT|RIGHT|FULL|CROSS)?\s*JOIN\b/iu.test(reconciliation)) {
+    failures.push(
+      "apps/api/src/db/schema-reconciliation.ts -> cross-module SQL JOIN 대신 독립 조회·application 조정 필요"
+    )
+  }
+}
+
 function verifyDbModuleSchemaTransitionInventory(): void {
   const fixturePath = path.join(
     repositoryRoot,
@@ -1408,10 +1569,12 @@ function verifyDbModuleSchemaTransitionInventory(): void {
     repositoryRoot,
     "packages/infra/db/src/schema"
   )
-  const schemaFiles = fs
-    .readdirSync(schemaDirectory)
-    .filter((fileName) => fileName.endsWith(".schema.ts"))
-    .map((fileName) => `packages/infra/db/src/schema/${fileName}`)
+  const schemaFiles = fs.existsSync(schemaDirectory)
+    ? fs
+        .readdirSync(schemaDirectory)
+        .filter((fileName) => fileName.endsWith(".schema.ts"))
+        .map((fileName) => `packages/infra/db/src/schema/${fileName}`)
+    : []
 
   for (const schemaPath of schemaFiles) {
     if (!(schemaPath in transition)) {
@@ -1449,6 +1612,11 @@ function collectSourceFiles(directory: string): string[] {
     if (entry.isDirectory()) return collectSourceFiles(entryPath)
     return sourceExtensions.has(path.extname(entry.name)) ? [entryPath] : []
   })
+}
+
+function readOptionalSource(relative: string): string {
+  const filePath = path.join(repositoryRoot, relative)
+  return fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : ""
 }
 
 function readImports(filePath: string): string[] {

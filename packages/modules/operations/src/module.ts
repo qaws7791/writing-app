@@ -1,4 +1,3 @@
-import type { Database } from "bun:sqlite"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
 import {
@@ -34,7 +33,6 @@ import { createAiChangeProposalRepository } from "#operations/infrastructure/per
 import { createAiConversationRepository } from "#operations/infrastructure/persistence/ai-conversation-repository"
 import { createAiQuotaRepository } from "#operations/infrastructure/persistence/ai-quota-repository"
 import { createOperationsSettingsRepository } from "#operations/infrastructure/persistence/operations-settings-repository"
-import { runOperationsSchemaMigration } from "#operations/infrastructure/persistence/schema-migration"
 import {
   createOperationsRoutes,
   type OperationsHttpRouteGroup,
@@ -66,11 +64,9 @@ export function createOperationsModule(
     proposalIdGenerator: IdGenerator<AiChangeProposalId>
     reporting: OperationsReportingPorts
     reportingFailureObserver: OperationsReportingFailureObserver
-    sqlite: Database
     target: AiChangeTargetPort
   }>
 ): OperationsModule {
-  runOperationsSchemaMigration(input.sqlite)
   const proposalRepository = createAiChangeProposalRepository(input.database)
   const proposals = createAiChangeProposalApplication({
     clock: input.clock,

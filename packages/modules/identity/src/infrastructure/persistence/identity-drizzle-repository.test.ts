@@ -4,7 +4,7 @@ import {
   userIdSchema,
 } from "@workspace/contracts/identity/admin-ids"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 import { runInSqliteTransaction } from "@workspace/db/sqlite-database"
 
 import {
@@ -16,8 +16,8 @@ import { seedOwnerIdentity } from "#identity/infrastructure/persistence/seed"
 import {
   adminIdentityProfiles,
   learnerProfiles,
-  runIdentitySchemaMigration,
 } from "#identity/infrastructure/persistence/schema"
+import { runIdentitySchemaMigration } from "#identity/infrastructure/persistence/schema-migration"
 
 const now = new Date("2026-07-22T00:00:00.000Z")
 
@@ -26,14 +26,8 @@ describe("identity SQLite repository", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       client.sqlite.exec(`
-        CREATE TABLE learner_profiles (
-          user_id TEXT PRIMARY KEY NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-          status TEXT NOT NULL DEFAULT 'active',
-          display_name TEXT,
-          deleted_at INTEGER
-        );
         INSERT INTO user (
           id, name, email, email_verified, image, created_at, updated_at
         ) VALUES (
@@ -79,7 +73,7 @@ describe("identity SQLite repository", () => {
     const adminId = adminIdSchema.parse("admin-1")
 
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       runIdentitySchemaMigration(client.sqlite)
       seedOwnerIdentity(client.db, adminId)
       const repository = createDrizzleIdentityRepository(client.db)
@@ -173,7 +167,7 @@ describe("identity SQLite repository", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
-      runBaselineMigration(client.sqlite)
+      runBaselineTestMigration(client.sqlite)
       runIdentitySchemaMigration(client.sqlite)
 
       expect(() =>

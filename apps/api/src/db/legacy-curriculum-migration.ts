@@ -67,17 +67,19 @@ export function hasLegacyCurriculumSchema(sqlite: Database): boolean {
 export function migrateLegacyCurriculumSchema(
   sqlite: Database,
   baselineSql: string,
-  normalizeVersionedStepContent: NormalizeVersionedStepContent
+  normalizeVersionedStepContent: NormalizeVersionedStepContent,
+  prepareLegacyState?: (sqlite: Database) => void
 ): void {
   assertPreMigrationDatabaseIntegrity(sqlite)
-  const normalizedStepContent = validateLegacyCurriculum(
-    sqlite,
-    normalizeVersionedStepContent
-  )
 
   sqlite.exec("PRAGMA foreign_keys = OFF")
   try {
     sqlite.exec("BEGIN IMMEDIATE")
+    prepareLegacyState?.(sqlite)
+    const normalizedStepContent = validateLegacyCurriculum(
+      sqlite,
+      normalizeVersionedStepContent
+    )
     updateLegacyStepContent(sqlite, normalizedStepContent)
     renameLegacyCurriculumTables(sqlite)
     sqlite.exec(baselineSql)

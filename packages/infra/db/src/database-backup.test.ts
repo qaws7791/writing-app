@@ -19,7 +19,7 @@ import {
   createVerifiedDatabaseBackup,
   verifyDatabaseBackup,
 } from "#db/database-backup"
-import { runBaselineMigration } from "#db/migrations/migrate"
+import { runBaselineTestMigration } from "#db/test-support/application-migration"
 
 describe("SQLite 백업과 복구 검증", () => {
   it("공백이 있는 file-backed WAL DB를 독립 백업하고 임시 복구한다", () => {
@@ -29,18 +29,24 @@ describe("SQLite 백업과 복구 검증", () => {
     const source = createWritingAppDatabase(sourcePath)
 
     try {
-      runBaselineMigration(source.sqlite)
+      runBaselineTestMigration(source.sqlite)
       source.sqlite.exec("PRAGMA wal_autocheckpoint = 0")
       source.sqlite.exec(`
         CREATE TABLE backup_probe (value TEXT NOT NULL);
         INSERT INTO backup_probe (value) VALUES ('backup-before');
       `)
+      const sourceBeforeBackup = readFileSync(sourcePath)
+      const sourceWalBeforeBackup = readFileSync(`${sourcePath}-wal`)
+      const sourceShmSizeBeforeBackup = statSync(`${sourcePath}-shm`).size
 
       const report = createVerifiedDatabaseBackup({
         backupPath,
         requiredTables: ["backup_probe"],
         sourcePath,
       })
+      expect(readFileSync(sourcePath)).toEqual(sourceBeforeBackup)
+      expect(readFileSync(`${sourcePath}-wal`)).toEqual(sourceWalBeforeBackup)
+      expect(statSync(`${sourcePath}-shm`).size).toBe(sourceShmSizeBeforeBackup)
       source.sqlite.exec(
         "INSERT INTO backup_probe (value) VALUES ('source-after')"
       )
@@ -49,7 +55,8 @@ describe("SQLite 백업과 복구 검증", () => {
       const isolatedInspection = inspectIsolatedBackup(backupPath)
 
       expect(isolatedInspection.probeRows).toEqual([{ value: "backup-before" }])
-      expect(isolatedInspection.sidecarsCreated).toBe(true)
+      expect(isolatedInspection.journalMode).toBe("delete")
+      expect(isolatedInspection.sidecarsCreated).toBe(false)
       expect(isolatedInspection.queryOnlyEnabled).toBe(true)
       expect(isolatedInspection.temporaryDirectoryRemoved).toBe(true)
       expect(readFileSync(backupPath)).toEqual(backupBeforeVerification)
@@ -89,7 +96,7 @@ describe("SQLite 백업과 복구 검증", () => {
     const source = createWritingAppDatabase(sourcePath)
 
     try {
-      runBaselineMigration(source.sqlite)
+      runBaselineTestMigration(source.sqlite)
       writeFileSync(corruptedPath, "SQLite format 3\0손상된 파일", "utf8")
       writeFileSync(protectedPath, "운영 파일 원본", "utf8")
       const protectedBefore = readFileSync(protectedPath)
@@ -113,6 +120,7 @@ describe("SQLite 백업과 복구 검증", () => {
 })
 
 function inspectIsolatedBackup(backupPath: string): {
+  readonly journalMode: string
   readonly probeRows: readonly { readonly value: string }[]
   readonly queryOnlyEnabled: boolean
   readonly sidecarsCreated: boolean
@@ -123,6 +131,7 @@ function inspectIsolatedBackup(backupPath: string): {
   )
   const restoredPath = join(temporaryDirectory, "restored.sqlite")
   let restored: Database | undefined
+  let journalMode = ""
   let probeRows: readonly { readonly value: string }[] = []
   let queryOnlyEnabled = false
   let sidecarsCreated = false
@@ -132,7 +141,7 @@ function inspectIsolatedBackup(backupPath: string): {
     chmodSync(restoredPath, 0o600)
     restored = new Database(restoredPath, {
       create: false,
-      readwrite: true,
+      readonly: true,
       strict: true,
     })
     restored.exec("PRAGMA query_only = ON")
@@ -141,6 +150,10 @@ function inspectIsolatedBackup(backupPath: string): {
         .query<{ readonly query_only: number }, []>("PRAGMA query_only")
         .get()?.query_only === 1
     restored.query("PRAGMA integrity_check").get()
+    journalMode =
+      restored
+        .query<{ readonly journal_mode: string }, []>("PRAGMA journal_mode")
+        .get()?.journal_mode ?? ""
     probeRows = restored
       .query<{ readonly value: string }, []>(
         "SELECT value FROM backup_probe ORDER BY rowid"
@@ -154,6 +167,7 @@ function inspectIsolatedBackup(backupPath: string): {
   }
 
   return {
+    journalMode,
     probeRows,
     queryOnlyEnabled,
     sidecarsCreated,

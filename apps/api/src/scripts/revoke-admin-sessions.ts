@@ -1,6 +1,6 @@
 import { createWritingAppDatabase } from "@workspace/db/client"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { adminAuthSessions } from "@workspace/db/schema"
+import { adminAuthSessions } from "@workspace/auth/schema"
 
 export function revokeAllAdminSessions(db: WritingAppDatabase): number {
   return db.transaction((transaction) => {

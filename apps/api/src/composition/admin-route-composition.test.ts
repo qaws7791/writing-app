@@ -25,10 +25,7 @@ describe("관리자 capability route composition", () => {
     const databaseClient = createInMemoryWritingAppDatabase()
 
     try {
-      const context = createCompositionContext(
-        databaseClient.db,
-        databaseClient.sqlite
-      )
+      const context = createCompositionContext(databaseClient.db)
       const first = createAdminCapabilityRouteGroupRegistry(context)
       const second = createAdminCapabilityRouteGroupRegistry(context)
       const routes = createAdminCapabilityRoutes(context)
@@ -109,8 +106,7 @@ describe("관리자 capability route composition", () => {
 })
 
 function createCompositionContext(
-  database: AdminRouteCompositionContext["database"],
-  sqlite: Parameters<typeof createResourceLibraryModule>[0]["sqlite"]
+  database: AdminRouteCompositionContext["database"]
 ): AdminRouteCompositionContext {
   return {
     aiConfig: null,
@@ -170,12 +166,10 @@ function createCompositionContext(
         publishDocumentSaved: async () => ok(undefined),
       },
       folderIdGenerator: { next: () => "resource-folder-1" as never },
-      sqlite,
       storage: null,
     }),
     sessionResolver: {
       resolveSession: () => Promise.resolve(null),
     },
-    sqlite,
   }
 }

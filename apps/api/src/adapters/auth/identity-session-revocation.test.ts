@@ -10,9 +10,9 @@ import {
   authUsers,
 } from "@workspace/auth/schema"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 import { createIdentitySessionRevocation } from "@/adapters/auth/identity-session-revocation"
+import { runApplicationMigrations } from "@/db/migrate"
 
 const now = new Date("2026-07-22T00:00:00.000Z")
 
@@ -21,7 +21,7 @@ describe("identity auth session revocation adapter", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
-      runBaselineMigration(client.sqlite)
+      runApplicationMigrations(client.sqlite)
       seedAuthUsers(client)
       const port = createIdentitySessionRevocation(client.db)
 

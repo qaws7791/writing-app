@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 
 import {
   assertResourceLibraryMigrationPrerequisites,
@@ -11,7 +11,7 @@ describe("resource-library schema migration", () => {
   it("기존 row를 보존하고 cross-module FK를 제거한 뒤 재실행할 수 있다", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
+      runBaselineTestMigration(database.sqlite)
       insertAdmin(database.sqlite, "admin-1")
       database.sqlite.exec(`
         INSERT INTO admin_resource_nodes (
@@ -87,7 +87,7 @@ describe("resource-library schema migration", () => {
   it("legacy actor orphan을 cross-module FK 제거 전에 fail-closed한다", () => {
     const database = createInMemoryWritingAppDatabase()
     try {
-      runBaselineMigration(database.sqlite)
+      runBaselineTestMigration(database.sqlite)
       database.sqlite.exec("PRAGMA foreign_keys = OFF")
       database.sqlite.exec(`
         INSERT INTO admin_resource_nodes (
@@ -139,7 +139,7 @@ describe("resource-library schema migration", () => {
 })
 
 function insertAdmin(
-  sqlite: Parameters<typeof runBaselineMigration>[0],
+  sqlite: Parameters<typeof runBaselineTestMigration>[0],
   adminId: string
 ): void {
   sqlite
@@ -152,7 +152,7 @@ function insertAdmin(
 }
 
 function readForeignKeyTables(
-  sqlite: Parameters<typeof runBaselineMigration>[0],
+  sqlite: Parameters<typeof runBaselineTestMigration>[0],
   tableName: string
 ): readonly string[] {
   return sqlite
@@ -165,7 +165,7 @@ function readForeignKeyTables(
 }
 
 function readIndexes(
-  sqlite: Parameters<typeof runBaselineMigration>[0]
+  sqlite: Parameters<typeof runBaselineTestMigration>[0]
 ): readonly string[] {
   return sqlite
     .query<{ readonly name: string }, []>(
@@ -176,7 +176,7 @@ function readIndexes(
 }
 
 function readTables(
-  sqlite: Parameters<typeof runBaselineMigration>[0]
+  sqlite: Parameters<typeof runBaselineTestMigration>[0]
 ): readonly string[] {
   return sqlite
     .query<{ readonly name: string }, []>(

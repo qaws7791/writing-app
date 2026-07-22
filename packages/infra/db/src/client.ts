@@ -2,18 +2,18 @@ import { fileURLToPath } from "node:url"
 
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 
-import * as authSchema from "@workspace/auth/schema"
-import * as moduleSchema from "#db/schema"
 import {
   createSqliteDatabase,
   type SqliteDatabaseClient,
 } from "#db/sqlite-database"
 
-const schema = { ...authSchema, ...moduleSchema }
+const databaseSchema = {}
 
-export type WritingAppDatabase = BunSQLiteDatabase<typeof schema>
+export type WritingAppDatabase = BunSQLiteDatabase<typeof databaseSchema>
 
-export type WritingAppDatabaseClient = SqliteDatabaseClient<typeof schema>
+export type WritingAppDatabaseClient = SqliteDatabaseClient<
+  typeof databaseSchema
+>
 
 export function getDefaultDatabaseUrl(): string {
   return fileURLToPath(new URL("../../../../data/api.sqlite", import.meta.url))
@@ -22,13 +22,17 @@ export function getDefaultDatabaseUrl(): string {
 export function createWritingAppDatabase(
   url: string
 ): WritingAppDatabaseClient {
-  return createSqliteDatabase({ filename: url, schema })
+  return createSqliteDatabase({ filename: url, schema: databaseSchema })
 }
 
 export function createReadOnlyWritingAppDatabase(
   url: string
 ): WritingAppDatabaseClient {
-  return createSqliteDatabase({ filename: url, mode: "read-only", schema })
+  return createSqliteDatabase({
+    filename: url,
+    mode: "read-only",
+    schema: databaseSchema,
+  })
 }
 
 export function createInMemoryWritingAppDatabase(): WritingAppDatabaseClient {

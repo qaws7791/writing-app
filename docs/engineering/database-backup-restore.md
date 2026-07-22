@@ -14,6 +14,7 @@ bun run db:backup --source=data/api.sqlite --output="backups/api-2026-07-12.sqli
 - `--output`은 필수이며 원본과 다른 경로여야 한다.
 - 기존 출력 파일은 덮어쓰지 않는다.
 - 운영 중 WAL에 남은 commit도 `bun:sqlite` snapshot 직렬화에 포함한다.
+- 생성 중인 임시 snapshot은 `DELETE` journal mode로 정규화해 최종 백업 파일 하나만으로 독립적으로 열 수 있게 한다.
 - 임시 `.partial` 파일을 검증한 뒤 같은 디렉터리에서 최종 이름으로 원자적으로 바꾼다.
 
 성공 시 표준 출력에 다음 구조의 JSON을 남긴다.
@@ -46,7 +47,9 @@ bun run db:backup --source=data/api.sqlite --output="backups/api-2026-07-12.sqli
 5. 각 필수 테이블에 `COUNT(*)` 읽기 smoke test를 수행한다.
 6. `schema_version`과 `user_version`을 결과에 기록한다.
 
-직렬화된 WAL 모드 snapshot은 SQLite가 읽기 과정에서 `-wal`과 `-shm` sidecar를 초기화해야 할 수 있다. 따라서 임시 복구본에만 파일 쓰기 권한을 허용한다. sidecar는 임시 디렉터리 안에서만 생성되며 연결을 닫은 뒤 임시 디렉터리와 함께 제거한다. 검증 전후 읽기 전용 원본 백업의 바이트·권한과 원본 옆 sidecar 부재를 회귀 테스트로 확인한다.
+최종 백업은 WAL sidecar에 의존하지 않는 단일 파일이다. generic 검증은 임시 복구본에서 무결성과 필수 table 읽기를 확인하고, API 통합 검증은 migration 이력 table과 현재 application table을 요구한 뒤 실제 content module query를 read-only connection에서 실행한다. 검증 전후 최종 백업의 바이트·권한이 바뀌지 않고 백업 옆에 WAL/SHM이 생기지 않는지 회귀 테스트로 확인한다.
+
+백업 중 원본 DB와 원본 WAL은 바이트 단위로 바뀌지 않아야 한다. SHM은 SQLite connection 간 coordination을 위한 휘발성 파일이라 내용이 바뀔 수 있으므로 존재와 크기만 검사한다. 이는 snapshot이 원본을 mutation하지 않는다는 검증 범위를 과장하지 않기 위한 의도적인 구분이다.
 
 운영 복구가 필요한 경우에는 다음 순서를 따른다.
 
@@ -66,8 +69,9 @@ bun run db:backup --source=data/api.sqlite --output="backups/api-2026-07-12.sqli
 `packages/infra/db/src/database-backup.test.ts`는 다음을 회귀 검증한다.
 
 - 공백이 있는 file-backed 경로와 활성 WAL에서 snapshot 백업
-- 백업 뒤 원본 변경과 무관한 독립 백업 열기
-- 백업 검증과 복구본 읽기
-- 임시 복구본의 WAL/SHM sidecar 생성·제거와 원본 백업 불변성
+- 백업 뒤 원본 변경과 무관한 단일 파일의 독립 read-only 열기
+- 현재 migration 이력·필수 table 검증과 실제 application read
+- 원본 DB·WAL 바이트 불변성, SHM 존재·크기와 최종 백업 불변성
+- 백업 경로 옆 WAL/SHM sidecar 비생성
 - 손상 파일 거부
 - 기존 출력 파일 비덮어쓰기

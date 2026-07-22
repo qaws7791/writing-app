@@ -46,12 +46,12 @@ describe("파괴적 DB 작업 보호 장치", () => {
   })
 
   it.each([
-    [false, false, false],
-    [true, false, false],
-    [true, true, false],
+    [false, false, false, "ALLOW_DATABASE_RESET=true와 --force"],
+    [true, false, false, "ALLOW_DATABASE_RESET=true와 --force"],
+    [true, true, false, "일치하는 대상 fingerprint"],
   ])(
     "production 승인이 불완전하면 거부한다 (%s, %s, %s)",
-    (allowDatabaseReset, forceDatabaseReset, hasFingerprint) => {
+    (allowDatabaseReset, forceDatabaseReset, hasFingerprint, errorMessage) => {
       const target = createRepositoryDatabaseTarget()
 
       try {
@@ -63,7 +63,7 @@ describe("파괴적 DB 작업 보호 장치", () => {
             nodeEnv: "production",
             targetFingerprint: hasFingerprint ? target.fingerprint : undefined,
           })
-        ).toThrow("일치하는 대상 fingerprint")
+        ).toThrow(errorMessage)
       } finally {
         cleanupTarget(target)
       }
@@ -88,6 +88,29 @@ describe("파괴적 DB 작업 보호 장치", () => {
     }
   })
 
+  it.each([
+    [false, true],
+    [true, false],
+  ])(
+    "non-production도 명시적 reset 허용과 force를 요구한다 (%s, %s)",
+    (allowDatabaseReset, forceDatabaseReset) => {
+      const target = createRepositoryDatabaseTarget()
+
+      try {
+        expect(() =>
+          assertDestructiveDatabaseAllowed(target, {
+            allowDatabaseReset,
+            databaseUrl: target.databasePath,
+            forceDatabaseReset,
+            nodeEnv: "development",
+          })
+        ).toThrow("ALLOW_DATABASE_RESET=true와 --force")
+      } finally {
+        cleanupTarget(target)
+      }
+    }
+  )
+
   it("DB와 sidecar를 백업한 뒤 대상 파일만 삭제한다", () => {
     const target = createRepositoryDatabaseTarget()
     const walPath = `${target.databasePath}-wal`
@@ -102,9 +125,9 @@ describe("파괴적 DB 작업 보호 장치", () => {
 
     try {
       const result = resetSqliteDatabaseFiles({
-        allowDatabaseReset: false,
+        allowDatabaseReset: true,
         databaseUrl: target.databasePath,
-        forceDatabaseReset: false,
+        forceDatabaseReset: true,
         nodeEnv: "development",
       })
 

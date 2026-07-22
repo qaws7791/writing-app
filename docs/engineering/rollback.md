@@ -32,6 +32,12 @@ ansible-playbook infra/ansible/playbooks/rollback.yaml \
 실행 뒤에는 같은 `API_HOST`의 `/health`, `/api/admin/health`, 두 인증 realm과 관리자 핵심 변경 route를
 검증한다. Caddy의 API upstream은 `api:4000` 하나여야 한다.
 
+## 통합 schema 이후 호환성
+
+현재 API migration은 빈 DB, 보존된 baseline, 이전 module schema와 명시적으로 식별한 legacy schema를 현재 상태로 올릴 수 있다. 이전 module migration 함수가 현재 schema에서 멱등적으로 끝나는 것도 테스트하지만, 이는 이전 API image 전체가 현재 DB와 호환된다는 뜻이 아니다.
+
+현재 schema는 cross-module FK를 제거하기 위해 여러 table을 재구성하고 제품 role을 auth credential table에서 identity table로 옮긴 뒤 기존 role column을 제거한다. 따라서 이 migration이 적용된 DB에 role column을 기대하는 이전 API image를 배치하는 code-only rollback은 지원하지 않는다. 이전 image가 필요한 경우에는 writer를 중지하고 그 image와 호환되는 migration 전 검증 백업을 새 경로로 복구해야 한다. 운영 DB에서 역방향 SQL을 즉석 작성하거나 migration 이력만 삭제하는 방식은 허용하지 않는다.
+
 ## DB 복구
 
 DB 복구는 코드 롤백과 별도 승인 작업이다. 통합 API와 Litestream을 중지하고 단일
@@ -40,6 +46,8 @@ SQLite writer가 없는 상태에서만 수행한다. 절차와 fail-closed 조�
 
 복구 뒤에는 migration 상태, `foreign_key_check`, learner/admin 인증 테이블, 자료실
 문서 ETag와 학습 진행을 확인한 다음 통합 API를 다시 시작한다.
+
+통합 migration의 사전 검사, 적용 transaction 또는 최종 schema 검증이 실패하면 API 기동을 계속하지 않는다. 백업 생성·검증이 실패하면 migration과 배포를 시작하지 않으며, 복구 검증이 실패하면 해당 파일로 writer를 전환하지 않는다. 이 세 중단 조건은 migration runner가 데이터 변경을 rollback하는 범위와 운영자가 검증 백업을 선택하는 범위를 분리한다.
 
 ## 작업 잠금과 실패 복구
 

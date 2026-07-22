@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite"
 import { eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 
 import {
   createCourseId,
@@ -216,7 +216,7 @@ describe("content migration prerequisites", () => {
     const sqlite = new Database(":memory:")
 
     try {
-      runBaselineMigration(sqlite)
+      runBaselineTestMigration(sqlite)
       sqlite.exec(
         "DROP TRIGGER course_curriculum_versions_published_update_guard"
       )
@@ -241,7 +241,7 @@ describe("content migration prerequisites", () => {
     const sqlite = new Database(":memory:")
 
     try {
-      runBaselineMigration(sqlite)
+      runBaselineTestMigration(sqlite)
       sqlite.exec(`
         DROP INDEX course_curriculum_versions_single_draft_idx;
         INSERT INTO courses VALUES ('duplicate-course', 'active', 1, NULL, 1);
@@ -269,7 +269,7 @@ describe("content migration prerequisites", () => {
     const sqlite = new Database(":memory:")
 
     try {
-      runBaselineMigration(sqlite)
+      runBaselineTestMigration(sqlite)
       sqlite.exec("PRAGMA foreign_keys = OFF")
       sqlite.exec(`
         INSERT INTO learner_course_progress (
@@ -302,7 +302,7 @@ describe("content migration prerequisites", () => {
 
 function createRepositoryFixture() {
   const databaseClient = createWritingAppDatabase(":memory:")
-  runBaselineMigration(databaseClient.sqlite)
+  runBaselineTestMigration(databaseClient.sqlite)
   runContentSchemaMigration(databaseClient.sqlite)
   return {
     databaseClient,

@@ -101,13 +101,14 @@ export function assertDestructiveDatabaseAllowed(
   target: DatabaseResetTarget,
   options: DestructiveDatabaseOptions
 ): void {
-  if (options.nodeEnv !== "production") {
-    return
+  if (!options.allowDatabaseReset || !options.forceDatabaseReset) {
+    throw new Error(
+      "DB 초기화는 ALLOW_DATABASE_RESET=true와 --force가 필요합니다."
+    )
   }
 
   if (
-    !options.allowDatabaseReset ||
-    !options.forceDatabaseReset ||
+    options.nodeEnv === "production" &&
     options.targetFingerprint !== target.fingerprint
   ) {
     throw new Error(

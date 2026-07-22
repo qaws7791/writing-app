@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { adminAuthSessions, adminAuthUsers } from "@workspace/db/schema"
+import { adminAuthSessions, adminAuthUsers } from "@workspace/auth/schema"
 
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
+import { runApplicationMigrations } from "@/db/migrate"
 
 describe("관리자 session revoker", () => {
   it("대상 관리자의 모든 session만 삭제한다", async () => {
@@ -12,7 +12,7 @@ describe("관리자 session revoker", () => {
     const now = new Date("2026-07-18T00:00:00.000Z")
 
     try {
-      runBaselineMigration(database.sqlite)
+      runApplicationMigrations(database.sqlite)
       database.db
         .insert(adminAuthUsers)
         .values([

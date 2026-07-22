@@ -19,6 +19,7 @@ import {
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 import type { ContentModule } from "@workspace/content/module"
+import { normalizeVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
@@ -33,7 +34,6 @@ import type {
   SessionResolver,
 } from "@workspace/identity/sessions"
 import type { LearningModule } from "@workspace/learning/module"
-import { runLearningSchemaMigration } from "@workspace/learning/migration"
 import { createLearningReportingQuery } from "@workspace/learning/reporting"
 import {
   createAppLogger,
@@ -73,6 +73,7 @@ import {
   createResourceObjectStorage,
 } from "@/composition/resource-library-module.composition"
 import type { ApiEnv } from "@/config/env"
+import { runApplicationMigrations } from "@/db/migrate"
 import type { AdminRouteGroup } from "@/http/admin-route-group"
 import { createApiHealthProbe, type ApiHealthProbe } from "@/runtime/api-health"
 import { systemClock } from "@/runtime/system-clock"
@@ -143,7 +144,9 @@ export async function createContainer(
     )
     const closeDatabase = onceAsync(database.close)
     cleanup.register("database", closeDatabase)
-    runLearningSchemaMigration(database.sqlite)
+    runApplicationMigrations(database.sqlite, {
+      normalizeVersionedStepContent: normalizeVersionedStepContentOrThrow,
+    })
 
     const eventBus = createInMemoryEventBus<WorkspaceEventMap>()
     const eventSubscriptions = new Set<() => void>()
@@ -232,7 +235,6 @@ export async function createContainer(
       eventIdGenerator,
       learningReport: learningReporting,
       logger,
-      sqlite: database.sqlite,
     })
     identityBridge.bind(identity)
     const learnerSessionResolver = identity.createLearnerSessionResolver(
@@ -251,7 +253,6 @@ export async function createContainer(
         write?.call(logger, event, "ai.feedback.attempt.transition")
       },
       provider: aiFeedbackProvider,
-      sqlite: database.sqlite,
     })
     const learning = composeLearningModule({
       aiFeedback: aiFeedback.application,
@@ -263,7 +264,6 @@ export async function createContainer(
       eventIdGenerator,
       identity,
       logger,
-      sqlite: database.sqlite,
     })
     const resourceLibrary = composeResourceLibraryModule({
       assetIdGenerator: createPrefixedIdGenerator<ResourceAssetId>(
@@ -283,7 +283,6 @@ export async function createContainer(
         idGenerator
       ),
       logger,
-      sqlite: database.sqlite,
       storage,
     })
     const operations = composeOperationsModule({
@@ -302,7 +301,6 @@ export async function createContainer(
         idGenerator
       ),
       resourceLibrary,
-      sqlite: database.sqlite,
     })
     closeOperationsAi = operations.closeAi
 
@@ -327,7 +325,6 @@ export async function createContainer(
         ),
         resourceLibrary,
         sessionResolver: adminSessionResolver,
-        sqlite: database.sqlite,
       },
       operations
     )

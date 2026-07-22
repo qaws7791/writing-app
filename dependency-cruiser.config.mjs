@@ -142,8 +142,8 @@ const config = {
       from: {
         path: "^(apps|packages)/",
         pathNot: [
-          "^apps/api/src/(composition|scripts)/",
-          "^packages/infra/db/src/(migrations|seeds)/",
+          "^apps/api/src/db/(schema|seed)\\.ts$",
+          "^apps/api/src/scripts/",
           "^packages/modules/[^/]+/src/infrastructure/persistence/",
         ],
       },

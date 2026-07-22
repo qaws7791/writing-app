@@ -7,7 +7,9 @@
     "audit:admin-auth": "bun src/scripts/admin-auth-audit.ts",
     "build": "bun build src/main.ts --target=bun --outdir=dist",
     "db:backup": "bun src/scripts/backup-database.ts",
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "bun src/scripts/migrate-database.ts",
+    "db:reconcile": "bun src/scripts/reconcile-database.ts",
     "db:reset": "bun src/scripts/reset-database.ts",
     "db:seed": "bun src/scripts/seed-database.ts",
     "dev": "cd ../.. && bun --env-file=apps/api/.env --watch apps/api/src/main.ts",
@@ -46,6 +48,7 @@
   "devDependencies": {
     "@types/bun": "catalog:",
     "@workspace/typescript-config": "workspace:*",
+    "drizzle-kit": "^0.31.0",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"

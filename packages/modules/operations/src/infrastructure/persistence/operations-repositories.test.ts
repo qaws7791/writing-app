@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
 import type {
   AdminId,
   AiChangeProposalId,
@@ -135,7 +135,7 @@ async function withTemporaryOperationsDatabase(
   const directory = mkdtempSync(join(tmpdir(), "writing-app-operations-"))
   const client = createWritingAppDatabase(join(directory, "operations.sqlite"))
   try {
-    runBaselineMigration(client.sqlite)
+    runBaselineTestMigration(client.sqlite)
     client.sqlite
       .query<unknown, [string, string, string, number, number]>(`
         INSERT INTO admin_user (
