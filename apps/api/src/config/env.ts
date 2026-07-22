@@ -1,6 +1,7 @@
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { parseEnv, type AppEnvInput } from "@workspace/env/parse-env"
-import { z } from "@/http/platform/zod"
+import { shouldUsePrettyLogging } from "@workspace/observability/logger"
+import { z } from "@workspace/http-platform/zod"
 
 import {
   normalizeApiHostAuthority,
@@ -22,6 +23,8 @@ export type ApiEnv = {
   readonly googleClientSecret: string | undefined
   readonly learnerAuthSecret: string
   readonly learnerCookieDomain: string | undefined
+  readonly logLevel: string
+  readonly logPretty: boolean
   readonly nodeEnv: "development" | "test" | "production"
   readonly openAiApiKey: string | undefined
   readonly openAiModel: string
@@ -77,6 +80,11 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     googleClientSecret: env.GOOGLE_CLIENT_SECRET,
     learnerAuthSecret: env.LEARNER_AUTH_SECRET,
     learnerCookieDomain: env.LEARNER_AUTH_COOKIE_DOMAIN,
+    logLevel: input["LOG_LEVEL"]?.trim() || "info",
+    logPretty: shouldUsePrettyLogging({
+      LOG_PRETTY: input["LOG_PRETTY"],
+      NODE_ENV: env.NODE_ENV,
+    }),
     nodeEnv: env.NODE_ENV,
     openAiApiKey: env.OPENAI_API_KEY,
     openAiModel: env.OPENAI_MODEL,

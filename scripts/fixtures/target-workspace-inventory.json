@@ -1,0 +1,29 @@
+{
+  "apps": ["apps/admin", "apps/api", "apps/storybook", "apps/web"],
+  "packages": [
+    "packages/config/env",
+    "packages/config/nextjs-config",
+    "packages/config/typescript-config",
+    "packages/infra/ai",
+    "packages/infra/auth",
+    "packages/infra/db",
+    "packages/infra/event-bus",
+    "packages/infra/http-client",
+    "packages/infra/http-platform",
+    "packages/infra/observability",
+    "packages/infra/storage",
+    "packages/modules/ai-feedback",
+    "packages/modules/content",
+    "packages/modules/identity",
+    "packages/modules/learning",
+    "packages/modules/operations",
+    "packages/modules/resource-library",
+    "packages/shared/contracts",
+    "packages/shared/errors",
+    "packages/shared/event-contracts",
+    "packages/shared/kernel",
+    "packages/shared/resource-document",
+    "packages/shared/types",
+    "packages/shared/ui"
+  ]
+}

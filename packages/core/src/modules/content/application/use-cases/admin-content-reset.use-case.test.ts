@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
-import type { AdminContentResetResultDto } from "@workspace/contracts/admin/content-data"
-import { adminIdSchema } from "@workspace/contracts/admin/identity-data"
+import type { AdminContentResetResultDto } from "@workspace/contracts/operations/content-reset-data"
+import { adminIdSchema } from "@workspace/contracts/identity/data"
 import type { ContentResetRepository } from "#core/modules/content/application/ports/admin-content.repository"
 import { createAdminContentResetUseCase } from "#core/modules/content/application/use-cases/admin-content-reset.use-case"
 

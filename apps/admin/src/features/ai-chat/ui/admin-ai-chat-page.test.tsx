@@ -15,6 +15,7 @@ import type {
   AdminAiChatConversationList,
 } from "@/features/ai-chat/model/admin-ai-chat"
 import { conversationIdSchema } from "@/features/ai-chat/model/conversation-id"
+import { messageIdSchema } from "@workspace/contracts/identity/admin-ids"
 
 const { replaceMock } = vi.hoisted(() => ({ replaceMock: vi.fn() }))
 
@@ -34,13 +35,13 @@ const conversationDetail: AdminAiChatConversationDetail = {
     {
       content: "강의 소개 문구를 써줘",
       createdAt: "2026-06-14T03:00:00.000Z",
-      id: "message-1",
+      id: messageIdSchema.parse("message-1"),
       role: "user",
     },
     {
       content: "학습 목표가 보이는 소개 문구입니다.",
       createdAt: "2026-06-14T03:01:00.000Z",
-      id: "message-2",
+      id: messageIdSchema.parse("message-2"),
       role: "assistant",
     },
   ],
@@ -91,7 +92,7 @@ describe("AdminAiChatPage", () => {
         {
           content: "두 번째 메시지",
           createdAt: "2026-06-14T04:00:00.000Z",
-          id: "message-3",
+          id: messageIdSchema.parse("message-3"),
           role: "user" as const,
         },
       ],

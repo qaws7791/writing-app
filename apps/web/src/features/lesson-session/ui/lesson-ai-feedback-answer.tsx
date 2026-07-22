@@ -1,6 +1,6 @@
 "use client"
 
-import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning"
+import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning/learner-content"
 import { AiFeedbackAnswer } from "@workspace/ui/components/lesson/ai-feedback-answer"
 
 import { useLessonDraftText } from "@/features/lesson-session/hooks/use-lesson-draft-text"

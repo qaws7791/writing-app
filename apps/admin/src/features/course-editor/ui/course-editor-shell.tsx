@@ -5,9 +5,9 @@ import { useEffect, useMemo, useReducer, useState, useTransition } from "react"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-  type LessonStepId,
   unitIdSchema,
-} from "@workspace/contracts/content"
+} from "@workspace/contracts/content/ids"
+import type { LessonStepId } from "@workspace/types/ids"
 
 import {
   adminCourseEditorSchema,

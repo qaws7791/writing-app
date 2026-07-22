@@ -4,9 +4,10 @@ import {
   adminAiChatConversationDetailDtoSchema,
   type AdminAiChatConversationDetailDto,
   type AdminAiChatMessageDto,
-} from "@workspace/contracts/admin"
-import { conversationIdSchema } from "@workspace/contracts/admin/ai-chat-data"
-import { adminIdSchema } from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/operations/admin-ai-chat"
+import { conversationIdSchema } from "@workspace/contracts/operations/ai-chat-data"
+import { messageIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { adminIdSchema } from "@workspace/contracts/identity/data"
 import { adminRoles, type AiChatRepository } from "@workspace/core/admin"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
@@ -56,7 +57,7 @@ const completedConversationDetail =
 const assistantMessage: AdminAiChatMessageDto = {
   content: "바로 사용할 수 있는 소개 문구입니다.",
   createdAt: testNow.toISOString(),
-  id: "message-2",
+  id: messageIdSchema.parse("message-2"),
   role: "assistant",
 }
 

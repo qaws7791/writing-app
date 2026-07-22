@@ -10,14 +10,14 @@
 
 ## 경계
 
-- `@workspace/contracts/learning`은 공개 레슨, stable item ID 제출, 서버 평가와 학습 상태 전이 계약을 소유한다.
+- `@workspace/contracts/learning/learner-content`와 `@workspace/contracts/learning/learner-transition`은 공개 레슨, stable item ID 제출, 서버 평가와 학습 상태 전이 계약을 소유한다.
 - `packages/core`는 채점, 순서, 잠금, 진도, 레슨·코스 완료와 AI 피드백 전이를 소유한다.
 - 학습 시작 정책은 lesson scope, 잠금, 기존 진행과 정렬된 step ID snapshot만 받아 rejection·start·replay와 readonly effect를 결정한다. Drizzle repository는 한 transaction에서 load → decide → apply만 수행한다.
 - 일반 단계 완료 정책은 rejection·retry·replay·step/lesson acceptance를 구분하고, 답안 저장 → step/lesson 전진 → 필요한 course 완료 → 활동 집계 effect를 SQL·table 이름 없이 계획한다. interpreter는 이 순서를 한 transaction에서 적용한다.
 - `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event, 화면 전환과 시각 컴포넌트 조립만 소유한다.
 - `apps/web/src/features/lesson-session/model/lesson-match-presentation.ts`와 `ui/lesson-match-answer.tsx`는 매칭 choice ID, 결정적 shuffle, pending·일대일 selection 전이, 정답 tone과 stable item-ID payload를 소유한다.
 - `apps/web/src/features/lesson-session/api/lesson-draft-storage.ts`는 사용자별 `v2` key, 20,000자 상한, 메모리 cache, legacy 정리와 cross-tab 무효화를 소유한다.
-- `packages/ui/src/components/lesson`은 API 계약과 채점 규칙을 import하지 않는 순수 props 기반 시각 컴포넌트만 제공한다. `MatchAnswer`는 controlled choice·connection·pending 값과 선택 callback을 받아 버튼 접근성과 연결선 DOM 측정만 담당한다.
+- `packages/shared/ui/src/components/lesson`은 API 계약과 채점 규칙을 import하지 않는 순수 props 기반 시각 컴포넌트만 제공한다. `MatchAnswer`는 controlled choice·connection·pending 값과 선택 callback을 받아 버튼 접근성과 연결선 DOM 측정만 담당한다.
 - `apps/admin` 코스 편집기는 내부 콘텐츠 계약을 검증하고 10개 스텝 편집 폼과 학습자 미리보기를 제공한다.
 
 ## 학습자 동작

@@ -1,0 +1,35 @@
+{
+  "name": "@workspace/http-platform",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#http-platform/*": "./src/*"
+  },
+  "exports": {
+    "./context": "./src/context.ts",
+    "./core": "./src/core/index.ts",
+    "./errors": "./src/errors/index.ts",
+    "./openapi": "./src/openapi.ts",
+    "./request-logging": "./src/request-logging.middleware.ts",
+    "./security": "./src/security/index.ts",
+    "./zod": "./src/zod.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "catalog:",
+    "@workspace/contracts": "workspace:*",
+    "@workspace/observability": "workspace:*",
+    "hono": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

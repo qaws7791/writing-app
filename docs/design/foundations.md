@@ -4,15 +4,15 @@
 
 ## 적용 범위
 
-- 공통 컴포넌트 토큰: `packages/ui/src/styles/`
+- 공통 컴포넌트 토큰: `packages/shared/ui/src/styles/`
 - 학습자 앱 스타일: `apps/web/src/app/globals.css`
 - 어드민 앱 스타일: `apps/admin/src/app/globals.css`
 
-학습자 앱과 어드민 앱은 같은 제품 시각 언어를 사용한다. 색상, radius, font, motion의 기준은 `packages/ui`에 두고, 각 앱의 `globals.css`는 화면별 조합과 레이아웃 보정만 담당한다.
+학습자 앱과 어드민 앱은 같은 제품 시각 언어를 사용한다. 색상, radius, font, motion의 기준은 `packages/shared/ui`에 두고, 각 앱의 `globals.css`는 화면별 조합과 레이아웃 보정만 담당한다.
 
 ## 토큰 구조
 
-`@workspace/ui`는 Tailwind CSS 4, Base UI 기반 primitive, 글결 제품 토큰을 사용한다. 토큰은 `packages/ui/src/styles/tokens/` 아래 reference, semantic, component, radius, motion으로 분리하고, `globals.css`가 entrypoint다.
+`@workspace/ui`는 Tailwind CSS 4, Base UI 기반 primitive, 글결 제품 토큰을 사용한다. 토큰은 `packages/shared/ui/src/styles/tokens/` 아래 reference, semantic, component, radius, motion으로 분리하고, `globals.css`가 entrypoint다.
 
 ## Semantic Color
 

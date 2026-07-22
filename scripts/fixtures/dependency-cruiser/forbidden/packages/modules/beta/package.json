@@ -1,0 +1,7 @@
+{
+  "name": "@fixture/beta",
+  "private": true,
+  "imports": {
+    "#beta/*": "./src/*"
+  }
+}

@@ -1,9 +1,9 @@
 import {
   completeLearnerStepBodySchema,
   completeLearnerStepParamsSchema,
-  learnerIdSchema,
   startLearnerLessonBodySchema,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-transition"
+import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 
 export const startLessonBodySchema = startLearnerLessonBodySchema
 export const completeStepBodySchema = completeLearnerStepBodySchema

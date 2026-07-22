@@ -1,5 +1,5 @@
 {
-  "extends": "@workspace/config/typescript/base.json",
+  "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ESNext",

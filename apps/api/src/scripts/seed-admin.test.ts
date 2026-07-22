@@ -4,8 +4,11 @@ import {
   type AdminAuthRuntime,
 } from "@workspace/auth/admin/server"
 import { adminRoles } from "@workspace/core/admin"
-import { adminAuthUsers, type WritingAppDatabase } from "@workspace/db"
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { adminAuthUsers } from "@workspace/auth/schema"
+import {
+  createInMemoryWritingAppDatabase,
+  type WritingAppDatabase,
+} from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"

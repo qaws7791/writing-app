@@ -3,7 +3,7 @@ import type {
   LessonId,
   LessonStepId,
   UnitId,
-} from "@workspace/contracts/content"
+} from "@workspace/types/ids"
 
 export type NewAdminCourseContentIds = {
   readonly courseId: CourseId

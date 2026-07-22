@@ -1,5 +1,5 @@
-import type { LessonStepDto } from "@workspace/contracts/content"
-import type { LessonStepId } from "@workspace/contracts/content/content.ids"
+import type { LessonStepDto } from "@workspace/contracts/content/course"
+import type { LessonStepId } from "@workspace/contracts/content/ids"
 import type { LearnerStepSubmission } from "@workspace/contracts/learning/step-data"
 
 import type {
@@ -8,7 +8,7 @@ import type {
   LearnerTransitionError,
   PrepareLearnerAiFeedbackCommand,
 } from "#core/modules/learning/domain/learner-transition"
-import { err, ok, type Result } from "#core/shared/result"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 type AiFeedbackStepSnapshot = {
   readonly content: LessonStepDto

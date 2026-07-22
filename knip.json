@@ -1,0 +1,86 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "exclude": ["cycles", "duplicates"],
+  "ignore": ["scripts/fixtures/dependency-cruiser/**"],
+  "playwright": false,
+  "ignoreFiles": [
+    "dependency-cruiser.config.mjs",
+    "e2e/fixture-server.ts",
+    "playwright.ui-style.config.ts"
+  ],
+  "workspaces": {
+    ".": {
+      "entry": [
+        "e2e/**/*.test.ts",
+        "e2e/fixture-server.ts",
+        "dependency-cruiser.config.mjs",
+        "playwright.config.ts",
+        "playwright.ui-style.config.ts",
+        "scripts/**/*.test.ts",
+        "scripts/check-architecture.ts",
+        "scripts/run-e2e.ts"
+      ],
+      "project": [
+        "e2e/**/*.{ts,tsx}",
+        "scripts/**/*.{ts,tsx,mjs}",
+        "*.config.{ts,mjs}"
+      ],
+      "ignoreDependencies": ["dependency-cruiser"]
+    },
+    "apps/api": {
+      "entry": [
+        "src/scripts/setup-e2e-content-database.ts",
+        "src/scripts/setup-e2e-database.ts",
+        "src/test-support/learner-api-shutdown-process.ts"
+      ]
+    },
+    "apps/admin": {
+      "ignoreDependencies": [
+        "@tailwindcss/typography",
+        "tailwindcss",
+        "tw-animate-css"
+      ]
+    },
+    "apps/storybook": {
+      "ignoreDependencies": ["react-docgen-typescript"]
+    },
+    "apps/web": {
+      "ignoreDependencies": [
+        "@tailwindcss/typography",
+        "tailwindcss",
+        "tw-animate-css"
+      ]
+    },
+    "apps/*": {
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/*": {
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/core": {
+      "entry": ["src/**/*.typecheck.ts"]
+    },
+    "packages/modules/*": {
+      "entry": ["src/**/*.typecheck.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/infra/*": {
+      "entry": ["src/**/*.typecheck.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/shared/*": {
+      "entry": ["src/**/*.typecheck.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/config/*": {},
+    "packages/config/env": {
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/config/nextjs-config": {
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/config/typescript-config": {
+      "ignoreUnresolved": ["next"]
+    }
+  }
+}

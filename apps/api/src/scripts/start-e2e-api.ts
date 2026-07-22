@@ -1,14 +1,15 @@
 import { serve } from "bun"
 
-import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback"
+import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
 import type { AiFeedbackProvider } from "@workspace/core/ai-feedback"
+import { ok } from "@workspace/kernel/result"
 
 import { createApiRuntime } from "@/api-runtime"
 import { createApp } from "@/app"
 import { parseApiEnv } from "@/config/env"
 import { createAdminApp } from "@/http/admin-app"
 import { createUnifiedApp } from "@/http/unified-app"
-import { createAppLogger } from "@/observability/app-logger"
+import { createAppLogger } from "@workspace/observability/logger"
 import {
   createUnifiedApiServerLifecycle,
   registerUnifiedApiShutdownSignals,
@@ -24,9 +25,8 @@ if (env.nodeEnv !== "test" || !env.testAuthEnabled) {
 
 const provider: AiFeedbackProvider = {
   async createFeedback() {
-    return {
-      kind: "ok",
-      value: aiFeedbackPayloadSchema.parse({
+    return ok(
+      aiFeedbackPayloadSchema.parse({
         improvements: ["근거를 한 문장 더 구체화해 보세요."],
         nextAction: "같은 주장을 더 짧게 다시 써보세요.",
         score: 90,
@@ -34,14 +34,14 @@ const provider: AiFeedbackProvider = {
         showScore: true,
         strengths: ["핵심 장점을 명확하게 표현했습니다."],
         summary: "서버 상태 전이의 장점을 잘 설명했습니다.",
-      }),
-    }
+      })
+    )
   },
 }
 const runtime = createApiRuntime({
   aiFeedbackProvider: provider,
   env,
-  logger: createAppLogger(),
+  logger: createAppLogger({ level: env.logLevel, pretty: env.logPretty }),
 })
 const unifiedFetch = (() => {
   try {

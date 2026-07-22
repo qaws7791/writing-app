@@ -3,7 +3,7 @@
 import {
   adminLegalSettingsRequestSchema,
   adminNoticeSettingsRequestSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/operations/admin-settings"
 
 import { createAdminSettingsDal } from "@/features/settings-management/server/admin-settings-dal"
 import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"

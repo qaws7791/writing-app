@@ -1,4 +1,4 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 
 export const adminRouteGroupOrder = Object.freeze([
   "aiChat",

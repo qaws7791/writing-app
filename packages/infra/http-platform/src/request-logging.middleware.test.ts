@@ -1,0 +1,192 @@
+import { Hono } from "hono"
+import { describe, expect, it, vi } from "vitest"
+
+import {
+  createRequestLoggingMiddleware,
+  normalizeExternalRequestId,
+} from "#http-platform/request-logging.middleware"
+import type { RequestLogEvent } from "@workspace/observability/request-logger"
+
+describe("Hono request logging middleware", () => {
+  it("외부 request id와 서버 request id를 분리한다", async () => {
+    const events: RequestLogEvent[] = []
+    const createRequestId = vi.fn(() => "generated-request-id")
+    const readMonotonicTimeMs = createMonotonicClock([10.2, 18.8])
+    const app = new Hono()
+
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId,
+        logRequest: (event) => events.push(event),
+        readMonotonicTimeMs,
+      })
+    )
+    app.get("/health", (context) => context.text("ok", 202))
+
+    const response = await app.request("/health", {
+      headers: {
+        "x-request-id": "incoming-request-id",
+      },
+    })
+
+    expect(response.headers.get("x-request-id")).toBe("generated-request-id")
+    expect(createRequestId).toHaveBeenCalledOnce()
+    expect(events).toEqual([
+      {
+        audience: "learner",
+        durationMs: 9,
+        method: "GET",
+        path: "/health",
+        externalRequestId: "incoming-request-id",
+        requestId: "generated-request-id",
+        status: 202,
+      },
+    ])
+  })
+
+  it("초장문과 제어 문자가 있는 외부 request id는 로그에서 제외한다", async () => {
+    const events: RequestLogEvent[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "server-request-id",
+        logRequest: (event) => events.push(event),
+      })
+    )
+    app.get("/health", (context) => context.text("ok"))
+
+    await app.request("/health", {
+      headers: { "x-request-id": "a".repeat(129) },
+    })
+
+    expect(events[0]).not.toHaveProperty("externalRequestId")
+    expect(events[0]?.requestId).toBe("server-request-id")
+    expect(normalizeExternalRequestId("line\nbreak")).toBeUndefined()
+  })
+
+  it("인증 middleware가 설정한 actor를 완료 로그에 보강한다", async () => {
+    const events: RequestLogEvent[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "server-request-id",
+        logRequest: (event) => events.push(event),
+        readActor: () => ({ id: "user-1", type: "learner" }),
+      })
+    )
+    app.get("/profile", (context) => context.text("ok"))
+
+    await app.request("/profile")
+
+    expect(events[0]).toMatchObject({
+      actorId: "user-1",
+      actorType: "learner",
+      audience: "learner",
+    })
+  })
+
+  it("제품 정책을 모르는 observer에 request context를 전달한다", async () => {
+    const observations: unknown[] = []
+    const app = new Hono()
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "admin",
+        createRequestId: () => "request-id",
+        logRequest: () => undefined,
+        observeRequest: (observation) => observations.push(observation),
+      })
+    )
+    app.get("/health", (context) => context.text("ok"))
+
+    await app.request("/health")
+
+    expect(observations).toEqual([
+      expect.objectContaining({ actor: undefined, requestId: "request-id" }),
+    ])
+  })
+
+  it("request id가 없으면 주입된 generator로 새 id를 만들고 response header에 싣는다", async () => {
+    const events: RequestLogEvent[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "generated-request-id",
+        logRequest: (event) => events.push(event),
+        readMonotonicTimeMs: createMonotonicClock([1, 1]),
+      })
+    )
+    app.get("/courses", (context) => context.json({ ok: true }))
+
+    const response = await app.request("/courses")
+
+    expect(response.headers.get("x-request-id")).toBe("generated-request-id")
+    expect(events[0]).toMatchObject({
+      audience: "learner",
+      durationMs: 0,
+      method: "GET",
+      path: "/courses",
+      requestId: "generated-request-id",
+      status: 200,
+    })
+  })
+
+  it("route가 예외를 던져도 finally에서 요청 로그를 남긴다", async () => {
+    const events: RequestLogEvent[] = []
+    const app = new Hono()
+
+    app.onError((_error, context) => context.text("failed", 500))
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "failed-request-id",
+        logRequest: (event) => events.push(event),
+        readMonotonicTimeMs: createMonotonicClock([2, 7]),
+      })
+    )
+    app.get("/boom", () => {
+      throw new Error("boom")
+    })
+
+    const response = await app.request("/boom")
+
+    expect(response.status).toBe(500)
+    expect(events).toEqual([
+      {
+        audience: "learner",
+        durationMs: 5,
+        method: "GET",
+        path: "/boom",
+        requestId: "failed-request-id",
+        status: 500,
+      },
+    ])
+  })
+})
+
+function createMonotonicClock(values: readonly number[]): () => number {
+  let index = 0
+
+  return () => {
+    const value = values[index]
+
+    if (value === undefined) {
+      throw new Error("No monotonic clock value is available")
+    }
+
+    index += 1
+    return value
+  }
+}

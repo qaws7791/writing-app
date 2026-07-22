@@ -1,11 +1,11 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminCourseEditorDocumentSchema,
   adminPublishCourseResultSchema,
-} from "@workspace/contracts/admin/content-data"
-import { courseIdSchema } from "@workspace/contracts/content"
+} from "@workspace/contracts/content/admin-data"
+import { courseIdSchema } from "@workspace/contracts/content/ids"
 import type { AdminCourseUseCase } from "@workspace/core/content"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {

@@ -4,9 +4,9 @@ import { describe, expect, it, vi } from "vitest"
 
 import { HomePage } from "@/features/learner-home/ui/home-page"
 import { HomeProgressClient } from "@/features/learner-home/ui/home-progress-client"
-import { learnerProgressPageSchema } from "@workspace/contracts/learning"
-import type { LearnerProfileResponse } from "@workspace/contracts/learning"
-import { httpApiOk as apiOk } from "@workspace/http-client"
+import { learnerProgressPageSchema } from "@workspace/contracts/learning/learner-content"
+import type { LearnerProfileResponse } from "@workspace/contracts/learning/learner-api"
+import { httpApiOk as apiOk } from "@workspace/http-client/api-result"
 import type { LearnerHomeApi } from "@/features/learner-home/api/learner-home-api"
 
 const profileStats: LearnerProfileResponse["stats"] = {

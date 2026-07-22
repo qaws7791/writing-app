@@ -1,4 +1,5 @@
 import type { ResourceTreeCommandRejection } from "#core/modules/resource-library/application/resource-library-error"
+import type { AdminId } from "@workspace/types/ids"
 import type {
   ResourceBreadcrumbItem,
   ResourceDocumentId,
@@ -9,7 +10,7 @@ import type {
 
 export type ResourceDocumentActor = {
   readonly email: string
-  readonly id: string
+  readonly id: AdminId
   readonly name: string
 }
 

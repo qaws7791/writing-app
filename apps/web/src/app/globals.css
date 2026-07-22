@@ -5,7 +5,7 @@
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:is(.dark *));
 @source "../**/*.{ts,tsx}";
-@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+@source "../../../../packages/shared/ui/src/**/*.{ts,tsx}";
 
 @keyframes landing-marquee-forward {
   from {

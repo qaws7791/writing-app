@@ -1,5 +1,5 @@
-import type { ConversationId } from "@workspace/contracts/admin/ai-chat-data"
-import type { AdminId } from "@workspace/contracts/admin/identity-data"
+import type { ConversationId } from "@workspace/contracts/operations/ai-chat-data"
+import type { AdminId } from "@workspace/contracts/identity/data"
 
 export type AiChatRequestGuard = {
   readonly acquire: (input: {
@@ -10,7 +10,7 @@ export type AiChatRequestGuard = {
   }) => AiChatRequestPermit
 }
 
-export type AiChatRequestPermit =
+type AiChatRequestPermit =
   | { readonly kind: "accepted"; readonly release: () => void }
   | {
       readonly kind: "rejected"

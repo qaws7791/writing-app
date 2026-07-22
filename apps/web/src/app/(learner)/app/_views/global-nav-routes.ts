@@ -1,4 +1,4 @@
-export const globalNavRoutePaths = {
+const globalNavRoutePaths = {
   home: "/app",
   learn: "/app/courses",
   profile: "/app/profile",

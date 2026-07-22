@@ -25,6 +25,7 @@ import {
   adminResourceDocuments,
   adminResourceNodes,
 } from "@workspace/db/schema"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 
 type DatabaseTransaction = Parameters<
   Parameters<WritingAppDatabase["transaction"]>[0]
@@ -289,7 +290,7 @@ function readResourceDocument(
     createdAt: new Date(row.created_at),
     createdBy: {
       email: row.created_by_email,
-      id: row.created_by_id,
+      id: adminIdSchema.parse(row.created_by_id),
       name: row.created_by_name,
     },
     id: toResourceDocumentId(row.id),
@@ -300,7 +301,7 @@ function readResourceDocument(
     updatedAt: new Date(row.updated_at),
     updatedBy: {
       email: row.updated_by_email,
-      id: row.updated_by_id,
+      id: adminIdSchema.parse(row.updated_by_id),
       name: row.updated_by_name,
     },
     version: row.version,

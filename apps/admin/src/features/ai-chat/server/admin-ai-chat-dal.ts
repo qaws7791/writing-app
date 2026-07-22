@@ -3,7 +3,7 @@ import type { AdminApiResult } from "@/shared/http/admin-api-result"
 import {
   adminAiChatConversationDetailDtoSchema,
   adminAiChatConversationListDtoSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/operations/admin-ai-chat"
 import type { ConversationId } from "@/features/ai-chat/model/conversation-id"
 import type {
   AdminAiChatConversationDetail,

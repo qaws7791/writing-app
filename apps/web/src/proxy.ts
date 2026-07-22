@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 
-import { createContentSecurityPolicy } from "@workspace/config/nextjs/security-headers"
+import { createContentSecurityPolicy } from "@workspace/nextjs-config/security-headers"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import { readWebCspRuntimeConfig } from "@/server/env/runtime-config"
 import { readLearnerSessionTokenFromCookieHeader } from "@workspace/auth/session-token"

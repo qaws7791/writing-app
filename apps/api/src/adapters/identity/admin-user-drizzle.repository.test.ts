@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { eq } from "drizzle-orm"
 
-import { userIdSchema } from "@workspace/contracts/admin/identity-data"
+import { userIdSchema } from "@workspace/contracts/identity/data"
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { authUsers, learnerProfiles } from "@workspace/db/schema"

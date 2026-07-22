@@ -2,7 +2,7 @@ import {
   adminRoles,
   type AdminId,
   type AdminRole,
-} from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/identity/data"
 
 export type AdminActor = {
   readonly id: AdminId

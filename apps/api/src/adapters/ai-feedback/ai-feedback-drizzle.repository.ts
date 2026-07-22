@@ -1,7 +1,7 @@
 import { and, count, eq, inArray, lte } from "drizzle-orm"
 
 import type { AiFeedbackRepository } from "@workspace/core/ai-feedback"
-import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback"
+import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   aiFeedbackAttempts,

@@ -3,12 +3,12 @@ import { z } from "zod"
 import {
   lessonStepDtoSchema,
   type LessonStepDto,
-} from "@workspace/contracts/content"
+} from "@workspace/contracts/content/course"
 
 const lessonSummarySchema = z.array(z.string())
 const persistedStepContentSchema = z.object({ type: z.string() }).passthrough()
 
-export type LearnerLessonPersistedStepRow = {
+type LearnerLessonPersistedStepRow = {
   readonly contentJson: string
   readonly id: string
   readonly sortOrder: number
@@ -21,7 +21,7 @@ export type LearnerLessonPersistedRowBundle = {
   readonly summaryJson: string
 }
 
-export type DecodedLearnerLessonPersistedData = {
+type DecodedLearnerLessonPersistedData = {
   readonly steps: readonly LessonStepDto[]
   readonly summary: readonly string[]
 }

@@ -1,18 +1,18 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminArchiveCourseResultSchema,
   adminCourseListDtoSchema,
-} from "@workspace/contracts/admin/admin-courses"
+} from "@workspace/contracts/content/admin-courses"
 import {
   adminCourseDetailDtoSchema,
   adminCourseListStatusFilterSchema,
-} from "@workspace/contracts/admin/content-data"
+} from "@workspace/contracts/content/admin-data"
 import type {
   AdminCourseArchiveResult,
   AdminCourseListResult,
   AdminCourseUseCase,
 } from "@workspace/core/content"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {

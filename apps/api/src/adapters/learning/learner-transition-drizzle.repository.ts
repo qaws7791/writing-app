@@ -13,14 +13,14 @@ import {
 import {
   lessonStepDtoSchema,
   type LessonStepDto,
-} from "@workspace/contracts/content"
+} from "@workspace/contracts/content/course"
 import {
   courseIdSchema,
   lessonIdSchema,
   lessonStepIdSchema,
   type LessonId,
   type LessonStepId,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   courseCurriculumVersions,
@@ -40,8 +40,6 @@ import {
   decidePrepareAiFeedbackContext,
   decidePrepareAiFeedbackTarget,
   decideStartLesson,
-  err,
-  ok,
   planCompleteStep,
   toLearningDateKey,
   type FinalizeAiFeedbackSnapshot,
@@ -57,12 +55,12 @@ import {
   type LearnerTransitionRepository,
   type LearningDateKey,
   type PrepareLearnerAiFeedbackCommand,
-  type Result,
   type StartLessonDecision,
   type StartLessonEffect,
   type StartLessonSnapshot,
   type StartLearnerLessonCommand,
 } from "@workspace/core/learning"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 type LearningTransaction = Parameters<
   Parameters<WritingAppDatabase["transaction"]>[0]

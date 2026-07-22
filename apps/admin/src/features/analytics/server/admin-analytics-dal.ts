@@ -3,18 +3,18 @@ import type { AdminHttpTransport } from "@/shared/http/admin-http-transport"
 import {
   adminAnalyticsDtoSchema,
   adminLessonAnalyticsPageDtoSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/operations/admin-analytics"
 import type {
   AdminAnalytics,
   AdminLessonAnalyticsPage,
 } from "@/entities/admin-analytics/model/admin-analytics"
 
-export type AdminLessonAnalyticsSort =
+type AdminLessonAnalyticsSort =
   | "completionRate"
   | "courseTitle"
   | "dropOffRate"
   | "lessonTitle"
-export type AdminSortDirection = "asc" | "desc"
+type AdminSortDirection = "asc" | "desc"
 
 export type AdminAnalyticsDal = {
   readonly getAnalytics: (input: {

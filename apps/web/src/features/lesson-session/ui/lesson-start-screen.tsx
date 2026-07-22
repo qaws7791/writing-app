@@ -1,6 +1,6 @@
 "use client"
 
-import type { LearnerLesson as Lesson } from "@workspace/contracts/learning"
+import type { LearnerLesson as Lesson } from "@workspace/contracts/learning/learner-content"
 import {
   LessonIntroHeader,
   LessonShell,

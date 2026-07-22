@@ -18,7 +18,7 @@ import {
   type ProfileReader,
   type ProgressService,
 } from "@workspace/core/learning"
-import type { WritingAppDatabase } from "@workspace/db"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import { createLearnerAuthRuntime } from "@workspace/auth/learner/server"
 
 import { createLearnerAuthDatabase } from "@/adapters/auth/auth-sqlite-database"

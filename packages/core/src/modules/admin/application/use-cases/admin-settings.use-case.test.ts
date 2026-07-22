@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { adminIdSchema } from "@workspace/contracts/admin/identity-data"
-import type { AdminSettingsDto } from "@workspace/contracts/admin/settings-data"
+import { adminIdSchema } from "@workspace/contracts/identity/data"
+import type { AdminSettingsDto } from "@workspace/contracts/operations/settings-data"
 import type { SettingsRepository } from "#core/modules/admin/application/ports/admin-settings.repository"
 import { createAdminSettingsUseCase } from "#core/modules/admin/application/use-cases/admin-settings.use-case"
 

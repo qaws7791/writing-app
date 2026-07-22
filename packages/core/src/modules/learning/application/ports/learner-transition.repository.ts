@@ -8,7 +8,7 @@ import type {
   StartLearnerLessonCommand,
   StartLearnerLessonResult,
 } from "#core/modules/learning/domain/learner-transition"
-import type { Result } from "#core/shared/result"
+import type { Result } from "@workspace/kernel/result"
 
 export type LearnerTransitionRepository = {
   readonly completeAiFeedbackStep: (

@@ -1,4 +1,4 @@
-import type { AdminResourceImageMimeType } from "@workspace/contracts/admin"
+import type { AdminResourceImageMimeType } from "@workspace/contracts/resource-library/shared"
 
 const imageExtensions: Record<AdminResourceImageMimeType, string> = {
   "image/jpeg": "jpg",

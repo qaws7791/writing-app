@@ -2,9 +2,9 @@ import fs from "node:fs"
 import path from "node:path"
 
 import {
-  createRepositoryWorkspaceInventory,
+  createWorkspaceInventory,
   formatWorkspaceInventoryError,
-} from "@workspace/repository-tooling"
+} from "#scripts/workspace-inventory"
 
 type JsonRecord = Record<string, unknown>
 
@@ -155,7 +155,7 @@ function collectMarkdownFiles(): string[] {
 }
 
 function readWorkspacePackages(): Map<string, WorkspacePackage> {
-  const result = createRepositoryWorkspaceInventory(repositoryRoot)
+  const result = createWorkspaceInventory(repositoryRoot)
 
   if (result.status === "failure") {
     failures.push(...result.errors.map(formatWorkspaceInventoryError))
@@ -166,7 +166,9 @@ function readWorkspacePackages(): Map<string, WorkspacePackage> {
     result.inventory.allWorkspaces.map((workspace) => [
       workspace.name,
       {
-        exports: workspace.exportEntries.map(({ key }) => key),
+        exports: isRecord(workspace.exportsValue)
+          ? Object.keys(workspace.exportsValue)
+          : [],
         scripts: new Set(Object.keys(workspace.scripts)),
       },
     ])

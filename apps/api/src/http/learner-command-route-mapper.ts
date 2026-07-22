@@ -1,7 +1,7 @@
 import type {
   CompleteLearnerStepResult,
   LearnerAiFeedbackTransitionResult as LearnerAiFeedbackTransitionResponse,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-transition"
 import type {
   AiFeedbackServiceError,
   LearnerAiFeedbackTransitionResult,
@@ -9,10 +9,10 @@ import type {
 import type {
   CompleteLearnerStepTransitionResult,
   LearnerTransitionError,
-  Result,
   StartLearnerLessonResult,
 } from "@workspace/core/learning"
-import { AppError } from "@/http/platform/errors"
+import type { Result } from "@workspace/kernel/result"
+import { AppError } from "@workspace/http-platform/errors"
 
 type LearnerCommandError = AiFeedbackServiceError | LearnerTransitionError
 
@@ -45,7 +45,7 @@ export function unwrapLearnerAiFeedbackTransitionResult(
 function unwrapLearnerCommandResult<TValue>(
   result: Result<TValue, LearnerCommandError>
 ): TValue {
-  if (result.kind === "err") throw mapLearnerCommandError(result.error)
+  if (result.isErr()) throw mapLearnerCommandError(result.error)
 
   return result.value
 }

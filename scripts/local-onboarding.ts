@@ -101,7 +101,7 @@ export interface InspectLocalOnboardingOptions {
   readonly requireDatabase?: boolean
 }
 
-export function createLocalCredentials(): LocalCredentials {
+function createLocalCredentials(): LocalCredentials {
   return {
     adminAuthSecret: randomBytes(32).toString("base64url"),
     adminSeedPassword: `${randomBytes(24).toString("base64url")}Aa1!`,

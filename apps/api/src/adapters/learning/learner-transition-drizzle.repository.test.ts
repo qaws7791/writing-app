@@ -4,11 +4,11 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { lessonStepDtoSchema } from "@workspace/contracts/content"
+import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
 import {
   curriculumVersionIdSchema,
   learnerIdSchema,
@@ -72,14 +72,12 @@ describe("학습자 상태 전이 Drizzle repository", () => {
 
       expect(results).toEqual([
         expect.objectContaining({
-          kind: "ok",
           value: expect.objectContaining({
             currentStepId: "l1-s1",
             status: "in_progress",
           }),
         }),
         expect.objectContaining({
-          kind: "ok",
           value: expect.objectContaining({
             currentStepId: "l1-s1",
             status: "in_progress",
@@ -203,11 +201,9 @@ describe("학습자 상태 전이 Drizzle repository", () => {
 
       expect(results).toEqual([
         expect.objectContaining({
-          kind: "ok",
           value: expect.objectContaining({ kind: "lesson-completed" }),
         }),
         expect.objectContaining({
-          kind: "ok",
           value: expect.objectContaining({ kind: "lesson-completed" }),
         }),
       ])
@@ -262,7 +258,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         })
       ).resolves.toMatchObject({
         error: { kind: "lesson-locked" },
-        kind: "err",
       })
       await expect(
         repository.completeStep({
@@ -274,7 +269,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         })
       ).resolves.toMatchObject({
         error: { kind: "lesson-locked" },
-        kind: "err",
       })
       await expect(
         repository.startLesson({
@@ -286,7 +280,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         })
       ).resolves.toMatchObject({
         error: { kind: "curriculum-version-changed" },
-        kind: "err",
       })
       expect(readLearnerTransitionState(client)).toEqual(unchangedState)
 
@@ -298,7 +291,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
       })
 
       expect(result).toMatchObject({
-        kind: "ok",
         value: {
           completedSteps: 0,
           currentStepId: "l1-s1",
@@ -343,7 +335,7 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         occurredAt: now,
         userId,
       })
-      expect(started.kind).toBe("ok")
+      expect(started.isOk()).toBe(true)
 
       const steps = readInternalSteps(client, lessonId)
       const first = steps[0]
@@ -380,7 +372,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         })
       ).resolves.toMatchObject({
         error: { kind: "step-sequence-conflict" },
-        kind: "err",
       })
       expect(readLearnerTransitionState(client)).toEqual(unchangedState)
 
@@ -397,7 +388,7 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         stepId: lessonStepIdSchema.parse(first.id),
         userId,
       })
-      expect(wrong).toMatchObject({ kind: "ok", value: { kind: "retry" } })
+      expect(wrong).toMatchObject({ value: { kind: "retry" } })
       expect(readLearnerTransitionState(client)).toEqual(unchangedState)
 
       const command = {
@@ -417,14 +408,12 @@ describe("학습자 상태 전이 Drizzle repository", () => {
       const repeated = await repository.completeStep(command)
 
       expect(accepted).toMatchObject({
-        kind: "ok",
         value: {
           kind: "advanced",
           learning: { currentStepId: second.id },
         },
       })
       expect(repeated).toMatchObject({
-        kind: "ok",
         value: { kind: "advanced" },
       })
       expect(readAnswerCount(client, lessonId)).toBe(1)
@@ -466,19 +455,16 @@ describe("학습자 상태 전이 Drizzle repository", () => {
       const repeated = await repository.completeStep(command)
 
       expect(completed).toMatchObject({
-        kind: "ok",
         value: {
           kind: "lesson-completed",
           lessonCompletion: { totalSteps: 1 },
         },
       })
       expect(repeated).toMatchObject({
-        kind: "ok",
         value: { kind: "lesson-completed" },
       })
       expect(repeated).toEqual(completed)
       expect(completed).toMatchObject({
-        kind: "ok",
         value: {
           courseLearning: {
             completedLessons: 1,
@@ -546,7 +532,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
           userId,
         })
       ).resolves.toMatchObject({
-        kind: "ok",
         value: { currentStepId: "l13-s1", status: "in_progress" },
       })
       await repository.completeStep({
@@ -602,7 +587,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
       const replayed = await repository.completeStep(finalCommand)
 
       expect(completed).toMatchObject({
-        kind: "ok",
         value: {
           courseLearning: {
             completedAt: now.toISOString(),
@@ -616,7 +600,6 @@ describe("학습자 상태 전이 Drizzle repository", () => {
         },
       })
       expect(replayed).toMatchObject({
-        kind: "ok",
         value: { evaluation: null, kind: "lesson-completed" },
       })
       expect(
@@ -654,13 +637,12 @@ describe("학습자 상태 전이 Drizzle repository", () => {
       await expect(
         repository.prepareAiFeedback(command)
       ).resolves.toMatchObject({
-        kind: "ok",
         value: { answer: "학습자가 작성한 문장" },
       })
       const result = await repository.completeAiFeedbackStep(command)
       const repeated = await repository.completeAiFeedbackStep(command)
 
-      expect(result).toMatchObject({ kind: "ok" })
+      expect(result.isOk()).toBe(true)
       expect(repeated).toEqual(result)
       expect(
         client.db
@@ -747,7 +729,7 @@ async function startFirstLesson(
     occurredAt: now,
     userId,
   })
-  if (started.kind === "err" || started.value.status !== "in_progress") {
+  if (started.isErr() || started.value.status !== "in_progress") {
     throw new Error("First lesson was not started")
   }
   return {
@@ -765,7 +747,7 @@ async function completeFirstLesson(
   const result = await repository.completeStep(
     await startFirstLesson(repository)
   )
-  if (result.kind === "err" || result.value.kind !== "lesson-completed") {
+  if (result.isErr() || result.value.kind !== "lesson-completed") {
     throw new Error("First lesson was not completed")
   }
 }

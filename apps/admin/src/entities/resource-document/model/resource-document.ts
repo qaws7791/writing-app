@@ -58,12 +58,12 @@ export type AdminResourceImage = {
   readonly url: string
 }
 
-export type AdminResourceNodeMutation = { readonly node: AdminResourceTreeNode }
-export type AdminResourceTrashResult = {
+type AdminResourceNodeMutation = { readonly node: AdminResourceTreeNode }
+type AdminResourceTrashResult = {
   readonly documentCount: number
   readonly folderCount: number
 }
-export type AdminResourceRestoreResult = AdminResourceTrashResult & {
+type AdminResourceRestoreResult = AdminResourceTrashResult & {
   readonly node: AdminResourceTreeNode
 }
 export type AdminResourceSearch = {
@@ -75,30 +75,30 @@ export type AdminResourceSearch = {
     readonly version: number
   }[]
 }
-export type AdminImportResourceDocumentInput = {
+type AdminImportResourceDocumentInput = {
   readonly fileName: string
   readonly markdown: string
   readonly parentId: string | null
 }
-export type AdminImportResourceDocumentResult = {
+type AdminImportResourceDocumentResult = {
   readonly document: AdminResourceDocument
   readonly mutation: AdminResourceNodeMutation
 }
-export type AdminMoveResourceNodeInput = {
+type AdminMoveResourceNodeInput = {
   readonly destinationParentId: string | null
 }
-export type AdminRenameResourceFolderInput = { readonly name: string }
+type AdminRenameResourceFolderInput = { readonly name: string }
 export type AdminSaveResourceDocumentInput = {
   readonly contentMarkdown: string
   readonly name: string
 }
 
-export type ResourceSaveResult =
+type ResourceSaveResult =
   | { readonly status: "conflict"; readonly latest: AdminResourceDocument }
   | { readonly status: "error"; readonly message: string }
   | { readonly status: "ok"; readonly value: AdminResourceDocument }
 
-export type ResourceUploadResult =
+type ResourceUploadResult =
   | { readonly status: "error"; readonly message: string }
   | { readonly status: "ok"; readonly value: AdminResourceImage }
 

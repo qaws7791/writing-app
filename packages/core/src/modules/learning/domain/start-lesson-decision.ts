@@ -2,7 +2,7 @@ import type {
   CourseId,
   LessonId,
   LessonStepId,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
 import type {
   CurriculumVersionId,
   LearnerId,

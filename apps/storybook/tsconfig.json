@@ -1,5 +1,5 @@
 {
-  "extends": "@workspace/config/typescript/react-library.json",
+  "extends": "@workspace/typescript-config/react-library.json",
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -7,7 +7,7 @@
     "baseUrl": ".",
     "types": ["bun"],
     "paths": {
-      "#ui/*": ["../../packages/ui/src/*"],
+      "#ui/*": ["../../packages/shared/ui/src/*"],
       "#storybook/*": ["src/*"],
       "#storybook-config/*": [".storybook/*"],
       "#storybook-root/*": ["*"]

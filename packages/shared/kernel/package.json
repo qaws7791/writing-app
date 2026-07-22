@@ -1,0 +1,25 @@
+{
+  "name": "@workspace/kernel",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#kernel/*": "./src/*.ts"
+  },
+  "exports": {
+    "./clock": "./src/clock.ts",
+    "./domain-event": "./src/domain-event.ts",
+    "./result": "./src/result.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "neverthrow": "8.2.0"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

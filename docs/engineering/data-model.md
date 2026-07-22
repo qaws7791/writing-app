@@ -2,7 +2,7 @@
 
 ## 목적
 
-이 문서는 데이터 의미, 불변식과 변경 원칙을 정의한다. 현재 schema, table, column, index, migration과 seed는 `packages/db`가 소유한다.
+이 문서는 데이터 의미, 불변식과 변경 원칙을 정의한다. 현재 인증 schema는 `packages/infra/auth`, 통합 SQLite schema·migration·seed는 `packages/infra/db`가 소유한다.
 
 ## 모델 원칙
 

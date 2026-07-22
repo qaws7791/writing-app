@@ -17,7 +17,7 @@ import type {
   LearnerReadModelPage,
   LearnerReadModelRepository,
 } from "#core/modules/learning/application/ports/learner-read-model.repository"
-import { err, ok, type Result } from "#core/shared/result"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 export type LearnerContentServiceError =
   | { readonly kind: "course-not-found" }

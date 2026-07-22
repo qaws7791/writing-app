@@ -1,10 +1,10 @@
-import { AppError } from "@/http/platform/errors"
+import { AppError } from "@workspace/http-platform/errors"
 import type { Context, Input } from "hono"
 import type { z } from "zod"
 
 import type { ApiHonoEnv } from "@/context/hono-env"
 
-export type LearnerContractResponseInvalidEvent = {
+type LearnerContractResponseInvalidEvent = {
   readonly classification: "response-schema-invalid"
   readonly contractName: string
   readonly deploymentVersion: string
@@ -43,7 +43,7 @@ export function parseLearnerRouteResponse<
   })
 }
 
-export function parseLearnerResponse<TSchema extends z.ZodType>(input: {
+function parseLearnerResponse<TSchema extends z.ZodType>(input: {
   readonly contractName: string
   readonly deploymentVersion: string
   readonly logContractError?: LearnerContractErrorLogger

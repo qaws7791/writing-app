@@ -8,8 +8,8 @@ import {
   learnerCompleteStepResponseSchema,
   learnerLessonResponseSchema,
   learnerStartLessonResponseSchema,
-} from "@workspace/contracts/learning"
-import { httpApiOk as apiOk } from "@workspace/http-client"
+} from "@workspace/contracts/learning/learner-api"
+import { httpApiOk as apiOk } from "@workspace/http-client/api-result"
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

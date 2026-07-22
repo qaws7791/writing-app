@@ -1,7 +1,7 @@
 import type {
   AdminResourceTreeNodeDto,
   AdminResourceTreeScope,
-} from "@workspace/contracts/admin/resource-library-data"
+} from "@workspace/contracts/resource-library/data"
 
 import type { ResourceTreeRepository } from "#core/modules/resource-library/application/ports/resource-tree.repository"
 import type { ResourceTreeCommandResult } from "#core/modules/resource-library/application/resource-library-error"

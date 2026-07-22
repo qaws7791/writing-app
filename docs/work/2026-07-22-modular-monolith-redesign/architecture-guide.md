@@ -591,14 +591,19 @@ export type Brand<TValue, TName extends string> = TValue & {
 import type { Brand } from "#types/brand"
 
 export type AdminId = Brand<string, "AdminId">
-export type AssetId = Brand<string, "AssetId">
 export type ConversationId = Brand<string, "ConversationId">
 export type CourseId = Brand<string, "CourseId">
 export type CurriculumVersionId = Brand<string, "CurriculumVersionId">
 export type LearnerId = Brand<string, "LearnerId">
 export type LessonId = Brand<string, "LessonId">
 export type LessonStepId = Brand<string, "LessonStepId">
+export type LessonStepItemId = Brand<string, "LessonStepItemId">
+export type MessageId = Brand<string, "MessageId">
+export type ResourceAssetId = Brand<string, "ResourceAssetId">
 export type ResourceDocumentId = Brand<string, "ResourceDocumentId">
+export type ResourceFolderId = Brand<string, "ResourceFolderId">
+export type ResourceNodeId = ResourceDocumentId | ResourceFolderId
+export type UnitId = Brand<string, "UnitId">
 export type UserId = Brand<string, "UserId">
 ```
 
@@ -620,7 +625,7 @@ export type LearningError =
 ### 7.4 `@workspace/event-contracts`
 
 ```ts
-// packages/shared/event-contracts/src/index.ts
+// packages/shared/event-contracts/src/workspace-event.ts
 import type { DomainEvent } from "@workspace/kernel/domain-event"
 import type {
   CourseId,
@@ -631,25 +636,28 @@ import type {
 } from "@workspace/types/ids"
 
 export type WorkspaceEventMap = {
-  "ai-feedback.completed": DomainEvent<
+  readonly "ai-feedback.completed": DomainEvent<
     "ai-feedback.completed",
-    { learnerId: LearnerId; lessonId: LessonId }
+    { readonly learnerId: LearnerId; readonly lessonId: LessonId }
   >
-  "content.curriculum-published": DomainEvent<
+  readonly "content.curriculum-published": DomainEvent<
     "content.curriculum-published",
-    { courseId: CourseId; revision: number }
+    { readonly courseId: CourseId; readonly revision: number }
   >
-  "identity.user-status-changed": DomainEvent<
+  readonly "identity.user-status-changed": DomainEvent<
     "identity.user-status-changed",
-    { status: "active" | "deleted" | "suspended"; userId: UserId }
+    {
+      readonly status: "active" | "deleted" | "suspended"
+      readonly userId: UserId
+    }
   >
-  "learning.lesson-completed": DomainEvent<
+  readonly "learning.lesson-completed": DomainEvent<
     "learning.lesson-completed",
-    { learnerId: LearnerId; lessonId: LessonId }
+    { readonly learnerId: LearnerId; readonly lessonId: LessonId }
   >
-  "resource-library.document-saved": DomainEvent<
+  readonly "resource-library.document-saved": DomainEvent<
     "resource-library.document-saved",
-    { documentId: ResourceDocumentId; version: number }
+    { readonly documentId: ResourceDocumentId; readonly version: number }
   >
 }
 
@@ -732,7 +740,7 @@ import { ResultAsync } from "@workspace/kernel/result"
 import type {
   WorkspaceEventMap,
   WorkspaceEventName,
-} from "@workspace/event-contracts"
+} from "@workspace/event-contracts/workspace-event"
 
 export type EventDispatchError = Readonly<{
   cause: unknown

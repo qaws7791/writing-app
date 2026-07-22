@@ -8,14 +8,14 @@ import {
   learnerProfileResponseSchema,
   learnerProgressResponseSchema,
   learnerStartLessonResponseSchema,
-  type LearnerAiFeedbackTransitionResult,
   type LearnerCourseCategoriesResponse,
   type LearnerCourseDetailResponse,
   type LearnerCourseListResponse,
   type LearnerLessonResponse,
   type LearnerProfileResponse,
   type LearnerProgressResponse,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-api"
+import { type LearnerAiFeedbackTransitionResult } from "@workspace/contracts/learning/learner-transition"
 
 import {
   createOpenApiClient,

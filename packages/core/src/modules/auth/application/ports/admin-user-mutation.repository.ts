@@ -1,8 +1,8 @@
 import type {
   AdminUserDetailDto,
   UserId,
-} from "@workspace/contracts/admin/identity-data"
-import type { LearnerOperationalStatus } from "@workspace/contracts/status"
+} from "@workspace/contracts/identity/data"
+import type { LearnerOperationalStatus } from "@workspace/contracts/identity/status"
 
 export type DeleteAdminUserInput = {
   readonly now: Date

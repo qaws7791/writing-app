@@ -18,7 +18,7 @@ const expectedConfigs: readonly ExpectedComponentsConfig[] = [
       ui: "@/components/ui",
       utils: "@/lib/utils",
     },
-    filePath: "packages/ui/components.json",
+    filePath: "packages/shared/ui/components.json",
     tailwindCss: "src/styles/globals.css",
   },
   {
@@ -30,7 +30,7 @@ const expectedConfigs: readonly ExpectedComponentsConfig[] = [
       utils: "@workspace/ui/lib/utils",
     },
     filePath: "apps/web/components.json",
-    tailwindCss: "../../packages/ui/src/styles/globals.css",
+    tailwindCss: "../../packages/shared/ui/src/styles/globals.css",
   },
   {
     aliases: {

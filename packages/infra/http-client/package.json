@@ -1,0 +1,27 @@
+{
+  "name": "@workspace/http-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#http-client/*": "./src/*"
+  },
+  "exports": {
+    "./api-result": "./src/api-result.ts",
+    "./json-transport": "./src/json-transport.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:watch": "bun --bun ../../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:",
+    "zod": "catalog:"
+  }
+}

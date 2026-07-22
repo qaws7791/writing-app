@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createCourseImageUrl } from "@/entities/course/model/course-visual-assets"
 import type { CourseListFilters } from "@/features/course-catalog/model/course-list-filters"
 import { getBrowserCourseCatalogApi } from "@/features/course-catalog/api/course-catalog-api"
-import type { LearnerCourseSummary } from "@workspace/contracts/learning"
+import type { LearnerCourseSummary } from "@workspace/contracts/learning/learner-content"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   Empty,

@@ -11,7 +11,7 @@ import { createAdminDashboardDal } from "@/features/dashboard/server/admin-dashb
 import { createAdminSettingsDal } from "@/features/settings-management/server/admin-settings-dal"
 import { createAdminUsersDal } from "@/features/user-management/server/admin-users-dal"
 import type { ApiBaseUrl } from "@/shared/config/admin-runtime-config"
-import type { HttpFetch } from "@workspace/http-client"
+import type { HttpFetch } from "@workspace/http-client/json-transport"
 import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 import { userIdSchema } from "@/entities/learner-account/model/learner-account-id"
 import { courseIdSchema } from "@/entities/course/model/course-id"

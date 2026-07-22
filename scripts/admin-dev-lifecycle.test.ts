@@ -151,7 +151,7 @@ function migrateDisposableDatabase(
   environment: Record<string, string | undefined>
 ): void {
   const migration = Bun.spawnSync({
-    cmd: [process.execPath, "--filter", "@workspace/db", "db:migrate"],
+    cmd: [process.execPath, "--filter", "@workspace/api", "db:migrate"],
     cwd: repositoryRoot,
     env: environment,
     stderr: "pipe",

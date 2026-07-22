@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 @source "./.storybook/**/*.{ts,tsx}";
 @source "./src/**/*.{ts,tsx,mdx}";
-@source "../../packages/ui/src/**/*.{ts,tsx}";
+@source "../../packages/shared/ui/src/**/*.{ts,tsx}";
 
 .storybook-root {
   min-height: 100%;

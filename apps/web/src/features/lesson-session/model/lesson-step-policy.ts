@@ -1,8 +1,8 @@
+import type { LearnerLessonStep } from "@workspace/contracts/learning/learner-content"
 import type {
-  LearnerLessonStep,
   LearnerStepSubmission,
   StepEvaluation,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-transition"
 
 export type LessonStepCheckedState = StepEvaluation
 

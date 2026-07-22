@@ -1,11 +1,7 @@
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
-import type {
-  LessonId,
-  LessonStepId,
-  UnitId,
-} from "@workspace/contracts/content"
+import type { LessonId, LessonStepId, UnitId } from "@workspace/types/ids"
 
-export type CourseEditorStatus =
+type CourseEditorStatus =
   | "clean"
   | "conflict"
   | "dirty"

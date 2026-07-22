@@ -1,4 +1,4 @@
-import type { AdminDashboardDto } from "@workspace/contracts/admin/dashboard-analytics-data"
+import type { AdminDashboardDto } from "@workspace/contracts/operations/dashboard-analytics-data"
 
 export type ReadAdminDashboardInput = {
   readonly now: Date

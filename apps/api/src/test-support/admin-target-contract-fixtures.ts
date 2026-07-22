@@ -1,8 +1,8 @@
-import { adminIdSchema } from "@workspace/contracts/admin"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { adminRoles } from "@workspace/core/admin"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import {
   adminSessionExpiresAt,
@@ -24,8 +24,6 @@ import type {
   AdminTargetRouteFixture as AdminTargetContractFixture,
   AdminTargetRouteFixtureJson as AdminTargetContractFixtureJson,
 } from "@/test-support/admin-target-route-fixture"
-
-export type { AdminTargetContractFixture, AdminTargetContractFixtureJson }
 
 export type AdminTargetContractFixtureFactory = (
   scenario: string

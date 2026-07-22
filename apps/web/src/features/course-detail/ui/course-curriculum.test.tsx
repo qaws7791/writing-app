@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
 import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
-import { learnerCourseDetailSchema } from "@workspace/contracts/learning"
+import { learnerCourseDetailSchema } from "@workspace/contracts/learning/learner-content"
 
 const version = { curriculumVersionId: "c1-v1", revision: 1 }
 const course = learnerCourseDetailSchema.parse({

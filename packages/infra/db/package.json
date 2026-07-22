@@ -1,0 +1,46 @@
+{
+  "name": "@workspace/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#db/*": "./src/*"
+  },
+  "exports": {
+    "./client": "./src/client.ts",
+    "./content/content-archive-policy": "./src/content/content-archive-policy.ts",
+    "./content/curriculum-version-id": "./src/content/curriculum-version-id.ts",
+    "./content/normalize-versioned-step-content": "./src/content/normalize-versioned-step-content.ts",
+    "./database-backup": "./src/database-backup.ts",
+    "./destructive-operation-guard": "./src/destructive-operation-guard.ts",
+    "./migrations/curriculum-migration": "./src/migrations/curriculum-migration.ts",
+    "./migrations/migrate": "./src/migrations/migrate.ts",
+    "./persisted-values": "./src/persisted-values.ts",
+    "./schema": "./src/schema/index.ts",
+    "./seed": "./src/seeds/index.ts",
+    "./seeds/seed": "./src/seeds/seed.ts",
+    "./seeds/seed-content": "./src/seeds/seed-content.ts",
+    "./sqlite-database": "./src/sqlite-database.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:watch": "bun --bun ../../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/auth": "workspace:*",
+    "@workspace/contracts": "workspace:*",
+    "@workspace/types": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@workspace/typescript-config": "workspace:*",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  }
+}

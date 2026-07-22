@@ -1,7 +1,7 @@
 import type {
   LearnerProfileResponse,
   LearnerProgressResponse,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-api"
 import { BookOpenIcon, FlameIcon } from "@workspace/ui/components/icons"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 

@@ -89,9 +89,9 @@ export function validateToolchainRuntime(
   const errors: string[] = []
   const nodeMajor = Number(/^v?(\d+)\./u.exec(runtime.nodeVersion)?.[1])
 
-  if (runtime.bunVersion !== contract.bunVersion) {
+  if (!isCompatibleBunVersion(runtime.bunVersion, contract.bunVersion)) {
     errors.push(
-      `Bun ${contract.bunVersion}이 필요하지만 ${runtime.bunVersion}이 실행 중입니다.`
+      `Bun ${contract.bunVersion} 이상 같은 major가 필요하지만 ${runtime.bunVersion}이 실행 중입니다.`
     )
   }
   if (nodeMajor !== contract.nodeMajor) {
@@ -101,6 +101,29 @@ export function validateToolchainRuntime(
   }
 
   return errors
+}
+
+function isCompatibleBunVersion(
+  runtimeVersion: string,
+  minimumVersion: string
+): boolean {
+  const runtime = readSemver(runtimeVersion)
+  const minimum = readSemver(minimumVersion)
+  if (runtime === null || minimum === null || runtime[0] !== minimum[0]) {
+    return false
+  }
+
+  return (
+    runtime[1] > minimum[1] ||
+    (runtime[1] === minimum[1] && runtime[2] >= minimum[2])
+  )
+}
+
+function readSemver(version: string): readonly [number, number, number] | null {
+  const match = /^(\d+)\.(\d+)\.(\d+)$/u.exec(version)
+  return match === null
+    ? null
+    : [Number(match[1]), Number(match[2]), Number(match[3])]
 }
 
 export function validateQualityGatesToolchain(

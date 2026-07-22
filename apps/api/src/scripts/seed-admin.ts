@@ -1,12 +1,9 @@
 import { hashAuthPassword } from "@workspace/auth/password"
-import {
-  adminAuthAccounts,
-  adminAuthUsers,
-  type WritingAppDatabase,
-} from "@workspace/db"
+import { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
 import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
+  type WritingAppDatabase,
 } from "@workspace/db/client"
 
 import {

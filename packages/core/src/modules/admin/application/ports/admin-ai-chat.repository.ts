@@ -2,8 +2,8 @@ import type {
   AdminAiChatConversationDto,
   AdminAiChatMessageDto,
   ConversationId,
-} from "@workspace/contracts/admin/ai-chat-data"
-import type { AdminId } from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/operations/ai-chat-data"
+import type { AdminId } from "@workspace/contracts/identity/data"
 
 export type ReadAdminAiChatConversationsInput = {
   readonly adminId: AdminId

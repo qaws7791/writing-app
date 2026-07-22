@@ -1,4 +1,4 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminAiChatConversationDetailDtoSchema,
   adminAiChatConversationListDtoSchema,
@@ -7,19 +7,19 @@ import {
   adminAiChatStreamDoneEventSchema,
   adminAiChatStreamErrorEventSchema,
   type AdminAiChatConversationDetailDto,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/operations/admin-ai-chat"
 import {
   conversationIdSchema,
   type AdminAiChatMessageDto,
-} from "@workspace/contracts/admin/ai-chat-data"
-import type { AdminId } from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/operations/ai-chat-data"
+import type { AdminId } from "@workspace/contracts/identity/data"
 import type {
   AdminAiChatConversationHistory,
   AiChatRepository,
   ReadAdminAiChatConversationsResult,
 } from "@workspace/core/admin"
-import { privateNoStoreCacheControl } from "@/http/platform/security"
-import { z } from "@/http/platform/zod"
+import { privateNoStoreCacheControl } from "@workspace/http-platform/security"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {

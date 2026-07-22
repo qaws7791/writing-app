@@ -1,9 +1,8 @@
-import type { LessonId, LessonStepId } from "@workspace/contracts/content"
-import type { LearnerId } from "@workspace/contracts/learning/step-data"
 import type {
   AiFeedbackPayload,
   AiFeedbackResultDto,
-} from "@workspace/contracts/ai-feedback"
+} from "@workspace/contracts/ai-feedback/feedback"
+import type { LearnerId, LessonId, LessonStepId } from "@workspace/types/ids"
 import type { AiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/ports/ai-feedback.provider"
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
@@ -12,7 +11,7 @@ import {
   type AiFeedbackAttemptContext,
   type AiFeedbackAttemptTransitionEvent,
 } from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
-import { err, type Result } from "#core/shared/result"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 export type AiFeedbackServiceError =
   | {
@@ -108,7 +107,7 @@ export function createLearnerAiFeedbackTransitionService<
     async createFeedback(command, options) {
       const preparation =
         await learnerTransitionRepository.prepareAiFeedback(command)
-      if (preparation.kind === "err") return preparation
+      if (preparation.isErr()) return err(preparation.error)
       let transition: TTransitionResult | null = null
       let transitionError: TTransitionError | null = null
       const feedback = await attemptCoordinator.createAttempt(
@@ -129,7 +128,7 @@ export function createLearnerAiFeedbackTransitionService<
                 stepId: command.stepId,
                 userId: command.userId,
               })
-            if (result.kind === "err") {
+            if (result.isErr()) {
               transitionError = result.error
               return false
             }
@@ -140,14 +139,11 @@ export function createLearnerAiFeedbackTransitionService<
       )
 
       if (transitionError !== null) return err(transitionError)
-      if (feedback.kind === "err") return feedback
+      if (feedback.isErr()) return err(feedback.error)
       if (transition === null) {
         throw new Error("AI feedback transition result was not finalized")
       }
-      return {
-        kind: "ok",
-        value: { feedback: feedback.value, transition },
-      }
+      return ok({ feedback: feedback.value, transition })
     },
   }
 }

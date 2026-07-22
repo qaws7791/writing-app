@@ -1,4 +1,4 @@
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 export function positiveIntegerQuery(input: {
   readonly fallback: number

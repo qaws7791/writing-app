@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 
-import { createContentSecurityPolicy } from "@workspace/config/nextjs/security-headers"
+import { createContentSecurityPolicy } from "@workspace/nextjs-config/security-headers"
 import { readAdminCspRuntimeConfig } from "@/server/env/admin-runtime-config"
 import { adminRequestPathHeader } from "@/shared/auth/admin-request-path"
 

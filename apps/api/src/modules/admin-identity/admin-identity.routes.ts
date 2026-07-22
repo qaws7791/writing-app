@@ -1,15 +1,15 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminDeleteUserResultSchema,
   adminUserListDtoSchema,
-} from "@workspace/contracts/admin/admin-users"
-import { adminUpdateUserStatusRequestSchema } from "@workspace/contracts/admin/admin-shared"
+} from "@workspace/contracts/identity/admin-users"
+import { adminUpdateUserStatusRequestSchema } from "@workspace/contracts/identity/status"
 import {
   adminUserDetailDtoSchema,
   adminUserListStatusFilterSchema,
   adminUserSortSchema,
   userIdSchema,
-} from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/identity/data"
 import type {
   AdminUserReader,
   ReadAdminUsersResult,
@@ -19,7 +19,7 @@ import type {
   AdminUserMutationUseCase,
   AdminUserStatusUpdateResult,
 } from "@workspace/core/auth"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import { forbiddenAdminError, notFoundAdminError } from "@/admin/admin-errors"

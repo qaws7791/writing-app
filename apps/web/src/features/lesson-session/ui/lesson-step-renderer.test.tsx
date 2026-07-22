@@ -5,10 +5,8 @@ import { describe, expect, it, vi } from "vitest"
 
 import { writeLessonDraftText } from "@/features/lesson-session/api/lesson-draft-storage"
 import { LessonStepRenderer } from "@/features/lesson-session/ui/lesson-step-renderer"
-import {
-  learnerLessonStepSchema,
-  stepEvaluationSchema,
-} from "@workspace/contracts/learning"
+import { learnerLessonStepSchema } from "@workspace/contracts/learning/learner-content"
+import { stepEvaluationSchema } from "@workspace/contracts/learning/learner-transition"
 
 describe("LessonStepRenderer", () => {
   it("객관식 선택을 stable option ID 제출로 변환한다", async () => {

@@ -1,7 +1,0 @@
-{
-  "extends": "@workspace/config/typescript/base.json",
-  "compilerOptions": {
-    "types": ["node"]
-  },
-  "include": ["src/**/*.ts", "vitest.config.ts"]
-}

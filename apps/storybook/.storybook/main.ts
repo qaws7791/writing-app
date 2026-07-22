@@ -34,7 +34,7 @@ function getStorybookManualChunk(id: string) {
   const normalizedId = id.replaceAll("\\", "/")
 
   if (
-    normalizedId.includes("/packages/ui/src/") &&
+    normalizedId.includes("/packages/shared/ui/src/") &&
     !normalizedId.includes(".stories.")
   ) {
     return "workspace-ui"
@@ -112,7 +112,7 @@ const config: StorybookConfig = {
       },
       resolve: {
         alias: {
-          "#ui": path.resolve(workspaceRoot, "packages/ui/src"),
+          "#ui": path.resolve(workspaceRoot, "packages/shared/ui/src"),
           "#storybook": path.resolve(workspaceRoot, "apps/storybook/src"),
           "#storybook-config": path.resolve(
             workspaceRoot,

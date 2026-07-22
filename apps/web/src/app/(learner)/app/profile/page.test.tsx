@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import ProfileRoute from "@/app/(learner)/app/profile/page"
 import type { ApiError } from "@/shared/http/api-error"
-import { httpApiFailure as apiFailure } from "@workspace/http-client"
+import { httpApiFailure as apiFailure } from "@workspace/http-client/api-result"
 import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
 
 const { redirectMock } = vi.hoisted(() => ({

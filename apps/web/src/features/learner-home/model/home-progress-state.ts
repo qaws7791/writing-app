@@ -1,4 +1,4 @@
-import type { LearnerProgressCourse } from "@workspace/contracts/learning"
+import type { LearnerProgressCourse } from "@workspace/contracts/learning/learner-content"
 
 export type CompletedCoursesState =
   | { readonly status: "error" }

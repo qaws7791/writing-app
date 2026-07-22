@@ -1,4 +1,4 @@
-import type { HttpApiResult } from "@workspace/http-client"
+import type { HttpApiResult } from "@workspace/http-client/api-result"
 
 import type { ApiError } from "@/shared/http/api-error"
 

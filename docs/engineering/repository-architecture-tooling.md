@@ -1,60 +1,49 @@
-# Repository architecture tooling
+# 저장소 아키텍처 검증 도구
 
-## 범위
+## 책임
 
-repository tooling은 workspace inventory, module graph, import ratchet, CI 실행 보고, coverage 집계와 package public-surface 검사를 제공한다. `apps/api`의 단일 runtime은 학습자 HTTP 표면과 `/api/admin` 경로 sub-app에서 여섯 관리자 capability를 조립하며, 정적 검사는 제거된 별도 관리자 runtime과 forwarding 경계의 재도입을 거부한다.
+아키텍처 정책은 하나의 도구에 중복 구현하지 않는다.
 
-이 도구가 검증하는 것은 repository source graph와 정적 deployment contract다. Compose/Caddy source가 unified API를 가리킨다는 사실만으로 실제 production traffic 적용·관찰까지 증명하지 않는다.
+| 책임                                                              | 권위 source                                                                                   |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| import graph, runtime cycle, 계층·package 경계, 미선언 dependency | `dependency-cruiser.config.mjs`, `scripts/check-architecture.ts`                              |
+| 미사용 file·export·dependency                                     | `knip.json`                                                                                   |
+| workspace 발견과 test·coverage 대상                               | `scripts/workspace-inventory.ts`, `scripts/check-workspace-inventory.ts`                      |
+| 명시적 package export와 core symbol snapshot                      | `scripts/check-package-interfaces.ts`, `scripts/fixtures/core-capability-public-surface.json` |
+| coverage 집계와 CI task 결과 해석                                 | `scripts/coverage-report.ts`, `scripts/ci-workspace-inventory-report.ts`                      |
 
-## Module Interface
+Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표현 수준의 `workspace/no-unsafe-unknown-cast`만 검사한다. workspace inventory, coverage와 CI summary helper도 자기 task에 필요한 좁은 입력만 해석하며 범용 repository graph를 만들지 않는다.
 
-`@workspace/repository-tooling`은 architecture 정책이 공유하는 다음 Interface를 제공한다.
+## Graph 정책
 
-- `createRepositoryInventory`: `.ts`·`.tsx` source와 module reference inventory를 결정적으로 정렬한다.
-- `readModuleReferences`: import, re-export, dynamic import, import type과 named import를 구분한다.
-- `collectImportViolations`: 정책 matcher가 반환한 source→target 위반을 같은 형식으로 표시한다.
-- `createModuleGraph`: 상대 경로, private alias, package export를 실제 source 파일로 해석한다.
-- `findCycles`: runtime graph의 순환을 source→target chain으로 반환한다.
-- `evaluateImportRatchet`: 파일·specifier 단위 allowance와 실제 import edge를 대조해 신규 위반과 제거 뒤 남은 allowance를 모두 실패시킨다.
-- `createRepositoryWorkspaceInventory`: root workspace glob과 manifest를 읽고 test·coverage·Storybook capability를 파생하거나 구조화된 오류를 반환한다.
-- `readTurboRunSummary`, `resolveTaskExecutionStatus`: Turborepo `2.10.4` summary v1에서 실행, cache hit, 실패, 건너뜀, 제외를 구분한다.
-- `aggregateLcovReports`, `assertLineCoverageThresholds`: workspace별 LCOV 집계와 위험 파일 baseline 판정을 coverage 실행 orchestration에서 분리한다.
+- runtime cycle은 실패하고 type-only edge는 cycle 판정에서 제외한다.
+- 미해결 import와 manifest에 직접 선언하지 않은 package import는 실패한다.
+- `config → 상위 계층`, `shared → module·infra·app`, `infra → module·app` 의존을 거부한다.
+- Better Auth, OpenAI·Mastra, AWS SDK, Pino와 Emittery 직접 import는 각각의 infra 소유 package로 제한한다.
+- shared 안에서도 kernel은 외부 workspace runtime과 framework에 의존하지 않고, event-contracts는 kernel과 types만 의존한다.
+- module 내부는 `domain → application → infrastructure/interface` 방향을 지키며 다른 module의 내부 경로를 import하지 않는다.
+- module의 domain·application은 shared HTTP contract를 import하지 않는다.
+- web·admin은 module·DB·Drizzle을, Storybook은 UI·config 외 package를 직접 import하지 않는다.
+- generated output만 제외하고 source directory 전체를 숨기는 예외는 두지 않는다.
+- private alias, 공개 subpath, type-only cycle과 금지 edge는 `scripts/fixtures/dependency-cruiser/`의 허용·금지 fixture로 함께 검증한다.
 
-앱과 core의 architecture test는 이 Interface 위에서 허용·금지 matcher만 정의한다. graph parser와 source traversal을 test마다 다시 만들지 않는다.
+기존 flat package를 전환하는 동안 `dependency-cruiser.config.mjs`의 `legacy-*` 규칙이 같은 정책을 적용한다. `legacy-core-*`는 P4~P9와 P15, `legacy-ui-*`는 P2·P12, `legacy-frontends-*`는 P12, API·Better Auth 경계 규칙은 P3~P10에서 대상 package 규칙으로 흡수한 뒤 P15에서 제거한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
 
-## Architecture 기준선
+## Dead code와 공개 표면
 
-`check:architecture-boundaries`는 core runtime adapter edge와 capability 간 private edge를 허용하지 않는다. UI의 app/core/DB/HTTP client 의존, 두 frontend의 core·DB·Drizzle 의존과 API transport의 DB·Drizzle 의존도 허용하지 않는다. allowance가 제거되면 같은 변경에서 기준선을 줄이지 않는 한 검사가 실패한다.
+Knip gate는 읽기 전용이며 `--fix`를 실행하지 않는다. 실제 runtime·tooling 진입점만 `knip.json`에 선언하고 generated output은 Git ignore 경계로 제외한다. cycle은 dependency-cruiser, 의미상 중복 schema는 계약 검사가 소유하므로 Knip의 해당 reporter는 중복 실행하지 않는다.
 
-`core-capability-contract-entrypoint` 규칙은 test를 포함한 `packages/core/src` 전체를 수집한다. `@workspace/contracts/learning/{step-data,read-data}`와 `@workspace/contracts/admin/{content-data,identity-data,dashboard-analytics-data,settings-data,ai-chat-data,resource-library-data}`만 정확히 허용하고 다른 learning/admin source는 allowance 없이 실패시킨다.
+package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 symbol의 추가·삭제는 소유 package의 export 목록과 core symbol fixture를 함께 갱신해야 하며, broad root barrel, `src` deep import, 자기 공개 경로 역참조와 제거된 forwarding/runtime의 재도입은 `check:package-interfaces`가 거부한다. 같은 검사는 shared package의 exact export, canonical ID 중복, canonical 오류 schema 소비와 성공 response runtime parse도 고정한다.
 
-## Core capability public surface
+## 실행
 
-`check:package-interfaces`는 기존 `packages/core/package.json` subpath snapshot과 삭제 파일 guard를 유지하면서 `packages/core/tsconfig.json`으로 TypeScript program을 만든다. checker의 `getExportsOfModule`로 `admin`, `ai-feedback`, `auth`, `content`, `learning`, `resource-library`의 `api/index.ts`를 해석하므로 직접 export뿐 아니라 `export *`가 전이적으로 노출하는 symbol도 포함한다.
+```bash
+bun run check:architecture
+bun run check:dead-code
+bun run check:package-interfaces
+bun run check:workspace-inventory
+```
 
-실제 symbol 이름은 정렬·중복 제거된 `scripts/fixtures/core-capability-public-surface.json`과 exact 비교한다. 새 symbol은 `added`, 제거된 symbol은 `removed`로 capability와 facade 경로를 함께 출력한다. fixture의 capability key, 정렬 또는 중복이 잘못돼도 실패하므로 공개 API 확장은 source와 snapshot을 같은 review에서 명시적으로 승인해야 한다.
+root `lint`와 pre-commit은 위 검사를 포함한다. dependency-cruiser는 workspace별 TypeScript config를 사용하므로 실행 비용은 단일 root scan보다 크지만 private alias와 runtime별 module resolution을 정확히 따른다. 이 비용은 정책 parser를 자체 유지하는 장기 유지보수 비용보다 작다고 판단한다.
 
-## Runtime cycle 범위
-
-root `check:import-cycles`는 workspace package dependency와 다음 전체 runtime source를 검사한다.
-
-- `apps/web/src`
-- `apps/admin/src`
-- `apps/api/src`
-- `packages/core/src`
-
-test와 declaration 파일, type-only reference는 runtime cycle graph에서 제외한다. re-export와 dynamic import는 runtime edge로 포함한다.
-
-## 검증
-
-- tooling fixture는 type-only, re-export, dynamic import, private alias, package export와 의도적 cycle을 포함한다.
-- architecture 정책 오류와 cycle 오류는 `source -> target` chain을 출력한다.
-- core architecture 정책은 domain과 production application의 DB·ORM·인증·provider·Hono import, application→infrastructure import와 직접 Worker·WebSocket·fetch·`process.env` 사용을 거부한다.
-- core architecture 정책은 모든 capability facade의 infrastructure export와 facade가 아닌 core 구현의 canonical `#core/modules/<capability>/api/index` 역참조를 거부한다.
-- core public-surface fixture는 6개 facade의 실제 export symbol을 고정하고 추가·제거를 구분해 보고한다.
-- core contract 정책은 test까지 포함해 broad·legacy·transport source를 거부한다. Oxlint fixture는 architecture inventory가 표현하지 않는 import-equals와 computed dynamic import까지 차단하고 static·re-export·dynamic·import-type 우회를 중복 검증한다.
-- `packages/repository-tooling/vitest.config.ts`는 root workspace test와 quality gate에 포함된다.
-- web, admin, api, core architecture test와 root cycle script는 이 Module의 공통 source traversal·AST parser를 사용한다. 별도 removal verifier는 삭제된 runtime 식별자의 재도입을 차단한다.
-- workspace fixture는 추가·삭제·중복·누락·지원하지 않는 glob과 test runtime 변경을 검증한다.
-- workspace glob 아래에 `.next`, `.turbo`, `coverage`, `dist`, `node_modules`만 남은 제거된 workspace 디렉터리는 source가 없는 생성 산출물로 제외한다. 빈 디렉터리나 다른 source entry가 있는 manifest 누락은 계속 오류다.
-- CI summary fixture는 Turborepo `2.10.4`의 v1 schema를 고정하며 실패 task를 성공으로 표시하지 않는다.
+정적 검사의 통과는 source graph를 증명할 뿐 production traffic, 외부 provider와 실제 배포 상태를 증명하지 않는다.

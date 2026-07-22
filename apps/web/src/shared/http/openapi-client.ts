@@ -8,12 +8,11 @@ import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cook
 import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import { buildApiUrl } from "@/shared/config/runtime-config"
 import {
-  fetchHttpResponse,
-  httpApiFailure,
-  httpApiOk,
+  requestHttpJson,
   type HttpFetch,
   type HttpNetworkError,
-} from "@workspace/http-client"
+} from "@workspace/http-client/json-transport"
+import { httpApiFailure, httpApiOk } from "@workspace/http-client/api-result"
 
 type ResponseSchema<TValue> = {
   readonly safeParse: (value: unknown) =>
@@ -90,77 +89,23 @@ export function createOpenApiClient({
         headers,
         method: input.method,
       })
-      const fetchResult = await fetchJson(request, fetch, reportNetworkError)
+      const result = await requestHttpJson({
+        fetch,
+        request,
+        schema: input.schema,
+      })
 
-      if (fetchResult.kind === "network-error") {
-        return httpApiFailure(networkApiError(fetchResult.error))
+      switch (result.kind) {
+        case "success":
+          return httpApiOk(result.value)
+        case "http-error":
+          return httpApiFailure(toApiError(result.status, result.body))
+        case "contract-error":
+          return httpApiFailure(contractApiError(result.status ?? undefined))
+        case "network-error":
+          reportNetworkError?.({ error: result.error, request })
+          return httpApiFailure(networkApiError(result.error))
       }
-
-      const { response } = fetchResult
-      const bodyResult = await readJson(response)
-
-      if (bodyResult.kind === "err") {
-        return httpApiFailure(contractApiError(response.status))
-      }
-
-      if (!response.ok) {
-        return httpApiFailure(toApiError(response.status, bodyResult.value))
-      }
-
-      const parsedBody = input.schema.safeParse(bodyResult.value)
-
-      if (!parsedBody.success) {
-        return httpApiFailure(contractApiError(response.status))
-      }
-
-      return httpApiOk(parsedBody.data)
     },
-  }
-}
-
-async function fetchJson(
-  request: Request,
-  fetch: FetchLike,
-  reportNetworkError: NetworkErrorReporter | undefined
-): ReturnType<typeof fetchHttpResponse> {
-  const result = await fetchHttpResponse(request, fetch)
-
-  if (result.kind === "network-error") {
-    reportNetworkError?.({
-      error: result.error,
-      request,
-    })
-  }
-
-  return result
-}
-
-async function readJson(response: Response): Promise<
-  | {
-      readonly kind: "ok"
-      readonly value: unknown
-    }
-  | {
-      readonly kind: "err"
-    }
-> {
-  const text = await response.text()
-
-  if (text.length === 0) {
-    return {
-      kind: "ok",
-      value: null,
-    }
-  }
-
-  try {
-    return {
-      kind: "ok",
-      value: JSON.parse(text) as unknown,
-    }
-  } catch {
-    return {
-      kind: "err",
-    }
   }
 }

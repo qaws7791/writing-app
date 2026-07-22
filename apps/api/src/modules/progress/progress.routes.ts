@@ -1,4 +1,4 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import { learnerIdSchema } from "@workspace/contracts/learning/read-data"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"

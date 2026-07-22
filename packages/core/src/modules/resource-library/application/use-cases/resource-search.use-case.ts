@@ -1,4 +1,4 @@
-import type { AdminResourceSearchItemDto } from "@workspace/contracts/admin/resource-library-data"
+import type { AdminResourceSearchItemDto } from "@workspace/contracts/resource-library/data"
 
 import type { ResourceSearchRepository } from "#core/modules/resource-library/application/ports/resource-search.repository"
 

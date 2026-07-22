@@ -1,11 +1,11 @@
 import type {
-  AdminContentResetResultDto,
   AdminCourseDetailDto,
   AdminCourseEditorDocument,
   AdminCourseListItemDto,
   AdminCourseListStatusFilter,
   AdminPublishCourseResult,
-} from "@workspace/contracts/admin/content-data"
+} from "@workspace/contracts/content/admin-data"
+import type { AdminContentResetResultDto } from "@workspace/contracts/operations/content-reset-data"
 
 export type ResetAdminContentInput = {
   readonly now: Date

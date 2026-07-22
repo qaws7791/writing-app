@@ -4,14 +4,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import CourseDetailRoute, {
   generateMetadata,
 } from "@/app/(learner)/app/courses/[id]/page"
-import { learnerCourseDetailSchema } from "@workspace/contracts/learning"
+import { learnerCourseDetailSchema } from "@workspace/contracts/learning/learner-content"
 import { networkApiError } from "@/shared/http/api-error"
 import {
   httpApiFailure as apiFailure,
   httpApiOk as apiOk,
-} from "@workspace/http-client"
+} from "@workspace/http-client/api-result"
 import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
-import { createHttpNetworkError } from "@workspace/http-client"
+import { createHttpNetworkError } from "@workspace/http-client/json-transport"
 
 const api: WritingAppApi = {
   completeStep: vi.fn(),

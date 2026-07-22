@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import type { LearnerProgressCourse } from "@workspace/contracts/learning"
+import type { LearnerProgressCourse } from "@workspace/contracts/learning/learner-content"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"
 

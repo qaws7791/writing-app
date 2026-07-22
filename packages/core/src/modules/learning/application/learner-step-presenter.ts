@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto"
 
-import type { LessonStepDto } from "@workspace/contracts/content"
+import type { LessonStepDto } from "@workspace/contracts/content/course"
 import {
   learnerLessonStepSchema,
   type LearnerLessonStep,

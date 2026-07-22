@@ -1,4 +1,4 @@
-import { learnerAccountStatusSchema } from "@workspace/contracts/status"
+import { learnerAccountStatusSchema } from "@workspace/contracts/identity/status"
 import { z } from "zod"
 
 import type { ReadAdminUsersInput } from "@/entities/learner-account/model/admin-learner-account"

@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 
-import { courseVisualKeyValues } from "@workspace/contracts/content"
+import { courseVisualKeyValues } from "@workspace/contracts/content/course"
 
 import { validateCourseThumbnailAssets } from "./check-course-thumbnail-assets"
 

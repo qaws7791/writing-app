@@ -1,9 +1,16 @@
-import type { Brand } from "@workspace/contracts/content/content.ids"
+import type {
+  ResourceAssetId,
+  ResourceDocumentId,
+  ResourceFolderId,
+  ResourceNodeId,
+} from "@workspace/types/ids"
 
-export type ResourceFolderId = Brand<string, "ResourceFolderId">
-export type ResourceDocumentId = Brand<string, "ResourceDocumentId">
-export type ResourceAssetId = Brand<string, "ResourceAssetId">
-export type ResourceNodeId = ResourceFolderId | ResourceDocumentId
+export type {
+  ResourceAssetId,
+  ResourceDocumentId,
+  ResourceFolderId,
+  ResourceNodeId,
+} from "@workspace/types/ids"
 export type ResourceNodeStatus = "active" | "trashed"
 export type ResourceTreeScope = "active" | "trash"
 

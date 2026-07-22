@@ -4,8 +4,9 @@ import {
   learnerCoursePageSchema,
   learnerLessonSchema,
   learnerProgressPageSchema,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-content"
 import { createLearnerCursorCodec } from "@workspace/core/learning"
+import { err, ok } from "@workspace/kernel/result"
 
 import type { ApiDependencies } from "@/app"
 
@@ -29,7 +30,7 @@ const version = {
   revision: 1,
 } as const
 
-export const testCoursePage = learnerCoursePageSchema.parse({
+const testCoursePage = learnerCoursePageSchema.parse({
   items: [
     {
       category: "입문자를 위한 코스",
@@ -86,7 +87,7 @@ export const testCourseDetail = learnerCourseDetailSchema.parse({
   ],
 })
 
-export const testLearnerLesson = learnerLessonSchema.parse({
+const testLearnerLesson = learnerLessonSchema.parse({
   category: "문장의 기본기",
   courseId: "c1",
   description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
@@ -113,7 +114,7 @@ export const testLearnerLesson = learnerLessonSchema.parse({
   version,
 })
 
-export const testProgressPage = learnerProgressPageSchema.parse({
+const testProgressPage = learnerProgressPageSchema.parse({
   items: [],
   nextCursor: null,
 })
@@ -123,13 +124,13 @@ export function createTestDependencies(): ApiDependencies {
     contentService: {
       async getCourseDetail({ courseId }) {
         return courseId === "c1"
-          ? { kind: "ok", value: testCourseDetail }
-          : { kind: "err", error: { kind: "course-not-found" } }
+          ? ok(testCourseDetail)
+          : err({ kind: "course-not-found" })
       },
       async getLesson({ lessonId }) {
         return lessonId === "l1"
-          ? { kind: "ok", value: testLearnerLesson }
-          : { kind: "err", error: { kind: "lesson-not-found" } }
+          ? ok(testLearnerLesson)
+          : err({ kind: "lesson-not-found" })
       },
       async listCourseCategories() {
         return ["입문자를 위한 코스"]

@@ -6,10 +6,6 @@ export function createAdminLoginPath(nextPath: string): string {
   return `/login?next=${encodeURIComponent(safeNextPath)}`
 }
 
-export function createAdminLogoutPath(): string {
-  return "/login"
-}
-
 export function resolveSafeAdminNextPath(nextPath: string): string {
   return resolveSafeInternalPath({
     blockedPathnames: ["/login"],

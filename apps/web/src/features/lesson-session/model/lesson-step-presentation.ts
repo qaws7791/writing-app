@@ -1,7 +1,5 @@
-import type {
-  LearnerLessonStep as LessonStep,
-  LessonStepItemId,
-} from "@workspace/contracts/learning"
+import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning/learner-content"
+import type { LessonStepItemId } from "@workspace/contracts/learning/ids"
 
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
 

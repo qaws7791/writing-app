@@ -1,4 +1,4 @@
-import type { LessonStepDto } from "@workspace/contracts/content"
+import type { LessonStepDto } from "@workspace/contracts/content/course"
 import {
   stepEvaluationSchema,
   type LearnerStepSubmission,

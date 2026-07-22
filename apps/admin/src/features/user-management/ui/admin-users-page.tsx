@@ -13,7 +13,7 @@ import type {
   AdminUserList,
   ReadAdminUsersInput,
 } from "@/entities/learner-account/model/admin-learner-account"
-import type { LearnerOperationalStatus } from "@workspace/contracts/status"
+import type { LearnerOperationalStatus } from "@workspace/contracts/identity/status"
 import {
   createGetFilterHref,
   readGetFormFields,

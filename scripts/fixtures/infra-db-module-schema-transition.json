@@ -1,0 +1,10 @@
+{
+  "packages/infra/db/src/content/content-archive-policy.ts": "P5-030",
+  "packages/infra/db/src/content/curriculum-version-id.ts": "P5-030",
+  "packages/infra/db/src/content/normalize-versioned-step-content.ts": "P5-008",
+  "packages/infra/db/src/schema/admin.schema.ts": "P9-020",
+  "packages/infra/db/src/schema/content.schema.ts": "P5-018",
+  "packages/infra/db/src/schema/feedback.schema.ts": "P6-015",
+  "packages/infra/db/src/schema/learning.schema.ts": "P7-022",
+  "packages/infra/db/src/schema/resource.schema.ts": "P8-019"
+}

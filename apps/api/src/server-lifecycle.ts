@@ -1,8 +1,6 @@
-export type UnifiedApiServer = {
+type UnifiedApiServer = {
   readonly stop: (_closeActiveConnections?: boolean) => Promise<void> | void
 }
-
-export type LearnerApiServer = UnifiedApiServer
 
 export type UnifiedApiShutdownPhase =
   | "cancel-activity"
@@ -13,7 +11,7 @@ export type UnifiedApiShutdownPhase =
 
 export type LearnerApiShutdownPhase = "close-core" | "stop-server"
 
-export type ServerLifecycleScheduledTask = {
+type ServerLifecycleScheduledTask = {
   readonly cancel: () => void
 }
 
@@ -24,7 +22,7 @@ export type ServerLifecycleScheduler = {
   ) => ServerLifecycleScheduledTask
 }
 
-export type LongLivedActivityLease = {
+type LongLivedActivityLease = {
   readonly label: string
   readonly release: () => void
   readonly signal: AbortSignal

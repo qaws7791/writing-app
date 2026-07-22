@@ -5,8 +5,8 @@ import type { LessonSessionApi } from "@/features/lesson-session/api/lesson-sess
 import {
   learnerCompleteStepResponseSchema,
   learnerStartLessonResponseSchema,
-} from "@workspace/contracts/learning"
-import { httpApiOk as apiOk } from "@workspace/http-client"
+} from "@workspace/contracts/learning/learner-api"
+import { httpApiOk as apiOk } from "@workspace/http-client/api-result"
 
 describe("createLessonSessionEffects", () => {
   it("lesson-scoped 전이 명령에 공통 식별자를 결합한다", async () => {

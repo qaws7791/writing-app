@@ -3,9 +3,9 @@ import type { AdminApiResult } from "@/shared/http/admin-api-result"
 import {
   adminSessionDtoSchema,
   type AdminSessionDto,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/identity/admin-session"
 
-export type AdminSession = AdminSessionDto
+type AdminSession = AdminSessionDto
 
 export type AdminSessionDal = {
   readonly getSession: () => Promise<AdminApiResult<AdminSession>>

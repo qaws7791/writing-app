@@ -3,7 +3,8 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ProfilePage } from "@/features/learner-profile/ui/profile-page"
-import type { LearnerProfileResponse } from "@workspace/contracts/learning"
+import type { LearnerProfileResponse } from "@workspace/contracts/learning/learner-api"
+import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 
 const { onLogout, setTheme } = vi.hoisted(() => ({
   onLogout: vi.fn(),
@@ -27,7 +28,7 @@ const profile: LearnerProfileResponse = {
   },
   user: {
     email: "minji@example.com",
-    id: "user-1",
+    id: userIdSchema.parse("user-1"),
     image: null,
     joinedAt: "2026-06-01T00:00:00.000Z",
     name: "민지",

@@ -1,2 +1,2 @@
-export { conversationIdSchema } from "@workspace/contracts/admin"
-export type { ConversationId } from "@workspace/contracts/admin"
+export { conversationIdSchema } from "@workspace/contracts/identity/admin-ids"
+export type { ConversationId } from "@workspace/types/ids"

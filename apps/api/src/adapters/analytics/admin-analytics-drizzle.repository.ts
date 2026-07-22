@@ -3,13 +3,15 @@ import type {
   AdminLessonAnalyticsItemDto,
   AdminLessonAnalyticsSort,
   AdminSortDirection,
-} from "@workspace/contracts/admin/dashboard-analytics-data"
-import type { AdminUserStatus } from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/operations/dashboard-analytics-data"
+import type { AdminUserStatus } from "@workspace/contracts/identity/data"
+import { contentStatuses } from "@workspace/contracts/content/status"
+import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
+import { lessonProgressStatuses } from "@workspace/contracts/learning/status"
 import {
-  contentStatuses,
-  learnerAccountStatuses,
-  lessonProgressStatuses,
-} from "@workspace/contracts/status"
+  courseIdSchema,
+  lessonIdSchema,
+} from "@workspace/contracts/content/ids"
 import {
   createAdminPageBounds,
   type AdminAnalyticsReader,
@@ -180,7 +182,11 @@ function readLessonAnalytics(
     .all()
 
   return {
-    items: rows,
+    items: rows.map((row) => ({
+      ...row,
+      courseId: courseIdSchema.parse(row.courseId),
+      lessonId: lessonIdSchema.parse(row.lessonId),
+    })),
     page: pagination.page,
     pageSize: pagination.pageSize,
     totalItems: pagination.totalItems,
@@ -366,9 +372,9 @@ function readActiveLearners(db: WritingAppDatabase): AdminLearnerSnapshot[] {
 }
 
 function readActiveLessonSnapshots(db: WritingAppDatabase): {
-  readonly courseId: string
+  readonly courseId: AdminLessonAnalyticsItemDto["courseId"]
   readonly courseTitle: string
-  readonly lessonId: string
+  readonly lessonId: AdminLessonAnalyticsItemDto["lessonId"]
   readonly lessonTitle: string
 }[] {
   return db
@@ -409,6 +415,11 @@ function readActiveLessonSnapshots(db: WritingAppDatabase): {
       )
     )
     .all()
+    .map((row) => ({
+      ...row,
+      courseId: courseIdSchema.parse(row.courseId),
+      lessonId: lessonIdSchema.parse(row.lessonId),
+    }))
 }
 
 function countByDate(

@@ -3,7 +3,7 @@ import type {
   AdminAiChatConversationListDto,
   AdminAiChatConversationDto,
   AdminAiChatMessageDto,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/operations/admin-ai-chat"
 
 export type AdminAiChatMessage = AdminAiChatMessageDto
 export type AdminAiChatConversation = AdminAiChatConversationDto

@@ -1,4 +1,4 @@
-import type { CourseVisualKey } from "@workspace/contracts/content"
+import type { CourseVisualKey } from "@workspace/contracts/content/course"
 
 type AdminCourseVisualKey = CourseVisualKey
 

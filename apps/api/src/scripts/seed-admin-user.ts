@@ -1,5 +1,5 @@
 import { adminRoles } from "@workspace/core/admin"
-import type { adminAuthAccounts, adminAuthUsers } from "@workspace/db"
+import type { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
 
 export type SeedAdminUserRow = typeof adminAuthUsers.$inferInsert & {
   readonly emailVerified: true
@@ -43,7 +43,7 @@ export function createSeedAdminUserRow({
   }
 }
 
-export function createSeedAdminAccountRow(input: {
+function createSeedAdminAccountRow(input: {
   readonly passwordHash: string
   readonly userRow: SeedAdminUserRow
 }): SeedAdminAccountRow {

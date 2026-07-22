@@ -1,11 +1,16 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { ErrorResponseSchema } from "@/http/platform/errors"
-import { z } from "@/http/platform/zod"
+import { ErrorResponseSchema } from "@workspace/http-platform/errors"
+import {
+  eventStreamResponse,
+  jsonResponse,
+  markdownResponse,
+} from "@workspace/http-platform/openapi"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminHonoEnv } from "@/admin/admin-hono-env"
 
-export const adminOpenApiDocumentConfig = {
+const adminOpenApiDocumentConfig = {
   info: {
     title: "Writing App Admin API",
     version: "0.0.1",
@@ -15,7 +20,7 @@ export const adminOpenApiDocumentConfig = {
 
 export const adminRoutePrefix = "/api/admin" as const
 
-export const adminSessionCookieSecurityScheme = {
+const adminSessionCookieSecurityScheme = {
   in: "cookie",
   name: adminSessionCookieName,
   type: "apiKey",
@@ -40,50 +45,12 @@ export const adminHealthResponseSchema = z.object({
   service: z.literal("api"),
 })
 
-export function jsonResponse(description: string, schema: z.ZodType) {
-  return {
-    content: {
-      "application/json": {
-        schema,
-      },
-    },
-    description,
-  }
-}
-
-export function eventStreamResponse(description: string) {
-  return {
-    content: {
-      "text/event-stream": {
-        schema: z.string(),
-      },
-    },
-    description,
-  }
-}
-
-export function markdownResponse(description: string) {
-  return {
-    content: {
-      "text/markdown": {
-        schema: z.string(),
-      },
-    },
-    description,
-  }
-}
-
-export function multipartRequestBody<const TSchema extends z.ZodType>(
-  schema: TSchema
-) {
-  return {
-    content: {
-      "multipart/form-data": {
-        schema,
-      },
-    },
-  }
-}
+export {
+  eventStreamResponse,
+  jsonResponse,
+  markdownResponse,
+  multipartRequestBody,
+} from "@workspace/http-platform/openapi"
 
 export function errorJsonResponse(description: string) {
   return jsonResponse(description, ErrorResponseSchema)

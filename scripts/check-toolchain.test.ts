@@ -38,7 +38,7 @@ describe("toolchain 계약", () => {
     expect(result.kind).toBe("invalid")
   })
 
-  test("실행 중인 Bun exact version과 Node major 불일치를 거부한다", () => {
+  test("실행 중인 Bun floor는 허용하고 Node major 불일치는 거부한다", () => {
     const contract = {
       bunVersion: "1.3.10",
       nodeMajor: 24,
@@ -50,7 +50,7 @@ describe("toolchain 계약", () => {
         bunVersion: "1.3.14",
         nodeVersion: "22.18.0",
       })
-    ).toHaveLength(2)
+    ).toHaveLength(1)
   })
 
   test("모든 CI job이 setup 뒤 install 전에 preflight를 실행한다", () => {

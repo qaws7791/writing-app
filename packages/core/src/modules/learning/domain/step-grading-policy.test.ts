@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { lessonStepDtoSchema } from "@workspace/contracts/content"
+import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/step-data"
 
 import { gradeLearnerStep } from "#core/modules/learning/domain/step-grading-policy"

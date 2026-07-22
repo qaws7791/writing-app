@@ -1,13 +1,15 @@
 import { appendFileSync } from "node:fs"
 
 import {
-  createRepositoryWorkspaceInventory,
   findLatestTurboRunSummary,
   formatTaskExecutionStatus,
-  formatWorkspaceInventoryError,
   readTurboRunSummary,
   resolveTaskExecutionStatus,
-} from "@workspace/repository-tooling"
+} from "#scripts/ci-workspace-inventory-report"
+import {
+  createWorkspaceInventory,
+  formatWorkspaceInventoryError,
+} from "#scripts/workspace-inventory"
 
 const arguments_ = process.argv.slice(2)
 const summaryDirectoryArgument = arguments_.find((argument) =>
@@ -18,7 +20,7 @@ const requestedScripts = arguments_.filter(
 )
 const rows = ["| workspace | CI 범위 |", "| --- | --- |"]
 
-const inventoryResult = createRepositoryWorkspaceInventory(process.cwd())
+const inventoryResult = createWorkspaceInventory(process.cwd())
 
 if (inventoryResult.status === "failure") {
   throw new Error(

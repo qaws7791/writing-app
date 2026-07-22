@@ -1,0 +1,19 @@
+{
+  "name": "@workspace/nextjs-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./csp-report": "./src/csp-report.ts",
+    "./security-headers": "./src/security-headers.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

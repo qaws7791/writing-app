@@ -22,16 +22,16 @@
   },
   "dependencies": {
     "@workspace/contracts": "workspace:*",
+    "@workspace/kernel": "workspace:*",
     "@workspace/resource-document": "workspace:*",
-    "zod": "^4.2.0"
+    "@workspace/types": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
     "@types/bun": "catalog:",
-    "@workspace/config": "workspace:*",
-    "@workspace/repository-tooling": "workspace:*",
-    "typescript": "5.9.3",
-    "vite-tsconfig-paths": "^6.1.1",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   }
 }

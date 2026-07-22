@@ -3,7 +3,7 @@ import {
   type AiFeedbackPayload,
   type AiFeedbackResultDto,
   type CreateAiFeedbackCommand,
-} from "@workspace/contracts/ai-feedback"
+} from "@workspace/contracts/ai-feedback/feedback"
 import {
   aiFeedbackAttemptPolicySchema,
   calculateRemainingAiFeedbackAttempts,
@@ -15,7 +15,7 @@ import type {
   AiFeedbackAttemptStatus,
   AiFeedbackRepository,
 } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
-import { err, ok, type Result } from "#core/shared/result"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 export type AiFeedbackAttemptContext = {
   readonly focus: string
@@ -169,7 +169,7 @@ export function createAiFeedbackAttemptCoordinator({
         ),
       })
 
-      if (providerResult.kind === "err") {
+      if (providerResult.isErr()) {
         const transitioned = await feedbackRepository.markAttemptFailed({
           attemptId: reservation.attemptId,
           occurredAt: now(),
@@ -282,7 +282,7 @@ async function requestAiFeedback({
       aborted,
     ])
 
-    if (providerResult.kind === "err") {
+    if (providerResult.isErr()) {
       return err({ kind: "provider-failed" })
     }
 

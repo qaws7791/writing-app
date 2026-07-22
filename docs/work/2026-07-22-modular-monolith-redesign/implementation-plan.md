@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: 계획 수립 완료, 구현 미착수  
+> 상태: P0·P1·P2·P3 완료, P4 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -47,10 +47,10 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ## 3. 전체 단계 현황
 
-- [ ] P0. 기준선, 책임 매핑과 안전 조건을 확정한다.
-- [ ] P1. workspace, task graph와 architecture 도구 기반을 전환한다.
-- [ ] P2. shared package 기반을 구축한다.
-- [ ] P3. infra package 기반을 구축한다.
+- [x] P0. 기준선, 책임 매핑과 안전 조건을 확정한다.
+- [x] P1. workspace, task graph와 architecture 도구 기반을 전환한다.
+- [x] P2. shared package 기반을 구축한다.
+- [x] P3. infra package 기반을 구축한다.
 - [ ] P4. `identity` 모듈을 전환한다.
 - [ ] P5. `content` 모듈을 전환한다.
 - [ ] P6. `ai-feedback` 모듈을 전환한다.
@@ -70,320 +70,320 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 4.1 작업 착수 조건
 
-- [ ] P0-001 구현 기준 branch와 기준 commit을 기록한다. 증거:
-- [ ] P0-002 시작 시점의 tracked·untracked 변경을 기록하고 이 작업이 소유하지 않는 변경을 표시한다. 증거:
-- [ ] P0-003 작업 owner, architecture reviewer, data migration reviewer와 security reviewer를 정한다. 증거:
-- [ ] P0-004 capability별 PR 또는 commit 경계를 정하고 각 경계의 rollback 단위를 기록한다. 증거:
-- [ ] P0-005 임시 호환 항목의 `도입 이유 / owner / 제거 단계 / 만료 조건` 기록 형식을 정한다. 증거:
-- [ ] P0-006 production 변경은 별도 승인 전까지 범위 밖임을 작업 참여자와 확인한다. 증거:
-- [ ] P0-007 현재 실행 중인 dev server와 background process를 식별하고 종료 책임자를 정한다. 증거:
+- [x] P0-001 구현 기준 branch와 기준 commit을 기록한다. 증거: [P0 착수 기준](./p0-baseline.md)
+- [x] P0-002 시작 시점의 tracked·untracked 변경을 기록하고 이 작업이 소유하지 않는 변경을 표시한다. 증거: [P0 착수 기준](./p0-baseline.md)
+- [x] P0-003 작업 owner, architecture reviewer, data migration reviewer와 security reviewer를 정한다. 증거: [P0 착수 기준](./p0-baseline.md)
+- [x] P0-004 capability별 PR 또는 commit 경계를 정하고 각 경계의 rollback 단위를 기록한다. 증거: [변경과 rollback 경계](./p0-baseline.md)
+- [x] P0-005 임시 호환 항목의 `도입 이유 / owner / 제거 단계 / 만료 조건` 기록 형식을 정한다. 증거: [변경과 rollback 경계](./p0-baseline.md)
+- [x] P0-006 production 변경은 별도 승인 전까지 범위 밖임을 작업 참여자와 확인한다. 증거: [P0 착수 기준](./p0-baseline.md)
+- [x] P0-007 현재 실행 중인 dev server와 background process를 식별하고 종료 책임자를 정한다. 증거: [P0 착수 기준](./p0-baseline.md)
 
 ### 4.2 코드·설정 기준선
 
-- [ ] P0-008 root와 workspace manifest에서 현재 workspace inventory를 생성한다. 증거:
-- [ ] P0-009 root manifest에서 catalog, scripts, engines와 package manager 값을 확인한다. 증거:
-- [ ] P0-010 각 workspace의 name, export, import alias와 direct dependency를 목록화한다. 증거:
-- [ ] P0-011 현재 runtime dependency graph와 type-only graph를 분리해 저장한다. 증거:
-- [ ] P0-012 현재 package public surface snapshot과 consumer를 연결한다. 증거:
-- [ ] P0-013 현재 route registry와 runtime OpenAPI를 저장한다. 증거:
-- [ ] P0-014 각 route의 method, path, audience, auth middleware, request schema와 response schema를 연결한다. 증거:
-- [ ] P0-015 web과 admin의 HTTP endpoint 소비 위치를 route inventory에 연결한다. 증거:
-- [ ] P0-016 현재 DB table, index, trigger, FK와 schema source의 소유 위치를 목록화한다. 증거:
-- [ ] P0-017 현재 cross-capability FK와 SQL join을 식별한다. 증거:
-- [ ] P0-018 적용된 migration 순서, checksum 또는 동등한 식별 정보와 실행 지점을 기록한다. 증거:
-- [ ] P0-019 seed entry, reset 경로와 destructive guard를 기록한다. 증거:
-- [ ] P0-020 env parser, `.env.example`, local runtime default와 deployment 입력의 연결을 확인한다. 증거:
-- [ ] P0-021 Compose, proxy, image build, release workflow와 rollback automation이 참조하는 source 경로를 기록한다. 증거:
-- [ ] P0-022 test workspace, coverage 대상, Storybook test와 Playwright project를 기록한다. 증거:
-- [ ] P0-023 현재 root quality gate를 실행해 기존 실패와 이번 작업으로 생긴 실패를 구분할 기준선을 만든다. 증거:
+- [x] P0-008 root와 workspace manifest에서 현재 workspace inventory를 생성한다. 증거: [Workspace inventory](./p0-dependency-inventory.md)
+- [x] P0-009 root manifest에서 catalog, scripts, engines와 package manager 값을 확인한다. 증거: [Workspace inventory](./p0-dependency-inventory.md)
+- [x] P0-010 각 workspace의 name, export, import alias와 direct dependency를 목록화한다. 증거: manifest와 [공개 표면](./p0-dependency-inventory.md)
+- [x] P0-011 현재 runtime dependency graph와 type-only graph를 분리해 저장한다. 증거: [내부 graph](./p0-dependency-inventory.md)
+- [x] P0-012 현재 package public surface snapshot과 consumer를 연결한다. 증거: [공개 표면과 consumer](./p0-dependency-inventory.md)
+- [x] P0-013 현재 route registry와 runtime OpenAPI를 저장한다. 증거: [HTTP와 OpenAPI](./p0-route-and-data-inventory.md)
+- [x] P0-014 각 route의 method, path, audience, auth middleware, request schema와 response schema를 연결한다. 증거: [HTTP와 OpenAPI](./p0-route-and-data-inventory.md)
+- [x] P0-015 web과 admin의 HTTP endpoint 소비 위치를 route inventory에 연결한다. 증거: [HTTP와 OpenAPI](./p0-route-and-data-inventory.md)
+- [x] P0-016 현재 DB table, index, trigger, FK와 schema source의 소유 위치를 목록화한다. 증거: [Schema와 migration](./p0-route-and-data-inventory.md)
+- [x] P0-017 현재 cross-capability FK와 SQL join을 식별한다. 증거: [Cross-context 접근](./p0-route-and-data-inventory.md)
+- [x] P0-018 적용된 migration 순서, checksum 또는 동등한 식별 정보와 실행 지점을 기록한다. 증거: [Schema와 migration](./p0-route-and-data-inventory.md)
+- [x] P0-019 seed entry, reset 경로와 destructive guard를 기록한다. 증거: [Seed·환경·배포·test](./p0-route-and-data-inventory.md)
+- [x] P0-020 env parser, `.env.example`, local runtime default와 deployment 입력의 연결을 확인한다. 증거: [Seed·환경·배포·test](./p0-route-and-data-inventory.md)
+- [x] P0-021 Compose, proxy, image build, release workflow와 rollback automation이 참조하는 source 경로를 기록한다. 증거: [Seed·환경·배포·test](./p0-route-and-data-inventory.md)
+- [x] P0-022 test workspace, coverage 대상, Storybook test와 Playwright project를 기록한다. 증거: [Seed·환경·배포·test](./p0-route-and-data-inventory.md)
+- [x] P0-023 현재 root quality gate를 실행해 기존 실패와 이번 작업으로 생긴 실패를 구분할 기준선을 만든다. 증거: [시작 품질 기준선](./p0-baseline.md), [최종 gate](./p0-validation.md)
 
 ### 4.3 사용자 동작 기준선
 
-- [ ] P0-024 test auth 설정이 production에서 fail-closed하는지 확인한다. 증거:
-- [ ] P0-025 학습자 인증, 코스 조회, 레슨 시작, 답안 저장, 레슨 완료 흐름을 기준선으로 고정한다. 증거:
-- [ ] P0-026 학습자 AI 피드백의 성공, 제한, provider 부재와 timeout 동작을 고정한다. 증거:
-- [ ] P0-027 관리자 인증, role·owner 거부와 session 폐기 동작을 고정한다. 증거:
-- [ ] P0-028 콘텐츠 draft 편집, 발행, archive와 reset 동작을 고정한다. 증거:
-- [ ] P0-029 관리자 dashboard·analytics·설정·AI 대화 동작을 고정한다. 증거:
-- [ ] P0-030 자료실 tree, 문서 저장, 검색, asset upload·delete와 version conflict 동작을 고정한다. 증거:
-- [ ] P0-031 learner·admin health와 graceful shutdown 동작을 고정한다. 증거:
-- [ ] P0-032 격리된 fixture에서 현재 migration, backup과 restore smoke를 실행한다. 증거:
-- [ ] P0-033 기준선에서 발견한 기존 결함을 별도 항목으로 분리하고 architecture 전환 성공 조건을 왜곡하지 않게 한다. 증거:
+- [x] P0-024 test auth 설정이 production에서 fail-closed하는지 확인한다. 증거: env·auth test, [사용자와 데이터 기준선](./p0-validation.md)
+- [x] P0-025 학습자 인증, 코스 조회, 레슨 시작, 답안 저장, 레슨 완료 흐름을 기준선으로 고정한다. 증거: [전체 workspace test](./p0-validation.md)
+- [x] P0-026 학습자 AI 피드백의 성공, 제한, provider 부재와 timeout 동작을 고정한다. 증거: [전체 workspace test](./p0-validation.md)
+- [x] P0-027 관리자 인증, role·owner 거부와 session 폐기 동작을 고정한다. 증거: [전체 workspace test](./p0-validation.md)
+- [x] P0-028 콘텐츠 draft 편집, 발행, archive와 reset 동작을 고정한다. 증거: [전체 workspace test](./p0-validation.md)
+- [x] P0-029 관리자 dashboard·analytics·설정·AI 대화 동작을 고정한다. 증거: [전체 workspace test](./p0-validation.md)
+- [x] P0-030 자료실 tree, 문서 저장, 검색, asset upload·delete와 version conflict 동작을 고정한다. 증거: [전체 workspace test](./p0-validation.md)
+- [x] P0-031 learner·admin health와 graceful shutdown 동작을 고정한다. 증거: [전체 workspace·scripts test](./p0-validation.md)
+- [x] P0-032 격리된 fixture에서 현재 migration, backup과 restore smoke를 실행한다. 증거: DB 45 tests, [사용자와 데이터 기준선](./p0-validation.md)
+- [x] P0-033 기준선에서 발견한 기존 결함을 별도 항목으로 분리하고 architecture 전환 성공 조건을 왜곡하지 않게 한다. 증거: [기존 결함과 실행 환경 분리](./p0-validation.md)
 
 ### 4.4 bounded context 책임 확정
 
-- [ ] P0-034 현재 source를 `identity`, `content`, `ai-feedback`, `learning`, `resource-library`, `operations` 후보로 분류한다. 증거:
-- [ ] P0-035 각 route를 정확히 하나의 module HTTP interface 또는 공통 platform route에 배정한다. 증거:
-- [ ] P0-036 각 table과 trigger를 정확히 하나의 module 또는 auth infra에 배정한다. 증거:
-- [ ] P0-037 각 canonical wire contract를 정확히 하나의 context subpath에 배정한다. 증거:
-- [ ] P0-038 공유 ID 중 transport-neutral brand로 이동할 항목을 확정한다. 증거:
-- [ ] P0-039 module 간 즉시 조회를 공개 query port로 분류한다. 증거:
-- [ ] P0-040 주요 command에 필수인 동기 협력을 공개 application port로 분류한다. 증거:
-- [ ] P0-041 commit 이후 비핵심 후속 효과를 domain event로 분류한다. 증거:
-- [ ] P0-042 반드시 전달되어야 하거나 재생이 필요한 효과를 in-memory event 대상에서 제외한다. 증거:
-- [ ] P0-043 operations가 직접 읽는 다른 capability table과 repository를 모두 식별한다. 증거:
-- [ ] P0-044 domain·application의 framework, ORM, provider SDK, `process.env`, 시간과 ID 직접 호출을 식별한다. 증거:
-- [ ] P0-045 frontend와 Storybook의 금지 대상 import를 식별한다. 증거:
-- [ ] P0-046 책임이 겹치거나 소유자를 결정하지 못한 source·route·table·contract를 0개로 만든다. 증거:
+- [x] P0-034 현재 source를 `identity`, `content`, `ai-feedback`, `learning`, `resource-library`, `operations` 후보로 분류한다. 증거: [책임 배정](./p0-boundary-decisions.md)
+- [x] P0-035 각 route를 정확히 하나의 module HTTP interface 또는 공통 platform route에 배정한다. 증거: [HTTP와 OpenAPI](./p0-route-and-data-inventory.md)
+- [x] P0-036 각 table과 trigger를 정확히 하나의 module 또는 auth infra에 배정한다. 증거: [Schema와 migration](./p0-route-and-data-inventory.md)
+- [x] P0-037 각 canonical wire contract를 정확히 하나의 context subpath에 배정한다. 증거: [Contract·ID·module 협력](./p0-boundary-decisions.md)
+- [x] P0-038 공유 ID 중 transport-neutral brand로 이동할 항목을 확정한다. 증거: [Contract·ID·module 협력](./p0-boundary-decisions.md)
+- [x] P0-039 module 간 즉시 조회를 공개 query port로 분류한다. 증거: [Contract·ID·module 협력](./p0-boundary-decisions.md)
+- [x] P0-040 주요 command에 필수인 동기 협력을 공개 application port로 분류한다. 증거: [Contract·ID·module 협력](./p0-boundary-decisions.md)
+- [x] P0-041 commit 이후 비핵심 후속 효과를 domain event로 분류한다. 증거: [Contract·ID·module 협력](./p0-boundary-decisions.md)
+- [x] P0-042 반드시 전달되어야 하거나 재생이 필요한 효과를 in-memory event 대상에서 제외한다. 증거: [Contract·ID·module 협력](./p0-boundary-decisions.md)
+- [x] P0-043 operations가 직접 읽는 다른 capability table과 repository를 모두 식별한다. 증거: [Cross-context 접근](./p0-route-and-data-inventory.md)
+- [x] P0-044 domain·application의 framework, ORM, provider SDK, `process.env`, 시간과 ID 직접 호출을 식별한다. 증거: [순수성 기준선](./p0-boundary-decisions.md)
+- [x] P0-045 frontend와 Storybook의 금지 대상 import를 식별한다. 증거: [순수성 기준선](./p0-boundary-decisions.md)
+- [x] P0-046 책임이 겹치거나 소유자를 결정하지 못한 source·route·table·contract를 0개로 만든다. 증거: [책임 배정](./p0-boundary-decisions.md)
 
 ### 4.5 결정과 위험 통제
 
-- [ ] P0-047 modular monolith, package 재편과 migration 계보 변경에 필요한 ADR 범위를 판정한다. 증거:
-- [ ] P0-048 이미 적용된 migration을 보존하는 append-only 전환 전략을 확정한다. 증거:
-- [ ] P0-049 cross-module FK 제거 시 필요한 데이터 사전 검사와 application-level reconciliation을 정한다. 증거:
-- [ ] P0-050 SQLite 단일 writer, transaction 범위와 외부 I/O 분리 원칙을 확인한다. 증거:
-- [ ] P0-051 in-memory event bus가 권위 projection을 만들지 않는다는 제한을 확인한다. 증거:
-- [ ] P0-052 outbox, worker, Redis와 generic queue를 이번 범위에 추가하지 않음을 확인한다. 증거:
-- [ ] P0-053 route·wire·데이터 호환성의 허용 변경과 금지 변경을 정한다. 증거:
-- [ ] P0-054 각 단계의 중단 조건과 안전한 되돌리기 지점을 위험 기록에 연결한다. 증거:
-- [ ] P0-055 P0 게이트: 미배정 책임, 미분류 cross-module 접근과 기준선 미확보 항목이 0개다. 증거:
+- [x] P0-047 modular monolith, package 재편과 migration 계보 변경에 필요한 ADR 범위를 판정한다. 증거: [데이터와 외부 I/O 결정](./p0-boundary-decisions.md)
+- [x] P0-048 이미 적용된 migration을 보존하는 append-only 전환 전략을 확정한다. 증거: [Schema와 migration](./p0-route-and-data-inventory.md)
+- [x] P0-049 cross-module FK 제거 시 필요한 데이터 사전 검사와 application-level reconciliation을 정한다. 증거: [데이터와 외부 I/O 결정](./p0-boundary-decisions.md)
+- [x] P0-050 SQLite 단일 writer, transaction 범위와 외부 I/O 분리 원칙을 확인한다. 증거: [데이터와 외부 I/O 결정](./p0-boundary-decisions.md)
+- [x] P0-051 in-memory event bus가 권위 projection을 만들지 않는다는 제한을 확인한다. 증거: [데이터와 외부 I/O 결정](./p0-boundary-decisions.md)
+- [x] P0-052 outbox, worker, Redis와 generic queue를 이번 범위에 추가하지 않음을 확인한다. 증거: [데이터와 외부 I/O 결정](./p0-boundary-decisions.md)
+- [x] P0-053 route·wire·데이터 호환성의 허용 변경과 금지 변경을 정한다. 증거: [호환성과 중단 조건](./p0-boundary-decisions.md)
+- [x] P0-054 각 단계의 중단 조건과 안전한 되돌리기 지점을 위험 기록에 연결한다. 증거: [호환성과 중단 조건](./p0-boundary-decisions.md)
+- [x] P0-055 P0 게이트: 미배정 책임, 미분류 cross-module 접근과 기준선 미확보 항목이 0개다. 증거: [P0 경계 결정](./p0-boundary-decisions.md), [검증](./p0-validation.md)
 
 ## 5. P1 — workspace, task graph와 architecture 도구
 
 ### 5.1 workspace 전환 준비
 
-- [ ] P1-001 target group을 포함하는 임시 workspace glob을 설계하고 최종 `packages/*` 제거 단계를 P15에 연결한다. 증거:
-- [ ] P1-002 같은 package name이 두 workspace에서 동시에 발견되지 않는 fixture를 추가한다. 증거:
-- [ ] P1-003 source 없는 generated directory가 workspace로 오인되지 않는 fixture를 유지한다. 증거:
-- [ ] P1-004 target 2단계 glob과 최종 package inventory fixture를 추가한다. 증거:
-- [ ] P1-005 root catalog의 공유 dependency 후보를 실제 consumer 수로 다시 계산한다. 증거:
-- [ ] P1-006 공유 dependency는 root exact catalog, 단일 consumer dependency는 workspace manifest가 소유하게 정리한다. 증거:
-- [ ] P1-007 runtime import와 test·build import를 dependency와 devDependency로 구분한다. 증거:
-- [ ] P1-008 내부 dependency를 `workspace:*`로 통일한다. 증거:
-- [ ] P1-009 transitive dependency에 기대는 import를 검사하는 fixture를 추가한다. 증거:
+- [x] P1-001 target group을 포함하는 임시 workspace glob을 설계하고 최종 `packages/*` 제거 단계를 P15에 연결한다. 증거: [Workspace와 config](./p1-validation.md)
+- [x] P1-002 같은 package name이 두 workspace에서 동시에 발견되지 않는 fixture를 추가한다. 증거: `scripts/workspace-inventory.test.ts`
+- [x] P1-003 source 없는 generated directory가 workspace로 오인되지 않는 fixture를 유지한다. 증거: `scripts/workspace-inventory.test.ts`
+- [x] P1-004 target 2단계 glob과 최종 package inventory fixture를 추가한다. 증거: `scripts/fixtures/target-workspace-inventory.json`
+- [x] P1-005 root catalog의 공유 dependency 후보를 실제 consumer 수로 다시 계산한다. 증거: `scripts/check-workspace-dependency-versions.ts`
+- [x] P1-006 공유 dependency는 root exact catalog, 단일 consumer dependency는 workspace manifest가 소유하게 정리한다. 증거: [Workspace와 config](./p1-validation.md)
+- [x] P1-007 runtime import와 test·build import를 dependency와 devDependency로 구분한다. 증거: workspace manifest와 Knip gate
+- [x] P1-008 내부 dependency를 `workspace:*`로 통일한다. 증거: `bun run check:workspace-dependency-versions`
+- [x] P1-009 transitive dependency에 기대는 import를 검사하는 fixture를 추가한다. 증거: dependency-cruiser 금지 fixture
 
 ### 5.2 config package 분리
 
-- [ ] P1-010 `@workspace/typescript-config`의 public config entry와 소비 workspace를 확정한다. 증거:
-- [ ] P1-011 TypeScript config source를 `packages/config/typescript-config`로 이동한다. 증거:
-- [ ] P1-012 모든 workspace의 `extends`와 manifest dependency를 새 package에 맞춘다. 증거:
-- [ ] P1-013 runtime별 strict option과 module resolution이 유지되는지 typecheck한다. 증거:
-- [ ] P1-014 `@workspace/nextjs-config`의 CSP·security header helper 공개 표면을 확정한다. 증거:
-- [ ] P1-015 Next.js config source를 `packages/config/nextjs-config`로 이동한다. 증거:
-- [ ] P1-016 web과 admin config 소비 경로와 dependency를 갱신한다. 증거:
-- [ ] P1-017 `@workspace/env`를 `packages/config/env`로 이동한다. 증거:
-- [ ] P1-018 env parser와 local runtime default의 public subpath를 유지하거나 명시적으로 전환한다. 증거:
-- [ ] P1-019 client bundle이 server env parser를 포함하지 않는지 검사한다. 증거:
-- [ ] P1-020 config package가 다른 workspace package에 의존하지 않는지 검사한다. 증거:
-- [ ] P1-021 이전 `@workspace/config` package와 경로를 제거한다. 증거:
+- [x] P1-010 `@workspace/typescript-config`의 public config entry와 소비 workspace를 확정한다. 증거: package manifest와 [Workspace와 config](./p1-validation.md)
+- [x] P1-011 TypeScript config source를 `packages/config/typescript-config`로 이동한다. 증거: `packages/config/typescript-config/`
+- [x] P1-012 모든 workspace의 `extends`와 manifest dependency를 새 package에 맞춘다. 증거: `bun run typecheck`
+- [x] P1-013 runtime별 strict option과 module resolution이 유지되는지 typecheck한다. 증거: [최종 gate](./p0-validation.md)
+- [x] P1-014 `@workspace/nextjs-config`의 CSP·security header helper 공개 표면을 확정한다. 증거: `packages/config/nextjs-config/package.json`
+- [x] P1-015 Next.js config source를 `packages/config/nextjs-config`로 이동한다. 증거: `packages/config/nextjs-config/`
+- [x] P1-016 web과 admin config 소비 경로와 dependency를 갱신한다. 증거: app manifest·Next config, build gate
+- [x] P1-017 `@workspace/env`를 `packages/config/env`로 이동한다. 증거: `packages/config/env/`
+- [x] P1-018 env parser와 local runtime default의 public subpath를 유지하거나 명시적으로 전환한다. 증거: `packages/config/env/package.json`, env 26 tests
+- [x] P1-019 client bundle이 server env parser를 포함하지 않는지 검사한다. 증거: `frontend-does-not-import-server-env-parser`
+- [x] P1-020 config package가 다른 workspace package에 의존하지 않는지 검사한다. 증거: config 상향 runtime edge 0, architecture gate
+- [x] P1-021 이전 `@workspace/config` package와 경로를 제거한다. 증거: `bun run check:package-interfaces`
 
 ### 5.3 Turborepo와 root task
 
-- [ ] P1-022 `build`, `lint`, `test`, `typecheck`의 dependency graph를 target workspace에 맞춘다. 증거:
-- [ ] P1-023 build output과 cache input이 각 runtime의 실제 output·env 입력을 반영하는지 확인한다. 증거:
-- [ ] P1-024 `dev` task를 persistent·non-cache로 유지한다. 증거:
-- [ ] P1-025 root `check:architecture` entry를 추가한다. 증거:
-- [ ] P1-026 root `check:dead-code` entry를 추가한다. 증거:
-- [ ] P1-027 root lint가 architecture, dead-code와 Oxlint warning 실패를 포함하게 한다. 증거:
-- [ ] P1-028 기존 setup, doctor, DB, Storybook, E2E와 deployment task를 새 workspace graph에서도 보존한다. 증거:
-- [ ] P1-029 CI cache key와 path filter가 2단계 package 경로를 포함하게 한다. 증거:
+- [x] P1-022 `build`, `lint`, `test`, `typecheck`의 dependency graph를 target workspace에 맞춘다. 증거: `turbo.json`, [Task graph와 CI](./p1-validation.md)
+- [x] P1-023 build output과 cache input이 각 runtime의 실제 output·env 입력을 반영하는지 확인한다. 증거: `scripts/turbo-cache-contract.test.ts`
+- [x] P1-024 `dev` task를 persistent·non-cache로 유지한다. 증거: `turbo.json`, lifecycle test
+- [x] P1-025 root `check:architecture` entry를 추가한다. 증거: root `package.json`
+- [x] P1-026 root `check:dead-code` entry를 추가한다. 증거: root `package.json`
+- [x] P1-027 root lint가 architecture, dead-code와 Oxlint warning 실패를 포함하게 한다. 증거: root lint 통과
+- [x] P1-028 기존 setup, doctor, DB, Storybook, E2E와 deployment task를 새 workspace graph에서도 보존한다. 증거: root manifest와 scripts 119 tests
+- [x] P1-029 CI cache key와 path filter가 2단계 package 경로를 포함하게 한다. 증거: `.github/workflows/quality-gates.yml`
 
 ### 5.4 dependency-cruiser
 
-- [ ] P1-030 dependency-cruiser를 root 개발 dependency로 선언한다. 증거:
-- [ ] P1-031 TypeScript config와 private alias를 해석하는 기본 설정을 만든다. 증거:
-- [ ] P1-032 runtime cycle 금지 규칙을 추가하고 type-only edge를 구분한다. 증거:
-- [ ] P1-033 undeclared·unknown dependency 금지 규칙을 추가한다. 증거:
-- [ ] P1-034 config의 상향 의존 금지 규칙을 추가한다. 증거:
-- [ ] P1-035 shared의 app·module·infra 의존 금지 규칙을 추가한다. 증거:
-- [ ] P1-036 infra의 app·module 의존 금지 규칙을 추가한다. 증거:
-- [ ] P1-037 module 간 내부 import 금지 규칙을 capture fixture와 함께 추가한다. 증거:
-- [ ] P1-038 domain 순수성 규칙을 허용·금지 fixture와 함께 추가한다. 증거:
-- [ ] P1-039 application의 concrete adapter·interface 의존 금지 규칙을 추가한다. 증거:
-- [ ] P1-040 frontend의 module·DB·Drizzle import 금지 규칙을 추가한다. 증거:
-- [ ] P1-041 Storybook의 UI·config 외 package import 금지 규칙을 추가한다. 증거:
-- [ ] P1-042 package 내부 private alias와 workspace public subpath 해석 fixture를 추가한다. 증거:
-- [ ] P1-043 넓은 directory 예외 대신 파일·edge 단위의 임시 allowlist와 제거 ID를 기록한다. 증거:
+- [x] P1-030 dependency-cruiser를 root 개발 dependency로 선언한다. 증거: root manifest·lockfile
+- [x] P1-031 TypeScript config와 private alias를 해석하는 기본 설정을 만든다. 증거: `scripts/check-architecture.ts`
+- [x] P1-032 runtime cycle 금지 규칙을 추가하고 type-only edge를 구분한다. 증거: `no-circular-runtime-dependencies`와 fixture
+- [x] P1-033 undeclared·unknown dependency 금지 규칙을 추가한다. 증거: `no-unlisted-dependencies`와 fixture
+- [x] P1-034 config의 상향 의존 금지 규칙을 추가한다. 증거: `config-does-not-depend-up`
+- [x] P1-035 shared의 app·module·infra 의존 금지 규칙을 추가한다. 증거: `shared-does-not-depend-up`
+- [x] P1-036 infra의 app·module 의존 금지 규칙을 추가한다. 증거: `infra-does-not-depend-on-modules-or-apps`
+- [x] P1-037 module 간 내부 import 금지 규칙을 capture fixture와 함께 추가한다. 증거: `modules-do-not-import-other-module-internals`
+- [x] P1-038 domain 순수성 규칙을 허용·금지 fixture와 함께 추가한다. 증거: `domain-is-layer-pure`, runtime framework fixture
+- [x] P1-039 application의 concrete adapter·interface 의존 금지 규칙을 추가한다. 증거: `application-does-not-import-concrete-adapters`
+- [x] P1-040 frontend의 module·DB·Drizzle import 금지 규칙을 추가한다. 증거: frontend·legacy frontend rules
+- [x] P1-041 Storybook의 UI·config 외 package import 금지 규칙을 추가한다. 증거: `storybook-only-consumes-ui-and-config`
+- [x] P1-042 package 내부 private alias와 workspace public subpath 해석 fixture를 추가한다. 증거: dependency-cruiser allowed fixture
+- [x] P1-043 넓은 directory 예외 대신 파일·edge 단위의 임시 allowlist와 제거 ID를 기록한다. 증거: [Graph 정책](../../engineering/repository-architecture-tooling.md)
 
 ### 5.5 Knip과 package interface 검사
 
-- [ ] P1-044 Knip을 root 개발 dependency로 선언한다. 증거:
-- [ ] P1-045 apps와 네 package group의 workspace 설정을 추가한다. 증거:
-- [ ] P1-046 dynamic entry의 실제 사용 경로를 확인하고 필요한 최소 entry만 선언한다. 증거:
-- [ ] P1-047 generated output을 source 검사에서 제외하되 source directory 전체를 숨기지 않는다. 증거:
-- [ ] P1-048 `knip --fix`를 자동 gate에서 제외하고 읽기 전용 검사만 연결한다. 증거:
-- [ ] P1-049 explicit export subpath만 허용하는 package interface 검사를 target package에 맞춘다. 증거:
-- [ ] P1-050 module `./schema`와 `./seed` consumer를 migration·seed tooling으로 제한한다. 증거:
-- [ ] P1-051 broad root barrel, `src` deep import와 자기 public path 역참조 검사를 추가한다. 증거:
-- [ ] P1-052 forwarding file과 삭제된 runtime identifier 재도입 검사를 추가한다. 증거:
+- [x] P1-044 Knip을 root 개발 dependency로 선언한다. 증거: root manifest·lockfile
+- [x] P1-045 apps와 네 package group의 workspace 설정을 추가한다. 증거: `knip.json`
+- [x] P1-046 dynamic entry의 실제 사용 경로를 확인하고 필요한 최소 entry만 선언한다. 증거: `knip.json`
+- [x] P1-047 generated output을 source 검사에서 제외하되 source directory 전체를 숨기지 않는다. 증거: `knip.json`
+- [x] P1-048 `knip --fix`를 자동 gate에서 제외하고 읽기 전용 검사만 연결한다. 증거: root `check:dead-code`
+- [x] P1-049 explicit export subpath만 허용하는 package interface 검사를 target package에 맞춘다. 증거: `scripts/check-package-interfaces.ts`
+- [x] P1-050 module `./schema`와 `./seed` consumer를 migration·seed tooling으로 제한한다. 증거: dependency-cruiser rule
+- [x] P1-051 broad root barrel, `src` deep import와 자기 public path 역참조 검사를 추가한다. 증거: `scripts/check-package-interfaces.ts`
+- [x] P1-052 forwarding file과 삭제된 runtime identifier 재도입 검사를 추가한다. 증거: `scripts/check-package-interfaces.ts`
 
 ### 5.6 custom repository tooling 제거
 
-- [ ] P1-053 `@workspace/repository-tooling`의 모든 consumer를 기능별로 분류한다. 증거:
-- [ ] P1-054 import graph, cycle과 boundary 검사를 dependency-cruiser로 치환한다. 증거:
-- [ ] P1-055 unused file·export·dependency 검사를 Knip으로 치환한다. 증거:
-- [ ] P1-056 workspace inventory 검사를 root manifest 기반의 좁은 검사로 치환한다. 증거:
-- [ ] P1-057 package public surface 검사를 특정 package를 소유하는 root script로 치환한다. 증거:
-- [ ] P1-058 coverage 집계와 CI summary 해석이 필요한지 재검증하고 각 task owner로 이동한다. 증거:
-- [ ] P1-059 기존 검사와 새 검사를 같은 commit에서 실행해 허용·금지 fixture 결과를 대조한다. 증거:
-- [ ] P1-060 새 도구가 놓치는 정책을 좁은 fixture로 보완한다. 증거:
-- [ ] P1-061 root와 workspace manifest에서 `@workspace/repository-tooling` dependency를 제거한다. 증거:
-- [ ] P1-062 `packages/repository-tooling`과 중복 graph script를 제거한다. 증거:
-- [ ] P1-063 architecture 정책이 Oxlint와 custom parser에 중복 구현되지 않았는지 검사한다. 증거:
-- [ ] P1-064 P1 게이트: frozen install, tool fixture, architecture, dead-code, lint와 기존 핵심 build가 통과한다. 증거:
+- [x] P1-053 `@workspace/repository-tooling`의 모든 consumer를 기능별로 분류한다. 증거: [Custom tooling 제거](./p1-validation.md)
+- [x] P1-054 import graph, cycle과 boundary 검사를 dependency-cruiser로 치환한다. 증거: architecture config·runner
+- [x] P1-055 unused file·export·dependency 검사를 Knip으로 치환한다. 증거: `knip.json`, dead-code gate
+- [x] P1-056 workspace inventory 검사를 root manifest 기반의 좁은 검사로 치환한다. 증거: `scripts/workspace-inventory.ts`
+- [x] P1-057 package public surface 검사를 특정 package를 소유하는 root script로 치환한다. 증거: `scripts/check-package-interfaces.ts`
+- [x] P1-058 coverage 집계와 CI summary 해석이 필요한지 재검증하고 각 task owner로 이동한다. 증거: `scripts/coverage-report.ts`, `scripts/ci-workspace-inventory-report.ts`
+- [x] P1-059 기존 검사와 새 검사를 같은 commit에서 실행해 허용·금지 fixture 결과를 대조한다. 증거: [Custom tooling 제거](./p1-validation.md), scripts·workspace test
+- [x] P1-060 새 도구가 놓치는 정책을 좁은 fixture로 보완한다. 증거: dependency-cruiser fixture와 package interface snapshot
+- [x] P1-061 root와 workspace manifest에서 `@workspace/repository-tooling` dependency를 제거한다. 증거: manifest scan·Knip gate
+- [x] P1-062 `packages/repository-tooling`과 중복 graph script를 제거한다. 증거: deleted paths guard
+- [x] P1-063 architecture 정책이 Oxlint와 custom parser에 중복 구현되지 않았는지 검사한다. 증거: [도구 책임](../../engineering/repository-architecture-tooling.md)
+- [x] P1-064 P1 게이트: frozen install, tool fixture, architecture, dead-code, lint와 기존 핵심 build가 통과한다. 증거: [최종 gate](./p0-validation.md)
 
 ## 6. P2 — shared package 기반
 
 ### 6.1 `@workspace/types`
 
-- [ ] P2-001 transport-neutral brand와 ID의 canonical 목록을 P0 contract inventory와 대조한다. 증거:
-- [ ] P2-002 `packages/shared/types` workspace와 private alias를 만든다. 증거:
-- [ ] P2-003 `Brand`를 runtime 없는 type으로 구현한다. 증거:
-- [ ] P2-004 module 간에 전달되는 ID를 의미별 brand로 정의한다. 증거:
-- [ ] P2-005 string→brand 변환을 Zod transform 또는 신뢰 경계 factory로 제한한다. 증거:
-- [ ] P2-006 기존 contracts·core의 중복 brand 정의를 소비자별로 전환한다. 증거:
-- [ ] P2-007 서로 다른 ID의 오용을 거부하는 typecheck fixture를 추가한다. 증거:
-- [ ] P2-008 root barrel 없이 필요한 subpath만 export한다. 증거:
+- [x] P2-001 transport-neutral brand와 ID의 canonical 목록을 P0 contract inventory와 대조한다. 증거: `packages/shared/types/src/ids.ts`, [P2 검증](./p2-validation.md)
+- [x] P2-002 `packages/shared/types` workspace와 private alias를 만든다. 증거: `packages/shared/types/package.json`
+- [x] P2-003 `Brand`를 runtime 없는 type으로 구현한다. 증거: `packages/shared/types/src/brand.ts`
+- [x] P2-004 module 간에 전달되는 ID를 의미별 brand로 정의한다. 증거: `packages/shared/types/src/ids.ts`
+- [x] P2-005 string→brand 변환을 Zod transform 또는 신뢰 경계 factory로 제한한다. 증거: contract ID schema와 adapter·DB ID factory, [P2 검증](./p2-validation.md)
+- [x] P2-006 기존 contracts·core의 중복 brand 정의를 소비자별로 전환한다. 증거: `scripts/check-package-interfaces.ts`
+- [x] P2-007 서로 다른 ID의 오용을 거부하는 typecheck fixture를 추가한다. 증거: `packages/shared/types/src/ids.typecheck.ts`
+- [x] P2-008 root barrel 없이 필요한 subpath만 export한다. 증거: `packages/shared/types/package.json`, package interface gate
 
 ### 6.2 `@workspace/kernel`
 
-- [ ] P2-009 `packages/shared/kernel` workspace와 private alias를 만든다. 증거:
-- [ ] P2-010 neverthrow를 direct dependency로 선언하고 필요한 Result API만 재노출한다. 증거:
-- [ ] P2-011 `Clock` 계약을 정의한다. 증거:
-- [ ] P2-012 generic `IdGenerator` 계약을 정의한다. 증거:
-- [ ] P2-013 immutable `DomainEvent` 계약을 정의한다. 증거:
-- [ ] P2-014 immutable `DomainDecision` 계약을 정의한다. 증거:
-- [ ] P2-015 mutable event queue API를 공개하지 않는 interface test를 추가한다. 증거:
-- [ ] P2-016 기존 core shared Result 소비자를 새 subpath로 전환한다. 증거:
-- [ ] P2-017 kernel이 framework, DB, provider와 `process.env`에 의존하지 않는지 검사한다. 증거:
+- [x] P2-009 `packages/shared/kernel` workspace와 private alias를 만든다. 증거: `packages/shared/kernel/package.json`
+- [x] P2-010 neverthrow를 direct dependency로 선언하고 필요한 Result API만 재노출한다. 증거: `packages/shared/kernel/package.json`, `packages/shared/kernel/src/result.ts`
+- [x] P2-011 `Clock` 계약을 정의한다. 증거: `packages/shared/kernel/src/clock.ts`
+- [x] P2-012 generic `IdGenerator` 계약을 정의한다. 증거: `packages/shared/kernel/src/clock.ts`
+- [x] P2-013 immutable `DomainEvent` 계약을 정의한다. 증거: `packages/shared/kernel/src/domain-event.ts`
+- [x] P2-014 immutable `DomainDecision` 계약을 정의한다. 증거: `packages/shared/kernel/src/domain-event.ts`
+- [x] P2-015 mutable event queue API를 공개하지 않는 interface test를 추가한다. 증거: `packages/shared/kernel/src/domain-event.typecheck.ts`
+- [x] P2-016 기존 core shared Result 소비자를 새 subpath로 전환한다. 증거: core·API import와 387개 회귀 test, [P2 검증](./p2-validation.md)
+- [x] P2-017 kernel이 framework, DB, provider와 `process.env`에 의존하지 않는지 검사한다. 증거: `kernel-does-not-import-*` architecture 규칙과 package interface gate
 
 ### 6.3 `@workspace/errors`
 
-- [ ] P2-018 공통 infrastructure·transport 오류 vocabulary의 최소 범위를 확정한다. 증거:
-- [ ] P2-019 `packages/shared/errors` workspace를 만든다. 증거:
-- [ ] P2-020 오류를 immutable discriminated union으로 정의한다. 증거:
-- [ ] P2-021 module domain error가 shared package로 새어 나오지 않게 검사한다. 증거:
-- [ ] P2-022 public error에 cause, stack, SQL, credential과 개인정보가 포함되지 않는 test를 추가한다. 증거:
+- [x] P2-018 공통 infrastructure·transport 오류 vocabulary의 최소 범위를 확정한다. 증거: `packages/shared/errors/src/infrastructure-error.ts`, `transport-error.ts`
+- [x] P2-019 `packages/shared/errors` workspace를 만든다. 증거: `packages/shared/errors/package.json`
+- [x] P2-020 오류를 immutable discriminated union으로 정의한다. 증거: errors source와 typecheck fixture
+- [x] P2-021 module domain error가 shared package로 새어 나오지 않게 검사한다. 증거: `scripts/check-package-interfaces.ts`, `error-vocabulary.typecheck.ts`
+- [x] P2-022 public error에 cause, stack, SQL, credential과 개인정보가 포함되지 않는 test를 추가한다. 증거: `packages/shared/errors/src/error-vocabulary.test.ts`
 
 ### 6.4 `@workspace/event-contracts`
 
-- [ ] P2-023 P0에서 분류한 cross-module event만 canonical event map에 포함한다. 증거:
-- [ ] P2-024 `packages/shared/event-contracts` workspace를 만든다. 증거:
-- [ ] P2-025 event name을 `<context>.<past-tense-kebab>` 형식으로 정의한다. 증거:
-- [ ] P2-026 payload가 brand ID와 immutable 값만 포함하게 한다. 증거:
-- [ ] P2-027 entity, repository, use case와 HTTP DTO import를 금지한다. 증거:
-- [ ] P2-028 event name과 payload의 exhaustive type fixture를 추가한다. 증거:
+- [x] P2-023 P0에서 분류한 cross-module event만 canonical event map에 포함한다. 증거: `packages/shared/event-contracts/src/workspace-event.ts`, [P2 검증](./p2-validation.md)
+- [x] P2-024 `packages/shared/event-contracts` workspace를 만든다. 증거: `packages/shared/event-contracts/package.json`
+- [x] P2-025 event name을 `<context>.<past-tense-kebab>` 형식으로 정의한다. 증거: `WorkspaceEventMap`
+- [x] P2-026 payload가 brand ID와 immutable 값만 포함하게 한다. 증거: `WorkspaceEventMap`, kernel immutable event fixture
+- [x] P2-027 entity, repository, use case와 HTTP DTO import를 금지한다. 증거: `event-contracts-only-import-kernel-and-types` architecture 규칙
+- [x] P2-028 event name과 payload의 exhaustive type fixture를 추가한다. 증거: `packages/shared/event-contracts/src/workspace-event.typecheck.ts`
 
 ### 6.5 `@workspace/contracts`
 
-- [ ] P2-029 기존 contract 소비자와 public subpath를 기준선 inventory와 대조한다. 증거:
-- [ ] P2-030 package를 `packages/shared/contracts`로 이동한다. 증거:
-- [ ] P2-031 `learning`, `content`, `identity`, `ai-feedback`, `resource-library`, `operations` subpath를 만든다. 증거:
-- [ ] P2-032 기존 `admin` umbrella contract를 새 context owner로 분리한다. 증거:
-- [ ] P2-033 request, response와 공개 오류를 canonical Zod schema로 정의한다. 증거:
-- [ ] P2-034 schema에서 타입을 추론하고 별도 수기 wire type 중복을 제거한다. 증거:
-- [ ] P2-035 성공 response도 endpoint schema로 parse하도록 consumer contract를 고정한다. 증거:
-- [ ] P2-036 root barrel과 broad context barrel을 제거하거나 좁은 subpath로 교체한다. 증거:
-- [ ] P2-037 module domain·application이 HTTP contract를 import하지 않는 fixture를 추가한다. 증거:
-- [ ] P2-038 frontend와 HTTP interface가 같은 schema instance를 소비하는 contract test를 추가한다. 증거:
-- [ ] P2-039 정적 OpenAPI 사본과 generated client가 생기지 않는 guard를 추가한다. 증거:
+- [x] P2-029 기존 contract 소비자와 public subpath를 기준선 inventory와 대조한다. 증거: exact export snapshot과 [P2 검증](./p2-validation.md)
+- [x] P2-030 package를 `packages/shared/contracts`로 이동한다. 증거: 새 manifest와 이전 경로 삭제 guard
+- [x] P2-031 `learning`, `content`, `identity`, `ai-feedback`, `resource-library`, `operations` subpath를 만든다. 증거: `packages/shared/contracts/package.json`
+- [x] P2-032 기존 `admin` umbrella contract를 새 context owner로 분리한다. 증거: context별 source와 broad `admin` export 부재
+- [x] P2-033 request, response와 공개 오류를 canonical Zod schema로 정의한다. 증거: contracts 56 tests
+- [x] P2-034 schema에서 타입을 추론하고 별도 수기 wire type 중복을 제거한다. 증거: context contract source와 dead-code gate
+- [x] P2-035 성공 response도 endpoint schema로 parse하도록 consumer contract를 고정한다. 증거: `scripts/check-package-interfaces.ts`, web·admin HTTP transport test
+- [x] P2-036 root barrel과 broad context barrel을 제거하거나 좁은 subpath로 교체한다. 증거: exact export snapshot과 package interface gate
+- [x] P2-037 module domain·application이 HTTP contract를 import하지 않는 fixture를 추가한다. 증거: dependency-cruiser forbidden fixture와 `module-domain-and-application-do-not-import-http-contracts`
+- [x] P2-038 frontend와 HTTP interface가 같은 schema instance를 소비하는 contract test를 추가한다. 증거: canonical schema consumer guard와 전체 app test
+- [x] P2-039 정적 OpenAPI 사본과 generated client가 생기지 않는 guard를 추가한다. 증거: `scripts/check-package-interfaces.ts`
 
 ### 6.6 `@workspace/resource-document`
 
-- [ ] P2-040 package를 `packages/shared/resource-document`로 이동한다. 증거:
-- [ ] P2-041 GFM Markdown을 canonical document source로 유지한다. 증거:
-- [ ] P2-042 AST parse·serialize와 validation public surface를 좁게 정의한다. 증거:
-- [ ] P2-043 Lexical headless 변환과 React editor dependency를 분리한다. 증거:
-- [ ] P2-044 tree, 저장, 권한, asset lifecycle 코드가 package에 남지 않는지 검사한다. 증거:
-- [ ] P2-045 기존 Markdown round-trip과 invalid input test를 통과시킨다. 증거:
+- [x] P2-040 package를 `packages/shared/resource-document`로 이동한다. 증거: 새 manifest와 이전 경로 삭제 guard
+- [x] P2-041 GFM Markdown을 canonical document source로 유지한다. 증거: `resource-markdown.ts`와 Markdown test
+- [x] P2-042 AST parse·serialize와 validation public surface를 좁게 정의한다. 증거: resource-document exact export snapshot
+- [x] P2-043 Lexical headless 변환과 React editor dependency를 분리한다. 증거: resource-document manifest와 admin editor 소비 경계
+- [x] P2-044 tree, 저장, 권한, asset lifecycle 코드가 package에 남지 않는지 검사한다. 증거: package interface ownership file guard
+- [x] P2-045 기존 Markdown round-trip과 invalid input test를 통과시킨다. 증거: 3개 파일·71개 test 통과
 
 ### 6.7 `@workspace/ui`
 
-- [ ] P2-046 package를 `packages/shared/ui`로 이동한다. 증거:
-- [ ] P2-047 접근성 primitive와 학습 표현 component의 export를 분류한다. 증거:
-- [ ] P2-048 React와 React DOM의 peer·dev dependency 관계를 정리한다. 증거:
-- [ ] P2-049 API, auth, DB, module, HTTP client와 Next navigation import를 제거한다. 증거:
-- [ ] P2-050 component가 data와 command를 props로만 받는지 검사한다. 증거:
-- [ ] P2-051 root barrel 없이 primitive 단위 public subpath를 유지한다. 증거:
-- [ ] P2-052 Storybook story, interaction과 a11y test를 새 경로로 전환한다. 증거:
-- [ ] P2-053 P2 게이트: shared package가 app·module·infra를 import하지 않고 package test·typecheck·Storybook build가 통과한다. 증거:
+- [x] P2-046 package를 `packages/shared/ui`로 이동한다. 증거: 새 manifest와 이전 경로 삭제 guard
+- [x] P2-047 접근성 primitive와 학습 표현 component의 export를 분류한다. 증거: UI export category guard
+- [x] P2-048 React와 React DOM의 peer·dev dependency 관계를 정리한다. 증거: `packages/shared/ui/package.json`
+- [x] P2-049 API, auth, DB, module, HTTP client와 Next navigation import를 제거한다. 증거: `shared-ui-does-not-import-application-boundaries` architecture 규칙
+- [x] P2-050 component가 data와 command를 props로만 받는지 검사한다. 증거: UI 직접 I/O·server command guard와 component test
+- [x] P2-051 root barrel 없이 primitive 단위 public subpath를 유지한다. 증거: UI manifest와 export category guard
+- [x] P2-052 Storybook story, interaction과 a11y test를 새 경로로 전환한다. 증거: Storybook 42개 파일·179개 test, 정적 build 통과
+- [x] P2-053 P2 게이트: shared package가 app·module·infra를 import하지 않고 package test·typecheck·Storybook build가 통과한다. 증거: [P2 검증](./p2-validation.md), root lint·typecheck·test·build 통과
 
 ## 7. P3 — infra package 기반
 
 ### 7.1 `@workspace/db`
 
-- [ ] P3-001 connection, transaction, migration runner, backup·restore와 destructive guard source를 식별한다. 증거:
-- [ ] P3-002 DB package를 `packages/infra/db`로 이동한다. 증거:
-- [ ] P3-003 Bun SQLite connection과 close lifecycle을 명시적 factory로 만든다. 증거:
-- [ ] P3-004 transaction primitive가 module schema나 business policy를 알지 않게 한다. 증거:
-- [ ] P3-005 기존 domain policy와 content normalization을 content module 이동 대상으로 표시한다. 증거:
-- [ ] P3-006 기존 module schema의 임시 잔존 항목마다 P4~P9 제거 ID를 연결한다. 증거:
-- [ ] P3-007 DB package가 최종적으로 module schema를 import·re-export하지 않는 interface test를 준비한다. 증거:
-- [ ] P3-008 backup·restore와 destructive guard 회귀 테스트를 새 경로에서 통과시킨다. 증거:
+- [x] P3-001 connection, transaction, migration runner, backup·restore와 destructive guard source를 식별한다. 증거: `packages/infra/db/src`, [P3 검증](./p3-validation.md)
+- [x] P3-002 DB package를 `packages/infra/db`로 이동한다. 증거: 새 manifest와 이전 경로 삭제 guard
+- [x] P3-003 Bun SQLite connection과 close lifecycle을 명시적 factory로 만든다. 증거: `sqlite-database.ts`와 client test
+- [x] P3-004 transaction primitive가 module schema나 business policy를 알지 않게 한다. 증거: generic `runInSqliteTransaction`, package interface gate
+- [x] P3-005 기존 domain policy와 content normalization을 content module 이동 대상으로 표시한다. 증거: DB transition inventory의 P5 제거 ID
+- [x] P3-006 기존 module schema의 임시 잔존 항목마다 P4~P9 제거 ID를 연결한다. 증거: `scripts/fixtures/infra-db-module-schema-transition.json`
+- [x] P3-007 DB package가 최종적으로 module schema를 import·re-export하지 않는 interface test를 준비한다. 증거: transition inventory·`scripts/check-package-interfaces.ts`, P11 제거 단계
+- [x] P3-008 backup·restore와 destructive guard 회귀 테스트를 새 경로에서 통과시킨다. 증거: DB 8개 file·46개 test
 
 ### 7.2 `@workspace/auth`
 
-- [ ] P3-009 auth package를 `packages/infra/auth`로 이동한다. 증거:
-- [ ] P3-010 Better Auth direct import를 이 package 안으로 제한한다. 증거:
-- [ ] P3-011 learner Google OAuth와 admin ID/password runtime을 분리한다. 증거:
-- [ ] P3-012 credential, cookie, token과 session lifecycle의 public subpath를 좁게 정의한다. 증거:
-- [ ] P3-013 Better Auth schema와 DB rate-limit counter의 소유권을 auth에 둔다. 증거:
-- [ ] P3-014 제품 profile, user status와 admin role policy를 auth에서 제거할 대상으로 연결한다. 증거:
-- [ ] P3-015 client subpath가 server, DB와 ORM을 번들하지 않는 test를 통과시킨다. 증거:
-- [ ] P3-016 test auth가 production configuration에서 fail-closed하는지 회귀 테스트한다. 증거:
+- [x] P3-009 auth package를 `packages/infra/auth`로 이동한다. 증거: 새 manifest와 이전 경로 삭제 guard
+- [x] P3-010 Better Auth direct import를 이 package 안으로 제한한다. 증거: provider ownership architecture·interface gate
+- [x] P3-011 learner Google OAuth와 admin ID/password runtime을 분리한다. 증거: `learner/server.ts`, `admin/server.ts`와 통합 test
+- [x] P3-012 credential, cookie, token과 session lifecycle의 public subpath를 좁게 정의한다. 증거: auth manifest exact export snapshot
+- [x] P3-013 Better Auth schema와 DB rate-limit counter의 소유권을 auth에 둔다. 증거: auth `./schema`, auth-owned migration·schema test
+- [x] P3-014 제품 profile, user status와 admin role policy를 auth에서 제거할 대상으로 연결한다. 증거: P4-001·005·007·033
+- [x] P3-015 client subpath가 server, DB와 ORM을 번들하지 않는 test를 통과시킨다. 증거: auth client boundary interface gate와 6개 client test
+- [x] P3-016 test auth가 production configuration에서 fail-closed하는지 회귀 테스트한다. 증거: API env test와 test-auth plugin test
 
 ### 7.3 `@workspace/http-client`
 
-- [ ] P3-017 package를 `packages/infra/http-client`로 이동한다. 증거:
-- [ ] P3-018 network, HTTP, contract와 success variant를 구분한다. 증거:
-- [ ] P3-019 consumer가 전달한 Zod success schema를 실행하게 한다. 증거:
-- [ ] P3-020 internal cause가 UI message로 직접 노출되지 않는 test를 추가한다. 증거:
-- [ ] P3-021 server와 browser 소비자가 공유할 수 있는 transport-neutral surface만 export한다. 증거:
+- [x] P3-017 package를 `packages/infra/http-client`로 이동한다. 증거: 새 manifest와 이전 경로 삭제 guard
+- [x] P3-018 network, HTTP, contract와 success variant를 구분한다. 증거: `json-transport.ts` discriminated union
+- [x] P3-019 consumer가 전달한 Zod success schema를 실행하게 한다. 증거: HTTP client·web·admin contract test
+- [x] P3-020 internal cause가 UI message로 직접 노출되지 않는 test를 추가한다. 증거: `json-transport.test.ts`
+- [x] P3-021 server와 browser 소비자가 공유할 수 있는 transport-neutral surface만 export한다. 증거: `./api-result`, `./json-transport` exact exports와 bundle boundary gate
 
 ### 7.4 `@workspace/ai`
 
-- [ ] P3-022 apps/api의 OpenAI·Mastra runtime과 lifecycle source를 식별한다. 증거:
-- [ ] P3-023 `packages/infra/ai` workspace를 만든다. 증거:
-- [ ] P3-024 OpenAI client와 Mastra runtime을 명시적 factory로 이동한다. 증거:
-- [ ] P3-025 validated config, timeout과 AbortSignal을 factory input으로 받는다. 증거:
-- [ ] P3-026 provider exception을 typed infrastructure error로 정규화한다. 증거:
-- [ ] P3-027 provider key 부재를 fail-closed Result로 반환한다. 증거:
-- [ ] P3-028 prompt, coaching policy, attempt와 제품 DTO가 infra package에 들어오지 않는지 검사한다. 증거:
-- [ ] P3-029 close가 idempotent하고 partial initialization failure에서 호출되는지 test한다. 증거:
+- [x] P3-022 apps/api의 OpenAI·Mastra runtime과 lifecycle source를 식별한다. 증거: API AI adapter와 [P3 검증](./p3-validation.md)
+- [x] P3-023 `packages/infra/ai` workspace를 만든다. 증거: AI manifest·workspace inventory
+- [x] P3-024 OpenAI client와 Mastra runtime을 명시적 factory로 이동한다. 증거: `openai-client.ts`, `mastra-runtime.ts`
+- [x] P3-025 validated config, timeout과 AbortSignal을 factory input으로 받는다. 증거: AI config schema와 test
+- [x] P3-026 provider exception을 typed infrastructure error로 정규화한다. 증거: `AiInfrastructureError`, provider error test
+- [x] P3-027 provider key 부재를 fail-closed Result로 반환한다. 증거: AI infrastructure test
+- [x] P3-028 prompt, coaching policy, attempt와 제품 DTO가 infra package에 들어오지 않는지 검사한다. 증거: P3 infrastructure ownership gate
+- [x] P3-029 close가 idempotent하고 partial initialization failure에서 호출되는지 test한다. 증거: AI lifecycle test 2건
 
 ### 7.5 `@workspace/event-bus`
 
-- [ ] P3-030 Emittery를 event-bus workspace의 direct dependency로 선언한다. 증거:
-- [ ] P3-031 `packages/infra/event-bus` workspace를 만든다. 증거:
-- [ ] P3-032 typed `publish`가 listener 완료를 기다리는 `ResultAsync`를 반환하게 한다. 증거:
-- [ ] P3-033 listener 다중 실패가 관측 가능한 error cause로 보존되는지 test한다. 증거:
-- [ ] P3-034 기본 dispatch가 listener 순서에 의존하지 않는지 test한다. 증거:
-- [ ] P3-035 `subscribe`가 teardown용 unsubscribe를 반환하게 한다. 증거:
-- [ ] P3-036 in-memory delivery의 한계를 public contract와 test 이름에 명시한다. 증거:
-- [ ] P3-037 durable projection consumer가 event bus를 사용하지 않는지 검사한다. 증거:
+- [x] P3-030 Emittery를 event-bus workspace의 direct dependency로 선언한다. 증거: event-bus manifest·lockfile
+- [x] P3-031 `packages/infra/event-bus` workspace를 만든다. 증거: manifest·workspace inventory
+- [x] P3-032 typed `publish`가 listener 완료를 기다리는 `ResultAsync`를 반환하게 한다. 증거: `in-memory-event-bus.ts`와 async completion test
+- [x] P3-033 listener 다중 실패가 관측 가능한 error cause로 보존되는지 test한다. 증거: 다중 cause test
+- [x] P3-034 기본 dispatch가 listener 순서에 의존하지 않는지 test한다. 증거: slow·fast listener test
+- [x] P3-035 `subscribe`가 teardown용 unsubscribe를 반환하게 한다. 증거: idempotent unsubscribe test
+- [x] P3-036 in-memory delivery의 한계를 public contract와 test 이름에 명시한다. 증거: `best-effort-process-local` delivery 계약
+- [x] P3-037 durable projection consumer가 event bus를 사용하지 않는지 검사한다. 증거: package interface durable consumer guard
 
 ### 7.6 `@workspace/storage`
 
-- [ ] P3-038 기존 R2·S3 client source와 asset policy source를 분리한다. 증거:
-- [ ] P3-039 `packages/infra/storage` workspace를 만든다. 증거:
-- [ ] P3-040 AWS SDK client와 object adapter를 validated config로 생성한다. 증거:
-- [ ] P3-041 SDK exception을 typed infrastructure error로 변환한다. 증거:
-- [ ] P3-042 object key, MIME, ownership과 document relation이 module에 남도록 한다. 증거:
-- [ ] P3-043 provider retry와 application retry가 중복되지 않는 test·설명을 추가한다. 증거:
+- [x] P3-038 기존 R2·S3 client source와 asset policy source를 분리한다. 증거: infra object adapter와 API `resource-image-file.ts`
+- [x] P3-039 `packages/infra/storage` workspace를 만든다. 증거: storage manifest·workspace inventory
+- [x] P3-040 AWS SDK client와 object adapter를 validated config로 생성한다. 증거: `createS3ObjectStorage`
+- [x] P3-041 SDK exception을 typed infrastructure error로 변환한다. 증거: `ObjectStorageError`와 cause test
+- [x] P3-042 object key, MIME, ownership과 document relation이 module에 남도록 한다. 증거: storage ownership interface gate
+- [x] P3-043 provider retry와 application retry가 중복되지 않는 test·설명을 추가한다. 증거: single operation test와 [P3 검증](./p3-validation.md)
 
 ### 7.7 `@workspace/observability`
 
-- [ ] P3-044 apps/api의 logger와 audit event source를 식별한다. 증거:
-- [ ] P3-045 `packages/infra/observability` workspace를 만든다. 증거:
-- [ ] P3-046 Pino root·child logger를 validated config로 생성한다. 증거:
-- [ ] P3-047 request, security, owner mutation, provider와 event dispatch event type을 정의한다. 증거:
-- [ ] P3-048 secret, credential, session token, 원문 답안과 불필요한 개인정보 redaction test를 추가한다. 증거:
-- [ ] P3-049 product source의 `console.log`·`console.error`를 logger 호출로 전환한다. 증거:
-- [ ] P3-050 logger package의 `process.env` 직접 접근을 제거한다. 증거:
-- [ ] P3-051 flush 실패와 shutdown 동작을 관측 가능하게 한다. 증거:
+- [x] P3-044 apps/api의 logger와 audit event source를 식별한다. 증거: observability source 이동과 [P3 검증](./p3-validation.md)
+- [x] P3-045 `packages/infra/observability` workspace를 만든다. 증거: observability manifest·workspace inventory
+- [x] P3-046 Pino root·child logger를 validated config로 생성한다. 증거: `logger.ts`와 JSON logger test
+- [x] P3-047 request, security, owner mutation, provider와 event dispatch event type을 정의한다. 증거: `events.ts`
+- [x] P3-048 secret, credential, session token, 원문 답안과 불필요한 개인정보 redaction test를 추가한다. 증거: recursive redaction test
+- [x] P3-049 product source의 `console.log`·`console.error`를 logger 호출로 전환한다. 증거: production console guard
+- [x] P3-050 logger package의 `process.env` 직접 접근을 제거한다. 증거: P3 infrastructure ownership gate
+- [x] P3-051 flush 실패와 shutdown 동작을 관측 가능하게 한다. 증거: logger lifecycle Result·test
 
 ### 7.8 `@workspace/http-platform`
 
-- [ ] P3-052 apps/api의 Hono context, route helper와 공통 security source를 식별한다. 증거:
-- [ ] P3-053 `packages/infra/http-platform` workspace를 만든다. 증거:
-- [ ] P3-054 Hono env와 request context 타입을 이동한다. 증거:
-- [ ] P3-055 runtime OpenAPI helper를 이동하고 endpoint contract 소유권은 module에 남긴다. 증거:
-- [ ] P3-056 body limit, trusted origin과 private no-store middleware를 이동한다. 증거:
-- [ ] P3-057 request ID와 logger 연결 기반을 이동한다. 증거:
-- [ ] P3-058 global unexpected error handler가 내부 원인을 숨기고 request ID를 반환하는지 test한다. 증거:
-- [ ] P3-059 module error mapping, authorization policy와 repository가 package에 들어오지 않는지 검사한다. 증거:
-- [ ] P3-060 모든 infra package의 `process.env` 직접 접근을 0개로 만든다. 증거:
-- [ ] P3-061 P3 게이트: infra가 modules·apps를 import하지 않고 package test·typecheck와 관련 API test가 통과한다. 증거:
+- [x] P3-052 apps/api의 Hono context, route helper와 공통 security source를 식별한다. 증거: HTTP platform source 이동과 [P3 검증](./p3-validation.md)
+- [x] P3-053 `packages/infra/http-platform` workspace를 만든다. 증거: HTTP platform manifest·workspace inventory
+- [x] P3-054 Hono env와 request context 타입을 이동한다. 증거: `context.ts`와 API env alias
+- [x] P3-055 runtime OpenAPI helper를 이동하고 endpoint contract 소유권은 module에 남긴다. 증거: `openapi.ts`, API endpoint schema
+- [x] P3-056 body limit, trusted origin과 private no-store middleware를 이동한다. 증거: `security` exact export와 4개 security test
+- [x] P3-057 request ID와 logger 연결 기반을 이동한다. 증거: request-logging middleware와 6개 test
+- [x] P3-058 global unexpected error handler가 내부 원인을 숨기고 request ID를 반환하는지 test한다. 증거: HTTP platform create-app·API learner/admin error test
+- [x] P3-059 module error mapping, authorization policy와 repository가 package에 들어오지 않는지 검사한다. 증거: HTTP platform ownership interface gate
+- [x] P3-060 모든 infra package의 `process.env` 직접 접근을 0개로 만든다. 증거: P3 infrastructure ownership gate
+- [x] P3-061 P3 게이트: infra가 modules·apps를 import하지 않고 package test·typecheck와 관련 API test가 통과한다. 증거: [P3 검증](./p3-validation.md)
 
 ## 8. P4 — `identity` 모듈 전환
 

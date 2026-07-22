@@ -4,11 +4,11 @@ import {
   createLessonSessionState,
   transitionLessonSession,
 } from "@/features/lesson-session/model/lesson-session-machine"
+import { learnerCompleteStepResponseSchema } from "@workspace/contracts/learning/learner-api"
 import {
-  learnerCompleteStepResponseSchema,
   learnerStepSubmissionSchema,
   stepEvaluationSchema,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-transition"
 
 describe("lesson session machine", () => {
   it("서버 retry 평가에서는 index를 유지한다", () => {

@@ -1,10 +1,7 @@
 import { z } from "zod"
+import type { CourseId } from "@workspace/types/ids"
 
-declare const courseIdBrand: unique symbol
-
-export type CourseId = string & {
-  readonly [courseIdBrand]: true
-}
+export type { CourseId } from "@workspace/types/ids"
 
 export const courseIdSchema = z
   .string()

@@ -1,9 +1,7 @@
 "use client"
 
-import type {
-  CompleteLearnerStepResult,
-  LearnerLesson as Lesson,
-} from "@workspace/contracts/learning"
+import type { CompleteLearnerStepResult } from "@workspace/contracts/learning/learner-transition"
+import type { LearnerLesson as Lesson } from "@workspace/contracts/learning/learner-content"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"
 

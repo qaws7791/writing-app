@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 
-import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning"
+import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning/learner-content"
 import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
 import type { LessonStepCheckedVisual } from "@workspace/ui/components/lesson/lesson-step-checked-visual"
 

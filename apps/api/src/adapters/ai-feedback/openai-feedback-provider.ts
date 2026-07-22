@@ -1,6 +1,7 @@
-import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback"
+import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
 import type { AiFeedbackProvider } from "@workspace/core/ai-feedback"
-import OpenAI from "openai"
+import { err, ok } from "@workspace/kernel/result"
+import { createOpenAiClient } from "@workspace/ai/openai-client"
 
 export type OpenAiResponseCreateRequest = {
   readonly input: string
@@ -48,10 +49,11 @@ export function createConfiguredAiFeedbackProvider({
   readonly model: string
   readonly onUsage?: (event: OpenAiUsageEvent) => void
 }): AiFeedbackProvider {
-  if (apiKey === undefined) return createUnavailableAiFeedbackProvider()
+  const clientResult = createOpenAiClient({ apiKey, timeoutMs: 30_000 })
+  if (clientResult.isErr()) return createUnavailableAiFeedbackProvider()
 
   return createOpenAiFeedbackProvider({
-    client: new OpenAI({ apiKey }),
+    client: clientResult.value.client,
     model,
     onUsage,
   })
@@ -95,19 +97,11 @@ export function createOpenAiFeedbackProvider({
           })
         }
 
-        return {
-          kind: "ok",
-          value: aiFeedbackPayloadSchema.parse(
-            JSON.parse(response.output_text)
-          ),
-        }
+        return ok(
+          aiFeedbackPayloadSchema.parse(JSON.parse(response.output_text))
+        )
       } catch {
-        return {
-          error: {
-            kind: "provider-unavailable",
-          },
-          kind: "err",
-        }
+        return err({ kind: "provider-unavailable" })
       }
     },
   }
@@ -116,12 +110,7 @@ export function createOpenAiFeedbackProvider({
 export function createUnavailableAiFeedbackProvider(): AiFeedbackProvider {
   return {
     async createFeedback() {
-      return {
-        error: {
-          kind: "provider-unavailable",
-        },
-        kind: "err",
-      }
+      return err({ kind: "provider-unavailable" })
     },
   }
 }

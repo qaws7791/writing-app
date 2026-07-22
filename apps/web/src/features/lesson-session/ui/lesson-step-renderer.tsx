@@ -27,7 +27,7 @@ import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-c
 import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
-import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning"
+import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning/learner-content"
 
 export type LessonStepRendererProps = {
   readonly answerError?: null | string

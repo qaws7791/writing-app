@@ -1,10 +1,8 @@
-import type { AdminDashboardDto } from "@workspace/contracts/admin/dashboard-analytics-data"
-import { userIdSchema } from "@workspace/contracts/admin/identity-data"
-import {
-  contentStatuses,
-  learnerAccountStatuses,
-  lessonProgressStatuses,
-} from "@workspace/contracts/status"
+import type { AdminDashboardDto } from "@workspace/contracts/operations/dashboard-analytics-data"
+import { userIdSchema } from "@workspace/contracts/identity/data"
+import { contentStatuses } from "@workspace/contracts/content/status"
+import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
+import { lessonProgressStatuses } from "@workspace/contracts/learning/status"
 import type {
   AdminDashboardReader,
   ReadAdminDashboardInput,

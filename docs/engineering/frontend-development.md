@@ -1,6 +1,6 @@
 # 프론트엔드 개발 가이드
 
-이 문서는 `apps/web`, `apps/admin`, `packages/ui`를 개발할 때 따르는 프론트엔드 원칙을 정리한다. 모든 문서와 사용자 노출 텍스트는 한국어를 기본으로 하며, 기술 고유명사와 코드 식별자는 원문을 유지한다.
+이 문서는 `apps/web`, `apps/admin`, `packages/shared/ui`를 개발할 때 따르는 프론트엔드 원칙을 정리한다. 모든 문서와 사용자 노출 텍스트는 한국어를 기본으로 하며, 기술 고유명사와 코드 식별자는 원문을 유지한다.
 
 ## 기본 원칙
 
@@ -8,15 +8,15 @@
 - 앱은 조립자 역할을 한다. 비즈니스 규칙은 가능한 한 `packages/core` 또는 feature 내부 순수 함수에 둔다.
 - 외부 API 응답은 canonical runtime schema로 먼저 검증한다. 화면 모델과 의미가 같으면 canonical 타입을 직접 사용하고, 실제 UI 모델 차이가 있을 때만 mapper를 둔다.
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
-- 공유 UI는 `packages/ui`에 둔다. `components/ui`는 shadcn 프리미티브, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점, 라우팅은 각 앱 feature에서 조합한다.
-- 학습자 공개 모델과 답안 payload는 `@workspace/contracts/learning`을 직접 사용한다. `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
+- 공유 UI는 `packages/shared/ui`에 둔다. `components/ui`는 shadcn 프리미티브, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점, 라우팅은 각 앱 feature에서 조합한다.
+- 학습자 공개 모델과 답안 payload는 `@workspace/contracts/learning/learner-content`와 `@workspace/contracts/learning/learner-transition`을 직접 사용한다. `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
 
 ## 기술과 적용 범위
 
 - 학습자 웹과 어드민 웹은 Next.js 16 App Router와 React 19를 사용한다. 기본 런타임은 Node.js이며, Edge runtime은 지연 개선이 실측되고 모든 의존성이 호환되는 좁은 경계에서만 검토한다.
 - 패키지 관리와 workspace 실행은 Bun과 Turborepo, 정적 타입 검사는 TypeScript strict, 런타임 신뢰 경계 검증은 Zod를 사용한다.
-- 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
-- Better Auth integration은 `packages/auth`, 인증 영속성 mapping·lifecycle과 도메인 실행은 `apps/api`가 소유한다. Next.js 앱은 DB나 ORM에 직접 접근하지 않고 학습자 또는 관리자 Hono API를 호출한다.
+- 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/shared/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
+- Better Auth integration과 인증 schema는 `packages/infra/auth`, 제품 profile·role policy와 app 전용 repository 조립은 `apps/api`가 소유한다. Next.js 앱은 DB나 ORM에 직접 접근하지 않고 학습자 또는 관리자 Hono API를 호출한다.
 - TanStack Query, Zustand, React Hook Form, `next-intl` 같은 라이브러리는 기본 전제가 아니다. 현재 feature의 요구와 기존 도구로 해결할 수 없는 문제가 확인되고 소유권·번들·운영 비용이 정당화될 때만 별도 결정으로 도입한다.
 
 ## 소스 구조와 의존성
@@ -90,9 +90,9 @@
 
 ## 데이터 접근 경계
 
-`apps/web`의 공통 HTTP transport는 `src/shared/http`에 있고, 서버 요청 factory는 `src/server/http`가 소유한다. 각 브라우저 화면은 자기 `features/*/api`의 좁은 포트를 사용하고, Server Component는 `features/*/server/dal`을 직접 호출한다. 정적 OpenAPI JSON과 generated TypeScript 타입은 사용하지 않는다. HTTP 응답은 `@workspace/contracts/learning`의 canonical runtime schema로 검증하며 course·progress·lesson·profile은 identity 변환 없이 화면에 전달한다. 코스 목록의 검색·분류·정렬은 Zod로 파싱한 URL 조건을 API query로 전달하고 `/course-categories` 결과를 별도로 사용한다.
+`apps/web`의 공통 HTTP transport는 `src/shared/http`에 있고, 서버 요청 factory는 `src/server/http`가 소유한다. 각 브라우저 화면은 자기 `features/*/api`의 좁은 포트를 사용하고, Server Component는 `features/*/server/dal`을 직접 호출한다. 정적 OpenAPI JSON과 generated TypeScript 타입은 사용하지 않는다. HTTP 응답은 `@workspace/contracts/learning/learner-api`, `@workspace/contracts/learning/learner-read-model`, `@workspace/contracts/learning/learner-transition`의 canonical runtime schema로 검증하며 course·progress·lesson·profile은 identity 변환 없이 화면에 전달한다. 코스 목록의 검색·분류·정렬은 Zod로 파싱한 URL 조건을 API query로 전달하고 `/course-categories` 결과를 별도로 사용한다.
 
-`apps/admin`의 공통 HTTP result와 transport는 `src/shared/http`, 요청별 인증 transport factory는 `src/server/http`가 소유한다. Server Component는 자기 `features/*/server`의 좁은 DAL을 호출하고, 브라우저 재조회가 필요한 코스 편집기와 자료실만 자기 `features/*/api` adapter를 사용한다. 각 DAL과 adapter는 `@workspace/contracts/admin`의 canonical schema로 응답을 검증한다. 중앙 `AdminApi`와 조회용 Server Action은 사용하지 않는다.
+`apps/admin`의 공통 HTTP result와 transport는 `src/shared/http`, 요청별 인증 transport factory는 `src/server/http`가 소유한다. Server Component는 자기 `features/*/server`의 좁은 DAL을 호출하고, 브라우저 재조회가 필요한 코스 편집기와 자료실만 자기 `features/*/api` adapter를 사용한다. 각 DAL과 adapter는 `@workspace/contracts/content/admin-courses`, `@workspace/contracts/identity/admin-users`, `@workspace/contracts/operations/admin-dashboard`, `@workspace/contracts/resource-library/admin-resource-documents`처럼 endpoint 소유 context의 canonical schema로 응답을 검증한다. 중앙 `AdminApi`와 조회용 Server Action은 사용하지 않는다.
 
 어드민의 공개 런타임 설정도 공통 `NEXT_PUBLIC_API_BASE_URL`을 Zod로 검증한 뒤 Server Component가 직렬화 가능한 값만 Client Component에 전달한다. 클라이언트에는 URL 브랜드와 순수 조립 함수만 포함해 Zod parser가 초기 번들에 들어가지 않게 한다.
 
@@ -150,7 +150,7 @@
 
 레슨의 선택형 답안은 키보드와 보조 기술이 선택 상태를 식별할 수 있도록 네이티브 `button`과 `aria-pressed`를 사용한다. 관리자 분석 표는 검색 입력의 명시적 이름, 행·열 머리글, 정렬 상태, 페이지 이동 버튼 이름을 제공한다.
 
-- 버튼, dialog, dropdown, form control은 `packages/ui` 컴포넌트를 우선 사용한다.
+- 버튼, dialog, dropdown, form control은 `packages/shared/ui` 컴포넌트를 우선 사용한다.
 - 내부 페이지로 이동하는 보이는 UI는 `next/link`의 `Link`를 사용한다. 카드, 메뉴, 탭처럼 버튼 모양이어도 목적지가 있는 탐색이면 링크로 표현한다.
 - `router.push`와 `router.replace`는 로그인 완료, 저장 완료, 모달 종료 후 이동처럼 사용자의 명령 또는 비동기 결과에 따른 화면 전이에만 사용한다.
 - 탐색 목적으로 클릭 가능한 `div`를 만들지 않는다. 현재 페이지를 가리키는 내부 탐색 링크는 가능한 `aria-current="page"`를 사용한다.
@@ -160,7 +160,7 @@
 - 화면 텍스트와 `aria-label`은 한국어로 작성한다.
 - `/app/profile`의 3분할 segmented control로 라이트, 다크, 시스템 테마 전환을 지원한다.
 - 재사용은 boolean prop을 계속 추가하는 방식보다 `children`, slot과 작은 subcomponent의 composition을 우선한다. prop 전달이 길어지면 소비 위치 조정, composition, 좁은 view model, scoped context 순서로 해결한다.
-- 재사용 컴포넌트는 controlled와 uncontrolled 계약을 혼합하지 않는다. 접근성, token과 variant는 `packages/ui`, 도메인 상태와 명령 조립은 각 앱 feature가 소유한다.
+- 재사용 컴포넌트는 controlled와 uncontrolled 계약을 혼합하지 않는다. 접근성, token과 variant는 `packages/shared/ui`, 도메인 상태와 명령 조립은 각 앱 feature가 소유한다.
 
 ## 성능과 번들
 
@@ -221,7 +221,7 @@
 - 순수 규칙과 상태 전이는 구현 파일 가까이의 Vitest, 컴포넌트 행위는 Testing Library와 `user-event`, 공용 UI 상태와 접근성은 Storybook interaction, 핵심 사용자 여정은 Playwright로 검증한다.
 - 컴포넌트 테스트는 구현 세부사항보다 role, accessible name과 실제 command 결과를 조회한다. loading, empty, error, permission과 version conflict처럼 복구 경로가 다른 상태를 포함한다.
 - E2E는 모든 조합이 아니라 인증, 학습 상태 전이, 발행, 권한 변경과 자료 저장처럼 제품·보안·데이터 정합성에 중요한 여정을 우선한다. 로컬 브라우저와 E2E 인증은 Google OAuth 대신 `ENABLE_TEST_AUTH=true`를 사용한다.
-- 아키텍처 경계는 `check:architecture-boundaries`, package 공개 Interface는 `check:package-interfaces`, 순환 참조는 `check:import-cycles`로 강제한다. 새로운 예외를 조건문이나 allowance로 숨기지 않는다.
+- 아키텍처 경계와 runtime 순환 참조는 `check:architecture`, 미사용 코드는 `check:dead-code`, package 공개 Interface는 `check:package-interfaces`로 강제한다. 새로운 예외를 조건문이나 넓은 allowance로 숨기지 않는다.
 
 ## 코드 리뷰 체크리스트
 

@@ -1,7 +1,7 @@
 import { defineApiRoute } from "@/context/hono-env"
 import { jsonResponse } from "@/http/openapi"
 import { parseLearnerRouteResponse } from "@/http/learner-response"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 const healthResponseSchema = z.strictObject({
   ok: z.boolean(),

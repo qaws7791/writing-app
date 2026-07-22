@@ -11,7 +11,11 @@ import type {
 } from "@/features/course-catalog/model/admin-course-catalog"
 import { networkAdminApiError } from "@/shared/http/admin-api-error"
 import type { AdminApiResult } from "@/shared/http/admin-api-result"
-import { createHttpNetworkError } from "@workspace/http-client"
+import { createHttpNetworkError } from "@workspace/http-client/json-transport"
+import {
+  courseIdSchema,
+  curriculumVersionIdSchema,
+} from "@workspace/contracts/content/ids"
 
 const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }))
 vi.mock("next/navigation", () => ({
@@ -30,7 +34,7 @@ const courses: AdminCourseList = {
   items: [
     {
       category: "입문자를 위한 코스",
-      id: "c1",
+      id: courseIdSchema.parse("c1"),
       lessonCount: 10,
       revision: 2,
       status: "active",
@@ -40,7 +44,7 @@ const courses: AdminCourseList = {
     },
     {
       category: "문법 심화",
-      id: "c2",
+      id: courseIdSchema.parse("c2"),
       lessonCount: 8,
       revision: 1,
       status: "archived",
@@ -180,10 +184,10 @@ function networkError() {
 function courseDetail(id: string): AdminCreatedCourse {
   return {
     category: "미분류",
-    curriculumVersionId: `${id}-v1`,
+    curriculumVersionId: curriculumVersionIdSchema.parse(`${id}-v1`),
     description: "강의 설명",
     editVersion: 0,
-    id,
+    id: courseIdSchema.parse(id),
     revision: 1,
     status: "active",
     title: "새 강의",

@@ -1,6 +1,6 @@
 import type { AdminApiResult } from "@/shared/http/admin-api-result"
 import type { AdminHttpTransport } from "@/shared/http/admin-http-transport"
-import { adminDashboardDtoSchema } from "@workspace/contracts/admin"
+import { adminDashboardDtoSchema } from "@workspace/contracts/operations/admin-dashboard"
 import type { AdminDashboard } from "@/features/dashboard/model/admin-dashboard"
 
 export type AdminDashboardDal = {

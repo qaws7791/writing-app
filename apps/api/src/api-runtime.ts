@@ -8,8 +8,9 @@ import {
 } from "@workspace/auth/admin/server"
 import {
   createWritingAppDatabase,
+  getDefaultDatabaseUrl,
   type WritingAppDatabase,
-} from "@workspace/db"
+} from "@workspace/db/client"
 
 import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
@@ -17,7 +18,7 @@ import { createAdminCapabilityRoutes } from "@/composition/admin-route-compositi
 import type { ApiEnv } from "@/config/env"
 import type { AdminRouteGroup } from "@/http/admin-route-group"
 import { createLearnerApiCore, type LearnerApiCore } from "@/learner-api-core"
-import type { AppLogger } from "@/observability/app-logger"
+import type { AppLogger } from "@workspace/observability/logger"
 
 export type AdminAuth = {
   readonly authHandler: (request: Request) => Promise<Response>
@@ -42,7 +43,9 @@ export type CreateApiRuntimeInput = {
 }
 
 export function createApiRuntime(input: CreateApiRuntimeInput): ApiRuntime {
-  const databaseClient = createWritingAppDatabase(input.env.databaseUrl)
+  const databaseClient = createWritingAppDatabase(
+    input.env.databaseUrl ?? getDefaultDatabaseUrl()
+  )
 
   return assembleApiRuntime({
     closeDatabase: databaseClient.close,

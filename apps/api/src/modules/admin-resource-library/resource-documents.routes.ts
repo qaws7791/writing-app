@@ -1,18 +1,20 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminImportResourceDocumentRequestSchema,
   adminImportResourceDocumentResultDtoSchema,
   adminResourceDocumentDtoSchema,
-  adminResourceImageAltTextSchema,
-  adminResourceImageMaxBytes,
   adminResourceImageUploadDtoSchema,
   adminSaveResourceDocumentRequestSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/resource-library/admin-resource-documents"
+import {
+  adminResourceImageAltTextSchema,
+  adminResourceImageMaxBytes,
+} from "@workspace/contracts/resource-library/shared"
 import type {
   ResourceAssetUseCase,
   ResourceDocumentUseCase,
 } from "@workspace/core/resource-library"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {

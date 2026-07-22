@@ -1,12 +1,6 @@
-import {
-  DeleteObjectsCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3"
+import { createS3ObjectStorage } from "@workspace/storage/object-storage"
 
 import type { AdminAssetStoreEnv } from "@/config/env"
-
-const maxDeleteObjectsPerRequest = 1_000
 
 export type ResourceAssetStore = {
   readonly deleteObjects: (objectKeys: readonly string[]) => Promise<void>
@@ -20,61 +14,19 @@ export type ResourceAssetStore = {
 export function createR2ResourceAssetStore(
   config: AdminAssetStoreEnv
 ): ResourceAssetStore {
-  const endpoint = new URL(config.endpoint)
-  const client = new S3Client({
-    credentials: {
-      accessKeyId: config.accessKeyId,
-      secretAccessKey: config.secretAccessKey,
-    },
-    endpoint: config.endpoint,
-    forcePathStyle:
-      endpoint.hostname === "localhost" || endpoint.hostname === "127.0.0.1",
-    region: config.region,
-  })
+  const storageResult = createS3ObjectStorage(config)
+  if (storageResult.isErr()) throw storageResult.error
+  const storage = storageResult.value
 
   return {
     async deleteObjects(objectKeys) {
-      for (
-        let offset = 0;
-        offset < objectKeys.length;
-        offset += maxDeleteObjectsPerRequest
-      ) {
-        const result = await client.send(
-          new DeleteObjectsCommand({
-            Bucket: config.bucket,
-            Delete: {
-              Objects: objectKeys
-                .slice(offset, offset + maxDeleteObjectsPerRequest)
-                .map((Key) => ({ Key })),
-              Quiet: true,
-            },
-          })
-        )
-        if ((result.Errors?.length ?? 0) > 0) {
-          throw new Error("R2 객체 일부를 삭제하지 못했습니다.")
-        }
-      }
+      const result = await storage.deleteObjects(objectKeys)
+      if (result.isErr()) throw result.error
     },
     async putObject(input) {
-      await client.send(
-        new PutObjectCommand({
-          Body: input.body,
-          Bucket: config.bucket,
-          ContentType: input.contentType,
-          Key: input.objectKey,
-        })
-      )
-      return {
-        url: createPublicAssetUrl(config.publicBaseUrl, input.objectKey),
-      }
+      const result = await storage.putObject(input)
+      if (result.isErr()) throw result.error
+      return result.value
     },
   }
-}
-
-function createPublicAssetUrl(baseUrl: string, objectKey: string): string {
-  const encodedKey = objectKey
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/")
-  return `${baseUrl.replace(/\/$/u, "")}/${encodedKey}`
 }

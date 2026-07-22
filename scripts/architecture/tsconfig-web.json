@@ -1,0 +1,14 @@
+{
+  "extends": "../../apps/web/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "#auth/*": ["packages/infra/auth/src/*"],
+      "#env/*": ["packages/config/env/src/*"],
+      "#ui/*": ["packages/shared/ui/src/*"],
+      "@/*": ["apps/web/src/*"]
+    }
+  },
+  "include": ["../../apps/web/**/*.ts", "../../apps/web/**/*.tsx"],
+  "exclude": ["../../apps/web/.next", "../../apps/web/node_modules"]
+}

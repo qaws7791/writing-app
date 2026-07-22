@@ -1,10 +1,10 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
+import { learnerApiErrorSchema } from "@workspace/contracts/learning/api-error"
 import {
-  learnerApiErrorSchema,
   learnerCompleteStepResponseSchema,
   learnerLessonParamsSchema,
   learnerStartLessonResponseSchema,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-api"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"

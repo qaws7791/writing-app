@@ -1,10 +1,10 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminLegalSettingsRequestSchema,
   adminNoticeSettingsRequestSchema,
-} from "@workspace/contracts/admin"
-import { adminContentResetResultSchema } from "@workspace/contracts/admin/content-data"
-import { adminSettingsDtoSchema } from "@workspace/contracts/admin/settings-data"
+} from "@workspace/contracts/operations/admin-settings"
+import { adminContentResetResultSchema } from "@workspace/contracts/operations/content-reset-data"
+import { adminSettingsDtoSchema } from "@workspace/contracts/operations/settings-data"
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
 import type { AdminContentResetUseCase } from "@workspace/core/content"
 

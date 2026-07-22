@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react"
 
-import type { LearnerProgressResponse } from "@workspace/contracts/learning"
+import type { LearnerProgressResponse } from "@workspace/contracts/learning/learner-api"
 import {
   getBrowserLearnerHomeApi,
   type LearnerHomeApi,

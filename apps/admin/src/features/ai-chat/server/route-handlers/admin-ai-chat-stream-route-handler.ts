@@ -1,4 +1,4 @@
-import { adminAiChatMessageRequestSchema } from "@workspace/contracts/admin"
+import { adminAiChatMessageRequestSchema } from "@workspace/contracts/operations/admin-ai-chat"
 
 import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 import {

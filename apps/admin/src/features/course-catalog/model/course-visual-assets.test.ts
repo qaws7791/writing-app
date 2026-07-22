@@ -1,4 +1,4 @@
-import { courseVisualKeyValues } from "@workspace/contracts/content"
+import { courseVisualKeyValues } from "@workspace/contracts/content/course"
 import { describe, expect, it } from "vitest"
 
 import { createAdminCourseImageUrl } from "@/entities/course/model/course-visual-assets"

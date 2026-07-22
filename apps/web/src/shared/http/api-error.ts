@@ -1,12 +1,12 @@
 import {
   learnerApiErrorSchema,
   type LearnerApiError,
-} from "@workspace/contracts/learning"
-import type { HttpNetworkError } from "@workspace/http-client"
+} from "@workspace/contracts/learning/api-error"
+import type { HttpNetworkError } from "@workspace/http-client/json-transport"
 
 export type ApiError = ContractApiError | NetworkApiError | ServerApiError
 
-export type ServerApiError = LearnerApiError & {
+type ServerApiError = LearnerApiError & {
   readonly status: number
 }
 

@@ -1,6 +1,6 @@
-import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback"
+import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback/feedback"
 import type { AiFeedbackPrompt } from "#core/modules/ai-feedback/domain/ai-feedback.prompt"
-import type { Result } from "#core/shared/result"
+import type { Result } from "@workspace/kernel/result"
 
 export type AiFeedbackProviderInput = AiFeedbackPrompt
 

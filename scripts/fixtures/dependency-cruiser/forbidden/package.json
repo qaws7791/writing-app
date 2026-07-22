@@ -1,0 +1,9 @@
+{
+  "name": "dependency-cruiser-forbidden-fixture",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/modules/*",
+    "packages/shared/*"
+  ]
+}

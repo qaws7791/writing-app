@@ -1,8 +1,8 @@
+import { completeLearnerStepParamsSchema } from "@workspace/contracts/learning/learner-transition"
 import {
-  completeLearnerStepParamsSchema,
   createLearnerAiFeedbackTransitionHeadersSchema,
   learnerAiFeedbackTransitionResponseSchema,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-api"
 
 export const createFeedbackTransitionHeadersSchema =
   createLearnerAiFeedbackTransitionHeadersSchema

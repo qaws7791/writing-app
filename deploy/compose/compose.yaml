@@ -274,7 +274,7 @@ services:
     working_dir: /workspace
     entrypoint:
       - bun
-      - packages/db/src/scripts/backup-database.ts
+      - apps/api/src/scripts/backup-database.ts
     environment:
       DATABASE_URL: file:/var/lib/writing-app/api.sqlite
       NODE_ENV: production

@@ -1,10 +1,7 @@
 import { z } from "zod"
+import type { ResourceDocumentId } from "@workspace/types/ids"
 
-declare const resourceDocumentIdBrand: unique symbol
-
-export type ResourceDocumentId = string & {
-  readonly [resourceDocumentIdBrand]: true
-}
+export type { ResourceDocumentId } from "@workspace/types/ids"
 
 export const resourceDocumentIdSchema = z
   .string()

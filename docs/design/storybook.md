@@ -15,14 +15,14 @@ Storybook은 디자인 시스템의 실행 가능한 명세다. story source와 
 
 - MDX와 story는 `apps/storybook/src/stories`에 둔다.
 - Storybook 전용 helper block은 `apps/storybook/src/blocks`에 둔다.
-- `packages/ui`에는 story 파일을 두지 않는다.
+- `packages/shared/ui`에는 story 파일을 두지 않는다.
 - `apps/storybook/.storybook/main.ts`가 MDX와 story source를 수집한다.
 - `apps/storybook/.storybook/preview.tsx`가 theme, density와 motion global을 적용한다.
 
 ## 스타일 빌드 경계
 
 - `apps/storybook/src/styles.css`가 Tailwind, typography, animation, dark variant와 Storybook·공유 UI source scan을 직접 선언한다.
-- `apps/storybook/postcss.config.mjs`는 앱 로컬 `@tailwindcss/postcss` 설정이며 `packages/ui` 설정을 재노출하지 않는다.
+- `apps/storybook/postcss.config.mjs`는 앱 로컬 `@tailwindcss/postcss` 설정이며 `packages/shared/ui` 설정을 재노출하지 않는다.
 - Tailwind, PostCSS, `@tailwindcss/typography`, `tw-animate-css`는 Storybook의 직접 개발 의존성이다.
 - 공유 전역 스타일은 `@import`를 `@plugin`보다 먼저 선언한다.
 

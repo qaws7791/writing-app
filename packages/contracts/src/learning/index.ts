@@ -1,7 +1,0 @@
-export * from "@workspace/contracts/learning/api-error"
-export * from "@workspace/contracts/learning/learner-api"
-export * from "@workspace/contracts/learning/learner-content"
-export * from "@workspace/contracts/learning/learner-read-model"
-export * from "@workspace/contracts/learning/learner-transition"
-export * from "@workspace/contracts/learning/learning"
-export * from "@workspace/contracts/learning/learning.ids"

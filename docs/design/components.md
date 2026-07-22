@@ -1,6 +1,6 @@
 # 컴포넌트 스펙
 
-이 문서는 공유 UI와 앱별 주요 컴포넌트의 현재 스펙이다. 공통 컴포넌트는 `packages/ui`를 우선하고, 앱별 조합은 각 앱의 feature 또는 component 폴더에 둔다.
+이 문서는 공유 UI와 앱별 주요 컴포넌트의 현재 스펙이다. 공통 컴포넌트는 `packages/shared/ui`를 우선하고, 앱별 조합은 각 앱의 feature 또는 component 폴더에 둔다.
 
 ## 공통 원칙
 
@@ -9,13 +9,13 @@
 - 목적지가 있는 UI는 버튼처럼 보여도 `Link`를 사용한다.
 - 화면 텍스트와 `aria-label`은 한국어로 작성한다.
 - destructive 동작은 즉시 실행하지 않고 확인 dialog를 거친다.
-- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. `@workspace/ui/styles`는 token과 공통 style만 제공하며 Tailwind/PostCSS 실행은 각 앱 Adapter가 소유한다. 공개 entrypoint는 `packages/ui/README.md`를 따른다.
-- 앱 `tsconfig.json`은 `packages/ui/src` 내부를 직접 가리키는 source alias를 만들지 않는다. 공유 UI 소비는 `@workspace/ui/*` package export map을 통한다.
-- `packages/ui` 소스는 `@/`를 사용하지 않는다. 공유 UI 내부 참조는 `#lib/*`, `#components/*` 또는 상대 경로를 사용하고, 앱 소스는 `@/`를 유지한다.
+- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. `@workspace/ui/styles`는 token과 공통 style만 제공하며 Tailwind/PostCSS 실행은 각 앱 Adapter가 소유한다. 공개 entrypoint는 `packages/shared/ui/README.md`를 따른다.
+- 앱 `tsconfig.json`은 `packages/shared/ui/src` 내부를 직접 가리키는 source alias를 만들지 않는다. 공유 UI 소비는 `@workspace/ui/*` package export map을 통한다.
+- `packages/shared/ui` 소스는 `@/`를 사용하지 않는다. 공유 UI 내부 참조는 `#ui/*` private alias를 사용하고, 앱 소스는 `@/`를 유지한다.
 
 ## Button
 
-구현 위치: `packages/ui/src/components/ui/button.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/button.tsx`
 
 기반은 `@base-ui/react/button`이다.
 
@@ -53,7 +53,7 @@
 
 ## Card
 
-구현 위치: `packages/ui/src/components/ui/card.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/card.tsx`
 
 현재 `Card`는 `variant` prop을 갖지 않는다. 과거 Material Design 3식 variant 실험 기록은 정식 계약으로 유지하지 않는다.
 
@@ -78,21 +78,21 @@
 
 ## Surface
 
-구현 위치: `packages/ui/src/components/ui/surface.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/surface.tsx`
 
 `Surface`는 anatomy가 없는 일반 표면이다. admin panel, 간단한 목록 컨테이너, web의 반복 표면을 흡수한다. `variant`는 `default`, `elevated`, `panel`만 제공하고, padding은 `size` 토큰을 따른다.
 
 ## Field
 
-구현 위치: `packages/ui/src/components/ui/field.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/field.tsx`
 
 구성은 `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FormSection`이다. `Field`는 label과 description, error를 자동으로 연결하지 않는다. 호출자가 `htmlFor`, `id`, `aria-describedby`, `aria-invalid`를 명시해 관계를 드러낸다. `FieldError`는 `role="alert"`를 사용한다.
 
 ## Input
 
-구현 위치: `packages/ui/src/components/ui/input.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/input.tsx`
 
-공통 field control contract는 `packages/ui/src/lib/field-control-variants.ts`에 정의한다.
+공통 field control contract는 `packages/shared/ui/src/lib/field-control-variants.ts`에 정의한다.
 
 - 높이는 density token의 `control-height-md`를 따른다.
 - `bg-transparent`, `border-field-border`, `rounded-control`, hover/focus 시 border 강조, `focus-visible:ring-3`을 사용한다.
@@ -101,7 +101,7 @@
 
 ## Select
 
-구현 위치: `packages/ui/src/components/ui/select.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/select.tsx`
 
 - Base UI select primitive다.
 - `SelectTrigger`는 `variant`로 표현 스타일을 선택한다.
@@ -113,7 +113,7 @@
 
 ## Textarea
 
-구현 위치: `packages/ui/src/components/ui/textarea.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/textarea.tsx`
 
 - Input과 동일한 field control contract를 따른다.
 - 최소 높이 96px.
@@ -123,31 +123,31 @@
 
 ## Progress
 
-구현 위치: `packages/ui/src/components/ui/progress.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/progress.tsx`
 
 구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 기본적으로 `bg-accent`를 사용하고, track은 `bg-default-soft` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 레슨과 코스 상세처럼 kwep 기준의 노란 진행률이 필요한 화면은 `indicatorClassName="bg-accent"`와 `trackClassName`으로 높이와 색을 명시한다.
 
 ## Badge
 
-구현 위치: `packages/ui/src/components/ui/badge.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/badge.tsx`
 
 `Badge`는 domain status를 직접 해석하지 않는다. app이 상태를 `tone`으로 변환해 전달한다. 지원 tone은 `neutral`, `success`, `danger`, `info`, `selected`다.
 
 ## Accordion
 
-구현 위치: `packages/ui/src/components/ui/accordion.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/accordion.tsx`
 
 기반은 `@base-ui/react/accordion`이다. 구조는 `Accordion`, `AccordionItem`, `AccordionHeader`, `AccordionTrigger`, `AccordionPanel`이다. 수동 disclosure 구현 대신 사용하며, `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
 
 ## DropdownMenu
 
-구현 위치: `packages/ui/src/components/ui/dropdown-menu.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/dropdown-menu.tsx`
 
 기반은 `@base-ui/react/menu`다. 계정 메뉴처럼 trigger와 메뉴 항목이 필요한 경우 사용한다. 구조는 `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuLinkItem`, `DropdownMenuSeparator`다. 항목 tone은 `neutral`, `danger`만 제공한다. 링크 항목도 메뉴 안에서는 `role="menuitem"` 의미를 따른다.
 
 ## AlertDialog
 
-구현 위치: `packages/ui/src/components/ui/alert-dialog.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/alert-dialog.tsx`
 
 기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 기본 스타일은 Kwep `Modal`과 동일하다. `bg-cream` 패널, `bg-charcoal/30` 오버레이, 제목 `text-heading-sm font-bold`, 설명 `text-body-lg`, footer는 동일 너비 `size="extra"` pill 버튼 2개(`AlertDialogCancel`은 `secondary`, `AlertDialogAction`은 `default`)를 가로로 배치한다. 레슨 나가기처럼 일반 확인은 `AlertDialogAction` 기본 variant를 쓴다. 삭제·보관·초기화처럼 되돌릴 수 없는 작업만 `variant="destructive"`를 명시한다.
 
@@ -155,8 +155,8 @@
 
 구현 위치:
 
-- `packages/ui/src/components/ui/segmented-control.tsx`
-- `packages/ui/src/components/ui/toggle-group.tsx`
+- `packages/shared/ui/src/components/ui/segmented-control.tsx`
+- `packages/shared/ui/src/components/ui/toggle-group.tsx`
 
 `SegmentedControl`은 테마, 보기 방식, 범주처럼 하나의 값을 고르는 컨트롤이다. 호출자는 `value`, `defaultValue`, `onValueChange`를 문자열 단위로 다룬다. `ToggleGroup`은 태그나 검토 범위처럼 여러 값을 동시에 고르는 컨트롤을 위해 Base UI의 배열 `value` 계약을 그대로 노출한다.
 
@@ -164,8 +164,8 @@
 
 구현 위치:
 
-- `packages/ui/src/components/ui/alert.tsx`
-- `packages/ui/src/components/ui/callout.tsx`
+- `packages/shared/ui/src/components/ui/alert.tsx`
+- `packages/shared/ui/src/components/ui/callout.tsx`
 
 `Alert`는 상태 메시지이고 기본 role은 `status`다. 오류처럼 assertive announcement가 필요한 경우 호출자가 role을 바꾼다. `Callout`은 본문 안의 참고, 설명, 안내 표면이며 사용자 문자열을 포함하지 않는다.
 
@@ -173,9 +173,9 @@
 
 구현 위치:
 
-- `packages/ui/src/components/ui/sticky-action-bar.tsx`
-- `packages/ui/src/components/ui/rich-text.tsx`
-- `packages/ui/src/components/ui/choice-card.tsx`
+- `packages/shared/ui/src/components/ui/sticky-action-bar.tsx`
+- `packages/shared/ui/src/components/ui/rich-text.tsx`
+- `packages/shared/ui/src/components/ui/choice-card.tsx`
 
 `StickyActionBar`는 모바일 safe-area를 포함한 하단 고정 행동 영역이다. tone은 `default`, `success`, `danger`만 제공한다. `RichText`는 markdown parser가 아니라 ReactMarkdown 결과물을 감싸는 token 기반 prose wrapper다. markdown parsing과 remark/rehype 정책은 앱이 소유한다. `ChoiceCard`와 `ChoiceCardGroup`은 레슨 선택형 UI의 generic button/card이며 상태는 `idle`, `selected`, `correct`, `wrong`, `disabled`만 받는다. `selected`는 `bg-accent text-accent-foreground`를 사용한다. `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 lesson step 컴포넌트의 미채점 선택 상태도 동일한 accent 토큰을 따른다. `MatchAnswer`는 미채점 상태에서 연결된 항목은 공통 accent fill과 연결선으로 표시하고, 아직 짝이 없는 항목은 surface 상태를 유지한다. 왼쪽·오른쪽 어느 쪽이든 먼저 탭해 짝을 맞출 수 있다. 채점 후에는 연결선과 버튼이 정오답 톤으로 바뀐다. monorepo에서 `primary`는 차콜(주요 CTA)이므로 선택 fill에 `bg-primary`를 쓰지 않는다.
 
@@ -183,9 +183,9 @@
 
 구현 위치:
 
-- `packages/ui/src/components/ui/spinner.tsx`
-- `packages/ui/src/components/ui/separator.tsx`
-- `packages/ui/src/components/ui/avatar.tsx`
+- `packages/shared/ui/src/components/ui/spinner.tsx`
+- `packages/shared/ui/src/components/ui/separator.tsx`
+- `packages/shared/ui/src/components/ui/avatar.tsx`
 
 `Spinner`는 caller가 `label`을 제공할 때만 접근 가능한 `status`가 된다. label이 없으면 장식으로 처리한다. `Separator`는 기본 decorative이고, 의미 있는 구분선이 필요할 때 `decorative={false}`를 사용한다. `Avatar`는 image와 fallback anatomy만 제공한다.
 
@@ -193,12 +193,12 @@
 
 구현 위치:
 
-- `packages/ui/src/components/ui/page-header.tsx`
-- `packages/ui/src/components/ui/section-header.tsx`
-- `packages/ui/src/components/ui/stat-card.tsx`
-- `packages/ui/src/components/ui/filter-toolbar.tsx`
-- `packages/ui/src/components/ui/data-table.tsx`
-- `packages/ui/src/components/ui/empty-state.tsx`
+- `packages/shared/ui/src/components/ui/page-header.tsx`
+- `packages/shared/ui/src/components/ui/section-header.tsx`
+- `packages/shared/ui/src/components/ui/stat-card.tsx`
+- `packages/shared/ui/src/components/ui/filter-toolbar.tsx`
+- `packages/shared/ui/src/components/ui/data-table.tsx`
+- `packages/shared/ui/src/components/ui/empty-state.tsx`
 
 `PageHeader`와 `SectionHeader`는 제목, 설명, 선택적 action 영역만 제공한다. `StatGrid`와 `StatCard`는 dashboard 지표 같은 반복 metric에 사용한다. 학습자 홈 기준으로 `StatCard`는 `layout="compact"`(`rounded-2xl`, `px-5 py-3.5`, 작은 라벨과 `text-title-lg` 값)을 쓴다. 학습자 프로필 요약은 `layout="profile"`(`bg-surface`, `p-8`, 중앙 정렬, border 없음, `text-heading-lg font-black` 값)을 쓴다. 어드민·대시보드 metric은 기본 `layout="metric"`(border, 좌측 정렬)이다. `FilterToolbar`는 검색과 select filter를 배치하는 form이고, `FilterToolbarField`와 `FilterToolbarLabel`을 함께 사용한다. `DataTableContainer`와 `DataTable`은 horizontal overflow와 기본 table cell 스타일만 제공한다. `EmptyState`는 결과 없음과 초기 상태를 표현하며, 도메인 메시지는 호출자가 전달한다.
 
@@ -210,7 +210,7 @@
 
 ## Icon
 
-구현 위치: `packages/ui/src/components/icons.tsx`
+구현 위치: `packages/shared/ui/src/components/icons.tsx`
 
 기본 아이콘 라이브러리는 `lucide-react`다. 새 아이콘이 필요하면 먼저 `lucide-react` export를 추가한다. 직접 SVG를 추가할 때는 lucide와 같은 stroke 규칙을 유지하고, 장식 아이콘은 `aria-hidden="true"`를 지정한다.
 여러 화면에서 반복되는 브랜드형 아이콘은 앱 파일에 직접 SVG helper를 두지 않고 `@workspace/ui/components/icons`에서 가져온다. 화면 의미가 강한 도메인 전용 그림이나 외부 브랜드 로고만 앱 내부에 둘 수 있다.
@@ -260,7 +260,7 @@
 
 ### CompareStepView 및 레슨 콜아웃
 
-구현 위치: `packages/ui/src/components/lesson/compare-step-view.tsx`
+구현 위치: `packages/shared/ui/src/components/lesson/compare-step-view.tsx`
 
 - Kwep `StepRenderer` compare 분기와 동일한 마크업·토큰을 따른다.
 - 버전 본문은 `bg-surface` 패널 + `1.125rem` 본문 `p` 태그다.
@@ -270,7 +270,7 @@
 
 ## 어드민 앱 컴포넌트
 
-어드민 앱은 학습자 앱과 동일한 `@workspace/ui` 제품 토큰과 primitive를 사용한다. 어드민 화면의 도메인 조립은 앱 feature에 남기고, 색상·radius·font·motion 기준은 `packages/ui`에서 가져온다.
+어드민 앱은 학습자 앱과 동일한 `@workspace/ui` 제품 토큰과 primitive를 사용한다. 어드민 화면의 도메인 조립은 앱 feature에 남기고, 색상·radius·font·motion 기준은 `packages/shared/ui`에서 가져온다.
 
 ### AdminShell
 
@@ -291,28 +291,28 @@
 
 ### Admin Page Header
 
-구현 위치: `packages/ui/src/components/ui/page-header.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/page-header.tsx`
 
 - 모든 어드민 주요 화면은 `PageHeader`를 직접 사용한다.
 - 앱 전용 `AdminHeader` 래퍼는 유지하지 않는다.
 
 ### Admin Surface
 
-구현 위치: `packages/ui/src/components/ui/surface.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/surface.tsx`
 
 - 반복 업무 화면의 기본 표면은 `Surface variant="panel"`이다.
 - 화면별 grid, flex, spacing 조합은 feature component의 semantic utility class로 둔다.
 
 ### Admin Filter
 
-구현 위치: `packages/ui/src/components/ui/filter-toolbar.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/filter-toolbar.tsx`
 
 - 목록 화면의 검색, select filter, 페이지 크기, 주요 행동은 `FilterToolbar`에 둔다.
 - 각 필드는 `FilterToolbarField`와 `FilterToolbarLabel`을 사용한다.
 
 ### Admin Data Table
 
-구현 위치: `packages/ui/src/components/ui/data-table.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/data-table.tsx`
 
 - 표는 `DataTableContainer`와 `DataTable`을 사용한다.
 - table semantic은 앱이 유지하고, `th scope="col"`과 caption 또는 `aria-label`을 제공한다.
@@ -322,9 +322,9 @@
 
 구현 위치:
 
-- `packages/ui/src/components/ui/badge.tsx`
-- `packages/ui/src/components/ui/alert.tsx`
-- `packages/ui/src/components/ui/alert-dialog.tsx`
+- `packages/shared/ui/src/components/ui/badge.tsx`
+- `packages/shared/ui/src/components/ui/alert.tsx`
+- `packages/shared/ui/src/components/ui/alert-dialog.tsx`
 
 - 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Kwep 어드민 기준의 중립 `Badge`로 표시한다.
 - 오류와 성공 메시지는 `Alert`를 사용하고, 오류는 `role="alert"`, 처리 완료는 `role="status"`로 노출한다.

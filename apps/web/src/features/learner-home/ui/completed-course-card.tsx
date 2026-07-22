@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { createCourseImageUrl } from "@/entities/course/model/course-visual-assets"
-import type { LearnerProgressCourse } from "@workspace/contracts/learning"
+import type { LearnerProgressCourse } from "@workspace/contracts/learning/learner-content"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CompletedCourseCardProps = {

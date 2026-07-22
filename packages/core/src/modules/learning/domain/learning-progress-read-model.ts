@@ -2,11 +2,11 @@ import type {
   CourseDetailDto,
   CourseSummaryDto,
   LessonSummaryDto,
-} from "@workspace/contracts/content"
+} from "@workspace/contracts/content/course"
 import {
   lessonProgressStatuses,
   type LessonProgressStatus as PersistedLessonProgressStatus,
-} from "@workspace/contracts/status"
+} from "@workspace/contracts/learning/status"
 import type {
   LessonAvailabilityStatus,
   ProgressCourseStatusFilter,

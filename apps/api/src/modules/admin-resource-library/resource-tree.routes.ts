@@ -1,4 +1,4 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminCreateResourceNodeRequestSchema,
   adminMoveResourceNodeRequestSchema,
@@ -7,10 +7,10 @@ import {
   adminResourceRestoreResultDtoSchema,
   adminResourceTrashResultDtoSchema,
   adminResourceTreeDtoSchema,
-  adminResourceTreeScopeSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/resource-library/admin-resource-tree"
+import { adminResourceTreeScopeSchema } from "@workspace/contracts/resource-library/shared"
 import type { ResourceTreeUseCase } from "@workspace/core/resource-library"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {

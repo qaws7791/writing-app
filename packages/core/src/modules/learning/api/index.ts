@@ -31,4 +31,3 @@ export * from "#core/modules/learning/application/ports/learner-transition.repos
 export * from "#core/modules/learning/application/ports/learner-read-model.repository"
 export * from "#core/modules/learning/application/use-cases/learner-content.service"
 export * from "#core/modules/learning/application/use-cases/learner-progress.service"
-export { err, ok, type Result } from "#core/shared/result"

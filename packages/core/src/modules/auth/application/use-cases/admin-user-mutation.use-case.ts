@@ -1,4 +1,4 @@
-import type { AdminUserDetailDto } from "@workspace/contracts/admin/identity-data"
+import type { AdminUserDetailDto } from "@workspace/contracts/identity/data"
 
 import type {
   AdminUserMutationRepository,

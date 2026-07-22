@@ -8,12 +8,12 @@ import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie
 import { buildApiUrl, type ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   fetchHttpResponse,
-  httpApiFailure,
-  httpApiOk,
+  requestHttpJson,
   type HttpFetch,
-} from "@workspace/http-client"
+} from "@workspace/http-client/json-transport"
+import { httpApiFailure, httpApiOk } from "@workspace/http-client/api-result"
 
-export type AdminResponseSchema<TValue> = {
+type AdminResponseSchema<TValue> = {
   readonly safeParse: (
     value: unknown
   ) =>
@@ -21,10 +21,10 @@ export type AdminResponseSchema<TValue> = {
     | { readonly success: false }
 }
 
-export type AdminHttpMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
+type AdminHttpMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
 export type AdminTokenProvider = () => Promise<string | null> | string | null
 
-export type AdminDownload = {
+type AdminDownload = {
   readonly body: string
   readonly fileName: string
 }
@@ -92,26 +92,24 @@ export function createAdminHttpTransport({
         ...(requestOrigin === undefined ? {} : { requestOrigin }),
         tokenProvider,
       })
-      const result = await fetchHttpResponse(request, fetch)
+      const result = await requestHttpJson({
+        fetch,
+        request,
+        schema: input.schema,
+      })
 
-      if (result.kind === "network-error") {
-        return httpApiFailure(networkAdminApiError(result.error))
+      switch (result.kind) {
+        case "success":
+          return httpApiOk(result.value)
+        case "http-error":
+          return httpApiFailure(toAdminApiError(result.status, result.body))
+        case "contract-error":
+          return httpApiFailure(
+            contractAdminApiError(result.status ?? undefined)
+          )
+        case "network-error":
+          return httpApiFailure(networkAdminApiError(result.error))
       }
-
-      const body = await readJson(result.response)
-      if (body.kind === "error") {
-        return httpApiFailure(contractAdminApiError(result.response.status))
-      }
-      if (!result.response.ok) {
-        return httpApiFailure(
-          toAdminApiError(result.response.status, body.value)
-        )
-      }
-
-      const parsed = input.schema.safeParse(body.value)
-      return parsed.success
-        ? httpApiOk(parsed.data)
-        : httpApiFailure(contractAdminApiError(result.response.status))
     },
   }
 }

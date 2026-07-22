@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest"
 
-import { lessonStepDtoSchema } from "@workspace/contracts/content"
+import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/step-data"
-import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback"
+import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
+import { err, ok } from "@workspace/kernel/result"
 
 import {
   decideFinalizeAiFeedback,
@@ -81,14 +82,13 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
         answer: { text: "저장된 답안", type: "WRITE" },
         lessonTitle: "레슨 제목",
       })
-    ).toEqual({
-      kind: "ok",
-      value: {
+    ).toEqual(
+      ok({
         answer: "저장된 답안",
         focus: "명확성",
         lessonTitle: "레슨 제목",
-      },
-    })
+      })
+    )
   })
 
   it("잠금·순서·잘못된 target·답안 부재를 명시적 오류로 거절한다", () => {
@@ -139,13 +139,12 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
         answer: null,
         lessonTitle: "레슨 제목",
       })
-    ).toEqual({
-      error: {
+    ).toEqual(
+      err({
         kind: "feedback-answer-not-found",
         targetStepId: "write-step",
-      },
-      kind: "err",
-    })
+      })
+    )
   })
 
   it("finalize를 진행·완료 replay·거절 분기로 결정한다", () => {

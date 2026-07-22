@@ -13,7 +13,8 @@ import {
   conversationIdSchema,
   type AdminAiChatConversationDto,
   type AdminAiChatMessageDto,
-} from "@workspace/contracts/admin/ai-chat-data"
+} from "@workspace/contracts/operations/ai-chat-data"
+import { messageIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminAiChatConversations,
@@ -222,7 +223,7 @@ function toMessageDto(message: AiChatMessageRow): AdminAiChatMessageDto {
   return {
     content: message.content,
     createdAt: message.createdAt.toISOString(),
-    id: message.id,
+    id: messageIdSchema.parse(message.id),
     role: message.role,
   }
 }

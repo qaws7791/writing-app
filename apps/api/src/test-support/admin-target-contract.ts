@@ -13,7 +13,7 @@ export type AdminTargetContractJson =
   | readonly AdminTargetContractJson[]
   | { readonly [key: string]: AdminTargetContractJson }
 
-export type AdminTargetContractRequestBody =
+type AdminTargetContractRequestBody =
   | {
       readonly encoding: "base64"
       readonly value: string
@@ -23,14 +23,14 @@ export type AdminTargetContractRequestBody =
       readonly value: string
     }
 
-export type AdminTargetContractResponseBodyMode =
+type AdminTargetContractResponseBodyMode =
   | "bytes"
   | "json"
   | "none"
   | "sse"
   | "text"
 
-export type AdminTargetContractOpenApiComponentSection =
+type AdminTargetContractOpenApiComponentSection =
   | "callbacks"
   | "examples"
   | "headers"

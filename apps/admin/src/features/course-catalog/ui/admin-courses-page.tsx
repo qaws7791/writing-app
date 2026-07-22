@@ -23,7 +23,7 @@ import type {
   AdminCourseList,
   ReadAdminCoursesInput,
 } from "@/features/course-catalog/model/admin-course-catalog"
-import { contentStatuses } from "@workspace/contracts/status"
+import { contentStatuses } from "@workspace/contracts/content/status"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
   AlertDialog,

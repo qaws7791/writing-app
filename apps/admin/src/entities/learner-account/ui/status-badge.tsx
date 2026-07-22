@@ -1,9 +1,11 @@
 import {
   contentStatuses,
-  learnerAccountStatuses,
   type ContentStatus,
+} from "@workspace/contracts/content/status"
+import {
+  learnerAccountStatuses,
   type LearnerAccountStatus,
-} from "@workspace/contracts/status"
+} from "@workspace/contracts/identity/status"
 import { Ban } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
 

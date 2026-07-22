@@ -4,4 +4,4 @@ export {
   learnerCourseListResponseSchema as courseListDtoSchema,
   learnerCourseParamsSchema as courseParamsSchema,
   learnerCourseQuerySchema as courseQuerySchema,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-api"

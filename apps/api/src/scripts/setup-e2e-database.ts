@@ -1,9 +1,6 @@
 import { hashAuthPassword } from "@workspace/auth/password"
-import {
-  adminAuthAccounts,
-  adminAuthUsers,
-  createWritingAppDatabase,
-} from "@workspace/db"
+import { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
+import { createWritingAppDatabase } from "@workspace/db/client"
 
 const e2eDatabaseUrl = process.env["DATABASE_URL"]
 const adminPassword = "e2e-password-123"

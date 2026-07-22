@@ -3,15 +3,17 @@ import path from "node:path"
 import { describe, expect, it } from "bun:test"
 
 import {
-  createRepositoryWorkspaceInventory,
   readTurboRunSummary,
   resolveTaskExecutionStatus,
+} from "#scripts/ci-workspace-inventory-report"
+import {
+  createWorkspaceInventory,
   type WorkspaceManifest,
-} from "@workspace/repository-tooling"
+} from "#scripts/workspace-inventory"
 
 describe("CI workspace 인벤토리", () => {
   it("현재 workspace의 지원 또는 제외 사유를 출력한다", () => {
-    const inventoryResult = createRepositoryWorkspaceInventory(process.cwd())
+    const inventoryResult = createWorkspaceInventory(process.cwd())
     expect(inventoryResult.status).toBe("success")
     if (inventoryResult.status === "failure") return
 
@@ -30,7 +32,7 @@ describe("CI workspace 인벤토리", () => {
   })
 
   it("Turborepo 2.10.4 summary v1에서 실제 task 상태를 구분한다", () => {
-    const inventoryResult = createRepositoryWorkspaceInventory(process.cwd())
+    const inventoryResult = createWorkspaceInventory(process.cwd())
     expect(inventoryResult.status).toBe("success")
     if (inventoryResult.status === "failure") return
 
@@ -56,7 +58,7 @@ describe("CI workspace 인벤토리", () => {
       resolveTaskExecutionStatus({
         requestedTask: "test",
         summary,
-        workspace: getWorkspace(workspaces, "@workspace/repository-tooling"),
+        workspace: getWorkspace(workspaces, "@workspace/env"),
       })
     ).toBe("cache-hit")
     expect(
@@ -70,7 +72,7 @@ describe("CI workspace 인벤토리", () => {
       resolveTaskExecutionStatus({
         requestedTask: "test",
         summary,
-        workspace: getWorkspace(workspaces, "@workspace/config"),
+        workspace: getWorkspace(workspaces, "@workspace/nextjs-config"),
       })
     ).toBe("excluded")
     expect(

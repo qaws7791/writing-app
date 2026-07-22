@@ -1,13 +1,17 @@
 {
-  "extends": "@workspace/config/typescript/base.json",
+  "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
-      "#auth/*": ["../../packages/auth/src/*"],
+      "#ai/*": ["../../packages/infra/ai/src/*"],
+      "#auth/*": ["../../packages/infra/auth/src/*"],
       "#core/*": ["../../packages/core/src/*"],
-      "#env/*": ["../../packages/env/src/*"],
+      "#db/*": ["../../packages/infra/db/src/*"],
+      "#env/*": ["../../packages/config/env/src/*"],
+      "#http-platform/*": ["../../packages/infra/http-platform/src/*"],
+      "#observability/*": ["../../packages/infra/observability/src/*"],
       "@/*": ["./src/*"]
     },
     "types": ["bun"]

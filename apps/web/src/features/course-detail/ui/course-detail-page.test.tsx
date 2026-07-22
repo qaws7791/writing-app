@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { CourseDetailPage } from "@/features/course-detail/ui/course-detail-page"
-import { learnerCourseDetailSchema } from "@workspace/contracts/learning"
+import { learnerCourseDetailSchema } from "@workspace/contracts/learning/learner-content"
 
 const version = { curriculumVersionId: "c1-v1", revision: 1 }
 const course = learnerCourseDetailSchema.parse({

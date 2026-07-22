@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test"
 
-import { recordCspViolation } from "@workspace/config/nextjs/csp-report"
+import { recordCspViolation } from "@workspace/nextjs-config/csp-report"
 import {
   createContentSecurityPolicy,
   createNextSecurityHeaders,
-} from "@workspace/config/nextjs/security-headers"
+} from "@workspace/nextjs-config/security-headers"
 
 describe("Next CSP 정책", () => {
   it("production script에서 unsafe-inline을 제거하고 속성 script를 차단한다", () => {

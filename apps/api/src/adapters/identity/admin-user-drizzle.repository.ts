@@ -4,7 +4,7 @@ import {
   type AdminUserListItemDto,
   type AdminUserSort,
   type AdminUserStatus,
-} from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/identity/data"
 import type {
   ReadAdminUserInput,
   ReadAdminUsersInput,
@@ -24,11 +24,9 @@ import {
   toLearningDateKey,
   type LearningDateKey,
 } from "@workspace/core/learning"
-import {
-  contentStatuses,
-  learnerAccountStatuses,
-  lessonProgressStatuses,
-} from "@workspace/contracts/status"
+import { contentStatuses } from "@workspace/contracts/content/status"
+import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
+import { lessonProgressStatuses } from "@workspace/contracts/learning/status"
 import {
   and,
   asc,

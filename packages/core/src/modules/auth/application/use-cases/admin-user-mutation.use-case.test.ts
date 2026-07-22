@@ -4,7 +4,7 @@ import {
   adminIdSchema,
   userIdSchema,
   type AdminUserDetailDto,
-} from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/identity/data"
 
 import type { AdminUserMutationRepository } from "#core/modules/auth/application/ports/admin-user-mutation.repository"
 import { createAdminUserMutationUseCase } from "#core/modules/auth/application/use-cases/admin-user-mutation.use-case"

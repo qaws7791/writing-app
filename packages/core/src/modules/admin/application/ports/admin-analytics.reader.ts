@@ -3,7 +3,7 @@ import type {
   AdminLessonAnalyticsItemDto,
   AdminLessonAnalyticsSort,
   AdminSortDirection,
-} from "@workspace/contracts/admin/dashboard-analytics-data"
+} from "@workspace/contracts/operations/dashboard-analytics-data"
 
 export type ReadAdminAnalyticsInput = {
   readonly days: number

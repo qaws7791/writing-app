@@ -2,7 +2,7 @@ export type MatchChoiceId = string & {
   readonly __brand: "MatchChoiceId"
 }
 
-export type MatchStepItemInput = {
+type MatchStepItemInput = {
   readonly id: string
   readonly text: string
 }

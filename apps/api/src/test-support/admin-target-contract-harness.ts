@@ -45,11 +45,11 @@ type RunnerSpecification = {
   readonly workspaceRoot: string
 }
 
-export type AdminTargetContractRun = {
+type AdminTargetContractRun = {
   readonly target: AdminTargetContractRuntimeObservation
 }
 
-export type AdminTargetContractRuntimeObservation = {
+type AdminTargetContractRuntimeObservation = {
   readonly observations: readonly AdminTargetContractSemanticObservation[]
   readonly rawObservations: readonly AdminTargetContractRawObservation[]
   readonly runtime: AdminTargetContractRunnerOutput["runtime"]
@@ -75,7 +75,7 @@ export async function assertAdminTargetContract(
   }
 }
 
-export async function runAdminTargetContract(
+async function runAdminTargetContract(
   input: AdminTargetContractRunInput,
   options: AdminTargetContractHarnessOptions = {}
 ): Promise<AdminTargetContractRun> {

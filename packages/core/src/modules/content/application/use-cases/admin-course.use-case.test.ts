@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
+  adminCourseDetailDtoSchema,
   adminCourseEditorDocumentSchema,
-  type AdminCourseDetailDto,
   type AdminPublishCourseResult,
-} from "@workspace/contracts/admin/content-data"
-import { adminIdSchema } from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/content/admin-data"
+import { adminIdSchema } from "@workspace/contracts/identity/data"
 import type { CourseAdminRepository } from "#core/modules/content/application/ports/admin-content.repository"
 import { createAdminCourseUseCase } from "#core/modules/content/application/use-cases/admin-course.use-case"
 
@@ -21,7 +21,7 @@ const operatorActor = {
 
 const now = new Date("2026-06-14T03:00:00.000Z")
 
-const courseDetail: AdminCourseDetailDto = {
+const courseDetail = adminCourseDetailDtoSchema.parse({
   category: "미분류",
   curriculumVersionId: "course-1-v1",
   description: "강의 설명",
@@ -31,7 +31,7 @@ const courseDetail: AdminCourseDetailDto = {
   status: "active",
   title: "새 강의",
   units: [],
-}
+})
 
 const editorDocument = adminCourseEditorDocumentSchema.parse(courseDetail)
 

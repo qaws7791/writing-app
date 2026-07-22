@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { conversationIdSchema } from "@workspace/contracts/admin/ai-chat-data"
-import { adminIdSchema } from "@workspace/contracts/admin/identity-data"
+import { conversationIdSchema } from "@workspace/contracts/operations/ai-chat-data"
+import { adminIdSchema } from "@workspace/contracts/identity/data"
 
 import { createAiChatRequestGuard } from "@/modules/admin-ai-chat/ai-chat-request-guard"
 

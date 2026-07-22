@@ -6,6 +6,7 @@ import {
   lessonLearningStateSchema,
   stepEvaluationSchema,
 } from "@workspace/contracts/learning/step-data"
+import { err, ok } from "@workspace/kernel/result"
 
 import { createApp } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
@@ -23,9 +24,8 @@ describe("학습자 서버 권위 상태 전이 route", () => {
         },
         async startLesson(command) {
           commands.push(command)
-          return {
-            kind: "ok",
-            value: lessonLearningStateSchema.parse({
+          return ok(
+            lessonLearningStateSchema.parse({
               completedSteps: 0,
               currentStepId: "l1-s1",
               currentStepIndex: 0,
@@ -33,8 +33,8 @@ describe("학습자 서버 권위 상태 전이 route", () => {
               status: "in_progress",
               totalSteps: 2,
               version,
-            }),
-          }
+            })
+          )
         },
       })
     )
@@ -68,31 +68,28 @@ describe("학습자 서버 권위 상태 전이 route", () => {
       createDependencies({
         async completeStep(command) {
           commands.push(command)
-          return {
-            kind: "ok",
-            value: {
-              evaluation: stepEvaluationSchema.parse({
-                correct: false,
-                correctItemIds: ["option-b"],
-                explanation: "둘째가 정답입니다.",
-                items: [
-                  { id: "option-a", verdict: "incorrect" },
-                  { id: "option-b", verdict: "missed" },
-                ],
-                type: "MULTIPLE_CHOICE",
-              }),
-              learning: inProgressLessonLearningStateSchema.parse({
-                completedSteps: 0,
-                currentStepId: "l1-s1",
-                currentStepIndex: 0,
-                progressPercent: 0,
-                status: "in_progress",
-                totalSteps: 2,
-                version,
-              }),
-              kind: "retry",
-            },
-          }
+          return ok({
+            evaluation: stepEvaluationSchema.parse({
+              correct: false,
+              correctItemIds: ["option-b"],
+              explanation: "둘째가 정답입니다.",
+              items: [
+                { id: "option-a", verdict: "incorrect" },
+                { id: "option-b", verdict: "missed" },
+              ],
+              type: "MULTIPLE_CHOICE",
+            }),
+            learning: inProgressLessonLearningStateSchema.parse({
+              completedSteps: 0,
+              currentStepId: "l1-s1",
+              currentStepIndex: 0,
+              progressPercent: 0,
+              status: "in_progress",
+              totalSteps: 2,
+              version,
+            }),
+            kind: "retry",
+          })
         },
         async startLesson() {
           throw new Error("Unexpected startLesson")
@@ -141,14 +138,11 @@ describe("학습자 서버 권위 상태 전이 route", () => {
     const app = createApp(
       createDependencies({
         async completeStep(command) {
-          return {
-            error: {
-              kind: "step-sequence-conflict",
-              lessonId: command.lessonId,
-              stepId: command.stepId,
-            },
-            kind: "err",
-          }
+          return err({
+            kind: "step-sequence-conflict",
+            lessonId: command.lessonId,
+            stepId: command.stepId,
+          })
         },
         async startLesson() {
           throw new Error("Unexpected startLesson")

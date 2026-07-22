@@ -16,7 +16,7 @@
 - 파일명은 kebab-case를 사용한다.
 - TypeScript import path에는 파일 확장자를 포함하지 않는다.
 - workspace 간 import는 `@workspace/*`의 명시적인 공개 subpath를 사용한다.
-- canonical DTO, brand ID와 status는 가장 구체적인 `@workspace/contracts/*` 공개 subpath에서 직접 import한다.
+- canonical DTO와 wire status는 가장 구체적인 `@workspace/contracts/*` 공개 subpath에서, brand ID는 `@workspace/types/ids`에서 직접 import한다. 예상 가능한 실패의 공통 Result API는 `@workspace/kernel/result`를 사용한다.
 - 의미, 정책 또는 validation을 추가하지 않는 core 내부 한 줄 forwarding 파일을 만들지 않는다. 외부 호환성이 필요한 capability facade는 canonical contract를 직접 재수출한다.
 - 패키지 내부 Implementation은 package별 private alias를 사용한다. `auth`, `core`, `ui`, `env`는 각각 `#auth/*`, `#core/*`, `#ui/*`, `#env/*`, Storybook source는 `#storybook/*`를 사용한다. API 내부 platform과 observability 구현은 `@/*` 앱 alias를 사용한다.
 - 패키지 내부에서 자기 `@workspace/*` 공개 Interface를 역참조하거나 상대 경로로 우회하지 않는다.
@@ -62,10 +62,9 @@ bun run lint:fix
 - `typescript/no-explicit-any`: 기본 warn, 프론트엔드 영역은 error.
 - `typescript/no-non-null-assertion`: error.
 - `workspace/no-unsafe-unknown-cast`: error.
-- `workspace/no-invalid-workspace-dependency`: error.
+- import graph와 package dependency 정책은 dependency-cruiser가 소유하며 Oxlint에 중복 구현하지 않는다.
 
-Architecture test는 계층 규칙을 검사할 때 TypeScript AST 기반 import 수집을 사용한다. type-only import, dynamic import, export declaration도 runtime import와 같은 경계를 따라야 한다.
-`bun run check:import-cycles`는 workspace package runtime dependency cycle과 `packages/core`, 어드민 course editor의 runtime module cycle을 검사한다. type-only import는 cycle graph에서 제외한다.
+`bun run check:architecture`는 static import, re-export와 dynamic import의 계층 규칙을 검사한다. runtime cycle 판정에서는 type-only edge를 제외하되 계층 경계에서는 type-only 우회도 허용하지 않는다.
 
 ## TypeScript
 
@@ -92,8 +91,8 @@ Architecture test는 계층 규칙을 검사할 때 TypeScript AST 기반 import
 ## API와 DB 경계
 
 - `apps/api`의 composition과 app-owned persistence adapter만 `@workspace/db`와 Drizzle을 import한다. HTTP route와 middleware는 직접 import하지 않는다.
-- `packages/auth`의 SQLite adapter factory는 Better Auth vendor 호출만 격리한다. API가 DB lifecycle, learner/admin schema mapping과 app 전용 repository를 소유해 주입한다.
-- `packages/db`는 `@workspace/core`를 import하지 않는다.
+- `packages/infra/auth`의 SQLite adapter factory는 Better Auth vendor 호출을 격리하고 auth schema를 소유한다. API는 제품 profile·role repository를 주입한다.
+- `packages/infra/db`는 `@workspace/core`를 import하지 않는다.
 - DB row와 API DTO 사이 변환은 repository 또는 mapper 경계에서 수행한다.
 - API 응답은 runtime schema나 mapper를 통과한 내부 모델로 화면에 전달한다.
 

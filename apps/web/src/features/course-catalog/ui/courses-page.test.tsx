@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { CoursesPage } from "@/features/course-catalog/ui/courses-page"
-import { learnerCourseSummarySchema } from "@workspace/contracts/learning"
+import { learnerCourseSummarySchema } from "@workspace/contracts/learning/learner-content"
 
 vi.mock("next/navigation", () => ({
   useRouter() {

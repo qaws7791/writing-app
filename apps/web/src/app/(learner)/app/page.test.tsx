@@ -2,13 +2,14 @@ import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import AppHomeRoute from "@/app/(learner)/app/page"
-import { learnerProgressPageSchema } from "@workspace/contracts/learning"
-import type { LearnerProfileResponse } from "@workspace/contracts/learning"
+import { learnerProgressPageSchema } from "@workspace/contracts/learning/learner-content"
+import type { LearnerProfileResponse } from "@workspace/contracts/learning/learner-api"
+import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { ApiError } from "@/shared/http/api-error"
 import {
   httpApiFailure as apiFailure,
   httpApiOk as apiOk,
-} from "@workspace/http-client"
+} from "@workspace/http-client/api-result"
 import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
 
 const { redirectMock } = vi.hoisted(() => ({
@@ -39,7 +40,7 @@ const profile: LearnerProfileResponse = {
   },
   user: {
     email: "minji@example.com",
-    id: "user-1",
+    id: userIdSchema.parse("user-1"),
     image: null,
     joinedAt: "2026-06-01T00:00:00.000Z",
     name: "민지",

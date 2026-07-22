@@ -9,10 +9,11 @@ import type {
   ProfileReader,
   ProgressService,
 } from "@workspace/core/learning"
-import type { InternalErrorLogger } from "@/http/platform/errors"
-import type { RequestLoggingRuntime } from "@/http/platform/request-logging.middleware"
-import type { RequestLogger } from "@/observability/request-logger"
-import type { SecurityAuditLogger } from "@/observability/security-audit-logger"
+import type { InternalErrorLogger } from "@workspace/http-platform/errors"
+import type { RequestLoggingRuntime } from "@workspace/http-platform/request-logging"
+import type { RequestLogger } from "@workspace/observability/request-logger"
+import type { SecurityAuditLogger } from "@workspace/observability/security-audit-logger"
+import type { HttpRequestContext } from "@workspace/http-platform/context"
 
 import type { LearnerContractErrorLogger } from "@/http/learner-response"
 
@@ -41,10 +42,12 @@ export type ApiDependencies = {
   readonly webOrigin?: string
 }
 
-export type ApiRequestContext = Omit<ApiDependencies, "now"> & {
-  readonly deploymentVersion: string
-  readonly now: () => Date
-}
+export type ApiRequestContext = HttpRequestContext<
+  Omit<ApiDependencies, "now"> & {
+    readonly deploymentVersion: string
+    readonly now: () => Date
+  }
+>
 
 export function createRequestContext(
   dependencies: ApiDependencies

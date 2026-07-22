@@ -2,7 +2,7 @@ import { createHash } from "node:crypto"
 import { readdir, readFile, stat } from "node:fs/promises"
 import path from "node:path"
 
-import { courseVisualKeyValues } from "@workspace/contracts/content"
+import { courseVisualKeyValues } from "@workspace/contracts/content/course"
 
 const expectedFileNames = courseVisualKeyValues
   .map((visualKey) => `${visualKey}.png`)

@@ -1,7 +1,10 @@
-import { Agent } from "@mastra/core/agent"
-import { Mastra } from "@mastra/core"
-import { createTool } from "@mastra/core/tools"
 import type { ReadableStream } from "node:stream/web"
+import {
+  createMastraAgent,
+  createMastraRuntime,
+  createMastraTool,
+  type ManagedMastraRuntime,
+} from "@workspace/ai/mastra-runtime"
 import type {
   ResourceDocumentUseCase,
   ResourceSearchUseCase,
@@ -10,7 +13,7 @@ import { z } from "zod"
 
 import type { AdminAiChatAgent } from "@/modules/admin-ai-chat/admin-ai-chat-agent"
 
-export const adminContentAgentId = "admin-content-agent"
+const adminContentAgentId = "admin-content-agent"
 
 export type { AdminAiChatAgent } from "@/modules/admin-ai-chat/admin-ai-chat-agent"
 
@@ -26,7 +29,7 @@ export function createAdminMastra({
     readonly search: ResourceSearchUseCase
   }
 }) {
-  const searchResources = createTool({
+  const searchResources = createMastraTool({
     description:
       "관리자 자료실의 활성 문서 제목과 본문을 검색합니다. 내부 사실을 답하기 전에 사용합니다.",
     id: "search_resources",
@@ -48,7 +51,7 @@ export function createAdminMastra({
       }
     },
   })
-  const readResourceDocument = createTool({
+  const readResourceDocument = createMastraTool({
     description:
       "관리자 자료실의 활성 문서 한 건을 Markdown 원문과 함께 읽습니다. search_resources가 반환한 id를 사용합니다.",
     id: "read_resource_document",
@@ -71,7 +74,7 @@ export function createAdminMastra({
       }
     },
   })
-  const adminContentAgent = new Agent({
+  const adminContentAgent = createMastraAgent({
     id: adminContentAgentId,
     instructions: [
       "당신은 한국어 글쓰기 교육 플랫폼 '글결'의 관리자 콘텐츠 제작 에이전트입니다.",
@@ -90,17 +93,21 @@ export function createAdminMastra({
     tools: { readResourceDocument, searchResources },
   })
 
-  return new Mastra({
+  const runtimeResult = createMastraRuntime({
     agents: { adminContentAgent },
+    apiKey: openAiApiKey,
+    timeoutMs: 30_000,
   })
+  if (runtimeResult.isErr()) throw runtimeResult.error
+  return runtimeResult.value
 }
 
 export function createMastraAdminAiChatAgent(
-  mastra: ReturnType<typeof createAdminMastra>
+  mastra: ManagedMastraRuntime
 ): AdminAiChatAgent {
   return {
     async streamText(prompt, options) {
-      const agent = mastra.getAgentById(adminContentAgentId)
+      const agent = mastra.value.getAgentById(adminContentAgentId)
       const stream = await agent.stream(prompt, {
         abortSignal: options.signal,
         modelSettings: { maxOutputTokens: options.maxOutputTokens },

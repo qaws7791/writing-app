@@ -224,7 +224,7 @@ function LandingStatCard({
   )
 }
 
-export function useCountUp(target: number, active: boolean, duration = 1400) {
+function useCountUp(target: number, active: boolean, duration = 1400) {
   const [value, setValue] = useState(0)
 
   useEffect(() => {

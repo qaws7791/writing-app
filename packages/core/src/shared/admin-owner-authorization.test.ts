@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  adminIdSchema,
-  adminRoles,
-} from "@workspace/contracts/admin/identity-data"
+import { adminIdSchema, adminRoles } from "@workspace/contracts/identity/data"
 import { authorizeOwnerMutation } from "#core/shared/admin-owner-authorization"
 
 describe("관리자 owner 변경 권한", () => {

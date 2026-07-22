@@ -1,7 +1,7 @@
 import {
   adminResourceDocumentDtoSchema,
   adminResourceImageUploadDtoSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/resource-library/admin-resource-documents"
 
 import type {
   AdminResourceDocument,

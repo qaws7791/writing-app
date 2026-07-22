@@ -1,17 +1,17 @@
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import {
   adminAnalyticsDtoSchema,
   adminDashboardDtoSchema,
   adminLessonAnalyticsSortSchema,
   adminSortDirectionSchema,
-} from "@workspace/contracts/admin/dashboard-analytics-data"
-import { adminLessonAnalyticsPageDtoSchema } from "@workspace/contracts/admin/admin-analytics"
+} from "@workspace/contracts/operations/dashboard-analytics-data"
+import { adminLessonAnalyticsPageDtoSchema } from "@workspace/contracts/operations/admin-analytics"
 import type {
   AdminAnalyticsReader,
   AdminDashboardReader,
   ReadAdminLessonAnalyticsResult,
 } from "@workspace/core/admin"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {

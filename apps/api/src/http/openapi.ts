@@ -1,9 +1,9 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { learnerApiErrorSchema } from "@workspace/contracts/learning"
-import { z } from "@/http/platform/zod"
+import { learnerApiErrorSchema } from "@workspace/contracts/learning/api-error"
+import { jsonResponse } from "@workspace/http-platform/openapi"
 
-export const openApiDocumentConfig = {
+const openApiDocumentConfig = {
   info: {
     title: "Writing App API",
     version: "0.0.1",
@@ -11,7 +11,7 @@ export const openApiDocumentConfig = {
   openapi: "3.1.0",
 } as const
 
-export const learnerSessionCookieSecurityScheme = {
+const learnerSessionCookieSecurityScheme = {
   in: "cookie",
   name: learnerSessionCookieName,
   type: "apiKey",
@@ -31,16 +31,7 @@ export type ApiOpenApiDocument = {
   readonly paths?: unknown
 }
 
-export function jsonResponse(description: string, schema: z.ZodType) {
-  return {
-    content: {
-      "application/json": {
-        schema,
-      },
-    },
-    description,
-  }
-}
+export { jsonResponse } from "@workspace/http-platform/openapi"
 
 export function authenticatedResponses(
   successResponse: ReturnType<typeof jsonResponse>

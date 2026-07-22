@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import LessonRoute from "@/app/(lesson)/app/lesson/page"
 import { networkApiError } from "@/shared/http/api-error"
-import { httpApiFailure as apiFailure } from "@workspace/http-client"
+import { httpApiFailure as apiFailure } from "@workspace/http-client/api-result"
 import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
-import { createHttpNetworkError } from "@workspace/http-client"
+import { createHttpNetworkError } from "@workspace/http-client/json-transport"
 
 const api: WritingAppApi = {
   completeStep: vi.fn(),

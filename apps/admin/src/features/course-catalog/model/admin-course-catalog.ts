@@ -2,9 +2,9 @@ import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/content/admin-courses"
 
-export type AdminCourseStatus = "active" | "archived"
+type AdminCourseStatus = "active" | "archived"
 export type ReadAdminCoursesInput = {
   readonly category: string
   readonly page: number
@@ -13,6 +13,5 @@ export type ReadAdminCoursesInput = {
   readonly status: "all" | AdminCourseStatus
 }
 export type AdminCreatedCourse = AdminCourseDetailDto
-export type AdminCourseListItem = AdminCourseListDto["items"][number]
 export type AdminCourseList = AdminCourseListDto
 export type AdminArchiveCourseResult = AdminArchiveCourseResultDto

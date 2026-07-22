@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { adminIdSchema } from "@workspace/contracts/admin"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { adminAuthSessions, adminAuthUsers } from "@workspace/db/schema"

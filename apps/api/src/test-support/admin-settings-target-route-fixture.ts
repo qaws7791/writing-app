@@ -1,7 +1,7 @@
-import { adminIdSchema } from "@workspace/contracts/admin"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminContentResetResultSchema } from "@workspace/contracts/admin/content-data"
-import { adminSettingsDtoSchema } from "@workspace/contracts/admin/settings-data"
+import { adminContentResetResultSchema } from "@workspace/contracts/operations/content-reset-data"
+import { adminSettingsDtoSchema } from "@workspace/contracts/operations/settings-data"
 import { adminRoles } from "@workspace/core/admin"
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
 import type { AdminContentResetUseCase } from "@workspace/core/content"
@@ -14,7 +14,7 @@ import {
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminSettingsRoutes } from "@/modules/admin-settings/admin-settings.routes"
 
-export type AdminSettingsTargetRouteFixtureJson =
+type AdminSettingsTargetRouteFixtureJson =
   | null
   | boolean
   | number

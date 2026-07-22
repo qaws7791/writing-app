@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "#alpha/*": ["packages/modules/alpha/src/*"],
+      "@fixture/alpha/api": ["packages/modules/alpha/src/interface/api.ts"],
+      "@fixture/types/id": ["packages/shared/types/src/id.ts"]
+    }
+  },
+  "include": ["apps/**/*.ts", "packages/**/*.ts"]
+}

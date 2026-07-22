@@ -1,4 +1,5 @@
 import { createAiFeedbackPrompt } from "@workspace/core/ai-feedback"
+import { err, ok } from "@workspace/kernel/result"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -93,9 +94,8 @@ describe("OpenAI AI feedback provider", () => {
         }),
         { signal: abortController.signal }
       )
-    ).resolves.toEqual({
-      kind: "ok",
-      value: {
+    ).resolves.toEqual(
+      ok({
         improvements: ["근거를 더 구체화하세요."],
         nextAction: "예시 한 문장을 덧붙이세요.",
         score: 88,
@@ -103,8 +103,8 @@ describe("OpenAI AI feedback provider", () => {
         showScore: true,
         strengths: ["주장이 앞에 있어 읽기 쉽습니다."],
         summary: "핵심이 선명한 답변입니다.",
-      },
-    })
+      })
+    )
 
     expect(requests).toHaveLength(1)
     expect(requests[0]).toMatchObject({
@@ -151,12 +151,7 @@ describe("OpenAI AI feedback provider", () => {
           lessonTitle: "좋은 문장이란 무엇인가",
         })
       )
-    ).resolves.toEqual({
-      error: {
-        kind: "provider-unavailable",
-      },
-      kind: "err",
-    })
+    ).resolves.toEqual(err({ kind: "provider-unavailable" }))
   })
 
   it("API key가 없는 실행 환경에서는 unavailable provider를 사용한다", async () => {
@@ -172,11 +167,6 @@ describe("OpenAI AI feedback provider", () => {
           lessonTitle: "좋은 문장이란 무엇인가",
         })
       )
-    ).resolves.toEqual({
-      error: {
-        kind: "provider-unavailable",
-      },
-      kind: "err",
-    })
+    ).resolves.toEqual(err({ kind: "provider-unavailable" }))
   })
 })

@@ -3,7 +3,7 @@ import type {
   SaveAdminNoticeSettingsInput,
   SettingsRepository,
 } from "@workspace/core/admin"
-import type { AdminSettingsDto } from "@workspace/contracts/admin/settings-data"
+import type { AdminSettingsDto } from "@workspace/contracts/operations/settings-data"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { adminSettings } from "@workspace/db/schema"
 

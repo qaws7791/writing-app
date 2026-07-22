@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono"
-import { AppError } from "@/http/platform/errors"
-import { withPrivateNoStore } from "@/http/platform/security"
-import { learnerAccountStatuses } from "@workspace/core/auth"
+import { AppError } from "@workspace/http-platform/errors"
+import { withPrivateNoStore } from "@workspace/http-platform/security"
+import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
 
 import type { ApiHonoEnv } from "@/context/hono-env"
 

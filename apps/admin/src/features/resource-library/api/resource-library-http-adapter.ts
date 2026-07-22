@@ -1,11 +1,11 @@
+import { adminImportResourceDocumentResultDtoSchema } from "@workspace/contracts/resource-library/admin-resource-documents"
 import {
-  adminImportResourceDocumentResultDtoSchema,
   adminResourceNodeMutationDtoSchema,
   adminResourceRestoreResultDtoSchema,
-  adminResourceSearchDtoSchema,
   adminResourceTrashResultDtoSchema,
   adminResourceTreeDtoSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/resource-library/admin-resource-tree"
+import { adminResourceSearchDtoSchema } from "@workspace/contracts/resource-library/admin-resource-search"
 
 import type { ResourceLibraryApi } from "@/entities/resource-document/model/resource-document"
 import type { AdminHttpTransport } from "@/shared/http/admin-http-transport"

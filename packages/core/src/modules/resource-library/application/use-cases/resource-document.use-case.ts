@@ -1,7 +1,7 @@
 import type {
   AdminResourceDocumentDto,
   AdminResourceTreeNodeDto,
-} from "@workspace/contracts/admin/resource-library-data"
+} from "@workspace/contracts/resource-library/data"
 import {
   normalizeResourceMarkdown,
   prepareResourceMarkdownImport,

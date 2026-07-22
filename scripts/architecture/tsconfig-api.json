@@ -1,0 +1,14 @@
+{
+  "extends": "../../apps/api/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "#auth/*": ["packages/infra/auth/src/*"],
+      "#core/*": ["packages/core/src/*"],
+      "#env/*": ["packages/config/env/src/*"],
+      "@/*": ["apps/api/src/*"]
+    }
+  },
+  "include": ["../../apps/api/**/*.ts"],
+  "exclude": ["../../apps/api/node_modules"]
+}

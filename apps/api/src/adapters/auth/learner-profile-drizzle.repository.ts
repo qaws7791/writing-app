@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm"
 
 import type { LearnerTestAuthDisplayNameSynchronizer } from "@workspace/auth/learner/server"
 import type { LearnerProfileRepository } from "@workspace/core/auth"
-import { learnerAccountStatuses } from "@workspace/contracts/status"
+import { learnerAccountStatuses } from "@workspace/contracts/identity/status"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { authUsers, learnerProfiles } from "@workspace/db/schema"
 

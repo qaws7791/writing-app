@@ -1,0 +1,29 @@
+{
+  "name": "@workspace/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#env/*": "./src/*"
+  },
+  "exports": {
+    "./local-runtime-defaults": "./src/local-runtime-defaults.ts",
+    "./parse-env": "./src/parse-env.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest watch --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  }
+}

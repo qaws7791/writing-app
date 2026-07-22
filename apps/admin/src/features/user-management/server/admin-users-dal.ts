@@ -4,7 +4,7 @@ import {
   adminDeleteUserResultSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/identity/admin-users"
 import type { UserId } from "@/entities/learner-account/model/learner-account-id"
 import type {
   AdminDeleteUserResult,

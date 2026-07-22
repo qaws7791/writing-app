@@ -14,7 +14,7 @@
       "execution": { "exitCode": 0 }
     },
     {
-      "package": "@workspace/repository-tooling",
+      "package": "@workspace/env",
       "task": "test",
       "command": "vitest run --config vitest.config.ts",
       "cache": { "status": "HIT" },
@@ -28,7 +28,7 @@
       "execution": { "exitCode": 1 }
     },
     {
-      "package": "@workspace/config",
+      "package": "@workspace/nextjs-config",
       "task": "test",
       "command": null,
       "cache": { "status": "MISS" }

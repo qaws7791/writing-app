@@ -1,12 +1,13 @@
-import {
-  adminIdSchema,
-  adminResourceDocumentDtoSchema,
-  adminResourceSearchItemDtoSchema,
-  adminResourceTreeNodeDtoSchema,
-} from "@workspace/contracts/admin"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { adminResourceDocumentDtoSchema } from "@workspace/contracts/resource-library/admin-resource-documents"
+import { adminResourceSearchItemDtoSchema } from "@workspace/contracts/resource-library/admin-resource-search"
+import { adminResourceTreeNodeDtoSchema } from "@workspace/contracts/resource-library/admin-resource-tree"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { adminRoles } from "@workspace/core/admin"
-import { toResourceAssetId } from "@workspace/core/resource-library"
+import {
+  toResourceAssetId,
+  toResourceFolderId,
+} from "@workspace/core/resource-library"
 import type {
   ResourceAssetUseCase,
   ResourceDocumentUseCase,
@@ -150,7 +151,10 @@ function createTreeService(journal: EffectJournal): ResourceTreeUseCase {
         value: {
           node: {
             ...documentNode,
-            parentId: input.destinationParentId,
+            parentId:
+              input.destinationParentId === null
+                ? null
+                : toResourceFolderId(input.destinationParentId),
           },
         },
       }

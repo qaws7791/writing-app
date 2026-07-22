@@ -1,4 +1,4 @@
-import type { AdminSettingsDto } from "@workspace/contracts/admin/settings-data"
+import type { AdminSettingsDto } from "@workspace/contracts/operations/settings-data"
 
 export type SaveAdminNoticeSettingsInput = {
   readonly announce: string

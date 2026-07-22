@@ -2,7 +2,7 @@ import type {
   AdminCourseDetailDto,
   AdminCourseEditorDocument,
   AdminPublishCourseResult,
-} from "@workspace/contracts/admin/content-data"
+} from "@workspace/contracts/content/admin-data"
 import type {
   ArchiveAdminCourseInput,
   CourseAdminRepository,

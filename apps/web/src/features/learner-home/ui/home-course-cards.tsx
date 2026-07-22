@@ -4,7 +4,7 @@ import Link from "next/link"
 import type {
   LearnerLessonReference,
   LearnerProgressCourse,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-content"
 import {
   ChevronRightIcon,
   PlayIcon,

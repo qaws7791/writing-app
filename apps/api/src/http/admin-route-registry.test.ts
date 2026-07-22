@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
-import type { AnyRouteConfig } from "@/http/platform/core"
+import type { AnyRouteConfig } from "@workspace/http-platform/core"
 
 import {
   AdminRouteAssemblyError,

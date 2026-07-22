@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { lessonStepDtoSchema } from "@workspace/contracts/content"
+import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 import {
   courseIdSchema,
   lessonIdSchema,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
 import {
   curriculumVersionIdSchema,
   learnerIdSchema,

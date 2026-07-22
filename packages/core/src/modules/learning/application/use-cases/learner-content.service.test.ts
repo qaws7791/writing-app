@@ -8,7 +8,8 @@ import {
 import {
   courseIdSchema,
   lessonIdSchema,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
+import { err, ok } from "@workspace/kernel/result"
 
 import { createLearnerContentService } from "#core/modules/learning/application/use-cases/learner-content.service"
 import type { LearnerReadModelRepository } from "#core/modules/learning/application/ports/learner-read-model.repository"
@@ -121,13 +122,13 @@ describe("학습자 콘텐츠 서비스", () => {
         courseId: courseIdSchema.parse("course-1"),
         userId: learnerIdSchema.parse("user-1"),
       })
-    ).resolves.toEqual({ kind: "ok", value: detail })
+    ).resolves.toEqual(ok(detail))
     await expect(
       service.getLesson({
         lessonId: lessonIdSchema.parse("lesson-1"),
         userId: learnerIdSchema.parse("user-1"),
       })
-    ).resolves.toEqual({ kind: "ok", value: lesson })
+    ).resolves.toEqual(ok(lesson))
   })
 
   it("잠긴 lesson은 공개 본문 없이 lesson-locked 오류를 반환한다", async () => {
@@ -144,10 +145,7 @@ describe("학습자 콘텐츠 서비스", () => {
         lessonId: lessonIdSchema.parse("lesson-2"),
         userId: learnerIdSchema.parse("user-1"),
       })
-    ).resolves.toEqual({
-      error: { kind: "lesson-locked" },
-      kind: "err",
-    })
+    ).resolves.toEqual(err({ kind: "lesson-locked" }))
   })
 })
 

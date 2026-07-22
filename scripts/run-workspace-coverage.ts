@@ -4,10 +4,12 @@ import { basename, join } from "node:path"
 import {
   aggregateLcovReports,
   assertLineCoverageThresholds,
-  createRepositoryWorkspaceInventory,
-  formatWorkspaceInventoryError,
   type LineCoverageThreshold,
-} from "@workspace/repository-tooling"
+} from "#scripts/coverage-report"
+import {
+  createWorkspaceInventory,
+  formatWorkspaceInventoryError,
+} from "#scripts/workspace-inventory"
 
 type BunCoverageProject = {
   readonly coverageTests: readonly string[]
@@ -34,10 +36,7 @@ const projects: readonly CoverageProject[] = [
   },
   {
     coverageTests: [
-      "src/architecture.test.ts",
       "src/adapters/ai-chat/admin-ai-chat-drizzle.repository.test.ts",
-      "src/http/platform/security/request-security.test.ts",
-      "src/observability/app-logger.test.ts",
     ],
     path: "apps/api",
     runtime: "bun",
@@ -58,16 +57,16 @@ const projects: readonly CoverageProject[] = [
       "src/admin/server-integration.test.ts",
       "src/session-token.test.ts",
     ],
-    path: "packages/auth",
+    path: "packages/infra/auth",
     runtime: "bun",
   },
   {
     coverageTests: ["src/input-limits.test.ts"],
-    path: "packages/contracts",
+    path: "packages/shared/contracts",
     runtime: "node",
   },
   {
-    coverageTests: ["src/architecture.test.ts"],
+    coverageTests: [],
     path: "packages/core",
     runtime: "bun",
   },
@@ -77,13 +76,41 @@ const projects: readonly CoverageProject[] = [
       "src/destructive-operation-guard.test.ts",
       "src/migrations/baseline-migration.test.ts",
     ],
-    path: "packages/db",
+    path: "packages/infra/db",
     runtime: "bun",
   },
-  { path: "packages/env", runtime: "node" },
+  { path: "packages/config/env", runtime: "node" },
   {
-    coverageTests: ["src/index.test.ts"],
-    path: "packages/http-client",
+    coverageTests: ["src/json-transport.test.ts"],
+    path: "packages/infra/http-client",
+    runtime: "node",
+  },
+  {
+    coverageTests: ["src/ai-infrastructure.test.ts"],
+    path: "packages/infra/ai",
+    runtime: "node",
+  },
+  {
+    coverageTests: ["src/in-memory-event-bus.test.ts"],
+    path: "packages/infra/event-bus",
+    runtime: "node",
+  },
+  {
+    coverageTests: [
+      "src/core/create-app.test.ts",
+      "src/security/request-security.test.ts",
+    ],
+    path: "packages/infra/http-platform",
+    runtime: "node",
+  },
+  {
+    coverageTests: ["src/logger.test.ts"],
+    path: "packages/infra/observability",
+    runtime: "node",
+  },
+  {
+    coverageTests: ["src/object-storage.test.ts"],
+    path: "packages/infra/storage",
     runtime: "node",
   },
   {
@@ -92,7 +119,7 @@ const projects: readonly CoverageProject[] = [
       "src/resource-markdown-import.test.ts",
       "src/resource-image-node.test.ts",
     ],
-    path: "packages/resource-document",
+    path: "packages/shared/resource-document",
     runtime: "node",
   },
   {
@@ -100,7 +127,7 @@ const projects: readonly CoverageProject[] = [
       "src/components/lesson/match-answer.test.tsx",
       "src/lib/safe-navigation-path.test.ts",
     ],
-    path: "packages/ui",
+    path: "packages/shared/ui",
     runtime: "node",
   },
 ]
@@ -222,7 +249,7 @@ async function runNodeCoverage(
 }
 
 function validateCoverageInventory(): void {
-  const result = createRepositoryWorkspaceInventory(process.cwd())
+  const result = createWorkspaceInventory(process.cwd())
   if (result.status === "failure") {
     throw new Error(result.errors.map(formatWorkspaceInventoryError).join("\n"))
   }

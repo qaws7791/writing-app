@@ -8,12 +8,12 @@
 
 공유 아이콘 export 위치:
 
-- `packages/ui/src/components/icons.tsx`
+- `packages/shared/ui/src/components/icons.tsx`
 
 사용 원칙:
 
 - 새 아이콘이 필요하면 먼저 `lucide-react`에서 가져와 공유 export에 추가한다.
-- 앱 전용 임시 SVG는 허용하지만, 여러 화면에서 반복되면 `packages/ui`로 이동한다.
+- 앱 전용 임시 SVG는 허용하지만, 여러 화면에서 반복되면 `packages/shared/ui`로 이동한다.
 - 아이콘 버튼은 가능한 텍스트 대신 익숙한 아이콘을 사용하고, 의미가 불명확하면 `aria-label` 또는 tooltip을 제공한다.
 - 장식 아이콘은 `aria-hidden="true"`를 지정한다.
 - SVG stroke는 lucide와 같은 `fill="none"`, `stroke="currentColor"`, `strokeWidth={2}`, round cap/join을 기준으로 한다.
@@ -87,7 +87,7 @@
 
 ## SVG 처리
 
-- 공통 아이콘성 SVG는 `packages/ui`로 모은다.
+- 공통 아이콘성 SVG는 `packages/shared/ui`로 모은다.
 - 화면 고유 장식 SVG는 앱 컴포넌트 내부에 둘 수 있으나, 이름과 `aria-hidden` 처리 기준을 명확히 한다.
 - 복잡한 일러스트레이션을 SVG로 직접 만들기보다 실제 이미지나 bitmap asset이 더 적절한지 먼저 판단한다.
 

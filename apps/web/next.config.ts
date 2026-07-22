@@ -2,7 +2,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
-import { createNextSecurityHeaders } from "@workspace/config/nextjs/security-headers"
+import { createNextSecurityHeaders } from "@workspace/nextjs-config/security-headers"
 
 const appDirectory = dirname(fileURLToPath(import.meta.url))
 const development = process.env.NODE_ENV !== "production"

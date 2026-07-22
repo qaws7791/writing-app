@@ -1,9 +1,9 @@
-import type { AiFeedbackResultDto } from "@workspace/contracts/ai-feedback"
+import type { AiFeedbackResultDto } from "@workspace/contracts/ai-feedback/feedback"
 import type {
   LearnerLesson,
   LearnerLessonStep,
-  LearnerStepSubmission,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-content"
+import type { LearnerStepSubmission } from "@workspace/contracts/learning/learner-transition"
 
 export type LessonAiFeedback = AiFeedbackResultDto
 export type LessonStepAnswerPayload = LearnerStepSubmission
@@ -36,12 +36,4 @@ export function isLastLessonStep(
   stepIndex: number
 ): boolean {
   return stepIndex === lesson.steps.length - 1
-}
-
-export function formatEstimatedMinutes(minutes: number): string {
-  return `예상 ${minutes}분`
-}
-
-export function formatStepCount(stepCount: number): string {
-  return `${stepCount}개 스텝`
 }

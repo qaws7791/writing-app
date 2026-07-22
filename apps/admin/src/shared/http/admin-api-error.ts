@@ -1,6 +1,7 @@
-import type { HttpNetworkError } from "@workspace/http-client"
+import type { HttpNetworkError } from "@workspace/http-client/json-transport"
+import { adminApiErrorSchema } from "@workspace/contracts/operations/admin-api-error"
 
-export type AdminApiErrorCode =
+type AdminApiErrorCode =
   | "contract-error"
   | "forbidden"
   | "invalid-request"
@@ -20,7 +21,7 @@ export type AdminApiError =
       readonly status?: number
     }
 
-export type AdminNetworkApiError = {
+type AdminNetworkApiError = {
   readonly code: "network-error"
   readonly message: string
   readonly network: HttpNetworkError
@@ -93,20 +94,13 @@ export function isAdminAuthenticationError(error: AdminApiError): boolean {
 }
 
 function readServerErrorCode(body: unknown): ServerAdminApiErrorCode | null {
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("code" in body) ||
-    typeof body.code !== "string"
-  ) {
+  const parsed = adminApiErrorSchema.safeParse(body)
+
+  if (!parsed.success || !isServerErrorCode(parsed.data.code)) {
     return null
   }
 
-  if (!isServerErrorCode(body.code)) {
-    return null
-  }
-
-  return serverCodeMap[body.code]
+  return serverCodeMap[parsed.data.code]
 }
 
 function isServerErrorCode(code: string): code is keyof typeof serverCodeMap {

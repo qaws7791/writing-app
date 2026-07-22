@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+import { ok } from "@workspace/kernel/result"
 
 import { createApp } from "@/app"
 import {
@@ -168,7 +169,7 @@ describe("플랫폼 API courses route", () => {
       contentService: {
         ...dependencies.contentService,
         async getCourseDetail() {
-          return { kind: "ok" as const, value: completedDetail }
+          return ok(completedDetail)
         },
       },
     })

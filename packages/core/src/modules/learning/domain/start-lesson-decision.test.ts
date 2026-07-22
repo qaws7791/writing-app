@@ -4,7 +4,7 @@ import {
   courseIdSchema,
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
 import {
   curriculumVersionIdSchema,
   learnerIdSchema,

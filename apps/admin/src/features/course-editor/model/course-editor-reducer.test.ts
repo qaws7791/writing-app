@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest"
 import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-course-editor"
 import {
+  curriculumVersionIdSchema,
   lessonIdSchema,
   lessonStepIdSchema,
   unitIdSchema,
-} from "@workspace/contracts/content"
+} from "@workspace/contracts/content/ids"
 
 import {
   courseEditorReducer,
@@ -56,7 +57,7 @@ describe("courseEditorReducer", () => {
     })
     const latest = {
       ...document,
-      curriculumVersionId: "course-1-v2",
+      curriculumVersionId: curriculumVersionIdSchema.parse("course-1-v2"),
       editVersion: 3,
       revision: 2,
       title: "서버 제목",

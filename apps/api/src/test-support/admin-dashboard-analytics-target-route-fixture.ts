@@ -1,10 +1,14 @@
 import type {
   AdminAnalyticsDto,
   AdminDashboardDto,
-} from "@workspace/contracts/admin/dashboard-analytics-data"
-import { adminIdSchema } from "@workspace/contracts/admin"
-import { userIdSchema } from "@workspace/contracts/admin/identity-data"
-import type { AdminLessonAnalyticsPageDto } from "@workspace/contracts/admin/admin-analytics"
+} from "@workspace/contracts/operations/dashboard-analytics-data"
+import {
+  courseIdSchema,
+  lessonIdSchema,
+} from "@workspace/contracts/content/ids"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { userIdSchema } from "@workspace/contracts/identity/data"
+import type { AdminLessonAnalyticsPageDto } from "@workspace/contracts/operations/admin-analytics"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
   adminRoles,
@@ -19,7 +23,7 @@ import {
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminDashboardAnalyticsRoutes } from "@/modules/admin-dashboard-analytics/admin-dashboard-analytics.routes"
 
-export type AdminDashboardAnalyticsTargetRouteFixtureJson =
+type AdminDashboardAnalyticsTargetRouteFixtureJson =
   | null
   | boolean
   | number
@@ -71,10 +75,10 @@ const analytics: AdminAnalyticsDto = {
     {
       completed: 1,
       completionRate: 50,
-      courseId: "course-1",
+      courseId: courseIdSchema.parse("course-1"),
       courseTitle: "활성 코스",
       dropOffRate: 50,
-      lessonId: "lesson-2",
+      lessonId: lessonIdSchema.parse("lesson-2"),
       lessonTitle: "둘째 레슨",
       started: 2,
     },

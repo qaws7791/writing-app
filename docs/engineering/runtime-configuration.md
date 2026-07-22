@@ -7,13 +7,14 @@
 ## 권위 소스
 
 - 로컬 준비와 진단: `scripts/setup.ts`, `scripts/local-onboarding.ts`, `scripts/doctor.ts`
-- 공통 로컬 runtime 값: `packages/env/src/local-runtime-defaults.ts`
+- 공통 로컬 runtime 값: `packages/config/env/src/local-runtime-defaults.ts`
 - runtime별 환경 변수 계약: 각 앱의 환경 parser와 `.env.example`
 - production 입력: `deploy/compose/`, Ansible inventory와 secret 관리 경계
 
 ## 설정 원칙
 
 - 환경 변수는 runtime 경계에서 schema로 parse하고, parse 결과만 내부에 전달한다.
+- `packages/infra/*`는 `process.env`를 직접 읽지 않고 조립 경계가 전달한 검증 완료 설정만 소비한다.
 - 기본값은 한 source에서만 선언하고, 문서·test fixture·deployment script에 다시 적지 않는다.
 - secret, cookie, public origin과 데이터 저장소 설정은 서로 다른 목적과 회전 수명을 가진 값으로 분리한다.
 - production parser는 insecure origin, 약한 secret, 상충하는 Host·cookie 설정과 test-only 설정을 fail-fast해야 한다.

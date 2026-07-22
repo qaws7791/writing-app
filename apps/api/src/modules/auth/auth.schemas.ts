@@ -1,1 +1,1 @@
-export { learnerSessionResponseSchema as sessionResponseSchema } from "@workspace/contracts/learning"
+export { learnerSessionResponseSchema as sessionResponseSchema } from "@workspace/contracts/learning/learner-api"

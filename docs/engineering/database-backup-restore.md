@@ -26,7 +26,7 @@ bun run db:backup --source=data/api.sqlite --output="backups/api-2026-07-12.sqli
   "backupBytes": 1234,
   "verification": {
     "integrityCheck": "ok",
-    "applicationReadSmoke": "ok",
+    "requiredTableReadSmoke": "ok",
     "schemaVersion": 1,
     "userVersion": 0
   }
@@ -63,7 +63,7 @@ bun run db:backup --source=data/api.sqlite --output="backups/api-2026-07-12.sqli
 
 ## 자동 검증
 
-`packages/db/src/database-backup.test.ts`는 다음을 회귀 검증한다.
+`packages/infra/db/src/database-backup.test.ts`는 다음을 회귀 검증한다.
 
 - 공백이 있는 file-backed 경로와 활성 WAL에서 snapshot 백업
 - 백업 뒤 원본 변경과 무관한 독립 백업 열기

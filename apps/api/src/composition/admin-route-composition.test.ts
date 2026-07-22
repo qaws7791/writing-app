@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { createInMemoryWritingAppDatabase } from "@workspace/db"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 
 import {
   createAdminCapabilityRouteGroupRegistry,
@@ -8,7 +8,7 @@ import {
 } from "@/composition/admin-route-composition"
 import { parseApiEnv } from "@/config/env"
 import { adminRouteGroupOrder } from "@/http/admin-route-group"
-import { createAppLogger } from "@/observability/app-logger"
+import { createAppLogger } from "@workspace/observability/logger"
 
 describe("관리자 capability route composition", () => {
   it("하나의 app-owned context로 여섯 capability factory를 매번 독립 조립한다", () => {

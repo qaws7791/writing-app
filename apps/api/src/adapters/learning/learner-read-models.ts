@@ -7,10 +7,8 @@ import {
   type ProgressReader,
 } from "@workspace/core/learning"
 import { learnerProfileStatsDtoSchema } from "@workspace/contracts/learning/learner-read-model"
-import {
-  contentStatuses,
-  lessonProgressStatuses,
-} from "@workspace/contracts/status"
+import { contentStatuses } from "@workspace/contracts/content/status"
+import { lessonProgressStatuses } from "@workspace/contracts/learning/status"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   courseCurriculumVersions,

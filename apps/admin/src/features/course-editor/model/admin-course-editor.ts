@@ -2,7 +2,7 @@ import {
   adminCourseEditorDocumentSchema,
   type AdminCourseEditorDocument,
   type AdminPublishCourseResult,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/content/admin-courses"
 
 export const adminCourseEditorSchema = adminCourseEditorDocumentSchema
 export type AdminCourseDetail = AdminCourseEditorDocument

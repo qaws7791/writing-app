@@ -2,7 +2,7 @@ import type {
   AdminDeleteUserResultDto,
   AdminUserDetailDto,
   AdminUserListDto,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/identity/admin-users"
 
 export type AdminUserStatus = "active" | "deleted" | "suspended"
 export type ReadAdminUsersInput = {
@@ -12,7 +12,6 @@ export type ReadAdminUsersInput = {
   readonly sort: "joined" | "lastActive" | "lessonsDone" | "streak"
   readonly status: "all" | AdminUserStatus
 }
-export type AdminUserListItem = AdminUserListDto["items"][number]
 export type AdminUserList = AdminUserListDto
 export type AdminUserDetail = AdminUserDetailDto
 export type AdminDeleteUserResult = AdminDeleteUserResultDto

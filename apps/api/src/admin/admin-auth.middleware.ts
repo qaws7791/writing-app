@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from "hono"
 import { authorizeOwnerMutation } from "@workspace/core/admin"
-import { withPrivateNoStore } from "@/http/platform/security"
+import { withPrivateNoStore } from "@workspace/http-platform/security"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {

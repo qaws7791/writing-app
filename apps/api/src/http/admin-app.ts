@@ -2,13 +2,13 @@ import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-import { createApp as createHonoApp } from "@/http/platform/core"
-import type { InternalErrorLogger } from "@/http/platform/errors"
+import { createApp as createHonoApp } from "@workspace/http-platform/core"
+import type { InternalErrorLogger } from "@workspace/http-platform/errors"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
   withPrivateNoStore,
-} from "@/http/platform/security"
+} from "@workspace/http-platform/security"
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import {
   adminHealthRoute,
@@ -20,9 +20,10 @@ import type { AdminRouteGroup } from "@/http/admin-route-group"
 import {
   createRequestLoggingMiddleware,
   type RequestLoggingRuntime,
-} from "@/http/platform/request-logging.middleware"
-import type { RequestLogger } from "@/observability/request-logger"
-import type { SecurityAuditLogger } from "@/observability/security-audit-logger"
+} from "@workspace/http-platform/request-logging"
+import { createSecurityAuditRequestObserver } from "@/observability/security-audit-request-observer"
+import type { RequestLogger } from "@workspace/observability/request-logger"
+import type { SecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 
 export type AdminAppDependencies = {
   readonly adminOrigin?: string
@@ -114,7 +115,9 @@ function createAdminMiddleware(
         audience: "admin",
         createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
         logRequest: dependencies.requestLogger,
-        logSecurityAudit: dependencies.securityAuditLogger,
+        observeRequest: createSecurityAuditRequestObserver(
+          dependencies.securityAuditLogger
+        ),
         readActor(context) {
           const session = context.get("activeAdminSession")
 

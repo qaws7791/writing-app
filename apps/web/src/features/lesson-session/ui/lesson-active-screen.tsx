@@ -14,7 +14,7 @@ import { LessonStepRenderer } from "@/features/lesson-session/ui/lesson-step-ren
 import type {
   LearnerLesson as Lesson,
   LearnerLessonStep as LessonStep,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-content"
 import {
   LessonCheckedFooter,
   LessonProgressHeader,

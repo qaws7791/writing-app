@@ -13,7 +13,7 @@ const reservedFoundationOperationIds = [
 ] as const
 const reservedAdminAuthPath = "/auth"
 
-export type AdminRouteSource = {
+type AdminRouteSource = {
   readonly group: AdminRouteGroupName
   readonly index: number
   readonly method: string

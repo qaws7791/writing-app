@@ -3,7 +3,7 @@ import {
   adminUserListItemDtoSchema,
   adminIdSchema,
   userIdSchema,
-} from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/identity/data"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { adminRoles, type AdminUserReader } from "@workspace/core/admin"
 import type { AdminUserMutationUseCase } from "@workspace/core/auth"

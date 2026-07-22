@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
 import { createCourseImageUrl } from "@/entities/course/model/course-visual-assets"
-import type { LearnerCourseDetail } from "@workspace/contracts/learning"
+import type { LearnerCourseDetail } from "@workspace/contracts/learning/learner-content"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"

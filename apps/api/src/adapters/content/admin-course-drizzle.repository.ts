@@ -20,20 +20,22 @@ import {
   createDefaultAdminCourseContentIds,
   type CreateAdminCourseContentIds,
 } from "@/adapters/content/admin-content-ids"
-import { contentStatuses } from "@workspace/contracts/status"
+import { contentStatuses } from "@workspace/contracts/content/status"
 
 import {
   adminCourseEditorDocumentSchema,
-  type AdminContentResetResultDto,
   type AdminCourseDetailDto,
   type AdminCourseEditorDocument,
-} from "@workspace/contracts/admin/content-data"
+} from "@workspace/contracts/content/admin-data"
+import type { AdminContentResetResultDto } from "@workspace/contracts/operations/content-reset-data"
 import {
   courseVisualKeySchema,
   type CourseVisualKey,
-} from "@workspace/contracts/content"
+} from "@workspace/contracts/content/course"
+import { courseIdSchema } from "@workspace/contracts/content/ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { createCurriculumVersionId } from "@workspace/db/content/curriculum-version-id"
+import type { CourseId } from "@workspace/types/ids"
 import { normalizeVersionedStepContent } from "@workspace/db/content/normalize-versioned-step-content"
 import { persistedContentStatuses } from "@workspace/db/persisted-values"
 import {
@@ -117,7 +119,7 @@ function createCourse(
 function insertCourseDraft(
   db: WritingAppDatabase,
   input: CreateAdminCourseInput,
-  courseId: string
+  courseId: CourseId
 ): AdminCourseDetailDto {
   const curriculumVersionId = createCurriculumVersionId(courseId, 1)
   const sortOrder = readNextCourseSortOrder(db)
@@ -635,6 +637,7 @@ function readCourses(
   return {
     items: rows.map((row) => ({
       ...row,
+      id: courseIdSchema.parse(row.id),
       visualKey: readCourseVisualKey(row.visualKey),
     })),
     page: pagination.page,

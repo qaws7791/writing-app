@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
-import { adminIdSchema } from "@workspace/contracts/admin"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { adminRoles } from "@workspace/core/admin"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-import { z } from "@/http/platform/zod"
+import { z } from "@workspace/http-platform/zod"
 
 import {
   adminSessionExpiresAt,
@@ -339,6 +339,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     await expect(response.json()).resolves.toEqual({
       code: "INTERNAL_SERVER_ERROR",
       message: "Internal Server Error",
+      requestId: "admin-error-request-id",
     })
   })
 

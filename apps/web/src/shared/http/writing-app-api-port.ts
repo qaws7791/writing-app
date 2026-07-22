@@ -3,22 +3,24 @@ import type {
   CompleteLearnerStepBody,
   CompleteLearnerStepResult,
   LearnerAiFeedbackTransitionResult,
+} from "@workspace/contracts/learning/learner-transition"
+import type {
   LearnerCourseCategoriesResponse,
   LearnerCourseDetailResponse,
   LearnerCourseListResponse,
   LearnerLessonResponse,
   LearnerProfileResponse,
   LearnerProgressResponse,
-  LessonLearningState,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-api"
+import type { LessonLearningState } from "@workspace/contracts/learning/learner-content"
 
-export type GetProgressOptions = {
+type GetProgressOptions = {
   readonly cursor?: string
   readonly limit?: number
   readonly status?: "completed" | "in_progress"
 }
 
-export type ListCoursesOptions = {
+type ListCoursesOptions = {
   readonly category?: string
   readonly cursor?: string
   readonly limit?: number

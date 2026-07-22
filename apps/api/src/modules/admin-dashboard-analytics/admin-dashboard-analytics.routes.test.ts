@@ -1,11 +1,15 @@
 import { describe, expect, it, vi } from "vitest"
+import {
+  courseIdSchema,
+  lessonIdSchema,
+} from "@workspace/contracts/content/ids"
 import type {
   AdminAnalyticsDto,
   AdminDashboardDto,
-} from "@workspace/contracts/admin/dashboard-analytics-data"
-import { adminIdSchema } from "@workspace/contracts/admin"
-import { userIdSchema } from "@workspace/contracts/admin/identity-data"
-import type { AdminLessonAnalyticsPageDto } from "@workspace/contracts/admin/admin-analytics"
+} from "@workspace/contracts/operations/dashboard-analytics-data"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { userIdSchema } from "@workspace/contracts/identity/data"
+import type { AdminLessonAnalyticsPageDto } from "@workspace/contracts/operations/admin-analytics"
 import {
   adminRoles,
   type ReadAdminLessonAnalyticsResult,
@@ -59,10 +63,10 @@ const analytics: AdminAnalyticsDto = {
     {
       completed: 1,
       completionRate: 50,
-      courseId: "course-1",
+      courseId: courseIdSchema.parse("course-1"),
       courseTitle: "활성 코스",
       dropOffRate: 50,
-      lessonId: "lesson-2",
+      lessonId: lessonIdSchema.parse("lesson-2"),
       lessonTitle: "둘째 레슨",
       started: 2,
     },

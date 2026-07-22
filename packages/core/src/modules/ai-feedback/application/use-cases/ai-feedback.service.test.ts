@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback"
+import { aiFeedbackPayloadSchema } from "@workspace/contracts/ai-feedback/feedback"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/contracts/content"
+} from "@workspace/contracts/content/ids"
 import {
   curriculumVersionIdSchema,
   inProgressLessonLearningStateSchema,
@@ -15,7 +15,7 @@ import type { AiFeedbackProvider } from "#core/modules/ai-feedback/application/p
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
 import { createLearnerAiFeedbackTransitionService } from "#core/modules/ai-feedback/application/use-cases/ai-feedback.service"
 import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
-import { ok } from "#core/shared/result"
+import { ok } from "@workspace/kernel/result"
 
 describe("LearnerAiFeedbackTransitionService", () => {
   it("고정 version 답안으로 provider를 호출하고 성공 저장과 step 전이를 결합한다", async () => {

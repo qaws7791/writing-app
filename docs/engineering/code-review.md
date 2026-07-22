@@ -22,10 +22,10 @@
 
 ## 경계 체크
 
-- `apps/api -> packages/core -> packages/db` 방향을 지키는가?
-- `packages/db`가 `packages/core`를 import하지 않는가?
+- 앱 조립 경계만 core 공개 port, app-owned adapter와 `packages/infra/*` 구현을 함께 아는가?
+- infra package가 app·module을 import하지 않고 provider SDK를 소유 package 밖으로 노출하지 않는가?
 - 관리자 use case가 기능별 파일과 repository port에 의존하고 불필요하게 전체 `AdminRepository` 또는 mega service를 요구하지 않는가?
-- 관리자 DTO schema가 기능별 contract 파일에 있고 `@workspace/contracts/admin` entrypoint만 공개 계약으로 소비되는가?
+- 관리자 DTO schema가 `content`, `identity`, `operations`, `resource-library`의 소유 context에 있고 가장 좁은 `@workspace/contracts/<context>/<contract>` entrypoint로 소비되는가?
 - 어드민 코스 편집기 root에는 shell entrypoint만 두고 `workspace`, `preview`, `step-forms` 디렉토리 책임이 섞이지 않는가?
 - 어드민 코스 편집기 step form 의존 방향이 `step-form-registry -> step-forms barrel -> forms -> shared`로 유지되는가?
 - 학습 step answer 검증은 learning domain policy에 있고 application service가 step type별 validator를 다시 구현하지 않는가?
@@ -35,10 +35,10 @@
 - 기존 architecture allowance에 연결된 import를 제거했다면 같은 변경에서 exact ratchet도 축소했는가? 새 allowance나 wildcard 예외를 추가하지 않았는가?
 - HTTP 변경 route가 검증된 `*Request`를 application command로 명시적으로 변환하고 repository port까지 request 타입을 전달하지 않는가?
 - 관리자 DB 생성·공유·종료는 `admin-runtime` 하나가 소유하고 core service 결과에 DB client가 노출되지 않는가?
-- 학습자 HTTP 경계가 `@workspace/contracts/learning`의 strict schema와 추론 타입을 직접 사용하고 generated OpenAPI 타입이나 `writing-app-api-contract`를 다시 만들지 않는가?
+- 학습자 HTTP 경계가 `@workspace/contracts/learning/learner-api` 등 endpoint 소유 contract의 strict schema와 추론 타입을 직접 사용하고 generated OpenAPI 타입이나 `writing-app-api-contract`를 다시 만들지 않는가?
 - 학습자 성공 응답이 전송 직전에 runtime parse되고 계약 실패 로그에서 본문·답안·Zod message가 제외되는가?
-- 매칭 스텝 presentation 상호작용 모델은 `apps/web` feature 내부에 있고 `packages/contracts`나 `packages/core` public API로 새어 나가지 않는가?
-- Learning domain이 content 타입을 필요로 할 때 content module facade가 아니라 `@workspace/contracts/content` 또는 구체적인 독립 경계를 import하는가?
+- 매칭 스텝 presentation 상호작용 모델은 `apps/web` feature 내부에 있고 `packages/shared/contracts`나 `packages/core` public API로 새어 나가지 않는가?
+- Learning domain이 content 타입을 필요로 할 때 content module facade가 아니라 `@workspace/contracts/content/course` 또는 구체적인 독립 경계를 import하는가?
 - 레거시 실험 디렉터리의 구현 파일을 제품 런타임에서 import하지 않는가?
 
 ## 인증과 권한 체크

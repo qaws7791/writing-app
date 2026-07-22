@@ -2,7 +2,7 @@ import type {
   CompleteLearnerStepResult,
   LearnerStepSubmission,
   StepEvaluation,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-transition"
 
 type PendingAcceptedTransition = Exclude<
   CompleteLearnerStepResult,
@@ -53,7 +53,7 @@ export type LessonSessionEvent =
   | { readonly stepId: string; readonly type: "RETRY_EDIT_REQUESTED" }
   | { readonly type: "ACCEPTED_CONTINUE_REQUESTED" }
 
-export class LessonSessionTransitionError extends Error {
+class LessonSessionTransitionError extends Error {
   constructor(state: LessonSessionState, event: LessonSessionEvent) {
     super(
       `레슨 세션의 ${state.status} 상태에서는 ${event.type} event를 처리할 수 없습니다.`

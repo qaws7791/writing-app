@@ -2,10 +2,11 @@ import fs from "node:fs"
 import path from "node:path"
 
 import {
-  createRepositoryWorkspaceInventory,
+  createWorkspaceInventory,
   formatWorkspaceInventoryError,
   type WorkspaceInventory,
-} from "@workspace/repository-tooling"
+  type WorkspaceManifest,
+} from "#scripts/workspace-inventory"
 
 type JsonRecord = Record<string, unknown>
 
@@ -25,6 +26,14 @@ const requiredTurboBuildOutputs = [
   "dist/**",
   ".next/**",
   "!.next/cache/**",
+] as const
+const requiredWorkspaceGlobs = [
+  "apps/*",
+  "packages/*",
+  "packages/modules/*",
+  "packages/infra/*",
+  "packages/shared/*",
+  "packages/config/*",
 ] as const
 
 const repositoryRoot = process.cwd()
@@ -124,6 +133,13 @@ function validateRootPackageScripts() {
     path.join(repositoryRoot, "package.json")
   )
   const scripts = rootPackageJson["scripts"]
+  const workspaceGlobs = readStringArray(rootPackageJson["workspaces"])
+
+  reportMissingOrExtra({
+    actual: workspaceGlobs,
+    expected: requiredWorkspaceGlobs,
+    label: "package.json workspaces",
+  })
 
   if (!isRecord(scripts)) {
     failures.push("package.json must declare scripts.")
@@ -426,8 +442,7 @@ function isPathInsideDirectory(filePath: string, directory: string): boolean {
   )
 }
 
-const workspaceInventoryResult =
-  createRepositoryWorkspaceInventory(repositoryRoot)
+const workspaceInventoryResult = createWorkspaceInventory(repositoryRoot)
 
 if (workspaceInventoryResult.status === "failure") {
   failures.push(

@@ -1,4 +1,7 @@
-import type { HttpApiFailure, HttpApiResult } from "@workspace/http-client"
+import type {
+  HttpApiFailure,
+  HttpApiResult,
+} from "@workspace/http-client/api-result"
 
 import type { AdminApiError } from "@/shared/http/admin-api-error"
 

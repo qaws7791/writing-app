@@ -1,6 +1,6 @@
 # 디자인 브리프
 
-이 문서는 writing-app의 브랜드 톤, 무드, 아트 디렉션, 미적 원칙의 단일 진실 원천이다. 구현 기준은 `apps/web`, `apps/admin`, `packages/ui`, `apps/storybook`의 현재 코드와 기존 제품 문서다.
+이 문서는 writing-app의 브랜드 톤, 무드, 아트 디렉션, 미적 원칙의 단일 진실 원천이다. 구현 기준은 `apps/web`, `apps/admin`, `packages/shared/ui`, `apps/storybook`의 현재 코드와 기존 제품 문서다.
 
 ## 제품 정체성
 
@@ -59,4 +59,4 @@ writing-app은 한국어 글쓰기 학습 플랫폼이다. 학습자는 작은 �
 - `docs/design/screens`
 - `apps/web/src/app/globals.css`
 - `apps/admin/src/app/globals.css`
-- `packages/ui/src/styles/globals.css`
+- `packages/shared/ui/src/styles/globals.css`

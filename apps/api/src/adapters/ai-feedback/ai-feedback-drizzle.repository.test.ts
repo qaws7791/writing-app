@@ -5,8 +5,8 @@ import { join } from "node:path"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/contracts/content/content.ids"
-import { learnerIdSchema } from "@workspace/contracts/learning/learning.ids"
+} from "@workspace/contracts/content/ids"
+import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 import {
   createInMemoryWritingAppDatabase,
   createWritingAppDatabase,
@@ -17,10 +17,9 @@ import { createDrizzleAiFeedbackRepository } from "@/adapters/ai-feedback/ai-fee
 import {
   createAiFeedbackAttemptCoordinator,
   defaultAiFeedbackAttemptPolicy,
-  err,
-  ok,
   type AiFeedbackProvider,
 } from "@workspace/core/ai-feedback"
+import { err, ok } from "@workspace/kernel/result"
 import {
   aiFeedbackAttempts,
   authUsers,
@@ -29,7 +28,7 @@ import {
 import { createCurriculumVersionId } from "@workspace/db/content/curriculum-version-id"
 import type { ContentSeedRows } from "@workspace/db/seeds/seed-content"
 import { upsertContentSeedRows } from "@workspace/db/seeds/seed"
-import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback"
+import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback/feedback"
 
 const now = new Date("2026-06-14T10:30:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")
@@ -68,7 +67,7 @@ describe("AI 피드백 repository", () => {
 
       await expect(
         coordinator.createAttempt(command("transaction-boundary"), context)
-      ).resolves.toMatchObject({ kind: "ok" })
+      ).resolves.toMatchObject({ value: { remainingAttempts: 2 } })
       expect(providerWriteLockAcquired).toBe(true)
     } finally {
       observer.close()
@@ -162,12 +161,11 @@ describe("AI 피드백 repository", () => {
 
       await expect(
         failedCoordinator.createAttempt(command("failed-key"), context)
-      ).resolves.toMatchObject({ kind: "err" })
+      ).resolves.toMatchObject({ error: { kind: "provider-failed" } })
 
       await expect(
         createCoordinator(client).createAttempt(command("new-key"), context)
       ).resolves.toMatchObject({
-        kind: "ok",
         value: { remainingAttempts: 2 },
       })
 
@@ -203,14 +201,13 @@ describe("AI 피드백 repository", () => {
       for (const key of ["first", "second", "third"]) {
         await expect(
           coordinator.createAttempt(command(key), context)
-        ).resolves.toMatchObject({ kind: "ok" })
+        ).resolves.toMatchObject({ value: expect.any(Object) })
       }
       await expect(
         coordinator.createAttempt(command("fourth"), context)
-      ).resolves.toEqual({
-        error: { kind: "attempt-limit-exceeded", remainingAttempts: 0 },
-        kind: "err",
-      })
+      ).resolves.toEqual(
+        err({ kind: "attempt-limit-exceeded", remainingAttempts: 0 })
+      )
 
       expect(providerCalls).toBe(3)
     } finally {

@@ -11,7 +11,7 @@ const reactPath = path.resolve(__dirname, "node_modules/react")
 const reactDomPath = path.resolve(__dirname, "node_modules/react-dom")
 const resourceDocumentPath = path.resolve(
   __dirname,
-  "../../packages/resource-document/src"
+  "../../packages/shared/resource-document/src"
 )
 
 export default defineConfig({

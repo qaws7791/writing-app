@@ -4,7 +4,7 @@ import type {
   AdminUserListStatusFilter,
   AdminUserSort,
   UserId,
-} from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/identity/data"
 
 export type ReadAdminUsersInput = {
   readonly page: number

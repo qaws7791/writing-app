@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { learnerProgressPageSchema } from "@workspace/contracts/learning"
+import { learnerProgressPageSchema } from "@workspace/contracts/learning/learner-content"
 
 import { createApp } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"

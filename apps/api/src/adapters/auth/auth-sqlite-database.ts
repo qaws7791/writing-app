@@ -1,15 +1,17 @@
 import { createSqliteAuthDatabaseAdapter } from "@workspace/auth/sqlite-database"
-import type { WritingAppDatabase } from "@workspace/db"
 import {
+  adminAuthRateLimits,
   adminAuthAccounts,
   adminAuthSessions,
   adminAuthUsers,
   adminAuthVerifications,
+  authRateLimits,
   authAccounts,
   authSessions,
   authUsers,
   authVerifications,
-} from "@workspace/db/schema"
+} from "@workspace/auth/schema"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import * as dbSchema from "@workspace/db/schema"
 
 export function createLearnerAuthDatabase(database: WritingAppDatabase) {
@@ -18,6 +20,7 @@ export function createLearnerAuthDatabase(database: WritingAppDatabase) {
     schema: {
       ...dbSchema,
       account: authAccounts,
+      rateLimit: authRateLimits,
       session: authSessions,
       user: authUsers,
       verification: authVerifications,
@@ -31,6 +34,7 @@ export function createAdminAuthDatabase(database: WritingAppDatabase) {
     schema: {
       ...dbSchema,
       admin_account: adminAuthAccounts,
+      rateLimit: adminAuthRateLimits,
       admin_session: adminAuthSessions,
       admin_user: adminAuthUsers,
       admin_verification: adminAuthVerifications,

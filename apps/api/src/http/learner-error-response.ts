@@ -3,12 +3,12 @@ import {
   createErrorHandler,
   ErrorResponseSchema,
   type InternalErrorLogger,
-} from "@/http/platform/errors"
+} from "@workspace/http-platform/errors"
 import {
   learnerApiErrorSchema,
   type LearnerApiError,
   type LearnerApiErrorCode,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/api-error"
 
 import type { ApiHonoEnv } from "@/context/hono-env"
 
@@ -91,23 +91,28 @@ async function normalizeLearnerErrorResponse(input: {
   readonly requestId: string
   readonly response: Response
 }): Promise<Response> {
-  const parsedLegacyError = ErrorResponseSchema.safeParse(
-    await readJson(input.response)
-  )
-  const error = parsedLegacyError.success
-    ? mapLegacyError({
-        code: parsedLegacyError.data.code,
-        errors: parsedLegacyError.data.errors,
-        path: input.path,
-        requestId: input.requestId,
-        status: input.response.status,
-      })
-    : input.response.status === 404
-      ? createStandardError(
-          mapLegacyCode("NOT_FOUND", input.path, input.response.status),
-          input.requestId
-        )
-      : createStandardError("INTERNAL_SERVER_ERROR", input.requestId)
+  const body = await readJson(input.response)
+  const parsedCanonicalError = learnerApiErrorSchema.safeParse(body)
+  const parsedLegacyError = ErrorResponseSchema.safeParse(body)
+  const error =
+    input.response.status >= 500
+      ? createStandardError("INTERNAL_SERVER_ERROR", input.requestId)
+      : parsedCanonicalError.success
+        ? parsedCanonicalError.data
+        : parsedLegacyError.success
+          ? mapLegacyError({
+              code: parsedLegacyError.data.code,
+              errors: parsedLegacyError.data.errors,
+              path: input.path,
+              requestId: input.requestId,
+              status: input.response.status,
+            })
+          : input.response.status === 404
+            ? createStandardError(
+                mapLegacyCode("NOT_FOUND", input.path, input.response.status),
+                input.requestId
+              )
+            : createStandardError("INTERNAL_SERVER_ERROR", input.requestId)
   const parsedError = learnerApiErrorSchema.parse(error)
   const headers = new Headers(input.response.headers)
 

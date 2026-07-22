@@ -1,5 +1,5 @@
 {
-  "extends": "@workspace/config/typescript/nextjs.json",
+  "extends": "@workspace/typescript-config/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
     "exactOptionalPropertyTypes": true,
@@ -8,9 +8,9 @@
     "types": ["bun", "@testing-library/jest-dom"],
     "useUnknownInCatchVariables": true,
     "paths": {
-      "#auth/*": ["../../packages/auth/src/*"],
-      "#env/*": ["../../packages/env/src/*"],
-      "#ui/*": ["../../packages/ui/src/*"],
+      "#auth/*": ["../../packages/infra/auth/src/*"],
+      "#env/*": ["../../packages/config/env/src/*"],
+      "#ui/*": ["../../packages/shared/ui/src/*"],
       "@/*": ["./src/*"]
     }
   },

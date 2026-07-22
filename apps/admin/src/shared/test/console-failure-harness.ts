@@ -20,7 +20,7 @@ export function installConsoleFailureHarness(): void {
   })
 }
 
-export function createUnexpectedConsoleError(
+function createUnexpectedConsoleError(
   method: ConsoleFailureMethod,
   values: readonly unknown[]
 ): Error {

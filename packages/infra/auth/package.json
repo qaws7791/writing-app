@@ -1,0 +1,42 @@
+{
+  "name": "@workspace/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#auth/*": "./src/*"
+  },
+  "exports": {
+    "./admin/client": "./src/admin/client.ts",
+    "./admin/server": "./src/admin/server.ts",
+    "./learner/client": "./src/learner/client.ts",
+    "./learner/server": "./src/learner/server.ts",
+    "./password": "./src/password.ts",
+    "./schema": "./src/schema/index.ts",
+    "./session-token": "./src/session-token.ts",
+    "./sqlite-database": "./src/sqlite-database.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:watch": "bun --bun ../../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/contracts": "workspace:*",
+    "@workspace/core": "workspace:*",
+    "better-auth": "^1.6.13",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@workspace/typescript-config": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,9 +1,10 @@
-import { adminIdSchema } from "@workspace/contracts/admin"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
   adminCourseDetailDtoSchema,
   adminCourseEditorDocumentSchema,
-} from "@workspace/contracts/admin/content-data"
+} from "@workspace/contracts/content/admin-data"
+import { courseIdSchema } from "@workspace/contracts/content/ids"
 import { adminRoles } from "@workspace/core/admin"
 import type { AdminCourseUseCase } from "@workspace/core/content"
 
@@ -15,7 +16,7 @@ import {
 import { createAdminApp } from "@/http/admin-app"
 import { createAdminContentRoutes } from "@/modules/admin-content/admin-content.routes"
 
-export type AdminContentTargetRouteFixtureJson =
+type AdminContentTargetRouteFixtureJson =
   | null
   | boolean
   | number
@@ -154,7 +155,7 @@ function createCourseService(
         items: [
           {
             category: "미분류",
-            id: "course-1",
+            id: courseIdSchema.parse("course-1"),
             lessonCount: 1,
             revision: 1,
             status: "active",

@@ -21,7 +21,7 @@ import { isLessonStepSubmittable } from "@/features/lesson-session/model/lesson-
 import type {
   LearnerLesson as Lesson,
   LearnerLessonStep as LessonStep,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-content"
 import type { LessonSessionApi } from "@/features/lesson-session/api/lesson-session-api"
 
 const LESSON_START_ERROR =

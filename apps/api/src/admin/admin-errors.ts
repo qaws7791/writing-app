@@ -1,4 +1,4 @@
-import { AppError } from "@/http/platform/errors"
+import { AppError } from "@workspace/http-platform/errors"
 import type { AdminOwnerMutationResult } from "@workspace/core/admin"
 import type {
   AdminCourseEditorSaveResult,

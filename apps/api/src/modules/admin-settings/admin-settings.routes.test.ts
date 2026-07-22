@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
-import { adminIdSchema } from "@workspace/contracts/admin"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { adminRoles, type AdminRole } from "@workspace/core/admin"
 import type { AdminContentResetUseCase } from "@workspace/core/content"
-import type { AdminSettingsDto } from "@workspace/contracts/admin/settings-data"
+import type { AdminSettingsDto } from "@workspace/contracts/operations/settings-data"
 import type { AdminSettingsUseCase } from "@workspace/core/admin"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 

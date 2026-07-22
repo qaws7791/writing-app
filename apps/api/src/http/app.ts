@@ -1,16 +1,13 @@
 import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
-import { createApp as createHonoApp } from "@/http/platform/core"
+import { createApp as createHonoApp } from "@workspace/http-platform/core"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
-} from "@/http/platform/security"
+} from "@workspace/http-platform/security"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
-import {
-  type ApiDependencies,
-  type ApiRequestContext,
-} from "@/context/create-request-context"
+import type { ApiDependencies } from "@/context/create-request-context"
 import { createCorsMiddleware } from "@/middleware/cors.middleware"
 import { createRequestContextMiddleware } from "@/middleware/request-context.middleware"
 import { registerApiBootstrapRoutes, routes } from "@/routes"
@@ -18,11 +15,10 @@ import {
   createLearnerErrorHandler,
   createLearnerErrorResponseMiddleware,
 } from "@/http/learner-error-response"
-import { createRequestLoggingMiddleware } from "@/http/platform/request-logging.middleware"
+import { createRequestLoggingMiddleware } from "@workspace/http-platform/request-logging"
+import { createSecurityAuditRequestObserver } from "@/observability/security-audit-request-observer"
 
-export type { ApiDependencies, ApiRequestContext }
-export { createOpenApiDocument } from "@/http/openapi"
-export type { ApiOpenApiDocument } from "@/http/openapi"
+export type { ApiDependencies }
 
 export function createApp(dependencies: ApiDependencies): OpenAPIHono {
   const app = createHonoApp({
@@ -50,7 +46,9 @@ function createMiddleware(
       audience: "learner",
       createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
       logRequest: dependencies.requestLogger ?? ignoreRequestLog,
-      logSecurityAudit: dependencies.securityAuditLogger,
+      observeRequest: createSecurityAuditRequestObserver(
+        dependencies.securityAuditLogger
+      ),
       readActor(context) {
         const session = context.get("activeSession")
 

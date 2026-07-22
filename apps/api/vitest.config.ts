@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "#resource-document": fileURLToPath(
-        new URL("../../packages/resource-document/src", import.meta.url)
+        new URL("../../packages/shared/resource-document/src", import.meta.url)
       ),
     },
   },

@@ -1,4 +1,4 @@
-import type { AdminContentResetResultDto } from "@workspace/contracts/admin/content-data"
+import type { AdminContentResetResultDto } from "@workspace/contracts/operations/content-reset-data"
 import type {
   ContentResetRepository,
   ResetAdminContentInput,

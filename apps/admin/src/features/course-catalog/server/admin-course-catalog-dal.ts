@@ -2,7 +2,7 @@ import {
   adminArchiveCourseResultSchema,
   adminCourseDetailDtoSchema,
   adminCourseListDtoSchema,
-} from "@workspace/contracts/admin"
+} from "@workspace/contracts/content/admin-courses"
 
 import type { CourseId } from "@/entities/course/model/course-id"
 import type {

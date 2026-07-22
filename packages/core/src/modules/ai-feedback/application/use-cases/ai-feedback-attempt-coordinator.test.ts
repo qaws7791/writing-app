@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/contracts/content/content.ids"
+} from "@workspace/contracts/content/ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/step-data"
 import {
   createAiFeedbackAttemptCoordinator,
@@ -11,8 +11,8 @@ import {
 } from "#core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
 import { defaultAiFeedbackAttemptPolicy } from "#core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import type { AiFeedbackRepository } from "#core/modules/ai-feedback/application/ports/ai-feedback.repository"
-import { err, ok } from "#core/shared/result"
-import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback"
+import { err, ok } from "@workspace/kernel/result"
+import type { AiFeedbackPayload } from "@workspace/contracts/ai-feedback/feedback"
 
 const occurredAt = new Date("2026-06-14T10:00:00.000Z")
 const command = {
@@ -48,10 +48,9 @@ describe("AI 피드백 시도 coordinator", () => {
       },
     })
 
-    await expect(coordinator.createAttempt(command, context)).resolves.toEqual({
-      kind: "ok",
-      value: { ...feedbackPayload, remainingAttempts: 2 },
-    })
+    await expect(coordinator.createAttempt(command, context)).resolves.toEqual(
+      ok({ ...feedbackPayload, remainingAttempts: 2 })
+    )
     expect(succeeded).toBe(true)
     expect(transitions).toEqual([
       expect.objectContaining({
@@ -85,10 +84,9 @@ describe("AI 피드백 시도 coordinator", () => {
       },
     })
 
-    await expect(coordinator.createAttempt(command, context)).resolves.toEqual({
-      error: { kind: "provider-failed", remainingAttempts: 3 },
-      kind: "err",
-    })
+    await expect(coordinator.createAttempt(command, context)).resolves.toEqual(
+      err({ kind: "provider-failed", remainingAttempts: 3 })
+    )
     expect(failed).toBe(true)
   })
 
@@ -126,10 +124,9 @@ describe("AI 피드백 시도 coordinator", () => {
     )
 
     expect(providerSignal?.aborted).toBe(true)
-    await expect(attempt).resolves.toEqual({
-      error: { kind: "provider-failed", remainingAttempts: 3 },
-      kind: "err",
-    })
+    await expect(attempt).resolves.toEqual(
+      err({ kind: "provider-failed", remainingAttempts: 3 })
+    )
     expect(failed).toBe(true)
   })
 
@@ -173,10 +170,9 @@ describe("AI 피드백 시도 coordinator", () => {
     )
 
     expect(providerSignal?.aborted).toBe(true)
-    await expect(attempt).resolves.toEqual({
-      error: { kind: "provider-failed", remainingAttempts: 3 },
-      kind: "err",
-    })
+    await expect(attempt).resolves.toEqual(
+      err({ kind: "provider-failed", remainingAttempts: 3 })
+    )
     expect(failed).toBe(true)
   })
 
@@ -199,10 +195,9 @@ describe("AI 피드백 시도 coordinator", () => {
       },
     })
 
-    await expect(coordinator.createAttempt(command, context)).resolves.toEqual({
-      error: { kind: "attempt-in-progress", remainingAttempts: 2 },
-      kind: "err",
-    })
+    await expect(coordinator.createAttempt(command, context)).resolves.toEqual(
+      err({ kind: "attempt-in-progress", remainingAttempts: 2 })
+    )
     expect(transitions).toEqual([
       expect.objectContaining({
         attemptId: "expired-1",

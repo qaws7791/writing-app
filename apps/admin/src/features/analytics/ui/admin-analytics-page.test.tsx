@@ -9,7 +9,11 @@ import type {
   AdminAnalytics,
   AdminLessonAnalyticsPage,
 } from "@/entities/admin-analytics/model/admin-analytics"
-import { createHttpNetworkError } from "@workspace/http-client"
+import { createHttpNetworkError } from "@workspace/http-client/json-transport"
+import {
+  courseIdSchema,
+  lessonIdSchema,
+} from "@workspace/contracts/content/ids"
 
 const analytics: AdminAnalytics = {
   dailySeries: [
@@ -38,10 +42,10 @@ const lessonAnalytics: AdminLessonAnalyticsPage = {
     {
       completed: 7,
       completionRate: 70,
-      courseId: "c1",
+      courseId: courseIdSchema.parse("c1"),
       courseTitle: "글쓰기 첫걸음 30일",
       dropOffRate: 30,
-      lessonId: "l1",
+      lessonId: lessonIdSchema.parse("l1"),
       lessonTitle: "문장 시작하기",
       started: 10,
     },
@@ -110,7 +114,7 @@ describe("AdminAnalyticsPage", () => {
     }
     const items = Array.from({ length: 11 }, (_, index) => ({
       ...firstItem,
-      lessonId: `lesson-${index}`,
+      lessonId: lessonIdSchema.parse(`lesson-${index}`),
       lessonTitle: `문장 ${index + 1}`,
     }))
 

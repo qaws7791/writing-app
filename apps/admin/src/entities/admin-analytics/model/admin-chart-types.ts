@@ -1,10 +1,10 @@
-export type DailySeriesPoint = {
+type DailySeriesPoint = {
   readonly completions: number
   readonly date: string
   readonly signups: number
 }
 
-export type StreakBucket = {
+type StreakBucket = {
   readonly count: number
   readonly label: string
 }

@@ -5,7 +5,7 @@ import Link from "next/link"
 import type {
   LearnerCourseDetail,
   LessonLearningState,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-content"
 import { CheckIcon, LockIcon, PlayIcon } from "@workspace/ui/components/icons"
 import {
   Accordion,

@@ -1,0 +1,23 @@
+{
+  "name": "@workspace/errors",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#errors/*": "./src/*.ts"
+  },
+  "exports": {
+    "./infrastructure-error": "./src/infrastructure-error.ts",
+    "./transport-error": "./src/transport-error.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

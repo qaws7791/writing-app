@@ -6,6 +6,7 @@ import {
   learnerProgressCourseSchema,
 } from "@workspace/contracts/learning/read-data"
 import { createLearnerCursorCodec } from "@workspace/core/learning"
+import { err, ok } from "@workspace/kernel/result"
 
 import {
   decodeLearnerCourseListQuery,
@@ -58,16 +59,15 @@ describe("learner read transport mapping", () => {
       sort: "title-asc",
     })
 
-    expect(first).toEqual({
-      kind: "ok",
-      value: {
+    expect(first).toEqual(
+      ok({
         category: "입문",
         limit: 1,
         query: "글쓰기",
         sort: "title-asc",
-      },
-    })
-    if (first.kind !== "ok") throw new Error("course query decode failed")
+      })
+    )
+    if (first.isErr()) throw new Error("course query decode failed")
 
     const position = { courseId: "course-1", primary: "글쓰기 입문" }
     const wirePage = encodeLearnerCoursePage(cursorCodec, first.value, {
@@ -84,10 +84,7 @@ describe("learner read transport mapping", () => {
       query: "글쓰기",
       sort: "title-asc",
     })
-    expect(next).toEqual({
-      kind: "ok",
-      value: { ...first.value, after: position },
-    })
+    expect(next).toEqual(ok({ ...first.value, after: position }))
 
     expect(
       decodeLearnerCourseListQuery(cursorCodec, {
@@ -95,7 +92,7 @@ describe("learner read transport mapping", () => {
         limit: 1,
         sort: "title-desc",
       })
-    ).toEqual({ error: { kind: "invalid-cursor" }, kind: "err" })
+    ).toEqual(err({ kind: "invalid-cursor" }))
   })
 
   it("마지막·빈 course page는 cursor 없이 기존 wire envelope로 변환한다", () => {
@@ -118,7 +115,7 @@ describe("learner read transport mapping", () => {
       limit: 10,
       status: "in_progress",
     })
-    if (query.kind !== "ok") throw new Error("progress query decode failed")
+    if (query.isErr()) throw new Error("progress query decode failed")
 
     const position = { courseId: "course-1", primary: 1 }
     const wirePage = encodeLearnerProgressPage(cursorCodec, query.value, {
@@ -132,10 +129,7 @@ describe("learner read transport mapping", () => {
         limit: 10,
         status: "in_progress",
       })
-    ).toEqual({
-      kind: "ok",
-      value: { ...query.value, after: position },
-    })
+    ).toEqual(ok({ ...query.value, after: position }))
     expect(
       decodeLearnerProgressListQuery(
         cursorCodec,
@@ -146,7 +140,7 @@ describe("learner read transport mapping", () => {
           status: "in_progress",
         }
       )
-    ).toEqual({ error: { kind: "invalid-cursor" }, kind: "err" })
+    ).toEqual(err({ kind: "invalid-cursor" }))
   })
 
   it("마지막·빈 progress page는 cursor 없이 기존 wire envelope로 변환한다", () => {
@@ -154,7 +148,7 @@ describe("learner read transport mapping", () => {
     const query = decodeLearnerProgressListQuery(cursorCodec, learnerId, {
       limit: 10,
     })
-    if (query.kind !== "ok") throw new Error("progress query decode failed")
+    if (query.isErr()) throw new Error("progress query decode failed")
 
     expect(
       encodeLearnerProgressPage(cursorCodec, query.value, {

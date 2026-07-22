@@ -1,0 +1,21 @@
+{
+  "name": "@workspace/types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#types/*": "./src/*.ts"
+  },
+  "exports": {
+    "./brand": "./src/brand.ts",
+    "./ids": "./src/ids.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

@@ -5,17 +5,17 @@ import { createApp } from "@/app"
 import { parseApiEnv } from "@/config/env"
 import { createAdminApp } from "@/http/admin-app"
 import { createUnifiedApp } from "@/http/unified-app"
-import { defaultRequestLoggingRuntime } from "@/http/platform/request-logging.middleware"
-import { createAppLogger } from "@/observability/app-logger"
-import { createRequestLogger } from "@/observability/request-logger"
-import { createSecurityAuditLogger } from "@/observability/security-audit-logger"
+import { defaultRequestLoggingRuntime } from "@workspace/http-platform/request-logging"
+import { createAppLogger } from "@workspace/observability/logger"
+import { createRequestLogger } from "@workspace/observability/request-logger"
+import { createSecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 import {
   createUnifiedApiServerLifecycle,
   registerUnifiedApiShutdownSignals,
 } from "@/server-lifecycle"
 
 const env = parseApiEnv(process.env)
-const logger = createAppLogger()
+const logger = createAppLogger({ level: env.logLevel, pretty: env.logPretty })
 const aiFeedbackProvider = createConfiguredAiFeedbackProvider({
   apiKey: env.openAiApiKey,
   model: env.openAiModel,

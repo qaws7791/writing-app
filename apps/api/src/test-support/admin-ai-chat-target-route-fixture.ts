@@ -3,9 +3,12 @@ import {
   adminAiChatConversationListDtoSchema,
   type AdminAiChatConversationDetailDto,
   type AdminAiChatMessageDto,
-} from "@workspace/contracts/admin"
-import { conversationIdSchema } from "@workspace/contracts/admin/ai-chat-data"
-import { adminIdSchema } from "@workspace/contracts/admin/identity-data"
+} from "@workspace/contracts/operations/admin-ai-chat"
+import { conversationIdSchema } from "@workspace/contracts/operations/ai-chat-data"
+import {
+  adminIdSchema,
+  messageIdSchema,
+} from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
   adminRoles,
@@ -29,7 +32,7 @@ import {
   type AdminAiChatRouteDependencies,
 } from "@/modules/admin-ai-chat/admin-ai-chat.routes"
 
-export type AdminAiChatTargetRouteFixtureJson =
+type AdminAiChatTargetRouteFixtureJson =
   | null
   | boolean
   | number
@@ -63,7 +66,7 @@ const conversationDetail = adminAiChatConversationDetailDtoSchema.parse({
 const assistantMessage: AdminAiChatMessageDto = {
   content: "바로 사용할 수 있는 소개 문구입니다.",
   createdAt: fixtureNow.toISOString(),
-  id: "message-2",
+  id: messageIdSchema.parse("message-2"),
   role: "assistant",
 }
 const completedConversationDetail =

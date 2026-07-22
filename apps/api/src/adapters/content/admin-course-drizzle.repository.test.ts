@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { createWritingAppDatabase } from "@workspace/db"
+import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 import {

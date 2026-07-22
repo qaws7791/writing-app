@@ -5,8 +5,9 @@ import type { LearnerTransitionError } from "@workspace/core/learning"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/contracts/content"
-import { AppError } from "@/http/platform/errors"
+} from "@workspace/contracts/content/ids"
+import { err } from "@workspace/kernel/result"
+import { AppError } from "@workspace/http-platform/errors"
 
 import { unwrapLearnerAiFeedbackTransitionResult } from "@/http/learner-command-route-mapper"
 
@@ -79,7 +80,7 @@ describe("학습 command HTTP 경계 매퍼", () => {
     "$error.kind expected rejection을 $expectedStatus $expectedCode로 변환한다",
     ({ error, expectedCode, expectedStatus }) => {
       const mapped = captureAppError(() =>
-        unwrapLearnerAiFeedbackTransitionResult({ error, kind: "err" })
+        unwrapLearnerAiFeedbackTransitionResult(err(error))
       )
 
       expect(mapped).toMatchObject({

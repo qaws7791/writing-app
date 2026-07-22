@@ -1,4 +1,4 @@
-import { adminSessionDtoSchema } from "@workspace/contracts/admin"
+import { adminSessionDtoSchema } from "@workspace/contracts/identity/admin-session"
 
 import type { AdminSessionResolver } from "@workspace/auth/admin/server"
 import { defineAdminRoute } from "@/admin/admin-hono-env"

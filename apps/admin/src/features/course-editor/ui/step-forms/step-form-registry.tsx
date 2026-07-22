@@ -19,7 +19,7 @@ type StepFormRegistry = {
   ) => React.ReactNode
 }
 
-export const stepFormByType = {
+const stepFormByType = {
   AI_FEEDBACK: AiFeedbackStepForm,
   CATEGORIZE: CategorizeStepForm,
   COMPARE: CompareStepForm,

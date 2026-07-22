@@ -16,35 +16,35 @@
 
 ## 사실별 소유자
 
-| 사실 영역                                 | 권위 소유자                                                               | 문서가 소유하는 내용           |
-| ----------------------------------------- | ------------------------------------------------------------------------- | ------------------------------ |
-| 제품 문제와 목표                          | `docs/product/problem-definition.md`, `docs/product/product-vision.md`    | 제품 의도와 우선순위           |
-| 사용자 가치와 인수 기준                   | `docs/product/user-stories/`                                              | 사용자 관점의 수용 기준        |
-| 구현할 제품 규칙                          | `docs/product/requirements/`                                              | 제품 정책과 예외               |
-| 콘텐츠 계층과 불변식                      | `docs/product/content-model.md`                                           | 도메인 의미와 불변식           |
-| 현재 코스 draft·published 콘텐츠          | curriculum repository가 관리하는 persisted data                           | 콘텐츠 의미와 발행 정책        |
-| 코스 제작용 학습 참고자료                 | 관리자 자료실의 활성 문서                                                 | 없음                           |
-| 관리자 운영 정책                          | `docs/product/admin-operations.md`                                        | 운영자의 권한·책임 정책        |
-| 화면 목적과 정보 구조                     | `docs/design/screens/`, `docs/design/ia-spec.md`                          | 화면 목적, 흐름, 접근성 기준   |
-| workspace 집합·패키지 이름·script         | 루트와 각 workspace의 `package.json`                                      | 없음                           |
-| 로컬 URL·port·환경 변수 기본값            | 환경 parser, `.env.example`, `packages/env/src/local-runtime-defaults.ts` | 설정 분류와 변경 원칙          |
-| API path·method·wire schema               | `apps/api` route registry, runtime OpenAPI, `packages/contracts`          | 호환성·오류·인증 정책          |
-| 인증·권한의 현재 middleware 배치          | API 인증·인가 middleware와 contract                                       | 권한 정책과 보안 원칙          |
-| 데이터 schema·migration                   | `packages/db` schema와 migration                                          | 데이터 불변식과 migration 절차 |
-| production service·image·network topology | `deploy/compose/compose.yaml`, Caddy 설정, release workflow               | 배포 승인·복구·안전 절차       |
-| 테스트 명령·실행 대상                     | workspace test 설정과 루트 task                                           | 테스트 전략과 품질 기준        |
-| 검증 실행 결과                            | commit, 실행 명령, 환경, artifact가 고정된 archive 보고서                 | 과거 증거                      |
-| 되돌리기 어려운 기술 결정의 이유          | `docs/engineering/adr/`                                                   | 결정의 이유와 대안             |
+| 사실 영역                                 | 권위 소유자                                                                      | 문서가 소유하는 내용           |
+| ----------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------ |
+| 제품 문제와 목표                          | `docs/product/problem-definition.md`, `docs/product/product-vision.md`           | 제품 의도와 우선순위           |
+| 사용자 가치와 인수 기준                   | `docs/product/user-stories/`                                                     | 사용자 관점의 수용 기준        |
+| 구현할 제품 규칙                          | `docs/product/requirements/`                                                     | 제품 정책과 예외               |
+| 콘텐츠 계층과 불변식                      | `docs/product/content-model.md`                                                  | 도메인 의미와 불변식           |
+| 현재 코스 draft·published 콘텐츠          | curriculum repository가 관리하는 persisted data                                  | 콘텐츠 의미와 발행 정책        |
+| 코스 제작용 학습 참고자료                 | 관리자 자료실의 활성 문서                                                        | 없음                           |
+| 관리자 운영 정책                          | `docs/product/admin-operations.md`                                               | 운영자의 권한·책임 정책        |
+| 화면 목적과 정보 구조                     | `docs/design/screens/`, `docs/design/ia-spec.md`                                 | 화면 목적, 흐름, 접근성 기준   |
+| workspace 집합·패키지 이름·script         | 루트와 각 workspace의 `package.json`                                             | 없음                           |
+| 로컬 URL·port·환경 변수 기본값            | 환경 parser, `.env.example`, `packages/config/env/src/local-runtime-defaults.ts` | 설정 분류와 변경 원칙          |
+| API path·method·wire schema               | `apps/api` route registry, runtime OpenAPI, `packages/shared/contracts`          | 호환성·오류·인증 정책          |
+| 인증·권한의 현재 middleware 배치          | API 인증·인가 middleware와 contract                                              | 권한 정책과 보안 원칙          |
+| 데이터 schema·migration                   | `packages/infra/auth`, `packages/infra/db`의 schema와 migration                  | 데이터 불변식과 migration 절차 |
+| production service·image·network topology | `deploy/compose/compose.yaml`, Caddy 설정, release workflow                      | 배포 승인·복구·안전 절차       |
+| 테스트 명령·실행 대상                     | workspace test 설정과 루트 task                                                  | 테스트 전략과 품질 기준        |
+| 검증 실행 결과                            | commit, 실행 명령, 환경, artifact가 고정된 archive 보고서                        | 과거 증거                      |
+| 되돌리기 어려운 기술 결정의 이유          | `docs/engineering/adr/`                                                          | 결정의 이유와 대안             |
 
 ## 현재 코드 사실 탐색
 
 현재 값을 확인할 때는 문서의 서술을 신뢰하지 말고 다음 권위 소스를 직접 읽는다.
 
 1. workspace, package, script와 tool 버전은 루트와 각 workspace의 `package.json`을 확인한다.
-2. 로컬 runtime 기본값과 환경 변수는 `packages/env`, 각 앱의 parser와 `.env.example`을 확인한다.
-3. API path·method·schema는 `apps/api` route registry, `packages/contracts`, 실행 중인 OpenAPI를 확인한다.
+2. 로컬 runtime 기본값과 환경 변수는 `packages/config/env`, 각 앱의 parser와 `.env.example`을 확인한다.
+3. API path·method·schema는 `apps/api` route registry, `packages/shared/contracts`, 실행 중인 OpenAPI를 확인한다.
 4. 배포 service, image, port, network와 proxy는 `deploy/compose/`, Caddy 설정과 release workflow를 확인한다.
-5. schema와 migration은 `packages/db`를, 테스트 실행 대상은 root task와 workspace test 설정을 확인한다.
+5. 인증 schema는 `packages/infra/auth`, 통합 SQLite schema·migration은 `packages/infra/db`를, 테스트 실행 대상은 root task와 workspace test 설정을 확인한다.
 
 제거된 구조를 설명해야 하는 과거 기록에서는 `legacy`를 명시하며 현재형으로 서술하지 않는다.
 

@@ -1,4 +1,4 @@
-import type { AdminResourceImageMimeType } from "@workspace/contracts/admin/resource-library-data"
+import type { AdminResourceImageMimeType } from "@workspace/contracts/resource-library/data"
 
 import type { ResourceAssetRepository } from "#core/modules/resource-library/application/ports/resource-asset.repository"
 import {

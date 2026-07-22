@@ -1,4 +1,4 @@
-import type { LearnerCourseSummary } from "@workspace/contracts/learning"
+import type { LearnerCourseSummary } from "@workspace/contracts/learning/learner-content"
 
 type CourseVisualKey = LearnerCourseSummary["visualKey"]
 

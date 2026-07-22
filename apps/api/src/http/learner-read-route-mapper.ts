@@ -3,22 +3,20 @@ import type {
   LearnerCoursePage,
   LearnerProgressListQuery as LearnerProgressListWireQuery,
   LearnerProgressPage,
-} from "@workspace/contracts/learning"
+} from "@workspace/contracts/learning/learner-content"
 import type {
   LearnerCourseSummary,
   LearnerId,
   LearnerProgressCourse,
 } from "@workspace/contracts/learning/read-data"
 import {
-  err,
-  ok,
   type LearnerCourseReadQuery,
   type LearnerCursorCodec,
   type LearnerCursorPosition,
   type LearnerProgressReadQuery,
   type LearnerReadModelPage,
-  type Result,
 } from "@workspace/core/learning"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 export type LearnerReadTransportError = { readonly kind: "invalid-cursor" }
 
@@ -36,7 +34,7 @@ export function decodeLearnerCourseListQuery(
     fingerprint: cursorCodec.createFingerprint(query),
   })
 
-  if (after.kind === "err") return after
+  if (after.isErr()) return err(after.error)
 
   return ok({
     ...query,
@@ -82,7 +80,7 @@ export function decodeLearnerProgressListQuery(
     learnerScope,
   })
 
-  if (after.kind === "err") return after
+  if (after.isErr()) return err(after.error)
 
   return ok({
     ...(after.value === undefined ? {} : { after: after.value }),

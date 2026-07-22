@@ -1,4 +1,4 @@
-import { contentStatusSchema } from "@workspace/contracts/status"
+import { contentStatusSchema } from "@workspace/contracts/content/status"
 import { z } from "zod"
 
 import type { ReadAdminCoursesInput } from "@/features/course-catalog/model/admin-course-catalog"
