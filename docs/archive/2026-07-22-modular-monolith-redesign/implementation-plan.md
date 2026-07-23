@@ -1,8 +1,12 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13·P14·P15·P16 완료, P17 미착수
-> 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
-> 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
+> 상태: P0~P17 완료
+> 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)
+>
+> 최초 작업 경로: `docs/work/2026-07-22-modular-monolith-redesign/`
+>
+> 완료 보관 경로: `docs/archive/2026-07-22-modular-monolith-redesign/`
+>
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
 
 ## 1. 문서 목적과 사용법
@@ -64,7 +68,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P14. 배포·운영 automation을 새 경로에 맞춘다. 증거: [P14 구현 증거](./p14-validation.md)
 - [x] P15. 이전 구조와 모든 임시 호환 계층을 제거한다. 증거: [P15 구현 증거](./p15-validation.md)
 - [x] P16. 전체 품질·복구·사용자 흐름 검증을 완료한다. 증거: [P16 전체 검증과 독립 리뷰](./p16-validation.md)
-- [ ] P17. 영구 문서 반영과 작업 기록 보관을 완료한다.
+- [x] P17. 영구 문서 반영과 작업 기록 보관을 완료한다. 증거: [P17 검증과 독립 리뷰](./p17-validation.md)
 
 ## 4. P0 — 기준선, 책임 매핑과 안전 조건
 
@@ -958,32 +962,32 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 21.1 권위 문서 갱신
 
-- [ ] P17-001 `docs/authority-map.md`의 package, API, schema와 test 권위 경로를 새 구조에 맞춘다. 증거:
-- [ ] P17-002 `docs/engineering/system-overview.md`에 최종 module·composition 경계 원칙을 반영한다. 증거:
-- [ ] P17-003 workspace dependency와 package interface 문서를 새 group·public subpath 규칙에 맞춘다. 증거:
-- [ ] P17-004 repository architecture tooling 문서를 dependency-cruiser·Knip 책임에 맞춘다. 증거:
-- [ ] P17-005 tech stack과 runtime configuration 문서의 변경 원칙을 검토한다. 증거:
-- [ ] P17-006 API contract 문서에 module-owned route와 canonical contract 원칙을 반영한다. 증거:
-- [ ] P17-007 auth·permission·security 문서에 auth/identity 분리와 rate-limit owner를 반영한다. 증거:
-- [ ] P17-008 data model·schema convention 문서에 module schema와 cross-module reference 원칙을 반영한다. 증거:
-- [ ] P17-009 frontend development 문서에 새 package 소비 경계를 반영한다. 증거:
-- [ ] P17-010 testing 문서에 계층별 module test와 architecture fixture 원칙을 반영한다. 증거:
-- [ ] P17-011 observability 문서에 request·security·provider·event audit 경계를 반영한다. 증거:
-- [ ] P17-012 migration·backup·rollback·deployment 문서를 새 실행 지점과 안전 절차에 맞춘다. 증거:
-- [ ] P17-013 되돌리기 어려운 결정의 ADR을 작성하거나 기존 ADR을 갱신한다. 증거:
-- [ ] P17-014 문서가 manifest·route·schema·명령의 현재 값을 중복 소유하지 않는지 review한다. 증거:
-- [ ] P17-015 모든 내부 문서 링크와 document drift 검사를 통과시킨다. 증거:
+- [x] P17-001 `docs/authority-map.md`의 package, API, schema와 test 권위 경로를 새 구조에 맞춘다. 증거: [영구 문서 대조](./p17-validation.md#영구-문서-대조)
+- [x] P17-002 `docs/engineering/system-overview.md`에 최종 module·composition 경계 원칙을 반영한다. 증거: [시스템 경계 원칙](../../engineering/system-overview.md), [영구 문서 대조](./p17-validation.md#영구-문서-대조)
+- [x] P17-003 workspace dependency와 package interface 문서를 새 group·public subpath 규칙에 맞춘다. 증거: [workspace dependency 정책](../../engineering/workspace-dependency-policy.md), [package interface 규칙](../../engineering/package-interface-and-import-rules.md)
+- [x] P17-004 repository architecture tooling 문서를 dependency-cruiser·Knip 책임에 맞춘다. 증거: [repository architecture tooling](../../engineering/repository-architecture-tooling.md)
+- [x] P17-005 tech stack과 runtime configuration 문서의 변경 원칙을 검토한다. 증거: [기술 선택 원칙](../../engineering/tech-stack.md), [런타임 설정 원칙](../../engineering/runtime-configuration.md)
+- [x] P17-006 API contract 문서에 module-owned route와 canonical contract 원칙을 반영한다. 증거: [HTTP 계약 원칙](../../engineering/api-contract.md)
+- [x] P17-007 auth·permission·security 문서에 auth/identity 분리와 rate-limit owner를 반영한다. 증거: [인증·권한 정책](../../engineering/auth-permissions.md), [보안 원칙](../../engineering/security.md)
+- [x] P17-008 data model·schema convention 문서에 module schema와 cross-module reference 원칙을 반영한다. 증거: [데이터 모델 원칙](../../engineering/data-model.md), [schema 관습](../../engineering/schema-conventions.md)
+- [x] P17-009 frontend development 문서에 새 package 소비 경계를 반영한다. 증거: [프론트엔드 개발 가이드](../../engineering/frontend-development.md)
+- [x] P17-010 testing 문서에 계층별 module test와 architecture fixture 원칙을 반영한다. 증거: [테스트 전략](../../engineering/testing.md)
+- [x] P17-011 observability 문서에 request·security·provider·event audit 경계를 반영한다. 증거: [관찰 가능성 원칙](../../engineering/observability.md)
+- [x] P17-012 migration·backup·rollback·deployment 문서를 새 실행 지점과 안전 절차에 맞춘다. 증거: [migration](../../engineering/migration.md), [backup·restore](../../engineering/database-backup-restore.md), [rollback](../../engineering/rollback.md), [deployment](../../engineering/deployment.md)
+- [x] P17-013 되돌리기 어려운 결정의 ADR을 작성하거나 기존 ADR을 갱신한다. 증거: [ADR-0020](../../engineering/adr/ADR-0020-module-owned-vertical-slices.md), [ADR 대체 관계](./p17-validation.md#영구-문서-대조)
+- [x] P17-014 문서가 manifest·route·schema·명령의 현재 값을 중복 소유하지 않는지 review한다. 증거: [영구 문서 대조](./p17-validation.md#영구-문서-대조)
+- [x] P17-015 모든 내부 문서 링크와 document drift 검사를 통과시킨다. 증거: [P17 검증](./p17-validation.md#검증)
 
 ### 21.2 검증 기록과 보관
 
-- [ ] P17-016 기준 commit, 실행 시각, 환경, 명령, 결과와 artifact 위치를 이 작업 기록에 정리한다. 증거:
-- [ ] P17-017 production 미실행 항목과 별도 승인이 필요한 후속 작업을 명확히 표시한다. 증거:
-- [ ] P17-018 미완료 checkbox, 차단 항목과 임시 예외를 0개로 만든다. 증거:
-- [ ] P17-019 `docs/work/_index.md`에서 작업 상태를 완료로 갱신할 준비를 한다. 증거:
-- [ ] P17-020 영구 결론이 권위 문서에 반영됐는지 최종 reviewer가 확인한다. 증거:
-- [ ] P17-021 작업 디렉터리 전체를 같은 이름의 `docs/archive` 경로로 이동한다. 증거:
-- [ ] P17-022 `docs/work/_index.md`에서 진행 중 작업 항목을 제거한다. 증거:
-- [ ] P17-023 `docs/archive/_index.md`에 완료 작업과 검증 기록 링크를 추가한다. 증거:
-- [ ] P17-024 이동 뒤 문서 링크와 document drift 검사를 다시 통과시킨다. 증거:
-- [ ] P17-025 최종 git diff에 unrelated refactor, formatting-only 변경과 생성물이 없는지 확인한다. 증거:
-- [ ] P17-026 P17 게이트: implementation, 검증, 영구 문서와 archive 생명주기가 모두 완료됐다. 증거:
+- [x] P17-016 기준 commit, 실행 시각, 환경, 명령, 결과와 artifact 위치를 이 작업 기록에 정리한다. 증거: [P17 판정 기준](./p17-validation.md#판정-기준), [P17 검증](./p17-validation.md#검증)
+- [x] P17-017 production 미실행 항목과 별도 승인이 필요한 후속 작업을 명확히 표시한다. 증거: [판정 기준](./p17-validation.md#판정-기준)
+- [x] P17-018 미완료 checkbox, 차단 항목과 임시 예외를 0개로 만든다. 증거: [P17 검증](./p17-validation.md#검증), [독립 리뷰](./p17-validation.md#독립-리뷰)
+- [x] P17-019 `docs/work/_index.md`에서 작업 상태를 완료로 갱신할 준비를 한다. 증거: [작업 기록 생명주기](./p17-validation.md#작업-기록-생명주기)
+- [x] P17-020 영구 결론이 권위 문서에 반영됐는지 최종 reviewer가 확인한다. 증거: [독립 리뷰](./p17-validation.md#독립-리뷰)
+- [x] P17-021 작업 디렉터리 전체를 같은 이름의 `docs/archive` 경로로 이동한다. 증거: [작업 기록 생명주기](./p17-validation.md#작업-기록-생명주기)
+- [x] P17-022 `docs/work/_index.md`에서 진행 중 작업 항목을 제거한다. 증거: [작업 기록 생명주기](./p17-validation.md#작업-기록-생명주기)
+- [x] P17-023 `docs/archive/_index.md`에 완료 작업과 검증 기록 링크를 추가한다. 증거: [작업 기록 생명주기](./p17-validation.md#작업-기록-생명주기)
+- [x] P17-024 이동 뒤 문서 링크와 document drift 검사를 다시 통과시킨다. 증거: [작업 기록 생명주기](./p17-validation.md#작업-기록-생명주기), [P17 검증](./p17-validation.md#검증)
+- [x] P17-025 최종 git diff에 unrelated refactor, formatting-only 변경과 생성물이 없는지 확인한다. 증거: [P17 검증](./p17-validation.md#검증)
+- [x] P17-026 P17 게이트: implementation, 검증, 영구 문서와 archive 생명주기가 모두 완료됐다. 증거: [P17 검증과 독립 리뷰](./p17-validation.md)

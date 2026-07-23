@@ -6,11 +6,12 @@
 
 ## 보관 작업
 
-| 작업                                 | 문서                                                                                                                               | 보관 이유                        |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| 2026-06-20 제품 코드베이스 조사      | [`research.md`](./2026-06-20-product-codebase-research/research.md), [`audit.md`](./2026-06-20-product-codebase-research/audit.md) | 요구사항 역추적과 문서 반영 완료 |
-| 2026-07-18 어드민 개발 브라우저 검증 | [`report.md`](./2026-07-18-admin-development-browser-verification/report.md)                                                       | 결함 수정과 재검증 완료          |
-| 2026-07-20 프로젝트 지식 시스템 정리 | [`plan.md`](./2026-07-20-project-knowledge-system/plan.md)                                                                         | 코드 사실 중복 문서 정리 완료    |
+| 작업                                 | 문서                                                                                                                                                                                                                                                        | 보관 이유                              |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| 2026-06-20 제품 코드베이스 조사      | [`research.md`](./2026-06-20-product-codebase-research/research.md), [`audit.md`](./2026-06-20-product-codebase-research/audit.md)                                                                                                                          | 요구사항 역추적과 문서 반영 완료       |
+| 2026-07-18 어드민 개발 브라우저 검증 | [`report.md`](./2026-07-18-admin-development-browser-verification/report.md)                                                                                                                                                                                | 결함 수정과 재검증 완료                |
+| 2026-07-20 프로젝트 지식 시스템 정리 | [`plan.md`](./2026-07-20-project-knowledge-system/plan.md)                                                                                                                                                                                                  | 코드 사실 중복 문서 정리 완료          |
+| 2026-07-22 모듈러 모놀리스 전체 개편 | [`implementation-plan.md`](./2026-07-22-modular-monolith-redesign/implementation-plan.md), [`p16-validation.md`](./2026-07-22-modular-monolith-redesign/p16-validation.md), [`p17-validation.md`](./2026-07-22-modular-monolith-redesign/p17-validation.md) | P1~P17 구현·검증과 영구 문서 반영 완료 |
 
 ## 사용 기준
 

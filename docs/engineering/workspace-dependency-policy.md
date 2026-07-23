@@ -18,14 +18,12 @@ dependency audit는 HIGH 이상을 예외 없이 차단하는 상태를 기본�
 - 미정의 `--semantic-color-*` 호환 별칭 baseline은 0이다. 앱과 패키지는 `--bg-*`, `--fg-*`, `--action-*`, `--success-*`, `--danger-*`, `--info-*` 공식 의미 토큰을 직접 참조한다.
 - baseline이나 allowlist 변경에는 실제 검출 근거, owner, 제거 조건이 필요하다. 제품 소스 전체를 가리는 디렉터리 예외는 허용하지 않는다.
 
-## 검증 명령
+## 검증
 
-- `bun test scripts/check-design-system-guardrails.test.ts scripts/check-workspace-dependency-versions.test.ts`
-- `bun run check:design-system-guardrails`
-- `bun run check:workspace-dependency-versions`
-- `bun install --frozen-lockfile`
-- `bun pm ls --all`
-- `bun run lint`
-- `bun run test`
-- `bun run build`
-- `bun run audit:full`
+현재 task 이름과 실행 대상은 root manifest와 CI workflow가 소유한다. dependency 변경은 다음 범주의 root gate를 함께 통과해야 한다.
+
+- workspace inventory·version 정책과 design-system ratchet
+- frozen install, lockfile 불변성과 전체 dependency tree 확인
+- lint, test, build와 전체 dependency audit
+
+문서에 task 목록을 복제하지 않고 [사실별 권위 지도](../authority-map.md)를 통해 현재 실행 진입점을 확인한다.

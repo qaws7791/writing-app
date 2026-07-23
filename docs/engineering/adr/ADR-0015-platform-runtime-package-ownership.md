@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+부분 대체됨 — 환경 설정 package 유지 결정은 유효하지만, HTTP·관측 구현의 app-local 위치 결정은 [ADR-0020](./ADR-0020-module-owned-vertical-slices.md)의 infra·module 수직 경계가 대체한다.
 
 ## 날짜
 
@@ -235,3 +235,7 @@ bunx bun@1.3.10 run build
 - frozen install, API lint·typecheck, package interface와 architecture boundary 검사가 통과했다.
   이동한 HTTP platform test 21개, observability test 11개와 API 전체 58개 파일·311개 test가
   통과했다.
+
+### 2026-07-23 대체 관계
+
+위 구현 결과는 단일 API 전환 시점의 app-local 경계 기록이다. 후속 모듈러 모놀리스 개편에서는 module HTTP interface가 공통 transport·관측 계약을 실제로 함께 소비하므로 HTTP platform과 observability를 infra package로 다시 분리했다. API는 runtime 조립과 제품별 관찰 연결만 소유한다. 현재 package 위치와 공개 surface는 manifest가 권위이며, 경계 판단에는 ADR-0020과 시스템 경계 원칙을 사용한다.

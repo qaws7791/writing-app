@@ -6,10 +6,10 @@
 
 ## 권위 소스
 
-- 학습자 HTTP 표면: module HTTP interface, 학습자 route registry와 runtime OpenAPI
-- 관리자 HTTP 표면: module HTTP interface, 관리자 route registry와 runtime OpenAPI
+- capability endpoint의 method·path·handler·contract 연결과 auth option: module HTTP interface
 - wire schema: `packages/shared/contracts`
-- transport 오류 변환과 인증 middleware: API runtime source
+- 공통 Hono app·error·request security와 middleware primitive: `packages/infra/http-platform`
+- session resolver 주입, module route 등록, foundation route와 runtime OpenAPI: API composition과 route registry
 
 문서의 endpoint 목록으로 현재 API를 판정하지 않는다.
 

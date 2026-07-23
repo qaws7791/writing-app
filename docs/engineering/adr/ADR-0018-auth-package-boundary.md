@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+채택됨 — 인증 vendor 격리 결정은 유지하며 최종 schema·adapter 위치는 [ADR-0020](./ADR-0020-module-owned-vertical-slices.md)을 따른다.
 
 ## 날짜
 
@@ -56,3 +56,7 @@ Better Auth 설정은 secret, origin, cookie, provider, hook과 session 변환�
 - package export, architecture boundary, workspace dependency, import cycle과 coverage inventory 검사를 통과해야 한다.
 - `packages/auth` 밖의 Better Auth import, root barrel, client-to-server import와 workspace cycle이 없어야 한다.
 - 기존 endpoint, cookie 속성, OpenAPI, DB schema와 migration에 의미 변경이 없어야 한다.
+
+## 2026-07-23 구현 갱신
+
+이 문서 본문의 `packages/auth`와 app-owned persistence는 결정 당시의 물리 경계다. 최종 구조에서는 auth infra가 Better Auth integration과 credential·session schema·migration·adapter를 소유하고, identity module이 profile·status·role policy와 repository를 소유한다. API는 DB lifecycle과 두 경계의 vendor-neutral 연결만 조립하며 제품 repository 구현을 소유하지 않는다. 현재 경로와 export는 각 manifest에서 확인한다.

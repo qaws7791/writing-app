@@ -13,10 +13,10 @@
 
 ## 기술과 적용 범위
 
-- 학습자 웹과 어드민 웹은 Next.js 16 App Router와 React 19를 사용한다. 기본 런타임은 Node.js이며, Edge runtime은 지연 개선이 실측되고 모든 의존성이 호환되는 좁은 경계에서만 검토한다.
+- 학습자 웹과 어드민 웹은 manifest가 선언한 Next.js App Router와 React를 사용한다. 기본 서버 런타임은 현재 앱 설정을 따르며, Edge runtime은 지연 개선이 실측되고 모든 의존성이 호환되는 좁은 경계에서만 검토한다.
 - 패키지 관리와 workspace 실행은 Bun과 Turborepo, 정적 타입 검사는 TypeScript strict, 런타임 신뢰 경계 검증은 Zod를 사용한다.
 - 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/shared/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
-- Better Auth integration과 인증 schema는 `packages/infra/auth`, 제품 profile·role policy와 app 전용 repository 조립은 `apps/api`가 소유한다. Next.js 앱은 DB나 ORM에 직접 접근하지 않고 학습자 또는 관리자 Hono API를 호출한다.
+- Better Auth integration과 credential·session schema는 auth infra, 제품 profile·role policy와 repository는 identity module이 소유한다. API composition은 두 경계를 vendor-neutral port로 연결하며, Next.js 앱은 DB나 ORM에 직접 접근하지 않고 공개 HTTP API를 호출한다.
 - TanStack Query, Zustand, React Hook Form, `next-intl` 같은 라이브러리는 기본 전제가 아니다. 현재 feature의 요구와 기존 도구로 해결할 수 없는 문제가 확인되고 소유권·번들·운영 비용이 정당화될 때만 별도 결정으로 도입한다.
 
 ## 소스 구조와 의존성
@@ -43,7 +43,7 @@
 ### 라우팅 레이어
 
 - `page.tsx`와 `layout.tsx`는 비동기 `params`·`searchParams`를 기다린 뒤 Zod로 파싱하고, 인증·redirect, feature DAL 호출, `notFound`, metadata와 화면 조립만 담당한다.
-- Next.js 16의 `cookies()`, `headers()`, `params`, `searchParams`는 비동기 API로 취급한다. 동기 접근에 의존하지 않는다.
+- manifest가 선언한 App Router의 `cookies()`, `headers()`, `params`, `searchParams`는 비동기 API로 취급한다. 동기 접근에 의존하지 않는다.
 - 라우트에서만 사용하는 조립 view는 해당 segment의 `_views` 같은 private folder에 둔다. 사용자 능력으로 재사용되면 feature로 이동한다.
 - `layout.tsx`는 모든 하위 route가 필요로 하는 shell과 provider만 소유한다. 특정 page에만 필요한 조회를 상위 layout으로 끌어올리지 않는다.
 - `loading.tsx`는 route shell에 맞는 skeleton, `error.tsx`는 예상하지 못한 segment 오류의 복구 UI, `global-error.tsx`는 root 오류를 담당한다. `error.tsx`와 `global-error.tsx`는 Client Component이며 다시 시도는 `reset()`을 사용한다.
@@ -113,7 +113,7 @@
 
 ### 쓰기 경로와 폼
 
-- 제품 상태 변경의 canonical endpoint와 인가·트랜잭션은 `apps/api`가 소유한다. 브라우저에서 직접 갱신해야 하는 feature는 자기 `api` adapter로 Hono API를 호출한다.
+- 제품 상태 변경의 canonical contract, 인가와 transaction은 해당 module의 HTTP·application·infrastructure 경계가 소유하고 API executable은 이를 조립해 공개한다. 브라우저에서 직접 갱신해야 하는 feature는 자기 `api` adapter로 공개 API를 호출한다.
 - Server Action은 어드민 폼처럼 Next.js 서버 경계가 사용자 입력을 받아 기존 API command를 호출하는 경우 사용할 수 있다. Action도 외부에서 호출 가능한 공개 진입점으로 보고 입력 파싱과 인증을 수행하며, 비즈니스 규칙이나 DB 접근을 복제하지 않는다.
 - Server Action을 조회용 `queryFn`처럼 사용하지 않는다. 외부 client, webhook과 공개 REST endpoint는 `apps/api`가 소유하며 Next.js Route Handler로 중복 구현하지 않는다.
 - 단순 폼은 native form과 명시적인 pending·결과 상태를 우선한다. 동적 필드나 즉시 검증이 충분히 복잡할 때만 form library를 검토하며, 클라이언트와 서버 검증은 같은 canonical schema를 공유한다.

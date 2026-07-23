@@ -17,7 +17,7 @@
 - resource-library module은 자료 tree·Markdown version·FTS·휴지통과 이미지 metadata lifecycle을 함께 소유한다. API composition은 관리자 actor directory, object storage와 공유 event publisher port를 주입하고, SQLite와 object storage의 비원자적 변경은 보상 삭제·삭제 대기·reconciliation으로 격리한다.
 - operations module은 대시보드·분석 조합, 운영 설정, 관리자 AI 대화·quota·변경안 검토와 관리자 HTTP interface를 소유한다. reporting은 identity·content·learning의 공개 port를 병렬 호출하고 하나라도 실패하면 불완전한 수치를 성공으로 공개하지 않는다. AI 변경안 승인은 API composition이 주입한 content·resource-library의 기존 command port만 호출한다.
 - learning의 완료 event는 transaction 결과에서 commit 이후 발행 대상으로 반환한다. 전달 실패는 이미 확정된 학습 상태를 rollback으로 오표현하지 않고 별도 관찰 실패로 격리한다.
-- 외부 provider SDK, HTTP framework, logger와 DB runtime은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다.
+- 외부 provider SDK, logger와 DB runtime 구현은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다. HTTP framework의 공통 app·middleware·error·security 구현은 http-platform infra가 소유하되, endpoint를 소유하는 module interface는 공개 platform helper와 필요한 Hono route type을 사용한다. API composition은 module route와 실행 경계 route를 최종 app에 등록한다.
 - 각 module과 auth infra는 자기 최종 schema와 migration 사전 조건을 소유하고, 실제 seed가 있는 경계만 seed provider를 공개한다. API는 이 provider를 하나의 schema·migration·seed 실행 지점에서 조립하며 DB infra는 application table을 알지 않는다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.

@@ -44,13 +44,6 @@ package interface 검사는 이 allowlist와 함께 API Drizzle config의 schema
 
 ## 실행
 
-```bash
-bun run check:architecture
-bun run check:dead-code
-bun run check:package-interfaces
-bun run check:workspace-inventory
-```
-
-root `lint`와 pre-commit은 위 검사를 포함한다. dependency-cruiser는 workspace별 TypeScript config를 사용하므로 실행 비용은 단일 root scan보다 크지만 private alias와 runtime별 module resolution을 정확히 따른다. 이 비용은 정책 parser를 자체 유지하는 장기 유지보수 비용보다 작다고 판단한다.
+현재 실행 진입점은 root manifest가 소유하고 root lint와 pre-commit이 architecture, dead-code, package interface와 workspace inventory 검사를 조립한다. dependency-cruiser는 workspace별 TypeScript config를 사용하므로 실행 비용은 단일 root scan보다 크지만 private alias와 runtime별 module resolution을 정확히 따른다. 이 비용은 정책 parser를 자체 유지하는 장기 유지보수 비용보다 작다고 판단한다.
 
 정적 검사의 통과는 source graph를 증명할 뿐 production traffic, 외부 provider와 실제 배포 상태를 증명하지 않는다.
