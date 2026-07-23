@@ -13,7 +13,9 @@ type CapturedRequestLogEvent = {
   readonly actorType?: "admin" | "learner"
   readonly audience: "admin" | "learner"
   readonly durationMs: number
+  readonly errorClass?: "client-error" | "server-error"
   readonly method: string
+  readonly outcome: "failed" | "succeeded"
   readonly path: string
   readonly requestId?: string
   readonly status: number
@@ -60,6 +62,8 @@ describe("플랫폼 API profile route", () => {
     expect(requestEvents[0]).toMatchObject({
       audience: "learner",
       method: "GET",
+      errorClass: "client-error",
+      outcome: "failed",
       path: "/profile",
       externalRequestId: "request-1",
       requestId: response.headers.get("x-request-id"),
@@ -86,11 +90,35 @@ describe("플랫폼 API profile route", () => {
       actorId: "user-1",
       actorType: "learner",
       audience: "learner",
+      outcome: "succeeded",
       status: 200,
     })
     expect(JSON.stringify(requestEvents[0])).not.toMatch(
       /authorization|cookie|token|email/i
     )
+  })
+
+  it("identity와 독립된 learning 인증도 공통 actor context를 남긴다", async () => {
+    const requestEvents: CapturedRequestLogEvent[] = []
+    const app = createApp({
+      ...createDependencies(),
+      requestLogger(event) {
+        requestEvents.push(event)
+      },
+    })
+
+    const response = await app.request("/courses", {
+      headers: { Cookie: "learner_session_token=active-token" },
+    })
+
+    expect(response.status).toBe(200)
+    expect(requestEvents[0]).toMatchObject({
+      actorId: "user-1",
+      actorType: "learner",
+      audience: "learner",
+      outcome: "succeeded",
+      status: 200,
+    })
   })
 
   it("브라우저 쓰기 요청 preflight에 CORS 헤더로 응답한다", async () => {

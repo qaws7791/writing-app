@@ -150,7 +150,9 @@ describe("AI feedback application", () => {
 
   it("provider 성공 뒤 저장 실패는 provider를 재호출하지 않고 보상 실패 전이를 시도한다", async () => {
     const provider = vi.fn(async () => ok(providerResponse))
-    const markAttemptFailed = vi.fn(async () => ok(true))
+    const markAttemptFailed = vi.fn(async () =>
+      ok({ kind: "transitioned" as const })
+    )
     const application = createApplication({
       provider: { createFeedback: provider },
       repository: repository({
@@ -219,11 +221,17 @@ function repository(
   return {
     async markAttemptFailed(input) {
       overrides.calls?.push("repository:fail")
-      return overrides.markAttemptFailed?.(input) ?? ok(true)
+      return (
+        overrides.markAttemptFailed?.(input) ??
+        ok({ kind: "transitioned" as const })
+      )
     },
     async markAttemptSucceeded(input) {
       overrides.calls?.push("repository:succeed")
-      return overrides.markAttemptSucceeded?.(input) ?? ok(true)
+      return (
+        overrides.markAttemptSucceeded?.(input) ??
+        ok({ kind: "transitioned" as const })
+      )
     },
     async reserveAttempt(input) {
       overrides.calls?.push("repository:reserve")

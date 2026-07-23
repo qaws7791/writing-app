@@ -46,10 +46,10 @@ export async function handleAdminAiChatStream(
         "Content-Type": "application/json",
         Cookie: `${adminSessionCookieName}=${encodeURIComponent(token)}`,
         Origin: adminWebOrigin,
-        ...(request.headers.has("x-forwarded-for")
+        ...(request.headers.has("x-writing-app-client-ip")
           ? {
-              "X-Forwarded-For":
-                request.headers.get("x-forwarded-for") ?? "unknown",
+              "X-Writing-App-Client-IP":
+                request.headers.get("x-writing-app-client-ip") ?? "unknown",
             }
           : {}),
       },

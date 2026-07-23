@@ -52,6 +52,11 @@ export function createResourceAssetApplication(
         }
       }
       if (dependencies.storage === null) {
+        observeStorageFailure(
+          dependencies.assetAuditObserver,
+          "availability-check",
+          false
+        )
         return {
           compensation: "not-required",
           kind: "resource-storage-failure",
@@ -66,12 +71,29 @@ export function createResourceAssetApplication(
         documentId: input.documentId,
         mimeType: validation.contentType,
       })
-      const uploaded = await dependencies.storage.putObject({
-        body: input.bytes,
-        contentType: validation.contentType,
-        objectKey,
-      })
+      let uploaded: Awaited<
+        ReturnType<NonNullable<typeof dependencies.storage>["putObject"]>
+      >
+      try {
+        uploaded = await dependencies.storage.putObject({
+          body: input.bytes,
+          contentType: validation.contentType,
+          objectKey,
+        })
+      } catch {
+        observeStorageFailure(
+          dependencies.assetAuditObserver,
+          "put-object",
+          true
+        )
+        return storageFailure(true, "not-required")
+      }
       if (uploaded.isErr()) {
+        observeStorageFailure(
+          dependencies.assetAuditObserver,
+          "put-object",
+          uploaded.error.retryable
+        )
         return {
           compensation: "not-required",
           kind: "resource-storage-failure",
@@ -135,8 +157,26 @@ async function compensateUpload(
   asset: ResourceAsset,
   objectKey: string
 ): Promise<"failed" | "succeeded"> {
-  const deleted = await dependencies.storage?.deleteObjects([objectKey])
-  if (deleted?.isOk()) return "succeeded"
+  let deleted: Awaited<
+    ReturnType<NonNullable<typeof dependencies.storage>["deleteObjects"]>
+  > | null
+  try {
+    deleted =
+      dependencies.storage === null
+        ? null
+        : await dependencies.storage.deleteObjects([objectKey])
+  } catch {
+    deleted = null
+  }
+  if (deleted !== null && deleted.isOk()) return "succeeded"
+  const retryable =
+    deleted === null ? true : deleted.isErr() && deleted.error.retryable
+
+  observeStorageFailure(
+    dependencies.assetAuditObserver,
+    "compensate-delete",
+    retryable
+  )
 
   try {
     dependencies.assetAuditObserver({
@@ -149,6 +189,23 @@ async function compensateUpload(
     // 감사 observer 실패가 보상 결과를 성공으로 바꾸지 않는다.
   }
   return "failed"
+}
+
+function observeStorageFailure(
+  observer: ResourceLibraryDependencies["assetAuditObserver"],
+  phase: "availability-check" | "compensate-delete" | "put-object",
+  retryable: boolean
+): void {
+  try {
+    observer({
+      kind: "resource-asset-storage-failed",
+      operation: "upload",
+      phase,
+      retryable,
+    })
+  } catch {
+    return
+  }
 }
 
 function storageFailure(

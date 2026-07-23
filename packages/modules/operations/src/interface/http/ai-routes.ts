@@ -1,9 +1,13 @@
 import type { AnyRouteConfig } from "@workspace/http-platform/core"
+import { assertExhaustiveHttpResult } from "@workspace/http-platform/errors"
 import {
   eventStreamResponse,
   jsonResponse,
 } from "@workspace/http-platform/openapi"
-import { privateNoStoreCacheControl } from "@workspace/http-platform/security"
+import {
+  privateNoStoreCacheControl,
+  readTrustedClientIp,
+} from "@workspace/http-platform/security"
 import { z } from "@workspace/http-platform/zod"
 import {
   adminAiChatConversationDetailDtoSchema,
@@ -37,6 +41,7 @@ import type {
   OperationsSecurityAuditPort,
 } from "#operations/application/ports/operations-ports"
 import type { AiChangeProposal } from "#operations/domain/ai-change-proposal"
+import type { OperationsError } from "#operations/domain/operations-error"
 import type {
   AiConversationHistory,
   AiConversationSummary,
@@ -164,6 +169,7 @@ function createStreamMessageRoute(
       401: operationsErrorResponse("관리자 인증이 필요합니다."),
       403: operationsErrorResponse("관리자 권한이 필요합니다."),
       429: operationsErrorResponse("AI 채팅 요청 한도를 초과했습니다."),
+      503: operationsErrorResponse("AI 채팅 요청 한도를 확인할 수 없습니다."),
     },
     summary: "어드민 AI 채팅 메시지 스트리밍",
     ...operationsSessionRouteOptions(input.session),
@@ -171,12 +177,14 @@ function createStreamMessageRoute(
   const handler: OperationsRouteHandler<typeof route> = async (context) => {
     const actor = context.get("operationsActor")
     const body = context.req.valid("json")
-    const permit = await input.guard.acquire({
+    const permitResult = await input.guard.acquire({
       adminId: actor.id,
-      clientIp: readClientIp(context.req.raw),
+      clientIp: readTrustedClientIp(context.req.raw),
       conversationId: body.conversationId ?? null,
       now: input.now(),
     })
+    if (permitResult.isErr()) throw mapOperationsError(permitResult.error)
+    const permit = permitResult.value
     if (permit.kind === "rejected") {
       input.audit({
         action: "ai.quota.exceeded",
@@ -324,7 +332,8 @@ function createAiSseStream(
           signal: abortController.signal,
         })
         if (started.isErr()) {
-          enqueueApplicationError(controller, encoder, started.error.kind)
+          if (abortController.signal.aborted) return
+          enqueueApplicationError(controller, encoder, started.error)
           return
         }
         let content = ""
@@ -350,7 +359,7 @@ function createAiSseStream(
           conversationId: started.value.history.conversation.conversation.id,
         })
         if (saved.isErr()) {
-          enqueueApplicationError(controller, encoder, saved.error.kind)
+          enqueueApplicationError(controller, encoder, saved.error)
           return
         }
         const completed = await input.conversations.readConversation({
@@ -406,9 +415,9 @@ function closeStreamController(
 function enqueueApplicationError(
   controller: ReadableStreamDefaultController<Uint8Array>,
   encoder: TextEncoder,
-  kind: string
+  error: OperationsError
 ) {
-  switch (kind) {
+  switch (error.kind) {
     case "provider-unavailable":
       enqueueError(
         controller,
@@ -425,9 +434,20 @@ function enqueueApplicationError(
         "Conversation was not found"
       )
       return
-    default:
+    case "provider-timeout":
+    case "request-aborted":
+    case "conflict":
+    case "permission-denied":
+    case "persistence-failed":
+    case "provider-failed":
+    case "quota-exceeded":
+    case "reporting-unavailable":
+    case "validation-failed":
       enqueueError(controller, encoder, "AI_STREAM_FAILED", "AI stream failed")
+      return
   }
+
+  return assertExhaustiveHttpResult(error)
 }
 
 function enqueueError(
@@ -487,13 +507,4 @@ function toProposalDto(proposal: AiChangeProposal) {
     createdAt: proposal.createdAt.toISOString(),
     reviewedAt: proposal.reviewedAt?.toISOString() ?? null,
   })
-}
-
-function readClientIp(request: Request): string {
-  return (
-    request.headers.get("cf-connecting-ip")?.trim() ||
-    request.headers.get("x-real-ip")?.trim() ||
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "unknown"
-  )
 }

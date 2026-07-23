@@ -18,6 +18,11 @@
 - 권한 변경, password 변경, 계정 정지·삭제는 기존 session과 장기 token의 영향을 함께 검토한다.
 - test-only 인증과 개발 편의 설정은 production에서 fail-closed해야 한다.
 
+## 네트워크·rate limit 신뢰 경계
+
+- client IP 기반 제어는 reverse proxy가 신뢰 가능한 upstream을 기준으로 정제하고 덮어쓴 전용 header만 입력으로 사용한다. 애플리케이션과 BFF는 일반 전달 header를 직접 해석하지 않는다. 현재 경계는 [Caddy 설정](../../deploy/caddy/caddyfile), [HTTP 보안 adapter](../../packages/infra/http-platform/src/security/trusted-client-ip.ts)와 [관리자 BFF](../../apps/admin/src/features/ai-chat/server/route-handlers/admin-ai-chat-stream-route-handler.ts)가 소유한다.
+- 인증 남용 방지, 관리자 AI quota와 학습자 AI feedback 시도 제한은 각각의 capability가 독립된 상태와 정책을 소유한다. 실제 owner와 저장 구조는 [auth schema](../../packages/infra/auth/src/schema), [operations schema](../../packages/modules/operations/src/infrastructure/persistence/schema.ts), [ai-feedback schema](../../packages/modules/ai-feedback/src/infrastructure/persistence/schema.ts)에서 확인한다.
+
 ## 입력·출력·브라우저
 
 - 모든 외부 입력은 크기·형식·권한·소유권을 검증한다.

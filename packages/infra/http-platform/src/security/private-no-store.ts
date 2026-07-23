@@ -1,4 +1,13 @@
+import type { Context, Env } from "hono"
+
 export const privateNoStoreCacheControl = "private, no-store"
+
+export function setPrivateNoStoreHeaders<TEnv extends Env>(
+  context: Pick<Context<TEnv>, "header">
+): void {
+  context.header("Cache-Control", privateNoStoreCacheControl)
+  context.header("Vary", "Cookie", { append: true })
+}
 
 export function withPrivateNoStore(response: Response): Response {
   const headers = new Headers(response.headers)

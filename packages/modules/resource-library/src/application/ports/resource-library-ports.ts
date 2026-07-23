@@ -149,6 +149,11 @@ export type ResourcePermanentDeletePlan = Readonly<{
   rootId: ResourceNodeId
 }>
 
+export type ResourceReconciliationPersistenceError = Readonly<{
+  kind: "resource-reconciliation-persistence-failed"
+  operation: "read-pending-asset-deletions"
+}>
+
 export type ResourceTreeRepository = Readonly<{
   completePermanentDelete: (
     rootId: ResourceNodeId
@@ -176,7 +181,12 @@ export type ResourceTreeRepository = Readonly<{
   ) => Promise<ResourceCommandResult<ResourcePermanentDeletePlan>>
   readPendingAssetDeletions: (
     limit: number
-  ) => Promise<readonly PendingResourceAssetDeletion[]>
+  ) => Promise<
+    Result<
+      readonly PendingResourceAssetDeletion[],
+      ResourceReconciliationPersistenceError
+    >
+  >
   readSubtree: (nodeId: ResourceNodeId) => Promise<readonly ResourceTreeNode[]>
   readTree: (scope: ResourceTreeScope) => Promise<readonly ResourceTreeEntry[]>
   renameFolder: (
@@ -214,7 +224,25 @@ export type ResourceAssetAuditObserver = (
     | Readonly<{
         kind: "resource-asset-delete-failed"
         objectKeys: readonly string[]
+        phase: "permanent-delete" | "reconciliation"
+        retryable: boolean
         rootId: ResourceNodeId
+      }>
+    | Readonly<{
+        kind: "resource-asset-reconciliation-failed"
+        phase: "read-pending"
+      }>
+    | Readonly<{
+        kind: "resource-asset-reconciliation-failed"
+        objectKeys: readonly string[]
+        phase: "complete-metadata"
+        rootId: ResourceNodeId
+      }>
+    | Readonly<{
+        kind: "resource-asset-storage-failed"
+        operation: "upload"
+        phase: "availability-check" | "compensate-delete" | "put-object"
+        retryable: boolean
       }>
 ) => void
 

@@ -109,6 +109,8 @@ describe("resource tree application", () => {
     expect(observer).toHaveBeenCalledWith({
       kind: "resource-asset-delete-failed",
       objectKeys: ["resource-library/document-1/asset-1.png"],
+      phase: "permanent-delete",
+      retryable: true,
       rootId,
     })
   })

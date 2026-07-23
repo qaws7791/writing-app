@@ -21,12 +21,16 @@
 
 	@api host {$API_HOST}
 	handle @api {
-		reverse_proxy api:4000
+		reverse_proxy api:4000 {
+			header_up X-Writing-App-Client-IP {client_ip}
+		}
 	}
 
 	@admin-web host {$ADMIN_HOST}
 	handle @admin-web {
-		reverse_proxy admin:3001
+		reverse_proxy admin:3001 {
+			header_up X-Writing-App-Client-IP {client_ip}
+		}
 	}
 
 	handle {

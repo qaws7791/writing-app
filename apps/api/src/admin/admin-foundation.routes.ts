@@ -5,6 +5,7 @@ import { defineAdminRoute } from "@/admin/admin-hono-env"
 import {
   adminAuthenticatedResponses,
   adminHealthResponseSchema,
+  adminReadinessResponseSchema,
   jsonResponse,
 } from "@/admin/admin-openapi"
 import { adminSessionRouteOptions } from "@workspace/identity/http"
@@ -19,17 +20,25 @@ export function createAdminHealthRoutes(health: ApiHealthProbe) {
       responses: {
         200: jsonResponse(
           "어드민 API가 요청을 처리할 준비가 됐습니다.",
-          adminHealthResponseSchema
+          adminReadinessResponseSchema
         ),
         503: jsonResponse(
           "API 데이터베이스가 준비되지 않았습니다.",
-          adminHealthResponseSchema
+          adminReadinessResponseSchema
         ),
       },
       summary: "어드민 API readiness 조회",
       handler: (context) => {
         const ready = health.isDatabaseReady()
-        return context.json({ ok: ready, service: "api" }, ready ? 200 : 503)
+        return context.json(
+          {
+            checks: { database: ready ? "ready" : "unavailable" },
+            impact: ready ? "none" : "database-dependent-requests-unavailable",
+            ok: ready,
+            service: "api",
+          },
+          ready ? 200 : 503
+        )
       },
     }),
     defineAdminRoute({

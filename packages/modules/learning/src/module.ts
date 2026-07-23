@@ -1,5 +1,6 @@
 import type { LearnerAiFeedbackTransitionResult } from "@workspace/contracts/learning/learner-transition"
 import type { WritingAppDatabase } from "@workspace/db/client"
+import { assertExhaustiveHttpResult } from "@workspace/http-platform/errors"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { LearnerId, LessonId, LessonStepId } from "@workspace/types/ids"
 
@@ -169,4 +170,6 @@ function mapAiFeedbackHttpError(
     case "persistence-failed":
       return { kind: "persistence-failed" }
   }
+
+  return assertExhaustiveHttpResult(error)
 }

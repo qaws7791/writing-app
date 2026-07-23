@@ -8,6 +8,10 @@ import {
   normalizeErrorStatusCode,
 } from "#http-platform/errors/status"
 import type { ErrorStatusCode } from "#http-platform/errors/status"
+import {
+  privateNoStoreCacheControl,
+  withPrivateNoStore,
+} from "#http-platform/security/private-no-store"
 
 type ErrorResponseResult = {
   status: ErrorStatusCode
@@ -83,7 +87,11 @@ export function createErrorHandler(
       })
     }
 
-    return errorJson(body, status)
+    const response = errorJson(body, status)
+    return context.res.headers.get("Cache-Control") ===
+      privateNoStoreCacheControl
+      ? withPrivateNoStore(response)
+      : response
   }
 }
 

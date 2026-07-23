@@ -32,9 +32,15 @@ import {
   type AnyRouteConfig,
 } from "@workspace/http-platform/core"
 import type { HttpPlatformEnv } from "@workspace/http-platform/context"
-import { AppError } from "@workspace/http-platform/errors"
+import {
+  AppError,
+  assertExhaustiveHttpResult,
+} from "@workspace/http-platform/errors"
 import { jsonResponse } from "@workspace/http-platform/openapi"
-import { withPrivateNoStore } from "@workspace/http-platform/security"
+import {
+  setPrivateNoStoreHeaders,
+  withPrivateNoStore,
+} from "@workspace/http-platform/security"
 
 import type { LearningApplication } from "#learning/application/learning-application"
 import type { LearningQueries } from "#learning/application/learning-queries"
@@ -58,7 +64,7 @@ export type LearningLearnerSessionPort = Readonly<{
     headers: Headers
   ) => Promise<
     | Readonly<{ kind: "active"; learnerId: LearnerId }>
-    | Readonly<{ kind: "inactive" }>
+    | Readonly<{ kind: "inactive"; learnerId: LearnerId }>
     | null
   >
 }>
@@ -381,10 +387,12 @@ function createRequireLearnerMiddleware(
   session: LearningLearnerSessionPort
 ): MiddlewareHandler<LearningHonoEnv> {
   return async (context, next) => {
+    setPrivateNoStoreHeaders(context)
     const learner = await session.resolveLearner(context.req.raw.headers)
     if (learner === null) {
       throw httpError(401, "UNAUTHENTICATED", "로그인이 필요합니다.")
     }
+    context.set("requestActor", { id: learner.learnerId, type: "learner" })
     if (learner.kind === "inactive") {
       throw httpError(403, "FORBIDDEN", "사용할 수 없는 계정입니다.")
     }
@@ -425,6 +433,8 @@ function mapReadError(
     case "lesson-locked":
       return httpError(403, "LESSON_LOCKED", "아직 학습할 수 없는 레슨입니다.")
   }
+
+  return assertExhaustiveHttpResult(kind)
 }
 
 function httpError(

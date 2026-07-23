@@ -6,6 +6,8 @@ export type OperationsError =
       retryAfterSeconds: number
     }>
   | Readonly<{ kind: "provider-unavailable" }>
+  | Readonly<{ kind: "provider-timeout" }>
+  | Readonly<{ kind: "request-aborted" }>
   | Readonly<{
       kind: "validation-failed"
       reason: string

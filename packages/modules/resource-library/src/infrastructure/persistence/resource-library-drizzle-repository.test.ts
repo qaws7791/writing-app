@@ -235,6 +235,22 @@ describe("resource-library temporary SQLite repositories", () => {
       ).toEqual({ content: "", name: "원래 제목", version: 0 })
     })
   })
+
+  it("reconciliation 조회 DB 예외를 typed persistence error로 변환한다", async () => {
+    await withTemporaryResourceDatabase(async ({ database, sqlite }) => {
+      sqlite.exec("DROP TABLE admin_resource_assets")
+
+      const result =
+        await createDrizzleResourceTreeRepository(
+          database
+        ).readPendingAssetDeletions(10)
+
+      expect(result._unsafeUnwrapErr()).toEqual({
+        kind: "resource-reconciliation-persistence-failed",
+        operation: "read-pending-asset-deletions",
+      })
+    })
+  })
 })
 
 async function withTemporaryResourceDatabase(

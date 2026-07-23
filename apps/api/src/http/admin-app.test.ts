@@ -29,6 +29,8 @@ describe("통합 runtime 관리자 공통 delivery", () => {
 
     expect(healthResponse.status).toBe(200)
     await expect(healthResponse.json()).resolves.toEqual({
+      checks: { database: "ready" },
+      impact: "none",
       ok: true,
       service: "api",
     })
@@ -264,7 +266,21 @@ describe("통합 runtime 관리자 공통 delivery", () => {
   })
 
   it("operator는 주입된 owner route에서 기존 403 의미를 유지한다", async () => {
-    const dependencies = createDependencies({ role: adminRoles.operator })
+    const requestEvents: unknown[] = []
+    const securityEvents: unknown[] = []
+    const dependencies = createDependencies({
+      requestLogger(event) {
+        requestEvents.push(event)
+      },
+      requestLoggingRuntime: {
+        createRequestId: () => "operator-request-id",
+        readMonotonicTimeMs: () => 0,
+      },
+      role: adminRoles.operator,
+      securityAuditLogger(event) {
+        securityEvents.push(event)
+      },
+    })
     const ownerRoute = defineAdminRoute({
       method: "post",
       operationId: "runOwnerOnlyAction",
@@ -289,10 +305,28 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     })
 
     expect(response.status).toBe(403)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     await expect(response.json()).resolves.toEqual({
       code: "FORBIDDEN",
       message: "Forbidden",
     })
+    expect(requestEvents).toEqual([
+      expect.objectContaining({
+        actorId: "admin-1",
+        actorType: "admin",
+        outcome: "failed",
+        status: 403,
+      }),
+    ])
+    expect(securityEvents).toEqual([
+      expect.objectContaining({
+        action: "authorization.denied",
+        actorId: "admin-1",
+        actorType: "admin",
+        outcome: "denied",
+      }),
+    ])
   })
 
   it("내부 예외를 redacted 500 오류와 request id로 변환한다", async () => {

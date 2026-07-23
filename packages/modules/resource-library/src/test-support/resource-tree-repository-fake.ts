@@ -1,4 +1,5 @@
 import type { ResourceTreeRepository } from "#resource-library/application/ports/resource-library-ports"
+import { ok } from "@workspace/kernel/result"
 import { readResourceFolderId } from "#resource-library/domain/resource-tree-node"
 
 const defaultNode = Object.freeze({
@@ -27,7 +28,7 @@ export function createResourceTreeRepositoryFake(
         rootId: input.nodeId,
       },
     }),
-    readPendingAssetDeletions: async () => [],
+    readPendingAssetDeletions: async () => ok([]),
     readSubtree: async () => [defaultNode],
     readTree: async () => [{ hasChildren: false, node: defaultNode }],
     renameFolder: async () => ({

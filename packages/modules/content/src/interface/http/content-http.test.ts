@@ -65,8 +65,9 @@ const editorDocument: CourseEditorDocument = {
 
 describe("content HTTP interface", () => {
   it("unauthenticated read와 operator mutation을 각각 401·403으로 거절한다", async () => {
+    const requestActors: unknown[] = []
     const createCourse = vi.fn(async () => ok(editorDocument))
-    const app = createContentHttpFixture({ createCourse })
+    const app = createContentHttpFixture({ createCourse }, requestActors)
 
     const unauthenticated = await app.request("/courses")
     const forbidden = await app.request("/courses", {
@@ -79,8 +80,14 @@ describe("content HTTP interface", () => {
       code: "UNAUTHORIZED",
     })
     expect(forbidden.status).toBe(403)
+    expect(forbidden.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(forbidden.headers.get("Vary")).toContain("Cookie")
     await expect(forbidden.json()).resolves.toMatchObject({ code: "FORBIDDEN" })
     expect(createCourse).not.toHaveBeenCalled()
+    expect(requestActors[1]).toMatchObject({
+      id: "admin-1",
+      type: "admin",
+    })
   })
 
   it("editor ETag를 읽고 If-Match가 일치하면 증가한 ETag를 반환한다", async () => {
@@ -147,7 +154,10 @@ describe("content HTTP interface", () => {
   })
 })
 
-function createContentHttpFixture(overrides: Partial<ContentApplication> = {}) {
+function createContentHttpFixture(
+  overrides: Partial<ContentApplication> = {},
+  requestActors?: unknown[]
+) {
   const application: ContentApplication = {
     archiveCourse: async () => ok(undefined),
     createCourse: async () => ok(editorDocument),
@@ -199,6 +209,18 @@ function createContentHttpFixture(overrides: Partial<ContentApplication> = {}) {
   }
 
   return createApp({
+    middleware:
+      requestActors === undefined
+        ? []
+        : [
+            async (context, next) => {
+              try {
+                await next()
+              } finally {
+                requestActors.push(context.get("requestActor"))
+              }
+            },
+          ],
     routes: createAdminContentRoutes({ application, sessionPort }),
   })
 }

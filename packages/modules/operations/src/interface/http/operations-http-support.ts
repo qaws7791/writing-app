@@ -2,7 +2,10 @@ import type { RouteHandler } from "@hono/zod-openapi"
 import type { Env, Handler, Input, TypedResponse } from "hono"
 import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import { defineRouteForEnv } from "@workspace/http-platform/core"
-import { AppError } from "@workspace/http-platform/errors"
+import {
+  AppError,
+  assertExhaustiveHttpResult,
+} from "@workspace/http-platform/errors"
 import { adminApiErrorSchema } from "@workspace/contracts/operations/admin-api-error"
 import { jsonResponse } from "@workspace/http-platform/openapi"
 
@@ -57,6 +60,10 @@ export function mapOperationsError(error: OperationsError): AppError {
         "AI_PROVIDER_UNAVAILABLE",
         "AI provider is unavailable"
       )
+    case "provider-timeout":
+      return operationError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out")
+    case "request-aborted":
+      return operationError(408, "REQUEST_ABORTED", "Request was aborted")
     case "validation-failed":
       return operationError(422, "VALIDATION_FAILED", "Invalid request")
     case "conflict":
@@ -78,10 +85,12 @@ export function mapOperationsError(error: OperationsError): AppError {
     case "provider-failed":
       return operationError(502, "AI_PROVIDER_FAILED", "AI provider failed")
   }
+
+  return assertExhaustiveHttpResult(error)
 }
 
 function operationError(
-  status: 403 | 404 | 409 | 422 | 429 | 502 | 503,
+  status: 403 | 404 | 408 | 409 | 422 | 429 | 502 | 503 | 504,
   code: string,
   message: string
 ): AppError {

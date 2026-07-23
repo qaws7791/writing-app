@@ -26,7 +26,13 @@ describe("단일 API app", () => {
     })
 
     for (const path of ["/health", "/api/admin/health"]) {
-      expect((await request(app, path)).status).toBe(503)
+      const response = await request(app, path)
+      expect(response.status).toBe(503)
+      await expect(response.json()).resolves.toMatchObject({
+        checks: { database: "unavailable" },
+        impact: "database-dependent-requests-unavailable",
+        ok: false,
+      })
     }
     for (const path of ["/health/live", "/api/admin/health/live"]) {
       expect((await request(app, path)).status).toBe(200)
@@ -34,7 +40,13 @@ describe("단일 API app", () => {
 
     databaseReady = true
     for (const path of ["/health", "/api/admin/health"]) {
-      expect((await request(app, path)).status).toBe(200)
+      const response = await request(app, path)
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toMatchObject({
+        checks: { database: "ready" },
+        impact: "none",
+        ok: true,
+      })
     }
   })
 
@@ -65,7 +77,12 @@ describe("단일 API app", () => {
     })
 
     await expect(read(app, "/api/admin/health")).resolves.toBe(
-      JSON.stringify({ ok: true, service: "api" })
+      JSON.stringify({
+        checks: { database: "ready" },
+        impact: "none",
+        ok: true,
+        service: "api",
+      })
     )
     await expect(read(app, "/api/admin/auth/get-session")).resolves.toBe(
       JSON.stringify({ authenticated: false })

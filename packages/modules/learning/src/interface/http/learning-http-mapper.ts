@@ -13,7 +13,10 @@ import {
   completeLearnerStepResultSchema,
   type CompleteLearnerStepResult,
 } from "@workspace/contracts/learning/learner-transition"
-import { AppError } from "@workspace/http-platform/errors"
+import {
+  AppError,
+  assertExhaustiveHttpResult,
+} from "@workspace/http-platform/errors"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { LearnerId } from "@workspace/types/ids"
 
@@ -244,6 +247,8 @@ function mapLearningCommandError(error: LearningCommandError): AppError {
         "AI 코칭을 잠시 사용할 수 없습니다."
       )
   }
+
+  return assertExhaustiveHttpResult(error)
 }
 
 function decodePosition(

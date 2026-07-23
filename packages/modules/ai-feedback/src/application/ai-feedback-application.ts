@@ -19,6 +19,7 @@ import type {
   AiFeedbackAttemptTransition,
   AiFeedbackRepository,
   FinalizeAiFeedbackAttemptInput,
+  FinalizeAiFeedbackAttemptResult,
 } from "#ai-feedback/application/ports/ai-feedback-repository"
 
 export type { AiFeedbackAttemptTransition } from "#ai-feedback/application/ports/ai-feedback-repository"
@@ -145,7 +146,7 @@ export function createAiFeedbackApplication(
           occurredAt: dependencies.clock.now(),
         })
         if (failed.isErr()) return err(failed.error)
-        if (failed.value) {
+        if (failed.value.kind === "transitioned") {
           observeTransition(dependencies, {
             attemptId: reservation.attemptId,
             attemptNumber: reservation.attemptNumber,
@@ -164,7 +165,7 @@ export function createAiFeedbackApplication(
         feedback,
         occurredAt: dependencies.clock.now(),
       })
-      if (succeeded.isErr() || !succeeded.value) {
+      if (succeeded.isErr() || succeeded.value.kind === "not-pending") {
         await markFailed(dependencies, {
           attemptId: reservation.attemptId,
           occurredAt: dependencies.clock.now(),
@@ -256,7 +257,7 @@ async function requestProviderFeedback(input: {
 async function markFailed(
   dependencies: AiFeedbackApplicationDependencies,
   input: FinalizeAiFeedbackAttemptInput
-): Promise<Result<boolean, AiFeedbackError>> {
+): Promise<Result<FinalizeAiFeedbackAttemptResult, AiFeedbackError>> {
   const result = await dependencies.repository.markAttemptFailed(input)
   return result.isErr()
     ? persistenceError(result.error.operation)

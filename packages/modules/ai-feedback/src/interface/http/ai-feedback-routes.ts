@@ -13,9 +13,15 @@ import {
   type AnyRouteConfig,
 } from "@workspace/http-platform/core"
 import type { HttpPlatformEnv } from "@workspace/http-platform/context"
-import { AppError } from "@workspace/http-platform/errors"
+import {
+  AppError,
+  assertExhaustiveHttpResult,
+} from "@workspace/http-platform/errors"
 import { jsonResponse } from "@workspace/http-platform/openapi"
-import { withPrivateNoStore } from "@workspace/http-platform/security"
+import {
+  setPrivateNoStoreHeaders,
+  withPrivateNoStore,
+} from "@workspace/http-platform/security"
 import {
   createAiFeedbackHeadersSchema,
   createAiFeedbackParamsSchema,
@@ -76,7 +82,7 @@ export type AiFeedbackLearnerSessionPort = Readonly<{
     headers: Headers
   ) => Promise<
     | Readonly<{ kind: "active"; learnerId: LearnerId }>
-    | Readonly<{ kind: "inactive" }>
+    | Readonly<{ kind: "inactive"; learnerId: LearnerId }>
     | null
   >
 }>
@@ -169,10 +175,12 @@ function createRequireLearnerMiddleware(
   session: AiFeedbackLearnerSessionPort
 ): MiddlewareHandler<AiFeedbackHonoEnv> {
   return async (context, next) => {
+    setPrivateNoStoreHeaders(context)
     const learner = await session.resolveLearner(context.req.raw.headers)
     if (learner === null) {
       throw httpError(401, "UNAUTHENTICATED", "로그인이 필요합니다.")
     }
+    context.set("requestActor", { id: learner.learnerId, type: "learner" })
     if (learner.kind === "inactive") {
       throw httpError(403, "FORBIDDEN", "사용할 수 없는 계정입니다.")
     }
@@ -248,6 +256,8 @@ function mapAiFeedbackHttpError(error: AiFeedbackHttpCommandError): Response {
         "AI 코칭 요청을 완료하지 못했습니다."
       )
   }
+
+  return assertExhaustiveHttpResult(error)
 }
 
 function errorResponse(description: string) {

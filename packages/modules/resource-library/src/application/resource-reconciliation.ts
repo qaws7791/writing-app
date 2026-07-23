@@ -1,8 +1,10 @@
 import type { ResourceNodeId } from "@workspace/types/ids"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 import type {
   ResourceAssetAuditObserver,
   ResourceObjectStoragePort,
+  ResourceReconciliationPersistenceError,
   ResourceTreeRepository,
 } from "#resource-library/application/ports/resource-library-ports"
 import type { PendingResourceAssetDeletion } from "#resource-library/domain/resource-asset"
@@ -17,11 +19,19 @@ export type ResourceReconciliationResult = Readonly<{
 }>
 
 export type ResourceReconciliationDryRunQuery = Readonly<{
-  execute: (limit: number) => Promise<ResourceReconciliationDryRun>
+  execute: (
+    limit: number
+  ) => Promise<
+    Result<ResourceReconciliationDryRun, ResourceReconciliationPersistenceError>
+  >
 }>
 
 export type ResourceReconciliationCommand = Readonly<{
-  execute: (limit: number) => Promise<ResourceReconciliationResult>
+  execute: (
+    limit: number
+  ) => Promise<
+    Result<ResourceReconciliationResult, ResourceReconciliationPersistenceError>
+  >
 }>
 
 export type ResourceReconciliation = Readonly<{
@@ -37,17 +47,17 @@ export function createResourceReconciliation(input: {
   return Object.freeze({
     dryRun: Object.freeze({
       async execute(limit: number) {
-        return {
-          pending: await input.treeRepository.readPendingAssetDeletions(limit),
-        }
+        const pending = await readPendingAssetDeletions(input, limit)
+        if (pending.isErr()) return err(pending.error)
+        return ok({ pending: pending.value })
       },
     }),
     mutation: Object.freeze({
       async execute(limit: number) {
-        const pending =
-          await input.treeRepository.readPendingAssetDeletions(limit)
+        const pending = await readPendingAssetDeletions(input, limit)
+        if (pending.isErr()) return err(pending.error)
         const byRoot = new Map<ResourceNodeId, string[]>()
-        for (const asset of pending) {
+        for (const asset of pending.value) {
           const objectKeys = byRoot.get(asset.deleteRootId) ?? []
           objectKeys.push(asset.objectKey)
           byRoot.set(asset.deleteRootId, objectKeys)
@@ -56,10 +66,38 @@ export function createResourceReconciliation(input: {
         const failedRootIds: ResourceNodeId[] = []
         const reconciledRootIds: ResourceNodeId[] = []
         for (const [rootId, objectKeys] of byRoot) {
-          const deleted = await input.storage?.deleteObjects(objectKeys)
-          if (deleted === undefined || deleted.isErr()) {
+          let deletion:
+            | Readonly<{ kind: "storage-unavailable" }>
+            | Readonly<{ kind: "thrown" }>
+            | Readonly<{
+                kind: "result"
+                value: Awaited<
+                  ReturnType<ResourceObjectStoragePort["deleteObjects"]>
+                >
+              }>
+          if (input.storage === null) {
+            deletion = { kind: "storage-unavailable" }
+          } else {
+            try {
+              deletion = {
+                kind: "result",
+                value: await input.storage.deleteObjects(objectKeys),
+              }
+            } catch {
+              deletion = { kind: "thrown" }
+            }
+          }
+          if (deletion.kind !== "result" || deletion.value.isErr()) {
             failedRootIds.push(rootId)
-            observeFailure(input.assetAuditObserver, rootId, objectKeys)
+            observeDeleteFailure(
+              input.assetAuditObserver,
+              rootId,
+              objectKeys,
+              deletion.kind === "thrown" ||
+                (deletion.kind === "result" &&
+                  deletion.value.isErr() &&
+                  deletion.value.error.retryable)
+            )
             continue
           }
 
@@ -67,30 +105,97 @@ export function createResourceReconciliation(input: {
             const completed =
               await input.treeRepository.completePermanentDelete(rootId)
             if (completed.kind === "ok") reconciledRootIds.push(rootId)
-            else failedRootIds.push(rootId)
+            else {
+              failedRootIds.push(rootId)
+              observeReconciliationFailure(
+                input.assetAuditObserver,
+                rootId,
+                objectKeys
+              )
+            }
           } catch {
             failedRootIds.push(rootId)
+            observeReconciliationFailure(
+              input.assetAuditObserver,
+              rootId,
+              objectKeys
+            )
           }
         }
 
-        return {
+        return ok({
           failedRootIds: Object.freeze(failedRootIds),
           reconciledRootIds: Object.freeze(reconciledRootIds),
-        }
+        })
       },
     }),
   })
 }
 
-function observeFailure(
+async function readPendingAssetDeletions(
+  input: Readonly<{
+    assetAuditObserver: ResourceAssetAuditObserver
+    treeRepository: ResourceTreeRepository
+  }>,
+  limit: number
+): Promise<
+  Awaited<ReturnType<ResourceTreeRepository["readPendingAssetDeletions"]>>
+> {
+  let pending: Awaited<
+    ReturnType<ResourceTreeRepository["readPendingAssetDeletions"]>
+  >
+  try {
+    pending = await input.treeRepository.readPendingAssetDeletions(limit)
+  } catch {
+    pending = err({
+      kind: "resource-reconciliation-persistence-failed",
+      operation: "read-pending-asset-deletions",
+    })
+  }
+  if (pending.isErr()) observePendingReadFailure(input.assetAuditObserver)
+  return pending
+}
+
+function observePendingReadFailure(observer: ResourceAssetAuditObserver): void {
+  try {
+    observer({
+      kind: "resource-asset-reconciliation-failed",
+      phase: "read-pending",
+    })
+  } catch {
+    return
+  }
+}
+
+function observeReconciliationFailure(
   observer: ResourceAssetAuditObserver,
   rootId: ResourceNodeId,
   objectKeys: readonly string[]
 ): void {
   try {
     observer({
+      kind: "resource-asset-reconciliation-failed",
+      objectKeys,
+      phase: "complete-metadata",
+      rootId,
+    })
+  } catch {
+    return
+  }
+}
+
+function observeDeleteFailure(
+  observer: ResourceAssetAuditObserver,
+  rootId: ResourceNodeId,
+  objectKeys: readonly string[],
+  retryable: boolean
+): void {
+  try {
+    observer({
       kind: "resource-asset-delete-failed",
       objectKeys,
+      phase: "reconciliation",
+      retryable,
       rootId,
     })
   } catch {

@@ -74,13 +74,21 @@ export type FinalizeAiFeedbackAttemptInput = Readonly<{
   occurredAt: Date
 }>
 
+export type FinalizeAiFeedbackAttemptResult =
+  | Readonly<{ kind: "not-pending" }>
+  | Readonly<{ kind: "transitioned" }>
+
 export type AiFeedbackRepository = Readonly<{
   markAttemptFailed: (
     input: FinalizeAiFeedbackAttemptInput
-  ) => Promise<Result<boolean, AiFeedbackPersistenceError>>
+  ) => Promise<
+    Result<FinalizeAiFeedbackAttemptResult, AiFeedbackPersistenceError>
+  >
   markAttemptSucceeded: (
     input: FinalizeAiFeedbackAttemptInput & Readonly<{ feedback: AiFeedback }>
-  ) => Promise<Result<boolean, AiFeedbackPersistenceError>>
+  ) => Promise<
+    Result<FinalizeAiFeedbackAttemptResult, AiFeedbackPersistenceError>
+  >
   reserveAttempt: (
     input: ReserveAiFeedbackAttemptInput
   ) => Promise<

@@ -37,4 +37,39 @@ describe("API security audit policy", () => {
     ])
     expect(JSON.stringify(audits)).not.toContain("secret")
   })
+
+  it("인증 실패·인가 거절·AI quota 거절을 서로 다른 audit action으로 분류한다", async () => {
+    const audits: SecurityAuditEvent[] = []
+    const app = new Hono()
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "request-id",
+        logRequest: () => undefined,
+        observeRequest: createSecurityAuditRequestObserver((event) =>
+          audits.push(event)
+        ),
+      })
+    )
+    app.post("/api/auth/sign-in/email", (context) =>
+      context.json({ ok: false }, 401)
+    )
+    app.get("/profile", (context) => context.json({ ok: false }, 403))
+    app.post("/learning/steps/step-1/ai-feedback", (context) =>
+      context.json({ ok: false }, 429)
+    )
+
+    await app.request("/api/auth/sign-in/email", { method: "POST" })
+    await app.request("/profile")
+    await app.request("/learning/steps/step-1/ai-feedback", {
+      method: "POST",
+    })
+
+    expect(audits.map((event) => event.action)).toEqual([
+      "authentication.failed",
+      "authorization.denied",
+      "ai.quota.exceeded",
+    ])
+  })
 })

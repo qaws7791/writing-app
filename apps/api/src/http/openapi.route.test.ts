@@ -5,7 +5,9 @@ import { createLearnerApp as createApp } from "@/http/learner-app"
 import { createTestDependencies } from "@/routes/test-dependencies"
 import {
   expectedOpenApiRouteKeys,
+  expectedProtectedOpenApiRouteKeys,
   readOpenApiRouteKeys,
+  readProtectedOpenApiRouteKeys,
 } from "@/test-support/p10-route-parity"
 
 describe("플랫폼 API openapi route", () => {
@@ -108,5 +110,8 @@ describe("플랫폼 API openapi route", () => {
     expect(readOpenApiRouteKeys(document)).toEqual(
       expectedOpenApiRouteKeys("learner")
     )
+    expect(
+      readProtectedOpenApiRouteKeys(document, "learnerSessionCookie")
+    ).toEqual(expectedProtectedOpenApiRouteKeys("learner"))
   })
 })

@@ -1,7 +1,9 @@
 export type RequestCompletedEvent = Readonly<{
   audience: "admin" | "learner"
   durationMs: number
+  errorClass?: "client-error" | "server-error"
   method: string
+  outcome: "failed" | "succeeded"
   path: string
   requestId: string
   status: number

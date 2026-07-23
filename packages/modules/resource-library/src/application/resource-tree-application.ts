@@ -3,6 +3,7 @@ import type { ResourceFolderId, ResourceNodeId } from "@workspace/types/ids"
 import type {
   ResourceCommandResult,
   ResourceLibraryDependencies,
+  ResourceObjectStoragePort,
 } from "#resource-library/application/ports/resource-library-ports"
 import {
   authorizeResourceAccess,
@@ -70,32 +71,30 @@ export function createResourceTreeApplication(
 ): ResourceTreeApplication {
   return Object.freeze({
     createDocument(input) {
-      const forbidden = rejectForbidden<ResourceTreeMutation>(input.actor)
-      return (
-        forbidden ??
-        dependencies.treeRepository.createNode({
-          actorId: input.actor.id,
-          kind: "document",
-          nodeId: dependencies.documentIdGenerator.next(),
-          now: dependencies.clock.now(),
-          parentId: input.parentId,
-          preferredName: "제목 없음",
-        })
-      )
+      if (authorizeResourceAccess(input.actor) === "forbidden") {
+        return Promise.resolve({ kind: "resource-forbidden" })
+      }
+      return dependencies.treeRepository.createNode({
+        actorId: input.actor.id,
+        kind: "document",
+        nodeId: dependencies.documentIdGenerator.next(),
+        now: dependencies.clock.now(),
+        parentId: input.parentId,
+        preferredName: "제목 없음",
+      })
     },
     createFolder(input) {
-      const forbidden = rejectForbidden<ResourceTreeMutation>(input.actor)
-      return (
-        forbidden ??
-        dependencies.treeRepository.createNode({
-          actorId: input.actor.id,
-          kind: "folder",
-          nodeId: dependencies.folderIdGenerator.next(),
-          now: dependencies.clock.now(),
-          parentId: input.parentId,
-          preferredName: "새 폴더",
-        })
-      )
+      if (authorizeResourceAccess(input.actor) === "forbidden") {
+        return Promise.resolve({ kind: "resource-forbidden" })
+      }
+      return dependencies.treeRepository.createNode({
+        actorId: input.actor.id,
+        kind: "folder",
+        nodeId: dependencies.folderIdGenerator.next(),
+        now: dependencies.clock.now(),
+        parentId: input.parentId,
+        preferredName: "새 폴더",
+      })
     },
     async deleteNodePermanently(input) {
       if (authorizeResourceAccess(input.actor) === "forbidden") {
@@ -124,7 +123,12 @@ export function createResourceTreeApplication(
       const objectKeys = prepared.value.assets.map(({ objectKey }) => objectKey)
       if (objectKeys.length > 0) {
         if (dependencies.storage === null) {
-          observeDeleteFailure(dependencies, prepared.value.rootId, objectKeys)
+          observeDeleteFailure(
+            dependencies,
+            prepared.value.rootId,
+            objectKeys,
+            false
+          )
           return {
             compensation: "not-required",
             kind: "resource-storage-failure",
@@ -132,9 +136,32 @@ export function createResourceTreeApplication(
             retryable: false,
           }
         }
-        const deleted = await dependencies.storage.deleteObjects(objectKeys)
+        let deleted: Awaited<
+          ReturnType<ResourceObjectStoragePort["deleteObjects"]>
+        >
+        try {
+          deleted = await dependencies.storage.deleteObjects(objectKeys)
+        } catch {
+          observeDeleteFailure(
+            dependencies,
+            prepared.value.rootId,
+            objectKeys,
+            true
+          )
+          return {
+            compensation: "not-required",
+            kind: "resource-storage-failure",
+            operation: "delete",
+            retryable: true,
+          }
+        }
         if (deleted.isErr()) {
-          observeDeleteFailure(dependencies, prepared.value.rootId, objectKeys)
+          observeDeleteFailure(
+            dependencies,
+            prepared.value.rootId,
+            objectKeys,
+            deleted.error.retryable
+          )
           return {
             compensation: "not-required",
             kind: "resource-storage-failure",
@@ -166,16 +193,15 @@ export function createResourceTreeApplication(
       }
     },
     moveNode(input) {
-      const forbidden = rejectForbidden<ResourceTreeMutation>(input.actor)
-      return (
-        forbidden ??
-        dependencies.treeRepository.moveNode({
-          actorId: input.actor.id,
-          destinationParentId: input.destinationParentId,
-          nodeId: input.nodeId,
-          now: dependencies.clock.now(),
-        })
-      )
+      if (authorizeResourceAccess(input.actor) === "forbidden") {
+        return Promise.resolve({ kind: "resource-forbidden" })
+      }
+      return dependencies.treeRepository.moveNode({
+        actorId: input.actor.id,
+        destinationParentId: input.destinationParentId,
+        nodeId: input.nodeId,
+        now: dependencies.clock.now(),
+      })
     },
     async readTree(scope) {
       return sortResourceTreeEntries(
@@ -183,59 +209,51 @@ export function createResourceTreeApplication(
       )
     },
     renameFolder(input) {
-      const forbidden = rejectForbidden<ResourceTreeMutation>(input.actor)
-      return (
-        forbidden ??
-        dependencies.treeRepository.renameFolder({
-          actorId: input.actor.id,
-          folderId: input.folderId,
-          name: input.name,
-          now: dependencies.clock.now(),
-        })
-      )
+      if (authorizeResourceAccess(input.actor) === "forbidden") {
+        return Promise.resolve({ kind: "resource-forbidden" })
+      }
+      return dependencies.treeRepository.renameFolder({
+        actorId: input.actor.id,
+        folderId: input.folderId,
+        name: input.name,
+        now: dependencies.clock.now(),
+      })
     },
     restoreNode(input) {
-      const forbidden = rejectForbidden<ResourceRestoreResult>(input.actor)
-      return (
-        forbidden ??
-        dependencies.treeRepository.restoreNode({
-          actorId: input.actor.id,
-          nodeId: input.nodeId,
-          now: dependencies.clock.now(),
-        })
-      )
+      if (authorizeResourceAccess(input.actor) === "forbidden") {
+        return Promise.resolve({ kind: "resource-forbidden" })
+      }
+      return dependencies.treeRepository.restoreNode({
+        actorId: input.actor.id,
+        nodeId: input.nodeId,
+        now: dependencies.clock.now(),
+      })
     },
     trashNode(input) {
-      const forbidden = rejectForbidden<ResourceTrashResult>(input.actor)
-      return (
-        forbidden ??
-        dependencies.treeRepository.trashNode({
-          actorId: input.actor.id,
-          nodeId: input.nodeId,
-          now: dependencies.clock.now(),
-        })
-      )
+      if (authorizeResourceAccess(input.actor) === "forbidden") {
+        return Promise.resolve({ kind: "resource-forbidden" })
+      }
+      return dependencies.treeRepository.trashNode({
+        actorId: input.actor.id,
+        nodeId: input.nodeId,
+        now: dependencies.clock.now(),
+      })
     },
   })
-}
-
-function rejectForbidden<TValue>(
-  actor: ResourceActor
-): Promise<ResourceCommandResult<TValue>> | null {
-  return authorizeResourceAccess(actor) === "forbidden"
-    ? Promise.resolve({ kind: "resource-forbidden" })
-    : null
 }
 
 function observeDeleteFailure(
   dependencies: Pick<ResourceLibraryDependencies, "assetAuditObserver">,
   rootId: ResourceNodeId,
-  objectKeys: readonly string[]
+  objectKeys: readonly string[],
+  retryable: boolean
 ): void {
   try {
     dependencies.assetAuditObserver({
       kind: "resource-asset-delete-failed",
       objectKeys,
+      phase: "permanent-delete",
+      retryable,
       rootId,
     })
   } catch {

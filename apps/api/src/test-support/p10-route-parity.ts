@@ -1,4 +1,5 @@
 export type ApiRouteParityEntry = Readonly<{
+  access: "protected" | "public"
   audience: "admin" | "learner"
   classification: "approved-addition" | "baseline"
   method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
@@ -6,8 +7,8 @@ export type ApiRouteParityEntry = Readonly<{
 }>
 
 const p10RouteParity = Object.freeze([
-  learner("GET", "/health"),
-  learner("GET", "/health/live", "approved-addition"),
+  learner("GET", "/health", "baseline", "public"),
+  learner("GET", "/health/live", "approved-addition", "public"),
   learner("GET", "/auth/session"),
   learner("GET", "/profile"),
   learner("GET", "/courses"),
@@ -18,8 +19,8 @@ const p10RouteParity = Object.freeze([
   learner("POST", "/learning/lessons/{lessonId}/start"),
   learner("POST", "/learning/lessons/{lessonId}/steps/{stepId}/complete"),
   learner("POST", "/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback"),
-  admin("GET", "/api/admin/health"),
-  admin("GET", "/api/admin/health/live", "approved-addition"),
+  admin("GET", "/api/admin/health", "baseline", "public"),
+  admin("GET", "/api/admin/health/live", "approved-addition", "public"),
   admin("GET", "/api/admin/session"),
   admin("GET", "/api/admin/courses"),
   admin("POST", "/api/admin/courses"),
@@ -75,31 +76,25 @@ const p10RouteParity = Object.freeze([
 function learner(
   method: ApiRouteParityEntry["method"],
   path: string,
-  classification: ApiRouteParityEntry["classification"] = "baseline"
+  classification: ApiRouteParityEntry["classification"] = "baseline",
+  access: ApiRouteParityEntry["access"] = "protected"
 ): ApiRouteParityEntry {
-  return { audience: "learner", classification, method, path }
+  return { access, audience: "learner", classification, method, path }
 }
 
 function admin(
   method: ApiRouteParityEntry["method"],
   path: string,
-  classification: ApiRouteParityEntry["classification"] = "baseline"
+  classification: ApiRouteParityEntry["classification"] = "baseline",
+  access: ApiRouteParityEntry["access"] = "protected"
 ): ApiRouteParityEntry {
-  return { audience: "admin", classification, method, path }
+  return { access, audience: "admin", classification, method, path }
 }
 
 export function readOpenApiRouteKeys(document: unknown): readonly string[] {
-  if (
-    typeof document !== "object" ||
-    document === null ||
-    !("paths" in document) ||
-    typeof document.paths !== "object" ||
-    document.paths === null
-  ) {
-    throw new Error("OpenAPI document에 paths 객체가 필요합니다.")
-  }
+  const paths = readOpenApiPaths(document)
 
-  return Object.entries(document.paths)
+  return Object.entries(paths)
     .flatMap(([path, pathItem]) => {
       if (typeof pathItem !== "object" || pathItem === null) return []
       return Object.keys(pathItem)
@@ -111,11 +106,69 @@ export function readOpenApiRouteKeys(document: unknown): readonly string[] {
     .sort()
 }
 
+export function readProtectedOpenApiRouteKeys(
+  document: unknown,
+  securityScheme: "adminSessionCookie" | "learnerSessionCookie"
+): readonly string[] {
+  const paths = readOpenApiPaths(document)
+
+  return Object.entries(paths)
+    .flatMap(([path, pathItem]) => {
+      if (typeof pathItem !== "object" || pathItem === null) return []
+      return Object.entries(pathItem).flatMap(([method, operation]) => {
+        if (
+          !["delete", "get", "patch", "post", "put"].includes(method) ||
+          typeof operation !== "object" ||
+          operation === null ||
+          !("security" in operation) ||
+          !Array.isArray(operation.security)
+        ) {
+          return []
+        }
+        const isProtected = operation.security.some(
+          (requirement: unknown) =>
+            typeof requirement === "object" &&
+            requirement !== null &&
+            securityScheme in requirement
+        )
+        return isProtected ? [`${method.toUpperCase()} ${path}`] : []
+      })
+    })
+    .sort()
+}
+
+function readOpenApiPaths(
+  document: unknown
+): Readonly<Record<string, unknown>> {
+  if (
+    typeof document !== "object" ||
+    document === null ||
+    !("paths" in document) ||
+    typeof document.paths !== "object" ||
+    document.paths === null
+  ) {
+    throw new Error("OpenAPI document에 paths 객체가 필요합니다.")
+  }
+
+  return document.paths as Readonly<Record<string, unknown>>
+}
+
 export function expectedOpenApiRouteKeys(
   audience: ApiRouteParityEntry["audience"]
 ): readonly string[] {
   return p10RouteParity
     .filter((route) => route.audience === audience)
+    .map((route) => `${route.method} ${route.path}`)
+    .sort()
+}
+
+export function expectedProtectedOpenApiRouteKeys(
+  audience: ApiRouteParityEntry["audience"]
+): readonly string[] {
+  return p10RouteParity
+    .filter(
+      (route) => route.audience === audience && route.access === "protected"
+    )
     .map((route) => `${route.method} ${route.path}`)
     .sort()
 }

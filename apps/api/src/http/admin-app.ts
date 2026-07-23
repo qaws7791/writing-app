@@ -122,17 +122,6 @@ function createAdminMiddleware(
         observeRequest: createSecurityAuditRequestObserver(
           dependencies.securityAuditLogger
         ),
-        readActor(context) {
-          const session = context.get("activeAdminSession")
-
-          return session === undefined
-            ? undefined
-            : {
-                id: session.admin.id,
-                role: session.admin.role,
-                type: "admin",
-              }
-        },
         readMonotonicTimeMs:
           dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
       })

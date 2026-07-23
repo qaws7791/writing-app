@@ -63,13 +63,17 @@ describe("resource-library HTTP interface", () => {
   })
 
   it("unauthenticated와 forbidden을 application 호출 전에 거절한다", async () => {
+    const requestActors: unknown[] = []
     const readTree = vi.fn(async () => [])
-    const app = createFixture({
-      treeApplication: {
-        ...createDependencies().treeApplication,
-        readTree,
+    const app = createFixture(
+      {
+        treeApplication: {
+          ...createDependencies().treeApplication,
+          readTree,
+        },
       },
-    })
+      requestActors
+    )
 
     const unauthenticated = await app.request("/resources/tree")
     const forbidden = await app.request("/resources/tree", {
@@ -78,11 +82,17 @@ describe("resource-library HTTP interface", () => {
 
     expect(unauthenticated.status).toBe(401)
     expect(forbidden.status).toBe(403)
+    expect(forbidden.headers.get("cache-control")).toBe("private, no-store")
+    expect(forbidden.headers.get("vary")).toContain("Cookie")
     await expect(unauthenticated.json()).resolves.toMatchObject({
       code: "UNAUTHORIZED",
     })
     await expect(forbidden.json()).resolves.toMatchObject({ code: "FORBIDDEN" })
     expect(readTree).not.toHaveBeenCalled()
+    expect(requestActors[1]).toMatchObject({
+      id: "admin-1",
+      type: "admin",
+    })
   })
 
   it("read와 write 응답에 private no-store를 적용하고 강한 ETag를 유지한다", async () => {
@@ -183,8 +193,23 @@ describe("resource-library HTTP interface", () => {
   })
 })
 
-function createFixture(overrides: Partial<ResourceRouteDependencies> = {}) {
+function createFixture(
+  overrides: Partial<ResourceRouteDependencies> = {},
+  requestActors?: unknown[]
+) {
   return createApp({
+    middleware:
+      requestActors === undefined
+        ? []
+        : [
+            async (context, next) => {
+              try {
+                await next()
+              } finally {
+                requestActors.push(context.get("requestActor"))
+              }
+            },
+          ],
     routes: createResourceLibraryRoutes({
       ...createDependencies(),
       ...overrides,

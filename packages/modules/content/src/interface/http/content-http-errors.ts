@@ -1,4 +1,7 @@
-import { AppError } from "@workspace/http-platform/errors"
+import {
+  AppError,
+  assertExhaustiveHttpResult,
+} from "@workspace/http-platform/errors"
 
 import type { ContentError } from "#content/domain/content-error"
 
@@ -33,6 +36,8 @@ export function mapContentError(error: ContentError): AppError {
         `Content validation failed: ${error.reason}`
       )
   }
+
+  return assertExhaustiveHttpResult(error)
 }
 
 export function invalidContentRequestError(): AppError {

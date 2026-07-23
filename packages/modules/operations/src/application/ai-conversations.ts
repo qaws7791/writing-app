@@ -11,6 +11,7 @@ import type {
   AiConversationRepository,
   AiProviderPort,
   OperationsClock,
+  OperationsProviderFailureObserver,
 } from "#operations/application/ports/operations-ports"
 
 export type AiConversationQueries = Readonly<{
@@ -89,6 +90,7 @@ export function createAiConversationQueries(
 export function createAiStreamingApplication(input: {
   readonly clock: OperationsClock
   readonly provider: AiProviderPort | null
+  readonly providerFailureObserver: OperationsProviderFailureObserver
   readonly repository: AiConversationRepository
 }): AiStreamingApplication {
   return Object.freeze({
@@ -108,7 +110,14 @@ export function createAiStreamingApplication(input: {
       }
     },
     async startMessage(command) {
-      if (input.provider === null) return err({ kind: "provider-unavailable" })
+      if (input.provider === null) {
+        observeProviderFailure(input.providerFailureObserver, {
+          kind: "operations-ai-provider-failed",
+          operation: "stream-text",
+          reason: "provider-unavailable",
+        })
+        return err({ kind: "provider-unavailable" })
+      }
 
       let history: AiConversationHistory | null
       try {
@@ -129,20 +138,80 @@ export function createAiStreamingApplication(input: {
       }
 
       try {
+        const stream = await input.provider.streamText(createPrompt(history), {
+          adminId: command.adminId,
+          conversationId: history.conversation.conversation.id,
+          maxOutputTokens: 2_000,
+          signal: command.signal,
+        })
         return ok({
           history,
-          stream: await input.provider.streamText(createPrompt(history), {
-            adminId: command.adminId,
-            conversationId: history.conversation.conversation.id,
-            maxOutputTokens: 2_000,
-            signal: command.signal,
-          }),
+          stream: observeProviderStream(
+            stream,
+            input.providerFailureObserver,
+            command.signal
+          ),
         })
       } catch {
-        return err({ kind: "provider-failed" })
+        const failure = classifyProviderFailure(command.signal)
+        if (failure.observedReason !== null) {
+          observeProviderFailure(input.providerFailureObserver, {
+            kind: "operations-ai-provider-failed",
+            operation: "stream-text",
+            reason: failure.observedReason,
+          })
+        }
+        return err({ kind: failure.errorKind })
       }
     },
   })
+}
+
+async function* observeProviderStream(
+  stream: AsyncIterable<string>,
+  observer: OperationsProviderFailureObserver,
+  signal: AbortSignal
+): AsyncIterable<string> {
+  try {
+    yield* stream
+  } catch (error) {
+    const failure = classifyProviderFailure(signal)
+    if (failure.observedReason !== null) {
+      observeProviderFailure(observer, {
+        kind: "operations-ai-provider-failed",
+        operation: "stream-text",
+        reason: failure.observedReason,
+      })
+    }
+    throw error
+  }
+}
+
+function classifyProviderFailure(signal: AbortSignal): Readonly<{
+  errorKind: "provider-failed" | "provider-timeout" | "request-aborted"
+  observedReason: "provider-failed" | "provider-timeout" | null
+}> {
+  if (!signal.aborted) {
+    return { errorKind: "provider-failed", observedReason: "provider-failed" }
+  }
+  if (signal.reason === "provider-timeout") {
+    return {
+      errorKind: "provider-timeout",
+      observedReason: "provider-timeout",
+    }
+  }
+  return { errorKind: "request-aborted", observedReason: null }
+}
+
+function observeProviderFailure(
+  observer: OperationsProviderFailureObserver,
+  event: Parameters<OperationsProviderFailureObserver>[0]
+): void {
+  try {
+    observer(event)
+  } catch {
+    return
+  }
 }
 
 function createPrompt(history: AiConversationHistory): string {

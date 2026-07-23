@@ -1,4 +1,7 @@
-import { AppError } from "@workspace/http-platform/errors"
+import {
+  AppError,
+  assertExhaustiveHttpResult,
+} from "@workspace/http-platform/errors"
 
 import type { ResourceLibraryError } from "#resource-library/domain/resource-library-error"
 
@@ -61,6 +64,8 @@ export function mapResourceLibraryError(error: ResourceLibraryError): AppError {
               : 400,
       })
   }
+
+  return assertExhaustiveHttpResult(error)
 }
 
 export function preconditionRequiredResourceLibraryError(): AppError {

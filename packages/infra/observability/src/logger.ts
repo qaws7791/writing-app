@@ -60,7 +60,7 @@ export function createChildLogger(
   logger: AppLogger,
   bindings: Readonly<Record<string, unknown>>
 ): AppLogger {
-  return logger.child(bindings)
+  return logger.child(redactValue(bindings) as Record<string, unknown>)
 }
 
 function redactLogObject(object: object): Record<string, unknown> {
@@ -81,7 +81,22 @@ function redactValue(value: unknown, key = ""): unknown {
 }
 
 function isSensitiveKey(key: string): boolean {
-  return /(?:secret|password|credential|session.?token|raw.?answer|answer.?text|email|ip.?address|user.?agent)/iu.test(
-    key
-  )
+  const normalized = key.replaceAll(/[^a-z0-9]/giu, "").toLowerCase()
+
+  return [
+    "answertext",
+    "authorization",
+    "clientip",
+    "cookie",
+    "credential",
+    "email",
+    "ipaddress",
+    "password",
+    "rawanswer",
+    "remoteip",
+    "secret",
+    "session",
+    "token",
+    "useragent",
+  ].some((sensitivePart) => normalized.includes(sensitivePart))
 }

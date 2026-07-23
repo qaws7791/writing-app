@@ -56,6 +56,8 @@ describe("identity HTTP interface", () => {
     })
 
     expect(response.status).toBe(403)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     await expect(response.json()).resolves.toMatchObject({ code: "FORBIDDEN" })
   })
 
@@ -107,14 +109,15 @@ describe("identity learner HTTP interface", () => {
   it("unauthenticated와 suspended 제품 identity를 각각 401·403으로 거절한다", async () => {
     const app = createLearnerIdentityHttpFixture()
 
-    expect((await app.request("/profile")).status).toBe(401)
-    expect(
-      (
-        await app.request("/profile", {
-          headers: { Cookie: "learner=suspended" },
-        })
-      ).status
-    ).toBe(403)
+    const unauthenticated = await app.request("/profile")
+    const suspended = await app.request("/profile", {
+      headers: { Cookie: "learner=suspended" },
+    })
+
+    expect(unauthenticated.status).toBe(401)
+    expect(suspended.status).toBe(403)
+    expect(suspended.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(suspended.headers.get("Vary")).toContain("Cookie")
   })
 
   it("active 제품 identity의 session과 profile 응답을 canonical schema로 반환한다", async () => {

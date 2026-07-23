@@ -142,10 +142,13 @@ export function createTestDependencies(
     async resolveLearner(headers: Headers) {
       const session = await sessionResolver.resolveSession(headers)
       if (session === null) return null
-      if (session.user.status !== "active") return { kind: "inactive" as const }
+      const learnerId = learnerIdSchema.parse(session.user.id)
+      if (session.user.status !== "active") {
+        return { kind: "inactive" as const, learnerId }
+      }
       return {
         kind: "active" as const,
-        learnerId: learnerIdSchema.parse(session.user.id),
+        learnerId,
       }
     },
   }

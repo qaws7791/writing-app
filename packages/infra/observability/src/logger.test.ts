@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createAppLogger, shouldUsePrettyLogging } from "#observability/logger"
+import {
+  createAppLogger,
+  createChildLogger,
+  shouldUsePrettyLogging,
+} from "#observability/logger"
 import { shutdownLogger } from "#observability/lifecycle"
 import { createRequestLogger } from "#observability/request-logger"
 
@@ -8,9 +12,11 @@ type LogRecord = {
   readonly adminId?: string
   readonly audience?: "admin" | "learner"
   readonly durationMs?: number
+  readonly errorClass?: "client-error" | "server-error"
   readonly level: number
   readonly method?: string
   readonly msg: string
+  readonly outcome?: "failed" | "succeeded"
   readonly path?: string
   readonly requestId?: string
   readonly status?: number
@@ -83,6 +89,7 @@ describe("logger", () => {
       audience: "learner",
       durationMs: 12,
       method: "GET",
+      outcome: "succeeded",
       path: "/courses",
       requestId: "r1",
       status: 200,
@@ -93,6 +100,7 @@ describe("logger", () => {
       durationMs: 12,
       method: "GET",
       msg: "request.completed",
+      outcome: "succeeded",
       path: "/courses",
       requestId: "r1",
       status: 200,
@@ -110,6 +118,7 @@ describe("logger", () => {
       audience: "learner",
       durationMs: 15,
       method: "GET",
+      outcome: "succeeded",
       path: "/profile",
       requestId: "r2",
       status: 200,
@@ -151,6 +160,40 @@ describe("logger", () => {
       },
       secret: "[REDACTED]",
     })
+  })
+
+  it("대소문자·구분자·배열 위치와 child binding에 관계없이 민감 key를 가린다", () => {
+    const { records, stream } = createMemoryLogStream()
+    const logger = createChildLogger(createAppLogger({ stream }), {
+      "Refresh-Token": "child-token",
+    })
+
+    logger.info({
+      headers: {
+        Authorization: "Bearer credential",
+        Cookie: "session=credential",
+      },
+      nested: [
+        {
+          client_IP: "203.0.113.1",
+          raw_answer: "원문 답안",
+          SESSION: "session-value",
+        },
+      ],
+    })
+
+    const serialized = JSON.stringify(records[0])
+    for (const sensitiveValue of [
+      "child-token",
+      "Bearer credential",
+      "session=credential",
+      "203.0.113.1",
+      "원문 답안",
+      "session-value",
+    ]) {
+      expect(serialized).not.toContain(sensitiveValue)
+    }
+    expect(serialized.match(/\[REDACTED\]/gu)?.length).toBeGreaterThanOrEqual(6)
   })
 
   it("flush 실패를 관측하고 shutdown close를 계속 수행한다", async () => {

@@ -3,7 +3,10 @@ import { defineRouteForEnv } from "@workspace/http-platform/core"
 import type { HttpPlatformEnv } from "@workspace/http-platform/context"
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import { AppError } from "@workspace/http-platform/errors"
-import { withPrivateNoStore } from "@workspace/http-platform/security"
+import {
+  setPrivateNoStoreHeaders,
+  withPrivateNoStore,
+} from "@workspace/http-platform/security"
 import {
   learnerProfileResponseSchema,
   learnerSessionResponseSchema,
@@ -84,6 +87,7 @@ export function createRequireActiveLearnerSessionMiddleware(
   sessionResolver: SessionResolver
 ): MiddlewareHandler<IdentityLearnerHonoEnv> {
   return async (context, next) => {
+    setPrivateNoStoreHeaders(context)
     const session = await sessionResolver.resolveSession(
       context.req.raw.headers
     )
@@ -94,6 +98,8 @@ export function createRequireActiveLearnerSessionMiddleware(
         status: 401,
       })
     }
+    context.set("activeSession", session)
+    context.set("requestActor", { id: session.user.id, type: "learner" })
     if (session.user.status !== "active") {
       throw new AppError({
         code: "FORBIDDEN",
@@ -102,7 +108,6 @@ export function createRequireActiveLearnerSessionMiddleware(
       })
     }
 
-    context.set("activeSession", session)
     await next()
     context.res = withPrivateNoStore(context.res)
   }

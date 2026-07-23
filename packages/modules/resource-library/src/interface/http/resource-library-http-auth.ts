@@ -1,7 +1,10 @@
 import type { MiddlewareHandler } from "hono"
 import type { HttpPlatformEnv } from "@workspace/http-platform/context"
 import { AppError } from "@workspace/http-platform/errors"
-import { withPrivateNoStore } from "@workspace/http-platform/security"
+import {
+  setPrivateNoStoreHeaders,
+  withPrivateNoStore,
+} from "@workspace/http-platform/security"
 
 import type { ResourceAdminSessionPort } from "#resource-library/application/ports/resource-library-ports"
 import {
@@ -26,13 +29,15 @@ function createRequireResourceLibrarySessionMiddleware(
   sessionPort: ResourceAdminSessionPort
 ): MiddlewareHandler<ResourceLibraryHonoEnv> {
   return async (context, next) => {
+    setPrivateNoStoreHeaders(context)
     const actor = await sessionPort.resolveActor(context.req.raw.headers)
     if (actor === null) throw unauthorizedResourceLibraryError()
+    context.set("resourceActor", actor)
+    context.set("requestActor", { id: actor.id, type: "admin" })
     if (authorizeResourceAccess(actor) === "forbidden") {
       throw forbiddenResourceLibraryError()
     }
 
-    context.set("resourceActor", actor)
     await next()
     context.res = withPrivateNoStore(context.res)
   }

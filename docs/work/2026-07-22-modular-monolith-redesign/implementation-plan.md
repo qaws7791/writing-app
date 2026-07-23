@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12 완료, P13 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13 완료, P14 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -60,7 +60,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P10. API composition root와 lifecycle을 완성한다. 증거: [P10 구현 증거](./p10-validation.md)
 - [x] P11. 통합 schema, migration과 seed 경계를 완성한다. 증거: [P11 구현 증거](./p11-validation.md)
 - [x] P12. web, admin과 Storybook 소비 경계를 전환한다. 증거: [P12 구현 증거](./p12-validation.md)
-- [ ] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다.
+- [x] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다. 증거: [P13 구현 증거](./p13-validation.md)
 - [ ] P14. 배포·운영 automation을 새 경로에 맞춘다.
 - [ ] P15. 이전 구조와 모든 임시 호환 계층을 제거한다.
 - [ ] P16. 전체 품질·복구·사용자 흐름 검증을 완료한다.
@@ -793,48 +793,48 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 17.1 오류와 결정성
 
-- [ ] P13-001 domain의 예상 가능한 실패가 모두 `Result` union인지 검사한다. 증거:
-- [ ] P13-002 application의 async 실패가 모두 `ResultAsync` 또는 명시적 Result variant인지 검사한다. 증거:
-- [ ] P13-003 infrastructure exception이 typed error로 변환되는지 검사한다. 증거:
-- [ ] P13-004 HTTP Result mapping의 switch가 exhaustive한지 typecheck fixture로 검증한다. 증거:
-- [ ] P13-005 expected failure를 `null`, 빈 배열과 generic success boolean으로 병합하지 않는지 검사한다. 증거:
-- [ ] P13-006 domain·application의 직접 시간·ID 생성을 0개로 만든다. 증거:
-- [ ] P13-007 mutable aggregate와 mutable event payload를 0개로 만든다. 증거:
-- [ ] P13-008 범용 JSON stringify equality를 domain value object에서 사용하지 않는지 검사한다. 증거:
+- [x] P13-001 domain의 예상 가능한 실패가 모두 `Result` union인지 검사한다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
+- [x] P13-002 application의 async 실패가 모두 `ResultAsync` 또는 명시적 Result variant인지 검사한다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
+- [x] P13-003 infrastructure exception이 typed error로 변환되는지 검사한다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
+- [x] P13-004 HTTP Result mapping의 switch가 exhaustive한지 typecheck fixture로 검증한다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
+- [x] P13-005 expected failure를 `null`, 빈 배열과 generic success boolean으로 병합하지 않는지 검사한다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
+- [x] P13-006 domain·application의 직접 시간·ID 생성을 0개로 만든다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
+- [x] P13-007 mutable aggregate와 mutable event payload를 0개로 만든다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
+- [x] P13-008 범용 JSON stringify equality를 domain value object에서 사용하지 않는지 검사한다. 증거: [오류와 결정성](./p13-validation.md#오류와-결정성)
 
 ### 17.2 인증·인가와 browser security
 
-- [ ] P13-009 learner와 admin credential, cookie와 session lifecycle 분리를 회귀 검증한다. 증거:
-- [ ] P13-010 공개 admin signup이 존재하지 않는지 검증한다. 증거:
-- [ ] P13-011 모든 protected read·write가 server authorization을 통과하는지 route inventory로 검증한다. 증거:
-- [ ] P13-012 role, credential와 user status 변경 시 session 폐기 영향을 검증한다. 증거:
-- [ ] P13-013 reverse proxy가 정제한 client IP만 rate-limit 입력으로 신뢰하게 한다. 증거:
-- [ ] P13-014 auth, operations와 ai-feedback rate-limit owner가 겹치지 않는지 검증한다. 증거:
-- [ ] P13-015 CORS, trusted origin, Host, cookie, CSRF, CSP와 no-store를 통합 검토한다. 증거:
-- [ ] P13-016 public error에 stack, SQL, provider 원문, credential과 개인정보가 없는지 fuzz·fixture로 검증한다. 증거:
+- [x] P13-009 learner와 admin credential, cookie와 session lifecycle 분리를 회귀 검증한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
+- [x] P13-010 공개 admin signup이 존재하지 않는지 검증한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
+- [x] P13-011 모든 protected read·write가 server authorization을 통과하는지 route inventory로 검증한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
+- [x] P13-012 role, credential와 user status 변경 시 session 폐기 영향을 검증한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
+- [x] P13-013 reverse proxy가 정제한 client IP만 rate-limit 입력으로 신뢰하게 한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
+- [x] P13-014 auth, operations와 ai-feedback rate-limit owner가 겹치지 않는지 검증한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
+- [x] P13-015 CORS, trusted origin, Host, cookie, CSRF, CSP와 no-store를 통합 검토한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
+- [x] P13-016 public error에 stack, SQL, provider 원문, credential과 개인정보가 없는지 fuzz·fixture로 검증한다. 증거: [인증·인가와 browser security](./p13-validation.md#인증인가와-browser-security)
 
 ### 17.3 AI·storage·event 안전성
 
-- [ ] P13-017 AI provider에 필요한 최소 텍스트만 전달되는지 검증한다. 증거:
-- [ ] P13-018 prompt, 원문 답안과 provider response가 기본 log에 남지 않는지 검증한다. 증거:
-- [ ] P13-019 모든 provider call에 timeout과 AbortSignal이 적용되는지 검증한다. 증거:
-- [ ] P13-020 transaction 안에서 OpenAI 또는 R2를 기다리는 경로를 0개로 만든다. 증거:
-- [ ] P13-021 R2 upload·delete compensation과 reconciliation이 멱등 key를 유지하는지 검증한다. 증거:
-- [ ] P13-022 event가 DB commit 이후에만 publish되는지 application test로 검증한다. 증거:
-- [ ] P13-023 listener 순서 의존과 `emitSerial` 사용을 0개로 만든다. 증거:
-- [ ] P13-024 event dispatch 실패가 이미 commit된 상태를 rollback으로 오표현하지 않는지 검증한다. 증거:
-- [ ] P13-025 in-memory event 기반 권위 projection을 0개로 만든다. 증거:
+- [x] P13-017 AI provider에 필요한 최소 텍스트만 전달되는지 검증한다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-018 prompt, 원문 답안과 provider response가 기본 log에 남지 않는지 검증한다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-019 모든 provider call에 timeout과 AbortSignal이 적용되는지 검증한다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-020 transaction 안에서 OpenAI 또는 R2를 기다리는 경로를 0개로 만든다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-021 R2 upload·delete compensation과 reconciliation이 멱등 key를 유지하는지 검증한다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-022 event가 DB commit 이후에만 publish되는지 application test로 검증한다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-023 listener 순서 의존과 `emitSerial` 사용을 0개로 만든다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-024 event dispatch 실패가 이미 commit된 상태를 rollback으로 오표현하지 않는지 검증한다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
+- [x] P13-025 in-memory event 기반 권위 projection을 0개로 만든다. 증거: [AI·storage·event 안전성](./p13-validation.md#aistorageevent-안전성)
 
 ### 17.4 관측성과 운영
 
-- [ ] P13-026 request log에 request ID, audience, actor type, 결과, duration과 오류 분류를 포함한다. 증거:
-- [ ] P13-027 owner mutation, auth failure, authorization denial과 AI quota를 security audit event로 남긴다. 증거:
-- [ ] P13-028 event·provider·storage와 reconciliation 실패를 분류해 기록한다. 증거:
-- [ ] P13-029 secret·credential·session·원문 답안 redaction test를 통과시킨다. 증거:
-- [ ] P13-030 health에서 DB readiness와 사용자 영향 판단 신호를 확인한다. 증거:
-- [ ] P13-031 shutdown에서 request drain, unsubscribe, AI, DB와 log flush 순서를 확인한다. 증거:
-- [ ] P13-032 OpenTelemetry·Sentry·새 dashboard를 owner·보존·비용 결정 없이 추가하지 않았는지 확인한다. 증거:
-- [ ] P13-033 P13 게이트: security, failure-path, audit, health와 shutdown test가 통과한다. 증거:
+- [x] P13-026 request log에 request ID, audience, actor type, 결과, duration과 오류 분류를 포함한다. 증거: [관측성과 운영](./p13-validation.md#관측성과-운영)
+- [x] P13-027 owner mutation, auth failure, authorization denial과 AI quota를 security audit event로 남긴다. 증거: [관측성과 운영](./p13-validation.md#관측성과-운영)
+- [x] P13-028 event·provider·storage와 reconciliation 실패를 분류해 기록한다. 증거: [관측성과 운영](./p13-validation.md#관측성과-운영)
+- [x] P13-029 secret·credential·session·원문 답안 redaction test를 통과시킨다. 증거: [관측성과 운영](./p13-validation.md#관측성과-운영)
+- [x] P13-030 health에서 DB readiness와 사용자 영향 판단 신호를 확인한다. 증거: [관측성과 운영](./p13-validation.md#관측성과-운영)
+- [x] P13-031 shutdown에서 request drain, unsubscribe, AI, DB와 log flush 순서를 확인한다. 증거: [관측성과 운영](./p13-validation.md#관측성과-운영)
+- [x] P13-032 OpenTelemetry·Sentry·새 dashboard를 owner·보존·비용 결정 없이 추가하지 않았는지 확인한다. 증거: [관측성과 운영](./p13-validation.md#관측성과-운영)
+- [x] P13-033 P13 게이트: security, failure-path, audit, health와 shutdown test가 통과한다. 증거: [자동 검증](./p13-validation.md#자동-검증)
 
 ## 18. P14 — 배포·운영 automation 경로 전환
 

@@ -44,7 +44,9 @@ export function createDrizzleAiFeedbackRepository(
           )
           .returning({ id: aiFeedbackAttempts.id })
           .get()
-        return ok(updated !== undefined)
+        return ok({
+          kind: updated === undefined ? "not-pending" : "transitioned",
+        })
       } catch (cause) {
         return err(persistenceError("fail-attempt", cause))
       }
@@ -66,7 +68,9 @@ export function createDrizzleAiFeedbackRepository(
           )
           .returning({ id: aiFeedbackAttempts.id })
           .get()
-        return ok(updated !== undefined)
+        return ok({
+          kind: updated === undefined ? "not-pending" : "transitioned",
+        })
       } catch (cause) {
         return err(persistenceError("succeed-attempt", cause))
       }

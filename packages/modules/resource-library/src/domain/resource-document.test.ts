@@ -29,8 +29,10 @@ const document: ResourceDocument = Object.freeze({
 
 describe("resource document version policy", () => {
   it("현재 ETag version만 허용하고 stale version에는 최신 문서를 포함한다", () => {
-    expect(validateResourceDocumentVersion(document, 3)).toBeNull()
-    expect(validateResourceDocumentVersion(document, 2)).toEqual({
+    expect(validateResourceDocumentVersion(document, 3).isOk()).toBe(true)
+    expect(
+      validateResourceDocumentVersion(document, 2)._unsafeUnwrapErr()
+    ).toEqual({
       document,
       kind: "resource-conflict",
       reason: "stale-version",

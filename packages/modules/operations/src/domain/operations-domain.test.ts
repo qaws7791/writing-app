@@ -13,6 +13,10 @@ import {
   type AiChangeProposal,
 } from "#operations/domain/ai-change-proposal"
 import { decideAiRequestLimit } from "#operations/domain/ai-request-limit"
+import {
+  validateLegalDocument,
+  validateNoticeDocument,
+} from "#operations/domain/operations-settings"
 
 const adminId = "admin-1" as AdminId
 const proposal: AiChangeProposal = {
@@ -86,6 +90,21 @@ describe("operations domain", () => {
       kind: "rejected",
       reason: "admin-minute",
       retryAfterSeconds: 31,
+    })
+  })
+
+  it("운영 문서 검증을 null이 아닌 명시적 decision으로 반환한다", () => {
+    expect(
+      validateNoticeDocument({ announce: "공지", banner: "배너" })
+    ).toEqual({ kind: "valid" })
+    expect(
+      validateLegalDocument({ privacy: "개인정보", terms: "x".repeat(100_001) })
+    ).toEqual({
+      error: {
+        kind: "validation-failed",
+        reason: "legal-document-too-long",
+      },
+      kind: "invalid",
     })
   })
 })

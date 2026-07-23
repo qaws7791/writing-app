@@ -42,6 +42,9 @@ export function composeOperationsModule(
     database: input.database,
     knowledge: createOperationsKnowledgePort(input.resourceLibrary),
     proposalIdGenerator: input.proposalIdGenerator,
+    providerFailureObserver(event) {
+      input.logger.warn(event, "operations.ai.provider_failed")
+    },
     reporting: {
       content: input.content.operationsReportingQuery,
       identity: input.identity.operationsReportingQuery,

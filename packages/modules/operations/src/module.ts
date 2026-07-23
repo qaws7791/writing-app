@@ -24,6 +24,7 @@ import type {
   OperationsAdminSessionPort,
   OperationsAiKnowledgePort,
   OperationsClock,
+  OperationsProviderFailureObserver,
   OperationsReportingFailureObserver,
   OperationsReportingPorts,
   OperationsSecurityAuditPort,
@@ -62,6 +63,7 @@ export function createOperationsModule(
     database: WritingAppDatabase
     knowledge: OperationsAiKnowledgePort
     proposalIdGenerator: IdGenerator<AiChangeProposalId>
+    providerFailureObserver: OperationsProviderFailureObserver
     reporting: OperationsReportingPorts
     reportingFailureObserver: OperationsReportingFailureObserver
     target: AiChangeTargetPort
@@ -88,6 +90,7 @@ export function createOperationsModule(
   const streaming = createAiStreamingApplication({
     clock: input.clock,
     provider: managedProvider?.provider ?? null,
+    providerFailureObserver: input.providerFailureObserver,
     repository: conversationRepository,
   })
   const reporting = createOperationsReportingQueries({

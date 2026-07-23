@@ -59,13 +59,6 @@ function createMiddleware(
       observeRequest: createSecurityAuditRequestObserver(
         dependencies.securityAuditLogger
       ),
-      readActor(context) {
-        const session = context.get("activeSession")
-
-        return session === undefined
-          ? undefined
-          : { id: session.user.id, type: "learner" }
-      },
       readMonotonicTimeMs:
         dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
     }),

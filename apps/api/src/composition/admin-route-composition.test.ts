@@ -15,7 +15,9 @@ import { createAdminApp } from "@/http/admin-app"
 import { createAppLogger } from "@workspace/observability/logger"
 import {
   expectedOpenApiRouteKeys,
+  expectedProtectedOpenApiRouteKeys,
   readOpenApiRouteKeys,
+  readProtectedOpenApiRouteKeys,
 } from "@/test-support/p10-route-parity"
 
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
@@ -99,6 +101,9 @@ describe("관리자 capability route composition", () => {
       expect(readOpenApiRouteKeys(document)).toEqual(
         expectedOpenApiRouteKeys("admin")
       )
+      expect(
+        readProtectedOpenApiRouteKeys(document, "adminSessionCookie")
+      ).toEqual(expectedProtectedOpenApiRouteKeys("admin"))
     } finally {
       databaseClient.close()
     }

@@ -67,8 +67,9 @@ describe("AI feedback HTTP interface", () => {
   })
 
   it("unauthenticated와 inactive learner를 application 호출 전에 거절한다", async () => {
+    const requestActors: unknown[] = []
     const requestFeedback = vi.fn(async () => ok(successResult))
-    const app = createFixture({ requestFeedback })
+    const app = createFixture({ requestFeedback }, undefined, requestActors)
 
     const unauthenticated = await app.request(path, {
       headers: { "Idempotency-Key": "request-1" },
@@ -84,7 +85,13 @@ describe("AI feedback HTTP interface", () => {
 
     expect(unauthenticated.status).toBe(401)
     expect(inactive.status).toBe(403)
+    expect(inactive.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(inactive.headers.get("Vary")).toContain("Cookie")
     expect(requestFeedback).not.toHaveBeenCalled()
+    expect(requestActors[1]).toMatchObject({
+      id: "learner-1",
+      type: "learner",
+    })
   })
 
   it("idempotency key가 없으면 application 호출 전에 400으로 거절한다", async () => {
@@ -155,15 +162,31 @@ function createFixture(
     async resolveLearner(headers) {
       const cookie = headers.get("Cookie")
       if (cookie === null) return null
-      if (cookie === "learner=inactive") return { kind: "inactive" }
+      const learnerId = learnerIdSchema.parse("learner-1")
+      if (cookie === "learner=inactive") return { kind: "inactive", learnerId }
       return {
         kind: "active",
-        learnerId: learnerIdSchema.parse("learner-1"),
+        learnerId,
       }
     },
-  }
+  },
+  requestActors?: unknown[]
 ) {
-  return createApp({ routes: createAiFeedbackRoutes({ command, session }) })
+  return createApp({
+    middleware:
+      requestActors === undefined
+        ? []
+        : [
+            async (context, next) => {
+              try {
+                await next()
+              } finally {
+                requestActors.push(context.get("requestActor"))
+              }
+            },
+          ],
+    routes: createAiFeedbackRoutes({ command, session }),
+  })
 }
 
 function request(app: ReturnType<typeof createFixture>) {

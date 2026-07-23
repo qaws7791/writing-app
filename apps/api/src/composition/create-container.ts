@@ -434,10 +434,13 @@ function createLearningLearnerSessionPort(sessionResolver: SessionResolver) {
     async resolveLearner(headers: Headers) {
       const session = await sessionResolver.resolveSession(headers)
       if (session === null) return null
-      if (session.user.status !== "active") return { kind: "inactive" as const }
+      const learnerId = learnerIdSchema.parse(session.user.id)
+      if (session.user.status !== "active") {
+        return Object.freeze({ kind: "inactive" as const, learnerId })
+      }
       return Object.freeze({
         kind: "active" as const,
-        learnerId: learnerIdSchema.parse(session.user.id),
+        learnerId,
       })
     },
   })

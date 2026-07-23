@@ -1,5 +1,6 @@
 import { and, asc, eq, getTableColumns, isNull, ne, sql } from "drizzle-orm"
 import type { WritingAppDatabase } from "@workspace/db/client"
+import { err, ok } from "@workspace/kernel/result"
 
 import type {
   ResourceCommandResult,
@@ -64,32 +65,41 @@ export function createDrizzleResourceTreeRepository(
       return preparePermanentDelete(database, input)
     },
     async readPendingAssetDeletions(limit) {
-      return database
-        .select({
-          assetId: adminResourceAssets.id,
-          deleteRootId: adminResourceAssets.deleteRootId,
-          objectKey: adminResourceAssets.objectKey,
-          requestedAt: adminResourceAssets.deleteRequestedAt,
-        })
-        .from(adminResourceAssets)
-        .where(eq(adminResourceAssets.status, "delete-pending"))
-        .orderBy(
-          asc(adminResourceAssets.deleteRequestedAt),
-          asc(adminResourceAssets.id)
+      try {
+        return ok(
+          database
+            .select({
+              assetId: adminResourceAssets.id,
+              deleteRootId: adminResourceAssets.deleteRootId,
+              objectKey: adminResourceAssets.objectKey,
+              requestedAt: adminResourceAssets.deleteRequestedAt,
+            })
+            .from(adminResourceAssets)
+            .where(eq(adminResourceAssets.status, "delete-pending"))
+            .orderBy(
+              asc(adminResourceAssets.deleteRequestedAt),
+              asc(adminResourceAssets.id)
+            )
+            .limit(limit)
+            .all()
+            .map((row) => {
+              if (row.deleteRootId === null || row.requestedAt === null) {
+                throw new Error("삭제 대기 자산 상태가 올바르지 않습니다.")
+              }
+              return Object.freeze({
+                assetId: readResourceAssetId(row.assetId),
+                deleteRootId: readResourceNodeId(row.deleteRootId),
+                objectKey: row.objectKey,
+                requestedAt: row.requestedAt,
+              })
+            })
         )
-        .limit(limit)
-        .all()
-        .map((row) => {
-          if (row.deleteRootId === null || row.requestedAt === null) {
-            throw new Error("삭제 대기 자산 상태가 올바르지 않습니다.")
-          }
-          return Object.freeze({
-            assetId: readResourceAssetId(row.assetId),
-            deleteRootId: readResourceNodeId(row.deleteRootId),
-            objectKey: row.objectKey,
-            requestedAt: row.requestedAt,
-          })
+      } catch {
+        return err({
+          kind: "resource-reconciliation-persistence-failed",
+          operation: "read-pending-asset-deletions",
         })
+      }
     },
     async readSubtree(nodeId) {
       return readResourceSubtree(database, nodeId)

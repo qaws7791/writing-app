@@ -45,6 +45,13 @@ export const adminHealthResponseSchema = z.object({
   service: z.literal("api"),
 })
 
+export const adminReadinessResponseSchema = z.object({
+  checks: z.object({ database: z.enum(["ready", "unavailable"]) }),
+  impact: z.enum(["database-dependent-requests-unavailable", "none"]),
+  ok: z.boolean(),
+  service: z.literal("api"),
+})
+
 export {
   eventStreamResponse,
   jsonResponse,

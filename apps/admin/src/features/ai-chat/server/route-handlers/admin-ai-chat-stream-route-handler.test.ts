@@ -64,6 +64,37 @@ describe("어드민 AI chat proxy", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it("Caddy가 정제한 전용 client IP만 upstream에 전달한다", async () => {
+    const fetchMock = vi.fn(
+      async (request: RequestInfo | URL, init?: RequestInit) => {
+        const resolvedRequest =
+          request instanceof Request ? request : new Request(request, init)
+        expect(resolvedRequest.headers.get("X-Writing-App-Client-IP")).toBe(
+          "203.0.113.7"
+        )
+        expect(resolvedRequest.headers.get("X-Forwarded-For")).toBeNull()
+        return new Response("data", {
+          headers: { "Content-Type": "text/event-stream" },
+        })
+      }
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    await POST(
+      new Request(`${localRuntimeDefaults.adminWebOrigin}/api/ai-chat/stream`, {
+        body: JSON.stringify({ message: "요청" }),
+        headers: {
+          "X-Forwarded-For": "198.51.100.1",
+          "X-Writing-App-Client-IP": "203.0.113.7",
+          Origin: localRuntimeDefaults.adminWebOrigin,
+        },
+        method: "POST",
+      })
+    )
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
   it("미인증 요청과 잘못된 body는 upstream 호출 전에 거절한다", async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal("fetch", fetchMock)

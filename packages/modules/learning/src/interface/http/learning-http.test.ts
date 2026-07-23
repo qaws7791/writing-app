@@ -33,7 +33,8 @@ const learning = {
 
 describe("learning HTTP interface", () => {
   it("unauthenticated와 inactive learner를 query 호출 전에 거절한다", async () => {
-    const fixture = createFixture()
+    const requestActors: unknown[] = []
+    const fixture = createFixture({}, requestActors)
 
     const unauthenticated = await fixture.app.request("/courses")
     const inactive = await fixture.app.request("/courses", {
@@ -42,7 +43,13 @@ describe("learning HTTP interface", () => {
 
     expect(unauthenticated.status).toBe(401)
     expect(inactive.status).toBe(403)
+    expect(inactive.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(inactive.headers.get("Vary")).toContain("Cookie")
     expect(fixture.queries.content.listCourses).not.toHaveBeenCalled()
+    expect(requestActors[1]).toMatchObject({
+      id: "learner-1",
+      type: "learner",
+    })
   })
 
   it("잘못된 transition body를 application 호출 전에 400으로 거절한다", async () => {
@@ -141,7 +148,7 @@ type Overrides = Readonly<{
   getLesson?: LearningQueries["content"]["getLesson"]
 }>
 
-function createFixture(overrides: Overrides = {}) {
+function createFixture(overrides: Overrides = {}, requestActors?: unknown[]) {
   const application: LearningApplication = {
     answerStep: vi.fn(async () =>
       ok({ evaluation: null, kind: "advanced" as const, learning })
@@ -175,7 +182,7 @@ function createFixture(overrides: Overrides = {}) {
     async resolveLearner(headers) {
       const cookie = headers.get("Cookie")
       if (cookie === null) return null
-      if (cookie === "learner=inactive") return { kind: "inactive" }
+      if (cookie === "learner=inactive") return { kind: "inactive", learnerId }
       return { kind: "active", learnerId }
     },
   }
@@ -188,5 +195,24 @@ function createFixture(overrides: Overrides = {}) {
     session,
   })
 
-  return { app: createApp({ routes }), application, queries, routes }
+  return {
+    app: createApp({
+      middleware:
+        requestActors === undefined
+          ? []
+          : [
+              async (context, next) => {
+                try {
+                  await next()
+                } finally {
+                  requestActors.push(context.get("requestActor"))
+                }
+              },
+            ],
+      routes,
+    }),
+    application,
+    queries,
+    routes,
+  }
 }

@@ -1,7 +1,10 @@
 import type { MiddlewareHandler } from "hono"
 import type { HttpPlatformEnv } from "@workspace/http-platform/context"
 import { AppError } from "@workspace/http-platform/errors"
-import { withPrivateNoStore } from "@workspace/http-platform/security"
+import {
+  setPrivateNoStoreHeaders,
+  withPrivateNoStore,
+} from "@workspace/http-platform/security"
 
 import type { OperationsAdminSessionPort } from "#operations/application/ports/operations-ports"
 import type { OperationsActor } from "#operations/domain/operations-actor"
@@ -23,6 +26,7 @@ function createSessionMiddleware(
   sessionPort: OperationsAdminSessionPort
 ): MiddlewareHandler<OperationsHonoEnv> {
   return async (context, next) => {
+    setPrivateNoStoreHeaders(context)
     const actor = await sessionPort.resolveActor(context.req.raw.headers)
     if (actor === null) {
       throw new AppError({
@@ -32,6 +36,11 @@ function createSessionMiddleware(
       })
     }
     context.set("operationsActor", actor)
+    context.set("requestActor", {
+      id: actor.id,
+      ...(actor.settingsMutation === "allowed" ? { role: "owner" } : {}),
+      type: "admin",
+    })
     await next()
     context.res = withPrivateNoStore(context.res)
   }

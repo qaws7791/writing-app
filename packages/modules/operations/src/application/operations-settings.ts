@@ -52,7 +52,7 @@ export function createOperationsSettingsApplication(
           return err({ kind: "permission-denied" } as const)
         }
         const validation = validateLegalDocument(input.document)
-        if (validation !== null) return err(validation)
+        if (validation.kind === "invalid") return err(validation.error)
         try {
           return ok(
             await repository.saveLegalDocument({
@@ -78,7 +78,7 @@ export function createOperationsSettingsApplication(
           return err({ kind: "permission-denied" } as const)
         }
         const validation = validateNoticeDocument(input.document)
-        if (validation !== null) return err(validation)
+        if (validation.kind === "invalid") return err(validation.error)
         try {
           return ok(
             await repository.saveNoticeDocument({

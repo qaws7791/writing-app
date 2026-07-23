@@ -1,6 +1,8 @@
 import type { AdminId, ConversationId } from "@workspace/types/ids"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 import type { AiQuotaRepository } from "#operations/application/ports/operations-ports"
+import type { OperationsError } from "#operations/domain/operations-error"
 
 export type AiRequestPermit =
   | Readonly<{ kind: "accepted"; release: () => void }>
@@ -18,7 +20,7 @@ export type AiRequestGuard = Readonly<{
       conversationId: ConversationId | null
       now: Date
     }>
-  ) => Promise<AiRequestPermit>
+  ) => Promise<Result<AiRequestPermit, OperationsError>>
 }>
 
 export function createAiRequestGuard(input: {
@@ -38,11 +40,11 @@ export function createAiRequestGuard(input: {
     async acquire(command) {
       const key = `${command.adminId}:${command.conversationId ?? "new"}`
       if (inFlight.has(key)) {
-        return {
+        return ok({
           kind: "rejected",
           reason: "in-flight",
           retryAfterSeconds: 1,
-        }
+        })
       }
       inFlight.add(key)
       let quota: Awaited<ReturnType<AiQuotaRepository["consume"]>>
@@ -53,24 +55,34 @@ export function createAiRequestGuard(input: {
           limits,
           now: command.now,
         })
-      } catch (error) {
+      } catch {
         inFlight.delete(key)
-        throw error
+        return err({
+          kind: "persistence-failed",
+          operation: "consume-ai-quota",
+        })
       }
-      if (quota.kind === "rejected") {
+      if (quota.isErr()) {
         inFlight.delete(key)
-        return quota
+        return err({
+          kind: "persistence-failed",
+          operation: quota.error.operation,
+        })
+      }
+      if (quota.value.kind === "rejected") {
+        inFlight.delete(key)
+        return ok(quota.value)
       }
 
       let released = false
-      return {
+      return ok({
         kind: "accepted",
         release() {
           if (released) return
           released = true
           inFlight.delete(key)
         },
-      }
+      })
     },
   })
 }

@@ -2,7 +2,10 @@ import type { RouteHandler } from "@hono/zod-openapi"
 import type { Env, Handler, Input, TypedResponse } from "hono"
 import type { AnyRouteConfig } from "@workspace/http-platform/core"
 import { defineRouteForEnv } from "@workspace/http-platform/core"
-import { AppError } from "@workspace/http-platform/errors"
+import {
+  AppError,
+  assertExhaustiveHttpResult,
+} from "@workspace/http-platform/errors"
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import {
   adminDeleteUserResultSchema,
@@ -263,6 +266,8 @@ function mapIdentityError(error: IdentityError): AppError {
         status: 503,
       })
   }
+
+  return assertExhaustiveHttpResult(error)
 }
 
 type AdminIdentityRouteHandler<TRoute extends AnyRouteConfig> =

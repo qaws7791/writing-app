@@ -1,6 +1,9 @@
 import type { MiddlewareHandler } from "hono"
 import { AppError } from "@workspace/http-platform/errors"
-import { withPrivateNoStore } from "@workspace/http-platform/security"
+import {
+  setPrivateNoStoreHeaders,
+  withPrivateNoStore,
+} from "@workspace/http-platform/security"
 import type { HttpPlatformEnv } from "@workspace/http-platform/context"
 
 import { authorizeOwnerMutation } from "#identity/domain/admin-role"
@@ -20,6 +23,7 @@ export function createRequireAdminSessionMiddleware(
   sessionResolver: AdminSessionResolver
 ): MiddlewareHandler<IdentityAdminHonoEnv> {
   return async (context, next) => {
+    setPrivateNoStoreHeaders(context)
     const session = await sessionResolver.resolveSession(
       context.req.raw.headers
     )
@@ -27,6 +31,11 @@ export function createRequireAdminSessionMiddleware(
 
     context.set("activeAdminSession", session)
     context.set("adminActor", toAdminActor(session))
+    context.set("requestActor", {
+      id: session.admin.id,
+      role: session.admin.role,
+      type: "admin",
+    })
     await next()
     context.res = withPrivateNoStore(context.res)
   }
@@ -36,18 +45,23 @@ export function createRequireOwnerAdminSessionMiddleware(
   sessionResolver: AdminSessionResolver
 ): MiddlewareHandler<IdentityAdminHonoEnv> {
   return async (context, next) => {
+    setPrivateNoStoreHeaders(context)
     const session = await sessionResolver.resolveSession(
       context.req.raw.headers
     )
     if (session === null) throw unauthorizedIdentityError()
 
     const actor = toAdminActor(session)
+    context.set("activeAdminSession", session)
+    context.set("adminActor", actor)
+    context.set("requestActor", {
+      id: actor.id,
+      role: actor.role,
+      type: "admin",
+    })
     if (authorizeOwnerMutation(actor) === "forbidden") {
       throw forbiddenIdentityError()
     }
-
-    context.set("activeAdminSession", session)
-    context.set("adminActor", actor)
     await next()
     context.res = withPrivateNoStore(context.res)
   }

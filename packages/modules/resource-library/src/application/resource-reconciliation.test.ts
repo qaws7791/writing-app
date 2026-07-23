@@ -44,13 +44,13 @@ describe("resource asset reconciliation", () => {
       storage: { deleteObjects, putObject: async () => ok({ url: "unused" }) },
       treeRepository: createResourceTreeRepositoryFake({
         completePermanentDelete,
-        readPendingAssetDeletions: async () => pending,
+        readPendingAssetDeletions: async () => ok(pending),
       }),
     })
 
-    await expect(reconciliation.dryRun.execute(10)).resolves.toEqual({
-      pending,
-    })
+    await expect(
+      reconciliation.dryRun.execute(10).then((result) => result._unsafeUnwrap())
+    ).resolves.toEqual({ pending })
     expect(deleteObjects).not.toHaveBeenCalled()
     expect(completePermanentDelete).not.toHaveBeenCalled()
   })
@@ -69,11 +69,15 @@ describe("resource asset reconciliation", () => {
       storage: { deleteObjects, putObject: async () => ok({ url: "unused" }) },
       treeRepository: createResourceTreeRepositoryFake({
         completePermanentDelete,
-        readPendingAssetDeletions: async () => pending,
+        readPendingAssetDeletions: async () => ok(pending),
       }),
     })
 
-    await expect(reconciliation.mutation.execute(10)).resolves.toEqual({
+    await expect(
+      reconciliation.mutation
+        .execute(10)
+        .then((result) => result._unsafeUnwrap())
+    ).resolves.toEqual({
       failedRootIds: [secondRoot],
       reconciledRootIds: [firstRoot],
     })
@@ -87,7 +91,109 @@ describe("resource asset reconciliation", () => {
     expect(observer).toHaveBeenCalledWith({
       kind: "resource-asset-delete-failed",
       objectKeys: ["root-2/asset-3.png"],
+      phase: "reconciliation",
+      retryable: true,
       rootId: secondRoot,
     })
+  })
+
+  it("object 삭제 뒤 metadata 완료 실패를 별도 reconciliation event로 분류한다", async () => {
+    const firstPending = pending[0]
+    if (firstPending === undefined) throw new Error("pending fixture is empty")
+    const observer = vi.fn()
+    const reconciliation = createResourceReconciliation({
+      assetAuditObserver: observer,
+      storage: {
+        deleteObjects: async () => ok(undefined),
+        putObject: async () => ok({ url: "unused" }),
+      },
+      treeRepository: createResourceTreeRepositoryFake({
+        completePermanentDelete: async () => ({
+          kind: "resource-persistence-failure",
+          operation: "complete-delete",
+        }),
+        readPendingAssetDeletions: async () => ok([firstPending]),
+      }),
+    })
+
+    await expect(
+      reconciliation.mutation
+        .execute(10)
+        .then((result) => result._unsafeUnwrap())
+    ).resolves.toEqual({
+      failedRootIds: [firstRoot],
+      reconciledRootIds: [],
+    })
+    expect(observer).toHaveBeenCalledWith({
+      kind: "resource-asset-reconciliation-failed",
+      objectKeys: ["root-1/asset-1.png"],
+      phase: "complete-metadata",
+      rootId: firstRoot,
+    })
+  })
+
+  it("pending 조회 실패를 typed result와 stable phase로 반환한다", async () => {
+    const observer = vi.fn()
+    const reconciliation = createResourceReconciliation({
+      assetAuditObserver: observer,
+      storage: null,
+      treeRepository: createResourceTreeRepositoryFake({
+        readPendingAssetDeletions: async () =>
+          Promise.reject(new Error("database-secret")),
+      }),
+    })
+
+    await expect(reconciliation.mutation.execute(10)).resolves.toEqual(
+      err({
+        kind: "resource-reconciliation-persistence-failed",
+        operation: "read-pending-asset-deletions",
+      })
+    )
+    expect(observer).toHaveBeenCalledWith({
+      kind: "resource-asset-reconciliation-failed",
+      phase: "read-pending",
+    })
+    expect(JSON.stringify(observer.mock.calls)).not.toContain("database-secret")
+  })
+
+  it("storage throw를 root별로 격리하고 다음 root reconciliation을 계속한다", async () => {
+    const observer = vi.fn()
+    const completePermanentDelete = vi.fn(async () => ({
+      kind: "ok" as const,
+      value: undefined,
+    }))
+    const reconciliation = createResourceReconciliation({
+      assetAuditObserver: observer,
+      storage: {
+        async deleteObjects(keys) {
+          if (keys[0]?.startsWith("root-1/")) {
+            throw new Error("storage-secret")
+          }
+          return ok(undefined)
+        },
+        putObject: async () => ok({ url: "unused" }),
+      },
+      treeRepository: createResourceTreeRepositoryFake({
+        completePermanentDelete,
+        readPendingAssetDeletions: async () => ok(pending),
+      }),
+    })
+
+    await expect(
+      reconciliation.mutation
+        .execute(10)
+        .then((result) => result._unsafeUnwrap())
+    ).resolves.toEqual({
+      failedRootIds: [firstRoot],
+      reconciledRootIds: [secondRoot],
+    })
+    expect(observer).toHaveBeenCalledWith({
+      kind: "resource-asset-delete-failed",
+      objectKeys: ["root-1/asset-1.png", "root-1/asset-2.png"],
+      phase: "reconciliation",
+      retryable: true,
+      rootId: firstRoot,
+    })
+    expect(JSON.stringify(observer.mock.calls)).not.toContain("storage-secret")
   })
 })

@@ -505,6 +505,7 @@ verifyP9OperationsOwnership()
 verifyP10ApiCompositionOwnership()
 verifyP11SchemaOwnership()
 verifyP12FrontendOwnership()
+verifyP13RuntimeSafety()
 verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
@@ -1611,6 +1612,335 @@ function verifyP12FrontendOwnership(): void {
         `apps/storybook/package.json -> Storybook 내부 dependency ${dependency} 금지`
       )
     }
+  }
+}
+
+function verifyP13RuntimeSafety(): void {
+  const rateLimitOwners = [
+    {
+      root: "packages/infra/auth/src",
+      tables: ["admin_auth_rate_limit", "auth_rate_limit"],
+    },
+    {
+      root: "packages/modules/ai-feedback/src",
+      tables: ["ai_feedback_attempts"],
+    },
+    {
+      root: "packages/modules/operations/src",
+      tables: ["operations_ai_quota_counters"],
+    },
+  ] as const
+
+  for (const owner of rateLimitOwners) {
+    const ownerSources = collectSourceFiles(
+      path.join(repositoryRoot, owner.root)
+    )
+      .filter(
+        (filePath) => !/\.(?:spec|test|typecheck)\.[jt]sx?$/u.test(filePath)
+      )
+      .map((filePath) => fs.readFileSync(filePath, "utf8"))
+      .join("\n")
+
+    for (const table of owner.tables) {
+      const tableNamePattern = new RegExp(`\\b${table}\\b`, "u")
+      if (!tableNamePattern.test(ownerSources)) {
+        failures.push(`${owner.root} -> rate-limit owner table ${table} 누락`)
+      }
+    }
+    for (const foreignOwner of rateLimitOwners) {
+      if (foreignOwner.root === owner.root) continue
+      for (const foreignTable of foreignOwner.tables) {
+        const foreignTableNamePattern = new RegExp(`\\b${foreignTable}\\b`, "u")
+        if (foreignTableNamePattern.test(ownerSources)) {
+          failures.push(
+            `${owner.root} -> 다른 rate-limit owner table ${foreignTable} 접근 금지`
+          )
+        }
+      }
+    }
+  }
+
+  const moduleRoot = path.join(repositoryRoot, "packages/modules")
+  for (const moduleEntry of fs.readdirSync(moduleRoot, {
+    withFileTypes: true,
+  })) {
+    if (!moduleEntry.isDirectory()) continue
+
+    const modulePackageRoot = path.join(moduleRoot, moduleEntry.name)
+    const tsconfigPath = path.join(modulePackageRoot, "tsconfig.json")
+    const config = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
+    if (config.error !== undefined) {
+      failures.push(
+        `${relativePath(tsconfigPath)} -> P13 decision type 검사 설정을 읽을 수 없음`
+      )
+      continue
+    }
+    const parsedConfig = ts.parseJsonConfigFileContent(
+      config.config,
+      ts.sys,
+      modulePackageRoot
+    )
+    const program = ts.createProgram(
+      parsedConfig.fileNames,
+      parsedConfig.options
+    )
+    const typeChecker = program.getTypeChecker()
+
+    for (const layer of ["application", "domain"] as const) {
+      const layerRoot = path.join(moduleRoot, moduleEntry.name, "src", layer)
+      if (!fs.existsSync(layerRoot)) continue
+
+      for (const filePath of collectSourceFiles(layerRoot)) {
+        if (/\.(?:test|typecheck)\.[jt]sx?$/u.test(filePath)) continue
+        const relative = relativePath(filePath)
+        const source = fs.readFileSync(filePath, "utf8")
+
+        if (
+          /\b(?:Date\.now\s*\(|Math\.random\s*\(|crypto\.randomUUID\s*\(|randomUUID\s*\(|new\s+Date\s*\(\s*\))/u.test(
+            source
+          )
+        ) {
+          failures.push(
+            `${relative} -> domain·application의 직접 시간·ID 생성 금지`
+          )
+        }
+        if (/\bResult(?:Async)?\s*<\s*boolean\b/u.test(source)) {
+          failures.push(
+            `${relative} -> expected outcome은 boolean 대신 판별 가능한 variant 필요`
+          )
+        }
+        const sourceFile = program.getSourceFile(filePath)
+        if (sourceFile === undefined) {
+          failures.push(`${relative} -> P13 decision type 검사 source 누락`)
+          continue
+        }
+        for (const functionName of readNullBasedDecisionFunctions(
+          sourceFile,
+          typeChecker
+        )) {
+          failures.push(
+            `${relative} -> ${functionName} expected decision의 null 반환 금지`
+          )
+        }
+        if (
+          layer === "domain" &&
+          /JSON\.stringify\s*\([^)]*\)\s*(?:===|!==)|(?:===|!==)\s*JSON\.stringify\s*\(/u.test(
+            source
+          )
+        ) {
+          failures.push(
+            `${relative} -> domain value equality의 JSON.stringify 사용 금지`
+          )
+        }
+      }
+    }
+  }
+
+  verifyP13NullDecisionGateFixture()
+
+  const externalIoImports = [
+    "@aws-sdk/client-s3",
+    "@mastra/",
+    "@workspace/ai",
+    "@workspace/storage",
+    "openai",
+  ] as const
+  const telemetryImports = ["@opentelemetry/", "@sentry/"] as const
+
+  for (const filePath of collectSourceFiles(repositoryRoot)) {
+    if (filePath.includes(`${path.sep}node_modules${path.sep}`)) continue
+    const relative = relativePath(filePath)
+    if (!/^(?:apps|packages)\//u.test(relative)) continue
+    if (/\.(?:spec|test|typecheck)\.[jt]sx?$/u.test(relative)) continue
+
+    const source = fs.readFileSync(filePath, "utf8")
+    const imports = readImports(filePath)
+    if (/\bemitSerial\s*\(/u.test(source)) {
+      failures.push(`${relative} -> listener 순서 의존 emitSerial 금지`)
+    }
+    if (
+      /["'](?:cf-connecting-ip|x-forwarded-for|x-real-ip)["']/iu.test(source)
+    ) {
+      failures.push(
+        `${relative} -> 정제되지 않은 client IP 전달 header 직접 신뢰 금지`
+      )
+    }
+    if (
+      /\.transaction\s*\(/u.test(source) &&
+      imports.some((imported) =>
+        externalIoImports.some(
+          (external) => imported === external || imported.startsWith(external)
+        )
+      )
+    ) {
+      failures.push(
+        `${relative} -> database transaction 내부 외부 provider 의존 금지`
+      )
+    }
+    for (const imported of imports) {
+      if (
+        telemetryImports.some(
+          (telemetry) =>
+            imported === telemetry || imported.startsWith(telemetry)
+        )
+      ) {
+        failures.push(
+          `${relative} -> 운영 결정 없는 telemetry backend 도입 금지: ${imported}`
+        )
+      }
+    }
+  }
+}
+
+function readNullBasedDecisionFunctions(
+  sourceFile: ts.SourceFile,
+  typeChecker: ts.TypeChecker
+): readonly string[] {
+  const functionNames = new Set<string>()
+  const decisionName = /^(?:authorize|decide|reject|transition|validate)[A-Z]/u
+  const inspectSignature = (
+    name: string | undefined,
+    declaration: ts.SignatureDeclaration
+  ): void => {
+    if (name === undefined || !decisionName.test(name)) return
+    const signature = typeChecker.getSignatureFromDeclaration(declaration)
+    if (
+      signature !== undefined &&
+      containsNullType(
+        typeChecker.getReturnTypeOfSignature(signature),
+        typeChecker
+      )
+    ) {
+      functionNames.add(name)
+    }
+  }
+  const inspectCallableDeclaration = (
+    name: string | undefined,
+    declaration:
+      | ts.PropertyDeclaration
+      | ts.PropertySignature
+      | ts.VariableDeclaration
+  ): void => {
+    if (name === undefined || !decisionName.test(name)) return
+    for (const signature of typeChecker
+      .getTypeAtLocation(declaration)
+      .getCallSignatures()) {
+      if (containsNullType(signature.getReturnType(), typeChecker)) {
+        functionNames.add(name)
+      }
+    }
+  }
+  const visit = (node: ts.Node): void => {
+    if (ts.isFunctionDeclaration(node)) {
+      inspectSignature(node.name?.text, node)
+    } else if (ts.isMethodDeclaration(node) || ts.isMethodSignature(node)) {
+      inspectSignature(readDeclarationName(node.name), node)
+    } else if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) {
+      inspectSignature(readFunctionExpressionName(node), node)
+    } else if (ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) {
+      inspectCallableDeclaration(readDeclarationName(node.name), node)
+    } else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
+      inspectCallableDeclaration(node.name.text, node)
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+  return [...functionNames].sort()
+}
+
+function containsNullType(
+  type: ts.Type,
+  typeChecker: ts.TypeChecker,
+  seen = new Set<ts.Type>()
+): boolean {
+  if ((type.flags & ts.TypeFlags.Null) !== 0) return true
+  if (seen.has(type)) return false
+  seen.add(type)
+
+  if (type.isUnionOrIntersection()) {
+    return type.types.some((member) =>
+      containsNullType(member, typeChecker, seen)
+    )
+  }
+  if (
+    type.aliasTypeArguments?.some((argument) =>
+      containsNullType(argument, typeChecker, seen)
+    ) === true
+  ) {
+    return true
+  }
+  if (
+    (type.flags & ts.TypeFlags.Object) !== 0 &&
+    ((type as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference) !== 0
+  ) {
+    return typeChecker
+      .getTypeArguments(type as ts.TypeReference)
+      .some((argument) => containsNullType(argument, typeChecker, seen))
+  }
+  if ((type.flags & ts.TypeFlags.TypeParameter) !== 0) {
+    const constraint = typeChecker.getBaseConstraintOfType(type)
+    return (
+      constraint !== undefined &&
+      containsNullType(constraint, typeChecker, seen)
+    )
+  }
+  return false
+}
+
+function readDeclarationName(
+  name: ts.PropertyName | undefined
+): string | undefined {
+  return name !== undefined && ts.isIdentifier(name) ? name.text : undefined
+}
+
+function readFunctionExpressionName(
+  node: ts.ArrowFunction | ts.FunctionExpression
+): string | undefined {
+  if (ts.isFunctionExpression(node) && node.name !== undefined) {
+    return node.name.text
+  }
+  const parent = node.parent
+  if (ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name)) {
+    return parent.name.text
+  }
+  if (
+    (ts.isPropertyAssignment(parent) || ts.isPropertyDeclaration(parent)) &&
+    ts.isIdentifier(parent.name)
+  ) {
+    return parent.name.text
+  }
+  return undefined
+}
+
+function verifyP13NullDecisionGateFixture(): void {
+  const fixturePath = path.join(
+    repositoryRoot,
+    "scripts/fixtures/p13-null-decision-gate.ts"
+  )
+  const program = ts.createProgram([fixturePath], {
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    noEmit: true,
+    skipLibCheck: true,
+    strict: true,
+    target: ts.ScriptTarget.ES2022,
+  })
+  const sourceFile = program.getSourceFile(fixturePath)
+  if (sourceFile === undefined) {
+    failures.push(
+      `${relativePath(fixturePath)} -> P13 null decision gate fixture를 읽을 수 없음`
+    )
+    return
+  }
+  const detected = readNullBasedDecisionFunctions(
+    sourceFile,
+    program.getTypeChecker()
+  )
+  const expected = ["decideAliased", "transitionContextual", "validateInferred"]
+  if (detected.join("\n") !== expected.join("\n")) {
+    failures.push(
+      `${relativePath(fixturePath)} -> P13 null decision gate 회귀: ${detected.join(", ")}`
+    )
   }
 }
 

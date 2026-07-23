@@ -99,15 +99,42 @@ describe("operations HTTP contract", () => {
     )
   })
 
-  it("proxy가 전달한 첫 client IP를 quota 입력으로 사용한다", async () => {
+  it("quota persistence 실패를 명시적 503으로 mapping한다", async () => {
+    const fixture = createFixture({ quotaFailure: true })
+    const response = await postStream(fixture.app)
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "OPERATIONS_UNAVAILABLE",
+    })
+  })
+
+  it("proxy가 정제해 덮어쓴 client IP만 quota 입력으로 사용한다", async () => {
     const fixture = createFixture()
     const response = await postStream(fixture.app, {
-      "X-Forwarded-For": "203.0.113.7, 198.51.100.2",
+      "CF-Connecting-IP": "198.51.100.1",
+      "X-Forwarded-For": "198.51.100.2",
+      "X-Real-IP": "198.51.100.3",
+      "X-Writing-App-Client-IP": "203.0.113.7",
     })
     await response.text()
 
     expect(fixture.acquire).toHaveBeenCalledWith(
       expect.objectContaining({ clientIp: "203.0.113.7" })
+    )
+  })
+
+  it("정제되지 않은 client IP header는 quota 식별자로 신뢰하지 않는다", async () => {
+    const fixture = createFixture()
+    const response = await postStream(fixture.app, {
+      "CF-Connecting-IP": "198.51.100.1",
+      "X-Forwarded-For": "198.51.100.2",
+      "X-Real-IP": "198.51.100.3",
+    })
+    await response.text()
+
+    expect(fixture.acquire).toHaveBeenCalledWith(
+      expect.objectContaining({ clientIp: "unknown" })
     )
   })
 
@@ -199,6 +226,7 @@ function createFixture(
       typeof createAiStreamingApplication
     >[0]["provider"]
     readonly proposalReviewSucceeded?: boolean
+    readonly quotaFailure?: boolean
     readonly quotaRejected?: boolean
     readonly reportingUnavailable?: boolean
     readonly role?: "operator" | "owner"
@@ -258,17 +286,26 @@ function createFixture(
             },
           }
         : input.provider,
+    providerFailureObserver: () => undefined,
     repository: conversationRepository,
   })
-  const acquire = vi.fn(async () =>
-    input.quotaRejected
-      ? {
-          kind: "rejected" as const,
-          reason: "admin-minute" as const,
-          retryAfterSeconds: 30,
-        }
-      : { kind: "accepted" as const, release: () => undefined }
-  )
+  const acquire = vi.fn(async () => {
+    if (input.quotaFailure === true) {
+      return err({
+        kind: "persistence-failed" as const,
+        operation: "consume-ai-quota",
+      })
+    }
+    return ok(
+      input.quotaRejected
+        ? {
+            kind: "rejected" as const,
+            reason: "admin-minute" as const,
+            retryAfterSeconds: 30,
+          }
+        : { kind: "accepted" as const, release: () => undefined }
+    )
+  })
   const routes = createOperationsRoutes({
     ai: {
       conversations: {

@@ -334,6 +334,53 @@ describe("createApp", () => {
     expect(response.status).toBe(500)
   })
 
+  it.each([
+    ["SQL", () => new Error("SELECT password FROM user")],
+    [
+      "provider 원문",
+      () =>
+        new HTTPException(502, {
+          message: "provider response body: raw-provider-sentinel",
+        }),
+    ],
+    [
+      "credential과 개인정보",
+      () =>
+        new Error(
+          "Authorization: Bearer credential-sentinel learner@example.test"
+        ),
+    ],
+    [
+      "중첩 cause",
+      () =>
+        new Error("outer-sentinel", {
+          cause: { stack: "stack-sentinel", token: "token-sentinel" },
+        }),
+    ],
+  ])(
+    "public error에서 %s 정보를 노출하지 않는다",
+    async (_name, createError) => {
+      const hostileRoute = defineRoute({
+        method: "get",
+        path: "/hostile-error",
+        responses: { 500: { description: "Internal server error" } },
+        handler: () => {
+          throw createError()
+        },
+      })
+      const hostileApp = createApp({ routes: [hostileRoute] as const })
+
+      const response = await hostileApp.request("/hostile-error")
+      const body = JSON.stringify(await response.json())
+
+      expect(response.status).toBeGreaterThanOrEqual(500)
+      expect(body).toMatch(/^\{"code":"[A-Z_]+","message":"[^"\n]+"\}$/u)
+      expect(body).not.toMatch(
+        /SELECT|password|provider response|raw-provider|Authorization|Bearer|credential-sentinel|learner@example|outer-sentinel|stack-sentinel|token-sentinel/iu
+      )
+    }
+  )
+
   it("500 응답과 내부 오류 로그를 같은 request id로 연결하고 원인을 제한한다", async () => {
     const errors: unknown[] = []
     const errorApp = createApp({

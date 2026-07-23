@@ -19,7 +19,9 @@ export function createSecurityAuditRequestObserver(
     } as const
 
     if (
-      (path.startsWith("/api/auth/") || path.startsWith("/api/admin/auth/")) &&
+      (path.startsWith("/auth/") ||
+        path.startsWith("/api/auth/") ||
+        path.startsWith("/api/admin/auth/")) &&
       status >= 400
     ) {
       logSecurityAudit({

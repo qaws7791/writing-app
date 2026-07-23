@@ -6,6 +6,7 @@ import {
   normalizeExternalRequestId,
 } from "#http-platform/request-logging.middleware"
 import type { RequestLogEvent } from "@workspace/observability/request-logger"
+import type { HttpPlatformEnv } from "#http-platform/context"
 
 describe("Hono request logging middleware", () => {
   it("외부 request id와 서버 request id를 분리한다", async () => {
@@ -38,6 +39,7 @@ describe("Hono request logging middleware", () => {
         audience: "learner",
         durationMs: 9,
         method: "GET",
+        outcome: "succeeded",
         path: "/health",
         externalRequestId: "incoming-request-id",
         requestId: "generated-request-id",
@@ -69,9 +71,9 @@ describe("Hono request logging middleware", () => {
     expect(normalizeExternalRequestId("line\nbreak")).toBeUndefined()
   })
 
-  it("인증 middleware가 설정한 actor를 완료 로그에 보강한다", async () => {
+  it("인증 middleware가 공통 context에 설정한 actor를 완료 로그에 보강한다", async () => {
     const events: RequestLogEvent[] = []
-    const app = new Hono()
+    const app = new Hono<HttpPlatformEnv>()
 
     app.use(
       "*",
@@ -79,9 +81,12 @@ describe("Hono request logging middleware", () => {
         audience: "learner",
         createRequestId: () => "server-request-id",
         logRequest: (event) => events.push(event),
-        readActor: () => ({ id: "user-1", type: "learner" }),
       })
     )
+    app.use("*", async (context, next) => {
+      context.set("requestActor", { id: "user-1", type: "learner" })
+      await next()
+    })
     app.get("/profile", (context) => context.text("ok"))
 
     await app.request("/profile")
@@ -136,6 +141,7 @@ describe("Hono request logging middleware", () => {
       audience: "learner",
       durationMs: 0,
       method: "GET",
+      outcome: "succeeded",
       path: "/courses",
       requestId: "generated-request-id",
       status: 200,
@@ -167,11 +173,44 @@ describe("Hono request logging middleware", () => {
       {
         audience: "learner",
         durationMs: 5,
+        errorClass: "server-error",
         method: "GET",
+        outcome: "failed",
         path: "/boom",
         requestId: "failed-request-id",
         status: 500,
       },
+    ])
+  })
+
+  it("4xx와 5xx를 실패 결과와 안정된 오류 분류로 구분한다", async () => {
+    const events: RequestLogEvent[] = []
+    const app = new Hono()
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "admin",
+        createRequestId: () => "request-id",
+        logRequest: (event) => events.push(event),
+      })
+    )
+    app.get("/denied", (context) => context.text("denied", 403))
+    app.get("/failed", (context) => context.text("failed", 503))
+
+    await app.request("/denied")
+    await app.request("/failed")
+
+    expect(events).toEqual([
+      expect.objectContaining({
+        errorClass: "client-error",
+        outcome: "failed",
+        status: 403,
+      }),
+      expect.objectContaining({
+        errorClass: "server-error",
+        outcome: "failed",
+        status: 503,
+      }),
     ])
   })
 })

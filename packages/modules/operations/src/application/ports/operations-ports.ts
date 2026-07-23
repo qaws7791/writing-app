@@ -7,6 +7,7 @@ import type {
   ResourceDocumentId,
   UserId,
 } from "@workspace/types/ids"
+import type { Result } from "@workspace/kernel/result"
 
 import type {
   AiChange,
@@ -74,6 +75,14 @@ export type OperationsReportingFailureObserver = (
   event: Readonly<{
     kind: "operations-reporting-source-failed"
     source: "content" | "identity" | "learning"
+  }>
+) => void
+
+export type OperationsProviderFailureObserver = (
+  event: Readonly<{
+    kind: "operations-ai-provider-failed"
+    operation: "stream-text"
+    reason: "provider-failed" | "provider-timeout" | "provider-unavailable"
   }>
 ) => void
 
@@ -156,6 +165,19 @@ export type AiChangeTargetPort = Readonly<{
   ) => Promise<OperationsError | Readonly<{ kind: "ok" }>>
 }>
 
+export type AiQuotaDecision =
+  | Readonly<{ kind: "accepted" }>
+  | Readonly<{
+      kind: "rejected"
+      reason: "admin-day" | "admin-minute" | "ip-minute"
+      retryAfterSeconds: number
+    }>
+
+export type AiQuotaPersistenceError = Readonly<{
+  kind: "operations-quota-persistence-failed"
+  operation: "consume-ai-quota"
+}>
+
 export type AiQuotaRepository = Readonly<{
   consume: (
     input: Readonly<{
@@ -168,14 +190,7 @@ export type AiQuotaRepository = Readonly<{
       }>
       now: Date
     }>
-  ) => Promise<
-    | Readonly<{ kind: "accepted" }>
-    | Readonly<{
-        kind: "rejected"
-        reason: "admin-day" | "admin-minute" | "ip-minute"
-        retryAfterSeconds: number
-      }>
-  >
+  ) => Promise<Result<AiQuotaDecision, AiQuotaPersistenceError>>
 }>
 
 export type OperationsAdminSessionPort = Readonly<{

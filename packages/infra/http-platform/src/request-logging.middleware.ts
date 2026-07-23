@@ -4,15 +4,10 @@ import type {
   RequestAudience,
   RequestLogger,
 } from "@workspace/observability/request-logger"
-
-export type RequestActor = {
-  readonly id: string
-  readonly role?: string
-  readonly type: "admin" | "learner"
-}
+import type { HttpRequestActor } from "#http-platform/context"
 
 export type RequestObservation = {
-  readonly actor: RequestActor | undefined
+  readonly actor: HttpRequestActor | undefined
   readonly context: Context
   readonly requestId: string
 }
@@ -22,7 +17,7 @@ export type RequestLoggingMiddlewareOptions = {
   readonly createRequestId?: () => string
   readonly logRequest: RequestLogger
   readonly observeRequest?: (observation: RequestObservation) => void
-  readonly readActor?: (context: Context) => RequestActor | undefined
+  readonly readActor?: (context: Context) => HttpRequestActor | undefined
   readonly readMonotonicTimeMs?: () => number
 }
 
@@ -61,7 +56,8 @@ export function createRequestLoggingMiddleware({
     try {
       await next()
     } finally {
-      const actor = readActor?.(context)
+      const actor = readActor?.(context) ?? context.get("requestActor")
+      const classification = classifyRequestResult(context.res.status)
       logRequest({
         ...(actor === undefined
           ? {}
@@ -70,12 +66,24 @@ export function createRequestLoggingMiddleware({
         durationMs: Math.max(0, Math.round(readMonotonicTimeMs() - startedAt)),
         ...(externalRequestId === undefined ? {} : { externalRequestId }),
         method: context.req.method,
+        ...classification,
         path: context.req.path,
         requestId,
         status: context.res.status,
       })
       observeRequest?.({ actor, context, requestId })
     }
+  }
+}
+
+function classifyRequestResult(status: number): Readonly<{
+  errorClass?: "client-error" | "server-error"
+  outcome: "failed" | "succeeded"
+}> {
+  if (status < 400) return { outcome: "succeeded" }
+  return {
+    errorClass: status < 500 ? "client-error" : "server-error",
+    outcome: "failed",
   }
 }
 

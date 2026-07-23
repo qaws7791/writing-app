@@ -113,14 +113,36 @@ describe("operations temporary SQLite repositories", () => {
         now,
       }
       await expect(
-        createAiQuotaRepository(database).consume(quotaInput)
+        createAiQuotaRepository(database)
+          .consume(quotaInput)
+          .then((result) => result._unsafeUnwrap())
       ).resolves.toEqual({ kind: "accepted" })
       await expect(
-        createAiQuotaRepository(database).consume(quotaInput)
+        createAiQuotaRepository(database)
+          .consume(quotaInput)
+          .then((result) => result._unsafeUnwrap())
       ).resolves.toEqual({
         kind: "rejected",
         reason: "admin-minute",
         retryAfterSeconds: 60,
+      })
+    })
+  })
+
+  it("quota 저장소 DB 예외를 typed persistence error로 변환한다", async () => {
+    await withTemporaryOperationsDatabase(async ({ database, sqlite }) => {
+      sqlite.exec("DROP TABLE operations_ai_quota_counters")
+
+      const result = await createAiQuotaRepository(database).consume({
+        adminId,
+        clientIp: "127.0.0.1",
+        limits: { dailyAdmin: 10, minuteAdmin: 1, minuteIp: 10 },
+        now,
+      })
+
+      expect(result._unsafeUnwrapErr()).toEqual({
+        kind: "operations-quota-persistence-failed",
+        operation: "consume-ai-quota",
       })
     })
   })

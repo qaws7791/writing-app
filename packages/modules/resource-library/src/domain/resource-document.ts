@@ -1,4 +1,5 @@
 import type { AdminId, ResourceDocumentId } from "@workspace/types/ids"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 import type { ResourceActorProfile } from "#resource-library/domain/resource-access-policy"
 import type { ResourceConflictError } from "#resource-library/domain/resource-library-error"
@@ -34,14 +35,14 @@ export type ResourceDocument = Omit<
 export function validateResourceDocumentVersion(
   document: ResourceDocument,
   expectedVersion: number
-): ResourceConflictError | null {
+): Result<void, ResourceConflictError> {
   return document.version === expectedVersion
-    ? null
-    : {
+    ? ok(undefined)
+    : err({
         document,
         kind: "resource-conflict",
         reason: "stale-version",
-      }
+      })
 }
 
 export function nextResourceDocumentVersion(version: number): number {

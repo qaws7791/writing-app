@@ -69,10 +69,12 @@ describe("resource asset application", () => {
   })
 
   it("validation·authorization·storage 실패는 뒤 단계에 도달하지 않는다", async () => {
+    const observer = vi.fn()
     const createAsset = vi.fn(async () => ({ kind: "ok" as const }))
     const putObject = vi.fn(async () => err({ retryable: true }))
     const application = createResourceAssetApplication(
       createDependencies({
+        assetAuditObserver: observer,
         assetRepository: { createAsset },
         storage: { deleteObjects: async () => ok(undefined), putObject },
       })
@@ -114,6 +116,62 @@ describe("resource asset application", () => {
       retryable: true,
     })
     expect(createAsset).not.toHaveBeenCalled()
+    expect(observer).toHaveBeenCalledWith({
+      kind: "resource-asset-storage-failed",
+      operation: "upload",
+      phase: "put-object",
+      retryable: true,
+    })
+  })
+
+  it("storage 미설정과 throw를 원문 없는 stable event로 분류한다", async () => {
+    const unavailableObserver = vi.fn()
+    const unavailableApplication = createResourceAssetApplication(
+      createDependencies({
+        assetAuditObserver: unavailableObserver,
+        storage: null,
+      })
+    )
+
+    await expect(upload(unavailableApplication)).resolves.toEqual({
+      compensation: "not-required",
+      kind: "resource-storage-failure",
+      operation: "upload",
+      retryable: false,
+    })
+    expect(unavailableObserver).toHaveBeenCalledWith({
+      kind: "resource-asset-storage-failed",
+      operation: "upload",
+      phase: "availability-check",
+      retryable: false,
+    })
+
+    const thrownObserver = vi.fn()
+    const thrownApplication = createResourceAssetApplication(
+      createDependencies({
+        assetAuditObserver: thrownObserver,
+        storage: {
+          deleteObjects: async () => ok(undefined),
+          putObject: async () => Promise.reject(new Error("storage-secret")),
+        },
+      })
+    )
+
+    await expect(upload(thrownApplication)).resolves.toEqual({
+      compensation: "not-required",
+      kind: "resource-storage-failure",
+      operation: "upload",
+      retryable: true,
+    })
+    expect(thrownObserver).toHaveBeenCalledWith({
+      kind: "resource-asset-storage-failed",
+      operation: "upload",
+      phase: "put-object",
+      retryable: true,
+    })
+    expect(JSON.stringify(thrownObserver.mock.calls)).not.toContain(
+      "storage-secret"
+    )
   })
 
   it("DB가 문서를 찾지 못하면 업로드 object를 보상 삭제한다", async () => {
