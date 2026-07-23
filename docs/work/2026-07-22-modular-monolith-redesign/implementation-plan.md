@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13 완료, P14 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13·P14 완료, P15 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -61,7 +61,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P11. 통합 schema, migration과 seed 경계를 완성한다. 증거: [P11 구현 증거](./p11-validation.md)
 - [x] P12. web, admin과 Storybook 소비 경계를 전환한다. 증거: [P12 구현 증거](./p12-validation.md)
 - [x] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다. 증거: [P13 구현 증거](./p13-validation.md)
-- [ ] P14. 배포·운영 automation을 새 경로에 맞춘다.
+- [x] P14. 배포·운영 automation을 새 경로에 맞춘다. 증거: [P14 구현 증거](./p14-validation.md)
 - [ ] P15. 이전 구조와 모든 임시 호환 계층을 제거한다.
 - [ ] P16. 전체 품질·복구·사용자 흐름 검증을 완료한다.
 - [ ] P17. 영구 문서 반영과 작업 기록 보관을 완료한다.
@@ -840,28 +840,28 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 18.1 build와 CI
 
-- [ ] P14-001 Docker build context와 COPY path가 2단계 package 구조를 포함하게 한다. 증거:
-- [ ] P14-002 web, admin과 API image가 필요한 workspace만 포함하는지 확인한다. 증거:
-- [ ] P14-003 image build가 hoisted transitive dependency에 기대지 않는지 확인한다. 증거:
-- [ ] P14-004 CI path filter가 modules, infra, shared와 config 변경을 감지하게 한다. 증거:
-- [ ] P14-005 CI가 architecture, dead-code, lint, typecheck, test와 build를 실행하게 한다. 증거:
-- [ ] P14-006 generated OpenAPI·migration·Storybook artifact의 source와 보존 위치를 확인한다. 증거:
-- [ ] P14-007 dependency audit 예외의 근거·owner·만료 조건을 재검토한다. 증거:
+- [x] P14-001 Docker build context와 COPY path가 2단계 package 구조를 포함하게 한다. 증거: [build와 CI](./p14-validation.md#build와-ci)
+- [x] P14-002 web, admin과 API image가 필요한 workspace만 포함하는지 확인한다. 증거: [build와 CI](./p14-validation.md#build와-ci)
+- [x] P14-003 image build가 hoisted transitive dependency에 기대지 않는지 확인한다. 증거: [build와 CI](./p14-validation.md#build와-ci)
+- [x] P14-004 CI path filter가 modules, infra, shared와 config 변경을 감지하게 한다. 증거: [build와 CI](./p14-validation.md#build와-ci)
+- [x] P14-005 CI가 architecture, dead-code, lint, typecheck, test와 build를 실행하게 한다. 증거: [build와 CI](./p14-validation.md#build와-ci)
+- [x] P14-006 generated OpenAPI·migration·Storybook artifact의 source와 보존 위치를 확인한다. 증거: [build와 CI](./p14-validation.md#build와-ci)
+- [x] P14-007 dependency audit 예외의 근거·owner·만료 조건을 재검토한다. 증거: [build와 CI](./p14-validation.md#build와-ci)
 
 ### 18.2 deployment와 recovery
 
-- [ ] P14-008 Compose가 통합 API runtime 하나를 계속 사용하게 한다. 증거:
-- [ ] P14-009 proxy가 learner·admin API를 같은 API upstream에 연결하게 한다. 증거:
-- [ ] P14-010 environment·secret 이름 변경이 parser, example과 deployment automation에 함께 반영되게 한다. 증거:
-- [ ] P14-011 migration automation이 apps/api의 통합 migration entry를 사용하게 한다. 증거:
-- [ ] P14-012 seed·reset 명령이 production에서 fail-closed하게 한다. 증거:
-- [ ] P14-013 backup script와 restore playbook의 새 package 경로를 갱신한다. 증거:
-- [ ] P14-014 rollback이 learner·admin API를 같은 immutable image로 되돌리게 한다. 증거:
-- [ ] P14-015 migration 비호환 시 code rollback과 data recovery를 분리하게 한다. 증거:
-- [ ] P14-016 operation lock과 stale lock의 fail-closed 동작을 유지한다. 증거:
-- [ ] P14-017 정적 deployment config·Ansible·image smoke를 비운영 환경에서 검증한다. 증거:
-- [ ] P14-018 실제 production deploy·rollback·restore는 별도 승인 없이는 실행하지 않는다. 증거:
-- [ ] P14-019 P14 게이트: deployment 정적 검사, image build·smoke와 recovery source test가 통과한다. 증거:
+- [x] P14-008 Compose가 통합 API runtime 하나를 계속 사용하게 한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-009 proxy가 learner·admin API를 같은 API upstream에 연결하게 한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-010 environment·secret 이름 변경이 parser, example과 deployment automation에 함께 반영되게 한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-011 migration automation이 apps/api의 통합 migration entry를 사용하게 한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-012 seed·reset 명령이 production에서 fail-closed하게 한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-013 backup script와 restore playbook의 새 package 경로를 갱신한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-014 rollback이 learner·admin API를 같은 immutable image로 되돌리게 한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-015 migration 비호환 시 code rollback과 data recovery를 분리하게 한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-016 operation lock과 stale lock의 fail-closed 동작을 유지한다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-017 정적 deployment config·Ansible·image smoke를 비운영 환경에서 검증한다. 증거: [자동 검증과 증거 한계](./p14-validation.md#자동-검증과-증거-한계)
+- [x] P14-018 실제 production deploy·rollback·restore는 별도 승인 없이는 실행하지 않는다. 증거: [deployment와 recovery](./p14-validation.md#deployment와-recovery)
+- [x] P14-019 P14 게이트: deployment 정적 검사, image build·smoke와 recovery source test가 통과한다. 증거: [자동 검증과 증거 한계](./p14-validation.md#자동-검증과-증거-한계)
 
 ## 19. P15 — 이전 구조와 임시 호환 계층 제거
 

@@ -11,10 +11,13 @@ export type DeploymentServiceName = "admin" | "api" | "web"
 export interface DeploymentImageSpec {
   readonly buildArguments: readonly (readonly [name: string, value: string])[]
   readonly dockerfile: string
+  readonly forbiddenPaths: readonly string[]
   readonly healthHostEnvironment?: "API_ORIGIN"
   readonly healthPort: number
   readonly name: DeploymentServiceName
+  readonly optimizedImagePath?: string
   readonly runtime: "bun" | "node"
+  readonly runtimeArtifactPaths: readonly string[]
   readonly staticPaths: readonly string[]
   readonly staticResponses: readonly StaticResponseSpec[]
   readonly usesDatabase: boolean
@@ -76,7 +79,11 @@ export const composeSmokeRoutes = [
     path: "/health",
   },
   {
-    expectedResponse: { ok: true },
+    expectedResponse: {
+      checks: { database: "ready" },
+      impact: "none",
+      ok: true,
+    },
     host: "api.example.test",
     path: "/health",
   },
@@ -95,9 +102,16 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
       ["WEB_ORIGIN", "https://web.example.test"],
     ],
     dockerfile: "deploy/docker/web.dockerfile",
+    forbiddenPaths: [
+      "/workspace/apps/admin",
+      "/workspace/apps/api",
+      "/workspace/packages/modules",
+    ],
     healthPort: 3000,
     name: "web",
+    optimizedImagePath: "/course-thumbnails/expression.png",
     runtime: "node",
+    runtimeArtifactPaths: [],
     staticPaths: [
       "/workspace/apps/web/.next/static",
       "/workspace/apps/web/public/course-thumbnails/vocabulary-basics.png",
@@ -108,6 +122,17 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   {
     buildArguments: [],
     dockerfile: "deploy/docker/api.dockerfile",
+    runtimeArtifactPaths: [
+      "/workspace/bin/api",
+      "/workspace/bin/database-backup",
+      "/workspace/bin/database-migrate",
+      "/workspace/node_modules/prismjs/package.json",
+    ],
+    forbiddenPaths: [
+      "/workspace/apps",
+      "/workspace/package.json",
+      "/workspace/packages",
+    ],
     healthHostEnvironment: "API_ORIGIN",
     healthPort: 4000,
     name: "api",
@@ -124,9 +149,16 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
       ["ADMIN_ORIGIN", "https://admin.example.test"],
     ],
     dockerfile: "deploy/docker/admin.dockerfile",
+    forbiddenPaths: [
+      "/workspace/apps/api",
+      "/workspace/apps/web",
+      "/workspace/packages/modules",
+    ],
     healthPort: 3001,
     name: "admin",
+    optimizedImagePath: "/course-thumbnails/expression.png",
     runtime: "node",
+    runtimeArtifactPaths: [],
     staticPaths: [
       "/workspace/apps/admin/.next/static",
       ...courseThumbnailFileNames.map(
@@ -219,6 +251,7 @@ export function createRuntimeEnvironment(
     ["LEARNER_AUTH_SECRET", learnerSecret],
     ["LEARNER_AUTH_COOKIE_DOMAIN", "example.test"],
     ["CURSOR_SIGNING_SECRET", `${learnerSecret}-cursor-distinct`],
+    ["DEPLOYMENT_VERSION", "writing-app-smoke-api@sha256:test"],
     ["ADMIN_AUTH_SECRET", adminSecret],
     ["ADMIN_AUTH_COOKIE_DOMAIN", "example.test"],
     ["OPENAI_MODEL", "gpt-5.2"],
@@ -535,20 +568,31 @@ function assertStaticPaths(
   spec: DeploymentImageSpec,
   imageReference: string
 ): void {
-  for (const staticPath of spec.staticPaths) {
-    const check = staticPath.endsWith("/.next/static")
+  const checks = spec.staticPaths.map((staticPath) =>
+    staticPath.endsWith("/.next/static")
       ? `test -d '${staticPath}' && test -n "$(find '${staticPath}' -type f -print -quit)"`
       : `test -f '${staticPath}'`
-    runDocker([
-      "run",
-      "--rm",
-      "--entrypoint",
-      "sh",
-      imageReference,
-      "-c",
-      check,
-    ])
-  }
+  )
+  checks.push(
+    ...spec.runtimeArtifactPaths.map(
+      (runtimeArtifactPath) => `test -f '${runtimeArtifactPath}'`
+    )
+  )
+  checks.push(
+    ...spec.forbiddenPaths.map(
+      (forbiddenPath) => `test ! -e '${forbiddenPath}'`
+    )
+  )
+
+  runDocker([
+    "run",
+    "--rm",
+    "--entrypoint",
+    "sh",
+    imageReference,
+    "-c",
+    checks.join(" && "),
+  ])
 }
 
 async function waitForContainerHealth(
@@ -607,19 +651,101 @@ function assertStaticResponses(
   spec: DeploymentImageSpec,
   containerName: string
 ): void {
-  const runtime = spec.runtime === "node" ? "node" : "bun"
+  if (spec.staticResponses.length === 0) return
 
-  for (const staticResponse of spec.staticResponses) {
+  const runtime = spec.runtime === "node" ? "node" : "bun"
+  const assertions = spec.staticResponses.map((staticResponse) => {
     const url = `http://127.0.0.1:${spec.healthPort}${staticResponse.path}`
-    const assertionScript = [
+    return [
+      "{",
       `const response=await fetch(${JSON.stringify(url)});`,
       "if(!response.ok)throw new Error(`status=${response.status}`);",
       `if(response.headers.get('cache-control')!==${JSON.stringify(staticResponse.cacheControl)})throw new Error('cache-control mismatch');`,
       `if(response.headers.get('content-type')!==${JSON.stringify(staticResponse.contentType)})throw new Error('content-type mismatch');`,
+      "}",
     ].join("")
+  })
+  const assertionScript = [
+    "(async()=>{",
+    ...assertions,
+    "})().catch((error)=>{console.error(error);process.exit(1)})",
+  ].join("")
 
-    runDocker(["exec", containerName, runtime, "-e", assertionScript])
+  runDocker(["exec", containerName, runtime, "-e", assertionScript])
+}
+
+export function createImageOptimizationRequestScript(
+  spec: DeploymentImageSpec
+): string {
+  if (spec.optimizedImagePath === undefined) {
+    throw new Error(`${spec.name}: image optimizer 검증 경로가 없습니다.`)
   }
+
+  const origin = `http://127.0.0.1:${spec.healthPort}`
+  const optimizedPath = `/_next/image?url=${encodeURIComponent(spec.optimizedImagePath)}&w=640&q=75`
+
+  return [
+    `const sourceResponse=await fetch(${JSON.stringify(`${origin}${spec.optimizedImagePath}`)});`,
+    "if(!sourceResponse.ok)throw new Error(`source status=${sourceResponse.status}`);",
+    `const optimizedResponse=await fetch(${JSON.stringify(`${origin}${optimizedPath}`)});`,
+    "if(!optimizedResponse.ok)throw new Error(`optimizer status=${optimizedResponse.status}`);",
+    "const source=Buffer.from(await sourceResponse.arrayBuffer());",
+    "const optimized=Buffer.from(await optimizedResponse.arrayBuffer());",
+    "if(optimized.length>=source.length)throw new Error(`optimizer did not reduce bytes: source=${source.length}, optimized=${optimized.length}`);",
+    "if(optimized.equals(source))throw new Error('optimizer returned source bytes unchanged');",
+    "if(!optimizedResponse.headers.get('content-type')?.startsWith('image/'))throw new Error('optimizer content-type mismatch');",
+  ].join("")
+}
+
+function assertImageOptimization(
+  spec: DeploymentImageSpec,
+  containerName: string
+): void {
+  if (spec.optimizedImagePath === undefined) return
+
+  runDocker([
+    "exec",
+    containerName,
+    "node",
+    "-e",
+    createImageOptimizationRequestScript(spec),
+  ])
+}
+
+function assertApiOperationExecutables(
+  imageReference: string,
+  dataDirectory: string
+): void {
+  const databaseUrl = "file:/var/lib/writing-app/api.sqlite"
+  const mount = `type=bind,source=${dataDirectory},target=/var/lib/writing-app`
+  runDocker([
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--mount",
+    mount,
+    "--env",
+    `DATABASE_URL=${databaseUrl}`,
+    "--entrypoint",
+    "bun",
+    imageReference,
+    "/workspace/bin/database-migrate",
+  ])
+  runDocker([
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--mount",
+    mount,
+    "--entrypoint",
+    "bun",
+    imageReference,
+    "/workspace/bin/database-backup",
+    "--source=/var/lib/writing-app/api.sqlite",
+    "--output=/var/lib/writing-app/image-smoke-backup.sqlite",
+  ])
 }
 
 function createComposeImageReferences(
@@ -779,6 +905,9 @@ async function runDeploymentImageTests(): Promise<void> {
       builtImages.push({ imageReference, name: spec.name })
       assertImageUser(imageReference)
       assertStaticPaths(spec, imageReference)
+      if (spec.name === "api") {
+        assertApiOperationExecutables(imageReference, fixture.dataDirectory)
+      }
 
       ownedContainers.add(containerName)
       runDocker(
@@ -793,6 +922,7 @@ async function runDeploymentImageTests(): Promise<void> {
       await waitForContainerHealth(spec, containerName)
       assertContainerUser(containerName)
       assertStaticResponses(spec, containerName)
+      assertImageOptimization(spec, containerName)
       runDocker(["rm", "--force", containerName])
       ownedContainers.delete(containerName)
       console.log(

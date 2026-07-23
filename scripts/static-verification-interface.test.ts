@@ -136,4 +136,28 @@ describe("정적 검증 Interface", () => {
     }
     expect(workflow).not.toMatch(/uses:\s+[^\s]+@v\d+/u)
   })
+
+  test("모든 source 경로가 필수 gate를 실행하고 2단계 workspace cache와 Storybook artifact를 보존한다", () => {
+    const workflow = readFileSync(
+      path.join(repositoryRoot, ".github", "workflows", "quality-gates.yml"),
+      "utf8"
+    )
+
+    expect(workflow).toContain("pull_request:")
+    expect(workflow).toContain("push:\n    branches:\n      - main")
+    expect(workflow).not.toMatch(/^\s+paths(?:-ignore)?:/mu)
+    expect(workflow).toContain("'packages/*/*/package.json'")
+    for (const command of [
+      "bun run lint",
+      "bun run format:check",
+      "bun run typecheck",
+      "bun run test -- --summarize --continue=always",
+      "bun run build",
+    ]) {
+      expect(workflow).toContain(command)
+    }
+    expect(workflow).toContain("name: storybook-static-${{ github.sha }}")
+    expect(workflow).toContain("path: apps/storybook/dist/")
+    expect(workflow).toContain("retention-days: 14")
+  })
 })

@@ -6,6 +6,8 @@
 
 현재 exact version은 root manifest와 lockfile이 소유한다. 공통 version을 올릴 때는 root catalog 한 곳과 lockfile을 함께 변경하고 전체 테스트·빌드·audit를 실행한다. 서로 다른 version이 반드시 필요한 경우에는 호환성 근거, 영향 workspace, 제거 조건을 이 문서에 먼저 기록한 뒤 dependency drift 검사에 package 단위 예외를 추가한다.
 
+dependency audit는 HIGH 이상을 예외 없이 차단하는 상태를 기본으로 한다. 수정 버전이 없어 예외가 불가피하다면 advisory와 package, 실제 도달 경로, 완화 근거, owner, 만료일과 제거 조건을 실행 가능한 정책 source에 먼저 기록해야 하며 명령문에 `--ignore`를 직접 추가하지 않는다.
+
 `bun run check:workspace-dependency-versions`는 실제 consumer 수를 다시 계산해 공유 dependency의 exact catalog와 단일 consumer의 직접 version을 검사한다. 내부 package는 `workspace:*`를 사용하고 source가 import하는 runtime·test·build dependency를 해당 manifest에 직접 선언한다. Vitest test script를 가진 workspace는 transitive 실행 파일에 기대지 않고 devDependency를 직접 선언해야 한다.
 
 ## 디자인·lint ratchet

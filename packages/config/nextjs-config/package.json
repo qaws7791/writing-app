@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./csp-report": "./src/csp-report.ts",
+    "./image-optimizer-security": "./src/image-optimizer-security.ts",
     "./security-headers": "./src/security-headers.ts"
   },
   "scripts": {

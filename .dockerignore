@@ -25,6 +25,7 @@ node_modules
 output
 prototype
 scratch
+scripts
 test-results
 **/.env
 **/.env.*

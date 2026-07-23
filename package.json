@@ -30,12 +30,13 @@
     "jsdom": "29.1.1",
     "lexical": "0.46.0",
     "lucide-react": "1.24.0",
-    "next": "16.2.6",
+    "next": "16.2.11",
     "next-themes": "0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "3.9.2",
     "server-only": "0.0.1",
+    "sharp": "0.34.5",
     "tailwindcss": "4.3.2",
     "tw-animate-css": "1.4.0",
     "typescript": "5.9.3",
@@ -52,8 +53,8 @@
     "packages/config/*"
   ],
   "scripts": {
-    "audit:full": "bun audit --audit-level=high --ignore=GHSA-r5fr-rjxr-66jc --ignore=GHSA-fx2h-pf6j-xcff --ignore=GHSA-v2wj-q39q-566r --ignore=GHSA-p9ff-h696-f583 --ignore=GHSA-26hh-7cqf-hhc6 --ignore=GHSA-86j7-9j95-vpqj --ignore=GHSA-vmh5-mc38-953g --ignore=GHSA-vxpw-j846-p89q --ignore=GHSA-hm92-r4w5-c3mj --ignore=GHSA-3mfm-83xf-c92r --ignore=GHSA-2w6w-674q-4c4q --ignore=GHSA-xhpv-hc6g-r9c6 --ignore=GHSA-9cx6-37pm-9jff --ignore=GHSA-xjpj-3mr7-gcpf --ignore=GHSA-ph9p-34f9-6g65 --ignore=GHSA-96hv-2xvq-fx4p --ignore=GHSA-rf6f-7fwh-wjgh --ignore=GHSA-88fw-hqm2-52qc --ignore=GHSA-c2c7-rcm5-vvqj",
-    "audit:production": "bun audit --audit-level=high --ignore=GHSA-r5fr-rjxr-66jc --ignore=GHSA-fx2h-pf6j-xcff --ignore=GHSA-v2wj-q39q-566r --ignore=GHSA-p9ff-h696-f583 --ignore=GHSA-26hh-7cqf-hhc6 --ignore=GHSA-86j7-9j95-vpqj --ignore=GHSA-vmh5-mc38-953g --ignore=GHSA-vxpw-j846-p89q --ignore=GHSA-hm92-r4w5-c3mj --ignore=GHSA-3mfm-83xf-c92r --ignore=GHSA-2w6w-674q-4c4q --ignore=GHSA-xhpv-hc6g-r9c6 --ignore=GHSA-9cx6-37pm-9jff --ignore=GHSA-xjpj-3mr7-gcpf --ignore=GHSA-ph9p-34f9-6g65 --ignore=GHSA-96hv-2xvq-fx4p --ignore=GHSA-rf6f-7fwh-wjgh --ignore=GHSA-88fw-hqm2-52qc --ignore=GHSA-c2c7-rcm5-vvqj",
+    "audit:full": "bun scripts/run-dependency-audit.ts full",
+    "audit:production": "bun scripts/run-dependency-audit.ts production",
     "build": "turbo build",
     "build-storybook": "bun --filter @workspace/storybook build",
     "check:admin-chart-route-bundle": "bun scripts/check-admin-chart-route-bundle.ts",
@@ -136,6 +137,7 @@
     "node": "24.x"
   },
   "overrides": {
+    "fast-uri": "3.1.4",
     "hono": "^4.12.25"
   },
   "packageManager": "bun@1.3.10"

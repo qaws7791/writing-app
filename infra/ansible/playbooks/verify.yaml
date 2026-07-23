@@ -125,11 +125,17 @@
           loop:
             - audience: learner
               expected:
+                checks:
+                  database: ready
+                impact: none
                 ok: true
               host: "{{ writing_app_api_host }}"
               path: /health
             - audience: admin
               expected:
+                checks:
+                  database: ready
+                impact: none
                 ok: true
                 service: api
               host: "{{ writing_app_api_host }}"
@@ -186,10 +192,16 @@
           loop:
             - audience: learner
               expected:
+                checks:
+                  database: ready
+                impact: none
                 ok: true
               path: /health
             - audience: admin
               expected:
+                checks:
+                  database: ready
+                impact: none
                 ok: true
                 service: api
               path: /api/admin/health

@@ -11,11 +11,14 @@ const healthcheck = { test: ["CMD", "true"] }
 const sqliteVolume = [{ target: "/var/lib/writing-app", type: "bind" }]
 
 function createValidComposeConfig(): unknown {
+  const digest = "a".repeat(64)
+  const apiImage = `example.invalid/writing-app-api@sha256:${digest}`
   return {
     services: {
       admin: {
         environment: { API_BASE_URL: "http://api:4000" },
         healthcheck,
+        image: `example.invalid/writing-app-admin@sha256:${digest}`,
         init: true,
         networks: { admin: null },
       },
@@ -41,18 +44,41 @@ function createValidComposeConfig(): unknown {
             "fetch(url,{headers:{Host:new URL(process.env.API_ORIGIN).host}})",
           ],
         },
+        image: apiImage,
         init: true,
         networks: { admin: null, learner: null },
         volumes: sqliteVolume,
       },
       caddy: { networks: { admin: null, edge: null, learner: null } },
       cloudflared: { networks: { edge: null } },
-      "database-backup": {},
-      "database-check": {},
-      "database-migrate": {},
+      "database-backup": {
+        entrypoint: ["bun", "/workspace/bin/database-backup"],
+        image: apiImage,
+        network_mode: "none",
+        restart: "no",
+        volumes: sqliteVolume,
+      },
+      "database-check": {
+        image: apiImage,
+        network_mode: "none",
+        restart: "no",
+        volumes: sqliteVolume,
+      },
+      "database-migrate": {
+        command: ["bun", "/workspace/bin/database-migrate"],
+        image: apiImage,
+        network_mode: "none",
+        restart: "no",
+        volumes: sqliteVolume,
+      },
       "database-restore": {},
       litestream: { networks: { backup: null }, volumes: sqliteVolume },
-      web: { healthcheck, init: true, networks: { learner: null } },
+      web: {
+        healthcheck,
+        image: `example.invalid/writing-app-web@sha256:${digest}`,
+        init: true,
+        networks: { learner: null },
+      },
     },
   }
 }
@@ -85,6 +111,17 @@ describe("배포 Compose 계약", () => {
 
     expect(validateComposeContract(config)).toContain(
       "web: host port를 공개하면 안 됩니다."
+    )
+  })
+
+  test("중복 환경 변수의 마지막 가변 tag로 해석된 image를 거부한다", () => {
+    const config = createValidComposeConfig() as {
+      services: { web: { image: string } }
+    }
+    config.services.web.image = "example.invalid/writing-app-web:latest"
+
+    expect(validateComposeContract(config)).toContain(
+      "web: immutable image digest가 필요합니다."
     )
   })
 
@@ -128,6 +165,37 @@ describe("배포 Compose 계약", () => {
 
     expect(validateComposeContract(config)).toContain(
       "admin: 단일 API의 api:4000 upstream을 사용해야 합니다."
+    )
+  })
+
+  test("migration·backup·integrity 작업은 통합 API image의 전용 entry를 격리 실행한다", () => {
+    const config = createValidComposeConfig() as {
+      services: {
+        "database-backup": { entrypoint: readonly string[] }
+        "database-check": { image: string }
+        "database-migrate": { command: readonly string[]; image: string }
+      }
+    }
+    config.services["database-migrate"].command = [
+      "bun",
+      "--filter",
+      "@workspace/db",
+      "db:migrate",
+    ]
+    config.services["database-migrate"].image = "legacy-api:latest"
+    config.services["database-backup"].entrypoint = [
+      "bun",
+      "apps/api/src/scripts/backup-database.ts",
+    ]
+    config.services["database-check"].image = "legacy-api:latest"
+
+    expect(validateComposeContract(config)).toEqual(
+      expect.arrayContaining([
+        "database-migrate: 통합 API와 같은 image를 사용해야 합니다.",
+        "database-migrate: API image의 /workspace/bin/database-migrate를 Bun으로 실행해야 합니다.",
+        "database-backup: API image의 /workspace/bin/database-backup를 Bun으로 실행해야 합니다.",
+        "database-check: 통합 API와 같은 image를 사용해야 합니다.",
+      ])
     )
   })
 })
@@ -236,6 +304,10 @@ describe("repository 배포 source", () => {
 
     expect(compose).toContain("API_ORIGIN")
     expect(compose).not.toMatch(/^ {2}admin-api:/mu)
+    expect(compose).toContain("- /workspace/bin/database-migrate")
+    expect(compose).toContain("- /workspace/bin/database-backup")
+    expect(compose).not.toContain("@workspace/db")
+    expect(compose).not.toContain("apps/api/src/scripts/backup-database.ts")
     expect(validateUnifiedApiCaddyContract(caddyfile)).toEqual([])
     expect(apiEnvironmentTemplate).toContain(
       "API_ALLOWED_HOSTS={{ ([writing_app_api_host, 'api:4000'] | join(',')) | to_json }}"
@@ -246,11 +318,74 @@ describe("repository 배포 source", () => {
     )
   })
 
+  test("production runtime 환경 변수와 secret 이름은 parser example·Ansible에 함께 존재한다", () => {
+    const apiEnvironmentParsers = [
+      "apps/api/src/config/env.ts",
+      "packages/config/env/src/parse-env.ts",
+    ]
+      .map((relativePath) =>
+        readFileSync(path.join(repositoryRoot, relativePath), "utf8")
+      )
+      .join("\n")
+    const apiEnvironmentExample = readFileSync(
+      path.join(repositoryRoot, "apps/api/.env.example"),
+      "utf8"
+    )
+    const apiEnvironmentTemplate = readFileSync(
+      path.join(
+        repositoryRoot,
+        "infra/ansible/roles/writing_app_deploy/templates/api.env.j2"
+      ),
+      "utf8"
+    )
+    const compose = readFileSync(
+      path.join(repositoryRoot, "deploy/compose/compose.yaml"),
+      "utf8"
+    )
+
+    for (const name of [
+      "ADMIN_ASSET_PUBLIC_BASE_URL",
+      "ADMIN_ASSET_S3_ACCESS_KEY",
+      "ADMIN_ASSET_S3_BUCKET",
+      "ADMIN_ASSET_S3_ENDPOINT",
+      "ADMIN_ASSET_S3_REGION",
+      "ADMIN_ASSET_S3_SECRET_KEY",
+      "ADMIN_AUTH_SECRET",
+      "ADMIN_ORIGIN",
+      "API_ALLOWED_HOSTS",
+      "API_ORIGIN",
+      "CURSOR_SIGNING_SECRET",
+      "DATABASE_URL",
+      "ENABLE_TEST_AUTH",
+      "LEARNER_AUTH_SECRET",
+      "NODE_ENV",
+      "WEB_ORIGIN",
+    ]) {
+      expect(apiEnvironmentExample).toContain(name)
+      expect(apiEnvironmentTemplate).toContain(`${name}=`)
+      expect(apiEnvironmentParsers).toContain(name)
+    }
+    expect(compose).toContain(
+      "DEPLOYMENT_VERSION: ${API_IMAGE:?API_IMAGE가 필요합니다}"
+    )
+    expect(apiEnvironmentExample).toContain("DATABASE_SEED_PRODUCTION_APPROVED")
+    expect(apiEnvironmentTemplate).not.toContain(
+      "DATABASE_SEED_PRODUCTION_APPROVED"
+    )
+  })
+
   test("Ansible은 immutable image, DNS Host, 공유 operation lock을 유지한다", () => {
     const deploymentTasks = readFileSync(
       path.join(
         repositoryRoot,
         "infra/ansible/roles/writing_app_deploy/tasks/main.yaml"
+      ),
+      "utf8"
+    )
+    const deploymentHandlers = readFileSync(
+      path.join(
+        repositoryRoot,
+        "infra/ansible/roles/writing_app_deploy/handlers/main.yaml"
       ),
       "utf8"
     )
@@ -269,10 +404,22 @@ describe("repository 배포 source", () => {
         "utf8"
       )
     )
+    const deployPlaybook = playbooks[0] ?? ""
+    const rollbackPlaybook = playbooks[1] ?? ""
+    const restorePlaybook = playbooks[2] ?? ""
+    const verifyPlaybook = playbooks[3] ?? ""
 
     expect(deploymentTasks).toContain(
       "변경된 bind-mounted Caddyfile을 반영하도록 Caddy 재생성"
     )
+    expect(deploymentHandlers).toContain(
+      "변경된 bind-mounted Caddyfile을 반영하도록 Caddy 재생성"
+    )
+    expect(deploymentHandlers).toContain("recreate: always")
+    expect(deploymentTasks).toContain("ansible.builtin.meta: flush_handlers")
+    expect(
+      deploymentTasks.indexOf("ansible.builtin.meta: flush_handlers")
+    ).toBeLessThan(deploymentTasks.indexOf("배포 image reference 기록"))
     expect(deploymentTasks).toContain("profiles:\n          - operations")
     for (const imageVariable of [
       "writing_app_web_image",
@@ -294,8 +441,35 @@ describe("repository 배포 source", () => {
     )
     for (const playbook of playbooks) {
       expect(playbook).toContain("writing_app_operation_lock_directory")
+      expect(playbook).toContain("- mkdir")
+      expect(playbook).toContain("failed_when: false")
+      expect(playbook).toMatch(/operation_lock\.rc == 0/u)
+      expect(playbook).toContain("stale lock")
       expect(playbook).toContain("state: absent")
     }
+    expect(deployPlaybook).toContain("writing_app_allow_production_deploy")
+    expect(rollbackPlaybook).toContain("writing_app_allow_code_rollback")
+    expect(rollbackPlaybook).toContain(
+      "writing_app_code_rollback_database_compatible"
+    )
+    expect(rollbackPlaybook).toContain("직전 Compose 설정 해석")
+    expect(rollbackPlaybook).toContain("- --format\n              - json")
+    expect(rollbackPlaybook).toContain(
+      "writing_app_previous_compose_configuration.stdout | from_json"
+    )
+    for (const serviceName of ["web", "api", "admin"]) {
+      expect(rollbackPlaybook).toContain(
+        `writing_app_previous_compose_services.${serviceName}.image`
+      )
+    }
+    expect(rollbackPlaybook).not.toContain("regex_findall")
+    expect(rollbackPlaybook).not.toContain("service: database-migrate")
+    expect(rollbackPlaybook).not.toContain("service: database-restore")
+    expect(restorePlaybook).toContain("writing_app_allow_database_restore")
+    expect(verifyPlaybook.match(/checks:\n\s+database: ready/gu)).toHaveLength(
+      4
+    )
+    expect(verifyPlaybook.match(/impact: none/gu)).toHaveLength(4)
   })
 
   test("Ansible immutable image assertion은 suffix와 제어 문자를 거부한다", () => {

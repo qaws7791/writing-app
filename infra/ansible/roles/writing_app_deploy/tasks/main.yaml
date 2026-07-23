@@ -80,7 +80,7 @@
 
 - name: 배포 ID 계산
   ansible.builtin.set_fact:
-    writing_app_deployment_id: "{{ ansible_date_time.iso8601_basic_short }}"
+    writing_app_deploy_deployment_id: "{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: Compose 파일 배치
   ansible.builtin.copy:
@@ -89,7 +89,7 @@
     owner: root
     group: root
     mode: "0644"
-  register: writing_app_compose_file
+  register: writing_app_deploy_compose_file
 
 - name: Caddy 설정 배치
   ansible.builtin.copy:
@@ -98,7 +98,8 @@
     owner: root
     group: root
     mode: "0644"
-  register: writing_app_caddy_file
+  register: writing_app_deploy_caddy_file
+  notify: 변경된 bind-mounted Caddyfile을 반영하도록 Caddy 재생성
 
 - name: Litestream 설정 배치
   ansible.builtin.copy:
@@ -107,7 +108,7 @@
     owner: root
     group: root
     mode: "0644"
-  register: writing_app_litestream_file
+  register: writing_app_deploy_litestream_file
 
 - name: Compose image 환경 파일 배치
   ansible.builtin.template:
@@ -117,17 +118,17 @@
     group: root
     mode: "0640"
     backup: true
-  register: writing_app_compose_environment
+  register: writing_app_deploy_compose_environment
 
 - name: 직전 image reference 보존
   ansible.builtin.copy:
-    src: "{{ writing_app_compose_environment.backup_file }}"
+    src: "{{ writing_app_deploy_compose_environment.backup_file }}"
     dest: "{{ writing_app_compose_directory }}/.env.previous"
     remote_src: true
     owner: root
     group: root
     mode: "0640"
-  when: writing_app_compose_environment.backup_file is defined
+  when: writing_app_deploy_compose_environment.backup_file is defined
 
 - name: 공개 런타임 환경 파일 배치
   ansible.builtin.template:
@@ -143,7 +144,7 @@
       destination: admin.env
     - source: caddy.env.j2
       destination: caddy.env
-  register: writing_app_public_environment_files
+  register: writing_app_deploy_public_environment_files
 
 - name: 비밀 런타임 환경 파일 배치
   ansible.builtin.template:
@@ -157,7 +158,7 @@
       destination: api.env
     - source: litestream.env.j2
       destination: litestream.env
-  register: writing_app_secret_environment_files
+  register: writing_app_deploy_secret_environment_files
   no_log: true
 
 - name: Cloudflare Tunnel token 배치
@@ -167,26 +168,26 @@
     owner: "65532"
     group: "65532"
     mode: "0600"
-  register: writing_app_tunnel_token_file
+  register: writing_app_deploy_tunnel_token_file
   no_log: true
 
 - name: 배포 변경 여부 계산
   ansible.builtin.set_fact:
-    writing_app_deployment_changed: >-
+    writing_app_deploy_deployment_changed: >-
       {{
-        writing_app_compose_file.changed
-        or writing_app_caddy_file.changed
-        or writing_app_litestream_file.changed
-        or writing_app_compose_environment.changed
+        writing_app_deploy_compose_file.changed
+        or writing_app_deploy_caddy_file.changed
+        or writing_app_deploy_litestream_file.changed
+        or writing_app_deploy_compose_environment.changed
         or (
-          writing_app_public_environment_files.results
+          writing_app_deploy_public_environment_files.results
           | selectattr('changed') | list | length > 0
         )
         or (
-          writing_app_secret_environment_files.results
+          writing_app_deploy_secret_environment_files.results
           | selectattr('changed') | list | length > 0
         )
-        or writing_app_tunnel_token_file.changed
+        or writing_app_deploy_tunnel_token_file.changed
       }}
 
 - name: Compose 설정 검증
@@ -215,7 +216,7 @@
   no_log: true
 
 - name: 변경된 배포 적용
-  when: writing_app_deployment_changed | bool
+  when: writing_app_deploy_deployment_changed | bool
   block:
     - name: 배포 이미지 pull
       community.docker.docker_compose_v2_pull:
@@ -252,7 +253,7 @@
     - name: 기존 DB 확인
       ansible.builtin.stat:
         path: "{{ writing_app_data_directory }}/api.sqlite"
-      register: writing_app_database_before_deploy
+      register: writing_app_deploy_database_before_deploy
 
     - name: 최초 기동 전 R2 복구 시도
       community.docker.docker_compose_v2_run:
@@ -268,12 +269,12 @@
         no_deps: true
         interactive: false
         tty: false
-      when: not writing_app_database_before_deploy.stat.exists
+      when: not writing_app_deploy_database_before_deploy.stat.exists
 
     - name: 복구 후 DB 확인
       ansible.builtin.stat:
         path: "{{ writing_app_data_directory }}/api.sqlite"
-      register: writing_app_database_after_restore
+      register: writing_app_deploy_database_after_restore
 
     - name: 복구된 DB 소유권 정규화
       ansible.builtin.file:
@@ -283,7 +284,7 @@
         group: "{{ writing_app_container_gid }}"
         mode: "0750"
         recurse: true
-      when: writing_app_database_after_restore.stat.exists
+      when: writing_app_deploy_database_after_restore.stat.exists
 
     - name: 기존 DB snapshot 백업
       community.docker.docker_compose_v2_run:
@@ -299,12 +300,12 @@
           - "--source=/var/lib/writing-app/api.sqlite"
           - >-
             --output=/var/backups/writing-app/
-            pre-deploy-{{ writing_app_deployment_id }}.sqlite
+            pre-deploy-{{ writing_app_deploy_deployment_id }}.sqlite
         cleanup: true
         no_deps: true
         interactive: false
         tty: false
-      when: writing_app_database_after_restore.stat.exists
+      when: writing_app_deploy_database_after_restore.stat.exists
 
     - name: SQLite writer 중지
       community.docker.docker_compose_v2:
@@ -360,30 +361,15 @@
         state: present
         wait: true
         wait_timeout: 120
-      register: writing_app_compose_deployment
 
-    - name: 변경된 bind-mounted Caddyfile을 반영하도록 Caddy 재생성
-      community.docker.docker_compose_v2:
-        project_src: "{{ writing_app_compose_directory }}"
-        env_files:
-          - .env
-        files:
-          - compose.yaml
-        dependencies: false
-        pull: never
-        recreate: always
-        services:
-          - caddy
-        state: present
-        wait: true
-        wait_timeout: 120
-      when: writing_app_caddy_file.changed
+    - name: 변경된 Caddy 설정을 배포 기록 전에 반영
+      ansible.builtin.meta: flush_handlers
 
     - name: 배포 image reference 기록
       ansible.builtin.copy:
         dest: >-
           {{ writing_app_deployment_directory }}/
-          {{ writing_app_deployment_id }}.txt
+          {{ writing_app_deploy_deployment_id }}.txt
         owner: root
         group: root
         mode: "0640"
@@ -403,4 +389,4 @@
     state: present
     wait: true
     wait_timeout: 120
-  when: not (writing_app_deployment_changed | bool)
+  when: not (writing_app_deploy_deployment_changed | bool)

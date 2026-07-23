@@ -225,12 +225,9 @@ services:
     image: ${API_IMAGE:?API_IMAGE가 필요합니다}
     profiles:
       - operations
-    working_dir: /workspace
     command:
       - bun
-      - --filter
-      - "@workspace/db"
-      - db:migrate
+      - /workspace/bin/database-migrate
     environment:
       DATABASE_URL: file:/var/lib/writing-app/api.sqlite
       NODE_ENV: production
@@ -271,10 +268,9 @@ services:
     image: ${API_IMAGE:?API_IMAGE가 필요합니다}
     profiles:
       - operations
-    working_dir: /workspace
     entrypoint:
       - bun
-      - apps/api/src/scripts/backup-database.ts
+      - /workspace/bin/database-backup
     environment:
       DATABASE_URL: file:/var/lib/writing-app/api.sqlite
       NODE_ENV: production

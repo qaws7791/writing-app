@@ -1,6 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalPassThroughEnv": ["CI", "WRITING_APP_DISPOSABLE_UBUNTU"],
+  "globalPassThroughEnv": [
+    "CI",
+    "NEXT_RUNTIME",
+    "WRITING_APP_DISPOSABLE_UBUNTU"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {

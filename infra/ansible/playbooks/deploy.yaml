@@ -6,6 +6,12 @@
   vars_files:
     - ../vars/defaults.yaml
   tasks:
+    - name: Production 배포 승인 확인
+      ansible.builtin.assert:
+        that:
+          - writing_app_allow_production_deploy | default(false) | bool
+        fail_msg: writing_app_allow_production_deploy=true를 명시해야 합니다.
+
     - name: 배포 작업 공유 락 획득
       ansible.builtin.command:
         argv:

@@ -14,7 +14,7 @@
 
 ## 승인과 실행
 
-1. 배포 대상 revision, image reference, 공개 origin과 대상 inventory의 일치 여부를 확인한다.
+1. 배포 대상 revision, image reference, 공개 origin과 대상 inventory의 일치 여부를 확인하고 production deploy 승인 입력을 명시한다. 승인 입력이 없으면 playbook은 호스트 변경 전에 중단해야 한다.
 2. 배포 전 데이터 backup·무결성·디스크·secret·연결 상태를 검사한다.
 3. migration 호환성과 rollback 가능 여부를 판정한다. 이전 코드와 호환되지 않는 데이터 변경은 별도 승인 없이는 진행하지 않는다.
 4. 승인된 automation으로 설정 배치, migration, 기동과 health·주요 읽기 smoke를 실행한다.
@@ -30,6 +30,8 @@
 ## 검증 경계
 
 정적 설정 검증, image smoke, host bootstrap, 실제 deploy와 복구 훈련은 서로 다른 위험 수준이다. 각 명령의 현재 이름·입력·실행 환경은 root task, CI workflow와 deployment automation source를 확인한다. 운영 서버나 개발자의 기존 데이터를 대상으로 destructive 검증을 실행하지 않는다.
+
+runtime OpenAPI는 등록 route에서 생성하므로 정적 사본을 보존하지 않고 계약 테스트로 재생성 가능성을 검증한다. migration SQL은 application migration source를 Git에 보존한다. Storybook 정적 산출물은 source가 아니라 CI 검토 artifact이며 제한된 기간만 보존한다. 현재 source와 보존 설정은 API route·migration directory, Storybook manifest와 quality workflow를 직접 확인한다.
 
 ## 변경 검토
 

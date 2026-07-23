@@ -208,12 +208,12 @@
             writing_app_restore_recovery_status: verified-success
             writing_app_restore_release_operation_lock: true
       rescue:
-        - name: fail-closed DB 복구 실패 stage 계산
+        - name: DB 복구 fail-closed 실패 stage 계산
           ansible.builtin.set_fact:
             writing_app_restore_failure_stage: >-
               {{ ansible_failed_task.name | default('unknown') }}
 
-        - name: fail-closed DB 복구 recovery 증적 기록
+        - name: DB 복구 fail-closed recovery 증적 기록
           ansible.builtin.copy:
             dest: >-
               {{ writing_app_backup_directory }}/{{ writing_app_restore_id }}/recovery.txt
@@ -235,7 +235,7 @@
             writing_app_restore_database_isolation_started
             | default(false) | bool
 
-        - name: fail-closed DB 복구 실패 종료
+        - name: DB 복구 fail-closed 실패 종료
           ansible.builtin.fail:
             msg: >-
               SQLite 복구가 {{ writing_app_restore_failure_stage }} 단계에서 실패했습니다.

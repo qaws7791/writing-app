@@ -1,5 +1,24 @@
 # syntax=docker/dockerfile:1
 
+FROM --platform=$BUILDPLATFORM oven/bun:1.3.10@sha256:b86c67b531d87b4db11470d9b2bd0c519b1976eee6fcd71634e73abfa6230d2e AS builder
+
+WORKDIR /workspace
+
+ENV CI=true \
+    NODE_ENV=production
+
+COPY --parents package.json bun.lock apps/*/package.json packages/*/package.json packages/*/*/package.json ./
+
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --production --filter @workspace/api --linker isolated --frozen-lockfile
+
+COPY . .
+
+RUN mkdir -p /workspace/image-bin \
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/main.ts --outfile /workspace/image-bin/api \
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/migrate-database.ts --outfile /workspace/image-bin/database-migrate \
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/backup-database.ts --outfile /workspace/image-bin/database-backup
+
 FROM oven/bun:1.3.10@sha256:b86c67b531d87b4db11470d9b2bd0c519b1976eee6fcd71634e73abfa6230d2e AS runner
 
 RUN groupadd --system --gid 10001 writing-app \
@@ -7,17 +26,13 @@ RUN groupadd --system --gid 10001 writing-app \
 
 WORKDIR /workspace
 
-ENV CI=true \
-    NODE_ENV=production
+ENV NODE_ENV=production
 
-COPY . .
-
-RUN bun install --production --filter @workspace/api --linker isolated --frozen-lockfile
+COPY --from=builder --chown=10001:10001 /workspace/image-bin/ ./bin/
+COPY --from=builder --chown=10001:10001 /workspace/node_modules/.bun/prismjs@1.30.0/node_modules/prismjs/ ./node_modules/prismjs/
 
 USER 10001:10001
 
-WORKDIR /workspace/apps/api
-
 EXPOSE 4000
 
-CMD ["bun", "src/main.ts"]
+CMD ["bun", "/workspace/bin/api"]

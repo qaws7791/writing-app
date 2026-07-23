@@ -38,6 +38,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   reactCompiler: true,
+  serverExternalPackages: ["sharp"],
   turbopack: {
     root: join(appDirectory, "../.."),
   },

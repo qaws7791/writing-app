@@ -13,6 +13,7 @@ import {
   createComposeUpArguments,
   createHealthRequestScript,
   createImageBuildArguments,
+  createImageOptimizationRequestScript,
   createRuntimeEnvironment,
   deploymentImageSpecs,
   isExpectedRuntimeUser,
@@ -83,6 +84,24 @@ describe("production image smoke 계약", () => {
     }
   })
 
+  test("runtime image는 대상 밖 workspace source를 포함하지 않는다", () => {
+    const api = deploymentImageSpecs.find((spec) => spec.name === "api")
+    const web = deploymentImageSpecs.find((spec) => spec.name === "web")
+    const admin = deploymentImageSpecs.find((spec) => spec.name === "admin")
+
+    expect(api?.runtimeArtifactPaths).toEqual([
+      "/workspace/bin/api",
+      "/workspace/bin/database-backup",
+      "/workspace/bin/database-migrate",
+      "/workspace/node_modules/prismjs/package.json",
+    ])
+    expect(api?.forbiddenPaths).toEqual(
+      expect.arrayContaining(["/workspace/apps", "/workspace/packages"])
+    )
+    expect(web?.forbiddenPaths).toContain("/workspace/packages/modules")
+    expect(admin?.forbiddenPaths).toContain("/workspace/packages/modules")
+  })
+
   test("통합 API smoke는 configured API Host로 health를 요청한다", () => {
     const apiSpec = deploymentImageSpecs.find((spec) => spec.name === "api")
     expect(apiSpec).toBeDefined()
@@ -101,6 +120,9 @@ describe("production image smoke 계약", () => {
       "https://assets.example.test"
     )
     expect(environment.get("API_ORIGIN")).toBe("https://api.example.test")
+    expect(environment.get("DEPLOYMENT_VERSION")).toBe(
+      "writing-app-smoke-api@sha256:test"
+    )
     expect(environment.get("ADMIN_ORIGIN")).toBe("https://admin.example.test")
     expect(environment.get("LEARNER_AUTH_COOKIE_DOMAIN")).toBe("example.test")
     expect(environment.get("ADMIN_AUTH_COOKIE_DOMAIN")).toBe("example.test")
@@ -199,7 +221,11 @@ describe("production image smoke 계약", () => {
         path: "/health",
       },
       {
-        expectedResponse: { ok: true },
+        expectedResponse: {
+          checks: { database: "ready" },
+          impact: "none",
+          ok: true,
+        },
         host: "api.example.test",
         path: "/health",
       },
@@ -265,23 +291,134 @@ describe("production image smoke 계약", () => {
     }
   })
 
-  test("Admin image는 제한된 worker로 Webpack production build를 실행한다", () => {
+  test("web과 admin image는 원본과 다른 축소 image optimizer 응답을 검증한다", () => {
+    for (const name of ["web", "admin"] as const) {
+      const spec = deploymentImageSpecs.find(
+        (candidate) => candidate.name === name
+      )
+      expect(spec).toBeDefined()
+      if (spec === undefined) continue
+
+      expect(spec.optimizedImagePath).toBe("/course-thumbnails/expression.png")
+      const script = createImageOptimizationRequestScript(spec)
+      expect(script).toContain("/_next/image?")
+      expect(script).toContain("w=640")
+      expect(script).toContain("optimized.length>=source.length")
+      expect(script).toContain("optimized.equals(source)")
+    }
+  })
+
+  test("두 Next app은 server 준비 전에 위험 decoder를 차단한다", () => {
+    const repositoryRoot = path.resolve(import.meta.dir, "..")
+    const policySource = readFileSync(
+      path.join(
+        repositoryRoot,
+        "packages/config/nextjs-config/src/image-optimizer-security.ts"
+      ),
+      "utf8"
+    )
+
+    expect(policySource).toContain("imageOptimizer.block")
+    for (const operation of [
+      "VipsForeignLoadNsgif",
+      "VipsForeignLoadTiff",
+      "VipsForeignLoadVips",
+    ]) {
+      expect(policySource).toContain(operation)
+    }
+
+    for (const app of ["web", "admin"] as const) {
+      const instrumentation = readFileSync(
+        path.join(repositoryRoot, "apps", app, "src", "instrumentation.ts"),
+        "utf8"
+      )
+      expect(instrumentation).toContain('process.env.NEXT_RUNTIME !== "nodejs"')
+      expect(instrumentation).toContain('import("sharp")')
+      expect(instrumentation).toContain(
+        "applyImageOptimizerSecurityPolicy(sharp)"
+      )
+    }
+  })
+
+  test("두 Next image는 제한된 worker를 사용하고 Admin은 Webpack으로 빌드한다", () => {
     const dockerfile = readFileSync(
       path.resolve(import.meta.dir, "../deploy/docker/admin.dockerfile"),
       "utf8"
     )
-    const nextConfig = readFileSync(
+    const adminNextConfig = readFileSync(
       path.resolve(import.meta.dir, "../apps/admin/next.config.ts"),
       "utf8"
     )
     const adminBuildSteps = dockerfile
       .split("\n")
-      .filter((line) => line.startsWith("RUN bun --filter @workspace/admin"))
+      .filter((line) => line.startsWith("RUN cd apps/admin"))
 
     expect(adminBuildSteps).toEqual([
-      "RUN bun --filter @workspace/admin build --webpack",
+      "RUN cd apps/admin && node node_modules/next/dist/bin/next build --webpack",
     ])
     expect(dockerfile).not.toContain("ignoreBuildErrors")
-    expect(nextConfig).toContain("cpus: 1")
+    expect(adminNextConfig).toContain("cpus: 1")
+    expect(
+      readFileSync(
+        path.resolve(import.meta.dir, "../apps/web/next.config.ts"),
+        "utf8"
+      )
+    ).toContain("cpus: 1")
+  })
+
+  test("세 Docker build는 isolated filtered install과 최소 runtime stage를 유지한다", () => {
+    const repositoryRoot = path.resolve(import.meta.dir, "..")
+    expect(
+      readFileSync(path.join(repositoryRoot, ".dockerignore"), "utf8")
+    ).toMatch(/^scripts$/mu)
+
+    for (const service of ["web", "api", "admin"] as const) {
+      const dockerfile = readFileSync(
+        path.join(repositoryRoot, "deploy", "docker", `${service}.dockerfile`),
+        "utf8"
+      )
+      expect(dockerfile).toContain("COPY . .")
+      expect(dockerfile).toContain(
+        "COPY --parents package.json bun.lock apps/*/package.json packages/*/package.json packages/*/*/package.json ./"
+      )
+      expect(dockerfile).toContain(
+        `--filter @workspace/${service} --linker isolated --frozen-lockfile`
+      )
+      expect(dockerfile).toContain("FROM --platform=$BUILDPLATFORM")
+      expect(dockerfile).toContain(
+        "--mount=type=cache,target=/root/.bun/install/cache"
+      )
+      expect(dockerfile.indexOf("bun install")).toBeLessThan(
+        dockerfile.indexOf("COPY . .")
+      )
+
+      if (service !== "api") {
+        expect(dockerfile).toContain("--cpu='*' --os=linux")
+        expect(dockerfile).toContain(" AS bun")
+        expect(dockerfile).toContain(
+          "COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun"
+        )
+        expect(dockerfile).toContain(
+          `RUN cd apps/${service} && node node_modules/next/dist/bin/next build`
+        )
+      }
+
+      const runner = dockerfile.slice(dockerfile.lastIndexOf(" AS runner"))
+      expect(runner).not.toContain("COPY . .")
+    }
+
+    const apiDockerfile = readFileSync(
+      path.join(repositoryRoot, "deploy", "docker", "api.dockerfile"),
+      "utf8"
+    )
+    expect(apiDockerfile).toContain(
+      "bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/main.ts --outfile /workspace/image-bin/api"
+    )
+    expect(apiDockerfile).toContain(
+      "COPY --from=builder --chown=10001:10001 /workspace/image-bin/ ./bin/"
+    )
+    expect(
+      apiDockerfile.slice(apiDockerfile.lastIndexOf(" AS runner"))
+    ).not.toContain("/workspace/apps/api")
   })
 })

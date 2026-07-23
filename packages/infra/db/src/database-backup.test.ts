@@ -3,13 +3,14 @@ import {
   copyFileSync,
   existsSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
   writeFileSync,
 } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 
 import { Database } from "bun:sqlite"
 import { describe, expect, it } from "vitest"
@@ -63,6 +64,11 @@ describe("SQLite 백업과 복구 검증", () => {
       expect(statSync(backupPath).mode & 0o777).toBe(0o444)
       expect(existsSync(`${backupPath}-wal`)).toBe(false)
       expect(existsSync(`${backupPath}-shm`)).toBe(false)
+      expect(
+        readdirSync(dirname(backupPath)).some((name) =>
+          name.includes(".partial")
+        )
+      ).toBe(false)
 
       expect(report).toMatchObject({
         backupPath,

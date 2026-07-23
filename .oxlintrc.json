@@ -109,7 +109,7 @@
     "turbo/no-undeclared-env-vars": "warn",
     "no-console": "error",
     "unused-imports/no-unused-imports": "error",
-    "unused-imports/no-unused-vars": [
+    "no-unused-vars": [
       "warn",
       {
         "vars": "all",

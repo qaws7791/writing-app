@@ -16,19 +16,21 @@ traffic만 별도 runtime으로 분기하는 rollback 경로는 유지하지 않
 
 `infra/ansible/playbooks/rollback.yaml`은 web, 통합 API, admin image를 승인된 이전
 digest로 전환한다. API image는 learner/admin route와 하나의 SQLite lifecycle을 함께
-소유하므로 둘을 분리해 선택할 수 없다.
+소유하므로 둘을 분리해 선택할 수 없다. playbook은 root 소유의 직전 Compose 환경을
+Compose로 해석하고, 최종 web·통합 API·admin image가 모두 digest인지 확인한 뒤에만 이를
+복구한다. 따라서 중복 환경 변수의 앞선 안전한 값이 뒤의 가변 tag를 가리지 못한다.
 
 ```bash
 ansible-playbook infra/ansible/playbooks/rollback.yaml \
   -i infra/ansible/inventories/production/hosts.yaml \
   --ask-vault-pass \
-  -e writing_app_rollback_approved=true \
-  -e writing_app_rollback_api_image=ghcr.io/example/writing-app-api@sha256:replace-me \
-  -e writing_app_rollback_web_image=ghcr.io/example/writing-app-web@sha256:replace-me \
-  -e writing_app_rollback_admin_image=ghcr.io/example/writing-app-admin@sha256:replace-me
+  -e writing_app_allow_code_rollback=true \
+  -e writing_app_code_rollback_database_compatible=true
 ```
 
-실행 전에는 현재 revision, 대상 digest, DB schema 호환성, 최신 backup을 확인한다.
+실행 전에는 현재 revision, 직전 환경의 대상 digest, DB schema 호환성, 최신 backup을 확인한다.
+DB 호환성 확인 입력은 운영자의 판단을 기록하는 fail-closed 승인이지 자동 호환성 증명이 아니다.
+호환되지 않으면 이 playbook을 실행하지 않고 별도 승인된 데이터 복구 절차를 사용한다.
 실행 뒤에는 같은 `API_HOST`의 `/health`, `/api/admin/health`, 두 인증 realm과 관리자 핵심 변경 route를
 검증한다. Caddy의 API upstream은 `api:4000` 하나여야 한다.
 

@@ -8,6 +8,9 @@ const appDirectory = dirname(fileURLToPath(import.meta.url))
 const development = process.env.NODE_ENV !== "production"
 
 const nextConfig: NextConfig = {
+  experimental: {
+    cpus: 1,
+  },
   output: "standalone",
   outputFileTracingRoot: join(appDirectory, "../.."),
   async headers() {
@@ -37,6 +40,7 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   reactCompiler: true,
+  serverExternalPackages: ["sharp"],
   poweredByHeader: false,
   turbopack: {
     root: join(appDirectory, "../.."),

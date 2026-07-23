@@ -70,7 +70,13 @@ export function createVerifiedDatabaseBackup(input: {
     }
   } finally {
     source.close()
-    rmSync(partialPath, { force: true })
+    for (const temporaryPath of [
+      partialPath,
+      `${partialPath}-shm`,
+      `${partialPath}-wal`,
+    ]) {
+      rmSync(temporaryPath, { force: true })
+    }
   }
 }
 

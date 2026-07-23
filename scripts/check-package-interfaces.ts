@@ -169,6 +169,7 @@ const expectedExports = {
   ],
   "packages/config/nextjs-config/package.json": [
     "./csp-report",
+    "./image-optimizer-security",
     "./security-headers",
   ],
   "packages/config/typescript-config/package.json": [

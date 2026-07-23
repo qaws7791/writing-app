@@ -10,7 +10,14 @@
       ansible.builtin.assert:
         that:
           - writing_app_allow_code_rollback | default(false) | bool
-        fail_msg: writing_app_allow_code_rollback=true를 명시해야 합니다.
+          - >-
+            writing_app_code_rollback_database_compatible
+            | default(false) | bool
+        fail_msg: >-
+          writing_app_allow_code_rollback=true와
+          writing_app_code_rollback_database_compatible=true를 명시해야 합니다.
+          DB가 이전 image와 호환되지 않으면 이 playbook을 실행하지 말고 별도 승인된
+          database restore 절차를 사용해야 합니다.
 
     - name: 코드 롤백 작업 공유 락 획득
       ansible.builtin.command:
@@ -44,7 +51,48 @@
           ansible.builtin.assert:
             that:
               - writing_app_previous_compose_environment.stat.exists
+              - writing_app_previous_compose_environment.stat.isreg
+              - writing_app_previous_compose_environment.stat.pw_name == 'root'
+              - writing_app_previous_compose_environment.stat.mode == '0640'
             fail_msg: 롤백할 직전 Compose 환경 파일이 없습니다.
+
+        - name: 직전 Compose 설정 해석
+          ansible.builtin.command:
+            argv:
+              - docker
+              - compose
+              - --env-file
+              - .env.previous
+              - -f
+              - compose.yaml
+              - config
+              - --format
+              - json
+          args:
+            chdir: "{{ writing_app_compose_directory }}"
+          register: writing_app_previous_compose_configuration
+          changed_when: false
+          no_log: true
+
+        - name: 직전 application image 불변성 검증
+          vars:
+            writing_app_previous_compose_services: >-
+              {{ (writing_app_previous_compose_configuration.stdout | from_json).services }}
+          ansible.builtin.assert:
+            that:
+              - >-
+                writing_app_previous_compose_services.web.image
+                is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - >-
+                writing_app_previous_compose_services.api.image
+                is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - >-
+                writing_app_previous_compose_services.admin.image
+                is match('^.+@sha256:[0-9a-f]{64}\Z')
+            fail_msg: >-
+              직전 Compose 설정이 최종 해석한 web, 통합 API와 admin image가 모두 immutable
+              digest여야 하며 다른 image reference로 롤백하지 않습니다.
+          no_log: true
 
         - name: 직전 image reference 복구
           ansible.builtin.copy:

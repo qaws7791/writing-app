@@ -83,6 +83,12 @@ export function validateComposeContract(input: unknown): readonly string[] {
   for (const serviceName of applicationServices) {
     const service = services[serviceName]
     if (!isJsonObject(service)) continue
+    if (
+      typeof service.image !== "string" ||
+      !/^.+@sha256:[0-9a-f]{64}(?![\s\S])/u.test(service.image)
+    ) {
+      errors.push(`${serviceName}: immutable image digest가 필요합니다.`)
+    }
     if (service.init !== true) {
       errors.push(`${serviceName}: init이 true여야 합니다.`)
     }
@@ -131,6 +137,66 @@ export function validateComposeContract(input: unknown): readonly string[] {
   const caddyService = services.caddy
   if (isJsonObject(caddyService) && hasDependency(caddyService, "admin-api")) {
     errors.push("caddy: 제거된 admin-api에 의존하면 안 됩니다.")
+  }
+
+  if (isJsonObject(apiService)) {
+    errors.push(
+      ...validateApiOperationService(
+        services["database-migrate"],
+        apiService,
+        "database-migrate",
+        "command",
+        ["bun", "/workspace/bin/database-migrate"]
+      ),
+      ...validateApiOperationService(
+        services["database-backup"],
+        apiService,
+        "database-backup",
+        "entrypoint",
+        ["bun", "/workspace/bin/database-backup"]
+      ),
+      ...validateApiOperationService(
+        services["database-check"],
+        apiService,
+        "database-check"
+      )
+    )
+  }
+
+  return errors
+}
+
+function validateApiOperationService(
+  value: unknown,
+  apiService: JsonObject,
+  serviceName: "database-backup" | "database-check" | "database-migrate",
+  executableField?: "command" | "entrypoint",
+  executableCommand?: readonly string[]
+): readonly string[] {
+  if (!isJsonObject(value)) return []
+
+  const errors: string[] = []
+  if (value.image !== apiService.image) {
+    errors.push(`${serviceName}: 통합 API와 같은 image를 사용해야 합니다.`)
+  }
+  if (value.network_mode !== "none") {
+    errors.push(`${serviceName}: network_mode는 none이어야 합니다.`)
+  }
+  if (value.restart !== "no") {
+    errors.push(`${serviceName}: 일회성 작업은 restart: no여야 합니다.`)
+  }
+  if (!hasVolumeTarget(value, "/var/lib/writing-app")) {
+    errors.push(`${serviceName}: application DB volume이 필요합니다.`)
+  }
+
+  if (
+    executableField !== undefined &&
+    executableCommand !== undefined &&
+    !sameStringArray(value[executableField], executableCommand)
+  ) {
+    errors.push(
+      `${serviceName}: API image의 ${executableCommand.at(-1)}를 Bun으로 실행해야 합니다.`
+    )
   }
 
   return errors
@@ -300,6 +366,14 @@ function sameValues(
   return (
     actual.length === expected.length &&
     actual.every((value, index) => value === [...expected].sort()[index])
+  )
+}
+
+function sameStringArray(value: unknown, expected: readonly string[]): boolean {
+  return (
+    Array.isArray(value) &&
+    value.length === expected.length &&
+    value.every((entry, index) => entry === expected[index])
   )
 }
 

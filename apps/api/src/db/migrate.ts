@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
 
 import type { Database } from "bun:sqlite"
 import { assertAiFeedbackMigrationPrerequisites } from "@workspace/ai-feedback/migration"
@@ -16,6 +15,9 @@ import {
 import { assertLearningMigrationPrerequisites } from "@workspace/learning/migration"
 import { assertResourceLibraryMigrationPrerequisites } from "@workspace/resource-library/migration"
 
+import baselineMigrationSql from "../../drizzle/0000-writing-app-baseline.sql" with { type: "text" }
+import moduleOwnershipMigrationSql from "../../drizzle/0001-module-schema-ownership.sql" with { type: "text" }
+
 import {
   assertCurrentApplicationSchema,
   hasBaselineSchema,
@@ -26,12 +28,12 @@ import { assertNoDanglingSchemaReferences } from "@/db/schema-reconciliation"
 
 const baselineMigration = readMigration(
   "0000-writing-app-baseline",
-  new URL("../../drizzle/0000-writing-app-baseline.sql", import.meta.url),
+  baselineMigrationSql,
   "ca744dd3c34bdd604cfd3de4e57c44dc4299e67bb6685926e4d89aa5821bee25"
 )
 const moduleOwnershipMigration = readMigration(
   "0001-module-schema-ownership",
-  new URL("../../drizzle/0001-module-schema-ownership.sql", import.meta.url),
+  moduleOwnershipMigrationSql,
   "20b1b8a424d4916b565f5b991f221ddc0708a1a654f0cfbeaf6627b53b2636b0"
 )
 
@@ -272,10 +274,10 @@ function prepareLegacyAiFeedbackAttemptState(sqlite: Database): void {
 
 function readMigration(
   id: string,
-  url: URL,
+  source: string,
   expectedChecksum: string
 ): Readonly<{ checksum: string; id: string; sql: string }> {
-  const sql = normalizeLineEndings(readFileSync(url, "utf8"))
+  const sql = normalizeLineEndings(source)
   const checksum = createHash("sha256").update(sql).digest("hex")
   if (checksum !== expectedChecksum) {
     throw new Error(`migration checksum이 변경됐습니다: ${id}`)
