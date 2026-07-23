@@ -34,6 +34,7 @@ const forbiddenRuntimeTokens = [
   "PRODUCTION_ADMIN_API_ORIGIN",
   "WEB_API_BASE_URL",
   "admin-api:4101",
+  "admin-api.",
   "admin-api-unified",
   "admin-api.dockerfile",
   "admin-api.env",

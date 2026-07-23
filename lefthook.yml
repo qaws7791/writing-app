@@ -14,7 +14,7 @@ pre-commit:
       run: bun run scripts/lint-staged-workspaces.ts {staged_files}
 
     workspace-inventory:
-      glob: "{package.json,turbo.json,vitest.workspace.ts,README.md,docs/**/*.md,apps/*/package.json,packages/*/package.json,packages/*/*/package.json,scripts/{check-workspace-inventory,workspace-inventory}.ts}"
+      glob: "{package.json,turbo.json,vitest.workspace.ts,README.md,docs/**/*.md,apps/*/package.json,packages/*/package.json,packages/*/*/package.json,scripts/{check-workspace-inventory,workspace-inventory,workspace-inventory.test}.ts,scripts/fixtures/target-workspace-inventory.json}"
       run: bun run check:workspace-inventory
 
     document-drift:
@@ -26,11 +26,11 @@ pre-commit:
       run: bun run check:workflow-skill-invocation-policy
 
     components-config:
-      glob: "{apps/*/components.json,packages/*/components.json,package.json,README.md,docs/engineering/testing.md,scripts/check-components-config.ts}"
+      glob: "{apps/*/components.json,packages/*/*/components.json,package.json,README.md,docs/engineering/testing.md,scripts/check-components-config.ts}"
       run: bun run check:components-config
 
     architecture:
-      glob: "{dependency-cruiser.config.mjs,package.json,apps/**/*.{ts,tsx},packages/**/*.{ts,tsx},apps/*/{package.json,tsconfig.json},packages/*/{package.json,tsconfig.json},packages/*/*/{package.json,tsconfig.json},scripts/{check-architecture,workspace-inventory}.ts,scripts/fixtures/dependency-cruiser/**}"
+      glob: "{dependency-cruiser.config.mjs,package.json,apps/**/*.{ts,tsx},packages/**/*.{ts,tsx},apps/*/{package.json,tsconfig.json},packages/*/package.json,packages/*/tsconfig.json,packages/*/*/{package.json,tsconfig.json},scripts/{check-architecture,workspace-inventory}.ts,scripts/fixtures/dependency-cruiser/**}"
       run: bun run check:architecture
 
     dead-code:
@@ -38,7 +38,7 @@ pre-commit:
       run: bun run check:dead-code
 
     package-interfaces:
-      glob: "{package.json,apps/storybook/**/*.{ts,tsx,mdx},packages/{core,ui}/**/*.{ts,tsx,json},packages/config/env/**/*.{ts,json},packages/*/*/**/*.{ts,tsx,json},scripts/check-package-interfaces.ts,docs/engineering/{code-style.md,package-interface-and-import-rules.md}}"
+      glob: "{package.json,apps/storybook/**/*.{ts,tsx,mdx},packages/*/package.json,packages/**/*.{ts,tsx,json},scripts/{check-package-interfaces,package-interface-tombstones,package-interface-tombstones.test}.ts,scripts/fixtures/p15-module-environment-access.txt,docs/engineering/{code-style.md,package-interface-and-import-rules.md}}"
       run: bun run check:package-interfaces
 
 pre-push:

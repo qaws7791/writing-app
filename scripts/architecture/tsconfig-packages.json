@@ -4,7 +4,6 @@
     "baseUrl": "../..",
     "paths": {
       "#auth/*": ["packages/infra/auth/src/*"],
-      "#core/*": ["packages/core/src/*"],
       "#env/*": ["packages/config/env/src/*"],
       "#contracts/*": ["packages/shared/contracts/src/*"],
       "#resource-document/*": ["packages/shared/resource-document/src/*"],

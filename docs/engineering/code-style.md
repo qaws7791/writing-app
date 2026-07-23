@@ -17,8 +17,8 @@
 - TypeScript import path에는 파일 확장자를 포함하지 않는다.
 - workspace 간 import는 `@workspace/*`의 명시적인 공개 subpath를 사용한다.
 - canonical DTO와 wire status는 가장 구체적인 `@workspace/contracts/*` 공개 subpath에서, brand ID는 `@workspace/types/ids`에서 직접 import한다. 예상 가능한 실패의 공통 Result API는 `@workspace/kernel/result`를 사용한다.
-- 의미, 정책 또는 validation을 추가하지 않는 core 내부 한 줄 forwarding 파일을 만들지 않는다. 외부 호환성이 필요한 capability facade는 canonical contract를 직접 재수출한다.
-- 패키지 내부 Implementation은 package별 private alias를 사용한다. `auth`, `core`, `ui`, `env`는 각각 `#auth/*`, `#core/*`, `#ui/*`, `#env/*`, Storybook source는 `#storybook/*`를 사용한다. API 내부 platform과 observability 구현은 `@/*` 앱 alias를 사용한다.
+- 의미, 정책 또는 validation을 추가하지 않는 한 줄 forwarding 파일을 만들지 않는다. 공개 capability는 소유 package의 좁은 subpath에서 직접 제공한다.
+- 패키지 내부 Implementation은 package별 private alias를 사용한다. 예를 들어 `auth`, `ui`, `env`는 각각 `#auth/*`, `#ui/*`, `#env/*`, Storybook source는 `#storybook/*`를 사용한다. API 내부 platform과 observability 구현은 `@/*` 앱 alias를 사용한다.
 - 패키지 내부에서 자기 `@workspace/*` 공개 Interface를 역참조하거나 상대 경로로 우회하지 않는다.
 - 앱 간 상대 import를 만들지 않는다.
 - 레거시 실험 디렉터리의 구현 파일은 제품 런타임에서 import하지 않는다.
@@ -90,9 +90,9 @@ bun run lint:fix
 
 ## API와 DB 경계
 
-- `apps/api`의 composition과 app-owned persistence adapter만 `@workspace/db`와 Drizzle을 import한다. HTTP route와 middleware는 직접 import하지 않는다.
+- DB·Drizzle 직접 접근은 `apps/api`의 composition·DB tooling·persistence/auth adapter, auth schema integration과 module infrastructure로 제한한다. HTTP interface와 middleware는 직접 import하지 않는다.
 - `packages/infra/auth`의 SQLite adapter factory는 Better Auth vendor 호출을 격리하고 auth schema를 소유한다. API는 제품 profile·role repository를 주입한다.
-- `packages/infra/db`는 `@workspace/core`를 import하지 않는다.
+- `packages/infra/db`는 application schema·migration·seed와 비즈니스 module을 import하지 않는다.
 - DB row와 API DTO 사이 변환은 repository 또는 mapper 경계에서 수행한다.
 - API 응답은 runtime schema나 mapper를 통과한 내부 모델로 화면에 전달한다.
 

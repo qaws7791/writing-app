@@ -54,7 +54,7 @@ describe("workspace inventory", () => {
     })
     writeRootManifest(repositoryRoot, [
       "apps/*",
-      "packages/*",
+      "packages/modules/*",
       "packages/config/*",
     ])
 
@@ -69,12 +69,15 @@ describe("workspace inventory", () => {
     const repositoryRoot = createFixtureRepository({
       "apps/web": { name: "@fixture/web" },
     })
-    fs.mkdirSync(path.join(repositoryRoot, "packages/removed/.turbo"), {
+    fs.mkdirSync(path.join(repositoryRoot, "packages/modules/removed/.turbo"), {
       recursive: true,
     })
-    fs.mkdirSync(path.join(repositoryRoot, "packages/removed/node_modules"), {
-      recursive: true,
-    })
+    fs.mkdirSync(
+      path.join(repositoryRoot, "packages/modules/removed/node_modules"),
+      {
+        recursive: true,
+      }
+    )
 
     const inventory = expectSuccess(createWorkspaceInventory(repositoryRoot))
     expect(inventory.allWorkspaces.map(({ name }) => name)).toEqual([
@@ -85,7 +88,7 @@ describe("workspace inventory", () => {
   it("같은 package name이 중복되면 실패한다", () => {
     const repositoryRoot = createFixtureRepository({
       "apps/web": { name: "@fixture/duplicate" },
-      "packages/core": { name: "@fixture/duplicate" },
+      "packages/modules/duplicate": { name: "@fixture/duplicate" },
     })
 
     const result = createWorkspaceInventory(repositoryRoot)
@@ -101,11 +104,11 @@ describe("workspace inventory", () => {
     const repositoryRoot = createFixtureRepository({
       "apps/web": { name: "@fixture/web" },
     })
-    fs.mkdirSync(path.join(repositoryRoot, "packages/missing/src"), {
+    fs.mkdirSync(path.join(repositoryRoot, "packages/modules/missing/src"), {
       recursive: true,
     })
     fs.writeFileSync(
-      path.join(repositoryRoot, "packages/missing/src/index.ts"),
+      path.join(repositoryRoot, "packages/modules/missing/src/index.ts"),
       "export const missing = true"
     )
 
@@ -132,7 +135,16 @@ function createFixtureRepository(
   fixtureRoots.push(repositoryRoot)
   fs.mkdirSync(path.join(repositoryRoot, "apps"))
   fs.mkdirSync(path.join(repositoryRoot, "packages"))
-  writeRootManifest(repositoryRoot, ["apps/*", "packages/*"])
+  for (const group of ["config", "infra", "modules", "shared"]) {
+    fs.mkdirSync(path.join(repositoryRoot, "packages", group))
+  }
+  writeRootManifest(repositoryRoot, [
+    "apps/*",
+    "packages/modules/*",
+    "packages/infra/*",
+    "packages/shared/*",
+    "packages/config/*",
+  ])
 
   for (const [directory, workspace] of Object.entries(workspaces)) {
     writeWorkspace(repositoryRoot, directory, workspace)

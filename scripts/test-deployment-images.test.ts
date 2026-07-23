@@ -379,8 +379,9 @@ describe("production image smoke 계약", () => {
       )
       expect(dockerfile).toContain("COPY . .")
       expect(dockerfile).toContain(
-        "COPY --parents package.json bun.lock apps/*/package.json packages/*/package.json packages/*/*/package.json ./"
+        "COPY --parents package.json bun.lock apps/*/package.json packages/*/*/package.json ./"
       )
+      expect(dockerfile).not.toContain(" packages/*/package.json ")
       expect(dockerfile).toContain(
         `--filter @workspace/${service} --linker isolated --frozen-lockfile`
       )

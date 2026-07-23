@@ -1,4 +1,7 @@
 {
   "name": "@fixture/forbidden-web",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "drizzle-orm": "1.0.0"
+  }
 }

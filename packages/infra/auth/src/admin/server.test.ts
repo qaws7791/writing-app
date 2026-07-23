@@ -41,7 +41,7 @@ describe("관리자 Better Auth runtime", () => {
 
     try {
       createAdminAuthRuntime({
-        apiOrigin: "https://admin-api.example.test",
+        apiOrigin: "https://api.example.test",
         cookieDomain: "example.test",
         database: createTestDatabaseAdapter(database.db),
         secret: "x".repeat(32),
@@ -62,7 +62,7 @@ describe("관리자 Better Auth runtime", () => {
           },
         },
         basePath: "/api/admin/auth",
-        baseURL: "https://admin-api.example.test",
+        baseURL: "https://api.example.test",
         disabledPaths: ["/sign-up/email"],
         emailAndPassword: { disableSignUp: true, enabled: true },
         session: { modelName: "admin_session" },
@@ -89,7 +89,7 @@ describe("관리자 Better Auth runtime", () => {
 
     try {
       const runtime = createAdminAuthRuntime({
-        apiOrigin: "https://admin-api.example.test",
+        apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
         secret: "x".repeat(32),
         sessionRevoker: { revokeAllForAdmin: vi.fn() },
@@ -114,7 +114,7 @@ describe("관리자 Better Auth runtime", () => {
 
     try {
       const runtime = createAdminAuthRuntime({
-        apiOrigin: "https://admin-api.example.test",
+        apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
         secret: "x".repeat(32),
         sessionRevoker: { revokeAllForAdmin: vi.fn() },

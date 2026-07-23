@@ -12,6 +12,7 @@ describe("legacy admin-api runtime 제거 검사", () => {
     ["image", "ADMIN_API_IMAGE=example.invalid/admin-api@sha256:fixture"],
     ["port", "ADMIN_API_PORT=4101"],
     ["upstream", "reverse_proxy admin-api:4101"],
+    ["hostname", "https://admin-api.example.test"],
     ["dockerfile", "deploy/docker/admin-api.dockerfile"],
     ["environment", "admin-api.env"],
     ["rollback", "admin-traffic-rollback.yaml"],

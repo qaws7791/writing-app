@@ -7,7 +7,7 @@ WORKDIR /workspace
 ENV CI=true \
     NODE_ENV=production
 
-COPY --parents package.json bun.lock apps/*/package.json packages/*/package.json packages/*/*/package.json ./
+COPY --parents package.json bun.lock apps/*/package.json packages/*/*/package.json ./
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --production --filter @workspace/api --linker isolated --frozen-lockfile

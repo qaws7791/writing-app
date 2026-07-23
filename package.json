@@ -46,7 +46,6 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*",
     "packages/modules/*",
     "packages/infra/*",
     "packages/shared/*",

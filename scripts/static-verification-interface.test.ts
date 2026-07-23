@@ -64,6 +64,47 @@ describe("정적 검증 Interface", () => {
     ).toBe(false)
   })
 
+  test("pre-commit은 제거된 flat package manifest를 필수 gate로 라우팅한다", () => {
+    const lefthook = readFileSync(
+      path.join(repositoryRoot, "lefthook.yml"),
+      "utf8"
+    )
+
+    for (const command of [
+      "workspace-inventory",
+      "document-drift",
+      "architecture",
+      "dead-code",
+      "package-interfaces",
+    ]) {
+      expect(lefthook).toMatch(
+        new RegExp(
+          `    ${command}:\\n      glob: "[^"\\n]*packages/\\*/package\\.json`,
+          "u"
+        )
+      )
+    }
+    expect(lefthook).toContain("packages/**/*.{ts,tsx,json}")
+    expect(lefthook).toContain(
+      "scripts/fixtures/target-workspace-inventory.json"
+    )
+    expect(lefthook).toContain("workspace-inventory.test")
+  })
+
+  test("Oxlint의 package script 예외는 2단계 workspace만 대상으로 한다", () => {
+    const oxlint = readFileSync(
+      path.join(repositoryRoot, ".oxlintrc.json"),
+      "utf8"
+    )
+
+    expect(oxlint).toContain(
+      "packages/*/*/scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}"
+    )
+    expect(oxlint).not.toContain(
+      '"packages/*/scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}"'
+    )
+  })
+
   test("배포 구성 CI는 root의 canonical 검증 명령을 실행한다", () => {
     const manifest = JSON.parse(
       readFileSync(path.join(repositoryRoot, "package.json"), "utf8")
@@ -147,6 +188,7 @@ describe("정적 검증 Interface", () => {
     expect(workflow).toContain("push:\n    branches:\n      - main")
     expect(workflow).not.toMatch(/^\s+paths(?:-ignore)?:/mu)
     expect(workflow).toContain("'packages/*/*/package.json'")
+    expect(workflow).not.toContain("'packages/*/package.json'")
     for (const command of [
       "bun run lint",
       "bun run format:check",

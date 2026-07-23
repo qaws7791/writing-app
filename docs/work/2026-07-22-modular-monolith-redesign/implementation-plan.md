@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13·P14 완료, P15 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13·P14·P15 완료, P16 이후 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -62,7 +62,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P12. web, admin과 Storybook 소비 경계를 전환한다. 증거: [P12 구현 증거](./p12-validation.md)
 - [x] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다. 증거: [P13 구현 증거](./p13-validation.md)
 - [x] P14. 배포·운영 automation을 새 경로에 맞춘다. 증거: [P14 구현 증거](./p14-validation.md)
-- [ ] P15. 이전 구조와 모든 임시 호환 계층을 제거한다.
+- [x] P15. 이전 구조와 모든 임시 호환 계층을 제거한다. 증거: [P15 구현 증거](./p15-validation.md)
 - [ ] P16. 전체 품질·복구·사용자 흐름 검증을 완료한다.
 - [ ] P17. 영구 문서 반영과 작업 기록 보관을 완료한다.
 
@@ -867,41 +867,41 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 19.1 package와 source 제거
 
-- [ ] P15-001 모든 `@workspace/core/*` consumer를 0개로 만든다. 증거:
-- [ ] P15-002 `packages/core` package와 public surface fixture를 제거한다. 증거:
-- [ ] P15-003 모든 `@workspace/repository-tooling` consumer를 0개로 재확인한다. 증거:
-- [ ] P15-004 기존 평면 `packages/*` source workspace를 target group으로 이동하거나 제거한다. 증거:
-- [ ] P15-005 root workspace에서 임시 `packages/*` glob을 제거한다. 증거:
-- [ ] P15-006 apps/api의 이전 adapter, module, route, platform과 composition 중복 source를 제거한다. 증거:
-- [ ] P15-007 packages/db의 이전 schema, domain policy, migration과 seed 중복 source를 제거한다. 증거:
-- [ ] P15-008 이전 config package와 중복 설정을 제거한다. 증거:
-- [ ] P15-009 모든 forwarding file과 deprecated alias를 제거한다. 증거:
-- [ ] P15-010 임시 compatibility adapter와 allowlist를 제거한다. 증거:
-- [ ] P15-011 제거 ledger의 미완료 항목을 0개로 만든다. 증거:
+- [x] P15-001 모든 `@workspace/core/*` consumer를 0개로 만든다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-002 `packages/core` package와 public surface fixture를 제거한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-003 모든 `@workspace/repository-tooling` consumer를 0개로 재확인한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-004 기존 평면 `packages/*` source workspace를 target group으로 이동하거나 제거한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-005 root workspace에서 임시 `packages/*` glob을 제거한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-006 apps/api의 이전 adapter, module, route, platform과 composition 중복 source를 제거한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-007 packages/db의 이전 schema, domain policy, migration과 seed 중복 source를 제거한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-008 이전 config package와 중복 설정을 제거한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-009 모든 forwarding file과 deprecated alias를 제거한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-010 임시 compatibility adapter와 allowlist를 제거한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-011 제거 ledger의 미완료 항목을 0개로 만든다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
 
 ### 19.2 정적 잔존물 검사
 
-- [ ] P15-012 `@workspace/core`, `@workspace/repository-tooling`과 이전 package path 문자열을 전체 검색한다. 증거:
-- [ ] P15-013 `src` deep import, 상대 workspace import와 file extension import를 전체 검색한다. 증거:
-- [ ] P15-014 broad root barrel과 같은 package public path 역참조를 전체 검색한다. 증거:
-- [ ] P15-015 cross-module schema, repository와 table import를 전체 검색한다. 증거:
-- [ ] P15-016 domain의 Hono, Drizzle, React, provider SDK와 `process.env` import를 전체 검색한다. 증거:
-- [ ] P15-017 frontend의 module, DB와 Drizzle import를 전체 검색한다. 증거:
-- [ ] P15-018 product source의 generic `utils`, `common`, `service` 신규 항목을 검토한다. 증거:
-- [ ] P15-019 directory·file PascalCase와 non-kebab-case 신규 항목을 검사한다. 증거:
-- [ ] P15-020 source 없는 legacy·generated directory와 빈 target directory를 정리한다. 증거:
-- [ ] P15-021 이전 runtime identifier, package-manager·DB 전제와 삭제 route 문자열을 검색한다. 증거:
+- [x] P15-012 `@workspace/core`, `@workspace/repository-tooling`과 이전 package path 문자열을 전체 검색한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-013 `src` deep import, 상대 workspace import와 file extension import를 전체 검색한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-014 broad root barrel과 같은 package public path 역참조를 전체 검색한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-015 cross-module schema, repository와 table import를 전체 검색한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-016 domain의 Hono, Drizzle, React, provider SDK와 `process.env` import를 전체 검색한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-017 frontend의 module, DB와 Drizzle import를 전체 검색한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-018 product source의 generic `utils`, `common`, `service` 신규 항목을 검토한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-019 directory·file PascalCase와 non-kebab-case 신규 항목을 검사한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-020 source 없는 legacy·generated directory와 빈 target directory를 정리한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-021 이전 runtime identifier, package-manager·DB 전제와 삭제 route 문자열을 검색한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
 
 ### 19.3 manifest와 lockfile
 
-- [ ] P15-022 최종 workspace inventory가 앱 4개와 package 24개인지 검사한다. 증거:
-- [ ] P15-023 모든 내부 package name이 `@workspace/*`인지 검사한다. 증거:
-- [ ] P15-024 package가 `modules`, `infra`, `shared`, `config` 아래에만 존재하는지 검사한다. 증거:
-- [ ] P15-025 모든 external import가 importing workspace manifest에 직접 선언됐는지 검사한다. 증거:
-- [ ] P15-026 불필요 dependency, export와 source를 Knip으로 제거한다. 증거:
-- [ ] P15-027 lockfile을 새 workspace와 manifest 상태로 갱신한다. 증거:
-- [ ] P15-028 frozen install을 새 checkout 또는 격리된 환경에서 통과시킨다. 증거:
-- [ ] P15-029 P15 게이트: 이전 구조, 임시 예외, 중복 package와 undeclared dependency가 0개다. 증거:
+- [x] P15-022 최종 workspace inventory가 앱 4개와 package 24개인지 검사한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-023 모든 내부 package name이 `@workspace/*`인지 검사한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-024 package가 `modules`, `infra`, `shared`, `config` 아래에만 존재하는지 검사한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-025 모든 external import가 importing workspace manifest에 직접 선언됐는지 검사한다. 증거: [정적 잔존물 감사](./p15-validation.md#정적-잔존물-감사)
+- [x] P15-026 불필요 dependency, export와 source를 Knip으로 제거한다. 증거: [검증 환경과 게이트](./p15-validation.md#검증-환경과-게이트)
+- [x] P15-027 lockfile을 새 workspace와 manifest 상태로 갱신한다. 증거: [제거와 최종 구조](./p15-validation.md#제거와-최종-구조)
+- [x] P15-028 frozen install을 새 checkout 또는 격리된 환경에서 통과시킨다. 증거: [검증 환경과 게이트](./p15-validation.md#검증-환경과-게이트)
+- [x] P15-029 P15 게이트: 이전 구조, 임시 예외, 중복 package와 undeclared dependency가 0개다. 증거: [검증 환경과 게이트](./p15-validation.md#검증-환경과-게이트)
 
 ## 20. P16 — 전체 검증과 완료 판정
 

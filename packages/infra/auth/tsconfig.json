@@ -5,8 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
-      "#auth/*": ["./src/*"],
-      "#core/*": ["../../core/src/*"]
+      "#auth/*": ["./src/*"]
     },
     "types": ["bun"]
   },

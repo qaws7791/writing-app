@@ -112,6 +112,23 @@ async function verifyArchitectureFixtures(): Promise<void> {
     path.join(reactPackageRoot, "index.js"),
     "export const createElement = () => null\n"
   )
+  const drizzlePackageRoot = path.join(
+    forbiddenFixtureRoot,
+    "node_modules/drizzle-orm"
+  )
+  fs.mkdirSync(drizzlePackageRoot, { recursive: true })
+  fs.writeFileSync(
+    path.join(drizzlePackageRoot, "package.json"),
+    JSON.stringify({
+      exports: "./index.js",
+      name: "drizzle-orm",
+      version: "1.0.0",
+    })
+  )
+  fs.writeFileSync(
+    path.join(drizzlePackageRoot, "index.js"),
+    "export const sql = () => null\n"
+  )
 
   let forbiddenReport: DependencyCruiserResult
   try {
@@ -132,12 +149,14 @@ async function verifyArchitectureFixtures(): Promise<void> {
   )
   const expectedRuleNames = [
     "application-does-not-import-concrete-adapters",
+    "application-does-not-import-runtime-frameworks",
     "domain-is-layer-pure",
     "domain-does-not-import-runtime-frameworks",
     "frontend-client-facing-code-does-not-import-server-boundaries",
     "frontend-entities-do-not-import-upper-layers",
     "frontend-features-do-not-import-app",
     "frontend-features-do-not-import-other-feature-internals",
+    "frontends-do-not-import-server-domain-or-db",
     "frontend-server-platform-does-not-import-product-layers",
     "frontend-shared-does-not-import-upper-layers",
     "module-schema-and-seed-are-tooling-only",

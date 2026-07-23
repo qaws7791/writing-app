@@ -170,7 +170,7 @@
         "apps/admin/**/*.{ts,tsx,js,jsx,mjs,cjs}",
         "apps/storybook/**/*.{ts,tsx,js,jsx,mjs,cjs}",
         "apps/web/**/*.{ts,tsx,js,jsx,mjs,cjs}",
-        "packages/ui/**/*.{ts,tsx,js,jsx,mjs,cjs}"
+        "packages/shared/ui/**/*.{ts,tsx,js,jsx,mjs,cjs}"
       ],
       "env": {
         "browser": true,
@@ -277,7 +277,7 @@
       "files": [
         "scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}",
         "apps/*/scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}",
-        "packages/*/scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}"
+        "packages/*/*/scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}"
       ],
       "env": {
         "browser": true,

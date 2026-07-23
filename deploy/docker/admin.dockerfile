@@ -11,7 +11,7 @@ ENV CI=true \
 
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 
-COPY --parents package.json bun.lock apps/*/package.json packages/*/package.json packages/*/*/package.json ./
+COPY --parents package.json bun.lock apps/*/package.json packages/*/*/package.json ./
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --filter @workspace/admin --linker isolated --frozen-lockfile --cpu='*' --os=linux

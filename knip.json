@@ -56,12 +56,6 @@
     "apps/*": {
       "project": ["src/**/*.{ts,tsx}"]
     },
-    "packages/*": {
-      "project": ["src/**/*.{ts,tsx}"]
-    },
-    "packages/core": {
-      "entry": ["src/**/*.typecheck.ts"]
-    },
     "packages/modules/*": {
       "entry": ["src/**/*.typecheck.ts"],
       "project": ["src/**/*.{ts,tsx}"]

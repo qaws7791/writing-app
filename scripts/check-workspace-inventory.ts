@@ -9,6 +9,10 @@ import {
 } from "#scripts/workspace-inventory"
 
 type JsonRecord = Record<string, unknown>
+type TargetWorkspaceInventory = {
+  readonly apps: readonly string[]
+  readonly packages: readonly string[]
+}
 
 const requiredAnalysisRoots = [
   "apps/storybook/**",
@@ -29,12 +33,12 @@ const requiredTurboBuildOutputs = [
 ] as const
 const requiredWorkspaceGlobs = [
   "apps/*",
-  "packages/*",
   "packages/modules/*",
   "packages/infra/*",
   "packages/shared/*",
   "packages/config/*",
 ] as const
+const targetPackageGroups = ["config", "infra", "modules", "shared"] as const
 
 const repositoryRoot = process.cwd()
 const failures: string[] = []
@@ -126,6 +130,46 @@ function validateVitestWorkspace(inventory: WorkspaceInventory) {
     expected: expectedProjects,
     label: "vitest.workspace.ts",
   })
+}
+
+function validateTargetWorkspaceLayout(inventory: WorkspaceInventory) {
+  const fixture = readJsonFile(
+    path.join(
+      repositoryRoot,
+      "scripts/fixtures/target-workspace-inventory.json"
+    )
+  )
+  const targetInventory: TargetWorkspaceInventory = {
+    apps: readStringArray(fixture["apps"]),
+    packages: readStringArray(fixture["packages"]),
+  }
+
+  reportMissingOrExtra({
+    actual: inventory.allWorkspaces.map(({ directory }) => directory),
+    expected: [...targetInventory.apps, ...targetInventory.packages],
+    label: "target workspace inventory",
+  })
+
+  const packageGroups = fs
+    .readdirSync(path.join(repositoryRoot, "packages"), {
+      withFileTypes: true,
+    })
+    .filter((entry) => entry.isDirectory())
+    .map(({ name }) => name)
+
+  reportMissingOrExtra({
+    actual: packageGroups,
+    expected: targetPackageGroups,
+    label: "packages directory groups",
+  })
+
+  for (const workspace of inventory.allWorkspaces) {
+    if (!/^@workspace\/[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(workspace.name)) {
+      failures.push(
+        `${workspace.manifestPath} package name ${workspace.name} must use the @workspace/kebab-case convention.`
+      )
+    }
+  }
 }
 
 function validateRootPackageScripts() {
@@ -456,6 +500,7 @@ const workspaceEntries =
     : []
 
 if (workspaceInventoryResult.status === "success") {
+  validateTargetWorkspaceLayout(workspaceInventoryResult.inventory)
   validateVitestWorkspace(workspaceInventoryResult.inventory)
 }
 validateRootPackageScripts()

@@ -4,13 +4,13 @@
 
 아키텍처 정책은 하나의 도구에 중복 구현하지 않는다.
 
-| 책임                                                              | 권위 source                                                                                   |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| import graph, runtime cycle, 계층·package 경계, 미선언 dependency | `dependency-cruiser.config.mjs`, `scripts/check-architecture.ts`                              |
-| 미사용 file·export·dependency                                     | `knip.json`                                                                                   |
-| workspace 발견과 test·coverage 대상                               | `scripts/workspace-inventory.ts`, `scripts/check-workspace-inventory.ts`                      |
-| 명시적 package export와 core symbol snapshot                      | `scripts/check-package-interfaces.ts`, `scripts/fixtures/core-capability-public-surface.json` |
-| coverage 집계와 CI task 결과 해석                                 | `scripts/coverage-report.ts`, `scripts/ci-workspace-inventory-report.ts`                      |
+| 책임                                                              | 권위 source                                                              |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| import graph, runtime cycle, 계층·package 경계, 미선언 dependency | `dependency-cruiser.config.mjs`, `scripts/check-architecture.ts`         |
+| 미사용 file·export·dependency                                     | `knip.json`                                                              |
+| workspace 발견과 test·coverage 대상                               | `scripts/workspace-inventory.ts`, `scripts/check-workspace-inventory.ts` |
+| 명시적 package export와 제거된 구조의 재도입 방지                 | `scripts/check-package-interfaces.ts`, 각 package manifest               |
+| coverage 집계와 CI task 결과 해석                                 | `scripts/coverage-report.ts`, `scripts/ci-workspace-inventory-report.ts` |
 
 Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표현 수준의 `workspace/no-unsafe-unknown-cast`만 검사한다. workspace inventory, coverage와 CI summary helper도 자기 task에 필요한 좁은 입력만 해석하며 범용 repository graph를 만들지 않는다.
 
@@ -28,7 +28,7 @@ Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표�
 - generated output만 제외하고 source directory 전체를 숨기는 예외는 두지 않는다.
 - private alias, 공개 subpath, type-only cycle과 금지 edge는 `scripts/fixtures/dependency-cruiser/`의 허용·금지 fixture로 함께 검증한다.
 
-기존 flat package를 전환하는 동안 `dependency-cruiser.config.mjs`의 `legacy-*` 규칙이 같은 정책을 적용한다. identity, content, ai-feedback, learning, resource-library, operations, API composition과 frontend 전환은 완료됐다. API transport→persistence 금지와 app-owned module·검증 전 env·private import 재도입은 대상 규칙으로 고정했으며, 빈 core workspace와 남은 `legacy-*` 규칙의 제거는 P15가 소유한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
+package는 `modules`, `infra`, `shared`, `config` 네 그룹 아래에만 존재한다. 이전 flat package, `core`, app-owned module·검증 전 env·private import와 API transport→persistence edge의 재도입은 대상 규칙과 package interface 검사로 거부한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
 
 operations repository의 module schema 직접 조회 예외는 제거하고 identity·content·learning reporting query port로 치환했다. learning과 ai-feedback의 예외도 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다. legacy curriculum 정규화는 반대 방향 의존을 만들지 않고 API migration composition이 content 공개 정책을 API-owned 이관에 주입한다.
 
@@ -36,7 +36,7 @@ operations repository의 module schema 직접 조회 예외는 제거하고 iden
 
 Knip gate는 읽기 전용이며 `--fix`를 실행하지 않는다. 실제 runtime·tooling 진입점만 `knip.json`에 선언하고 generated output은 Git ignore 경계로 제외한다. cycle은 dependency-cruiser, 의미상 중복 schema는 계약 검사가 소유하므로 Knip의 해당 reporter는 중복 실행하지 않는다.
 
-package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 symbol의 추가·삭제는 소유 package의 export 목록과 core symbol fixture를 함께 갱신해야 하며, broad root barrel, `src` deep import, 자기 공개 경로 역참조와 제거된 forwarding/runtime의 재도입은 `check:package-interfaces`가 거부한다. 같은 검사는 shared·identity·content·ai-feedback·learning·resource-library·operations package의 exact export, canonical ID 중복, canonical 오류 schema 소비, 성공 response runtime parse와 제거된 module 소유권 source의 재유입도 고정한다.
+package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 subpath의 추가·삭제는 소유 package의 export 목록을 함께 갱신해야 하며, broad root barrel, `src` deep import, 자기 공개 경로 역참조와 제거된 forwarding/runtime의 재도입은 `check:package-interfaces`가 거부한다. 같은 검사는 shared·identity·content·ai-feedback·learning·resource-library·operations package의 exact export key와 target 유효성, canonical ID 중복, canonical 오류 schema 소비, 성공 response runtime parse와 제거된 module 소유권 source의 재유입도 고정한다.
 
 module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`는 API의 단일 Drizzle schema entry와 격리된 E2E content seed fixture만 소비하고, 공개 `./migration`은 API migration composition과 호환성 test만 소비한다. 실제 seed가 있는 package의 `./seed`는 API seed composition과 seed tooling만 소비한다. Better Auth schema는 공식 adapter mapping과 API 인증 persistence adapter가 사용하는 별도 infra 예외다. 다른 module이나 app repository가 module table을 직접 읽는 예외는 두지 않는다.
 

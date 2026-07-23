@@ -12,11 +12,7 @@ export default defineConfig({
         "**/index.ts",
         "**/test/**",
       ],
-      include: [
-        "apps/*/src/**/*.{ts,tsx}",
-        "packages/*/src/**/*.{ts,tsx}",
-        "packages/*/*/src/**/*.{ts,tsx}",
-      ],
+      include: ["apps/*/src/**/*.{ts,tsx}", "packages/*/*/src/**/*.{ts,tsx}"],
       provider: "v8",
       reporter: ["text", "json", "json-summary", "lcov"],
       reportsDirectory: "coverage",

@@ -14,7 +14,7 @@
 - [ ] 새 정적 inline typography(`fontSize`, `lineHeight`, `letterSpacing`)를 추가하지 않았다.
 - [ ] 새 raw hex를 앱 소스에 추가하지 않았다. 예외가 있으면 이유를 본문에 적었다.
 - [ ] 새 수동 dialog, menu, accordion, segmented control을 만들지 않았다.
-- [ ] `packages/ui`에 도메인 이름이나 앱 runtime 책임을 넣지 않았다.
+- [ ] `packages/shared/ui`에 도메인 이름이나 앱 runtime 책임을 넣지 않았다.
 - [ ] 공용 컴포넌트 변경에는 Storybook story 또는 interaction test를 함께 추가했다.
 
 ## 검증

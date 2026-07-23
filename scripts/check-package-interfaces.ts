@@ -3,26 +3,18 @@ import path from "node:path"
 import { createHash } from "node:crypto"
 import ts from "typescript"
 
+import { findReintroducedDbInfrastructurePaths } from "#scripts/package-interface-tombstones"
+
 type PrivateImportScope = {
   readonly packageName?: string
   readonly root: string
 }
 
-const coreCapabilityFacades = [] as const
-
-type CoreCapabilityName = (typeof coreCapabilityFacades)[number][0]
-type CoreCapabilityPublicSurface = Readonly<
-  Record<CoreCapabilityName, readonly string[]>
->
-
 const repositoryRoot = process.cwd()
-const coreCapabilityPublicSurfaceFixture =
-  "scripts/fixtures/core-capability-public-surface.json"
 const sourceExtensions = new Set([".ts", ".tsx", ".mdx"])
 const failures: string[] = []
 const privateImportScopes: readonly PrivateImportScope[] = [
   { packageName: "@workspace/auth", root: "packages/infra/auth/src" },
-  { packageName: "@workspace/core", root: "packages/core/src" },
   {
     packageName: "@workspace/ai-feedback",
     root: "packages/modules/ai-feedback/src",
@@ -162,7 +154,6 @@ const expectedExports = {
     "./resource-library/data",
     "./resource-library/shared",
   ],
-  "packages/core/package.json": [],
   "packages/config/env/package.json": [
     "./local-runtime-defaults",
     "./parse-env",
@@ -260,60 +251,23 @@ const expectedExports = {
   ],
   "packages/shared/types/package.json": ["./brand", "./ids"],
 } as const
-const forbiddenCoreFacadeReferences = {} as const
-const forbiddenAdminApplicationFacadeFiles = [
-  "packages/core/src/modules/admin/application/policies/admin-actor-policy.ts",
-  "packages/core/src/modules/admin/application/ports/admin.repository.ts",
-  "packages/core/src/modules/admin/application/use-cases/admin.service.ts",
-] as const
-const forbiddenAdminApplicationFacadeSymbols = new Set([
-  "AdminRepository",
-  "AdminService",
-  "AdminServicePorts",
-  "createAdminService",
-])
-const forbiddenCoreForwardingFiles = [
-  "packages/core/src/modules/admin/application/use-cases/admin-ai-chat.use-case.ts",
-  "packages/core/src/modules/admin/application/use-cases/admin-analytics.use-case.ts",
-  "packages/core/src/modules/admin/application/use-cases/admin-dashboard.use-case.ts",
-  "packages/core/src/modules/admin/application/use-cases/admin-user.use-case.ts",
-  "packages/core/src/modules/admin/domain/admin.dto.ts",
-  "packages/core/src/modules/ai-feedback/domain/ai-feedback.dto.ts",
-  "packages/core/src/modules/auth/application/use-cases/learner-onboarding.ts",
-  "packages/core/src/modules/content/application/ports/content.repository.ts",
-  "packages/core/src/modules/content/application/use-cases/content-reader.ts",
-  "packages/core/src/modules/content/application/use-cases/learner-content.service.ts",
-  "packages/core/src/modules/content/domain/content.dto.ts",
-  "packages/core/src/modules/content/domain/content.ids.ts",
-  "packages/core/src/modules/content/domain/steps/ai-feedback-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/categorize-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/compare-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/fill-blank-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/index.ts",
-  "packages/core/src/modules/content/domain/steps/lesson-step-fields.ts",
-  "packages/core/src/modules/content/domain/steps/match-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/multiple-choice-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/order-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/reading-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/select-step.dto.ts",
-  "packages/core/src/modules/content/domain/steps/write-step.dto.ts",
-  "packages/core/src/modules/learning/domain/learner-read-model.dto.ts",
-  "packages/core/src/modules/learning/domain/learning.ids.ts",
-  "packages/core/src/modules/learning/application/use-cases/learner-transition.service.ts",
-  "packages/core/src/shared/kernel/status.ts",
-] as const
 const forbiddenUiPolicyFiles = [
   "packages/shared/ui/src/components/lesson/match-presentation.ts",
   "packages/shared/ui/src/lib/lesson-draft-storage.ts",
 ] as const
+const removedFlatWorkspaceDirectories = [
+  "packages/auth",
+  "packages/auth-proxy",
+  "packages/contracts",
+  "packages/core",
+  "packages/db",
+  "packages/env",
+  "packages/http-client",
+  "packages/repository-tooling",
+  "packages/resource-document",
+  "packages/ui",
+] as const
 const removedArchitectureToolingPaths = [
-  "packages/auth/package.json",
-  "packages/contracts/package.json",
-  "packages/db/package.json",
-  "packages/http-client/package.json",
-  "packages/resource-document/package.json",
-  "packages/repository-tooling/package.json",
-  "packages/ui/package.json",
   "scripts/check-architecture-boundaries.ts",
   "scripts/check-import-cycles.ts",
   "scripts/architecture/core-capability-policy.mjs",
@@ -326,6 +280,7 @@ const forbiddenResourceDocumentOwnershipFilePattern =
   /(?:^|[/.-])(?:asset-lifecycle|document-save|permission|repository|tree)(?:[/.-]|$)/u
 const forbiddenSharedUiIoPattern =
   /\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(|["']use server["']/u
+const processEnvironmentPattern = /\bprocess\s*\.\s*env\b/u
 const canonicalIdNames = new Set([
   "AdminId",
   "AiChangeProposalId",
@@ -363,37 +318,21 @@ const canonicalSchemaConsumers = [
   ],
 ] as const
 
+for (const removedDirectory of removedFlatWorkspaceDirectories) {
+  if (fs.existsSync(path.join(repositoryRoot, removedDirectory))) {
+    failures.push(`${removedDirectory} -> 제거된 flat workspace 재도입`)
+  }
+}
+
+for (const removedPath of findReintroducedDbInfrastructurePaths(
+  repositoryRoot
+)) {
+  failures.push(`${removedPath} -> P11 application tooling 이전 뒤 재도입 금지`)
+}
+
 for (const removedPath of removedArchitectureToolingPaths) {
   if (fs.existsSync(path.join(repositoryRoot, removedPath))) {
     failures.push(`${removedPath} -> 제거된 architecture tooling 재도입`)
-  }
-}
-
-for (const forwardingFile of forbiddenCoreForwardingFiles) {
-  if (fs.existsSync(path.join(repositoryRoot, forwardingFile))) {
-    failures.push(`${forwardingFile} -> 제거된 forwarding 파일 재도입`)
-  }
-}
-
-for (const facadeFile of forbiddenAdminApplicationFacadeFiles) {
-  if (fs.existsSync(path.join(repositoryRoot, facadeFile))) {
-    failures.push(`${facadeFile} -> 제거된 admin application façade 재도입`)
-  }
-}
-
-const legacyAdminApplicationRoot = path.join(
-  repositoryRoot,
-  "packages/core/src/modules/admin/application"
-)
-for (const filePath of fs.existsSync(legacyAdminApplicationRoot)
-  ? collectSourceFiles(legacyAdminApplicationRoot)
-  : []) {
-  for (const symbol of readTopLevelDeclarationNames(filePath)) {
-    if (forbiddenAdminApplicationFacadeSymbols.has(symbol)) {
-      failures.push(
-        `${relativePath(filePath)} -> 제거된 admin application façade symbol ${symbol}`
-      )
-    }
   }
 }
 
@@ -507,7 +446,6 @@ verifyP10ApiCompositionOwnership()
 verifyP11SchemaOwnership()
 verifyP12FrontendOwnership()
 verifyP13RuntimeSafety()
-verifyDbModuleSchemaTransitionInventory()
 
 const sharedUiManifestPath = path.join(
   repositoryRoot,
@@ -552,24 +490,6 @@ for (const [manifestPath, expected] of Object.entries(expectedExports)) {
   }
 }
 
-try {
-  verifyCoreCapabilityPublicSurface()
-} catch (error) {
-  failures.push(
-    `packages/core 공개 symbol snapshot 검사 실패: ${readErrorMessage(error)}`
-  )
-}
-
-for (const [facadePath, forbiddenReferences] of Object.entries(
-  forbiddenCoreFacadeReferences
-)) {
-  for (const source of readImports(path.join(repositoryRoot, facadePath))) {
-    if (forbiddenReferences.some((reference) => source.includes(reference))) {
-      failures.push(`${facadePath} -> 공개 금지 구현 ${source}`)
-    }
-  }
-}
-
 for (const scope of privateImportScopes) {
   for (const filePath of collectSourceFiles(
     path.join(repositoryRoot, scope.root)
@@ -603,7 +523,6 @@ for (const filePath of collectSourceFiles(repositoryRoot)) {
       }
     }
   }
-  if (relative.startsWith("packages/core/")) continue
   if (relative.endsWith("/next-env.d.ts")) continue
 
   for (const source of readImports(filePath)) {
@@ -624,11 +543,11 @@ for (const filePath of collectSourceFiles(repositoryRoot)) {
 
     if (
       source === "@workspace/core" ||
-      source.startsWith("@workspace/core/modules/") ||
-      source.startsWith("@workspace/core/shared/") ||
-      (source.startsWith("#core/") && source.includes(".repository"))
+      source.startsWith("@workspace/core/") ||
+      source === "#core" ||
+      source.startsWith("#core/")
     ) {
-      failures.push(`${relative} -> 허용되지 않은 core Interface ${source}`)
+      failures.push(`${relative} -> 제거된 core package ${source}`)
     }
 
     if (
@@ -793,10 +712,7 @@ function verifyP3InfrastructureOwnership(): void {
       )
     }
     for (const imported of readImports(filePath)) {
-      if (
-        imported.startsWith("@workspace/core/") ||
-        imported.startsWith("@workspace/contracts/")
-      ) {
+      if (imported.startsWith("@workspace/contracts/")) {
         failures.push(
           `${relative} -> AI infra의 제품 contract import ${imported}`
         )
@@ -826,13 +742,6 @@ function verifyP3InfrastructureOwnership(): void {
         `${relative} -> HTTP platform의 제품 정책·repository 소유 금지`
       )
     }
-    for (const imported of readImports(filePath)) {
-      if (imported.startsWith("@workspace/core/")) {
-        failures.push(
-          `${relative} -> HTTP platform의 module error·policy import ${imported}`
-        )
-      }
-    }
   }
 }
 
@@ -843,9 +752,6 @@ function verifyP4IdentityOwnership(): void {
     "apps/api/src/modules/admin-identity/admin-identity.routes.ts",
     "apps/api/src/modules/auth/auth.routes.ts",
     "apps/api/src/modules/profile/profile.routes.ts",
-    "packages/core/src/modules/auth/api/index.ts",
-    "packages/core/src/modules/admin/domain/admin-role.ts",
-    "packages/core/src/shared/admin-owner-authorization.ts",
   ] as const
 
   for (const sourcePath of removedIdentitySources) {
@@ -922,7 +828,6 @@ function verifyP5ContentOwnership(): void {
     "apps/api/src/modules/admin-content/admin-content.routes.ts",
     "apps/api/src/modules/admin-content/courses.routes.ts",
     "apps/api/src/modules/admin-content/curriculum-editor.routes.ts",
-    "packages/core/src/modules/content/api/index.ts",
     "packages/infra/db/src/content/content-archive-policy.ts",
     "packages/infra/db/src/content/curriculum-version-id.ts",
     "packages/infra/db/src/content/normalize-versioned-step-content.ts",
@@ -968,7 +873,6 @@ function verifyP6AiFeedbackOwnership(): void {
     "apps/api/src/adapters/ai-feedback/openai-feedback-provider.ts",
     "apps/api/src/modules/ai-feedback/ai-feedback.routes.ts",
     "apps/api/src/modules/ai-feedback/ai-feedback.schemas.ts",
-    "packages/core/src/modules/ai-feedback/api/index.ts",
     "packages/infra/db/src/schema/feedback.schema.ts",
   ] as const
 
@@ -987,7 +891,6 @@ function verifyP6AiFeedbackOwnership(): void {
       if (
         imported.startsWith("@workspace/auth") ||
         imported.startsWith("@workspace/content") ||
-        imported.startsWith("@workspace/core") ||
         imported.startsWith("@workspace/identity")
       ) {
         failures.push(
@@ -1047,7 +950,6 @@ function verifyP7LearningOwnership(): void {
     "apps/api/src/modules/learning/learner-transition.routes.ts",
     "apps/api/src/modules/lessons/lessons.routes.ts",
     "apps/api/src/modules/progress/progress.routes.ts",
-    "packages/core/src/modules/learning/api/index.ts",
     "packages/infra/db/src/schema/learning.schema.ts",
   ] as const
 
@@ -1067,7 +969,6 @@ function verifyP7LearningOwnership(): void {
         imported.startsWith("@workspace/ai-feedback") ||
         imported.startsWith("@workspace/auth") ||
         imported.startsWith("@workspace/content") ||
-        imported.startsWith("@workspace/core") ||
         imported.startsWith("@workspace/identity")
       ) {
         failures.push(
@@ -1127,7 +1028,6 @@ function verifyP8ResourceLibraryOwnership(): void {
     "apps/api/src/modules/admin-resource-library/resource-tree.routes.ts",
     "apps/api/src/resource-assets/resource-asset-store.ts",
     "apps/api/src/resource-assets/resource-image-file.ts",
-    "packages/core/src/modules/resource-library/api/index.ts",
     "packages/infra/db/src/schema/resource.schema.ts",
   ] as const
 
@@ -1149,7 +1049,6 @@ function verifyP8ResourceLibraryOwnership(): void {
         imported.startsWith("@workspace/ai-feedback") ||
         imported.startsWith("@workspace/auth") ||
         imported.startsWith("@workspace/content") ||
-        imported.startsWith("@workspace/core") ||
         imported.startsWith("@workspace/identity") ||
         imported.startsWith("@workspace/learning") ||
         imported.startsWith("@workspace/operations")
@@ -1226,7 +1125,6 @@ function verifyP9OperationsOwnership(): void {
     "apps/api/src/modules/admin-ai-chat/admin-ai-chat.routes.ts",
     "apps/api/src/modules/admin-dashboard-analytics/admin-dashboard-analytics.routes.ts",
     "apps/api/src/modules/admin-settings/admin-settings.routes.ts",
-    "packages/core/src/modules/admin/api/index.ts",
     "packages/infra/db/src/schema/admin.schema.ts",
   ] as const
 
@@ -1245,7 +1143,6 @@ function verifyP9OperationsOwnership(): void {
       if (
         imported.startsWith("@workspace/auth") ||
         imported.startsWith("@workspace/content") ||
-        imported.startsWith("@workspace/core") ||
         imported.startsWith("@workspace/identity") ||
         imported.startsWith("@workspace/learning") ||
         imported.startsWith("@workspace/resource-library")
@@ -1480,21 +1377,6 @@ function verifyP11SchemaOwnership(): void {
     )
   }
 
-  for (const removedPath of [
-    "packages/infra/db/drizzle.config.ts",
-    "packages/infra/db/src/migrations/0000-writing-app-baseline.sql",
-    "packages/infra/db/src/migrations/migrate.ts",
-    "packages/infra/db/src/schema/index.ts",
-    "packages/infra/db/src/seeds/index.ts",
-    "packages/infra/db/src/seeds/seed.ts",
-  ]) {
-    if (fs.existsSync(path.join(repositoryRoot, removedPath))) {
-      failures.push(
-        `${removedPath} -> P11 application tooling 이전 뒤 재도입 금지`
-      )
-    }
-  }
-
   const migrations = [
     [
       "apps/api/drizzle/0000-writing-app-baseline.sql",
@@ -1696,6 +1578,11 @@ function verifyP13RuntimeSafety(): void {
         const relative = relativePath(filePath)
         const source = fs.readFileSync(filePath, "utf8")
 
+        if (processEnvironmentPattern.test(source)) {
+          failures.push(
+            `${relative} -> domain·application의 process.env 접근 금지`
+          )
+        }
         if (
           /\b(?:Date\.now\s*\(|Math\.random\s*\(|crypto\.randomUUID\s*\(|randomUUID\s*\(|new\s+Date\s*\(\s*\))/u.test(
             source
@@ -1738,6 +1625,7 @@ function verifyP13RuntimeSafety(): void {
   }
 
   verifyP13NullDecisionGateFixture()
+  verifyModuleEnvironmentAccessFixture()
 
   const externalIoImports = [
     "@aws-sdk/client-s3",
@@ -1790,6 +1678,19 @@ function verifyP13RuntimeSafety(): void {
         )
       }
     }
+  }
+}
+
+function verifyModuleEnvironmentAccessFixture(): void {
+  const fixturePath = path.join(
+    repositoryRoot,
+    "scripts/fixtures/p15-module-environment-access.txt"
+  )
+  const fixture = fs.readFileSync(fixturePath, "utf8")
+  if (!processEnvironmentPattern.test(fixture)) {
+    failures.push(
+      `${relativePath(fixturePath)} -> module process.env 금지 fixture 회귀`
+    )
   }
 }
 
@@ -1945,43 +1846,6 @@ function verifyP13NullDecisionGateFixture(): void {
   }
 }
 
-function verifyDbModuleSchemaTransitionInventory(): void {
-  const fixturePath = path.join(
-    repositoryRoot,
-    "scripts/fixtures/infra-db-module-schema-transition.json"
-  )
-  const transition = JSON.parse(fs.readFileSync(fixturePath, "utf8")) as Record<
-    string,
-    string
-  >
-  const schemaDirectory = path.join(
-    repositoryRoot,
-    "packages/infra/db/src/schema"
-  )
-  const schemaFiles = fs.existsSync(schemaDirectory)
-    ? fs
-        .readdirSync(schemaDirectory)
-        .filter((fileName) => fileName.endsWith(".schema.ts"))
-        .map((fileName) => `packages/infra/db/src/schema/${fileName}`)
-    : []
-
-  for (const schemaPath of schemaFiles) {
-    if (!(schemaPath in transition)) {
-      failures.push(`${schemaPath} -> P4~P9 제거 ID mapping 누락`)
-    }
-  }
-  for (const [transitionPath, removalId] of Object.entries(transition)) {
-    if (!/^P[4-9]-\d{3}$/u.test(removalId)) {
-      failures.push(`${transitionPath} -> 유효하지 않은 제거 ID ${removalId}`)
-    }
-    if (!fs.existsSync(path.join(repositoryRoot, transitionPath))) {
-      failures.push(
-        `${transitionPath} -> 완료된 전환 항목은 inventory에서도 제거해야 함`
-      )
-    }
-  }
-}
-
 function collectSourceFiles(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     if (
@@ -2065,150 +1929,6 @@ function readTopLevelDeclarationNames(filePath: string): string[] {
       ts.isIdentifier(declaration.name) ? [declaration.name.text] : []
     )
   })
-}
-
-function verifyCoreCapabilityPublicSurface(): void {
-  if (coreCapabilityFacades.length === 0) return
-  const expected = readCoreCapabilityPublicSurfaceFixture()
-  const actual = readCoreCapabilityPublicSurface()
-
-  for (const [capability, facadePath] of coreCapabilityFacades) {
-    const expectedSymbols = expected[capability]
-    const actualSymbols = actual[capability]
-    const expectedSymbolSet = new Set(expectedSymbols)
-    const actualSymbolSet = new Set(actualSymbols)
-    const added = actualSymbols.filter(
-      (symbol) => !expectedSymbolSet.has(symbol)
-    )
-    const removed = expectedSymbols.filter(
-      (symbol) => !actualSymbolSet.has(symbol)
-    )
-
-    if (added.length === 0 && removed.length === 0) continue
-
-    failures.push(
-      `${facadePath} 공개 symbol snapshot 불일치: added=[${added.join(", ")}], removed=[${removed.join(", ")}]`
-    )
-  }
-}
-
-function readCoreCapabilityPublicSurfaceFixture(): CoreCapabilityPublicSurface {
-  const fixturePath = path.join(
-    repositoryRoot,
-    coreCapabilityPublicSurfaceFixture
-  )
-  const parsed: unknown = JSON.parse(fs.readFileSync(fixturePath, "utf8"))
-
-  if (!isUnknownObject(parsed)) {
-    throw new Error(`${coreCapabilityPublicSurfaceFixture}는 object여야 함`)
-  }
-
-  const expectedCapabilityNames = coreCapabilityFacades
-    .map(([capability]) => capability)
-    .toSorted()
-  const actualCapabilityNames = Object.keys(parsed).toSorted()
-
-  if (
-    JSON.stringify(actualCapabilityNames) !==
-    JSON.stringify(expectedCapabilityNames)
-  ) {
-    throw new Error(
-      `${coreCapabilityPublicSurfaceFixture} capability key 불일치: ${actualCapabilityNames.join(", ")}`
-    )
-  }
-
-  return Object.fromEntries(
-    coreCapabilityFacades.map(([capability]) => {
-      const symbols = parsed[capability]
-
-      if (
-        !Array.isArray(symbols) ||
-        !symbols.every((symbol) => typeof symbol === "string")
-      ) {
-        throw new Error(
-          `${coreCapabilityPublicSurfaceFixture}의 ${capability}는 string 배열이어야 함`
-        )
-      }
-
-      const normalizedSymbols = [...new Set(symbols)].toSorted()
-
-      if (JSON.stringify(symbols) !== JSON.stringify(normalizedSymbols)) {
-        throw new Error(
-          `${coreCapabilityPublicSurfaceFixture}의 ${capability} symbol은 정렬되고 중복이 없어야 함`
-        )
-      }
-
-      return [capability, symbols] as const
-    })
-  ) as CoreCapabilityPublicSurface
-}
-
-function readCoreCapabilityPublicSurface(): CoreCapabilityPublicSurface {
-  const configPath = path.join(repositoryRoot, "packages/core/tsconfig.json")
-  const config = ts.readConfigFile(configPath, ts.sys.readFile)
-
-  if (config.error !== undefined) {
-    throw new Error(readTypeScriptDiagnostic(config.error))
-  }
-
-  const parsedConfig = ts.parseJsonConfigFileContent(
-    config.config,
-    ts.sys,
-    path.dirname(configPath),
-    undefined,
-    configPath
-  )
-
-  if (parsedConfig.errors.length > 0) {
-    throw new Error(
-      parsedConfig.errors.map(readTypeScriptDiagnostic).join("\n")
-    )
-  }
-
-  const program = ts.createProgram({
-    options: parsedConfig.options,
-    projectReferences: parsedConfig.projectReferences,
-    rootNames: parsedConfig.fileNames,
-  })
-  const checker = program.getTypeChecker()
-
-  return Object.fromEntries(
-    coreCapabilityFacades.map(([capability, facadePath]) => {
-      const absoluteFacadePath = path.join(repositoryRoot, facadePath)
-      const sourceFile = program.getSourceFile(absoluteFacadePath)
-
-      if (sourceFile === undefined) {
-        throw new Error(`${facadePath}를 TypeScript program에서 찾을 수 없음`)
-      }
-
-      const moduleSymbol = checker.getSymbolAtLocation(sourceFile)
-
-      if (moduleSymbol === undefined) {
-        throw new Error(`${facadePath}의 module symbol을 찾을 수 없음`)
-      }
-
-      const symbols = checker
-        .getExportsOfModule(moduleSymbol)
-        .map((symbol) => symbol.getName())
-        .toSorted()
-
-      return [capability, symbols] as const
-    })
-  ) as CoreCapabilityPublicSurface
-}
-
-function isUnknownObject(
-  value: unknown
-): value is Readonly<Record<string, unknown>> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-}
-
-function readTypeScriptDiagnostic(diagnostic: ts.Diagnostic): string {
-  return ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")
-}
-
-function readErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
 }
 
 function relativePath(filePath: string): string {

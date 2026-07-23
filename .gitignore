@@ -51,7 +51,6 @@ docs/.obsidian/
 
 # local database
 /data
-/packages/db/data
 
 # secret credentials
 /credentials

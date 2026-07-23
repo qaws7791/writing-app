@@ -209,10 +209,6 @@
       "name": "@workspace/typescript-config",
       "version": "0.0.0",
     },
-    "packages/core": {
-      "name": "@workspace/core",
-      "version": "0.0.0",
-    },
     "packages/infra/ai": {
       "name": "@workspace/ai",
       "version": "0.0.0",
@@ -1517,8 +1513,6 @@
     "@workspace/content": ["@workspace/content@workspace:packages/modules/content"],
 
     "@workspace/contracts": ["@workspace/contracts@workspace:packages/shared/contracts"],
-
-    "@workspace/core": ["@workspace/core@workspace:packages/core"],
 
     "@workspace/db": ["@workspace/db@workspace:packages/infra/db"],
 

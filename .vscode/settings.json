@@ -1,7 +1,7 @@
 {
   "js/ts.tsdk.path": "node_modules\\typescript\\lib",
   "tailwindCSS.experimental.configFile": {
-    "packages/ui/src/styles/globals.css": "packages/ui/src/**",
+    "packages/shared/ui/src/styles/globals.css": "packages/shared/ui/src/**",
     "apps/web/src/app/globals.css": "apps/web/src/**",
     "apps/admin/src/app/globals.css": "apps/admin/src/**"
   }, 

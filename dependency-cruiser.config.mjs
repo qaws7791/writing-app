@@ -111,6 +111,17 @@ const config = {
       },
     },
     {
+      name: "application-does-not-import-runtime-frameworks",
+      severity: "error",
+      from: { path: "^packages/modules/[^/]+/src/application/" },
+      to: {
+        path: [
+          "node_modules/(?:better-auth|drizzle-orm|hono|@hono|@mastra|next|openai|react)(?:/|$)",
+          "node_modules/\\.bun/[^/]+/node_modules/(?:better-auth|drizzle-orm|hono|@hono|@mastra|next|openai|react)(?:/|$)",
+        ],
+      },
+    },
+    {
       name: "module-domain-and-application-do-not-import-http-contracts",
       severity: "error",
       from: {
@@ -123,7 +134,11 @@ const config = {
       severity: "error",
       from: { path: "^apps/(web|admin)/" },
       to: {
-        path: "^packages/(modules|infra)/",
+        path: [
+          "^packages/(modules|infra)/",
+          "node_modules/drizzle-orm(?:/|$)",
+          "node_modules/\\.bun/[^/]+/node_modules/drizzle-orm(?:/|$)",
+        ],
         pathNot: "^packages/infra/(auth|http-client)/",
       },
     },
@@ -200,59 +215,13 @@ const config = {
       },
     },
     {
-      name: "legacy-core-does-not-import-runtime-adapters",
-      severity: "error",
-      from: { path: "^packages/core/src/" },
-      to: {
-        path: [
-          "^packages/(infra/db|shared/ui)/",
-          "node_modules/(?:better-auth|drizzle-orm|hono|@hono|@mastra|next|openai|react)(?:/|$)",
-          "node_modules/\\.bun/[^/]+/node_modules/(?:better-auth|drizzle-orm|hono|@hono|@mastra|next|openai|react)(?:/|$)",
-        ],
-      },
-    },
-    {
-      name: "legacy-core-capabilities-do-not-import-each-other",
-      severity: "error",
-      from: { path: "^packages/core/src/modules/([^/]+)/" },
-      to: {
-        path: "^packages/core/src/modules/",
-        pathNot: "^packages/core/src/modules/$1/",
-      },
-    },
-    {
-      name: "legacy-core-uses-canonical-contract-data",
-      severity: "error",
-      from: { path: "^packages/core/src/" },
-      to: {
-        path: "^packages/shared/contracts/src/(identity|learning|operations)/",
-        pathNot: [
-          "^packages/shared/contracts/src/identity/(data|status)\\.ts$",
-          "^packages/shared/contracts/src/learning/(read-data|status|step-data)\\.ts$",
-          "^packages/shared/contracts/src/operations/(ai-chat-data|content-reset-data|dashboard-analytics-data|settings-data)\\.ts$",
-        ],
-      },
-    },
-    {
-      name: "legacy-frontends-do-not-import-core-or-db",
-      severity: "error",
-      from: { path: "^apps/(web|admin)/" },
-      to: {
-        path: [
-          "^packages/(core|infra/db)/",
-          "node_modules/drizzle-orm(?:/|$)",
-          "node_modules/\\.bun/[^/]+/node_modules/drizzle-orm(?:/|$)",
-        ],
-      },
-    },
-    {
       name: "shared-ui-does-not-import-application-boundaries",
       severity: "error",
       from: { path: "^packages/shared/ui/src/" },
       to: {
         path: [
           "^apps/",
-          "^packages/(core|infra/(auth|db|http-client))/",
+          "^packages/infra/(auth|db|http-client)/",
           "node_modules/better-auth(?:/|$)",
           "node_modules/\\.bun/[^/]+/node_modules/better-auth(?:/|$)",
           "node_modules/next/dist/client/components/navigation",
@@ -282,7 +251,7 @@ const config = {
       },
       to: {
         path: [
-          "^packages/(core|infra/db)/",
+          "^packages/infra/db/",
           "^packages/infra/auth/src/(admin|learner|shared)/(?:.*server|auth-database-adapter)",
           "node_modules/drizzle-orm(?:/|$)",
           "node_modules/\\.bun/[^/]+/node_modules/drizzle-orm(?:/|$)",
@@ -366,15 +335,6 @@ const config = {
           "node_modules/emittery(?:/|$)",
           "node_modules/\\.bun/[^/]+/node_modules/emittery(?:/|$)",
         ],
-      },
-    },
-    {
-      name: "api-only-imports-core-public-facades",
-      severity: "error",
-      from: { path: "^apps/api/src/" },
-      to: {
-        path: "^packages/core/src/",
-        pathNot: "^packages/core/src/modules/admin/api/index\\.ts$",
       },
     },
     {
