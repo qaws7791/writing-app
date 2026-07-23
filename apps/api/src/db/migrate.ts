@@ -1,8 +1,6 @@
 import { createHash } from "node:crypto"
 
 import type { Database } from "bun:sqlite"
-import { assertAiFeedbackMigrationPrerequisites } from "@workspace/ai-feedback/migration"
-import { assertContentMigrationPrerequisites } from "@workspace/content/migration"
 import {
   hasLegacyCurriculumSchema,
   migrateLegacyCurriculumSchema,
@@ -16,19 +14,18 @@ import {
   runSqliteMigrations,
   type SqliteMigrationResult,
 } from "@workspace/db/migration-runner"
-import { assertLearningMigrationPrerequisites } from "@workspace/learning/migration"
-import { assertResourceLibraryMigrationPrerequisites } from "@workspace/resource-library/migration"
 
 import baselineMigrationSql from "../../drizzle/0000-writing-app-baseline.sql" with { type: "text" }
 import moduleOwnershipMigrationSql from "../../drizzle/0001-module-schema-ownership.sql" with { type: "text" }
+import referenceIntegrityMigrationSql from "../../drizzle/0002-cross-module-reference-integrity.sql" with { type: "text" }
 
 import {
   assertCurrentApplicationSchema,
   hasBaselineSchema,
   isCurrentApplicationSchema,
+  isP11ModuleSchema,
   isPreP11ModuleSchema,
 } from "@/db/schema-architecture"
-import { assertNoDanglingSchemaReferences } from "@/db/schema-reconciliation"
 
 const baselineMigration = readMigration(
   "0000-writing-app-baseline",
@@ -39,6 +36,11 @@ const moduleOwnershipMigration = readMigration(
   "0001-module-schema-ownership",
   moduleOwnershipMigrationSql,
   "20b1b8a424d4916b565f5b991f221ddc0708a1a654f0cfbeaf6627b53b2636b0"
+)
+const referenceIntegrityMigration = readMigration(
+  "0002-cross-module-reference-integrity",
+  referenceIntegrityMigrationSql,
+  "86451557db525a8dd446daeca77dca54d8f241cb64c2cf5be08d7a2b6deb8d65"
 )
 
 export type ApplicationMigrationOptions = Readonly<{
@@ -62,7 +64,11 @@ function assertApplicationMigrationHistory(sqlite: Database): void {
 export function inspectApplicationMigrationHistory(
   sqlite: Database
 ): ApplicationMigrationHistoryInspection {
-  const expectedMigrations = [baselineMigration, moduleOwnershipMigration]
+  const expectedMigrations = [
+    baselineMigration,
+    moduleOwnershipMigration,
+    referenceIntegrityMigration,
+  ]
   if (
     sqlite
       .query<{ readonly present: number }, []>(`
@@ -179,10 +185,29 @@ export function runApplicationMigrations(
         }
         database.exec(moduleOwnershipMigration.sql)
       },
-      canAdopt: isCurrentApplicationSchema,
+      canAdopt: isP11ModuleSchema,
       checksum: moduleOwnershipMigration.checksum,
       foreignKeys: "off",
       id: moduleOwnershipMigration.id,
+      validate(database) {
+        if (
+          !isP11ModuleSchema(database) &&
+          !isCurrentApplicationSchema(database)
+        ) {
+          throw new Error(
+            "module ownership migration schema 검증에 실패했습니다."
+          )
+        }
+      },
+    },
+    {
+      apply(database) {
+        database.exec(referenceIntegrityMigration.sql)
+      },
+      canAdopt: isCurrentApplicationSchema,
+      checksum: referenceIntegrityMigration.checksum,
+      foreignKeys: "off",
+      id: referenceIntegrityMigration.id,
       validate: assertCurrentApplicationSchema,
     },
   ])
@@ -258,11 +283,22 @@ export function assertApplicationMigrationPrerequisites(
     throw new Error("migration prerequisite failed: foreign key violation")
   }
 
-  assertNoDanglingSchemaReferences(sqlite)
-  assertContentMigrationPrerequisites(sqlite)
-  assertAiFeedbackMigrationPrerequisites(sqlite)
-  assertLearningMigrationPrerequisites(sqlite)
-  assertResourceLibraryMigrationPrerequisites(sqlite)
+  const duplicateDraft = sqlite
+    .query<{ readonly courseId: string }, []>(`
+      SELECT course_id AS courseId
+      FROM course_curriculum_versions
+      WHERE status = 'draft'
+      GROUP BY course_id
+      HAVING COUNT(*) > 1
+      LIMIT 1
+    `)
+    .get()
+  if (duplicateDraft !== null) {
+    throw new Error(
+      `migration prerequisite failed: multiple drafts for ${duplicateDraft.courseId}`
+    )
+  }
+
   assertIdentityValues(sqlite)
   assertOperationsValues(sqlite)
 }

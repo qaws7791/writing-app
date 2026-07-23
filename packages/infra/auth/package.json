@@ -11,7 +11,6 @@
     "./admin/server": "./src/admin/server.ts",
     "./learner/client": "./src/learner/client.ts",
     "./learner/server": "./src/learner/server.ts",
-    "./migration": "./src/schema/migration.ts",
     "./password": "./src/password.ts",
     "./schema": "./src/schema/index.ts",
     "./seed": "./src/schema/seed.ts",
@@ -34,6 +33,7 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
+    "@workspace/db": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "drizzle-orm": "catalog:",
     "typescript": "catalog:",

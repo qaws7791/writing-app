@@ -151,21 +151,18 @@ describe("learning application", () => {
   it("오답 retry를 expected answer rejection 결과로 보존한다", async () => {
     const fixture = createFixture({
       completeStepResult: ok({
-        events: [],
-        value: {
-          evaluation: {
-            correct: false,
-            correctItemIds: ["answer-2"],
-            explanation: "다시 생각해 보세요.",
-            items: [
-              { id: "answer-1", verdict: "incorrect" },
-              { id: "answer-2", verdict: "missed" },
-            ],
-            type: "MULTIPLE_CHOICE",
-          },
-          kind: "retry",
-          learning: inProgress,
+        evaluation: {
+          correct: false,
+          correctItemIds: ["answer-2"],
+          explanation: "다시 생각해 보세요.",
+          items: [
+            { id: "answer-1", verdict: "incorrect" },
+            { id: "answer-2", verdict: "missed" },
+          ],
+          type: "MULTIPLE_CHOICE",
         },
+        kind: "retry",
+        learning: inProgress,
       }),
     })
 
@@ -312,49 +309,6 @@ describe("learning application", () => {
       "step-sequence-conflict",
     ])
   })
-
-  it("commit 뒤 lesson-completed event payload를 발행한다", async () => {
-    const fixture = createFixture({ completedEvent: true })
-
-    const result = await fixture.application.completeStep({
-      learnerId,
-      lessonId,
-      stepId,
-    })
-
-    expect(result.isOk()).toBe(true)
-    expect(
-      fixture.dependencies.eventPublisher.publishLessonCompleted
-    ).toHaveBeenCalledWith({
-      id: "event-1",
-      occurredAt,
-      payload: { learnerId, lessonId },
-      type: "learning.lesson-completed",
-    })
-  })
-
-  it("event dispatch와 failure observer가 실패해도 commit 성공을 rollback으로 표현하지 않는다", async () => {
-    const fixture = createFixture({
-      completedEvent: true,
-      eventFailureObserver: vi.fn(() => {
-        throw new Error("observer failed")
-      }),
-      publishResult: err({ kind: "learning-event-publish-failed" }),
-    })
-
-    const result = await fixture.application.completeStep({
-      learnerId,
-      lessonId,
-      stepId,
-    })
-
-    expect(result).toEqual(ok(advanced))
-    expect(fixture.dependencies.eventFailureObserver).toHaveBeenCalledWith({
-      eventId: "event-1",
-      eventName: "learning.lesson-completed",
-      kind: "learning-event-publish-failed",
-    })
-  })
 })
 
 const advanced = {
@@ -377,9 +331,7 @@ type FixtureOverrides = Readonly<{
       LearningApplicationDependencies["transitionRepository"]["completeStep"]
     >
   >
-  completedEvent?: boolean
   curriculum?: LearningCurriculum | null
-  eventFailureObserver?: LearningApplicationDependencies["eventFailureObserver"]
   identityResult?: Awaited<
     ReturnType<LearningApplicationDependencies["identity"]["readLearnerStatus"]>
   >
@@ -387,11 +339,6 @@ type FixtureOverrides = Readonly<{
   prepareResult?: Awaited<
     ReturnType<
       LearningApplicationDependencies["transitionRepository"]["prepareAiFeedback"]
-    >
-  >
-  publishResult?: Awaited<
-    ReturnType<
-      LearningApplicationDependencies["eventPublisher"]["publishLessonCompleted"]
     >
   >
 }>
@@ -402,16 +349,6 @@ function createFixture(overrides: FixtureOverrides = {}): {
 } {
   const selectedCurriculum =
     overrides.curriculum === undefined ? curriculum : overrides.curriculum
-  const events = overrides.completedEvent
-    ? [
-        {
-          learnerId,
-          lessonId,
-          occurredAt,
-          type: "learning.lesson-completed" as const,
-        },
-      ]
-    : []
   const dependencies: LearningApplicationDependencies = {
     aiFeedback: {
       requestFeedback: vi.fn(
@@ -435,13 +372,6 @@ function createFixture(overrides: FixtureOverrides = {}): {
       listPublishedCourses: vi.fn(async () => []),
       readCurriculum: vi.fn(async () => selectedCurriculum),
     },
-    eventFailureObserver: overrides.eventFailureObserver ?? vi.fn(),
-    eventIdGenerator: { next: vi.fn(() => "event-1") },
-    eventPublisher: {
-      publishLessonCompleted: vi.fn(
-        async () => overrides.publishResult ?? ok(undefined)
-      ),
-    },
     identity: {
       readLearnerStatus: vi.fn(
         async () => overrides.identityResult ?? ok("active" as const)
@@ -449,12 +379,10 @@ function createFixture(overrides: FixtureOverrides = {}): {
     },
     transitionRepository: {
       completeAiFeedbackStep: vi.fn(
-        async () =>
-          overrides.completeAiResult ?? ok({ events, value: advanced })
+        async () => overrides.completeAiResult ?? ok(advanced)
       ),
       completeStep: vi.fn(
-        async () =>
-          overrides.completeStepResult ?? ok({ events, value: advanced })
+        async () => overrides.completeStepResult ?? ok(advanced)
       ),
       findPinnedScope: vi.fn(async () =>
         overrides.pinned ? { courseId, curriculumVersionId, lessonId } : null
@@ -471,7 +399,7 @@ function createFixture(overrides: FixtureOverrides = {}): {
             showScore: true,
           })
       ),
-      startLesson: vi.fn(async () => ok({ events: [], value: inProgress })),
+      startLesson: vi.fn(async () => ok(inProgress)),
     },
   }
 

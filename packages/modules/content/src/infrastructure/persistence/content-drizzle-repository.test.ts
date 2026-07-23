@@ -1,8 +1,7 @@
-import { Database } from "bun:sqlite"
 import { eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 
 import {
   createCourseId,
@@ -15,10 +14,6 @@ import {
 import { decidePublishCurriculum } from "#content/domain/curriculum"
 import { createDrizzleContentRepository } from "#content/infrastructure/persistence/content-drizzle-repository"
 import { courseCurriculumVersions } from "#content/infrastructure/persistence/schema"
-import {
-  assertContentMigrationPrerequisites,
-  runContentSchemaMigration,
-} from "#content/infrastructure/persistence/schema-migration"
 
 const now = new Date("2026-07-22T03:00:00.000Z")
 const courseId = createCourseId("content-course-1")
@@ -95,15 +90,14 @@ describe("content Drizzle repository", () => {
       if (saved.isErr()) throw new Error(saved.error.kind)
       const decision = decidePublishCurriculum({
         draft: saved.value,
-        eventId: "content-event-1",
         now,
       })
       if (decision.isErr()) throw new Error(decision.error.kind)
 
       const published = await fixture.repository.publishDraft({
-        decision: decision.value,
         expectedEditVersion: 1,
         nextDraftId: createCurriculumVersionId(courseId, 2),
+        publishedRevision: decision.value,
       })
 
       expect(published.isOk() && published.value.revision).toBe(1)
@@ -139,16 +133,15 @@ describe("content Drizzle repository", () => {
       if (saved.isErr()) throw new Error(saved.error.kind)
       const decision = decidePublishCurriculum({
         draft: saved.value,
-        eventId: "content-event-1",
         now,
       })
       if (decision.isErr()) throw new Error(decision.error.kind)
 
       await expect(
         fixture.repository.publishDraft({
-          decision: decision.value,
           expectedEditVersion: 1,
           nextDraftId: saved.value.curriculumVersionId,
+          publishedRevision: decision.value,
         })
       ).rejects.toThrow(/UNIQUE constraint failed/u)
 
@@ -182,14 +175,13 @@ describe("content Drizzle repository", () => {
       if (saved.isErr()) throw new Error(saved.error.kind)
       const decision = decidePublishCurriculum({
         draft: saved.value,
-        eventId: "content-event-1",
         now,
       })
       if (decision.isErr()) throw new Error(decision.error.kind)
       await fixture.repository.publishDraft({
-        decision: decision.value,
         expectedEditVersion: 1,
         nextDraftId: createCurriculumVersionId(courseId, 2),
+        publishedRevision: decision.value,
       })
       const course = await fixture.repository.findCourse(courseId)
       if (course === null) throw new Error("course not found")
@@ -211,99 +203,9 @@ describe("content Drizzle repository", () => {
   })
 })
 
-describe("content migration prerequisites", () => {
-  it("module schema migration이 published 불변 trigger를 소유하고 복구한다", () => {
-    const sqlite = new Database(":memory:")
-
-    try {
-      runBaselineTestMigration(sqlite)
-      sqlite.exec(
-        "DROP TRIGGER course_curriculum_versions_published_update_guard"
-      )
-
-      runContentSchemaMigration(sqlite)
-
-      expect(
-        sqlite
-          .query<{ readonly name: string }, []>(
-            "SELECT name FROM sqlite_master WHERE type = 'trigger' AND name = 'course_curriculum_versions_published_update_guard'"
-          )
-          .get()
-      ).toEqual({
-        name: "course_curriculum_versions_published_update_guard",
-      })
-    } finally {
-      sqlite.close()
-    }
-  })
-
-  it("중복 draft가 있으면 migration을 fail-closed한다", () => {
-    const sqlite = new Database(":memory:")
-
-    try {
-      runBaselineTestMigration(sqlite)
-      sqlite.exec(`
-        DROP INDEX course_curriculum_versions_single_draft_idx;
-        INSERT INTO courses VALUES ('duplicate-course', 'active', 1, NULL, 1);
-        INSERT INTO course_curriculum_versions VALUES (
-          'curriculum:duplicate-course:1', 'duplicate-course', 1, 0,
-          'draft', '코스', '설명', '기초', 'basic-sentence-writing',
-          1, 1, NULL
-        );
-        INSERT INTO course_curriculum_versions VALUES (
-          'curriculum:duplicate-course:2', 'duplicate-course', 2, 0,
-          'draft', '코스', '설명', '기초', 'basic-sentence-writing',
-          1, 1, NULL
-        );
-      `)
-
-      expect(() => assertContentMigrationPrerequisites(sqlite)).toThrow(
-        /multiple drafts for duplicate-course/u
-      )
-    } finally {
-      sqlite.close()
-    }
-  })
-
-  it("cross-module orphan reference가 있으면 migration을 fail-closed한다", () => {
-    const sqlite = new Database(":memory:")
-
-    try {
-      runBaselineTestMigration(sqlite)
-      sqlite.exec("PRAGMA foreign_keys = OFF")
-      sqlite.exec(`
-        INSERT INTO learner_course_progress (
-          user_id,
-          course_id,
-          curriculum_version_id,
-          started_at,
-          last_activity_at,
-          status,
-          updated_at
-        ) VALUES (
-          'orphan-user',
-          'orphan-course',
-          'orphan-version',
-          1,
-          1,
-          'in_progress',
-          1
-        )
-      `)
-
-      expect(() => assertContentMigrationPrerequisites(sqlite)).toThrow(
-        /orphan learner course reference/u
-      )
-    } finally {
-      sqlite.close()
-    }
-  })
-})
-
 function createRepositoryFixture() {
   const databaseClient = createWritingAppDatabase(":memory:")
-  runBaselineTestMigration(databaseClient.sqlite)
-  runContentSchemaMigration(databaseClient.sqlite)
+  runCurrentTestMigration(databaseClient.sqlite)
   return {
     databaseClient,
     repository: createDrizzleContentRepository(databaseClient.db),

@@ -13,13 +13,12 @@ import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
-import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 
 import type { LearningContentQueryPort } from "#learning/application/ports/learning-ports"
 import type { LearningCurriculum } from "#learning/domain/learning-types"
 import { createDrizzleLearningReadRepository } from "#learning/infrastructure/persistence/learning-read-drizzle-repository"
 import { createDrizzleLearnerTransitionRepository } from "#learning/infrastructure/persistence/learning-transition-drizzle-repository"
-import { runLearningSchemaMigration } from "#learning/infrastructure/persistence/schema-migration"
 import {
   learnerActivityDays,
   learnerCourseProgress,
@@ -159,18 +158,8 @@ describe("learning SQLite repositories", () => {
         curriculum
       )
 
-      expect(started.isOk() && started.value.value.status).toBe("in_progress")
-      expect(completed.isOk() && completed.value.value.kind).toBe(
-        "lesson-completed"
-      )
-      expect(completed.isOk() && completed.value.events).toEqual([
-        {
-          learnerId,
-          lessonId: firstLessonId,
-          occurredAt,
-          type: "learning.lesson-completed",
-        },
-      ])
+      expect(started.isOk() && started.value.status).toBe("in_progress")
+      expect(completed.isOk() && completed.value.kind).toBe("lesson-completed")
       expect(
         fixture.database.db
           .select({ status: learnerLessonProgress.status })
@@ -277,8 +266,8 @@ describe("learning SQLite repositories", () => {
       const first = await repository.completeStep(command, curriculum)
       const replay = await repository.completeStep(command, curriculum)
 
-      expect(first.isOk() && first.value.events).toHaveLength(1)
-      expect(replay.isOk() && replay.value.events).toEqual([])
+      expect(first.isOk() && first.value.kind).toBe("lesson-completed")
+      expect(replay.isOk() && replay.value.kind).toBe("lesson-completed")
       expect(
         fixture.database.db
           .select({ completedLessons: learnerActivityDays.completedLessons })
@@ -297,8 +286,42 @@ function createFixture(): {
   database: WritingAppDatabaseClient
 } {
   const database = createInMemoryWritingAppDatabase()
-  runBaselineTestMigration(database.sqlite)
-  runLearningSchemaMigration(database.sqlite)
+  runCurrentTestMigration(database.sqlite)
+  database.sqlite.exec(`
+    INSERT INTO user (
+      id, name, email, email_verified, image, created_at, updated_at
+    ) VALUES ('learner-1', '학습자', 'learner-1@example.test', 1, NULL, 1, 1);
+    INSERT INTO courses (
+      id, status, sort_order, published_curriculum_version_id, created_at
+    ) VALUES ('course-1', 'active', 1, NULL, 1);
+    INSERT INTO course_curriculum_versions (
+      id, course_id, revision, edit_version, status, title, description,
+      category, visual_key, created_at, updated_at, published_at
+    ) VALUES (
+      'curriculum-1', 'course-1', 1, 0, 'draft', '코스', '설명',
+      '기초', 'basic-sentence-writing', 1, 1, NULL
+    );
+    INSERT INTO course_unit_versions (
+      curriculum_version_id, id, title, status, sort_order
+    ) VALUES ('curriculum-1', 'unit-1', '단원', 'active', 1);
+    INSERT INTO lesson_versions (
+      curriculum_version_id, id, unit_id, title, description, category,
+      summary_json, estimated_minutes, status, sort_order
+    ) VALUES
+      ('curriculum-1', 'lesson-1', 'unit-1', '첫 레슨', NULL, NULL, '[]', 5, 'active', 1),
+      ('curriculum-1', 'lesson-2', 'unit-1', '둘째 레슨', NULL, NULL, '[]', 5, 'active', 2);
+    INSERT INTO lesson_step_versions (
+      curriculum_version_id, id, lesson_id, type, content_json, status, sort_order
+    ) VALUES
+      ('curriculum-1', 'step-1', 'lesson-1', 'READING', '{}', 'active', 1),
+      ('curriculum-1', 'step-2', 'lesson-2', 'READING', '{}', 'active', 1);
+    UPDATE course_curriculum_versions
+    SET status = 'published', published_at = 1
+    WHERE id = 'curriculum-1';
+    UPDATE courses
+    SET published_curriculum_version_id = 'curriculum-1'
+    WHERE id = 'course-1';
+  `)
   const summary = {
     category: curriculum.category,
     courseId,

@@ -59,6 +59,52 @@ const tableOwners = new Map<string, SchemaOwner>(
   )
 )
 
+const requiredCrossModuleForeignKeys = [
+  { count: 1, table: "learner_profiles", target: "user" },
+  { count: 1, table: "admin_identity_profiles", target: "admin_user" },
+  { count: 1, table: "learner_activity_days", target: "user" },
+  { count: 1, table: "learner_course_progress", target: "user" },
+  {
+    count: 2,
+    table: "learner_course_progress",
+    target: "course_curriculum_versions",
+  },
+  { count: 2, table: "learner_lesson_progress", target: "lesson_versions" },
+  {
+    count: 3,
+    table: "learner_lesson_progress",
+    target: "lesson_step_versions",
+  },
+  {
+    count: 3,
+    table: "learner_lesson_answers",
+    target: "lesson_step_versions",
+  },
+  { count: 1, table: "ai_feedback_attempts", target: "user" },
+  {
+    count: 2,
+    table: "ai_feedback_attempts",
+    target: "course_curriculum_versions",
+  },
+  {
+    count: 3,
+    table: "ai_feedback_attempts",
+    target: "lesson_step_versions",
+  },
+  { count: 2, table: "admin_resource_nodes", target: "admin_user" },
+  { count: 1, table: "admin_resource_assets", target: "admin_user" },
+  {
+    count: 1,
+    table: "admin_ai_chat_conversations",
+    target: "admin_user",
+  },
+  {
+    count: 2,
+    table: "operations_ai_change_proposals",
+    target: "admin_user",
+  },
+] as const
+
 const baselineTables = [
   "account",
   "admin_account",
@@ -113,6 +159,18 @@ export function isPreP11ModuleSchema(sqlite: Database): boolean {
   }
 }
 
+export function isP11ModuleSchema(sqlite: Database): boolean {
+  try {
+    assertApplicationTables(sqlite)
+    assertTableNamesAndOwners()
+    assertNoCrossModuleForeignKeys(sqlite)
+    assertCurrentColumns(sqlite, { allowLegacyAdminRole: false })
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function isCurrentApplicationSchema(sqlite: Database): boolean {
   try {
     assertCurrentApplicationSchema(sqlite)
@@ -125,7 +183,7 @@ export function isCurrentApplicationSchema(sqlite: Database): boolean {
 export function assertCurrentApplicationSchema(sqlite: Database): void {
   assertApplicationTables(sqlite)
   assertTableNamesAndOwners()
-  assertNoCrossModuleForeignKeys(sqlite)
+  assertRequiredCrossModuleForeignKeys(sqlite)
   assertCurrentColumns(sqlite, { allowLegacyAdminRole: false })
 
   const legacyTables = [...readTableNames(sqlite)].filter(
@@ -150,7 +208,7 @@ export function assertCurrentApplicationSchema(sqlite: Database): void {
   }
 }
 
-export function assertNoCrossModuleForeignKeys(sqlite: Database): void {
+function assertNoCrossModuleForeignKeys(sqlite: Database): void {
   for (const [tableName, owner] of tableOwners) {
     for (const foreignKey of sqlite
       .query<{ readonly table: string }, []>(
@@ -163,6 +221,22 @@ export function assertNoCrossModuleForeignKeys(sqlite: Database): void {
           `cross-module FK가 남았습니다: ${tableName}(${owner}) -> ${foreignKey.table}(${referencedOwner ?? "unknown"})`
         )
       }
+    }
+  }
+}
+
+function assertRequiredCrossModuleForeignKeys(sqlite: Database): void {
+  for (const expected of requiredCrossModuleForeignKeys) {
+    const actualCount = sqlite
+      .query<{ readonly table: string }, []>(
+        `PRAGMA foreign_key_list(${expected.table})`
+      )
+      .all()
+      .filter(({ table }) => table === expected.target).length
+    if (actualCount !== expected.count) {
+      throw new Error(
+        `필수 cross-module FK가 다릅니다: ${expected.table} -> ${expected.target} (${actualCount}/${expected.count})`
+      )
     }
   }
 }

@@ -46,16 +46,12 @@ describe("P11 schema backup과 독립 restore", () => {
         ).toEqual([
           { id: "0000-writing-app-baseline" },
           { id: "0001-module-schema-ownership" },
+          { id: "0002-cross-module-reference-integrity" },
         ])
         const content = createContentModule({
           clock: { now: () => new Date("2026-07-23T00:00:00.000Z") },
           courseIdGenerator: { next: () => "unused" as never },
           database: restored.db,
-          eventFailureObserver: () => undefined,
-          eventIdGenerator: { next: () => "unused" },
-          eventPublisher: {
-            publishCurriculumPublished: async () => ok(undefined),
-          },
           resetGuard: { authorize: () => ok(undefined) },
         })
         await expect(

@@ -1,7 +1,3 @@
-import type {
-  DomainDecision,
-  DomainEvent,
-} from "@workspace/kernel/domain-event"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { UserId } from "@workspace/types/ids"
 
@@ -17,11 +13,6 @@ export type LearnerProfile = Readonly<{
   status: UserStatus
   userId: UserId
 }>
-
-export type IdentityUserStatusChangedEvent = DomainEvent<
-  "identity.user-status-changed",
-  { readonly status: UserStatus; readonly userId: UserId }
->
 
 export function createLearnerProfile(input: {
   readonly deletedAt?: Date | null
@@ -68,14 +59,10 @@ export function changeLearnerDisplayName(input: {
 }
 
 export function transitionLearnerProfileStatus(input: {
-  readonly eventId: string
   readonly now: Date
   readonly profile: LearnerProfile
   readonly status: UserStatus
-}): Result<
-  DomainDecision<LearnerProfile, IdentityUserStatusChangedEvent>,
-  IdentityError
-> {
+}): Result<LearnerProfile, IdentityError> {
   if (input.profile.status === input.status) {
     return err({
       from: input.profile.status,
@@ -95,20 +82,5 @@ export function transitionLearnerProfileStatus(input: {
   })
   if (profileResult.isErr()) return err(profileResult.error)
 
-  const event = Object.freeze({
-    id: input.eventId,
-    occurredAt: new Date(input.now),
-    payload: Object.freeze({
-      status: input.status,
-      userId: input.profile.userId,
-    }),
-    type: "identity.user-status-changed" as const,
-  })
-
-  return ok(
-    Object.freeze({
-      aggregate: profileResult.value,
-      events: Object.freeze([event]),
-    })
-  )
+  return ok(profileResult.value)
 }

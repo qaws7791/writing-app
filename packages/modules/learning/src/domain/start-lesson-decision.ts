@@ -5,7 +5,6 @@ import type {
   LessonId,
   LessonStepId,
 } from "@workspace/types/ids"
-import type { DomainDecision } from "@workspace/kernel/domain-event"
 
 import {
   toLearningDateKey,
@@ -71,9 +70,9 @@ type StartLessonAggregate = Readonly<{
 export type StartLessonDecision =
   | { readonly error: LearnerTransitionError; readonly kind: "rejected" }
   | (AcceptedStartLessonDecision &
-      DomainDecision<StartLessonAggregate, never> & { readonly kind: "start" })
+      Readonly<{ aggregate: StartLessonAggregate; kind: "start" }>)
   | (AcceptedStartLessonDecision &
-      DomainDecision<StartLessonAggregate, never> & { readonly kind: "replay" })
+      Readonly<{ aggregate: StartLessonAggregate; kind: "replay" }>)
 
 export function decideStartLesson(
   command: StartLearnerLessonCommand,
@@ -126,7 +125,6 @@ function createStartLessonDecision(
   return {
     aggregate,
     effects: createStartLessonEffects(command, snapshot.scope, firstStepId),
-    events: [],
     kind: snapshot.progress.kind === "started" ? "replay" : "start",
     ...aggregate,
   }
@@ -151,7 +149,6 @@ function freezeStartLessonDecision(
     effects: Object.freeze(
       decision.effects.map((effect) => Object.freeze({ ...effect }))
     ),
-    events: Object.freeze([...decision.events]),
     scope: Object.freeze({ ...decision.scope }),
     stepIds: Object.freeze([...decision.stepIds]),
   })

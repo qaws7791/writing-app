@@ -1,6 +1,5 @@
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import type { Result } from "@workspace/kernel/result"
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import type {
   CourseId,
   CurriculumVersionId,
@@ -16,7 +15,6 @@ import type {
   PublishedCurriculumRevision,
   PublishedLessonReference,
 } from "#content/domain/content-model"
-import type { ContentCurriculumPublishedEvent } from "#content/domain/curriculum"
 
 export type CourseEditorDocument = Omit<CurriculumDraft, "visualKey">
 
@@ -69,12 +67,9 @@ export type ContentRepository = Readonly<{
   ) => Promise<Result<CurriculumDraft | null, ContentError>>
   listPublishedCourseSummaries: () => Promise<readonly PublishedCourseSummary[]>
   publishDraft: (input: {
-    readonly decision: Readonly<{
-      aggregate: PublishedCurriculumRevision
-      events: readonly ContentCurriculumPublishedEvent[]
-    }>
     readonly expectedEditVersion: number
     readonly nextDraftId: CurriculumVersionId
+    readonly publishedRevision: PublishedCurriculumRevision
   }) => Promise<Result<PublishedCurriculumRevision, ContentError>>
   readCourseEditor: (courseId: CourseId) => Promise<CourseEditorDocument | null>
   readCourses: (input: ReadContentCoursesInput) => Promise<ContentCoursePage>
@@ -100,24 +95,6 @@ export type ContentRepository = Readonly<{
   }) => Promise<Result<CurriculumDraft, ContentError>>
 }>
 
-export type ContentEventPublishError = Readonly<{
-  kind: "content-event-publish-failed"
-}>
-
-export type ContentEventPublisher = Readonly<{
-  publishCurriculumPublished: (
-    event: WorkspaceEventMap["content.curriculum-published"]
-  ) => Promise<Result<void, ContentEventPublishError>>
-}>
-
-export type ContentEventFailureObserver = (
-  event: Readonly<{
-    eventId: string
-    eventName: "content.curriculum-published"
-    kind: "content-event-publish-failed"
-  }>
-) => void
-
 export type ContentResetGuardPort = Readonly<{
   authorize: () => Result<void, ContentError>
 }>
@@ -129,9 +106,6 @@ export type ContentAdminSessionPort = Readonly<{
 export type ContentApplicationDependencies = Readonly<{
   clock: Clock
   courseIdGenerator: IdGenerator<CourseId>
-  eventFailureObserver: ContentEventFailureObserver
-  eventIdGenerator: IdGenerator<string>
-  eventPublisher: ContentEventPublisher
   repository: ContentRepository
   resetGuard: ContentResetGuardPort
 }>

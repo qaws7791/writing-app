@@ -40,16 +40,13 @@ export async function inspectLocalApplicationDatabase({
   environment,
   repositoryRoot,
 }: InspectLocalDatabaseOptions): Promise<LocalDatabaseDiagnostic> {
-  const child = Bun.spawn(
-    ["bun", "apps/api/src/scripts/reconcile-database.ts"],
-    {
-      cwd: repositoryRoot,
-      env: environment,
-      stderr: "pipe",
-      stdin: "ignore",
-      stdout: "pipe",
-    }
-  )
+  const child = Bun.spawn(["bun", "apps/api/src/scripts/inspect-database.ts"], {
+    cwd: repositoryRoot,
+    env: environment,
+    stderr: "pipe",
+    stdin: "ignore",
+    stdout: "pipe",
+  })
   const [exitCode, stdout, stderr] = await Promise.all([
     child.exited,
     new Response(child.stdout).text(),

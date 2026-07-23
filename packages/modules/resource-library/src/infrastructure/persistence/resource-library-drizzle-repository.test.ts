@@ -4,13 +4,12 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 
 import { createDrizzleResourceAssetRepository } from "#resource-library/infrastructure/persistence/resource-asset-drizzle-repository"
 import { createDrizzleResourceDocumentRepository } from "#resource-library/infrastructure/persistence/resource-document-drizzle-repository"
 import { createDrizzleResourceSearchRepository } from "#resource-library/infrastructure/persistence/resource-search-drizzle-repository"
 import { createDrizzleResourceTreeRepository } from "#resource-library/infrastructure/persistence/resource-tree-drizzle-repository"
-import { runResourceLibrarySchemaMigration } from "#resource-library/infrastructure/persistence/schema-migration"
 import {
   readResourceAssetId,
   readResourceDocumentId,
@@ -262,9 +261,8 @@ async function withTemporaryResourceDatabase(
   const directory = mkdtempSync(join(tmpdir(), "writing-app-resource-library-"))
   const client = createWritingAppDatabase(join(directory, "resource.sqlite"))
   try {
-    runBaselineTestMigration(client.sqlite)
+    runCurrentTestMigration(client.sqlite)
     insertAdmin(client.sqlite)
-    runResourceLibrarySchemaMigration(client.sqlite)
     await run({ database: client.db, sqlite: client.sqlite })
   } finally {
     client.close()
@@ -278,8 +276,8 @@ function insertAdmin(
   sqlite
     .query<unknown, [string, string, string, number, number]>(`
       INSERT INTO admin_user (
-        id, name, email, email_verified, role, created_at, updated_at
-      ) VALUES (?, ?, ?, 1, 'owner', ?, ?)
+        id, name, email, email_verified, created_at, updated_at
+      ) VALUES (?, ?, ?, 1, ?, ?)
     `)
     .run("admin-1", "관리자", "admin@example.com", now.getTime(), now.getTime())
 }

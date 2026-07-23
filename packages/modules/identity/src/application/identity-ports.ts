@@ -1,6 +1,5 @@
-import type { Clock, IdGenerator } from "@workspace/kernel/clock"
+import type { Clock } from "@workspace/kernel/clock"
 import type { Result } from "@workspace/kernel/result"
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import type { AdminId, UserId } from "@workspace/types/ids"
 
 import type {
@@ -102,24 +101,6 @@ export type IdentitySessionRevocationPort = Readonly<{
   ) => Promise<Result<void, IdentitySessionRevocationError>>
 }>
 
-export type IdentityEventPublishError = Readonly<{
-  kind: "identity-event-publish-failed"
-}>
-
-export type IdentityEventPublisher = Readonly<{
-  publishUserStatusChanged: (
-    event: WorkspaceEventMap["identity.user-status-changed"]
-  ) => Promise<Result<void, IdentityEventPublishError>>
-}>
-
-export type IdentityEventFailureObserver = (
-  event: Readonly<{
-    eventId: string
-    eventName: "identity.user-status-changed"
-    kind: "identity-event-publish-failed"
-  }>
-) => void
-
 export type LearnerLearningReport = Readonly<{
   completedLessons: number
   currentStreakDays: number
@@ -148,9 +129,6 @@ export type LearnerProfileStatsQuery = Readonly<{
 
 export type IdentityApplicationDependencies = Readonly<{
   clock: Clock
-  eventFailureObserver: IdentityEventFailureObserver
-  eventIdGenerator: IdGenerator<string>
-  eventPublisher: IdentityEventPublisher
   learnerIdentityDirectory: LearnerIdentityDirectoryPort
   repository: IdentityRepository
   sessionRevocation: IdentitySessionRevocationPort

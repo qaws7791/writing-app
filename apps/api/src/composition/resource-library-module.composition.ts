@@ -1,7 +1,5 @@
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { AdminSessionResolver } from "@workspace/identity/sessions"
-import type { InMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import type { AppLogger } from "@workspace/observability/logger"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import {
@@ -30,8 +28,6 @@ export function composeResourceLibraryModule(input: {
   readonly clock: Clock
   readonly database: WritingAppDatabase
   readonly documentIdGenerator: IdGenerator<ResourceDocumentId>
-  readonly eventBus: InMemoryEventBus<WorkspaceEventMap>
-  readonly eventIdGenerator: IdGenerator<string>
   readonly folderIdGenerator: IdGenerator<ResourceFolderId>
   readonly logger: AppLogger
   readonly storage: ResourceObjectStoragePort | null
@@ -45,18 +41,6 @@ export function composeResourceLibraryModule(input: {
     clock: input.clock,
     database: input.database,
     documentIdGenerator: input.documentIdGenerator,
-    eventFailureObserver(event) {
-      input.logger.warn(event, "resource-library.event.publish_failed")
-    },
-    eventIdGenerator: input.eventIdGenerator,
-    eventPublisher: {
-      async publishDocumentSaved(event) {
-        const published = await input.eventBus.publish(event.type, event)
-        return published.mapErr(() => ({
-          kind: "resource-document-event-publish-failed" as const,
-        }))
-      },
-    },
     folderIdGenerator: input.folderIdGenerator,
     storage: input.storage,
   })

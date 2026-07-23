@@ -10,7 +10,6 @@
     "./admin-actor": "./src/domain/admin-role.ts",
     "./application": "./src/application/identity-service.ts",
     "./http": "./src/interface/http/identity-http.ts",
-    "./migration": "./src/infrastructure/persistence/schema-migration.ts",
     "./module": "./src/module.ts",
     "./ports": "./src/application/identity-ports.ts",
     "./queries": "./src/application/identity-queries.ts",
@@ -26,10 +25,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@workspace/auth": "workspace:*",
     "@hono/zod-openapi": "catalog:",
     "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
-    "@workspace/event-contracts": "workspace:*",
     "@workspace/http-platform": "workspace:*",
     "@workspace/kernel": "workspace:*",
     "@workspace/types": "workspace:*",

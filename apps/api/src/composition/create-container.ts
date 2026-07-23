@@ -25,8 +25,6 @@ import {
   getDefaultDatabaseUrl,
   type WritingAppDatabase,
 } from "@workspace/db/client"
-import { createInMemoryEventBus } from "@workspace/event-bus/in-memory-event-bus"
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import type { IdentityModule } from "@workspace/identity/module"
 import type {
@@ -97,12 +95,6 @@ export type ApiContainer = Readonly<{
     learningRoutes: ReturnType<LearningModule["createLearnerRoutes"]>
     sessionResolver: SessionResolver
   }>
-  lifecycle: Readonly<{
-    closeAi: () => Promise<void>
-    closeDatabase: () => Promise<void>
-    flushLogger: () => Promise<void>
-    unsubscribeEvents: () => Promise<void>
-  }>
   modules: Readonly<{
     aiFeedback: AiFeedbackModule
     content: ContentModule
@@ -131,8 +123,10 @@ export async function createContainer(
   env: ApiEnv,
   options: CreateContainerOptions = {}
 ): Promise<ApiContainer> {
-  const cleanup = createContainerCleanupCoordinator()
   let logger: AppLogger | undefined
+  const cleanup = createContainerCleanupCoordinator({
+    onFailure: (failure) => reportCleanupFailure(failure, logger),
+  })
 
   try {
     logger = createAppLogger({ level: env.logLevel, pretty: env.logPretty })
@@ -147,22 +141,6 @@ export async function createContainer(
     runApplicationMigrations(database.sqlite, {
       normalizeVersionedStepContent: normalizeLegacyVersionedStepContentOrThrow,
     })
-
-    const eventBus = createInMemoryEventBus<WorkspaceEventMap>()
-    const eventSubscriptions = new Set<() => void>()
-    const unsubscribeEvents = onceAsync(() => {
-      const failures: unknown[] = []
-      for (const unsubscribe of [...eventSubscriptions].reverse()) {
-        try {
-          unsubscribe()
-        } catch (cause) {
-          failures.push(cause)
-        }
-      }
-      eventSubscriptions.clear()
-      if (failures.length > 0) throw new AggregateError(failures)
-    })
-    cleanup.register("event-subscriptions", unsubscribeEvents)
 
     const clock = options.clock ?? systemClock
     const idGenerator = options.idGenerator ?? uuidGenerator
@@ -211,7 +189,6 @@ export async function createContainer(
       webOrigin: env.adminOrigin,
     })
 
-    const eventIdGenerator = idGenerator
     const content = composeContentModule({
       clock,
       courseIdGenerator: createPrefixedIdGenerator<CourseId>(
@@ -220,9 +197,6 @@ export async function createContainer(
       ),
       database: database.db,
       environment: env.nodeEnv,
-      eventBus,
-      eventIdGenerator,
-      logger,
     })
     const learningReporting = createLearningReportingQuery({
       content: createLearningContentQueryPort(content),
@@ -231,10 +205,7 @@ export async function createContainer(
     const identity = composeIdentityModule({
       clock,
       database: database.db,
-      eventBus,
-      eventIdGenerator,
       learningReport: learningReporting,
-      logger,
     })
     identityBridge.bind(identity)
     const learnerSessionResolver = identity.createLearnerSessionResolver(
@@ -260,10 +231,7 @@ export async function createContainer(
       content,
       cursorSigningSecret: env.cursorSigningSecret,
       database: database.db,
-      eventBus,
-      eventIdGenerator,
       identity,
-      logger,
     })
     const resourceLibrary = composeResourceLibraryModule({
       assetIdGenerator: createPrefixedIdGenerator<ResourceAssetId>(
@@ -276,8 +244,6 @@ export async function createContainer(
         "resource-document-",
         idGenerator
       ),
-      eventBus,
-      eventIdGenerator,
       folderIdGenerator: createPrefixedIdGenerator<ResourceFolderId>(
         "resource-folder-",
         idGenerator
@@ -336,7 +302,7 @@ export async function createContainer(
         capabilityRoutes: adminCapabilityRoutes,
         sessionResolver: adminSessionResolver,
       }),
-      dispose: () => disposeContainer(cleanup.dispose, logger as AppLogger),
+      dispose: () => disposeContainer(cleanup.dispose),
       health,
       learner: Object.freeze({
         aiFeedbackRoutes: aiFeedback.createLearnerRoutes({
@@ -351,12 +317,6 @@ export async function createContainer(
         learningRoutes: learning.createLearnerRoutes(learnerSession),
         sessionResolver: learnerSessionResolver,
       }),
-      lifecycle: Object.freeze({
-        closeAi,
-        closeDatabase,
-        flushLogger,
-        unsubscribeEvents,
-      }),
       modules: Object.freeze({
         aiFeedback,
         content,
@@ -368,7 +328,7 @@ export async function createContainer(
       platform: Object.freeze({ clock, env, idGenerator, logger }),
     })
   } catch (cause) {
-    await reportCleanupFailures(await cleanup.dispose(), logger)
+    await cleanup.dispose()
     throw cause
   }
 }
@@ -464,11 +424,9 @@ function flushAppLogger(logger: AppLogger): Promise<void> {
 }
 
 async function disposeContainer(
-  dispose: () => Promise<readonly ContainerCleanupFailure[]>,
-  logger: AppLogger
+  dispose: () => Promise<readonly ContainerCleanupFailure[]>
 ): Promise<void> {
   const failures = await dispose()
-  await reportCleanupFailures(failures, logger)
   if (failures.length > 0) {
     throw new AggregateError(
       failures.map((failure) => failure.cause),
@@ -477,18 +435,16 @@ async function disposeContainer(
   }
 }
 
-async function reportCleanupFailures(
-  failures: readonly ContainerCleanupFailure[],
+function reportCleanupFailure(
+  failure: ContainerCleanupFailure,
   logger: AppLogger | undefined
-): Promise<void> {
-  for (const failure of failures) {
-    try {
-      logger?.error(
-        { error: failure.cause, resource: failure.name },
-        "server.container.cleanup_failed"
-      )
-    } catch {
-      // 정리 오류 보고 실패가 원래 초기화 오류를 가리지 않게 한다.
-    }
+): void {
+  try {
+    logger?.error(
+      { error: failure.cause, resource: failure.name },
+      "server.container.cleanup_failed"
+    )
+  } catch {
+    // 정리 오류 보고 실패가 원래 초기화 오류를 가리지 않게 한다.
   }
 }

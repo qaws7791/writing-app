@@ -100,11 +100,6 @@ function createCompositionContext(
       clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
       courseIdGenerator: { next: () => "course-1" as never },
       database,
-      eventFailureObserver: () => undefined,
-      eventIdGenerator: { next: () => "event-1" },
-      eventPublisher: {
-        publishCurriculumPublished: async () => ok(undefined),
-      },
       resetGuard: { authorize: () => ok(undefined) },
     }),
     database,
@@ -112,11 +107,6 @@ function createCompositionContext(
     identity: createIdentityModule({
       clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
       database,
-      eventFailureObserver: () => undefined,
-      eventIdGenerator: { next: () => "event-1" },
-      eventPublisher: {
-        publishUserStatusChanged: async () => ok(undefined),
-      },
       learningReport: {
         readActiveLessonCount: async () => 0,
         readLearnerReports: async () => [],
@@ -145,11 +135,6 @@ function createCompositionContext(
       clock: { now: () => new Date("2026-07-18T00:00:00.000Z") },
       database,
       documentIdGenerator: { next: () => "resource-document-1" as never },
-      eventFailureObserver: () => undefined,
-      eventIdGenerator: { next: () => "event-1" },
-      eventPublisher: {
-        publishDocumentSaved: async () => ok(undefined),
-      },
       folderIdGenerator: { next: () => "resource-folder-1" as never },
       storage: null,
     }),

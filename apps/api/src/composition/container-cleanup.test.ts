@@ -8,7 +8,6 @@ import {
 const initializationStages = [
   "logger",
   "database",
-  "event-bus",
   "ai",
   "storage",
   "auth",
@@ -47,20 +46,21 @@ describe("API container 초기화 정리", () => {
   )
 
   it("cleanup 실패를 격리해 나머지 resource를 정리하고 반복 호출을 멱등 처리한다", async () => {
-    const cleanup = createContainerCleanupCoordinator()
     const events: string[] = []
     const databaseError = new Error("database close failed")
+    const onFailure = vi.fn()
     const loggerCleanup = vi.fn(() => {
       events.push("logger")
     })
 
+    const cleanup = createContainerCleanupCoordinator({ onFailure })
     cleanup.register("logger", loggerCleanup)
     cleanup.register("database", () => {
       events.push("database")
       throw databaseError
     })
-    cleanup.register("event-subscriptions", () => {
-      events.push("event-subscriptions")
+    cleanup.register("ai", () => {
+      events.push("ai")
     })
 
     const first = cleanup.dispose()
@@ -70,7 +70,11 @@ describe("API container 초기화 정리", () => {
     await expect(first).resolves.toEqual([
       { cause: databaseError, name: "database" },
     ])
-    expect(events).toEqual(["event-subscriptions", "database", "logger"])
+    expect(events).toEqual(["ai", "database", "logger"])
+    expect(onFailure).toHaveBeenCalledWith({
+      cause: databaseError,
+      name: "database",
+    })
     expect(loggerCleanup).toHaveBeenCalledOnce()
   })
 })
@@ -83,8 +87,6 @@ function cleanupNameByStage(
       return "logger"
     case "database":
       return "database"
-    case "event-bus":
-      return "event-subscriptions"
     case "ai":
       return "ai"
     case "storage":

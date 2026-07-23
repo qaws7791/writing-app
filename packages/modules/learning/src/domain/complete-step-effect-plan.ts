@@ -5,7 +5,6 @@ import type {
   LessonId,
   LessonStepId,
 } from "@workspace/types/ids"
-import type { DomainDecision } from "@workspace/kernel/domain-event"
 import type {
   LearnerStepSubmission,
   LearningStep,
@@ -95,23 +94,16 @@ export type CompleteStepEffect =
     }
 
 type CompleteStepPlanContext = {
+  readonly aggregate: Readonly<{
+    scope: LearnerLessonScope
+    stepIds: readonly LessonStepId[]
+    userId: LearnerId
+  }>
   readonly effects: readonly CompleteStepEffect[]
   readonly scope: LearnerLessonScope
   readonly stepIds: readonly LessonStepId[]
   readonly userId: LearnerId
-} & DomainDecision<
-  Readonly<{
-    scope: LearnerLessonScope
-    stepIds: readonly LessonStepId[]
-    userId: LearnerId
-  }>,
-  Readonly<{
-    learnerId: LearnerId
-    lessonId: LessonId
-    occurredAt: Date
-    type: "learning.lesson-completed"
-  }>
->
+}
 
 export type CompleteStepPlan =
   | { readonly error: LearnerTransitionError; readonly kind: "rejected" }
@@ -264,14 +256,6 @@ function createCompleteStepPlan(
       }),
     ],
     evaluation: grading.evaluation,
-    events: [
-      {
-        learnerId: command.userId,
-        lessonId: command.lessonId,
-        occurredAt: command.occurredAt,
-        type: "learning.lesson-completed",
-      },
-    ],
     kind: "accept-lesson",
   }
 }
@@ -290,9 +274,6 @@ function freezeCompleteStepPlan(plan: CompleteStepPlan): CompleteStepPlan {
     effects: Object.freeze(
       plan.effects.map((effect) => Object.freeze({ ...effect }))
     ),
-    events: Object.freeze(
-      plan.events.map((event) => Object.freeze({ ...event }))
-    ),
     scope: Object.freeze({ ...plan.scope }),
     stepIds: Object.freeze([...plan.stepIds]),
   })
@@ -310,7 +291,6 @@ function createPlanContext(
   return {
     aggregate,
     effects: [],
-    events: [],
     ...aggregate,
   }
 }

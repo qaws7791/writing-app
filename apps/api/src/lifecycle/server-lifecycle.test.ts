@@ -7,26 +7,17 @@ import {
 } from "@/lifecycle/server-lifecycle"
 
 describe("통합 API server lifecycle", () => {
-  it("drain 결과를 기록하고 event, AI, DB, logger 순서로 resource를 정리한다", async () => {
+  it("drain 결과를 기록하고 container에 resource 정리를 위임한다", async () => {
     const events: string[] = []
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeAi() {
-        events.push("ai")
-      },
-      closeDatabase() {
-        events.push("database")
+      disposeContainer() {
+        events.push("container")
       },
       fetch: () => new Response(null),
-      flushLogger() {
-        events.push("logger")
-      },
       onDrainResult(observation) {
         events.push(
           `drain:${observation.result}:${observation.activeActivities}:${observation.timeoutMilliseconds}`
         )
-      },
-      unsubscribeEvents() {
-        events.push("events")
       },
     })
     lifecycle.attachServer({
@@ -37,59 +28,33 @@ describe("통합 API server lifecycle", () => {
 
     await lifecycle.shutdown()
 
-    expect(events).toEqual([
-      "stop:false",
-      "drain:drained:0:20000",
-      "events",
-      "ai",
-      "database",
-      "logger",
-    ])
+    expect(events).toEqual(["stop:false", "drain:drained:0:20000", "container"])
   })
 
-  it("각 cleanup 실패를 구조화 phase로 격리하고 logger flush까지 계속한다", async () => {
-    const failures = {
-      ai: new Error("ai close failed"),
-      database: new Error("database close failed"),
-      events: new Error("event unsubscribe failed"),
-      logger: new Error("logger flush failed"),
-    }
+  it("container cleanup 실패를 구조화 phase로 격리한다", async () => {
+    const failure = new Error("container dispose failed")
     const onShutdownError = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeAi() {
-        throw failures.ai
-      },
-      closeDatabase() {
-        throw failures.database
+      disposeContainer() {
+        throw failure
       },
       fetch: () => new Response(null),
-      flushLogger() {
-        throw failures.logger
-      },
       onShutdownError,
-      unsubscribeEvents() {
-        throw failures.events
-      },
     })
     lifecycle.attachServer({ stop: vi.fn() })
 
     await expect(lifecycle.shutdown()).resolves.toBeUndefined()
-    expect(onShutdownError.mock.calls).toEqual([
-      [failures.events, "unsubscribe-events"],
-      [failures.ai, "close-ai"],
-      [failures.database, "close-database"],
-      [failures.logger, "flush-logger"],
-    ])
+    expect(onShutdownError).toHaveBeenCalledWith(failure, "dispose-container")
   })
 
   it("learner와 admin 응답 body가 모두 소비될 때까지 자연 drain하고 새 요청은 503으로 거절한다", async () => {
     const learnerStream = createControlledStream()
     const adminStream = createControlledStream()
     const scheduler = createFakeScheduler()
-    const closeDatabase = vi.fn()
+    const disposeContainer = vi.fn()
     const stop = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase,
+      disposeContainer,
       fetch(request) {
         return new URL(request.url).hostname === "learner.example.com"
           ? learnerStream.response
@@ -114,7 +79,7 @@ describe("통합 API server lifecycle", () => {
 
     expect(stop).toHaveBeenCalledWith(false)
     expect(scheduler.delays).toEqual([20_000])
-    expect(closeDatabase).not.toHaveBeenCalled()
+    expect(disposeContainer).not.toHaveBeenCalled()
     expect(rejected.status).toBe(503)
     await expect(rejected.json()).resolves.toEqual({
       code: "SERVICE_UNAVAILABLE",
@@ -124,7 +89,7 @@ describe("통합 API server lifecycle", () => {
     learnerStream.enqueue("learner")
     learnerStream.close()
     await expect(learnerBody).resolves.toBe("learner")
-    expect(closeDatabase).not.toHaveBeenCalled()
+    expect(disposeContainer).not.toHaveBeenCalled()
 
     adminStream.enqueue("admin")
     adminStream.close()
@@ -133,7 +98,7 @@ describe("통합 API server lifecycle", () => {
 
     expect(scheduler.tasks[0]?.cancelled).toBe(true)
     expect(stop).toHaveBeenCalledTimes(1)
-    expect(closeDatabase).toHaveBeenCalledTimes(1)
+    expect(disposeContainer).toHaveBeenCalledTimes(1)
   })
 
   it("소비자가 response body를 취소하면 원본 stream과 linked request signal에 전파한다", async () => {
@@ -141,7 +106,7 @@ describe("통합 API server lifecycle", () => {
     const scheduler = createFakeScheduler()
     let linkedSignal: AbortSignal | undefined
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase: vi.fn(),
+      disposeContainer: vi.fn(),
       fetch(request) {
         linkedSignal = request.signal
         return stream.response
@@ -166,7 +131,7 @@ describe("통합 API server lifecycle", () => {
     const scheduler = createFakeScheduler()
     let linkedSignal: AbortSignal | undefined
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase: vi.fn(),
+      disposeContainer: vi.fn(),
       fetch(request) {
         linkedSignal = request.signal
         return stream.response
@@ -191,9 +156,9 @@ describe("통합 API server lifecycle", () => {
   it("response body error도 activity를 해제해 shutdown을 막지 않는다", async () => {
     const stream = createControlledStream()
     const scheduler = createFakeScheduler()
-    const closeDatabase = vi.fn()
+    const disposeContainer = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase,
+      disposeContainer,
       fetch: () => stream.response,
       scheduler: scheduler.value,
     })
@@ -206,14 +171,14 @@ describe("통합 API server lifecycle", () => {
 
     await expect(body).rejects.toThrow("stream failed")
     await shutdown
-    expect(closeDatabase).toHaveBeenCalledTimes(1)
+    expect(disposeContainer).toHaveBeenCalledTimes(1)
     expect(scheduler.tasks[0]?.cancelled).toBe(true)
   })
 
   it("tracked response가 redirect metadata와 clone metadata를 보존한다", async () => {
     const redirectResponse = createRedirectResponseFixture()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase: vi.fn(),
+      disposeContainer: vi.fn(),
       fetch: () => redirectResponse,
     })
 
@@ -233,7 +198,7 @@ describe("통합 API server lifecycle", () => {
     await lifecycle.shutdown()
   })
 
-  it("drain deadline이면 stop(true), request abort와 body cancel 뒤 cleanup과 DB close를 수행한다", async () => {
+  it("drain deadline이면 stop(true), request abort와 body cancel 뒤 container를 정리한다", async () => {
     const events: string[] = []
     const stream = createControlledStream(() => {
       events.push("body-cancel")
@@ -241,12 +206,9 @@ describe("통합 API server lifecycle", () => {
     const scheduler = createFakeScheduler()
     let linkedSignal: AbortSignal | undefined
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase() {
-        events.push("database")
-      },
       drainTimeoutMilliseconds: 125,
-      unsubscribeEvents() {
-        events.push("cleanup")
+      disposeContainer() {
+        events.push("container")
       },
       fetch(request) {
         linkedSignal = request.signal
@@ -272,8 +234,7 @@ describe("통합 API server lifecycle", () => {
       "stop:false",
       "stop:true",
       "body-cancel",
-      "cleanup",
-      "database",
+      "container",
     ])
     expect(linkedSignal?.aborted).toBe(true)
     expect(lease.signal.aborted).toBe(true)
@@ -286,7 +247,7 @@ describe("통합 API server lifecycle", () => {
     lease.release()
   })
 
-  it("force stop 후 graceful stop과 force stop이 모두 종료될 때까지 DB를 닫지 않는다", async () => {
+  it("force stop 후 두 server stop이 모두 종료될 때까지 container를 정리하지 않는다", async () => {
     const events: string[] = []
     const stream = createControlledStream(() => {
       events.push("body-cancel")
@@ -295,8 +256,8 @@ describe("통합 API server lifecycle", () => {
     const gracefulStop = createDeferred<void>()
     const forceStopStarted = createDeferred<void>()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase() {
-        events.push("database")
+      disposeContainer() {
+        events.push("container")
       },
       drainTimeoutMilliseconds: 125,
       fetch: () => stream.response,
@@ -328,21 +289,21 @@ describe("통합 API server lifecycle", () => {
       "stop:false",
       "stop:true",
       "body-cancel",
-      "database",
+      "container",
     ])
     expect(scheduler.delays).toEqual([125, 5_000])
     expect(scheduler.tasks[1]?.cancelled).toBe(true)
   })
 
-  it("graceful stop이 force stop 후에도 종료되지 않으면 공유 deadline 뒤 DB를 닫는다", async () => {
+  it("graceful stop이 force stop 후에도 종료되지 않으면 공유 deadline 뒤 container를 정리한다", async () => {
     const scheduler = createFakeScheduler()
     const neverSettles = new Promise<void>(() => undefined)
     const forceStopStarted = createDeferred<void>()
     const activityAborted = createDeferred<void>()
     const onShutdownError = vi.fn()
-    const closeDatabase = vi.fn()
+    const disposeContainer = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase,
+      disposeContainer,
       drainTimeoutMilliseconds: 125,
       fetch: () => new Response(null),
       forcedPhaseTimeoutMilliseconds: 50,
@@ -371,20 +332,19 @@ describe("통합 API server lifecycle", () => {
     scheduler.runNext()
     await shutdown
 
-    expect(closeDatabase).toHaveBeenCalledOnce()
-    expect(onShutdownError).toHaveBeenCalledOnce()
-    expect(onShutdownError).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "TimeoutError" }),
-      "force-stop-server"
-    )
+    expect(disposeContainer).toHaveBeenCalledOnce()
+    expect(onShutdownError.mock.calls.map(([, phase]) => phase)).toEqual([
+      "force-stop-server",
+      "dispose-container",
+    ])
   })
 
-  it("active activity가 없어도 graceful stop이 종료되지 않으면 force stop 후 DB를 닫는다", async () => {
+  it("active activity가 없어도 graceful stop이 종료되지 않으면 force stop 후 container를 정리한다", async () => {
     const scheduler = createFakeScheduler()
     const neverSettles = new Promise<void>(() => undefined)
     const forceStopStarted = createDeferred<void>()
     const onShutdownError = vi.fn()
-    const closeDatabase = vi.fn()
+    const disposeContainer = vi.fn()
     const stop = vi.fn((force?: boolean) => {
       if (force) {
         forceStopStarted.resolve()
@@ -394,7 +354,7 @@ describe("통합 API server lifecycle", () => {
       return neverSettles
     })
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase,
+      disposeContainer,
       fetch: () => new Response(null),
       forcedPhaseTimeoutMilliseconds: 50,
       onShutdownError,
@@ -414,15 +374,14 @@ describe("통합 API server lifecycle", () => {
 
     expect(stop).toHaveBeenCalledTimes(2)
     expect(stop).toHaveBeenNthCalledWith(2, true)
-    expect(closeDatabase).toHaveBeenCalledOnce()
-    expect(onShutdownError).toHaveBeenCalledOnce()
-    expect(onShutdownError).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "TimeoutError" }),
-      "force-stop-server"
-    )
+    expect(disposeContainer).toHaveBeenCalledOnce()
+    expect(onShutdownError.mock.calls.map(([, phase]) => phase)).toEqual([
+      "force-stop-server",
+      "dispose-container",
+    ])
   })
 
-  it("취소와 external cleanup이 종료되지 않아도 공유 forced deadline 뒤 DB를 닫는다", async () => {
+  it("취소와 container cleanup이 종료되지 않아도 공유 forced deadline에 종료한다", async () => {
     const events: string[] = []
     const cancellationStarted = createDeferred<void>()
     const neverSettles = new Promise<void>(() => undefined)
@@ -433,14 +392,10 @@ describe("통합 API server lifecycle", () => {
     })
     const scheduler = createFakeScheduler()
     const onShutdownError = vi.fn()
-    const closeDatabase = vi.fn(() => {
-      events.push("database")
-    })
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase,
       drainTimeoutMilliseconds: 125,
-      unsubscribeEvents() {
-        events.push("cleanup")
+      disposeContainer() {
+        events.push("container")
         return neverSettles
       },
       fetch: () => stream.response,
@@ -459,8 +414,7 @@ describe("통합 API server lifecycle", () => {
     scheduler.runNext()
     await shutdown
 
-    expect(events).toEqual(["body-cancel", "cleanup", "database"])
-    expect(closeDatabase).toHaveBeenCalledTimes(1)
+    expect(events).toEqual(["body-cancel", "container"])
     expect(scheduler.tasks).toHaveLength(2)
     expect(
       onShutdownError.mock.calls.map(([error, phase]) => ({
@@ -469,15 +423,15 @@ describe("통합 API server lifecycle", () => {
       }))
     ).toEqual([
       { name: "TimeoutError", phase: "cancel-activity" },
-      { name: "TimeoutError", phase: "unsubscribe-events" },
+      { name: "TimeoutError", phase: "dispose-container" },
     ])
   })
 
   it("명시적 long-lived lease release는 멱등이며 자연 drain에 포함된다", async () => {
     const scheduler = createFakeScheduler()
-    const closeDatabase = vi.fn()
+    const disposeContainer = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase,
+      disposeContainer,
       fetch: () => new Response(null),
       scheduler: scheduler.value,
     })
@@ -485,37 +439,27 @@ describe("통합 API server lifecycle", () => {
     const lease = lifecycle.acquireLongLivedLease("learner-progress-sse")
 
     const shutdown = lifecycle.shutdown()
-    expect(closeDatabase).not.toHaveBeenCalled()
+    expect(disposeContainer).not.toHaveBeenCalled()
     lease.release()
     lease.release()
     await shutdown
 
     expect(lease.label).toBe("learner-progress-sse")
     expect(lease.signal.aborted).toBe(false)
-    expect(closeDatabase).toHaveBeenCalledTimes(1)
+    expect(disposeContainer).toHaveBeenCalledTimes(1)
     expect(scheduler.tasks[0]?.cancelled).toBe(true)
   })
 
-  it("event와 AI cleanup을 순서대로 격리하고 모두 끝난 뒤 DB를 한 번만 닫는다", async () => {
-    const firstCleanup = createDeferred<void>()
+  it("반복 shutdown에서도 container dispose를 한 번만 호출한다", async () => {
+    const disposal = createDeferred<void>()
     const events: string[] = []
-    const cleanupError = new Error("provider cleanup failed")
-    const onShutdownError = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeDatabase() {
-        events.push("database")
-      },
-      async unsubscribeEvents() {
-        events.push("cleanup:first")
-        await firstCleanup.promise
-        events.push("cleanup:first:done")
-      },
-      closeAi() {
-        events.push("cleanup:second")
-        throw cleanupError
+      async disposeContainer() {
+        events.push("container")
+        await disposal.promise
+        events.push("container:done")
       },
       fetch: () => new Response(null),
-      onShutdownError,
     })
     lifecycle.attachServer({
       stop(force) {
@@ -528,20 +472,13 @@ describe("통합 API server lifecycle", () => {
     await waitForMicrotasks()
 
     expect(firstShutdown).toBe(repeatedShutdown)
-    expect(events).toEqual(["stop:false", "cleanup:first"])
+    expect(events).toEqual(["stop:false", "container"])
 
-    firstCleanup.resolve()
+    disposal.resolve()
     await firstShutdown
     await lifecycle.shutdown()
 
-    expect(events).toEqual([
-      "stop:false",
-      "cleanup:first",
-      "cleanup:first:done",
-      "cleanup:second",
-      "database",
-    ])
-    expect(onShutdownError).toHaveBeenCalledWith(cleanupError, "close-ai")
+    expect(events).toEqual(["stop:false", "container", "container:done"])
   })
 })
 

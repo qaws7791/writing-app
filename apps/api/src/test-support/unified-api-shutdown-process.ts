@@ -22,7 +22,7 @@ let shutdownStarted = false
 const releaseRequest = createDeferred()
 const database = new Database(":memory:")
 const lifecycle = createUnifiedApiServerLifecycle({
-  closeDatabase() {
+  disposeContainer() {
     closeCount += 1
     database.close()
   },

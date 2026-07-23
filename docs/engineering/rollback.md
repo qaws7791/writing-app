@@ -36,9 +36,9 @@ DB 호환성 확인 입력은 운영자의 판단을 기록하는 fail-closed �
 
 ## 통합 schema 이후 호환성
 
-현재 API migration은 빈 DB, 보존된 baseline, 이전 module schema와 명시적으로 식별한 legacy schema를 현재 상태로 올릴 수 있다. 이전 module migration 함수가 현재 schema에서 멱등적으로 끝나는 것도 테스트하지만, 이는 이전 API image 전체가 현재 DB와 호환된다는 뜻이 아니다.
+현재 API migration은 빈 DB, 보존된 baseline, 이전 module schema와 명시적으로 식별한 legacy schema를 현재 상태로 올릴 수 있다.
 
-현재 schema는 cross-module FK를 제거하기 위해 여러 table을 재구성하고 제품 role을 auth credential table에서 identity table로 옮긴 뒤 기존 role column을 제거한다. 따라서 이 migration이 적용된 DB에 role column을 기대하는 이전 API image를 배치하는 code-only rollback은 지원하지 않는다. 이전 image가 필요한 경우에는 writer를 중지하고 그 image와 호환되는 migration 전 검증 백업을 새 경로로 복구해야 한다. 운영 DB에서 역방향 SQL을 즉석 작성하거나 migration 이력만 삭제하는 방식은 허용하지 않는다.
+현재 schema는 제품 role을 auth credential table에서 identity table로 옮기고 교차 module FK를 복원하기 위해 여러 table을 재구성한다. 따라서 이전 schema를 기대하는 API image의 code-only rollback은 지원하지 않는다. 이전 image가 필요한 경우에는 writer를 중지하고 그 image와 호환되는 migration 전 검증 백업을 새 경로로 복구해야 한다. 운영 DB에서 역방향 SQL을 즉석 작성하거나 migration 이력만 삭제하는 방식은 허용하지 않는다.
 
 ## DB 복구
 

@@ -8,7 +8,6 @@
   },
   "exports": {
     "./http": "./src/interface/http/resource-library-http.ts",
-    "./migration": "./src/infrastructure/persistence/schema-migration.ts",
     "./module": "./src/module.ts",
     "./ports": "./src/application/ports/resource-library-ports.ts",
     "./queries": "./src/application/resource-library-queries.ts",
@@ -22,9 +21,9 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:",
+    "@workspace/auth": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
-    "@workspace/event-contracts": "workspace:*",
     "@workspace/http-platform": "workspace:*",
     "@workspace/kernel": "workspace:*",
     "@workspace/resource-document": "workspace:*",

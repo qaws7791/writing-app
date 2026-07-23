@@ -1,5 +1,4 @@
 import type { ResourceDocumentId, ResourceFolderId } from "@workspace/types/ids"
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 
 import type {
   ResourceCommandResult,
@@ -56,9 +55,6 @@ export function createResourceDocumentApplication(
     | "codec"
     | "documentIdGenerator"
     | "documentRepository"
-    | "eventFailureObserver"
-    | "eventIdGenerator"
-    | "eventPublisher"
   >
 ): ResourceDocumentApplication {
   return Object.freeze({
@@ -123,8 +119,6 @@ export function createResourceDocumentApplication(
           parentId: input.parentId,
         })
         if (result.kind !== "ok") return result
-        await publishDocumentSaved(dependencies, result.value.document, now)
-
         return {
           kind: "ok",
           value: {
@@ -184,8 +178,6 @@ export function createResourceDocumentApplication(
           }
         }
         if (result.kind !== "ok") return result
-        await publishDocumentSaved(dependencies, result.value, now)
-
         return {
           kind: "ok",
           value: await hydrateResourceDocument(
@@ -201,34 +193,6 @@ export function createResourceDocumentApplication(
       }
     },
   })
-}
-
-async function publishDocumentSaved(
-  dependencies: Pick<
-    ResourceLibraryDependencies,
-    "eventFailureObserver" | "eventIdGenerator" | "eventPublisher"
-  >,
-  document: Readonly<{ id: ResourceDocumentId; version: number }>,
-  occurredAt: Date
-): Promise<void> {
-  const event = Object.freeze({
-    id: dependencies.eventIdGenerator.next(),
-    occurredAt,
-    payload: Object.freeze({
-      documentId: document.id,
-      version: document.version,
-    }),
-    type: "resource-library.document-saved" as const,
-  }) satisfies WorkspaceEventMap["resource-library.document-saved"]
-  const published =
-    await dependencies.eventPublisher.publishDocumentSaved(event)
-  if (published.isErr()) {
-    dependencies.eventFailureObserver({
-      eventId: event.id,
-      eventName: event.type,
-      kind: published.error.kind,
-    })
-  }
 }
 
 function readMarkdownFileNameTitle(fileName: string): string | null {

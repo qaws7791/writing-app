@@ -242,7 +242,6 @@ function verifyP10ApiCompositionOwnership(): void {
 
 function verifyP11SchemaOwnership(): void {
   const applicationSchemaPath = "apps/api/src/db/schema.ts"
-  const applicationMigrationPath = "apps/api/src/db/migrate.ts"
   const modulePackages = [
     "ai-feedback",
     "content",
@@ -268,29 +267,15 @@ function verifyP11SchemaOwnership(): void {
     )
   }
 
-  const migrationImports = new Set(
-    ["auth", ...modulePackages].map(
-      (packageName) => `@workspace/${packageName}/migration`
-    )
-  )
-
   for (const filePath of collectSourceFiles(repositoryRoot)) {
     if (filePath.includes(`${path.sep}node_modules${path.sep}`)) continue
     const relative = relativePath(filePath)
 
     for (const imported of readImports(filePath)) {
       if (
-        migrationImports.has(imported) &&
-        !relative.endsWith(".test.ts") &&
-        relative !== applicationMigrationPath
-      ) {
-        failures.push(
-          `${relative} -> module migration은 application migration composition 밖에서 실행할 수 없음: ${imported}`
-        )
-      }
-      if (
         imported === "@workspace/db/test-support/application-migration" &&
-        !relative.endsWith(".test.ts")
+        !relative.endsWith(".test.ts") &&
+        !relative.includes("/test-support/")
       ) {
         failures.push(
           `${relative} -> baseline test helper의 runtime import 금지`
@@ -320,14 +305,6 @@ function verifyP11SchemaOwnership(): void {
   }
   if (dbManifest.exports?.["./schema"] !== undefined) {
     failures.push("packages/infra/db/package.json -> schema 재공개 금지")
-  }
-  const reconciliation = readOptionalSource(
-    "apps/api/src/db/schema-reconciliation.ts"
-  )
-  if (/\b(?:INNER|LEFT|RIGHT|FULL|CROSS)?\s*JOIN\b/iu.test(reconciliation)) {
-    failures.push(
-      "apps/api/src/db/schema-reconciliation.ts -> cross-module SQL JOIN 대신 독립 조회·application 조정 필요"
-    )
   }
 }
 

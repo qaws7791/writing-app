@@ -4,7 +4,7 @@ import {
   userIdSchema,
 } from "@workspace/contracts/identity/admin-ids"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import { runInSqliteTransaction } from "@workspace/db/sqlite-database"
 
 import {
@@ -17,64 +17,25 @@ import {
   adminIdentityProfiles,
   learnerProfiles,
 } from "#identity/infrastructure/persistence/schema"
-import { runIdentitySchemaMigration } from "#identity/infrastructure/persistence/schema-migration"
 
 const now = new Date("2026-07-22T00:00:00.000Z")
 
 describe("identity SQLite repository", () => {
-  it("legacy auth role과 삭제 profile을 identity 정책으로 한 번만 backfill한다", () => {
-    const client = createInMemoryWritingAppDatabase()
-
-    try {
-      runBaselineTestMigration(client.sqlite)
-      client.sqlite.exec(`
-        INSERT INTO user (
-          id, name, email, email_verified, image, created_at, updated_at
-        ) VALUES (
-          'deleted-user', '삭제 전 이름', 'deleted@example.com', 1, NULL,
-          1784678400000, 1784678400000
-        );
-        INSERT INTO learner_profiles (
-          user_id, status, display_name, deleted_at
-        ) VALUES (
-          'deleted-user', 'deleted', '삭제 전 이름', 1784678400000
-        );
-      `)
-
-      const legacyAdminIdentities = [
-        { id: "legacy-owner", role: "owner" },
-      ] as const
-      runIdentitySchemaMigration(client.sqlite, { legacyAdminIdentities })
-      runIdentitySchemaMigration(client.sqlite, { legacyAdminIdentities })
-
-      expect(client.db.select().from(adminIdentityProfiles).all()).toEqual([
-        { adminId: "legacy-owner", role: "owner", version: 0 },
-      ])
-      expect(client.db.select().from(learnerProfiles).all()).toEqual([
-        {
-          deletedAt: now,
-          displayName: deletedLearnerDisplayName,
-          status: "deleted",
-          userId: "deleted-user",
-          version: 0,
-        },
-      ])
-      expect(
-        client.sqlite.query("PRAGMA foreign_key_list(learner_profiles)").all()
-      ).toEqual([])
-    } finally {
-      client.close()
-    }
-  })
-
   it("profile provisioning과 optimistic status·role 변경을 통합 검증한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     const userId = userIdSchema.parse("user-1")
     const adminId = adminIdSchema.parse("admin-1")
 
     try {
-      runBaselineTestMigration(client.sqlite)
-      runIdentitySchemaMigration(client.sqlite)
+      runCurrentTestMigration(client.sqlite)
+      client.sqlite.exec(`
+        INSERT INTO user (
+          id, name, email, email_verified, image, created_at, updated_at
+        ) VALUES ('user-1', '학습자', 'user-1@example.test', 1, NULL, 1, 1);
+        INSERT INTO admin_user (
+          id, name, email, email_verified, image, created_at, updated_at
+        ) VALUES ('admin-1', '관리자', 'admin-1@example.test', 1, NULL, 1, 1);
+      `)
       seedOwnerIdentity(client.db, adminId)
       const repository = createDrizzleIdentityRepository(client.db)
 
@@ -163,12 +124,16 @@ describe("identity SQLite repository", () => {
     }
   })
 
-  it("identity schema는 Better Auth table을 포함하지 않고 transaction rollback을 보존한다", () => {
+  it("transaction rollback을 보존한다", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
-      runBaselineTestMigration(client.sqlite)
-      runIdentitySchemaMigration(client.sqlite)
+      runCurrentTestMigration(client.sqlite)
+      client.sqlite.exec(`
+        INSERT INTO user (
+          id, name, email, email_verified, image, created_at, updated_at
+        ) VALUES ('user-2', '학습자', 'user-2@example.test', 1, NULL, 1, 1)
+      `)
 
       expect(() =>
         runInSqliteTransaction(client.db, (transaction) => {

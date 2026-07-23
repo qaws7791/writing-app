@@ -155,14 +155,12 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     )
     expect(advance).toMatchObject({
       aggregate: { kind: "advance", requestedStepIndex: 1 },
-      events: [],
       kind: "advance",
       requestedStepIndex: 1,
     })
     expect(Object.isFrozen(advance)).toBe(true)
     if (advance.kind === "advance") {
       expect(Object.isFrozen(advance.aggregate)).toBe(true)
-      expect(Object.isFrozen(advance.events)).toBe(true)
     }
     expect(
       decideFinalizeAiFeedback(completeCommand, {
@@ -174,7 +172,6 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
       })
     ).toMatchObject({
       aggregate: { kind: "replay-completed" },
-      events: [],
       kind: "replay-completed",
     })
     expect(

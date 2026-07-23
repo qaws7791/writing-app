@@ -50,29 +50,20 @@ describe("content curriculum domain", () => {
     })
   })
 
-  it("publish decision이 immutable revision과 curriculum-published event를 반환한다", () => {
+  it("publish decision이 immutable revision을 반환한다", () => {
     const decision = decidePublishCurriculum({
       draft: createDraft(),
-      eventId: "event-1",
       now,
     })._unsafeUnwrap()
 
-    expect(decision.aggregate).toMatchObject({
+    expect(decision).toMatchObject({
       courseId,
       curriculumVersionId: versionId,
       publishedAt: now,
       revision: 1,
     })
-    expect(decision.events).toEqual([
-      {
-        id: "event-1",
-        occurredAt: now,
-        payload: { courseId, revision: 1 },
-        type: "content.curriculum-published",
-      },
-    ])
-    expect(Object.isFrozen(decision.aggregate)).toBe(true)
-    expect(Object.isFrozen(decision.aggregate.units)).toBe(true)
+    expect(Object.isFrozen(decision)).toBe(true)
+    expect(Object.isFrozen(decision.units)).toBe(true)
   })
 
   it("빈 hierarchy 발행과 published revision 변경을 명시적으로 거절한다", () => {
@@ -81,7 +72,6 @@ describe("content curriculum domain", () => {
     expect(
       decidePublishCurriculum({
         draft: emptyDraft,
-        eventId: "event-1",
         now,
       })._unsafeUnwrapErr()
     ).toEqual({

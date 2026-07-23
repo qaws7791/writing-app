@@ -20,9 +20,9 @@ Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표�
 - runtime cycle은 실패하고 type-only edge는 cycle 판정에서 제외한다.
 - 미해결 import와 manifest에 직접 선언하지 않은 package import는 실패한다.
 - `config → 상위 계층`, `shared → module·infra·app`, `infra → module·app` 의존을 거부한다.
-- Better Auth, OpenAI·Mastra, AWS SDK, Pino와 Emittery 직접 import는 각각의 infra 소유 package로 제한한다.
-- shared 안에서도 kernel은 외부 workspace runtime과 framework에 의존하지 않고, event-contracts는 kernel과 types만 의존한다.
-- module 내부는 `domain → application → infrastructure/interface` 방향을 지키며 다른 module의 내부 경로를 import하지 않는다.
+- Better Auth, OpenAI·Mastra, AWS SDK와 Pino 직접 import는 각각의 infra 소유 package로 제한한다.
+- shared 안에서도 kernel은 외부 workspace runtime과 framework에 의존하지 않는다.
+- module 내부는 `domain → application → infrastructure/interface` 방향을 지키며 다른 module의 내부 경로를 import하지 않는다. 동일 SQLite FK 선언을 위한 공개 schema 의존만 infrastructure schema에서 허용한다.
 - module의 domain·application은 shared HTTP contract를 import하지 않는다.
 - web·admin은 module·DB·Drizzle을 직접 import하지 않고 `app → features → entities → shared` 방향과 feature 격리를 지킨다. client-facing source는 server 경계를 import하지 않는다.
 - Storybook은 UI·config 외 package를 직접 import하지 않는다.
@@ -39,9 +39,9 @@ Knip gate는 읽기 전용이며 `--fix`를 실행하지 않는다. 실제 runti
 
 package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 subpath의 추가·삭제는 소유 package의 export 목록을 함께 갱신해야 하며, workspace inventory 검사는 wildcard·root barrel과 유효하지 않은 target을 거부한다. export key 목록 자체는 manifest가 소유하고 과거 목록의 snapshot은 별도로 복제하지 않는다. package interface 검사는 내부 상대 import와 자기 공개 경로 역참조, canonical ID 중복과 canonical 오류 schema 소비처럼 import graph만으로 판정할 수 없는 계약을 고정한다.
 
-module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`는 API의 단일 Drizzle schema entry와 격리된 E2E content seed fixture만 소비하고, 공개 `./migration`은 API migration composition과 호환성 test만 소비한다. 실제 seed가 있는 package의 `./seed`는 API seed composition과 seed tooling만 소비한다. Better Auth schema는 공식 adapter mapping과 API 인증 persistence adapter가 사용하는 별도 infra 예외다. 다른 module이나 app repository가 module table을 직접 읽는 예외는 두지 않는다.
+module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`는 API의 단일 Drizzle schema entry, FK를 선언하는 module schema와 격리된 E2E content seed fixture가 소비한다. 실제 seed가 있는 package의 `./seed`는 API seed composition과 seed tooling만 소비한다. Better Auth schema는 공식 adapter mapping과 인증 persistence adapter도 소비한다. 다른 module이나 app repository가 module table을 직접 읽는 예외는 두지 않는다.
 
-package interface 검사는 이 allowlist와 함께 API schema aggregator, Drizzle config의 schema·output 경로, migration·test-support consumer, DB schema 재공개 금지와 reconciliation의 SQL join 부재를 검사한다. migration checksum과 적용 순서, 최종 schema와 cross-module FK 부재는 migration 실행 테스트가 검증한다. frontend 검사는 server source의 `server-only` marker를 고정하고 Storybook dependency 범위는 architecture 검사와 Knip이 맡는다.
+package interface 검사는 이 allowlist와 함께 API schema aggregator, Drizzle config의 schema·output 경로, test-support consumer와 DB schema 재공개 금지를 검사한다. migration checksum과 적용 순서, 최종 schema의 필수 FK는 migration 실행 테스트가 검증한다. frontend 검사는 server source의 `server-only` marker를 고정하고 Storybook dependency 범위는 architecture 검사와 Knip이 맡는다.
 
 ## 실행
 

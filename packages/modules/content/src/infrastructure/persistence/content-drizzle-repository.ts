@@ -393,7 +393,7 @@ function publishDraft(
   input: Parameters<ContentRepository["publishDraft"]>[0]
 ): Result<PublishedCurriculumRevision, ContentError> {
   return database.transaction((transaction) => {
-    const publishedRevision = input.decision.aggregate
+    const publishedRevision = input.publishedRevision
     const published = transaction
       .update(courseCurriculumVersions)
       .set({

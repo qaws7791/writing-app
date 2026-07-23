@@ -3,7 +3,6 @@ import type {
   CurriculumVersionId,
   LessonStepId,
 } from "@workspace/types/ids"
-import type { DomainDecision } from "@workspace/kernel/domain-event"
 import type {
   LearnerStepSubmission,
   LearningStep,
@@ -71,11 +70,11 @@ type FinalizeAiFeedbackAggregate =
 export type FinalizeAiFeedbackDecision =
   | { readonly error: LearnerTransitionError; readonly kind: "rejected" }
   | (Extract<FinalizeAiFeedbackAggregate, { kind: "advance" }> &
-      DomainDecision<FinalizeAiFeedbackAggregate, never>)
+      Readonly<{ aggregate: FinalizeAiFeedbackAggregate }>)
   | (Extract<FinalizeAiFeedbackAggregate, { kind: "replay-advanced" }> &
-      DomainDecision<FinalizeAiFeedbackAggregate, never>)
+      Readonly<{ aggregate: FinalizeAiFeedbackAggregate }>)
   | (Extract<FinalizeAiFeedbackAggregate, { kind: "replay-completed" }> &
-      DomainDecision<FinalizeAiFeedbackAggregate, never>)
+      Readonly<{ aggregate: FinalizeAiFeedbackAggregate }>)
 
 export function decidePrepareAiFeedbackTarget(
   command: PrepareLearnerAiFeedbackCommand,
@@ -227,14 +226,12 @@ export function decideFinalizeAiFeedback(
 function finalizeDecision(
   aggregate: FinalizeAiFeedbackAggregate
 ): Exclude<FinalizeAiFeedbackDecision, { readonly kind: "rejected" }> {
-  const events = Object.freeze([])
   switch (aggregate.kind) {
     case "advance": {
       const frozenAggregate = Object.freeze({ ...aggregate })
       return Object.freeze({
         ...frozenAggregate,
         aggregate: frozenAggregate,
-        events,
       })
     }
     case "replay-advanced": {
@@ -242,7 +239,6 @@ function finalizeDecision(
       return Object.freeze({
         ...frozenAggregate,
         aggregate: frozenAggregate,
-        events,
       })
     }
     case "replay-completed": {
@@ -250,7 +246,6 @@ function finalizeDecision(
       return Object.freeze({
         ...frozenAggregate,
         aggregate: frozenAggregate,
-        events,
       })
     }
   }

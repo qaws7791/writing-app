@@ -31,33 +31,22 @@ describe("identity 학습자 profile aggregate", () => {
     expect(Object.isFrozen(profile)).toBe(true)
   })
 
-  it("상태 전이에서 새 aggregate와 immutable event를 함께 반환한다", () => {
+  it("상태 전이에서 새 immutable profile을 반환한다", () => {
     const profile = createLearnerProfile({
       displayName: "학습자",
       userId,
     })._unsafeUnwrap()
     const decision = transitionLearnerProfileStatus({
-      eventId: "event-1",
       now,
       profile,
       status: "suspended",
     })._unsafeUnwrap()
 
-    expect(decision.aggregate).toMatchObject({
+    expect(decision).toMatchObject({
       displayName: "학습자",
       status: "suspended",
     })
-    expect(decision.events).toEqual([
-      {
-        id: "event-1",
-        occurredAt: now,
-        payload: { status: "suspended", userId },
-        type: "identity.user-status-changed",
-      },
-    ])
     expect(Object.isFrozen(decision)).toBe(true)
-    expect(Object.isFrozen(decision.events)).toBe(true)
-    expect(Object.isFrozen(decision.events[0]?.payload)).toBe(true)
   })
 
   it("동일 상태 전이를 거절한다", () => {
@@ -69,7 +58,6 @@ describe("identity 학습자 profile aggregate", () => {
 
     expect(
       transitionLearnerProfileStatus({
-        eventId: "event-1",
         now,
         profile,
         status: "suspended",
@@ -87,11 +75,10 @@ describe("identity 학습자 profile aggregate", () => {
       userId,
     })._unsafeUnwrap()
     const deleted = transitionLearnerProfileStatus({
-      eventId: "event-1",
       now,
       profile,
       status: "deleted",
-    })._unsafeUnwrap().aggregate
+    })._unsafeUnwrap()
 
     expect(deleted).toEqual({
       deletedAt: now,
@@ -107,11 +94,10 @@ describe("identity 학습자 profile aggregate", () => {
     ).toEqual({ kind: "identity-deleted" })
     expect(
       transitionLearnerProfileStatus({
-        eventId: "event-2",
         now,
         profile: deleted,
         status: "active",
-      })._unsafeUnwrap().aggregate
+      })._unsafeUnwrap()
     ).toEqual({
       deletedAt: null,
       displayName: deletedLearnerDisplayName,

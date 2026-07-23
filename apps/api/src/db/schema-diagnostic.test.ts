@@ -16,7 +16,6 @@ describe("application database diagnostic", () => {
     try {
       expect(inspectApplicationDatabase(database.sqlite)).toMatchObject({
         checks: {
-          danglingReferences: [],
           foreignKeyViolations: [],
           integrity: "ok",
         },
@@ -48,7 +47,7 @@ describe("application database diagnostic", () => {
     }
   })
 
-  it("현재 schema와 reference가 모두 유효할 때만 ok를 반환한다", () => {
+  it("현재 schema와 DB 검사가 유효할 때 ok를 반환한다", () => {
     const database = createInMemoryWritingAppDatabase()
 
     try {
@@ -80,13 +79,13 @@ describe("application database diagnostic", () => {
       runApplicationMigrations(database.sqlite)
       database.sqlite.exec(`
         DELETE FROM api_schema_migrations
-        WHERE id = '0001-module-schema-ownership'
+        WHERE id = '0002-cross-module-reference-integrity'
       `)
 
       expect(inspectApplicationDatabase(database.sqlite)).toMatchObject({
         issues: [],
         kind: "application-database-diagnostic",
-        pendingMigrationIds: ["0001-module-schema-ownership"],
+        pendingMigrationIds: ["0002-cross-module-reference-integrity"],
         schema: "current",
         status: "migration-required",
       })
@@ -107,37 +106,6 @@ describe("application database diagnostic", () => {
 
       expect(inspectApplicationDatabase(database.sqlite)).toMatchObject({
         issues: [{ code: "migration-history-invalid" }],
-        schema: "unsupported",
-        status: "blocked",
-      })
-    } finally {
-      database.close()
-    }
-  })
-
-  it("현재 schema의 dangling application reference를 blocked로 분류한다", () => {
-    const database = createInMemoryWritingAppDatabase()
-
-    try {
-      runApplicationMigrations(database.sqlite)
-      database.sqlite.exec(`
-        INSERT INTO learner_profiles (
-          user_id, status, display_name, deleted_at, version
-        ) VALUES ('missing-user', 'active', 'orphan', NULL, 0)
-      `)
-
-      expect(inspectApplicationDatabase(database.sqlite)).toMatchObject({
-        checks: {
-          danglingReferences: [
-            {
-              kind: "identity-learner",
-              referenceId: "missing-user",
-              targetId: "missing-user",
-            },
-          ],
-        },
-        issues: [{ code: "dangling-reference" }],
-        kind: "application-database-diagnostic",
         schema: "unsupported",
         status: "blocked",
       })

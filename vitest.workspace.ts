@@ -51,7 +51,6 @@ export default defineConfig({
       "packages/infra/auth/vitest.config.ts",
       "packages/shared/contracts/vitest.config.ts",
       "packages/infra/db/vitest.config.ts",
-      "packages/infra/event-bus/vitest.config.ts",
       "packages/config/env/vitest.config.ts",
       "packages/infra/http-client/vitest.config.ts",
       "packages/infra/http-platform/vitest.config.ts",

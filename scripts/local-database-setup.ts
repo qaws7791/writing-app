@@ -35,7 +35,7 @@ export async function runLocalDatabaseSetup({
     const diagnostic = await inspect()
     if (diagnostic.status === "blocked") {
       throw new Error(
-        "기존 DB가 지원하지 않는 상태입니다. bun --filter @workspace/api db:reconcile 결과를 확인하세요."
+        "기존 DB가 지원하지 않는 상태입니다. bun --filter @workspace/api db:inspect 결과를 확인하세요."
       )
     }
     if (diagnostic.status === "migration-required") {

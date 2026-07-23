@@ -6,6 +6,7 @@
     "moduleResolution": "Bundler",
     "paths": {
       "#auth/*": ["../../infra/auth/src/*"],
+      "#content/*": ["../content/src/*"],
       "#db/*": ["../../infra/db/src/*"],
       "#http-platform/*": ["../../infra/http-platform/src/*"],
       "#learning/*": ["./src/*"]

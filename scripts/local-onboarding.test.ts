@@ -33,7 +33,7 @@ describe("로컬 온보딩", () => {
       "audit:admin-auth": "admin-auth-audit.ts",
       "db:backup": "backup-database.ts",
       "db:migrate": "migrate-database.ts",
-      "db:reconcile": "reconcile-database.ts",
+      "db:inspect": "inspect-database.ts",
       "db:reset": "reset-database.ts",
       "db:seed": "seed-database.ts",
       "revoke:admin-sessions": "revoke-admin-sessions.ts",

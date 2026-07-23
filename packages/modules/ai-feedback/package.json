@@ -9,7 +9,6 @@
   "exports": {
     "./application": "./src/application/ai-feedback-application.ts",
     "./http": "./src/interface/http/ai-feedback-http.ts",
-    "./migration": "./src/infrastructure/persistence/schema-migration.ts",
     "./module": "./src/module.ts",
     "./ports": "./src/application/ports/ai-feedback-provider.ts",
     "./provider": "./src/infrastructure/adapters/openai-feedback-provider.ts",
@@ -23,6 +22,8 @@
   "dependencies": {
     "@hono/zod-openapi": "catalog:",
     "@workspace/ai": "workspace:*",
+    "@workspace/auth": "workspace:*",
+    "@workspace/content": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/http-platform": "workspace:*",

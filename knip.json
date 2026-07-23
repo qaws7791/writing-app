@@ -32,7 +32,7 @@
         "src/scripts/admin-auth-audit.ts",
         "src/scripts/backup-database.ts",
         "src/scripts/migrate-database.ts",
-        "src/scripts/reconcile-database.ts",
+        "src/scripts/inspect-database.ts",
         "src/scripts/reset-database.ts",
         "src/scripts/revoke-admin-sessions.ts",
         "src/scripts/seed-admin.ts",

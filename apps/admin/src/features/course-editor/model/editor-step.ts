@@ -1,105 +1,154 @@
-import {
-  lessonStepDtoSchema,
-  type LessonStepDto,
-} from "@workspace/contracts/content/steps"
-import { z } from "zod"
+import type { LessonStepType } from "@workspace/contracts/content/steps"
+import type { LessonStepId } from "@workspace/types/ids"
 
-const rawStepContentSchema = z.object({ type: z.string() }).passthrough()
+import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
 
-export type EditorStep = LessonStepDto & {
-  readonly contentStatus: "active" | "archived"
-}
+export type EditorStep =
+  AdminCourseDetail["units"][number]["lessons"][number]["steps"][number]
 
-export type EditorStepParseResult =
-  | {
-      readonly state: "valid"
-      readonly step: EditorStep
+type EditorStepCreation =
+  | Readonly<{
+      id: LessonStepId
+      sortOrder: number
+      targetStepId: LessonStepId
+      type: "AI_FEEDBACK"
+    }>
+  | Readonly<{
+      id: LessonStepId
+      sortOrder: number
+      type: Exclude<LessonStepType, "AI_FEEDBACK">
+    }>
+
+export function createEditorStep(input: EditorStepCreation): EditorStep {
+  const base = {
+    id: input.id,
+    sortOrder: input.sortOrder,
+    status: "active" as const,
+  }
+  const itemId = (kind: string, index: number) => `${input.id}-${kind}-${index}`
+
+  switch (input.type) {
+    case "AI_FEEDBACK":
+      return {
+        ...base,
+        allowRetry: true,
+        feedback: "",
+        focus: "",
+        score: 0,
+        scoreMax: 1,
+        showScore: false,
+        target: input.targetStepId,
+        type: input.type,
+      }
+    case "CATEGORIZE": {
+      const categoryId = itemId("category", 1)
+      return {
+        ...base,
+        categories: [{ id: categoryId, label: "새 카테고리" }],
+        explanation: "",
+        guide: "",
+        items: [
+          {
+            categoryId,
+            id: itemId("item", 1),
+            text: "새 항목",
+          },
+        ],
+        title: "새 분류",
+        type: input.type,
+      }
     }
-  | {
-      readonly id: string
-      readonly message: string
-      readonly rawType: string
-      readonly state: "invalid"
+    case "COMPARE":
+      return {
+        ...base,
+        analysis: "",
+        title: "새 비교",
+        type: input.type,
+        versions: [
+          { label: "초안", text: "" },
+          { label: "수정본", text: "" },
+        ],
+      }
+    case "FILL_BLANK": {
+      const wordId = itemId("word", 1)
+      return {
+        ...base,
+        answer: [wordId],
+        explanation: "",
+        template: "문장을 입력하세요.",
+        type: input.type,
+        wordIds: [wordId],
+        words: ["단어"],
+      }
     }
-
-export type WireEditorStep = {
-  readonly contentJson: string
-  readonly id: string
-  readonly sortOrder: number
-  readonly status: "active" | "archived"
-  readonly type: string
-}
-
-/** transport step을 편집 가능한 canonical union으로 검증한다. */
-export function parseEditorStep(step: WireEditorStep): EditorStepParseResult {
-  const contentResult = parseContentJson(step)
-  if (contentResult.state === "invalid") {
-    return contentResult
-  }
-
-  const { type: _storedSourceType, ...content } = contentResult.content
-  const result = lessonStepDtoSchema.safeParse({
-    id: step.id,
-    sortOrder: step.sortOrder,
-    type: step.type,
-    ...content,
-  })
-
-  if (!result.success) {
-    return invalidStep(
-      step,
-      result.error.issues
-        .map(
-          (issue) => `${issue.path.join(".") || "content"}: ${issue.message}`
-        )
-        .join(", ")
-    )
-  }
-
-  return {
-    state: "valid",
-    step: {
-      ...result.data,
-      contentStatus: step.status,
-    },
-  }
-}
-
-function parseContentJson(step: WireEditorStep):
-  | {
-      readonly content: z.infer<typeof rawStepContentSchema>
-      readonly state: "valid"
+    case "MATCH":
+      return {
+        ...base,
+        explanation: "",
+        guide: "",
+        pairs: [
+          {
+            left: "왼쪽 항목",
+            leftId: itemId("left", 1),
+            right: "오른쪽 항목",
+            rightId: itemId("right", 1),
+          },
+        ],
+        title: "새 연결",
+        type: input.type,
+      }
+    case "MULTIPLE_CHOICE": {
+      const correctId = itemId("option", 1)
+      return {
+        ...base,
+        correct: correctId,
+        explanation: "",
+        options: [
+          { id: correctId, text: "선택지 1" },
+          { id: itemId("option", 2), text: "선택지 2" },
+        ],
+        question: "질문을 입력하세요.",
+        type: input.type,
+      }
     }
-  | Extract<EditorStepParseResult, { readonly state: "invalid" }> {
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(step.contentJson)
-  } catch {
-    return invalidStep(step, "contentJson이 유효한 JSON이 아닙니다.")
-  }
-
-  const result = rawStepContentSchema.safeParse(parsed)
-  if (!result.success) {
-    return invalidStep(
-      step,
-      "contentJson은 문자열 type을 포함한 객체여야 합니다."
-    )
-  }
-
-  return {
-    content: result.data,
-    state: "valid",
-  }
-}
-
-function invalidStep(
-  step: WireEditorStep,
-  message: string
-): Extract<EditorStepParseResult, { readonly state: "invalid" }> {
-  return {
-    id: step.id,
-    message,
-    rawType: step.type,
-    state: "invalid",
+    case "ORDER": {
+      const firstId = itemId("item", 1)
+      return {
+        ...base,
+        correct: [firstId],
+        explanation: "",
+        itemIds: [firstId],
+        items: ["새 항목"],
+        showNumbers: true,
+        title: "새 순서",
+        type: input.type,
+      }
+    }
+    case "READING":
+      return {
+        ...base,
+        body: "",
+        guide: "",
+        title: "새 읽기",
+        type: input.type,
+      }
+    case "SELECT":
+      return {
+        ...base,
+        correct: [0],
+        explanation: "",
+        layout: "inline",
+        question: "질문을 입력하세요.",
+        segmentIds: [itemId("segment", 1)],
+        segments: ["새 구간"],
+        type: input.type,
+      }
+    case "WRITE":
+      return {
+        ...base,
+        min: 0,
+        prompt: "쓰기 안내를 입력하세요.",
+        type: input.type,
+      }
   }
 }

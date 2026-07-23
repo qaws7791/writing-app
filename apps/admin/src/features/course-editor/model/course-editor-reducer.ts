@@ -1,4 +1,5 @@
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
+import type { EditorStep } from "@/features/course-editor/model/editor-step"
 import type { LessonId, LessonStepId, UnitId } from "@workspace/types/ids"
 
 type CourseEditorStatus =
@@ -19,13 +20,6 @@ export type CourseEditorState = {
 }
 
 export type CourseEditorAction =
-  | {
-      readonly lessonId: LessonId
-      readonly stepId: LessonStepId
-      readonly targetStepId: LessonStepId
-      readonly type: "ai-feedback-target-changed"
-      readonly unitId: UnitId
-    }
   | {
       readonly field: "category" | "description" | "title"
       readonly type: "course-changed"
@@ -52,6 +46,31 @@ export type CourseEditorAction =
       readonly lessonId: LessonId
       readonly title: string
       readonly type: "lesson-title-changed"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly lessonId: LessonId
+      readonly step: EditorStep
+      readonly type: "step-added"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly lessonId: LessonId
+      readonly step: EditorStep
+      readonly type: "step-changed"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly direction: "down" | "up"
+      readonly lessonId: LessonId
+      readonly stepId: LessonStepId
+      readonly type: "step-moved"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly lessonId: LessonId
+      readonly stepId: LessonStepId
+      readonly type: "step-removed"
       readonly unitId: UnitId
     }
   | { readonly type: "save-started" }
@@ -84,30 +103,6 @@ export function courseEditorReducer(
   action: CourseEditorAction
 ): CourseEditorState {
   switch (action.type) {
-    case "ai-feedback-target-changed":
-      return changed(state, {
-        ...state.draft,
-        units: state.draft.units.map((unit) =>
-          unit.id === action.unitId
-            ? {
-                ...unit,
-                lessons: unit.lessons.map((lesson) =>
-                  lesson.id === action.lessonId
-                    ? {
-                        ...lesson,
-                        steps: lesson.steps.map((step) =>
-                          step.id === action.stepId &&
-                          step.type === "AI_FEEDBACK"
-                            ? { ...step, target: action.targetStepId }
-                            : step
-                        ),
-                      }
-                    : lesson
-                ),
-              }
-            : unit
-        ),
-      })
     case "course-changed":
       return changed(state, { ...state.draft, [action.field]: action.value })
     case "unit-added":
@@ -193,6 +188,42 @@ export function courseEditorReducer(
             : unit
         ),
       })
+    case "step-added":
+      return updateLessonSteps(state, action, (steps) =>
+        reorder([...steps, action.step])
+      )
+    case "step-changed":
+      return updateLessonSteps(state, action, (steps) =>
+        steps.map((step) =>
+          step.id === action.step.id
+            ? { ...action.step, sortOrder: step.sortOrder }
+            : step
+        )
+      )
+    case "step-moved":
+      return updateLessonSteps(state, action, (steps) => {
+        const currentIndex = steps.findIndex(
+          (step) => step.id === action.stepId
+        )
+        const targetIndex =
+          action.direction === "up" ? currentIndex - 1 : currentIndex + 1
+        if (
+          currentIndex < 0 ||
+          targetIndex < 0 ||
+          targetIndex >= steps.length
+        ) {
+          return steps
+        }
+        const reordered = [...steps]
+        const [step] = reordered.splice(currentIndex, 1)
+        if (step === undefined) return steps
+        reordered.splice(targetIndex, 0, step)
+        return reorder(reordered)
+      })
+    case "step-removed":
+      return updateLessonSteps(state, action, (steps) =>
+        reorder(steps.filter((step) => step.id !== action.stepId))
+      )
     case "save-started":
       return { ...state, message: null, status: "saving" }
     case "publish-started":
@@ -260,4 +291,25 @@ function reorder<TItem extends { readonly sortOrder: number }>(
   items: readonly TItem[]
 ): TItem[] {
   return items.map((item, index) => ({ ...item, sortOrder: index + 1 }))
+}
+
+function updateLessonSteps(
+  state: CourseEditorState,
+  action: Readonly<{ lessonId: LessonId; unitId: UnitId }>,
+  update: (steps: readonly EditorStep[]) => readonly EditorStep[]
+): CourseEditorState {
+  let didChange = false
+  const units = state.draft.units.map((unit) => {
+    if (unit.id !== action.unitId) return unit
+    return {
+      ...unit,
+      lessons: unit.lessons.map((lesson) => {
+        if (lesson.id !== action.lessonId) return lesson
+        const steps = update(lesson.steps)
+        didChange = steps !== lesson.steps
+        return didChange ? { ...lesson, steps: [...steps] } : lesson
+      }),
+    }
+  })
+  return didChange ? changed(state, { ...state.draft, units }) : state
 }

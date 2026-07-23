@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm"
 import { check, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { adminAuthUsers, authUsers } from "@workspace/auth/schema"
 
 import { adminRoleValues } from "#identity/domain/admin-role"
 import { userStatusValues } from "#identity/domain/user-status"
@@ -12,7 +13,10 @@ export const learnerProfiles = sqliteTable(
     status: text("status", { enum: userStatusValues })
       .notNull()
       .default("active"),
-    userId: text("user_id").primaryKey().notNull(),
+    userId: text("user_id")
+      .primaryKey()
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "cascade" }),
     version: integer("version").notNull().default(0),
   },
   (table) => [
@@ -27,7 +31,10 @@ export const learnerProfiles = sqliteTable(
 export const adminIdentityProfiles = sqliteTable(
   "admin_identity_profiles",
   {
-    adminId: text("admin_id").primaryKey().notNull(),
+    adminId: text("admin_id")
+      .primaryKey()
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
     role: text("role", { enum: adminRoleValues }).notNull().default("operator"),
     version: integer("version").notNull().default(0),
   },

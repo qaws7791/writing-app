@@ -8,6 +8,7 @@
       "#ai/*": ["../../infra/ai/src/*"],
       "#ai-feedback/*": ["./src/*"],
       "#auth/*": ["../../infra/auth/src/*"],
+      "#content/*": ["../content/src/*"],
       "#db/*": ["../../infra/db/src/*"],
       "#http-platform/*": ["../../infra/http-platform/src/*"]
     },

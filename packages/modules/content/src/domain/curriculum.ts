@@ -1,9 +1,4 @@
-import type {
-  DomainDecision,
-  DomainEvent,
-} from "@workspace/kernel/domain-event"
 import { err, ok, type Result } from "@workspace/kernel/result"
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 
 import type { ContentError } from "#content/domain/content-error"
 import {
@@ -18,11 +13,6 @@ import {
 } from "#content/domain/content-model"
 import { parseJsonObject } from "#content/domain/content-normalization"
 
-export type ContentCurriculumPublishedEvent = DomainEvent<
-  "content.curriculum-published",
-  WorkspaceEventMap["content.curriculum-published"]["payload"]
->
-
 export function createCurriculumDraft(
   input: CurriculumDraft
 ): Result<CurriculumDraft, ContentError> {
@@ -32,12 +22,8 @@ export function createCurriculumDraft(
 
 export function decidePublishCurriculum(input: {
   readonly draft: CurriculumDraft
-  readonly eventId: string
   readonly now: Date
-}): Result<
-  DomainDecision<PublishedCurriculumRevision, ContentCurriculumPublishedEvent>,
-  ContentError
-> {
+}): Result<PublishedCurriculumRevision, ContentError> {
   const validation = validateCurriculumDraft(input.draft, true)
   if (validation.isErr()) return err(validation.error)
 
@@ -52,22 +38,7 @@ export function decidePublishCurriculum(input: {
     units: input.draft.units,
     visualKey: input.draft.visualKey,
   })
-  const event = Object.freeze({
-    id: input.eventId,
-    occurredAt: new Date(input.now),
-    payload: Object.freeze({
-      courseId: input.draft.courseId,
-      revision: input.draft.revision,
-    }),
-    type: "content.curriculum-published" as const,
-  })
-
-  return ok(
-    Object.freeze({
-      aggregate: published,
-      events: Object.freeze([event]),
-    })
-  )
+  return ok(published)
 }
 
 export function decideArchiveCourse(

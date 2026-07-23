@@ -192,7 +192,6 @@ async function changeStatus(
   if (account === null) return err({ kind: "identity-not-found" })
 
   const decision = transitionLearnerProfileStatus({
-    eventId: dependencies.eventIdGenerator.next(),
     now: dependencies.clock.now(),
     profile: account.profile.profile,
     status: command.status,
@@ -201,21 +200,9 @@ async function changeStatus(
 
   const saved = await dependencies.repository.saveLearnerProfile({
     expectedVersion: account.profile.version,
-    profile: decision.value.aggregate,
+    profile: decision.value,
   })
   if (saved.isErr()) return err(saved.error)
-
-  for (const event of decision.value.events) {
-    const published =
-      await dependencies.eventPublisher.publishUserStatusChanged(event)
-    if (published.isErr()) {
-      dependencies.eventFailureObserver({
-        eventId: event.id,
-        eventName: event.type,
-        kind: published.error.kind,
-      })
-    }
-  }
 
   const revoked = await dependencies.sessionRevocation.revokeLearnerSessions(
     command.userId

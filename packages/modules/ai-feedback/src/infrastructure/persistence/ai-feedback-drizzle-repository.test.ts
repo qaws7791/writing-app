@@ -6,7 +6,7 @@ import {
   createInMemoryWritingAppDatabase,
   createWritingAppDatabase,
 } from "@workspace/db/client"
-import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import { ok } from "@workspace/kernel/result"
 import {
   courseIdSchema,
@@ -19,7 +19,6 @@ import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 import { createAiFeedbackApplication } from "#ai-feedback/application/ai-feedback-application"
 import { createAiFeedbackAttemptId } from "#ai-feedback/domain/ai-feedback-attempt"
 import { createDrizzleAiFeedbackRepository } from "#ai-feedback/infrastructure/persistence/ai-feedback-drizzle-repository"
-import { runAiFeedbackSchemaMigration } from "#ai-feedback/infrastructure/persistence/schema-migration"
 import { aiFeedbackAttempts } from "#ai-feedback/infrastructure/persistence/schema"
 
 const now = new Date("2026-07-23T01:00:00.000Z")
@@ -44,34 +43,10 @@ const providerResponse = {
 } as const
 
 describe("AI feedback Drizzle repository", () => {
-  it("module schema migration이 기존 row를 보존하고 cross-module FK를 제거한다", () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      runBaselineTestMigration(client.sqlite)
-      expect(
-        client.sqlite
-          .query<unknown, []>("PRAGMA foreign_key_list(ai_feedback_attempts)")
-          .all().length
-      ).toBeGreaterThan(0)
-
-      runAiFeedbackSchemaMigration(client.sqlite)
-      runAiFeedbackSchemaMigration(client.sqlite)
-
-      expect(
-        client.sqlite
-          .query<unknown, []>("PRAGMA foreign_key_list(ai_feedback_attempts)")
-          .all()
-      ).toEqual([])
-    } finally {
-      client.close()
-    }
-  })
-
   it("다른 module row를 조회하지 않고 branded scope로 예약·완료·멱등 재생한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
-      runBaselineTestMigration(client.sqlite)
-      runAiFeedbackSchemaMigration(client.sqlite)
+      prepareAiFeedbackDatabase(client.sqlite)
       let providerCalls = 0
       const application = createAiFeedbackApplication({
         attemptIdGenerator: {
@@ -114,8 +89,7 @@ describe("AI feedback Drizzle repository", () => {
   it("pending lease가 있으면 남은 TTL을 Retry-After 초 단위로 반환한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
-      runBaselineTestMigration(client.sqlite)
-      runAiFeedbackSchemaMigration(client.sqlite)
+      prepareAiFeedbackDatabase(client.sqlite)
       const repository = createDrizzleAiFeedbackRepository(client.db)
       const reservation = await repository.reserveAttempt({
         ...scope(),
@@ -154,8 +128,7 @@ describe("AI feedback Drizzle repository", () => {
   it("succeeded attempt만 quota를 차감하고 한도 뒤 새 예약을 거절한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     try {
-      runBaselineTestMigration(client.sqlite)
-      runAiFeedbackSchemaMigration(client.sqlite)
+      prepareAiFeedbackDatabase(client.sqlite)
       const repository = createDrizzleAiFeedbackRepository(client.db)
 
       const failed = await repository.reserveAttempt({
@@ -227,8 +200,7 @@ describe("AI feedback Drizzle repository", () => {
     const client = createWritingAppDatabase(databasePath)
     const observer = createWritingAppDatabase(databasePath)
     try {
-      runBaselineTestMigration(client.sqlite)
-      runAiFeedbackSchemaMigration(client.sqlite)
+      prepareAiFeedbackDatabase(client.sqlite)
       observer.sqlite.exec("PRAGMA busy_timeout = 50")
       let lockAcquired = false
       const application = createAiFeedbackApplication({
@@ -262,6 +234,48 @@ describe("AI feedback Drizzle repository", () => {
     }
   })
 })
+
+function prepareAiFeedbackDatabase(
+  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
+): void {
+  runCurrentTestMigration(sqlite)
+  sqlite.exec(`
+    INSERT INTO user (
+      id, name, email, email_verified, image, created_at, updated_at
+    ) VALUES ('learner-1', '학습자', 'learner-1@example.test', 1, NULL, 1, 1);
+    INSERT INTO courses (
+      id, status, sort_order, published_curriculum_version_id, created_at
+    ) VALUES ('course-1', 'active', 1, NULL, 1);
+    INSERT INTO course_curriculum_versions (
+      id, course_id, revision, edit_version, status, title, description,
+      category, visual_key, created_at, updated_at, published_at
+    ) VALUES (
+      'version-1', 'course-1', 1, 0, 'draft', '코스', '설명',
+      '기초', 'basic-sentence-writing', 1, 1, NULL
+    );
+    INSERT INTO course_unit_versions (
+      curriculum_version_id, id, title, status, sort_order
+    ) VALUES ('version-1', 'unit-1', '단원', 'active', 1);
+    INSERT INTO lesson_versions (
+      curriculum_version_id, id, unit_id, title, description, category,
+      summary_json, estimated_minutes, status, sort_order
+    ) VALUES (
+      'version-1', 'lesson-1', 'unit-1', '레슨', NULL, NULL,
+      '[]', 5, 'active', 1
+    );
+    INSERT INTO lesson_step_versions (
+      curriculum_version_id, id, lesson_id, type, content_json, status, sort_order
+    ) VALUES (
+      'version-1', 'step-2', 'lesson-1', 'AI_FEEDBACK', '{}', 'active', 1
+    );
+    UPDATE course_curriculum_versions
+    SET status = 'published', published_at = 1
+    WHERE id = 'version-1';
+    UPDATE courses
+    SET published_curriculum_version_id = 'version-1'
+    WHERE id = 'course-1';
+  `)
+}
 
 function scope() {
   return {

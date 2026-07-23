@@ -8,7 +8,6 @@
   },
   "exports": {
     "./clock": "./src/clock.ts",
-    "./domain-event": "./src/domain-event.ts",
     "./result": "./src/result.ts"
   },
   "scripts": {

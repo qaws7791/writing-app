@@ -41,32 +41,19 @@ export function createPublishCourseUseCase(
 
     const decision = decidePublishCurriculum({
       draft,
-      eventId: dependencies.eventIdGenerator.next(),
       now: dependencies.clock.now(),
     })
     if (decision.isErr()) return err(decision.error)
 
     const published = await dependencies.repository.publishDraft({
-      decision: decision.value,
       expectedEditVersion: command.expectedEditVersion,
       nextDraftId: createCurriculumVersionId(
         command.courseId,
         draft.revision + 1
       ),
+      publishedRevision: decision.value,
     })
     if (published.isErr()) return err(published.error)
-
-    for (const event of decision.value.events) {
-      const dispatched =
-        await dependencies.eventPublisher.publishCurriculumPublished(event)
-      if (dispatched.isErr()) {
-        dependencies.eventFailureObserver({
-          eventId: event.id,
-          eventName: event.type,
-          kind: dispatched.error.kind,
-        })
-      }
-    }
 
     return published.map((revision) => ({
       curriculumVersionId: revision.curriculumVersionId,

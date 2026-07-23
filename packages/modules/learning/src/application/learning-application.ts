@@ -13,7 +13,6 @@ import type {
 } from "#learning/domain/learner-transition"
 import type { LearnerStepSubmission } from "#learning/domain/learning-types"
 import type {
-  CommittedLearningTransition,
   LearningAiFeedbackError,
   LearningAiFeedbackResult,
   LearningApplicationDependencies,
@@ -111,8 +110,7 @@ export function createLearningApplication(
       curriculum
     )
     if (committed.isErr()) return err(committed.error)
-    await publishCommittedEvents(dependencies, committed.value)
-    return ok(committed.value.value)
+    return ok(committed.value)
   }
 
   return Object.freeze({
@@ -162,8 +160,7 @@ export function createLearningApplication(
           curriculum
         )
       if (committed.isErr()) return err(committed.error)
-      await publishCommittedEvents(dependencies, committed.value)
-      return ok({ feedback: feedback.value, transition: committed.value.value })
+      return ok({ feedback: feedback.value, transition: committed.value })
     },
     async startLesson(command) {
       const authorization = await authorizeLearner(
@@ -185,8 +182,7 @@ export function createLearningApplication(
         curriculum
       )
       if (committed.isErr()) return err(committed.error)
-      await publishCommittedEvents(dependencies, committed.value)
-      return ok(committed.value.value)
+      return ok(committed.value)
     },
   })
 }
@@ -219,47 +215,4 @@ async function readLessonCurriculum(
         courseId: pinned.courseId,
         curriculumVersionId: pinned.curriculumVersionId,
       })
-}
-
-async function publishCommittedEvents<TValue>(
-  dependencies: LearningApplicationDependencies,
-  committed: CommittedLearningTransition<TValue>
-): Promise<void> {
-  for (const intent of committed.events) {
-    const eventId = dependencies.eventIdGenerator.next()
-    try {
-      const published =
-        await dependencies.eventPublisher.publishLessonCompleted(
-          Object.freeze({
-            id: eventId,
-            occurredAt: new Date(intent.occurredAt),
-            payload: Object.freeze({
-              learnerId: intent.learnerId,
-              lessonId: intent.lessonId,
-            }),
-            type: intent.type,
-          })
-        )
-      if (published.isErr()) {
-        observeEventFailure(dependencies, eventId)
-      }
-    } catch {
-      observeEventFailure(dependencies, eventId)
-    }
-  }
-}
-
-function observeEventFailure(
-  dependencies: LearningApplicationDependencies,
-  eventId: string
-): void {
-  try {
-    dependencies.eventFailureObserver({
-      eventId,
-      eventName: "learning.lesson-completed",
-      kind: "learning-event-publish-failed",
-    })
-  } catch {
-    // 관찰자 실패는 이미 커밋된 학습 전이 결과를 변경하지 않는다.
-  }
 }

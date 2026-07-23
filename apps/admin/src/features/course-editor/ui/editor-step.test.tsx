@@ -1,87 +1,65 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
+import { adminCourseEditorStepSchema } from "@workspace/contracts/content/admin-courses"
+import {
+  lessonStepTypeValues,
+  type LessonStepType,
+} from "@workspace/contracts/content/steps"
+import { lessonStepIdSchema } from "@workspace/contracts/content/ids"
 
 import {
-  parseEditorStep,
-  type WireEditorStep,
+  createEditorStep,
+  type EditorStep,
 } from "@/features/course-editor/model/editor-step"
 import { renderStepForm } from "@/features/course-editor/ui/step-forms/step-form-registry"
 import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
 
-describe("코스 편집기 canonical step transport seam", () => {
-  it.each([
-    ["잘못된 JSON", "{"],
-    ["배열 content", "[]"],
-    ["type 없는 content", "{}"],
-  ])("%s을 빈 폼으로 강제 변환하지 않는다", (_name, contentJson) => {
-    expect(parseEditorStep(wireStep({ contentJson }))).toMatchObject({
-      id: "step-1",
-      state: "invalid",
-    })
+describe("코스 스텝 편집", () => {
+  it.each(lessonStepTypeValues)("%s 타입의 최소 유효 스텝을 만든다", (type) => {
+    const step = createStep(type)
+    expect(adminCourseEditorStepSchema.safeParse(step).success).toBe(true)
   })
 
-  it("필수 필드 타입이 잘못되면 explicit invalid outcome을 반환한다", () => {
-    expect(
-      parseEditorStep(
-        wireStep({
-          contentJson: JSON.stringify({
-            body: 123,
-            guide: "안내",
-            title: "읽기",
-            type: "reading",
-          }),
-        })
-      )
-    ).toMatchObject({
-      rawType: "READING",
-      state: "invalid",
-    })
-  })
+  it("구조화된 타입 폼을 렌더링한다", () => {
+    const step = createStep("READING")
 
-  it("유효한 variant 폼만 렌더링한다", () => {
-    const result = parseEditorStep(
-      wireStep({
-        contentJson: JSON.stringify({
-          body: "본문",
-          guide: "안내",
-          title: "읽기",
-          type: "reading",
-        }),
-      })
-    )
-    if (result.state !== "valid") {
-      throw new Error(result.message)
-    }
+    render(renderStepForm(step, vi.fn()))
 
-    render(renderStepForm(result.step))
-
-    expect(screen.getByLabelText("본문")).toHaveValue("본문")
+    expect(screen.getByLabelText("본문")).toHaveValue("")
     expect(screen.getByText("READING")).toBeVisible()
   })
 
-  it("손상 데이터는 읽기 전용 오류로 표시하고 입력 폼을 노출하지 않는다", () => {
-    const result = parseEditorStep(wireStep({ contentJson: "[]" }))
+  it("빈 작업대에서 타입을 선택해 스텝을 추가한다", async () => {
+    const onAdd = vi.fn()
 
-    render(<StepWorkspace steps={[result]} />)
+    render(
+      <StepWorkspace
+        onAdd={onAdd}
+        onChange={vi.fn()}
+        onMove={vi.fn()}
+        onRemove={vi.fn()}
+        steps={[]}
+      />
+    )
 
-    expect(screen.getByRole("alert")).toHaveAttribute("aria-readonly", "true")
-    expect(screen.getByText(/편집할 수 없습니다/)).toBeVisible()
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
+    screen.getByRole("button", { name: "스텝 추가" }).click()
+
+    expect(onAdd).toHaveBeenCalledOnce()
+    expect(onAdd.mock.calls[0]?.[0]).toMatchObject({
+      sortOrder: 1,
+      type: "READING",
+    })
   })
 })
 
-function wireStep(overrides: Partial<WireEditorStep>): WireEditorStep {
-  return {
-    contentJson: JSON.stringify({
-      body: "본문",
-      guide: "안내",
-      title: "읽기",
-      type: "reading",
-    }),
-    id: "step-1",
-    sortOrder: 1,
-    status: "active",
-    type: "READING",
-    ...overrides,
-  }
+function createStep(type: LessonStepType): EditorStep {
+  const id = lessonStepIdSchema.parse(`step-${type.toLowerCase()}`)
+  return type === "AI_FEEDBACK"
+    ? createEditorStep({
+        id,
+        sortOrder: 1,
+        targetStepId: lessonStepIdSchema.parse("write-step"),
+        type,
+      })
+    : createEditorStep({ id, sortOrder: 1, type })
 }

@@ -4,13 +4,10 @@ type UnifiedApiServer = {
 
 export type UnifiedApiShutdownPhase =
   | "cancel-activity"
-  | "close-ai"
-  | "close-database"
+  | "dispose-container"
   | "force-stop-server"
-  | "flush-logger"
   | "observe-drain"
   | "stop-server"
-  | "unsubscribe-events"
 
 type ServerLifecycleScheduledTask = {
   readonly cancel: () => void
@@ -110,11 +107,9 @@ const defaultScheduler: ServerLifecycleScheduler = {
 }
 
 export function createUnifiedApiServerLifecycle(input: {
-  readonly closeAi?: () => Promise<void> | void
-  readonly closeDatabase: () => Promise<void> | void
   readonly drainTimeoutMilliseconds?: number
+  readonly disposeContainer: () => Promise<void> | void
   readonly fetch: (_request: Request) => Promise<Response> | Response
-  readonly flushLogger?: () => Promise<void> | void
   readonly forcedPhaseTimeoutMilliseconds?: number
   readonly onDrainResult?: (observation: ApiDrainObservation) => void
   readonly onShutdownError?: (
@@ -122,7 +117,6 @@ export function createUnifiedApiServerLifecycle(input: {
     _phase: UnifiedApiShutdownPhase
   ) => void
   readonly scheduler?: ServerLifecycleScheduler
-  readonly unsubscribeEvents?: () => Promise<void> | void
 }): UnifiedApiServerLifecycle {
   const activeActivities = new Set<ActiveActivity>()
   const drainWaiters = new Set<() => void>()
@@ -285,11 +279,7 @@ export function createUnifiedApiServerLifecycle(input: {
   async function waitWithinForcedPhaseDeadline(
     operation: Promise<void>,
     deadline: { readonly expiration: Promise<void> },
-    phase:
-      | "cancel-activity"
-      | "close-ai"
-      | "force-stop-server"
-      | "unsubscribe-events"
+    phase: "cancel-activity" | "dispose-container" | "force-stop-server"
   ): Promise<void> {
     const result = await waitForOperationWithinDeadline(operation, deadline)
 
@@ -351,31 +341,11 @@ export function createUnifiedApiServerLifecycle(input: {
     }
   }
 
-  async function closeDatabase(): Promise<void> {
+  async function disposeContainer(): Promise<void> {
     try {
-      await input.closeDatabase()
+      await input.disposeContainer()
     } catch (error) {
-      reportShutdownError(error, "close-database")
-    }
-  }
-
-  async function flushLogger(): Promise<void> {
-    try {
-      await input.flushLogger?.()
-    } catch (error) {
-      reportShutdownError(error, "flush-logger")
-    }
-  }
-
-  async function runCleanup(
-    cleanup: (() => Promise<void> | void) | undefined,
-    phase: "close-ai" | "unsubscribe-events"
-  ): Promise<void> {
-    if (cleanup === undefined) return
-    try {
-      await cleanup()
-    } catch (error) {
-      reportShutdownError(error, phase)
+      reportShutdownError(error, "dispose-container")
     }
   }
 
@@ -540,18 +510,11 @@ export function createUnifiedApiServerLifecycle(input: {
         }
 
         await waitWithinForcedPhaseDeadline(
-          runCleanup(input.unsubscribeEvents, "unsubscribe-events"),
+          disposeContainer(),
           forcedPhaseDeadline,
-          "unsubscribe-events"
-        )
-        await waitWithinForcedPhaseDeadline(
-          runCleanup(input.closeAi, "close-ai"),
-          forcedPhaseDeadline,
-          "close-ai"
+          "dispose-container"
         )
         forcedPhaseDeadline.cancel()
-        await closeDatabase()
-        await flushLogger()
       })()
 
       return shutdownPromise

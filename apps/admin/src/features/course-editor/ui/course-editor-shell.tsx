@@ -21,6 +21,7 @@ import {
   courseEditorReducer,
   createCourseEditorState,
 } from "@/features/course-editor/model/course-editor-reducer"
+import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
 import type { AdminApiResult } from "@/shared/http/admin-api-result"
 import {
   ChevronRightIcon,
@@ -391,15 +392,54 @@ export function CourseEditorShell({
                         </div>
                         <AiFeedbackTargetFields
                           lesson={lesson}
-                          onTargetChange={(stepId, targetStepId) =>
+                          onTargetChange={(stepId, targetStepId) => {
+                            const step = lesson.steps.find(
+                              (candidate) => candidate.id === stepId
+                            )
+                            if (step?.type !== "AI_FEEDBACK") return
                             dispatch({
                               lessonId: lesson.id,
-                              stepId,
-                              targetStepId,
-                              type: "ai-feedback-target-changed",
+                              step: { ...step, target: targetStepId },
+                              type: "step-changed",
+                              unitId: unit.id,
+                            })
+                          }}
+                        />
+                        <StepWorkspace
+                          onAdd={(step) =>
+                            dispatch({
+                              lessonId: lesson.id,
+                              step,
+                              type: "step-added",
                               unitId: unit.id,
                             })
                           }
+                          onChange={(step) =>
+                            dispatch({
+                              lessonId: lesson.id,
+                              step,
+                              type: "step-changed",
+                              unitId: unit.id,
+                            })
+                          }
+                          onMove={(step, direction) =>
+                            dispatch({
+                              direction,
+                              lessonId: lesson.id,
+                              stepId: step.id,
+                              type: "step-moved",
+                              unitId: unit.id,
+                            })
+                          }
+                          onRemove={(step) =>
+                            dispatch({
+                              lessonId: lesson.id,
+                              stepId: step.id,
+                              type: "step-removed",
+                              unitId: unit.id,
+                            })
+                          }
+                          steps={lesson.steps}
                         />
                       </div>
                     ))}

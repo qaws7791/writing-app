@@ -56,10 +56,7 @@ import {
   type StartLessonEffect,
   type StartLessonSnapshot,
 } from "#learning/domain/start-lesson-decision"
-import type {
-  CommittedLearningTransition,
-  LearningTransitionRepository,
-} from "#learning/application/ports/learning-ports"
+import type { LearningTransitionRepository } from "#learning/application/ports/learning-ports"
 import type {
   LearningCurriculum,
   LearningStep,
@@ -182,16 +179,10 @@ function startLesson(
   transaction: LearningTransaction,
   command: StartLearnerLessonCommand,
   curriculum: LearningCurriculum
-): Result<
-  CommittedLearningTransition<LessonLearningState>,
-  LearnerTransitionError
-> {
+): Result<LessonLearningState, LearnerTransitionError> {
   const snapshot = loadStartLessonSnapshot(transaction, command, curriculum)
   const decision = decideStartLesson(command, snapshot)
-  return applyStartLessonDecision(transaction, decision).map((value) => ({
-    events: [],
-    value,
-  }))
+  return applyStartLessonDecision(transaction, decision)
 }
 
 function loadStartLessonSnapshot(
@@ -287,16 +278,10 @@ function completeStep(
   transaction: LearningTransaction,
   command: CompleteLearnerStepCommand,
   curriculum: LearningCurriculum
-): Result<
-  CommittedLearningTransition<CompleteLearnerStepTransitionResult>,
-  LearnerTransitionError
-> {
+): Result<CompleteLearnerStepTransitionResult, LearnerTransitionError> {
   const snapshot = loadCompleteStepSnapshot(transaction, command, curriculum)
   const plan = planCompleteStep(command, snapshot)
-  return applyCompleteStepPlan(transaction, plan, curriculum).map((value) => ({
-    events: plan.kind === "rejected" ? [] : plan.events,
-    value,
-  }))
+  return applyCompleteStepPlan(transaction, plan, curriculum)
 }
 
 function loadCompleteStepSnapshot(
@@ -502,10 +487,7 @@ function completeAiFeedbackStep(
   transaction: LearningTransaction,
   command: CompleteLearnerAiFeedbackCommand,
   curriculum: LearningCurriculum
-): Result<
-  CommittedLearningTransition<CompleteLearnerStepTransitionResult>,
-  LearnerTransitionError
-> {
+): Result<CompleteLearnerStepTransitionResult, LearnerTransitionError> {
   const scope = findPinnedLessonScope(transaction, command, curriculum)
   if (scope === null) {
     const decision = decideFinalizeAiFeedback(command, {
@@ -528,29 +510,25 @@ function completeAiFeedbackStep(
 
   switch (decision.kind) {
     case "replay-completed":
-      return ok({
-        events: [],
-        value: readCompletedResult(
+      return ok(
+        readCompletedResult(
           transaction,
           command.userId,
           scope,
           steps,
           curriculum
-        ),
-      })
+        )
+      )
     case "replay-advanced":
       return ok({
-        events: [],
-        value: {
-          evaluation: null,
-          kind: "advanced",
-          learning: readInProgressState(
-            transaction,
-            command.userId,
-            scope,
-            steps
-          ),
-        },
+        evaluation: null,
+        kind: "advanced",
+        learning: readInProgressState(
+          transaction,
+          command.userId,
+          scope,
+          steps
+        ),
       })
     case "advance": {
       const value = advanceAcceptedStep(transaction, {
@@ -565,20 +543,7 @@ function completeAiFeedbackStep(
         steps,
         userId: command.userId,
       })
-      return ok({
-        events:
-          value.kind === "lesson-completed"
-            ? [
-                {
-                  learnerId: command.userId,
-                  lessonId: command.lessonId,
-                  occurredAt: command.occurredAt,
-                  type: "learning.lesson-completed" as const,
-                },
-              ]
-            : [],
-        value,
-      })
+      return ok(value)
     }
   }
 }

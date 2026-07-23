@@ -1,22 +1,13 @@
 import { describe, expect, it } from "vitest"
 
-import { runAiFeedbackSchemaMigration } from "@workspace/ai-feedback/migration"
-import { runAuthSchemaMigration } from "@workspace/auth/migration"
-import { runContentSchemaMigration } from "@workspace/content/migration"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
-import { runIdentitySchemaMigration } from "@workspace/identity/migration"
-import { runLearningSchemaMigration } from "@workspace/learning/migration"
-import { runOperationsSchemaMigration } from "@workspace/operations/migration"
-import { runResourceLibrarySchemaMigration } from "@workspace/resource-library/migration"
 
 import { runApplicationMigrations } from "@/db/migrate"
 import {
   assertCurrentApplicationSchema,
-  assertNoCrossModuleForeignKeys,
   requiredApplicationTables,
 } from "@/db/schema-architecture"
-import { findDanglingSchemaReferences } from "@/db/schema-reconciliation"
 
 describe("통합 application migration", () => {
   it("빈 DB에 baseline과 append-only migration을 순서대로 한 번만 적용한다", () => {
@@ -26,10 +17,18 @@ describe("통합 application migration", () => {
       expect(runApplicationMigrations(database.sqlite)).toEqual([
         { execution: "applied", id: "0000-writing-app-baseline" },
         { execution: "applied", id: "0001-module-schema-ownership" },
+        {
+          execution: "applied",
+          id: "0002-cross-module-reference-integrity",
+        },
       ])
       expect(runApplicationMigrations(database.sqlite)).toEqual([
         { execution: "skipped", id: "0000-writing-app-baseline" },
         { execution: "skipped", id: "0001-module-schema-ownership" },
+        {
+          execution: "skipped",
+          id: "0002-cross-module-reference-integrity",
+        },
       ])
       expect(readApplicationTables(database.sqlite)).toEqual(
         expect.arrayContaining([...requiredApplicationTables])
@@ -62,6 +61,12 @@ describe("통합 application migration", () => {
           execution: "applied",
           id: "0001-module-schema-ownership",
         },
+        {
+          checksum:
+            "86451557db525a8dd446daeca77dca54d8f241cb64c2cf5be08d7a2b6deb8d65",
+          execution: "applied",
+          id: "0002-cross-module-reference-integrity",
+        },
       ])
       expect(() =>
         assertCurrentApplicationSchema(database.sqlite)
@@ -84,6 +89,10 @@ describe("통합 application migration", () => {
       expect(runApplicationMigrations(database.sqlite)).toEqual([
         { execution: "adopted", id: "0000-writing-app-baseline" },
         { execution: "applied", id: "0001-module-schema-ownership" },
+        {
+          execution: "applied",
+          id: "0002-cross-module-reference-integrity",
+        },
       ])
 
       expect(readPreservedRowCounts(database.sqlite)).toEqual(before)
@@ -111,63 +120,11 @@ describe("통합 application migration", () => {
           `)
           .get()
       ).toEqual({ altText: "기존 이미지", status: "active" })
-      expect(findDanglingSchemaReferences(database.sqlite)).toEqual([])
-      expect(() =>
-        assertNoCrossModuleForeignKeys(database.sqlite)
-      ).not.toThrow()
       expect(readSchemaSnapshot(database.sqlite)).toEqual(
         readSchemaSnapshot(freshDatabase.sqlite)
       )
     } finally {
       freshDatabase.close()
-      database.close()
-    }
-  })
-
-  it("P10의 idempotent module schema 상태를 채택하고 legacy auth role만 제거한다", () => {
-    const database = createInMemoryWritingAppDatabase()
-
-    try {
-      runBaselineTestMigration(database.sqlite)
-      runAuthSchemaMigration(database.sqlite)
-      runContentSchemaMigration(database.sqlite)
-      runAiFeedbackSchemaMigration(database.sqlite)
-      runIdentitySchemaMigration(database.sqlite)
-      runLearningSchemaMigration(database.sqlite)
-      runResourceLibrarySchemaMigration(database.sqlite)
-      runOperationsSchemaMigration(database.sqlite)
-
-      expect(runApplicationMigrations(database.sqlite)).toEqual([
-        { execution: "adopted", id: "0000-writing-app-baseline" },
-        { execution: "applied", id: "0001-module-schema-ownership" },
-      ])
-      expect(readColumns(database.sqlite, "admin_user")).not.toContain("role")
-      expect(() =>
-        assertCurrentApplicationSchema(database.sqlite)
-      ).not.toThrow()
-    } finally {
-      database.close()
-    }
-  })
-
-  it("P11 schema에서 P10 module migration을 다시 실행해도 현재 계약을 유지한다", () => {
-    const database = createInMemoryWritingAppDatabase()
-
-    try {
-      runApplicationMigrations(database.sqlite)
-      runAuthSchemaMigration(database.sqlite)
-      runContentSchemaMigration(database.sqlite)
-      runAiFeedbackSchemaMigration(database.sqlite)
-      runIdentitySchemaMigration(database.sqlite)
-      runLearningSchemaMigration(database.sqlite)
-      runResourceLibrarySchemaMigration(database.sqlite)
-      runOperationsSchemaMigration(database.sqlite)
-
-      expect(() =>
-        assertCurrentApplicationSchema(database.sqlite)
-      ).not.toThrow()
-      expect(readColumns(database.sqlite, "admin_user")).not.toContain("role")
-    } finally {
       database.close()
     }
   })
@@ -209,6 +166,10 @@ describe("통합 application migration", () => {
       expect(runApplicationMigrations(database.sqlite)).toEqual([
         { execution: "applied", id: "0000-writing-app-baseline" },
         { execution: "applied", id: "0001-module-schema-ownership" },
+        {
+          execution: "applied",
+          id: "0002-cross-module-reference-integrity",
+        },
       ])
       expect(readColumns(database.sqlite, "admin_user")).not.toEqual(
         expect.arrayContaining(["role", "two_factor_enabled"])
@@ -360,33 +321,16 @@ describe("통합 application migration", () => {
     }
   })
 
-  it("DB 내부 invariant와 cross-module application invariant를 분리한다", () => {
+  it("cross-module reference 위반을 쓰기 시점에 거절한다", () => {
     const database = createInMemoryWritingAppDatabase()
 
     try {
       runApplicationMigrations(database.sqlite)
-      database.sqlite.exec(`
-        INSERT INTO learner_profiles (
-          user_id, status, display_name, deleted_at, version
-        ) VALUES ('missing-user', 'active', 'orphan', NULL, 0)
-      `)
-      expect(findDanglingSchemaReferences(database.sqlite)).toEqual([
-        {
-          kind: "identity-learner",
-          referenceId: "missing-user",
-          targetId: "missing-user",
-        },
-      ])
-
       expect(() =>
         database.sqlite.exec(`
-          INSERT INTO learner_lesson_progress (
-            user_id, course_id, curriculum_version_id, lesson_id,
-            current_step_id, status, started_at, completed_at, updated_at
-          ) VALUES (
-            'missing-user', 'missing-course', 'missing-version',
-            'missing-lesson', 'missing-step', 'in_progress', 1, NULL, 1
-          )
+          INSERT INTO learner_profiles (
+            user_id, status, display_name, deleted_at, version
+          ) VALUES ('missing-user', 'active', 'orphan', NULL, 0)
         `)
       ).toThrow("FOREIGN KEY constraint failed")
     } finally {

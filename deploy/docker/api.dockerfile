@@ -18,7 +18,7 @@ RUN mkdir -p /workspace/image-bin \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/main.ts --outfile /workspace/image-bin/api \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/migrate-database.ts --outfile /workspace/image-bin/database-migrate \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/backup-database.ts --outfile /workspace/image-bin/database-backup \
-    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/reconcile-database.ts --outfile /workspace/image-bin/database-check
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/inspect-database.ts --outfile /workspace/image-bin/database-check
 
 FROM oven/bun:1.3.10@sha256:b86c67b531d87b4db11470d9b2bd0c519b1976eee6fcd71634e73abfa6230d2e AS runner
 

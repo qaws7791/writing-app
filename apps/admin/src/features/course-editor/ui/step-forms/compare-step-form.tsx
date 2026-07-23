@@ -1,29 +1,38 @@
 import {
+  parseEditorStepChange,
   StepFormShell,
+  StepJsonField,
+  StepTextField,
   type StepFormProps,
 } from "@/features/course-editor/ui/step-forms/shared/step-form-contract"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
 
-export function CompareStepForm({ step }: StepFormProps<"COMPARE">) {
+export function CompareStepForm({ onChange, step }: StepFormProps<"COMPARE">) {
   return (
     <StepFormShell step={step}>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field>
-          <FieldLabel htmlFor={`${step.id}-before`}>초안</FieldLabel>
-          <Textarea
-            id={`${step.id}-before`}
-            defaultValue={step.versions[0]?.text}
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor={`${step.id}-after`}>수정본</FieldLabel>
-          <Textarea
-            id={`${step.id}-after`}
-            defaultValue={step.versions[1]?.text}
-          />
-        </Field>
-      </div>
+      <StepTextField
+        id={`${step.id}-title`}
+        label="제목"
+        onChange={(title) => onChange({ ...step, title })}
+        value={step.title}
+      />
+      <StepJsonField
+        id={`${step.id}-versions`}
+        label="비교할 글 버전"
+        onCommit={(versions) => {
+          const changed = parseEditorStepChange(step, { versions })
+          if (changed?.type !== "COMPARE") return false
+          onChange(changed)
+          return true
+        }}
+        value={step.versions}
+      />
+      <StepTextField
+        id={`${step.id}-analysis`}
+        label="분석"
+        multiline
+        onChange={(analysis) => onChange({ ...step, analysis })}
+        value={step.analysis}
+      />
     </StepFormShell>
   )
 }

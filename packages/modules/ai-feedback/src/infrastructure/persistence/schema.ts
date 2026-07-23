@@ -1,6 +1,12 @@
 import { sql } from "drizzle-orm"
+import { authUsers } from "@workspace/auth/schema"
+import {
+  courseCurriculumVersions,
+  lessonStepVersions,
+} from "@workspace/content/schema"
 import {
   check,
+  foreignKey,
   index,
   integer,
   sqliteTable,
@@ -29,6 +35,28 @@ export const aiFeedbackAttempts = sqliteTable(
     userId: text("user_id").notNull(),
   },
   (table) => [
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [authUsers.id],
+      name: "ai_feedback_attempts_user_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [table.courseId, table.curriculumVersionId],
+      foreignColumns: [
+        courseCurriculumVersions.courseId,
+        courseCurriculumVersions.id,
+      ],
+      name: "ai_feedback_attempts_curriculum_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [table.curriculumVersionId, table.lessonId, table.stepId],
+      foreignColumns: [
+        lessonStepVersions.curriculumVersionId,
+        lessonStepVersions.lessonId,
+        lessonStepVersions.id,
+      ],
+      name: "ai_feedback_attempts_step_fk",
+    }).onDelete("restrict"),
     check(
       "ai_feedback_attempts_status_check",
       sql`${table.status} IN ('pending', 'succeeded', 'failed', 'expired')`

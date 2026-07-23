@@ -1,4 +1,5 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { adminAuthUsers } from "@workspace/auth/schema"
 
 const aiMessageRoles = ["assistant", "user"] as const
 const aiProposalStatuses = [
@@ -17,7 +18,9 @@ export const operationsSettings = sqliteTable("admin_settings", {
 export const operationsAiConversations = sqliteTable(
   "admin_ai_chat_conversations",
   {
-    adminId: text("admin_id").notNull(),
+    adminId: text("admin_id")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "restrict" }),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     id: text("id").primaryKey().notNull(),
     title: text("title").notNull(),
@@ -68,10 +71,15 @@ export const operationsAiChangeProposals = sqliteTable(
       .notNull()
       .references(() => operationsAiConversations.id, { onDelete: "cascade" }),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-    createdByAdminId: text("created_by_admin_id").notNull(),
+    createdByAdminId: text("created_by_admin_id")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "restrict" }),
     id: text("id").primaryKey().notNull(),
     reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
-    reviewedByAdminId: text("reviewed_by_admin_id"),
+    reviewedByAdminId: text("reviewed_by_admin_id").references(
+      () => adminAuthUsers.id,
+      { onDelete: "restrict" }
+    ),
     status: text("status", { enum: aiProposalStatuses }).notNull(),
   },
   (table) => [

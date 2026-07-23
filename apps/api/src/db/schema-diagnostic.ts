@@ -16,11 +16,6 @@ import {
   hasBaselineSchema,
   isCurrentApplicationSchema,
 } from "@/db/schema-architecture"
-import {
-  findDanglingSchemaReferences,
-  type DanglingSchemaReference,
-} from "@/db/schema-reconciliation"
-
 type DatabaseForeignKeyViolation = Readonly<{
   foreignKeyIndex: number
   parentTable: string
@@ -29,14 +24,12 @@ type DatabaseForeignKeyViolation = Readonly<{
 }>
 
 type ApplicationDatabaseChecks = Readonly<{
-  danglingReferences: readonly DanglingSchemaReference[]
   foreignKeyViolations: readonly DatabaseForeignKeyViolation[]
   integrity: string
 }>
 
 type ApplicationDatabaseDiagnosticIssue = Readonly<{
   code:
-    | "dangling-reference"
     | "database-check-unavailable"
     | "foreign-key-check-failed"
     | "integrity-check-failed"
@@ -134,22 +127,9 @@ export function inspectApplicationDatabase(
   }
 
   if (isCurrentApplicationSchema(sqlite)) {
-    const danglingReferences = findDanglingSchemaReferences(sqlite)
-    const currentChecks = createChecks(
-      checks.integrity,
-      checks.foreignKeyViolations,
-      danglingReferences
-    )
-    if (danglingReferences.length > 0) {
-      return blockedDiagnostic(
-        currentChecks,
-        "dangling-reference",
-        "current schema has dangling application references"
-      )
-    }
     if (migrationHistory.status === "incomplete") {
       return Object.freeze({
-        checks: currentChecks,
+        checks,
         issues: Object.freeze([]),
         kind: "application-database-diagnostic",
         pendingMigrationIds: migrationHistory.pendingMigrationIds,
@@ -158,7 +138,7 @@ export function inspectApplicationDatabase(
       })
     }
     return Object.freeze({
-      checks: currentChecks,
+      checks,
       issues: Object.freeze([]),
       kind: "application-database-diagnostic",
       schema: "current",
@@ -256,11 +236,9 @@ function readDatabaseChecks(sqlite: Database): ApplicationDatabaseChecks {
 
 function createChecks(
   integrity: string,
-  foreignKeyViolations: readonly DatabaseForeignKeyViolation[] = [],
-  danglingReferences: readonly DanglingSchemaReference[] = []
+  foreignKeyViolations: readonly DatabaseForeignKeyViolation[] = []
 ): ApplicationDatabaseChecks {
   return Object.freeze({
-    danglingReferences: Object.freeze([...danglingReferences]),
     foreignKeyViolations: Object.freeze([...foreignKeyViolations]),
     integrity,
   })

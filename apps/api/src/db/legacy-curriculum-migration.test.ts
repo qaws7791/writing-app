@@ -22,6 +22,10 @@ describe("legacy curriculum application migration", () => {
       expect(runApplicationMigrations(database.sqlite, legacyPolicy)).toEqual([
         { execution: "adopted", id: "0000-writing-app-baseline" },
         { execution: "applied", id: "0001-module-schema-ownership" },
+        {
+          execution: "applied",
+          id: "0002-cross-module-reference-integrity",
+        },
       ])
       expect(() =>
         assertCurrentApplicationSchema(database.sqlite)
@@ -331,6 +335,10 @@ describe("legacy curriculum application migration", () => {
       expect(runApplicationMigrations(database.sqlite, legacyPolicy)).toEqual([
         { execution: "skipped", id: "0000-writing-app-baseline" },
         { execution: "skipped", id: "0001-module-schema-ownership" },
+        {
+          execution: "skipped",
+          id: "0002-cross-module-reference-integrity",
+        },
       ])
       expect(
         database.sqlite

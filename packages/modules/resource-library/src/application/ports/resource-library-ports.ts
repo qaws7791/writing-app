@@ -1,6 +1,5 @@
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import type { Result } from "@workspace/kernel/result"
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
 import type {
   AdminId,
   ResourceAssetId,
@@ -246,24 +245,6 @@ export type ResourceAssetAuditObserver = (
       }>
 ) => void
 
-export type ResourceDocumentEventPublishError = Readonly<{
-  kind: "resource-document-event-publish-failed"
-}>
-
-export type ResourceDocumentEventPublisher = Readonly<{
-  publishDocumentSaved: (
-    event: WorkspaceEventMap["resource-library.document-saved"]
-  ) => Promise<Result<void, ResourceDocumentEventPublishError>>
-}>
-
-export type ResourceDocumentEventFailureObserver = (
-  event: Readonly<{
-    eventId: string
-    eventName: "resource-library.document-saved"
-    kind: "resource-document-event-publish-failed"
-  }>
-) => void
-
 export type ResourceLibraryDependencies = Readonly<{
   actorDirectory: ResourceActorDirectoryPort
   assetAuditObserver: ResourceAssetAuditObserver
@@ -272,9 +253,6 @@ export type ResourceLibraryDependencies = Readonly<{
   clock: Clock
   codec: ResourceDocumentCodec
   documentIdGenerator: IdGenerator<ResourceDocumentId>
-  eventFailureObserver: ResourceDocumentEventFailureObserver
-  eventIdGenerator: IdGenerator<string>
-  eventPublisher: ResourceDocumentEventPublisher
   documentRepository: ResourceDocumentRepository
   folderIdGenerator: IdGenerator<ResourceFolderId>
   searchRepository: ResourceSearchRepository

@@ -1,8 +1,4 @@
-export type ContainerCleanupName =
-  | "ai"
-  | "database"
-  | "event-subscriptions"
-  | "logger"
+export type ContainerCleanupName = "ai" | "database" | "logger"
 
 export type ContainerCleanupFailure = Readonly<{
   cause: unknown
@@ -16,14 +12,18 @@ export type ContainerCleanupCoordinator = Readonly<{
   register: (name: ContainerCleanupName, cleanup: ContainerCleanup) => void
 }>
 
-export function createContainerCleanupCoordinator(): ContainerCleanupCoordinator {
+export function createContainerCleanupCoordinator(
+  options: {
+    readonly onFailure?: (_failure: ContainerCleanupFailure) => void
+  } = {}
+): ContainerCleanupCoordinator {
   const entries: { cleanup: ContainerCleanup; name: ContainerCleanupName }[] =
     []
   let disposePromise: Promise<readonly ContainerCleanupFailure[]> | undefined
 
   return {
     dispose() {
-      disposePromise ??= disposeInReverse(entries)
+      disposePromise ??= disposeInReverse(entries, options.onFailure)
       return disposePromise
     },
     register(name, cleanup) {
@@ -41,7 +41,8 @@ async function disposeInReverse(
   entries: readonly {
     readonly cleanup: ContainerCleanup
     readonly name: ContainerCleanupName
-  }[]
+  }[],
+  onFailure: ((_failure: ContainerCleanupFailure) => void) | undefined
 ): Promise<readonly ContainerCleanupFailure[]> {
   const failures: ContainerCleanupFailure[] = []
 
@@ -49,7 +50,13 @@ async function disposeInReverse(
     try {
       await entry.cleanup()
     } catch (cause) {
-      failures.push({ cause, name: entry.name })
+      const failure = Object.freeze({ cause, name: entry.name })
+      failures.push(failure)
+      try {
+        onFailure?.(failure)
+      } catch {
+        // 실패 보고가 남은 resource 정리를 막아서는 안 된다.
+      }
     }
   }
 

@@ -117,11 +117,6 @@ const projects: readonly CoverageProject[] = [
     runtime: "node",
   },
   {
-    coverageTests: ["src/in-memory-event-bus.test.ts"],
-    path: "packages/infra/event-bus",
-    runtime: "node",
-  },
-  {
     coverageTests: [
       "src/core/create-app.test.ts",
       "src/security/request-security.test.ts",

@@ -9,7 +9,6 @@
   "exports": {
     "./application": "./src/application/learning-application.ts",
     "./http": "./src/interface/http/learning-http.ts",
-    "./migration": "./src/infrastructure/persistence/schema-migration.ts",
     "./mapping": "./src/infrastructure/persistence/published-curriculum-mapper.ts",
     "./module": "./src/module.ts",
     "./ports": "./src/application/ports/learning-ports.ts",
@@ -24,9 +23,10 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:",
+    "@workspace/auth": "workspace:*",
+    "@workspace/content": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
-    "@workspace/event-contracts": "workspace:*",
     "@workspace/http-platform": "workspace:*",
     "@workspace/kernel": "workspace:*",
     "@workspace/types": "workspace:*",

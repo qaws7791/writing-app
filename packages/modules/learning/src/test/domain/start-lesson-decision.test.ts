@@ -121,7 +121,6 @@ describe("학습 시작 의사결정", () => {
           userId: command.userId,
         },
       ],
-      events: [],
       kind: "start",
       scope: availableSnapshot.scope,
       stepIds: availableSnapshot.stepIds,
@@ -131,7 +130,6 @@ describe("학습 시작 의사결정", () => {
     if (decision.kind === "start") {
       expect(Object.isFrozen(decision.aggregate)).toBe(true)
       expect(Object.isFrozen(decision.effects)).toBe(true)
-      expect(Object.isFrozen(decision.events)).toBe(true)
     }
   })
 

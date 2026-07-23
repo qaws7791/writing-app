@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import type {
   AdminId,
   AiChangeProposalId,
@@ -14,13 +14,12 @@ import { createAiChangeProposalRepository } from "#operations/infrastructure/per
 import { createAiConversationRepository } from "#operations/infrastructure/persistence/ai-conversation-repository"
 import { createAiQuotaRepository } from "#operations/infrastructure/persistence/ai-quota-repository"
 import { createOperationsSettingsRepository } from "#operations/infrastructure/persistence/operations-settings-repository"
-import { runOperationsSchemaMigration } from "#operations/infrastructure/persistence/schema-migration"
 
 const now = new Date("2026-07-23T00:00:00.000Z")
 const adminId = "admin-1" as AdminId
 
 describe("operations temporary SQLite repositories", () => {
-  it("legacy row를 보존하며 cross-module admin FK를 제거하고 module table을 만든다", async () => {
+  it("현재 schema가 admin FK와 module table을 제공한다", async () => {
     await withTemporaryOperationsDatabase(async ({ database, sqlite }) => {
       const foreignTables = sqlite
         .query<{ readonly table: string }, []>(
@@ -28,7 +27,7 @@ describe("operations temporary SQLite repositories", () => {
         )
         .all()
         .map((row) => row.table)
-      expect(foreignTables).not.toContain("admin_user")
+      expect(foreignTables).toContain("admin_user")
       expect(
         sqlite
           .query<{ readonly title: string }, []>(
@@ -157,12 +156,12 @@ async function withTemporaryOperationsDatabase(
   const directory = mkdtempSync(join(tmpdir(), "writing-app-operations-"))
   const client = createWritingAppDatabase(join(directory, "operations.sqlite"))
   try {
-    runBaselineTestMigration(client.sqlite)
+    runCurrentTestMigration(client.sqlite)
     client.sqlite
       .query<unknown, [string, string, string, number, number]>(`
         INSERT INTO admin_user (
-          id, name, email, email_verified, role, created_at, updated_at
-        ) VALUES (?, ?, ?, 1, 'owner', ?, ?)
+          id, name, email, email_verified, created_at, updated_at
+        ) VALUES (?, ?, ?, 1, ?, ?)
       `)
       .run(adminId, "관리자", "admin@example.com", now.getTime(), now.getTime())
     client.sqlite.exec(`
@@ -172,8 +171,6 @@ async function withTemporaryOperationsDatabase(
         'conversation-legacy', '기존 대화', 'admin-1', ${now.getTime()}, ${now.getTime()}
       );
     `)
-    runOperationsSchemaMigration(client.sqlite)
-    runOperationsSchemaMigration(client.sqlite)
     await run({ database: client.db, sqlite: client.sqlite })
   } finally {
     client.close()

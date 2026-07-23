@@ -1,8 +1,8 @@
 import { Database } from "bun:sqlite"
 import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 
 import * as authSchema from "#auth/schema/index"
-import { runAuthSchemaMigration } from "#auth/schema/migration"
 
 export type AuthTestDatabase = BunSQLiteDatabase<typeof authSchema>
 
@@ -13,7 +13,7 @@ export function createAuthTestDatabase(): {
   const sqlite = new Database(":memory:")
 
   sqlite.exec("PRAGMA foreign_keys = ON")
-  runAuthSchemaMigration(sqlite)
+  runCurrentTestMigration(sqlite)
 
   return {
     close: () => sqlite.close(),

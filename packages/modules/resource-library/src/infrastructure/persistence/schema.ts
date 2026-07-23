@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm"
+import { adminAuthUsers } from "@workspace/auth/schema"
 import {
   check,
   index,
@@ -22,7 +23,9 @@ export const adminResourceNodes = sqliteTable(
   "admin_resource_nodes",
   {
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-    createdBy: text("created_by").notNull(),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "restrict" }),
     id: text("id").primaryKey().notNull(),
     kind: text("kind", { enum: resourceNodeKindValues }).notNull(),
     name: text("name").notNull(),
@@ -39,7 +42,9 @@ export const adminResourceNodes = sqliteTable(
       { onDelete: "restrict" }
     ),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-    updatedBy: text("updated_by").notNull(),
+    updatedBy: text("updated_by")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "restrict" }),
   },
   (table) => [
     check(
@@ -116,7 +121,10 @@ export const adminResourceAssets = sqliteTable(
     deleteRequestedAt: integer("delete_requested_at", {
       mode: "timestamp_ms",
     }),
-    deleteRequestedBy: text("delete_requested_by"),
+    deleteRequestedBy: text("delete_requested_by").references(
+      () => adminAuthUsers.id,
+      { onDelete: "restrict" }
+    ),
     deleteRootId: text("delete_root_id").references(
       (): AnySQLiteColumn => adminResourceNodes.id,
       { onDelete: "restrict" }

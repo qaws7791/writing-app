@@ -23,7 +23,6 @@ try {
     `${JSON.stringify(
       {
         checks: {
-          danglingReferences: [],
           foreignKeyViolations: [],
           integrity: "unavailable",
         },

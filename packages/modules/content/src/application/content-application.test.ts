@@ -90,9 +90,9 @@ describe("content application", () => {
     expect(fixture.repository.saveDraft).not.toHaveBeenCalled()
   })
 
-  it("publish commit 이후 event를 발행하고 실패를 rollback으로 표현하지 않는다", async () => {
+  it("검증된 publish 결정을 repository transaction에 전달한다", async () => {
     const order: string[] = []
-    const fixture = createApplicationFixture({ eventFailure: true, order })
+    const fixture = createApplicationFixture({ order })
 
     const result = await fixture.application.publishCourse({
       actor: owner,
@@ -101,12 +101,7 @@ describe("content application", () => {
     })
 
     expect(result.isOk()).toBe(true)
-    expect(order).toEqual(["commit", "publish", "observe"])
-    expect(fixture.dependencies.eventFailureObserver).toHaveBeenCalledWith({
-      eventId: "content-event-1",
-      eventName: "content.curriculum-published",
-      kind: "content-event-publish-failed",
-    })
+    expect(order).toEqual(["commit"])
   })
 
   it("reset guard가 거절하면 seed persistence를 호출하지 않는다", async () => {
@@ -120,11 +115,9 @@ describe("content application", () => {
 })
 
 function createApplicationFixture({
-  eventFailure = false,
   order = [],
   resetForbidden = false,
 }: {
-  readonly eventFailure?: boolean
   readonly order?: string[]
   readonly resetForbidden?: boolean
 } = {}) {
@@ -140,9 +133,9 @@ function createApplicationFixture({
     findCurriculumByLesson: vi.fn(async () => null),
     findDraft: vi.fn(async () => ok(draft)),
     listPublishedCourseSummaries: vi.fn(async () => []),
-    publishDraft: vi.fn(async ({ decision }) => {
+    publishDraft: vi.fn(async ({ publishedRevision }) => {
       order.push("commit")
-      return ok(decision.aggregate)
+      return ok(publishedRevision)
     }),
     readCourseEditor: vi.fn(async () => toEditorDocument(draft)),
     readCourses: vi.fn(async (input) => ({
@@ -173,16 +166,6 @@ function createApplicationFixture({
   const dependencies = {
     clock: { now: vi.fn(() => now) },
     courseIdGenerator: { next: vi.fn(() => draft.courseId) },
-    eventFailureObserver: vi.fn(() => order.push("observe")),
-    eventIdGenerator: { next: vi.fn(() => "content-event-1") },
-    eventPublisher: {
-      publishCurriculumPublished: vi.fn(async () => {
-        order.push("publish")
-        return eventFailure
-          ? err({ kind: "content-event-publish-failed" as const })
-          : ok(undefined)
-      }),
-    },
     repository,
     resetGuard: {
       authorize: vi.fn(() =>

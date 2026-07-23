@@ -1,15 +1,58 @@
 import {
+  parseEditorStepChange,
+  StepBooleanField,
   StepFormShell,
+  StepJsonField,
+  StepTextField,
   type StepFormProps,
 } from "@/features/course-editor/ui/step-forms/shared/step-form-contract"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
 
-export function OrderStepForm({ step }: StepFormProps<"ORDER">) {
+export function OrderStepForm({ onChange, step }: StepFormProps<"ORDER">) {
+  const commitJson = (patch: Readonly<Record<string, unknown>>): boolean => {
+    const changed = parseEditorStepChange(step, patch)
+    if (changed?.type !== "ORDER") return false
+    onChange(changed)
+    return true
+  }
+
   return (
     <StepFormShell step={step}>
-      <Textarea
-        aria-label="ORDER items"
-        defaultValue={JSON.stringify(step.items, null, 2)}
+      <StepTextField
+        id={`${step.id}-title`}
+        label="제목"
+        onChange={(title) => onChange({ ...step, title })}
+        value={step.title}
+      />
+      <StepJsonField
+        id={`${step.id}-items`}
+        label="정렬 항목"
+        onCommit={(items) => commitJson({ items })}
+        value={step.items}
+      />
+      <StepJsonField
+        id={`${step.id}-item-ids`}
+        label="항목 ID"
+        onCommit={(itemIds) => commitJson({ itemIds })}
+        value={step.itemIds}
+      />
+      <StepJsonField
+        id={`${step.id}-correct`}
+        label="정답 순서"
+        onCommit={(correct) => commitJson({ correct })}
+        value={step.correct}
+      />
+      <StepBooleanField
+        checked={step.showNumbers ?? false}
+        id={`${step.id}-show-numbers`}
+        label="순서 번호 표시"
+        onChange={(showNumbers) => onChange({ ...step, showNumbers })}
+      />
+      <StepTextField
+        id={`${step.id}-explanation`}
+        label="해설"
+        multiline
+        onChange={(explanation) => onChange({ ...step, explanation })}
+        value={step.explanation}
       />
     </StepFormShell>
   )

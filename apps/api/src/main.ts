@@ -39,17 +39,14 @@ export async function startApiServer(
     const app = createApp(container)
     const logger = container.platform.logger
     const lifecycle = createUnifiedApiServerLifecycle({
-      closeAi: container.lifecycle.closeAi,
-      closeDatabase: container.lifecycle.closeDatabase,
+      disposeContainer: container.dispose,
       fetch: app.fetch,
-      flushLogger: container.lifecycle.flushLogger,
       onDrainResult(observation) {
         logger.info(observation, "server.shutdown.drain")
       },
       onShutdownError(error, phase) {
         logger.error({ error, phase }, "server.shutdown.failed")
       },
-      unsubscribeEvents: container.lifecycle.unsubscribeEvents,
     })
     server = serve({ fetch: lifecycle.fetch, port: env.port })
     lifecycle.attachServer(server)

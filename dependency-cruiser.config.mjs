@@ -54,15 +54,6 @@ const config = {
       },
     },
     {
-      name: "event-contracts-only-import-kernel-and-types",
-      severity: "error",
-      from: { path: "^packages/shared/event-contracts/" },
-      to: {
-        path: ["^(apps|packages)/", "node_modules/"],
-        pathNot: "^packages/shared/(event-contracts|kernel|types)/",
-      },
-    },
-    {
       name: "infra-does-not-depend-on-modules-or-apps",
       severity: "error",
       from: { path: "^packages/infra/" },
@@ -74,14 +65,20 @@ const config = {
       from: { path: "^packages/modules/([^/]+)/" },
       to: {
         path: "^packages/modules/",
-        pathNot: "^packages/modules/$1/",
+        pathNot: [
+          "^packages/modules/$1/",
+          "^packages/modules/[^/]+/src/infrastructure/persistence/schema\\.ts$",
+        ],
       },
     },
     {
       name: "identity-does-not-import-auth-runtime",
       severity: "error",
       from: { path: "^packages/modules/identity/" },
-      to: { path: "^packages/infra/auth/" },
+      to: {
+        path: "^packages/infra/auth/",
+        pathNot: "^packages/infra/auth/src/schema/",
+      },
     },
     {
       name: "domain-is-layer-pure",
@@ -320,20 +317,6 @@ const config = {
         path: [
           "node_modules/(?:pino|pino-pretty)(?:/|$)",
           "node_modules/\\.bun/[^/]+/node_modules/(?:pino|pino-pretty)(?:/|$)",
-        ],
-      },
-    },
-    {
-      name: "emittery-is-owned-by-event-bus-infra",
-      severity: "error",
-      from: {
-        path: "^(apps|packages)/",
-        pathNot: "^packages/infra/event-bus/",
-      },
-      to: {
-        path: [
-          "node_modules/emittery(?:/|$)",
-          "node_modules/\\.bun/[^/]+/node_modules/emittery(?:/|$)",
         ],
       },
     },

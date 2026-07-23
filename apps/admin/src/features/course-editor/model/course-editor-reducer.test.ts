@@ -141,13 +141,16 @@ describe("courseEditorReducer", () => {
       ],
     })
 
+    const aiStep = editableDocument.units[0]?.lessons[0]?.steps[2]
+    if (aiStep?.type !== "AI_FEEDBACK") {
+      throw new Error("AI_FEEDBACK fixture가 필요합니다.")
+    }
     const changed = courseEditorReducer(
       createCourseEditorState(editableDocument),
       {
         lessonId,
-        stepId: aiStepId,
-        targetStepId: nextWriteStepId,
-        type: "ai-feedback-target-changed",
+        step: { ...aiStep, target: nextWriteStepId },
+        type: "step-changed",
         unitId,
       }
     )

@@ -69,14 +69,6 @@ describe("identity application", () => {
     expect(
       fixture.dependencies.sessionRevocation.revokeLearnerSessions
     ).toHaveBeenCalledWith(userId)
-    expect(
-      fixture.dependencies.eventPublisher.publishUserStatusChanged
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        payload: { status: "suspended", userId },
-        type: "identity.user-status-changed",
-      })
-    )
   })
 
   it("operator 요청은 persistence 전에 거절한다", async () => {
@@ -106,24 +98,7 @@ describe("identity application", () => {
     ).not.toHaveBeenCalled()
   })
 
-  it("commit 이후 event 발행 실패를 관측하고 성공 결과는 유지한다", async () => {
-    const fixture = createApplicationFixture({ eventFailure: true })
-
-    const result = await fixture.application.changeUserStatus({
-      actor: { id: ownerId, role: "owner" },
-      status: "suspended",
-      userId,
-    })
-
-    expect(result.isOk()).toBe(true)
-    expect(fixture.dependencies.eventFailureObserver).toHaveBeenCalledWith({
-      eventId: "identity-event-1",
-      eventName: "identity.user-status-changed",
-      kind: "identity-event-publish-failed",
-    })
-  })
-
-  it("commit 이후 session 폐기 실패에도 상태 변경 event를 발행한다", async () => {
+  it("commit 이후 session 폐기 실패를 명시적인 실패로 반환한다", async () => {
     const fixture = createApplicationFixture({ sessionFailure: true })
 
     const result = await fixture.application.changeUserStatus({
@@ -133,9 +108,6 @@ describe("identity application", () => {
     })
 
     expect(result).toEqual(err({ kind: "identity-session-revocation-failed" }))
-    expect(
-      fixture.dependencies.eventPublisher.publishUserStatusChanged
-    ).toHaveBeenCalledOnce()
   })
 
   it("관리자 role 변경은 owner 정책과 session 폐기를 함께 적용한다", async () => {
@@ -186,12 +158,10 @@ describe("identity application", () => {
 
 function createApplicationFixture({
   account = createLearnerAccount(),
-  eventFailure = false,
   saveConflict = false,
   sessionFailure = false,
 }: {
   readonly account?: LearnerAccount | null
-  readonly eventFailure?: boolean
   readonly saveConflict?: boolean
   readonly sessionFailure?: boolean
 } = {}) {
@@ -224,15 +194,6 @@ function createApplicationFixture({
   } satisfies IdentityRepository
   const dependencies = {
     clock: { now: vi.fn(() => now) },
-    eventFailureObserver: vi.fn(),
-    eventIdGenerator: { next: vi.fn(() => "identity-event-1") },
-    eventPublisher: {
-      publishUserStatusChanged: vi.fn(async () =>
-        eventFailure
-          ? err({ kind: "identity-event-publish-failed" as const })
-          : ok(undefined)
-      ),
-    },
     learnerIdentityDirectory: {
       findLearnerIdentity: vi.fn(async () => authenticatedLearner),
       listLearnerIdentities: vi.fn(async () => [authenticatedLearner]),

@@ -1,5 +1,4 @@
-import type { WorkspaceEventMap } from "@workspace/event-contracts/workspace-event"
-import type { Clock, IdGenerator } from "@workspace/kernel/clock"
+import type { Clock } from "@workspace/kernel/clock"
 import type { Result } from "@workspace/kernel/result"
 import type {
   CourseId,
@@ -101,18 +100,6 @@ export type LearningAiFeedbackApplicationPort = Readonly<{
   ) => Promise<Result<LearningAiFeedbackResult, LearningAiFeedbackError>>
 }>
 
-export type LearningEventIntent = Readonly<{
-  learnerId: LearnerId
-  lessonId: LessonId
-  occurredAt: Date
-  type: "learning.lesson-completed"
-}>
-
-export type CommittedLearningTransition<TValue> = Readonly<{
-  events: readonly LearningEventIntent[]
-  value: TValue
-}>
-
 export type LearnerPinnedScope = Readonly<{
   courseId: CourseId
   curriculumVersionId: CurriculumVersionId
@@ -124,19 +111,13 @@ export type LearningTransitionRepository = Readonly<{
     command: CompleteLearnerAiFeedbackCommand,
     curriculum: LearningCurriculum
   ) => Promise<
-    Result<
-      CommittedLearningTransition<CompleteLearnerStepTransitionResult>,
-      LearnerTransitionError
-    >
+    Result<CompleteLearnerStepTransitionResult, LearnerTransitionError>
   >
   completeStep: (
     command: CompleteLearnerStepCommand,
     curriculum: LearningCurriculum
   ) => Promise<
-    Result<
-      CommittedLearningTransition<CompleteLearnerStepTransitionResult>,
-      LearnerTransitionError
-    >
+    Result<CompleteLearnerStepTransitionResult, LearnerTransitionError>
   >
   findPinnedScope: (input: {
     readonly learnerId: LearnerId
@@ -149,39 +130,13 @@ export type LearningTransitionRepository = Readonly<{
   startLesson: (
     command: StartLearnerLessonCommand,
     curriculum: LearningCurriculum
-  ) => Promise<
-    Result<
-      CommittedLearningTransition<StartLearnerLessonResult>,
-      LearnerTransitionError
-    >
-  >
+  ) => Promise<Result<StartLearnerLessonResult, LearnerTransitionError>>
 }>
-
-export type LearningEventPublishError = Readonly<{
-  kind: "learning-event-publish-failed"
-}>
-
-export type LearningEventPublisher = Readonly<{
-  publishLessonCompleted: (
-    event: WorkspaceEventMap["learning.lesson-completed"]
-  ) => Promise<Result<void, LearningEventPublishError>>
-}>
-
-export type LearningEventFailureObserver = (
-  event: Readonly<{
-    eventId: string
-    eventName: "learning.lesson-completed"
-    kind: "learning-event-publish-failed"
-  }>
-) => void
 
 export type LearningApplicationDependencies = Readonly<{
   aiFeedback: LearningAiFeedbackApplicationPort
   clock: Clock
   content: LearningContentQueryPort
-  eventFailureObserver: LearningEventFailureObserver
-  eventIdGenerator: IdGenerator<string>
-  eventPublisher: LearningEventPublisher
   identity: LearningIdentityQueryPort
   transitionRepository: LearningTransitionRepository
 }>
