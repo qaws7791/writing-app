@@ -1,6 +1,13 @@
 import { randomBytes } from "node:crypto"
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 import {
   readToolchainContract,
@@ -101,6 +108,11 @@ export interface InspectLocalOnboardingOptions {
   readonly requireDatabase?: boolean
 }
 
+export interface LocalSetupEnvironment {
+  readonly databaseUrl: string
+  readonly processEnvironment: Readonly<NodeJS.ProcessEnv>
+}
+
 function createLocalCredentials(): LocalCredentials {
   return {
     adminAuthSecret: randomBytes(32).toString("base64url"),
@@ -188,6 +200,80 @@ export function createLocalEnvironmentFiles({
   })
 }
 
+export function createLocalSetupEnvironment(
+  repositoryRoot: string,
+  inheritedEnvironment: Readonly<NodeJS.ProcessEnv>
+): LocalSetupEnvironment {
+  const apiEnvironment = parseEnvironmentFile(
+    path.join(repositoryRoot, "apps/api/.env")
+  )
+  const conflictingKeys = [...apiEnvironment.entries()]
+    .filter(
+      ([key, value]) =>
+        inheritedEnvironment[key] !== undefined &&
+        inheritedEnvironment[key] !== value
+    )
+    .map(([key]) => key)
+    .sort()
+
+  if (conflictingKeys.length > 0) {
+    throw new Error(
+      `로컬 setup 환경과 shell 환경이 충돌합니다: ${conflictingKeys.join(", ")}`
+    )
+  }
+
+  const databaseUrl = apiEnvironment.get("DATABASE_URL")
+  if (databaseUrl === undefined) {
+    throw new Error(
+      "로컬 setup은 file-backed SQLite DATABASE_URL이 필요합니다."
+    )
+  }
+  if (databaseUrl.includes("$")) {
+    throw new Error(
+      "로컬 setup의 DATABASE_URL에는 환경 변수 보간을 사용할 수 없습니다."
+    )
+  }
+  if (apiEnvironment.get("NODE_ENV") !== "development") {
+    throw new Error(
+      "로컬 setup은 NODE_ENV=development에서만 실행할 수 있습니다."
+    )
+  }
+  if (apiEnvironment.get("ADMIN_SEED_RESET_PASSWORD") !== "false") {
+    throw new Error(
+      "로컬 setup은 ADMIN_SEED_RESET_PASSWORD=false가 필요합니다."
+    )
+  }
+
+  return Object.freeze({
+    databaseUrl,
+    processEnvironment: Object.freeze({
+      ...inheritedEnvironment,
+      ...Object.fromEntries(apiEnvironment),
+    }),
+  })
+}
+
+export function prepareLocalDatabaseDirectory(
+  repositoryRoot: string,
+  databaseUrl: string
+): string {
+  const databasePath = resolveLocalDatabasePath(repositoryRoot, databaseUrl)
+
+  if (databasePath === null) {
+    throw new Error(
+      "로컬 setup은 file-backed SQLite DATABASE_URL이 필요합니다."
+    )
+  }
+
+  mkdirSync(path.dirname(databasePath), { recursive: true })
+
+  if (existsSync(databasePath) && !statSync(databasePath).isFile()) {
+    throw new Error("DATABASE_URL 경로는 SQLite 파일이어야 합니다.")
+  }
+
+  return path.relative(repositoryRoot, path.dirname(databasePath)) || "."
+}
+
 export function inspectLocalOnboarding({
   bunVersion,
   nodeVersion,
@@ -251,7 +337,53 @@ export function inspectLocalOnboarding({
   checks.push(...inspectLocalRuntimeContract(environments, examples))
   checks.push(...inspectAuthSecrets(environments))
   checks.push(...inspectTestAuthentication(environments))
+  checks.push(...inspectLocalSetupSafety(environments))
   checks.push(...inspectDatabase(repositoryRoot, environments, requireDatabase))
+
+  return checks
+}
+
+function inspectLocalSetupSafety(
+  environments: ReadonlyMap<string, ReadonlyMap<string, string>>
+): readonly LocalOnboardingCheck[] {
+  const apiEnvironment = environments.get("apps/api/.env")
+  if (apiEnvironment === undefined) return []
+
+  const checks: LocalOnboardingCheck[] = []
+  const nodeEnvironment = apiEnvironment.get("NODE_ENV")
+  if (nodeEnvironment !== undefined) {
+    checks.push(
+      nodeEnvironment === "development"
+        ? {
+            detail: "로컬 개발 환경입니다.",
+            kind: "pass",
+            label: "로컬 setup 실행 환경",
+          }
+        : {
+            detail: "NODE_ENV=development에서만 로컬 setup을 실행하세요.",
+            kind: "failure",
+            label: "로컬 setup 실행 환경",
+          }
+    )
+  }
+
+  const resetPassword = apiEnvironment.get("ADMIN_SEED_RESET_PASSWORD")
+  if (resetPassword !== undefined) {
+    checks.push(
+      resetPassword === "false"
+        ? {
+            detail: "기존 관리자 credential을 보존합니다.",
+            kind: "pass",
+            label: "로컬 setup 관리자 seed",
+          }
+        : {
+            detail:
+              "ADMIN_SEED_RESET_PASSWORD=false에서만 로컬 setup을 실행하세요.",
+            kind: "failure",
+            label: "로컬 setup 관리자 seed",
+          }
+    )
+  }
 
   return checks
 }
@@ -496,11 +628,21 @@ function resolveLocalDatabasePath(
   repositoryRoot: string,
   databaseUrl: string
 ): string | null {
+  if (databaseUrl.includes("$")) return null
   if (
     databaseUrl === ":memory:" ||
-    /^[a-z][a-z\d+.-]*:\/\//iu.test(databaseUrl)
+    (!databaseUrl.startsWith("file://") &&
+      /^[a-z][a-z\d+.-]*:\/\//iu.test(databaseUrl))
   ) {
     return null
+  }
+
+  if (databaseUrl.startsWith("file://")) {
+    try {
+      return fileURLToPath(databaseUrl)
+    } catch {
+      return null
+    }
   }
 
   const filePath = databaseUrl.startsWith("file:")

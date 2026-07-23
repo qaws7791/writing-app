@@ -31,7 +31,7 @@ export async function seedContentDatabase(
 ): Promise<void> {
   const rows = await createDefaultContentSeedRows()
   database.transaction((transaction) => {
-    upsertContentSeedRows(transaction, rows, defaultSeedTime)
+    insertMissingContentSeedAggregates(transaction, rows, defaultSeedTime)
   })
 }
 
@@ -85,6 +85,24 @@ export function upsertContentSeedRows(
       insertSeedCourse(transaction, rows, course, now)
     } else {
       replaceSeedDraft(transaction, rows, course, now)
+    }
+  }
+}
+
+function insertMissingContentSeedAggregates(
+  transaction: WritingAppDatabaseTransaction,
+  rows: ContentSeedRows,
+  now: Date
+): void {
+  for (const course of rows.courses) {
+    const existingCourse = transaction
+      .select({ id: courses.id })
+      .from(courses)
+      .where(eq(courses.id, course.id))
+      .get()
+
+    if (existingCourse === undefined) {
+      insertSeedCourse(transaction, rows, course, now)
     }
   }
 }

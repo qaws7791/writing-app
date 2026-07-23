@@ -24,7 +24,7 @@
 
 - content module은 course, curriculum version, unit, lesson과 step schema·repository·seed를 소유한다. course마다 mutable draft 하나만 허용하고 published revision과 그 계층은 trigger로 변경을 거부한다.
 - 발행 transaction은 기존 draft를 published로 전환하고 다음 draft를 만든 뒤 course의 최신 published reference를 함께 갱신한다. domain event는 commit 뒤 발행하므로 event 전달 실패가 이미 확정된 콘텐츠를 되돌리지 않는다.
-- 보관은 course 상태만 바꾸어 신규 학습 조회에서 숨기고 기존 published revision과 학습자의 version 고정을 물리적으로 삭제하지 않는다. seed와 reset도 기존 published revision과 학습 진행을 보존하고 draft만 교체한다.
+- 보관은 course 상태만 바꾸어 신규 학습 조회에서 숨기고 기존 published revision과 학습자의 version 고정을 물리적으로 삭제하지 않는다. 기본 seed는 기존 course aggregate 전체를 보존하고 누락된 seed aggregate만 삽입한다. 명시적 content reset만 기존 published revision과 학습 진행을 보존하면서 draft를 교체하고 seed 밖 course를 보관한다.
 - 현재 Drizzle schema와 trigger 정의는 content module이 소유한다. 이미 적용됐을 수 있는 baseline SQL은 변경하지 않는 이력으로 보존하고, API의 append-only migration이 물리 cross-module FK를 제거한다.
 - 기존 curriculum 이관의 step 정규화 정책은 content domain이 소유하고 API migration 조립 지점이 legacy 이관에 주입한다. 정책이 없으면 legacy 이관은 데이터 변경 전에 실패한다.
 
@@ -59,7 +59,8 @@
 
 ## Seed와 보존
 
-- seed는 개발·검증을 재현 가능하게 만들되 사용자의 학습 기록을 암묵적으로 삭제하지 않는다.
-- seed는 auth·content·identity provider를 API에서 명시적으로 조립한다. 전체 삭제는 seed와 분리된 reset 명령과 destructive guard를 거쳐야 한다.
+- seed는 개발·검증을 재현 가능하게 만들되 기존 application state를 갱신하거나 사용자의 학습 기록을 암묵적으로 삭제하지 않는다. content는 course aggregate 단위로만 누락 fixture를 삽입한다.
+- seed는 auth·content·identity provider를 API에서 명시적으로 조립한다. 관리자 user·credential·owner identity의 부분 상태는 자동 승격하거나 수리하지 않고 실패한다.
+- password 변경과 전체 삭제는 기본 seed와 분리된 reset 명령, 명시적 승인과 destructive guard를 거쳐야 한다.
 - 운영 데이터의 보존·삭제·익명화 정책은 제품·보안 요구와 함께 명시한다.
 - 특정 seed 결과나 현재 row 수는 문서에 기록하지 않는다.

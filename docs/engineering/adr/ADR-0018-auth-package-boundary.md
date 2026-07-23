@@ -23,7 +23,7 @@ Better Auth 설정은 secret, origin, cookie, provider, hook과 session 변환�
 - 학습자와 관리자 secret, cookie, table, origin, endpoint를 합치지 않는다. 기존 schema, migration과 HTTP 계약도 변경하지 않는다.
 - 인증 cookie 이름은 `@workspace/contracts/auth-session-cookie`가 계속 소유하며 auth package는 재수출하지 않는다.
 - `better-auth` 직접 import는 auth package만 허용하고 client subpath의 server, core, DB와 ORM import를 정적 검사로 거부한다.
-- ADR-0014의 concrete persistence app ownership은 유지한다. “Better Auth integration도 실행 앱이 직접 소유한다”는 위치 결정만 이 ADR이 대체한다.
+- ADR-0020의 module-owned 제품 persistence를 따른다. auth infra가 credential·session schema와 Better Auth integration을 소유하고 API가 DB lifecycle과 identity 연결을 조립하는 이 ADR의 인증 전용 경계는 유지한다.
 
 ## 대안과 트레이드오프
 

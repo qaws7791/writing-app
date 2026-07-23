@@ -24,7 +24,7 @@
 - API container는 module과 adapter를 만들기 전에 migration을 한 번 실행한다. module factory의 개별 migration 실행은 제거한다.
 - 빈 DB에는 전체 계보를 적용한다. baseline, 이전 module migration 상태와 명시적으로 식별 가능한 legacy 상태는 검증 후 기존 단계를 채택한다. 출처를 판정할 수 없는 부분 schema와 알 수 없는 migration ID는 fail-closed한다.
 - migration 전 integrity·FK·dangling reference·중복·유효하지 않은 상태를 검사한다. cross-module FK는 제거하고 module 내부 FK만 남기며, 제거된 관계는 별도 reconciliation query로 관측한다.
-- seed 의미는 auth·content·identity owner에 남기고 API가 실행 순서를 명시한다. seed와 전체 reset을 분리하며 reset에는 환경 승인, 명시적 force와 production 대상 fingerprint가 필요하다.
+- seed 의미는 auth·content·identity owner에 남기고 API가 실행 순서를 명시한다. 기본 seed는 content aggregate와 identity·auth row를 누락된 경우에만 삽입하고 기존 application state를 갱신하지 않는다. 관리자 fixture의 부분 상태나 owner가 아닌 role은 자동 보정하지 않고 실패한다. password 변경과 전체 reset은 분리하며 reset에는 환경 승인, 명시적 force와 production 대상 fingerprint가 필요하다.
 - 현재 schema의 backup은 migration 이력과 필수 table을 포함한 단일 SQLite 파일로 만들고 독립 read-only application query로 검증한다.
 
 ## 대안과 트레이드오프

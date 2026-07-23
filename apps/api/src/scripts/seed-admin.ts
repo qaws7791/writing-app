@@ -6,7 +6,11 @@ import {
   getDefaultDatabaseUrl,
   type WritingAppDatabase,
 } from "@workspace/db/client"
-import { seedOwnerIdentity } from "@workspace/identity/seed"
+import {
+  inspectOwnerIdentitySeedState,
+  seedOwnerIdentity,
+} from "@workspace/identity/seed"
+import { eq } from "drizzle-orm"
 
 import { runApplicationMigrations } from "@/db/migrate"
 import {
@@ -23,43 +27,62 @@ export function seedAdminUser(
   return hashAuthPassword(input.password).then((passwordHash) =>
     db.transaction((transaction) => {
       const rows = createSeedAdminRows({ ...input, passwordHash })
-
-      transaction
-        .insert(adminAuthUsers)
-        .values(rows.user)
-        .onConflictDoUpdate({
-          set: {
-            email: rows.user.email,
-            emailVerified: rows.user.emailVerified,
-            image: rows.user.image,
-            name: rows.user.name,
-            updatedAt: rows.user.updatedAt,
-          },
-          target: adminAuthUsers.id,
+      const adminId = adminIdSchema.parse(rows.user.id)
+      const existingUser = transaction
+        .select({ id: adminAuthUsers.id })
+        .from(adminAuthUsers)
+        .where(eq(adminAuthUsers.id, rows.user.id))
+        .get()
+      const existingAccount = transaction
+        .select({
+          accountId: adminAuthAccounts.accountId,
+          id: adminAuthAccounts.id,
+          password: adminAuthAccounts.password,
+          providerId: adminAuthAccounts.providerId,
+          userId: adminAuthAccounts.userId,
         })
-        .run()
+        .from(adminAuthAccounts)
+        .where(eq(adminAuthAccounts.id, rows.account.id))
+        .get()
+      const existingIdentity = inspectOwnerIdentitySeedState(
+        transaction,
+        adminId
+      )
 
-      seedOwnerIdentity(transaction, adminIdSchema.parse(rows.user.id))
-
-      if (input.resetPassword !== true) {
-        transaction
-          .insert(adminAuthAccounts)
-          .values(rows.account)
-          .onConflictDoNothing({ target: adminAuthAccounts.id })
-          .run()
+      if (
+        existingUser === undefined &&
+        existingAccount === undefined &&
+        existingIdentity === "missing"
+      ) {
+        transaction.insert(adminAuthUsers).values(rows.user).run()
+        seedOwnerIdentity(transaction, adminId)
+        transaction.insert(adminAuthAccounts).values(rows.account).run()
         return
       }
 
+      if (
+        existingUser === undefined ||
+        existingAccount === undefined ||
+        existingIdentity !== "owner" ||
+        existingAccount.accountId !== rows.account.accountId ||
+        existingAccount.providerId !== rows.account.providerId ||
+        existingAccount.userId !== rows.account.userId ||
+        existingAccount.password === null
+      ) {
+        throw new Error(
+          "기존 seed 관리자 상태가 불완전하거나 owner credential과 일치하지 않습니다."
+        )
+      }
+
+      if (input.resetPassword !== true) return
+
       transaction
-        .insert(adminAuthAccounts)
-        .values(rows.account)
-        .onConflictDoUpdate({
-          set: {
-            password: rows.account.password,
-            updatedAt: rows.account.updatedAt,
-          },
-          target: adminAuthAccounts.id,
+        .update(adminAuthAccounts)
+        .set({
+          password: rows.account.password,
+          updatedAt: rows.account.updatedAt,
         })
+        .where(eq(adminAuthAccounts.id, rows.account.id))
         .run()
     })
   )

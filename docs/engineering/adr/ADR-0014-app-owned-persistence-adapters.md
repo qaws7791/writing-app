@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨. 단, Better Auth integration 위치 결정은 ADR-0018이 대체하며 app-owned persistence adapter 결정은 유지한다.
+대체됨. 전환기의 app-owned persistence 위치 결정은 [ADR-0020](./ADR-0020-module-owned-vertical-slices.md)의 module-owned 수직 슬라이스 결정이 대체한다. 인증 vendor 경계는 ADR-0018, 통합 migration 계보는 ADR-0019가 각각 이어서 정의한다.
 
 ## 날짜
 
@@ -92,3 +92,7 @@ MTA-15·16에서 두 executable의 DB lifecycle과 app-local composition entrypo
 MTA-59~64로 관리자 content, identity, dashboard/analytics, settings, AI chat, 자료실의 adapter·route가 모두 `apps/api`의 admin Host sub-app으로 이동했다. `apps/api/src/composition/admin-route-composition.ts`가 여섯 capability group을 명시적으로 조립하며, `apps/admin-api`는 parity suite, 로컬 개발, 명시적 rollback 및 관리자 seed/audit script를 위한 legacy workspace로만 유지한다.
 
 Compose/Caddy source는 두 public API Host를 `apps/api`로 전달하고 legacy service를 `rollback` profile로 격리한다. 이 ADR에서 확인하는 것은 source topology와 app-owned adapter 경계다. 실제 production 적용·관찰 및 rollback rehearsal은 외부 운영 증거가 필요하므로 완료된 traffic 전환으로 기록하지 않는다.
+
+### 2026-07-23 대체 관계
+
+이 문서의 본문은 app-owned adapter를 사용한 당시 전환 순서의 기록으로 보존한다. 최종 구조에서는 제품 persistence adapter가 해당 module infrastructure로 이동했고 API app은 runtime 조립과 lifecycle만 소유한다. 현재 경계 판단에는 ADR-0020과 시스템 경계 원칙을 사용한다.

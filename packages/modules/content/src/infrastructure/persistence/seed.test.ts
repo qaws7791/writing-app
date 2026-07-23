@@ -6,6 +6,7 @@ import { runBaselineTestMigration } from "@workspace/db/test-support/application
 import {
   courseCurriculumVersions,
   courses,
+  courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
 } from "#content/infrastructure/persistence/schema"
@@ -46,7 +47,7 @@ describe("content seed provider", () => {
     }
   })
 
-  it("재실행 시 published revision과 학습자 고정을 보존하고 draft만 교체한다", async () => {
+  it("재실행 시 기존 aggregate와 seed 밖 활성 course를 그대로 보존한다", async () => {
     const client = createWritingAppDatabase(":memory:")
 
     try {
@@ -71,6 +72,13 @@ describe("content seed provider", () => {
         throw new Error("published content fixture가 필요합니다.")
       }
       if (draft === undefined) throw new Error("draft fixture가 필요합니다.")
+      const draftUnit = client.db
+        .select()
+        .from(courseUnitVersions)
+        .where(eq(courseUnitVersions.curriculumVersionId, draft.id))
+        .get()
+      if (draftUnit === undefined)
+        throw new Error("draft unit fixture가 필요합니다.")
 
       client.sqlite.exec(`
         INSERT INTO user (
@@ -83,12 +91,47 @@ describe("content seed provider", () => {
           'seed-user', 'c1', '${publishedVersionId}',
           'in_progress', 1, 1, 1
         );
+        INSERT INTO courses (
+          created_at, id, published_curriculum_version_id, sort_order, status
+        ) VALUES (1, 'custom-course', NULL, 999, 'active');
       `)
       client.db
         .update(courseCurriculumVersions)
-        .set({ title: "교체될 draft" })
+        .set({ editVersion: 7, title: "보존할 draft" })
         .where(eq(courseCurriculumVersions.id, draft.id))
         .run()
+      client.db
+        .update(courseUnitVersions)
+        .set({ title: "보존할 draft unit" })
+        .where(
+          and(
+            eq(courseUnitVersions.curriculumVersionId, draft.id),
+            eq(courseUnitVersions.id, draftUnit.id)
+          )
+        )
+        .run()
+      const before = {
+        customCourse: client.db
+          .select()
+          .from(courses)
+          .where(eq(courses.id, "custom-course"))
+          .get(),
+        draft: client.db
+          .select()
+          .from(courseCurriculumVersions)
+          .where(eq(courseCurriculumVersions.id, draft.id))
+          .get(),
+        draftUnit: client.db
+          .select()
+          .from(courseUnitVersions)
+          .where(
+            and(
+              eq(courseUnitVersions.curriculumVersionId, draft.id),
+              eq(courseUnitVersions.id, draftUnit.id)
+            )
+          )
+          .get(),
+      }
 
       await seedContentDatabase(client.db)
 
@@ -106,18 +149,28 @@ describe("content seed provider", () => {
           )
           .get()?.count
       ).toBe(1)
-      expect(
-        client.db
+      expect({
+        customCourse: client.db
+          .select()
+          .from(courses)
+          .where(eq(courses.id, "custom-course"))
+          .get(),
+        draft: client.db
           .select()
           .from(courseCurriculumVersions)
+          .where(eq(courseCurriculumVersions.id, draft.id))
+          .get(),
+        draftUnit: client.db
+          .select()
+          .from(courseUnitVersions)
           .where(
             and(
-              eq(courseCurriculumVersions.courseId, "c1"),
-              eq(courseCurriculumVersions.status, "draft")
+              eq(courseUnitVersions.curriculumVersionId, draft.id),
+              eq(courseUnitVersions.id, draftUnit.id)
             )
           )
-          .all()
-      ).toHaveLength(1)
+          .get(),
+      }).toEqual(before)
     } finally {
       client.close()
     }

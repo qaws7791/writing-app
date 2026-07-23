@@ -22,15 +22,6 @@ export function seedLearnerAuth(
       name: input.name,
       updatedAt: input.now,
     })
-    .onConflictDoUpdate({
-      set: {
-        email: input.email,
-        emailVerified: true,
-        image: null,
-        name: input.name,
-        updatedAt: input.now,
-      },
-      target: authUsers.id,
-    })
+    .onConflictDoNothing({ target: authUsers.id })
     .run()
 }

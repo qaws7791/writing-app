@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest"
 
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import {
+  createInMemoryWritingAppDatabase,
+  type WritingAppDatabaseClient,
+} from "@workspace/db/client"
 
+import { runApplicationMigrations } from "@/db/migrate"
 import { seedApplicationDatabase } from "@/db/seed"
 
 describe("application seed composition", () => {
-  it("auth, content와 identity provider를 순서대로 호출하고 학습 기록을 보존한다", async () => {
+  it("재실행 시 학습자 auth·profile과 학습 기록의 application state를 보존한다", async () => {
     const database = createInMemoryWritingAppDatabase()
 
     try {
@@ -33,8 +37,69 @@ describe("application seed composition", () => {
           )
         `)
         .run(content.courseId, content.versionId)
+      database.sqlite.exec(`
+        UPDATE user
+        SET name = '수정한 학습자', email = 'edited@example.com', updated_at = 7
+        WHERE id = 'user-1';
+        UPDATE learner_profiles
+        SET status = 'suspended', display_name = '수정한 표시 이름', version = 7
+        WHERE user_id = 'user-1';
+      `)
+      const before = {
+        auth: database.sqlite
+          .query<
+            {
+              readonly email: string
+              readonly name: string
+              readonly updatedAt: number
+            },
+            []
+          >(
+            "SELECT email, name, updated_at AS updatedAt FROM user WHERE id = 'user-1'"
+          )
+          .get(),
+        profile: database.sqlite
+          .query<
+            {
+              readonly displayName: string
+              readonly status: string
+              readonly version: number
+            },
+            []
+          >(
+            "SELECT display_name AS displayName, status, version FROM learner_profiles WHERE user_id = 'user-1'"
+          )
+          .get(),
+      }
 
       await seedApplicationDatabase(database)
+
+      expect({
+        auth: database.sqlite
+          .query<
+            {
+              readonly email: string
+              readonly name: string
+              readonly updatedAt: number
+            },
+            []
+          >(
+            "SELECT email, name, updated_at AS updatedAt FROM user WHERE id = 'user-1'"
+          )
+          .get(),
+        profile: database.sqlite
+          .query<
+            {
+              readonly displayName: string
+              readonly status: string
+              readonly version: number
+            },
+            []
+          >(
+            "SELECT display_name AS displayName, status, version FROM learner_profiles WHERE user_id = 'user-1'"
+          )
+          .get(),
+      }).toEqual(before)
 
       expect(
         database.sqlite
@@ -57,6 +122,42 @@ describe("application seed composition", () => {
           )
           .get()?.count
       ).toBe(1)
+    } finally {
+      database.close()
+    }
+  })
+
+  it("중간 content seed 실패 후 재실행이 누락 aggregate만 채운다", async () => {
+    const database = createInMemoryWritingAppDatabase()
+
+    try {
+      runApplicationMigrations(database.sqlite)
+      database.sqlite.exec(`
+        CREATE TRIGGER reject_content_seed
+        BEFORE INSERT ON courses
+        BEGIN SELECT RAISE(ABORT, 'content seed fault injection'); END;
+      `)
+
+      await expect(seedApplicationDatabase(database)).rejects.toThrow(
+        "content seed fault injection"
+      )
+      expect(readSeedCounts(database)).toEqual({
+        content: 0,
+        learnerAuth: 1,
+        learnerIdentity: 0,
+      })
+
+      database.sqlite.exec("DROP TRIGGER reject_content_seed")
+      await seedApplicationDatabase(database)
+      const completed = readSeedCounts(database)
+      expect(completed.content).toBeGreaterThan(0)
+      expect(completed).toMatchObject({
+        learnerAuth: 1,
+        learnerIdentity: 1,
+      })
+
+      await seedApplicationDatabase(database)
+      expect(readSeedCounts(database)).toEqual(completed)
     } finally {
       database.close()
     }
@@ -86,3 +187,29 @@ describe("application seed composition", () => {
     }
   })
 })
+
+function readSeedCounts(database: WritingAppDatabaseClient): {
+  readonly content: number
+  readonly learnerAuth: number
+  readonly learnerIdentity: number
+} {
+  const row = database.sqlite
+    .query<
+      {
+        readonly content: number
+        readonly learnerAuth: number
+        readonly learnerIdentity: number
+      },
+      []
+    >(`
+      SELECT
+        (SELECT COUNT(*) FROM courses) AS content,
+        (SELECT COUNT(*) FROM user WHERE id = 'user-1') AS learnerAuth,
+        (
+          SELECT COUNT(*) FROM learner_profiles WHERE user_id = 'user-1'
+        ) AS learnerIdentity
+    `)
+    .get()
+  if (row === null) throw new Error("seed count fixture가 필요합니다.")
+  return row
+}

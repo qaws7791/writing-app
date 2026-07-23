@@ -8,6 +8,7 @@ import { adminAuthUsers } from "@workspace/auth/schema"
 import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabase,
+  type WritingAppDatabaseClient,
 } from "@workspace/db/client"
 import { readAdminIdentityRoles } from "@workspace/identity/reporting"
 
@@ -125,34 +126,110 @@ describe("통합 API 관리자 seed", () => {
         now: new Date("2026-06-14T00:00:00.000Z"),
         password: "admin-password-123",
       })
+      database.sqlite.exec(`
+        UPDATE admin_user
+        SET email = 'edited-admin@example.com', name = '수정한 관리자', updated_at = 7
+        WHERE id = 'admin-1';
+        UPDATE admin_identity_profiles
+        SET version = 7
+        WHERE admin_id = 'admin-1';
+      `)
+      const before = readSeedAdminState(database)
       await seedAdminUser(database.db, {
-        email: "admin@example.com",
-        name: "관리자",
+        email: "replacement@example.com",
+        name: "교체하면 안 되는 관리자",
         now: new Date("2026-06-15T00:00:00.000Z"),
         password: "changed-password-123",
       })
+      expect(readSeedAdminState(database)).toEqual(before)
       const auth = createTestAdminAuth(database.db)
-      expect(await requestAdminEmailSignIn(auth, "admin-password-123")).toBe(
-        200
-      )
       expect(
-        await requestAdminEmailSignIn(auth, "changed-password-123")
+        await requestAdminEmailSignIn(
+          auth,
+          "admin-password-123",
+          "edited-admin@example.com"
+        )
+      ).toBe(200)
+      expect(
+        await requestAdminEmailSignIn(
+          auth,
+          "changed-password-123",
+          "edited-admin@example.com"
+        )
       ).not.toBe(200)
 
       await seedAdminUser(database.db, {
-        email: "admin@example.com",
-        name: "관리자",
+        email: "replacement@example.com",
+        name: "교체하면 안 되는 관리자",
         now: new Date("2026-06-16T00:00:00.000Z"),
         password: "changed-password-123",
         resetPassword: true,
       })
-      expect(await requestAdminEmailSignIn(auth, "changed-password-123")).toBe(
-        200
-      )
+      expect(readSeedAdminState(database)).toMatchObject({
+        email: before.email,
+        name: before.name,
+        role: before.role,
+        version: before.version,
+      })
+      expect(
+        await requestAdminEmailSignIn(
+          auth,
+          "changed-password-123",
+          "edited-admin@example.com"
+        )
+      ).toBe(200)
     } finally {
       database.close()
     }
   }, 20_000)
+
+  it("부분 seed 상태와 operator role은 자동 보정하지 않고 실패한다", async () => {
+    const database = createInMemoryWritingAppDatabase()
+    try {
+      runApplicationMigrations(database.sqlite)
+      await seedAdminUser(database.db, {
+        email: "admin@example.com",
+        name: "관리자",
+        now: new Date("2026-06-14T00:00:00.000Z"),
+        password: "admin-password-123",
+      })
+      database.sqlite.exec(`
+        UPDATE admin_identity_profiles
+        SET role = 'operator'
+        WHERE admin_id = 'admin-1';
+      `)
+
+      await expect(
+        seedAdminUser(database.db, {
+          email: "admin@example.com",
+          name: "관리자",
+          now: new Date("2026-06-15T00:00:00.000Z"),
+          password: "admin-password-123",
+        })
+      ).rejects.toThrow("불완전하거나 owner credential")
+      expect(
+        database.sqlite
+          .query<{ readonly role: string }, []>(
+            "SELECT role FROM admin_identity_profiles WHERE admin_id = 'admin-1'"
+          )
+          .get()?.role
+      ).toBe("operator")
+
+      database.sqlite.exec(
+        "DELETE FROM admin_identity_profiles WHERE admin_id = 'admin-1'"
+      )
+      await expect(
+        seedAdminUser(database.db, {
+          email: "admin@example.com",
+          name: "관리자",
+          now: new Date("2026-06-16T00:00:00.000Z"),
+          password: "admin-password-123",
+        })
+      ).rejects.toThrow("불완전하거나 owner credential")
+    } finally {
+      database.close()
+    }
+  })
 
   it("credential 저장 실패 시 같은 transaction의 user 저장도 rollback한다", async () => {
     const database = createInMemoryWritingAppDatabase()
@@ -182,12 +259,13 @@ describe("통합 API 관리자 seed", () => {
 
 async function requestAdminEmailSignIn(
   auth: AdminAuthRuntime,
-  password: string
+  password: string,
+  email = "admin@example.com"
 ): Promise<number> {
   return auth
     .authHandler(
       new Request("http://api.localhost:4000/api/admin/auth/sign-in/email", {
-        body: JSON.stringify({ email: "admin@example.com", password }),
+        body: JSON.stringify({ email, password }),
         headers: {
           "Content-Type": "application/json",
           Origin: "http://localhost:3001",
@@ -196,6 +274,41 @@ async function requestAdminEmailSignIn(
       })
     )
     .then((response) => response.status)
+}
+
+function readSeedAdminState(database: WritingAppDatabaseClient): {
+  readonly email: string
+  readonly name: string
+  readonly password: string | null
+  readonly role: string
+  readonly version: number
+} {
+  const state = database.sqlite
+    .query<
+      {
+        readonly email: string
+        readonly name: string
+        readonly password: string | null
+        readonly role: string
+        readonly version: number
+      },
+      []
+    >(`
+      SELECT
+        admin_user.email,
+        admin_user.name,
+        admin_account.password,
+        admin_identity_profiles.role,
+        admin_identity_profiles.version
+      FROM admin_user
+      INNER JOIN admin_account ON admin_account.user_id = admin_user.id
+      INNER JOIN admin_identity_profiles
+        ON admin_identity_profiles.admin_id = admin_user.id
+      WHERE admin_user.id = 'admin-1'
+    `)
+    .get()
+  if (state === null) throw new Error("seed admin fixture가 필요합니다.")
+  return state
 }
 
 function createTestAdminAuth(database: WritingAppDatabase): AdminAuthRuntime {

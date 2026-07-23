@@ -30,6 +30,14 @@
     },
     "apps/api": {
       "entry": [
+        "src/scripts/admin-auth-audit.ts",
+        "src/scripts/backup-database.ts",
+        "src/scripts/migrate-database.ts",
+        "src/scripts/reconcile-database.ts",
+        "src/scripts/reset-database.ts",
+        "src/scripts/revoke-admin-sessions.ts",
+        "src/scripts/seed-admin.ts",
+        "src/scripts/seed-database.ts",
         "src/scripts/start-e2e-api.ts",
         "src/scripts/setup-e2e-content-database.ts",
         "src/scripts/setup-e2e-database.ts",

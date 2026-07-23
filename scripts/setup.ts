@@ -1,9 +1,11 @@
 import path from "node:path"
 
 import {
+  createLocalSetupEnvironment,
   createLocalEnvironmentFiles,
   hasLocalOnboardingFailures,
   inspectLocalOnboarding,
+  prepareLocalDatabaseDirectory,
   printLocalOnboardingChecks,
 } from "#scripts/local-onboarding"
 
@@ -35,7 +37,20 @@ async function runSetup(): Promise<void> {
     throw new Error("로컬 환경 사전 점검에 실패했습니다.")
   }
 
-  await runCommand(["bun", "run", "dev:admin:setup"])
+  const setupEnvironment = createLocalSetupEnvironment(
+    repositoryRoot,
+    process.env
+  )
+  const databaseDirectory = prepareLocalDatabaseDirectory(
+    repositoryRoot,
+    setupEnvironment.databaseUrl
+  )
+  console.log(`- 준비: ${databaseDirectory} database 디렉터리`)
+
+  await runCommand(
+    ["bun", "run", "dev:admin:setup"],
+    setupEnvironment.processEnvironment
+  )
   await runCommand(["bun", "run", "doctor"])
 
   console.log("로컬 준비가 완료되었습니다. bun run dev를 실행하세요.")
@@ -44,10 +59,14 @@ async function runSetup(): Promise<void> {
   )
 }
 
-async function runCommand(command: readonly string[]): Promise<void> {
+async function runCommand(
+  command: readonly string[],
+  environment: Readonly<NodeJS.ProcessEnv> = process.env
+): Promise<void> {
   console.log(`\n> ${command.join(" ")}`)
   const child = Bun.spawn(command, {
     cwd: repositoryRoot,
+    env: environment,
     stderr: "inherit",
     stdin: "inherit",
     stdout: "inherit",

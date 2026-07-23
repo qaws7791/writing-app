@@ -1,13 +1,16 @@
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
+import { pathToFileURL } from "node:url"
 
 import { describe, expect, test } from "bun:test"
 
 import {
   createLocalEnvironmentFiles,
+  createLocalSetupEnvironment,
   hasLocalOnboardingFailures,
   inspectLocalOnboarding,
+  prepareLocalDatabaseDirectory,
   type LocalCredentials,
 } from "#scripts/local-onboarding"
 
@@ -19,6 +22,31 @@ const credentials: LocalCredentials = {
 }
 
 describe("로컬 온보딩", () => {
+  test("API database 작업은 저장소 루트의 env와 상대 경로를 사용한다", () => {
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.resolve(import.meta.dir, "../apps/api/package.json"),
+        "utf8"
+      )
+    ) as { readonly scripts?: Readonly<Record<string, string>> }
+    const databaseScripts = {
+      "audit:admin-auth": "admin-auth-audit.ts",
+      "db:backup": "backup-database.ts",
+      "db:migrate": "migrate-database.ts",
+      "db:reconcile": "reconcile-database.ts",
+      "db:reset": "reset-database.ts",
+      "db:seed": "seed-database.ts",
+      "revoke:admin-sessions": "revoke-admin-sessions.ts",
+      "seed:admin": "seed-admin.ts",
+    } as const
+
+    for (const [scriptName, entrypoint] of Object.entries(databaseScripts)) {
+      expect(manifest.scripts?.[scriptName]).toBe(
+        `cd ../.. && bun --env-file=apps/api/.env apps/api/src/scripts/${entrypoint}`
+      )
+    }
+  })
+
   test("누락된 환경 파일을 credential을 치환해 생성한다", () => {
     using fixture = createFixture()
 
@@ -114,6 +142,133 @@ describe("로컬 온보딩", () => {
     expect(
       readEnvironmentValue(fixture.path, "apps/api/.env", "LEARNER_AUTH_SECRET")
     ).toBe(credentials.learnerAuthSecret)
+  })
+
+  test("database 부모 디렉터리를 준비하되 기존 파일은 보존한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+
+    const setupEnvironment = createLocalSetupEnvironment(fixture.path, {})
+    expect(setupEnvironment.databaseUrl).toBe("file:data/api.sqlite")
+    expect(setupEnvironment.processEnvironment.DATABASE_URL).toBe(
+      "file:data/api.sqlite"
+    )
+    expect(
+      prepareLocalDatabaseDirectory(fixture.path, setupEnvironment.databaseUrl)
+    ).toBe("data")
+
+    const databasePath = path.join(fixture.path, "data/api.sqlite")
+    fs.writeFileSync(databasePath, "existing-database")
+
+    expect(
+      prepareLocalDatabaseDirectory(fixture.path, setupEnvironment.databaseUrl)
+    ).toBe("data")
+    expect(fs.readFileSync(databasePath, "utf8")).toBe("existing-database")
+  })
+
+  test("API env와 상속 환경이 충돌하면 값 노출 없이 거부한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+
+    let message = ""
+    try {
+      createLocalSetupEnvironment(fixture.path, {
+        ADMIN_SEED_PASSWORD: "shell-admin-password",
+        DATABASE_URL: "file:shell.sqlite",
+      })
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error)
+    }
+
+    expect(message).toBe(
+      "로컬 setup 환경과 shell 환경이 충돌합니다: ADMIN_SEED_PASSWORD, DATABASE_URL"
+    )
+    expect(message).not.toContain("shell-admin-password")
+    expect(message).not.toContain("shell.sqlite")
+  })
+
+  test("공백 경로와 file URL은 같은 SQLite 파일 경계로 해석한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+    const apiEnvironmentPath = path.join(fixture.path, "apps/api/.env")
+
+    replaceFileValue(
+      apiEnvironmentPath,
+      "DATABASE_URL",
+      '"file:data directory/api.sqlite"'
+    )
+    const spacedEnvironment = createLocalSetupEnvironment(fixture.path, {})
+    expect(
+      prepareLocalDatabaseDirectory(fixture.path, spacedEnvironment.databaseUrl)
+    ).toBe("data directory")
+
+    const fileUrlPath = path.join(fixture.path, "file-url/api.sqlite")
+    replaceFileValue(
+      apiEnvironmentPath,
+      "DATABASE_URL",
+      pathToFileURL(fileUrlPath).href
+    )
+    const fileUrlEnvironment = createLocalSetupEnvironment(fixture.path, {})
+    expect(
+      prepareLocalDatabaseDirectory(
+        fixture.path,
+        fileUrlEnvironment.databaseUrl
+      )
+    ).toBe("file-url")
+  })
+
+  test("보간 URL과 SQLite 파일이 아닌 경로는 fail-closed한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+    const apiEnvironmentPath = path.join(fixture.path, "apps/api/.env")
+    replaceFileValue(
+      apiEnvironmentPath,
+      "DATABASE_URL",
+      "file:$DATABASE_DIRECTORY/api.sqlite"
+    )
+    expect(() => createLocalSetupEnvironment(fixture.path, {})).toThrow(
+      "환경 변수 보간"
+    )
+
+    replaceFileValue(apiEnvironmentPath, "DATABASE_URL", "file:data/api.sqlite")
+    fs.mkdirSync(path.join(fixture.path, "data/api.sqlite"), {
+      recursive: true,
+    })
+    expect(() =>
+      prepareLocalDatabaseDirectory(fixture.path, "file:data/api.sqlite")
+    ).toThrow("SQLite 파일")
+  })
+
+  test("production 환경과 관리자 password reset은 로컬 setup에서 거부한다", () => {
+    using fixture = createFixture()
+    createLocalEnvironmentFiles({
+      createCredentials: () => credentials,
+      repositoryRoot: fixture.path,
+    })
+    const apiEnvironmentPath = path.join(fixture.path, "apps/api/.env")
+
+    replaceFileValue(apiEnvironmentPath, "NODE_ENV", "production")
+    expect(() => createLocalSetupEnvironment(fixture.path, {})).toThrow(
+      "NODE_ENV=development"
+    )
+
+    replaceFileValue(apiEnvironmentPath, "NODE_ENV", "development")
+    replaceFileValue(apiEnvironmentPath, "ADMIN_SEED_RESET_PASSWORD", "true")
+    expect(() => createLocalSetupEnvironment(fixture.path, {})).toThrow(
+      "ADMIN_SEED_RESET_PASSWORD=false"
+    )
   })
 
   test("도구, 환경 파일, 비밀값 분리와 공유 DB를 진단한다", () => {

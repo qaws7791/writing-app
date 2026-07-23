@@ -1,6 +1,6 @@
 # 모듈러 모놀리스 전체 개편 실행 계획
 
-> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13·P14·P15 완료, P16 이후 미착수
+> 상태: P0·P1·P2·P3·P4·P5·P6·P7·P8·P9·P10·P11·P12·P13·P14·P15·P16 완료, P17 미착수
 > 기준 문서: [목표 아키텍처 가이드](./architecture-guide.md)  
 > 작업 단위: `docs/work/2026-07-22-modular-monolith-redesign/`  
 > 완료 처리: 영구 결론을 권위 문서에 반영한 뒤 작업 단위 전체를 `docs/archive/2026-07-22-modular-monolith-redesign/`로 이동
@@ -63,7 +63,7 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 - [x] P13. 오류, 보안, 관측성과 외부 I/O 경계를 통합 검증한다. 증거: [P13 구현 증거](./p13-validation.md)
 - [x] P14. 배포·운영 automation을 새 경로에 맞춘다. 증거: [P14 구현 증거](./p14-validation.md)
 - [x] P15. 이전 구조와 모든 임시 호환 계층을 제거한다. 증거: [P15 구현 증거](./p15-validation.md)
-- [ ] P16. 전체 품질·복구·사용자 흐름 검증을 완료한다.
+- [x] P16. 전체 품질·복구·사용자 흐름 검증을 완료한다. 증거: [P16 전체 검증과 독립 리뷰](./p16-validation.md)
 - [ ] P17. 영구 문서 반영과 작업 기록 보관을 완료한다.
 
 ## 4. P0 — 기준선, 책임 매핑과 안전 조건
@@ -907,52 +907,52 @@ architecture 도구도 짧은 병행 검증 후 교체한다. 기존 custom 검�
 
 ### 20.1 정적 품질 gate
 
-- [ ] P16-001 실행 시점의 root manifest에서 authoritative 검증 명령을 다시 확인한다. 증거:
-- [ ] P16-002 toolchain과 engine floor를 확인한다. 증거:
-- [ ] P16-003 `bun install --frozen-lockfile`을 통과시킨다. 증거:
-- [ ] P16-004 setup이 기존 env와 데이터를 덮어쓰지 않는지 검증한다. 증거:
-- [ ] P16-005 doctor가 새 workspace와 runtime dependency를 정상 판정하는지 검증한다. 증거:
-- [ ] P16-006 architecture 검사를 통과시킨다. 증거:
-- [ ] P16-007 dead-code 검사를 통과시킨다. 증거:
-- [ ] P16-008 package interface와 runtime cycle 검사를 통과시킨다. 증거:
-- [ ] P16-009 formatting check와 lint를 warning 없이 통과시킨다. 증거:
-- [ ] P16-010 전체 typecheck를 통과시킨다. 증거:
-- [ ] P16-011 전체 unit·integration·HTTP·UI test를 통과시킨다. 증거:
-- [ ] P16-012 web, admin, API와 Storybook build를 통과시킨다. 증거:
-- [ ] P16-013 dependency audit와 repository 정책 검사를 통과시킨다. 증거:
-- [ ] P16-014 pre-commit hook 전체를 통과시킨다. 증거:
+- [x] P16-001 실행 시점의 root manifest에서 authoritative 검증 명령을 다시 확인한다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-002 toolchain과 engine floor를 확인한다. 증거: [판정 기준](./p16-validation.md#판정-기준)
+- [x] P16-003 `bun install --frozen-lockfile`을 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-004 setup이 기존 env와 데이터를 덮어쓰지 않는지 검증한다. 증거: [검증 중 발견해 해결한 문제](./p16-validation.md#검증-중-발견해-해결한-문제)
+- [x] P16-005 doctor가 새 workspace와 runtime dependency를 정상 판정하는지 검증한다. 증거: [검증 중 발견해 해결한 문제](./p16-validation.md#검증-중-발견해-해결한-문제)
+- [x] P16-006 architecture 검사를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-007 dead-code 검사를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-008 package interface와 runtime cycle 검사를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-009 formatting check와 lint를 warning 없이 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-010 전체 typecheck를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-011 전체 unit·integration·HTTP·UI test를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-012 web, admin, API와 Storybook build를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-013 dependency audit와 repository 정책 검사를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
+- [x] P16-014 pre-commit hook 전체를 통과시킨다. 증거: [정적 품질과 build](./p16-validation.md#정적-품질과-build)
 
 ### 20.2 데이터와 운영 gate
 
-- [ ] P16-015 빈 DB migration과 seed를 반복 실행해 deterministic 결과를 확인한다. 증거:
-- [ ] P16-016 기준선 DB upgrade와 application read·write smoke를 통과시킨다. 증거:
-- [ ] P16-017 schema에서 cross-module FK와 join이 0개인지 최종 확인한다. 증거:
-- [ ] P16-018 backup·독립 restore·integrity와 필수 table smoke를 통과시킨다. 증거:
-- [ ] P16-019 rollback 한계와 data recovery 필요 조건을 reviewer가 승인한다. 증거:
-- [ ] P16-020 API health, readiness와 graceful shutdown을 실제 process로 검증한다. 증거:
-- [ ] P16-021 image build·smoke와 deployment static test를 통과시킨다. 증거:
+- [x] P16-015 빈 DB migration과 seed를 반복 실행해 deterministic 결과를 확인한다. 증거: [데이터·운영 검증](./p16-validation.md#데이터운영-검증)
+- [x] P16-016 기준선 DB upgrade와 application read·write smoke를 통과시킨다. 증거: [데이터·운영 검증](./p16-validation.md#데이터운영-검증)
+- [x] P16-017 schema에서 cross-module FK와 join이 0개인지 최종 확인한다. 증거: [데이터·운영 검증](./p16-validation.md#데이터운영-검증)
+- [x] P16-018 backup·독립 restore·integrity와 필수 table smoke를 통과시킨다. 증거: [데이터·운영 검증](./p16-validation.md#데이터운영-검증)
+- [x] P16-019 rollback 한계와 data recovery 필요 조건을 reviewer가 승인한다. 증거: [독립 리뷰](./p16-validation.md#독립-리뷰)
+- [x] P16-020 API health, readiness와 graceful shutdown을 실제 process로 검증한다. 증거: [데이터·운영 검증](./p16-validation.md#데이터운영-검증)
+- [x] P16-021 image build·smoke와 deployment static test를 통과시킨다. 증거: [데이터·운영 검증](./p16-validation.md#데이터운영-검증)
 
 ### 20.3 사용자 흐름과 비기능 gate
 
-- [ ] P16-022 `ENABLE_TEST_AUTH=true`로 학습자 인증과 핵심 학습 E2E를 통과시킨다. 증거:
-- [ ] P16-023 `ENABLE_TEST_AUTH=true`로 관리자 인증·권한과 핵심 운영 E2E를 통과시킨다. 증거:
-- [ ] P16-024 AI success, provider unavailable, timeout과 quota E2E 또는 경계 test를 통과시킨다. 증거:
-- [ ] P16-025 자료실 upload·저장·conflict·delete·reconciliation 흐름을 통과시킨다. 증거:
-- [ ] P16-026 route registry와 runtime OpenAPI가 승인된 기준선 차이만 포함하는지 확인한다. 증거:
-- [ ] P16-027 frontend 주요 route의 bundle guard와 Storybook a11y를 통과시킨다. 증거:
-- [ ] P16-028 구조화 로그와 audit event에서 민감 정보가 redaction되는지 확인한다. 증거:
-- [ ] P16-029 시작한 Node, Bun, dev server와 background process를 모두 안전하게 종료한다. 증거:
+- [x] P16-022 `ENABLE_TEST_AUTH=true`로 학습자 인증과 핵심 학습 E2E를 통과시킨다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
+- [x] P16-023 `ENABLE_TEST_AUTH=true`로 관리자 인증·권한과 핵심 운영 E2E를 통과시킨다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
+- [x] P16-024 AI success, provider unavailable, timeout과 quota E2E 또는 경계 test를 통과시킨다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
+- [x] P16-025 자료실 upload·저장·conflict·delete·reconciliation 흐름을 통과시킨다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
+- [x] P16-026 route registry와 runtime OpenAPI가 승인된 기준선 차이만 포함하는지 확인한다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
+- [x] P16-027 frontend 주요 route의 bundle guard와 Storybook a11y를 통과시킨다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
+- [x] P16-028 구조화 로그와 audit event에서 민감 정보가 redaction되는지 확인한다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
+- [x] P16-029 시작한 Node, Bun, dev server와 background process를 모두 안전하게 종료한다. 증거: [사용자 흐름과 비기능 검증](./p16-validation.md#사용자-흐름과-비기능-검증)
 
 ### 20.4 목표 구조 완료 조건
 
-- [ ] P16-030 모듈마다 domain·application·infrastructure·interface 수직 슬라이스가 실제 책임을 소유한다. 증거:
-- [ ] P16-031 module 간 협력이 공개 query port, application port 또는 domain event로만 이뤄진다. 증거:
-- [ ] P16-032 expected failure가 Result union으로 표현된다. 증거:
-- [ ] P16-033 aggregate event가 immutable DomainDecision으로 반환된다. 증거:
-- [ ] P16-034 frontend의 module·DB import가 0개다. 증거:
-- [ ] P16-035 unified migration, seed, backup·restore 경계가 검증됐다. 증거:
-- [ ] P16-036 deprecated alias, forwarding, 장기 dual architecture와 compatibility facade가 0개다. 증거:
-- [ ] P16-037 P16 게이트: 목표 아키텍처 가이드의 완료 조건을 전부 충족한다. 증거:
+- [x] P16-030 모듈마다 domain·application·infrastructure·interface 수직 슬라이스가 실제 책임을 소유한다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정)
+- [x] P16-031 module 간 협력이 공개 query port, application port 또는 domain event로만 이뤄진다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정)
+- [x] P16-032 expected failure가 Result union으로 표현된다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정)
+- [x] P16-033 aggregate event가 immutable DomainDecision으로 반환된다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정)
+- [x] P16-034 frontend의 module·DB import가 0개다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정)
+- [x] P16-035 unified migration, seed, backup·restore 경계가 검증됐다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정)
+- [x] P16-036 deprecated alias, forwarding, 장기 dual architecture와 compatibility facade가 0개다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정)
+- [x] P16-037 P16 게이트: 목표 아키텍처 가이드의 완료 조건을 전부 충족한다. 증거: [목표 구조 완료 판정](./p16-validation.md#목표-구조-완료-판정), [독립 리뷰](./p16-validation.md#독립-리뷰)
 
 ## 21. P17 — 영구 문서 반영과 archive
 

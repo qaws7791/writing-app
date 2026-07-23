@@ -23,7 +23,9 @@
 
 ## 로컬 준비와 테스트
 
-`bun run setup`은 안전한 초기 준비 진입점이고 `bun run doctor`는 변경 없는 진단 진입점이다. 데이터 초기화와 seed, 테스트 전용 인증은 각 실행 명령과 test 환경 설정의 범위에서만 사용한다. 실제 변수명과 활성화 조건은 권위 source에서 확인한다.
+`bun run setup`은 안전한 초기 준비 진입점이고 `bun run doctor`는 변경 없는 진단 진입점이다. setup은 API 환경 파일과 상속된 shell의 같은 키가 다르면 값은 출력하지 않고 중단하며, 검증한 환경을 migration과 seed 자식 process에 그대로 전달한다. 로컬 setup은 개발 환경과 관리자 password 보존 설정에서만 허용하고 database 경로의 환경 변수 보간은 거부한다.
+
+기본 seed는 누락된 개발 fixture만 삽입하고 기존 aggregate·인증·profile·권한을 갱신하지 않는다. 관리자 fixture가 일부만 존재하거나 owner credential 계약과 다르면 자동 보정하지 않고 실패한다. password 변경, content reset과 전체 초기화는 명시적인 승인 명령으로 분리한다. 실제 변수명과 활성화 조건은 권위 source에서 확인한다.
 
 ## 변경 검토
 

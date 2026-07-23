@@ -2058,23 +2058,23 @@ bun lefthook run pre-commit
 
 ## 26. 완료 조건
 
-- [ ] 앱 4개와 합의된 package 24개만 workspace inventory에 존재한다.
-- [ ] 모든 내부 package 이름이 `@workspace/*`다.
-- [ ] 이전 project 식별자와 폐기된 package-manager·DB 전제가 남아 있지 않다.
-- [ ] `@workspace/core`와 `@workspace/repository-tooling`이 제거됐다.
-- [ ] package는 `modules`, `infra`, `shared`, `config` 아래에만 존재한다.
-- [ ] module이 domain/application/infrastructure/interface 수직 슬라이스를 소유한다.
-- [ ] frontend의 module·DB import가 0이다.
-- [ ] cross-module schema import, FK와 join이 0이다.
-- [ ] expected failure가 Result union으로 표현된다.
-- [ ] aggregate event가 immutable DomainDecision으로 반환된다.
-- [ ] dependency-cruiser와 Knip이 통과한다.
-- [ ] package interface와 runtime cycle 검사가 통과한다.
-- [ ] unified migration, seed, backup·restore 경계를 검증했다.
-- [ ] `bun run lint`, `bun run typecheck`, `bun run test`, `bun run build`가 통과한다.
-- [ ] 핵심 Playwright E2E를 `ENABLE_TEST_AUTH=true`로 통과했다.
-- [ ] 시작한 모든 process를 안전하게 종료했다.
-- [ ] 관련 제품·엔지니어링 권위 문서를 갱신했다.
+- [x] 앱 4개와 합의된 package 24개만 workspace inventory에 존재한다.
+- [x] 모든 내부 package 이름이 `@workspace/*`다.
+- [x] 이전 project 식별자와 폐기된 package-manager·DB 전제가 남아 있지 않다.
+- [x] `@workspace/core`와 `@workspace/repository-tooling`이 제거됐다.
+- [x] package는 `modules`, `infra`, `shared`, `config` 아래에만 존재한다.
+- [x] module이 domain/application/infrastructure/interface 수직 슬라이스를 소유한다.
+- [x] frontend의 module·DB import가 0이다.
+- [x] cross-module schema import, FK와 join이 0이다.
+- [x] expected failure가 Result union으로 표현된다.
+- [x] aggregate event가 immutable DomainDecision으로 반환된다.
+- [x] dependency-cruiser와 Knip이 통과한다.
+- [x] package interface와 runtime cycle 검사가 통과한다.
+- [x] unified migration, seed, backup·restore 경계를 검증했다.
+- [x] `bun run lint`, `bun run typecheck`, `bun run test`, `bun run build`가 통과한다.
+- [x] 핵심 Playwright E2E를 `ENABLE_TEST_AUTH=true`로 통과했다.
+- [x] 시작한 모든 process를 안전하게 종료했다.
+- [x] 관련 제품·엔지니어링 권위 문서를 갱신했다.
 
 ---
 

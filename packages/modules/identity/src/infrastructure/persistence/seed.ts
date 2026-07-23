@@ -1,5 +1,6 @@
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { AdminId, UserId } from "@workspace/types/ids"
+import { eq } from "drizzle-orm"
 
 import { adminRoles, type AdminRole } from "#identity/domain/admin-role"
 import { userStatuses } from "#identity/domain/user-status"
@@ -24,15 +25,7 @@ export function seedLearnerIdentity(
       userId: input.userId,
       version: 0,
     })
-    .onConflictDoUpdate({
-      set: {
-        deletedAt: null,
-        displayName: input.displayName,
-        status: userStatuses.active,
-        version: 0,
-      },
-      target: learnerProfiles.userId,
-    })
+    .onConflictDoNothing({ target: learnerProfiles.userId })
     .run()
 }
 
@@ -43,6 +36,20 @@ export function seedOwnerIdentity(
   seedAdminIdentity(database, { adminId, role: adminRoles.owner })
 }
 
+export function inspectOwnerIdentitySeedState(
+  database: Pick<WritingAppDatabase, "select">,
+  adminId: AdminId
+): "missing" | "owner" | "role-conflict" {
+  const identity = database
+    .select({ role: adminIdentityProfiles.role })
+    .from(adminIdentityProfiles)
+    .where(eq(adminIdentityProfiles.adminId, adminId))
+    .get()
+
+  if (identity === undefined) return "missing"
+  return identity.role === adminRoles.owner ? "owner" : "role-conflict"
+}
+
 export function seedAdminIdentity(
   database: Pick<WritingAppDatabase, "insert">,
   input: Readonly<{ adminId: AdminId; role: AdminRole }>
@@ -50,9 +57,6 @@ export function seedAdminIdentity(
   database
     .insert(adminIdentityProfiles)
     .values({ adminId: input.adminId, role: input.role, version: 0 })
-    .onConflictDoUpdate({
-      set: { role: input.role },
-      target: adminIdentityProfiles.adminId,
-    })
+    .onConflictDoNothing({ target: adminIdentityProfiles.adminId })
     .run()
 }

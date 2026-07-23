@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨 — 저장소 구현 완료, 운영 검증(MTA-40) 대기
+채택됨 — 저장소의 단일 runtime과 legacy source 제거 완료, production 적용 검증은 미실행
 
 ## 날짜
 
@@ -64,3 +64,7 @@
 ## 구현 상태
 
 MTA-38~40 및 MTA-59~64의 저장소 작업으로 단일 `apps/api` runtime, 여섯 관리자 capability route, route parity fixture와 Compose·Caddy source configuration은 구현됐다. 그러나 실제 production 배포, public Host별 traffic 전환, 관찰 결과와 rollback rehearsal는 저장소에 기록되지 않았다. MTA-40이 그 운영 증거를 남기고, MTA-41은 그 뒤에만 legacy runtime 제거를 판단한다.
+
+### 2026-07-23 구현 갱신
+
+후속 모듈러 모놀리스 개편은 legacy runtime·image·profile과 parity 경로를 제거하고 단일 API만 남겼다. 위 맥락·gate는 당시 전환 순서의 기록이며 현재 source topology의 권위가 아니다. production 배포·관찰·rollback rehearsal은 여전히 실행하지 않았고, 이전 immutable image의 현재 DB 호환성이 별도 승인되지 않으면 code-only rollback을 허용하지 않는다. 복구가 필요하면 writer를 중지하고 검증된 호환 backup을 별도 경로에 restore한다.
