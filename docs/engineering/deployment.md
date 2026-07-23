@@ -12,13 +12,22 @@
 - secret과 production 설정은 Git에 저장하지 않고 승인된 secret 관리 경계를 통해 제공한다.
 - 현재 topology가 이 전제를 지키는지는 `deploy/compose/`와 proxy 설정을 직접 확인한다.
 
+브라우저 API는 학습자와 관리자 public origin의 `/api` 경로를 사용하고 Caddy가 내부 단일 API runtime으로 전달한다. API 전용 public origin은 배포 입력이 아니며 API container는 edge network에 직접 연결하지 않는다. 두 앱 origin은 session과 XSS 영향 범위를 분리하기 위해 서로 다르게 유지한다.
+
 ## 승인과 실행
 
-1. 배포 대상 revision, image reference, 공개 origin과 대상 inventory의 일치 여부를 확인하고 production deploy 승인 입력을 명시한다. 승인 입력이 없으면 playbook은 호스트 변경 전에 중단해야 한다.
-2. 실행 중 DB의 SQLite snapshot을 격리 디렉터리에 복제하고 candidate API image로 migration과 read-only application 진단을 리허설한다. 이 단계가 실패하면 기존 writer를 중지하지 않는다.
-3. migration 호환성과 rollback 가능 여부를 판정한다. 이전 코드와 호환되지 않는 데이터 변경은 별도 승인 없이는 진행하지 않는다.
-4. 리허설 성공 뒤 operation lock을 보존 상태로 전환하고 writer를 중지한다. 중지된 DB의 최종 검증 백업을 만든 뒤 실제 migration, DB 진단, 기동과 health·주요 읽기 smoke를 실행한다.
-5. 성공한 revision과 검증 결과를 deployment record와 CI artifact에 남긴다.
+1. 배포 대상 revision, image reference, 두 앱 공개 origin과 대상 inventory의 일치 여부를 확인하고 production deploy 승인 입력을 명시한다. 승인 입력이 없으면 playbook은 호스트 변경 전에 중단해야 한다.
+2. DB 진단이 현재 schema era를 선언하는지 확인한다. 이전 계보라면 아래의 일회성 전환을 먼저 완료하며 일반 deploy로 자동 채택하지 않는다.
+3. 실행 중 DB의 SQLite snapshot을 격리 디렉터리에 복제하고 candidate API image로 migration과 read-only application 진단을 리허설한다. 이 단계가 실패하면 기존 writer를 중지하지 않는다.
+4. migration 호환성과 rollback 가능 여부를 판정한다. 이전 코드와 호환되지 않는 데이터 변경은 별도 승인 없이는 진행하지 않는다.
+5. 리허설 성공 뒤 operation lock을 보존 상태로 전환하고 writer를 중지한다. 중지된 DB의 최종 검증 백업을 만든 뒤 실제 migration, DB 진단, 기동과 health·주요 읽기 smoke를 실행한다.
+6. 성공한 revision과 검증 결과를 deployment record와 CI artifact에 남긴다.
+
+## 일회성 schema era 전환
+
+첫 current-era-only revision 배포 전에는 모든 운영·스테이징 DB가 최종 이전 migration을 적용한 상태여야 한다. writer를 중지하고 operation lock을 유지한 뒤 candidate API image의 일회성 전환 entrypoint를 실행한다. 이 entrypoint는 최종 이전 계보와 SQLite 무결성을 검증하고 독립 백업을 만든 뒤 migration 이력만 원자적으로 현재 baseline 선언으로 바꾼다.
+
+전환 직후 read-only DB 진단, 독립 백업 복원 smoke와 application read를 확인한다. 결과에는 대상 inventory, 이전·현재 migration ID, backup 경로, SQLite 검사 결과, image digest와 실행 시간을 고정한다. 이 저장소 변경은 실제 대상 DB를 실행하지 않았으므로 production 전환 성공을 주장하지 않는다.
 
 ## 실패와 복구
 

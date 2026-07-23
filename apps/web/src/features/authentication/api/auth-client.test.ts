@@ -3,13 +3,8 @@ import type {
   createLearnerAuthClient,
   LearnerAuthClient,
 } from "@workspace/auth/learner/client"
-import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import { createWebAuthClient } from "@/features/authentication/api/auth-client"
-import {
-  readBrowserApiBaseUrl,
-  type BrowserApiBaseUrl,
-} from "@/shared/config/runtime-config"
 
 describe("auth client", () => {
   afterEach(() => {
@@ -19,7 +14,6 @@ describe("auth client", () => {
   it("로그아웃을 auth package에 위임하고 안전한 이동 경로를 반환한다", async () => {
     const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
     const webAuthClient = createWebAuthClient({
-      apiBaseUrl: readBrowserApiBaseUrl({}),
       learnerAuthClientFactory,
     })
 
@@ -32,7 +26,6 @@ describe("auth client", () => {
   it("로그아웃 후 이동 경로는 외부 URL을 허용하지 않는다", async () => {
     const { learnerAuthClientFactory } = createAuthClientFixture()
     const authClient = createWebAuthClient({
-      apiBaseUrl: readBrowserApiBaseUrl({}),
       learnerAuthClientFactory,
     })
 
@@ -52,7 +45,6 @@ describe("auth client", () => {
     const navigate = vi.fn()
     const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
     const webAuthClient = createWebAuthClient({
-      apiBaseUrl: readBrowserApiBaseUrl({}),
       fetchImplementation: fetch,
       learnerAuthClientFactory,
       navigate,
@@ -61,7 +53,6 @@ describe("auth client", () => {
     await webAuthClient.requestGoogleLogin("/app/courses")
 
     expect(learnerAuthClientFactory).toHaveBeenCalledWith({
-      baseURL: localRuntimeDefaults.apiBaseUrl,
       fetch,
       navigate,
     })
@@ -79,7 +70,6 @@ describe("auth client", () => {
     })
     const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
     const webAuthClient = createWebAuthClient({
-      apiBaseUrl: "http://localhost:4000" as BrowserApiBaseUrl,
       learnerAuthClientFactory,
     })
 

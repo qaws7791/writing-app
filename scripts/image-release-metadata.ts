@@ -10,7 +10,6 @@ export type ImageReleaseService = (typeof imageReleaseServices)[number]
 
 export interface ImageReleasePublicOrigins {
   readonly admin: string
-  readonly api: string
   readonly web: string
 }
 
@@ -195,7 +194,6 @@ export function parseImageReleaseRecord(input: unknown): ImageReleaseRecord {
     },
     publicOrigins: {
       admin: readString(input.publicOrigins.admin, "publicOrigins.admin"),
-      api: readString(input.publicOrigins.api, "publicOrigins.api"),
       web: readString(input.publicOrigins.web, "publicOrigins.web"),
     },
     revision: readString(input.revision, "revision"),
@@ -327,7 +325,6 @@ function invalidSchemaVersion(): never {
 function readPublicOriginsFromEnvironment(): ImageReleasePublicOrigins {
   return {
     admin: requireEnvironment("PRODUCTION_ADMIN_ORIGIN"),
-    api: requireEnvironment("PRODUCTION_API_ORIGIN"),
     web: requireEnvironment("PRODUCTION_WEB_ORIGIN"),
   }
 }

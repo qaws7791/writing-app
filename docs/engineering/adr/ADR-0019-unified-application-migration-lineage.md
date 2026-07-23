@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+대체됨 — 과거 계보 보존과 known-state adoption은 [ADR-0022](./ADR-0022-current-schema-era-baseline.md)의 현재 schema era와 단일 baseline 결정이 대체한다.
 
 ## 날짜
 

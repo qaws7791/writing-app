@@ -1,6 +1,5 @@
 import { seedLearnerAuth } from "@workspace/auth/seed"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { normalizeLegacyVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import { seedContentDatabase } from "@workspace/content/seed"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { seedLearnerIdentity } from "@workspace/identity/seed"
@@ -13,9 +12,7 @@ const seedLearnerId = userIdSchema.parse("user-1")
 export async function seedApplicationDatabase(
   client: WritingAppDatabaseClient
 ): Promise<void> {
-  runApplicationMigrations(client.sqlite, {
-    normalizeVersionedStepContent: normalizeLegacyVersionedStepContentOrThrow,
-  })
+  runApplicationMigrations(client.sqlite)
   seedLearnerAuth(client.db, {
     email: "learner@example.com",
     name: "글쓰기 탐험가",

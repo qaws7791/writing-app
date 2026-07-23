@@ -1,11 +1,10 @@
-import { expect, test, type Page } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 
-import { learnerApiOrigin, learnerWebOrigin, loginLearner } from "#e2e/auth"
+import { learnerWebOrigin, loginLearner } from "#e2e/auth"
 
 test("UI style seam은 Typography, Markdown, Dialog 시각 계약을 유지한다", async ({
   page,
 }) => {
-  await stubLessonStartPersistence(page)
   await loginLearner(page)
   await page.goto(`${learnerWebOrigin}/app/courses/c1`)
   await page.waitForLoadState("networkidle")
@@ -29,16 +28,3 @@ test("UI style seam은 Typography, Markdown, Dialog 시각 계약을 유지한�
   ).toBeVisible()
   await expect(page).toHaveScreenshot("dialog.png")
 })
-
-async function stubLessonStartPersistence(page: Page): Promise<void> {
-  const persistenceUrls = [
-    `${learnerApiOrigin}/learning/answers`,
-    `${learnerApiOrigin}/learning/lessons/*/progress`,
-  ] as const
-
-  for (const persistenceUrl of persistenceUrls) {
-    await page.route(persistenceUrl, async (route) => {
-      await route.fulfill({ json: { saved: true }, status: 200 })
-    })
-  }
-}

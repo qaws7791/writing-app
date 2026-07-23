@@ -8,12 +8,10 @@ import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 
 export function AdminCourseDetailPage({
-  apiBaseUrl,
   courseResult,
   publishCourse,
   saveCourse,
 }: {
-  readonly apiBaseUrl: import("@/shared/config/api-base-url").ApiBaseUrl
   readonly courseResult: AdminApiResult<AdminCourseDetail>
   readonly publishCourse: (
     course: AdminCourseDetail
@@ -38,7 +36,6 @@ export function AdminCourseDetailPage({
 
   return (
     <CourseEditorShell
-      apiBaseUrl={apiBaseUrl}
       course={courseResult.value}
       publishCourse={publishCourse}
       saveCourse={saveCourse}

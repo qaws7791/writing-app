@@ -15,16 +15,13 @@ const booleanFlagSchema = z
   .transform((value) => value === "true")
 
 const appEnvBaseSchema = z.object({
-  ADMIN_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
   ADMIN_AUTH_SECRET: z.string().min(32),
   ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
-  API_ORIGIN: z.url().optional(),
   API_PORT: portSchema.default(localRuntimePorts.api),
   CURSOR_SIGNING_SECRET: z.string().min(32).optional(),
   DATABASE_URL: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
-  LEARNER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
   LEARNER_AUTH_SECRET: z.string().min(32),
   ENABLE_TEST_AUTH: booleanFlagSchema,
   NODE_ENV: nodeEnvSchema,
@@ -69,7 +66,6 @@ function validateProductionEnvironment(
   const requiredUrls = [
     ["WEB_ORIGIN", env.WEB_ORIGIN],
     ["ADMIN_ORIGIN", env.ADMIN_ORIGIN],
-    ["API_ORIGIN", env.API_ORIGIN],
   ] as const
 
   for (const [name, value] of requiredUrls) {
@@ -125,19 +121,6 @@ function validateProductionEnvironment(
       "production에서는 테스트 인증을 활성화할 수 없습니다."
     )
   }
-
-  validateCookieDomain(
-    context,
-    "LEARNER_AUTH_COOKIE_DOMAIN",
-    env.LEARNER_AUTH_COOKIE_DOMAIN,
-    [env.WEB_ORIGIN, env.API_ORIGIN]
-  )
-  validateCookieDomain(
-    context,
-    "ADMIN_AUTH_COOKIE_DOMAIN",
-    env.ADMIN_AUTH_COOKIE_DOMAIN,
-    [env.ADMIN_ORIGIN, env.API_ORIGIN]
-  )
 }
 
 function isSecurePublicUrl(value: string): boolean {
@@ -187,32 +170,6 @@ function calculateShannonEntropyBits(value: string): number {
   }
 
   return bitsPerCharacter * value.length
-}
-
-function validateCookieDomain(
-  context: z.RefinementCtx,
-  name: "ADMIN_AUTH_COOKIE_DOMAIN" | "LEARNER_AUTH_COOKIE_DOMAIN",
-  value: string | undefined,
-  origins: readonly (string | undefined)[]
-): void {
-  if (value === undefined) return
-
-  const domain = value.replace(/^\./u, "").toLowerCase()
-  if (
-    isLocalHostname(domain) ||
-    origins.some((origin) => {
-      if (origin === undefined) return true
-
-      const hostname = new URL(origin).hostname.toLowerCase()
-      return hostname !== domain && !hostname.endsWith(`.${domain}`)
-    })
-  ) {
-    addProductionIssue(
-      context,
-      name,
-      "cookie domain은 cookie 발급·소비 HTTPS origin의 parent domain이어야 합니다."
-    )
-  }
 }
 
 function addProductionIssue(

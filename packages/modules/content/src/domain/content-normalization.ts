@@ -4,14 +4,6 @@ import type { ContentError } from "#content/domain/content-error"
 
 type JsonObject = { [key: string]: unknown }
 
-export type LegacyStepNormalizationContext = Readonly<{
-  lessonSteps: readonly Readonly<{
-    id: string
-    sortOrder: number
-    type: string
-  }>[]
-}>
-
 export function normalizeVersionedStepContent(
   stepId: string,
   stepType: string,
@@ -85,78 +77,6 @@ export function normalizeVersionedStepContentOrThrow(
     throw new Error(`Invalid step content for ${stepId}`)
   }
   return normalized.value
-}
-
-export function normalizeLegacyVersionedStepContentOrThrow(
-  stepId: string,
-  stepType: string,
-  contentJson: string,
-  context?: LegacyStepNormalizationContext
-): string {
-  const normalized = normalizeVersionedStepContentOrThrow(
-    stepId,
-    stepType,
-    contentJson
-  )
-  if (stepType === "READING") {
-    return normalizeLegacyReadingGuide(stepId, normalized)
-  }
-  if (stepType === "AI_FEEDBACK") {
-    return normalizeLegacyAiFeedbackTarget(stepId, normalized, context)
-  }
-  return normalized
-}
-
-function normalizeLegacyReadingGuide(
-  stepId: string,
-  contentJson: string
-): string {
-  const content = parseJsonObject(contentJson)
-  if (content === null) throw new Error(`Invalid step content for ${stepId}`)
-  if (Object.hasOwn(content, "guide")) return contentJson
-
-  content["guide"] = ""
-  return JSON.stringify(content)
-}
-
-function normalizeLegacyAiFeedbackTarget(
-  stepId: string,
-  contentJson: string,
-  context: LegacyStepNormalizationContext | undefined
-): string {
-  const content = parseJsonObject(contentJson)
-  if (content === null) throw new Error(`Invalid step content for ${stepId}`)
-  if (content["target"] !== "wr") return contentJson
-
-  if (context === undefined) {
-    throw new Error(`Legacy AI feedback target cannot resolve step ${stepId}`)
-  }
-  const step = context.lessonSteps.find((candidate) => candidate.id === stepId)
-  if (step === undefined) {
-    throw new Error(`Legacy AI feedback target cannot resolve step ${stepId}`)
-  }
-  const predecessors = context.lessonSteps.filter(
-    (candidate) =>
-      candidate.type === "WRITE" && candidate.sortOrder < step.sortOrder
-  )
-  if (predecessors.length === 0) {
-    throw new Error(
-      `Legacy AI feedback target has no preceding WRITE for ${stepId}`
-    )
-  }
-  if (
-    new Set(predecessors.map(({ id }) => id)).size !== predecessors.length ||
-    new Set(predecessors.map(({ sortOrder }) => sortOrder)).size !==
-      predecessors.length
-  ) {
-    throw new Error(`Legacy AI feedback target is ambiguous for ${stepId}`)
-  }
-
-  const target = predecessors.reduce((nearest, candidate) =>
-    candidate.sortOrder > nearest.sortOrder ? candidate : nearest
-  )
-  content["target"] = target.id
-  return JSON.stringify(content)
 }
 
 function normalizeMultipleChoice(stepId: string, content: JsonObject): void {

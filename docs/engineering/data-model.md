@@ -18,22 +18,21 @@
 - credential·session table은 auth infra가 소유하며 identity schema에 포함하지 않는다. identity profile은 인증 계정을 FK로 참조하고 credential의 물리 삭제에는 함께 삭제된다.
 - 삭제 전이는 profile을 비식별화하고 학습 기록을 보존한다. `deleted` 상태에서는 profile 변경과 보호 API 접근을 거부하지만, owner의 `active | suspended` 상태 변경은 삭제 시각을 비우고 계정을 운영 상태로 되돌린다. 비식별화된 표시 이름은 자동 복원할 근거 데이터가 없으므로 이후 profile 변경 전까지 유지한다.
 - profile과 role 변경은 version을 비교해 경쟁 변경을 명시적인 conflict로 반환한다.
-- 기존 관리자 credential의 legacy role 값은 API 통합 migration이 identity-owned 제품 role row로 한 번 backfill한 뒤 credential column을 제거한다. 기존 cross-module FK가 있는 profile table은 데이터를 보존해 identity-owned table로 재구성한다. 이후 role과 profile schema의 권위 소스는 identity module이다.
+- 제품 role과 profile schema의 권위 소스는 identity module이다. 인증 credential은 제품 role을 소유하지 않는다.
 
 ## Content 데이터 경계
 
 - content module은 course, curriculum version, unit, lesson과 step schema·repository·seed를 소유한다. course마다 mutable draft 하나만 허용하고 published revision과 그 계층은 trigger로 변경을 거부한다.
 - 발행 transaction은 기존 draft를 published로 전환하고 다음 draft를 만든 뒤 course의 최신 published reference를 함께 갱신한다.
 - 보관은 course 상태만 바꾸어 신규 학습 조회에서 숨기고 기존 published revision과 학습자의 version 고정을 물리적으로 삭제하지 않는다. 기본 seed는 기존 course aggregate 전체를 보존하고 누락된 seed aggregate만 삽입한다. 명시적 content reset만 기존 published revision과 학습 진행을 보존하면서 draft를 교체하고 seed 밖 course를 보관한다.
-- 현재 Drizzle schema와 trigger 정의는 content module이 소유한다. 이미 적용됐을 수 있는 SQL은 변경하지 않고 API의 append-only migration이 물리 관계를 갱신한다.
-- 기존 curriculum 이관의 step 정규화 정책은 content domain이 소유하고 API migration 조립 지점이 legacy 이관에 주입한다. 정책이 없으면 legacy 이관은 데이터 변경 전에 실패한다.
+- 현재 Drizzle schema와 trigger 정의는 content module이 소유한다. API의 현재 baseline과 이후 append-only migration은 이 최종 구조를 SQLite에 적용한다.
 
 ## AI feedback 데이터 경계
 
 - ai-feedback module은 learner·course·curriculum version·lesson·step의 branded ID, idempotency key, attempt 번호·상태·lease와 coaching 결과를 저장한다. 참조 무결성은 `RESTRICT` FK가 보장하고 runtime repository는 다른 module table을 조회하지 않는다.
 - 완료된 attempt만 사용자·curriculum version·lesson·step 범위의 한도를 차감한다. provider 실패와 만료는 완료 quota를 차감하지 않고, 동일 idempotency key의 성공 결과는 provider 재호출 없이 재생한다.
 - attempt 예약과 terminal 저장은 짧은 개별 transaction이며 provider I/O 중에는 transaction을 열지 않는다. AI 결과 저장 뒤 learning 진행 전이가 실패하면 저장 결과를 권위 상태로 유지하고 같은 key 재시도에서 learning 전이만 다시 수행한다.
-- module schema는 최종 구조를, API migration 계보는 FK 복원을 포함한 적용 순서와 데이터 복사를 소유한다.
+- module schema는 최종 구조를, API migration 계보는 baseline 이후의 변경 순서를 소유한다.
 
 ## Learning 데이터 경계
 

@@ -16,7 +16,6 @@ import {
 } from "@/features/course-editor/model/admin-course-editor"
 import { courseIdSchema } from "@/entities/course/model/course-id"
 import { createBrowserCourseEditorApi } from "@/features/course-editor/api/create-browser-course-editor-api"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   courseEditorReducer,
   createCourseEditorState,
@@ -45,12 +44,10 @@ import { cn } from "@workspace/ui/lib/utils"
 type EditorTab = "curriculum" | "info"
 
 export function CourseEditorShell({
-  apiBaseUrl,
   course,
   publishCourse,
   saveCourse,
 }: {
-  readonly apiBaseUrl: ApiBaseUrl
   readonly course: AdminCourseDetail
   readonly publishCourse: (
     course: AdminCourseDetail
@@ -59,10 +56,7 @@ export function CourseEditorShell({
     course: AdminCourseDetail
   ) => Promise<AdminApiResult<AdminCourseDetail>>
 }) {
-  const courseEditorApi = useMemo(
-    () => createBrowserCourseEditorApi(apiBaseUrl),
-    [apiBaseUrl]
-  )
+  const courseEditorApi = useMemo(() => createBrowserCourseEditorApi(), [])
   const loadLatestCourse = (courseId: string) =>
     courseEditorApi.getCourseEditor(courseIdSchema.parse(courseId))
   const [state, dispatch] = useReducer(

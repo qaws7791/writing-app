@@ -17,19 +17,16 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 
 COPY . .
 
-ARG NEXT_PUBLIC_API_BASE_URL
 ARG API_BASE_URL
 ARG WEB_ORIGIN
 ARG CSP_REPORT_ONLY=false
 
 ENV NODE_ENV=production \
-    NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} \
     API_BASE_URL=${API_BASE_URL} \
     WEB_ORIGIN=${WEB_ORIGIN} \
     CSP_REPORT_ONLY=${CSP_REPORT_ONLY}
 
-RUN test -n "$NEXT_PUBLIC_API_BASE_URL" \
-    && test -n "$API_BASE_URL" \
+RUN test -n "$API_BASE_URL" \
     && test -n "$WEB_ORIGIN"
 RUN cd apps/web && node node_modules/next/dist/bin/next build
 

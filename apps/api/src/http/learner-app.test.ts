@@ -121,37 +121,6 @@ describe("플랫폼 API profile route", () => {
     })
   })
 
-  it("브라우저 쓰기 요청 preflight에 CORS 헤더로 응답한다", async () => {
-    const app = createApp({
-      ...createDependencies(),
-      webOrigin: localRuntimeDefaults.learnerWebOrigin,
-    })
-
-    const response = await app.request(
-      "/learning/lessons/lesson-1/steps/step-1/complete",
-      {
-        headers: {
-          "Access-Control-Request-Headers":
-            "authorization,content-type,idempotency-key",
-          "Access-Control-Request-Method": "POST",
-          Origin: localRuntimeDefaults.learnerWebOrigin,
-        },
-        method: "OPTIONS",
-      }
-    )
-
-    expect(response.status).toBe(204)
-    expect(response.headers.get("access-control-allow-origin")).toBe(
-      localRuntimeDefaults.learnerWebOrigin
-    )
-    expect(response.headers.get("access-control-allow-credentials")).toBe(
-      "true"
-    )
-    expect(response.headers.get("access-control-allow-headers")).toBe(
-      "Authorization,Content-Type,Idempotency-Key"
-    )
-  })
-
   it("신뢰하지 않은 Origin의 쿠키 인증 변경 요청을 side effect 전에 거절한다", async () => {
     const completeStep = vi.fn(async () => {
       throw new Error("completeStep must not be called")
@@ -273,7 +242,7 @@ describe("플랫폼 API profile route", () => {
     })
 
     const response = await app.request(
-      "/api/auth/sign-in/google?callbackURL=%2Fapp%2Fcourses"
+      "/auth/sign-in/google?callbackURL=%2Fapp%2Fcourses"
     )
 
     expect(response.status).toBe(302)

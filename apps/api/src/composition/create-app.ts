@@ -50,12 +50,8 @@ export function createApp(container: ApiContainer) {
   })
   const unified = createUnifiedApp({
     adminApp: admin,
-    allowedHosts: env.allowedHosts,
     createRequestId: idGenerator.next,
     learnerApp: learner,
-    onRejectedHost(event) {
-      logger.warn(event, "request.host.rejected")
-    },
   })
 
   return Object.freeze({ admin, fetch: unified.fetch, learner, unified })

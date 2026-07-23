@@ -4,10 +4,6 @@ import {
 } from "@workspace/auth/learner/client"
 
 import { resolveSafeNextPath } from "@/features/authentication/model/auth-navigation"
-import {
-  readBrowserApiBaseUrl,
-  type BrowserApiBaseUrl,
-} from "@/shared/config/runtime-config"
 
 export async function requestGoogleLogin(nextPath: string): Promise<void> {
   await getDefaultWebAuthClient().requestGoogleLogin(nextPath)
@@ -33,22 +29,18 @@ type FetchImplementation = (
 ) => Promise<Response>
 
 export function createWebAuthClient({
-  apiBaseUrl,
   fetchImplementation = globalThis.fetch.bind(globalThis),
   learnerAuthClientFactory = createLearnerAuthClient,
   navigate = (url) => window.location.assign(url),
 }: {
-  readonly apiBaseUrl: BrowserApiBaseUrl
   readonly fetchImplementation?: FetchImplementation
   readonly learnerAuthClientFactory?: (input: {
-    readonly baseURL: string
     readonly fetch: FetchImplementation
     readonly navigate: (url: string) => void
   }) => LearnerAuthClient
   readonly navigate?: (url: string) => void
-}): WebAuthClient {
+} = {}): WebAuthClient {
   const authClient = learnerAuthClientFactory({
-    baseURL: apiBaseUrl,
     fetch: fetchImplementation,
     navigate,
   })
@@ -77,7 +69,5 @@ function createCallbackUrl(nextPath: string): string {
 }
 
 function getDefaultWebAuthClient(): WebAuthClient {
-  return createWebAuthClient({
-    apiBaseUrl: readBrowserApiBaseUrl(),
-  })
+  return createWebAuthClient()
 }

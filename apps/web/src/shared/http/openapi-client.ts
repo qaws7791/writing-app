@@ -5,8 +5,7 @@ import {
   toApiError,
 } from "@/shared/http/api-error"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
-import { buildApiUrl } from "@/shared/config/runtime-config"
+import type { ServerApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   requestHttpJson,
   type HttpFetch,
@@ -50,7 +49,7 @@ export function createOpenApiClient({
   reportNetworkError,
   tokenProvider,
 }: {
-  readonly baseUrl: ApiBaseUrl
+  readonly baseUrl?: ServerApiBaseUrl
   readonly fetch: FetchLike
   readonly reportNetworkError?: NetworkErrorReporter
   readonly tokenProvider: TokenProvider
@@ -108,4 +107,14 @@ export function createOpenApiClient({
       }
     },
   }
+}
+
+function buildApiUrl(
+  baseUrl: ServerApiBaseUrl | undefined,
+  path: string
+): string {
+  const normalizedPath = `/${path.replace(/^\/+/u, "")}`
+  return baseUrl === undefined
+    ? normalizedPath
+    : new URL(normalizedPath.slice(1), `${baseUrl}/`).toString()
 }

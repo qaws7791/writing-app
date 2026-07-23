@@ -1,22 +1,18 @@
 import { createAdminAuthClient } from "@workspace/auth/admin/client"
 
 import { resolveSafeAdminNextPath } from "@/features/authentication/model/admin-auth-navigation"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
-export async function requestAdminPasswordLogin(
-  apiBaseUrl: ApiBaseUrl,
-  {
-    email,
-    nextPath,
-    password,
-  }: {
-    readonly email: string
-    readonly nextPath: string
-    readonly password: string
-  }
-): Promise<{ readonly nextPath: string }> {
+export async function requestAdminPasswordLogin({
+  email,
+  nextPath,
+  password,
+}: {
+  readonly email: string
+  readonly nextPath: string
+  readonly password: string
+}): Promise<{ readonly nextPath: string }> {
   const safeNextPath = resolveSafeAdminNextPath(nextPath)
-  await getAdminAuthClient(apiBaseUrl).signInWithPassword({
+  await getAdminAuthClient().signInWithPassword({
     callbackURL: safeNextPath,
     email,
     password,
@@ -25,25 +21,19 @@ export async function requestAdminPasswordLogin(
   return { nextPath: safeNextPath }
 }
 
-export async function requestAdminPasswordChange(
-  apiBaseUrl: ApiBaseUrl,
-  input: {
-    readonly currentPassword: string
-    readonly newPassword: string
-  }
-): Promise<void> {
-  await getAdminAuthClient(apiBaseUrl).changePassword(input)
+export async function requestAdminPasswordChange(input: {
+  readonly currentPassword: string
+  readonly newPassword: string
+}): Promise<void> {
+  await getAdminAuthClient().changePassword(input)
 }
 
-export async function requestAdminSignOut(
-  apiBaseUrl: ApiBaseUrl
-): Promise<void> {
-  await getAdminAuthClient(apiBaseUrl).signOut()
+export async function requestAdminSignOut(): Promise<void> {
+  await getAdminAuthClient().signOut()
 }
 
-function getAdminAuthClient(apiBaseUrl: ApiBaseUrl) {
+function getAdminAuthClient() {
   return createAdminAuthClient({
-    baseURL: apiBaseUrl,
     fetch: globalThis.fetch.bind(globalThis),
   })
 }

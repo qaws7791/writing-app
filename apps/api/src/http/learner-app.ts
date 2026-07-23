@@ -8,7 +8,6 @@ import {
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import type { ApiDependencies } from "@/context/create-request-context"
-import { createCorsMiddleware } from "@/middleware/cors.middleware"
 import { createRequestContextMiddleware } from "@/middleware/request-context.middleware"
 import { createApiFoundationRoutes, registerApiBootstrapRoutes } from "@/routes"
 import {
@@ -69,7 +68,6 @@ function createMiddleware(
     dependencies.webOrigin ?? localRuntimeDefaults.learnerWebOrigin
 
   middleware.push(
-    createCorsMiddleware(dependencies),
     createRequestBodyLimitMiddleware(),
     createTrustedOriginMiddleware({ trustedOrigin: webOrigin })
   )

@@ -44,16 +44,14 @@ describe("web server runtime config", () => {
     )
   })
 
-  it("CSP runtime 설정은 공개 API origin과 report-only 상태를 함께 읽는다", () => {
+  it("CSP runtime 설정은 web origin과 report-only 상태를 함께 읽는다", () => {
     expect(
       readWebCspRuntimeConfig({
         CSP_REPORT_ONLY: "true",
-        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/path",
         NODE_ENV: "production",
         WEB_ORIGIN: "https://writing.example.test",
       })
     ).toEqual({
-      apiOrigin: "https://api.example.test",
       development: false,
       reportOnly: true,
       upgradeInsecureRequests: true,
@@ -63,32 +61,23 @@ describe("web server runtime config", () => {
   it("production localhost에서는 엄격한 CSP를 유지하고 HTTP 승격만 끈다", () => {
     expect(
       readWebCspRuntimeConfig({
-        NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:4000",
         NODE_ENV: "production",
         WEB_ORIGIN: "http://localhost:3000",
       })
     ).toEqual({
-      apiOrigin: "http://127.0.0.1:4000",
       development: false,
       reportOnly: false,
       upgradeInsecureRequests: false,
     })
   })
 
-  it("production 공개 HTTP origin과 API URL을 거부한다", () => {
+  it("production 공개 HTTP origin을 거부한다", () => {
     expect(() =>
       readWebOrigin({
         NODE_ENV: "production",
         WEB_ORIGIN: "http://writing.example.test",
       })
     ).toThrow("production web origin must use HTTPS")
-    expect(() =>
-      readWebCspRuntimeConfig({
-        NEXT_PUBLIC_API_BASE_URL: "http://api.example.test",
-        NODE_ENV: "production",
-        WEB_ORIGIN: "https://writing.example.test",
-      })
-    ).toThrow("production public API base URL must use HTTPS")
   })
 
   it("테스트 인증 플래그는 로컬에서 명시적으로 켠 경우에만 활성화한다", () => {

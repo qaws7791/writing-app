@@ -15,11 +15,6 @@ export type LocalDatabaseDiagnostic =
       status: "migration-required"
     }>
   | Readonly<{
-      legacySchema: "admin-mfa" | "baseline" | "curriculum"
-      schema: "legacy"
-      status: "migration-required"
-    }>
-  | Readonly<{
       reason: string
       schema: "unsupported"
       status: "blocked"
@@ -127,17 +122,6 @@ export function parseLocalDatabaseDiagnostic(
   }
   if (schema === "empty" && status === "migration-required") {
     return Object.freeze({ schema, status })
-  }
-  if (schema === "legacy" && status === "migration-required") {
-    const legacySchema = value["legacySchema"]
-    if (
-      legacySchema !== "admin-mfa" &&
-      legacySchema !== "baseline" &&
-      legacySchema !== "curriculum"
-    ) {
-      throw new Error("DB 진단 결과의 legacy schema가 올바르지 않습니다.")
-    }
-    return Object.freeze({ legacySchema, schema, status })
   }
   if (
     schema === "unsupported" &&

@@ -17,7 +17,7 @@ interface DeploymentImageSpec {
   readonly buildArguments: readonly (readonly [name: string, value: string])[]
   readonly dockerfile: string
   readonly forbiddenPaths: readonly string[]
-  readonly healthHostEnvironment?: "API_ORIGIN"
+  readonly healthPath: string
   readonly healthPort: number
   readonly name: DeploymentServiceName
   readonly optimizedImagePath?: string
@@ -98,20 +98,29 @@ const composeSmokeRoutes = [
       impact: "none",
       ok: true,
     },
-    host: "api.example.test",
-    path: "/health",
+    host: "web.example.test",
+    path: "/api/health",
   },
   {
     expectedResponse: { ok: true, service: "admin" },
     host: "admin.example.test",
     path: "/health",
   },
+  {
+    expectedResponse: {
+      checks: { database: "ready" },
+      impact: "none",
+      ok: true,
+      service: "api",
+    },
+    host: "admin.example.test",
+    path: "/api/admin/health",
+  },
 ] as const
 
 const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   {
     buildArguments: [
-      ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
       ["API_BASE_URL", "http://api:4000"],
       ["WEB_ORIGIN", "https://web.example.test"],
     ],
@@ -121,6 +130,7 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
       "/workspace/apps/api",
       "/workspace/packages/modules",
     ],
+    healthPath: "/health",
     healthPort: 3000,
     name: "web",
     optimizedImagePath: "/course-thumbnails/expression.png",
@@ -138,6 +148,7 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
     dockerfile: "deploy/docker/api.dockerfile",
     runtimeArtifactPaths: [
       "/workspace/bin/api",
+      "/workspace/bin/database-adopt-current-schema-era",
       "/workspace/bin/database-backup",
       "/workspace/bin/database-check",
       "/workspace/bin/database-migrate",
@@ -148,7 +159,7 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
       "/workspace/package.json",
       "/workspace/packages",
     ],
-    healthHostEnvironment: "API_ORIGIN",
+    healthPath: "/api/health",
     healthPort: 4000,
     name: "api",
     runtime: "bun",
@@ -158,7 +169,6 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   },
   {
     buildArguments: [
-      ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
       ["NEXT_PUBLIC_LEARNER_WEB_ORIGIN", "https://web.example.test"],
       ["API_BASE_URL", "http://api:4000"],
       ["ADMIN_ORIGIN", "https://admin.example.test"],
@@ -169,6 +179,7 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
       "/workspace/apps/web",
       "/workspace/packages/modules",
     ],
+    healthPath: "/health",
     healthPort: 3001,
     name: "admin",
     optimizedImagePath: "/course-thumbnails/expression.png",
@@ -262,13 +273,10 @@ function createRuntimeEnvironment(
     ["ADMIN_ASSET_S3_ENDPOINT", "https://r2.example.test"],
     ["ADMIN_ASSET_S3_REGION", "auto"],
     ["ADMIN_ASSET_S3_SECRET_KEY", "asset-secret-key"],
-    ["API_ORIGIN", "https://api.example.test"],
     ["LEARNER_AUTH_SECRET", learnerSecret],
-    ["LEARNER_AUTH_COOKIE_DOMAIN", "example.test"],
     ["CURSOR_SIGNING_SECRET", `${learnerSecret}-cursor-distinct`],
     ["DEPLOYMENT_VERSION", "writing-app-smoke-api@sha256:test"],
     ["ADMIN_AUTH_SECRET", adminSecret],
-    ["ADMIN_AUTH_COOKIE_DOMAIN", "example.test"],
     ["OPENAI_MODEL", "gpt-5.2"],
     ["LOG_PRETTY", "false"],
   ] as const
@@ -278,14 +286,12 @@ function createRuntimeEnvironment(
       return [
         ...publicEnvironment,
         ["PORT", "3000"],
-        ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
         ["API_BASE_URL", "http://api:4000"],
       ]
     case "admin":
       return [
         ...publicEnvironment,
         ["PORT", "3001"],
-        ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
         ["NEXT_PUBLIC_LEARNER_WEB_ORIGIN", "https://web.example.test"],
         ["API_BASE_URL", "http://api:4000"],
       ]
@@ -293,7 +299,6 @@ function createRuntimeEnvironment(
       return [
         ...apiEnvironment,
         ["API_PORT", "4000"],
-        ["API_ALLOWED_HOSTS", "api.example.test,api:4000"],
         ["DATABASE_URL", "file:/var/lib/writing-app/api.sqlite"],
       ]
   }
@@ -440,7 +445,6 @@ function createComposeSmokeFixture(input: {
   }
   writeEnvironmentFile(path.join(configDirectory, "caddy.env"), [
     ["WEB_HOST", "web.example.test"],
-    ["API_HOST", "api.example.test"],
     ["ADMIN_HOST", "admin.example.test"],
   ])
   writeEnvironmentFile(path.join(configDirectory, "litestream.env"), [
@@ -652,13 +656,8 @@ async function waitForContainerHealth(
 }
 
 function createHealthRequestScript(spec: DeploymentImageSpec): string {
-  const requestOptions =
-    spec.healthHostEnvironment === undefined
-      ? ""
-      : `,{headers:{Host:new URL(process.env.${spec.healthHostEnvironment}).host}}`
-
   return [
-    `const response=await fetch('http://127.0.0.1:${spec.healthPort}/health'${requestOptions});`,
+    `const response=await fetch('http://127.0.0.1:${spec.healthPort}${spec.healthPath}');`,
     "if(!response.ok)process.exit(1);",
   ].join("")
 }

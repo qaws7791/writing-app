@@ -85,7 +85,6 @@ jobs:
     env:
       API_BASE_URL: https://api.example.test
       ADMIN_ORIGIN: https://admin.example.test
-      NEXT_PUBLIC_API_BASE_URL: https://api.example.test
       NEXT_PUBLIC_LEARNER_WEB_ORIGIN: https://web.example.test
       WEB_ORIGIN: https://web.example.test
     steps:

@@ -2,6 +2,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { createNextSecurityHeaders } from "@workspace/nextjs-config/security-headers"
 
 const appDirectory = dirname(fileURLToPath(import.meta.url))
@@ -38,6 +39,19 @@ const nextConfig: NextConfig = {
         protocol: "https",
       },
     ],
+  },
+  async rewrites() {
+    if (!development) return []
+
+    const apiBaseUrl = (
+      process.env.API_BASE_URL ?? localRuntimeDefaults.apiBaseUrl
+    ).replace(/\/+$/u, "")
+    return [
+      {
+        destination: `${apiBaseUrl}/api/:path*`,
+        source: "/api/:path*",
+      },
+    ]
   },
   reactStrictMode: true,
   reactCompiler: true,

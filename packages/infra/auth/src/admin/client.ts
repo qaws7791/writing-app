@@ -1,4 +1,4 @@
-import { buildAuthApiUrl, type FetchImplementation } from "#auth/shared/client"
+import type { FetchImplementation } from "#auth/shared/client"
 
 export type AdminAuthClient = {
   readonly changePassword: (input: {
@@ -14,7 +14,6 @@ export type AdminAuthClient = {
 }
 
 export function createAdminAuthClient(input: {
-  readonly baseURL: string
   readonly fetch: FetchImplementation
 }): AdminAuthClient {
   return {
@@ -38,13 +37,10 @@ export function createAdminAuthClient(input: {
       )
     },
     async signOut() {
-      const response = await input.fetch(
-        buildAuthApiUrl(input.baseURL, "/api/admin/auth/sign-out"),
-        {
-          credentials: "include",
-          method: "POST",
-        }
-      )
+      const response = await input.fetch("/api/admin/auth/sign-out", {
+        credentials: "include",
+        method: "POST",
+      })
 
       if (!response.ok) {
         throw new Error("Failed to sign out")
@@ -55,14 +51,13 @@ export function createAdminAuthClient(input: {
 
 async function requestAdminAuthJson(
   client: {
-    readonly baseURL: string
     readonly fetch: FetchImplementation
   },
   path: string,
   body: Readonly<object>,
   errorMessage: string
 ): Promise<void> {
-  const response = await client.fetch(buildAuthApiUrl(client.baseURL, path), {
+  const response = await client.fetch(path, {
     body: JSON.stringify(body),
     credentials: "include",
     headers: { "Content-Type": "application/json" },

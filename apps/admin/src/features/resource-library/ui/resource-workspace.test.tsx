@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { ResourceWorkspace } from "@/features/resource-library/ui/resource-workspace"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 const { getResourceTreeMock, pushMock } = vi.hoisted(() => ({
   getResourceTreeMock: vi.fn(async () => ({
@@ -30,7 +29,6 @@ describe("ResourceWorkspace", () => {
 
     render(
       <ResourceWorkspace
-        apiBaseUrl={"https://api.example.test" as ApiBaseUrl}
         initialScope="trash"
         initialTree={{
           nodes: [

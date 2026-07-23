@@ -38,23 +38,17 @@ import type {
   AdminResourceTreeNode,
 } from "@/entities/resource-document/model/resource-document"
 import { resourceLibraryChangedEvent } from "@/entities/resource-document/model/resource-document"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 export function ResourceWorkspace({
-  apiBaseUrl,
   children,
   initialScope,
   initialTree,
 }: {
-  readonly apiBaseUrl: ApiBaseUrl
   readonly children: ReactNode
   readonly initialScope: ResourceLibraryScope
   readonly initialTree: AdminResourceTree | null
 }) {
-  const api = useMemo(
-    () => createBrowserResourceLibraryApi(apiBaseUrl),
-    [apiBaseUrl]
-  )
+  const api = useMemo(() => createBrowserResourceLibraryApi(), [])
   const pathname = usePathname()
   const router = useRouter()
   const scope = resolveResourceLibraryScope(pathname)

@@ -31,14 +31,14 @@ ansible-playbook infra/ansible/playbooks/rollback.yaml \
 실행 전에는 현재 revision, 직전 환경의 대상 digest, DB schema 호환성, 최신 backup을 확인한다.
 DB 호환성 확인 입력은 운영자의 판단을 기록하는 fail-closed 승인이지 자동 호환성 증명이 아니다.
 호환되지 않으면 이 playbook을 실행하지 않고 별도 승인된 데이터 복구 절차를 사용한다.
-실행 뒤에는 같은 `API_HOST`의 `/health`, `/api/admin/health`, 두 인증 realm과 관리자 핵심 변경 route를
-검증한다. Caddy의 API upstream은 `api:4000` 하나여야 한다.
+실행 뒤에는 학습자 origin의 `/api/health`와 관리자 origin의 `/api/admin/health`, 두 인증 realm과 관리자 핵심 변경 route를
+검증한다. 두 origin의 Caddy API upstream은 `api:4000` 하나여야 한다.
 
 ## 통합 schema 이후 호환성
 
-현재 API migration은 빈 DB, 보존된 baseline, 이전 module schema와 명시적으로 식별한 legacy schema를 현재 상태로 올릴 수 있다.
+현재 API runtime은 빈 DB와 현재 schema era의 migration 계보만 지원한다. 이전 계보를 자동 식별하거나 변환하지 않는다.
 
-현재 schema는 제품 role을 auth credential table에서 identity table로 옮기고 교차 module FK를 복원하기 위해 여러 table을 재구성한다. 따라서 이전 schema를 기대하는 API image의 code-only rollback은 지원하지 않는다. 이전 image가 필요한 경우에는 writer를 중지하고 그 image와 호환되는 migration 전 검증 백업을 새 경로로 복구해야 한다. 운영 DB에서 역방향 SQL을 즉석 작성하거나 migration 이력만 삭제하는 방식은 허용하지 않는다.
+일회성 era 전환은 제품 table과 데이터를 바꾸지 않고 migration 이력 선언만 교체한다. 그러나 이전 image는 새 baseline ID를 알지 못하므로 전환 뒤 code-only rollback 대상으로 간주하지 않는다. 이전 image가 필요한 경우에는 writer를 중지하고 전환 전 검증 백업을 새 경로로 복구해야 한다. 운영 DB에서 역방향 SQL을 즉석 작성하거나 migration 이력만 수동 편집하는 방식은 허용하지 않는다.
 
 ## DB 복구
 

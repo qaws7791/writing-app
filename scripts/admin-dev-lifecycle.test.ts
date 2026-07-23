@@ -36,11 +36,9 @@ test("dev:admin은 admin web과 통합 API만 실행하고 소유 process와 por
   const databaseUrl = `file:${databasePath}`
   const environment = {
     ...process.env,
-    API_ALLOWED_HOSTS: `localhost:${apiPort},127.0.0.1:${apiPort}`,
     API_BASE_URL: adminApiBaseUrl,
     ADMIN_AUTH_SECRET: "admin-dev-lifecycle-secret-value-0001",
     ADMIN_ORIGIN: `http://127.0.0.1:${adminWebPort}`,
-    API_ORIGIN: adminApiBaseUrl,
     API_PORT: String(apiPort),
     LEARNER_AUTH_SECRET: "learner-dev-lifecycle-secret-value-01",
     CI: "true",
@@ -48,7 +46,6 @@ test("dev:admin은 admin web과 통합 API만 실행하고 소유 process와 por
     DATABASE_URL: databaseUrl,
     ENABLE_TEST_AUTH: "true",
     LOG_PRETTY: "false",
-    NEXT_PUBLIC_API_BASE_URL: adminApiBaseUrl,
     NEXT_PUBLIC_LEARNER_WEB_ORIGIN: "http://127.0.0.1:3000",
     NODE_ENV: "development",
   }

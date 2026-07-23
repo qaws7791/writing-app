@@ -404,7 +404,7 @@ function AdminAiChatSession({
       }
   > {
     try {
-      const response = await fetch("/api/ai-chat/stream", {
+      const response = await fetch("/api/admin/ai-chat/messages/stream", {
         body: JSON.stringify({
           ...(conversationId === null ? {} : { conversationId }),
           message,

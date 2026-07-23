@@ -53,7 +53,7 @@
 - 대상 `WRITE` 답변이 저장되지 않았으면 답변 없음 오류로 요청을 처리하지 않는다.
 - `AI_FEEDBACK.target`이 없거나, `WRITE`가 아니거나, AI 코칭 스텝보다 앞서지 않으면 콘텐츠 설정 오류로 처리한다.
 - AI 피드백 대상이 아닌 스텝에 대한 요청은 잘못된 요청으로 처리한다.
-- 브라우저 요청의 `Idempotency-Key`는 CORS preflight와 실제 요청에서 허용한다.
+- 브라우저 요청은 학습자 origin의 same-origin API 경로로 `Idempotency-Key`를 전달한다.
 - AI 제공자 실패 시 한국어 오류를 표시한다.
 - 시도 한도 초과 시 추가 요청을 막는다.
 

@@ -744,22 +744,11 @@ function inspectLocalRuntimeContract(
   examples: ReadonlyMap<string, ReadonlyMap<string, string>>
 ): readonly LocalOnboardingCheck[] {
   const contractKeys = new Map<string, readonly string[]>([
-    [
-      "apps/api/.env",
-      ["API_ALLOWED_HOSTS", "API_ORIGIN", "ADMIN_ORIGIN", "WEB_ORIGIN"],
-    ],
-    [
-      "apps/web/.env",
-      ["NEXT_PUBLIC_API_BASE_URL", "API_BASE_URL", "WEB_ORIGIN"],
-    ],
+    ["apps/api/.env", ["ADMIN_ORIGIN", "WEB_ORIGIN"]],
+    ["apps/web/.env", ["API_BASE_URL", "WEB_ORIGIN"]],
     [
       "apps/admin/.env",
-      [
-        "API_BASE_URL",
-        "ADMIN_ORIGIN",
-        "NEXT_PUBLIC_API_BASE_URL",
-        "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
-      ],
+      ["API_BASE_URL", "ADMIN_ORIGIN", "NEXT_PUBLIC_LEARNER_WEB_ORIGIN"],
     ],
   ])
   const mismatches: string[] = []
@@ -785,7 +774,7 @@ function inspectLocalRuntimeContract(
         }
       : {
           detail:
-            "관리자와 학습자 origin 및 API Host가 로컬 표준과 일치합니다.",
+            "관리자·학습자 origin과 내부 API 주소가 로컬 표준과 일치합니다.",
           kind: "pass",
           label: "로컬 런타임 계약",
         },

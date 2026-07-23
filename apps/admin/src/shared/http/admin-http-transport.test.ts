@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest"
 
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import { createAdminHttpTransport } from "@/shared/http/admin-http-transport"
-import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 
-const baseUrl = readApiBaseUrl({
-  NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/",
-})
+const baseUrl = "https://api.example.test" as ApiBaseUrl
 
 const unknownSchema = {
   safeParse: (value: unknown) => ({ data: value, success: true as const }),

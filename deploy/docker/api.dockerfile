@@ -16,6 +16,7 @@ COPY . .
 
 RUN mkdir -p /workspace/image-bin \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/main.ts --outfile /workspace/image-bin/api \
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/adopt-current-schema-era.ts --outfile /workspace/image-bin/database-adopt-current-schema-era \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/migrate-database.ts --outfile /workspace/image-bin/database-migrate \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/backup-database.ts --outfile /workspace/image-bin/database-backup \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/inspect-database.ts --outfile /workspace/image-bin/database-check

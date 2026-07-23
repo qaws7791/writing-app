@@ -27,8 +27,8 @@ describe("setup과 doctor DB 안전 경계", () => {
       inspect: async () => {
         events.push("inspect")
         return {
-          legacySchema: "curriculum",
-          schema: "legacy",
+          pendingMigrationIds: ["0001-next-schema-change"],
+          schema: "current",
           status: "migration-required",
         }
       },
@@ -67,7 +67,7 @@ describe("setup과 doctor DB 안전 경계", () => {
         },
         databaseExists: () => true,
         inspect: async () => ({
-          pendingMigrationIds: ["0001-module-schema-ownership"],
+          pendingMigrationIds: ["0001-next-schema-change"],
           schema: "current",
           status: "migration-required",
         }),
@@ -100,7 +100,7 @@ describe("setup과 doctor DB 안전 경계", () => {
         backup: async () => "recovery.sqlite",
         databaseExists: () => true,
         inspect: async () => ({
-          pendingMigrationIds: ["0001-module-schema-ownership"],
+          pendingMigrationIds: ["0001-next-schema-change"],
           schema: "current",
           status: "migration-required",
         }),
@@ -192,7 +192,7 @@ describe("setup과 doctor DB 안전 경계", () => {
       rehearseLocalDatabaseMigration({
         backupPath,
         inspectCandidate: async () => ({
-          pendingMigrationIds: ["0001-module-schema-ownership"],
+          pendingMigrationIds: ["0001-next-schema-change"],
           schema: "current",
           status: "migration-required",
         }),
@@ -287,13 +287,7 @@ describe("setup과 doctor DB 안전 경계", () => {
       })
     })
 
-    expect(events).toEqual([
-      "exists",
-      "inspect",
-      "backup",
-      "rehearse",
-      "migrate",
-    ])
+    expect(events).toEqual(["exists", "inspect", "migrate"])
   })
 
   test("doctor는 로컬 환경과 read-only DB 진단만 실행한다", () => {

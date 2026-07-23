@@ -10,7 +10,6 @@ import {
   type DatabaseBackupReport,
 } from "@workspace/db/database-backup"
 
-import { requiredDatabaseBackupTables } from "@/db/schema-architecture"
 import {
   inspectApplicationDatabase,
   readApplicationDatabaseBackupTables,
@@ -20,7 +19,7 @@ export function createVerifiedApplicationDatabaseBackup(input: {
   readonly backupPath: string
   readonly sourcePath: string
 }): DatabaseBackupReport {
-  const sourcePath = resolveDatabasePath(input.sourcePath)
+  const sourcePath = resolveApplicationDatabasePath(input.sourcePath)
   const source = createReadOnlyWritingAppDatabase(sourcePath)
   let requiredTables: readonly string[]
 
@@ -37,7 +36,7 @@ export function createVerifiedApplicationDatabaseBackup(input: {
   })
 }
 
-function resolveDatabasePath(databaseUrl: string): string {
+export function resolveApplicationDatabasePath(databaseUrl: string): string {
   if (databaseUrl.startsWith("file://")) {
     return fileURLToPath(databaseUrl)
   }
@@ -51,18 +50,14 @@ function selectRequiredBackupTables(
   source: WritingAppDatabaseClient
 ): readonly string[] {
   const diagnostic = inspectApplicationDatabase(source.sqlite)
-  if (diagnostic.status === "blocked") {
+  if (diagnostic.schema !== "current" || diagnostic.status !== "ok") {
     throw new Error(
-      `database backup blocked: ${diagnostic.issues
-        .map(({ message }) => message)
-        .join("; ")}`
+      `database backup blocked: ${
+        diagnostic.issues.map(({ message }) => message).join("; ") ||
+        `${diagnostic.schema}/${diagnostic.status}`
+      }`
     )
   }
 
-  const actualTables = readApplicationDatabaseBackupTables(source.sqlite)
-  if (diagnostic.schema !== "current") return actualTables
-
-  return Object.freeze(
-    [...new Set([...requiredDatabaseBackupTables, ...actualTables])].sort()
-  )
+  return readApplicationDatabaseBackupTables(source.sqlite)
 }

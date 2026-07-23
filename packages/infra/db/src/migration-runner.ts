@@ -2,7 +2,6 @@ import type { Database } from "bun:sqlite"
 
 export type SqliteMigration = Readonly<{
   apply: (sqlite: Database) => void
-  canAdopt?: (sqlite: Database) => boolean
   checksum: string
   foreignKeys: "off" | "on"
   id: string
@@ -10,7 +9,7 @@ export type SqliteMigration = Readonly<{
 }>
 
 export type SqliteMigrationResult = Readonly<{
-  execution: "adopted" | "applied" | "skipped"
+  execution: "applied" | "skipped"
   id: string
 }>
 
@@ -49,8 +48,6 @@ export function runSqliteMigrations(
       return { execution: "skipped", id: migration.id }
     }
 
-    const execution =
-      migration.canAdopt?.(sqlite) === true ? "adopted" : "applied"
     const foreignKeysEnabled = readForeignKeysEnabled(sqlite)
     let transactionStarted = false
 
@@ -59,7 +56,7 @@ export function runSqliteMigrations(
       sqlite.exec("BEGIN IMMEDIATE")
       transactionStarted = true
 
-      if (execution === "applied") migration.apply(sqlite)
+      migration.apply(sqlite)
       migration.validate?.(sqlite)
 
       if (migration.foreignKeys === "off") {
@@ -74,11 +71,11 @@ export function runSqliteMigrations(
       }
 
       sqlite
-        .query<void, [string, string, string]>(`
-          INSERT INTO ${migrationTable} (id, checksum, execution)
-          VALUES (?, ?, ?)
+        .query<void, [string, string]>(`
+          INSERT INTO ${migrationTable} (id, checksum)
+          VALUES (?, ?)
         `)
-        .run(migration.id, migration.checksum, execution)
+        .run(migration.id, migration.checksum)
       sqlite.exec("COMMIT")
       transactionStarted = false
     } catch (error) {
@@ -88,7 +85,7 @@ export function runSqliteMigrations(
       setForeignKeysEnabled(sqlite, foreignKeysEnabled)
     }
 
-    return { execution, id: migration.id }
+    return { execution: "applied", id: migration.id }
   })
 }
 
@@ -116,7 +113,6 @@ function createMigrationTable(sqlite: Database): void {
     CREATE TABLE IF NOT EXISTS ${migrationTable} (
       id TEXT PRIMARY KEY NOT NULL,
       checksum TEXT NOT NULL,
-      execution TEXT NOT NULL CHECK (execution IN ('applied', 'adopted')),
       applied_at INTEGER NOT NULL DEFAULT (unixepoch())
     )
   `)

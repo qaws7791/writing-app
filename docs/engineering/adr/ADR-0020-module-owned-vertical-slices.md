@@ -20,7 +20,7 @@
 - persistence schema·repository·seed와 provider adapter는 해당 제품 module infrastructure가 소유한다. API app은 concrete 제품 adapter를 소유하지 않고 module factory, 공통 middleware, runtime lifecycle과 composition만 소유한다.
 - module 간 협력은 공개 application/query port와 commit 뒤 domain event로만 수행한다. 상대 schema·repository·table deep import와 cross-module FK·join은 허용하지 않는다.
 - credential·session과 Better Auth vendor integration은 제품 module이 아닌 auth infra가 소유한다. identity module은 제품 profile·상태·role policy를 소유하고 API composition이 두 경계를 연결한다.
-- DB infra는 schema-neutral SQLite client, transaction, backup과 destructive guard만 제공한다. application migration 순서와 schema 조립은 ADR-0019의 통합 계보를 따른다.
+- DB infra는 schema-neutral SQLite client, transaction, backup과 destructive guard만 제공한다. application migration 순서와 schema 조립은 ADR-0022의 현재 schema era 계보를 따른다.
 - frontend는 공개 HTTP contract만 소비하고 module 또는 DB source를 직접 import하지 않는다.
 - 전환용 forwarding, compatibility facade와 app/module 이중 구현은 최종 구조에 남기지 않는다.
 
@@ -36,7 +36,7 @@
 
 새 제품 기능은 먼저 책임 module과 공개 협력 계약을 정해야 한다. 별도 배포나 DB가 필요해지는 시점에는 같은 port를 추출 경계로 재평가하되 미리 remote abstraction을 만들지 않는다. 현재 source 위치와 package 수는 코드·설정에서 확인하고 이 ADR에 복제하지 않는다.
 
-이 결정은 ADR-0014의 app-owned concrete persistence 위치를 대체한다. ADR-0018의 인증 vendor 경계와 ADR-0019의 통합 migration 계보는 이 결정의 예외·실행 규칙으로 함께 유지한다.
+이 결정은 ADR-0014의 app-owned concrete persistence 위치를 대체한다. ADR-0018의 인증 vendor 경계와 ADR-0022의 현재 schema era 계보는 이 결정의 예외·실행 규칙으로 함께 유지한다.
 
 ## 검증
 

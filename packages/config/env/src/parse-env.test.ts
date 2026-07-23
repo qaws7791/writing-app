@@ -16,7 +16,6 @@ const cursorProductionSecret =
 const validProductionEnv = {
   ADMIN_AUTH_SECRET: adminProductionSecret,
   ADMIN_ORIGIN: "https://admin.example.com",
-  API_ORIGIN: "https://api.example.com",
   CURSOR_SIGNING_SECRET: cursorProductionSecret,
   DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
   LEARNER_AUTH_SECRET: learnerProductionSecret,
@@ -50,16 +49,13 @@ describe("env parser", () => {
         WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
       })
     ).toEqual({
-      ADMIN_AUTH_COOKIE_DOMAIN: undefined,
       ADMIN_AUTH_SECRET: validAdminSecret,
       ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
-      API_ORIGIN: undefined,
       API_PORT: 4001,
       CURSOR_SIGNING_SECRET: undefined,
       DATABASE_URL: ":memory:",
       GOOGLE_CLIENT_ID: undefined,
       GOOGLE_CLIENT_SECRET: undefined,
-      LEARNER_AUTH_COOKIE_DOMAIN: undefined,
       LEARNER_AUTH_SECRET: validSecret,
       ENABLE_TEST_AUTH: false,
       NODE_ENV: "test",
@@ -117,20 +113,7 @@ describe("env parser", () => {
     expect(parseEnv(validProductionEnv)).toMatchObject(validProductionEnv)
   })
 
-  it("production cookie domain은 API 발급과 frontend 소비 host의 공통 parent를 허용한다", () => {
-    expect(
-      parseEnv({
-        ...validProductionEnv,
-        ADMIN_AUTH_COOKIE_DOMAIN: "example.com",
-        LEARNER_AUTH_COOKIE_DOMAIN: "example.com",
-      })
-    ).toMatchObject({
-      ADMIN_AUTH_COOKIE_DOMAIN: "example.com",
-      LEARNER_AUTH_COOKIE_DOMAIN: "example.com",
-    })
-  })
-
-  it.each(["ADMIN_AUTH_SECRET", "API_ORIGIN", "DATABASE_URL"] as const)(
+  it.each(["ADMIN_AUTH_SECRET", "DATABASE_URL"] as const)(
     "production에서 %s 누락을 startup 전에 거부한다",
     (name) => {
       expect(() =>
@@ -151,15 +134,6 @@ describe("env parser", () => {
       { LEARNER_AUTH_SECRET: "replace-with-production-secret-0123456789" },
     ],
     ["test auth", { ENABLE_TEST_AUTH: "true" }],
-    ["cookie domain", { LEARNER_AUTH_COOKIE_DOMAIN: "attacker.example" }],
-    [
-      "cookie domain learner API 발급 host",
-      { LEARNER_AUTH_COOKIE_DOMAIN: "app.example.com" },
-    ],
-    [
-      "cookie domain admin API 발급 host",
-      { ADMIN_AUTH_COOKIE_DOMAIN: "admin.example.com" },
-    ],
   ])("production에서 %s 설정을 거부한다", (_, override) => {
     expect(() => parseEnv({ ...validProductionEnv, ...override })).toThrow()
   })

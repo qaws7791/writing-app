@@ -1,10 +1,9 @@
 import { expect, test, type Page } from "@playwright/test"
 import { readFile } from "node:fs/promises"
 
-import { learnerApiOrigin, learnerWebOrigin, loginLearner } from "#e2e/auth"
+import { learnerWebOrigin, loginLearner } from "#e2e/auth"
 
 const adminWebOrigin = "http://127.0.0.1:3101"
-const adminApiOrigin = "http://127.0.0.1:4100"
 const adminPassword = "e2e-password-123"
 
 test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완료한다", async ({
@@ -20,7 +19,7 @@ test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완�
     if (/google|gstatic/i.test(url)) {
       googleRequests.push(url)
     }
-    if (url.startsWith(learnerApiOrigin)) {
+    if (url.startsWith(`${learnerWebOrigin}/api/`)) {
       apiRequests.push(url)
     }
   })
@@ -72,7 +71,7 @@ test("학습자가 오답, 정답, AI 코칭을 거쳐 레슨과 코스를 완�
   ).not.toBeVisible()
 
   const completedProgressResponse = await page.request.get(
-    `${learnerApiOrigin}/progress?status=completed`
+    `${learnerWebOrigin}/api/progress?status=completed`
   )
   expect(completedProgressResponse.status()).toBe(200)
   const completedProgress = (await completedProgressResponse.json()) as {
@@ -118,7 +117,9 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   ownerPage.on("request", (request) => {
     const url = request.url()
 
-    if (url.startsWith(adminApiOrigin)) targetAdminRequests.push(url)
+    if (url.startsWith(`${adminWebOrigin}/api/admin/`)) {
+      targetAdminRequests.push(url)
+    }
   })
 
   await loginAdmin(ownerPage, "owner@example.test", {
@@ -127,7 +128,7 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   await expect(ownerPage).toHaveURL(`${adminWebOrigin}/courses?page=2`)
   expect(
     targetAdminRequests.some((url) =>
-      url.startsWith(`${adminApiOrigin}/api/admin/auth/sign-in/email`)
+      url.startsWith(`${adminWebOrigin}/api/admin/auth/sign-in/email`)
     )
   ).toBe(true)
   await ownerPage.goto(`${adminWebOrigin}/`)

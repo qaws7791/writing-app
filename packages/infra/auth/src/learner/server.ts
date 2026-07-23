@@ -12,8 +12,6 @@ export type {
 } from "#auth/learner/test-auth-types"
 
 export type CreateLearnerAuthRuntimeInput = {
-  readonly apiOrigin: string
-  readonly cookieDomain?: string
   readonly database: AuthDatabaseAdapter
   readonly googleClientId?: string
   readonly googleClientSecret?: string
@@ -48,9 +46,15 @@ export function createLearnerAuthRuntime(
   input: CreateLearnerAuthRuntimeInput
 ): LearnerAuthRuntime {
   const auth = betterAuth({
-    advanced: createLearnerAdvancedOptions(input.cookieDomain),
+    advanced: {
+      cookies: {
+        session_token: {
+          name: learnerSessionCookieName,
+        },
+      },
+    },
     basePath: "/api/auth",
-    baseURL: input.apiOrigin,
+    baseURL: input.webOrigin,
     database: readAuthDatabaseAdapter(input.database),
     databaseHooks: createLearnerAuthHooks({
       identityProvisioner: input.identityProvisioner,
@@ -132,28 +136,6 @@ function createLearnerAuthHooks({
           await identityProvisioner.provision(toLearnerAuthIdentity(user))
         },
       },
-    },
-  }
-}
-
-function createLearnerAdvancedOptions(cookieDomain: string | undefined) {
-  const baseOptions = {
-    cookies: {
-      session_token: {
-        name: learnerSessionCookieName,
-      },
-    },
-  }
-
-  if (cookieDomain === undefined) {
-    return baseOptions
-  }
-
-  return {
-    ...baseOptions,
-    crossSubDomainCookies: {
-      domain: cookieDomain,
-      enabled: true,
     },
   }
 }

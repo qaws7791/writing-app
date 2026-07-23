@@ -30,12 +30,8 @@ async function runDoctor(): Promise<void> {
     repositoryRoot,
   })
   if (diagnostic.status === "migration-required") {
-    const schema =
-      diagnostic.schema === "legacy"
-        ? `legacy/${diagnostic.legacySchema}`
-        : diagnostic.schema
     throw new Error(
-      `DB schema ${schema}에 migration이 필요합니다. bun run setup을 실행하세요.`
+      `DB schema ${diagnostic.schema}에 migration이 필요합니다. bun run setup을 실행하세요.`
     )
   }
   if (diagnostic.status === "blocked") {

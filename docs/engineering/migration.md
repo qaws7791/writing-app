@@ -2,36 +2,41 @@
 
 ## 목적
 
-이 문서는 schema와 데이터 migration의 안전한 변경 절차를 정의한다. 각 module과 auth infra는 최종 Drizzle schema를 소유하고, API의 append-only SQL만 application migration 계보와 실행을 소유한다. DB infra는 application table을 알지 않는 SQLite migration primitive와 current-schema test fixture만 제공한다.
+이 문서는 schema와 데이터 migration의 안전한 변경 절차를 정의한다. 각 module과 auth infra는 최종 Drizzle schema를 소유하고, API의 현재 baseline과 이후 append-only SQL이 application migration 계보를 소유한다. DB infra는 application table을 알지 않는 SQLite migration primitive와 current-schema test fixture만 제공한다.
 
-## 원칙
+## 현재 계보
 
-- migration은 순서가 보존되는 append-only 변경 기록으로 관리한다.
-- 적용된 migration의 ID와 정규화된 내용 checksum은 바꾸지 않는다. 실행기는 알 수 없는 ID, checksum 불일치와 순서가 잘못된 manifest를 거부한다.
-- application과 schema가 공존해야 하는 기간에는 backward-compatible 변경을 우선한다.
-- migration, seed, backup·restore, health 검증은 하나의 운영 판단 단위다.
-- destructive migration과 이전 코드가 읽을 수 없는 변경은 자동 code rollback 대상으로 취급하지 않는다.
+- 신규 DB는 현재 baseline 하나로 생성한다. 삭제된 과거 migration을 재생하지 않는다.
+- 현재 schema era는 migration 이력의 baseline ID와 checksum으로 선언한다.
+- 런타임은 빈 DB와 현재 schema era의 연속된 migration prefix만 지원한다. 이전 계보, 알 수 없는 ID, checksum 불일치와 순서가 잘못된 이력은 추측해 채택하지 않고 기동을 중단한다.
 - API는 DB connection을 만든 직후 module·adapter를 조립하기 전에 migration을 한 번 실행한다. module factory는 migration을 실행하지 않는다.
-- 알려진 schema만 명시적으로 적용하거나 채택한다. 출처를 판정할 수 없는 부분 schema는 추측해 고치지 않고 fail-closed한다.
-- migration 전에 integrity, 기존 FK, 중복과 유효하지 않은 상태를 검사한다. 새 FK를 만드는 재구성은 transaction 종료 전 `foreign_key_check`로 orphan을 검출한다.
-- FK 재구성이 필요한 migration은 한 transaction 안에서 FK 검사를 일시 중지하고 데이터 복사·검증·이력 기록을 함께 확정한다. 완료 전 `foreign_key_check`가 실패하면 전체 transaction을 되돌린다.
-- 현재 migration 목록이나 실행 결과를 living guide에 복제하지 않는다.
+- 적용된 migration SQL과 checksum은 바꾸지 않는다. 다음 변경은 새 migration으로만 추가한다.
+- migration, seed, backup·restore와 health 검증은 하나의 운영 판단 단위다.
 
-## 호환성 경계
+현재 baseline 파일, manifest와 실행 함수는 `apps/api/drizzle`, `apps/api/src/db/migrate.ts`가 소유한다. living 문서에는 현재 ID·checksum 목록을 복제하지 않는다.
 
-통합 실행기는 빈 DB, 변경 불가능한 baseline, 이전 단계의 module schema와 명시적으로 식별 가능한 legacy schema만 지원한다. 기존 schema를 채택할 때도 같은 최종 schema 검증과 migration 이력 기록을 거친다. legacy curriculum 이관에는 content module의 legacy 정규화 정책이 반드시 주입돼야 하며, 활성 여부와 무관하게 course·unit·lesson·step 전체 hierarchy와 학습자 참조를 보존한다. 현재 payload validator를 완화하지 않고 식별 가능한 legacy 표현만 migration 경계에서 정규화한다. 식별 가능한 legacy 자료실 schema도 module 소유 구조로 이관하되, 출처가 불명확한 부분 schema는 변환하지 않는다.
+## Schema era 전환
 
-새 코드는 위 상태를 현재 schema로 올릴 수 있다. 현재 schema는 credential에서 제품 role을 제거하고 교차 module FK를 복원하므로 이전 전체 API image가 그대로 읽을 수 있다고 가정하지 않는다. 이 경계를 넘은 뒤 되돌리려면 코드 image 교체가 아니라 migration 전 검증 백업 복구가 필요하다.
+현재 era 이전 DB는 application runtime이 업그레이드하지 않는다. 일회성 전환 도구만 다음 조건을 모두 확인한 뒤 기존 migration 이력을 현재 baseline 선언으로 바꾼다.
 
-## 실행 절차
+1. 최종 이전 migration 계보의 ID와 checksum이 정확히 일치한다.
+2. `integrity_check`와 `foreign_key_check`가 통과한다.
+3. 현재 DB의 검증된 독립 백업을 새 경로에 만든다.
+4. writer가 중지되고 operation lock이 유지된 상태에서 이력 교체를 한 transaction으로 확정한다.
+
+이 작업은 table이나 제품 데이터를 변환하지 않는다. 부분 schema, 중간 migration 상태와 변조된 이력은 지원하지 않는다. 현재 명령과 image entrypoint는 API manifest, 전환 script와 Compose source가 소유한다.
+
+운영·스테이징 DB와 보존 backup의 전환 증적이 아직 이 저장소 작업에서 확인되지 않았으므로 일회성 도구는 남겨 둔다. 모든 대상의 baseline ID, SQLite 검사와 복원 가능한 백업이 archive 보고서로 확인되면 일회성 script·image binary·Compose service를 같은 후속 변경에서 제거한다.
+
+## 이후 변경 절차
 
 1. 영향받는 데이터·consumer, 양방향 code/schema 호환성과 복구 가능성을 확인한다.
 2. append-only SQL의 table 재구성, data copy, index, trigger와 FK 변화를 사람이 검토한다.
-3. 격리된 fresh·baseline·지원 legacy fixture에서 migration, row 보존, 최종 schema와 application read/write를 검증한다.
+3. 격리된 fresh DB와 현재 계보의 직전 fixture에서 migration, row 보존, 최종 schema와 application read/write를 검증한다.
 4. production 전 검증된 backup과 `integrity_check`·`foreign_key_check` 결과를 확보한다.
-5. 승인된 automation으로 API의 통합 migration entry와 기동 검증을 실행한다.
-6. migration이나 사후 검증이 실패하면 service 기동을 중단하고 새 상태를 정상으로 기록하지 않는다. code rollback과 data recovery를 분리해 판단한다.
+5. 승인된 automation으로 API migration entry와 기동 검증을 실행한다.
+6. migration이나 사후 검증이 실패하면 service 기동을 중단한다. code rollback과 data recovery를 분리해 판단한다.
 
 ## 검증 기록
 
-실제 migration 실행과 복구 훈련의 commit, 데이터 source, 환경, 명령, 무결성 결과와 소요 시간은 archive 보고서에 고정한다.
+실제 전환, migration 실행과 복구 훈련의 commit, 데이터 source, 환경, 명령, 무결성 결과와 소요 시간은 archive 보고서에 고정한다. 저장소 fixture 통과는 운영 DB 전환 성공의 증거가 아니다.

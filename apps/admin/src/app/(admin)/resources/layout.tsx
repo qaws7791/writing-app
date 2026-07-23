@@ -16,7 +16,6 @@ import {
 } from "@/features/authentication/model/admin-auth-navigation"
 import { adminRequestPathHeader } from "@/shared/auth/admin-request-path"
 import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import { readServerApiBaseUrl } from "@/server/env/admin-runtime-config"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
 
 export default async function ResourceLayout({
@@ -55,11 +54,7 @@ export default async function ResourceLayout({
 
   return (
     <Suspense fallback={<ResourceWorkspaceFallback />}>
-      <ResourceWorkspace
-        apiBaseUrl={readServerApiBaseUrl()}
-        initialScope={initialScope}
-        initialTree={initialTree}
-      >
+      <ResourceWorkspace initialScope={initialScope} initialTree={initialTree}>
         {children}
       </ResourceWorkspace>
     </Suspense>

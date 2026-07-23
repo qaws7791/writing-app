@@ -313,7 +313,6 @@ function readSeedAdminState(database: WritingAppDatabaseClient): {
 
 function createTestAdminAuth(database: WritingAppDatabase): AdminAuthRuntime {
   return createAdminAuthRuntime({
-    apiOrigin: "http://api.localhost:4000",
     database: createAdminAuthDatabase(database),
     secret: "x".repeat(32),
     sessionRevoker: createDrizzleAdminSessionRevoker(database),

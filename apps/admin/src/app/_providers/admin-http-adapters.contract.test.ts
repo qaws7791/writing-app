@@ -10,22 +10,20 @@ import { createAdminCourseCatalogDal } from "@/features/course-catalog/server/ad
 import { createAdminDashboardDal } from "@/features/dashboard/server/admin-dashboard-dal"
 import { createAdminContentMaintenanceDal } from "@/features/content-maintenance/server/admin-content-maintenance-dal"
 import { createAdminUsersDal } from "@/features/user-management/server/admin-users-dal"
-import type { ApiBaseUrl } from "@/shared/config/admin-runtime-config"
+import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import type { HttpFetch } from "@workspace/http-client/json-transport"
-import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
 import { userIdSchema } from "@/entities/learner-account/model/learner-account-id"
 import { courseIdSchema } from "@/entities/course/model/course-id"
 
 const userId = userIdSchema.parse("user-1")
 const courseId = courseIdSchema.parse("c1")
+const apiBaseUrl = "https://api.example.test" as ApiBaseUrl
 
 describe("관리자 feature HTTP Adapter 계약", () => {
   it("서버 요청에 검증된 Origin을 명시하고 세션 응답을 파싱한다", async () => {
     let capturedRequest: Request | undefined
     const api = createTestAdminApis({
-      baseUrl: readApiBaseUrl({
-        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/",
-      }),
+      baseUrl: apiBaseUrl,
       fetch: async (request) => {
         capturedRequest = request
         return jsonResponse({
@@ -54,9 +52,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
     const requests: Request[] = []
     const bodies: unknown[] = []
     const api = createTestAdminApis({
-      baseUrl: readApiBaseUrl({
-        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/",
-      }),
+      baseUrl: apiBaseUrl,
       fetch: async (request) => {
         requests.push(request)
 
@@ -237,9 +233,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
 
   it("실패 응답을 AdminApi 오류로 변환한다", async () => {
     const api = createTestAdminApis({
-      baseUrl: readApiBaseUrl({
-        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
-      }),
+      baseUrl: apiBaseUrl,
       fetch: async () =>
         jsonResponse(
           {
@@ -265,9 +259,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
 
   it("권한 실패 응답을 AdminApi 권한 오류로 변환한다", async () => {
     const api = createTestAdminApis({
-      baseUrl: readApiBaseUrl({
-        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
-      }),
+      baseUrl: apiBaseUrl,
       fetch: async () =>
         jsonResponse(
           {
@@ -291,9 +283,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
 
   it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
     const api = createTestAdminApis({
-      baseUrl: readApiBaseUrl({
-        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
-      }),
+      baseUrl: apiBaseUrl,
       fetch: async () =>
         jsonResponse({
           metrics: {
@@ -317,9 +307,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
   it("fetch 예외를 원인이 보존된 네트워크 오류로 반환한다", async () => {
     const cause = new TypeError("Network unreachable")
     const api = createTestAdminApis({
-      baseUrl: readApiBaseUrl({
-        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
-      }),
+      baseUrl: apiBaseUrl,
       fetch: async () => {
         throw cause
       },

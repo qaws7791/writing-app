@@ -21,7 +21,6 @@ import {
   createVerifiedDatabaseBackup,
   verifyDatabaseBackup,
 } from "#db/database-backup"
-import { runBaselineTestMigration } from "#db/test-support/application-migration"
 
 const backupFileModeObservation = vi.hoisted(() => ({
   conflictingDestination: undefined as string | undefined,
@@ -60,7 +59,7 @@ describe("SQLite 백업과 복구 검증", () => {
     const source = createWritingAppDatabase(sourcePath)
 
     try {
-      runBaselineTestMigration(source.sqlite)
+      createBackupTestSchema(source.sqlite)
       source.sqlite.exec("PRAGMA wal_autocheckpoint = 0")
       source.sqlite.exec(`
         CREATE TABLE backup_probe (value TEXT NOT NULL);
@@ -132,7 +131,7 @@ describe("SQLite 백업과 복구 검증", () => {
     const source = createWritingAppDatabase(sourcePath)
 
     try {
-      runBaselineTestMigration(source.sqlite)
+      createBackupTestSchema(source.sqlite)
       writeFileSync(corruptedPath, "SQLite format 3\0손상된 파일", "utf8")
       writeFileSync(protectedPath, "운영 파일 원본", "utf8")
       const protectedBefore = readFileSync(protectedPath)
@@ -161,13 +160,13 @@ describe("SQLite 백업과 복구 검증", () => {
     const source = createWritingAppDatabase(sourcePath)
 
     try {
-      runBaselineTestMigration(source.sqlite)
+      createBackupTestSchema(source.sqlite)
       backupFileModeObservation.conflictingDestination = backupPath
 
       expect(() =>
         createVerifiedDatabaseBackup({
           backupPath,
-          requiredTables: ["user"],
+          requiredTables: ["backup_source"],
           sourcePath,
         })
       ).toThrow("기존 백업 파일을 덮어쓰지 않습니다")
@@ -191,7 +190,7 @@ describe("SQLite 백업과 복구 검증", () => {
     const source = createWritingAppDatabase(sourcePath)
 
     try {
-      runBaselineTestMigration(source.sqlite)
+      createBackupTestSchema(source.sqlite)
     } finally {
       source.close()
     }
@@ -213,7 +212,7 @@ describe("SQLite 백업과 복구 검증", () => {
       expect(() =>
         createVerifiedDatabaseBackup({
           backupPath,
-          requiredTables: ["user"],
+          requiredTables: ["backup_source"],
           sourcePath,
         })
       ).toThrow("source close failure")
@@ -243,7 +242,7 @@ describe("SQLite 백업과 복구 검증", () => {
       const source = createWritingAppDatabase(sourcePath)
 
       try {
-        runBaselineTestMigration(source.sqlite)
+        createBackupTestSchema(source.sqlite)
       } finally {
         source.close()
       }
@@ -255,12 +254,12 @@ describe("SQLite 백업과 복구 검증", () => {
       try {
         createVerifiedDatabaseBackup({
           backupPath: firstBackupPath,
-          requiredTables: ["user"],
+          requiredTables: ["backup_source"],
           sourcePath,
         })
         createVerifiedDatabaseBackup({
           backupPath: secondBackupPath,
-          requiredTables: ["user"],
+          requiredTables: ["backup_source"],
           sourcePath,
         })
 
@@ -275,6 +274,10 @@ describe("SQLite 백업과 복구 검증", () => {
     }
   )
 })
+
+function createBackupTestSchema(sqlite: Database): void {
+  sqlite.exec("CREATE TABLE backup_source (value TEXT NOT NULL)")
+}
 
 function inspectIsolatedBackup(backupPath: string): {
   readonly journalMode: string

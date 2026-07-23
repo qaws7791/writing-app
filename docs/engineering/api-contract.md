@@ -27,7 +27,7 @@
 ## 인증과 브라우저 경계
 
 - 인증 방식과 권한 정책은 제품·보안 문서가 소유하고, 현재 endpoint와 middleware 배치는 코드가 소유한다.
-- 쿠키가 포함되는 브라우저 요청은 origin 검증과 CORS를 모두 통과해야 한다.
+- 브라우저 API 요청은 현재 앱 origin의 상대 경로를 사용한다. 쿠키가 포함되는 상태 변경 요청은 API의 trusted origin 검증을 통과해야 한다.
 - browser public 설정에는 secret이나 내부 network topology를 포함하지 않는다.
 - 관리자와 학습자 보안 영역은 권한과 credential 수명주기를 독립적으로 유지한다.
 

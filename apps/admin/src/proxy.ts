@@ -9,7 +9,6 @@ export function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID()
   const policy = createContentSecurityPolicy({
     allowHttpsImages: true,
-    connectSources: createAdminApiConnectSources(runtime.apiOrigin),
     development: runtime.development,
     nonce,
     upgradeInsecureRequests: runtime.upgradeInsecureRequests,
@@ -31,19 +30,6 @@ export function proxy(request: NextRequest) {
     policy
   )
   return response
-}
-
-function createAdminApiConnectSources(
-  apiOrigin: string | undefined
-): readonly string[] {
-  if (apiOrigin === undefined) {
-    return []
-  }
-
-  const httpOrigin = new URL(apiOrigin).origin
-  const webSocketUrl = new URL(httpOrigin)
-  webSocketUrl.protocol = webSocketUrl.protocol === "https:" ? "wss:" : "ws:"
-  return [httpOrigin, webSocketUrl.origin]
 }
 
 export const config = {

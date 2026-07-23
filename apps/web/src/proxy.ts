@@ -14,7 +14,6 @@ export function proxy(request: NextRequest) {
   const runtime = readWebCspRuntimeConfig()
   const nonce = crypto.randomUUID()
   const policy = createContentSecurityPolicy({
-    connectSources: [runtime.apiOrigin],
     development: runtime.development,
     imageSources: [
       "https://lh3.googleusercontent.com",

@@ -122,7 +122,6 @@ function createMigratedTestDatabase() {
 
 function createTestRuntime(database: Database) {
   return createAdminAuthRuntime({
-    apiOrigin: "http://api.localhost:4000",
     database: createSqliteAuthDatabaseAdapter({
       database,
       schema: {

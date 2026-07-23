@@ -63,7 +63,7 @@
 - 오류 응답 status와 code가 계약과 맞는가?
 - JSON parse 오류와 validation 오류가 구분되는가?
 - OpenAPI 생성 결과가 변경되면 정적 계약도 갱신했는가?
-- CORS와 credentials 정책이 앱 origin과 일치하는가?
+- 브라우저 API가 같은 앱 origin의 상대 경로를 사용하고 상태 변경 요청의 origin 검증을 유지하는가?
 
 ## 프론트엔드 체크
 

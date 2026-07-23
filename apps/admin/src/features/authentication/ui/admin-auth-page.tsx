@@ -5,18 +5,15 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition, type FormEvent } from "react"
 
 import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 
 export function AdminAuthPage({
-  apiBaseUrl,
   learnerWebOrigin,
   nextPath,
 }: {
-  readonly apiBaseUrl: ApiBaseUrl
   readonly learnerWebOrigin: string
   readonly nextPath: string
 }) {
@@ -30,7 +27,7 @@ export function AdminAuthPage({
     setErrorMessage(null)
     startTransition(async () => {
       try {
-        const result = await requestAdminPasswordLogin(apiBaseUrl, {
+        const result = await requestAdminPasswordLogin({
           email: String(formData.get("email") ?? ""),
           nextPath,
           password: String(formData.get("password") ?? ""),

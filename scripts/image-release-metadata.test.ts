@@ -12,7 +12,6 @@ import {
 
 const publicOrigins: ImageReleasePublicOrigins = {
   admin: "https://admin.writing.example.com",
-  api: "https://api.writing.example.com",
   web: "https://writing.example.com",
 }
 const revision = "a".repeat(40)

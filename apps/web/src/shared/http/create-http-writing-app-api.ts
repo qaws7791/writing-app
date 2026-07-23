@@ -25,53 +25,57 @@ import {
   type TokenProvider,
 } from "@/shared/http/openapi-client"
 import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
+import type { ServerApiBaseUrl } from "@/shared/config/api-base-url"
 
 export function createHttpWritingAppApi({
   baseUrl,
   fetch,
   tokenProvider,
 }: {
-  readonly baseUrl: ApiBaseUrl
+  readonly baseUrl?: ServerApiBaseUrl
   readonly fetch: FetchLike
   readonly tokenProvider: TokenProvider
 }): WritingAppApi {
-  const client = createOpenApiClient({ baseUrl, fetch, tokenProvider })
+  const client = createOpenApiClient({
+    ...(baseUrl === undefined ? {} : { baseUrl }),
+    fetch,
+    tokenProvider,
+  })
 
   return {
     async completeStep(input) {
       return client.requestJson({
         body: input.request,
         method: "POST",
-        path: `/learning/lessons/${input.lessonId}/steps/${input.stepId}/complete`,
+        path: `/api/learning/lessons/${input.lessonId}/steps/${input.stepId}/complete`,
         schema: learnerCompleteStepResponseSchema,
       })
     },
     async getCourseCategories() {
       return client.requestJson<LearnerCourseCategoriesResponse>({
         method: "GET",
-        path: "/course-categories",
+        path: "/api/course-categories",
         schema: learnerCourseCategoriesResponseSchema,
       })
     },
     async getCourseDetail(courseId) {
       return client.requestJson<LearnerCourseDetailResponse>({
         method: "GET",
-        path: `/courses/${courseId}`,
+        path: `/api/courses/${courseId}`,
         schema: learnerCourseDetailResponseSchema,
       })
     },
     async getLesson(lessonId) {
       return client.requestJson<LearnerLessonResponse>({
         method: "GET",
-        path: `/lessons/${lessonId}`,
+        path: `/api/lessons/${lessonId}`,
         schema: learnerLessonResponseSchema,
       })
     },
     async getProfile() {
       return client.requestJson<LearnerProfileResponse>({
         method: "GET",
-        path: "/profile",
+        path: "/api/profile",
         schema: learnerProfileResponseSchema,
       })
     },
@@ -93,7 +97,7 @@ export function createHttpWritingAppApi({
       return client.requestJson<LearnerAiFeedbackTransitionResult>({
         headers: { "Idempotency-Key": input.idempotencyKey },
         method: "POST",
-        path: `/learning/lessons/${input.lessonId}/steps/${input.stepId}/ai-feedback`,
+        path: `/api/learning/lessons/${input.lessonId}/steps/${input.stepId}/ai-feedback`,
         schema: learnerAiFeedbackTransitionResponseSchema,
       })
     },
@@ -103,7 +107,7 @@ export function createHttpWritingAppApi({
           expectedCurriculumVersionId: input.expectedCurriculumVersionId,
         },
         method: "POST",
-        path: `/learning/lessons/${input.lessonId}/start`,
+        path: `/api/learning/lessons/${input.lessonId}/start`,
         schema: learnerStartLessonResponseSchema,
       })
     },
@@ -113,19 +117,19 @@ export function createHttpWritingAppApi({
 function buildProgressPath(
   options?: Parameters<WritingAppApi["getProgress"]>[0]
 ): string {
-  if (options === undefined) return "/progress"
+  if (options === undefined) return "/api/progress"
 
   const searchParams = new URLSearchParams()
   appendDefined(searchParams, "cursor", options.cursor)
   appendDefined(searchParams, "limit", options.limit)
   appendDefined(searchParams, "status", options.status)
-  return withSearchParams("/progress", searchParams)
+  return withSearchParams("/api/progress", searchParams)
 }
 
 function buildCourseListPath(
   options?: Parameters<WritingAppApi["listCourses"]>[0]
 ): string {
-  if (options === undefined) return "/courses"
+  if (options === undefined) return "/api/courses"
 
   const searchParams = new URLSearchParams()
   appendDefined(searchParams, "category", options.category)
@@ -133,7 +137,7 @@ function buildCourseListPath(
   appendDefined(searchParams, "limit", options.limit)
   appendDefined(searchParams, "query", options.query)
   appendDefined(searchParams, "sort", options.sort)
-  return withSearchParams("/courses", searchParams)
+  return withSearchParams("/api/courses", searchParams)
 }
 
 function appendDefined(

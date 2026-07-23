@@ -1,17 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
   requestAdminPasswordChange,
   requestAdminPasswordLogin,
 } from "@/features/authentication/api/admin-auth-client"
-import { readApiBaseUrl } from "@/shared/config/admin-runtime-config"
-
-const apiBaseUrl = readApiBaseUrl({})
 
 describe("admin auth client", () => {
   afterEach(() => {
-    delete process.env["NEXT_PUBLIC_API_BASE_URL"]
     vi.unstubAllGlobals()
   })
 
@@ -21,7 +16,7 @@ describe("admin auth client", () => {
     vi.stubGlobal("fetch", fetch)
 
     await expect(
-      requestAdminPasswordLogin(apiBaseUrl, {
+      requestAdminPasswordLogin({
         email: "admin@example.com",
         nextPath: "/courses",
         password: "admin-password-123",
@@ -29,7 +24,7 @@ describe("admin auth client", () => {
     ).resolves.toEqual({ nextPath: "/courses" })
 
     expect(fetch).toHaveBeenCalledWith(
-      `${localRuntimeDefaults.apiBaseUrl}/api/admin/auth/sign-in/email`,
+      "/api/admin/auth/sign-in/email",
       expect.objectContaining({
         body: JSON.stringify({
           callbackURL: "/courses",
@@ -50,7 +45,7 @@ describe("admin auth client", () => {
 
     let caughtError: unknown
     try {
-      await requestAdminPasswordLogin(apiBaseUrl, {
+      await requestAdminPasswordLogin({
         email: "admin@example.com",
         nextPath: "/courses",
         password: "wrong-password",
@@ -67,7 +62,7 @@ describe("admin auth client", () => {
     const fetch = vi.fn(async () => Response.json({ status: true }))
     vi.stubGlobal("fetch", fetch)
 
-    await requestAdminPasswordChange(apiBaseUrl, {
+    await requestAdminPasswordChange({
       currentPassword: "old-password",
       newPassword: "new-password",
     })

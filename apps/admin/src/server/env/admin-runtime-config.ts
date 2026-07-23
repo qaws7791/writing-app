@@ -15,7 +15,6 @@ const adminServerRuntimeEnvSchema = z
     API_BASE_URL: optionalUrlSchema,
     ADMIN_ORIGIN: optionalUrlSchema,
     CSP_REPORT_ONLY: z.enum(["true", "false"]).optional(),
-    NEXT_PUBLIC_API_BASE_URL: optionalUrlSchema,
     NODE_ENV: z.string().optional(),
   })
   .loose()
@@ -50,7 +49,6 @@ export function readAdminWebOrigin(
 export function readAdminCspRuntimeConfig(
   env: AdminServerRuntimeEnv = process.env
 ): {
-  readonly apiOrigin: string
   readonly development: boolean
   readonly reportOnly: boolean
   readonly upgradeInsecureRequests: boolean
@@ -65,13 +63,6 @@ export function readAdminCspRuntimeConfig(
   )
 
   return {
-    apiOrigin: toServerOrigin(
-      runtimeEnv.NEXT_PUBLIC_API_BASE_URL,
-      runtimeEnv.NODE_ENV,
-      localRuntimeDefaults.apiBaseUrl,
-      "production public API base URL is required",
-      "public API base URL"
-    ),
     development: runtimeEnv.NODE_ENV !== "production",
     reportOnly: runtimeEnv.CSP_REPORT_ONLY === "true",
     upgradeInsecureRequests: shouldUpgradeInsecureRequests(adminOrigin),

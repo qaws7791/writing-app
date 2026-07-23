@@ -173,33 +173,6 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     expect(authHandler).toHaveBeenCalledOnce()
   })
 
-  it("관리자 CORS preflight 계약을 유지한다", async () => {
-    const app = createAdminApp(createDependencies())
-
-    const response = await app.request("/session", {
-      headers: {
-        "Access-Control-Request-Headers": "Authorization, Content-Type",
-        "Access-Control-Request-Method": "PUT",
-        Origin: adminOrigin,
-      },
-      method: "OPTIONS",
-    })
-
-    expect(response.status).toBe(204)
-    expect(response.headers.get("access-control-allow-origin")).toBe(
-      adminOrigin
-    )
-    expect(response.headers.get("access-control-allow-credentials")).toBe(
-      "true"
-    )
-    expect(response.headers.get("access-control-allow-methods")).toContain(
-      "PUT"
-    )
-    expect(response.headers.get("access-control-expose-headers")).toContain(
-      "Content-Disposition"
-    )
-  })
-
   it("주입한 capability route에 owner 인가와 관리자 actor 로깅을 적용한다", async () => {
     const requestEvents: unknown[] = []
     const securityEvents: unknown[] = []

@@ -6,7 +6,6 @@
         "API_BASE_URL",
         "ADMIN_ORIGIN",
         "CSP_REPORT_ONLY",
-        "NEXT_PUBLIC_API_BASE_URL",
         "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
         "NODE_ENV"
       ]
@@ -16,7 +15,6 @@
         "API_BASE_URL",
         "ADMIN_ORIGIN",
         "CSP_REPORT_ONLY",
-        "NEXT_PUBLIC_API_BASE_URL",
         "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
         "NODE_ENV"
       ]

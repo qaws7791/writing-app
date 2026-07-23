@@ -1,21 +1,10 @@
 import type { Database } from "bun:sqlite"
 
-import { normalizeLegacyVersionedStepContentOrThrow } from "@workspace/content/normalization"
-
 import {
-  assertLegacyCurriculumMigrationPrerequisites,
-  hasLegacyCurriculumSchema,
-} from "@/db/legacy-curriculum-migration"
-import { assertLegacyResourceLibraryMigrationPrerequisites } from "@/db/legacy-resource-library-migration"
-import {
-  assertApplicationMigrationPrerequisites,
-  hasKnownLegacyAdminMfaSchema,
+  currentSchemaBaseline,
   inspectApplicationMigrationHistory,
 } from "@/db/migrate"
-import {
-  hasBaselineSchema,
-  isCurrentApplicationSchema,
-} from "@/db/schema-architecture"
+
 type DatabaseForeignKeyViolation = Readonly<{
   foreignKeyIndex: number
   parentTable: string
@@ -34,8 +23,7 @@ type ApplicationDatabaseDiagnosticIssue = Readonly<{
     | "foreign-key-check-failed"
     | "integrity-check-failed"
     | "migration-history-invalid"
-    | "migration-prerequisite-failed"
-    | "unknown-schema"
+    | "schema-era-missing"
   message: string
 }>
 
@@ -60,12 +48,6 @@ export type ApplicationDatabaseDiagnostic =
   | (DiagnosticBase &
       Readonly<{
         schema: "empty"
-        status: "migration-required"
-      }>)
-  | (DiagnosticBase &
-      Readonly<{
-        legacySchema: "admin-mfa" | "baseline" | "curriculum"
-        schema: "legacy"
         status: "migration-required"
       }>)
   | (DiagnosticBase &
@@ -115,8 +97,10 @@ export function inspectApplicationDatabase(
     )
   }
 
-  const tableNames = readUserTableNames(sqlite)
-  if (tableNames.length === 0) {
+  const applicationTables = readApplicationDatabaseBackupTables(sqlite).filter(
+    (tableName) => tableName !== "api_schema_migrations"
+  )
+  if (applicationTables.length === 0) {
     return Object.freeze({
       checks,
       issues: Object.freeze([]),
@@ -126,17 +110,7 @@ export function inspectApplicationDatabase(
     })
   }
 
-  if (isCurrentApplicationSchema(sqlite)) {
-    if (migrationHistory.status === "incomplete") {
-      return Object.freeze({
-        checks,
-        issues: Object.freeze([]),
-        kind: "application-database-diagnostic",
-        pendingMigrationIds: migrationHistory.pendingMigrationIds,
-        schema: "current",
-        status: "migration-required",
-      })
-    }
+  if (migrationHistory.status === "complete") {
     return Object.freeze({
       checks,
       issues: Object.freeze([]),
@@ -146,45 +120,22 @@ export function inspectApplicationDatabase(
     })
   }
 
-  if (hasLegacyCurriculumSchema(sqlite)) {
-    try {
-      assertLegacyCurriculumMigrationPrerequisites(
-        sqlite,
-        normalizeLegacyVersionedStepContentOrThrow
-      )
-      assertLegacyResourceLibraryMigrationPrerequisites(sqlite)
-      return legacyDiagnostic(checks, "curriculum")
-    } catch (error) {
-      return blockedDiagnostic(
-        checks,
-        "migration-prerequisite-failed",
-        `legacy curriculum prerequisite failed: ${readErrorMessage(error)}`
-      )
-    }
+  if (migrationHistory.pendingMigrationIds.includes(currentSchemaBaseline.id)) {
+    return blockedDiagnostic(
+      checks,
+      "schema-era-missing",
+      "현재 schema era가 선언되지 않았습니다."
+    )
   }
 
-  if (hasBaselineSchema(sqlite)) {
-    try {
-      assertApplicationMigrationPrerequisites(sqlite)
-      return legacyDiagnostic(checks, "baseline")
-    } catch (error) {
-      return blockedDiagnostic(
-        checks,
-        "migration-prerequisite-failed",
-        `baseline migration prerequisite failed: ${readErrorMessage(error)}`
-      )
-    }
-  }
-
-  if (hasKnownLegacyAdminMfaSchema(sqlite)) {
-    return legacyDiagnostic(checks, "admin-mfa")
-  }
-
-  return blockedDiagnostic(
+  return Object.freeze({
     checks,
-    "unknown-schema",
-    `unknown application schema tables: ${tableNames.join(", ")}`
-  )
+    issues: Object.freeze([]),
+    kind: "application-database-diagnostic",
+    pendingMigrationIds: migrationHistory.pendingMigrationIds,
+    schema: "current",
+    status: "migration-required",
+  })
 }
 
 export function readApplicationDatabaseBackupTables(
@@ -244,23 +195,6 @@ function createChecks(
   })
 }
 
-function legacyDiagnostic(
-  checks: ApplicationDatabaseChecks,
-  legacySchema: Extract<
-    ApplicationDatabaseDiagnostic,
-    { readonly schema: "legacy" }
-  >["legacySchema"]
-): ApplicationDatabaseDiagnostic {
-  return Object.freeze({
-    checks,
-    issues: Object.freeze([]),
-    kind: "application-database-diagnostic",
-    legacySchema,
-    schema: "legacy",
-    status: "migration-required",
-  })
-}
-
 function blockedDiagnostic(
   checks: ApplicationDatabaseChecks,
   code: ApplicationDatabaseDiagnosticIssue["code"],
@@ -274,12 +208,6 @@ function blockedDiagnostic(
     schema: "unsupported",
     status: "blocked",
   })
-}
-
-function readUserTableNames(sqlite: Database): readonly string[] {
-  return readApplicationDatabaseBackupTables(sqlite).filter(
-    (tableName) => tableName !== "api_schema_migrations"
-  )
 }
 
 function readErrorMessage(error: unknown): string {

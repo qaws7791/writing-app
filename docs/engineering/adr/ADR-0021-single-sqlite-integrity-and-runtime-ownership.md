@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+부분 대체됨 — FK·runtime 소유권 결정은 유지하며, 과거 migration과 legacy runtime 유지 결정은 [ADR-0022](./ADR-0022-current-schema-era-baseline.md)가 대체한다.
 
 ## 날짜
 

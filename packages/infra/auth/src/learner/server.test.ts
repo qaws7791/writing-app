@@ -51,8 +51,6 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       createLearnerAuthRuntime({
-        apiOrigin: "https://api.example.test",
-        cookieDomain: "example.test",
         database: createTestDatabaseAdapter(database.db),
         googleClientId: "google-client",
         googleClientSecret: "google-secret",
@@ -67,13 +65,9 @@ describe("학습자 Better Auth runtime", () => {
           cookies: {
             session_token: { name: learnerSessionCookieName },
           },
-          crossSubDomainCookies: {
-            domain: "example.test",
-            enabled: true,
-          },
         },
         basePath: "/api/auth",
-        baseURL: "https://api.example.test",
+        baseURL: "https://app.example.test",
         plugins: [{ id: "learner-test-auth" }],
         socialProviders: {
           google: {
@@ -95,7 +89,6 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       createLearnerAuthRuntime({
-        apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
         identityProvisioner,
         secret: "x".repeat(32),
@@ -126,7 +119,6 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       const runtime = createLearnerAuthRuntime({
-        apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
         identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),
@@ -153,7 +145,6 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       const runtime = createLearnerAuthRuntime({
-        apiOrigin: "https://api.example.test",
         database: createTestDatabaseAdapter(database.db),
         identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),

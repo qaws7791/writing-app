@@ -173,7 +173,7 @@ describe("application seed composition", () => {
       `)
 
       await expect(seedApplicationDatabase(database)).rejects.toThrow(
-        "지원하지 않는 database schema"
+        "현재 schema era가 선언되지 않은 database"
       )
       expect(
         database.sqlite

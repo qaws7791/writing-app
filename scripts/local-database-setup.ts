@@ -38,7 +38,10 @@ export async function runLocalDatabaseSetup({
         "기존 DB가 지원하지 않는 상태입니다. bun --filter @workspace/api db:inspect 결과를 확인하세요."
       )
     }
-    if (diagnostic.status === "migration-required") {
+    if (
+      diagnostic.status === "migration-required" &&
+      diagnostic.schema !== "empty"
+    ) {
       const backupPath = await backup()
       await rehearseMigration(backupPath)
     }

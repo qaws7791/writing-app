@@ -50,8 +50,7 @@ services:
         - bun
         - -e
         - >-
-          fetch('http://127.0.0.1:4000/health',{headers:{
-          Host:new URL(process.env.API_ORIGIN).host}}).then((response)=>{
+          fetch('http://127.0.0.1:4000/api/health').then((response)=>{
           if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
       interval: 30s
       timeout: 5s
@@ -238,6 +237,26 @@ services:
       - type: bind
         source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
         target: /var/lib/writing-app
+    network_mode: none
+    restart: "no"
+
+  database-adopt-current-schema-era:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    profiles:
+      - operations
+    entrypoint:
+      - bun
+      - /workspace/bin/database-adopt-current-schema-era
+    environment:
+      DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      NODE_ENV: production
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+      - type: bind
+        source: ${BACKUP_DIRECTORY:?BACKUP_DIRECTORY가 필요합니다}
+        target: /var/backups/writing-app
     network_mode: none
     restart: "no"
 

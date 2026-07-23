@@ -12,7 +12,7 @@ type ApplicationDefinition = {
 }
 
 const repositoryRoot = resolve(import.meta.dir, "..")
-const publicApiBaseUrl = "http://127.0.0.1:4300"
+const serverApiBaseUrl = "http://127.0.0.1:4300"
 const requestTimeout = 10_000
 const applications: readonly ApplicationDefinition[] = [
   {
@@ -47,9 +47,8 @@ async function verifyStandaloneApplication(
   const origin = `http://127.0.0.1:${application.port}`
   const environment = {
     ...process.env,
-    API_BASE_URL: publicApiBaseUrl,
+    API_BASE_URL: serverApiBaseUrl,
     HOSTNAME: "127.0.0.1",
-    NEXT_PUBLIC_API_BASE_URL: publicApiBaseUrl,
     NODE_ENV: "production",
     PORT: String(application.port),
     [application.originVariable]: origin,

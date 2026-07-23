@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest"
 
+import type { ServerApiBaseUrl } from "@/shared/config/api-base-url"
 import { createHttpWritingAppApi } from "@/shared/http/create-http-writing-app-api"
 import type { FetchLike } from "@/shared/http/openapi-client"
-import { readBrowserApiBaseUrl } from "@/shared/config/runtime-config"
+
+const apiBaseUrl = "https://api.example.test" as ServerApiBaseUrl
 
 describe("HTTP WritingAppApi", () => {
   it("start와 complete 명령을 lesson-scoped route로 보낸다", async () => {
@@ -44,11 +46,11 @@ describe("HTTP WritingAppApi", () => {
 
     expect(await readRequest(requests, 0)).toMatchObject({
       body: JSON.stringify({ expectedCurriculumVersionId: "version-1" }),
-      url: "https://api.example.test/learning/lessons/lesson-1/start",
+      url: "https://api.example.test/api/learning/lessons/lesson-1/start",
     })
     expect(await readRequest(requests, 1)).toMatchObject({
       body: JSON.stringify({ kind: "acknowledge" }),
-      url: "https://api.example.test/learning/lessons/lesson-1/steps/step-1/complete",
+      url: "https://api.example.test/api/learning/lessons/lesson-1/steps/step-1/complete",
     })
   })
 
@@ -92,7 +94,7 @@ describe("HTTP WritingAppApi", () => {
     expect(request).toBeInstanceOf(Request)
     if (!(request instanceof Request)) return
     expect(request.url).toBe(
-      "https://api.example.test/learning/lessons/lesson-1/steps/step-ai/ai-feedback"
+      "https://api.example.test/api/learning/lessons/lesson-1/steps/step-ai/ai-feedback"
     )
     expect(request.headers.get("Idempotency-Key")).toBe("feedback-key-1")
     expect(await request.clone().text()).toBe("")
@@ -101,10 +103,7 @@ describe("HTTP WritingAppApi", () => {
 
 function createApi(fetch: FetchLike) {
   return createHttpWritingAppApi({
-    baseUrl: readBrowserApiBaseUrl({
-      NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
-      NODE_ENV: "test",
-    }),
+    baseUrl: apiBaseUrl,
     fetch,
     tokenProvider: () => "session-token",
   })

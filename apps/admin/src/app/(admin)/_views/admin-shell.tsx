@@ -9,7 +9,6 @@ import { useState } from "react"
 
 import { AdminSidebar } from "@/app/(admin)/_views/admin-sidebar"
 import { requestAdminSignOut } from "@/features/authentication/api/admin-auth-client"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
   isAdminNavigationActive,
   readAdminNavigationItems,
@@ -18,13 +17,11 @@ import { cn } from "@workspace/ui/lib/utils"
 
 export function AdminShell({
   activePath,
-  apiBaseUrl,
   children,
   learnerWebOrigin,
   role,
 }: {
   readonly activePath?: string
-  readonly apiBaseUrl: ApiBaseUrl
   readonly children: ReactNode
   readonly learnerWebOrigin: string
   readonly role: AdminRole
@@ -115,7 +112,7 @@ export function AdminShell({
     startTransition(async () => {
       setSignOutError(null)
       try {
-        await requestAdminSignOut(apiBaseUrl)
+        await requestAdminSignOut()
         router.replace("/login")
       } catch {
         setSignOutError(

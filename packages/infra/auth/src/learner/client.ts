@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/client"
 
-import { buildAuthApiUrl, type FetchImplementation } from "#auth/shared/client"
+import type { FetchImplementation } from "#auth/shared/client"
 
 export type LearnerAuthClient = {
   readonly signInForTest: (callbackURL: string) => void
@@ -9,22 +9,17 @@ export type LearnerAuthClient = {
 }
 
 export function createLearnerAuthClient(input: {
-  readonly baseURL: string
   readonly fetch: FetchImplementation
   readonly navigate: (url: string) => void
 }): LearnerAuthClient {
   const authClient = createAuthClient({
-    baseURL: input.baseURL,
     fetchOptions: { customFetchImpl: input.fetch },
   })
 
   return {
     signInForTest(callbackURL) {
       input.navigate(
-        buildAuthApiUrl(
-          input.baseURL,
-          `/api/auth/test/sign-in?callbackURL=${encodeURIComponent(callbackURL)}`
-        )
+        `/api/auth/test/sign-in?callbackURL=${encodeURIComponent(callbackURL)}`
       )
     },
     async signInWithGoogle(callbackURL) {
@@ -34,13 +29,10 @@ export function createLearnerAuthClient(input: {
       })
     },
     async signOut() {
-      const response = await input.fetch(
-        buildAuthApiUrl(input.baseURL, "/api/auth/sign-out"),
-        {
-          credentials: "include",
-          method: "POST",
-        }
-      )
+      const response = await input.fetch("/api/auth/sign-out", {
+        credentials: "include",
+        method: "POST",
+      })
 
       if (!response.ok) {
         throw new Error("Failed to sign out")

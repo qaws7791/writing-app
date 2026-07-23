@@ -19,7 +19,6 @@ import {
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 import type { ContentModule } from "@workspace/content/module"
-import { normalizeLegacyVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
@@ -137,9 +136,7 @@ export async function createContainer(
     )
     const closeDatabase = onceAsync(database.close)
     cleanup.register("database", closeDatabase)
-    runApplicationMigrations(database.sqlite, {
-      normalizeVersionedStepContent: normalizeLegacyVersionedStepContentOrThrow,
-    })
+    runApplicationMigrations(database.sqlite)
 
     const clock = options.clock ?? systemClock
     const idGenerator = options.idGenerator ?? uuidGenerator
@@ -164,8 +161,6 @@ export async function createContainer(
     const storage = createResourceObjectStorage(env.adminAssetStore)
     const identityBridge = createLearnerIdentityBridge(database.db)
     const learnerAuth = createLearnerAuthRuntime({
-      apiOrigin: env.apiOrigin,
-      cookieDomain: env.learnerCookieDomain,
       database: createLearnerAuthDatabase(database.db),
       googleClientId: env.googleClientId,
       googleClientSecret: env.googleClientSecret,
@@ -180,8 +175,6 @@ export async function createContainer(
       webOrigin: env.webOrigin,
     })
     const adminAuth = createAdminAuthRuntime({
-      apiOrigin: env.apiOrigin,
-      cookieDomain: env.adminCookieDomain,
       database: createAdminAuthDatabase(database.db),
       secret: env.adminAuthSecret,
       sessionRevoker: createDrizzleAdminSessionRevoker(database.db),

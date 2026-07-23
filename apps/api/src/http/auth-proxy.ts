@@ -9,10 +9,10 @@ export function registerAuthProxy(
     return
   }
 
-  app.get("/api/auth/sign-in/google", (context) => {
+  app.get("/auth/sign-in/google", (context) => {
     return redirectGoogleSignIn(context.req.raw, authHandler)
   })
-  app.on(["GET", "POST"], "/api/auth/*", (context) => {
+  app.on(["GET", "POST"], "/auth/*", (context) => {
     return authHandler(context.req.raw).then(withPrivateNoStore)
   })
 }

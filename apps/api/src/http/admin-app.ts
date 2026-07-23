@@ -1,6 +1,5 @@
 import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
-import { cors } from "hono/cors"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { createApp as createHonoApp } from "@workspace/http-platform/core"
 import type { InternalErrorLogger } from "@workspace/http-platform/errors"
@@ -132,13 +131,6 @@ function createAdminMiddleware(
     dependencies.adminOrigin ?? localRuntimeDefaults.adminWebOrigin
 
   middleware.push(
-    cors({
-      allowHeaders: ["Authorization", "Content-Type", "If-Match"],
-      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      credentials: true,
-      exposeHeaders: ["Content-Disposition", "ETag", "Retry-After"],
-      origin: adminOrigin,
-    }),
     createRequestBodyLimitMiddleware({ maxSize: 6 * 1024 * 1024 }),
     createTrustedOriginMiddleware({ trustedOrigin: adminOrigin })
   )

@@ -109,17 +109,13 @@ describe("학습자 테스트 인증", () => {
 
   it("외부 callback을 거절하고 HTTPS cookie 보안 속성을 유지한다", async () => {
     const database = createMigratedTestDatabase()
-    const secureAuthBaseUrl = "https://api.example.test"
     const secureWebOrigin = "https://app.example.test"
 
     try {
-      const runtime = createTestRuntime(database.db, {
-        apiOrigin: secureAuthBaseUrl,
-        webOrigin: secureWebOrigin,
-      })
+      const runtime = createTestRuntime(database.db, secureWebOrigin)
       const response = await runtime.authHandler(
         new Request(
-          `${secureAuthBaseUrl}/api/auth/test/sign-in?callbackURL=${encodeURIComponent(
+          `${secureWebOrigin}/api/auth/test/sign-in?callbackURL=${encodeURIComponent(
             "https://external.example/app/courses"
           )}`,
           { headers: { Origin: secureWebOrigin } }
@@ -144,15 +140,8 @@ function createMigratedTestDatabase() {
   return createAuthTestDatabase()
 }
 
-function createTestRuntime(
-  database: Database,
-  origins: {
-    readonly apiOrigin: string
-    readonly webOrigin: string
-  } = { apiOrigin: authBaseUrl, webOrigin }
-) {
+function createTestRuntime(database: Database, runtimeWebOrigin = webOrigin) {
   return createLearnerAuthRuntime({
-    apiOrigin: origins.apiOrigin,
     database: createSqliteAuthDatabaseAdapter({
       database,
       schema: {
@@ -175,7 +164,7 @@ function createTestRuntime(
           .run()
       },
     },
-    webOrigin: origins.webOrigin,
+    webOrigin: runtimeWebOrigin,
   })
 }
 

@@ -16,7 +16,6 @@ type WebServerRuntimeEnv = {
 const webServerRuntimeEnvSchema = z.object({
   CSP_REPORT_ONLY: z.string().optional(),
   ENABLE_TEST_AUTH: z.string().optional(),
-  NEXT_PUBLIC_API_BASE_URL: z.string().trim().min(1).optional(),
   NODE_ENV: z.string().optional(),
   API_BASE_URL: z.string().trim().min(1).optional(),
   WEB_ORIGIN: z.string().trim().min(1).optional(),
@@ -60,7 +59,6 @@ export function readWebOrigin(env: WebServerRuntimeEnv = process.env): string {
 export function readWebCspRuntimeConfig(
   env: WebServerRuntimeEnv = process.env
 ): {
-  readonly apiOrigin: string
   readonly development: boolean
   readonly reportOnly: boolean
   readonly upgradeInsecureRequests: boolean
@@ -75,13 +73,6 @@ export function readWebCspRuntimeConfig(
   )
 
   return {
-    apiOrigin: toServerOrigin(
-      parsedEnv.NEXT_PUBLIC_API_BASE_URL,
-      parsedEnv.NODE_ENV,
-      localRuntimeDefaults.apiBaseUrl,
-      "production public API base URL is required",
-      "public API base URL"
-    ),
     development: parsedEnv.NODE_ENV !== "production",
     reportOnly: parsedEnv.CSP_REPORT_ONLY === "true",
     upgradeInsecureRequests: shouldUpgradeInsecureRequests(webOrigin),

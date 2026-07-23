@@ -409,8 +409,6 @@ function createFixture(): Disposable & { readonly path: string } {
     [
       "LEARNER_AUTH_SECRET=replace-with-32-byte-local-api-secret",
       "CURSOR_SIGNING_SECRET=replace-with-distinct-32-byte-cursor-secret",
-      "API_ORIGIN=http://localhost:4000",
-      "API_ALLOWED_HOSTS=localhost:4000,127.0.0.1:4000,api:4000",
       "ADMIN_AUTH_SECRET=replace-with-32-byte-local-admin-secret",
       "ADMIN_ORIGIN=http://127.0.0.1:3001",
       "DATABASE_URL=file:data/api.sqlite",
@@ -430,7 +428,6 @@ function createFixture(): Disposable & { readonly path: string } {
     root,
     "apps/web/.env.example",
     [
-      "NEXT_PUBLIC_API_BASE_URL=http://localhost:4000",
       "API_BASE_URL=http://localhost:4000",
       "WEB_ORIGIN=http://localhost:3000",
       "ENABLE_TEST_AUTH=true",
@@ -441,7 +438,6 @@ function createFixture(): Disposable & { readonly path: string } {
     root,
     "apps/admin/.env.example",
     [
-      "NEXT_PUBLIC_API_BASE_URL=http://localhost:4000",
       "NEXT_PUBLIC_LEARNER_WEB_ORIGIN=http://localhost:3000",
       "API_BASE_URL=http://localhost:4000",
       "ADMIN_ORIGIN=http://127.0.0.1:3001",

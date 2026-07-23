@@ -17,12 +17,9 @@ writing_app_cloudflared_image: cloudflare/cloudflared:2026.6.0@sha256:ba461b8aa9
 writing_app_litestream_image: litestream/litestream:0.5.11@sha256:79e3bfce6ed758722916f816b028fffd9e0a971058f41b88e2779510cead1d8d
 
 writing_app_web_origin: "https://{{ writing_app_web_host }}"
-writing_app_api_origin: "https://{{ writing_app_api_host }}"
 writing_app_admin_origin: "https://{{ writing_app_admin_host }}"
 
 writing_app_openai_model: gpt-5.2
-writing_app_learner_auth_cookie_domain: ""
-writing_app_admin_auth_cookie_domain: ""
 writing_app_google_client_id: ""
 writing_app_google_client_secret: ""
 writing_app_openai_api_key: ""

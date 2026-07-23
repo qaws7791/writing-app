@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { runBaselineTestMigration } from "@workspace/db/test-support/application-migration"
+import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 
 import {
   courseCurriculumVersions,
@@ -17,7 +17,7 @@ describe("content seed provider", () => {
     const client = createWritingAppDatabase(":memory:")
 
     try {
-      runBaselineTestMigration(client.sqlite)
+      runCurrentTestMigration(client.sqlite)
       await seedContentDatabase(client.db)
 
       expect(client.db.select().from(courses).all()).toHaveLength(5)
@@ -51,7 +51,7 @@ describe("content seed provider", () => {
     const client = createWritingAppDatabase(":memory:")
 
     try {
-      runBaselineTestMigration(client.sqlite)
+      runCurrentTestMigration(client.sqlite)
       await seedContentDatabase(client.db)
       const publishedVersionId = client.db
         .select({ id: courses.publishedCurriculumVersionId })

@@ -13,10 +13,7 @@ import {
 } from "@/features/authentication/model/admin-auth-navigation"
 import { adminRequestPathHeader } from "@/shared/auth/admin-request-path"
 import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import {
-  readApiBaseUrl,
-  readLearnerWebOrigin,
-} from "@/shared/config/admin-runtime-config"
+import { readLearnerWebOrigin } from "@/shared/config/admin-runtime-config"
 
 export default async function AdminLayout({
   children,
@@ -54,7 +51,6 @@ export default async function AdminLayout({
 
   return (
     <AdminShell
-      apiBaseUrl={readApiBaseUrl()}
       learnerWebOrigin={readLearnerWebOrigin()}
       role={sessionResult.value.admin.role}
     >

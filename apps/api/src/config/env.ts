@@ -1,28 +1,17 @@
-import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import { parseEnv, type AppEnvInput } from "@workspace/env/parse-env"
 import { shouldUsePrettyLogging } from "@workspace/observability/logger"
 import { z } from "@workspace/http-platform/zod"
 
-import {
-  normalizeApiHostAuthority,
-  parseApiHostConfiguration,
-  type ApiHostConfiguration,
-} from "@/config/api-hosts"
-
 export type ApiEnv = {
   readonly adminAssetStore: AdminAssetStoreEnv | undefined
   readonly adminAuthSecret: string
-  readonly adminCookieDomain: string | undefined
   readonly adminOrigin: string
-  readonly allowedHosts: ApiHostConfiguration
-  readonly apiOrigin: string
   readonly cursorSigningSecret: string
   readonly databaseUrl: string | undefined
   readonly deploymentVersion: string
   readonly googleClientId: string | undefined
   readonly googleClientSecret: string | undefined
   readonly learnerAuthSecret: string
-  readonly learnerCookieDomain: string | undefined
   readonly logLevel: string
   readonly logPretty: boolean
   readonly nodeEnv: "development" | "test" | "production"
@@ -45,14 +34,8 @@ const adminAssetStoreEnvSchema = z.object({
 export type AdminAssetStoreEnv = z.infer<typeof adminAssetStoreEnvSchema>
 
 export function parseApiEnv(input: AppEnvInput): ApiEnv {
-  const env = parseEnv({
-    ...input,
-    WEB_ORIGIN:
-      input["WEB_ORIGIN"] ?? input["CORS_ORIGIN"]?.split(",")[0]?.trim(),
-  })
+  const env = parseEnv(input)
   const cursorSigningSecret = readCursorSigningSecret(env)
-  const apiOrigin = env.API_ORIGIN ?? localRuntimeDefaults.apiBaseUrl
-  const allowedHosts = parseApiHostConfiguration(input["API_ALLOWED_HOSTS"])
   const adminAssetStore = parseAdminAssetStore(input, env.NODE_ENV)
 
   validateSeparatedAuthConfiguration({
@@ -61,15 +44,11 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     learnerAuthSecret: env.LEARNER_AUTH_SECRET,
     learnerOrigin: env.WEB_ORIGIN,
   })
-  validateApiOriginHost(apiOrigin, allowedHosts)
 
   return {
     adminAssetStore,
     adminAuthSecret: env.ADMIN_AUTH_SECRET,
-    adminCookieDomain: env.ADMIN_AUTH_COOKIE_DOMAIN,
     adminOrigin: env.ADMIN_ORIGIN,
-    allowedHosts,
-    apiOrigin,
     cursorSigningSecret,
     databaseUrl: env.DATABASE_URL,
     deploymentVersion: parseDeploymentVersion(
@@ -79,7 +58,6 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     googleClientId: env.GOOGLE_CLIENT_ID,
     googleClientSecret: env.GOOGLE_CLIENT_SECRET,
     learnerAuthSecret: env.LEARNER_AUTH_SECRET,
-    learnerCookieDomain: env.LEARNER_AUTH_COOKIE_DOMAIN,
     logLevel: input["LOG_LEVEL"]?.trim() || "info",
     logPretty: shouldUsePrettyLogging({
       LOG_PRETTY: input["LOG_PRETTY"],
@@ -159,19 +137,6 @@ function validateSeparatedAuthConfiguration(input: {
   ) {
     throw new Error(
       "Invalid environment variables: ADMIN_ORIGIN: 학습자 origin과 다른 값을 사용해야 합니다."
-    )
-  }
-}
-
-function validateApiOriginHost(
-  value: string,
-  allowedHosts: ReadonlySet<string>
-): void {
-  const authority = normalizeApiHostAuthority(new URL(value).host)
-
-  if (!allowedHosts.has(authority)) {
-    throw new Error(
-      "Invalid environment variables: API_ORIGIN: URL host가 API Host allowlist에 포함되어야 합니다."
     )
   }
 }

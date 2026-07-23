@@ -3,7 +3,6 @@ import { ResourceDocumentView } from "@/features/resource-document-editor/ui/res
 import { createResourceDocumentHttpAdapter } from "@/features/resource-document-editor/api/resource-document-http-adapter"
 import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
 import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import { readServerApiBaseUrl } from "@/server/env/admin-runtime-config"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { resourceDocumentIdSchema } from "@/entities/resource-document/model/resource-document-id"
 import { notFound } from "next/navigation"
@@ -35,7 +34,6 @@ export default async function AdminResourceDocumentRoute({
     <ResourceDocumentView document={result.value} />
   ) : (
     <ResourceDocumentEditor
-      apiBaseUrl={readServerApiBaseUrl()}
       document={result.value}
       key={`${result.value.id}:${result.value.version}`}
     />

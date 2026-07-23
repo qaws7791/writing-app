@@ -59,7 +59,13 @@ export function createLearnerErrorResponseMiddleware(): MiddlewareHandler<ApiHon
   return async (context, next) => {
     await next()
 
-    if (context.req.path === "/health" || context.res.status < 400) return
+    if (
+      context.req.path === "/health" ||
+      context.req.path === "/api/health" ||
+      context.res.status < 400
+    ) {
+      return
+    }
 
     context.res = await normalizeLearnerErrorResponse({
       path: context.req.path,
@@ -123,6 +129,7 @@ async function normalizeLearnerErrorResponse(input: {
   const headers = new Headers(input.response.headers)
 
   headers.set("Content-Type", "application/json")
+  headers.set("x-request-id", input.requestId)
 
   return new Response(JSON.stringify(parsedError), {
     headers,

@@ -4,10 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { AdminAuthPage } from "@/features/authentication/ui/admin-auth-page"
 import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
-import {
-  readApiBaseUrl,
-  readLearnerWebOrigin,
-} from "@/shared/config/admin-runtime-config"
+import { readLearnerWebOrigin } from "@/shared/config/admin-runtime-config"
 
 const replace = vi.fn()
 
@@ -20,7 +17,6 @@ vi.mock("@/features/authentication/api/admin-auth-client", () => ({
 
 const requestAdminPasswordLoginMock = vi.mocked(requestAdminPasswordLogin)
 const authPageProps = {
-  apiBaseUrl: readApiBaseUrl({}),
   learnerWebOrigin: readLearnerWebOrigin({}),
 } as const
 
@@ -55,14 +51,11 @@ describe("AdminAuthPage", () => {
     await user.click(screen.getByRole("button", { name: "로그인" }))
 
     await waitFor(() =>
-      expect(requestAdminPasswordLoginMock).toHaveBeenCalledWith(
-        authPageProps.apiBaseUrl,
-        {
-          email: "admin@example.com",
-          nextPath: "/courses",
-          password: "admin-password-123",
-        }
-      )
+      expect(requestAdminPasswordLoginMock).toHaveBeenCalledWith({
+        email: "admin@example.com",
+        nextPath: "/courses",
+        password: "admin-password-123",
+      })
     )
     expect(replace).toHaveBeenCalledWith("/courses")
   })

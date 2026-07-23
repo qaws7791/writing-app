@@ -6,6 +6,7 @@
   "scripts": {
     "audit:admin-auth": "cd ../.. && bun --env-file=apps/api/.env apps/api/src/scripts/admin-auth-audit.ts",
     "build": "bun build src/main.ts --target=bun --outdir=dist",
+    "db:adopt-current-schema-era": "cd ../.. && bun --env-file=apps/api/.env apps/api/src/scripts/adopt-current-schema-era.ts",
     "db:backup": "cd ../.. && bun --env-file=apps/api/.env apps/api/src/scripts/backup-database.ts",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "cd ../.. && bun --env-file=apps/api/.env apps/api/src/scripts/migrate-database.ts",

@@ -57,7 +57,6 @@ import {
   resourceLibraryChangedEvent,
   type AdminResourceDocument,
 } from "@/entities/resource-document/model/resource-document"
-import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 
 const resourceEditorTheme = {
   code: "my-5 block overflow-x-auto rounded-xl bg-muted px-4 py-3 font-mono text-sm leading-6",
@@ -91,16 +90,11 @@ const resourceEditorTheme = {
 } satisfies EditorThemeClasses
 
 export function ResourceDocumentEditor({
-  apiBaseUrl,
   document,
 }: {
-  readonly apiBaseUrl: ApiBaseUrl
   readonly document: AdminResourceDocument
 }) {
-  const api = useMemo(
-    () => createBrowserResourceDocumentApi(apiBaseUrl),
-    [apiBaseUrl]
-  )
+  const api = useMemo(() => createBrowserResourceDocumentApi(), [])
   const [editor, setEditor] = useState<LexicalEditor | null>(null)
   const [title, setTitle] = useState(document.name)
   const [version, setVersion] = useState(document.version)

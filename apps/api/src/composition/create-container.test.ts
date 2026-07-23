@@ -45,9 +45,9 @@ describe("API container", () => {
         "resourceLibrary",
       ])
       const app = createApp(container)
-      const learnerHealth = await request(app.unified, "/health")
+      const learnerHealth = await request(app.unified, "/api/health")
       const adminHealth = await request(app.unified, "/api/admin/health")
-      const learnerOpenApi = await request(app.unified, "/openapi")
+      const learnerOpenApi = await request(app.unified, "/api/openapi")
       const adminOpenApi = await request(app.unified, "/api/admin/openapi")
 
       expect(learnerHealth.status).toBe(200)
@@ -75,8 +75,6 @@ function createTestEnvironment(
   return {
     ADMIN_AUTH_SECRET: "admin-test-secret-0123456789abcdef",
     ADMIN_ORIGIN: "http://localhost:3001",
-    API_ALLOWED_HOSTS: "localhost:4000,api:4000",
-    API_ORIGIN: "http://localhost:4000",
     API_PORT: "4000",
     DATABASE_URL: databasePath,
     LEARNER_AUTH_SECRET: "learner-test-secret-0123456789abcdef",

@@ -4,13 +4,9 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { AdminShell } from "@/app/(admin)/_views/admin-shell"
-import {
-  readApiBaseUrl,
-  readLearnerWebOrigin,
-} from "@/shared/config/admin-runtime-config"
+import { readLearnerWebOrigin } from "@/shared/config/admin-runtime-config"
 
 const shellProps = {
-  apiBaseUrl: readApiBaseUrl({}),
   learnerWebOrigin: readLearnerWebOrigin({}),
   role: "owner",
 } as const

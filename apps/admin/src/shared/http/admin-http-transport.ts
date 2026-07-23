@@ -49,7 +49,7 @@ export function createAdminHttpTransport({
   requestOrigin,
   tokenProvider,
 }: {
-  readonly baseUrl: ApiBaseUrl
+  readonly baseUrl?: ApiBaseUrl
   readonly fetch: HttpFetch
   readonly requestOrigin?: string
   readonly tokenProvider: AdminTokenProvider
@@ -57,7 +57,7 @@ export function createAdminHttpTransport({
   return {
     async requestDownload(input) {
       const request = await createRequest({
-        baseUrl,
+        ...(baseUrl === undefined ? {} : { baseUrl }),
         method: "GET",
         path: input.path,
         ...(requestOrigin === undefined ? {} : { requestOrigin }),
@@ -84,7 +84,7 @@ export function createAdminHttpTransport({
     },
     async requestJson(input) {
       const request = await createRequest({
-        baseUrl,
+        ...(baseUrl === undefined ? {} : { baseUrl }),
         ...(input.body === undefined ? {} : { body: input.body }),
         ...(input.headers === undefined ? {} : { headers: input.headers }),
         method: input.method,
@@ -115,7 +115,7 @@ export function createAdminHttpTransport({
 }
 
 async function createRequest(input: {
-  readonly baseUrl: ApiBaseUrl
+  readonly baseUrl?: ApiBaseUrl
   readonly body?: unknown
   readonly headers?: Readonly<Record<string, string>>
   readonly method: AdminHttpMethod

@@ -18,21 +18,18 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 
 COPY . .
 
-ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_LEARNER_WEB_ORIGIN
 ARG API_BASE_URL
 ARG ADMIN_ORIGIN
 ARG CSP_REPORT_ONLY=false
 
 ENV NODE_ENV=production \
-    NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} \
     NEXT_PUBLIC_LEARNER_WEB_ORIGIN=${NEXT_PUBLIC_LEARNER_WEB_ORIGIN} \
     API_BASE_URL=${API_BASE_URL} \
     ADMIN_ORIGIN=${ADMIN_ORIGIN} \
     CSP_REPORT_ONLY=${CSP_REPORT_ONLY}
 
-RUN test -n "$NEXT_PUBLIC_API_BASE_URL" \
-    && test -n "$NEXT_PUBLIC_LEARNER_WEB_ORIGIN" \
+RUN test -n "$NEXT_PUBLIC_LEARNER_WEB_ORIGIN" \
     && test -n "$API_BASE_URL" \
     && test -n "$ADMIN_ORIGIN"
 RUN cd apps/admin && node node_modules/next/dist/bin/next build --webpack

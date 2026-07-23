@@ -102,7 +102,6 @@ describe("production image release workflow", () => {
   test("production 공개 origin을 repository variable로만 전달한다", () => {
     for (const variable of [
       "PRODUCTION_WEB_ORIGIN",
-      "PRODUCTION_API_ORIGIN",
       "PRODUCTION_ADMIN_ORIGIN",
     ]) {
       expect(workflow).toContain("vars." + variable)

@@ -51,7 +51,6 @@ jobs:
         env:
           IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
           PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
-          PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
           PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
       - id: vulnerability-policy
         name: Image 취약점 정책 검증
@@ -77,7 +76,6 @@ jobs:
             dockerfile: deploy/docker/web.dockerfile
             runtime: node-24
             build-args: |
-              NEXT_PUBLIC_API_BASE_URL=${{ vars.PRODUCTION_API_ORIGIN }}
               API_BASE_URL=http://api:4000
               WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
           - service: api
@@ -88,7 +86,6 @@ jobs:
             dockerfile: deploy/docker/admin.dockerfile
             runtime: node-24
             build-args: |
-              NEXT_PUBLIC_API_BASE_URL=${{ vars.PRODUCTION_API_ORIGIN }}
               NEXT_PUBLIC_LEARNER_WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
               API_BASE_URL=http://api:4000
               ADMIN_ORIGIN=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
@@ -121,7 +118,6 @@ jobs:
             org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
             io.writing-app.configuration-digest=${{ needs.release-preflight.outputs.configuration-digest }}
             io.writing-app.public-origin.admin=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
-            io.writing-app.public-origin.api=${{ vars.PRODUCTION_API_ORIGIN }}
             io.writing-app.public-origin.web=${{ vars.PRODUCTION_WEB_ORIGIN }}
             io.writing-app.runtime=${{ matrix.runtime }}
             io.writing-app.vulnerability-policy-digest=${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
@@ -190,7 +186,6 @@ jobs:
           IMAGE_RELEASE_SERVICE: ${{ matrix.service }}
           IMAGE_RELEASE_VULNERABILITY_POLICY_DIGEST: ${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
           PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
-          PRODUCTION_API_ORIGIN: ${{ vars.PRODUCTION_API_ORIGIN }}
           PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:

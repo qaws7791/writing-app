@@ -196,10 +196,8 @@ function createE2eServerDefinitions(
       cwd: repositoryRoot,
       env: {
         ...environment,
-        API_ALLOWED_HOSTS: "localhost:4100,127.0.0.1:4100",
         ADMIN_AUTH_SECRET: "e2e-admin-auth-secret-must-have-32-characters",
         ADMIN_ORIGIN: "http://127.0.0.1:3101",
-        API_ORIGIN: "http://127.0.0.1:4100",
         API_PORT: "4100",
         DATABASE_URL: e2eDatabaseUrl,
         ENABLE_TEST_AUTH: "true",
@@ -208,7 +206,7 @@ function createE2eServerDefinitions(
         WEB_ORIGIN: "http://localhost:3100",
       },
       name: "api",
-      readinessUrl: "http://127.0.0.1:4100/health",
+      readinessUrl: "http://127.0.0.1:4100/api/health",
     },
     {
       command: [
@@ -225,7 +223,6 @@ function createE2eServerDefinitions(
         ...environment,
         ENABLE_TEST_AUTH: "true",
         API_BASE_URL: "http://127.0.0.1:4100",
-        NEXT_PUBLIC_API_BASE_URL: "http://localhost:4100",
       },
       name: "learner web",
       readinessUrl: "http://localhost:3100/login",
@@ -258,7 +255,6 @@ function createE2eServerDefinitions(
         ...environment,
         API_BASE_URL: "http://127.0.0.1:4100",
         ADMIN_ORIGIN: "http://127.0.0.1:3101",
-        NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:4100",
         NEXT_PUBLIC_LEARNER_WEB_ORIGIN: "http://localhost:3100",
       },
       name: "admin web",

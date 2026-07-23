@@ -9,7 +9,7 @@ import {
 } from "#scripts/local-database-diagnostic"
 
 describe("로컬 DB 진단 경계", () => {
-  test("현재·legacy·차단 결과를 discriminated union으로 해석한다", () => {
+  test("현재·migration 필요·차단 결과를 discriminated union으로 해석한다", () => {
     expect(
       parseLocalDatabaseDiagnostic(
         JSON.stringify({
@@ -27,30 +27,14 @@ describe("로컬 DB 진단 경계", () => {
           checks: {},
           issues: [],
           kind: "application-database-diagnostic",
-          pendingMigrationIds: ["0001-module-schema-ownership"],
+          pendingMigrationIds: ["0001-next-schema-change"],
           schema: "current",
           status: "migration-required",
         })
       )
     ).toEqual({
-      pendingMigrationIds: ["0001-module-schema-ownership"],
+      pendingMigrationIds: ["0001-next-schema-change"],
       schema: "current",
-      status: "migration-required",
-    })
-    expect(
-      parseLocalDatabaseDiagnostic(
-        JSON.stringify({
-          checks: {},
-          issues: [],
-          kind: "application-database-diagnostic",
-          legacySchema: "curriculum",
-          schema: "legacy",
-          status: "migration-required",
-        })
-      )
-    ).toEqual({
-      legacySchema: "curriculum",
-      schema: "legacy",
       status: "migration-required",
     })
     expect(
@@ -79,7 +63,7 @@ describe("로컬 DB 진단 경계", () => {
       parseLocalDatabaseDiagnostic(
         JSON.stringify({
           kind: "application-database-diagnostic",
-          schema: "legacy",
+          schema: "unknown",
           status: "ok",
         })
       )
@@ -103,7 +87,7 @@ describe("로컬 DB 진단 경계", () => {
     })
     const pending = JSON.stringify({
       kind: "application-database-diagnostic",
-      pendingMigrationIds: ["0001-module-schema-ownership"],
+      pendingMigrationIds: ["0001-next-schema-change"],
       schema: "current",
       status: "migration-required",
     })
@@ -122,7 +106,7 @@ describe("로컬 DB 진단 경계", () => {
         stdout: pending,
       })
     ).toEqual({
-      pendingMigrationIds: ["0001-module-schema-ownership"],
+      pendingMigrationIds: ["0001-next-schema-change"],
       schema: "current",
       status: "migration-required",
     })

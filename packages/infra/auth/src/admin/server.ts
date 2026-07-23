@@ -24,8 +24,6 @@ export type AdminSessionRevoker = {
 }
 
 export type CreateAdminAuthRuntimeInput = {
-  readonly apiOrigin: string
-  readonly cookieDomain?: string
   readonly database: AuthDatabaseAdapter
   readonly secret: string
   readonly sessionRevoker: AdminSessionRevoker
@@ -42,9 +40,16 @@ export function createAdminAuthRuntime(
 ): AdminAuthRuntime {
   const auth = betterAuth({
     account: { modelName: "admin_account" },
-    advanced: createAdminAdvancedOptions(input.cookieDomain),
+    advanced: {
+      cookiePrefix: "writing-app-admin",
+      cookies: {
+        session_token: {
+          name: adminSessionCookieName,
+        },
+      },
+    },
     basePath: "/api/admin/auth",
-    baseURL: input.apiOrigin,
+    baseURL: input.webOrigin,
     database: readAuthDatabaseAdapter(input.database),
     disabledPaths: ["/sign-up/email"],
     emailAndPassword: {
@@ -65,7 +70,6 @@ export function createAdminAuthRuntime(
   return {
     authHandler: createAdminAuthHandler({
       auth,
-      cookieDomain: input.cookieDomain,
       identityResolver,
       sessionRevoker: input.sessionRevoker,
     }),
@@ -116,7 +120,6 @@ function createAdminIdentityResolver(
 
 function createAdminAuthHandler(input: {
   readonly auth: { readonly handler: (request: Request) => Promise<Response> }
-  readonly cookieDomain?: string
   readonly identityResolver: AdminAuthIdentityResolver
   readonly sessionRevoker: AdminSessionRevoker
 }): (request: Request) => Promise<Response> {
@@ -134,10 +137,7 @@ function createAdminAuthHandler(input: {
     await input.sessionRevoker.revokeAllForAdmin(identity.id)
 
     const headers = new Headers(response.headers)
-    headers.append(
-      "Set-Cookie",
-      createExpiredAdminSessionCookie(input.cookieDomain, request.url)
-    )
+    headers.append("Set-Cookie", createExpiredAdminSessionCookie(request.url))
 
     return new Response(response.body, {
       headers,
@@ -154,10 +154,7 @@ function isPasswordChangeRequest(request: Request): boolean {
   )
 }
 
-function createExpiredAdminSessionCookie(
-  cookieDomain: string | undefined,
-  requestUrl: string
-): string {
+function createExpiredAdminSessionCookie(requestUrl: string): string {
   const attributes = [
     `${adminSessionCookieName}=`,
     "Max-Age=0",
@@ -166,29 +163,7 @@ function createExpiredAdminSessionCookie(
     "SameSite=Lax",
   ]
 
-  if (cookieDomain !== undefined) attributes.push(`Domain=${cookieDomain}`)
   if (new URL(requestUrl).protocol === "https:") attributes.push("Secure")
 
   return attributes.join("; ")
-}
-
-function createAdminAdvancedOptions(cookieDomain: string | undefined) {
-  const baseOptions = {
-    cookiePrefix: "writing-app-admin",
-    cookies: {
-      session_token: {
-        name: adminSessionCookieName,
-      },
-    },
-  }
-
-  if (cookieDomain === undefined) return baseOptions
-
-  return {
-    ...baseOptions,
-    crossSubDomainCookies: {
-      domain: cookieDomain,
-      enabled: true,
-    },
-  }
 }
