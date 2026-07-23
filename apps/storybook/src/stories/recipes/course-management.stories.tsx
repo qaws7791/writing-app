@@ -28,9 +28,6 @@ import {
   SelectValue,
 } from "@workspace/ui/components/ui/select"
 
-import { RecipeFrame } from "#storybook/blocks/recipe-frame"
-import { ViewportFrame } from "#storybook/blocks/viewport-frame"
-
 const meta = {
   title: "Recipes/Course Management",
   parameters: {
@@ -41,83 +38,54 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-function CourseCard() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle as="h2">문장의 중심 찾기</CardTitle>
-        <CardDescription>12분 학습 · 입문 코스</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Progress value={62}>
-          <ProgressLabel>진행률</ProgressLabel>
-          <ProgressValue />
-        </Progress>
-      </CardContent>
-      <CardFooter className="justify-end gap-2">
-        <Button variant="outline">검토</Button>
-        <Button>이어 하기</Button>
-      </CardFooter>
-    </Card>
-  )
-}
-
 export const CardRecipe: Story = {
   render: () => (
-    <div className="grid gap-6">
-      <RecipeFrame label="Course Card">
-        <CourseCard />
-      </RecipeFrame>
-    </div>
+    <section className="grid gap-4 rounded-panel border border-border/50 bg-background p-surface-padding-md">
+      <h3 className="text-title-lg font-black">Course Card</h3>
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2">문장의 중심 찾기</CardTitle>
+          <CardDescription>12분 학습 · 입문 코스</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Progress value={62}>
+            <ProgressLabel>진행률</ProgressLabel>
+            <ProgressValue />
+          </Progress>
+        </CardContent>
+        <CardFooter className="justify-end gap-2">
+          <Button variant="outline">검토</Button>
+          <Button>이어 하기</Button>
+        </CardFooter>
+      </Card>
+    </section>
   ),
 }
 
 export const ResponsiveForm: Story = {
   render: () => (
-    <div className="grid gap-6 xl:grid-cols-[auto_1fr]">
-      <ViewportFrame label="mobile-sm" width="360px">
-        <div className="grid gap-4 p-surface-padding-md">
-          <Field>
-            <FieldLabel htmlFor="recipe-mobile-title">코스 제목</FieldLabel>
-            <Input id="recipe-mobile-title" placeholder="제목" />
-            <FieldDescription>모바일에서는 한 열로 쌓인다.</FieldDescription>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="recipe-mobile-status">상태</FieldLabel>
-            <Select defaultValue="draft">
-              <SelectTrigger id="recipe-mobile-status" variant="outlined">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">초안</SelectItem>
-                <SelectItem value="published">공개</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Button>저장</Button>
-        </div>
-      </ViewportFrame>
-      <ViewportFrame label="desktop" width="720px">
-        <div className="grid grid-cols-[1fr_12rem_auto] items-end gap-3 p-surface-padding-md">
-          <Field>
-            <FieldLabel htmlFor="recipe-desktop-title">코스 제목</FieldLabel>
-            <Input id="recipe-desktop-title" placeholder="제목" />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="recipe-desktop-status">상태</FieldLabel>
-            <Select defaultValue="draft">
-              <SelectTrigger id="recipe-desktop-status" variant="outlined">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">초안</SelectItem>
-                <SelectItem value="published">공개</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Button>저장</Button>
-        </div>
-      </ViewportFrame>
-    </div>
+    <form
+      className="grid max-w-4xl gap-4 rounded-panel border border-border/50 bg-background p-surface-padding-md md:grid-cols-[1fr_12rem_auto] md:items-end"
+      onSubmit={(event) => event.preventDefault()}
+    >
+      <Field>
+        <FieldLabel htmlFor="recipe-title">코스 제목</FieldLabel>
+        <Input id="recipe-title" placeholder="제목" />
+        <FieldDescription>작은 viewport에서는 한 열로 쌓인다.</FieldDescription>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="recipe-status">상태</FieldLabel>
+        <Select defaultValue="draft">
+          <SelectTrigger id="recipe-status" variant="outlined">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="draft">초안</SelectItem>
+            <SelectItem value="published">공개</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+      <Button type="submit">저장</Button>
+    </form>
   ),
 }

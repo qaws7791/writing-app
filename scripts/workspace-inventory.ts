@@ -30,6 +30,10 @@ export type WorkspaceInventory = {
 }
 
 export type WorkspaceInventoryError =
+  | {
+      readonly manifestPath: string
+      readonly type: "invalid-workspace-globs"
+    }
   | { readonly glob: string; readonly type: "unsupported-workspace-glob" }
   | { readonly directory: string; readonly type: "workspace-root-not-found" }
   | {
@@ -86,7 +90,18 @@ export function createWorkspaceInventory(
     }
   }
 
-  const workspaceGlobs = readStringArray(rootManifest["workspaces"])
+  const workspaceGlobs = readWorkspaceGlobs(rootManifest["workspaces"])
+  if (workspaceGlobs === null) {
+    return {
+      errors: [
+        {
+          manifestPath: normalizePath(rootManifestPath),
+          type: "invalid-workspace-globs",
+        },
+      ],
+      status: "failure",
+    }
+  }
   const workspaceContainerDirectories = new Set(
     workspaceGlobs.map((workspaceGlob) => workspaceGlob.slice(0, -2))
   )
@@ -145,6 +160,8 @@ export function formatWorkspaceInventoryError(
   error: WorkspaceInventoryError
 ): string {
   switch (error.type) {
+    case "invalid-workspace-globs":
+      return `${error.manifestPath} must declare non-empty string workspace globs.`
     case "unsupported-workspace-glob":
       return `Unsupported workspace glob: ${error.glob}`
     case "workspace-root-not-found":
@@ -344,10 +361,16 @@ function isJsonValue(value: unknown): value is JsonValue {
   return Object.values(value).every(isJsonValue)
 }
 
-function readStringArray(value: JsonValue | undefined): string[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
-    : []
+function readWorkspaceGlobs(value: JsonValue | undefined): string[] | null {
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    value.some((item) => typeof item !== "string")
+  ) {
+    return null
+  }
+
+  return value
 }
 
 function readStringRecord(

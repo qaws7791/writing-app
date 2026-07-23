@@ -277,9 +277,7 @@ jobs:
       - run: bun install --linker isolated --frozen-lockfile
       - run: bun run build
       - run: bun run check:ui-style-compiled-css
-      - run: bun run check:resource-route-bundle
-      - run: bun run check:admin-chart-route-bundle
-      - run: bun run check:landing-route-bundle
+      - run: bun run check:route-bundles
       - run: bun run test:frontend-production-runtime
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:

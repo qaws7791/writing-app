@@ -16,6 +16,31 @@ export interface ContainerImageLock {
 
 type SourceReader = (relativePath: string) => string
 
+export function readContainerImageLock(
+  repositoryRoot: string
+): ContainerImageLock {
+  const lockPath = path.join(
+    repositoryRoot,
+    "deploy",
+    "security",
+    "container-image-lock.json"
+  )
+  return parseContainerImageLock(
+    JSON.parse(fs.readFileSync(lockPath, "utf8")) as unknown
+  )
+}
+
+export function requireLockedContainerImageReference(
+  lock: ContainerImageLock,
+  name: string
+): string {
+  const image = lock.images.find((candidate) => candidate.name === name)
+  if (image === undefined) {
+    throw new Error(`${name}: container image lock 항목이 없습니다.`)
+  }
+  return image.reference
+}
+
 export function parseContainerImageLock(input: unknown): ContainerImageLock {
   if (!isObject(input))
     throw new Error("container image lock은 객체여야 합니다.")
@@ -127,15 +152,7 @@ function escapeRegExp(value: string): string {
 
 function runContainerImageLockCheck(): void {
   const repositoryRoot = path.resolve(import.meta.dir, "..")
-  const lockPath = path.join(
-    repositoryRoot,
-    "deploy",
-    "security",
-    "container-image-lock.json"
-  )
-  const lock = parseContainerImageLock(
-    JSON.parse(fs.readFileSync(lockPath, "utf8")) as unknown
-  )
+  const lock = readContainerImageLock(repositoryRoot)
   const errors = validateContainerImageLock(lock, (relativePath) =>
     fs.readFileSync(path.join(repositoryRoot, relativePath), "utf8")
   )

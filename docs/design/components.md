@@ -192,7 +192,7 @@
 
 ## Guardrail
 
-`bun run check:design-system-guardrails`는 legacy admin 디자인 class, 앱 inline typography style, 앱 raw hex color가 현재 이관 기준선보다 늘어나지 않는지 검사한다. 이 검사는 root `bun run lint`에 포함한다. 2026-06-25 admin 이관 이후 legacy admin 디자인 class 기준선은 0이다.
+`bun run check:design-system-guardrails`는 legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic color alias를 금지한다. raw hex color는 CSS token을 사용할 수 없는 정적 metadata나 Storybook theme처럼 검사 source에 명시된 소유 파일에서만 허용한다. 과거 검출 수를 유지하는 baseline은 두지 않으며 이 검사는 root `bun run lint`에 포함한다.
 
 ## Icon
 

@@ -18,7 +18,6 @@
         "playwright.ui-style.config.ts",
         "scripts/**/*.test.ts",
         "scripts/check-architecture.ts",
-        "scripts/fixtures/p13-null-decision-gate.ts",
         "scripts/run-e2e.ts"
       ],
       "project": [

@@ -3,6 +3,11 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 
+import {
+  readContainerImageLock,
+  requireLockedContainerImageReference,
+} from "./check-container-image-lock"
+
 type JsonObject = Record<string, unknown>
 
 const applicationServices = ["web", "api", "admin"] as const
@@ -54,6 +59,12 @@ interface DeploymentFixture extends Disposable {
   readonly composeEnvironmentPath: string
   readonly litestreamEnvironmentPath: string
   readonly litestreamPath: string
+}
+
+interface LockedDeploymentImages {
+  readonly caddy: string
+  readonly cloudflared: string
+  readonly litestream: string
 }
 
 export function validateComposeContract(input: unknown): readonly string[] {
@@ -443,7 +454,10 @@ function sameStringArray(value: unknown, expected: readonly string[]): boolean {
   )
 }
 
-function createDeploymentFixture(repositoryRoot: string): DeploymentFixture {
+function createDeploymentFixture(
+  repositoryRoot: string,
+  images: LockedDeploymentImages
+): DeploymentFixture {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "writing-app-deploy-"))
   const configDirectory = path.join(root, "config")
   const secretsDirectory = path.join(root, "secrets")
@@ -535,9 +549,9 @@ function createDeploymentFixture(repositoryRoot: string): DeploymentFixture {
       `WEB_IMAGE=example.invalid/writing-app-web@sha256:${digest}`,
       `API_IMAGE=example.invalid/writing-app-api@sha256:${digest}`,
       `ADMIN_IMAGE=example.invalid/writing-app-admin@sha256:${digest}`,
-      "CADDY_IMAGE=caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648",
-      "CLOUDFLARED_IMAGE=cloudflare/cloudflared:2026.6.0@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f",
-      "LITESTREAM_IMAGE=litestream/litestream:0.5.11@sha256:79e3bfce6ed758722916f816b028fffd9e0a971058f41b88e2779510cead1d8d",
+      `CADDY_IMAGE=${images.caddy}`,
+      `CLOUDFLARED_IMAGE=${images.cloudflared}`,
+      `LITESTREAM_IMAGE=${images.litestream}`,
       `CONFIG_DIRECTORY=${toDockerPath(configDirectory)}`,
       `SECRETS_DIRECTORY=${toDockerPath(secretsDirectory)}`,
       `DATA_DIRECTORY=${toDockerPath(dataDirectory)}`,
@@ -599,11 +613,15 @@ function requireSuccessfulCommand(
   )
 }
 
-function validateContainerConfigs(fixture: DeploymentFixture): void {
+function validateContainerConfigs(
+  fixture: DeploymentFixture,
+  images: LockedDeploymentImages
+): void {
   validateCaddyContainerConfig(
     fixture.caddyEnvironmentPath,
     fixture.caddyfilePath,
-    "Caddy 설정 검증"
+    "Caddy 설정 검증",
+    images.caddy
   )
   requireSuccessfulCommand("Litestream 설정 검증", "docker", [
     "run",
@@ -612,7 +630,7 @@ function validateContainerConfigs(fixture: DeploymentFixture): void {
     fixture.litestreamEnvironmentPath,
     "--mount",
     `type=bind,source=${fixture.litestreamPath},target=/etc/litestream.yaml,readonly`,
-    "litestream/litestream:0.5.11@sha256:79e3bfce6ed758722916f816b028fffd9e0a971058f41b88e2779510cead1d8d",
+    images.litestream,
     "databases",
     "-config",
     "/etc/litestream.yaml",
@@ -622,7 +640,8 @@ function validateContainerConfigs(fixture: DeploymentFixture): void {
 function validateCaddyContainerConfig(
   caddyEnvironmentPath: string,
   caddyfilePath: string,
-  label: string
+  label: string,
+  imageReference: string
 ): void {
   requireSuccessfulCommand(label, "docker", [
     "run",
@@ -631,7 +650,7 @@ function validateCaddyContainerConfig(
     caddyEnvironmentPath,
     "--mount",
     `type=bind,source=${caddyfilePath},target=/etc/caddy/caddyfile,readonly`,
-    "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648",
+    imageReference,
     "caddy",
     "validate",
     "--config",
@@ -643,6 +662,12 @@ function validateCaddyContainerConfig(
 
 function runDeploymentConfigCheck(): void {
   const repositoryRoot = path.resolve(import.meta.dir, "..")
+  const imageLock = readContainerImageLock(repositoryRoot)
+  const images: LockedDeploymentImages = {
+    caddy: requireLockedContainerImageReference(imageLock, "caddy"),
+    cloudflared: requireLockedContainerImageReference(imageLock, "cloudflared"),
+    litestream: requireLockedContainerImageReference(imageLock, "litestream"),
+  }
   const composePath = path.join(
     repositoryRoot,
     "deploy",
@@ -650,7 +675,7 @@ function runDeploymentConfigCheck(): void {
     "compose.yaml"
   )
 
-  using fixture = createDeploymentFixture(repositoryRoot)
+  using fixture = createDeploymentFixture(repositoryRoot, images)
   const composeResult = requireSuccessfulCommand(
     "Compose 설정 해석",
     "docker",
@@ -688,7 +713,7 @@ function runDeploymentConfigCheck(): void {
     "--skip-container-validation"
   )
   if (!skipContainerValidation) {
-    validateContainerConfigs(fixture)
+    validateContainerConfigs(fixture, images)
   }
 
   console.log(

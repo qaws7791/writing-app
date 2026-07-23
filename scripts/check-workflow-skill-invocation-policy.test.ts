@@ -10,7 +10,6 @@ describe("워크플로 스킬 호출 정책", () => {
           agentConfiguration:
             "interface:\n  display_name: fixture\npolicy:\n  allow_implicit_invocation: false\n",
           name: "fixture",
-          skillMarkdown: "---\nname: fixture\n---\n",
         },
       ])
     ).toEqual([])
@@ -22,13 +21,11 @@ describe("워크플로 스킬 호출 정책", () => {
         {
           agentConfiguration: "policy:\n  allow_implicit_invocation: true\n",
           name: "implicit",
-          skillMarkdown: "---\nname: implicit\n---\n",
         },
         { name: "missing" },
       ])
     ).toEqual([
       "implicit: agents/openai.yaml의 policy.allow_implicit_invocation은 false여야 합니다.",
-      "missing: SKILL.md가 없습니다.",
       "missing: agents/openai.yaml이 없습니다.",
     ])
   })

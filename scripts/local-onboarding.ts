@@ -17,7 +17,6 @@ import {
 const localEnvironmentFiles = [
   {
     examplePath: "apps/api/.env.example",
-    legacyValues: {},
     path: "apps/api/.env",
     prepare: (template: string, credentials: LocalCredentials) =>
       replaceEnvironmentValue(
@@ -44,13 +43,11 @@ const localEnvironmentFiles = [
   },
   {
     examplePath: "apps/web/.env.example",
-    legacyValues: {},
     path: "apps/web/.env",
     prepare: (template: string) => template,
   },
   {
     examplePath: "apps/admin/.env.example",
-    legacyValues: {},
     path: "apps/admin/.env",
     prepare: (template: string) => template,
   },
@@ -75,7 +72,6 @@ export type LocalEnvironmentFileResult =
   | {
       readonly addedKeys: readonly string[]
       readonly kind: "updated"
-      readonly migratedKeys: readonly string[]
       readonly path: string
     }
 
@@ -176,13 +172,9 @@ export function createLocalEnvironmentFiles({
     )
     const reconciliation = reconcileEnvironmentFile(
       readFileSync(targetPath, "utf8"),
-      template,
-      file.legacyValues
+      template
     )
-    if (
-      reconciliation.addedKeys.length === 0 &&
-      reconciliation.migratedKeys.length === 0
-    ) {
+    if (reconciliation.addedKeys.length === 0) {
       return { kind: "preserved", path: file.path }
     }
 
@@ -194,7 +186,6 @@ export function createLocalEnvironmentFiles({
     return {
       addedKeys: reconciliation.addedKeys,
       kind: "updated",
-      migratedKeys: reconciliation.migratedKeys,
       path: file.path,
     }
   })
@@ -686,27 +677,17 @@ function environmentFileNeedsUpdate(
 
   const environment = parseEnvironmentFile(targetPath)
   const example = parseEnvironmentFile(examplePath)
-  if (
-    [...example.keys()].some(
-      (key) => (environment.get(key)?.trim().length ?? 0) === 0
-    )
-  ) {
-    return true
-  }
-
-  return Object.entries(file.legacyValues).some(
-    ([key, legacyValue]) => environment.get(key) === legacyValue
+  return [...example.keys()].some(
+    (key) => (environment.get(key)?.trim().length ?? 0) === 0
   )
 }
 
 function reconcileEnvironmentFile(
   content: string,
-  template: string,
-  legacyValues: Readonly<Record<string, string>>
+  template: string
 ): {
   readonly addedKeys: readonly string[]
   readonly content: string
-  readonly migratedKeys: readonly string[]
 } {
   const currentValues = parseEnvironmentContent(content)
   const templateValues = parseEnvironmentContent(template)
@@ -715,10 +696,6 @@ function reconcileEnvironmentFile(
   )
   const absentKeys = addedKeys.filter((key) => !currentValues.has(key))
   const emptyKeys = addedKeys.filter((key) => currentValues.has(key))
-  const migratedKeys = Object.entries(legacyValues)
-    .filter(([key, legacyValue]) => currentValues.get(key) === legacyValue)
-    .map(([key]) => key)
-
   let nextContent = content
   for (const key of emptyKeys) {
     const desiredValue = templateValues.get(key)
@@ -727,14 +704,6 @@ function reconcileEnvironmentFile(
     }
     nextContent = replaceEnvironmentValue(nextContent, key, desiredValue)
   }
-  for (const key of migratedKeys) {
-    const desiredValue = templateValues.get(key)
-    if (desiredValue === undefined) {
-      throw new Error(`환경 변수 예시에 ${key}가 없습니다.`)
-    }
-    nextContent = replaceEnvironmentValue(nextContent, key, desiredValue)
-  }
-
   if (absentKeys.length > 0) {
     const separator = nextContent.endsWith("\n") ? "" : "\n"
     const additions = absentKeys
@@ -743,7 +712,7 @@ function reconcileEnvironmentFile(
     nextContent = `${nextContent}${separator}${additions}\n`
   }
 
-  return { addedKeys, content: nextContent, migratedKeys }
+  return { addedKeys, content: nextContent }
 }
 
 function inspectRequiredEnvironmentValues(

@@ -14,7 +14,7 @@ pre-commit:
       run: bun run scripts/lint-staged-workspaces.ts {staged_files}
 
     workspace-inventory:
-      glob: "{package.json,turbo.json,vitest.workspace.ts,README.md,docs/**/*.md,apps/*/package.json,packages/*/package.json,packages/*/*/package.json,scripts/{check-workspace-inventory,workspace-inventory,workspace-inventory.test}.ts,scripts/fixtures/target-workspace-inventory.json}"
+      glob: "{package.json,vitest.workspace.ts,README.md,docs/**/*.md,apps/*/package.json,packages/*/package.json,packages/*/*/package.json,scripts/{check-workspace-inventory,workspace-inventory,workspace-inventory.test}.ts}"
       run: bun run check:workspace-inventory
 
     document-drift:
@@ -38,7 +38,7 @@ pre-commit:
       run: bun run check:dead-code
 
     package-interfaces:
-      glob: "{package.json,apps/storybook/**/*.{ts,tsx,mdx},packages/*/package.json,packages/**/*.{ts,tsx,json},scripts/{check-package-interfaces,package-interface-tombstones,package-interface-tombstones.test}.ts,scripts/fixtures/p15-module-environment-access.txt,docs/engineering/{code-style.md,package-interface-and-import-rules.md}}"
+      glob: "{package.json,apps/storybook/**/*.{ts,tsx,mdx},packages/*/package.json,packages/**/*.{ts,tsx,json},scripts/check-package-interfaces.ts,scripts/fixtures/p15-module-environment-access.txt,docs/engineering/{code-style.md,package-interface-and-import-rules.md}}"
       run: bun run check:package-interfaces
 
 pre-push:

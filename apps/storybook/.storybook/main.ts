@@ -30,61 +30,6 @@ function stripUseClientDirectiveForStorybook() {
   }
 }
 
-function getStorybookManualChunk(id: string) {
-  const normalizedId = id.replaceAll("\\", "/")
-
-  if (
-    normalizedId.includes("/packages/shared/ui/src/") &&
-    !normalizedId.includes(".stories.")
-  ) {
-    return "workspace-ui"
-  }
-
-  if (!normalizedId.includes("/node_modules/")) {
-    return undefined
-  }
-
-  if (normalizedId.includes("/axe-core/")) {
-    return "a11y-vendor"
-  }
-
-  if (
-    normalizedId.includes("/@storybook/") ||
-    normalizedId.includes("/storybook/")
-  ) {
-    return "storybook-vendor"
-  }
-
-  if (
-    normalizedId.includes("/react-aria-components/") ||
-    normalizedId.includes("/@react-aria/") ||
-    normalizedId.includes("/@react-stately/")
-  ) {
-    return "react-aria-vendor"
-  }
-
-  if (
-    normalizedId.includes("/react/") ||
-    normalizedId.includes("/react-dom/")
-  ) {
-    return "react-vendor"
-  }
-
-  if (normalizedId.includes("/motion/")) {
-    return "motion-vendor"
-  }
-
-  if (
-    normalizedId.includes("/@radix-ui/") ||
-    normalizedId.includes("/tailwind-merge/") ||
-    normalizedId.includes("/tailwind-variants/")
-  ) {
-    return "ui-deps-vendor"
-  }
-
-  return undefined
-}
-
 const config: StorybookConfig = {
   stories: ["../src/docs/**/*.mdx", "../src/stories/**/*.stories.@(ts|tsx)"],
   addons: [
@@ -119,14 +64,6 @@ const config: StorybookConfig = {
             "apps/storybook/.storybook"
           ),
           "#storybook-root": path.resolve(workspaceRoot, "apps/storybook"),
-        },
-      },
-      build: {
-        chunkSizeWarningLimit: 1200,
-        rollupOptions: {
-          output: {
-            manualChunks: getStorybookManualChunk,
-          },
         },
       },
       plugins: [stripUseClientDirectiveForStorybook()],

@@ -10,19 +10,18 @@ dependency audit는 HIGH 이상을 예외 없이 차단하는 상태를 기본�
 
 `bun run check:workspace-dependency-versions`는 실제 consumer 수를 다시 계산해 공유 dependency의 exact catalog와 단일 consumer의 직접 version을 검사한다. 내부 package는 `workspace:*`를 사용하고 source가 import하는 runtime·test·build dependency를 해당 manifest에 직접 선언한다. Vitest test script를 가진 workspace는 transitive 실행 파일에 기대지 않고 devDependency를 직접 선언해야 한다.
 
-## 디자인·lint ratchet
+## 디자인·lint guardrail
 
 - 제품 lint는 warning도 실패로 처리한다. 로컬 root `lint`와 CI가 모두 Oxlint `--deny-warnings`를 사용한다.
-- raw hex color baseline은 검증 source가 소유한다. 검출이 증가하면 실패하고, 감소해도 근거 없이 baseline을 낮추지 않는다.
-- `apps/web/src/app/manifest.ts`는 CSS token을 참조할 수 없는 Web Manifest 정적 색상 필드만 포함하므로 제외한다.
-- 미정의 `--semantic-color-*` 호환 별칭 baseline은 0이다. 앱과 패키지는 `--bg-*`, `--fg-*`, `--action-*`, `--success-*`, `--danger-*`, `--info-*` 공식 의미 토큰을 직접 참조한다.
-- baseline이나 allowlist 변경에는 실제 검출 근거, owner, 제거 조건이 필요하다. 제품 소스 전체를 가리는 디렉터리 예외는 허용하지 않는다.
+- raw hex color는 CSS token을 사용할 수 없는 정적 metadata와 theme owner처럼 검증 source에 명시된 파일에서만 허용한다.
+- 미정의 `--semantic-color-*` 호환 별칭은 허용하지 않는다. 앱과 패키지는 `--bg-*`, `--fg-*`, `--action-*`, `--success-*`, `--danger-*`, `--info-*` 공식 의미 토큰을 직접 참조한다.
+- allowlist 변경에는 실제 사용 근거와 owner가 필요하다. 과거 검출 수 baseline이나 제품 소스 전체를 가리는 디렉터리 예외는 허용하지 않는다.
 
 ## 검증
 
 현재 task 이름과 실행 대상은 root manifest와 CI workflow가 소유한다. dependency 변경은 다음 범주의 root gate를 함께 통과해야 한다.
 
-- workspace inventory·version 정책과 design-system ratchet
+- workspace inventory·version 정책과 design-system guardrail
 - frozen install, lockfile 불변성과 전체 dependency tree 확인
 - lint, test, build와 전체 dependency audit
 

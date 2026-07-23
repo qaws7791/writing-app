@@ -327,15 +327,7 @@ describe("배포 Caddy 계약", () => {
 describe("repository 배포 source", () => {
   const repositoryRoot = path.resolve(import.meta.dir, "..")
 
-  test("legacy admin-api 배포 source를 제거하고 공개 통합 API 계약을 유지한다", () => {
-    const compose = readFileSync(
-      path.join(repositoryRoot, "deploy/compose/compose.yaml"),
-      "utf8"
-    )
-    const caddyfile = readFileSync(
-      path.join(repositoryRoot, "deploy/caddy/caddyfile"),
-      "utf8"
-    )
+  test("Ansible 환경 template은 공개 통합 API topology를 유지한다", () => {
     const apiEnvironmentTemplate = readFileSync(
       path.join(
         repositoryRoot,
@@ -357,15 +349,6 @@ describe("repository 배포 source", () => {
       ),
       "utf8"
     )
-
-    expect(compose).toContain("API_ORIGIN")
-    expect(compose).not.toMatch(/^ {2}admin-api:/mu)
-    expect(compose).toContain("- /workspace/bin/database-migrate")
-    expect(compose).toContain("- /workspace/bin/database-backup")
-    expect(compose).toContain("- /workspace/bin/database-check")
-    expect(compose).not.toContain("@workspace/db")
-    expect(compose).not.toContain("apps/api/src/scripts/backup-database.ts")
-    expect(validateUnifiedApiCaddyContract(caddyfile)).toEqual([])
     expect(apiEnvironmentTemplate).toContain(
       "API_ALLOWED_HOSTS={{ ([writing_app_api_host, 'api:4000'] | join(',')) | to_json }}"
     )
@@ -530,12 +513,6 @@ describe("repository 배포 source", () => {
     expect(deployPlaybook).toContain(
       "writing_app_deploy_release_operation_lock | default(true) | bool"
     )
-    for (const source of [deploymentTasks, ...playbooks]) {
-      for (const argument of readFoldedAnsibleArgvScalars(source)) {
-        expect(argument).not.toContain("/ ")
-        expect(argument).not.toContain(", ")
-      }
-    }
     for (const imageVariable of [
       "writing_app_web_image",
       "writing_app_api_image",
@@ -585,41 +562,6 @@ describe("repository 배포 source", () => {
       4
     )
     expect(verifyPlaybook.match(/impact: none/gu)).toHaveLength(4)
-  })
-
-  test("Ansible immutable image assertion은 suffix와 제어 문자를 거부한다", () => {
-    const exactDigestSuffix = /@sha256:[0-9a-f]{64}(?![\s\S])/u
-    const validImage = `ghcr.io/example/api@sha256:${"a".repeat(64)}`
-
-    expect(validImage).toMatch(exactDigestSuffix)
-    expect(`${validImage}-suffix`).not.toMatch(exactDigestSuffix)
-    expect(`${validImage}\n`).not.toMatch(exactDigestSuffix)
-  })
-
-  test("Ansible production Host assertion은 정규 DNS FQDN만 허용한다", () => {
-    const publicHostname =
-      /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$(?![\s\S])/u
-
-    for (const hostname of [
-      "api.example.test",
-      "api-admin.example.co.kr",
-      "example.test",
-    ]) {
-      expect(hostname).toMatch(publicHostname)
-    }
-    for (const hostname of [
-      "api:4000",
-      "Api.example.test",
-      "api..example.test",
-      "api.example.test.",
-      "api.example.test\n",
-      "api.example.test/path",
-      "-api.example.test",
-      "api-.example.test",
-      `${"a".repeat(64)}.example.test`,
-    ]) {
-      expect(hostname).not.toMatch(publicHostname)
-    }
   })
 
   test("실패로 staged 설정만 남아도 검증 성공 marker 없이는 전체 배포를 다시 실행한다", () => {
@@ -674,43 +616,3 @@ describe("repository 배포 source", () => {
     )
   })
 })
-
-function readFoldedAnsibleArgvScalars(source: string): readonly string[] {
-  const lines = source.split(/\r?\n/u)
-  const argumentsFound: string[] = []
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index] ?? ""
-    if (line.trim() !== "argv:") continue
-
-    const argvIndent = readIndent(line)
-    for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
-      const candidate = lines[cursor] ?? ""
-      if (candidate.trim().length > 0 && readIndent(candidate) <= argvIndent) {
-        break
-      }
-      if (candidate.trim() !== "- >-") continue
-
-      const itemIndent = readIndent(candidate)
-      const content: string[] = []
-      for (cursor += 1; cursor < lines.length; cursor += 1) {
-        const contentLine = lines[cursor] ?? ""
-        if (
-          contentLine.trim().length > 0 &&
-          readIndent(contentLine) <= itemIndent
-        ) {
-          cursor -= 1
-          break
-        }
-        if (contentLine.trim().length > 0) content.push(contentLine.trim())
-      }
-      argumentsFound.push(content.join(" "))
-    }
-  }
-
-  return argumentsFound
-}
-
-function readIndent(line: string): number {
-  return /^\s*/u.exec(line)?.[0].length ?? 0
-}

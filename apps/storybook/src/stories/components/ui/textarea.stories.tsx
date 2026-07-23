@@ -99,7 +99,7 @@ export const CounterComposition: Story = {
     <Field className="w-[min(36rem,calc(100vw-2rem))]">
       <div className="flex items-center justify-between gap-3">
         <FieldLabel htmlFor="textarea-counter">피드백</FieldLabel>
-        <span className="text-caption font-bold text-muted-foreground/70">
+        <span className="text-caption font-bold text-muted-foreground">
           42 / 500
         </span>
       </div>

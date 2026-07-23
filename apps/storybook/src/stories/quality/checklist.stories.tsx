@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Button } from "@workspace/ui/components/ui/button"
@@ -8,7 +9,6 @@ import {
 } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 
-import { DoDont } from "#storybook/blocks/do-dont"
 import { KeyboardTable } from "#storybook/blocks/keyboard-table"
 
 const meta = {
@@ -20,6 +20,29 @@ const meta = {
 
 export default meta
 type Story = StoryObj<typeof meta>
+
+function DoDont({
+  doExample,
+  dontExample,
+}: {
+  readonly doExample: ReactNode
+  readonly dontExample: ReactNode
+}) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-3 rounded-panel border border-success-fg/25 bg-surface p-surface-padding-md text-foreground">
+        <h3 className="text-title-md font-black text-success-foreground">Do</h3>
+        {doExample}
+      </section>
+      <section className="grid gap-3 rounded-panel border border-danger-fg/25 bg-surface p-surface-padding-md text-foreground">
+        <h3 className="text-title-md font-black text-danger-foreground">
+          Do not
+        </h3>
+        {dontExample}
+      </section>
+    </div>
+  )
+}
 
 export const AccessibilityContracts: Story = {
   render: () => (
@@ -42,7 +65,7 @@ export const AccessibilityContracts: Story = {
           <div className="grid gap-2">
             <span className="text-label-md font-bold">제목</span>
             <Input aria-invalid="true" placeholder="오류만 표시" />
-            <p className="text-label-sm font-bold">빨간색으로만 오류 표시</p>
+            <p className="text-label-sm font-bold">제목을 입력해야 한다.</p>
           </div>
         }
       />

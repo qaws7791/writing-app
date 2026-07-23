@@ -10,9 +10,7 @@
 
 ## 설정
 
-각 `SKILL.md` frontmatter에는 `disable-model-invocation: true`를 둔다. 이 설정을 해석하는 호환 대상에서 암묵 호출을 막는다.
-
-각 스킬의 `agents/openai.yaml`에는 다음 Codex 정책을 둔다.
+각 스킬의 `agents/openai.yaml`에는 다음 Codex 정책을 둔다. Codex 호출 정책은 이 파일이 소유하며 `SKILL.md` frontmatter에 같은 사실을 복제하지 않는다.
 
 ```yaml
 policy:

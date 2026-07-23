@@ -9,62 +9,12 @@ import {
 } from "#scripts/workspace-inventory"
 
 type JsonRecord = Record<string, unknown>
-type TargetWorkspaceInventory = {
-  readonly apps: readonly string[]
-  readonly packages: readonly string[]
-}
-
-const requiredAnalysisRoots = [
-  "apps/storybook/**",
-  "packages/config/**",
-  "scripts/**",
-] as const
-const requiredTurboTasks = [
-  "build",
-  "dev",
-  "lint",
-  "test",
-  "typecheck",
-] as const
-const requiredTurboBuildOutputs = [
-  "dist/**",
-  ".next/**",
-  "!.next/cache/**",
-] as const
-const requiredWorkspaceGlobs = [
-  "apps/*",
-  "packages/modules/*",
-  "packages/infra/*",
-  "packages/shared/*",
-  "packages/config/*",
-] as const
-const targetPackageGroups = ["config", "infra", "modules", "shared"] as const
 
 const repositoryRoot = process.cwd()
 const failures: string[] = []
 
-function readJsonFile(filePath: string): JsonRecord {
-  const value: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"))
-
-  if (!isRecord(value)) {
-    throw new Error(`${filePath} must contain a JSON object.`)
-  }
-
-  return value
-}
-
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value)
-}
-
-function readStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
-    : []
-}
-
-function normalizePath(filePath: string): string {
-  return filePath.replaceAll(path.sep, "/")
 }
 
 function readVitestWorkspaceProjects(): string[] {
@@ -132,120 +82,12 @@ function validateVitestWorkspace(inventory: WorkspaceInventory) {
   })
 }
 
-function validateTargetWorkspaceLayout(inventory: WorkspaceInventory) {
-  const fixture = readJsonFile(
-    path.join(
-      repositoryRoot,
-      "scripts/fixtures/target-workspace-inventory.json"
-    )
-  )
-  const targetInventory: TargetWorkspaceInventory = {
-    apps: readStringArray(fixture["apps"]),
-    packages: readStringArray(fixture["packages"]),
-  }
-
-  reportMissingOrExtra({
-    actual: inventory.allWorkspaces.map(({ directory }) => directory),
-    expected: [...targetInventory.apps, ...targetInventory.packages],
-    label: "target workspace inventory",
-  })
-
-  const packageGroups = fs
-    .readdirSync(path.join(repositoryRoot, "packages"), {
-      withFileTypes: true,
-    })
-    .filter((entry) => entry.isDirectory())
-    .map(({ name }) => name)
-
-  reportMissingOrExtra({
-    actual: packageGroups,
-    expected: targetPackageGroups,
-    label: "packages directory groups",
-  })
-
+function validateWorkspaceNames(inventory: WorkspaceInventory) {
   for (const workspace of inventory.allWorkspaces) {
     if (!/^@workspace\/[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(workspace.name)) {
       failures.push(
         `${workspace.manifestPath} package name ${workspace.name} must use the @workspace/kebab-case convention.`
       )
-    }
-  }
-}
-
-function validateRootPackageScripts() {
-  const rootPackageJson = readJsonFile(
-    path.join(repositoryRoot, "package.json")
-  )
-  const scripts = rootPackageJson["scripts"]
-  const workspaceGlobs = readStringArray(rootPackageJson["workspaces"])
-
-  reportMissingOrExtra({
-    actual: workspaceGlobs,
-    expected: requiredWorkspaceGlobs,
-    label: "package.json workspaces",
-  })
-
-  if (!isRecord(scripts)) {
-    failures.push("package.json must declare scripts.")
-    return
-  }
-
-  const lintScript = scripts["lint"]
-  if (
-    typeof lintScript !== "string" ||
-    !lintScript.includes("check:workspace-inventory")
-  ) {
-    failures.push("package.json lint must run check:workspace-inventory.")
-  }
-
-  const coverageScript = scripts["test:coverage"]
-  if (
-    typeof coverageScript !== "string" ||
-    !coverageScript.includes("run-workspace-coverage.ts")
-  ) {
-    failures.push(
-      "package.json test:coverage must use run-workspace-coverage.ts."
-    )
-  }
-
-  const analysisScript = scripts["repomix:analysis"]
-  if (typeof analysisScript !== "string") {
-    failures.push("package.json must declare repomix:analysis.")
-    return
-  }
-
-  for (const root of requiredAnalysisRoots) {
-    if (!analysisScript.includes(root)) {
-      failures.push(`repomix:analysis must include ${root}.`)
-    }
-  }
-}
-
-function validateTurboTasks() {
-  const turboJson = readJsonFile(path.join(repositoryRoot, "turbo.json"))
-  const tasks = turboJson["tasks"]
-
-  if (!isRecord(tasks)) {
-    failures.push("turbo.json must declare tasks.")
-    return
-  }
-
-  for (const taskName of requiredTurboTasks) {
-    if (!isRecord(tasks[taskName])) {
-      failures.push(`turbo.json tasks must include ${taskName}.`)
-    }
-  }
-
-  const buildTask = tasks["build"]
-  if (!isRecord(buildTask)) {
-    return
-  }
-
-  const outputs = readStringArray(buildTask["outputs"])
-
-  for (const output of requiredTurboBuildOutputs) {
-    if (!outputs.includes(output)) {
-      failures.push(`turbo.json build outputs must include ${output}.`)
     }
   }
 }
@@ -258,6 +100,11 @@ function validatePackageExports(
     const exportsValue = entry.exportsValue
 
     if (exportsValue === undefined) {
+      if (entry.directory.startsWith("packages/")) {
+        failures.push(
+          `${entry.directory}/package.json must declare explicit package exports.`
+        )
+      }
       continue
     }
 
@@ -266,6 +113,11 @@ function validatePackageExports(
         `${entry.directory}/package.json exports must be an object.`
       )
       continue
+    }
+    if (Object.keys(exportsValue).length === 0) {
+      failures.push(
+        `${entry.directory}/package.json exports must not be empty.`
+      )
     }
 
     for (const [exportKey, exportValue] of Object.entries(exportsValue)) {
@@ -281,9 +133,15 @@ function validatePackageExports(
 }
 
 function validateExportKey(packageDirectory: string, exportKey: string) {
-  if (!exportKey.startsWith(".")) {
+  if (!exportKey.startsWith("./")) {
     failures.push(
-      `${packageDirectory}/package.json export key ${exportKey} must start with ".".`
+      `${packageDirectory}/package.json export key ${exportKey} must be an explicit subpath.`
+    )
+  }
+
+  if (exportKey.includes("*")) {
+    failures.push(
+      `${packageDirectory}/package.json export key ${exportKey} must not use a wildcard.`
     )
   }
 
@@ -384,12 +242,9 @@ function validateExportTarget({
   }
 
   if (target.includes("*")) {
-    validateWildcardExportTarget({
-      absolutePackageDirectory,
-      exportKey,
-      packageDirectory,
-      target,
-    })
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} must not use a wildcard.`
+    )
     return
   }
 
@@ -405,76 +260,6 @@ function validateExportTarget({
       `${packageDirectory}/package.json export ${exportKey} target ${target} must be a file.`
     )
   }
-}
-
-function validateWildcardExportTarget({
-  absolutePackageDirectory,
-  exportKey,
-  packageDirectory,
-  target,
-}: {
-  readonly absolutePackageDirectory: string
-  readonly exportKey: string
-  readonly packageDirectory: string
-  readonly target: string
-}) {
-  const wildcardCount = [...target].filter(
-    (character) => character === "*"
-  ).length
-
-  if (wildcardCount !== 1) {
-    failures.push(
-      `${packageDirectory}/package.json export ${exportKey} target ${target} must use one wildcard.`
-    )
-    return
-  }
-
-  const [prefix = "", suffix = ""] = target.slice(2).split("*")
-  const searchRoot = prefix.endsWith("/")
-    ? prefix.slice(0, -1)
-    : path.dirname(prefix)
-  const absoluteSearchRoot = path.resolve(packageDirectory, searchRoot)
-
-  if (!isPathInsideDirectory(absoluteSearchRoot, absolutePackageDirectory)) {
-    failures.push(
-      `${packageDirectory}/package.json export ${exportKey} target ${target} must stay inside the package.`
-    )
-    return
-  }
-
-  if (
-    !fs.existsSync(absoluteSearchRoot) ||
-    !fs.statSync(absoluteSearchRoot).isDirectory()
-  ) {
-    failures.push(
-      `${packageDirectory}/package.json export ${exportKey} target ${target} base directory does not exist.`
-    )
-    return
-  }
-
-  const hasMatchingFile = collectFiles(absoluteSearchRoot).some((filePath) => {
-    const relativeFilePath = normalizePath(
-      path.relative(absolutePackageDirectory, filePath)
-    )
-
-    return (
-      relativeFilePath.startsWith(prefix) && relativeFilePath.endsWith(suffix)
-    )
-  })
-
-  if (!hasMatchingFile) {
-    failures.push(
-      `${packageDirectory}/package.json export ${exportKey} target ${target} has no matching files.`
-    )
-  }
-}
-
-function collectFiles(directory: string): string[] {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name)
-
-    return entry.isDirectory() ? collectFiles(entryPath) : [entryPath]
-  })
 }
 
 function isPathInsideDirectory(filePath: string, directory: string): boolean {
@@ -500,11 +285,9 @@ const workspaceEntries =
     : []
 
 if (workspaceInventoryResult.status === "success") {
-  validateTargetWorkspaceLayout(workspaceInventoryResult.inventory)
+  validateWorkspaceNames(workspaceInventoryResult.inventory)
   validateVitestWorkspace(workspaceInventoryResult.inventory)
 }
-validateRootPackageScripts()
-validateTurboTasks()
 validatePackageExports(workspaceEntries)
 
 if (failures.length > 0) {

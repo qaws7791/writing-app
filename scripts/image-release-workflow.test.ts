@@ -8,20 +8,6 @@ const workflow = readFileSync(
   "utf8"
 )
 
-const actionPins = {
-  "actions/attest": "f6bf1532d7d6793fce74eac584813a8eee607999",
-  "actions/checkout": "df4cb1c069e1874edd31b4311f1884172cec0e10",
-  "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
-  "actions/setup-node": "249970729cb0ef3589644e2896645e5dc5ba9c38",
-  "actions/upload-artifact": "b7c566a772e6b6bfb58ed0dc250532a479d7789f",
-  "anchore/scan-action": "e1165082ffb1fe366ebaf02d8526e7c4989ea9d2",
-  "docker/build-push-action": "53b7df96c91f9c12dcc8a07bcb9ccacbed38856a",
-  "docker/login-action": "af1e73f918a031802d376d3c8bbc3fe56130a9b0",
-  "docker/metadata-action": "dc802804100637a589fabce1cb79ff13a1411302",
-  "docker/setup-buildx-action": "bb05f3f5519dd87d3ba754cc423b652a5edd6d2c",
-  "oven-sh/setup-bun": "0c5077e51419868618aeaa5fe8019c62421857d6",
-} as const
-
 describe("production image release workflow", () => {
   test("성공한 main push 품질 게이트의 동일 SHA만 release한다", () => {
     expect(workflow).toContain("workflows:\n      - 필수 품질 게이트")
@@ -50,12 +36,8 @@ describe("production image release workflow", () => {
     expect(workflow).not.toContain("service: admin-api")
 
     expect(workflow).toContain("packages: write")
-    expect(workflow).toContain(
-      `uses: docker/login-action@${actionPins["docker/login-action"]}`
-    )
-    expect(workflow).toContain(
-      `uses: docker/build-push-action@${actionPins["docker/build-push-action"]}`
-    )
+    expect(workflow).toContain("uses: docker/login-action@")
+    expect(workflow).toContain("uses: docker/build-push-action@")
     expect(workflow).toContain("push: true")
     expect(workflow).toContain("platforms: linux/amd64")
     expect(workflow).toContain(
@@ -80,13 +62,9 @@ describe("production image release workflow", () => {
     expect(workflow).toContain("id-token: write")
     expect(workflow).toContain("provenance: mode=max")
     expect(workflow).toContain("sbom: true")
-    expect(workflow).toContain(
-      `uses: actions/attest@${actionPins["actions/attest"]}`
-    )
+    expect(workflow).toContain("uses: actions/attest@")
     expect(workflow).toContain("push-to-registry: true")
-    expect(workflow).toContain(
-      `uses: actions/download-artifact@${actionPins["actions/download-artifact"]}`
-    )
+    expect(workflow).toContain("uses: actions/download-artifact@")
     expect(workflow).toContain(
       "bun scripts/image-release-metadata.ts aggregate"
     )
@@ -94,9 +72,7 @@ describe("production image release workflow", () => {
   })
 
   test("각 digest를 고정 Grype로 검사하고 HIGH 이상이면 manifest 생성을 차단한다", () => {
-    expect(workflow).toContain(
-      `uses: anchore/scan-action@${actionPins["anchore/scan-action"]}`
-    )
+    expect(workflow).toContain("uses: anchore/scan-action@")
     expect(workflow).toContain("grype-version: v0.110.0")
     expect(workflow).toContain(
       "severity-cutoff: ${{ needs.release-preflight.outputs.vulnerability-severity-cutoff }}"
@@ -135,9 +111,13 @@ describe("production image release workflow", () => {
   })
 
   test("모든 외부 action을 검증된 full commit SHA로 고정한다", () => {
-    for (const [action, revision] of Object.entries(actionPins)) {
-      expect(workflow).toContain(`uses: ${action}@${revision}`)
+    const actionReferences = [
+      ...workflow.matchAll(/^\s*uses:\s+([^\s#]+)/gmu),
+    ].map((match) => match[1])
+
+    expect(actionReferences.length).toBeGreaterThan(0)
+    for (const reference of actionReferences) {
+      expect(reference).toMatch(/^[^@]+@[0-9a-f]{40}$/u)
     }
-    expect(workflow).not.toMatch(/uses: [^\s]+@v\d+/u)
   })
 })

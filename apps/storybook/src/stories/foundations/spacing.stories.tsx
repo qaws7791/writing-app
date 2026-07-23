@@ -34,7 +34,7 @@ export const Scale: Story = {
           </span>
           <div className="flex items-center gap-3">
             <span className={`${item.className} block h-6 bg-accent`} />
-            <span className="text-caption font-bold text-muted-foreground/70">
+            <span className="text-caption font-bold text-muted-foreground">
               {item.label}
             </span>
           </div>

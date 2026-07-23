@@ -6,9 +6,14 @@ import path from "node:path"
 
 import { courseVisualKeyValues } from "@workspace/contracts/content/course"
 
-export type DeploymentServiceName = "admin" | "api" | "web"
+import {
+  readContainerImageLock,
+  requireLockedContainerImageReference,
+} from "./check-container-image-lock"
 
-export interface DeploymentImageSpec {
+type DeploymentServiceName = "admin" | "api" | "web"
+
+interface DeploymentImageSpec {
   readonly buildArguments: readonly (readonly [name: string, value: string])[]
   readonly dockerfile: string
   readonly forbiddenPaths: readonly string[]
@@ -39,13 +44,13 @@ interface ImageSmokeFixture extends Disposable {
   readonly dataDirectory: string
 }
 
-export interface ComposeSmokeImageReferences {
+interface ComposeSmokeImageReferences {
   readonly admin: string
   readonly api: string
   readonly web: string
 }
 
-export interface ComposeSmokeEnvironmentInput {
+interface ComposeSmokeEnvironmentInput {
   readonly backupDirectory: string
   readonly caddyImage: string
   readonly configDirectory: string
@@ -59,20 +64,29 @@ interface ComposeSmokeFixture extends Disposable {
   readonly command: ComposeSmokeCommand
 }
 
-export interface ComposeSmokeCommand {
+interface ComposeSmokeCommand {
   readonly composeEnvironmentPath: string
   readonly composePath: string
   readonly projectName: string
 }
 
 const expectedRuntimeUser = "10001:10001"
-const caddyImageReference =
-  "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648"
+const apiOnlyEnvironmentNames = [
+  "ADMIN_ASSET_PUBLIC_BASE_URL",
+  "ADMIN_ASSET_S3_ACCESS_KEY",
+  "ADMIN_ASSET_S3_BUCKET",
+  "ADMIN_ASSET_S3_ENDPOINT",
+  "ADMIN_ASSET_S3_REGION",
+  "ADMIN_ASSET_S3_SECRET_KEY",
+  "ADMIN_AUTH_SECRET",
+  "CURSOR_SIGNING_SECRET",
+  "LEARNER_AUTH_SECRET",
+] as const
 const courseThumbnailFileNames = courseVisualKeyValues.map(
   (visualKey) => `${visualKey}.png`
 )
 
-export const composeSmokeRoutes = [
+const composeSmokeRoutes = [
   {
     expectedResponse: { ok: true, service: "web" },
     host: "web.example.test",
@@ -94,7 +108,7 @@ export const composeSmokeRoutes = [
   },
 ] as const
 
-export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
+const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   {
     buildArguments: [
       ["NEXT_PUBLIC_API_BASE_URL", "https://api.example.test"],
@@ -176,7 +190,7 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
   },
 ]
 
-export function createImageBuildArguments(
+function createImageBuildArguments(
   spec: DeploymentImageSpec,
   imageReference: string,
   repositoryRoot: string
@@ -199,7 +213,7 @@ export function createImageBuildArguments(
   ]
 }
 
-export function createContainerRunArguments(
+function createContainerRunArguments(
   spec: DeploymentImageSpec,
   imageReference: string,
   containerName: string,
@@ -225,11 +239,11 @@ export function createContainerRunArguments(
   ]
 }
 
-export function isExpectedRuntimeUser(imageUser: string): boolean {
+function isExpectedRuntimeUser(imageUser: string): boolean {
   return imageUser.trim() === expectedRuntimeUser
 }
 
-export function createRuntimeEnvironment(
+function createRuntimeEnvironment(
   spec: DeploymentImageSpec,
   learnerSecret: string,
   adminSecret: string
@@ -285,7 +299,7 @@ export function createRuntimeEnvironment(
   }
 }
 
-export function createComposeCommandArguments(
+function createComposeCommandArguments(
   command: ComposeSmokeCommand,
   operation: readonly string[]
 ): readonly string[] {
@@ -301,7 +315,7 @@ export function createComposeCommandArguments(
   ]
 }
 
-export function createComposeUpArguments(
+function createComposeUpArguments(
   command: ComposeSmokeCommand
 ): readonly string[] {
   return createComposeCommandArguments(command, [
@@ -317,7 +331,7 @@ export function createComposeUpArguments(
   ])
 }
 
-export function createComposeDownArguments(
+function createComposeDownArguments(
   command: ComposeSmokeCommand
 ): readonly string[] {
   return createComposeCommandArguments(command, [
@@ -327,7 +341,7 @@ export function createComposeDownArguments(
   ])
 }
 
-export function createCaddyRequestArguments(
+function createCaddyRequestArguments(
   command: ComposeSmokeCommand,
   host: string,
   requestPath: string
@@ -346,7 +360,7 @@ export function createCaddyRequestArguments(
   ])
 }
 
-export function createAdminSsrHealthCheckArguments(
+function createAdminSsrHealthCheckArguments(
   command: ComposeSmokeCommand
 ): readonly string[] {
   return createComposeCommandArguments(command, [
@@ -359,7 +373,7 @@ export function createAdminSsrHealthCheckArguments(
   ])
 }
 
-export function createAdminSsrHealthCheckScript(): string {
+function createAdminSsrHealthCheckScript(): string {
   return [
     "(async()=>{",
     "const baseUrl=process.env.API_BASE_URL;",
@@ -480,7 +494,7 @@ function createComposeSmokeFixture(input: {
   }
 }
 
-export function createComposeSmokeEnvironment(
+function createComposeSmokeEnvironment(
   input: ComposeSmokeEnvironmentInput
 ): readonly string[] {
   return [
@@ -553,7 +567,7 @@ function runDocker(
   return commandResult
 }
 
-function assertImageUser(imageReference: string): void {
+function assertImageRuntimeContract(imageReference: string): void {
   const result = runDocker(
     ["image", "inspect", "--format", "{{.Config.User}}", imageReference],
     { capture: true }
@@ -561,6 +575,16 @@ function assertImageUser(imageReference: string): void {
   if (!isExpectedRuntimeUser(result.stdout)) {
     throw new Error(
       `${imageReference}: runtime user는 ${expectedRuntimeUser}여야 합니다.`
+    )
+  }
+
+  const architecture = runDocker(
+    ["image", "inspect", "--format", "{{.Architecture}}", imageReference],
+    { capture: true }
+  ).stdout.trim()
+  if (architecture !== "amd64") {
+    throw new Error(
+      `${imageReference}: runtime architecture는 amd64여야 합니다.`
     )
   }
 }
@@ -627,7 +651,7 @@ async function waitForContainerHealth(
   )
 }
 
-export function createHealthRequestScript(spec: DeploymentImageSpec): string {
+function createHealthRequestScript(spec: DeploymentImageSpec): string {
   const requestOptions =
     spec.healthHostEnvironment === undefined
       ? ""
@@ -645,6 +669,74 @@ function assertContainerUser(containerName: string): void {
   })
   if (result.stdout.trim() !== "10001") {
     throw new Error(`${containerName}: runtime UID가 10001이 아닙니다.`)
+  }
+}
+
+function assertContainerIsolation(
+  spec: DeploymentImageSpec,
+  containerName: string,
+  expectedEnvironment: readonly (readonly [name: string, value: string])[]
+): void {
+  const inspectionResult = runDocker(
+    ["inspect", "--format", "{{json .}}", containerName],
+    { capture: true }
+  )
+  let inspection: {
+    readonly Config?: { readonly Env?: readonly string[] }
+    readonly HostConfig?: {
+      readonly NetworkMode?: string
+      readonly PortBindings?: Readonly<Record<string, unknown>> | null
+    }
+    readonly Mounts?: readonly { readonly Destination?: string }[]
+  }
+  try {
+    inspection = JSON.parse(inspectionResult.stdout) as typeof inspection
+  } catch {
+    throw new Error(
+      `${containerName}: Docker inspect 출력을 해석하지 못했습니다.`
+    )
+  }
+
+  const hostConfig = inspection.HostConfig
+  if (hostConfig?.NetworkMode !== "none") {
+    throw new Error(`${containerName}: network mode는 none이어야 합니다.`)
+  }
+  const portBindings = hostConfig?.PortBindings
+  if (
+    portBindings !== null &&
+    portBindings !== undefined &&
+    Object.keys(portBindings).length > 0
+  ) {
+    throw new Error(`${containerName}: host port binding이 있으면 안 됩니다.`)
+  }
+
+  const environmentNames = new Set(
+    (inspection.Config?.Env ?? []).map((entry) => entry.split("=", 1)[0] ?? "")
+  )
+  for (const [name] of expectedEnvironment) {
+    if (!environmentNames.has(name)) {
+      throw new Error(`${containerName}: ${name} 환경 변수가 없습니다.`)
+    }
+  }
+  if (spec.name !== "api") {
+    for (const name of apiOnlyEnvironmentNames) {
+      if (environmentNames.has(name)) {
+        throw new Error(`${containerName}: ${name}은 API에만 전달해야 합니다.`)
+      }
+    }
+  }
+
+  const mountTargets = (inspection.Mounts ?? [])
+    .map((mount) => mount.Destination)
+    .filter((target): target is string => target !== undefined)
+  const expectedMountTargets = spec.usesDatabase ? ["/var/lib/writing-app"] : []
+  if (
+    mountTargets.length !== expectedMountTargets.length ||
+    mountTargets.some((target) => !expectedMountTargets.includes(target))
+  ) {
+    throw new Error(
+      `${containerName}: 허용되지 않은 mount가 있거나 application DB mount가 없습니다.`
+    )
   }
 }
 
@@ -675,7 +767,7 @@ function assertStaticResponses(
   runDocker(["exec", containerName, runtime, "-e", assertionScript])
 }
 
-export function createImageOptimizationRequestScript(
+function createImageOptimizationRequestScript(
   spec: DeploymentImageSpec
 ): string {
   if (spec.optimizedImagePath === undefined) {
@@ -895,6 +987,11 @@ function runComposeTrafficSmoke(input: {
 
 async function runDeploymentImageTests(): Promise<void> {
   const repositoryRoot = path.resolve(import.meta.dir, "..")
+  const containerImageLock = readContainerImageLock(repositoryRoot)
+  const caddyImageReference = requireLockedContainerImageReference(
+    containerImageLock,
+    "caddy"
+  )
   const runId = `${process.pid}-${Date.now()}`
   const learnerSecret = createSmokeSecret()
   let adminSecret = createSmokeSecret()
@@ -918,12 +1015,17 @@ async function runDeploymentImageTests(): Promise<void> {
       console.log(`${spec.name}: linux/amd64 image를 빌드합니다.`)
       runDocker(createImageBuildArguments(spec, imageReference, repositoryRoot))
       builtImages.push({ imageReference, name: spec.name })
-      assertImageUser(imageReference)
+      assertImageRuntimeContract(imageReference)
       assertStaticPaths(spec, imageReference)
       if (spec.name === "api") {
         assertApiOperationExecutables(imageReference, fixture.dataDirectory)
       }
 
+      const runtimeEnvironment = createRuntimeEnvironment(
+        spec,
+        learnerSecret,
+        adminSecret
+      )
       ownedContainers.add(containerName)
       runDocker(
         createContainerRunArguments(
@@ -931,11 +1033,12 @@ async function runDeploymentImageTests(): Promise<void> {
           imageReference,
           containerName,
           fixture.dataDirectory,
-          createRuntimeEnvironment(spec, learnerSecret, adminSecret)
+          runtimeEnvironment
         )
       )
       await waitForContainerHealth(spec, containerName)
       assertContainerUser(containerName)
+      assertContainerIsolation(spec, containerName, runtimeEnvironment)
       assertStaticResponses(spec, containerName)
       assertImageOptimization(spec, containerName)
       runDocker(["rm", "--force", containerName])

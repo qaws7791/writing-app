@@ -4,7 +4,6 @@ import path from "node:path"
 export interface WorkflowSkillPolicySource {
   readonly agentConfiguration?: string
   readonly name: string
-  readonly skillMarkdown?: string
 }
 
 export function validateWorkflowSkillInvocationPolicy(
@@ -12,10 +11,6 @@ export function validateWorkflowSkillInvocationPolicy(
 ): readonly string[] {
   return sources.flatMap((source) => {
     const errors: string[] = []
-
-    if (source.skillMarkdown === undefined) {
-      errors.push(`${source.name}: SKILL.md가 없습니다.`)
-    }
 
     if (source.agentConfiguration === undefined) {
       errors.push(`${source.name}: agents/openai.yaml이 없습니다.`)
@@ -51,7 +46,6 @@ function readWorkflowSkillPolicySources(
     .sort((left, right) => left.name.localeCompare(right.name))
     .map((entry) => {
       const skillDirectory = path.join(workflowsDirectory, entry.name)
-      const skillPath = path.join(skillDirectory, "SKILL.md")
       const agentConfigurationPath = path.join(
         skillDirectory,
         "agents",
@@ -63,9 +57,6 @@ function readWorkflowSkillPolicySources(
           ? readFileSync(agentConfigurationPath, "utf8")
           : undefined,
         name: entry.name,
-        skillMarkdown: existsSync(skillPath)
-          ? readFileSync(skillPath, "utf8")
-          : undefined,
       }
     })
 }

@@ -2,7 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 
 export type Guardrail = {
-  readonly baseline: number
+  readonly allowedPaths?: readonly string[]
   readonly description: string
   readonly label: string
   readonly pattern: RegExp
@@ -31,45 +31,43 @@ const ignoredDirectories = new Set([
 ])
 
 const ignoredHexPaths = [
-  // Web manifest 색상은 CSS token을 참조할 수 없어 정적 색상 문자열이 필요하다.
+  // 이 파일들은 외부 manifest 또는 독립 시각 샘플을 소유해 CSS token을 참조할 수 없다.
   "apps/web/src/app/manifest.ts",
+  "apps/web/src/features/landing/ui/landing-content.tsx",
+  "apps/storybook/.storybook/storybook-theme.ts",
 ] as const
 const scannedExtensions = new Set([".css", ".ts", ".tsx"])
 
 const guardrails: readonly Guardrail[] = [
   {
-    baseline: 0,
-    description: "apps/admin/src의 legacy admin 디자인 class 기준선",
+    description: "apps/admin/src의 legacy admin 디자인 class 금지",
     label: "legacy admin design class",
     pattern: legacyAdminDesignClassRegex,
     roots: ["apps/admin/src"],
   },
   {
-    baseline: 0,
-    description: "apps/**, packages/**의 legacy button motion class 기준선",
+    description: "apps/**, packages/**의 legacy button motion class 금지",
     label: "legacy button motion class",
     pattern: /\bbtn-squish\b/g,
     roots: ["apps", "packages"],
   },
   {
-    baseline: 0,
-    description: "apps/**, packages/**의 미정의 semantic color alias 기준선",
+    description: "apps/**, packages/**의 미정의 semantic color alias 금지",
     label: "legacy semantic color alias",
     pattern: /--semantic-color-[a-z0-9-]+/g,
     roots: ["apps", "packages"],
   },
   {
-    baseline: 0,
     description:
-      "apps/**의 fontSize, lineHeight, letterSpacing inline style 기준선",
+      "apps/**의 fontSize, lineHeight, letterSpacing inline style 금지",
     label: "inline typography style",
     pattern:
       /style=\{\{[\s\S]*?(?:fontSize|lineHeight|letterSpacing)[\s\S]*?\}\}/g,
     roots: ["apps"],
   },
   {
-    baseline: 32,
-    description: "apps/**의 raw hex color 기준선",
+    allowedPaths: ignoredHexPaths,
+    description: "명시적 시각 상수 소유 파일 밖의 raw hex color",
     label: "raw hex color",
     pattern: /#[0-9a-fA-F]{3,8}\b/g,
     roots: ["apps"],
@@ -101,17 +99,12 @@ export function countGuardrailMatches(
   const files = guardrail.roots.flatMap((scanRoot) =>
     collectFiles(path.join(root, scanRoot))
   )
+  const allowedPaths = new Set(guardrail.allowedPaths ?? [])
 
-  const scopedFiles =
-    guardrail.label === "raw hex color" ||
-    guardrail.label === "inline typography style"
-      ? files.filter(
-          (filePath) =>
-            !ignoredHexPaths.some((ignoredPath) =>
-              filePath.includes(ignoredPath.replace(/\//g, path.sep))
-            )
-        )
-      : files
+  const scopedFiles = files.filter(
+    (filePath) =>
+      !allowedPaths.has(path.relative(root, filePath).replaceAll(path.sep, "/"))
+  )
 
   return scopedFiles.reduce((count, filePath) => {
     const content = fs.readFileSync(filePath, "utf8")
@@ -133,23 +126,14 @@ export function evaluateGuardrails(
   for (const guardrail of configuredGuardrails) {
     const count = countGuardrailMatches(guardrail, root)
 
-    if (count > guardrail.baseline) {
+    if (count > 0) {
       failures.push(
-        `${guardrail.label} increased from ${guardrail.baseline} to ${count}. ${guardrail.description}을 초과했다.`
+        `${guardrail.label} ${count}건을 발견했다. ${guardrail.description}을 위반했다.`
       )
       continue
     }
 
-    if (count < guardrail.baseline) {
-      failures.push(
-        `${guardrail.label} decreased from ${guardrail.baseline} to ${count}. 실제 감소를 새 baseline으로 반영해야 한다.`
-      )
-      continue
-    }
-
-    summaries.push(
-      `${guardrail.label}: ${count}/${guardrail.baseline} (${guardrail.description})`
-    )
+    summaries.push(`${guardrail.label}: 위반 없음 (${guardrail.description})`)
   }
 
   return { failures, summaries }
@@ -172,5 +156,5 @@ if (import.meta.main) {
     process.exit(1)
   }
 
-  console.log("Design system guardrails are within baseline.")
+  console.log("Design system guardrails passed.")
 }

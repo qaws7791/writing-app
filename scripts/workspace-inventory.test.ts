@@ -17,36 +17,6 @@ afterEach(() => {
 })
 
 describe("workspace inventory", () => {
-  it("2단계 target glob과 package 24개 fixture를 고정한다", () => {
-    const fixture = JSON.parse(
-      fs.readFileSync(
-        path.join(
-          process.cwd(),
-          "scripts/fixtures/target-workspace-inventory.json"
-        ),
-        "utf8"
-      )
-    ) as {
-      readonly apps: readonly string[]
-      readonly packages: readonly string[]
-    }
-
-    expect(fixture.apps).toHaveLength(4)
-    expect(fixture.packages).toHaveLength(24)
-    expect(
-      fixture.packages.filter((entry) => entry.startsWith("packages/modules/"))
-    ).toHaveLength(6)
-    expect(
-      fixture.packages.filter((entry) => entry.startsWith("packages/infra/"))
-    ).toHaveLength(8)
-    expect(
-      fixture.packages.filter((entry) => entry.startsWith("packages/shared/"))
-    ).toHaveLength(7)
-    expect(
-      fixture.packages.filter((entry) => entry.startsWith("packages/config/"))
-    ).toHaveLength(3)
-  })
-
   it("중첩 glob의 group container를 workspace로 오인하지 않는다", () => {
     const repositoryRoot = createFixtureRepository({
       "apps/web": { name: "@fixture/web" },
@@ -120,10 +90,100 @@ describe("workspace inventory", () => {
       )
     }
   })
+
+  it("지원하는 test runtime을 manifest script에서 분류한다", () => {
+    const repositoryRoot = createFixtureRepository({
+      "apps/web": {
+        name: "@fixture/web",
+        testScript: "vitest run --config vitest.config.ts",
+      },
+      "packages/modules/learning": {
+        name: "@fixture/learning",
+        testScript:
+          "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+      },
+    })
+
+    const inventory = expectSuccess(createWorkspaceInventory(repositoryRoot))
+    expect(
+      inventory.testCapableWorkspaces.map(({ name, testRuntime }) => ({
+        name,
+        testRuntime,
+      }))
+    ).toEqual([
+      { name: "@fixture/web", testRuntime: "node" },
+      { name: "@fixture/learning", testRuntime: "bun" },
+    ])
+  })
+
+  it("지원하지 않는 test runtime이면 실패한다", () => {
+    const repositoryRoot = createFixtureRepository({
+      "apps/web": {
+        name: "@fixture/web",
+        testScript: "tsx scripts/test.ts",
+      },
+    })
+
+    const result = createWorkspaceInventory(repositoryRoot)
+    expect(result.status).toBe("failure")
+    if (result.status === "failure") {
+      expect(result.errors.map(({ type }) => type)).toContain(
+        "unsupported-test-runtime"
+      )
+    }
+  })
+
+  it("root manifest에 workspace glob이 없으면 실패한다", () => {
+    const repositoryRoot = createFixtureRepository({})
+    writeRootManifest(repositoryRoot, [])
+
+    const result = createWorkspaceInventory(repositoryRoot)
+    expect(result.status).toBe("failure")
+    if (result.status === "failure") {
+      expect(result.errors.map(({ type }) => type)).toContain(
+        "invalid-workspace-globs"
+      )
+    }
+  })
+
+  it.each([
+    [".", "./src/index.ts"],
+    ["./*", "./src/*.ts"],
+  ] as const)("package의 broad export %s를 거부한다", (exportKey, target) => {
+    const repositoryRoot = createFixtureRepository({
+      "packages/modules/learning": {
+        exports: { [exportKey]: target },
+        name: "@workspace/learning",
+      },
+    })
+    fs.writeFileSync(path.join(repositoryRoot, "vitest.workspace.ts"), "[]")
+
+    const result = runWorkspaceCheck(repositoryRoot)
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toContain("must")
+  })
+
+  it("package의 explicit subpath export를 허용한다", () => {
+    const repositoryRoot = createFixtureRepository({
+      "packages/modules/learning": {
+        exports: { "./module": "./src/index.ts" },
+        name: "@workspace/learning",
+      },
+    })
+    fs.writeFileSync(path.join(repositoryRoot, "vitest.workspace.ts"), "[]")
+
+    expect(runWorkspaceCheck(repositoryRoot)).toEqual({
+      exitCode: 0,
+      stderr: "",
+    })
+  })
 })
 
 type FixtureWorkspace = {
+  readonly exports?: Readonly<Record<string, string>>
   readonly name: string
+  readonly testScript?: string
 }
 
 function createFixtureRepository(
@@ -172,7 +232,19 @@ function writeWorkspace(
   fs.mkdirSync(path.join(workspaceRoot, "src"), { recursive: true })
   fs.writeFileSync(
     path.join(workspaceRoot, "package.json"),
-    JSON.stringify({ name: workspace.name, private: true })
+    JSON.stringify({
+      exports: workspace.exports,
+      name: workspace.name,
+      private: true,
+      scripts:
+        workspace.testScript === undefined
+          ? undefined
+          : { test: workspace.testScript },
+    })
+  )
+  fs.writeFileSync(
+    path.join(workspaceRoot, "src/index.ts"),
+    "export const fixture = true"
   )
 }
 
@@ -183,4 +255,26 @@ function expectSuccess(
   if (result.status === "failure")
     throw new Error(JSON.stringify(result.errors))
   return result.inventory
+}
+
+function runWorkspaceCheck(repositoryRoot: string): {
+  readonly exitCode: number
+  readonly stderr: string
+} {
+  const result = Bun.spawnSync(
+    [
+      process.execPath,
+      path.join(import.meta.dir, "check-workspace-inventory.ts"),
+    ],
+    {
+      cwd: repositoryRoot,
+      stderr: "pipe",
+      stdout: "ignore",
+    }
+  )
+
+  return {
+    exitCode: result.exitCode,
+    stderr: result.stderr.toString(),
+  }
 }

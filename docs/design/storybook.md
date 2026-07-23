@@ -4,8 +4,8 @@ Storybook은 디자인 시스템의 실행 가능한 명세다. story source와 
 
 ## 정보 구조
 
-- 사이드바는 `Getting Started`, `Foundations`, `Components`, `Patterns`, `Interactions`, `Recipes`, `Quality` 순서로 정렬한다.
-- theme, density와 motion을 toolbar global로 제공한다.
+- 사이드바는 단일 `Getting Started/Welcome` 안내 뒤에 `Foundations`, `Components`, `Patterns`, `Recipes`, `Quality` 순서로 정렬한다.
+- theme과 motion을 toolbar global로 제공한다.
 - custom viewport는 `mobile-sm`, `mobile-lg`, `tablet`, `desktop`, `wide`를 제공한다.
 - Foundation story는 Color, Typography, Spacing, Motion 단위로 나눈다.
 - Components story는 Actions, Forms, Surfaces, Feedback, Data Display, Disclosure, Selection 범주로 나눈다.
@@ -14,10 +14,10 @@ Storybook은 디자인 시스템의 실행 가능한 명세다. story source와 
 ## 소유 경계
 
 - MDX와 story는 `apps/storybook/src/stories`에 둔다.
-- Storybook 전용 helper block은 `apps/storybook/src/blocks`에 둔다.
+- 둘 이상의 문서나 story에서 쓰는 Storybook helper block은 `apps/storybook/src/blocks`에 둔다. 한 story에서만 쓰는 얇은 layout wrapper는 소비 지점에 둔다.
 - `packages/shared/ui`에는 story 파일을 두지 않는다.
 - `apps/storybook/.storybook/main.ts`가 MDX와 story source를 수집한다.
-- `apps/storybook/.storybook/preview.tsx`가 theme, density와 motion global을 적용한다.
+- `apps/storybook/.storybook/preview.tsx`가 theme과 motion global을 적용한다.
 
 ## 스타일 빌드 경계
 

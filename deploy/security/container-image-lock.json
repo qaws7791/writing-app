@@ -20,27 +20,17 @@
     {
       "name": "caddy",
       "reference": "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648",
-      "uses": [
-        "infra/ansible/vars/defaults.yaml",
-        "scripts/check-deployment-config.ts",
-        "scripts/test-deployment-images.ts"
-      ]
+      "uses": ["infra/ansible/vars/defaults.yaml"]
     },
     {
       "name": "cloudflared",
       "reference": "cloudflare/cloudflared:2026.6.0@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f",
-      "uses": [
-        "infra/ansible/vars/defaults.yaml",
-        "scripts/check-deployment-config.ts"
-      ]
+      "uses": ["infra/ansible/vars/defaults.yaml"]
     },
     {
       "name": "litestream",
       "reference": "litestream/litestream:0.5.11@sha256:79e3bfce6ed758722916f816b028fffd9e0a971058f41b88e2779510cead1d8d",
-      "uses": [
-        "infra/ansible/vars/defaults.yaml",
-        "scripts/check-deployment-config.ts"
-      ]
+      "uses": ["infra/ansible/vars/defaults.yaml"]
     }
   ]
 }

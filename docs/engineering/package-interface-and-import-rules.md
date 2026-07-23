@@ -14,7 +14,7 @@
 - `packages/infra/auth`는 Better Auth server/client integration, credential·session schema와 migration, 비밀번호와 session token 정규화를 소유한다. 제품 profile·status·role은 소유하지 않고 인증된 vendor-neutral identity를 identity module에 제공한다.
 - `packages/infra/db`, `ai`, `event-bus`, `storage`, `http-client`는 각각 schema-neutral SQLite connection·transaction·migration runner·backup·destructive guard, AI provider runtime, process-local event 전달, object storage SDK, transport-neutral HTTP 결과를 소유한다. DB infra는 application schema·migration SQL·seed를 소유하거나 재수출하지 않는다.
 - `packages/shared`의 `types`, `kernel`, `errors`, `event-contracts`, `contracts`, `resource-document`, `ui`는 각각 transport-neutral 타입, 최소 실행 원시값, 공통 경계 오류, module 간 event, wire schema, Markdown 변환, 순수 표현 UI를 소유한다.
-- 공개 subpath key와 target은 각 package manifest가 소유하고 package interface 검사가 유효성을 검증한다.
+- 공개 subpath key와 target은 각 package manifest가 소유하고 workspace inventory 검사가 유효성을 검증한다.
 
 ## 공개 Interface 원칙
 
@@ -26,7 +26,7 @@
 - auth infra는 learner/admin과 client/server, schema·migration·seed tooling 경계를 분리한다. root barrel과 client/server forwarding 경로는 제공하지 않는다.
 - 제품 module은 application port, query·command, HTTP, module factory와 필요한 tooling 경계를 capability 단위 subpath로 공개한다. consumer는 domain·infrastructure 내부 경로를 import하지 않는다.
 - schema·migration·seed subpath는 통합 DB tooling과 격리 fixture만 소비한다. 다른 module과 일반 runtime consumer에는 제품 persistence를 공개하지 않는다.
-- 현재 exact export key와 target은 package manifest와 package interface 검사에서 확인한다. 문서의 예시를 inventory로 사용하지 않는다.
+- 현재 export key는 package manifest만 소유한다. package interface 검사는 explicit subpath 형식과 target 존재 여부를 확인하며 별도 exact 목록을 복제하지 않는다.
 - 인증 cookie 이름은 `@workspace/contracts/auth-session-cookie`가 canonical 계약으로 소유하며 auth package는 이를 재수출하지 않는다.
 - identity profile·session과 관리자 사용자 계약은 `@workspace/contracts/identity/*`, content 관리자 계약은 `@workspace/contracts/content/*`, 학습 HTTP 계약은 `@workspace/contracts/learning/*`의 구체적인 경로에서 가져온다. generated OpenAPI 타입이나 중간 계약 계층을 만들지 않는다.
 
@@ -68,12 +68,13 @@
 - API composition과 adapter는 concrete dependency를 조립할 수 있지만 HTTP route, middleware와 response 경계는 DB·Drizzle을 직접 import하지 않는다.
 - capability 간 호출은 공개 API 또는 합의된 application port를 사용한다.
 
-runtime graph는 `apps/api composition -> module public facade -> module infrastructure -> infra primitive`다. 인증 graph는 `frontend feature adapter -> auth client`와 `apps/api composition -> auth server runtime -> identity application`으로 나뉜다. 이전 flat package와 `core` 경로는 존재하지 않으며 정적 검사로 재도입을 막는다.
+runtime graph는 `apps/api composition -> module public facade -> module infrastructure -> infra primitive`다. 인증 graph는 `frontend feature adapter -> auth client`와 `apps/api composition -> auth server runtime -> identity application`으로 나뉜다. 현재 package 계층과 import 방향은 architecture 검사가 판정한다.
 
 ## 자동 검증
 
 - `bun run check:architecture`가 runtime cycle, 계층, vendor와 client/server import 경계를 검사한다.
 - `bun run check:dead-code`가 사용되지 않는 file·export·dependency를 읽기 전용으로 검사한다.
-- `bun run check:package-interfaces`가 shared·infra·identity·content·ai-feedback·learning·resource-library·operations의 exact export key와 target 유효성, canonical ID·schema 소비, provider 소유권, infra의 환경 변수·제품 정책 비의존, module 간 직접 의존, API의 검증 전 env·Clock·ID·private import 경계, 제거된 flat workspace, 내부 상대 import, 자기 공개 경로 역참조, `src` deep import와 제거된 module source 재도입을 검사한다.
-- 같은 검사는 API schema aggregator·Drizzle config·migration checksum, schema/migration/seed의 tooling consumer, DB infra의 schema-neutral dependency와 이전 DB migration·seed 경로 부재를 고정한다.
+- `bun run check:workspace-inventory`가 explicit export key·target의 형식과 존재 여부를 검사한다.
+- `bun run check:package-interfaces`가 canonical ID·schema 소비, UI·infra의 runtime 비의존, API의 검증 전 env·Clock·ID 경계, 내부 상대 import와 자기 공개 경로 역참조를 검사한다.
+- 같은 검사는 API schema aggregator·Drizzle config, migration·test-support의 tooling consumer, DB schema 재공개 금지, reconciliation과 frontend `server-only` 경계를 고정한다. package·module 의존 graph는 `check:architecture`, HTTP parse·migration checksum·event 전달 동작은 각 소유 package의 실행 테스트가 전담한다.
 - package test와 typecheck는 정적 graph가 판정할 수 없는 runtime 계약과 type 계약을 검증한다.

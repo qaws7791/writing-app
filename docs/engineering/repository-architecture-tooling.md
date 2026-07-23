@@ -9,13 +9,11 @@
 | import graph, runtime cycle, 계층·package 경계, 미선언 dependency | `dependency-cruiser.config.mjs`, `scripts/check-architecture.ts`         |
 | 미사용 file·export·dependency                                     | `knip.json`                                                              |
 | workspace 발견과 test·coverage 대상                               | `scripts/workspace-inventory.ts`, `scripts/check-workspace-inventory.ts` |
-| 명시적 package export와 제거된 구조의 재도입 방지                 | `scripts/check-package-interfaces.ts`, 각 package manifest               |
+| package export key·target 유효성                                  | `scripts/check-workspace-inventory.ts`, 각 package manifest              |
+| graph 밖 runtime·data 경계                                        | `scripts/check-package-interfaces.ts`                                    |
 | coverage 집계와 CI task 결과 해석                                 | `scripts/coverage-report.ts`, `scripts/ci-workspace-inventory-report.ts` |
-| LOC 원본 수집, 역할 분류와 계층 집계                              | `scripts/analyze-loc.ts`, `scripts/loc-analysis.ts`                      |
 
 Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표현 수준의 `workspace/no-unsafe-unknown-cast`만 검사한다. workspace inventory, coverage와 CI summary helper도 자기 task에 필요한 좁은 입력만 해석하며 범용 repository graph를 만들지 않는다.
-
-LOC 분석은 clean checkout과 `scc v3.7.0`을 요구하는 수동 정보성 감사다. workspace는 기존 inventory에서 발견하고 file 원본을 category·directory·owner로 재집계하며 합계 불일치와 Git 비추적 파일 혼입은 실패한다. LOC는 책임 집중의 탐색 신호일 뿐 품질 gate나 분리 결정의 단독 근거로 사용하지 않는다.
 
 ## Graph 정책
 
@@ -31,7 +29,7 @@ LOC 분석은 clean checkout과 `scc v3.7.0`을 요구하는 수동 정보성 �
 - generated output만 제외하고 source directory 전체를 숨기는 예외는 두지 않는다.
 - private alias, 공개 subpath, type-only cycle과 금지 edge는 `scripts/fixtures/dependency-cruiser/`의 허용·금지 fixture로 함께 검증한다.
 
-package는 `modules`, `infra`, `shared`, `config` 네 그룹 아래에만 존재한다. 이전 flat package, `core`, app-owned module·검증 전 env·private import와 API transport→persistence edge의 재도입은 대상 규칙과 package interface 검사로 거부한다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
+package는 `modules`, `infra`, `shared`, `config` 네 그룹 아래에서 workspace manifest로 발견한다. 계층과 package 의존 방향, app-owned module과 API transport→persistence edge는 dependency-cruiser가 검사하고, 검증 전 env·Clock·ID·private import 같은 source 의미 경계는 package interface 검사가 맡는다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
 
 operations repository의 module schema 직접 조회 예외는 제거하고 identity·content·learning reporting query port로 치환했다. learning과 ai-feedback의 예외도 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다. legacy curriculum 정규화는 반대 방향 의존을 만들지 않고 API migration composition이 content 공개 정책을 API-owned 이관에 주입한다.
 
@@ -39,11 +37,11 @@ operations repository의 module schema 직접 조회 예외는 제거하고 iden
 
 Knip gate는 읽기 전용이며 `--fix`를 실행하지 않는다. 실제 runtime·tooling 진입점만 `knip.json`에 선언하고 generated output은 Git ignore 경계로 제외한다. cycle은 dependency-cruiser, 의미상 중복 schema는 계약 검사가 소유하므로 Knip의 해당 reporter는 중복 실행하지 않는다.
 
-package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 subpath의 추가·삭제는 소유 package의 export 목록을 함께 갱신해야 하며, broad root barrel, `src` deep import, 자기 공개 경로 역참조와 제거된 forwarding/runtime의 재도입은 `check:package-interfaces`가 거부한다. 같은 검사는 shared·identity·content·ai-feedback·learning·resource-library·operations package의 exact export key와 target 유효성, canonical ID 중복, canonical 오류 schema 소비, 성공 response runtime parse와 제거된 module 소유권 source의 재유입도 고정한다.
+package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 subpath의 추가·삭제는 소유 package의 export 목록을 함께 갱신해야 하며, workspace inventory 검사는 wildcard·root barrel과 유효하지 않은 target을 거부한다. export key 목록 자체는 manifest가 소유하고 과거 목록의 snapshot은 별도로 복제하지 않는다. package interface 검사는 내부 상대 import와 자기 공개 경로 역참조, canonical ID 중복과 canonical 오류 schema 소비처럼 import graph만으로 판정할 수 없는 계약을 고정한다.
 
 module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`는 API의 단일 Drizzle schema entry와 격리된 E2E content seed fixture만 소비하고, 공개 `./migration`은 API migration composition과 호환성 test만 소비한다. 실제 seed가 있는 package의 `./seed`는 API seed composition과 seed tooling만 소비한다. Better Auth schema는 공식 adapter mapping과 API 인증 persistence adapter가 사용하는 별도 infra 예외다. 다른 module이나 app repository가 module table을 직접 읽는 예외는 두지 않는다.
 
-package interface 검사는 이 allowlist와 함께 API Drizzle config의 schema·output 경로, immutable migration의 정규화 checksum, 통합 migration 선실행, 제거된 DB schema·migration·seed 경로와 DB infra의 business dependency 부재를 검사한다. schema ownership 검사는 context table 이름, cross-module FK 부재와 reconciliation 구현의 SQL join 부재를 runtime test와 나눠 검증한다. frontend 검사는 server source의 `server-only` marker와 Storybook 내부 dependency 범위도 고정한다.
+package interface 검사는 이 allowlist와 함께 API schema aggregator, Drizzle config의 schema·output 경로, migration·test-support consumer, DB schema 재공개 금지와 reconciliation의 SQL join 부재를 검사한다. migration checksum과 적용 순서, 최종 schema와 cross-module FK 부재는 migration 실행 테스트가 검증한다. frontend 검사는 server source의 `server-only` marker를 고정하고 Storybook dependency 범위는 architecture 검사와 Knip이 맡는다.
 
 ## 실행
 

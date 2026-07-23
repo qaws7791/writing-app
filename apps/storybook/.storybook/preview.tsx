@@ -67,11 +67,6 @@ const preview: Preview = {
       context: {
         exclude: ["[data-base-ui-focus-guard]"],
       },
-      options: {
-        rules: {
-          "color-contrast": { enabled: false },
-        },
-      },
       test: "error",
     },
     viewport: {
@@ -84,10 +79,8 @@ const preview: Preview = {
           "Foundations",
           "Components",
           "Patterns",
-          "Interactions",
           "Recipes",
           "Quality",
-          "Migration",
         ],
       },
     },

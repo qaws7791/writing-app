@@ -1,7 +1,5 @@
 import type { Decorator } from "@storybook/react-vite"
 
-import { StoryFrame } from "#storybook/blocks/story-frame"
-
 const CHECKED_OPTIONS = [false, "correct", "wrong"] as const
 
 export const checkedArgType = {
@@ -21,9 +19,9 @@ export const lessonParameters = {
 
 export const lessonDecorators: Decorator[] = [
   (Story) => (
-    <StoryFrame variant="reading">
+    <div className="mx-auto grid max-w-3xl gap-5 rounded-panel border border-border/50 bg-background p-surface-padding-lg">
       <Story />
-    </StoryFrame>
+    </div>
   ),
 ]
 

@@ -7,7 +7,6 @@
     "#resource-library/*": "./src/*"
   },
   "exports": {
-    "./commands": "./src/application/resource-document-command-port.ts",
     "./http": "./src/interface/http/resource-library-http.ts",
     "./migration": "./src/infrastructure/persistence/schema-migration.ts",
     "./module": "./src/module.ts",

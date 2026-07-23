@@ -127,7 +127,6 @@ describe("로컬 온보딩", () => {
       {
         addedKeys: ["ADMIN_SEED_NAME"],
         kind: "updated",
-        migratedKeys: [],
         path: "apps/api/.env",
       },
       { kind: "preserved", path: "apps/web/.env" },
@@ -383,7 +382,6 @@ describe("로컬 온보딩", () => {
     expect(results[0]).toEqual({
       addedKeys: ["ADMIN_AUTH_SECRET"],
       kind: "updated",
-      migratedKeys: [],
       path: "apps/api/.env",
     })
     expect(

@@ -1,9 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { ContrastPair } from "#storybook/blocks/contrast-pair"
-import { StoryMatrix } from "#storybook/blocks/story-matrix"
-import { TokenSwatch } from "#storybook/blocks/token-swatch"
-
 const semanticColors = [
   {
     name: "Canvas",
@@ -47,6 +43,33 @@ const semanticColors = [
   },
 ] as const
 
+const contrastPairs = [
+  {
+    background: "var(--action-primary-bg)",
+    foreground: "var(--action-primary-fg)",
+    name: "Primary action",
+    role: "action-primary",
+  },
+  {
+    background: "var(--action-selected-bg)",
+    foreground: "var(--action-selected-fg)",
+    name: "Selected",
+    role: "action-selected",
+  },
+  {
+    background: "var(--success-bg)",
+    foreground: "var(--success-fg)",
+    name: "Success",
+    role: "success",
+  },
+  {
+    background: "var(--danger-bg)",
+    foreground: "var(--danger-fg)",
+    name: "Danger",
+    role: "danger",
+  },
+] as const
+
 const meta = {
   title: "Foundations/Color",
   parameters: {
@@ -59,71 +82,48 @@ type Story = StoryObj<typeof meta>
 
 export const SemanticTokens: Story = {
   render: () => (
-    <StoryMatrix
-      columns={4}
-      items={semanticColors.map((color) => ({
-        title: color.name,
-        children: (
-          <TokenSwatch
-            background={color.value}
-            label={color.name}
-            token={color.token}
-          />
-        ),
-      }))}
-    />
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {semanticColors.map((color) => (
+        <section
+          className="grid min-h-36 content-between rounded-card border border-border/50 p-5"
+          key={color.token}
+          style={{
+            background: color.value,
+            color: "var(--fg-default)",
+          }}
+        >
+          <span className="text-label-sm font-black">{color.token}</span>
+          <strong className="text-title-lg">{color.name}</strong>
+        </section>
+      ))}
+    </div>
   ),
 }
 
 export const ContrastPairs: Story = {
   render: () => (
-    <StoryMatrix
-      items={[
-        {
-          title: "Primary action",
-          children: (
-            <ContrastPair
-              background="var(--action-primary-bg)"
-              foreground="var(--action-primary-fg)"
-              label="Primary action"
-              role="action-primary"
-            />
-          ),
-        },
-        {
-          title: "Selected",
-          children: (
-            <ContrastPair
-              background="var(--action-selected-bg)"
-              foreground="var(--action-selected-fg)"
-              label="Selected"
-              role="action-selected"
-            />
-          ),
-        },
-        {
-          title: "Success",
-          children: (
-            <ContrastPair
-              background="var(--success-bg)"
-              foreground="var(--success-fg)"
-              label="Success"
-              role="success"
-            />
-          ),
-        },
-        {
-          title: "Danger",
-          children: (
-            <ContrastPair
-              background="var(--danger-bg)"
-              foreground="var(--danger-fg)"
-              label="Danger"
-              role="danger"
-            />
-          ),
-        },
-      ]}
-    />
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {contrastPairs.map((pair) => (
+        <section
+          className="grid gap-3 rounded-panel border border-border/50 bg-surface p-surface-padding-md"
+          key={pair.role}
+        >
+          <h3 className="text-title-md font-black">{pair.name}</h3>
+          <div
+            className="grid gap-2 rounded-panel border border-border/50 p-5"
+            style={{
+              background: pair.background,
+              color: pair.foreground,
+            }}
+          >
+            <span className="text-label-sm font-black">{pair.role}</span>
+            <strong className="text-title-md">{pair.name}</strong>
+            <p className="text-body-sm font-semibold">
+              전경과 배경을 함께 쓰는 semantic pair다.
+            </p>
+          </div>
+        </section>
+      ))}
+    </div>
   ),
 }
