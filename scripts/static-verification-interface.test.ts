@@ -50,6 +50,7 @@ describe("정적 검증 Interface", () => {
     expect(staticChecks).toContain("- run: bun run lint")
     expect(staticChecks).toContain("- run: bun run format:check")
     expect(staticChecks).toContain("- run: bun run typecheck")
+    expect(staticChecks).toContain("- run: bun run audit:full")
     expect(
       staticChecks.replace("- run: bun run check:toolchain", "")
     ).not.toContain("- run: bun run check:")
@@ -195,11 +196,44 @@ describe("정적 검증 Interface", () => {
       "bun run typecheck",
       "bun run test -- --summarize --continue=always",
       "bun run build",
+      "bun run test:frontend-production-runtime",
     ]) {
       expect(workflow).toContain(command)
     }
-    expect(workflow).toContain("name: storybook-static-${{ github.sha }}")
+    expect(workflow).toContain(
+      "name: storybook-static-${{ runner.os }}-${{ github.sha }}"
+    )
     expect(workflow).toContain("path: apps/storybook/dist/")
     expect(workflow).toContain("retention-days: 14")
+  })
+
+  test("이식 가능한 전체 품질 gate는 Linux, Windows와 macOS에서 실행한다", () => {
+    const workflow = readFileSync(
+      path.join(repositoryRoot, ".github", "workflows", "quality-gates.yml"),
+      "utf8"
+    )
+
+    for (const [job, nextJob] of [
+      ["static-checks", "deployment-config"],
+      ["tests", "admin-dev-lifecycle"],
+      ["coverage", "storybook-tests"],
+      ["storybook-tests", "browser-e2e"],
+      ["browser-e2e", "build"],
+    ] as const) {
+      const jobSource = workflow.slice(
+        workflow.indexOf(`  ${job}:`),
+        workflow.indexOf(`  ${nextJob}:`)
+      )
+      expect(jobSource).toContain(
+        "os: [ubuntu-latest, windows-latest, macos-latest]"
+      )
+      expect(jobSource).toContain("runs-on: ${{ matrix.os }}")
+    }
+
+    const buildSource = workflow.slice(workflow.indexOf("  build:"))
+    expect(buildSource).toContain(
+      "os: [ubuntu-latest, windows-latest, macos-latest]"
+    )
+    expect(buildSource).toContain("runs-on: ${{ matrix.os }}")
   })
 })

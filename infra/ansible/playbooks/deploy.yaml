@@ -35,6 +35,12 @@
 
     - name: 공유 락 아래 Writing App 배포 실행
       block:
+        - name: 배포 fail-closed 상태 초기화
+          ansible.builtin.set_fact:
+            writing_app_deploy_database_mutation_started: false
+            writing_app_deploy_recovery_status: not-required
+            writing_app_deploy_release_operation_lock: true
+
         - name: Writing App 호스트 준비
           ansible.builtin.include_role:
             name: writing_app_host
@@ -42,9 +48,54 @@
         - name: Writing App 배포 실행
           ansible.builtin.include_role:
             name: writing_app_deploy
+      rescue:
+        - name: 배포 fail-closed 실패 stage 계산
+          ansible.builtin.set_fact:
+            writing_app_deploy_failure_stage: >-
+              {{ ansible_failed_task.name | default('unknown') }}
+
+        - name: 배포 recovery 증적 디렉터리 보장
+          ansible.builtin.file:
+            path: >-
+              {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}
+            state: directory
+            owner: root
+            group: root
+            mode: "0750"
+          failed_when: false
+          when: writing_app_deploy_database_mutation_started | default(false) | bool
+
+        - name: 배포 fail-closed recovery 증적 기록
+          ansible.builtin.copy:
+            dest: >-
+              {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/recovery.txt
+            owner: root
+            group: root
+            mode: "0640"
+            content: |
+              operation=deploy
+              status=failed
+              failure_state=fail-closed
+              failed_at={{ ansible_date_time.iso8601 }}
+              failure_stage={{ writing_app_deploy_failure_stage }}
+              database_mutation_started={{ writing_app_deploy_database_mutation_started | default(false) | bool }}
+              recovery_status={{ writing_app_deploy_recovery_status | default('unknown') }}
+              operation_lock_retained={{ not (writing_app_deploy_release_operation_lock | default(false) | bool) }}
+              next_action=operation lock을 유지한 채 pre-deploy 백업, 실제 DB 무결성, Compose runtime을 읽기 전용으로 점검하고 incident 책임자가 수동 복구를 결정합니다.
+          failed_when: false
+          when: writing_app_deploy_database_mutation_started | default(false) | bool
+
+        - name: 배포 fail-closed 실패 종료
+          ansible.builtin.fail:
+            msg: >-
+              배포가 {{ writing_app_deploy_failure_stage }} 단계에서 실패했습니다.
+              실제 DB 변경이 시작된 뒤의 실패이면 operation lock을 보존하고 recovery.txt에
+              수동 복구 증적을 기록했습니다.
       always:
         - name: 이 배포 실행이 획득한 공유 락 해제
           ansible.builtin.file:
             path: "{{ writing_app_operation_lock_directory }}"
             state: absent
-          when: writing_app_operation_lock.rc == 0
+          when:
+            - writing_app_operation_lock.rc == 0
+            - writing_app_deploy_release_operation_lock | default(true) | bool

@@ -9,6 +9,7 @@ type ContentSecurityPolicyOptions = {
   readonly development?: boolean
   readonly imageSources?: readonly string[]
   readonly nonce?: string
+  readonly upgradeInsecureRequests: boolean
 }
 
 export function createNextSecurityHeaders({
@@ -18,6 +19,7 @@ export function createNextSecurityHeaders({
   imageSources = [],
   includeContentSecurityPolicy = true,
   reportOnly = false,
+  upgradeInsecureRequests,
 }: {
   readonly allowHttpsImages?: boolean
   readonly connectSources?: readonly string[]
@@ -25,7 +27,8 @@ export function createNextSecurityHeaders({
   readonly imageSources?: readonly string[]
   readonly includeContentSecurityPolicy?: boolean
   readonly reportOnly?: boolean
-} = {}): readonly NextSecurityHeader[] {
+  readonly upgradeInsecureRequests: boolean
+}): readonly NextSecurityHeader[] {
   const headers: NextSecurityHeader[] = []
   if (includeContentSecurityPolicy) {
     headers.push({
@@ -37,6 +40,7 @@ export function createNextSecurityHeaders({
         connectSources,
         development,
         imageSources,
+        upgradeInsecureRequests,
       }),
     })
   }
@@ -67,7 +71,8 @@ export function createContentSecurityPolicy({
   development = false,
   imageSources = [],
   nonce,
-}: ContentSecurityPolicyOptions = {}): string {
+  upgradeInsecureRequests,
+}: ContentSecurityPolicyOptions): string {
   const scriptSources = ["'self'"]
   if (nonce === undefined) {
     if (development) {
@@ -102,7 +107,7 @@ export function createContentSecurityPolicy({
     "report-uri /api/csp-report",
   ]
 
-  if (!development) {
+  if (upgradeInsecureRequests) {
     directives.push("upgrade-insecure-requests")
   }
 

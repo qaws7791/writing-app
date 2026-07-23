@@ -7,7 +7,7 @@
     "build": "next build",
     "dev": "next dev --hostname 127.0.0.1 --port 3001",
     "lint": "oxlint .",
-    "start": "next start --port 3001",
+    "start": "node ../../scripts/run-next-standalone.mjs admin",
     "test": "vitest run --config vitest.config.ts",
     "typecheck": "next typegen && tsc --noEmit"
   },

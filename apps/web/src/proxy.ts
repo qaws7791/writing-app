@@ -21,6 +21,7 @@ export function proxy(request: NextRequest) {
       "https://images.googleusercontent.com",
     ],
     nonce,
+    upgradeInsecureRequests: runtime.upgradeInsecureRequests,
   })
 
   const requestHeaders = new Headers(request.headers)

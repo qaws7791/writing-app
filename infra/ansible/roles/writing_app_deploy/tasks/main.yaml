@@ -81,6 +81,8 @@
 - name: 배포 ID 계산
   ansible.builtin.set_fact:
     writing_app_deploy_deployment_id: "{{ ansible_date_time.iso8601_basic_short }}"
+    writing_app_deploy_verified_state_path: >-
+      {{ writing_app_deployment_directory }}/verified-state.sha256
 
 - name: Compose 파일 배치
   ansible.builtin.copy:
@@ -99,7 +101,6 @@
     group: root
     mode: "0644"
   register: writing_app_deploy_caddy_file
-  notify: 변경된 bind-mounted Caddyfile을 반영하도록 Caddy 재생성
 
 - name: Litestream 설정 배치
   ansible.builtin.copy:
@@ -171,6 +172,65 @@
   register: writing_app_deploy_tunnel_token_file
   no_log: true
 
+- name: 현재 배포 입력 파일 checksum 계산
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    checksum_algorithm: sha256
+  loop:
+    - "{{ writing_app_compose_directory }}/compose.yaml"
+    - "{{ writing_app_compose_directory }}/.env"
+    - "{{ writing_app_config_directory }}/caddyfile"
+    - "{{ writing_app_config_directory }}/litestream.yaml"
+    - "{{ writing_app_config_directory }}/web.env"
+    - "{{ writing_app_config_directory }}/admin.env"
+    - "{{ writing_app_config_directory }}/caddy.env"
+    - "{{ writing_app_config_directory }}/api.env"
+    - "{{ writing_app_config_directory }}/litestream.env"
+    - "{{ writing_app_secrets_directory }}/cloudflare-tunnel-token"
+  register: writing_app_deploy_input_files
+  changed_when: false
+  no_log: true
+
+- name: 현재 배포 입력 fingerprint 계산
+  ansible.builtin.set_fact:
+    writing_app_deploy_desired_state_fingerprint: >-
+      {{
+        (
+          writing_app_deploy_input_files.results
+          | map(attribute='stat.checksum')
+          | join('\n')
+        )
+        | hash('sha256')
+      }}
+  no_log: true
+
+- name: 직전 검증 성공 marker 확인
+  ansible.builtin.stat:
+    path: "{{ writing_app_deploy_verified_state_path }}"
+  register: writing_app_deploy_verified_state_marker
+  changed_when: false
+
+- name: 직전 검증 성공 fingerprint 읽기
+  ansible.builtin.slurp:
+    src: "{{ writing_app_deploy_verified_state_path }}"
+  register: writing_app_deploy_verified_state_content
+  when: writing_app_deploy_verified_state_marker.stat.exists
+  no_log: true
+
+- name: 현재 입력의 직전 검증 성공 여부 계산
+  ansible.builtin.set_fact:
+    writing_app_deploy_verified_state_matches: >-
+      {{
+        writing_app_deploy_verified_state_marker.stat.exists
+        and (
+          writing_app_deploy_verified_state_content.content
+          | default('')
+          | b64decode
+          | trim
+        ) == writing_app_deploy_desired_state_fingerprint
+      }}
+  no_log: true
+
 - name: 배포 변경 여부 계산
   ansible.builtin.set_fact:
     writing_app_deploy_deployment_changed: >-
@@ -188,6 +248,7 @@
           | selectattr('changed') | list | length > 0
         )
         or writing_app_deploy_tunnel_token_file.changed
+        or not (writing_app_deploy_verified_state_matches | bool)
       }}
 
 - name: Compose 설정 검증
@@ -238,9 +299,7 @@
           - --env-file
           - "{{ writing_app_config_directory }}/caddy.env"
           - --mount
-          - >-
-            type=bind,source={{ writing_app_config_directory }}/caddyfile,
-            target=/etc/caddy/caddyfile,readonly
+          - "type=bind,source={{ writing_app_config_directory }}/caddyfile,target=/etc/caddy/caddyfile,readonly"
           - "{{ writing_app_caddy_image }}"
           - caddy
           - validate
@@ -250,12 +309,25 @@
           - caddyfile
       changed_when: false
 
+    - name: 배포 DB 리허설 디렉터리 생성
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ writing_app_container_uid }}"
+        group: "{{ writing_app_container_gid }}"
+        mode: "0750"
+      loop:
+        - >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}
+        - >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal
+
     - name: 기존 DB 확인
       ansible.builtin.stat:
         path: "{{ writing_app_data_directory }}/api.sqlite"
       register: writing_app_deploy_database_before_deploy
 
-    - name: 최초 기동 전 R2 복구 시도
+    - name: 최초 기동 전 격리 경로로 R2 복구 시도
       community.docker.docker_compose_v2_run:
         project_src: "{{ writing_app_compose_directory }}"
         env_files:
@@ -265,18 +337,25 @@
         profiles:
           - operations
         service: database-restore
+        argv:
+          - restore
+          - -config
+          - /etc/litestream.yaml
+          - -if-db-not-exists
+          - -if-replica-exists
+          - -integrity-check
+          - full
+          - -o
+          - >-
+            /var/backups/writing-app/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal/api.sqlite
+          - /var/lib/writing-app/api.sqlite
         cleanup: true
         no_deps: true
         interactive: false
         tty: false
       when: not writing_app_deploy_database_before_deploy.stat.exists
 
-    - name: 복구 후 DB 확인
-      ansible.builtin.stat:
-        path: "{{ writing_app_data_directory }}/api.sqlite"
-      register: writing_app_deploy_database_after_restore
-
-    - name: 복구된 DB 소유권 정규화
+    - name: 기존 DB 소유권 정규화
       ansible.builtin.file:
         path: "{{ writing_app_data_directory }}"
         state: directory
@@ -284,9 +363,9 @@
         group: "{{ writing_app_container_gid }}"
         mode: "0750"
         recurse: true
-      when: writing_app_deploy_database_after_restore.stat.exists
+      when: writing_app_deploy_database_before_deploy.stat.exists
 
-    - name: 기존 DB snapshot 백업
+    - name: DB 리허설용 live snapshot 생성
       community.docker.docker_compose_v2_run:
         project_src: "{{ writing_app_compose_directory }}"
         env_files:
@@ -298,14 +377,92 @@
         service: database-backup
         argv:
           - "--source=/var/lib/writing-app/api.sqlite"
-          - >-
-            --output=/var/backups/writing-app/
-            pre-deploy-{{ writing_app_deploy_deployment_id }}.sqlite
+          - "--output=/var/backups/writing-app/deploy-{{ writing_app_deploy_deployment_id }}/pre-rehearsal.sqlite"
         cleanup: true
         no_deps: true
         interactive: false
         tty: false
-      when: writing_app_deploy_database_after_restore.stat.exists
+      when: writing_app_deploy_database_before_deploy.stat.exists
+
+    - name: Live snapshot을 격리된 리허설 DB로 복제
+      ansible.builtin.copy:
+        src: >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/pre-rehearsal.sqlite
+        dest: >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal/api.sqlite
+        remote_src: true
+        owner: "{{ writing_app_container_uid }}"
+        group: "{{ writing_app_container_gid }}"
+        mode: "0640"
+      when: writing_app_deploy_database_before_deploy.stat.exists
+
+    - name: 최초 DB 리허설용 빈 DB 생성
+      ansible.builtin.copy:
+        content: ""
+        dest: >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal/api.sqlite
+        force: false
+        owner: "{{ writing_app_container_uid }}"
+        group: "{{ writing_app_container_gid }}"
+        mode: "0640"
+      when: not writing_app_deploy_database_before_deploy.stat.exists
+
+    - name: Candidate image로 격리된 DB migration 리허설
+      ansible.builtin.command:
+        argv:
+          - docker
+          - run
+          - --rm
+          - --network
+          - none
+          - --user
+          - "{{ writing_app_container_uid }}:{{ writing_app_container_gid }}"
+          - --env
+          - DATABASE_URL=file:/var/lib/writing-app/api.sqlite
+          - --env
+          - NODE_ENV=production
+          - --mount
+          - >-
+            type=bind,source={{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal,target=/var/lib/writing-app
+          - "{{ writing_app_api_image }}"
+          - bun
+          - /workspace/bin/database-migrate
+      changed_when: false
+
+    - name: Candidate image로 격리된 DB 검증 리허설
+      ansible.builtin.command:
+        argv:
+          - docker
+          - run
+          - --rm
+          - --network
+          - none
+          - --user
+          - "{{ writing_app_container_uid }}:{{ writing_app_container_gid }}"
+          - --env
+          - DATABASE_URL=file:/var/lib/writing-app/api.sqlite
+          - --env
+          - NODE_ENV=production
+          - --mount
+          - >-
+            type=bind,source={{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal,target=/var/lib/writing-app,readonly
+          - "{{ writing_app_api_image }}"
+          - bun
+          - /workspace/bin/database-check
+      changed_when: false
+
+    - name: 검증된 리허설 DB 작업본 정리
+      ansible.builtin.file:
+        path: >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal
+        state: absent
+      when: writing_app_deploy_database_before_deploy.stat.exists
+
+    - name: 실제 DB 변경 전 operation lock 보존 설정
+      ansible.builtin.set_fact:
+        writing_app_deploy_database_mutation_started: true
+        writing_app_deploy_recovery_status: pending
+        writing_app_deploy_release_operation_lock: false
 
     - name: SQLite writer 중지
       community.docker.docker_compose_v2:
@@ -318,6 +475,43 @@
           - api
         dependencies: false
         state: stopped
+
+    - name: 검증된 최초 DB를 실제 경로에 원자적으로 설치
+      ansible.builtin.copy:
+        src: >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal/api.sqlite
+        dest: "{{ writing_app_data_directory }}/api.sqlite"
+        remote_src: true
+        owner: "{{ writing_app_container_uid }}"
+        group: "{{ writing_app_container_gid }}"
+        mode: "0640"
+      when: not writing_app_deploy_database_before_deploy.stat.exists
+
+    - name: 설치가 끝난 최초 DB 리허설 작업본 정리
+      ansible.builtin.file:
+        path: >-
+          {{ writing_app_backup_directory }}/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal
+        state: absent
+      when: not writing_app_deploy_database_before_deploy.stat.exists
+
+    - name: 중지된 DB의 최종 pre-deploy snapshot 백업
+      community.docker.docker_compose_v2_run:
+        project_src: "{{ writing_app_compose_directory }}"
+        env_files:
+          - .env
+        files:
+          - compose.yaml
+        profiles:
+          - operations
+        service: database-backup
+        argv:
+          - "--source=/var/lib/writing-app/api.sqlite"
+          - "--output=/var/backups/writing-app/deploy-{{ writing_app_deploy_deployment_id }}/pre-deploy.sqlite"
+        cleanup: true
+        no_deps: true
+        interactive: false
+        tty: false
+      when: writing_app_deploy_database_before_deploy.stat.exists
 
     - name: DB migration 실행
       community.docker.docker_compose_v2_run:
@@ -357,19 +551,15 @@
         files:
           - compose.yaml
         pull: never
+        recreate: always
         remove_orphans: true
         state: present
         wait: true
         wait_timeout: 120
 
-    - name: 변경된 Caddy 설정을 배포 기록 전에 반영
-      ansible.builtin.meta: flush_handlers
-
     - name: 배포 image reference 기록
       ansible.builtin.copy:
-        dest: >-
-          {{ writing_app_deployment_directory }}/
-          {{ writing_app_deploy_deployment_id }}.txt
+        dest: "{{ writing_app_deployment_directory }}/{{ writing_app_deploy_deployment_id }}.txt"
         owner: root
         group: root
         mode: "0640"
@@ -377,6 +567,19 @@
           web={{ writing_app_web_image }}
           api={{ writing_app_api_image }}
           admin={{ writing_app_admin_image }}
+
+    - name: 검증 성공 배포 fingerprint 기록
+      ansible.builtin.copy:
+        dest: "{{ writing_app_deploy_verified_state_path }}"
+        owner: root
+        group: root
+        mode: "0640"
+        content: "{{ writing_app_deploy_desired_state_fingerprint }}\n"
+
+    - name: 검증된 배포 후 operation lock 해제 허용
+      ansible.builtin.set_fact:
+        writing_app_deploy_recovery_status: verified-success
+        writing_app_deploy_release_operation_lock: true
 
 - name: 변경 없는 Compose 서비스 상태 확인
   community.docker.docker_compose_v2:

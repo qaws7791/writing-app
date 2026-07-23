@@ -1,11 +1,9 @@
 import type { ReadableStream } from "node:stream/web"
 import {
-  createMastraAgent,
-  createMastraRuntime,
+  createManagedMastraAgent,
   createMastraTool,
   MastraRequestContext,
-  type ManagedMastraRuntime,
-} from "@workspace/ai/mastra-runtime"
+} from "@workspace/ai/mastra-agent"
 import type {
   AdminId,
   ConversationId,
@@ -119,7 +117,7 @@ export function createOperationsMastraProvider(input: {
         : { created: true, proposalId: result.value.id }
     },
   })
-  const agent = createMastraAgent({
+  const managedAgent = createManagedMastraAgent({
     id: agentId,
     instructions: [
       "당신은 한국어 글쓰기 교육 플랫폼의 관리자 콘텐츠 제작 에이전트입니다.",
@@ -138,26 +136,22 @@ export function createOperationsMastraProvider(input: {
       searchResources,
     },
   })
-  const runtimeResult = createMastraRuntime({
-    agents: { agent },
-    apiKey: input.apiKey,
-    timeoutMs: 30_000,
-  })
-  if (runtimeResult.isErr()) throw runtimeResult.error
   return Object.freeze({
-    close: runtimeResult.value.close,
-    provider: createProvider(runtimeResult.value),
+    close: managedAgent.close,
+    provider: createProvider(managedAgent.agent),
   })
 }
 
-function createProvider(runtime: ManagedMastraRuntime): AiProviderPort {
+function createProvider(
+  agent: ReturnType<typeof createManagedMastraAgent>["agent"]
+): AiProviderPort {
   return Object.freeze({
     async streamText(prompt, options) {
       const requestContext =
         new MastraRequestContext<OperationsAiRequestContext>()
       requestContext.set("adminId", options.adminId)
       requestContext.set("conversationId", options.conversationId)
-      const stream = await runtime.value.getAgentById(agentId).stream(prompt, {
+      const stream = await agent.stream(prompt, {
         abortSignal: options.signal,
         modelSettings: { maxOutputTokens: options.maxOutputTokens },
         requestContext,

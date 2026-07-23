@@ -18,9 +18,13 @@ env:
 
 jobs:
   static-checks:
-    name: 정적 검증
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    name: 정적 검증 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -38,6 +42,7 @@ jobs:
       - run: bun run lint
       - run: bun run format:check
       - run: bun run typecheck
+      - run: bun run audit:full
       - if: always()
         run: bun scripts/ci-workspace-inventory.ts lint typecheck
 
@@ -94,9 +99,13 @@ jobs:
       - run: bun run test:deployment-images
 
   tests:
-    name: 전체 테스트
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    name: 전체 테스트 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -126,7 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -144,9 +153,13 @@ jobs:
       - run: bun run test:admin-dev-lifecycle
 
   coverage:
-    name: 커버리지
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    name: 커버리지 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -165,15 +178,19 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: coverage-${{ github.sha }}
+          name: coverage-${{ runner.os }}-${{ github.sha }}
           path: coverage/
           if-no-files-found: error
           retention-days: 14
 
   storybook-tests:
-    name: Storybook 상호작용 및 접근성
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    name: Storybook 상호작용 및 접근성 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -188,13 +205,20 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'package.json', 'apps/*/package.json', 'packages/*/*/package.json') }}
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium
+      - if: runner.os == 'Linux'
+        run: bunx playwright install --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: bunx playwright install chromium
       - run: bun run test:storybook
 
   browser-e2e:
-    name: 브라우저 E2E
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    name: 브라우저 E2E (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -209,21 +233,28 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'package.json', 'apps/*/package.json', 'packages/*/*/package.json') }}
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium
+      - if: runner.os == 'Linux'
+        run: bunx playwright install --with-deps chromium
+      - if: runner.os != 'Linux'
+        run: bunx playwright install chromium
       - run: bun run test:e2e:flaky-policy
       - run: bun run test:e2e
       - if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: playwright-${{ github.sha }}
+          name: playwright-${{ runner.os }}-${{ github.sha }}
           path: output/playwright/
           if-no-files-found: error
           retention-days: 14
 
   build:
-    name: 빌드
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    name: 빌드 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     env:
       API_BASE_URL: https://api.example.test
       ADMIN_ORIGIN: https://admin.example.test
@@ -249,9 +280,10 @@ jobs:
       - run: bun run check:resource-route-bundle
       - run: bun run check:admin-chart-route-bundle
       - run: bun run check:landing-route-bundle
+      - run: bun run test:frontend-production-runtime
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: storybook-static-${{ github.sha }}
+          name: storybook-static-${{ runner.os }}-${{ github.sha }}
           path: apps/storybook/dist/
           if-no-files-found: error
           retention-days: 14

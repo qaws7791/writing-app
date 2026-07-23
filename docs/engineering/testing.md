@@ -27,6 +27,7 @@
 ## 테스트 데이터와 인증
 
 - DB fixture는 각 테스트가 열고 닫으며, 실패 경로에서도 자원을 정리한다.
+- SQLite fixture는 추적 중인 statement를 모두 finalize한 뒤 strict close하고 파일을 즉시 제거한다. 강제 GC, 지연 또는 삭제 재시도로 수명주기 결함을 숨기지 않는다.
 - browser와 E2E 테스트는 production OAuth가 아니라 테스트 전용 인증 설정을 사용한다.
 - 테스트 전용 인증은 non-production 환경과 명시적 test 설정에서만 활성화한다.
 - secret, 실제 사용자 데이터, production endpoint와 공유 storage를 fixture에 사용하지 않는다.
@@ -42,6 +43,8 @@
 ## 실행과 검증
 
 공개 검증 명령은 root `package.json`이 소유한다. 변경 범위에 맞는 lint, typecheck, test, build와 배포 검증을 선택하고, 실제 명령·입력·지원 환경은 manifest와 CI workflow를 확인한다.
+
+개발자가 사용하는 이식 가능한 품질 gate와 generated frontend production runtime smoke는 Linux, Windows와 macOS에서 검증한다. Linux container·Ansible에 종속된 배포 검증은 Ubuntu 격리 환경에서 별도로 실행한다.
 
 `check:document-drift`는 문서의 현재 코드 사실을 강제하지 않는다. 문서 구조, 내부 링크, 공개 실행 명령과 workspace import 참조를 검사하며, 제품 정책과 충돌하는 자료실 설명만 별도 회귀 대상으로 둔다.
 

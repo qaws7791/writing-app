@@ -2,7 +2,7 @@ import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
 } from "@workspace/db/client"
-import { normalizeVersionedStepContentOrThrow } from "@workspace/content/normalization"
+import { normalizeLegacyVersionedStepContentOrThrow } from "@workspace/content/normalization"
 
 import { runApplicationMigrations } from "@/db/migrate"
 
@@ -11,7 +11,7 @@ const client = createWritingAppDatabase(databaseUrl)
 
 try {
   const migrations = runApplicationMigrations(client.sqlite, {
-    normalizeVersionedStepContent: normalizeVersionedStepContentOrThrow,
+    normalizeVersionedStepContent: normalizeLegacyVersionedStepContentOrThrow,
   })
   process.stdout.write(`${JSON.stringify({ migrations })}\n`)
 } finally {

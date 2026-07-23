@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import { connection } from "next/server"
 import type { ReactNode } from "react"
 import { ThemeProvider } from "next-themes"
+import { zodJitlessBootstrapScript } from "@workspace/nextjs-config/zod-jitless"
 import "@workspace/ui/pretendard-font"
 
 import "@/app/globals.css"
@@ -28,6 +29,14 @@ export default async function RootLayout({
 
   return (
     <html data-density="compact" lang="ko" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: zodJitlessBootstrapScript }}
+          id="admin-zod-jitless"
+          suppressHydrationWarning
+          {...(nonce === undefined ? {} : { nonce })}
+        />
+      </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"

@@ -7,7 +7,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "oxlint .",
-    "start": "next start",
+    "start": "node ../../scripts/run-next-standalone.mjs web",
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest watch --config vitest.config.ts",
     "typecheck": "next typegen && tsc --noEmit"

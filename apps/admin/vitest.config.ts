@@ -43,6 +43,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    maxWorkers: 2,
     setupFiles: ["./vitest.setup.ts"],
   },
 })

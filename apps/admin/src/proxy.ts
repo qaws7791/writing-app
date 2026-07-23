@@ -12,6 +12,7 @@ export function proxy(request: NextRequest) {
     connectSources: createAdminApiConnectSources(runtime.apiOrigin),
     development: runtime.development,
     nonce,
+    upgradeInsecureRequests: runtime.upgradeInsecureRequests,
   })
 
   const requestHeaders = new Headers(request.headers)

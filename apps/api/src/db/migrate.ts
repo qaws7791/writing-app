@@ -9,6 +9,10 @@ import {
   type NormalizeVersionedStepContent,
 } from "@/db/legacy-curriculum-migration"
 import {
+  assertLegacyResourceLibraryMigrationPrerequisites,
+  prepareLegacyResourceLibraryState,
+} from "@/db/legacy-resource-library-migration"
+import {
   runSqliteMigrations,
   type SqliteMigrationResult,
 } from "@workspace/db/migration-runner"
@@ -41,10 +45,99 @@ export type ApplicationMigrationOptions = Readonly<{
   normalizeVersionedStepContent?: NormalizeVersionedStepContent
 }>
 
+export type ApplicationMigrationHistoryInspection =
+  | Readonly<{
+      pendingMigrationIds: readonly string[]
+      status: "complete"
+    }>
+  | Readonly<{
+      pendingMigrationIds: readonly string[]
+      status: "incomplete"
+    }>
+
+function assertApplicationMigrationHistory(sqlite: Database): void {
+  inspectApplicationMigrationHistory(sqlite)
+}
+
+export function inspectApplicationMigrationHistory(
+  sqlite: Database
+): ApplicationMigrationHistoryInspection {
+  const expectedMigrations = [baselineMigration, moduleOwnershipMigration]
+  if (
+    sqlite
+      .query<{ readonly present: number }, []>(`
+        SELECT EXISTS (
+          SELECT 1
+          FROM sqlite_master
+          WHERE type = 'table' AND name = 'api_schema_migrations'
+        ) AS present
+      `)
+      .get()?.present !== 1
+  ) {
+    return Object.freeze({
+      pendingMigrationIds: Object.freeze(
+        expectedMigrations.map(({ id }) => id)
+      ),
+      status: "incomplete",
+    })
+  }
+
+  const expectedMigrationsById = new Map(
+    expectedMigrations.map((migration) => [migration.id, migration])
+  )
+  const appliedMigrations = sqlite
+    .query<{ readonly checksum: string; readonly id: string }, []>(`
+      SELECT id, checksum
+      FROM api_schema_migrations
+      ORDER BY id
+    `)
+    .all()
+
+  for (const applied of appliedMigrations) {
+    const expected = expectedMigrationsById.get(applied.id)
+    if (expected === undefined) {
+      throw new Error(`알 수 없는 적용 migration입니다: ${applied.id}`)
+    }
+    if (expected.checksum !== applied.checksum) {
+      throw new Error(`적용 migration checksum이 다릅니다: ${applied.id}`)
+    }
+  }
+
+  const appliedMigrationIds = new Set(appliedMigrations.map(({ id }) => id))
+  const firstPendingIndex = expectedMigrations.findIndex(
+    ({ id }) => !appliedMigrationIds.has(id)
+  )
+  if (
+    firstPendingIndex >= 0 &&
+    expectedMigrations
+      .slice(firstPendingIndex + 1)
+      .some(({ id }) => appliedMigrationIds.has(id))
+  ) {
+    throw new Error(
+      "적용 migration 순서가 올바르지 않습니다. 이력은 manifest의 연속된 prefix여야 합니다."
+    )
+  }
+
+  if (firstPendingIndex < 0) {
+    return Object.freeze({
+      pendingMigrationIds: Object.freeze([]),
+      status: "complete",
+    })
+  }
+
+  return Object.freeze({
+    pendingMigrationIds: Object.freeze(
+      expectedMigrations.slice(firstPendingIndex).map(({ id }) => id)
+    ),
+    status: "incomplete",
+  })
+}
+
 export function runApplicationMigrations(
   sqlite: Database,
   options: ApplicationMigrationOptions = {}
 ): readonly SqliteMigrationResult[] {
+  assertApplicationMigrationHistory(sqlite)
   prepareLegacyCurriculum(sqlite, options)
 
   const hasApplicationTables = readApplicationTableCount(sqlite) > 0
@@ -52,14 +145,14 @@ export function runApplicationMigrations(
   if (
     hasApplicationTables &&
     !baselineSchemaPresent &&
-    !isKnownLegacyAdminMfaSchema(sqlite)
+    !hasKnownLegacyAdminMfaSchema(sqlite)
   ) {
     throw new Error(
       "지원하지 않는 database schema입니다. migration 전에 복구 가능한 backup과 기준 version을 확인해야 합니다."
     )
   }
   if (baselineSchemaPresent && !isCurrentApplicationSchema(sqlite)) {
-    assertMigrationPrerequisites(sqlite)
+    assertApplicationMigrationPrerequisites(sqlite)
   }
 
   return runSqliteMigrations(sqlite, [
@@ -95,7 +188,7 @@ export function runApplicationMigrations(
   ])
 }
 
-function isKnownLegacyAdminMfaSchema(sqlite: Database): boolean {
+export function hasKnownLegacyAdminMfaSchema(sqlite: Database): boolean {
   const tables = readApplicationTableNames(sqlite)
   const allowedTables = new Set([
     "admin_mfa_recovery_code",
@@ -129,16 +222,24 @@ function prepareLegacyCurriculum(
       "legacy curriculum migration에는 content normalization 정책이 필요합니다."
     )
   }
+  assertLegacyResourceLibraryMigrationPrerequisites(sqlite)
 
   migrateLegacyCurriculumSchema(
     sqlite,
     baselineMigration.sql,
     options.normalizeVersionedStepContent,
-    prepareLegacyAiFeedbackAttemptState
+    prepareLegacyApplicationState
   )
 }
 
-function assertMigrationPrerequisites(sqlite: Database): void {
+function prepareLegacyApplicationState(sqlite: Database): void {
+  prepareLegacyAiFeedbackAttemptState(sqlite)
+  prepareLegacyResourceLibraryState(sqlite)
+}
+
+export function assertApplicationMigrationPrerequisites(
+  sqlite: Database
+): void {
   const integrity = sqlite
     .query<{ readonly result: string }, []>(
       "SELECT integrity_check AS result FROM pragma_integrity_check"

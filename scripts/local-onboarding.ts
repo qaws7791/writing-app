@@ -624,7 +624,7 @@ function inspectDatabase(
   ]
 }
 
-function resolveLocalDatabasePath(
+export function resolveLocalDatabasePath(
   repositoryRoot: string,
   databaseUrl: string
 ): string | null {

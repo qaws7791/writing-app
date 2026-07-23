@@ -258,13 +258,7 @@ describe("AI feedback Drizzle repository", () => {
     } finally {
       observer.close()
       client.close()
-      Bun.gc(true)
-      rmSync(directory, {
-        force: true,
-        maxRetries: 5,
-        recursive: true,
-        retryDelay: 100,
-      })
+      rmSync(directory, { force: true, recursive: true })
     }
   })
 })

@@ -3,7 +3,7 @@
 ## Repository Overview
 
 - This repository is a Bun-managed monorepo for a writing-focused learning platform.
-- Do not edit the legacy experimental directory at the repository root — **replace this line with the exact path** (e.g. `/legacy`); it is not part of the main project structure.
+- No legacy experimental directory currently exists at the repository root; do not infer one from generated or archived paths.
 - Documentation under `/docs` must be written in Korean. This file and other agent-instruction files are not subject to that rule.
 
 ### Prerequisites

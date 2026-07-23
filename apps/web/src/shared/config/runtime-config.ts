@@ -1,3 +1,4 @@
+import { assertPublicUrlTransport } from "@workspace/env/public-url"
 import { z } from "zod"
 
 import type {
@@ -56,7 +57,13 @@ function toApiBaseUrl(
     rawValue === undefined || rawValue.trim() === ""
       ? createDevelopmentBrowserApiBaseUrl()
       : rawValue
-  return apiBaseUrlSchema.parse(candidate)
+  const apiBaseUrl = apiBaseUrlSchema.parse(candidate)
+  assertPublicUrlTransport(new URL(apiBaseUrl), {
+    description: "public API base URL",
+    nodeEnvironment,
+  })
+
+  return apiBaseUrl
 }
 
 function createDevelopmentBrowserApiBaseUrl(): string {

@@ -1,4 +1,5 @@
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import { assertPublicUrlTransport } from "@workspace/env/public-url"
 import { z } from "zod/mini"
 
 import type { ApiBaseUrl } from "@/shared/config/api-base-url"
@@ -34,9 +35,17 @@ export function readLearnerWebOrigin(env?: AdminRuntimeEnv): string {
     throw new Error("production learner web origin is required")
   }
 
-  return candidate === undefined || candidate.trim() === ""
-    ? localRuntimeDefaults.learnerWebOrigin
-    : new URL(candidate).origin
+  const url = new URL(
+    candidate === undefined || candidate.trim() === ""
+      ? localRuntimeDefaults.learnerWebOrigin
+      : candidate
+  )
+  assertPublicUrlTransport(url, {
+    description: "learner web origin",
+    nodeEnvironment,
+  })
+
+  return url.origin
 }
 
 function toApiBaseUrl(
@@ -55,6 +64,10 @@ function toApiBaseUrl(
       ? localRuntimeDefaults.apiBaseUrl
       : rawValue
   const url = new URL(candidate)
+  assertPublicUrlTransport(url, {
+    description: "public API base URL",
+    nodeEnvironment,
+  })
 
   return url.toString().replace(/\/+$/, "")
 }

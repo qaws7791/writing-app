@@ -22,6 +22,7 @@ const expectedNetworks = {
   api: ["admin", "learner"],
   caddy: ["admin", "edge", "learner"],
   cloudflared: ["edge"],
+  "database-restore": ["backup"],
   litestream: ["backup"],
   web: ["learner"],
 } as const
@@ -139,6 +140,16 @@ export function validateComposeContract(input: unknown): readonly string[] {
     errors.push("caddy: 제거된 admin-api에 의존하면 안 됩니다.")
   }
 
+  const litestreamService = services.litestream
+  if (isJsonObject(litestreamService)) {
+    errors.push(
+      ...validateDatabaseRestoreService(
+        services["database-restore"],
+        litestreamService
+      )
+    )
+  }
+
   if (isJsonObject(apiService)) {
     errors.push(
       ...validateApiOperationService(
@@ -158,8 +169,47 @@ export function validateComposeContract(input: unknown): readonly string[] {
       ...validateApiOperationService(
         services["database-check"],
         apiService,
-        "database-check"
+        "database-check",
+        "command",
+        ["bun", "/workspace/bin/database-check"]
       )
+    )
+  }
+
+  return errors
+}
+
+function validateDatabaseRestoreService(
+  value: unknown,
+  litestreamService: JsonObject
+): readonly string[] {
+  if (!isJsonObject(value)) return []
+
+  const errors: string[] = []
+  if (value.image !== litestreamService.image) {
+    errors.push("database-restore: Litestream과 같은 image를 사용해야 합니다.")
+  }
+  if (value.restart !== "no") {
+    errors.push("database-restore: 일회성 작업은 restart: no여야 합니다.")
+  }
+  if (!hasVolumeTarget(value, "/var/lib/writing-app")) {
+    errors.push("database-restore: application DB volume이 필요합니다.")
+  }
+  if (!hasVolumeTarget(value, "/var/backups/writing-app")) {
+    errors.push("database-restore: 격리 복구용 backup volume이 필요합니다.")
+  }
+  if (
+    !sameStringArray(value.command, [
+      "restore",
+      "-config",
+      "/etc/litestream.yaml",
+      "-if-db-not-exists",
+      "-if-replica-exists",
+      "/var/lib/writing-app/api.sqlite",
+    ])
+  ) {
+    errors.push(
+      "database-restore: Litestream의 조건부 기본 복구 command를 유지해야 합니다."
     )
   }
 
@@ -187,6 +237,12 @@ function validateApiOperationService(
   }
   if (!hasVolumeTarget(value, "/var/lib/writing-app")) {
     errors.push(`${serviceName}: application DB volume이 필요합니다.`)
+  }
+  if (
+    serviceName === "database-check" &&
+    !hasReadOnlyVolumeTarget(value, "/var/lib/writing-app")
+  ) {
+    errors.push("database-check: application DB volume은 read-only여야 합니다.")
   }
 
   if (
@@ -348,6 +404,16 @@ function hasVolumeTarget(service: JsonObject, target: string): boolean {
   if (!Array.isArray(service.volumes)) return false
   return service.volumes.some(
     (volume) => isJsonObject(volume) && volume.target === target
+  )
+}
+
+function hasReadOnlyVolumeTarget(service: JsonObject, target: string): boolean {
+  if (!Array.isArray(service.volumes)) return false
+  return service.volumes.some(
+    (volume) =>
+      isJsonObject(volume) &&
+      volume.target === target &&
+      volume.read_only === true
   )
 }
 

@@ -9,10 +9,14 @@ import {
 
 const healthcheck = { test: ["CMD", "true"] }
 const sqliteVolume = [{ target: "/var/lib/writing-app", type: "bind" }]
+const readOnlySqliteVolume = [
+  { read_only: true, target: "/var/lib/writing-app", type: "bind" },
+]
 
 function createValidComposeConfig(): unknown {
   const digest = "a".repeat(64)
   const apiImage = `example.invalid/writing-app-api@sha256:${digest}`
+  const litestreamImage = `example.invalid/litestream@sha256:${digest}`
   return {
     services: {
       admin: {
@@ -56,13 +60,14 @@ function createValidComposeConfig(): unknown {
         image: apiImage,
         network_mode: "none",
         restart: "no",
-        volumes: sqliteVolume,
+        volumes: readOnlySqliteVolume,
       },
       "database-check": {
+        command: ["bun", "/workspace/bin/database-check"],
         image: apiImage,
         network_mode: "none",
         restart: "no",
-        volumes: sqliteVolume,
+        volumes: readOnlySqliteVolume,
       },
       "database-migrate": {
         command: ["bun", "/workspace/bin/database-migrate"],
@@ -71,8 +76,28 @@ function createValidComposeConfig(): unknown {
         restart: "no",
         volumes: sqliteVolume,
       },
-      "database-restore": {},
-      litestream: { networks: { backup: null }, volumes: sqliteVolume },
+      "database-restore": {
+        command: [
+          "restore",
+          "-config",
+          "/etc/litestream.yaml",
+          "-if-db-not-exists",
+          "-if-replica-exists",
+          "/var/lib/writing-app/api.sqlite",
+        ],
+        image: litestreamImage,
+        networks: { backup: null },
+        restart: "no",
+        volumes: [
+          ...sqliteVolume,
+          { target: "/var/backups/writing-app", type: "bind" },
+        ],
+      },
+      litestream: {
+        image: litestreamImage,
+        networks: { backup: null },
+        volumes: sqliteVolume,
+      },
       web: {
         healthcheck,
         image: `example.invalid/writing-app-web@sha256:${digest}`,
@@ -172,7 +197,11 @@ describe("배포 Compose 계약", () => {
     const config = createValidComposeConfig() as {
       services: {
         "database-backup": { entrypoint: readonly string[] }
-        "database-check": { image: string }
+        "database-check": {
+          command: readonly string[]
+          image: string
+          volumes: readonly unknown[]
+        }
         "database-migrate": { command: readonly string[]; image: string }
       }
     }
@@ -188,6 +217,8 @@ describe("배포 Compose 계약", () => {
       "apps/api/src/scripts/backup-database.ts",
     ]
     config.services["database-check"].image = "legacy-api:latest"
+    config.services["database-check"].command = ["bun", "-e", "PRAGMA"]
+    config.services["database-check"].volumes = sqliteVolume
 
     expect(validateComposeContract(config)).toEqual(
       expect.arrayContaining([
@@ -195,6 +226,31 @@ describe("배포 Compose 계약", () => {
         "database-migrate: API image의 /workspace/bin/database-migrate를 Bun으로 실행해야 합니다.",
         "database-backup: API image의 /workspace/bin/database-backup를 Bun으로 실행해야 합니다.",
         "database-check: 통합 API와 같은 image를 사용해야 합니다.",
+        "database-check: API image의 /workspace/bin/database-check를 Bun으로 실행해야 합니다.",
+        "database-check: application DB volume은 read-only여야 합니다.",
+      ])
+    )
+  })
+
+  test("restore는 Litestream image와 실제·격리 volume을 사용한다", () => {
+    const config = createValidComposeConfig() as {
+      services: {
+        "database-restore": {
+          command: readonly string[]
+          image: string
+          volumes: readonly unknown[]
+        }
+      }
+    }
+    config.services["database-restore"].image = "legacy-litestream:latest"
+    config.services["database-restore"].command = ["restore", "unsafe.sqlite"]
+    config.services["database-restore"].volumes = sqliteVolume
+
+    expect(validateComposeContract(config)).toEqual(
+      expect.arrayContaining([
+        "database-restore: Litestream과 같은 image를 사용해야 합니다.",
+        "database-restore: 격리 복구용 backup volume이 필요합니다.",
+        "database-restore: Litestream의 조건부 기본 복구 command를 유지해야 합니다.",
       ])
     )
   })
@@ -306,6 +362,7 @@ describe("repository 배포 source", () => {
     expect(compose).not.toMatch(/^ {2}admin-api:/mu)
     expect(compose).toContain("- /workspace/bin/database-migrate")
     expect(compose).toContain("- /workspace/bin/database-backup")
+    expect(compose).toContain("- /workspace/bin/database-check")
     expect(compose).not.toContain("@workspace/db")
     expect(compose).not.toContain("apps/api/src/scripts/backup-database.ts")
     expect(validateUnifiedApiCaddyContract(caddyfile)).toEqual([])
@@ -382,13 +439,6 @@ describe("repository 배포 source", () => {
       ),
       "utf8"
     )
-    const deploymentHandlers = readFileSync(
-      path.join(
-        repositoryRoot,
-        "infra/ansible/roles/writing_app_deploy/handlers/main.yaml"
-      ),
-      "utf8"
-    )
     const deploymentDefaults = readFileSync(
       path.join(repositoryRoot, "infra/ansible/vars/defaults.yaml"),
       "utf8"
@@ -409,18 +459,83 @@ describe("repository 배포 source", () => {
     const restorePlaybook = playbooks[2] ?? ""
     const verifyPlaybook = playbooks[3] ?? ""
 
-    expect(deploymentTasks).toContain(
-      "변경된 bind-mounted Caddyfile을 반영하도록 Caddy 재생성"
-    )
-    expect(deploymentHandlers).toContain(
-      "변경된 bind-mounted Caddyfile을 반영하도록 Caddy 재생성"
-    )
-    expect(deploymentHandlers).toContain("recreate: always")
-    expect(deploymentTasks).toContain("ansible.builtin.meta: flush_handlers")
-    expect(
-      deploymentTasks.indexOf("ansible.builtin.meta: flush_handlers")
-    ).toBeLessThan(deploymentTasks.indexOf("배포 image reference 기록"))
+    expect(deploymentTasks).toContain("recreate: always")
     expect(deploymentTasks).toContain("profiles:\n          - operations")
+    const rehearsalSnapshot = deploymentTasks.indexOf(
+      "DB 리허설용 live snapshot 생성"
+    )
+    const isolatedRestore = deploymentTasks.indexOf(
+      "최초 기동 전 격리 경로로 R2 복구 시도"
+    )
+    const rehearsalMigration = deploymentTasks.indexOf(
+      "Candidate image로 격리된 DB migration 리허설"
+    )
+    const rehearsalCheck = deploymentTasks.indexOf(
+      "Candidate image로 격리된 DB 검증 리허설"
+    )
+    const retainLock = deploymentTasks.indexOf(
+      "실제 DB 변경 전 operation lock 보존 설정"
+    )
+    const stopWriter = deploymentTasks.indexOf("SQLite writer 중지")
+    const finalSnapshot = deploymentTasks.indexOf(
+      "중지된 DB의 최종 pre-deploy snapshot 백업"
+    )
+    const firstDatabaseInstall = deploymentTasks.indexOf(
+      "검증된 최초 DB를 실제 경로에 원자적으로 설치"
+    )
+    const productionMigration = deploymentTasks.indexOf("DB migration 실행")
+    const productionCheck = deploymentTasks.indexOf("배포 DB 무결성 검증")
+
+    expect(rehearsalSnapshot).toBeGreaterThan(-1)
+    expect(isolatedRestore).toBeGreaterThan(-1)
+    expect(isolatedRestore).toBeLessThan(rehearsalMigration)
+    expect(rehearsalSnapshot).toBeLessThan(rehearsalMigration)
+    expect(rehearsalMigration).toBeLessThan(rehearsalCheck)
+    expect(rehearsalCheck).toBeLessThan(retainLock)
+    expect(retainLock).toBeLessThan(stopWriter)
+    expect(stopWriter).toBeLessThan(firstDatabaseInstall)
+    expect(firstDatabaseInstall).toBeLessThan(productionMigration)
+    expect(stopWriter).toBeLessThan(finalSnapshot)
+    expect(finalSnapshot).toBeLessThan(productionMigration)
+    expect(productionMigration).toBeLessThan(productionCheck)
+    expect(deploymentTasks).toContain("target=/var/lib/writing-app,readonly")
+    expect(deploymentTasks).toContain("/workspace/bin/database-check")
+    expect(deploymentTasks).toContain(
+      "/var/backups/writing-app/deploy-{{ writing_app_deploy_deployment_id }}/rehearsal/api.sqlite"
+    )
+    expect(deploymentTasks).toContain("- -o")
+    expect(deploymentTasks).toContain(
+      '"--output=/var/backups/writing-app/deploy-{{ writing_app_deploy_deployment_id }}/pre-rehearsal.sqlite"'
+    )
+    expect(deploymentTasks).toContain(
+      '"--output=/var/backups/writing-app/deploy-{{ writing_app_deploy_deployment_id }}/pre-deploy.sqlite"'
+    )
+    expect(restorePlaybook).toContain(
+      '"--output=/var/backups/writing-app/pre-{{ writing_app_restore_id }}.sqlite"'
+    )
+    expect(restorePlaybook).toContain(
+      '"{{ writing_app_backup_directory }}/{{ writing_app_restore_id }}/{{ item.item }}"'
+    )
+    expect(deploymentTasks).toContain(
+      'dest: "{{ writing_app_deployment_directory }}/{{ writing_app_deploy_deployment_id }}.txt"'
+    )
+    expect(deployPlaybook).toContain(
+      "writing_app_deploy_database_mutation_started: false"
+    )
+    expect(deploymentTasks).toContain(
+      "writing_app_deploy_release_operation_lock: false"
+    )
+    expect(deployPlaybook).toContain("operation_lock_retained=")
+    expect(deployPlaybook).toContain("recovery.txt")
+    expect(deployPlaybook).toContain(
+      "writing_app_deploy_release_operation_lock | default(true) | bool"
+    )
+    for (const source of [deploymentTasks, ...playbooks]) {
+      for (const argument of readFoldedAnsibleArgvScalars(source)) {
+        expect(argument).not.toContain("/ ")
+        expect(argument).not.toContain(", ")
+      }
+    }
     for (const imageVariable of [
       "writing_app_web_image",
       "writing_app_api_image",
@@ -506,4 +621,96 @@ describe("repository 배포 source", () => {
       expect(hostname).not.toMatch(publicHostname)
     }
   })
+
+  test("실패로 staged 설정만 남아도 검증 성공 marker 없이는 전체 배포를 다시 실행한다", () => {
+    const deploymentTasks = readFileSync(
+      path.join(
+        repositoryRoot,
+        "infra/ansible/roles/writing_app_deploy/tasks/main.yaml"
+      ),
+      "utf8"
+    )
+    const fingerprintCalculation = deploymentTasks.indexOf(
+      "현재 배포 입력 fingerprint 계산"
+    )
+    const markerRead = deploymentTasks.indexOf(
+      "직전 검증 성공 fingerprint 읽기"
+    )
+    const deploymentChangeCalculation = deploymentTasks.indexOf(
+      "배포 변경 여부 계산"
+    )
+    const safeDeployment = deploymentTasks.indexOf("변경된 배포 적용")
+    const serviceHealth = deploymentTasks.indexOf(
+      "Compose 서비스 기동 및 health 대기"
+    )
+    const markerWrite = deploymentTasks.indexOf(
+      "검증 성공 배포 fingerprint 기록"
+    )
+    const releaseOperationLock = deploymentTasks.indexOf(
+      "검증된 배포 후 operation lock 해제 허용"
+    )
+    const unchangedCompose = deploymentTasks.indexOf(
+      "변경 없는 Compose 서비스 상태 확인"
+    )
+
+    expect(fingerprintCalculation).toBeGreaterThan(-1)
+    expect(fingerprintCalculation).toBeLessThan(markerRead)
+    expect(markerRead).toBeLessThan(deploymentChangeCalculation)
+    expect(deploymentChangeCalculation).toBeLessThan(safeDeployment)
+    expect(deploymentTasks).toContain(
+      "or not (writing_app_deploy_verified_state_matches | bool)"
+    )
+    expect(serviceHealth).toBeLessThan(markerWrite)
+    expect(markerWrite).toBeLessThan(releaseOperationLock)
+    expect(releaseOperationLock).toBeLessThan(unchangedCompose)
+    expect(deploymentTasks).toContain(
+      "{{ writing_app_deployment_directory }}/verified-state.sha256"
+    )
+    expect(deploymentTasks).toContain(
+      'content: "{{ writing_app_deploy_desired_state_fingerprint }}\\n"'
+    )
+    expect(deploymentTasks.indexOf("recreate: always")).toBeLessThan(
+      markerWrite
+    )
+  })
 })
+
+function readFoldedAnsibleArgvScalars(source: string): readonly string[] {
+  const lines = source.split(/\r?\n/u)
+  const argumentsFound: string[] = []
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index] ?? ""
+    if (line.trim() !== "argv:") continue
+
+    const argvIndent = readIndent(line)
+    for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
+      const candidate = lines[cursor] ?? ""
+      if (candidate.trim().length > 0 && readIndent(candidate) <= argvIndent) {
+        break
+      }
+      if (candidate.trim() !== "- >-") continue
+
+      const itemIndent = readIndent(candidate)
+      const content: string[] = []
+      for (cursor += 1; cursor < lines.length; cursor += 1) {
+        const contentLine = lines[cursor] ?? ""
+        if (
+          contentLine.trim().length > 0 &&
+          readIndent(contentLine) <= itemIndent
+        ) {
+          cursor -= 1
+          break
+        }
+        if (contentLine.trim().length > 0) content.push(contentLine.trim())
+      }
+      argumentsFound.push(content.join(" "))
+    }
+  }
+
+  return argumentsFound
+}
+
+function readIndent(line: string): number {
+  return /^\s*/u.exec(line)?.[0].length ?? 0
+}

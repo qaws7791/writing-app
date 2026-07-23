@@ -92,6 +92,7 @@ describe("production image smoke 계약", () => {
     expect(api?.runtimeArtifactPaths).toEqual([
       "/workspace/bin/api",
       "/workspace/bin/database-backup",
+      "/workspace/bin/database-check",
       "/workspace/bin/database-migrate",
       "/workspace/node_modules/prismjs/package.json",
     ])

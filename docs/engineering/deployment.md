@@ -15,14 +15,16 @@
 ## 승인과 실행
 
 1. 배포 대상 revision, image reference, 공개 origin과 대상 inventory의 일치 여부를 확인하고 production deploy 승인 입력을 명시한다. 승인 입력이 없으면 playbook은 호스트 변경 전에 중단해야 한다.
-2. 배포 전 데이터 backup·무결성·디스크·secret·연결 상태를 검사한다.
+2. 실행 중 DB의 SQLite snapshot을 격리 디렉터리에 복제하고 candidate API image로 migration과 read-only application 진단을 리허설한다. 이 단계가 실패하면 기존 writer를 중지하지 않는다.
 3. migration 호환성과 rollback 가능 여부를 판정한다. 이전 코드와 호환되지 않는 데이터 변경은 별도 승인 없이는 진행하지 않는다.
-4. 승인된 automation으로 설정 배치, migration, 기동과 health·주요 읽기 smoke를 실행한다.
+4. 리허설 성공 뒤 operation lock을 보존 상태로 전환하고 writer를 중지한다. 중지된 DB의 최종 검증 백업을 만든 뒤 실제 migration, DB 진단, 기동과 health·주요 읽기 smoke를 실행한다.
 5. 성공한 revision과 검증 결과를 deployment record와 CI artifact에 남긴다.
 
 ## 실패와 복구
 
 - health 또는 smoke가 실패하면 새 revision을 정상 상태로 기록하지 않는다.
+- 렌더링된 배포 입력의 fingerprint는 DB 검증과 서비스 health가 모두 성공한 뒤에만 검증 성공 marker로 기록한다. marker가 없거나 현재 입력과 다르면 같은 설정의 재실행도 전체 리허설·백업·migration 경로를 다시 거치고, bind-mounted 설정까지 반영되도록 서비스를 재생성해야 한다.
+- 실제 DB 변경이 시작된 뒤 실패하면 operation lock을 자동 해제하지 않고 배포별 backup 디렉터리에 실패 단계와 수동 복구 안내를 기록한다.
 - 코드 rollback과 데이터 복구는 별도 절차다. 코드 rollback이 데이터를 과거 시점으로 되돌리는 근거가 되지 않는다.
 - 복구는 현재 실행 중인 revision, backup source, migration 상태와 영향 범위를 기록한 뒤 승인된 runbook으로 실행한다.
 - 실패한 배포와 복구 결과는 기준 commit, 환경, 명령, 결과를 고정한 검증 기록으로 남긴다.

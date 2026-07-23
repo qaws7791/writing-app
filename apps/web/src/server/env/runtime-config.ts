@@ -1,6 +1,10 @@
 import "server-only"
 
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import {
+  assertPublicUrlTransport,
+  shouldUpgradeInsecureRequests,
+} from "@workspace/env/public-url"
 import { z } from "zod"
 
 import type { ServerApiBaseUrl } from "@/shared/config/api-base-url"
@@ -48,7 +52,8 @@ export function readWebOrigin(env: WebServerRuntimeEnv = process.env): string {
     parsedEnv.WEB_ORIGIN,
     parsedEnv.NODE_ENV,
     localRuntimeDefaults.learnerWebOrigin,
-    "production web origin is required"
+    "production web origin is required",
+    "web origin"
   )
 }
 
@@ -58,18 +63,28 @@ export function readWebCspRuntimeConfig(
   readonly apiOrigin: string
   readonly development: boolean
   readonly reportOnly: boolean
+  readonly upgradeInsecureRequests: boolean
 } {
   const parsedEnv = webServerRuntimeEnvSchema.parse(env)
+  const webOrigin = toServerOrigin(
+    parsedEnv.WEB_ORIGIN,
+    parsedEnv.NODE_ENV,
+    localRuntimeDefaults.learnerWebOrigin,
+    "production web origin is required",
+    "web origin"
+  )
 
   return {
     apiOrigin: toServerOrigin(
       parsedEnv.NEXT_PUBLIC_API_BASE_URL,
       parsedEnv.NODE_ENV,
       localRuntimeDefaults.apiBaseUrl,
-      "production public API base URL is required"
+      "production public API base URL is required",
+      "public API base URL"
     ),
     development: parsedEnv.NODE_ENV !== "production",
     reportOnly: parsedEnv.CSP_REPORT_ONLY === "true",
+    upgradeInsecureRequests: shouldUpgradeInsecureRequests(webOrigin),
   }
 }
 
@@ -96,7 +111,8 @@ function toServerOrigin(
   rawValue: string | undefined,
   nodeEnvironment: string | undefined,
   fallback: string,
-  productionError: string
+  productionError: string,
+  description: string
 ): string {
   if (
     nodeEnvironment === "production" &&
@@ -108,5 +124,8 @@ function toServerOrigin(
   const candidate =
     rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue
 
-  return new URL(urlSchema.parse(candidate)).origin
+  const url = new URL(urlSchema.parse(candidate))
+  assertPublicUrlTransport(url, { description, nodeEnvironment })
+
+  return url.origin
 }

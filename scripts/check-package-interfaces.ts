@@ -65,11 +65,7 @@ const privateImportScopes: readonly PrivateImportScope[] = [
 ]
 
 const expectedExports = {
-  "packages/infra/ai/package.json": [
-    "./lifecycle",
-    "./mastra-runtime",
-    "./openai-client",
-  ],
+  "packages/infra/ai/package.json": ["./mastra-agent", "./openai-client"],
   "packages/infra/auth/package.json": [
     "./admin/client",
     "./admin/server",
@@ -157,11 +153,13 @@ const expectedExports = {
   "packages/config/env/package.json": [
     "./local-runtime-defaults",
     "./parse-env",
+    "./public-url",
   ],
   "packages/config/nextjs-config/package.json": [
     "./csp-report",
     "./image-optimizer-security",
     "./security-headers",
+    "./zod-jitless",
   ],
   "packages/config/typescript-config/package.json": [
     "./base.json",

@@ -1,9 +1,8 @@
 import { resolve } from "node:path"
 
-import { createVerifiedDatabaseBackup } from "@workspace/db/database-backup"
 import { getDefaultDatabaseUrl } from "@workspace/db/client"
 
-import { requiredDatabaseBackupTables } from "@/db/schema-architecture"
+import { createVerifiedApplicationDatabaseBackup } from "@/db/application-database-backup"
 
 const argumentsMap = new Map(
   process.argv.slice(2).map((argument) => {
@@ -11,19 +10,17 @@ const argumentsMap = new Map(
     return [key, value.join("=")] as const
   })
 )
-const sourcePath = resolve(
+const sourcePath =
   argumentsMap.get("--source") ??
-    process.env["DATABASE_URL"] ??
-    getDefaultDatabaseUrl()
-)
+  process.env["DATABASE_URL"] ??
+  getDefaultDatabaseUrl()
 const output = argumentsMap.get("--output")
 if (output === undefined || output.length === 0) {
   throw new Error("--output=<백업 파일 경로>가 필요합니다.")
 }
 
-const report = createVerifiedDatabaseBackup({
+const report = createVerifiedApplicationDatabaseBackup({
   backupPath: resolve(output),
-  requiredTables: requiredDatabaseBackupTables,
   sourcePath,
 })
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`)

@@ -3,25 +3,48 @@ import {
   getDefaultDatabaseUrl,
 } from "@workspace/db/client"
 
-import { findDanglingSchemaReferences } from "@/db/schema-reconciliation"
+import { inspectApplicationDatabase } from "@/db/schema-diagnostic"
 
 const databaseUrl = process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
-const client = createReadOnlyWritingAppDatabase(databaseUrl)
 
 try {
-  const danglingReferences = findDanglingSchemaReferences(client.sqlite)
+  const client = createReadOnlyWritingAppDatabase(databaseUrl)
+  try {
+    const diagnostic = inspectApplicationDatabase(client.sqlite)
+    process.stdout.write(`${JSON.stringify(diagnostic, null, 2)}\n`)
+    if (diagnostic.schema !== "current" || diagnostic.status !== "ok") {
+      process.exitCode = 2
+    }
+  } finally {
+    client.close()
+  }
+} catch (error) {
   process.stdout.write(
     `${JSON.stringify(
       {
-        danglingReferences,
-        kind: "schema-reference-reconciliation",
-        status: danglingReferences.length === 0 ? "ok" : "dangling",
+        checks: {
+          danglingReferences: [],
+          foreignKeyViolations: [],
+          integrity: "unavailable",
+        },
+        issues: [
+          {
+            code: "database-check-unavailable",
+            message: `database could not be opened: ${readErrorMessage(error)}`,
+          },
+        ],
+        kind: "application-database-diagnostic",
+        reason: `database could not be opened: ${readErrorMessage(error)}`,
+        schema: "unsupported",
+        status: "blocked",
       },
       null,
       2
     )}\n`
   )
-  if (danglingReferences.length > 0) process.exitCode = 2
-} finally {
-  client.close()
+  process.exitCode = 2
+}
+
+function readErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "unknown error"
 }

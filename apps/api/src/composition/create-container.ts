@@ -19,7 +19,7 @@ import {
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
 import type { ContentModule } from "@workspace/content/module"
-import { normalizeVersionedStepContentOrThrow } from "@workspace/content/normalization"
+import { normalizeLegacyVersionedStepContentOrThrow } from "@workspace/content/normalization"
 import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
@@ -145,7 +145,7 @@ export async function createContainer(
     const closeDatabase = onceAsync(database.close)
     cleanup.register("database", closeDatabase)
     runApplicationMigrations(database.sqlite, {
-      normalizeVersionedStepContent: normalizeVersionedStepContentOrThrow,
+      normalizeVersionedStepContent: normalizeLegacyVersionedStepContentOrThrow,
     })
 
     const eventBus = createInMemoryEventBus<WorkspaceEventMap>()

@@ -8,7 +8,8 @@
   },
   "exports": {
     "./local-runtime-defaults": "./src/local-runtime-defaults.ts",
-    "./parse-env": "./src/parse-env.ts"
+    "./parse-env": "./src/parse-env.ts",
+    "./public-url": "./src/public-url.ts"
   },
   "scripts": {
     "lint": "oxlint .",

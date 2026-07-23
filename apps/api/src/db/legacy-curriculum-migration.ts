@@ -10,23 +10,34 @@ import {
 export type NormalizeVersionedStepContent = (
   stepId: string,
   stepType: string,
-  contentJson: string
+  contentJson: string,
+  context: Readonly<{
+    lessonSteps: readonly Readonly<{
+      id: string
+      sortOrder: number
+      type: string
+    }>[]
+  }>
 ) => string
 
 type LegacyCourseRow = {
   readonly id: string
+  readonly sortOrder: number
+  readonly status: string
 }
 
 type LegacyUnitRow = {
   readonly courseId: string
   readonly id: string
   readonly sortOrder: number
+  readonly status: string
 }
 
 type LegacyLessonRow = {
   readonly courseId: string
   readonly id: string
   readonly sortOrder: number
+  readonly status: string
   readonly unitId: string
 }
 
@@ -35,6 +46,7 @@ type LegacyStepRow = {
   readonly id: string
   readonly lessonId: string
   readonly sortOrder: number
+  readonly status: string
   readonly type: string
 }
 
@@ -60,8 +72,26 @@ const lessonStepsSchema = z
   .array(lessonStepDtoSchema)
   .superRefine((steps, context) => validateAiFeedbackTargets(steps, context))
 
+const legacyCurriculumRequiredTables = Object.freeze([
+  "ai_feedback_attempts",
+  "course_units",
+  "courses",
+  "learner_lesson_answers",
+  "learner_lesson_progress",
+  "lesson_steps",
+  "lessons",
+] as const)
+
 export function hasLegacyCurriculumSchema(sqlite: Database): boolean {
   return readColumnNames(sqlite, "courses").includes("curriculum_revision")
+}
+
+export function assertLegacyCurriculumMigrationPrerequisites(
+  sqlite: Database,
+  normalizeVersionedStepContent: NormalizeVersionedStepContent
+): void {
+  assertPreMigrationDatabaseIntegrity(sqlite)
+  validateLegacyCurriculum(sqlite, normalizeVersionedStepContent)
 }
 
 export function migrateLegacyCurriculumSchema(
@@ -85,6 +115,7 @@ export function migrateLegacyCurriculumSchema(
     sqlite.exec(baselineSql)
     copyLegacyCurriculum(sqlite)
     dropLegacyCurriculumTables(sqlite)
+    assertPostMigrationDatabaseIntegrity(sqlite)
     sqlite.exec("COMMIT")
   } catch (error) {
     rollbackIfActive(sqlite)
@@ -92,8 +123,6 @@ export function migrateLegacyCurriculumSchema(
   } finally {
     sqlite.exec("PRAGMA foreign_keys = ON")
   }
-
-  assertPostMigrationDatabaseIntegrity(sqlite)
 }
 
 function validateLegacyCurriculum(
@@ -101,42 +130,42 @@ function validateLegacyCurriculum(
   normalizeVersionedStepContent: NormalizeVersionedStepContent
 ): ReadonlyMap<string, string> {
   assertRequiredLegacyTables(sqlite)
+  assertRequiredLegacyColumns(sqlite)
 
   const courses = sqlite
-    .query<LegacyCourseRow, []>("SELECT id FROM courses ORDER BY id")
+    .query<LegacyCourseRow, []>(`
+      SELECT id, sort_order AS sortOrder, status
+      FROM courses
+      ORDER BY sort_order, id
+    `)
     .all()
   const units = sqlite
     .query<LegacyUnitRow, []>(`
-      SELECT id, course_id AS courseId, sort_order AS sortOrder
+      SELECT id, course_id AS courseId, sort_order AS sortOrder, status
       FROM course_units
-      WHERE status = 'active'
       ORDER BY course_id, sort_order, id
     `)
     .all()
   const lessons = sqlite
     .query<LegacyLessonRow, []>(`
       SELECT lesson.id, lesson.course_id AS courseId,
-             lesson.unit_id AS unitId, lesson.sort_order AS sortOrder
+             lesson.unit_id AS unitId, lesson.sort_order AS sortOrder,
+             lesson.status
       FROM lessons lesson
-      JOIN course_units unit ON unit.id = lesson.unit_id
-      WHERE lesson.status = 'active' AND unit.status = 'active'
       ORDER BY lesson.unit_id, lesson.sort_order, lesson.id
     `)
     .all()
   const steps = sqlite
     .query<LegacyStepRow, []>(`
       SELECT step.id, step.lesson_id AS lessonId, step.type,
-             step.sort_order AS sortOrder, step.content_json AS contentJson
+             step.sort_order AS sortOrder, step.content_json AS contentJson,
+             step.status
       FROM lesson_steps step
-      JOIN lessons lesson ON lesson.id = step.lesson_id
-      JOIN course_units unit ON unit.id = lesson.unit_id
-      WHERE step.status = 'active'
-        AND lesson.status = 'active'
-        AND unit.status = 'active'
       ORDER BY step.lesson_id, step.sort_order, step.id
     `)
     .all()
 
+  assertLegacyHierarchyRelationships(courses, units, lessons, steps)
   assertEveryParentHasChildren(
     courses.map(({ id }) => id),
     units.map(({ courseId }) => courseId),
@@ -152,6 +181,8 @@ function validateLegacyCurriculum(
     steps.map(({ lessonId }) => lessonId),
     "lesson"
   )
+  assertActivePathsHaveActiveChildren(courses, units, lessons, steps)
+  assertContiguousSortOrders(courses, () => "course catalog", "course")
   assertContiguousSortOrders(units, (row) => row.courseId, "course unit")
   assertContiguousSortOrders(lessons, (row) => row.unitId, "lesson")
   assertContiguousSortOrders(steps, (row) => row.lessonId, "lesson step")
@@ -173,28 +204,38 @@ function normalizeAndValidateSteps(
 ): ReadonlyMap<string, string> {
   const normalized = new Map<string, string>()
   const stepsByLessonId = new Map<string, LessonStepDto[]>()
+  const legacyStepsByLessonId = groupBy(steps, (step) => step.lessonId)
 
   for (const step of steps) {
-    const contentJson = normalizeVersionedStepContent(
-      step.id,
-      step.type,
-      step.contentJson
-    )
-    const parsedContent: unknown = JSON.parse(contentJson)
-    if (!isJsonObject(parsedContent)) {
-      throw new Error(`step ${step.id} content must be an object`)
+    try {
+      const contentJson = normalizeVersionedStepContent(
+        step.id,
+        step.type,
+        step.contentJson,
+        {
+          lessonSteps: legacyStepsByLessonId.get(step.lessonId) ?? [],
+        }
+      )
+      const parsedContent: unknown = JSON.parse(contentJson)
+      if (!isJsonObject(parsedContent)) {
+        throw new Error("content must be an object")
+      }
+      const { type: _storedType, ...content } = parsedContent
+      const parsedStep = lessonStepDtoSchema.parse({
+        ...content,
+        id: step.id,
+        sortOrder: step.sortOrder,
+        type: step.type,
+      })
+      const lessonSteps = stepsByLessonId.get(step.lessonId) ?? []
+      lessonSteps.push(parsedStep)
+      stepsByLessonId.set(step.lessonId, lessonSteps)
+      normalized.set(step.id, contentJson)
+    } catch (error) {
+      throw new Error(
+        `step ${step.id} content contract is invalid: ${readErrorMessage(error)}`
+      )
     }
-    const { type: _storedType, ...content } = parsedContent
-    const parsedStep = lessonStepDtoSchema.parse({
-      ...content,
-      id: step.id,
-      sortOrder: step.sortOrder,
-      type: step.type,
-    })
-    const lessonSteps = stepsByLessonId.get(step.lessonId) ?? []
-    lessonSteps.push(parsedStep)
-    stepsByLessonId.set(step.lessonId, lessonSteps)
-    normalized.set(step.id, contentJson)
   }
 
   for (const [lessonId, lessonSteps] of stepsByLessonId) {
@@ -342,8 +383,7 @@ INSERT INTO course_unit_versions (
 SELECT
   'curriculum:' || unit.course_id || ':1',
   unit.id, unit.title, unit.sort_order, unit.status
-FROM course_units_legacy unit
-WHERE unit.status = 'active';
+FROM course_units_legacy unit;
 
 INSERT INTO lesson_versions (
   curriculum_version_id, id, unit_id, title, category, description,
@@ -353,9 +393,7 @@ SELECT
   'curriculum:' || lesson.course_id || ':1',
   lesson.id, lesson.unit_id, lesson.title, lesson.category, lesson.description,
   lesson.estimated_minutes, lesson.summary_json, lesson.sort_order, lesson.status
-FROM lessons_legacy lesson
-JOIN course_units_legacy unit ON unit.id = lesson.unit_id
-WHERE lesson.status = 'active' AND unit.status = 'active';
+FROM lessons_legacy lesson;
 
 INSERT INTO lesson_step_versions (
   curriculum_version_id, id, lesson_id, type, sort_order, content_json, status
@@ -364,11 +402,7 @@ SELECT
   'curriculum:' || lesson.course_id || ':1',
   step.id, step.lesson_id, step.type, step.sort_order, step.content_json, step.status
 FROM lesson_steps_legacy step
-JOIN lessons_legacy lesson ON lesson.id = step.lesson_id
-JOIN course_units_legacy unit ON unit.id = lesson.unit_id
-WHERE step.status = 'active'
-  AND lesson.status = 'active'
-  AND unit.status = 'active';
+JOIN lessons_legacy lesson ON lesson.id = step.lesson_id;
 
 UPDATE course_curriculum_versions
 SET status = 'published', published_at = 0
@@ -431,7 +465,15 @@ SELECT
   progress.user_id,
   lesson.course_id,
   'curriculum:' || lesson.course_id || ':1',
-  CASE WHEN NOT EXISTS (
+  CASE WHEN EXISTS (
+    SELECT 1
+    FROM lessons_legacy required_lesson
+    JOIN course_units_legacy required_unit
+      ON required_unit.id = required_lesson.unit_id
+    WHERE required_lesson.course_id = lesson.course_id
+      AND required_lesson.status = 'active'
+      AND required_unit.status = 'active'
+  ) AND NOT EXISTS (
     SELECT 1
     FROM lessons_legacy required_lesson
     JOIN course_units_legacy required_unit
@@ -448,7 +490,15 @@ SELECT
       )
   ) THEN 'completed' ELSE 'in_progress' END,
   MIN(progress.started_at),
-  CASE WHEN NOT EXISTS (
+  CASE WHEN EXISTS (
+    SELECT 1
+    FROM lessons_legacy required_lesson
+    JOIN course_units_legacy required_unit
+      ON required_unit.id = required_lesson.unit_id
+    WHERE required_lesson.course_id = lesson.course_id
+      AND required_lesson.status = 'active'
+      AND required_unit.status = 'active'
+  ) AND NOT EXISTS (
     SELECT 1
     FROM lessons_legacy required_lesson
     JOIN course_units_legacy required_unit
@@ -469,6 +519,44 @@ SELECT
 FROM learner_lesson_progress_legacy progress
 JOIN lessons_legacy lesson ON lesson.id = progress.lesson_id
 GROUP BY progress.user_id, lesson.course_id;
+
+INSERT INTO learner_course_progress (
+  user_id, course_id, curriculum_version_id, status,
+  started_at, completed_at, last_activity_at, updated_at
+)
+SELECT
+  activity.user_id,
+  activity.course_id,
+  'curriculum:' || activity.course_id || ':1',
+  'in_progress',
+  MIN(activity.started_at),
+  NULL,
+  MAX(activity.updated_at),
+  MAX(activity.updated_at)
+FROM (
+  SELECT
+    answer.user_id,
+    lesson.course_id,
+    answer.answered_at AS started_at,
+    answer.updated_at
+  FROM learner_lesson_answers_legacy answer
+  JOIN lessons_legacy lesson ON lesson.id = answer.lesson_id
+  UNION ALL
+  SELECT
+    attempt.user_id,
+    lesson.course_id,
+    attempt.created_at AS started_at,
+    attempt.updated_at
+  FROM ai_feedback_attempts_legacy attempt
+  JOIN lessons_legacy lesson ON lesson.id = attempt.lesson_id
+) activity
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM learner_course_progress existing
+  WHERE existing.user_id = activity.user_id
+    AND existing.course_id = activity.course_id
+)
+GROUP BY activity.user_id, activity.course_id;
 
 INSERT INTO learner_lesson_progress (
   user_id, course_id, curriculum_version_id, lesson_id, current_step_id,
@@ -545,15 +633,6 @@ DROP TABLE courses_legacy;
 }
 
 function assertRequiredLegacyTables(sqlite: Database): void {
-  const required = [
-    "ai_feedback_attempts",
-    "course_units",
-    "courses",
-    "learner_lesson_answers",
-    "learner_lesson_progress",
-    "lesson_steps",
-    "lessons",
-  ]
   const tables = new Set(
     sqlite
       .query<{ readonly name: string }, []>(
@@ -562,7 +641,9 @@ function assertRequiredLegacyTables(sqlite: Database): void {
       .all()
       .map(({ name }) => name)
   )
-  const missing = required.filter((table) => !tables.has(table))
+  const missing = legacyCurriculumRequiredTables.filter(
+    (table) => !tables.has(table)
+  )
   if (missing.length > 0) {
     throw new Error(
       `legacy curriculum tables are missing: ${missing.join(", ")}`
@@ -570,7 +651,222 @@ function assertRequiredLegacyTables(sqlite: Database): void {
   }
 }
 
+function assertRequiredLegacyColumns(sqlite: Database): void {
+  const requiredColumns = {
+    course_units: ["id", "course_id", "title", "sort_order", "status"],
+    courses: [
+      "id",
+      "title",
+      "description",
+      "category",
+      "visual_key",
+      "status",
+      "sort_order",
+      "curriculum_revision",
+    ],
+    learner_lesson_answers: [
+      "user_id",
+      "lesson_id",
+      "step_id",
+      "answer_json",
+      "answered_at",
+      "updated_at",
+    ],
+    learner_lesson_progress: [
+      "user_id",
+      "lesson_id",
+      "current_step_index",
+      "status",
+      "started_at",
+      "completed_at",
+      "updated_at",
+    ],
+    lesson_steps: [
+      "id",
+      "lesson_id",
+      "type",
+      "sort_order",
+      "content_json",
+      "status",
+    ],
+    lessons: [
+      "id",
+      "course_id",
+      "unit_id",
+      "title",
+      "category",
+      "description",
+      "estimated_minutes",
+      "summary_json",
+      "sort_order",
+      "status",
+    ],
+  } as const
+
+  for (const [tableName, columns] of Object.entries(requiredColumns)) {
+    assertRequiredColumns(sqlite, tableName, columns)
+  }
+
+  const attemptColumns = readColumnNames(sqlite, "ai_feedback_attempts")
+  assertRequiredColumns(
+    sqlite,
+    "ai_feedback_attempts",
+    attemptColumns.includes("status")
+      ? [
+          "id",
+          "user_id",
+          "lesson_id",
+          "step_id",
+          "attempt_number",
+          "idempotency_key",
+          "status",
+          "answer_text",
+          "result_json",
+          "created_at",
+          "updated_at",
+          "expires_at",
+        ]
+      : [
+          "user_id",
+          "lesson_id",
+          "step_id",
+          "attempt_number",
+          "answer_text",
+          "result_json",
+          "created_at",
+        ]
+  )
+}
+
+function assertRequiredColumns(
+  sqlite: Database,
+  tableName: string,
+  requiredColumns: readonly string[]
+): void {
+  const columns = readColumnNames(sqlite, tableName)
+  const missing = requiredColumns.filter((column) => !columns.includes(column))
+  if (missing.length > 0) {
+    throw new Error(
+      `legacy curriculum table ${tableName} is missing columns: ${missing.join(", ")}`
+    )
+  }
+}
+
+function assertLegacyHierarchyRelationships(
+  courses: readonly LegacyCourseRow[],
+  units: readonly LegacyUnitRow[],
+  lessons: readonly LegacyLessonRow[],
+  steps: readonly LegacyStepRow[]
+): void {
+  assertKnownStatuses(courses, "course")
+  assertKnownStatuses(units, "course unit")
+  assertKnownStatuses(lessons, "lesson")
+  assertKnownStatuses(steps, "lesson step")
+
+  const coursesById = new Map(courses.map((course) => [course.id, course]))
+  const unitsById = new Map(units.map((unit) => [unit.id, unit]))
+  const lessonsById = new Map(lessons.map((lesson) => [lesson.id, lesson]))
+
+  for (const unit of units) {
+    if (!coursesById.has(unit.courseId)) {
+      throw new Error(
+        `course unit ${unit.id} references missing course ${unit.courseId}`
+      )
+    }
+  }
+
+  for (const lesson of lessons) {
+    const unit = unitsById.get(lesson.unitId)
+    if (unit === undefined) {
+      throw new Error(
+        `lesson ${lesson.id} references missing course unit ${lesson.unitId}`
+      )
+    }
+    if (unit.courseId !== lesson.courseId) {
+      throw new Error(
+        `lesson ${lesson.id} course ${lesson.courseId} does not match course unit ${lesson.unitId}`
+      )
+    }
+  }
+
+  for (const step of steps) {
+    if (!lessonsById.has(step.lessonId)) {
+      throw new Error(
+        `lesson step ${step.id} references missing lesson ${step.lessonId}`
+      )
+    }
+  }
+
+  const hierarchyIds = [...units, ...lessons, ...steps].map(({ id }) => id)
+  if (new Set(hierarchyIds).size !== hierarchyIds.length) {
+    throw new Error("legacy curriculum hierarchy contains duplicate IDs")
+  }
+}
+
+function assertKnownStatuses(
+  rows: readonly { readonly id: string; readonly status: string }[],
+  rowKind: string
+): void {
+  const invalid = rows.find(
+    ({ status }) => status !== "active" && status !== "archived"
+  )
+  if (invalid !== undefined) {
+    throw new Error(
+      `${rowKind} ${invalid.id} has invalid status ${invalid.status}`
+    )
+  }
+}
+
+function assertActivePathsHaveActiveChildren(
+  courses: readonly LegacyCourseRow[],
+  units: readonly LegacyUnitRow[],
+  lessons: readonly LegacyLessonRow[],
+  steps: readonly LegacyStepRow[]
+): void {
+  const activeCourseIds = new Set(
+    courses.filter(({ status }) => status === "active").map(({ id }) => id)
+  )
+  const activeUnits = units.filter(
+    ({ courseId, status }) =>
+      status === "active" && activeCourseIds.has(courseId)
+  )
+  const activeUnitIds = new Set(activeUnits.map(({ id }) => id))
+  const activeLessons = lessons.filter(
+    ({ status, unitId }) => status === "active" && activeUnitIds.has(unitId)
+  )
+
+  assertEveryParentHasActiveChildren(
+    [...activeCourseIds],
+    activeUnits.map(({ courseId }) => courseId),
+    "course"
+  )
+  assertEveryParentHasActiveChildren(
+    [...activeUnitIds],
+    activeLessons.map(({ unitId }) => unitId),
+    "course unit"
+  )
+  assertEveryParentHasActiveChildren(
+    activeLessons.map(({ id }) => id),
+    steps
+      .filter(({ status }) => status === "active")
+      .map(({ lessonId }) => lessonId),
+    "lesson"
+  )
+}
+
 function assertEveryParentHasChildren(
+  parentIds: readonly string[],
+  childParentIds: readonly string[],
+  parentKind: string
+): void {
+  const parentIdsWithChildren = new Set(childParentIds)
+  const emptyParentId = parentIds.find((id) => !parentIdsWithChildren.has(id))
+  if (emptyParentId !== undefined) {
+    throw new Error(`${parentKind} ${emptyParentId} has no children`)
+  }
+}
+
+function assertEveryParentHasActiveChildren(
   parentIds: readonly string[],
   childParentIds: readonly string[],
   parentKind: string
@@ -613,6 +909,20 @@ function countBy<T>(
     counts.set(key, (counts.get(key) ?? 0) + 1)
   }
   return counts
+}
+
+function groupBy<T>(
+  values: readonly T[],
+  readKey: (value: T) => string
+): ReadonlyMap<string, readonly T[]> {
+  const groups = new Map<string, T[]>()
+  for (const value of values) {
+    const key = readKey(value)
+    const group = groups.get(key) ?? []
+    group.push(value)
+    groups.set(key, group)
+  }
+  return groups
 }
 
 function assertPreMigrationDatabaseIntegrity(sqlite: Database): void {

@@ -19,7 +19,7 @@
 
 ## 호환성 경계
 
-통합 실행기는 빈 DB, 변경 불가능한 baseline, 이전 단계의 module schema와 명시적으로 식별 가능한 legacy schema만 지원한다. 기존 schema를 채택할 때도 같은 최종 schema 검증과 migration 이력 기록을 거친다. legacy curriculum 이관에는 content module의 정규화 정책이 반드시 주입돼야 한다.
+통합 실행기는 빈 DB, 변경 불가능한 baseline, 이전 단계의 module schema와 명시적으로 식별 가능한 legacy schema만 지원한다. 기존 schema를 채택할 때도 같은 최종 schema 검증과 migration 이력 기록을 거친다. legacy curriculum 이관에는 content module의 legacy 정규화 정책이 반드시 주입돼야 하며, 활성 여부와 무관하게 course·unit·lesson·step 전체 hierarchy와 학습자 참조를 보존한다. 현재 payload validator를 완화하지 않고 식별 가능한 legacy 표현만 migration 경계에서 정규화한다. 식별 가능한 legacy 자료실 schema도 module 소유 구조로 이관하되, 출처가 불명확한 부분 schema는 변환하지 않는다.
 
 새 코드는 위 상태를 현재 schema로 올릴 수 있다. 반대로 현재 schema는 credential에서 제품 role을 제거하고 일부 table을 FK 없이 재구성하므로, 이전 전체 API image가 그대로 읽을 수 있다고 가정하지 않는다. 이전 module migration 함수의 멱등성은 회귀 검증하지만 이는 이전 application 전체의 호환성을 뜻하지 않는다. 이 경계를 넘은 뒤 되돌리려면 코드 image 교체가 아니라 migration 전 검증 백업 복구가 필요하다.
 

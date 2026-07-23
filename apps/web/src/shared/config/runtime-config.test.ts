@@ -22,6 +22,18 @@ describe("web runtime config", () => {
     expect(() => readBrowserApiBaseUrl({ NODE_ENV: "production" })).toThrow(
       "production API base URL is required"
     )
+    expect(() =>
+      readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "http://api.example.test",
+        NODE_ENV: "production",
+      })
+    ).toThrow("production public API base URL must use HTTPS")
+    expect(
+      readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "http://localhost:4000",
+        NODE_ENV: "production",
+      })
+    ).toBe("http://localhost:4000")
   })
 
   it("API path를 같은 규칙으로 조합한다", () => {

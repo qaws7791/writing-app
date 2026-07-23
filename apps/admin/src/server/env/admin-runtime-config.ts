@@ -1,6 +1,10 @@
 import "server-only"
 
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import {
+  assertPublicUrlTransport,
+  shouldUpgradeInsecureRequests,
+} from "@workspace/env/public-url"
 import { z } from "zod"
 
 import type { ApiBaseUrl } from "@/shared/config/api-base-url"
@@ -38,7 +42,8 @@ export function readAdminWebOrigin(
     runtimeEnv.ADMIN_ORIGIN,
     runtimeEnv.NODE_ENV,
     localRuntimeDefaults.adminWebOrigin,
-    "production admin web origin is required"
+    "production admin web origin is required",
+    "admin web origin"
   )
 }
 
@@ -48,17 +53,28 @@ export function readAdminCspRuntimeConfig(
   readonly apiOrigin: string
   readonly development: boolean
   readonly reportOnly: boolean
+  readonly upgradeInsecureRequests: boolean
 } {
   const runtimeEnv = adminServerRuntimeEnvSchema.parse(env)
+  const adminOrigin = toServerOrigin(
+    runtimeEnv.ADMIN_ORIGIN,
+    runtimeEnv.NODE_ENV,
+    localRuntimeDefaults.adminWebOrigin,
+    "production admin web origin is required",
+    "admin web origin"
+  )
+
   return {
     apiOrigin: toServerOrigin(
       runtimeEnv.NEXT_PUBLIC_API_BASE_URL,
       runtimeEnv.NODE_ENV,
       localRuntimeDefaults.apiBaseUrl,
-      "production public API base URL is required"
+      "production public API base URL is required",
+      "public API base URL"
     ),
     development: runtimeEnv.NODE_ENV !== "production",
     reportOnly: runtimeEnv.CSP_REPORT_ONLY === "true",
+    upgradeInsecureRequests: shouldUpgradeInsecureRequests(adminOrigin),
   }
 }
 
@@ -66,7 +82,8 @@ function toServerOrigin(
   rawValue: string | undefined,
   nodeEnvironment: string | undefined,
   fallback: string,
-  productionError: string
+  productionError: string,
+  description?: string
 ): string {
   if (
     nodeEnvironment === "production" &&
@@ -78,5 +95,10 @@ function toServerOrigin(
   const candidate =
     rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue
 
-  return new URL(candidate).origin
+  const url = new URL(candidate)
+  if (description !== undefined) {
+    assertPublicUrlTransport(url, { description, nodeEnvironment })
+  }
+
+  return url.origin
 }

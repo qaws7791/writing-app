@@ -217,6 +217,9 @@ services:
       - type: bind
         source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
         target: /var/lib/writing-app
+      - type: bind
+        source: ${BACKUP_DIRECTORY:?BACKUP_DIRECTORY가 필요합니다}
+        target: /var/backups/writing-app
     networks:
       - backup
     restart: "no"
@@ -244,18 +247,10 @@ services:
       - operations
     command:
       - bun
-      - -e
-      - >-
-        import { Database } from 'bun:sqlite';
-        const database = new Database(
-          '/var/lib/writing-app/api.sqlite', { readonly: true }
-        );
-        const result = database.query('PRAGMA integrity_check').values();
-        database.close();
-        if (result.length !== 1 || result[0]?.[0] !== 'ok') {
-          console.error(result);
-          process.exit(1);
-        }
+      - /workspace/bin/database-check
+    environment:
+      DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      NODE_ENV: production
     volumes:
       - type: bind
         source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}

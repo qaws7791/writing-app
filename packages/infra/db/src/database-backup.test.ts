@@ -3,6 +3,7 @@ import {
   copyFileSync,
   existsSync,
   mkdtempSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -13,7 +14,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 
 import { Database } from "bun:sqlite"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { createWritingAppDatabase } from "#db/client"
 import {
@@ -21,6 +22,35 @@ import {
   verifyDatabaseBackup,
 } from "#db/database-backup"
 import { runBaselineTestMigration } from "#db/test-support/application-migration"
+
+const backupFileModeObservation = vi.hoisted(() => ({
+  conflictingDestination: undefined as string | undefined,
+  partialModes: [] as number[],
+}))
+
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>()
+
+  return {
+    ...actual,
+    linkSync(
+      existingPath: Parameters<typeof actual.linkSync>[0],
+      newPath: Parameters<typeof actual.linkSync>[1]
+    ): void {
+      if (String(existingPath).endsWith(".partial")) {
+        backupFileModeObservation.partialModes.push(
+          actual.statSync(existingPath).mode & 0o777
+        )
+        if (
+          backupFileModeObservation.conflictingDestination === String(newPath)
+        ) {
+          actual.writeFileSync(newPath, "경쟁 백업", { flag: "wx" })
+        }
+      }
+      actual.linkSync(existingPath, newPath)
+    },
+  }
+})
 
 describe("SQLite 백업과 복구 검증", () => {
   it("공백이 있는 file-backed WAL DB를 독립 백업하고 임시 복구한다", () => {
@@ -123,6 +153,127 @@ describe("SQLite 백업과 복구 검증", () => {
       rmSync(directory, { force: true, recursive: true })
     }
   })
+
+  it("publish 직전 같은 경로가 생성되어도 기존 백업을 덮어쓰지 않는다", () => {
+    const directory = mkdtempSync(join(tmpdir(), "writing app backup race "))
+    const sourcePath = join(directory, "source.sqlite")
+    const backupPath = join(directory, "backup", "snapshot.sqlite")
+    const source = createWritingAppDatabase(sourcePath)
+
+    try {
+      runBaselineTestMigration(source.sqlite)
+      backupFileModeObservation.conflictingDestination = backupPath
+
+      expect(() =>
+        createVerifiedDatabaseBackup({
+          backupPath,
+          requiredTables: ["user"],
+          sourcePath,
+        })
+      ).toThrow("기존 백업 파일을 덮어쓰지 않습니다")
+      expect(readFileSync(backupPath, "utf8")).toBe("경쟁 백업")
+      expect(
+        readdirSync(dirname(backupPath)).some((name) =>
+          name.includes(".partial")
+        )
+      ).toBe(false)
+    } finally {
+      backupFileModeObservation.conflictingDestination = undefined
+      source.close()
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it("source close가 실패해도 미완성 backup 파일을 정리한다", () => {
+    const directory = mkdtempSync(join(tmpdir(), "writing app close failure "))
+    const sourcePath = join(directory, "source.sqlite")
+    const backupPath = join(directory, "backup", "snapshot.sqlite")
+    const source = createWritingAppDatabase(sourcePath)
+
+    try {
+      runBaselineTestMigration(source.sqlite)
+    } finally {
+      source.close()
+    }
+
+    const nativeClose = Database.prototype.close
+    const closeSpy = vi
+      .spyOn(Database.prototype, "close")
+      .mockImplementation(function (
+        this: Database,
+        throwOnError?: boolean
+      ): void {
+        nativeClose.call(this, throwOnError)
+        if (this.filename === sourcePath) {
+          throw new Error("source close failure")
+        }
+      })
+
+    try {
+      expect(() =>
+        createVerifiedDatabaseBackup({
+          backupPath,
+          requiredTables: ["user"],
+          sourcePath,
+        })
+      ).toThrow("source close failure")
+      expect(existsSync(backupPath)).toBe(false)
+      expect(
+        readdirSync(dirname(backupPath)).some((name) =>
+          name.includes(".partial")
+        )
+      ).toBe(false)
+    } finally {
+      closeSpy.mockRestore()
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it.skipIf(process.platform === "win32")(
+    "새 output과 staging·최종 backup만 private mode로 만든다",
+    () => {
+      const directory = mkdtempSync(
+        join(tmpdir(), "writing app private backup ")
+      )
+      const sourcePath = join(directory, "source.sqlite")
+      const newOutputDirectory = join(directory, "new-output")
+      const firstBackupPath = join(newOutputDirectory, "first.sqlite")
+      const existingOutputDirectory = join(directory, "existing-output")
+      const secondBackupPath = join(existingOutputDirectory, "second.sqlite")
+      const source = createWritingAppDatabase(sourcePath)
+
+      try {
+        runBaselineTestMigration(source.sqlite)
+      } finally {
+        source.close()
+      }
+
+      mkdirSync(existingOutputDirectory, { mode: 0o750 })
+      chmodSync(existingOutputDirectory, 0o750)
+      backupFileModeObservation.partialModes.length = 0
+
+      try {
+        createVerifiedDatabaseBackup({
+          backupPath: firstBackupPath,
+          requiredTables: ["user"],
+          sourcePath,
+        })
+        createVerifiedDatabaseBackup({
+          backupPath: secondBackupPath,
+          requiredTables: ["user"],
+          sourcePath,
+        })
+
+        expect(statSync(newOutputDirectory).mode & 0o777).toBe(0o700)
+        expect(statSync(existingOutputDirectory).mode & 0o777).toBe(0o750)
+        expect(backupFileModeObservation.partialModes).toEqual([0o600, 0o600])
+        expect(statSync(firstBackupPath).mode & 0o777).toBe(0o600)
+        expect(statSync(secondBackupPath).mode & 0o777).toBe(0o600)
+      } finally {
+        rmSync(directory, { force: true, recursive: true })
+      }
+    }
+  )
 })
 
 function inspectIsolatedBackup(backupPath: string): {

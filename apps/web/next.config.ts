@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
           ...createNextSecurityHeaders({
             development,
             includeContentSecurityPolicy: false,
+            upgradeInsecureRequests: false,
           }),
         ],
         source: "/(.*)",

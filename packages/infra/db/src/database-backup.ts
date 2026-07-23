@@ -3,11 +3,11 @@ import {
   copyFileSync,
   closeSync,
   existsSync,
+  linkSync,
   mkdirSync,
   mkdtempSync,
   openSync,
   readSync,
-  renameSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -15,7 +15,7 @@ import {
 import { tmpdir } from "node:os"
 import { basename, dirname, join, resolve } from "node:path"
 
-import { Database } from "bun:sqlite"
+import { Database, type SQLQueryBindings } from "bun:sqlite"
 
 export type DatabaseBackupVerification = {
   readonly integrityCheck: "ok"
@@ -47,36 +47,80 @@ export function createVerifiedDatabaseBackup(input: {
     throw new Error(`기존 백업 파일을 덮어쓰지 않습니다: ${backupPath}`)
   }
 
-  mkdirSync(dirname(backupPath), { recursive: true })
+  ensureBackupOutputDirectory(dirname(backupPath))
   const partialPath = join(
     dirname(backupPath),
     `.${basename(backupPath)}.${crypto.randomUUID()}.partial`
   )
   const source = new Database(sourcePath, { readonly: true, strict: true })
+  let sourceClosed = false
 
   try {
-    writeFileSync(partialPath, source.serialize())
+    writeFileSync(partialPath, source.serialize(), {
+      flag: "wx",
+      mode: 0o600,
+    })
+    chmodSync(partialPath, 0o600)
     normalizeBackupJournalMode(partialPath)
     const verification = verifyDatabaseBackup(partialPath, {
       requiredTables: input.requiredTables,
     })
-    renameSync(partialPath, backupPath)
+    const backupBytes = statSync(partialPath).size
+    source.close(true)
+    sourceClosed = true
+    publishBackupWithoutOverwrite(partialPath, backupPath)
     return {
-      backupBytes: statSync(backupPath).size,
+      backupBytes,
       backupPath,
       kind: "database-backup-verified",
       sourcePath,
       verification,
     }
   } finally {
-    source.close()
-    for (const temporaryPath of [
-      partialPath,
-      `${partialPath}-shm`,
-      `${partialPath}-wal`,
-    ]) {
-      rmSync(temporaryPath, { force: true })
+    try {
+      if (!sourceClosed) {
+        source.close(true)
+      }
+    } finally {
+      for (const temporaryPath of [
+        partialPath,
+        `${partialPath}-shm`,
+        `${partialPath}-wal`,
+      ]) {
+        rmSync(temporaryPath, { force: true })
+      }
     }
+  }
+}
+
+function publishBackupWithoutOverwrite(
+  partialPath: string,
+  backupPath: string
+): void {
+  try {
+    linkSync(partialPath, backupPath)
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "EEXIST"
+    ) {
+      throw new Error(`기존 백업 파일을 덮어쓰지 않습니다: ${backupPath}`, {
+        cause: error,
+      })
+    }
+    throw error
+  }
+}
+
+function ensureBackupOutputDirectory(outputDirectory: string): void {
+  const firstCreatedDirectory = mkdirSync(outputDirectory, {
+    mode: 0o700,
+    recursive: true,
+  })
+  if (firstCreatedDirectory !== undefined) {
+    chmodSync(outputDirectory, 0o700)
   }
 }
 
@@ -88,16 +132,14 @@ function normalizeBackupJournalMode(backupPath: string): void {
   })
 
   try {
-    const journalMode = backup
-      .query<{ readonly journal_mode: string }, []>(
-        "PRAGMA journal_mode = DELETE"
-      )
-      .get()?.journal_mode
+    const journalMode = readSqliteRow<{
+      readonly journal_mode: string
+    }>(backup, "PRAGMA journal_mode = DELETE")?.journal_mode
     if (journalMode !== "delete") {
       throw new Error(`백업 DB journal_mode 전환 실패: ${journalMode}`)
     }
   } finally {
-    backup.close()
+    backup.close(true)
   }
 }
 
@@ -133,41 +175,58 @@ function inspectRestoredDatabase(
 
   try {
     restored.exec("PRAGMA query_only = ON")
-    const integrityCheck = restored
-      .query<{ readonly integrity_check: string }, []>("PRAGMA integrity_check")
-      .get()?.integrity_check
+    const integrityCheck = readSqliteRow<{
+      readonly integrity_check: string
+    }>(restored, "PRAGMA integrity_check")?.integrity_check
     if (integrityCheck !== "ok") {
       throw new Error(`복구 DB integrity_check 실패: ${integrityCheck}`)
     }
 
     for (const tableName of requiredTables) {
-      const exists = restored
-        .query<{ readonly name: string }, [name: string]>(
-          "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?1"
-        )
-        .get(tableName)
+      const exists = readSqliteRow<{ readonly name: string }>(
+        restored,
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?1",
+        tableName
+      )
       if (exists === null || exists === undefined) {
         throw new Error(`복구 DB 필수 table 누락: ${tableName}`)
       }
-      restored.query(`SELECT COUNT(*) AS row_count FROM "${tableName}"`).get()
+      readSqliteRow(
+        restored,
+        `SELECT COUNT(*) AS row_count FROM "${tableName}"`
+      )
     }
 
     return {
       integrityCheck: "ok",
       requiredTableReadSmoke: "ok",
       schemaVersion:
-        restored
-          .query<{ readonly schema_version: number }, []>(
-            "PRAGMA schema_version"
-          )
-          .get()?.schema_version ?? 0,
+        readSqliteRow<{ readonly schema_version: number }>(
+          restored,
+          "PRAGMA schema_version"
+        )?.schema_version ?? 0,
       userVersion:
-        restored
-          .query<{ readonly user_version: number }, []>("PRAGMA user_version")
-          .get()?.user_version ?? 0,
+        readSqliteRow<{ readonly user_version: number }>(
+          restored,
+          "PRAGMA user_version"
+        )?.user_version ?? 0,
     }
   } finally {
-    restored.close()
+    restored.close(true)
+  }
+}
+
+function readSqliteRow<TRow>(
+  sqlite: Database,
+  sql: string,
+  ...params: SQLQueryBindings[]
+): TRow | null {
+  const statement = sqlite.prepare<TRow, SQLQueryBindings[]>(sql)
+
+  try {
+    return statement.get(...params)
+  } finally {
+    statement.finalize()
   }
 }
 

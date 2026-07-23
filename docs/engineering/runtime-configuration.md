@@ -6,7 +6,7 @@
 
 ## 권위 소스
 
-- 로컬 준비와 진단: `scripts/setup.ts`, `scripts/local-onboarding.ts`, `scripts/doctor.ts`
+- 로컬 준비와 진단: `scripts/setup.ts`, `scripts/local-onboarding.ts`, `scripts/local-database-setup.ts`, `scripts/local-database-diagnostic.ts`, `scripts/doctor.ts`
 - 공통 로컬 runtime 값: `packages/config/env/src/local-runtime-defaults.ts`
 - runtime별 환경 변수 계약: 각 앱의 환경 parser와 `.env.example`
 - production 입력: `deploy/compose/`, Ansible inventory와 secret 관리 경계
@@ -23,9 +23,11 @@
 
 ## 로컬 준비와 테스트
 
-`bun run setup`은 안전한 초기 준비 진입점이고 `bun run doctor`는 변경 없는 진단 진입점이다. setup은 API 환경 파일과 상속된 shell의 같은 키가 다르면 값은 출력하지 않고 중단하며, 검증한 환경을 migration과 seed 자식 process에 그대로 전달한다. 로컬 setup은 개발 환경과 관리자 password 보존 설정에서만 허용하고 database 경로의 환경 변수 보간은 거부한다.
+`bun run setup`은 안전한 초기 준비 진입점이고 `bun run doctor`는 변경 없는 진단 진입점이다. setup은 저장소 operation lock으로 같은 checkout의 동시 실행을 차단하고, API 환경 파일과 상속된 shell의 같은 키가 다르면 값은 출력하지 않고 중단한다. 검증한 환경을 자식 process에 그대로 전달하며, 기존 migration 필요 DB는 검증 백업을 훼손하지 않는 임시 사본에서 같은 migration과 read-only 진단이 성공한 뒤에만 실제 migration을 시작한다. 이 lock은 실행 중인 앱의 DB writer를 조정하지 않으므로 setup 전에 개발 서버를 종료한다. doctor는 workspace 계약과 DB 무결성·schema를 읽기 전용으로 확인하고 migration 필요 상태도 실패로 보고한다. 로컬 setup은 개발 환경과 관리자 password 보존 설정에서만 허용하고 database 경로의 환경 변수 보간은 거부한다.
 
-기본 seed는 누락된 개발 fixture만 삽입하고 기존 aggregate·인증·profile·권한을 갱신하지 않는다. 관리자 fixture가 일부만 존재하거나 owner credential 계약과 다르면 자동 보정하지 않고 실패한다. password 변경, content reset과 전체 초기화는 명시적인 승인 명령으로 분리한다. 실제 변수명과 활성화 조건은 권위 source에서 확인한다.
+기본 seed는 누락된 개발 fixture만 삽입하고 기존 aggregate·인증·profile·권한을 갱신하지 않는다. migration, 학습자·콘텐츠 seed와 관리자 seed는 하나의 transaction이 아니라 순서가 있는 별도 process이며, 중간 실패 뒤 멱등적으로 재실행해 완료하는 모델이다. 관리자 fixture가 일부만 존재하거나 owner credential 계약과 다르면 자동 보정하지 않고 실패한다. password 변경, content reset과 전체 초기화는 명시적인 승인 명령으로 분리한다. 실제 변수명과 활성화 조건은 권위 source에서 확인한다.
+
+production의 browser 공개 URL은 HTTPS를 사용한다. 실제 production build를 loopback에서 검증할 때만 HTTP를 허용하며, 이 경우 CSP nonce와 `strict-dynamic`은 유지하고 insecure request 승격만 제외한다. container 내부 upstream처럼 browser에 공개되지 않는 연결은 별도 server runtime 계약으로 검증한다. Web과 Admin의 직접 production 실행은 Next가 생성한 standalone server를 사용하며 정적·public asset 포함 여부를 smoke test한다.
 
 ## 변경 검토
 

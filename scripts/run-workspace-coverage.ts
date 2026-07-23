@@ -1,4 +1,4 @@
-import { mkdirSync, rmSync } from "node:fs"
+import { existsSync, mkdirSync, rmSync } from "node:fs"
 import { basename, join } from "node:path"
 
 import {
@@ -72,7 +72,7 @@ const projects: readonly CoverageProject[] = [
     coverageTests: [
       "src/client.test.ts",
       "src/destructive-operation-guard.test.ts",
-      "src/migrations/baseline-migration.test.ts",
+      "src/migration-runner.test.ts",
     ],
     path: "packages/infra/db",
     runtime: "bun",
@@ -170,7 +170,7 @@ const criticalCoverageThresholds: readonly LineCoverageThreshold[] = [
     reportDirectory: "apps-admin",
   },
   {
-    filePath: "src/migrations/migrate.ts",
+    filePath: "src/migration-runner.ts",
     minimum: 87,
     reportDirectory: "packages-db",
   },
@@ -292,6 +292,16 @@ function validateCoverageInventory(): void {
     throw new Error(
       `Coverage inventory가 일치하지 않습니다.\nexpected: ${expected.join(", ")}\nactual: ${actual.join(", ")}`
     )
+  }
+
+  for (const project of projects) {
+    for (const testPath of project.coverageTests ?? []) {
+      if (!existsSync(join(process.cwd(), project.path, testPath))) {
+        throw new Error(
+          `Coverage test 파일이 없습니다: ${project.path}/${testPath}`
+        )
+      }
+    }
   }
 }
 

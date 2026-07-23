@@ -63,9 +63,7 @@
             service: database-backup
             argv:
               - "--source=/var/lib/writing-app/api.sqlite"
-              - >-
-                --output=/var/backups/writing-app/
-                pre-{{ writing_app_restore_id }}.sqlite
+              - "--output=/var/backups/writing-app/pre-{{ writing_app_restore_id }}.sqlite"
             cleanup: true
             no_deps: true
             interactive: false
@@ -113,9 +111,7 @@
             argv:
               - mv
               - "{{ item.stat.path }}"
-              - >-
-                {{ writing_app_backup_directory }}/
-                {{ writing_app_restore_id }}/{{ item.item }}
+              - "{{ writing_app_backup_directory }}/{{ writing_app_restore_id }}/{{ item.item }}"
           loop: "{{ writing_app_database_files.results }}"
           when: item.stat.exists
           changed_when: true

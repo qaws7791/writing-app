@@ -46,6 +46,18 @@ describe("admin runtime config", () => {
     expect(() => readLearnerWebOrigin({ NODE_ENV: "production" })).toThrow(
       "production learner web origin is required"
     )
+    expect(() =>
+      readApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "http://api.example.test",
+        NODE_ENV: "production",
+      })
+    ).toThrow("production public API base URL must use HTTPS")
+    expect(() =>
+      readLearnerWebOrigin({
+        NEXT_PUBLIC_LEARNER_WEB_ORIGIN: "http://writing.example.test",
+        NODE_ENV: "production",
+      })
+    ).toThrow("production learner web origin must use HTTPS")
   })
 
   it("서버 전용 API와 admin origin을 공개 브라우저 계약과 분리한다", () => {
@@ -61,11 +73,18 @@ describe("admin runtime config", () => {
         NODE_ENV: "production",
       })
     ).toBe("https://admin.example.test")
+    expect(
+      readServerApiBaseUrl({
+        API_BASE_URL: "http://api:4000/",
+        NODE_ENV: "production",
+      })
+    ).toBe("http://api:4000")
   })
 
   it("CSP runtime 설정은 공개 admin API와 report-only 상태를 함께 읽는다", () => {
     expect(
       readAdminCspRuntimeConfig({
+        ADMIN_ORIGIN: "https://admin.example.test",
         CSP_REPORT_ONLY: "true",
         NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/path",
         NODE_ENV: "production",
@@ -74,7 +93,32 @@ describe("admin runtime config", () => {
       apiOrigin: "https://api.example.test",
       development: false,
       reportOnly: true,
+      upgradeInsecureRequests: true,
     })
+  })
+
+  it("production localhost에서는 엄격한 CSP를 유지하고 HTTP 승격만 끈다", () => {
+    expect(
+      readAdminCspRuntimeConfig({
+        ADMIN_ORIGIN: "http://admin.localhost:3001",
+        NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:4000",
+        NODE_ENV: "production",
+      })
+    ).toEqual({
+      apiOrigin: "http://127.0.0.1:4000",
+      development: false,
+      reportOnly: false,
+      upgradeInsecureRequests: false,
+    })
+  })
+
+  it("production 공개 HTTP admin origin을 거부한다", () => {
+    expect(() =>
+      readAdminWebOrigin({
+        ADMIN_ORIGIN: "http://admin.example.test",
+        NODE_ENV: "production",
+      })
+    ).toThrow("production admin web origin must use HTTPS")
   })
 
   it("어드민 API path를 같은 규칙으로 조합한다", () => {

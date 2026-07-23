@@ -125,6 +125,7 @@ export const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
     runtimeArtifactPaths: [
       "/workspace/bin/api",
       "/workspace/bin/database-backup",
+      "/workspace/bin/database-check",
       "/workspace/bin/database-migrate",
       "/workspace/node_modules/prismjs/package.json",
     ],
@@ -745,6 +746,20 @@ function assertApiOperationExecutables(
     "/workspace/bin/database-backup",
     "--source=/var/lib/writing-app/api.sqlite",
     "--output=/var/lib/writing-app/image-smoke-backup.sqlite",
+  ])
+  runDocker([
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--mount",
+    `${mount},readonly`,
+    "--env",
+    `DATABASE_URL=${databaseUrl}`,
+    "--entrypoint",
+    "bun",
+    imageReference,
+    "/workspace/bin/database-check",
   ])
 }
 

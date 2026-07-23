@@ -51,6 +51,7 @@ export default defineConfig({
       "test/**/*.test.ts",
       "test/**/*.test.tsx",
     ],
+    maxWorkers: 2,
     setupFiles: ["./vitest.setup.ts"],
   },
 })
