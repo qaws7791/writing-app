@@ -19,8 +19,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@headless-tree/core": "catalog:",
-    "@headless-tree/react": "catalog:",
     "@workspace/ui": "workspace:*",
     "lucide-react": "catalog:",
     "react": "catalog:",

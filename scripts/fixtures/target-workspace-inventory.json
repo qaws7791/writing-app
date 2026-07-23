@@ -19,7 +19,6 @@
     "packages/modules/operations",
     "packages/modules/resource-library",
     "packages/shared/contracts",
-    "packages/shared/errors",
     "packages/shared/event-contracts",
     "packages/shared/kernel",
     "packages/shared/resource-document",

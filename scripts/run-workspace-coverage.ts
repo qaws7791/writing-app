@@ -64,11 +64,6 @@ const projects: readonly CoverageProject[] = [
     runtime: "node",
   },
   {
-    coverageTests: ["src/error-vocabulary.test.ts"],
-    path: "packages/shared/errors",
-    runtime: "node",
-  },
-  {
     coverageTests: [
       "src/client.test.ts",
       "src/destructive-operation-guard.test.ts",

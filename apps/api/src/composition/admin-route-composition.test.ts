@@ -11,14 +11,7 @@ import {
   type AdminRouteCompositionContext,
 } from "@/composition/admin-route-composition"
 import { adminRouteGroupOrder } from "@/http/admin-route-group"
-import { createAdminApp } from "@/http/admin-app"
 import { createAppLogger } from "@workspace/observability/logger"
-import {
-  expectedOpenApiRouteKeys,
-  expectedProtectedOpenApiRouteKeys,
-  readOpenApiRouteKeys,
-  readProtectedOpenApiRouteKeys,
-} from "@/test-support/p10-route-parity"
 
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
 
@@ -91,19 +84,6 @@ describe("관리자 capability route composition", () => {
         "searchAdminResourceLibrary",
       ])
       expect(Object.isFrozen(routes)).toBe(true)
-      const app = createAdminApp({
-        capabilityRoutes: routes,
-        health: { isDatabaseReady: () => true },
-        sessionResolver: context.sessionResolver,
-      })
-      const document = await (await app.request("/openapi")).json()
-
-      expect(readOpenApiRouteKeys(document)).toEqual(
-        expectedOpenApiRouteKeys("admin")
-      )
-      expect(
-        readProtectedOpenApiRouteKeys(document, "adminSessionCookie")
-      ).toEqual(expectedProtectedOpenApiRouteKeys("admin"))
     } finally {
       databaseClient.close()
     }

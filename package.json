@@ -9,8 +9,6 @@
     "#scripts/*": "./scripts/*.ts"
   },
   "catalog": {
-    "@headless-tree/core": "1.7.0",
-    "@headless-tree/react": "1.7.0",
     "@hono/zod-openapi": "1.4.0",
     "@lexical/code": "0.46.0",
     "@lexical/link": "0.46.0",
@@ -35,7 +33,6 @@
     "next-themes": "0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "recharts": "3.9.2",
     "server-only": "0.0.1",
     "sharp": "0.34.5",
     "tailwindcss": "4.3.2",
@@ -53,6 +50,7 @@
     "packages/config/*"
   ],
   "scripts": {
+    "analyze:loc": "bun scripts/analyze-loc.ts",
     "audit:full": "bun scripts/run-dependency-audit.ts full",
     "audit:production": "bun scripts/run-dependency-audit.ts production",
     "build": "turbo build",

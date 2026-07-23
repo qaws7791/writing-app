@@ -11,7 +11,6 @@
     "./database-backup": "./src/database-backup.ts",
     "./destructive-operation-guard": "./src/destructive-operation-guard.ts",
     "./migration-runner": "./src/migration-runner.ts",
-    "./persisted-values": "./src/persisted-values.ts",
     "./sqlite-database": "./src/sqlite-database.ts",
     "./test-support/application-migration": "./src/test-support/application-migration.ts"
   },

@@ -151,15 +151,6 @@
 
 기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 기본 스타일은 Kwep `Modal`과 동일하다. `bg-cream` 패널, `bg-charcoal/30` 오버레이, 제목 `text-heading-sm font-bold`, 설명 `text-body-lg`, footer는 동일 너비 `size="extra"` pill 버튼 2개(`AlertDialogCancel`은 `secondary`, `AlertDialogAction`은 `default`)를 가로로 배치한다. 레슨 나가기처럼 일반 확인은 `AlertDialogAction` 기본 variant를 쓴다. 삭제·보관·초기화처럼 되돌릴 수 없는 작업만 `variant="destructive"`를 명시한다.
 
-## SegmentedControl과 ToggleGroup
-
-구현 위치:
-
-- `packages/shared/ui/src/components/ui/segmented-control.tsx`
-- `packages/shared/ui/src/components/ui/toggle-group.tsx`
-
-`SegmentedControl`은 테마, 보기 방식, 범주처럼 하나의 값을 고르는 컨트롤이다. 호출자는 `value`, `defaultValue`, `onValueChange`를 문자열 단위로 다룬다. `ToggleGroup`은 태그나 검토 범위처럼 여러 값을 동시에 고르는 컨트롤을 위해 Base UI의 배열 `value` 계약을 그대로 노출한다.
-
 ## Alert와 Callout
 
 구현 위치:
@@ -169,25 +160,20 @@
 
 `Alert`는 상태 메시지이고 기본 role은 `status`다. 오류처럼 assertive announcement가 필요한 경우 호출자가 role을 바꾼다. `Callout`은 본문 안의 참고, 설명, 안내 표면이며 사용자 문자열을 포함하지 않는다.
 
-## StickyActionBar, RichText, ChoiceCard
+## StickyActionBar와 레슨 선택 상태
 
-구현 위치:
+구현 위치: `packages/shared/ui/src/components/ui/sticky-action-bar.tsx`
 
-- `packages/shared/ui/src/components/ui/sticky-action-bar.tsx`
-- `packages/shared/ui/src/components/ui/rich-text.tsx`
-- `packages/shared/ui/src/components/ui/choice-card.tsx`
+`StickyActionBar`는 모바일 safe-area를 포함한 하단 고정 행동 영역이다. tone은 `default`, `success`, `danger`만 제공한다. `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 lesson step 컴포넌트의 미채점 선택 상태는 동일한 accent 토큰을 따른다. `MatchAnswer`는 미채점 상태에서 연결된 항목은 공통 accent fill과 연결선으로 표시하고, 아직 짝이 없는 항목은 surface 상태를 유지한다. 왼쪽·오른쪽 어느 쪽이든 먼저 탭해 짝을 맞출 수 있다. 채점 후에는 연결선과 버튼이 정오답 톤으로 바뀐다. monorepo에서 `primary`는 차콜(주요 CTA)이므로 선택 fill에 `bg-primary`를 쓰지 않는다.
 
-`StickyActionBar`는 모바일 safe-area를 포함한 하단 고정 행동 영역이다. tone은 `default`, `success`, `danger`만 제공한다. `RichText`는 markdown parser가 아니라 ReactMarkdown 결과물을 감싸는 token 기반 prose wrapper다. markdown parsing과 remark/rehype 정책은 앱이 소유한다. `ChoiceCard`와 `ChoiceCardGroup`은 레슨 선택형 UI의 generic button/card이며 상태는 `idle`, `selected`, `correct`, `wrong`, `disabled`만 받는다. `selected`는 `bg-accent text-accent-foreground`를 사용한다. `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 lesson step 컴포넌트의 미채점 선택 상태도 동일한 accent 토큰을 따른다. `MatchAnswer`는 미채점 상태에서 연결된 항목은 공통 accent fill과 연결선으로 표시하고, 아직 짝이 없는 항목은 surface 상태를 유지한다. 왼쪽·오른쪽 어느 쪽이든 먼저 탭해 짝을 맞출 수 있다. 채점 후에는 연결선과 버튼이 정오답 톤으로 바뀐다. monorepo에서 `primary`는 차콜(주요 CTA)이므로 선택 fill에 `bg-primary`를 쓰지 않는다.
-
-## Spinner, Separator, Avatar
+## Spinner와 Separator
 
 구현 위치:
 
 - `packages/shared/ui/src/components/ui/spinner.tsx`
 - `packages/shared/ui/src/components/ui/separator.tsx`
-- `packages/shared/ui/src/components/ui/avatar.tsx`
 
-`Spinner`는 caller가 `label`을 제공할 때만 접근 가능한 `status`가 된다. label이 없으면 장식으로 처리한다. `Separator`는 기본 decorative이고, 의미 있는 구분선이 필요할 때 `decorative={false}`를 사용한다. `Avatar`는 image와 fallback anatomy만 제공한다.
+`Spinner`는 caller가 `label`을 제공할 때만 접근 가능한 `status`가 된다. label이 없으면 장식으로 처리한다. `Separator`는 기본 decorative이고, 의미 있는 구분선이 필요할 때 `decorative={false}`를 사용한다.
 
 ## Page와 Admin Pattern
 
@@ -256,7 +242,7 @@
 - 중앙 `main`만 `overflow-y-auto`로 스크롤한다.
 - 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다. 기본 CTA는 cream gradient footer를 사용하고, 정답/오답 피드백은 상단 gradient와 색상 구분선 뒤에 `correct` 또는 `wrong` 버튼을 배치한다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant, 취소는 `secondary`다.
-- 선택형 레슨 UI는 `ChoiceCard`, markdown 본문은 `RichText`를 사용한다.
+- 선택형 레슨 UI는 `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 전용 lesson 컴포넌트를 사용하고 markdown 본문은 내부 `MarkdownContent`에서 렌더링한다.
 
 ### CompareStepView 및 레슨 콜아웃
 

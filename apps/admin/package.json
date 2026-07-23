@@ -32,7 +32,7 @@
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "recharts": "catalog:",
+    "recharts": "3.9.2",
     "server-only": "catalog:",
     "sharp": "catalog:",
     "zod": "catalog:"

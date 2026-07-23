@@ -27,7 +27,6 @@ const privateImportScopes: readonly PrivateImportScope[] = [
     packageName: "@workspace/contracts",
     root: "packages/shared/contracts/src",
   },
-  { packageName: "@workspace/errors", root: "packages/shared/errors/src" },
   {
     packageName: "@workspace/event-contracts",
     root: "packages/shared/event-contracts/src",
@@ -83,7 +82,6 @@ const expectedExports = {
     "./database-backup",
     "./destructive-operation-guard",
     "./migration-runner",
-    "./persisted-values",
     "./sqlite-database",
     "./test-support/application-migration",
   ],
@@ -103,7 +101,6 @@ const expectedExports = {
   ],
   "packages/infra/observability/package.json": [
     "./events",
-    "./lifecycle",
     "./logger",
     "./request-logger",
     "./security-audit-logger",
@@ -114,7 +111,6 @@ const expectedExports = {
     "./auth-session-cookie",
     "./content/admin-courses",
     "./content/admin-content-reset",
-    "./content/admin-data",
     "./content/admin-routes",
     "./content/api-error",
     "./content/course",
@@ -147,7 +143,6 @@ const expectedExports = {
     "./resource-library/admin-resource-documents",
     "./resource-library/admin-resource-search",
     "./resource-library/admin-resource-tree",
-    "./resource-library/data",
     "./resource-library/shared",
   ],
   "packages/config/env/package.json": [
@@ -165,10 +160,6 @@ const expectedExports = {
     "./base.json",
     "./nextjs.json",
     "./react-library.json",
-  ],
-  "packages/shared/errors/package.json": [
-    "./infrastructure-error",
-    "./transport-error",
   ],
   "packages/shared/event-contracts/package.json": ["./workspace-event"],
   "packages/shared/kernel/package.json": [
@@ -270,10 +261,6 @@ const removedArchitectureToolingPaths = [
   "scripts/check-import-cycles.ts",
   "scripts/architecture/core-capability-policy.mjs",
 ] as const
-const allowedSharedErrorNames = new Set([
-  "InfrastructureError",
-  "TransportError",
-])
 const forbiddenResourceDocumentOwnershipFilePattern =
   /(?:^|[/.-])(?:asset-lifecycle|document-save|permission|repository|tree)(?:[/.-]|$)/u
 const forbiddenSharedUiIoPattern =
@@ -346,20 +333,6 @@ for (const filePath of collectSourceFiles(
   const source = fs.readFileSync(filePath, "utf8")
   if (/\bprocess\s*\.\s*env\b/u.test(source)) {
     failures.push(`${relativePath(filePath)} -> kernel의 process.env 접근 금지`)
-  }
-}
-
-for (const filePath of collectSourceFiles(
-  path.join(repositoryRoot, "packages/shared/errors/src")
-)) {
-  if (/\.(?:test|typecheck)\.[jt]sx?$/u.test(filePath)) continue
-
-  for (const symbol of readTopLevelDeclarationNames(filePath)) {
-    if (symbol.endsWith("Error") && !allowedSharedErrorNames.has(symbol)) {
-      failures.push(
-        `${relativePath(filePath)} -> module domain 오류 ${symbol}의 shared 노출 금지`
-      )
-    }
   }
 }
 

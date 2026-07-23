@@ -1,11 +1,10 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
   createAppLogger,
   createChildLogger,
   shouldUsePrettyLogging,
 } from "#observability/logger"
-import { shutdownLogger } from "#observability/lifecycle"
 import { createRequestLogger } from "#observability/request-logger"
 
 type LogRecord = {
@@ -194,22 +193,5 @@ describe("logger", () => {
       expect(serialized).not.toContain(sensitiveValue)
     }
     expect(serialized.match(/\[REDACTED\]/gu)?.length).toBeGreaterThanOrEqual(6)
-  })
-
-  it("flush 실패를 관측하고 shutdown close를 계속 수행한다", async () => {
-    const cause = new Error("flush failed")
-    const close = vi.fn()
-    const onError = vi.fn()
-    const result = await shutdownLogger({
-      close,
-      flush: async () => Promise.reject(cause),
-      onError,
-    })
-
-    expect(result.isErr()).toBe(true)
-    expect(onError).toHaveBeenCalledWith(
-      expect.objectContaining({ cause, phase: "flush" })
-    )
-    expect(close).toHaveBeenCalledOnce()
   })
 })

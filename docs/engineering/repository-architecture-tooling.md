@@ -11,8 +11,11 @@
 | workspace 발견과 test·coverage 대상                               | `scripts/workspace-inventory.ts`, `scripts/check-workspace-inventory.ts` |
 | 명시적 package export와 제거된 구조의 재도입 방지                 | `scripts/check-package-interfaces.ts`, 각 package manifest               |
 | coverage 집계와 CI task 결과 해석                                 | `scripts/coverage-report.ts`, `scripts/ci-workspace-inventory-report.ts` |
+| LOC 원본 수집, 역할 분류와 계층 집계                              | `scripts/analyze-loc.ts`, `scripts/loc-analysis.ts`                      |
 
 Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표현 수준의 `workspace/no-unsafe-unknown-cast`만 검사한다. workspace inventory, coverage와 CI summary helper도 자기 task에 필요한 좁은 입력만 해석하며 범용 repository graph를 만들지 않는다.
+
+LOC 분석은 clean checkout과 `scc v3.7.0`을 요구하는 수동 정보성 감사다. workspace는 기존 inventory에서 발견하고 file 원본을 category·directory·owner로 재집계하며 합계 불일치와 Git 비추적 파일 혼입은 실패한다. LOC는 책임 집중의 탐색 신호일 뿐 품질 gate나 분리 결정의 단독 근거로 사용하지 않는다.
 
 ## Graph 정책
 
