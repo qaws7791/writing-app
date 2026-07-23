@@ -1,7 +1,0 @@
-{
-  "name": "@fixture/contracts",
-  "private": true,
-  "exports": {
-    "./content/course": "./src/content/course.ts"
-  }
-}

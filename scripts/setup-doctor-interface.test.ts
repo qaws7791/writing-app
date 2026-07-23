@@ -296,15 +296,14 @@ describe("setup과 doctor DB 안전 경계", () => {
     ])
   })
 
-  test("doctor는 workspace 계약과 read-only DB 진단만 실행한다", () => {
+  test("doctor는 로컬 환경과 read-only DB 진단만 실행한다", () => {
     const repositoryRoot = path.resolve(import.meta.dir, "..")
     const source = fs.readFileSync(
       path.join(repositoryRoot, "scripts/doctor.ts"),
       "utf8"
     )
 
-    expect(source).toContain("check:workspace-inventory")
-    expect(source).toContain("check:workspace-dependency-versions")
+    expect(source).toContain("inspectLocalOnboarding")
     expect(source).toContain("inspectLocalApplicationDatabase")
     expect(source).toContain('diagnostic.status === "migration-required"')
     expect(source).not.toContain("db:migrate")

@@ -14,7 +14,7 @@
 - `packages/infra/auth`는 Better Auth server/client integration, credential·session schema와 migration, 비밀번호와 session token 정규화를 소유한다. 제품 profile·status·role은 소유하지 않고 인증된 vendor-neutral identity를 identity module에 제공한다.
 - `packages/infra/db`, `ai`, `event-bus`, `storage`, `http-client`는 각각 schema-neutral SQLite connection·transaction·migration runner·backup·destructive guard, AI provider runtime, process-local event 전달, object storage SDK, transport-neutral HTTP 결과를 소유한다. DB infra는 application schema·migration SQL·seed를 소유하거나 재수출하지 않는다.
 - `packages/shared`의 `types`, `kernel`, `errors`, `contracts`, `resource-document`, `ui`는 각각 transport-neutral 타입, 최소 실행 원시값, 공통 경계 오류, wire schema, Markdown 변환, 순수 표현 UI를 소유한다.
-- 공개 subpath key와 target은 각 package manifest가 소유하고 workspace inventory 검사가 유효성을 검증한다.
+- 공개 subpath key와 target은 각 package manifest가 소유하고 TypeScript와 실제 consumer build가 해석한다.
 
 ## 공개 Interface 원칙
 
@@ -26,7 +26,7 @@
 - auth infra는 learner/admin과 client/server, schema·migration·seed tooling 경계를 분리한다. root barrel과 client/server forwarding 경로는 제공하지 않는다.
 - 제품 module은 application port, query·command, HTTP, module factory와 필요한 tooling 경계를 capability 단위 subpath로 공개한다. consumer는 domain·infrastructure 내부 경로를 import하지 않는다.
 - schema·migration·seed subpath는 통합 DB tooling과 격리 fixture만 소비한다. 다른 module과 일반 runtime consumer에는 제품 persistence를 공개하지 않는다.
-- 현재 export key는 package manifest만 소유한다. package interface 검사는 explicit subpath 형식과 target 존재 여부를 확인하며 별도 exact 목록을 복제하지 않는다.
+- 현재 export key는 package manifest만 소유한다. 별도 exact 목록이나 export 형태 검사기를 복제하지 않고 TypeScript와 실제 consumer build가 target을 해석한다.
 - 인증 cookie 이름은 `@workspace/contracts/auth-session-cookie`가 canonical 계약으로 소유하며 auth package는 이를 재수출하지 않는다.
 - identity profile·session과 관리자 사용자 계약은 `@workspace/contracts/identity/*`, content 관리자 계약은 `@workspace/contracts/content/*`, 학습 HTTP 계약은 `@workspace/contracts/learning/*`의 구체적인 경로에서 가져온다. generated OpenAPI 타입이나 중간 계약 계층을 만들지 않는다.
 
@@ -45,7 +45,7 @@
 | AI change proposal  | 안전한 변경 variant와 검토 상태                          | 제안 조회·승인·거절 response                             |
 | resource library    | resource ID, document, asset, tree/search item           | request, collection/mutation response wrapper와 error    |
 
-현재 공개 subpath inventory와 owner mapping은 package manifest와 architecture boundary fixture가 소유한다. 정적 검사는 broad contract barrel, transport-only source와 의미 없는 forwarding의 재유입을 거부한다.
+현재 공개 subpath inventory와 owner mapping은 package manifest가 소유한다. broad contract barrel, transport-only source와 의미 없는 forwarding의 재유입은 package 변경 리뷰에서 판단한다.
 
 ## 내부 import 원칙
 
@@ -68,13 +68,10 @@
 - API composition과 adapter는 concrete dependency를 조립할 수 있지만 HTTP route, middleware와 response 경계는 DB·Drizzle을 직접 import하지 않는다.
 - capability 간 호출은 공개 API 또는 합의된 application port를 사용한다.
 
-runtime graph는 `apps/api composition -> module public facade -> module infrastructure -> infra primitive`다. 인증 graph는 `frontend feature adapter -> auth client`와 `apps/api composition -> auth server runtime -> identity application`으로 나뉜다. 현재 package 계층과 import 방향은 architecture 검사가 판정한다.
+runtime graph는 `apps/api composition -> module public facade -> module infrastructure -> infra primitive`다. 인증 graph는 `frontend feature adapter -> auth client`와 `apps/api composition -> auth server runtime -> identity application`으로 나뉜다. 실제 import edge는 source가 소유하고 architecture 검사는 순환, 미선언 dependency와 frontend server·DB 경계만 판정한다.
 
 ## 자동 검증
 
-- `bun run check:architecture`가 runtime cycle, 계층, vendor와 client/server import 경계를 검사한다.
-- `bun run check:dead-code`가 사용되지 않는 file·export·dependency를 읽기 전용으로 검사한다.
-- `bun run check:workspace-inventory`가 explicit export key·target의 형식과 존재 여부를 검사한다.
-- `bun run check:package-interfaces`가 canonical ID·schema 소비, UI·infra의 runtime 비의존, API의 검증 전 env·Clock·ID 경계, 내부 상대 import와 자기 공개 경로 역참조를 검사한다.
-- 같은 검사는 API schema aggregator·Drizzle config, current-schema test-support consumer, DB schema 재공개 금지와 frontend `server-only` 경계를 고정한다. package·module 의존 graph는 `check:architecture`, HTTP parse·migration checksum은 각 소유 package의 실행 테스트가 전담한다.
-- package test와 typecheck는 정적 graph가 판정할 수 없는 runtime 계약과 type 계약을 검증한다.
+- `bun run check:architecture`는 runtime cycle, 미선언 dependency와 frontend server·DB import를 검사한다.
+- TypeScript와 production build는 package export target과 client/server 조립 가능성을 실제 consumer 관점에서 검증한다.
+- package test는 HTTP parse, migration checksum, runtime 계약처럼 import graph가 판정할 수 없는 동작을 검증한다.

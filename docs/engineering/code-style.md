@@ -64,7 +64,7 @@ bun run lint:fix
 - `workspace/no-unsafe-unknown-cast`: error.
 - import graph와 package dependency 정책은 dependency-cruiser가 소유하며 Oxlint에 중복 구현하지 않는다.
 
-`bun run check:architecture`는 static import, re-export와 dynamic import의 계층 규칙을 검사한다. runtime cycle 판정에서는 type-only edge를 제외하되 계층 경계에서는 type-only 우회도 허용하지 않는다.
+`bun run check:architecture`는 type-only edge를 제외한 runtime cycle, 미선언 dependency와 frontend의 server·DB import를 검사한다. 폴더 계층 자체는 정적 정책으로 강제하지 않는다.
 
 ## TypeScript
 

@@ -222,7 +222,7 @@
 - 순수 규칙과 상태 전이는 구현 파일 가까이의 Vitest, 컴포넌트 행위는 Testing Library와 `user-event`, 공용 UI 상태와 접근성은 Storybook interaction, 핵심 사용자 여정은 Playwright로 검증한다.
 - 컴포넌트 테스트는 구현 세부사항보다 role, accessible name과 실제 command 결과를 조회한다. loading, empty, error, permission과 version conflict처럼 복구 경로가 다른 상태를 포함한다.
 - E2E는 모든 조합이 아니라 인증, 학습 상태 전이, 발행, 권한 변경과 자료 저장처럼 제품·보안·데이터 정합성에 중요한 여정을 우선한다. 로컬 브라우저와 E2E 인증은 Google OAuth 대신 `ENABLE_TEST_AUTH=true`를 사용한다.
-- 아키텍처 경계와 runtime 순환 참조는 `check:architecture`, 미사용 코드는 `check:dead-code`, package 공개 Interface는 `check:package-interfaces`로 강제한다. 새로운 예외를 조건문이나 넓은 allowance로 숨기지 않는다.
+- runtime 순환 참조, 미선언 dependency와 frontend의 server·DB import는 `check:architecture`로 차단한다. package 공개 Interface와 feature 내부 방향은 TypeScript, production build와 코드 리뷰에서 확인한다.
 
 ## 코드 리뷰 체크리스트
 

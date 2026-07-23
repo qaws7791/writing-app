@@ -30,8 +30,6 @@ async function runSetup(): Promise<void> {
 async function runSetupExclusively(): Promise<void> {
   await runCommand(["bun", "run", "check:toolchain"])
   await runCommand(["bun", "install", "--frozen-lockfile"])
-  await runCommand(["bun", "run", "check:workspace-inventory"])
-  await runCommand(["bun", "run", "check:workspace-dependency-versions"])
 
   const files = createLocalEnvironmentFiles({ repositoryRoot })
   for (const file of files) {

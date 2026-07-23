@@ -1,7 +1,0 @@
-{
-  "name": "@fixture/app",
-  "private": true,
-  "dependencies": {
-    "@fixture/alpha": "workspace:*"
-  }
-}

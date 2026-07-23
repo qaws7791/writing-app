@@ -2,49 +2,22 @@
 
 ## 책임
 
-아키텍처 정책은 하나의 도구에 중복 구현하지 않는다.
+정적 import graph 검사는 다음 세 실패만 차단한다.
 
-| 책임                                                              | 권위 source                                                              |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| import graph, runtime cycle, 계층·package 경계, 미선언 dependency | `dependency-cruiser.config.mjs`, `scripts/check-architecture.ts`         |
-| 미사용 file·export·dependency                                     | `knip.json`                                                              |
-| workspace 발견과 test·coverage 대상                               | `scripts/workspace-inventory.ts`, `scripts/check-workspace-inventory.ts` |
-| package export key·target 유효성                                  | `scripts/check-workspace-inventory.ts`, 각 package manifest              |
-| graph 밖 runtime·data 경계                                        | `scripts/check-package-interfaces.ts`                                    |
-| coverage 집계와 CI task 결과 해석                                 | `scripts/coverage-report.ts`, `scripts/ci-workspace-inventory-report.ts` |
+- type-only edge를 제외한 runtime 순환 의존성
+- source에서 import하지만 package manifest에 선언하지 않은 외부 의존성
+- web·admin에서 module, DB, ORM 또는 server 전용 환경 parser로 향하는 의존성
 
-Oxlint custom rule은 import graph를 다시 해석하지 않고 TypeScript 표현 수준의 `workspace/no-unsafe-unknown-cast`만 검사한다. workspace inventory, coverage와 CI summary helper도 자기 task에 필요한 좁은 입력만 해석하며 범용 repository graph를 만들지 않는다.
+규칙의 권위 source는 `dependency-cruiser.config.mjs`이고 실행 진입점은 `scripts/check-architecture.ts`다. 실행기는 root manifest의 workspace glob을 읽고 각 workspace TypeScript 설정으로 Dependency Cruiser를 호출할 뿐, 별도 package inventory나 허용·금지 가상 저장소를 유지하지 않는다.
 
-## Graph 정책
+## 의도적으로 강제하지 않는 구조
 
-- runtime cycle은 실패하고 type-only edge는 cycle 판정에서 제외한다.
-- 미해결 import와 manifest에 직접 선언하지 않은 package import는 실패한다.
-- `config → 상위 계층`, `shared → module·infra·app`, `infra → module·app` 의존을 거부한다.
-- Better Auth, OpenAI·Mastra, AWS SDK와 Pino 직접 import는 각각의 infra 소유 package로 제한한다.
-- shared 안에서도 kernel은 외부 workspace runtime과 framework에 의존하지 않는다.
-- module 내부는 `domain → application → infrastructure/interface` 방향을 지키며 다른 module의 내부 경로를 import하지 않는다. 동일 SQLite FK 선언을 위한 공개 schema 의존만 infrastructure schema에서 허용한다.
-- module의 domain·application은 shared HTTP contract를 import하지 않는다.
-- web·admin은 module·DB·Drizzle을 직접 import하지 않고 `app → features → entities → shared` 방향과 feature 격리를 지킨다. client-facing source는 server 경계를 import하지 않는다.
-- Storybook은 UI·config 외 package를 직접 import하지 않는다.
-- generated output만 제외하고 source directory 전체를 숨기는 예외는 두지 않는다.
-- private alias, 공개 subpath, type-only cycle과 금지 edge는 `scripts/fixtures/dependency-cruiser/`의 허용·금지 fixture로 함께 검증한다.
+`domain`, `application`, `interface`, `infrastructure` 같은 폴더 배치, feature 내부 방향, package export 모양과 vendor별 소유권은 별도 규칙 엔진으로 강제하지 않는다. 이러한 구조는 package의 공개 표면, TypeScript 접근 가능성, 제품 테스트와 코드 리뷰에서 판단한다.
 
-package는 `modules`, `infra`, `shared`, `config` 네 그룹 아래에서 workspace manifest로 발견한다. 계층과 package 의존 방향, app-owned module과 API transport→persistence edge는 dependency-cruiser가 검사하고, 검증 전 env·Clock·ID·private import 같은 source 의미 경계는 package interface 검사가 맡는다. 디렉터리 전체를 통과시키는 임시 allowlist는 허용하지 않으며 새 예외에는 정확한 edge, owner, 제거 단계와 만료 조건이 필요하다.
-
-operations repository의 module schema 직접 조회 예외는 제거하고 identity·content·learning reporting query port로 치환했다. learning과 ai-feedback의 예외도 제거했으며 DB infra에서 content 정책으로 향하는 예외는 두지 않는다. legacy curriculum 정규화는 반대 방향 의존을 만들지 않고 API migration composition이 content 공개 정책을 API-owned 이관에 주입한다.
-
-## Dead code와 공개 표면
-
-Knip gate는 읽기 전용이며 `--fix`를 실행하지 않는다. 실제 runtime·tooling 진입점만 `knip.json`에 선언하고 generated output은 Git ignore 경계로 제외한다. cycle은 dependency-cruiser, 의미상 중복 schema는 계약 검사가 소유하므로 Knip의 해당 reporter는 중복 실행하지 않는다.
-
-package 소비자는 manifest의 명시적 subpath만 사용한다. 공개 subpath의 추가·삭제는 소유 package의 export 목록을 함께 갱신해야 하며, workspace inventory 검사는 wildcard·root barrel과 유효하지 않은 target을 거부한다. export key 목록 자체는 manifest가 소유하고 과거 목록의 snapshot은 별도로 복제하지 않는다. package interface 검사는 내부 상대 import와 자기 공개 경로 역참조, canonical ID 중복과 canonical 오류 schema 소비처럼 import graph만으로 판정할 수 없는 계약을 고정한다.
-
-module infrastructure는 자기 private schema를 import할 수 있다. 공개 `./schema`는 API의 단일 Drizzle schema entry, FK를 선언하는 module schema와 격리된 E2E content seed fixture가 소비한다. 실제 seed가 있는 package의 `./seed`는 API seed composition과 seed tooling만 소비한다. Better Auth schema는 공식 adapter mapping과 인증 persistence adapter도 소비한다. 다른 module이나 app repository가 module table을 직접 읽는 예외는 두지 않는다.
-
-package interface 검사는 이 allowlist와 함께 API schema aggregator, Drizzle config의 schema·output 경로, test-support consumer와 DB schema 재공개 금지를 검사한다. migration checksum과 적용 순서, 최종 schema의 필수 FK는 migration 실행 테스트가 검증한다. frontend 검사는 server source의 `server-only` marker를 고정하고 Storybook dependency 범위는 architecture 검사와 Knip이 맡는다.
+이 선택은 정적 검사만으로 발견하던 일부 내부 결합을 리뷰 단계까지 늦출 수 있다. 반면 구조를 바꿀 때 정책 parser, fixture와 snapshot을 함께 수정하던 유지보수 비용을 제거하고, 보안상 중요한 frontend server·DB 경계와 실제 dependency 정합성은 계속 자동 차단한다.
 
 ## 실행
 
-현재 실행 진입점은 root manifest가 소유하고 root lint와 pre-commit이 architecture, dead-code, package interface와 workspace inventory 검사를 조립한다. dependency-cruiser는 workspace별 TypeScript config를 사용하므로 실행 비용은 단일 root scan보다 크지만 private alias와 runtime별 module resolution을 정확히 따른다. 이 비용은 정책 parser를 자체 유지하는 장기 유지보수 비용보다 작다고 판단한다.
+root `lint`는 Oxlint만 실행한다. import graph 검사는 별도 root task로 실행하며 CI의 정적 검사 job이 둘을 함께 호출한다. 형식, 타입, 동작과 배포 가능성은 각각 Oxfmt, TypeScript, 제품 테스트, production build와 Compose smoke가 소유한다.
 
-정적 검사의 통과는 source graph를 증명할 뿐 production traffic, 외부 provider와 실제 배포 상태를 증명하지 않는다.
+정적 검사의 통과는 source graph만 증명하며 production traffic, 외부 provider와 실제 배포 상태를 증명하지 않는다.

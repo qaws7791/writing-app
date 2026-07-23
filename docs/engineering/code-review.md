@@ -32,7 +32,7 @@
 - AI feedback service가 attempt 계산, provider 호출, persistence 저장 세부사항을 직접 구현하지 않고 coordinator와 domain policy에 위임하는가?
 - 프론트엔드가 module infrastructure, DB나 Drizzle에 직접 의존하지 않는가?
 - domain과 production application이 runtime adapter나 infrastructure 구현을 import하거나 Worker·network·환경 변수를 직접 사용하지 않는가?
-- 기존 architecture allowance에 연결된 import를 제거했다면 같은 변경에서 exact ratchet도 축소했는가? 새 allowance나 wildcard 예외를 추가하지 않았는가?
+- 새 import가 runtime cycle을 만들거나 manifest에 없는 dependency, frontend의 server·DB 의존을 추가하지 않는가?
 - HTTP 변경 route가 검증된 `*Request`를 application command로 명시적으로 변환하고 repository port까지 request 타입을 전달하지 않는가?
 - API composition root가 DB 생성·공유·종료를 소유하고 module application 결과에 DB client가 노출되지 않는가?
 - 학습자 HTTP 경계가 `@workspace/contracts/learning/learner-api` 등 endpoint 소유 contract의 strict schema와 추론 타입을 직접 사용하고 generated OpenAPI 타입이나 `writing-app-api-contract`를 다시 만들지 않는가?

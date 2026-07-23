@@ -192,7 +192,7 @@
 
 ## Guardrail
 
-`bun run check:design-system-guardrails`는 legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic color alias를 금지한다. raw hex color는 CSS token을 사용할 수 없는 정적 metadata나 Storybook theme처럼 검사 source에 명시된 소유 파일에서만 허용한다. 과거 검출 수를 유지하는 baseline은 두지 않으며 이 검사는 root `bun run lint`에 포함한다.
+legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic color alias는 사용하지 않는다. raw hex color는 CSS token을 사용할 수 없는 정적 metadata나 Storybook theme처럼 소유 경계가 분명한 파일에서만 허용한다. 이 기준은 별도 repository parser가 아니라 공용 primitive, token의 공개 표면과 코드 리뷰로 유지한다.
 
 ## Icon
 

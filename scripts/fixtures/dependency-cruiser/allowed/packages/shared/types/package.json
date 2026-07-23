@@ -1,7 +1,0 @@
-{
-  "name": "@fixture/types",
-  "private": true,
-  "exports": {
-    "./id": "./src/id.ts"
-  }
-}

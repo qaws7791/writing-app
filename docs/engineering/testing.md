@@ -2,7 +2,7 @@
 
 ## 목적
 
-이 문서는 테스트 우선순위, 격리 원칙과 품질 판단 기준을 정의한다. 현재 test workspace, 명령, coverage 기준, fixture와 CI job은 root task와 각 workspace의 test 설정이 소유한다.
+이 문서는 테스트 우선순위, 격리 원칙과 품질 판단 기준을 정의한다. 현재 test workspace, 명령, fixture와 CI job은 root task와 각 workspace의 test 설정이 소유한다.
 
 ## 원칙
 
@@ -35,8 +35,8 @@
 ## 품질 기준
 
 - 권한, 인증, migration, backup·restore, transaction, 입력 검증, 민감 데이터 보호 변경에는 회귀 테스트를 추가한다.
-- coverage는 실행 가능한 source 전체를 대상으로 측정하되, 수치와 대상 목록은 coverage 설정과 CI 결과가 소유한다.
-- 새 실행 경로는 baseline을 낮추는 방식으로 통과시키지 않는다.
+- 테스트 수나 coverage 수치보다 권한, 상태 전이, transaction과 복구처럼 실패 비용이 큰 동작의 관찰 가능한 결과를 우선한다.
+- 새 실행 경로는 기존 assertion을 약화하거나 삭제하는 방식으로 통과시키지 않는다.
 - UI markup만 바뀐 경우에도 접근성 또는 해당 화면의 사용자 흐름 영향을 확인한다.
 - flaky 실패는 재시도로 숨기지 않고 원인을 분리·기록한다.
 
@@ -44,10 +44,8 @@
 
 공개 검증 명령은 root `package.json`이 소유한다. 변경 범위에 맞는 lint, typecheck, test, build와 배포 검증을 선택하고, 실제 명령·입력·지원 환경은 manifest와 CI workflow를 확인한다.
 
-개발자가 사용하는 이식 가능한 품질 gate와 generated frontend production runtime smoke는 Linux, Windows와 macOS에서 검증한다. Linux container·Ansible에 종속된 배포 검증은 Ubuntu 격리 환경에서 별도로 실행한다.
-
-`check:document-drift`는 문서의 현재 코드 사실을 강제하지 않는다. 문서 구조, 내부 링크, 공개 실행 명령과 workspace import 참조를 검사하며, 제품 정책과 충돌하는 자료실 설명만 별도 회귀 대상으로 둔다.
+PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. 다른 운영체제의 로컬 개발 호환성은 매 PR 전체 검증이 아니라 필요할 때 설치 smoke나 주기 실행으로 확인한다. 배포 설정은 자체 parser로 재해석하지 않고 Compose, Caddy, Ansible과 실제 container가 직접 읽게 한다.
 
 ## 검증 기록
 
-특정 날짜의 실행 시간, toolchain, coverage 수치, CI 결과와 production 적용 여부는 living guide에 기록하지 않는다. 재현 가능한 검증 보고서는 기준 commit, 실행 시각·환경, 명령, 결과와 artifact 위치를 포함해 작업 완료 후 archive에 보관한다.
+특정 날짜의 실행 시간, toolchain, 테스트 수치, CI 결과와 production 적용 여부는 living guide에 기록하지 않는다. 재현 가능한 검증 보고서는 기준 commit, 실행 시각·환경, 명령, 결과와 artifact 위치를 포함해 작업 완료 후 archive에 보관한다.

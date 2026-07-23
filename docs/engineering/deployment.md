@@ -33,7 +33,7 @@
 
 정적 설정 검증, image smoke, host bootstrap, 실제 deploy와 복구 훈련은 서로 다른 위험 수준이다. 각 명령의 현재 이름·입력·실행 환경은 root task, CI workflow와 deployment automation source를 확인한다. 운영 서버나 개발자의 기존 데이터를 대상으로 destructive 검증을 실행하지 않는다.
 
-runtime OpenAPI는 등록 route에서 생성하므로 정적 사본을 보존하지 않고 계약 테스트로 재생성 가능성을 검증한다. migration SQL은 application migration source를 Git에 보존한다. Storybook 정적 산출물은 source가 아니라 CI 검토 artifact이며 제한된 기간만 보존한다. 현재 source와 보존 설정은 API route·migration directory, Storybook manifest와 quality workflow를 직접 확인한다.
+runtime OpenAPI는 등록 route에서 생성하므로 정적 사본을 보존하지 않고 계약 테스트로 재생성 가능성을 검증한다. migration SQL은 application migration source를 Git에 보존한다. Storybook 정적 산출물은 source가 아니며 필요할 때 manifest의 build task로 재생성한다. 현재 source는 API route·migration directory와 Storybook manifest를 직접 확인한다.
 
 ## 변경 검토
 

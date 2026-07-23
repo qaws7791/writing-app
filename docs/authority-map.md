@@ -29,7 +29,7 @@
 | workspace 집합·패키지 이름·script         | 루트와 각 workspace의 `package.json`                                                           | 없음                           |
 | package 공개 표면·private alias           | 각 package manifest의 `exports`·`imports`                                                      | 공개 경계 원칙                 |
 | 선언 dependency·실제 import edge          | 각 workspace manifest의 dependency 필드와 production·test source import                        | 의존 방향 원칙                 |
-| dependency graph 허용 정책·위반 판정      | `dependency-cruiser.config.mjs`, architecture·package interface 검사                           | 정책과 예외 기준               |
+| dependency graph 허용 정책·위반 판정      | `dependency-cruiser.config.mjs`, architecture 검사                                             | 정책과 예외 기준               |
 | 로컬 URL·port·환경 변수 기본값            | 환경 parser, `.env.example`, `packages/config/env/src/local-runtime-defaults.ts`               | 설정 분류와 변경 원칙          |
 | API path·method·wire schema               | module HTTP interface, `apps/api` route registry, runtime OpenAPI, `packages/shared/contracts` | 호환성·오류·인증 정책          |
 | 인증·권한의 현재 middleware 배치          | module HTTP interface와 API composition의 인증·인가 경계                                       | 권한 정책과 보안 원칙          |
@@ -43,7 +43,7 @@
 
 현재 값을 확인할 때는 문서의 서술을 신뢰하지 말고 다음 권위 소스를 직접 읽는다.
 
-1. workspace, package, script, tool 버전, 선언 dependency와 공개·private subpath는 루트와 각 workspace의 `package.json`을 확인한다. 실제 import edge는 production·test source를 확인하고 dependency-cruiser로 전체 graph를 탐색하며, 허용·금지 판정은 dependency-cruiser 설정과 architecture·package interface 검사를 확인한다.
+1. workspace, package, script, tool 버전, 선언 dependency와 공개·private subpath는 루트와 각 workspace의 `package.json`을 확인한다. 실제 import edge는 production·test source를 확인하고 dependency-cruiser로 전체 graph를 탐색하며, 자동 차단 범위는 dependency-cruiser 설정과 architecture 검사를 확인한다.
 2. 로컬 runtime 기본값과 환경 변수는 `packages/config/env`, 각 앱의 parser와 `.env.example`을 확인한다.
 3. API path·method·schema는 module HTTP interface, `apps/api` route registry, `packages/shared/contracts`, 실행 중인 OpenAPI를 확인한다.
 4. 배포 service, image, port, network와 proxy는 `deploy/compose/`, Caddy 설정과 release workflow를 확인한다.

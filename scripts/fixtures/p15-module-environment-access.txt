@@ -1,2 +1,0 @@
-export const forbiddenModuleEnvironmentAccess =
-  process.env.P15_FORBIDDEN_MODULE_ENVIRONMENT_FIXTURE

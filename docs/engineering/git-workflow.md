@@ -53,11 +53,7 @@ Lefthook 설정은 루트 `lefthook.yml`을 기준으로 한다.
 pre-commit:
 
 - staged 파일을 Oxfmt로 포맷한다.
-- 변경된 workspace만 Turbo 필터 기반 lint를 실행한다.
-
-pre-push:
-
-- `bun run lint`를 실행한다.
+- staged source 파일을 Oxlint로 검사한다.
 
 ## PR 규칙
 
@@ -85,11 +81,10 @@ PR은 가능한 작은 단위로 유지한다. 아키텍처, DB, 인증, UI를 �
 
 ## 머지 정책
 
-- 2026-07-13 기준 GitHub `main` branch protection과 ruleset은 설정되어 있지 않다. main으로 병합하기 전 `필수 품질 게이트` workflow의 정적 검증, 전체 테스트, 어드민 개발 lifecycle Windows·Linux matrix, 커버리지, Storybook, 브라우저 E2E, 빌드, 의존성 감사 job이 모두 통과해야 한다.
-- CI는 모든 PR 경로에서 Bun 1.3.10과 Node.js 24.x를 setup하고, `check:toolchain`을 install 전 preflight로 실행한 뒤 frozen lockfile을 사용한다. canonical workspace inventory의 실행 또는 제외 사유는 job summary에 남긴다.
-- 정적 검증은 workspace 인벤토리와 계약 검사, localhost guard, Oxfmt check, warning을 허용하지 않는 Oxlint, typecheck를 포함한다.
-- 의존성 감사는 production 의존성과 전체 의존성을 분리해 실행한다.
-- Bun cache key는 운영체제와 `bun.lock` hash로 구성한다. coverage와 Playwright 결과는 성공·실패와 무관하게 artifact 업로드를 시도하며 파일이 없으면 job을 실패시킨다. Playwright artifact에는 최초 실패 진단과 첫 retry trace가 포함된다.
+- main으로 병합하기 전 형식, Oxlint와 최소 import graph 규칙, typecheck, 제품 테스트, production build, 학습자 핵심 흐름 E2E, 관리자 권한 E2E, Compose 기동·health smoke를 통과해야 한다.
+- PR 필수 검증은 production 배포 환경과 같은 Linux에서 한 번 실행한다. Windows와 macOS 호환성은 매 PR 전체 matrix가 아니라 필요에 따른 설치 smoke나 주기 실행으로 다룬다.
+- install은 manifest와 lockfile을 직접 읽는 package manager에 맡기고 frozen lockfile을 사용한다.
+- 품질 workflow는 제품 동작을 검증하지 않는 coverage 집계, workspace 실행 보고서와 정책 검사기의 자기 테스트를 실행하지 않는다.
 - 실패한 검증이 있다면 PR에 이유와 영향 범위를 남긴다.
 - unrelated change를 같은 PR에 포함하지 않는다.
 - 기존 사용자 변경을 되돌리지 않는다.

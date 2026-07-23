@@ -3,45 +3,11 @@
 pre-commit:
   parallel: true
   commands:
-    # format all staged files with the root Oxfmt config
     format:
       glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,mdx,yaml,yml,css}"
       run: bun oxfmt --ignore-path .gitignore {staged_files}
       stage_fixed: true
 
-    workspace-lint:
-      glob: "{apps,packages}/**/*.{ts,tsx,js,jsx}"
-      run: bun run scripts/lint-staged-workspaces.ts {staged_files}
-
-    workspace-inventory:
-      glob: "{package.json,vitest.workspace.ts,README.md,docs/**/*.md,apps/*/package.json,packages/*/package.json,packages/*/*/package.json,scripts/{check-workspace-inventory,workspace-inventory,workspace-inventory.test}.ts}"
-      run: bun run check:workspace-inventory
-
-    document-drift:
-      glob: "{AGENTS.md,README.md,docs/**/*.md,apps/api/src/**/*.ts,package.json,apps/*/package.json,packages/*/package.json,packages/*/*/package.json,scripts/check-document-drift.ts}"
-      run: bun run check:document-drift
-
-    workflow-skill-invocation-policy:
-      glob: "{.agents/skills/workflows/**/SKILL.md,.agents/skills/workflows/**/agents/openai.yaml,docs/engineering/codex-skill-invocation-policy.md,scripts/check-workflow-skill-invocation-policy.ts,package.json}"
-      run: bun run check:workflow-skill-invocation-policy
-
-    components-config:
-      glob: "{apps/*/components.json,packages/*/*/components.json,package.json,README.md,docs/engineering/testing.md,scripts/check-components-config.ts}"
-      run: bun run check:components-config
-
-    architecture:
-      glob: "{dependency-cruiser.config.mjs,package.json,apps/**/*.{ts,tsx},packages/**/*.{ts,tsx},apps/*/{package.json,tsconfig.json},packages/*/package.json,packages/*/tsconfig.json,packages/*/*/{package.json,tsconfig.json},scripts/{check-architecture,workspace-inventory}.ts,scripts/fixtures/dependency-cruiser/**}"
-      run: bun run check:architecture
-
-    dead-code:
-      glob: "{knip.json,package.json,apps/**/*.{ts,tsx},packages/**/*.{ts,tsx},apps/*/package.json,packages/*/package.json,packages/*/*/package.json,scripts/**/*.{ts,mjs}}"
-      run: bun run check:dead-code
-
-    package-interfaces:
-      glob: "{package.json,apps/storybook/**/*.{ts,tsx,mdx},packages/*/package.json,packages/**/*.{ts,tsx,json},scripts/check-package-interfaces.ts,scripts/fixtures/p15-module-environment-access.txt,docs/engineering/{code-style.md,package-interface-and-import-rules.md}}"
-      run: bun run check:package-interfaces
-
-pre-push:
-  commands:
-    workspace-lint:
-      run: bun run lint
+    lint:
+      glob: "{apps,packages,scripts}/**/*.{ts,tsx,js,jsx,cjs,mjs}"
+      run: bun oxlint --deny-warnings {staged_files}
