@@ -21,6 +21,7 @@ describe("통합 application migration", () => {
           execution: "applied",
           id: "0002-cross-module-reference-integrity",
         },
+        { execution: "applied", id: "0003-remove-unused-operations" },
       ])
       expect(runApplicationMigrations(database.sqlite)).toEqual([
         { execution: "skipped", id: "0000-writing-app-baseline" },
@@ -29,6 +30,7 @@ describe("통합 application migration", () => {
           execution: "skipped",
           id: "0002-cross-module-reference-integrity",
         },
+        { execution: "skipped", id: "0003-remove-unused-operations" },
       ])
       expect(readApplicationTables(database.sqlite)).toEqual(
         expect.arrayContaining([...requiredApplicationTables])
@@ -67,6 +69,12 @@ describe("통합 application migration", () => {
           execution: "applied",
           id: "0002-cross-module-reference-integrity",
         },
+        {
+          checksum:
+            "f757d500fc548052b97de4938d94f86c41377df3ca25ba0868b7923a537ea622",
+          execution: "applied",
+          id: "0003-remove-unused-operations",
+        },
       ])
       expect(() =>
         assertCurrentApplicationSchema(database.sqlite)
@@ -93,9 +101,16 @@ describe("통합 application migration", () => {
           execution: "applied",
           id: "0002-cross-module-reference-integrity",
         },
+        { execution: "applied", id: "0003-remove-unused-operations" },
       ])
 
       expect(readPreservedRowCounts(database.sqlite)).toEqual(before)
+      expect(readApplicationTables(database.sqlite)).not.toEqual(
+        expect.arrayContaining([
+          "admin_settings",
+          "operations_ai_change_proposals",
+        ])
+      )
       expect(
         database.sqlite
           .query<
@@ -170,6 +185,7 @@ describe("통합 application migration", () => {
           execution: "applied",
           id: "0002-cross-module-reference-integrity",
         },
+        { execution: "applied", id: "0003-remove-unused-operations" },
       ])
       expect(readColumns(database.sqlite, "admin_user")).not.toEqual(
         expect.arrayContaining(["role", "two_factor_enabled"])
@@ -337,6 +353,40 @@ describe("통합 application migration", () => {
       database.close()
     }
   })
+
+  it("저장된 AI 변경안이 있으면 폐기 migration을 중단한다", () => {
+    const database = createInMemoryWritingAppDatabase()
+
+    try {
+      runApplicationMigrations(database.sqlite)
+      database.sqlite.exec(`
+        CREATE TABLE admin_settings (
+          key TEXT PRIMARY KEY NOT NULL,
+          updated_at INTEGER NOT NULL,
+          value TEXT NOT NULL
+        );
+        CREATE TABLE operations_ai_change_proposals (
+          id TEXT PRIMARY KEY NOT NULL
+        );
+        INSERT INTO operations_ai_change_proposals (id)
+        VALUES ('proposal-1');
+        DELETE FROM api_schema_migrations
+        WHERE id = '0003-remove-unused-operations';
+      `)
+
+      expect(() => runApplicationMigrations(database.sqlite)).toThrow(
+        "AI 변경안 데이터가 남아 있어 폐기 migration을 중단했습니다."
+      )
+      expect(readApplicationTables(database.sqlite)).toEqual(
+        expect.arrayContaining([
+          "admin_settings",
+          "operations_ai_change_proposals",
+        ])
+      )
+    } finally {
+      database.close()
+    }
+  })
 })
 
 function insertBaselineRows(
@@ -469,7 +519,6 @@ function readPreservedRowCounts(
     "admin_resource_documents",
     "admin_resource_nodes",
     "admin_resource_search",
-    "admin_settings",
     "admin_user",
     "ai_feedback_attempts",
     "course_curriculum_versions",

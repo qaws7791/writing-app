@@ -5,8 +5,7 @@ import type { AdminSessionResolver } from "@workspace/identity/sessions"
 import type { AppLogger } from "@workspace/observability/logger"
 import type { ResourceLibraryModule } from "@workspace/resource-library/module"
 import type { LearningReportingQuery } from "@workspace/learning/reporting"
-import type { Clock, IdGenerator } from "@workspace/kernel/clock"
-import type { AiChangeProposalId } from "@workspace/types/ids"
+import type { Clock } from "@workspace/kernel/clock"
 
 export type AdminRouteCompositionContext = {
   readonly aiConfig: Readonly<{ apiKey: string; model: string }> | null
@@ -16,7 +15,6 @@ export type AdminRouteCompositionContext = {
   readonly identity: IdentityModule
   readonly learningReporting: LearningReportingQuery
   readonly logger: AppLogger
-  readonly proposalIdGenerator: IdGenerator<AiChangeProposalId>
   readonly resourceLibrary: ResourceLibraryModule
   readonly sessionResolver: AdminSessionResolver
 }

@@ -40,7 +40,6 @@ import {
 import type { OperationsModule } from "@workspace/operations/module"
 import type { ResourceLibraryModule } from "@workspace/resource-library/module"
 import type {
-  AiChangeProposalId,
   CourseId,
   ResourceAssetId,
   ResourceDocumentId,
@@ -262,10 +261,6 @@ export async function createContainer(
       identity,
       learningReporting: learning.reportingQuery,
       logger,
-      proposalIdGenerator: createPrefixedIdGenerator<AiChangeProposalId>(
-        "operations-ai-proposal-",
-        idGenerator
-      ),
       resourceLibrary,
     })
     closeOperationsAi = operations.closeAi
@@ -285,10 +280,6 @@ export async function createContainer(
         identity,
         learningReporting: learning.reportingQuery,
         logger,
-        proposalIdGenerator: createPrefixedIdGenerator<AiChangeProposalId>(
-          "operations-ai-proposal-",
-          idGenerator
-        ),
         resourceLibrary,
         sessionResolver: adminSessionResolver,
       },

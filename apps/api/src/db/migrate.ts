@@ -18,13 +18,16 @@ import {
 import baselineMigrationSql from "../../drizzle/0000-writing-app-baseline.sql" with { type: "text" }
 import moduleOwnershipMigrationSql from "../../drizzle/0001-module-schema-ownership.sql" with { type: "text" }
 import referenceIntegrityMigrationSql from "../../drizzle/0002-cross-module-reference-integrity.sql" with { type: "text" }
+import removeUnusedOperationsMigrationSql from "../../drizzle/0003-remove-unused-operations.sql" with { type: "text" }
 
 import {
   assertCurrentApplicationSchema,
+  assertReferenceIntegrityApplicationSchema,
   hasBaselineSchema,
   isCurrentApplicationSchema,
   isP11ModuleSchema,
   isPreP11ModuleSchema,
+  isReferenceIntegrityApplicationSchema,
 } from "@/db/schema-architecture"
 
 const baselineMigration = readMigration(
@@ -41,6 +44,11 @@ const referenceIntegrityMigration = readMigration(
   "0002-cross-module-reference-integrity",
   referenceIntegrityMigrationSql,
   "86451557db525a8dd446daeca77dca54d8f241cb64c2cf5be08d7a2b6deb8d65"
+)
+const removeUnusedOperationsMigration = readMigration(
+  "0003-remove-unused-operations",
+  removeUnusedOperationsMigrationSql,
+  "f757d500fc548052b97de4938d94f86c41377df3ca25ba0868b7923a537ea622"
 )
 
 export type ApplicationMigrationOptions = Readonly<{
@@ -68,6 +76,7 @@ export function inspectApplicationMigrationHistory(
     baselineMigration,
     moduleOwnershipMigration,
     referenceIntegrityMigration,
+    removeUnusedOperationsMigration,
   ]
   if (
     sqlite
@@ -148,16 +157,18 @@ export function runApplicationMigrations(
 
   const hasApplicationTables = readApplicationTableCount(sqlite) > 0
   const baselineSchemaPresent = hasBaselineSchema(sqlite)
+  const currentSchemaPresent = isCurrentApplicationSchema(sqlite)
   if (
     hasApplicationTables &&
     !baselineSchemaPresent &&
+    !currentSchemaPresent &&
     !hasKnownLegacyAdminMfaSchema(sqlite)
   ) {
     throw new Error(
       "지원하지 않는 database schema입니다. migration 전에 복구 가능한 backup과 기준 version을 확인해야 합니다."
     )
   }
-  if (baselineSchemaPresent && !isCurrentApplicationSchema(sqlite)) {
+  if (baselineSchemaPresent && !currentSchemaPresent) {
     assertApplicationMigrationPrerequisites(sqlite)
   }
 
@@ -171,7 +182,10 @@ export function runApplicationMigrations(
       foreignKeys: "on",
       id: baselineMigration.id,
       validate(database) {
-        if (!hasBaselineSchema(database)) {
+        if (
+          !hasBaselineSchema(database) &&
+          !isReferenceIntegrityApplicationSchema(database)
+        ) {
           throw new Error("baseline migration schema 검증에 실패했습니다.")
         }
       },
@@ -192,7 +206,7 @@ export function runApplicationMigrations(
       validate(database) {
         if (
           !isP11ModuleSchema(database) &&
-          !isCurrentApplicationSchema(database)
+          !isReferenceIntegrityApplicationSchema(database)
         ) {
           throw new Error(
             "module ownership migration schema 검증에 실패했습니다."
@@ -208,9 +222,46 @@ export function runApplicationMigrations(
       checksum: referenceIntegrityMigration.checksum,
       foreignKeys: "off",
       id: referenceIntegrityMigration.id,
+      validate: assertReferenceIntegrityApplicationSchema,
+    },
+    {
+      apply(database) {
+        assertNoPersistedAiChangeProposals(database)
+        database.exec(removeUnusedOperationsMigration.sql)
+      },
+      canAdopt: isCurrentApplicationSchema,
+      checksum: removeUnusedOperationsMigration.checksum,
+      foreignKeys: "on",
+      id: removeUnusedOperationsMigration.id,
       validate: assertCurrentApplicationSchema,
     },
   ])
+}
+
+function assertNoPersistedAiChangeProposals(sqlite: Database): void {
+  const proposalTableExists =
+    sqlite
+      .query<{ readonly present: number }, []>(`
+        SELECT EXISTS (
+          SELECT 1
+          FROM sqlite_master
+          WHERE type = 'table'
+            AND name = 'operations_ai_change_proposals'
+        ) AS present
+      `)
+      .get()?.present === 1
+  if (!proposalTableExists) return
+
+  const proposal = sqlite
+    .query<{ readonly id: string }, []>(
+      "SELECT id FROM operations_ai_change_proposals LIMIT 1"
+    )
+    .get()
+  if (proposal !== null) {
+    throw new Error(
+      "AI 변경안 데이터가 남아 있어 폐기 migration을 중단했습니다."
+    )
+  }
 }
 
 export function hasKnownLegacyAdminMfaSchema(sqlite: Database): boolean {

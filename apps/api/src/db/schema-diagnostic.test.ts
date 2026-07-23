@@ -79,13 +79,13 @@ describe("application database diagnostic", () => {
       runApplicationMigrations(database.sqlite)
       database.sqlite.exec(`
         DELETE FROM api_schema_migrations
-        WHERE id = '0002-cross-module-reference-integrity'
+        WHERE id = '0003-remove-unused-operations'
       `)
 
       expect(inspectApplicationDatabase(database.sqlite)).toMatchObject({
         issues: [],
         kind: "application-database-diagnostic",
-        pendingMigrationIds: ["0002-cross-module-reference-integrity"],
+        pendingMigrationIds: ["0003-remove-unused-operations"],
         schema: "current",
         status: "migration-required",
       })

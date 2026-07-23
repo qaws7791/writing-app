@@ -130,9 +130,9 @@ describe("admin runtime config", () => {
         readApiBaseUrl({
           NEXT_PUBLIC_API_BASE_URL: "https://api.example.test///",
         }),
-        "/api/admin/settings"
+        "/api/admin/maintenance"
       )
-    ).toBe("https://api.example.test/api/admin/settings")
+    ).toBe("https://api.example.test/api/admin/maintenance")
   })
 
   it("runtime config 밖의 실행 코드가 어드민 API base URL env를 직접 읽지 않는다", () => {

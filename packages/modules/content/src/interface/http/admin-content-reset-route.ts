@@ -21,7 +21,7 @@ export function createAdminContentResetRoute(dependencies: {
   const routeConfig = {
     method: "post",
     operationId: "resetAdminContent",
-    path: "/settings/content-reset",
+    path: "/maintenance/content-reset",
     responses: {
       ...contentAuthenticatedResponses(
         jsonResponse("콘텐츠 초기화 결과입니다.", adminContentResetResultSchema)

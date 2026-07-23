@@ -14,6 +14,10 @@ const referenceIntegrityMigrationUrl = new URL(
   "../../../../../apps/api/drizzle/0002-cross-module-reference-integrity.sql",
   import.meta.url
 )
+const removeUnusedOperationsMigrationUrl = new URL(
+  "../../../../../apps/api/drizzle/0003-remove-unused-operations.sql",
+  import.meta.url
+)
 
 export function readBaselineTestMigrationSql(): string {
   return readFileSync(baselineMigrationUrl, "utf8")
@@ -35,6 +39,7 @@ export function runCurrentTestMigration(sqlite: Database): void {
     sqlite.exec(readBaselineTestMigrationSql())
     sqlite.exec(readFileSync(moduleOwnershipMigrationUrl, "utf8"))
     sqlite.exec(readFileSync(referenceIntegrityMigrationUrl, "utf8"))
+    sqlite.exec(readFileSync(removeUnusedOperationsMigrationUrl, "utf8"))
   } finally {
     sqlite.exec(`PRAGMA foreign_keys = ${foreignKeysEnabled ? "ON" : "OFF"}`)
   }

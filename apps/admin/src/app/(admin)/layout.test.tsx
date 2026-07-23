@@ -9,15 +9,16 @@ const { redirectMock } = vi.hoisted(() => ({
     throw new Error(`redirect:${path}`)
   }),
 }))
-const { getSessionMock } = vi.hoisted(() => ({
+const { getSessionMock, headersMock } = vi.hoisted(() => ({
   getSessionMock: vi.fn(),
+  headersMock: vi.fn(),
 }))
 
 vi.mock("next/navigation", () => ({
   redirect: redirectMock,
 }))
 vi.mock("next/headers", () => ({
-  headers: async () => new Headers(),
+  headers: headersMock,
 }))
 
 vi.mock("@/app/(admin)/_views/admin-shell", () => ({
@@ -43,6 +44,7 @@ vi.mock("@/server/http/get-admin-http-transport", () => ({
 describe("어드민 layout", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    headersMock.mockResolvedValue(new Headers())
     getSessionMock.mockResolvedValue({
       status: "ok",
       value: {
@@ -80,6 +82,31 @@ describe("어드민 layout", () => {
     expect(redirectMock).not.toHaveBeenCalled()
     expect(screen.getByRole("region", { name: "관리자 콘솔" })).toBeVisible()
     expect(screen.getByRole("heading", { name: "대시보드" })).toBeVisible()
+  })
+
+  it("운영자는 owner 전용 콘텐츠 유지보수 화면에 진입할 수 없다", async () => {
+    headersMock.mockResolvedValueOnce(
+      new Headers({
+        "x-writing-app-admin-request-path": "/maintenance",
+      })
+    )
+    getSessionMock.mockResolvedValueOnce({
+      status: "ok",
+      value: {
+        admin: {
+          email: "operator@example.com",
+          id: "admin-2",
+          name: "운영자",
+          role: "operator",
+        },
+      },
+    })
+
+    await expect(
+      AdminLayout({ children: <h1>콘텐츠 유지보수</h1> })
+    ).rejects.toBeInstanceOf(Error)
+
+    expect(redirectMock).toHaveBeenCalledWith("/")
   })
 
   it("쿠키가 있어도 서버 세션이 유효하지 않으면 로그인 화면으로 보낸다", async () => {

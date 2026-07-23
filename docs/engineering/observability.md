@@ -2,7 +2,7 @@
 
 ## 목적
 
-이 문서는 장애 탐지·조사·복구에 필요한 관찰 기준을 정의한다. 현재 logger, request event schema, metric, alert rule과 dashboard는 runtime source와 운영 설정이 소유한다.
+이 문서는 장애 탐지·조사·복구에 필요한 관찰 기준을 정의한다. 현재 logger, request event schema, metric, alert rule과 dashboard는 runtime source와 배포 설정이 소유한다.
 
 ## 원칙
 

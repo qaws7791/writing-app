@@ -26,6 +26,7 @@ describe("legacy curriculum application migration", () => {
           execution: "applied",
           id: "0002-cross-module-reference-integrity",
         },
+        { execution: "applied", id: "0003-remove-unused-operations" },
       ])
       expect(() =>
         assertCurrentApplicationSchema(database.sqlite)
@@ -339,6 +340,7 @@ describe("legacy curriculum application migration", () => {
           execution: "skipped",
           id: "0002-cross-module-reference-integrity",
         },
+        { execution: "skipped", id: "0003-remove-unused-operations" },
       ])
       expect(
         database.sqlite

@@ -47,6 +47,7 @@ describe("P11 schema backup과 독립 restore", () => {
           { id: "0000-writing-app-baseline" },
           { id: "0001-module-schema-ownership" },
           { id: "0002-cross-module-reference-integrity" },
+          { id: "0003-remove-unused-operations" },
         ])
         const content = createContentModule({
           clock: { now: () => new Date("2026-07-23T00:00:00.000Z") },

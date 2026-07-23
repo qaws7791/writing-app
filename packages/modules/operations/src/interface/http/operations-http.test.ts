@@ -1,18 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
 import { createApp } from "@workspace/http-platform/core"
 import { err, ok } from "@workspace/kernel/result"
-import type {
-  AdminId,
-  AiChangeProposalId,
-  ConversationId,
-  CourseId,
-  MessageId,
-} from "@workspace/types/ids"
+import type { AdminId, ConversationId, MessageId } from "@workspace/types/ids"
 
 import { createAiStreamingApplication } from "#operations/application/ai-conversations"
-import { createOperationsSettingsApplication } from "#operations/application/operations-settings"
 import type { AiConversationRepository } from "#operations/application/ports/operations-ports"
-import type { AiChangeProposal } from "#operations/domain/ai-change-proposal"
 import type { OperationsActor } from "#operations/domain/operations-actor"
 import { createOperationsRoutes } from "#operations/interface/http/operations-http"
 
@@ -20,22 +12,6 @@ const adminId = "admin-1" as AdminId
 const conversationId = "conversation-1" as ConversationId
 const now = new Date("2026-07-23T00:00:00.000Z")
 const cookie = "admin_session_token=admin-token"
-const approvedProposal: AiChangeProposal = {
-  change: {
-    courseId: "course-1" as CourseId,
-    expectedEditVersion: 1,
-    kind: "content-course-draft",
-    title: "새 제목",
-  },
-  conversationId,
-  createdAt: now,
-  createdByAdminId: adminId,
-  id: "proposal-1" as AiChangeProposalId,
-  reviewedAt: now,
-  reviewedByAdminId: adminId,
-  status: "approved",
-}
-
 describe("operations HTTP contract", () => {
   it("인증 없는 요청을 거절하고 인증된 read에는 private no-store를 적용한다", async () => {
     const fixture = createFixture()
@@ -62,26 +38,6 @@ describe("operations HTTP contract", () => {
     await expect(response.json()).resolves.toMatchObject({
       code: "OPERATIONS_REPORTING_UNAVAILABLE",
     })
-  })
-
-  it("operator의 owner mutation을 403으로 거절하고 security audit에 남긴다", async () => {
-    const fixture = createFixture({ role: "operator" })
-    const response = await fixture.app.request("/settings/notice", {
-      body: JSON.stringify({ announce: "공지", banner: "배너" }),
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookie,
-      },
-      method: "PUT",
-    })
-
-    expect(response.status).toBe(403)
-    expect(fixture.audit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "owner.mutation",
-        outcome: "denied",
-      })
-    )
   })
 
   it("quota 거절은 안정된 code와 Retry-After를 반환하고 audit한다", async () => {
@@ -135,26 +91,6 @@ describe("operations HTTP contract", () => {
 
     expect(fixture.acquire).toHaveBeenCalledWith(
       expect.objectContaining({ clientIp: "unknown" })
-    )
-  })
-
-  it("AI 변경안 승인 결과를 canonical contract로 반환하고 audit한다", async () => {
-    const fixture = createFixture({ proposalReviewSucceeded: true })
-    const response = await fixture.app.request(
-      "/ai-chat/proposals/proposal-1/approve",
-      { headers: { Cookie: cookie }, method: "POST" }
-    )
-
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
-      id: "proposal-1",
-      status: "approved",
-    })
-    expect(fixture.audit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "ai.change.reviewed",
-        outcome: "succeeded",
-      })
     )
   })
 
@@ -225,19 +161,15 @@ function createFixture(
     readonly provider?: Parameters<
       typeof createAiStreamingApplication
     >[0]["provider"]
-    readonly proposalReviewSucceeded?: boolean
     readonly quotaFailure?: boolean
     readonly quotaRejected?: boolean
     readonly reportingUnavailable?: boolean
-    readonly role?: "operator" | "owner"
   } = {}
 ) {
   const audit = vi.fn()
   const actor: OperationsActor = {
-    email: "admin@example.com",
     id: adminId,
-    name: "관리자",
-    settingsMutation: input.role === "operator" ? "forbidden" : "allowed",
+    role: "owner",
   }
   const history = {
     conversation: {
@@ -313,18 +245,6 @@ function createFixture(
         readConversations: async () => ok([history.conversation]),
       },
       guard: { acquire },
-      proposals: {
-        createProposal: async () =>
-          err({ kind: "validation-failed", reason: "not-used" }),
-        readProposal: async () =>
-          input.proposalReviewSucceeded
-            ? ok(approvedProposal)
-            : err({ kind: "not-found", target: "proposal" }),
-        reviewProposal: async () =>
-          input.proposalReviewSucceeded
-            ? ok(approvedProposal)
-            : err({ kind: "not-found", target: "proposal" }),
-      },
       streaming,
     },
     audit,
@@ -355,20 +275,6 @@ function createFixture(
         return headers.get("Cookie") === cookie ? actor : null
       },
     },
-    settings: createOperationsSettingsApplication({
-      readSettings: async () => ({
-        legal: { privacy: "", terms: "" },
-        notice: { announce: "", banner: "" },
-      }),
-      saveLegalDocument: async (document) => ({
-        legal: document,
-        notice: { announce: "", banner: "" },
-      }),
-      saveNoticeDocument: async (document) => ({
-        legal: { privacy: "", terms: "" },
-        notice: document,
-      }),
-    }),
   })
   const app = createApp({
     middleware: [

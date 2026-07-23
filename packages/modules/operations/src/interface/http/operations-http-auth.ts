@@ -38,7 +38,7 @@ function createSessionMiddleware(
     context.set("operationsActor", actor)
     context.set("requestActor", {
       id: actor.id,
-      ...(actor.settingsMutation === "allowed" ? { role: "owner" } : {}),
+      role: actor.role,
       type: "admin",
     })
     await next()

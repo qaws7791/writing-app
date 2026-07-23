@@ -7,7 +7,7 @@
 - `packages/modules/ai-feedback`은 coaching prompt·provider 검증, attempt 정책·persistence, provider adapter와 학습자 HTTP interface를 하나의 수직 module로 소유한다.
 - `packages/modules/learning`은 학습 진행·채점·활동일 정책, read/command application, persistence·reporting과 학습자 HTTP interface를 하나의 수직 module로 소유한다.
 - `packages/modules/resource-library`는 자료 tree·Markdown 문서·검색·휴지통과 자산 metadata, persistence·reconciliation과 관리자 HTTP interface를 하나의 수직 module로 소유한다. object storage 구현과 관리자 actor 조회는 API composition이 port로 주입한다.
-- `packages/modules/operations`는 대시보드·분석 reporting 조합, 공지·법적 문서 설정, 관리자 AI 대화·quota·변경안, persistence와 관리자 HTTP interface를 하나의 수직 module로 소유한다. identity role은 capability로 변환하고 세 reporting query와 content·resource command는 API composition이 port로 주입한다.
+- `packages/modules/operations`는 대시보드·분석 reporting 조합, 관리자 AI 대화·quota, persistence와 관리자 HTTP interface를 하나의 수직 module로 소유한다. 세 reporting query와 자료실 검색·조회 port는 API composition이 주입한다.
 - 실행 앱 전용 bootstrap과 infrastructure 조립은 API의 명시적 app·container factory가 소유한다. API의 DB composition은 통합 schema entry, append-only migration 계보와 seed provider 실행 순서를 소유한다. app-owned module·platform facade를 별도로 두지 않으며 module은 공개 subpath로만 소비한다.
 - `packages/infra/http-platform`은 Hono/OpenAPI 공통 app·route helper, error, request security와 middleware를 소유한다. 각 제품 module의 HTTP interface는 endpoint method·path·canonical contract 연결·auth option·handler를 소유하고, 제품 정책은 같은 module의 domain·application에 둔다. API는 module route 조립과 health·OpenAPI 같은 실행 경계 route를 소유한다.
 - `packages/infra/observability`는 Pino logger와 공통 관측 event 계약을 소유하고 제품별 audit 분류는 API에 남긴다.
@@ -40,9 +40,7 @@
 | admin content       | editor document, projection item, publish/reset data     | course page, archive acknowledgement와 request           |
 | admin identity      | admin/user ID·role, user item와 filter 값                | user page, status request와 delete acknowledgement       |
 | dashboard·analytics | 운영 projection item와 sort 값                           | analytics page와 HTTP query/response envelope            |
-| settings            | 저장된 settings snapshot과 validation limit              | notice/legal request body                                |
 | AI chat             | conversation, message와 role                             | message request, list/detail wrapper와 SSE event         |
-| AI change proposal  | 안전한 변경 variant와 검토 상태                          | 제안 조회·승인·거절 response                             |
 | resource library    | resource ID, document, asset, tree/search item           | request, collection/mutation response wrapper와 error    |
 
 현재 공개 subpath inventory와 owner mapping은 package manifest가 소유한다. broad contract barrel, transport-only source와 의미 없는 forwarding의 재유입은 package 변경 리뷰에서 판단한다.

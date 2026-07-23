@@ -20,14 +20,9 @@ import {
   adminAiChatStreamErrorEventSchema,
   type AdminAiChatStreamErrorCode,
 } from "@workspace/contracts/operations/admin-ai-chat"
-import {
-  adminAiChangeProposalDtoSchema,
-  aiChangeProposalIdSchema,
-} from "@workspace/contracts/operations/admin-ai-proposals"
 import { conversationIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { AdminId, ConversationId } from "@workspace/types/ids"
 
-import type { AiChangeProposalApplication } from "#operations/application/ai-change-proposals"
 import type {
   AiConversationQueries,
   AiStreamingApplication,
@@ -40,7 +35,6 @@ import type {
   OperationsAdminSessionPort,
   OperationsSecurityAuditPort,
 } from "#operations/application/ports/operations-ports"
-import type { AiChangeProposal } from "#operations/domain/ai-change-proposal"
 import type { OperationsError } from "#operations/domain/operations-error"
 import type {
   AiConversationHistory,
@@ -59,14 +53,11 @@ import {
 const conversationParamsSchema = z.object({
   conversationId: conversationIdSchema,
 })
-const proposalParamsSchema = z.object({ proposalId: aiChangeProposalIdSchema })
-
 export function createOperationsAiRoutes(input: {
   readonly audit: OperationsSecurityAuditPort
   readonly conversations: AiConversationQueries
   readonly guard: AiRequestGuard
   readonly now: () => Date
-  readonly proposals: AiChangeProposalApplication
   readonly session: OperationsAdminSessionPort
   readonly streaming: AiStreamingApplication
 }) {
@@ -74,9 +65,6 @@ export function createOperationsAiRoutes(input: {
     createListConversationsRoute(input),
     createReadConversationRoute(input),
     createStreamMessageRoute(input),
-    createReadProposalRoute(input),
-    createReviewProposalRoute(input, "approve"),
-    createReviewProposalRoute(input, "reject"),
   ])
 }
 
@@ -223,77 +211,6 @@ function createStreamMessageRoute(
         },
       }
     )
-  }
-  return defineOperationsRoute({ ...route, handler })
-}
-
-function createReadProposalRoute(
-  input: Parameters<typeof createOperationsAiRoutes>[0]
-) {
-  const route = {
-    method: "get",
-    operationId: "getAdminAiChangeProposal",
-    path: "/ai-chat/proposals/{proposalId}",
-    request: { params: proposalParamsSchema },
-    responses: {
-      ...operationsAuthenticatedResponses(
-        jsonResponse("AI 변경안입니다.", adminAiChangeProposalDtoSchema)
-      ),
-      404: operationsErrorResponse("AI 변경안을 찾을 수 없습니다."),
-    },
-    summary: "AI 변경안 조회",
-    ...operationsSessionRouteOptions(input.session),
-  } satisfies AnyRouteConfig
-  const handler: OperationsRouteHandler<typeof route> = async (context) => {
-    const result = await input.proposals.readProposal(
-      context.req.valid("param").proposalId
-    )
-    if (result.isErr()) throw mapOperationsError(result.error)
-    return context.json(toProposalDto(result.value), 200)
-  }
-  return defineOperationsRoute({ ...route, handler })
-}
-
-function createReviewProposalRoute(
-  input: Parameters<typeof createOperationsAiRoutes>[0],
-  decision: "approve" | "reject"
-) {
-  const route = {
-    method: "post",
-    operationId:
-      decision === "approve"
-        ? "approveAdminAiChangeProposal"
-        : "rejectAdminAiChangeProposal",
-    path: `/ai-chat/proposals/{proposalId}/${decision}`,
-    request: { params: proposalParamsSchema },
-    responses: {
-      ...operationsAuthenticatedResponses(
-        jsonResponse("검토된 AI 변경안입니다.", adminAiChangeProposalDtoSchema)
-      ),
-      404: operationsErrorResponse("AI 변경안을 찾을 수 없습니다."),
-      409: operationsErrorResponse("AI 변경안 상태가 충돌했습니다."),
-      422: operationsErrorResponse("변경안을 적용할 수 없습니다."),
-    },
-    summary: decision === "approve" ? "AI 변경안 승인" : "AI 변경안 거절",
-    ...operationsSessionRouteOptions(input.session),
-  } satisfies AnyRouteConfig
-  const handler: OperationsRouteHandler<typeof route> = async (context) => {
-    const actor = context.get("operationsActor")
-    const result = await input.proposals.reviewProposal({
-      actor,
-      decision,
-      proposalId: context.req.valid("param").proposalId,
-    })
-    input.audit({
-      action: "ai.change.reviewed",
-      actorId: actor.id,
-      outcome: result.isOk() ? "succeeded" : "denied",
-      reason: result.isErr() ? result.error.kind : undefined,
-      requestId: context.get("requestId") ?? "untracked",
-      target: `operations.ai-change.${decision}`,
-    })
-    if (result.isErr()) throw mapOperationsError(result.error)
-    return context.json(toProposalDto(result.value), 200)
   }
   return defineOperationsRoute({ ...route, handler })
 }
@@ -498,13 +415,5 @@ function toConversationDetailDto(history: AiConversationHistory) {
   return adminAiChatConversationDetailDtoSchema.parse({
     conversation: toConversationDto(history.conversation),
     messages: history.messages.map(toMessageDto),
-  })
-}
-
-function toProposalDto(proposal: AiChangeProposal) {
-  return adminAiChangeProposalDtoSchema.parse({
-    ...proposal,
-    createdAt: proposal.createdAt.toISOString(),
-    reviewedAt: proposal.reviewedAt?.toISOString() ?? null,
   })
 }

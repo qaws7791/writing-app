@@ -270,7 +270,7 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 
 구현 위치: `apps/admin/src/components/admin-sidebar.tsx`
 
-- 주요 메뉴: 대시보드, 강의 관리, 사용자 관리, 분석, 자료실, AI 채팅, 운영 설정.
+- 주요 메뉴: 대시보드, 강의 관리, 사용자 관리, 분석, 자료실, AI 채팅. 콘텐츠 유지보수는 소유자에게만 표시한다.
 - 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
 - 아이콘은 `@workspace/ui/components/icons`에서 가져온다.
 - 활성 링크는 `aria-current="page"`와 `action-primary-*` semantic token으로 표시한다.

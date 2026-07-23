@@ -58,7 +58,7 @@ describe("API container", () => {
         "paths./learning/lessons/{lessonId}/steps/{stepId}/complete.post"
       )
       expect((await adminOpenApi.json()) as object).toHaveProperty(
-        "paths./api/admin/settings/notice.put"
+        "paths./api/admin/maintenance/content-reset.post"
       )
     } finally {
       await container.dispose()

@@ -134,7 +134,6 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   await expect(
     ownerPage.getByRole("heading", { name: "대시보드" })
   ).toBeVisible()
-  expect(await updateNotice(ownerPage, "owner 공지")).toBe(200)
   await ownerPage.goto(`${adminWebOrigin}/courses`)
   await ownerPage.getByLabel("코스 검색").fill("새 강의")
   await ownerPage.getByLabel("코스 검색").press("Enter")
@@ -265,6 +264,10 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
     throw new Error("다운로드 파일 경로를 확인할 수 없습니다.")
   }
   expect(await readFile(downloadPath, "utf8")).toContain("E2E resource body")
+  await ownerPage.goto(`${adminWebOrigin}/maintenance`)
+  await expect(
+    ownerPage.getByRole("heading", { name: "콘텐츠 유지보수" })
+  ).toBeVisible()
   expect(ownerDiagnostics).toEqual([])
   await ownerContext.close()
 
@@ -286,7 +289,11 @@ test("관리자 owner와 operator 권한을 서버 경계에서 구분한다", a
   await expect(
     operatorPage.getByRole("combobox", { name: "상태" })
   ).toContainText("정지")
-  expect(await updateNotice(operatorPage, "operator 공지")).toBe(403)
+  await operatorPage.goto(`${adminWebOrigin}/maintenance`)
+  await expect(operatorPage).toHaveURL(`${adminWebOrigin}/`)
+  await expect(
+    operatorPage.getByRole("link", { name: "콘텐츠 유지보수" })
+  ).toHaveCount(0)
   expect(operatorDiagnostics).toEqual([])
   await operatorContext.close()
 })
@@ -307,21 +314,6 @@ async function loginAdmin(
   await page.getByRole("button", { name: "로그인" }).click()
 
   await page.waitForURL(`${adminWebOrigin}${nextPath}`)
-}
-
-async function updateNotice(page: Page, announce: string): Promise<number> {
-  const response = await page.request.put(
-    `${adminApiOrigin}/api/admin/settings/notice`,
-    {
-      data: {
-        announce,
-        banner: "E2E 배너",
-      },
-      headers: { Origin: adminWebOrigin },
-    }
-  )
-
-  return response.status()
 }
 
 function observeBrowserDiagnostics(page: Page): string[] {

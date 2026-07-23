@@ -1,6 +1,5 @@
 import type {
   AdminId,
-  AiChangeProposalId,
   ConversationId,
   CourseId,
   LessonId,
@@ -10,22 +9,11 @@ import type {
 import type { Result } from "@workspace/kernel/result"
 
 import type {
-  AiChange,
-  AiChangeProposal,
-  AiChangeProposalStatus,
-} from "#operations/domain/ai-change-proposal"
-import type {
   AiConversationHistory,
   AiConversationSummary,
   AiMessage,
 } from "#operations/domain/ai-conversation"
 import type { OperationsActor } from "#operations/domain/operations-actor"
-import type { OperationsError } from "#operations/domain/operations-error"
-import type {
-  LegalDocument,
-  NoticeDocument,
-  OperationsSettings,
-} from "#operations/domain/operations-settings"
 
 export type OperationsIdentitySnapshot = Readonly<{
   createdAt: Date
@@ -86,16 +74,6 @@ export type OperationsProviderFailureObserver = (
   }>
 ) => void
 
-export type OperationsSettingsRepository = Readonly<{
-  readSettings: () => Promise<OperationsSettings>
-  saveLegalDocument: (
-    input: LegalDocument & { readonly now: Date }
-  ) => Promise<OperationsSettings>
-  saveNoticeDocument: (
-    input: NoticeDocument & { readonly now: Date }
-  ) => Promise<OperationsSettings>
-}>
-
 export type AiConversationRepository = Readonly<{
   createUserMessage: (
     input: Readonly<{
@@ -133,36 +111,10 @@ export type AiProviderPort = Readonly<{
   streamText: (
     prompt: string,
     options: Readonly<{
-      adminId: AdminId
-      conversationId: ConversationId
       maxOutputTokens: number
       signal: AbortSignal
     }>
   ) => Promise<AsyncIterable<string>>
-}>
-
-export type AiChangeProposalRepository = Readonly<{
-  createProposal: (proposal: AiChangeProposal) => Promise<void>
-  readProposal: (
-    proposalId: AiChangeProposalId
-  ) => Promise<AiChangeProposal | null>
-  transitionProposal: (
-    input: Readonly<{
-      expectedStatus: AiChangeProposalStatus
-      proposal: AiChangeProposal
-    }>
-  ) => Promise<"conflict" | "updated">
-}>
-
-export type AiChangeTargetPort = Readonly<{
-  applyContentDraft: (
-    actor: OperationsActor,
-    change: Extract<AiChange, { readonly kind: "content-course-draft" }>
-  ) => Promise<OperationsError | Readonly<{ kind: "ok" }>>
-  applyResourceDocument: (
-    actor: OperationsActor,
-    change: Extract<AiChange, { readonly kind: "resource-document" }>
-  ) => Promise<OperationsError | Readonly<{ kind: "ok" }>>
 }>
 
 export type AiQuotaDecision =
@@ -199,7 +151,7 @@ export type OperationsAdminSessionPort = Readonly<{
 
 export type OperationsSecurityAuditPort = (
   event: Readonly<{
-    action: "ai.change.reviewed" | "ai.quota.exceeded" | "owner.mutation"
+    action: "ai.quota.exceeded"
     actorId: AdminId
     outcome: "denied" | "failed" | "succeeded"
     reason?: string
@@ -228,7 +180,3 @@ export type OperationsAiKnowledgePort = Readonly<{
 }>
 
 export type OperationsClock = Readonly<{ now: () => Date }>
-
-export type OperationsProposalIdGenerator = Readonly<{
-  next: () => AiChangeProposalId
-}>

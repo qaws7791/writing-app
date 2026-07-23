@@ -1,4 +1,5 @@
 import type { ComponentType } from "react"
+import type { AdminRole } from "@workspace/contracts/identity/admin-session"
 
 import {
   BarChartIcon,
@@ -19,6 +20,7 @@ export type AdminNavigationItem = {
     readonly strokeWidth?: number
   }>
   readonly label: string
+  readonly ownerOnly?: boolean
 }
 
 export const adminNavigationItems = [
@@ -60,11 +62,20 @@ export const adminNavigationItems = [
   },
   {
     end: false,
-    href: "/settings",
+    href: "/maintenance",
     icon: SettingsIcon,
-    label: "운영 설정",
+    label: "콘텐츠 유지보수",
+    ownerOnly: true,
   },
 ] as const satisfies readonly AdminNavigationItem[]
+
+export function readAdminNavigationItems(
+  role: AdminRole
+): readonly AdminNavigationItem[] {
+  return adminNavigationItems.filter(
+    (item) => !("ownerOnly" in item) || !item.ownerOnly || role === "owner"
+  )
+}
 
 export function isAdminNavigationActive(
   activePath: string,

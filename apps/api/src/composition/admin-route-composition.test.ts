@@ -39,7 +39,7 @@ describe("관리자 capability route composition", () => {
       ).toEqual({
         content: 7,
         identity: 4,
-        operations: 12,
+        operations: 6,
         resourceLibrary: 14,
       })
       expect(
@@ -59,15 +59,9 @@ describe("관리자 capability route composition", () => {
         "getAdminAiChatConversations",
         "getAdminAiChatConversation",
         "streamAdminAiChatMessage",
-        "getAdminAiChangeProposal",
-        "approveAdminAiChangeProposal",
-        "rejectAdminAiChangeProposal",
         "getAdminDashboard",
         "getAdminAnalytics",
         "getAdminLessonAnalytics",
-        "getAdminSettings",
-        "updateAdminNoticeSettings",
-        "updateAdminLegalSettings",
         "getAdminResourceTree",
         "createAdminResourceFolder",
         "createAdminResourceDocumentNode",
@@ -124,9 +118,6 @@ function createCompositionContext(
         learnerActivities: [],
         lessonProgress: [],
       }),
-    },
-    proposalIdGenerator: {
-      next: () => "operations-ai-proposal-1" as never,
     },
     resourceLibrary: createResourceLibraryModule({
       actorDirectory: { readActors: async () => [] },

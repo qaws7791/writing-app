@@ -139,8 +139,6 @@ export function createAiStreamingApplication(input: {
 
       try {
         const stream = await input.provider.streamText(createPrompt(history), {
-          adminId: command.adminId,
-          conversationId: history.conversation.conversation.id,
           maxOutputTokens: 2_000,
           signal: command.signal,
         })

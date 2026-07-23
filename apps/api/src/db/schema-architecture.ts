@@ -43,10 +43,18 @@ const schemaTablesByOwner = {
   ],
 } as const
 
+const retiredApplicationTables = new Set([
+  "admin_settings",
+  "operations_ai_change_proposals",
+])
+
 type SchemaOwner = keyof typeof schemaTablesByOwner
 
 export const requiredApplicationTables = Object.freeze(
-  Object.values(schemaTablesByOwner).flat().sort()
+  Object.values(schemaTablesByOwner)
+    .flat()
+    .filter((table) => !retiredApplicationTables.has(table))
+    .sort()
 )
 export const requiredDatabaseBackupTables = Object.freeze([
   "api_schema_migrations",
@@ -96,11 +104,6 @@ const requiredCrossModuleForeignKeys = [
   {
     count: 1,
     table: "admin_ai_chat_conversations",
-    target: "admin_user",
-  },
-  {
-    count: 2,
-    table: "operations_ai_change_proposals",
     target: "admin_user",
   },
 ] as const
@@ -180,7 +183,33 @@ export function isCurrentApplicationSchema(sqlite: Database): boolean {
   }
 }
 
+export function isReferenceIntegrityApplicationSchema(
+  sqlite: Database
+): boolean {
+  try {
+    assertReferenceIntegrityApplicationSchema(sqlite)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function assertCurrentApplicationSchema(sqlite: Database): void {
+  assertReferenceIntegrityApplicationSchema(sqlite)
+
+  const retiredTables = [...retiredApplicationTables].filter((table) =>
+    readTableNames(sqlite).has(table)
+  )
+  if (retiredTables.length > 0) {
+    throw new Error(
+      `폐기된 application table이 남았습니다: ${retiredTables.join(", ")}`
+    )
+  }
+}
+
+export function assertReferenceIntegrityApplicationSchema(
+  sqlite: Database
+): void {
   assertApplicationTables(sqlite)
   assertTableNamesAndOwners()
   assertRequiredCrossModuleForeignKeys(sqlite)

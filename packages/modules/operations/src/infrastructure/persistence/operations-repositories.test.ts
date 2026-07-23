@@ -4,23 +4,17 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
-import type {
-  AdminId,
-  AiChangeProposalId,
-  CourseId,
-} from "@workspace/types/ids"
+import type { AdminId } from "@workspace/types/ids"
 
-import { createAiChangeProposalRepository } from "#operations/infrastructure/persistence/ai-change-proposal-repository"
 import { createAiConversationRepository } from "#operations/infrastructure/persistence/ai-conversation-repository"
 import { createAiQuotaRepository } from "#operations/infrastructure/persistence/ai-quota-repository"
-import { createOperationsSettingsRepository } from "#operations/infrastructure/persistence/operations-settings-repository"
 
 const now = new Date("2026-07-23T00:00:00.000Z")
 const adminId = "admin-1" as AdminId
 
 describe("operations temporary SQLite repositories", () => {
   it("현재 schema가 admin FK와 module table을 제공한다", async () => {
-    await withTemporaryOperationsDatabase(async ({ database, sqlite }) => {
+    await withTemporaryOperationsDatabase(async ({ sqlite }) => {
       const foreignTables = sqlite
         .query<{ readonly table: string }, []>(
           "PRAGMA foreign_key_list(admin_ai_chat_conversations)"
@@ -37,27 +31,21 @@ describe("operations temporary SQLite repositories", () => {
       ).toEqual({ title: "기존 대화" })
       expect(readTables(sqlite)).toEqual(
         expect.arrayContaining([
-          "admin_settings",
           "admin_ai_chat_conversations",
           "admin_ai_chat_messages",
-          "operations_ai_change_proposals",
           "operations_ai_quota_counters",
         ])
       )
-
-      const settings = createOperationsSettingsRepository(database)
-      await settings.saveNoticeDocument({
-        announce: "공지",
-        banner: "배너",
-        now,
-      })
-      await expect(settings.readSettings()).resolves.toMatchObject({
-        notice: { announce: "공지", banner: "배너" },
-      })
+      expect(readTables(sqlite)).not.toEqual(
+        expect.arrayContaining([
+          "admin_settings",
+          "operations_ai_change_proposals",
+        ])
+      )
     })
   })
 
-  it("conversation 소유권, proposal CAS와 영속 quota를 repository별로 보존한다", async () => {
+  it("conversation 소유권과 영속 quota를 repository별로 보존한다", async () => {
     await withTemporaryOperationsDatabase(async ({ database }) => {
       const conversations = createAiConversationRepository(database)
       const history = await conversations.createUserMessage({
@@ -77,34 +65,6 @@ describe("operations temporary SQLite repositories", () => {
           messagePageSize: 100,
         })
       ).resolves.toBeNull()
-
-      const proposals = createAiChangeProposalRepository(database)
-      const proposal = {
-        change: {
-          courseId: "course-1" as CourseId,
-          expectedEditVersion: 1,
-          kind: "content-course-draft" as const,
-          title: "새 제목",
-        },
-        conversationId,
-        createdAt: now,
-        createdByAdminId: adminId,
-        id: "proposal-1" as AiChangeProposalId,
-        reviewedAt: null,
-        reviewedByAdminId: null,
-        status: "proposed" as const,
-      }
-      await proposals.createProposal(proposal)
-      await expect(proposals.readProposal(proposal.id)).resolves.toEqual(
-        proposal
-      )
-      await expect(
-        proposals.transitionProposal({
-          expectedStatus: "approved",
-          proposal: { ...proposal, status: "rejected" },
-        })
-      ).resolves.toBe("conflict")
-
       const quotaInput = {
         adminId,
         clientIp: "127.0.0.1",

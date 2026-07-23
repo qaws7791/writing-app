@@ -3,8 +3,8 @@
 import Link from "next/link"
 import { ExternalLink, LogOut } from "lucide-react"
 import {
-  adminNavigationItems,
   isAdminNavigationActive,
+  type AdminNavigationItem,
 } from "@/app/(admin)/_views/admin-navigation"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -12,11 +12,13 @@ export function AdminSidebar({
   activePath,
   isSigningOut,
   learnerWebOrigin,
+  navigationItems,
   onSignOut,
 }: {
   readonly activePath: string
   readonly isSigningOut: boolean
   readonly learnerWebOrigin: string
+  readonly navigationItems: readonly AdminNavigationItem[]
   readonly onSignOut: () => void
 }) {
   return (
@@ -28,7 +30,7 @@ export function AdminSidebar({
         글결 <span className="text-muted-foreground">어드민</span>
       </Link>
       <nav aria-label="어드민 주요 메뉴" className="flex flex-1 flex-col gap-1">
-        {adminNavigationItems.map((item) => {
+        {navigationItems.map((item) => {
           const isActive = isAdminNavigationActive(
             activePath,
             item.href,

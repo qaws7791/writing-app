@@ -12,6 +12,7 @@ import {
 const shellProps = {
   apiBaseUrl: readApiBaseUrl({}),
   learnerWebOrigin: readLearnerWebOrigin({}),
+  role: "owner",
 } as const
 
 const { replaceMock, signOutMock } = vi.hoisted(() => ({
@@ -65,8 +66,8 @@ describe("AdminShell", () => {
       within(navigation).getByRole("link", { name: "분석" })
     ).toHaveAttribute("href", "/analytics")
     expect(
-      within(navigation).getByRole("link", { name: "운영 설정" })
-    ).toHaveAttribute("href", "/settings")
+      within(navigation).getByRole("link", { name: "콘텐츠 유지보수" })
+    ).toHaveAttribute("href", "/maintenance")
     expect(screen.getByRole("link", { name: "앱으로 이동" })).toBeVisible()
     expect(
       screen.getByRole("button", { name: "어드민 로그아웃" })
@@ -74,6 +75,18 @@ describe("AdminShell", () => {
     expect(
       screen.getByRole("heading", { name: "콘텐츠 관리" })
     ).toBeInTheDocument()
+  })
+
+  it("운영자에게 owner 전용 유지보수 메뉴를 노출하지 않는다", () => {
+    render(
+      <AdminShell {...shellProps} activePath="/courses" role="operator">
+        <h1>콘텐츠 관리</h1>
+      </AdminShell>
+    )
+
+    expect(
+      screen.queryByRole("link", { name: "콘텐츠 유지보수" })
+    ).not.toBeInTheDocument()
   })
 
   it("로그아웃 실패를 alert로 보여주고 재시도할 수 있다", async () => {

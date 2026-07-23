@@ -1,8 +1,4 @@
 export {
-  createAiChangeProposalApplication,
-  type AiChangeProposalApplication,
-} from "#operations/application/ai-change-proposals"
-export {
   createAiConversationQueries,
   createAiStreamingApplication,
   type AiConversationQueries,
@@ -20,8 +16,4 @@ export {
   type OperationsLessonAnalyticsItem,
   type OperationsReportingQueries,
 } from "#operations/application/operations-reporting"
-export {
-  createOperationsSettingsApplication,
-  type OperationsSettingsApplication,
-} from "#operations/application/operations-settings"
 export type { OperationsError } from "#operations/domain/operations-error"

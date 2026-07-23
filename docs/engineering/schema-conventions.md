@@ -25,7 +25,7 @@
 
 ## 직접 관리 테이블
 
-콘텐츠, 학습 진행, AI 피드백, 운영 설정처럼 프로젝트가 직접 소유한 테이블은 SQL 이름에 snake_case를 사용한다.
+콘텐츠, 학습 진행과 AI 피드백처럼 프로젝트가 직접 소유한 테이블은 SQL 이름에 snake_case를 사용한다.
 
 새 table은 가능한 한 소유 context를 드러내는 prefix를 사용한다. 기존 provider 이름이나 제품의 오래된 canonical 이름처럼 rename 비용이 의미를 개선하는 이점보다 큰 경우에는 기존 이름을 보존하고 schema ownership 검사에 명시적으로 배정한다. prefix만 보고 소유권을 추측하지 않고 module schema와 API의 ownership 검사를 권위로 삼는다.
 
@@ -40,7 +40,6 @@
 - `learner_lesson_progress.current_step_id`
 - `learner_lesson_answers.answer_json`
 - `ai_feedback_attempts.result_json`
-- `admin_settings.updated_at`
 
 Drizzle schema에서는 SQL 컬럼은 snake_case로 두고 TypeScript 속성은 camelCase로 매핑한다.
 

@@ -1,6 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
+import type { AdminRole } from "@workspace/contracts/identity/admin-session"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTransition } from "react"
@@ -10,8 +11,8 @@ import { AdminSidebar } from "@/app/(admin)/_views/admin-sidebar"
 import { requestAdminSignOut } from "@/features/authentication/api/admin-auth-client"
 import type { ApiBaseUrl } from "@/shared/config/api-base-url"
 import {
-  adminNavigationItems,
   isAdminNavigationActive,
+  readAdminNavigationItems,
 } from "@/app/(admin)/_views/admin-navigation"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -20,17 +21,20 @@ export function AdminShell({
   apiBaseUrl,
   children,
   learnerWebOrigin,
+  role,
 }: {
   readonly activePath?: string
   readonly apiBaseUrl: ApiBaseUrl
   readonly children: ReactNode
   readonly learnerWebOrigin: string
+  readonly role: AdminRole
 }) {
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [signOutError, setSignOutError] = useState<string | null>(null)
   const currentPath = activePath ?? pathname
+  const navigationItems = readAdminNavigationItems(role)
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -38,6 +42,7 @@ export function AdminShell({
         activePath={currentPath}
         isSigningOut={isPending}
         learnerWebOrigin={learnerWebOrigin}
+        navigationItems={navigationItems}
         onSignOut={signOut}
       />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -58,7 +63,7 @@ export function AdminShell({
           aria-label="어드민 모바일 메뉴"
           className="flex gap-1 overflow-x-auto bg-surface/60 px-3 py-2 md:hidden"
         >
-          {adminNavigationItems.map((item) => {
+          {navigationItems.map((item) => {
             const isActive = isAdminNavigationActive(
               currentPath,
               item.href,

@@ -8,7 +8,7 @@ import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-co
 import { createAdminCourseEditorApi } from "@/features/course-editor/api/admin-course-editor-api"
 import { createAdminCourseCatalogDal } from "@/features/course-catalog/server/admin-course-catalog-dal"
 import { createAdminDashboardDal } from "@/features/dashboard/server/admin-dashboard-dal"
-import { createAdminSettingsDal } from "@/features/settings-management/server/admin-settings-dal"
+import { createAdminContentMaintenanceDal } from "@/features/content-maintenance/server/admin-content-maintenance-dal"
 import { createAdminUsersDal } from "@/features/user-management/server/admin-users-dal"
 import type { ApiBaseUrl } from "@/shared/config/admin-runtime-config"
 import type { HttpFetch } from "@workspace/http-client/json-transport"
@@ -188,40 +188,6 @@ describe("관리자 feature HTTP Adapter 계약", () => {
         ],
       },
     })
-    await expect(api.getSettings()).resolves.toMatchObject({
-      status: "ok",
-      value: {
-        notice: {
-          banner: "오늘의 공지",
-        },
-      },
-    })
-    await expect(
-      api.saveNoticeSettings({
-        announce: "공지 본문",
-        banner: "오늘의 공지",
-      })
-    ).resolves.toMatchObject({
-      status: "ok",
-      value: {
-        notice: {
-          announce: "공지 본문",
-        },
-      },
-    })
-    await expect(
-      api.saveLegalSettings({
-        privacy: "개인정보처리방침",
-        terms: "이용약관",
-      })
-    ).resolves.toMatchObject({
-      status: "ok",
-      value: {
-        legal: {
-          terms: "이용약관",
-        },
-      },
-    })
     await expect(api.resetContent()).resolves.toMatchObject({
       status: "ok",
       value: {
@@ -251,10 +217,7 @@ describe("관리자 feature HTTP Adapter 계약", () => {
         "GET",
         "https://api.example.test/api/admin/analytics/lessons?direction=asc&page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5&sort=completionRate",
       ],
-      ["GET", "https://api.example.test/api/admin/settings"],
-      ["PUT", "https://api.example.test/api/admin/settings/notice"],
-      ["PUT", "https://api.example.test/api/admin/settings/legal"],
-      ["POST", "https://api.example.test/api/admin/settings/content-reset"],
+      ["POST", "https://api.example.test/api/admin/maintenance/content-reset"],
     ])
     expect(requests[0]?.headers.get("Cookie")).toBe(
       "admin_session_token=admin-token"
@@ -267,14 +230,6 @@ describe("관리자 feature HTTP Adapter 계약", () => {
       courseDetail("c1"),
       {
         status: "suspended",
-      },
-      {
-        announce: "공지 본문",
-        banner: "오늘의 공지",
-      },
-      {
-        privacy: "개인정보처리방침",
-        terms: "이용약관",
       },
       {},
     ])
@@ -410,7 +365,7 @@ function createTestAdminApis(input: {
     ...createAdminCourseCatalogDal(transport),
     ...createAdminCourseEditorApi(transport),
     ...createAdminDashboardDal(transport),
-    ...createAdminSettingsDal(transport),
+    ...createAdminContentMaintenanceDal(transport),
     ...createAdminUsersDal(transport),
   }
 }
@@ -553,25 +508,7 @@ function responseFor(request: Request): unknown {
     }
   }
 
-  if (request.url.endsWith("/settings")) {
-    return settings()
-  }
-
-  if (request.url.endsWith("/settings/notice")) {
-    return settings({
-      announce: "공지 본문",
-      banner: "오늘의 공지",
-    })
-  }
-
-  if (request.url.endsWith("/settings/legal")) {
-    return settings(undefined, {
-      privacy: "개인정보처리방침",
-      terms: "이용약관",
-    })
-  }
-
-  if (request.url.endsWith("/settings/content-reset")) {
+  if (request.url.endsWith("/maintenance/content-reset")) {
     return {
       changed: {
         archived: 0,
@@ -610,22 +547,6 @@ function lessonAnalytics() {
     lessonId: "l1",
     lessonTitle: "문장 시작하기",
     started: 10,
-  }
-}
-
-function settings(
-  notice = {
-    announce: "",
-    banner: "오늘의 공지",
-  },
-  legal = {
-    privacy: "",
-    terms: "",
-  }
-) {
-  return {
-    legal,
-    notice,
   }
 }
 

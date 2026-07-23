@@ -44,10 +44,19 @@ export default async function AdminLayout({
     return <AdminServiceUnavailable retryHref={requestPath} />
   }
 
+  if (
+    (requestPath === "/maintenance" ||
+      requestPath.startsWith("/maintenance/")) &&
+    sessionResult.value.admin.role !== "owner"
+  ) {
+    redirect("/")
+  }
+
   return (
     <AdminShell
       apiBaseUrl={readApiBaseUrl()}
       learnerWebOrigin={readLearnerWebOrigin()}
+      role={sessionResult.value.admin.role}
     >
       {children}
     </AdminShell>
