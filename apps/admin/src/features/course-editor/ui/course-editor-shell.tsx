@@ -1,7 +1,15 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useReducer, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
+import {
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  useTransition,
+} from "react"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
@@ -35,6 +43,15 @@ import {
   TrashIcon,
 } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
@@ -49,6 +66,23 @@ import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { cn } from "@workspace/ui/lib/utils"
 
 type EditorTab = "curriculum" | "info"
+type EditorUnit = AdminCourseDetail["units"][number]
+type EditorLesson = EditorUnit["lessons"][number]
+type ConfirmationIntent =
+  | { readonly type: "change-tab"; readonly tab: EditorTab }
+  | { readonly type: "navigate-course-list" }
+  | { readonly type: "publish" }
+  | {
+      readonly type: "remove-lesson"
+      readonly lessonId: EditorLesson["id"]
+      readonly lessonTitle: string
+      readonly unitId: EditorUnit["id"]
+    }
+  | {
+      readonly type: "remove-unit"
+      readonly unitId: EditorUnit["id"]
+      readonly unitTitle: string
+    }
 
 export function CourseEditorShell({
   course,
@@ -63,6 +97,7 @@ export function CourseEditorShell({
     course: AdminCourseDetail
   ) => Promise<AdminRequestResult<AdminCourseDetail>>
 }) {
+  const router = useRouter()
   const loadLatestCourse = (courseId: string) =>
     settleAdminApiRequest(getAdminCourseEditor(courseId))
   const [state, dispatch] = useReducer(
@@ -71,6 +106,9 @@ export function CourseEditorShell({
     createCourseEditorState
   )
   const [tab, setTab] = useState<EditorTab>("info")
+  const [confirmationIntent, setConfirmationIntent] =
+    useState<ConfirmationIntent | null>(null)
+  const editorHeadingRef = useRef<HTMLHeadingElement>(null)
   const [isPending, startTransition] = useTransition()
   const isUnsaved = [
     "conflict",
@@ -116,14 +154,18 @@ export function CourseEditorShell({
   }, [isUnsaved])
 
   const changeTab = (nextTab: EditorTab) => {
-    if (
-      nextTab !== tab &&
-      isUnsaved &&
-      !window.confirm("저장하지 않은 변경이 있습니다. 편집 화면을 이동할까요?")
-    ) {
+    if (nextTab === tab) {
+      return
+    }
+    if (isUnsaved) {
+      requestConfirmation({ tab: nextTab, type: "change-tab" })
       return
     }
     setTab(nextTab)
+  }
+
+  const requestConfirmation = (intent: ConfirmationIntent) => {
+    setConfirmationIntent(intent)
   }
 
   const save = () => {
@@ -159,8 +201,6 @@ export function CourseEditorShell({
   }
 
   const publish = () => {
-    if (!window.confirm("현재 초안을 학습자에게 발행할까요?")) return
-
     dispatch({ type: "publish-started" })
     startTransition(async () => {
       const result = await publishCourse(state.draft)
@@ -188,6 +228,37 @@ export function CourseEditorShell({
     })
   }
 
+  const confirmIntent = () => {
+    if (confirmationIntent === null) return
+
+    const intent = confirmationIntent
+    setConfirmationIntent(null)
+    requestAnimationFrame(() => editorHeadingRef.current?.focus())
+
+    switch (intent.type) {
+      case "change-tab":
+        setTab(intent.tab)
+        return
+      case "navigate-course-list":
+        router.push("/courses")
+        return
+      case "publish":
+        publish()
+        return
+      case "remove-lesson":
+        dispatch({
+          lessonId: intent.lessonId,
+          type: "lesson-removed",
+          unitId: intent.unitId,
+        })
+        return
+      case "remove-unit":
+        dispatch({ type: "unit-removed", unitId: intent.unitId })
+    }
+  }
+
+  const confirmationCopy = getConfirmationCopy(confirmationIntent)
+
   return (
     <div className="-mx-5 -mt-8 flex min-h-full flex-col md:-mx-10">
       <div className="border-b border-surface-hover px-6 pb-0 pt-8 md:px-10">
@@ -201,13 +272,16 @@ export function CourseEditorShell({
             prefetch={false}
             onClick={(event) => {
               if (
-                isUnsaved &&
-                !window.confirm(
-                  "저장하지 않은 변경을 버리고 목록으로 이동할까요?"
-                )
+                !isUnsaved ||
+                event.altKey ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey
               ) {
-                event.preventDefault()
+                return
               }
+              event.preventDefault()
+              requestConfirmation({ type: "navigate-course-list" })
             }}
           >
             콘텐츠 관리
@@ -218,7 +292,11 @@ export function CourseEditorShell({
           </span>
         </nav>
         <div className="mb-5 flex items-center justify-between gap-4">
-          <h1 className="text-[1.375rem] font-bold text-foreground">
+          <h1
+            ref={editorHeadingRef}
+            className="text-[1.375rem] font-bold text-foreground"
+            tabIndex={-1}
+          >
             {state.draft.title || "제목 없음"}
           </h1>
           <div className="flex items-center gap-2">
@@ -234,7 +312,10 @@ export function CourseEditorShell({
             >
               {state.status === "saving" ? "저장 중…" : "변경 저장"}
             </Button>
-            <Button disabled={isPending || isUnsaved} onClick={publish}>
+            <Button
+              disabled={isPending || isUnsaved}
+              onClick={() => requestConfirmation({ type: "publish" })}
+            >
               {state.status === "publishing" ? "발행 중…" : "초안 발행"}
             </Button>
           </div>
@@ -373,7 +454,11 @@ export function CourseEditorShell({
                     <Button
                       aria-label={`${unit.title} 유닛 삭제`}
                       onClick={() =>
-                        dispatch({ type: "unit-removed", unitId: unit.id })
+                        requestConfirmation({
+                          type: "remove-unit",
+                          unitId: unit.id,
+                          unitTitle: unit.title,
+                        })
                       }
                       size="icon"
                       variant="ghost"
@@ -418,9 +503,10 @@ export function CourseEditorShell({
                           <Button
                             aria-label={`${lesson.title} 레슨 삭제`}
                             onClick={() =>
-                              dispatch({
+                              requestConfirmation({
                                 lessonId: lesson.id,
-                                type: "lesson-removed",
+                                lessonTitle: lesson.title,
+                                type: "remove-lesson",
                                 unitId: unit.id,
                               })
                             }
@@ -511,12 +597,84 @@ export function CourseEditorShell({
           </div>
         )}
       </div>
+      <AlertDialog
+        onOpenChange={(open) => {
+          if (!open) setConfirmationIntent(null)
+        }}
+        open={confirmationIntent !== null}
+      >
+        {confirmationCopy === null ? null : (
+          <AlertDialogContent>
+            <AlertDialogTitle>{confirmationCopy.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmationCopy.description}
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmIntent}
+                variant={
+                  confirmationCopy.destructive ? "destructive" : "default"
+                }
+              >
+                {confirmationCopy.action}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </div>
   )
 }
 
-type EditorLesson = AdminCourseDetail["units"][number]["lessons"][number]
 type LessonStepId = EditorLesson["steps"][number]["id"]
+
+function getConfirmationCopy(intent: ConfirmationIntent | null): {
+  readonly action: string
+  readonly description: string
+  readonly destructive: boolean
+  readonly title: string
+} | null {
+  if (intent === null) return null
+
+  switch (intent.type) {
+    case "change-tab":
+      return {
+        action: "이동하기",
+        description: "저장하지 않은 변경은 현재 초안에 남아 있습니다.",
+        destructive: false,
+        title: "편집 화면을 이동할까요?",
+      }
+    case "navigate-course-list":
+      return {
+        action: "목록으로 이동",
+        description: "저장하지 않은 변경을 버리고 콘텐츠 관리로 이동합니다.",
+        destructive: false,
+        title: "콘텐츠 관리로 이동할까요?",
+      }
+    case "publish":
+      return {
+        action: "발행하기",
+        description: "현재 초안을 학습자에게 공개합니다.",
+        destructive: false,
+        title: "현재 초안을 발행할까요?",
+      }
+    case "remove-lesson":
+      return {
+        action: "레슨 삭제",
+        description: `${intent.lessonTitle} 레슨과 포함된 스텝을 삭제합니다.`,
+        destructive: true,
+        title: "레슨을 삭제할까요?",
+      }
+    case "remove-unit":
+      return {
+        action: "유닛 삭제",
+        description: `${intent.unitTitle} 유닛과 포함된 레슨을 삭제합니다.`,
+        destructive: true,
+        title: "유닛을 삭제할까요?",
+      }
+  }
+}
 
 function AiFeedbackTargetFields({
   lesson,

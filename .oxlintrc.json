@@ -178,6 +178,7 @@
         "serviceworker": true
       },
       "rules": {
+        "no-alert": "error",
         "no-unused-vars": "error",
         "react/display-name": "error",
         "react/jsx-key": "error",

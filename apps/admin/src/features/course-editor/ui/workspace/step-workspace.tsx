@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useState } from "react"
+import { useId, useRef, useState } from "react"
 import {
   lessonStepTypeSchema,
   lessonStepTypeValues,
@@ -8,6 +8,15 @@ import {
 } from "@workspace/contracts/content/steps"
 import { lessonStepIdSchema } from "@workspace/contracts/content/ids"
 import { PlusIcon, TrashIcon } from "@workspace/ui/components/icons"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Field,
@@ -52,7 +61,9 @@ export function StepWorkspace({
   readonly steps: readonly EditorStep[]
 }) {
   const stepTypeControlId = useId()
+  const [removeTarget, setRemoveTarget] = useState<EditorStep | null>(null)
   const [stepType, setStepType] = useState<LessonStepType>("READING")
+  const workspaceRef = useRef<HTMLDivElement>(null)
   const targetWriteStep = [...steps]
     .reverse()
     .find((step) => step.type === "WRITE")
@@ -75,7 +86,7 @@ export function StepWorkspace({
   }
 
   return (
-    <Surface className="mt-3" variant="panel">
+    <Surface ref={workspaceRef} className="mt-3" tabIndex={-1} variant="panel">
       <SectionHeader
         description="확정 스텝 타입의 content를 편집합니다."
         title="스텝 편집"
@@ -147,9 +158,7 @@ export function StepWorkspace({
                 </Button>
                 <Button
                   aria-label={`${step.type} 스텝 삭제`}
-                  onClick={() => {
-                    if (window.confirm("이 스텝을 삭제할까요?")) onRemove(step)
-                  }}
+                  onClick={() => setRemoveTarget(step)}
                   size="icon"
                   type="button"
                   variant="ghost"
@@ -162,6 +171,35 @@ export function StepWorkspace({
           ))}
         </ol>
       )}
+      <AlertDialog
+        onOpenChange={(open) => {
+          if (!open) setRemoveTarget(null)
+        }}
+        open={removeTarget !== null}
+      >
+        {removeTarget === null ? null : (
+          <AlertDialogContent>
+            <AlertDialogTitle>스텝을 삭제할까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {removeTarget.type} 스텝을 현재 레슨에서 삭제합니다.
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  const step = removeTarget
+                  setRemoveTarget(null)
+                  onRemove(step)
+                  requestAnimationFrame(() => workspaceRef.current?.focus())
+                }}
+                variant="destructive"
+              >
+                스텝 삭제
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </Surface>
   )
 }

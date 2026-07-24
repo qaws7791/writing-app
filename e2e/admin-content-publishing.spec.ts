@@ -180,8 +180,11 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
     readingAsset.id
   )
 
-  adminPage.once("dialog", (dialog) => dialog.accept())
   await adminPage.getByRole("button", { name: "초안 발행" }).click()
+  await adminPage
+    .getByRole("alertdialog", { name: "현재 초안을 발행할까요?" })
+    .getByRole("button", { name: "발행하기" })
+    .click()
   await expect(adminPage.getByText("리비전 1을 발행했습니다.")).toBeVisible()
   const revisionTwoDraft = await readAdminCourseEditor(
     adminPage,
@@ -274,8 +277,11 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   expect((await replacementResponsePromise).status()).toBe(200)
   await adminPage.getByRole("button", { name: "변경 저장" }).click()
   await expect(adminPage.getByText("코스를 저장했습니다.")).toBeVisible()
-  adminPage.once("dialog", (dialog) => dialog.accept())
   await adminPage.getByRole("button", { name: "초안 발행" }).click()
+  await adminPage
+    .getByRole("alertdialog", { name: "현재 초안을 발행할까요?" })
+    .getByRole("button", { name: "발행하기" })
+    .click()
   await expect(adminPage.getByText("리비전 2을 발행했습니다.")).toBeVisible()
 
   await learnerPage.reload()

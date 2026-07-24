@@ -60,8 +60,11 @@ test("지원 브라우저에서 학습자 테마와 어드민 반응형 shell이
       name: /learner@example\.com/,
     })
     await activeLearnerRow.hover()
-    adminPage.once("dialog", (dialog) => dialog.accept())
     await activeLearnerRow.getByRole("button", { name: "정지" }).click()
+    await adminPage
+      .getByRole("alertdialog", { name: "사용자 상태 변경 확인" })
+      .getByRole("button", { name: "정지 처리" })
+      .click()
     await expect(adminPage.getByText("사용자를 정지했습니다.")).toBeVisible()
 
     await adminPage.reload()
@@ -69,8 +72,11 @@ test("지원 브라우저에서 학습자 테마와 어드민 반응형 shell이
       name: /learner@example\.com/,
     })
     await suspendedLearnerRow.hover()
-    adminPage.once("dialog", (dialog) => dialog.accept())
     await suspendedLearnerRow.getByRole("button", { name: "활성화" }).click()
+    await adminPage
+      .getByRole("alertdialog", { name: "사용자 상태 변경 확인" })
+      .getByRole("button", { name: "활성화 처리" })
+      .click()
     await expect(adminPage.getByText("사용자를 활성화했습니다.")).toBeVisible()
 
     await adminPage.reload()

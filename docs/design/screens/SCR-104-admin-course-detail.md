@@ -32,6 +32,7 @@
 - 스텝 작업대는 step registry와 타입별 form renderer를 사용해 content JSON을 보여준다.
 - 학습자 미리보기는 `Card`로 현재 첫 레슨의 시작 화면 핵심 정보를 보여준다.
 - 패널 구조는 `Surface variant="panel"`, `SectionHeader`, `Field`, `Card` 조합을 사용한다.
+- draft 발행, 미저장 변경 폐기와 유닛·레슨·스텝 삭제는 `AlertDialog` 확인 뒤 실행한다. 삭제 action만 `destructive` variant를 사용한다.
 
 ## 상태
 
@@ -57,4 +58,5 @@
 
 - 모든 편집 control은 한국어 label을 가진다.
 - 오류는 `role="alert"`로 표시한다.
+- 확인 dialog는 `role="alertdialog"` 의미와 제목·설명 관계를 제공하고, 취소하면 편집 상태와 현재 위치를 유지한다.
 - preview 텍스트는 학습자에게 보이는 실제 콘텐츠와 동일한 한국어를 사용한다.

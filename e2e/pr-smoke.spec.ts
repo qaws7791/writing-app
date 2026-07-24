@@ -115,8 +115,11 @@ test("owner 관리자가 로그인해 새 코스 초안을 발행한다", async 
   expect(saved.status()).toBe(200)
 
   await page.goto(`${adminWebOrigin}/courses/${encodeURIComponent(courseId)}`)
-  page.once("dialog", (dialog) => dialog.accept())
   await page.getByRole("button", { name: "초안 발행" }).click()
+  await page
+    .getByRole("alertdialog", { name: "현재 초안을 발행할까요?" })
+    .getByRole("button", { name: "발행하기" })
+    .click()
 
   await expect(page.getByText("리비전 1을 발행했습니다.")).toBeVisible()
 })
@@ -125,8 +128,11 @@ test("owner 관리자가 활성 학습자를 정지한다", async ({ page }) => 
   await loginAdmin(page, "owner@example.test", { nextPath: "/users" })
   const learnerRow = page.getByRole("row", { name: /learner@example.com/ })
   await learnerRow.hover()
-  page.once("dialog", (dialog) => dialog.accept())
   await learnerRow.getByRole("button", { name: "정지" }).click()
+  await page
+    .getByRole("alertdialog", { name: "사용자 상태 변경 확인" })
+    .getByRole("button", { name: "정지 처리" })
+    .click()
 
   await expect(page.getByText("사용자를 정지했습니다.")).toBeVisible()
   await expect(learnerRow.getByText("정지", { exact: true })).toBeVisible()

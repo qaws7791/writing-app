@@ -49,7 +49,6 @@ const users: AdminUserList = {
 describe("AdminUsersPage", () => {
   it("검색, 상태 필터, 정렬, 사용자 목록과 상태 변경을 렌더링한다", async () => {
     const user = userEvent.setup()
-    vi.spyOn(window, "confirm").mockReturnValue(true)
     const updateUserStatus = vi.fn<
       () => Promise<AdminRequestResult<AdminUserDetail>>
     >(async () => ok(userDetail("suspended")))
@@ -82,6 +81,30 @@ describe("AdminUsersPage", () => {
     expect(within(row).getByText("5일")).toBeVisible()
 
     await user.click(within(row).getByRole("button", { name: "정지" }))
+
+    const statusDialog = screen.getByRole("alertdialog", {
+      name: "사용자 상태 변경 확인",
+    })
+    expect(statusDialog).toBeVisible()
+    expect(
+      within(statusDialog).getByText(
+        "minji@example.com 사용자를 확인합니다. 사용자를 정지 상태로 전환합니다."
+      )
+    ).toBeVisible()
+    expect(updateUserStatus).not.toHaveBeenCalled()
+
+    await user.click(within(statusDialog).getByRole("button", { name: "취소" }))
+    expect(
+      screen.queryByRole("alertdialog", { name: "사용자 상태 변경 확인" })
+    ).not.toBeInTheDocument()
+    expect(updateUserStatus).not.toHaveBeenCalled()
+
+    await user.click(within(row).getByRole("button", { name: "정지" }))
+    await user.click(
+      within(
+        screen.getByRole("alertdialog", { name: "사용자 상태 변경 확인" })
+      ).getByRole("button", { name: "정지 처리" })
+    )
 
     expect(updateUserStatus).toHaveBeenCalledWith({
       status: "suspended",
@@ -122,9 +145,44 @@ describe("AdminUsersPage", () => {
     expect(screen.getByText("삭제 요청을 처리했습니다.")).toBeVisible()
   })
 
+  it("상태 변경 처리 중에는 확인을 다시 실행하지 않는다", async () => {
+    const user = userEvent.setup()
+    let finishUpdate:
+      | ((result: AdminRequestResult<AdminUserDetail>) => void)
+      | undefined
+    const updateUserStatus = vi.fn(
+      () =>
+        new Promise<AdminRequestResult<AdminUserDetail>>((resolve) => {
+          finishUpdate = resolve
+        })
+    )
+
+    render(
+      <AdminUsersPage
+        deleteUser={async () => ok({ deleted: true })}
+        filters={filters}
+        updateUserStatus={updateUserStatus}
+        usersResult={ok(users)}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "정지" }))
+    const confirmButton = within(
+      screen.getByRole("alertdialog", { name: "사용자 상태 변경 확인" })
+    ).getByRole("button", { name: "정지 처리" })
+
+    await user.click(confirmButton)
+
+    expect(confirmButton).toBeDisabled()
+    await user.click(confirmButton)
+    expect(updateUserStatus).toHaveBeenCalledOnce()
+
+    finishUpdate?.(ok(userDetail("suspended")))
+    expect(await screen.findByText("사용자를 정지했습니다.")).toBeVisible()
+  })
+
   it("정지 사용자는 활성화하고 삭제 사용자는 읽기 전용으로 표시한다", async () => {
     const user = userEvent.setup()
-    vi.spyOn(window, "confirm").mockReturnValue(true)
     const updateUserStatus = vi.fn(async () => ok(userDetail("active")))
     const firstUser = users.items[0]
     if (firstUser === undefined) throw new Error("사용자 fixture가 없습니다.")
@@ -149,6 +207,11 @@ describe("AdminUsersPage", () => {
     )
 
     await user.click(screen.getByRole("button", { name: "활성화" }))
+    await user.click(
+      within(
+        screen.getByRole("alertdialog", { name: "사용자 상태 변경 확인" })
+      ).getByRole("button", { name: "활성화 처리" })
+    )
     expect(updateUserStatus).toHaveBeenCalledWith({
       status: "active",
       userId: "user-1",

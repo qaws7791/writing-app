@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 import { adminCourseEditorStepSchema } from "@workspace/contracts/content/admin-courses"
 import {
@@ -68,6 +69,42 @@ describe("코스 스텝 편집", () => {
       sortOrder: 1,
       type: "READING",
     })
+  })
+
+  it("스텝 삭제를 취소하거나 확인한다", async () => {
+    const user = userEvent.setup()
+    const onRemove = vi.fn()
+    const step = createStep("READING")
+
+    render(
+      <StepWorkspace
+        assetUpload={assetUpload}
+        onAdd={vi.fn()}
+        onChange={vi.fn()}
+        onMove={vi.fn()}
+        onRemove={onRemove}
+        steps={[step]}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "READING 스텝 삭제" }))
+    let dialog = screen.getByRole("alertdialog", {
+      name: "스텝을 삭제할까요?",
+    })
+    await user.click(within(dialog).getByRole("button", { name: "취소" }))
+    expect(onRemove).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole("button", { name: "READING 스텝 삭제" }))
+    dialog = screen.getByRole("alertdialog", {
+      name: "스텝을 삭제할까요?",
+    })
+    await user.click(within(dialog).getByRole("button", { name: "스텝 삭제" }))
+
+    expect(onRemove).toHaveBeenCalledWith(step)
+    const workspace = screen
+      .getByRole("heading", { name: "스텝 편집" })
+      .closest('[data-slot="surface"]')
+    await waitFor(() => expect(workspace).toHaveFocus())
   })
 })
 

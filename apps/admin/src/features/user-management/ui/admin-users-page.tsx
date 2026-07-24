@@ -18,7 +18,10 @@ import {
   createGetFilterHref,
   readGetFormFields,
 } from "@/shared/navigation/get-filter-url"
-import { readUserStatusTransition } from "@/features/user-management/model/user-status-transition"
+import {
+  readUserStatusTransition,
+  type UserStatusTransition,
+} from "@/features/user-management/model/user-status-transition"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
   AlertDialog,
@@ -89,6 +92,10 @@ export function AdminUsersPage({
   const [deleteTarget, setDeleteTarget] = useState<
     AdminUserList["items"][number] | null
   >(null)
+  const [statusTarget, setStatusTarget] = useState<{
+    readonly transition: UserStatusTransition
+    readonly user: AdminUserList["items"][number]
+  } | null>(null)
   const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
@@ -292,34 +299,9 @@ export function AdminUsersPage({
                           <Button
                             variant="outline"
                             disabled={isPending}
-                            onClick={() => {
-                              if (
-                                !window.confirm(
-                                  `${user.email} 사용자를 확인합니다. ${transition.confirmation}`
-                                )
-                              ) {
-                                return
-                              }
-
-                              startTransition(async () => {
-                                const result = await updateUserStatus({
-                                  status: transition.targetStatus,
-                                  userId: user.id,
-                                })
-
-                                setMessage(
-                                  result.status === "ok"
-                                    ? {
-                                        message: transition.successMessage,
-                                        tone: "success",
-                                      }
-                                    : {
-                                        message: result.error.message,
-                                        tone: "danger",
-                                      }
-                                )
-                              })
-                            }}
+                            onClick={() =>
+                              setStatusTarget({ transition, user })
+                            }
                             type="button"
                           >
                             {transition.label}
@@ -342,6 +324,58 @@ export function AdminUsersPage({
           </TableBody>
         </Table>
       </div>
+      <AlertDialog
+        open={statusTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !isPending) {
+            setStatusTarget(null)
+          }
+        }}
+      >
+        {statusTarget === null ? null : (
+          <AlertDialogContent>
+            <AlertDialogTitle>사용자 상태 변경 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              {statusTarget.user.email} 사용자를 확인합니다.{" "}
+              {statusTarget.transition.confirmation}
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isPending}>취소</AlertDialogCancel>
+              <Button
+                disabled={isPending}
+                size="extra"
+                onClick={() => {
+                  if (isPending) return
+
+                  const { transition, user } = statusTarget
+                  startTransition(async () => {
+                    const result = await updateUserStatus({
+                      status: transition.targetStatus,
+                      userId: user.id,
+                    })
+
+                    setMessage(
+                      result.status === "ok"
+                        ? {
+                            message: transition.successMessage,
+                            tone: "success",
+                          }
+                        : {
+                            message: result.error.message,
+                            tone: "danger",
+                          }
+                    )
+                    setStatusTarget(null)
+                  })
+                }}
+                type="button"
+              >
+                {statusTarget.transition.label} 처리
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
       <AlertDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {

@@ -19,6 +19,7 @@
 - 처리 상태 메시지
 - `DataTable` 사용자 목록
 - 페이지네이션
+- `AlertDialog` 사용자 상태 변경 확인
 - `AlertDialog` 삭제 요청 확인
 
 ## UI 기준
@@ -44,4 +45,4 @@
 
 - toolbar는 `aria-label="사용자 필터"`를 제공한다.
 - table header는 `scope="col"`을 사용한다.
-- 삭제 확인 dialog는 `AlertDialog`를 사용하며 `role="alertdialog"` 의미와 제목/설명 관계를 제공한다.
+- 상태 변경과 삭제 확인 dialog는 `AlertDialog`를 사용하며 `role="alertdialog"` 의미와 제목/설명 관계를 제공한다.
