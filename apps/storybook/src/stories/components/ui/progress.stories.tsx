@@ -8,6 +8,7 @@ import {
   ProgressLabel,
   ProgressValue,
 } from "@workspace/ui/components/ui/progress"
+import { Surface } from "@workspace/ui/components/ui/surface"
 
 import { KeyboardTable } from "#storybook/blocks/keyboard-table"
 
@@ -60,6 +61,26 @@ export const VariantsAndSizes: Story = {
         <ProgressValue />
       </Progress>
     </div>
+  ),
+}
+
+/**
+ * Surface 패널 위 0% 진행률에서도 빈 트랙이 보이는지 검증하는 스토리입니다.
+ */
+export const EmptyTrackOnSurface: Story = {
+  render: () => (
+    <Surface className="max-w-xl rounded-4xl p-8" variant="panel">
+      <Progress
+        aria-label="글쓰기 첫걸음 30일 진행률"
+        className="items-center gap-3"
+        indicatorClassName="bg-primary"
+        value={0}
+      >
+        <span className="shrink-0 text-label-sm font-bold text-muted-foreground">
+          0/10
+        </span>
+      </Progress>
+    </Surface>
   ),
 }
 

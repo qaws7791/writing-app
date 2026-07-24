@@ -125,7 +125,7 @@
 
 구현 위치: `packages/shared/ui/src/components/ui/progress.tsx`
 
-구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 기본적으로 `bg-accent`를 사용하고, track은 `bg-default-soft` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 레슨과 코스 상세처럼 kwep 기준의 노란 진행률이 필요한 화면은 `indicatorClassName="bg-accent"`와 `trackClassName`으로 높이와 색을 명시한다.
+구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 기본적으로 `bg-accent`를 사용하고, track은 `bg-default-soft` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 호출부에서 `trackClassName`으로 `bg-surface`나 `bg-bg-surface`를 덮어쓰지 않는다. 높이 조정만 필요하면 `trackClassName`에 `h-*`만 전달한다. 레슨과 코스 상세처럼 kwep 기준의 노란 진행률이 필요한 화면은 `indicatorClassName="bg-accent"`와 `trackClassName`으로 높이와 색을 명시한다.
 
 ## Badge
 

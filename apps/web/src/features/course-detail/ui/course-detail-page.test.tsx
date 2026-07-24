@@ -75,6 +75,9 @@ describe("코스 상세 화면", () => {
     ).toBeInTheDocument()
     expect(screen.getByText("0/2")).toBeInTheDocument()
     expect(
+      screen.getByRole("progressbar", { name: "글쓰기 첫걸음 30일 진행률" })
+    ).toHaveAttribute("aria-valuenow", "0")
+    expect(
       screen.getByText("첫 번째 레슨: 좋은 문장이란 무엇인가")
     ).toBeInTheDocument()
 

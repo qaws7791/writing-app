@@ -127,7 +127,7 @@ function ContinueCourseSummary({
         aria-label={`${course.title} 진행률`}
         className="items-center gap-3"
         indicatorClassName="bg-action-primary-bg"
-        trackClassName="h-2 bg-bg-surface"
+        trackClassName="h-2"
         value={progressPercent}
       >
         <span className="shrink-0 text-label-sm font-bold text-muted-foreground">

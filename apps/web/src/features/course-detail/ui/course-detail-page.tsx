@@ -6,6 +6,7 @@ import { resolveCourseImage } from "@/entities/course/model/course-visual-assets
 import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { Progress } from "@workspace/ui/components/ui/progress"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CourseDetailPageProps = {
@@ -53,13 +54,13 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
           {course.description}
         </p>
         <div className="mb-10 flex items-center gap-6">
-          <div className="h-4 flex-1 overflow-hidden rounded-full bg-bg-surface">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <span className="text-title-md font-black">
+          <Progress
+            aria-label={`${course.title} 진행률`}
+            className="min-w-0 flex-1"
+            indicatorClassName="bg-primary"
+            value={progressPercent}
+          />
+          <span className="shrink-0 text-title-md font-black tabular-nums">
             {completedLessonCount}/{totalLessonCount}
           </span>
         </div>
