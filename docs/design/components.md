@@ -139,6 +139,32 @@
 
 기반은 `@base-ui/react/accordion`이다. 구조는 `Accordion`, `AccordionItem`, `AccordionHeader`, `AccordionTrigger`, `AccordionPanel`이다. 수동 disclosure 구현 대신 사용하며, `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
 
+## Tabs
+
+구현 위치: `packages/shared/ui/src/components/ui/tabs.tsx`
+
+기반은 `@base-ui/react/tabs`다. 구조는 `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`이다. 한 화면에서 관련 섹션을 전환할 때 사용하며, `role="tablist"` / `tab` / `tabpanel`과 키보드 탐색은 Base UI 계약을 따른다. 라우팅이나 URL 복원이 필요한 필터는 `Link` pill을 쓰고, 클라이언트 상태 전환만 필요한 경우 `Tabs`를 쓴다.
+
+### Variant
+
+| `TabsList` variant | 용도                                                       |
+| ------------------ | ---------------------------------------------------------- |
+| `default`          | 학습자 화면의 섹션 전환. surface 트랙 + elevated 활성 pill |
+| `line`             | 밀도가 높은 화면의 밑줄 탭                                 |
+
+### `default` 스타일
+
+- `TabsList`는 `rounded-pill`, `bg-surface`, `p-1` 트랙으로 탭을 한 그룹으로 묶는다.
+- `TabsTrigger`는 `h-9`, `rounded-pill`, `px-4`, `text-body-sm`, `font-bold`를 사용한다.
+- 비활성은 트랙 위 투명 배경, `text-muted-foreground`다.
+- 활성은 `bg-bg-elevated`, `text-fg-default`, `shadow-sm`으로 트랙 안에서 떠 있는 pill처럼 보인다.
+- focus는 `focus-visible:ring-3`을 유지한다.
+
+### `line` 스타일
+
+- 활성 탭은 `text-fg-default`, `font-bold`, charcoal 밑줄(`after`)로 표시한다.
+- 비활성은 `text-muted-foreground`다.
+
 ## DropdownMenu
 
 구현 위치: `packages/shared/ui/src/components/ui/dropdown-menu.tsx`

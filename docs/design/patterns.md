@@ -22,6 +22,7 @@
 - 코스 목록의 카테고리 선택은 가로 스크롤 pill 버튼으로 표현한다.
 - 활성 상태는 `Button` 기본 variant, 비활성은 `secondary` variant를 쓴다.
 - URL 복원이 필요한 상태가 되면 query로 승격한다.
+- 학습 홈의 `진행중` / `완료` 전환도 동일한 pill 언어를 쓰며, 공유 `Tabs` `default` variant로 구현한다. `TabsList` surface 트랙 안에서 활성 pill이 구분된다.
 
 ### 진행률
 
