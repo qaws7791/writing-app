@@ -19,7 +19,10 @@ export function ProfilePage({ logoutAction, profile }: ProfilePageProps) {
     <div className="max-w-2xl mx-auto">
       <div className="flex flex-col items-center mb-16 mt-8">
         <ProfileAvatar image={profile.user.image} name={profile.user.name} />
-        <h1 className="mb-2 text-[1.75rem] font-black">{profile.user.name}</h1>
+        <div className="mb-2 flex items-center justify-center gap-1">
+          <h1 className="text-[1.75rem] font-black">{profile.user.name}</h1>
+          <ProfileNameEditor currentName={profile.user.name} />
+        </div>
         <p className="font-bold text-muted-foreground">가입일: {joinedDate}</p>
       </div>
       <h3 className="mb-6 text-heading-sm font-bold">나의 학습 요약</h3>
@@ -35,7 +38,6 @@ export function ProfilePage({ logoutAction, profile }: ProfilePageProps) {
           value={`🔥 ${profile.stats.currentStreakDays}`}
         />
       </StatGrid>
-      <ProfileNameEditor currentName={profile.user.name} />
       <h3 className="mb-6 text-heading-sm font-bold">화면 테마</h3>
       <div className="mb-12">
         <ThemeToggle />

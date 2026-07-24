@@ -17,25 +17,34 @@ vi.mock("@workspace/http-client/learner", () => ({ updateProfile }))
 
 import { ProfileNameEditor } from "@/features/learner-profile/ui/profile-name-editor"
 
+async function openProfileNameDialog(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "표시 이름 수정" }))
+}
+
 describe("프로필 이름 편집", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it("접근 가능한 form으로 이름을 저장하고 성공 상태를 알린다", async () => {
+  it("닫힌 상태에서는 표시 이름 입력을 보여주지 않는다", () => {
+    render(<ProfileNameEditor currentName="기존 이름" />)
+
+    expect(screen.queryByLabelText("표시 이름")).not.toBeInTheDocument()
+  })
+
+  it("접근 가능한 form으로 이름을 저장하고 Dialog를 닫는다", async () => {
     const user = userEvent.setup()
     updateProfile.mockResolvedValue({ name: "새 이름" })
     render(<ProfileNameEditor currentName="기존 이름" />)
 
+    await openProfileNameDialog(user)
     await user.clear(screen.getByLabelText("표시 이름"))
     await user.type(screen.getByLabelText("표시 이름"), "새 이름")
     await user.click(screen.getByRole("button", { name: "이름 저장" }))
 
     expect(updateProfile).toHaveBeenCalledWith({ name: "새 이름" })
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      "표시 이름을 저장했습니다."
-    )
     expect(refresh).toHaveBeenCalledOnce()
+    expect(screen.queryByLabelText("표시 이름")).not.toBeInTheDocument()
   })
 
   it("API 오류를 숨기지 않고 alert로 전달한다", async () => {
@@ -55,6 +64,7 @@ describe("프로필 이름 편집", () => {
     )
     render(<ProfileNameEditor currentName="기존 이름" />)
 
+    await openProfileNameDialog(user)
     await user.click(screen.getByRole("button", { name: "이름 저장" }))
 
     expect(await screen.findByRole("alert")).toHaveTextContent(

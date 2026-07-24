@@ -65,6 +65,9 @@ describe("프로필 화면", () => {
 
     expect(screen.getByText("✍️")).toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "민지" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "표시 이름 수정" })
+    ).toBeInTheDocument()
     expect(screen.getByText("가입일: 2026.06.01")).toBeInTheDocument()
     expect(
       screen.getByRole("heading", { name: "나의 학습 요약" })

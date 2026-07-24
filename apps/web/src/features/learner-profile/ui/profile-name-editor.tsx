@@ -5,8 +5,16 @@ import { useRouter } from "next/navigation"
 import { updateProfile } from "@workspace/http-client/learner"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/ui/dialog"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Label } from "@workspace/ui/components/ui/label"
+import { PencilIcon } from "lucide-react"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import {
@@ -14,9 +22,7 @@ import {
   settleLearnerApiRequest,
 } from "@/shared/http/learner-api-client"
 
-type ProfileNameEditorMessage =
-  | Readonly<{ kind: "error"; text: string }>
-  | Readonly<{ kind: "success"; text: string }>
+type ProfileNameEditorMessage = Readonly<{ kind: "error"; text: string }>
 
 export function ProfileNameEditor({
   currentName,
@@ -24,8 +30,16 @@ export function ProfileNameEditor({
   readonly currentName: string
 }) {
   const router = useRouter()
+  const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<ProfileNameEditorMessage | null>(null)
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen)
+    if (!nextOpen) {
+      setMessage(null)
+    }
+  }
 
   const submitName = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -46,50 +60,59 @@ export function ProfileNameEditor({
         return
       }
 
-      setMessage({
-        kind: "success",
-        text: "표시 이름을 저장했습니다.",
-      })
+      setOpen(false)
       router.refresh()
     })
   }
 
   return (
-    <section aria-labelledby="profile-name-heading" className="mb-12">
-      <h3 className="mb-6 text-heading-sm font-bold" id="profile-name-heading">
-        프로필 이름
-      </h3>
-      <form
-        aria-label="프로필 이름 수정"
-        className="flex flex-col gap-3 sm:flex-row sm:items-end"
-        onSubmit={submitName}
-      >
-        <div className="flex-1">
-          <Label htmlFor="profile-display-name">표시 이름</Label>
-          <Input
-            autoComplete="name"
-            className="mt-2"
-            defaultValue={currentName}
-            disabled={isPending}
-            id="profile-display-name"
-            maxLength={200}
-            name="name"
-            required
+    <Dialog onOpenChange={handleOpenChange} open={open}>
+      <DialogTrigger
+        render={
+          <Button
+            aria-label="표시 이름 수정"
+            className="text-muted-foreground hover:text-foreground"
+            size="icon-sm"
+            type="button"
+            variant="ghost"
           />
-        </div>
-        <Button disabled={isPending} type="submit">
-          {isPending ? "저장 중…" : "이름 저장"}
-        </Button>
-      </form>
-      {message === null ? null : (
-        <Alert
-          className="mt-3"
-          role={message.kind === "error" ? "alert" : "status"}
-          tone={message.kind === "error" ? "danger" : "success"}
+        }
+      >
+        <PencilIcon aria-hidden="true" />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>표시 이름 수정</DialogTitle>
+        </DialogHeader>
+        <form
+          aria-label="프로필 이름 수정"
+          className="flex flex-col gap-3"
+          key={`${currentName}-${open}`}
+          onSubmit={submitName}
         >
-          <AlertDescription>{message.text}</AlertDescription>
-        </Alert>
-      )}
-    </section>
+          <div>
+            <Label htmlFor="profile-display-name">표시 이름</Label>
+            <Input
+              autoComplete="name"
+              className="mt-2"
+              defaultValue={currentName}
+              disabled={isPending}
+              id="profile-display-name"
+              maxLength={200}
+              name="name"
+              required
+            />
+          </div>
+          <Button disabled={isPending} type="submit">
+            {isPending ? "저장 중…" : "이름 저장"}
+          </Button>
+        </form>
+        {message === null ? null : (
+          <Alert role="alert" tone="danger">
+            <AlertDescription>{message.text}</AlertDescription>
+          </Alert>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }
