@@ -11,6 +11,7 @@
 | entrypoint                               | 책임                              |
 | ---------------------------------------- | --------------------------------- |
 | `@workspace/ui/styles`                   | 공통 token과 style Implementation |
+| `@workspace/ui/pretendard-font`          | 로컬 Pretendard font-face         |
 | `@workspace/ui/lib/utils`                | `cn` helper                       |
 | `@workspace/ui/components/icons`         | 앱에서 반복 사용하는 공통 아이콘  |
 | `@workspace/ui/components/ui/{컴포넌트}` | shadcn/Base UI 기반 primitive     |
@@ -18,6 +19,8 @@
 ## 스타일 구조
 
 전역 스타일 entrypoint는 `@workspace/ui/styles`를 사용한다. 내부 구현은 `src/styles/tokens/` 아래에서 reference, semantic, typography, spacing, radius, elevation, motion, z-index, component token으로 나눈다. Tailwind import, plugin, source scan, PostCSS 설정은 이 패키지가 아니라 각 앱 Adapter가 소유한다.
+
+앱과 Storybook의 root는 `@workspace/ui/pretendard-font`를 한 번 import해 로컬 가변 동적 서브셋을 명시적으로 활성화한다.
 
 새 공용 컴포넌트는 legacy 색상 이름보다 `bg-*`, `fg-*`, `action-*`, `success-*`, `danger-*`, `info-*` semantic token을 먼저 사용한다. `cream`, `surface`, `charcoal`, `primary`, `destructive`는 앱 이관이 끝날 때까지 유지하는 compatibility alias다.
 

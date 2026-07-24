@@ -59,7 +59,7 @@ namespace에는 역할 토큰과 기존 호환 API를 함께 연결한다. 따�
 
 ## 타이포그래피
 
-- 공통 UI, 학습자 앱, 어드민 앱, Storybook은 운영체제의 한국어 시스템 글꼴 스택을 공유한다. 웹폰트 다운로드와 교체로 인한 LCP 지연을 피하고, 플랫폼별 글꼴 차이는 허용한다. 외부 폰트 CDN 요청은 허용하지 않는다.
+- 공통 UI, 학습자 앱, 어드민 앱, Storybook은 `pretendard` 패키지의 가변 동적 서브셋을 self-host하고 `Pretendard Variable`을 우선 사용한다. 외부 폰트 CDN 요청은 허용하지 않으며 `font-display: swap`으로 시스템 글꼴 fallback 뒤 교체한다.
 - 모든 문서와 사용자 노출 텍스트는 한국어를 기본으로 한다.
 - letter spacing은 기본 0을 유지한다. 라벨성 uppercase 또는 작은 eyebrow에 한해 현재 구현처럼 `0.06em`에서 `0.08em`을 허용한다.
 

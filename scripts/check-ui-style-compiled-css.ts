@@ -7,6 +7,10 @@ export type UiStyleSentinel = {
 }
 
 export const uiStyleSentinels: readonly UiStyleSentinel[] = [
+  {
+    label: "Pretendard variable dynamic subset",
+    marker: "font-display:swap;font-weight:45 920",
+  },
   { label: "typography plugin", marker: ".prose" },
   { label: "animation plugin", marker: "--tw-enter-opacity" },
   { label: "semantic token", marker: "--action-primary-bg:" },

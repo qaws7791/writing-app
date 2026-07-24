@@ -420,8 +420,9 @@
 @theme inline {
   /* Font Family */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
-    "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕",
+    system-ui, sans-serif;
   --font-heading: var(--font-sans);
   /* Text Sizes */
   --text-display-lg: 5rem;

@@ -7,7 +7,8 @@
     "#ui/*": "./src/*"
   },
   "sideEffects": [
-    "*.css"
+    "*.css",
+    "./src/styles/pretendard-font.ts"
   ],
   "exports": {
     "./components/icons": "./src/components/icons.tsx",
@@ -56,6 +57,7 @@
     "./lib/field-control-variants": "./src/lib/field-control-variants.ts",
     "./lib/safe-navigation-path": "./src/lib/safe-navigation-path.ts",
     "./lib/utils": "./src/lib/utils.ts",
+    "./pretendard-font": "./src/styles/pretendard-font.ts",
     "./styles": "./src/styles/globals.css"
   },
   "scripts": {
@@ -69,6 +71,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "catalog:",
+    "pretendard": "1.3.9",
     "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.5.0"
   },
