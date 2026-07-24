@@ -77,6 +77,14 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 - Do not refactor, reformat, or move files unrelated to the request.
 - If scope is uncertain, don't write code first — ask a question or present a plan.
 
+### Testing Discipline
+
+- Treat production, test, fixture, and verification code alike as maintenance liabilities. Prefer less code and simpler, explicit, deterministic, side-effect-free designs enforced by types or structure where practical; self-evident behavior needs no compensating test.
+- Add or expand tests only for a concrete, meaningful, uncovered regression risk—such as non-trivial domain policy, state transitions, security, data integrity, external contracts, or reproduced defects—not merely because implementation changed.
+- Do not test trivial wrappers, type-enforced facts, framework behavior, static markup, implementation details, duplicated behavior across layers, or low-value permutations.
+- When justified, extend the existing suite with the smallest test at the lowest-cost relevant boundary and assert observable behavior; if no consequential failure can be named, do not write it.
+- Prefer simpler code, types, structure, lint rules, or existing tools to new validation scripts. Tests and checks are evidence, not proof of correctness or quality; simplify live designs continuously, and treat growing defensive checks as a signal to fix the design rather than add guardrails.
+
 ### TypeScript Principles
 
 - Use brand types for domain entities.
