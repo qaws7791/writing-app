@@ -4,7 +4,6 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
   readServerApiBaseUrl,
-  readTestAuthEnabled,
   readWebCspRuntimeConfig,
   readWebOrigin,
 } from "@/server/env/runtime-config"
@@ -52,6 +51,7 @@ describe("web server runtime config", () => {
         WEB_ORIGIN: "https://writing.example.test",
       })
     ).toEqual({
+      contentAssetImageSource: null,
       development: false,
       reportOnly: true,
       upgradeInsecureRequests: true,
@@ -65,6 +65,7 @@ describe("web server runtime config", () => {
         WEB_ORIGIN: "http://localhost:3000",
       })
     ).toEqual({
+      contentAssetImageSource: null,
       development: false,
       reportOnly: false,
       upgradeInsecureRequests: false,
@@ -80,19 +81,44 @@ describe("web server runtime config", () => {
     ).toThrow("production web origin must use HTTPS")
   })
 
-  it("테스트 인증 플래그는 로컬에서 명시적으로 켠 경우에만 활성화한다", () => {
-    expect(readTestAuthEnabled({})).toBe(false)
+  it("content asset origin은 개발 HTTP를 허용하고 production에서 HTTPS를 강제한다", () => {
     expect(
-      readTestAuthEnabled({
-        ENABLE_TEST_AUTH: "true",
-        NODE_ENV: "development",
-      })
-    ).toBe(true)
-    expect(
-      readTestAuthEnabled({
-        ENABLE_TEST_AUTH: "true",
+      readWebCspRuntimeConfig({
+        CONTENT_ASSET_PUBLIC_BASE_URL: "http://127.0.0.1:4199/content-assets",
+        WEB_ORIGIN: "http://localhost:3000",
+      }).contentAssetImageSource
+    ).toBe("http://127.0.0.1:4199")
+    expect(() =>
+      readWebCspRuntimeConfig({
+        CONTENT_ASSET_PUBLIC_BASE_URL: "http://127.0.0.1:4199/content-assets",
         NODE_ENV: "production",
+        WEB_ORIGIN: "https://writing.example.test",
       })
-    ).toBe(false)
+    ).toThrow("content asset public base URL must use HTTPS in production")
+  })
+
+  it("production content asset origin은 build 허용 목록과 일치해야 한다", () => {
+    expect(
+      readWebCspRuntimeConfig({
+        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS:
+          "https://staging-assets.example.test,https://assets.example.test",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          "https://assets.example.test/content-assets",
+        NODE_ENV: "production",
+        WEB_ORIGIN: "https://writing.example.test",
+      }).contentAssetImageSource
+    ).toBe("https://assets.example.test")
+    expect(() =>
+      readWebCspRuntimeConfig({
+        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS:
+          "https://staging-assets.example.test,https://assets.example.test",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          "https://unknown-assets.example.test/content-assets",
+        NODE_ENV: "production",
+        WEB_ORIGIN: "https://writing.example.test",
+      })
+    ).toThrow(
+      "content asset public base URL origin is not in the image allowlist"
+    )
   })
 })

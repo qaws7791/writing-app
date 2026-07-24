@@ -4,7 +4,6 @@ import {
   type DocsContainerProps,
 } from "@storybook/addon-docs/blocks"
 import type { Preview } from "@storybook/react-vite"
-import "@workspace/ui/pretendard-font"
 import { addons } from "storybook/preview-api"
 
 import "#storybook-root/styles.css"

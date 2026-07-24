@@ -12,6 +12,13 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 import {
+  contentAssetAltTextMaxLength,
+  contentAssetKindValues,
+  contentAssetMaxBytes,
+  contentAssetMimeTypeValues,
+  contentAssetStatusValues,
+} from "#content/domain/content-asset"
+import {
   contentStatuses,
   contentStatusValues,
   courseVisualKeyValues,
@@ -50,6 +57,10 @@ export const courseCurriculumVersions = sqliteTable(
     courseId: text("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
+    coverAssetId: text("cover_asset_id").references(
+      (): AnySQLiteColumn => contentAssets.id,
+      { onDelete: "restrict" }
+    ),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     description: text("description").notNull(),
     editVersion: integer("edit_version").notNull().default(0),
@@ -93,6 +104,76 @@ export const courseCurriculumVersions = sqliteTable(
       .where(sql`${table.status} = 'draft'`),
     index("course_curriculum_versions_course_status_idx").on(
       table.courseId,
+      table.status
+    ),
+  ]
+)
+
+export const contentAssets = sqliteTable(
+  "content_assets",
+  {
+    altText: text("alt_text").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    contentType: text("content_type", {
+      enum: contentAssetMimeTypeValues,
+    }).notNull(),
+    courseId: text("course_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    curriculumVersionId: text("curriculum_version_id").notNull(),
+    id: text("id").primaryKey().notNull(),
+    kind: text("kind", { enum: contentAssetKindValues }).notNull(),
+    objectKey: text("object_key").notNull(),
+    orphanedAt: integer("orphaned_at", { mode: "timestamp_ms" }),
+    status: text("status", { enum: contentAssetStatusValues })
+      .notNull()
+      .default("active"),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.courseId, table.curriculumVersionId],
+      foreignColumns: [
+        courseCurriculumVersions.courseId,
+        courseCurriculumVersions.id,
+      ],
+      name: "content_assets_curriculum_version_fk",
+    }).onDelete("cascade"),
+    check(
+      "content_assets_kind_check",
+      sql`${table.kind} IN ('course-cover', 'reading-illustration')`
+    ),
+    check(
+      "content_assets_content_type_check",
+      sql`${table.contentType} IN ('image/jpeg', 'image/png', 'image/webp')`
+    ),
+    check(
+      "content_assets_byte_size_check",
+      sql`${table.byteSize} > 0 AND ${table.byteSize} <= ${sql.raw(
+        String(contentAssetMaxBytes)
+      )}`
+    ),
+    check(
+      "content_assets_alt_text_check",
+      sql`length(trim(${table.altText})) > 0 AND length(${table.altText}) <= ${sql.raw(
+        String(contentAssetAltTextMaxLength)
+      )}`
+    ),
+    check(
+      "content_assets_status_check",
+      sql`${table.status} IN ('active', 'orphaned')`
+    ),
+    check(
+      "content_assets_orphaned_at_check",
+      sql`(${table.status} = 'active' AND ${table.orphanedAt} IS NULL) OR (${table.status} = 'orphaned' AND ${table.orphanedAt} IS NOT NULL)`
+    ),
+    check(
+      "content_assets_updated_at_check",
+      sql`${table.updatedAt} >= ${table.createdAt}`
+    ),
+    uniqueIndex("content_assets_object_key_idx").on(table.objectKey),
+    index("content_assets_course_version_status_idx").on(
+      table.courseId,
+      table.curriculumVersionId,
       table.status
     ),
   ]

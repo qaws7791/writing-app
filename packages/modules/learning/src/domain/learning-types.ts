@@ -1,4 +1,5 @@
 import type {
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
@@ -17,6 +18,7 @@ export type LearningStep =
       Readonly<{
         body: string
         guide: string
+        illustrationAssetId?: ContentAssetId
         source?: string
         title: string
         type: "READING"
@@ -46,16 +48,16 @@ export type LearningStep =
         explanation: string
         template: string
         type: "FILL_BLANK"
-        wordIds?: readonly string[]
+        wordIds: readonly string[]
         words: readonly string[]
       }>)
   | (LearningStepBase &
       Readonly<{
-        correct: readonly number[]
+        correct: readonly string[]
         explanation: string
         layout?: string
         question: string
-        segmentIds?: readonly string[]
+        segmentIds: readonly string[]
         segments: readonly string[]
         type: "SELECT"
       }>)
@@ -63,7 +65,7 @@ export type LearningStep =
       Readonly<{
         correct: readonly string[]
         explanation: string
-        itemIds?: readonly string[]
+        itemIds: readonly string[]
         items: readonly string[]
         showNumbers?: boolean
         title: string
@@ -94,9 +96,6 @@ export type LearningStep =
         allowRetry: boolean
         feedback: string
         focus: string
-        score: number
-        scoreMax: number
-        showScore: boolean
         target: LessonStepId
         type: "AI_FEEDBACK"
       }>)
@@ -106,9 +105,9 @@ export type LearningStep =
         guide: string
         pairs: readonly Readonly<{
           left: string
-          leftId?: string
+          leftId: string
           right: string
-          rightId?: string
+          rightId: string
         }>[]
         title: string
         type: "MATCH"
@@ -148,6 +147,7 @@ export type LearningCurriculum = Readonly<{
   category: string
   contentStatus?: "active" | "archived"
   courseId: CourseId
+  coverAssetId: ContentAssetId | null
   curriculumVersionId: CurriculumVersionId
   description: string
   lessons: readonly LearningCurriculumLesson[]
@@ -170,6 +170,7 @@ export type LearningCurriculum = Readonly<{
 export type LearningCourseSummary = Readonly<{
   category: string
   courseId: CourseId
+  coverAssetId: ContentAssetId | null
   description: string
   lessonCount: number
   revision: number
@@ -211,6 +212,46 @@ export type LearnerStepSubmission =
       type: "CATEGORIZE"
     }>
   | Readonly<{ text: string; type: "WRITE" }>
+
+export type LearnerStepDraftAnswer =
+  | Readonly<{
+      selectedOptionId: LessonStepItemId | null
+      type: "MULTIPLE_CHOICE"
+    }>
+  | Readonly<{
+      selectedChoiceIds: readonly LessonStepItemId[]
+      type: "FILL_BLANK"
+    }>
+  | Readonly<{
+      selectedItemIds: readonly LessonStepItemId[]
+      type: "SELECT"
+    }>
+  | Readonly<{
+      orderedItemIds: readonly LessonStepItemId[]
+      type: "ORDER"
+    }>
+  | Readonly<{
+      pairs: readonly Readonly<{
+        leftItemId: LessonStepItemId
+        rightItemId: LessonStepItemId
+      }>[]
+      type: "MATCH"
+    }>
+  | Readonly<{
+      assignments: readonly Readonly<{
+        categoryId: LessonStepItemId
+        itemId: LessonStepItemId
+      }>[]
+      type: "CATEGORIZE"
+    }>
+  | Readonly<{ text: string; type: "WRITE" }>
+
+export type LearnerStepDraft = Readonly<{
+  answer: LearnerStepDraftAnswer
+  stepId: LessonStepId
+  updatedAt: string
+  version: number
+}>
 
 export type StepItemVerdict = "correct" | "incorrect" | "missed"
 

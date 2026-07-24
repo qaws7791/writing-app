@@ -8,18 +8,25 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["generate", "^generate", "^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "generate": {
+      "outputs": [".generated/**"]
+    },
+    "@workspace/http-client#generate": {
+      "dependsOn": ["@workspace/api#generate"],
+      "outputs": [".generated/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["generate", "^generate", "^typecheck"]
     },
     "test": {
-      "dependsOn": ["^test"],
+      "dependsOn": ["generate", "^generate", "^test"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"]
     },
     "dev": {

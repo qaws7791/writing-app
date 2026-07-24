@@ -1,20 +1,32 @@
 import type { Result } from "@workspace/kernel/result"
 
-import type {
-  AiFeedbackProviderResponse,
-  AiFeedbackProviderResponseError,
-} from "#ai-feedback/domain/ai-feedback"
+import type { AiFeedbackProviderResponse } from "#ai-feedback/domain/ai-feedback"
 import type { AiFeedbackPrompt } from "#ai-feedback/domain/ai-feedback-prompt"
 
-export type AiFeedbackProviderError =
-  | AiFeedbackProviderResponseError
-  | Readonly<{
-      kind: "provider-timeout" | "provider-unavailable" | "request-aborted"
-    }>
+export type AiFeedbackProviderUsage = Readonly<{
+  inputTokens: number
+  outputTokens: number
+}>
+
+export type AiFeedbackProviderError = Readonly<{
+  kind:
+    | "provider-response-invalid"
+    | "provider-timeout"
+    | "provider-unavailable"
+    | "request-aborted"
+  usage?: AiFeedbackProviderUsage
+}>
+
+export type AiFeedbackProviderSuccess = Readonly<{
+  feedback: AiFeedbackProviderResponse
+  usage?: AiFeedbackProviderUsage
+}>
 
 export type AiFeedbackProvider = Readonly<{
+  model: string
+  provider: string
   createFeedback: (
     prompt: AiFeedbackPrompt,
     options: Readonly<{ signal: AbortSignal }>
-  ) => Promise<Result<AiFeedbackProviderResponse, AiFeedbackProviderError>>
+  ) => Promise<Result<AiFeedbackProviderSuccess, AiFeedbackProviderError>>
 }>

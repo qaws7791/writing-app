@@ -49,7 +49,8 @@ const lessonSteps = [
     sortOrder: 4,
     template: "그는 회의 내내 동료의 발표를 ___ 했다.",
     words: ["보다", "관찰"],
-    answer: ["관찰"],
+    wordIds: ["word-a", "word-b"],
+    answer: ["word-b"],
     explanation: "집중해서 살피는 행위에는 관찰이 정확합니다.",
   },
   {
@@ -58,7 +59,8 @@ const lessonSteps = [
     sortOrder: 5,
     question: "주어 역할을 하는 구간을 모두 선택하세요.",
     segments: ["꾸준한 ", "글쓰기는 ", "사고를 ", "정돈한다."],
-    correct: [0, 1],
+    segmentIds: ["segment-a", "segment-b", "segment-c", "segment-d"],
+    correct: ["segment-a", "segment-b"],
     explanation: "꾸준한 글쓰기는 주어부입니다.",
   },
   {
@@ -67,7 +69,8 @@ const lessonSteps = [
     sortOrder: 6,
     title: "문장을 자연스러운 어순으로",
     items: ["나는", "책을", "읽었다"],
-    correct: ["나는", "책을", "읽었다"],
+    itemIds: ["item-a", "item-b", "item-c"],
+    correct: ["item-a", "item-b", "item-c"],
     showNumbers: true,
     explanation: "한국어 기본 어순을 확인합니다.",
   },
@@ -89,9 +92,6 @@ const lessonSteps = [
     target: "l1-s7",
     focus: "명확성",
     feedback: "주장과 근거가 명확히 구분되어 있습니다.",
-    showScore: true,
-    score: 92,
-    scoreMax: 100,
     allowRetry: true,
   },
   {
@@ -100,7 +100,14 @@ const lessonSteps = [
     sortOrder: 9,
     title: "접속사와 기능 짝짓기",
     guide: "왼쪽 접속사와 오른쪽 기능을 짝지으세요.",
-    pairs: [{ left: "그러나", right: "역접" }],
+    pairs: [
+      {
+        left: "그러나",
+        leftId: "left-a",
+        right: "역접",
+        rightId: "right-a",
+      },
+    ],
     explanation: "접속사는 논리 관계를 보여줍니다.",
   },
   {
@@ -118,11 +125,21 @@ const lessonSteps = [
 ] as const
 
 describe("콘텐츠 DTO schema", () => {
-  it("표준 10개 스텝 DTO를 discriminated union으로 parse한다", () => {
-    expect(lessonSteps.map((step) => lessonStepDtoSchema.parse(step))).toEqual(
-      lessonSteps
-    )
+  it.each(lessonSteps)("$type 유효 계약을 parse한다", (step) => {
+    expect(lessonStepDtoSchema.parse(step)).toEqual(step)
   })
+
+  it.each(lessonSteps)(
+    "$type 계약은 다른 type discriminator를 거부한다",
+    (step) => {
+      expect(
+        lessonStepDefinitions[step.type].schema.safeParse({
+          ...step,
+          type: "UNKNOWN",
+        }).success
+      ).toBe(false)
+    }
+  )
 
   it("쓰기 스텝은 guide 없이 prompt나 topic만 있어도 parse한다", () => {
     expect(
@@ -139,7 +156,18 @@ describe("콘텐츠 DTO schema", () => {
     })
   })
 
-  it("스텝 타입별 DTO 정의와 답변 가능 정책을 같은 계약에서 관리한다", () => {
+  it("기존 score 필드가 남은 AI 코칭 스텝을 거부한다", () => {
+    const feedbackStep = lessonSteps.find((step) => step.type === "AI_FEEDBACK")
+    if (feedbackStep === undefined) {
+      throw new Error("AI 코칭 테스트 fixture가 없습니다.")
+    }
+
+    expect(
+      lessonStepDtoSchema.safeParse({ ...feedbackStep, score: 92 }).success
+    ).toBe(false)
+  })
+
+  it("스텝 타입별 DTO와 transition·draft·평가 정책을 같은 계약에서 관리한다", () => {
     expect(Object.keys(lessonStepDefinitions).sort()).toEqual(
       [...lessonStepTypeSchema.options].sort()
     )
@@ -149,6 +177,16 @@ describe("콘텐츠 DTO schema", () => {
         (stepType) => lessonStepDefinitions[stepType].answerable
       )
     ).toEqual([...answerableLessonStepTypes])
+    expect(lessonStepDefinitions.READING).toMatchObject({
+      completion: "acknowledge",
+      draftable: false,
+      evaluatedByServer: false,
+    })
+    expect(lessonStepDefinitions.AI_FEEDBACK).toMatchObject({
+      completion: "ai-feedback",
+      draftable: false,
+      evaluatedByServer: true,
+    })
   })
 
   it("코스 목록과 코스 상세 DTO를 parse한다", () => {

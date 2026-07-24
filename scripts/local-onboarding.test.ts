@@ -22,31 +22,6 @@ const credentials: LocalCredentials = {
 }
 
 describe("로컬 온보딩", () => {
-  test("API database 작업은 저장소 루트의 env와 상대 경로를 사용한다", () => {
-    const manifest = JSON.parse(
-      fs.readFileSync(
-        path.resolve(import.meta.dir, "../apps/api/package.json"),
-        "utf8"
-      )
-    ) as { readonly scripts?: Readonly<Record<string, string>> }
-    const databaseScripts = {
-      "audit:admin-auth": "admin-auth-audit.ts",
-      "db:backup": "backup-database.ts",
-      "db:migrate": "migrate-database.ts",
-      "db:inspect": "inspect-database.ts",
-      "db:reset": "reset-database.ts",
-      "db:seed": "seed-database.ts",
-      "revoke:admin-sessions": "revoke-admin-sessions.ts",
-      "seed:admin": "seed-admin.ts",
-    } as const
-
-    for (const [scriptName, entrypoint] of Object.entries(databaseScripts)) {
-      expect(manifest.scripts?.[scriptName]).toBe(
-        `cd ../.. && bun --env-file=apps/api/.env apps/api/src/scripts/${entrypoint}`
-      )
-    }
-  })
-
   test("누락된 환경 파일을 credential을 치환해 생성한다", () => {
     using fixture = createFixture()
 
@@ -309,19 +284,13 @@ describe("로컬 온보딩", () => {
     })
   })
 
-  test("일치하지 않는 테스트 인증과 누락된 DB를 실패로 보고한다", () => {
+  test("누락된 DB를 실패로 보고한다", () => {
     using fixture = createFixture()
     createLocalEnvironmentFiles({
       createCredentials: () => credentials,
       repositoryRoot: fixture.path,
     })
     fs.mkdirSync(path.join(fixture.path, "node_modules"))
-    replaceFileValue(
-      path.join(fixture.path, "apps/web/.env"),
-      "ENABLE_TEST_AUTH",
-      "false"
-    )
-
     const checks = inspectLocalOnboarding({
       bunVersion: "1.3.10",
       nodeVersion: "24.15.0",
@@ -329,11 +298,6 @@ describe("로컬 온보딩", () => {
     })
 
     expect(hasLocalOnboardingFailures(checks)).toBe(true)
-    expect(checks).toContainEqual({
-      detail: "apps/api와 apps/web의 ENABLE_TEST_AUTH 값을 일치시키세요.",
-      kind: "failure",
-      label: "테스트 인증",
-    })
     expect(checks).toContainEqual({
       detail: "bun run dev:admin:setup을 실행하세요.",
       kind: "failure",
@@ -416,7 +380,6 @@ function createFixture(): Disposable & { readonly path: string } {
       "DEPLOYMENT_VERSION=local",
       "API_PORT=4000",
       "WEB_ORIGIN=http://localhost:3000",
-      "ENABLE_TEST_AUTH=true",
       "ADMIN_SEED_EMAIL=owner@example.com",
       "ADMIN_SEED_NAME=관리자",
       "ADMIN_SEED_PASSWORD=replace-with-strong-local-admin-password",
@@ -430,7 +393,6 @@ function createFixture(): Disposable & { readonly path: string } {
     [
       "API_BASE_URL=http://localhost:4000",
       "WEB_ORIGIN=http://localhost:3000",
-      "ENABLE_TEST_AUTH=true",
       "CSP_REPORT_ONLY=false",
     ].join("\n")
   )

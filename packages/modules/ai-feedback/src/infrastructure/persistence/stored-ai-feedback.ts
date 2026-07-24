@@ -4,9 +4,6 @@ import { validateAiFeedbackProviderResponse } from "#ai-feedback/domain/ai-feedb
 const storedFeedbackKeys = new Set([
   "improvements",
   "nextAction",
-  "score",
-  "scoreRange",
-  "showScore",
   "strengths",
   "summary",
 ])
@@ -22,36 +19,15 @@ export function validateStoredAiFeedback(value: string | null): AiFeedback {
   }
   if (
     !isUnknownRecord(parsed) ||
-    Object.keys(parsed).some((key) => !storedFeedbackKeys.has(key)) ||
-    typeof parsed["showScore"] !== "boolean"
+    Object.keys(parsed).some((key) => !storedFeedbackKeys.has(key))
   ) {
     throw new Error("Stored AI feedback result is invalid")
   }
-  if (
-    !Array.isArray(parsed["scoreRange"]) ||
-    parsed["scoreRange"].length !== 2 ||
-    parsed["scoreRange"][0] !== 0 ||
-    parsed["scoreRange"][1] !== 100
-  ) {
-    throw new Error("Stored AI feedback score range is invalid")
-  }
 
-  const response = validateAiFeedbackProviderResponse({
-    improvements: parsed["improvements"],
-    nextAction: parsed["nextAction"],
-    score: parsed["score"],
-    strengths: parsed["strengths"],
-    summary: parsed["summary"],
-  })
+  const response = validateAiFeedbackProviderResponse(parsed)
   if (response.isErr()) throw new Error("Stored AI feedback result is invalid")
 
-  const scoreRange = Object.freeze([0, 100] as const)
-
-  return Object.freeze({
-    ...response.value,
-    scoreRange,
-    showScore: parsed["showScore"],
-  })
+  return response.value
 }
 
 function isUnknownRecord(

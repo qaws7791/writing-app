@@ -1,6 +1,7 @@
 import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
-import { createApp as createHonoApp } from "@workspace/http-platform/core"
+import { createApp as createHonoApp } from "@workspace/http-platform/app"
+import { createApiErrorResponseMiddleware } from "@workspace/http-platform/errors"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
@@ -8,39 +9,20 @@ import {
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import type { ApiDependencies } from "@/context/create-request-context"
+import type { ApiHonoEnv } from "@/context/hono-env"
 import { createRequestContextMiddleware } from "@/middleware/request-context.middleware"
-import { createApiFoundationRoutes, registerApiBootstrapRoutes } from "@/routes"
-import {
-  createLearnerErrorHandler,
-  createLearnerErrorResponseMiddleware,
-} from "@/http/learner-error-response"
-import { createRequestLoggingMiddleware } from "@workspace/http-platform/request-logging"
+import { createRequestLoggingMiddleware } from "@workspace/http-platform/app"
 import { createSecurityAuditRequestObserver } from "@/observability/security-audit-request-observer"
 
 export type { ApiDependencies }
 
-export function createLearnerApp(dependencies: ApiDependencies): OpenAPIHono {
-  const app = createHonoApp({
+export function createLearnerApp(
+  dependencies: ApiDependencies
+): OpenAPIHono<ApiHonoEnv> {
+  return createHonoApp<ApiHonoEnv>({
     errorLogger: dependencies.errorLogger,
     middleware: createMiddleware(dependencies),
-    routes: [
-      ...createApiFoundationRoutes(dependencies),
-      ...dependencies.aiFeedbackRoutes,
-      ...dependencies.identityRoutes,
-      ...dependencies.learningRoutes,
-    ],
   })
-
-  app.onError(
-    createLearnerErrorHandler(
-      dependencies.errorLogger,
-      dependencies.requestLoggingRuntime?.createRequestId
-    )
-  )
-
-  registerApiBootstrapRoutes(app, dependencies)
-
-  return app
 }
 
 function createMiddleware(
@@ -61,7 +43,9 @@ function createMiddleware(
       readMonotonicTimeMs:
         dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
     }),
-    createLearnerErrorResponseMiddleware()
+    createApiErrorResponseMiddleware({
+      exclude: isLearnerHealthPath,
+    })
   )
 
   const webOrigin =
@@ -76,3 +60,7 @@ function createMiddleware(
 }
 
 function ignoreRequestLog(): void {}
+
+function isLearnerHealthPath(path: string): boolean {
+  return path === "/health" || path === "/api/health"
+}

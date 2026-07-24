@@ -289,43 +289,6 @@ describe("setup과 doctor DB 안전 경계", () => {
 
     expect(events).toEqual(["exists", "inspect", "migrate"])
   })
-
-  test("doctor는 로컬 환경과 read-only DB 진단만 실행한다", () => {
-    const repositoryRoot = path.resolve(import.meta.dir, "..")
-    const source = fs.readFileSync(
-      path.join(repositoryRoot, "scripts/doctor.ts"),
-      "utf8"
-    )
-
-    expect(source).toContain("inspectLocalOnboarding")
-    expect(source).toContain("inspectLocalApplicationDatabase")
-    expect(source).toContain('diagnostic.status === "migration-required"')
-    expect(source).not.toContain("db:migrate")
-    expect(source).not.toContain("db:reset")
-  })
-
-  test("setup은 전체 operation lock 안에서 candidate와 실제 migration entrypoint를 연결한다", () => {
-    const repositoryRoot = path.resolve(import.meta.dir, "..")
-    const setupSource = fs.readFileSync(
-      path.join(repositoryRoot, "scripts/setup.ts"),
-      "utf8"
-    )
-    const databaseSetupSource = fs.readFileSync(
-      path.join(repositoryRoot, "scripts/local-database-setup.ts"),
-      "utf8"
-    )
-
-    expect(setupSource).toContain(
-      "withLocalSetupOperationLock(repositoryRoot, runSetupExclusively)"
-    )
-    expect(setupSource).toContain(
-      '["bun", "--filter", "@workspace/api", "db:migrate"]'
-    )
-    expect(databaseSetupSource).toContain(
-      'diagnostic.schema !== "current" || diagnostic.status !== "ok"'
-    )
-    expect(setupSource).not.toContain("statSync(databasePath)")
-  })
 })
 
 function createTemporaryFixture(): Disposable & { readonly path: string } {

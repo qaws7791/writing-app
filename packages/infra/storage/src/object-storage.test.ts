@@ -43,6 +43,17 @@ describe("S3-compatible object storage", () => {
     if (putResult.isErr()) expect(putResult.error.cause).toBe(cause)
   })
 
+  it("persisted object key를 public origin에서만 결정적으로 resolve한다", () => {
+    const result = createS3ObjectStorage(config, {
+      client: { send: async () => ({}) },
+    })
+    if (result.isErr()) throw result.error
+
+    expect(result.value.resolveUrl("course covers/표지.webp")).toBe(
+      "https://cdn.example.test/course%20covers/%ED%91%9C%EC%A7%80.webp"
+    )
+  })
+
   it("불완전한 config를 fail-closed한다", () => {
     expect(
       createS3ObjectStorage({ ...config, secretAccessKey: "" }).isErr()

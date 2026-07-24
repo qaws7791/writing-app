@@ -9,12 +9,14 @@ import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-
 export function MultipleChoiceAnswer({
   checked = false,
   correctOptionId,
+  defaultSelectedOptionId = null,
   onSelect,
   options,
   question,
 }: {
   readonly checked?: LessonStepCheckedVisual
   readonly correctOptionId: string
+  readonly defaultSelectedOptionId?: string | null
   readonly onSelect?: (optionId: string) => void
   readonly options: readonly {
     readonly id: string
@@ -22,16 +24,21 @@ export function MultipleChoiceAnswer({
   }[]
   readonly question: string
 }) {
-  const [selectedOptionId, setSelectedOptionId] = useState<null | string>(null)
+  const [selectedOptionId, setSelectedOptionId] = useState<null | string>(
+    defaultSelectedOptionId
+  )
 
   const MC_COLORS: Record<
     "secondary" | "selected" | "correct" | "wrong",
     { bg: string; text: string }
   > = {
-    secondary: { bg: "bg-surface", text: "text-charcoal" },
-    selected: { bg: "bg-accent", text: "text-accent-foreground" },
-    correct: { bg: "bg-mint-light", text: "text-charcoal" },
-    wrong: { bg: "bg-coral-light", text: "text-charcoal" },
+    secondary: { bg: "bg-bg-surface", text: "text-fg-default" },
+    selected: {
+      bg: "bg-action-selected-bg",
+      text: "text-action-selected-fg",
+    },
+    correct: { bg: "bg-success", text: "text-success-foreground" },
+    wrong: { bg: "bg-danger", text: "text-danger-foreground" },
   }
 
   const stateMap = {
@@ -94,7 +101,7 @@ export function MultipleChoiceAnswer({
                   "h-auto w-full justify-start rounded-3xl px-5 py-4 text-left text-base font-medium",
                   c.bg,
                   c.text,
-                  variant === "selected" && "hover:bg-accent",
+                  variant === "selected" && "hover:bg-action-selected-bg",
                   faded && "opacity-40"
                 ),
                 variant: buttonVariant,

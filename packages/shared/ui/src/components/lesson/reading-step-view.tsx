@@ -1,13 +1,17 @@
+import type { ReactNode } from "react"
+
 import { MarkdownContent } from "#ui/components/lesson/markdown-content"
 
 export function ReadingStepView({
   body,
   guide,
+  illustration,
   source,
   title,
 }: {
   readonly body: string
   readonly guide: string
+  readonly illustration?: ReactNode
   readonly source?: string
   readonly title: string
 }) {
@@ -19,12 +23,15 @@ export function ReadingStepView({
       {guide === "" ? null : (
         <MarkdownContent className="mb-6">{guide}</MarkdownContent>
       )}
-      <MarkdownContent className="mb-6 prose-p:text-charcoal/80 prose-li:text-charcoal/80 prose-hr:border-surface">
+      {illustration === undefined ? null : (
+        <div className="mb-6 overflow-hidden rounded-card">{illustration}</div>
+      )}
+      <MarkdownContent className="mb-6 [&_p]:text-fg-default [&_li]:text-fg-default">
         {body}
       </MarkdownContent>
       {source === undefined ? null : (
         <div
-          className="text-muted-foreground font-bold"
+          className="text-fg-muted font-bold"
           style={{ fontSize: "0.8125rem" }}
         >
           출처: {source}

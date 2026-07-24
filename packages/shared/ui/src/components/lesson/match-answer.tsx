@@ -43,19 +43,19 @@ function getMatchButtonClassName({
   readonly tone?: MatchAnswerConnection["tone"]
 }) {
   if (checked !== false) {
-    if (tone === "correct") return "bg-mint-light text-charcoal"
-    if (tone === "wrong") return "bg-coral-light text-charcoal"
+    if (tone === "correct") return "bg-success text-success-foreground"
+    if (tone === "wrong") return "bg-danger text-danger-foreground"
   }
 
   if (isActive) {
-    return "bg-charcoal text-cream shadow-lg scale-[1.02]"
+    return "bg-action-primary-bg text-action-primary-fg shadow-lg scale-[1.02]"
   }
 
   if (isPaired) {
-    return "bg-accent text-accent-foreground"
+    return "bg-action-selected-bg text-action-selected-fg"
   }
 
-  return "bg-surface text-charcoal hover:bg-accent/30"
+  return "bg-bg-surface text-fg-default hover:bg-action-selected-bg"
 }
 
 function measureMatchConnectionLines({
@@ -111,9 +111,9 @@ function MatchConnectionOverlay({
         <line
           className={cn(
             "stroke-[2.5]",
-            line.tone === "correct" && "stroke-mint-dark",
-            line.tone === "wrong" && "stroke-coral-dark",
-            line.tone === "default" && "stroke-charcoal/60"
+            line.tone === "correct" && "stroke-success-fg",
+            line.tone === "wrong" && "stroke-danger-fg",
+            line.tone === "default" && "stroke-fg-muted"
           )}
           key={line.id}
           strokeLinecap="round"
@@ -225,7 +225,7 @@ export function MatchAnswer({
       {guide ? (
         <MarkdownContent className="mb-6">{guide}</MarkdownContent>
       ) : (
-        <p className="text-muted-foreground font-medium mb-6">
+        <p className="text-fg-muted font-medium mb-6">
           양쪽 항목을 차례로 탭해 짝을 맞추세요. 같은 항목을 다시 탭하면 선택을
           취소할 수 있습니다.
         </p>
@@ -298,8 +298,8 @@ export function MatchAnswer({
         </div>
       </div>
       {checked !== false && explanation ? (
-        <div className="mt-6 bg-surface rounded-4xl p-6">
-          <div className="font-bold text-muted-foreground mb-2">해설</div>
+        <div className="mt-6 bg-bg-surface rounded-4xl p-6">
+          <div className="font-bold text-fg-muted mb-2">해설</div>
           <p className="font-medium">{explanation}</p>
         </div>
       ) : null}

@@ -2,11 +2,7 @@ import type { Clock } from "@workspace/kernel/clock"
 import type { Result } from "@workspace/kernel/result"
 import type { AdminId, UserId } from "@workspace/types/ids"
 
-import type {
-  AdminActor,
-  AdminIdentity,
-  AdminRole,
-} from "#identity/domain/admin-role"
+import type { AdminActor } from "#identity/domain/admin-actor"
 import type { IdentityError } from "#identity/domain/identity-error"
 import type { LearnerProfile } from "#identity/domain/learner-profile"
 import type { UserStatus } from "#identity/domain/user-status"
@@ -32,22 +28,12 @@ export type LearnerAccount = Readonly<{
   profile: LearnerProfileSnapshot
 }>
 
-export type AdminIdentitySnapshot = Readonly<{
-  identity: AdminIdentity
-  version: number
-}>
-
 export type IdentityRepository = Readonly<{
-  findAdminIdentity: (adminId: AdminId) => Promise<AdminIdentitySnapshot | null>
   findLearnerProfile: (userId: UserId) => Promise<LearnerProfileRecord | null>
   listLearnerProfiles: () => Promise<readonly LearnerProfileRecord[]>
   provisionLearnerProfile: (input: {
     readonly profile: LearnerProfile
   }) => Promise<LearnerProfileSnapshot>
-  saveAdminIdentity: (input: {
-    readonly expectedVersion: number
-    readonly identity: AdminIdentity
-  }) => Promise<Result<AdminIdentitySnapshot, IdentityError>>
   saveLearnerProfile: (input: {
     readonly expectedVersion: number | null
     readonly profile: LearnerProfile
@@ -93,12 +79,44 @@ export type IdentitySessionRevocationError = Readonly<{
 }>
 
 export type IdentitySessionRevocationPort = Readonly<{
-  revokeAdminSessions: (
-    adminId: AdminId
-  ) => Promise<Result<void, IdentitySessionRevocationError>>
   revokeLearnerSessions: (
     userId: UserId
   ) => Promise<Result<void, IdentitySessionRevocationError>>
+}>
+
+export type LearnerDeletionMarker = Readonly<{
+  requestedAt: Date
+  userId: UserId
+}>
+
+export type LearnerDeletionMarkerError = Readonly<{
+  kind: "deletion-marker-storage-failed"
+}>
+
+export type LearnerDeletionMarkerStorePort = Readonly<{
+  readAll: () => Promise<
+    Result<readonly LearnerDeletionMarker[], LearnerDeletionMarkerError>
+  >
+  record: (
+    marker: LearnerDeletionMarker
+  ) => Promise<Result<void, LearnerDeletionMarkerError>>
+}>
+
+export type DeletedLearnerPurgeRepositoryError = Readonly<{
+  kind: "deleted-learner-purge-failed"
+}>
+
+export type DeletedLearnerPurgeRepository = Readonly<{
+  purgeDeletedBefore: (input: {
+    readonly batchSize: number
+    readonly cutoff: Date
+    readonly dryRun: boolean
+  }) => Promise<
+    Result<
+      Readonly<{ matchedUserCount: number; purgedUserCount: number }>,
+      DeletedLearnerPurgeRepositoryError
+    >
+  >
 }>
 
 export type LearnerLearningReport = Readonly<{
@@ -129,6 +147,7 @@ export type LearnerProfileStatsQuery = Readonly<{
 
 export type IdentityApplicationDependencies = Readonly<{
   clock: Clock
+  deletionMarkerStore: Pick<LearnerDeletionMarkerStorePort, "record">
   learnerIdentityDirectory: LearnerIdentityDirectoryPort
   repository: IdentityRepository
   sessionRevocation: IdentitySessionRevocationPort
@@ -138,10 +157,4 @@ export type ChangeUserStatusCommand = Readonly<{
   actor: AdminActor
   status: UserStatus
   userId: UserId
-}>
-
-export type ChangeAdminRoleCommand = Readonly<{
-  actor: AdminActor
-  adminId: AdminId
-  role: AdminRole
 }>

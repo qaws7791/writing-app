@@ -1,4 +1,8 @@
-import type { AnyRouteConfig } from "@workspace/http-platform/core"
+import {
+  createRoute,
+  type OpenAPIHono,
+  type RouteConfig,
+} from "@hono/zod-openapi"
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import {
   adminAnalyticsDtoSchema,
@@ -9,34 +13,78 @@ import {
   adminAnalyticsQuerySchema,
   adminLessonAnalyticsQuerySchema,
 } from "@workspace/contracts/operations/analytics-query"
+import {
+  aiFeedbackQualityQuerySchema,
+  aiFeedbackQualitySnapshotSchema,
+} from "@workspace/contracts/ai-feedback/quality"
 
 import type { OperationsReportingQueries } from "#operations/application/operations-reporting"
 import type { OperationsAdminSessionPort } from "#operations/application/ports/operations-ports"
-import { operationsSessionRouteOptions } from "#operations/interface/http/operations-http-auth"
 import {
-  defineOperationsRoute,
+  operationsSessionRouteOptions,
+  type OperationsHonoEnv,
+} from "#operations/interface/http/operations-http-auth"
+import {
   mapOperationsError,
   operationsAuthenticatedResponses,
   operationsErrorResponse,
-  type OperationsRouteHandler,
 } from "#operations/interface/http/operations-http-support"
 
-export function createOperationsReportingRoutes(input: {
-  readonly now: () => Date
-  readonly queries: OperationsReportingQueries
-  readonly session: OperationsAdminSessionPort
-}) {
-  return Object.freeze([
-    createDashboardRoute(input),
-    createAnalyticsRoute(input),
-    createLessonAnalyticsRoute(input),
-  ])
+type OperationsReportingRouteDependencies = Readonly<{
+  now: () => Date
+  queries: OperationsReportingQueries
+  session: OperationsAdminSessionPort
+}>
+
+export function registerOperationsReportingRoutes<
+  TEnv extends OperationsHonoEnv,
+>(app: OpenAPIHono<TEnv>, input: OperationsReportingRouteDependencies): void {
+  registerDashboardRoute(app, input)
+  registerAnalyticsRoute(app, input)
+  registerLessonAnalyticsRoute(app, input)
+  registerAiFeedbackQualityRoute(app, input)
 }
 
-function createDashboardRoute(
-  input: Parameters<typeof createOperationsReportingRoutes>[0]
-) {
-  const route = {
+function registerAiFeedbackQualityRoute<TEnv extends OperationsHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: OperationsReportingRouteDependencies
+): void {
+  const route = createRoute({
+    method: "get",
+    operationId: "getAdminAiFeedbackQuality",
+    path: "/analytics/ai-feedback",
+    request: { query: aiFeedbackQualityQuerySchema },
+    responses: {
+      ...operationsAuthenticatedResponses(
+        jsonResponse(
+          "원문을 포함하지 않는 AI 코칭 품질 집계입니다.",
+          aiFeedbackQualitySnapshotSchema
+        )
+      ),
+      503: operationsErrorResponse("운영 보고 데이터를 사용할 수 없습니다."),
+    },
+    summary: "AI 코칭 품질 집계 조회",
+    ...operationsSessionRouteOptions(input.session),
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const query = context.req.valid("query")
+    const result = await input.queries.readAiFeedbackQuality({
+      from: new Date(query.from),
+      to: new Date(query.to),
+    })
+    if (result.isErr()) throw mapOperationsError(result.error)
+    return context.json(
+      aiFeedbackQualitySnapshotSchema.parse(result.value),
+      200
+    )
+  })
+}
+
+function registerDashboardRoute<TEnv extends OperationsHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: OperationsReportingRouteDependencies
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getAdminDashboard",
     path: "/dashboard",
@@ -48,19 +96,19 @@ function createDashboardRoute(
     },
     summary: "어드민 대시보드 조회",
     ...operationsSessionRouteOptions(input.session),
-  } satisfies AnyRouteConfig
-  const handler: OperationsRouteHandler<typeof route> = async (context) => {
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
     const result = await input.queries.readDashboard({ now: input.now() })
     if (result.isErr()) throw mapOperationsError(result.error)
     return context.json(adminDashboardDtoSchema.parse(result.value), 200)
-  }
-  return defineOperationsRoute({ ...route, handler })
+  })
 }
 
-function createAnalyticsRoute(
-  input: Parameters<typeof createOperationsReportingRoutes>[0]
-) {
-  const route = {
+function registerAnalyticsRoute<TEnv extends OperationsHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: OperationsReportingRouteDependencies
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getAdminAnalytics",
     path: "/analytics",
@@ -73,8 +121,8 @@ function createAnalyticsRoute(
     },
     summary: "어드민 분석 요약 조회",
     ...operationsSessionRouteOptions(input.session),
-  } satisfies AnyRouteConfig
-  const handler: OperationsRouteHandler<typeof route> = async (context) => {
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
     const query = context.req.valid("query")
     const result = await input.queries.readAnalytics({
       days: query.days,
@@ -82,14 +130,14 @@ function createAnalyticsRoute(
     })
     if (result.isErr()) throw mapOperationsError(result.error)
     return context.json(adminAnalyticsDtoSchema.parse(result.value), 200)
-  }
-  return defineOperationsRoute({ ...route, handler })
+  })
 }
 
-function createLessonAnalyticsRoute(
-  input: Parameters<typeof createOperationsReportingRoutes>[0]
-) {
-  const route = {
+function registerLessonAnalyticsRoute<TEnv extends OperationsHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: OperationsReportingRouteDependencies
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getAdminLessonAnalytics",
     path: "/analytics/lessons",
@@ -105,8 +153,8 @@ function createLessonAnalyticsRoute(
     },
     summary: "어드민 레슨별 분석 조회",
     ...operationsSessionRouteOptions(input.session),
-  } satisfies AnyRouteConfig
-  const handler: OperationsRouteHandler<typeof route> = async (context) => {
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
     const result = await input.queries.readLessonAnalytics(
       context.req.valid("query")
     )
@@ -123,6 +171,5 @@ function createLessonAnalyticsRoute(
       }),
       200
     )
-  }
-  return defineOperationsRoute({ ...route, handler })
+  })
 }

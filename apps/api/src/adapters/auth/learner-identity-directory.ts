@@ -34,11 +34,11 @@ export function createLearnerIdentityDirectory(
 function toLearnerIdentity(
   row: typeof authUsers.$inferSelect
 ): AuthenticatedLearnerIdentity {
-  return Object.freeze({
+  return {
     email: row.email,
     id: userIdSchema.parse(row.id),
     image: row.image,
     joinedAt: new Date(row.createdAt),
     name: row.name,
-  })
+  }
 }

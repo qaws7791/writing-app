@@ -1,6 +1,5 @@
 import type { AdminId } from "@workspace/types/ids"
 
-import type { AdminRole } from "#identity/domain/admin-role"
 import type { UserStatus } from "#identity/domain/user-status"
 
 export const adminSessionExpiresAt = Symbol("admin-session-expires-at")
@@ -25,7 +24,6 @@ export type AdminAuthenticatedSession = Readonly<{
     email: string
     id: AdminId
     name: string
-    role: AdminRole
   }>
   [adminSessionExpiresAt]: Date
 }>

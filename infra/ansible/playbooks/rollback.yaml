@@ -2,7 +2,7 @@
 - name: Writing App 코드 롤백
   hosts: writing_app
   become: true
-  gather_facts: false
+  gather_facts: true
   vars_files:
     - ../vars/defaults.yaml
   tasks:
@@ -13,9 +13,13 @@
           - >-
             writing_app_code_rollback_database_compatible
             | default(false) | bool
+          - writing_app_hold_operation_lock_for_verify | default(false) | bool
+          - writing_app_source_revision is match('^[0-9a-f]{40}\Z')
+          - writing_app_operation_handoff_token is match('^[0-9a-f]{64}\Z')
         fail_msg: >-
           writing_app_allow_code_rollback=true와
-          writing_app_code_rollback_database_compatible=true를 명시해야 합니다.
+          writing_app_code_rollback_database_compatible=true, 공개 verify까지 lock을 유지하는
+          writing_app_hold_operation_lock_for_verify=true를 명시해야 합니다.
           DB가 이전 image와 호환되지 않으면 이 playbook을 실행하지 말고 별도 승인된
           database restore 절차를 사용해야 합니다.
 
@@ -40,29 +44,86 @@
           시작하지 않습니다. stale lock은 자동 삭제하지 않으므로, 실행 중인 작업이 없음을 확인한
           운영자가 수동으로 점검·해제해야 합니다.
 
+    - name: 코드 롤백 fail-closed 상태 초기화
+      ansible.builtin.set_fact:
+        writing_app_rollback_mutation_started: false
+        writing_app_rollback_release_operation_lock: true
+        writing_app_rollback_recovery_status: not-required
+
     - name: 공유 락 아래 코드 롤백 실행
       block:
         - name: 직전 Compose 환경 파일 확인
           ansible.builtin.stat:
             path: "{{ writing_app_compose_directory }}/.env.previous"
+            checksum_algorithm: sha256
           register: writing_app_previous_compose_environment
 
-        - name: 직전 배포 존재 확인
+        - name: 현재 검증 성공 Compose 환경 파일 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_compose_directory }}/.env.verified"
+            checksum_algorithm: sha256
+          register: writing_app_current_verified_compose_environment
+
+        - name: 현재 Compose 환경 파일 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_compose_directory }}/.env"
+            checksum_algorithm: sha256
+          register: writing_app_current_compose_environment
+
+        - name: 현재·검증 성공 Compose 환경 보호 속성 확인
           ansible.builtin.assert:
             that:
-              - writing_app_previous_compose_environment.stat.exists
-              - writing_app_previous_compose_environment.stat.isreg
-              - writing_app_previous_compose_environment.stat.pw_name == 'root'
-              - writing_app_previous_compose_environment.stat.mode == '0640'
-            fail_msg: 롤백할 직전 Compose 환경 파일이 없습니다.
+              - writing_app_current_compose_environment.stat.exists
+              - writing_app_current_compose_environment.stat.isreg
+              - writing_app_current_compose_environment.stat.pw_name == 'root'
+              - writing_app_current_compose_environment.stat.mode == '0640'
+              - writing_app_current_verified_compose_environment.stat.exists
+              - writing_app_current_verified_compose_environment.stat.isreg
+              - writing_app_current_verified_compose_environment.stat.pw_name == 'root'
+              - writing_app_current_verified_compose_environment.stat.mode == '0640'
+            fail_msg: 현재 또는 마지막 검증 성공 Compose 환경 파일이 올바르지 않습니다.
 
-        - name: 직전 Compose 설정 해석
+        - name: 현재 배포의 검증 성공 여부와 rollback target 계산
+          ansible.builtin.set_fact:
+            writing_app_rollback_current_is_verified: >-
+              {{
+                writing_app_current_compose_environment.stat.checksum
+                == writing_app_current_verified_compose_environment.stat.checksum
+              }}
+            writing_app_rollback_target_environment_file: >-
+              {{
+                (
+                  writing_app_current_compose_environment.stat.checksum
+                  == writing_app_current_verified_compose_environment.stat.checksum
+                )
+                | ternary('.env.previous', '.env.verified')
+              }}
+
+        - name: 검증 성공 현재 배포의 직전 rollback 후보 확인
+          ansible.builtin.assert:
+            that:
+              - >-
+                not (writing_app_rollback_current_is_verified | bool)
+                or writing_app_previous_compose_environment.stat.exists
+              - >-
+                not (writing_app_rollback_current_is_verified | bool)
+                or writing_app_previous_compose_environment.stat.isreg
+              - >-
+                not (writing_app_rollback_current_is_verified | bool)
+                or writing_app_previous_compose_environment.stat.pw_name == 'root'
+              - >-
+                not (writing_app_rollback_current_is_verified | bool)
+                or writing_app_previous_compose_environment.stat.mode == '0640'
+            fail_msg: >-
+              현재 배포가 검증 성공 상태이지만 그 이전 rollback 후보가 없습니다.
+
+        - name: 승인된 rollback target Compose 설정 해석
           ansible.builtin.command:
             argv:
               - docker
               - compose
               - --env-file
-              - .env.previous
+              - "{{ writing_app_rollback_target_environment_file }}"
               - -f
               - compose.yaml
               - config
@@ -70,33 +131,41 @@
               - json
           args:
             chdir: "{{ writing_app_compose_directory }}"
-          register: writing_app_previous_compose_configuration
+          register: writing_app_rollback_target_compose_configuration
           changed_when: false
           no_log: true
 
-        - name: 직전 application image 불변성 검증
+        - name: Rollback target application image 불변성 검증
           vars:
-            writing_app_previous_compose_services: >-
-              {{ (writing_app_previous_compose_configuration.stdout | from_json).services }}
+            writing_app_rollback_target_compose_services: >-
+              {{ (writing_app_rollback_target_compose_configuration.stdout | from_json).services }}
           ansible.builtin.assert:
             that:
               - >-
-                writing_app_previous_compose_services.web.image
+                writing_app_rollback_target_compose_services.web.image
                 is match('^.+@sha256:[0-9a-f]{64}\Z')
               - >-
-                writing_app_previous_compose_services.api.image
+                writing_app_rollback_target_compose_services.api.image
                 is match('^.+@sha256:[0-9a-f]{64}\Z')
               - >-
-                writing_app_previous_compose_services.admin.image
+                writing_app_rollback_target_compose_services.admin.image
                 is match('^.+@sha256:[0-9a-f]{64}\Z')
             fail_msg: >-
               직전 Compose 설정이 최종 해석한 web, 통합 API와 admin image가 모두 immutable
               digest여야 하며 다른 image reference로 롤백하지 않습니다.
           no_log: true
 
-        - name: 직전 image reference 복구
+        - name: 코드 롤백 mutation 전 operation lock 보존 설정
+          ansible.builtin.set_fact:
+            writing_app_rollback_mutation_started: true
+            writing_app_rollback_release_operation_lock: false
+            writing_app_rollback_recovery_status: pending-public-verification
+
+        - name: 승인된 image reference 복구
           ansible.builtin.copy:
-            src: "{{ writing_app_compose_directory }}/.env.previous"
+            src: >-
+              {{ writing_app_compose_directory }}/{{
+              writing_app_rollback_target_environment_file }}
             dest: "{{ writing_app_compose_directory }}/.env"
             remote_src: true
             owner: root
@@ -114,9 +183,74 @@
             state: present
             wait: true
             wait_timeout: 120
+
+        - name: Rollback 검증 handoff 소유권 기록
+          ansible.builtin.copy:
+            dest: "{{ writing_app_operation_lock_directory }}/handoff.json"
+            owner: root
+            group: root
+            mode: "0600"
+            content: >-
+              {{
+                {
+                  'adminImage': (
+                    writing_app_rollback_target_compose_configuration.stdout
+                    | from_json
+                  ).services.admin.image,
+                  'apiImage': (
+                    writing_app_rollback_target_compose_configuration.stdout
+                    | from_json
+                  ).services.api.image,
+                  'automationRevision': writing_app_source_revision,
+                  'operation': 'rollback',
+                  'promoteVerifiedToPrevious': (
+                    writing_app_rollback_current_is_verified | bool
+                  ),
+                  'token': writing_app_operation_handoff_token,
+                  'webImage': (
+                    writing_app_rollback_target_compose_configuration.stdout
+                    | from_json
+                  ).services.web.image
+                }
+                | to_nice_json
+              }}
+          no_log: true
+      rescue:
+        - name: 코드 롤백 실패 stage 계산
+          ansible.builtin.set_fact:
+            writing_app_rollback_failure_stage: >-
+              {{ ansible_failed_task.name | default('unknown') }}
+
+        - name: 코드 롤백 fail-closed recovery 증적 기록
+          ansible.builtin.copy:
+            dest: >-
+              {{ writing_app_deployment_directory }}/rollback-{{
+              ansible_date_time.iso8601_basic_short }}-recovery.txt
+            owner: root
+            group: root
+            mode: "0640"
+            content: |
+              operation=rollback
+              status=failed
+              failed_at={{ ansible_date_time.iso8601 }}
+              failure_stage={{ writing_app_rollback_failure_stage }}
+              mutation_started={{ writing_app_rollback_mutation_started | bool }}
+              recovery_status={{ writing_app_rollback_recovery_status }}
+              operation_lock_retained={{ not (writing_app_rollback_release_operation_lock | bool) }}
+              next_action=현재 .env, 실제 container digest, DB 호환성과 public health를 읽기 전용으로 확인하고 incident commander가 수동 복구를 결정합니다.
+          when: writing_app_rollback_mutation_started | bool
+          failed_when: false
+
+        - name: 코드 롤백 fail-closed 실패 종료
+          ansible.builtin.fail:
+            msg: >-
+              코드 롤백이 {{ writing_app_rollback_failure_stage }} 단계에서 실패했습니다.
+              Image 전환이 시작됐으면 operation lock과 검증 성공 환경 이력을 보존했습니다.
       always:
         - name: 이 코드 롤백 실행이 획득한 공유 락 해제
           ansible.builtin.file:
             path: "{{ writing_app_operation_lock_directory }}"
             state: absent
-          when: writing_app_rollback_operation_lock.rc == 0
+          when:
+            - writing_app_rollback_operation_lock.rc == 0
+            - writing_app_rollback_release_operation_lock | bool

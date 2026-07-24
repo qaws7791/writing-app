@@ -10,6 +10,7 @@ import {
   readContainerImageLock,
   requireLockedContainerImageReference,
 } from "./check-container-image-lock"
+import { readImageReleaseManifest } from "./image-release-metadata"
 
 type DeploymentServiceName = "admin" | "api" | "web"
 
@@ -57,7 +58,6 @@ interface ComposeSmokeEnvironmentInput {
   readonly dataDirectory: string
   readonly images: ComposeSmokeImageReferences
   readonly runId: string
-  readonly secretsDirectory: string
 }
 
 interface ComposeSmokeFixture extends Disposable {
@@ -71,6 +71,18 @@ interface ComposeSmokeCommand {
 }
 
 const expectedRuntimeUser = "10001:10001"
+const runtimeSecretEnvironmentNames = [
+  "ADMIN_ASSET_S3_ACCESS_KEY",
+  "ADMIN_ASSET_S3_SECRET_KEY",
+  "ADMIN_AUTH_SECRET",
+  "CURSOR_SIGNING_SECRET",
+  "DELETION_MARKER_S3_ACCESS_KEY",
+  "DELETION_MARKER_S3_SECRET_KEY",
+  "GOOGLE_CLIENT_SECRET",
+  "LEARNER_AUTH_SECRET",
+  "OPENAI_API_KEY",
+  "RESEND_API_KEY",
+] as const
 const apiOnlyEnvironmentNames = [
   "ADMIN_ASSET_PUBLIC_BASE_URL",
   "ADMIN_ASSET_S3_ACCESS_KEY",
@@ -79,8 +91,26 @@ const apiOnlyEnvironmentNames = [
   "ADMIN_ASSET_S3_REGION",
   "ADMIN_ASSET_S3_SECRET_KEY",
   "ADMIN_AUTH_SECRET",
+  "AI_FEEDBACK_GLOBAL_DAILY_REQUEST_LIMIT",
+  "AI_FEEDBACK_GLOBAL_DAILY_SUCCESS_LIMIT",
+  "AI_FEEDBACK_PENDING_TTL_MS",
+  "AI_FEEDBACK_PROVIDER_TIMEOUT_MS",
+  "AI_FEEDBACK_USER_DAILY_REQUEST_LIMIT",
+  "AI_FEEDBACK_USER_DAILY_SUCCESS_LIMIT",
+  "AUTH_EMAIL_FROM",
+  "AUTH_EMAIL_REPLY_TO",
   "CURSOR_SIGNING_SECRET",
+  "DELETION_MARKER_S3_ACCESS_KEY",
+  "DELETION_MARKER_S3_BUCKET",
+  "DELETION_MARKER_S3_ENDPOINT",
+  "DELETION_MARKER_S3_PREFIX",
+  "DELETION_MARKER_S3_REGION",
+  "DELETION_MARKER_S3_SECRET_KEY",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
   "LEARNER_AUTH_SECRET",
+  "OPENAI_API_KEY",
+  "RESEND_API_KEY",
 ] as const
 const courseThumbnailFileNames = courseVisualKeyValues.map(
   (visualKey) => `${visualKey}.png`
@@ -123,6 +153,10 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
     buildArguments: [
       ["API_BASE_URL", "http://api:4000"],
       ["WEB_ORIGIN", "https://web.example.test"],
+      [
+        "CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS",
+        "https://staging-assets.example.test,https://assets.example.test",
+      ],
     ],
     dockerfile: "deploy/docker/web.dockerfile",
     forbiddenPaths: [
@@ -148,10 +182,14 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
     dockerfile: "deploy/docker/api.dockerfile",
     runtimeArtifactPaths: [
       "/workspace/bin/api",
-      "/workspace/bin/database-adopt-current-schema-era",
       "/workspace/bin/database-backup",
       "/workspace/bin/database-check",
+      "/workspace/bin/database-integrity-check",
       "/workspace/bin/database-migrate",
+      "/workspace/bin/database-seed",
+      "/workspace/bin/deletion-marker-restore",
+      "/workspace/bin/maintenance-daily",
+      "/workspace/bin/owner-seed",
       "/workspace/node_modules/prismjs/package.json",
     ],
     forbiddenPaths: [
@@ -172,6 +210,10 @@ const deploymentImageSpecs: readonly DeploymentImageSpec[] = [
       ["NEXT_PUBLIC_LEARNER_WEB_ORIGIN", "https://web.example.test"],
       ["API_BASE_URL", "http://api:4000"],
       ["ADMIN_ORIGIN", "https://admin.example.test"],
+      [
+        "CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS",
+        "https://staging-assets.example.test,https://assets.example.test",
+      ],
     ],
     dockerfile: "deploy/docker/admin.dockerfile",
     forbiddenPaths: [
@@ -264,6 +306,11 @@ function createRuntimeEnvironment(
     ["ENABLE_TEST_AUTH", "false"],
     ["WEB_ORIGIN", "https://web.example.test"],
     ["ADMIN_ORIGIN", "https://admin.example.test"],
+    ["CONTENT_ASSET_PUBLIC_BASE_URL", "https://assets.example.test"],
+    [
+      "CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS",
+      "https://staging-assets.example.test,https://assets.example.test",
+    ],
   ] as const
   const apiEnvironment = [
     ...publicEnvironment,
@@ -273,11 +320,29 @@ function createRuntimeEnvironment(
     ["ADMIN_ASSET_S3_ENDPOINT", "https://r2.example.test"],
     ["ADMIN_ASSET_S3_REGION", "auto"],
     ["ADMIN_ASSET_S3_SECRET_KEY", "asset-secret-key"],
+    ["AI_FEEDBACK_GLOBAL_DAILY_REQUEST_LIMIT", "1000"],
+    ["AI_FEEDBACK_GLOBAL_DAILY_SUCCESS_LIMIT", "500"],
+    ["AI_FEEDBACK_PENDING_TTL_MS", "60000"],
+    ["AI_FEEDBACK_PROVIDER_TIMEOUT_MS", "30000"],
+    ["AI_FEEDBACK_USER_DAILY_REQUEST_LIMIT", "20"],
+    ["AI_FEEDBACK_USER_DAILY_SUCCESS_LIMIT", "10"],
+    ["AUTH_EMAIL_FROM", "Writing App <auth@example.test>"],
+    ["AUTH_EMAIL_REPLY_TO", "support@example.test"],
     ["LEARNER_AUTH_SECRET", learnerSecret],
     ["CURSOR_SIGNING_SECRET", `${learnerSecret}-cursor-distinct`],
+    ["DELETION_MARKER_S3_ACCESS_KEY", "marker-access-key"],
+    ["DELETION_MARKER_S3_BUCKET", "writing-app-deletion-markers"],
+    ["DELETION_MARKER_S3_ENDPOINT", "https://private-s3.example.test"],
+    ["DELETION_MARKER_S3_PREFIX", "privacy/deletion-markers"],
+    ["DELETION_MARKER_S3_REGION", "auto"],
+    ["DELETION_MARKER_S3_SECRET_KEY", "marker-secret-key"],
     ["DEPLOYMENT_VERSION", "writing-app-smoke-api@sha256:test"],
     ["ADMIN_AUTH_SECRET", adminSecret],
+    ["GOOGLE_CLIENT_ID", "google-smoke-client-id"],
+    ["GOOGLE_CLIENT_SECRET", "google-smoke-client-secret"],
+    ["OPENAI_API_KEY", "openai-smoke-api-key"],
     ["OPENAI_MODEL", "gpt-5.2"],
+    ["RESEND_API_KEY", "resend-smoke-api-key"],
     ["LOG_PRETTY", "false"],
   ] as const
 
@@ -393,6 +458,28 @@ function createAdminSsrHealthCheckScript(): string {
 export function validateComposeSmokeServices(
   serviceOutput: string
 ): readonly string[] {
+  return validateServiceSet(
+    serviceOutput,
+    new Set(["api", "admin", "caddy", "web"]),
+    "Compose smoke"
+  )
+}
+
+export function validateComposeRuntimeServices(
+  serviceOutput: string
+): readonly string[] {
+  return validateServiceSet(
+    serviceOutput,
+    new Set(["api", "admin", "caddy", "litestream", "web"]),
+    "Compose runtime"
+  )
+}
+
+function validateServiceSet(
+  serviceOutput: string,
+  expectedServices: ReadonlySet<string>,
+  scope: string
+): readonly string[] {
   const activeServices = new Set(
     serviceOutput
       .split(/\r?\n/u)
@@ -400,18 +487,15 @@ export function validateComposeSmokeServices(
       .filter((serviceName) => serviceName.length > 0)
   )
   const errors: string[] = []
-  const expectedServices = new Set(["api", "admin", "caddy", "web"])
 
   for (const serviceName of expectedServices) {
     if (!activeServices.has(serviceName)) {
-      errors.push(`${serviceName}: Compose smoke 실행 중이어야 합니다.`)
+      errors.push(`${serviceName}: ${scope}에 포함되어야 합니다.`)
     }
   }
   for (const serviceName of activeServices) {
     if (expectedServices.has(serviceName)) continue
-    errors.push(
-      `${serviceName}: Compose smoke 외부 service를 실행하면 안 됩니다.`
-    )
+    errors.push(`${serviceName}: ${scope} 외부 service입니다.`)
   }
 
   return errors
@@ -431,10 +515,8 @@ function createComposeSmokeFixture(input: {
     path.join(os.tmpdir(), "writing-app-compose-smoke-")
   )
   const configDirectory = path.join(root, "config")
-  const secretsDirectory = path.join(root, "secrets")
   const backupDirectory = path.join(root, "backups")
   fs.mkdirSync(configDirectory)
-  fs.mkdirSync(secretsDirectory)
   fs.mkdirSync(backupDirectory)
 
   for (const spec of deploymentImageSpecs) {
@@ -462,10 +544,6 @@ function createComposeSmokeFixture(input: {
     path.join(input.repositoryRoot, "deploy", "litestream", "litestream.yaml"),
     path.join(configDirectory, "litestream.yaml")
   )
-  fs.writeFileSync(
-    path.join(secretsDirectory, "cloudflare-tunnel-token"),
-    "smoke-token\n"
-  )
 
   const composeEnvironmentPath = path.join(root, "compose.env")
   fs.writeFileSync(
@@ -477,7 +555,6 @@ function createComposeSmokeFixture(input: {
       dataDirectory: input.dataDirectory,
       images: input.images,
       runId: input.runId,
-      secretsDirectory: toDockerPath(secretsDirectory),
     }).join("\n")}\n`
   )
 
@@ -506,10 +583,8 @@ function createComposeSmokeEnvironment(
     `API_IMAGE=${input.images.api}`,
     `ADMIN_IMAGE=${input.images.admin}`,
     `CADDY_IMAGE=${input.caddyImage}`,
-    `CLOUDFLARED_IMAGE=writing-app-smoke-cloudflared-unused:${input.runId}`,
     `LITESTREAM_IMAGE=writing-app-smoke-litestream-unused:${input.runId}`,
     `CONFIG_DIRECTORY=${input.configDirectory}`,
-    `SECRETS_DIRECTORY=${input.secretsDirectory}`,
     `DATA_DIRECTORY=${input.dataDirectory}`,
     `BACKUP_DIRECTORY=${input.backupDirectory}`,
   ]
@@ -590,6 +665,22 @@ function assertImageRuntimeContract(imageReference: string): void {
     throw new Error(
       `${imageReference}: runtime architecture는 amd64여야 합니다.`
     )
+  }
+
+  const imageEnvironment = runDocker(
+    ["image", "inspect", "--format", "{{json .Config.Env}}", imageReference],
+    { capture: true }
+  ).stdout
+  const imageHistory = runDocker(
+    ["history", "--no-trunc", "--format", "{{.CreatedBy}}", imageReference],
+    { capture: true }
+  ).stdout
+  for (const name of runtimeSecretEnvironmentNames) {
+    if (imageEnvironment.includes(`${name}=`) || imageHistory.includes(name)) {
+      throw new Error(
+        `${imageReference}: ${name}은 image config나 build history에 포함되면 안 됩니다.`
+      )
+    }
   }
 }
 
@@ -822,6 +913,20 @@ function assertApiOperationExecutables(
     "--entrypoint",
     "bun",
     imageReference,
+    "/workspace/bin/database-integrity-check",
+  ])
+  runDocker([
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--mount",
+    mount,
+    "--env",
+    `DATABASE_URL=${databaseUrl}`,
+    "--entrypoint",
+    "bun",
+    imageReference,
     "/workspace/bin/database-migrate",
   ])
   runDocker([
@@ -907,6 +1012,12 @@ function createComposeServiceListArguments(
   return createComposeCommandArguments(command, ["ps", "--all", "--services"])
 }
 
+function createComposeRuntimeServiceListArguments(
+  command: ComposeSmokeCommand
+): readonly string[] {
+  return createComposeCommandArguments(command, ["config", "--services"])
+}
+
 function createComposeLogsArguments(
   command: ComposeSmokeCommand
 ): readonly string[] {
@@ -936,6 +1047,19 @@ function runComposeTrafficSmoke(input: {
 
   try {
     console.log("Caddy와 target API/Admin SSR Compose smoke를 시작합니다.")
+    const runtimeServices = runDocker(
+      createComposeRuntimeServiceListArguments(fixture.command),
+      { capture: true }
+    )
+    const runtimeServiceErrors = validateComposeRuntimeServices(
+      runtimeServices.stdout
+    )
+    if (runtimeServiceErrors.length > 0) {
+      throw new Error(
+        runtimeServiceErrors.map((error) => `- ${error}`).join("\n")
+      )
+    }
+
     runDocker(createComposeUpArguments(fixture.command))
 
     const serviceResult = runDocker(
@@ -984,8 +1108,14 @@ function runComposeTrafficSmoke(input: {
   )
 }
 
-async function runDeploymentImageTests(): Promise<void> {
+async function runDeploymentImageTests(
+  releasedManifestPath?: string
+): Promise<void> {
   const repositoryRoot = path.resolve(import.meta.dir, "..")
+  const releasedManifest =
+    releasedManifestPath === undefined
+      ? undefined
+      : readImageReleaseManifest(releasedManifestPath)
   const containerImageLock = readContainerImageLock(repositoryRoot)
   const caddyImageReference = requireLockedContainerImageReference(
     containerImageLock,
@@ -997,23 +1127,37 @@ async function runDeploymentImageTests(): Promise<void> {
   while (adminSecret === learnerSecret) adminSecret = createSmokeSecret()
   const ownedContainers = new Set<string>()
   const ownedImages = new Set<string>()
-  const builtImages: {
+  const testedImages: {
     readonly imageReference: string
     readonly name: DeploymentServiceName
   }[] = []
 
   runDocker(["info", "--format", "{{.ServerVersion}}"])
+  if (releasedManifest !== undefined) {
+    console.log(
+      `Release source revision ${releasedManifest.sourceRevision}의 digest image를 검증합니다.`
+    )
+  }
 
   using fixture = createImageSmokeFixture()
   try {
     for (const spec of deploymentImageSpecs) {
-      const imageReference = `writing-app-smoke-${spec.name}:${runId}`
+      const imageReference =
+        releasedManifest?.images[spec.name] ??
+        `writing-app-smoke-${spec.name}:${runId}`
       const containerName = `writing-app-smoke-${spec.name}-${runId}`
       ownedImages.add(imageReference)
 
-      console.log(`${spec.name}: linux/amd64 image를 빌드합니다.`)
-      runDocker(createImageBuildArguments(spec, imageReference, repositoryRoot))
-      builtImages.push({ imageReference, name: spec.name })
+      if (releasedManifest === undefined) {
+        console.log(`${spec.name}: linux/amd64 image를 빌드합니다.`)
+        runDocker(
+          createImageBuildArguments(spec, imageReference, repositoryRoot)
+        )
+      } else {
+        console.log(`${spec.name}: 검증된 digest image를 가져옵니다.`)
+        runDocker(["pull", "--platform", "linux/amd64", imageReference])
+      }
+      testedImages.push({ imageReference, name: spec.name })
       assertImageRuntimeContract(imageReference)
       assertStaticPaths(spec, imageReference)
       if (spec.name === "api") {
@@ -1056,7 +1200,7 @@ async function runDeploymentImageTests(): Promise<void> {
       adminSecret,
       caddyImage: caddySmokeImage,
       dataDirectory: fixture.dataDirectory,
-      images: createComposeImageReferences(builtImages),
+      images: createComposeImageReferences(testedImages),
       learnerSecret,
       projectName: `writing-app-smoke-${runId}`,
       repositoryRoot,
@@ -1080,9 +1224,27 @@ function createSmokeSecret(): string {
   return `0123456789abcdef${randomBytes(32).toString("hex")}`
 }
 
+function readReleasedManifestPath(
+  arguments_: readonly string[]
+): string | undefined {
+  if (arguments_.length === 0) return undefined
+  if (
+    arguments_.length !== 2 ||
+    arguments_[0] !== "released" ||
+    arguments_[1] === undefined
+  ) {
+    throw new Error(
+      "released <image-release-manifest.json> 형식으로 실행해야 합니다."
+    )
+  }
+  return path.resolve(arguments_[1])
+}
+
 if (import.meta.main) {
   try {
-    await runDeploymentImageTests()
+    await runDeploymentImageTests(
+      readReleasedManifestPath(process.argv.slice(2))
+    )
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error))
     process.exitCode = 1

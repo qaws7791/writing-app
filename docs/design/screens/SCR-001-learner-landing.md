@@ -15,33 +15,33 @@
 
 ## 정보 구조
 
-- 고정 상단 nav
-- hero
-- 주제 marquee
-- 특징 섹션
-- 시작 방법
-- 지표
-- 화면 미리보기
+- 상단 nav: 브랜드, 로그인, 학습 시작
+- 핵심 가치 hero
+- 학습 방식: 짧은 레슨, 직접 쓰기, AI 코칭
+- 실제 코스 기반 제품 미리보기
 - 최종 CTA
-- footer: 코스, 학습 통계, 소개
+- footer: 현재 목적지가 확인된 탐색 링크
 
 ## UI 기준
 
-- 배경은 `cream`, 본문은 `charcoal`을 사용한다.
+- 배경과 본문은 공용 semantic color token을 사용한다.
 - hero H1은 큰 display type을 사용한다.
-- 주요 CTA는 `bg-charcoal text-cream`, 보조 CTA는 `bg-surface`를 사용한다.
-- 랜딩 장식 pebble과 marquee는 정보 전달을 방해하지 않아야 한다.
-- 제품명은 `글결.`을 기준으로 한다. 현재 일부 코드의 `Kernel` 문구는 후속 정리 대상이다.
+- 주요 CTA는 primary action token, 보조 CTA는 surface token을 사용한다.
+- 제품 미리보기는 실제 코스 콘텐츠와 썸네일을 사용하고 임의의 범용 학습 화면을 만들지 않는다.
+- 제품명은 `글결.`을 기준으로 한다.
 
 ## 상태
 
-- nav는 스크롤 시 반투명 cream 배경과 blur를 적용한다.
+- nav는 별도 스크롤 listener 없이 문서 흐름과 CSS로 동작한다.
 - CTA는 학습 홈 또는 코스 탐색으로 이동한다.
-- footer의 코스와 학습 통계는 각각 코스 탐색과 학습 홈으로 이동하고, 소개는 랜딩의 특징 섹션으로 이동한다.
+- 로그인 CTA는 로그인으로 이동한다.
+- footer 링크는 확인된 제품 route로 이동한다.
 - 목적지가 확정되지 않은 메뉴는 footer에 노출하지 않는다.
+- 모바일과 다크 모드에서도 가로 스크롤 없이 정보 순서와 대비를 유지한다.
 
 ## 접근성
 
-- nav와 CTA는 native `button` 또는 `Link`로 구현한다.
-- marquee는 장식이므로 `aria-hidden`을 유지한다.
-- 미리보기 이미지는 한국어 alt를 제공한다.
+- nav와 CTA는 탐색 의미에 맞는 `Link`로 구현한다.
+- heading 단계와 landmark를 유지한다.
+- 제품 미리보기 이미지는 구체적인 한국어 alt를 제공한다.
+- 핵심 정보는 motion이나 포인터 입력에 의존하지 않는다.

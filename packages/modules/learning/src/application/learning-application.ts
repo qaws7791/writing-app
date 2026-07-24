@@ -1,5 +1,6 @@
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type {
+  CourseId,
   CurriculumVersionId,
   LearnerId,
   LessonId,
@@ -7,11 +8,26 @@ import type {
 } from "@workspace/types/ids"
 
 import type {
+  LearnerCourseDetail,
+  LearnerCourseSummary,
+  LearnerLesson,
+  LearnerProgressCourse,
+} from "#learning/application/learning-read-model"
+import type {
+  LearnerCourseReadQuery,
+  LearnerProgressReadQuery,
+  LearnerReadModelPage,
+} from "#learning/application/ports/learner-read-model-repository"
+import type {
   CompleteLearnerStepTransitionResult,
   LearnerTransitionError,
+  SaveLearnerStepDraftResult,
   StartLearnerLessonResult,
 } from "#learning/domain/learner-transition"
-import type { LearnerStepSubmission } from "#learning/domain/learning-types"
+import type {
+  LearnerStepDraftAnswer,
+  LearnerStepSubmission,
+} from "#learning/domain/learning-types"
 import type {
   LearningAiFeedbackError,
   LearningAiFeedbackResult,
@@ -24,14 +40,27 @@ export type StartLearningLessonCommand = Readonly<{
   lessonId: LessonId
 }>
 
-export type AnswerLearningStepCommand = Readonly<{
+export type SubmitLearningStepCommand = Readonly<{
   learnerId: LearnerId
   lessonId: LessonId
   stepId: LessonStepId
-  submission: LearnerStepSubmission
-}>
+}> &
+  (
+    | Readonly<{
+        completion: Readonly<{
+          kind: "answer"
+          submission: LearnerStepSubmission
+        }>
+      }>
+    | Readonly<{
+        completion: Readonly<{ kind: "acknowledge" | "skip-ai-feedback" }>
+      }>
+  )
 
-export type CompleteLearningStepCommand = Readonly<{
+export type SaveLearningStepDraftCommand = Readonly<{
+  answer: LearnerStepDraftAnswer
+  expectedCurriculumVersionId: CurriculumVersionId
+  expectedVersion: number | null
   learnerId: LearnerId
   lessonId: LessonId
   stepId: LessonStepId
@@ -54,19 +83,34 @@ export type LearningCommandError =
   | LearningCollaboratorError
   | LearningAiFeedbackError
 
+export type LearningReadError =
+  | Readonly<{ kind: "course-not-found" }>
+  | Readonly<{ kind: "lesson-locked" }>
+  | Readonly<{ kind: "lesson-not-found" }>
+
 export type LearningAiFeedbackTransition = Readonly<{
   feedback: LearningAiFeedbackResult
   transition: CompleteLearnerStepTransitionResult
 }>
 
 export type LearningApplication = Readonly<{
-  answerStep: (
-    command: AnswerLearningStepCommand
-  ) => Promise<
-    Result<CompleteLearnerStepTransitionResult, LearningCommandError>
-  >
-  completeStep: (
-    command: CompleteLearningStepCommand
+  readCourseCatalog: (
+    query: LearnerCourseReadQuery
+  ) => Promise<LearnerReadModelPage<LearnerCourseSummary>>
+  readCourseCategories: () => Promise<readonly string[]>
+  readCourseDetail: (input: {
+    readonly courseId: CourseId
+    readonly learnerId: LearnerId
+  }) => Promise<Result<LearnerCourseDetail, LearningReadError>>
+  readLearnerHome: (
+    query: LearnerProgressReadQuery
+  ) => Promise<LearnerReadModelPage<LearnerProgressCourse>>
+  readLesson: (input: {
+    readonly learnerId: LearnerId
+    readonly lessonId: LessonId
+  }) => Promise<Result<LearnerLesson, LearningReadError>>
+  submitStep: (
+    command: SubmitLearningStepCommand
   ) => Promise<
     Result<CompleteLearnerStepTransitionResult, LearningCommandError>
   >
@@ -74,6 +118,9 @@ export type LearningApplication = Readonly<{
     command: RequestLearningAiFeedbackCommand,
     options?: Readonly<{ signal?: AbortSignal }>
   ) => Promise<Result<LearningAiFeedbackTransition, LearningCommandError>>
+  saveStepDraft: (
+    command: SaveLearningStepDraftCommand
+  ) => Promise<Result<SaveLearnerStepDraftResult, LearningCommandError>>
   startLesson: (
     command: StartLearningLessonCommand
   ) => Promise<Result<StartLearnerLessonResult, LearningCommandError>>
@@ -82,40 +129,41 @@ export type LearningApplication = Readonly<{
 export function createLearningApplication(
   dependencies: LearningApplicationDependencies
 ): LearningApplication {
-  async function complete(
-    command: AnswerLearningStepCommand | CompleteLearningStepCommand
-  ): Promise<
-    Result<CompleteLearnerStepTransitionResult, LearningCommandError>
-  > {
-    const authorization = await authorizeLearner(
-      dependencies,
-      command.learnerId
-    )
-    if (authorization.isErr()) return err(authorization.error)
-    const curriculum = await readLessonCurriculum(dependencies, command)
-    if (curriculum === null) {
-      return err({ kind: "lesson-not-found", lessonId: command.lessonId })
-    }
-    const committed = await dependencies.transitionRepository.completeStep(
-      {
-        completion:
-          "submission" in command
-            ? { kind: "answer", submission: command.submission }
-            : { kind: "acknowledge" },
-        lessonId: command.lessonId,
-        occurredAt: dependencies.clock.now(),
-        stepId: command.stepId,
-        userId: command.learnerId,
-      },
-      curriculum
-    )
-    if (committed.isErr()) return err(committed.error)
-    return ok(committed.value)
-  }
-
-  return Object.freeze({
-    answerStep: complete,
-    completeStep: complete,
+  return {
+    async readCourseCatalog(query) {
+      const page = await dependencies.readRepository.listCourses(query)
+      return {
+        items: page.items.map(presentCourseSummary),
+        nextPosition: page.nextPosition,
+      }
+    },
+    readCourseCategories() {
+      return dependencies.readRepository.listCourseCategories()
+    },
+    async readCourseDetail(input) {
+      const course = await dependencies.readRepository.findCourseDetail({
+        courseId: input.courseId,
+        userId: input.learnerId,
+      })
+      return course === null ? err({ kind: "course-not-found" }) : ok(course)
+    },
+    readLearnerHome(query) {
+      return dependencies.readRepository.listProgress(query)
+    },
+    async readLesson(input) {
+      const lesson = await dependencies.readRepository.findLesson({
+        lessonId: input.lessonId,
+        userId: input.learnerId,
+      })
+      switch (lesson.kind) {
+        case "found":
+          return ok(lesson.value)
+        case "locked":
+          return err({ kind: "lesson-locked" })
+        case "not-found":
+          return err({ kind: "lesson-not-found" })
+      }
+    },
     async requestAiFeedback(command, options) {
       const authorization = await authorizeLearner(
         dependencies,
@@ -162,6 +210,30 @@ export function createLearningApplication(
       if (committed.isErr()) return err(committed.error)
       return ok({ feedback: feedback.value, transition: committed.value })
     },
+    async saveStepDraft(command) {
+      const authorization = await authorizeLearner(
+        dependencies,
+        command.learnerId
+      )
+      if (authorization.isErr()) return err(authorization.error)
+      const curriculum = await readLessonCurriculum(dependencies, command)
+      if (curriculum === null) {
+        return err({ kind: "lesson-not-found", lessonId: command.lessonId })
+      }
+      const saved = await dependencies.transitionRepository.saveStepDraft(
+        {
+          answer: command.answer,
+          expectedCurriculumVersionId: command.expectedCurriculumVersionId,
+          expectedVersion: command.expectedVersion,
+          lessonId: command.lessonId,
+          occurredAt: dependencies.clock.now(),
+          stepId: command.stepId,
+          userId: command.learnerId,
+        },
+        curriculum
+      )
+      return saved.isErr() ? err(saved.error) : ok(saved.value)
+    },
     async startLesson(command) {
       const authorization = await authorizeLearner(
         dependencies,
@@ -184,7 +256,48 @@ export function createLearningApplication(
       if (committed.isErr()) return err(committed.error)
       return ok(committed.value)
     },
-  })
+    async submitStep(command) {
+      const authorization = await authorizeLearner(
+        dependencies,
+        command.learnerId
+      )
+      if (authorization.isErr()) return err(authorization.error)
+      const curriculum = await readLessonCurriculum(dependencies, command)
+      if (curriculum === null) {
+        return err({ kind: "lesson-not-found", lessonId: command.lessonId })
+      }
+      const committed = await dependencies.transitionRepository.completeStep(
+        {
+          completion: command.completion,
+          lessonId: command.lessonId,
+          occurredAt: dependencies.clock.now(),
+          stepId: command.stepId,
+          userId: command.learnerId,
+        },
+        curriculum
+      )
+      return committed.isErr() ? err(committed.error) : ok(committed.value)
+    },
+  }
+}
+
+function presentCourseSummary(
+  course: LearnerCourseSummary
+): LearnerCourseSummary {
+  return {
+    category: course.category,
+    contentStatus: course.contentStatus,
+    cover: course.cover,
+    description: course.description,
+    id: course.id,
+    lessonCount: course.lessonCount,
+    title: course.title,
+    version: {
+      curriculumVersionId: course.version.curriculumVersionId,
+      revision: course.version.revision,
+    },
+    visualKey: course.visualKey,
+  }
 }
 
 async function authorizeLearner(

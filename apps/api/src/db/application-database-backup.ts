@@ -10,10 +10,8 @@ import {
   type DatabaseBackupReport,
 } from "@workspace/db/database-backup"
 
-import {
-  inspectApplicationDatabase,
-  readApplicationDatabaseBackupTables,
-} from "@/db/schema-diagnostic"
+import { inspectApplicationDatabase } from "@/db/schema-diagnostic"
+import { requiredApplicationBackupTableNames } from "@/db/required-application-tables"
 
 export function createVerifiedApplicationDatabaseBackup(input: {
   readonly backupPath: string
@@ -36,7 +34,7 @@ export function createVerifiedApplicationDatabaseBackup(input: {
   })
 }
 
-export function resolveApplicationDatabasePath(databaseUrl: string): string {
+function resolveApplicationDatabasePath(databaseUrl: string): string {
   if (databaseUrl.startsWith("file://")) {
     return fileURLToPath(databaseUrl)
   }
@@ -59,5 +57,5 @@ function selectRequiredBackupTables(
     )
   }
 
-  return readApplicationDatabaseBackupTables(source.sqlite)
+  return requiredApplicationBackupTableNames
 }

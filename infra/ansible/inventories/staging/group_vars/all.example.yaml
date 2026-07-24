@@ -1,0 +1,73 @@
+writing_app_environment: staging
+writing_app_compose_directory: /opt/writing-app-staging
+writing_app_config_directory: /etc/writing-app-staging/config
+writing_app_data_directory: /var/lib/writing-app-staging
+writing_app_backup_directory: /var/backups/writing-app-staging
+writing_app_deployment_directory: /var/lib/writing-app-staging/deployments
+writing_app_operation_lock_directory: /var/lock/writing-app-staging-operation.lock
+writing_app_web_host: staging-app.example.com
+writing_app_admin_host: staging-admin.example.com
+writing_app_verify_public_routes: true
+writing_app_enable_api_docs: true
+writing_app_maintenance_log_retention_evidence_file: >-
+  /etc/writing-app-staging/evidence/log-retention.json
+writing_app_maintenance_on_calendar: "*-*-* 02:15:00"
+# staging 승인을 통과한 immutable digest만 사용하며 production inventory와 독립 승격한다.
+writing_app_web_image: ghcr.io/example/writing-app-web@sha256:replace-me
+writing_app_api_image: ghcr.io/example/writing-app-api@sha256:replace-me
+writing_app_admin_image: ghcr.io/example/writing-app-admin@sha256:replace-me
+
+writing_app_registry_username: ""
+writing_app_registry_token: >-
+  {{ vault_writing_app_registry_token | default('') }}
+
+writing_app_openai_model: gpt-5.2
+writing_app_auth_email_from: 글결 Staging <auth-staging@example.com>
+writing_app_auth_email_reply_to: support-staging@example.com
+writing_app_google_client_id: "{{ vault_writing_app_google_client_id }}"
+writing_app_google_client_secret: "{{ vault_writing_app_google_client_secret }}"
+writing_app_openai_api_key: "{{ vault_writing_app_openai_api_key }}"
+writing_app_resend_api_key: "{{ vault_writing_app_resend_api_key }}"
+# 일일 quota 수치는 제품 entitlement가 아닌 출시 검증 전 운영 safeguard 예시다.
+writing_app_ai_feedback_user_daily_request_limit: 20
+writing_app_ai_feedback_user_daily_success_limit: 10
+writing_app_ai_feedback_global_daily_request_limit: 1000
+writing_app_ai_feedback_global_daily_success_limit: 500
+writing_app_ai_feedback_provider_timeout_ms: 30000
+writing_app_ai_feedback_pending_ttl_ms: 60000
+
+# staging Vault는 production Vault와 별도 파일·credential set으로 관리한다.
+writing_app_learner_auth_secret: "{{ vault_writing_app_learner_auth_secret }}"
+writing_app_cursor_signing_secret: >-
+  {{ vault_writing_app_cursor_signing_secret }}
+writing_app_admin_auth_secret: "{{ vault_writing_app_admin_auth_secret }}"
+writing_app_r2_access_key_id: "{{ vault_writing_app_r2_access_key_id }}"
+writing_app_r2_secret_access_key: "{{ vault_writing_app_r2_secret_access_key }}"
+writing_app_r2_bucket: replace-with-staging-r2-backup-bucket
+writing_app_r2_endpoint: https://replace-with-staging-account-id.r2.cloudflarestorage.com
+writing_app_r2_path: writing-app/staging/api.sqlite
+
+# staging 자료 이미지는 production과 다른 public bucket을 사용한다.
+writing_app_admin_asset_s3_access_key: >-
+  {{ vault_writing_app_admin_asset_s3_access_key }}
+writing_app_admin_asset_s3_secret_key: >-
+  {{ vault_writing_app_admin_asset_s3_secret_key }}
+writing_app_admin_asset_s3_bucket: replace-with-staging-public-assets-bucket
+writing_app_admin_asset_s3_endpoint: >-
+  https://replace-with-staging-account-id.r2.cloudflarestorage.com
+writing_app_admin_asset_s3_region: auto
+writing_app_admin_asset_public_base_url: https://staging-assets.example.com
+writing_app_content_asset_image_allowed_origins:
+  - https://staging-assets.example.com
+  - https://assets.example.com
+
+# staging 삭제 marker도 production과 다른 private bucket/prefix를 사용한다.
+writing_app_deletion_marker_s3_access_key: >-
+  {{ vault_writing_app_deletion_marker_s3_access_key }}
+writing_app_deletion_marker_s3_secret_key: >-
+  {{ vault_writing_app_deletion_marker_s3_secret_key }}
+writing_app_deletion_marker_s3_bucket: replace-with-staging-private-marker-bucket
+writing_app_deletion_marker_s3_endpoint: >-
+  https://replace-with-staging-account-id.r2.cloudflarestorage.com
+writing_app_deletion_marker_s3_region: auto
+writing_app_deletion_marker_s3_prefix: privacy/staging/deletion-markers

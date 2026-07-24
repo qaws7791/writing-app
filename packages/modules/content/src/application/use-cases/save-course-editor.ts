@@ -1,9 +1,6 @@
 import { err, type Result } from "@workspace/kernel/result"
+import type { AdminId } from "@workspace/types/ids"
 
-import {
-  authorizeContentMutation,
-  type ContentActor,
-} from "#content/domain/content-admin-policy"
 import type { ContentError } from "#content/domain/content-error"
 import { createCurriculumDraft } from "#content/domain/curriculum"
 import type {
@@ -12,7 +9,7 @@ import type {
 } from "#content/application/ports/content-ports"
 
 export type SaveCourseEditorUseCase = (command: {
-  readonly actor: ContentActor
+  readonly adminId: AdminId
   readonly document: CourseEditorDocument
   readonly expectedEditVersion: number
 }) => Promise<Result<CourseEditorDocument, ContentError>>
@@ -21,9 +18,6 @@ export function createSaveCourseEditorUseCase(
   dependencies: ContentApplicationDependencies
 ): SaveCourseEditorUseCase {
   return async (command) => {
-    const authorization = authorizeContentMutation(command.actor)
-    if (authorization.isErr()) return err(authorization.error)
-
     const currentResult = await dependencies.repository.findDraft(
       command.document.courseId
     )
@@ -58,6 +52,9 @@ export function createSaveCourseEditorUseCase(
         expectedEditVersion: command.expectedEditVersion,
         now: dependencies.clock.now(),
       })
-    ).map(({ visualKey: _visualKey, ...document }) => document)
+    ).map(({ visualKey: _visualKey, ...document }) => ({
+      ...document,
+      assets: [],
+    }))
   }
 }

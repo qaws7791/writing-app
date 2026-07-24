@@ -6,11 +6,77 @@
   vars_files:
     - ../vars/defaults.yaml
   tasks:
-    - name: Production 배포 승인 확인
+    - name: 배포 승인 확인
       ansible.builtin.assert:
         that:
-          - writing_app_allow_production_deploy | default(false) | bool
-        fail_msg: writing_app_allow_production_deploy=true를 명시해야 합니다.
+          - writing_app_allow_deploy | default(false) | bool
+          - writing_app_hold_operation_lock_for_verify | default(false) | bool
+          - writing_app_source_revision is match('^[0-9a-f]{40}\Z')
+          - writing_app_operation_handoff_token is match('^[0-9a-f]{64}\Z')
+          - >-
+            not (writing_app_require_production_readiness | default(false) | bool) or
+            writing_app_environment == 'production'
+        fail_msg: >-
+          writing_app_allow_deploy=true와 공개 verify까지 lock을 유지하는
+          writing_app_hold_operation_lock_for_verify=true를 명시해야 합니다.
+          Production readiness 입력은 production 대상에서만 사용할 수 있습니다.
+
+    - name: Production 외부 준비 증거 확인
+      ansible.builtin.assert:
+        that:
+          - writing_app_environment == 'production'
+          - writing_app_source_revision is match('^[0-9a-f]{40}\Z')
+          - writing_app_full_e2e_approved | bool
+          - writing_app_full_e2e_evidence_revision == writing_app_source_revision
+          - >-
+            writing_app_full_e2e_evidence_run_url is
+            match('^https://[^/]+/[^/]+/[^/]+/actions/runs/[1-9][0-9]*\Z')
+          - writing_app_legal_review_approved | bool
+          - >-
+            writing_app_legal_review_evidence_id is
+            match('^[A-Za-z0-9][A-Za-z0-9._:/-]{7,199}\Z')
+          - >-
+            not (
+              writing_app_legal_review_evidence_id is
+              search('(?:\A|[-_./:])(?i:example|none|null|placeholder|tbd|todo|unknown)(?:[-_./:]|\Z)')
+            )
+          - >-
+            writing_app_legal_review_verified_at is
+            match('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\Z')
+          - >-
+            (
+              (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) -
+              (writing_app_legal_review_verified_at | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+            ).total_seconds() >= 0
+          - writing_app_restore_drill_approved | bool
+          - writing_app_restore_drill_environment == 'staging'
+          - >-
+            writing_app_restore_drill_evidence_id is
+            match('^[A-Za-z0-9][A-Za-z0-9._:/-]{7,199}\Z')
+          - >-
+            not (
+              writing_app_restore_drill_evidence_id is
+              search('(?:\A|[-_./:])(?i:example|none|null|placeholder|tbd|todo|unknown)(?:[-_./:]|\Z)')
+            )
+          - >-
+            writing_app_restore_drill_verified_at is
+            match('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\Z')
+          - >-
+            (
+              (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) -
+              (writing_app_restore_drill_verified_at | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+            ).total_seconds() >= 0
+          - >-
+            (
+              (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) -
+              (writing_app_restore_drill_verified_at | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+            ).total_seconds() <= 2678400
+        fail_msg: >-
+          Production은 동일 revision 전체 E2E, 외부 법률 검토와 최근 31일 이내 staging
+          복구 훈련의 승인·증거가 모두 필요합니다. 저장소 검증을 외부 증거로 대체할 수 없습니다.
+      when: >-
+        (writing_app_environment == 'production') or
+        (writing_app_require_production_readiness | default(false) | bool)
 
     - name: 배포 작업 공유 락 획득
       ansible.builtin.command:
@@ -37,6 +103,7 @@
       block:
         - name: 배포 fail-closed 상태 초기화
           ansible.builtin.set_fact:
+            writing_app_deploy_completed_for_verification: false
             writing_app_deploy_database_mutation_started: false
             writing_app_deploy_recovery_status: not-required
             writing_app_deploy_release_operation_lock: true
@@ -48,11 +115,41 @@
         - name: Writing App 배포 실행
           ansible.builtin.include_role:
             name: writing_app_deploy
+
+        - name: 배포 검증 handoff 소유권 기록
+          ansible.builtin.copy:
+            dest: "{{ writing_app_operation_lock_directory }}/handoff.json"
+            owner: root
+            group: root
+            mode: "0600"
+            content: >-
+              {{
+                {
+                  'adminImage': writing_app_admin_image,
+                  'apiImage': writing_app_api_image,
+                  'automationRevision': writing_app_source_revision,
+                  'operation': 'deployment',
+                  'revision': writing_app_source_revision,
+                  'token': writing_app_operation_handoff_token,
+                  'webImage': writing_app_web_image
+                }
+                | to_nice_json
+              }}
+          no_log: true
+
+        - name: 공개 검증 인계 가능 상태 기록
+          ansible.builtin.set_fact:
+            writing_app_deploy_completed_for_verification: true
       rescue:
         - name: 배포 fail-closed 실패 stage 계산
           ansible.builtin.set_fact:
             writing_app_deploy_failure_stage: >-
               {{ ansible_failed_task.name | default('unknown') }}
+
+        - name: DB 변경 뒤 배포 실패의 operation lock 보존
+          ansible.builtin.set_fact:
+            writing_app_deploy_release_operation_lock: false
+          when: writing_app_deploy_database_mutation_started | default(false) | bool
 
         - name: 배포 recovery 증적 디렉터리 보장
           ansible.builtin.file:
@@ -99,3 +196,6 @@
           when:
             - writing_app_operation_lock.rc == 0
             - writing_app_deploy_release_operation_lock | default(true) | bool
+            - >-
+              not (writing_app_hold_operation_lock_for_verify | default(false) | bool)
+              or not (writing_app_deploy_completed_for_verification | default(false) | bool)

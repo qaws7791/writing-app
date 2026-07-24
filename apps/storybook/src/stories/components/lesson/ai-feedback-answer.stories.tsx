@@ -3,6 +3,7 @@ import { fn } from "storybook/test"
 
 import {
   AiFeedbackAnswer,
+  type AiFeedbackContinueOutcome,
   type AiFeedbackRequestOutcome,
 } from "@workspace/ui/components/lesson/ai-feedback-answer"
 
@@ -19,7 +20,8 @@ type AiFeedbackStoryArgs = {
   readonly allowRetry: boolean
   readonly draftText: string
   readonly focus: string
-  readonly mockOutcome: "error" | "loading" | "success"
+  readonly mockOutcome: "error" | "limit" | "loading" | "quota" | "success"
+  readonly onContinueWithoutFeedback: () => Promise<AiFeedbackContinueOutcome>
   readonly onRequest: () => Promise<AiFeedbackRequestOutcome>
 }
 
@@ -37,8 +39,26 @@ function createMockOnRequest(
 
     if (mockOutcome === "error") {
       return {
-        status: "error",
+        kind: "retryable",
         message: "AI 코칭 요청에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        status: "error",
+      }
+    }
+
+    if (mockOutcome === "quota") {
+      return {
+        kind: "quota",
+        message: "오늘의 AI 코칭 요청 한도를 모두 사용했습니다.",
+        retryAfterSeconds: 3_600,
+        status: "error",
+      }
+    }
+
+    if (mockOutcome === "limit") {
+      return {
+        kind: "limit",
+        message: "이 단계의 AI 코칭 3회를 모두 사용했습니다.",
+        status: "error",
       }
     }
 
@@ -55,6 +75,9 @@ const meta = {
   tags: ["autodocs"],
   args: {
     ...aiFeedbackDefaults,
+    onContinueWithoutFeedback: fn(
+      async (): Promise<AiFeedbackContinueOutcome> => ({ status: "ok" })
+    ),
     onRequest: fn(createMockOnRequest("success")),
   },
   argTypes: {
@@ -72,10 +95,13 @@ const meta = {
     },
     mockOutcome: {
       control: "select",
-      options: ["success", "error", "loading"],
+      options: ["success", "error", "quota", "limit", "loading"],
       description: "AI 코칭 요청 mock 결과입니다.",
     },
     onRequest: {
+      table: { disable: true },
+    },
+    onContinueWithoutFeedback: {
       table: { disable: true },
     },
   },
@@ -132,5 +158,48 @@ export const WithFeedback: Story = {
 export const RequestError: Story = {
   args: {
     mockOutcome: "error",
+  },
+  play: async ({ canvasElement }) => {
+    const button = canvasElement.querySelector("button")
+    button?.click()
+  },
+}
+
+/**
+ * AI 코칭 요청을 기다리는 상태를 확인하는 예시입니다.
+ */
+export const RequestLoading: Story = {
+  args: {
+    mockOutcome: "loading",
+  },
+  play: async ({ canvasElement }) => {
+    const button = canvasElement.querySelector("button")
+    button?.click()
+  },
+}
+
+/**
+ * 일일 요청 한도와 서울 시간 기준 재시도 안내를 확인하는 예시입니다.
+ */
+export const DailyQuota: Story = {
+  args: {
+    mockOutcome: "quota",
+  },
+  play: async ({ canvasElement }) => {
+    const button = canvasElement.querySelector("button")
+    button?.click()
+  },
+}
+
+/**
+ * 한 스텝에서 성공한 AI 코칭 3회를 모두 사용한 영구 한도 예시입니다.
+ */
+export const AttemptLimit: Story = {
+  args: {
+    mockOutcome: "limit",
+  },
+  play: async ({ canvasElement }) => {
+    const button = canvasElement.querySelector("button")
+    button?.click()
   },
 }

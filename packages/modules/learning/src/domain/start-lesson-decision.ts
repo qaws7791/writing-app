@@ -78,7 +78,7 @@ export function decideStartLesson(
   command: StartLearnerLessonCommand,
   snapshot: StartLessonSnapshot
 ): StartLessonDecision {
-  return freezeStartLessonDecision(createStartLessonDecision(command, snapshot))
+  return cloneStartLessonDecision(createStartLessonDecision(command, snapshot))
 }
 
 function createStartLessonDecision(
@@ -117,11 +117,11 @@ function createStartLessonDecision(
     }
   }
 
-  const aggregate = Object.freeze({
+  const aggregate = {
     scope: snapshot.scope,
     stepIds: snapshot.stepIds,
     userId: command.userId,
-  })
+  }
   return {
     aggregate,
     effects: createStartLessonEffects(command, snapshot.scope, firstStepId),
@@ -130,28 +130,26 @@ function createStartLessonDecision(
   }
 }
 
-function freezeStartLessonDecision(
+function cloneStartLessonDecision(
   decision: StartLessonDecision
 ): StartLessonDecision {
   if (decision.kind === "rejected") {
-    return Object.freeze({
+    return {
       ...decision,
-      error: Object.freeze({ ...decision.error }),
-    })
+      error: { ...decision.error },
+    }
   }
-  return Object.freeze({
+  return {
     ...decision,
-    aggregate: Object.freeze({
+    aggregate: {
       ...decision.aggregate,
-      scope: Object.freeze({ ...decision.aggregate.scope }),
-      stepIds: Object.freeze([...decision.aggregate.stepIds]),
-    }),
-    effects: Object.freeze(
-      decision.effects.map((effect) => Object.freeze({ ...effect }))
-    ),
-    scope: Object.freeze({ ...decision.scope }),
-    stepIds: Object.freeze([...decision.stepIds]),
-  })
+      scope: { ...decision.aggregate.scope },
+      stepIds: [...decision.aggregate.stepIds],
+    },
+    effects: decision.effects.map((effect) => ({ ...effect })),
+    scope: { ...decision.scope },
+    stepIds: [...decision.stepIds],
+  }
 }
 
 function createStartLessonEffects(
@@ -159,7 +157,7 @@ function createStartLessonEffects(
   scope: LearnerLessonScope,
   firstStepId: LessonStepId
 ): readonly StartLessonEffect[] {
-  return Object.freeze([
+  return [
     {
       courseId: scope.courseId,
       curriculumVersionId: scope.curriculumVersionId,
@@ -184,5 +182,5 @@ function createStartLessonEffects(
       occurredAt: command.occurredAt,
       userId: command.userId,
     },
-  ])
+  ]
 }

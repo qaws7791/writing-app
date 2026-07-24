@@ -7,12 +7,14 @@ import {
   lessonStepIdSchema,
   unitIdSchema,
 } from "#contracts/content/ids"
+import { contentAssetReferenceDtoSchema } from "#contracts/content/admin-assets"
 import { courseVisualKeySchema } from "#contracts/content/course"
 import {
   nonNegativeIntegerSchema,
   positiveSortOrderSchema,
 } from "#contracts/content/steps/lesson-step-fields"
 import { lessonStepItemIdSchema } from "#contracts/learning/ids"
+import { learnerStepDraftSchema } from "#contracts/learning/learner-step-answer"
 import { contentStatusSchema } from "#contracts/content/status"
 
 export const curriculumVersionRefSchema = z.strictObject({
@@ -108,6 +110,9 @@ const learnerStepItemSchema = z.strictObject({
 const learnerReadingStepSchema = learnerStepBaseSchema.extend({
   body: z.string(),
   guide: z.string(),
+  illustration: contentAssetReferenceDtoSchema
+    .extend({ kind: z.literal("reading-illustration") })
+    .optional(),
   source: z.string().optional(),
   title: z.string(),
   type: z.literal("READING"),
@@ -206,6 +211,9 @@ export const learnerLessonStepSchema = z.discriminatedUnion("type", [
 export const learnerCourseSummarySchema = z.strictObject({
   category: z.string(),
   contentStatus: contentStatusSchema,
+  cover: contentAssetReferenceDtoSchema
+    .extend({ kind: z.literal("course-cover") })
+    .nullable(),
   description: z.string(),
   id: courseIdSchema,
   lessonCount: nonNegativeIntegerSchema,
@@ -241,6 +249,7 @@ export const learnerLessonSchema = z.strictObject({
   category: z.string().nullable(),
   courseId: courseIdSchema,
   description: z.string().nullable(),
+  drafts: z.array(learnerStepDraftSchema),
   estimatedMinutes: z.number().int().positive(),
   id: lessonIdSchema,
   learning: lessonLearningStateSchema,
@@ -252,6 +261,9 @@ export const learnerLessonSchema = z.strictObject({
 })
 
 export const learnerProgressCourseSchema = z.strictObject({
+  cover: contentAssetReferenceDtoSchema
+    .extend({ kind: z.literal("course-cover") })
+    .nullable(),
   id: courseIdSchema,
   learning: courseLearningStateSchema,
   title: z.string(),
@@ -275,15 +287,6 @@ export const learnerProgressPageSchema = createCursorPageSchema(
 )
 export const learnerCourseCategoriesSchema = z.array(z.string())
 
-export const learnerCourseSortValues = [
-  "recommended",
-  "title-asc",
-  "title-desc",
-  "lesson-count-asc",
-  "lesson-count-desc",
-] as const
-export const learnerCourseSortSchema = z.enum(learnerCourseSortValues)
-
 const cursorListQueryFields = {
   cursor: z.string().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -293,7 +296,6 @@ export const learnerCourseListQuerySchema = z.strictObject({
   ...cursorListQueryFields,
   category: z.string().min(1).optional(),
   query: z.string().trim().min(1).max(100).optional(),
-  sort: learnerCourseSortSchema.default("recommended"),
 })
 
 export const learnerProgressListQuerySchema = z.strictObject({
@@ -314,7 +316,6 @@ export type LearnerLesson = z.infer<typeof learnerLessonSchema>
 export type LearnerProgressCourse = z.infer<typeof learnerProgressCourseSchema>
 export type LearnerCoursePage = z.infer<typeof learnerCoursePageSchema>
 export type LearnerProgressPage = z.infer<typeof learnerProgressPageSchema>
-export type LearnerCourseSort = z.infer<typeof learnerCourseSortSchema>
 export type LearnerCourseListQuery = z.infer<
   typeof learnerCourseListQuerySchema
 >

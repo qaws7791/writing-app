@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { createApp } from "@workspace/http-platform/core"
+import { createApp } from "@workspace/http-platform/app"
 import {
   adminIdSchema,
   userIdSchema,
@@ -15,11 +15,15 @@ import type {
   AdminUserMutationUseCase,
   AdminUserReader,
 } from "#identity/application/identity-queries"
-import { createAdminIdentityRoutes } from "#identity/interface/http/admin-identity-routes"
-import { createLearnerIdentityRoutes } from "#identity/interface/http/learner-identity-routes"
+import { registerAdminIdentityRoutes } from "#identity/interface/http/admin-identity-routes"
+import type { IdentityAdminHonoEnv } from "#identity/interface/http/admin-auth"
+import {
+  registerLearnerIdentityRoutes,
+  type IdentityLearnerHonoEnv,
+} from "#identity/interface/http/learner-identity-routes"
 
 const userId = userIdSchema.parse("user-1")
-const ownerId = adminIdSchema.parse("owner-1")
+const adminId = adminIdSchema.parse("admin-1")
 const user: AdminUserDetail = {
   email: "learner@example.com",
   id: userId,
@@ -35,7 +39,7 @@ const user: AdminUserDetail = {
 
 describe("identity HTTP interface", () => {
   it("unauthenticated read를 401로 거절한다", async () => {
-    const app = createIdentityHttpFixture({ role: "owner" })
+    const app = createIdentityHttpFixture()
     const response = await app.request("/users")
 
     expect(response.status).toBe(401)
@@ -44,25 +48,8 @@ describe("identity HTTP interface", () => {
     })
   })
 
-  it("operator mutation을 403으로 거절한다", async () => {
-    const app = createIdentityHttpFixture({ role: "operator" })
-    const response = await app.request("/users/user-1/status", {
-      body: JSON.stringify({ status: "suspended" }),
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: "admin=valid",
-      },
-      method: "PATCH",
-    })
-
-    expect(response.status).toBe(403)
-    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-    expect(response.headers.get("Vary")).toContain("Cookie")
-    await expect(response.json()).resolves.toMatchObject({ code: "FORBIDDEN" })
-  })
-
   it("optimistic conflict를 canonical 409 오류로 exhaustive mapping한다", async () => {
-    const app = createIdentityHttpFixture({ conflict: true, role: "owner" })
+    const app = createIdentityHttpFixture({ conflict: true })
     const response = await app.request("/users/user-1/status", {
       body: JSON.stringify({ status: "suspended" }),
       headers: {
@@ -78,8 +65,21 @@ describe("identity HTTP interface", () => {
     })
   })
 
-  it("인증된 read와 owner mutation 성공 응답을 canonical schema로 검증한다", async () => {
-    const app = createIdentityHttpFixture({ role: "owner" })
+  it("삭제 marker 기록 실패를 성공으로 숨기지 않고 503으로 반환한다", async () => {
+    const app = createIdentityHttpFixture({ markerFailure: true })
+    const response = await app.request("/users/user-1", {
+      headers: { Cookie: "admin=valid" },
+      method: "DELETE",
+    })
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "IDENTITY_DELETION_MARKER_FAILED",
+    })
+  })
+
+  it("인증된 read와 관리자 mutation 성공 응답을 canonical schema로 검증한다", async () => {
+    const app = createIdentityHttpFixture()
     const listResponse = await app.request("/users?page=1&pageSize=12", {
       headers: { Cookie: "admin=valid" },
     })
@@ -137,21 +137,47 @@ describe("identity learner HTTP interface", () => {
       user: { id: "user-1", name: "학습자" },
     })
   })
+
+  it("표시 이름을 정규화해 수정하고 잘못된 입력은 canonical 400으로 거절한다", async () => {
+    const app = createLearnerIdentityHttpFixture()
+    const headers = {
+      "Content-Type": "application/json",
+      Cookie: "learner=active",
+    }
+    const updated = await app.request("/profile", {
+      body: JSON.stringify({ name: "  새 이름  " }),
+      headers,
+      method: "PATCH",
+    })
+    const invalid = await app.request("/profile", {
+      body: JSON.stringify({ name: "   " }),
+      headers,
+      method: "PATCH",
+    })
+
+    expect(updated.status).toBe(200)
+    await expect(updated.json()).resolves.toEqual({ name: "새 이름" })
+    expect(invalid.status).toBe(400)
+    await expect(invalid.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+    })
+  })
 })
 
-function createIdentityHttpFixture(input: {
-  readonly conflict?: boolean
-  readonly role: "operator" | "owner"
-}) {
+function createIdentityHttpFixture(
+  input: {
+    readonly conflict?: boolean
+    readonly markerFailure?: boolean
+  } = {}
+) {
   const sessionResolver: AdminSessionResolver = {
     async resolveSession(headers) {
       return headers.get("Cookie") === "admin=valid"
         ? {
             admin: {
               email: "owner@example.com",
-              id: ownerId,
+              id: adminId,
               name: "소유자",
-              role: input.role,
             },
             [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
           }
@@ -174,7 +200,9 @@ function createIdentityHttpFixture(input: {
   }
   const mutation: AdminUserMutationUseCase = {
     async deleteUser() {
-      return ok(undefined)
+      return input.markerFailure === true
+        ? err({ kind: "identity-deletion-marker-failed" })
+        : ok(undefined)
     },
     async updateUserStatus(command) {
       return input.conflict === true
@@ -183,46 +211,56 @@ function createIdentityHttpFixture(input: {
     },
   }
 
-  return createApp({
-    routes: createAdminIdentityRoutes({
-      sessionResolver,
-      userMutationService: mutation,
-      userReader: reader,
-    }),
+  const app = createApp<IdentityAdminHonoEnv>()
+  registerAdminIdentityRoutes(app, {
+    sessionResolver,
+    userMutationService: mutation,
+    userReader: reader,
   })
+  return app
 }
 
 function createLearnerIdentityHttpFixture() {
-  return createApp({
-    routes: createLearnerIdentityRoutes({
-      profileStatsQuery: {
-        async readProfileStats() {
-          return {
-            completedLessons: 3,
-            currentStreakDays: 2,
-            lastActiveDate: "2026-07-22",
-            progressPercent: 60,
-            totalLessons: 5,
-          }
-        },
+  const app = createApp<IdentityLearnerHonoEnv>()
+  registerLearnerIdentityRoutes(app, {
+    application: {
+      async changeLearnerDisplayName(command) {
+        return ok({
+          deletedAt: null,
+          displayName: command.displayName.trim(),
+          status: "active",
+          userId: command.userId,
+        })
       },
-      sessionResolver: {
-        async resolveSession(headers) {
-          const status = headers.get("Cookie")?.split("=")[1]
-          if (status !== "active" && status !== "suspended") return null
+    },
+    profileStatsQuery: {
+      async readProfileStats() {
+        return {
+          completedLessons: 3,
+          currentStreakDays: 2,
+          lastActiveDate: "2026-07-22",
+          progressPercent: 60,
+          totalLessons: 5,
+        }
+      },
+    },
+    sessionResolver: {
+      async resolveSession(headers) {
+        const status = headers.get("Cookie")?.split("=")[1]
+        if (status !== "active" && status !== "suspended") return null
 
-          return {
-            user: {
-              email: "learner@example.com",
-              id: "user-1",
-              image: null,
-              joinedAt: "2026-06-14T00:00:00.000Z",
-              name: "학습자",
-              status,
-            },
-          }
-        },
+        return {
+          user: {
+            email: "learner@example.com",
+            id: "user-1",
+            image: null,
+            joinedAt: "2026-06-14T00:00:00.000Z",
+            name: "학습자",
+            status,
+          },
+        }
       },
-    }),
+    },
   })
+  return app
 }

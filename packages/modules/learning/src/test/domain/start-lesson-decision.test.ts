@@ -126,11 +126,6 @@ describe("학습 시작 의사결정", () => {
       stepIds: availableSnapshot.stepIds,
       userId: command.userId,
     })
-    expect(Object.isFrozen(decision)).toBe(true)
-    if (decision.kind === "start") {
-      expect(Object.isFrozen(decision.aggregate)).toBe(true)
-      expect(Object.isFrozen(decision.effects)).toBe(true)
-    }
   })
 
   it("기존 진행 replay도 같은 idempotent effect로 수렴한다", () => {

@@ -10,9 +10,13 @@ import {
 
 describe("ORDER 초기 순서", () => {
   it("같은 seed는 정답과 다른 동일한 순서를 만든다", () => {
-    const items = ["첫째", "둘째", "셋째", "넷째"]
-    const first = createDeterministicOrder(items, items, "step-1")
-    const second = createDeterministicOrder(items, items, "step-1")
+    const items = ["첫째", "둘째", "셋째", "넷째"].map((text, index) => ({
+      id: `item-${index + 1}`,
+      text,
+    }))
+    const correctItemIds = items.map((item) => item.id)
+    const first = createDeterministicOrder(items, correctItemIds, "step-1")
+    const second = createDeterministicOrder(items, correctItemIds, "step-1")
 
     expect(first).toEqual(second)
     expect(first).not.toEqual(items)
@@ -20,18 +24,33 @@ describe("ORDER 초기 순서", () => {
 
   it("항목 추가와 삭제 후에도 각 항목을 정확히 한 번 포함한다", () => {
     for (let size = 2; size <= 20; size += 1) {
-      const items = Array.from({ length: size }, (_, index) => `item-${index}`)
-      const shuffled = createDeterministicOrder(items, items, `step-${size}`)
+      const items = Array.from(
+        { length: size },
+        (_, index) => `item-${index}`
+      ).map((id) => ({ id, text: id }))
+      const shuffled = createDeterministicOrder(
+        items,
+        items.map((item) => item.id),
+        `step-${size}`
+      )
 
-      expect([...shuffled].sort()).toEqual([...items].sort())
-      expect(new Set(shuffled)).toHaveLength(items.length)
+      expect(shuffled.map((item) => item.id).sort()).toEqual(
+        items.map((item) => item.id).sort()
+      )
+      expect(new Set(shuffled.map((item) => item.id))).toHaveLength(
+        items.length
+      )
     }
   })
 
   it("SSR HTML과 hydration 초기 DOM 순서가 같다", async () => {
     const props = {
-      correctItems: ["첫째", "둘째", "셋째"],
-      items: ["첫째", "둘째", "셋째"],
+      correctItemIds: ["item-1", "item-2", "item-3"],
+      items: [
+        { id: "item-1", text: "첫째" },
+        { id: "item-2", text: "둘째" },
+        { id: "item-3", text: "셋째" },
+      ],
       seed: "step-hydration",
     }
     const html = renderToString(<OrderAnswer {...props} />)

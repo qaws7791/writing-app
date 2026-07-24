@@ -5,16 +5,18 @@ import type { Ref } from "react"
 import type {
   LessonAiFeedbackOutcome,
   LessonAiFeedbackRequest,
-  LessonAnswerChange,
+  LessonAiFeedbackSkipOutcome,
   LessonStepAnswerPayload,
 } from "@/features/lesson-session/model/lesson-logic"
+import type { LessonDraftSyncStatus } from "@/features/lesson-session/hooks/use-lesson-draft-sync"
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
 import { getLessonStepActionLabel } from "@/features/lesson-session/model/lesson-step-policy"
+import { LessonDraftStatus } from "@/features/lesson-session/ui/lesson-draft-status"
 import { LessonStepRenderer } from "@/features/lesson-session/ui/lesson-step-renderer"
 import type {
-  LearnerLesson as Lesson,
-  LearnerLessonStep as LessonStep,
-} from "@workspace/contracts/learning/learner-content"
+  LearnerLessonDto as Lesson,
+  LearnerLessonStepDto as LessonStep,
+} from "@/shared/http/learner-api-client"
 import {
   LessonCheckedFooter,
   LessonProgressHeader,
@@ -28,52 +30,66 @@ import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
 type LessonCheckedState = false | LessonStepCheckedState
 
 export function LessonActiveScreen({
+  aiFeedbackDraftText,
   answerError,
+  answerPayload,
   checked,
   completeError,
   contentRef,
+  currentDraftStatus,
   currentStep,
   currentStepIndex,
-  isCompleting,
-  isSavingProgress,
   isReady,
+  isSubmitting,
   lesson,
-  learnerId,
   onAiFeedbackRequest,
-  onAnswerChange,
+  onAiFeedbackSkip,
   onAnswerPayloadChange,
   onCancelExit,
   onConfirmExit,
+  onDraftFlush,
   onExit,
+  onRetryDraft,
+  onRetryLocalDraft,
   onSubmitCurrentStep,
+  onUseServerDraft,
   progress,
+  renderRevision,
   showExit,
   visibleStepNumber,
 }: {
+  readonly aiFeedbackDraftText: string
   readonly answerError: null | string
+  readonly answerPayload: LessonStepAnswerPayload | undefined
   readonly checked: LessonCheckedState
   readonly completeError: null | string
   readonly contentRef: Ref<HTMLElement>
+  readonly currentDraftStatus: LessonDraftSyncStatus
   readonly currentStep: LessonStep
   readonly currentStepIndex: number
-  readonly isCompleting: boolean
-  readonly isSavingProgress: boolean
   readonly isReady: boolean
+  readonly isSubmitting: boolean
   readonly lesson: Lesson
-  readonly learnerId: string
   readonly onAiFeedbackRequest: (
     request: LessonAiFeedbackRequest
   ) => Promise<LessonAiFeedbackOutcome>
-  readonly onAnswerChange: (change: LessonAnswerChange) => Promise<void>
+  readonly onAiFeedbackSkip: (
+    request: LessonAiFeedbackRequest
+  ) => Promise<LessonAiFeedbackSkipOutcome>
   readonly onAnswerPayloadChange: (change: {
     readonly payload: LessonStepAnswerPayload
     readonly stepId: string
   }) => void
   readonly onCancelExit: () => void
   readonly onConfirmExit: () => void
+  readonly onDraftFlush: () => void
   readonly onExit: () => void
+  readonly onRetryDraft: () => void
+  readonly onRetryLocalDraft: () => void
   readonly onSubmitCurrentStep: () => void
+  readonly onUseServerDraft: () => void
   readonly progress: number
+  readonly renderRevision: number
   readonly showExit: boolean
   readonly visibleStepNumber: number
 }) {
@@ -85,16 +101,12 @@ export function LessonActiveScreen({
           <StickyActionBar className="mx-auto max-w-2xl">
             <Button
               className="w-full"
-              disabled={!isReady || isCompleting || isSavingProgress}
+              disabled={!isReady || isSubmitting}
               onClick={onSubmitCurrentStep}
               size="lg"
               variant={isReady ? "default" : "secondary"}
             >
-              {isCompleting
-                ? "완료 저장 중"
-                : isSavingProgress
-                  ? "진행 저장 중"
-                  : getLessonStepActionLabel(currentStep)}
+              {isSubmitting ? "저장 중" : getLessonStepActionLabel(currentStep)}
             </Button>
           </StickyActionBar>
         ) : (
@@ -110,18 +122,27 @@ export function LessonActiveScreen({
         />
       }
     >
-      <div className="an-fi">
+      <div className="an-fi" onBlurCapture={onDraftFlush}>
         <LessonStepRenderer
+          aiFeedbackDraftText={aiFeedbackDraftText}
           answerError={answerError}
           checked={checked}
-          learnerId={learnerId}
           onAiFeedbackRequest={onAiFeedbackRequest}
-          onAnswerChange={onAnswerChange}
+          onAiFeedbackSkip={onAiFeedbackSkip}
           onAnswerPayloadChange={onAnswerPayloadChange}
-          key={currentStepIndex}
+          key={`${currentStepIndex}:${renderRevision}`}
           step={currentStep}
+          {...(answerPayload === undefined ? {} : { answerPayload })}
         />
-        {completeError === null ? null : (
+        {isDraftableLessonStep(currentStep) ? (
+          <LessonDraftStatus
+            onRetry={onRetryDraft}
+            onRetryLocal={onRetryLocalDraft}
+            onUseServer={onUseServerDraft}
+            status={currentDraftStatus}
+          />
+        ) : null}
+        {completeError === null || currentStep.type === "AI_FEEDBACK" ? null : (
           <Callout className="mt-6" role="alert" tone="danger">
             <CalloutContent>{completeError}</CalloutContent>
           </Callout>
@@ -131,5 +152,13 @@ export function LessonActiveScreen({
         <LessonExitModal onCancel={onCancelExit} onConfirm={onConfirmExit} />
       ) : null}
     </LessonShell>
+  )
+}
+
+function isDraftableLessonStep(step: LessonStep): boolean {
+  return (
+    step.type !== "AI_FEEDBACK" &&
+    step.type !== "COMPARE" &&
+    step.type !== "READING"
   )
 }

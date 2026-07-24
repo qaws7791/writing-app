@@ -19,8 +19,7 @@ import type {
 
 const now = new Date("2026-07-22T00:00:00.000Z")
 const userId = "user-1" as UserId
-const ownerId = "owner-1" as AdminId
-const operatorId = "operator-1" as AdminId
+const adminId = "admin-1" as AdminId
 const authenticatedLearner = {
   email: "learner@example.com",
   id: userId,
@@ -55,11 +54,11 @@ describe("identity application", () => {
     ).resolves.toMatchObject({ value: { displayName: "새 이름" } })
   })
 
-  it("owner 상태 변경에서 clock, repository와 session port fake를 사용한다", async () => {
+  it("관리자 상태 변경에서 clock, repository와 session port fake를 사용한다", async () => {
     const fixture = createApplicationFixture()
 
     const result = await fixture.application.changeUserStatus({
-      actor: { id: ownerId, role: "owner" },
+      actor: { id: adminId },
       status: "suspended",
       userId,
     })
@@ -71,24 +70,12 @@ describe("identity application", () => {
     ).toHaveBeenCalledWith(userId)
   })
 
-  it("operator 요청은 persistence 전에 거절한다", async () => {
-    const fixture = createApplicationFixture()
-
-    await expect(
-      fixture.application.deleteUser({
-        actor: { id: operatorId, role: "operator" },
-        userId,
-      })
-    ).resolves.toMatchObject({ error: { kind: "identity-forbidden" } })
-    expect(fixture.repository.saveLearnerProfile).not.toHaveBeenCalled()
-  })
-
   it("optimistic conflict를 Result로 반환한다", async () => {
     const fixture = createApplicationFixture({ saveConflict: true })
 
     await expect(
       fixture.application.changeUserStatus({
-        actor: { id: ownerId, role: "owner" },
+        actor: { id: adminId },
         status: "suspended",
         userId,
       })
@@ -102,7 +89,7 @@ describe("identity application", () => {
     const fixture = createApplicationFixture({ sessionFailure: true })
 
     const result = await fixture.application.changeUserStatus({
-      actor: { id: ownerId, role: "owner" },
+      actor: { id: adminId },
       status: "suspended",
       userId,
     })
@@ -110,19 +97,25 @@ describe("identity application", () => {
     expect(result).toEqual(err({ kind: "identity-session-revocation-failed" }))
   })
 
-  it("관리자 role 변경은 owner 정책과 session 폐기를 함께 적용한다", async () => {
-    const fixture = createApplicationFixture()
+  it("삭제 marker 기록 실패 시 profile과 session을 변경하지 않는다", async () => {
+    const fixture = createApplicationFixture({ markerFailure: true })
 
-    const result = await fixture.application.changeAdminRole({
-      actor: { id: ownerId, role: "owner" },
-      adminId: operatorId,
-      role: "owner",
-    })
-
-    expect(result._unsafeUnwrap()).toEqual({ id: operatorId, role: "owner" })
+    await expect(
+      fixture.application.deleteUser({
+        actor: { id: adminId },
+        userId,
+      })
+    ).resolves.toEqual(err({ kind: "identity-deletion-marker-failed" }))
     expect(
-      fixture.dependencies.sessionRevocation.revokeAdminSessions
-    ).toHaveBeenCalledWith(operatorId)
+      fixture.dependencies.deletionMarkerStore.record
+    ).toHaveBeenCalledWith({
+      requestedAt: now,
+      userId,
+    })
+    expect(fixture.repository.saveLearnerProfile).not.toHaveBeenCalled()
+    expect(
+      fixture.dependencies.sessionRevocation.revokeLearnerSessions
+    ).not.toHaveBeenCalled()
   })
 
   it("auth port fake로 learner와 admin actor session을 해석한다", async () => {
@@ -132,10 +125,10 @@ describe("identity application", () => {
     }
     const adminAuthentication = {
       resolveIdentity: vi.fn(async () => ({
-        email: "operator@example.com",
+        email: "admin@example.com",
         expiresAt: new Date("2099-01-01T00:00:00.000Z"),
-        id: operatorId,
-        name: "운영자",
+        id: adminId,
+        name: "관리자",
       })),
     }
 
@@ -151,26 +144,24 @@ describe("identity application", () => {
         authentication: adminAuthentication,
       }).resolveSession(new Headers())
     ).resolves.toMatchObject({
-      admin: { id: operatorId, role: "operator" },
+      admin: { id: adminId },
     })
   })
 })
 
 function createApplicationFixture({
   account = createLearnerAccount(),
+  markerFailure = false,
   saveConflict = false,
   sessionFailure = false,
 }: {
   readonly account?: LearnerAccount | null
+  readonly markerFailure?: boolean
   readonly saveConflict?: boolean
   readonly sessionFailure?: boolean
 } = {}) {
   let currentAccount = account
   const repository = {
-    findAdminIdentity: vi.fn(async (adminId) => ({
-      identity: { id: adminId, role: "operator" as const },
-      version: 0,
-    })),
     findLearnerProfile: vi.fn(async () =>
       currentAccount === null ? null : toLearnerProfileRecord(currentAccount)
     ),
@@ -181,11 +172,6 @@ function createApplicationFixture({
       currentAccount = createLearnerAccount({ profile })
       return currentAccount.profile
     }),
-    saveAdminIdentity: vi.fn(async (input) =>
-      saveConflict
-        ? err({ kind: "identity-conflict" as const })
-        : ok({ identity: input.identity, version: input.expectedVersion + 1 })
-    ),
     saveLearnerProfile: vi.fn(async (input) => {
       if (saveConflict) return err({ kind: "identity-conflict" as const })
       currentAccount = createLearnerAccount({ profile: input.profile })
@@ -194,13 +180,19 @@ function createApplicationFixture({
   } satisfies IdentityRepository
   const dependencies = {
     clock: { now: vi.fn(() => now) },
+    deletionMarkerStore: {
+      record: vi.fn(async () =>
+        markerFailure
+          ? err({ kind: "deletion-marker-storage-failed" as const })
+          : ok(undefined)
+      ),
+    },
     learnerIdentityDirectory: {
       findLearnerIdentity: vi.fn(async () => authenticatedLearner),
       listLearnerIdentities: vi.fn(async () => [authenticatedLearner]),
     },
     repository,
     sessionRevocation: {
-      revokeAdminSessions: vi.fn(async () => ok(undefined)),
       revokeLearnerSessions: vi.fn(async () =>
         sessionFailure
           ? err({ kind: "session-revocation-failed" as const })

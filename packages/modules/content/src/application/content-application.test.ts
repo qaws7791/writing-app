@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { err, ok } from "@workspace/kernel/result"
 import type {
   AdminId,
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
@@ -11,70 +12,30 @@ import type {
 
 import { createContentApplication } from "#content/application/content-application"
 import type {
+  ContentAssetStoragePort,
   ContentApplicationDependencies,
   ContentRepository,
 } from "#content/application/ports/content-ports"
+import type { ContentAsset } from "#content/domain/content-asset"
 import type { CurriculumDraft } from "#content/domain/content-model"
 
-const owner = {
-  adminId: "owner-1" as AdminId,
-  mutation: "allowed",
-} as const
-const operator = {
-  adminId: "operator-1" as AdminId,
-  mutation: "forbidden",
-} as const
+const adminId = "admin-1" as AdminId
 const now = new Date("2026-07-22T00:00:00.000Z")
 
 describe("content application", () => {
-  it("course command와 query를 각각 좁은 repository port에 위임한다", async () => {
+  it("course 생성 command에 서버 ID와 시각을 전달한다", async () => {
     const fixture = createApplicationFixture()
 
     await expect(
-      fixture.application.createCourse(owner)
+      fixture.application.createCourse(adminId)
     ).resolves.toMatchObject({
       value: { courseId: "course-1" },
     })
-    await expect(
-      fixture.application.getCourses({
-        category: "",
-        page: 1,
-        pageSize: 20,
-        query: "",
-        status: "all",
-      })
-    ).resolves.toMatchObject({ page: 1, totalItems: 0 })
 
     expect(fixture.repository.createCourse).toHaveBeenCalledWith({
       courseId: "course-1",
       now,
     })
-    expect(fixture.repository.readCourses).toHaveBeenCalledOnce()
-  })
-
-  it("owner가 아닌 mutation은 persistence 전에 거절한다", async () => {
-    const fixture = createApplicationFixture()
-
-    await expect(fixture.application.createCourse(operator)).resolves.toEqual(
-      err({ kind: "content-forbidden" })
-    )
-    await expect(
-      fixture.application.archiveCourse({
-        actor: operator,
-        courseId: draft.courseId,
-      })
-    ).resolves.toEqual(err({ kind: "content-forbidden" }))
-    await expect(
-      fixture.application.publishCourse({
-        actor: operator,
-        courseId: draft.courseId,
-        expectedEditVersion: 0,
-      })
-    ).resolves.toEqual(err({ kind: "content-forbidden" }))
-
-    expect(fixture.repository.createCourse).not.toHaveBeenCalled()
-    expect(fixture.repository.findCourse).not.toHaveBeenCalled()
-    expect(fixture.repository.findDraft).not.toHaveBeenCalled()
   })
 
   it("stale edit version을 optimistic conflict로 반환한다", async () => {
@@ -82,7 +43,7 @@ describe("content application", () => {
 
     await expect(
       fixture.application.saveCourseEditor({
-        actor: owner,
+        adminId,
         document: toEditorDocument(draft),
         expectedEditVersion: 1,
       })
@@ -95,7 +56,7 @@ describe("content application", () => {
     const fixture = createApplicationFixture({ order })
 
     const result = await fixture.application.publishCourse({
-      actor: owner,
+      adminId,
       courseId: draft.courseId,
       expectedEditVersion: draft.editVersion,
     })
@@ -104,24 +65,65 @@ describe("content application", () => {
     expect(order).toEqual(["commit"])
   })
 
-  it("reset guard가 거절하면 seed persistence를 호출하지 않는다", async () => {
-    const fixture = createApplicationFixture({ resetForbidden: true })
+  it("object key를 저장소 URL로 해석해 editor와 learner 참조에 반환한다", async () => {
+    const asset = createAsset()
+    const assetStorage: ContentAssetStoragePort = {
+      async deleteObjects() {
+        throw new Error("asset deletion was not expected")
+      },
+      async putObject() {
+        throw new Error("asset upload was not expected")
+      },
+      resolveUrl: vi.fn(
+        (objectKey) => `https://assets.example.test/${objectKey}`
+      ),
+    }
+    const fixture = createApplicationFixture({
+      assetStorage,
+      assets: [asset],
+    })
 
     await expect(
-      fixture.application.resetContent({ actor: owner })
-    ).resolves.toEqual(err({ kind: "content-reset-forbidden" }))
-    expect(fixture.repository.resetContent).not.toHaveBeenCalled()
+      fixture.application.getCourseEditor(draft.courseId)
+    ).resolves.toMatchObject({
+      assets: [
+        {
+          altText: asset.altText,
+          id: asset.id,
+          kind: asset.kind,
+          url: `https://assets.example.test/${asset.objectKey}`,
+        },
+      ],
+    })
+    await expect(
+      fixture.application.resolveAssetReferences([
+        asset.id,
+        "missing-asset" as ContentAssetId,
+        asset.id,
+      ])
+    ).resolves.toEqual([
+      {
+        altText: asset.altText,
+        id: asset.id,
+        kind: asset.kind,
+        url: `https://assets.example.test/${asset.objectKey}`,
+      },
+    ])
+    expect(assetStorage.resolveUrl).toHaveBeenCalledTimes(2)
   })
 })
 
 function createApplicationFixture({
+  assetStorage = null,
+  assets = [],
   order = [],
-  resetForbidden = false,
 }: {
+  readonly assetStorage?: ContentAssetStoragePort | null
+  readonly assets?: readonly ContentAsset[]
   readonly order?: string[]
-  readonly resetForbidden?: boolean
 } = {}) {
   const repository = {
+    createAsset: vi.fn(),
     createCourse: vi.fn(async () => ok(toEditorDocument(draft))),
     findCourse: vi.fn(async () => ({
       createdAt: now,
@@ -132,11 +134,18 @@ function createApplicationFixture({
     })),
     findCurriculumByLesson: vi.fn(async () => null),
     findDraft: vi.fn(async () => ok(draft)),
+    deleteOrphanedAssetCandidates: vi.fn(async () => ok(0)),
     listPublishedCourseSummaries: vi.fn(async () => []),
+    listActiveAssetsForCourse: vi.fn(async () => assets),
+    listOrphanedAssetCandidates: vi.fn(async () => ok([])),
     publishDraft: vi.fn(async ({ publishedRevision }) => {
       order.push("commit")
       return ok(publishedRevision)
     }),
+    readAssetOwner: vi.fn(async () => null),
+    readActiveAssetsByIds: vi.fn(async (assetIds) =>
+      assets.filter((asset) => assetIds.includes(asset.id))
+    ),
     readCourseEditor: vi.fn(async () => toEditorDocument(draft)),
     readCourses: vi.fn(async (input) => ({
       items: [],
@@ -146,34 +155,24 @@ function createApplicationFixture({
       totalPages: 1,
     })),
     readCurriculum: vi.fn(async () => null),
-    resetContent: vi.fn(async () =>
-      ok({
-        changed: {
-          archived: 0,
-          courses: 5,
-          lessons: 44,
-          steps: 136,
-          units: 15,
-        },
-        revision: 2,
-      })
-    ),
     saveCourse: vi.fn(async ({ course }) => ok(course)),
     saveDraft: vi.fn(async ({ draft: value }) =>
       ok({ ...value, editVersion: value.editVersion + 1 })
     ),
   } satisfies ContentRepository
   const dependencies = {
+    assetIdGenerator: {
+      next: vi.fn(() => "content-asset-1" as ContentAssetId),
+    },
+    assetImageProcessor: {
+      process: vi.fn(async (input) =>
+        ok({ bytes: input.bytes, contentType: input.contentType })
+      ),
+    },
+    assetStorage,
     clock: { now: vi.fn(() => now) },
     courseIdGenerator: { next: vi.fn(() => draft.courseId) },
     repository,
-    resetGuard: {
-      authorize: vi.fn(() =>
-        resetForbidden
-          ? err({ kind: "content-reset-forbidden" as const })
-          : ok(undefined)
-      ),
-    },
   } satisfies ContentApplicationDependencies
 
   return {
@@ -187,12 +186,13 @@ function toEditorDocument({
   visualKey: _visualKey,
   ...document
 }: CurriculumDraft) {
-  return document
+  return { ...document, assets: [] }
 }
 
 const draft: CurriculumDraft = {
   category: "입문",
   courseId: "course-1" as CourseId,
+  coverAssetId: null,
   curriculumVersionId: "curriculum:course-1:1" as CurriculumVersionId,
   description: "설명",
   editVersion: 0,
@@ -228,4 +228,21 @@ const draft: CurriculumDraft = {
     },
   ],
   visualKey: "basic-sentence-writing",
+}
+
+function createAsset(): ContentAsset {
+  return {
+    altText: "코스 표지",
+    byteSize: 4,
+    contentType: "image/jpeg",
+    courseId: draft.courseId,
+    createdAt: now,
+    curriculumVersionId: draft.curriculumVersionId,
+    id: "content-asset-1" as ContentAssetId,
+    kind: "course-cover",
+    objectKey: "content-assets/course-cover/content-asset-1.jpg",
+    orphanedAt: null,
+    status: "active",
+    updatedAt: now,
+  }
 }

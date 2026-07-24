@@ -15,10 +15,6 @@
       owner: root
       group: root
       mode: "0750"
-    - path: "{{ writing_app_secrets_directory }}"
-      owner: root
-      group: root
-      mode: "0700"
     - path: "{{ writing_app_data_directory }}"
       owner: "{{ writing_app_container_uid }}"
       group: "{{ writing_app_container_gid }}"

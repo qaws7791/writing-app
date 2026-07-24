@@ -66,14 +66,15 @@
 - 필터는 `FilterToolbar`에 모은다.
 - 목록은 `Surface variant="panel"` 안의 `DataTable`로 표시한다.
 - 페이지네이션 메타는 섹션 heading 설명에 표시한다.
-- 검색/필터가 실제 URL과 동기화되지 않는 경우, 후속 작업에서 form submit 또는 query 반영 정책을 명시한 뒤 구현한다.
+- 복원 가능한 검색·정렬·페이지 상태는 native GET form과 `Link`로 URL query에 보존하고 서버 조회에 사용한다.
 
 ### 지표 대시보드
 
-- 주요 지표는 4열 metric card grid를 기본으로 한다.
-- 어드민 대시보드와 분석의 추이, 분포, 운영 흐름 차트는 Recharts 기반 구현을 사용할 수 있다.
+- 주요 지표는 화면 폭에 따라 1·2·3열로 확장되는 metric card grid를 기본으로 한다.
+- 분석의 제한된 핵심 추이는 Recharts 기반 구현을 사용할 수 있다.
 - 매우 단순한 보조 막대는 CSS 또는 SVG로 표현할 수 있다.
-- 차트만으로 의미를 전달하지 않고 수치, 라벨, 표, 보조 설명을 함께 제공한다.
+- 분석 차트는 하나의 지연 로딩 client boundary와 공통 shell·tooltip token을 사용한다.
+- 차트만으로 의미를 전달하지 않고 기간 합계, 라벨, 공통 데이터 표와 보조 설명을 함께 제공한다.
 - 숫자는 `toLocaleString("ko-KR")`를 사용한다.
 
 ### 상태 pill
@@ -83,7 +84,7 @@
 
 ### 위험 작업
 
-- 보관, 삭제 요청, 콘텐츠 초기화는 확인 dialog를 거친다.
+- 보관과 삭제 요청은 확인 dialog를 거친다.
 - confirm 버튼은 `Button variant="destructive"`를 사용한다.
 - 성공 또는 실패 결과는 `Alert role="status"`에 한국어로 표시한다.
 

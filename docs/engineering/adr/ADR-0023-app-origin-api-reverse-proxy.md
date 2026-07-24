@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨 — source topology 구현 완료, production 전환 검증은 미실행
+부분 대체됨 — origin별 reverse proxy 결정은 유지되며, 관리자 AI stream 항목은 확정 제품 범위에서 제거됨
 
 ## 날짜
 
@@ -21,7 +21,7 @@
 - API 전용 public host와 browser API base URL 설정을 제거한다. API container는 내부 network에서만 접근한다.
 - 브라우저 adapter는 상대 경로와 host-only session cookie를 사용한다. CORS는 두지 않으며 상태 변경 요청의 trusted origin 검증은 유지한다.
 - Server Component의 DAL은 내부 `API_BASE_URL`로 API를 직접 호출한다. 로컬 개발에서만 Next rewrite가 상대 브라우저 경로를 내부 API로 전달한다.
-- 관리자 AI stream은 별도 Next Route Handler를 거치지 않고 관리자 origin의 API proxy 경로를 사용한다.
+- 당시 관리자 AI stream은 별도 Next Route Handler를 거치지 않고 관리자 origin의 API proxy 경로를 사용하도록 결정했다. 이후 확정 제품 범위에서 관리자 AI 채팅과 stream을 제거했으므로 현재 적용 대상이 아니다.
 
 ## 대안과 trade-off
 
@@ -33,6 +33,6 @@
 
 ## 배포 조건
 
-production 적용 전에 외부 API consumer와 Cloudflare tunnel/DNS route를 확인하고 Google OAuth redirect URI를 학습자 origin의 callback 경로로 갱신한다. 기존 Domain cookie는 만료 전까지 브라우저에 남을 수 있으므로 즉시 격리가 필요하면 session 폐기와 cookie 만료 계획을 별도로 승인한다. 두 앱 origin의 health·인증·상태 변경·관리자 stream smoke가 통과한 뒤에만 API public route를 제거한다.
+production 적용 전에 외부 API consumer와 기존 DNS route를 확인하고 Google OAuth redirect URI를 학습자 origin의 callback 경로로 갱신한다. 기존 Domain cookie는 만료 전까지 브라우저에 남을 수 있으므로 즉시 격리가 필요하면 session 폐기와 cookie 만료 계획을 별도로 승인한다. 두 앱 origin의 health·인증·상태 변경 smoke가 통과한 뒤에만 API public route를 제거한다.
 
 이 ADR은 source 구성을 설명하며 production traffic 전환, 외부 consumer 부재, 기존 cookie 만료 또는 OAuth 설정 완료를 주장하지 않는다.

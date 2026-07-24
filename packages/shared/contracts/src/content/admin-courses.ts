@@ -1,6 +1,8 @@
 import { z } from "zod"
+import { adminContentAssetUploadDtoSchema } from "#contracts/content/admin-assets"
 import { courseVisualKeySchema } from "#contracts/content/course"
 import {
+  contentAssetIdSchema,
   courseIdSchema,
   curriculumVersionIdSchema,
   lessonIdSchema,
@@ -11,7 +13,7 @@ import {
   lessonStepDtoSchema,
   validateAiFeedbackTargets,
 } from "#contracts/content/course"
-import { adminContentStatusSchema } from "#contracts/content/status"
+import { contentStatusSchema } from "#contracts/content/status"
 import {
   nonNegativeIntegerSchema,
   positiveIntegerSchema,
@@ -21,7 +23,7 @@ export const adminCourseStepDtoSchema = z.object({
   contentJson: z.string(),
   id: lessonStepIdSchema,
   sortOrder: positiveIntegerSchema,
-  status: adminContentStatusSchema,
+  status: contentStatusSchema,
   type: z.string(),
 })
 
@@ -31,7 +33,7 @@ export const adminCourseLessonDtoSchema = z.object({
   estimatedMinutes: positiveIntegerSchema,
   id: lessonIdSchema,
   sortOrder: positiveIntegerSchema,
-  status: adminContentStatusSchema,
+  status: contentStatusSchema,
   summary: z.array(z.string()),
   steps: z.array(adminCourseStepDtoSchema),
   title: z.string(),
@@ -41,7 +43,7 @@ export const adminCourseUnitDtoSchema = z.object({
   id: unitIdSchema,
   lessons: z.array(adminCourseLessonDtoSchema),
   sortOrder: positiveIntegerSchema,
-  status: adminContentStatusSchema,
+  status: contentStatusSchema,
   title: z.string(),
 })
 
@@ -52,7 +54,7 @@ export const adminCourseDetailDtoSchema = z.object({
   editVersion: nonNegativeIntegerSchema,
   id: courseIdSchema,
   revision: positiveIntegerSchema,
-  status: adminContentStatusSchema,
+  status: contentStatusSchema,
   title: z.string(),
   units: z.array(adminCourseUnitDtoSchema),
 })
@@ -62,7 +64,7 @@ export const adminCourseListItemDtoSchema = z.object({
   id: courseIdSchema,
   lessonCount: nonNegativeIntegerSchema,
   revision: nonNegativeIntegerSchema,
-  status: adminContentStatusSchema,
+  status: contentStatusSchema,
   title: z.string(),
   unitCount: nonNegativeIntegerSchema,
   visualKey: courseVisualKeySchema,
@@ -113,22 +115,29 @@ export const adminCourseEditorUnitSchema = z
   .superRefine((unit, context) => {
     validateContiguousSortOrders(unit.lessons, context)
   })
+const adminCourseEditorWriteDocumentFields = {
+  category: z.string(),
+  coverAssetId: contentAssetIdSchema.nullable(),
+  curriculumVersionId: curriculumVersionIdSchema,
+  description: z.string(),
+  editVersion: nonNegativeIntegerSchema,
+  id: courseIdSchema,
+  revision: positiveIntegerSchema,
+  status: activeEditorStatusSchema,
+  title: z.string().min(1),
+  units: z.array(adminCourseEditorUnitSchema),
+} as const
+
+export const adminCourseEditorWriteDocumentSchema = z
+  .strictObject(adminCourseEditorWriteDocumentFields)
+  .superRefine(validateEditorDocument)
+
 export const adminCourseEditorDocumentSchema = z
-  .object({
-    category: z.string(),
-    curriculumVersionId: curriculumVersionIdSchema,
-    description: z.string(),
-    editVersion: nonNegativeIntegerSchema,
-    id: courseIdSchema,
-    revision: positiveIntegerSchema,
-    status: activeEditorStatusSchema,
-    title: z.string().min(1),
-    units: z.array(adminCourseEditorUnitSchema),
+  .strictObject({
+    assets: z.array(adminContentAssetUploadDtoSchema),
+    ...adminCourseEditorWriteDocumentFields,
   })
-  .superRefine((document, context) => {
-    validateContiguousSortOrders(document.units, context)
-    validateUniqueEditorIds(document, context)
-  })
+  .superRefine(validateEditorDocument)
 
 export const adminPublishCourseResultSchema = z.object({
   curriculumVersionId: curriculumVersionIdSchema,
@@ -148,6 +157,27 @@ function validateContiguousSortOrders(
       })
     }
   })
+}
+
+function validateEditorDocument(
+  document: {
+    readonly units: readonly {
+      readonly id: string
+      readonly lessons: readonly {
+        readonly id: string
+        readonly steps: readonly {
+          readonly id: string
+          readonly sortOrder: number
+        }[]
+        readonly sortOrder: number
+      }[]
+      readonly sortOrder: number
+    }[]
+  },
+  context: z.RefinementCtx
+): void {
+  validateContiguousSortOrders(document.units, context)
+  validateUniqueEditorIds(document, context)
 }
 
 function validateUniqueEditorIds(
@@ -192,6 +222,9 @@ export type AdminCourseListItemDto = z.infer<
 export type AdminCourseListDto = z.infer<typeof adminCourseListDtoSchema>
 export type AdminCourseEditorDocument = z.infer<
   typeof adminCourseEditorDocumentSchema
+>
+export type AdminCourseEditorWriteDocument = z.infer<
+  typeof adminCourseEditorWriteDocumentSchema
 >
 export type AdminPublishCourseResult = z.infer<
   typeof adminPublishCourseResultSchema

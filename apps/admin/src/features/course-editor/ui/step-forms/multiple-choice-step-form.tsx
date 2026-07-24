@@ -47,9 +47,10 @@ export function MultipleChoiceStepForm({
         id={`${step.id}-wrong`}
         label="오답 안내"
         multiline
-        onChange={(wrong) =>
-          onChange({ ...step, wrong: wrong === "" ? undefined : wrong })
-        }
+        onChange={(wrong) => {
+          const { wrong: _wrong, ...stepWithoutWrong } = step
+          onChange(wrong === "" ? stepWithoutWrong : { ...step, wrong })
+        }}
         value={step.wrong}
       />
     </StepFormShell>

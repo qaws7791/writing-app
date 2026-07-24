@@ -10,17 +10,34 @@ describe("AdminCourseDetailPage", () => {
         courseResult={{
           error: {
             code: "not-found",
+            kind: "http",
             message: "요청한 항목을 찾을 수 없습니다.",
+            requestId: "course-detail-request",
+            retryAfterSeconds: null,
             status: 404,
           },
           status: "error",
         }}
         publishCourse={async () => ({
-          error: { code: "not-found", message: "없음" },
+          error: {
+            code: "not-found",
+            kind: "http",
+            message: "없음",
+            requestId: "publish-course-request",
+            retryAfterSeconds: null,
+            status: 404,
+          },
           status: "error",
         })}
         saveCourse={async () => ({
-          error: { code: "not-found", message: "없음" },
+          error: {
+            code: "not-found",
+            kind: "http",
+            message: "없음",
+            requestId: "save-course-request",
+            retryAfterSeconds: null,
+            status: 404,
+          },
           status: "error",
         })}
       />

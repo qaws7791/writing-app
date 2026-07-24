@@ -1,10 +1,10 @@
 import type { LessonStepType } from "@workspace/contracts/content/steps"
-import type { LessonStepId } from "@workspace/types/ids"
 
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
 
 export type EditorStep =
   AdminCourseDetail["units"][number]["lessons"][number]["steps"][number]
+type LessonStepId = EditorStep["id"]
 
 type EditorStepCreation =
   | Readonly<{
@@ -34,9 +34,6 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
         allowRetry: true,
         feedback: "",
         focus: "",
-        score: 0,
-        scoreMax: 1,
-        showScore: false,
         target: input.targetStepId,
         type: input.type,
       }
@@ -132,17 +129,19 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
         title: "새 읽기",
         type: input.type,
       }
-    case "SELECT":
+    case "SELECT": {
+      const segmentId = itemId("segment", 1)
       return {
         ...base,
-        correct: [0],
+        correct: [segmentId],
         explanation: "",
         layout: "inline",
         question: "질문을 입력하세요.",
-        segmentIds: [itemId("segment", 1)],
+        segmentIds: [segmentId],
         segments: ["새 구간"],
         type: input.type,
       }
+    }
     case "WRITE":
       return {
         ...base,

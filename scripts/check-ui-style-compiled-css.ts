@@ -10,6 +10,7 @@ export const uiStyleSentinels: readonly UiStyleSentinel[] = [
   { label: "typography plugin", marker: ".prose" },
   { label: "animation plugin", marker: "--tw-enter-opacity" },
   { label: "semantic token", marker: "--action-primary-bg:" },
+  { label: "chart semantic token", marker: "--chart-1:" },
   {
     label: "button press state",
     marker:

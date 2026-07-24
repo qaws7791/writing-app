@@ -1,18 +1,8 @@
-import type { RouteHandler } from "@hono/zod-openapi"
-import type {
-  Env,
-  Handler,
-  Input,
-  MiddlewareHandler,
-  TypedResponse,
-} from "hono"
+import { createRoute, type OpenAPIHono } from "@hono/zod-openapi"
+import type { MiddlewareHandler } from "hono"
 import type { Result } from "@workspace/kernel/result"
 import type { LearnerId, LessonId, LessonStepId } from "@workspace/types/ids"
-import {
-  defineRouteForEnv,
-  type AnyRouteConfig,
-} from "@workspace/http-platform/core"
-import type { HttpPlatformEnv } from "@workspace/http-platform/context"
+import type { HttpPlatformEnv } from "@workspace/http-platform/app"
 import {
   AppError,
   assertExhaustiveHttpResult,
@@ -26,14 +16,9 @@ import {
   createAiFeedbackHeadersSchema,
   createAiFeedbackParamsSchema,
 } from "@workspace/contracts/ai-feedback/feedback"
-import { learnerApiErrorSchema } from "@workspace/contracts/learning/api-error"
+import { apiErrorSchema } from "@workspace/contracts/api-error"
 import { learnerAiFeedbackTransitionResponseSchema } from "@workspace/contracts/learning/learner-api"
 import type { LearnerAiFeedbackTransitionResult } from "@workspace/contracts/learning/learner-transition"
-
-export type AiFeedbackHttpRouteGroup = readonly {
-  readonly handler: unknown
-  readonly route: AnyRouteConfig
-}[]
 
 export type AiFeedbackHttpCommand = Readonly<{
   idempotencyKey: string
@@ -56,6 +41,11 @@ export type AiFeedbackHttpCommandError =
     }>
   | Readonly<{
       kind: "attempt-in-progress"
+      remainingAttempts: number
+      retryAfterSeconds: number
+    }>
+  | Readonly<{
+      kind: "daily-quota-exceeded"
       remainingAttempts: number
       retryAfterSeconds: number
     }>
@@ -87,17 +77,18 @@ export type AiFeedbackLearnerSessionPort = Readonly<{
   >
 }>
 
-type AiFeedbackHonoEnv = HttpPlatformEnv<{
+export type AiFeedbackHonoEnv = HttpPlatformEnv<{
   aiFeedbackLearner: Readonly<{ learnerId: LearnerId }>
 }>
 
-const defineAiFeedbackRoute = defineRouteForEnv<AiFeedbackHonoEnv>()
-
-export function createAiFeedbackRoutes(input: {
-  readonly command: AiFeedbackHttpCommandPort
-  readonly session: AiFeedbackLearnerSessionPort
-}): AiFeedbackHttpRouteGroup {
-  const routeConfig = {
+export function registerAiFeedbackRoutes<TEnv extends AiFeedbackHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: {
+    readonly command: AiFeedbackHttpCommandPort
+    readonly session: AiFeedbackLearnerSessionPort
+  }
+): void {
+  const route = createRoute({
     method: "post",
     middleware: [createRequireLearnerMiddleware(input.session)],
     operationId: "createLearnerStepAiFeedback",
@@ -122,11 +113,9 @@ export function createAiFeedbackRoutes(input: {
     },
     security: [{ learnerSessionCookie: [] }],
     summary: "현재 AI 코칭 단계 완료",
-  } satisfies AnyRouteConfig
+  })
 
-  const handler: AiFeedbackRouteHandler<typeof routeConfig> = async (
-    context
-  ) => {
+  app.openapi(route, async (context) => {
     const params = context.req.valid("param")
     const headers = context.req.valid("header")
     const result = await input.command.requestFeedback(
@@ -139,37 +128,13 @@ export function createAiFeedbackRoutes(input: {
       { signal: context.req.raw.signal }
     )
 
-    if (result.isErr()) return mapAiFeedbackHttpError(result.error)
+    if (result.isErr()) mapAiFeedbackHttpError(result.error)
     return context.json(
       learnerAiFeedbackTransitionResponseSchema.parse(result.value),
       200
     )
-  }
-
-  return Object.freeze([
-    defineAiFeedbackRoute({
-      ...routeConfig,
-      handler,
-    }),
-  ])
+  })
 }
-
-type AiFeedbackRouteHandler<TRoute extends AnyRouteConfig> =
-  RouteHandler<TRoute, AiFeedbackHonoEnv> extends Handler<
-    infer TEnv extends Env,
-    infer TPath extends string,
-    infer TInput extends Input,
-    infer _TResponse
-  >
-    ? Handler<
-        TEnv,
-        TPath,
-        TInput,
-        | Promise<Response | TypedResponse<unknown>>
-        | Response
-        | TypedResponse<unknown>
-      >
-    : never
 
 function createRequireLearnerMiddleware(
   session: AiFeedbackLearnerSessionPort
@@ -191,7 +156,7 @@ function createRequireLearnerMiddleware(
   }
 }
 
-function mapAiFeedbackHttpError(error: AiFeedbackHttpCommandError): Response {
+function mapAiFeedbackHttpError(error: AiFeedbackHttpCommandError): never {
   switch (error.kind) {
     case "invalid-request":
       throw httpError(400, "VALIDATION_ERROR", "요청 내용을 확인해 주세요.")
@@ -230,15 +195,18 @@ function mapAiFeedbackHttpError(error: AiFeedbackHttpCommandError): Response {
         "AI 코칭 시도 횟수를 모두 사용했습니다."
       )
     case "attempt-in-progress":
-      return Response.json(
-        {
-          code: "ATTEMPT_IN_PROGRESS",
-          message: "AI 코칭 요청을 처리하고 있습니다.",
-        },
-        {
-          headers: { "Retry-After": String(error.retryAfterSeconds) },
-          status: 409,
-        }
+      throw httpError(
+        409,
+        "ATTEMPT_IN_PROGRESS",
+        "AI 코칭 요청을 처리하고 있습니다.",
+        { "Retry-After": String(error.retryAfterSeconds) }
+      )
+    case "daily-quota-exceeded":
+      throw httpError(
+        429,
+        "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED",
+        "오늘의 AI 코칭 요청 한도를 모두 사용했습니다.",
+        { "Retry-After": String(error.retryAfterSeconds) }
       )
     case "provider-response-invalid":
     case "provider-timeout":
@@ -261,13 +229,14 @@ function mapAiFeedbackHttpError(error: AiFeedbackHttpCommandError): Response {
 }
 
 function errorResponse(description: string) {
-  return jsonResponse(description, learnerApiErrorSchema)
+  return jsonResponse(description, apiErrorSchema)
 }
 
 function httpError(
   status: 400 | 401 | 403 | 404 | 409 | 429 | 500 | 503,
   code: string,
-  message: string
+  message: string,
+  headers?: Readonly<Record<string, string>>
 ): AppError {
-  return new AppError({ code, message, status })
+  return new AppError({ code, headers, message, status })
 }

@@ -19,7 +19,6 @@ const meta = {
   args: {
     ...writeDefaults,
     onChange: fn(),
-    onDraftSave: fn(),
     text: "",
   },
   argTypes: {
@@ -63,10 +62,6 @@ const meta = {
       control: { type: "number", min: 1 },
       description: "목표 글자 수입니다.",
     },
-    draft: {
-      control: "boolean",
-      description: "드래프트 저장 버튼을 표시합니다.",
-    },
     placeholder: {
       control: "text",
       description: "입력창 placeholder입니다.",
@@ -81,7 +76,6 @@ const meta = {
     },
     checked: checkedArgType,
     onChange: createOnChangeArgType("본문이 바뀔 때 호출됩니다."),
-    onDraftSave: createOnChangeArgType("드래프트 저장 시 호출됩니다."),
   },
   decorators: lessonDecorators,
   parameters: lessonParameters,
@@ -95,15 +89,6 @@ type Story = StoryObj<typeof meta>
  * Controls로 제목·안내·참고문·글자 수 제한·채점 상태를 조작할 수 있는 Playground입니다.
  */
 export const Playground: Story = {}
-
-/**
- * 드래프트 저장 버튼이 있는 예시입니다.
- */
-export const WithDraftSave: Story = {
-  args: {
-    draft: true,
-  },
-}
 
 /**
  * 주장·반박 모드 예시입니다.

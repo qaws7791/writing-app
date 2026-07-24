@@ -1,11 +1,24 @@
 logging:
   level: info
 
+retention:
+  enabled: true
+
+shutdown-sync-timeout: 30s
+shutdown-sync-interval: 500ms
+
+snapshot:
+  interval: 1h
+  retention: 720h
+
 validation:
   interval: 5m
 
+verify-compaction: true
+
 dbs:
   - path: /var/lib/writing-app/api.sqlite
+    monitor-interval: 1s
     checkpoint-interval: 1m
     busy-timeout: 5s
     replica:

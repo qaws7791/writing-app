@@ -22,30 +22,43 @@ export function normalizeVersionedStepContent(
       case "MULTIPLE_CHOICE":
         normalizeMultipleChoice(stepId, parsed)
         break
-      case "FILL_BLANK":
-        parsed["wordIds"] = ensureIds(
-          stepId,
-          "word",
-          readArray(parsed, "words"),
-          parsed["wordIds"]
+      case "FILL_BLANK": {
+        const words = readArray(parsed, "words")
+        const wordIds = ensureIds(stepId, "word", words, parsed["wordIds"])
+        parsed["wordIds"] = wordIds
+        parsed["answer"] = resolveStableIds(
+          words,
+          wordIds,
+          readArray(parsed, "answer")
         )
         break
-      case "SELECT":
-        parsed["segmentIds"] = ensureIds(
+      }
+      case "SELECT": {
+        const segments = readArray(parsed, "segments")
+        const segmentIds = ensureIds(
           stepId,
           "segment",
-          readArray(parsed, "segments"),
+          segments,
           parsed["segmentIds"]
         )
-        break
-      case "ORDER":
-        parsed["itemIds"] = ensureIds(
-          stepId,
-          "item",
-          readArray(parsed, "items"),
-          parsed["itemIds"]
+        parsed["segmentIds"] = segmentIds
+        parsed["correct"] = resolveIndexedOrStableIds(
+          segmentIds,
+          readArray(parsed, "correct")
         )
         break
+      }
+      case "ORDER": {
+        const items = readArray(parsed, "items")
+        const itemIds = ensureIds(stepId, "item", items, parsed["itemIds"])
+        parsed["itemIds"] = itemIds
+        parsed["correct"] = resolveStableIds(
+          items,
+          itemIds,
+          readArray(parsed, "correct")
+        )
+        break
+      }
       case "MATCH":
         normalizeMatchPairs(stepId, parsed)
         break
@@ -148,6 +161,53 @@ function ensureIds(
   }
 
   return items.map((_, index) => createItemId(stepId, kind, index))
+}
+
+function resolveStableIds(
+  displayValues: readonly unknown[],
+  stableIds: readonly string[],
+  expectedValues: readonly unknown[]
+): readonly string[] {
+  const remaining = displayValues.map((displayValue, index) => ({
+    displayValue,
+    stableId: stableIds[index],
+  }))
+
+  return expectedValues.map((expectedValue) => {
+    const index = remaining.findIndex(
+      (item) =>
+        item.stableId === expectedValue || item.displayValue === expectedValue
+    )
+    const item = remaining[index]
+    if (index < 0 || item?.stableId === undefined) {
+      throw new Error("Expected value does not reference a stable item ID")
+    }
+    remaining.splice(index, 1)
+    return item.stableId
+  })
+}
+
+function resolveIndexedOrStableIds(
+  stableIds: readonly string[],
+  expectedValues: readonly unknown[]
+): readonly string[] {
+  return expectedValues.map((expectedValue) => {
+    if (
+      typeof expectedValue === "string" &&
+      stableIds.includes(expectedValue)
+    ) {
+      return expectedValue
+    }
+    if (
+      typeof expectedValue === "number" &&
+      Number.isInteger(expectedValue) &&
+      expectedValue >= 0
+    ) {
+      const stableId = stableIds[expectedValue]
+      if (stableId !== undefined) return stableId
+    }
+    throw new Error("Expected value does not reference a stable item ID")
+  })
 }
 
 function createItemId(stepId: string, kind: string, index: number): string {

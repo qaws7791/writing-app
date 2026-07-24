@@ -7,24 +7,21 @@ describe("코스 목록 URL 필터", () => {
     expect(parseCourseListFilters({})).toEqual({
       category: "",
       query: "",
-      sort: "recommended",
     })
     expect(
       parseCourseListFilters({
         category: "문장",
         query: "기초",
-        sort: "title-desc",
       })
-    ).toEqual({ category: "문장", query: "기초", sort: "title-desc" })
+    ).toEqual({ category: "문장", query: "기초" })
   })
 
-  it("배열과 알 수 없는 정렬은 기존처럼 기본값으로 정규화한다", () => {
+  it("배열 값을 빈 필터로 정규화한다", () => {
     expect(
       parseCourseListFilters({
         category: ["문장"],
         query: ["기초"],
-        sort: "unknown",
       })
-    ).toEqual({ category: "", query: "", sort: "recommended" })
+    ).toEqual({ category: "", query: "" })
   })
 })

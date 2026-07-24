@@ -1,7 +1,5 @@
-import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning/learner-content"
-import type { LessonStepItemId } from "@workspace/contracts/learning/ids"
-
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
+import type { LearnerLessonStepDto as LessonStep } from "@/shared/http/learner-api-client"
 
 type LessonStepCheckedPresentation =
   | false
@@ -39,7 +37,7 @@ export function toLessonStepCheckedVisual(
 
 export function getCorrectLessonStepItemIds(
   checked: LessonStepCheckedState | false
-): readonly LessonStepItemId[] {
+): readonly string[] {
   return checked !== false && "correctItemIds" in checked
     ? checked.correctItemIds
     : []
@@ -51,21 +49,6 @@ export function getLessonStepEvaluationExplanation(
   return checked !== false && "explanation" in checked
     ? checked.explanation
     : ""
-}
-
-export function mapLessonStepTextsToItemIds<TId extends string>(
-  items: readonly { readonly id: TId; readonly text: string }[],
-  texts: readonly string[]
-): TId[] {
-  const remaining = [...items]
-  return texts.map((text) => {
-    const index = remaining.findIndex((item) => item.text === text)
-    if (index < 0) throw new Error(`선택 항목을 찾을 수 없습니다: ${text}`)
-    const [item] = remaining.splice(index, 1)
-    if (item === undefined)
-      throw new Error(`선택 항목을 찾을 수 없습니다: ${text}`)
-    return item.id
-  })
 }
 
 export function findLessonStepItemId<TId extends string>(

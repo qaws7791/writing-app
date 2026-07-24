@@ -1,10 +1,10 @@
 import { err, type Result } from "@workspace/kernel/result"
-import type { CourseId, CurriculumVersionId } from "@workspace/types/ids"
+import type {
+  AdminId,
+  CourseId,
+  CurriculumVersionId,
+} from "@workspace/types/ids"
 
-import {
-  authorizeContentMutation,
-  type ContentActor,
-} from "#content/domain/content-admin-policy"
 import type { ContentError } from "#content/domain/content-error"
 import { createCurriculumVersionId } from "#content/domain/content-model"
 import { decidePublishCurriculum } from "#content/domain/curriculum"
@@ -17,7 +17,7 @@ export type PublishedCourseResult = Readonly<{
 }>
 
 export type PublishCourseUseCase = (command: {
-  readonly actor: ContentActor
+  readonly adminId: AdminId
   readonly courseId: CourseId
   readonly expectedEditVersion: number
 }) => Promise<Result<PublishedCourseResult, ContentError>>
@@ -26,9 +26,6 @@ export function createPublishCourseUseCase(
   dependencies: ContentApplicationDependencies
 ): PublishCourseUseCase {
   return async (command) => {
-    const authorization = authorizeContentMutation(command.actor)
-    if (authorization.isErr()) return err(authorization.error)
-
     const draftResult = await dependencies.repository.findDraft(
       command.courseId
     )

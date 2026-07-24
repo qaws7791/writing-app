@@ -23,7 +23,7 @@
 - 앱 간 상대 import를 만들지 않는다.
 - 레거시 실험 디렉터리의 구현 파일은 제품 런타임에서 import하지 않는다.
 - `apps/web/src`는 `app`, `features`, `entities`, `shared`, `server` 계층만 사용한다. `app`은 route와 조립, `features`는 사용자 능력, `entities`는 feature 간 안정된 도메인 표현, `shared`는 도메인 중립 코드, `server`는 서버 플랫폼을 소유한다.
-- `apps/web`의 feature는 다른 feature 내부를 import하지 않는다. Client Component와 feature UI는 `server` 또는 feature DAL을 import하지 않는다.
+- `apps/web`의 feature는 다른 feature 내부를 import하지 않는다. Client Component와 feature UI는 `server` 또는 서버 request options 경계를 import하지 않는다.
 
 ## 포맷
 
@@ -64,7 +64,7 @@ bun run lint:fix
 - `workspace/no-unsafe-unknown-cast`: error.
 - import graph와 package dependency 정책은 dependency-cruiser가 소유하며 Oxlint에 중복 구현하지 않는다.
 
-`bun run check:architecture`는 type-only edge를 제외한 runtime cycle, 미선언 dependency와 frontend의 server·DB import를 검사한다. 폴더 계층 자체는 정적 정책으로 강제하지 않는다.
+`bun run check:architecture`는 type-only edge를 제외한 runtime cycle, 미선언 dependency, frontend workspace 허용 목록, module domain·application의 framework·DB import와 module private target 접근을 검사한다. 폴더 존재나 frontend app 내부 계층 자체는 정적 정책으로 강제하지 않는다.
 
 ## TypeScript
 
@@ -81,7 +81,7 @@ bun run lint:fix
 
 - Client Component는 상호작용 상태가 필요할 때만 사용한다.
 - 서버에서 조회 가능한 데이터는 Server Component에서 먼저 처리한다.
-- `apps/web/src/app`의 page와 layout은 URL 입력 파싱, 인증·redirect, feature DAL 호출과 화면 조립만 담당한다.
+- `apps/web/src/app`의 page와 layout은 URL 입력 파싱, 인증·redirect, generated client 호출과 화면 조립만 담당한다.
 - route 전용 조립은 `_views`, provider 조립은 `app/_providers`에 둔다.
 - 내부 이동 UI는 `next/link`의 `Link`를 사용한다.
 - 명령형 이동은 로그인 완료, 저장 완료, 모달 종료 같은 이벤트 결과에만 사용한다.
@@ -91,7 +91,7 @@ bun run lint:fix
 ## API와 DB 경계
 
 - DB·Drizzle 직접 접근은 `apps/api`의 composition·DB tooling·persistence/auth adapter, auth schema integration과 module infrastructure로 제한한다. HTTP interface와 middleware는 직접 import하지 않는다.
-- auth infra의 SQLite adapter factory는 Better Auth vendor 호출과 credential·session schema를 격리한다. identity module은 제품 profile·role repository를 소유하고 API composition은 vendor-neutral application·query port로 두 경계를 연결한다.
+- auth infra의 SQLite adapter factory는 Better Auth vendor 호출과 credential·session schema를 격리한다. identity module은 학습자 profile repository와 관리자 session 해석을 소유하고 API composition은 vendor-neutral application·query port로 두 경계를 연결한다.
 - `packages/infra/db`는 application schema·migration·seed와 비즈니스 module을 import하지 않는다.
 - DB row와 API DTO 사이 변환은 repository 또는 mapper 경계에서 수행한다.
 - API 응답은 runtime schema나 mapper를 통과한 내부 모델로 화면에 전달한다.

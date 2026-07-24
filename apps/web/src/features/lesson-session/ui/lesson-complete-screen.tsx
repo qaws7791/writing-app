@@ -1,12 +1,14 @@
 "use client"
 
-import type { CompleteLearnerStepResult } from "@workspace/contracts/learning/learner-transition"
-import type { LearnerLesson as Lesson } from "@workspace/contracts/learning/learner-content"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"
+import type {
+  LearnerCompleteStepResultDto,
+  LearnerLessonDto as Lesson,
+} from "@/shared/http/learner-api-client"
 
 type LessonCompletionTransition = Extract<
-  CompleteLearnerStepResult,
+  LearnerCompleteStepResultDto,
   { readonly status: "lesson_completed" }
 >
 

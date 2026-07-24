@@ -1,0 +1,76 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreFiles": ["packages/**/src/**/*.typecheck.{ts,tsx}"],
+  "workspaces": {
+    ".": {
+      "entry": [
+        "dependency-cruiser.config.mjs!",
+        "e2e/**/*.spec.ts",
+        "e2e/fixture-server.ts",
+        "lighthouse-ci.config.cjs!",
+        "playwright*.config.ts!",
+        "scripts/k6-staging-smoke.js!",
+        "scripts/**/*.test.ts"
+      ],
+      "project": [
+        "*.{js,cjs,mjs,ts,cts,mts}",
+        "e2e/**/*.{ts,tsx}",
+        "scripts/**/*.{js,cjs,mjs,ts,cts,mts}",
+        "!scripts/architecture/fixtures/**"
+      ],
+      "ignoreUnresolved": [
+        "^apps/api/src/scripts/assert-e2e-published-content-immutable\\.ts$"
+      ],
+      "ignoreDependencies": ["^k6(?:/|$)"],
+      "playwright": false
+    },
+    "apps/*": {
+      "entry": [
+        "src/app/**/{default,error,global-error,layout,loading,not-found,page,route,template}.{ts,tsx}!",
+        "src/**/*.{test,spec}.{ts,tsx}"
+      ],
+      "project": ["src/**/*.{css,ts,tsx}"]
+    },
+    "apps/api": {
+      "entry": [
+        "src/scripts/*.ts!",
+        "src/test-support/unified-api-shutdown-process.ts",
+        "src/**/*.{test,spec}.ts"
+      ],
+      "project": ["src/**/*.ts"]
+    },
+    "apps/storybook": {
+      "entry": [".storybook/**/*.{ts,tsx}!", "src/**/*.stories.tsx"],
+      "project": [".storybook/**/*.{ts,tsx}", "src/**/*.{css,mdx,ts,tsx}"]
+    },
+    "packages/{config,infra,modules,shared}/*": {
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/config/typescript-config": {
+      "entry": ["base.json!", "nextjs.json!", "react-library.json!"],
+      "project": [],
+      "ignoreUnresolved": ["^next$"]
+    },
+    "packages/infra/http-client": {
+      "includeEntryExports": true,
+      "entry": ["src/**/*.{test,spec}.ts"],
+      "project": [
+        ".generated/**/*.ts",
+        "*.{js,cjs,mjs,ts,cts,mts}",
+        "src/**/*.ts"
+      ],
+      "ignoreIssues": {
+        ".generated/**": [
+          "duplicates",
+          "enumMembers",
+          "exports",
+          "files",
+          "namespaceMembers",
+          "nsExports",
+          "nsTypes",
+          "types"
+        ]
+      }
+    }
+  }
+}

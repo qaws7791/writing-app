@@ -2,11 +2,12 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { CourseDetailPage } from "@/features/course-detail/ui/course-detail-page"
-import { learnerCourseDetailSchema } from "@workspace/contracts/learning/learner-content"
+import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
 
 const version = { curriculumVersionId: "c1-v1", revision: 1 }
-const course = learnerCourseDetailSchema.parse({
+const course: LearnerCourseDetailDto = {
   category: "입문자를 위한 코스",
+  cover: null,
   description:
     "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
@@ -58,7 +59,7 @@ const course = learnerCourseDetailSchema.parse({
     },
   ],
   version,
-})
+}
 
 describe("코스 상세 화면", () => {
   it("현재 제품 코스 상세처럼 hero, 진행률, 첫 레슨 링크를 표시한다", () => {
@@ -85,5 +86,8 @@ describe("코스 상세 화면", () => {
       "href",
       "/app/courses"
     )
+    expect(
+      screen.getByRole("img", { name: "글쓰기 첫걸음 30일" })
+    ).toHaveAttribute("loading", "eager")
   })
 })

@@ -15,11 +15,6 @@ const serverOnlyEmptyPath = path.join(
 // 이 alias와 dedupe를 제거하면 테스트 번들에 React가 중복되어 Invalid hook call이 발생할 수 있다.
 const reactPath = path.resolve(__dirname, "node_modules/react")
 const reactDomPath = path.resolve(__dirname, "node_modules/react-dom")
-const resourceDocumentPath = path.resolve(
-  __dirname,
-  "../../packages/shared/resource-document/src"
-)
-
 export default defineConfig({
   esbuild: {
     jsx: "automatic",
@@ -29,16 +24,12 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: "server-only", replacement: serverOnlyEmptyPath },
-      { find: "#resource-document", replacement: resourceDocumentPath },
       { find: /^react$/, replacement: reactPath },
       { find: /^react-dom$/, replacement: reactDomPath },
       { find: /^react\/(.*)/, replacement: `${reactPath}/$1` },
       { find: /^react-dom\/(.*)/, replacement: `${reactDomPath}/$1` },
     ],
     dedupe: ["react", "react-dom"],
-  },
-  ssr: {
-    noExternal: ["@workspace/resource-document"],
   },
   test: {
     environment: "jsdom",

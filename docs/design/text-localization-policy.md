@@ -2,7 +2,7 @@
 
 ## 원칙
 
-사용자, 관리자, 운영자가 볼 수 있는 모든 텍스트는 한국어로 제공한다.
+학습자와 소유자 관리자가 볼 수 있는 모든 텍스트는 한국어로 제공한다.
 
 이 원칙은 화면에 직접 보이는 문구뿐 아니라 접근성 텍스트, 버튼 라벨, 빈 상태, 확인 대화상자, 토스트, API 오류 메시지, 클라이언트 오류 메시지, OpenAPI 예시 응답 메시지에도 동일하게 적용한다.
 
@@ -10,7 +10,7 @@
 
 - `apps/web`의 학습자 화면 텍스트.
 - `apps/admin`의 관리자 화면 텍스트.
-- `apps/api`가 학습자 HTTP 표면과 `/api/admin` 경로 sub-app에서 반환하는 사용자 대상 오류 메시지. 관리자 capability는 content·identity·dashboard/analytics·settings·AI chat·자료실 여섯 경계를 포함한다.
+- `apps/api`가 학습자 HTTP 표면과 `/api/admin` 경로 sub-app에서 반환하는 사용자 대상 오류 메시지.
 - `packages/modules/*`에서 생성하는 도메인·데이터 작업 오류 메시지.
 - `packages/shared/ui`의 기본 접근성 텍스트와 보조 텍스트.
 - 생성된 API 타입과 문서에 포함되는 사용자 대상 메시지.

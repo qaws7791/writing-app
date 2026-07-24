@@ -1,14 +1,30 @@
 import { parseEnv, type AppEnvInput } from "@workspace/env/parse-env"
+import { parseContentAssetPublicBaseUrl } from "@workspace/env/public-url"
 import { shouldUsePrettyLogging } from "@workspace/observability/logger"
-import { z } from "@workspace/http-platform/zod"
+import { z } from "@workspace/http-platform/openapi"
+import {
+  defaultAiFeedbackAttemptPolicy,
+  defaultAiFeedbackDailyQuotaPolicy,
+  type AiFeedbackAttemptPolicy,
+  type AiFeedbackDailyQuotaPolicy,
+} from "@workspace/ai-feedback/application"
 
 export type ApiEnv = {
   readonly adminAssetStore: AdminAssetStoreEnv | undefined
   readonly adminAuthSecret: string
   readonly adminOrigin: string
+  readonly authEmail: AuthEmailEnv
+  readonly aiFeedback: AiFeedbackEnv
   readonly cursorSigningSecret: string
   readonly databaseUrl: string | undefined
+  readonly deletionMarkerStore: DeletionMarkerStoreEnv | undefined
+  readonly deploymentEnvironment:
+    | "development"
+    | "test"
+    | "staging"
+    | "production"
   readonly deploymentVersion: string
+  readonly enableApiDocs: boolean
   readonly googleClientId: string | undefined
   readonly googleClientSecret: string | undefined
   readonly learnerAuthSecret: string
@@ -18,9 +34,24 @@ export type ApiEnv = {
   readonly openAiApiKey: string | undefined
   readonly openAiModel: string
   readonly port: number
-  readonly testAuthEnabled: boolean
   readonly webOrigin: string
 }
+
+type AiFeedbackEnv = Readonly<{
+  attemptPolicy: AiFeedbackAttemptPolicy
+  dailyQuotaPolicy: AiFeedbackDailyQuotaPolicy
+}>
+
+type AuthEmailEnv =
+  | Readonly<{
+      kind: "in-memory"
+    }>
+  | Readonly<{
+      apiKey: string
+      from: string
+      kind: "resend"
+      replyTo: string | undefined
+    }>
 
 const adminAssetStoreEnvSchema = z.object({
   accessKeyId: z.string().min(1),
@@ -31,12 +62,44 @@ const adminAssetStoreEnvSchema = z.object({
   secretAccessKey: z.string().min(1),
 })
 
+const deletionMarkerStoreEnvSchema = z.object({
+  accessKeyId: z.string().min(1),
+  bucket: z.string().min(1),
+  endpoint: z.url(),
+  prefix: z.string().min(1),
+  region: z.string().min(1),
+  secretAccessKey: z.string().min(1),
+})
+
+const aiFeedbackEnvSchema = z
+  .object({
+    globalDailyRequestLimit: z.coerce.number().int().positive(),
+    globalDailySuccessLimit: z.coerce.number().int().positive(),
+    pendingTtlMs: z.coerce.number().int().positive(),
+    providerTimeoutMs: z.coerce.number().int().positive(),
+    userDailyRequestLimit: z.coerce.number().int().positive(),
+    userDailySuccessLimit: z.coerce.number().int().positive(),
+  })
+  .refine(
+    (value) =>
+      value.providerTimeoutMs < value.pendingTtlMs &&
+      value.userDailySuccessLimit <= value.userDailyRequestLimit &&
+      value.globalDailySuccessLimit <= value.globalDailyRequestLimit,
+    { message: "AI feedback quota와 timeout 설정의 순서가 올바르지 않습니다." }
+  )
+
 export type AdminAssetStoreEnv = z.infer<typeof adminAssetStoreEnvSchema>
+type DeletionMarkerStoreEnv = z.infer<typeof deletionMarkerStoreEnvSchema>
 
 export function parseApiEnv(input: AppEnvInput): ApiEnv {
   const env = parseEnv(input)
   const cursorSigningSecret = readCursorSigningSecret(env)
   const adminAssetStore = parseAdminAssetStore(input, env.NODE_ENV)
+  const deletionMarkerStore = parseDeletionMarkerStore(
+    input,
+    env.NODE_ENV,
+    adminAssetStore
+  )
 
   validateSeparatedAuthConfiguration({
     adminAuthSecret: env.ADMIN_AUTH_SECRET,
@@ -44,17 +107,26 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     learnerAuthSecret: env.LEARNER_AUTH_SECRET,
     learnerOrigin: env.WEB_ORIGIN,
   })
+  validateProviderConfiguration(env)
 
   return {
     adminAssetStore,
     adminAuthSecret: env.ADMIN_AUTH_SECRET,
     adminOrigin: env.ADMIN_ORIGIN,
+    authEmail: parseAuthEmailEnv(input, env.NODE_ENV),
+    aiFeedback: parseAiFeedbackEnv(input),
     cursorSigningSecret,
     databaseUrl: env.DATABASE_URL,
+    deletionMarkerStore,
+    deploymentEnvironment: parseDeploymentEnvironment(
+      env.NODE_ENV,
+      input["DEPLOYMENT_ENVIRONMENT"]
+    ),
     deploymentVersion: parseDeploymentVersion(
       env.NODE_ENV,
       input["DEPLOYMENT_VERSION"]
     ),
+    enableApiDocs: parseApiDocsEnabled(input["ENABLE_API_DOCS"], env.NODE_ENV),
     googleClientId: env.GOOGLE_CLIENT_ID,
     googleClientSecret: env.GOOGLE_CLIENT_SECRET,
     learnerAuthSecret: env.LEARNER_AUTH_SECRET,
@@ -67,8 +139,107 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     openAiApiKey: env.OPENAI_API_KEY,
     openAiModel: env.OPENAI_MODEL,
     port: env.API_PORT,
-    testAuthEnabled: env.NODE_ENV !== "production" && env.ENABLE_TEST_AUTH,
     webOrigin: env.WEB_ORIGIN,
+  }
+}
+
+function parseApiDocsEnabled(
+  value: string | undefined,
+  nodeEnv: ApiEnv["nodeEnv"]
+): boolean {
+  const normalized = value?.trim()
+  if (
+    normalized !== undefined &&
+    normalized !== "true" &&
+    normalized !== "false"
+  ) {
+    throw new Error(
+      "Invalid environment variables: ENABLE_API_DOCS: true 또는 false가 필요합니다."
+    )
+  }
+
+  return nodeEnv === "production" ? normalized === "true" : true
+}
+
+function parseAuthEmailEnv(
+  input: AppEnvInput,
+  nodeEnv: ApiEnv["nodeEnv"]
+): AuthEmailEnv {
+  const apiKey = readNonEmptyValue(input["RESEND_API_KEY"])
+  const from = readNonEmptyValue(input["AUTH_EMAIL_FROM"])
+  const replyTo = readNonEmptyValue(input["AUTH_EMAIL_REPLY_TO"])
+  const hasAnyConfiguration =
+    apiKey !== undefined || from !== undefined || replyTo !== undefined
+
+  if (!hasAnyConfiguration) {
+    if (nodeEnv === "production") {
+      throw new Error(
+        "Invalid environment variables: RESEND_API_KEY, AUTH_EMAIL_FROM: production에서는 인증 메일 전송 설정이 필요합니다."
+      )
+    }
+
+    return { kind: "in-memory" }
+  }
+
+  if (apiKey === undefined || from === undefined) {
+    throw new Error(
+      "Invalid environment variables: RESEND_API_KEY, AUTH_EMAIL_FROM: 인증 메일 전송 설정은 함께 지정해야 합니다."
+    )
+  }
+
+  if (replyTo !== undefined && !z.email().safeParse(replyTo).success) {
+    throw new Error(
+      "Invalid environment variables: AUTH_EMAIL_REPLY_TO: 유효한 이메일 주소가 필요합니다."
+    )
+  }
+
+  return {
+    apiKey,
+    from,
+    kind: "resend",
+    replyTo,
+  }
+}
+
+function readNonEmptyValue(value: string | undefined): string | undefined {
+  const normalized = value?.trim()
+  return normalized === undefined || normalized === "" ? undefined : normalized
+}
+
+function parseAiFeedbackEnv(input: AppEnvInput): AiFeedbackEnv {
+  const parsed = aiFeedbackEnvSchema.parse({
+    globalDailyRequestLimit:
+      input["AI_FEEDBACK_GLOBAL_DAILY_REQUEST_LIMIT"] ??
+      defaultAiFeedbackDailyQuotaPolicy.globalDailyRequestLimit,
+    globalDailySuccessLimit:
+      input["AI_FEEDBACK_GLOBAL_DAILY_SUCCESS_LIMIT"] ??
+      defaultAiFeedbackDailyQuotaPolicy.globalDailySuccessLimit,
+    pendingTtlMs:
+      input["AI_FEEDBACK_PENDING_TTL_MS"] ??
+      defaultAiFeedbackAttemptPolicy.pendingTtlMs,
+    providerTimeoutMs:
+      input["AI_FEEDBACK_PROVIDER_TIMEOUT_MS"] ??
+      defaultAiFeedbackAttemptPolicy.providerTimeoutMs,
+    userDailyRequestLimit:
+      input["AI_FEEDBACK_USER_DAILY_REQUEST_LIMIT"] ??
+      defaultAiFeedbackDailyQuotaPolicy.userDailyRequestLimit,
+    userDailySuccessLimit:
+      input["AI_FEEDBACK_USER_DAILY_SUCCESS_LIMIT"] ??
+      defaultAiFeedbackDailyQuotaPolicy.userDailySuccessLimit,
+  })
+
+  return {
+    attemptPolicy: {
+      maxCompletedAttempts: defaultAiFeedbackAttemptPolicy.maxCompletedAttempts,
+      pendingTtlMs: parsed.pendingTtlMs,
+      providerTimeoutMs: parsed.providerTimeoutMs,
+    },
+    dailyQuotaPolicy: {
+      globalDailyRequestLimit: parsed.globalDailyRequestLimit,
+      globalDailySuccessLimit: parsed.globalDailySuccessLimit,
+      userDailyRequestLimit: parsed.userDailyRequestLimit,
+      userDailySuccessLimit: parsed.userDailySuccessLimit,
+    },
   }
 }
 
@@ -108,16 +279,115 @@ function parseAdminAssetStore(
       : undefined
   )
 
+  const publicBaseUrl = parseContentAssetPublicBaseUrl(
+    assetStore?.publicBaseUrl,
+    {
+      description: "ADMIN_ASSET_PUBLIC_BASE_URL",
+      nodeEnvironment: nodeEnv,
+    }
+  )
   if (
     nodeEnv === "production" &&
     assetStore !== undefined &&
-    (new URL(assetStore.endpoint).protocol !== "https:" ||
-      new URL(assetStore.publicBaseUrl).protocol !== "https:")
+    new URL(assetStore.endpoint).protocol !== "https:"
   ) {
     throw new Error("production 자료 이미지 저장소는 HTTPS URL이 필요합니다.")
   }
 
-  return assetStore
+  return assetStore === undefined || publicBaseUrl === null
+    ? undefined
+    : {
+        ...assetStore,
+        publicBaseUrl:
+          publicBaseUrl.pathname === "/"
+            ? publicBaseUrl.origin
+            : publicBaseUrl.href,
+      }
+}
+
+function parseDeletionMarkerStore(
+  input: AppEnvInput,
+  nodeEnv: ApiEnv["nodeEnv"],
+  adminAssetStore: AdminAssetStoreEnv | undefined
+): DeletionMarkerStoreEnv | undefined {
+  const markerValues = [
+    input["DELETION_MARKER_S3_ACCESS_KEY"],
+    input["DELETION_MARKER_S3_BUCKET"],
+    input["DELETION_MARKER_S3_ENDPOINT"],
+    input["DELETION_MARKER_S3_REGION"],
+    input["DELETION_MARKER_S3_SECRET_KEY"],
+  ]
+  const hasMarkerValue =
+    markerValues.some((value) => value !== undefined) ||
+    input["DELETION_MARKER_S3_PREFIX"] !== undefined
+  const hasCompleteMarkerConfiguration = markerValues.every(
+    (value) => value !== undefined
+  )
+
+  if (hasMarkerValue && !hasCompleteMarkerConfiguration) {
+    throw new Error(
+      "Invalid environment variables: DELETION_MARKER_S3_ENDPOINT, DELETION_MARKER_S3_REGION, DELETION_MARKER_S3_BUCKET, DELETION_MARKER_S3_ACCESS_KEY, DELETION_MARKER_S3_SECRET_KEY: private 삭제 marker 저장소 설정은 모두 함께 지정해야 합니다."
+    )
+  }
+  if (nodeEnv === "production" && !hasCompleteMarkerConfiguration) {
+    throw new Error(
+      "Invalid environment variables: DELETION_MARKER_S3_ENDPOINT, DELETION_MARKER_S3_REGION, DELETION_MARKER_S3_BUCKET, DELETION_MARKER_S3_ACCESS_KEY, DELETION_MARKER_S3_SECRET_KEY: production에서는 private 삭제 marker 저장소 설정이 필요합니다."
+    )
+  }
+
+  const markerStore = deletionMarkerStoreEnvSchema.optional().parse(
+    hasCompleteMarkerConfiguration
+      ? {
+          accessKeyId: input["DELETION_MARKER_S3_ACCESS_KEY"],
+          bucket: input["DELETION_MARKER_S3_BUCKET"],
+          endpoint: input["DELETION_MARKER_S3_ENDPOINT"],
+          prefix:
+            input["DELETION_MARKER_S3_PREFIX"] ?? "privacy/deletion-markers",
+          region: input["DELETION_MARKER_S3_REGION"],
+          secretAccessKey: input["DELETION_MARKER_S3_SECRET_KEY"],
+        }
+      : undefined
+  )
+
+  if (
+    nodeEnv === "production" &&
+    markerStore !== undefined &&
+    new URL(markerStore.endpoint).protocol !== "https:"
+  ) {
+    throw new Error(
+      "Invalid environment variables: DELETION_MARKER_S3_ENDPOINT: production private 삭제 marker 저장소는 HTTPS URL이 필요합니다."
+    )
+  }
+  if (
+    markerStore !== undefined &&
+    adminAssetStore !== undefined &&
+    markerStore.bucket === adminAssetStore.bucket
+  ) {
+    throw new Error(
+      "Invalid environment variables: DELETION_MARKER_S3_BUCKET: public asset bucket과 다른 private bucket을 사용해야 합니다."
+    )
+  }
+
+  return markerStore
+}
+
+function validateProviderConfiguration(env: ReturnType<typeof parseEnv>): void {
+  const hasGoogleClientId = env.GOOGLE_CLIENT_ID !== undefined
+  const hasGoogleClientSecret = env.GOOGLE_CLIENT_SECRET !== undefined
+
+  if (hasGoogleClientId !== hasGoogleClientSecret) {
+    throw new Error(
+      "Invalid environment variables: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: Google OAuth 설정은 함께 지정해야 합니다."
+    )
+  }
+  if (
+    env.NODE_ENV === "production" &&
+    (!hasGoogleClientId || env.OPENAI_API_KEY === undefined)
+  ) {
+    throw new Error(
+      "Invalid environment variables: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, OPENAI_API_KEY: production에서는 Google OAuth와 OpenAI 설정이 필요합니다."
+    )
+  }
 }
 
 function validateSeparatedAuthConfiguration(input: {
@@ -171,4 +441,44 @@ function parseDeploymentVersion(
   }
 
   return "local"
+}
+
+function parseDeploymentEnvironment(
+  nodeEnv: ApiEnv["nodeEnv"],
+  value: string | undefined
+): ApiEnv["deploymentEnvironment"] {
+  const normalized = value?.trim()
+
+  if (normalized === undefined || normalized.length === 0) {
+    if (nodeEnv === "production") {
+      throw new Error(
+        "Invalid environment variables: DEPLOYMENT_ENVIRONMENT: production 실행 모드에서는 staging 또는 production 대상 환경이 필요합니다."
+      )
+    }
+    return nodeEnv
+  }
+
+  if (
+    normalized !== "development" &&
+    normalized !== "test" &&
+    normalized !== "staging" &&
+    normalized !== "production"
+  ) {
+    throw new Error(
+      "Invalid environment variables: DEPLOYMENT_ENVIRONMENT: development, test, staging 또는 production이 필요합니다."
+    )
+  }
+
+  if (
+    (nodeEnv === "production" &&
+      normalized !== "staging" &&
+      normalized !== "production") ||
+    (nodeEnv !== "production" && normalized !== nodeEnv)
+  ) {
+    throw new Error(
+      "Invalid environment variables: DEPLOYMENT_ENVIRONMENT: NODE_ENV 실행 모드와 대상 환경 조합이 올바르지 않습니다."
+    )
+  }
+
+  return normalized
 }

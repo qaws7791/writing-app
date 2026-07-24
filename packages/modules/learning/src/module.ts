@@ -10,10 +10,6 @@ import {
   type LearningCommandError,
 } from "#learning/application/learning-application"
 import {
-  createLearningQueries,
-  type LearningQueries,
-} from "#learning/application/learning-queries"
-import {
   createLearningProfileStatsQuery,
   createLearningReportingQuery,
   type LearningProfileStats,
@@ -21,17 +17,15 @@ import {
 } from "#learning/application/learning-reporting"
 import type { LearningApplicationDependencies } from "#learning/application/ports/learning-ports"
 import { createDrizzleLearningReadRepository } from "#learning/infrastructure/persistence/learning-read-drizzle-repository"
-import { createLearnerCursorCodec } from "#learning/infrastructure/persistence/learner-cursor"
+import {
+  createLearnerCursorCodec,
+  type LearnerCursorCodec,
+} from "#learning/infrastructure/persistence/learner-cursor"
 import {
   createDrizzleLearningReportingRepository,
   toLearningUserId,
 } from "#learning/infrastructure/persistence/learning-reporting-drizzle-repository"
 import { createDrizzleLearnerTransitionRepository } from "#learning/infrastructure/persistence/learning-transition-drizzle-repository"
-import {
-  createLearningRoutes,
-  type LearningHttpRouteGroup,
-  type LearningLearnerSessionPort,
-} from "#learning/interface/http/learning-routes"
 import { presentAiFeedbackResult } from "#learning/interface/http/learning-http-mapper"
 
 export type LearningAiFeedbackHttpCommandError =
@@ -43,6 +37,11 @@ export type LearningAiFeedbackHttpCommandError =
   | Readonly<{ kind: "feedback-answer-not-found" }>
   | Readonly<{ kind: "feedback-target-invalid" }>
   | Readonly<{ kind: "attempt-limit-exceeded"; remainingAttempts: 0 }>
+  | Readonly<{
+      kind: "daily-quota-exceeded"
+      remainingAttempts: number
+      retryAfterSeconds: number
+    }>
   | Readonly<{
       kind: "attempt-in-progress"
       remainingAttempts: number
@@ -77,18 +76,18 @@ export type LearningAiFeedbackHttpCommandPort = Readonly<{
 export type LearningModule = Readonly<{
   aiFeedbackCommand: LearningAiFeedbackHttpCommandPort
   application: LearningApplication
-  createLearnerRoutes: (
-    session: LearningLearnerSessionPort
-  ) => LearningHttpRouteGroup
+  cursor: LearnerCursorCodec
   profileStatsQuery: Readonly<{
     readProfileStats: (userId: string) => Promise<LearningProfileStats>
   }>
-  queries: LearningQueries
   reportingQuery: LearningReportingQuery
 }>
 
 export function createLearningModule(
-  input: Omit<LearningApplicationDependencies, "transitionRepository"> &
+  input: Omit<
+    LearningApplicationDependencies,
+    "readRepository" | "transitionRepository"
+  > &
     Readonly<{
       cursorSigningSecret: string
       database: WritingAppDatabase
@@ -98,15 +97,15 @@ export function createLearningModule(
   const transitionRepository = createDrizzleLearnerTransitionRepository(
     input.database
   )
-  const application = createLearningApplication({
-    ...input,
-    transitionRepository,
-  })
   const readRepository = createDrizzleLearningReadRepository(input.database, {
     content: input.content,
     presentationSecret: input.presentationSecret,
   })
-  const queries = createLearningQueries(readRepository)
+  const application = createLearningApplication({
+    ...input,
+    readRepository,
+    transitionRepository,
+  })
   const cursor = createLearnerCursorCodec(input.cursorSigningSecret)
   const reportingQuery = createLearningReportingQuery({
     content: input.content,
@@ -116,33 +115,30 @@ export function createLearningModule(
     reporting: reportingQuery,
   })
 
-  return Object.freeze({
+  return {
     aiFeedbackCommand: createAiFeedbackHttpCommand(application),
     application,
-    createLearnerRoutes(session) {
-      return createLearningRoutes({ application, cursor, queries, session })
-    },
-    profileStatsQuery: Object.freeze({
+    cursor,
+    profileStatsQuery: {
       readProfileStats(userId: string) {
         return profileStatsQuery.readProfileStats(toLearningUserId(userId))
       },
-    }),
-    queries,
+    },
     reportingQuery,
-  })
+  }
 }
 
 function createAiFeedbackHttpCommand(
   application: LearningApplication
 ): LearningAiFeedbackHttpCommandPort {
-  return Object.freeze({
+  return {
     async requestFeedback(command, options) {
       const result = await application.requestAiFeedback(command, options)
       return result.isErr()
         ? err(mapAiFeedbackHttpError(result.error))
         : ok(presentAiFeedbackResult(result.value))
     },
-  })
+  }
 }
 
 function mapAiFeedbackHttpError(
@@ -158,6 +154,7 @@ function mapAiFeedbackHttpError(
     case "feedback-target-invalid":
     case "attempt-limit-exceeded":
     case "attempt-in-progress":
+    case "daily-quota-exceeded":
     case "provider-response-invalid":
     case "provider-timeout":
     case "provider-unavailable":
@@ -165,6 +162,7 @@ function mapAiFeedbackHttpError(
       return error
     case "learner-inactive":
     case "learner-not-found":
+    case "step-draft-version-conflict":
       return { kind: "invalid-request" }
     case "identity-query-failed":
     case "persistence-failed":

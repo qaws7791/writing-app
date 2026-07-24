@@ -1,33 +1,23 @@
 import {
-  LandingNavMotion,
-  LandingPointerGlow,
-} from "@/features/landing/ui/landing-motion"
-import {
-  Features,
-  FinalCta,
+  FinalCtaSection,
   Footer,
-  Hero,
-  HowItWorks,
-  Marquee,
-  Showcase,
-  Stats,
+  HeroSection,
+  LandingNav,
+  LearningMethodSection,
+  ProductPreviewSection,
 } from "@/features/landing/ui/landing-sections"
 
 export function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
-      <LandingPointerGlow />
-      <div className="relative z-10">
-        <LandingNavMotion />
-        <Hero />
-        <Marquee />
-        <Features />
-        <HowItWorks />
-        <Stats />
-        <Showcase />
-        <FinalCta />
-        <Footer />
-      </div>
+    <div className="min-h-screen bg-bg-canvas text-fg-default">
+      <LandingNav />
+      <main>
+        <HeroSection />
+        <LearningMethodSection />
+        <ProductPreviewSection />
+        <FinalCtaSection />
+      </main>
+      <Footer />
     </div>
   )
 }

@@ -2,10 +2,221 @@
 - name: Writing App 배포 검증
   hosts: writing_app
   become: true
-  gather_facts: false
+  gather_facts: true
   vars_files:
     - ../vars/defaults.yaml
   tasks:
+    - name: 배포 검증 finalization mode 확인
+      ansible.builtin.assert:
+        that:
+          - >-
+            not (
+              writing_app_verify_finalize_deployment | bool
+              and writing_app_verify_finalize_rollback | bool
+            )
+          - >-
+            not (writing_app_verify_finalize_rollback | bool)
+            or (writing_app_verify_expected_images_from_compose_environment | bool)
+          - >-
+            not (writing_app_verify_finalize_deployment | bool)
+            or not (writing_app_verify_expected_images_from_compose_environment | bool)
+          - >-
+            not (
+              writing_app_verify_finalize_deployment | bool
+              or writing_app_verify_finalize_rollback | bool
+            )
+            or (writing_app_verify_uses_existing_operation_lock | bool)
+          - >-
+            not (writing_app_verify_uses_existing_operation_lock | bool)
+            or (
+              (writing_app_verify_finalize_deployment | bool)
+              != (writing_app_verify_finalize_rollback | bool)
+            )
+          - >-
+            not (writing_app_verify_uses_existing_operation_lock | bool)
+            or writing_app_source_revision is match('^[0-9a-f]{40}\Z')
+          - >-
+            not (writing_app_verify_uses_existing_operation_lock | bool)
+            or writing_app_operation_handoff_token is match('^[0-9a-f]{64}\Z')
+        fail_msg: >-
+          Finalization은 기존 operation lock을 인계받아 deployment 또는 rollback 중 정확히 하나만
+          실행해야 하며, source revision과 64자리 handoff token이 필요합니다.
+
+    - name: 이전 작업의 operation lock을 단일 verifier가 인계
+      when: writing_app_verify_uses_existing_operation_lock | bool
+      block:
+        - name: 이전 작업이 보존한 operation lock 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_operation_lock_directory }}"
+          register: writing_app_verify_existing_operation_lock
+
+        - name: 배포 검증 handoff atomic claim 획득
+          ansible.builtin.command:
+            argv:
+              - mkdir
+              - -m
+              - "0700"
+              - "{{ writing_app_operation_lock_directory }}/verify.claim"
+          register: writing_app_verify_handoff_claim
+          changed_when: writing_app_verify_handoff_claim.rc == 0
+          failed_when: false
+
+        - name: 배포 검증 handoff claim 소유권 기록
+          ansible.builtin.copy:
+            dest: >-
+              {{ writing_app_operation_lock_directory }}/verify.claim/owner.json
+            owner: root
+            group: root
+            mode: "0600"
+            content: >-
+              {{
+                {
+                  'adminImage': (
+                    (writing_app_verify_finalize_deployment | bool)
+                    | ternary(writing_app_admin_image, '')
+                  ),
+                  'apiImage': (
+                    (writing_app_verify_finalize_deployment | bool)
+                    | ternary(writing_app_api_image, '')
+                  ),
+                  'automationRevision': writing_app_source_revision,
+                  'operation': (
+                    (writing_app_verify_finalize_deployment | bool)
+                    | ternary('deployment', 'rollback')
+                  ),
+                  'promoteVerifiedToPrevious': false,
+                  'revision': (
+                    (writing_app_verify_finalize_deployment | bool)
+                    | ternary(writing_app_source_revision, '')
+                  ),
+                  'token': writing_app_operation_handoff_token,
+                  'webImage': (
+                    (writing_app_verify_finalize_deployment | bool)
+                    | ternary(writing_app_web_image, '')
+                  )
+                }
+                | to_nice_json
+              }}
+          no_log: true
+          when: writing_app_verify_handoff_claim.rc == 0
+
+        - name: 이전 작업의 검증 handoff marker 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_operation_lock_directory }}/handoff.json"
+          register: writing_app_verify_handoff_marker
+
+        - name: 이전 작업의 검증 handoff marker 읽기
+          ansible.builtin.slurp:
+            src: "{{ writing_app_operation_lock_directory }}/handoff.json"
+          register: writing_app_verify_handoff_marker_content
+          no_log: true
+          when:
+            - writing_app_verify_handoff_marker.stat.exists | default(false)
+            - writing_app_verify_handoff_marker.stat.isreg | default(false)
+
+        - name: 이전 작업의 검증 handoff metadata 해석
+          ansible.builtin.set_fact:
+            writing_app_verify_handoff_metadata: >-
+              {{
+                writing_app_verify_handoff_marker_content.content
+                | b64decode
+                | from_json
+              }}
+          no_log: true
+          when: writing_app_verify_handoff_marker_content is not skipped
+
+        - name: 배포 검증 handoff 소유권 검증
+          ansible.builtin.assert:
+            that:
+              - writing_app_verify_existing_operation_lock.stat.exists
+              - writing_app_verify_existing_operation_lock.stat.isdir
+              - writing_app_verify_existing_operation_lock.stat.pw_name == 'root'
+              - writing_app_verify_existing_operation_lock.stat.mode == '0700'
+              - writing_app_verify_handoff_claim.rc == 0
+              - writing_app_verify_handoff_marker.stat.exists
+              - writing_app_verify_handoff_marker.stat.isreg
+              - writing_app_verify_handoff_marker.stat.pw_name == 'root'
+              - writing_app_verify_handoff_marker.stat.mode == '0600'
+              - >-
+                (writing_app_verify_handoff_metadata.operation | default(''))
+                == (
+                  (writing_app_verify_finalize_deployment | bool)
+                  | ternary('deployment', 'rollback')
+                )
+              - >-
+                writing_app_verify_handoff_metadata.automationRevision
+                == writing_app_source_revision
+              - >-
+                not (writing_app_verify_finalize_deployment | bool)
+                or writing_app_verify_handoff_metadata.revision
+                == writing_app_source_revision
+              - >-
+                (writing_app_verify_handoff_metadata.token | default(''))
+                == writing_app_operation_handoff_token
+              - writing_app_verify_handoff_metadata.webImage is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - writing_app_verify_handoff_metadata.apiImage is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - writing_app_verify_handoff_metadata.adminImage is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - >-
+                not (writing_app_verify_finalize_deployment | bool)
+                or writing_app_verify_handoff_metadata.webImage == writing_app_web_image
+              - >-
+                not (writing_app_verify_finalize_deployment | bool)
+                or writing_app_verify_handoff_metadata.apiImage == writing_app_api_image
+              - >-
+                not (writing_app_verify_finalize_deployment | bool)
+                or writing_app_verify_handoff_metadata.adminImage == writing_app_admin_image
+              - >-
+                not (writing_app_verify_finalize_rollback | bool)
+                or (
+                  writing_app_verify_handoff_metadata.promoteVerifiedToPrevious
+                  is boolean
+                )
+            fail_msg: >-
+              다른 verifier가 이미 인계했거나 operation type, source revision과 handoff token이
+              일치하지 않습니다. 기존 operation lock은 삭제하지 않습니다.
+
+        - name: 검증된 handoff 계약을 claim에 고정
+          ansible.builtin.copy:
+            dest: >-
+              {{ writing_app_operation_lock_directory }}/verify.claim/owner.json
+            owner: root
+            group: root
+            mode: "0600"
+            content: >-
+              {{
+                {
+                  'adminImage': writing_app_verify_handoff_metadata.adminImage,
+                  'apiImage': writing_app_verify_handoff_metadata.apiImage,
+                  'automationRevision': writing_app_source_revision,
+                  'operation': writing_app_verify_handoff_metadata.operation,
+                  'promoteVerifiedToPrevious': (
+                    writing_app_verify_handoff_metadata.promoteVerifiedToPrevious
+                    | default(false)
+                  ),
+                  'revision': (
+                    writing_app_verify_handoff_metadata.revision | default('')
+                  ),
+                  'token': writing_app_operation_handoff_token,
+                  'webImage': writing_app_verify_handoff_metadata.webImage
+                }
+                | to_nice_json
+              }}
+          no_log: true
+      rescue:
+        - name: 이 실행이 만든 잘못된 handoff claim 제거
+          ansible.builtin.file:
+            path: "{{ writing_app_operation_lock_directory }}/verify.claim"
+            state: absent
+          when: >-
+            ((writing_app_verify_handoff_claim | default({})).rc | default(1))
+            == 0
+
+        - name: 배포 검증 handoff 실패 종료
+          ansible.builtin.fail:
+            msg: >-
+              기존 operation lock의 단일-consumer handoff를 검증하지 못했습니다.
+              실행 중인 작업을 확인하기 전에는 lock을 삭제하지 않습니다.
+
     - name: 배포 검증 작업 공유 락 획득
       ansible.builtin.command:
         argv:
@@ -16,19 +227,99 @@
       register: writing_app_verify_operation_lock
       changed_when: writing_app_verify_operation_lock.rc == 0
       failed_when: false
+      when: not (writing_app_verify_uses_existing_operation_lock | bool)
 
-    - name: 배포 검증 작업 공유 락 획득 결과 검증
+    - name: 독립 배포 검증 작업 공유 락 획득 결과 검증
       ansible.builtin.assert:
         that:
-          - writing_app_verify_operation_lock.rc == 0
+          - writing_app_verify_operation_lock.rc | default(1) == 0
         fail_msg: >-
           다른 Writing App deploy, rollback 또는 복구 작업이 이미 실행 중이거나
           {{ writing_app_operation_lock_directory }}를 생성할 수 없습니다. 안전을 위해 배포 검증을
           시작하지 않습니다. stale lock은 자동 삭제하지 않으므로, 실행 중인 작업이 없음을 확인한
           운영자가 수동으로 점검·해제해야 합니다.
+      when: not (writing_app_verify_uses_existing_operation_lock | bool)
+
+    - name: 배포 검증 락 해제 정책 초기화
+      ansible.builtin.set_fact:
+        writing_app_verify_release_operation_lock: >-
+          {{ not (writing_app_verify_uses_existing_operation_lock | bool) }}
 
     - name: 공유 락 아래 배포 검증 실행
       block:
+        - name: 현재 Compose 환경의 rollback target image 해석
+          ansible.builtin.command:
+            argv:
+              - docker
+              - compose
+              - --env-file
+              - .env
+              - -f
+              - compose.yaml
+              - config
+              - --format
+              - json
+          args:
+            chdir: "{{ writing_app_compose_directory }}"
+          register: writing_app_verify_current_compose_configuration
+          changed_when: false
+          no_log: true
+          when: writing_app_verify_expected_images_from_compose_environment | bool
+
+        - name: Rollback target image를 검증 기준으로 설정
+          ansible.builtin.set_fact:
+            writing_app_web_image: >-
+              {{ (writing_app_verify_current_compose_configuration.stdout | from_json).services.web.image }}
+            writing_app_api_image: >-
+              {{ (writing_app_verify_current_compose_configuration.stdout | from_json).services.api.image }}
+            writing_app_admin_image: >-
+              {{ (writing_app_verify_current_compose_configuration.stdout | from_json).services.admin.image }}
+          no_log: true
+          when: writing_app_verify_expected_images_from_compose_environment | bool
+
+        - name: Rollback handoff와 현재 Compose target 일치 검증
+          ansible.builtin.assert:
+            that:
+              - writing_app_web_image == writing_app_verify_handoff_metadata.webImage
+              - writing_app_api_image == writing_app_verify_handoff_metadata.apiImage
+              - writing_app_admin_image == writing_app_verify_handoff_metadata.adminImage
+            fail_msg: >-
+              Rollback과 verify 사이에 Compose target digest가 바뀌어 finalization을 중단합니다.
+          no_log: true
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: 실행 중인 release container image 조회
+          ansible.builtin.command:
+            argv:
+              - docker
+              - container
+              - inspect
+              - "writing-app-{{ item.service }}-1"
+          loop:
+            - expected: "{{ writing_app_web_image }}"
+              service: web
+            - expected: "{{ writing_app_api_image }}"
+              service: api
+            - expected: "{{ writing_app_admin_image }}"
+              service: admin
+          loop_control:
+            label: "{{ item.service }}"
+          changed_when: false
+          register: writing_app_verify_release_containers
+
+        - name: 실행 중인 release container digest 검증
+          ansible.builtin.assert:
+            that:
+              - >-
+                (
+                  item.stdout | from_json | first
+                ).Config.Image == item.item.expected
+            fail_msg: >-
+              {{ item.item.service }} container가 검증 대상 release digest로 실행 중이지 않습니다.
+          loop: "{{ writing_app_verify_release_containers.results }}"
+          loop_control:
+            label: "{{ item.item.service }}"
+
         - name: Compose 서비스 health 대기
           community.docker.docker_compose_v2:
             project_src: "{{ writing_app_compose_directory }}"
@@ -158,6 +449,9 @@
             method: GET
             status_code: 200
             return_content: true
+            follow_redirects: none
+            timeout: 10
+            validate_certs: true
           loop:
             - audience: learner
               expected:
@@ -170,6 +464,9 @@
                 service: admin
               origin: "{{ writing_app_admin_origin }}"
           register: writing_app_public_web_health
+          changed_when: false
+          become: false
+          delegate_to: localhost
           when: writing_app_verify_public_routes | bool
 
         - name: 공개 web audience 응답 검증
@@ -189,6 +486,9 @@
             method: GET
             status_code: 200
             return_content: true
+            follow_redirects: none
+            timeout: 10
+            validate_certs: true
           loop:
             - audience: learner
               expected:
@@ -208,6 +508,9 @@
               origin: "{{ writing_app_admin_origin }}"
               path: /api/admin/health
           register: writing_app_public_api_health
+          changed_when: false
+          become: false
+          delegate_to: localhost
           when: writing_app_verify_public_routes | bool
 
         - name: 공개 API endpoint 응답 검증
@@ -220,9 +523,475 @@
           loop_control:
             label: "{{ item.item.audience }}"
           when: writing_app_verify_public_routes | bool
+
+        - name: 안전한 핵심 공개 route smoke
+          ansible.builtin.uri:
+            url: "{{ item.origin }}{{ item.path }}"
+            method: GET
+            status_code: "{{ item.expected_status }}"
+            return_content: false
+            follow_redirects: none
+            timeout: 10
+            validate_certs: true
+          loop:
+            - audience: learner
+              expected_status: 200
+              origin: "{{ writing_app_web_origin }}"
+              path: /login
+            - audience: admin
+              expected_status: 200
+              origin: "{{ writing_app_admin_origin }}"
+              path: /login
+            - audience: learner-api-auth-boundary
+              expected_status: 401
+              origin: "{{ writing_app_web_origin }}"
+              path: /api/courses
+            - audience: admin-api-auth-boundary
+              expected_status: 401
+              origin: "{{ writing_app_admin_origin }}"
+              path: /api/admin/courses
+            - audience: learner-admin-api-boundary
+              expected_status: 404
+              origin: "{{ writing_app_web_origin }}"
+              path: /api/admin/health
+          loop_control:
+            label: "{{ item.audience }}"
+          changed_when: false
+          become: false
+          delegate_to: localhost
+          when: writing_app_verify_public_routes | bool
+
+        - name: 검증 완료 배포 입력 파일 checksum 계산
+          ansible.builtin.stat:
+            path: "{{ item }}"
+            checksum_algorithm: sha256
+          loop:
+            - "{{ writing_app_compose_directory }}/compose.yaml"
+            - "{{ writing_app_compose_directory }}/.env"
+            - "{{ writing_app_config_directory }}/caddyfile"
+            - "{{ writing_app_config_directory }}/litestream.yaml"
+            - "{{ writing_app_config_directory }}/web.env"
+            - "{{ writing_app_config_directory }}/admin.env"
+            - "{{ writing_app_config_directory }}/caddy.env"
+            - "{{ writing_app_config_directory }}/api.env"
+            - "{{ writing_app_config_directory }}/litestream.env"
+          register: writing_app_verify_input_files
+          changed_when: false
+          no_log: true
+          when: >-
+            (writing_app_verify_finalize_deployment | bool)
+            or (writing_app_verify_finalize_rollback | bool)
+
+        - name: 검증 완료 배포 fingerprint 계산
+          ansible.builtin.set_fact:
+            writing_app_verify_desired_state_fingerprint: >-
+              {{
+                (
+                  writing_app_verify_input_files.results
+                  | map(attribute='stat.checksum')
+                  | join('\n')
+                )
+                | hash('sha256')
+              }}
+          no_log: true
+          when: >-
+            (writing_app_verify_finalize_deployment | bool)
+            or (writing_app_verify_finalize_rollback | bool)
+
+        - name: 검증 완료 배포 기록 입력 확인
+          ansible.builtin.assert:
+            that:
+              - writing_app_verify_public_routes | bool
+              - writing_app_source_revision is match('^[0-9a-f]{40}\Z')
+              - writing_app_web_image is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - writing_app_api_image is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - writing_app_admin_image is match('^.+@sha256:[0-9a-f]{64}\Z')
+            fail_msg: >-
+              검증 완료 기록에는 public route 검증 활성화, source revision과
+              세 immutable image digest가 필요합니다.
+          when: writing_app_verify_finalize_deployment | bool
+
+        - name: 직전 검증 성공 Compose 환경 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_compose_directory }}/.env.verified"
+            checksum_algorithm: sha256
+          register: writing_app_verify_previous_verified_environment
+          when: writing_app_verify_finalize_deployment | bool
+
+        - name: 현재 Compose 환경 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_compose_directory }}/.env"
+            checksum_algorithm: sha256
+          register: writing_app_verify_current_environment
+          when: writing_app_verify_finalize_deployment | bool
+
+        - name: 직전 검증 성공 Compose 환경 보호 속성 확인
+          ansible.builtin.assert:
+            that:
+              - writing_app_verify_current_environment.stat.exists
+              - writing_app_verify_current_environment.stat.isreg
+              - writing_app_verify_current_environment.stat.pw_name == 'root'
+              - writing_app_verify_current_environment.stat.mode == '0640'
+              - >-
+                not writing_app_verify_previous_verified_environment.stat.exists
+                or writing_app_verify_previous_verified_environment.stat.isreg
+              - >-
+                not writing_app_verify_previous_verified_environment.stat.exists
+                or writing_app_verify_previous_verified_environment.stat.pw_name == 'root'
+              - >-
+                not writing_app_verify_previous_verified_environment.stat.exists
+                or writing_app_verify_previous_verified_environment.stat.mode == '0640'
+            fail_msg: 직전 검증 성공 Compose 환경 파일의 소유권 또는 mode가 올바르지 않습니다.
+          when: writing_app_verify_finalize_deployment | bool
+
+        - name: 현재 배포 snapshot의 기존 승격 여부 계산
+          ansible.builtin.set_fact:
+            writing_app_verify_deployment_snapshot_already_promoted: >-
+              {{
+                writing_app_verify_previous_verified_environment.stat.exists
+                and (
+                  writing_app_verify_previous_verified_environment.stat.checksum
+                  == writing_app_verify_current_environment.stat.checksum
+                )
+              }}
+          no_log: true
+          when: writing_app_verify_finalize_deployment | bool
+
+        - name: 직전 검증 성공 Compose 환경을 rollback 후보로 승격
+          ansible.builtin.copy:
+            src: "{{ writing_app_compose_directory }}/.env.verified"
+            dest: "{{ writing_app_compose_directory }}/.env.previous"
+            remote_src: true
+            owner: root
+            group: root
+            mode: "0640"
+          when:
+            - writing_app_verify_finalize_deployment | bool
+            - writing_app_verify_previous_verified_environment.stat.exists
+            - not (writing_app_verify_deployment_snapshot_already_promoted | bool)
+
+        - name: 현재 Compose 환경을 검증 성공 snapshot으로 기록
+          ansible.builtin.copy:
+            src: "{{ writing_app_compose_directory }}/.env"
+            dest: "{{ writing_app_compose_directory }}/.env.verified"
+            remote_src: true
+            owner: root
+            group: root
+            mode: "0640"
+          when:
+            - writing_app_verify_finalize_deployment | bool
+            - not (writing_app_verify_deployment_snapshot_already_promoted | bool)
+
+        - name: 검증 완료 배포 image reference 기록
+          ansible.builtin.copy:
+            dest: "{{ writing_app_deployment_directory }}/{{ writing_app_source_revision }}.txt"
+            owner: root
+            group: root
+            mode: "0640"
+            content: |
+              revision={{ writing_app_source_revision }}
+              web={{ writing_app_web_image }}
+              api={{ writing_app_api_image }}
+              admin={{ writing_app_admin_image }}
+          when: writing_app_verify_finalize_deployment | bool
+
+        - name: 검증 성공 배포 fingerprint 기록
+          ansible.builtin.copy:
+            dest: "{{ writing_app_deploy_verified_state_path }}"
+            owner: root
+            group: root
+            mode: "0640"
+            content: "{{ writing_app_verify_desired_state_fingerprint }}\n"
+          when: writing_app_verify_finalize_deployment | bool
+
+        - name: Rollback finalization 입력 확인
+          ansible.builtin.assert:
+            that:
+              - writing_app_verify_public_routes | bool
+              - writing_app_web_image is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - writing_app_api_image is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - writing_app_admin_image is match('^.+@sha256:[0-9a-f]{64}\Z')
+            fail_msg: Rollback 완료에는 public route 검증과 세 immutable image digest가 필요합니다.
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: Rollback 현재 Compose 환경 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_compose_directory }}/.env"
+            checksum_algorithm: sha256
+          register: writing_app_verify_rollback_current_environment
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: Rollback 직전 검증 성공 Compose 환경 확인
+          ansible.builtin.stat:
+            path: "{{ writing_app_compose_directory }}/.env.verified"
+            checksum_algorithm: sha256
+          register: writing_app_verify_rollback_verified_environment
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: Rollback 환경 이력 보호 속성 확인
+          ansible.builtin.assert:
+            that:
+              - writing_app_verify_rollback_current_environment.stat.exists
+              - writing_app_verify_rollback_current_environment.stat.isreg
+              - writing_app_verify_rollback_current_environment.stat.pw_name == 'root'
+              - writing_app_verify_rollback_current_environment.stat.mode == '0640'
+              - writing_app_verify_rollback_verified_environment.stat.exists
+              - writing_app_verify_rollback_verified_environment.stat.isreg
+              - writing_app_verify_rollback_verified_environment.stat.pw_name == 'root'
+              - writing_app_verify_rollback_verified_environment.stat.mode == '0640'
+            fail_msg: Rollback finalization에 필요한 현재·검증 성공 환경 이력이 올바르지 않습니다.
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: Rollback 환경 이력 승격 필요 여부 계산
+          ansible.builtin.set_fact:
+            writing_app_verify_rollback_history_already_finalized: >-
+              {{
+                writing_app_verify_rollback_current_environment.stat.checksum
+                == writing_app_verify_rollback_verified_environment.stat.checksum
+              }}
+          no_log: true
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: 미검증 candidate 복구의 기존 rollback 이력 보존 검증
+          ansible.builtin.assert:
+            that:
+              - >-
+                writing_app_verify_handoff_metadata.promoteVerifiedToPrevious
+                | bool
+                or writing_app_verify_rollback_history_already_finalized
+            fail_msg: >-
+              미검증 candidate 복구는 현재 환경이 마지막 검증 성공 환경과 같아야 하며
+              기존 rollback 후보를 변경하지 않습니다.
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: 롤백 직전 검증 성공 환경을 다음 rollback 후보로 보존
+          ansible.builtin.copy:
+            src: "{{ writing_app_compose_directory }}/.env.verified"
+            dest: "{{ writing_app_compose_directory }}/.env.previous"
+            remote_src: true
+            owner: root
+            group: root
+            mode: "0640"
+          when:
+            - writing_app_verify_finalize_rollback | bool
+            - >-
+              writing_app_verify_handoff_metadata.promoteVerifiedToPrevious
+              | bool
+            - not (writing_app_verify_rollback_history_already_finalized | bool)
+
+        - name: 롤백된 Compose 환경을 검증 성공 이력으로 기록
+          ansible.builtin.copy:
+            src: "{{ writing_app_compose_directory }}/.env"
+            dest: "{{ writing_app_compose_directory }}/.env.verified"
+            remote_src: true
+            owner: root
+            group: root
+            mode: "0640"
+          when:
+            - writing_app_verify_finalize_rollback | bool
+            - >-
+              writing_app_verify_handoff_metadata.promoteVerifiedToPrevious
+              | bool
+            - not (writing_app_verify_rollback_history_already_finalized | bool)
+
+        - name: 검증 완료 rollback image reference 기록
+          ansible.builtin.copy:
+            dest: >-
+              {{ writing_app_deployment_directory }}/rollback-{{
+              ansible_date_time.iso8601_basic_short }}.txt
+            owner: root
+            group: root
+            mode: "0640"
+            content: |
+              operation=rollback
+              verified_at={{ ansible_date_time.iso8601 }}
+              automation_revision={{ writing_app_source_revision }}
+              web={{ writing_app_web_image }}
+              api={{ writing_app_api_image }}
+              admin={{ writing_app_admin_image }}
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: 검증 성공 rollback fingerprint 기록
+          ansible.builtin.copy:
+            dest: "{{ writing_app_deploy_verified_state_path }}"
+            owner: root
+            group: root
+            mode: "0640"
+            content: "{{ writing_app_verify_desired_state_fingerprint }}\n"
+          when: writing_app_verify_finalize_rollback | bool
+
+        - name: Unlock 직전 handoff marker 재확인
+          ansible.builtin.slurp:
+            src: "{{ writing_app_operation_lock_directory }}/handoff.json"
+          register: writing_app_verify_final_handoff_marker
+          no_log: true
+          when: writing_app_verify_uses_existing_operation_lock | bool
+
+        - name: Unlock 직전 handoff claim 재확인
+          ansible.builtin.slurp:
+            src: >-
+              {{ writing_app_operation_lock_directory }}/verify.claim/owner.json
+          register: writing_app_verify_final_handoff_claim
+          no_log: true
+          when: writing_app_verify_uses_existing_operation_lock | bool
+
+        - name: Unlock 대상 operation 소유권 재검증
+          vars:
+            writing_app_verify_final_marker: >-
+              {{
+                writing_app_verify_final_handoff_marker.content
+                | b64decode
+                | from_json
+              }}
+            writing_app_verify_final_claim: >-
+              {{
+                writing_app_verify_final_handoff_claim.content
+                | b64decode
+                | from_json
+              }}
+            writing_app_verify_expected_operation: >-
+              {{
+                (writing_app_verify_finalize_deployment | bool)
+                | ternary('deployment', 'rollback')
+              }}
+            writing_app_verify_expected_revision: >-
+              {{
+                (writing_app_verify_finalize_deployment | bool)
+                | ternary(writing_app_source_revision, '')
+              }}
+          ansible.builtin.assert:
+            that:
+              - >-
+                writing_app_verify_final_marker.operation
+                == writing_app_verify_expected_operation
+              - >-
+                writing_app_verify_final_marker.automationRevision
+                == writing_app_source_revision
+              - >-
+                (writing_app_verify_final_marker.revision | default(''))
+                == writing_app_verify_expected_revision
+              - >-
+                writing_app_verify_final_marker.token
+                == writing_app_operation_handoff_token
+              - >-
+                writing_app_verify_final_claim.operation
+                == writing_app_verify_expected_operation
+              - >-
+                writing_app_verify_final_claim.automationRevision
+                == writing_app_source_revision
+              - >-
+                (writing_app_verify_final_claim.revision | default(''))
+                == writing_app_verify_expected_revision
+              - >-
+                writing_app_verify_final_claim.token
+                == writing_app_operation_handoff_token
+              - writing_app_verify_final_marker.webImage == writing_app_web_image
+              - writing_app_verify_final_marker.apiImage == writing_app_api_image
+              - writing_app_verify_final_marker.adminImage == writing_app_admin_image
+              - writing_app_verify_final_claim.webImage == writing_app_web_image
+              - writing_app_verify_final_claim.apiImage == writing_app_api_image
+              - writing_app_verify_final_claim.adminImage == writing_app_admin_image
+              - >-
+                not (writing_app_verify_finalize_rollback | bool)
+                or (
+                  writing_app_verify_final_marker.promoteVerifiedToPrevious
+                  is boolean
+                )
+              - >-
+                not (writing_app_verify_finalize_rollback | bool)
+                or (
+                  writing_app_verify_final_claim.promoteVerifiedToPrevious
+                  is boolean
+                )
+              - >-
+                not (writing_app_verify_finalize_rollback | bool)
+                or (
+                  writing_app_verify_final_marker.promoteVerifiedToPrevious
+                  == writing_app_verify_handoff_metadata.promoteVerifiedToPrevious
+                )
+              - >-
+                not (writing_app_verify_finalize_rollback | bool)
+                or (
+                  writing_app_verify_final_claim.promoteVerifiedToPrevious
+                  == writing_app_verify_handoff_metadata.promoteVerifiedToPrevious
+                )
+            fail_msg: >-
+              검증 중 operation lock 소유권이 바뀌어 unlock을 중단합니다.
+          no_log: true
+          when: writing_app_verify_uses_existing_operation_lock | bool
+
+        - name: 전체 검증 성공 후 operation lock 해제 허용
+          ansible.builtin.set_fact:
+            writing_app_deploy_recovery_status: verified-success
+            writing_app_verify_release_operation_lock: true
+      rescue:
+        - name: 배포 검증 실패 stage 계산
+          ansible.builtin.set_fact:
+            writing_app_verify_failure_stage: >-
+              {{ ansible_failed_task.name | default('unknown') }}
+
+        - name: 배포 검증 fail-closed recovery 증적 기록
+          ansible.builtin.copy:
+            dest: >-
+              {{ writing_app_deployment_directory }}/verify-{{
+              ansible_date_time.iso8601_basic_short }}-recovery.txt
+            owner: root
+            group: root
+            mode: "0640"
+            content: |
+              operation=verify
+              predecessor={{ writing_app_verify_handoff_metadata.operation | default('standalone') }}
+              source_revision={{ writing_app_source_revision | default('') }}
+              failed_at={{ ansible_date_time.iso8601 }}
+              failure_stage={{ writing_app_verify_failure_stage }}
+              operation_lock_retained={{ not (writing_app_verify_release_operation_lock | default(false) | bool) }}
+              next_action=operation lock과 handoff marker를 유지한 채 실제 container digest, public health와 현재·verified·previous Compose 환경 이력을 읽기 전용으로 확인하고 incident commander가 재검증 또는 수동 복구를 결정합니다.
+          failed_when: false
+
+        - name: 실패한 verifier의 handoff claim 소유권 읽기
+          ansible.builtin.slurp:
+            src: >-
+              {{ writing_app_operation_lock_directory }}/verify.claim/owner.json
+          register: writing_app_verify_failed_handoff_claim
+          no_log: true
+          failed_when: false
+          when: writing_app_verify_uses_existing_operation_lock | bool
+
+        - name: 실패한 verifier의 handoff claim metadata 해석
+          ansible.builtin.set_fact:
+            writing_app_verify_failed_handoff_claim_metadata: >-
+              {{
+                writing_app_verify_failed_handoff_claim.content
+                | b64decode
+                | from_json
+              }}
+          no_log: true
+          when:
+            - writing_app_verify_uses_existing_operation_lock | bool
+            - writing_app_verify_failed_handoff_claim.content is defined
+
+        - name: 실패한 verifier가 획득한 handoff claim 반환
+          ansible.builtin.file:
+            path: "{{ writing_app_operation_lock_directory }}/verify.claim"
+            state: absent
+          when:
+            - writing_app_verify_uses_existing_operation_lock | bool
+            - >-
+              (
+                (writing_app_verify_failed_handoff_claim_metadata | default({})).token
+                | default('')
+              )
+              == writing_app_operation_handoff_token
+          failed_when: false
+
+        - name: 배포 검증 fail-closed 실패 종료
+          ansible.builtin.fail:
+            msg: >-
+              배포 검증이 {{ writing_app_verify_failure_stage }} 단계에서 실패했습니다.
+              인계받은 operation lock과 recovery 증적은 보존했습니다.
       always:
         - name: 이 배포 검증 실행이 획득한 공유 락 해제
           ansible.builtin.file:
             path: "{{ writing_app_operation_lock_directory }}"
             state: absent
-          when: writing_app_verify_operation_lock.rc == 0
+          when: writing_app_verify_release_operation_lock | default(false) | bool

@@ -1,4 +1,4 @@
-import type { RequestObservation } from "@workspace/http-platform/request-logging"
+import type { RequestObservation } from "@workspace/http-platform/app"
 import type { SecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 
 export function createSecurityAuditRequestObserver(
@@ -48,7 +48,7 @@ export function createSecurityAuditRequestObserver(
       return
     }
     if (
-      actor?.role === "owner" &&
+      actor?.type === "admin" &&
       ["DELETE", "PATCH", "POST", "PUT"].includes(method)
     ) {
       logSecurityAudit({

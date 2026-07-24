@@ -36,7 +36,6 @@
     "@types/react-dom": "catalog:",
     "@vitest/browser-playwright": "4.1.10",
     "@workspace/typescript-config": "workspace:*",
-    "react-docgen-typescript": "^2.4.0",
     "storybook": "10.2.19",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",

@@ -27,6 +27,7 @@ let resourcesReserved = false
 let servers: readonly StartedE2eServer[] = []
 let runnerArguments: E2eRunnerArguments = {
   playwrightArguments: [],
+  runtime: "development",
   serverScope: "all",
 }
 let playwright: Bun.Subprocess<"ignore", "inherit", "inherit"> | undefined
@@ -52,7 +53,8 @@ try {
     createE2eServerDefinitions(
       databaseUrl,
       temporaryDirectory,
-      runnerArguments.serverScope
+      runnerArguments.serverScope,
+      runnerArguments.runtime
     ),
     {
       onServerStarted(server) {
@@ -174,7 +176,8 @@ async function releaseE2eResources(): Promise<void> {
 function createE2eServerDefinitions(
   e2eDatabaseUrl: string,
   e2eRunRoot: string,
-  serverScope: E2eServerScope
+  serverScope: E2eServerScope,
+  runtime: E2eRuntime
 ): readonly E2eServerDefinition[] {
   const environment = {
     ...process.env,
@@ -200,7 +203,8 @@ function createE2eServerDefinitions(
         ADMIN_ORIGIN: "http://127.0.0.1:3101",
         API_PORT: "4100",
         DATABASE_URL: e2eDatabaseUrl,
-        ENABLE_TEST_AUTH: "true",
+        GOOGLE_CLIENT_ID: "e2e-google-client.apps.googleusercontent.com",
+        GOOGLE_CLIENT_SECRET: "e2e-google-client-secret",
         LEARNER_AUTH_SECRET: "e2e-auth-secret-must-have-32-characters",
         NODE_ENV: "test",
         WEB_ORIGIN: "http://localhost:3100",
@@ -209,20 +213,41 @@ function createE2eServerDefinitions(
       readinessUrl: "http://127.0.0.1:4100/api/health",
     },
     {
-      command: [
-        process.execPath,
-        path.join(webDirectory, "node_modules", "next", "dist", "bin", "next"),
-        "dev",
-        "--hostname",
-        "localhost",
-        "--port",
-        "3100",
-      ],
-      cwd: webDirectory,
+      command:
+        runtime === "standalone"
+          ? [
+              process.execPath,
+              path.join(repositoryRoot, "scripts", "run-next-standalone.mjs"),
+              "web",
+            ]
+          : [
+              process.execPath,
+              path.join(
+                webDirectory,
+                "node_modules",
+                "next",
+                "dist",
+                "bin",
+                "next"
+              ),
+              "dev",
+              "--hostname",
+              "localhost",
+              "--port",
+              "3100",
+            ],
+      cwd: runtime === "standalone" ? repositoryRoot : webDirectory,
       env: {
         ...environment,
-        ENABLE_TEST_AUTH: "true",
         API_BASE_URL: "http://127.0.0.1:4100",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          runtime === "standalone"
+            ? undefined
+            : "http://127.0.0.1:4199/content-assets",
+        HOSTNAME: "localhost",
+        NODE_ENV: runtime === "standalone" ? "production" : undefined,
+        PORT: "3100",
+        WEB_ORIGIN: "http://localhost:3100",
       },
       name: "learner web",
       readinessUrl: "http://localhost:3100/login",
@@ -234,28 +259,42 @@ function createE2eServerDefinitions(
   return [
     ...learnerServers,
     {
-      command: [
-        process.execPath,
-        path.join(
-          adminDirectory,
-          "node_modules",
-          "next",
-          "dist",
-          "bin",
-          "next"
-        ),
-        "dev",
-        "--hostname",
-        "127.0.0.1",
-        "--port",
-        "3101",
-      ],
-      cwd: adminDirectory,
+      command:
+        runtime === "standalone"
+          ? [
+              process.execPath,
+              path.join(repositoryRoot, "scripts", "run-next-standalone.mjs"),
+              "admin",
+            ]
+          : [
+              process.execPath,
+              path.join(
+                adminDirectory,
+                "node_modules",
+                "next",
+                "dist",
+                "bin",
+                "next"
+              ),
+              "dev",
+              "--hostname",
+              "127.0.0.1",
+              "--port",
+              "3101",
+            ],
+      cwd: runtime === "standalone" ? repositoryRoot : adminDirectory,
       env: {
         ...environment,
         API_BASE_URL: "http://127.0.0.1:4100",
         ADMIN_ORIGIN: "http://127.0.0.1:3101",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          runtime === "standalone"
+            ? undefined
+            : "http://127.0.0.1:4199/content-assets",
+        HOSTNAME: "127.0.0.1",
         NEXT_PUBLIC_LEARNER_WEB_ORIGIN: "http://localhost:3100",
+        NODE_ENV: runtime === "standalone" ? "production" : undefined,
+        PORT: "3101",
       },
       name: "admin web",
       readinessUrl: "http://127.0.0.1:3101/login",
@@ -264,9 +303,11 @@ function createE2eServerDefinitions(
 }
 
 type E2eServerScope = "all" | "learner"
+type E2eRuntime = "development" | "standalone"
 
 interface E2eRunnerArguments {
   readonly playwrightArguments: readonly string[]
+  readonly runtime: E2eRuntime
   readonly serverScope: E2eServerScope
 }
 
@@ -274,10 +315,28 @@ function readRunnerArguments(
   argumentsToParse: readonly string[]
 ): E2eRunnerArguments {
   const playwrightArguments: string[] = []
+  let runtime: E2eRuntime = "development"
   let serverScope: E2eServerScope = "all"
 
   for (let index = 0; index < argumentsToParse.length; index += 1) {
     const argument = argumentsToParse[index]
+
+    if (argument === "--runtime") {
+      const requestedRuntime = argumentsToParse[index + 1]
+
+      if (
+        requestedRuntime !== "development" &&
+        requestedRuntime !== "standalone"
+      ) {
+        throw new Error(
+          "--runtime 값은 development 또는 standalone이어야 합니다."
+        )
+      }
+
+      runtime = requestedRuntime
+      index += 1
+      continue
+    }
 
     if (argument !== "--server-scope") {
       playwrightArguments.push(argument)
@@ -294,7 +353,7 @@ function readRunnerArguments(
     index += 1
   }
 
-  return { playwrightArguments, serverScope }
+  return { playwrightArguments, runtime, serverScope }
 }
 
 async function waitForReleasedResources(): Promise<void> {

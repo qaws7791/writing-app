@@ -4,6 +4,7 @@ import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
+import { lessonStepTypeValues } from "@workspace/contracts/content/steps"
 
 import { runApplicationMigrations } from "@/db/migrate"
 import { seedApplicationDatabase } from "@/db/seed"
@@ -122,6 +123,14 @@ describe("application seed composition", () => {
           )
           .get()?.count
       ).toBe(1)
+      expect(
+        database.sqlite
+          .query<{ readonly type: string }, []>(
+            "SELECT DISTINCT type FROM lesson_step_versions ORDER BY type"
+          )
+          .all()
+          .map((row) => row.type)
+      ).toEqual([...lessonStepTypeValues].sort())
     } finally {
       database.close()
     }
@@ -173,7 +182,7 @@ describe("application seed composition", () => {
       `)
 
       await expect(seedApplicationDatabase(database)).rejects.toThrow(
-        "현재 schema era가 선언되지 않은 database"
+        "migration 이력이 없는 비어 있지 않은 database"
       )
       expect(
         database.sqlite

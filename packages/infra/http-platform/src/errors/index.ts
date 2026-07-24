@@ -1,4 +1,5 @@
 export { AppError } from "#http-platform/errors/app-error"
+export { createApiErrorResponseMiddleware } from "#http-platform/errors/api-error-response.middleware"
 export { assertExhaustiveHttpResult } from "#http-platform/errors/assert-exhaustive-http-result"
 export { ErrorResponseSchema } from "#http-platform/errors/error-response"
 export { createErrorHandler } from "#http-platform/errors/error-handler"

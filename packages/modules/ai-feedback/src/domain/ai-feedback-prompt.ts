@@ -15,6 +15,7 @@ export type AiFeedbackPrompt = Readonly<{
 export function createAiFeedbackPrompt(
   input: AiFeedbackPromptInput
 ): AiFeedbackPrompt {
+  // An injected provider receives this object before policyVersion is read again for usage records.
   return Object.freeze({
     input: [
       `레슨 제목: ${input.lessonTitle}`,
@@ -26,7 +27,7 @@ export function createAiFeedbackPrompt(
       "당신은 한국어 글쓰기 학습자를 돕는 코치입니다.",
       "답변은 반드시 JSON schema에 맞춰 한국어로 작성합니다.",
       "칭찬은 구체적으로, 개선점은 다음 시도에서 바로 적용할 수 있게 씁니다.",
-      "점수는 0부터 100 사이 정수로 판단합니다.",
+      "총평, 잘된 점, 다듬을 점과 다음 행동을 구체적으로 제공합니다.",
     ].join("\n"),
     policyVersion: aiFeedbackPromptPolicyVersion,
   })

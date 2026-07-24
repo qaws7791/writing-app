@@ -4,6 +4,7 @@ import {
   currentSchemaBaseline,
   inspectApplicationMigrationHistory,
 } from "@/db/migrate"
+import { requiredApplicationTableNames } from "@/db/required-application-tables"
 
 type DatabaseForeignKeyViolation = Readonly<{
   foreignKeyIndex: number
@@ -23,7 +24,8 @@ type ApplicationDatabaseDiagnosticIssue = Readonly<{
     | "foreign-key-check-failed"
     | "integrity-check-failed"
     | "migration-history-invalid"
-    | "schema-era-missing"
+    | "schema-table-mismatch"
+    | "unmanaged-database"
   message: string
 }>
 
@@ -100,59 +102,85 @@ export function inspectApplicationDatabase(
   const applicationTables = readApplicationDatabaseBackupTables(sqlite).filter(
     (tableName) => tableName !== "api_schema_migrations"
   )
-  if (applicationTables.length === 0) {
-    return Object.freeze({
+  if (
+    applicationTables.length === 0 &&
+    migrationHistory.status === "incomplete"
+  ) {
+    return {
       checks,
-      issues: Object.freeze([]),
+      issues: [],
       kind: "application-database-diagnostic",
       schema: "empty",
       status: "migration-required",
-    })
+    }
   }
 
   if (migrationHistory.status === "complete") {
-    return Object.freeze({
+    const actualTables = new Set(applicationTables)
+    const requiredTables = new Set<string>(requiredApplicationTableNames)
+    const missingTables = requiredApplicationTableNames.filter(
+      (tableName) => !actualTables.has(tableName)
+    )
+    const unexpectedTables = applicationTables.filter(
+      (tableName) => !requiredTables.has(tableName)
+    )
+    if (missingTables.length > 0 || unexpectedTables.length > 0) {
+      return blockedDiagnostic(
+        checks,
+        "schema-table-mismatch",
+        [
+          missingTables.length === 0
+            ? null
+            : `required tables missing: ${missingTables.join(", ")}`,
+          unexpectedTables.length === 0
+            ? null
+            : `unexpected tables present: ${unexpectedTables.join(", ")}`,
+        ]
+          .filter((message): message is string => message !== null)
+          .join("; ")
+      )
+    }
+
+    return {
       checks,
-      issues: Object.freeze([]),
+      issues: [],
       kind: "application-database-diagnostic",
       schema: "current",
       status: "ok",
-    })
+    }
   }
 
   if (migrationHistory.pendingMigrationIds.includes(currentSchemaBaseline.id)) {
     return blockedDiagnostic(
       checks,
-      "schema-era-missing",
-      "현재 schema era가 선언되지 않았습니다."
+      "unmanaged-database",
+      "migration 이력이 없는 비어 있지 않은 database입니다."
     )
   }
 
-  return Object.freeze({
+  return {
     checks,
-    issues: Object.freeze([]),
+    issues: [],
     kind: "application-database-diagnostic",
     pendingMigrationIds: migrationHistory.pendingMigrationIds,
     schema: "current",
     status: "migration-required",
-  })
+  }
 }
 
-export function readApplicationDatabaseBackupTables(
+function readApplicationDatabaseBackupTables(
   sqlite: Database
 ): readonly string[] {
-  return Object.freeze(
-    sqlite
-      .query<{ readonly name: string }, []>(`
-        SELECT name
-        FROM sqlite_master
-        WHERE type = 'table'
-          AND name NOT LIKE 'sqlite_%'
-        ORDER BY name
-      `)
-      .all()
-      .map(({ name }) => name)
-  )
+  return sqlite
+    .query<{ readonly name: string }, []>(`
+      SELECT name
+      FROM sqlite_master
+      WHERE type = 'table'
+        AND name NOT LIKE 'sqlite_%'
+      ORDER BY name
+    `)
+    .all()
+    .map(({ name }) => name)
 }
 
 function readDatabaseChecks(sqlite: Database): ApplicationDatabaseChecks {
@@ -173,14 +201,12 @@ function readDatabaseChecks(sqlite: Database): ApplicationDatabaseChecks {
       []
     >("PRAGMA foreign_key_check")
     .all()
-    .map((violation) =>
-      Object.freeze({
-        foreignKeyIndex: violation.fkid,
-        parentTable: violation.parent,
-        rowId: violation.rowid,
-        table: violation.table,
-      })
-    )
+    .map((violation) => ({
+      foreignKeyIndex: violation.fkid,
+      parentTable: violation.parent,
+      rowId: violation.rowid,
+      table: violation.table,
+    }))
 
   return createChecks(integrity, foreignKeyViolations)
 }
@@ -189,10 +215,10 @@ function createChecks(
   integrity: string,
   foreignKeyViolations: readonly DatabaseForeignKeyViolation[] = []
 ): ApplicationDatabaseChecks {
-  return Object.freeze({
-    foreignKeyViolations: Object.freeze([...foreignKeyViolations]),
+  return {
+    foreignKeyViolations: [...foreignKeyViolations],
     integrity,
-  })
+  }
 }
 
 function blockedDiagnostic(
@@ -200,14 +226,14 @@ function blockedDiagnostic(
   code: ApplicationDatabaseDiagnosticIssue["code"],
   reason: string
 ): ApplicationDatabaseDiagnostic {
-  return Object.freeze({
+  return {
     checks,
-    issues: Object.freeze([Object.freeze({ code, message: reason })]),
+    issues: [{ code, message: reason }],
     kind: "application-database-diagnostic",
     reason,
     schema: "unsupported",
     status: "blocked",
-  })
+  }
 }
 
 function readErrorMessage(error: unknown): string {

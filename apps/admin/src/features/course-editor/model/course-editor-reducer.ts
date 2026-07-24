@@ -1,6 +1,15 @@
-import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
+import type {
+  AdminContentAsset,
+  AdminCourseDetail,
+} from "@/features/course-editor/model/admin-course-editor"
 import type { EditorStep } from "@/features/course-editor/model/editor-step"
-import type { LessonId, LessonStepId, UnitId } from "@workspace/types/ids"
+
+type EditorUnit = AdminCourseDetail["units"][number]
+type EditorLesson = EditorUnit["lessons"][number]
+type ContentAssetId = AdminCourseDetail["assets"][number]["id"]
+type UnitId = EditorUnit["id"]
+type LessonId = EditorLesson["id"]
+type LessonStepId = EditorLesson["steps"][number]["id"]
 
 type CourseEditorStatus =
   | "clean"
@@ -20,6 +29,14 @@ export type CourseEditorState = {
 }
 
 export type CourseEditorAction =
+  | {
+      readonly asset: AdminContentAsset
+      readonly type: "asset-registered"
+    }
+  | {
+      readonly assetId: ContentAssetId | null
+      readonly type: "cover-asset-changed"
+    }
   | {
       readonly field: "category" | "description" | "title"
       readonly type: "course-changed"
@@ -103,6 +120,24 @@ export function courseEditorReducer(
   action: CourseEditorAction
 ): CourseEditorState {
   switch (action.type) {
+    case "asset-registered":
+      return {
+        ...state,
+        draft: {
+          ...state.draft,
+          assets: [
+            ...state.draft.assets.filter(
+              (asset) => asset.id !== action.asset.id
+            ),
+            action.asset,
+          ],
+        },
+      }
+    case "cover-asset-changed":
+      return changed(state, {
+        ...state.draft,
+        coverAssetId: action.assetId,
+      })
     case "course-changed":
       return changed(state, { ...state.draft, [action.field]: action.value })
     case "unit-added":

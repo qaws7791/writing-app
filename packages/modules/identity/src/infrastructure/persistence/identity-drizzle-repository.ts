@@ -1,35 +1,24 @@
 import { and, asc, eq } from "drizzle-orm"
 import { err, ok } from "@workspace/kernel/result"
-import {
-  adminIdSchema,
-  userIdSchema,
-} from "@workspace/contracts/identity/admin-ids"
+import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
-import { parseAdminRole, type AdminIdentity } from "#identity/domain/admin-role"
 import {
   createLearnerProfile,
   deletedLearnerDisplayName,
 } from "#identity/domain/learner-profile"
 import { userStatuses } from "#identity/domain/user-status"
 import type {
-  AdminIdentitySnapshot,
   IdentityRepository,
   LearnerProfileRecord,
   LearnerProfileSnapshot,
 } from "#identity/application/identity-ports"
-import {
-  adminIdentityProfiles,
-  learnerProfiles,
-} from "#identity/infrastructure/persistence/schema"
+import { learnerProfiles } from "#identity/infrastructure/persistence/schema"
 
 export function createDrizzleIdentityRepository(
   database: WritingAppDatabase
 ): IdentityRepository {
   return {
-    async findAdminIdentity(adminId) {
-      return readAdminIdentity(database, adminId)
-    },
     async findLearnerProfile(userId) {
       return readLearnerProfile(database, userId)
     },
@@ -54,24 +43,6 @@ export function createDrizzleIdentityRepository(
         throw new Error("저장된 학습자 identity profile을 찾을 수 없습니다.")
       }
       return toLearnerProfileSnapshot(record, input.profile.displayName)
-    },
-    async saveAdminIdentity(input) {
-      const nextVersion = input.expectedVersion + 1
-      const updated = database
-        .update(adminIdentityProfiles)
-        .set({ role: input.identity.role, version: nextVersion })
-        .where(
-          and(
-            eq(adminIdentityProfiles.adminId, input.identity.id),
-            eq(adminIdentityProfiles.version, input.expectedVersion)
-          )
-        )
-        .returning({ version: adminIdentityProfiles.version })
-        .get()
-
-      return updated === undefined
-        ? err({ kind: "identity-conflict" })
-        : ok({ identity: input.identity, version: nextVersion })
     },
     async saveLearnerProfile(input) {
       const nextVersion = (input.expectedVersion ?? -1) + 1
@@ -117,31 +88,6 @@ export function createDrizzleIdentityRepository(
   }
 }
 
-function readAdminIdentity(
-  database: WritingAppDatabase,
-  adminId: Parameters<IdentityRepository["findAdminIdentity"]>[0]
-): AdminIdentitySnapshot | null {
-  const row = database
-    .select({
-      adminId: adminIdentityProfiles.adminId,
-      role: adminIdentityProfiles.role,
-      version: adminIdentityProfiles.version,
-    })
-    .from(adminIdentityProfiles)
-    .where(eq(adminIdentityProfiles.adminId, adminId))
-    .get()
-  if (row === undefined) return null
-
-  const role = parseAdminRole(row.role)
-  if (role === null) throw new Error("저장된 관리자 role이 올바르지 않습니다.")
-
-  const identity: AdminIdentity = Object.freeze({
-    id: adminIdSchema.parse(row.adminId),
-    role,
-  })
-  return Object.freeze({ identity, version: row.version })
-}
-
 function readLearnerProfile(
   database: WritingAppDatabase,
   userId: Parameters<IdentityRepository["findLearnerProfile"]>[0]
@@ -173,13 +119,13 @@ function toLearnerProfileRecord(row: {
   readonly userId: string
   readonly version: number
 }): LearnerProfileRecord {
-  return Object.freeze({
+  return {
     deletedAt: row.deletedAt === null ? null : new Date(row.deletedAt),
     displayName: row.displayName,
     status: row.status,
     userId: userIdSchema.parse(row.userId),
     version: row.version,
-  })
+  }
 }
 
 function toLearnerProfileSnapshot(
@@ -199,8 +145,8 @@ function toLearnerProfileSnapshot(
     throw new Error("저장된 학습자 identity profile이 올바르지 않습니다.")
   }
 
-  return Object.freeze({
+  return {
     profile: profile.value,
     version: record.version,
-  })
+  }
 }

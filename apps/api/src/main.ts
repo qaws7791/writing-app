@@ -54,7 +54,7 @@ export async function startApiServer(
       logger.error({ error }, "server.shutdown.unhandled")
     )
 
-    return Object.freeze({ app, container, lifecycle, server })
+    return { app, container, lifecycle, server }
   } catch (cause) {
     try {
       await server?.stop(true)

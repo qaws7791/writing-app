@@ -81,10 +81,11 @@ PR은 가능한 작은 단위로 유지한다. 아키텍처, DB, 인증, UI를 �
 
 ## 머지 정책
 
-- main으로 병합하기 전 형식, Oxlint와 최소 import graph 규칙, typecheck, 제품 테스트, production build, 학습자 핵심 흐름 E2E, 관리자 권한 E2E, Compose 기동·health smoke를 통과해야 한다.
+- main으로 병합하기 전 형식, Oxlint와 import graph 규칙, typecheck, 전체 unit·integration, production build와 route bundle, 단일 Chromium의 학습자·관리자 핵심 smoke를 PR Linux gate에서 통과해야 한다.
+- main push는 동일 검사를 다시 중복하지 않고 Chromium·WebKit release E2E, Lighthouse와 source image Compose smoke를 추가로 차단하며, 모두 성공한 동일 revision만 image release 대상으로 삼는다. Staging k6는 해당 revision의 immutable digest를 staging에 배포·검증한 뒤 image release workflow에서 한 번만 실행한다.
 - PR 필수 검증은 production 배포 환경과 같은 Linux에서 한 번 실행한다. Windows와 macOS 호환성은 매 PR 전체 matrix가 아니라 필요에 따른 설치 smoke나 주기 실행으로 다룬다.
 - install은 manifest와 lockfile을 직접 읽는 package manager에 맡기고 frozen lockfile을 사용한다.
-- 품질 workflow는 제품 동작을 검증하지 않는 coverage 집계, workspace 실행 보고서와 정책 검사기의 자기 테스트를 실행하지 않는다.
+- 품질 workflow는 제품 동작을 검증하지 않는 coverage 집계와 workspace 실행 보고서를 만들지 않는다. Repository 계약·정책 검사기의 회귀 테스트는 automation이 실제 gate와 어긋나지 않도록 unit·integration suite와 함께 한 번 실행한다.
 - 실패한 검증이 있다면 PR에 이유와 영향 범위를 남긴다.
 - unrelated change를 같은 PR에 포함하지 않는다.
 - 기존 사용자 변경을 되돌리지 않는다.

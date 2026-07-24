@@ -55,11 +55,11 @@ namespace에는 역할 토큰과 기존 호환 API를 함께 연결한다. 따�
 - `text-primary`, `text-destructive`처럼 legacy fill 색상을 텍스트로 쓰는 패턴은 새 코드에 추가하지 않는다.
 - 선택 상태는 `action-selected-*`, 주요 행동은 `action-primary-*`로 분리한다.
 - 신규 색상은 임의 hex보다 먼저 semantic token 조합으로 해결한다.
-- app JSX에서 raw hex를 새로 추가하지 않는다. 이미지, SVG asset, 계산된 chart series만 예외다.
+- UI source의 raw hex는 reference 또는 semantic token 정의에만 둔다. chart, 상태, overlay도 역할 토큰을 소비한다.
 
 ## 타이포그래피
 
-- 공통 UI, 학습자 앱, 어드민 앱, Storybook은 `pretendard@1.3.9` 패키지의 동적 서브셋 WOFF2를 self-host하고 `Pretendard Variable`을 우선 사용한다. 외부 폰트 CDN 요청은 허용하지 않으며 `font-display: swap`으로 시스템 폰트 fallback 뒤 교체한다. Pretendard는 SIL Open Font License 1.1을 따른다.
+- 공통 UI, 학습자 앱, 어드민 앱, Storybook은 운영체제의 한국어 시스템 글꼴 스택을 공유한다. 웹폰트 다운로드와 교체로 인한 LCP 지연을 피하고, 플랫폼별 글꼴 차이는 허용한다. 외부 폰트 CDN 요청은 허용하지 않는다.
 - 모든 문서와 사용자 노출 텍스트는 한국어를 기본으로 한다.
 - letter spacing은 기본 0을 유지한다. 라벨성 uppercase 또는 작은 eyebrow에 한해 현재 구현처럼 `0.06em`에서 `0.08em`을 허용한다.
 
@@ -114,5 +114,5 @@ namespace에는 역할 토큰과 기존 호환 API를 함께 연결한다. 따�
 
 - Button의 기본 누름 반응은 `buttonVariants`가 소유한다. active 상태에서 `scale(0.96)`으로 눌림을 표현하되 disabled, 열려 있는 disclosure trigger에는 적용하지 않는다. 호출부는 `.btn-squish`를 직접 사용하지 않는다.
 - 콘텐츠 진입은 `.an-fi`의 `0.4s cubic-bezier(0.16, 1, 0.3, 1)` fade-up을 사용한다.
-- 랜딩 장식 요소는 marquee와 pebble float을 사용할 수 있으나, 레슨 본문과 CTA 안정성을 해치면 제거한다.
+- 공개 랜딩은 Button press와 짧은 색상·opacity 전환만 사용한다. 반복 장식, scroll·pointer 기반 transform은 사용하지 않는다.
 - 공용 motion token은 `prefers-reduced-motion`에서 duration을 1ms로 낮추고 press scale을 1로 둔다.

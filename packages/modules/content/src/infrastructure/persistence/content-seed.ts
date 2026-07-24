@@ -249,9 +249,7 @@ export function normalizeSeedStepContent(step: ContentSeedStep): string {
   return JSON.stringify(step)
 }
 
-export async function readContentSeedData(): Promise<
-  readonly ContentSeedCourse[]
-> {
+async function readContentSeedData(): Promise<readonly ContentSeedCourse[]> {
   const seedUrl = new URL("./content-seed-data.json", import.meta.url)
 
   return (await Bun.file(seedUrl).json()) as readonly ContentSeedCourse[]

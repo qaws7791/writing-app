@@ -17,7 +17,7 @@ export function createCurriculumDraft(
   input: CurriculumDraft
 ): Result<CurriculumDraft, ContentError> {
   const validation = validateCurriculumDraft(input, false)
-  return validation.isErr() ? err(validation.error) : ok(freezeDraft(input))
+  return validation.isErr() ? err(validation.error) : ok(cloneDraft(input))
 }
 
 export function decidePublishCurriculum(input: {
@@ -27,9 +27,10 @@ export function decidePublishCurriculum(input: {
   const validation = validateCurriculumDraft(input.draft, true)
   if (validation.isErr()) return err(validation.error)
 
-  const published = freezePublishedRevision({
+  const published = clonePublishedRevision({
     category: input.draft.category,
     courseId: input.draft.courseId,
+    coverAssetId: input.draft.coverAssetId,
     curriculumVersionId: input.draft.curriculumVersionId,
     description: input.draft.description,
     publishedAt: input.now,
@@ -48,13 +49,11 @@ export function decideArchiveCourse(
     return err({ kind: "content-not-found" })
   }
 
-  return ok(
-    Object.freeze({
-      ...course,
-      createdAt: new Date(course.createdAt),
-      status: contentStatuses.archived,
-    })
-  )
+  return ok({
+    ...course,
+    createdAt: new Date(course.createdAt),
+    status: contentStatuses.archived,
+  })
 }
 
 export function assertCurriculumRevisionMutable(
@@ -269,42 +268,32 @@ function validationError(
   return err({ kind: "content-validation-failed", reason })
 }
 
-function freezeDraft(draft: CurriculumDraft): CurriculumDraft {
-  return Object.freeze({
+function cloneDraft(draft: CurriculumDraft): CurriculumDraft {
+  return {
     ...draft,
-    units: freezeUnits(draft.units),
-  })
+    units: cloneUnits(draft.units),
+  }
 }
 
-function freezePublishedRevision(
+function clonePublishedRevision(
   revision: PublishedCurriculumRevision
 ): PublishedCurriculumRevision {
-  return Object.freeze({
+  return {
     ...revision,
     publishedAt: new Date(revision.publishedAt),
-    units: freezeUnits(revision.units),
-  })
+    units: cloneUnits(revision.units),
+  }
 }
 
-function freezeUnits(
+function cloneUnits(
   units: readonly CurriculumUnit[]
 ): readonly CurriculumUnit[] {
-  return Object.freeze(
-    units.map((unit) =>
-      Object.freeze({
-        ...unit,
-        lessons: Object.freeze(
-          unit.lessons.map((lesson: CurriculumLesson) =>
-            Object.freeze({
-              ...lesson,
-              steps: Object.freeze(
-                lesson.steps.map((step) => Object.freeze({ ...step }))
-              ),
-              summary: Object.freeze([...lesson.summary]),
-            })
-          )
-        ),
-      })
-    )
-  )
+  return units.map((unit) => ({
+    ...unit,
+    lessons: unit.lessons.map((lesson: CurriculumLesson) => ({
+      ...lesson,
+      steps: lesson.steps.map((step) => ({ ...step })),
+      summary: [...lesson.summary],
+    })),
+  }))
 }

@@ -1,0 +1,12 @@
+[Unit]
+Description=Writing App {{ writing_app_environment }} daily maintenance schedule
+
+[Timer]
+OnCalendar={{ writing_app_maintenance_on_calendar }}
+RandomizedDelaySec={{ writing_app_maintenance_randomized_delay_seconds }}
+AccuracySec=1m
+Persistent=true
+Unit=writing-app-{{ writing_app_environment }}-maintenance.service
+
+[Install]
+WantedBy=timers.target

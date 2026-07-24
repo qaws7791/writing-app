@@ -7,13 +7,9 @@ type MatchStepItemInput = {
   readonly text: string
 }
 
-export type MatchStepPairInput = {
-  readonly left: MatchStepItemInput
-  readonly right: MatchStepItemInput
-}
-
 export type MatchStepPresentationInput = {
-  readonly pairs: readonly MatchStepPairInput[]
+  readonly leftItems: readonly MatchStepItemInput[]
+  readonly rightItems: readonly MatchStepItemInput[]
 }
 
 export type MatchChoice = {
@@ -33,9 +29,14 @@ export type MatchAnswerPair = {
 export type MatchSelectionMap = Readonly<Record<MatchChoiceId, MatchChoiceId>>
 
 export type MatchStepPresentation = {
-  readonly correctRightChoiceIdByLeftChoiceId: MatchSelectionMap
   readonly leftChoices: readonly MatchChoice[]
   readonly rightChoices: readonly MatchChoice[]
+}
+
+export type MatchEvaluationItemInput = {
+  readonly leftItemId: string
+  readonly rightItemId: string
+  readonly verdict: "correct" | "incorrect" | "missed"
 }
 
 export type PendingMatchChoice =
@@ -66,27 +67,45 @@ export type MatchAnswerConnection = {
 export function createMatchStepPresentation(
   step: MatchStepPresentationInput
 ): MatchStepPresentation {
-  const leftChoices = step.pairs.map((pair, index) =>
-    createMatchChoice("left", pair.left, index)
+  const leftChoices = step.leftItems.map((item, index) =>
+    createMatchChoice("left", item, index)
   )
-  const rightChoices = step.pairs.map((pair, index) =>
-    createMatchChoice("right", pair.right, index)
+  const rightChoices = step.rightItems.map((item, index) =>
+    createMatchChoice("right", item, index)
   )
 
   return {
-    correctRightChoiceIdByLeftChoiceId: createCorrectRightChoiceMap(
-      leftChoices,
-      rightChoices
-    ),
     leftChoices,
     rightChoices: shuffleRightChoices(rightChoices),
   }
 }
 
-export function createMatchInteractionState(): MatchInteractionState {
+export function createMatchInteractionState(
+  presentation?: MatchStepPresentation,
+  initialPairs: readonly Readonly<{
+    leftItemId: string
+    rightItemId: string
+  }>[] = []
+): MatchInteractionState {
+  const selectionMap: Record<string, MatchChoiceId> = {}
+
+  if (presentation !== undefined) {
+    for (const pair of initialPairs) {
+      const leftChoice = presentation.leftChoices.find(
+        (choice) => choice.itemId === pair.leftItemId
+      )
+      const rightChoice = presentation.rightChoices.find(
+        (choice) => choice.itemId === pair.rightItemId
+      )
+      if (leftChoice !== undefined && rightChoice !== undefined) {
+        selectionMap[leftChoice.id] = rightChoice.id
+      }
+    }
+  }
+
   return {
     pendingChoice: null,
-    selectionMap: {},
+    selectionMap: selectionMap as MatchSelectionMap,
   }
 }
 
@@ -208,7 +227,7 @@ export function toMatchAnswerPairs(
 export function toMatchAnswerConnections(
   presentation: MatchStepPresentation,
   selectionMap: MatchSelectionMap,
-  checked: boolean
+  evaluationItems?: readonly MatchEvaluationItemInput[]
 ): readonly MatchAnswerConnection[] {
   return presentation.leftChoices.flatMap((leftChoice) => {
     const rightChoiceId = selectionMap[leftChoice.id]
@@ -217,29 +236,29 @@ export function toMatchAnswerConnections(
       return []
     }
 
+    const rightChoice = findChoiceById(presentation.rightChoices, rightChoiceId)
+    const evaluatedItem =
+      rightChoice === undefined
+        ? undefined
+        : evaluationItems?.find(
+            (item) =>
+              item.leftItemId === leftChoice.itemId &&
+              item.rightItemId === rightChoice.itemId
+          )
+
     return [
       {
         leftChoiceId: leftChoice.id,
         rightChoiceId,
-        tone: checked
-          ? isCorrectMatchChoice(presentation, leftChoice.id, rightChoiceId)
-            ? "correct"
-            : "wrong"
-          : "default",
+        tone:
+          evaluationItems === undefined
+            ? "default"
+            : evaluatedItem?.verdict === "correct"
+              ? "correct"
+              : "wrong",
       },
     ]
   })
-}
-
-export function isCorrectMatchChoice(
-  presentation: MatchStepPresentation,
-  leftChoiceId: MatchChoiceId,
-  rightChoiceId: MatchChoiceId
-): boolean {
-  return (
-    presentation.correctRightChoiceIdByLeftChoiceId[leftChoiceId] ===
-    rightChoiceId
-  )
 }
 
 export function findMatchChoice(
@@ -267,33 +286,10 @@ function createMatchChoice(
   }
 }
 
-function createCorrectRightChoiceMap(
-  leftChoices: readonly MatchChoice[],
-  rightChoices: readonly MatchChoice[]
-): MatchSelectionMap {
-  const correctMap: Record<string, MatchChoiceId> = {}
-
-  for (const leftChoice of leftChoices) {
-    const rightChoice = rightChoices.find(
-      (choice) => choice.pairIndex === leftChoice.pairIndex
-    )
-
-    if (rightChoice === undefined) {
-      throw new Error(
-        `매칭 pair가 오른쪽 선택지를 찾지 못했습니다: ${leftChoice.id}`
-      )
-    }
-
-    correctMap[leftChoice.id] = rightChoice.id
-  }
-
-  return correctMap as MatchSelectionMap
-}
-
 function shuffleRightChoices(
   rightChoices: readonly MatchChoice[]
 ): readonly MatchChoice[] {
-  const seed = rightChoices.map((choice) => choice.text).join("")
+  const seed = rightChoices.map((choice) => choice.itemId).join("")
   const nextChoices = [...rightChoices]
   let hash = 0
 

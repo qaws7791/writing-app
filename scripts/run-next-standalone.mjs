@@ -12,10 +12,10 @@ import { dirname, join, relative, resolve } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
-const applicationDefinitions = Object.freeze({
-  admin: Object.freeze({ defaultPort: 3001 }),
-  web: Object.freeze({ defaultPort: 3000 }),
-})
+const applicationDefinitions = {
+  admin: { defaultPort: 3001 },
+  web: { defaultPort: 3000 },
+}
 
 export function resolveStandaloneApplication(
   applicationName,

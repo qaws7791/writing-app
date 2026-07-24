@@ -14,10 +14,12 @@ node_modules
 .env.production.local
 apps/api/.env.development
 apps/api/.generated/
+packages/infra/http-client/.generated/
 
 # Testing
 coverage
 /artifacts
+/.lighthouseci/
 /output/
 playwright-report
 test-results
@@ -55,6 +57,8 @@ docs/.obsidian/
 # secret credentials
 /credentials
 /infra/ansible/inventories/*/hosts.yaml
+/infra/ansible/inventories/*/.vault-password
+/infra/ansible/inventories/*/group_vars/all.yaml
 /infra/ansible/inventories/*/group_vars/vault.yaml
 
 /Kwep

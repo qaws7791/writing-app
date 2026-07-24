@@ -1,30 +1,23 @@
 import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import CourseDetailRoute, {
-  generateMetadata,
-} from "@/app/(learner)/app/courses/[id]/page"
-import { learnerCourseDetailSchema } from "@workspace/contracts/learning/learner-content"
-import { networkApiError } from "@/shared/http/api-error"
-import {
-  httpApiFailure as apiFailure,
-  httpApiOk as apiOk,
-} from "@workspace/http-client/api-result"
-import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
-import { createHttpNetworkError } from "@workspace/http-client/json-transport"
+import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
-const api: WritingAppApi = {
-  completeStep: vi.fn(),
-  getCourseDetail: vi.fn(),
-  getCourseCategories: vi.fn(),
-  getLesson: vi.fn(),
-  getProfile: vi.fn(),
-  getProgress: vi.fn(),
-  listCourses: vi.fn(),
-  requestAiFeedback: vi.fn(),
-  startLesson: vi.fn(),
-}
+const { generatedClient, requestOptions, serverOptionsMock } = vi.hoisted(
+  () => ({
+    generatedClient: {
+      getCourseDetail: vi.fn(),
+      getProgress: vi.fn(),
+    },
+    requestOptions: { cache: "no-store" } as const,
+    serverOptionsMock: vi.fn(),
+  })
+)
 
+vi.mock("@workspace/http-client/learner", () => generatedClient)
+vi.mock("@/server/http/learner-api-client", () => ({
+  getServerLearnerRequestOptions: serverOptionsMock,
+}))
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
     throw new Error("not-found")
@@ -37,21 +30,18 @@ vi.mock("next/navigation", () => ({
   }),
 }))
 
-vi.mock("@/server/auth/server-session-token", () => ({
-  getServerLearnerSessionToken: vi.fn(async () => "learner-token"),
-}))
-
-vi.mock("@/server/http/get-server-writing-app-api", () => ({
-  getServerWritingAppApi: vi.fn(() => api),
-}))
+import CourseDetailRoute, {
+  generateMetadata,
+} from "@/app/(learner)/app/courses/[id]/page"
+import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
 
 const version = { curriculumVersionId: "c1-v1", revision: 1 }
-const course = learnerCourseDetailSchema.parse({
+const course: LearnerCourseDetailDto = {
   category: "입문자를 위한 코스",
+  contentStatus: "active",
+  cover: null,
   description: "매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
-  lessonCount: 1,
-  contentStatus: "active",
   learning: {
     completedLessons: 0,
     nextLesson: {
@@ -66,18 +56,18 @@ const course = learnerCourseDetailSchema.parse({
     totalLessons: 1,
     version,
   },
+  lessonCount: 1,
   title: "글쓰기 첫걸음 30일",
-  visualKey: "basic-sentence-writing",
   units: [
     {
       id: "u1",
       lessons: [
         {
           category: "문장",
+          contentStatus: "active",
           description: "좋은 문장을 배웁니다.",
           estimatedMinutes: 5,
           id: "l1",
-          contentStatus: "active",
           learning: { status: "not_started", totalSteps: 1, version },
           sortOrder: 1,
           title: "좋은 문장이란 무엇인가",
@@ -88,15 +78,17 @@ const course = learnerCourseDetailSchema.parse({
     },
   ],
   version,
-})
+  visualKey: "basic-sentence-writing",
+}
 
 describe("코스 상세 route", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    serverOptionsMock.mockResolvedValue(requestOptions)
   })
 
   it("course 상세만 조회하고 progress 목록을 별도로 조회하지 않는다", async () => {
-    vi.mocked(api.getCourseDetail).mockResolvedValue(apiOk(course))
+    generatedClient.getCourseDetail.mockResolvedValue(course)
 
     render(
       await CourseDetailRoute({
@@ -104,15 +96,18 @@ describe("코스 상세 route", () => {
       })
     )
 
-    expect(api.getCourseDetail).toHaveBeenCalledWith("c1")
-    expect(api.getProgress).not.toHaveBeenCalled()
+    expect(generatedClient.getCourseDetail).toHaveBeenCalledWith(
+      "c1",
+      requestOptions
+    )
+    expect(generatedClient.getProgress).not.toHaveBeenCalled()
     expect(
       screen.getByRole("heading", { name: "글쓰기 첫걸음 30일" })
     ).toBeInTheDocument()
   })
 
   it("course 정보로 공유 metadata를 만들고 없는 course에는 canonical을 만들지 않는다", async () => {
-    vi.mocked(api.getCourseDetail).mockResolvedValueOnce(apiOk(course))
+    generatedClient.getCourseDetail.mockResolvedValueOnce(course)
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ id: "c1" }),
@@ -133,9 +128,7 @@ describe("코스 상세 route", () => {
       title: course.title,
     })
 
-    vi.mocked(api.getCourseDetail).mockResolvedValueOnce(
-      apiFailure(networkError())
-    )
+    generatedClient.getCourseDetail.mockRejectedValueOnce(networkError())
     const fallback = await generateMetadata({
       params: Promise.resolve({ id: "missing" }),
     })
@@ -145,7 +138,7 @@ describe("코스 상세 route", () => {
   })
 
   it("코스 조회 실패를 fallback 콘텐츠로 숨기지 않는다", async () => {
-    vi.mocked(api.getCourseDetail).mockResolvedValue(apiFailure(networkError()))
+    generatedClient.getCourseDetail.mockRejectedValue(networkError())
 
     render(
       await CourseDetailRoute({
@@ -162,11 +155,10 @@ describe("코스 상세 route", () => {
   })
 })
 
-function networkError() {
-  return networkApiError(
-    createHttpNetworkError(
-      new Request("https://api.example.test/test"),
-      new TypeError("test network failure")
-    )
-  )
+function networkError(): GeneratedApiClientError {
+  return new GeneratedApiClientError({
+    kind: "network",
+    method: "GET",
+    url: "/api/courses/c1",
+  })
 }

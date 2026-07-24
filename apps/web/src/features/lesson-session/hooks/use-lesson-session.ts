@@ -1,16 +1,23 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useSyncExternalStore,
+} from "react"
 
 import {
   getFirstLessonStep,
   getLessonStep,
-  isLastLessonStep,
   type LessonAiFeedbackOutcome,
   type LessonAiFeedbackRequest,
-  type LessonAnswerChange,
+  type LessonAiFeedbackSkipOutcome,
   type LessonStepAnswerPayload,
 } from "@/features/lesson-session/model/lesson-logic"
+import { useLessonDraftSync } from "@/features/lesson-session/hooks/use-lesson-draft-sync"
 import { createLessonSessionEffects } from "@/features/lesson-session/api/lesson-session-effect-adapter"
 import {
   createLessonSessionState,
@@ -18,35 +25,64 @@ import {
   type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
 import { isLessonStepSubmittable } from "@/features/lesson-session/model/lesson-step-policy"
+import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/learner-transition"
 import type {
-  LearnerLesson as Lesson,
-  LearnerLessonStep as LessonStep,
-} from "@workspace/contracts/learning/learner-content"
-import type { LessonSessionApi } from "@/features/lesson-session/api/lesson-session-api"
+  LearnerCompleteStepBodyDto,
+  LearnerLessonDto as Lesson,
+  LearnerLessonStepDto as LessonStep,
+  LearnerStepDraftAnswerDto,
+  LearnerStepDraftDto,
+} from "@/shared/http/learner-api-client"
 
 const LESSON_START_ERROR =
   "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
 const LESSON_STEP_ERROR =
   "학습 단계를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+const noopSubscribe = () => () => {}
+const clientMountedSnapshot = () => true
+const serverMountedSnapshot = () => false
 
-export function useLessonSession({
-  api,
-  lesson,
-}: {
-  readonly api: LessonSessionApi
-  readonly lesson: Lesson
-}) {
+export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    clientMountedSnapshot,
+    serverMountedSnapshot
+  )
   const initialState = resolveInitialSessionState(lesson)
   const effects = useMemo(
     () =>
-      createLessonSessionEffects(api, {
+      createLessonSessionEffects({
         expectedCurriculumVersionId: lesson.version.curriculumVersionId,
         lessonId: lesson.id,
       }),
-    [api, lesson.id, lesson.version.curriculumVersionId]
+    [lesson.id, lesson.version.curriculumVersionId]
   )
   const [sessionState, send] = useReducer(transitionLessonSession, initialState)
   const sessionStateRef = useRef(sessionState)
+  const applyServerDraft = useCallback(
+    (stepId: string, answer: LearnerStepDraftAnswerDto | null) => {
+      if (sessionStateRef.current.status !== "active") return
+      send({ payload: answer, stepId, type: "DRAFT_RECONCILED" })
+    },
+    [send]
+  )
+  const {
+    applyServerDrafts,
+    discardSubmittedDraft,
+    flushAll,
+    flushStepDraft,
+    reconcile,
+    renderRevisionByStepId,
+    retryLocalDraft,
+    stageDraft,
+    statusByStepId,
+    useServerDraft,
+  } = useLessonDraftSync({
+    expectedCurriculumVersionId: lesson.version.curriculumVersionId,
+    initialDrafts: lesson.drafts,
+    lessonId: lesson.id,
+    onServerDraftApplied: applyServerDraft,
+  })
   const aiFeedbackRequestRef = useRef<{
     readonly idempotencyKey: string
     readonly stepId: string
@@ -74,15 +110,25 @@ export function useLessonSession({
     isActive && currentStep !== null
       ? sessionState.answerPayloads[currentStep.id]
       : undefined
+  const currentDraftStatus =
+    currentStep === null
+      ? ({ kind: "idle" } as const)
+      : (statusByStepId[currentStep.id] ?? ({ kind: "idle" } as const))
   const checked = isActive ? sessionState.checked : false
   const hasPendingTransition =
     isActive && sessionState.pendingTransition !== null
   const isReady =
     currentStep !== null &&
+    currentDraftStatus.kind !== "conflict" &&
     (hasPendingTransition ||
       isLessonStepSubmittable(currentStep, currentAnswerPayload))
   const visibleStepNumber = currentStepIndex + 1
-  const progress = (visibleStepNumber / lesson.steps.length) * 100
+  const progress =
+    sessionState.status === "active"
+      ? sessionState.progressPercent
+      : sessionState.status === "complete"
+        ? 100
+        : 0
 
   const startLesson = useCallback(async (): Promise<void> => {
     if (sessionStateRef.current.status !== "not-started") return
@@ -109,20 +155,16 @@ export function useLessonSession({
       return
     }
 
+    applyServerDrafts(result.learning.drafts)
     send({
+      answerPayloads: toDraftAnswerPayloads(result.learning.drafts),
       currentStepIndex: result.learning.currentStepIndex,
+      progressPercent: result.learning.progressPercent,
       type: "START_SUCCEEDED",
     })
-  }, [effects, lesson, send])
+  }, [applyServerDrafts, effects, lesson, send])
 
   const saveAnswer = useCallback(
-    async ({ answer, stepId }: LessonAnswerChange): Promise<void> => {
-      send({ payload: answer, stepId, type: "ANSWER_PAYLOAD_CHANGED" })
-    },
-    [send]
-  )
-
-  const setAnswerPayload = useCallback(
     ({
       payload,
       stepId,
@@ -131,8 +173,9 @@ export function useLessonSession({
       readonly stepId: string
     }) => {
       send({ payload, stepId, type: "ANSWER_PAYLOAD_CHANGED" })
+      stageDraft(stepId, payload)
     },
-    [send]
+    [send, stageDraft]
   )
 
   const requestAiFeedback = useCallback(
@@ -148,13 +191,26 @@ export function useLessonSession({
       const result = await effects.requestAiFeedback({ idempotencyKey, stepId })
 
       if (result.status === "error") {
-        if (!result.retryable) aiFeedbackRequestRef.current = null
-        return { message: result.message, status: "error" }
+        if (!result.reuseIdempotencyKey) {
+          aiFeedbackRequestRef.current = null
+        }
+        return {
+          kind: result.kind,
+          message: result.message,
+          ...(result.retryAfterSeconds === undefined
+            ? {}
+            : { retryAfterSeconds: result.retryAfterSeconds }),
+          status: "error",
+        }
       }
 
       if (result.transition.status === "retry") {
         aiFeedbackRequestRef.current = null
-        return { message: LESSON_STEP_ERROR, status: "error" }
+        return {
+          kind: "fatal",
+          message: LESSON_STEP_ERROR,
+          status: "error",
+        }
       }
 
       aiFeedbackRequestRef.current = null
@@ -162,6 +218,48 @@ export function useLessonSession({
       return { feedback: result.feedback, status: "ok" }
     },
     [effects, send]
+  )
+
+  const skipAiFeedback = useCallback(
+    async ({
+      stepId,
+    }: LessonAiFeedbackRequest): Promise<LessonAiFeedbackSkipOutcome> => {
+      const state = sessionStateRef.current
+      const step =
+        state.status === "active"
+          ? getLessonStep(lesson, state.currentStepIndex)
+          : null
+      if (
+        state.status !== "active" ||
+        state.activity !== "idle" ||
+        state.pendingTransition !== null ||
+        step?.type !== "AI_FEEDBACK" ||
+        step.id !== stepId
+      ) {
+        return { message: LESSON_STEP_ERROR, status: "error" }
+      }
+
+      send({ type: "SUBMIT_REQUESTED" })
+      const result = await effects.completeStep({
+        request: { kind: "skip-ai-feedback" },
+        stepId,
+      })
+      if (!isMountedRef.current) {
+        return { message: LESSON_STEP_ERROR, status: "error" }
+      }
+      if (result.status === "error" || result.transition.status === "retry") {
+        const message =
+          result.status === "error"
+            ? result.message || LESSON_STEP_ERROR
+            : LESSON_STEP_ERROR
+        send({ message, type: "SUBMIT_FAILED" })
+        return { message, status: "error" }
+      }
+
+      send({ transition: result.transition, type: "STEP_ACCEPTED" })
+      return { status: "ok" }
+    },
+    [effects, lesson, send]
   )
 
   async function submitCurrentStep(): Promise<void> {
@@ -188,6 +286,7 @@ export function useLessonSession({
     )
     if (request === null) return
 
+    await flushStepDraft(step.id)
     send({ type: "SUBMIT_REQUESTED" })
     const result = await effects.completeStep({ request, stepId: step.id })
     if (!isMountedRef.current) return
@@ -205,6 +304,7 @@ export function useLessonSession({
       return
     }
 
+    discardSubmittedDraft(step.id)
     send({ transition: result.transition, type: "STEP_ACCEPTED" })
     if (result.transition.evaluation === null) {
       send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
@@ -213,36 +313,47 @@ export function useLessonSession({
 
   return {
     answerError: null,
-    canStart: getFirstLessonStep(lesson) !== null,
+    aiFeedbackDraftText: getAiFeedbackDraftText(
+      currentStep,
+      sessionState.status === "active" ? sessionState.answerPayloads : {}
+    ),
+    canStart: mounted && getFirstLessonStep(lesson) !== null,
     checked,
     completeError: isActive ? sessionState.submitError : null,
     completion:
       sessionState.status === "complete" ? sessionState.completion : null,
     currentAnswerPayload,
+    currentDraftStatus,
     currentStep,
     currentStepIndex,
+    flushCurrentDraft: () =>
+      currentStep === null ? Promise.resolve() : flushStepDraft(currentStep.id),
+    flushDrafts: flushAll,
     hasStarted: isActive || sessionState.status === "complete",
     isComplete: sessionState.status === "complete",
-    isCompleting:
-      isActive &&
-      sessionState.activity === "submitting" &&
-      isLastLessonStep(lesson, currentStepIndex),
-    isLastStep: isLastLessonStep(lesson, currentStepIndex),
+    isSubmitting: isActive && sessionState.activity === "submitting",
     isQuizStep: currentStep !== null && isEvaluatedChoiceStep(currentStep),
     isReady,
-    isSavingProgress:
-      isActive &&
-      sessionState.activity === "submitting" &&
-      !isLastLessonStep(lesson, currentStepIndex),
     isSavingStart: sessionState.status === "starting",
     progress,
+    renderRevision:
+      currentStep === null ? 0 : (renderRevisionByStepId[currentStep.id] ?? 0),
     requestAiFeedback,
+    retryDraftSync: reconcile,
+    retryLocalDraft:
+      currentStep === null
+        ? () => undefined
+        : () => retryLocalDraft(currentStep.id),
     saveAnswer,
-    setAnswerPayload,
+    skipAiFeedback,
     startError:
       sessionState.status === "not-started" ? sessionState.startError : null,
     startLesson,
     submitCurrentStep,
+    useServerDraft:
+      currentStep === null
+        ? () => undefined
+        : () => useServerDraft(currentStep.id),
     visibleStepNumber,
   }
 }
@@ -252,7 +363,13 @@ function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
     case "not_started":
       return createLessonSessionState(0, false)
     case "in_progress":
-      return createLessonSessionState(lesson.learning.currentStepIndex, true)
+      return createLessonSessionState(
+        lesson.learning.currentStepIndex,
+        true,
+        false,
+        toDraftAnswerPayloads(lesson.drafts),
+        lesson.learning.progressPercent
+      )
     case "completed":
       return createLessonSessionState(lesson.steps.length - 1, true, true)
     case "locked":
@@ -263,13 +380,29 @@ function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
 function createCompleteStepRequest(
   step: LessonStep,
   answer: LessonStepAnswerPayload | undefined
-) {
+): LearnerCompleteStepBodyDto | null {
   if (step.type === "READING" || step.type === "COMPARE") {
     return { kind: "acknowledge" as const }
   }
 
-  if (answer === undefined) return null
-  return { answer, kind: "answer" as const }
+  const submission = learnerStepSubmissionSchema.safeParse(answer)
+  if (!submission.success) return null
+  return { answer: submission.data, kind: "answer" as const }
+}
+
+function toDraftAnswerPayloads(
+  drafts: readonly LearnerStepDraftDto[]
+): Readonly<Record<string, LearnerStepDraftAnswerDto>> {
+  return Object.fromEntries(drafts.map((draft) => [draft.stepId, draft.answer]))
+}
+
+function getAiFeedbackDraftText(
+  step: LessonStep | null,
+  answerPayloads: Readonly<Record<string, LearnerStepDraftAnswerDto>>
+): string {
+  if (step?.type !== "AI_FEEDBACK") return ""
+  const targetAnswer = answerPayloads[step.target]
+  return targetAnswer?.type === "WRITE" ? targetAnswer.text : ""
 }
 
 function isEvaluatedChoiceStep(step: LessonStep): boolean {

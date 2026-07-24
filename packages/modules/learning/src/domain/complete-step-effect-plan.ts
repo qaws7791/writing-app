@@ -132,7 +132,7 @@ export function planCompleteStep(
   command: CompleteLearnerStepCommand,
   snapshot: CompleteStepSnapshot
 ): CompleteStepPlan {
-  return freezeCompleteStepPlan(createCompleteStepPlan(command, snapshot))
+  return cloneCompleteStepPlan(createCompleteStepPlan(command, snapshot))
 }
 
 function createCompleteStepPlan(
@@ -260,34 +260,32 @@ function createCompleteStepPlan(
   }
 }
 
-function freezeCompleteStepPlan(plan: CompleteStepPlan): CompleteStepPlan {
+function cloneCompleteStepPlan(plan: CompleteStepPlan): CompleteStepPlan {
   if (plan.kind === "rejected") {
-    return Object.freeze({ ...plan, error: Object.freeze({ ...plan.error }) })
+    return { ...plan, error: { ...plan.error } }
   }
-  return Object.freeze({
+  return {
     ...plan,
-    aggregate: Object.freeze({
+    aggregate: {
       ...plan.aggregate,
-      scope: Object.freeze({ ...plan.aggregate.scope }),
-      stepIds: Object.freeze([...plan.aggregate.stepIds]),
-    }),
-    effects: Object.freeze(
-      plan.effects.map((effect) => Object.freeze({ ...effect }))
-    ),
-    scope: Object.freeze({ ...plan.scope }),
-    stepIds: Object.freeze([...plan.stepIds]),
-  })
+      scope: { ...plan.aggregate.scope },
+      stepIds: [...plan.aggregate.stepIds],
+    },
+    effects: plan.effects.map((effect) => ({ ...effect })),
+    scope: { ...plan.scope },
+    stepIds: [...plan.stepIds],
+  }
 }
 
 function createPlanContext(
   command: CompleteLearnerStepCommand,
   snapshot: Extract<CompleteStepSnapshot, { readonly kind: "lesson" }>
 ): CompleteStepPlanContext {
-  const aggregate = Object.freeze({
+  const aggregate = {
     scope: snapshot.scope,
     stepIds: snapshot.steps.map((step) => step.id),
     userId: command.userId,
-  })
+  }
   return {
     aggregate,
     effects: [],

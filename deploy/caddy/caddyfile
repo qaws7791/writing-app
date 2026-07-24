@@ -1,66 +1,61 @@
 {
 	admin 127.0.0.1:2019
-	auto_https off
-
-	servers {
-		trusted_proxies static private_ranges
-		trusted_proxies_strict
-		client_ip_headers CF-Connecting-IP X-Forwarded-For
-	}
 }
 
-:8080 {
-	handle /healthz {
-		respond "ok" 200
-	}
-
-	@learner-csp {
-		host {$WEB_HOST}
-		path /api/csp-report
-	}
+(learner-routes) {
+	@learner-csp path /api/csp-report
 	handle @learner-csp {
 		reverse_proxy web:3000
 	}
 
-	@learner-admin-api {
-		host {$WEB_HOST}
-		path /api/admin /api/admin/*
-	}
+	@learner-admin-api path /api/admin /api/admin/*
 	handle @learner-admin-api {
 		respond "not found" 404
 	}
 
-	@learner-api {
-		host {$WEB_HOST}
-		path /api/*
-	}
+	@learner-api path /api/*
 	handle @learner-api {
 		reverse_proxy api:4000 {
-			header_up X-Writing-App-Client-IP {client_ip}
+			header_up X-Writing-App-Client-IP {http.request.remote.host}
 		}
-	}
-
-	@learner-web host {$WEB_HOST}
-	handle @learner-web {
-		reverse_proxy web:3000
-	}
-
-	@admin-api {
-		host {$ADMIN_HOST}
-		path /api/admin /api/admin/*
-	}
-	handle @admin-api {
-		reverse_proxy api:4000 {
-			header_up X-Writing-App-Client-IP {client_ip}
-		}
-	}
-
-	@admin-web host {$ADMIN_HOST}
-	handle @admin-web {
-		reverse_proxy admin:3001
 	}
 
 	handle {
-		respond "not found" 404
+		reverse_proxy web:3000
 	}
+}
+
+(admin-routes) {
+	@admin-api path /api/admin /api/admin/*
+	handle @admin-api {
+		reverse_proxy api:4000 {
+			header_up X-Writing-App-Client-IP {http.request.remote.host}
+		}
+	}
+
+	handle {
+		reverse_proxy admin:3001
+	}
+}
+
+{$WEB_HOST} {
+	import learner-routes
+}
+
+{$ADMIN_HOST} {
+	import admin-routes
+}
+
+http://127.0.0.1:8080 {
+	handle /healthz {
+		respond "ok" 200
+	}
+}
+
+http://{$WEB_HOST}:8080 {
+	import learner-routes
+}
+
+http://{$ADMIN_HOST}:8080 {
+	import admin-routes
 }

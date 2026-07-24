@@ -1,29 +1,22 @@
 import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import ProfileRoute from "@/app/(learner)/app/profile/page"
-import type { ApiError } from "@/shared/http/api-error"
-import { httpApiFailure as apiFailure } from "@workspace/http-client/api-result"
-import type { WritingAppApi } from "@/shared/http/writing-app-api-port"
+import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
-const { redirectMock } = vi.hoisted(() => ({
-  redirectMock: vi.fn((path: string) => {
-    throw new Error(`redirect:${path}`)
-  }),
+const { getProfile, redirectMock, requestOptions, serverOptionsMock } =
+  vi.hoisted(() => ({
+    getProfile: vi.fn(),
+    redirectMock: vi.fn((path: string) => {
+      throw new Error(`redirect:${path}`)
+    }),
+    requestOptions: { cache: "no-store" } as const,
+    serverOptionsMock: vi.fn(),
+  }))
+
+vi.mock("@workspace/http-client/learner", () => ({ getProfile }))
+vi.mock("@/server/http/learner-api-client", () => ({
+  getServerLearnerRequestOptions: serverOptionsMock,
 }))
-
-const api: WritingAppApi = {
-  completeStep: vi.fn(),
-  getCourseDetail: vi.fn(),
-  getCourseCategories: vi.fn(),
-  getLesson: vi.fn(),
-  getProfile: vi.fn(),
-  getProgress: vi.fn(),
-  listCourses: vi.fn(),
-  requestAiFeedback: vi.fn(),
-  startLesson: vi.fn(),
-}
-
 vi.mock("next/navigation", () => ({
   redirect: redirectMock,
   useRouter: () => ({
@@ -31,22 +24,17 @@ vi.mock("next/navigation", () => ({
   }),
 }))
 
-vi.mock("@/server/auth/server-session-token", () => ({
-  getServerLearnerSessionToken: vi.fn(async () => "learner-token"),
-}))
-
-vi.mock("@/server/http/get-server-writing-app-api", () => ({
-  getServerWritingAppApi: vi.fn(() => api),
-}))
+import ProfileRoute from "@/app/(learner)/app/profile/page"
 
 describe("프로필 route", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    serverOptionsMock.mockResolvedValue(requestOptions)
   })
 
   it("API 인증 실패만 로그인으로 보낸다", async () => {
-    vi.mocked(api.getProfile).mockResolvedValue(
-      apiFailure(authenticationError())
+    getProfile.mockRejectedValue(
+      httpError("UNAUTHENTICATED", 401, "로그인이 필요합니다.")
     )
 
     await expect(ProfileRoute()).rejects.toBeInstanceOf(Error)
@@ -54,7 +42,13 @@ describe("프로필 route", () => {
   })
 
   it("프로필 서비스 장애는 로그인으로 보내지 않고 notice로 보여준다", async () => {
-    vi.mocked(api.getProfile).mockResolvedValue(apiFailure(serviceError()))
+    getProfile.mockRejectedValue(
+      httpError(
+        "PROVIDER_UNAVAILABLE",
+        503,
+        "프로필 서비스를 잠시 사용할 수 없습니다."
+      )
+    )
 
     render(await ProfileRoute())
 
@@ -68,20 +62,15 @@ describe("프로필 route", () => {
   })
 })
 
-function authenticationError(): ApiError {
-  return {
-    code: "UNAUTHENTICATED",
-    message: "로그인이 필요합니다.",
-    requestId: "request-authentication",
-    status: 401,
-  }
-}
-
-function serviceError(): ApiError {
-  return {
-    code: "PROVIDER_UNAVAILABLE",
-    message: "프로필 서비스를 잠시 사용할 수 없습니다.",
-    requestId: "request-service",
-    status: 503,
-  }
+function httpError(
+  code: string,
+  status: number,
+  message: string
+): GeneratedApiClientError {
+  return new GeneratedApiClientError({
+    error: { code, message, requestId: "request-1", violations: [] },
+    kind: "http",
+    retryAfterSeconds: null,
+    status,
+  })
 }

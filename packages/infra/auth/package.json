@@ -9,6 +9,10 @@
   "exports": {
     "./admin/client": "./src/admin/client.ts",
     "./admin/server": "./src/admin/server.ts",
+    "./email/delivery": "./src/email/delivery.ts",
+    "./email/in-memory": "./src/email/in-memory.ts",
+    "./email/resend": "./src/email/resend.ts",
+    "./email/templates": "./src/email/templates.ts",
     "./learner/client": "./src/learner/client.ts",
     "./learner/server": "./src/learner/server.ts",
     "./password": "./src/password.ts",
@@ -25,8 +29,7 @@
   },
   "dependencies": {
     "@workspace/contracts": "workspace:*",
-    "better-auth": "^1.6.13",
-    "zod": "catalog:"
+    "better-auth": "^1.6.13"
   },
   "peerDependencies": {
     "drizzle-orm": "catalog:"

@@ -1,95 +1,93 @@
-import type { AdminChartPanelProps } from "@/entities/admin-analytics/model/admin-chart-types"
+import type {
+  AdminChartKind,
+  AdminChartPanelProps,
+} from "@/entities/admin-analytics/model/admin-chart-types"
 import { AdminChartVisual } from "@/entities/admin-analytics/ui/admin-chart-visual"
+import { Surface } from "@workspace/ui/components/ui/surface"
+
+const chartCopy = {
+  "d7-return": {
+    description: "관찰 기간이 끝난 첫 시작 cohort의 재방문입니다.",
+    title: "D7 재방문",
+  },
+  "signup-activation": {
+    description: "가입과 학습자별 첫 레슨 시작을 함께 비교합니다.",
+    title: "가입·활성화",
+  },
+  "start-completion": {
+    description: "첫 레슨 시작과 전체 레슨 완료 흐름을 비교합니다.",
+    title: "시작·완료",
+  },
+} as const satisfies Record<
+  AdminChartKind,
+  Readonly<{ description: string; title: string }>
+>
 
 export function AdminChartPanel(props: AdminChartPanelProps) {
-  const title = readChartTitle(props.kind)
+  const copy = chartCopy[props.kind]
 
   return (
-    <article className="rounded-4xl border border-surface-hover p-6">
-      <h2 className="mb-2 text-[1.125rem] font-bold text-foreground">
-        {title}
+    <Surface
+      aria-labelledby={`${props.kind}-chart-title`}
+      className="min-w-0"
+      role="group"
+      variant="panel"
+    >
+      <h2
+        className="m-0 text-title-md font-black"
+        id={`${props.kind}-chart-title`}
+      >
+        {copy.title}
       </h2>
-      <ChartSummary props={props} />
-      <ChartDataTable props={props} title={title} />
+      <p className="mt-1 text-body-sm font-semibold text-muted-foreground">
+        {copy.description}
+      </p>
+      <ChartSummary {...props} />
       <AdminChartVisual {...props} />
-    </article>
+    </Surface>
   )
 }
 
-function ChartSummary({ props }: { readonly props: AdminChartPanelProps }) {
-  if (props.kind === "streaks") {
-    const total = props.data.reduce((sum, bucket) => sum + bucket.count, 0)
+function ChartSummary({ data, kind }: AdminChartPanelProps) {
+  if (kind === "signup-activation") {
     return (
-      <p className="text-[0.875rem] font-medium text-muted-foreground">
-        분포에 포함된 사용자 {total.toLocaleString("ko-KR")}명
+      <p className="mt-3 text-label-md font-black text-foreground">
+        기간 합계 가입 {formatTotal(data, "signups")}명 · 첫 시작{" "}
+        {formatTotal(data, "starts")}명
+      </p>
+    )
+  }
+  if (kind === "start-completion") {
+    return (
+      <p className="mt-3 text-label-md font-black text-foreground">
+        기간 합계 첫 시작 {formatTotal(data, "starts")}명 · 완료{" "}
+        {formatTotal(data, "completions")}건
       </p>
     )
   }
 
-  const valueKey = props.kind === "signups" ? "signups" : "completions"
-  const total = props.data.reduce((sum, point) => sum + point[valueKey], 0)
-  const label = props.kind === "signups" ? "가입" : "레슨 완료"
+  const returnTotal = data.reduce(
+    (total, point) => total + (point.returns ?? 0),
+    0
+  )
+  const immatureDays = data.filter(
+    (point) => point.returnStatus === "immature"
+  ).length
   return (
-    <p className="text-[0.875rem] font-medium text-muted-foreground">
-      기간 합계 {label} {total.toLocaleString("ko-KR")}건
+    <p className="mt-3 text-label-md font-black text-foreground">
+      성숙 cohort 재방문 합계 {returnTotal.toLocaleString("ko-KR")}명
+      {immatureDays === 0
+        ? null
+        : ` · 아직 집계 중인 날짜 ${immatureDays.toLocaleString("ko-KR")}일`}
     </p>
   )
 }
 
-function ChartDataTable({
-  props,
-  title,
-}: {
-  readonly props: AdminChartPanelProps
-  readonly title: string
-}) {
-  if (props.kind === "streaks") {
-    return (
-      <table className="sr-only">
-        <caption>{title} 데이터</caption>
-        <thead>
-          <tr>
-            <th scope="col">연속 학습일</th>
-            <th scope="col">사용자 수</th>
-          </tr>
-        </thead>
-        <tbody>
-          {props.data.map((bucket) => (
-            <tr key={bucket.label}>
-              <th scope="row">{bucket.label}</th>
-              <td>{bucket.count}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    )
-  }
-
-  const valueKey = props.kind === "signups" ? "signups" : "completions"
-  const valueLabel = props.kind === "signups" ? "가입 수" : "완료 수"
-  return (
-    <table className="sr-only">
-      <caption>{title} 데이터</caption>
-      <thead>
-        <tr>
-          <th scope="col">날짜</th>
-          <th scope="col">{valueLabel}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {props.data.map((point) => (
-          <tr key={point.date}>
-            <th scope="row">{point.date}</th>
-            <td>{point[valueKey]}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-
-function readChartTitle(kind: AdminChartPanelProps["kind"]) {
-  if (kind === "signups") return "최근 30일 가입 추이"
-  if (kind === "completions") return "일별 레슨 완료"
-  return "스트릭 유지 분포"
+function formatTotal(
+  data: AdminChartPanelProps["data"],
+  key: "completions" | "signups" | "starts"
+): string {
+  return data
+    .reduce((total, point) => total + point[key], 0)
+    .toLocaleString("ko-KR")
 }

@@ -1,17 +1,20 @@
 import type {
-  AdminArchiveCourseResultDto,
-  AdminCourseDetailDto,
-  AdminCourseListDto,
-} from "@workspace/contracts/content/admin-courses"
+  archiveAdminCourse,
+  createAdminCourse,
+  getAdminCourses,
+} from "@workspace/http-client/admin"
 
-type AdminCourseStatus = "active" | "archived"
+type AdminCourseListQuery = NonNullable<Parameters<typeof getAdminCourses>[0]>
+type AdminCourseStatus = NonNullable<AdminCourseListQuery["status"]>
 export type ReadAdminCoursesInput = {
   readonly category: string
   readonly page: number
   readonly pageSize: number
   readonly query: string
-  readonly status: "all" | AdminCourseStatus
+  readonly status: AdminCourseStatus
 }
-export type AdminCreatedCourse = AdminCourseDetailDto
-export type AdminCourseList = AdminCourseListDto
-export type AdminArchiveCourseResult = AdminArchiveCourseResultDto
+export type AdminCreatedCourse = Awaited<ReturnType<typeof createAdminCourse>>
+export type AdminCourseList = Awaited<ReturnType<typeof getAdminCourses>>
+export type AdminArchiveCourseResult = Awaited<
+  ReturnType<typeof archiveAdminCourse>
+>

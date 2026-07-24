@@ -1,4 +1,4 @@
-export type ContainerCleanupName = "ai" | "database" | "logger"
+export type ContainerCleanupName = "database" | "logger" | "reporting-database"
 
 export type ContainerCleanupFailure = Readonly<{
   cause: unknown
@@ -50,7 +50,7 @@ async function disposeInReverse(
     try {
       await entry.cleanup()
     } catch (cause) {
-      const failure = Object.freeze({ cause, name: entry.name })
+      const failure = { cause, name: entry.name }
       failures.push(failure)
       try {
         onFailure?.(failure)
@@ -60,5 +60,5 @@ async function disposeInReverse(
     }
   }
 
-  return Object.freeze(failures)
+  return failures
 }

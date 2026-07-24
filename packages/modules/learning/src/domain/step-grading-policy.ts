@@ -25,6 +25,11 @@ export function gradeLearnerStep(
       ? { answer: null, evaluation: null, kind: "accepted" }
       : { kind: "invalid" }
   }
+  if (completion.kind === "skip-ai-feedback") {
+    return step.type === "AI_FEEDBACK"
+      ? { answer: null, evaluation: null, kind: "accepted" }
+      : { kind: "invalid" }
+  }
 
   switch (completion.submission.type) {
     case "MULTIPLE_CHOICE":
@@ -87,7 +92,7 @@ function gradeFillBlank(
   answer: Extract<LearnerStepSubmission, { readonly type: "FILL_BLANK" }>
 ): StepGradingResult {
   const ids = step.wordIds
-  if (ids === undefined || ids.length !== step.words.length) {
+  if (ids.length !== step.words.length) {
     throw new Error(`Missing stable choice IDs for ${step.id}`)
   }
   if (
@@ -98,7 +103,7 @@ function gradeFillBlank(
     return { kind: "invalid" }
   }
 
-  const correctIds = resolveOrderedIds(step.words, ids, step.answer)
+  const correctIds = step.answer
   const correct = equalValues(answer.selectedChoiceIds, correctIds)
   return evaluatedResult(answer, correct, {
     correct,
@@ -117,7 +122,7 @@ function gradeSelect(
   answer: Extract<LearnerStepSubmission, { readonly type: "SELECT" }>
 ): StepGradingResult {
   const ids = step.segmentIds
-  if (ids === undefined || ids.length !== step.segments.length) {
+  if (ids.length !== step.segments.length) {
     throw new Error(`Missing stable item IDs for ${step.id}`)
   }
   if (
@@ -127,11 +132,7 @@ function gradeSelect(
     return { kind: "invalid" }
   }
 
-  const correctIds = step.correct.map((index) => ids[index])
-  if (correctIds.some((id) => id === undefined)) {
-    throw new Error(`Invalid SELECT solution for ${step.id}`)
-  }
-  const expected = correctIds as readonly string[]
+  const expected = step.correct
   const correct = sameValueSet(answer.selectedItemIds, expected)
   const selectedIds = new Set<string>(answer.selectedItemIds)
   return evaluatedResult(answer, correct, {
@@ -151,7 +152,7 @@ function gradeOrder(
   answer: Extract<LearnerStepSubmission, { readonly type: "ORDER" }>
 ): StepGradingResult {
   const ids = step.itemIds
-  if (ids === undefined || ids.length !== step.items.length) {
+  if (ids.length !== step.items.length) {
     throw new Error(`Missing stable item IDs for ${step.id}`)
   }
   if (
@@ -162,7 +163,7 @@ function gradeOrder(
     return { kind: "invalid" }
   }
 
-  const correctIds = resolveOrderedIds(step.items, ids, step.correct)
+  const correctIds = step.correct
   const correct = equalValues(answer.orderedItemIds, correctIds)
   return evaluatedResult(answer, correct, {
     correct,
@@ -181,9 +182,6 @@ function gradeMatch(
   answer: Extract<LearnerStepSubmission, { readonly type: "MATCH" }>
 ): StepGradingResult {
   const solution = step.pairs.map((pair) => {
-    if (pair.leftId === undefined || pair.rightId === undefined) {
-      throw new Error(`Missing stable pair IDs for ${step.id}`)
-    }
     return { leftItemId: pair.leftId, rightItemId: pair.rightId }
   })
   const leftIds = solution.map((pair) => pair.leftItemId)
@@ -296,23 +294,6 @@ function itemVerdict(selected: boolean, expected: boolean): StepItemVerdict {
   if (selected) return "incorrect"
   if (expected) return "missed"
   return "correct"
-}
-
-function resolveOrderedIds(
-  values: readonly string[],
-  ids: readonly string[],
-  expectedValues: readonly string[]
-): readonly string[] {
-  const remaining = values.map((value, index) => ({ id: ids[index], value }))
-  return expectedValues.map((expected) => {
-    const index = remaining.findIndex((item) => item.value === expected)
-    const item = remaining[index]
-    if (index < 0 || item?.id === undefined) {
-      throw new Error("Solution does not match stable item IDs")
-    }
-    remaining.splice(index, 1)
-    return item.id
-  })
 }
 
 function equalValues(left: readonly string[], right: readonly string[]) {

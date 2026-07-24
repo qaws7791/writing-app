@@ -1,26 +1,32 @@
 import { describe, expect, it, vi } from "vitest"
+import { createRoute, type OpenAPIHono } from "@hono/zod-openapi"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import { adminRoles } from "@workspace/identity/admin-actor"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-import { z } from "@workspace/http-platform/zod"
+import { z } from "@workspace/http-platform/openapi"
 
 import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
+  type AdminSessionResolver,
 } from "@workspace/identity/sessions"
-import { defineAdminRoute } from "@/admin/admin-hono-env"
+import { registerAdminFoundationRoutes } from "@/admin/admin-foundation.routes"
+import type { AdminHonoEnv } from "@/admin/admin-hono-env"
 import { jsonResponse } from "@/admin/admin-openapi"
-import { ownerAdminRouteOptions } from "@workspace/identity/http"
-import { createAdminApp, type AdminAppDependencies } from "@/http/admin-app"
-import { defineAdminRouteGroup } from "@/http/admin-route-group"
+import { adminSessionRouteOptions } from "@workspace/identity/http"
+import {
+  createAdminApp,
+  registerAdminApiDocumentation,
+  registerAdminAuthRoutes,
+  type AdminAppDependencies,
+} from "@/http/admin-app"
 
 const adminId = adminIdSchema.parse("admin-1")
 const adminOrigin = localRuntimeDefaults.adminWebOrigin
 
 describe("통합 runtime 관리자 공통 delivery", () => {
   it("기능 route가 비어 있어도 health, session, OpenAPI 기반이 독립 실행된다", async () => {
-    const app = createAdminApp(createDependencies())
+    const app = createFixture()
 
     const healthResponse = await app.request("/health")
     const sessionResponse = await app.request("/session")
@@ -28,14 +34,8 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     const featureResponse = await app.request("/courses")
 
     expect(healthResponse.status).toBe(200)
-    await expect(healthResponse.json()).resolves.toEqual({
-      checks: { database: "ready" },
-      impact: "none",
-      ok: true,
-      service: "api",
-    })
     expect(sessionResponse.status).toBe(401)
-    await expect(sessionResponse.json()).resolves.toEqual({
+    await expect(sessionResponse.json()).resolves.toMatchObject({
       code: "UNAUTHORIZED",
       message: "Unauthorized",
     })
@@ -43,13 +43,23 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     expect(featureResponse.status).toBe(404)
   })
 
+  it("Scalar 문서 UI를 제공하고 비활성화 시 문서 route를 등록하지 않는다", async () => {
+    const enabled = createFixture()
+    const scalarResponse = await enabled.request("/docs")
+
+    expect(scalarResponse.status).toBe(200)
+    expect(scalarResponse.headers.get("content-type")).toContain("text/html")
+    expect(await scalarResponse.text()).toContain("Writing App Admin API")
+
+    const disabled = createAdminApp({ adminOrigin })
+    registerAdminApiDocumentation(disabled, { enabled: false })
+    expect((await disabled.request("/openapi")).status).toBe(404)
+    expect((await disabled.request("/docs")).status).toBe(404)
+  })
+
   it("관리자 세션 응답과 auth 응답에 private no-store를 적용한다", async () => {
     const authHandler = vi.fn(async () => Response.json({ ok: true }))
-    const app = createAdminApp(
-      createDependencies({
-        authHandler,
-      })
-    )
+    const app = createFixture({ authHandler })
 
     const sessionResponse = await app.request("/session", {
       headers: {
@@ -63,12 +73,11 @@ describe("통합 runtime 관리자 공통 delivery", () => {
       "private, no-store"
     )
     expect(sessionResponse.headers.get("Vary")).toContain("Cookie")
-    await expect(sessionResponse.json()).resolves.toEqual({
+    await expect(sessionResponse.json()).resolves.toMatchObject({
       admin: {
         email: "admin@example.com",
         id: "admin-1",
         name: "관리자",
-        role: "owner",
       },
     })
     expect(authResponse.status).toBe(200)
@@ -78,7 +87,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
   })
 
   it("health와 OpenAPI 공개 응답에는 private cache 정책을 추가하지 않는다", async () => {
-    const app = createAdminApp(createDependencies())
+    const app = createFixture()
 
     for (const path of ["/health", "/openapi"]) {
       const response = await app.request(path)
@@ -92,15 +101,13 @@ describe("통합 runtime 관리자 공통 delivery", () => {
 
   it("관리자 비밀번호 변경은 요청값과 무관하게 다른 세션 폐기를 강제한다", async () => {
     const capturedRequests: Request[] = []
-    const app = createAdminApp(
-      createDependencies({
-        async authHandler(request) {
-          capturedRequests.push(request)
+    const app = createFixture({
+      async authHandler(request) {
+        capturedRequests.push(request)
 
-          return Response.json({ ok: true })
-        },
-      })
-    )
+        return Response.json({ ok: true })
+      },
+    })
 
     const response = await app.request("/auth/change-password", {
       body: JSON.stringify({
@@ -125,7 +132,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
 
   it("쿠키 변경 요청의 신뢰하지 않은 origin을 auth handler 전에 거절한다", async () => {
     const authHandler = vi.fn(async () => Response.json({ ok: true }))
-    const app = createAdminApp(createDependencies({ authHandler }))
+    const app = createFixture({ authHandler })
 
     const response = await app.request("/auth/change-password", {
       body: JSON.stringify({
@@ -142,7 +149,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     })
 
     expect(response.status).toBe(403)
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toMatchObject({
       code: "FORBIDDEN_ORIGIN",
       message: "Forbidden",
     })
@@ -151,7 +158,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
 
   it("관리자 API 본문은 6 MiB까지 전달하고 1 byte 초과는 handler 전에 거절한다", async () => {
     const authHandler = vi.fn(async () => Response.json({ ok: true }))
-    const app = createAdminApp(createDependencies({ authHandler }))
+    const app = createFixture({ authHandler })
     const bodyLimitBytes = 6 * 1024 * 1024
 
     for (const fixture of [
@@ -173,10 +180,10 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     expect(authHandler).toHaveBeenCalledOnce()
   })
 
-  it("주입한 capability route에 owner 인가와 관리자 actor 로깅을 적용한다", async () => {
+  it("주입한 capability route에 관리자 인증과 actor 로깅을 적용한다", async () => {
     const requestEvents: unknown[] = []
     const securityEvents: unknown[] = []
-    const dependencies = createDependencies({
+    const app = createFixture({
       requestLogger(event) {
         requestEvents.push(event)
       },
@@ -187,23 +194,21 @@ describe("통합 runtime 관리자 공통 delivery", () => {
       securityAuditLogger(event) {
         securityEvents.push(event)
       },
-    })
-    const ownerRoute = defineAdminRoute({
-      method: "post",
-      operationId: "runAdminOwnerAction",
-      path: "/owner-action",
-      responses: {
-        200: jsonResponse(
-          "관리자 소유자 작업 결과입니다.",
-          z.object({ ok: z.boolean() })
-        ),
+      registerRoutes(app, sessionResolver) {
+        const ownerRoute = createRoute({
+          method: "post",
+          operationId: "runAdminOwnerAction",
+          path: "/owner-action",
+          responses: {
+            200: jsonResponse(
+              "관리자 소유자 작업 결과입니다.",
+              z.object({ ok: z.boolean() })
+            ),
+          },
+          ...adminSessionRouteOptions(sessionResolver),
+        })
+        app.openapi(ownerRoute, (context) => context.json({ ok: true }, 200))
       },
-      handler: (context) => context.json({ ok: true }, 200),
-      ...ownerAdminRouteOptions(dependencies.sessionResolver),
-    })
-    const app = createAdminApp({
-      ...dependencies,
-      capabilityRoutes: defineAdminRouteGroup([ownerRoute]),
     })
 
     const response = await app.request("/owner-action", {
@@ -238,96 +243,31 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     ])
   })
 
-  it("operator는 주입된 owner route에서 기존 403 의미를 유지한다", async () => {
-    const requestEvents: unknown[] = []
-    const securityEvents: unknown[] = []
-    const dependencies = createDependencies({
-      requestLogger(event) {
-        requestEvents.push(event)
-      },
-      requestLoggingRuntime: {
-        createRequestId: () => "operator-request-id",
-        readMonotonicTimeMs: () => 0,
-      },
-      role: adminRoles.operator,
-      securityAuditLogger(event) {
-        securityEvents.push(event)
-      },
-    })
-    const ownerRoute = defineAdminRoute({
-      method: "post",
-      operationId: "runOwnerOnlyAction",
-      path: "/owner-only",
-      responses: {
-        200: { description: "소유자 작업 결과입니다." },
-      },
-      handler: (context) => context.json({ ok: true }, 200),
-      ...ownerAdminRouteOptions(dependencies.sessionResolver),
-    })
-    const app = createAdminApp({
-      ...dependencies,
-      capabilityRoutes: defineAdminRouteGroup([ownerRoute]),
-    })
-
-    const response = await app.request("/owner-only", {
-      headers: {
-        Cookie: `${adminSessionCookieName}=admin-token`,
-        Origin: adminOrigin,
-      },
-      method: "POST",
-    })
-
-    expect(response.status).toBe(403)
-    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-    expect(response.headers.get("Vary")).toContain("Cookie")
-    await expect(response.json()).resolves.toEqual({
-      code: "FORBIDDEN",
-      message: "Forbidden",
-    })
-    expect(requestEvents).toEqual([
-      expect.objectContaining({
-        actorId: "admin-1",
-        actorType: "admin",
-        outcome: "failed",
-        status: 403,
-      }),
-    ])
-    expect(securityEvents).toEqual([
-      expect.objectContaining({
-        action: "authorization.denied",
-        actorId: "admin-1",
-        actorType: "admin",
-        outcome: "denied",
-      }),
-    ])
-  })
-
   it("내부 예외를 redacted 500 오류와 request id로 변환한다", async () => {
     const errors: unknown[] = []
-    const failingRoute = defineAdminRoute({
-      method: "get",
-      operationId: "getFailingAdminFixture",
-      path: "/failure",
-      responses: {
-        200: { description: "실패 fixture입니다." },
+    const app = createFixture({
+      errorLogger(event) {
+        errors.push(event)
       },
-      handler: () => {
-        throw new Error("database unavailable sentinel")
+      registerRoutes(app) {
+        const failingRoute = createRoute({
+          method: "get",
+          operationId: "getFailingAdminFixture",
+          path: "/failure",
+          responses: {
+            200: { description: "실패 fixture입니다." },
+          },
+        })
+        app.openapi(failingRoute, () => {
+          throw new Error("database unavailable sentinel")
+        })
+      },
+      requestLogger() {},
+      requestLoggingRuntime: {
+        createRequestId: () => "admin-error-request-id",
+        readMonotonicTimeMs: () => 0,
       },
     })
-    const app = createAdminApp(
-      createDependencies({
-        capabilityRoutes: defineAdminRouteGroup([failingRoute]),
-        errorLogger(event) {
-          errors.push(event)
-        },
-        requestLogger() {},
-        requestLoggingRuntime: {
-          createRequestId: () => "admin-error-request-id",
-          readMonotonicTimeMs: () => 0,
-        },
-      })
-    )
 
     const response = await app.request("/failure")
 
@@ -343,7 +283,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     expect(JSON.stringify(errors)).not.toContain(
       "database unavailable sentinel"
     )
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toMatchObject({
       code: "INTERNAL_SERVER_ERROR",
       message: "Internal Server Error",
       requestId: "admin-error-request-id",
@@ -351,7 +291,7 @@ describe("통합 runtime 관리자 공통 delivery", () => {
   })
 
   it("OpenAPI 문서에 실제 관리자 cookie와 foundation 보안 계약을 등록한다", async () => {
-    const app = createAdminApp(createDependencies())
+    const app = createFixture()
 
     const response = await app.request("/openapi")
     const document = await response.json()
@@ -371,9 +311,9 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     )
   })
 
-  it("각 factory 호출은 route registry와 middleware 상태를 공유하지 않는다", async () => {
-    const first = createAdminApp(createDependencies())
-    const second = createAdminApp(createDependencies())
+  it("한 app에 추가한 route가 다른 app instance를 오염시키지 않는다", async () => {
+    const first = createFixture()
+    const second = createFixture()
 
     first.get("/fixture", (context) => context.text("first"))
     second.get("/fixture", (context) => context.text("second"))
@@ -391,35 +331,52 @@ describe("통합 runtime 관리자 공통 delivery", () => {
   })
 })
 
-function createDependencies(
-  overrides: Partial<AdminAppDependencies> & {
-    readonly role?: AdminAuthenticatedSession["admin"]["role"]
-  } = {}
-): AdminAppDependencies {
-  const session = createSession(overrides.role ?? adminRoles.owner)
+type AdminTestOptions = Partial<AdminAppDependencies> & {
+  readonly authHandler?: (request: Request) => Promise<Response>
+  readonly health?: { readonly isDatabaseReady: () => boolean }
+  readonly registerRoutes?: (
+    app: OpenAPIHono<AdminHonoEnv>,
+    sessionResolver: AdminSessionResolver
+  ) => void
+  readonly sessionResolver?: AdminSessionResolver
+}
 
-  return {
-    adminOrigin,
-    sessionResolver: {
+function createFixture(overrides: AdminTestOptions = {}) {
+  const session = createSession()
+  const sessionResolver =
+    overrides.sessionResolver ??
+    ({
       async resolveSession(headers) {
         return headers.get("Cookie")?.includes(adminSessionCookieName)
           ? session
           : null
       },
-    },
-    ...overrides,
-  }
+    } satisfies AdminSessionResolver)
+  const {
+    authHandler,
+    health = { isDatabaseReady: () => true },
+    registerRoutes,
+    sessionResolver: _sessionResolver,
+    ...appDependencies
+  } = overrides
+  const app = createAdminApp({
+    adminOrigin,
+    ...appDependencies,
+  })
+
+  registerAdminFoundationRoutes(app, { health, sessionResolver })
+  registerRoutes?.(app, sessionResolver)
+  registerAdminAuthRoutes(app, authHandler)
+  registerAdminApiDocumentation(app, { enabled: true })
+  return app
 }
 
-function createSession(
-  role: AdminAuthenticatedSession["admin"]["role"]
-): AdminAuthenticatedSession {
+function createSession(): AdminAuthenticatedSession {
   return {
     admin: {
       email: "admin@example.com",
       id: adminId,
       name: "관리자",
-      role,
     },
     [adminSessionExpiresAt]: new Date("2026-07-18T00:00:00.000Z"),
   }

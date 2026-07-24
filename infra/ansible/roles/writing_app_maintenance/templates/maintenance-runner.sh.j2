@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+lock_directory={{ writing_app_operation_lock_directory | quote }}
+container_name={{ ('writing-app-' ~ writing_app_environment ~ '-maintenance') | quote }}
+
+mkdir -m 0700 "${lock_directory}"
+cleanup() {
+  rmdir "${lock_directory}"
+}
+trap cleanup EXIT
+
+/usr/bin/docker compose \
+  --env-file {{ writing_app_compose_directory | quote }}/.env \
+  --file {{ writing_app_compose_directory | quote }}/compose.yaml \
+  run --rm --no-deps \
+  --name "${container_name}" \
+  --user {{ writing_app_container_uid }}:{{ writing_app_container_gid }} \
+  --env-from-file {{ writing_app_config_directory | quote }}/maintenance.env \
+  --volume {{ writing_app_maintenance_log_retention_evidence_file | quote }}:/run/writing-app-maintenance/log-retention-evidence.json:ro \
+  api \
+  bun /workspace/bin/maintenance-daily \
+  --batch-size={{ writing_app_maintenance_batch_size }}

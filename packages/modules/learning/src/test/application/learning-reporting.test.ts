@@ -23,16 +23,6 @@ describe("learning reporting query", () => {
         userId: learnerId,
       },
     ])
-    const readOperationsReport = vi.fn(async () => ({
-      learnerActivities: [
-        {
-          currentStreakDays: 3,
-          lastActiveDate: "2026-07-23",
-          userId: learnerId,
-        },
-      ],
-      lessonProgress: [],
-    }))
     const reporting = createLearningReportingQuery({
       content: {
         async listPublishedCourses() {
@@ -42,23 +32,13 @@ describe("learning reporting query", () => {
           ]
         },
       },
-      repository: { readLearnerReports, readOperationsReport },
+      repository: { readLearnerReports },
     })
 
     await expect(reporting.readActiveLessonCount()).resolves.toBe(5)
     await expect(reporting.readLearnerReports([learnerId])).resolves.toEqual([
       expect.objectContaining({ userId: learnerId }),
     ])
-    await expect(reporting.readOperationsReport()).resolves.toEqual({
-      learnerActivities: [
-        {
-          currentStreakDays: 3,
-          lastActiveDate: "2026-07-23",
-          userId: learnerId,
-        },
-      ],
-      lessonProgress: [],
-    })
     expect(readLearnerReports).toHaveBeenCalledWith([learnerId])
   })
 
@@ -78,12 +58,6 @@ describe("learning reporting query", () => {
             },
           ]
         },
-        async readOperationsReport() {
-          return {
-            learnerActivities: [],
-            lessonProgress: [],
-          }
-        },
       },
     })
 
@@ -101,6 +75,7 @@ function createCourseSummary(courseId: string, lessonCount: number) {
   return {
     category: "기초",
     courseId: courseId as CourseId,
+    coverAssetId: null,
     description: "설명",
     lessonCount,
     revision: 1,

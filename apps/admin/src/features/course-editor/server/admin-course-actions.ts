@@ -5,25 +5,34 @@ import "server-only"
 import { revalidatePath } from "next/cache"
 
 import { courseIdSchema } from "@/entities/course/model/course-id"
-import { createAdminCourseEditorApi } from "@/features/course-editor/api/admin-course-editor-api"
 import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-course-editor"
-import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
-import { createAdminActionError } from "@/shared/http/admin-api-result"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
+import {
+  invalidAdminRequestFailure,
+  settleAdminApiRequest,
+  unauthenticatedAdminRequestFailure,
+} from "@/shared/http/admin-api-client"
+import {
+  publishAdminCourse,
+  saveAdminCourseEditor,
+} from "@workspace/http-client/admin"
 
 export async function saveAdminCourseEditorAction(input: unknown) {
   const document = adminCourseEditorSchema.safeParse(input)
-  if (!document.success) return createAdminActionError("invalid-request")
+  if (!document.success) return invalidAdminRequestFailure()
 
-  const token = await getServerAdminSessionToken()
-  if (token === null) return createAdminActionError("unauthorized")
+  const requestOptions = await getServerAdminRequestOptions({
+    headers: { "If-Match": `"${document.data.editVersion}"` },
+  })
+  if (requestOptions === null) return unauthenticatedAdminRequestFailure()
 
-  const api = createAdminCourseEditorApi(
-    getServerAdminHttpTransport({ tokenProvider: () => token })
-  )
-  const result = await api.saveCourseEditor(
-    courseIdSchema.parse(document.data.id),
-    document.data
+  const { assets: _assets, ...writeDocument } = document.data
+  const result = await settleAdminApiRequest(
+    saveAdminCourseEditor(
+      courseIdSchema.parse(document.data.id),
+      writeDocument,
+      requestOptions
+    )
   )
 
   if (result.status === "ok") {
@@ -35,17 +44,15 @@ export async function saveAdminCourseEditorAction(input: unknown) {
 
 export async function publishAdminCourseAction(input: unknown) {
   const document = adminCourseEditorSchema.safeParse(input)
-  if (!document.success) return createAdminActionError("invalid-request")
+  if (!document.success) return invalidAdminRequestFailure()
 
-  const token = await getServerAdminSessionToken()
-  if (token === null) return createAdminActionError("unauthorized")
+  const requestOptions = await getServerAdminRequestOptions({
+    headers: { "If-Match": `"${document.data.editVersion}"` },
+  })
+  if (requestOptions === null) return unauthenticatedAdminRequestFailure()
 
-  const api = createAdminCourseEditorApi(
-    getServerAdminHttpTransport({ tokenProvider: () => token })
-  )
-  const result = await api.publishCourse(
-    courseIdSchema.parse(document.data.id),
-    document.data
+  const result = await settleAdminApiRequest(
+    publishAdminCourse(courseIdSchema.parse(document.data.id), requestOptions)
   )
 
   if (result.status === "ok") {

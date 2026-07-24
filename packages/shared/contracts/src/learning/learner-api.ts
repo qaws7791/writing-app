@@ -10,8 +10,9 @@ import {
   learnerProgressPageSchema,
 } from "#contracts/learning/learner-content"
 import {
-  completeLearnerStepResponseSchema,
+  completeLearnerStepResultSchema,
   learnerAiFeedbackTransitionResultSchema,
+  saveLearnerStepDraftResponseSchema,
   startLearnerLessonResponseSchema,
 } from "#contracts/learning/learner-transition"
 import { z } from "zod"
@@ -23,8 +24,9 @@ export const learnerLessonResponseSchema = learnerLessonSchema
 export const learnerCourseCategoriesResponseSchema =
   learnerCourseCategoriesSchema
 export const learnerStartLessonResponseSchema = startLearnerLessonResponseSchema
-export const learnerCompleteStepResponseSchema =
-  completeLearnerStepResponseSchema
+export const learnerSaveStepDraftResponseSchema =
+  saveLearnerStepDraftResponseSchema
+export const learnerCompleteStepResponseSchema = completeLearnerStepResultSchema
 export const learnerAiFeedbackTransitionResponseSchema =
   learnerAiFeedbackTransitionResultSchema
 
@@ -55,3 +57,9 @@ export type LearnerCourseCategoriesResponse = z.infer<
   typeof learnerCourseCategoriesResponseSchema
 >
 export type LearnerLessonResponse = z.infer<typeof learnerLessonResponseSchema>
+export type LearnerStartLessonResponse = z.infer<
+  typeof learnerStartLessonResponseSchema
+>
+export type LearnerSaveStepDraftResponse = z.infer<
+  typeof learnerSaveStepDraftResponseSchema
+>

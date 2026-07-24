@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 
 import {
   createContentSeedRows,
@@ -258,6 +259,21 @@ describe("기준 콘텐츠 seed 변환", () => {
       SELECT: 2,
       WRITE: 40,
     })
+
+    for (const step of rows.steps) {
+      const { type: _seedType, ...content } = JSON.parse(step.contentJson) as {
+        readonly type?: unknown
+        readonly [field: string]: unknown
+      }
+      expect(
+        lessonStepDtoSchema.safeParse({
+          ...content,
+          id: step.id,
+          sortOrder: step.sortOrder,
+          type: step.type,
+        }).success
+      ).toBe(true)
+    }
   })
 })
 

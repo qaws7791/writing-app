@@ -1,29 +1,14 @@
-import type { LessonId, UserId } from "@workspace/types/ids"
+import type { UserId } from "@workspace/types/ids"
 
 import type {
   LearningContentQueryPort,
   LearningReportItem,
 } from "#learning/application/ports/learning-ports"
 
-export type LearningOperationsReport = Readonly<{
-  learnerActivities: readonly Readonly<{
-    currentStreakDays: number
-    lastActiveDate: string
-    userId: UserId
-  }>[]
-  lessonProgress: readonly Readonly<{
-    completedAt: string | null
-    lessonId: LessonId
-    status: "completed" | "in_progress"
-    userId: UserId
-  }>[]
-}>
-
 export type LearningReportingRepository = Readonly<{
   readLearnerReports: (
     userIds: readonly UserId[]
   ) => Promise<readonly LearningReportItem[]>
-  readOperationsReport: () => Promise<LearningOperationsReport>
 }>
 
 export type LearningReportingQuery = Readonly<{
@@ -31,7 +16,6 @@ export type LearningReportingQuery = Readonly<{
   readLearnerReports: (
     userIds: readonly UserId[]
   ) => Promise<readonly LearningReportItem[]>
-  readOperationsReport: () => Promise<LearningOperationsReport>
 }>
 
 export type LearningProfileStats = Readonly<{
@@ -50,7 +34,7 @@ export function createLearningReportingQuery(input: {
   readonly content: Pick<LearningContentQueryPort, "listPublishedCourses">
   readonly repository: LearningReportingRepository
 }): LearningReportingQuery {
-  return Object.freeze({
+  return {
     async readActiveLessonCount() {
       const courses = await input.content.listPublishedCourses()
       return courses.reduce((total, course) => total + course.lessonCount, 0)
@@ -58,16 +42,13 @@ export function createLearningReportingQuery(input: {
     readLearnerReports(userIds) {
       return input.repository.readLearnerReports(userIds)
     },
-    readOperationsReport() {
-      return input.repository.readOperationsReport()
-    },
-  })
+  }
 }
 
 export function createLearningProfileStatsQuery(input: {
   readonly reporting: LearningReportingQuery
 }): LearningProfileStatsQuery {
-  return Object.freeze({
+  return {
     async readProfileStats(userId) {
       const [reports, totalLessons] = await Promise.all([
         input.reporting.readLearnerReports([userId]),
@@ -76,7 +57,7 @@ export function createLearningProfileStatsQuery(input: {
       const report = reports[0]
       const completedLessons = report?.completedLessons ?? 0
 
-      return Object.freeze({
+      return {
         completedLessons,
         currentStreakDays: report?.currentStreakDays ?? 0,
         lastActiveDate: report?.lastActive ?? null,
@@ -85,7 +66,7 @@ export function createLearningProfileStatsQuery(input: {
             ? 0
             : Math.round((completedLessons / totalLessons) * 100),
         totalLessons,
-      })
+      }
     },
-  })
+  }
 }

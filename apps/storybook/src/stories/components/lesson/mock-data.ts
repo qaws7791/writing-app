@@ -36,7 +36,12 @@ export const multipleChoiceDefaults = {
 
 export const fillBlankDefaults = {
   template: "그는 회의 내내 동료의 발표를 ___ 했다.",
-  words: ["보다", "관찰", "쳐다", "구경"],
+  choices: [
+    { id: "word-1", text: "보다" },
+    { id: "word-2", text: "관찰" },
+    { id: "word-3", text: "쳐다" },
+    { id: "word-4", text: "구경" },
+  ],
   blankCount: 1,
   checked: false as const,
 } as const
@@ -51,8 +56,14 @@ export const selectDefaults = {
 } as const
 
 export const orderDefaults = {
-  items: ["나는", "어제", "도서관에서", "책을", "읽었다"],
-  correctItems: ["나는", "어제", "도서관에서", "책을", "읽었다"],
+  items: [
+    { id: "item-1", text: "나는" },
+    { id: "item-2", text: "어제" },
+    { id: "item-3", text: "도서관에서" },
+    { id: "item-4", text: "책을" },
+    { id: "item-5", text: "읽었다" },
+  ],
+  correctItemIds: ["item-1", "item-2", "item-3", "item-4", "item-5"],
   showNumbers: true,
   explanation:
     "한국어 기본 어순은 주어 - 시간 - 장소 - 목적어 - 서술어 입니다.",
@@ -110,7 +121,6 @@ export const writeDefaults = {
   reference: "그는회의내동료의발표를집중해서들었다.",
   min: 20,
   max: 2000,
-  draft: false,
   placeholder: "여기에 작성하세요...",
   sample: "그는 회의 내내 동료의 발표를 집중해서 들었다.",
   checked: false as const,
@@ -135,8 +145,5 @@ export const aiFeedbackViewModel: AiFeedbackViewModel = {
     "두 번째 문장에 구체적인 예시를 추가하면 더 설득력이 높아집니다.",
   ],
   nextAction: "근거 문장에 숫자나 사례를 하나 넣어 다시 작성해 보세요.",
-  score: 92,
-  scoreRange: [0, 100],
-  showScore: true,
   remainingAttempts: 2,
 }

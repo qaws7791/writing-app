@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import * as adminIdentityData from "#contracts/identity/data"
-import { adminRoleSchema } from "#contracts/identity/admin-session"
 import { adminUserDetailDtoSchema } from "#contracts/identity/admin-users"
 import { lessonStepDtoSchema } from "#contracts/content/course"
 import { learnerCourseSummarySchema } from "#contracts/learning/learner-content"
@@ -25,7 +24,6 @@ describe("transport-neutral 공개 entrypoint", () => {
     expect(adminIdentityData.adminUserDetailDtoSchema).toBe(
       adminUserDetailDtoSchema
     )
-    expect(adminIdentityData.adminRoleSchema).toBe(adminRoleSchema)
   })
 
   it("HTTP body, query, page, error와 SSE wire를 노출하지 않는다", () => {

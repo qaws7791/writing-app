@@ -3,10 +3,13 @@ import {
   archiveAdminCourseAction,
   createAdminCourseAction,
 } from "@/features/course-catalog/server/admin-course-actions"
-import { createAdminCourseCatalogDal } from "@/features/course-catalog/server/admin-course-catalog-dal"
 import { AdminCoursesPage } from "@/features/course-catalog/ui/admin-courses-page"
-import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
+import {
+  settleAdminApiRequest,
+  unauthenticatedAdminRequestFailure,
+} from "@/shared/http/admin-api-client"
+import { getAdminCourses } from "@workspace/http-client/admin"
 
 export default async function AdminCoursesRoute({
   searchParams,
@@ -14,11 +17,11 @@ export default async function AdminCoursesRoute({
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const filters = parseAdminCourseFilters(await searchParams)
-  const coursesResult = await createAdminCourseCatalogDal(
-    getServerAdminHttpTransport({
-      tokenProvider: getServerAdminSessionToken,
-    })
-  ).getCourses(filters)
+  const requestOptions = await getServerAdminRequestOptions()
+  const coursesResult =
+    requestOptions === null
+      ? unauthenticatedAdminRequestFailure()
+      : await settleAdminApiRequest(getAdminCourses(filters, requestOptions))
 
   return (
     <AdminCoursesPage

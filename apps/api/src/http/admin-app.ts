@@ -1,74 +1,73 @@
 import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
+import { Scalar } from "@scalar/hono-api-reference"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-import { createApp as createHonoApp } from "@workspace/http-platform/core"
+import { createApp as createHonoApp } from "@workspace/http-platform/app"
 import type { InternalErrorLogger } from "@workspace/http-platform/errors"
+import { createApiErrorResponseMiddleware } from "@workspace/http-platform/errors"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
   withPrivateNoStore,
 } from "@workspace/http-platform/security"
-import type { AdminSessionResolver } from "@workspace/identity/sessions"
-import {
-  createAdminHealthRoutes,
-  createAdminSessionRoute,
-} from "@/admin/admin-foundation.routes"
 import type { AdminHonoEnv } from "@/admin/admin-hono-env"
 import { createAdminOpenApiDocument } from "@/admin/admin-openapi"
-import type { AdminRouteGroup } from "@/http/admin-route-group"
 import {
   createRequestLoggingMiddleware,
   type RequestLoggingRuntime,
-} from "@workspace/http-platform/request-logging"
+} from "@workspace/http-platform/app"
 import { createSecurityAuditRequestObserver } from "@/observability/security-audit-request-observer"
 import type { RequestLogger } from "@workspace/observability/request-logger"
 import type { SecurityAuditLogger } from "@workspace/observability/security-audit-logger"
-import type { ApiHealthProbe } from "@/runtime/api-health"
 
 export type AdminAppDependencies = {
   readonly adminOrigin?: string
-  readonly authHandler?: (request: Request) => Promise<Response>
-  readonly capabilityRoutes?: AdminRouteGroup
+  readonly auditMiddleware?: MiddlewareHandler<AdminHonoEnv>
   readonly errorLogger?: InternalErrorLogger
-  readonly health?: ApiHealthProbe
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly securityAuditLogger?: SecurityAuditLogger
-  readonly sessionResolver: AdminSessionResolver
 }
 
 export function createAdminApp(
   dependencies: AdminAppDependencies
 ): OpenAPIHono<AdminHonoEnv> {
-  const app = createHonoApp({
+  return createHonoApp<AdminHonoEnv>({
     errorLogger: dependencies.errorLogger,
     middleware: createAdminMiddleware(dependencies),
-    routes: [
-      ...createAdminHealthRoutes(
-        dependencies.health ?? { isDatabaseReady: () => true }
-      ),
-      createAdminSessionRoute(dependencies.sessionResolver),
-      ...(dependencies.capabilityRoutes ?? []),
-    ],
-  }) as OpenAPIHono<AdminHonoEnv>
+  })
+}
 
-  if (dependencies.authHandler !== undefined) {
-    const authHandler = dependencies.authHandler
+export function registerAdminAuthRoutes(
+  app: OpenAPIHono<AdminHonoEnv>,
+  authHandler: ((request: Request) => Promise<Response>) | undefined
+): void {
+  if (authHandler === undefined) return
 
-    app.on(["GET", "POST"], "/auth/*", async (context) => {
-      const request = await enforcePasswordChangeSessionRevocation(
-        context.req.raw
-      )
+  app.on(["GET", "POST"], "/auth/*", async (context) => {
+    const request = await enforcePasswordChangeSessionRevocation(
+      context.req.raw
+    )
+    return authHandler(request).then(withPrivateNoStore)
+  })
+}
 
-      return authHandler(request).then(withPrivateNoStore)
-    })
-  }
+export function registerAdminApiDocumentation(
+  app: OpenAPIHono<AdminHonoEnv>,
+  options: Readonly<{ enabled: boolean }>
+): void {
+  if (!options.enabled) return
 
   app.get("/openapi", (context) =>
     context.json(createAdminOpenApiDocument(app))
   )
-
-  return app
+  app.get(
+    "/docs",
+    Scalar({
+      pageTitle: "Writing App Admin API",
+      spec: { url: "/api/admin/openapi" },
+    })
+  )
 }
 
 async function enforcePasswordChangeSessionRevocation(
@@ -112,20 +111,21 @@ function createAdminMiddleware(
 ): readonly MiddlewareHandler[] {
   const middleware: MiddlewareHandler[] = []
 
-  if (dependencies.requestLogger !== undefined) {
-    middleware.push(
-      createRequestLoggingMiddleware({
-        audience: "admin",
-        createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
-        logRequest: dependencies.requestLogger,
-        observeRequest: createSecurityAuditRequestObserver(
-          dependencies.securityAuditLogger
-        ),
-        readMonotonicTimeMs:
-          dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
-      })
-    )
-  }
+  middleware.push(
+    createRequestLoggingMiddleware({
+      audience: "admin",
+      createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
+      logRequest: dependencies.requestLogger ?? ignoreRequestLog,
+      observeRequest: createSecurityAuditRequestObserver(
+        dependencies.securityAuditLogger
+      ),
+      readMonotonicTimeMs:
+        dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
+    }),
+    createApiErrorResponseMiddleware({
+      exclude: isAdminHealthPath,
+    })
+  )
 
   const adminOrigin =
     dependencies.adminOrigin ?? localRuntimeDefaults.adminWebOrigin
@@ -135,5 +135,15 @@ function createAdminMiddleware(
     createTrustedOriginMiddleware({ trustedOrigin: adminOrigin })
   )
 
+  if (dependencies.auditMiddleware !== undefined) {
+    middleware.push(dependencies.auditMiddleware)
+  }
+
   return middleware
+}
+
+function ignoreRequestLog(): void {}
+
+function isAdminHealthPath(path: string): boolean {
+  return path === "/health" || path === "/api/admin/health"
 }

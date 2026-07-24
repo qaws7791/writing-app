@@ -4,7 +4,6 @@ import {
   createMatchInteractionState,
   createMatchStepPresentation,
   findMatchedLeftChoiceIdForRightChoiceId,
-  isCorrectMatchChoice,
   toMatchAnswerConnections,
   toMatchAnswerPairs,
   transitionMatchChoiceSelection,
@@ -25,15 +24,13 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
       { left: "마무리", right: "정리" },
     ])
 
-    expect(first.rightChoices.map((choice) => choice.id)).toEqual([
-      "right-3",
-      "right-2",
+    expect(first.rightChoices.map((choice) => choice.id)).toEqual(
+      second.rightChoices.map((choice) => choice.id)
+    )
+    expect(first.rightChoices.map((choice) => choice.id).sort()).toEqual([
       "right-1",
-    ])
-    expect(second.rightChoices.map((choice) => choice.id)).toEqual([
-      "right-3",
       "right-2",
-      "right-1",
+      "right-3",
     ])
   })
 
@@ -141,7 +138,7 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     ])
   })
 
-  it("정답 여부는 표시 텍스트가 아니라 choice id pair로 판정한다", () => {
+  it("정오답 표시는 client pair 순서가 아니라 server evaluation만 따른다", () => {
     const presentation = createPresentation([
       { left: "문장 A", right: "강조" },
       { left: "문장 B", right: "강조" },
@@ -156,13 +153,25 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     }
 
     expect(
-      isCorrectMatchChoice(presentation, firstLeft.id, secondRight.id)
-    ).toBe(false)
+      toMatchAnswerConnections(presentation, { [firstLeft.id]: secondRight.id })
+    ).toEqual([
+      {
+        leftChoiceId: firstLeft.id,
+        rightChoiceId: secondRight.id,
+        tone: "default",
+      },
+    ])
     expect(
       toMatchAnswerConnections(
         presentation,
         { [firstLeft.id]: secondRight.id },
-        true
+        [
+          {
+            leftItemId: firstLeft.itemId,
+            rightItemId: secondRight.itemId,
+            verdict: "incorrect",
+          },
+        ]
       )
     ).toEqual([
       {
@@ -215,9 +224,13 @@ function createPresentation(
   pairs: readonly { readonly left: string; readonly right: string }[]
 ) {
   return createMatchStepPresentation({
-    pairs: pairs.map((pair, index) => ({
-      left: { id: `left-item-${index + 1}`, text: pair.left },
-      right: { id: `right-item-${index + 1}`, text: pair.right },
+    leftItems: pairs.map((pair, index) => ({
+      id: `left-item-${index + 1}`,
+      text: pair.left,
+    })),
+    rightItems: pairs.map((pair, index) => ({
+      id: `right-item-${index + 1}`,
+      text: pair.right,
     })),
   })
 }

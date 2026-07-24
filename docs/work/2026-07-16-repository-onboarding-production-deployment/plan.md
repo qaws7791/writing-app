@@ -254,7 +254,7 @@ Linux 전용 `check:deployment-ansible`은 전체 `ansible-lint`와 저장소의
 
 `deploy/security/image-vulnerability-policy.json`은 기본 예외 0건으로 시작한다. 예외를 추가하려면 CVE·GHSA 식별자, package, 대상 service, 구체적 사유, GitHub owner와 만료일이 모두 필요하며 만료·중복 예외는 preflight에서 거부한다. 검사 실패 candidate는 GHCR에 남을 수 있지만 attestation과 배포 manifest를 받지 못한다.
 
-`deploy/security/container-image-lock.json`은 Bun·Node base와 Caddy·Cloudflared·Litestream 운영 image의 tag, registry index digest와 `linux/amd64` 검증일을 기록한다. Dockerfile, Ansible 기본값과 배포 fixture의 tag-only 회귀는 root lint에서 거부한다. 같은 tag의 digest를 암묵적으로 따라가지 않고 월간·보안 공지 갱신 PR에서 manifest 조회, image smoke와 취약점 검사를 다시 수행한다.
+`deploy/security/container-image-lock.json`은 Bun·Node base와 Caddy·Litestream 운영 image의 tag, registry index digest와 `linux/amd64` 검증일을 기록한다. Dockerfile, Ansible 기본값과 배포 fixture의 tag-only 회귀는 root lint에서 거부한다. 같은 tag의 digest를 암묵적으로 따라가지 않고 월간·보안 공지 갱신 PR에서 manifest 조회, image smoke와 취약점 검사를 다시 수행한다.
 
 release workflow는 run별 candidate tag로 먼저 게시하고 Grype 검사를 통과한 같은 digest에만 release tag, attestation과 manifest를 부여한다. 보존 정책은 최소 7일이 지난 candidate-only version만 정리 후보로 선택하며 release와 untagged OCI referrer 자동 삭제를 금지한다. GitHub Packages REST 삭제는 package admin 권한이 필요하고 Actions 지원이 public preview이므로 실제 삭제 workflow는 저장소 소유자의 권한·복구 확인과 production environment 승인 뒤 연결한다.
 

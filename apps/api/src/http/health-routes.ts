@@ -1,7 +1,8 @@
-import { defineApiRoute } from "@/context/hono-env"
-import { jsonResponse } from "@/http/openapi"
+import { createRoute, type OpenAPIHono } from "@hono/zod-openapi"
+import { jsonResponse, z } from "@workspace/http-platform/openapi"
+
+import type { ApiHonoEnv } from "@/context/hono-env"
 import { parseLearnerRouteResponse } from "@/http/learner-response"
-import { z } from "@workspace/http-platform/zod"
 import type { ApiHealthProbe } from "@/runtime/api-health"
 
 const livenessResponseSchema = z.strictObject({
@@ -16,63 +17,61 @@ const readinessResponseSchema = z.strictObject({
   ok: z.boolean(),
 })
 
-export function createHealthRoutes(health: ApiHealthProbe) {
-  return [
-    defineApiRoute({
-      method: "get",
-      operationId: "getHealth",
-      path: "/health",
-      responses: {
-        200: jsonResponse(
-          "API가 요청을 처리할 준비가 됐습니다.",
-          readinessResponseSchema
-        ),
-        503: jsonResponse(
-          "API 데이터베이스가 준비되지 않았습니다.",
-          readinessResponseSchema
-        ),
-      },
-      summary: "API readiness 조회",
-      handler: (context) => {
-        const ready = health.isDatabaseReady()
-        return context.json(
-          parseLearnerRouteResponse(
-            context,
-            "HealthResponse",
-            readinessResponseSchema,
-            {
-              checks: { database: ready ? "ready" : "unavailable" },
-              impact: ready
-                ? "none"
-                : "database-dependent-requests-unavailable",
-              ok: ready,
-            }
-          ),
-          ready ? 200 : 503
-        )
-      },
-    }),
-    defineApiRoute({
-      method: "get",
-      operationId: "getLiveness",
-      path: "/health/live",
-      responses: {
-        200: jsonResponse(
-          "API process가 실행 중입니다.",
-          livenessResponseSchema
-        ),
-      },
-      summary: "API liveness 조회",
-      handler: (context) =>
-        context.json(
-          parseLearnerRouteResponse(
-            context,
-            "HealthLivenessResponse",
-            livenessResponseSchema,
-            { ok: true }
-          ),
-          200
-        ),
-    }),
-  ] as const
+export function registerHealthRoutes(
+  app: OpenAPIHono<ApiHonoEnv>,
+  health: ApiHealthProbe
+): void {
+  const readinessRoute = createRoute({
+    method: "get",
+    operationId: "getHealth",
+    path: "/health",
+    responses: {
+      200: jsonResponse(
+        "API가 요청을 처리할 준비가 됐습니다.",
+        readinessResponseSchema
+      ),
+      503: jsonResponse(
+        "API 데이터베이스가 준비되지 않았습니다.",
+        readinessResponseSchema
+      ),
+    },
+    summary: "API readiness 조회",
+  })
+  app.openapi(readinessRoute, (context) => {
+    const ready = health.isDatabaseReady()
+    return context.json(
+      parseLearnerRouteResponse(
+        context,
+        "HealthResponse",
+        readinessResponseSchema,
+        {
+          checks: { database: ready ? "ready" : "unavailable" },
+          impact: ready ? "none" : "database-dependent-requests-unavailable",
+          ok: ready,
+        }
+      ),
+      ready ? 200 : 503
+    )
+  })
+
+  const livenessRoute = createRoute({
+    method: "get",
+    operationId: "getLiveness",
+    path: "/health/live",
+    responses: {
+      200: jsonResponse("API process가 실행 중입니다.", livenessResponseSchema),
+    },
+    summary: "API liveness 조회",
+  })
+  app.openapi(livenessRoute, (context) =>
+    context.json(
+      parseLearnerRouteResponse(
+        context,
+        "HealthLivenessResponse",
+        livenessResponseSchema,
+        { ok: true }
+      ),
+      200
+    )
+  )
 }

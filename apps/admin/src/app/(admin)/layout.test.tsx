@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
 import AdminLayout from "@/app/(admin)/layout"
 
@@ -9,10 +10,12 @@ const { redirectMock } = vi.hoisted(() => ({
     throw new Error(`redirect:${path}`)
   }),
 }))
-const { getSessionMock, headersMock } = vi.hoisted(() => ({
-  getSessionMock: vi.fn(),
-  headersMock: vi.fn(),
-}))
+const { getAdminSessionMock, getServerAdminRequestOptionsMock, headersMock } =
+  vi.hoisted(() => ({
+    getAdminSessionMock: vi.fn(),
+    getServerAdminRequestOptionsMock: vi.fn(),
+    headersMock: vi.fn(),
+  }))
 
 vi.mock("next/navigation", () => ({
   redirect: redirectMock,
@@ -27,41 +30,30 @@ vi.mock("@/app/(admin)/_views/admin-shell", () => ({
   },
 }))
 
-vi.mock("@/server/auth/get-admin-session-token", () => ({
-  getServerAdminSessionToken: vi.fn(async () => "admin-token"),
+vi.mock("@workspace/http-client/admin", () => ({
+  getAdminSession: getAdminSessionMock,
 }))
 
-vi.mock("@/features/authentication/server/admin-session-dal", () => ({
-  createAdminSessionDal: vi.fn(() => ({
-    getSession: getSessionMock,
-  })),
-}))
-
-vi.mock("@/server/http/get-admin-http-transport", () => ({
-  getServerAdminHttpTransport: vi.fn(() => ({})),
+vi.mock("@/server/http/admin-api-request-options", () => ({
+  getServerAdminRequestOptions: getServerAdminRequestOptionsMock,
 }))
 
 describe("어드민 layout", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     headersMock.mockResolvedValue(new Headers())
-    getSessionMock.mockResolvedValue({
-      status: "ok",
-      value: {
-        admin: {
-          email: "admin@example.com",
-          id: "admin-1",
-          name: "관리자",
-          role: "owner",
-        },
+    getServerAdminRequestOptionsMock.mockResolvedValue({})
+    getAdminSessionMock.mockResolvedValue({
+      admin: {
+        email: "admin@example.com",
+        id: "admin-1",
+        name: "관리자",
       },
     })
   })
 
   it("관리자 세션 토큰이 없으면 로그인 화면으로 보낸다", async () => {
-    const { getServerAdminSessionToken } =
-      await import("@/server/auth/get-admin-session-token")
-    vi.mocked(getServerAdminSessionToken).mockResolvedValueOnce(null)
+    getServerAdminRequestOptionsMock.mockResolvedValueOnce(null)
 
     await expect(
       AdminLayout({
@@ -70,6 +62,7 @@ describe("어드민 layout", () => {
     ).rejects.toBeInstanceOf(Error)
 
     expect(redirectMock).toHaveBeenCalledWith("/login?next=%2F")
+    expect(getAdminSessionMock).not.toHaveBeenCalled()
   })
 
   it("관리자 세션 토큰이 있으면 콘솔 shell을 렌더링한다", async () => {
@@ -84,36 +77,19 @@ describe("어드민 layout", () => {
     expect(screen.getByRole("heading", { name: "대시보드" })).toBeVisible()
   })
 
-  it("운영자는 owner 전용 콘텐츠 유지보수 화면에 진입할 수 없다", async () => {
-    headersMock.mockResolvedValueOnce(
-      new Headers({
-        "x-writing-app-admin-request-path": "/maintenance",
+  it("쿠키가 있어도 서버 세션이 유효하지 않으면 로그인 화면으로 보낸다", async () => {
+    getAdminSessionMock.mockRejectedValueOnce(
+      new GeneratedApiClientError({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "인증이 필요합니다.",
+          requestId: "session-request",
+        },
+        kind: "http",
+        retryAfterSeconds: null,
+        status: 401,
       })
     )
-    getSessionMock.mockResolvedValueOnce({
-      status: "ok",
-      value: {
-        admin: {
-          email: "operator@example.com",
-          id: "admin-2",
-          name: "운영자",
-          role: "operator",
-        },
-      },
-    })
-
-    await expect(
-      AdminLayout({ children: <h1>콘텐츠 유지보수</h1> })
-    ).rejects.toBeInstanceOf(Error)
-
-    expect(redirectMock).toHaveBeenCalledWith("/")
-  })
-
-  it("쿠키가 있어도 서버 세션이 유효하지 않으면 로그인 화면으로 보낸다", async () => {
-    getSessionMock.mockResolvedValueOnce({
-      error: { code: "unauthorized", message: "인증이 필요합니다." },
-      status: "error",
-    })
 
     await expect(
       AdminLayout({ children: <h1>대시보드</h1> })
@@ -122,13 +98,21 @@ describe("어드민 layout", () => {
     expect(redirectMock).toHaveBeenCalledWith("/login?next=%2F")
   })
 
-  it.each(["contract-error", "network-error"] as const)(
-    "%s 세션 오류는 로그인으로 보내지 않고 서비스 오류를 보여준다",
-    async (code) => {
-      getSessionMock.mockResolvedValueOnce({
-        error: { code, message: "서비스 오류" },
-        status: "error",
-      })
+  it.each([
+    new GeneratedApiClientError({
+      kind: "contract",
+      reason: "invalid-json-response",
+      status: 200,
+    }),
+    new GeneratedApiClientError({
+      kind: "network",
+      method: "GET",
+      url: "https://api.example.test/api/admin/session",
+    }),
+  ])(
+    "$name 세션 오류는 로그인으로 보내지 않고 서비스 오류를 보여준다",
+    async (error) => {
+      getAdminSessionMock.mockRejectedValueOnce(error)
 
       render(await AdminLayout({ children: <h1>대시보드</h1> }))
 

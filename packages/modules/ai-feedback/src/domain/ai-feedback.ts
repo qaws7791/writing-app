@@ -5,7 +5,6 @@ const outputCollectionMaxLength = 20
 const providerResponseKeys = new Set([
   "improvements",
   "nextAction",
-  "score",
   "strengths",
   "summary",
 ])
@@ -13,16 +12,11 @@ const providerResponseKeys = new Set([
 export type AiFeedbackProviderResponse = Readonly<{
   improvements: readonly string[]
   nextAction: string
-  score: number
   strengths: readonly string[]
   summary: string
 }>
 
-export type AiFeedback = AiFeedbackProviderResponse &
-  Readonly<{
-    scoreRange: readonly [0, 100]
-    showScore: boolean
-  }>
+export type AiFeedback = AiFeedbackProviderResponse
 
 export type AiFeedbackProviderResponseError = Readonly<{
   kind: "provider-response-invalid"
@@ -38,46 +32,34 @@ export function validateAiFeedbackProviderResponse(
 
   const improvements = readTextCollection(value["improvements"])
   const nextAction = readText(value["nextAction"])
-  const score = value["score"]
   const strengths = readTextCollection(value["strengths"])
   const summary = readText(value["summary"])
 
   if (
     improvements === null ||
     nextAction === null ||
-    typeof score !== "number" ||
-    !Number.isInteger(score) ||
-    score < 0 ||
-    score > 100 ||
     strengths === null ||
     summary === null
   ) {
     return invalidResponse()
   }
 
-  return ok(
-    Object.freeze({
-      improvements,
-      nextAction,
-      score,
-      strengths,
-      summary,
-    })
-  )
+  return ok({
+    improvements,
+    nextAction,
+    strengths,
+    summary,
+  })
 }
 
 export function createAiFeedback(
-  response: AiFeedbackProviderResponse,
-  showScore: boolean
+  response: AiFeedbackProviderResponse
 ): AiFeedback {
-  const scoreRange = Object.freeze([0, 100] as const)
-  return Object.freeze({
+  return {
     ...response,
-    improvements: Object.freeze([...response.improvements]),
-    scoreRange,
-    showScore,
-    strengths: Object.freeze([...response.strengths]),
-  })
+    improvements: [...response.improvements],
+    strengths: [...response.strengths],
+  }
 }
 
 function invalidResponse(): Result<never, AiFeedbackProviderResponseError> {
@@ -104,7 +86,7 @@ function readTextCollection(value: unknown): readonly string[] | null {
   const items = value.map(readText)
   return items.some((item) => item === null)
     ? null
-    : Object.freeze(items.map((item) => item ?? ""))
+    : items.map((item) => item ?? "")
 }
 
 function isUnknownRecord(

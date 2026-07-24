@@ -1,42 +1,57 @@
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
+
+const generatedClient = vi.hoisted(() => ({
+  completeLearnerStep: vi.fn(),
+  createLearnerStepAiFeedback: vi.fn(),
+  startLearnerLesson: vi.fn(),
+}))
+
+vi.mock("@workspace/http-client/learner", () => generatedClient)
 
 import { createLessonSessionEffects } from "@/features/lesson-session/api/lesson-session-effect-adapter"
-import type { LessonSessionApi } from "@/features/lesson-session/api/lesson-session-api"
-import {
-  learnerCompleteStepResponseSchema,
-  learnerStartLessonResponseSchema,
-} from "@workspace/contracts/learning/learner-api"
-import { httpApiOk as apiOk } from "@workspace/http-client/api-result"
+import type {
+  LearnerCompleteStepResultDto,
+  LearnerStartLessonResultDto,
+} from "@/shared/http/learner-api-client"
+
+const start: LearnerStartLessonResultDto = {
+  completedSteps: 0,
+  currentStepId: "step-1",
+  currentStepIndex: 0,
+  drafts: [],
+  progressPercent: 0,
+  status: "in_progress",
+  totalSteps: 2,
+  version: { curriculumVersionId: "version-1", revision: 1 },
+}
+
+const advanced: LearnerCompleteStepResultDto = {
+  evaluation: null,
+  learning: {
+    completedSteps: 1,
+    currentStepId: "step-2",
+    currentStepIndex: 1,
+    progressPercent: 50,
+    status: "in_progress",
+    totalSteps: 2,
+    version: start.version,
+  },
+  status: "advanced",
+}
 
 describe("createLessonSessionEffects", () => {
-  it("lesson-scoped 전이 명령에 공통 식별자를 결합한다", async () => {
-    const start = learnerStartLessonResponseSchema.parse({
-      completedSteps: 0,
-      currentStepId: "step-1",
-      currentStepIndex: 0,
-      progressPercent: 0,
-      status: "in_progress",
-      totalSteps: 2,
-      version: { curriculumVersionId: "version-1", revision: 1 },
-    })
-    const advanced = learnerCompleteStepResponseSchema.parse({
-      evaluation: null,
-      learning: {
-        ...start,
-        completedSteps: 1,
-        currentStepId: "step-2",
-        currentStepIndex: 1,
-        progressPercent: 50,
-      },
-      status: "advanced",
-    })
-    const startLesson = vi.fn(async () => apiOk(start))
-    const completeStep = vi.fn(async () => apiOk(advanced))
-    const api = createApi({ completeStep, startLesson })
-    const effects = createLessonSessionEffects(api, {
-      expectedCurriculumVersionId: "version-1",
-      lessonId: "lesson-1",
-    })
+  beforeEach(() => {
+    generatedClient.completeLearnerStep.mockReset()
+    generatedClient.createLearnerStepAiFeedback.mockReset()
+    generatedClient.startLearnerLesson.mockReset()
+  })
+
+  it("생성 클라이언트 호출에 lesson 범위와 body를 전달한다", async () => {
+    generatedClient.startLearnerLesson.mockResolvedValue(start)
+    generatedClient.completeLearnerStep.mockResolvedValue(advanced)
+    const effects = createEffects()
 
     await effects.start()
     await effects.completeStep({
@@ -44,26 +59,143 @@ describe("createLessonSessionEffects", () => {
       stepId: "step-1",
     })
 
-    expect(startLesson).toHaveBeenCalledWith({
-      expectedCurriculumVersionId: "version-1",
-      lessonId: "lesson-1",
-    })
-    expect(completeStep).toHaveBeenCalledWith({
-      lessonId: "lesson-1",
-      request: { kind: "acknowledge" },
-      stepId: "step-1",
-    })
+    expect(generatedClient.startLearnerLesson).toHaveBeenCalledWith(
+      "lesson-1",
+      { expectedCurriculumVersionId: "version-1" }
+    )
+    expect(generatedClient.completeLearnerStep).toHaveBeenCalledWith(
+      "lesson-1",
+      "step-1",
+      { kind: "acknowledge" }
+    )
   })
+
+  it("AI 요청의 멱등성 키를 generated RequestInit에 전달한다", async () => {
+    generatedClient.createLearnerStepAiFeedback.mockResolvedValue({
+      feedback: {
+        improvements: ["문장을 더 구체적으로 써 보세요."],
+        nextAction: "한 문장을 고쳐 써 보세요.",
+        remainingAttempts: 1,
+        strengths: ["핵심 생각이 분명해요."],
+        summary: "요약",
+      },
+      transition: advanced,
+    })
+
+    await createEffects().requestAiFeedback({
+      idempotencyKey: "feedback-1",
+      stepId: "step-ai",
+    })
+
+    expect(generatedClient.createLearnerStepAiFeedback).toHaveBeenCalledWith(
+      "lesson-1",
+      "step-ai",
+      { headers: { "Idempotency-Key": "feedback-1" } }
+    )
+  })
+
+  it.each([
+    [
+      "provider",
+      httpError("PROVIDER_UNAVAILABLE", 503),
+      {
+        kind: "retryable",
+        retryAfterSeconds: undefined,
+        reuseIdempotencyKey: false,
+      },
+    ],
+    [
+      "pending",
+      httpError("ATTEMPT_IN_PROGRESS", 409, 17),
+      {
+        kind: "retryable",
+        retryAfterSeconds: 17,
+        reuseIdempotencyKey: true,
+      },
+    ],
+    [
+      "daily quota",
+      httpError("AI_FEEDBACK_DAILY_QUOTA_EXCEEDED", 429, 3_600),
+      { kind: "quota", retryAfterSeconds: 3_600, reuseIdempotencyKey: true },
+    ],
+    [
+      "attempt limit",
+      httpError("ATTEMPT_LIMIT_EXCEEDED", 429),
+      {
+        kind: "limit",
+        retryAfterSeconds: undefined,
+        reuseIdempotencyKey: false,
+      },
+    ],
+    [
+      "network",
+      new GeneratedApiClientError({
+        kind: "network",
+        method: "POST",
+        url: "/api/learning/lessons/lesson-1/steps/step-ai/ai-feedback",
+      }),
+      {
+        kind: "retryable",
+        retryAfterSeconds: undefined,
+        reuseIdempotencyKey: true,
+      },
+    ],
+    [
+      "contract",
+      new GeneratedApiClientError({
+        kind: "contract",
+        reason: "invalid-json-response",
+        status: 500,
+      }),
+      {
+        kind: "fatal",
+        retryAfterSeconds: undefined,
+        reuseIdempotencyKey: false,
+      },
+    ],
+  ] as const)(
+    "%s 오류를 학습자 UI 상태로 분류한다",
+    async (_label, error, expected) => {
+      generatedClient.createLearnerStepAiFeedback.mockRejectedValue(error)
+
+      await expect(
+        createEffects().requestAiFeedback({
+          idempotencyKey: "feedback-1",
+          stepId: "step-ai",
+        })
+      ).resolves.toMatchObject({
+        kind: expected.kind,
+        reuseIdempotencyKey: expected.reuseIdempotencyKey,
+        ...(expected.retryAfterSeconds === undefined
+          ? {}
+          : { retryAfterSeconds: expected.retryAfterSeconds }),
+        status: "error",
+      })
+    }
+  )
 })
 
-function createApi(overrides: Partial<LessonSessionApi>): LessonSessionApi {
-  const unavailable = async () => {
-    throw new Error("호출되지 않아야 합니다.")
-  }
-  return {
-    completeStep: vi.fn(unavailable),
-    requestAiFeedback: vi.fn(unavailable),
-    startLesson: vi.fn(unavailable),
-    ...overrides,
-  }
+function createEffects() {
+  return createLessonSessionEffects({
+    expectedCurriculumVersionId: "version-1",
+    lessonId: "lesson-1",
+  })
+}
+
+function httpError(
+  code: string,
+  status: number,
+  retryAfterSeconds: number | null = null
+): GeneratedApiClientError {
+  return new GeneratedApiClientError({
+    error: {
+      code,
+      message: "테스트 오류",
+      requestId: "request-1",
+      violations: [],
+    },
+    kind: "http",
+    retryAfterSeconds,
+    status,
+  })
 }

@@ -17,6 +17,7 @@ import {
   createLearningApplication,
   type LearningApplication,
 } from "#learning/application/learning-application"
+import type { LearnerCourseSummary } from "#learning/application/learning-read-model"
 import type { LearningApplicationDependencies } from "#learning/application/ports/learning-ports"
 import type { LearningCurriculum } from "#learning/domain/learning-types"
 
@@ -33,6 +34,7 @@ const curriculum: LearningCurriculum = {
   category: "기초",
   contentStatus: "active",
   courseId,
+  coverAssetId: null,
   curriculumVersionId,
   description: "설명",
   lessons: [
@@ -57,9 +59,6 @@ const curriculum: LearningCurriculum = {
           feedback: "피드백",
           focus: "명료성",
           id: nextStepId,
-          score: 80,
-          scoreMax: 100,
-          showScore: true,
           sortOrder: 2,
           target: stepId,
           type: "AI_FEEDBACK",
@@ -88,6 +87,37 @@ const inProgress = {
 }
 
 describe("learning application", () => {
+  it("catalog 조회는 repository의 공개 허용 필드만 반환한다", async () => {
+    const fixture = createFixture()
+    const repositoryCourse: LearnerCourseSummary & {
+      readonly internalSolution: string
+    } = {
+      category: "기초",
+      contentStatus: "active",
+      cover: null,
+      description: "설명",
+      id: courseId,
+      internalSolution: "외부에 노출되면 안 됨",
+      lessonCount: 1,
+      title: "코스",
+      version: { curriculumVersionId, revision: 1 },
+      visualKey: "basic-sentence-writing",
+    }
+    vi.mocked(
+      fixture.dependencies.readRepository.listCourses
+    ).mockResolvedValue({
+      items: [repositoryCourse],
+      nextPosition: null,
+    })
+
+    const page = await fixture.application.readCourseCatalog({
+      limit: 20,
+    })
+
+    expect(page.items[0]).not.toHaveProperty("internalSolution")
+    expect(page.items[0]).toMatchObject({ id: courseId, title: "코스" })
+  })
+
   it("lesson start에 identity, content, Clock과 transition port를 순서대로 사용한다", async () => {
     const fixture = createFixture()
 
@@ -97,7 +127,7 @@ describe("learning application", () => {
       lessonId,
     })
 
-    expect(result).toEqual(ok(inProgress))
+    expect(result).toEqual(ok({ ...inProgress, drafts: [] }))
     expect(
       fixture.dependencies.identity.readLearnerStatus
     ).toHaveBeenCalledWith(learnerId)
@@ -117,20 +147,31 @@ describe("learning application", () => {
     )
   })
 
-  it("answer와 acknowledge command를 별도 completion으로 전달한다", async () => {
+  it("answer, acknowledge와 AI fallback을 명시적 completion으로 전달한다", async () => {
     const fixture = createFixture()
     const submission = {
       selectedOptionId: lessonStepItemIdSchema.parse("answer-1"),
       type: "MULTIPLE_CHOICE" as const,
     }
 
-    await fixture.application.answerStep({
+    await fixture.application.submitStep({
+      completion: { kind: "answer", submission },
       learnerId,
       lessonId,
       stepId,
-      submission,
     })
-    await fixture.application.completeStep({ learnerId, lessonId, stepId })
+    await fixture.application.submitStep({
+      completion: { kind: "acknowledge" },
+      learnerId,
+      lessonId,
+      stepId,
+    })
+    await fixture.application.submitStep({
+      completion: { kind: "skip-ai-feedback" },
+      learnerId,
+      lessonId,
+      stepId: nextStepId,
+    })
 
     expect(
       fixture.dependencies.transitionRepository.completeStep
@@ -144,6 +185,51 @@ describe("learning application", () => {
     ).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({ completion: { kind: "acknowledge" } }),
+      curriculum
+    )
+    expect(
+      fixture.dependencies.transitionRepository.completeStep
+    ).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({ completion: { kind: "skip-ai-feedback" } }),
+      curriculum
+    )
+  })
+
+  it("draft command에 인증·pinned revision·expected version을 적용한다", async () => {
+    const fixture = createFixture({ pinned: true })
+    const answer = { text: "저장할 초안", type: "WRITE" as const }
+
+    const result = await fixture.application.saveStepDraft({
+      answer,
+      expectedCurriculumVersionId: curriculumVersionId,
+      expectedVersion: null,
+      learnerId,
+      lessonId,
+      stepId,
+    })
+
+    expect(result.isOk() && result.value).toMatchObject({
+      answer,
+      stepId,
+      version: 0,
+    })
+    expect(fixture.dependencies.content.readCurriculum).toHaveBeenCalledWith({
+      courseId,
+      curriculumVersionId,
+    })
+    expect(
+      fixture.dependencies.transitionRepository.saveStepDraft
+    ).toHaveBeenCalledWith(
+      {
+        answer,
+        expectedCurriculumVersionId: curriculumVersionId,
+        expectedVersion: null,
+        lessonId,
+        occurredAt,
+        stepId,
+        userId: learnerId,
+      },
       curriculum
     )
   })
@@ -166,14 +252,17 @@ describe("learning application", () => {
       }),
     })
 
-    const result = await fixture.application.answerStep({
+    const result = await fixture.application.submitStep({
+      completion: {
+        kind: "answer",
+        submission: {
+          selectedOptionId: lessonStepItemIdSchema.parse("answer-1"),
+          type: "MULTIPLE_CHOICE",
+        },
+      },
       learnerId,
       lessonId,
       stepId,
-      submission: {
-        selectedOptionId: lessonStepItemIdSchema.parse("answer-1"),
-        type: "MULTIPLE_CHOICE",
-      },
     })
 
     expect(result.isOk() && result.value.kind).toBe("retry")
@@ -187,7 +276,8 @@ describe("learning application", () => {
     ] as const) {
       const fixture = createFixture({ identityResult })
 
-      const result = await fixture.application.completeStep({
+      const result = await fixture.application.submitStep({
+        completion: { kind: "acknowledge" },
         learnerId,
         lessonId,
         stepId,
@@ -210,12 +300,14 @@ describe("learning application", () => {
       }),
     })
 
-    const missingResult = await missing.application.completeStep({
+    const missingResult = await missing.application.submitStep({
+      completion: { kind: "acknowledge" },
       learnerId,
       lessonId,
       stepId,
     })
-    const conflictResult = await conflicted.application.completeStep({
+    const conflictResult = await conflicted.application.submitStep({
+      completion: { kind: "acknowledge" },
       learnerId,
       lessonId,
       stepId,
@@ -232,7 +324,12 @@ describe("learning application", () => {
   it("pinned revision은 현재 published revision 대신 정확한 content snapshot을 읽는다", async () => {
     const fixture = createFixture({ pinned: true })
 
-    await fixture.application.completeStep({ learnerId, lessonId, stepId })
+    await fixture.application.submitStep({
+      completion: { kind: "acknowledge" },
+      learnerId,
+      lessonId,
+      stepId,
+    })
 
     expect(fixture.dependencies.content.readCurriculum).toHaveBeenCalledWith({
       courseId,
@@ -341,6 +438,11 @@ type FixtureOverrides = Readonly<{
       LearningApplicationDependencies["transitionRepository"]["prepareAiFeedback"]
     >
   >
+  saveDraftResult?: Awaited<
+    ReturnType<
+      LearningApplicationDependencies["transitionRepository"]["saveStepDraft"]
+    >
+  >
 }>
 
 function createFixture(overrides: FixtureOverrides = {}): {
@@ -358,9 +460,6 @@ function createFixture(overrides: FixtureOverrides = {}): {
             improvements: ["개선"],
             nextAction: "다음 행동",
             remainingAttempts: 1,
-            score: 80,
-            scoreRange: [0, 100] as const,
-            showScore: true,
             strengths: ["장점"],
             summary: "요약",
           })
@@ -370,12 +469,20 @@ function createFixture(overrides: FixtureOverrides = {}): {
     content: {
       findCurriculumByLesson: vi.fn(async () => selectedCurriculum),
       listPublishedCourses: vi.fn(async () => []),
+      resolveAssetReferences: vi.fn(async () => []),
       readCurriculum: vi.fn(async () => selectedCurriculum),
     },
     identity: {
       readLearnerStatus: vi.fn(
         async () => overrides.identityResult ?? ok("active" as const)
       ),
+    },
+    readRepository: {
+      findCourseDetail: vi.fn(async () => null),
+      findLesson: vi.fn(async () => ({ kind: "not-found" as const })),
+      listCourseCategories: vi.fn(async () => []),
+      listCourses: vi.fn(async () => ({ items: [], nextPosition: null })),
+      listProgress: vi.fn(async () => ({ items: [], nextPosition: null })),
     },
     transitionRepository: {
       completeAiFeedbackStep: vi.fn(
@@ -396,10 +503,19 @@ function createFixture(overrides: FixtureOverrides = {}): {
             curriculumVersionId,
             focus: "명료성",
             lessonTitle: "첫 레슨",
-            showScore: true,
           })
       ),
-      startLesson: vi.fn(async () => ok(inProgress)),
+      saveStepDraft: vi.fn(
+        async (command) =>
+          overrides.saveDraftResult ??
+          ok({
+            answer: command.answer,
+            stepId: command.stepId,
+            updatedAt: command.occurredAt.toISOString(),
+            version: command.expectedVersion === null ? 0 : 1,
+          })
+      ),
+      startLesson: vi.fn(async () => ok({ ...inProgress, drafts: [] })),
     },
   }
 

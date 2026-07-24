@@ -1,0 +1,71 @@
+---
+- name: Daily maintenance 입력 사전 검증
+  ansible.builtin.include_tasks: validate.yaml
+
+- name: Daily maintenance 실행기 디렉터리 준비
+  ansible.builtin.file:
+    path: "{{ writing_app_libexec_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Daily maintenance systemd unit 디렉터리 준비
+  ansible.builtin.file:
+    path: "{{ writing_app_systemd_unit_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Daily maintenance 전용 승인 환경 배치
+  ansible.builtin.template:
+    src: maintenance.env.j2
+    dest: "{{ writing_app_config_directory }}/maintenance.env"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: Daily maintenance 실행기 배치
+  ansible.builtin.template:
+    src: maintenance-runner.sh.j2
+    dest: >-
+      {{ writing_app_libexec_directory }}/writing-app-{{ writing_app_environment }}-maintenance
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Daily maintenance systemd service 배치
+  ansible.builtin.template:
+    src: maintenance.service.j2
+    dest: >-
+      {{ writing_app_systemd_unit_directory }}/writing-app-{{ writing_app_environment }}-maintenance.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: writing_app_maintenance_service_unit
+
+- name: Daily maintenance systemd timer 배치
+  ansible.builtin.template:
+    src: maintenance.timer.j2
+    dest: >-
+      {{ writing_app_systemd_unit_directory }}/writing-app-{{ writing_app_environment }}-maintenance.timer
+    owner: root
+    group: root
+    mode: "0644"
+  register: writing_app_maintenance_timer_unit
+
+- name: Daily maintenance timer 활성화
+  ansible.builtin.systemd_service:
+    name: >-
+      writing-app-{{ writing_app_environment }}-maintenance.timer
+    daemon_reload: >-
+      {{
+        writing_app_maintenance_service_unit.changed
+        or writing_app_maintenance_timer_unit.changed
+      }}
+    enabled: true
+    state: >-
+      {{ 'restarted' if writing_app_maintenance_timer_unit.changed else 'started' }}
+  when: writing_app_maintenance_manage_timer | bool

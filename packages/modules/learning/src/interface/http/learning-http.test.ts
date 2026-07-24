@@ -6,14 +6,14 @@ import {
   lessonStepIdSchema,
 } from "@workspace/contracts/content/ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
-import { createApp } from "@workspace/http-platform/core"
+import { createApp } from "@workspace/http-platform/app"
 import { err, ok } from "@workspace/kernel/result"
 
 import type { LearningApplication } from "#learning/application/learning-application"
-import type { LearningQueries } from "#learning/application/learning-queries"
 import { createLearnerCursorCodec } from "#learning/infrastructure/persistence/learner-cursor"
 import {
-  createLearningRoutes,
+  registerLearningRoutes,
+  type LearningHonoEnv,
   type LearningLearnerSessionPort,
 } from "#learning/interface/http/learning-routes"
 
@@ -45,7 +45,7 @@ describe("learning HTTP interface", () => {
     expect(inactive.status).toBe(403)
     expect(inactive.headers.get("Cache-Control")).toBe("private, no-store")
     expect(inactive.headers.get("Vary")).toContain("Cookie")
-    expect(fixture.queries.content.listCourses).not.toHaveBeenCalled()
+    expect(fixture.application.readCourseCatalog).not.toHaveBeenCalled()
     expect(requestActors[1]).toMatchObject({
       id: "learner-1",
       type: "learner",
@@ -68,7 +68,7 @@ describe("learning HTTP interface", () => {
     )
 
     expect(response.status).toBe(400)
-    expect(fixture.application.answerStep).not.toHaveBeenCalled()
+    expect(fixture.application.submitStep).not.toHaveBeenCalled()
   })
 
   it("course·lesson not-found를 canonical 404 code로 mapping한다", async () => {
@@ -95,7 +95,7 @@ describe("learning HTTP interface", () => {
 
   it("step sequence conflict를 canonical 409로 mapping한다", async () => {
     const fixture = createFixture({
-      completeStep: async () =>
+      submitStep: async () =>
         err({ kind: "step-sequence-conflict", lessonId, stepId }),
     })
 
@@ -117,66 +117,119 @@ describe("learning HTTP interface", () => {
     })
   })
 
-  it("route registry가 canonical learner operation과 path를 한 번씩 공개한다", () => {
-    const fixture = createFixture()
-    const definitions = fixture.routes.map(({ route }) => [
-      route.operationId,
-      route.path,
-    ])
-
-    expect(definitions).toEqual([
-      ["getCourses", "/courses"],
-      ["getCourseCategories", "/course-categories"],
-      ["getCourseDetail", "/courses/{courseId}"],
-      ["getLesson", "/lessons/{lessonId}"],
-      ["getProgress", "/progress"],
-      ["startLearnerLesson", "/learning/lessons/{lessonId}/start"],
-      [
-        "completeLearnerStep",
-        "/learning/lessons/{lessonId}/steps/{stepId}/complete",
-      ],
-    ])
-    expect(new Set(definitions.map(([operationId]) => operationId)).size).toBe(
-      definitions.length
+  it("AI 코칭 fallback을 명시적 submit completion으로 전달한다", async () => {
+    const submitStep = vi.fn(async () =>
+      ok({ evaluation: null, kind: "advanced" as const, learning })
     )
+    const fixture = createFixture({ submitStep })
+
+    const response = await fixture.app.request(
+      "/learning/lessons/lesson-1/steps/step-1/complete",
+      {
+        body: JSON.stringify({ kind: "skip-ai-feedback" }),
+        headers: {
+          Cookie: "learner=active",
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    expect(submitStep).toHaveBeenCalledWith({
+      completion: { kind: "skip-ai-feedback" },
+      learnerId,
+      lessonId,
+      stepId,
+    })
+  })
+
+  it("draft를 저장하고 stale expected version을 canonical 409로 mapping한다", async () => {
+    const success = createFixture()
+    const stale = createFixture({
+      saveStepDraft: async () =>
+        err({
+          currentVersion: 1,
+          kind: "step-draft-version-conflict",
+          lessonId,
+          stepId,
+        }),
+    })
+    const request = {
+      body: JSON.stringify({
+        answer: { text: "서버 초안", type: "WRITE" },
+        expectedCurriculumVersionId: curriculumVersionId,
+        expectedVersion: null,
+      }),
+      headers: {
+        Cookie: "learner=active",
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+    }
+
+    const saved = await success.app.request(
+      "/learning/lessons/lesson-1/steps/step-1/draft",
+      request
+    )
+    const conflicted = await stale.app.request(
+      "/learning/lessons/lesson-1/steps/step-1/draft",
+      request
+    )
+
+    expect(saved.status).toBe(200)
+    await expect(saved.json()).resolves.toMatchObject({
+      answer: { text: "초안", type: "WRITE" },
+      stepId,
+      version: 0,
+    })
+    expect(conflicted.status).toBe(409)
+    await expect(conflicted.json()).resolves.toMatchObject({
+      code: "STEP_DRAFT_VERSION_CONFLICT",
+    })
   })
 })
 
 type Overrides = Readonly<{
-  completeStep?: LearningApplication["completeStep"]
-  getCourseDetail?: LearningQueries["content"]["getCourseDetail"]
-  getLesson?: LearningQueries["content"]["getLesson"]
+  getCourseDetail?: LearningApplication["readCourseDetail"]
+  getLesson?: LearningApplication["readLesson"]
+  saveStepDraft?: LearningApplication["saveStepDraft"]
+  submitStep?: LearningApplication["submitStep"]
 }>
 
 function createFixture(overrides: Overrides = {}, requestActors?: unknown[]) {
   const application: LearningApplication = {
-    answerStep: vi.fn(async () =>
-      ok({ evaluation: null, kind: "advanced" as const, learning })
-    ),
-    completeStep:
-      overrides.completeStep ??
-      vi.fn(async () =>
-        ok({ evaluation: null, kind: "advanced" as const, learning })
-      ),
+    readCourseCatalog: vi.fn(async () => ({
+      items: [],
+      nextPosition: null,
+    })),
+    readCourseCategories: vi.fn(async () => []),
+    readCourseDetail:
+      overrides.getCourseDetail ??
+      vi.fn(async () => err({ kind: "course-not-found" as const })),
+    readLearnerHome: vi.fn(async () => ({ items: [], nextPosition: null })),
+    readLesson:
+      overrides.getLesson ??
+      vi.fn(async () => err({ kind: "lesson-not-found" as const })),
     requestAiFeedback: vi.fn(async () =>
       err({ kind: "provider-unavailable" as const, remainingAttempts: 1 })
     ),
-    startLesson: vi.fn(async () => ok(learning)),
-  }
-  const queries: LearningQueries = {
-    content: {
-      getCourseDetail:
-        overrides.getCourseDetail ??
-        vi.fn(async () => err({ kind: "course-not-found" as const })),
-      getLesson:
-        overrides.getLesson ??
-        vi.fn(async () => err({ kind: "lesson-not-found" as const })),
-      listCourseCategories: vi.fn(async () => []),
-      listCourses: vi.fn(async () => ({ items: [], nextPosition: null })),
-    },
-    progress: {
-      readProgress: vi.fn(async () => ({ items: [], nextPosition: null })),
-    },
+    saveStepDraft:
+      overrides.saveStepDraft ??
+      vi.fn(async () =>
+        ok({
+          answer: { text: "초안", type: "WRITE" as const },
+          stepId,
+          updatedAt: "2026-07-22T15:00:00.000Z",
+          version: 0,
+        })
+      ),
+    startLesson: vi.fn(async () => ok({ ...learning, drafts: [] })),
+    submitStep:
+      overrides.submitStep ??
+      vi.fn(async () =>
+        ok({ evaluation: null, kind: "advanced" as const, learning })
+      ),
   }
   const session: LearningLearnerSessionPort = {
     async resolveLearner(headers) {
@@ -186,33 +239,30 @@ function createFixture(overrides: Overrides = {}, requestActors?: unknown[]) {
       return { kind: "active", learnerId }
     },
   }
-  const routes = createLearningRoutes({
+  const app = createApp<LearningHonoEnv>({
+    middleware:
+      requestActors === undefined
+        ? []
+        : [
+            async (context, next) => {
+              try {
+                await next()
+              } finally {
+                requestActors.push(context.get("requestActor"))
+              }
+            },
+          ],
+  })
+  registerLearningRoutes(app, {
     application,
     cursor: createLearnerCursorCodec(
       "learning-http-test-secret-at-least-32-bytes"
     ),
-    queries,
     session,
   })
 
   return {
-    app: createApp({
-      middleware:
-        requestActors === undefined
-          ? []
-          : [
-              async (context, next) => {
-                try {
-                  await next()
-                } finally {
-                  requestActors.push(context.get("requestActor"))
-                }
-              },
-            ],
-      routes,
-    }),
+    app,
     application,
-    queries,
-    routes,
   }
 }

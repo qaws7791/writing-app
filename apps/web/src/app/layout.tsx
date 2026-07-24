@@ -4,7 +4,6 @@ import { connection } from "next/server"
 import type { ReactNode } from "react"
 
 import { zodJitlessBootstrapScript } from "@workspace/nextjs-config/zod-jitless"
-import "@workspace/ui/pretendard-font"
 
 import "@/app/globals.css"
 import { AppProviders } from "@/app/_providers/app-providers"

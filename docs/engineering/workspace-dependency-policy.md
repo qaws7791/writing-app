@@ -22,7 +22,8 @@ dependency audit는 HIGH 이상을 예외 없이 차단하는 상태를 기본�
 현재 task 이름과 실행 대상은 root manifest와 CI workflow가 소유한다. dependency 변경은 다음 범주의 root gate를 함께 통과해야 한다.
 
 - frozen install과 lockfile 불변성
-- 미선언 dependency를 포함한 최소 import graph 검사
+- 미선언 dependency와 package 경계를 포함한 import graph 검사
+- 사용되지 않는 dependency·file·export와 중복 public symbol 검사
 - lint, test와 build
 - 보안 위험이나 release 변경이 있는 경우 dependency audit
 

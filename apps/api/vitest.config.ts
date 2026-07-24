@@ -1,6 +1,5 @@
 import tsconfigPaths from "vite-tsconfig-paths"
 import { readFileSync } from "node:fs"
-import { fileURLToPath } from "node:url"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
@@ -15,16 +14,9 @@ export default defineConfig({
     },
     tsconfigPaths(),
   ],
-  resolve: {
-    alias: {
-      "#resource-document": fileURLToPath(
-        new URL("../../packages/shared/resource-document/src", import.meta.url)
-      ),
-    },
-  },
   ssr: {
     external: ["bun:sqlite"],
-    noExternal: ["@workspace/resource-document", "zod"],
+    noExternal: ["zod"],
   },
   test: {
     environment: "node",

@@ -1,5 +1,3 @@
-import { readdirSync, readFileSync } from "node:fs"
-import { join, relative } from "node:path"
 import { describe, expect, it } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
@@ -14,15 +12,6 @@ import {
 describe("admin runtime config", () => {
   it("학습자 공개 origin을 명시적으로 읽는다", () => {
     expect(readLearnerWebOrigin({})).toBe(localRuntimeDefaults.learnerWebOrigin)
-  })
-
-  it("브라우저 전역 없이 development 기본값을 읽는다", () => {
-    expect(
-      readFileSync(
-        join(process.cwd(), "src/shared/config/admin-runtime-config.ts"),
-        "utf8"
-      )
-    ).not.toContain("window")
   })
 
   it("production 브라우저 공개 주소의 로컬 fallback을 거부한다", () => {
@@ -66,6 +55,7 @@ describe("admin runtime config", () => {
         NODE_ENV: "production",
       })
     ).toEqual({
+      contentAssetImageSource: null,
       development: false,
       reportOnly: true,
       upgradeInsecureRequests: true,
@@ -79,6 +69,7 @@ describe("admin runtime config", () => {
         NODE_ENV: "production",
       })
     ).toEqual({
+      contentAssetImageSource: null,
       development: false,
       reportOnly: false,
       upgradeInsecureRequests: false,
@@ -98,55 +89,49 @@ describe("admin runtime config", () => {
     expect(buildApiUrl(undefined, "/api/admin/auth/sign-in/email")).toBe(
       "/api/admin/auth/sign-in/email"
     )
-    expect(buildApiUrl(undefined, "api/admin/maintenance")).toBe(
-      "/api/admin/maintenance"
+    expect(buildApiUrl(undefined, "api/admin/courses")).toBe(
+      "/api/admin/courses"
     )
   })
 
-  it("runtime config 밖의 실행 코드가 어드민 API base URL env를 직접 읽지 않는다", () => {
-    const runtimeConfigSource = readFileSync(
-      join(process.cwd(), "src/shared/config/admin-runtime-config.ts"),
-      "utf8"
-    )
-    expect(runtimeConfigSource).toContain("env ?? process.env")
-    const offenders = findRuntimeSourceFiles().filter((filePath) => {
-      if (filePath.endsWith("admin-runtime-config.ts")) {
-        return false
-      }
-
-      const source = readFileSync(filePath, "utf8")
-
-      return /process\.env(?:\[['"]API_BASE_URL['"]\]|\.API_BASE_URL)/.test(
-        source
-      )
-    })
-
+  it("content asset origin은 개발 HTTP를 허용하고 production에서 HTTPS를 강제한다", () => {
     expect(
-      offenders.map((filePath) => relative(adminDirectory, filePath))
-    ).toEqual([])
+      readAdminCspRuntimeConfig({
+        ADMIN_ORIGIN: "http://127.0.0.1:3001",
+        CONTENT_ASSET_PUBLIC_BASE_URL: "http://127.0.0.1:4199/content-assets",
+      }).contentAssetImageSource
+    ).toBe("http://127.0.0.1:4199")
+    expect(() =>
+      readAdminCspRuntimeConfig({
+        ADMIN_ORIGIN: "https://admin.example.test",
+        CONTENT_ASSET_PUBLIC_BASE_URL: "http://127.0.0.1:4199/content-assets",
+        NODE_ENV: "production",
+      })
+    ).toThrow("content asset public base URL must use HTTPS in production")
+  })
+
+  it("production content asset origin은 build 허용 목록과 일치해야 한다", () => {
+    expect(
+      readAdminCspRuntimeConfig({
+        ADMIN_ORIGIN: "https://admin.example.test",
+        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS:
+          "https://staging-assets.example.test,https://assets.example.test",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          "https://assets.example.test/content-assets",
+        NODE_ENV: "production",
+      }).contentAssetImageSource
+    ).toBe("https://assets.example.test")
+    expect(() =>
+      readAdminCspRuntimeConfig({
+        ADMIN_ORIGIN: "https://admin.example.test",
+        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS:
+          "https://staging-assets.example.test,https://assets.example.test",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          "https://unknown-assets.example.test/content-assets",
+        NODE_ENV: "production",
+      })
+    ).toThrow(
+      "content asset public base URL origin is not in the image allowlist"
+    )
   })
 })
-
-function findRuntimeSourceFiles(
-  directory = join(adminDirectory, "src")
-): string[] {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = join(directory, entry.name)
-
-    if (entry.isDirectory()) {
-      return findRuntimeSourceFiles(entryPath)
-    }
-
-    if (
-      entry.name.endsWith(".test.ts") ||
-      entry.name.endsWith(".test.tsx") ||
-      (!entry.name.endsWith(".ts") && !entry.name.endsWith(".tsx"))
-    ) {
-      return []
-    }
-
-    return [entryPath]
-  })
-}
-
-const adminDirectory = join(import.meta.dirname, "../../..")

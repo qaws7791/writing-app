@@ -39,6 +39,7 @@
     "**/dist/**",
     "**/.turbo/**",
     "**/coverage/**",
+    "**/.generated/**",
     "**/.source/**",
     "**/next-env.d.ts",
     "docs/superpowers/evidence/**",

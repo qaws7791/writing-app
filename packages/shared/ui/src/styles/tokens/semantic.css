@@ -67,6 +67,12 @@
   --info: var(--info-bg);
   --info-foreground: var(--info-fg);
 
+  --chart-1: var(--ref-charcoal);
+  --chart-2: var(--ref-mint-dark);
+  --chart-3: var(--ref-coral-dark);
+  --chart-4: var(--ref-info-fg);
+  --chart-5: var(--ref-muted);
+
   --border: color-mix(in oklab, var(--ref-charcoal) 12%, transparent);
   --focus: var(--ref-charcoal);
   --link: var(--ref-charcoal);
@@ -86,7 +92,7 @@
   --action-primary-bg: var(--ref-charcoal);
   --action-primary-fg: var(--ref-cream);
   --action-selected-bg: var(--ref-primary-yellow);
-  --action-selected-fg: var(--ref-charcoal);
+  --action-selected-fg: var(--ref-ink);
   --fg-default: var(--ref-charcoal);
   --fg-muted: var(--ref-muted);
   --fg-subtle: #8c857a;

@@ -19,6 +19,7 @@
     ".env.production.local",
     "apps/api/.env.development",
     "apps/api/.generated/",
+    "packages/infra/http-client/.generated/",
     "coverage",
     ".turbo",
     ".worktrees/",

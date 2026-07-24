@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { adminCourseEditorStepSchema } from "@workspace/contracts/content/admin-courses"
 import {
+  lessonStepDefinitions,
   lessonStepTypeValues,
   type LessonStepType,
 } from "@workspace/contracts/content/steps"
@@ -11,10 +12,27 @@ import {
   createEditorStep,
   type EditorStep,
 } from "@/features/course-editor/model/editor-step"
-import { renderStepForm } from "@/features/course-editor/ui/step-forms/step-form-registry"
+import {
+  renderStepForm,
+  stepFormByType,
+} from "@/features/course-editor/ui/step-forms/step-form-registry"
 import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
 
 describe("코스 스텝 편집", () => {
+  const assetUpload = {
+    assets: [],
+    disabled: false,
+    upload: async () => {
+      throw new Error("이 테스트에서는 asset을 업로드하지 않습니다.")
+    },
+  } as const
+
+  it("canonical 10타입 계약과 form registry key가 일치한다", () => {
+    expect(Object.keys(stepFormByType).sort()).toEqual(
+      Object.keys(lessonStepDefinitions).sort()
+    )
+  })
+
   it.each(lessonStepTypeValues)("%s 타입의 최소 유효 스텝을 만든다", (type) => {
     const step = createStep(type)
     expect(adminCourseEditorStepSchema.safeParse(step).success).toBe(true)
@@ -23,7 +41,7 @@ describe("코스 스텝 편집", () => {
   it("구조화된 타입 폼을 렌더링한다", () => {
     const step = createStep("READING")
 
-    render(renderStepForm(step, vi.fn()))
+    render(renderStepForm(step, vi.fn(), assetUpload))
 
     expect(screen.getByLabelText("본문")).toHaveValue("")
     expect(screen.getByText("READING")).toBeVisible()
@@ -34,6 +52,7 @@ describe("코스 스텝 편집", () => {
 
     render(
       <StepWorkspace
+        assetUpload={assetUpload}
         onAdd={onAdd}
         onChange={vi.fn()}
         onMove={vi.fn()}

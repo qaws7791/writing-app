@@ -29,48 +29,81 @@ export type LessonStepType = z.infer<typeof lessonStepTypeSchema>
 
 type LessonStepDefinition = {
   readonly answerable: boolean
+  readonly completion: "acknowledge" | "answer" | "ai-feedback"
+  readonly draftable: boolean
+  readonly evaluatedByServer: boolean
   readonly schema: z.ZodType<unknown>
 }
 
 export const lessonStepDefinitions = {
   READING: {
     answerable: false,
+    completion: "acknowledge",
+    draftable: false,
+    evaluatedByServer: false,
     schema: readingStepDtoSchema,
   },
   COMPARE: {
     answerable: false,
+    completion: "acknowledge",
+    draftable: false,
+    evaluatedByServer: false,
     schema: compareStepDtoSchema,
   },
   MULTIPLE_CHOICE: {
     answerable: true,
+    completion: "answer",
+    draftable: true,
+    evaluatedByServer: true,
     schema: multipleChoiceStepDtoSchema,
   },
   FILL_BLANK: {
     answerable: true,
+    completion: "answer",
+    draftable: true,
+    evaluatedByServer: true,
     schema: fillBlankStepDtoSchema,
   },
   SELECT: {
     answerable: true,
+    completion: "answer",
+    draftable: true,
+    evaluatedByServer: true,
     schema: selectStepDtoSchema,
   },
   ORDER: {
     answerable: true,
+    completion: "answer",
+    draftable: true,
+    evaluatedByServer: true,
     schema: orderStepDtoSchema,
   },
   WRITE: {
     answerable: true,
+    completion: "answer",
+    draftable: true,
+    evaluatedByServer: true,
     schema: writeStepDtoSchema,
   },
   AI_FEEDBACK: {
-    answerable: true,
+    answerable: false,
+    completion: "ai-feedback",
+    draftable: false,
+    evaluatedByServer: true,
     schema: aiFeedbackStepDtoSchema,
   },
   MATCH: {
     answerable: true,
+    completion: "answer",
+    draftable: true,
+    evaluatedByServer: true,
     schema: matchStepDtoSchema,
   },
   CATEGORIZE: {
     answerable: true,
+    completion: "answer",
+    draftable: true,
+    evaluatedByServer: true,
     schema: categorizeStepDtoSchema,
   },
 } as const satisfies Record<LessonStepType, LessonStepDefinition>
@@ -90,10 +123,22 @@ export const lessonStepDtoSchema = z.discriminatedUnion("type", [
 
 export type LessonStepDto = z.infer<typeof lessonStepDtoSchema>
 
+export type AnswerableLessonStepType = {
+  [TType in LessonStepType]: (typeof lessonStepDefinitions)[TType]["answerable"] extends true
+    ? TType
+    : never
+}[LessonStepType]
+
 export const answerableLessonStepTypeValues = lessonStepTypeValues.filter(
-  (stepType) => lessonStepDefinitions[stepType].answerable
+  (stepType): stepType is AnswerableLessonStepType =>
+    lessonStepDefinitions[stepType].answerable
 )
 
 export const answerableLessonStepTypes = new Set<LessonStepType>(
   answerableLessonStepTypeValues
+)
+
+export const draftableLessonStepTypeValues = lessonStepTypeValues.filter(
+  (stepType): stepType is AnswerableLessonStepType =>
+    lessonStepDefinitions[stepType].draftable
 )

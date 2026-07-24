@@ -5,14 +5,16 @@ export type AppErrorInput = {
   status: ErrorStatusCode
   code: string
   message: string
-  errors?: ErrorResponse["errors"]
+  headers?: Readonly<Record<string, string>>
+  violations?: ErrorResponse["violations"]
   cause?: unknown
 }
 
 export class AppError extends Error {
   readonly status: ErrorStatusCode
   readonly code: string
-  readonly errors?: ErrorResponse["errors"]
+  readonly headers?: Readonly<Record<string, string>>
+  readonly violations?: ErrorResponse["violations"]
   override readonly cause?: unknown
 
   constructor(input: AppErrorInput) {
@@ -21,7 +23,8 @@ export class AppError extends Error {
     this.name = "AppError"
     this.status = input.status
     this.code = input.code
-    this.errors = input.errors
+    this.headers = input.headers
+    this.violations = input.violations
     this.cause = input.cause
   }
 }

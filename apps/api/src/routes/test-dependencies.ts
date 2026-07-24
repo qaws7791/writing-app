@@ -6,18 +6,20 @@ import {
   learnerProgressPageSchema,
 } from "@workspace/contracts/learning/learner-content"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
-import { createAiFeedbackRoutes } from "@workspace/ai-feedback/http"
-import { createLearnerIdentityRoutes } from "@workspace/identity/http"
+import { registerAiFeedbackRoutes } from "@workspace/ai-feedback/http"
+import { registerLearnerIdentityRoutes } from "@workspace/identity/http"
 import type { SessionResolver } from "@workspace/identity/sessions"
 import type { LearningApplication } from "@workspace/learning/application"
 import {
   createLearnerCursorCodec,
-  createLearningRoutes,
+  registerLearningRoutes,
 } from "@workspace/learning/http"
-import type { LearningQueries } from "@workspace/learning/queries"
 import { err, ok } from "@workspace/kernel/result"
 
-import type { ApiDependencies } from "@/http/learner-app"
+import { createLearnerApp, type ApiDependencies } from "@/http/learner-app"
+import { registerAuthProxy } from "@/http/auth-proxy"
+import { registerHealthRoutes } from "@/http/health-routes"
+import { registerLearnerApiDocumentation } from "@/http/openapi"
 
 const activeSession = {
   user: {
@@ -36,6 +38,7 @@ const coursePage = learnerCoursePageSchema.parse({
     {
       category: "입문자를 위한 코스",
       contentStatus: "active",
+      cover: null,
       description: "매일 조금씩 쓰는 습관을 만듭니다.",
       id: "c1",
       lessonCount: 1,
@@ -68,6 +71,7 @@ const lesson = learnerLessonSchema.parse({
   category: "문장의 기본기",
   courseId: "c1",
   description: "명료한 문장을 살펴봅니다.",
+  drafts: [],
   estimatedMinutes: 5,
   id: "l1",
   learning: { status: "not_started", totalSteps: 1, version },
@@ -93,50 +97,50 @@ const progressPage = learnerProgressPageSchema.parse({
 
 export function createTestDependencies(
   input: {
-    readonly completeStep?: LearningApplication["completeStep"]
+    readonly submitStep?: LearningApplication["submitStep"]
+    readonly health?: { readonly isDatabaseReady: () => boolean }
+    readonly profileStats?: Readonly<{
+      completedLessons: number
+      currentStreakDays: number
+      lastActiveDate: string | null
+      progressPercent: number
+      totalLessons: number
+    }>
     readonly sessionResolver?: SessionResolver
   } = {}
-): ApiDependencies {
+) {
   const sessionResolver = input.sessionResolver ?? createTestSessionResolver()
   const application: LearningApplication = {
-    answerStep: async () => {
-      throw new Error("Unexpected test dependency call: answerStep")
+    async readCourseCatalog() {
+      return { items: coursePage.items, nextPosition: null }
     },
-    completeStep:
-      input.completeStep ??
-      (async () => {
-        throw new Error("Unexpected test dependency call: completeStep")
-      }),
+    async readCourseCategories() {
+      return ["입문자를 위한 코스"]
+    },
+    async readCourseDetail({ courseId }) {
+      return courseId === "c1"
+        ? ok(courseDetail)
+        : err({ kind: "course-not-found" })
+    },
+    async readLearnerHome() {
+      return { items: progressPage.items, nextPosition: null }
+    },
+    async readLesson({ lessonId }) {
+      return lessonId === "l1" ? ok(lesson) : err({ kind: "lesson-not-found" })
+    },
     requestAiFeedback: async () =>
       err({ kind: "provider-unavailable", remainingAttempts: 1 }),
+    saveStepDraft: async () => {
+      throw new Error("Unexpected test dependency call: saveStepDraft")
+    },
     startLesson: async () => {
       throw new Error("Unexpected test dependency call: startLesson")
     },
-  }
-  const queries: LearningQueries = {
-    content: {
-      async getCourseDetail({ courseId }) {
-        return courseId === "c1"
-          ? ok(courseDetail)
-          : err({ kind: "course-not-found" })
-      },
-      async getLesson({ lessonId }) {
-        return lessonId === "l1"
-          ? ok(lesson)
-          : err({ kind: "lesson-not-found" })
-      },
-      async listCourseCategories() {
-        return ["입문자를 위한 코스"]
-      },
-      async listCourses() {
-        return { items: coursePage.items, nextPosition: null }
-      },
-    },
-    progress: {
-      async readProgress() {
-        return { items: progressPage.items, nextPosition: null }
-      },
-    },
+    submitStep:
+      input.submitStep ??
+      (async () => {
+        throw new Error("Unexpected test dependency call: submitStep")
+      }),
   }
   const learningSession = {
     async resolveLearner(headers: Headers) {
@@ -154,40 +158,70 @@ export function createTestDependencies(
   }
 
   return {
-    aiFeedbackRoutes: createAiFeedbackRoutes({
-      command: {
-        async requestFeedback() {
-          throw new Error("Unexpected test dependency call: AI feedback")
-        },
-      },
-      session: learningSession,
-    }),
-    identityRoutes: createLearnerIdentityRoutes({
-      profileStatsQuery: {
-        async readProfileStats() {
-          return {
-            completedLessons: 1,
-            currentStreakDays: 2,
-            lastActiveDate: "2026-06-14",
-            progressPercent: 33,
-            totalLessons: 3,
-          }
-        },
-      },
-      sessionResolver,
-    }),
-    health: { isDatabaseReady: () => true },
-    learningRoutes: createLearningRoutes({
-      application,
-      cursor: createLearnerCursorCodec(
-        "test-cursor-signing-secret-with-32-bytes"
-      ),
-      queries,
-      session: learningSession,
-    }),
-    now: () => new Date("2026-07-23T00:00:00.000Z"),
+    application,
+    cursor: createLearnerCursorCodec(
+      "test-cursor-signing-secret-with-32-bytes"
+    ),
+    health: input.health ?? { isDatabaseReady: () => true },
+    learningSession,
+    profileStats:
+      input.profileStats ??
+      ({
+        completedLessons: 1,
+        currentStreakDays: 2,
+        lastActiveDate: "2026-06-14",
+        progressPercent: 33,
+        totalLessons: 3,
+      } as const),
     sessionResolver,
   }
+}
+
+export function createTestLearnerApp(
+  input: Parameters<typeof createTestDependencies>[0] & {
+    readonly authHandler?: (request: Request) => Promise<Response>
+    readonly runtime?: ApiDependencies
+  } = {}
+) {
+  const dependencies = createTestDependencies(input)
+  const app = createLearnerApp(input.runtime ?? {})
+
+  registerHealthRoutes(app, dependencies.health)
+  registerAiFeedbackRoutes(app, {
+    command: {
+      async requestFeedback() {
+        throw new Error("Unexpected test dependency call: AI feedback")
+      },
+    },
+    session: dependencies.learningSession,
+  })
+  registerLearnerIdentityRoutes(app, {
+    application: {
+      async changeLearnerDisplayName(command) {
+        return ok({
+          deletedAt: null,
+          displayName: command.displayName.trim(),
+          status: "active",
+          userId: command.userId,
+        })
+      },
+    },
+    profileStatsQuery: {
+      async readProfileStats() {
+        return dependencies.profileStats
+      },
+    },
+    sessionResolver: dependencies.sessionResolver,
+  })
+  registerLearningRoutes(app, {
+    application: dependencies.application,
+    cursor: dependencies.cursor,
+    session: dependencies.learningSession,
+  })
+  registerAuthProxy(app, input.authHandler)
+  registerLearnerApiDocumentation(app, { enabled: true })
+
+  return app
 }
 
 function createTestSessionResolver(): SessionResolver {

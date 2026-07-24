@@ -29,6 +29,7 @@ import {
   type EditorStep,
 } from "@/features/course-editor/model/editor-step"
 import { renderStepForm } from "@/features/course-editor/ui/step-forms/step-form-registry"
+import type { StepFormProps } from "@/features/course-editor/ui/step-forms/shared/step-form-contract"
 
 const stepTypeItems = lessonStepTypeValues.map((type) => ({
   label: type,
@@ -36,12 +37,14 @@ const stepTypeItems = lessonStepTypeValues.map((type) => ({
 }))
 
 export function StepWorkspace({
+  assetUpload,
   onAdd,
   onChange,
   onMove,
   onRemove,
   steps,
 }: {
+  readonly assetUpload: StepFormProps<EditorStep["type"]>["assetUpload"]
   readonly onAdd: (step: EditorStep) => void
   readonly onChange: (step: EditorStep) => void
   readonly onMove: (step: EditorStep, direction: "down" | "up") => void
@@ -154,7 +157,7 @@ export function StepWorkspace({
                   <TrashIcon aria-hidden="true" size={14} />
                 </Button>
               </div>
-              {renderStepForm(step, onChange)}
+              {renderStepForm(step, onChange, assetUpload)}
             </li>
           ))}
         </ol>

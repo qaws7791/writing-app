@@ -1,4 +1,8 @@
-import type { AnyRouteConfig } from "@workspace/http-platform/core"
+import {
+  createRoute,
+  type OpenAPIHono,
+  type RouteConfig,
+} from "@hono/zod-openapi"
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import {
   adminArchiveCourseResultSchema,
@@ -12,10 +16,7 @@ import {
 
 import type { ContentApplication } from "#content/application/content-application"
 import type { ContentAdminSessionPort } from "#content/application/ports/content-ports"
-import {
-  contentMutationRouteOptions,
-  contentSessionRouteOptions,
-} from "#content/interface/http/content-http-auth"
+import { contentSessionRouteOptions } from "#content/interface/http/content-http-auth"
 import { mapContentError } from "#content/interface/http/content-http-errors"
 import {
   toAdminCourseDetail,
@@ -24,29 +25,27 @@ import {
 import {
   contentAuthenticatedResponses,
   contentErrorJsonResponse,
-  defineContentRoute,
-  type ContentRouteHandler,
 } from "#content/interface/http/content-http-support"
+import type { ContentAdminHonoEnv } from "#content/interface/http/content-http-auth"
 
 export type AdminCourseRouteDependencies = Readonly<{
   application: ContentApplication
   sessionPort: ContentAdminSessionPort
 }>
 
-export function createAdminCourseRoutes(
+export function registerAdminCourseRoutes<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   dependencies: AdminCourseRouteDependencies
-) {
-  return Object.freeze([
-    createListCoursesRoute(dependencies),
-    createCreateCourseRoute(dependencies),
-    createArchiveCourseRoute(dependencies),
-  ])
+): void {
+  registerListCoursesRoute(app, dependencies)
+  registerCreateCourseRoute(app, dependencies)
+  registerArchiveCourseRoute(app, dependencies)
 }
 
-function createListCoursesRoute({
-  application,
-  sessionPort,
-}: AdminCourseRouteDependencies) {
+function registerListCoursesRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminCourseRouteDependencies
+): void {
   const routeConfig = {
     method: "get",
     operationId: "getAdminCourses",
@@ -57,20 +56,19 @@ function createListCoursesRoute({
     ),
     summary: "어드민 코스 목록 조회",
     ...contentSessionRouteOptions(sessionPort),
-  } satisfies AnyRouteConfig
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
 
-  const handler: ContentRouteHandler<typeof routeConfig> = async (context) => {
+  app.openapi(route, async (context) => {
     const page = await application.getCourses(context.req.valid("query"))
     return context.json(toAdminCourseList(page), 200)
-  }
-
-  return defineContentRoute({ ...routeConfig, handler })
+  })
 }
 
-function createCreateCourseRoute({
-  application,
-  sessionPort,
-}: AdminCourseRouteDependencies) {
+function registerCreateCourseRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminCourseRouteDependencies
+): void {
   const routeConfig = {
     method: "post",
     operationId: "createAdminCourse",
@@ -79,22 +77,21 @@ function createCreateCourseRoute({
       jsonResponse("생성된 어드민 코스입니다.", adminCourseDetailDtoSchema)
     ),
     summary: "어드민 코스 생성",
-    ...contentMutationRouteOptions(sessionPort),
-  } satisfies AnyRouteConfig
+    ...contentSessionRouteOptions(sessionPort),
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
 
-  const handler: ContentRouteHandler<typeof routeConfig> = async (context) => {
-    const result = await application.createCourse(context.var.contentActor)
+  app.openapi(route, async (context) => {
+    const result = await application.createCourse(context.var.contentAdminId)
     if (result.isErr()) throw mapContentError(result.error)
     return context.json(toAdminCourseDetail(result.value), 200)
-  }
-
-  return defineContentRoute({ ...routeConfig, handler })
+  })
 }
 
-function createArchiveCourseRoute({
-  application,
-  sessionPort,
-}: AdminCourseRouteDependencies) {
+function registerArchiveCourseRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminCourseRouteDependencies
+): void {
   const routeConfig = {
     method: "delete",
     operationId: "archiveAdminCourse",
@@ -111,12 +108,13 @@ function createArchiveCourseRoute({
       409: contentErrorJsonResponse("코스 상태 변경이 충돌했습니다."),
     },
     summary: "어드민 코스 보관",
-    ...contentMutationRouteOptions(sessionPort),
-  } satisfies AnyRouteConfig
+    ...contentSessionRouteOptions(sessionPort),
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
 
-  const handler: ContentRouteHandler<typeof routeConfig> = async (context) => {
+  app.openapi(route, async (context) => {
     const result = await application.archiveCourse({
-      actor: context.var.contentActor,
+      adminId: context.var.contentAdminId,
       courseId: context.req.valid("param").courseId,
     })
     if (result.isErr()) throw mapContentError(result.error)
@@ -124,7 +122,5 @@ function createArchiveCourseRoute({
       adminArchiveCourseResultSchema.parse({ archived: true }),
       200
     )
-  }
-
-  return defineContentRoute({ ...routeConfig, handler })
+  })
 }

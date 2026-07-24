@@ -3,9 +3,10 @@
 import Link from "next/link"
 
 import type {
-  LearnerCourseDetail,
-  LessonLearningState,
-} from "@workspace/contracts/learning/learner-content"
+  LearnerCourseDetailDto,
+  LearnerCourseLessonDto,
+  LearnerCourseUnitDto,
+} from "@/shared/http/learner-api-client"
 import { CheckIcon, LockIcon, PlayIcon } from "@workspace/ui/components/icons"
 import {
   Accordion,
@@ -16,11 +17,11 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 
 type CourseCurriculumProps = {
-  readonly course: LearnerCourseDetail
+  readonly course: LearnerCourseDetailDto
 }
 
-type CourseUnit = LearnerCourseDetail["units"][number]
-type CourseLessonSummary = CourseUnit["lessons"][number]
+type CourseUnit = LearnerCourseUnitDto
+type CourseLessonSummary = LearnerCourseLessonDto
 
 export function CourseCurriculum({ course }: CourseCurriculumProps) {
   return (
@@ -62,8 +63,8 @@ function CurriculumUnit({
             className={cn(
               "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
               unitDone
-                ? "bg-mint-light text-charcoal"
-                : "bg-charcoal/15 text-charcoal"
+                ? "bg-success text-success-foreground"
+                : "bg-bg-surface text-fg-default"
             )}
           >
             {unitDone ? (
@@ -100,7 +101,7 @@ function CurriculumLesson({
   status,
 }: {
   readonly lesson: CourseLessonSummary
-  readonly status: LessonLearningState["status"]
+  readonly status: CourseLessonSummary["learning"]["status"]
 }) {
   const done = status === "completed"
   const locked = status === "locked"
@@ -115,10 +116,10 @@ function CurriculumLesson({
           className={cn(
             "w-6 h-6 rounded-full flex justify-center items-center",
             done
-              ? "bg-mint-light text-charcoal"
+              ? "bg-success text-success-foreground"
               : locked
-                ? "bg-charcoal/15 text-muted-foreground"
-                : "bg-charcoal/15 text-charcoal"
+                ? "bg-bg-surface text-fg-muted"
+                : "bg-bg-surface text-fg-default"
           )}
         >
           {done ? (

@@ -27,7 +27,6 @@ describe("module-local OpenAI feedback provider", () => {
               output_text: JSON.stringify({
                 improvements: ["근거를 보강하세요."],
                 nextAction: "예시를 추가하세요.",
-                score: 88,
                 strengths: ["주장이 명확합니다."],
                 summary: "좋은 초안입니다.",
               }),
@@ -41,11 +40,12 @@ describe("module-local OpenAI feedback provider", () => {
 
     await expect(provider.createFeedback(prompt, { signal })).resolves.toEqual(
       ok({
-        improvements: ["근거를 보강하세요."],
-        nextAction: "예시를 추가하세요.",
-        score: 88,
-        strengths: ["주장이 명확합니다."],
-        summary: "좋은 초안입니다.",
+        feedback: {
+          improvements: ["근거를 보강하세요."],
+          nextAction: "예시를 추가하세요.",
+          strengths: ["주장이 명확합니다."],
+          summary: "좋은 초안입니다.",
+        },
       })
     )
     expect(requests[0]).toMatchObject({
@@ -59,9 +59,12 @@ describe("module-local OpenAI feedback provider", () => {
         },
       },
     })
-    expect(requests[0]?.text.format.schema.properties).not.toHaveProperty(
-      "showScore"
-    )
+    expect(requests[0]?.text.format.schema.required).toEqual([
+      "summary",
+      "strengths",
+      "improvements",
+      "nextAction",
+    ])
   })
 
   it("provider 원문이 잘못되면 원문 없이 invalid-response로 반환한다", async () => {
@@ -101,8 +104,7 @@ describe("module-local OpenAI feedback provider", () => {
     ).resolves.toEqual(err({ kind: "provider-unavailable" }))
   })
 
-  it("usage observer에는 token 수와 model만 전달한다", async () => {
-    const usage: unknown[] = []
+  it("usage는 provider 응답 원문 없이 정규화해 반환한다", async () => {
     const provider = createOpenAiFeedbackProvider({
       client: {
         responses: {
@@ -111,7 +113,6 @@ describe("module-local OpenAI feedback provider", () => {
               output_text: JSON.stringify({
                 improvements: ["개선점"],
                 nextAction: "다음 행동",
-                score: 70,
                 strengths: ["강점"],
                 summary: "요약",
               }),
@@ -125,22 +126,27 @@ describe("module-local OpenAI feedback provider", () => {
         },
       },
       model: "gpt-test",
-      onUsage: (event) => usage.push(event),
       timeoutMs: 30_000,
     })
 
-    await provider.createFeedback(prompt, {
+    const result = await provider.createFeedback(prompt, {
       signal: new AbortController().signal,
     })
 
-    expect(usage).toEqual([
-      {
-        inputTokens: 10,
-        model: "gpt-test",
-        outputTokens: 20,
-        totalTokens: 30,
-      },
-    ])
-    expect(JSON.stringify(usage)).not.toContain("학습자 답변")
+    expect(result).toEqual(
+      ok({
+        feedback: {
+          improvements: ["개선점"],
+          nextAction: "다음 행동",
+          strengths: ["강점"],
+          summary: "요약",
+        },
+        usage: {
+          inputTokens: 10,
+          outputTokens: 20,
+        },
+      })
+    )
+    expect(JSON.stringify(result)).not.toContain("학습자 답변")
   })
 })

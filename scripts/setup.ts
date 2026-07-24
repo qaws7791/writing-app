@@ -139,10 +139,10 @@ function createCandidateDatabaseEnvironment(
   environment: Readonly<NodeJS.ProcessEnv>,
   candidatePath: string
 ): Readonly<NodeJS.ProcessEnv> {
-  return Object.freeze({
+  return {
     ...environment,
     DATABASE_URL: pathToFileURL(candidatePath).href,
-  })
+  }
 }
 
 async function runCommand(

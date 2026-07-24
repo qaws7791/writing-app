@@ -4,7 +4,7 @@ import type {
 } from "@workspace/ai/openai-client"
 import { normalizeAiProviderError } from "@workspace/ai/openai-client"
 import type { Result } from "@workspace/kernel/result"
-import { err } from "@workspace/kernel/result"
+import { err, ok } from "@workspace/kernel/result"
 
 import type { AiFeedbackProvider } from "#ai-feedback/application/ports/ai-feedback-provider"
 import { validateAiFeedbackProviderResponse } from "#ai-feedback/domain/ai-feedback"
@@ -41,24 +41,17 @@ export type OpenAiResponsesClient = Readonly<{
   }>
 }>
 
-export type OpenAiUsageEvent = Readonly<{
-  inputTokens: number
-  model: string
-  outputTokens: number
-  totalTokens: number
-}>
-
 export function createConfiguredAiFeedbackProvider(input: {
   readonly model: string
-  readonly onUsage?: (event: OpenAiUsageEvent) => void
   readonly runtime: Result<OpenAiClientRuntime, AiInfrastructureError>
 }): AiFeedbackProvider {
-  if (input.runtime.isErr()) return createUnavailableAiFeedbackProvider()
+  if (input.runtime.isErr()) {
+    return createUnavailableAiFeedbackProvider({ model: input.model })
+  }
 
   return createOpenAiFeedbackProvider({
     client: input.runtime.value.client,
     model: input.model,
-    onUsage: input.onUsage,
     timeoutMs: input.runtime.value.timeoutMs,
   })
 }
@@ -66,10 +59,11 @@ export function createConfiguredAiFeedbackProvider(input: {
 export function createOpenAiFeedbackProvider(input: {
   readonly client: OpenAiResponsesClient
   readonly model: string
-  readonly onUsage?: (event: OpenAiUsageEvent) => void
   readonly timeoutMs: number
 }): AiFeedbackProvider {
-  return Object.freeze({
+  return {
+    model: input.model,
+    provider: "openai",
     async createFeedback(prompt, options) {
       try {
         const response = await input.client.responses.create(
@@ -89,24 +83,32 @@ export function createOpenAiFeedbackProvider(input: {
           { signal: options.signal }
         )
 
-        if (response.usage !== undefined) {
-          input.onUsage?.(
-            Object.freeze({
-              inputTokens: response.usage.input_tokens,
-              model: input.model,
-              outputTokens: response.usage.output_tokens,
-              totalTokens: response.usage.total_tokens,
-            })
-          )
+        const usage = readUsage(response.usage)
+        if (response.usage !== undefined && usage === undefined) {
+          return err({ kind: "provider-response-invalid" })
         }
 
         let parsed: unknown
         try {
           parsed = JSON.parse(response.output_text)
         } catch {
-          return err({ kind: "provider-response-invalid" })
+          return err({
+            kind: "provider-response-invalid",
+            ...(usage === undefined ? {} : { usage }),
+          })
         }
-        return validateAiFeedbackProviderResponse(parsed)
+        const feedback = validateAiFeedbackProviderResponse(parsed)
+        if (feedback.isErr()) {
+          return err({
+            ...feedback.error,
+            ...(usage === undefined ? {} : { usage }),
+          })
+        }
+
+        return ok({
+          feedback: feedback.value,
+          ...(usage === undefined ? {} : { usage }),
+        })
       } catch (cause) {
         const error = normalizeAiProviderError(cause, input.timeoutMs)
         switch (error.kind) {
@@ -120,15 +122,46 @@ export function createOpenAiFeedbackProvider(input: {
         }
       }
     },
-  })
+  }
 }
 
-export function createUnavailableAiFeedbackProvider(): AiFeedbackProvider {
-  return Object.freeze({
+export function createUnavailableAiFeedbackProvider(
+  input: Readonly<{ model?: string }> = {}
+): AiFeedbackProvider {
+  return {
+    model: input.model ?? "unconfigured",
+    provider: "openai",
     async createFeedback() {
       return err({ kind: "provider-unavailable" })
     },
-  })
+  }
+}
+
+function readUsage(
+  usage:
+    | Readonly<{
+        input_tokens: number
+        output_tokens: number
+        total_tokens: number
+      }>
+    | undefined
+) {
+  if (usage === undefined) return undefined
+  if (
+    !Number.isInteger(usage.input_tokens) ||
+    usage.input_tokens < 0 ||
+    !Number.isInteger(usage.output_tokens) ||
+    usage.output_tokens < 0 ||
+    !Number.isInteger(usage.total_tokens) ||
+    usage.total_tokens < 0
+  ) {
+    return undefined
+  }
+
+  return {
+    inputTokens: usage.input_tokens,
+    outputTokens: usage.output_tokens,
+  }
 }
 
 const aiFeedbackJsonSchema = {
@@ -141,7 +174,6 @@ const aiFeedbackJsonSchema = {
       type: "array",
     },
     nextAction: { minLength: 1, type: "string" },
-    score: { maximum: 100, minimum: 0, type: "integer" },
     strengths: {
       items: { minLength: 1, type: "string" },
       maxItems: 20,
@@ -150,6 +182,6 @@ const aiFeedbackJsonSchema = {
     },
     summary: { minLength: 1, type: "string" },
   },
-  required: ["summary", "strengths", "improvements", "nextAction", "score"],
+  required: ["summary", "strengths", "improvements", "nextAction"],
   type: "object",
 } as const

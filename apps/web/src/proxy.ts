@@ -18,6 +18,9 @@ export function proxy(request: NextRequest) {
     imageSources: [
       "https://lh3.googleusercontent.com",
       "https://images.googleusercontent.com",
+      ...(runtime.contentAssetImageSource === null
+        ? []
+        : [runtime.contentAssetImageSource]),
     ],
     nonce,
     upgradeInsecureRequests: runtime.upgradeInsecureRequests,

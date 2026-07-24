@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 
 import { SearchIcon } from "@workspace/ui/components/icons"
 import { StatusBadge } from "@/entities/learner-account/ui/status-badge"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type {
   AdminDeleteUserResult,
   AdminUserDetail,
@@ -19,7 +19,6 @@ import {
   readGetFormFields,
 } from "@/shared/navigation/get-filter-url"
 import { readUserStatusTransition } from "@/features/user-management/model/user-status-transition"
-import type { UserId } from "@/entities/learner-account/model/learner-account-id"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
   AlertDialog,
@@ -78,14 +77,14 @@ export function AdminUsersPage({
   usersResult,
 }: {
   readonly deleteUser: (
-    userId: UserId
-  ) => Promise<AdminApiResult<AdminDeleteUserResult>>
+    userId: string
+  ) => Promise<AdminRequestResult<AdminDeleteUserResult>>
   readonly filters: ReadAdminUsersInput
   readonly updateUserStatus: (input: {
     readonly status: LearnerOperationalStatus
-    readonly userId: UserId
-  }) => Promise<AdminApiResult<AdminUserDetail>>
-  readonly usersResult: AdminApiResult<AdminUserList>
+    readonly userId: string
+  }) => Promise<AdminRequestResult<AdminUserDetail>>
+  readonly usersResult: AdminRequestResult<AdminUserList>
 }) {
   const [deleteTarget, setDeleteTarget] = useState<
     AdminUserList["items"][number] | null
@@ -208,7 +207,7 @@ export function AdminUsersPage({
         </Alert>
       )}
       <div className="overflow-hidden rounded-[24px] border border-border/50">
-        <Table className="min-w-0">
+        <Table className="min-w-[880px]">
           <TableCaption className="sr-only">사용자 목록</TableCaption>
           <TableHeader>
             <TableRow className="border-b border-border/50 bg-transparent">

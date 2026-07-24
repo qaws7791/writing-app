@@ -1,13 +1,29 @@
-import { and, asc, count, eq, or, sql } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type {
   CourseId,
+  ContentAssetId,
   CurriculumVersionId,
   LessonId,
 } from "@workspace/types/ids"
 
 import type { ContentError } from "#content/domain/content-error"
+import {
+  contentAssetOrphanRetentionMs,
+  type ContentAsset,
+  type ContentAssetKind,
+} from "#content/domain/content-asset"
 import {
   contentStatuses,
   createCourseId,
@@ -30,18 +46,19 @@ import {
 import { createCurriculumDraft } from "#content/domain/curriculum"
 import type {
   ContentCoursePage,
+  ContentAssetOwner,
   ContentRepository,
   CourseEditorDocument,
   ReadContentCoursesInput,
 } from "#content/application/ports/content-ports"
 import {
+  contentAssets,
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
 } from "#content/infrastructure/persistence/schema"
-import { resetContentFromSeed } from "#content/infrastructure/persistence/seed"
 
 const activeStatus = contentStatuses.active
 
@@ -53,7 +70,10 @@ type CourseReadDatabase = Pick<WritingAppDatabase, "select">
 export function createDrizzleContentRepository(
   database: WritingAppDatabase
 ): ContentRepository {
-  return Object.freeze({
+  return {
+    async createAsset(asset) {
+      return createAsset(database, asset)
+    },
     async createCourse(input) {
       return createCourse(database, input)
     },
@@ -68,6 +88,21 @@ export function createDrizzleContentRepository(
     },
     async listPublishedCourseSummaries() {
       return listPublishedCourseSummaries(database)
+    },
+    async listActiveAssetsForCourse(courseId) {
+      return listActiveAssetsForCourse(database, courseId)
+    },
+    async listOrphanedAssetCandidates(input) {
+      return listOrphanedAssetCandidates(database, input)
+    },
+    async deleteOrphanedAssetCandidates(input) {
+      return deleteOrphanedAssetCandidates(database, input)
+    },
+    async readAssetOwner(input) {
+      return readAssetOwner(database, input)
+    },
+    async readActiveAssetsByIds(assetIds) {
+      return readActiveAssetsByIds(database, assetIds)
     },
     async publishDraft(input) {
       return publishDraft(database, input)
@@ -85,16 +120,185 @@ export function createDrizzleContentRepository(
     async readCurriculum(input) {
       return readCurriculum(database, input)
     },
-    async resetContent(input) {
-      return ok(await resetContentFromSeed(database, input.now))
-    },
     async saveCourse(input) {
       return saveCourse(database, input)
     },
     async saveDraft(input) {
       return saveDraft(database, input)
     },
-  })
+  }
+}
+
+function listActiveAssetsForCourse(
+  database: CourseReadDatabase,
+  courseId: CourseId
+): readonly ContentAsset[] {
+  return database
+    .select()
+    .from(contentAssets)
+    .where(
+      and(
+        eq(contentAssets.courseId, courseId),
+        eq(contentAssets.status, "active")
+      )
+    )
+    .orderBy(asc(contentAssets.createdAt), asc(contentAssets.id))
+    .all()
+    .map(toContentAsset)
+}
+
+function readActiveAssetsByIds(
+  database: CourseReadDatabase,
+  assetIds: readonly ContentAssetId[]
+): readonly ContentAsset[] {
+  if (assetIds.length === 0) return []
+
+  return database
+    .select()
+    .from(contentAssets)
+    .where(
+      and(
+        inArray(contentAssets.id, assetIds),
+        eq(contentAssets.status, "active")
+      )
+    )
+    .orderBy(asc(contentAssets.id))
+    .all()
+    .map(toContentAsset)
+}
+
+function listOrphanedAssetCandidates(
+  database: WritingAppDatabase,
+  input: { readonly batchSize: number; readonly cutoff: Date }
+) {
+  try {
+    return ok(
+      database
+        .select({
+          id: contentAssets.id,
+          objectKey: contentAssets.objectKey,
+        })
+        .from(contentAssets)
+        .innerJoin(
+          courseCurriculumVersions,
+          eq(courseCurriculumVersions.id, contentAssets.curriculumVersionId)
+        )
+        .where(
+          and(
+            eq(contentAssets.status, "orphaned"),
+            isNotNull(contentAssets.orphanedAt),
+            lte(contentAssets.orphanedAt, input.cutoff),
+            eq(courseCurriculumVersions.status, "draft")
+          )
+        )
+        .orderBy(asc(contentAssets.orphanedAt), asc(contentAssets.id))
+        .limit(input.batchSize)
+        .all()
+        .map(({ id, objectKey }) => ({ id: id as ContentAssetId, objectKey }))
+    )
+  } catch {
+    return err({ kind: "content-asset-persistence-failed" } as const)
+  }
+}
+
+function deleteOrphanedAssetCandidates(
+  database: WritingAppDatabase,
+  input: {
+    readonly assetIds: readonly ContentAssetId[]
+    readonly cutoff: Date
+  }
+) {
+  if (input.assetIds.length === 0) return ok(0)
+
+  try {
+    const deleted = database
+      .delete(contentAssets)
+      .where(
+        and(
+          inArray(contentAssets.id, input.assetIds),
+          eq(contentAssets.status, "orphaned"),
+          isNotNull(contentAssets.orphanedAt),
+          lte(contentAssets.orphanedAt, input.cutoff)
+        )
+      )
+      .returning({ id: contentAssets.id })
+      .all()
+    return ok(deleted.length)
+  } catch {
+    return err({ kind: "content-asset-persistence-failed" } as const)
+  }
+}
+
+function readAssetOwner(
+  database: CourseReadDatabase,
+  input: {
+    readonly courseId: CourseId
+    readonly curriculumVersionId: CurriculumVersionId
+  }
+): ContentAssetOwner | null {
+  const owner = database
+    .select({
+      courseId: courseCurriculumVersions.courseId,
+      curriculumVersionId: courseCurriculumVersions.id,
+      versionStatus: courseCurriculumVersions.status,
+    })
+    .from(courseCurriculumVersions)
+    .innerJoin(courses, eq(courses.id, courseCurriculumVersions.courseId))
+    .where(
+      and(
+        eq(courses.id, input.courseId),
+        eq(courses.status, activeStatus),
+        eq(courseCurriculumVersions.id, input.curriculumVersionId)
+      )
+    )
+    .get()
+
+  return owner === undefined
+    ? null
+    : {
+        courseId: createCourseId(owner.courseId),
+        curriculumVersionId: readCurriculumVersionId(owner.curriculumVersionId),
+        versionStatus: owner.versionStatus,
+      }
+}
+
+function createAsset(
+  database: WritingAppDatabase,
+  asset: ContentAsset
+): Result<ContentAsset, ContentError> {
+  try {
+    return database.transaction((transaction) => {
+      const owner = transaction
+        .select({
+          courseStatus: courses.status,
+          versionStatus: courseCurriculumVersions.status,
+        })
+        .from(courseCurriculumVersions)
+        .innerJoin(courses, eq(courses.id, courseCurriculumVersions.courseId))
+        .where(
+          and(
+            eq(courses.id, asset.courseId),
+            eq(courseCurriculumVersions.id, asset.curriculumVersionId)
+          )
+        )
+        .get()
+
+      if (owner === undefined || owner.courseStatus !== activeStatus) {
+        return err({ kind: "content-not-found" })
+      }
+      if (owner.versionStatus !== "draft") {
+        return err({ kind: "content-immutable-revision" })
+      }
+
+      transaction.insert(contentAssets).values(asset).run()
+      return ok(asset)
+    })
+  } catch (error) {
+    if (isUniqueConstraintViolation(error)) {
+      return err({ kind: "content-conflict" })
+    }
+    throw error
+  }
 }
 
 function createCourse(
@@ -121,6 +325,7 @@ function createCourse(
         .values({
           category: "미분류",
           courseId: input.courseId,
+          coverAssetId: null,
           createdAt: input.now,
           description: "강의 설명을 입력하세요.",
           editVersion: 0,
@@ -141,18 +346,18 @@ function createCourse(
     throw error
   }
 
-  return ok(
-    Object.freeze({
-      category: "미분류",
-      courseId: input.courseId,
-      curriculumVersionId,
-      description: "강의 설명을 입력하세요.",
-      editVersion: 0,
-      revision: 1,
-      title: "새 강의",
-      units: Object.freeze([]),
-    })
-  )
+  return ok({
+    assets: [],
+    category: "미분류",
+    courseId: input.courseId,
+    coverAssetId: null,
+    curriculumVersionId,
+    description: "강의 설명을 입력하세요.",
+    editVersion: 0,
+    revision: 1,
+    title: "새 강의",
+    units: [],
+  })
 }
 
 function findCourse(
@@ -166,7 +371,7 @@ function findCourse(
     .get()
   if (row === undefined) return null
 
-  return Object.freeze({
+  return {
     createdAt: new Date(row.createdAt),
     id: createCourseId(row.id),
     publishedCurriculumVersionId:
@@ -175,7 +380,7 @@ function findCourse(
         : readCurriculumVersionId(row.publishedCurriculumVersionId),
     sortOrder: row.sortOrder,
     status: row.status,
-  })
+  }
 }
 
 function readDraft(
@@ -187,6 +392,7 @@ function readDraft(
       category: courseCurriculumVersions.category,
       courseId: courses.id,
       courseStatus: courses.status,
+      coverAssetId: courseCurriculumVersions.coverAssetId,
       curriculumVersionId: courseCurriculumVersions.id,
       description: courseCurriculumVersions.description,
       editVersion: courseCurriculumVersions.editVersion,
@@ -212,6 +418,8 @@ function readDraft(
   return createCurriculumDraft({
     category: row.category,
     courseId: createCourseId(row.courseId),
+    coverAssetId:
+      row.coverAssetId === null ? null : (row.coverAssetId as ContentAssetId),
     curriculumVersionId: readCurriculumVersionId(row.curriculumVersionId),
     description: row.description,
     editVersion: row.editVersion,
@@ -260,40 +468,34 @@ function readCurriculumUnits(
     .orderBy(asc(lessonStepVersions.sortOrder))
     .all()
 
-  return Object.freeze(
-    unitRows.map((unit) =>
-      Object.freeze({
-        id: readUnitId(unit.id),
-        lessons: Object.freeze(
-          lessonRows
-            .filter((lesson) => lesson.unitId === unit.id)
-            .map((lesson) => toCurriculumLesson(lesson, stepRows))
-        ),
-        sortOrder: unit.sortOrder,
-        status: unit.status,
-        title: unit.title,
-      })
-    )
-  )
+  return unitRows.map((unit) => ({
+    id: readUnitId(unit.id),
+    lessons: lessonRows
+      .filter((lesson) => lesson.unitId === unit.id)
+      .map((lesson) => toCurriculumLesson(lesson, stepRows)),
+    sortOrder: unit.sortOrder,
+    status: unit.status,
+    title: unit.title,
+  }))
 }
 
 function toCurriculumLesson(
   lesson: typeof lessonVersions.$inferSelect,
   steps: readonly (typeof lessonStepVersions.$inferSelect)[]
 ): CurriculumLesson {
-  return Object.freeze({
+  return {
     category: lesson.category,
     description: lesson.description,
     estimatedMinutes: lesson.estimatedMinutes,
     id: readLessonId(lesson.id),
     sortOrder: lesson.sortOrder,
     status: lesson.status,
-    steps: Object.freeze(
-      steps.filter((step) => step.lessonId === lesson.id).map(toCurriculumStep)
-    ),
-    summary: Object.freeze(readJsonStringArray(lesson.summaryJson)),
+    steps: steps
+      .filter((step) => step.lessonId === lesson.id)
+      .map(toCurriculumStep),
+    summary: readJsonStringArray(lesson.summaryJson),
     title: lesson.title,
-  })
+  }
 }
 
 function toCurriculumStep(
@@ -302,13 +504,13 @@ function toCurriculumStep(
   const type = readLessonStepType(step.type)
   if (type === null) throw new Error(`Invalid persisted step type: ${step.id}`)
 
-  return Object.freeze({
+  return {
     contentJson: step.contentJson,
     id: readLessonStepId(step.id),
     sortOrder: step.sortOrder,
     status: step.status,
     type,
-  })
+  }
 }
 
 function saveDraft(
@@ -319,72 +521,320 @@ function saveDraft(
     readonly now: Date
   }
 ): Result<CurriculumDraft, ContentError> {
-  return database.transaction((transaction) => {
-    const currentDraft = transaction
-      .select({
-        courseStatus: courses.status,
-        editVersion: courseCurriculumVersions.editVersion,
-        id: courseCurriculumVersions.id,
-        status: courseCurriculumVersions.status,
-      })
-      .from(courses)
-      .innerJoin(
-        courseCurriculumVersions,
-        eq(courseCurriculumVersions.courseId, courses.id)
-      )
-      .where(
-        and(
-          eq(courses.id, input.draft.courseId),
-          eq(courseCurriculumVersions.id, input.draft.curriculumVersionId)
+  try {
+    return database.transaction((transaction) => {
+      const currentDraft = transaction
+        .select({
+          courseStatus: courses.status,
+          coverAssetId: courseCurriculumVersions.coverAssetId,
+          editVersion: courseCurriculumVersions.editVersion,
+          id: courseCurriculumVersions.id,
+          status: courseCurriculumVersions.status,
+        })
+        .from(courses)
+        .innerJoin(
+          courseCurriculumVersions,
+          eq(courseCurriculumVersions.courseId, courses.id)
         )
+        .where(
+          and(
+            eq(courses.id, input.draft.courseId),
+            eq(courseCurriculumVersions.id, input.draft.curriculumVersionId)
+          )
+        )
+        .get()
+
+      if (
+        currentDraft === undefined ||
+        currentDraft.courseStatus !== activeStatus
+      ) {
+        abortDraftSave({ kind: "content-not-found" })
+      }
+      if (currentDraft.status === "published") {
+        abortDraftSave({ kind: "content-immutable-revision" })
+      }
+      if (
+        currentDraft.editVersion !== input.expectedEditVersion ||
+        input.draft.editVersion !== input.expectedEditVersion
+      ) {
+        abortDraftSave({ kind: "content-conflict" })
+      }
+
+      const assetReferences = validateAndTransitionDraftAssetReferences(
+        transaction,
+        {
+          currentCoverAssetId:
+            currentDraft.coverAssetId === null
+              ? null
+              : (currentDraft.coverAssetId as ContentAssetId),
+          currentDraftId: readCurriculumVersionId(currentDraft.id),
+          draft: input.draft,
+          now: input.now,
+        }
       )
-      .get()
+      if (assetReferences.isErr()) abortDraftSave(assetReferences.error)
 
-    if (
-      currentDraft === undefined ||
-      currentDraft.courseStatus !== activeStatus
-    ) {
-      return err({ kind: "content-not-found" })
-    }
-    if (currentDraft.status === "published") {
-      return err({ kind: "content-immutable-revision" })
-    }
-    if (
-      currentDraft.editVersion !== input.expectedEditVersion ||
-      input.draft.editVersion !== input.expectedEditVersion
-    ) {
-      return err({ kind: "content-conflict" })
-    }
+      const updatedDraft = transaction
+        .update(courseCurriculumVersions)
+        .set({
+          category: input.draft.category,
+          coverAssetId: input.draft.coverAssetId,
+          description: input.draft.description,
+          editVersion: input.expectedEditVersion + 1,
+          title: input.draft.title,
+          updatedAt: input.now,
+        })
+        .where(
+          and(
+            eq(courseCurriculumVersions.id, currentDraft.id),
+            eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
+            eq(courseCurriculumVersions.status, "draft")
+          )
+        )
+        .returning({ id: courseCurriculumVersions.id })
+        .get()
+      if (updatedDraft === undefined) {
+        abortDraftSave({ kind: "content-conflict" })
+      }
 
-    const updatedDraft = transaction
-      .update(courseCurriculumVersions)
+      deleteDraftContent(transaction, currentDraft.id)
+      insertCurriculumContent(transaction, currentDraft.id, input.draft.units)
+
+      const saved = readDraft(transaction, input.draft.courseId)
+      if (saved.isErr()) abortDraftSave(saved.error)
+      if (saved.value === null) {
+        throw new Error("Saved content draft was not found")
+      }
+      return ok(saved.value)
+    })
+  } catch (error) {
+    if (error instanceof DraftSaveAbort) return err(error.contentError)
+    throw error
+  }
+}
+
+class DraftSaveAbort extends Error {
+  readonly contentError: ContentError
+
+  constructor(contentError: ContentError) {
+    super(contentError.kind)
+    this.name = "DraftSaveAbort"
+    this.contentError = contentError
+  }
+}
+
+function abortDraftSave(contentError: ContentError): never {
+  throw new DraftSaveAbort(contentError)
+}
+
+type ExpectedAssetReference = Readonly<{
+  id: ContentAssetId
+  kind: ContentAssetKind
+}>
+
+function validateAndTransitionDraftAssetReferences(
+  transaction: WritingAppDatabaseTransaction,
+  input: {
+    readonly currentCoverAssetId: ContentAssetId | null
+    readonly currentDraftId: CurriculumVersionId
+    readonly draft: CurriculumDraft
+    readonly now: Date
+  }
+): Result<void, ContentError> {
+  const currentSteps = transaction
+    .select({
+      contentJson: lessonStepVersions.contentJson,
+      type: lessonStepVersions.type,
+    })
+    .from(lessonStepVersions)
+    .where(eq(lessonStepVersions.curriculumVersionId, input.currentDraftId))
+    .all()
+  const currentReferences = readExpectedAssetReferences({
+    coverAssetId: input.currentCoverAssetId,
+    steps: currentSteps,
+  })
+  const nextReferences = readExpectedAssetReferences({
+    coverAssetId: input.draft.coverAssetId,
+    steps: input.draft.units.flatMap((unit) =>
+      unit.lessons.flatMap((lesson) => lesson.steps)
+    ),
+  })
+  if (currentReferences === null || nextReferences === null) {
+    return invalidAssetReference()
+  }
+
+  const allReferenceIds = [
+    ...new Set(
+      [...currentReferences.values(), ...nextReferences.values()].map(
+        ({ id }) => id
+      )
+    ),
+  ]
+  const assets =
+    allReferenceIds.length === 0
+      ? []
+      : transaction
+          .select({
+            courseId: contentAssets.courseId,
+            curriculumVersionId: contentAssets.curriculumVersionId,
+            id: contentAssets.id,
+            kind: contentAssets.kind,
+            orphanedAt: contentAssets.orphanedAt,
+            status: contentAssets.status,
+            versionStatus: courseCurriculumVersions.status,
+          })
+          .from(contentAssets)
+          .innerJoin(
+            courseCurriculumVersions,
+            and(
+              eq(courseCurriculumVersions.courseId, contentAssets.courseId),
+              eq(courseCurriculumVersions.id, contentAssets.curriculumVersionId)
+            )
+          )
+          .where(inArray(contentAssets.id, allReferenceIds))
+          .all()
+  const assetsById = new Map(assets.map((asset) => [asset.id, asset]))
+  const reactivationCutoff = new Date(
+    input.now.getTime() - contentAssetOrphanRetentionMs
+  )
+  const reactivatedIds: ContentAssetId[] = []
+
+  for (const expected of nextReferences.values()) {
+    const asset = assetsById.get(expected.id)
+    if (
+      asset === undefined ||
+      asset.courseId !== input.draft.courseId ||
+      asset.kind !== expected.kind ||
+      (asset.curriculumVersionId !== input.currentDraftId &&
+        asset.versionStatus !== "published")
+    ) {
+      return invalidAssetReference()
+    }
+    if (asset.status === "active") continue
+    if (
+      asset.curriculumVersionId !== input.currentDraftId ||
+      asset.orphanedAt === null ||
+      asset.orphanedAt <= reactivationCutoff
+    ) {
+      return invalidAssetReference()
+    }
+    reactivatedIds.push(expected.id)
+  }
+
+  const nextIds = new Set(nextReferences.keys())
+  const orphanedIds = [...currentReferences.values()].flatMap(({ id }) => {
+    const asset = assetsById.get(id)
+    return !nextIds.has(id) &&
+      asset?.curriculumVersionId === input.currentDraftId &&
+      asset.status === "active"
+      ? [id]
+      : []
+  })
+
+  if (reactivatedIds.length > 0) {
+    transaction
+      .update(contentAssets)
       .set({
-        category: input.draft.category,
-        description: input.draft.description,
-        editVersion: input.expectedEditVersion + 1,
-        title: input.draft.title,
+        orphanedAt: null,
+        status: "active",
         updatedAt: input.now,
       })
       .where(
         and(
-          eq(courseCurriculumVersions.id, currentDraft.id),
-          eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
-          eq(courseCurriculumVersions.status, "draft")
+          inArray(contentAssets.id, reactivatedIds),
+          eq(contentAssets.curriculumVersionId, input.currentDraftId),
+          eq(contentAssets.status, "orphaned")
         )
       )
-      .returning({ id: courseCurriculumVersions.id })
-      .get()
-    if (updatedDraft === undefined) return err({ kind: "content-conflict" })
+      .run()
+  }
+  if (orphanedIds.length > 0) {
+    transaction
+      .update(contentAssets)
+      .set({
+        orphanedAt: input.now,
+        status: "orphaned",
+        updatedAt: input.now,
+      })
+      .where(
+        and(
+          inArray(contentAssets.id, orphanedIds),
+          eq(contentAssets.curriculumVersionId, input.currentDraftId),
+          eq(contentAssets.status, "active")
+        )
+      )
+      .run()
+  }
 
-    deleteDraftContent(transaction, currentDraft.id)
-    insertCurriculumContent(transaction, currentDraft.id, input.draft.units)
+  return ok(undefined)
+}
 
-    const saved = readDraft(transaction, input.draft.courseId)
-    if (saved.isErr()) return err(saved.error)
-    if (saved.value === null) {
-      throw new Error("Saved content draft was not found")
+function readExpectedAssetReferences(input: {
+  readonly coverAssetId: ContentAssetId | null
+  readonly steps: readonly Readonly<{
+    contentJson: string
+    type: string
+  }>[]
+}): ReadonlyMap<ContentAssetId, ExpectedAssetReference> | null {
+  const references = new Map<ContentAssetId, ExpectedAssetReference>()
+  if (
+    input.coverAssetId !== null &&
+    !addExpectedAssetReference(references, {
+      id: input.coverAssetId,
+      kind: "course-cover",
+    })
+  ) {
+    return null
+  }
+
+  for (const step of input.steps) {
+    if (step.type !== "READING") continue
+    let content: unknown
+    try {
+      content = JSON.parse(step.contentJson)
+    } catch {
+      return null
     }
-    return ok(saved.value)
+    if (
+      typeof content !== "object" ||
+      content === null ||
+      Array.isArray(content)
+    ) {
+      return null
+    }
+    const illustrationAssetId = (
+      content as { readonly illustrationAssetId?: unknown }
+    ).illustrationAssetId
+    if (illustrationAssetId === undefined) continue
+    if (
+      typeof illustrationAssetId !== "string" ||
+      illustrationAssetId.length === 0 ||
+      !addExpectedAssetReference(references, {
+        id: illustrationAssetId as ContentAssetId,
+        kind: "reading-illustration",
+      })
+    ) {
+      return null
+    }
+  }
+
+  return references
+}
+
+function addExpectedAssetReference(
+  references: Map<ContentAssetId, ExpectedAssetReference>,
+  reference: ExpectedAssetReference
+): boolean {
+  const current = references.get(reference.id)
+  if (current !== undefined && current.kind !== reference.kind) return false
+  references.set(reference.id, reference)
+  return true
+}
+
+function invalidAssetReference(): Result<never, ContentError> {
+  return err({
+    kind: "content-validation-failed",
+    reason: "invalid-asset-reference",
   })
 }
 
@@ -429,6 +879,7 @@ function publishDraft(
       .values({
         category: publishedRevision.category,
         courseId: publishedRevision.courseId,
+        coverAssetId: publishedRevision.coverAssetId,
         createdAt: publishedRevision.publishedAt,
         description: publishedRevision.description,
         editVersion: 0,
@@ -598,21 +1049,17 @@ function readCourses(
     .offset(pagination.offset)
     .all()
 
-  return Object.freeze({
-    items: Object.freeze(
-      rows.map((row) =>
-        Object.freeze({
-          ...row,
-          id: createCourseId(row.id),
-          visualKey: readCourseVisualKey(row.visualKey),
-        })
-      )
-    ),
+  return {
+    items: rows.map((row) => ({
+      ...row,
+      id: createCourseId(row.id),
+      visualKey: readCourseVisualKey(row.visualKey),
+    })),
     page: pagination.page,
     pageSize: pagination.pageSize,
     totalItems: pagination.totalItems,
     totalPages: pagination.totalPages,
-  })
+  }
 }
 
 function createReadCoursesWhereCondition({
@@ -648,6 +1095,7 @@ function listPublishedCourseSummaries(
     .select({
       category: courseCurriculumVersions.category,
       courseId: courses.id,
+      coverAssetId: courseCurriculumVersions.coverAssetId,
       description: courseCurriculumVersions.description,
       lessonCount: count(lessonVersions.id),
       revision: courseCurriculumVersions.revision,
@@ -673,16 +1121,14 @@ function listPublishedCourseSummaries(
     .orderBy(asc(courses.sortOrder), asc(courses.id))
     .all()
 
-  return Object.freeze(
-    rows.map((row) =>
-      Object.freeze({
-        ...row,
-        courseId: createCourseId(row.courseId),
-        versionId: readCurriculumVersionId(row.versionId),
-        visualKey: readCourseVisualKey(row.visualKey),
-      })
-    )
-  )
+  return rows.map((row) => ({
+    ...row,
+    courseId: createCourseId(row.courseId),
+    coverAssetId:
+      row.coverAssetId === null ? null : (row.coverAssetId as ContentAssetId),
+    versionId: readCurriculumVersionId(row.versionId),
+    visualKey: readCourseVisualKey(row.visualKey),
+  }))
 }
 
 function readCurriculum(
@@ -721,9 +1167,13 @@ function readCurriculum(
     .get()
   if (version === undefined || version.publishedAt === null) return null
 
-  return Object.freeze({
+  return {
     category: version.category,
     courseId: createCourseId(version.courseId),
+    coverAssetId:
+      version.coverAssetId === null
+        ? null
+        : (version.coverAssetId as ContentAssetId),
     curriculumVersionId: readCurriculumVersionId(version.id),
     description: version.description,
     publishedAt: new Date(version.publishedAt),
@@ -731,7 +1181,7 @@ function readCurriculum(
     title: version.title,
     units: readCurriculumUnits(database, version.id),
     visualKey: readCourseVisualKey(version.visualKey),
-  })
+  }
 }
 
 function findCurriculumByLesson(
@@ -780,12 +1230,12 @@ function findCurriculumByLesson(
 
   return row === undefined
     ? null
-    : Object.freeze({
+    : {
         courseId: createCourseId(row.courseId),
         curriculumVersionId: readCurriculumVersionId(row.curriculumVersionId),
         lessonId: readLessonId(row.lessonId),
         revision: row.revision,
-      })
+      }
 }
 
 function readNextCourseSortOrder(database: WritingAppDatabase): number {
@@ -816,7 +1266,19 @@ function createPageBounds(
 
 function toCourseEditorDocument(draft: CurriculumDraft): CourseEditorDocument {
   const { visualKey: _visualKey, ...document } = draft
-  return Object.freeze(document)
+  return { ...document, assets: [] }
+}
+
+function toContentAsset(row: typeof contentAssets.$inferSelect): ContentAsset {
+  return {
+    ...row,
+    courseId: createCourseId(row.courseId),
+    curriculumVersionId: readCurriculumVersionId(row.curriculumVersionId),
+    id: row.id as ContentAssetId,
+    orphanedAt: row.orphanedAt === null ? null : new Date(row.orphanedAt),
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+  }
 }
 
 function readJsonStringArray(value: string): readonly string[] {

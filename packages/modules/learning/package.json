@@ -12,7 +12,6 @@
     "./mapping": "./src/infrastructure/persistence/published-curriculum-mapper.ts",
     "./module": "./src/module.ts",
     "./ports": "./src/application/ports/learning-ports.ts",
-    "./queries": "./src/application/learning-queries.ts",
     "./reporting": "./src/learning-reporting.ts",
     "./schema": "./src/infrastructure/persistence/schema.ts"
   },

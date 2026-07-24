@@ -1,12 +1,19 @@
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import type { Result } from "@workspace/kernel/result"
 import type {
+  AdminId,
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
 } from "@workspace/types/ids"
 
-import type { ContentActor } from "#content/domain/content-admin-policy"
+import type {
+  ContentAsset,
+  ContentAssetKind,
+  ContentAssetMimeType,
+  ContentAssetValidationReason,
+} from "#content/domain/content-asset"
 import type { ContentError } from "#content/domain/content-error"
 import type {
   Course,
@@ -16,7 +23,24 @@ import type {
   PublishedLessonReference,
 } from "#content/domain/content-model"
 
-export type CourseEditorDocument = Omit<CurriculumDraft, "visualKey">
+export type ResolvedContentAsset = Readonly<{
+  altText: string
+  byteSize: number
+  contentType: ContentAssetMimeType
+  courseId: CourseId
+  curriculumVersionId: CurriculumVersionId
+  id: ContentAssetId
+  kind: ContentAssetKind
+  url: string
+}>
+
+export type ContentAssetReference = Pick<
+  ResolvedContentAsset,
+  "altText" | "id" | "kind" | "url"
+>
+
+export type CourseEditorDocument = Omit<CurriculumDraft, "visualKey"> &
+  Readonly<{ assets: readonly ResolvedContentAsset[] }>
 
 export type ContentCourseListItem = Readonly<{
   category: string
@@ -37,17 +61,6 @@ export type ContentCoursePage = Readonly<{
   totalPages: number
 }>
 
-export type ContentResetResult = Readonly<{
-  changed: Readonly<{
-    archived: number
-    courses: number
-    lessons: number
-    steps: number
-    units: number
-  }>
-  revision: number
-}>
-
 export type ReadContentCoursesInput = Readonly<{
   category: string
   page: number
@@ -56,7 +69,51 @@ export type ReadContentCoursesInput = Readonly<{
   status: "active" | "all" | "archived"
 }>
 
+export type ContentAssetImageProcessorPort = Readonly<{
+  process: (input: {
+    readonly bytes: Uint8Array
+    readonly contentType: ContentAssetMimeType
+    readonly kind: ContentAssetKind
+  }) => Promise<
+    Result<
+      Readonly<{
+        bytes: Uint8Array
+        contentType: ContentAssetMimeType
+      }>,
+      Readonly<{ reason: ContentAssetValidationReason }>
+    >
+  >
+}>
+
+export type ContentAssetStoragePort = Readonly<{
+  deleteObjects: (
+    objectKeys: readonly string[]
+  ) => Promise<Result<void, Readonly<{ retryable: boolean }>>>
+  putObject: (input: {
+    readonly body: Uint8Array
+    readonly contentType: ContentAssetMimeType
+    readonly objectKey: string
+  }) => Promise<
+    Result<Readonly<{ url: string }>, Readonly<{ retryable: boolean }>>
+  >
+  resolveUrl: (objectKey: string) => string
+}>
+
+export type ContentAssetOwner = Readonly<{
+  courseId: CourseId
+  curriculumVersionId: CurriculumVersionId
+  versionStatus: "draft" | "published"
+}>
+
+export type OrphanedContentAssetCandidate = Readonly<{
+  id: ContentAssetId
+  objectKey: string
+}>
+
 export type ContentRepository = Readonly<{
+  createAsset: (
+    asset: ContentAsset
+  ) => Promise<Result<ContentAsset, ContentError>>
   createCourse: (input: {
     readonly courseId: CourseId
     readonly now: Date
@@ -66,6 +123,24 @@ export type ContentRepository = Readonly<{
     courseId: CourseId
   ) => Promise<Result<CurriculumDraft | null, ContentError>>
   listPublishedCourseSummaries: () => Promise<readonly PublishedCourseSummary[]>
+  listActiveAssetsForCourse: (
+    courseId: CourseId
+  ) => Promise<readonly ContentAsset[]>
+  listOrphanedAssetCandidates: (input: {
+    readonly batchSize: number
+    readonly cutoff: Date
+  }) => Promise<Result<readonly OrphanedContentAssetCandidate[], ContentError>>
+  deleteOrphanedAssetCandidates: (input: {
+    readonly assetIds: readonly ContentAssetId[]
+    readonly cutoff: Date
+  }) => Promise<Result<number, ContentError>>
+  readAssetOwner: (input: {
+    readonly courseId: CourseId
+    readonly curriculumVersionId: CurriculumVersionId
+  }) => Promise<ContentAssetOwner | null>
+  readActiveAssetsByIds: (
+    assetIds: readonly ContentAssetId[]
+  ) => Promise<readonly ContentAsset[]>
   publishDraft: (input: {
     readonly expectedEditVersion: number
     readonly nextDraftId: CurriculumVersionId
@@ -81,9 +156,6 @@ export type ContentRepository = Readonly<{
     readonly curriculumVersionId?: CurriculumVersionId
     readonly lessonId: LessonId
   }) => Promise<PublishedLessonReference | null>
-  resetContent: (input: {
-    readonly now: Date
-  }) => Promise<Result<ContentResetResult, ContentError>>
   saveCourse: (input: {
     readonly course: Course
     readonly expectedStatus: Course["status"]
@@ -95,17 +167,15 @@ export type ContentRepository = Readonly<{
   }) => Promise<Result<CurriculumDraft, ContentError>>
 }>
 
-export type ContentResetGuardPort = Readonly<{
-  authorize: () => Result<void, ContentError>
-}>
-
 export type ContentAdminSessionPort = Readonly<{
-  resolveActor: (headers: Headers) => Promise<ContentActor | null>
+  resolveAdminId: (headers: Headers) => Promise<AdminId | null>
 }>
 
 export type ContentApplicationDependencies = Readonly<{
+  assetIdGenerator: IdGenerator<ContentAssetId>
+  assetImageProcessor: ContentAssetImageProcessorPort
+  assetStorage: ContentAssetStoragePort | null
   clock: Clock
   courseIdGenerator: IdGenerator<CourseId>
   repository: ContentRepository
-  resetGuard: ContentResetGuardPort
 }>

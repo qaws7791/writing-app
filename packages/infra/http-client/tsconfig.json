@@ -7,6 +7,11 @@
     "paths": { "#http-client/*": ["./src/*"] },
     "types": ["bun"]
   },
-  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "include": [
+    ".generated/**/*.ts",
+    "orval.config.ts",
+    "src/**/*.ts",
+    "vitest.config.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

@@ -10,17 +10,16 @@
 - HTTP transport는 입력·세션·권한·응답 변환을 소유하고, 도메인 정책과 persistence 구현을 혼합하지 않는다.
 - 도메인 policy와 use case는 HTTP framework·ORM·특정 provider에 의존하지 않는다.
 - concrete persistence adapter는 해당 module infrastructure가 소유하고 실행 의존성 조립은 API composition이 맡는다.
-- 여러 runtime이 공유하는 인증 vendor integration과 credential·session schema는 좁은 auth infra package가 소유한다. 제품 profile·사용자 상태·role policy는 identity module이 소유하며, API의 auth adapter가 vendor-neutral identity directory port를 구현한다. identity module은 auth runtime·schema를 직접 읽지 않는다.
-- content module은 draft 편집, immutable published revision, 발행·보관·reset과 콘텐츠 schema·seed를 함께 소유한다. learning과 operations에는 table이 아니라 공개 query port를 제공한다.
+- 여러 runtime이 공유하는 인증 vendor integration과 credential·session schema는 좁은 auth infra package가 소유한다. identity module은 학습자 profile·사용자 상태와 관리자 session 해석을 소유하며, API의 auth adapter가 vendor-neutral identity directory port를 구현한다. 관리자 권한은 별도 관리자 인증 경계의 유효한 session으로 결정하고 제품 role profile을 두지 않는다.
+- content module은 draft 편집, immutable published revision, 발행·보관과 콘텐츠 schema·seed를 함께 소유한다.
 - ai-feedback module은 coaching prompt, provider 응답 검증, 완료 attempt 제한과 기록, module-local provider adapter와 HTTP interface를 소유한다. API composition은 learning의 저장 답안 문맥·진행 전이와 ai-feedback application port를 연결하며 어느 쪽도 상대 table을 읽지 않는다.
 - learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query, identity의 상태 query와 ai-feedback application port는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
-- resource-library module은 자료 tree·Markdown version·FTS·휴지통과 이미지 metadata lifecycle을 함께 소유한다. API composition은 관리자 actor directory와 object storage를 주입하고, SQLite와 object storage의 비원자적 변경은 보상 삭제·삭제 대기·reconciliation으로 격리한다.
-- operations module은 대시보드·분석 조합, 관리자 AI 대화·quota와 관리자 HTTP interface를 소유한다. reporting은 identity·content·learning의 공개 port를 병렬 호출하고 하나라도 실패하면 불완전한 수치를 성공으로 공개하지 않는다. 관리자 AI에는 resource-library의 검색·조회 port만 주입하며 변경 port를 제공하지 않는다.
+- operations module은 대시보드·분석용 읽기 전용 reporting과 관리자 HTTP interface를 소유한다. reporting SQL은 같은 SQLite의 여러 module table을 join할 수 있지만 다른 module의 command나 repository를 대신하지 않는다.
 - 외부 provider SDK, logger와 DB runtime 구현은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다. HTTP framework의 공통 app·middleware·error·security 구현은 http-platform infra가 소유하되, endpoint를 소유하는 module interface는 공개 platform helper와 필요한 Hono route type을 사용한다. API composition은 module route와 실행 경계 route를 최종 app에 등록한다.
 - 각 module과 auth infra는 자기 최종 Drizzle schema를 소유하고, 실제 seed가 있는 경계만 seed provider를 공개한다. API SQL이 유일한 migration 계보를 소유하고 schema·seed 실행을 조립한다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.
-- API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, 외부 I/O와 여섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
+- API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, 외부 I/O와 `content`, `learning`, `identity`, `ai-feedback`, `operations` 다섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
 - API 종료는 신규 요청 차단과 진행 응답 drain 뒤 `container.dispose()`에 resource 정리를 위임한다. container는 AI, DB, logger를 역순으로 정리하고 각 실패를 격리하며 signal 중복 수신은 같은 종료 작업으로 수렴시킨다.
 
 ## 의존성 판단
@@ -38,7 +37,7 @@
 | 질문                        | 먼저 확인할 권위 소스                                                                                                  |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | 현재 workspace·package 책임 | root와 workspace `package.json`, source import graph                                                                   |
-| 현재 API·schema             | route registry, `packages/shared/contracts`, runtime OpenAPI                                                           |
+| 현재 API·schema             | module HTTP `register*Routes`, API composition root, `packages/shared/contracts`, runtime OpenAPI                      |
 | 현재 persistence·migration  | module schema·repository, `packages/infra/auth`, `apps/api/src/db`, `apps/api/drizzle`과 `packages/infra/db` primitive |
 | 현재 배포 topology          | `deploy/compose/`, proxy 설정, release workflow                                                                        |
 | 설계 이유                   | 관련 ADR와 이 문서의 경계 원칙                                                                                         |

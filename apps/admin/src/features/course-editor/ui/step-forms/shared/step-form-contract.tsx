@@ -10,10 +10,24 @@ import {
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { adminCourseEditorStepSchema } from "@workspace/contracts/content/admin-courses"
+import type {
+  AdminContentAsset,
+  AdminContentAssetKind,
+} from "@/features/course-editor/model/admin-course-editor"
 
 import type { EditorStep } from "@/features/course-editor/model/editor-step"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 
 export type StepFormProps<TType extends EditorStep["type"]> = {
+  readonly assetUpload: {
+    readonly assets: readonly AdminContentAsset[]
+    readonly disabled: boolean
+    readonly upload: (input: {
+      readonly altText: string
+      readonly file: File
+      readonly kind: AdminContentAssetKind
+    }) => Promise<AdminRequestResult<AdminContentAsset>>
+  }
   readonly onChange: (
     step: Extract<EditorStep, { readonly type: TType }>
   ) => void
@@ -25,7 +39,7 @@ export function parseEditorStepChange(
   patch: Readonly<Record<string, unknown>>
 ): EditorStep | null {
   const result = adminCourseEditorStepSchema.safeParse({ ...step, ...patch })
-  return result.success ? result.data : null
+  return result.success ? (result.data as EditorStep) : null
 }
 
 export function StepFormShell({

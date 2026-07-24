@@ -4,20 +4,22 @@ import {
   createAdminUserMutationUseCase,
   createAdminUserReader,
   createIdentityLearningQuery,
-  createOperationsIdentityReportingQuery,
   type AdminUserMutationUseCase,
   type AdminUserReader,
   type IdentityLearningQuery,
-  type OperationsIdentityReportingQuery,
 } from "#identity/application/identity-queries"
 import type {
   AdminAuthenticationPort,
   AuthenticatedLearnerIdentity,
+  DeletedLearnerPurgeRepository,
   IdentityApplicationDependencies,
   IdentityLearningReportPort,
   LearnerAuthenticationPort,
-  LearnerProfileStatsQuery,
 } from "#identity/application/identity-ports"
+import {
+  createDeletedLearnerPurgeCommand,
+  type DeletedLearnerPurgeCommand,
+} from "#identity/application/deleted-learner-purge"
 import {
   createIdentityApplication,
   type IdentityApplication,
@@ -28,32 +30,20 @@ import {
   type AdminSessionResolver,
   type SessionResolver,
 } from "#identity/application/identity-sessions"
-import {
-  createAdminIdentityRoutes,
-  createLearnerIdentityRoutes,
-  type IdentityHttpRouteGroup,
-} from "#identity/interface/http/identity-http"
 import { createDrizzleIdentityRepository } from "#identity/infrastructure/persistence/identity-drizzle-repository"
 
 export type IdentityModule = Readonly<{
   adminUserMutation: AdminUserMutationUseCase
   adminUserReader: AdminUserReader
   application: IdentityApplication
-  createAdminRoutes: (
-    sessionResolver: AdminSessionResolver
-  ) => IdentityHttpRouteGroup
   createAdminSessionResolver: (
     authentication: AdminAuthenticationPort
   ) => AdminSessionResolver
-  createLearnerRoutes: (input: {
-    readonly profileStatsQuery: LearnerProfileStatsQuery
-    readonly sessionResolver: SessionResolver
-  }) => ReturnType<typeof createLearnerIdentityRoutes>
   createLearnerSessionResolver: (
     authentication: LearnerAuthenticationPort
   ) => SessionResolver
+  deletedLearnerPurge: DeletedLearnerPurgeCommand
   learningQuery: IdentityLearningQuery
-  operationsReportingQuery: OperationsIdentityReportingQuery
   provisioningPort: Readonly<{
     provision: (identity: AuthenticatedLearnerIdentity) => Promise<void>
   }>
@@ -62,6 +52,7 @@ export type IdentityModule = Readonly<{
 export function createIdentityModule(
   input: Omit<IdentityApplicationDependencies, "repository"> & {
     readonly database: WritingAppDatabase
+    readonly deletedLearnerPurgeRepository: DeletedLearnerPurgeRepository
     readonly learningReport: IdentityLearningReportPort
   }
 ): IdentityModule {
@@ -77,41 +68,31 @@ export function createIdentityModule(
     reader: adminUserReader,
   })
 
-  return Object.freeze({
+  return {
     adminUserMutation,
     adminUserReader,
     application,
-    createAdminRoutes(sessionResolver) {
-      return createAdminIdentityRoutes({
-        sessionResolver,
-        userMutationService: adminUserMutation,
-        userReader: adminUserReader,
-      })
-    },
     createAdminSessionResolver(authentication) {
       return createAdminSessionResolver({ application, authentication })
-    },
-    createLearnerRoutes(routeInput) {
-      return createLearnerIdentityRoutes(routeInput)
     },
     createLearnerSessionResolver(authentication) {
       return createLearnerSessionResolver({ application, authentication })
     },
+    deletedLearnerPurge: createDeletedLearnerPurgeCommand({
+      clock: input.clock,
+      repository: input.deletedLearnerPurgeRepository,
+    }),
     learningQuery: createIdentityLearningQuery({
       learnerIdentityDirectory: input.learnerIdentityDirectory,
       repository,
     }),
-    operationsReportingQuery: createOperationsIdentityReportingQuery({
-      learnerIdentityDirectory: input.learnerIdentityDirectory,
-      repository,
-    }),
-    provisioningPort: Object.freeze({
+    provisioningPort: {
       async provision(identity: AuthenticatedLearnerIdentity) {
         const result = await application.provisionLearner(identity)
         if (result.isErr()) {
           throw new Error(`identity provisioning failed: ${result.error.kind}`)
         }
       },
-    }),
-  })
+    },
+  }
 }

@@ -14,16 +14,16 @@
 
 ## ID 규칙
 
-| 접두사    | 의미                   |
-| --------- | ---------------------- |
-| `REQ-LRN` | 플랫폼 학습자 요구사항 |
-| `REQ-ADM` | 어드민 운영자 요구사항 |
+| 접두사    | 의미                          |
+| --------- | ----------------------------- |
+| `REQ-LRN` | 플랫폼 학습자 요구사항        |
+| `REQ-ADM` | 어드민 소유자 관리자 요구사항 |
 
 ## 플랫폼
 
 | ID                                                          | 제목                 | 출처 유저 스토리       | 관련 화면                       | 상태 |
 | ----------------------------------------------------------- | -------------------- | ---------------------- | ------------------------------- | ---- |
-| [REQ-LRN-1](./platform/req-lrn-1-google-login.md)           | Google 로그인        | `US-LRN-1`             | `SCR-002`                       | 기준 |
+| [REQ-LRN-1](./platform/req-lrn-1-learner-authentication.md) | 학습자 인증          | `US-LRN-1`             | `SCR-002`                       | 기준 |
 | [REQ-LRN-2](./platform/req-lrn-2-continue-learning.md)      | 이어서 학습          | `US-LRN-2`             | `SCR-003`, `SCR-006`            | 기준 |
 | [REQ-LRN-3](./platform/req-lrn-3-course-discovery.md)       | 코스 탐색과 시작     | `US-LRN-3`, `US-LRN-4` | `SCR-003`, `SCR-004`, `SCR-005` | 기준 |
 | [REQ-LRN-4](./platform/req-lrn-4-lesson-progression.md)     | 레슨 진행            | `US-LRN-5`             | `SCR-006`                       | 기준 |
@@ -36,12 +36,10 @@
 
 ## 어드민
 
-| ID                                                    | 제목              | 출처 유저 스토리 | 관련 화면                                             | 상태 |
-| ----------------------------------------------------- | ----------------- | ---------------- | ----------------------------------------------------- | ---- |
-| [REQ-ADM-1](./admin/req-adm-1-admin-login.md)         | 어드민 로그인     | `US-ADM-1`       | `SCR-101`                                             | 기준 |
-| [REQ-ADM-2](./admin/req-adm-2-dashboard-analytics.md) | 운영 지표와 분석  | `US-ADM-2`       | `SCR-102`, `SCR-107`                                  | 기준 |
-| [REQ-ADM-3](./admin/req-adm-3-content-operations.md)  | 콘텐츠 운영       | `US-ADM-3`       | `SCR-103`, `SCR-104`                                  | 기준 |
-| [REQ-ADM-4](./admin/req-adm-4-user-operations.md)     | 사용자 운영       | `US-ADM-4`       | `SCR-105`, `SCR-106`                                  | 기준 |
-| [REQ-ADM-5](./admin/req-adm-5-content-maintenance.md) | 콘텐츠 유지보수   | `US-ADM-5`       | `SCR-108`                                             | 기준 |
-| [REQ-ADM-6](./admin/req-adm-6-admin-navigation.md)    | 어드민 내비게이션 | `US-ADM-6`       | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107`, `SCR-108` | 기준 |
-| [REQ-ADM-7](./admin/req-adm-7-resource-library.md)    | 관리자 자료실     | `US-ADM-7`       | `SCR-110`                                             | 기준 |
+| ID                                                    | 제목              | 출처 유저 스토리 | 관련 화면                                  | 상태 |
+| ----------------------------------------------------- | ----------------- | ---------------- | ------------------------------------------ | ---- |
+| [REQ-ADM-1](./admin/req-adm-1-admin-login.md)         | 어드민 로그인     | `US-ADM-1`       | `SCR-101`                                  | 기준 |
+| [REQ-ADM-2](./admin/req-adm-2-dashboard-analytics.md) | 운영 지표와 분석  | `US-ADM-2`       | `SCR-102`, `SCR-107`                       | 기준 |
+| [REQ-ADM-3](./admin/req-adm-3-content-operations.md)  | 콘텐츠 운영       | `US-ADM-3`       | `SCR-103`, `SCR-104`                       | 기준 |
+| [REQ-ADM-4](./admin/req-adm-4-user-operations.md)     | 사용자 운영       | `US-ADM-4`       | `SCR-105`, `SCR-106`                       | 기준 |
+| [REQ-ADM-6](./admin/req-adm-6-admin-navigation.md)    | 어드민 내비게이션 | `US-ADM-6`       | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107` | 기준 |

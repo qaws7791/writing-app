@@ -8,23 +8,23 @@ const buttonVariantClasses = cva(
   {
     variants: {
       variant: {
-        default: "bg-charcoal text-cream hover:opacity-90",
-        solid: "bg-charcoal text-cream hover:opacity-90",
+        default: "bg-action-primary-bg text-action-primary-fg hover:opacity-90",
+        solid: "bg-action-primary-bg text-action-primary-fg hover:opacity-90",
         outline:
-          "border border-border bg-transparent text-charcoal hover:bg-surface aria-expanded:bg-surface",
+          "border border-border bg-transparent text-fg-default hover:bg-bg-surface aria-expanded:bg-bg-surface",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-surface-hover aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
           "bg-transparent text-muted-foreground hover:bg-surface hover:text-foreground aria-expanded:bg-surface",
         destructive:
-          "bg-coral-light text-charcoal hover:opacity-90 focus-visible:ring-coral-light/30",
+          "bg-danger text-danger-foreground hover:opacity-90 focus-visible:ring-danger-fg/30",
         link: "text-primary underline-offset-4 hover:underline",
         correct:
-          "bg-mint-light text-charcoal hover:opacity-90 focus-visible:ring-mint-light/30",
+          "bg-success text-success-foreground hover:opacity-90 focus-visible:ring-success-fg/30",
         wrong:
-          "bg-coral-light text-charcoal hover:opacity-90 focus-visible:ring-coral-light/30",
-        white: "bg-cream text-charcoal hover:bg-surface",
-        ink: "bg-ink text-white hover:opacity-90 focus-visible:ring-ink/30",
+          "bg-danger text-danger-foreground hover:opacity-90 focus-visible:ring-danger-fg/30",
+        white: "bg-bg-elevated text-fg-default hover:bg-bg-surface",
+        ink: "bg-action-primary-bg text-action-primary-fg hover:opacity-90",
       },
       size: {
         default: "h-11 px-5 py-2.5 gap-2 font-bold text-base",

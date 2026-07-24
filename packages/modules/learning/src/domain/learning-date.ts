@@ -12,7 +12,7 @@ export type LearningActivityDatePolicy = Readonly<{
 export function createLearningActivityDatePolicy(
   clock: Clock
 ): LearningActivityDatePolicy {
-  return Object.freeze({ currentDateKey: () => toLearningDateKey(clock.now()) })
+  return { currentDateKey: () => toLearningDateKey(clock.now()) }
 }
 
 const learningDateFormatter = new Intl.DateTimeFormat("en-US", {

@@ -102,13 +102,22 @@ services:
       - caddyfile
     restart: unless-stopped
     stop_grace_period: 10s
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
     volumes:
       - type: bind
         source: ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/caddyfile
         target: /etc/caddy/caddyfile
         read_only: true
+      - type: volume
+        source: caddy-data
+        target: /data
+      - type: volume
+        source: caddy-config
+        target: /config
     networks:
-      - edge
       - learner
       - admin
     depends_on:
@@ -130,34 +139,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: "5"
-
-  cloudflared:
-    image: ${CLOUDFLARED_IMAGE:?CLOUDFLARED_IMAGE가 필요합니다}
-    user: "65532:65532"
-    command:
-      - tunnel
-      - --no-autoupdate
-      - run
-      - --token-file
-      - /run/secrets/cloudflare-tunnel-token
-    restart: unless-stopped
-    stop_grace_period: 30s
-    volumes:
-      - type: bind
-        source: >-
-          ${SECRETS_DIRECTORY:?SECRETS_DIRECTORY가 필요합니다}/cloudflare-tunnel-token
-        target: /run/secrets/cloudflare-tunnel-token
-        read_only: true
-    networks:
-      - edge
-    depends_on:
-      caddy:
-        condition: service_healthy
     logging:
       driver: json-file
       options:
@@ -205,6 +186,8 @@ services:
       - /etc/litestream.yaml
       - -if-db-not-exists
       - -if-replica-exists
+      - -integrity-check
+      - full
       - /var/lib/writing-app/api.sqlite
     env_file:
       - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/litestream.env
@@ -216,6 +199,25 @@ services:
       - type: bind
         source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
         target: /var/lib/writing-app
+      - type: bind
+        source: ${BACKUP_DIRECTORY:?BACKUP_DIRECTORY가 필요합니다}
+        target: /var/backups/writing-app
+    networks:
+      - backup
+    restart: "no"
+
+  deletion-marker-restore:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    profiles:
+      - operations
+    command:
+      - bun
+      - /workspace/bin/deletion-marker-restore
+    environment:
+      DEPLOYMENT_VERSION: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    env_file:
+      - ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/api.env
+    volumes:
       - type: bind
         source: ${BACKUP_DIRECTORY:?BACKUP_DIRECTORY가 필요합니다}
         target: /var/backups/writing-app
@@ -240,26 +242,6 @@ services:
     network_mode: none
     restart: "no"
 
-  database-adopt-current-schema-era:
-    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
-    profiles:
-      - operations
-    entrypoint:
-      - bun
-      - /workspace/bin/database-adopt-current-schema-era
-    environment:
-      DATABASE_URL: file:/var/lib/writing-app/api.sqlite
-      NODE_ENV: production
-    volumes:
-      - type: bind
-        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
-        target: /var/lib/writing-app
-      - type: bind
-        source: ${BACKUP_DIRECTORY:?BACKUP_DIRECTORY가 필요합니다}
-        target: /var/backups/writing-app
-    network_mode: none
-    restart: "no"
-
   database-check:
     image: ${API_IMAGE:?API_IMAGE가 필요합니다}
     profiles:
@@ -275,6 +257,42 @@ services:
         source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
         target: /var/lib/writing-app
         read_only: true
+    network_mode: none
+    restart: "no"
+
+  owner-seed:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    profiles:
+      - operations
+    command:
+      - bun
+      - /workspace/bin/owner-seed
+    environment:
+      ADMIN_SEED_EXPECTED_DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      NODE_ENV: production
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
+    network_mode: none
+    restart: "no"
+
+  database-seed:
+    image: ${API_IMAGE:?API_IMAGE가 필요합니다}
+    profiles:
+      - operations
+    command:
+      - bun
+      - /workspace/bin/database-seed
+    environment:
+      DATABASE_SEED_EXPECTED_DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      DATABASE_URL: file:/var/lib/writing-app/api.sqlite
+      NODE_ENV: production
+    volumes:
+      - type: bind
+        source: ${DATA_DIRECTORY:?DATA_DIRECTORY가 필요합니다}
+        target: /var/lib/writing-app
     network_mode: none
     restart: "no"
 
@@ -300,7 +318,10 @@ services:
     restart: "no"
 
 networks:
-  edge:
   learner:
   admin:
   backup:
+
+volumes:
+  caddy-data:
+  caddy-config:

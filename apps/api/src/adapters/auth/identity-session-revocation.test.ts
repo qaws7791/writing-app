@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vitest"
-import {
-  adminIdSchema,
-  userIdSchema,
-} from "@workspace/contracts/identity/admin-ids"
-import {
-  adminAuthSessions,
-  adminAuthUsers,
-  authSessions,
-  authUsers,
-} from "@workspace/auth/schema"
+import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { authSessions, authUsers } from "@workspace/auth/schema"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 
 import { createIdentitySessionRevocation } from "@/adapters/auth/identity-session-revocation"
@@ -17,7 +9,7 @@ import { runApplicationMigrations } from "@/db/migrate"
 const now = new Date("2026-07-22T00:00:00.000Z")
 
 describe("identity auth session revocation adapter", () => {
-  it("제품 ID만 받아 learner와 admin session을 각각 폐기한다", async () => {
+  it("제품 ID만 받아 learner session을 폐기한다", async () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
@@ -29,12 +21,6 @@ describe("identity auth session revocation adapter", () => {
         (await port.revokeLearnerSessions(userIdSchema.parse("user-1"))).isOk()
       ).toBe(true)
       expect(client.db.select().from(authSessions).all()).toEqual([])
-      expect(client.db.select().from(adminAuthSessions).all()).toHaveLength(1)
-
-      expect(
-        (await port.revokeAdminSessions(adminIdSchema.parse("admin-1"))).isOk()
-      ).toBe(true)
-      expect(client.db.select().from(adminAuthSessions).all()).toEqual([])
     } finally {
       client.close()
     }
@@ -48,11 +34,6 @@ describe("identity auth session revocation adapter", () => {
 
       await expect(
         port.revokeLearnerSessions(userIdSchema.parse("user-1"))
-      ).resolves.toMatchObject({
-        error: { kind: "session-revocation-failed" },
-      })
-      await expect(
-        port.revokeAdminSessions(adminIdSchema.parse("admin-1"))
       ).resolves.toMatchObject({
         error: { kind: "session-revocation-failed" },
       })
@@ -77,17 +58,6 @@ function seedAuthUsers(
     })
     .run()
   client.db
-    .insert(adminAuthUsers)
-    .values({
-      createdAt: now,
-      email: "admin@example.com",
-      emailVerified: true,
-      id: "admin-1",
-      name: "관리자",
-      updatedAt: now,
-    })
-    .run()
-  client.db
     .insert(authSessions)
     .values({
       createdAt: now,
@@ -96,17 +66,6 @@ function seedAuthUsers(
       token: "learner-token",
       updatedAt: now,
       userId: "user-1",
-    })
-    .run()
-  client.db
-    .insert(adminAuthSessions)
-    .values({
-      createdAt: now,
-      expiresAt: new Date("2099-01-01T00:00:00.000Z"),
-      id: "admin-session",
-      token: "admin-token",
-      updatedAt: now,
-      userId: "admin-1",
     })
     .run()
 }

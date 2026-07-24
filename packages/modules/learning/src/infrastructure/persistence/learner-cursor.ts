@@ -1,7 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto"
 
 import type {
-  LearnerCourseSort,
   LearnerCursorCodec,
   LearnerCursorEndpoint,
   LearnerCursorPosition,
@@ -29,18 +28,10 @@ type LearnerKeysetCursorCondition<
       readonly primaryOrder: "ascending" | "descending"
     }
 
-export type LearnerCourseCursorCondition = LearnerKeysetCursorCondition<
-  number | string
->
+export type LearnerCourseCursorCondition = LearnerKeysetCursorCondition<number>
 
 export type LearnerProgressCursorCondition =
   LearnerKeysetCursorCondition<number>
-
-export type LearnerCourseCursorPrimarySource = {
-  readonly lessonCount: number
-  readonly sortOrder: number
-  readonly titleSortKey: string
-}
 
 type LearnerCursorPayload = {
   readonly endpoint: LearnerCursorEndpoint
@@ -51,26 +42,18 @@ type LearnerCursorPayload = {
 }
 
 export function resolveLearnerCourseCursorCondition(
-  sort: LearnerCourseSort,
   after: LearnerCursorConditionInput | undefined
 ): LearnerCourseCursorCondition {
   if (after === undefined) return { kind: "first-page" }
-
-  const spec = readCourseCursorSpec(sort)
-  const primary = after.primary
-
-  if (typeof primary !== "number" && typeof primary !== "string") {
-    return { kind: "invalid-primary" }
-  }
-  if (typeof primary !== spec.primaryType) {
+  if (typeof after.primary !== "number") {
     return { kind: "invalid-primary" }
   }
 
   return {
     courseId: after.courseId,
     kind: "after",
-    primary,
-    primaryOrder: spec.primaryOrder,
+    primary: after.primary,
+    primaryOrder: "ascending",
   }
 }
 
@@ -87,22 +70,6 @@ export function resolveLearnerProgressCursorCondition(
     kind: "after",
     primary: after.primary,
     primaryOrder: "descending",
-  }
-}
-
-export function readLearnerCourseCursorPrimary(
-  source: LearnerCourseCursorPrimarySource,
-  sort: LearnerCourseSort
-): number | string {
-  switch (sort) {
-    case "recommended":
-      return source.sortOrder
-    case "title-asc":
-    case "title-desc":
-      return source.titleSortKey
-    case "lesson-count-asc":
-    case "lesson-count-desc":
-      return source.lessonCount
   }
 }
 
@@ -169,23 +136,6 @@ export function createLearnerCursorCodec(secret: string): LearnerCursorCodec {
 
 function sign(payload: string, secret: string): string {
   return createHmac("sha256", secret).update(payload).digest("base64url")
-}
-
-function readCourseCursorSpec(sort: LearnerCourseSort): {
-  readonly primaryOrder: "ascending" | "descending"
-  readonly primaryType: "number" | "string"
-} {
-  switch (sort) {
-    case "recommended":
-    case "lesson-count-asc":
-      return { primaryOrder: "ascending", primaryType: "number" }
-    case "title-asc":
-      return { primaryOrder: "ascending", primaryType: "string" }
-    case "title-desc":
-      return { primaryOrder: "descending", primaryType: "string" }
-    case "lesson-count-desc":
-      return { primaryOrder: "descending", primaryType: "number" }
-  }
 }
 
 function parsePayload(encodedPayload: string): LearnerCursorPayload | null {

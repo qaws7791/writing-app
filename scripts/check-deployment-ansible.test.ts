@@ -14,6 +14,20 @@ describe("Ansible 배포 검증", () => {
       path.join("playbooks", "verify.yaml"),
     ])
   })
+
+  test("운영 playbook은 다섯 개의 명시적 경계만 유지한다", () => {
+    const ansibleRoot = path.resolve(import.meta.dir, "..", "infra", "ansible")
+
+    expect(readDeploymentPlaybooks(ansibleRoot)).toEqual(
+      [
+        "bootstrap.yaml",
+        "deploy.yaml",
+        "restore.yaml",
+        "rollback.yaml",
+        "verify.yaml",
+      ].map((name) => path.join("playbooks", name))
+    )
+  })
 })
 
 function createFixture(): Disposable & { readonly path: string } {

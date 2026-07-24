@@ -15,7 +15,8 @@ import {
 
 type ErrorResponseResult = {
   status: ErrorStatusCode
-  body: ErrorResponse
+  body: Omit<ErrorResponse, "requestId">
+  headers?: Readonly<Record<string, string>>
 }
 
 type InternalErrorLogEvent = {
@@ -30,18 +31,19 @@ export type InternalErrorLogger = (event: InternalErrorLogEvent) => void
 
 function toErrorResponse(error: unknown): ErrorResponseResult {
   if (error instanceof AppError) {
-    const body: ErrorResponse = {
+    const body: Omit<ErrorResponse, "requestId"> = {
       code: error.code,
       message: error.message,
     }
 
-    if (error.errors !== undefined) {
-      body.errors = error.errors
+    if (error.violations !== undefined) {
+      body.violations = error.violations
     }
 
     return {
       status: error.status,
       body,
+      ...(error.headers === undefined ? {} : { headers: error.headers }),
     }
   }
 
@@ -51,8 +53,11 @@ function toErrorResponse(error: unknown): ErrorResponseResult {
     return {
       status,
       body: {
-        code: "HTTP_EXCEPTION",
-        message: getStatusMessage(status),
+        code: status === 400 ? "VALIDATION_FAILED" : "HTTP_ERROR",
+        message:
+          status === 400
+            ? "Request validation failed"
+            : getStatusMessage(status),
       },
     }
   }
@@ -70,29 +75,36 @@ export function createErrorHandler(
   logInternalError?: InternalErrorLogger
 ): ErrorHandler {
   return (error, context) => {
-    const { status, body: baseBody } = toErrorResponse(error)
-    const requestId = context.get("requestId")
-    const body =
-      status === 500 && typeof requestId === "string"
-        ? { ...baseBody, requestId }
-        : baseBody
+    const { status, body: baseBody, headers } = toErrorResponse(error)
+    const requestId = readRequestId(context.get("requestId"))
+    const body: ErrorResponse = { ...baseBody, requestId }
 
     if (status === 500) {
       logInternalError?.({
         causeClass: readCauseClass(error),
         errorClass: readErrorClass(error),
-        requestId: typeof requestId === "string" ? requestId : undefined,
+        requestId,
         stack: readRedactedStack(error),
         status,
       })
     }
 
     const response = errorJson(body, status)
+    response.headers.set("x-request-id", requestId)
+    for (const [name, value] of Object.entries(headers ?? {})) {
+      response.headers.set(name, value)
+    }
     return context.res.headers.get("Cache-Control") ===
       privateNoStoreCacheControl
       ? withPrivateNoStore(response)
       : response
   }
+}
+
+function readRequestId(value: unknown): string {
+  return typeof value === "string" && value.length > 0
+    ? value
+    : crypto.randomUUID()
 }
 
 function readErrorClass(error: unknown): string {

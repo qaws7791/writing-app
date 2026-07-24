@@ -1,25 +1,21 @@
-import Link from "next/link"
-
-import { AdminChartPanel } from "@/entities/admin-analytics/ui/admin-chart-panel"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
-import type { AdminAnalytics } from "@/entities/admin-analytics/model/admin-analytics"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminDashboard } from "@/features/dashboard/model/admin-dashboard"
 import {
-  BookOpenIcon,
+  BarChartIcon,
   CheckCircleIcon,
   FlameIcon,
+  PlayIcon,
   UserPlusIcon,
   UsersIcon,
 } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 
 export function AdminDashboardPage({
-  analyticsResult,
   dashboardResult,
 }: {
-  readonly analyticsResult: AdminApiResult<AdminAnalytics>
-  readonly dashboardResult: AdminApiResult<AdminDashboard>
+  readonly dashboardResult: AdminRequestResult<AdminDashboard>
 }) {
   if (dashboardResult.status === "error") {
     return (
@@ -32,116 +28,80 @@ export function AdminDashboardPage({
     )
   }
 
-  const { metrics, recentActivities } = dashboardResult.value
-  const analytics =
-    analyticsResult.status === "ok" ? analyticsResult.value : null
+  const { activeWindow, asOfDate, metrics } = dashboardResult.value
 
   return (
     <>
-      <DashboardHeading />
-      <StatGrid aria-label="주요 지표">
+      <DashboardHeading asOfDate={asOfDate} />
+      <StatGrid aria-label="주요 지표" className="lg:grid-cols-3">
         <StatCard
-          detail={`활성 ${metrics.activeUsersLast7Days.toLocaleString("ko-KR")}명 (최근 7일)`}
+          detail={`${asOfDate} 기준`}
           icon={<UsersIcon aria-hidden="true" size={20} />}
           label="총 사용자"
-          value={metrics.totalUsers.toLocaleString("ko-KR")}
+          value={formatCount(metrics.totalUsers)}
         />
         <StatCard
-          detail={`오늘 ${metrics.signupsToday.toLocaleString("ko-KR")}명`}
+          detail={`${activeWindow.from}–${activeWindow.to}`}
+          icon={<FlameIcon aria-hidden="true" size={20} />}
+          label="최근 7일 활성"
+          value={formatCount(metrics.activeUsersLast7Days)}
+        />
+        <StatCard
+          detail="학습자별 최초 시작 누적"
+          icon={<PlayIcon aria-hidden="true" size={20} />}
+          label="첫 레슨 시작"
+          value={formatCount(metrics.firstLessonStarts)}
+        />
+        <StatCard
+          detail={`${formatCount(metrics.activationRate.numerator)} / ${formatCount(metrics.activationRate.denominator)}명 첫 시작`}
           icon={<UserPlusIcon aria-hidden="true" size={20} />}
-          label="신규 가입"
-          value={`+${metrics.signupsLast7Days.toLocaleString("ko-KR")}`}
+          label="활성화율"
+          value={formatRate(
+            metrics.activationRate.percentage,
+            metrics.activationRate.status
+          )}
         />
         <StatCard
-          detail="누적 완료 수"
+          detail={`${formatCount(metrics.d7ReturnRate.numerator)} / ${formatCount(metrics.d7ReturnRate.denominator)}명 · ${metrics.d7ReturnRate.matureCohortThrough}까지`}
+          icon={<BarChartIcon aria-hidden="true" size={20} />}
+          label="7일 내 재방문"
+          value={formatRate(
+            metrics.d7ReturnRate.percentage,
+            metrics.d7ReturnRate.status
+          )}
+        />
+        <StatCard
+          detail="삭제 학습자 제외 누적"
           icon={<CheckCircleIcon aria-hidden="true" size={20} />}
-          label="총 레슨 완료"
-          value={metrics.completedLessons.toLocaleString("ko-KR")}
-        />
-        <StatCard
-          detail={`${metrics.activeCourses.toLocaleString("ko-KR")}개 강의의 레슨`}
-          icon={<BookOpenIcon aria-hidden="true" size={20} />}
-          label="콘텐츠"
-          value={metrics.activeLessons.toLocaleString("ko-KR")}
+          label="완료 레슨"
+          value={formatCount(metrics.completedLessons)}
         />
       </StatGrid>
-      {analytics === null ? null : (
-        <section className="mt-6 grid gap-4 lg:grid-cols-2">
-          <AdminChartPanel data={analytics.dailySeries} kind="signups" />
-          <AdminChartPanel data={analytics.dailySeries} kind="completions" />
-        </section>
-      )}
-      <section className="mt-4 grid gap-4 lg:grid-cols-2">
-        {analytics === null ? null : (
-          <AdminChartPanel data={analytics.streakBuckets} kind="streaks" />
-        )}
-        <RecentActivityPanel activities={recentActivities} />
-      </section>
     </>
   )
 }
 
-function DashboardHeading() {
+function DashboardHeading({ asOfDate }: { readonly asOfDate?: string }) {
   return (
-    <header className="mb-8">
-      <h1 className="m-0 text-[2rem] font-bold text-foreground">대시보드</h1>
-      <p className="mt-1 text-[1.0625rem] font-medium text-muted-foreground">
-        글결 서비스 현황 한눈에 보기
-      </p>
-    </header>
+    <PageHeader
+      description={
+        asOfDate === undefined
+          ? "첫 시작과 7일 재방문을 포함한 핵심 운영 지표입니다."
+          : `${asOfDate} 기준 · 첫 시작과 7일 재방문을 포함한 핵심 운영 지표입니다.`
+      }
+      title="대시보드"
+    />
   )
 }
 
-function RecentActivityPanel({
-  activities,
-}: {
-  readonly activities: AdminDashboard["recentActivities"]
-}) {
-  return (
-    <article className="rounded-4xl border border-surface-hover p-6">
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="m-0 text-[1.125rem] font-bold text-foreground">
-          최근 활동
-        </h2>
-        <Link
-          className="text-[0.875rem] font-bold text-muted-foreground transition-colors hover:text-foreground"
-          href="/users"
-        >
-          전체 보기 →
-        </Link>
-      </div>
-      <ul
-        aria-label="최근 활동"
-        className="m-0 flex list-none flex-col gap-3 p-0"
-      >
-        {activities.length === 0 ? (
-          <li className="text-[0.9375rem] font-medium text-muted-foreground">
-            최근 활동이 없습니다.
-          </li>
-        ) : (
-          activities.map((activity) => (
-            <li key={activity.userId}>
-              <Link
-                className="flex items-center justify-between gap-3 transition-opacity hover:opacity-70"
-                href={`/users/${activity.userId}`}
-              >
-                <div className="min-w-0">
-                  <div className="truncate text-[0.9375rem] font-bold text-foreground">
-                    {activity.name}
-                  </div>
-                  <div className="truncate text-[0.8125rem] font-medium text-muted-foreground">
-                    {activity.email}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-1 text-[0.8125rem] font-bold text-muted-foreground">
-                  <FlameIcon aria-hidden="true" size={14} />
-                  {activity.currentStreakDays}일
-                </div>
-              </Link>
-            </li>
-          ))
-        )}
-      </ul>
-    </article>
-  )
+function formatCount(value: number): string {
+  return value.toLocaleString("ko-KR")
+}
+
+function formatRate(
+  percentage: number | null,
+  status: "available" | "empty" | "immature"
+): string {
+  if (percentage !== null) return `${percentage.toLocaleString("ko-KR")}%`
+  return status === "immature" ? "집계 중" : "표본 없음"
 }

@@ -25,7 +25,7 @@
 - 제품 concrete adapter는 module infrastructure가 소유하고, 앱 조립 경계만 module 공개 factory·port와 `packages/infra/*` runtime 구현을 함께 아는가?
 - infra package가 app·module을 import하지 않고 provider SDK를 소유 package 밖으로 노출하지 않는가?
 - 관리자 use case가 기능별 파일과 repository port에 의존하고 불필요하게 전체 `AdminRepository` 또는 mega service를 요구하지 않는가?
-- 관리자 DTO schema가 `content`, `identity`, `operations`, `resource-library`의 소유 context에 있고 가장 좁은 `@workspace/contracts/<context>/<contract>` entrypoint로 소비되는가?
+- 관리자 DTO schema가 `content`, `identity`, `operations`의 소유 context에 있고 가장 좁은 `@workspace/contracts/<context>/<contract>` entrypoint로 소비되는가?
 - 어드민 코스 편집기 root에는 shell entrypoint만 두고 `workspace`, `preview`, `step-forms` 디렉토리 책임이 섞이지 않는가?
 - 어드민 코스 편집기 step form 의존 방향이 `step-form-registry -> step-forms barrel -> forms -> shared`로 유지되는가?
 - 학습 step answer 검증은 learning domain policy에 있고 application service가 step type별 validator를 다시 구현하지 않는가?
@@ -44,15 +44,15 @@
 ## 인증과 권한 체크
 
 - 새 route가 인증 필요 여부를 명시했는가?
-- 관리자 변경성 route가 owner guard를 사용하는가?
-- unknown role 처리 경로가 안전한가?
+- 관리자 route가 별도 관리자 session guard를 사용하는가?
+- 관리자 actor ID가 검증된 session에서만 구성되는가?
 - 학습자 suspended/deleted 상태가 보호 API에서 차단되는가?
 - 쿠키 이름, origin, 비밀값을 학습자/관리자 간 혼용하지 않는가?
 
 ## 데이터 체크
 
 - schema, migration SQL, Drizzle schema가 일치하는가?
-- 기본 seed가 기존 aggregate·인증·profile·권한과 진행/답변을 갱신하거나 삭제하지 않고, reset은 명시적 승인 경계로 분리됐는가?
+- 기본 seed가 기존 aggregate·인증·profile·권한과 진행/답변을 갱신하거나 삭제하지 않는가?
 - 콘텐츠 삭제 대신 `archived` 정책을 지키는가?
 - JSON 컬럼은 schema/parser로 검증되는가?
 - 날짜와 시간대 정책이 명시적인가?

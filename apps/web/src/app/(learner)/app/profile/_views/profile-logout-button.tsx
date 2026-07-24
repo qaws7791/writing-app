@@ -5,13 +5,8 @@ import { useRouter } from "next/navigation"
 import { Button } from "@workspace/ui/components/ui/button"
 
 import { requestLogout } from "@/features/authentication/api/auth-client"
-import { clearLessonDraftsForUser } from "@/features/lesson-session/api/lesson-draft-storage"
 
-export function ProfileLogoutButton({
-  learnerId,
-}: {
-  readonly learnerId: string
-}) {
+export function ProfileLogoutButton() {
   const router = useRouter()
 
   return (
@@ -19,7 +14,6 @@ export function ProfileLogoutButton({
       className="w-full"
       onClick={() => {
         void requestLogout("/").then((path) => {
-          clearLessonDraftsForUser(learnerId)
           router.push(path)
         })
       }}

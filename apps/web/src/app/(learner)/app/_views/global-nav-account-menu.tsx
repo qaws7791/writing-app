@@ -31,7 +31,7 @@ export function GlobalNavAccountMenu() {
         align="end"
         className={cn(
           "w-48 min-w-48 max-w-48",
-          "rounded-4xl border-2 border-surface bg-cream p-4",
+          "rounded-4xl border-2 border-border bg-bg-elevated p-4",
           "shadow-none ring-0"
         )}
         sideOffset={12}
@@ -43,7 +43,7 @@ export function GlobalNavAccountMenu() {
               "w-full justify-start rounded-3xl px-4 py-3 text-body-sm font-bold no-underline",
               "hover:bg-surface focus:bg-surface data-highlighted:bg-surface",
               item.tone === "danger"
-                ? "text-coral-dark focus:text-coral-dark data-highlighted:text-coral-dark"
+                ? "text-danger-fg focus:text-danger-fg data-highlighted:text-danger-fg"
                 : "text-foreground focus:text-foreground data-highlighted:text-foreground"
             )}
             render={<Link href={item.href} />}

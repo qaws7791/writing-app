@@ -1,23 +1,51 @@
 import type { Logger } from "pino"
 
-import type { RequestCompletedEvent } from "#observability/events"
+import {
+  logEventNames,
+  logRetentionClasses,
+  type RequestCompletedEvent,
+} from "#observability/events"
+import { redactUrlQuery } from "#observability/redaction"
 
 export type RequestAudience = "admin" | "learner"
 
 export type RequestLogEvent = RequestCompletedEvent & {
   readonly actorId?: string
   readonly actorType?: "admin" | "learner"
-  readonly adminId?: string
   readonly externalRequestId?: string
-  readonly userId?: string
 }
 
 export type RequestLogger = (event: RequestLogEvent) => void
+
+export type RequestLogRecord = RequestLogEvent & {
+  readonly event: typeof logEventNames.requestCompleted
+  readonly retentionClass: typeof logRetentionClasses.application
+}
 
 export function createRequestLogger(
   logger: Pick<Logger, "info">
 ): RequestLogger {
   return (event) => {
-    logger.info(event, "request.completed")
+    logger.info(createRequestLogRecord(event), logEventNames.requestCompleted)
+  }
+}
+
+function createRequestLogRecord(event: RequestLogEvent): RequestLogRecord {
+  return {
+    ...(event.actorId === undefined ? {} : { actorId: event.actorId }),
+    ...(event.actorType === undefined ? {} : { actorType: event.actorType }),
+    audience: event.audience,
+    durationMs: event.durationMs,
+    ...(event.errorClass === undefined ? {} : { errorClass: event.errorClass }),
+    event: logEventNames.requestCompleted,
+    ...(event.externalRequestId === undefined
+      ? {}
+      : { externalRequestId: event.externalRequestId }),
+    method: event.method,
+    outcome: event.outcome,
+    path: redactUrlQuery(event.path),
+    requestId: event.requestId,
+    retentionClass: logRetentionClasses.application,
+    status: event.status,
   }
 }

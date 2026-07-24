@@ -31,8 +31,8 @@ export function CompareStepView({
               className: cn(
                 "h-auto flex-1 rounded-full py-3 text-body-sm",
                 tab === index
-                  ? "bg-charcoal text-cream"
-                  : "bg-surface text-charcoal hover:bg-surface/70"
+                  ? "bg-action-primary-bg text-action-primary-fg"
+                  : "bg-bg-surface text-fg-default hover:bg-surface-hover"
               ),
               variant: tab === index ? "default" : "secondary",
             })}
@@ -45,7 +45,7 @@ export function CompareStepView({
           </button>
         ))}
       </div>
-      <div className="bg-surface rounded-4xl p-6 md:p-8">
+      <div className="bg-bg-surface rounded-4xl p-6 md:p-8">
         <p
           className="font-medium leading-relaxed whitespace-pre-line"
           style={{ fontSize: "1.125rem" }}
@@ -55,9 +55,7 @@ export function CompareStepView({
       </div>
       {analysis ? (
         <div className="mt-6 bg-accent-soft rounded-4xl p-6">
-          <div className="font-bold text-muted-foreground mb-2">
-            💡 생각해보기
-          </div>
+          <div className="font-bold text-fg-muted mb-2">💡 생각해보기</div>
           <p className="font-medium" style={{ fontSize: "1.0625rem" }}>
             {analysis}
           </p>

@@ -5,13 +5,10 @@ import {
   adminPublishCourseResultSchema,
   type AdminCourseDetailDto,
   type AdminCourseEditorDocument,
+  type AdminCourseEditorWriteDocument,
   type AdminCourseListDto,
   type AdminPublishCourseResult,
 } from "@workspace/contracts/content/admin-courses"
-import {
-  adminContentResetResultSchema,
-  type AdminContentResetResultDto,
-} from "@workspace/contracts/content/admin-content-reset"
 import { err, ok, type Result } from "@workspace/kernel/result"
 
 import type { ContentError } from "#content/domain/content-error"
@@ -23,13 +20,12 @@ import type {
 import { normalizeVersionedStepContent } from "#content/domain/content-normalization"
 import type {
   ContentCoursePage,
-  ContentResetResult,
   CourseEditorDocument,
 } from "#content/application/ports/content-ports"
 import type { PublishedCourseResult } from "#content/application/use-cases/publish-course"
 
 export function toCourseEditorDocument(
-  document: AdminCourseEditorDocument
+  document: AdminCourseEditorWriteDocument
 ): Result<CourseEditorDocument, ContentError> {
   const units: CurriculumUnit[] = []
 
@@ -81,8 +77,10 @@ export function toCourseEditorDocument(
   }
 
   return ok({
+    assets: [],
     category: document.category,
     courseId: document.id,
+    coverAssetId: document.coverAssetId,
     curriculumVersionId: document.curriculumVersionId,
     description: document.description,
     editVersion: document.editVersion,
@@ -96,7 +94,9 @@ export function toAdminCourseEditorDocument(
   document: CourseEditorDocument
 ): AdminCourseEditorDocument {
   return adminCourseEditorDocumentSchema.parse({
+    assets: document.assets,
     category: document.category,
+    coverAssetId: document.coverAssetId,
     curriculumVersionId: document.curriculumVersionId,
     description: document.description,
     editVersion: document.editVersion,
@@ -151,14 +151,16 @@ export function toAdminPublishResult(
   })
 }
 
-export function toAdminContentResetResult(
-  result: ContentResetResult
-): AdminContentResetResultDto {
-  return adminContentResetResultSchema.parse(result)
-}
-
 function toAdminCourseEditorStep(step: CurriculumStep): unknown {
-  const content = parseContentObject(step)
+  const normalized = normalizeVersionedStepContent(
+    step.id,
+    step.type,
+    step.contentJson
+  )
+  if (normalized.isErr()) {
+    throw new Error(`Invalid persisted content step: ${step.id}`)
+  }
+  const content = parseContentObject(step.id, normalized.value)
   const { type: _persistedType, ...wireContent } = content
   return {
     ...wireContent,
@@ -169,10 +171,13 @@ function toAdminCourseEditorStep(step: CurriculumStep): unknown {
   }
 }
 
-function parseContentObject(step: CurriculumStep): { [key: string]: unknown } {
-  const value: unknown = JSON.parse(step.contentJson)
+function parseContentObject(
+  stepId: string,
+  contentJson: string
+): { [key: string]: unknown } {
+  const value: unknown = JSON.parse(contentJson)
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new Error(`Invalid persisted content step: ${step.id}`)
+    throw new Error(`Invalid persisted content step: ${stepId}`)
   }
   return value as { [key: string]: unknown }
 }

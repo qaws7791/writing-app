@@ -2,9 +2,13 @@ import "server-only"
 
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
+  assertContentAssetPublicBaseUrlAllowed,
+  parseContentAssetImageAllowedOrigins,
   assertPublicUrlTransport,
+  parseContentAssetPublicBaseUrl,
   shouldUpgradeInsecureRequests,
 } from "@workspace/env/public-url"
+import { readContentAssetImageSource } from "@workspace/nextjs-config/content-asset-images"
 import { z } from "zod"
 
 import type { ApiBaseUrl } from "@/shared/config/api-base-url"
@@ -14,6 +18,8 @@ const adminServerRuntimeEnvSchema = z
   .object({
     API_BASE_URL: optionalUrlSchema,
     ADMIN_ORIGIN: optionalUrlSchema,
+    CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS: z.string().trim().min(1).optional(),
+    CONTENT_ASSET_PUBLIC_BASE_URL: optionalUrlSchema,
     CSP_REPORT_ONLY: z.enum(["true", "false"]).optional(),
     NODE_ENV: z.string().optional(),
   })
@@ -49,6 +55,7 @@ export function readAdminWebOrigin(
 export function readAdminCspRuntimeConfig(
   env: AdminServerRuntimeEnv = process.env
 ): {
+  readonly contentAssetImageSource: string | null
   readonly development: boolean
   readonly reportOnly: boolean
   readonly upgradeInsecureRequests: boolean
@@ -61,8 +68,33 @@ export function readAdminCspRuntimeConfig(
     "production admin web origin is required",
     "admin web origin"
   )
+  const contentAssetPublicBaseUrl = parseContentAssetPublicBaseUrl(
+    runtimeEnv.CONTENT_ASSET_PUBLIC_BASE_URL,
+    {
+      description: "content asset public base URL",
+      nodeEnvironment: runtimeEnv.NODE_ENV,
+    }
+  )
+  const contentAssetImageAllowedOrigins = parseContentAssetImageAllowedOrigins(
+    runtimeEnv.CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS,
+    {
+      description: "content asset image allowed origins",
+      nodeEnvironment: runtimeEnv.NODE_ENV,
+    }
+  )
+  assertContentAssetPublicBaseUrlAllowed(
+    contentAssetPublicBaseUrl,
+    contentAssetImageAllowedOrigins,
+    {
+      description: "content asset public base URL",
+      nodeEnvironment: runtimeEnv.NODE_ENV,
+    }
+  )
 
   return {
+    contentAssetImageSource: readContentAssetImageSource(
+      contentAssetPublicBaseUrl
+    ),
     development: runtimeEnv.NODE_ENV !== "production",
     reportOnly: runtimeEnv.CSP_REPORT_ONLY === "true",
     upgradeInsecureRequests: shouldUpgradeInsecureRequests(adminOrigin),

@@ -1,6 +1,6 @@
 import { seedLearnerAuth } from "@workspace/auth/seed"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { seedContentDatabase } from "@workspace/content/seed"
+import { seedContentDatabase } from "@workspace/content/application"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { seedLearnerIdentity } from "@workspace/identity/seed"
 

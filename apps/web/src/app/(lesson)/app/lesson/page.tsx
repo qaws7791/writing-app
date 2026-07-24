@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation"
+import { getLesson } from "@workspace/http-client/learner"
 
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { LessonExperience } from "@/features/lesson-session/ui/lesson-experience"
 import { parseLessonRouteSearchParams } from "@/features/lesson-session/model/lesson-route-search-params"
-import { getLessonExperience } from "@/features/lesson-session/server/dal/get-lesson-experience"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
-import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
+import {
+  isLearnerApiAuthenticationError,
+  settleLearnerApiRequest,
+} from "@/shared/http/learner-api-client"
+import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
 type LessonRouteProps = {
   readonly searchParams: Promise<{
@@ -14,10 +18,13 @@ type LessonRouteProps = {
 }
 
 export default async function LessonRoute({ searchParams }: LessonRouteProps) {
-  const { lessonId } = parseLessonRouteSearchParams(await searchParams)
-  const token = await getServerLearnerSessionToken()
+  const [resolvedSearchParams, requestOptions] = await Promise.all([
+    searchParams,
+    getServerLearnerRequestOptions({ cache: "no-store" }),
+  ])
+  const { lessonId } = parseLessonRouteSearchParams(resolvedSearchParams)
 
-  if (token === null) {
+  if (requestOptions === null) {
     const requestedLessonPath =
       lessonId === undefined
         ? "/app/lesson"
@@ -35,12 +42,11 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   }
 
   const nextPath = `/app/lesson?lesson_id=${encodeURIComponent(lessonId)}`
-  const { lessonResult, profileResult } = await getLessonExperience({
-    lessonId,
-    sessionToken: token,
-  })
+  const lessonResult = await settleLearnerApiRequest(
+    getLesson(lessonId, requestOptions)
+  )
   if (lessonResult.status === "error") {
-    if (lessonResult.error.code === "UNAUTHENTICATED") {
+    if (isLearnerApiAuthenticationError(lessonResult.error)) {
       redirect(createLoginPagePath(nextPath))
     }
 
@@ -52,20 +58,6 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     )
   }
 
-  if (profileResult.status === "error") {
-    if (profileResult.error.code === "UNAUTHENTICATED") {
-      redirect(createLoginPagePath(nextPath))
-    }
-
-    return (
-      <AppRouteNotice
-        description={profileResult.error.message}
-        title="학습자 정보를 확인할 수 없습니다."
-      />
-    )
-  }
   const lesson = lessonResult.value
-  return (
-    <LessonExperience lesson={lesson} learnerId={profileResult.value.user.id} />
-  )
+  return <LessonExperience lesson={lesson} />
 }

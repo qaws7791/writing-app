@@ -16,20 +16,31 @@ export const adminLessonAnalyticsItemDtoSchema = z.object({
   started: adminNonNegativeIntegerSchema,
 })
 
+export const adminAiFeedbackLessonFailureDtoSchema = z.object({
+  courseId: courseIdSchema,
+  courseTitle: z.string(),
+  failureCount: adminPositiveIntegerSchema,
+  failureRate: z.number().min(0).max(100),
+  lessonId: lessonIdSchema,
+  lessonTitle: z.string(),
+  requestCount: adminPositiveIntegerSchema,
+})
+
 export const adminAnalyticsDtoSchema = z.object({
   dailySeries: z.array(
     z.object({
       completions: adminNonNegativeIntegerSchema,
       date: z.string(),
+      returns: adminNonNegativeIntegerSchema.nullable(),
+      returnStatus: z.enum(["available", "empty", "immature"]),
       signups: adminNonNegativeIntegerSchema,
+      starts: adminNonNegativeIntegerSchema,
     })
   ),
-  streakBuckets: z.array(
-    z.object({
-      count: adminNonNegativeIntegerSchema,
-      label: z.string(),
-    })
-  ),
+  from: z.iso.date(),
+  matureCohortThrough: z.iso.date(),
+  to: z.iso.date(),
+  worstAiFeedbackLessons: z.array(adminAiFeedbackLessonFailureDtoSchema),
   worstLessons: z.array(adminLessonAnalyticsItemDtoSchema),
 })
 
@@ -39,11 +50,14 @@ export const adminLessonAnalyticsPageDtoSchema = z.object({
     page: adminPositiveIntegerSchema,
     pageSize: adminPositiveIntegerSchema,
     totalItems: adminNonNegativeIntegerSchema,
-    totalPages: adminPositiveIntegerSchema,
+    totalPages: adminNonNegativeIntegerSchema,
   }),
 })
 
 export type AdminAnalyticsDto = z.infer<typeof adminAnalyticsDtoSchema>
+export type AdminAiFeedbackLessonFailureDto = z.infer<
+  typeof adminAiFeedbackLessonFailureDtoSchema
+>
 export type AdminLessonAnalyticsItemDto = z.infer<
   typeof adminLessonAnalyticsItemDtoSchema
 >

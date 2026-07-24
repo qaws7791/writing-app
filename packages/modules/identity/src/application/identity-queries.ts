@@ -1,7 +1,7 @@
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { UserId } from "@workspace/types/ids"
 
-import type { AdminActor } from "#identity/domain/admin-role"
+import type { AdminActor } from "#identity/domain/admin-actor"
 import type { IdentityError } from "#identity/domain/identity-error"
 import type { UserStatus } from "#identity/domain/user-status"
 import { userStatuses } from "#identity/domain/user-status"
@@ -76,17 +76,6 @@ export type IdentityLearningQuery = Readonly<{
   readLearnerStatus: (
     userId: UserId
   ) => Promise<Result<UserStatus, IdentityError>>
-}>
-
-export type OperationsIdentitySnapshot = Readonly<{
-  createdAt: Date
-  email: string
-  id: UserId
-  name: string
-}>
-
-export type OperationsIdentityReportingQuery = Readonly<{
-  readNonDeletedLearners: () => Promise<readonly OperationsIdentitySnapshot[]>
 }>
 
 export function createAdminUserReader(input: {
@@ -177,29 +166,6 @@ export function createIdentityLearningQuery(
       return account === null
         ? err({ kind: "identity-not-found" })
         : ok(account.profile.profile.status)
-    },
-  }
-}
-
-export function createOperationsIdentityReportingQuery(
-  dependencies: Readonly<{
-    learnerIdentityDirectory: LearnerIdentityDirectoryPort
-    repository: IdentityRepository
-  }>
-): OperationsIdentityReportingQuery {
-  return {
-    async readNonDeletedLearners() {
-      const accounts = await listLearnerAccounts(dependencies, {
-        query: "",
-        status: "all",
-      })
-
-      return accounts.map((account) => ({
-        createdAt: new Date(account.createdAt),
-        email: account.email,
-        id: account.id,
-        name: account.profile.profile.displayName,
-      }))
     },
   }
 }

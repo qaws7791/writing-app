@@ -9,13 +9,10 @@ import type {
   AdminCourseList,
   ReadAdminCoursesInput,
 } from "@/features/course-catalog/model/admin-course-catalog"
-import { networkAdminApiError } from "@/shared/http/admin-api-error"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
-import { createHttpNetworkError } from "@workspace/http-client/json-transport"
-import {
-  courseIdSchema,
-  curriculumVersionIdSchema,
-} from "@workspace/contracts/content/ids"
+import type {
+  AdminRequestError,
+  AdminRequestResult,
+} from "@/shared/http/admin-api-client"
 
 const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }))
 vi.mock("next/navigation", () => ({
@@ -34,7 +31,7 @@ const courses: AdminCourseList = {
   items: [
     {
       category: "입문자를 위한 코스",
-      id: courseIdSchema.parse("c1"),
+      id: "c1",
       lessonCount: 10,
       revision: 2,
       status: "active",
@@ -44,7 +41,7 @@ const courses: AdminCourseList = {
     },
     {
       category: "문법 심화",
-      id: courseIdSchema.parse("c2"),
+      id: "c2",
       lessonCount: 8,
       revision: 1,
       status: "archived",
@@ -65,7 +62,7 @@ describe("AdminCoursesPage", () => {
   it("코스 검색, 필터, 페이지 크기, 목록과 보관 대화상자를 렌더링한다", async () => {
     const user = userEvent.setup()
     const archiveCourse = vi.fn<
-      () => Promise<AdminApiResult<AdminArchiveCourseResult>>
+      () => Promise<AdminRequestResult<AdminArchiveCourseResult>>
     >(async () => ({
       status: "ok",
       value: {
@@ -130,7 +127,7 @@ describe("AdminCoursesPage", () => {
   it("새 코스 생성 결과를 알려준다", async () => {
     const user = userEvent.setup()
     const createCourse = vi.fn<
-      () => Promise<AdminApiResult<AdminCreatedCourse>>
+      () => Promise<AdminRequestResult<AdminCreatedCourse>>
     >(async () => ok(courseDetail("new-course")))
 
     render(
@@ -165,29 +162,31 @@ describe("AdminCoursesPage", () => {
   })
 })
 
-function ok<TValue>(value: TValue): AdminApiResult<TValue> {
+function ok<TValue>(value: TValue): AdminRequestResult<TValue> {
   return {
     status: "ok",
     value,
   }
 }
 
-function networkError() {
-  return networkAdminApiError(
-    createHttpNetworkError(
-      new Request("https://api.example.test/api/admin/test"),
-      new TypeError("test network failure")
-    )
-  )
+function networkError(): AdminRequestError {
+  return {
+    code: "NETWORK_ERROR",
+    kind: "network",
+    message: "네트워크 연결을 확인해 주세요.",
+    requestId: "client",
+    retryAfterSeconds: null,
+    status: null,
+  }
 }
 
 function courseDetail(id: string): AdminCreatedCourse {
   return {
     category: "미분류",
-    curriculumVersionId: curriculumVersionIdSchema.parse(`${id}-v1`),
+    curriculumVersionId: `${id}-v1`,
     description: "강의 설명",
     editVersion: 0,
-    id: courseIdSchema.parse(id),
+    id,
     revision: 1,
     status: "active",
     title: "새 강의",

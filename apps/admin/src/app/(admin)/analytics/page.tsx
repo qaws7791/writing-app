@@ -1,28 +1,41 @@
 import { AdminAnalyticsPage } from "@/features/analytics/ui/admin-analytics-page"
-import { createAdminAnalyticsDal } from "@/features/analytics/server/admin-analytics-dal"
-import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
-import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
+import { parseAdminAnalyticsFilters } from "@/features/analytics/model/admin-analytics-filters"
+import {
+  settleAdminApiRequest,
+  unauthenticatedAdminRequestFailure,
+} from "@/shared/http/admin-api-client"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
+import {
+  getAdminAnalytics,
+  getAdminLessonAnalytics,
+} from "@workspace/http-client/admin"
 
-export default async function AdminAnalyticsRoute() {
-  const api = createAdminAnalyticsDal(
-    getServerAdminHttpTransport({
-      tokenProvider: getServerAdminSessionToken,
-    })
-  )
-  const [analyticsResult, lessonAnalyticsResult] = await Promise.all([
-    api.getAnalytics({ days: 30 }),
-    api.getLessonAnalytics({
-      direction: "asc",
-      page: 1,
-      pageSize: 10,
-      query: "",
-      sort: "completionRate",
-    }),
-  ])
+export default async function AdminAnalyticsRoute({
+  searchParams,
+}: {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const filters = parseAdminAnalyticsFilters(await searchParams)
+  const requestOptions = await getServerAdminRequestOptions()
+  const [analyticsResult, lessonAnalyticsResult] =
+    requestOptions === null
+      ? [
+          unauthenticatedAdminRequestFailure(),
+          unauthenticatedAdminRequestFailure(),
+        ]
+      : await Promise.all([
+          settleAdminApiRequest(
+            getAdminAnalytics({ days: 30 }, requestOptions)
+          ),
+          settleAdminApiRequest(
+            getAdminLessonAnalytics(filters, requestOptions)
+          ),
+        ])
 
   return (
     <AdminAnalyticsPage
       analyticsResult={analyticsResult}
+      filters={filters}
       lessonAnalyticsResult={lessonAnalyticsResult}
     />
   )

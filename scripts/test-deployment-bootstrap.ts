@@ -15,6 +15,7 @@ interface BootstrapFixture extends Disposable {
   readonly cleanupPlaybookPath: string
   readonly extraVariables: string
   readonly inventoryPath: string
+  readonly maintenancePlaybookPath: string
 }
 
 interface CommandResult {
@@ -83,6 +84,9 @@ function createBootstrapFixture(): BootstrapFixture {
   const targetRoot = `/var/tmp/writing-app-bootstrap-${runId}`
   const inventoryPath = path.join(root, "inventory.yaml")
   const cleanupPlaybookPath = path.join(root, "cleanup.yaml")
+  const maintenancePlaybookPath = path.join(root, "maintenance.yaml")
+  const maintenanceEvidenceDirectory = `${targetRoot}/evidence`
+  const maintenanceEvidenceFile = `${maintenanceEvidenceDirectory}/log-retention.json`
 
   fs.writeFileSync(
     inventoryPath,
@@ -113,18 +117,80 @@ function createBootstrapFixture(): BootstrapFixture {
       "",
     ].join("\n")
   )
+  fs.writeFileSync(
+    maintenancePlaybookPath,
+    [
+      "---",
+      "- name: Writing App maintenance role 멱등성 fixture",
+      "  hosts: writing_app",
+      "  become: true",
+      "  gather_facts: false",
+      "  pre_tasks:",
+      "    - name: Maintenance fixture 증거 디렉터리 준비",
+      "      ansible.builtin.file:",
+      `        path: ${maintenanceEvidenceDirectory}`,
+      "        state: directory",
+      "        owner: root",
+      "        group: root",
+      '        mode: "0755"',
+      "    - name: Maintenance fixture 외부 보존 증거 배치",
+      "      ansible.builtin.copy:",
+      `        dest: ${maintenanceEvidenceFile}`,
+      "        owner: root",
+      "        group: root",
+      '        mode: "0600"',
+      "        content: |",
+      "          {",
+      '            "applicationRequestRetentionDays": 30,',
+      '            "evidenceId": "ansible-idempotency-fixture",',
+      '            "securityRetentionDays": 90,',
+      '            "sink": "fixture-only",',
+      '            "validUntil": "2099-01-01T00:00:00.000Z",',
+      '            "verifiedAt": "2026-07-24T00:00:00.000Z"',
+      "          }",
+      "  roles:",
+      "    - role: writing_app_maintenance",
+      "  post_tasks:",
+      "    - name: Maintenance 전용 환경 결과 읽기",
+      "      ansible.builtin.slurp:",
+      `        src: ${targetRoot}/config/maintenance.env`,
+      "      register: writing_app_maintenance_fixture_environment",
+      "      changed_when: false",
+      "    - name: Staging maintenance 대상 환경 검증",
+      "      ansible.builtin.assert:",
+      "        that:",
+      "          - >-",
+      "            'DAILY_MAINTENANCE_ENVIRONMENT=staging'",
+      "            in (writing_app_maintenance_fixture_environment.content | b64decode)",
+      "          - >-",
+      "            'DAILY_MAINTENANCE_APPROVED=true'",
+      "            in (writing_app_maintenance_fixture_environment.content | b64decode)",
+      "",
+    ].join("\n")
+  )
 
   return {
     cleanupPlaybookPath,
     extraVariables: JSON.stringify({
+      writing_app_api_image: `example.invalid/writing-app-api@sha256:${"a".repeat(64)}`,
       writing_app_backup_directory: `${targetRoot}/backups`,
       writing_app_compose_directory: `${targetRoot}/compose`,
       writing_app_config_directory: `${targetRoot}/config`,
       writing_app_data_directory: `${targetRoot}/data`,
       writing_app_deployment_directory: `${targetRoot}/deployments`,
-      writing_app_secrets_directory: `${targetRoot}/secrets`,
+      writing_app_environment: "staging",
+      writing_app_libexec_directory: `${targetRoot}/libexec`,
+      writing_app_maintenance_batch_size: 100,
+      writing_app_maintenance_log_retention_evidence_file:
+        maintenanceEvidenceFile,
+      writing_app_maintenance_manage_timer: false,
+      writing_app_maintenance_on_calendar: "*-*-* 02:15:00",
+      writing_app_maintenance_randomized_delay_seconds: 0,
+      writing_app_operation_lock_directory: `${targetRoot}/operation.lock`,
+      writing_app_systemd_unit_directory: `${targetRoot}/systemd`,
     }),
     inventoryPath,
+    maintenancePlaybookPath,
     [Symbol.dispose]() {
       fs.rmSync(root, { force: true, recursive: true })
     },
@@ -169,6 +235,24 @@ function requireSuccess(label: string, result: CommandResult): void {
   throw new Error(`${label}에 실패했습니다. exit code: ${result.exitCode}`)
 }
 
+function requireIdempotentSecondRun(
+  label: string,
+  result: CommandResult
+): void {
+  requireSuccess(`${label} 두 번째 실행`, result)
+  const changedTaskCount = readChangedTaskCount(result.stdout)
+  if (changedTaskCount === undefined) {
+    throw new Error(
+      `${label} 두 번째 Ansible recap에서 changed 값을 찾지 못했습니다.`
+    )
+  }
+  if (changedTaskCount !== 0) {
+    throw new Error(
+      `${label} 두 번째 실행에 ${changedTaskCount}개의 변경이 발생했습니다.`
+    )
+  }
+}
+
 async function runBootstrapIdempotencyTest(): Promise<void> {
   const release =
     process.platform === "linux" && fs.existsSync("/etc/os-release")
@@ -209,17 +293,25 @@ async function runBootstrapIdempotencyTest(): Promise<void> {
     )
     console.log("Ubuntu bootstrap 두 번째 실행을 시작합니다.")
     const secondRun = await runCommand("ansible-playbook", args, ansibleRoot)
-    requireSuccess("bootstrap 두 번째 실행", secondRun)
+    requireIdempotentSecondRun("bootstrap", secondRun)
 
-    const changedTaskCount = readChangedTaskCount(secondRun.stdout)
-    if (changedTaskCount === undefined) {
-      throw new Error("두 번째 Ansible recap에서 changed 값을 찾지 못했습니다.")
-    }
-    if (changedTaskCount !== 0) {
-      throw new Error(
-        `bootstrap 두 번째 실행에 ${changedTaskCount}개의 변경이 발생했습니다.`
-      )
-    }
+    const maintenanceArgs = [
+      "-i",
+      fixture.inventoryPath,
+      fixture.maintenancePlaybookPath,
+      "--extra-vars",
+      fixture.extraVariables,
+    ]
+    console.log("Daily maintenance role 첫 번째 실행을 시작합니다.")
+    requireSuccess(
+      "daily maintenance role 첫 번째 실행",
+      await runCommand("ansible-playbook", maintenanceArgs, ansibleRoot)
+    )
+    console.log("Daily maintenance role 두 번째 실행을 시작합니다.")
+    requireIdempotentSecondRun(
+      "daily maintenance role",
+      await runCommand("ansible-playbook", maintenanceArgs, ansibleRoot)
+    )
   } catch (error) {
     taskError = error
   }
@@ -234,7 +326,9 @@ async function runBootstrapIdempotencyTest(): Promise<void> {
   }
   if (taskError !== undefined) throw taskError
 
-  console.log("Ubuntu 24.04 bootstrap 두 번째 실행 changed=0을 확인했습니다.")
+  console.log(
+    "Ubuntu 24.04 bootstrap과 daily maintenance role의 두 번째 실행 changed=0을 확인했습니다."
+  )
 }
 
 if (import.meta.main) {

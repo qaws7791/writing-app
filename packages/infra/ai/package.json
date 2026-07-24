@@ -7,7 +7,6 @@
     "#ai/*": "./src/*"
   },
   "exports": {
-    "./mastra-agent": "./src/mastra-agent.ts",
     "./openai-client": "./src/openai-client.ts"
   },
   "scripts": {
@@ -16,7 +15,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@mastra/core": "^1.46.0",
     "@workspace/kernel": "workspace:*",
     "openai": "^6.39.0",
     "zod": "catalog:"

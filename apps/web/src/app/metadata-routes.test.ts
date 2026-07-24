@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-import manifest from "@/app/manifest"
 import robots from "@/app/robots"
 import sitemap from "@/app/sitemap"
 
@@ -19,15 +18,6 @@ describe("학습자 metadata route", () => {
         userAgent: "*",
       },
       sitemap: "http://localhost:3000/sitemap.xml",
-    })
-  })
-
-  it("설치 가능한 한국어 앱 manifest를 제공한다", () => {
-    expect(manifest()).toMatchObject({
-      display: "standalone",
-      lang: "ko",
-      name: "글결",
-      start_url: "/",
     })
   })
 })

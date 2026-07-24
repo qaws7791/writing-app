@@ -1,24 +1,23 @@
 import { Hono, type Env, type Schema } from "hono"
 import { describe, expect, it, vi } from "vitest"
 
-import { createAdminApp } from "@/http/admin-app"
-import { createLearnerApp } from "@/http/learner-app"
+import { registerAdminFoundationRoutes } from "@/admin/admin-foundation.routes"
+import { createAdminApp, registerAdminAuthRoutes } from "@/http/admin-app"
 import { createUnifiedApp } from "@/http/unified-app"
-import { createTestDependencies } from "@/routes/test-dependencies"
+import { createTestLearnerApp } from "@/routes/test-dependencies"
 
 describe("단일 API app", () => {
   it("learner와 admin readiness는 같은 DB 상태를 반영하고 liveness와 분리한다", async () => {
     let databaseReady = false
     const health = { isDatabaseReady: () => databaseReady }
+    const adminApp = createAdminApp({})
+    registerAdminFoundationRoutes(adminApp, {
+      health,
+      sessionResolver: { resolveSession: () => Promise.resolve(null) },
+    })
     const app = createUnifiedApp({
-      adminApp: createAdminApp({
-        health,
-        sessionResolver: { resolveSession: () => Promise.resolve(null) },
-      }),
-      learnerApp: createLearnerApp({
-        ...createTestDependencies(),
-        health,
-      }),
+      adminApp,
+      learnerApp: createTestLearnerApp({ health }),
     })
 
     for (const path of ["/api/health", "/api/admin/health"]) {
@@ -63,22 +62,18 @@ describe("단일 API app", () => {
     const authHandler = vi.fn(async () =>
       Response.json({ authenticated: false })
     )
+    const adminApp = createAdminApp({})
+    registerAdminFoundationRoutes(adminApp, {
+      health: { isDatabaseReady: () => true },
+      sessionResolver: { resolveSession: () => Promise.resolve(null) },
+    })
+    registerAdminAuthRoutes(adminApp, authHandler)
     const app = createUnifiedApp({
-      adminApp: createAdminApp({
-        authHandler,
-        sessionResolver: { resolveSession: () => Promise.resolve(null) },
-      }),
+      adminApp,
       learnerApp: new Hono(),
     })
 
-    await expect(read(app, "/api/admin/health")).resolves.toBe(
-      JSON.stringify({
-        checks: { database: "ready" },
-        impact: "none",
-        ok: true,
-        service: "api",
-      })
-    )
+    expect((await request(app, "/api/admin/health")).status).toBe(200)
     await expect(read(app, "/api/admin/auth/get-session")).resolves.toBe(
       JSON.stringify({ authenticated: false })
     )

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   createLoginPagePath,
+  createVerifiedLoginPagePath,
   resolveSafeNextPath,
 } from "@/features/authentication/model/auth-navigation"
 
@@ -11,6 +12,9 @@ describe("auth navigation", () => {
     expect(resolveSafeNextPath("https://example.com/app")).toBe("/app")
     expect(createLoginPagePath("/app/lesson?lesson_id=l1")).toBe(
       "/login?next=%2Fapp%2Flesson%3Flesson_id%3Dl1"
+    )
+    expect(createVerifiedLoginPagePath("/app/profile")).toBe(
+      "/login?next=%2Fapp%2Fprofile&verified=true"
     )
   })
 })

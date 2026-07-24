@@ -10,7 +10,9 @@ test("UI style seam은 Typography, Markdown, Dialog 시각 계약을 유지한�
   await page.waitForLoadState("networkidle")
   await page.getByRole("link", { name: "학습 시작하기" }).click()
   await page.waitForLoadState("networkidle")
-  await page.getByRole("button", { name: "시작하기" }).click()
+  const startButton = page.getByRole("button", { name: "시작하기" })
+  await expect(startButton).toBeEnabled()
+  await startButton.click()
 
   await page.addStyleTag({
     content:

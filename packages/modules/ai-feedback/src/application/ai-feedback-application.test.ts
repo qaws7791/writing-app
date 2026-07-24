@@ -25,38 +25,52 @@ const request = {
   learnerId: "learner-1" as LearnerId,
   lessonId: "lesson-1" as LessonId,
   lessonTitle: "좋은 문장",
-  showScore: true,
   stepId: "step-2" as LessonStepId,
 }
 const providerResponse = {
   improvements: ["근거를 보강하세요."],
   nextAction: "예시를 추가하세요.",
-  score: 80,
   strengths: ["주장이 명확합니다."],
   summary: "좋은 초안입니다.",
 } as const
+const providerSuccess = {
+  feedback: providerResponse,
+  usage: { inputTokens: 10, outputTokens: 20 },
+} as const
+const providerIdentity = {
+  model: "gpt-test",
+  provider: "openai",
+} as const
 
 describe("AI feedback application", () => {
-  it("attempt를 예약한 뒤 provider를 호출하고 성공 결과를 저장한다", async () => {
+  it("attempt를 예약한 뒤 provider를 호출하고 안전한 usage metadata와 성공 결과를 저장한다", async () => {
     const calls: string[] = []
+    const finalized: unknown[] = []
     const transitions: unknown[] = []
+    const usage: unknown[] = []
     const application = createApplication({
       observeAttemptTransition: (event) => transitions.push(event),
+      observeUsage: (event) => usage.push(event),
       provider: {
+        ...providerIdentity,
         async createFeedback(prompt) {
           calls.push(`provider:${prompt.policyVersion}`)
-          return ok(providerResponse)
+          return ok(providerSuccess)
         },
       },
-      repository: repository({ calls }),
+      repository: repository({
+        calls,
+        async markAttemptSucceeded(input) {
+          finalized.push(input)
+          return ok({ kind: "transitioned" as const })
+        },
+      }),
     })
 
     await expect(application.requestFeedback(request)).resolves.toEqual(
       ok({
         ...providerResponse,
         remainingAttempts: 2,
-        scoreRange: [0, 100],
-        showScore: true,
       })
     )
     expect(calls).toEqual([
@@ -76,6 +90,27 @@ describe("AI feedback application", () => {
     expect(observed).not.toContain(request.focus)
     expect(observed).not.toContain(request.lessonTitle)
     expect(observed).not.toContain("writing-coach-v1")
+    expect(finalized).toEqual([
+      expect.objectContaining({
+        inputTokenCount: 10,
+        latencyMs: 0,
+        outputTokenCount: 20,
+      }),
+    ])
+    expect(usage).toEqual([
+      {
+        inputTokens: 10,
+        latencyMs: 0,
+        model: "gpt-test",
+        outcome: "succeeded",
+        outputTokens: 20,
+        promptPolicyVersion: "writing-coach-v1",
+        provider: "openai",
+      },
+    ])
+    const usageJson = JSON.stringify(usage)
+    expect(usageJson).not.toContain(request.answer)
+    expect(usageJson).not.toContain(providerResponse.summary)
   })
 
   it.each([
@@ -88,6 +123,7 @@ describe("AI feedback application", () => {
     async (kind) => {
       const application = createApplication({
         provider: {
+          ...providerIdentity,
           async createFeedback() {
             return err({ kind })
           },
@@ -100,12 +136,61 @@ describe("AI feedback application", () => {
     }
   )
 
+  it("provider 실패 usage는 요청 원문 없이 저장하고 성공 quota를 차감하지 않는다", async () => {
+    const finalized: unknown[] = []
+    const usage: unknown[] = []
+    const application = createApplication({
+      observeUsage: (event) => usage.push(event),
+      provider: {
+        ...providerIdentity,
+        async createFeedback() {
+          return err({
+            kind: "provider-response-invalid",
+            usage: { inputTokens: 11, outputTokens: 3 },
+          })
+        },
+      },
+      repository: repository({
+        async markAttemptFailed(input) {
+          finalized.push(input)
+          return ok({ kind: "transitioned" as const })
+        },
+      }),
+    })
+
+    await expect(application.requestFeedback(request)).resolves.toEqual(
+      err({ kind: "provider-response-invalid", remainingAttempts: 3 })
+    )
+    expect(finalized).toEqual([
+      expect.objectContaining({
+        failureCode: "provider-response-invalid",
+        inputTokenCount: 11,
+        latencyMs: 0,
+        outputTokenCount: 3,
+      }),
+    ])
+    expect(usage).toEqual([
+      {
+        failureCode: "provider-response-invalid",
+        inputTokens: 11,
+        latencyMs: 0,
+        model: "gpt-test",
+        outcome: "failed",
+        outputTokens: 3,
+        promptPolicyVersion: "writing-coach-v1",
+        provider: "openai",
+      },
+    ])
+    expect(JSON.stringify(usage)).not.toContain(request.answer)
+  })
+
   it("caller abort를 provider가 무시해도 즉시 취소하고 failed로 전이한다", async () => {
     const caller = new AbortController()
     const started = deferred<void>()
     let providerSignal: AbortSignal | undefined
     const application = createApplication({
       provider: {
+        ...providerIdentity,
         async createFeedback(_prompt, options) {
           providerSignal = options.signal
           started.resolve()
@@ -131,6 +216,7 @@ describe("AI feedback application", () => {
     const started = deferred<void>()
     const application = createApplication({
       provider: {
+        ...providerIdentity,
         async createFeedback() {
           started.resolve()
           return new Promise<never>(() => undefined)
@@ -149,12 +235,12 @@ describe("AI feedback application", () => {
   })
 
   it("provider 성공 뒤 저장 실패는 provider를 재호출하지 않고 보상 실패 전이를 시도한다", async () => {
-    const provider = vi.fn(async () => ok(providerResponse))
+    const provider = vi.fn(async () => ok(providerSuccess))
     const markAttemptFailed = vi.fn(async () =>
       ok({ kind: "transitioned" as const })
     )
     const application = createApplication({
-      provider: { createFeedback: provider },
+      provider: { ...providerIdentity, createFeedback: provider },
       repository: repository({
         markAttemptFailed,
         markAttemptSucceeded: async () =>
@@ -174,9 +260,9 @@ describe("AI feedback application", () => {
   })
 
   it("예약 persistence 실패에서는 provider를 호출하지 않는다", async () => {
-    const provider = vi.fn(async () => ok(providerResponse))
+    const provider = vi.fn(async () => ok(providerSuccess))
     const application = createApplication({
-      provider: { createFeedback: provider },
+      provider: { ...providerIdentity, createFeedback: provider },
       repository: repository({
         reserveAttempt: async () =>
           err({
@@ -201,8 +287,9 @@ function createApplication(
     attemptIdGenerator: { next: () => createAiFeedbackAttemptId("attempt-1") },
     clock: { now: () => now },
     provider: {
+      ...providerIdentity,
       async createFeedback() {
-        return ok(providerResponse)
+        return ok(providerSuccess)
       },
     },
     repository: repository(),

@@ -1,5 +1,6 @@
 "use client"
 
+import type { CSSProperties } from "react"
 import {
   Bar,
   BarChart,
@@ -12,53 +13,53 @@ import {
   YAxis,
 } from "recharts"
 
-type DailySeriesPoint = {
-  readonly completions: number
-  readonly date: string
-  readonly signups: number
-}
+import type { AdminChartPanelProps } from "@/entities/admin-analytics/model/admin-chart-types"
 
-type StreakBucket = {
-  readonly count: number
-  readonly label: string
-}
-
-const tooltipStyle = {
-  background: "var(--color-charcoal)",
-  border: "none",
+const chartMargin = { bottom: 0, left: -20, right: 8, top: 8 }
+const axisTick = { fill: "var(--chart-5)", fontSize: 11 }
+const tooltipContentStyle = {
+  background: "var(--bg-elevated)",
+  border: "1px solid var(--border)",
   borderRadius: 16,
-  color: "var(--color-surface)",
+  color: "var(--fg-default)",
   fontSize: 13,
   fontWeight: 700,
+} satisfies CSSProperties
+const tooltipItemStyle = {
+  color: "var(--fg-default)",
+} satisfies CSSProperties
+const tooltipLabelStyle = {
+  color: "var(--fg-muted)",
+} satisfies CSSProperties
+
+export function AdminAnalyticsChart({ data, kind }: AdminChartPanelProps) {
+  if (kind === "signup-activation") {
+    return <SignupActivationChart data={data} />
+  }
+  if (kind === "start-completion") {
+    return <StartCompletionChart data={data} />
+  }
+  return <D7ReturnChart data={data} />
 }
 
-export function AdminSignupTrendChart({
-  data,
-}: {
-  readonly data: readonly DailySeriesPoint[]
-}) {
+function SignupActivationChart({ data }: Pick<AdminChartPanelProps, "data">) {
   return (
     <ResponsiveContainer height={260} width="100%">
-      <LineChart
-        data={[...data]}
-        margin={{ bottom: 0, left: -20, right: 8, top: 8 }}
-      >
-        <CartesianGrid stroke="var(--color-surface)" strokeDasharray="3 3" />
-        <XAxis
-          dataKey="date"
-          interval={5}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
-        />
-        <YAxis
-          allowDecimals={false}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
-        />
-        <Tooltip contentStyle={tooltipStyle} />
+      <LineChart data={[...data]} margin={chartMargin}>
+        <CommonChartElements />
         <Line
           dataKey="signups"
           dot={false}
           name="가입"
-          stroke="var(--color-charcoal)"
+          stroke="var(--chart-4)"
+          strokeWidth={3}
+          type="monotone"
+        />
+        <Line
+          dataKey="starts"
+          dot={false}
+          name="첫 시작"
+          stroke="var(--chart-2)"
           strokeWidth={3}
           type="monotone"
         />
@@ -67,35 +68,20 @@ export function AdminSignupTrendChart({
   )
 }
 
-export function AdminCompletionTrendChart({
-  data,
-}: {
-  readonly data: readonly DailySeriesPoint[]
-}) {
+function StartCompletionChart({ data }: Pick<AdminChartPanelProps, "data">) {
   return (
     <ResponsiveContainer height={260} width="100%">
-      <BarChart
-        data={[...data]}
-        margin={{ bottom: 0, left: -20, right: 8, top: 8 }}
-      >
-        <CartesianGrid
-          stroke="var(--color-surface)"
-          strokeDasharray="3 3"
-          vertical={false}
+      <BarChart data={[...data]} margin={chartMargin}>
+        <CommonChartElements barCursor />
+        <Bar
+          dataKey="starts"
+          fill="var(--chart-2)"
+          name="첫 시작"
+          radius={[6, 6, 0, 0]}
         />
-        <XAxis
-          dataKey="date"
-          interval={5}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
-        />
-        <YAxis
-          allowDecimals={false}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
-        />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
         <Bar
           dataKey="completions"
-          fill="var(--color-accent)"
+          fill="var(--chart-1)"
           name="완료"
           radius={[6, 6, 0, 0]}
         />
@@ -104,38 +90,45 @@ export function AdminCompletionTrendChart({
   )
 }
 
-export function AdminStreakDistributionChart({
-  data,
-}: {
-  readonly data: readonly StreakBucket[]
-}) {
+function D7ReturnChart({ data }: Pick<AdminChartPanelProps, "data">) {
   return (
     <ResponsiveContainer height={260} width="100%">
-      <BarChart
-        data={[...data]}
-        margin={{ bottom: 0, left: -20, right: 8, top: 8 }}
-      >
-        <CartesianGrid
-          stroke="var(--color-surface)"
-          strokeDasharray="3 3"
-          vertical={false}
+      <LineChart data={[...data]} margin={chartMargin}>
+        <CommonChartElements />
+        <Line
+          connectNulls={false}
+          dataKey="returns"
+          dot={false}
+          name="D7 재방문"
+          stroke="var(--chart-3)"
+          strokeWidth={3}
+          type="monotone"
         />
-        <XAxis
-          dataKey="label"
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
-        />
-        <YAxis
-          allowDecimals={false}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
-        />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
-        <Bar
-          dataKey="count"
-          fill="var(--color-mint)"
-          name="사용자 수"
-          radius={[6, 6, 0, 0]}
-        />
-      </BarChart>
+      </LineChart>
     </ResponsiveContainer>
+  )
+}
+
+function CommonChartElements({
+  barCursor = false,
+}: {
+  readonly barCursor?: boolean
+}) {
+  return (
+    <>
+      <CartesianGrid
+        stroke="var(--border)"
+        strokeDasharray="3 3"
+        vertical={false}
+      />
+      <XAxis dataKey="date" minTickGap={24} tick={axisTick} />
+      <YAxis allowDecimals={false} tick={axisTick} />
+      <Tooltip
+        contentStyle={tooltipContentStyle}
+        itemStyle={tooltipItemStyle}
+        labelStyle={tooltipLabelStyle}
+        {...(barCursor ? { cursor: { fill: "transparent" } } : {})}
+      />
+    </>
   )
 }

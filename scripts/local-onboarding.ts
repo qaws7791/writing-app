@@ -235,13 +235,13 @@ export function createLocalSetupEnvironment(
     )
   }
 
-  return Object.freeze({
+  return {
     databaseUrl,
-    processEnvironment: Object.freeze({
+    processEnvironment: {
       ...inheritedEnvironment,
       ...Object.fromEntries(apiEnvironment),
-    }),
-  })
+    },
+  }
 }
 
 export function prepareLocalDatabaseDirectory(
@@ -327,7 +327,6 @@ export function inspectLocalOnboarding({
 
   checks.push(...inspectLocalRuntimeContract(environments, examples))
   checks.push(...inspectAuthSecrets(environments))
-  checks.push(...inspectTestAuthentication(environments))
   checks.push(...inspectLocalSetupSafety(environments))
   checks.push(...inspectDatabase(repositoryRoot, environments, requireDatabase))
 
@@ -530,41 +529,6 @@ function inspectSecret(label: string, value: string): LocalOnboardingCheck {
     kind: "pass",
     label,
   }
-}
-
-function inspectTestAuthentication(
-  environments: ReadonlyMap<string, ReadonlyMap<string, string>>
-): readonly LocalOnboardingCheck[] {
-  const apiValue = environments.get("apps/api/.env")?.get("ENABLE_TEST_AUTH")
-  const webValue = environments.get("apps/web/.env")?.get("ENABLE_TEST_AUTH")
-
-  if (apiValue === undefined || webValue === undefined) {
-    return []
-  }
-
-  if (apiValue !== webValue) {
-    return [
-      {
-        detail: "apps/api와 apps/web의 ENABLE_TEST_AUTH 값을 일치시키세요.",
-        kind: "failure",
-        label: "테스트 인증",
-      },
-    ]
-  }
-
-  return [
-    apiValue === "true"
-      ? {
-          detail: "학습자 테스트 로그인이 활성화되어 있습니다.",
-          kind: "pass",
-          label: "테스트 인증",
-        }
-      : {
-          detail: "학습자 테스트 로그인이 비활성화되어 있습니다.",
-          kind: "warning",
-          label: "테스트 인증",
-        },
-  ]
 }
 
 function inspectDatabase(

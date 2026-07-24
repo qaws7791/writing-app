@@ -1,0 +1,161 @@
+---
+- name: Daily maintenance 입력 검증
+  ansible.builtin.assert:
+    that:
+      - writing_app_environment in ['production', 'staging']
+      - writing_app_api_image is match('^.+@sha256:[0-9a-f]{64}\Z')
+      - writing_app_maintenance_batch_size | int >= 1
+      - writing_app_maintenance_batch_size | int <= 1000
+      - writing_app_maintenance_log_retention_evidence_file is match('^/')
+      - writing_app_maintenance_on_calendar | length > 0
+      - writing_app_maintenance_randomized_delay_seconds | int >= 0
+    fail_msg: >-
+      환경, immutable API image, 1..1000 batch, 절대 evidence 경로와 timer 일정을
+      daily maintenance 전용 입력으로 명시해야 합니다.
+
+- name: 외부 log retention 증거 파일 확인
+  ansible.builtin.stat:
+    path: "{{ writing_app_maintenance_log_retention_evidence_file }}"
+    checksum_algorithm: sha256
+  register: writing_app_maintenance_retention_evidence
+  changed_when: false
+
+- name: 외부 log retention 증거 파일 보호 속성 검증
+  ansible.builtin.assert:
+    that:
+      - writing_app_maintenance_retention_evidence.stat.exists
+      - writing_app_maintenance_retention_evidence.stat.isreg
+      - writing_app_maintenance_retention_evidence.stat.pw_name == 'root'
+      - writing_app_maintenance_retention_evidence.stat.gr_name == 'root'
+      - writing_app_maintenance_retention_evidence.stat.mode == '0600'
+    fail_msg: >-
+      외부 log retention 증거는 root:root 0600 regular file이어야 합니다.
+
+- name: 외부 log retention 증거 JSON 읽기
+  ansible.builtin.slurp:
+    src: "{{ writing_app_maintenance_log_retention_evidence_file }}"
+  register: writing_app_maintenance_retention_evidence_content
+  changed_when: false
+  no_log: true
+
+- name: 외부 log retention 증거 JSON 해석
+  ansible.builtin.set_fact:
+    writing_app_maintenance_retention_evidence_value: >-
+      {{
+        writing_app_maintenance_retention_evidence_content.content
+        | b64decode
+        | from_json
+      }}
+  no_log: true
+
+- name: 외부 log retention 증거 schema 검증
+  ansible.builtin.assert:
+    that:
+      - >-
+        writing_app_maintenance_retention_evidence_value.keys() | list | sort
+        == [
+          'applicationRequestRetentionDays',
+          'evidenceId',
+          'securityRetentionDays',
+          'sink',
+          'validUntil',
+          'verifiedAt'
+        ]
+      - >-
+        writing_app_maintenance_retention_evidence_value.applicationRequestRetentionDays
+        is integer
+      - >-
+        writing_app_maintenance_retention_evidence_value.applicationRequestRetentionDays
+        | int
+        == writing_app_maintenance_retention_evidence_value.applicationRequestRetentionDays
+      - >-
+        writing_app_maintenance_retention_evidence_value.applicationRequestRetentionDays
+        | int >= 1
+      - >-
+        writing_app_maintenance_retention_evidence_value.applicationRequestRetentionDays
+        | int <= 30
+      - >-
+        writing_app_maintenance_retention_evidence_value.securityRetentionDays
+        is integer
+      - >-
+        writing_app_maintenance_retention_evidence_value.securityRetentionDays
+        | int
+        == writing_app_maintenance_retention_evidence_value.securityRetentionDays
+      - >-
+        writing_app_maintenance_retention_evidence_value.securityRetentionDays
+        | int >= 1
+      - >-
+        writing_app_maintenance_retention_evidence_value.securityRetentionDays
+        | int <= 90
+      - writing_app_maintenance_retention_evidence_value.evidenceId is string
+      - writing_app_maintenance_retention_evidence_value.evidenceId | trim | length >= 1
+      - writing_app_maintenance_retention_evidence_value.evidenceId | trim | length <= 200
+      - >-
+        not (
+          (writing_app_maintenance_retention_evidence_value.evidenceId | trim)
+          is search('(?:\A|[-_./:])(?i:example|none|null|placeholder|tbd|todo|unknown)(?:[-_./:]|\Z)')
+        )
+      - writing_app_maintenance_retention_evidence_value.sink is string
+      - writing_app_maintenance_retention_evidence_value.sink | trim | length >= 1
+      - writing_app_maintenance_retention_evidence_value.sink | trim | length <= 200
+      - >-
+        not (
+          (writing_app_maintenance_retention_evidence_value.sink | trim)
+          is search('(?:\A|[-_./:])(?i:example|none|null|placeholder|tbd|todo|unknown)(?:[-_./:]|\Z)')
+        )
+      - writing_app_maintenance_retention_evidence_value.verifiedAt is string
+      - writing_app_maintenance_retention_evidence_value.validUntil is string
+      - >-
+        writing_app_maintenance_retention_evidence_value.verifiedAt
+        is match('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?Z\Z')
+      - >-
+        writing_app_maintenance_retention_evidence_value.validUntil
+        is match('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?Z\Z')
+    fail_msg: >-
+      외부 log retention 증거는 exact six-field schema와 class별 최대 30일·90일 기간을
+      만족해야 합니다.
+  no_log: true
+
+- name: 외부 log retention 증거 시각을 epoch로 변환
+  ansible.builtin.command:
+    argv:
+      - date
+      - --date
+      - "{{ item }}"
+      - +%s
+  loop:
+    - "{{ writing_app_maintenance_retention_evidence_value.verifiedAt }}"
+    - "{{ writing_app_maintenance_retention_evidence_value.validUntil }}"
+  register: writing_app_maintenance_retention_evidence_epochs
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: 외부 log retention 검증 기준 시각 조회
+  ansible.builtin.command:
+    argv:
+      - date
+      - -u
+      - +%s
+  register: writing_app_maintenance_retention_evidence_now
+  changed_when: false
+
+- name: 외부 log retention 증거 유효기간 검증
+  ansible.builtin.assert:
+    that:
+      - writing_app_maintenance_retention_evidence_epochs.results | length == 2
+      - writing_app_maintenance_retention_evidence_epochs.results[0].rc == 0
+      - writing_app_maintenance_retention_evidence_epochs.results[1].rc == 0
+      - >-
+        writing_app_maintenance_retention_evidence_epochs.results[0].stdout | int
+        <= writing_app_maintenance_retention_evidence_now.stdout | int
+      - >-
+        writing_app_maintenance_retention_evidence_epochs.results[1].stdout | int
+        > writing_app_maintenance_retention_evidence_now.stdout | int
+      - >-
+        writing_app_maintenance_retention_evidence_epochs.results[1].stdout | int
+        > writing_app_maintenance_retention_evidence_epochs.results[0].stdout | int
+    fail_msg: >-
+      외부 log retention evidence의 verifiedAt은 미래일 수 없고 validUntil은 현재와
+      verifiedAt 뒤여야 합니다.
+  no_log: true

@@ -1,5 +1,5 @@
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type {
   AdminCourseDetail,
   AdminCoursePublishResult,
@@ -12,13 +12,13 @@ export function AdminCourseDetailPage({
   publishCourse,
   saveCourse,
 }: {
-  readonly courseResult: AdminApiResult<AdminCourseDetail>
+  readonly courseResult: AdminRequestResult<AdminCourseDetail>
   readonly publishCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminApiResult<AdminCoursePublishResult>>
+  ) => Promise<AdminRequestResult<AdminCoursePublishResult>>
   readonly saveCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminApiResult<AdminCourseDetail>>
+  ) => Promise<AdminRequestResult<AdminCourseDetail>>
 }) {
   if (courseResult.status === "error") {
     return (

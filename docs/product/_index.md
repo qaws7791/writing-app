@@ -6,12 +6,14 @@
 
 ## 탐색 순서
 
-1. 제품의 이유와 방향은 `problem-definition.md`, `product-vision.md`에서 확인한다.
-2. 사용자 기준은 `personas.md`에서 확인한다.
-3. 사용자 가치와 인수 기준은 `user-stories/_index.md`에서 시작해 개별 유저 스토리 문서에서 확인한다.
-4. 개발자를 위한 제품 규칙은 `requirements/_index.md`에서 시작해 개별 요구사항 문서에서 확인한다.
-5. 화면 목적과 UI 기준은 `docs/design/screens/`의 개별 화면 문서에서 확인한다.
-6. 콘텐츠, 운영, 지표 기준은 `content-model.md`, `admin-operations.md`, `metrics.md`에서 확인한다.
+1. 확정 제품 범위는 `product-scope.md`에서 확인한다.
+2. 제품의 이유와 방향은 `problem-definition.md`, `product-vision.md`에서 확인한다.
+3. 사용자 기준은 `personas.md`에서 확인한다.
+4. 사용자 가치와 인수 기준은 `user-stories/_index.md`에서 시작해 개별 유저 스토리 문서에서 확인한다.
+5. 개발자를 위한 제품 규칙은 `requirements/_index.md`에서 시작해 개별 요구사항 문서에서 확인한다.
+6. 화면 목적과 UI 기준은 `docs/design/screens/`의 개별 화면 문서에서 확인한다.
+7. 학습 상태 책임과 레슨 전이 흐름은 `learner-journey.md`에서 확인한다.
+8. 콘텐츠, 운영, 지표 기준은 `content-model.md`, `admin-operations.md`, `metrics.md`에서 확인한다.
 
 ## 디렉토리 지도
 
@@ -26,9 +28,11 @@
 | 파일                       | 목적                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------- |
 | `_index.md`                | 제품 문서 전체의 진입점과 탐색 지도를 제공한다.                                    |
-| `problem-definition.md`    | 학습자와 운영자가 겪는 핵심 문제와 제품 제약을 정의한다.                           |
+| `product-scope.md`         | 첫 출시의 유지 기능, 핵심 흐름과 명시적 비범위를 정의한다.                         |
+| `problem-definition.md`    | 학습자와 소유자 관리자가 겪는 핵심 문제와 제품 제약을 정의한다.                    |
 | `product-vision.md`        | 제품 비전, 사용자 가치, 제품 원칙, 비목표를 정의한다.                              |
-| `personas.md`              | 학습자, 운영자, 소유자 관리자, 제외 사용자를 정의한다.                             |
+| `personas.md`              | 학습자, 소유자 관리자와 제외 사용자를 정의한다.                                    |
+| `learner-journey.md`       | 서버·클라이언트 학습 상태 책임, 레슨 전이와 동기화 정책을 정의한다.                |
 | `user-stories/_index.md`   | 유저 스토리 ID 규칙과 목록을 제공한다.                                             |
 | `user-stories/template.md` | 새 유저 스토리 문서의 작성 형식을 제공한다.                                        |
 | `requirements/_index.md`   | 요구사항 ID 규칙과 목록을 제공한다.                                                |

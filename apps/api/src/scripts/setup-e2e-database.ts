@@ -1,21 +1,25 @@
 import { hashAuthPassword } from "@workspace/auth/password"
-import { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
+import {
+  adminAuthAccounts,
+  adminAuthUsers,
+  authAccounts,
+} from "@workspace/auth/schema"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { seedAdminIdentity } from "@workspace/identity/seed"
 
 import { runApplicationMigrations } from "@/db/migrate"
 
-const e2eDatabaseUrl = process.env["DATABASE_URL"]
 const adminPassword = "e2e-password-123"
+const learnerPassword = "e2e-password-123"
 
-if (process.env["NODE_ENV"] !== "test" || e2eDatabaseUrl === undefined) {
-  throw new Error("E2E 관리자 fixture에는 NODE_ENV=test가 필요합니다.")
+if (import.meta.main) {
+  const e2eDatabaseUrl = process.env["DATABASE_URL"]
+  if (process.env["NODE_ENV"] !== "test" || e2eDatabaseUrl === undefined) {
+    throw new Error("E2E 인증 fixture에는 NODE_ENV=test가 필요합니다.")
+  }
+  await setupE2eAuthDatabase(e2eDatabaseUrl)
 }
 
-await seedE2eAdmins(e2eDatabaseUrl)
-
-async function seedE2eAdmins(databaseUrl: string): Promise<void> {
+export async function setupE2eAuthDatabase(databaseUrl: string): Promise<void> {
   const database = createWritingAppDatabase(databaseUrl)
   try {
     runApplicationMigrations(database.sqlite)
@@ -26,18 +30,11 @@ async function seedE2eAdmins(databaseUrl: string): Promise<void> {
         email: "owner@example.test",
         id: "e2e-owner",
         name: "E2E 소유자",
-        role: "owner",
-      },
-      {
-        email: "operator@example.test",
-        id: "e2e-operator",
-        name: "E2E 운영자",
-        role: "operator",
       },
     ] as const
 
     await database.db.insert(adminAuthUsers).values(
-      admins.map(({ role: _role, ...admin }) => ({
+      admins.map((admin) => ({
         ...admin,
         createdAt: now,
         emailVerified: true,
@@ -45,12 +42,6 @@ async function seedE2eAdmins(databaseUrl: string): Promise<void> {
         updatedAt: now,
       }))
     )
-    for (const admin of admins) {
-      seedAdminIdentity(database.db, {
-        adminId: adminIdSchema.parse(admin.id),
-        role: admin.role,
-      })
-    }
     await database.db.insert(adminAuthAccounts).values(
       admins.map((admin) => ({
         accountId: admin.id,
@@ -62,6 +53,15 @@ async function seedE2eAdmins(databaseUrl: string): Promise<void> {
         userId: admin.id,
       }))
     )
+    await database.db.insert(authAccounts).values({
+      accountId: "user-1",
+      createdAt: now,
+      id: "e2e-learner-credential",
+      password: await hashAuthPassword(learnerPassword),
+      providerId: "credential",
+      updatedAt: now,
+      userId: "user-1",
+    })
   } finally {
     database.close()
   }

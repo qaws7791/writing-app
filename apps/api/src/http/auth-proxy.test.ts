@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { createLearnerApp as createApp } from "@/http/learner-app"
-import { createTestDependencies } from "@/routes/test-dependencies"
+import { createTestLearnerApp } from "@/routes/test-dependencies"
 
 describe("플랫폼 API auth route", () => {
   it("인증 없는 session 요청은 401이다", async () => {
-    const app = createApp(createTestDependencies())
+    const app = createTestLearnerApp()
 
     const response = await app.request("/auth/session")
 
@@ -18,7 +17,7 @@ describe("플랫폼 API auth route", () => {
   })
 
   it("인증된 session 요청은 사용자 정보를 반환한다", async () => {
-    const app = createApp(createTestDependencies())
+    const app = createTestLearnerApp()
 
     const response = await app.request("/auth/session", {
       headers: {

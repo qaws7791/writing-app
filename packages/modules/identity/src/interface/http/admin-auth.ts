@@ -4,15 +4,14 @@ import {
   setPrivateNoStoreHeaders,
   withPrivateNoStore,
 } from "@workspace/http-platform/security"
-import type { HttpPlatformEnv } from "@workspace/http-platform/context"
+import type { HttpPlatformEnv } from "@workspace/http-platform/app"
 
-import { authorizeOwnerMutation } from "#identity/domain/admin-role"
 import {
   toAdminActor,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
 } from "#identity/application/identity-sessions"
-import type { AdminActor } from "#identity/domain/admin-role"
+import type { AdminActor } from "#identity/domain/admin-actor"
 
 export type IdentityAdminHonoEnv = HttpPlatformEnv<{
   activeAdminSession: AdminAuthenticatedSession
@@ -33,35 +32,8 @@ export function createRequireAdminSessionMiddleware(
     context.set("adminActor", toAdminActor(session))
     context.set("requestActor", {
       id: session.admin.id,
-      role: session.admin.role,
       type: "admin",
     })
-    await next()
-    context.res = withPrivateNoStore(context.res)
-  }
-}
-
-export function createRequireOwnerAdminSessionMiddleware(
-  sessionResolver: AdminSessionResolver
-): MiddlewareHandler<IdentityAdminHonoEnv> {
-  return async (context, next) => {
-    setPrivateNoStoreHeaders(context)
-    const session = await sessionResolver.resolveSession(
-      context.req.raw.headers
-    )
-    if (session === null) throw unauthorizedIdentityError()
-
-    const actor = toAdminActor(session)
-    context.set("activeAdminSession", session)
-    context.set("adminActor", actor)
-    context.set("requestActor", {
-      id: actor.id,
-      role: actor.role,
-      type: "admin",
-    })
-    if (authorizeOwnerMutation(actor) === "forbidden") {
-      throw forbiddenIdentityError()
-    }
     await next()
     context.res = withPrivateNoStore(context.res)
   }
@@ -76,25 +48,10 @@ export function adminSessionRouteOptions(
   }
 }
 
-export function ownerAdminRouteOptions(sessionResolver: AdminSessionResolver) {
-  return {
-    middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],
-    security: [{ adminSessionCookie: [] }],
-  }
-}
-
 export function unauthorizedIdentityError(): AppError {
   return new AppError({
     code: "UNAUTHORIZED",
     message: "Unauthorized",
     status: 401,
-  })
-}
-
-export function forbiddenIdentityError(): AppError {
-  return new AppError({
-    code: "FORBIDDEN",
-    message: "Forbidden",
-    status: 403,
   })
 }

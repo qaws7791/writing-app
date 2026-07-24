@@ -7,21 +7,28 @@ import {
   lessonStepIdSchema,
   unitIdSchema,
 } from "@workspace/contracts/content/ids"
-import type { LessonStepId } from "@workspace/types/ids"
+import {
+  getAdminCourseEditor,
+  uploadAdminContentAsset,
+} from "@workspace/http-client/admin"
 
 import {
   adminCourseEditorSchema,
+  type AdminContentAsset,
+  type AdminContentAssetKind,
   type AdminCourseDetail,
   type AdminCoursePublishResult,
 } from "@/features/course-editor/model/admin-course-editor"
-import { courseIdSchema } from "@/entities/course/model/course-id"
-import { createBrowserCourseEditorApi } from "@/features/course-editor/api/create-browser-course-editor-api"
 import {
   courseEditorReducer,
   createCourseEditorState,
 } from "@/features/course-editor/model/course-editor-reducer"
 import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import { ContentAssetUploadField } from "@/features/course-editor/ui/content-asset-upload-field"
+import {
+  settleAdminApiRequest,
+  type AdminRequestResult,
+} from "@/shared/http/admin-api-client"
 import {
   ChevronRightIcon,
   PlusIcon,
@@ -51,14 +58,13 @@ export function CourseEditorShell({
   readonly course: AdminCourseDetail
   readonly publishCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminApiResult<AdminCoursePublishResult>>
+  ) => Promise<AdminRequestResult<AdminCoursePublishResult>>
   readonly saveCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminApiResult<AdminCourseDetail>>
+  ) => Promise<AdminRequestResult<AdminCourseDetail>>
 }) {
-  const courseEditorApi = useMemo(() => createBrowserCourseEditorApi(), [])
   const loadLatestCourse = (courseId: string) =>
-    courseEditorApi.getCourseEditor(courseIdSchema.parse(courseId))
+    settleAdminApiRequest(getAdminCourseEditor(courseId))
   const [state, dispatch] = useReducer(
     courseEditorReducer,
     course,
@@ -77,6 +83,28 @@ export function CourseEditorShell({
       state.draft.units.reduce((count, unit) => count + unit.lessons.length, 0),
     [state.draft.units]
   )
+  const coverAsset = state.draft.assets.find(
+    (asset) =>
+      asset.id === state.draft.coverAssetId && asset.kind === "course-cover"
+  )
+  const uploadAsset = async (input: {
+    readonly altText: string
+    readonly file: File
+    readonly kind: AdminContentAssetKind
+  }): Promise<AdminRequestResult<AdminContentAsset>> => {
+    const result = await settleAdminApiRequest(
+      uploadAdminContentAsset(state.draft.id, {
+        altText: input.altText,
+        curriculumVersionId: state.draft.curriculumVersionId,
+        file: input.file,
+        kind: input.kind,
+      })
+    )
+    if (result.status === "ok") {
+      dispatch({ asset: result.value, type: "asset-registered" })
+    }
+    return result
+  }
 
   useEffect(() => {
     if (!isUnsaved) return
@@ -116,7 +144,7 @@ export function CourseEditorShell({
         dispatch({ document: result.value, type: "save-succeeded" })
         return
       }
-      if (result.error.code !== "stale-revision") {
+      if (result.error.code !== "CONTENT_CONFLICT") {
         dispatch({ message: result.error.message, type: "server-failed" })
         return
       }
@@ -137,7 +165,7 @@ export function CourseEditorShell({
     startTransition(async () => {
       const result = await publishCourse(state.draft)
       if (result.status === "error") {
-        if (result.error.code !== "stale-revision") {
+        if (result.error.code !== "CONTENT_CONFLICT") {
           dispatch({ message: result.error.message, type: "server-failed" })
           return
         }
@@ -170,6 +198,7 @@ export function CourseEditorShell({
           <Link
             className="font-medium text-muted-foreground transition-colors hover:text-foreground"
             href="/courses"
+            prefetch={false}
             onClick={(event) => {
               if (
                 isUnsaved &&
@@ -297,6 +326,23 @@ export function CourseEditorShell({
                 value={state.draft.category}
               />
             </Field>
+            <div className="mt-6">
+              <ContentAssetUploadField
+                asset={coverAsset}
+                kind="course-cover"
+                label="코스 표지"
+                onRemove={() =>
+                  dispatch({ assetId: null, type: "cover-asset-changed" })
+                }
+                onUploaded={(asset) =>
+                  dispatch({
+                    assetId: asset.id,
+                    type: "cover-asset-changed",
+                  })
+                }
+                upload={uploadAsset}
+              />
+            </div>
           </div>
         ) : (
           <div>
@@ -400,6 +446,11 @@ export function CourseEditorShell({
                           }}
                         />
                         <StepWorkspace
+                          assetUpload={{
+                            assets: state.draft.assets,
+                            disabled: false,
+                            upload: uploadAsset,
+                          }}
                           onAdd={(step) =>
                             dispatch({
                               lessonId: lesson.id,
@@ -465,6 +516,7 @@ export function CourseEditorShell({
 }
 
 type EditorLesson = AdminCourseDetail["units"][number]["lessons"][number]
+type LessonStepId = EditorLesson["steps"][number]["id"]
 
 function AiFeedbackTargetFields({
   lesson,

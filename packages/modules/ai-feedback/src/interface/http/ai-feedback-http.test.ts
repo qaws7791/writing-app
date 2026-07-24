@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest"
 import { inProgressLessonLearningStateSchema } from "@workspace/contracts/learning/step-data"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
-import { createApp } from "@workspace/http-platform/core"
+import { createApp } from "@workspace/http-platform/app"
 import { err, ok } from "@workspace/kernel/result"
 
 import {
-  createAiFeedbackRoutes,
+  registerAiFeedbackRoutes,
+  type AiFeedbackHonoEnv,
   type AiFeedbackHttpCommandPort,
   type AiFeedbackLearnerSessionPort,
 } from "#ai-feedback/interface/http/ai-feedback-routes"
@@ -16,9 +17,6 @@ const successResult = {
     improvements: ["근거를 보강하세요."],
     nextAction: "예시를 추가하세요.",
     remainingAttempts: 2,
-    score: 80,
-    scoreRange: [0, 100] as [0, 100],
-    showScore: true,
     strengths: ["주장이 명확합니다."],
     summary: "좋은 초안입니다.",
   },
@@ -141,6 +139,25 @@ describe("AI feedback HTTP interface", () => {
     })
   })
 
+  it("일일 quota 제한은 다음 Asia/Seoul 날짜까지의 Retry-After를 반환한다", async () => {
+    const app = createFixture({
+      requestFeedback: async () =>
+        err({
+          kind: "daily-quota-exceeded",
+          remainingAttempts: 2,
+          retryAfterSeconds: 7_200,
+        }),
+    })
+
+    const response = await request(app)
+
+    expect(response.status).toBe(429)
+    expect(response.headers.get("retry-after")).toBe("7200")
+    await expect(response.json()).resolves.toMatchObject({
+      code: "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED",
+    })
+  })
+
   it("provider 실패 응답에는 provider 원문과 prompt를 포함하지 않는다", async () => {
     const app = createFixture({
       requestFeedback: async () => err({ kind: "provider-response-invalid" }),
@@ -172,7 +189,7 @@ function createFixture(
   },
   requestActors?: unknown[]
 ) {
-  return createApp({
+  const app = createApp<AiFeedbackHonoEnv>({
     middleware:
       requestActors === undefined
         ? []
@@ -185,8 +202,9 @@ function createFixture(
               }
             },
           ],
-    routes: createAiFeedbackRoutes({ command, session }),
   })
+  registerAiFeedbackRoutes(app, { command, session })
+  return app
 }
 
 function request(app: ReturnType<typeof createFixture>) {

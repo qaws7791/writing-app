@@ -1,11 +1,11 @@
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { UserId } from "@workspace/types/ids"
+import { learnerDisplayNameSchema } from "@workspace/contracts/identity/learner-profile"
 
 import type { IdentityError } from "#identity/domain/identity-error"
 import { userStatuses, type UserStatus } from "#identity/domain/user-status"
 
 export const deletedLearnerDisplayName = "삭제된 사용자"
-const learnerDisplayNameMaxLength = 200
 
 export type LearnerProfile = Readonly<{
   deletedAt: Date | null
@@ -21,27 +21,26 @@ export function createLearnerProfile(input: {
   readonly userId: UserId
 }): Result<LearnerProfile, IdentityError> {
   const status = input.status ?? userStatuses.active
-  const displayName = input.displayName.trim()
+  const displayNameResult = learnerDisplayNameSchema.safeParse(
+    input.displayName
+  )
+  const displayName = displayNameResult.success ? displayNameResult.data : ""
   const deletedAt = input.deletedAt ?? null
-  const hasValidDisplayName =
-    displayName.length > 0 && displayName.length <= learnerDisplayNameMaxLength
   const hasConsistentDeletion =
     status === userStatuses.deleted
       ? deletedAt !== null && displayName === deletedLearnerDisplayName
       : deletedAt === null
 
-  if (!hasValidDisplayName || !hasConsistentDeletion) {
+  if (!displayNameResult.success || !hasConsistentDeletion) {
     return err({ kind: "identity-invalid-profile" })
   }
 
-  return ok(
-    Object.freeze({
-      deletedAt: deletedAt === null ? null : new Date(deletedAt),
-      displayName,
-      status,
-      userId: input.userId,
-    })
-  )
+  return ok({
+    deletedAt: deletedAt === null ? null : new Date(deletedAt),
+    displayName,
+    status,
+    userId: input.userId,
+  })
 }
 
 export function changeLearnerDisplayName(input: {
@@ -63,7 +62,7 @@ export function transitionLearnerProfileStatus(input: {
   readonly profile: LearnerProfile
   readonly status: UserStatus
 }): Result<LearnerProfile, IdentityError> {
-  if (input.profile.status === input.status) {
+  if (!isAllowedStatusTransition(input.profile.status, input.status)) {
     return err({
       from: input.profile.status,
       kind: "identity-invalid-status-transition",
@@ -83,4 +82,15 @@ export function transitionLearnerProfileStatus(input: {
   if (profileResult.isErr()) return err(profileResult.error)
 
   return ok(profileResult.value)
+}
+
+function isAllowedStatusTransition(from: UserStatus, to: UserStatus): boolean {
+  switch (from) {
+    case "active":
+      return to === "deleted" || to === "suspended"
+    case "suspended":
+      return to === "active" || to === "deleted"
+    case "deleted":
+      return false
+  }
 }

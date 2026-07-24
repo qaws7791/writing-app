@@ -6,49 +6,61 @@ import { buttonVariants } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
 import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 
-export function FillBlankAnswer({
+type FillBlankChoice<TId extends string> = {
+  readonly id: TId
+  readonly text: string
+}
+
+export function FillBlankAnswer<TId extends string>({
   blankCount,
   checked = false,
+  choices,
+  defaultSelectedChoiceIds = [],
   onChange,
   template,
-  words,
 }: {
   readonly blankCount: number
   readonly checked?: LessonStepCheckedVisual
-  readonly onChange?: (selectedWords: readonly string[]) => void
+  readonly choices: readonly FillBlankChoice<TId>[]
+  readonly defaultSelectedChoiceIds?: readonly TId[]
+  readonly onChange?: (selectedChoiceIds: readonly TId[]) => void
   readonly template: string
-  readonly words: readonly string[]
 }) {
-  const [selectedWords, setSelectedWords] = useState<
-    readonly (string | null)[]
-  >(() => Array.from({ length: blankCount }, () => null))
+  const [selectedChoiceIds, setSelectedChoiceIds] = useState<
+    readonly (TId | null)[]
+  >(() =>
+    Array.from(
+      { length: blankCount },
+      (_, index) => defaultSelectedChoiceIds[index] ?? null
+    )
+  )
 
-  function emitChange(nextWords: readonly (string | null)[]) {
-    onChange?.(nextWords.map((word) => word ?? ""))
+  function emitChange(nextChoiceIds: readonly (TId | null)[]) {
+    onChange?.(nextChoiceIds.flatMap((id) => (id === null ? [] : [id])))
   }
 
-  function handleSelectWord(word: string) {
+  function handleSelectChoice(choiceId: TId) {
     if (checked !== false) return
 
-    const isAlreadyUsed = selectedWords.includes(word)
+    const isAlreadyUsed = selectedChoiceIds.includes(choiceId)
     if (isAlreadyUsed) return
 
-    const nextWords = [...selectedWords]
-    const emptyIndex = nextWords.indexOf(null)
+    const nextChoiceIds = [...selectedChoiceIds]
+    const emptyIndex = nextChoiceIds.indexOf(null)
     if (emptyIndex !== -1) {
-      nextWords[emptyIndex] = word
-      setSelectedWords(nextWords)
-      emitChange(nextWords)
+      nextChoiceIds[emptyIndex] = choiceId
+      setSelectedChoiceIds(nextChoiceIds)
+      emitChange(nextChoiceIds)
     }
   }
 
-  function handleRemoveWord(index: number) {
+  function handleRemoveChoice(index: number) {
     if (checked !== false) return
 
-    const nextWords = [...selectedWords]
-    nextWords[index] = null
-    setSelectedWords(nextWords)
-    emitChange(nextWords)
+    const nextChoiceIds = [...selectedChoiceIds]
+    nextChoiceIds[index] = null
+    setSelectedChoiceIds(nextChoiceIds)
+    emitChange(nextChoiceIds)
   }
 
   return (
@@ -65,49 +77,59 @@ export function FillBlankAnswer({
             {part}
             {index < blankCount ? (
               <button
-                aria-label={`${index + 1}번째 빈칸${selectedWords[index] ? ` ${selectedWords[index]}, 선택 해제` : ", 비어 있음"}`}
-                disabled={checked !== false || selectedWords[index] === null}
-                onClick={() => handleRemoveWord(index)}
+                aria-label={`${index + 1}번째 빈칸${selectedChoiceIds[index] ? ` ${getChoiceText(choices, selectedChoiceIds[index])}, 선택 해제` : ", 비어 있음"}`}
+                disabled={
+                  checked !== false || selectedChoiceIds[index] === null
+                }
+                onClick={() => handleRemoveChoice(index)}
                 className={cn(
                   "inline-block min-w-[80px] px-3 py-1 rounded-xl mx-1 text-center",
-                  selectedWords[index]
-                    ? "bg-accent text-accent-foreground font-bold cursor-pointer"
-                    : "bg-surface"
+                  selectedChoiceIds[index]
+                    ? "bg-action-selected-bg text-action-selected-fg font-bold cursor-pointer"
+                    : "bg-bg-surface"
                 )}
                 type="button"
               >
-                {selectedWords[index] ?? "___"}
+                {getChoiceText(choices, selectedChoiceIds[index]) ?? "___"}
               </button>
             ) : null}
           </span>
         ))}
       </p>
       <div className="flex flex-wrap gap-3">
-        {words.map((word) => {
-          const used = selectedWords.includes(word)
+        {choices.map((choice) => {
+          const used = selectedChoiceIds.includes(choice.id)
           return (
             <button
               aria-pressed={used}
-              key={word}
+              key={choice.id}
               disabled={used || checked !== false}
-              onClick={() => handleSelectWord(word)}
+              onClick={() => handleSelectChoice(choice.id)}
               className={buttonVariants({
                 className: cn(
                   "h-auto rounded-full px-5 py-3 text-base disabled:opacity-100",
                   used
-                    ? "bg-surface text-muted-foreground hover:bg-surface"
-                    : "bg-surface text-charcoal hover:bg-accent hover:text-accent-foreground"
+                    ? "bg-bg-surface text-fg-muted hover:bg-bg-surface"
+                    : "bg-bg-surface text-fg-default hover:bg-action-selected-bg hover:text-action-selected-fg"
                 ),
                 variant: "secondary",
               })}
               style={{ fontSize: "1rem" }}
               type="button"
             >
-              {word}
+              {choice.text}
             </button>
           )
         })}
       </div>
     </div>
   )
+}
+
+function getChoiceText(
+  choices: readonly FillBlankChoice<string>[],
+  choiceId: string | null | undefined
+): string | null {
+  if (choiceId === null || choiceId === undefined) return null
+  return choices.find((choice) => choice.id === choiceId)?.text ?? null
 }

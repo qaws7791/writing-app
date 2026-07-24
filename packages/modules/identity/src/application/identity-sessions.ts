@@ -1,4 +1,4 @@
-import type { AdminActor } from "#identity/domain/admin-role"
+import type { AdminActor } from "#identity/domain/admin-actor"
 import type {
   AdminAuthenticationPort,
   AuthenticatedAdminIdentity,
@@ -51,10 +51,9 @@ export function createAdminSessionResolver(input: {
 }
 
 export function toAdminActor(session: AdminAuthenticatedSession): AdminActor {
-  return Object.freeze({
+  return {
     id: session.admin.id,
-    role: session.admin.role,
-  })
+  }
 }
 
 export type { AuthenticatedAdminIdentity, AuthenticatedLearnerIdentity }

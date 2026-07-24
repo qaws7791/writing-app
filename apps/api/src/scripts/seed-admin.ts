@@ -1,15 +1,10 @@
 import { hashAuthPassword } from "@workspace/auth/password"
 import { adminAuthAccounts, adminAuthUsers } from "@workspace/auth/schema"
-import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import {
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
   type WritingAppDatabase,
 } from "@workspace/db/client"
-import {
-  inspectOwnerIdentitySeedState,
-  seedOwnerIdentity,
-} from "@workspace/identity/seed"
 import { eq } from "drizzle-orm"
 
 import { runApplicationMigrations } from "@/db/migrate"
@@ -27,7 +22,6 @@ export function seedAdminUser(
   return hashAuthPassword(input.password).then((passwordHash) =>
     db.transaction((transaction) => {
       const rows = createSeedAdminRows({ ...input, passwordHash })
-      const adminId = adminIdSchema.parse(rows.user.id)
       const existingUser = transaction
         .select({ id: adminAuthUsers.id })
         .from(adminAuthUsers)
@@ -44,18 +38,8 @@ export function seedAdminUser(
         .from(adminAuthAccounts)
         .where(eq(adminAuthAccounts.id, rows.account.id))
         .get()
-      const existingIdentity = inspectOwnerIdentitySeedState(
-        transaction,
-        adminId
-      )
-
-      if (
-        existingUser === undefined &&
-        existingAccount === undefined &&
-        existingIdentity === "missing"
-      ) {
+      if (existingUser === undefined && existingAccount === undefined) {
         transaction.insert(adminAuthUsers).values(rows.user).run()
-        seedOwnerIdentity(transaction, adminId)
         transaction.insert(adminAuthAccounts).values(rows.account).run()
         return
       }
@@ -63,14 +47,13 @@ export function seedAdminUser(
       if (
         existingUser === undefined ||
         existingAccount === undefined ||
-        existingIdentity !== "owner" ||
         existingAccount.accountId !== rows.account.accountId ||
         existingAccount.providerId !== rows.account.providerId ||
         existingAccount.userId !== rows.account.userId ||
         existingAccount.password === null
       ) {
         throw new Error(
-          "기존 seed 관리자 상태가 불완전하거나 owner credential과 일치하지 않습니다."
+          "기존 seed 관리자 상태가 불완전하거나 credential과 일치하지 않습니다."
         )
       }
 

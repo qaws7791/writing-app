@@ -1,4 +1,5 @@
 import type {
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
@@ -6,11 +7,13 @@ import type {
   UnitId,
 } from "@workspace/types/ids"
 
+/** Prevents runtime mutation from changing shared domain and persistence status checks. */
 export const contentStatuses = Object.freeze({
   active: "active",
   archived: "archived",
 } as const)
 
+/** Prevents runtime mutation from changing the shared schema enum vocabulary. */
 export const contentStatusValues = Object.freeze([
   contentStatuses.active,
   contentStatuses.archived,
@@ -18,6 +21,7 @@ export const contentStatusValues = Object.freeze([
 
 export type ContentStatus = (typeof contentStatusValues)[number]
 
+/** Prevents runtime mutation from changing persisted step discriminator validation. */
 export const lessonStepTypeValues = Object.freeze([
   "READING",
   "COMPARE",
@@ -33,6 +37,7 @@ export const lessonStepTypeValues = Object.freeze([
 
 export type LessonStepType = (typeof lessonStepTypeValues)[number]
 
+/** Prevents runtime mutation from changing persisted visual-key validation. */
 export const courseVisualKeyValues = Object.freeze([
   "basic-sentence-writing",
   "grammar-complete",
@@ -82,6 +87,7 @@ export type CurriculumUnit = Readonly<{
 export type CurriculumDraft = Readonly<{
   category: string
   courseId: CourseId
+  coverAssetId: ContentAssetId | null
   curriculumVersionId: CurriculumVersionId
   description: string
   editVersion: number
@@ -94,6 +100,7 @@ export type CurriculumDraft = Readonly<{
 export type PublishedCurriculumRevision = Readonly<{
   category: string
   courseId: CourseId
+  coverAssetId: ContentAssetId | null
   curriculumVersionId: CurriculumVersionId
   description: string
   publishedAt: Date
@@ -106,6 +113,7 @@ export type PublishedCurriculumRevision = Readonly<{
 export type PublishedCourseSummary = Readonly<{
   category: string
   courseId: CourseId
+  coverAssetId: ContentAssetId | null
   description: string
   lessonCount: number
   revision: number

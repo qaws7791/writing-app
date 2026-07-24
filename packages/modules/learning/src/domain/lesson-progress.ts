@@ -2,11 +2,6 @@ import type { LearnerId, LessonId, LessonStepId } from "@workspace/types/ids"
 
 import type { LearnerStepSubmission } from "#learning/domain/learning-types"
 
-export type LessonProgress =
-  | Readonly<{ kind: "not-started" }>
-  | Readonly<{ currentStepId: LessonStepId; kind: "in-progress" }>
-  | Readonly<{ currentStepId: LessonStepId; kind: "completed" }>
-
 type LessonSubmission = LearnerStepSubmission
 
 export type LearningAttempt = Readonly<{
@@ -18,51 +13,43 @@ export type LearningAttempt = Readonly<{
 }>
 
 export function createLearningAttempt(input: LearningAttempt): LearningAttempt {
-  return Object.freeze({
+  return {
     ...input,
-    submission: freezeSubmission(input.submission),
-  })
+    submission: cloneSubmission(input.submission),
+  }
 }
 
-export function createLessonProgress(input: LessonProgress): LessonProgress {
-  return Object.freeze({ ...input })
-}
-
-function freezeSubmission(submission: LessonSubmission): LessonSubmission {
+function cloneSubmission(submission: LessonSubmission): LessonSubmission {
   switch (submission.type) {
     case "MULTIPLE_CHOICE":
     case "WRITE":
-      return Object.freeze({ ...submission })
+      return { ...submission }
     case "FILL_BLANK":
-      return Object.freeze({
+      return {
         ...submission,
-        selectedChoiceIds: Object.freeze([...submission.selectedChoiceIds]),
-      })
+        selectedChoiceIds: [...submission.selectedChoiceIds],
+      }
     case "SELECT":
-      return Object.freeze({
+      return {
         ...submission,
-        selectedItemIds: Object.freeze([...submission.selectedItemIds]),
-      })
+        selectedItemIds: [...submission.selectedItemIds],
+      }
     case "ORDER":
-      return Object.freeze({
+      return {
         ...submission,
-        orderedItemIds: Object.freeze([...submission.orderedItemIds]),
-      })
+        orderedItemIds: [...submission.orderedItemIds],
+      }
     case "MATCH":
-      return Object.freeze({
+      return {
         ...submission,
-        pairs: Object.freeze(
-          submission.pairs.map((pair) => Object.freeze({ ...pair }))
-        ),
-      })
+        pairs: submission.pairs.map((pair) => ({ ...pair })),
+      }
     case "CATEGORIZE":
-      return Object.freeze({
+      return {
         ...submission,
-        assignments: Object.freeze(
-          submission.assignments.map((assignment) =>
-            Object.freeze({ ...assignment })
-          )
-        ),
-      })
+        assignments: submission.assignments.map((assignment) => ({
+          ...assignment,
+        })),
+      }
   }
 }

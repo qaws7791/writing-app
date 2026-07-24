@@ -1,8 +1,8 @@
 import type {
-  AdminDeleteUserResultDto,
-  AdminUserDetailDto,
-  AdminUserListDto,
-} from "@workspace/contracts/identity/admin-users"
+  deleteAdminUser,
+  getAdminUser,
+  getAdminUsers,
+} from "@workspace/http-client/admin"
 
 export type AdminUserStatus = "active" | "deleted" | "suspended"
 export type ReadAdminUsersInput = {
@@ -12,6 +12,6 @@ export type ReadAdminUsersInput = {
   readonly sort: "joined" | "lastActive" | "lessonsDone" | "streak"
   readonly status: "all" | AdminUserStatus
 }
-export type AdminUserList = AdminUserListDto
-export type AdminUserDetail = AdminUserDetailDto
-export type AdminDeleteUserResult = AdminDeleteUserResultDto
+export type AdminUserList = Awaited<ReturnType<typeof getAdminUsers>>
+export type AdminUserDetail = Awaited<ReturnType<typeof getAdminUser>>
+export type AdminDeleteUserResult = Awaited<ReturnType<typeof deleteAdminUser>>

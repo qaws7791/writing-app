@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 
 import {
   createLearnerCursorCodec,
-  readLearnerCourseCursorPrimary,
   resolveLearnerCourseCursorCondition,
   resolveLearnerProgressCursorCondition,
 } from "#learning/infrastructure/persistence/learner-cursor"
@@ -50,7 +49,7 @@ describe("학습자 cursor codec", () => {
 
   it("payload 또는 서명이 변조되면 거부한다", () => {
     const codec = createLearnerCursorCodec(secret)
-    const fingerprint = codec.createFingerprint({ sort: "recommended" })
+    const fingerprint = codec.createFingerprint({ category: "입문" })
     const cursor = codec.encode({
       endpoint: "courses",
       fingerprint,
@@ -80,45 +79,33 @@ describe("학습자 cursor codec", () => {
 })
 
 describe("학습자 keyset cursor condition", () => {
-  it.each([
-    ["recommended", 3, "ascending"],
-    ["title-asc", "가나다", "ascending"],
-    ["title-desc", "가나다", "descending"],
-    ["lesson-count-asc", 7, "ascending"],
-    ["lesson-count-desc", 7, "descending"],
-  ] as const)(
-    "%s course 정렬의 primary type과 방향을 결정한다",
-    (sort, primary, primaryOrder) => {
+  it("course 추천 순서의 숫자 primary와 오름차순 방향을 결정한다", () => {
+    expect(
+      resolveLearnerCourseCursorCondition({
+        courseId: "course-2",
+        primary: 3,
+      })
+    ).toEqual({
+      courseId: "course-2",
+      kind: "after",
+      primary: 3,
+      primaryOrder: "ascending",
+    })
+  })
+
+  it.each(["3", null])(
+    "course의 숫자가 아닌 primary %s를 거부한다",
+    (primary) => {
       expect(
-        resolveLearnerCourseCursorCondition(sort, {
+        resolveLearnerCourseCursorCondition({
           courseId: "course-2",
           primary,
         })
       ).toEqual({
-        courseId: "course-2",
-        kind: "after",
-        primary,
-        primaryOrder,
+        kind: "invalid-primary",
       })
     }
   )
-
-  it.each([
-    ["recommended", "3"],
-    ["title-asc", 3],
-    ["title-desc", null],
-    ["lesson-count-asc", "7"],
-    ["lesson-count-desc", null],
-  ] as const)("%s의 잘못되거나 null인 primary를 거부한다", (sort, primary) => {
-    const after = {
-      courseId: "course-2",
-      primary,
-    }
-
-    expect(resolveLearnerCourseCursorCondition(sort, after)).toEqual({
-      kind: "invalid-primary",
-    })
-  })
 
   it("progress timestamp는 숫자 DESC이고 동률 course ID는 predicate adapter에 위임한다", () => {
     expect(
@@ -141,30 +128,11 @@ describe("학습자 keyset cursor condition", () => {
   })
 
   it("cursor가 없으면 course와 progress 모두 첫 page condition을 반환한다", () => {
-    expect(
-      resolveLearnerCourseCursorCondition("recommended", undefined)
-    ).toEqual({ kind: "first-page" })
+    expect(resolveLearnerCourseCursorCondition(undefined)).toEqual({
+      kind: "first-page",
+    })
     expect(resolveLearnerProgressCursorCondition(undefined)).toEqual({
       kind: "first-page",
     })
-  })
-
-  it.each([
-    ["recommended", 9],
-    ["title-asc", "normalized-title"],
-    ["title-desc", "normalized-title"],
-    ["lesson-count-asc", 4],
-    ["lesson-count-desc", 4],
-  ] as const)("%s course row에서 cursor primary를 읽는다", (sort, expected) => {
-    expect(
-      readLearnerCourseCursorPrimary(
-        {
-          lessonCount: 4,
-          sortOrder: 9,
-          titleSortKey: "normalized-title",
-        },
-        sort
-      )
-    ).toBe(expected)
   })
 })

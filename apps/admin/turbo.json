@@ -5,6 +5,8 @@
       "env": [
         "API_BASE_URL",
         "ADMIN_ORIGIN",
+        "CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS",
+        "CONTENT_ASSET_PUBLIC_BASE_URL",
         "CSP_REPORT_ONLY",
         "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
         "NODE_ENV"
@@ -14,6 +16,8 @@
       "passThroughEnv": [
         "API_BASE_URL",
         "ADMIN_ORIGIN",
+        "CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS",
+        "CONTENT_ASSET_PUBLIC_BASE_URL",
         "CSP_REPORT_ONLY",
         "NEXT_PUBLIC_LEARNER_WEB_ORIGIN",
         "NODE_ENV"

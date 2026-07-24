@@ -1,6 +1,8 @@
 import pino, { type DestinationStream, type Logger } from "pino"
 import { z } from "zod"
 
+import { redactLogRecord, redactLogValue } from "#observability/redaction"
+
 export type AppLogger = Logger
 
 export type CreateAppLoggerOptions = {
@@ -35,7 +37,7 @@ export function createAppLogger({
   if (parsed.pretty && !stream) {
     return pino({
       base: null,
-      formatters: { log: redactLogObject },
+      formatters: { log: redactLogRecord },
       level: parsed.level,
       transport: {
         target: "pino-pretty",
@@ -49,7 +51,7 @@ export function createAppLogger({
   return pino(
     {
       base: null,
-      formatters: { log: redactLogObject },
+      formatters: { log: redactLogRecord },
       level: parsed.level,
     },
     stream
@@ -60,43 +62,5 @@ export function createChildLogger(
   logger: AppLogger,
   bindings: Readonly<Record<string, unknown>>
 ): AppLogger {
-  return logger.child(redactValue(bindings) as Record<string, unknown>)
-}
-
-function redactLogObject(object: object): Record<string, unknown> {
-  return redactValue(object) as Record<string, unknown>
-}
-
-function redactValue(value: unknown, key = ""): unknown {
-  if (isSensitiveKey(key)) return "[REDACTED]"
-  if (Array.isArray(value)) return value.map((item) => redactValue(item))
-  if (typeof value !== "object" || value === null) return value
-
-  return Object.fromEntries(
-    Object.entries(value).map(([entryKey, entryValue]) => [
-      entryKey,
-      redactValue(entryValue, entryKey),
-    ])
-  )
-}
-
-function isSensitiveKey(key: string): boolean {
-  const normalized = key.replaceAll(/[^a-z0-9]/giu, "").toLowerCase()
-
-  return [
-    "answertext",
-    "authorization",
-    "clientip",
-    "cookie",
-    "credential",
-    "email",
-    "ipaddress",
-    "password",
-    "rawanswer",
-    "remoteip",
-    "secret",
-    "session",
-    "token",
-    "useragent",
-  ].some((sensitivePart) => normalized.includes(sensitivePart))
+  return logger.child(redactLogValue(bindings) as Record<string, unknown>)
 }

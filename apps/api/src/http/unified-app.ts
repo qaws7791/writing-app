@@ -1,5 +1,5 @@
 import { Hono, type Env, type Schema } from "hono"
-import { defaultRequestLoggingRuntime } from "@workspace/http-platform/request-logging"
+import { defaultRequestLoggingRuntime } from "@workspace/http-platform/app"
 
 import { adminRoutePrefix } from "@/admin/admin-openapi"
 

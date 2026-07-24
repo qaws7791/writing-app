@@ -1,93 +1,46 @@
-import type { WritingAppDatabase } from "@workspace/db/client"
+import type { IdGenerator } from "@workspace/kernel/clock"
 
 import {
-  createAiConversationQueries,
-  createAiStreamingApplication,
-  type AiConversationQueries,
-  type AiStreamingApplication,
-} from "#operations/application/ai-conversations"
-import { createAiRequestGuard } from "#operations/application/ai-request-guard"
+  createAuditTrail,
+  type AuditTrail,
+} from "#operations/application/audit-trail"
 import {
   createOperationsReportingQueries,
+  type OperationsReportingFailureObserver,
   type OperationsReportingQueries,
 } from "#operations/application/operations-reporting"
-import type {
-  OperationsAdminSessionPort,
-  OperationsAiKnowledgePort,
-  OperationsClock,
-  OperationsProviderFailureObserver,
-  OperationsReportingFailureObserver,
-  OperationsReportingPorts,
-  OperationsSecurityAuditPort,
-} from "#operations/application/ports/operations-ports"
-import { createOperationsMastraProvider } from "#operations/infrastructure/ai/operations-mastra-provider"
-import { createAiConversationRepository } from "#operations/infrastructure/persistence/ai-conversation-repository"
-import { createAiQuotaRepository } from "#operations/infrastructure/persistence/ai-quota-repository"
-import {
-  createOperationsRoutes,
-  type OperationsHttpRouteGroup,
-} from "#operations/interface/http/operations-http"
+import type { AuditEventRepository } from "#operations/application/ports/audit-event-repository"
+import type { OperationsClock } from "#operations/application/ports/operations-ports"
+import type { OperationsReportingRepository } from "#operations/application/ports/operations-reporting-repository"
 
 export type OperationsModule = Readonly<{
-  ai: Readonly<{
-    conversations: AiConversationQueries
-    streaming: AiStreamingApplication
-  }>
-  closeAi: () => Promise<void>
-  createAdminRoutes: (
-    session: OperationsAdminSessionPort
-  ) => OperationsHttpRouteGroup
+  auditTrail: AuditTrail
   reporting: OperationsReportingQueries
 }>
 
 export function createOperationsModule(
   input: Readonly<{
-    aiConfig: Readonly<{ apiKey: string; model: string }> | null
-    audit: OperationsSecurityAuditPort
+    audit: Readonly<{
+      idGenerator: IdGenerator<string>
+      repository: AuditEventRepository
+    }>
     clock: OperationsClock
-    database: WritingAppDatabase
-    knowledge: OperationsAiKnowledgePort
-    providerFailureObserver: OperationsProviderFailureObserver
-    reporting: OperationsReportingPorts
+    reporting: OperationsReportingRepository
     reportingFailureObserver: OperationsReportingFailureObserver
   }>
 ): OperationsModule {
-  const managedProvider =
-    input.aiConfig === null
-      ? null
-      : createOperationsMastraProvider({
-          apiKey: input.aiConfig.apiKey,
-          knowledge: input.knowledge,
-          model: input.aiConfig.model,
-        })
-  const conversationRepository = createAiConversationRepository(input.database)
-  const conversations = createAiConversationQueries(conversationRepository)
-  const streaming = createAiStreamingApplication({
-    clock: input.clock,
-    provider: managedProvider?.provider ?? null,
-    providerFailureObserver: input.providerFailureObserver,
-    repository: conversationRepository,
-  })
   const reporting = createOperationsReportingQueries({
     observer: input.reportingFailureObserver,
-    ports: input.reporting,
+    repository: input.reporting,
   })
-  const guard = createAiRequestGuard({
-    repository: createAiQuotaRepository(input.database),
+  const auditTrail = createAuditTrail({
+    clock: input.clock,
+    idGenerator: input.audit.idGenerator,
+    repository: input.audit.repository,
   })
 
-  return Object.freeze({
-    ai: Object.freeze({ conversations, streaming }),
-    closeAi: managedProvider?.close ?? (() => Promise.resolve()),
-    createAdminRoutes(session) {
-      return createOperationsRoutes({
-        ai: { conversations, guard, streaming },
-        audit: input.audit,
-        now: input.clock.now,
-        reporting,
-        session,
-      })
-    },
+  return {
+    auditTrail,
     reporting,
-  })
+  }
 }

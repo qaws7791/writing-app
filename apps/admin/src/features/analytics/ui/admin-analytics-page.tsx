@@ -1,37 +1,48 @@
-"use client"
-
-import { useMemo, useState } from "react"
+import Link from "next/link"
+import type { ReactNode } from "react"
 
 import { AdminChartPanel } from "@/entities/admin-analytics/ui/admin-chart-panel"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
+import type { AdminAnalyticsFilters } from "@/features/analytics/model/admin-analytics-filters"
+import { createGetFilterHref } from "@/shared/navigation/get-filter-url"
 import type {
   AdminAnalytics,
   AdminLessonAnalyticsPage,
 } from "@/entities/admin-analytics/model/admin-analytics"
+import type { AdminLessonAnalyticsSort } from "@workspace/contracts/operations/analytics-query"
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   SearchIcon,
 } from "@workspace/ui/components/icons"
-import { TrendingDown } from "lucide-react"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@workspace/ui/components/ui/empty"
+import {
+  FilterToolbar,
+  FilterToolbarField,
+  FilterToolbarLabel,
+} from "@workspace/ui/components/ui/filter-toolbar"
 import { Input } from "@workspace/ui/components/ui/input"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { Surface } from "@workspace/ui/components/ui/surface"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 
-const PAGE_SIZE = 10
-
-type LessonSortKey =
-  | "completionRate"
-  | "courseTitle"
-  | "dropOffRate"
-  | "lessonTitle"
+const pageSizeOptions = [10, 20, 50] as const
 
 export function AdminAnalyticsPage({
   analyticsResult,
+  filters,
   lessonAnalyticsResult,
 }: {
-  readonly analyticsResult: AdminApiResult<AdminAnalytics>
-  readonly lessonAnalyticsResult: AdminApiResult<AdminLessonAnalyticsPage>
+  readonly analyticsResult: AdminRequestResult<AdminAnalytics>
+  readonly filters: AdminAnalyticsFilters
+  readonly lessonAnalyticsResult: AdminRequestResult<AdminLessonAnalyticsPage>
 }) {
   if (analyticsResult.status === "error") {
     return (
@@ -44,340 +55,583 @@ export function AdminAnalyticsPage({
     )
   }
 
-  const lessonRows =
-    lessonAnalyticsResult.status === "ok"
-      ? lessonAnalyticsResult.value.items
-      : []
+  const analytics = analyticsResult.value
 
   return (
     <>
-      <AnalyticsHeading />
-      <section className="mb-4 grid gap-4 lg:grid-cols-2">
-        <AdminChartPanel
-          data={analyticsResult.value.dailySeries}
-          kind="signups"
+      <AnalyticsHeading analytics={analytics} />
+      {analytics.dailySeries.length === 0 ? (
+        <AnalyticsEmptyState />
+      ) : (
+        <>
+          <section
+            aria-label="핵심 추이"
+            className="mb-4 grid gap-4 xl:grid-cols-3"
+          >
+            <AdminChartPanel
+              data={analytics.dailySeries}
+              kind="signup-activation"
+            />
+            <AdminChartPanel
+              data={analytics.dailySeries}
+              kind="start-completion"
+            />
+            <AdminChartPanel data={analytics.dailySeries} kind="d7-return" />
+          </section>
+          <DailyAnalyticsTable analytics={analytics} />
+        </>
+      )}
+      <WorstLessonsTable lessons={analytics.worstLessons} />
+      <WorstAiFeedbackLessonsTable lessons={analytics.worstAiFeedbackLessons} />
+      {lessonAnalyticsResult.status === "error" ? (
+        <LessonAnalyticsError message={lessonAnalyticsResult.error.message} />
+      ) : (
+        <LessonAnalyticsTable
+          filters={filters}
+          page={lessonAnalyticsResult.value}
         />
-        <AdminChartPanel
-          data={analyticsResult.value.dailySeries}
-          kind="completions"
-        />
-      </section>
-      <section className="mb-4 grid gap-4 lg:grid-cols-2">
-        <AdminChartPanel
-          data={analyticsResult.value.streakBuckets}
-          kind="streaks"
-        />
-        <WorstLessonsPanel lessons={analyticsResult.value.worstLessons} />
-      </section>
-      <LessonAnalyticsTable lessons={lessonRows} />
+      )}
     </>
   )
 }
 
-function AnalyticsHeading() {
+function AnalyticsHeading({
+  analytics,
+}: {
+  readonly analytics?: AdminAnalytics
+}) {
   return (
-    <header className="mb-6">
-      <h1 className="m-0 text-[2rem] font-bold text-foreground">분석</h1>
-      <p className="mt-1 text-[1.0625rem] font-medium text-muted-foreground">
-        가입, 완료, 이탈 지표를 분석합니다.
-      </p>
-    </header>
+    <PageHeader
+      description={
+        analytics === undefined
+          ? "가입, 첫 시작, 완료와 D7 재방문을 분석합니다."
+          : `${analytics.from}–${analytics.to} · D7 성숙 cohort ${analytics.matureCohortThrough}까지`
+      }
+      title="분석"
+    />
   )
 }
 
-function WorstLessonsPanel({
-  lessons,
-}: {
-  readonly lessons: AdminAnalytics["worstLessons"]
-}) {
+function AnalyticsEmptyState() {
   return (
-    <article className="rounded-4xl border border-surface-hover p-6">
-      <h2 className="m-0 mb-1 text-[1.125rem] font-bold text-foreground">
-        이탈률 상위 레슨
-      </h2>
-      <p className="mb-4 text-[0.875rem] font-medium text-muted-foreground">
-        완료율이 낮거나 이탈이 높은 레슨입니다.
-      </p>
-      <ul className="m-0 flex list-none flex-col gap-3 p-0">
-        {lessons.length === 0 ? (
-          <li className="text-[0.875rem] font-medium text-muted-foreground">
-            표시할 레슨이 없습니다.
-          </li>
-        ) : (
-          lessons.map((lesson) => (
-            <li
-              className="flex items-center justify-between gap-3 border-b border-surface-hover pb-3 last:border-0 last:pb-0"
-              key={lesson.lessonId}
-            >
-              <div className="min-w-0">
-                <div className="truncate text-[0.9375rem] font-bold text-foreground">
-                  {lesson.lessonTitle}
-                </div>
-                <div className="truncate text-[0.8125rem] font-medium text-muted-foreground">
-                  {lesson.courseTitle}
-                </div>
-              </div>
-              <span className="shrink-0 text-[0.8125rem] font-bold text-destructive">
-                {lesson.dropOffRate}%
-              </span>
-            </li>
-          ))
-        )}
-      </ul>
-    </article>
+    <Surface className="mb-4" variant="panel">
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>표시할 일별 분석 데이터가 없습니다.</EmptyTitle>
+          <EmptyDescription>
+            학습자 활동이 기록되면 가입·첫 시작·완료·재방문 추이를 표시합니다.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    </Surface>
   )
 }
 
-function LessonAnalyticsTable({
-  lessons,
+function DailyAnalyticsTable({
+  analytics,
 }: {
-  readonly lessons: AdminLessonAnalyticsPage["items"]
+  readonly analytics: AdminAnalytics
 }) {
-  const [query, setQuery] = useState("")
-  const [sortKey, setSortKey] = useState<LessonSortKey>("completionRate")
-  const [sortAsc, setSortAsc] = useState(true)
-  const [page, setPage] = useState(0)
-
-  const filtered = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
-    const base =
-      normalizedQuery.length === 0
-        ? lessons
-        : lessons.filter(
-            (lesson) =>
-              lesson.lessonTitle.toLowerCase().includes(normalizedQuery) ||
-              lesson.courseTitle.toLowerCase().includes(normalizedQuery)
-          )
-
-    return [...base].sort((left, right) => {
-      const leftValue = left[sortKey]
-      const rightValue = right[sortKey]
-      const comparison =
-        typeof leftValue === "string"
-          ? leftValue.localeCompare(String(rightValue))
-          : Number(leftValue) - Number(rightValue)
-
-      return sortAsc ? comparison : -comparison
-    })
-  }, [lessons, query, sortAsc, sortKey])
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const safePage = Math.min(page, totalPages - 1)
-  const rows = filtered.slice(
-    safePage * PAGE_SIZE,
-    safePage * PAGE_SIZE + PAGE_SIZE
-  )
-
   return (
-    <article className="rounded-4xl border border-surface-hover p-6">
-      <h2 className="m-0 mb-1 text-[1.125rem] font-bold text-foreground">
-        레슨별 완료율
-      </h2>
-      <p className="mb-4 text-[0.875rem] font-medium text-muted-foreground">
-        강의 전체 레슨의 완료율과 이탈률
+    <Surface className="mb-4" variant="panel">
+      <h2 className="m-0 text-title-md font-black">일별 분석 데이터</h2>
+      <p className="mt-1 text-body-sm font-semibold text-muted-foreground">
+        세 차트와 같은 값을 표로 확인할 수 있습니다.
       </p>
-      <div className="relative mb-4">
-        <label className="sr-only" htmlFor="lesson-analytics-search">
-          레슨 또는 강의 검색
-        </label>
-        <SearchIcon
-          aria-hidden="true"
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          size={14}
-        />
-        <Input
-          className="pl-8 text-[0.875rem] font-medium"
-          id="lesson-analytics-search"
-          onChange={(event) => {
-            setQuery(event.target.value)
-            setPage(0)
-          }}
-          placeholder="레슨 또는 강의 검색…"
-          value={query}
-        />
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-[520px] w-full table-fixed">
-          <caption className="sr-only">레슨별 완료율과 이탈률</caption>
+      <div
+        className="mt-4 overflow-x-auto"
+        data-slot="analytics-data-table-container"
+      >
+        <table
+          aria-label="일별 가입, 첫 시작, 완료와 D7 재방문"
+          className="w-full min-w-[720px] text-body-sm"
+        >
           <thead>
-            <tr className="border-b border-background">
-              <AnalyticsHeaderCell
-                active={sortKey === "lessonTitle"}
-                asc={sortAsc}
-                className="w-[34%]"
-                label="레슨"
-                onClick={() => toggleSort("lessonTitle")}
-              />
-              <AnalyticsHeaderCell
-                active={sortKey === "courseTitle"}
-                asc={sortAsc}
-                className="w-[26%]"
-                label="강의"
-                onClick={() => toggleSort("courseTitle")}
-              />
-              <AnalyticsHeaderCell
-                active={sortKey === "completionRate"}
-                asc={sortAsc}
-                className="w-[22%]"
-                label="완료율"
-                onClick={() => toggleSort("completionRate")}
-              />
-              <AnalyticsHeaderCell
-                active={sortKey === "dropOffRate"}
-                asc={sortAsc}
-                className="w-[18%]"
-                label="이탈률"
-                onClick={() => toggleSort("dropOffRate")}
-              />
+            <tr className="border-b border-border">
+              <TableHeading>날짜</TableHeading>
+              <TableHeading>가입</TableHeading>
+              <TableHeading>첫 시작</TableHeading>
+              <TableHeading>완료</TableHeading>
+              <TableHeading>D7 재방문</TableHeading>
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {analytics.dailySeries.map((point) => (
+              <tr
+                className="border-b border-border last:border-0"
+                key={point.date}
+              >
+                <th
+                  className="px-4 py-3 text-left font-black text-foreground"
+                  scope="row"
+                >
+                  {point.date}
+                </th>
+                <TableNumber value={`${formatCount(point.signups)}명`} />
+                <TableNumber value={`${formatCount(point.starts)}명`} />
+                <TableNumber value={`${formatCount(point.completions)}건`} />
+                <TableNumber value={formatReturnValue(point)} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Surface>
+  )
+}
+
+function WorstAiFeedbackLessonsTable({
+  lessons,
+}: {
+  readonly lessons: AdminAnalytics["worstAiFeedbackLessons"]
+}) {
+  return (
+    <Surface className="mb-4" variant="panel">
+      <h2 className="m-0 text-title-md font-black">AI 실패율 상위 레슨</h2>
+      <p className="mt-1 text-body-sm font-semibold text-muted-foreground">
+        조회 기간의 AI 코칭 요청 중 실패 비율이 높은 현재 레슨입니다.
+      </p>
+      <div className="mt-4 overflow-x-auto">
+        <table
+          aria-label="AI 실패율 상위 레슨"
+          className="w-full min-w-[720px] text-body-sm"
+        >
+          <thead>
+            <tr className="border-b border-border">
+              <TableHeading>레슨</TableHeading>
+              <TableHeading>강의</TableHeading>
+              <TableHeading>요청</TableHeading>
+              <TableHeading>실패</TableHeading>
+              <TableHeading>실패율</TableHeading>
+            </tr>
+          </thead>
+          <tbody>
+            {lessons.length === 0 ? (
               <tr>
                 <td
-                  className="py-10 text-center text-[0.875rem] text-muted-foreground"
-                  colSpan={4}
+                  className="px-4 py-10 text-center font-semibold text-muted-foreground"
+                  colSpan={5}
                 >
-                  검색 결과가 없습니다.
+                  조회 기간에 AI 실패가 발생한 레슨이 없습니다.
                 </td>
               </tr>
             ) : (
-              rows.map((lesson) => (
+              lessons.map((lesson) => (
                 <tr
-                  className="border-b border-background last:border-0"
-                  key={lesson.lessonId}
+                  className="border-b border-border last:border-0"
+                  key={`${lesson.courseId}:${lesson.lessonId}`}
                 >
                   <th
-                    className="truncate px-2 py-3 text-left text-[0.875rem] font-bold text-foreground"
+                    className="px-4 py-3 text-left font-black text-foreground"
                     scope="row"
                   >
                     {lesson.lessonTitle}
                   </th>
-                  <td className="truncate px-2 py-3 text-[0.8125rem] font-medium text-muted-foreground">
+                  <td className="px-4 py-3 font-semibold text-muted-foreground">
                     {lesson.courseTitle}
                   </td>
-                  <td className="px-2 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 max-w-[80px] flex-1 overflow-hidden rounded-full bg-background">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{
-                            background:
-                              lesson.completionRate < 50
-                                ? "var(--color-coral)"
-                                : "var(--color-charcoal)",
-                            width: `${lesson.completionRate}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-[0.8125rem] font-bold text-foreground">
-                        {lesson.completionRate}%
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-2 py-3">
-                    <span
-                      className="inline-flex items-center gap-1 text-[0.8125rem] font-bold"
-                      style={{
-                        color:
-                          lesson.dropOffRate > 50
-                            ? "var(--color-coral-dark)"
-                            : "var(--color-muted-foreground)",
-                      }}
-                    >
-                      {lesson.dropOffRate > 50 ? (
-                        <TrendingDown aria-hidden="true" size={13} />
-                      ) : null}
-                      {lesson.dropOffRate}%
-                    </span>
-                  </td>
+                  <TableNumber
+                    value={`${formatCount(lesson.requestCount)}건`}
+                  />
+                  <TableNumber
+                    value={`${formatCount(lesson.failureCount)}건`}
+                  />
+                  <TableNumber value={`${lesson.failureRate}%`} />
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
-      {totalPages > 1 ? (
-        <div className="mt-4 flex items-center justify-between border-t border-background pt-3">
-          <span className="text-[0.8125rem] font-medium text-muted-foreground">
-            {filtered.length}개 중 {safePage * PAGE_SIZE + 1}–
-            {Math.min((safePage + 1) * PAGE_SIZE, filtered.length)}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              aria-label="이전 페이지"
-              className="rounded-xl border border-surface-hover p-1.5 transition-colors hover:bg-surface disabled:opacity-30"
-              disabled={safePage === 0}
-              onClick={() => setPage((current) => Math.max(0, current - 1))}
-              type="button"
-            >
-              <ChevronLeftIcon aria-hidden="true" size={14} />
-            </button>
-            <span className="text-[0.8125rem] font-bold text-foreground">
-              {safePage + 1} / {totalPages}
-            </span>
-            <button
-              aria-label="다음 페이지"
-              className="rounded-xl border border-surface-hover p-1.5 transition-colors hover:bg-surface disabled:opacity-30"
-              disabled={safePage === totalPages - 1}
-              onClick={() =>
-                setPage((current) => Math.min(totalPages - 1, current + 1))
-              }
-              type="button"
-            >
-              <ChevronRightIcon aria-hidden="true" size={14} />
-            </button>
-          </div>
-        </div>
-      ) : null}
-    </article>
+    </Surface>
   )
-
-  function toggleSort(nextKey: LessonSortKey) {
-    if (sortKey === nextKey) {
-      setSortAsc((current) => !current)
-      return
-    }
-
-    setSortKey(nextKey)
-    setSortAsc(true)
-    setPage(0)
-  }
 }
 
-function AnalyticsHeaderCell({
-  active,
-  asc,
-  className,
-  label,
-  onClick,
+function WorstLessonsTable({
+  lessons,
 }: {
-  readonly active: boolean
-  readonly asc: boolean
-  readonly className: string
-  readonly label: string
-  readonly onClick: () => void
+  readonly lessons: AdminAnalytics["worstLessons"]
 }) {
   return (
+    <Surface className="mb-4" variant="panel">
+      <h2 className="m-0 text-title-md font-black">이탈률 상위 레슨</h2>
+      <p className="mt-1 text-body-sm font-semibold text-muted-foreground">
+        완료율이 낮아 콘텐츠 점검이 우선인 레슨입니다.
+      </p>
+      <div className="mt-4 overflow-x-auto">
+        <table
+          aria-label="이탈률 상위 레슨"
+          className="w-full min-w-[680px] text-body-sm"
+        >
+          <thead>
+            <tr className="border-b border-border">
+              <TableHeading>레슨</TableHeading>
+              <TableHeading>강의</TableHeading>
+              <TableHeading>시작</TableHeading>
+              <TableHeading>완료</TableHeading>
+              <TableHeading>이탈률</TableHeading>
+            </tr>
+          </thead>
+          <tbody>
+            {lessons.length === 0 ? (
+              <tr>
+                <td
+                  className="px-4 py-10 text-center font-semibold text-muted-foreground"
+                  colSpan={5}
+                >
+                  표시할 이탈 레슨이 없습니다.
+                </td>
+              </tr>
+            ) : (
+              lessons.map((lesson) => (
+                <tr
+                  className="border-b border-border last:border-0"
+                  key={lesson.lessonId}
+                >
+                  <th
+                    className="px-4 py-3 text-left font-black text-foreground"
+                    scope="row"
+                  >
+                    {lesson.lessonTitle}
+                  </th>
+                  <td className="px-4 py-3 font-semibold text-muted-foreground">
+                    {lesson.courseTitle}
+                  </td>
+                  <TableNumber value={`${formatCount(lesson.started)}명`} />
+                  <TableNumber value={`${formatCount(lesson.completed)}명`} />
+                  <TableNumber value={`${lesson.dropOffRate}%`} />
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Surface>
+  )
+}
+
+function LessonAnalyticsError({ message }: { readonly message: string }) {
+  return (
+    <Surface variant="panel">
+      <h2 className="m-0 mb-3 text-title-md font-black">레슨별 성과</h2>
+      <Alert role="alert" tone="danger">
+        <AlertDescription>{message}</AlertDescription>
+      </Alert>
+    </Surface>
+  )
+}
+
+function LessonAnalyticsTable({
+  filters,
+  page,
+}: {
+  readonly filters: AdminAnalyticsFilters
+  readonly page: AdminLessonAnalyticsPage
+}) {
+  const { pagination } = page
+  const firstItem =
+    pagination.totalItems === 0
+      ? 0
+      : (pagination.page - 1) * pagination.pageSize + 1
+  const lastItem = Math.min(
+    pagination.page * pagination.pageSize,
+    pagination.totalItems
+  )
+
+  return (
+    <Surface variant="panel">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="m-0 text-title-md font-black">레슨별 성과</h2>
+          <p className="mt-1 text-body-sm font-semibold text-muted-foreground">
+            시작·완료·완료율·이탈률을 서버 집계로 조회합니다.
+          </p>
+        </div>
+        <span className="text-label-md font-black text-muted-foreground">
+          {formatCount(pagination.totalItems)}개
+        </span>
+      </div>
+      <LessonAnalyticsFilter filters={filters} />
+      <div
+        className="overflow-x-auto"
+        data-slot="lesson-analytics-table-container"
+      >
+        <table
+          aria-label="레슨별 성과"
+          className="w-full min-w-[880px] text-body-sm"
+        >
+          <thead>
+            <tr className="border-b border-border">
+              <SortableHeading filters={filters} label="레슨" sort="lesson" />
+              <SortableHeading filters={filters} label="강의" sort="course" />
+              <TableHeading>시작</TableHeading>
+              <TableHeading>완료</TableHeading>
+              <SortableHeading
+                filters={filters}
+                label="완료율"
+                sort="completionRate"
+              />
+              <SortableHeading
+                filters={filters}
+                label="이탈률"
+                sort="dropOff"
+              />
+            </tr>
+          </thead>
+          <tbody>
+            {page.items.length === 0 ? (
+              <tr>
+                <td
+                  className="px-4 py-10 text-center font-semibold text-muted-foreground"
+                  colSpan={6}
+                >
+                  검색 조건에 맞는 레슨이 없습니다.
+                </td>
+              </tr>
+            ) : (
+              page.items.map((lesson) => (
+                <tr
+                  className="border-b border-border last:border-0"
+                  key={lesson.lessonId}
+                >
+                  <th
+                    className="px-4 py-3 text-left font-black text-foreground"
+                    scope="row"
+                  >
+                    {lesson.lessonTitle}
+                  </th>
+                  <td className="px-4 py-3 font-semibold text-muted-foreground">
+                    {lesson.courseTitle}
+                  </td>
+                  <TableNumber value={`${formatCount(lesson.started)}명`} />
+                  <TableNumber value={`${formatCount(lesson.completed)}명`} />
+                  <TableNumber value={`${lesson.completionRate}%`} />
+                  <TableNumber value={`${lesson.dropOffRate}%`} />
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      {pagination.totalPages === 0 ? null : (
+        <nav
+          aria-label="레슨 분석 페이지"
+          className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4"
+        >
+          <span className="text-label-md font-bold text-muted-foreground">
+            {formatCount(pagination.totalItems)}개 중 {formatCount(firstItem)}–
+            {formatCount(lastItem)}
+          </span>
+          <div className="flex items-center gap-2">
+            <PaginationLink
+              disabled={pagination.page <= 1}
+              href={createAnalyticsHref(filters, {
+                page: Math.max(1, pagination.page - 1),
+              })}
+              label="이전 페이지"
+            >
+              <ChevronLeftIcon aria-hidden="true" size={16} />
+            </PaginationLink>
+            <span className="min-w-20 text-center text-label-md font-black">
+              {pagination.page} / {pagination.totalPages}
+            </span>
+            <PaginationLink
+              disabled={pagination.page >= pagination.totalPages}
+              href={createAnalyticsHref(filters, {
+                page: Math.min(pagination.totalPages, pagination.page + 1),
+              })}
+              label="다음 페이지"
+            >
+              <ChevronRightIcon aria-hidden="true" size={16} />
+            </PaginationLink>
+          </div>
+        </nav>
+      )}
+    </Surface>
+  )
+}
+
+function LessonAnalyticsFilter({
+  filters,
+}: {
+  readonly filters: AdminAnalyticsFilters
+}) {
+  return (
+    <FilterToolbar
+      aria-label="레슨 분석 필터"
+      className="grid-cols-[minmax(220px,1fr)_160px_auto_auto] max-lg:grid-cols-1"
+      method="get"
+    >
+      <input name="direction" type="hidden" value={filters.direction} />
+      <input name="page" type="hidden" value="1" />
+      <input name="sort" type="hidden" value={filters.sort} />
+      <FilterToolbarField className="relative">
+        <FilterToolbarLabel>레슨 또는 강의 검색</FilterToolbarLabel>
+        <SearchIcon
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-3 left-3.5 text-muted-foreground"
+          size={16}
+        />
+        <Input
+          aria-label="레슨 또는 강의 검색"
+          className="pl-10 font-semibold"
+          defaultValue={filters.query}
+          name="query"
+          placeholder="검색어 입력"
+        />
+      </FilterToolbarField>
+      <FilterToolbarField>
+        <FilterToolbarLabel>페이지당 행</FilterToolbarLabel>
+        <select
+          aria-label="페이지당 행"
+          className="h-11 rounded-control border border-field-border bg-transparent px-4 text-body-sm font-semibold text-foreground focus-visible:ring-3 focus-visible:ring-focus"
+          defaultValue={filters.pageSize}
+          name="pageSize"
+        >
+          {pageSizeOptions.map((pageSize) => (
+            <option key={pageSize} value={pageSize}>
+              {pageSize}개
+            </option>
+          ))}
+        </select>
+      </FilterToolbarField>
+      <Button type="submit" variant="outline">
+        조회
+      </Button>
+      <Link
+        className={buttonVariants({ size: "default", variant: "ghost" })}
+        href="/analytics"
+      >
+        초기화
+      </Link>
+    </FilterToolbar>
+  )
+}
+
+function SortableHeading({
+  filters,
+  label,
+  sort,
+}: {
+  readonly filters: AdminAnalyticsFilters
+  readonly label: string
+  readonly sort: AdminLessonAnalyticsSort
+}) {
+  const active = filters.sort === sort
+  const nextDirection = active && filters.direction === "asc" ? "desc" : "asc"
+
+  return (
     <th
-      aria-sort={active ? (asc ? "ascending" : "descending") : "none"}
-      className={`${className} px-2 py-2 text-left`}
+      aria-sort={
+        active
+          ? filters.direction === "asc"
+            ? "ascending"
+            : "descending"
+          : "none"
+      }
+      className="px-4 py-3 text-left"
       scope="col"
     >
-      <button
-        className="flex items-center gap-1 text-[0.8125rem] font-bold text-muted-foreground transition-colors hover:text-foreground"
-        onClick={onClick}
-        type="button"
+      <Link
+        aria-label={`${label} ${nextDirection === "asc" ? "오름차순" : "내림차순"} 정렬`}
+        className="inline-flex items-center gap-1 font-black text-muted-foreground hover:text-foreground"
+        href={createAnalyticsHref(filters, {
+          direction: nextDirection,
+          page: 1,
+          sort,
+        })}
       >
         {label}
         {active ? (
           <ChevronDownIcon
             aria-hidden="true"
-            className={asc ? "rotate-180" : ""}
-            size={12}
+            className={filters.direction === "asc" ? "rotate-180" : undefined}
+            size={14}
           />
         ) : null}
-      </button>
+      </Link>
     </th>
+  )
+}
+
+function PaginationLink({
+  children,
+  disabled,
+  href,
+  label,
+}: {
+  readonly children: ReactNode
+  readonly disabled: boolean
+  readonly href: string
+  readonly label: string
+}) {
+  const className = buttonVariants({
+    className: disabled ? "pointer-events-none opacity-40" : undefined,
+    size: "icon-sm",
+    variant: "outline",
+  })
+
+  return disabled ? (
+    <span
+      aria-disabled="true"
+      aria-label={label}
+      className={className}
+      role="link"
+    >
+      {children}
+    </span>
+  ) : (
+    <Link aria-label={label} className={className} href={href}>
+      {children}
+    </Link>
+  )
+}
+
+function TableHeading({ children }: { readonly children: ReactNode }) {
+  return (
+    <th
+      className="px-4 py-3 text-left font-black text-muted-foreground"
+      scope="col"
+    >
+      {children}
+    </th>
+  )
+}
+
+function TableNumber({ value }: { readonly value: string }) {
+  return (
+    <td className="px-4 py-3 font-bold tabular-nums text-foreground">
+      {value}
+    </td>
+  )
+}
+
+function formatReturnValue(
+  point: AdminAnalytics["dailySeries"][number]
+): string {
+  if (point.returnStatus === "immature") return "집계 중"
+  if (point.returnStatus === "empty") return "표본 없음"
+  return point.returns === null
+    ? "표본 없음"
+    : `${formatCount(point.returns)}명`
+}
+
+function formatCount(value: number): string {
+  return value.toLocaleString("ko-KR")
+}
+
+function createAnalyticsHref(
+  filters: AdminAnalyticsFilters,
+  overrides: Readonly<Record<string, string | number>> = {}
+): string {
+  return createGetFilterHref(
+    [
+      ["direction", filters.direction],
+      ["page", filters.page],
+      ["pageSize", filters.pageSize],
+      ["query", filters.query],
+      ["sort", filters.sort],
+    ],
+    overrides
   )
 }

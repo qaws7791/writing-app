@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { prettyFactory } from "pino-pretty"
 
 import {
   createAppLogger,
@@ -6,21 +7,13 @@ import {
   shouldUsePrettyLogging,
 } from "#observability/logger"
 import { createRequestLogger } from "#observability/request-logger"
+import { createSecurityAuditLogger } from "#observability/security-audit-logger"
 
 type LogRecord = {
-  readonly adminId?: string
-  readonly audience?: "admin" | "learner"
-  readonly durationMs?: number
-  readonly errorClass?: "client-error" | "server-error"
+  readonly [key: string]: unknown
   readonly level: number
-  readonly method?: string
   readonly msg: string
-  readonly outcome?: "failed" | "succeeded"
-  readonly path?: string
-  readonly requestId?: string
-  readonly status?: number
   readonly time?: number
-  readonly userId?: string
 }
 
 function createMemoryLogStream(): {
@@ -89,7 +82,7 @@ describe("logger", () => {
       durationMs: 12,
       method: "GET",
       outcome: "succeeded",
-      path: "/courses",
+      path: "/courses/:courseId",
       requestId: "r1",
       status: 200,
     })
@@ -97,16 +90,18 @@ describe("logger", () => {
     expect(records[0]).toMatchObject({
       audience: "learner",
       durationMs: 12,
+      event: "request.completed",
       method: "GET",
       msg: "request.completed",
       outcome: "succeeded",
-      path: "/courses",
+      path: "/courses/:courseId",
       requestId: "r1",
+      retentionClass: "application-30d",
       status: 200,
     })
   })
 
-  it("request log helper가 사용자 식별자를 구조화해서 남긴다", () => {
+  it("request log helper가 actor 식별자를 구조화하고 허용하지 않은 필드를 버린다", () => {
     const { records, stream } = createMemoryLogStream()
     const logger = createAppLogger({
       stream,
@@ -121,10 +116,21 @@ describe("logger", () => {
       path: "/profile",
       requestId: "r2",
       status: 200,
-      userId: "user-1",
-    })
+      actorId: "user-1",
+      actorType: "learner",
+      answer: "raw answer",
+      clientIp: "203.0.113.20",
+      email: "learner@example.test",
+      name: "learner name",
+      prompt: "raw prompt",
+      providerResponse: "raw provider response",
+      secret: "request secret",
+      userAgent: "raw user agent",
+    } as Parameters<typeof logRequest>[0])
 
     expect(records[0]).toMatchObject({
+      actorId: "user-1",
+      actorType: "learner",
       audience: "learner",
       durationMs: 15,
       method: "GET",
@@ -132,32 +138,54 @@ describe("logger", () => {
       path: "/profile",
       requestId: "r2",
       status: 200,
-      userId: "user-1",
     })
+    const serialized = JSON.stringify(records[0])
+    for (const forbiddenValue of [
+      "raw answer",
+      "203.0.113.20",
+      "learner@example.test",
+      "learner name",
+      "raw prompt",
+      "raw provider response",
+      "request secret",
+      "raw user agent",
+    ]) {
+      expect(serialized).not.toContain(forbiddenValue)
+    }
   })
 
-  it("secret, credential, session token, 원문 답안과 불필요한 개인정보를 재귀적으로 가린다", () => {
+  it("금지된 개인정보, 원문과 provider cause를 재귀적으로 가리고 URL query를 제거한다", () => {
     const { records, stream } = createMemoryLogStream()
     const logger = createAppLogger({ stream })
 
     logger.info({
+      cause: "provider raw cause",
       credential: "credential-value",
       nested: {
         answerText: "raw answer",
         email: "learner@example.test",
+        name: "학습자 이름",
+        prompt: "raw prompt",
+        providerResponse: "provider raw response",
         sessionToken: "session-value",
       },
       secret: "secret-value",
+      url: "https://example.test/callback?token=query-secret#result",
     })
 
     expect(records[0]).toMatchObject({
+      cause: "[REDACTED]",
       credential: "[REDACTED]",
       nested: {
         answerText: "[REDACTED]",
         email: "[REDACTED]",
+        name: "[REDACTED]",
+        prompt: "[REDACTED]",
+        providerResponse: "[REDACTED]",
         sessionToken: "[REDACTED]",
       },
       secret: "[REDACTED]",
+      url: "https://example.test/callback?[REDACTED]#result",
     })
   })
 
@@ -193,5 +221,114 @@ describe("logger", () => {
       expect(serialized).not.toContain(sensitiveValue)
     }
     expect(serialized.match(/\[REDACTED\]/gu)?.length).toBeGreaterThanOrEqual(6)
+  })
+
+  it("AI usage의 집계 token 수는 credential token과 구분한다", () => {
+    const { records, stream } = createMemoryLogStream()
+    const logger = createAppLogger({ stream })
+
+    logger.info({
+      accessToken: "credential-token",
+      inputTokens: 120,
+      outputTokens: 30,
+      totalTokens: 150,
+    })
+
+    expect(records[0]).toMatchObject({
+      accessToken: "[REDACTED]",
+      inputTokens: 120,
+      outputTokens: 30,
+      totalTokens: 150,
+    })
+  })
+
+  it("security event만 제한된 IP와 User-Agent 필드를 보존한다", () => {
+    const { records, stream } = createMemoryLogStream()
+    const logger = createAppLogger({ stream })
+    const logSecurityAudit = createSecurityAuditLogger(logger)
+
+    logger.info({
+      clientIp: "203.0.113.10",
+      userAgent: "general-user-agent",
+    })
+    logSecurityAudit({
+      action: "authorization.denied",
+      clientIp: "203.0.113.10",
+      outcome: "denied",
+      requestId: "r-security",
+      target: "GET /users/:userId?token=query-secret",
+      userAgent: "Browser/1.0\u0000",
+    })
+
+    expect(records[0]).toMatchObject({
+      clientIp: "[REDACTED]",
+      userAgent: "[REDACTED]",
+    })
+    expect(records[1]).toMatchObject({
+      action: "authorization.denied",
+      clientIp: "203.0.113.10",
+      event: "security.audit",
+      level: 40,
+      msg: "security.audit",
+      retentionClass: "security-90d",
+      target: "GET /users/:userId?[REDACTED]",
+      userAgent: "Browser/1.0",
+    })
+  })
+
+  it("성공 security event도 security 보존 class와 info level을 사용한다", () => {
+    const { records, stream } = createMemoryLogStream()
+    const logger = createAppLogger({ stream })
+    const logSecurityAudit = createSecurityAuditLogger(logger)
+
+    logSecurityAudit({
+      action: "owner.mutation",
+      outcome: "succeeded",
+      requestId: "r-owner",
+      target: "DELETE /users/:userId",
+    })
+
+    expect(records[0]).toMatchObject({
+      event: "security.audit",
+      level: 30,
+      retentionClass: "security-90d",
+    })
+  })
+
+  it("pretty와 JSON 표현이 같은 구조화 필드를 유지한다", () => {
+    const { records, stream } = createMemoryLogStream()
+    const logger = createAppLogger({ stream })
+    const logRequest = createRequestLogger(logger)
+
+    logRequest({
+      actorId: "user-1",
+      actorType: "learner",
+      audience: "learner",
+      durationMs: 12,
+      method: "GET",
+      outcome: "succeeded",
+      path: "/courses/:courseId",
+      requestId: "r-pretty",
+      status: 200,
+    })
+
+    const jsonRecord = records[0]
+    if (jsonRecord === undefined) {
+      throw new Error("request log record was not written")
+    }
+    const pretty = prettyFactory({ colorize: false, singleLine: true })
+    const prettyOutput = pretty(JSON.stringify(jsonRecord))
+    const objectStart = prettyOutput.indexOf("{")
+    const prettyFields = JSON.parse(prettyOutput.slice(objectStart)) as Record<
+      string,
+      unknown
+    >
+    const structuredJsonFields = Object.fromEntries(
+      Object.entries(jsonRecord).filter(
+        ([key]) => !["level", "msg", "time"].includes(key)
+      )
+    )
+
+    expect(prettyFields).toEqual(structuredJsonFields)
   })
 })

@@ -9,12 +9,24 @@ export type AiFeedbackAttemptStatus =
   | "pending"
   | "succeeded"
 
+export const aiFeedbackFailureCodeValues = [
+  "pending-expired",
+  "persistence-failed",
+  "provider-response-invalid",
+  "provider-timeout",
+  "provider-unavailable",
+  "request-aborted",
+] as const
+
+export type AiFeedbackFailureCode = (typeof aiFeedbackFailureCodeValues)[number]
+
 export type AiFeedbackAttemptPolicy = Readonly<{
   maxCompletedAttempts: number
   pendingTtlMs: number
   providerTimeoutMs: number
 }>
 
+/** Exported default shared by callers; runtime mutation would alter timeout and attempt safeguards globally. */
 export const defaultAiFeedbackAttemptPolicy = Object.freeze({
   maxCompletedAttempts: 3,
   pendingTtlMs: 60_000,
@@ -44,7 +56,7 @@ export function validateAiFeedbackAttemptPolicy(
     return err({ kind: "attempt-policy-invalid" })
   }
 
-  return ok(Object.freeze({ ...policy }))
+  return ok({ ...policy })
 }
 
 export function calculateRemainingAiFeedbackAttempts(input: {

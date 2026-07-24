@@ -10,10 +10,9 @@ export const contentStatusValues = [
 ] as const
 export const contentStatusSchema = z.enum(contentStatusValues)
 
-export const adminContentStatusSchema = contentStatusSchema
 export const adminCourseListStatusFilterSchema = z.union([
   z.literal("all"),
-  adminContentStatusSchema,
+  contentStatusSchema,
 ])
 
 export type ContentStatus = z.infer<typeof contentStatusSchema>

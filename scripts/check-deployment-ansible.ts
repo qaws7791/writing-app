@@ -40,19 +40,25 @@ function runDeploymentAnsibleCheck(): void {
   }
 
   const ansibleRoot = path.resolve(import.meta.dir, "..", "infra", "ansible")
-  const inventory = path.join("inventories", "production", "hosts.example.yaml")
+  const inventories = ["production", "staging"].map((environment) =>
+    path.join("inventories", environment, "hosts.example.yaml")
+  )
 
   runCommand(ansibleRoot, "ansible-lint", ["."])
-  for (const playbook of readDeploymentPlaybooks(ansibleRoot)) {
-    runCommand(ansibleRoot, "ansible-playbook", [
-      "--syntax-check",
-      "-i",
-      inventory,
-      playbook,
-    ])
+  for (const inventory of inventories) {
+    for (const playbook of readDeploymentPlaybooks(ansibleRoot)) {
+      runCommand(ansibleRoot, "ansible-playbook", [
+        "--syntax-check",
+        "-i",
+        inventory,
+        playbook,
+      ])
+    }
   }
 
-  console.log("Ansible lint와 playbook syntax 검증을 통과했습니다.")
+  console.log(
+    "Ansible lint와 production/staging playbook syntax 검증을 통과했습니다."
+  )
 }
 
 if (import.meta.main) runDeploymentAnsibleCheck()

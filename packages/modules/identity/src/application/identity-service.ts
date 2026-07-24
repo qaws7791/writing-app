@@ -1,9 +1,5 @@
 import { err, ok, type Result } from "@workspace/kernel/result"
 
-import {
-  decideAdminRoleChange,
-  type AdminIdentity,
-} from "#identity/domain/admin-role"
 import type { IdentityError } from "#identity/domain/identity-error"
 import {
   changeLearnerDisplayName,
@@ -15,7 +11,6 @@ import { userStatuses } from "#identity/domain/user-status"
 import type {
   AuthenticatedAdminIdentity,
   AuthenticatedLearnerIdentity,
-  ChangeAdminRoleCommand,
   ChangeUserStatusCommand,
   IdentityApplicationDependencies,
 } from "#identity/application/identity-ports"
@@ -27,9 +22,6 @@ import {
 import { findLearnerAccount } from "#identity/application/learner-account-reader"
 
 export type IdentityApplication = Readonly<{
-  changeAdminRole: (
-    command: ChangeAdminRoleCommand
-  ) => Promise<Result<AdminIdentity, IdentityError>>
   changeLearnerDisplayName: (command: {
     readonly displayName: string
     readonly userId: AuthenticatedLearnerIdentity["id"]
@@ -58,32 +50,6 @@ export function createIdentityApplication(
   dependencies: IdentityApplicationDependencies
 ): IdentityApplication {
   return {
-    async changeAdminRole(command) {
-      const snapshot = await dependencies.repository.findAdminIdentity(
-        command.adminId
-      )
-      if (snapshot === null) return err({ kind: "identity-not-found" })
-
-      const decision = decideAdminRoleChange({
-        actor: command.actor,
-        identity: snapshot.identity,
-        role: command.role,
-      })
-      if (decision.isErr()) return err(decision.error)
-
-      const saved = await dependencies.repository.saveAdminIdentity({
-        expectedVersion: snapshot.version,
-        identity: decision.value,
-      })
-      if (saved.isErr()) return err(saved.error)
-
-      const revoked = await dependencies.sessionRevocation.revokeAdminSessions(
-        command.adminId
-      )
-      return revoked.isErr()
-        ? err({ kind: "identity-session-revocation-failed" })
-        : ok(saved.value.identity)
-    },
     async changeLearnerDisplayName(command) {
       const account = await findLearnerAccount(dependencies, command.userId)
       if (account === null) return err({ kind: "identity-not-found" })
@@ -104,10 +70,22 @@ export function createIdentityApplication(
       return changeStatus(dependencies, command)
     },
     async deleteUser(command) {
-      return changeStatus(dependencies, {
-        ...command,
-        status: userStatuses.deleted,
-      })
+      return changeStatus(
+        dependencies,
+        {
+          ...command,
+          status: userStatuses.deleted,
+        },
+        async (requestedAt) => {
+          const recorded = await dependencies.deletionMarkerStore.record({
+            requestedAt,
+            userId: command.userId,
+          })
+          return recorded.isErr()
+            ? err({ kind: "identity-deletion-marker-failed" as const })
+            : ok(undefined)
+        }
+      )
     },
     async provisionLearner(identity) {
       return provisionLearnerProfile(dependencies, identity)
@@ -119,22 +97,14 @@ export function createIdentityApplication(
         : ok(account.profile.profile)
     },
     async resolveAdminIdentity(identity) {
-      const snapshot = await dependencies.repository.findAdminIdentity(
-        identity.id
-      )
-      if (snapshot === null) return err({ kind: "identity-not-found" })
-
-      return ok(
-        Object.freeze({
-          admin: Object.freeze({
-            email: identity.email,
-            id: identity.id,
-            name: identity.name,
-            role: snapshot.identity.role,
-          }),
-          [adminSessionExpiresAt]: new Date(identity.expiresAt),
-        })
-      )
+      return ok({
+        admin: {
+          email: identity.email,
+          id: identity.id,
+          name: identity.name,
+        },
+        [adminSessionExpiresAt]: new Date(identity.expiresAt),
+      })
     },
     async resolveLearnerIdentity(identity) {
       let account = await findLearnerAccount(dependencies, identity.id)
@@ -148,18 +118,16 @@ export function createIdentityApplication(
       }
       if (account === null) return err({ kind: "identity-not-found" })
 
-      return ok(
-        Object.freeze({
-          user: Object.freeze({
-            email: identity.email,
-            id: identity.id,
-            image: identity.image,
-            joinedAt: identity.joinedAt.toISOString(),
-            name: account.profile.profile.displayName,
-            status: account.profile.profile.status,
-          }),
-        })
-      )
+      return ok({
+        user: {
+          email: identity.email,
+          id: identity.id,
+          image: identity.image,
+          joinedAt: identity.joinedAt.toISOString(),
+          name: account.profile.profile.displayName,
+          status: account.profile.profile.status,
+        },
+      })
     },
   }
 }
@@ -182,21 +150,24 @@ async function provisionLearnerProfile(
 
 async function changeStatus(
   dependencies: IdentityApplicationDependencies,
-  command: ChangeUserStatusCommand
+  command: ChangeUserStatusCommand,
+  beforeSave: (
+    requestedAt: Date
+  ) => Promise<Result<void, IdentityError>> = async () => ok(undefined)
 ): Promise<Result<LearnerProfile, IdentityError>> {
-  if (command.actor.role !== "owner") {
-    return err({ kind: "identity-forbidden" })
-  }
-
   const account = await findLearnerAccount(dependencies, command.userId)
   if (account === null) return err({ kind: "identity-not-found" })
 
+  const requestedAt = dependencies.clock.now()
   const decision = transitionLearnerProfileStatus({
-    now: dependencies.clock.now(),
+    now: requestedAt,
     profile: account.profile.profile,
     status: command.status,
   })
   if (decision.isErr()) return err(decision.error)
+
+  const prepared = await beforeSave(requestedAt)
+  if (prepared.isErr()) return err(prepared.error)
 
   const saved = await dependencies.repository.saveLearnerProfile({
     expectedVersion: account.profile.version,

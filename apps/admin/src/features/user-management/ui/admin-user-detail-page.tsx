@@ -8,14 +8,14 @@ import {
 } from "lucide-react"
 
 import { StatusBadge } from "@/entities/learner-account/ui/status-badge"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminUserDetail } from "@/entities/learner-account/model/admin-learner-account"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 
 export function AdminUserDetailPage({
   userResult,
 }: {
-  readonly userResult: AdminApiResult<AdminUserDetail>
+  readonly userResult: AdminRequestResult<AdminUserDetail>
 }) {
   if (userResult.status === "error") {
     return (

@@ -42,26 +42,24 @@ describe("auth client", () => {
       },
     })
     const fetch = vi.fn(async () => Response.json({ success: true }))
-    const navigate = vi.fn()
     const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
     const webAuthClient = createWebAuthClient({
       fetchImplementation: fetch,
       learnerAuthClientFactory,
-      navigate,
     })
 
     await webAuthClient.requestGoogleLogin("/app/courses")
 
     expect(learnerAuthClientFactory).toHaveBeenCalledWith({
       fetch,
-      navigate,
     })
-    expect(authClient.signInWithGoogle).toHaveBeenCalledWith(
-      "http://localhost:3000/app/courses"
-    )
+    expect(authClient.signInWithGoogle).toHaveBeenCalledWith({
+      callbackURL: "http://localhost:3000/app/courses",
+      errorCallbackURL: "http://localhost:3000/login?authError=true",
+    })
   })
 
-  it("테스트 로그인 요청은 auth package에 callback URL을 전달한다", () => {
+  it("이메일 가입, 로그인과 재전송에 절대 callback URL을 전달한다", async () => {
     vi.stubGlobal("window", {
       location: {
         assign: vi.fn(),
@@ -73,11 +71,67 @@ describe("auth client", () => {
       learnerAuthClientFactory,
     })
 
-    webAuthClient.requestTestLogin("/app/courses")
+    await webAuthClient.requestEmailSignUp({
+      email: "learner@example.com",
+      name: "학습자",
+      nextPath: "/app/courses",
+      password: "Learner-password-123!",
+    })
+    await webAuthClient.requestEmailLogin({
+      email: "learner@example.com",
+      nextPath: "/app/courses",
+      password: "Learner-password-123!",
+    })
+    await webAuthClient.requestVerificationEmail({
+      email: "learner@example.com",
+      nextPath: "/app/courses",
+    })
 
-    expect(authClient.signInForTest).toHaveBeenCalledWith(
-      "http://localhost:3000/app/courses"
-    )
+    const verificationCallback =
+      "http://localhost:3000/login?next=%2Fapp%2Fcourses&verified=true"
+    expect(authClient.signUpWithEmail).toHaveBeenCalledWith({
+      callbackURL: verificationCallback,
+      email: "learner@example.com",
+      name: "학습자",
+      password: "Learner-password-123!",
+    })
+    expect(authClient.signInWithEmail).toHaveBeenCalledWith({
+      callbackURL: "http://localhost:3000/app/courses",
+      email: "learner@example.com",
+      password: "Learner-password-123!",
+    })
+    expect(authClient.resendVerificationEmail).toHaveBeenCalledWith({
+      callbackURL: verificationCallback,
+      email: "learner@example.com",
+    })
+  })
+
+  it("비밀번호 재설정 요청과 완료를 auth package에 전달한다", async () => {
+    vi.stubGlobal("window", {
+      location: {
+        assign: vi.fn(),
+        origin: "http://localhost:3000",
+      },
+    })
+    const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
+    const webAuthClient = createWebAuthClient({
+      learnerAuthClientFactory,
+    })
+
+    await webAuthClient.requestPasswordReset("learner@example.com")
+    await webAuthClient.resetPassword({
+      newPassword: "New-learner-password-123!",
+      token: "reset-token",
+    })
+
+    expect(authClient.requestPasswordReset).toHaveBeenCalledWith({
+      email: "learner@example.com",
+      redirectTo: "http://localhost:3000/reset-password",
+    })
+    expect(authClient.resetPassword).toHaveBeenCalledWith({
+      newPassword: "New-learner-password-123!",
+      token: "reset-token",
+    })
   })
 })
 
@@ -86,8 +140,12 @@ function createAuthClientFixture(): {
   readonly learnerAuthClientFactory: LearnerAuthClientFactory
 } {
   const authClient: LearnerAuthClient = {
-    signInForTest: vi.fn(),
+    requestPasswordReset: vi.fn(async () => undefined),
+    resendVerificationEmail: vi.fn(async () => undefined),
+    resetPassword: vi.fn(async () => undefined),
+    signInWithEmail: vi.fn(async () => undefined),
     signInWithGoogle: vi.fn(async () => undefined),
+    signUpWithEmail: vi.fn(async () => undefined),
     signOut: vi.fn(async () => undefined),
   }
 

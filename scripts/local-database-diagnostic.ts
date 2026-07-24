@@ -98,7 +98,7 @@ export function parseLocalDatabaseDiagnostic(
   const schema = value["schema"]
   const status = value["status"]
   if (schema === "current" && status === "ok") {
-    return Object.freeze({ schema, status })
+    return { schema, status }
   }
   if (schema === "current" && status === "migration-required") {
     const pendingMigrationIds = value["pendingMigrationIds"]
@@ -114,14 +114,14 @@ export function parseLocalDatabaseDiagnostic(
         "DB 진단 결과의 pending migration 목록이 올바르지 않습니다."
       )
     }
-    return Object.freeze({
-      pendingMigrationIds: Object.freeze([...pendingMigrationIds]),
+    return {
+      pendingMigrationIds: [...pendingMigrationIds],
       schema,
       status,
-    })
+    }
   }
   if (schema === "empty" && status === "migration-required") {
-    return Object.freeze({ schema, status })
+    return { schema, status }
   }
   if (
     schema === "unsupported" &&
@@ -129,7 +129,7 @@ export function parseLocalDatabaseDiagnostic(
     typeof value["reason"] === "string" &&
     value["reason"].length > 0
   ) {
-    return Object.freeze({ reason: value["reason"], schema, status })
+    return { reason: value["reason"], schema, status }
   }
 
   throw new Error("DB 진단 결과의 schema/status 조합이 올바르지 않습니다.")

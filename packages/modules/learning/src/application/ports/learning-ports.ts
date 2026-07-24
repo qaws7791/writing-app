@@ -1,6 +1,7 @@
 import type { Clock } from "@workspace/kernel/clock"
 import type { Result } from "@workspace/kernel/result"
 import type {
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LearnerId,
@@ -16,6 +17,8 @@ import type {
   LearnerAiFeedbackContext,
   LearnerTransitionError,
   PrepareLearnerAiFeedbackCommand,
+  SaveLearnerStepDraftCommand,
+  SaveLearnerStepDraftResult,
   StartLearnerLessonCommand,
   StartLearnerLessonResult,
 } from "#learning/domain/learner-transition"
@@ -23,6 +26,8 @@ import type {
   LearningCourseSummary,
   LearningCurriculum,
 } from "#learning/domain/learning-types"
+import type { LearnerReadModelRepository } from "#learning/application/ports/learner-read-model-repository"
+import type { LearnerContentAssetReference } from "#learning/application/learning-read-model"
 
 export type LearningContentQueryPort = Readonly<{
   findCurriculumByLesson: (input: {
@@ -30,6 +35,9 @@ export type LearningContentQueryPort = Readonly<{
     readonly lessonId: LessonId
   }) => Promise<LearningCurriculum | null>
   listPublishedCourses: () => Promise<readonly LearningCourseSummary[]>
+  resolveAssetReferences: (
+    assetIds: readonly ContentAssetId[]
+  ) => Promise<readonly LearnerContentAssetReference[]>
   readCurriculum: (input: {
     readonly courseId: CourseId
     readonly curriculumVersionId?: CurriculumVersionId
@@ -55,15 +63,17 @@ export type LearningAiFeedbackResult = Readonly<{
   improvements: readonly string[]
   nextAction: string
   remainingAttempts: number
-  score: number
-  scoreRange: readonly [0, 100]
-  showScore: boolean
   strengths: readonly string[]
   summary: string
 }>
 
 export type LearningAiFeedbackError =
   | Readonly<{ kind: "attempt-limit-exceeded"; remainingAttempts: 0 }>
+  | Readonly<{
+      kind: "daily-quota-exceeded"
+      remainingAttempts: number
+      retryAfterSeconds: number
+    }>
   | Readonly<{
       kind: "attempt-in-progress"
       remainingAttempts: number
@@ -93,7 +103,6 @@ export type LearningAiFeedbackApplicationPort = Readonly<{
       learnerId: LearnerId
       lessonId: LessonId
       lessonTitle: string
-      showScore: boolean
       stepId: LessonStepId
     }>,
     options: Readonly<{ signal?: AbortSignal }>
@@ -127,6 +136,10 @@ export type LearningTransitionRepository = Readonly<{
     command: PrepareLearnerAiFeedbackCommand,
     curriculum: LearningCurriculum
   ) => Promise<Result<LearnerAiFeedbackContext, LearnerTransitionError>>
+  saveStepDraft: (
+    command: SaveLearnerStepDraftCommand,
+    curriculum: LearningCurriculum
+  ) => Promise<Result<SaveLearnerStepDraftResult, LearnerTransitionError>>
   startLesson: (
     command: StartLearnerLessonCommand,
     curriculum: LearningCurriculum
@@ -138,6 +151,7 @@ export type LearningApplicationDependencies = Readonly<{
   clock: Clock
   content: LearningContentQueryPort
   identity: LearningIdentityQueryPort
+  readRepository: LearnerReadModelRepository
   transitionRepository: LearningTransitionRepository
 }>
 

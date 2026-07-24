@@ -1,3 +1,3 @@
-import type { AdminDashboardDto } from "@workspace/contracts/operations/admin-dashboard"
+import type { getAdminDashboard } from "@workspace/http-client/admin"
 
-export type AdminDashboard = AdminDashboardDto
+export type AdminDashboard = Awaited<ReturnType<typeof getAdminDashboard>>

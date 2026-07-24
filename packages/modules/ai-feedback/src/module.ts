@@ -9,17 +9,13 @@ import {
 import { createDrizzleAiFeedbackRepository } from "#ai-feedback/infrastructure/persistence/ai-feedback-drizzle-repository"
 import { createAiFeedbackAttemptId } from "#ai-feedback/domain/ai-feedback-attempt"
 import {
-  createAiFeedbackRoutes,
-  type AiFeedbackHttpCommandPort,
-  type AiFeedbackLearnerSessionPort,
-} from "#ai-feedback/interface/http/ai-feedback-routes"
-
+  createAiFeedbackMaintenance,
+  type AiFeedbackMaintenance,
+} from "#ai-feedback/application/ai-feedback-maintenance"
+import { createDrizzleAiFeedbackMaintenanceRepository } from "#ai-feedback/infrastructure/persistence/ai-feedback-maintenance-drizzle-repository"
 export type AiFeedbackModule = Readonly<{
   application: AiFeedbackApplication
-  createLearnerRoutes: (input: {
-    readonly command: AiFeedbackHttpCommandPort
-    readonly session: AiFeedbackLearnerSessionPort
-  }) => ReturnType<typeof createAiFeedbackRoutes>
+  maintenance: AiFeedbackMaintenance
 }>
 
 export function createAiFeedbackModule(
@@ -40,10 +36,11 @@ export function createAiFeedbackModule(
     repository: createDrizzleAiFeedbackRepository(input.database),
   })
 
-  return Object.freeze({
+  return {
     application,
-    createLearnerRoutes(routeInput) {
-      return createAiFeedbackRoutes(routeInput)
-    },
-  })
+    maintenance: createAiFeedbackMaintenance({
+      clock: input.clock,
+      repository: createDrizzleAiFeedbackMaintenanceRepository(input.database),
+    }),
+  }
 }

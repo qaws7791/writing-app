@@ -1,12 +1,9 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 
-import type { LearnerProgressResponse } from "@workspace/contracts/learning/learner-api"
-import {
-  getBrowserLearnerHomeApi,
-  type LearnerHomeApi,
-} from "@/features/learner-home/api/learner-home-api"
+import { useRouter } from "next/navigation"
+import { getProgress } from "@workspace/http-client/learner"
 import {
   Tabs,
   TabsContent,
@@ -26,42 +23,51 @@ import {
   type CompletedCoursesState,
   type ProgressCourseState,
 } from "@/features/learner-home/model/home-progress-state"
+import {
+  isLearnerApiAuthenticationError,
+  settleLearnerApiRequest,
+  type LearnerProgressPageDto,
+} from "@/shared/http/learner-api-client"
 
 export type HomeProgressClientProps = {
-  readonly api?: LearnerHomeApi
-  readonly inProgress: LearnerProgressResponse
+  readonly inProgress: LearnerProgressPageDto
 }
 
-export function HomeProgressClient({
-  api,
-  inProgress,
-}: HomeProgressClientProps) {
-  const resolvedApi = useMemo(() => api ?? getBrowserLearnerHomeApi(), [api])
+export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
+  const router = useRouter()
   const [completedState, setCompletedState] = useState<CompletedCoursesState>({
     status: "idle",
   })
   const [inProgressState, setInProgressState] = useState<ProgressCourseState>({
     courses: inProgress.items,
+    loadMoreError: null,
     loadMoreStatus: "idle",
     nextCursor: inProgress.nextCursor,
   })
 
   const loadCompletedCourses = useCallback(async () => {
     setCompletedState({ status: "loading" })
-    const result = await resolvedApi.getProgress({ status: "completed" })
+    const result = await settleLearnerApiRequest(
+      getProgress({ status: "completed" })
+    )
 
     if (result.status === "error") {
-      setCompletedState({ status: "error" })
+      if (isLearnerApiAuthenticationError(result.error)) {
+        router.refresh()
+        return
+      }
+      setCompletedState({ message: result.error.message, status: "error" })
       return
     }
 
     setCompletedState({
       courses: result.value.items,
+      loadMoreError: null,
       loadMoreStatus: "idle",
       nextCursor: result.value.nextCursor,
       status: "loaded",
     })
-  }, [resolvedApi])
+  }, [router])
 
   const loadMoreInProgressCourses = useCallback(async () => {
     if (
@@ -74,16 +80,24 @@ export function HomeProgressClient({
     const cursor = inProgressState.nextCursor
     setInProgressState((state) => ({
       ...state,
+      loadMoreError: null,
       loadMoreStatus: "loading",
     }))
-    const result = await resolvedApi.getProgress({
-      cursor,
-      status: "in_progress",
-    })
+    const result = await settleLearnerApiRequest(
+      getProgress({
+        cursor,
+        status: "in_progress",
+      })
+    )
 
     if (result.status === "error") {
+      if (isLearnerApiAuthenticationError(result.error)) {
+        router.refresh()
+        return
+      }
       setInProgressState((state) => ({
         ...state,
+        loadMoreError: result.error.message,
         loadMoreStatus: "error",
       }))
       return
@@ -91,10 +105,11 @@ export function HomeProgressClient({
 
     setInProgressState((state) => ({
       courses: appendUniqueProgressCourses(state.courses, result.value.items),
+      loadMoreError: null,
       loadMoreStatus: "idle",
       nextCursor: result.value.nextCursor,
     }))
-  }, [inProgressState.loadMoreStatus, inProgressState.nextCursor, resolvedApi])
+  }, [inProgressState.loadMoreStatus, inProgressState.nextCursor, router])
 
   const loadMoreCompletedCourses = useCallback(async () => {
     if (
@@ -108,18 +123,28 @@ export function HomeProgressClient({
     const cursor = completedState.nextCursor
     setCompletedState((state) =>
       state.status === "loaded"
-        ? { ...state, loadMoreStatus: "loading" }
+        ? { ...state, loadMoreError: null, loadMoreStatus: "loading" }
         : state
     )
-    const result = await resolvedApi.getProgress({
-      cursor,
-      status: "completed",
-    })
+    const result = await settleLearnerApiRequest(
+      getProgress({
+        cursor,
+        status: "completed",
+      })
+    )
 
     if (result.status === "error") {
+      if (isLearnerApiAuthenticationError(result.error)) {
+        router.refresh()
+        return
+      }
       setCompletedState((state) =>
         state.status === "loaded"
-          ? { ...state, loadMoreStatus: "error" }
+          ? {
+              ...state,
+              loadMoreError: result.error.message,
+              loadMoreStatus: "error",
+            }
           : state
       )
       return
@@ -132,13 +157,14 @@ export function HomeProgressClient({
               state.courses,
               result.value.items
             ),
+            loadMoreError: null,
             loadMoreStatus: "idle",
             nextCursor: result.value.nextCursor,
             status: "loaded",
           }
         : state
     )
-  }, [completedState, resolvedApi])
+  }, [completedState, router])
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -164,6 +190,7 @@ export function HomeProgressClient({
           {inProgressState.courses.length > 0 ? (
             <ProgressCourseList
               courses={inProgressState.courses}
+              loadMoreError={inProgressState.loadMoreError}
               loadMoreLabel="진행 중 코스 더 보기"
               loadMoreStatus={inProgressState.loadMoreStatus}
               nextCursor={inProgressState.nextCursor}

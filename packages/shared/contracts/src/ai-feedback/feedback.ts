@@ -22,9 +22,6 @@ export const aiFeedbackPayloadSchema = z.strictObject({
     .min(1)
     .max(aiFeedbackOutputCollectionMaxLength),
   nextAction: nonEmptyTextSchema,
-  score: z.number().int().min(0).max(100),
-  scoreRange: z.tuple([z.literal(0), z.literal(100)]),
-  showScore: z.boolean(),
   strengths: z
     .array(nonEmptyTextSchema)
     .min(1)
@@ -46,6 +43,7 @@ export const createAiFeedbackHeadersSchema = z.looseObject({
 })
 
 export const aiFeedbackPublicErrorCodeValues = [
+  "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED",
   "ATTEMPT_IN_PROGRESS",
   "ATTEMPT_LIMIT_EXCEEDED",
   "PROVIDER_UNAVAILABLE",

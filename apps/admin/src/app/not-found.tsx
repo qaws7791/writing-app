@@ -8,7 +8,7 @@ export default function AdminNotFound() {
           관리자 페이지를 찾을 수 없습니다.
         </h1>
         <Link
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-4xl bg-charcoal px-5 py-2.5 font-bold text-cream hover:opacity-90"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-4xl bg-action-primary-bg px-5 py-2.5 font-bold text-action-primary-fg hover:opacity-90"
           href="/"
         >
           대시보드로 돌아가기

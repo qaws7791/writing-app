@@ -1,44 +1,63 @@
-import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
+import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { AdminAnalyticsPage } from "@/features/analytics/ui/admin-analytics-page"
-import { networkAdminApiError } from "@/shared/http/admin-api-error"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import type {
+  AdminRequestError,
+  AdminRequestResult,
+} from "@/shared/http/admin-api-client"
+import type { AdminAnalyticsFilters } from "@/features/analytics/model/admin-analytics-filters"
 import type {
   AdminAnalytics,
   AdminLessonAnalyticsPage,
 } from "@/entities/admin-analytics/model/admin-analytics"
-import { createHttpNetworkError } from "@workspace/http-client/json-transport"
 import {
   courseIdSchema,
   lessonIdSchema,
 } from "@workspace/contracts/content/ids"
+
+const filters: AdminAnalyticsFilters = {
+  direction: "asc",
+  page: 1,
+  pageSize: 10,
+  query: "문장",
+  sort: "completionRate",
+}
 
 const analytics: AdminAnalytics = {
   dailySeries: [
     {
       completions: 2,
       date: "2026-06-13",
+      returns: 1,
+      returnStatus: "available",
       signups: 1,
+      starts: 1,
     },
     {
       completions: 5,
       date: "2026-06-14",
+      returns: null,
+      returnStatus: "immature",
       signups: 3,
+      starts: 2,
     },
   ],
-  streakBuckets: [
+  from: "2026-06-13",
+  matureCohortThrough: "2026-06-06",
+  to: "2026-06-14",
+  worstAiFeedbackLessons: [
     {
-      count: 4,
-      label: "1-3일",
+      courseId: courseIdSchema.parse("c1"),
+      courseTitle: "글쓰기 첫걸음 30일",
+      failureCount: 2,
+      failureRate: 66.7,
+      lessonId: lessonIdSchema.parse("l1"),
+      lessonTitle: "문장 시작하기",
+      requestCount: 3,
     },
   ],
-  worstLessons: [],
-}
-
-const lessonAnalytics: AdminLessonAnalyticsPage = {
-  items: [
+  worstLessons: [
     {
       completed: 7,
       completionRate: 70,
@@ -50,108 +69,155 @@ const lessonAnalytics: AdminLessonAnalyticsPage = {
       started: 10,
     },
   ],
+}
+
+const lessonAnalytics: AdminLessonAnalyticsPage = {
+  items: analytics.worstLessons,
   pagination: {
     page: 1,
     pageSize: 10,
-    totalItems: 1,
-    totalPages: 1,
+    totalItems: 21,
+    totalPages: 3,
   },
 }
 
 describe("AdminAnalyticsPage", () => {
-  it("Kwep 기준 차트와 레슨별 완료율 목록을 렌더링한다", () => {
-    render(
-      <AdminAnalyticsPage
-        analyticsResult={ok(analytics)}
-        lessonAnalyticsResult={ok(lessonAnalytics)}
-      />
-    )
+  it("세 핵심 차트의 요약과 하나의 일별 데이터 표를 렌더링한다", () => {
+    renderPage()
 
     expect(screen.getByRole("heading", { name: "분석" })).toBeVisible()
+    expect(screen.getByRole("heading", { name: "가입·활성화" })).toBeVisible()
+    expect(screen.getByRole("heading", { name: "시작·완료" })).toBeVisible()
+    expect(screen.getByRole("heading", { name: "D7 재방문" })).toBeVisible()
+    expect(screen.getByText("기간 합계 가입 4명 · 첫 시작 3명")).toBeVisible()
+    expect(screen.getByText("기간 합계 첫 시작 3명 · 완료 7건")).toBeVisible()
     expect(
-      screen.getByRole("heading", { name: "최근 30일 가입 추이" })
+      screen.getByText("성숙 cohort 재방문 합계 1명 · 아직 집계 중인 날짜 1일")
     ).toBeVisible()
-    expect(
-      screen.getByRole("heading", { name: "일별 레슨 완료" })
-    ).toBeVisible()
-    expect(
-      screen.getByRole("heading", { name: "스트릭 유지 분포" })
-    ).toBeVisible()
-    expect(
-      screen.getByRole("table", { name: "일별 레슨 완료 데이터" })
-    ).toHaveTextContent("2026-06-14")
-    expect(screen.getByText("기간 합계 레슨 완료 7건")).toBeVisible()
-    expect(
-      screen.getByRole("table", { name: "스트릭 유지 분포 데이터" })
-    ).toHaveTextContent("1-3일")
-    expect(screen.getByRole("heading", { name: "레슨별 완료율" })).toBeVisible()
-    expect(
-      screen.getByRole("textbox", { name: "레슨 또는 강의 검색" })
-    ).toBeVisible()
-    const lessonTable = screen.getByRole("table", {
-      name: "레슨별 완료율과 이탈률",
+    const dailyTable = screen.getByRole("table", {
+      name: "일별 가입, 첫 시작, 완료와 D7 재방문",
     })
-    expect(lessonTable).toBeVisible()
-    expect(screen.getByRole("columnheader", { name: "레슨" })).toHaveAttribute(
-      "aria-sort",
-      "none"
-    )
-    expect(
-      screen.getByRole("columnheader", { name: "완료율" })
-    ).toHaveAttribute("aria-sort", "ascending")
-    expect(
-      screen.getByRole("rowheader", { name: "문장 시작하기" })
-    ).toBeVisible()
-    expect(screen.getByText("70%")).toBeVisible()
-    expect(screen.getByText("30%")).toBeVisible()
+    expect(dailyTable).toHaveTextContent("2026-06-14")
+    expect(within(dailyTable).getByText("집계 중")).toBeVisible()
+    const aiFailureTable = screen.getByRole("table", {
+      name: "AI 실패율 상위 레슨",
+    })
+    expect(aiFailureTable).toHaveTextContent("문장 시작하기")
+    expect(aiFailureTable).toHaveTextContent("3건")
+    expect(aiFailureTable).toHaveTextContent("2건")
+    expect(aiFailureTable).toHaveTextContent("66.7%")
+    expect(screen.queryByText("스트릭 유지 분포")).not.toBeInTheDocument()
   })
 
-  it("페이지 이동 버튼에 이름과 비활성 상태를 제공한다", async () => {
-    const user = userEvent.setup()
-    const firstItem = lessonAnalytics.items[0]
-    if (firstItem === undefined) {
-      throw new Error("레슨 분석 테스트 fixture가 비어 있습니다.")
-    }
-    const items = Array.from({ length: 11 }, (_, index) => ({
-      ...firstItem,
-      lessonId: lessonIdSchema.parse(`lesson-${index}`),
-      lessonTitle: `문장 ${index + 1}`,
-    }))
+  it("서버 검색·정렬·페이지 상태를 URL 링크와 form에 보존한다", () => {
+    renderPage()
 
+    expect(
+      screen.getByRole("textbox", { name: "레슨 또는 강의 검색" })
+    ).toHaveValue("문장")
+    expect(screen.getByRole("combobox", { name: "페이지당 행" })).toHaveValue(
+      "10"
+    )
+    expect(
+      screen.getByRole("columnheader", { name: "완료율 내림차순 정렬" })
+    ).toHaveAttribute("aria-sort", "ascending")
+    expect(
+      screen.getByRole("link", { name: "완료율 내림차순 정렬" })
+    ).toHaveAttribute(
+      "href",
+      "?direction=desc&page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5&sort=completionRate"
+    )
+    expect(screen.getByRole("link", { name: "이전 페이지" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    )
+    expect(screen.getByRole("link", { name: "다음 페이지" })).toHaveAttribute(
+      "href",
+      "?direction=asc&page=2&pageSize=10&query=%EB%AC%B8%EC%9E%A5&sort=completionRate"
+    )
+    expect(
+      screen.getByRole("table", { name: "레슨별 성과" })
+    ).toHaveTextContent("문장 시작하기")
+  })
+
+  it("일별 row와 레슨 row가 없으면 각각 한국어 빈 상태를 표시한다", () => {
     render(
       <AdminAnalyticsPage
-        analyticsResult={ok(analytics)}
-        lessonAnalyticsResult={ok({ ...lessonAnalytics, items })}
+        analyticsResult={ok({
+          ...analytics,
+          dailySeries: [],
+          worstAiFeedbackLessons: [],
+          worstLessons: [],
+        })}
+        filters={{ ...filters, query: "없는 검색" }}
+        lessonAnalyticsResult={ok({
+          items: [],
+          pagination: {
+            page: 1,
+            pageSize: 10,
+            totalItems: 0,
+            totalPages: 0,
+          },
+        })}
       />
     )
 
-    const previous = screen.getByRole("button", { name: "이전 페이지" })
-    const next = screen.getByRole("button", { name: "다음 페이지" })
-    expect(previous).toBeDisabled()
-    expect(next).toBeEnabled()
-
-    await user.click(next)
-
-    expect(previous).toBeEnabled()
-    expect(next).toBeDisabled()
+    expect(
+      screen.getByText("표시할 일별 분석 데이터가 없습니다.")
+    ).toBeVisible()
+    expect(screen.getByText("표시할 이탈 레슨이 없습니다.")).toBeVisible()
+    expect(
+      screen.getByText("조회 기간에 AI 실패가 발생한 레슨이 없습니다.")
+    ).toBeVisible()
+    expect(screen.getByText("검색 조건에 맞는 레슨이 없습니다.")).toBeVisible()
+    expect(
+      screen.queryByRole("navigation", { name: "레슨 분석 페이지" })
+    ).not.toBeInTheDocument()
   })
 
-  it("API 오류 상태를 보여준다", () => {
-    render(
+  it("요약과 레슨 목록 오류를 한국어 alert로 구분한다", () => {
+    const { rerender } = render(
       <AdminAnalyticsPage
         analyticsResult={{
           error: networkError(),
           status: "error",
         }}
+        filters={filters}
         lessonAnalyticsResult={ok(lessonAnalytics)}
       />
     )
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "네트워크 연결을 확인해 주세요."
+    )
 
-    expect(screen.getByText("네트워크 연결을 확인해 주세요.")).toBeVisible()
+    rerender(
+      <AdminAnalyticsPage
+        analyticsResult={ok(analytics)}
+        filters={filters}
+        lessonAnalyticsResult={{
+          error: networkError(),
+          status: "error",
+        }}
+      />
+    )
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "네트워크 연결을 확인해 주세요."
+    )
+    expect(screen.getByRole("heading", { name: "레슨별 성과" })).toBeVisible()
   })
 })
 
-function ok<TValue>(value: TValue): AdminApiResult<TValue> {
+function renderPage() {
+  return render(
+    <AdminAnalyticsPage
+      analyticsResult={ok(analytics)}
+      filters={filters}
+      lessonAnalyticsResult={ok(lessonAnalytics)}
+    />
+  )
+}
+
+function ok<TValue>(value: TValue): AdminRequestResult<TValue> {
   return {
     status: "ok",
     value,
@@ -159,10 +225,12 @@ function ok<TValue>(value: TValue): AdminApiResult<TValue> {
 }
 
 function networkError() {
-  return networkAdminApiError(
-    createHttpNetworkError(
-      new Request("https://api.example.test/api/admin/test"),
-      new TypeError("test network failure")
-    )
-  )
+  return {
+    code: "NETWORK_ERROR",
+    kind: "network",
+    message: "네트워크 연결을 확인해 주세요.",
+    requestId: "client",
+    retryAfterSeconds: null,
+    status: null,
+  } satisfies AdminRequestError
 }

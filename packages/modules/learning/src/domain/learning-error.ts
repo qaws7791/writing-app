@@ -10,7 +10,11 @@ export type LearningExpectedFailure =
   | AnswerRejectedFailure
   | Readonly<{ kind: "not-found"; resource: "lesson" }>
   | Readonly<{
-      conflict: "curriculum-version" | "feedback-answer" | "step-sequence"
+      conflict:
+        | "curriculum-version"
+        | "feedback-answer"
+        | "step-draft-version"
+        | "step-sequence"
       kind: "conflict"
     }>
   | Readonly<{
@@ -21,7 +25,7 @@ export type LearningExpectedFailure =
 export function createAnswerRejectedFailure(
   evaluation: StepEvaluation
 ): AnswerRejectedFailure {
-  return Object.freeze({ evaluation, kind: "answer-rejected" })
+  return { evaluation, kind: "answer-rejected" }
 }
 
 export function classifyLearningTransitionError(
@@ -29,27 +33,29 @@ export function classifyLearningTransitionError(
 ): Exclude<LearningExpectedFailure, AnswerRejectedFailure> {
   switch (error.kind) {
     case "lesson-not-found":
-      return Object.freeze({ kind: "not-found", resource: "lesson" })
+      return { kind: "not-found", resource: "lesson" }
     case "curriculum-version-changed":
-      return Object.freeze({ conflict: "curriculum-version", kind: "conflict" })
+      return { conflict: "curriculum-version", kind: "conflict" }
     case "feedback-answer-not-found":
-      return Object.freeze({ conflict: "feedback-answer", kind: "conflict" })
+      return { conflict: "feedback-answer", kind: "conflict" }
     case "step-sequence-conflict":
-      return Object.freeze({ conflict: "step-sequence", kind: "conflict" })
+      return { conflict: "step-sequence", kind: "conflict" }
+    case "step-draft-version-conflict":
+      return { conflict: "step-draft-version", kind: "conflict" }
     case "feedback-target-invalid":
-      return Object.freeze({
+      return {
         kind: "invalid-transition",
         reason: "feedback-target",
-      })
+      }
     case "invalid-request":
-      return Object.freeze({
+      return {
         kind: "invalid-transition",
         reason: "invalid-request",
-      })
+      }
     case "lesson-locked":
-      return Object.freeze({
+      return {
         kind: "invalid-transition",
         reason: "lesson-locked",
-      })
+      }
   }
 }

@@ -17,10 +17,7 @@ export function createLearningReportingQuery(input: {
   })
 }
 
-export type {
-  LearningOperationsReport,
-  LearningReportingQuery,
-} from "#learning/application/learning-reporting"
+export type { LearningReportingQuery } from "#learning/application/learning-reporting"
 
 export {
   addLearningCalendarDays,

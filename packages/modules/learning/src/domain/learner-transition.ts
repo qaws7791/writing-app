@@ -8,6 +8,8 @@ import type {
 
 import type {
   CourseLearningState,
+  LearnerStepDraft,
+  LearnerStepDraftAnswer,
   LearnerStepSubmission,
   LessonLearningState,
   StepEvaluation,
@@ -44,8 +46,19 @@ export type CompleteLearnerStepCommand = {
   readonly userId: LearnerId
 }
 
+export type SaveLearnerStepDraftCommand = {
+  readonly answer: LearnerStepDraftAnswer
+  readonly expectedCurriculumVersionId: CurriculumVersionId
+  readonly expectedVersion: number | null
+  readonly lessonId: LessonId
+  readonly occurredAt: Date
+  readonly stepId: LessonStepId
+  readonly userId: LearnerId
+}
+
 export type LearnerStepCompletion =
   | { readonly kind: "acknowledge" }
+  | { readonly kind: "skip-ai-feedback" }
   | {
       readonly kind: "answer"
       readonly submission: LearnerStepSubmission
@@ -69,7 +82,6 @@ export type LearnerAiFeedbackContext = {
   readonly curriculumVersionId: CurriculumVersionId
   readonly focus: string
   readonly lessonTitle: string
-  readonly showScore: boolean
 }
 
 export type LearnerTransitionError =
@@ -81,6 +93,12 @@ export type LearnerTransitionError =
     }
   | {
       readonly kind: "step-sequence-conflict"
+      readonly lessonId: LessonId
+      readonly stepId: LessonStepId
+    }
+  | {
+      readonly currentVersion: number | null
+      readonly kind: "step-draft-version-conflict"
       readonly lessonId: LessonId
       readonly stepId: LessonStepId
     }
@@ -102,7 +120,9 @@ export type LearnerTransitionError =
       readonly stepId: LessonStepId
     }
 
-export type StartLearnerLessonResult = LessonLearningState
+export type StartLearnerLessonResult = LessonLearningState &
+  Readonly<{ drafts: readonly LearnerStepDraft[] }>
+export type SaveLearnerStepDraftResult = LearnerStepDraft
 export type CompleteLearnerStepTransitionResult =
   | {
       readonly evaluation: StepEvaluation

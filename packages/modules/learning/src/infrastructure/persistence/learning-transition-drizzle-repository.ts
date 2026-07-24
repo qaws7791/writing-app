@@ -22,7 +22,10 @@ import {
   learnerCourseProgress,
   learnerLessonAnswers,
   learnerLessonProgress,
+  learnerStepDraftAnswerJsonMaxBytes,
+  learnerStepDrafts,
 } from "#learning/infrastructure/persistence/schema"
+import { readLearnerStepDrafts } from "#learning/infrastructure/persistence/learner-step-draft-drizzle"
 import {
   decideFinalizeAiFeedback,
   decidePrepareAiFeedbackContext,
@@ -48,7 +51,10 @@ import type {
   LearnerLessonScope,
   LearnerTransitionError,
   PrepareLearnerAiFeedbackCommand,
+  SaveLearnerStepDraftCommand,
+  SaveLearnerStepDraftResult,
   StartLearnerLessonCommand,
+  StartLearnerLessonResult,
 } from "#learning/domain/learner-transition"
 import {
   decideStartLesson,
@@ -102,6 +108,12 @@ export function createDrizzleLearnerTransitionRepository(
     },
     async prepareAiFeedback(command, curriculum) {
       return prepareAiFeedback(db, command, curriculum)
+    },
+    async saveStepDraft(command, curriculum) {
+      return db.transaction(
+        (transaction) => saveStepDraft(transaction, command, curriculum),
+        { behavior: "immediate" }
+      )
     },
     async startLesson(command, curriculum) {
       return db.transaction(
@@ -175,11 +187,175 @@ function parseStoredAnswer(value: string | undefined) {
   }
 }
 
+function saveStepDraft(
+  transaction: LearningTransaction,
+  command: SaveLearnerStepDraftCommand,
+  curriculum: LearningCurriculum
+): Result<SaveLearnerStepDraftResult, LearnerTransitionError> {
+  const scope = findPinnedLessonScope(transaction, command, curriculum)
+  if (scope === null) {
+    return err(
+      findCurriculumLesson(curriculum, command.lessonId) === null
+        ? { kind: "lesson-not-found", lessonId: command.lessonId }
+        : { kind: "lesson-locked", lessonId: command.lessonId }
+    )
+  }
+  if (scope.curriculumVersionId !== command.expectedCurriculumVersionId) {
+    return err({
+      kind: "curriculum-version-changed",
+      lessonId: command.lessonId,
+    })
+  }
+  if (
+    command.expectedVersion !== null &&
+    (!Number.isSafeInteger(command.expectedVersion) ||
+      command.expectedVersion < 0 ||
+      command.expectedVersion === Number.MAX_SAFE_INTEGER)
+  ) {
+    return err({
+      kind: "invalid-request",
+      lessonId: command.lessonId,
+      stepId: command.stepId,
+    })
+  }
+  if (
+    !isLessonUnlocked(
+      transaction,
+      command.userId,
+      scope,
+      readOrderedLessons(curriculum)
+    )
+  ) {
+    return err({ kind: "lesson-locked", lessonId: command.lessonId })
+  }
+
+  const progress = readLessonProgress(transaction, command.userId, scope)
+  if (
+    progress === null ||
+    progress.status !== inProgressStatus ||
+    progress.currentStepId !== command.stepId
+  ) {
+    return err({
+      kind: "step-sequence-conflict",
+      lessonId: command.lessonId,
+      stepId: command.stepId,
+    })
+  }
+
+  const step = readLessonSteps(curriculum, scope).find(
+    (candidate) => candidate.id === command.stepId
+  )?.content
+  if (step === undefined) {
+    return err({
+      kind: "step-sequence-conflict",
+      lessonId: command.lessonId,
+      stepId: command.stepId,
+    })
+  }
+  if (step.type !== command.answer.type) {
+    return err({
+      kind: "invalid-request",
+      lessonId: command.lessonId,
+      stepId: command.stepId,
+    })
+  }
+
+  const answerJson = JSON.stringify(command.answer)
+  if (
+    new TextEncoder().encode(answerJson).byteLength >
+    learnerStepDraftAnswerJsonMaxBytes
+  ) {
+    return err({
+      kind: "invalid-request",
+      lessonId: command.lessonId,
+      stepId: command.stepId,
+    })
+  }
+
+  const nextVersion = (command.expectedVersion ?? -1) + 1
+  const saved =
+    command.expectedVersion === null
+      ? transaction
+          .insert(learnerStepDrafts)
+          .values({
+            answerJson,
+            courseId: scope.courseId,
+            curriculumVersionId: scope.curriculumVersionId,
+            lessonId: scope.lessonId,
+            stepId: command.stepId,
+            updatedAt: command.occurredAt,
+            userId: command.userId,
+            version: nextVersion,
+          })
+          .onConflictDoNothing()
+          .returning({ version: learnerStepDrafts.version })
+          .get()
+      : transaction
+          .update(learnerStepDrafts)
+          .set({
+            answerJson,
+            updatedAt: command.occurredAt,
+            version: nextVersion,
+          })
+          .where(
+            and(
+              eq(learnerStepDrafts.userId, command.userId),
+              eq(learnerStepDrafts.courseId, scope.courseId),
+              eq(
+                learnerStepDrafts.curriculumVersionId,
+                scope.curriculumVersionId
+              ),
+              eq(learnerStepDrafts.lessonId, scope.lessonId),
+              eq(learnerStepDrafts.stepId, command.stepId),
+              eq(learnerStepDrafts.version, command.expectedVersion)
+            )
+          )
+          .returning({ version: learnerStepDrafts.version })
+          .get()
+
+  if (saved === undefined) {
+    return err({
+      currentVersion: readStepDraftVersion(transaction, command, scope),
+      kind: "step-draft-version-conflict",
+      lessonId: command.lessonId,
+      stepId: command.stepId,
+    })
+  }
+  return ok({
+    answer: command.answer,
+    stepId: command.stepId,
+    updatedAt: toIso(command.occurredAt),
+    version: saved.version,
+  })
+}
+
+function readStepDraftVersion(
+  database: TransitionDatabase,
+  command: SaveLearnerStepDraftCommand,
+  scope: LessonScope
+): number | null {
+  return (
+    database
+      .select({ version: learnerStepDrafts.version })
+      .from(learnerStepDrafts)
+      .where(
+        and(
+          eq(learnerStepDrafts.userId, command.userId),
+          eq(learnerStepDrafts.courseId, scope.courseId),
+          eq(learnerStepDrafts.curriculumVersionId, scope.curriculumVersionId),
+          eq(learnerStepDrafts.lessonId, scope.lessonId),
+          eq(learnerStepDrafts.stepId, command.stepId)
+        )
+      )
+      .get()?.version ?? null
+  )
+}
+
 function startLesson(
   transaction: LearningTransaction,
   command: StartLearnerLessonCommand,
   curriculum: LearningCurriculum
-): Result<LessonLearningState, LearnerTransitionError> {
+): Result<StartLearnerLessonResult, LearnerTransitionError> {
   const snapshot = loadStartLessonSnapshot(transaction, command, curriculum)
   const decision = decideStartLesson(command, snapshot)
   return applyStartLessonDecision(transaction, decision)
@@ -208,20 +384,26 @@ function loadStartLessonSnapshot(
 function applyStartLessonDecision(
   transaction: LearningTransaction,
   decision: StartLessonDecision
-): Result<LessonLearningState, LearnerTransitionError> {
+): Result<StartLearnerLessonResult, LearnerTransitionError> {
   if (decision.kind === "rejected") return err(decision.error)
 
   for (const effect of decision.effects) {
     applyStartLessonEffect(transaction, effect)
   }
-  return ok(
-    readLessonLearningState(
+  return ok({
+    ...readLessonLearningState(
       transaction,
       decision.userId,
       decision.scope,
       decision.stepIds.map((id) => ({ id }))
-    )
-  )
+    ),
+    drafts: readLearnerStepDrafts(transaction, {
+      courseId: decision.scope.courseId,
+      curriculumVersionId: decision.scope.curriculumVersionId,
+      lessonId: decision.scope.lessonId,
+      userId: decision.userId,
+    }),
+  })
 }
 
 function applyStartLessonEffect(
@@ -390,8 +572,8 @@ function applyCompleteStepEffect(
   effect: CompleteStepEffect
 ): void {
   switch (effect.kind) {
-    case "save-accepted-answer":
-      transaction
+    case "save-accepted-answer": {
+      const savedAnswer = transaction
         .insert(learnerLessonAnswers)
         .values({
           answerJson: JSON.stringify(effect.answer),
@@ -404,8 +586,26 @@ function applyCompleteStepEffect(
           userId: effect.userId,
         })
         .onConflictDoNothing()
+        .returning({ stepId: learnerLessonAnswers.stepId })
+        .get()
+      if (savedAnswer === undefined) return
+      transaction
+        .delete(learnerStepDrafts)
+        .where(
+          and(
+            eq(learnerStepDrafts.userId, effect.userId),
+            eq(learnerStepDrafts.courseId, effect.courseId),
+            eq(
+              learnerStepDrafts.curriculumVersionId,
+              effect.curriculumVersionId
+            ),
+            eq(learnerStepDrafts.lessonId, effect.lessonId),
+            eq(learnerStepDrafts.stepId, effect.stepId)
+          )
+        )
         .run()
       return
+    }
     case "advance-lesson-step":
       transaction
         .update(learnerLessonProgress)

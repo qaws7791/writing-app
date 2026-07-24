@@ -16,7 +16,7 @@ import {
   ChevronsLeftIcon,
   ChevronsRightIcon,
 } from "@workspace/ui/components/icons"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type {
   AdminArchiveCourseResult,
   AdminCreatedCourse,
@@ -87,9 +87,9 @@ export function AdminCoursesPage({
 }: {
   readonly archiveCourse: (
     courseId: string
-  ) => Promise<AdminApiResult<AdminArchiveCourseResult>>
-  readonly coursesResult: AdminApiResult<AdminCourseList>
-  readonly createCourse: () => Promise<AdminApiResult<AdminCreatedCourse>>
+  ) => Promise<AdminRequestResult<AdminArchiveCourseResult>>
+  readonly coursesResult: AdminRequestResult<AdminCourseList>
+  readonly createCourse: () => Promise<AdminRequestResult<AdminCreatedCourse>>
   readonly filters: ReadAdminCoursesInput
 }) {
   const [archiveTarget, setArchiveTarget] = useState<
@@ -321,6 +321,7 @@ export function AdminCoursesPage({
                           <Link
                             className="font-bold text-foreground hover:underline text-sm"
                             href={`/courses/${course.id}`}
+                            prefetch={false}
                           >
                             {course.title}
                           </Link>

@@ -1,22 +1,23 @@
-import { describe, expect, it, vi } from "vitest"
-import { createApp } from "@workspace/http-platform/core"
+import { describe, expect, it } from "vitest"
+import { createApp } from "@workspace/http-platform/app"
 import { err, ok } from "@workspace/kernel/result"
-import type { AdminId, ConversationId, MessageId } from "@workspace/types/ids"
+import type { AdminId, CourseId, LessonId } from "@workspace/types/ids"
 
-import { createAiStreamingApplication } from "#operations/application/ai-conversations"
-import type { AiConversationRepository } from "#operations/application/ports/operations-ports"
 import type { OperationsActor } from "#operations/domain/operations-actor"
-import { createOperationsRoutes } from "#operations/interface/http/operations-http"
+import {
+  registerOperationsRoutes,
+  type OperationsHonoEnv,
+} from "#operations/interface/http/operations-http"
 
 const adminId = "admin-1" as AdminId
-const conversationId = "conversation-1" as ConversationId
 const now = new Date("2026-07-23T00:00:00.000Z")
 const cookie = "admin_session_token=admin-token"
+
 describe("operations HTTP contract", () => {
   it("인증 없는 요청을 거절하고 인증된 read에는 private no-store를 적용한다", async () => {
-    const fixture = createFixture()
-    const anonymous = await fixture.app.request("/dashboard")
-    const authenticated = await fixture.app.request("/dashboard", {
+    const app = createFixture()
+    const anonymous = await app.request("/dashboard")
+    const authenticated = await app.request("/dashboard", {
       headers: { Cookie: cookie },
     })
 
@@ -29,8 +30,8 @@ describe("operations HTTP contract", () => {
   })
 
   it("부분 reporting 실패를 불완전한 성공으로 숨기지 않고 503으로 공개한다", async () => {
-    const fixture = createFixture({ reportingUnavailable: true })
-    const response = await fixture.app.request("/dashboard", {
+    const app = createFixture({ reportingUnavailable: true })
+    const response = await app.request("/dashboard", {
       headers: { Cookie: cookie },
     })
 
@@ -40,235 +41,174 @@ describe("operations HTTP contract", () => {
     })
   })
 
-  it("quota 거절은 안정된 code와 Retry-After를 반환하고 audit한다", async () => {
-    const fixture = createFixture({ quotaRejected: true })
-    const response = await postStream(fixture.app)
-
-    expect(response.status).toBe(429)
-    expect(response.headers.get("Retry-After")).toBe("30")
-    await expect(response.json()).resolves.toEqual({
-      code: "AI_CHAT_RATE_LIMITED",
-      message: "AI 채팅 요청 한도를 초과했습니다.",
+  it("레슨 pagination·정렬과 AI 품질 기간을 route 경계에서 제한한다", async () => {
+    const app = createFixture()
+    const oversizedPage = await app.request("/analytics/lessons?pageSize=101", {
+      headers: { Cookie: cookie },
     })
-    expect(fixture.audit).toHaveBeenCalledWith(
-      expect.objectContaining({ action: "ai.quota.exceeded" })
+    const unsupportedSort = await app.request(
+      "/analytics/lessons?sort=started",
+      { headers: { Cookie: cookie } }
     )
-  })
-
-  it("quota persistence 실패를 명시적 503으로 mapping한다", async () => {
-    const fixture = createFixture({ quotaFailure: true })
-    const response = await postStream(fixture.app)
-
-    expect(response.status).toBe(503)
-    await expect(response.json()).resolves.toMatchObject({
-      code: "OPERATIONS_UNAVAILABLE",
-    })
-  })
-
-  it("proxy가 정제해 덮어쓴 client IP만 quota 입력으로 사용한다", async () => {
-    const fixture = createFixture()
-    const response = await postStream(fixture.app, {
-      "CF-Connecting-IP": "198.51.100.1",
-      "X-Forwarded-For": "198.51.100.2",
-      "X-Real-IP": "198.51.100.3",
-      "X-Writing-App-Client-IP": "203.0.113.7",
-    })
-    await response.text()
-
-    expect(fixture.acquire).toHaveBeenCalledWith(
-      expect.objectContaining({ clientIp: "203.0.113.7" })
+    const oversizedAiRange = await app.request(
+      "/analytics/ai-feedback?from=2025-01-01T00%3A00%3A00.000Z&to=2026-07-23T00%3A00%3A00.000Z",
+      { headers: { Cookie: cookie } }
     )
+
+    expect(oversizedPage.status).toBe(400)
+    expect(unsupportedSort.status).toBe(400)
+    expect(oversizedAiRange.status).toBe(400)
   })
 
-  it("정제되지 않은 client IP header는 quota 식별자로 신뢰하지 않는다", async () => {
-    const fixture = createFixture()
-    const response = await postStream(fixture.app, {
-      "CF-Connecting-IP": "198.51.100.1",
-      "X-Forwarded-For": "198.51.100.2",
-      "X-Real-IP": "198.51.100.3",
-    })
-    await response.text()
-
-    expect(fixture.acquire).toHaveBeenCalledWith(
-      expect.objectContaining({ clientIp: "unknown" })
+  it("AI 원문 없는 품질 집계를 관리자 전용 private 응답으로 제공한다", async () => {
+    const app = createFixture()
+    const response = await app.request(
+      "/analytics/ai-feedback?from=2026-07-22T00%3A00%3A00.000Z&to=2026-07-23T00%3A00%3A00.000Z",
+      { headers: { Cookie: cookie } }
     )
-  })
-
-  it("provider 부재는 user message 저장 없이 canonical error SSE만 전송한다", async () => {
-    const createUserMessage = vi.fn()
-    const fixture = createFixture({ createUserMessage, provider: null })
-    const response = await postStream(fixture.app)
 
     expect(response.status).toBe(200)
     expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-    await expect(response.text().then(readSseEvents)).resolves.toEqual([
-      {
-        data: {
-          code: "AI_PROVIDER_UNAVAILABLE",
-          message: "AI provider is unavailable",
-        },
-        event: "error",
-      },
-    ])
-    expect(createUserMessage).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toMatchObject({
+      failureCount: 0,
+      requestCount: 0,
+      status: "empty",
+      successRate: null,
+    })
   })
 
-  it("provider 실패는 기존 AI_STREAM_FAILED error SSE로 변환한다", async () => {
-    const fixture = createFixture({
-      provider: {
-        async streamText() {
-          throw new Error("provider failed")
-        },
-      },
+  it("분석 요약에 원문 없는 AI 실패율 상위 레슨을 제공한다", async () => {
+    const app = createFixture()
+    const response = await app.request("/analytics?days=30", {
+      headers: { Cookie: cookie },
     })
-    const response = await postStream(fixture.app)
 
-    await expect(response.text().then(readSseEvents)).resolves.toEqual([
-      {
-        data: { code: "AI_STREAM_FAILED", message: "AI stream failed" },
-        event: "error",
-      },
-    ])
+    expect(response.status).toBe(200)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    await expect(response.json()).resolves.toMatchObject({
+      worstAiFeedbackLessons: [
+        {
+          courseId: "course-1",
+          courseTitle: "글쓰기 코스",
+          failureCount: 2,
+          failureRate: 66.7,
+          lessonId: "lesson-1",
+          lessonTitle: "문장 시작하기",
+          requestCount: 3,
+        },
+      ],
+    })
   })
 
-  it("성공 streaming은 canonical chunk와 done event만 전송한다", async () => {
-    const fixture = createFixture({
-      provider: {
-        async streamText() {
-          return (async function* () {
-            yield "완성된 "
-            yield "문구"
-          })()
-        },
-      },
+  it("감사 이벤트 조회를 관리자 전용 private 응답으로 제공한다", async () => {
+    const app = createFixture()
+    const anonymous = await app.request("/audit-events")
+    const authenticated = await app.request("/audit-events?limit=10", {
+      headers: { Cookie: cookie },
     })
-    const response = await postStream(fixture.app)
-    const events = readSseEvents(await response.text())
 
-    expect(events.map((event) => event.event)).toEqual([
-      "chunk",
-      "chunk",
-      "done",
-    ])
+    expect(anonymous.status).toBe(401)
+    expect(authenticated.status).toBe(200)
+    expect(authenticated.headers.get("Cache-Control")).toBe("private, no-store")
+    await expect(authenticated.json()).resolves.toEqual({ items: [] })
   })
 })
 
 function createFixture(
-  input: {
-    readonly createUserMessage?: ReturnType<
-      typeof vi.fn<AiConversationRepository["createUserMessage"]>
-    >
-    readonly provider?: Parameters<
-      typeof createAiStreamingApplication
-    >[0]["provider"]
-    readonly quotaFailure?: boolean
-    readonly quotaRejected?: boolean
-    readonly reportingUnavailable?: boolean
-  } = {}
+  input: Readonly<{ reportingUnavailable?: boolean }> = {}
 ) {
-  const audit = vi.fn()
   const actor: OperationsActor = {
     id: adminId,
-    role: "owner",
   }
-  const history = {
-    conversation: {
-      conversation: {
-        adminId,
-        createdAt: now,
-        id: conversationId,
-        title: "문구",
-        updatedAt: now,
-      },
-      messageCount: 2,
-    },
-    messages: [
-      {
-        content: "문구를 작성해 줘",
-        conversationId,
-        createdAt: now,
-        id: "message-1" as MessageId,
-        role: "user" as const,
+  const app = createApp<OperationsHonoEnv>({
+    middleware: [
+      async (context, next) => {
+        context.set("requestId", "request-1")
+        await next()
       },
     ],
-  }
-  const createUserMessage =
-    input.createUserMessage ?? vi.fn(async () => history)
-  const conversationRepository = {
-    createUserMessage,
-    readConversation: vi.fn(async () => history),
-    readConversations: vi.fn(async () => [history.conversation]),
-    saveAssistantMessage: vi.fn(async ({ content }: { content: string }) => ({
-      content,
-      conversationId,
-      createdAt: now,
-      id: "message-2" as MessageId,
-      role: "assistant" as const,
-    })),
-  }
-  const streaming = createAiStreamingApplication({
-    clock: { now: () => now },
-    provider:
-      input.provider === undefined
-        ? {
-            async streamText() {
-              return (async function* () {
-                yield "문구"
-              })()
-            },
-          }
-        : input.provider,
-    providerFailureObserver: () => undefined,
-    repository: conversationRepository,
   })
-  const acquire = vi.fn(async () => {
-    if (input.quotaFailure === true) {
-      return err({
-        kind: "persistence-failed" as const,
-        operation: "consume-ai-quota",
-      })
-    }
-    return ok(
-      input.quotaRejected
-        ? {
-            kind: "rejected" as const,
-            reason: "admin-minute" as const,
-            retryAfterSeconds: 30,
-          }
-        : { kind: "accepted" as const, release: () => undefined }
-    )
-  })
-  const routes = createOperationsRoutes({
-    ai: {
-      conversations: {
-        readConversation: async () => ok(history),
-        readConversations: async () => ok([history.conversation]),
+  registerOperationsRoutes(app, {
+    auditTrail: {
+      async begin() {
+        throw new Error("HTTP 조회 fixture에서 begin을 호출하면 안 됩니다.")
       },
-      guard: { acquire },
-      streaming,
+      async complete() {
+        throw new Error("HTTP 조회 fixture에서 complete를 호출하면 안 됩니다.")
+      },
+      async inspectExpired() {
+        return ok(0)
+      },
+      async purgeExpired() {
+        return ok(0)
+      },
+      async readRecent() {
+        return ok([])
+      },
     },
-    audit,
     now: () => now,
     reporting: {
+      readAiFeedbackQuality: async ({ from, to }) =>
+        ok({
+          failureCount: 0,
+          failureCounts: [],
+          from: from.toISOString(),
+          latency: { averageMs: null, sampleCount: 0, totalMs: 0 },
+          requestCount: 0,
+          retryCount: 0,
+          status: "empty",
+          successCount: 0,
+          successRate: null,
+          to: to.toISOString(),
+          tokens: { input: 0, output: 0, sampleCount: 0 },
+        }),
       readAnalytics: async () =>
-        ok({ dailySeries: [], streakBuckets: [], worstLessons: [] }),
+        ok({
+          dailySeries: [],
+          from: "2026-06-24",
+          matureCohortThrough: "2026-07-15",
+          to: "2026-07-23",
+          worstAiFeedbackLessons: [
+            {
+              courseId: "course-1" as CourseId,
+              courseTitle: "글쓰기 코스",
+              failureCount: 2,
+              failureRate: 66.7,
+              lessonId: "lesson-1" as LessonId,
+              lessonTitle: "문장 시작하기",
+              requestCount: 3,
+            },
+          ],
+          worstLessons: [],
+        }),
       readDashboard: async () =>
-        input.reportingUnavailable
-          ? err({ kind: "reporting-unavailable", sources: ["content"] })
+        input.reportingUnavailable === true
+          ? err({ kind: "reporting-unavailable", query: "dashboard" })
           : ok({
+              activeWindow: { from: "2026-07-17", to: "2026-07-23" },
+              asOfDate: "2026-07-23",
               metrics: {
-                activeCourses: 0,
-                activeLessons: 0,
                 activeUsersLast7Days: 0,
+                activationRate: {
+                  denominator: 0,
+                  numerator: 0,
+                  percentage: null,
+                  status: "empty",
+                },
                 completedLessons: 0,
-                signupsLast7Days: 0,
-                signupsToday: 0,
+                d7ReturnRate: {
+                  denominator: 0,
+                  matureCohortThrough: "2026-07-15",
+                  numerator: 0,
+                  percentage: null,
+                  status: "empty",
+                },
+                firstLessonStarts: 0,
                 totalUsers: 0,
               },
-              recentActivities: [],
             }),
       readLessonAnalytics: async () =>
-        ok({ items: [], page: 1, pageSize: 10, totalItems: 0, totalPages: 1 }),
+        ok({ items: [], page: 1, pageSize: 10, totalItems: 0, totalPages: 0 }),
     },
     session: {
       async resolveActor(headers) {
@@ -276,43 +216,6 @@ function createFixture(
       },
     },
   })
-  const app = createApp({
-    middleware: [
-      async (context, next) => {
-        context.set("requestId", "request-1")
-        await next()
-      },
-    ],
-    routes,
-  })
-  return { acquire, app, audit }
-}
 
-function postStream(
-  app: ReturnType<typeof createFixture>["app"],
-  headers: Readonly<Record<string, string>> = {}
-) {
-  return app.request("/ai-chat/messages/stream", {
-    body: JSON.stringify({ message: "문구를 작성해 줘" }),
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookie,
-      ...headers,
-    },
-    method: "POST",
-  })
-}
-
-function readSseEvents(body: string) {
-  return body
-    .trim()
-    .split("\n\n")
-    .filter(Boolean)
-    .map((frame) => {
-      const lines = frame.split("\n")
-      return {
-        data: JSON.parse(lines[1]?.slice("data: ".length) ?? "null"),
-        event: lines[0]?.slice("event: ".length),
-      }
-    })
+  return app
 }

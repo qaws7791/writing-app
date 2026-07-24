@@ -44,9 +44,6 @@ const feedbackStepContent = lessonStepDtoSchema.parse({
   feedback: "피드백",
   focus: "명확성",
   id: "feedback-step",
-  score: 80,
-  scoreMax: 100,
-  showScore: true,
   sortOrder: 2,
   target: "write-step",
   type: "AI_FEEDBACK",
@@ -66,7 +63,6 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     expect(target).toEqual({
       focus: "명확성",
       kind: "load-context",
-      showScore: true,
       targetStepId: "write-step",
     })
     if (target.kind === "rejected") throw new Error("target rejected")
@@ -85,7 +81,6 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
         curriculumVersionId: "version-1",
         focus: "명확성",
         lessonTitle: "레슨 제목",
-        showScore: true,
       })
     )
   })
@@ -158,10 +153,6 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
       kind: "advance",
       requestedStepIndex: 1,
     })
-    expect(Object.isFrozen(advance)).toBe(true)
-    if (advance.kind === "advance") {
-      expect(Object.isFrozen(advance.aggregate)).toBe(true)
-    }
     expect(
       decideFinalizeAiFeedback(completeCommand, {
         ...finalizableSnapshot(),

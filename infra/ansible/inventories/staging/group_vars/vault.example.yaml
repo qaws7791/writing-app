@@ -1,0 +1,18 @@
+---
+# 이 파일을 staging 전용 vault.yaml로 복사하고 실제 값을 넣은 뒤
+# ansible-vault encrypt inventories/staging/group_vars/vault.yaml을 실행한다.
+# production Vault의 값을 복사하지 않는다.
+vault_writing_app_learner_auth_secret: replace-with-staging-learner-auth-secret
+vault_writing_app_cursor_signing_secret: replace-with-distinct-staging-cursor-secret
+vault_writing_app_admin_auth_secret: replace-with-distinct-staging-admin-secret
+vault_writing_app_r2_access_key_id: replace-with-staging-r2-access-key-id
+vault_writing_app_r2_secret_access_key: replace-with-staging-r2-secret-access-key
+vault_writing_app_admin_asset_s3_access_key: replace-with-staging-asset-access-key-id
+vault_writing_app_admin_asset_s3_secret_key: replace-with-staging-asset-secret-access-key
+vault_writing_app_deletion_marker_s3_access_key: replace-with-staging-marker-access-key-id
+vault_writing_app_deletion_marker_s3_secret_key: replace-with-staging-marker-secret-access-key
+vault_writing_app_google_client_id: replace-with-staging-google-client-id
+vault_writing_app_google_client_secret: replace-with-staging-google-client-secret
+vault_writing_app_openai_api_key: replace-with-staging-openai-api-key
+vault_writing_app_resend_api_key: replace-with-staging-resend-api-key
+vault_writing_app_registry_token: ""

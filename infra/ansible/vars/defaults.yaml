@@ -2,33 +2,77 @@ writing_app_source_root: "{{ playbook_dir }}/../../.."
 
 writing_app_compose_directory: /opt/writing-app
 writing_app_config_directory: /etc/writing-app/config
-writing_app_secrets_directory: /etc/writing-app/secrets
 writing_app_data_directory: /var/lib/writing-app
 writing_app_backup_directory: /var/backups/writing-app
 writing_app_deployment_directory: /var/lib/writing-app/deployments
+writing_app_deploy_verified_state_path: >-
+  {{ writing_app_deployment_directory }}/verified-state.sha256
 writing_app_operation_lock_directory: /var/lock/writing-app-operation.lock
+writing_app_environment: ""
+writing_app_source_revision: ""
+writing_app_systemd_unit_directory: /etc/systemd/system
+writing_app_libexec_directory: /usr/local/libexec
 writing_app_public_hostname_pattern: >-
   ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+\Z
 writing_app_container_uid: 10001
 writing_app_container_gid: 10001
 
 writing_app_caddy_image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
-writing_app_cloudflared_image: cloudflare/cloudflared:2026.6.0@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f
 writing_app_litestream_image: litestream/litestream:0.5.11@sha256:79e3bfce6ed758722916f816b028fffd9e0a971058f41b88e2779510cead1d8d
 
 writing_app_web_origin: "https://{{ writing_app_web_host }}"
 writing_app_admin_origin: "https://{{ writing_app_admin_host }}"
 
 writing_app_openai_model: gpt-5.2
+writing_app_auth_email_from: ""
+writing_app_auth_email_reply_to: ""
 writing_app_google_client_id: ""
 writing_app_google_client_secret: ""
 writing_app_openai_api_key: ""
+writing_app_resend_api_key: ""
+writing_app_ai_feedback_user_daily_request_limit: ""
+writing_app_ai_feedback_user_daily_success_limit: ""
+writing_app_ai_feedback_global_daily_request_limit: ""
+writing_app_ai_feedback_global_daily_success_limit: ""
+writing_app_ai_feedback_provider_timeout_ms: ""
+writing_app_ai_feedback_pending_ttl_ms: ""
 writing_app_registry_username: ""
 writing_app_registry_token: ""
+writing_app_allow_deploy: false
+writing_app_full_e2e_approved: false
+writing_app_full_e2e_evidence_revision: ""
+writing_app_full_e2e_evidence_run_url: ""
+writing_app_legal_review_approved: false
+writing_app_legal_review_evidence_id: ""
+writing_app_legal_review_verified_at: ""
+writing_app_require_production_readiness: false
+writing_app_restore_drill_approved: false
+writing_app_restore_drill_environment: ""
+writing_app_restore_drill_evidence_id: ""
+writing_app_restore_drill_verified_at: ""
 writing_app_verify_public_routes: false
+writing_app_verify_finalize_deployment: false
+writing_app_verify_finalize_rollback: false
+writing_app_verify_expected_images_from_compose_environment: false
+writing_app_verify_uses_existing_operation_lock: false
+writing_app_hold_operation_lock_for_verify: false
+writing_app_operation_handoff_token: ""
+writing_app_enable_api_docs: false
+writing_app_maintenance_batch_size: 100
+writing_app_maintenance_log_retention_evidence_file: ""
+writing_app_maintenance_manage_timer: true
+writing_app_maintenance_on_calendar: "*-*-* 03:15:00"
+writing_app_maintenance_randomized_delay_seconds: 900
 writing_app_admin_asset_s3_access_key: ""
 writing_app_admin_asset_s3_secret_key: ""
 writing_app_admin_asset_s3_bucket: ""
 writing_app_admin_asset_s3_endpoint: ""
 writing_app_admin_asset_s3_region: auto
 writing_app_admin_asset_public_base_url: ""
+writing_app_content_asset_image_allowed_origins: []
+writing_app_deletion_marker_s3_access_key: ""
+writing_app_deletion_marker_s3_secret_key: ""
+writing_app_deletion_marker_s3_bucket: ""
+writing_app_deletion_marker_s3_endpoint: ""
+writing_app_deletion_marker_s3_region: auto
+writing_app_deletion_marker_s3_prefix: ""

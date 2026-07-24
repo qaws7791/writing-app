@@ -16,6 +16,7 @@ import {
 const curriculum: PersistedPublishedCurriculum = {
   category: "기초",
   courseId: courseIdSchema.parse("course-1"),
+  coverAssetId: null,
   curriculumVersionId: curriculumVersionIdSchema.parse("curriculum-1"),
   description: "설명",
   revision: 1,
@@ -57,7 +58,7 @@ const curriculum: PersistedPublishedCurriculum = {
 }
 
 describe("published curriculum persistence mapper", () => {
-  it("persisted JSON을 immutable learning curriculum으로 복원한다", () => {
+  it("persisted JSON을 공개 learning curriculum으로 복원한다", () => {
     const mapped = mapPublishedLearningCurriculum(curriculum, "active")
 
     expect(mapped).toMatchObject({
@@ -65,9 +66,6 @@ describe("published curriculum persistence mapper", () => {
       courseId: "course-1",
       lessons: [{ id: "lesson-1", steps: [{ id: "step-1" }] }],
     })
-    expect(Object.isFrozen(mapped)).toBe(true)
-    expect(Object.isFrozen(mapped.lessons)).toBe(true)
-    expect(Object.isFrozen(mapped.lessons[0]?.steps)).toBe(true)
   })
 
   it("손상된 persisted JSON을 fail-closed한다", () => {

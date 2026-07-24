@@ -22,7 +22,10 @@ import { createDrizzleLearnerTransitionRepository } from "#learning/infrastructu
 import {
   learnerActivityDays,
   learnerCourseProgress,
+  learnerLessonAnswers,
   learnerLessonProgress,
+  learnerStepDraftAnswerJsonMaxBytes,
+  learnerStepDrafts,
 } from "#learning/infrastructure/persistence/schema"
 
 const learnerId = learnerIdSchema.parse("learner-1")
@@ -39,6 +42,7 @@ const curriculum: LearningCurriculum = {
   category: "기초",
   contentStatus: "active",
   courseId,
+  coverAssetId: null,
   curriculumVersionId,
   description: "설명",
   lessons: [
@@ -93,6 +97,33 @@ const curriculum: LearningCurriculum = {
   visualKey: "basic-sentence-writing",
 }
 
+const firstCurriculumLesson = curriculum.lessons[0]
+const secondCurriculumLesson = curriculum.lessons[1]
+if (
+  firstCurriculumLesson === undefined ||
+  secondCurriculumLesson === undefined
+) {
+  throw new Error("Draft repository test curriculum requires two lessons")
+}
+
+const writingCurriculum: LearningCurriculum = {
+  ...curriculum,
+  lessons: [
+    {
+      ...firstCurriculumLesson,
+      steps: [
+        {
+          id: firstStepId,
+          min: 1,
+          sortOrder: 1,
+          type: "WRITE",
+        },
+      ],
+    },
+    secondCurriculumLesson,
+  ],
+}
+
 describe("learning SQLite repositories", () => {
   it("content port와 learning table만으로 course·lesson projection을 읽는다", async () => {
     const fixture = createFixture()
@@ -107,7 +138,6 @@ describe("learning SQLite repositories", () => {
 
       const courses = await repository.listCourses({
         limit: 20,
-        sort: "recommended",
       })
       const detail = await repository.findCourseDetail({
         courseId,
@@ -279,14 +309,399 @@ describe("learning SQLite repositories", () => {
       fixture.database.close()
     }
   })
+
+  it("draft를 생성·갱신하고 stale version을 원본 변경 없이 거절한다", async () => {
+    const fixture = createFixture(writingCurriculum)
+    try {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: firstLessonId,
+          occurredAt,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+
+      const created = await repository.saveStepDraft(
+        {
+          answer: { text: "첫 초안", type: "WRITE" },
+          expectedCurriculumVersionId: curriculumVersionId,
+          expectedVersion: null,
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      const updatedAt = new Date("2026-07-22T15:01:00.000Z")
+      const updated = await repository.saveStepDraft(
+        {
+          answer: { text: "갱신한 초안", type: "WRITE" },
+          expectedCurriculumVersionId: curriculumVersionId,
+          expectedVersion: 0,
+          lessonId: firstLessonId,
+          occurredAt: updatedAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      const stale = await repository.saveStepDraft(
+        {
+          answer: { text: "뒤늦은 초안", type: "WRITE" },
+          expectedCurriculumVersionId: curriculumVersionId,
+          expectedVersion: 0,
+          lessonId: firstLessonId,
+          occurredAt: new Date("2026-07-22T15:02:00.000Z"),
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      const restarted = await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: firstLessonId,
+          occurredAt,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      const readRepository = createDrizzleLearningReadRepository(
+        fixture.database.db,
+        {
+          content: fixture.content,
+          presentationSecret: "presentation-secret-at-least-32-bytes",
+        }
+      )
+      const lesson = await readRepository.findLesson({
+        lessonId: firstLessonId,
+        userId: learnerId,
+      })
+
+      expect(created.isOk() && created.value.version).toBe(0)
+      expect(updated.isOk() && updated.value.version).toBe(1)
+      expect(stale.isErr() && stale.error).toMatchObject({
+        currentVersion: 1,
+        kind: "step-draft-version-conflict",
+      })
+      expect(restarted.isOk() && restarted.value.drafts).toEqual([
+        {
+          answer: { text: "갱신한 초안", type: "WRITE" },
+          stepId: firstStepId,
+          updatedAt: updatedAt.toISOString(),
+          version: 1,
+        },
+      ])
+      expect(lesson.kind === "found" ? lesson.value.drafts : undefined).toEqual(
+        restarted.isOk() ? restarted.value.drafts : []
+      )
+    } finally {
+      fixture.database.close()
+    }
+  })
+
+  it("다른 사용자·잠긴 lesson·다른 curriculum revision의 draft를 거절한다", async () => {
+    const fixture = createFixture(writingCurriculum)
+    try {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: firstLessonId,
+          occurredAt,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      const otherLearnerId = learnerIdSchema.parse("learner-2")
+      const otherRevisionId =
+        curriculumVersionIdSchema.parse("curriculum-other")
+      const command = {
+        answer: { text: "초안", type: "WRITE" as const },
+        expectedCurriculumVersionId: curriculumVersionId,
+        expectedVersion: null,
+        lessonId: firstLessonId,
+        occurredAt,
+        stepId: firstStepId,
+        userId: learnerId,
+      }
+
+      const otherUser = await repository.saveStepDraft(
+        { ...command, userId: otherLearnerId },
+        writingCurriculum
+      )
+      const lockedLesson = await repository.saveStepDraft(
+        {
+          ...command,
+          lessonId: secondLessonId,
+          stepId: secondStepId,
+        },
+        writingCurriculum
+      )
+      const changedRevision = await repository.saveStepDraft(
+        {
+          ...command,
+          expectedCurriculumVersionId: otherRevisionId,
+        },
+        writingCurriculum
+      )
+
+      expect(otherUser.isErr() && otherUser.error.kind).toBe("lesson-locked")
+      expect(lockedLesson.isErr() && lockedLesson.error.kind).toBe(
+        "lesson-locked"
+      )
+      expect(changedRevision.isErr() && changedRevision.error.kind).toBe(
+        "curriculum-version-changed"
+      )
+      expect(
+        fixture.database.db.select().from(learnerStepDrafts).all()
+      ).toEqual([])
+    } finally {
+      fixture.database.close()
+    }
+  })
+
+  it("정답 제출 성공 transaction에서 answer 저장과 draft 삭제를 함께 commit한다", async () => {
+    const fixture = createFixture(writingCurriculum)
+    try {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: firstLessonId,
+          occurredAt,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      await repository.saveStepDraft(
+        {
+          answer: { text: "제출할 초안", type: "WRITE" },
+          expectedCurriculumVersionId: curriculumVersionId,
+          expectedVersion: null,
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+
+      const completed = await repository.completeStep(
+        {
+          completion: {
+            kind: "answer",
+            submission: { text: "제출할 답안", type: "WRITE" },
+          },
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+
+      expect(completed.isOk() && completed.value.kind).toBe("lesson-completed")
+      expect(
+        fixture.database.db.select().from(learnerLessonAnswers).all()
+      ).toHaveLength(1)
+      expect(
+        fixture.database.db.select().from(learnerStepDrafts).all()
+      ).toHaveLength(0)
+    } finally {
+      fixture.database.close()
+    }
+  })
+
+  it("제출 transaction 후반 실패 시 answer와 draft 삭제를 함께 rollback한다", async () => {
+    const fixture = createFixture(writingCurriculum)
+    try {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: firstLessonId,
+          occurredAt,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      await repository.saveStepDraft(
+        {
+          answer: { text: "보존할 초안", type: "WRITE" },
+          expectedCurriculumVersionId: curriculumVersionId,
+          expectedVersion: null,
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      fixture.database.sqlite.exec(`
+        CREATE TRIGGER fail_answer_activity
+        BEFORE UPDATE ON learner_activity_days
+        BEGIN
+          SELECT RAISE(ABORT, 'injected answer activity failure');
+        END;
+      `)
+
+      await expect(
+        repository.completeStep(
+          {
+            completion: {
+              kind: "answer",
+              submission: { text: "제출할 답안", type: "WRITE" },
+            },
+            lessonId: firstLessonId,
+            occurredAt,
+            stepId: firstStepId,
+            userId: learnerId,
+          },
+          writingCurriculum
+        )
+      ).rejects.toThrow("injected answer activity failure")
+
+      expect(
+        fixture.database.db.select().from(learnerLessonAnswers).all()
+      ).toHaveLength(0)
+      expect(
+        fixture.database.db.select().from(learnerStepDrafts).all()
+      ).toMatchObject([
+        {
+          answerJson: JSON.stringify({
+            text: "보존할 초안",
+            type: "WRITE",
+          }),
+          version: 0,
+        },
+      ])
+    } finally {
+      fixture.database.close()
+    }
+  })
+
+  it("draft JSON 크기·version 제약과 course progress cascade를 적용한다", async () => {
+    const fixture = createFixture(writingCurriculum)
+    try {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: firstLessonId,
+          occurredAt,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      const values = {
+        answerJson: JSON.stringify({ text: "초안", type: "WRITE" }),
+        courseId,
+        curriculumVersionId,
+        lessonId: firstLessonId,
+        stepId: firstStepId,
+        updatedAt: occurredAt,
+        userId: learnerId,
+      }
+
+      expect(() =>
+        fixture.database.db
+          .insert(learnerStepDrafts)
+          .values({ ...values, version: -1 })
+          .run()
+      ).toThrow()
+      expect(() =>
+        fixture.database.db
+          .insert(learnerStepDrafts)
+          .values({
+            ...values,
+            answerJson: "가".repeat(learnerStepDraftAnswerJsonMaxBytes),
+            version: 0,
+          })
+          .run()
+      ).toThrow()
+
+      await repository.saveStepDraft(
+        {
+          answer: { text: "cascade 대상", type: "WRITE" },
+          expectedCurriculumVersionId: curriculumVersionId,
+          expectedVersion: null,
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        writingCurriculum
+      )
+      fixture.database.db
+        .delete(learnerCourseProgress)
+        .where(eq(learnerCourseProgress.userId, learnerId))
+        .run()
+
+      expect(
+        fixture.database.db.select().from(learnerStepDrafts).all()
+      ).toHaveLength(0)
+    } finally {
+      fixture.database.close()
+    }
+  })
 })
 
-function createFixture(): {
+function createFixture(selectedCurriculum: LearningCurriculum = curriculum): {
   content: LearningContentQueryPort
   database: WritingAppDatabaseClient
 } {
   const database = createInMemoryWritingAppDatabase()
   runCurrentTestMigration(database.sqlite)
+  database.sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS learner_step_drafts (
+      answer_json text NOT NULL,
+      course_id text NOT NULL,
+      curriculum_version_id text NOT NULL,
+      lesson_id text NOT NULL,
+      step_id text NOT NULL,
+      updated_at integer NOT NULL,
+      user_id text NOT NULL,
+      version integer DEFAULT 0 NOT NULL,
+      PRIMARY KEY (
+        user_id, course_id, curriculum_version_id, lesson_id, step_id
+      ),
+      CONSTRAINT learner_step_drafts_course_progress_fk
+        FOREIGN KEY (user_id, course_id, curriculum_version_id)
+        REFERENCES learner_course_progress (
+          user_id, course_id, curriculum_version_id
+        ) ON DELETE CASCADE,
+      CONSTRAINT learner_step_drafts_step_fk
+        FOREIGN KEY (curriculum_version_id, lesson_id, step_id)
+        REFERENCES lesson_step_versions (
+          curriculum_version_id, lesson_id, id
+        ) ON DELETE CASCADE,
+      CONSTRAINT learner_step_drafts_answer_json_size_check
+        CHECK (
+          length(CAST(answer_json AS BLOB)) <=
+          ${learnerStepDraftAnswerJsonMaxBytes}
+        ),
+      CONSTRAINT learner_step_drafts_version_check CHECK (version >= 0)
+    );
+    CREATE INDEX IF NOT EXISTS learner_step_drafts_lesson_idx
+      ON learner_step_drafts (
+        user_id, curriculum_version_id, lesson_id
+      );
+  `)
   database.sqlite.exec(`
     INSERT INTO user (
       id, name, email, email_verified, image, created_at, updated_at
@@ -323,25 +738,27 @@ function createFixture(): {
     WHERE id = 'course-1';
   `)
   const summary = {
-    category: curriculum.category,
+    category: selectedCurriculum.category,
     courseId,
-    description: curriculum.description,
-    lessonCount: curriculum.lessons.length,
-    revision: curriculum.revision,
+    coverAssetId: selectedCurriculum.coverAssetId,
+    description: selectedCurriculum.description,
+    lessonCount: selectedCurriculum.lessons.length,
+    revision: selectedCurriculum.revision,
     sortOrder: 1,
-    title: curriculum.title,
+    title: selectedCurriculum.title,
     versionId: curriculumVersionId,
-    visualKey: curriculum.visualKey,
+    visualKey: selectedCurriculum.visualKey,
   }
   const content: LearningContentQueryPort = {
     findCurriculumByLesson: vi.fn(async ({ lessonId }) =>
-      curriculum.lessons.some((lesson) => lesson.id === lessonId)
-        ? curriculum
+      selectedCurriculum.lessons.some((lesson) => lesson.id === lessonId)
+        ? selectedCurriculum
         : null
     ),
     listPublishedCourses: vi.fn(async () => [summary]),
+    resolveAssetReferences: vi.fn(async () => []),
     readCurriculum: vi.fn(async ({ courseId: requestedCourseId }) =>
-      requestedCourseId === courseId ? curriculum : null
+      requestedCourseId === courseId ? selectedCurriculum : null
     ),
   }
   return { content, database }

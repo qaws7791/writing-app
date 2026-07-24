@@ -19,3 +19,12 @@ export function createLoginPagePath(nextPath: string): string {
 
   return `/login?next=${encodeURIComponent(safeNextPath)}`
 }
+
+export function createVerifiedLoginPagePath(nextPath: string): string {
+  const searchParams = new URLSearchParams({
+    next: resolveSafeNextPath(nextPath),
+    verified: "true",
+  })
+
+  return `/login?${searchParams.toString()}`
+}

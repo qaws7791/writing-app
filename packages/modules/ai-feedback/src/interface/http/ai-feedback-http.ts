@@ -1,6 +1,6 @@
 export {
-  createAiFeedbackRoutes,
-  type AiFeedbackHttpRouteGroup,
+  registerAiFeedbackRoutes,
+  type AiFeedbackHonoEnv,
   type AiFeedbackHttpCommand,
   type AiFeedbackHttpCommandError,
   type AiFeedbackHttpCommandPort,

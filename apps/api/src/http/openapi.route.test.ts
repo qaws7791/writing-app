@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
-import { createLearnerApp as createApp } from "@/http/learner-app"
-import { createTestDependencies } from "@/routes/test-dependencies"
+import { createLearnerApp } from "@/http/learner-app"
+import { registerLearnerApiDocumentation } from "@/http/openapi"
+import { createTestLearnerApp } from "@/routes/test-dependencies"
 
 describe("플랫폼 API openapi route", () => {
   it("OpenAPI 3.1 baseline document를 반환한다", async () => {
-    const dependencies = createTestDependencies()
-    const app = createApp(dependencies)
+    const app = createTestLearnerApp()
 
     const response = await app.request("/openapi")
 
@@ -73,12 +73,19 @@ describe("플랫폼 API openapi route", () => {
     expect(document.paths).toHaveProperty(
       "/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback"
     )
-    for (const { route } of dependencies.learningRoutes) {
-      expect(document).toHaveProperty(
-        ["paths", route.path, route.method, "operationId"],
-        route.operationId
-      )
-    }
+    expect(document).toHaveProperty(
+      ["paths", "/courses", "get", "operationId"],
+      "getCourses"
+    )
+    expect(document).toHaveProperty(
+      [
+        "paths",
+        "/learning/lessons/{lessonId}/steps/{stepId}/draft",
+        "put",
+        "operationId",
+      ],
+      "saveLearnerStepDraft"
+    )
     for (const path of [
       "/learning/answers",
       "/learning/lessons/{lessonId}/progress",
@@ -101,5 +108,19 @@ describe("플랫폼 API openapi route", () => {
       ],
       false
     )
+  })
+
+  it("활성화 시 Scalar UI를 제공하고 비활성화 시 문서 route를 등록하지 않는다", async () => {
+    const enabled = createTestLearnerApp()
+    const scalarResponse = await enabled.request("/docs")
+
+    expect(scalarResponse.status).toBe(200)
+    expect(scalarResponse.headers.get("content-type")).toContain("text/html")
+    expect(await scalarResponse.text()).toContain("Writing App Learner API")
+
+    const disabled = createLearnerApp({})
+    registerLearnerApiDocumentation(disabled, { enabled: false })
+    expect((await disabled.request("/openapi")).status).toBe(404)
+    expect((await disabled.request("/docs")).status).toBe(404)
   })
 })

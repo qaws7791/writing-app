@@ -1,11 +1,49 @@
-import { defaultRequestLoggingRuntime } from "@workspace/http-platform/request-logging"
+import { registerAiFeedbackRoutes } from "@workspace/ai-feedback/http"
+import type { ContentAdminSessionPort } from "@workspace/content/ports"
+import { registerRoutes as registerContentRoutes } from "@workspace/content/register-routes"
+import { defaultRequestLoggingRuntime } from "@workspace/http-platform/app"
+import type { OpenAPIHono } from "@hono/zod-openapi"
+import {
+  registerAdminIdentityRoutes,
+  registerLearnerIdentityRoutes,
+} from "@workspace/identity/http"
+import type { AdminSessionResolver } from "@workspace/identity/sessions"
+import { registerLearningRoutes } from "@workspace/learning/http"
 import { createRequestLogger } from "@workspace/observability/request-logger"
 import { createSecurityAuditLogger } from "@workspace/observability/security-audit-logger"
+import { registerOperationsRoutes } from "@workspace/operations/http"
 
+import { registerAdminFoundationRoutes } from "@/admin/admin-foundation.routes"
+import type { AdminHonoEnv } from "@/admin/admin-hono-env"
 import type { ApiContainer } from "@/composition/create-container"
-import { createAdminApp } from "@/http/admin-app"
+import { createOperationsAdminSessionPort } from "@/composition/operations-module.composition"
+import {
+  createAdminApp,
+  registerAdminApiDocumentation,
+  registerAdminAuthRoutes,
+} from "@/http/admin-app"
+import { registerAuthProxy } from "@/http/auth-proxy"
+import { registerHealthRoutes } from "@/http/health-routes"
 import { createLearnerApp } from "@/http/learner-app"
+import { registerLearnerApiDocumentation } from "@/http/openapi"
 import { createUnifiedApp } from "@/http/unified-app"
+import { createAdminAuditMiddleware } from "@/observability/admin-audit.middleware"
+import type { ApiHonoEnv } from "@/context/hono-env"
+import type { ApiHealthProbe } from "@/runtime/api-health"
+
+export type LearnerContractRouteDependencies = Readonly<{
+  aiFeedback: Parameters<typeof registerAiFeedbackRoutes>[1]
+  health: ApiHealthProbe
+  identity: Parameters<typeof registerLearnerIdentityRoutes>[1]
+  learning: Parameters<typeof registerLearningRoutes>[1]
+}>
+
+export type AdminContractRouteDependencies = Readonly<{
+  content: Parameters<typeof registerContentRoutes>[1]
+  foundation: Parameters<typeof registerAdminFoundationRoutes>[1]
+  identity: Parameters<typeof registerAdminIdentityRoutes>[1]
+  operations: Parameters<typeof registerOperationsRoutes>[1]
+}>
 
 export function createApp(container: ApiContainer) {
   const { env, idGenerator, logger } = container.platform
@@ -15,9 +53,8 @@ export function createApp(container: ApiContainer) {
   }
   const requestLogger = createRequestLogger(logger)
   const securityAuditLogger = createSecurityAuditLogger(logger)
+
   const learner = createLearnerApp({
-    aiFeedbackRoutes: container.learner.aiFeedbackRoutes,
-    authHandler: container.learner.authHandler,
     contractErrorLogger(event) {
       logger.error(event, "api.contract.response_invalid")
     },
@@ -25,36 +62,111 @@ export function createApp(container: ApiContainer) {
     errorLogger(event) {
       logger.error(event, "request.failed")
     },
-    health: container.health,
-    identityRoutes: container.learner.identityRoutes,
-    learningRoutes: container.learner.learningRoutes,
-    now: container.platform.clock.now,
     requestLogger,
     requestLoggingRuntime,
     securityAuditLogger,
-    sessionResolver: container.learner.sessionResolver,
     webOrigin: env.webOrigin,
   })
+  registerLearnerContractRoutes(learner, {
+    aiFeedback: {
+      command: container.modules.learning.aiFeedbackCommand,
+      session: container.learner.learningSession,
+    },
+    health: container.health,
+    identity: {
+      application: container.modules.identity.application,
+      profileStatsQuery: container.modules.learning.profileStatsQuery,
+      sessionResolver: container.learner.sessionResolver,
+    },
+    learning: {
+      application: container.modules.learning.application,
+      cursor: container.modules.learning.cursor,
+      session: container.learner.learningSession,
+    },
+  })
+  registerAuthProxy(learner, container.learner.authHandler)
+  registerLearnerApiDocumentation(learner, { enabled: env.enableApiDocs })
+
+  const adminSession = createOperationsAdminSessionPort(
+    container.admin.sessionResolver
+  )
   const admin = createAdminApp({
     adminOrigin: env.adminOrigin,
-    authHandler: container.admin.authHandler,
-    capabilityRoutes: container.admin.capabilityRoutes,
+    auditMiddleware: createAdminAuditMiddleware({
+      auditTrail: container.modules.operations.auditTrail,
+      sessionResolver: container.admin.sessionResolver,
+    }),
     errorLogger(event) {
       logger.error(event, "request.failed")
     },
-    health: container.health,
     requestLogger,
     requestLoggingRuntime,
     securityAuditLogger,
-    sessionResolver: container.admin.sessionResolver,
   })
+  registerAdminContractRoutes(admin, {
+    content: {
+      application: container.modules.content,
+      sessionPort: createContentAdminSessionPort(
+        container.admin.sessionResolver
+      ),
+    },
+    foundation: {
+      health: container.health,
+      sessionResolver: container.admin.sessionResolver,
+    },
+    identity: {
+      sessionResolver: container.admin.sessionResolver,
+      userMutationService: container.modules.identity.adminUserMutation,
+      userReader: container.modules.identity.adminUserReader,
+    },
+    operations: {
+      auditTrail: container.modules.operations.auditTrail,
+      now: container.platform.clock.now,
+      reporting: container.modules.operations.reporting,
+      session: adminSession,
+    },
+  })
+  registerAdminAuthRoutes(admin, container.admin.authHandler)
+  registerAdminApiDocumentation(admin, { enabled: env.enableApiDocs })
+
   const unified = createUnifiedApp({
     adminApp: admin,
     createRequestId: idGenerator.next,
     learnerApp: learner,
   })
 
-  return Object.freeze({ admin, fetch: unified.fetch, learner, unified })
+  return { admin, fetch: unified.fetch, learner, unified }
 }
 
 export type ApiApp = ReturnType<typeof createApp>
+
+export function registerLearnerContractRoutes(
+  app: OpenAPIHono<ApiHonoEnv>,
+  dependencies: LearnerContractRouteDependencies
+): void {
+  registerHealthRoutes(app, dependencies.health)
+  registerAiFeedbackRoutes(app, dependencies.aiFeedback)
+  registerLearnerIdentityRoutes(app, dependencies.identity)
+  registerLearningRoutes(app, dependencies.learning)
+}
+
+export function registerAdminContractRoutes(
+  app: OpenAPIHono<AdminHonoEnv>,
+  dependencies: AdminContractRouteDependencies
+): void {
+  registerAdminFoundationRoutes(app, dependencies.foundation)
+  registerContentRoutes(app, dependencies.content)
+  registerAdminIdentityRoutes(app, dependencies.identity)
+  registerOperationsRoutes(app, dependencies.operations)
+}
+
+function createContentAdminSessionPort(
+  sessionResolver: AdminSessionResolver
+): ContentAdminSessionPort {
+  return {
+    async resolveAdminId(headers) {
+      const session = await sessionResolver.resolveSession(headers)
+      return session?.admin.id ?? null
+    },
+  }
+}

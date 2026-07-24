@@ -18,16 +18,31 @@
 - `packages/infra/*`는 `process.env`를 직접 읽지 않고 조립 경계가 전달한 검증 완료 설정만 소비한다.
 - 기본값은 한 source에서만 선언하고, 문서·test fixture·deployment script에 다시 적지 않는다.
 - secret, 앱 public origin과 데이터 저장소 설정은 서로 다른 목적과 회전 수명을 가진 값으로 분리한다.
-- production parser는 insecure 앱 origin, 약한 secret과 test-only 설정을 fail-fast해야 한다.
+- production parser는 insecure 앱 origin과 약한 secret을 fail-fast해야 한다.
+- `NODE_ENV`는 runtime 실행 모드이고 `DEPLOYMENT_ENVIRONMENT`는 운영 대상을 나타낸다. production 모드에서는 staging 또는 production 대상을 명시하고, development/test가 암묵적으로 production을 가리키지 않게 한다.
 - 설정 추가·삭제는 parser, `.env.example`, local onboarding, deployment 입력과 검증을 같은 변경에서 갱신한다.
 
 ## 로컬 준비와 테스트
 
 `bun run setup`은 안전한 초기 준비 진입점이고 `bun run doctor`는 변경 없는 진단 진입점이다. setup은 저장소 operation lock으로 같은 checkout의 동시 실행을 차단하고, API 환경 파일과 상속된 shell의 같은 키가 다르면 값은 출력하지 않고 중단한다. 검증한 환경을 자식 process에 그대로 전달하며, 기존 migration 필요 DB는 검증 백업을 훼손하지 않는 임시 사본에서 같은 migration과 read-only 진단이 성공한 뒤에만 실제 migration을 시작한다. 이 lock은 실행 중인 앱의 DB writer를 조정하지 않으므로 setup 전에 개발 서버를 종료한다. doctor는 workspace 계약과 DB 무결성·schema를 읽기 전용으로 확인하고 migration 필요 상태도 실패로 보고한다. 로컬 setup은 개발 환경과 관리자 password 보존 설정에서만 허용하고 database 경로의 환경 변수 보간은 거부한다.
 
-기본 seed는 누락된 개발 fixture만 삽입하고 기존 aggregate·인증·profile·권한을 갱신하지 않는다. migration, 학습자·콘텐츠 seed와 관리자 seed는 하나의 transaction이 아니라 순서가 있는 별도 process이며, 중간 실패 뒤 멱등적으로 재실행해 완료하는 모델이다. 관리자 fixture가 일부만 존재하거나 owner credential 계약과 다르면 자동 보정하지 않고 실패한다. password 변경, content reset과 전체 초기화는 명시적인 승인 명령으로 분리한다. 실제 변수명과 활성화 조건은 권위 source에서 확인한다.
+기본 seed는 누락된 개발 fixture만 삽입하고 기존 aggregate·인증·profile을 갱신하지 않는다. migration, 학습자·콘텐츠 seed와 관리자 seed는 하나의 transaction이 아니라 순서가 있는 별도 process이며, 중간 실패 뒤 멱등적으로 재실행해 완료하는 모델이다. 관리자 user와 credential fixture가 일부만 존재하거나 credential 계약과 다르면 자동 보정하지 않고 실패한다. 관리자 password 변경은 기본 seed와 분리된 명시적 승인 명령으로만 수행한다. 실제 변수명과 활성화 조건은 권위 source에서 확인한다.
+
+삭제 학습자 정리 명령은 명시적으로 지정한 database URL, destructive 승인, 예상 database URL의 일치를 모두 검증한 뒤 실행한다. 출력은 정리 기준 시각과 삭제 건수로 제한하며 사용자 식별자나 민감 데이터를 기록하지 않는다. 실제 변수명과 실행 계약은 [정리 명령 source](../../apps/api/src/scripts/purge-deleted-learners.ts)가 소유한다.
+
+일일 maintenance는 deleted 학습자, 만료 session, AI pending, DB audit와 orphan 콘텐츠 asset을 bounded batch로 정리하고 request·security 외부 보존 상태를 함께 JSON으로 보고한다. dry-run은 같은 cutoff와 대상 수를 사용하며 actual만 affected 수를 만든다. production actual은 명시한 배포 환경·database 확인과 destructive 승인에 더해 유효한 외부 log class retention 증거 파일이 없으면 실패한다. 배포 timer의 반복 실행 승인은 root 전용 `0600` maintenance 환경 파일에만 저장하고 일반 API 환경에는 넣지 않는다.
+
+삭제 marker 복구는 timezone이 포함된 snapshot 시각, `DEPLOYMENT_ENVIRONMENT`와 같은 대상 환경, 격리 candidate DB 확인과 actual 승인을 요구한다. 복구·rollback처럼 작업마다 판단해야 하는 승인은 inventory나 지속 환경 파일에 저장하지 않고 해당 Ansible 실행의 extra vars와 container command에만 전달한다. 정확한 인자·변수와 guard는 [일일 명령](../../apps/api/src/scripts/maintenance-daily.ts), [복구 명령](../../apps/api/src/scripts/reapply-deletion-markers.ts)과 [restore playbook](../../infra/ansible/playbooks/restore.yaml)이 소유한다.
 
 production의 앱 공개 URL은 HTTPS를 사용한다. 브라우저는 API base URL 설정 없이 앱별 상대 `/api` 경로를 사용하며, `API_BASE_URL`은 Next server와 개발 rewrite가 내부 API에 연결할 때만 사용한다. 실제 production build를 loopback에서 검증할 때만 HTTP를 허용하며, 이 경우 CSP nonce와 `strict-dynamic`은 유지하고 insecure request 승격만 제외한다. Web과 Admin의 직접 production 실행은 Next가 생성한 standalone server를 사용하며 정적·public asset 포함 여부를 smoke test한다.
+
+AI feedback의 사용자별·전체 일일 request/success 한도, provider timeout과 pending TTL은 API 환경 parser가 검증해 module composition에 값으로 주입한다. success 한도는 대응하는 request 한도를 넘을 수 없고 provider timeout은 pending TTL보다 짧아야 한다. 변수명과 기본값의 권위 source는 [API 환경 parser](../../apps/api/src/config/env.ts), 로컬 예시는 [API 환경 예시](../../apps/api/.env.example)다. 현재 일일 quota 기본량은 제품 승인값이 아니라 출시 전 부하·비용 검증을 위해 둔 운영 초기 추론값이므로 production 확정 전에 별도 승인이 필요하다.
+
+인증 메일은 API 조립 경계가 검증한 설정을 `@workspace/auth` 전달 Port에 주입한다. development와 test에서 provider 설정이 없으면 인메모리 adapter를 사용한다. production API는 Resend, Google OAuth, OpenAI, public content asset과 private 삭제 marker 설정이 완전하지 않으면 server를 열기 전에 실패한다. private marker는 public asset과 다른 bucket을 사용하고 production endpoint는 HTTPS여야 한다. Litestream credential과 replica 위치는 API 설정과 분리한 전용 runtime 파일로만 전달하며 Ansible이 service 시작 전에 검증한다.
+
+Next image build에는 공개 origin과 비밀이 아닌 내부 routing 값만 전달한다. 인증·provider·storage credential은 build argument나 `NEXT_PUBLIC_` 변수로 전달하지 않고 배포 host의 권한 제한 runtime 파일에서만 주입한다. release smoke는 web/admin container에 API 전용 변수가 전달되지 않는지도 확인한다.
+
+환경별 API 입력 예시는 [local](../../apps/api/.env.example), [test](../../apps/api/.env.test.example), [staging](../../apps/api/.env.staging.example), [production](../../apps/api/.env.production.example)으로 분리한다. staging과 production 예시의 placeholder는 실행값이 아니며, 실제 production 입력은 Ansible inventory와 Vault가 소유한다.
 
 ## 변경 검토
 

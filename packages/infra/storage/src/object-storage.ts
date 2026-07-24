@@ -35,6 +35,7 @@ export type ObjectStorage = {
     readonly contentType: string
     readonly objectKey: string
   }) => ResultAsync<{ readonly url: string }, ObjectStorageError>
+  readonly resolveUrl: (objectKey: string) => string
 }
 
 type ObjectStorageSdkClient = {
@@ -105,6 +106,9 @@ export function createS3ObjectStorage(
           retryable: true,
         })
       )
+    },
+    resolveUrl(objectKey) {
+      return createPublicObjectUrl(config.publicBaseUrl, objectKey)
     },
   })
 }

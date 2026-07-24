@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  adminIdSchema,
-  userIdSchema,
-} from "@workspace/contracts/identity/admin-ids"
+import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import { runInSqliteTransaction } from "@workspace/db/sqlite-database"
@@ -12,19 +9,14 @@ import {
   deletedLearnerDisplayName,
 } from "#identity/domain/learner-profile"
 import { createDrizzleIdentityRepository } from "#identity/infrastructure/persistence/identity-drizzle-repository"
-import { seedOwnerIdentity } from "#identity/infrastructure/persistence/seed"
-import {
-  adminIdentityProfiles,
-  learnerProfiles,
-} from "#identity/infrastructure/persistence/schema"
+import { learnerProfiles } from "#identity/infrastructure/persistence/schema"
 
 const now = new Date("2026-07-22T00:00:00.000Z")
 
 describe("identity SQLite repository", () => {
-  it("profile provisioning과 optimistic status·role 변경을 통합 검증한다", async () => {
+  it("profile provisioning과 optimistic status 변경을 통합 검증한다", async () => {
     const client = createInMemoryWritingAppDatabase()
     const userId = userIdSchema.parse("user-1")
-    const adminId = adminIdSchema.parse("admin-1")
 
     try {
       runCurrentTestMigration(client.sqlite)
@@ -32,11 +24,7 @@ describe("identity SQLite repository", () => {
         INSERT INTO user (
           id, name, email, email_verified, image, created_at, updated_at
         ) VALUES ('user-1', '학습자', 'user-1@example.test', 1, NULL, 1, 1);
-        INSERT INTO admin_user (
-          id, name, email, email_verified, image, created_at, updated_at
-        ) VALUES ('admin-1', '관리자', 'admin-1@example.test', 1, NULL, 1, 1);
       `)
-      seedOwnerIdentity(client.db, adminId)
       const repository = createDrizzleIdentityRepository(client.db)
 
       const provisioned = await repository.provisionLearnerProfile({
@@ -100,25 +88,6 @@ describe("identity SQLite repository", () => {
           })
         )._unsafeUnwrapErr()
       ).toEqual({ kind: "identity-conflict" })
-
-      const admin = await repository.findAdminIdentity(adminId)
-      expect(admin).toMatchObject({ identity: { role: "owner" }, version: 0 })
-      expect(
-        (
-          await repository.saveAdminIdentity({
-            expectedVersion: admin?.version ?? -1,
-            identity: { id: adminId, role: "operator" },
-          })
-        )._unsafeUnwrap()
-      ).toMatchObject({ identity: { role: "operator" }, version: 1 })
-      expect(
-        (
-          await repository.saveAdminIdentity({
-            expectedVersion: admin?.version ?? -1,
-            identity: { id: adminId, role: "operator" },
-          })
-        )._unsafeUnwrapErr()
-      ).toEqual({ kind: "identity-conflict" })
     } finally {
       client.close()
     }
@@ -150,9 +119,6 @@ describe("identity SQLite repository", () => {
         })
       ).toThrow("rollback fixture")
       expect(client.db.select().from(learnerProfiles).all()).toEqual([])
-      expect(
-        Object.keys({ adminIdentityProfiles, learnerProfiles }).sort()
-      ).toEqual(["adminIdentityProfiles", "learnerProfiles"])
     } finally {
       client.close()
     }

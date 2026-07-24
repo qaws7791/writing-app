@@ -1,13 +1,9 @@
 import type { ComponentType } from "react"
-import type { AdminRole } from "@workspace/contracts/identity/admin-session"
 
 import {
   BarChartIcon,
   BookOpenIcon,
-  BotIcon,
-  FolderOpenIcon,
   LayoutDashboardIcon,
-  SettingsIcon,
   UsersIcon,
 } from "@workspace/ui/components/icons"
 
@@ -20,7 +16,6 @@ export type AdminNavigationItem = {
     readonly strokeWidth?: number
   }>
   readonly label: string
-  readonly ownerOnly?: boolean
 }
 
 export const adminNavigationItems = [
@@ -38,18 +33,6 @@ export const adminNavigationItems = [
   },
   {
     end: false,
-    href: "/resources",
-    icon: FolderOpenIcon,
-    label: "자료실",
-  },
-  {
-    end: false,
-    href: "/chat",
-    icon: BotIcon,
-    label: "AI 에이전트",
-  },
-  {
-    end: false,
     href: "/users",
     icon: UsersIcon,
     label: "사용자 관리",
@@ -60,22 +43,7 @@ export const adminNavigationItems = [
     icon: BarChartIcon,
     label: "분석",
   },
-  {
-    end: false,
-    href: "/maintenance",
-    icon: SettingsIcon,
-    label: "콘텐츠 유지보수",
-    ownerOnly: true,
-  },
 ] as const satisfies readonly AdminNavigationItem[]
-
-export function readAdminNavigationItems(
-  role: AdminRole
-): readonly AdminNavigationItem[] {
-  return adminNavigationItems.filter(
-    (item) => !("ownerOnly" in item) || !item.ownerOnly || role === "owner"
-  )
-}
 
 export function isAdminNavigationActive(
   activePath: string,

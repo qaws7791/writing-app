@@ -1,10 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import type {
-  LearnerLessonReference,
-  LearnerProgressCourse,
-} from "@workspace/contracts/learning/learner-content"
+import type { LearnerProgressCourseDto } from "@/shared/http/learner-api-client"
 import {
   ChevronRightIcon,
   PlayIcon,
@@ -14,7 +11,7 @@ import { buttonVariants } from "@workspace/ui/components/ui/button"
 import { Progress } from "@workspace/ui/components/ui/progress"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
-import { createCourseImageUrl } from "@/entities/course/model/course-visual-assets"
+import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
 
 export function StartCourseCta() {
   return (
@@ -50,7 +47,7 @@ export function ContinueCourseCard({
   course,
   priority = false,
 }: {
-  readonly course: LearnerProgressCourse
+  readonly course: LearnerProgressCourseDto
   readonly priority?: boolean
 }) {
   const completedLessonCount = course.learning.completedLessons
@@ -71,13 +68,13 @@ export function ContinueCourseCard({
       >
         <div className="relative h-36 w-full shrink-0 overflow-hidden lg:h-28 lg:min-h-28 lg:w-44">
           <Image
-            alt={course.title}
+            alt={resolveCourseImage(course).alt}
             className="object-cover pointer-events-none"
             draggable={false}
             fill
             priority={priority}
             sizes="(min-width: 1024px) 176px, 100vw"
-            src={createCourseImageUrl(course.visualKey)}
+            src={resolveCourseImage(course).src}
           />
         </div>
         <div className="px-6 pt-5 pb-4 lg:min-w-0 lg:flex-1 lg:px-5 lg:py-4">
@@ -109,7 +106,7 @@ function ContinueCourseSummary({
   totalLessonCount,
 }: {
   readonly completedLessonCount: number
-  readonly course: LearnerProgressCourse
+  readonly course: LearnerProgressCourseDto
   readonly progressPercent: number
   readonly totalLessonCount: number
 }) {
@@ -129,8 +126,8 @@ function ContinueCourseSummary({
       <Progress
         aria-label={`${course.title} 진행률`}
         className="items-center gap-3"
-        indicatorClassName="bg-charcoal"
-        trackClassName="h-2 bg-charcoal/10"
+        indicatorClassName="bg-action-primary-bg"
+        trackClassName="h-2 bg-bg-surface"
         value={progressPercent}
       >
         <span className="shrink-0 text-label-sm font-bold text-muted-foreground">
@@ -144,7 +141,9 @@ function ContinueCourseSummary({
 function NextLessonLink({
   lesson,
 }: {
-  readonly lesson: LearnerLessonReference
+  readonly lesson: NonNullable<
+    LearnerProgressCourseDto["learning"]["nextLesson"]
+  >
 }) {
   return (
     <Link

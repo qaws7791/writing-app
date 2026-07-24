@@ -2,16 +2,17 @@ import type { LearnerId } from "@workspace/types/ids"
 
 import type {
   CourseLearningState,
+  LearnerStepDraft,
   LearningCurriculum,
   LessonLearningState,
 } from "#learning/domain/learning-types"
 
-export type LearnerCourseSort =
-  | "recommended"
-  | "title-asc"
-  | "title-desc"
-  | "lesson-count-asc"
-  | "lesson-count-desc"
+export type LearnerContentAssetReference = Readonly<{
+  altText: string
+  id: string
+  kind: "course-cover" | "reading-illustration"
+  url: string
+}>
 
 export type LearnerCursorEndpoint = "courses" | "progress"
 
@@ -44,6 +45,7 @@ export type LearnerCursorCodec = Readonly<{
 export type LearnerCourseSummary = Readonly<{
   category: string
   contentStatus: "active" | "archived"
+  cover: LearnerContentAssetReference | null
   description: string
   id: string
   lessonCount: number
@@ -90,6 +92,7 @@ export type LearnerLessonStep =
       Readonly<{
         body: string
         guide: string
+        illustration?: LearnerContentAssetReference
         source?: string
         title: string
         type: "READING"
@@ -174,6 +177,7 @@ export type LearnerLesson = Readonly<{
   category: string | null
   courseId: string
   description: string | null
+  drafts: readonly LearnerStepDraft[]
   estimatedMinutes: number
   id: string
   learning: LessonLearningState
@@ -188,6 +192,7 @@ export type LearnerLesson = Readonly<{
 }>
 
 export type LearnerProgressCourse = Readonly<{
+  cover: LearnerContentAssetReference | null
   id: string
   learning: CourseLearningState
   title: string
@@ -199,7 +204,6 @@ export type LearnerCourseReadQuery = Readonly<{
   category?: string
   limit: number
   query?: string
-  sort: LearnerCourseSort
 }>
 
 export type LearnerProgressReadQuery = Readonly<{

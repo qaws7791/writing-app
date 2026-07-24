@@ -10,7 +10,8 @@ import {
   toMatchAnswerPairs,
   transitionMatchChoiceSelection,
   type MatchAnswerPair,
-  type MatchStepPairInput,
+  type MatchEvaluationItemInput,
+  type MatchStepPresentationInput,
 } from "@/features/lesson-session/model/lesson-match-presentation"
 import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
 import type { MatchAnswerChoiceSelection } from "@workspace/ui/components/lesson/match-answer"
@@ -18,28 +19,39 @@ import type { LessonStepCheckedVisual } from "@workspace/ui/components/lesson/le
 
 export function LessonMatchAnswer({
   checked,
+  evaluationItems,
   explanation,
   guide,
+  initialPairs = [],
+  leftItems,
   onChange,
-  pairs,
+  rightItems,
   title,
 }: {
   readonly checked: LessonStepCheckedVisual
+  readonly evaluationItems?: readonly MatchEvaluationItemInput[]
   readonly explanation?: string
   readonly guide: string
+  readonly initialPairs?: readonly Readonly<{
+    leftItemId: string
+    rightItemId: string
+  }>[]
+  readonly leftItems: MatchStepPresentationInput["leftItems"]
   readonly onChange: (pairs: readonly MatchAnswerPair[]) => void
-  readonly pairs: readonly MatchStepPairInput[]
+  readonly rightItems: MatchStepPresentationInput["rightItems"]
   readonly title: string
 }) {
   const presentation = useMemo(
-    () => createMatchStepPresentation({ pairs }),
-    [pairs]
+    () => createMatchStepPresentation({ leftItems, rightItems }),
+    [leftItems, rightItems]
   )
-  const [interaction, setInteraction] = useState(createMatchInteractionState)
+  const [interaction, setInteraction] = useState(() =>
+    createMatchInteractionState(presentation, initialPairs)
+  )
   const connections = toMatchAnswerConnections(
     presentation,
     interaction.selectionMap,
-    checked !== false
+    evaluationItems
   )
 
   function handleChoiceSelect(selection: MatchAnswerChoiceSelection) {

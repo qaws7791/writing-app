@@ -7,21 +7,32 @@
     "#http-client/*": "./src/*"
   },
   "exports": {
+    "./admin": "./.generated/admin/index.ts",
+    "./admin/msw": "./.generated/admin/mocks/handlers.ts",
     "./api-result": "./src/api-result.ts",
-    "./json-transport": "./src/json-transport.ts"
+    "./generated-fetch": "./src/generated-fetch.ts",
+    "./learner": "./.generated/learner/index.ts",
+    "./learner/msw": "./.generated/learner/mocks/handlers.ts",
+    "./msw-fixtures": "./src/msw-fixtures.ts"
   },
   "scripts": {
+    "generate": "orval --config orval.config.ts && bun src/scripts/generate-msw-handler-exports.ts",
     "lint": "oxlint .",
     "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
     "test:watch": "bun --bun ../../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@faker-js/faker": "catalog:",
     "@types/bun": "catalog:",
     "@workspace/typescript-config": "workspace:*",
+    "msw": "catalog:",
+    "orval": "catalog:",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",
-    "vitest": "catalog:",
-    "zod": "catalog:"
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@workspace/contracts": "workspace:*"
   }
 }

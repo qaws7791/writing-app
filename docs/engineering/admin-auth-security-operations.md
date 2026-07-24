@@ -13,12 +13,12 @@
 
 ## 감사와 세션 폐기
 
-1. 감사는 운영 데이터의 변경 없이 승인된 관리자와 역할을 확인한다.
+1. 감사는 운영 데이터의 변경 없이 승인된 관리자를 확인한다.
 2. 감사 출력은 password, session token, secret과 불필요한 개인 정보를 포함하지 않는다.
-3. role 또는 credential 변경, 계정 정지·삭제가 확인되면 영향을 받는 session을 폐기할지 명시적으로 결정한다.
-4. session 폐기는 audit 결과를 검토한 운영자가 별도 승인으로 실행한다.
+3. credential 변경, 계정 정지·삭제가 확인되면 영향을 받는 session을 폐기할지 명시적으로 결정한다.
+4. session 폐기는 audit 결과를 검토한 승인된 관리자가 별도 승인으로 실행한다.
 5. 실행 결과는 기준 commit, 운영 환경, 명령, 영향 범위와 결과를 고정한 archive 보고서로 남긴다.
 
 ## 변경 검토
 
-관리자 생성 방식, credential 수명, session 폐기 규칙, audit 범위 또는 owner 권한을 바꾸면 인증·권한 정책, 보안, deployment·rollback 절차와 함께 검토한다.
+관리자 생성 방식, credential 수명, session 폐기 규칙, audit 범위 또는 관리자 권한 모델을 바꾸면 인증·권한 정책, 보안, deployment·rollback 절차와 함께 검토한다.

@@ -1,5 +1,7 @@
 import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
+import { normalizeVersionedStepContentOrThrow } from "@workspace/content/application"
 import type {
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
@@ -12,6 +14,7 @@ import type { LearningCurriculum } from "#learning/domain/learning-types"
 export type PersistedPublishedCurriculum = Readonly<{
   category: string
   courseId: CourseId
+  coverAssetId: ContentAssetId | null
   curriculumVersionId: CurriculumVersionId
   description: string
   revision: number
@@ -45,45 +48,38 @@ export function mapPublishedLearningCurriculum(
   curriculum: PersistedPublishedCurriculum,
   contentStatus: "active" | "archived"
 ): LearningCurriculum {
-  return Object.freeze({
+  return {
     category: curriculum.category,
     contentStatus,
     courseId: curriculum.courseId,
+    coverAssetId: curriculum.coverAssetId,
     curriculumVersionId: curriculum.curriculumVersionId,
     description: curriculum.description,
-    lessons: Object.freeze(
-      curriculum.units.flatMap((unit) =>
-        unit.lessons.map((lesson) =>
-          Object.freeze({
-            category: lesson.category,
-            description: lesson.description,
-            estimatedMinutes: lesson.estimatedMinutes,
-            id: lesson.id,
-            sortOrder: lesson.sortOrder,
-            status: lesson.status,
-            steps: Object.freeze(lesson.steps.map(mapPersistedLearningStep)),
-            summary: Object.freeze([...lesson.summary]),
-            title: lesson.title,
-            unitId: unit.id,
-            unitSortOrder: unit.sortOrder,
-          })
-        )
-      )
+    lessons: curriculum.units.flatMap((unit) =>
+      unit.lessons.map((lesson) => ({
+        category: lesson.category,
+        description: lesson.description,
+        estimatedMinutes: lesson.estimatedMinutes,
+        id: lesson.id,
+        sortOrder: lesson.sortOrder,
+        status: lesson.status,
+        steps: lesson.steps.map(mapPersistedLearningStep),
+        summary: [...lesson.summary],
+        title: lesson.title,
+        unitId: unit.id,
+        unitSortOrder: unit.sortOrder,
+      }))
     ),
     revision: curriculum.revision,
     title: curriculum.title,
-    units: Object.freeze(
-      curriculum.units.map((unit) =>
-        Object.freeze({
-          id: unit.id,
-          sortOrder: unit.sortOrder,
-          status: unit.status,
-          title: unit.title,
-        })
-      )
-    ),
+    units: curriculum.units.map((unit) => ({
+      id: unit.id,
+      sortOrder: unit.sortOrder,
+      status: unit.status,
+      title: unit.title,
+    })),
     visualKey: curriculum.visualKey,
-  })
+  }
 }
 
 function mapPersistedLearningStep(
@@ -98,6 +94,12 @@ function mapPersistedLearningStep(
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error(`Published learning step content is invalid: ${step.id}`)
   }
+  const normalizedContentJson = normalizeVersionedStepContentOrThrow(
+    step.id,
+    step.type,
+    step.contentJson
+  )
+  value = JSON.parse(normalizedContentJson) as unknown
   const { type: _persistedType, ...content } = value as Record<string, unknown>
   return lessonStepDtoSchema.parse({
     ...content,

@@ -1,5 +1,6 @@
 import { z } from "zod"
 import type {
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
@@ -8,6 +9,7 @@ import type {
 } from "@workspace/types/ids"
 
 export type {
+  ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
@@ -23,6 +25,7 @@ function createIdSchema<TId extends string>() {
 }
 
 export const courseIdSchema = createIdSchema<CourseId>()
+export const contentAssetIdSchema = createIdSchema<ContentAssetId>()
 export const curriculumVersionIdSchema = createIdSchema<CurriculumVersionId>()
 export const unitIdSchema = createIdSchema<UnitId>()
 export const lessonIdSchema = createIdSchema<LessonId>()

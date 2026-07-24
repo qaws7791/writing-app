@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
+import { adminContentAssetMaxBytes } from "@workspace/contracts/content/admin-assets"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { createApp } from "@workspace/http-platform/core"
+import { createApp } from "@workspace/http-platform/app"
 import { err, ok } from "@workspace/kernel/result"
+import type { ContentAssetId } from "@workspace/types/ids"
 
 import type { ContentApplication } from "#content/application/content-application"
 import type {
@@ -15,13 +17,16 @@ import {
   readLessonStepId,
   readUnitId,
 } from "#content/domain/content-model"
-import { createAdminContentRoutes } from "#content/interface/http/content-http"
+import { registerContentRoutes } from "#content/interface/http/content-http"
+import type { ContentAdminHonoEnv } from "#content/interface/http/content-http-auth"
 
 const courseId = createCourseId("course-1")
 const curriculumVersionId = createCurriculumVersionId(courseId, 1)
 const editorDocument: CourseEditorDocument = {
+  assets: [],
   category: "기초",
   courseId,
+  coverAssetId: null,
   curriculumVersionId,
   description: "강의 설명",
   editVersion: 3,
@@ -64,39 +69,26 @@ const editorDocument: CourseEditorDocument = {
 }
 
 describe("content HTTP interface", () => {
-  it("unauthenticated read와 operator mutation을 각각 401·403으로 거절한다", async () => {
-    const requestActors: unknown[] = []
+  it("인증되지 않은 요청을 401로 처리한다", async () => {
     const createCourse = vi.fn(async () => ok(editorDocument))
-    const app = createContentHttpFixture({ createCourse }, requestActors)
+    const app = createContentHttpFixture({ createCourse })
 
     const unauthenticated = await app.request("/courses")
-    const forbidden = await app.request("/courses", {
-      headers: { Cookie: "admin=operator" },
-      method: "POST",
-    })
 
     expect(unauthenticated.status).toBe(401)
     await expect(unauthenticated.json()).resolves.toMatchObject({
       code: "UNAUTHORIZED",
     })
-    expect(forbidden.status).toBe(403)
-    expect(forbidden.headers.get("Cache-Control")).toBe("private, no-store")
-    expect(forbidden.headers.get("Vary")).toContain("Cookie")
-    await expect(forbidden.json()).resolves.toMatchObject({ code: "FORBIDDEN" })
     expect(createCourse).not.toHaveBeenCalled()
-    expect(requestActors[1]).toMatchObject({
-      id: "admin-1",
-      type: "admin",
-    })
   })
 
   it("editor ETag를 읽고 If-Match가 일치하면 증가한 ETag를 반환한다", async () => {
     const app = createContentHttpFixture()
-    const headers = { Cookie: "admin=owner" }
+    const headers = { Cookie: "admin=valid" }
 
     const read = await app.request("/courses/course-1/editor", { headers })
     const save = await app.request("/courses/course-1/editor", {
-      body: JSON.stringify(await read.clone().json()),
+      body: JSON.stringify(toWireDocument(editorDocument)),
       headers: {
         ...headers,
         "Content-Type": "application/json",
@@ -118,7 +110,7 @@ describe("content HTTP interface", () => {
     const response = await app.request("/courses/course-1/editor", {
       body: JSON.stringify(toWireDocument(editorDocument)),
       headers: {
-        Cookie: "admin=owner",
+        Cookie: "admin=valid",
         "Content-Type": "application/json",
       },
       method: "PUT",
@@ -142,7 +134,7 @@ describe("content HTTP interface", () => {
     const response = await app.request("/courses/course-1/editor", {
       body: JSON.stringify(toWireDocument(editorDocument)),
       headers: {
-        Cookie: "admin=owner",
+        Cookie: "admin=valid",
         "Content-Type": "application/json",
         "If-Match": '"3"',
       },
@@ -152,15 +144,121 @@ describe("content HTTP interface", () => {
     expect(response.status).toBe(409)
     await expect(response.json()).resolves.toMatchObject({ code })
   })
+
+  it("multipart 콘텐츠 이미지를 application command로 전달한다", async () => {
+    const uploadAsset = vi.fn(async () =>
+      ok({
+        asset: {
+          altText: "코스 표지",
+          byteSize: 4,
+          contentType: "image/jpeg" as const,
+          courseId,
+          createdAt: new Date(),
+          curriculumVersionId,
+          id: "content-asset-1" as ContentAssetId,
+          kind: "course-cover" as const,
+          objectKey: "content-assets/course-cover/content-asset-1.jpg",
+          orphanedAt: null,
+          status: "active" as const,
+          updatedAt: new Date(),
+        },
+        url: "https://cdn.example.test/content-asset-1.jpg",
+      })
+    )
+    const app = createContentHttpFixture({ uploadAsset })
+    const form = new FormData()
+    form.set("altText", "코스 표지")
+    form.set("curriculumVersionId", curriculumVersionId)
+    form.set("kind", "course-cover")
+    form.set(
+      "file",
+      new File([new Uint8Array([0xff, 0xd8, 0xff, 0x00])], "ignored.jpg", {
+        type: "image/jpeg",
+      })
+    )
+
+    const response = await app.request("/courses/course-1/assets", {
+      body: form,
+      headers: { Cookie: "admin=valid" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      contentType: "image/jpeg",
+      id: "content-asset-1",
+      kind: "course-cover",
+    })
+    expect(uploadAsset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        adminId: "admin-1",
+        altText: "코스 표지",
+        courseId,
+        curriculumVersionId,
+        declaredContentType: "image/jpeg",
+        kind: "course-cover",
+      })
+    )
+  })
+
+  it("multipart file 누락을 application 호출 전에 400으로 거절한다", async () => {
+    const uploadAsset = vi.fn()
+    const app = createContentHttpFixture({ uploadAsset })
+    const form = new FormData()
+    form.set("altText", "코스 표지")
+    form.set("curriculumVersionId", curriculumVersionId)
+    form.set("kind", "course-cover")
+
+    const response = await app.request("/courses/course-1/assets", {
+      body: form,
+      headers: { Cookie: "admin=valid" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+    })
+    expect(uploadAsset).not.toHaveBeenCalled()
+  })
+
+  it("5MB 초과 multipart 파일을 application 호출 전에 413으로 거절한다", async () => {
+    const uploadAsset = vi.fn()
+    const app = createContentHttpFixture({ uploadAsset })
+    const form = new FormData()
+    form.set("altText", "코스 표지")
+    form.set("curriculumVersionId", curriculumVersionId)
+    form.set("kind", "course-cover")
+    form.set(
+      "file",
+      new File(
+        [new Uint8Array(adminContentAssetMaxBytes + 1)],
+        "oversized.jpg",
+        { type: "image/jpeg" }
+      )
+    )
+
+    const response = await app.request("/courses/course-1/assets", {
+      body: form,
+      headers: { Cookie: "admin=valid" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(413)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "CONTENT_ASSET_TOO_LARGE",
+    })
+    expect(uploadAsset).not.toHaveBeenCalled()
+  })
 })
 
-function createContentHttpFixture(
-  overrides: Partial<ContentApplication> = {},
-  requestActors?: unknown[]
-) {
+function createContentHttpFixture(overrides: Partial<ContentApplication> = {}) {
   const application: ContentApplication = {
     archiveCourse: async () => ok(undefined),
+    cleanupOrphanedAssets: async () =>
+      ok({ deleted: 0, retained: 0, scanned: 0 }),
     createCourse: async () => ok(editorDocument),
+    findCurriculumByLesson: async () => null,
     getCourseEditor: async () => editorDocument,
     getCourses: async (query) => ({
       items: [
@@ -180,54 +278,37 @@ function createContentHttpFixture(
       totalItems: 1,
       totalPages: 1,
     }),
+    listPublishedCourses: async () => [],
     publishCourse: async () =>
       ok({ curriculumVersionId, publishedAt: new Date(), revision: 1 }),
-    resetContent: async () =>
-      ok({
-        changed: {
-          archived: 0,
-          courses: 1,
-          lessons: 1,
-          steps: 1,
-          units: 1,
-        },
-        revision: 1,
-      }),
+    readCurriculum: async () => null,
+    resolveAssetReferences: async () => [],
     saveCourseEditor: async () =>
       ok({ ...editorDocument, editVersion: editorDocument.editVersion + 1 }),
+    uploadAsset: async () =>
+      err({
+        kind: "content-asset-invalid",
+        reason: "image-decode-failed",
+      }),
     ...overrides,
   }
   const sessionPort: ContentAdminSessionPort = {
-    async resolveActor(headers) {
+    async resolveAdminId(headers) {
       const cookie = headers.get("Cookie")
       if (cookie === null) return null
-      return {
-        adminId: adminIdSchema.parse("admin-1"),
-        mutation: cookie === "admin=owner" ? "allowed" : "forbidden",
-      }
+      return adminIdSchema.parse("admin-1")
     },
   }
 
-  return createApp({
-    middleware:
-      requestActors === undefined
-        ? []
-        : [
-            async (context, next) => {
-              try {
-                await next()
-              } finally {
-                requestActors.push(context.get("requestActor"))
-              }
-            },
-          ],
-    routes: createAdminContentRoutes({ application, sessionPort }),
-  })
+  const app = createApp<ContentAdminHonoEnv>()
+  registerContentRoutes(app, { application, sessionPort })
+  return app
 }
 
 function toWireDocument(document: CourseEditorDocument) {
   return {
     category: document.category,
+    coverAssetId: document.coverAssetId,
     curriculumVersionId: document.curriculumVersionId,
     description: document.description,
     editVersion: document.editVersion,

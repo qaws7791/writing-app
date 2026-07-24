@@ -1,6 +1,6 @@
 import type { AiFeedbackApplication } from "@workspace/ai-feedback/application"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
-import type { ContentModule } from "@workspace/content/module"
+import type { ContentApplication } from "@workspace/content/application"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { IdentityModule } from "@workspace/identity/module"
 import {
@@ -17,7 +17,7 @@ import type { Clock } from "@workspace/kernel/clock"
 export function composeLearningModule(input: {
   readonly aiFeedback: AiFeedbackApplication
   readonly clock: Clock
-  readonly content: ContentModule
+  readonly content: ContentApplication
   readonly cursorSigningSecret: string
   readonly database: WritingAppDatabase
   readonly identity: IdentityModule
@@ -34,14 +34,13 @@ export function composeLearningModule(input: {
 }
 
 export function createLearningContentQueryPort(
-  content: ContentModule
+  content: ContentApplication
 ): LearningContentQueryPort {
-  return Object.freeze({
+  return {
     async findCurriculumByLesson(query) {
-      const reference =
-        await content.learningQuery.findCurriculumByLesson(query)
+      const reference = await content.findCurriculumByLesson(query)
       if (reference === null) return null
-      const curriculum = await content.learningQuery.readCurriculum({
+      const curriculum = await content.readCurriculum({
         courseId: reference.courseId,
         curriculumVersionId: reference.curriculumVersionId,
       })
@@ -50,22 +49,24 @@ export function createLearningContentQueryPort(
         : mapPublishedCurriculum(content, curriculum)
     },
     async listPublishedCourses() {
-      const courses = await content.learningQuery.listPublishedCourses()
-      return courses.map((course) => Object.freeze({ ...course }))
+      const courses = await content.listPublishedCourses()
+      return courses.map((course) => ({ ...course }))
     },
+    resolveAssetReferences: (assetIds) =>
+      content.resolveAssetReferences(assetIds),
     async readCurriculum(query) {
-      const curriculum = await content.learningQuery.readCurriculum(query)
+      const curriculum = await content.readCurriculum(query)
       return curriculum === null
         ? null
         : mapPublishedCurriculum(content, curriculum)
     },
-  })
+  }
 }
 
 function createLearningIdentityQueryPort(
   identity: IdentityModule
 ): LearningIdentityQueryPort {
-  return Object.freeze({
+  return {
     async readLearnerStatus(learnerId) {
       const result = await identity.learningQuery.readLearnerStatus(
         userIdSchema.parse(learnerId)
@@ -78,18 +79,18 @@ function createLearningIdentityQueryPort(
             : ("identity-validation-failed" as const),
       }))
     },
-  })
+  }
 }
 
 type PublishedCurriculum = NonNullable<
-  Awaited<ReturnType<ContentModule["learningQuery"]["readCurriculum"]>>
+  Awaited<ReturnType<ContentApplication["readCurriculum"]>>
 >
 
 async function mapPublishedCurriculum(
-  content: ContentModule,
+  content: ContentApplication,
   curriculum: PublishedCurriculum
 ) {
-  const publishedCourses = await content.learningQuery.listPublishedCourses()
+  const publishedCourses = await content.listPublishedCourses()
   const contentStatus = publishedCourses.some(
     (course) =>
       course.courseId === curriculum.courseId &&

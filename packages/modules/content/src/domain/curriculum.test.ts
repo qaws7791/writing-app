@@ -7,7 +7,6 @@ import type {
   UnitId,
 } from "@workspace/types/ids"
 
-import { authorizeContentReset } from "#content/domain/content-admin-policy"
 import {
   assertCurriculumRevisionMutable,
   createCurriculumDraft,
@@ -50,7 +49,7 @@ describe("content curriculum domain", () => {
     })
   })
 
-  it("publish decision이 immutable revision을 반환한다", () => {
+  it("발행 시 revision과 published 시각을 확정한다", () => {
     const decision = decidePublishCurriculum({
       draft: createDraft(),
       now,
@@ -62,8 +61,6 @@ describe("content curriculum domain", () => {
       publishedAt: now,
       revision: 1,
     })
-    expect(Object.isFrozen(decision)).toBe(true)
-    expect(Object.isFrozen(decision.units)).toBe(true)
   })
 
   it("빈 hierarchy 발행과 published revision 변경을 명시적으로 거절한다", () => {
@@ -98,24 +95,6 @@ describe("content curriculum domain", () => {
       kind: "content-not-found",
     })
   })
-
-  it("reset은 명시적 확인과 non-production 환경을 모두 요구한다", () => {
-    expect(
-      authorizeContentReset({ confirmed: true, environment: "test" }).isOk()
-    ).toBe(true)
-    expect(
-      authorizeContentReset({
-        confirmed: false,
-        environment: "development",
-      })._unsafeUnwrapErr()
-    ).toEqual({ kind: "content-reset-forbidden" })
-    expect(
-      authorizeContentReset({
-        confirmed: true,
-        environment: "production",
-      })._unsafeUnwrapErr()
-    ).toEqual({ kind: "content-reset-forbidden" })
-  })
 })
 
 function createDraft({
@@ -126,6 +105,7 @@ function createDraft({
   return {
     category: "입문",
     courseId,
+    coverAssetId: null,
     curriculumVersionId: versionId,
     description: "설명",
     editVersion: 0,

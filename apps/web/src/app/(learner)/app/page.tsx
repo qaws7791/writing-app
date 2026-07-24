@@ -1,21 +1,32 @@
 import { redirect } from "next/navigation"
+import { getProfile, getProgress } from "@workspace/http-client/learner"
 
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { HomePage } from "@/features/learner-home/ui/home-page"
-import { getLearnerHome } from "@/features/learner-home/server/dal/get-learner-home"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
-import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
+import {
+  isLearnerApiAuthenticationError,
+  settleLearnerApiRequest,
+} from "@/shared/http/learner-api-client"
+import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
 export default async function AppHomeRoute() {
-  const token = await getServerLearnerSessionToken()
+  const requestOptions = await getServerLearnerRequestOptions({
+    cache: "no-store",
+  })
 
-  if (token === null) {
+  if (requestOptions === null) {
     redirect(createLoginPagePath("/app"))
   }
 
-  const { inProgressResult, profileResult } = await getLearnerHome(token)
+  const [profileResult, inProgressResult] = await Promise.all([
+    settleLearnerApiRequest(getProfile(requestOptions)),
+    settleLearnerApiRequest(
+      getProgress({ status: "in_progress" }, requestOptions)
+    ),
+  ])
   if (profileResult.status === "error") {
-    if (profileResult.error.code === "UNAUTHENTICATED") {
+    if (isLearnerApiAuthenticationError(profileResult.error)) {
       redirect(createLoginPagePath("/app"))
     }
 
@@ -28,7 +39,7 @@ export default async function AppHomeRoute() {
   }
 
   if (inProgressResult.status === "error") {
-    if (inProgressResult.error.code === "UNAUTHENTICATED") {
+    if (isLearnerApiAuthenticationError(inProgressResult.error)) {
       redirect(createLoginPagePath("/app"))
     }
 

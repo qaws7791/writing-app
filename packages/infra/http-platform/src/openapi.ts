@@ -1,5 +1,7 @@
 import { z } from "@hono/zod-openapi"
 
+export { z } from "@hono/zod-openapi"
+
 export function jsonResponse(description: string, schema: z.ZodType) {
   return {
     content: { "application/json": { schema } },

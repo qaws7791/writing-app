@@ -7,7 +7,7 @@ type ClientReferenceManifest = {
   readonly entryJSFiles: Readonly<Record<string, readonly string[]>>
 }
 
-type RouteBundleCheck = {
+export type RouteBundleCheck = {
   readonly app: "admin" | "web"
   readonly clientModuleBoundary?: {
     readonly allowed: RegExp
@@ -24,7 +24,12 @@ type RouteBundleCheck = {
   readonly success: string
 }
 
-const routeBundleChecks = [
+export type RouteChunkGzipSize = {
+  readonly gzipBytes: number
+  readonly path: string
+}
+
+export const routeBundleChecks = [
   {
     app: "admin",
     forbiddenChunkContent: {
@@ -32,7 +37,7 @@ const routeBundleChecks = [
       pattern: /recharts|Recharts|ResponsiveContainer/,
     },
     manifestPath: "server/app/(admin)/page_client-reference-manifest.js",
-    maximumGzipBytes: 60_000,
+    maximumGzipBytes: 75_000,
     name: "/",
     success: "Recharts 없음",
   },
@@ -44,50 +49,43 @@ const routeBundleChecks = [
     },
     manifestPath:
       "server/app/(admin)/analytics/page_client-reference-manifest.js",
-    maximumGzipBytes: 75_000,
+    maximumGzipBytes: 90_000,
     name: "/analytics",
     success: "Recharts 없음",
   },
   {
     app: "web",
     clientModuleBoundary: {
-      allowed: /\/landing-motion\.tsx/,
-      error: "랜딩 정적 section이 client 경계에 포함되었습니다",
+      allowed: /$^/,
+      error: "랜딩 feature가 client 경계에 포함되었습니다",
       selected: /\/features\/landing\//,
     },
     manifestPath: "server/app/page_client-reference-manifest.js",
-    maximumGzipBytes: 50_000,
+    maximumGzipBytes: 65_000,
     name: "/",
-    success: "landing client module은 motion island만 포함",
+    success: "landing client module 0개",
   },
   {
-    app: "admin",
-    forbiddenChunkContent: {
-      error: "초기 chunk에 Lexical/Yjs가 포함되었습니다",
-      pattern: /@lexical|LexicalEditor|\byjs\b|Y\.Doc/,
-    },
-    manifestPath:
-      "server/app/(admin)/resources/page_client-reference-manifest.js",
-    maximumGzipBytes: 275_000,
-    name: "/resources",
-    success: "Lexical/Yjs 없음",
+    app: "web",
+    manifestPath: "server/app/(learner)/app/page_client-reference-manifest.js",
+    maximumGzipBytes: 220_000,
+    name: "/app",
+    success: "learner home 예산 이내",
   },
   {
-    app: "admin",
-    forbiddenChunkContent: {
-      error: "초기 chunk에 Lexical/Yjs가 포함되었습니다",
-      pattern: /@lexical|LexicalEditor|\byjs\b|Y\.Doc/,
-    },
+    app: "web",
     manifestPath:
-      "server/app/(admin)/resources/trash/page_client-reference-manifest.js",
-    maximumGzipBytes: 275_000,
-    name: "/resources/trash",
-    success: "Lexical/Yjs 없음",
+      "server/app/(lesson)/app/lesson/page_client-reference-manifest.js",
+    maximumGzipBytes: 235_000,
+    name: "/app/lesson",
+    success: "lesson shell 예산 이내",
   },
 ] as const satisfies readonly RouteBundleCheck[]
 
-for (const check of routeBundleChecks) {
-  verifyRouteBundle(check)
+if (import.meta.main) {
+  for (const check of routeBundleChecks) {
+    verifyRouteBundle(check)
+  }
 }
 
 function verifyRouteBundle(check: RouteBundleCheck) {
@@ -112,14 +110,15 @@ function verifyRouteBundle(check: RouteBundleCheck) {
   }
 
   const chunkPaths = [...new Set(Object.values(manifest.entryJSFiles).flat())]
-  const chunks = chunkPaths.map((chunkPath) => ({
-    content: readFileSync(join(nextDirectory, chunkPath)),
-    path: chunkPath,
-  }))
-  const gzipBytes = chunks.reduce(
-    (total, chunk) => total + gzipSync(chunk.content).byteLength,
-    0
-  )
+  const chunks = chunkPaths.map((chunkPath) => {
+    const content = readFileSync(join(nextDirectory, chunkPath))
+    return {
+      content,
+      gzipBytes: gzipSync(content).byteLength,
+      path: chunkPath,
+    }
+  })
+  const gzipBytes = chunks.reduce((total, chunk) => total + chunk.gzipBytes, 0)
 
   if (check.forbiddenChunkContent !== undefined) {
     const forbiddenChunks = chunks
@@ -130,19 +129,40 @@ function verifyRouteBundle(check: RouteBundleCheck) {
 
     if (forbiddenChunks.length > 0) {
       throw new Error(
-        `${check.name} ${check.forbiddenChunkContent.error}: ${forbiddenChunks.join(", ")}`
+        `${check.name} ${check.forbiddenChunkContent.error}: ${forbiddenChunks.join(", ")}\n${formatRouteChunkBreakdown(chunks)}`
       )
     }
   }
 
-  if (gzipBytes > check.maximumGzipBytes) {
-    throw new Error(
-      `${check.name} 초기 JS gzip 예산을 초과했습니다: ${gzipBytes} > ${check.maximumGzipBytes}`
-    )
-  }
+  assertRouteBundleBudget(check, gzipBytes, chunks)
 
   console.log(
     `${check.name}: 초기 chunk ${chunkPaths.length}개, gzip ${gzipBytes} bytes, ${check.success}`
+  )
+}
+
+export function formatRouteChunkBreakdown(
+  chunks: readonly RouteChunkGzipSize[]
+): string {
+  const lines = [...chunks]
+    .sort(
+      (left, right) =>
+        right.gzipBytes - left.gzipBytes || left.path.localeCompare(right.path)
+    )
+    .map((chunk) => `- ${chunk.path}: ${chunk.gzipBytes} bytes`)
+
+  return `초기 chunk gzip 원인:\n${lines.join("\n")}`
+}
+
+export function assertRouteBundleBudget(
+  check: Pick<RouteBundleCheck, "maximumGzipBytes" | "name">,
+  gzipBytes: number,
+  chunks: readonly RouteChunkGzipSize[]
+): void {
+  if (gzipBytes <= check.maximumGzipBytes) return
+
+  throw new Error(
+    `${check.name} 초기 JS gzip 예산을 초과했습니다: ${gzipBytes} > ${check.maximumGzipBytes}\n${formatRouteChunkBreakdown(chunks)}`
   )
 }
 

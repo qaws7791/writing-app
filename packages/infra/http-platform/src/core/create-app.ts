@@ -1,24 +1,25 @@
 import { OpenAPIHono } from "@hono/zod-openapi"
+import type { Env, MiddlewareHandler } from "hono"
 import {
   createErrorHandler,
   createNotFoundHandler,
   createValidationErrorHook,
 } from "#http-platform/errors/index"
-import type { CreateAppOptions } from "#http-platform/core/types"
 
-export function createApp<const TRoutes extends CreateAppOptions["routes"]>(
-  options: CreateAppOptions<TRoutes>
-) {
-  const app = new OpenAPIHono({
+export type CreateAppOptions<TEnv extends Env> = Readonly<{
+  errorLogger?: Parameters<typeof createErrorHandler>[0]
+  middleware?: readonly MiddlewareHandler<TEnv>[]
+}>
+
+export function createApp<TEnv extends Env = Env>(
+  options: CreateAppOptions<TEnv> = {}
+): OpenAPIHono<TEnv> {
+  const app = new OpenAPIHono<TEnv>({
     defaultHook: createValidationErrorHook(),
   })
 
   for (const middleware of options.middleware ?? []) {
     app.use("*", middleware)
-  }
-
-  for (const route of options.routes) {
-    app.openapi(route.route as never, route.handler as never)
   }
 
   app.notFound(createNotFoundHandler())

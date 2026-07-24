@@ -3,10 +3,37 @@ import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import {
+  parseContentAssetImageAllowedOrigins,
+  parseContentAssetPublicBaseUrl,
+} from "@workspace/env/public-url"
 import { createNextSecurityHeaders } from "@workspace/nextjs-config/security-headers"
+import {
+  createContentAssetRemotePatterns,
+  resolveContentAssetImageAllowedOrigins,
+  shouldAllowLocalContentAssetImages,
+} from "@workspace/nextjs-config/content-asset-images"
 
 const appDirectory = dirname(fileURLToPath(import.meta.url))
 const development = process.env.NODE_ENV !== "production"
+const contentAssetPublicBaseUrl = parseContentAssetPublicBaseUrl(
+  process.env.CONTENT_ASSET_PUBLIC_BASE_URL,
+  {
+    description: "content asset public base URL",
+    nodeEnvironment: process.env.NODE_ENV,
+  }
+)
+const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
+  parseContentAssetImageAllowedOrigins(
+    process.env.CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS,
+    {
+      description: "content asset image allowed origins",
+      nodeEnvironment: process.env.NODE_ENV,
+    }
+  ),
+  contentAssetPublicBaseUrl,
+  development
+)
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -38,6 +65,15 @@ const nextConfig: NextConfig = {
     ]
   },
   poweredByHeader: false,
+  images: {
+    dangerouslyAllowLocalIP: shouldAllowLocalContentAssetImages(
+      contentAssetImageAllowedOrigins,
+      development
+    ),
+    remotePatterns: [
+      ...createContentAssetRemotePatterns(contentAssetImageAllowedOrigins),
+    ],
+  },
   async rewrites() {
     if (!development) return []
 

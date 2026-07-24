@@ -1,8 +1,5 @@
 import { asc } from "drizzle-orm"
 import { z } from "zod"
-import { adminRoleSchema } from "@workspace/contracts/identity/admin-session"
-import type { AdminRole } from "@workspace/identity/admin-actor"
-import { readAdminIdentityRoles } from "@workspace/identity/reporting"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { createReadOnlyWritingAppDatabase } from "@workspace/db/client"
 import {
@@ -13,7 +10,6 @@ import {
 
 const approvedAdminSchema = z.object({
   email: z.email(),
-  role: adminRoleSchema,
 })
 
 export type ApprovedAdmin = z.infer<typeof approvedAdminSchema>
@@ -26,13 +22,12 @@ export type AdminAuthAuditEntry = {
   readonly createdAt: string
   readonly email: string
   readonly expiredSessionCount: number
-  readonly role: AdminRole
   readonly sessions: readonly {
     readonly createdAt: string
     readonly expiresAt: string
     readonly status: "active" | "expired"
   }[]
-  readonly status: "approved" | "role_mismatch" | "unapproved"
+  readonly status: "approved" | "unapproved"
 }
 
 export async function auditAdminAuth(
@@ -48,19 +43,6 @@ export async function auditAdminAuth(
     })
     .from(adminAuthUsers)
     .orderBy(asc(adminAuthUsers.email))
-  const identityRoles = new Map<string, AdminRole>(
-    readAdminIdentityRoles(db).map((identity) => [
-      identity.adminId,
-      identity.role,
-    ])
-  )
-  const users = authUsers.map((user) => {
-    const role = identityRoles.get(user.id)
-    if (role === undefined) {
-      throw new Error(`관리자 identity profile이 없습니다: ${user.id}`)
-    }
-    return { ...user, role }
-  })
   const accounts = await db
     .select({
       createdAt: adminAuthAccounts.createdAt,
@@ -81,7 +63,7 @@ export async function auditAdminAuth(
     approvedAdmins.map((admin) => [admin.email.toLowerCase(), admin])
   )
 
-  const inventory = users.map((user): AdminAuthAuditEntry => {
+  const inventory = authUsers.map((user): AdminAuthAuditEntry => {
     const approved = approvedByEmail.get(user.email.toLowerCase())
     const sessionInventory = sessions
       .filter((session) => session.userId === user.id)
@@ -109,17 +91,13 @@ export async function auditAdminAuth(
       expiredSessionCount: sessionInventory.filter(
         (session) => session.status === "expired"
       ).length,
-      role: user.role,
       sessions: sessionInventory,
-      status:
-        approved === undefined
-          ? "unapproved"
-          : approved.role === user.role
-            ? "approved"
-            : "role_mismatch",
+      status: approved === undefined ? "unapproved" : "approved",
     }
   })
-  const actualEmails = new Set(users.map((user) => user.email.toLowerCase()))
+  const actualEmails = new Set(
+    authUsers.map((user) => user.email.toLowerCase())
+  )
   const missingApprovedAdmins = approvedAdmins.filter(
     (admin) => !actualEmails.has(admin.email.toLowerCase())
   )

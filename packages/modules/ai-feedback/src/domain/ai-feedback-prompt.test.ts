@@ -26,5 +26,6 @@ describe("AI feedback prompt policy", () => {
     expect(JSON.stringify(prompt)).not.toContain("learnerId")
     expect(JSON.stringify(prompt)).not.toContain("curriculumVersionId")
     expect(JSON.stringify(prompt)).not.toContain("idempotencyKey")
+    expect(prompt.instructions).not.toContain("점수")
   })
 })

@@ -1,10 +1,24 @@
 import type { Context, MiddlewareHandler } from "hono"
 
-import type {
-  RequestAudience,
-  RequestLogger,
-} from "@workspace/observability/request-logger"
 import type { HttpRequestActor } from "#http-platform/context"
+
+const claimedRequestLogs = new WeakSet<Request>()
+
+export type RequestLogEvent = Readonly<{
+  actorId?: string
+  actorType?: "admin" | "learner"
+  audience: "admin" | "learner"
+  durationMs: number
+  errorClass?: "client-error" | "server-error"
+  externalRequestId?: string
+  method: string
+  outcome: "failed" | "succeeded"
+  path: string
+  requestId: string
+  status: number
+}>
+
+export type RequestLogger = (event: RequestLogEvent) => void
 
 export type RequestObservation = {
   readonly actor: HttpRequestActor | undefined
@@ -13,7 +27,7 @@ export type RequestObservation = {
 }
 
 export type RequestLoggingMiddlewareOptions = {
-  readonly audience: RequestAudience
+  readonly audience: "admin" | "learner"
   readonly createRequestId?: () => string
   readonly logRequest: RequestLogger
   readonly observeRequest?: (observation: RequestObservation) => void
@@ -40,6 +54,13 @@ export function createRequestLoggingMiddleware({
   readMonotonicTimeMs = defaultRequestLoggingRuntime.readMonotonicTimeMs,
 }: RequestLoggingMiddlewareOptions): MiddlewareHandler {
   return async (context, next) => {
+    const request = context.req.raw
+    if (claimedRequestLogs.has(request)) {
+      await next()
+      return
+    }
+    claimedRequestLogs.add(request)
+
     const startedAt = readMonotonicTimeMs()
     const currentRequestId = context.get("requestId")
     const requestId =
@@ -67,13 +88,22 @@ export function createRequestLoggingMiddleware({
         ...(externalRequestId === undefined ? {} : { externalRequestId }),
         method: context.req.method,
         ...classification,
-        path: context.req.path,
+        path: readRouteTemplate(context),
         requestId,
         status: context.res.status,
       })
       observeRequest?.({ actor, context, requestId })
     }
   }
+}
+
+function readRouteTemplate(context: Context): string {
+  const routeTemplate = context.req.routePath
+  const queryStart = routeTemplate.indexOf("?")
+  const path =
+    queryStart === -1 ? routeTemplate : routeTemplate.slice(0, queryStart)
+
+  return path.length === 0 ? "/*" : path
 }
 
 function classifyRequestResult(status: number): Readonly<{

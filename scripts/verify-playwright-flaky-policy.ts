@@ -17,13 +17,13 @@ const [localConfiguration, ciConfiguration] = await Promise.all([
 deepStrictEqual(localConfiguration, {
   failOnFlakyTests: false,
   retries: 0,
-  trace: "on-first-retry",
+  trace: "retain-on-failure",
   workers: 1,
 })
 deepStrictEqual(ciConfiguration, {
   failOnFlakyTests: true,
-  retries: 1,
-  trace: "on-first-retry",
+  retries: 0,
+  trace: "retain-on-failure",
   workers: 1,
 })
 
@@ -73,10 +73,10 @@ try {
   match(output, /CI flaky 정책 검증 fixture/u)
   match(output, /Expected:\s+1/u)
   match(output, /Received:\s+0/u)
-  match(output, /1 flaky/u)
+  match(output, /1 failed/u)
 
   const traceFiles = await findFiles(policyResults, "trace.zip")
-  equal(traceFiles.length, 1, "첫 retry trace가 정확히 하나 생성되어야 합니다.")
+  equal(traceFiles.length, 1, "실패 trace가 정확히 하나 생성되어야 합니다.")
 
   process.stdout.write(
     `Playwright flaky 정책 검증 통과: ${path.relative(repositoryRoot, traceFiles[0] ?? policyResults)}\n`

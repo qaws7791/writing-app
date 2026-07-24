@@ -74,16 +74,16 @@ function toLearnerAccount(
     throw new Error("저장된 학습자 identity profile이 올바르지 않습니다.")
   }
 
-  return Object.freeze({
+  return {
     createdAt: new Date(identity.joinedAt),
     email: identity.email,
     id: identity.id,
     image: identity.image,
-    profile: Object.freeze({
+    profile: {
       profile: profile.value,
       version: record?.version ?? null,
-    }),
-  })
+    },
+  }
 }
 
 function matchesStatus(

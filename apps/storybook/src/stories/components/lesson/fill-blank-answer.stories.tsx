@@ -25,9 +25,9 @@ const meta = {
       control: "text",
       description: "빈칸이 `___`로 표시된 문장 템플릿입니다.",
     },
-    words: {
+    choices: {
       ...objectArgType,
-      description: "선택 가능한 단어 목록입니다.",
+      description: "stable ID를 가진 선택 가능한 단어 목록입니다.",
     },
     blankCount: {
       control: { type: "number", min: 1, max: 5 },
@@ -49,7 +49,7 @@ type Story = StoryObj<typeof meta>
 export const Playground: Story = {
   render: (args) => (
     <FillBlankAnswer
-      key={`${args.template}-${args.blankCount}-${args.words.join(",")}`}
+      key={`${args.template}-${args.blankCount}-${args.choices.map((choice) => choice.id).join(",")}`}
       {...args}
     />
   ),

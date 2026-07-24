@@ -1,20 +1,29 @@
 import { render, screen, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { CoursesPage } from "@/features/course-catalog/ui/courses-page"
-import { learnerCourseSummarySchema } from "@workspace/contracts/learning/learner-content"
+import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
+const { getCourses, refresh, replace } = vi.hoisted(() => ({
+  getCourses: vi.fn(),
+  refresh: vi.fn(),
+  replace: vi.fn(),
+}))
+
+vi.mock("@workspace/http-client/learner", () => ({ getCourses }))
 vi.mock("next/navigation", () => ({
   useRouter() {
-    return {
-      replace: vi.fn(),
-    }
+    return { refresh, replace }
   },
 }))
 
+import { CoursesPage } from "@/features/course-catalog/ui/courses-page"
+import type { LearnerCourseSummaryDto } from "@/shared/http/learner-api-client"
+
 const version = { curriculumVersionId: "c1-v1", revision: 1 }
-const beginnerCourse = learnerCourseSummarySchema.parse({
+const beginnerCourse: LearnerCourseSummaryDto = {
   category: "입문자를 위한 코스",
+  cover: null,
   description:
     "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
@@ -23,9 +32,10 @@ const beginnerCourse = learnerCourseSummarySchema.parse({
   title: "글쓰기 첫걸음 30일",
   visualKey: "basic-sentence-writing",
   version,
-})
-const grammarCourse = learnerCourseSummarySchema.parse({
+}
+const grammarCourse: LearnerCourseSummaryDto = {
   category: "문법 심화",
+  cover: null,
   description:
     "주술 호응, 시제, 조사 사용까지 한국어 문장을 단단하게 만드는 문법.",
   id: "c2",
@@ -34,7 +44,7 @@ const grammarCourse = learnerCourseSummarySchema.parse({
   title: "문장의 기본 문법",
   visualKey: "grammar-complete",
   version: { curriculumVersionId: "c2-v1", revision: 1 },
-})
+}
 const courses = [beginnerCourse, grammarCourse]
 
 describe("코스 목록 화면", () => {
@@ -43,7 +53,7 @@ describe("코스 목록 화면", () => {
       <CoursesPage
         categories={["입문자를 위한 코스", "문법 심화"]}
         courses={courses}
-        filters={{ category: "", query: "", sort: "recommended" }}
+        filters={{ category: "", query: "" }}
       />
     )
 
@@ -85,19 +95,19 @@ describe("코스 목록 화면", () => {
     ).toBeInTheDocument()
   })
 
-  it("URL 필터 기준으로 검색, 카테고리, 정렬 결과를 보여준다", () => {
+  it("URL 필터 기준으로 검색과 카테고리 결과를 보여준다", () => {
     render(
       <CoursesPage
         categories={["입문자를 위한 코스", "문법 심화"]}
         courses={[grammarCourse, beginnerCourse]}
-        filters={{ category: "", query: "문장", sort: "lesson-count-asc" }}
+        filters={{ category: "", query: "문장" }}
       />
     )
 
     expect(screen.getByLabelText("검색")).toHaveValue("문장")
-    expect(screen.getByRole("combobox", { name: "정렬" })).toHaveTextContent(
-      "레슨 적은 순"
-    )
+    expect(
+      screen.queryByRole("combobox", { name: "정렬" })
+    ).not.toBeInTheDocument()
     expect(screen.getAllByRole("link", { name: /문장/ })[0]).toHaveAttribute(
       "href",
       "/app/courses/c2"
@@ -113,7 +123,6 @@ describe("코스 목록 화면", () => {
         filters={{
           category: "문법 심화",
           query: "없는 코스",
-          sort: "recommended",
         }}
       />
     )
@@ -132,7 +141,7 @@ describe("코스 목록 화면", () => {
       <CoursesPage
         categories={[]}
         courses={[]}
-        filters={{ category: "", query: "", sort: "recommended" }}
+        filters={{ category: "", query: "" }}
       />
     )
 
@@ -142,5 +151,69 @@ describe("코스 목록 화면", () => {
     expect(
       screen.queryByRole("link", { name: /글쓰기 첫걸음 30일/ })
     ).not.toBeInTheDocument()
+  })
+
+  it.each([
+    [
+      "network",
+      new GeneratedApiClientError({
+        kind: "network",
+        method: "GET",
+        url: "courses",
+      }),
+      "API에 연결할 수 없습니다.",
+    ],
+    [
+      "contract",
+      new GeneratedApiClientError({
+        kind: "contract",
+        reason: "invalid-json-response",
+        status: 200,
+      }),
+      "API 계약을 해석할 수 없습니다.",
+    ],
+  ])("%s 실패를 더 보기 오류로 보여준다", async (_kind, error, message) => {
+    getCourses.mockRejectedValueOnce(error)
+    render(
+      <CoursesPage
+        categories={[]}
+        courses={[beginnerCourse]}
+        filters={{ category: "", query: "" }}
+        nextCursor="next-page"
+      />
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: "코스 더 보기" }))
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(message)
+  })
+
+  it("더 보기 중 401이면 서버 route를 다시 확인한다", async () => {
+    getCourses.mockRejectedValueOnce(
+      new GeneratedApiClientError({
+        error: {
+          code: "UNAUTHENTICATED",
+          message: "로그인이 필요합니다.",
+          requestId: "request-1",
+          violations: [],
+        },
+        kind: "http",
+        retryAfterSeconds: null,
+        status: 401,
+      })
+    )
+    render(
+      <CoursesPage
+        categories={[]}
+        courses={[beginnerCourse]}
+        filters={{ category: "", query: "" }}
+        nextCursor="next-page"
+      />
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: "코스 더 보기" }))
+
+    expect(refresh).toHaveBeenCalledOnce()
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument()
   })
 })

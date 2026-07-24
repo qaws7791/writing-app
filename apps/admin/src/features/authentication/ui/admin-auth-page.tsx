@@ -2,7 +2,12 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, useTransition, type FormEvent } from "react"
+import {
+  useState,
+  useSyncExternalStore,
+  useTransition,
+  type FormEvent,
+} from "react"
 
 import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
@@ -19,6 +24,11 @@ export function AdminAuthPage({
 }) {
   const router = useRouter()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    readHydrated,
+    readNotHydrated
+  )
   const [isSubmitting, startTransition] = useTransition()
 
   function submitLogin(event: FormEvent<HTMLFormElement>) {
@@ -64,7 +74,7 @@ export function AdminAuthPage({
           />
           <Button
             className="w-full rounded-4xl py-4 text-[1.0625rem] font-bold"
-            disabled={isSubmitting}
+            disabled={!isHydrated || isSubmitting}
             type="submit"
           >
             로그인
@@ -84,6 +94,18 @@ export function AdminAuthPage({
       </div>
     </main>
   )
+}
+
+function subscribeToHydration(): () => void {
+  return () => {}
+}
+
+function readHydrated(): true {
+  return true
+}
+
+function readNotHydrated(): false {
+  return false
 }
 
 function AuthInput({

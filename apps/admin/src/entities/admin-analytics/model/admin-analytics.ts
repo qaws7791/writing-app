@@ -1,7 +1,9 @@
 import type {
-  AdminAnalyticsDto,
-  AdminLessonAnalyticsPageDto,
-} from "@workspace/contracts/operations/admin-analytics"
+  getAdminAnalytics,
+  getAdminLessonAnalytics,
+} from "@workspace/http-client/admin"
 
-export type AdminAnalytics = AdminAnalyticsDto
-export type AdminLessonAnalyticsPage = AdminLessonAnalyticsPageDto
+export type AdminAnalytics = Awaited<ReturnType<typeof getAdminAnalytics>>
+export type AdminLessonAnalyticsPage = Awaited<
+  ReturnType<typeof getAdminLessonAnalytics>
+>

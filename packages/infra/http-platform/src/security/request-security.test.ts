@@ -27,6 +27,7 @@ describe("요청 보안 middleware", () => {
     await expect(forbiddenResponse.json()).resolves.toEqual({
       code: "FORBIDDEN_ORIGIN",
       message: "Forbidden",
+      requestId: forbiddenResponse.headers.get("x-request-id"),
     })
     expect(mutate).not.toHaveBeenCalled()
 
@@ -81,6 +82,7 @@ describe("요청 보안 middleware", () => {
     await expect(oversizedResponse.json()).resolves.toEqual({
       code: "PAYLOAD_TOO_LARGE",
       message: "Payload Too Large",
+      requestId: oversizedResponse.headers.get("x-request-id"),
     })
     expect(mutate).toHaveBeenCalledTimes(1)
   })

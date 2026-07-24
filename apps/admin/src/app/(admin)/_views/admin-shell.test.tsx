@@ -8,11 +8,11 @@ import { readLearnerWebOrigin } from "@/shared/config/admin-runtime-config"
 
 const shellProps = {
   learnerWebOrigin: readLearnerWebOrigin({}),
-  role: "owner",
 } as const
 
-const { replaceMock, signOutMock } = vi.hoisted(() => ({
+const { replaceMock, setThemeMock, signOutMock } = vi.hoisted(() => ({
   replaceMock: vi.fn(),
+  setThemeMock: vi.fn(),
   signOutMock: vi.fn(),
 }))
 
@@ -24,6 +24,13 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/courses",
   useRouter: () => ({
     replace: replaceMock,
+  }),
+}))
+
+vi.mock("next-themes", () => ({
+  useTheme: () => ({
+    setTheme: setThemeMock,
+    theme: "system",
   }),
 }))
 
@@ -50,20 +57,11 @@ describe("AdminShell", () => {
       within(navigation).getByRole("link", { name: "콘텐츠 관리" })
     ).toHaveAttribute("aria-current", "page")
     expect(
-      within(navigation).getByRole("link", { name: "자료실" })
-    ).toHaveAttribute("href", "/resources")
-    expect(
-      within(navigation).getByRole("link", { name: "AI 에이전트" })
-    ).toHaveAttribute("href", "/chat")
-    expect(
       within(navigation).getByRole("link", { name: "사용자 관리" })
     ).toHaveAttribute("href", "/users")
     expect(
       within(navigation).getByRole("link", { name: "분석" })
     ).toHaveAttribute("href", "/analytics")
-    expect(
-      within(navigation).getByRole("link", { name: "콘텐츠 유지보수" })
-    ).toHaveAttribute("href", "/maintenance")
     expect(screen.getByRole("link", { name: "앱으로 이동" })).toBeVisible()
     expect(
       screen.getByRole("button", { name: "어드민 로그아웃" })
@@ -73,16 +71,29 @@ describe("AdminShell", () => {
     ).toBeInTheDocument()
   })
 
-  it("운영자에게 owner 전용 유지보수 메뉴를 노출하지 않는다", () => {
+  it("좁은 화면 메뉴를 drawer로 열고 테마를 변경한다", async () => {
+    const user = userEvent.setup()
+
     render(
-      <AdminShell {...shellProps} activePath="/courses" role="operator">
+      <AdminShell {...shellProps} activePath="/courses">
         <h1>콘텐츠 관리</h1>
       </AdminShell>
     )
 
+    await user.click(screen.getByRole("button", { name: "메뉴 열기" }))
+
+    const drawer = await screen.findByRole("dialog", { name: "어드민 메뉴" })
+    const navigation = within(drawer).getByRole("navigation", {
+      name: "어드민 주요 메뉴",
+    })
+
     expect(
-      screen.queryByRole("link", { name: "콘텐츠 유지보수" })
-    ).not.toBeInTheDocument()
+      within(navigation).getByRole("link", { name: "콘텐츠 관리" })
+    ).toHaveAttribute("aria-current", "page")
+
+    await user.click(within(drawer).getByRole("button", { name: "다크" }))
+
+    expect(setThemeMock).toHaveBeenCalledWith("dark")
   })
 
   it("로그아웃 실패를 alert로 보여주고 재시도할 수 있다", async () => {

@@ -1,13 +1,13 @@
 "use client"
 
-import type { LearnerLessonStep as LessonStep } from "@workspace/contracts/learning/learner-content"
 import { AiFeedbackAnswer } from "@workspace/ui/components/lesson/ai-feedback-answer"
 
-import { useLessonDraftText } from "@/features/lesson-session/hooks/use-lesson-draft-text"
 import type {
   LessonAiFeedbackOutcome,
   LessonAiFeedbackRequest,
+  LessonAiFeedbackSkipOutcome,
 } from "@/features/lesson-session/model/lesson-logic"
+import type { LearnerLessonStepDto as LessonStep } from "@/shared/http/learner-api-client"
 
 type AiFeedbackLessonStep = Extract<
   LessonStep,
@@ -15,26 +15,38 @@ type AiFeedbackLessonStep = Extract<
 >
 
 export function LessonAiFeedbackAnswer({
-  learnerId,
+  draftText,
   onAiFeedbackRequest,
+  onAiFeedbackSkip,
   step,
 }: {
-  readonly learnerId: string
+  readonly draftText: string
   readonly onAiFeedbackRequest?: (
     request: LessonAiFeedbackRequest
   ) => Promise<LessonAiFeedbackOutcome>
+  readonly onAiFeedbackSkip?: (
+    request: LessonAiFeedbackRequest
+  ) => Promise<LessonAiFeedbackSkipOutcome>
   readonly step: AiFeedbackLessonStep
 }) {
-  const draftText = useLessonDraftText(learnerId, step.target)
-
   return (
     <AiFeedbackAnswer
       allowRetry
       draftText={draftText}
       focus={step.focus}
+      {...(onAiFeedbackSkip === undefined
+        ? {}
+        : {
+            onContinueWithoutFeedback: () =>
+              onAiFeedbackSkip({ stepId: step.id }),
+          })}
       onRequest={async () =>
         onAiFeedbackRequest === undefined
-          ? { message: "AI 코칭을 사용할 수 없습니다.", status: "error" }
+          ? {
+              kind: "fatal",
+              message: "AI 코칭을 사용할 수 없습니다.",
+              status: "error",
+            }
           : onAiFeedbackRequest({ stepId: step.id })
       }
     />

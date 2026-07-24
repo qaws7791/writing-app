@@ -20,7 +20,7 @@ type StatusPresentation = {
 }
 
 const activePresentation: StatusPresentation = {
-  className: "bg-mint-light text-mint-dark",
+  className: "bg-success text-success-foreground",
   label: "활성",
   showBanIcon: false,
 }
@@ -35,12 +35,12 @@ const statusPresentation: Record<
     showBanIcon: false,
   },
   [learnerAccountStatuses.suspended]: {
-    className: "bg-coral-light text-coral-dark",
+    className: "bg-danger text-danger-foreground",
     label: "정지",
     showBanIcon: true,
   },
   [learnerAccountStatuses.deleted]: {
-    className: "bg-coral-light text-coral-dark",
+    className: "bg-danger text-danger-foreground",
     label: "삭제",
     showBanIcon: false,
   },

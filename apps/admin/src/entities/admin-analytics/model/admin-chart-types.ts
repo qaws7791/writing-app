@@ -1,20 +1,13 @@
-type DailySeriesPoint = {
-  readonly completions: number
-  readonly date: string
-  readonly signups: number
-}
+import type { AdminAnalytics } from "@/entities/admin-analytics/model/admin-analytics"
 
-type StreakBucket = {
-  readonly count: number
-  readonly label: string
-}
+type AdminDailySeriesPoint = AdminAnalytics["dailySeries"][number]
 
-export type AdminChartPanelProps =
-  | {
-      readonly data: readonly DailySeriesPoint[]
-      readonly kind: "completions" | "signups"
-    }
-  | {
-      readonly data: readonly StreakBucket[]
-      readonly kind: "streaks"
-    }
+export type AdminChartKind =
+  | "d7-return"
+  | "signup-activation"
+  | "start-completion"
+
+export type AdminChartPanelProps = Readonly<{
+  data: readonly AdminDailySeriesPoint[]
+  kind: AdminChartKind
+}>

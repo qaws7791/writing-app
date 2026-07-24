@@ -9,9 +9,14 @@ import type {
 
 import type { AiFeedback } from "#ai-feedback/domain/ai-feedback"
 import type {
+  AiFeedbackFailureCode,
   AiFeedbackAttemptId,
   AiFeedbackAttemptStatus,
 } from "#ai-feedback/domain/ai-feedback-attempt"
+import type {
+  AiFeedbackDailyQuotaPolicy,
+  AiFeedbackQuotaDate,
+} from "#ai-feedback/domain/ai-feedback-quota"
 
 export type AiFeedbackAttemptScope = Readonly<{
   courseId: CourseId
@@ -29,6 +34,11 @@ type ReserveAiFeedbackAttemptInput = AiFeedbackAttemptScope &
     expiresAt: Date
     idempotencyKey: string
     maxCompletedAttempts: number
+    model: string
+    promptPolicyVersion: string
+    quotaDate: AiFeedbackQuotaDate
+    quotaPolicy: AiFeedbackDailyQuotaPolicy
+    quotaRetryAfterSeconds: number
   }>
 
 type ExpiredAiFeedbackAttempt = Readonly<{
@@ -55,10 +65,19 @@ type ReserveAiFeedbackAttemptResult =
         feedback: AiFeedback
         kind: "already-succeeded"
       }>)
-  | (ReservationMetadata & Readonly<{ kind: "already-failed" }>)
+  | (ReservationMetadata &
+      Readonly<{
+        failureCode: AiFeedbackFailureCode
+        kind: "already-failed"
+      }>)
   | (ReservationMetadata &
       Readonly<{
         kind: "in-progress"
+        retryAfterSeconds: number
+      }>)
+  | (ReservationMetadata &
+      Readonly<{
+        kind: "daily-quota-exceeded"
         retryAfterSeconds: number
       }>)
   | (ReservationMetadata & Readonly<{ kind: "limit-exceeded" }>)
@@ -69,9 +88,12 @@ export type AiFeedbackPersistenceError = Readonly<{
   operation: "fail-attempt" | "reserve-attempt" | "succeed-attempt"
 }>
 
-export type FinalizeAiFeedbackAttemptInput = Readonly<{
+type FinalizeAiFeedbackAttemptInput = Readonly<{
   attemptId: AiFeedbackAttemptId
+  inputTokenCount?: number
+  latencyMs: number
   occurredAt: Date
+  outputTokenCount?: number
 }>
 
 export type FinalizeAiFeedbackAttemptResult =
@@ -80,7 +102,8 @@ export type FinalizeAiFeedbackAttemptResult =
 
 export type AiFeedbackRepository = Readonly<{
   markAttemptFailed: (
-    input: FinalizeAiFeedbackAttemptInput
+    input: FinalizeAiFeedbackAttemptInput &
+      Readonly<{ failureCode: AiFeedbackFailureCode }>
   ) => Promise<
     Result<FinalizeAiFeedbackAttemptResult, AiFeedbackPersistenceError>
   >

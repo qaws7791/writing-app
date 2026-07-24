@@ -16,7 +16,7 @@ export default function AdminRouteError({
           잠시 후 다시 시도해 주세요.
         </p>
         <button
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-4xl bg-charcoal px-5 py-2.5 font-bold text-cream hover:opacity-90"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-4xl bg-action-primary-bg px-5 py-2.5 font-bold text-action-primary-fg hover:opacity-90"
           onClick={reset}
           type="button"
         >

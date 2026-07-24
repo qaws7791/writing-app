@@ -5,18 +5,22 @@ import "server-only"
 import { revalidatePath } from "next/cache"
 
 import { courseIdSchema } from "@/entities/course/model/course-id"
-import { createAdminCourseCatalogDal } from "@/features/course-catalog/server/admin-course-catalog-dal"
-import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
-import { createAdminActionError } from "@/shared/http/admin-api-result"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
+import {
+  archiveAdminCourse,
+  createAdminCourse,
+} from "@workspace/http-client/admin"
+import {
+  invalidAdminRequestFailure,
+  settleAdminApiRequest,
+  unauthenticatedAdminRequestFailure,
+} from "@/shared/http/admin-api-client"
 
 export async function createAdminCourseAction() {
-  const token = await getServerAdminSessionToken()
-  if (token === null) return createAdminActionError("unauthorized")
+  const requestOptions = await getServerAdminRequestOptions()
+  if (requestOptions === null) return unauthenticatedAdminRequestFailure()
 
-  const result = await createAdminCourseCatalogDal(
-    getServerAdminHttpTransport({ tokenProvider: () => token })
-  ).createCourse()
+  const result = await settleAdminApiRequest(createAdminCourse(requestOptions))
 
   if (result.status === "ok") revalidatePath("/courses")
   return result
@@ -24,14 +28,14 @@ export async function createAdminCourseAction() {
 
 export async function archiveAdminCourseAction(input: unknown) {
   const courseId = courseIdSchema.safeParse(input)
-  if (!courseId.success) return createAdminActionError("invalid-request")
+  if (!courseId.success) return invalidAdminRequestFailure()
 
-  const token = await getServerAdminSessionToken()
-  if (token === null) return createAdminActionError("unauthorized")
+  const requestOptions = await getServerAdminRequestOptions()
+  if (requestOptions === null) return unauthenticatedAdminRequestFailure()
 
-  const result = await createAdminCourseCatalogDal(
-    getServerAdminHttpTransport({ tokenProvider: () => token })
-  ).archiveCourse(courseId.data)
+  const result = await settleAdminApiRequest(
+    archiveAdminCourse(courseId.data, requestOptions)
+  )
 
   if (result.status === "ok") revalidatePath("/courses")
   return result

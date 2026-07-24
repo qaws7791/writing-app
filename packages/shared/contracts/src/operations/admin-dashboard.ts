@@ -1,26 +1,32 @@
 import { z } from "zod"
-import { userIdSchema } from "#contracts/identity/admin-ids"
 import { nonNegativeIntegerSchema as adminNonNegativeIntegerSchema } from "#contracts/shared/integer"
 
+const adminMetricPercentageSchema = z.number().min(0).max(100)
+const adminMetricRateSchema = z.strictObject({
+  denominator: adminNonNegativeIntegerSchema,
+  numerator: adminNonNegativeIntegerSchema,
+  percentage: adminMetricPercentageSchema.nullable(),
+})
+
 export const adminDashboardDtoSchema = z.object({
+  activeWindow: z.strictObject({
+    from: z.iso.date(),
+    to: z.iso.date(),
+  }),
+  asOfDate: z.iso.date(),
   metrics: z.object({
-    activeCourses: adminNonNegativeIntegerSchema,
-    activeLessons: adminNonNegativeIntegerSchema,
     activeUsersLast7Days: adminNonNegativeIntegerSchema,
+    activationRate: adminMetricRateSchema.extend({
+      status: z.enum(["available", "empty"]),
+    }),
     completedLessons: adminNonNegativeIntegerSchema,
-    signupsLast7Days: adminNonNegativeIntegerSchema,
-    signupsToday: adminNonNegativeIntegerSchema,
+    d7ReturnRate: adminMetricRateSchema.extend({
+      matureCohortThrough: z.iso.date(),
+      status: z.enum(["available", "empty", "immature"]),
+    }),
+    firstLessonStarts: adminNonNegativeIntegerSchema,
     totalUsers: adminNonNegativeIntegerSchema,
   }),
-  recentActivities: z.array(
-    z.object({
-      currentStreakDays: adminNonNegativeIntegerSchema,
-      email: z.email(),
-      lastActiveDate: z.string().nullable(),
-      name: z.string(),
-      userId: userIdSchema,
-    })
-  ),
 })
 
 export type AdminDashboardDto = z.infer<typeof adminDashboardDtoSchema>

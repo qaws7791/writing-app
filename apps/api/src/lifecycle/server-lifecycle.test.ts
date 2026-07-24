@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   createUnifiedApiServerLifecycle,
-  registerUnifiedApiShutdownSignals,
   type ServerLifecycleScheduler,
 } from "@/lifecycle/server-lifecycle"
 
@@ -223,7 +222,7 @@ describe("통합 API server lifecycle", () => {
     })
 
     await lifecycle.fetch(new Request("https://learner.example.com/stream"))
-    const lease = lifecycle.acquireLongLivedLease("admin-ai-chat-sse")
+    const lease = lifecycle.acquireLongLivedLease("long-lived-stream")
     const shutdown = lifecycle.shutdown()
 
     expect(scheduler.delays).toEqual([125])
@@ -479,43 +478,6 @@ describe("통합 API server lifecycle", () => {
     await lifecycle.shutdown()
 
     expect(events).toEqual(["stop:false", "container", "container:done"])
-  })
-})
-
-describe("API shutdown signal 등록", () => {
-  it("SIGINT와 SIGTERM 중 최초 신호만 실행한다", async () => {
-    const listeners = new Map<string, () => void>()
-    const shutdown = vi.fn(async () => undefined)
-    registerUnifiedApiShutdownSignals(shutdown, (signal, listener) => {
-      listeners.set(signal, listener)
-    })
-
-    listeners.get("SIGINT")?.()
-    listeners.get("SIGTERM")?.()
-    await waitForMicrotasks()
-
-    expect(shutdown).toHaveBeenCalledTimes(1)
-  })
-
-  it("shutdown rejection을 catch hook으로 보고한다", async () => {
-    const listeners = new Map<string, () => void>()
-    const shutdownError = new Error("shutdown failed")
-    const onShutdownError = vi.fn()
-    registerUnifiedApiShutdownSignals(
-      async () => {
-        throw shutdownError
-      },
-      (signal, listener) => {
-        listeners.set(signal, listener)
-      },
-      onShutdownError
-    )
-
-    listeners.get("SIGTERM")?.()
-    await waitForMicrotasks()
-
-    expect(onShutdownError).toHaveBeenCalledOnce()
-    expect(onShutdownError).toHaveBeenCalledWith(shutdownError)
   })
 })
 

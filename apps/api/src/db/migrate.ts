@@ -11,10 +11,10 @@ import currentSchemaBaselineSql from "../../drizzle/0000-current-schema-baseline
 export const currentSchemaBaseline = readMigration(
   "0000-current-schema-baseline",
   currentSchemaBaselineSql,
-  "a65960ed40a5fa50559024f72211b18642572f4e612bc85319c9aff6bd146628"
+  "52cf51e62305886f6056a6bdfcfb42f99886805c65ac33ebdd2f35856bb2b65e"
 )
 
-const applicationMigrations = Object.freeze([
+const applicationMigrations = [
   {
     apply(database: Database) {
       database.exec(currentSchemaBaseline.sql)
@@ -23,7 +23,7 @@ const applicationMigrations = Object.freeze([
     foreignKeys: "on" as const,
     id: currentSchemaBaseline.id,
   },
-])
+]
 
 export type ApplicationMigrationHistoryInspection =
   | Readonly<{
@@ -79,10 +79,10 @@ export function inspectApplicationMigrationHistory(
   }
 
   if (firstPendingIndex < 0) {
-    return Object.freeze({
-      pendingMigrationIds: Object.freeze([]),
+    return {
+      pendingMigrationIds: [],
       status: "complete",
-    })
+    }
   }
 
   return incompleteHistory(applicationMigrations.slice(firstPendingIndex))
@@ -91,12 +91,9 @@ export function inspectApplicationMigrationHistory(
 export function runApplicationMigrations(
   sqlite: Database
 ): readonly SqliteMigrationResult[] {
-  if (
-    hasApplicationTables(sqlite) &&
-    !hasCurrentSchemaBaselineHistory(sqlite)
-  ) {
+  if (hasApplicationTables(sqlite) && !hasMigrationHistoryTable(sqlite)) {
     throw new Error(
-      "현재 schema era가 선언되지 않은 database입니다. 검증 백업 뒤 일회성 schema era 전환을 먼저 실행해야 합니다."
+      "migration 이력이 없는 비어 있지 않은 database에는 baseline을 적용할 수 없습니다."
     )
   }
 
@@ -107,10 +104,10 @@ export function runApplicationMigrations(
 function incompleteHistory(
   migrations: readonly Readonly<{ id: string }>[]
 ): ApplicationMigrationHistoryInspection {
-  return Object.freeze({
-    pendingMigrationIds: Object.freeze(migrations.map(({ id }) => id)),
+  return {
+    pendingMigrationIds: migrations.map(({ id }) => id),
     status: "incomplete",
-  })
+  }
 }
 
 function hasMigrationHistoryTable(sqlite: Database): boolean {
@@ -124,22 +121,6 @@ function hasMigrationHistoryTable(sqlite: Database): boolean {
         ) AS present
       `)
       .get()?.present === 1
-  )
-}
-
-function hasCurrentSchemaBaselineHistory(sqlite: Database): boolean {
-  if (!hasMigrationHistoryTable(sqlite)) return false
-
-  return (
-    sqlite
-      .query<{ readonly present: number }, [string]>(`
-        SELECT EXISTS (
-          SELECT 1
-          FROM api_schema_migrations
-          WHERE id = ?
-        ) AS present
-      `)
-      .get(currentSchemaBaseline.id)?.present === 1
   )
 }
 
@@ -169,7 +150,7 @@ function readMigration(
   if (checksum !== expectedChecksum) {
     throw new Error(`migration checksum이 변경됐습니다: ${id}`)
   }
-  return Object.freeze({ checksum, id, sql })
+  return { checksum, id, sql }
 }
 
 function normalizeLineEndings(value: string): string {

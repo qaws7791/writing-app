@@ -13,3 +13,19 @@ const courseVisualAssetUrls = {
 export function createCourseImageUrl(visualKey: CourseVisualKey): string {
   return courseVisualAssetUrls[visualKey]
 }
+
+export function resolveCourseImage(course: {
+  readonly cover: null | Readonly<{ altText: string; url: string }>
+  readonly title: string
+  readonly visualKey: CourseVisualKey
+}): Readonly<{ alt: string; src: string }> {
+  return course.cover === null
+    ? {
+        alt: course.title,
+        src: createCourseImageUrl(course.visualKey),
+      }
+    : {
+        alt: course.cover.altText,
+        src: course.cover.url,
+      }
+}

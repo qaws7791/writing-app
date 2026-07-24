@@ -9,10 +9,6 @@ on:
     branches:
       - main
 
-concurrency:
-  group: image-release-${{ github.event.workflow_run.head_sha }}
-  cancel-in-progress: false
-
 permissions:
   contents: read
 
@@ -27,10 +23,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
-      configuration-digest: ${{ steps.inputs.outputs.configuration-digest }}
       image-prefix: ${{ steps.inputs.outputs.image-prefix }}
       release-tag: ${{ steps.inputs.outputs.release-tag }}
-      vulnerability-policy-digest: ${{ steps.vulnerability-policy.outputs.policy-digest }}
       vulnerability-severity-cutoff: ${{ steps.vulnerability-policy.outputs.severity-cutoff }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -45,13 +39,46 @@ jobs:
           bun-version: 1.3.10
       - run: bun run check:toolchain
       - run: bun install --frozen-lockfile
+      - id: generated-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          key: >-
+            generated-v1-${{ runner.os }}-${{
+            hashFiles('bun.lock', 'package.json', 'turbo.json', 'apps/api/**', 'packages/**')
+            }}
+          path: |
+            .turbo/cache
+            apps/api/.generated
+            packages/infra/http-client/.generated
+      - if: steps.generated-cache.outputs.cache-hit != 'true'
+        run: bun run generate
+      - name: Release generated contract 검증
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s apps/api/.generated/openapi/admin.json
+          test -s apps/api/.generated/openapi/learner.json
+          test -s packages/infra/http-client/.generated/admin/index.ts
+          test -s packages/infra/http-client/.generated/learner/index.ts
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: release-generated-contract-${{ github.event.workflow_run.head_sha }}
+          path: |
+            .turbo/cache
+            apps/api/.generated
+            packages/infra/http-client/.generated
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
       - id: inputs
         name: 공개 build 입력과 release 식별자 검증
         run: bun scripts/image-release-metadata.ts preflight
         env:
           IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
           PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
+          PRODUCTION_CONTENT_ASSET_PUBLIC_BASE_URL: ${{ vars.PRODUCTION_CONTENT_ASSET_PUBLIC_BASE_URL }}
           PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
+          STAGING_CONTENT_ASSET_PUBLIC_BASE_URL: ${{ vars.STAGING_CONTENT_ASSET_PUBLIC_BASE_URL }}
       - id: vulnerability-policy
         name: Image 취약점 정책 검증
         run: bun scripts/image-vulnerability-policy.ts validate
@@ -74,21 +101,20 @@ jobs:
         include:
           - service: web
             dockerfile: deploy/docker/web.dockerfile
-            runtime: node-24
             build-args: |
               API_BASE_URL=http://api:4000
               WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
+              CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS=${{ vars.STAGING_CONTENT_ASSET_PUBLIC_BASE_URL }},${{ vars.PRODUCTION_CONTENT_ASSET_PUBLIC_BASE_URL }}
           - service: api
             dockerfile: deploy/docker/api.dockerfile
-            runtime: bun-1.3.10
             build-args: ""
           - service: admin
             dockerfile: deploy/docker/admin.dockerfile
-            runtime: node-24
             build-args: |
               NEXT_PUBLIC_LEARNER_WEB_ORIGIN=${{ vars.PRODUCTION_WEB_ORIGIN }}
               API_BASE_URL=http://api:4000
               ADMIN_ORIGIN=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
+              CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS=${{ vars.STAGING_CONTENT_ASSET_PUBLIC_BASE_URL }},${{ vars.PRODUCTION_CONTENT_ASSET_PUBLIC_BASE_URL }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -102,25 +128,18 @@ jobs:
           bun-version: 1.3.10
       - run: bun run check:toolchain
       - run: bun install --frozen-lockfile
+      - name: Web client generated contract 복원
+        if: matrix.service != 'api'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: release-generated-contract-${{ github.event.workflow_run.head_sha }}
+          path: .
       - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
       - uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - id: metadata
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
-        with:
-          images: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}
-          tags: |
-            type=raw,value=candidate-${{ github.event.workflow_run.head_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          labels: |
-            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
-            io.writing-app.configuration-digest=${{ needs.release-preflight.outputs.configuration-digest }}
-            io.writing-app.public-origin.admin=${{ vars.PRODUCTION_ADMIN_ORIGIN }}
-            io.writing-app.public-origin.web=${{ vars.PRODUCTION_WEB_ORIGIN }}
-            io.writing-app.runtime=${{ matrix.runtime }}
-            io.writing-app.vulnerability-policy-digest=${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
       - id: build
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
@@ -129,20 +148,18 @@ jobs:
           cache-to: type=gha,mode=max,scope=release-${{ matrix.service }}
           context: .
           file: ${{ matrix.dockerfile }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          labels: org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
           platforms: linux/amd64
           provenance: mode=max
           pull: true
           push: true
           sbom: true
-          tags: ${{ steps.metadata.outputs.tags }}
+          tags: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}:candidate-${{ github.event.workflow_run.head_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Grype 예외 설정 생성
         run: >-
           bun scripts/image-vulnerability-policy.ts write-grype-config
           ${{ matrix.service }}
           output/vulnerability-reports/${{ matrix.service }}.grype.yaml
-        env:
-          IMAGE_RELEASE_VULNERABILITY_POLICY_DIGEST: ${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
       - id: vulnerability-scan
         name: Image 취약점 검사
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
@@ -163,7 +180,6 @@ jobs:
           name: image-vulnerability-report-${{ matrix.service }}-${{ github.event.workflow_run.head_sha }}
           path: output/vulnerability-reports/${{ matrix.service }}.json
           if-no-files-found: error
-          retention-days: 90
       - name: 검사 통과 digest를 release tag로 승격
         run: >-
           docker buildx imagetools create
@@ -178,21 +194,15 @@ jobs:
       - name: Image digest record 생성
         run: bun scripts/image-release-metadata.ts write-record
         env:
-          IMAGE_RELEASE_CONFIGURATION_DIGEST: ${{ needs.release-preflight.outputs.configuration-digest }}
           IMAGE_RELEASE_DIGEST: ${{ steps.build.outputs.digest }}
-          IMAGE_RELEASE_NAME: ${{ needs.release-preflight.outputs.image-prefix }}-${{ matrix.service }}
           IMAGE_RELEASE_OUTPUT: output/image-release-records/${{ matrix.service }}.json
           IMAGE_RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
           IMAGE_RELEASE_SERVICE: ${{ matrix.service }}
-          IMAGE_RELEASE_VULNERABILITY_POLICY_DIGEST: ${{ needs.release-preflight.outputs.vulnerability-policy-digest }}
-          PRODUCTION_ADMIN_ORIGIN: ${{ vars.PRODUCTION_ADMIN_ORIGIN }}
-          PRODUCTION_WEB_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: image-release-record-${{ matrix.service }}-${{ github.event.workflow_run.head_sha }}
           path: output/image-release-records/${{ matrix.service }}.json
           if-no-files-found: error
-          retention-days: 30
 
   release-manifest:
     name: 배포 image digest manifest
@@ -225,7 +235,292 @@ jobs:
           output/image-release-manifest.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: production-image-digests-${{ github.event.workflow_run.head_sha }}-${{ needs.release-preflight.outputs.configuration-digest }}
+          name: image-release-manifest-${{ github.event.workflow_run.head_sha }}
           path: output/image-release-manifest.json
           if-no-files-found: error
-          retention-days: 90
+
+  staging-smoke:
+    name: Staging digest deploy와 핵심 flow
+    needs:
+      - release-manifest
+    concurrency:
+      group: writing-app-staging-deploy
+      cancel-in-progress: false
+    environment: staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - run: bun install --frozen-lockfile
+      - uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: image-release-manifest-${{ github.event.workflow_run.head_sha }}
+          path: output
+      - run: >-
+          bun scripts/test-deployment-images.ts
+          released
+          output/image-release-manifest.json
+      - name: 검증된 digest를 Staging Ansible 입력으로 변환
+        run: >-
+          bun scripts/image-release-metadata.ts write-ansible-vars
+          output/image-release-manifest.json
+          infra/ansible/release-vars.json
+      - name: 고정 Ansible 의존성 설치
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/ansible-venv"
+          "$RUNNER_TEMP/ansible-venv/bin/pip" install \
+            --requirement infra/ansible/requirements.txt
+          "$RUNNER_TEMP/ansible-venv/bin/ansible-galaxy" collection install \
+            --requirements-file infra/ansible/requirements.yaml
+      - name: Staging inventory와 SSH 입력 준비
+        shell: bash
+        env:
+          ANSIBLE_GROUP_VARS_YAML: ${{ secrets.ANSIBLE_GROUP_VARS_YAML }}
+          ANSIBLE_HOSTS_YAML: ${{ secrets.ANSIBLE_HOSTS_YAML }}
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+          ANSIBLE_VAULT_YAML: ${{ secrets.ANSIBLE_VAULT_YAML }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          for name in \
+            ANSIBLE_GROUP_VARS_YAML \
+            ANSIBLE_HOSTS_YAML \
+            ANSIBLE_VAULT_PASSWORD \
+            ANSIBLE_VAULT_YAML \
+            SSH_KNOWN_HOSTS \
+            SSH_PRIVATE_KEY
+          do
+            test -n "${!name}"
+          done
+          install -d -m 0700 infra/ansible/inventories/staging
+          install -d -m 0700 infra/ansible/inventories/staging/group_vars
+          install -d -m 0700 "$HOME/.ssh"
+          printf '%s\n' "$ANSIBLE_HOSTS_YAML" \
+            > infra/ansible/inventories/staging/hosts.yaml
+          printf '%s\n' "$ANSIBLE_GROUP_VARS_YAML" \
+            > infra/ansible/inventories/staging/group_vars/all.yaml
+          printf '%s\n' "$ANSIBLE_VAULT_YAML" \
+            > infra/ansible/inventories/staging/group_vars/vault.yaml
+          printf '%s\n' "$ANSIBLE_VAULT_PASSWORD" \
+            > infra/ansible/inventories/staging/.vault-password
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/writing-app-staging-key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 0600 \
+            infra/ansible/inventories/staging/hosts.yaml \
+            infra/ansible/inventories/staging/group_vars/all.yaml \
+            infra/ansible/inventories/staging/group_vars/vault.yaml \
+            infra/ansible/inventories/staging/.vault-password \
+            "$RUNNER_TEMP/writing-app-staging-key" \
+            "$HOME/.ssh/known_hosts"
+      - name: Staging 배포와 공개 경계 검증
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          bun scripts/assert-release-head.ts
+          unset GITHUB_TOKEN
+          umask 077
+          handoff_file="$RUNNER_TEMP/writing-app-staging-handoff.json"
+          handoff_token="$(openssl rand -hex 32)"
+          echo "::add-mask::$handoff_token"
+          printf '{"writing_app_operation_handoff_token":"%s"}\n' \
+            "$handoff_token" > "$handoff_file"
+          eval "$(ssh-agent -s)"
+          trap 'ssh-agent -k >/dev/null; rm -f "$handoff_file"' EXIT
+          ssh-add "$RUNNER_TEMP/writing-app-staging-key"
+          cd infra/ansible
+          "$RUNNER_TEMP/ansible-venv/bin/ansible-playbook" \
+            -i inventories/staging/hosts.yaml \
+            --vault-password-file inventories/staging/.vault-password \
+            playbooks/deploy.yaml \
+            --extra-vars @release-vars.json \
+            --extra-vars "@$handoff_file" \
+            --extra-vars writing_app_allow_deploy=true \
+            --extra-vars writing_app_hold_operation_lock_for_verify=true
+          "$RUNNER_TEMP/ansible-venv/bin/ansible-playbook" \
+            -i inventories/staging/hosts.yaml \
+            --vault-password-file inventories/staging/.vault-password \
+            playbooks/verify.yaml \
+            --extra-vars @release-vars.json \
+            --extra-vars "@$handoff_file" \
+            --extra-vars writing_app_verify_uses_existing_operation_lock=true \
+            --extra-vars writing_app_verify_finalize_deployment=true \
+            --extra-vars writing_app_verify_public_routes=true
+      - uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
+        with:
+          k6-version: "2.0.0"
+      - name: 배포된 Staging 핵심 사용자 flow
+        env:
+          K6_ALLOW_STAGING_LOAD: "true"
+          K6_CURRICULUM_VERSION_ID: ${{ vars.K6_CURRICULUM_VERSION_ID }}
+          K6_LEARNER_COOKIE: ${{ secrets.K6_LEARNER_COOKIE }}
+          K6_LESSON_ID: ${{ vars.K6_LESSON_ID }}
+          K6_PRODUCTION_ORIGIN: ${{ vars.PRODUCTION_WEB_ORIGIN }}
+          K6_STAGING_ORIGIN: ${{ vars.STAGING_WEB_ORIGIN }}
+          K6_STEP_ID: ${{ vars.K6_STEP_ID }}
+          K6_WRONG_OPTION_ID: ${{ vars.K6_WRONG_OPTION_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          k6 inspect --execution-requirements --include-system-env-vars scripts/k6-staging-smoke.js
+          k6 run scripts/k6-staging-smoke.js
+
+  production-deploy:
+    name: Production 배포와 검증
+    needs:
+      - release-manifest
+      - staging-smoke
+    concurrency:
+      group: writing-app-production-deploy
+      cancel-in-progress: false
+    environment: production
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: image-release-manifest-${{ github.event.workflow_run.head_sha }}
+          path: output
+      - name: 검증된 digest를 Ansible 입력으로 변환
+        run: >-
+          bun scripts/image-release-metadata.ts write-ansible-vars
+          output/image-release-manifest.json
+          infra/ansible/release-vars.json
+      - name: Production 외부 준비 증거 검증
+        run: bun scripts/production-readiness.ts
+        env:
+          PRODUCTION_DEPLOY_APPROVED: ${{ vars.PRODUCTION_DEPLOY_APPROVED }}
+          PRODUCTION_FULL_E2E_APPROVED: ${{ vars.PRODUCTION_FULL_E2E_APPROVED }}
+          PRODUCTION_LEGAL_REVIEW_APPROVED: ${{ vars.PRODUCTION_LEGAL_REVIEW_APPROVED }}
+          PRODUCTION_LEGAL_REVIEW_EVIDENCE_ID: ${{ vars.PRODUCTION_LEGAL_REVIEW_EVIDENCE_ID }}
+          PRODUCTION_LEGAL_REVIEW_VERIFIED_AT: ${{ vars.PRODUCTION_LEGAL_REVIEW_VERIFIED_AT }}
+          PRODUCTION_READINESS_OUTPUT: infra/ansible/production-readiness-vars.json
+          PRODUCTION_RESTORE_DRILL_APPROVED: ${{ vars.PRODUCTION_RESTORE_DRILL_APPROVED }}
+          PRODUCTION_RESTORE_DRILL_ENVIRONMENT: ${{ vars.PRODUCTION_RESTORE_DRILL_ENVIRONMENT }}
+          PRODUCTION_RESTORE_DRILL_EVIDENCE_ID: ${{ vars.PRODUCTION_RESTORE_DRILL_EVIDENCE_ID }}
+          PRODUCTION_RESTORE_DRILL_VERIFIED_AT: ${{ vars.PRODUCTION_RESTORE_DRILL_VERIFIED_AT }}
+          QUALITY_GATE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}
+          RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
+      - name: 고정 Ansible 의존성 설치
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/ansible-venv"
+          "$RUNNER_TEMP/ansible-venv/bin/pip" install \
+            --requirement infra/ansible/requirements.txt
+          "$RUNNER_TEMP/ansible-venv/bin/ansible-galaxy" collection install \
+            --requirements-file infra/ansible/requirements.yaml
+      - name: Production inventory와 SSH 입력 준비
+        shell: bash
+        env:
+          ANSIBLE_GROUP_VARS_YAML: ${{ secrets.ANSIBLE_GROUP_VARS_YAML }}
+          ANSIBLE_HOSTS_YAML: ${{ secrets.ANSIBLE_HOSTS_YAML }}
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+          ANSIBLE_VAULT_YAML: ${{ secrets.ANSIBLE_VAULT_YAML }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          for name in \
+            ANSIBLE_GROUP_VARS_YAML \
+            ANSIBLE_HOSTS_YAML \
+            ANSIBLE_VAULT_PASSWORD \
+            ANSIBLE_VAULT_YAML \
+            SSH_KNOWN_HOSTS \
+            SSH_PRIVATE_KEY
+          do
+            test -n "${!name}"
+          done
+          install -d -m 0700 infra/ansible/inventories/production
+          install -d -m 0700 infra/ansible/inventories/production/group_vars
+          install -d -m 0700 "$HOME/.ssh"
+          printf '%s\n' "$ANSIBLE_HOSTS_YAML" \
+            > infra/ansible/inventories/production/hosts.yaml
+          printf '%s\n' "$ANSIBLE_GROUP_VARS_YAML" \
+            > infra/ansible/inventories/production/group_vars/all.yaml
+          printf '%s\n' "$ANSIBLE_VAULT_YAML" \
+            > infra/ansible/inventories/production/group_vars/vault.yaml
+          printf '%s\n' "$ANSIBLE_VAULT_PASSWORD" \
+            > infra/ansible/inventories/production/.vault-password
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/writing-app-deploy-key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 0600 \
+            infra/ansible/inventories/production/hosts.yaml \
+            infra/ansible/inventories/production/group_vars/all.yaml \
+            infra/ansible/inventories/production/group_vars/vault.yaml \
+            infra/ansible/inventories/production/.vault-password \
+            "$RUNNER_TEMP/writing-app-deploy-key" \
+            "$HOME/.ssh/known_hosts"
+      - name: Production 배포 후 공개 경계 검증
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          bun scripts/assert-release-head.ts
+          unset GITHUB_TOKEN
+          umask 077
+          handoff_file="$RUNNER_TEMP/writing-app-production-handoff.json"
+          handoff_token="$(openssl rand -hex 32)"
+          echo "::add-mask::$handoff_token"
+          printf '{"writing_app_operation_handoff_token":"%s"}\n' \
+            "$handoff_token" > "$handoff_file"
+          eval "$(ssh-agent -s)"
+          trap 'ssh-agent -k >/dev/null; rm -f "$handoff_file"' EXIT
+          ssh-add "$RUNNER_TEMP/writing-app-deploy-key"
+          cd infra/ansible
+          "$RUNNER_TEMP/ansible-venv/bin/ansible-playbook" \
+            -i inventories/production/hosts.yaml \
+            --vault-password-file inventories/production/.vault-password \
+            playbooks/deploy.yaml \
+            --extra-vars @release-vars.json \
+            --extra-vars @production-readiness-vars.json \
+            --extra-vars "@$handoff_file" \
+            --extra-vars writing_app_hold_operation_lock_for_verify=true
+          "$RUNNER_TEMP/ansible-venv/bin/ansible-playbook" \
+            -i inventories/production/hosts.yaml \
+            --vault-password-file inventories/production/.vault-password \
+            playbooks/verify.yaml \
+            --extra-vars @release-vars.json \
+            --extra-vars "@$handoff_file" \
+            --extra-vars writing_app_verify_uses_existing_operation_lock=true \
+            --extra-vars writing_app_verify_finalize_deployment=true \
+            --extra-vars writing_app_verify_public_routes=true

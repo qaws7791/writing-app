@@ -149,7 +149,7 @@
 
 구현 위치: `packages/shared/ui/src/components/ui/alert-dialog.tsx`
 
-기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 기본 스타일은 Kwep `Modal`과 동일하다. `bg-cream` 패널, `bg-charcoal/30` 오버레이, 제목 `text-heading-sm font-bold`, 설명 `text-body-lg`, footer는 동일 너비 `size="extra"` pill 버튼 2개(`AlertDialogCancel`은 `secondary`, `AlertDialogAction`은 `default`)를 가로로 배치한다. 레슨 나가기처럼 일반 확인은 `AlertDialogAction` 기본 variant를 쓴다. 삭제·보관·초기화처럼 되돌릴 수 없는 작업만 `variant="destructive"`를 명시한다.
+기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 기본 스타일은 Kwep `Modal`과 동일하다. `bg-cream` 패널, `bg-charcoal/30` 오버레이, 제목 `text-heading-sm font-bold`, 설명 `text-body-lg`, footer는 동일 너비 `size="extra"` pill 버튼 2개(`AlertDialogCancel`은 `secondary`, `AlertDialogAction`은 `default`)를 가로로 배치한다. 레슨 나가기처럼 일반 확인은 `AlertDialogAction` 기본 variant를 쓴다. 삭제·보관처럼 되돌릴 수 없는 작업만 `variant="destructive"`를 명시한다.
 
 ## Alert와 Callout
 
@@ -192,7 +192,7 @@
 
 ## Guardrail
 
-legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic color alias는 사용하지 않는다. raw hex color는 CSS token을 사용할 수 없는 정적 metadata나 Storybook theme처럼 소유 경계가 분명한 파일에서만 허용한다. 이 기준은 별도 repository parser가 아니라 공용 primitive, token의 공개 표면과 코드 리뷰로 유지한다.
+legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic color alias는 사용하지 않는다. UI source의 raw hex color는 token 정의 밖에서 사용하지 않는다. 이 기준은 공용 primitive, token의 공개 표면과 코드 리뷰로 유지한다.
 
 ## Icon
 
@@ -229,8 +229,8 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
 - 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
 - 이모지만 표시하는 계정 메뉴 trigger의 접근성 이름은 `계정 메뉴`로 제공한다.
-- 계정 메뉴 드롭다운은 Kwep `Chrome.tsx`와 같이 `bg-cream`, `border-2 border-surface`, `rounded-4xl`, `w-48`, `p-4`를 쓰고 그림자는 없다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
-- 메뉴 항목은 `w-full text-left`, `py-3 px-4`, `rounded-3xl`, `font-bold`이며 hover/focus/highlight 시 `bg-surface`를 쓴다. 로그아웃만 `text-coral-dark`로 구분한다.
+- 계정 메뉴 드롭다운은 `bg-elevated`, `border-border`, `rounded-4xl`, `w-48`, `p-4`를 쓰고 그림자는 없다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
+- 메뉴 항목은 `w-full text-left`, `py-3 px-4`, `rounded-3xl`, `font-bold`이며 hover/focus/highlight 시 `bg-surface`를 쓴다. 로그아웃만 `danger-fg`로 구분한다.
 - `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.
 
 ### LessonShell
@@ -260,20 +260,22 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 
 ### AdminShell
 
-구현 위치: `apps/admin/src/components/admin-shell.tsx`
+구현 위치: `apps/admin/src/app/(admin)/_views/admin-shell.tsx`
 
 - 256px 사이드바와 본문 1fr 구성을 사용한다.
 - 사이드바와 본문은 semantic Tailwind class와 공용 토큰을 사용한다.
 - 본문은 `max-w-6xl`, `px-5 md:px-10`, `py-8`을 사용한다.
+- 좁은 화면에서는 고정 사이드바를 숨기고 같은 정보 구조를 modal drawer로 제공한다.
 
 ### AdminSidebar
 
-구현 위치: `apps/admin/src/components/admin-sidebar.tsx`
+구현 위치: `apps/admin/src/app/(admin)/_views/admin-sidebar.tsx`
 
-- 주요 메뉴: 대시보드, 강의 관리, 사용자 관리, 분석, 자료실, AI 채팅. 콘텐츠 유지보수는 소유자에게만 표시한다.
+- 주요 메뉴: 대시보드, 강의 관리, 사용자 관리, 분석.
 - 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
 - 아이콘은 `@workspace/ui/components/icons`에서 가져온다.
 - 활성 링크는 `aria-current="page"`와 `action-primary-*` semantic token으로 표시한다.
+- 사이드바와 drawer는 라이트, 다크, 시스템 테마 선택과 앱 이동, 로그아웃을 동일하게 제공한다.
 
 ### Admin Page Header
 
@@ -302,6 +304,7 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 
 - 표는 `DataTableContainer`와 `DataTable`을 사용한다.
 - table semantic은 앱이 유지하고, `th scope="col"`과 caption 또는 `aria-label`을 제공한다.
+- 좁은 화면에서도 열과 작업을 숨기지 않고 table 최소 폭과 수평 스크롤을 유지한다.
 - 첫 열의 제목, 보조 식별자, thumbnail 조립은 feature component가 담당한다.
 
 ### Admin Status와 Dialog

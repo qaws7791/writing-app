@@ -19,7 +19,7 @@ afterEach(async () => {
 })
 
 describe("API container", () => {
-  it("한 DB와 공통 runtime adapter로 6개 module, 두 auth realm과 실제 route를 조립한다", async () => {
+  it("한 DB와 공통 runtime adapter로 learner·admin route를 조립하고 안전하게 종료한다", async () => {
     const directory = await mkdtemp(join(tmpdir(), "writing-app-p10-"))
     temporaryDirectories.push(directory)
     const databasePath = join(directory, "api.sqlite")
@@ -36,14 +36,6 @@ describe("API container", () => {
     )
 
     try {
-      expect(Object.keys(container.modules)).toEqual([
-        "aiFeedback",
-        "content",
-        "identity",
-        "learning",
-        "operations",
-        "resourceLibrary",
-      ])
       const app = createApp(container)
       const learnerHealth = await request(app.unified, "/api/health")
       const adminHealth = await request(app.unified, "/api/admin/health")
@@ -58,7 +50,7 @@ describe("API container", () => {
         "paths./learning/lessons/{lessonId}/steps/{stepId}/complete.post"
       )
       expect((await adminOpenApi.json()) as object).toHaveProperty(
-        "paths./api/admin/maintenance/content-reset.post"
+        "paths./api/admin/courses.get"
       )
     } finally {
       await container.dispose()

@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { userIdSchema } from "#contracts/identity/admin-ids"
-import { adminUserStatusSchema } from "#contracts/identity/status"
+import { learnerAccountStatusSchema } from "#contracts/identity/status"
 import {
   nonNegativeIntegerSchema as adminNonNegativeIntegerSchema,
   positiveIntegerSchema as adminPositiveIntegerSchema,
@@ -29,7 +29,7 @@ export const adminUserListItemDtoSchema = z.object({
   lastActive: z.string().nullable(),
   lessonsDone: adminNonNegativeIntegerSchema,
   name: z.string(),
-  status: adminUserStatusSchema,
+  status: learnerAccountStatusSchema,
   streak: adminNonNegativeIntegerSchema,
 })
 

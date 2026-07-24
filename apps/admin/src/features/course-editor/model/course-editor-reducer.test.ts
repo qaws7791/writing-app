@@ -13,7 +13,9 @@ import {
 } from "@/features/course-editor/model/course-editor-reducer"
 
 const document = adminCourseEditorSchema.parse({
+  assets: [],
   category: "미분류",
+  coverAssetId: null,
   curriculumVersionId: "course-1-v1",
   description: "설명",
   editVersion: 0,
@@ -121,9 +123,6 @@ describe("courseEditorReducer", () => {
                   feedback: "피드백",
                   focus: "명확성",
                   id: aiStepId,
-                  score: 1,
-                  scoreMax: 5,
-                  showScore: true,
                   sortOrder: 3,
                   status: "active",
                   target: writeStepId,

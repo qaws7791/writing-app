@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from "hono"
-import type { HttpPlatformEnv } from "@workspace/http-platform/context"
+import type { HttpPlatformEnv } from "@workspace/http-platform/app"
 import { AppError } from "@workspace/http-platform/errors"
 import {
   setPrivateNoStoreHeaders,
@@ -38,7 +38,6 @@ function createSessionMiddleware(
     context.set("operationsActor", actor)
     context.set("requestActor", {
       id: actor.id,
-      role: actor.role,
       type: "admin",
     })
     await next()

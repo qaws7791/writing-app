@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { adminRoles } from "@workspace/identity/admin-actor"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { seedAdminIdentity } from "@workspace/identity/seed"
 import {
   adminAuthAccounts,
   adminAuthSessions,
@@ -17,7 +14,7 @@ import {
 } from "@/scripts/revoke-admin-sessions"
 
 describe("통합 API 관리자 인증 운영 명령", () => {
-  it("승인 불일치와 미승인 계정을 분류하되 credential 비밀값은 출력하지 않는다", async () => {
+  it("승인·미승인 계정을 분류하되 credential 비밀값은 출력하지 않는다", async () => {
     const database = createInMemoryWritingAppDatabase()
     const now = new Date("2026-07-12T00:00:00.000Z")
     try {
@@ -40,14 +37,6 @@ describe("통합 API 관리자 인증 운영 명령", () => {
           updatedAt: now,
         },
       ])
-      seedAdminIdentity(database.db, {
-        adminId: adminIdSchema.parse("approved"),
-        role: adminRoles.owner,
-      })
-      seedAdminIdentity(database.db, {
-        adminId: adminIdSchema.parse("rogue"),
-        role: adminRoles.operator,
-      })
       await database.db.insert(adminAuthAccounts).values({
         accountId: "rogue",
         createdAt: now,
@@ -68,16 +57,13 @@ describe("통합 API 관리자 인증 운영 명령", () => {
 
       const report = await auditAdminAuth(
         database.db,
-        [
-          { email: "approved@example.test", role: adminRoles.operator },
-          { email: "missing@example.test", role: adminRoles.owner },
-        ],
+        [{ email: "approved@example.test" }, { email: "missing@example.test" }],
         now
       )
       expect(report.inventory).toEqual([
         expect.objectContaining({
           email: "approved@example.test",
-          status: "role_mismatch",
+          status: "approved",
         }),
         expect.objectContaining({
           activeSessionCount: 1,

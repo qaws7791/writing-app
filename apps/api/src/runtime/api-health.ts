@@ -5,7 +5,7 @@ export type ApiHealthProbe = Readonly<{
 }>
 
 export function createApiHealthProbe(database: Database): ApiHealthProbe {
-  return Object.freeze({
+  return {
     isDatabaseReady() {
       try {
         database.query("SELECT 1").get()
@@ -14,5 +14,5 @@ export function createApiHealthProbe(database: Database): ApiHealthProbe {
         return false
       }
     },
-  })
+  }
 }

@@ -47,7 +47,6 @@ export type PrepareAiFeedbackTargetDecision =
   | {
       readonly focus: string
       readonly kind: "load-context"
-      readonly showScore: boolean
       readonly targetStepId: LessonStepId
     }
 
@@ -152,7 +151,6 @@ export function decidePrepareAiFeedbackTarget(
   return {
     focus: aiStep.focus,
     kind: "load-context",
-    showScore: aiStep.showScore,
     targetStepId: targetStep.content.id,
   }
 }
@@ -178,7 +176,6 @@ export function decidePrepareAiFeedbackContext(
     curriculumVersionId: snapshot.curriculumVersionId,
     focus: target.focus,
     lessonTitle: snapshot.lessonTitle,
-    showScore: target.showScore,
   })
 }
 
@@ -228,25 +225,25 @@ function finalizeDecision(
 ): Exclude<FinalizeAiFeedbackDecision, { readonly kind: "rejected" }> {
   switch (aggregate.kind) {
     case "advance": {
-      const frozenAggregate = Object.freeze({ ...aggregate })
-      return Object.freeze({
-        ...frozenAggregate,
-        aggregate: frozenAggregate,
-      })
+      const aggregateSnapshot = { ...aggregate }
+      return {
+        ...aggregateSnapshot,
+        aggregate: aggregateSnapshot,
+      }
     }
     case "replay-advanced": {
-      const frozenAggregate = Object.freeze({ ...aggregate })
-      return Object.freeze({
-        ...frozenAggregate,
-        aggregate: frozenAggregate,
-      })
+      const aggregateSnapshot = { ...aggregate }
+      return {
+        ...aggregateSnapshot,
+        aggregate: aggregateSnapshot,
+      }
     }
     case "replay-completed": {
-      const frozenAggregate = Object.freeze({ ...aggregate })
-      return Object.freeze({
-        ...frozenAggregate,
-        aggregate: frozenAggregate,
-      })
+      const aggregateSnapshot = { ...aggregate }
+      return {
+        ...aggregateSnapshot,
+        aggregate: aggregateSnapshot,
+      }
     }
   }
 }

@@ -1,0 +1,37 @@
+[Unit]
+Description=Writing App {{ writing_app_environment }} daily maintenance
+Requires=docker.service
+After=docker.service
+ConditionPathExists={{ writing_app_compose_directory }}/compose.yaml
+ConditionPathExists={{ writing_app_compose_directory }}/.env
+ConditionPathExists={{ writing_app_config_directory }}/api.env
+ConditionPathExists={{ writing_app_config_directory }}/maintenance.env
+ConditionPathExists={{ writing_app_maintenance_log_retention_evidence_file }}
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart={{ writing_app_libexec_directory }}/writing-app-{{ writing_app_environment }}-maintenance
+ExecStopPost=-/usr/bin/docker rm -f writing-app-{{ writing_app_environment }}-maintenance
+TimeoutStartSec=30min
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/run /var/lock
+
+[Install]
+WantedBy=multi-user.target

@@ -8,14 +8,11 @@ import {
 const initializationStages = [
   "logger",
   "database",
-  "ai",
-  "storage",
   "auth",
   "content",
   "identity",
   "ai-feedback",
   "learning",
-  "resource-library",
   "operations",
   "routes",
 ] as const
@@ -59,9 +56,6 @@ describe("API container 초기화 정리", () => {
       events.push("database")
       throw databaseError
     })
-    cleanup.register("ai", () => {
-      events.push("ai")
-    })
 
     const first = cleanup.dispose()
     const repeated = cleanup.dispose()
@@ -70,7 +64,7 @@ describe("API container 초기화 정리", () => {
     await expect(first).resolves.toEqual([
       { cause: databaseError, name: "database" },
     ])
-    expect(events).toEqual(["ai", "database", "logger"])
+    expect(events).toEqual(["database", "logger"])
     expect(onFailure).toHaveBeenCalledWith({
       cause: databaseError,
       name: "database",
@@ -87,15 +81,11 @@ function cleanupNameByStage(
       return "logger"
     case "database":
       return "database"
-    case "ai":
-      return "ai"
-    case "storage":
     case "auth":
     case "content":
     case "identity":
     case "ai-feedback":
     case "learning":
-    case "resource-library":
     case "operations":
     case "routes":
       return null

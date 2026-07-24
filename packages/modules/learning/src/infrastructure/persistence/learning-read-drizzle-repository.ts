@@ -8,22 +8,28 @@ import {
   lessonStepIdSchema,
 } from "@workspace/contracts/content/ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import type { CourseId, LearnerId, LessonId } from "@workspace/types/ids"
+import type {
+  ContentAssetId,
+  CourseId,
+  LearnerId,
+  LessonId,
+} from "@workspace/types/ids"
 
 import {
   projectLearnerCourseDetail,
   projectLearnerCoursePage,
   projectLearnerProgressCourse,
   projectLearnerProgressPageWindow,
+  presentLearnerStep,
   type LearnerCourseProjectionBundle,
-} from "#learning/application/learner-read-projection"
+} from "#learning/infrastructure/persistence/learner-read-mapping"
 import type { LearnerCourseDetail } from "#learning/application/learning-read-model"
+import type { LearnerContentAssetReference } from "#learning/application/learning-read-model"
 import {
-  readLearnerCourseCursorPrimary,
   resolveLearnerCourseCursorCondition,
   resolveLearnerProgressCursorCondition,
 } from "#learning/infrastructure/persistence/learner-cursor"
-import { presentLearnerStep } from "#learning/application/learner-step-presenter"
+import { readLearnerStepDrafts } from "#learning/infrastructure/persistence/learner-step-draft-drizzle"
 import type {
   LearnerCourseReadQuery,
   LearnerProgressReadQuery,
@@ -43,22 +49,20 @@ export function createDrizzleLearningReadRepository(
     presentationSecret: string
   }>
 ): LearnerReadModelRepository {
-  return Object.freeze({
+  return {
     findCourseDetail: (query) =>
       findCourseDetail(database, input.content, query),
     findLesson: (query) =>
       findLesson(database, input.content, input.presentationSecret, query),
     async listCourseCategories() {
       const courses = await input.content.listPublishedCourses()
-      return Object.freeze(
-        [
-          ...new Set(courses.map((course) => course.category.normalize("NFC"))),
-        ].sort((left, right) => left.localeCompare(right, "ko"))
-      )
+      return [
+        ...new Set(courses.map((course) => course.category.normalize("NFC"))),
+      ].sort((left, right) => left.localeCompare(right, "ko"))
     },
     listCourses: (query) => listCourses(input.content, query),
     listProgress: (query) => listProgress(database, input.content, query),
-  })
+  }
 }
 
 async function listCourses(
@@ -67,7 +71,14 @@ async function listCourses(
 ) {
   const normalizedCategory = query.category?.normalize("NFC")
   const normalizedQuery = query.query?.normalize("NFC").toLocaleLowerCase("ko")
-  const rows = (await content.listPublishedCourses())
+  const publishedCourses = await content.listPublishedCourses()
+  const assetReferencesById = await resolveAssetReferencesById(
+    content,
+    publishedCourses.flatMap((course) =>
+      course.coverAssetId === null ? [] : [course.coverAssetId]
+    )
+  )
+  const rows = publishedCourses
     .filter(
       (course) =>
         (normalizedCategory === undefined ||
@@ -83,25 +94,25 @@ async function listCourses(
     .map((course) => ({
       category: course.category,
       contentStatus: "active" as const,
+      cover: resolveCoverReference(assetReferencesById, course.coverAssetId),
       description: course.description,
       id: course.courseId,
       lessonCount: course.lessonCount,
       revision: course.revision,
       sortOrder: course.sortOrder,
       title: course.title,
-      titleSortKey: course.title.normalize("NFC").toLocaleLowerCase("ko"),
       versionId: course.versionId,
       visualKey: course.visualKey,
     }))
-    .sort((left, right) => compareCourseRows(left, right, query.sort))
-  const cursor = resolveLearnerCourseCursorCondition(query.sort, query.after)
-  const afterRows = rows.filter((row) =>
-    isCourseAfterCursor(row, cursor, query.sort)
-  )
+    .sort(
+      (left, right) =>
+        left.sortOrder - right.sortOrder || left.id.localeCompare(right.id)
+    )
+  const cursor = resolveLearnerCourseCursorCondition(query.after)
+  const afterRows = rows.filter((row) => isCourseAfterCursor(row, cursor))
 
   return projectLearnerCoursePage({
     limit: query.limit,
-    nextPrimary: (row) => readLearnerCourseCursorPrimary(row, query.sort),
     rows: afterRows.slice(0, query.limit + 1),
   })
 }
@@ -130,14 +141,25 @@ async function findCourseDetail(
   })
 
   if (curriculum === null) return null
-  return projectCourseDetail(database, curriculum, input.userId, progress)
+  const assetReferencesById = await resolveAssetReferencesById(
+    content,
+    curriculum.coverAssetId === null ? [] : [curriculum.coverAssetId]
+  )
+  return projectCourseDetail(
+    database,
+    curriculum,
+    input.userId,
+    progress,
+    resolveCoverReference(assetReferencesById, curriculum.coverAssetId)
+  )
 }
 
 function projectCourseDetail(
   database: WritingAppDatabase,
   curriculum: LearningCurriculum,
   userId: LearnerId,
-  courseProgress: typeof learnerCourseProgress.$inferSelect | undefined
+  courseProgress: typeof learnerCourseProgress.$inferSelect | undefined,
+  cover: LearnerContentAssetReference | null
 ): LearnerCourseDetail {
   const activeUnits = curriculum.units
     .filter((unit) => unit.status === "active")
@@ -210,6 +232,7 @@ function projectCourseDetail(
     })),
     version: {
       category: curriculum.category,
+      cover,
       description: curriculum.description,
       id: curriculum.curriculumVersionId,
       revision: curriculum.revision,
@@ -263,11 +286,22 @@ async function findLesson(
       )
     )
     .get()
+  const assetReferencesById = await resolveAssetReferencesById(content, [
+    ...(curriculum.coverAssetId === null ? [] : [curriculum.coverAssetId]),
+    ...curriculum.lessons.flatMap((curriculumLesson) =>
+      curriculumLesson.steps.flatMap((step) =>
+        step.type === "READING" && step.illustrationAssetId !== undefined
+          ? [step.illustrationAssetId]
+          : []
+      )
+    ),
+  ])
   const course = projectCourseDetail(
     database,
     curriculum,
     input.userId,
-    courseProgress
+    courseProgress,
+    resolveCoverReference(assetReferencesById, curriculum.coverAssetId)
   )
   const lessonSummary = course.units
     .flatMap((unit) => unit.lessons)
@@ -290,6 +324,7 @@ async function findLesson(
     .sort((left, right) => left.sortOrder - right.sortOrder)
     .map((step) =>
       presentLearnerStep(step, {
+        assetReferencesById,
         learnerScope,
         lessonId: lesson.id,
         versionId: curriculum.curriculumVersionId,
@@ -302,6 +337,12 @@ async function findLesson(
       category: lesson.category,
       courseId: curriculum.courseId,
       description: lesson.description,
+      drafts: readLearnerStepDrafts(database, {
+        courseId: curriculum.courseId,
+        curriculumVersionId: curriculum.curriculumVersionId,
+        lessonId: lesson.id,
+        userId: input.userId,
+      }),
       estimatedMinutes: lesson.estimatedMinutes,
       id: lesson.id,
       learning: lessonSummary.learning,
@@ -312,6 +353,28 @@ async function findLesson(
       version: course.version,
     },
   }
+}
+
+async function resolveAssetReferencesById(
+  content: LearningContentQueryPort,
+  assetIds: readonly ContentAssetId[]
+): Promise<ReadonlyMap<string, LearnerContentAssetReference>> {
+  const uniqueAssetIds = [...new Set(assetIds)]
+  if (uniqueAssetIds.length === 0) return new Map()
+  const references = await content.resolveAssetReferences(uniqueAssetIds)
+  return new Map(references.map((reference) => [reference.id, reference]))
+}
+
+function resolveCoverReference(
+  references: ReadonlyMap<string, LearnerContentAssetReference>,
+  assetId: ContentAssetId | null
+): LearnerContentAssetReference | null {
+  if (assetId === null) return null
+  const reference = references.get(assetId)
+  if (reference === undefined || reference.kind !== "course-cover") {
+    throw new Error(`Published course cover is missing: ${assetId}`)
+  }
+  return reference
 }
 
 async function listProgress(
@@ -366,37 +429,19 @@ async function listProgress(
 
 type CourseRow = Readonly<{
   id: CourseId
-  lessonCount: number
   sortOrder: number
-  titleSortKey: string
 }>
-
-function compareCourseRows(
-  left: CourseRow,
-  right: CourseRow,
-  sort: LearnerCourseReadQuery["sort"]
-): number {
-  const leftPrimary = readLearnerCourseCursorPrimary(left, sort)
-  const rightPrimary = readLearnerCourseCursorPrimary(right, sort)
-  const descending = sort === "title-desc" || sort === "lesson-count-desc"
-  const primary = comparePrimary(leftPrimary, rightPrimary)
-  return (descending ? -primary : primary) || left.id.localeCompare(right.id)
-}
 
 function isCourseAfterCursor(
   row: CourseRow,
-  cursor: ReturnType<typeof resolveLearnerCourseCursorCondition>,
-  sort: LearnerCourseReadQuery["sort"]
+  cursor: ReturnType<typeof resolveLearnerCourseCursorCondition>
 ): boolean {
   if (cursor.kind === "first-page") return true
   if (cursor.kind === "invalid-primary") return false
-  const comparison = comparePrimary(
-    readLearnerCourseCursorPrimary(row, sort),
-    cursor.primary
+  return (
+    row.sortOrder > cursor.primary ||
+    (row.sortOrder === cursor.primary && row.id > cursor.courseId)
   )
-  return cursor.primaryOrder === "ascending"
-    ? comparison > 0 || (comparison === 0 && row.id > cursor.courseId)
-    : comparison < 0 || (comparison === 0 && row.id > cursor.courseId)
 }
 
 function isProgressAfterCursor(
@@ -410,9 +455,4 @@ function isProgressAfterCursor(
     primary < cursor.primary ||
     (primary === cursor.primary && row.courseId > cursor.courseId)
   )
-}
-
-function comparePrimary(left: number | string, right: number | string): number {
-  if (typeof left === "number" && typeof right === "number") return left - right
-  return String(left).localeCompare(String(right), "ko")
 }

@@ -2,9 +2,13 @@ import "server-only"
 
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
+  assertContentAssetPublicBaseUrlAllowed,
+  parseContentAssetImageAllowedOrigins,
   assertPublicUrlTransport,
+  parseContentAssetPublicBaseUrl,
   shouldUpgradeInsecureRequests,
 } from "@workspace/env/public-url"
+import { readContentAssetImageSource } from "@workspace/nextjs-config/content-asset-images"
 import { z } from "zod"
 
 import type { ServerApiBaseUrl } from "@/shared/config/api-base-url"
@@ -14,8 +18,9 @@ type WebServerRuntimeEnv = {
 }
 
 const webServerRuntimeEnvSchema = z.object({
+  CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS: z.string().trim().min(1).optional(),
+  CONTENT_ASSET_PUBLIC_BASE_URL: z.string().trim().min(1).optional(),
   CSP_REPORT_ONLY: z.string().optional(),
-  ENABLE_TEST_AUTH: z.string().optional(),
   NODE_ENV: z.string().optional(),
   API_BASE_URL: z.string().trim().min(1).optional(),
   WEB_ORIGIN: z.string().trim().min(1).optional(),
@@ -34,16 +39,6 @@ export function readServerApiBaseUrl(
   ) as ServerApiBaseUrl
 }
 
-export function readTestAuthEnabled(
-  env: WebServerRuntimeEnv = process.env
-): boolean {
-  const parsedEnv = webServerRuntimeEnvSchema.parse(env)
-
-  return (
-    parsedEnv.NODE_ENV !== "production" && parsedEnv.ENABLE_TEST_AUTH === "true"
-  )
-}
-
 export function readWebOrigin(env: WebServerRuntimeEnv = process.env): string {
   const parsedEnv = webServerRuntimeEnvSchema.parse(env)
 
@@ -59,6 +54,7 @@ export function readWebOrigin(env: WebServerRuntimeEnv = process.env): string {
 export function readWebCspRuntimeConfig(
   env: WebServerRuntimeEnv = process.env
 ): {
+  readonly contentAssetImageSource: string | null
   readonly development: boolean
   readonly reportOnly: boolean
   readonly upgradeInsecureRequests: boolean
@@ -71,8 +67,33 @@ export function readWebCspRuntimeConfig(
     "production web origin is required",
     "web origin"
   )
+  const contentAssetPublicBaseUrl = parseContentAssetPublicBaseUrl(
+    parsedEnv.CONTENT_ASSET_PUBLIC_BASE_URL,
+    {
+      description: "content asset public base URL",
+      nodeEnvironment: parsedEnv.NODE_ENV,
+    }
+  )
+  const contentAssetImageAllowedOrigins = parseContentAssetImageAllowedOrigins(
+    parsedEnv.CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS,
+    {
+      description: "content asset image allowed origins",
+      nodeEnvironment: parsedEnv.NODE_ENV,
+    }
+  )
+  assertContentAssetPublicBaseUrlAllowed(
+    contentAssetPublicBaseUrl,
+    contentAssetImageAllowedOrigins,
+    {
+      description: "content asset public base URL",
+      nodeEnvironment: parsedEnv.NODE_ENV,
+    }
+  )
 
   return {
+    contentAssetImageSource: readContentAssetImageSource(
+      contentAssetPublicBaseUrl
+    ),
     development: parsedEnv.NODE_ENV !== "production",
     reportOnly: parsedEnv.CSP_REPORT_ONLY === "true",
     upgradeInsecureRequests: shouldUpgradeInsecureRequests(webOrigin),

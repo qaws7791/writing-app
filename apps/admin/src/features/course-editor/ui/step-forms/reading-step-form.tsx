@@ -3,8 +3,19 @@ import {
   StepTextField,
   type StepFormProps,
 } from "@/features/course-editor/ui/step-forms/shared/step-form-contract"
+import { ContentAssetUploadField } from "@/features/course-editor/ui/content-asset-upload-field"
 
-export function ReadingStepForm({ onChange, step }: StepFormProps<"READING">) {
+export function ReadingStepForm({
+  assetUpload,
+  onChange,
+  step,
+}: StepFormProps<"READING">) {
+  const illustration = assetUpload.assets.find(
+    (asset) =>
+      asset.id === step.illustrationAssetId &&
+      asset.kind === "reading-illustration"
+  )
+
   return (
     <StepFormShell step={step}>
       <StepTextField
@@ -30,10 +41,26 @@ export function ReadingStepForm({ onChange, step }: StepFormProps<"READING">) {
       <StepTextField
         id={`${step.id}-source`}
         label="출처"
-        onChange={(source) =>
-          onChange({ ...step, source: source === "" ? undefined : source })
-        }
+        onChange={(source) => {
+          const { source: _source, ...stepWithoutSource } = step
+          onChange(source === "" ? stepWithoutSource : { ...step, source })
+        }}
         value={step.source}
+      />
+      <ContentAssetUploadField
+        asset={illustration}
+        disabled={assetUpload.disabled}
+        kind="reading-illustration"
+        label="읽기 삽화"
+        onRemove={() => {
+          const { illustrationAssetId: _illustrationAssetId, ...nextStep } =
+            step
+          onChange(nextStep)
+        }}
+        onUploaded={(asset) =>
+          onChange({ ...step, illustrationAssetId: asset.id })
+        }
+        upload={assetUpload.upload}
       />
     </StepFormShell>
   )

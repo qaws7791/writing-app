@@ -1,12 +1,12 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import { createCourseImageUrl } from "@/entities/course/model/course-visual-assets"
-import type { LearnerProgressCourse } from "@workspace/contracts/learning/learner-content"
+import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
+import type { LearnerProgressCourseDto } from "@/shared/http/learner-api-client"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CompletedCourseCardProps = {
-  readonly course: LearnerProgressCourse
+  readonly course: LearnerProgressCourseDto
   readonly priority?: boolean
 }
 
@@ -28,13 +28,13 @@ export function CompletedCourseCard({
       >
         <div className="relative h-36 w-full shrink-0 overflow-hidden lg:h-28 lg:min-h-28 lg:w-44">
           <Image
-            alt={course.title}
+            alt={resolveCourseImage(course).alt}
             className="object-cover pointer-events-none"
             draggable={false}
             fill
             priority={priority}
             sizes="(min-width: 1024px) 176px, 100vw"
-            src={createCourseImageUrl(course.visualKey)}
+            src={resolveCourseImage(course).src}
           />
         </div>
         <div className="px-6 py-5 lg:flex lg:min-w-0 lg:flex-1 lg:items-center lg:px-5 lg:py-4">

@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, lte } from "drizzle-orm"
+import { and, count, eq, gt, inArray, lte, sql } from "drizzle-orm"
 import { err, ok } from "@workspace/kernel/result"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
@@ -9,7 +9,11 @@ import type {
   AiFeedbackPersistenceError,
   AiFeedbackRepository,
 } from "#ai-feedback/application/ports/ai-feedback-repository"
-import { aiFeedbackAttempts } from "#ai-feedback/infrastructure/persistence/schema"
+import {
+  aiFeedbackAttempts,
+  aiFeedbackGlobalDailyCounters,
+  aiFeedbackUserDailyCounters,
+} from "#ai-feedback/infrastructure/persistence/schema"
 
 type AiFeedbackTransaction = Parameters<
   Parameters<WritingAppDatabase["transaction"]>[0]
@@ -18,7 +22,7 @@ type AiFeedbackTransaction = Parameters<
 export function createDrizzleAiFeedbackRepository(
   database: WritingAppDatabase
 ): AiFeedbackRepository {
-  return Object.freeze({
+  return {
     async reserveAttempt(input) {
       try {
         return ok(
@@ -35,7 +39,14 @@ export function createDrizzleAiFeedbackRepository(
       try {
         const updated = database
           .update(aiFeedbackAttempts)
-          .set({ status: "failed", updatedAt: input.occurredAt })
+          .set({
+            failureCode: input.failureCode,
+            inputTokenCount: input.inputTokenCount ?? null,
+            latencyMs: input.latencyMs,
+            outputTokenCount: input.outputTokenCount ?? null,
+            status: "failed",
+            updatedAt: input.occurredAt,
+          })
           .where(
             and(
               eq(aiFeedbackAttempts.id, input.attemptId),
@@ -53,29 +64,17 @@ export function createDrizzleAiFeedbackRepository(
     },
     async markAttemptSucceeded(input) {
       try {
-        const updated = database
-          .update(aiFeedbackAttempts)
-          .set({
-            resultJson: JSON.stringify(input.feedback),
-            status: "succeeded",
-            updatedAt: input.occurredAt,
-          })
-          .where(
-            and(
-              eq(aiFeedbackAttempts.id, input.attemptId),
-              eq(aiFeedbackAttempts.status, "pending")
-            )
+        return ok(
+          database.transaction(
+            (transaction) => markAttemptSucceeded(transaction, input),
+            { behavior: "immediate" }
           )
-          .returning({ id: aiFeedbackAttempts.id })
-          .get()
-        return ok({
-          kind: updated === undefined ? "not-pending" : "transitioned",
-        })
+        )
       } catch (cause) {
         return err(persistenceError("succeed-attempt", cause))
       }
     },
-  })
+  }
 }
 
 function reserveAttempt(
@@ -85,7 +84,12 @@ function reserveAttempt(
   const scope = attemptScope(input)
   const expiredAttempts = transaction
     .update(aiFeedbackAttempts)
-    .set({ status: "expired", updatedAt: input.createdAt })
+    .set({
+      failureCode: "pending-expired",
+      latencyMs: sql`${aiFeedbackAttempts.expiresAt} - ${aiFeedbackAttempts.createdAt}`,
+      status: "expired",
+      updatedAt: input.createdAt,
+    })
     .where(
       and(
         scope,
@@ -107,6 +111,7 @@ function reserveAttempt(
       attemptId: aiFeedbackAttempts.id,
       attemptNumber: aiFeedbackAttempts.attemptNumber,
       expiresAt: aiFeedbackAttempts.expiresAt,
+      failureCode: aiFeedbackAttempts.failureCode,
       resultJson: aiFeedbackAttempts.resultJson,
       status: aiFeedbackAttempts.status,
     })
@@ -131,7 +136,14 @@ function reserveAttempt(
     existingAttempt?.status === "failed" ||
     existingAttempt?.status === "expired"
   ) {
-    return { ...metadata, kind: "already-failed" } as const
+    if (existingAttempt.failureCode === null) {
+      throw new Error("Terminal AI feedback attempt has no failure code")
+    }
+    return {
+      ...metadata,
+      failureCode: existingAttempt.failureCode,
+      kind: "already-failed",
+    } as const
   }
   if (existingAttempt?.status === "pending") {
     return {
@@ -160,6 +172,14 @@ function reserveAttempt(
         pendingAttempt.expiresAt,
         input.createdAt
       ),
+    } as const
+  }
+
+  if (isDailyQuotaExceeded(transaction, input)) {
+    return {
+      ...metadata,
+      kind: "daily-quota-exceeded",
+      retryAfterSeconds: input.quotaRetryAfterSeconds,
     } as const
   }
 
@@ -192,14 +212,22 @@ function reserveAttempt(
       expiresAt: input.expiresAt,
       id: input.attemptId,
       idempotencyKey: input.idempotencyKey,
+      inputTokenCount: null,
+      latencyMs: null,
       lessonId: input.lessonId,
+      model: input.model,
+      outputTokenCount: null,
+      promptPolicyVersion: input.promptPolicyVersion,
+      quotaDate: input.quotaDate,
       resultJson: null,
+      failureCode: null,
       status: "pending",
       stepId: input.stepId,
       updatedAt: input.createdAt,
       userId: input.learnerId,
     })
     .run()
+  incrementDailyRequestCounters(transaction, input)
 
   return {
     ...metadata,
@@ -207,6 +235,43 @@ function reserveAttempt(
     attemptNumber,
     kind: "reserved",
   } as const
+}
+
+function markAttemptSucceeded(
+  transaction: AiFeedbackTransaction,
+  input: Parameters<AiFeedbackRepository["markAttemptSucceeded"]>[0]
+) {
+  const updated = transaction
+    .update(aiFeedbackAttempts)
+    .set({
+      failureCode: null,
+      inputTokenCount: input.inputTokenCount ?? null,
+      latencyMs: input.latencyMs,
+      outputTokenCount: input.outputTokenCount ?? null,
+      resultJson: JSON.stringify(input.feedback),
+      status: "succeeded",
+      updatedAt: input.occurredAt,
+    })
+    .where(
+      and(
+        eq(aiFeedbackAttempts.id, input.attemptId),
+        eq(aiFeedbackAttempts.status, "pending")
+      )
+    )
+    .returning({
+      quotaDate: aiFeedbackAttempts.quotaDate,
+      userId: aiFeedbackAttempts.userId,
+    })
+    .get()
+
+  if (updated === undefined) return { kind: "not-pending" } as const
+
+  incrementDailySuccessCounters(transaction, {
+    occurredAt: input.occurredAt,
+    quotaDate: updated.quotaDate,
+    userId: updated.userId,
+  })
+  return { kind: "transitioned" } as const
 }
 
 function attemptScope(input: AiFeedbackAttemptScope) {
@@ -229,6 +294,154 @@ function countSucceededAttempts(
       .where(and(scope, eq(aiFeedbackAttempts.status, "succeeded")))
       .get()?.value ?? 0
   )
+}
+
+function isDailyQuotaExceeded(
+  transaction: AiFeedbackTransaction,
+  input: Parameters<AiFeedbackRepository["reserveAttempt"]>[0]
+): boolean {
+  const userCounter = transaction
+    .select({
+      requestCount: aiFeedbackUserDailyCounters.requestCount,
+      successCount: aiFeedbackUserDailyCounters.successCount,
+    })
+    .from(aiFeedbackUserDailyCounters)
+    .where(
+      and(
+        eq(aiFeedbackUserDailyCounters.userId, input.learnerId),
+        eq(aiFeedbackUserDailyCounters.quotaDate, input.quotaDate)
+      )
+    )
+    .get()
+  const globalCounter = transaction
+    .select({
+      requestCount: aiFeedbackGlobalDailyCounters.requestCount,
+      successCount: aiFeedbackGlobalDailyCounters.successCount,
+    })
+    .from(aiFeedbackGlobalDailyCounters)
+    .where(eq(aiFeedbackGlobalDailyCounters.quotaDate, input.quotaDate))
+    .get()
+  const userPending = countPendingAttempts(transaction, {
+    createdAt: input.createdAt,
+    quotaDate: input.quotaDate,
+    userId: input.learnerId,
+  })
+  const globalPending = countPendingAttempts(transaction, {
+    createdAt: input.createdAt,
+    quotaDate: input.quotaDate,
+  })
+
+  return (
+    (userCounter?.requestCount ?? 0) >=
+      input.quotaPolicy.userDailyRequestLimit ||
+    (globalCounter?.requestCount ?? 0) >=
+      input.quotaPolicy.globalDailyRequestLimit ||
+    (userCounter?.successCount ?? 0) + userPending >=
+      input.quotaPolicy.userDailySuccessLimit ||
+    (globalCounter?.successCount ?? 0) + globalPending >=
+      input.quotaPolicy.globalDailySuccessLimit
+  )
+}
+
+function countPendingAttempts(
+  transaction: AiFeedbackTransaction,
+  input: Readonly<{ createdAt: Date; quotaDate: string; userId?: string }>
+): number {
+  return (
+    transaction
+      .select({ value: count() })
+      .from(aiFeedbackAttempts)
+      .where(
+        and(
+          eq(aiFeedbackAttempts.quotaDate, input.quotaDate),
+          eq(aiFeedbackAttempts.status, "pending"),
+          gt(aiFeedbackAttempts.expiresAt, input.createdAt),
+          ...(input.userId === undefined
+            ? []
+            : [eq(aiFeedbackAttempts.userId, input.userId)])
+        )
+      )
+      .get()?.value ?? 0
+  )
+}
+
+function incrementDailyRequestCounters(
+  transaction: AiFeedbackTransaction,
+  input: Parameters<AiFeedbackRepository["reserveAttempt"]>[0]
+): void {
+  transaction
+    .insert(aiFeedbackUserDailyCounters)
+    .values({
+      quotaDate: input.quotaDate,
+      requestCount: 1,
+      successCount: 0,
+      updatedAt: input.createdAt,
+      userId: input.learnerId,
+    })
+    .onConflictDoUpdate({
+      set: {
+        requestCount: sql`${aiFeedbackUserDailyCounters.requestCount} + 1`,
+        updatedAt: input.createdAt,
+      },
+      target: [
+        aiFeedbackUserDailyCounters.userId,
+        aiFeedbackUserDailyCounters.quotaDate,
+      ],
+    })
+    .run()
+  transaction
+    .insert(aiFeedbackGlobalDailyCounters)
+    .values({
+      quotaDate: input.quotaDate,
+      requestCount: 1,
+      successCount: 0,
+      updatedAt: input.createdAt,
+    })
+    .onConflictDoUpdate({
+      set: {
+        requestCount: sql`${aiFeedbackGlobalDailyCounters.requestCount} + 1`,
+        updatedAt: input.createdAt,
+      },
+      target: aiFeedbackGlobalDailyCounters.quotaDate,
+    })
+    .run()
+}
+
+function incrementDailySuccessCounters(
+  transaction: AiFeedbackTransaction,
+  input: Readonly<{
+    occurredAt: Date
+    quotaDate: string
+    userId: string
+  }>
+): void {
+  const userCounter = transaction
+    .update(aiFeedbackUserDailyCounters)
+    .set({
+      successCount: sql`${aiFeedbackUserDailyCounters.successCount} + 1`,
+      updatedAt: input.occurredAt,
+    })
+    .where(
+      and(
+        eq(aiFeedbackUserDailyCounters.userId, input.userId),
+        eq(aiFeedbackUserDailyCounters.quotaDate, input.quotaDate)
+      )
+    )
+    .returning({ userId: aiFeedbackUserDailyCounters.userId })
+    .get()
+  const globalCounter = transaction
+    .update(aiFeedbackGlobalDailyCounters)
+    .set({
+      successCount: sql`${aiFeedbackGlobalDailyCounters.successCount} + 1`,
+      updatedAt: input.occurredAt,
+    })
+    .where(eq(aiFeedbackGlobalDailyCounters.quotaDate, input.quotaDate))
+    .returning({ quotaDate: aiFeedbackGlobalDailyCounters.quotaDate })
+    .get()
+
+  if (userCounter === undefined || globalCounter === undefined) {
+    throw new Error("AI feedback daily counter is missing")
+  }
 }
 
 function retryAfterSeconds(expiresAt: Date, now: Date): number {

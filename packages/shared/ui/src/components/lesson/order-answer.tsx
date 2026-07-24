@@ -8,13 +8,20 @@ import { GripVertical } from "lucide-react"
 import { cn } from "#ui/lib/utils"
 import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
 
-export function createDeterministicOrder(
-  items: readonly string[],
-  correct: readonly string[],
+export type OrderAnswerItem<TId extends string = string> = {
+  readonly id: TId
+  readonly text: string
+}
+
+export function createDeterministicOrder<TItem extends OrderAnswerItem>(
+  items: readonly TItem[],
+  correctItemIds: readonly string[],
   seed: string
-): readonly string[] {
+): readonly TItem[] {
   const arr = [...items]
-  const random = createSeededRandom(`${seed}\u0000${items.join("\u0000")}`)
+  const random = createSeededRandom(
+    `${seed}\u0000${items.map((item) => item.id).join("\u0000")}`
+  )
 
   for (let index = arr.length - 1; index > 0; index -= 1) {
     const targetIndex = Math.floor(random() * (index + 1))
@@ -26,7 +33,10 @@ export function createDeterministicOrder(
     }
   }
 
-  if (arr.length > 1 && arr.every((value, index) => value === correct[index])) {
+  if (
+    arr.length > 1 &&
+    arr.every((item, index) => item.id === correctItemIds[index])
+  ) {
     const first = arr.shift()
     if (first !== undefined) arr.push(first)
   }
@@ -47,9 +57,10 @@ function createSeededRandom(seed: string): () => number {
   }
 }
 
-export function OrderAnswer({
+export function OrderAnswer<TId extends string>({
   checked = false,
-  correctItems,
+  correctItemIds,
+  defaultOrderedItemIds,
   explanation,
   items,
   onChange,
@@ -58,17 +69,27 @@ export function OrderAnswer({
   title,
 }: {
   readonly checked?: LessonStepCheckedVisual
-  readonly correctItems: readonly string[]
+  readonly correctItemIds: readonly TId[]
+  readonly defaultOrderedItemIds?: readonly TId[]
   readonly explanation?: string
-  readonly items: readonly string[]
-  readonly onChange?: (orderedItems: readonly string[]) => void
+  readonly items: readonly OrderAnswerItem<TId>[]
+  readonly onChange?: (orderedItemIds: readonly TId[]) => void
   readonly seed?: string
   readonly showNumbers?: boolean
   readonly title?: string
 }) {
-  const [orderedItems, setOrderedItems] = useState<readonly string[]>(() =>
-    createDeterministicOrder(items, correctItems, seed ?? items.join("\u0000"))
-  )
+  const [orderedItems, setOrderedItems] = useState<
+    readonly OrderAnswerItem<TId>[]
+  >(() => {
+    const restoredOrder = resolveInitialOrder(items, defaultOrderedItemIds)
+    return restoredOrder === null
+      ? createDeterministicOrder(
+          items,
+          correctItemIds,
+          seed ?? items.map((item) => item.id).join("\u0000")
+        )
+      : restoredOrder
+  })
   const itemRefs = useRef<(HTMLDivElement | null)[]>([])
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
@@ -80,7 +101,7 @@ export function OrderAnswer({
   } | null>(null)
 
   useEffect(() => {
-    onChange?.(orderedItems)
+    onChange?.(orderedItems.map((item) => item.id))
     // Parent may pass an inline callback; only re-emit when order changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderedItems])
@@ -175,7 +196,7 @@ export function OrderAnswer({
       </h2>
       <div className="space-y-3 mb-6 select-none">
         {orderedItems.map((item, i) => {
-          const isCorrect = correctItems[i] === item
+          const isCorrect = correctItemIds[i] === item.id
           const isDragging = dragIndex === i
           let translateY = 0
           if (dragIndex !== null && hoverIndex !== null && !isDragging) {
@@ -193,14 +214,14 @@ export function OrderAnswer({
           return (
             <div
               className={cn(
-                "bg-surface p-4 rounded-3xl flex items-start gap-3",
+                "bg-bg-surface p-4 rounded-3xl flex items-start gap-3",
                 checked !== false &&
                   (isCorrect
-                    ? "bg-mint-light text-charcoal"
-                    : "bg-coral-light text-charcoal"),
+                    ? "bg-success text-success-foreground"
+                    : "bg-danger text-danger-foreground"),
                 isDragging && "shadow-lg"
               )}
-              key={`${item}-${i}`}
+              key={item.id}
               ref={(el) => {
                 itemRefs.current[i] = el
               }}
@@ -216,7 +237,7 @@ export function OrderAnswer({
               {checked === false ? (
                 <button
                   aria-label="드래그하여 순서 변경"
-                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-white touch-none"
+                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-fg-muted hover:bg-bg-elevated touch-none"
                   onPointerCancel={onPointerUp}
                   onPointerDown={(e) => onPointerDown(e, i)}
                   onPointerMove={onPointerMove}
@@ -240,23 +261,45 @@ export function OrderAnswer({
                 className="font-bold flex-1 min-w-0 break-words whitespace-normal"
                 style={{ fontSize: "1rem" }}
               >
-                {item}
+                {item.text}
               </span>
             </div>
           )
         })}
       </div>
       {checked !== false ? (
-        <div className="mt-6 bg-surface rounded-4xl p-6">
-          <div className="font-bold text-muted-foreground mb-2">정답 순서</div>
-          <p className="font-medium">{correctItems.join(" → ")}</p>
+        <div className="mt-6 bg-bg-surface rounded-4xl p-6">
+          <div className="font-bold text-fg-muted mb-2">정답 순서</div>
+          <p className="font-medium">
+            {correctItemIds
+              .flatMap((id) => {
+                const item = items.find((candidate) => candidate.id === id)
+                return item === undefined ? [] : [item.text]
+              })
+              .join(" → ")}
+          </p>
           {explanation ? (
-            <p className="mt-3 font-medium text-muted-foreground">
-              {explanation}
-            </p>
+            <p className="mt-3 font-medium text-fg-muted">{explanation}</p>
           ) : null}
         </div>
       ) : null}
     </div>
   )
+}
+
+function resolveInitialOrder<TId extends string>(
+  items: readonly OrderAnswerItem<TId>[],
+  orderedItemIds: readonly TId[] | undefined
+): readonly OrderAnswerItem<TId>[] | null {
+  if (orderedItemIds === undefined || orderedItemIds.length !== items.length) {
+    return null
+  }
+
+  const itemById = new Map(items.map((item) => [item.id, item]))
+  const orderedItems = orderedItemIds.flatMap((id) => {
+    const item = itemById.get(id)
+    return item === undefined ? [] : [item]
+  })
+
+  return orderedItems.length === items.length ? orderedItems : null
 }

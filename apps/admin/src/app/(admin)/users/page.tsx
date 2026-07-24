@@ -4,9 +4,12 @@ import {
   deleteAdminUserAction,
   updateAdminUserStatusAction,
 } from "@/features/user-management/server/admin-user-actions"
-import { createAdminUsersDal } from "@/features/user-management/server/admin-users-dal"
-import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
+import {
+  settleAdminApiRequest,
+  unauthenticatedAdminRequestFailure,
+} from "@/shared/http/admin-api-client"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
+import { getAdminUsers } from "@workspace/http-client/admin"
 
 export default async function AdminUsersRoute({
   searchParams,
@@ -14,11 +17,11 @@ export default async function AdminUsersRoute({
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const filters = parseAdminUserFilters(await searchParams)
-  const usersResult = await createAdminUsersDal(
-    getServerAdminHttpTransport({
-      tokenProvider: getServerAdminSessionToken,
-    })
-  ).getUsers(filters)
+  const requestOptions = await getServerAdminRequestOptions()
+  const usersResult =
+    requestOptions === null
+      ? unauthenticatedAdminRequestFailure()
+      : await settleAdminApiRequest(getAdminUsers(filters, requestOptions))
 
   return (
     <AdminUsersPage

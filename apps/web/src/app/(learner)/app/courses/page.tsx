@@ -1,31 +1,45 @@
 import { redirect } from "next/navigation"
+import { getCourseCategories, getCourses } from "@workspace/http-client/learner"
 
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { CoursesPage } from "@/features/course-catalog/ui/courses-page"
 import { parseCourseListFilters } from "@/features/course-catalog/model/course-list-filters"
-import { getCourseCatalog } from "@/features/course-catalog/server/dal/get-course-catalog"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
-import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
+import {
+  isLearnerApiAuthenticationError,
+  settleLearnerApiRequest,
+} from "@/shared/http/learner-api-client"
+import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
 export default async function CoursesRoute({
   searchParams,
 }: {
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const resolvedSearchParams = await searchParams
-  const token = await getServerLearnerSessionToken()
+  const [resolvedSearchParams, requestOptions] = await Promise.all([
+    searchParams,
+    getServerLearnerRequestOptions({ cache: "no-store" }),
+  ])
 
-  if (token === null) {
+  if (requestOptions === null) {
     redirect(createLoginPagePath("/app/courses"))
   }
 
   const filters = parseCourseListFilters(resolvedSearchParams)
-  const { categoriesResult, coursesResult } = await getCourseCatalog({
-    filters,
-    sessionToken: token,
-  })
+  const [coursesResult, categoriesResult] = await Promise.all([
+    settleLearnerApiRequest(
+      getCourses(
+        {
+          ...(filters.category === "" ? {} : { category: filters.category }),
+          ...(filters.query === "" ? {} : { query: filters.query }),
+        },
+        requestOptions
+      )
+    ),
+    settleLearnerApiRequest(getCourseCategories(requestOptions)),
+  ])
   if (coursesResult.status === "error") {
-    if (coursesResult.error.code === "UNAUTHENTICATED") {
+    if (isLearnerApiAuthenticationError(coursesResult.error)) {
       redirect(createLoginPagePath("/app/courses"))
     }
 
@@ -38,7 +52,7 @@ export default async function CoursesRoute({
   }
 
   if (categoriesResult.status === "error") {
-    if (categoriesResult.error.code === "UNAUTHENTICATED") {
+    if (isLearnerApiAuthenticationError(categoriesResult.error)) {
       redirect(createLoginPagePath("/app/courses"))
     }
 
@@ -55,7 +69,7 @@ export default async function CoursesRoute({
       categories={categoriesResult.value}
       courses={coursesResult.value.items}
       filters={filters}
-      key={`${filters.category}:${filters.query}:${filters.sort}`}
+      key={`${filters.category}:${filters.query}`}
       nextCursor={coursesResult.value.nextCursor}
     />
   )

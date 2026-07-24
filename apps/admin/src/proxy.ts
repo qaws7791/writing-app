@@ -8,8 +8,11 @@ export function proxy(request: NextRequest) {
   const runtime = readAdminCspRuntimeConfig()
   const nonce = crypto.randomUUID()
   const policy = createContentSecurityPolicy({
-    allowHttpsImages: true,
     development: runtime.development,
+    imageSources:
+      runtime.contentAssetImageSource === null
+        ? []
+        : [runtime.contentAssetImageSource],
     nonce,
     upgradeInsecureRequests: runtime.upgradeInsecureRequests,
   })

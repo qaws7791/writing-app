@@ -1,8 +1,7 @@
 import { sql } from "drizzle-orm"
 import { check, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
-import { adminAuthUsers, authUsers } from "@workspace/auth/schema"
+import { authUsers } from "@workspace/auth/schema"
 
-import { adminRoleValues } from "#identity/domain/admin-role"
 import { userStatusValues } from "#identity/domain/user-status"
 
 export const learnerProfiles = sqliteTable(
@@ -25,24 +24,5 @@ export const learnerProfiles = sqliteTable(
       sql`${table.status} IN ('active', 'suspended', 'deleted')`
     ),
     check("learner_profiles_version_check", sql`${table.version} >= 0`),
-  ]
-)
-
-export const adminIdentityProfiles = sqliteTable(
-  "admin_identity_profiles",
-  {
-    adminId: text("admin_id")
-      .primaryKey()
-      .notNull()
-      .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
-    role: text("role", { enum: adminRoleValues }).notNull().default("operator"),
-    version: integer("version").notNull().default(0),
-  },
-  (table) => [
-    check(
-      "admin_identity_profiles_role_check",
-      sql`${table.role} IN ('owner', 'operator')`
-    ),
-    check("admin_identity_profiles_version_check", sql`${table.version} >= 0`),
   ]
 )

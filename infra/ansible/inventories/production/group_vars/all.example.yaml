@@ -1,6 +1,13 @@
+writing_app_environment: production
 writing_app_web_host: app.example.com
 writing_app_admin_host: admin.example.com
-
+# verify playbook에서 DNS, TLS와 public route 경계를 검증한다.
+writing_app_verify_public_routes: true
+writing_app_enable_api_docs: false
+writing_app_maintenance_log_retention_evidence_file: >-
+  /etc/writing-app/evidence/log-retention.json
+writing_app_maintenance_on_calendar: "*-*-* 03:15:00"
+# 실제 배포에서는 세 application image를 tag@sha256:<64 hex>로 고정한다.
 writing_app_web_image: ghcr.io/example/writing-app-web@sha256:replace-me
 writing_app_api_image: ghcr.io/example/writing-app-api@sha256:replace-me
 writing_app_admin_image: ghcr.io/example/writing-app-admin@sha256:replace-me
@@ -11,20 +18,25 @@ writing_app_registry_token: >-
   {{ vault_writing_app_registry_token | default('') }}
 
 writing_app_openai_model: gpt-5.2
-writing_app_google_client_id: >-
-  {{ vault_writing_app_google_client_id | default('') }}
-writing_app_google_client_secret: >-
-  {{ vault_writing_app_google_client_secret | default('') }}
-writing_app_openai_api_key: >-
-  {{ vault_writing_app_openai_api_key | default('') }}
+writing_app_auth_email_from: 글결 <auth@example.com>
+writing_app_auth_email_reply_to: support@example.com
+writing_app_google_client_id: "{{ vault_writing_app_google_client_id }}"
+writing_app_google_client_secret: "{{ vault_writing_app_google_client_secret }}"
+writing_app_openai_api_key: "{{ vault_writing_app_openai_api_key }}"
+writing_app_resend_api_key: "{{ vault_writing_app_resend_api_key }}"
+# 일일 quota 수치는 제품 entitlement가 아닌 출시 검증 전 운영 safeguard 예시다.
+writing_app_ai_feedback_user_daily_request_limit: 20
+writing_app_ai_feedback_user_daily_success_limit: 10
+writing_app_ai_feedback_global_daily_request_limit: 1000
+writing_app_ai_feedback_global_daily_success_limit: 500
+writing_app_ai_feedback_provider_timeout_ms: 30000
+writing_app_ai_feedback_pending_ttl_ms: 60000
 
 # 아래 민감 값은 Ansible Vault로 암호화한 vault.yaml에서 관리한다.
 writing_app_learner_auth_secret: "{{ vault_writing_app_learner_auth_secret }}"
 writing_app_cursor_signing_secret: >-
   {{ vault_writing_app_cursor_signing_secret }}
 writing_app_admin_auth_secret: "{{ vault_writing_app_admin_auth_secret }}"
-writing_app_cloudflare_tunnel_token: >-
-  {{ vault_writing_app_cloudflare_tunnel_token }}
 writing_app_r2_access_key_id: "{{ vault_writing_app_r2_access_key_id }}"
 writing_app_r2_secret_access_key: "{{ vault_writing_app_r2_secret_access_key }}"
 writing_app_r2_bucket: replace-with-r2-bucket
@@ -40,4 +52,18 @@ writing_app_admin_asset_s3_bucket: replace-with-r2-public-assets-bucket
 writing_app_admin_asset_s3_endpoint: >-
   https://replace-with-account-id.r2.cloudflarestorage.com
 writing_app_admin_asset_s3_region: auto
-writing_app_admin_asset_public_base_url: https://replace-with-assets-domain
+writing_app_admin_asset_public_base_url: https://assets.example.com
+writing_app_content_asset_image_allowed_origins:
+  - https://staging-assets.example.com
+  - https://assets.example.com
+
+# 삭제 marker는 public asset과 다른 private bucket/prefix에 저장한다.
+writing_app_deletion_marker_s3_access_key: >-
+  {{ vault_writing_app_deletion_marker_s3_access_key }}
+writing_app_deletion_marker_s3_secret_key: >-
+  {{ vault_writing_app_deletion_marker_s3_secret_key }}
+writing_app_deletion_marker_s3_bucket: replace-with-private-marker-bucket
+writing_app_deletion_marker_s3_endpoint: >-
+  https://replace-with-account-id.r2.cloudflarestorage.com
+writing_app_deletion_marker_s3_region: auto
+writing_app_deletion_marker_s3_prefix: privacy/production/deletion-markers

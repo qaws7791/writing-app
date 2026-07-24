@@ -2,14 +2,14 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
-import { createCourseImageUrl } from "@/entities/course/model/course-visual-assets"
-import type { LearnerCourseDetail } from "@workspace/contracts/learning/learner-content"
+import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
+import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CourseDetailPageProps = {
-  readonly course: LearnerCourseDetail
+  readonly course: LearnerCourseDetailDto
 }
 
 export function CourseDetailPage({ course }: CourseDetailPageProps) {
@@ -39,21 +39,21 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
       >
         <div className="flex items-start justify-between gap-4 mb-6">
           <Image
-            alt={course.title}
+            alt={resolveCourseImage(course).alt}
             className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
             height={128}
-            preload
+            loading="eager"
             sizes="(max-width: 768px) 96px, 128px"
-            src={createCourseImageUrl(course.visualKey)}
+            src={resolveCourseImage(course).src}
             width={128}
           />
         </div>
         <h1 className="mb-4 text-heading-xl font-bold">{course.title}</h1>
-        <p className="mb-8 text-body-lg font-medium text-charcoal leading-relaxed">
+        <p className="mb-8 text-body-lg font-medium text-fg-default leading-relaxed">
           {course.description}
         </p>
         <div className="mb-10 flex items-center gap-6">
-          <div className="h-4 flex-1 overflow-hidden rounded-full bg-charcoal/20">
+          <div className="h-4 flex-1 overflow-hidden rounded-full bg-bg-surface">
             <div
               className="h-full rounded-full bg-primary transition-all"
               style={{ width: `${progressPercent}%` }}
@@ -72,7 +72,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             <Link
               className={buttonVariants({
                 className:
-                  "w-full rounded-full bg-charcoal px-10 text-cream md:w-auto h-auto py-5 text-lg font-bold hover:opacity-90",
+                  "w-full rounded-full bg-action-primary-bg px-10 text-action-primary-fg md:w-auto h-auto py-5 text-lg font-bold hover:opacity-90",
                 size: "lg",
               })}
               href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}

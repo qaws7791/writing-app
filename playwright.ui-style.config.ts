@@ -1,8 +1,15 @@
-import { defineConfig } from "@playwright/test"
+import { defineConfig, devices } from "@playwright/test"
 
 import baseConfig from "#playwright-config"
 
 export default defineConfig({
   ...baseConfig,
-  testMatch: "ui-style-seam.visual.spec.ts",
+  projects: [
+    {
+      name: "chromium-latest",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+  testIgnore: [],
+  testMatch: ["theme-surfaces.visual.spec.ts", "ui-style-seam.visual.spec.ts"],
 })

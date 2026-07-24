@@ -1,13 +1,5 @@
 import { z } from "zod"
 
-const courseSortSchema = z.enum([
-  "lesson-count-asc",
-  "lesson-count-desc",
-  "recommended",
-  "title-asc",
-  "title-desc",
-])
-
 const optionalStringSchema = z.preprocess(
   (value) => (typeof value === "string" ? value : undefined),
   z.string().default("")
@@ -16,10 +8,6 @@ const optionalStringSchema = z.preprocess(
 const courseListSearchParamsSchema = z.object({
   category: optionalStringSchema,
   query: optionalStringSchema,
-  sort: z.preprocess(
-    (value) => (typeof value === "string" ? value : undefined),
-    courseSortSchema.catch("recommended")
-  ),
 })
 
 export type CourseListFilters = z.infer<typeof courseListSearchParamsSchema>

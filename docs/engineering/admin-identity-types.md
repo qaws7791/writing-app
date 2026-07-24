@@ -2,7 +2,7 @@
 
 ## 목적
 
-관리자, 학습자 계정과 관리자 대화처럼 서로 다른 도메인의 식별자를 type level에서 구분한다. 현재 parser, 브랜드 타입과 wire schema는 contracts source가 소유한다.
+관리자와 학습자 계정처럼 서로 다른 도메인의 식별자를 type level에서 구분한다. 현재 parser, 브랜드 타입과 wire schema는 contracts source가 소유한다.
 
 ## 원칙
 

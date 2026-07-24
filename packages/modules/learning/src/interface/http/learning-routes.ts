@@ -1,13 +1,11 @@
-import type { RouteHandler } from "@hono/zod-openapi"
-import type {
-  Env,
-  Handler,
-  Input,
-  MiddlewareHandler,
-  TypedResponse,
-} from "hono"
+import {
+  createRoute,
+  type OpenAPIHono,
+  type RouteConfig,
+} from "@hono/zod-openapi"
+import type { MiddlewareHandler } from "hono"
 
-import { learnerApiErrorSchema } from "@workspace/contracts/learning/api-error"
+import { apiErrorSchema } from "@workspace/contracts/api-error"
 import {
   learnerCompleteStepResponseSchema,
   learnerCourseCategoriesResponseSchema,
@@ -19,19 +17,17 @@ import {
   learnerLessonResponseSchema,
   learnerProgressQuerySchema,
   learnerProgressResponseSchema,
+  learnerSaveStepDraftResponseSchema,
   learnerStartLessonResponseSchema,
 } from "@workspace/contracts/learning/learner-api"
 import {
   completeLearnerStepBodySchema,
   completeLearnerStepParamsSchema,
+  saveLearnerStepDraftBodySchema,
   startLearnerLessonBodySchema,
 } from "@workspace/contracts/learning/learner-transition"
 import type { LearnerId } from "@workspace/types/ids"
-import {
-  defineRouteForEnv,
-  type AnyRouteConfig,
-} from "@workspace/http-platform/core"
-import type { HttpPlatformEnv } from "@workspace/http-platform/context"
+import type { HttpPlatformEnv } from "@workspace/http-platform/app"
 import {
   AppError,
   assertExhaustiveHttpResult,
@@ -43,7 +39,6 @@ import {
 } from "@workspace/http-platform/security"
 
 import type { LearningApplication } from "#learning/application/learning-application"
-import type { LearningQueries } from "#learning/application/learning-queries"
 import type { LearnerCursorCodec } from "#learning/infrastructure/persistence/learner-cursor"
 import {
   decodeLearnerCourseListQuery,
@@ -53,11 +48,6 @@ import {
   presentCompleteStepResult,
   unwrapLearningResult,
 } from "#learning/interface/http/learning-http-mapper"
-
-export type LearningHttpRouteGroup = readonly Readonly<{
-  handler: unknown
-  route: AnyRouteConfig
-}>[]
 
 export type LearningLearnerSessionPort = Readonly<{
   resolveLearner: (
@@ -69,39 +59,39 @@ export type LearningLearnerSessionPort = Readonly<{
   >
 }>
 
-type LearningHonoEnv = HttpPlatformEnv<{
+export type LearningHonoEnv = HttpPlatformEnv<{
   learningLearner: Readonly<{ learnerId: LearnerId }>
 }>
 
-const defineLearningRoute = defineRouteForEnv<LearningHonoEnv>()
-
-export function createLearningRoutes(input: {
-  readonly application: LearningApplication
-  readonly cursor: LearnerCursorCodec
-  readonly queries: LearningQueries
-  readonly session: LearningLearnerSessionPort
-}): LearningHttpRouteGroup {
+export function registerLearningRoutes<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: {
+    readonly application: LearningApplication
+    readonly cursor: LearnerCursorCodec
+    readonly session: LearningLearnerSessionPort
+  }
+): void {
   const authenticated = {
     middleware: [createRequireLearnerMiddleware(input.session)],
     security: [{ learnerSessionCookie: [] }],
   }
 
-  return Object.freeze([
-    defineListCoursesRoute(input, authenticated),
-    defineListCourseCategoriesRoute(input, authenticated),
-    defineGetCourseDetailRoute(input, authenticated),
-    defineGetLessonRoute(input, authenticated),
-    defineProgressRoute(input, authenticated),
-    defineStartLessonRoute(input, authenticated),
-    defineCompleteStepRoute(input, authenticated),
-  ])
+  registerListCoursesRoute(app, input, authenticated)
+  registerListCourseCategoriesRoute(app, input, authenticated)
+  registerGetCourseDetailRoute(app, input, authenticated)
+  registerGetLessonRoute(app, input, authenticated)
+  registerProgressRoute(app, input, authenticated)
+  registerStartLessonRoute(app, input, authenticated)
+  registerSaveStepDraftRoute(app, input, authenticated)
+  registerCompleteStepRoute(app, input, authenticated)
 }
 
-function defineListCoursesRoute(
+function registerListCoursesRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
   authenticated: AuthenticatedRouteOptions
-) {
-  const route = {
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getCourses",
     path: "/courses",
@@ -115,29 +105,29 @@ function defineListCoursesRoute(
     ),
     summary: "코스 목록 조회",
     ...authenticated,
-  } satisfies AnyRouteConfig
-  const handler: LearningRouteHandler<typeof route> = async (context) => {
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
     const decoded = decodeLearnerCourseListQuery(
       input.cursor,
       context.req.valid("query")
     )
     if (decoded.isErr()) throw invalidCursorError()
-    const page = await input.queries.content.listCourses(decoded.value)
+    const page = await input.application.readCourseCatalog(decoded.value)
     return context.json(
       learnerCourseListResponseSchema.parse(
         encodeLearnerCoursePage(input.cursor, decoded.value, page)
       ),
       200
     )
-  }
-  return defineLearningRoute({ ...route, handler })
+  })
 }
 
-function defineListCourseCategoriesRoute(
+function registerListCourseCategoriesRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
   authenticated: AuthenticatedRouteOptions
-) {
-  const route = {
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getCourseCategories",
     path: "/course-categories",
@@ -149,22 +139,23 @@ function defineListCourseCategoriesRoute(
     ),
     summary: "코스 분류 목록 조회",
     ...authenticated,
-  } satisfies AnyRouteConfig
-  const handler: LearningRouteHandler<typeof route> = async (context) =>
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) =>
     context.json(
       learnerCourseCategoriesResponseSchema.parse(
-        await input.queries.content.listCourseCategories()
+        await input.application.readCourseCategories()
       ),
       200
     )
-  return defineLearningRoute({ ...route, handler })
+  )
 }
 
-function defineGetCourseDetailRoute(
+function registerGetCourseDetailRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
   authenticated: AuthenticatedRouteOptions
-) {
-  const route = {
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getCourseDetail",
     path: "/courses/{courseId}",
@@ -175,26 +166,26 @@ function defineGetCourseDetailRoute(
     ),
     summary: "코스 상세 조회",
     ...authenticated,
-  } satisfies AnyRouteConfig
-  const handler: LearningRouteHandler<typeof route> = async (context) => {
-    const result = await input.queries.content.getCourseDetail({
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const result = await input.application.readCourseDetail({
       courseId: context.req.valid("param").courseId,
-      userId: context.var.learningLearner.learnerId,
+      learnerId: context.var.learningLearner.learnerId,
     })
     if (result.isErr()) throw mapReadError(result.error.kind)
     return context.json(
       learnerCourseDetailResponseSchema.parse(result.value),
       200
     )
-  }
-  return defineLearningRoute({ ...route, handler })
+  })
 }
 
-function defineGetLessonRoute(
+function registerGetLessonRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
   authenticated: AuthenticatedRouteOptions
-) {
-  const route = {
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getLesson",
     path: "/lessons/{lessonId}",
@@ -205,23 +196,23 @@ function defineGetLessonRoute(
     ),
     summary: "레슨 상세 조회",
     ...authenticated,
-  } satisfies AnyRouteConfig
-  const handler: LearningRouteHandler<typeof route> = async (context) => {
-    const result = await input.queries.content.getLesson({
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const result = await input.application.readLesson({
       lessonId: context.req.valid("param").lessonId,
-      userId: context.var.learningLearner.learnerId,
+      learnerId: context.var.learningLearner.learnerId,
     })
     if (result.isErr()) throw mapReadError(result.error.kind)
     return context.json(learnerLessonResponseSchema.parse(result.value), 200)
-  }
-  return defineLearningRoute({ ...route, handler })
+  })
 }
 
-function defineProgressRoute(
+function registerProgressRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
   authenticated: AuthenticatedRouteOptions
-) {
-  const route = {
+): void {
+  const route = createRoute({
     method: "get",
     operationId: "getProgress",
     path: "/progress",
@@ -235,30 +226,30 @@ function defineProgressRoute(
     ),
     summary: "학습 진행 조회",
     ...authenticated,
-  } satisfies AnyRouteConfig
-  const handler: LearningRouteHandler<typeof route> = async (context) => {
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
     const decoded = decodeLearnerProgressListQuery(
       input.cursor,
       context.var.learningLearner.learnerId,
       context.req.valid("query")
     )
     if (decoded.isErr()) throw invalidCursorError()
-    const page = await input.queries.progress.readProgress(decoded.value)
+    const page = await input.application.readLearnerHome(decoded.value)
     return context.json(
       learnerProgressResponseSchema.parse(
         encodeLearnerProgressPage(input.cursor, decoded.value, page)
       ),
       200
     )
-  }
-  return defineLearningRoute({ ...route, handler })
+  })
 }
 
-function defineStartLessonRoute(
+function registerStartLessonRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
   authenticated: AuthenticatedRouteOptions
-) {
-  const route = {
+): void {
+  const route = createRoute({
     method: "post",
     operationId: "startLearnerLesson",
     path: "/learning/lessons/{lessonId}/start",
@@ -283,8 +274,8 @@ function defineStartLessonRoute(
     ),
     summary: "레슨 시작",
     ...authenticated,
-  } satisfies AnyRouteConfig
-  const handler: LearningRouteHandler<typeof route> = async (context) => {
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
     const result = await input.application.startLesson({
       expectedCurriculumVersionId:
         context.req.valid("json").expectedCurriculumVersionId,
@@ -295,15 +286,15 @@ function defineStartLessonRoute(
       learnerStartLessonResponseSchema.parse(unwrapLearningResult(result)),
       200
     )
-  }
-  return defineLearningRoute({ ...route, handler })
+  })
 }
 
-function defineCompleteStepRoute(
+function registerCompleteStepRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
   authenticated: AuthenticatedRouteOptions
-) {
-  const route = {
+): void {
+  const route = createRoute({
     method: "post",
     operationId: "completeLearnerStep",
     path: "/learning/lessons/{lessonId}/steps/{stepId}/complete",
@@ -329,8 +320,8 @@ function defineCompleteStepRoute(
     ),
     summary: "현재 레슨 단계 완료",
     ...authenticated,
-  } satisfies AnyRouteConfig
-  const handler: LearningRouteHandler<typeof route> = async (context) => {
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
     const params = context.req.valid("param")
     const body = context.req.valid("json")
     const command = {
@@ -340,48 +331,82 @@ function defineCompleteStepRoute(
     }
     const result =
       body.kind === "answer"
-        ? await input.application.answerStep({
+        ? await input.application.submitStep({
             ...command,
-            submission: body.answer,
+            completion: { kind: "answer", submission: body.answer },
           })
-        : await input.application.completeStep(command)
+        : await input.application.submitStep({
+            ...command,
+            completion: { kind: body.kind },
+          })
     return context.json(
       learnerCompleteStepResponseSchema.parse(
         presentCompleteStepResult(unwrapLearningResult(result))
       ),
       200
     )
-  }
-  return defineLearningRoute({ ...route, handler })
+  })
+}
+
+function registerSaveStepDraftRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: LearningRouteDependencies,
+  authenticated: AuthenticatedRouteOptions
+): void {
+  const route = createRoute({
+    method: "put",
+    operationId: "saveLearnerStepDraft",
+    path: "/learning/lessons/{lessonId}/steps/{stepId}/draft",
+    request: {
+      body: {
+        content: {
+          "application/json": { schema: saveLearnerStepDraftBodySchema },
+        },
+        required: true,
+      },
+      params: completeLearnerStepParamsSchema,
+    },
+    responses: authenticatedResponses(
+      jsonResponse(
+        "저장된 단계 초안과 새 version입니다.",
+        learnerSaveStepDraftResponseSchema
+      ),
+      {
+        400: errorResponse("잘못된 초안 요청입니다."),
+        404: errorResponse("레슨을 찾을 수 없습니다."),
+        409: errorResponse("초안 또는 커리큘럼 version이 충돌했습니다."),
+      }
+    ),
+    summary: "현재 레슨 단계 초안 저장",
+    ...authenticated,
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const params = context.req.valid("param")
+    const body = context.req.valid("json")
+    const result = await input.application.saveStepDraft({
+      answer: body.answer,
+      expectedCurriculumVersionId: body.expectedCurriculumVersionId,
+      expectedVersion: body.expectedVersion,
+      learnerId: context.var.learningLearner.learnerId,
+      lessonId: params.lessonId,
+      stepId: params.stepId,
+    })
+    return context.json(
+      learnerSaveStepDraftResponseSchema.parse(unwrapLearningResult(result)),
+      200
+    )
+  })
 }
 
 type LearningRouteDependencies = Readonly<{
   application: LearningApplication
   cursor: LearnerCursorCodec
-  queries: LearningQueries
 }>
 
 type AuthenticatedRouteOptions = {
   middleware: MiddlewareHandler<LearningHonoEnv>[]
   security: { learnerSessionCookie: never[] }[]
 }
-
-type LearningRouteHandler<TRoute extends AnyRouteConfig> =
-  RouteHandler<TRoute, LearningHonoEnv> extends Handler<
-    infer TEnv extends Env,
-    infer TPath extends string,
-    infer TInput extends Input,
-    infer _TResponse
-  >
-    ? Handler<
-        TEnv,
-        TPath,
-        TInput,
-        | Promise<Response | TypedResponse<unknown>>
-        | Response
-        | TypedResponse<unknown>
-      >
-    : never
 
 function createRequireLearnerMiddleware(
   session: LearningLearnerSessionPort
@@ -415,7 +440,7 @@ function authenticatedResponses(
 }
 
 function errorResponse(description: string) {
-  return jsonResponse(description, learnerApiErrorSchema)
+  return jsonResponse(description, apiErrorSchema)
 }
 
 function invalidCursorError(): AppError {

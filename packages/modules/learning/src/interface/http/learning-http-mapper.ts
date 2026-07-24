@@ -49,7 +49,6 @@ export function decodeLearnerCourseListQuery(
   const query = {
     category: wireQuery.category?.normalize("NFC"),
     query: wireQuery.query?.trim().normalize("NFC"),
-    sort: wireQuery.sort,
   }
   const after = decodePosition(cursorCodec, wireQuery.cursor, {
     endpoint: "courses",
@@ -78,7 +77,6 @@ export function encodeLearnerCoursePage(
             fingerprint: cursorCodec.createFingerprint({
               category: query.category,
               query: query.query,
-              sort: query.sort,
             }),
             position: page.nextPosition,
           }),
@@ -176,7 +174,6 @@ export function presentAiFeedbackResult(
     feedback: {
       ...result.feedback,
       improvements: [...result.feedback.improvements],
-      scoreRange: [0, 100],
       strengths: [...result.feedback.strengths],
     },
     transition: presentCompleteStepResult(result.transition),
@@ -225,6 +222,12 @@ function mapLearningCommandError(error: LearningCommandError): AppError {
         "STEP_SEQUENCE_CONFLICT",
         "현재 학습 순서와 요청한 단계가 다릅니다."
       )
+    case "step-draft-version-conflict":
+      return httpError(
+        409,
+        "STEP_DRAFT_VERSION_CONFLICT",
+        "다른 변경으로 단계 초안 버전이 바뀌었습니다."
+      )
     case "attempt-limit-exceeded":
       return httpError(
         429,
@@ -236,6 +239,12 @@ function mapLearningCommandError(error: LearningCommandError): AppError {
         409,
         "ATTEMPT_IN_PROGRESS",
         "AI 코칭 요청을 처리하고 있습니다."
+      )
+    case "daily-quota-exceeded":
+      return httpError(
+        429,
+        "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED",
+        "오늘 사용할 수 있는 AI 코칭 요청량을 모두 사용했습니다."
       )
     case "provider-response-invalid":
     case "provider-timeout":

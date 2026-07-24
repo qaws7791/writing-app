@@ -3,11 +3,12 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
 import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
-import { learnerCourseDetailSchema } from "@workspace/contracts/learning/learner-content"
+import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
 
 const version = { curriculumVersionId: "c1-v1", revision: 1 }
-const course = learnerCourseDetailSchema.parse({
+const course: LearnerCourseDetailDto = {
   category: "입문자를 위한 코스",
+  cover: null,
   description:
     "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
@@ -85,7 +86,7 @@ const course = learnerCourseDetailSchema.parse({
     },
   ],
   version,
-})
+}
 
 describe("코스 커리큘럼", () => {
   it("현재 제품 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 링크로 제공한다", async () => {

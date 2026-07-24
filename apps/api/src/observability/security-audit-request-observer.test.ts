@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { describe, expect, it } from "vitest"
-import { createRequestLoggingMiddleware } from "@workspace/http-platform/request-logging"
+import { createRequestLoggingMiddleware } from "@workspace/http-platform/app"
 import type { SecurityAuditEvent } from "@workspace/observability/security-audit-logger"
 
 import { createSecurityAuditRequestObserver } from "@/observability/security-audit-request-observer"
@@ -18,7 +18,7 @@ describe("API security audit policy", () => {
         observeRequest: createSecurityAuditRequestObserver((event) =>
           audits.push(event)
         ),
-        readActor: () => ({ id: "admin-1", role: "owner", type: "admin" }),
+        readActor: () => ({ id: "admin-1", type: "admin" }),
       })
     )
     app.patch("/users/user-1/status", (context) => context.json({ ok: true }))

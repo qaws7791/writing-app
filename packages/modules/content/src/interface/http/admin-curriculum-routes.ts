@@ -1,7 +1,12 @@
-import type { AnyRouteConfig } from "@workspace/http-platform/core"
+import {
+  createRoute,
+  type OpenAPIHono,
+  type RouteConfig,
+} from "@hono/zod-openapi"
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import {
   adminCourseEditorDocumentSchema,
+  adminCourseEditorWriteDocumentSchema,
   adminPublishCourseResultSchema,
 } from "@workspace/contracts/content/admin-courses"
 import {
@@ -11,10 +16,7 @@ import {
 
 import type { ContentApplication } from "#content/application/content-application"
 import type { ContentAdminSessionPort } from "#content/application/ports/content-ports"
-import {
-  contentMutationRouteOptions,
-  contentSessionRouteOptions,
-} from "#content/interface/http/content-http-auth"
+import { contentSessionRouteOptions } from "#content/interface/http/content-http-auth"
 import {
   contentPreconditionRequiredError,
   invalidContentRequestError,
@@ -28,9 +30,8 @@ import {
 import {
   contentAuthenticatedResponses,
   contentErrorJsonResponse,
-  defineContentRoute,
-  type ContentRouteHandler,
 } from "#content/interface/http/content-http-support"
+import type { ContentAdminHonoEnv } from "#content/interface/http/content-http-auth"
 import {
   parseIntegerEtag,
   toIntegerEtag,
@@ -41,20 +42,19 @@ export type AdminCurriculumRouteDependencies = Readonly<{
   sessionPort: ContentAdminSessionPort
 }>
 
-export function createAdminCurriculumRoutes(
+export function registerAdminCurriculumRoutes<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
   dependencies: AdminCurriculumRouteDependencies
-) {
-  return Object.freeze([
-    createGetCourseEditorRoute(dependencies),
-    createSaveCourseEditorRoute(dependencies),
-    createPublishCourseRoute(dependencies),
-  ])
+): void {
+  registerGetCourseEditorRoute(app, dependencies)
+  registerSaveCourseEditorRoute(app, dependencies)
+  registerPublishCourseRoute(app, dependencies)
 }
 
-function createGetCourseEditorRoute({
-  application,
-  sessionPort,
-}: AdminCurriculumRouteDependencies) {
+function registerGetCourseEditorRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminCurriculumRouteDependencies
+): void {
   const routeConfig = {
     method: "get",
     operationId: "getAdminCourseEditor",
@@ -71,9 +71,10 @@ function createGetCourseEditorRoute({
     },
     summary: "어드민 코스 편집 문서 조회",
     ...contentSessionRouteOptions(sessionPort),
-  } satisfies AnyRouteConfig
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
 
-  const handler: ContentRouteHandler<typeof routeConfig> = async (context) => {
+  app.openapi(route, async (context) => {
     const document = await application.getCourseEditor(
       context.req.valid("param").courseId
     )
@@ -83,15 +84,13 @@ function createGetCourseEditorRoute({
     return context.json(response, 200, {
       ETag: toIntegerEtag(response.editVersion),
     })
-  }
-
-  return defineContentRoute({ ...routeConfig, handler })
+  })
 }
 
-function createSaveCourseEditorRoute({
-  application,
-  sessionPort,
-}: AdminCurriculumRouteDependencies) {
+function registerSaveCourseEditorRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminCurriculumRouteDependencies
+): void {
   const routeConfig = {
     method: "put",
     operationId: "saveAdminCourseEditor",
@@ -99,7 +98,7 @@ function createSaveCourseEditorRoute({
     request: {
       body: {
         content: {
-          "application/json": { schema: adminCourseEditorDocumentSchema },
+          "application/json": { schema: adminCourseEditorWriteDocumentSchema },
         },
         required: true,
       },
@@ -120,10 +119,11 @@ function createSaveCourseEditorRoute({
       428: contentErrorJsonResponse("If-Match draft version이 필요합니다."),
     },
     summary: "어드민 코스 편집 문서 저장",
-    ...contentMutationRouteOptions(sessionPort),
-  } satisfies AnyRouteConfig
+    ...contentSessionRouteOptions(sessionPort),
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
 
-  const handler: ContentRouteHandler<typeof routeConfig> = async (context) => {
+  app.openapi(route, async (context) => {
     const expectedEditVersion = readExpectedEditVersion(
       context.req.valid("header")["if-match"]
     )
@@ -136,7 +136,7 @@ function createSaveCourseEditorRoute({
     const document = toCourseEditorDocument(requestDocument)
     if (document.isErr()) throw mapContentError(document.error)
     const result = await application.saveCourseEditor({
-      actor: context.var.contentActor,
+      adminId: context.var.contentAdminId,
       document: document.value,
       expectedEditVersion,
     })
@@ -146,15 +146,13 @@ function createSaveCourseEditorRoute({
     return context.json(response, 200, {
       ETag: toIntegerEtag(response.editVersion),
     })
-  }
-
-  return defineContentRoute({ ...routeConfig, handler })
+  })
 }
 
-function createPublishCourseRoute({
-  application,
-  sessionPort,
-}: AdminCurriculumRouteDependencies) {
+function registerPublishCourseRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminCurriculumRouteDependencies
+): void {
   const routeConfig = {
     method: "post",
     operationId: "publishAdminCourse",
@@ -177,23 +175,22 @@ function createPublishCourseRoute({
       428: contentErrorJsonResponse("If-Match draft version이 필요합니다."),
     },
     summary: "어드민 코스 draft 게시",
-    ...contentMutationRouteOptions(sessionPort),
-  } satisfies AnyRouteConfig
+    ...contentSessionRouteOptions(sessionPort),
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
 
-  const handler: ContentRouteHandler<typeof routeConfig> = async (context) => {
+  app.openapi(route, async (context) => {
     const expectedEditVersion = readExpectedEditVersion(
       context.req.valid("header")["if-match"]
     )
     const result = await application.publishCourse({
-      actor: context.var.contentActor,
+      adminId: context.var.contentAdminId,
       courseId: context.req.valid("param").courseId,
       expectedEditVersion,
     })
     if (result.isErr()) throw mapContentError(result.error)
     return context.json(toAdminPublishResult(result.value), 200)
-  }
-
-  return defineContentRoute({ ...routeConfig, handler })
+  })
 }
 
 function readExpectedEditVersion(value: string | undefined): number {

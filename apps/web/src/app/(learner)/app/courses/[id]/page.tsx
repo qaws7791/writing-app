@@ -1,12 +1,18 @@
 import type { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
+import { cache } from "react"
+import { getCourseDetail } from "@workspace/http-client/learner"
 
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { CourseDetailPage } from "@/features/course-detail/ui/course-detail-page"
 import { parseCourseDetailRouteParams } from "@/features/course-detail/model/course-detail-route-params"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
-import { getServerLearnerSessionToken } from "@/server/auth/server-session-token"
-import { getCachedCourseDetail } from "@/features/course-detail/server/dal/cached-course-detail"
+import {
+  isLearnerApiAuthenticationError,
+  readLearnerApiErrorCode,
+  settleLearnerApiRequest,
+} from "@/shared/http/learner-api-client"
+import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
 type CourseDetailRouteProps = {
   readonly params: Promise<{
@@ -20,26 +26,23 @@ export async function generateMetadata({
   const parsedParams = parseCourseDetailRouteParams(await params)
   if (parsedParams === null) return unavailableCourseMetadata()
   const { id } = parsedParams
-  const token = await getServerLearnerSessionToken()
-  if (token === null) {
-    return unavailableCourseMetadata()
-  }
-
-  const result = await getCachedCourseDetail(id, token)
-  if (result.status === "error") {
+  const result = await readCourseDetail(id)
+  if (result === null || result.status === "error") {
     return unavailableCourseMetadata()
   }
 
   const course = result.value
   const coursePath = `/app/courses/${encodeURIComponent(course.id)}`
-  const imagePath = `/course-thumbnails/${course.visualKey}.png`
+  const imagePath =
+    course.cover?.url ?? `/course-thumbnails/${course.visualKey}.png`
+  const imageAlt = course.cover?.altText ?? course.title
 
   return {
     alternates: { canonical: coursePath },
     description: course.description,
     openGraph: {
       description: course.description,
-      images: [{ alt: course.title, url: imagePath }],
+      images: [{ alt: imageAlt, url: imagePath }],
       title: course.title,
       type: "article",
       url: coursePath,
@@ -61,19 +64,17 @@ export default async function CourseDetailRoute({
   if (parsedParams === null) notFound()
   const { id } = parsedParams
   const nextPath = `/app/courses/${id}`
-  const token = await getServerLearnerSessionToken()
-
-  if (token === null) {
+  const courseResult = await readCourseDetail(id)
+  if (courseResult === null) {
     redirect(createLoginPagePath(nextPath))
   }
 
-  const courseResult = await getCachedCourseDetail(id, token)
   if (courseResult.status === "error") {
-    if (courseResult.error.code === "UNAUTHENTICATED") {
+    if (isLearnerApiAuthenticationError(courseResult.error)) {
       redirect(createLoginPagePath(nextPath))
     }
 
-    if (courseResult.error.code === "COURSE_NOT_FOUND") {
+    if (readLearnerApiErrorCode(courseResult.error) === "COURSE_NOT_FOUND") {
       notFound()
     }
 
@@ -94,3 +95,12 @@ function unavailableCourseMetadata(): Metadata {
     title: "코스를 찾을 수 없습니다",
   }
 }
+
+const readCourseDetail = cache(async (courseId: string) => {
+  const requestOptions = await getServerLearnerRequestOptions({
+    cache: "no-store",
+  })
+  if (requestOptions === null) return null
+
+  return settleLearnerApiRequest(getCourseDetail(courseId, requestOptions))
+})

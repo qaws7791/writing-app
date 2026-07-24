@@ -1,70 +1,40 @@
 import type { MiddlewareHandler } from "hono"
 import { AppError } from "@workspace/http-platform/errors"
-import type { HttpPlatformEnv } from "@workspace/http-platform/context"
+import type { HttpPlatformEnv } from "@workspace/http-platform/app"
 import {
   setPrivateNoStoreHeaders,
   withPrivateNoStore,
 } from "@workspace/http-platform/security"
+import type { AdminId } from "@workspace/types/ids"
 
 import type { ContentAdminSessionPort } from "#content/application/ports/content-ports"
-import type { ContentActor } from "#content/domain/content-admin-policy"
 
 export type ContentAdminHonoEnv = HttpPlatformEnv<{
-  contentActor: ContentActor
+  contentAdminId: AdminId
 }>
 
 export function contentSessionRouteOptions(
   sessionPort: ContentAdminSessionPort
 ) {
   return {
-    middleware: [createRequireContentSessionMiddleware(sessionPort)],
+    middleware: [createContentSessionMiddleware(sessionPort)],
     security: [{ adminSessionCookie: [] }],
   }
 }
 
-export function contentMutationRouteOptions(
-  sessionPort: ContentAdminSessionPort
-) {
-  return {
-    middleware: [createRequireContentMutationMiddleware(sessionPort)],
-    security: [{ adminSessionCookie: [] }],
-  }
-}
-
-function createRequireContentSessionMiddleware(
+function createContentSessionMiddleware(
   sessionPort: ContentAdminSessionPort
 ): MiddlewareHandler<ContentAdminHonoEnv> {
   return async (context, next) => {
     setPrivateNoStoreHeaders(context)
-    const actor = await sessionPort.resolveActor(context.req.raw.headers)
-    if (actor === null) throw unauthorizedContentError()
+    const adminId = await sessionPort.resolveAdminId(context.req.raw.headers)
+    if (adminId === null) throw unauthorizedContentError()
 
-    context.set("contentActor", actor)
+    context.set("contentAdminId", adminId)
     context.set("requestActor", {
-      id: actor.adminId,
-      ...(actor.mutation === "allowed" ? { role: "owner" } : {}),
+      id: adminId,
       type: "admin",
     })
-    await next()
-    context.res = withPrivateNoStore(context.res)
-  }
-}
-
-function createRequireContentMutationMiddleware(
-  sessionPort: ContentAdminSessionPort
-): MiddlewareHandler<ContentAdminHonoEnv> {
-  return async (context, next) => {
-    setPrivateNoStoreHeaders(context)
-    const actor = await sessionPort.resolveActor(context.req.raw.headers)
-    if (actor === null) throw unauthorizedContentError()
-
-    context.set("contentActor", actor)
-    context.set("requestActor", {
-      id: actor.adminId,
-      ...(actor.mutation === "allowed" ? { role: "owner" } : {}),
-      type: "admin",
-    })
-    if (actor.mutation === "forbidden") throw forbiddenContentError()
     await next()
     context.res = withPrivateNoStore(context.res)
   }
@@ -75,13 +45,5 @@ function unauthorizedContentError(): AppError {
     code: "UNAUTHORIZED",
     message: "Unauthorized",
     status: 401,
-  })
-}
-
-function forbiddenContentError(): AppError {
-  return new AppError({
-    code: "FORBIDDEN",
-    message: "Forbidden",
-    status: 403,
   })
 }

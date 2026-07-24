@@ -8,6 +8,7 @@ import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-
 export function SelectAnswer({
   checked = false,
   correctIndexes,
+  defaultSelectedIndexes = [],
   explanation,
   layout,
   onChange,
@@ -16,13 +17,16 @@ export function SelectAnswer({
 }: {
   readonly checked?: LessonStepCheckedVisual
   readonly correctIndexes: readonly number[]
+  readonly defaultSelectedIndexes?: readonly number[]
   readonly explanation?: string
   readonly layout?: string
   readonly onChange?: (selectedIndexes: readonly number[]) => void
   readonly question: string
   readonly segments: readonly string[]
 }) {
-  const [selectedIndexes, setSelectedIndexes] = useState<readonly number[]>([])
+  const [selectedIndexes, setSelectedIndexes] = useState<readonly number[]>(
+    defaultSelectedIndexes
+  )
   const isBlock = layout === "block"
 
   return (
@@ -41,12 +45,15 @@ export function SelectAnswer({
         {segments.map((segment, index) => {
           const isSelected = selectedIndexes.includes(index)
           const isCorrect = correctIndexes.includes(index)
-          let cls = "bg-surface"
+          let cls = "bg-bg-surface"
           if (checked !== false) {
-            if (isCorrect && isSelected) cls = "bg-mint-light text-charcoal"
-            else if (isCorrect && !isSelected) cls = "bg-mint/30 text-charcoal"
-            else if (isSelected) cls = "bg-coral-light text-charcoal"
-          } else if (isSelected) cls = "bg-accent text-accent-foreground"
+            if (isCorrect && isSelected)
+              cls = "bg-success text-success-foreground"
+            else if (isCorrect && !isSelected)
+              cls = "bg-success text-success-foreground"
+            else if (isSelected) cls = "bg-danger text-danger-foreground"
+          } else if (isSelected)
+            cls = "bg-action-selected-bg text-action-selected-fg"
           return (
             <button
               aria-pressed={isSelected}
@@ -78,8 +85,8 @@ export function SelectAnswer({
         })}
       </div>
       {checked !== false && explanation ? (
-        <div className="mt-8 bg-surface rounded-4xl p-6">
-          <div className="font-bold text-muted-foreground mb-2">해설</div>
+        <div className="mt-8 bg-bg-surface rounded-4xl p-6">
+          <div className="font-bold text-fg-muted mb-2">해설</div>
           <p className="font-medium">{explanation}</p>
         </div>
       ) : null}

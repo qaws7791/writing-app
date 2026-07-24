@@ -2,7 +2,7 @@
 
 한글쓰기 학습 플랫폼 모노레포다.
 
-제품·디자인·엔지니어링 기준은 [문서 인덱스](docs/_index.md)에서 시작한다. package, route, 환경 변수, 배포 topology처럼 현재 코드 사실은 [사실별 권위 지도](docs/authority-map.md)가 가리키는 코드와 설정에서 확인한다.
+확정 제품 범위는 [제품 범위](docs/product/product-scope.md)에서, 제품·디자인·엔지니어링 기준은 [문서 인덱스](docs/_index.md)에서 시작한다. package, route, 환경 변수, 배포 topology처럼 현재 코드 사실은 [사실별 권위 지도](docs/authority-map.md)가 가리키는 코드와 설정에서 확인한다.
 
 ## 빠른 시작
 

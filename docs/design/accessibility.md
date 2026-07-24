@@ -56,8 +56,8 @@
 
 ## Motion 접근성
 
-- 현재 Button의 `buttonVariants` press motion, `.an-fi`, landing marquee, pebble float motion이 존재한다.
-- 학습 흐름에 필수적인 정보는 motion에만 의존하지 않는다.
+- 현재 Button의 `buttonVariants` press motion과 `.an-fi`가 존재한다. 공개 랜딩은 Button press와 짧은 색상·opacity 전환만 사용한다.
+- 학습 흐름과 공개 랜딩의 핵심 정보는 motion에만 의존하지 않는다.
 - 새 장시간 반복 애니메이션을 추가할 때는 `prefers-reduced-motion` 대응을 함께 추가한다.
 
 ## 언어와 문구

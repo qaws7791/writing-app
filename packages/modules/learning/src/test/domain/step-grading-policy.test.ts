@@ -23,6 +23,38 @@ describe("학습 단계 서버 채점 정책", () => {
     })
   })
 
+  it("AI 제공자 실패 fallback은 AI 코칭 단계만 건너뛴다", () => {
+    const reading = lessonStepDtoSchema.parse({
+      body: "본문",
+      guide: "안내",
+      id: "reading-1",
+      sortOrder: 1,
+      title: "읽기",
+      type: "READING",
+    })
+    const aiFeedback = lessonStepDtoSchema.parse({
+      allowRetry: true,
+      feedback: "답변을 다듬어 보세요.",
+      focus: "명료성",
+      id: "ai-1",
+      sortOrder: 2,
+      target: "write-1",
+      type: "AI_FEEDBACK",
+    })
+
+    expect(gradeLearnerStep(aiFeedback, { kind: "skip-ai-feedback" })).toEqual({
+      answer: null,
+      evaluation: null,
+      kind: "accepted",
+    })
+    expect(gradeLearnerStep(reading, { kind: "skip-ai-feedback" })).toEqual({
+      kind: "invalid",
+    })
+    expect(gradeLearnerStep(aiFeedback, { kind: "acknowledge" })).toEqual({
+      kind: "invalid",
+    })
+  })
+
   it.each([
     {
       answer: { selectedOptionId: "option-b", type: "MULTIPLE_CHOICE" },
@@ -45,7 +77,7 @@ describe("학습 단계 서버 채점 정책", () => {
         type: "FILL_BLANK",
       },
       step: {
-        answer: ["나는", "쓴다"],
+        answer: ["word-a", "word-b"],
         explanation: "어순 해설",
         id: "blank-1",
         sortOrder: 1,
@@ -58,7 +90,7 @@ describe("학습 단계 서버 채점 정책", () => {
     {
       answer: { selectedItemIds: ["segment-b"], type: "SELECT" },
       step: {
-        correct: [1],
+        correct: ["segment-b"],
         explanation: "선택 해설",
         id: "select-1",
         question: "고르기",
@@ -71,7 +103,7 @@ describe("학습 단계 서버 채점 정책", () => {
     {
       answer: { orderedItemIds: ["item-b", "item-a"], type: "ORDER" },
       step: {
-        correct: ["둘째", "첫째"],
+        correct: ["item-b", "item-a"],
         explanation: "순서 해설",
         id: "order-1",
         itemIds: ["item-a", "item-b"],
@@ -169,4 +201,78 @@ describe("학습 단계 서버 채점 정책", () => {
     })
     expect(invalid).toEqual({ kind: "invalid" })
   })
+
+  it.each([
+    {
+      answer: {
+        pairs: [
+          { leftItemId: "left-a", rightItemId: "right-b" },
+          { leftItemId: "left-b", rightItemId: "right-a" },
+        ],
+        type: "MATCH",
+      },
+      expectedCorrect: false,
+      step: {
+        explanation: "같은 표시 문자열도 ID로 구분합니다.",
+        guide: "연결",
+        id: "match-duplicate-text",
+        pairs: [
+          {
+            left: "같음",
+            leftId: "left-a",
+            right: "같음",
+            rightId: "right-a",
+          },
+          {
+            left: "같음",
+            leftId: "left-b",
+            right: "같음",
+            rightId: "right-b",
+          },
+        ],
+        sortOrder: 1,
+        title: "중복 표시 문자열 연결",
+        type: "MATCH",
+      },
+    },
+    {
+      answer: {
+        assignments: [
+          { categoryId: "category-b", itemId: "item-a" },
+          { categoryId: "category-a", itemId: "item-b" },
+        ],
+        type: "CATEGORIZE",
+      },
+      expectedCorrect: false,
+      step: {
+        categories: [
+          { id: "category-a", label: "같음" },
+          { id: "category-b", label: "같음" },
+        ],
+        explanation: "같은 표시 문자열도 ID로 구분합니다.",
+        guide: "분류",
+        id: "categorize-duplicate-text",
+        items: [
+          { categoryId: "category-a", id: "item-a", text: "같음" },
+          { categoryId: "category-b", id: "item-b", text: "같음" },
+        ],
+        sortOrder: 1,
+        title: "중복 표시 문자열 분류",
+        type: "CATEGORIZE",
+      },
+    },
+  ] as const)(
+    "$step.type 중복 표시 문자열을 stable ID로 채점한다",
+    ({ answer, expectedCorrect, step }) => {
+      const result = gradeLearnerStep(lessonStepDtoSchema.parse(step), {
+        kind: "answer",
+        submission: learnerStepSubmissionSchema.parse(answer),
+      })
+
+      expect(result).toMatchObject({
+        evaluation: { correct: expectedCorrect, type: step.type },
+        kind: "retry",
+      })
+    }
+  )
 })

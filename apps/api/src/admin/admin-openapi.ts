@@ -1,14 +1,10 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { ErrorResponseSchema } from "@workspace/http-platform/errors"
-import {
-  eventStreamResponse,
-  jsonResponse,
-  markdownResponse,
-} from "@workspace/http-platform/openapi"
-import { z } from "@workspace/http-platform/zod"
+import { jsonResponse, z } from "@workspace/http-platform/openapi"
 
 import type { AdminHonoEnv } from "@/admin/admin-hono-env"
+import type { OpenApiDocument } from "@/openapi/openapi-document"
 
 const adminOpenApiDocumentConfig = {
   info: {
@@ -16,6 +12,7 @@ const adminOpenApiDocumentConfig = {
     version: "0.0.1",
   },
   openapi: "3.1.0",
+  servers: [{ description: "Admin API", url: "/" }],
 } as const
 
 export const adminRoutePrefix = "/api/admin" as const
@@ -25,20 +22,6 @@ const adminSessionCookieSecurityScheme = {
   name: adminSessionCookieName,
   type: "apiKey",
 } as const
-
-export type AdminOpenApiDocument = {
-  readonly components: {
-    readonly securitySchemes: {
-      readonly adminSessionCookie: typeof adminSessionCookieSecurityScheme
-    }
-  }
-  readonly info: {
-    readonly title: string
-    readonly version: string
-  }
-  readonly openapi: string
-  readonly paths?: unknown
-}
 
 export const adminHealthResponseSchema = z.object({
   ok: z.boolean(),
@@ -52,21 +35,14 @@ export const adminReadinessResponseSchema = z.object({
   service: z.literal("api"),
 })
 
-export {
-  eventStreamResponse,
-  jsonResponse,
-  markdownResponse,
-} from "@workspace/http-platform/openapi"
+export { jsonResponse } from "@workspace/http-platform/openapi"
 
 function errorJsonResponse(description: string) {
   return jsonResponse(description, ErrorResponseSchema)
 }
 
 export function adminAuthenticatedResponses(
-  successResponse:
-    | ReturnType<typeof eventStreamResponse>
-    | ReturnType<typeof jsonResponse>
-    | ReturnType<typeof markdownResponse>
+  successResponse: ReturnType<typeof jsonResponse>
 ) {
   return {
     200: successResponse,
@@ -78,7 +54,10 @@ export function adminAuthenticatedResponses(
 export function createAdminOpenApiDocument(
   app: OpenAPIHono<AdminHonoEnv>
 ): AdminOpenApiDocument {
-  const document = app.getOpenAPI31Document(adminOpenApiDocumentConfig)
+  const document = app.getOpenAPI31Document({
+    ...adminOpenApiDocumentConfig,
+    servers: [...adminOpenApiDocumentConfig.servers],
+  })
 
   return {
     ...document,
@@ -89,11 +68,17 @@ export function createAdminOpenApiDocument(
         adminSessionCookie: adminSessionCookieSecurityScheme,
       },
     },
+    openapi: adminOpenApiDocumentConfig.openapi,
     paths: Object.fromEntries(
       Object.entries(document.paths ?? {}).map(([path, item]) => [
         `${adminRoutePrefix}${path}`,
         item,
       ])
     ),
+    servers: [...adminOpenApiDocumentConfig.servers],
   }
 }
+
+export type AdminOpenApiDocument = OpenApiDocument<{
+  readonly adminSessionCookie: typeof adminSessionCookieSecurityScheme
+}>

@@ -1,15 +1,15 @@
 import type { ReactNode } from "react"
 
-import Image from "next/image"
-
-import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 
+import { ProfileAvatar } from "@/features/learner-profile/ui/profile-avatar"
+import { ProfileNameEditor } from "@/features/learner-profile/ui/profile-name-editor"
 import { ThemeToggle } from "@/features/learner-profile/ui/theme-toggle"
+import type { LearnerProfileDto } from "@/shared/http/learner-api-client"
 
 type ProfilePageProps = {
   readonly logoutAction: ReactNode
-  readonly profile: LearnerProfileResponse
+  readonly profile: LearnerProfileDto
 }
 
 export function ProfilePage({ logoutAction, profile }: ProfilePageProps) {
@@ -35,36 +35,12 @@ export function ProfilePage({ logoutAction, profile }: ProfilePageProps) {
           value={`🔥 ${profile.stats.currentStreakDays}`}
         />
       </StatGrid>
+      <ProfileNameEditor currentName={profile.user.name} />
       <h3 className="mb-6 text-heading-sm font-bold">화면 테마</h3>
       <div className="mb-12">
         <ThemeToggle />
       </div>
       {logoutAction}
-    </div>
-  )
-}
-
-function ProfileAvatar({
-  image,
-  name,
-}: {
-  readonly image: string | null
-  readonly name: string
-}) {
-  return (
-    <div className="mb-6 flex size-32 items-center justify-center overflow-hidden rounded-[3rem] bg-accent text-display-lg">
-      {image === null ? (
-        "✍️"
-      ) : (
-        <Image
-          alt={`${name} 프로필`}
-          className="size-full object-cover"
-          height={128}
-          src={image}
-          unoptimized
-          width={128}
-        />
-      )}
     </div>
   )
 }

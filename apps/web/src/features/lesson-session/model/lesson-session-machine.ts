@@ -1,20 +1,21 @@
 import type {
-  CompleteLearnerStepResult,
-  LearnerStepSubmission,
-  StepEvaluation,
-} from "@workspace/contracts/learning/learner-transition"
+  LearnerCompleteStepResultDto,
+  LearnerStepDraftAnswerDto,
+  LearnerStepEvaluationDto,
+} from "@/shared/http/learner-api-client"
 
 type PendingAcceptedTransition = Exclude<
-  CompleteLearnerStepResult,
+  LearnerCompleteStepResultDto,
   { readonly status: "retry" }
 >
 
 type ActiveLessonSession = {
   readonly activity: "idle" | "submitting"
-  readonly answerPayloads: Readonly<Record<string, LearnerStepSubmission>>
-  readonly checked: false | StepEvaluation
+  readonly answerPayloads: Readonly<Record<string, LearnerStepDraftAnswerDto>>
+  readonly checked: false | NonNullable<LearnerStepEvaluationDto>
   readonly currentStepIndex: number
   readonly pendingTransition: PendingAcceptedTransition | null
+  readonly progressPercent: number
   readonly submitError: null | string
 }
 
@@ -24,7 +25,7 @@ export type LessonSessionState =
   | (ActiveLessonSession & { readonly status: "active" })
   | {
       readonly completion: Extract<
-        CompleteLearnerStepResult,
+        LearnerCompleteStepResultDto,
         { readonly status: "lesson_completed" }
       > | null
       readonly currentStepIndex: number
@@ -33,17 +34,29 @@ export type LessonSessionState =
 
 export type LessonSessionEvent =
   | { readonly type: "START_REQUESTED" }
-  | { readonly currentStepIndex: number; readonly type: "START_SUCCEEDED" }
+  | {
+      readonly answerPayloads: Readonly<
+        Record<string, LearnerStepDraftAnswerDto>
+      >
+      readonly currentStepIndex: number
+      readonly progressPercent: number
+      readonly type: "START_SUCCEEDED"
+    }
   | { readonly message: string; readonly type: "START_FAILED" }
   | {
-      readonly payload: LearnerStepSubmission
+      readonly payload: LearnerStepDraftAnswerDto
       readonly stepId: string
       readonly type: "ANSWER_PAYLOAD_CHANGED"
+    }
+  | {
+      readonly payload: LearnerStepDraftAnswerDto | null
+      readonly stepId: string
+      readonly type: "DRAFT_RECONCILED"
     }
   | { readonly type: "SUBMIT_REQUESTED" }
   | { readonly message: string; readonly type: "SUBMIT_FAILED" }
   | {
-      readonly evaluation: StepEvaluation
+      readonly evaluation: NonNullable<LearnerStepEvaluationDto>
       readonly type: "STEP_RETRY"
     }
   | {
@@ -65,13 +78,21 @@ class LessonSessionTransitionError extends Error {
 export function createLessonSessionState(
   currentStepIndex: number,
   hasStarted: boolean,
-  isComplete = false
+  isComplete = false,
+  initialAnswerPayloads: Readonly<
+    Record<string, LearnerStepDraftAnswerDto>
+  > = {},
+  initialProgressPercent = 0
 ): LessonSessionState {
   if (isComplete) {
     return { completion: null, currentStepIndex, status: "complete" }
   }
   return hasStarted
-    ? createActiveLessonSession(currentStepIndex)
+    ? createActiveLessonSession(
+        currentStepIndex,
+        initialAnswerPayloads,
+        initialProgressPercent
+      )
     : { startError: null, status: "not-started" }
 }
 
@@ -86,7 +107,11 @@ export function transitionLessonSession(
 
   if (state.status === "starting") {
     if (event.type === "START_SUCCEEDED") {
-      return createActiveLessonSession(event.currentStepIndex)
+      return createActiveLessonSession(
+        event.currentStepIndex,
+        event.answerPayloads,
+        event.progressPercent
+      )
     }
     if (event.type === "START_FAILED") {
       return { startError: event.message, status: "not-started" }
@@ -108,6 +133,22 @@ export function transitionLessonSession(
       checked: false,
       submitError: null,
     }
+  }
+
+  if (event.type === "DRAFT_RECONCILED") {
+    const answerPayloads =
+      event.payload === null
+        ? Object.fromEntries(
+            Object.entries(state.answerPayloads).filter(
+              ([stepId]) => stepId !== event.stepId
+            )
+          )
+        : {
+            ...state.answerPayloads,
+            [event.stepId]: event.payload,
+          }
+
+    return { ...state, answerPayloads }
   }
 
   if (event.type === "SUBMIT_REQUESTED" && state.activity === "idle") {
@@ -133,6 +174,10 @@ export function transitionLessonSession(
       activity: "idle",
       checked: event.transition.evaluation ?? false,
       pendingTransition: event.transition,
+      progressPercent:
+        event.transition.status === "lesson_completed"
+          ? 100
+          : event.transition.learning.progressPercent,
       submitError: null,
     }
   }
@@ -163,7 +208,9 @@ export function transitionLessonSession(
     }
 
     return createActiveLessonSession(
-      state.pendingTransition.learning.currentStepIndex
+      state.pendingTransition.learning.currentStepIndex,
+      state.answerPayloads,
+      state.progressPercent
     )
   }
 
@@ -171,14 +218,17 @@ export function transitionLessonSession(
 }
 
 function createActiveLessonSession(
-  currentStepIndex: number
+  currentStepIndex: number,
+  answerPayloads: Readonly<Record<string, LearnerStepDraftAnswerDto>>,
+  progressPercent: number
 ): Extract<LessonSessionState, { readonly status: "active" }> {
   return {
     activity: "idle",
-    answerPayloads: {},
+    answerPayloads,
     checked: false,
     currentStepIndex,
     pendingTransition: null,
+    progressPercent,
     status: "active",
     submitError: null,
   }

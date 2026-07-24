@@ -7,13 +7,14 @@
     "#identity/*": "./src/*"
   },
   "exports": {
-    "./admin-actor": "./src/domain/admin-role.ts",
+    "./admin-actor": "./src/domain/admin-actor.ts",
     "./application": "./src/application/identity-service.ts",
     "./http": "./src/interface/http/identity-http.ts",
+    "./learner-profile": "./src/domain/learner-profile.ts",
     "./module": "./src/module.ts",
     "./ports": "./src/application/identity-ports.ts",
+    "./purge": "./src/application/deleted-learner-purge.ts",
     "./queries": "./src/application/identity-queries.ts",
-    "./reporting": "./src/infrastructure/persistence/admin-identity-reporting.ts",
     "./schema": "./src/infrastructure/persistence/schema.ts",
     "./seed": "./src/infrastructure/persistence/seed.ts",
     "./sessions": "./src/application/identity-sessions.ts",

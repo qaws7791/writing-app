@@ -16,15 +16,16 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core"
 
-const learningProgressStatuses = Object.freeze({
+const learningProgressStatuses = {
   completed: "completed",
   inProgress: "in_progress",
-} as const)
+} as const
+/** Exported singleton shared by schema consumers; runtime mutation would redefine persisted status values. */
 export const lessonProgressStatusValues = Object.freeze([
   learningProgressStatuses.inProgress,
   learningProgressStatuses.completed,
 ] as const)
-export const courseProgressStatusValues = lessonProgressStatusValues
+export const learnerStepDraftAnswerJsonMaxBytes = 65_536
 
 export const learnerActivityDays = sqliteTable(
   "learner_activity_days",
@@ -65,7 +66,7 @@ export const learnerCourseProgress = sqliteTable(
       mode: "timestamp_ms",
     }).notNull(),
     startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
-    status: text("status", { enum: courseProgressStatusValues })
+    status: text("status", { enum: lessonProgressStatusValues })
       .notNull()
       .default(learningProgressStatuses.inProgress),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
@@ -191,6 +192,61 @@ export const learnerLessonAnswers = sqliteTable(
       name: "learner_lesson_answers_step_fk",
     }).onDelete("restrict"),
     index("learner_lesson_answers_lesson_idx").on(
+      table.userId,
+      table.curriculumVersionId,
+      table.lessonId
+    ),
+  ]
+)
+
+export const learnerStepDrafts = sqliteTable(
+  "learner_step_drafts",
+  {
+    answerJson: text("answer_json").notNull(),
+    courseId: text("course_id").notNull(),
+    curriculumVersionId: text("curriculum_version_id").notNull(),
+    lessonId: text("lesson_id").notNull(),
+    stepId: text("step_id").notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    userId: text("user_id").notNull(),
+    version: integer("version").notNull().default(0),
+  },
+  (table) => [
+    primaryKey({
+      columns: [
+        table.userId,
+        table.courseId,
+        table.curriculumVersionId,
+        table.lessonId,
+        table.stepId,
+      ],
+    }),
+    foreignKey({
+      columns: [table.userId, table.courseId, table.curriculumVersionId],
+      foreignColumns: [
+        learnerCourseProgress.userId,
+        learnerCourseProgress.courseId,
+        learnerCourseProgress.curriculumVersionId,
+      ],
+      name: "learner_step_drafts_course_progress_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.curriculumVersionId, table.lessonId, table.stepId],
+      foreignColumns: [
+        lessonStepVersions.curriculumVersionId,
+        lessonStepVersions.lessonId,
+        lessonStepVersions.id,
+      ],
+      name: "learner_step_drafts_step_fk",
+    }).onDelete("cascade"),
+    check(
+      "learner_step_drafts_answer_json_size_check",
+      sql`length(CAST(${table.answerJson} AS BLOB)) <= ${sql.raw(
+        String(learnerStepDraftAnswerJsonMaxBytes)
+      )}`
+    ),
+    check("learner_step_drafts_version_check", sql`${table.version} >= 0`),
+    index("learner_step_drafts_lesson_idx").on(
       table.userId,
       table.curriculumVersionId,
       table.lessonId

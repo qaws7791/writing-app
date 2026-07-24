@@ -1,12 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-import { createLearnerIdentityRoutes } from "@workspace/identity/http"
+import type { SessionResolver } from "@workspace/identity/sessions"
 
-import {
-  createLearnerApp as createApp,
-  type ApiDependencies,
-} from "@/http/learner-app"
-import { createTestDependencies } from "@/routes/test-dependencies"
+import { createTestLearnerApp } from "@/routes/test-dependencies"
 
 type CapturedRequestLogEvent = {
   readonly actorId?: string
@@ -43,10 +39,11 @@ const profileStats = {
 describe("플랫폼 API profile route", () => {
   it("요청 완료 로그에 request id와 응답 상태를 남긴다", async () => {
     const requestEvents: CapturedRequestLogEvent[] = []
-    const app = createApp({
-      ...createDependencies(),
-      requestLogger(event) {
-        requestEvents.push(event)
+    const app = createFixture({
+      runtime: {
+        requestLogger(event) {
+          requestEvents.push(event)
+        },
       },
     })
 
@@ -74,10 +71,11 @@ describe("플랫폼 API profile route", () => {
 
   it("인증 요청 완료 로그에 학습자 actor를 보강한다", async () => {
     const requestEvents: CapturedRequestLogEvent[] = []
-    const app = createApp({
-      ...createDependencies(),
-      requestLogger(event) {
-        requestEvents.push(event)
+    const app = createFixture({
+      runtime: {
+        requestLogger(event) {
+          requestEvents.push(event)
+        },
       },
     })
 
@@ -100,10 +98,11 @@ describe("플랫폼 API profile route", () => {
 
   it("identity와 독립된 learning 인증도 공통 actor context를 남긴다", async () => {
     const requestEvents: CapturedRequestLogEvent[] = []
-    const app = createApp({
-      ...createDependencies(),
-      requestLogger(event) {
-        requestEvents.push(event)
+    const app = createFixture({
+      runtime: {
+        requestLogger(event) {
+          requestEvents.push(event)
+        },
       },
     })
 
@@ -122,10 +121,10 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("신뢰하지 않은 Origin의 쿠키 인증 변경 요청을 side effect 전에 거절한다", async () => {
-    const completeStep = vi.fn(async () => {
-      throw new Error("completeStep must not be called")
+    const submitStep = vi.fn(async () => {
+      throw new Error("submitStep must not be called")
     })
-    const app = createApp(createDependencies({ completeStep }))
+    const app = createFixture({ submitStep })
 
     const response = await app.request(
       "/learning/lessons/lesson-1/steps/step-1/complete",
@@ -144,24 +143,24 @@ describe("플랫폼 API profile route", () => {
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
       code: "FORBIDDEN_ORIGIN",
-      message: "허용되지 않은 요청 출처입니다.",
+      message: "Forbidden",
       requestId: response.headers.get("x-request-id"),
     })
-    expect(completeStep).not.toHaveBeenCalled()
+    expect(submitStep).not.toHaveBeenCalled()
   })
 
   it("학습자 API는 실제 1 MiB 본문을 전달하고 1 byte 초과를 side effect 전에 거절한다", async () => {
-    const completeStep = vi.fn(async () => {
-      throw new Error("completeStep must not be called")
+    const submitStep = vi.fn(async () => {
+      throw new Error("submitStep must not be called")
     })
-    const app = createApp(createDependencies({ completeStep }))
+    const app = createFixture({ submitStep })
     const bodyLimitBytes = 1024 * 1024
     const emptyPaddingJson = JSON.stringify({ padding: "" })
 
     for (const fixture of [
       {
         byteLength: bodyLimitBytes,
-        expectedCode: "VALIDATION_ERROR",
+        expectedCode: "VALIDATION_FAILED",
         expectedStatus: 400,
       },
       {
@@ -197,12 +196,12 @@ describe("플랫폼 API profile route", () => {
       })
     }
 
-    expect(completeStep).not.toHaveBeenCalled()
+    expect(submitStep).not.toHaveBeenCalled()
   })
 
   it("예상된 security와 body-limit 거절은 내부 결함 logger로 전달하지 않는다", async () => {
     const errorLogger = vi.fn()
-    const app = createApp({ ...createDependencies(), errorLogger })
+    const app = createFixture({ runtime: { errorLogger } })
 
     const forbiddenOrigin = await app.request(
       "/learning/lessons/lesson-1/steps/step-1/complete",
@@ -229,8 +228,7 @@ describe("플랫폼 API profile route", () => {
 
   it("기존 Google 로그인 시작 경로를 Better Auth social sign-in으로 위임한다", async () => {
     const capturedRequests: Request[] = []
-    const app = createApp({
-      ...createDependencies(),
+    const app = createFixture({
       async authHandler(request) {
         capturedRequests.push(request)
 
@@ -263,8 +261,39 @@ describe("플랫폼 API profile route", () => {
     })
   })
 
+  it("Better Auth 403 code를 canonical envelope에서 보존한다", async () => {
+    const app = createFixture({
+      async authHandler() {
+        return Response.json(
+          {
+            code: "EMAIL_NOT_VERIFIED",
+            message: "Email is not verified",
+          },
+          { status: 403 }
+        )
+      },
+    })
+
+    const response = await app.request("/auth/sign-in/email", {
+      body: JSON.stringify({
+        email: "learner@example.com",
+        password: "password",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(403)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    await expect(response.json()).resolves.toEqual({
+      code: "EMAIL_NOT_VERIFIED",
+      message: "Email is not verified",
+      requestId: response.headers.get("x-request-id"),
+    })
+  })
+
   it("인증 없는 profile 요청은 401이다", async () => {
-    const app = createApp(createDependencies())
+    const app = createFixture()
 
     const response = await app.request("/profile")
 
@@ -277,7 +306,7 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("인증된 active 사용자의 profile과 통계를 반환한다", async () => {
-    const app = createApp(createDependencies())
+    const app = createFixture()
 
     const response = await app.request("/profile", {
       headers: {
@@ -295,7 +324,7 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("Bearer 토큰만으로 보호 route에 접근할 수 없다", async () => {
-    const app = createApp(createDependencies())
+    const app = createFixture()
 
     const response = await app.request("/profile", {
       headers: { Authorization: "Bearer active-token" },
@@ -305,7 +334,7 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("공개 health와 OpenAPI 응답에는 민감 응답 캐시 정책을 추가하지 않는다", async () => {
-    const app = createApp(createDependencies())
+    const app = createFixture()
 
     for (const path of ["/health", "/openapi"]) {
       const response = await app.request(path)
@@ -318,7 +347,7 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("suspended 또는 deleted 사용자는 보호 route에서 차단한다", async () => {
-    const app = createApp(createDependencies())
+    const app = createFixture()
 
     for (const token of ["suspended-token", "deleted-token"]) {
       const response = await app.request("/profile", {
@@ -330,14 +359,14 @@ describe("플랫폼 API profile route", () => {
       expect(response.status).toBe(403)
       await expect(response.json()).resolves.toEqual({
         code: "FORBIDDEN",
-        message: "요청한 작업을 수행할 권한이 없습니다.",
+        message: "사용할 수 없는 계정입니다.",
         requestId: response.headers.get("x-request-id"),
       })
     }
   })
 
-  it("단계 완료 transport validation 실패를 VALIDATION_ERROR 오류로 변환한다", async () => {
-    const app = createApp(createDependencies())
+  it("단계 완료 transport validation 실패를 VALIDATION_FAILED 오류로 변환한다", async () => {
+    const app = createFixture()
 
     const response = await app.request(
       "/learning/lessons/lesson-1/steps/step-1/complete",
@@ -359,8 +388,8 @@ describe("플랫폼 API profile route", () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toMatchObject({
-      code: "VALIDATION_ERROR",
-      message: "요청 내용을 확인해 주세요.",
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
       requestId: response.headers.get("x-request-id"),
       violations: expect.arrayContaining([
         expect.objectContaining({
@@ -371,10 +400,10 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("빈 body와 잘못된 JSON을 같은 transport 오류로 거절한다", async () => {
-    const completeStep = vi.fn(async () => {
-      throw new Error("completeStep must not be called")
+    const submitStep = vi.fn(async () => {
+      throw new Error("submitStep must not be called")
     })
-    const app = createApp(createDependencies({ completeStep }))
+    const app = createFixture({ submitStep })
 
     for (const body of ["", "{"] as const) {
       const response = await app.request(
@@ -392,16 +421,16 @@ describe("플랫폼 API profile route", () => {
 
       expect(response.status).toBe(400)
       await expect(response.json()).resolves.toMatchObject({
-        code: "VALIDATION_ERROR",
+        code: "VALIDATION_FAILED",
         requestId: response.headers.get("x-request-id"),
       })
     }
 
-    expect(completeStep).not.toHaveBeenCalled()
+    expect(submitStep).not.toHaveBeenCalled()
   })
 
-  it("요청 계약에 없는 JSON 필드를 VALIDATION_ERROR로 거절한다", async () => {
-    const app = createApp(createDependencies())
+  it("요청 계약에 없는 JSON 필드를 VALIDATION_FAILED로 거절한다", async () => {
+    const app = createFixture()
 
     const response = await app.request(
       "/learning/lessons/lesson-1/steps/step-1/complete",
@@ -425,7 +454,7 @@ describe("플랫폼 API profile route", () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toMatchObject({
-      code: "VALIDATION_ERROR",
+      code: "VALIDATION_FAILED",
       requestId: response.headers.get("x-request-id"),
       violations: [
         expect.objectContaining({
@@ -436,7 +465,7 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("제거한 학습 쓰기 endpoint는 404를 반환한다", async () => {
-    const app = createApp(createDependencies())
+    const app = createFixture()
 
     for (const path of [
       "/learning/answers",
@@ -459,10 +488,8 @@ describe("플랫폼 API profile route", () => {
   })
 })
 
-function createDependencies(
-  input: Parameters<typeof createTestDependencies>[0] = {}
-): ApiDependencies {
-  const sessionResolver: ApiDependencies["sessionResolver"] = {
+function createFixture(input: Parameters<typeof createTestLearnerApp>[0] = {}) {
+  const sessionResolver: SessionResolver = {
     async resolveSession(headers) {
       const token = readTestSessionToken(headers)
 
@@ -478,18 +505,11 @@ function createDependencies(
     },
   }
 
-  return {
-    ...createTestDependencies({ ...input, sessionResolver }),
-    identityRoutes: createLearnerIdentityRoutes({
-      profileStatsQuery: {
-        async readProfileStats() {
-          return profileStats
-        },
-      },
-      sessionResolver,
-    }),
+  return createTestLearnerApp({
+    ...input,
+    profileStats,
     sessionResolver,
-  }
+  })
 }
 
 function readTestSessionToken(headers: Headers): string | null {

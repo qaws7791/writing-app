@@ -2,50 +2,6 @@
 @import "tw-animate-css";
 @import "@workspace/ui/styles";
 
-@plugin "@tailwindcss/typography";
 @custom-variant dark (&:is(.dark *));
 @source "../**/*.{ts,tsx}";
 @source "../../../../packages/shared/ui/src/**/*.{ts,tsx}";
-
-@keyframes landing-marquee-forward {
-  from {
-    transform: translateX(0%);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes landing-marquee-reverse {
-  from {
-    transform: translateX(-50%);
-  }
-
-  to {
-    transform: translateX(0%);
-  }
-}
-
-@keyframes landing-pebble-float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(calc(var(--landing-pebble-drift, 24px) * -1))
-      rotate(8deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .landing-motion {
-    transform: none !important;
-  }
-
-  [style*="landing-marquee"],
-  [style*="landing-pebble-float"] {
-    animation: none !important;
-  }
-}

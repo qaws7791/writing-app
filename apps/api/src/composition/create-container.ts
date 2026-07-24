@@ -1,15 +1,18 @@
 import { createOpenAiClient } from "@workspace/ai/openai-client"
-import type { AiFeedbackAttemptTransition } from "@workspace/ai-feedback/application"
+import type {
+  AiFeedbackAttemptTransition,
+  AiFeedbackUsageEvent,
+} from "@workspace/ai-feedback/application"
 import type { AiFeedbackModule } from "@workspace/ai-feedback/module"
 import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
-import {
-  createConfiguredAiFeedbackProvider,
-  type OpenAiUsageEvent,
-} from "@workspace/ai-feedback/provider"
+import { createConfiguredAiFeedbackProvider } from "@workspace/ai-feedback/provider"
 import {
   createAdminAuthRuntime,
   type AdminAuthRuntime,
 } from "@workspace/auth/admin/server"
+import type { AuthEmailDeliveryPort } from "@workspace/auth/email/delivery"
+import { createInMemoryAuthEmailDelivery } from "@workspace/auth/email/in-memory"
+import { createResendAuthEmailDelivery } from "@workspace/auth/email/resend"
 import {
   createLearnerAuthRuntime,
   type LearnerAuthIdentity,
@@ -18,11 +21,12 @@ import {
 } from "@workspace/auth/learner/server"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
-import type { ContentModule } from "@workspace/content/module"
+import type { ContentApplication } from "@workspace/content/application"
+import type { ContentAssetStoragePort } from "@workspace/content/ports"
 import {
+  createReadOnlyWritingAppDatabase,
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
-  type WritingAppDatabase,
 } from "@workspace/db/client"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import type { IdentityModule } from "@workspace/identity/module"
@@ -31,29 +35,28 @@ import type {
   SessionResolver,
 } from "@workspace/identity/sessions"
 import type { LearningModule } from "@workspace/learning/module"
+import type { LearningLearnerSessionPort } from "@workspace/learning/http"
 import { createLearningReportingQuery } from "@workspace/learning/reporting"
 import {
   createAppLogger,
   type AppLogger,
 } from "@workspace/observability/logger"
 import type { OperationsModule } from "@workspace/operations/module"
-import type { ResourceLibraryModule } from "@workspace/resource-library/module"
-import type {
-  CourseId,
-  ResourceAssetId,
-  ResourceDocumentId,
-  ResourceFolderId,
-} from "@workspace/types/ids"
+import {
+  logEventNames,
+  logRetentionClasses,
+  type AiUsageEvent,
+} from "@workspace/observability/events"
+import type { ContentAssetId, CourseId } from "@workspace/types/ids"
+import { createS3PrivateObjectStorage } from "@workspace/storage/private-object-storage"
 
 import {
   createAdminAuthDatabase,
   createLearnerAuthDatabase,
 } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
-import { createLearnerTestAuthDisplayNameSynchronizer } from "@/adapters/auth/learner-test-auth-display-name-synchronizer"
 import { composeAiFeedbackModule } from "@/composition/ai-feedback-module.composition"
-import { createAdminCapabilityRoutes } from "@/composition/admin-route-composition"
-import { composeContentModule } from "@/composition/content-module.composition"
+import { composeContentApplication } from "@/composition/content-application.composition"
 import {
   createContainerCleanupCoordinator,
   type ContainerCleanupFailure,
@@ -64,42 +67,37 @@ import {
   createLearningContentQueryPort,
 } from "@/composition/learning-module.composition"
 import { composeOperationsModule } from "@/composition/operations-module.composition"
-import {
-  composeResourceLibraryModule,
-  createResourceObjectStorage,
-} from "@/composition/resource-library-module.composition"
 import type { ApiEnv } from "@/config/env"
 import { runApplicationMigrations } from "@/db/migrate"
-import type { AdminRouteGroup } from "@/http/admin-route-group"
 import { createApiHealthProbe, type ApiHealthProbe } from "@/runtime/api-health"
 import { systemClock } from "@/runtime/system-clock"
 import {
   createPrefixedIdGenerator,
   uuidGenerator,
 } from "@/runtime/uuid-generator"
+import {
+  createInMemoryDeletionMarkerStore,
+  createS3DeletionMarkerStore,
+} from "@/adapters/identity/deletion-marker-store"
 
 export type ApiContainer = Readonly<{
   admin: Readonly<{
     authHandler: AdminAuthRuntime["authHandler"]
-    capabilityRoutes: AdminRouteGroup
     sessionResolver: AdminSessionResolver
   }>
   dispose: () => Promise<void>
   health: ApiHealthProbe
   learner: Readonly<{
-    aiFeedbackRoutes: ReturnType<AiFeedbackModule["createLearnerRoutes"]>
     authHandler: LearnerAuthRuntime["authHandler"]
-    identityRoutes: ReturnType<IdentityModule["createLearnerRoutes"]>
-    learningRoutes: ReturnType<LearningModule["createLearnerRoutes"]>
+    learningSession: LearningLearnerSessionPort
     sessionResolver: SessionResolver
   }>
   modules: Readonly<{
     aiFeedback: AiFeedbackModule
-    content: ContentModule
+    content: ContentApplication
     identity: IdentityModule
     learning: LearningModule
     operations: OperationsModule
-    resourceLibrary: ResourceLibraryModule
   }>
   platform: Readonly<{
     clock: Clock
@@ -111,10 +109,12 @@ export type ApiContainer = Readonly<{
 
 export type CreateContainerOptions = Readonly<{
   aiFeedbackProvider?: AiFeedbackProvider
+  authEmailDelivery?: AuthEmailDeliveryPort
   clock?: Clock
+  contentAssetStorage?: ContentAssetStoragePort
   idGenerator?: IdGenerator<string>
   onAiFeedbackAttemptTransition?: (event: AiFeedbackAttemptTransition) => void
-  onAiFeedbackUsage?: (event: OpenAiUsageEvent) => void
+  onAiFeedbackUsage?: (event: AiFeedbackUsageEvent) => void
 }>
 
 export async function createContainer(
@@ -131,12 +131,13 @@ export async function createContainer(
     const flushLogger = onceAsync(() => flushAppLogger(logger as AppLogger))
     cleanup.register("logger", flushLogger)
 
-    const database = createWritingAppDatabase(
-      env.databaseUrl ?? getDefaultDatabaseUrl()
-    )
+    const databaseUrl = env.databaseUrl ?? getDefaultDatabaseUrl()
+    const database = createWritingAppDatabase(databaseUrl)
     const closeDatabase = onceAsync(database.close)
     cleanup.register("database", closeDatabase)
     runApplicationMigrations(database.sqlite)
+    const reportingDatabase = createReadOnlyWritingAppDatabase(databaseUrl)
+    cleanup.register("reporting-database", onceAsync(reportingDatabase.close))
 
     const clock = options.clock ?? systemClock
     const idGenerator = options.idGenerator ?? uuidGenerator
@@ -144,34 +145,21 @@ export async function createContainer(
       options.aiFeedbackProvider ??
       createConfiguredAiFeedbackProvider({
         model: env.openAiModel,
-        onUsage(event) {
-          options.onAiFeedbackUsage?.(event)
-          logger?.info(event, "ai.usage")
-        },
         runtime: createOpenAiClient({
           apiKey: env.openAiApiKey,
           maxRetries: 0,
-          timeoutMs: 30_000,
+          timeoutMs: env.aiFeedback.attemptPolicy.providerTimeoutMs,
         }),
       })
-    let closeOperationsAi: () => Promise<void> = () => Promise.resolve()
-    const closeAi = onceAsync(() => closeOperationsAi())
-    cleanup.register("ai", closeAi)
-
-    const storage = createResourceObjectStorage(env.adminAssetStore)
-    const identityBridge = createLearnerIdentityBridge(database.db)
+    const identityBridge = createLearnerIdentityBridge()
     const learnerAuth = createLearnerAuthRuntime({
       database: createLearnerAuthDatabase(database.db),
+      emailDelivery:
+        options.authEmailDelivery ?? createAuthEmailDelivery(env.authEmail),
       googleClientId: env.googleClientId,
       googleClientSecret: env.googleClientSecret,
       identityProvisioner: identityBridge.provisioner,
       secret: env.learnerAuthSecret,
-      testAuth: env.testAuthEnabled
-        ? {
-            kind: "enabled",
-            ...identityBridge.testAuthDisplayNameSynchronizer,
-          }
-        : { kind: "disabled" },
       webOrigin: env.webOrigin,
     })
     const adminAuth = createAdminAuthRuntime({
@@ -181,14 +169,19 @@ export async function createContainer(
       webOrigin: env.adminOrigin,
     })
 
-    const content = composeContentModule({
+    const content = composeContentApplication({
+      assetIdGenerator: createPrefixedIdGenerator<ContentAssetId>(
+        "content-asset-",
+        idGenerator
+      ),
+      assetStorage: options.contentAssetStorage,
+      assetStore: env.adminAssetStore,
       clock,
       courseIdGenerator: createPrefixedIdGenerator<CourseId>(
         "course-",
         idGenerator
       ),
       database: database.db,
-      environment: env.nodeEnv,
     })
     const learningReporting = createLearningReportingQuery({
       content: createLearningContentQueryPort(content),
@@ -197,6 +190,10 @@ export async function createContainer(
     const identity = composeIdentityModule({
       clock,
       database: database.db,
+      deletionMarkerStore: createDeletionMarkerStore({
+        configuration: env.deletionMarkerStore,
+        idGenerator,
+      }),
       learningReport: learningReporting,
     })
     identityBridge.bind(identity)
@@ -208,12 +205,43 @@ export async function createContainer(
     )
     const aiFeedback = composeAiFeedbackModule({
       attemptIdGenerator: idGenerator,
+      attemptPolicy: env.aiFeedback.attemptPolicy,
       clock,
+      dailyQuotaPolicy: env.aiFeedback.dailyQuotaPolicy,
       database: database.db,
       onAttemptTransition(event) {
         options.onAiFeedbackAttemptTransition?.(event)
         const write = event.toStatus === "failed" ? logger?.warn : logger?.info
         write?.call(logger, event, "ai.feedback.attempt.transition")
+      },
+      onUsage(event) {
+        options.onAiFeedbackUsage?.(event)
+        const logEvent = {
+          durationMs: event.latencyMs,
+          event: logEventNames.aiUsage,
+          ...(event.failureCode === undefined
+            ? {}
+            : { failureCode: event.failureCode }),
+          ...(event.inputTokens === undefined
+            ? {}
+            : { inputTokens: event.inputTokens }),
+          model: event.model,
+          operation: "feedback",
+          outcome: event.outcome,
+          ...(event.outputTokens === undefined
+            ? {}
+            : { outputTokens: event.outputTokens }),
+          promptPolicyVersion: event.promptPolicyVersion,
+          provider: event.provider,
+          retentionClass: logRetentionClasses.aiUsage,
+          ...(event.inputTokens === undefined ||
+          event.outputTokens === undefined
+            ? {}
+            : { totalTokens: event.inputTokens + event.outputTokens }),
+        } satisfies AiUsageEvent
+        const write =
+          event.outcome === "succeeded" ? logger?.info : logger?.warn
+        write?.call(logger, logEvent, logEventNames.aiUsage)
       },
       provider: aiFeedbackProvider,
     })
@@ -225,106 +253,82 @@ export async function createContainer(
       database: database.db,
       identity,
     })
-    const resourceLibrary = composeResourceLibraryModule({
-      assetIdGenerator: createPrefixedIdGenerator<ResourceAssetId>(
-        "resource-asset-",
-        idGenerator
-      ),
-      clock,
-      database: database.db,
-      documentIdGenerator: createPrefixedIdGenerator<ResourceDocumentId>(
-        "resource-document-",
-        idGenerator
-      ),
-      folderIdGenerator: createPrefixedIdGenerator<ResourceFolderId>(
-        "resource-folder-",
-        idGenerator
-      ),
-      logger,
-      storage,
-    })
     const operations = composeOperationsModule({
-      aiConfig:
-        env.openAiApiKey === undefined
-          ? null
-          : { apiKey: env.openAiApiKey, model: env.openAiModel },
       clock,
-      content,
       database: database.db,
-      identity,
-      learningReporting: learning.reportingQuery,
+      idGenerator,
       logger,
-      resourceLibrary,
+      reportingDatabase: reportingDatabase.sqlite,
     })
-    closeOperationsAi = operations.closeAi
 
     const learnerSession = createLearningLearnerSessionPort(
       learnerSessionResolver
     )
-    const adminCapabilityRoutes = createAdminCapabilityRoutes(
-      {
-        aiConfig:
-          env.openAiApiKey === undefined
-            ? null
-            : { apiKey: env.openAiApiKey, model: env.openAiModel },
-        clock,
-        content,
-        database: database.db,
-        identity,
-        learningReporting: learning.reportingQuery,
-        logger,
-        resourceLibrary,
-        sessionResolver: adminSessionResolver,
-      },
-      operations
-    )
     const health = createApiHealthProbe(database.sqlite)
 
-    return Object.freeze({
-      admin: Object.freeze({
+    return {
+      admin: {
         authHandler: adminAuth.authHandler,
-        capabilityRoutes: adminCapabilityRoutes,
         sessionResolver: adminSessionResolver,
-      }),
+      },
       dispose: () => disposeContainer(cleanup.dispose),
       health,
-      learner: Object.freeze({
-        aiFeedbackRoutes: aiFeedback.createLearnerRoutes({
-          command: learning.aiFeedbackCommand,
-          session: learnerSession,
-        }),
+      learner: {
         authHandler: learnerAuth.authHandler,
-        identityRoutes: identity.createLearnerRoutes({
-          profileStatsQuery: learning.profileStatsQuery,
-          sessionResolver: learnerSessionResolver,
-        }),
-        learningRoutes: learning.createLearnerRoutes(learnerSession),
+        learningSession: learnerSession,
         sessionResolver: learnerSessionResolver,
-      }),
-      modules: Object.freeze({
+      },
+      modules: {
         aiFeedback,
         content,
         identity,
         learning,
         operations,
-        resourceLibrary,
-      }),
-      platform: Object.freeze({ clock, env, idGenerator, logger }),
-    })
+      },
+      platform: { clock, env, idGenerator, logger },
+    }
   } catch (cause) {
     await cleanup.dispose()
     throw cause
   }
 }
 
-function createLearnerIdentityBridge(database: WritingAppDatabase): Readonly<{
+function createDeletionMarkerStore(input: {
+  readonly configuration: ApiEnv["deletionMarkerStore"]
+  readonly idGenerator: IdGenerator<string>
+}) {
+  if (input.configuration === undefined) {
+    return createInMemoryDeletionMarkerStore()
+  }
+
+  const objectStorage = createS3PrivateObjectStorage(input.configuration)
+  if (objectStorage.isErr()) {
+    throw new Error("private 삭제 marker 저장소 설정이 올바르지 않습니다.")
+  }
+  return createS3DeletionMarkerStore({
+    idGenerator: input.idGenerator,
+    objectStorage: objectStorage.value,
+    prefix: input.configuration.prefix,
+  })
+}
+
+function createAuthEmailDelivery(
+  configuration: ApiEnv["authEmail"]
+): AuthEmailDeliveryPort {
+  return configuration.kind === "resend"
+    ? createResendAuthEmailDelivery({
+        apiKey: configuration.apiKey,
+        from: configuration.from,
+        replyTo: configuration.replyTo,
+      })
+    : createInMemoryAuthEmailDelivery()
+}
+
+function createLearnerIdentityBridge(): Readonly<{
   bind: (identity: IdentityModule) => void
   provisioner: Readonly<{
     provision: (identity: LearnerAuthIdentity) => Promise<void>
   }>
-  testAuthDisplayNameSynchronizer: ReturnType<
-    typeof createLearnerTestAuthDisplayNameSynchronizer
-  >
 }> {
   let identityModule: IdentityModule | undefined
   const readIdentity = (): IdentityModule => {
@@ -336,58 +340,52 @@ function createLearnerIdentityBridge(database: WritingAppDatabase): Readonly<{
     return identityModule
   }
 
-  return Object.freeze({
+  return {
     bind(identity) {
       if (identityModule !== undefined) {
         throw new Error("learner auth identity bridge가 이미 연결됐습니다.")
       }
       identityModule = identity
     },
-    provisioner: Object.freeze({
+    provisioner: {
       async provision(authIdentity: LearnerAuthIdentity) {
         await readIdentity().provisioningPort.provision({
           ...authIdentity,
           id: userIdSchema.parse(authIdentity.id),
         })
       },
-    }),
-    testAuthDisplayNameSynchronizer:
-      createLearnerTestAuthDisplayNameSynchronizer(database, {
-        changeLearnerDisplayName(input) {
-          return readIdentity().application.changeLearnerDisplayName(input)
-        },
-      }),
-  })
+    },
+  }
 }
 
 function createLearnerAuthenticationPort(
   resolver: LearnerAuthIdentityResolver
 ) {
-  return Object.freeze({
+  return {
     async resolveIdentity(headers: Headers) {
       const identity = await resolver.resolveIdentity(headers)
       if (identity === null) return null
       const userId = userIdSchema.safeParse(identity.id)
       return userId.success ? { ...identity, id: userId.data } : null
     },
-  })
+  }
 }
 
 function createLearningLearnerSessionPort(sessionResolver: SessionResolver) {
-  return Object.freeze({
+  return {
     async resolveLearner(headers: Headers) {
       const session = await sessionResolver.resolveSession(headers)
       if (session === null) return null
       const learnerId = learnerIdSchema.parse(session.user.id)
       if (session.user.status !== "active") {
-        return Object.freeze({ kind: "inactive" as const, learnerId })
+        return { kind: "inactive" as const, learnerId }
       }
-      return Object.freeze({
+      return {
         kind: "active" as const,
         learnerId,
-      })
+      }
     },
-  })
+  }
 }
 
 function onceAsync(operation: () => Promise<void> | void): () => Promise<void> {

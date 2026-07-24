@@ -17,70 +17,134 @@ env:
   CI: true
 
 jobs:
-  format:
-    name: 형식
-    runs-on: ubuntu-latest
+  workflow-static:
+    name: GitHub Actions workflow 정적 검사
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - name: 고정 actionlint로 workflow schema 검사
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/actionlint.tar.gz"
+          curl --fail --location --silent --show-error --retry 3 \
+            --output "$archive" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          printf '%s  %s\n' \
+            8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 \
+            "$archive" | sha256sum --check --strict
+          tar --extract --gzip --file "$archive" --directory "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint"
+
+  generated-contract:
+    name: OpenAPI·Orval generation cache
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24.x
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.10
-      - run: bun install --frozen-lockfile
-      - run: bun run format:check
+      - run: bun run check:toolchain
+      - id: generated-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          key: >-
+            generated-v1-${{ runner.os }}-${{
+            hashFiles('bun.lock', 'package.json', 'turbo.json', 'apps/api/**', 'packages/**')
+            }}
+          path: |
+            .turbo/cache
+            apps/api/.generated
+            packages/infra/http-client/.generated
+      - if: steps.generated-cache.outputs.cache-hit != 'true'
+        run: bun install --frozen-lockfile
+      - if: steps.generated-cache.outputs.cache-hit != 'true'
+        run: bun run generate
+      - name: 생성 source와 필수 산출물 검증
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s apps/api/.generated/openapi/admin.json
+          test -s apps/api/.generated/openapi/learner.json
+          test -s packages/infra/http-client/.generated/admin/index.ts
+          test -s packages/infra/http-client/.generated/learner/index.ts
+          git diff --exit-code
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: generated-contract-${{ github.sha }}
+          path: |
+            .turbo/cache
+            apps/api/.generated
+            packages/infra/http-client/.generated
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
 
-  lint:
-    name: 정적 검사
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  static-generated:
+    name: 정적 계약
+    needs:
+      - generated-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24.x
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.10
+      - run: bun run check:toolchain
       - run: bun install --frozen-lockfile
-      - run: bun run lint
-      - run: bun run check:architecture
-
-  typecheck:
-    name: 타입 검사
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          node-version: 24.x
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-        with:
-          bun-version: 1.3.10
-      - run: bun install --frozen-lockfile
-      - run: bun run typecheck
+          name: generated-contract-${{ github.sha }}
+          path: .
+      - name: 형식·lint·architecture·dependency·Knip·type 병렬 검사
+        run: bun run ci:static
 
   tests:
-    name: 위험 경계 테스트
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
+    name: Unit·integration·repository 계약
+    needs:
+      - generated-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24.x
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.10
+      - run: bun run check:toolchain
       - run: bun install --frozen-lockfile
-      - run: bun run test
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: generated-contract-${{ github.sha }}
+          path: .
+      - name: Repository 계약과 workspace unit·integration 병렬 검사
+        run: bun run ci:tests
 
   build:
-    name: 프로덕션 빌드
-    runs-on: ubuntu-latest
+    name: PR production build와 bundle 예산
+    if: github.event_name == 'pull_request'
+    needs:
+      - generated-contract
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       API_BASE_URL: https://api.example.test
@@ -89,59 +153,176 @@ jobs:
       WEB_ORIGIN: https://web.example.test
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24.x
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.10
+      - run: bun run check:toolchain
       - run: bun install --linker isolated --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: generated-contract-${{ github.sha }}
+          path: .
       - run: bun run build
+      - run: bun run check:route-bundles
 
-  learner-e2e:
-    name: 학습자 핵심 흐름 E2E
-    runs-on: ubuntu-latest
+  pr-e2e:
+    name: PR Chromium 핵심 smoke
+    if: github.event_name == 'pull_request'
+    needs:
+      - generated-contract
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24.x
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.10
+      - run: bun run check:toolchain
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium
-      - run: bun run test:e2e:learner
-
-  admin-e2e:
-    name: 관리자 권한 E2E
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          node-version: 24.x
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-        with:
-          bun-version: 1.3.10
-      - run: bun install --frozen-lockfile
+          name: generated-contract-${{ github.sha }}
+          path: .
       - run: bunx playwright install --with-deps chromium
-      - run: bun run test:e2e:admin
+      - run: bun run test:e2e:pr
 
-  deployment-smoke:
-    name: Compose 기동 및 health smoke
-    runs-on: ubuntu-latest
+  main-e2e:
+    name: Main 전체 Chromium·WebKit E2E
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - generated-contract
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24.x
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.10
+      - run: bun run check:toolchain
       - run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: generated-contract-${{ github.sha }}
+          path: .
+      - run: bunx playwright install --with-deps chromium webkit
+      - run: bun run test:storybook
+      - run: bun run test:e2e:release
+
+  lighthouse:
+    name: Lighthouse mobile 성능
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - generated-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      API_BASE_URL: http://127.0.0.1:4100
+      WEB_ORIGIN: http://localhost:3200
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: generated-contract-${{ github.sha }}
+          path: .
+      - run: bunx playwright install --with-deps chromium
+      - run: bun --filter @workspace/web build
+      - run: bun run test:performance:lighthouse
+      - name: Lighthouse report 보존
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          if-no-files-found: warn
+          name: lighthouse-${{ github.sha }}
+          path: output/lighthouse
+
+  ansible-static:
+    name: Ubuntu Ansible lint·syntax·idempotency
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - name: 고정 Ansible 의존성 설치
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/ansible-venv"
+          "$RUNNER_TEMP/ansible-venv/bin/pip" install \
+            --requirement infra/ansible/requirements.txt
+          "$RUNNER_TEMP/ansible-venv/bin/ansible-galaxy" collection install \
+            --requirements-file infra/ansible/requirements.yaml
+      - name: Production·staging lint와 syntax 검사
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/ansible-venv/bin:$PATH"
+          bun run check:deployment-ansible
+      - name: Disposable Ubuntu bootstrap·maintenance 멱등성
+        env:
+          CI: "true"
+          WRITING_APP_DISPOSABLE_UBUNTU: "true"
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/ansible-venv/bin:$PATH"
+          bun run test:deployment-bootstrap
+
+  deployment-smoke:
+    name: Main source image Compose smoke
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - generated-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.x
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.10
+      - run: bun run check:toolchain
+      - run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: generated-contract-${{ github.sha }}
+          path: .
       - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
-      - run: bun run test:deployment-images
+      - run: bun scripts/test-deployment-images.ts

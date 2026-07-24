@@ -25,9 +25,9 @@ const meta = {
       ...objectArgType,
       description: "정렬할 항목 목록입니다.",
     },
-    correctItems: {
+    correctItemIds: {
       ...objectArgType,
-      description: "정답 순서입니다.",
+      description: "stable ID 기준 정답 순서입니다.",
     },
     showNumbers: {
       control: "boolean",
@@ -51,7 +51,9 @@ type Story = StoryObj<typeof meta>
  * Controls로 항목·정답 순서·번호 표시·채점 상태를 조작할 수 있는 Playground입니다.
  */
 export const Playground: Story = {
-  render: (args) => <OrderAnswer key={args.items.join("|")} {...args} />,
+  render: (args) => (
+    <OrderAnswer key={args.items.map((item) => item.id).join("|")} {...args} />
+  ),
 }
 
 /**

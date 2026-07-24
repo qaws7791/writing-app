@@ -14,9 +14,9 @@ export const adminAnalyticsQuerySchema = z.object({
 
 export const adminLessonAnalyticsQuerySchema = z.object({
   direction: adminSortDirectionSchema.default("asc"),
-  page: z.coerce.number().int().positive().default(1),
+  page: z.coerce.number().int().positive().max(10_000).default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(10),
-  query: z.string().default(""),
+  query: z.string().trim().max(100).default(""),
   sort: adminLessonAnalyticsSortSchema.default("completionRate"),
 })
 

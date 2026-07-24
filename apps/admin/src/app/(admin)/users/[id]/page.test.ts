@@ -1,18 +1,18 @@
 import { describe, expect, it, vi } from "vitest"
 
-const { getUserMock, notFoundMock } = vi.hoisted(() => ({
-  getUserMock: vi.fn(),
+const { getAdminUserMock, notFoundMock } = vi.hoisted(() => ({
+  getAdminUserMock: vi.fn(),
   notFoundMock: vi.fn(() => {
     throw new Error("not-found")
   }),
 }))
 
 vi.mock("next/navigation", () => ({ notFound: notFoundMock }))
-vi.mock("@/features/user-management/server/admin-users-dal", () => ({
-  createAdminUsersDal: () => ({ getUser: getUserMock }),
+vi.mock("@workspace/http-client/admin", () => ({
+  getAdminUser: getAdminUserMock,
 }))
-vi.mock("@/server/http/get-admin-http-transport", () => ({
-  getServerAdminHttpTransport: vi.fn(),
+vi.mock("@/server/http/admin-api-request-options", () => ({
+  getServerAdminRequestOptions: vi.fn(async () => ({})),
 }))
 
 import AdminUserDetailRoute from "@/app/(admin)/users/[id]/page"
@@ -26,6 +26,6 @@ describe("admin user detail route", () => {
     ).rejects.toThrow("not-found")
 
     expect(notFoundMock).toHaveBeenCalledTimes(1)
-    expect(getUserMock).not.toHaveBeenCalled()
+    expect(getAdminUserMock).not.toHaveBeenCalled()
   })
 })

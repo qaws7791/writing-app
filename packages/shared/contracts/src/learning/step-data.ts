@@ -29,9 +29,11 @@ export {
   type LessonStepItemId,
 } from "#contracts/learning/ids"
 export {
+  learnerStepDraftSchema,
   learnerStepSubmissionSchema,
   stepEvaluationSchema,
   stepItemVerdictSchema,
+  type LearnerStepDraft,
   type LearnerStepSubmission,
   type StepEvaluation,
   type StepItemVerdict,

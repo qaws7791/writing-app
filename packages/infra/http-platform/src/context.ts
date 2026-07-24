@@ -2,7 +2,6 @@ import type { Env } from "hono"
 
 export type HttpRequestActor = Readonly<{
   id: string
-  role?: string
   type: "admin" | "learner"
 }>
 

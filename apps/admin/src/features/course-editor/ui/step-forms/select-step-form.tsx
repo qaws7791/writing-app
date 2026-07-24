@@ -37,16 +37,17 @@ export function SelectStepForm({ onChange, step }: StepFormProps<"SELECT">) {
       />
       <StepJsonField
         id={`${step.id}-correct`}
-        label="정답 index"
+        label="정답 ID"
         onCommit={(correct) => commitJson({ correct })}
         value={step.correct}
       />
       <StepTextField
         id={`${step.id}-layout`}
         label="레이아웃"
-        onChange={(layout) =>
-          onChange({ ...step, layout: layout === "" ? undefined : layout })
-        }
+        onChange={(layout) => {
+          const { layout: _layout, ...stepWithoutLayout } = step
+          onChange(layout === "" ? stepWithoutLayout : { ...step, layout })
+        }}
         value={step.layout}
       />
       <StepTextField

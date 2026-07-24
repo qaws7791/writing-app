@@ -7,13 +7,10 @@
     "#http-platform/*": "./src/*"
   },
   "exports": {
-    "./context": "./src/context.ts",
-    "./core": "./src/core/index.ts",
+    "./app": "./src/app.ts",
     "./errors": "./src/errors/index.ts",
     "./openapi": "./src/openapi.ts",
-    "./request-logging": "./src/request-logging.middleware.ts",
-    "./security": "./src/security/index.ts",
-    "./zod": "./src/zod.ts"
+    "./security": "./src/security/index.ts"
   },
   "scripts": {
     "lint": "oxlint .",
@@ -23,7 +20,6 @@
   "dependencies": {
     "@hono/zod-openapi": "catalog:",
     "@workspace/contracts": "workspace:*",
-    "@workspace/observability": "workspace:*",
     "hono": "catalog:",
     "zod": "catalog:"
   },

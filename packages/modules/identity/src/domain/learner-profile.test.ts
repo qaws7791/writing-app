@@ -12,7 +12,7 @@ const userId = "user-1" as UserId
 const now = new Date("2026-07-22T00:00:00.000Z")
 
 describe("identity 학습자 profile aggregate", () => {
-  it("표시 이름 invariant를 적용하고 정상 profile을 immutable 값으로 만든다", () => {
+  it("공백 이름을 거절하고 표시 이름을 정규화한다", () => {
     expect(
       createLearnerProfile({ displayName: "   ", userId })._unsafeUnwrapErr()
     ).toEqual({ kind: "identity-invalid-profile" })
@@ -28,48 +28,42 @@ describe("identity 학습자 profile aggregate", () => {
       status: "active",
       userId,
     })
-    expect(Object.isFrozen(profile)).toBe(true)
   })
 
-  it("상태 전이에서 새 immutable profile을 반환한다", () => {
+  it.each([
+    ["active", "active", false],
+    ["active", "suspended", true],
+    ["active", "deleted", true],
+    ["suspended", "active", true],
+    ["suspended", "suspended", false],
+    ["suspended", "deleted", true],
+    ["deleted", "active", false],
+    ["deleted", "suspended", false],
+    ["deleted", "deleted", false],
+  ] as const)("%s → %s 상태 전이 허용 여부를 고정한다", (from, to, allowed) => {
     const profile = createLearnerProfile({
-      displayName: "학습자",
+      deletedAt: from === "deleted" ? now : null,
+      displayName: from === "deleted" ? deletedLearnerDisplayName : "학습자",
+      status: from,
       userId,
     })._unsafeUnwrap()
     const decision = transitionLearnerProfileStatus({
       now,
       profile,
-      status: "suspended",
-    })._unsafeUnwrap()
-
-    expect(decision).toMatchObject({
-      displayName: "학습자",
-      status: "suspended",
+      status: to,
     })
-    expect(Object.isFrozen(decision)).toBe(true)
+
+    expect(decision.isOk()).toBe(allowed)
+    if (decision.isErr()) {
+      expect(decision.error).toEqual({
+        from,
+        kind: "identity-invalid-status-transition",
+        to,
+      })
+    }
   })
 
-  it("동일 상태 전이를 거절한다", () => {
-    const profile = createLearnerProfile({
-      displayName: "학습자",
-      status: "suspended",
-      userId,
-    })._unsafeUnwrap()
-
-    expect(
-      transitionLearnerProfileStatus({
-        now,
-        profile,
-        status: "suspended",
-      })._unsafeUnwrapErr()
-    ).toEqual({
-      from: "suspended",
-      kind: "identity-invalid-status-transition",
-      to: "suspended",
-    })
-  })
-
-  it("삭제 전이는 노출 이름을 비식별화하고 상태 복구 전 이름 변경을 거절한다", () => {
+  it("삭제 전이는 노출 이름을 비식별화하고 이후 이름 변경을 거절한다", () => {
     const profile = createLearnerProfile({
       displayName: "실명",
       userId,
@@ -97,12 +91,11 @@ describe("identity 학습자 profile aggregate", () => {
         now,
         profile: deleted,
         status: "active",
-      })._unsafeUnwrap()
+      })._unsafeUnwrapErr()
     ).toEqual({
-      deletedAt: null,
-      displayName: deletedLearnerDisplayName,
-      status: "active",
-      userId,
+      from: "deleted",
+      kind: "identity-invalid-status-transition",
+      to: "active",
     })
   })
 })

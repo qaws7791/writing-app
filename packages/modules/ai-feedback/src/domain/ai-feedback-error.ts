@@ -9,6 +9,11 @@ export type AiFeedbackError =
       retryAfterSeconds: number
     }>
   | Readonly<{
+      kind: "daily-quota-exceeded"
+      remainingAttempts: number
+      retryAfterSeconds: number
+    }>
+  | Readonly<{
       kind:
         | "provider-response-invalid"
         | "provider-timeout"

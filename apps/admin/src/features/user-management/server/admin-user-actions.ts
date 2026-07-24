@@ -9,10 +9,16 @@ import {
   userIdSchema,
   type UserId,
 } from "@/entities/learner-account/model/learner-account-id"
-import { createAdminUsersDal } from "@/features/user-management/server/admin-users-dal"
-import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
-import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
-import { createAdminActionError } from "@/shared/http/admin-api-result"
+import {
+  invalidAdminRequestFailure,
+  settleAdminApiRequest,
+  unauthenticatedAdminRequestFailure,
+} from "@/shared/http/admin-api-client"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
+import {
+  deleteAdminUser,
+  updateAdminUserStatus,
+} from "@workspace/http-client/admin"
 
 const updateAdminUserStatusCommandSchema = z.object({
   status: z.enum(["active", "suspended"]),
@@ -21,14 +27,18 @@ const updateAdminUserStatusCommandSchema = z.object({
 
 export async function updateAdminUserStatusAction(input: unknown) {
   const command = updateAdminUserStatusCommandSchema.safeParse(input)
-  if (!command.success) return createAdminActionError("invalid-request")
+  if (!command.success) return invalidAdminRequestFailure()
 
-  const token = await getServerAdminSessionToken()
-  if (token === null) return createAdminActionError("unauthorized")
+  const requestOptions = await getServerAdminRequestOptions()
+  if (requestOptions === null) return unauthenticatedAdminRequestFailure()
 
-  const result = await createAdminUsersDal(
-    getServerAdminHttpTransport({ tokenProvider: () => token })
-  ).updateUserStatus(command.data)
+  const result = await settleAdminApiRequest(
+    updateAdminUserStatus(
+      command.data.userId,
+      { status: command.data.status },
+      requestOptions
+    )
+  )
 
   if (result.status === "ok") revalidateUserPaths(command.data.userId)
   return result
@@ -36,14 +46,14 @@ export async function updateAdminUserStatusAction(input: unknown) {
 
 export async function deleteAdminUserAction(input: unknown) {
   const userId = userIdSchema.safeParse(input)
-  if (!userId.success) return createAdminActionError("invalid-request")
+  if (!userId.success) return invalidAdminRequestFailure()
 
-  const token = await getServerAdminSessionToken()
-  if (token === null) return createAdminActionError("unauthorized")
+  const requestOptions = await getServerAdminRequestOptions()
+  if (requestOptions === null) return unauthenticatedAdminRequestFailure()
 
-  const result = await createAdminUsersDal(
-    getServerAdminHttpTransport({ tokenProvider: () => token })
-  ).deleteUser(userId.data)
+  const result = await settleAdminApiRequest(
+    deleteAdminUser(userId.data, requestOptions)
+  )
 
   if (result.status === "ok") revalidateUserPaths(userId.data)
   return result

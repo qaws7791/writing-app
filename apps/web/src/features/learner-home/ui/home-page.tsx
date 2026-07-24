@@ -1,18 +1,20 @@
-import type { LearnerProgressResponse } from "@workspace/contracts/learning/learner-api"
-import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
 import { BookOpenIcon, FlameIcon } from "@workspace/ui/components/icons"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 
 import { HomeProgressClient } from "@/features/learner-home/ui/home-progress-client"
+import type {
+  LearnerProfileStatsDto,
+  LearnerProgressPageDto,
+} from "@/shared/http/learner-api-client"
 
 export function HomePage({
   inProgress,
   learnerName,
   profileStats,
 }: {
-  readonly inProgress: LearnerProgressResponse
+  readonly inProgress: LearnerProgressPageDto
   readonly learnerName: null | string | undefined
-  readonly profileStats: LearnerProfileResponse["stats"]
+  readonly profileStats: LearnerProfileStatsDto
 }) {
   const firstName = normalizeFirstName(learnerName)
 

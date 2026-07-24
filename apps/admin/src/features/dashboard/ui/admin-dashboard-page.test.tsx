@@ -2,83 +2,103 @@ import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { AdminDashboardPage } from "@/features/dashboard/ui/admin-dashboard-page"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
-import type { AdminAnalytics } from "@/entities/admin-analytics/model/admin-analytics"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminDashboard } from "@/features/dashboard/model/admin-dashboard"
-import { userIdSchema } from "@/entities/learner-account/model/learner-account-id"
 
 const dashboard: AdminDashboard = {
+  activeWindow: {
+    from: "2026-07-18",
+    to: "2026-07-24",
+  },
+  asOfDate: "2026-07-24",
   metrics: {
-    activeCourses: 5,
-    activeLessons: 44,
     activeUsersLast7Days: 8,
+    activationRate: {
+      denominator: 36,
+      numerator: 12,
+      percentage: 33.3,
+      status: "available",
+    },
     completedLessons: 72,
-    signupsLast7Days: 4,
-    signupsToday: 1,
+    d7ReturnRate: {
+      denominator: 10,
+      matureCohortThrough: "2026-07-16",
+      numerator: 4,
+      percentage: 40,
+      status: "available",
+    },
+    firstLessonStarts: 12,
     totalUsers: 36,
   },
-  recentActivities: [
-    {
-      currentStreakDays: 5,
-      email: "minji@example.com",
-      lastActiveDate: "2026-06-14",
-      name: "민지",
-      userId: userIdSchema.parse("user-1"),
-    },
-  ],
-}
-
-const analytics: AdminAnalytics = {
-  dailySeries: [
-    { completions: 2, date: "2026-06-01", signups: 1 },
-    { completions: 4, date: "2026-06-02", signups: 0 },
-  ],
-  streakBuckets: [{ count: 3, label: "0일" }],
-  worstLessons: [],
 }
 
 describe("AdminDashboardPage", () => {
-  it("dashboard API 응답으로 Kwep 기준 지표 카드와 최근 활동을 렌더링한다", () => {
+  it("canonical 순서로 여섯 운영 지표와 집계 근거를 렌더링한다", () => {
+    render(<AdminDashboardPage dashboardResult={ok(dashboard)} />)
+
+    expect(screen.getByRole("heading", { name: "대시보드" })).toBeVisible()
+    expect(
+      screen.getByText(
+        "2026-07-24 기준 · 첫 시작과 7일 재방문을 포함한 핵심 운영 지표입니다."
+      )
+    ).toBeVisible()
+    const cards = within(screen.getByLabelText("주요 지표")).getAllByRole(
+      "article"
+    )
+    expect(cards).toHaveLength(6)
+    expect(cards.map((card) => card.textContent)).toEqual([
+      expect.stringContaining("총 사용자36"),
+      expect.stringContaining("최근 7일 활성8"),
+      expect.stringContaining("첫 레슨 시작12"),
+      expect.stringContaining("활성화율33.3%"),
+      expect.stringContaining("7일 내 재방문40%"),
+      expect.stringContaining("완료 레슨72"),
+    ])
+    expect(cards[3]).toHaveTextContent("12 / 36명 첫 시작")
+    expect(cards[4]).toHaveTextContent("4 / 10명 · 2026-07-16까지")
+    expect(screen.queryByText("최근 활동")).not.toBeInTheDocument()
+  })
+
+  it("빈 비율과 아직 성숙하지 않은 D7 cohort를 0%와 구분한다", () => {
     render(
       <AdminDashboardPage
-        analyticsResult={ok(analytics)}
-        dashboardResult={ok(dashboard)}
+        dashboardResult={ok({
+          ...dashboard,
+          metrics: {
+            ...dashboard.metrics,
+            activationRate: {
+              denominator: 0,
+              numerator: 0,
+              percentage: null,
+              status: "empty",
+            },
+            d7ReturnRate: {
+              denominator: 0,
+              matureCohortThrough: "2026-07-16",
+              numerator: 0,
+              percentage: null,
+              status: "immature",
+            },
+          },
+        })}
       />
     )
 
-    expect(screen.getByRole("heading", { name: "대시보드" })).toBeVisible()
-    const metrics = screen.getByLabelText("주요 지표")
-    expect(within(metrics).getByText("총 사용자")).toBeVisible()
-    expect(within(metrics).getByText("36")).toBeVisible()
-    expect(within(metrics).getByText("활성 8명 (최근 7일)")).toBeVisible()
-    expect(within(metrics).getByText("신규 가입")).toBeVisible()
-    expect(within(metrics).getByText("+4")).toBeVisible()
-    expect(within(metrics).getByText("오늘 1명")).toBeVisible()
-    expect(within(metrics).getByText("총 레슨 완료")).toBeVisible()
-    expect(within(metrics).getByText("72")).toBeVisible()
-    expect(within(metrics).getByText("누적 완료 수")).toBeVisible()
-    expect(within(metrics).getByText("콘텐츠")).toBeVisible()
-    expect(within(metrics).getByText("44")).toBeVisible()
-    expect(within(metrics).getByText("5개 강의의 레슨")).toBeVisible()
-    expect(screen.getByRole("heading", { name: "최근 활동" })).toBeVisible()
-    expect(screen.getByRole("link", { name: /민지/ })).toBeVisible()
-    expect(
-      screen.getByRole("table", { name: "최근 30일 가입 추이 데이터" })
-    ).toHaveTextContent("2026-06-01")
-    expect(screen.getByText("기간 합계 가입 1건")).toBeVisible()
-    expect(
-      screen.getByRole("table", { name: "스트릭 유지 분포 데이터" })
-    ).toHaveTextContent("0일")
+    expect(screen.getByText("표본 없음")).toBeVisible()
+    expect(screen.getByText("집계 중")).toBeVisible()
+    expect(screen.queryByText("0%")).not.toBeInTheDocument()
   })
 
-  it("API 오류 상태를 한국어로 보여준다", () => {
+  it("API 오류 상태를 한국어 alert로 보여준다", () => {
     render(
       <AdminDashboardPage
-        analyticsResult={ok(analytics)}
         dashboardResult={{
           error: {
             code: "unauthorized",
+            kind: "http",
             message: "관리자 로그인이 필요합니다.",
+            requestId: "dashboard-request",
+            retryAfterSeconds: null,
             status: 401,
           },
           status: "error",
@@ -86,11 +106,13 @@ describe("AdminDashboardPage", () => {
       />
     )
 
-    expect(screen.getByText("관리자 로그인이 필요합니다.")).toBeVisible()
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "관리자 로그인이 필요합니다."
+    )
   })
 })
 
-function ok<TValue>(value: TValue): AdminApiResult<TValue> {
+function ok<TValue>(value: TValue): AdminRequestResult<TValue> {
   return {
     status: "ok",
     value,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
@@ -8,35 +8,21 @@ import { LessonActiveScreen } from "@/features/lesson-session/ui/lesson-active-s
 import { LessonCompleteScreen } from "@/features/lesson-session/ui/lesson-complete-screen"
 import { LessonStartScreen } from "@/features/lesson-session/ui/lesson-start-screen"
 import { useLessonSession } from "@/features/lesson-session/hooks/use-lesson-session"
-import type { LearnerLesson as Lesson } from "@workspace/contracts/learning/learner-content"
-import {
-  getBrowserLessonSessionApi,
-  type LessonSessionApi,
-} from "@/features/lesson-session/api/lesson-session-api"
+import type { LearnerLessonDto as Lesson } from "@/shared/http/learner-api-client"
 
 type LessonExperienceProps = {
-  readonly api?: LessonSessionApi
   readonly lesson: Lesson
-  readonly learnerId: string
 }
 
 export function LessonExperience(props: LessonExperienceProps) {
   return <LessonExperienceSession key={props.lesson.id} {...props} />
 }
 
-function LessonExperienceSession({
-  api,
-  lesson,
-  learnerId,
-}: LessonExperienceProps) {
+function LessonExperienceSession({ lesson }: LessonExperienceProps) {
   const router = useRouter()
   const contentRef = useRef<HTMLElement>(null)
   const [showExit, setShowExit] = useState(false)
-  const resolvedApi = useMemo(() => api ?? getBrowserLessonSessionApi(), [api])
-  const session = useLessonSession({
-    api: resolvedApi,
-    lesson,
-  })
+  const session = useLessonSession({ lesson })
 
   useEffect(() => {
     if (!session.hasStarted) {
@@ -65,28 +51,40 @@ function LessonExperienceSession({
   if (session.hasStarted && session.currentStep !== null) {
     return (
       <LessonActiveScreen
+        aiFeedbackDraftText={session.aiFeedbackDraftText}
         answerError={session.answerError}
+        answerPayload={session.currentAnswerPayload}
         checked={session.checked}
         completeError={session.completeError}
         contentRef={contentRef}
+        currentDraftStatus={session.currentDraftStatus}
         currentStep={session.currentStep}
         currentStepIndex={session.currentStepIndex}
-        isCompleting={session.isCompleting}
-        isSavingProgress={session.isSavingProgress}
         isReady={session.isReady}
+        isSubmitting={session.isSubmitting}
         lesson={lesson}
-        learnerId={learnerId}
         onAiFeedbackRequest={session.requestAiFeedback}
-        onAnswerChange={session.saveAnswer}
-        onAnswerPayloadChange={session.setAnswerPayload}
+        onAiFeedbackSkip={session.skipAiFeedback}
+        onAnswerPayloadChange={session.saveAnswer}
         onCancelExit={() => setShowExit(false)}
         onConfirmExit={() => {
-          setShowExit(false)
-          router.push(`/app/courses/${lesson.courseId}`)
+          void (async () => {
+            await session.flushDrafts()
+            setShowExit(false)
+            router.push(`/app/courses/${lesson.courseId}`)
+          })()
         }}
-        onExit={() => setShowExit(true)}
+        onDraftFlush={() => void session.flushCurrentDraft()}
+        onExit={() => {
+          void session.flushCurrentDraft()
+          setShowExit(true)
+        }}
+        onRetryDraft={() => void session.retryDraftSync()}
+        onRetryLocalDraft={session.retryLocalDraft}
         onSubmitCurrentStep={() => void session.submitCurrentStep()}
+        onUseServerDraft={session.useServerDraft}
         progress={session.progress}
+        renderRevision={session.renderRevision}
         showExit={showExit}
         visibleStepNumber={session.visibleStepNumber}
       />

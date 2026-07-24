@@ -37,8 +37,8 @@ Course
 - 레슨은 제목, 카테고리, 설명, 예상 시간, 요약, 상태, 정렬 순서를 가진다.
 - 레슨 요약은 문자열 배열이며 완료 화면의 핵심 요약 목록으로 사용할 수 있다.
 - 레슨은 한 코스와 한 유닛에 속한다.
-- 레슨 진행 표시 상태는 `available`, `completed`로 구분한다.
-- 모든 active 레슨은 학습자가 직접 열 수 있으며, 별도 잠금 상태를 두지 않는다.
+- 레슨 학습 상태는 시작 전, 진행 중, 잠김, 완료를 구분한다.
+- active 레슨의 잠금과 해제는 고정 curriculum revision 안에서 서버가 선행 레슨 완료를 기준으로 판정한다.
 
 ## 스텝
 
@@ -47,19 +47,19 @@ Course
 - 선택형 스텝의 option·segment·item·pair는 버전 사이에서 유지되는 stable ID를 가지며 정답 참조는 배열 위치나 문구 대신 ID를 사용한다.
 - 스텝 상태는 코스 상태와 같은 `active`, `archived`를 사용한다.
 - 스텝 wire 계약은 `packages/shared/contracts/src/content/steps`의 타입별 파일과 `steps/index.ts`의 명시 조합으로 관리한다.
-- 새 스텝 타입을 추가할 때는 DTO schema, 답변 가능 정책, 학습 답변 schema, DB seed 정규화, API OpenAPI schema, web mapper와 renderer, admin 편집 폼을 함께 검토한다.
-- `lessonStepDefinitions`는 타입별 DTO schema와 답변 가능 여부를 같은 계약으로 묶어 누락을 빠르게 드러내기 위한 기준이다.
+- 새 스텝 타입을 추가할 때는 DTO schema, 완료 방식, draft·서버 평가 정책, 학습 답변 schema, DB seed 정규화, API OpenAPI schema, web renderer와 admin 편집 폼을 함께 검토한다.
+- `lessonStepDefinitions`는 타입별 DTO schema, 완료 방식, draft 가능 여부와 서버 평가 여부를 같은 계약으로 묶어 누락을 빠르게 드러내기 위한 기준이다.
 
 ## 확정 스텝 타입
 
 - `READING`: 제목, 안내, 본문, 출처를 제공한다.
 - `COMPARE`: 둘 이상의 글 버전과 분석을 제공한다.
 - `MULTIPLE_CHOICE`: 질문, 선택지, 정답, 해설을 제공한다.
-- `FILL_BLANK`: 문장 템플릿, 단어, 정답, 해설을 제공한다.
-- `SELECT`: 문장 구간, 정답 index, 해설, `inline` 또는 `block` layout을 제공한다.
-- `ORDER`: 항목, 정답 순서, 번호 표시 여부, 해설을 제공한다.
+- `FILL_BLANK`: 문장 템플릿, stable ID가 있는 단어, 정답 ID 순서와 해설을 제공한다.
+- `SELECT`: stable ID가 있는 문장 구간, 정답 ID, 해설, `inline` 또는 `block` layout을 제공한다.
+- `ORDER`: stable ID가 있는 항목, 정답 ID 순서, 번호 표시 여부와 해설을 제공한다.
 - `WRITE`: 쓰기 안내, 최소 글자 수, 목표 글자 수, 최대 글자 수, 반박 쓰기 맥락, 참고 자료, 구조 가이드, 참조 답안을 제공한다.
-- `AI_FEEDBACK`: 피드백 대상, 평가 초점, 점수 표시 여부, 재시도 허용 여부를 제공한다.
+- `AI_FEEDBACK`: 같은 레슨에서 앞선 `WRITE` 스텝을 대상으로 피드백 초점과 재시도 허용 여부를 제공한다. 자체 답안·draft나 숫자 점수는 생성하거나 표시하지 않는다.
 - `MATCH`: 왼쪽 항목과 오른쪽 항목의 짝, 결정적 오른쪽 표시 순서, stable choice id 기반 선택 정책, 해설을 제공한다.
 - `CATEGORIZE`: 카테고리, 항목, 정답 카테고리, 해설을 제공한다.
 
@@ -97,6 +97,10 @@ Course
 
 코스마다 변경 가능한 draft 하나와 변경할 수 없는 published revision들을 운영한다. 관리자의 저장은 draft에만 반영하고, 명시적 발행이 성공해야 신규 학습자 경로가 새 revision을 사용한다.
 
+콘텐츠 이미지는 draft asset으로 업로드한 뒤 발행된 revision에 고정한다. published revision이 참조하는 asset과 metadata는 변경하지 않으며, 더 이상 어떤 draft나 published revision도 참조하지 않는 asset만 보존 정책에 따라 정리한다.
+
+콘텐츠 asset 용도는 코스 표지와 `READING` 본문 삽화다. 모든 asset에는 대체 텍스트가 필요하며, 프로필 이미지는 content asset 범위에 포함하지 않는다.
+
 | 변경 유형        | 예시                        | 정책                                                           |
 | ---------------- | --------------------------- | -------------------------------------------------------------- |
 | `minor-edit`     | 오탈자와 설명 보완          | draft에 저장하고 검토 뒤 발행한다.                             |
@@ -116,11 +120,13 @@ Course
 - 코스 보관은 코스 identity를 `archived`로 바꾸며 published version과 학습자 참조를 물리적으로 삭제하지 않는다.
 - `active` 콘텐츠만 신규 학습 경로에 포함하고 `archived` 콘텐츠는 신규 경로에서 숨긴다.
 - 물리 삭제는 참조 무결성, 복구 기간과 운영 감사 요구를 확인한 별도 정리 작업에서만 수행한다.
-- 사용자 삭제 요청은 앱 소유 프로필을 `deleted`로 전환하고 노출 데이터를 비식별화한다. 인증 provider 테이블을 임의로 훼손하지 않으며 학습 진행과 답변은 감사·복구 정책에 따라 보존한다.
+- 사용자 삭제 요청은 즉시 session을 폐기하고 앱 소유 프로필을 `deleted`로 전환한다. 삭제 시각 기준 5일이 지나면 학습 진행·초안·답변과 AI 피드백을 함께 삭제하고 콘텐츠 revision은 보존하며, backup 복원 시 외부 삭제 marker를 재적용한다.
 
 ## 답변과 학습 활동일
 
 - 상호작용형 스텝 답변은 코스, curriculum version, 레슨과 스텝 범위에 속한다.
+- `READING`과 `COMPARE`는 확인 동작만 가지며 답안·draft·평가 payload가 없다. `AI_FEEDBACK`은 대상 `WRITE`의 서버 저장 답안을 사용한다.
+- 나머지 상호작용형 스텝은 타입별 최종 답안, 부분 draft와 서버 evaluation 계약을 가진다.
 - 중복 문구가 가능한 선택형 활동의 화면 identity와 정답 판정은 문구나 배열 위치가 아니라 stable item ID를 기준으로 한다.
 - 연속 학습일은 클라이언트 상태가 아니라 진행 저장, 답변 저장과 레슨 완료 같은 서버 이벤트로 계산한다.
 - 학습 활동 날짜는 플랫폼 학습 시간대 `Asia/Seoul`의 논리 날짜를 사용한다.

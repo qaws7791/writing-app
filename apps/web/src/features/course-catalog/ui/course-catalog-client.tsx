@@ -3,12 +3,16 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
-import { createCourseImageUrl } from "@/entities/course/model/course-visual-assets"
+import { getCourses } from "@workspace/http-client/learner"
+import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
 import type { CourseListFilters } from "@/features/course-catalog/model/course-list-filters"
-import { getBrowserCourseCatalogApi } from "@/features/course-catalog/api/course-catalog-api"
-import type { LearnerCourseSummary } from "@workspace/contracts/learning/learner-content"
+import {
+  isLearnerApiAuthenticationError,
+  settleLearnerApiRequest,
+  type LearnerCourseSummaryDto,
+} from "@/shared/http/learner-api-client"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   Empty,
@@ -17,31 +21,16 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@workspace/ui/components/ui/empty"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/ui/select"
 import { SearchIcon, XIcon } from "@workspace/ui/components/icons"
 
 const eagerCourseImageCount = 3
 
 export type CoursesPageProps = {
   readonly categories: readonly string[]
-  readonly courses: readonly LearnerCourseSummary[]
+  readonly courses: readonly LearnerCourseSummaryDto[]
   readonly filters: CourseListFilters
   readonly nextCursor?: string | null
 }
-
-const sortOptions = [
-  { label: "기본 순", value: "recommended" },
-  { label: "제목 가나다순", value: "title-asc" },
-  { label: "제목 역순", value: "title-desc" },
-  { label: "레슨 많은 순", value: "lesson-count-desc" },
-  { label: "레슨 적은 순", value: "lesson-count-asc" },
-] as const
 
 export function CourseCatalogClient({
   categories,
@@ -54,21 +43,30 @@ export function CourseCatalogClient({
   const [visibleCourses, setVisibleCourses] = useState(courses)
   const [nextCursor, setNextCursor] = useState(initialNextCursor)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
   const [prevFiltersQuery, setPrevFiltersQuery] = useState(filters.query)
   const searchRef = useRef<HTMLInputElement>(null)
-  const api = useMemo(() => getBrowserCourseCatalogApi(), [])
 
   const loadMore = useCallback(async () => {
     if (nextCursor === null || isLoadingMore) return
     setIsLoadingMore(true)
-    const result = await api.listCourses({
-      ...(filters.category === "" ? {} : { category: filters.category }),
-      cursor: nextCursor,
-      ...(filters.query === "" ? {} : { query: filters.query }),
-      sort: filters.sort,
-    })
+    setLoadMoreError(null)
+    const result = await settleLearnerApiRequest(
+      getCourses({
+        ...(filters.category === "" ? {} : { category: filters.category }),
+        cursor: nextCursor,
+        ...(filters.query === "" ? {} : { query: filters.query }),
+      })
+    )
     setIsLoadingMore(false)
-    if (result.status === "error") return
+    if (result.status === "error") {
+      if (isLearnerApiAuthenticationError(result.error)) {
+        router.refresh()
+        return
+      }
+      setLoadMoreError(result.error.message)
+      return
+    }
     setVisibleCourses((current) => [
       ...current,
       ...result.value.items.filter(
@@ -76,14 +74,7 @@ export function CourseCatalogClient({
       ),
     ])
     setNextCursor(result.value.nextCursor)
-  }, [
-    api,
-    filters.category,
-    filters.query,
-    filters.sort,
-    isLoadingMore,
-    nextCursor,
-  ])
+  }, [filters.category, filters.query, isLoadingMore, nextCursor, router])
 
   if (filters.query !== prevFiltersQuery) {
     setQuery(filters.query)
@@ -95,7 +86,6 @@ export function CourseCatalogClient({
       const nextFilters = {
         category: filters.category,
         query,
-        sort: filters.sort,
         ...overrides,
       }
       const params = new URLSearchParams()
@@ -108,15 +98,11 @@ export function CourseCatalogClient({
         params.set("query", nextFilters.query.trim())
       }
 
-      if (nextFilters.sort !== "recommended") {
-        params.set("sort", nextFilters.sort)
-      }
-
       const search = params.toString()
       const href = search === "" ? "/app/courses" : `/app/courses?${search}`
       router.replace(href, { scroll: false })
     },
-    [filters.category, filters.sort, query, router]
+    [filters.category, query, router]
   )
 
   // 디바운스된 query 값을 통해 URL을 갱신하여 서버 필터링 재호출
@@ -145,7 +131,7 @@ export function CourseCatalogClient({
         </Empty>
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap items-center gap-3">
+          <div className="mb-5 flex items-center gap-3">
             <div className="relative flex-1 min-w-[200px]">
               <label className="sr-only" htmlFor="course-query">
                 검색
@@ -175,31 +161,6 @@ export function CourseCatalogClient({
                   <XIcon size={15} />
                 </button>
               ) : null}
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="sr-only" htmlFor="course-sort">
-                정렬
-              </label>
-              <Select
-                items={sortOptions}
-                value={filters.sort}
-                onValueChange={(value) => {
-                  updateUrl({
-                    sort: value as CourseListFilters["sort"],
-                  })
-                }}
-              >
-                <SelectTrigger id="course-sort">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <div
@@ -250,7 +211,7 @@ export function CourseCatalogClient({
                   >
                     <div className="relative w-28 shrink-0 md:w-full md:h-44">
                       <Image
-                        alt={course.title}
+                        alt={resolveCourseImage(course).alt}
                         draggable="false"
                         className="object-cover select-none"
                         fill
@@ -259,7 +220,7 @@ export function CourseCatalogClient({
                         }
                         preload={index === 0}
                         sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
-                        src={createCourseImageUrl(course.visualKey)}
+                        src={resolveCourseImage(course).src}
                       />
                     </div>
                     <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">
@@ -277,7 +238,15 @@ export function CourseCatalogClient({
                 ))}
               </div>
               {nextCursor === null ? null : (
-                <div className="mt-8 flex justify-center">
+                <div className="mt-8 flex flex-col items-center gap-2">
+                  {loadMoreError === null ? null : (
+                    <p
+                      className="text-body-sm font-bold text-destructive"
+                      role="alert"
+                    >
+                      {loadMoreError}
+                    </p>
+                  )}
                   <button
                     className={buttonVariants({ variant: "secondary" })}
                     disabled={isLoadingMore}
@@ -312,10 +281,6 @@ function createCoursesHref(
 
   if (nextFilters.query.trim() !== "") {
     params.set("query", nextFilters.query.trim())
-  }
-
-  if (nextFilters.sort !== "recommended") {
-    params.set("sort", nextFilters.sort)
   }
 
   const query = params.toString()

@@ -1,6 +1,9 @@
+import { readFile } from "node:fs/promises"
 import path from "node:path"
 
 const databaseUrl = readRequiredEnvironment("E2E_DATABASE_URL")
+const e2eRunRoot = readRequiredEnvironment("E2E_RUN_ROOT")
+const contentAssetRoot = path.resolve(e2eRunRoot, "content-assets")
 const setupScripts = [
   "apps/api/src/scripts/setup-e2e-content-database.ts",
   "apps/api/src/scripts/setup-e2e-database.ts",
@@ -24,10 +27,49 @@ for (const setupScript of setupScripts) {
 }
 
 Bun.serve({
-  fetch: () => new Response("ready"),
+  async fetch(request) {
+    const requestUrl = new URL(request.url)
+    if (requestUrl.pathname === "/") return new Response("ready")
+    if (!requestUrl.pathname.startsWith("/content-assets/")) {
+      return new Response("not found", { status: 404 })
+    }
+
+    const target = path.resolve(
+      e2eRunRoot,
+      requestUrl.pathname.replace(/^\/+/u, "")
+    )
+    if (!target.startsWith(`${contentAssetRoot}${path.sep}`)) {
+      return new Response("not found", { status: 404 })
+    }
+
+    try {
+      return new Response(await readFile(target), {
+        headers: {
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Content-Type": readImageContentType(target),
+        },
+      })
+    } catch {
+      return new Response("not found", { status: 404 })
+    }
+  },
   hostname: "127.0.0.1",
   port: 4199,
 })
+
+function readImageContentType(filePath: string): string {
+  switch (path.extname(filePath).toLowerCase()) {
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg"
+    case ".png":
+      return "image/png"
+    case ".webp":
+      return "image/webp"
+    default:
+      return "application/octet-stream"
+  }
+}
 
 function readRequiredEnvironment(name: string): string {
   const value = process.env[name]?.trim()

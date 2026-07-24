@@ -263,9 +263,6 @@ describe("학습 단계 완료 effect plan", () => {
         "complete-course",
         "record-learning-activity",
       ])
-      expect(Object.isFrozen(completedCourse)).toBe(true)
-      expect(Object.isFrozen(completedCourse.aggregate)).toBe(true)
-      expect(Object.isFrozen(completedCourse.effects)).toBe(true)
     }
   })
 })

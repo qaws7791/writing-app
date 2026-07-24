@@ -9,24 +9,24 @@ import { MarkdownContent } from "#ui/components/lesson/markdown-content"
 
 const CATEGORY_PALETTE = [
   {
-    activeRing: "ring-charcoal/50",
-    base: "bg-charcoal text-cream",
-    cardBg: "bg-charcoal/10 hover:bg-charcoal/10",
+    activeRing: "ring-fg-default/50",
+    base: "bg-action-primary-bg text-action-primary-fg",
+    cardBg: "bg-bg-surface hover:bg-bg-surface",
   },
   {
     activeRing: "ring-accent",
-    base: "bg-accent text-accent-foreground",
-    cardBg: "bg-accent/25 hover:bg-accent/25",
+    base: "bg-action-selected-bg text-action-selected-fg",
+    cardBg: "bg-action-selected-bg hover:bg-action-selected-bg",
   },
   {
-    activeRing: "ring-mint",
-    base: "bg-mint text-ink",
-    cardBg: "bg-mint/20 hover:bg-mint/20",
+    activeRing: "ring-success-fg",
+    base: "bg-success text-success-foreground",
+    cardBg: "bg-success hover:bg-success",
   },
   {
-    activeRing: "ring-coral/60",
-    base: "bg-coral text-ink",
-    cardBg: "bg-coral/10 hover:bg-coral/10",
+    activeRing: "ring-danger-fg/60",
+    base: "bg-danger text-danger-foreground",
+    cardBg: "bg-danger hover:bg-danger",
   },
 ] as const
 
@@ -178,12 +178,12 @@ export function CategorizeAnswer({
                   className: cn(
                     "h-auto w-full justify-start rounded-3xl px-4 py-3.5 text-left disabled:opacity-100",
                     isCorrect
-                      ? "bg-mint-light hover:bg-mint-light"
+                      ? "bg-success text-success-foreground hover:bg-success"
                       : isWrong
-                        ? "bg-coral-light hover:bg-coral-light"
+                        ? "bg-danger text-danger-foreground hover:bg-danger"
                         : isTagged && palette !== null
                           ? palette.cardBg
-                          : "bg-surface hover:bg-surface",
+                          : "bg-bg-surface hover:bg-bg-surface",
                     isClickable ? "cursor-pointer" : "",
                     isClickable && !isTagged
                       ? "ring-2 ring-charcoal/20 ring-offset-1"
@@ -214,7 +214,7 @@ export function CategorizeAnswer({
                     </span>
                   ) : null}
                   <span
-                    className="font-bold text-charcoal w-full"
+                    className="font-bold text-fg-default w-full"
                     style={{ fontSize: "0.9375rem" }}
                   >
                     {item.text}
@@ -225,8 +225,8 @@ export function CategorizeAnswer({
           })}
         </div>
         {checked !== false && explanation ? (
-          <div className="mt-2 bg-surface rounded-4xl p-6 an-fi">
-            <div className="font-bold text-muted-foreground mb-2">해설</div>
+          <div className="mt-2 bg-bg-surface rounded-4xl p-6 an-fi">
+            <div className="font-bold text-fg-muted mb-2">해설</div>
             <p className="font-medium">{explanation}</p>
           </div>
         ) : null}
@@ -234,7 +234,7 @@ export function CategorizeAnswer({
       {checked === false ? (
         <div className="-mx-6 mt-auto shrink-0 bg-gradient-to-t from-bg-canvas via-bg-canvas to-transparent px-6 pb-3 pt-5">
           <div
-            className="font-bold text-muted-foreground mb-2 tracking-widest"
+            className="font-bold text-fg-muted mb-2 tracking-widest"
             style={{ fontSize: "0.75rem" }}
           >
             태그 선택

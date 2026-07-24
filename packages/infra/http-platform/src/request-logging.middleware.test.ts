@@ -148,6 +148,60 @@ describe("Hono request logging middleware", () => {
     })
   })
 
+  it("실제 URL과 query 대신 매칭된 route template만 기록한다", async () => {
+    const events: RequestLogEvent[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "route-template-request-id",
+        logRequest: (event) => events.push(event),
+      })
+    )
+    app.get("/users/:userId", (context) => context.text("ok"))
+
+    await app.request("/users/private-user-id?token=query-secret")
+
+    expect(events[0]).toMatchObject({
+      path: "/users/:userId",
+      requestId: "route-template-request-id",
+    })
+    expect(JSON.stringify(events[0])).not.toMatch(
+      /private-user-id|query-secret/u
+    )
+  })
+
+  it("같은 HTTP 요청에 middleware가 중첩되어도 완료 이벤트는 한 번만 기록한다", async () => {
+    const firstLogger = vi.fn()
+    const secondLogger = vi.fn()
+    const app = new Hono()
+
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "single-request-id",
+        logRequest: firstLogger,
+      })
+    )
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        audience: "learner",
+        createRequestId: () => "duplicate-request-id",
+        logRequest: secondLogger,
+      })
+    )
+    app.get("/health", (context) => context.text("ok"))
+
+    await app.request("/health")
+
+    expect(firstLogger).toHaveBeenCalledOnce()
+    expect(secondLogger).not.toHaveBeenCalled()
+  })
+
   it("route가 예외를 던져도 finally에서 요청 로그를 남긴다", async () => {
     const events: RequestLogEvent[] = []
     const app = new Hono()

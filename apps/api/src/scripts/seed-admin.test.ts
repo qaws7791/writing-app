@@ -3,14 +3,12 @@ import {
   createAdminAuthRuntime,
   type AdminAuthRuntime,
 } from "@workspace/auth/admin/server"
-import { adminRoles } from "@workspace/identity/admin-actor"
 import { adminAuthUsers } from "@workspace/auth/schema"
 import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
-import { readAdminIdentityRoles } from "@workspace/identity/reporting"
 
 import { createAdminAuthDatabase } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
@@ -104,8 +102,8 @@ describe("통합 API 관리자 seed", () => {
         now: new Date("2026-06-14T00:00:00.000Z"),
         password: "admin-password-123",
       })
-      expect(readAdminIdentityRoles(database.db)).toEqual([
-        { adminId: "admin-1", role: adminRoles.owner },
+      await expect(database.db.select().from(adminAuthUsers)).resolves.toEqual([
+        expect.objectContaining({ email: "admin@example.com", id: "admin-1" }),
       ])
       const auth = createTestAdminAuth(database.db)
       expect(await requestAdminEmailSignIn(auth, "admin-password-123")).toBe(
@@ -130,9 +128,6 @@ describe("통합 API 관리자 seed", () => {
         UPDATE admin_user
         SET email = 'edited-admin@example.com', name = '수정한 관리자', updated_at = 7
         WHERE id = 'admin-1';
-        UPDATE admin_identity_profiles
-        SET version = 7
-        WHERE admin_id = 'admin-1';
       `)
       const before = readSeedAdminState(database)
       await seedAdminUser(database.db, {
@@ -168,8 +163,6 @@ describe("통합 API 관리자 seed", () => {
       expect(readSeedAdminState(database)).toMatchObject({
         email: before.email,
         name: before.name,
-        role: before.role,
-        version: before.version,
       })
       expect(
         await requestAdminEmailSignIn(
@@ -183,7 +176,7 @@ describe("통합 API 관리자 seed", () => {
     }
   }, 20_000)
 
-  it("부분 seed 상태와 operator role은 자동 보정하지 않고 실패한다", async () => {
+  it("부분 seed 상태는 자동 보정하지 않고 실패한다", async () => {
     const database = createInMemoryWritingAppDatabase()
     try {
       runApplicationMigrations(database.sqlite)
@@ -194,9 +187,8 @@ describe("통합 API 관리자 seed", () => {
         password: "admin-password-123",
       })
       database.sqlite.exec(`
-        UPDATE admin_identity_profiles
-        SET role = 'operator'
-        WHERE admin_id = 'admin-1';
+        DELETE FROM admin_account
+        WHERE user_id = 'admin-1';
       `)
 
       await expect(
@@ -206,26 +198,14 @@ describe("통합 API 관리자 seed", () => {
           now: new Date("2026-06-15T00:00:00.000Z"),
           password: "admin-password-123",
         })
-      ).rejects.toThrow("불완전하거나 owner credential")
+      ).rejects.toThrow("불완전하거나 credential")
       expect(
         database.sqlite
-          .query<{ readonly role: string }, []>(
-            "SELECT role FROM admin_identity_profiles WHERE admin_id = 'admin-1'"
+          .query<{ readonly email: string }, []>(
+            "SELECT email FROM admin_user WHERE id = 'admin-1'"
           )
-          .get()?.role
-      ).toBe("operator")
-
-      database.sqlite.exec(
-        "DELETE FROM admin_identity_profiles WHERE admin_id = 'admin-1'"
-      )
-      await expect(
-        seedAdminUser(database.db, {
-          email: "admin@example.com",
-          name: "관리자",
-          now: new Date("2026-06-16T00:00:00.000Z"),
-          password: "admin-password-123",
-        })
-      ).rejects.toThrow("불완전하거나 owner credential")
+          .get()?.email
+      ).toBe("admin@example.com")
     } finally {
       database.close()
     }
@@ -280,8 +260,6 @@ function readSeedAdminState(database: WritingAppDatabaseClient): {
   readonly email: string
   readonly name: string
   readonly password: string | null
-  readonly role: string
-  readonly version: number
 } {
   const state = database.sqlite
     .query<
@@ -289,21 +267,15 @@ function readSeedAdminState(database: WritingAppDatabaseClient): {
         readonly email: string
         readonly name: string
         readonly password: string | null
-        readonly role: string
-        readonly version: number
       },
       []
     >(`
       SELECT
         admin_user.email,
         admin_user.name,
-        admin_account.password,
-        admin_identity_profiles.role,
-        admin_identity_profiles.version
+        admin_account.password
       FROM admin_user
       INNER JOIN admin_account ON admin_account.user_id = admin_user.id
-      INNER JOIN admin_identity_profiles
-        ON admin_identity_profiles.admin_id = admin_user.id
       WHERE admin_user.id = 'admin-1'
     `)
     .get()

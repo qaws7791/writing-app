@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-course-editor"
@@ -6,21 +6,20 @@ import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-co
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
 
-const { getCourseEditorMock } = vi.hoisted(() => ({
+const { getCourseEditorMock, uploadAssetMock } = vi.hoisted(() => ({
   getCourseEditorMock: vi.fn(),
+  uploadAssetMock: vi.fn(),
 }))
 
-vi.mock(
-  "@/features/course-editor/api/create-browser-course-editor-api",
-  () => ({
-    createBrowserCourseEditorApi: () => ({
-      getCourseEditor: getCourseEditorMock,
-    }),
-  })
-)
+vi.mock("@workspace/http-client/admin", () => ({
+  getAdminCourseEditor: getCourseEditorMock,
+  uploadAdminContentAsset: uploadAssetMock,
+}))
 
 const course: AdminCourseDetail = adminCourseEditorSchema.parse({
+  assets: [],
   category: "입문자를 위한 코스",
+  coverAssetId: null,
   curriculumVersionId: "c1-v3",
   description: "글쓰기 입문 과정",
   editVersion: 2,
@@ -54,7 +53,8 @@ const course: AdminCourseDetail = adminCourseEditorSchema.parse({
 describe("CourseEditorShell", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getCourseEditorMock.mockResolvedValue({ status: "ok", value: course })
+    getCourseEditorMock.mockResolvedValue(course)
+    uploadAssetMock.mockReset()
   })
 
   it("Kwep 기준 코스 제목, 강의 정보 탭, 커리큘럼 탭을 렌더링한다", async () => {
@@ -95,6 +95,71 @@ describe("CourseEditorShell", () => {
     expect(screen.getByDisplayValue("첫 레슨")).toBeVisible()
   })
 
+  it("표지의 대체 텍스트와 업로드 진행을 표시하고 asset ID를 저장한다", async () => {
+    const user = userEvent.setup()
+    const saveCourse = vi.fn(async (draft: AdminCourseDetail) => ({
+      status: "ok" as const,
+      value: { ...draft, editVersion: draft.editVersion + 1 },
+    }))
+    let finishUpload:
+      | ((value: AdminCourseDetail["assets"][number]) => void)
+      | undefined
+    uploadAssetMock.mockReturnValue(
+      new Promise((resolve) => {
+        finishUpload = resolve
+      })
+    )
+
+    render(
+      <CourseEditorShell
+        course={course}
+        publishCourse={async () => ({
+          status: "ok",
+          value: {
+            curriculumVersionId: course.curriculumVersionId,
+            publishedAt: "2026-07-17T00:00:00.000Z",
+            revision: course.revision,
+          },
+        })}
+        saveCourse={saveCourse}
+      />
+    )
+
+    await user.upload(
+      screen.getByLabelText("이미지 파일"),
+      new File(["cover"], "cover.png", { type: "image/png" })
+    )
+    await user.type(screen.getByLabelText("대체 텍스트"), "글쓰기 코스 표지")
+    await user.click(screen.getByRole("button", { name: "이미지 업로드" }))
+
+    expect(
+      screen.getByRole("progressbar", { name: "코스 표지 업로드 진행 중" })
+    ).toBeVisible()
+
+    finishUpload?.({
+      altText: "글쓰기 코스 표지",
+      byteSize: 1024,
+      contentType: "image/webp",
+      courseId: course.id,
+      curriculumVersionId: course.curriculumVersionId,
+      id: "asset-cover-1",
+      kind: "course-cover",
+      url: "https://assets.example.test/cover.webp",
+    })
+
+    expect(
+      await screen.findByRole("img", { name: "글쓰기 코스 표지" })
+    ).toBeVisible()
+    await user.click(screen.getByRole("button", { name: "변경 저장" }))
+    await waitFor(() =>
+      expect(saveCourse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coverAssetId: "asset-cover-1",
+        })
+      )
+    )
+  })
+
   it("저장된 draft를 확인 뒤 발행하고 다음 draft를 다시 읽는다", async () => {
     const user = userEvent.setup()
     const nextDraft = {
@@ -111,10 +176,7 @@ describe("CourseEditorShell", () => {
         revision: course.revision,
       },
     }))
-    const loadLatestCourse = vi.fn(async () => ({
-      status: "ok" as const,
-      value: nextDraft,
-    }))
+    const loadLatestCourse = vi.fn(async () => nextDraft)
     getCourseEditorMock.mockImplementation(loadLatestCourse)
     vi.spyOn(window, "confirm").mockReturnValue(true)
 

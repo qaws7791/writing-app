@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { AdminUsersPage } from "@/features/user-management/ui/admin-users-page"
-import type { AdminApiResult } from "@/shared/http/admin-api-result"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type {
   AdminDeleteUserResult,
   AdminUserDetail,
@@ -51,7 +51,7 @@ describe("AdminUsersPage", () => {
     const user = userEvent.setup()
     vi.spyOn(window, "confirm").mockReturnValue(true)
     const updateUserStatus = vi.fn<
-      () => Promise<AdminApiResult<AdminUserDetail>>
+      () => Promise<AdminRequestResult<AdminUserDetail>>
     >(async () => ok(userDetail("suspended")))
 
     render(
@@ -64,6 +64,9 @@ describe("AdminUsersPage", () => {
     )
 
     expect(screen.getByRole("heading", { name: "사용자 관리" })).toBeVisible()
+    expect(screen.getByRole("table", { name: "사용자 목록" })).toHaveClass(
+      "min-w-[880px]"
+    )
     expect(screen.getByLabelText("사용자 검색")).toHaveValue("")
     expect(screen.getByRole("combobox", { name: "상태" })).toBeVisible()
     expect(screen.getByRole("combobox", { name: "정렬" })).toBeVisible()
@@ -97,7 +100,7 @@ describe("AdminUsersPage", () => {
   it("삭제 요청 확인 대화상자를 거쳐 삭제한다", async () => {
     const user = userEvent.setup()
     const deleteUser = vi.fn<
-      () => Promise<AdminApiResult<AdminDeleteUserResult>>
+      () => Promise<AdminRequestResult<AdminDeleteUserResult>>
     >(async () => ok({ deleted: true }))
 
     render(
@@ -159,7 +162,7 @@ describe("AdminUsersPage", () => {
   })
 })
 
-function ok<TValue>(value: TValue): AdminApiResult<TValue> {
+function ok<TValue>(value: TValue): AdminRequestResult<TValue> {
   return {
     status: "ok",
     value,

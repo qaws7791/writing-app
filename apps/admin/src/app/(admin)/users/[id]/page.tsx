@@ -1,8 +1,11 @@
 import { AdminUserDetailPage } from "@/features/user-management/ui/admin-user-detail-page"
-import { createAdminUsersDal } from "@/features/user-management/server/admin-users-dal"
-import { getServerAdminHttpTransport } from "@/server/http/get-admin-http-transport"
-import { getServerAdminSessionToken } from "@/server/auth/get-admin-session-token"
 import { userIdSchema } from "@/entities/learner-account/model/learner-account-id"
+import {
+  settleAdminApiRequest,
+  unauthenticatedAdminRequestFailure,
+} from "@/shared/http/admin-api-client"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
+import { getAdminUser } from "@workspace/http-client/admin"
 import { notFound } from "next/navigation"
 
 export default async function AdminUserDetailRoute({
@@ -14,12 +17,11 @@ export default async function AdminUserDetailRoute({
 }) {
   const parsedId = userIdSchema.safeParse((await params).id)
   if (!parsedId.success) notFound()
-  const api = createAdminUsersDal(
-    getServerAdminHttpTransport({
-      tokenProvider: getServerAdminSessionToken,
-    })
-  )
-  const userResult = await api.getUser(parsedId.data)
+  const requestOptions = await getServerAdminRequestOptions()
+  const userResult =
+    requestOptions === null
+      ? unauthenticatedAdminRequestFailure()
+      : await settleAdminApiRequest(getAdminUser(parsedId.data, requestOptions))
 
   return <AdminUserDetailPage userResult={userResult} />
 }

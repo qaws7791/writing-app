@@ -1,7 +1,7 @@
 import { z } from "zod"
-import type { CourseId } from "@workspace/types/ids"
+import type { CourseId } from "@workspace/contracts/content/ids"
 
-export type { CourseId } from "@workspace/types/ids"
+export type { CourseId } from "@workspace/contracts/content/ids"
 
 export const courseIdSchema = z
   .string()

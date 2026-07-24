@@ -1,15 +1,26 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+const generatedClient = vi.hoisted(() => ({
+  getProgress: vi.fn(),
+}))
+
+const refresh = vi.hoisted(() => vi.fn())
+
+vi.mock("@workspace/http-client/learner", () => generatedClient)
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh }),
+}))
 
 import { HomePage } from "@/features/learner-home/ui/home-page"
 import { HomeProgressClient } from "@/features/learner-home/ui/home-progress-client"
-import { learnerProgressPageSchema } from "@workspace/contracts/learning/learner-content"
-import type { LearnerProfileResponse } from "@workspace/contracts/identity/learner-profile"
-import { httpApiOk as apiOk } from "@workspace/http-client/api-result"
-import type { LearnerHomeApi } from "@/features/learner-home/api/learner-home-api"
+import type {
+  LearnerProfileStatsDto,
+  LearnerProgressPageDto,
+} from "@/shared/http/learner-api-client"
 
-const profileStats: LearnerProfileResponse["stats"] = {
+const profileStats: LearnerProfileStatsDto = {
   completedLessons: 0,
   currentStreakDays: 0,
   lastActiveDate: null,
@@ -18,14 +29,15 @@ const profileStats: LearnerProfileResponse["stats"] = {
 }
 
 const version = { curriculumVersionId: "c1-v1", revision: 1 }
-const emptyInProgress = learnerProgressPageSchema.parse({
+const emptyInProgress: LearnerProgressPageDto = {
   items: [],
   nextCursor: null,
-})
+}
 
-const progressWithActiveCourse = learnerProgressPageSchema.parse({
+const progressWithActiveCourse: LearnerProgressPageDto = {
   items: [
     {
+      cover: null,
       id: "c1",
       learning: {
         completedLessons: 1,
@@ -47,11 +59,12 @@ const progressWithActiveCourse = learnerProgressPageSchema.parse({
     },
   ],
   nextCursor: null,
-})
+}
 
-const completedProgress = learnerProgressPageSchema.parse({
+const completedProgress: LearnerProgressPageDto = {
   items: [
     {
+      cover: null,
       id: "c2",
       learning: {
         completedAt: "2026-06-14T00:00:00.000Z",
@@ -68,9 +81,14 @@ const completedProgress = learnerProgressPageSchema.parse({
     },
   ],
   nextCursor: null,
-})
+}
 
 describe("홈 화면", () => {
+  beforeEach(() => {
+    generatedClient.getProgress.mockReset()
+    refresh.mockReset()
+  })
+
   it("fresh 상태의 인사, 통계, 진행중 탭 CTA를 보여준다", () => {
     render(
       <HomePage
@@ -140,14 +158,15 @@ describe("홈 화면", () => {
 
   it("완료 탭에서 완료 코스 목록을 불러온다", async () => {
     const user = userEvent.setup()
-    const getProgress = vi.fn(async () => apiOk(completedProgress))
-    const api = createApi({ getProgress })
+    generatedClient.getProgress.mockResolvedValue(completedProgress)
 
-    render(<HomeProgressClient api={api} inProgress={emptyInProgress} />)
+    render(<HomeProgressClient inProgress={emptyInProgress} />)
 
     await user.click(screen.getByRole("tab", { name: "완료" }))
 
-    expect(getProgress).toHaveBeenCalledWith({ status: "completed" })
+    expect(generatedClient.getProgress).toHaveBeenCalledWith({
+      status: "completed",
+    })
     expect(await screen.findAllByText("완료한 코스")).toHaveLength(1)
     expect(
       screen.queryByRole("heading", {
@@ -158,13 +177,14 @@ describe("홈 화면", () => {
 
   it("진행 중 코스의 다음 cursor 페이지를 이어 붙인다", async () => {
     const user = userEvent.setup()
-    const initialPage = learnerProgressPageSchema.parse({
+    const initialPage: LearnerProgressPageDto = {
       items: progressWithActiveCourse.items,
       nextCursor: "progress-cursor-2",
-    })
-    const nextPage = learnerProgressPageSchema.parse({
+    }
+    const nextPage: LearnerProgressPageDto = {
       items: [
         {
+          cover: null,
           id: "c3",
           learning: {
             completedLessons: 0,
@@ -186,21 +206,16 @@ describe("홈 화면", () => {
         },
       ],
       nextCursor: null,
-    })
-    const getProgress = vi.fn(async () => apiOk(nextPage))
+    }
+    generatedClient.getProgress.mockResolvedValue(nextPage)
 
-    render(
-      <HomeProgressClient
-        api={createApi({ getProgress })}
-        inProgress={initialPage}
-      />
-    )
+    render(<HomeProgressClient inProgress={initialPage} />)
 
     await user.click(
       screen.getByRole("button", { name: "진행 중 코스 더 보기" })
     )
 
-    expect(getProgress).toHaveBeenCalledWith({
+    expect(generatedClient.getProgress).toHaveBeenCalledWith({
       cursor: "progress-cursor-2",
       status: "in_progress",
     })
@@ -210,13 +225,3 @@ describe("홈 화면", () => {
     ).not.toBeInTheDocument()
   })
 })
-
-function createApi({
-  getProgress,
-}: {
-  readonly getProgress: LearnerHomeApi["getProgress"]
-}): LearnerHomeApi {
-  return {
-    getProgress,
-  }
-}
