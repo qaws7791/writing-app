@@ -1,0 +1,12 @@
+interface:
+  display_name: Safe Dependency Management
+  short_description: Evaluate and change repository dependencies safely
+  default_prompt: Use $manage-dependencies to evaluate and safely implement this dependency
+    change.
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
