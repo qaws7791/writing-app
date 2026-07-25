@@ -11,7 +11,7 @@
 - module 외부에서 해당 module manifest가 공개하지 않은 `src` target으로 향하는 의존성
 - operations reporting에서 다른 module 구현으로 향하는 의존성
 
-규칙의 권위 source는 [Dependency Cruiser 설정](../../dependency-cruiser.config.mjs)이고 실행 진입점은 [architecture 검사](../../scripts/check-architecture.ts)다. 실행기는 root manifest의 workspace glob을 읽고 각 workspace TypeScript 설정으로 실제 graph를 검사한다. module의 공개 target은 각 module manifest의 `exports`에서 읽으므로 별도 package·export inventory를 복제하지 않는다.
+규칙의 권위 source는 [Dependency Cruiser 설정](../../dependency-cruiser.config.mjs)이고 실행 진입점은 [root manifest](../../package.json)의 `check:architecture`다. root TypeScript 설정으로 `apps`와 `packages`의 실제 graph를 한 번 검사한다. module의 공개 target은 각 module manifest의 `exports`에서 읽으므로 별도 package·export inventory를 복제하지 않는다.
 
 TypeScript 7은 안정된 programmatic API를 제공하지 않으므로 CLI 타입 검사는 TypeScript 7 native compiler가 소유하고, Dependency Cruiser의 source parser에는 공식 호환 package의 TypeScript 6 API만 제공한다. 두 실행 경로는 root manifest에서 서로 다른 package 이름으로 고정한다. Dependency Cruiser가 TypeScript 7의 안정 API를 지원하면 TypeScript 6 호환 package를 제거하고 정상 graph와 의도적 위반 fixture를 다시 검증한다.
 

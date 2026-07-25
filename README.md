@@ -13,7 +13,7 @@ bun run setup
 bun run dev
 ```
 
-`setup`은 안전하게 로컬 개발 준비를 수행하고, 기존 설정과 데이터는 덮어쓰지 않는다. 기본 seed는 누락된 개발 fixture만 추가하며 기존 데이터를 바꾸는 reset은 별도 명령이다. 실제 준비 절차와 실패 진단은 [런타임 설정 원칙](docs/engineering/runtime-configuration.md)을 따른다.
+`setup`은 누락된 환경 파일을 생성하고 설치·migration·기본 seed·진단을 순서대로 실행하며 기존 환경 파일은 덮어쓰지 않는다. migration 전에 실행 중인 개발 서버를 종료하고 보존이 필요한 로컬 DB는 직접 백업한다. 실제 준비 절차와 실패 진단은 [런타임 설정 원칙](docs/engineering/runtime-configuration.md)을 따른다.
 
 ## 개발과 검증
 
