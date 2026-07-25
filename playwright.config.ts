@@ -17,12 +17,10 @@ const releaseDeviceByProject = {
 export default defineConfig({
   failOnFlakyTests: isCi,
   testDir: "./e2e",
-  testIgnore: "**/*.visual.spec.ts",
   fullyParallel: false,
   forbidOnly: isCi,
   globalTimeout: 600_000,
   outputDir: "output/playwright/test-results",
-  snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: "output/playwright/report" }],
@@ -41,14 +39,6 @@ export default defineConfig({
     })),
   ],
   timeout: 30_000,
-  expect: {
-    toHaveScreenshot: {
-      animations: "disabled",
-      caret: "hide",
-      maxDiffPixelRatio: 0.02,
-      scale: "css",
-    },
-  },
   use: {
     baseURL: "http://localhost:3100",
     launchOptions: {

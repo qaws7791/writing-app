@@ -24,7 +24,7 @@ interface ProcessPair {
   readonly pid: number
 }
 
-test("dev:admin은 admin web과 통합 API만 실행하고 소유 process와 port를 정리한다", async () => {
+test("dev:admin 전용 smoke는 admin web과 통합 API의 process와 port를 정리한다", async () => {
   expect(await isPortListening(adminWebPort)).toBe(false)
   expect(await isPortListening(apiPort)).toBe(false)
   expect(existsSync(adminNextLock)).toBe(false)
