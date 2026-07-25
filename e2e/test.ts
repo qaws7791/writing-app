@@ -9,6 +9,14 @@ import { deriveE2eClientIp } from "#scripts/e2e-client-ip"
 
 export { expect }
 
+export function readCreatedCourseId(href: string | null): string {
+  const match = href?.match(/^\/courses\/([^/?#]+)$/u)
+  if (match?.[1] === undefined) {
+    throw new Error("생성된 코스 링크에서 course ID를 읽을 수 없습니다.")
+  }
+  return decodeURIComponent(match[1])
+}
+
 const clientIpByTestId = new Map<string, string>()
 const reservedClientIps = new Set<string>()
 

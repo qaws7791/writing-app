@@ -2,9 +2,10 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 
 import { expect, type Page } from "@playwright/test"
+import { e2eRuntime, readRequiredE2eEnvironment } from "#e2e/runtime"
 
-export const learnerWebOrigin = "http://localhost:3100"
-export const adminWebOrigin = "http://127.0.0.1:3101"
+export const learnerWebOrigin = e2eRuntime.learnerOrigin
+export const adminWebOrigin = e2eRuntime.adminOrigin
 
 const adminPassword = "e2e-password-123"
 const learnerEmail = "learner@example.com"
@@ -80,7 +81,7 @@ export async function readLatestAuthEmail(): Promise<
   }>
 > {
   const mailboxPath = path.join(
-    readRequiredEnvironment("E2E_RUN_ROOT"),
+    path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT")),
     "auth-email.json"
   )
   const parsed: unknown = JSON.parse(await readFile(mailboxPath, "utf8"))
@@ -100,13 +101,4 @@ export async function readLatestAuthEmail(): Promise<
     callbackUrl: parsed.callbackUrl,
     kind: parsed.kind,
   }
-}
-
-function readRequiredEnvironment(name: string): string {
-  const value = process.env[name]?.trim()
-  if (value === undefined || value === "") {
-    throw new Error(`E2E 실행에 ${name}이 필요합니다.`)
-  }
-
-  return path.resolve(value)
 }

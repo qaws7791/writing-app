@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
+import { e2eRuntime, readRequiredE2eEnvironment } from "#e2e/runtime"
 
-const databaseUrl = readRequiredEnvironment("E2E_DATABASE_URL")
-const e2eRunRoot = readRequiredEnvironment("E2E_RUN_ROOT")
+const databaseUrl = path.resolve(readRequiredE2eEnvironment("E2E_DATABASE_URL"))
+const e2eRunRoot = path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT"))
 const contentAssetRoot = path.resolve(e2eRunRoot, "content-assets")
 const setupScripts = [
   "apps/api/src/scripts/setup-e2e-content-database.ts",
@@ -54,7 +55,7 @@ Bun.serve({
     }
   },
   hostname: "127.0.0.1",
-  port: 4199,
+  port: Number(new URL(e2eRuntime.assetOrigin).port),
 })
 
 function readImageContentType(filePath: string): string {
@@ -69,14 +70,4 @@ function readImageContentType(filePath: string): string {
     default:
       return "application/octet-stream"
   }
-}
-
-function readRequiredEnvironment(name: string): string {
-  const value = process.env[name]?.trim()
-
-  if (value === undefined || value.length === 0) {
-    throw new Error(`${name}이 없어 E2E fixture를 준비할 수 없습니다.`)
-  }
-
-  return path.resolve(value)
 }

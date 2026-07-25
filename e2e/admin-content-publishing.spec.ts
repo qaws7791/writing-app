@@ -8,9 +8,11 @@ import {
 } from "@playwright/test"
 import { adminContentAssetUploadDtoSchema } from "@workspace/contracts/content/admin-assets"
 import {
+  adminCourseDetailDtoSchema,
   adminCourseEditorDocumentSchema,
   adminCourseEditorWriteDocumentSchema,
   type AdminCourseEditorDocument,
+  type AdminCourseEditorWriteDocument,
 } from "@workspace/contracts/content/admin-courses"
 import { saveLearnerStepDraftBodySchema } from "@workspace/contracts/learning/learner-transition"
 
@@ -24,8 +26,6 @@ import { expect, observeBrowserContext, test } from "#e2e/test"
 import {
   createE2eAdminContentFixture,
   e2eAdminContentActivityTypes,
-  e2eAdminContentCourseTitle,
-  e2eAdminContentOrderItems,
   e2eAdminContentReadingTitle,
 } from "#e2e/admin-content-fixture"
 
@@ -47,7 +47,23 @@ const learnerMobileContextOptions = {
   viewport: iPhone16Pro.viewport,
 } satisfies BrowserContextOptions
 
-test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는 고정 revision을 사용한다", async ({
+type OrderItem = Readonly<{ id: string; text: string }>
+
+interface AdminContentDraft {
+  readonly courseId: string
+  readonly document: AdminCourseEditorWriteDocument
+}
+
+interface PublishedAdminContent {
+  readonly courseId: string
+  readonly orderItems: readonly OrderItem[]
+  readonly orderStepId: string
+  readonly readingAssetUrl: string
+}
+
+test.describe.configure({ mode: "parallel" })
+
+test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발행한다", async ({
   browser,
 }) => {
   test.setTimeout(300_000)
@@ -63,33 +79,10 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   })
 
   await loginAdmin(adminPage, "owner@example.test", { nextPath: "/courses" })
-  await adminPage.getByRole("button", { name: "새 강의" }).click()
-  await expect(adminPage.getByText("새 코스를 만들었습니다.")).toBeVisible()
-  const createdCourseHref = await adminPage
-    .getByRole("link", { exact: true, name: "새 강의" })
-    .last()
-    .getAttribute("href")
-  const createdCourseId = readCreatedCourseId(createdCourseHref)
-
-  const initialEditor = await readAdminCourseEditor(adminPage, createdCourseId)
-  const fixture = createE2eAdminContentFixture(initialEditor)
-  expect(fixture.units[0]?.lessons[0]?.steps.map((step) => step.type)).toEqual(
-    e2eAdminContentActivityTypes
-  )
-  const fixtureSaveResponse = await adminPage.request.put(
-    `${adminWebOrigin}/api/admin/courses/${createdCourseId}/editor`,
-    {
-      data: adminCourseEditorWriteDocumentSchema.parse(fixture),
-      headers: {
-        "If-Match": `"${initialEditor.editVersion}"`,
-        Origin: adminWebOrigin,
-      },
-    }
-  )
-  expect(fixtureSaveResponse.status()).toBe(200)
-
+  const fixture = await createAdminContentDraft(adminPage, "publish")
+  const { courseId } = fixture
   await adminPage.goto(
-    `${adminWebOrigin}/courses/${encodeURIComponent(createdCourseId)}`
+    `${adminWebOrigin}/courses/${encodeURIComponent(courseId)}`
   )
   await adminPage.getByRole("button", { name: "커리큘럼" }).click()
   const stepForms = adminPage.getByRole("list", { name: "스텝 편집 폼" })
@@ -138,10 +131,7 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   await expect(
     adminPage.getByRole("img", { name: "리비전 1 코스 표지" })
   ).toBeVisible()
-  const coverReloadedEditor = await readAdminCourseEditor(
-    adminPage,
-    createdCourseId
-  )
+  const coverReloadedEditor = await readAdminCourseEditor(adminPage, courseId)
   expect(coverReloadedEditor.coverAssetId).toBe(coverAsset.id)
 
   await adminPage.setViewportSize({ height: 720, width: 1280 })
@@ -172,10 +162,7 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   await expect(
     adminPage.getByRole("img", { name: "리비전 1 읽기 삽화" })
   ).toBeVisible()
-  const imageReloadedEditor = await readAdminCourseEditor(
-    adminPage,
-    createdCourseId
-  )
+  const imageReloadedEditor = await readAdminCourseEditor(adminPage, courseId)
   expect(readReadingStep(imageReloadedEditor).illustrationAssetId).toBe(
     readingAsset.id
   )
@@ -186,14 +173,11 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
     .getByRole("button", { name: "발행하기" })
     .click()
   await expect(adminPage.getByText("리비전 1을 발행했습니다.")).toBeVisible()
-  const revisionTwoDraft = await readAdminCourseEditor(
-    adminPage,
-    createdCourseId
-  )
+  const revisionTwoDraft = await readAdminCourseEditor(adminPage, courseId)
   expect(revisionTwoDraft.revision).toBe(2)
 
   const publishedApiMutation = await adminPage.request.post(
-    `${adminWebOrigin}/api/admin/courses/${createdCourseId}/assets`,
+    `${adminWebOrigin}/api/admin/courses/${courseId}/assets`,
     {
       headers: { Origin: adminWebOrigin },
       multipart: {
@@ -208,19 +192,27 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   assertPublishedDatabaseMutationRejected(
     imageReloadedEditor.curriculumVersionId
   )
+  await adminContext.close()
+  adminDiagnostics.expectNoIssues()
+})
 
+test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된다", async ({
+  browser,
+}) => {
+  test.setTimeout(300_000)
+  const adminContext = await browser.newContext()
+  const adminDiagnostics = observeBrowserContext(adminContext)
+  const adminPage = await adminContext.newPage()
+  await loginAdmin(adminPage, "owner@example.test", { nextPath: "/courses" })
+  const fixture = await createPublishedAdminContent(adminPage, "revision")
+  const { courseId, readingAssetUrl } = fixture
   const learnerContext = await browser.newContext(learnerMobileContextOptions)
   const learnerDiagnostics = observeBrowserContext(learnerContext)
   const learnerPage = await learnerContext.newPage()
   await loginLearner(learnerPage)
-  await Promise.all([
-    learnerPage.waitForURL(
-      `${learnerWebOrigin}/app/courses/${encodeURIComponent(createdCourseId)}`
-    ),
-    learnerPage
-      .getByRole("link", { name: new RegExp(e2eAdminContentCourseTitle) })
-      .click(),
-  ])
+  await learnerPage.goto(
+    `${learnerWebOrigin}/app/courses/${encodeURIComponent(courseId)}`
+  )
   await learnerPage.waitForLoadState("networkidle")
   const learnerCoverImage = learnerPage.getByRole("img", {
     name: "리비전 1 코스 표지",
@@ -235,7 +227,7 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   const readingOptimizerResponsePromise = learnerPage.waitForResponse(
     (response) =>
       response.url().includes("/_next/image?") &&
-      decodeURIComponent(response.url()).includes(readingAsset.url)
+      decodeURIComponent(response.url()).includes(readingAssetUrl)
   )
   const startButton = learnerPage.getByRole("button", { name: "시작하기" })
   await expect(startButton).toBeEnabled()
@@ -254,7 +246,7 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   expect((await readingOptimizerResponse.body()).byteLength).toBeGreaterThan(0)
 
   await adminPage.goto(
-    `${adminWebOrigin}/courses/${encodeURIComponent(createdCourseId)}`
+    `${adminWebOrigin}/courses/${encodeURIComponent(courseId)}`
   )
   await adminPage.getByRole("button", { name: "커리큘럼" }).click()
   const revisionTwoReading = adminPage
@@ -295,8 +287,6 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
     learnerPage.getByRole("img", { name: "리비전 2 읽기 삽화" })
   ).toHaveCount(0)
 
-  await completeAllMobileActivityTypes(learnerPage)
-
   await adminPage.getByRole("button", { name: "강의 정보" }).click()
   await adminPage
     .getByLabel("설명")
@@ -314,7 +304,168 @@ test("관리자가 10개 활동과 이미지를 발행하고 기존 학습자는
   adminDiagnostics.expectNoIssues()
 })
 
-async function completeAllMobileActivityTypes(page: Page): Promise<void> {
+test("학습자가 모바일에서 10개 활동 유형을 완료한다", async ({ browser }) => {
+  test.setTimeout(300_000)
+  const adminContext = await browser.newContext()
+  const adminDiagnostics = observeBrowserContext(adminContext)
+  const adminPage = await adminContext.newPage()
+  await loginAdmin(adminPage, "owner@example.test", { nextPath: "/courses" })
+  const fixture = await createPublishedAdminContent(adminPage, "activities")
+  await adminContext.close()
+  adminDiagnostics.expectNoIssues()
+
+  const learnerContext = await browser.newContext(learnerMobileContextOptions)
+  const learnerDiagnostics = observeBrowserContext(learnerContext)
+  const learnerPage = await learnerContext.newPage()
+  await loginLearner(
+    learnerPage,
+    `/app/courses/${encodeURIComponent(fixture.courseId)}`
+  )
+  await learnerPage.getByRole("link", { name: "학습 시작하기" }).click()
+  const startButton = learnerPage.getByRole("button", { name: "시작하기" })
+  await expect(startButton).toBeEnabled()
+  await startButton.click()
+  await completeAllMobileActivityTypes(learnerPage, fixture)
+  await learnerContext.close()
+  learnerDiagnostics.expectNoIssues()
+})
+
+async function createAdminContentDraft(
+  page: Page,
+  idNamespace: string
+): Promise<AdminContentDraft> {
+  const createResponse = await page.request.post(
+    `${adminWebOrigin}/api/admin/courses`,
+    { headers: { Origin: adminWebOrigin } }
+  )
+  expect(createResponse.status()).toBe(200)
+  const course = adminCourseDetailDtoSchema.parse(await createResponse.json())
+  const initialEditor = await readAdminCourseEditor(page, course.id)
+  const document = createE2eAdminContentFixture(initialEditor, idNamespace)
+  expect(document.units[0]?.lessons[0]?.steps.map((step) => step.type)).toEqual(
+    e2eAdminContentActivityTypes
+  )
+  const saveResponse = await page.request.put(
+    `${adminWebOrigin}/api/admin/courses/${course.id}/editor`,
+    {
+      data: adminCourseEditorWriteDocumentSchema.parse(document),
+      headers: {
+        "If-Match": `"${initialEditor.editVersion}"`,
+        Origin: adminWebOrigin,
+      },
+    }
+  )
+  expect(saveResponse.status()).toBe(200)
+  return { courseId: course.id, document }
+}
+
+async function createPublishedAdminContent(
+  page: Page,
+  idNamespace: string
+): Promise<PublishedAdminContent> {
+  const draft = await createAdminContentDraft(page, idNamespace)
+  const editor = await readAdminCourseEditor(page, draft.courseId)
+  const coverAsset = await uploadContentAsset(page, {
+    altText: "리비전 1 코스 표지",
+    courseId: draft.courseId,
+    curriculumVersionId: editor.curriculumVersionId,
+    kind: "course-cover",
+  })
+  const readingAsset = await uploadContentAsset(page, {
+    altText: "리비전 1 읽기 삽화",
+    courseId: draft.courseId,
+    curriculumVersionId: editor.curriculumVersionId,
+    kind: "reading-illustration",
+  })
+  const editorWithAssets = await readAdminCourseEditor(page, draft.courseId)
+  const { assets: _assets, ...currentDocument } = editorWithAssets
+  const document = adminCourseEditorWriteDocumentSchema.parse({
+    ...currentDocument,
+    coverAssetId: coverAsset.id,
+    units: currentDocument.units.map((unit) => ({
+      ...unit,
+      lessons: unit.lessons.map((lesson) => ({
+        ...lesson,
+        steps: lesson.steps.map((step) =>
+          step.type === "READING"
+            ? { ...step, illustrationAssetId: readingAsset.id }
+            : step
+        ),
+      })),
+    })),
+  })
+  const saveResponse = await page.request.put(
+    `${adminWebOrigin}/api/admin/courses/${draft.courseId}/editor`,
+    {
+      data: document,
+      headers: {
+        "If-Match": `"${editorWithAssets.editVersion}"`,
+        Origin: adminWebOrigin,
+      },
+    }
+  )
+  expect(saveResponse.status()).toBe(200)
+  const savedEditor = await readAdminCourseEditor(page, draft.courseId)
+  const publishResponse = await page.request.post(
+    `${adminWebOrigin}/api/admin/courses/${draft.courseId}/publish`,
+    {
+      headers: {
+        "If-Match": `"${savedEditor.editVersion}"`,
+        Origin: adminWebOrigin,
+      },
+    }
+  )
+  expect(publishResponse.status()).toBe(200)
+
+  const lesson = document.units[0]?.lessons[0]
+  const orderStep = lesson?.steps.find((step) => step.type === "ORDER")
+  if (lesson === undefined || orderStep?.type !== "ORDER") {
+    throw new Error("E2E 관리자 콘텐츠 fixture 구조가 올바르지 않습니다.")
+  }
+  const orderItems = orderStep.items.map((text, index) => {
+    const id = orderStep.itemIds[index]
+    if (id === undefined) {
+      throw new Error("E2E ORDER fixture 항목 ID가 없습니다.")
+    }
+    return { id, text }
+  })
+  return {
+    courseId: draft.courseId,
+    orderItems,
+    orderStepId: orderStep.id,
+    readingAssetUrl: readingAsset.url,
+  }
+}
+
+async function uploadContentAsset(
+  page: Page,
+  input: Readonly<{
+    altText: string
+    courseId: string
+    curriculumVersionId: string
+    kind: "course-cover" | "reading-illustration"
+  }>
+) {
+  const response = await page.request.post(
+    `${adminWebOrigin}/api/admin/courses/${input.courseId}/assets`,
+    {
+      headers: { Origin: adminWebOrigin },
+      multipart: {
+        altText: input.altText,
+        curriculumVersionId: input.curriculumVersionId,
+        file: imageFile,
+        kind: input.kind,
+      },
+    }
+  )
+  expect(response.status()).toBe(200)
+  return adminContentAssetUploadDtoSchema.parse(await response.json())
+}
+
+async function completeAllMobileActivityTypes(
+  page: Page,
+  fixture: PublishedAdminContent
+): Promise<void> {
   await expectMobileLessonStep(
     page,
     1,
@@ -363,8 +514,11 @@ async function completeAllMobileActivityTypes(page: Page): Promise<void> {
   })
   await expect(orderHandles).toHaveCount(2)
   await expect(page.getByRole("status")).toHaveText("서버에 저장됨")
-  const canonicalOrderItemIds = e2eAdminContentOrderItems.map((item) => item.id)
-  const initialOrderItemIds = await readOrderActivityItemIds(orderHandles)
+  const canonicalOrderItemIds = fixture.orderItems.map((item) => item.id)
+  const initialOrderItemIds = await readOrderActivityItemIds(
+    orderHandles,
+    fixture.orderItems
+  )
   expect(initialOrderItemIds.toSorted()).toEqual(
     canonicalOrderItemIds.toSorted()
   )
@@ -374,16 +528,30 @@ async function completeAllMobileActivityTypes(page: Page): Promise<void> {
     await moveFirstOrderItemDown(
       page,
       orderHandles,
-      reversedCanonicalOrderItemIds
+      reversedCanonicalOrderItemIds,
+      fixture.orderStepId,
+      fixture.orderItems
     )
-    await moveFirstOrderItemDown(page, orderHandles, canonicalOrderItemIds)
+    await moveFirstOrderItemDown(
+      page,
+      orderHandles,
+      canonicalOrderItemIds,
+      fixture.orderStepId,
+      fixture.orderItems
+    )
   } else {
-    await moveFirstOrderItemDown(page, orderHandles, canonicalOrderItemIds)
+    await moveFirstOrderItemDown(
+      page,
+      orderHandles,
+      canonicalOrderItemIds,
+      fixture.orderStepId,
+      fixture.orderItems
+    )
   }
 
-  expect(await readOrderActivityItemIds(orderHandles)).toEqual(
-    canonicalOrderItemIds
-  )
+  expect(
+    await readOrderActivityItemIds(orderHandles, fixture.orderItems)
+  ).toEqual(canonicalOrderItemIds)
   await submitAndContinue(page, "확인하기")
 
   await expectMobileLessonStep(
@@ -474,16 +642,18 @@ async function expectMobileLessonStep(
 async function moveFirstOrderItemDown(
   page: Page,
   orderHandles: Locator,
-  expectedOrderItemIds: readonly string[]
+  expectedOrderItemIds: readonly string[],
+  orderStepId: string,
+  orderItems: readonly OrderItem[]
 ): Promise<void> {
   const updatedOrderDraft = page.waitForResponse(
     (response) =>
       response.request().method() === "PUT" &&
-      response.url().includes("/steps/e2e-image-order/draft")
+      response.url().includes(`/steps/${encodeURIComponent(orderStepId)}/draft`)
   )
   await orderHandles.first().press("ArrowDown")
   await expect
-    .poll(() => readOrderActivityItemIds(orderHandles))
+    .poll(() => readOrderActivityItemIds(orderHandles, orderItems))
     .toEqual(expectedOrderItemIds)
 
   const response = await updatedOrderDraft
@@ -499,7 +669,8 @@ async function moveFirstOrderItemDown(
 }
 
 async function readOrderActivityItemIds(
-  orderHandles: Locator
+  orderHandles: Locator,
+  orderItems: readonly OrderItem[]
 ): Promise<readonly string[]> {
   const rows = orderHandles.locator("..")
   const texts = await Promise.all(
@@ -507,13 +678,14 @@ async function readOrderActivityItemIds(
       rows.nth(index).locator("span").last().innerText()
     )
   )
-  return texts.map(readOrderActivityItemId)
+  return texts.map((text) => readOrderActivityItemId(text, orderItems))
 }
 
-function readOrderActivityItemId(text: string): string {
-  const item = e2eAdminContentOrderItems.find(
-    (candidate) => candidate.text === text
-  )
+function readOrderActivityItemId(
+  text: string,
+  orderItems: readonly OrderItem[]
+): string {
+  const item = orderItems.find((candidate) => candidate.text === text)
   if (item === undefined) {
     throw new Error(`알 수 없는 ORDER 활동 항목입니다: ${text}`)
   }
@@ -558,14 +730,6 @@ function waitForAssetUploadResponse(page: Page) {
       response.request().method() === "POST" &&
       /\/api\/admin\/courses\/[^/]+\/assets$/u.test(response.url())
   )
-}
-
-function readCreatedCourseId(href: string | null): string {
-  const match = href?.match(/^\/courses\/([^/?#]+)$/u)
-  if (match?.[1] === undefined) {
-    throw new Error("생성된 코스 링크에서 course ID를 읽을 수 없습니다.")
-  }
-  return decodeURIComponent(match[1])
 }
 
 async function readNaturalImageSize(

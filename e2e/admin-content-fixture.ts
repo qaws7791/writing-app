@@ -4,7 +4,7 @@ import {
   type AdminCourseEditorWriteDocument,
 } from "@workspace/contracts/content/admin-courses"
 
-export const e2eAdminContentCourseTitle = "E2E 이미지 발행 코스"
+const e2eAdminContentCourseTitle = "E2E 이미지 발행 코스"
 export const e2eAdminContentReadingTitle = "리비전 1 이미지 읽기"
 export const e2eAdminContentActivityTypes = [
   "READING",
@@ -18,15 +18,18 @@ export const e2eAdminContentActivityTypes = [
   "MATCH",
   "CATEGORIZE",
 ] as const
-export const e2eAdminContentOrderItems = [
+const e2eAdminContentOrderItems = [
   { id: "e2e-order-1", text: "주장을 쓴다" },
   { id: "e2e-order-2", text: "근거를 덧붙인다" },
 ] as const
 
 export function createE2eAdminContentFixture(
-  editor: AdminCourseEditorDocument
+  editor: AdminCourseEditorDocument,
+  idNamespace = ""
 ): AdminCourseEditorWriteDocument {
   const { assets: _assets, ...writeDocument } = editor
+  const id = (value: string) =>
+    idNamespace === "" ? value : `${idNamespace}-${value}`
 
   return adminCourseEditorWriteDocumentSchema.parse({
     ...writeDocument,
@@ -36,13 +39,13 @@ export function createE2eAdminContentFixture(
     title: e2eAdminContentCourseTitle,
     units: [
       {
-        id: "e2e-image-unit",
+        id: id("e2e-image-unit"),
         lessons: [
           {
             category: "E2E",
             description: "10개 활동 유형을 실제 계약으로 검증합니다.",
             estimatedMinutes: 10,
-            id: "e2e-image-lesson",
+            id: id("e2e-image-lesson"),
             sortOrder: 1,
             status: "active",
             summary: ["콘텐츠 이미지와 revision 고정을 확인했다"],
@@ -51,7 +54,7 @@ export function createE2eAdminContentFixture(
               {
                 body: "발행된 읽기 본문은 기존 학습자에게 고정됩니다.",
                 guide: "삽화와 대체 텍스트를 함께 확인하세요.",
-                id: "e2e-image-reading",
+                id: id("e2e-image-reading"),
                 sortOrder: 1,
                 status: "active",
                 title: e2eAdminContentReadingTitle,
@@ -59,7 +62,7 @@ export function createE2eAdminContentFixture(
               },
               {
                 analysis: "두 문장의 차이를 비교합니다.",
-                id: "e2e-image-compare",
+                id: id("e2e-image-compare"),
                 sortOrder: 2,
                 status: "active",
                 title: "문장 비교",
@@ -70,12 +73,12 @@ export function createE2eAdminContentFixture(
                 ],
               },
               {
-                correct: "e2e-choice-correct",
+                correct: id("e2e-choice-correct"),
                 explanation: "서버 계약이 정답을 보존합니다.",
-                id: "e2e-image-multiple-choice",
+                id: id("e2e-image-multiple-choice"),
                 options: [
-                  { id: "e2e-choice-correct", text: "명확한 문장" },
-                  { id: "e2e-choice-wrong", text: "모호한 문장" },
+                  { id: id("e2e-choice-correct"), text: "명확한 문장" },
+                  { id: id("e2e-choice-wrong"), text: "모호한 문장" },
                 ],
                 question: "더 명확한 문장을 고르세요.",
                 sortOrder: 3,
@@ -83,33 +86,33 @@ export function createE2eAdminContentFixture(
                 type: "MULTIPLE_CHOICE",
               },
               {
-                correct: ["e2e-segment-2"],
+                correct: [id("e2e-segment-2")],
                 explanation: "핵심 표현을 선택합니다.",
-                id: "e2e-image-select",
+                id: id("e2e-image-select"),
                 layout: "inline",
                 question: "핵심 표현을 선택하세요.",
-                segmentIds: ["e2e-segment-1", "e2e-segment-2"],
+                segmentIds: [id("e2e-segment-1"), id("e2e-segment-2")],
                 segments: ["문장은", "명확해야 합니다"],
                 sortOrder: 4,
                 status: "active",
                 type: "SELECT",
               },
               {
-                answer: ["e2e-word-clear"],
+                answer: [id("e2e-word-clear")],
                 explanation: "명확한 표현이 정답입니다.",
-                id: "e2e-image-fill-blank",
+                id: id("e2e-image-fill-blank"),
                 sortOrder: 5,
                 status: "active",
                 template: "문장은 ___ 해야 합니다.",
                 type: "FILL_BLANK",
-                wordIds: ["e2e-word-clear", "e2e-word-vague"],
+                wordIds: [id("e2e-word-clear"), id("e2e-word-vague")],
                 words: ["명확", "모호"],
               },
               {
-                correct: e2eAdminContentOrderItems.map((item) => item.id),
+                correct: e2eAdminContentOrderItems.map((item) => id(item.id)),
                 explanation: "주장 뒤에 근거를 둡니다.",
-                id: "e2e-image-order",
-                itemIds: e2eAdminContentOrderItems.map((item) => item.id),
+                id: id("e2e-image-order"),
+                itemIds: e2eAdminContentOrderItems.map((item) => id(item.id)),
                 items: e2eAdminContentOrderItems.map((item) => item.text),
                 showNumbers: true,
                 sortOrder: 6,
@@ -119,7 +122,7 @@ export function createE2eAdminContentFixture(
               },
               {
                 goal: 80,
-                id: "e2e-image-write",
+                id: id("e2e-image-write"),
                 min: 5,
                 prompt: "명확한 문장을 한 줄 작성하세요.",
                 sortOrder: 7,
@@ -131,22 +134,22 @@ export function createE2eAdminContentFixture(
                 allowRetry: true,
                 feedback: "명확성을 기준으로 살펴봅니다.",
                 focus: "명확성",
-                id: "e2e-image-ai-feedback",
+                id: id("e2e-image-ai-feedback"),
                 sortOrder: 8,
                 status: "active",
-                target: "e2e-image-write",
+                target: id("e2e-image-write"),
                 type: "AI_FEEDBACK",
               },
               {
                 explanation: "접속사와 역할을 연결합니다.",
                 guide: "서로 맞는 항목을 연결하세요.",
-                id: "e2e-image-match",
+                id: id("e2e-image-match"),
                 pairs: [
                   {
                     left: "따라서",
-                    leftId: "e2e-match-left",
+                    leftId: id("e2e-match-left"),
                     right: "인과",
-                    rightId: "e2e-match-right",
+                    rightId: id("e2e-match-right"),
                   },
                 ],
                 sortOrder: 9,
@@ -156,21 +159,21 @@ export function createE2eAdminContentFixture(
               },
               {
                 categories: [
-                  { id: "e2e-category-claim", label: "주장" },
-                  { id: "e2e-category-evidence", label: "근거" },
+                  { id: id("e2e-category-claim"), label: "주장" },
+                  { id: id("e2e-category-evidence"), label: "근거" },
                 ],
                 explanation: "문장의 역할을 분류합니다.",
                 guide: "각 문장을 알맞은 역할로 옮기세요.",
-                id: "e2e-image-categorize",
+                id: id("e2e-image-categorize"),
                 items: [
                   {
-                    categoryId: "e2e-category-claim",
-                    id: "e2e-category-item-1",
+                    categoryId: id("e2e-category-claim"),
+                    id: id("e2e-category-item-1"),
                     text: "명확한 문장이 좋다.",
                   },
                   {
-                    categoryId: "e2e-category-evidence",
-                    id: "e2e-category-item-2",
+                    categoryId: id("e2e-category-evidence"),
+                    id: id("e2e-category-item-2"),
                     text: "독자가 한 번에 이해한다.",
                   },
                 ],

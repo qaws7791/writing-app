@@ -4,7 +4,6 @@
   "workspaces": {
     ".": {
       "entry": [
-        "dependency-cruiser.config.mjs!",
         "e2e/**/*.spec.ts",
         "e2e/fixture-server.ts",
         "lighthouse-ci.config.cjs!",
@@ -21,7 +20,7 @@
       "ignoreUnresolved": [
         "^apps/api/src/scripts/assert-e2e-published-content-immutable\\.ts$"
       ],
-      "ignoreDependencies": ["^k6(?:/|$)"],
+      "ignoreDependencies": ["@lhci/cli", "^k6(?:/|$)"],
       "playwright": false
     },
     "apps/*": {

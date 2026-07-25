@@ -2,9 +2,6 @@
 
 const learnerCookie = readRequiredEnvironment("LIGHTHOUSE_AUTH_COOKIE")
 const chromePath = readRequiredEnvironment("LIGHTHOUSE_CHROME_PATH")
-const chromeDebuggingPort = readPortEnvironment(
-  "LIGHTHOUSE_CHROME_DEBUGGING_PORT"
-)
 
 module.exports = {
   ci: {
@@ -34,12 +31,11 @@ module.exports = {
       settings: {
         extraHeaders: JSON.stringify({ Cookie: learnerCookie }),
         onlyCategories: ["performance"],
-        port: chromeDebuggingPort,
       },
       url: [
-        "http://localhost:3200/",
-        "http://localhost:3200/app",
-        "http://localhost:3200/app/lesson?lesson_id=e2e-transition-lesson",
+        "http://localhost:3100/",
+        "http://localhost:3100/app",
+        "http://localhost:3100/app/lesson?lesson_id=e2e-transition-lesson",
       ],
     },
     upload: {
@@ -54,16 +50,6 @@ function readRequiredEnvironment(name) {
 
   if (value === undefined || value.length === 0) {
     throw new Error(`${name} 환경 변수가 필요합니다.`)
-  }
-
-  return value
-}
-
-function readPortEnvironment(name) {
-  const value = Number(readRequiredEnvironment(name))
-
-  if (!Number.isSafeInteger(value) || value < 1 || value > 65_535) {
-    throw new Error(`${name} 환경 변수는 유효한 TCP 포트여야 합니다.`)
   }
 
   return value
