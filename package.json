@@ -57,13 +57,12 @@
     "audit:production": "bun scripts/run-dependency-audit.ts production",
     "build": "turbo build",
     "build-storybook": "bun --filter @workspace/storybook build",
-    "check:architecture": "bun scripts/check-architecture.ts",
+    "check:architecture": "depcruise apps packages --config dependency-cruiser.config.mjs --ts-config tsconfig.json --output-type err",
     "check:knip": "knip --config knip.json --no-gitignore --no-progress --treat-config-hints-as-errors",
     "check:container-image-lock": "bun scripts/check-container-image-lock.ts",
     "check:dependencies": "syncpack lint --dependency-types dev,prod,peer",
     "check:deployment-ansible": "bun scripts/check-deployment-ansible.ts",
     "check:route-bundles": "bun scripts/check-route-bundles.ts",
-    "check:toolchain": "bun scripts/check-toolchain.ts",
     "ci:static": "bun run --parallel --no-exit-on-error \"ci:static:*\"",
     "ci:static:architecture": "bun run check:architecture",
     "ci:static:dependencies": "bun run check:dependencies",
@@ -76,7 +75,7 @@
     "ci:tests:repository": "bun test ./scripts",
     "ci:tests:workspace": "bun run test",
     "dev": "turbo dev",
-    "dev:admin": "bun run check:toolchain && turbo dev --filter=@workspace/admin --filter=@workspace/api",
+    "dev:admin": "turbo dev --filter=@workspace/admin --filter=@workspace/api",
     "dev:admin:setup": "bun --filter @workspace/api db:migrate && bun --filter @workspace/api db:seed && bun --env-file=apps/api/.env --filter @workspace/api seed:admin",
     "dev:app": "turbo dev --filter=@workspace/web --filter=@workspace/api",
     "dev:app:setup": "bun --filter @workspace/api db:migrate && bun --filter @workspace/api db:seed",
@@ -97,7 +96,6 @@
     "test:deployment-bootstrap": "bun scripts/test-deployment-bootstrap.ts",
     "test:frontend-production-runtime": "bun scripts/test-next-standalone-runtime.ts",
     "test:oxlint-rules": "node scripts/oxlint/workspace-rules.node-test.mjs",
-    "test:performance-config": "bun test scripts/performance-gates.test.ts",
     "test:performance:lighthouse": "bun scripts/run-lighthouse-ci.ts",
     "test:e2e": "bun run test:e2e:release",
     "test:e2e:pr": "bun scripts/run-e2e.ts --project pr-chromium",
@@ -135,7 +133,8 @@
     "turbo": "^2.8.8",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "catalog:"
   },
   "engines": {
     "node": "24.x"

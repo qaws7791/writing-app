@@ -23,8 +23,8 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
-    "test:watch": "bun --bun ../../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
+    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/auth",
+    "test:watch": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs watch --config vitest.workspace.ts --project @workspace/auth",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
@@ -40,7 +40,6 @@
     "@workspace/typescript-config": "workspace:*",
     "drizzle-orm": "catalog:",
     "typescript": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   }
 }

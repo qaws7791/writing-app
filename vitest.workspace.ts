@@ -1,10 +1,49 @@
+import path from "node:path"
+
 import { defineConfig } from "vitest/config"
+import tsconfigPaths from "vite-tsconfig-paths"
+
+const repositoryRoot = process.cwd()
 
 export default defineConfig({
   test: {
     projects: [
-      "apps/{admin,api,web}/vitest.config.ts",
-      "packages/{config,infra,modules,shared}/*/vitest.config.ts",
+      path.join(repositoryRoot, "apps/admin/vitest.config.ts"),
+      path.join(repositoryRoot, "apps/api/vitest.config.ts"),
+      path.join(repositoryRoot, "apps/web/vitest.config.ts"),
+      path.join(repositoryRoot, "packages/shared/ui/vitest.config.ts"),
+      ...[
+        ["@workspace/ai", "packages/infra/ai"],
+        ["@workspace/ai-feedback", "packages/modules/ai-feedback"],
+        ["@workspace/auth", "packages/infra/auth"],
+        ["@workspace/content", "packages/modules/content"],
+        ["@workspace/contracts", "packages/shared/contracts"],
+        ["@workspace/db", "packages/infra/db"],
+        ["@workspace/env", "packages/config/env"],
+        ["@workspace/http-client", "packages/infra/http-client"],
+        ["@workspace/http-platform", "packages/infra/http-platform"],
+        ["@workspace/identity", "packages/modules/identity"],
+        ["@workspace/learning", "packages/modules/learning"],
+        ["@workspace/observability", "packages/infra/observability"],
+        ["@workspace/operations", "packages/modules/operations"],
+        ["@workspace/storage", "packages/infra/storage"],
+      ].map(([name, root]) => ({
+        plugins: [
+          tsconfigPaths({
+            projects: [path.join(repositoryRoot, root, "tsconfig.json")],
+          }),
+        ],
+        root: path.join(repositoryRoot, root),
+        ssr: {
+          external: ["bun:sqlite"],
+          noExternal: ["zod"],
+        },
+        test: {
+          environment: "node",
+          include: ["src/**/*.test.ts"],
+          name,
+        },
+      })),
     ],
   },
 })

@@ -1,174 +1,84 @@
-import { chmodSync, existsSync, mkdirSync } from "node:fs"
+import { randomBytes } from "node:crypto"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import path from "node:path"
-import { pathToFileURL } from "node:url"
-
-import {
-  createSetupDatabaseBackupPath,
-  inspectLocalApplicationDatabase,
-} from "#scripts/local-database-diagnostic"
-import {
-  rehearseLocalDatabaseMigration,
-  runLocalDatabaseSetup,
-  withLocalSetupOperationLock,
-} from "#scripts/local-database-setup"
-import {
-  createLocalSetupEnvironment,
-  createLocalEnvironmentFiles,
-  hasLocalOnboardingFailures,
-  inspectLocalOnboarding,
-  prepareLocalDatabaseDirectory,
-  printLocalOnboardingChecks,
-  resolveLocalDatabasePath,
-} from "#scripts/local-onboarding"
 
 const repositoryRoot = path.resolve(import.meta.dir, "..")
+const environmentFiles = [
+  ["apps/api/.env.example", "apps/api/.env"],
+  ["apps/web/.env.example", "apps/web/.env"],
+  ["apps/admin/.env.example", "apps/admin/.env"],
+] as const
 
-async function runSetup(): Promise<void> {
-  await withLocalSetupOperationLock(repositoryRoot, runSetupExclusively)
-}
-
-async function runSetupExclusively(): Promise<void> {
-  await runCommand(["bun", "run", "check:toolchain"])
-  await runCommand(["bun", "install", "--frozen-lockfile"])
-
-  const files = createLocalEnvironmentFiles({ repositoryRoot })
-  for (const file of files) {
-    const action =
-      file.kind === "created"
-        ? "생성"
-        : file.kind === "updated"
-          ? "보충"
-          : "보존"
-    console.log(`- ${action}: ${file.path}`)
+for (const [examplePath, targetPath] of environmentFiles) {
+  const target = path.join(repositoryRoot, targetPath)
+  if (existsSync(target)) {
+    console.log(`- 보존: ${targetPath}`)
+    continue
   }
 
-  const preflight = inspectLocalOnboarding({
-    bunVersion: Bun.version,
-    nodeVersion: process.versions.node,
-    repositoryRoot,
-    requireDatabase: false,
-  })
-  printLocalOnboardingChecks(preflight)
-  if (hasLocalOnboardingFailures(preflight)) {
-    throw new Error("로컬 환경 사전 점검에 실패했습니다.")
-  }
-
-  const setupEnvironment = createLocalSetupEnvironment(
-    repositoryRoot,
-    process.env
-  )
-  const databaseDirectory = prepareLocalDatabaseDirectory(
-    repositoryRoot,
-    setupEnvironment.databaseUrl
-  )
-  console.log(`- 준비: ${databaseDirectory} database 디렉터리`)
-
-  const databasePath = resolveLocalDatabasePath(
-    repositoryRoot,
-    setupEnvironment.databaseUrl
-  )
-  if (databasePath === null) {
-    throw new Error(
-      "로컬 setup은 file-backed SQLite DATABASE_URL이 필요합니다."
+  let content = readFileSync(path.join(repositoryRoot, examplePath), "utf8")
+  if (targetPath === "apps/api/.env") {
+    content = replaceEnvironmentValue(
+      content,
+      "LEARNER_AUTH_SECRET",
+      createSecret()
+    )
+    content = replaceEnvironmentValue(
+      content,
+      "ADMIN_AUTH_SECRET",
+      createSecret()
+    )
+    content = replaceEnvironmentValue(
+      content,
+      "CURSOR_SIGNING_SECRET",
+      createSecret()
+    )
+    content = replaceEnvironmentValue(
+      content,
+      "ADMIN_SEED_PASSWORD",
+      `${createSecret()}Aa1!`
+    )
+    content = replaceEnvironmentValue(
+      content,
+      "ADMIN_SEED_RESET_PASSWORD",
+      "false"
     )
   }
 
-  await runLocalDatabaseSetup({
-    async backup() {
-      const backupPath = createSetupDatabaseBackupPath(repositoryRoot)
-      const backupDirectory = path.dirname(backupPath)
-      mkdirSync(backupDirectory, { mode: 0o700, recursive: true })
-      chmodSync(backupDirectory, 0o700)
-      await runCommand(
-        [
-          "bun",
-          "apps/api/src/scripts/backup-database.ts",
-          `--source=${databasePath}`,
-          `--output=${backupPath}`,
-        ],
-        setupEnvironment.processEnvironment
-      )
-      console.log(
-        `- 검증된 migration 전 백업: ${path.relative(repositoryRoot, backupPath)}`
-      )
-      return backupPath
-    },
-    databaseExists: () => existsSync(databasePath),
-    inspect: () =>
-      inspectLocalApplicationDatabase({
-        environment: setupEnvironment.processEnvironment,
-        repositoryRoot,
-      }),
-    migrateAndSeed: () =>
-      runCommand(
-        ["bun", "run", "dev:admin:setup"],
-        setupEnvironment.processEnvironment
-      ),
-    async rehearseMigration(backupPath) {
-      await rehearseLocalDatabaseMigration({
-        backupPath,
-        inspectCandidate: (candidatePath) =>
-          inspectLocalApplicationDatabase({
-            environment: createCandidateDatabaseEnvironment(
-              setupEnvironment.processEnvironment,
-              candidatePath
-            ),
-            repositoryRoot,
-          }),
-        migrateCandidate: (candidatePath) =>
-          runCommand(
-            ["bun", "--filter", "@workspace/api", "db:migrate"],
-            createCandidateDatabaseEnvironment(
-              setupEnvironment.processEnvironment,
-              candidatePath
-            )
-          ),
-      })
-      console.log("- 격리된 DB 사본 migration과 진단을 통과했습니다.")
-    },
-  })
-  await runCommand(["bun", "run", "doctor"])
-
-  console.log("로컬 준비가 완료되었습니다. bun run dev를 실행하세요.")
-  console.log(
-    "관리자 로그인 값은 apps/api/.env의 ADMIN_SEED_EMAIL과 ADMIN_SEED_PASSWORD에서 확인하세요."
-  )
+  writeFileSync(target, content, { encoding: "utf8", flag: "wx", mode: 0o600 })
+  console.log(`- 생성: ${targetPath}`)
 }
 
-function createCandidateDatabaseEnvironment(
-  environment: Readonly<NodeJS.ProcessEnv>,
-  candidatePath: string
-): Readonly<NodeJS.ProcessEnv> {
-  return {
-    ...environment,
-    DATABASE_URL: pathToFileURL(candidatePath).href,
-  }
+mkdirSync(path.join(repositoryRoot, "data"), { recursive: true })
+await run(["bun", "install", "--frozen-lockfile"])
+await run(["bun", "run", "dev:admin:setup"])
+await run(["bun", "run", "doctor"])
+
+console.log("로컬 준비가 완료되었습니다. bun run dev를 실행하세요.")
+
+function createSecret(): string {
+  return randomBytes(32).toString("base64url")
 }
 
-async function runCommand(
-  command: readonly string[],
-  environment: Readonly<NodeJS.ProcessEnv> = process.env
-): Promise<void> {
+function replaceEnvironmentValue(
+  content: string,
+  name: string,
+  value: string
+): string {
+  const pattern = new RegExp(`^${name}=.*$`, "mu")
+  if (!pattern.test(content)) throw new Error(`${name} 예시가 없습니다.`)
+  return content.replace(pattern, `${name}=${value}`)
+}
+
+async function run(command: readonly string[]): Promise<void> {
   console.log(`\n> ${command.join(" ")}`)
   const child = Bun.spawn([...command], {
     cwd: repositoryRoot,
-    env: environment,
     stderr: "inherit",
     stdin: "inherit",
     stdout: "inherit",
   })
-  const exitCode = await child.exited
-
-  if (exitCode !== 0) {
+  if ((await child.exited) !== 0) {
     throw new Error(`${command.join(" ")} 명령이 실패했습니다.`)
-  }
-}
-
-if (import.meta.main) {
-  try {
-    await runSetup()
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error))
-    process.exit(1)
   }
 }

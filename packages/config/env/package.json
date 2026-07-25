@@ -13,8 +13,8 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest watch --config vitest.config.ts",
+    "test": "cd ../../.. && vitest run --config vitest.workspace.ts --project @workspace/env",
+    "test:watch": "cd ../../.. && vitest watch --config vitest.workspace.ts --project @workspace/env",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
@@ -24,7 +24,6 @@
     "@types/bun": "catalog:",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   }
 }
