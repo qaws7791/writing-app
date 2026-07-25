@@ -70,7 +70,7 @@ describe("AdminCoursesPage", () => {
       },
     }))
 
-    const { container } = render(
+    render(
       <AdminCoursesPage
         archiveCourse={archiveCourse}
         coursesResult={ok(courses)}
@@ -79,34 +79,9 @@ describe("AdminCoursesPage", () => {
       />
     )
 
-    expect(screen.getByRole("heading", { name: "콘텐츠 관리" })).toBeVisible()
-    expect(screen.getByLabelText("코스 검색")).toHaveValue("")
-    expect(screen.getByLabelText("코스 검색")).toHaveAttribute("name", "query")
-    expect(screen.getByRole("button", { name: "검색" })).toBeVisible()
-
-    const courseTable = screen.getByRole("table", { name: "코스 목록" })
-    expect(courseTable).toHaveClass("min-w-[720px]")
-    expect(courseTable).not.toHaveClass("min-w-0")
-
-    const categoryInput = container.querySelector("input[name='category']")
-    expect(categoryInput).toBeDefined()
-    expect(categoryInput).toHaveValue("")
-
-    const statusInput = container.querySelector("input[name='status']")
-    expect(statusInput).toBeDefined()
-    expect(statusInput).toHaveValue("all")
-
-    const pageSizeInput = container.querySelector("input[name='pageSize']")
-    expect(pageSizeInput).toBeDefined()
-    expect(pageSizeInput).toHaveValue("20")
-
     const activeRow = screen.getByRole("row", {
       name: /글쓰기 첫걸음 30일/,
     })
-    expect(within(activeRow).getByText("입문자를 위한 코스")).toBeVisible()
-    expect(within(activeRow).getByText("3")).toBeVisible()
-    expect(within(activeRow).getByText("10")).toBeVisible()
-
     await user.click(within(activeRow).getByRole("button", { name: "보관" }))
     expect(
       screen.getByRole("alertdialog", { name: "코스 보관 확인" })

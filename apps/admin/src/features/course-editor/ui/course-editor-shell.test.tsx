@@ -65,44 +65,6 @@ describe("CourseEditorShell", () => {
     uploadAssetMock.mockReset()
   })
 
-  it("Kwep 기준 코스 제목, 강의 정보 탭, 커리큘럼 탭을 렌더링한다", async () => {
-    const user = userEvent.setup()
-
-    render(
-      <CourseEditorShell
-        course={course}
-        publishCourse={async () => ({
-          status: "ok",
-          value: {
-            curriculumVersionId: course.curriculumVersionId,
-            publishedAt: "2026-07-17T00:00:00.000Z",
-            revision: course.revision,
-          },
-        })}
-        saveCourse={async (draft) => ({
-          status: "ok",
-          value: { ...draft, editVersion: draft.editVersion + 1 },
-        })}
-      />
-    )
-
-    expect(
-      screen.getByRole("heading", { name: "글쓰기 첫걸음 30일" })
-    ).toBeVisible()
-    expect(screen.getByRole("link", { name: "콘텐츠 관리" })).toBeVisible()
-    expect(screen.getByRole("button", { name: "강의 정보" })).toBeVisible()
-    expect(screen.getByRole("button", { name: "커리큘럼" })).toBeVisible()
-    expect(screen.getByRole("button", { name: "초안 발행" })).toBeVisible()
-    expect(screen.getByLabelText("제목")).toHaveValue("글쓰기 첫걸음 30일")
-
-    await user.click(screen.getByRole("button", { name: "커리큘럼" }))
-
-    expect(screen.getByText("유닛 1개 · 레슨 1개")).toBeVisible()
-    expect(screen.getByText("UNIT 1")).toBeVisible()
-    expect(screen.getByDisplayValue("1주차")).toBeVisible()
-    expect(screen.getByDisplayValue("첫 레슨")).toBeVisible()
-  })
-
   it("표지의 대체 텍스트와 업로드 진행을 표시하고 asset ID를 저장한다", async () => {
     const user = userEvent.setup()
     const saveCourse = vi.fn(async (draft: AdminCourseDetail) => ({

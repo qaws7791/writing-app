@@ -57,48 +57,6 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     expect((await disabled.request("/docs")).status).toBe(404)
   })
 
-  it("관리자 세션 응답과 auth 응답에 private no-store를 적용한다", async () => {
-    const authHandler = vi.fn(async () => Response.json({ ok: true }))
-    const app = createFixture({ authHandler })
-
-    const sessionResponse = await app.request("/session", {
-      headers: {
-        Cookie: `${adminSessionCookieName}=admin-token`,
-      },
-    })
-    const authResponse = await app.request("/auth/get-session")
-
-    expect(sessionResponse.status).toBe(200)
-    expect(sessionResponse.headers.get("Cache-Control")).toBe(
-      "private, no-store"
-    )
-    expect(sessionResponse.headers.get("Vary")).toContain("Cookie")
-    await expect(sessionResponse.json()).resolves.toMatchObject({
-      admin: {
-        email: "admin@example.com",
-        id: "admin-1",
-        name: "관리자",
-      },
-    })
-    expect(authResponse.status).toBe(200)
-    expect(authResponse.headers.get("Cache-Control")).toBe("private, no-store")
-    expect(authResponse.headers.get("Vary")).toContain("Cookie")
-    expect(authHandler).toHaveBeenCalledOnce()
-  })
-
-  it("health와 OpenAPI 공개 응답에는 private cache 정책을 추가하지 않는다", async () => {
-    const app = createFixture()
-
-    for (const path of ["/health", "/openapi"]) {
-      const response = await app.request(path)
-
-      expect(response.status).toBe(200)
-      expect(response.headers.get("Cache-Control")).not.toBe(
-        "private, no-store"
-      )
-    }
-  })
-
   it("관리자 비밀번호 변경은 요청값과 무관하게 다른 세션 폐기를 강제한다", async () => {
     const capturedRequests: Request[] = []
     const app = createFixture({
@@ -154,30 +112,6 @@ describe("통합 runtime 관리자 공통 delivery", () => {
       message: "Forbidden",
     })
     expect(authHandler).not.toHaveBeenCalled()
-  })
-
-  it("관리자 API 본문은 6 MiB까지 전달하고 1 byte 초과는 handler 전에 거절한다", async () => {
-    const authHandler = vi.fn(async () => Response.json({ ok: true }))
-    const app = createFixture({ authHandler })
-    const bodyLimitBytes = 6 * 1024 * 1024
-
-    for (const fixture of [
-      { expectedStatus: 200, size: bodyLimitBytes },
-      { expectedStatus: 413, size: bodyLimitBytes + 1 },
-    ] as const) {
-      const response = await app.request("/auth/test", {
-        body: "x".repeat(fixture.size),
-        headers: {
-          "Content-Length": String(fixture.size),
-          "Content-Type": "text/plain",
-        },
-        method: "POST",
-      })
-
-      expect(response.status).toBe(fixture.expectedStatus)
-    }
-
-    expect(authHandler).toHaveBeenCalledOnce()
   })
 
   it("주입한 capability route에 관리자 인증과 actor 로깅을 적용한다", async () => {

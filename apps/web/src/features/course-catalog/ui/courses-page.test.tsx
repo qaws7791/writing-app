@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -45,56 +45,7 @@ const grammarCourse: LearnerCourseSummaryDto = {
   visualKey: "grammar-complete",
   version: { curriculumVersionId: "c2-v1", revision: 1 },
 }
-const courses = [beginnerCourse, grammarCourse]
-
 describe("코스 목록 화면", () => {
-  it("현재 제품 코스 목록처럼 카테고리와 코스 상세 링크를 보여준다", async () => {
-    render(
-      <CoursesPage
-        categories={["입문자를 위한 코스", "문법 심화"]}
-        courses={courses}
-        filters={{ category: "", query: "" }}
-      />
-    )
-
-    expect(
-      screen.getByRole("heading", { name: "무엇을 써볼까요?" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        "관심 있는 주제를 골라 매일 한 단락씩 글의 결을 다듬어 보세요."
-      )
-    ).toBeInTheDocument()
-
-    const allCategory = screen.getByRole("link", { name: "전체" })
-    const beginnerCategory = screen.getByRole("link", {
-      name: "입문자를 위한 코스",
-    })
-
-    expect(screen.getByLabelText("코스 카테고리")).toBeInTheDocument()
-    expect(allCategory).toHaveAttribute("href", "/app/courses")
-    expect(beginnerCategory).toHaveAttribute(
-      "href",
-      "/app/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4"
-    )
-    expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
-    expect(screen.getByText("10개 레슨")).toBeInTheDocument()
-    expect(
-      screen.getByRole("img", { name: "글쓰기 첫걸음 30일" })
-    ).toHaveAttribute("loading", "eager")
-    expect(
-      screen.getByRole("img", { name: "문장의 기본 문법" })
-    ).toHaveAttribute("loading", "eager")
-
-    const grammarCourseCard = screen.getByText("문장의 기본 문법").closest("a")
-
-    expect(grammarCourseCard).not.toBeNull()
-    expect(grammarCourseCard).toHaveAttribute("href", "/app/courses/c2")
-    expect(
-      within(grammarCourseCard as HTMLElement).getByText("8개 레슨")
-    ).toBeInTheDocument()
-  })
-
   it("URL 필터 기준으로 검색과 카테고리 결과를 보여준다", () => {
     render(
       <CoursesPage

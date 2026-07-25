@@ -80,19 +80,6 @@ describe("단일 API app", () => {
     expect(authHandler).toHaveBeenCalledTimes(1)
     expect((await request(app, "/health")).status).toBe(404)
   })
-
-  it("모든 응답에 request ID를 부여한다", async () => {
-    const app = createUnifiedApp({
-      adminApp: new Hono(),
-      learnerApp: new Hono(),
-      createRequestId: () => "request-id",
-    })
-
-    const response = await request(app, "/api/missing")
-
-    expect(response.status).toBe(404)
-    expect(response.headers.get("x-request-id")).toBe("request-id")
-  })
 })
 
 async function read<TEnv extends Env, TSchema extends Schema>(

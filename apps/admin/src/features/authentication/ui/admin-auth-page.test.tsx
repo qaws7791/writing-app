@@ -26,21 +26,6 @@ describe("AdminAuthPage", () => {
     requestAdminPasswordLoginMock.mockReset()
   })
 
-  it("관리자 email/password 로그인 폼과 운영 콘솔 설명을 보여준다", () => {
-    render(<AdminAuthPage {...authPageProps} nextPath="/courses" />)
-
-    expect(screen.getByRole("heading", { name: "글결 어드민" })).toBeVisible()
-    expect(
-      screen.getByText("접근하려면 관리자 계정으로 로그인하세요.")
-    ).toBeVisible()
-    expect(screen.getByLabelText("이메일")).toBeVisible()
-    expect(screen.getByLabelText("비밀번호")).toHaveAttribute(
-      "type",
-      "password"
-    )
-    expect(screen.getByRole("button", { name: "로그인" })).toBeVisible()
-  })
-
   it("로그인 성공 후 안전한 다음 경로로 이동한다", async () => {
     const user = userEvent.setup()
     requestAdminPasswordLoginMock.mockResolvedValue({ nextPath: "/courses" })

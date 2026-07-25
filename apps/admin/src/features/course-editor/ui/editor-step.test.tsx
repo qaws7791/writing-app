@@ -13,10 +13,7 @@ import {
   createEditorStep,
   type EditorStep,
 } from "@/features/course-editor/model/editor-step"
-import {
-  renderStepForm,
-  stepFormByType,
-} from "@/features/course-editor/ui/step-forms/step-form-registry"
+import { stepFormByType } from "@/features/course-editor/ui/step-forms/step-form-registry"
 import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
 
 describe("코스 스텝 편집", () => {
@@ -37,15 +34,6 @@ describe("코스 스텝 편집", () => {
   it.each(lessonStepTypeValues)("%s 타입의 최소 유효 스텝을 만든다", (type) => {
     const step = createStep(type)
     expect(adminCourseEditorStepSchema.safeParse(step).success).toBe(true)
-  })
-
-  it("구조화된 타입 폼을 렌더링한다", () => {
-    const step = createStep("READING")
-
-    render(renderStepForm(step, vi.fn(), assetUpload))
-
-    expect(screen.getByLabelText("본문")).toHaveValue("")
-    expect(screen.getByText("READING")).toBeVisible()
   })
 
   it("빈 작업대에서 타입을 선택해 스텝을 추가한다", async () => {

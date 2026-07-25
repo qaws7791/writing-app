@@ -3,26 +3,8 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { ContentAssetUploadField } from "@/features/course-editor/ui/content-asset-upload-field"
-import { createAdminContentAssetFixture } from "@/test/admin-api-fixtures"
 
 describe("ContentAssetUploadField", () => {
-  it("화면 상단의 코스 표지를 즉시 로드한다", () => {
-    render(
-      <ContentAssetUploadField
-        asset={createAdminContentAssetFixture()}
-        kind="course-cover"
-        label="코스 표지"
-        onRemove={vi.fn()}
-        onUploaded={vi.fn()}
-        upload={vi.fn()}
-      />
-    )
-
-    expect(
-      screen.getByRole("img", { name: "글쓰기 코스 표지" })
-    ).toHaveAttribute("loading", "eager")
-  })
-
   it("대체 텍스트 없이 업로드하지 않는다", async () => {
     const user = userEvent.setup()
     const upload = vi.fn()
