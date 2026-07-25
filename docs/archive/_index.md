@@ -14,6 +14,7 @@
 | 2026-07-22 모듈러 모놀리스 전체 개편 | [`implementation-plan.md`](./2026-07-22-modular-monolith-redesign/implementation-plan.md), [`p16-validation.md`](./2026-07-22-modular-monolith-redesign/p16-validation.md), [`p17-validation.md`](./2026-07-22-modular-monolith-redesign/p17-validation.md) | P1~P17 구현·검증과 영구 문서 반영 완료 |
 | 2026-07-23 코드베이스 LOC 분석       | [`plan.md`](./2026-07-23-codebase-loc-analysis/plan.md), [`results.md`](./2026-07-23-codebase-loc-analysis/results.md)                                                                                                                                      | 수집 도구 구현과 기준선 분석 완료      |
 | 2026-07-24 P0·P1 아키텍처 정리       | [`plan.md`](./2026-07-24-p0-p1-architecture-cleanup/plan.md)                                                                                                                                                                                                | 구현·검증과 영구 문서 반영 완료        |
+| 2026-07-26 TypeScript 7 마이그레이션 | [`plan.md`](./2026-07-26-typescript-7-migration/plan.md), [`validation-report.md`](./2026-07-26-typescript-7-migration/validation-report.md)                                                                                                                | 구현·전체 검증과 영구 문서 반영 완료   |
 
 ## 사용 기준
 

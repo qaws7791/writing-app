@@ -6,6 +6,8 @@
 
 현재 exact version은 root manifest와 lockfile이 소유한다. 공통 version을 올릴 때는 root catalog 한 곳과 lockfile을 함께 변경하고 전체 테스트·빌드·audit를 실행한다. 서로 다른 version이 반드시 필요한 경우에는 호환성 근거, 영향 workspace와 제거 조건을 이 문서에 기록한다.
 
+TypeScript compiler CLI는 native TypeScript 7 package가 소유한다. TypeScript API를 직접 소비하지만 7의 안정 API를 아직 지원하지 않는 정적 도구에는 TypeScript 6 공식 호환 package만 제공한다. 이 예외는 제품 source의 타입 검사나 emit에 사용할 수 없으며, 해당 도구가 TypeScript 7 API를 지원하는 즉시 제거한다.
+
 dependency audit는 HIGH 이상을 예외 없이 차단하는 상태를 기본으로 한다. 수정 버전이 없어 예외가 불가피하다면 advisory와 package, 실제 도달 경로, 완화 근거, owner, 만료일과 제거 조건을 실행 가능한 정책 source에 먼저 기록해야 하며 명령문에 `--ignore`를 직접 추가하지 않는다.
 
 내부 package는 `workspace:*`를 사용하고 source가 import하는 runtime·test·build dependency를 해당 manifest에 직접 선언한다. package manager가 catalog와 workspace reference를 해석하고, architecture 검사가 source import에 대응하는 manifest 선언 누락을 차단한다.

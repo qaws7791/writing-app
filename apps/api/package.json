@@ -24,7 +24,7 @@
     "seed:admin": "cd ../.. && bun --env-file=apps/api/.env apps/api/src/scripts/seed-admin.ts",
     "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
     "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:",

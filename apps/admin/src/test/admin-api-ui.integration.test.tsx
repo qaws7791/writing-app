@@ -2,7 +2,15 @@ import { File as NodeFile } from "node:buffer"
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest"
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 import { setupServer } from "msw/node"
 
 import {
@@ -24,6 +32,10 @@ import {
   type AdminContentAssetFixture,
   type AdminCourseEditorFixture,
 } from "@/test/admin-api-fixtures"
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}))
 
 const server = setupServer()
 const nativeRequest = globalThis.Request

@@ -1,7 +1,6 @@
 {
   "extends": "@workspace/typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "exactOptionalPropertyTypes": true,
     "incremental": true,
     "noFallthroughCasesInSwitch": true,

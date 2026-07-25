@@ -15,7 +15,7 @@
   "scripts": {
     "lint": "oxlint .",
     "test": "bun --bun ../../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:",

@@ -12,7 +12,7 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc7 --noEmit"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -13,6 +13,8 @@
 
 규칙의 권위 source는 [Dependency Cruiser 설정](../../dependency-cruiser.config.mjs)이고 실행 진입점은 [architecture 검사](../../scripts/check-architecture.ts)다. 실행기는 root manifest의 workspace glob을 읽고 각 workspace TypeScript 설정으로 실제 graph를 검사한다. module의 공개 target은 각 module manifest의 `exports`에서 읽으므로 별도 package·export inventory를 복제하지 않는다.
 
+TypeScript 7은 안정된 programmatic API를 제공하지 않으므로 CLI 타입 검사는 TypeScript 7 native compiler가 소유하고, Dependency Cruiser의 source parser에는 공식 호환 package의 TypeScript 6 API만 제공한다. 두 실행 경로는 root manifest에서 서로 다른 package 이름으로 고정한다. Dependency Cruiser가 TypeScript 7의 안정 API를 지원하면 TypeScript 6 호환 package를 제거하고 정상 graph와 의도적 위반 fixture를 다시 검증한다.
+
 의도적 위반 fixture는 frontend 허용 목록·cross-app, module layer와 외부·module 간 private target 규칙이 각각 실제로 실패하는지 확인한다. 동일 app 내부 import, Next.js framework와 module public target import가 허용되는지도 같은 graph 결과에서 검증한다. fixture의 source 문자열을 검사하거나 규칙 구현을 snapshot으로 고정하지 않는다.
 
 ## Knip

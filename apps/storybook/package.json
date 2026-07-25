@@ -16,7 +16,7 @@
     "build:serve": "storybook build --output-dir dist && bunx http-server dist -p 6007 -c-1",
     "lint": "oxlint .",
     "test:stories": "vitest run --config vitest.storybook.config.ts --project=storybook",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
     "@workspace/ui": "workspace:*",

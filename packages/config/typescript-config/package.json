@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "tsc7": "./run-tsc.mjs"
+  },
+  "dependencies": {
+    "@typescript/native": "catalog:"
+  },
   "exports": {
     "./base.json": "./base.json",
     "./nextjs.json": "./nextjs.json",

@@ -10,7 +10,7 @@
     "start": "node ../../scripts/run-next-standalone.mjs web",
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest watch --config vitest.config.ts",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "node ../../scripts/run-next-typegen.mjs && tsc7 --noEmit"
   },
   "dependencies": {
     "@workspace/auth": "workspace:*",
@@ -19,6 +19,7 @@
     "@workspace/http-client": "workspace:*",
     "@workspace/nextjs-config": "workspace:*",
     "@workspace/ui": "workspace:*",
+    "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",

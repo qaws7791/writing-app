@@ -9,7 +9,7 @@
     "lint": "oxlint .",
     "start": "node ../../scripts/run-next-standalone.mjs admin",
     "test": "vitest run --config vitest.config.ts",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "node ../../scripts/run-next-typegen.mjs && tsc7 --noEmit"
   },
   "dependencies": {
     "@workspace/auth": "workspace:*",

@@ -1,10 +1,11 @@
 {
-  "js/ts.tsdk.path": "node_modules\\typescript\\lib",
+  "js/ts.experimental.useTsgo": true,
+  "js/ts.tsdk.path": "./node_modules/@typescript/native",
   "tailwindCSS.experimental.configFile": {
     "packages/shared/ui/src/styles/globals.css": "packages/shared/ui/src/**",
     "apps/web/src/app/globals.css": "apps/web/src/**",
     "apps/admin/src/app/globals.css": "apps/admin/src/**"
-  }, 
+  },
   "oxc.fmt.configPath": ".oxfmtrc.json",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
@@ -19,4 +20,7 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  }
 }
