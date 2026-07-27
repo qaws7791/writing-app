@@ -356,6 +356,8 @@ Wikipedia 사용은 DPI에서 사후 조금 더 높았지만 신뢰 차이는 �
 
 ## 교차 검증과 충돌
 
+- 3단계 확정 주장 ID: `clm-information-source-media-ai-literacy-002`
+
 - **전문가 관찰과 중재:** `src-0154-lateral-reading-expertise`는 팩트체커가 방위 잡기·측면 읽기·클릭 자제를 사용한다는 전문가 비교다. 본 연구는 그 전략을 수업으로 가르친 뒤 수행차이를 관찰하여 “가르칠 수 있는가”에 더 직접적인 근거를 제공한다.
 - **전략 명칭:** 본 DPI 자료는 trusted work–original–source–circle back 네 동작을 사용하고, `src-0156-sift-four-moves`는 Stop–Investigate–Find better coverage–Trace라는 후속 SIFT 표현을 사용한다. 이름을 혼합해 암기시키기보다 목적 대응표를 제시한다.
 - **인과 강도:** 저자들은 `efficacy`와 `increased`라는 표현을 쓰지만 개인·분반 무작위 배정은 보고하지 않는다. 큰 사후차이는 검증된 사실이고, 순수한 중재 인과량이라는 해석은 비무작위·출석·강사·분반 교란 때문에 더 약하다.

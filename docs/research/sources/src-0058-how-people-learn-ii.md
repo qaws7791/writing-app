@@ -457,6 +457,8 @@
 
 ## 교차 검증과 충돌
 
+- 3단계 확정 주장 ID: `clm-instruction-practice-transfer-003`, `clm-instruction-practice-transfer-005`
+
 - `src-0055-practice-testing-spacing-integration`은 인출과 간격을 통합한 실천적 모형을, `src-0062-distributed-practice-meta-analysis`는 분산 간격의 정량 관계를 더 깊게 다룬다. 본 보고서의 장별 요약만으로 고정 간격을 정하지 않는다.
 - `src-0056-retrieval-type-spacing-online`은 한국 대학생 온라인 동영상에서 인출 유형과 최종검사 간격의 상호작용을 보여준다. 본 보고서의 넓은 원리와 방향은 맞지만, 성인 문해·장문 수행으로의 전이는 별도 검증이 필요하다.
 - `src-0057-training-transfer-growth`은 한국 보험설계사 과정에서 동기·상사 지원·부담과 자기보고 전이 궤적의 연관을 보인다. 본 보고서 9장의 환경 지원 결론과 정합적이지만, 두 자료 모두 특정 지원 개입의 인과효과를 확정하지 않는다.

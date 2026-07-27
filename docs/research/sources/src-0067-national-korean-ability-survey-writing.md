@@ -116,6 +116,8 @@
 
 ## 교차 검증과 충돌
 
+- 3단계 확정 주장 ID: `clm-organization-coherence-expression-003`, `clm-organization-coherence-expression-006`, `clm-organization-coherence-expression-007`
+
 - `src-0003`은 같은 제3차 조사의 읽기·문법·규범 파동이다. 공통 수준틀은 교차 확인하되 이 노트는 2025년 쓰기 네 문항과 채점만의 결과를 보존한다.
 - `src-0033`의 성인 쓰기 전략 종합은 실제 목적·장르별 연습을 지지하지만, 본 보고서는 중재효과가 아니라 한국 성인의 횡단 수행분포를 제공한다.
 - 2013·2018년 보고서(`src-0071`, `src-0069`)와 연결되지만 도구 변화 때문에 동일척도 추세로 단정하지 않는다.

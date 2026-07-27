@@ -343,6 +343,8 @@ hard binding과 soft binding도 구분한다. hard binding은 암호학적 해�
 
 ## 교차 검증과 충돌
 
+- 3단계 확정 주장 ID: `clm-information-source-media-ai-literacy-006`
+
 - **발행연도 충돌:** 선행 증거목록은 C2PA 2.4를 `(2025)`로 적었지만, 공식 사양 §5.3.1은 `2.4 - April 2026`이라고 명시한다. 제목의 버전과 원문 버전 고정 URL은 일치하므로 이 노트는 2026년 4월을 채택한다.
 - **NIST와의 일치:** `src-0152-nist-generative-ai-profile`은 콘텐츠 출처가 생성자·시간·장소·수정·원천 등의 맥락을 제공하지만 기술별 강건성·비용·오탐/미탐과 사용자 이해를 평가해야 한다고 정리한다. C2PA 2.4의 hard/soft binding, trust list, 점진 공개, AI disclosure는 그 운영 가능한 기술 구조를 제공한다.
 - **NIST와의 경계:** NIST 프로필은 조직 위험관리 권고이고 C2PA는 데이터·검증 상호운용 규격이다. NIST의 위험 완화 효과를 C2PA 준수만으로 달성했다고 볼 수 없고, C2PA 스키마의 존재를 조직 거버넌스 완료로 볼 수도 없다.

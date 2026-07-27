@@ -364,7 +364,7 @@
 
 ## 교차 검증과 충돌
 
-- 연결된 주장 ID: 미부여. 근거 통합 단계에서 부여해야 한다.
+- 3단계 확정 주장 ID: `clm-instruction-practice-transfer-002`
 - `src-0062-distributed-practice-meta-analysis`는 이 논문이 인용한 Cepeda 등(2006) 원 메타분석이다. 표본·포함 기준·조절변수·비선형 관계는 `src-0062`를 권위 근거로 삼고, `src-0055`의 37% 대 47% 요약만으로 일정을 정하지 않는다.
 - `src-0056-retrieval-type-spacing-online`은 한국어 온라인 학습에서 인출 유형과 간격을 직접 조작한 연구이므로 `어떤 인출 형식·간격이 어떤 결과를 만드는가`를 보완한다.
 - `src-0058-how-people-learn-ii`, `src-0059-organizing-instruction-study`, `src-0060-principles-of-instruction`은 인출·분산을 선행지식 활성화, 안내, 연습, 누적 복습과 통합하는 상위 설계 근거를 제공한다.

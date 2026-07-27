@@ -318,6 +318,8 @@
 
 ## 교차 검증과 충돌
 
+- 3단계 확정 주장 ID: `clm-instruction-practice-transfer-006`, `clm-reading-meaning-construction-007`
+
 - **서지 충돌**: 후보 목록의 Scammacca et al. 제목과 실제 링크 PDF의 표지 정보가 다르다. 이 노트는 직접 확인한 Eberhart·Zhang·Hock 원고만 수집 대상으로 삼았다.
 - **Scammacca 자료와 구별**: 무료로 확인되는 Scammacca et al.의 대표 메타분석은 4~12학년 어려움을 겪는 독자의 중재 82개 연구단위 효과를 다루며 성인 ABE 메타분석이 아니다. 후보 제목을 실제 논문으로 간주하지 않았다.
 - **성인 구성요소 연구와 일치**: Tighe·Schatschneider의 성인 저문해 구성요소 메타분석은 형태인식·언어이해·유창성·구어어휘·실단어 해독·작업기억이 이해와 강하게 관련된다고 보고한다. 이는 구성요소 진단 필요성과 방향은 일치하지만, 상관 메타분석이라 중재효과를 증명하지 않는다.

@@ -400,7 +400,7 @@ Fisher 등은 한 연구중심 공립대학의 여덟 과목에서 대학생이 
 
 ## 교차 검증과 충돌
 
-- 연결된 주장 ID: 미부여. 근거 통합 단계에서 부여해야 한다.
+- 3단계 확정 주장 ID: `clm-audience-purpose-genre-rhetoric-005`
 - `src-0049-audience-position-difference`와 가장 직접적으로 연결된다. 두 자료를 함께 보면 작성자가 상상한 독자와 실제 독자 반응이 다를 수 있으므로 독자 프로필과 사용자 피드백을 결합해야 한다.
 - `src-0050-text-analysis-report-writing`과는 장르의 사회적 목적, 모델 텍스트 분석, 실제 독자를 위한 재작성에 연결된다. `src-0054`의 독자 선택은 장르 변화와 분리되지 않으므로 장르 교육을 함께 해야 한다.
 - `src-0051-public-language-diagnosis`와 `src-0053-cdc-clear-communication-index`는 일반 시민·구체 1차 독자 관점에서 실제 문서를 검토하는 방법을 제공한다. 가상 독자 과제 뒤 이 도구로 독자 테스트를 붙일 수 있다.

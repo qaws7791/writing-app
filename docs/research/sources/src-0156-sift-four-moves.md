@@ -365,6 +365,8 @@ Caulfield는 온라인 정보의 신뢰성을 평가하는 일을 긴 체크리�
 
 ## 교차 검증과 충돌
 
+- 3단계 확정 주장 ID: `clm-information-source-media-ai-literacy-001`
+
 - **`src-0154`의 전문가 행동과 일치:** 전문 팩트체커가 낯선 웹사이트를 평가할 때 사이트 내부를 오래 읽기보다 새 탭에서 조직을 조사하고 다른 출처를 찾았다는 관찰은 `Investigate`와 `Find better coverage`의 행동 논리를 지지한다. 다만 `src-0154`는 전문가-비전문가 관찰 비교이고 SIFT 네 동작 전체의 효과시험은 아니다.
 - **`src-0155`의 수업구현과 일치:** 대학 교양수업 연구는 출처 조사, 이미 검증된 자료 찾기, 원출처 찾기, 막히면 되돌아가기를 실제 수업·숙제에 넣고 수행평가에서 큰 조건 차이를 보고했다. 이는 추상적 조언보다 실제 웹 연습·경로기록이 필요하다는 설계를 뒷받침한다.
 - **명칭 차이:** `src-0155`의 수업자료는 `Look for trusted work`, `Find the original`, `Investigate the source`, `Circle back`이라는 네 동작과 감정 확인 습관을 사용한다. 이 2019년 원문은 `Stop`, `Investigate`, `Find better coverage`, `Trace`를 사용한다. 개념적 중첩은 크지만 이름과 묶음이 완전히 같다고 처리하지 않는다.

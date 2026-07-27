@@ -444,7 +444,7 @@ Part B는 행동 권고가 있을 때 무엇을 할지, 왜 중요한지, 어떻
 
 ## 교차 검증과 충돌
 
-- 연결된 주장 ID: 미부여. 근거 통합 단계에서 부여해야 한다.
+- 3단계 확정 주장 ID: `clm-language-norms-sentence-clarity-006`, `clm-organization-coherence-expression-003`, `clm-organization-coherence-expression-004`
 - `src-0051-public-language-diagnosis`는 한국 중앙행정기관 문서의 실제 오류 유형과 시민·전문가 평정을 제공하고, `src-0053`은 핵심 메시지·행동·숫자·위험을 더 명시적으로 평가한다. 한국어 어법은 전자로, 독자 행동과 수리·위험 소통은 후자로 보완할 수 있다.
 - `src-0052-easy-statute-guidelines`와는 일반 독자 관점, 주체가 분명한 문장, 전문어 설명, 표·산식 활용에서 일치한다. 다만 법령은 하나의 행동 촉구보다 권리·의무와 법적 정확성이 우선할 수 있고, 능동태를 기계적으로 적용하면 법적 초점이 바뀔 수 있다.
 - `src-0049-audience-position-difference`는 작성자·전문가와 실제 독자의 관점 차이를 구체화하는 근거가 될 수 있다. Index의 네 사전 질문도 독자에 대한 추측을 경계한다.
