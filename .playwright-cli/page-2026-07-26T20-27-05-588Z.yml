@@ -1,0 +1,246 @@
+- generic [active] [ref=f2e1]:
+    - link "본문 바로가기" [ref=f2e2] [cursor=pointer]:
+        - /url: "#container"
+    - generic [ref=f2e3]:
+        - banner [ref=f2e4]:
+            - generic [ref=f2e5]:
+                - heading [level=1] [ref=f2e6]:
+                    - link [ref=f2e7] [cursor=pointer]:
+                        - /url: /kciportal/landing
+                        - emphasis [ref=f2e8]: KOAJ
+                        - generic [ref=f2e9]: KoreaOpen Access Journals
+                - navigation [ref=f2e10]:
+                    - list [ref=f2e11]:
+                        - listitem [ref=f2e12]:
+                            - link "KOAJ 소개" [ref=f2e13] [cursor=pointer]:
+                                - /url: /kciportal/landing/about.kci
+                        - listitem [ref=f2e14]:
+                            - link "학술지" [ref=f2e15] [cursor=pointer]:
+                                - /url: /kciportal/landing/journalList.kci
+                        - listitem [ref=f2e16]:
+                            - link "논문" [ref=f2e17] [cursor=pointer]:
+                                - /url: /kciportal/landing/articleSearch.kci
+                        - listitem [ref=f2e18]:
+                            - link "통계" [ref=f2e19] [cursor=pointer]:
+                                - /url: /kciportal/landing/insiStatistics.kci
+                - generic [ref=f2e20]:
+                    - term [ref=f2e21]:
+                        - button "" [ref=f2e22] [cursor=pointer]
+                    - text: 
+        - generic [ref=f2e25]:
+            - generic [ref=f2e26]:
+                - generic [ref=f2e27]:
+                    - generic [ref=f2e28]: KCI 등재
+                    - heading [level=2] [ref=f2e30]:
+                        - text: 텍스트 분석이 글쓰기에 미치는 효과 연구－대학교 1학년의 보고서 쓰기를 대상으로－
+                        - paragraph [ref=f2e31]: A Study on the Effect of Text Analysis on Writing －To Write a Report for the First Year of College－
+                    - generic [ref=f2e32]:
+                        - generic [ref=f2e33]:
+                            - text: "새국어교육 약어 : KOED 2019 no.119, pp.213 - 245 DOI : 10.15734/koed..119.201906.213 발행기관 :"
+                            - link "한국국어교육학회" [ref=f2e34] [cursor=pointer]:
+                                - /url: javascript:;
+                            - text: "연구분야 : 한국어와문학 Copyright © 한국국어교육학회"
+                        - list:
+                            - listitem
+                - generic [ref=f2e35]:
+                    - generic [ref=f2e36]:
+                        - generic [ref=f2e37]:
+                            - text: 김정은
+                            - superscript [ref=f2e38]: "1"
+                            - text: ", 이병규"
+                            - superscript [ref=f2e39]: "2"
+                        - generic [ref=f2e40]:
+                            - paragraph [ref=f2e41]:
+                                - superscript [ref=f2e42]: "1"
+                                - text: 가원초등학교
+                            - paragraph [ref=f2e43]:
+                                - superscript [ref=f2e44]: "2"
+                                - text: 서울교육대학교
+                    - generic [ref=f2e45]:
+                        - 'button "인용한 논문 수 : 2" [ref=f2e46] [cursor=pointer]'
+                        - generic [ref=f2e47]: 306 회 열람
+                        - button " 현재 페이지 인쇄" [ref=f2e48] [cursor=pointer]:
+                            - generic [ref=f2e49]: 
+                            - text: 현재 페이지 인쇄
+                        - button " PDF 다운로드" [ref=f2e50] [cursor=pointer]:
+                            - generic [ref=f2e51]: 
+                            - text: PDF 다운로드
+                        - button " 인용보기" [ref=f2e52] [cursor=pointer]:
+                            - generic [ref=f2e53]: 
+                            - text: 인용보기
+                        - button " 공유" [ref=f2e55] [cursor=pointer]:
+                            - generic [ref=f2e56]: 
+                            - text: 공유
+            - generic [ref=f2e57]:
+                - article [ref=f2e58]:
+                    - heading [level=3] [ref=f2e59]:
+                        - button "초록 " [ref=f2e60] [cursor=pointer]:
+                            - emphasis [ref=f2e61]: 초록
+                            - generic [ref=f2e62]: 
+                    - generic [ref=f2e64]: 목적：이 연구는 텍스트 분석이 글쓰기 지도에 효과적인 방안 중 하나가 될 수 있음을 제안하고 그 효과성을 확인하는 데 목적이 있다. 방법：이를 위해서 텍스트 갈래 지식에 기반하여 텍스트 분석 기준을 마련하고, 대학교 1학년 학생들을 대상으로 텍스트 분석을 활용한 글쓰기를 지도하고 보고서를 작성하도록 하였다. 수합한 보고서는 대조 집단의 보고서와 비교하여 효과성을 확인하고자 하였다. 결과：텍스트 분석을 통해 보고서의 특성을 파악한 뒤 보고서를 쓰게 하였을 때, 학습자들은 보고서의 특성에 부합하는 글을 썼으며 특히 보고서의 맥락과 표현 측면에서 높은 점수를 보였다. 결론：자기 주도적 학습 능력이 높은 학습자의 경우 텍스트를 분석하는 과정에서 텍스트 갈래의 특성을 파악해 보는 경험을 제공하는 것이 텍스트의 변화 가능성을 인식하고 자신의 의도를 효과적으로 전달할 수 있는 글을 생산하는 데 도움을 준다. 이 글을 통해 효과적인 글쓰기 지도 방법으로써 텍스트 분석의 가능성을 살펴볼 수 있을 것으로 기대한다. Purpose：The purpose of this study is to suggest that text analysis can be one of the effective measures for writing method and to confirm its effectiveness. Methods：In order to accomplish this research purpose, the criteria for text analysis were prepared based on text grammar, and the report was prepared by guiding first-year university students to writing using text analysis. First-year university students were asked to write reports using text analysis, comparing the reports with the control group. Results：The analysis results showed that the characteristics of the report were determined by analyzing the text, the report was written to match the characteristics of the report. Conclusion：For learners with high self-directed learning ability, providing experience to find the characteristics of text in the process of analyzing text helps produce text that can recognize the potential for change in text and effectively communicate their intentions. This article will explore the possibilities of text analysis as an effective way of writing method
+                - article [ref=f2e65]:
+                    - heading [level=3] [ref=f2e66]:
+                        - button "키워드 " [ref=f2e67] [cursor=pointer]:
+                            - emphasis [ref=f2e68]: 키워드
+                            - generic [ref=f2e69]: 
+                    - generic [ref=f2e71]: 텍스트 분석, 글쓰기 지도, 분석 기준, 텍스트 갈래 지식, 장르 인식 Text analysis, Writing method, Analysis criteria, Text grammar, Genre awareness
+                - article [ref=f2e72]:
+                    - heading [level=3] [ref=f2e73]:
+                        - button "참고문헌(33) " [ref=f2e74] [cursor=pointer]:
+                            - emphasis [ref=f2e75]: 참고문헌(33)
+                            - generic [ref=f2e76]: 
+                    - list [ref=f2e79]:
+                        - listitem [ref=f2e80]:
+                            - text: 1. [학술지] 권태현 / 2016
+                            - link "/ 국어 교사의 장르 인식 분석" [ref=f2e81] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002158855
+                            - text: "/ 교원교육 / 32 (4) : 49 ~ 4"
+                            - img "kci" [ref=f2e82]
+                        - listitem [ref=f2e83]:
+                            - text: 2. [학술지] 권태현 / 2017
+                            - link "/ 장르 기반 쓰기 교육의 대안적 방법 탐색" [ref=f2e84] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002207831
+                            - text: "/ 작문연구 (32) : 185 ~ 32"
+                            - img "kci" [ref=f2e85]
+                        - listitem [ref=f2e86]:
+                            - text: 3. [학술지] 김미영 / 2018
+                            - 'link "/ 대학 글쓰기 수업을 위한 지도 사례 연구: 장르 분석을 통한 칼럼 쓰기를 중심으로" [ref=f2e87] [cursor=pointer]':
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002310459
+                            - text: "/ 학습자중심교과교육연구 / 18 (1) : 373 ~ 1"
+                            - img "kci" [ref=f2e88]
+                        - listitem [ref=f2e89]: 4. [학위논문] 김정은 / 2015 / 텍스트 갈래 지식에 기반 한 설명문 쓰기 지도 방안 연구
+                        - listitem [ref=f2e90]:
+                            - text: 5. [학술지] 김현숙 / 2016
+                            - link "/ 대학생 글쓰기에서장르 기반 문법 지식 교육의 필요성 - 논설문을 중심으로 -" [ref=f2e91] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002117135
+                            - text: "/ 작문연구 (29) : 211 ~ 29"
+                            - img "kci" [ref=f2e92]
+                        - listitem [ref=f2e93]:
+                            - text: 6. [학술지] 나은미 / 2017
+                            - link "/ 장르에 대한 이해와 대학의 <사고와 표현> 교육 설계" [ref=f2e94] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002303990
+                            - text: "/ 사고와표현 / 10 (3) : 7 ~ 3"
+                            - img "kci" [ref=f2e95]
+                        - listitem [ref=f2e96]:
+                            - text: 7. [학술지] 박수자 / 2016
+                            - link "/ 장르 인식을 위한비문학 제재 읽기 학습 방안 연구" [ref=f2e97] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002162962
+                            - text: "/ 한국초등국어교육 (61) : 123 ~ 61"
+                            - img "kci" [ref=f2e98]
+                        - listitem [ref=f2e99]: 8. [단행본] 박태호 / 2000 / 장르 중심 작문 교수, 학습론 / 박이정
+                        - listitem [ref=f2e100]:
+                            - text: 9. [학술지] 박혜영 / 2016
+                            - link "/ 국어교사의 쓰기 장르 인식에 관한 은유 분석" [ref=f2e101] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002113326
+                            - text: "/ 학습자중심교과교육연구 / 16 (5) : 403 ~ 5"
+                            - img "kci" [ref=f2e102]
+                        - listitem [ref=f2e103]:
+                            - text: 10. [학술지] 오세영 / 2018
+                            - link "/ 대학생 필자의 학문적 글쓰기 과정에 나타난 장르 인식과 글쓰기 변형의 상관 분석 연구" [ref=f2e104] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002332110
+                            - text: "/ 우리말글 / 76 : 61 ~"
+                            - img "kci" [ref=f2e105]
+                        - listitem [ref=f2e106]:
+                            - text: 11. [학술지] 원진숙 / 2011
+                            - link "/ 장르 기반 환경적 쓰기 교수.학습 모형 개발 연구" [ref=f2e107] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001583304
+                            - text: "/ 한국초등교육 / 22 (2) : 147 ~ 2"
+                            - img "kci" [ref=f2e108]
+                        - listitem [ref=f2e109]: "12. [학술지] 이경화 / 2018 / 초등학생 필자의 장르 인식에 대한 사례 연구 / 초등교과교육연구 / 29 : 1 ~"
+                        - listitem [ref=f2e110]:
+                            - text: 13. [학술지] 이병규 / 2018
+                            - link "/ 문법과 읽기 교육의 융합" [ref=f2e111] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002411772
+                            - text: "/ 언어사실과 관점 / 45 : 5 ~"
+                            - img "kci" [ref=f2e112]
+                        - listitem [ref=f2e113]: 14. [단행본] 이병규 / 2019 / 국어 문법 교육론 / 집문당
+                        - listitem [ref=f2e114]:
+                            - text: 15. [학술지] 김정은 / 2015
+                            - link "/ 설명문 텍스트의 맥락과 구조 연구" [ref=f2e115] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002059395
+                            - text: "/ 새국어교육 (105) : 97 ~ 105"
+                            - img "kci" [ref=f2e116]
+                        - listitem [ref=f2e117]:
+                            - text: 16. [학술지] 김정은 / 2016
+                            - link "/ 텍스트 갈래 지식과 과정 중심 쓰기를 통합한 쓰기 지도 방안 연구 - 설명문을 중심으로 -" [ref=f2e118] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002118331
+                            - text: "/ 새국어교육 (107) : 7 ~ 107"
+                            - img "kci" [ref=f2e119]
+                        - listitem [ref=f2e120]:
+                            - text: 17. [학술지] 이병규 / 2017
+                            - link "/ 국어과 내용으로서의 맥락에 대한 재고(再考)" [ref=f2e121] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002236821
+                            - text: "/ 새국어교육 (111) : 7 ~ 111"
+                            - img "kci" [ref=f2e122]
+                        - listitem [ref=f2e123]:
+                            - text: 18. [학술지] 이병규 / 2014
+                            - link "/ 초등 국어과 교육을 위한텍스트 갈래에 대한 지식 범주화" [ref=f2e124] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001860690
+                            - text: "/ 청람어문교육 (49) : 195 ~ 49"
+                            - img "kci" [ref=f2e125]
+                        - listitem [ref=f2e126]:
+                            - text: 19. [학술지] 이병규 / 2016
+                            - link "/ 기행문 텍스트의 맥락과 형식 연구" [ref=f2e127] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002098910
+                            - text: "/ 한국초등교육 / 27 (1) : 269 ~ 1"
+                            - img "kci" [ref=f2e128]
+                        - listitem [ref=f2e129]:
+                            - text: 20. [학술지] 최선희 / 2016
+                            - link "/ 기행문 텍스트 갈래의 내용 및 구조 연구" [ref=f2e130] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002117078
+                            - text: "/ 청람어문교육 (58) : 149 ~ 58"
+                            - img "kci" [ref=f2e131]
+                        - listitem [ref=f2e132]: "21. [학술대회] 이승연 / 2016 / 한국어 화자의 장르 인식에 관한 연구：고급 한국어 읽기 텍스트 개발을 위하여 / 국제한국어교육학회 추계학술발표논문집 / : 29 ~"
+                        - listitem [ref=f2e133]:
+                            - text: 22. [학술지] 이윤빈 / 2015
+                            - link "/ 장르 인식 기반 대학 글쓰기 교육 프로그램의 개발 및 적용" [ref=f2e134] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002031475
+                            - text: "/ 작문연구 (26) : 107 ~ 26"
+                            - img "kci" [ref=f2e135]
+                        - listitem [ref=f2e136]: "23. [학술지] 이지영 / 2010 / ‘장르’에 대한 초등 교사의 인식 연구 / 교과교육연구 / 3 : 149 ~"
+                        - listitem [ref=f2e137]:
+                            - text: 24. [학술지] 제민경 / 2014
+                            - link "/ ‘장르’ 개념화를 위한 문법교육적 접근" [ref=f2e138] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001914364
+                            - text: "/ 국어교육학연구 / 49 (3) : 393 ~ 3"
+                            - img "kci" [ref=f2e139]
+                        - listitem [ref=f2e140]: 25. [학위논문] 제민경 / 2014 / 장르 문법 교육 내용 연구
+                        - listitem [ref=f2e141]:
+                            - text: 26. [학술지] 차현정 / 2011
+                            - link "/ 장르와 레지스터 분석에서 나타난 중학생의 지구과학 주제 글쓰기의 언어적 특징" [ref=f2e142] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001534368
+                            - text: "/ 한국지구과학회지 / 32 (1) : 84 ~ 1"
+                            - img "kci" [ref=f2e143]
+                        - listitem [ref=f2e144]:
+                            - text: 27. [학술지] 최종윤 / 2014
+                            - link "/ 선행 장르 지식이 초등학생의 설명문 쓰기 능력에 미치는 영향" [ref=f2e145] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001918854
+                            - text: "/ 청람어문교육 (51) : 199 ~ 51"
+                            - img "kci" [ref=f2e146]
+                        - listitem [ref=f2e147]:
+                            - text: 28. [학술지] 최종윤 / 2018
+                            - link "/ 예비 초등 교사의 장르 인식이 쓰기 수행에 미치는 영향 - 논설문을 중심으로 -" [ref=f2e148] [cursor=pointer]:
+                                - /url: /kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002342273
+                            - text: "/ 한국초등국어교육 (64) : 147 ~ 64"
+                            - img "kci" [ref=f2e149]
+                        - listitem [ref=f2e150]: "29. [학술지] Clark, I. L. / 2011 / Genre awareness, academic argument, and transferability / The WAC Journal / 22 : 65 ~"
+                        - listitem [ref=f2e151]: 30. [단행본] Devitt, A. J. / 2004 / Scenes of Writing：Strategies for composing with Genre / Pearson/Longman
+                        - listitem [ref=f2e152]: 31. [단행본] Hyland, K. / 2011 / 쓰기 지도와 쓰기 연구의 방법 / 글로벌콘텐츠
+                        - listitem [ref=f2e153]: "32. [학술지] Johns, A. M. / 2008 / Genre Awareness for the novice academic student：An ongoing quest / Language Teaching / 41 : 237 ~"
+                        - listitem [ref=f2e154]: 33. [단행본] Knapp, P. / 2007 / 장르, 텍스트, 문법-쓰기 교육을 위한 문법 / 박이정
+            - complementary [ref=f2e155]:
+                - button "toggle menu" [ref=f2e156] [cursor=pointer]
+            - text:  
+        - contentinfo [ref=f2e158]:
+            - heading [level=1] [ref=f2e159]:
+                - img "한국연구재단 로고" [ref=f2e160]
+            - generic [ref=f2e161]:
+                - list [ref=f2e162]:
+                    - listitem [ref=f2e163]: (우)305-754 대전광역시 유성구 가정로 201 한국연구재단
+                    - listitem [ref=f2e164]: "TEL: 042-869-6674, 1544-6118"
+                    - listitem [ref=f2e165]:
+                        - text: "E-mail:"
+                        - link "kciadmin@nrf.re.kr" [ref=f2e166] [cursor=pointer]:
+                            - /url: mailto:kciadmin@nrf.re.kr
+                - paragraph [ref=f2e167]: COPYRIGHT BY 2024 NRF. ALL RIGHTS RESERVED.
+    - text:  ㆍ ㆍ ㆍ ㆍ    ㆍ ㆍ

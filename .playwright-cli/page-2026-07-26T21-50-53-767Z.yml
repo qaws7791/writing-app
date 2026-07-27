@@ -1,0 +1,12 @@
+- generic [ref=e6]:
+    - generic [ref=e8]:
+        - generic [ref=e9]: pmc.ncbi.nlm.nih.gov에 액세스하기 전에 브라우저를 확인 중입니다...
+        - generic [ref=e10]:
+            - text: 5초 후에 자동으로 리디렉션되지 않는다면
+            - link "여기" [ref=e11] [cursor=pointer]:
+                - /url: "#"
+            - text: 를 클릭하세요.
+    - iframe [ref=e14]:
+        - generic [ref=f1e6]:
+            - strong [ref=f1e7]: reCAPTCHA
+            - text: 로 보호됨
