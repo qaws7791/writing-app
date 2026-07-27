@@ -16,6 +16,7 @@
 | 2026-07-24 P0·P1 아키텍처 정리       | [`plan.md`](./2026-07-24-p0-p1-architecture-cleanup/plan.md)                                                                                                                                                                                                | 구현·검증과 영구 문서 반영 완료        |
 | 2026-07-26 TypeScript 7 마이그레이션 | [`plan.md`](./2026-07-26-typescript-7-migration/plan.md), [`validation-report.md`](./2026-07-26-typescript-7-migration/validation-report.md)                                                                                                                | 구현·전체 검증과 영구 문서 반영 완료   |
 | 2026-07-26 테스트·검증 코드 정돈     | [`plan.md`](./2026-07-26-test-verification-cleanup/plan.md), [`validation-report.md`](./2026-07-26-test-verification-cleanup/validation-report.md)                                                                                                          | 8개 우선순위 구현·검증과 정리 완료     |
+| 2026-07-27 코스 시드 콘텐츠 재구축   | [`plan.md`](./2026-07-27-course-seed-rebuild/plan.md), [`progress.md`](./2026-07-27-course-seed-rebuild/progress.md), [`stage-5/validation-report.md`](./2026-07-27-course-seed-rebuild/stage-5/validation-report.md)                                       | 전체 기준선 구축·검증과 한계 기록 완료 |
 
 ## 사용 기준
 

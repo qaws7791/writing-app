@@ -56,6 +56,19 @@
 
 ## 콘텐츠 연결
 
-코스 집필을 시작하면 코스별 근거 문서에 `콘텐츠 ID`, `주장 ID`, `적용 방식`, `근거 한계`를 기록한다. 하나의 콘텐츠가 여러 주장에 의존하면 행을 나누며, 같은 문구나 최종 코스 구조를 복제하지 않는다. 주장 없이 작성자의 선택으로 만든 예시·활동은 외부 근거가 있는 것처럼 연결하지 않고 `자체 설계`로 구분한다.
+코스별 문서는 JSON 콘텐츠 ID와 설계 근거만 연결하며 학습자용 콘텐츠 값을 복제하지 않는다.
 
 - [`course-word-sentence-meaning.md`](./course-word-sentence-meaning.md) — 어휘와 문장의 의미 정확히 읽기
+- [`course-reading-structure-main-ideas.md`](./course-reading-structure-main-ideas.md) — 글의 핵심과 구조 읽기
+- [`course-clear-accurate-expression.md`](./course-clear-accurate-expression.md) — 의미를 살려 명료하게 쓰기
+- [`course-grammar-orthography.md`](./course-grammar-orthography.md) — 한국어 문법과 표기 판단하기
+- [`course-idea-topic-development.md`](./course-idea-topic-development.md) — 생각을 넓혀 쓸거리 만들기
+- [`course-organization-coherence.md`](./course-organization-coherence.md) — 정보를 조직해 글의 흐름 만들기
+- [`course-audience-purpose-genre.md`](./course-audience-purpose-genre.md) — 독자와 목적에 맞춰 쓰기
+- [`course-reader-centered-explanation.md`](./course-reader-centered-explanation.md) — 독자가 이해하는 설명 쓰기
+- [`course-evidence-based-inference.md`](./course-evidence-based-inference.md) — 근거를 연결해 추론하기
+- [`course-information-search-credibility.md`](./course-information-search-credibility.md) — 정보를 찾고 신뢰성을 판단하기
+- [`course-critical-analysis-integration.md`](./course-critical-analysis-integration.md) — 자료를 구조화해 비판적으로 판단하기
+- [`course-evidence-based-argumentation.md`](./course-evidence-based-argumentation.md) — 근거와 반론으로 주장 세우기
+- [`course-revision-feedback.md`](./course-revision-feedback.md) — 초고를 진단하고 개선하기
+- [`course-responsible-source-ai-use.md`](./course-responsible-source-ai-use.md) — 출처와 AI를 책임 있게 활용하기

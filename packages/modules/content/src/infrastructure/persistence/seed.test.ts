@@ -20,27 +20,27 @@ describe("content seed provider", () => {
       runCurrentTestMigration(client.sqlite)
       await seedContentDatabase(client.db)
 
-      expect(client.db.select().from(courses).all()).toHaveLength(5)
+      expect(client.db.select().from(courses).all()).toHaveLength(14)
       expect(
         client.db.select().from(courseCurriculumVersions).all()
-      ).toHaveLength(10)
+      ).toHaveLength(28)
       expect(
         client.db
           .select()
           .from(courseCurriculumVersions)
           .where(eq(courseCurriculumVersions.status, "published"))
           .all()
-      ).toHaveLength(5)
+      ).toHaveLength(14)
       expect(
         client.db
           .select()
           .from(courseCurriculumVersions)
           .where(eq(courseCurriculumVersions.status, "draft"))
           .all()
-      ).toHaveLength(5)
-      expect(client.db.select().from(lessonVersions).all()).toHaveLength(88)
+      ).toHaveLength(14)
+      expect(client.db.select().from(lessonVersions).all()).toHaveLength(642)
       expect(client.db.select().from(lessonStepVersions).all()).toHaveLength(
-        272
+        1662
       )
     } finally {
       client.close()
@@ -53,17 +53,25 @@ describe("content seed provider", () => {
     try {
       runCurrentTestMigration(client.sqlite)
       await seedContentDatabase(client.db)
+      const firstSeedCourseId = client.db
+        .select({ id: courses.id })
+        .from(courses)
+        .orderBy(courses.sortOrder)
+        .get()?.id
+      if (firstSeedCourseId === undefined) {
+        throw new Error("첫 seed course fixture가 필요합니다.")
+      }
       const publishedVersionId = client.db
         .select({ id: courses.publishedCurriculumVersionId })
         .from(courses)
-        .where(eq(courses.id, "c1"))
+        .where(eq(courses.id, firstSeedCourseId))
         .get()?.id
       const draft = client.db
         .select()
         .from(courseCurriculumVersions)
         .where(
           and(
-            eq(courseCurriculumVersions.courseId, "c1"),
+            eq(courseCurriculumVersions.courseId, firstSeedCourseId),
             eq(courseCurriculumVersions.status, "draft")
           )
         )
@@ -88,7 +96,7 @@ describe("content seed provider", () => {
           user_id, course_id, curriculum_version_id,
           status, started_at, last_activity_at, updated_at
         ) VALUES (
-          'seed-user', 'c1', '${publishedVersionId}',
+          'seed-user', '${firstSeedCourseId}', '${publishedVersionId}',
           'in_progress', 1, 1, 1
         );
         INSERT INTO courses (
@@ -139,7 +147,7 @@ describe("content seed provider", () => {
         client.db
           .select({ id: courses.publishedCurriculumVersionId })
           .from(courses)
-          .where(eq(courses.id, "c1"))
+          .where(eq(courses.id, firstSeedCourseId))
           .get()?.id
       ).toBe(publishedVersionId)
       expect(

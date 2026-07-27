@@ -24,80 +24,69 @@ describe("기준 콘텐츠 seed 변환", () => {
   it("기준 콘텐츠를 새 baseline row 수량으로 변환한다", async () => {
     const rows = createContentSeedRows(await readSeedData())
 
-    expect(rows.courses).toHaveLength(5)
-    expect(rows.units).toHaveLength(15)
-    expect(rows.lessons).toHaveLength(44)
-    expect(rows.steps).toHaveLength(136)
+    expect(rows.courses).toHaveLength(14)
+    expect(rows.units).toHaveLength(69)
+    expect(rows.lessons).toHaveLength(321)
+    expect(rows.steps).toHaveLength(831)
 
     expect(rows.courses[0]).toMatchObject({
-      id: "c1",
-      title: "글쓰기 첫걸음 30일",
+      id: "course-word-sentence-meaning",
+      title: "어휘와 문장의 의미 정확히 읽기",
       description:
-        "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
-      category: "입문자를 위한 코스",
+        "문맥, 문장 구조, 지시와 논리 관계를 함께 살펴 단어와 문장의 가능한 의미를 구별합니다.",
+      category: "언어와 읽기",
       visualKey: "basic-sentence-writing",
       status: "active",
       sortOrder: 1,
     })
 
     expect(rows.units[0]).toMatchObject({
-      id: "u1",
-      courseId: "c1",
-      title: "문장의 기본기",
+      id: "unit-word-context-and-use",
+      courseId: "course-word-sentence-meaning",
+      title: "문맥에서 단어 의미와 쓰임 판단하기",
       status: "active",
       sortOrder: 1,
     })
 
     expect(rows.lessons[0]).toMatchObject({
-      id: "l1",
-      courseId: "c1",
-      unitId: "u1",
-      title: "좋은 문장이란 무엇인가",
-      category: "문장의 기본기",
-      description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
-      estimatedMinutes: 5,
+      id: "lesson-word-context-clues",
+      courseId: "course-word-sentence-meaning",
+      unitId: "unit-word-context-and-use",
+      title: "문맥 단서의 종류 찾기",
+      category: "문맥에서 단어 의미와 쓰임 판단하기",
+      description:
+        "같은 단어 주변의 대상·행동·상황 단서를 표시하고 각 단서가 배제하는 뜻을 말한다.",
+      estimatedMinutes: 8,
       summaryJson: JSON.stringify([
-        "좋은 문장은 모호하지 않다",
-        "한 문장에는 한 가지 생각만 담는다",
+        "문맥 단서의 종류 찾기에서는 판단 대상과 적용 범위를 먼저 고정한다.",
+        "직접 확인한 근거와 해석, 남은 한계를 구분한다.",
+        "근거가 지지하는 범위에서 결론을 제시하고 다시 검토한다.",
       ]),
       status: "active",
       sortOrder: 1,
     })
 
     expect(rows.steps[0]).toMatchObject({
-      id: "l1-s1",
-      lessonId: "l1",
+      id: "lesson-word-context-clues-s1",
+      lessonId: "lesson-word-context-clues",
       type: "READING",
       status: "active",
       sortOrder: 1,
     })
     expect(JSON.parse(rows.steps[0]?.contentJson ?? "{}")).toMatchObject({
       type: "reading",
-      title: "명료성의 원칙",
+      title: "문맥 단서의 종류 찾기의 판단 기준",
     })
-
-    const newActivityLesson = rows.lessons.find(
-      (lesson) => lesson.id === "l-new"
-    )
-    expect(newActivityLesson).toMatchObject({
-      description: "매칭·분류·계획·교정 네 가지 활동을 차례로 체험해보세요.",
-      summaryJson: JSON.stringify([
-        "매칭과 분류로 개념 사이의 관계를 익힌다",
-        "계획 단계에서 독자·목적·핵심을 정하면 본 쓰기가 가벼워진다",
-        "교정은 띄어쓰기와 같은 표기 오류를 바로잡는다",
-      ]),
-    })
-    expect(
-      rows.steps
-        .filter((step) => step.lessonId === "l-new")
-        .map((step) => step.type)
-    ).toEqual(["MATCH", "CATEGORIZE", "WRITE", "WRITE"])
 
     expect(
       rows.steps
         .filter((step) => step.type === "AI_FEEDBACK")
         .map((step) => JSON.parse(step.contentJson).target)
-    ).toEqual(["l6-s3", "l25-s3"])
+    ).toEqual([
+      "lesson-expression-independent-edit-s3",
+      "lesson-argument-independent-s3",
+      "lesson-revision-new-task-s3",
+    ])
   })
 
   it("표준 스텝 타입을 저장용 표준 타입으로 정규화한다", () => {
@@ -248,16 +237,16 @@ describe("기준 콘텐츠 seed 변환", () => {
     )
 
     expect(distribution).toEqual({
-      AI_FEEDBACK: 2,
-      CATEGORIZE: 1,
-      COMPARE: 8,
-      FILL_BLANK: 5,
-      MATCH: 1,
-      MULTIPLE_CHOICE: 12,
-      ORDER: 3,
-      READING: 62,
-      SELECT: 2,
-      WRITE: 40,
+      AI_FEEDBACK: 3,
+      CATEGORIZE: 87,
+      COMPARE: 38,
+      FILL_BLANK: 4,
+      MATCH: 60,
+      MULTIPLE_CHOICE: 50,
+      ORDER: 22,
+      READING: 321,
+      SELECT: 60,
+      WRITE: 186,
     })
 
     for (const step of rows.steps) {

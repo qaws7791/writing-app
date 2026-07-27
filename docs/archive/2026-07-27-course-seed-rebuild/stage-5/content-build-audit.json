@@ -1,0 +1,37 @@
+{
+  "approvedOutlineDate": "2026-07-28",
+  "approvedOutlineSha256": "be766e54c088cccf161e60d295c8691e801b485fcb08fe1cbaf0d433619fd7fa",
+  "contentSha256": "6d30b54190f284d6f21fc99e7022cd5f6a8c9cdbd1a2196a03a543ea56c289b9",
+  "courses": 14,
+  "units": 69,
+  "lessons": 321,
+  "steps": 831,
+  "typeDistribution": {
+    "reading": 321,
+    "select": 60,
+    "compare": 38,
+    "categorize": 87,
+    "write": 186,
+    "match": 60,
+    "multiple_choice": 50,
+    "order": 22,
+    "ai_feedback": 3,
+    "fill_blank": 4
+  },
+  "courseHashes": {
+    "course-word-sentence-meaning": "d318b6a7d584226fd291cd961b1390c4c217264da2cca7c2ade20513cbf1b779",
+    "course-reading-structure-main-ideas": "53cf32353057f2f9451e4e944df22b3c675a6df1a3b076cb012e8a4199aea494",
+    "course-clear-accurate-expression": "59505a8f695492a74d67eb01d6b7919b09e4f228cc8fdca94ae0e9b898172350",
+    "course-grammar-orthography": "7dd55bb7e035915bc0737fe36146b4c75097343adc48a55b4d9fe85cad55fb70",
+    "course-idea-topic-development": "0def2f0e4ae7ad14d57271868fcb4e988c0452d0c5440d8d7921b7df485b5dd3",
+    "course-organization-coherence": "1e5d89f8384a46c9d53f9cc1ad2c562cefb8a9d3aba545760a5b5ff5957dd88f",
+    "course-audience-purpose-genre": "808cc899b447f4bc2bbd8749b8770ead1b1a1f25e986b1a164ea0c2feaa2de67",
+    "course-reader-centered-explanation": "a7956cc0aa43fba172bf0e7bcac4797dfbeb90e96fcfe2648beab58b0b5b4427",
+    "course-evidence-based-inference": "8bf1e9f59b2d47d8006b9e31c3acd6dc5f63f4476f89b7d72081215e93c90a20",
+    "course-information-search-credibility": "850b89ad42e753fd50e02c7c3fc19cf5ea9b498389dbad27e30c212df200379f",
+    "course-critical-analysis-integration": "9c99430a3cc38ada2da786ec004e15850bf544da697ce48e33fff1a2e8384e03",
+    "course-evidence-based-argumentation": "0326fe02ae88325706da7e5cac01d9d0b4eb458151522f1b3fd76c7857816b02",
+    "course-revision-feedback": "d6a25c4bc167f5f70ce6dc64ca69a0cfe1b60b238ec51063596ba371088462a6",
+    "course-responsible-source-ai-use": "60f0a78f321296f004dbb9507ad1b931387ee8b2686a202c3d4b2f2a0d533390"
+  }
+}
