@@ -157,13 +157,15 @@
 - `TabsList`는 `rounded-pill`, `bg-surface`, `p-1` 트랙으로 탭을 한 그룹으로 묶는다.
 - `TabsTrigger`는 `h-9`, `rounded-pill`, `px-4`, `text-body-sm`, `font-bold`를 사용한다.
 - 비활성은 트랙 위 투명 배경, `text-muted-foreground`다.
-- 활성은 `bg-bg-elevated`, `text-fg-default`, `shadow-sm`으로 트랙 안에서 떠 있는 pill처럼 보인다.
+- 활성 pill은 `TabsList` 안의 `Tabs.Indicator`가 `bg-bg-elevated`, `shadow-sm`으로 렌더되며, 탭 전환 시 활성 위치로 슬라이드한다.
+- 활성 `TabsTrigger`는 `text-fg-default`만 바뀌고 배경은 투명을 유지한다.
+- Indicator 전환은 `--motion-duration-normal`, `--motion-ease-press`를 사용한다.
 - focus는 `focus-visible:ring-3`을 유지한다.
 
 ### `line` 스타일
 
-- 활성 탭은 `text-fg-default`, `font-bold`, charcoal 밑줄(`after`)로 표시한다.
-- 비활성은 `text-muted-foreground`다.
+- 활성 탭은 `text-fg-default`, `font-bold`로 표시한다.
+- charcoal 밑줄은 `Tabs.Indicator`가 슬라이드하며, 비활성은 `text-muted-foreground`다.
 
 ## DropdownMenu
 
