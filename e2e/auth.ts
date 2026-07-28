@@ -22,7 +22,7 @@ export async function loginAdmin(
       : `${adminWebOrigin}${nextPath}`
   )
   await page.getByLabel("이메일").fill(email)
-  await page.getByLabel("비밀번호").fill(adminPassword)
+  await page.getByLabel("비밀번호", { exact: true }).fill(adminPassword)
   const loginButton = page.getByRole("button", { name: "로그인" })
   await expect(loginButton).toBeEnabled()
   const [loginResponse] = await Promise.all([
@@ -46,7 +46,7 @@ export async function loginLearner(
     waitUntil: "networkidle",
   })
   await page.getByLabel("이메일").fill(learnerEmail)
-  await page.getByLabel("비밀번호").fill(learnerPassword)
+  await page.getByLabel("비밀번호", { exact: true }).fill(learnerPassword)
   const loginButton = page.getByRole("button", {
     name: "이메일로 로그인하기",
   })

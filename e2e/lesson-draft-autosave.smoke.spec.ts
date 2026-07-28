@@ -96,7 +96,11 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
   await page.goto(`${learnerWebOrigin}/app/profile`)
   await page.getByRole("button", { name: "로그아웃" }).click()
   await expect(page).toHaveURL(`${learnerWebOrigin}/`)
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "생각을 문장으로"
+  )
 
-  await loginLearner(page, lessonPath)
-  await expect(page.getByRole("textbox")).toHaveValue(latestDraft)
+  const reloginPage = await page.context().newPage()
+  await loginLearner(reloginPage, lessonPath)
+  await expect(reloginPage.getByRole("textbox")).toHaveValue(latestDraft)
 })

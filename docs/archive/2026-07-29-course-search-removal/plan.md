@@ -3,7 +3,8 @@
 ## 문서 상태
 
 - 작성일: 2026-07-29
-- 상태: 구현 완료, 브라우저 검증 결함 대기
+- 보관일: 2026-07-29
+- 상태: 완료
 - 결정: 초기 출시에서는 학습자와 관리자 코스 목록의 텍스트 검색을 모두 제공하지 않는다.
 
 ## 목표
@@ -94,9 +95,9 @@
 - `bun run generate`, `bun run test`, `bun lint`, `bun typecheck`, `bun run format:check`, `bun lefthook run pre-commit`이 통과했다.
 - production HTTPS 조건을 만족하는 검증용 content asset URL을 주입한 `bun run build`가 API, learner web, admin web과 Storybook에서 통과했다.
 - 정적 Storybook의 관리자 코스 패턴을 Chromium으로 열어 검색 입력 없이 상태 필터와 코스 목록이 노출되는 접근성 tree를 확인했다.
-- `bun run test:storybook`은 변경한 스토리를 포함한 다수의 기존 스토리에서 React `Invalid hook call`로 실패했다. 실패 stack이 잠금 파일의 Base UI 1.6이 아닌 `node_modules`의 Base UI 1.4 경로를 선택하고 기존 HEAD 스토리도 같은 `Button` 경로를 사용하는 것까지는 **확인된 사실**이다. 중복 React를 선택하는 정확한 원인은 이번 작업 범위를 벗어난 별도 조사 대상이라는 판단은 **추론**이다.
-- `bun run test:e2e:pr`은 코스 화면 진입 전에 로그인 helper의 `getByLabel("비밀번호")`가 password input과 “비밀번호 표시” button을 함께 선택하는 오류 및 기존 CSP console 진단으로 실패했다. 따라서 학습자 실제 화면과 기존 `?query=...` URL의 브라우저 smoke는 완료하지 못했다.
-- dependency, lockfile과 DB schema는 변경하지 않았다. 실행한 Storybook, Playwright, fixture 프로세스는 모두 종료했다.
+- 후속 검증 게이트 복구에서 Storybook과 공유 UI의 Base UI 해석을 1.6.0으로 통일한 뒤 `bun run test:storybook` 152개가 통과했다.
+- `bun run test:e2e:pr` 5개와 Chromium·WebKit `bun run test:e2e:release` 각 9개가 browser console 오류 없이 통과했다. 기존 검색 제거 구현은 후속 복구에서 다시 변경하지 않았다.
+- 검색 제거 구현에서는 dependency, lockfile과 DB schema를 변경하지 않았다. 실행한 Storybook, Playwright, fixture 프로세스는 모두 종료했다.
 
 ## 위험과 통제
 

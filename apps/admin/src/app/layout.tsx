@@ -4,6 +4,7 @@ import { connection } from "next/server"
 import type { ReactNode } from "react"
 import { ThemeProvider } from "next-themes"
 import { zodJitlessBootstrapScript } from "@workspace/nextjs-config/zod-jitless"
+import { UiCspProvider } from "@workspace/ui/components/ui/csp-provider"
 import "@workspace/ui/pretendard-font"
 
 import "@/app/globals.css"
@@ -38,15 +39,17 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-          {...(nonce === undefined ? {} : { nonce })}
-        >
-          {children}
-        </ThemeProvider>
+        <UiCspProvider {...(nonce === undefined ? {} : { nonce })}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            disableTransitionOnChange
+            enableSystem
+            {...(nonce === undefined ? {} : { nonce })}
+          >
+            {children}
+          </ThemeProvider>
+        </UiCspProvider>
       </body>
     </html>
   )

@@ -81,11 +81,12 @@ test("학습자가 AI retry·quota 뒤 프로필 이름을 수정하고 로그�
   await expect(
     page.getByRole("heading", { name: "글쓰기 탐험가" })
   ).toBeVisible()
-  await page.getByLabel("표시 이름").fill("릴리스 학습자")
+  await page.getByRole("button", { name: "표시 이름 수정" }).click()
+  await page.getByLabel("표시 이름", { exact: true }).fill("릴리스 학습자")
   await page.getByRole("button", { name: "이름 저장" }).click()
-  await expect(page.getByRole("status")).toContainText(
-    "표시 이름을 저장했습니다."
-  )
+  await expect(
+    page.getByRole("heading", { name: "릴리스 학습자" })
+  ).toBeVisible()
   await page.reload()
   await expect(
     page.getByRole("heading", { name: "릴리스 학습자" })
@@ -93,8 +94,14 @@ test("학습자가 AI retry·quota 뒤 프로필 이름을 수정하고 로그�
 
   await page.getByRole("button", { name: "로그아웃" }).click()
   await expect(page).toHaveURL(`${learnerWebOrigin}/`)
-  await page.goto(`${learnerWebOrigin}/app/courses/e2e-transition-course`)
-  await expect(page).toHaveURL(
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "생각을 문장으로"
+  )
+  const protectedPage = await page.context().newPage()
+  await protectedPage.goto(
+    `${learnerWebOrigin}/app/courses/e2e-transition-course`
+  )
+  await expect(protectedPage).toHaveURL(
     `${learnerWebOrigin}/login?next=%2Fapp%2Fcourses%2Fe2e-transition-course`
   )
 })
@@ -126,8 +133,9 @@ test("owner 관리자의 삭제 처리가 학습자 세션을 폐기한다", asy
     `${learnerWebOrigin}/api/profile`
   )
   expect(revokedProfile.status()).toBe(401)
-  await learnerPage.goto(`${learnerWebOrigin}/app/profile`)
-  await expect(learnerPage).toHaveURL(
+  const revokedPage = await learnerContext.newPage()
+  await revokedPage.goto(`${learnerWebOrigin}/app/profile`)
+  await expect(revokedPage).toHaveURL(
     `${learnerWebOrigin}/login?next=%2Fapp%2Fprofile`
   )
 

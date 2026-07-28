@@ -45,10 +45,10 @@ test("학습자가 이메일 가입, 확인, 로그인과 비밀번호 재설정
   await expect(
     page.getByRole("button", { name: "이메일로 로그인하기" })
   ).toBeEnabled()
-  await page.getByRole("button", { name: "가입" }).click()
+  await page.getByRole("tab", { name: "가입" }).click()
   await page.getByLabel("이름").fill("이메일 학습자")
   await page.getByLabel("이메일").fill(email)
-  await page.getByLabel("비밀번호").fill(password)
+  await page.getByLabel("비밀번호", { exact: true }).fill(password)
   await page.getByRole("button", { name: "이메일로 가입하기" }).click()
   await expect(
     page.getByText(
@@ -87,7 +87,7 @@ test("학습자가 이메일 가입, 확인, 로그인과 비밀번호 재설정
   ).toBeVisible()
 
   await page.getByLabel("이메일").fill(email)
-  await page.getByLabel("비밀번호").fill(password)
+  await page.getByLabel("비밀번호", { exact: true }).fill(password)
   await Promise.all([
     page.waitForURL(`${learnerWebOrigin}/app/courses`),
     page.getByRole("button", { name: "이메일로 로그인하기" }).click(),
@@ -133,7 +133,7 @@ test("학습자가 이메일 가입, 확인, 로그인과 비밀번호 재설정
 
   await page.goto(`${learnerWebOrigin}/login?next=/app/courses`)
   await page.getByLabel("이메일").fill(email)
-  await page.getByLabel("비밀번호").fill(newPassword)
+  await page.getByLabel("비밀번호", { exact: true }).fill(newPassword)
   await Promise.all([
     page.waitForURL(`${learnerWebOrigin}/app/courses`),
     page.getByRole("button", { name: "이메일로 로그인하기" }).click(),

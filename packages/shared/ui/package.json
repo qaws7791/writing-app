@@ -33,6 +33,7 @@
     "./components/ui/button": "./src/components/ui/button.tsx",
     "./components/ui/callout": "./src/components/ui/callout.tsx",
     "./components/ui/card": "./src/components/ui/card.tsx",
+    "./components/ui/csp-provider": "./src/components/ui/csp-provider.tsx",
     "./components/ui/dialog": "./src/components/ui/dialog.tsx",
     "./components/ui/dropdown-menu": "./src/components/ui/dropdown-menu.tsx",
     "./components/ui/empty": "./src/components/ui/empty.tsx",
@@ -67,7 +68,7 @@
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.0",
+    "@base-ui/react": "catalog:",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "catalog:",

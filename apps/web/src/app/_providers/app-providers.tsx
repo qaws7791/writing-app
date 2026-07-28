@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react"
 import { ThemeProvider } from "next-themes"
+import { UiCspProvider } from "@workspace/ui/components/ui/csp-provider"
 
 export function AppProviders({
   children,
@@ -11,14 +12,16 @@ export function AppProviders({
   readonly nonce?: string
 }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      disableTransitionOnChange
-      enableSystem
-      {...(nonce === undefined ? {} : { nonce })}
-    >
-      {children}
-    </ThemeProvider>
+    <UiCspProvider {...(nonce === undefined ? {} : { nonce })}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        disableTransitionOnChange
+        enableSystem
+        {...(nonce === undefined ? {} : { nonce })}
+      >
+        {children}
+      </ThemeProvider>
+    </UiCspProvider>
   )
 }
