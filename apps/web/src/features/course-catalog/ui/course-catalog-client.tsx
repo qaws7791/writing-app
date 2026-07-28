@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 
 import { getCourses } from "@workspace/http-client/learner"
 import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
@@ -21,7 +21,6 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@workspace/ui/components/ui/empty"
-import { SearchIcon, XIcon } from "@workspace/ui/components/icons"
 
 const eagerCourseImageCount = 3
 
@@ -39,13 +38,10 @@ export function CourseCatalogClient({
   nextCursor: initialNextCursor = null,
 }: CoursesPageProps) {
   const router = useRouter()
-  const [query, setQuery] = useState(filters.query)
   const [visibleCourses, setVisibleCourses] = useState(courses)
   const [nextCursor, setNextCursor] = useState(initialNextCursor)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
-  const [prevFiltersQuery, setPrevFiltersQuery] = useState(filters.query)
-  const searchRef = useRef<HTMLInputElement>(null)
 
   const loadMore = useCallback(async () => {
     if (nextCursor === null || isLoadingMore) return
@@ -55,7 +51,6 @@ export function CourseCatalogClient({
       getCourses({
         ...(filters.category === "" ? {} : { category: filters.category }),
         cursor: nextCursor,
-        ...(filters.query === "" ? {} : { query: filters.query }),
       })
     )
     setIsLoadingMore(false)
@@ -74,53 +69,11 @@ export function CourseCatalogClient({
       ),
     ])
     setNextCursor(result.value.nextCursor)
-  }, [filters.category, filters.query, isLoadingMore, nextCursor, router])
-
-  if (filters.query !== prevFiltersQuery) {
-    setQuery(filters.query)
-    setPrevFiltersQuery(filters.query)
-  }
-
-  const updateUrl = useCallback(
-    (overrides: Partial<CourseListFilters>) => {
-      const nextFilters = {
-        category: filters.category,
-        query,
-        ...overrides,
-      }
-      const params = new URLSearchParams()
-
-      if (nextFilters.category !== "") {
-        params.set("category", nextFilters.category)
-      }
-
-      if (nextFilters.query.trim() !== "") {
-        params.set("query", nextFilters.query.trim())
-      }
-
-      const search = params.toString()
-      const href = search === "" ? "/app/courses" : `/app/courses?${search}`
-      router.replace(href, { scroll: false })
-    },
-    [filters.category, query, router]
-  )
-
-  // 디바운스된 query 값을 통해 URL을 갱신하여 서버 필터링 재호출
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (query.trim() !== filters.query.trim()) {
-        updateUrl({ query })
-      }
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [query, filters.query, updateUrl])
+  }, [filters.category, isLoadingMore, nextCursor, router])
 
   return (
     <div>
-      {visibleCourses.length === 0 &&
-      filters.category === "" &&
-      filters.query === "" ? (
+      {visibleCourses.length === 0 && filters.category === "" ? (
         <Empty role="status">
           <EmptyHeader>
             <EmptyTitle>아직 열려 있는 코스가 없습니다.</EmptyTitle>
@@ -131,38 +84,6 @@ export function CourseCatalogClient({
         </Empty>
       ) : (
         <>
-          <div className="mb-5 flex items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
-              <label className="sr-only" htmlFor="course-query">
-                검색
-              </label>
-              <SearchIcon
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-                size={16}
-              />
-              <input
-                className="w-full rounded-full bg-surface py-3 pl-11 pr-10 text-body-sm font-medium text-foreground outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-charcoal/20"
-                id="course-query"
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="코스 검색…"
-                ref={searchRef}
-                value={query}
-              />
-              {query ? (
-                <button
-                  aria-label="검색어 지우기"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={() => {
-                    setQuery("")
-                    searchRef.current?.focus()
-                  }}
-                  type="button"
-                >
-                  <XIcon size={15} />
-                </button>
-              ) : null}
-            </div>
-          </div>
           <div
             aria-label="코스 카테고리"
             className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:-mx-12 md:px-12 mb-8 pb-2"
@@ -175,7 +96,7 @@ export function CourseCatalogClient({
                   variant:
                     filters.category === category ? "default" : "secondary",
                 })}
-                href={createCoursesHref(filters, { category })}
+                href={createCoursesHref(category)}
                 key={category}
               >
                 {category === "" ? "전체" : category}
@@ -185,14 +106,14 @@ export function CourseCatalogClient({
           {visibleCourses.length === 0 ? (
             <Empty role="status">
               <EmptyHeader>
-                <EmptyTitle>조건에 맞는 코스가 없습니다.</EmptyTitle>
+                <EmptyTitle>이 카테고리에는 코스가 없습니다.</EmptyTitle>
                 <EmptyDescription>
-                  검색어나 카테고리를 조정하면 더 많은 코스를 볼 수 있습니다.
+                  전체 코스에서 다른 글쓰기 주제를 살펴보세요.
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
                 <Link className={buttonVariants()} href="/app/courses">
-                  필터 초기화
+                  전체 코스 보기
                 </Link>
               </EmptyContent>
             </Empty>
@@ -265,25 +186,8 @@ export function CourseCatalogClient({
   )
 }
 
-function createCoursesHref(
-  filters: CourseListFilters,
-  overrides: Partial<CourseListFilters>
-): string {
-  const nextFilters = {
-    ...filters,
-    ...overrides,
-  }
-  const params = new URLSearchParams()
-
-  if (nextFilters.category !== "") {
-    params.set("category", nextFilters.category)
-  }
-
-  if (nextFilters.query.trim() !== "") {
-    params.set("query", nextFilters.query.trim())
-  }
-
-  const query = params.toString()
-
-  return query === "" ? "/app/courses" : `/app/courses?${query}`
+function createCoursesHref(category: string): string {
+  return category === ""
+    ? "/app/courses"
+    : `/app/courses?${new URLSearchParams({ category }).toString()}`
 }

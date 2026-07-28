@@ -18,7 +18,6 @@ export const adminCoursesQuerySchema = z.object({
   category: z.string().optional().default(""),
   page: positiveIntegerQuery(defaultPage),
   pageSize: positiveIntegerQuery(defaultPageSize, maxPageSize),
-  query: z.string().optional().default(""),
   status: adminCourseListStatusFilterSchema.optional().default("all"),
 })
 

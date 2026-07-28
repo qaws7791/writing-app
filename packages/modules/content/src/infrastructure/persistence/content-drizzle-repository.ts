@@ -1,14 +1,4 @@
-import {
-  and,
-  asc,
-  count,
-  eq,
-  inArray,
-  isNotNull,
-  lte,
-  or,
-  sql,
-} from "drizzle-orm"
+import { and, asc, count, eq, inArray, isNotNull, lte, sql } from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type {
@@ -986,11 +976,9 @@ function readCourses(
   database: WritingAppDatabase,
   input: ReadContentCoursesInput
 ): ContentCoursePage {
-  const query = input.query.trim().toLowerCase()
   const category = input.category.trim()
   const whereCondition = createReadCoursesWhereCondition({
     category,
-    query,
     status: input.status,
   })
   const totalItems =
@@ -1064,11 +1052,9 @@ function readCourses(
 
 function createReadCoursesWhereCondition({
   category,
-  query,
   status,
 }: {
   readonly category: string
-  readonly query: string
   readonly status: ReadContentCoursesInput["status"]
 }) {
   const statusCondition =
@@ -1077,15 +1063,8 @@ function createReadCoursesWhereCondition({
     category.length === 0
       ? undefined
       : eq(courseCurriculumVersions.category, category)
-  const queryCondition =
-    query.length === 0
-      ? undefined
-      : or(
-          sql`lower(${courseCurriculumVersions.title}) like ${`%${query}%`}`,
-          sql`lower(${courseCurriculumVersions.description}) like ${`%${query}%`}`
-        )
 
-  return and(statusCondition, categoryCondition, queryCondition)
+  return and(statusCondition, categoryCondition)
 }
 
 function listPublishedCourseSummaries(

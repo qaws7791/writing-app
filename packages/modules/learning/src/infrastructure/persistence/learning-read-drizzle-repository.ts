@@ -70,7 +70,6 @@ async function listCourses(
   query: LearnerCourseReadQuery
 ) {
   const normalizedCategory = query.category?.normalize("NFC")
-  const normalizedQuery = query.query?.normalize("NFC").toLocaleLowerCase("ko")
   const publishedCourses = await content.listPublishedCourses()
   const assetReferencesById = await resolveAssetReferencesById(
     content,
@@ -81,15 +80,8 @@ async function listCourses(
   const rows = publishedCourses
     .filter(
       (course) =>
-        (normalizedCategory === undefined ||
-          course.category.normalize("NFC") === normalizedCategory) &&
-        (normalizedQuery === undefined ||
-          [course.title, course.description, course.category].some((value) =>
-            value
-              .normalize("NFC")
-              .toLocaleLowerCase("ko")
-              .includes(normalizedQuery)
-          ))
+        normalizedCategory === undefined ||
+        course.category.normalize("NFC") === normalizedCategory
     )
     .map((course) => ({
       category: course.category,

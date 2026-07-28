@@ -14,7 +14,6 @@ import {
   FilterToolbarField,
   FilterToolbarLabel,
 } from "@workspace/ui/components/ui/filter-toolbar"
-import { Input } from "@workspace/ui/components/ui/input"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import { SectionHeader } from "@workspace/ui/components/ui/section-header"
 import { Select } from "@workspace/ui/components/ui/select"
@@ -44,7 +43,7 @@ export const Overview: Story = {
     <div className="grid gap-5">
       <PageHeader
         title="콘텐츠 관리"
-        description="코스를 검색하고 새 강의를 생성하거나 보관합니다."
+        description="코스를 확인하고 새 강의를 생성하거나 보관합니다."
         actions={<Button>새 코스</Button>}
       />
       <StatGrid aria-label="주요 지표">
@@ -59,10 +58,6 @@ export const Overview: Story = {
         <StatCard label="완료 레슨" value="8,420" detail="누적 완료 수" />
       </StatGrid>
       <FilterToolbar aria-label="코스 필터">
-        <FilterToolbarField>
-          <FilterToolbarLabel>코스 검색</FilterToolbarLabel>
-          <Input aria-label="코스 검색" placeholder="제목 또는 설명 검색" />
-        </FilterToolbarField>
         <FilterToolbarField>
           <FilterToolbarLabel>상태</FilterToolbarLabel>
           <Select aria-label="상태" defaultValue="all">
@@ -103,9 +98,7 @@ export const EmptyResult: Story = {
     <Empty>
       <EmptyHeader>
         <EmptyTitle>표시할 항목이 없습니다</EmptyTitle>
-        <EmptyDescription>
-          검색어나 필터를 조정해 다시 확인하세요.
-        </EmptyDescription>
+        <EmptyDescription>필터를 조정해 다시 확인하세요.</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button variant="outline">필터 초기화</Button>

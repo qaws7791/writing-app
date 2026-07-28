@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation"
 import {
   ArchiveIcon,
   PlusIcon,
-  SearchIcon,
   LayersIcon,
   BookOpenIcon,
   ChevronLeftIcon,
@@ -47,7 +46,6 @@ import {
   FilterToolbarField,
   FilterToolbarLabel,
 } from "@workspace/ui/components/ui/filter-toolbar"
-import { Input } from "@workspace/ui/components/ui/input"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import {
   Select,
@@ -104,7 +102,7 @@ export function AdminCoursesPage({
     return (
       <>
         <PageHeader
-          description="코스를 검색하고 새 강의를 생성하거나 보관합니다."
+          description="코스를 확인하고 새 강의를 생성하거나 보관합니다."
           title="콘텐츠 관리"
         />
         <Alert role="alert" tone="danger">
@@ -119,7 +117,6 @@ export function AdminCoursesPage({
   const createPageLink = (pageNumber: number) => {
     return createGetFilterHref(
       [
-        ["query", filters.query],
         ["category", filters.category],
         ["status", filters.status],
         ["pageSize", filters.pageSize],
@@ -166,26 +163,14 @@ export function AdminCoursesPage({
         }
       />
 
-      <form ref={formRef} method="get" className="flex flex-col gap-4 w-full">
+      <form
+        aria-label="코스 필터"
+        ref={formRef}
+        method="get"
+        className="flex flex-col gap-4 w-full"
+      >
         <input name="page" type="hidden" value="1" />
-        {/* 검색 및 필터링 바 */}
         <div className="flex flex-wrap items-center gap-3 w-full">
-          <FilterToolbarField className="relative flex-1 min-w-[240px] gap-0">
-            <FilterToolbarLabel className="sr-only">
-              코스 검색
-            </FilterToolbarLabel>
-            <SearchIcon
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-              size={16}
-            />
-            <Input
-              aria-label="코스 검색"
-              defaultValue={filters.query}
-              name="query"
-              placeholder="강의 제목 또는 설명 검색..."
-              className="pl-10 font-semibold"
-            />
-          </FilterToolbarField>
           <FilterToolbarField className="gap-0">
             <FilterToolbarLabel className="sr-only">
               카테고리
@@ -243,9 +228,6 @@ export function AdminCoursesPage({
               </SelectContent>
             </Select>
           </FilterToolbarField>
-          <Button type="submit" variant="outline">
-            검색
-          </Button>
           <span className="text-muted-foreground font-bold ml-auto text-sm">
             {courses.pagination.totalItems}개 결과
           </span>
@@ -297,7 +279,7 @@ export function AdminCoursesPage({
                     colSpan={5}
                     className="p-12 text-center text-muted-foreground font-semibold"
                   >
-                    검색 결과가 없습니다.
+                    선택한 조건에 맞는 코스가 없습니다.
                   </TableCell>
                 </TableRow>
               ) : (

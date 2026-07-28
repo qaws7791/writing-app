@@ -9,14 +9,12 @@ describe("admin course filters", () => {
         category: "실전 글쓰기",
         page: "2",
         pageSize: "50",
-        query: "문장",
         status: "archived",
       })
     ).toEqual({
       category: "실전 글쓰기",
       page: 2,
       pageSize: 50,
-      query: "문장",
       status: "archived",
     })
   })
@@ -27,14 +25,12 @@ describe("admin course filters", () => {
         category: ["실전 글쓰기"],
         page: "-1",
         pageSize: "NaN",
-        query: ["문장"],
         status: "unknown",
       })
     ).toEqual({
       category: "",
       page: 1,
       pageSize: 20,
-      query: "",
       status: "all",
     })
   })

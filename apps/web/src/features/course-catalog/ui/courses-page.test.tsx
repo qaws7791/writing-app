@@ -4,16 +4,15 @@ import { describe, expect, it, vi } from "vitest"
 
 import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
-const { getCourses, refresh, replace } = vi.hoisted(() => ({
+const { getCourses, refresh } = vi.hoisted(() => ({
   getCourses: vi.fn(),
   refresh: vi.fn(),
-  replace: vi.fn(),
 }))
 
 vi.mock("@workspace/http-client/learner", () => ({ getCourses }))
 vi.mock("next/navigation", () => ({
   useRouter() {
-    return { refresh, replace }
+    return { refresh }
   },
 }))
 
@@ -46,19 +45,22 @@ const grammarCourse: LearnerCourseSummaryDto = {
   version: { curriculumVersionId: "c2-v1", revision: 1 },
 }
 describe("코스 목록 화면", () => {
-  it("URL 필터 기준으로 검색과 카테고리 결과를 보여준다", () => {
+  it("카테고리 탐색과 코스 목록을 보여준다", () => {
     render(
       <CoursesPage
         categories={["입문자를 위한 코스", "문법 심화"]}
         courses={[grammarCourse, beginnerCourse]}
-        filters={{ category: "", query: "문장" }}
+        filters={{ category: "" }}
       />
     )
 
-    expect(screen.getByLabelText("검색")).toHaveValue("문장")
     expect(
       screen.queryByRole("combobox", { name: "정렬" })
     ).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "문법 심화" })).toHaveAttribute(
+      "href",
+      "/app/courses?category=%EB%AC%B8%EB%B2%95+%EC%8B%AC%ED%99%94"
+    )
     expect(screen.getAllByRole("link", { name: /문장/ })[0]).toHaveAttribute(
       "href",
       "/app/courses/c2"
@@ -66,34 +68,28 @@ describe("코스 목록 화면", () => {
     expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
   })
 
-  it("검색 결과가 없으면 필터 초기화 링크를 보여준다", () => {
+  it("카테고리에 코스가 없으면 전체 코스 링크를 보여준다", () => {
     render(
       <CoursesPage
         categories={["입문자를 위한 코스", "문법 심화"]}
         courses={[]}
         filters={{
           category: "문법 심화",
-          query: "없는 코스",
         }}
       />
     )
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "조건에 맞는 코스가 없습니다."
+      "이 카테고리에는 코스가 없습니다."
     )
-    expect(screen.getByRole("link", { name: "필터 초기화" })).toHaveAttribute(
-      "href",
-      "/app/courses"
-    )
+    expect(
+      screen.getByRole("link", { name: "전체 코스 보기" })
+    ).toHaveAttribute("href", "/app/courses")
   })
 
   it("빈 코스 목록은 fallback 코스 대신 empty state로 보여준다", () => {
     render(
-      <CoursesPage
-        categories={[]}
-        courses={[]}
-        filters={{ category: "", query: "" }}
-      />
+      <CoursesPage categories={[]} courses={[]} filters={{ category: "" }} />
     )
 
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -129,7 +125,7 @@ describe("코스 목록 화면", () => {
       <CoursesPage
         categories={[]}
         courses={[beginnerCourse]}
-        filters={{ category: "", query: "" }}
+        filters={{ category: "" }}
         nextCursor="next-page"
       />
     )
@@ -157,7 +153,7 @@ describe("코스 목록 화면", () => {
       <CoursesPage
         categories={[]}
         courses={[beginnerCourse]}
-        filters={{ category: "", query: "" }}
+        filters={{ category: "" }}
         nextCursor="next-page"
       />
     )

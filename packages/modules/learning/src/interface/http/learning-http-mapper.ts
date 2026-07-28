@@ -48,7 +48,6 @@ export function decodeLearnerCourseListQuery(
 ): Result<LearnerCourseReadQuery, LearnerReadTransportError> {
   const query = {
     category: wireQuery.category?.normalize("NFC"),
-    query: wireQuery.query?.trim().normalize("NFC"),
   }
   const after = decodePosition(cursorCodec, wireQuery.cursor, {
     endpoint: "courses",
@@ -76,7 +75,6 @@ export function encodeLearnerCoursePage(
             endpoint: "courses",
             fingerprint: cursorCodec.createFingerprint({
               category: query.category,
-              query: query.query,
             }),
             position: page.nextPosition,
           }),

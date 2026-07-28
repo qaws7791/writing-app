@@ -295,7 +295,6 @@ const cursorListQueryFields = {
 export const learnerCourseListQuerySchema = z.strictObject({
   ...cursorListQueryFields,
   category: z.string().min(1).optional(),
-  query: z.string().trim().min(1).max(100).optional(),
 })
 
 export const learnerProgressListQuerySchema = z.strictObject({

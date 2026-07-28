@@ -203,7 +203,6 @@ export type LearnerCourseReadQuery = Readonly<{
   after?: LearnerCursorPosition
   category?: string
   limit: number
-  query?: string
 }>
 
 export type LearnerProgressReadQuery = Readonly<{

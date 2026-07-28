@@ -31,7 +31,6 @@ export default async function CoursesRoute({
       getCourses(
         {
           ...(filters.category === "" ? {} : { category: filters.category }),
-          ...(filters.query === "" ? {} : { query: filters.query }),
         },
         requestOptions
       )
@@ -69,7 +68,7 @@ export default async function CoursesRoute({
       categories={categoriesResult.value}
       courses={coursesResult.value.items}
       filters={filters}
-      key={`${filters.category}:${filters.query}`}
+      key={filters.category}
       nextCursor={coursesResult.value.nextCursor}
     />
   )

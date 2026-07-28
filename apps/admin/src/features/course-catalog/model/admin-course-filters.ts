@@ -7,7 +7,6 @@ const courseFiltersSchema = z.object({
   category: stringValue(""),
   page: positiveInteger(1),
   pageSize: positiveInteger(20),
-  query: stringValue(""),
   status: z
     .preprocess(
       (value) => (typeof value === "string" ? value : "all"),

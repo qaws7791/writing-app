@@ -23,7 +23,6 @@ const filters: ReadAdminCoursesInput = {
   category: "",
   page: 1,
   pageSize: 20,
-  query: "",
   status: "all",
 }
 
@@ -59,7 +58,7 @@ const courses: AdminCourseList = {
 }
 
 describe("AdminCoursesPage", () => {
-  it("코스 검색, 필터, 페이지 크기, 목록과 보관 대화상자를 렌더링한다", async () => {
+  it("필터, 페이지 크기, 목록과 보관 대화상자를 렌더링한다", async () => {
     const user = userEvent.setup()
     const archiveCourse = vi.fn<
       () => Promise<AdminRequestResult<AdminArchiveCourseResult>>

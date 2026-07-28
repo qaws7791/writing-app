@@ -10,7 +10,6 @@ export type ReadAdminCoursesInput = {
   readonly category: string
   readonly page: number
   readonly pageSize: number
-  readonly query: string
   readonly status: AdminCourseStatus
 }
 export type AdminCreatedCourse = Awaited<ReturnType<typeof createAdminCourse>>

@@ -65,7 +65,6 @@ export type ReadContentCoursesInput = Readonly<{
   category: string
   page: number
   pageSize: number
-  query: string
   status: "active" | "all" | "archived"
 }>
 

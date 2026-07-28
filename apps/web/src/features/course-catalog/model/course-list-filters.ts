@@ -7,7 +7,6 @@ const optionalStringSchema = z.preprocess(
 
 const courseListSearchParamsSchema = z.object({
   category: optionalStringSchema,
-  query: optionalStringSchema,
 })
 
 export type CourseListFilters = z.infer<typeof courseListSearchParamsSchema>

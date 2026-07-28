@@ -181,7 +181,7 @@ function renderCoursePagination(): void {
     <CoursesPage
       categories={[]}
       courses={[learnerCourseSummaryFixture]}
-      filters={{ category: "", query: "" }}
+      filters={{ category: "" }}
       nextCursor="next-page"
     />
   )
