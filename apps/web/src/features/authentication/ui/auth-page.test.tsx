@@ -39,11 +39,17 @@ describe("로그인 및 가입 페이지", () => {
     )
 
     within(serverContainer)
+      .getAllByRole("tab")
+      .forEach((tab) => expect(tab).toHaveAttribute("aria-disabled", "true"))
+    within(serverContainer)
       .getAllByRole("button")
       .forEach((button) => expect(button).toBeDisabled())
 
     render(<AuthPage nextPath="/app/courses" />)
 
+    screen
+      .getAllByRole("tab")
+      .forEach((tab) => expect(tab).toHaveAttribute("aria-disabled", "false"))
     screen
       .getAllByRole("button")
       .forEach((button) => expect(button).toBeEnabled())
@@ -90,7 +96,7 @@ describe("로그인 및 가입 페이지", () => {
     const user = userEvent.setup()
     render(<AuthPage nextPath="/app/courses" />)
 
-    await user.click(screen.getByRole("button", { name: "가입" }))
+    await user.click(screen.getByRole("tab", { name: "가입" }))
     await user.type(screen.getByLabelText("이름"), "학습자")
     await user.type(screen.getByLabelText("이메일"), "learner@example.com")
     await user.type(screen.getByLabelText("비밀번호"), "Learner-password-123!")
@@ -126,7 +132,7 @@ describe("로그인 및 가입 페이지", () => {
     const user = userEvent.setup()
     render(<AuthPage nextPath="/app" />)
 
-    await user.click(screen.getByRole("button", { name: "가입" }))
+    await user.click(screen.getByRole("tab", { name: "가입" }))
     await user.type(screen.getByLabelText("이름"), "학습자")
     await user.type(screen.getByLabelText("이메일"), "learner@example.com")
     await user.type(screen.getByLabelText("비밀번호"), "short")
@@ -145,7 +151,7 @@ describe("로그인 및 가입 페이지", () => {
     const user = userEvent.setup()
     render(<AuthPage nextPath="/app" />)
 
-    await user.click(screen.getByRole("button", { name: "가입" }))
+    await user.click(screen.getByRole("tab", { name: "가입" }))
     await user.type(screen.getByLabelText("이름"), "학습자")
     await user.type(screen.getByLabelText("이메일"), "learner@example.com")
     await user.type(screen.getByLabelText("비밀번호"), "Learner-password-123!")
