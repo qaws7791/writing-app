@@ -179,7 +179,7 @@ export function AuthPage({
         </p>
       </header>
 
-      <div className="w-full max-w-sm rounded-panel border border-border/50 bg-bg-elevated p-surface-padding-md">
+      <div className="w-full max-w-sm">
         <div className="space-y-5">
           {mode === "reset-request" ? (
             <h2 className="text-title-md font-bold text-fg-default">
