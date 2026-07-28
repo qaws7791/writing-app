@@ -5,7 +5,7 @@ pre-commit:
   commands:
     format:
       glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,mdx,yaml,yml,css}"
-      run: bun oxfmt --ignore-path .gitignore {staged_files}
+      run: bun oxfmt --no-error-on-unmatched-pattern --ignore-path .gitignore {staged_files}
       stage_fixed: true
 
     lint:
