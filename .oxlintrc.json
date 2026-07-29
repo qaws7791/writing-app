@@ -42,9 +42,7 @@
     "**/.generated/**",
     "**/.source/**",
     "**/next-env.d.ts",
-    "docs/superpowers/evidence/**",
-    ".worktrees/**",
-    "Kwep/**"
+    ".worktrees/**"
   ],
   "rules": {
     "constructor-super": "error",
@@ -137,6 +135,7 @@
     "typescript/prefer-namespace-keyword": "error",
     "typescript/triple-slash-reference": "error",
     "typescript/no-non-null-assertion": "error",
+    "workspace/catch-preserves-cause": "error",
     "workspace/no-unsafe-unknown-cast": "error"
   },
   "overrides": [
@@ -256,13 +255,13 @@
             "patterns": [
               {
                 "group": [
-                  "@test/*",
+                  "@/test/*",
                   "../test/*",
                   "../../test/*",
                   "../../../test/*",
                   "../../../../test/*"
                 ],
-                "message": "제품 소스는 테스트 지원 경계를 import할 수 없습니다. 테스트 fixture와 fake는 apps/web/test 안에서만 사용하세요."
+                "message": "제품 소스는 테스트 지원 경계를 import할 수 없습니다. 테스트 fixture와 fake는 apps/web/src/test 안에서만 사용하세요."
               }
             ]
           }

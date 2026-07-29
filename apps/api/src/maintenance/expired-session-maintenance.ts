@@ -1,6 +1,7 @@
 import { and, asc, inArray, lte } from "drizzle-orm"
 import { adminAuthSessions, authSessions } from "@workspace/auth/schema"
 import type { WritingAppDatabase } from "@workspace/db/client"
+import type { Failure } from "@workspace/kernel/failure"
 import { err, ok, type Result } from "@workspace/kernel/result"
 
 type ExpiredSessionMaintenanceResult = Readonly<{
@@ -8,9 +9,8 @@ type ExpiredSessionMaintenanceResult = Readonly<{
   matchedSessions: number
 }>
 
-type ExpiredSessionMaintenanceError = Readonly<{
-  kind: "expired-session-maintenance-failed"
-}>
+type ExpiredSessionMaintenanceError =
+  Failure<"expired-session-maintenance-failed">
 
 export type ExpiredSessionMaintenance = Readonly<{
   cleanup: (input: {
@@ -94,8 +94,8 @@ export function createExpiredSessionMaintenance(
           deletedSessions,
           matchedSessions: candidates.length,
         })
-      } catch {
-        return err({ kind: "expired-session-maintenance-failed" })
+      } catch (cause) {
+        return err({ cause, kind: "expired-session-maintenance-failed" })
       }
     },
   }

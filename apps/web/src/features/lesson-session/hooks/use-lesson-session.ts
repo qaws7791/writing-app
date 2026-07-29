@@ -25,6 +25,7 @@ import type {
   LearnerStepDraftAnswerDto,
   LearnerStepDraftDto,
 } from "@/shared/http/learner-api-client"
+import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 const LESSON_START_ERROR =
   "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
@@ -33,13 +34,15 @@ const LESSON_STEP_ERROR =
 
 export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
   const initialState = resolveInitialSessionState(lesson)
+  const readAbortSignal = useUnmountAbortSignal()
   const effects = useMemo(
     () =>
       createLessonSessionEffects({
         expectedCurriculumVersionId: lesson.version.curriculumVersionId,
         lessonId: lesson.id,
+        readAbortSignal,
       }),
-    [lesson.id, lesson.version.curriculumVersionId]
+    [lesson.id, lesson.version.curriculumVersionId, readAbortSignal]
   )
   const [sessionState, send] = useReducer(transitionLessonSession, initialState)
   const sessionStateRef = useRef(sessionState)

@@ -55,7 +55,6 @@ function createSpecs(
     CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS:
       "https://staging-assets.example.test,https://assets.example.test",
     CONTENT_ASSET_PUBLIC_BASE_URL: "https://assets.example.test",
-    ENABLE_TEST_AUTH: "false",
     NODE_ENV: "production",
     WEB_ORIGIN: "https://web.example.test",
   }

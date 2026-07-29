@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { parseApiEnv } from "@/env"
+import { parseApiEnv } from "@/config/env"
 
 const learnerSecret = "learner-test-secret-0123456789abcdef"
 const adminSecret = "admin-test-secret-0123456789abcdef"

@@ -78,8 +78,9 @@ export function createUploadContentAsset(
         contentType: validation.contentType,
         kind: command.kind,
       })
-    } catch {
+    } catch (cause) {
       return err({
+        cause,
         kind: "content-asset-invalid",
         reason: "image-decode-failed",
       })
@@ -139,14 +140,14 @@ export function createUploadContentAsset(
     let registered: Result<ContentAsset, ContentError>
     try {
       registered = await dependencies.repository.createAsset(asset)
-    } catch {
+    } catch (cause) {
       const compensation = await compensateContentAssetUpload(
         dependencies.assetStorage,
         objectKey
       )
       return compensation.isErr()
         ? err(compensation.error)
-        : err({ kind: "content-asset-persistence-failed" })
+        : err({ cause, kind: "content-asset-persistence-failed" })
     }
     if (registered.isErr()) {
       const compensation = await compensateContentAssetUpload(
@@ -187,8 +188,9 @@ async function putContentAssetObject(
           operation: "upload",
           retryable: uploaded.error.retryable,
         })
-  } catch {
+  } catch (cause) {
     return err({
+      cause,
       compensation: "not-required",
       kind: "content-asset-storage-failed",
       operation: "upload",
@@ -213,8 +215,9 @@ async function compensateContentAssetUpload(
           operation: "compensate-delete",
           retryable: deleted.error.retryable,
         })
-  } catch {
+  } catch (cause) {
     return err({
+      cause,
       compensation: "failed",
       kind: "content-asset-storage-failed",
       operation: "compensate-delete",

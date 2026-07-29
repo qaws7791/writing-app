@@ -104,3 +104,46 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
   await loginLearner(reloginPage, lessonPath)
   await expect(reloginPage.getByRole("textbox")).toHaveValue(latestDraft)
 })
+
+test("debounce가 끝나기 전에 탭을 닫아도 초안을 잃지 않는다", async ({
+  browser,
+}, testInfo) => {
+  const lessonPath = "/app/lesson?lesson_id=e2e-draft-lesson"
+  const draft = `${testInfo.project.name} 탭 종료 직전 초안`
+  const context = await browser.newContext()
+  const diagnostics = observeBrowserContext(context)
+  const page = await context.newPage()
+  await loginLearner(page, lessonPath)
+
+  const startButton = page.getByRole("button", { name: "시작하기" })
+  const answer = page.getByRole("textbox")
+  await expect(startButton.or(answer)).toBeVisible()
+  if (await startButton.isVisible()) {
+    await expect(startButton).toBeEnabled()
+    await startButton.click()
+  }
+  await expect(answer).toBeVisible()
+
+  const completedDraftSaves: number[] = []
+  page.on("response", (response) => {
+    if (
+      response.request().method() === "PUT" &&
+      response.url().includes("/draft")
+    ) {
+      completedDraftSaves.push(response.status())
+    }
+  })
+
+  await answer.fill(draft)
+  await page.close({ runBeforeUnload: true })
+
+  // debounce(800ms)가 발동하기 전에 닫혔음을 확인해야 언로드 flush를 검증한 것이 된다.
+  expect(completedDraftSaves).toEqual([])
+
+  const reopenedPage = await context.newPage()
+  await loginLearner(reopenedPage, lessonPath)
+  await expect(reopenedPage.getByRole("textbox")).toHaveValue(draft)
+
+  await context.close()
+  diagnostics.expectNoIssues()
+})

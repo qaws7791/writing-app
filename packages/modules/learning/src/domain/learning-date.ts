@@ -3,7 +3,7 @@ import type { Clock } from "@workspace/kernel/clock"
 
 export type LearningDateKey = Brand<string, "LearningDateKey">
 
-export const platformLearningTimeZone = "Asia/Seoul"
+const platformLearningTimeZone = "Asia/Seoul"
 
 export type LearningActivityDatePolicy = Readonly<{
   currentDateKey: () => LearningDateKey

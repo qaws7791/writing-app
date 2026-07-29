@@ -63,6 +63,12 @@ export function isLearnerApiNetworkError(
   return error.detail.kind === "network"
 }
 
+export function isLearnerApiAbortedError(
+  error: GeneratedApiClientError
+): boolean {
+  return error.detail.kind === "aborted"
+}
+
 export type LearnerCourseDetailDto = Awaited<ReturnType<typeof getCourseDetail>>
 export type LearnerCourseUnitDto = LearnerCourseDetailDto["units"][number]
 export type LearnerCourseLessonDto = LearnerCourseUnitDto["lessons"][number]

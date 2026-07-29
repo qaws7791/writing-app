@@ -66,8 +66,9 @@ export function normalizeVersionedStepContent(
         normalizeCategorize(stepId, parsed)
         break
     }
-  } catch {
+  } catch (cause) {
     return err({
+      cause,
       kind: "content-validation-failed",
       reason: "invalid-step-content",
     })

@@ -57,28 +57,11 @@ describe("env parser", () => {
       GOOGLE_CLIENT_ID: undefined,
       GOOGLE_CLIENT_SECRET: undefined,
       LEARNER_AUTH_SECRET: validSecret,
-      ENABLE_TEST_AUTH: false,
       NODE_ENV: "test",
       OPENAI_API_KEY: undefined,
       OPENAI_MODEL: "gpt-5.2",
       WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
     })
-  })
-
-  it("테스트 인증 플래그는 명시적으로 true일 때만 켜진다", () => {
-    expect(
-      parseEnv({
-        ADMIN_AUTH_SECRET: validAdminSecret,
-        ENABLE_TEST_AUTH: "true",
-        LEARNER_AUTH_SECRET: validSecret,
-      }).ENABLE_TEST_AUTH
-    ).toBe(true)
-    expect(
-      parseEnv({
-        ADMIN_AUTH_SECRET: validAdminSecret,
-        LEARNER_AUTH_SECRET: validSecret,
-      }).ENABLE_TEST_AUTH
-    ).toBe(false)
   })
 
   it("DATABASE_URL이 없으면 DB client 기본 경로를 사용하도록 비워 둔다", () => {
@@ -133,19 +116,21 @@ describe("env parser", () => {
       "placeholder",
       { LEARNER_AUTH_SECRET: "replace-with-production-secret-0123456789" },
     ],
-    ["test auth", { ENABLE_TEST_AUTH: "true" }],
   ])("production에서 %s 설정을 거부한다", (_, override) => {
     expect(() => parseEnv({ ...validProductionEnv, ...override })).toThrow()
   })
 
-  it("development의 localhost와 테스트 인증은 유지한다", () => {
+  it("development의 localhost origin 기본값은 유지한다", () => {
     expect(
       parseEnv({
         ADMIN_AUTH_SECRET: validAdminSecret,
-        ENABLE_TEST_AUTH: "true",
         LEARNER_AUTH_SECRET: validSecret,
         NODE_ENV: "development",
       })
-    ).toMatchObject({ ENABLE_TEST_AUTH: true, NODE_ENV: "development" })
+    ).toMatchObject({
+      ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
+      NODE_ENV: "development",
+      WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
+    })
   })
 })

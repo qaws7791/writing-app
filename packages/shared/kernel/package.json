@@ -8,6 +8,7 @@
   },
   "exports": {
     "./clock": "./src/clock.ts",
+    "./failure": "./src/failure.ts",
     "./result": "./src/result.ts"
   },
   "scripts": {

@@ -9,10 +9,12 @@ import { getCourses } from "@workspace/http-client/learner"
 import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
 import type { CourseListFilters } from "@/features/course-catalog/model/course-list-filters"
 import {
+  isLearnerApiAbortedError,
   isLearnerApiAuthenticationError,
   settleLearnerApiRequest,
   type LearnerCourseSummaryDto,
 } from "@/shared/http/learner-api-client"
+import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   Empty,
@@ -38,6 +40,7 @@ export function CourseCatalogClient({
   nextCursor: initialNextCursor = null,
 }: CoursesPageProps) {
   const router = useRouter()
+  const readAbortSignal = useUnmountAbortSignal()
   const [visibleCourses, setVisibleCourses] = useState(courses)
   const [nextCursor, setNextCursor] = useState(initialNextCursor)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -48,13 +51,17 @@ export function CourseCatalogClient({
     setIsLoadingMore(true)
     setLoadMoreError(null)
     const result = await settleLearnerApiRequest(
-      getCourses({
-        ...(filters.category === "" ? {} : { category: filters.category }),
-        cursor: nextCursor,
-      })
+      getCourses(
+        {
+          ...(filters.category === "" ? {} : { category: filters.category }),
+          cursor: nextCursor,
+        },
+        { signal: readAbortSignal() }
+      )
     )
     setIsLoadingMore(false)
     if (result.status === "error") {
+      if (isLearnerApiAbortedError(result.error)) return
       if (isLearnerApiAuthenticationError(result.error)) {
         router.refresh()
         return
@@ -69,7 +76,7 @@ export function CourseCatalogClient({
       ),
     ])
     setNextCursor(result.value.nextCursor)
-  }, [filters.category, isLoadingMore, nextCursor, router])
+  }, [filters.category, isLoadingMore, nextCursor, readAbortSignal, router])
 
   return (
     <div>

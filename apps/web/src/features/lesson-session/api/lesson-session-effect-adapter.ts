@@ -57,11 +57,14 @@ export type LessonSessionEffects = {
 export function createLessonSessionEffects(input: {
   readonly expectedCurriculumVersionId: string
   readonly lessonId: string
+  readonly readAbortSignal: () => AbortSignal
 }): LessonSessionEffects {
   return {
     async completeStep({ request, stepId }) {
       const result = await settleLearnerApiRequest(
-        completeLearnerStep(input.lessonId, stepId, request)
+        completeLearnerStep(input.lessonId, stepId, request, {
+          signal: input.readAbortSignal(),
+        })
       )
 
       return result.status === "error"
@@ -72,6 +75,7 @@ export function createLessonSessionEffects(input: {
       const result = await settleLearnerApiRequest(
         createLearnerStepAiFeedback(input.lessonId, stepId, {
           headers: { "Idempotency-Key": idempotencyKey },
+          signal: input.readAbortSignal(),
         })
       )
 
@@ -85,9 +89,13 @@ export function createLessonSessionEffects(input: {
     },
     async start() {
       const result = await settleLearnerApiRequest(
-        startLearnerLesson(input.lessonId, {
-          expectedCurriculumVersionId: input.expectedCurriculumVersionId,
-        })
+        startLearnerLesson(
+          input.lessonId,
+          {
+            expectedCurriculumVersionId: input.expectedCurriculumVersionId,
+          },
+          { signal: input.readAbortSignal() }
+        )
       )
       return result.status === "error"
         ? { message: result.error.message, status: "error" }

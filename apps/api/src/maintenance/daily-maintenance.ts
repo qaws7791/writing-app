@@ -5,6 +5,7 @@ import {
 } from "@workspace/content/maintenance"
 import type { DeletedLearnerPurgeCommand } from "@workspace/identity/purge"
 import type { Clock } from "@workspace/kernel/clock"
+import type { Failure } from "@workspace/kernel/failure"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { AuditTrail } from "@workspace/operations/audit"
 
@@ -23,11 +24,13 @@ type MaintenanceStage =
   | "expired-sessions"
   | "input"
 
-export type DailyMaintenanceError = Readonly<{
-  cutoff: Date
-  kind: "daily-maintenance-failed"
-  stage: MaintenanceStage
-}>
+export type DailyMaintenanceError = Failure<
+  "daily-maintenance-failed",
+  {
+    readonly cutoff: Date
+    readonly stage: MaintenanceStage
+  }
+>
 
 type BatchResult = Readonly<{
   affected: number
@@ -100,7 +103,11 @@ export function createDailyMaintenance(input: {
         dryRun: command.dryRun,
       })
       if (deletedLearners.isErr()) {
-        return maintenanceError("deleted-learners", occurredAt)
+        return maintenanceError(
+          "deleted-learners",
+          occurredAt,
+          deletedLearners.error
+        )
       }
 
       const expiredSessions = await input.expiredSessions.cleanup({
@@ -109,7 +116,11 @@ export function createDailyMaintenance(input: {
         dryRun: command.dryRun,
       })
       if (expiredSessions.isErr()) {
-        return maintenanceError("expired-sessions", occurredAt)
+        return maintenanceError(
+          "expired-sessions",
+          occurredAt,
+          expiredSessions.error
+        )
       }
 
       const aiPending = await input.aiFeedback.expireStalePending({
@@ -117,21 +128,25 @@ export function createDailyMaintenance(input: {
         dryRun: command.dryRun,
       })
       if (aiPending.isErr()) {
-        return maintenanceError("ai-pending", occurredAt)
+        return maintenanceError("ai-pending", occurredAt, aiPending.error)
       }
 
       const auditMatched = await input.auditTrail.inspectExpired({
         batchSize: command.batchSize,
         cutoff: occurredAt,
       })
-      if (auditMatched.isErr()) return maintenanceError("audit", occurredAt)
+      if (auditMatched.isErr()) {
+        return maintenanceError("audit", occurredAt, auditMatched.error)
+      }
       const auditAffected = command.dryRun
         ? ok(0)
         : await input.auditTrail.purgeExpired({
             batchSize: command.batchSize,
             cutoff: occurredAt,
           })
-      if (auditAffected.isErr()) return maintenanceError("audit", occurredAt)
+      if (auditAffected.isErr()) {
+        return maintenanceError("audit", occurredAt, auditAffected.error)
+      }
 
       const contentAssetCutoff = new Date(
         occurredAt.getTime() - contentAssetOrphanRetentionMs
@@ -142,7 +157,11 @@ export function createDailyMaintenance(input: {
         dryRun: command.dryRun,
       })
       if (contentAssets.isErr()) {
-        return maintenanceError("content-assets", contentAssetCutoff)
+        return maintenanceError(
+          "content-assets",
+          contentAssetCutoff,
+          contentAssets.error
+        )
       }
 
       return ok({
@@ -190,9 +209,11 @@ export function createDailyMaintenance(input: {
 
 function maintenanceError(
   stage: MaintenanceStage,
-  cutoff: Date
+  cutoff: Date,
+  cause: unknown
 ): Result<never, DailyMaintenanceError> {
   return err({
+    cause,
     cutoff: new Date(cutoff),
     kind: "daily-maintenance-failed",
     stage,

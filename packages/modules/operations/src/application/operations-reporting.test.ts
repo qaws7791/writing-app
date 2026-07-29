@@ -48,6 +48,7 @@ describe("operations reporting application", () => {
     })
 
     expect(result.isErr() && result.error).toEqual({
+      cause,
       kind: "reporting-unavailable",
       query: "dashboard",
     })

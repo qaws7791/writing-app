@@ -54,11 +54,15 @@ describe("외부 삭제 marker store", () => {
       prefix: "privacy/deletion-markers",
     })
 
-    await expect(store.readAll()).resolves.toEqual(
-      expect.objectContaining({
-        error: { kind: "deletion-marker-storage-failed" },
-      })
-    )
+    const result = await store.readAll()
+
+    expect(result).toMatchObject({
+      error: { kind: "deletion-marker-storage-failed" },
+    })
+    const recordedCause = result.isErr()
+      ? `${String(result.error.cause)}${JSON.stringify(result.error.cause)}`
+      : ""
+    expect(recordedCause).not.toContain("person@example.test")
   })
 
   it("non-production in-memory adapter도 marker를 복제해 결정적으로 읽는다", async () => {

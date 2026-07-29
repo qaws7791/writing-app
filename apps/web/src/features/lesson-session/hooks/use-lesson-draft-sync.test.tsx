@@ -81,7 +81,8 @@ describe("useLessonDraftSync", () => {
       expect.objectContaining({
         answer: latestAnswer,
         expectedVersion: 1,
-      })
+      }),
+      { signal: expect.any(AbortSignal) }
     )
 
     await act(async () => {
@@ -114,6 +115,12 @@ describe("useLessonDraftSync", () => {
     await act(flushMicrotasks)
 
     expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
+    expect(generatedClient.saveLearnerStepDraft).toHaveBeenLastCalledWith(
+      "lesson-1",
+      "step-write",
+      expect.objectContaining({ answer: latestAnswer }),
+      { keepalive: true }
+    )
   })
 
   it("409이면 최신 서버 초안과 미전송 입력을 함께 보존하고 최신 version으로 재시도한다", async () => {
@@ -150,7 +157,8 @@ describe("useLessonDraftSync", () => {
       expect.objectContaining({
         answer: localAnswer,
         expectedVersion: 3,
-      })
+      }),
+      { signal: expect.any(AbortSignal) }
     )
   })
 
@@ -190,7 +198,8 @@ describe("useLessonDraftSync", () => {
     expect(generatedClient.saveLearnerStepDraft).toHaveBeenLastCalledWith(
       "lesson-1",
       "step-write",
-      expect.objectContaining({ answer: localAnswer })
+      expect.objectContaining({ answer: localAnswer }),
+      { signal: expect.any(AbortSignal) }
     )
   })
 

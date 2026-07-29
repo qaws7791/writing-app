@@ -164,9 +164,10 @@ describe("홈 화면", () => {
 
     await user.click(screen.getByRole("tab", { name: "완료" }))
 
-    expect(generatedClient.getProgress).toHaveBeenCalledWith({
-      status: "completed",
-    })
+    expect(generatedClient.getProgress).toHaveBeenCalledWith(
+      { status: "completed" },
+      { signal: expect.any(AbortSignal) }
+    )
     expect(await screen.findAllByText("완료한 코스")).toHaveLength(1)
     expect(
       screen.queryByRole("heading", {
@@ -215,10 +216,10 @@ describe("홈 화면", () => {
       screen.getByRole("button", { name: "진행 중 코스 더 보기" })
     )
 
-    expect(generatedClient.getProgress).toHaveBeenCalledWith({
-      cursor: "progress-cursor-2",
-      status: "in_progress",
-    })
+    expect(generatedClient.getProgress).toHaveBeenCalledWith(
+      { cursor: "progress-cursor-2", status: "in_progress" },
+      { signal: expect.any(AbortSignal) }
+    )
     expect(await screen.findByText("표현 확장")).toBeInTheDocument()
     expect(
       screen.queryByRole("button", { name: "진행 중 코스 더 보기" })

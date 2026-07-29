@@ -92,6 +92,9 @@ export function createOpenAiFeedbackProvider(input: {
         try {
           parsed = JSON.parse(response.output_text)
         } catch {
+          // JSON parse 오류 message는 provider 원문 조각을 포함한다.
+          // 이 provider는 원문을 보관하지 않으므로 cause를 의도적으로 버린다.
+          // oxlint-disable-next-line workspace/catch-preserves-cause
           return err({
             kind: "provider-response-invalid",
             ...(usage === undefined ? {} : { usage }),
@@ -113,12 +116,12 @@ export function createOpenAiFeedbackProvider(input: {
         const error = normalizeAiProviderError(cause, input.timeoutMs)
         switch (error.kind) {
           case "operation-aborted":
-            return err({ kind: "request-aborted" })
+            return err({ cause, kind: "request-aborted" })
           case "operation-timed-out":
-            return err({ kind: "provider-timeout" })
+            return err({ cause, kind: "provider-timeout" })
           case "configuration-invalid":
           case "operation-failed":
-            return err({ kind: "provider-unavailable" })
+            return err({ cause, kind: "provider-unavailable" })
         }
       }
     },

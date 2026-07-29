@@ -7,6 +7,7 @@ import {
 } from "@workspace/operations/module"
 import type { OperationsAdminSessionPort } from "@workspace/operations/ports"
 import { createSqliteOperationsReportingRepository } from "@workspace/operations/reporting-repository"
+import { logEventNames } from "@workspace/observability/events"
 import type { AppLogger } from "@workspace/observability/logger"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -23,7 +24,9 @@ export function composeOperationsModule(
   return createOperationsModule({
     audit: {
       idGenerator: input.idGenerator,
-      repository: createAuditEventDrizzleRepository(input.database),
+      repository: createAuditEventDrizzleRepository(input.database, (event) => {
+        input.logger.error(event, logEventNames.auditPersistenceFailed)
+      }),
     },
     clock: input.clock,
     reporting: createSqliteOperationsReportingRepository(

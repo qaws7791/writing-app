@@ -84,9 +84,15 @@ describe("public URL transport", () => {
     }
   })
 
-  it("asset production은 loopback까지 HTTPS만 허용하고 개발은 HTTP를 허용한다", () => {
-    expect(() =>
+  it("asset production은 loopback HTTP를 허용하고 공개 HTTP를 거부한다", () => {
+    expect(
       parseContentAssetPublicBaseUrl("http://localhost:9000/assets", {
+        description: "content asset base URL",
+        nodeEnvironment: "production",
+      })?.href
+    ).toBe("http://localhost:9000/assets")
+    expect(() =>
+      parseContentAssetPublicBaseUrl("http://assets.example.test/assets", {
         description: "content asset base URL",
         nodeEnvironment: "production",
       })
@@ -112,9 +118,16 @@ describe("public URL transport", () => {
       "https://staging-assets.example.test",
       "https://assets.example.test:8443",
     ])
+    expect(
+      parseContentAssetImageAllowedOrigins("http://localhost:9000", {
+        description: "content asset image allowed origins",
+        nodeEnvironment: "production",
+      }).map((origin) => origin.origin)
+    ).toEqual(["http://localhost:9000"])
 
     for (const value of [
       "https://*.example.test",
+      "http://assets.example.test",
       "https://assets.example.test/path",
       "https://assets.example.test/",
       "https://assets.example.test?variant=unsafe",

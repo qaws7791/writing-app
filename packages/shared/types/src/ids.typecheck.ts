@@ -1,7 +1,6 @@
 import type {
   AdminId,
   ContentAssetId,
-  ConversationId,
   CourseId,
   LearnerId,
   LessonId,
@@ -10,7 +9,6 @@ import type {
 
 declare const adminId: AdminId
 declare const contentAssetId: ContentAssetId
-declare const conversationId: ConversationId
 declare const courseId: CourseId
 declare const learnerId: LearnerId
 declare const lessonId: LessonId
@@ -18,7 +16,6 @@ declare const userId: UserId
 
 function acceptsAdminId(_value: AdminId): void {}
 function acceptsContentAssetId(_value: ContentAssetId): void {}
-function acceptsConversationId(_value: ConversationId): void {}
 function acceptsCourseId(_value: CourseId): void {}
 function acceptsLearnerId(_value: LearnerId): void {}
 function acceptsLessonId(_value: LessonId): void {}
@@ -26,7 +23,6 @@ function acceptsUserId(_value: UserId): void {}
 
 acceptsAdminId(adminId)
 acceptsContentAssetId(contentAssetId)
-acceptsConversationId(conversationId)
 acceptsCourseId(courseId)
 acceptsLearnerId(learnerId)
 acceptsLessonId(lessonId)

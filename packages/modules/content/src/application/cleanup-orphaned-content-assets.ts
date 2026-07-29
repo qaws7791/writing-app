@@ -104,8 +104,9 @@ async function deleteCandidateObjects(
           operation: "cleanup-delete",
           retryable: deleted.error.retryable,
         })
-  } catch {
+  } catch (cause) {
     return err({
+      cause,
       compensation: "not-required",
       kind: "content-asset-storage-failed",
       operation: "cleanup-delete",

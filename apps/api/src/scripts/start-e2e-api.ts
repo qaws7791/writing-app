@@ -76,8 +76,8 @@ function createE2eContentAssetStorage(
           )
         )
         return ok(undefined)
-      } catch {
-        return err({ retryable: true })
+      } catch (cause) {
+        return err({ cause, retryable: true })
       }
     },
     async putObject(input) {
@@ -86,8 +86,8 @@ function createE2eContentAssetStorage(
         await mkdir(path.dirname(target), { recursive: true })
         await writeFile(target, input.body, { mode: 0o600 })
         return ok({ url: resolveUrl(input.objectKey) })
-      } catch {
-        return err({ retryable: true })
+      } catch (cause) {
+        return err({ cause, retryable: true })
       }
     },
     resolveUrl,

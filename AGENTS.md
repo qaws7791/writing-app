@@ -8,7 +8,7 @@
 
 ### Prerequisites
 
-Treat the versions below as a reference floor — the authoritative versions are defined in the repository's `package.json` (`engines`) or `.tool-versions`.
+Treat the versions below as a reference floor — the authoritative versions are defined in the repository's `package.json`: `engines` for Node.js and `packageManager` for Bun.
 
 - Bun 1.3.10 or later
 - Node.js 24.x
@@ -54,7 +54,7 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 - Treat `docs/archive/` and ADRs as historical record only — exclude them from current-fact determination, and read them only when you need past decisions or evidence.
 - New planning, investigation, and audit documents go in `docs/work/<yyyy-mm-dd-name>/`. On completion, move the same work unit to `docs/archive/<yyyy-mm-dd-name>/`, folding any permanent conclusions into the relevant product/design/engineering authority documents first.
 - Whenever a change affects a fact that a doc describes, update the relevant `/docs` file: check it's current before starting, and update it again before finishing.
-- For local browser or E2E tests, use the test-specific login (`ENABLE_TEST_AUTH=true`) instead of Google OAuth. If this file is out of date, confirm the flag against its source.
+- For local browser or E2E tests, sign in through the real email and password handlers rather than Google OAuth. `e2e/auth.ts` owns the seeded credentials and the sign-in routes; read it instead of restating them here.
 - Update this file when repository-wide agent instructions, project structure, authoritative workflows, required tooling, verification commands, security rules, or commit conventions change. Keep feature-specific facts in their authority source instead.
 
 ## Coding Guidelines
@@ -137,6 +137,7 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 ```sh
 bun run build
 bun run typecheck
+bun run test
 bun lefthook run pre-commit
 ```
 

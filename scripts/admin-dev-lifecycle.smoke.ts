@@ -44,7 +44,6 @@ test("dev:admin 전용 smoke는 admin web과 통합 API의 process와 port를 �
     CI: "true",
     CURSOR_SIGNING_SECRET: "cursor-signing-secret-value-for-lifecycle-01",
     DATABASE_URL: databaseUrl,
-    ENABLE_TEST_AUTH: "true",
     LOG_PRETTY: "false",
     NEXT_PUBLIC_LEARNER_WEB_ORIGIN: "http://127.0.0.1:3000",
     NODE_ENV: "development",

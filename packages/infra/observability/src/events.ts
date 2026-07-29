@@ -1,6 +1,7 @@
 export const logEventNames = {
   aiUsage: "ai.usage",
   audit: "audit.recorded",
+  auditPersistenceFailed: "audit.persistence_failed",
   eventDispatch: "event.dispatch",
   providerOperation: "provider.operation",
   requestCompleted: "request.completed",

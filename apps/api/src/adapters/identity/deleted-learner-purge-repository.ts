@@ -51,8 +51,8 @@ export function createDeletedLearnerPurgeRepository(
         )
 
         return ok(result)
-      } catch {
-        return err({ kind: "deleted-learner-purge-failed" })
+      } catch (cause) {
+        return err({ cause, kind: "deleted-learner-purge-failed" })
       }
     },
   }

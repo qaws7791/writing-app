@@ -2,15 +2,21 @@
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 
-import { getLesson, saveLearnerStepDraft } from "@workspace/http-client/learner"
+import { getLesson } from "@workspace/http-client/learner"
 
 import {
+  saveStepDraft,
+  type DraftSaveTransport,
+} from "@/features/lesson-session/api/draft-transport"
+import {
+  isLearnerApiAbortedError,
   isLearnerApiNetworkError,
   readLearnerApiErrorCode,
   settleLearnerApiRequest,
   type LearnerStepDraftAnswerDto,
   type LearnerStepDraftDto,
 } from "@/shared/http/learner-api-client"
+import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 const AUTOSAVE_DELAY_MS = 800
 const RECONCILE_INTERVAL_MS = 30_000
@@ -58,11 +64,12 @@ export function useLessonDraftSync({
   const timersRef = useRef(
     new Map<string, ReturnType<typeof globalThis.setTimeout>>()
   )
-  const flushStepDraftRef = useRef<(stepId: string) => Promise<void>>(
-    async () => undefined
-  )
+  const flushStepDraftRef = useRef<
+    (stepId: string, transport: DraftSaveTransport) => Promise<void>
+  >(async () => undefined)
   const reconcilePromiseRef = useRef<Promise<void> | null>(null)
   const mountedRef = useRef(false)
+  const readAbortSignal = useUnmountAbortSignal()
   const onServerDraftAppliedRef = useRef(onServerDraftApplied)
   const [renderRevisionByStepId, setRenderRevisionByStepId] = useState<
     Readonly<Record<string, number>>
@@ -102,12 +109,19 @@ export function useLessonDraftSync({
   )
 
   const bumpRenderRevision = useCallback((stepId: string) => {
-    if (!mountedRef.current) return
     setRenderRevisionByStepId((current) => ({
       ...current,
       [stepId]: (current[stepId] ?? 0) + 1,
     }))
   }, [])
+
+  const defaultTransport = useCallback(
+    (): DraftSaveTransport => ({
+      kind: "default",
+      signal: readAbortSignal(),
+    }),
+    [readAbortSignal]
+  )
 
   const clearScheduledSave = useCallback((stepId: string) => {
     const timer = timersRef.current.get(stepId)
@@ -121,11 +135,11 @@ export function useLessonDraftSync({
       clearScheduledSave(stepId)
       const timer = globalThis.setTimeout(() => {
         timersRef.current.delete(stepId)
-        void flushStepDraftRef.current(stepId)
+        void flushStepDraftRef.current(stepId, defaultTransport())
       }, AUTOSAVE_DELAY_MS)
       timersRef.current.set(stepId, timer)
     },
-    [clearScheduledSave]
+    [clearScheduledSave, defaultTransport]
   )
 
   const applyServerDrafts = useCallback(
@@ -207,9 +221,12 @@ export function useLessonDraftSync({
     }
 
     const reconciliation = (async () => {
-      const result = await settleLearnerApiRequest(getLesson(lessonId))
+      const result = await settleLearnerApiRequest(
+        getLesson(lessonId, { signal: readAbortSignal() })
+      )
 
       if (result.status === "error") {
+        if (isLearnerApiAbortedError(result.error)) return
         const records = readDraftRecords(recordsRef)
         for (const [stepId, record] of records) {
           if (!record.dirty) continue
@@ -244,7 +261,9 @@ export function useLessonDraftSync({
         .filter(([, record]) => record.dirty && record.conflict === null)
         .map(([stepId]) => stepId)
       await Promise.all(
-        pendingStepIds.map((stepId) => flushStepDraftRef.current(stepId))
+        pendingStepIds.map((stepId) =>
+          flushStepDraftRef.current(stepId, defaultTransport())
+        )
       )
     })().finally(() => {
       reconcilePromiseRef.current = null
@@ -252,10 +271,17 @@ export function useLessonDraftSync({
 
     reconcilePromiseRef.current = reconciliation
     return reconciliation
-  }, [applyServerDrafts, expectedCurriculumVersionId, lessonId, setStepStatus])
+  }, [
+    applyServerDrafts,
+    defaultTransport,
+    expectedCurriculumVersionId,
+    lessonId,
+    readAbortSignal,
+    setStepStatus,
+  ])
 
-  const flushStepDraft = useCallback(
-    async (stepId: string): Promise<void> => {
+  const flushStepDraftWithTransport = useCallback(
+    async (stepId: string, transport: DraftSaveTransport): Promise<void> => {
       clearScheduledSave(stepId)
       const record = readDraftRecords(recordsRef).get(stepId)
       if (
@@ -277,15 +303,21 @@ export function useLessonDraftSync({
       setStepStatus(stepId, { kind: "saving" })
 
       const result = await settleLearnerApiRequest(
-        saveLearnerStepDraft(lessonId, stepId, {
-          answer: sentAnswer,
-          expectedCurriculumVersionId,
-          expectedVersion: record.expectedVersion,
+        saveStepDraft({
+          body: {
+            answer: sentAnswer,
+            expectedCurriculumVersionId,
+            expectedVersion: record.expectedVersion,
+          },
+          lessonId,
+          stepId,
+          transport,
         })
       )
       record.inFlight = false
 
       if (result.status === "error") {
+        if (isLearnerApiAbortedError(result.error)) return
         if (
           readLearnerApiErrorCode(result.error) ===
           "STEP_DRAFT_VERSION_CONFLICT"
@@ -319,7 +351,7 @@ export function useLessonDraftSync({
 
       setStepStatus(stepId, { kind: "saving" })
       queueMicrotask(() => {
-        void flushStepDraftRef.current(stepId)
+        void flushStepDraftRef.current(stepId, transport)
       })
     },
     [
@@ -332,16 +364,30 @@ export function useLessonDraftSync({
   )
 
   useEffect(() => {
-    flushStepDraftRef.current = flushStepDraft
-  }, [flushStepDraft])
+    flushStepDraftRef.current = flushStepDraftWithTransport
+  }, [flushStepDraftWithTransport])
 
-  const flushAll = useCallback(async (): Promise<void> => {
-    await Promise.all(
-      [...readDraftRecords(recordsRef).keys()].map((stepId) =>
-        flushStepDraftRef.current(stepId)
+  const flushStepDraft = useCallback(
+    (stepId: string): Promise<void> =>
+      flushStepDraftRef.current(stepId, defaultTransport()),
+    [defaultTransport]
+  )
+
+  const flushAllWithTransport = useCallback(
+    async (transport: DraftSaveTransport): Promise<void> => {
+      await Promise.all(
+        [...readDraftRecords(recordsRef).keys()].map((stepId) =>
+          flushStepDraftRef.current(stepId, transport)
+        )
       )
-    )
-  }, [])
+    },
+    []
+  )
+
+  const flushAll = useCallback(
+    (): Promise<void> => flushAllWithTransport(defaultTransport()),
+    [defaultTransport, flushAllWithTransport]
+  )
 
   const stageDraft = useCallback(
     (stepId: string, answer: LearnerStepDraftAnswerDto) => {
@@ -391,7 +437,6 @@ export function useLessonDraftSync({
     (stepId: string) => {
       clearScheduledSave(stepId)
       readDraftRecords(recordsRef).delete(stepId)
-      if (!mountedRef.current) return
       setStatusByStepId((current) =>
         Object.fromEntries(
           Object.entries(current).filter(([id]) => id !== stepId)
@@ -412,9 +457,9 @@ export function useLessonDraftSync({
       record.conflict = null
       record.dirty = true
       setStepStatus(stepId, { kind: "saving" })
-      void flushStepDraftRef.current(stepId)
+      void flushStepDraftRef.current(stepId, defaultTransport())
     },
-    [setStepStatus]
+    [defaultTransport, setStepStatus]
   )
 
   const useServerDraft = useCallback(
@@ -457,11 +502,11 @@ export function useLessonDraftSync({
       }
     }
     const handlePageHide = () => {
-      void flushAll()
+      void flushAllWithTransport({ kind: "unload" })
     }
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        void flushAll()
+        void flushAllWithTransport({ kind: "unload" })
       } else {
         void reconcile()
       }
@@ -488,7 +533,7 @@ export function useLessonDraftSync({
       }
       scheduledTimers.clear()
     }
-  }, [flushAll, reconcile, setStepStatus])
+  }, [flushAllWithTransport, reconcile, setStepStatus])
 
   return {
     applyServerDrafts,

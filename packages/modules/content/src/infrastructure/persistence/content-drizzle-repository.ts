@@ -186,8 +186,8 @@ function listOrphanedAssetCandidates(
         .all()
         .map(({ id, objectKey }) => ({ id: id as ContentAssetId, objectKey }))
     )
-  } catch {
-    return err({ kind: "content-asset-persistence-failed" } as const)
+  } catch (cause) {
+    return err({ cause, kind: "content-asset-persistence-failed" } as const)
   }
 }
 
@@ -214,8 +214,8 @@ function deleteOrphanedAssetCandidates(
       .returning({ id: contentAssets.id })
       .all()
     return ok(deleted.length)
-  } catch {
-    return err({ kind: "content-asset-persistence-failed" } as const)
+  } catch (cause) {
+    return err({ cause, kind: "content-asset-persistence-failed" } as const)
   }
 }
 
@@ -283,11 +283,11 @@ function createAsset(
       transaction.insert(contentAssets).values(asset).run()
       return ok(asset)
     })
-  } catch (error) {
-    if (isUniqueConstraintViolation(error)) {
-      return err({ kind: "content-conflict" })
+  } catch (cause) {
+    if (isUniqueConstraintViolation(cause)) {
+      return err({ cause, kind: "content-conflict" })
     }
-    throw error
+    throw cause
   }
 }
 
@@ -329,11 +329,11 @@ function createCourse(
         })
         .run()
     })
-  } catch (error) {
-    if (isUniqueConstraintViolation(error)) {
-      return err({ kind: "content-conflict" })
+  } catch (cause) {
+    if (isUniqueConstraintViolation(cause)) {
+      return err({ cause, kind: "content-conflict" })
     }
-    throw error
+    throw cause
   }
 
   return ok({

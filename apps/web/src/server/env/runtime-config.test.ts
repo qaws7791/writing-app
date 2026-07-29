@@ -90,7 +90,8 @@ describe("web server runtime config", () => {
     ).toBe("http://127.0.0.1:4199")
     expect(() =>
       readWebCspRuntimeConfig({
-        CONTENT_ASSET_PUBLIC_BASE_URL: "http://127.0.0.1:4199/content-assets",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          "http://assets.example.test/content-assets",
         NODE_ENV: "production",
         WEB_ORIGIN: "https://writing.example.test",
       })

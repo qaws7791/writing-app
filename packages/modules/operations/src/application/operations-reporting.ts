@@ -100,7 +100,7 @@ async function executeReportingQuery<T>(
       kind: "operations-reporting-query-failed",
       query,
     })
-    return err({ kind: "reporting-unavailable", query })
+    return err({ cause, kind: "reporting-unavailable", query })
   }
 }
 

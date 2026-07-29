@@ -4,6 +4,7 @@ import type { WritingAppDatabase } from "@workspace/db/client"
 import { deletedLearnerDisplayName } from "@workspace/identity/learner-profile"
 import { learnerProfiles } from "@workspace/identity/schema"
 import type { LearnerDeletionMarker } from "@workspace/identity/ports"
+import type { Failure } from "@workspace/kernel/failure"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { UserId } from "@workspace/types/ids"
 
@@ -16,9 +17,8 @@ export type DeletionMarkerBatchResult = Readonly<{
   purgedUsers: number
 }>
 
-type DeletionMarkerReapplicationRepositoryError = Readonly<{
-  kind: "deletion-marker-reapplication-persistence-failed"
-}>
+type DeletionMarkerReapplicationRepositoryError =
+  Failure<"deletion-marker-reapplication-persistence-failed">
 
 export function createDeletionMarkerReapplicationRepository(
   database: WritingAppDatabase
@@ -113,8 +113,9 @@ export function createDeletionMarkerReapplicationRepository(
             { behavior: "immediate" }
           )
         )
-      } catch {
+      } catch (cause) {
         return err({
+          cause,
           kind: "deletion-marker-reapplication-persistence-failed",
         })
       }

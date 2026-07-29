@@ -9,10 +9,6 @@ const nodeEnvSchema = z
   .enum(["development", "test", "production"])
   .default("development")
 const portSchema = z.coerce.number().int().min(1).max(65535)
-const booleanFlagSchema = z
-  .enum(["true", "false"])
-  .default("false")
-  .transform((value) => value === "true")
 
 const appEnvBaseSchema = z.object({
   ADMIN_AUTH_SECRET: z.string().min(32),
@@ -23,7 +19,6 @@ const appEnvBaseSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   LEARNER_AUTH_SECRET: z.string().min(32),
-  ENABLE_TEST_AUTH: booleanFlagSchema,
   NODE_ENV: nodeEnvSchema,
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).default("gpt-5.2"),
@@ -111,14 +106,6 @@ function validateProductionEnvironment(
       context,
       "ADMIN_AUTH_SECRET",
       "학습자 secret과 다른 값을 사용해야 합니다."
-    )
-  }
-
-  if (env.ENABLE_TEST_AUTH) {
-    addProductionIssue(
-      context,
-      "ENABLE_TEST_AUTH",
-      "production에서는 테스트 인증을 활성화할 수 없습니다."
     )
   }
 }

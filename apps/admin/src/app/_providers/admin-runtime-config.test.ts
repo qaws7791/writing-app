@@ -104,7 +104,8 @@ describe("admin runtime config", () => {
     expect(() =>
       readAdminCspRuntimeConfig({
         ADMIN_ORIGIN: "https://admin.example.test",
-        CONTENT_ASSET_PUBLIC_BASE_URL: "http://127.0.0.1:4199/content-assets",
+        CONTENT_ASSET_PUBLIC_BASE_URL:
+          "http://assets.example.test/content-assets",
         NODE_ENV: "production",
       })
     ).toThrow("content asset public base URL must use HTTPS in production")

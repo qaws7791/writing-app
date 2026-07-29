@@ -35,7 +35,10 @@ describe("daily maintenance 실제 SQLite integration", () => {
     try {
       runApplicationMigrations(client.sqlite)
       seedDailyMaintenanceFixture(client.sqlite)
-      const auditRepository = createAuditEventDrizzleRepository(client.db)
+      const auditRepository = createAuditEventDrizzleRepository(
+        client.db,
+        () => undefined
+      )
       const createdAudit = createAuditTrail({
         clock: { now: () => new Date(now.getTime() - 365 * dayMs) },
         idGenerator: { next: () => "audit-expired" },

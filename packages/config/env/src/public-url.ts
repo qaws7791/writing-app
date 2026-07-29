@@ -32,7 +32,7 @@ export function parseContentAssetPublicBaseUrl(
   ) {
     throw new Error(`${description} is not a safe public base URL`)
   }
-  if (nodeEnvironment === "production" && url.protocol !== "https:") {
+  if (violatesProductionHttps(url, nodeEnvironment)) {
     throw new Error(`${description} must use HTTPS in production`)
   }
 
@@ -65,7 +65,7 @@ export function parseContentAssetImageAllowedOrigins(
     ) {
       throw new Error(`${description} contains a non-canonical origin`)
     }
-    if (nodeEnvironment === "production" && url.protocol !== "https:") {
+    if (violatesProductionHttps(url, nodeEnvironment)) {
       throw new Error(`${description} must use HTTPS in production`)
     }
 
@@ -116,6 +116,17 @@ export function assertPublicUrlTransport(
 
 export function shouldUpgradeInsecureRequests(publicOrigin: string): boolean {
   return new URL(publicOrigin).protocol === "https:"
+}
+
+function violatesProductionHttps(
+  url: URL,
+  nodeEnvironment: string | undefined
+): boolean {
+  return (
+    nodeEnvironment === "production" &&
+    url.protocol !== "https:" &&
+    !isLoopbackHostname(url.hostname)
+  )
 }
 
 function isLoopbackHostname(hostname: string): boolean {

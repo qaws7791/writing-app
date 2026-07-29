@@ -24,10 +24,12 @@ import {
   type ProgressCourseState,
 } from "@/features/learner-home/model/home-progress-state"
 import {
+  isLearnerApiAbortedError,
   isLearnerApiAuthenticationError,
   settleLearnerApiRequest,
   type LearnerProgressPageDto,
 } from "@/shared/http/learner-api-client"
+import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 export type HomeProgressClientProps = {
   readonly inProgress: LearnerProgressPageDto
@@ -35,6 +37,7 @@ export type HomeProgressClientProps = {
 
 export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
   const router = useRouter()
+  const readAbortSignal = useUnmountAbortSignal()
   const [completedState, setCompletedState] = useState<CompletedCoursesState>({
     status: "idle",
   })
@@ -48,10 +51,11 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
   const loadCompletedCourses = useCallback(async () => {
     setCompletedState({ status: "loading" })
     const result = await settleLearnerApiRequest(
-      getProgress({ status: "completed" })
+      getProgress({ status: "completed" }, { signal: readAbortSignal() })
     )
 
     if (result.status === "error") {
+      if (isLearnerApiAbortedError(result.error)) return
       if (isLearnerApiAuthenticationError(result.error)) {
         router.refresh()
         return
@@ -67,7 +71,7 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
       nextCursor: result.value.nextCursor,
       status: "loaded",
     })
-  }, [router])
+  }, [readAbortSignal, router])
 
   const loadMoreInProgressCourses = useCallback(async () => {
     if (
@@ -84,13 +88,17 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
       loadMoreStatus: "loading",
     }))
     const result = await settleLearnerApiRequest(
-      getProgress({
-        cursor,
-        status: "in_progress",
-      })
+      getProgress(
+        {
+          cursor,
+          status: "in_progress",
+        },
+        { signal: readAbortSignal() }
+      )
     )
 
     if (result.status === "error") {
+      if (isLearnerApiAbortedError(result.error)) return
       if (isLearnerApiAuthenticationError(result.error)) {
         router.refresh()
         return
@@ -109,7 +117,12 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
       loadMoreStatus: "idle",
       nextCursor: result.value.nextCursor,
     }))
-  }, [inProgressState.loadMoreStatus, inProgressState.nextCursor, router])
+  }, [
+    inProgressState.loadMoreStatus,
+    inProgressState.nextCursor,
+    readAbortSignal,
+    router,
+  ])
 
   const loadMoreCompletedCourses = useCallback(async () => {
     if (
@@ -127,13 +140,17 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
         : state
     )
     const result = await settleLearnerApiRequest(
-      getProgress({
-        cursor,
-        status: "completed",
-      })
+      getProgress(
+        {
+          cursor,
+          status: "completed",
+        },
+        { signal: readAbortSignal() }
+      )
     )
 
     if (result.status === "error") {
+      if (isLearnerApiAbortedError(result.error)) return
       if (isLearnerApiAuthenticationError(result.error)) {
         router.refresh()
         return
@@ -164,7 +181,7 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
           }
         : state
     )
-  }, [completedState, router])
+  }, [completedState, readAbortSignal, router])
 
   const handleTabChange = useCallback(
     (value: string) => {

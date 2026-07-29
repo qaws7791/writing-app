@@ -8,6 +8,7 @@ import {
 import { createDeletedLearnerPurgeCommand } from "@workspace/identity/purge"
 import { createAuditTrail } from "@workspace/operations/audit"
 import { createAuditEventDrizzleRepository } from "@workspace/operations/audit-repository"
+import { logEventNames } from "@workspace/observability/events"
 import { createS3ObjectStorage } from "@workspace/storage/object-storage"
 
 import { createContentAssetStorageAdapter } from "@/adapters/content/content-asset-storage"
@@ -44,7 +45,9 @@ export class DailyMaintenanceExecutionError extends Error {
   readonly stage: DailyMaintenanceError["stage"]
 
   constructor(error: DailyMaintenanceError) {
-    super(`daily maintenance ${error.stage} batch에 실패했습니다.`)
+    super(`daily maintenance ${error.stage} batch에 실패했습니다.`, {
+      cause: error.cause,
+    })
     this.name = "DailyMaintenanceExecutionError"
     this.cutoff = new Date(error.cutoff)
     this.stage = error.stage
@@ -137,7 +140,15 @@ export async function runDailyMaintenance(input: {
   const auditTrail = createAuditTrail({
     clock: systemClock,
     idGenerator: uuidGenerator,
-    repository: createAuditEventDrizzleRepository(input.client.db),
+    repository: createAuditEventDrizzleRepository(input.client.db, (event) => {
+      process.stderr.write(
+        `${JSON.stringify({
+          kind: logEventNames.auditPersistenceFailed,
+          message: readFailureMessage(event.cause),
+          operation: event.operation,
+        })}\n`
+      )
+    }),
   })
   const maintenance = createDailyMaintenance({
     aiFeedback: createAiFeedbackMaintenanceForDatabase({
@@ -162,6 +173,10 @@ export async function runDailyMaintenance(input: {
     throw new DailyMaintenanceExecutionError(result.error)
   }
   return result.value
+}
+
+function readFailureMessage(cause: unknown): string {
+  return cause instanceof Error ? cause.message : String(cause)
 }
 
 async function readLogRetentionEvidence(

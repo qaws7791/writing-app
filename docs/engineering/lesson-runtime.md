@@ -39,6 +39,7 @@
 - 정답, 해설, 진도율, 다음 레슨과 완료 여부를 프론트엔드에서 다시 계산하지 않는다.
 - 낙관적 UI는 사용자 입력과 요청 중 상태에만 적용한다. 응답을 받으면 서버의 evaluation, learning state와 draft version으로 조정하며, 충돌이나 네트워크 실패에서도 로컬 미전송 입력을 보존한다.
 - 입력 변경은 800ms debounce로 저장하고 blur, hidden, pagehide, 레슨 나가기와 답안 제출에서는 대기 중인 저장을 즉시 flush한다. focus·reconnect에서는 서버를 다시 읽으며 visible 상태에서만 30초 간격으로 조정한다. 같은 스텝의 진행 중 저장은 한 건으로 제한하고 후속 변경을 합친다.
+- hidden·pagehide flush는 `keepalive` 요청으로 보내 탭 종료·페이지 언로드 뒤에도 전송이 완료된다. 브라우저의 keepalive 본문 상한(64KiB)을 넘는 초안은 이 보장 밖이며 일반 요청으로 보낸다. 그 밖의 모든 요청은 화면을 벗어날 때 취소한다.
 - 코스의 다음 레슨과 잠금 상태는 active 유닛의 `sortOrder`, 그 안의 active 레슨 `sortOrder` 순으로 서버가 계산한다.
 - 코스와 진행 목록은 `{ items, nextCursor }`를 사용하며 다음 cursor가 있을 때만 추가 로딩을 제공한다.
 - 레슨 조회·시작 응답의 서버 초안을 reducer 초기값으로 사용해 첫 render부터 복원한다. 로그아웃은 서버 초안을 삭제하지 않으므로 재로그인과 다른 기기에서도 이어 쓸 수 있다.
@@ -57,6 +58,6 @@
 - 일반 단계 완료 테스트는 순수 plan의 effect 순서, rejection·retry·replay의 빈 effect, lesson/course/activity 결과와 마지막 activity fault에서 답안·lesson·course·activity 전체 rollback을 확인한다.
 - 서버 드래프트 SQLite 테스트는 사용자·revision·레슨·스텝 격리, 크기·version 제약, 낙관적 충돌, 조회·시작 복구, 부모 삭제 cascade와 제출 실패 시 답안·드래프트 rollback을 확인한다.
 - 레슨 세션이 서버 전이 결과만으로 이동하는지 web 테스트로 확인한다.
-- 웹 초안 테스트는 debounce·즉시 flush·진행 중 저장 합치기, 네트워크 재시도, stale version 충돌의 양쪽 값 보존, focus 조정과 첫 render 복원을 확인한다. Chromium과 Safari smoke는 새로고침·다른 탭·재로그인 복구를 확인한다.
+- 웹 초안 테스트는 debounce·즉시 flush·진행 중 저장 합치기, 네트워크 재시도, stale version 충돌의 양쪽 값 보존, focus 조정과 첫 render 복원을 확인한다. Chromium과 Safari smoke는 새로고침·다른 탭·재로그인 복구와 debounce 전 탭 종료 복구를 확인한다.
 - 매칭 정책의 결정성·중복 label·일대일 재배정·재선택·정답 tone·item-ID payload는 web 테스트로, controlled 표시·keyboard callback·접근성 상태는 UI와 Storybook 테스트로 확인한다.
 - step 시각 상태는 Storybook fixture로, 어드민 편집 union은 editor 테스트로 확인한다.

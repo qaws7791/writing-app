@@ -47,7 +47,9 @@ export async function runDeletedLearnerPurge(
   })
   const result = await command.execute()
   if (result.isErr()) {
-    throw new Error("삭제 학습자 purge transaction에 실패했습니다.")
+    throw new Error("삭제 학습자 purge transaction에 실패했습니다.", {
+      cause: result.error.cause,
+    })
   }
 
   return result.value

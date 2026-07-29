@@ -17,14 +17,11 @@ export function operationsAuthenticatedResponses(
   }
 }
 
-export function mapOperationsError(_error: OperationsError): AppError {
-  return operationError(
-    503,
-    "OPERATIONS_REPORTING_UNAVAILABLE",
-    "Operations reporting is unavailable"
-  )
-}
-
-function operationError(status: 503, code: string, message: string): AppError {
-  return new AppError({ code, message, status })
+export function mapOperationsError(error: OperationsError): AppError {
+  return new AppError({
+    cause: error,
+    code: "OPERATIONS_REPORTING_UNAVAILABLE",
+    message: `${error.query} reporting is unavailable`,
+    status: 503,
+  })
 }

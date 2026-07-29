@@ -27,7 +27,10 @@ export function createS3DeletionMarkerStore(input: {
       try {
         const listed = await input.objectStorage.listObjectKeys(`${prefix}/`)
         if (listed.isErr()) {
-          return err({ kind: "deletion-marker-storage-failed" })
+          return err({
+            cause: listed.error,
+            kind: "deletion-marker-storage-failed",
+          })
         }
 
         const markers = await Promise.all(
@@ -40,8 +43,8 @@ export function createS3DeletionMarkerStore(input: {
           })
         )
         return ok(sortDeletionMarkers(markers))
-      } catch {
-        return err({ kind: "deletion-marker-storage-failed" })
+      } catch (cause) {
+        return err({ cause, kind: "deletion-marker-storage-failed" })
       }
     },
     async record(marker) {
@@ -59,10 +62,13 @@ export function createS3DeletionMarkerStore(input: {
           objectKey,
         })
         return stored.isErr()
-          ? err({ kind: "deletion-marker-storage-failed" })
+          ? err({
+              cause: stored.error,
+              kind: "deletion-marker-storage-failed",
+            })
           : ok(undefined)
-      } catch {
-        return err({ kind: "deletion-marker-storage-failed" })
+      } catch (cause) {
+        return err({ cause, kind: "deletion-marker-storage-failed" })
       }
     },
   }

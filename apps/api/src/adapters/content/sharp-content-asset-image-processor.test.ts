@@ -74,10 +74,8 @@ describe("Sharp content asset image processor", () => {
         contentType: "image/jpeg",
         kind: "course-cover",
       })
-    ).resolves.toEqual(
-      expect.objectContaining({
-        error: { reason: "image-decode-failed" },
-      })
-    )
+    ).resolves.toMatchObject({
+      error: { reason: "image-decode-failed" },
+    })
   })
 })

@@ -1,4 +1,5 @@
 import type { Clock } from "@workspace/kernel/clock"
+import type { Failure } from "@workspace/kernel/failure"
 import type { Result } from "@workspace/kernel/result"
 import type { AdminId, UserId } from "@workspace/types/ids"
 
@@ -74,9 +75,8 @@ export type AdminAuthenticationPort = Readonly<{
   ) => Promise<AuthenticatedAdminIdentity | null>
 }>
 
-export type IdentitySessionRevocationError = Readonly<{
-  kind: "session-revocation-failed"
-}>
+export type IdentitySessionRevocationError =
+  Failure<"session-revocation-failed">
 
 export type IdentitySessionRevocationPort = Readonly<{
   revokeLearnerSessions: (
@@ -89,9 +89,8 @@ export type LearnerDeletionMarker = Readonly<{
   userId: UserId
 }>
 
-export type LearnerDeletionMarkerError = Readonly<{
-  kind: "deletion-marker-storage-failed"
-}>
+export type LearnerDeletionMarkerError =
+  Failure<"deletion-marker-storage-failed">
 
 export type LearnerDeletionMarkerStorePort = Readonly<{
   readAll: () => Promise<
@@ -102,9 +101,8 @@ export type LearnerDeletionMarkerStorePort = Readonly<{
   ) => Promise<Result<void, LearnerDeletionMarkerError>>
 }>
 
-export type DeletedLearnerPurgeRepositoryError = Readonly<{
-  kind: "deleted-learner-purge-failed"
-}>
+export type DeletedLearnerPurgeRepositoryError =
+  Failure<"deleted-learner-purge-failed">
 
 export type DeletedLearnerPurgeRepository = Readonly<{
   purgeDeletedBefore: (input: {

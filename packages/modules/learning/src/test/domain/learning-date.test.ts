@@ -6,14 +6,12 @@ import {
   createLearningActivityDatePolicy,
   groupLearningActivityDatesByUserId,
   isLearningDateKeyInRange,
-  platformLearningTimeZone,
   toLearningDateKey,
   type LearningDateKey,
 } from "#learning/domain/learning-date"
 
 describe("학습 활동일 정책", () => {
   it("플랫폼 학습일은 명시된 학습 시간대를 사용한다", () => {
-    expect(platformLearningTimeZone).toBe("Asia/Seoul")
     expect(toLearningDateKey(new Date("2026-06-14T14:59:59.000Z"))).toBe(
       "2026-06-14"
     )

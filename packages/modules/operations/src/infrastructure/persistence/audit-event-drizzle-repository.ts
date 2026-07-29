@@ -3,13 +3,28 @@ import type { WritingAppDatabase } from "@workspace/db/client"
 import { err, ok } from "@workspace/kernel/result"
 import type { AdminId, CourseId, UserId } from "@workspace/types/ids"
 
-import type { AuditEventRepository } from "#operations/application/ports/audit-event-repository"
+import type {
+  AuditEventFailureObserver,
+  AuditEventOperation,
+  AuditEventRepository,
+} from "#operations/application/ports/audit-event-repository"
+
+export type { AuditEventFailureObserver }
 import type { AuditEvent, AuditEventId } from "#operations/domain/audit-event"
 import { auditEvents } from "#operations/infrastructure/persistence/schema"
 
 export function createAuditEventDrizzleRepository(
-  database: WritingAppDatabase
+  database: WritingAppDatabase,
+  observer: AuditEventFailureObserver
 ): AuditEventRepository {
+  const persistenceFailed = (
+    cause: unknown,
+    operation: AuditEventOperation
+  ) => {
+    observer({ cause, kind: "audit-event-persistence-failed", operation })
+    return err({ cause, kind: "audit-event-persistence-failed" } as const)
+  }
+
   return {
     async countExpired(input) {
       try {
@@ -22,8 +37,8 @@ export function createAuditEventDrizzleRepository(
             .limit(input.batchSize)
             .all().length
         )
-      } catch {
-        return err({ kind: "audit-event-persistence-failed" })
+      } catch (cause) {
+        return persistenceFailed(cause, "count-expired")
       }
     },
     async complete(input) {
@@ -41,18 +56,18 @@ export function createAuditEventDrizzleRepository(
           .get()
 
         return updated === undefined
-          ? err({ kind: "audit-event-conflict" })
+          ? err({ kind: "audit-event-conflict" } as const)
           : ok(undefined)
-      } catch {
-        return err({ kind: "audit-event-persistence-failed" })
+      } catch (cause) {
+        return persistenceFailed(cause, "complete")
       }
     },
     async insert(event) {
       try {
         database.insert(auditEvents).values(toAuditEventRow(event)).run()
         return ok(undefined)
-      } catch {
-        return err({ kind: "audit-event-persistence-failed" })
+      } catch (cause) {
+        return persistenceFailed(cause, "insert")
       }
     },
     async listRecent(limit) {
@@ -66,8 +81,8 @@ export function createAuditEventDrizzleRepository(
             .all()
             .map(toAuditEvent)
         )
-      } catch {
-        return err({ kind: "audit-event-persistence-failed" })
+      } catch (cause) {
+        return persistenceFailed(cause, "list-recent")
       }
     },
     async purgeExpired(input) {
@@ -86,8 +101,8 @@ export function createAuditEventDrizzleRepository(
           .all()
 
         return ok(deleted.length)
-      } catch {
-        return err({ kind: "audit-event-persistence-failed" })
+      } catch (cause) {
+        return persistenceFailed(cause, "purge-expired")
       }
     },
   }

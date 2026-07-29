@@ -21,12 +21,6 @@ export type LessonAiFeedbackOutcome =
       readonly status: "error"
     }
 
-export function getFirstLessonStep(
-  lesson: LearnerLessonDto
-): LearnerLessonStepDto | null {
-  return getLessonStep(lesson, 0)
-}
-
 export function getLessonStep(
   lesson: LearnerLessonDto,
   stepIndex: number

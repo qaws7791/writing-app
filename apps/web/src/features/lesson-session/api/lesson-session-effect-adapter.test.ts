@@ -27,6 +27,8 @@ const start: LearnerStartLessonResultDto = {
   version: { curriculumVersionId: "version-1", revision: 1 },
 }
 
+const abortSignal = new AbortController().signal
+
 const advanced: LearnerCompleteStepResultDto = {
   evaluation: null,
   learning: {
@@ -61,12 +63,14 @@ describe("createLessonSessionEffects", () => {
 
     expect(generatedClient.startLearnerLesson).toHaveBeenCalledWith(
       "lesson-1",
-      { expectedCurriculumVersionId: "version-1" }
+      { expectedCurriculumVersionId: "version-1" },
+      { signal: abortSignal }
     )
     expect(generatedClient.completeLearnerStep).toHaveBeenCalledWith(
       "lesson-1",
       "step-1",
-      { kind: "acknowledge" }
+      { kind: "acknowledge" },
+      { signal: abortSignal }
     )
   })
 
@@ -90,7 +94,10 @@ describe("createLessonSessionEffects", () => {
     expect(generatedClient.createLearnerStepAiFeedback).toHaveBeenCalledWith(
       "lesson-1",
       "step-ai",
-      { headers: { "Idempotency-Key": "feedback-1" } }
+      {
+        headers: { "Idempotency-Key": "feedback-1" },
+        signal: abortSignal,
+      }
     )
   })
 
@@ -179,6 +186,7 @@ function createEffects() {
   return createLessonSessionEffects({
     expectedCurriculumVersionId: "version-1",
     lessonId: "lesson-1",
+    readAbortSignal: () => abortSignal,
   })
 }
 

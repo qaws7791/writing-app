@@ -9,8 +9,13 @@ import {
   type AdminSessionResolver,
 } from "@workspace/identity/sessions"
 import { createAuditTrail, type AuditTrail } from "@workspace/operations/audit"
-import { createAuditEventDrizzleRepository } from "@workspace/operations/audit-repository"
+import {
+  createAuditEventDrizzleRepository,
+  type AuditEventFailureObserver,
+} from "@workspace/operations/audit-repository"
 import type { CourseId } from "@workspace/types/ids"
+
+type AuditEventFailure = Parameters<AuditEventFailureObserver>[0]
 
 import type { AdminHonoEnv } from "@/admin/admin-hono-env"
 import { runApplicationMigrations } from "@/db/migrate"
@@ -29,7 +34,10 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
       const trail = createAuditTrail({
         clock: { now: () => now },
         idGenerator: { next: () => `audit-${++sequence}` },
-        repository: createAuditEventDrizzleRepository(client.db),
+        repository: createAuditEventDrizzleRepository(
+          client.db,
+          () => undefined
+        ),
       })
       const app = createAuditedFixture(trail)
 
@@ -152,7 +160,10 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
       const trail = createAuditTrail({
         clock: { now: () => currentTime },
         idGenerator: { next: () => `audit-${++sequence}` },
-        repository: createAuditEventDrizzleRepository(client.db),
+        repository: createAuditEventDrizzleRepository(
+          client.db,
+          () => undefined
+        ),
       })
 
       await startAndCompleteCourseAudit(trail, "request-boundary")
@@ -188,10 +199,13 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
           SELECT RAISE(ABORT, 'audit unavailable');
         END;
       `)
+      const observedFailures: AuditEventFailure[] = []
       const trail = createAuditTrail({
         clock: { now: () => now },
         idGenerator: { next: () => "audit-1" },
-        repository: createAuditEventDrizzleRepository(client.db),
+        repository: createAuditEventDrizzleRepository(client.db, (failure) => {
+          observedFailures.push(failure)
+        }),
       })
       let mutationCount = 0
       const app = createAuditedFixture(trail, () => {
@@ -211,6 +225,10 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
       expect(mutationCount).toBe(0)
       expect(unauthenticated.status).toBe(401)
       expect(readAuditRows(client.sqlite)).toEqual([])
+      expect(observedFailures).toMatchObject([
+        { kind: "audit-event-persistence-failed", operation: "insert" },
+      ])
+      expect(observedFailures[0]?.cause).toBeInstanceOf(Error)
     } finally {
       client.close()
     }
@@ -231,7 +249,10 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
       const trail = createAuditTrail({
         clock: { now: () => now },
         idGenerator: { next: () => "audit-1" },
-        repository: createAuditEventDrizzleRepository(client.db),
+        repository: createAuditEventDrizzleRepository(
+          client.db,
+          () => undefined
+        ),
       })
       let mutationCount = 0
       const app = createAuditedFixture(trail, () => {

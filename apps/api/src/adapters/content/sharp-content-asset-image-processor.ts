@@ -51,8 +51,8 @@ export function createSharpContentAssetImageProcessor(): ContentAssetImageProces
           bytes: Uint8Array.from(output),
           contentType: input.contentType,
         })
-      } catch {
-        return err({ reason: "image-decode-failed" })
+      } catch (cause) {
+        return err({ cause, reason: "image-decode-failed" })
       }
     },
   }

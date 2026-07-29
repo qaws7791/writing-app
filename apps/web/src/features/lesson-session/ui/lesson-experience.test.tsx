@@ -197,7 +197,8 @@ describe("LessonExperience", () => {
     expect(generatedClient.completeLearnerStep).toHaveBeenCalledWith(
       "lesson-1",
       "step-ai",
-      { kind: "skip-ai-feedback" }
+      { kind: "skip-ai-feedback" },
+      { signal: expect.any(AbortSignal) }
     )
 
     await userEvent.click(
@@ -293,7 +294,8 @@ describe("LessonExperience", () => {
             answer: { text: "이어 쓴 문장", type: "WRITE" },
             expectedCurriculumVersionId: "version-1",
             expectedVersion: 2,
-          }
+          },
+          { signal: expect.any(AbortSignal) }
         )
       },
       { timeout: 1_500 }
@@ -311,7 +313,8 @@ describe("LessonExperience", () => {
     await waitFor(() => {
       expect(generatedClient.startLearnerLesson).toHaveBeenCalledWith(
         "lesson-1",
-        { expectedCurriculumVersionId: "version-1" }
+        { expectedCurriculumVersionId: "version-1" },
+        { signal: expect.any(AbortSignal) }
       )
     })
     expect(await screen.findByText("정답을 고르세요")).toBeInTheDocument()
@@ -348,7 +351,8 @@ describe("LessonExperience", () => {
       {
         answer: { selectedOptionId: "option-1", type: "MULTIPLE_CHOICE" },
         kind: "answer",
-      }
+      },
+      { signal: expect.any(AbortSignal) }
     )
   })
 

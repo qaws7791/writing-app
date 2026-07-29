@@ -15,8 +15,8 @@ export function createIdentitySessionRevocation(
           .where(eq(authSessions.userId, userId))
           .run()
         return ok(undefined)
-      } catch {
-        return err({ kind: "session-revocation-failed" })
+      } catch (cause) {
+        return err({ cause, kind: "session-revocation-failed" })
       }
     },
   }
