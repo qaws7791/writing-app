@@ -6,7 +6,7 @@ import { validate } from "@scalar/openapi-parser"
 import {
   createOpenApiDocuments,
   serializeOpenApiDocument,
-} from "@/openapi/openapi-documents"
+} from "@/http/openapi-documents"
 
 export const defaultOpenApiOutputDirectory = resolve(
   import.meta.dir,

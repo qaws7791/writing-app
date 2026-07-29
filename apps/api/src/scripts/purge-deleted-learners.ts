@@ -2,10 +2,13 @@ import {
   createWritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
-import { createDeletedLearnerPurgeCommand } from "@workspace/identity/purge"
+import {
+  createDeletedLearnerPurgeCommand,
+  createDeletedLearnerPurgeRepository,
+} from "@workspace/identity/module"
 import type { Clock } from "@workspace/kernel/clock"
 
-import { createDeletedLearnerPurgeRepository } from "@/adapters/identity/deleted-learner-purge-repository"
+import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 import { systemClock } from "@/runtime/system-clock"
 
 export type DeletedLearnerPurgeEnvironment = Readonly<{
@@ -43,7 +46,10 @@ export async function runDeletedLearnerPurge(
 ) {
   const command = createDeletedLearnerPurgeCommand({
     clock,
-    repository: createDeletedLearnerPurgeRepository(client.db),
+    repository: createDeletedLearnerPurgeRepository({
+      database: client.db,
+      learnerDataPurges: learnerDataPurgePorts,
+    }),
   })
   const result = await command.execute()
   if (result.isErr()) {

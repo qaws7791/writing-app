@@ -1,14 +1,14 @@
-import type {
-  AiFeedbackAttemptPolicy,
-  AiFeedbackAttemptTransition,
-  AiFeedbackDailyQuotaPolicy,
-  AiFeedbackUsageEvent,
-} from "@workspace/ai-feedback/application"
 import {
   createAiFeedbackModule,
   type AiFeedbackModule,
 } from "@workspace/ai-feedback/module"
-import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
+import type {
+  AiFeedbackAttemptPolicy,
+  AiFeedbackAttemptTransition,
+  AiFeedbackDailyQuotaPolicy,
+  AiFeedbackProvider,
+  AiFeedbackUsageEvent,
+} from "@workspace/ai-feedback/ports"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 
@@ -20,7 +20,11 @@ export function composeAiFeedbackModule(input: {
   readonly database: WritingAppDatabase
   readonly onAttemptTransition?: (event: AiFeedbackAttemptTransition) => void
   readonly onUsage?: (event: AiFeedbackUsageEvent) => void
-  readonly provider: AiFeedbackProvider
+  readonly openAi: Readonly<{
+    apiKey: string | undefined
+    model: string
+  }>
+  readonly provider?: AiFeedbackProvider
 }): AiFeedbackModule {
   return createAiFeedbackModule({
     attemptIdGenerator: input.attemptIdGenerator,
@@ -30,6 +34,7 @@ export function composeAiFeedbackModule(input: {
     database: input.database,
     observeAttemptTransition: input.onAttemptTransition,
     observeUsage: input.onUsage,
-    provider: input.provider,
+    openAi: input.openAi,
+    ...(input.provider === undefined ? {} : { provider: input.provider }),
   })
 }

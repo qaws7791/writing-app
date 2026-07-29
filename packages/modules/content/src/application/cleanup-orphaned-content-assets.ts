@@ -6,13 +6,13 @@ import type {
 } from "#content/application/ports/content-ports"
 import type { ContentError } from "#content/domain/content-error"
 
-export type CleanupOrphanedAssetsInput = Readonly<{
+type CleanupOrphanedAssetsInput = Readonly<{
   batchSize: number
   cutoff: Date
   dryRun: boolean
 }>
 
-export type CleanupOrphanedAssetsResult = Readonly<{
+type CleanupOrphanedAssetsResult = Readonly<{
   deleted: number
   retained: number
   scanned: number

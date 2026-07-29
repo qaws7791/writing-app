@@ -1,13 +1,13 @@
-import type { AiFeedbackMaintenance } from "@workspace/ai-feedback/maintenance"
+import type { AiFeedbackMaintenance } from "@workspace/ai-feedback/ports"
 import {
   contentAssetOrphanRetentionMs,
   type CleanupOrphanedAssets,
-} from "@workspace/content/maintenance"
-import type { DeletedLearnerPurgeCommand } from "@workspace/identity/purge"
+} from "@workspace/content/ports"
+import type { DeletedLearnerPurgeCommand } from "@workspace/identity/ports"
 import type { Clock } from "@workspace/kernel/clock"
 import type { Failure } from "@workspace/kernel/failure"
 import { err, ok, type Result } from "@workspace/kernel/result"
-import type { AuditTrail } from "@workspace/operations/audit"
+import type { AuditTrail } from "@workspace/operations/ports"
 
 import type { ExpiredSessionMaintenance } from "@/maintenance/expired-session-maintenance"
 import type { ExternalLogRetentionEvidence } from "@/maintenance/log-retention-evidence"

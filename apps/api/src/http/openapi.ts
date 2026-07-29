@@ -2,8 +2,8 @@ import type { OpenAPIHono } from "@hono/zod-openapi"
 import { Scalar } from "@scalar/hono-api-reference"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
-import type { ApiHonoEnv } from "@/context/hono-env"
-import type { OpenApiDocument } from "@/openapi/openapi-document"
+import type { ApiHonoEnv } from "@/middleware/hono-env"
+import type { OpenApiDocument } from "@/http/openapi-document"
 
 const openApiDocumentConfig = {
   info: {

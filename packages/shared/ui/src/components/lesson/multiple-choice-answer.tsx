@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { buttonVariants } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
-import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
+import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 
 export function MultipleChoiceAnswer({
   checked = false,

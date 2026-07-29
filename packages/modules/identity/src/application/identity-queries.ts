@@ -1,5 +1,6 @@
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { UserId } from "@workspace/types/ids"
+import { toPlatformDayKey } from "@workspace/kernel/day-boundary"
 
 import type { AdminActor } from "#identity/domain/admin-actor"
 import type { IdentityError } from "#identity/domain/identity-error"
@@ -17,10 +18,10 @@ import {
   listLearnerAccounts,
 } from "#identity/application/learner-account-reader"
 
-export type AdminUserSort = "joined" | "lastActive" | "lessonsDone" | "streak"
-export type AdminUserStatusFilter = UserStatus | "all"
+type AdminUserSort = "joined" | "lastActive" | "lessonsDone" | "streak"
+type AdminUserStatusFilter = UserStatus | "all"
 
-export type AdminUserListItem = Readonly<{
+type AdminUserListItem = Readonly<{
   email: string
   id: UserId
   joined: string
@@ -37,7 +38,7 @@ export type AdminUserDetail = AdminUserListItem &
     totalLessons: number
   }>
 
-export type ReadAdminUsersInput = Readonly<{
+type ReadAdminUsersInput = Readonly<{
   page: number
   pageSize: number
   query: string
@@ -183,7 +184,7 @@ function toAdminUserListItem(
   return {
     email: deleted ? "deleted@example.invalid" : account.email,
     id: account.id,
-    joined: toSeoulDate(account.createdAt),
+    joined: toPlatformDayKey(account.createdAt),
     lastActive: report?.lastActive ?? null,
     lessonsDone: report?.completedLessons ?? 0,
     name: account.profile.profile.displayName,
@@ -216,18 +217,4 @@ function createAdminUserComparator(sort: AdminUserSort) {
 
 function compareDescending(left: string, right: string): number {
   return right.localeCompare(left)
-}
-
-function toSeoulDate(date: Date): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-  }).formatToParts(date)
-  const values = Object.fromEntries(
-    parts.map((part) => [part.type, part.value])
-  )
-
-  return `${values["year"]}-${values["month"]}-${values["day"]}`
 }

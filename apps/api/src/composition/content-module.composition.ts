@@ -1,7 +1,7 @@
 import {
-  createContentApplication,
-  type ContentApplication,
-} from "@workspace/content/application"
+  createContentModule,
+  type ContentModule,
+} from "@workspace/content/module"
 import type { ContentAssetStoragePort } from "@workspace/content/ports"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { createS3ObjectStorage } from "@workspace/storage/object-storage"
@@ -12,14 +12,14 @@ import { createContentAssetStorageAdapter } from "@/adapters/content/content-ass
 import { createSharpContentAssetImageProcessor } from "@/adapters/content/sharp-content-asset-image-processor"
 import type { AdminAssetStoreEnv } from "@/config/env"
 
-export function composeContentApplication(input: {
+export function composeContentModule(input: {
   readonly assetIdGenerator: IdGenerator<ContentAssetId>
   readonly assetStorage?: ContentAssetStoragePort
   readonly assetStore: AdminAssetStoreEnv | undefined
   readonly clock: Clock
   readonly courseIdGenerator: IdGenerator<CourseId>
   readonly database: WritingAppDatabase
-}): ContentApplication {
+}): ContentModule {
   const objectStorage =
     input.assetStorage ??
     (input.assetStore === undefined
@@ -33,7 +33,7 @@ export function composeContentApplication(input: {
           }
         ))
 
-  return createContentApplication({
+  return createContentModule({
     assetIdGenerator: input.assetIdGenerator,
     assetImageProcessor: createSharpContentAssetImageProcessor(),
     assetStorage: objectStorage,

@@ -2,22 +2,44 @@ import { Hono } from "hono"
 import { describe, expect, it } from "vitest"
 import type { Database } from "bun:sqlite"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import {
+  createInMemoryWritingAppDatabase,
+  type WritingAppDatabase,
+} from "@workspace/db/client"
 import { AppError } from "@workspace/http-platform/errors"
 import {
   adminSessionExpiresAt,
   type AdminSessionResolver,
-} from "@workspace/identity/sessions"
-import { createAuditTrail, type AuditTrail } from "@workspace/operations/audit"
-import {
-  createAuditEventDrizzleRepository,
-  type AuditEventFailureObserver,
-} from "@workspace/operations/audit-repository"
+} from "@workspace/identity/ports"
+import { createOperationsModule } from "@workspace/operations/module"
+import type {
+  AuditEventFailureObserver,
+  AuditTrail,
+} from "@workspace/operations/ports"
 import type { CourseId } from "@workspace/types/ids"
 
 type AuditEventFailure = Parameters<AuditEventFailureObserver>[0]
 
-import type { AdminHonoEnv } from "@/admin/admin-hono-env"
+function createTestAuditTrail(input: {
+  readonly clock: () => Date
+  readonly database: WritingAppDatabase
+  readonly failureObserver?: AuditEventFailureObserver
+  readonly nextId: () => string
+  readonly reportingDatabase: Database
+}): AuditTrail {
+  return createOperationsModule({
+    audit: {
+      failureObserver: input.failureObserver ?? (() => undefined),
+      idGenerator: { next: input.nextId },
+    },
+    clock: { now: input.clock },
+    database: input.database,
+    reportingDatabase: input.reportingDatabase,
+    reportingFailureObserver: () => undefined,
+  }).auditTrail
+}
+
+import type { AdminHonoEnv } from "@/http/admin-hono-env"
 import { runApplicationMigrations } from "@/db/migrate"
 import { createAdminAuditMiddleware } from "@/observability/admin-audit.middleware"
 
@@ -27,17 +49,16 @@ const adminCookie = "admin=valid"
 describe("관리자 DB audit SQLite + Hono integration", () => {
   it("대상 관리자 요청의 actor·target·성공/실패만 저장하고 PII payload는 저장하지 않는다", async () => {
     const client = createInMemoryWritingAppDatabase()
+    const reportingClient = createInMemoryWritingAppDatabase()
 
     try {
       runApplicationMigrations(client.sqlite)
       let sequence = 0
-      const trail = createAuditTrail({
-        clock: { now: () => now },
-        idGenerator: { next: () => `audit-${++sequence}` },
-        repository: createAuditEventDrizzleRepository(
-          client.db,
-          () => undefined
-        ),
+      const trail = createTestAuditTrail({
+        clock: () => now,
+        database: client.db,
+        nextId: () => `audit-${++sequence}`,
+        reportingDatabase: reportingClient.sqlite,
       })
       const app = createAuditedFixture(trail)
 
@@ -146,24 +167,24 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
         ])
       )
     } finally {
+      reportingClient.close()
       client.close()
     }
   })
 
   it("retention cutoff의 정확한 경계를 batch로 삭제하고 재실행을 안전하게 처리한다", async () => {
     const client = createInMemoryWritingAppDatabase()
+    const reportingClient = createInMemoryWritingAppDatabase()
 
     try {
       runApplicationMigrations(client.sqlite)
       let currentTime = new Date("2025-07-24T00:00:00.000Z")
       let sequence = 0
-      const trail = createAuditTrail({
-        clock: { now: () => currentTime },
-        idGenerator: { next: () => `audit-${++sequence}` },
-        repository: createAuditEventDrizzleRepository(
-          client.db,
-          () => undefined
-        ),
+      const trail = createTestAuditTrail({
+        clock: () => currentTime,
+        database: client.db,
+        nextId: () => `audit-${++sequence}`,
+        reportingDatabase: reportingClient.sqlite,
       })
 
       await startAndCompleteCourseAudit(trail, "request-boundary")
@@ -183,12 +204,14 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
         },
       ])
     } finally {
+      reportingClient.close()
       client.close()
     }
   })
 
   it("사전 audit insert 실패 시 mutation을 실행하지 않고 인증 실패는 DB audit에서 제외한다", async () => {
     const client = createInMemoryWritingAppDatabase()
+    const reportingClient = createInMemoryWritingAppDatabase()
 
     try {
       runApplicationMigrations(client.sqlite)
@@ -200,12 +223,14 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
         END;
       `)
       const observedFailures: AuditEventFailure[] = []
-      const trail = createAuditTrail({
-        clock: { now: () => now },
-        idGenerator: { next: () => "audit-1" },
-        repository: createAuditEventDrizzleRepository(client.db, (failure) => {
+      const trail = createTestAuditTrail({
+        clock: () => now,
+        database: client.db,
+        failureObserver: (failure) => {
           observedFailures.push(failure)
-        }),
+        },
+        nextId: () => "audit-1",
+        reportingDatabase: reportingClient.sqlite,
       })
       let mutationCount = 0
       const app = createAuditedFixture(trail, () => {
@@ -230,12 +255,14 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
       ])
       expect(observedFailures[0]?.cause).toBeInstanceOf(Error)
     } finally {
+      reportingClient.close()
       client.close()
     }
   })
 
   it("outcome update 실패 시 started 흔적을 보존하고 성공 응답을 반환하지 않는다", async () => {
     const client = createInMemoryWritingAppDatabase()
+    const reportingClient = createInMemoryWritingAppDatabase()
 
     try {
       runApplicationMigrations(client.sqlite)
@@ -246,13 +273,11 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
           SELECT RAISE(ABORT, 'audit unavailable');
         END;
       `)
-      const trail = createAuditTrail({
-        clock: { now: () => now },
-        idGenerator: { next: () => "audit-1" },
-        repository: createAuditEventDrizzleRepository(
-          client.db,
-          () => undefined
-        ),
+      const trail = createTestAuditTrail({
+        clock: () => now,
+        database: client.db,
+        nextId: () => "audit-1",
+        reportingDatabase: reportingClient.sqlite,
       })
       let mutationCount = 0
       const app = createAuditedFixture(trail, () => {
@@ -270,6 +295,7 @@ describe("관리자 DB audit SQLite + Hono integration", () => {
         { outcome: "started", requestId: "request-1" },
       ])
     } finally {
+      reportingClient.close()
       client.close()
     }
   })

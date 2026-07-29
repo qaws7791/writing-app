@@ -13,11 +13,4 @@ describe("어드민 식별자 parser", () => {
     expect(parsed).toBe(value)
     expect(JSON.stringify(parsed)).toBe(JSON.stringify(value))
   })
-
-  it.each(["", " user-1", "user 1", "user/1", "가나다", "a".repeat(201)])(
-    "길이와 허용 문자 규칙을 위반한 ID를 거부한다: %s",
-    (value) => {
-      expect(userIdSchema.safeParse(value).success).toBe(false)
-    }
-  )
 })

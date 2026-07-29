@@ -4,14 +4,14 @@ import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerOperationalStatusSchema } from "@workspace/contracts/identity/status"
 import { AppError } from "@workspace/http-platform/errors"
 import { readTrustedClientIp } from "@workspace/http-platform/security"
-import type { AdminSessionResolver } from "@workspace/identity/sessions"
-import type { AuditTrail } from "@workspace/operations/audit"
+import type { AdminSessionResolver } from "@workspace/identity/ports"
 import type {
   AuditAction,
   AuditTarget,
-} from "@workspace/operations/audit-event"
+  AuditTrail,
+} from "@workspace/operations/ports"
 
-import type { AdminHonoEnv } from "@/admin/admin-hono-env"
+import type { AdminHonoEnv } from "@/http/admin-hono-env"
 
 type AdminAuditDescriptor = Readonly<{
   action: AuditAction

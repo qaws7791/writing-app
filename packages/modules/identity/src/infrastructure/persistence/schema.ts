@@ -26,3 +26,5 @@ export const learnerProfiles = sqliteTable(
     check("learner_profiles_version_check", sql`${table.version} >= 0`),
   ]
 )
+
+export * from "#identity/infrastructure/persistence/reporting-view"

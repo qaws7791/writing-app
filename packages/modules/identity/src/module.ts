@@ -96,3 +96,9 @@ export function createIdentityModule(
     },
   }
 }
+
+export { createDeletedLearnerPurgeCommand } from "#identity/application/deleted-learner-purge"
+export { createDeletedLearnerPurgeRepository } from "#identity/infrastructure/persistence/deleted-learner-purge-repository"
+export { createDeletionMarkerReapplicationRepository } from "#identity/infrastructure/persistence/deletion-marker-reapplication-repository"
+export { identityLearnerDataPurge } from "#identity/infrastructure/persistence/learner-purge"
+export { seedLearnerIdentity } from "#identity/infrastructure/persistence/seed"

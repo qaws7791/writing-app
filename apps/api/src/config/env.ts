@@ -7,7 +7,7 @@ import {
   defaultAiFeedbackDailyQuotaPolicy,
   type AiFeedbackAttemptPolicy,
   type AiFeedbackDailyQuotaPolicy,
-} from "@workspace/ai-feedback/application"
+} from "@workspace/ai-feedback/ports"
 
 export type ApiEnv = {
   readonly adminAssetStore: AdminAssetStoreEnv | undefined

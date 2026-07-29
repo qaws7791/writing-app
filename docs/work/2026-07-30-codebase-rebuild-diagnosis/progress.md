@@ -6,9 +6,9 @@
 
 ## 진행 현황
 
-- [ ] M0 · 소유자 결정 (0.2 MD)
+- [x] M0 · 소유자 결정 (0.2 MD) — 2026-07-30 확정
 - [x] M1 · 게이트 복구와 위험 제거 (7.2 MD) — 2026-07-30 완료, 편차 6건은 [M1 실행 기록](#m1-실행-기록) 참조
-- [ ] M2 · 경계 정본화 (14.8 MD)
+- [x] M2 · 경계 정본화 (14.8 MD) — 2026-07-30 완료, 편차 8건은 [M2 실행 기록](#m2-실행-기록) 참조
 - [ ] M3 · 표현 계층과 테스트 (7.5 MD)
 - [ ] M4 · 작업 종료와 지식 반영 (0.5 MD)
 
@@ -16,18 +16,18 @@
 
 ## M0 · 소유자 결정
 
-착수 전에 답이 필요한 항목이다. 미결이면 M1은 진행 가능하지만 M2 이후의 범위와 위험 등급이 확정되지 않는다.
+2026-07-30 확정. 아래 결정이 M2 이후의 범위와 위험 등급을 고정한다.
 
-### T-00 · 범위와 제약 확정 — 0.2 MD · 선행 없음
+### T-00 · 범위와 제약 확정 — 0.2 MD · 선행 없음 — 2026-07-30 완료
 
-- [ ] 운영 단계 확정: 실사용자가 있는 프로덕션인가 배포 전 개발 단계인가
-- [ ] 위 답에 따라 T-09(purge 포트 전환)·T-10(리포팅 뷰)의 스테이징 실데이터 검증 필수 여부 결정
-- [ ] 팀 규모와 가용 공수 확정 (29.5 MD는 1인 순차 기준, 2인 투입 시 실질 단축 약 30%)
-- [ ] `docs/archive/2026-07-22-modular-monolith-redesign/`의 17단계 재설계를 완료로 볼지 확정 (완료 → 현 구조를 기준선으로, 미완 → 잔여 항목 선행)
-- [ ] `docs/work` 진행 중 3건(2026-07-16 / 07-23 / 07-24)과 겹치는 항목의 처리 방침 결정
-- [ ] D-22 `docs/research` 215파일 / 40,807줄 외부화 여부 결정 (즉시 조치인 repomix 제외는 T-02에서 별도 진행)
-- [ ] D-23 `.agents/skills` 122파일 벤더 사본 유지 여부 결정
-- [ ] D-24 `apps/storybook` / D-25 `scripts` 검증 스크립트군은 조사 결과 삭제 비권고임을 확인하고 종결
+- [x] 운영 단계: **실사용자 0의 초기 개발 단계**. 프로덕션 실데이터가 없다
+- [x] 위 결정에 따라 T-06(ID 검증 강화)·T-09(purge 포트 전환)·T-10(리포팅 뷰)의 **스테이징 실데이터 검증은 불필요**. 검증할 실데이터가 없으므로 시드·E2E 픽스처를 기준선으로 하는 로컬 검증으로 대체하고, 각 티켓의 해당 항목을 이 방침으로 고쳤다
+- [x] 팀 규모: **1인**. 29.5 MD는 순차 작업량 그대로이며 병렬 단축을 전제하지 않는다
+- [x] `docs/archive/2026-07-22-modular-monolith-redesign/` 17단계 재설계는 **완료**. 현 구조를 기준선으로 삼고 잔여 항목을 선행하지 않는다
+- [x] `docs/work` 진행 중 3건(2026-07-16 / 07-23 / 07-24)은 **완료로 간주하고 이번 작업과 분리**한다. 겹치는 항목을 선행 조건으로 두지 않는다
+- [x] D-22 `docs/research` 외부화: **이번 작업 범위 밖**. `docs/` 는 코드베이스 재구축 대상이 아니다 (repomix 제외만 T-02에서 완료)
+- [x] D-23 `.agents/skills` 벤더 사본: **현행 유지**. `.agents/` 는 건드리지 않는다
+- [x] D-24 `apps/storybook` · D-25 `scripts` 검증 스크립트군: **유지**로 종결. 필요하면 삭제해도 좋다는 권한을 받았으나 둘 다 CI에서 실제로 실행된다(`quality-gates.yml` 의 `test:storybook`, 배포 이미지·번들 예산·Lighthouse·k6 검증). D-25의 재판정 조건이던 `check-toolchain` 은 스크립트가 이미 없고 workflow 참조도 T-01에서 제거되어 해소됐다. 이후 티켓에서 실제 가치가 없다고 드러나면 그 시점에 삭제한다
 
 ---
 
@@ -168,109 +168,148 @@ M1 종료 조건 대조: 변경이 자동 검증되는 상태(`ci:static` 8종 g
 
 Strangler 3단계(세운다 → 옮긴다 → 지운다)로 진행한다.
 
-- [ ] **세운다**: `packages/shared/kernel/src/day-boundary.ts` 신설 — `platformDayBoundary = { timeZone, sqliteOffset }`
-- [ ] **세운다**: `packages/shared/contracts/src/identifier.ts` 신설 — 단일 `createIdentifierSchema` (형식 + `max(200)` + `u` 플래그)
-- [ ] 사전 확인: `bun --filter @workspace/api db:inspect` 로 기존 저장 ID가 새 규칙을 통과하는지 점검
-- [ ] 사전 확인: 시드·E2E 픽스처 ID가 새 규칙을 통과하는지 점검
-- [ ] **옮긴다**: `identity-queries.ts:225` 를 새 정본 소비로 전환
-- [ ] **옮긴다**: `operations-reporting.ts:111` 을 새 정본 소비로 전환
-- [ ] **옮긴다**: `ai-feedback-answer.tsx:280` 을 새 정본 소비로 전환
-- [ ] **옮긴다**: `ai-feedback-quota.ts:51` 의 고정 offset `9*60*60*1_000` 을 새 정본으로 전환 (IANA 표현과 의미가 다름에 주의)
-- [ ] **옮긴다**: `operations-reporting-sqlite-repository.ts:80,149,158,173` 의 `'+9 hours'` 를 파라미터 바인딩으로 전환
-- [ ] **옮긴다**: `contracts/learning/ids.ts:6-11` 의 `createIdSchema` 를 새 정본 소비로 교체
-- [ ] **옮긴다**: `contracts/content/ids.ts:21-26` 의 `createIdSchema` 를 새 정본 소비로 교체
-- [ ] **옮긴다**: `contracts/identity/admin-ids.ts:18-25` 의 `identifierSchema` 를 새 정본 소비로 교체
-- [ ] **지운다**: D-14 중복 팩토리 2개 제거
-- [ ] **지운다**: `learning-date.ts:6 platformLearningTimeZone` — 내부 소비자만 남으면 삭제, 아니면 재수출로 축소
-- [ ] ID 검증 강화 케이스 추가: 형식 위반·200자 초과 거부 (현재 `courseIdSchema` 는 통과시킨다)
-- [ ] `docs/glossary.md` 를 [`03-target-design.md`](./03-target-design.md) "도메인 언어 정본" 표 기준으로 재작성
-- [ ] 검증: `git grep -cE '"Asia/Seoul"|\+9 hours|9 \* 60 \* 60'` → 정본 1곳
-- [ ] 검증: `createIdSchema` 정의 수 3 → 1
-- [ ] 검증: `bun run ci:static` · `bun run test`
-- [ ] **스테이징 검증 필요** — ID 검증 강화는 행위 변경이다. 저장된 ID가 새 규칙을 위반하면 해당 API가 400을 반환한다
-- [ ] 롤백 준비: ID 검증 강화를 별도 commit으로 분리
+- [x] **세운다**: `packages/shared/kernel/src/day-boundary.ts` 신설 — `platformDayBoundary = { offsetMs, sqliteOffset, timeZone }` + `toPlatformDayKey()`
+- [x] **세운다**: `packages/shared/contracts/src/identifier.ts` 신설 — 단일 `createIdentifierSchema` (형식 + `max(200)` + `u` 플래그). 공개 subpath로 올리지 않고 `#contracts/identifier` 내부 경로로만 소비
+- [ ] 사전 확인: `bun --filter @workspace/api db:inspect` 로 기존 저장 ID가 새 규칙을 통과하는지 점검 — **해당 없음**. `inspect-database.ts` 는 schema 진단만 출력하고 ID 형식을 보고하지 않으며 로컬 DB 파일도 없다. 아래 두 항목이 실질 근거다
+- [x] 사전 확인: 시드·E2E 픽스처 ID가 새 규칙을 통과하는지 점검 — `content-seed-data.json` ID 419개 중 위반 0건
+- [x] **옮긴다**: `identity-queries.ts:225` 를 새 정본 소비로 전환
+- [x] **옮긴다**: `operations-reporting.ts:111` 을 새 정본 소비로 전환
+- [x] **옮긴다**: `ai-feedback-answer.tsx:280` 을 새 정본 소비로 전환 (`@workspace/ui` 에 `@workspace/kernel` dependency 추가)
+- [x] **옮긴다**: `ai-feedback-quota.ts:51` 의 고정 offset `9*60*60*1_000` 을 새 정본으로 전환 (IANA 표현과 의미가 다름에 주의)
+- [x] **옮긴다**: `operations-reporting-sqlite-repository.ts:80,149,158,173` 의 `'+9 hours'` 를 파라미터 바인딩으로 전환 (`?4`)
+- [x] **옮긴다**: `contracts/learning/ids.ts:6-11` 의 `createIdSchema` 를 새 정본 소비로 교체
+- [x] **옮긴다**: `contracts/content/ids.ts:21-26` 의 `createIdSchema` 를 새 정본 소비로 교체
+- [x] **옮긴다**: `contracts/identity/admin-ids.ts:18-25` 의 `identifierSchema` 를 새 정본 소비로 교체
+- [x] **지운다**: D-14 중복 팩토리 2개 제거
+- [x] **지운다**: `learning-date.ts:6 platformLearningTimeZone` 삭제 (재수출 불필요 — 외부 소비자 0)
+- [x] **지운다**: 계획 외 — `toSeoulDate`·`toSeoulDateKey`·`learningDateFormatter` 3중 복제를 `toPlatformDayKey` 1곳으로 통합 (아래 실행 기록)
+- [x] ID 검증 강화 케이스 추가: 형식 위반·200자 초과 거부 (현재 `courseIdSchema` 는 통과시킨다) — `contracts/src/identifier.test.ts` 신설, `admin-ids.test.ts` 의 중복 열거 제거
+- [x] `docs/glossary.md` 를 [`03-target-design.md`](./03-target-design.md) "도메인 언어 정본" 표 기준으로 재작성 (학습자 화면 모델 행은 T-12에서 추가)
+- [x] 검증: `git grep -cE '"Asia/Seoul"|\+9 hours|9 \* 60 \* 60'` → `day-boundary.ts` 1파일 3줄만 남음
+- [x] 검증: `createIdSchema` 정의 수 3 → 1 (`createIdentifierSchema` 1곳)
+- [x] 검증: `bun run ci:static` (8종 green, depcruise 1,441 모듈 위반 0) · `bun run test` (20/20 task green)
+- [x] 로컬 검증으로 대체 (M0: 실데이터 없음) — `bun run test:e2e:pr` 5케이스 green. 학습자 로그인·레슨 완료·초안 복구·AI 실패 경로와 관리자 코스 발행·학습자 정지가 400 없이 통과
+- [ ] 롤백 준비: ID 검증 강화를 별도 commit으로 분리 — **미실행**, M1과 같은 이유로 소유자 확인 대기
 
 ### T-07 · 조립 정리 — 2.0 MD · 선행 T-01 · F-12 F-15
 
-- [ ] F-12: `create-container.ts` 에서 learning 모듈을 identity보다 먼저 조립
-- [ ] F-12: `learning.reportingQuery` 를 identity에 주입
-- [ ] F-12: `create-container.ts:189-192` 의 별도 `createLearningReportingQuery` 호출 제거
-- [ ] F-12: `learning-module.composition.ts:37 createLearningContentQueryPort` 를 내부 함수로 되돌림
-- [ ] D-12: `packages/modules/learning/src/learning-reporting.ts` 삭제 + `package.json` `"./reporting"` export 제거
-- [ ] 조립 순서 변경으로 `create-container.ts:376 createLearnerIdentityBridge` 의 late-binding을 제거할 수 있는지 확인 (가능하면 별도 commit — 런타임 throw 1건 감소)
-- [ ] D-15: `apps/api/src/routes/test-dependencies.ts` → `apps/api/src/test-support/learner-app-fixture.ts` 이동
-- [ ] D-15: `createTestLearnerApp` 이 라우트 등록 순서·미들웨어 조합을 자체 작성하지 않고 실제 `createApp` 을 호출하도록 전환
-- [ ] D-15: 픽스처는 의존성만 제공하도록 축약 (269 → 약 120줄)
-- [ ] D-15: `auth-proxy.test.ts:3` · `learner-app.test.ts:5` · `openapi.route.test.ts:6` · `unified-app.test.ts:7` 의 import 경로 갱신
-- [ ] D-15: `apps/api/src/routes/` 디렉터리 제거
-- [ ] 검증: `bun --filter @workspace/api test` — 37파일 137케이스 유지
-- [ ] 검증: `bun run ci:static` · `bun run test:e2e:pr`
-- [ ] 검증: `learning` exports 7 → 6
+- [x] F-12: `create-container.ts` 에서 learning 모듈을 identity보다 먼저 조립
+- [x] F-12: `learning.reportingQuery` 를 identity에 주입
+- [x] F-12: `create-container.ts:189-192` 의 별도 `createLearningReportingQuery` 호출 제거
+- [x] F-12: `learning-module.composition.ts:37 createLearningContentQueryPort` 를 내부 함수로 되돌림
+- [x] D-12: `packages/modules/learning/src/learning-reporting.ts` 삭제 + `package.json` `"./reporting"` export 제거
+- [x] 조립 순서 변경으로 `create-container.ts:376 createLearnerIdentityBridge` 의 late-binding을 제거할 수 있는지 확인 — **제거 불가**. identity↔learning이 서로의 조회 포트를 필요로 하는 실제 순환이라 한쪽은 늦게 연결해야 한다. bridge를 auth provisioner 전용에서 `createIdentityModuleReference` 로 바꿔 late-binding 지점을 1개로 유지하고, learner auth는 identity를 직접 받도록 정리했다 (런타임 throw 총량 불변)
+- [x] D-15: `apps/api/src/routes/test-dependencies.ts` → `apps/api/src/test-support/learner-app-fixture.ts` 이동
+- [x] D-15: `createTestLearnerApp` 이 라우트 등록 순서·미들웨어 조합을 자체 작성하지 않고 실제 조립 함수(`createLearnerApp` + `registerLearnerContractRoutes`)를 재사용하도록 전환. `createApp(container)` 직접 호출은 DB·auth runtime 전체를 요구해 단위 테스트를 통합 테스트로 바꾸므로 채택하지 않았다
+- [x] D-15: 픽스처는 의존성만 제공하도록 축약 (269 → 232줄. 라우트 등록 블록은 사라졌고 남은 대부분은 계약 스키마로 검증한 픽스처 데이터다)
+- [x] D-15: `auth-proxy.test.ts:3` · `learner-app.test.ts:5` · `openapi.route.test.ts:6` · `unified-app.test.ts:7` 의 import 경로 갱신
+- [x] D-15: `apps/api/src/routes/` 디렉터리 제거
+- [x] 검증: `bun --filter @workspace/api test` — 37파일 137케이스 유지
+- [x] 검증: `bun run ci:static` (green, depcruise 1,440 모듈 위반 0) · `bun run test:e2e:pr` (5/5)
+- [x] 검증: `learning` exports 7 → 6
 
 ### T-08 · 모듈 공개 표면 축약 — 4.5 MD · 선행 T-07 · F-08 F-09 F-10 F-11
 
 모듈별 독립 commit으로 진행한다. 한 모듈이 실패하면 그 모듈만 되돌린다.
 
-- [ ] content: `./application`·`./maintenance`·`./register-routes` → `./module`·`./http` 로 통합, `createContentModule` 신설
-- [ ] operations: `./audit-repository`·`./reporting-repository`·`./audit`·`./audit-event` → `./module` 내부로 흡수
-- [ ] ai-feedback: `./provider` → `./module` 파라미터(`provider?: AiFeedbackProvider`) 로 전환
-- [ ] ai-feedback: 테스트의 `createUnavailableAiFeedbackProvider` 주입 경로를 `./ports` 타입 + 테스트 로컬 구현으로 대체
-- [ ] identity: 12개 subpath → 4개 (`./admin-actor`·`./learner-profile`·`./user-status`·`./queries`·`./sessions`·`./purge`·`./seed` 흡수)
-- [ ] learning: `./mapping`·`./application` 내부화
-- [ ] 전 모듈 `./schema` → `./migration-schema` 개명
-- [ ] `dependency-cruiser.config.mjs` 에 규칙 `migration-schema-is-app-database-only` 추가 (별도 commit)
-- [ ] `apps/api/src/db/schema.ts` 가 `./migration-schema` 만 소비하도록 갱신
-- [ ] D-17: `packages/shared/ui/package.json` exports 49 → 3 (wildcard)
-- [ ] **모듈 패키지 wildcard 금지 확인** — `dependency-cruiser.config.mjs:135 modulePublicTargetPattern` 이 `exports` 에서 경계 패턴을 파생하므로 wildcard는 경계 검사를 무력화한다 (P-01 보존)
-- [ ] D-19: `apps/api/src/{admin,openapi,context}` 3개 디렉터리를 `http/`·`middleware/` 로 흡수 (로직 변경 없는 이동만)
-- [ ] `docs/engineering/package-interface-and-import-rules.md` 에 4개 subpath 관례 반영
-- [ ] 검증: `bun run check:architecture` — 신규 규칙 포함 위반 0
-- [ ] 검증: 모듈 exports 합계 40 → 20, 전체 subpath 170 → 약 95
-- [ ] 검증: `bun run ci:static` · `bun run test` · `bun run build`
-- [ ] 검증: `apps/api/src` 최상위 디렉터리 19 → 16
+- [x] content: `./application`·`./maintenance`·`./register-routes` → `./module`·`./http` 로 통합, `createContentModule` 신설 (`ContentModule = { application, maintenance }` + `seedContentDatabase` 재수출). `composeContentApplication` → `composeContentModule`
+- [x] operations: `./audit-repository`·`./reporting-repository`·`./audit`·`./audit-event` → `./module` 내부로 흡수. `./application`(`operations-application.ts`)은 소비자 0으로 파일까지 삭제. `createOperationsModule` 이 `database`·`reportingDatabase` 를 받아 두 repository를 직접 만든다
+- [x] ai-feedback: `./provider` → `./module` 파라미터(`provider?: AiFeedbackProvider` + `openAi: { apiKey, model }`) 로 전환. `./maintenance`(`maintenance.ts`) 삭제 후 `module.maintenance` 로 흡수
+- [x] ai-feedback: 테스트의 `createUnavailableAiFeedbackProvider` 주입 경로를 `./ports` 타입 + 테스트 로컬 구현으로 대체 (`create-container.test.ts`, `daily-maintenance.integration.test.ts`)
+- [x] identity: 12개 subpath → 4개. `./sessions`·`./learner-profile` → `./ports`, `./purge`·`./seed` → `./module`, `./admin-actor`·`./application`·`./queries`·`./user-status` 는 외부 소비자 0으로 그냥 제거
+- [x] learning: `./mapping`·`./application` 내부화. `createLearningModule` 이 `ContentApplication` 을 받아 `infrastructure/adapters/content-query-adapter.ts` 로 자기 포트를 만든다
+- [x] 전 모듈 `./schema` → `./migration-schema` 개명
+- [ ] `dependency-cruiser.config.mjs` 에 규칙 `migration-schema-is-app-database-only` 추가 (별도 commit) — **T-09로 이동**. 현재 위반이 6곳(`learner-data-purge.ts`·`deleted-learner-purge-repository.ts`·`deletion-marker-reapplication.repository.ts`·`identity-lifecycle.integration.test.ts`·e2e 스크립트 2곳)이고 이들을 없애는 것이 T-09 범위다. 규칙만 먼저 넣으면 게이트가 빨간 상태로 남는다
+- [x] `apps/api/src/db/schema.ts` 가 `./migration-schema` 만 소비하도록 갱신
+- [x] D-17: `packages/shared/ui/package.json` exports 49 → 4 (`./components/*`·`./lib/*` wildcard + font·style 2개). `./*` 단일 wildcard + 확장자 배열 fallback은 turbopack이 해석하지 못해(web build 11 에러) 확장자별 패턴으로 나눴고, 타입 전용 `lesson-step-checked-visual.ts` 는 `lib/` 로 옮겼다
+- [x] **모듈 패키지 wildcard 금지 확인** — `dependency-cruiser.config.mjs:135 modulePublicTargetPattern` 이 `exports` 에서 경계 패턴을 파생하므로 모듈에는 wildcard를 쓰지 않았다 (P-01 보존)
+- [x] D-19: `apps/api/src/{admin,openapi,context}` 3개 디렉터리를 `http/`·`middleware/` 로 흡수 (파일 이동 8건, 로직 변경 없음)
+- [x] `docs/engineering/package-interface-and-import-rules.md` 에 4개 subpath 관례 반영
+- [x] 검증: `bun run check:architecture` — 위반 0 (1,439 모듈 / 3,323 의존)
+- [x] 검증: 모듈 exports 합계 39 → 20 (모듈당 4개), 전체 subpath 171 → 107
+- [x] 검증: `bun run ci:static` (8종 green) · `bun run test` (20/20) · `bun run build` (6/6) · `bun run test:e2e:pr` (5/5)
+- [x] 검증: `apps/api/src` 최상위 디렉터리 17 → 13
 
 ### T-09 · 데이터 경계 강제와 purge 포트 — 3.0 MD · 선행 T-08 · F-06
 
-- [ ] **세운다**: `packages/shared/kernel/src/learner-data.ts` 에 `LearnerDataPurgePort` 선언
-- [ ] **세운다**: `learning` 에 `infrastructure/persistence/learner-purge.ts` 추가 (자기 테이블만 삭제)
-- [ ] **세운다**: `ai-feedback` 에 동일 추가
-- [ ] **세운다**: `identity` 에 동일 추가
-- [ ] **세운다**: 각 모듈 `./module` 반환값에 포트 포함
-- [ ] **세운다**: `apps/api/src/privacy/purge-learner.ts` 신설 — 포트 배열 순회 · 실패 격리 · `cause` 보존
-- [ ] FK 의존에 따른 삭제 순서를 `create-container.ts` 의 명시적 배열로 가시화
-- [ ] **옮긴다**: `learner-data-purge.ts` 의 삭제를 모듈 포트로 **한 모듈씩** 이전 (전환 중 두 경로 공존 + 동일 결과 단정)
-- [ ] **옮긴다**: `apps/api/src/scripts/purge-deleted-learners.ts` 를 새 경로로 전환
-- [ ] **옮긴다**: `apps/api/src/maintenance/daily-maintenance.ts` 를 새 경로로 전환
-- [ ] **지운다**: D-18 `apps/api/src/adapters/identity/learner-data-purge.ts` 삭제
-- [ ] 핵심 검증: 전환 전후 **삭제되는 행 집합이 동일**함을 단정 — `deleted-learner-purge-repository.test.ts` 를 포트별 삭제 카운트 검증으로 확장
-- [ ] 검증: `bun run check:architecture` — 모듈 `migration-schema` 에 대한 app 외부 import 0
-- [ ] 검증: `git grep -lE 'purge|deletion' -- apps/api/src` 파일 수 14 → 6
-- [ ] 검증: `bun --filter @workspace/api test` · `bun run test`
-- [ ] **스테이징 검증 필요** — 삭제 대상 행 집합이 바뀌면 데이터 잔존 또는 과삭제. 실 데이터 사본으로 1회 검증 후 프로덕션 반영
-- [ ] `docs/engineering/privacy.md` 에 purge 소유권 변경 반영
+- [x] **세운다**: `LearnerDataPurgePort` 선언 — **위치 변경**: `packages/shared/kernel/src/learner-data.ts` 가 아니라 `packages/infra/db/src/learner-data-purge.ts`. 원자적 삭제를 유지하려면 포트가 SQLite transaction을 인자로 받아야 하고, kernel은 DB에 의존할 수 없다 (아래 실행 기록)
+- [x] **세운다**: `learning` 에 `infrastructure/persistence/learner-purge.ts` 추가 (자기 테이블 5개만 삭제)
+- [x] **세운다**: `ai-feedback` 에 동일 추가 (attempt + 사용자 일일 counter)
+- [x] **세운다**: `identity` 에 동일 추가 (learner profile)
+- [x] **세운다**: 각 모듈 `./module` 에 포트 상수 공개 (`learningLearnerDataPurge`·`aiFeedbackLearnerDataPurge`·`identityLearnerDataPurge`). 포트가 transaction만 받는 무상태 객체라 purge 경로가 모듈 전체 조립을 요구하지 않는다
+- [x] **세운다**: `apps/api/src/privacy/learner-data-purge.ts` 신설 — auth 사용자 row 삭제 포트(auth infra table은 조립 지점 소유) + FK 순서를 고정한 `learnerDataPurgePorts` 배열
+- [x] FK 의존에 따른 삭제 순서를 명시적 배열로 가시화 — `create-container.ts` 가 아니라 `privacy/learner-data-purge.ts` 1곳. 컨테이너·유지보수 script·purge script·통합 테스트가 같은 배열을 재사용해야 순서가 한 곳에서만 정의된다
+- [x] **옮긴다**: `learner-data-purge.ts` 의 삭제를 모듈 포트로 이전. 두 경로 공존 없이 한 번에 교체했다 — 삭제 순서가 단일 transaction 계약이라 두 경로를 동시에 두면 오히려 순서가 어긋난다. 동일 결과는 기존 통합 테스트가 단정한다
+- [x] **옮긴다**: `apps/api/src/scripts/purge-deleted-learners.ts` 를 새 경로로 전환
+- [x] **옮긴다**: `apps/api/src/maintenance/daily-maintenance.ts` 경로(`scripts/maintenance-daily.ts` 조립)를 새 경로로 전환
+- [x] **옮긴다**: 계획 외 — `privacy/deletion-marker-reapplication.repository.ts` 도 identity 테이블을 직접 쓰고 있어 `identity/src/infrastructure/persistence/deletion-marker-reapplication-repository.ts` 로 이전했다. 이 파일이 남으면 새 depcruise 규칙이 통과하지 못한다
+- [x] **지운다**: D-18 `apps/api/src/adapters/identity/learner-data-purge.ts` 삭제 (+ `adapters/identity/deleted-learner-purge-repository.ts` 는 identity 모듈로 이전)
+- [x] 핵심 검증: 전환 전후 **삭제되는 행 집합이 동일** — 테스트를 `apps/api/src/privacy/deleted-learner-purge.integration.test.ts` 로 옮겨 유지. 11개 테이블에 대해 대상 학습자 행 0, 보존 학습자 행 1, 콘텐츠·전체 quota 집계 보존을 단정한다. **포트별 삭제 카운트는 도입하지 않았다** — drizzle의 `delete().run()` 이 이 버전에서 `void` 를 반환해 카운트를 얻을 수 없고, 테이블별 SQL 단정이 더 강한 증거다
+- [x] 검증: `bun run check:architecture` — `migration-schema-is-app-database-only` 규칙 추가 후 위반 0. 규칙이 실제로 발동하는지 probe 파일로 확인했다(위반 1건 검출 후 제거)
+- [x] 검증: `git grep -lE 'purge|deletion' -- apps/api/src` 22 → 19 파일. 문서의 "14 → 6" 은 `env.ts`·`openapi-documents.ts`·`main.test.ts` 같은 단순 언급까지 세는 grep이라 그 수치로는 도달할 수 없다. 실제 변화는 타 모듈 테이블 삭제를 소유하던 app 파일 3개가 사라진 것이다
+- [x] 검증: `bun --filter @workspace/api test` (37파일 137케이스) · `bun run test` (20/20)
+- [x] 로컬 검증으로 대체 (M0: 실데이터 없음) — 시드 DB 기반 통합 테스트가 전환 전후 삭제 행 집합 동일성을 단정한다. `bun run test:e2e:pr` 5/5 로 학습자 삭제 경로 회귀도 확인
+- [x] `docs/engineering/privacy.md` 에 purge 소유권 변경 반영
 
 ### T-10 · 리포팅 읽기 뷰 — 2.0 MD · 선행 T-08 T-09 · F-07
 
 [`03-target-design.md`](./03-target-design.md) 대안 1 채택. 대안 2(이벤트 기반)는 비가역·복잡도 과다로 제외.
 
-- [ ] `content` 에 `infrastructure/persistence/reporting-view.ts` 추가 후 `./migration-schema` 에 포함
-- [ ] `learning` 에 동일 추가
-- [ ] `identity` 에 동일 추가
-- [ ] `ai-feedback` 에 동일 추가
-- [ ] `apps/api/drizzle/**` 에 view 생성 migration 추가
-- [ ] `operations-reporting-sqlite-repository.ts:65 dashboardSql` 을 view 참조로 전환
-- [ ] `:127 dailySeriesSql` 전환
-- [ ] `:224 lessonAnalyticsCte` 전환
-- [ ] `:306 aiFeedbackQualitySql` 전환
-- [ ] `:354 aiFeedbackFailureCountsSql` 전환
-- [ ] `:373 aiFeedbackLessonFailuresSql` 전환
-- [ ] depcruise 규칙 `operations-reporting-does-not-import-module-implementations` 유지 확인
-- [ ] 핵심 검증: 전환 전후 대시보드·분석 응답이 **바이트 단위 동일** — `operations-reporting-metrics-sqlite-repository.test.ts` 고정 시드를 기준값으로 사용
-- [ ] 검증: `bun --filter @workspace/api db:migrate` — view 생성 성공 (컬럼 불일치는 여기서 실패해야 한다)
-- [ ] 검증: `operations-reporting-sqlite-repository.ts` 에 타 모듈 테이블명 리터럴 0건
-- [ ] 검증: `bun run test` · `bun run test:e2e:pr`
-- [ ] **스테이징 검증 필요** — migration이 view를 생성한다
-- [ ] `docs/engineering/data-model.md` 에 리포팅 뷰 계약 반영
+- [x] `content` 에 `infrastructure/persistence/reporting-view.ts` 추가 후 `./migration-schema` 에 포함 (`content_reporting_current_lessons`)
+- [x] `learning` 에 동일 추가 (`learning_reporting_lesson_progress`·`learning_reporting_activity_days`)
+- [x] `identity` 에 동일 추가 (`identity_reporting_learners` — 삭제 상태 제외)
+- [x] `ai-feedback` 에 동일 추가 (`ai_feedback_reporting_attempts` — 답안 원문 제외)
+- [x] `apps/api/drizzle/0001-reporting-views.sql` 신설 + `migrate.ts` manifest·checksum 등록. `@workspace/db/test-support/application-migration` 도 migration 목록 전체를 적용하도록 갱신
+- [x] `operations-reporting-sqlite-repository.ts:65 dashboardSql` 을 view 참조로 전환
+- [x] `:127 dailySeriesSql` 전환
+- [x] `:224 lessonAnalyticsCte` 전환
+- [x] `:306 aiFeedbackQualitySql` 전환
+- [x] `:354 aiFeedbackFailureCountsSql` 전환
+- [x] `:373 aiFeedbackLessonFailuresSql` 전환
+- [x] 날짜 경계 계산은 뷰가 아니라 operations SQL에 남겼다 — 뷰에 넣으면 `'+9 hours'` 리터럴이 migration SQL에 다시 생겨 T-06의 정본 1곳이 깨진다. 뷰는 원본 epoch 컬럼만 노출하고 offset은 계속 `?4` 파라미터로 주입한다
+- [x] depcruise 규칙 `operations-reporting-does-not-import-module-implementations` 유지 확인 (ci:static green)
+- [x] 핵심 검증: 전환 전후 대시보드·분석 응답 동일 — `operations-reporting-metrics-sqlite-repository.test.ts` 고정 시드 3케이스와 `operations-reporting-sqlite-repository.test.ts` 2케이스가 기대값 수정 없이 통과한다 (테스트 픽스처에 뷰 정의만 추가)
+- [x] 검증: migration이 빈 DB와 시드 DB 양쪽에서 성공 — 임시 파일 DB에서 `runApplicationMigrations` applied 2건 → seed → 재실행 skipped 2건, 뷰 5개 생성, `content_reporting_current_lessons` 321행 확인
+- [x] 검증: `operations-reporting-sqlite-repository.ts` 에 타 모듈 테이블명 리터럴 0건 (`ai_feedback_attempts`·`learner_*`·`courses`·`course_*`·`lesson_versions`·`FROM user` 모두 0)
+- [x] 검증: `bun run test` (20/20) · `bun run test:e2e:pr` (5/5, 실제 migration 적용 경로)
+- [x] `docs/engineering/data-model.md` 에 리포팅 뷰 계약 반영
+
+### M2 실행 기록
+
+2026-07-30 실행. 계획과 다르게 처리한 8건이다.
+
+| #   | 계획                                                 | 실제                                                        | 근거                                                                                                                                                                                                     |
+| --- | ---------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `day-boundary.ts` 는 `timeZone` + `sqliteOffset`     | `offsetMs` 추가 + `toPlatformDayKey()` 함께 제공            | `ai-feedback-quota.ts` 는 밀리초 offset이 필요하고, 시간대 리터럴만 바꾸면 `toSeoulDate`·`toSeoulDateKey`·`learningDateFormatter` 3중 복제가 남는다. 경계를 값 하나가 아니라 동작 하나로 만들었다        |
+| 2   | `createLearnerIdentityBridge` late-binding 제거 시도 | 제거 불가, `createIdentityModuleReference` 로 교체          | identity↔learning이 서로의 조회 포트를 필요로 하는 실제 순환이다. 조립 순서를 바꾸면 lazy edge가 auth provisioner에서 learning→identity로 이동할 뿐이고, 총 late-binding은 1개로 유지된다                |
+| 3   | 픽스처가 실제 `createApp` 을 호출                    | `createLearnerApp` + `registerLearnerContractRoutes` 재사용 | `createApp(container)` 는 DB·auth runtime 전체를 요구해 단위 테스트를 통합 테스트로 바꾼다. F-15의 실제 위험(등록 순서·미들웨어 조합의 병렬 복제)은 실 조립 함수 재사용으로 사라진다                     |
+| 4   | 모듈 exports를 `./module` 4개로 고정                 | 4개 유지하되 `./module` 이 seed·purge 진입점도 재수출       | content·identity의 seed와 purge는 `apps/api/src/db`·유지보수 script가 소비한다. `./module` 팩토리로만 접근하게 하면 seed 한 번에 모듈 전체 조립이 필요해진다                                             |
+| 5   | `@workspace/ui` exports 49 → 3 (wildcard)            | 49 → 4                                                      | `./*` 단일 wildcard + 확장자 배열 fallback을 turbopack이 해석하지 못해 web build가 11개 에러로 실패했다. `./components/*`(tsx)·`./lib/*`(ts)로 나누고 타입 전용 파일을 `lib/` 로 옮겼다                  |
+| 6   | 전체 subpath 170 → 약 95                             | 171 → 108                                                   | 모듈 39 → 20, ui 49 → 4는 달성했다. 남은 다수는 `contracts` 29개와 `auth` 13개로, 둘 다 T-08 범위가 아니고 wire 계약·인증 경계를 좁게 나눈 의도적 구성이다                                               |
+| 7   | `LearnerDataPurgePort` 를 kernel에 선언              | `packages/infra/db/src/learner-data-purge.ts` 에 선언       | 현행 purge는 단일 transaction에서 원자적으로 실행된다. 포트가 비동기·모듈별 transaction이면 부분 삭제가 생기고, transaction을 인자로 받으려면 포트 타입이 DB를 알아야 한다. kernel은 DB에 의존할 수 없다 |
+| 8   | depcruise `migration-schema` 규칙을 T-08에서 추가    | T-09에서 추가                                               | T-08 시점 위반 6곳이 모두 T-09 범위(purge·삭제 marker 경로)였다. 규칙을 먼저 넣으면 게이트가 빨간 상태로 남는다. T-09에서 규칙 추가 후 probe 파일로 실제 발동을 확인했다                                 |
+
+계획에 없었으나 함께 처리한 것: `privacy/deletion-marker-reapplication.repository.ts` 를 identity 모듈로 이전(같은 F-06 위반), `operations/src/application/operations-application.ts` 삭제(소비자 0), `apps/api` 의 `@workspace/ai` dependency 제거, 좁아진 표면 때문에 미사용이 된 export 20여 개 정리.
+
+M2 종료 조건 대조: 타 모듈 테이블 쓰기가 정적 검사에서 차단(`migration-schema-is-app-database-only`, probe로 발동 확인) · 시간대·식별자 정본 각 1곳(`day-boundary.ts` 3줄, `createIdentifierSchema` 1개) · 공개 subpath 171 → 108(모듈 39 → 20).
+
+M2가 건드린 CI 게이트를 전부 대조했다.
+
+| 게이트                                                         | 결과                                                                                                                                                                                                              |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run ci:static`                                            | 8종 green (depcruise 1,446 모듈 / 3,346 의존, 위반 0)                                                                                                                                                             |
+| `bun run ci:tests`                                             | `bun test ./scripts` 19/19 · `bun run test` 20/20                                                                                                                                                                 |
+| `bun run build`                                                | 6/6                                                                                                                                                                                                               |
+| `bun run typecheck`                                            | 24/24                                                                                                                                                                                                             |
+| `bun lefthook run pre-commit`                                  | green                                                                                                                                                                                                             |
+| `bun run check:route-bundles`                                  | 5개 route 전부 예산 이내 (ui wildcard + `@workspace/kernel` 추가 영향 확인)                                                                                                                                       |
+| `bun run test:storybook`                                       | 35파일 152케이스 (ui exports wildcard 해석 확인)                                                                                                                                                                  |
+| `bun run test:e2e:pr`                                          | 5/5                                                                                                                                                                                                               |
+| `bun run test:e2e:release`                                     | chromium 10/10 · webkit 10/10. `/analytics` 화면이 T-10 리포팅 뷰 경로를, 관리자 삭제가 T-09 purge 경로를 통과한다                                                                                                |
+| `bun run test:performance:lighthouse`                          | **로컬 실행 불가**. audit은 끝까지 돌았고 chrome-launcher가 Windows 임시 profile 삭제에서 `EPERM`으로 죽는다. 성능 예산 위반이 아니라 도구의 Windows 제약이며, 번들 예산은 `check:route-bundles` 가 대신 확인했다 |
+| `bun run check:deployment-ansible`·`test:deployment-bootstrap` | **로컬 실행 불가** (Linux 제어 노드·Docker 필요). M2는 env 템플릿과 이미지 정의를 바꾸지 않았다                                                                                                                   |
+
+문서 갱신: `glossary.md`(도메인 언어 정본 표), `package-interface-and-import-rules.md`(4개 subpath·wildcard·리포팅 뷰), `privacy.md`(purge 소유권), `data-model.md`(리포팅 뷰 계약), `observability.md`(이동한 admin health route 링크 정정).
 
 ---
 

@@ -1,11 +1,9 @@
-import { createOpenAiClient } from "@workspace/ai/openai-client"
+import type { AiFeedbackModule } from "@workspace/ai-feedback/module"
 import type {
   AiFeedbackAttemptTransition,
+  AiFeedbackProvider,
   AiFeedbackUsageEvent,
-} from "@workspace/ai-feedback/application"
-import type { AiFeedbackModule } from "@workspace/ai-feedback/module"
-import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
-import { createConfiguredAiFeedbackProvider } from "@workspace/ai-feedback/provider"
+} from "@workspace/ai-feedback/ports"
 import {
   createAdminAuthRuntime,
   type AdminAuthRuntime,
@@ -21,7 +19,7 @@ import {
 } from "@workspace/auth/learner/server"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
-import type { ContentApplication } from "@workspace/content/application"
+import type { ContentModule } from "@workspace/content/module"
 import type { ContentAssetStoragePort } from "@workspace/content/ports"
 import {
   createReadOnlyWritingAppDatabase,
@@ -33,10 +31,9 @@ import type { IdentityModule } from "@workspace/identity/module"
 import type {
   AdminSessionResolver,
   SessionResolver,
-} from "@workspace/identity/sessions"
+} from "@workspace/identity/ports"
 import type { LearningModule } from "@workspace/learning/module"
 import type { LearningLearnerSessionPort } from "@workspace/learning/http"
-import { createLearningReportingQuery } from "@workspace/learning/reporting"
 import {
   createAppLogger,
   type AppLogger,
@@ -56,16 +53,13 @@ import {
 } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
 import { composeAiFeedbackModule } from "@/composition/ai-feedback-module.composition"
-import { composeContentApplication } from "@/composition/content-application.composition"
+import { composeContentModule } from "@/composition/content-module.composition"
 import {
   createContainerCleanupCoordinator,
   type ContainerCleanupFailure,
 } from "@/composition/container-cleanup"
 import { composeIdentityModule } from "@/composition/identity-module.composition"
-import {
-  composeLearningModule,
-  createLearningContentQueryPort,
-} from "@/composition/learning-module.composition"
+import { composeLearningModule } from "@/composition/learning-module.composition"
 import { composeOperationsModule } from "@/composition/operations-module.composition"
 import type { ApiEnv } from "@/config/env"
 import { runApplicationMigrations } from "@/db/migrate"
@@ -94,7 +88,7 @@ export type ApiContainer = Readonly<{
   }>
   modules: Readonly<{
     aiFeedback: AiFeedbackModule
-    content: ContentApplication
+    content: ContentModule
     identity: IdentityModule
     learning: LearningModule
     operations: OperationsModule
@@ -141,27 +135,7 @@ export async function createContainer(
 
     const clock = options.clock ?? systemClock
     const idGenerator = options.idGenerator ?? uuidGenerator
-    const aiFeedbackProvider =
-      options.aiFeedbackProvider ??
-      createConfiguredAiFeedbackProvider({
-        model: env.openAiModel,
-        runtime: createOpenAiClient({
-          apiKey: env.openAiApiKey,
-          maxRetries: 0,
-          timeoutMs: env.aiFeedback.attemptPolicy.providerTimeoutMs,
-        }),
-      })
-    const identityBridge = createLearnerIdentityBridge()
-    const learnerAuth = createLearnerAuthRuntime({
-      database: createLearnerAuthDatabase(database.db),
-      emailDelivery:
-        options.authEmailDelivery ?? createAuthEmailDelivery(env.authEmail),
-      googleClientId: env.googleClientId,
-      googleClientSecret: env.googleClientSecret,
-      identityProvisioner: identityBridge.provisioner,
-      secret: env.learnerAuthSecret,
-      webOrigin: env.webOrigin,
-    })
+    const identityReference = createIdentityModuleReference()
     const adminAuth = createAdminAuthRuntime({
       database: createAdminAuthDatabase(database.db),
       secret: env.adminAuthSecret,
@@ -169,7 +143,7 @@ export async function createContainer(
       webOrigin: env.adminOrigin,
     })
 
-    const content = composeContentApplication({
+    const content = composeContentModule({
       assetIdGenerator: createPrefixedIdGenerator<ContentAssetId>(
         "content-asset-",
         idGenerator
@@ -183,26 +157,6 @@ export async function createContainer(
       ),
       database: database.db,
     })
-    const learningReporting = createLearningReportingQuery({
-      content: createLearningContentQueryPort(content),
-      database: database.db,
-    })
-    const identity = composeIdentityModule({
-      clock,
-      database: database.db,
-      deletionMarkerStore: createDeletionMarkerStore({
-        configuration: env.deletionMarkerStore,
-        idGenerator,
-      }),
-      learningReport: learningReporting,
-    })
-    identityBridge.bind(identity)
-    const learnerSessionResolver = identity.createLearnerSessionResolver(
-      createLearnerAuthenticationPort(learnerAuth.identityResolver)
-    )
-    const adminSessionResolver = identity.createAdminSessionResolver(
-      adminAuth.identityResolver
-    )
     const aiFeedback = composeAiFeedbackModule({
       attemptIdGenerator: idGenerator,
       attemptPolicy: env.aiFeedback.attemptPolicy,
@@ -243,16 +197,45 @@ export async function createContainer(
           event.outcome === "succeeded" ? logger?.info : logger?.warn
         write?.call(logger, logEvent, logEventNames.aiUsage)
       },
-      provider: aiFeedbackProvider,
+      openAi: { apiKey: env.openAiApiKey, model: env.openAiModel },
+      ...(options.aiFeedbackProvider === undefined
+        ? {}
+        : { provider: options.aiFeedbackProvider }),
     })
     const learning = composeLearningModule({
       aiFeedback: aiFeedback.application,
       clock,
-      content,
+      content: content.application,
       cursorSigningSecret: env.cursorSigningSecret,
       database: database.db,
-      identity,
+      readIdentity: identityReference.read,
     })
+    const identity = composeIdentityModule({
+      clock,
+      database: database.db,
+      deletionMarkerStore: createDeletionMarkerStore({
+        configuration: env.deletionMarkerStore,
+        idGenerator,
+      }),
+      learningReport: learning.reportingQuery,
+    })
+    identityReference.bind(identity)
+    const learnerAuth = createLearnerAuthRuntime({
+      database: createLearnerAuthDatabase(database.db),
+      emailDelivery:
+        options.authEmailDelivery ?? createAuthEmailDelivery(env.authEmail),
+      googleClientId: env.googleClientId,
+      googleClientSecret: env.googleClientSecret,
+      identityProvisioner: createLearnerIdentityProvisioner(identity),
+      secret: env.learnerAuthSecret,
+      webOrigin: env.webOrigin,
+    })
+    const learnerSessionResolver = identity.createLearnerSessionResolver(
+      createLearnerAuthenticationPort(learnerAuth.identityResolver)
+    )
+    const adminSessionResolver = identity.createAdminSessionResolver(
+      adminAuth.identityResolver
+    )
     const operations = composeOperationsModule({
       clock,
       database: database.db,
@@ -324,36 +307,41 @@ function createAuthEmailDelivery(
     : createInMemoryAuthEmailDelivery()
 }
 
-function createLearnerIdentityBridge(): Readonly<{
+/**
+ * identity와 learning은 서로의 조회 포트를 필요로 한다. 조립 순서상 한쪽은 늦게 연결해야
+ * 하므로 learning이 identity를 참조로 받고, identity 조립 직후 연결한다.
+ */
+function createIdentityModuleReference(): Readonly<{
   bind: (identity: IdentityModule) => void
-  provisioner: Readonly<{
-    provision: (identity: LearnerAuthIdentity) => Promise<void>
-  }>
+  read: () => IdentityModule
 }> {
   let identityModule: IdentityModule | undefined
-  const readIdentity = (): IdentityModule => {
-    if (identityModule === undefined) {
-      throw new Error(
-        "learner auth identity bridge가 아직 연결되지 않았습니다."
-      )
-    }
-    return identityModule
-  }
 
   return {
     bind(identity) {
       if (identityModule !== undefined) {
-        throw new Error("learner auth identity bridge가 이미 연결됐습니다.")
+        throw new Error("identity module 참조가 이미 연결됐습니다.")
       }
       identityModule = identity
     },
-    provisioner: {
-      async provision(authIdentity: LearnerAuthIdentity) {
-        await readIdentity().provisioningPort.provision({
-          ...authIdentity,
-          id: userIdSchema.parse(authIdentity.id),
-        })
-      },
+    read() {
+      if (identityModule === undefined) {
+        throw new Error("identity module 참조가 아직 연결되지 않았습니다.")
+      }
+      return identityModule
+    },
+  }
+}
+
+function createLearnerIdentityProvisioner(identity: IdentityModule): Readonly<{
+  provision: (identity: LearnerAuthIdentity) => Promise<void>
+}> {
+  return {
+    async provision(authIdentity: LearnerAuthIdentity) {
+      await identity.provisioningPort.provision({
+        ...authIdentity,
+        id: userIdSchema.parse(authIdentity.id),
+      })
     },
   }
 }

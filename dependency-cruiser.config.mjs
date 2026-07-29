@@ -95,6 +95,22 @@ const config = {
       },
     },
     {
+      name: "migration-schema-is-app-database-only",
+      severity: "error",
+      comment:
+        "Module table definitions exist for the single migration lineage. Only the API database entry, other modules declaring foreign keys, and isolated E2E content fixtures may consume them.",
+      from: {
+        pathNot: [
+          "^apps/api/src/db/",
+          "^apps/api/src/scripts/(?:assert-e2e|setup-e2e)",
+          "^packages/modules/[^/]+/src/infrastructure/persistence/",
+        ],
+      },
+      to: {
+        path: "^packages/modules/[^/]+/src/infrastructure/persistence/schema\\.ts$",
+      },
+    },
+    {
       name: "operations-reporting-does-not-import-module-implementations",
       severity: "error",
       from: {

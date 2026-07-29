@@ -3,12 +3,21 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import { afterEach, describe, expect, it } from "vitest"
-import { createUnavailableAiFeedbackProvider } from "@workspace/ai-feedback/provider"
+import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
 import { createWritingAppDatabase } from "@workspace/db/client"
+import { err } from "@workspace/kernel/result"
 
 import { createApp } from "@/composition/create-app"
 import { createContainer } from "@/composition/create-container"
 import { parseApiEnv } from "@/config/env"
+
+const unavailableAiFeedbackProvider: AiFeedbackProvider = {
+  model: "test-unconfigured",
+  provider: "test",
+  async createFeedback() {
+    return err({ kind: "provider-unavailable" })
+  },
+}
 
 const temporaryDirectories: string[] = []
 
@@ -29,7 +38,7 @@ describe("API container", () => {
     const container = await createContainer(
       parseApiEnv(createTestEnvironment(databasePath)),
       {
-        aiFeedbackProvider: createUnavailableAiFeedbackProvider(),
+        aiFeedbackProvider: unavailableAiFeedbackProvider,
         clock: { now: () => new Date("2026-07-23T00:00:00.000Z") },
         idGenerator: { next: () => `test-id-${++sequence}` },
       }

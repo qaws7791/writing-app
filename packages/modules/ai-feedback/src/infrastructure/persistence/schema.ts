@@ -3,7 +3,7 @@ import { authUsers } from "@workspace/auth/schema"
 import {
   courseCurriculumVersions,
   lessonStepVersions,
-} from "@workspace/content/schema"
+} from "@workspace/content/migration-schema"
 import {
   check,
   foreignKey,
@@ -159,3 +159,5 @@ export const aiFeedbackGlobalDailyCounters = sqliteTable(
     ),
   ]
 )
+
+export * from "#ai-feedback/infrastructure/persistence/reporting-view"

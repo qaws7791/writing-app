@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createTestLearnerApp } from "@/routes/test-dependencies"
+import { createTestLearnerApp } from "@/test-support/learner-app-fixture"
 
 describe("플랫폼 API auth route", () => {
   it("인증 없는 session 요청은 401이다", async () => {

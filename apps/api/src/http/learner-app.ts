@@ -8,8 +8,8 @@ import {
 } from "@workspace/http-platform/security"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
-import type { ApiDependencies } from "@/context/create-request-context"
-import type { ApiHonoEnv } from "@/context/hono-env"
+import type { ApiDependencies } from "@/middleware/create-request-context"
+import type { ApiHonoEnv } from "@/middleware/hono-env"
 import { createRequestContextMiddleware } from "@/middleware/request-context.middleware"
 import { createRequestLoggingMiddleware } from "@workspace/http-platform/app"
 import { createSecurityAuditRequestObserver } from "@/observability/security-audit-request-observer"

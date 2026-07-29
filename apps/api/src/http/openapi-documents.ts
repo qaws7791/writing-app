@@ -8,8 +8,8 @@ import {
 } from "@/composition/create-app"
 import { createAdminApp } from "@/http/admin-app"
 import { createLearnerApp } from "@/http/learner-app"
-import { createAdminOpenApiDocument } from "@/admin/admin-openapi"
-import type { AdminOpenApiDocument } from "@/admin/admin-openapi"
+import { createAdminOpenApiDocument } from "@/http/admin-openapi"
+import type { AdminOpenApiDocument } from "@/http/admin-openapi"
 import { createOpenApiDocument } from "@/http/openapi"
 import type { ApiOpenApiDocument } from "@/http/openapi"
 

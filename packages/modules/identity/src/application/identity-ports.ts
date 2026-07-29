@@ -156,3 +156,33 @@ export type ChangeUserStatusCommand = Readonly<{
   status: UserStatus
   userId: UserId
 }>
+
+export {
+  adminSessionExpiresAt,
+  type AdminAuthenticatedSession,
+  type AdminSessionResolver,
+  type AuthenticatedSession,
+  type SessionResolver,
+} from "#identity/application/identity-session"
+export type DeletionMarkerBatchResult = Readonly<{
+  alreadyAppliedUsers: number
+  markedDeletedUsers: number
+  missingUsers: number
+  purgedUsers: number
+}>
+
+export type DeletionMarkerReapplicationRepository = Readonly<{
+  applyBatch: (input: {
+    readonly dryRun: boolean
+    readonly markers: readonly LearnerDeletionMarker[]
+    readonly purgeCutoff: Date
+  }) => Promise<
+    Result<
+      DeletionMarkerBatchResult,
+      Failure<"deletion-marker-reapplication-persistence-failed">
+    >
+  >
+}>
+
+export type { DeletedLearnerPurgeCommand } from "#identity/application/deleted-learner-purge"
+export { deletedLearnerDisplayName } from "#identity/domain/learner-profile"

@@ -5,7 +5,7 @@ import type {
   LearnerDeletionMarker,
   LearnerDeletionMarkerStorePort,
 } from "@workspace/identity/ports"
-import { deletedLearnerDisplayName } from "@workspace/identity/learner-profile"
+import { deletedLearnerDisplayName } from "@workspace/identity/ports"
 import { ok } from "@workspace/kernel/result"
 
 import { runApplicationMigrations } from "@/db/migrate"

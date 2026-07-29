@@ -1,30 +1,35 @@
 import { readFile } from "node:fs/promises"
-import { createAiFeedbackMaintenanceForDatabase } from "@workspace/ai-feedback/maintenance"
-import { createContentAssetMaintenance } from "@workspace/content/maintenance"
 import {
+  createReadOnlyWritingAppDatabase,
   createWritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
-import { createDeletedLearnerPurgeCommand } from "@workspace/identity/purge"
-import { createAuditTrail } from "@workspace/operations/audit"
-import { createAuditEventDrizzleRepository } from "@workspace/operations/audit-repository"
+import {
+  createDeletedLearnerPurgeCommand,
+  createDeletedLearnerPurgeRepository,
+} from "@workspace/identity/module"
+import { createOperationsModule } from "@workspace/operations/module"
 import { logEventNames } from "@workspace/observability/events"
-import { createS3ObjectStorage } from "@workspace/storage/object-storage"
+import type { ContentAssetId, CourseId } from "@workspace/types/ids"
 
-import { createContentAssetStorageAdapter } from "@/adapters/content/content-asset-storage"
-import { createDeletedLearnerPurgeRepository } from "@/adapters/identity/deleted-learner-purge-repository"
+import { composeAiFeedbackModule } from "@/composition/ai-feedback-module.composition"
+import { composeContentModule } from "@/composition/content-module.composition"
 import { parseApiEnv } from "@/config/env"
 import {
   createDailyMaintenance,
   type DailyMaintenanceError,
 } from "@/maintenance/daily-maintenance"
 import { createExpiredSessionMaintenance } from "@/maintenance/expired-session-maintenance"
+import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 import {
   parseExternalLogRetentionEvidence,
   type ExternalLogRetentionEvidence,
 } from "@/maintenance/log-retention-evidence"
 import { systemClock } from "@/runtime/system-clock"
-import { uuidGenerator } from "@/runtime/uuid-generator"
+import {
+  createPrefixedIdGenerator,
+  uuidGenerator,
+} from "@/runtime/uuid-generator"
 
 export type DailyMaintenanceEnvironment = Readonly<{
   DAILY_MAINTENANCE_APPROVED?: string
@@ -127,43 +132,63 @@ export async function runDailyMaintenance(input: {
   readonly environment: ReturnType<typeof parseApiEnv>
   readonly externalLogRetentionEvidence: ExternalLogRetentionEvidence | null
   readonly options: DailyMaintenanceCliOptions
+  readonly reportingClient: WritingAppDatabaseClient
 }) {
-  const contentObjectStorage =
-    input.environment.adminAssetStore === undefined
-      ? null
-      : createS3ObjectStorage(input.environment.adminAssetStore).match(
-          (storage) => createContentAssetStorageAdapter(storage),
-          () => {
-            throw new Error("콘텐츠 asset 저장소 설정이 올바르지 않습니다.")
-          }
-        )
-  const auditTrail = createAuditTrail({
+  const content = composeContentModule({
+    assetIdGenerator: createPrefixedIdGenerator<ContentAssetId>(
+      "content-asset-",
+      uuidGenerator
+    ),
+    assetStore: input.environment.adminAssetStore,
     clock: systemClock,
-    idGenerator: uuidGenerator,
-    repository: createAuditEventDrizzleRepository(input.client.db, (event) => {
-      process.stderr.write(
-        `${JSON.stringify({
-          kind: logEventNames.auditPersistenceFailed,
-          message: readFailureMessage(event.cause),
-          operation: event.operation,
-        })}\n`
-      )
-    }),
+    courseIdGenerator: createPrefixedIdGenerator<CourseId>(
+      "course-",
+      uuidGenerator
+    ),
+    database: input.client.db,
+  })
+  const operations = createOperationsModule({
+    audit: {
+      failureObserver(event) {
+        process.stderr.write(
+          `${JSON.stringify({
+            kind: logEventNames.auditPersistenceFailed,
+            message: readFailureMessage(event.cause),
+            operation: event.operation,
+          })}\n`
+        )
+      },
+      idGenerator: uuidGenerator,
+    },
+    clock: systemClock,
+    database: input.client.db,
+    reportingDatabase: input.reportingClient.sqlite,
+    reportingFailureObserver() {
+      // 유지보수 경로는 리포팅을 조회하지 않는다.
+    },
+  })
+  const aiFeedback = composeAiFeedbackModule({
+    attemptIdGenerator: uuidGenerator,
+    attemptPolicy: input.environment.aiFeedback.attemptPolicy,
+    clock: systemClock,
+    dailyQuotaPolicy: input.environment.aiFeedback.dailyQuotaPolicy,
+    database: input.client.db,
+    openAi: {
+      apiKey: input.environment.openAiApiKey,
+      model: input.environment.openAiModel,
+    },
   })
   const maintenance = createDailyMaintenance({
-    aiFeedback: createAiFeedbackMaintenanceForDatabase({
-      clock: systemClock,
-      database: input.client.db,
-    }),
-    auditTrail,
+    aiFeedback: aiFeedback.maintenance,
+    auditTrail: operations.auditTrail,
     clock: systemClock,
-    contentAssets: createContentAssetMaintenance({
-      assetStorage: contentObjectStorage,
-      database: input.client.db,
-    }),
+    contentAssets: content.maintenance,
     deletedLearners: createDeletedLearnerPurgeCommand({
       clock: systemClock,
-      repository: createDeletedLearnerPurgeRepository(input.client.db),
+      repository: createDeletedLearnerPurgeRepository({
+        database: input.client.db,
+        learnerDataPurges: learnerDataPurgePorts,
+      }),
     }),
     expiredSessions: createExpiredSessionMaintenance(input.client.db),
     externalLogRetentionEvidence: input.externalLogRetentionEvidence,
@@ -208,17 +233,20 @@ async function main(): Promise<void> {
     approval.logRetentionEvidenceFile
   )
   const client = createWritingAppDatabase(approval.databaseUrl)
+  const reportingClient = createReadOnlyWritingAppDatabase(approval.databaseUrl)
   try {
     const result = await runDailyMaintenance({
       client,
       environment,
       externalLogRetentionEvidence,
       options,
+      reportingClient,
     })
     process.stdout.write(
       `${JSON.stringify({ kind: "daily-maintenance-result", ...result })}\n`
     )
   } finally {
+    reportingClient.close()
     client.close()
   }
 }

@@ -1,7 +1,7 @@
 import { Hono, type Env, type Schema } from "hono"
 import { defaultRequestLoggingRuntime } from "@workspace/http-platform/app"
 
-import { adminRoutePrefix } from "@/admin/admin-openapi"
+import { adminRoutePrefix } from "@/http/admin-openapi"
 
 type UnifiedApiEnv = {
   Variables: { readonly requestId: string }

@@ -10,8 +10,8 @@ import {
   createTrustedOriginMiddleware,
   withPrivateNoStore,
 } from "@workspace/http-platform/security"
-import type { AdminHonoEnv } from "@/admin/admin-hono-env"
-import { createAdminOpenApiDocument } from "@/admin/admin-openapi"
+import type { AdminHonoEnv } from "@/http/admin-hono-env"
+import { createAdminOpenApiDocument } from "@/http/admin-openapi"
 import {
   createRequestLoggingMiddleware,
   type RequestLoggingRuntime,

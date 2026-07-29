@@ -1,9 +1,8 @@
 import type { Brand } from "@workspace/types/brand"
 import type { Clock } from "@workspace/kernel/clock"
+import { toPlatformDayKey } from "@workspace/kernel/day-boundary"
 
 export type LearningDateKey = Brand<string, "LearningDateKey">
-
-const platformLearningTimeZone = "Asia/Seoul"
 
 export type LearningActivityDatePolicy = Readonly<{
   currentDateKey: () => LearningDateKey
@@ -15,20 +14,8 @@ export function createLearningActivityDatePolicy(
   return { currentDateKey: () => toLearningDateKey(clock.now()) }
 }
 
-const learningDateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "2-digit",
-  month: "2-digit",
-  timeZone: platformLearningTimeZone,
-  year: "numeric",
-})
-
 export function toLearningDateKey(date: Date): LearningDateKey {
-  const parts = learningDateFormatter.formatToParts(date)
-  const year = readDatePart(parts, "year")
-  const month = readDatePart(parts, "month")
-  const day = readDatePart(parts, "day")
-
-  return `${year}-${month}-${day}` as LearningDateKey
+  return toPlatformDayKey(date) as LearningDateKey
 }
 
 export function addLearningCalendarDays(
@@ -106,19 +93,6 @@ export function calculateCurrentStreakDays(
   }
 
   return streak
-}
-
-function readDatePart(
-  parts: Intl.DateTimeFormatPart[],
-  type: Intl.DateTimeFormatPartTypes
-): string {
-  const value = parts.find((part) => part.type === type)?.value
-
-  if (value === undefined) {
-    throw new Error(`Missing ${type} in learning activity date`)
-  }
-
-  return value
 }
 
 function parseLearningDateKey(dateKey: LearningDateKey): {

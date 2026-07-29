@@ -58,7 +58,7 @@
 
 ## 운영 Reporting 데이터 경계
 
-- operations module의 reporting repository만 identity, content, learning과 ai-feedback table을 정적 SQL로 join·aggregate할 수 있다. 원본 schema와 제품 불변식의 소유권은 각 module에 그대로 남으며 reporting projection은 원본을 변경하지 않는다.
+- operations module의 reporting repository는 각 module이 공개한 리포팅 읽기 뷰만 join·aggregate한다. 뷰는 소유 module의 `infrastructure/persistence/reporting-view.ts`가 이름과 컬럼을 선언하고 API의 append-only migration이 생성하므로, 원본 컬럼이 사라지면 배포 전 migration에서 실패한다. 원본 schema와 제품 불변식의 소유권은 각 module에 그대로 남으며 reporting projection은 원본을 변경하지 않는다.
 - API composition은 writer와 분리한 SQLite read-only connection을 주입하고 repository는 `query_only`를 확인한다. 보고 조회가 쓰기 transaction이나 다른 module command repository로 우회해서는 안 된다.
 - 집계 SQL은 필요한 projection과 aggregate만 반환한다. 전체 table row를 application memory로 읽어 join하지 않고, AI 답안·prompt·피드백 원문을 선택하거나 반환하지 않는다.
 - 삭제 상태 학습자는 모든 운영 지표에서 제외한다. 첫 레슨 시작, `Asia/Seoul` 날짜 경계, D7 성숙 cohort와 완료·이탈의 제품 의미는 `docs/product/metrics.md`가 소유한다.

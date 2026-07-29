@@ -1,5 +1,6 @@
 import type { Database } from "bun:sqlite"
 import type { CourseId, LessonId } from "@workspace/types/ids"
+import { platformDayBoundary } from "@workspace/kernel/day-boundary"
 
 import type {
   OperationsAiFeedbackLessonFailure,
@@ -65,11 +66,8 @@ type AiFeedbackLessonFailureRow = Readonly<{
 const dashboardSql = `
   WITH
   eligible_learners AS (
-    SELECT user.id
-    FROM user
-    INNER JOIN learner_profiles
-      ON learner_profiles.user_id = user.id
-    WHERE learner_profiles.status <> 'deleted'
+    SELECT user_id AS id
+    FROM identity_reporting_learners
   ),
   first_starts AS (
     SELECT
@@ -77,9 +75,9 @@ const dashboardSql = `
       date(
         min(progress.started_at) / 1000,
         'unixepoch',
-        '+9 hours'
+        ?4
       ) AS first_start_date
-    FROM learner_lesson_progress AS progress
+    FROM learning_reporting_lesson_progress AS progress
     INNER JOIN eligible_learners
       ON eligible_learners.id = progress.user_id
     GROUP BY progress.user_id
@@ -94,7 +92,7 @@ const dashboardSql = `
     FROM mature_cohort
     WHERE EXISTS (
       SELECT 1
-      FROM learner_activity_days AS activity
+      FROM learning_reporting_activity_days AS activity
       WHERE activity.user_id = mature_cohort.user_id
         AND activity.activity_date > mature_cohort.first_start_date
         AND activity.activity_date <= date(
@@ -106,14 +104,14 @@ const dashboardSql = `
   SELECT
     (
       SELECT count(DISTINCT activity.user_id)
-      FROM learner_activity_days AS activity
+      FROM learning_reporting_activity_days AS activity
       INNER JOIN eligible_learners
         ON eligible_learners.id = activity.user_id
       WHERE activity.activity_date BETWEEN ?1 AND ?2
     ) AS activeUsersLast7Days,
     (
       SELECT count(*)
-      FROM learner_lesson_progress AS progress
+      FROM learning_reporting_lesson_progress AS progress
       INNER JOIN eligible_learners
         ON eligible_learners.id = progress.user_id
       WHERE progress.status = 'completed'
@@ -134,11 +132,8 @@ const dailySeriesSql = `
     WHERE date_key < ?2
   ),
   eligible_learners AS (
-    SELECT user.id, user.created_at
-    FROM user
-    INNER JOIN learner_profiles
-      ON learner_profiles.user_id = user.id
-    WHERE learner_profiles.status <> 'deleted'
+    SELECT user_id AS id, created_at
+    FROM identity_reporting_learners
   ),
   first_starts AS (
     SELECT
@@ -146,16 +141,16 @@ const dailySeriesSql = `
       date(
         min(progress.started_at) / 1000,
         'unixepoch',
-        '+9 hours'
+        ?4
       ) AS first_start_date
-    FROM learner_lesson_progress AS progress
+    FROM learning_reporting_lesson_progress AS progress
     INNER JOIN eligible_learners
       ON eligible_learners.id = progress.user_id
     GROUP BY progress.user_id
   ),
   signup_counts AS (
     SELECT
-      date(created_at / 1000, 'unixepoch', '+9 hours') AS date_key,
+      date(created_at / 1000, 'unixepoch', ?4) AS date_key,
       count(*) AS count
     FROM eligible_learners
     GROUP BY date_key
@@ -170,10 +165,10 @@ const dailySeriesSql = `
       date(
         progress.completed_at / 1000,
         'unixepoch',
-        '+9 hours'
+        ?4
       ) AS date_key,
       count(*) AS count
-    FROM learner_lesson_progress AS progress
+    FROM learning_reporting_lesson_progress AS progress
     INNER JOIN eligible_learners
       ON eligible_learners.id = progress.user_id
     WHERE progress.status = 'completed'
@@ -187,7 +182,7 @@ const dailySeriesSql = `
     FROM first_starts
     WHERE EXISTS (
       SELECT 1
-      FROM learner_activity_days AS activity
+      FROM learning_reporting_activity_days AS activity
       WHERE activity.user_id = first_starts.user_id
         AND activity.activity_date > first_starts.first_start_date
         AND activity.activity_date <= date(
@@ -224,32 +219,17 @@ const dailySeriesSql = `
 const lessonAnalyticsCte = `
   WITH
   eligible_learners AS (
-    SELECT user.id
-    FROM user
-    INNER JOIN learner_profiles
-      ON learner_profiles.user_id = user.id
-    WHERE learner_profiles.status <> 'deleted'
+    SELECT user_id AS id
+    FROM identity_reporting_learners
   ),
   current_lessons AS (
     SELECT
-      course.id AS course_id,
-      curriculum.id AS curriculum_version_id,
-      curriculum.title AS course_title,
-      lesson.id AS lesson_id,
-      lesson.title AS lesson_title
-    FROM courses AS course
-    INNER JOIN course_curriculum_versions AS curriculum
-      ON curriculum.course_id = course.id
-      AND curriculum.id = course.published_curriculum_version_id
-      AND curriculum.status = 'published'
-    INNER JOIN course_unit_versions AS unit
-      ON unit.curriculum_version_id = curriculum.id
-      AND unit.status = 'active'
-    INNER JOIN lesson_versions AS lesson
-      ON lesson.curriculum_version_id = curriculum.id
-      AND lesson.unit_id = unit.id
-      AND lesson.status = 'active'
-    WHERE course.status = 'active'
+      course_id,
+      curriculum_version_id,
+      course_title,
+      lesson_id,
+      lesson_title
+    FROM content_reporting_current_lessons
   ),
   progress_counts AS (
     SELECT
@@ -262,7 +242,7 @@ const lessonAnalyticsCte = `
           WHEN progress.status = 'completed' THEN progress.user_id
         END
       ) AS completed
-    FROM learner_lesson_progress AS progress
+    FROM learning_reporting_lesson_progress AS progress
     INNER JOIN eligible_learners
       ON eligible_learners.id = progress.user_id
     GROUP BY
@@ -305,11 +285,8 @@ const lessonAnalyticsCte = `
 
 const aiFeedbackQualitySql = `
   WITH eligible_learners AS (
-    SELECT user.id
-    FROM user
-    INNER JOIN learner_profiles
-      ON learner_profiles.user_id = user.id
-    WHERE learner_profiles.status <> 'deleted'
+    SELECT user_id AS id
+    FROM identity_reporting_learners
   )
   SELECT
     coalesce(
@@ -344,7 +321,7 @@ const aiFeedbackQualitySql = `
       ),
       0
     ) AS tokenSampleCount
-  FROM ai_feedback_attempts AS attempt
+  FROM ai_feedback_reporting_attempts AS attempt
   INNER JOIN eligible_learners
     ON eligible_learners.id = attempt.user_id
   WHERE attempt.created_at >= ?1
@@ -353,14 +330,11 @@ const aiFeedbackQualitySql = `
 
 const aiFeedbackFailureCountsSql = `
   WITH eligible_learners AS (
-    SELECT user.id
-    FROM user
-    INNER JOIN learner_profiles
-      ON learner_profiles.user_id = user.id
-    WHERE learner_profiles.status <> 'deleted'
+    SELECT user_id AS id
+    FROM identity_reporting_learners
   )
   SELECT attempt.failure_code AS code, count(*) AS count
-  FROM ai_feedback_attempts AS attempt
+  FROM ai_feedback_reporting_attempts AS attempt
   INNER JOIN eligible_learners
     ON eligible_learners.id = attempt.user_id
   WHERE attempt.created_at >= ?1
@@ -373,31 +347,16 @@ const aiFeedbackFailureCountsSql = `
 const aiFeedbackLessonFailuresSql = `
   WITH
   eligible_learners AS (
-    SELECT user.id
-    FROM user
-    INNER JOIN learner_profiles
-      ON learner_profiles.user_id = user.id
-    WHERE learner_profiles.status <> 'deleted'
+    SELECT user_id AS id
+    FROM identity_reporting_learners
   ),
   current_lessons AS (
     SELECT
-      course.id AS course_id,
-      curriculum.title AS course_title,
-      lesson.id AS lesson_id,
-      lesson.title AS lesson_title
-    FROM courses AS course
-    INNER JOIN course_curriculum_versions AS curriculum
-      ON curriculum.course_id = course.id
-      AND curriculum.id = course.published_curriculum_version_id
-      AND curriculum.status = 'published'
-    INNER JOIN course_unit_versions AS unit
-      ON unit.curriculum_version_id = curriculum.id
-      AND unit.status = 'active'
-    INNER JOIN lesson_versions AS lesson
-      ON lesson.curriculum_version_id = curriculum.id
-      AND lesson.unit_id = unit.id
-      AND lesson.status = 'active'
-    WHERE course.status = 'active'
+      course_id,
+      course_title,
+      lesson_id,
+      lesson_title
+    FROM content_reporting_current_lessons
   ),
   attempt_counts AS (
     SELECT
@@ -410,7 +369,7 @@ const aiFeedbackLessonFailuresSql = `
         END
       ) AS failure_count,
       count(*) AS request_count
-    FROM ai_feedback_attempts AS attempt
+    FROM ai_feedback_reporting_attempts AS attempt
     INNER JOIN eligible_learners
       ON eligible_learners.id = attempt.user_id
     WHERE attempt.quota_date BETWEEN ?1 AND ?2
@@ -497,8 +456,13 @@ export function createSqliteOperationsReportingRepository(
     },
     readAnalytics(input) {
       const dailySeries = sqlite
-        .query<DailySeriesRow, [string, string, string]>(dailySeriesSql)
-        .all(input.from, input.to, input.matureCohortThrough)
+        .query<DailySeriesRow, [string, string, string, string]>(dailySeriesSql)
+        .all(
+          input.from,
+          input.to,
+          input.matureCohortThrough,
+          platformDayBoundary.sqliteOffset
+        )
       const worstAiFeedbackLessons = readWorstAiFeedbackLessons(sqlite, input)
       const worstLessons = readWorstLessons(sqlite)
 
@@ -513,8 +477,13 @@ export function createSqliteOperationsReportingRepository(
     },
     readDashboard(input) {
       const row = sqlite
-        .query<DashboardRow, [string, string, string]>(dashboardSql)
-        .get(input.activeFrom, input.reportDate, input.matureCohortThrough)
+        .query<DashboardRow, [string, string, string, string]>(dashboardSql)
+        .get(
+          input.activeFrom,
+          input.reportDate,
+          input.matureCohortThrough,
+          platformDayBoundary.sqliteOffset
+        )
       if (row === null) {
         throw new Error("Operations dashboard aggregate could not be read")
       }

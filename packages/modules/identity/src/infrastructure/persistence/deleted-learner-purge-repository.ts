@@ -1,19 +1,20 @@
 import { and, asc, eq, isNotNull, lte } from "drizzle-orm"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { learnerProfiles } from "@workspace/identity/schema"
-import type { DeletedLearnerPurgeRepository } from "@workspace/identity/ports"
+import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
 import { err, ok } from "@workspace/kernel/result"
 
-import { deleteLearnerOwnedData } from "@/adapters/identity/learner-data-purge"
+import type { DeletedLearnerPurgeRepository } from "#identity/application/identity-ports"
+import { learnerProfiles } from "#identity/infrastructure/persistence/schema"
 
-export function createDeletedLearnerPurgeRepository(
-  database: WritingAppDatabase
-): DeletedLearnerPurgeRepository {
+export function createDeletedLearnerPurgeRepository(input: {
+  readonly database: WritingAppDatabase
+  readonly learnerDataPurges: readonly LearnerDataPurgePort[]
+}): DeletedLearnerPurgeRepository {
   return {
-    async purgeDeletedBefore(input) {
+    async purgeDeletedBefore(command) {
       try {
-        const result = database.transaction(
+        const result = input.database.transaction(
           (transaction) => {
             const userIds = transaction
               .select({ userId: learnerProfiles.userId })
@@ -22,25 +23,27 @@ export function createDeletedLearnerPurgeRepository(
                 and(
                   eq(learnerProfiles.status, "deleted"),
                   isNotNull(learnerProfiles.deletedAt),
-                  lte(learnerProfiles.deletedAt, input.cutoff)
+                  lte(learnerProfiles.deletedAt, command.cutoff)
                 )
               )
               .orderBy(
                 asc(learnerProfiles.deletedAt),
                 asc(learnerProfiles.userId)
               )
-              .limit(input.batchSize)
+              .limit(command.batchSize)
               .all()
               .map(({ userId }) => userIdSchema.parse(userId))
 
-            if (input.dryRun || userIds.length === 0) {
+            if (command.dryRun || userIds.length === 0) {
               return {
                 matchedUserCount: userIds.length,
                 purgedUserCount: 0,
               }
             }
 
-            deleteLearnerOwnedData(transaction, userIds)
+            for (const port of input.learnerDataPurges) {
+              port.purge(transaction, userIds)
+            }
 
             return {
               matchedUserCount: userIds.length,

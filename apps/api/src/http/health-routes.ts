@@ -1,7 +1,7 @@
 import { createRoute, type OpenAPIHono } from "@hono/zod-openapi"
 import { jsonResponse, z } from "@workspace/http-platform/openapi"
 
-import type { ApiHonoEnv } from "@/context/hono-env"
+import type { ApiHonoEnv } from "@/middleware/hono-env"
 import { parseLearnerRouteResponse } from "@/http/learner-response"
 import type { ApiHealthProbe } from "@/runtime/api-health"
 

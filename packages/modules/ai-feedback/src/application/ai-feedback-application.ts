@@ -37,7 +37,7 @@ import type {
 
 export type { AiFeedbackAttemptTransition } from "#ai-feedback/application/ports/ai-feedback-repository"
 
-export type RequestAiFeedbackInput = AiFeedbackAttemptScope &
+type RequestAiFeedbackInput = AiFeedbackAttemptScope &
   Readonly<{
     answer: string
     focus: string
@@ -45,10 +45,9 @@ export type RequestAiFeedbackInput = AiFeedbackAttemptScope &
     lessonTitle: string
   }>
 
-export type AiFeedbackResult = AiFeedback &
-  Readonly<{ remainingAttempts: number }>
+type AiFeedbackResult = AiFeedback & Readonly<{ remainingAttempts: number }>
 
-export type RequestAiFeedbackOptions = Readonly<{
+type RequestAiFeedbackOptions = Readonly<{
   signal?: AbortSignal
 }>
 
@@ -421,6 +420,3 @@ function scopeOf(input: RequestAiFeedbackInput): AiFeedbackAttemptScope {
     stepId: input.stepId,
   }
 }
-
-export { defaultAiFeedbackAttemptPolicy, defaultAiFeedbackDailyQuotaPolicy }
-export type { AiFeedbackAttemptPolicy, AiFeedbackDailyQuotaPolicy }

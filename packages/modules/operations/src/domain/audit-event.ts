@@ -14,7 +14,7 @@ export const auditCategoryValues = [
   "content-mutation",
 ] as const
 
-export type AuditCategory = (typeof auditCategoryValues)[number]
+type AuditCategory = (typeof auditCategoryValues)[number]
 
 export const auditActionValues = [
   "learner.detail.read",
@@ -29,7 +29,7 @@ export type AuditAction = (typeof auditActionValues)[number]
 
 export const auditOutcomeValues = ["started", "succeeded", "failed"] as const
 
-export type AuditOutcome = (typeof auditOutcomeValues)[number]
+type AuditOutcome = (typeof auditOutcomeValues)[number]
 
 export const auditTargetTypeValues = ["learner", "course"] as const
 

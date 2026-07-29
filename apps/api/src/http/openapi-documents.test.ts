@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 import {
   createOpenApiDocuments,
   serializeOpenApiDocument,
-} from "@/openapi/openapi-documents"
+} from "@/http/openapi-documents"
 
 const httpMethods = new Set([
   "delete",

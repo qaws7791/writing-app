@@ -1,15 +1,15 @@
 import { createRoute, type OpenAPIHono } from "@hono/zod-openapi"
 import { adminSessionDtoSchema } from "@workspace/contracts/identity/admin-session"
-import type { AdminSessionResolver } from "@workspace/identity/sessions"
+import type { AdminSessionResolver } from "@workspace/identity/ports"
 import { adminSessionRouteOptions } from "@workspace/identity/http"
 
-import type { AdminHonoEnv } from "@/admin/admin-hono-env"
+import type { AdminHonoEnv } from "@/http/admin-hono-env"
 import {
   adminAuthenticatedResponses,
   adminHealthResponseSchema,
   adminReadinessResponseSchema,
   jsonResponse,
-} from "@/admin/admin-openapi"
+} from "@/http/admin-openapi"
 import type { ApiHealthProbe } from "@/runtime/api-health"
 
 export function registerAdminFoundationRoutes(

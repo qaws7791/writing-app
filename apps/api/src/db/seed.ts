@@ -1,8 +1,8 @@
 import { seedLearnerAuth } from "@workspace/auth/seed"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { seedContentDatabase } from "@workspace/content/application"
+import { seedContentDatabase } from "@workspace/content/module"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
-import { seedLearnerIdentity } from "@workspace/identity/seed"
+import { seedLearnerIdentity } from "@workspace/identity/module"
 
 import { runApplicationMigrations } from "@/db/migrate"
 

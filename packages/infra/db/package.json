@@ -10,6 +10,7 @@
     "./client": "./src/client.ts",
     "./database-backup": "./src/database-backup.ts",
     "./destructive-operation-guard": "./src/destructive-operation-guard.ts",
+    "./learner-data-purge": "./src/learner-data-purge.ts",
     "./migration-runner": "./src/migration-runner.ts",
     "./sqlite-database": "./src/sqlite-database.ts",
     "./test-support/application-migration": "./src/test-support/application-migration.ts"

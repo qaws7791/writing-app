@@ -34,13 +34,13 @@ import type {
   LearningApplicationDependencies,
 } from "#learning/application/ports/learning-ports"
 
-export type StartLearningLessonCommand = Readonly<{
+type StartLearningLessonCommand = Readonly<{
   expectedCurriculumVersionId: CurriculumVersionId
   learnerId: LearnerId
   lessonId: LessonId
 }>
 
-export type SubmitLearningStepCommand = Readonly<{
+type SubmitLearningStepCommand = Readonly<{
   learnerId: LearnerId
   lessonId: LessonId
   stepId: LessonStepId
@@ -57,7 +57,7 @@ export type SubmitLearningStepCommand = Readonly<{
       }>
   )
 
-export type SaveLearningStepDraftCommand = Readonly<{
+type SaveLearningStepDraftCommand = Readonly<{
   answer: LearnerStepDraftAnswer
   expectedCurriculumVersionId: CurriculumVersionId
   expectedVersion: number | null
@@ -66,14 +66,14 @@ export type SaveLearningStepDraftCommand = Readonly<{
   stepId: LessonStepId
 }>
 
-export type RequestLearningAiFeedbackCommand = Readonly<{
+type RequestLearningAiFeedbackCommand = Readonly<{
   idempotencyKey: string
   learnerId: LearnerId
   lessonId: LessonId
   stepId: LessonStepId
 }>
 
-export type LearningCollaboratorError =
+type LearningCollaboratorError =
   | Readonly<{ kind: "learner-inactive" }>
   | Readonly<{ kind: "learner-not-found" }>
   | Readonly<{ kind: "identity-query-failed" }>
@@ -83,7 +83,7 @@ export type LearningCommandError =
   | LearningCollaboratorError
   | LearningAiFeedbackError
 
-export type LearningReadError =
+type LearningReadError =
   | Readonly<{ kind: "course-not-found" }>
   | Readonly<{ kind: "lesson-locked" }>
   | Readonly<{ kind: "lesson-not-found" }>

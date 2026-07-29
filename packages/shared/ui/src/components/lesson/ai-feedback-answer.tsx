@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 
+import { platformDayBoundary } from "@workspace/kernel/day-boundary"
+
 import { Button } from "#ui/components/ui/button"
 
 export type AiFeedbackViewModel = {
@@ -277,7 +279,7 @@ function formatRetryAt(retryAt: string): string {
   return new Intl.DateTimeFormat("ko-KR", {
     dateStyle: "medium",
     timeStyle: "short",
-    timeZone: "Asia/Seoul",
+    timeZone: platformDayBoundary.timeZone,
   }).format(new Date(retryAt))
 }
 

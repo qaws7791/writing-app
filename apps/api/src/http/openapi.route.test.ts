@@ -3,7 +3,7 @@ import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cook
 
 import { createLearnerApp } from "@/http/learner-app"
 import { registerLearnerApiDocumentation } from "@/http/openapi"
-import { createTestLearnerApp } from "@/routes/test-dependencies"
+import { createTestLearnerApp } from "@/test-support/learner-app-fixture"
 
 describe("플랫폼 API openapi route", () => {
   it("OpenAPI 3.1 baseline document를 반환한다", async () => {

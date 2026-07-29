@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { withPrivateNoStore } from "@workspace/http-platform/security"
 
-import type { ApiHonoEnv } from "@/context/hono-env"
+import type { ApiHonoEnv } from "@/middleware/hono-env"
 
 export function registerAuthProxy(
   app: OpenAPIHono<ApiHonoEnv>,

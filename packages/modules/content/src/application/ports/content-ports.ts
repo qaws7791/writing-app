@@ -42,7 +42,7 @@ export type ContentAssetReference = Pick<
 export type CourseEditorDocument = Omit<CurriculumDraft, "visualKey"> &
   Readonly<{ assets: readonly ResolvedContentAsset[] }>
 
-export type ContentCourseListItem = Readonly<{
+type ContentCourseListItem = Readonly<{
   category: string
   id: CourseId
   lessonCount: number

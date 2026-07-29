@@ -294,3 +294,5 @@ export const lessonStepVersions = sqliteTable(
     ),
   ]
 )
+
+export * from "#content/infrastructure/persistence/reporting-view"

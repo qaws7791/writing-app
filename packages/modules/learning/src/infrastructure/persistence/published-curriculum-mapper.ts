@@ -1,5 +1,5 @@
 import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
-import { normalizeVersionedStepContentOrThrow } from "@workspace/content/application"
+import { normalizeVersionedStepContentOrThrow } from "@workspace/content/ports"
 import type {
   ContentAssetId,
   CourseId,

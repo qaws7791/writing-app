@@ -3,8 +3,8 @@ import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie
 import { ErrorResponseSchema } from "@workspace/http-platform/errors"
 import { jsonResponse, z } from "@workspace/http-platform/openapi"
 
-import type { AdminHonoEnv } from "@/admin/admin-hono-env"
-import type { OpenApiDocument } from "@/openapi/openapi-document"
+import type { AdminHonoEnv } from "@/http/admin-hono-env"
+import type { OpenApiDocument } from "@/http/openapi-document"
 
 const adminOpenApiDocumentConfig = {
   info: {

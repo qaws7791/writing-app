@@ -1,4 +1,5 @@
 import { err, ok, type Result } from "@workspace/kernel/result"
+import { toPlatformDayKey } from "@workspace/kernel/day-boundary"
 
 import type { OperationsError } from "#operations/domain/operations-error"
 import type {
@@ -58,7 +59,7 @@ export function createOperationsReportingQueries(input: {
       )
     },
     readAnalytics(query) {
-      const to = toSeoulDateKey(query.now)
+      const to = toPlatformDayKey(query.now)
       return executeReportingQuery(input, "analytics", () =>
         input.repository.readAnalytics({
           from: addCalendarDays(to, -(query.days - 1)),
@@ -68,7 +69,7 @@ export function createOperationsReportingQueries(input: {
       )
     },
     readDashboard(query) {
-      const reportDate = toSeoulDateKey(query.now)
+      const reportDate = toPlatformDayKey(query.now)
       return executeReportingQuery(input, "dashboard", () =>
         input.repository.readDashboard({
           activeFrom: addCalendarDays(reportDate, -6),
@@ -104,28 +105,8 @@ async function executeReportingQuery<T>(
   }
 }
 
-function toSeoulDateKey(date: Date): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-  }).formatToParts(date)
-  const values = Object.fromEntries(
-    parts.map((part) => [part.type, part.value])
-  )
-
-  return `${values["year"]}-${values["month"]}-${values["day"]}`
-}
-
 function addCalendarDays(dateKey: string, amount: number): string {
   const date = new Date(`${dateKey}T00:00:00.000Z`)
   date.setUTCDate(date.getUTCDate() + amount)
   return date.toISOString().slice(0, 10)
 }
-
-export type {
-  OperationsAnalytics,
-  OperationsDashboard,
-  OperationsLessonAnalyticsItem,
-} from "#operations/application/ports/operations-reporting-repository"

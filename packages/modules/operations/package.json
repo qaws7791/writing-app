@@ -7,15 +7,10 @@
     "#operations/*": "./src/*"
   },
   "exports": {
-    "./application": "./src/application/operations-application.ts",
-    "./audit": "./src/application/audit-trail.ts",
-    "./audit-event": "./src/domain/audit-event.ts",
-    "./audit-repository": "./src/infrastructure/persistence/audit-event-drizzle-repository.ts",
     "./http": "./src/interface/http/operations-http.ts",
+    "./migration-schema": "./src/infrastructure/persistence/schema.ts",
     "./module": "./src/module.ts",
-    "./ports": "./src/application/ports/operations-ports.ts",
-    "./reporting-repository": "./src/infrastructure/persistence/operations-reporting-sqlite-repository.ts",
-    "./schema": "./src/infrastructure/persistence/schema.ts"
+    "./ports": "./src/application/ports/operations-ports.ts"
   },
   "scripts": {
     "lint": "oxlint .",

@@ -7,11 +7,10 @@
     "#content/*": "./src/*"
   },
   "exports": {
-    "./application": "./src/application.ts",
-    "./maintenance": "./src/maintenance.ts",
-    "./ports": "./src/application/ports/content-ports.ts",
-    "./register-routes": "./src/register-routes.ts",
-    "./schema": "./src/infrastructure/persistence/schema.ts"
+    "./http": "./src/interface/http/content-http.ts",
+    "./migration-schema": "./src/infrastructure/persistence/schema.ts",
+    "./module": "./src/module.ts",
+    "./ports": "./src/application/ports/content-module-ports.ts"
   },
   "scripts": {
     "lint": "oxlint .",

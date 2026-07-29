@@ -117,24 +117,39 @@ function createAiFeedbackReportingDatabase(): Database {
   const sqlite = new Database(":memory:")
   sqlite.exec(`
     CREATE TABLE user (
-      id TEXT PRIMARY KEY
+      id TEXT PRIMARY KEY,
+      created_at INTEGER NOT NULL DEFAULT 0
     );
     CREATE TABLE learner_profiles (
       user_id TEXT PRIMARY KEY,
       status TEXT NOT NULL
     );
     CREATE TABLE ai_feedback_attempts (
+      id TEXT,
       answer_text TEXT NOT NULL,
       attempt_number INTEGER NOT NULL,
+      course_id TEXT,
       created_at INTEGER NOT NULL,
       failure_code TEXT,
       input_token_count INTEGER,
       latency_ms INTEGER,
+      lesson_id TEXT,
       output_token_count INTEGER,
+      quota_date TEXT,
       result_json TEXT,
       status TEXT NOT NULL,
       user_id TEXT NOT NULL
     );
+    CREATE VIEW identity_reporting_learners AS
+    SELECT user.id AS user_id, user.created_at AS created_at
+    FROM user
+    INNER JOIN learner_profiles ON learner_profiles.user_id = user.id
+    WHERE learner_profiles.status <> 'deleted';
+    CREATE VIEW ai_feedback_reporting_attempts AS
+    SELECT
+      id, user_id, course_id, lesson_id, attempt_number, status, failure_code,
+      created_at, quota_date, input_token_count, output_token_count, latency_ms
+    FROM ai_feedback_attempts;
   `)
   return sqlite
 }

@@ -1,29 +1,73 @@
 import { describe, expect, it, vi } from "vitest"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { createAiFeedbackMaintenanceForDatabase } from "@workspace/ai-feedback/maintenance"
-import { createContentAssetMaintenance } from "@workspace/content/maintenance"
+import {
+  createAiFeedbackModule,
+  type AiFeedbackModule,
+} from "@workspace/ai-feedback/module"
+import {
+  defaultAiFeedbackAttemptPolicy,
+  defaultAiFeedbackDailyQuotaPolicy,
+  type AiFeedbackProvider,
+} from "@workspace/ai-feedback/ports"
+import { createContentModule } from "@workspace/content/module"
 import type { ContentAssetStoragePort } from "@workspace/content/ports"
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
-import { createDeletedLearnerPurgeCommand } from "@workspace/identity/purge"
+import {
+  createInMemoryWritingAppDatabase,
+  type WritingAppDatabase,
+} from "@workspace/db/client"
+import {
+  createDeletedLearnerPurgeCommand,
+  createDeletedLearnerPurgeRepository,
+} from "@workspace/identity/module"
 import { ok } from "@workspace/kernel/result"
-import { createAuditTrail } from "@workspace/operations/audit"
-import { createAuditEventDrizzleRepository } from "@workspace/operations/audit-repository"
-import type { CourseId } from "@workspace/types/ids"
+import { createOperationsModule } from "@workspace/operations/module"
+import type { ContentAssetId, CourseId } from "@workspace/types/ids"
 
-import { createDeletedLearnerPurgeRepository } from "@/adapters/identity/deleted-learner-purge-repository"
 import { runApplicationMigrations } from "@/db/migrate"
 import {
   createDailyMaintenance,
   type DailyMaintenanceResult,
 } from "@/maintenance/daily-maintenance"
 import { createExpiredSessionMaintenance } from "@/maintenance/expired-session-maintenance"
+import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 
 const now = new Date("2026-07-24T00:00:00.000Z")
 const dayMs = 86_400_000
 
+const unavailableAiFeedbackProvider: AiFeedbackProvider = {
+  model: "test-unconfigured",
+  provider: "test",
+  async createFeedback() {
+    return ok({
+      feedback: {
+        improvements: [],
+        nextAction: "",
+        strengths: [],
+        summary: "",
+      },
+    })
+  },
+}
+
+function createTestAiFeedbackModule(
+  database: WritingAppDatabase,
+  clock: () => Date
+): AiFeedbackModule {
+  return createAiFeedbackModule({
+    attemptIdGenerator: { next: () => "unused" },
+    attemptPolicy: defaultAiFeedbackAttemptPolicy,
+    clock: { now: clock },
+    dailyQuotaPolicy: defaultAiFeedbackDailyQuotaPolicy,
+    database,
+    openAi: { apiKey: undefined, model: "test-model" },
+    provider: unavailableAiFeedbackProvider,
+  })
+}
+
 describe("daily maintenance 실제 SQLite integration", () => {
   it("dry-run과 실제 대상 수가 일치하고 actual 재실행은 idempotent하다", async () => {
     const client = createInMemoryWritingAppDatabase()
+    const reportingClient = createInMemoryWritingAppDatabase()
     const storage: ContentAssetStoragePort = {
       deleteObjects: vi.fn(async () => ok(undefined)),
       putObject: vi.fn(async () => ok({ url: "https://assets.example.test" })),
@@ -35,16 +79,19 @@ describe("daily maintenance 실제 SQLite integration", () => {
     try {
       runApplicationMigrations(client.sqlite)
       seedDailyMaintenanceFixture(client.sqlite)
-      const auditRepository = createAuditEventDrizzleRepository(
-        client.db,
-        () => undefined
-      )
-      const createdAudit = createAuditTrail({
-        clock: { now: () => new Date(now.getTime() - 365 * dayMs) },
-        idGenerator: { next: () => "audit-expired" },
-        repository: auditRepository,
+      let auditTime = new Date(now.getTime() - 365 * dayMs)
+      let auditSequence = 0
+      const { auditTrail } = createOperationsModule({
+        audit: {
+          failureObserver: () => undefined,
+          idGenerator: { next: () => `audit-${++auditSequence}` },
+        },
+        clock: { now: () => auditTime },
+        database: client.db,
+        reportingDatabase: reportingClient.sqlite,
+        reportingFailureObserver: () => undefined,
       })
-      const started = await createdAudit.begin({
+      const started = await auditTrail.begin({
         action: "course.publish",
         actorId: adminIdSchema.parse("admin-1"),
         clientIp: null,
@@ -55,29 +102,35 @@ describe("daily maintenance 실제 SQLite integration", () => {
         },
       })
       if (started.isErr()) throw new Error(started.error.kind)
-      await createdAudit.complete({
+      await auditTrail.complete({
         eventId: started.value.id,
         outcome: "succeeded",
       })
+      auditTime = now
 
       const maintenance = createDailyMaintenance({
-        aiFeedback: createAiFeedbackMaintenanceForDatabase({
-          clock: { now: () => now },
-          database: client.db,
-        }),
-        auditTrail: createAuditTrail({
-          clock: { now: () => now },
-          idGenerator: { next: () => "unused" },
-          repository: auditRepository,
-        }),
+        aiFeedback: createTestAiFeedbackModule(client.db, () => now)
+          .maintenance,
+        auditTrail,
         clock: { now: () => now },
-        contentAssets: createContentAssetMaintenance({
+        contentAssets: createContentModule({
+          assetIdGenerator: { next: () => "unused" as ContentAssetId },
+          assetImageProcessor: {
+            process: () => {
+              throw new Error("asset 이미지 처리는 호출되지 않는다.")
+            },
+          },
           assetStorage: storage,
+          clock: { now: () => now },
+          courseIdGenerator: { next: () => "unused" as CourseId },
           database: client.db,
-        }),
+        }).maintenance,
         deletedLearners: createDeletedLearnerPurgeCommand({
           clock: { now: () => now },
-          repository: createDeletedLearnerPurgeRepository(client.db),
+          repository: createDeletedLearnerPurgeRepository({
+            database: client.db,
+            learnerDataPurges: learnerDataPurgePorts,
+          }),
         }),
         expiredSessions: createExpiredSessionMaintenance(client.db),
         externalLogRetentionEvidence: {
@@ -161,6 +214,7 @@ describe("daily maintenance 실제 SQLite integration", () => {
         recentDeletedLearners: 1,
       })
     } finally {
+      reportingClient.close()
       client.close()
     }
   })

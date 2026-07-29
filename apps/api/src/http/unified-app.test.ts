@@ -1,10 +1,10 @@
 import { Hono, type Env, type Schema } from "hono"
 import { describe, expect, it, vi } from "vitest"
 
-import { registerAdminFoundationRoutes } from "@/admin/admin-foundation.routes"
+import { registerAdminFoundationRoutes } from "@/http/admin-foundation.routes"
 import { createAdminApp, registerAdminAuthRoutes } from "@/http/admin-app"
 import { createUnifiedApp } from "@/http/unified-app"
-import { createTestLearnerApp } from "@/routes/test-dependencies"
+import { createTestLearnerApp } from "@/test-support/learner-app-fixture"
 
 describe("단일 API app", () => {
   it("learner와 admin readiness는 같은 DB 상태를 반영하고 liveness와 분리한다", async () => {

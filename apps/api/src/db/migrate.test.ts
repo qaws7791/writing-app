@@ -31,9 +31,11 @@ describe("application migration", () => {
     try {
       expect(runApplicationMigrations(sqlite)).toEqual([
         { execution: "applied", id: currentSchemaBaseline.id },
+        { execution: "applied", id: "0001-reporting-views" },
       ])
       expect(runApplicationMigrations(sqlite)).toEqual([
         { execution: "skipped", id: currentSchemaBaseline.id },
+        { execution: "skipped", id: "0001-reporting-views" },
       ])
       expect(
         sqlite
@@ -46,6 +48,11 @@ describe("application migration", () => {
         {
           checksum: currentSchemaBaseline.checksum,
           id: currentSchemaBaseline.id,
+        },
+        {
+          checksum:
+            "3733a851c5c3646d1f8f42b76ff94b688918020d7f1377eb33ab1f974abd770c",
+          id: "0001-reporting-views",
         },
       ])
       expect(

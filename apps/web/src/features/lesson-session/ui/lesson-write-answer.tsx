@@ -1,7 +1,7 @@
 "use client"
 
 import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
-import type { LessonStepCheckedVisual } from "@workspace/ui/components/lesson/lesson-step-checked-visual"
+import type { LessonStepCheckedVisual } from "@workspace/ui/lib/lesson-step-checked-visual"
 
 import type { LessonStepAnswerPayload } from "@/features/lesson-session/model/lesson-logic"
 import type { LearnerLessonStepDto as LessonStep } from "@/shared/http/learner-api-client"

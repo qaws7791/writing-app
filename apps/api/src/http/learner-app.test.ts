@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-import type { SessionResolver } from "@workspace/identity/sessions"
+import type { SessionResolver } from "@workspace/identity/ports"
 
-import { createTestLearnerApp } from "@/routes/test-dependencies"
+import { createTestLearnerApp } from "@/test-support/learner-app-fixture"
 
 type CapturedRequestLogEvent = {
   readonly actorId?: string

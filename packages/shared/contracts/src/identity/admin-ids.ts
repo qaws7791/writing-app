@@ -1,17 +1,8 @@
-import { z } from "zod"
 import type { AdminId, UserId } from "@workspace/types/ids"
 
+import { createIdentifierSchema } from "#contracts/identifier"
+
 export type { AdminId, UserId } from "@workspace/types/ids"
-
-const identifierSchema = z
-  .string()
-  .min(1)
-  .max(200)
-  .regex(/^[A-Za-z0-9][A-Za-z0-9._:-]*$/)
-
-function createIdentifierSchema<TId extends string>() {
-  return identifierSchema.transform((value): TId => value as TId)
-}
 
 export const adminIdSchema = createIdentifierSchema<AdminId>()
 export const userIdSchema = createIdentifierSchema<UserId>()

@@ -4,7 +4,7 @@ import {
   courseCurriculumVersions,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/content/schema"
+} from "@workspace/content/migration-schema"
 import {
   check,
   foreignKey,
@@ -253,3 +253,5 @@ export const learnerStepDrafts = sqliteTable(
     ),
   ]
 )
+
+export * from "#learning/infrastructure/persistence/reporting-view"

@@ -1,4 +1,4 @@
-import type { ContentAdminHonoEnv } from "@workspace/content/register-routes"
+import type { ContentAdminHonoEnv } from "@workspace/content/http"
 import type { IdentityAdminHonoEnv } from "@workspace/identity/http"
 import type { OperationsHonoEnv } from "@workspace/operations/http"
 

@@ -4,7 +4,7 @@ import { join } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
-import { createContentApplication } from "@workspace/content/application"
+import { createContentModule } from "@workspace/content/module"
 import {
   createReadOnlyWritingAppDatabase,
   createWritingAppDatabase,
@@ -47,7 +47,10 @@ describe("application database backup과 독립 restore", () => {
               "SELECT id FROM api_schema_migrations"
             )
             .all()
-        ).toEqual([{ id: currentSchemaBaseline.id }])
+        ).toEqual([
+          { id: currentSchemaBaseline.id },
+          { id: "0001-reporting-views" },
+        ])
         expect(
           restored.sqlite
             .query<{ readonly name: string }, []>(`
@@ -62,7 +65,7 @@ describe("application database backup과 독립 restore", () => {
         ).toEqual([...requiredApplicationBackupTableNames].sort())
         expect(requiredApplicationTableNames).toHaveLength(26)
 
-        const content = createContentApplication({
+        const content = createContentModule({
           assetIdGenerator: { next: () => "unused" as never },
           assetImageProcessor: {
             process: async () => {
@@ -76,9 +79,9 @@ describe("application database backup과 독립 restore", () => {
           courseIdGenerator: { next: () => "unused" as never },
           database: restored.db,
         })
-        await expect(content.listPublishedCourses()).resolves.not.toHaveLength(
-          0
-        )
+        await expect(
+          content.application.listPublishedCourses()
+        ).resolves.not.toHaveLength(0)
       } finally {
         restored.close()
       }

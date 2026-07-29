@@ -3,14 +3,14 @@ import path from "node:path"
 import { eq } from "drizzle-orm"
 
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { normalizeVersionedStepContentOrThrow } from "@workspace/content/application"
+import { normalizeVersionedStepContentOrThrow } from "@workspace/content/ports"
 import {
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
   lessonStepVersions,
   lessonVersions,
-} from "@workspace/content/schema"
+} from "@workspace/content/migration-schema"
 
 import { seedApplicationDatabase } from "@/db/seed"
 

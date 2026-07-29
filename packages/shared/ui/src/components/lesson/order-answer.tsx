@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { GripVertical } from "lucide-react"
 
 import { cn } from "#ui/lib/utils"
-import type { LessonStepCheckedVisual } from "#ui/components/lesson/lesson-step-checked-visual"
+import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 
 export type OrderAnswerItem<TId extends string = string> = {
   readonly id: TId

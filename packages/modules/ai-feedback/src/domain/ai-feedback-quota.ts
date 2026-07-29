@@ -1,4 +1,5 @@
 import type { Brand } from "@workspace/types/brand"
+import { platformDayBoundary } from "@workspace/kernel/day-boundary"
 import { err, ok, type Result } from "@workspace/kernel/result"
 
 export type AiFeedbackQuotaDate = Brand<string, "AiFeedbackQuotaDate">
@@ -48,14 +49,14 @@ export function createAsiaSeoulQuotaWindow(now: Date): AiFeedbackQuotaWindow {
   if (!Number.isFinite(time))
     throw new Error("AI feedback quota time is invalid")
 
-  const seoulOffsetMs = 9 * 60 * 60 * 1_000
-  const seoulTime = new Date(time + seoulOffsetMs)
+  const { offsetMs } = platformDayBoundary
+  const seoulTime = new Date(time + offsetMs)
   const nextSeoulMidnight =
     Date.UTC(
       seoulTime.getUTCFullYear(),
       seoulTime.getUTCMonth(),
       seoulTime.getUTCDate() + 1
-    ) - seoulOffsetMs
+    ) - offsetMs
 
   return {
     date: seoulTime.toISOString().slice(0, 10) as AiFeedbackQuotaDate,

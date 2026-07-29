@@ -1,3 +1,4 @@
+import type { ContentApplication } from "@workspace/content/ports"
 import type { LearnerAiFeedbackTransitionResult } from "@workspace/contracts/learning/learner-transition"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { assertExhaustiveHttpResult } from "@workspace/http-platform/errors"
@@ -16,6 +17,7 @@ import {
   type LearningReportingQuery,
 } from "#learning/application/learning-reporting"
 import type { LearningApplicationDependencies } from "#learning/application/ports/learning-ports"
+import { createLearningContentQueryPort } from "#learning/infrastructure/adapters/content-query-adapter"
 import { createDrizzleLearningReadRepository } from "#learning/infrastructure/persistence/learning-read-drizzle-repository"
 import {
   createLearnerCursorCodec,
@@ -86,29 +88,32 @@ export type LearningModule = Readonly<{
 export function createLearningModule(
   input: Omit<
     LearningApplicationDependencies,
-    "readRepository" | "transitionRepository"
+    "content" | "readRepository" | "transitionRepository"
   > &
     Readonly<{
+      content: ContentApplication
       cursorSigningSecret: string
       database: WritingAppDatabase
       presentationSecret: string
     }>
 ): LearningModule {
+  const content = createLearningContentQueryPort(input.content)
   const transitionRepository = createDrizzleLearnerTransitionRepository(
     input.database
   )
   const readRepository = createDrizzleLearningReadRepository(input.database, {
-    content: input.content,
+    content,
     presentationSecret: input.presentationSecret,
   })
   const application = createLearningApplication({
     ...input,
+    content,
     readRepository,
     transitionRepository,
   })
   const cursor = createLearnerCursorCodec(input.cursorSigningSecret)
   const reportingQuery = createLearningReportingQuery({
-    content: input.content,
+    content,
     repository: createDrizzleLearningReportingRepository(input.database),
   })
   const profileStatsQuery = createLearningProfileStatsQuery({
@@ -127,6 +132,8 @@ export function createLearningModule(
     reportingQuery,
   }
 }
+
+export { learningLearnerDataPurge } from "#learning/infrastructure/persistence/learner-purge"
 
 function createAiFeedbackHttpCommand(
   application: LearningApplication

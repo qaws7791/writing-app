@@ -13,7 +13,3 @@ export const userStatusValues = Object.freeze([
 ] as const)
 
 export type UserStatus = (typeof userStatusValues)[number]
-
-export function isUserStatus(value: unknown): value is UserStatus {
-  return userStatusValues.some((status) => status === value)
-}

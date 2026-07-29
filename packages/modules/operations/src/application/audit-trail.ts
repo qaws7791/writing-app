@@ -16,7 +16,7 @@ import {
 } from "#operations/domain/audit-event"
 import type { OperationsActor } from "#operations/domain/operations-actor"
 
-export type AuditTrailError =
+type AuditTrailError =
   | AuditEventRepositoryError
   | AuditEventValidationError
   | Readonly<{ kind: "invalid-audit-query" }>

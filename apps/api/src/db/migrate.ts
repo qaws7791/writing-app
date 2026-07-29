@@ -7,11 +7,18 @@ import {
 } from "@workspace/db/migration-runner"
 
 import currentSchemaBaselineSql from "../../drizzle/0000-current-schema-baseline.sql" with { type: "text" }
+import reportingViewsSql from "../../drizzle/0001-reporting-views.sql" with { type: "text" }
 
 export const currentSchemaBaseline = readMigration(
   "0000-current-schema-baseline",
   currentSchemaBaselineSql,
   "52cf51e62305886f6056a6bdfcfb42f99886805c65ac33ebdd2f35856bb2b65e"
+)
+
+const reportingViews = readMigration(
+  "0001-reporting-views",
+  reportingViewsSql,
+  "3733a851c5c3646d1f8f42b76ff94b688918020d7f1377eb33ab1f974abd770c"
 )
 
 const applicationMigrations = [
@@ -22,6 +29,14 @@ const applicationMigrations = [
     checksum: currentSchemaBaseline.checksum,
     foreignKeys: "on" as const,
     id: currentSchemaBaseline.id,
+  },
+  {
+    apply(database: Database) {
+      database.exec(reportingViews.sql)
+    },
+    checksum: reportingViews.checksum,
+    foreignKeys: "on" as const,
+    id: reportingViews.id,
   },
 ]
 

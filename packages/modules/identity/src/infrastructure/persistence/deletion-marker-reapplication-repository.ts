@@ -1,44 +1,28 @@
 import { eq, inArray } from "drizzle-orm"
 import { authSessions, authUsers } from "@workspace/auth/schema"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { deletedLearnerDisplayName } from "@workspace/identity/learner-profile"
-import { learnerProfiles } from "@workspace/identity/schema"
-import type { LearnerDeletionMarker } from "@workspace/identity/ports"
-import type { Failure } from "@workspace/kernel/failure"
-import { err, ok, type Result } from "@workspace/kernel/result"
+import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
+import { err, ok } from "@workspace/kernel/result"
 import type { UserId } from "@workspace/types/ids"
 
-import { deleteLearnerOwnedData } from "@/adapters/identity/learner-data-purge"
+import type {
+  DeletionMarkerReapplicationRepository,
+  LearnerDeletionMarker,
+} from "#identity/application/identity-ports"
+import { deletedLearnerDisplayName } from "#identity/domain/learner-profile"
+import { learnerProfiles } from "#identity/infrastructure/persistence/schema"
 
-export type DeletionMarkerBatchResult = Readonly<{
-  alreadyAppliedUsers: number
-  markedDeletedUsers: number
-  missingUsers: number
-  purgedUsers: number
-}>
-
-type DeletionMarkerReapplicationRepositoryError =
-  Failure<"deletion-marker-reapplication-persistence-failed">
-
-export function createDeletionMarkerReapplicationRepository(
-  database: WritingAppDatabase
-) {
+export function createDeletionMarkerReapplicationRepository(input: {
+  readonly database: WritingAppDatabase
+  readonly learnerDataPurges: readonly LearnerDataPurgePort[]
+}): DeletionMarkerReapplicationRepository {
   return {
-    async applyBatch(input: {
-      readonly dryRun: boolean
-      readonly markers: readonly LearnerDeletionMarker[]
-      readonly purgeCutoff: Date
-    }): Promise<
-      Result<
-        DeletionMarkerBatchResult,
-        DeletionMarkerReapplicationRepositoryError
-      >
-    > {
+    async applyBatch(command) {
       try {
         return ok(
-          database.transaction(
+          input.database.transaction(
             (transaction) => {
-              const userIds = input.markers.map(({ userId }) => userId)
+              const userIds = command.markers.map(({ userId }) => userId)
               const existingUserIds = new Set(
                 transaction
                   .select({ id: authUsers.id })
@@ -57,13 +41,15 @@ export function createDeletionMarkerReapplicationRepository(
               )
               const result = classifyMarkers({
                 existingUserIds,
-                markers: input.markers,
+                markers: command.markers,
                 profilesByUserId,
-                purgeCutoff: input.purgeCutoff,
+                purgeCutoff: command.purgeCutoff,
               })
-              if (input.dryRun) return result.counts
+              if (command.dryRun) return result.counts
 
-              deleteLearnerOwnedData(transaction, result.purgeUserIds)
+              for (const port of input.learnerDataPurges) {
+                port.purge(transaction, result.purgeUserIds)
+              }
               for (const marker of result.markDeletedMarkers) {
                 const profile = profilesByUserId.get(marker.userId)
                 if (profile === undefined) {
@@ -94,7 +80,7 @@ export function createDeletionMarkerReapplicationRepository(
                     .run()
                 }
               }
-              const retainedUserIds = input.markers
+              const retainedUserIds = command.markers
                 .map(({ userId }) => userId)
                 .filter(
                   (userId) =>

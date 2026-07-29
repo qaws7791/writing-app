@@ -2,7 +2,7 @@ import { AppError } from "@workspace/http-platform/errors"
 import type { Context, Input } from "hono"
 import type { z } from "zod"
 
-import type { ApiHonoEnv } from "@/context/hono-env"
+import type { ApiHonoEnv } from "@/middleware/hono-env"
 
 type LearnerContractResponseInvalidEvent = {
   readonly classification: "response-schema-invalid"

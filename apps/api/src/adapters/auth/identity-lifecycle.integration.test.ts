@@ -16,8 +16,7 @@ import {
 import {
   adminSessionExpiresAt,
   type AdminSessionResolver,
-} from "@workspace/identity/sessions"
-import { learnerProfiles } from "@workspace/identity/schema"
+} from "@workspace/identity/ports"
 
 import { composeIdentityModule } from "@/composition/identity-module.composition"
 import { runApplicationMigrations } from "@/db/migrate"
@@ -104,13 +103,21 @@ describe("identity 삭제 lifecycle Hono integration", () => {
       expect(deleted.status).toBe(200)
       expect(client.db.select().from(authSessions).all()).toEqual([])
       expect(
-        client.db
-          .select()
-          .from(learnerProfiles)
-          .where(eq(learnerProfiles.userId, userId))
-          .get()
+        client.sqlite
+          .query<
+            {
+              readonly deletedAt: number | null
+              readonly displayName: string
+              readonly status: string
+            },
+            [string]
+          >(
+            `SELECT deleted_at AS deletedAt, display_name AS displayName, status
+             FROM learner_profiles WHERE user_id = ?`
+          )
+          .get(userId)
       ).toMatchObject({
-        deletedAt: now,
+        deletedAt: now.getTime(),
         displayName: "삭제된 사용자",
         status: "deleted",
       })

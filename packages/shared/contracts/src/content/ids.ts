@@ -1,4 +1,3 @@
-import { z } from "zod"
 import type {
   ContentAssetId,
   CourseId,
@@ -7,6 +6,8 @@ import type {
   LessonStepId,
   UnitId,
 } from "@workspace/types/ids"
+
+import { createIdentifierSchema } from "#contracts/identifier"
 
 export type {
   ContentAssetId,
@@ -17,16 +18,10 @@ export type {
   UnitId,
 } from "@workspace/types/ids"
 
-function createIdSchema<TId extends string>() {
-  return z
-    .string()
-    .min(1)
-    .transform((value) => value as TId)
-}
-
-export const courseIdSchema = createIdSchema<CourseId>()
-export const contentAssetIdSchema = createIdSchema<ContentAssetId>()
-export const curriculumVersionIdSchema = createIdSchema<CurriculumVersionId>()
-export const unitIdSchema = createIdSchema<UnitId>()
-export const lessonIdSchema = createIdSchema<LessonId>()
-export const lessonStepIdSchema = createIdSchema<LessonStepId>()
+export const courseIdSchema = createIdentifierSchema<CourseId>()
+export const contentAssetIdSchema = createIdentifierSchema<ContentAssetId>()
+export const curriculumVersionIdSchema =
+  createIdentifierSchema<CurriculumVersionId>()
+export const unitIdSchema = createIdentifierSchema<UnitId>()
+export const lessonIdSchema = createIdentifierSchema<LessonId>()
+export const lessonStepIdSchema = createIdentifierSchema<LessonStepId>()

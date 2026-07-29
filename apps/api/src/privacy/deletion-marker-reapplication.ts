@@ -1,4 +1,5 @@
 import type { WritingAppDatabase } from "@workspace/db/client"
+import { createDeletionMarkerReapplicationRepository } from "@workspace/identity/module"
 import type {
   LearnerDeletionMarker,
   LearnerDeletionMarkerStorePort,
@@ -6,7 +7,7 @@ import type {
 import type { Clock } from "@workspace/kernel/clock"
 import { err, ok, type Result } from "@workspace/kernel/result"
 
-import { createDeletionMarkerReapplicationRepository } from "@/privacy/deletion-marker-reapplication.repository"
+import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 
 const deletedLearnerRetentionMs = 5 * 24 * 60 * 60 * 1_000
 
@@ -41,7 +42,10 @@ export function createDeletionMarkerReapplication(input: {
   readonly database: WritingAppDatabase
   readonly markerStore: Pick<LearnerDeletionMarkerStorePort, "readAll">
 }): DeletionMarkerReapplication {
-  const repository = createDeletionMarkerReapplicationRepository(input.database)
+  const repository = createDeletionMarkerReapplicationRepository({
+    database: input.database,
+    learnerDataPurges: learnerDataPurgePorts,
+  })
 
   return {
     async execute(command) {

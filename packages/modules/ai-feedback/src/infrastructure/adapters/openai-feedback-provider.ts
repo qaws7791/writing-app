@@ -128,7 +128,7 @@ export function createOpenAiFeedbackProvider(input: {
   }
 }
 
-export function createUnavailableAiFeedbackProvider(
+function createUnavailableAiFeedbackProvider(
   input: Readonly<{ model?: string }> = {}
 ): AiFeedbackProvider {
   return {

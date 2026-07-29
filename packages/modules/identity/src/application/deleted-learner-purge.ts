@@ -7,7 +7,7 @@ import type {
 } from "#identity/application/identity-ports"
 import { calculateDeletedLearnerPurgeCutoff } from "#identity/domain/deleted-learner-retention"
 
-export type DeletedLearnerPurgeResult = Readonly<{
+type DeletedLearnerPurgeResult = Readonly<{
   cutoff: Date
   matchedUserCount: number
   purgedUserCount: number

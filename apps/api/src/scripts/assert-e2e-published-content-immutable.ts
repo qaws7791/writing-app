@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm"
 
 import { curriculumVersionIdSchema } from "@workspace/contracts/content/ids"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { courseCurriculumVersions } from "@workspace/content/schema"
+import { courseCurriculumVersions } from "@workspace/content/migration-schema"
 
 if (import.meta.main) {
   const databaseUrl = readE2eDatabaseUrl(process.env)

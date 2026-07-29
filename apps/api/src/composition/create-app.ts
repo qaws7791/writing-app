@@ -1,20 +1,20 @@
 import { registerAiFeedbackRoutes } from "@workspace/ai-feedback/http"
 import type { ContentAdminSessionPort } from "@workspace/content/ports"
-import { registerRoutes as registerContentRoutes } from "@workspace/content/register-routes"
+import { registerContentRoutes } from "@workspace/content/http"
 import { defaultRequestLoggingRuntime } from "@workspace/http-platform/app"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import {
   registerAdminIdentityRoutes,
   registerLearnerIdentityRoutes,
 } from "@workspace/identity/http"
-import type { AdminSessionResolver } from "@workspace/identity/sessions"
+import type { AdminSessionResolver } from "@workspace/identity/ports"
 import { registerLearningRoutes } from "@workspace/learning/http"
 import { createRequestLogger } from "@workspace/observability/request-logger"
 import { createSecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 import { registerOperationsRoutes } from "@workspace/operations/http"
 
-import { registerAdminFoundationRoutes } from "@/admin/admin-foundation.routes"
-import type { AdminHonoEnv } from "@/admin/admin-hono-env"
+import { registerAdminFoundationRoutes } from "@/http/admin-foundation.routes"
+import type { AdminHonoEnv } from "@/http/admin-hono-env"
 import type { ApiContainer } from "@/composition/create-container"
 import { createOperationsAdminSessionPort } from "@/composition/operations-module.composition"
 import {
@@ -28,7 +28,7 @@ import { createLearnerApp } from "@/http/learner-app"
 import { registerLearnerApiDocumentation } from "@/http/openapi"
 import { createUnifiedApp } from "@/http/unified-app"
 import { createAdminAuditMiddleware } from "@/observability/admin-audit.middleware"
-import type { ApiHonoEnv } from "@/context/hono-env"
+import type { ApiHonoEnv } from "@/middleware/hono-env"
 import type { ApiHealthProbe } from "@/runtime/api-health"
 
 export type LearnerContractRouteDependencies = Readonly<{
@@ -105,7 +105,7 @@ export function createApp(container: ApiContainer) {
   })
   registerAdminContractRoutes(admin, {
     content: {
-      application: container.modules.content,
+      application: container.modules.content.application,
       sessionPort: createContentAdminSessionPort(
         container.admin.sessionResolver
       ),

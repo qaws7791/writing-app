@@ -39,6 +39,7 @@
 
 ## 보존과 삭제
 
+- 학습자 데이터 삭제는 자기 table을 소유한 module이 실행한다. 각 module이 `LearnerDataPurgePort` 구현을 공개하고 조립 지점이 FK 의존 순서를 고정한 배열로 순회하며, 전체가 하나의 SQLite transaction에서 원자적으로 실행된다. 조립 지점 밖에서 다른 module의 table을 지우는 경로는 architecture 검사가 차단한다.
 - AI usage log는 관찰 event의 보존 class를 따르고 원문을 포함하지 않는다.
 - 학습자 삭제 유예가 끝나면 사용자 식별자가 있는 AI attempt와 사용자별 quota를 다른 사용자 소유 학습 데이터와 함께 정리한다. 사용자 식별자가 없는 전체 quota 집계는 보존할 수 있다.
 - 보존 기간이나 provider 사용 목적을 바꾸려면 제품·보안·법률 검토와 사용자 고지 영향을 함께 확인한다.

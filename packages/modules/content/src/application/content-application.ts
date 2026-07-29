@@ -154,5 +154,3 @@ async function attachResolvedEditorAssets(
     ),
   }
 }
-
-export type { ContentError } from "#content/domain/content-error"

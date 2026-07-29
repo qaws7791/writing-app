@@ -3,8 +3,8 @@ import type { MiddlewareHandler } from "hono"
 import {
   createRequestContext,
   type ApiDependencies,
-} from "@/context/create-request-context"
-import type { ApiHonoEnv } from "@/context/hono-env"
+} from "@/middleware/create-request-context"
+import type { ApiHonoEnv } from "@/middleware/hono-env"
 
 export function createRequestContextMiddleware(
   dependencies: ApiDependencies

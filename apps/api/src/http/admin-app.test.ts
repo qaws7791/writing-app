@@ -9,10 +9,10 @@ import {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-} from "@workspace/identity/sessions"
-import { registerAdminFoundationRoutes } from "@/admin/admin-foundation.routes"
-import type { AdminHonoEnv } from "@/admin/admin-hono-env"
-import { jsonResponse } from "@/admin/admin-openapi"
+} from "@workspace/identity/ports"
+import { registerAdminFoundationRoutes } from "@/http/admin-foundation.routes"
+import type { AdminHonoEnv } from "@/http/admin-hono-env"
+import { jsonResponse } from "@/http/admin-openapi"
 import { adminSessionRouteOptions } from "@workspace/identity/http"
 import {
   createAdminApp,

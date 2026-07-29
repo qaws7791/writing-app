@@ -1,8 +1,6 @@
 import type { AdminActor } from "#identity/domain/admin-actor"
 import type {
   AdminAuthenticationPort,
-  AuthenticatedAdminIdentity,
-  AuthenticatedLearnerIdentity,
   LearnerAuthenticationPort,
 } from "#identity/application/identity-ports"
 import type { IdentityApplication } from "#identity/application/identity-service"
@@ -55,5 +53,3 @@ export function toAdminActor(session: AdminAuthenticatedSession): AdminActor {
     id: session.admin.id,
   }
 }
-
-export type { AuthenticatedAdminIdentity, AuthenticatedLearnerIdentity }
