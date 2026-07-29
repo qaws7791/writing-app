@@ -10,6 +10,7 @@ const stickyActionBarVariants = cva(
       tone: {
         default:
           "bg-gradient-to-t from-background via-background to-transparent pt-10 text-foreground",
+        plain: "bg-background pt-6 text-foreground",
         danger: "pt-0 text-danger-foreground",
         success: "pt-0 text-success-foreground",
       },

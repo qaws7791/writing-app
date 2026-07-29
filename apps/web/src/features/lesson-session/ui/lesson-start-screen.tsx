@@ -5,19 +5,21 @@ import {
   LessonIntroHeader,
   LessonShell,
 } from "@/features/lesson-session/ui/lesson-shell"
+import { LayersIcon } from "@workspace/ui/components/icons"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Callout, CalloutContent } from "@workspace/ui/components/ui/callout"
+import { Spinner } from "@workspace/ui/components/ui/spinner"
 import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
 
+const LESSON_TITLE_ID = "lesson-start-title"
+
 export function LessonStartScreen({
-  canStart,
   isSavingStart,
   lesson,
   onExit,
   onStart,
   startError,
 }: {
-  readonly canStart: boolean
   readonly isSavingStart: boolean
   readonly lesson: Lesson
   readonly onExit: () => void
@@ -26,16 +28,28 @@ export function LessonStartScreen({
 }) {
   return (
     <LessonShell
+      contentLabelledBy={LESSON_TITLE_ID}
       fixedFooter
       footer={
-        <StickyActionBar className="pointer-events-auto mx-auto max-w-2xl">
+        <StickyActionBar
+          className="pointer-events-auto mx-auto max-w-2xl"
+          tone="plain"
+        >
           <Button
+            aria-busy={isSavingStart || undefined}
             className="w-full"
-            disabled={!canStart || isSavingStart}
+            disabled={isSavingStart}
             onClick={onStart}
             size="extra"
           >
-            {isSavingStart ? "저장 중" : "시작하기"}
+            {isSavingStart ? (
+              <>
+                <Spinner aria-hidden data-icon="inline-start" />
+                시작하는 중…
+              </>
+            ) : (
+              "시작하기"
+            )}
           </Button>
         </StickyActionBar>
       }
@@ -43,19 +57,23 @@ export function LessonStartScreen({
     >
       <div className="an-fi">
         {lesson.category === null ? null : (
-          <div className="mb-4 text-label-sm font-bold uppercase text-muted-foreground tracking-widest">
+          <div className="mb-4 text-label-sm font-bold text-muted-foreground">
             {lesson.category}
           </div>
         )}
-        <h1 className="mb-6 text-heading-xl font-bold">{lesson.title}</h1>
+        <h1 className="mb-6 text-heading-xl font-bold" id={LESSON_TITLE_ID}>
+          {lesson.title}
+        </h1>
         {lesson.description === null ? null : (
           <p className="mb-8 text-body-lg font-medium text-muted-foreground">
             {lesson.description}
           </p>
         )}
         <div className="flex gap-6 text-body-sm font-medium text-muted-foreground">
-          <span>⏱ {lesson.estimatedMinutes}분</span>
-          <span>📚 {lesson.steps.length}개 스텝</span>
+          <span className="inline-flex items-center gap-2">
+            <LayersIcon aria-hidden size={18} />
+            {`${lesson.steps.length}개 활동`}
+          </span>
         </div>
         {startError === null ? null : (
           <Callout className="mt-8" role="alert" tone="danger">

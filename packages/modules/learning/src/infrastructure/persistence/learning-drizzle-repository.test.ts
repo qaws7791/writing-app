@@ -162,6 +162,38 @@ describe("learning SQLite repositories", () => {
     }
   })
 
+  it("스텝이 없는 레슨 조회는 lesson-not-found와 동일하게 not-found다", async () => {
+    const emptyStepCurriculum: LearningCurriculum = {
+      ...curriculum,
+      lessons: [
+        {
+          ...firstCurriculumLesson,
+          steps: [],
+        },
+        secondCurriculumLesson,
+      ],
+    }
+    const fixture = createFixture(emptyStepCurriculum)
+    try {
+      const repository = createDrizzleLearningReadRepository(
+        fixture.database.db,
+        {
+          content: fixture.content,
+          presentationSecret: "presentation-secret-at-least-32-bytes",
+        }
+      )
+
+      await expect(
+        repository.findLesson({
+          lessonId: firstLessonId,
+          userId: learnerId,
+        })
+      ).resolves.toEqual({ kind: "not-found" })
+    } finally {
+      fixture.database.close()
+    }
+  })
+
   it("start와 complete를 한 transaction에 반영하고 commit event intent를 반환한다", async () => {
     const fixture = createFixture()
     try {

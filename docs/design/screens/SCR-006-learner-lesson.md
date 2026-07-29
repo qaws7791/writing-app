@@ -14,6 +14,7 @@
 
 ## 정보 구조
 
+- 레슨 시작 화면(시작 전)
 - 레슨 진행 헤더
 - 중앙 레슨 콘텐츠
 - 하단 주요 행동
@@ -24,9 +25,18 @@
 
 - `AppShell`을 사용하지 않는 몰입형 전체 화면이다.
 - root는 `h-dvh min-h-screen overflow-hidden bg-background text-foreground`이다.
+- 상단 헤더·본문·하단 CTA는 동일 콘텐츠 열(`max-w-2xl`)과 동일 수평 패딩을 쓴다.
 - 상단 진행 헤더와 하단 CTA는 고정 영역으로 유지한다.
 - 중앙 콘텐츠만 스크롤된다.
 - 주요 CTA는 `Button`과 `StickyActionBar`를 사용한다.
+- 시작 화면의 StickyActionBar는 배경 그라데이션을 쓰지 않는다.
+- 시작 전 화면은 학습 가능한 레슨(스텝 ≥ 1)만 표시한다. 레슨 없음·스텝 없음은 시작 화면이 아니라 조회 실패(route notice)로 끝난다. 빈 스텝은 `lesson-not-found`와 동일하게 취급한다.
+- 시작 화면에는 `canStart`·시작 불가 disabled·불가 이유 UI가 없다. CTA 비활성은 시작 요청 중뿐이며, 카피는 `시작하는 중…`(또는 동등)과 busy 표시를 쓴다.
+- 시작 화면은 제목, 카테고리(있을 때), 설명(있을 때), 활동 수 메타를 표시한다. 예상 시간(분)은 표시하지 않는다.
+- 카테고리는 한국어 eyebrow로 두고 Latin `uppercase`·과도한 letter-spacing을 쓰지 않는다.
+- 활동 수는 인라인 메타 행으로 표시하고, 이모지 대신 제품 아이콘을 쓴다.
+- 나가기는 X 아이콘만 사용하며 최소 터치 목표를 만족하는 hit area와 `aria-label="나가기"`를 제공한다.
+- 시작 화면 콘텐츠 영역은 제목 `h1`과 `aria-labelledby`로 연결한다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 취소는 `계속 학습`, 확인은 `나가기`이며 확인 action은 `default`(charcoal) variant를 쓴다.
 - 완료 화면은 `action-selected-*` token 기반 fullscreen overlay를 사용한다.
 - markdown 본문은 앱의 `ReactMarkdown` 결과를 `RichText`로 감싼다.
@@ -53,9 +63,9 @@
 ## 상태
 
 - `lesson_id` 없음
-- 레슨 조회 실패
-- 시작 전
-- 시작 저장 중
+- 레슨 조회 실패(레슨 없음·빈 스텝 포함, `lesson-not-found`)
+- 시작 전(학습 가능 레슨만)
+- 시작 요청 중
 - step 편집 중
 - draft 저장 중·저장 완료·오프라인·version 충돌
 - 답안 확인 중
@@ -78,7 +88,7 @@
 ## 접근성
 
 - 진행률은 `role="progressbar"`와 ARIA 값을 제공한다.
-- 콘텐츠 영역은 `aria-label="레슨 콘텐츠"`를 사용한다.
+- 콘텐츠 영역은 시작 화면에서 제목과 `aria-labelledby`로 연결하고, 그 외에는 `aria-label="레슨 콘텐츠"`를 사용한다.
 - 행동 영역은 `aria-label="레슨 행동"`을 사용한다.
 - 나가기 버튼은 `aria-label="나가기"`를 제공한다.
 - 순서 스텝의 위/아래 이동 행동은 키보드로 실행 가능해야 한다.

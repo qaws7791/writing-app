@@ -268,6 +268,14 @@ async function findLesson(
         })
   if (curriculum === null) return { kind: "not-found" as const }
 
+  const lesson = curriculum.lessons.find(
+    (candidate) =>
+      candidate.id === input.lessonId && candidate.status === "active"
+  )
+  if (lesson === undefined || lesson.steps.length === 0) {
+    return { kind: "not-found" as const }
+  }
+
   const courseProgress = database
     .select()
     .from(learnerCourseProgress)
@@ -297,12 +305,8 @@ async function findLesson(
   )
   const lessonSummary = course.units
     .flatMap((unit) => unit.lessons)
-    .find((lesson) => lesson.id === input.lessonId)
-  const lesson = curriculum.lessons.find(
-    (candidate) =>
-      candidate.id === input.lessonId && candidate.status === "active"
-  )
-  if (lessonSummary === undefined || lesson === undefined) {
+    .find((entry) => entry.id === input.lessonId)
+  if (lessonSummary === undefined) {
     return { kind: "not-found" as const }
   }
   if (lessonSummary.learning.status === "locked") {

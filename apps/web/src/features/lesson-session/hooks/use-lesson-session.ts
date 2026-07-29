@@ -1,16 +1,8 @@
 "use client"
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useSyncExternalStore,
-} from "react"
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react"
 
 import {
-  getFirstLessonStep,
   getLessonStep,
   type LessonAiFeedbackOutcome,
   type LessonAiFeedbackRequest,
@@ -38,16 +30,8 @@ const LESSON_START_ERROR =
   "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
 const LESSON_STEP_ERROR =
   "학습 단계를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
-const noopSubscribe = () => () => {}
-const clientMountedSnapshot = () => true
-const serverMountedSnapshot = () => false
 
 export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
-  const mounted = useSyncExternalStore(
-    noopSubscribe,
-    clientMountedSnapshot,
-    serverMountedSnapshot
-  )
   const initialState = resolveInitialSessionState(lesson)
   const effects = useMemo(
     () =>
@@ -132,11 +116,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
 
   const startLesson = useCallback(async (): Promise<void> => {
     if (sessionStateRef.current.status !== "not-started") return
-    if (getFirstLessonStep(lesson) === null) {
-      send({ type: "START_REQUESTED" })
-      send({ message: "시작할 학습 스텝이 없습니다.", type: "START_FAILED" })
-      return
-    }
 
     send({ type: "START_REQUESTED" })
     const result = await effects.start()
@@ -162,7 +141,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
       progressPercent: result.learning.progressPercent,
       type: "START_SUCCEEDED",
     })
-  }, [applyServerDrafts, effects, lesson, send])
+  }, [applyServerDrafts, effects, send])
 
   const saveAnswer = useCallback(
     ({
@@ -317,7 +296,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
       currentStep,
       sessionState.status === "active" ? sessionState.answerPayloads : {}
     ),
-    canStart: mounted && getFirstLessonStep(lesson) !== null,
     checked,
     completeError: isActive ? sessionState.submitError : null,
     completion:

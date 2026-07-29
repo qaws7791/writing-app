@@ -20,6 +20,7 @@
 | 2026-07-29 코스 검색 기능 전면 제거    | [`plan.md`](./2026-07-29-course-search-removal/plan.md)                                                                                                                                                                                                     | 수직 제거와 전체 브라우저 검증 완료       |
 | 2026-07-29 검증 게이트 복구            | [`plan.md`](./2026-07-29-validation-gate-repair/plan.md), [`validation-report.md`](./2026-07-29-validation-gate-repair/validation-report.md)                                                                                                                | 기반 결함 복구와 전체 검증 완료           |
 | 2026-07-29 학습자 코스 상세 UI/UX 개선 | [`plan.md`](./2026-07-29-learner-course-detail-ux/plan.md)                                                                                                                                                                                                  | 승인 항목만 반영, 미승인 항목 되돌림 완료 |
+| 2026-07-29 학습자 레슨 시작 UI/UX 개선 | [`plan.md`](./2026-07-29-learner-lesson-start-ux/plan.md)                                                                                                                                                                                                   | 승인 범위 구현·검증 완료                  |
 
 ## 사용 기준
 

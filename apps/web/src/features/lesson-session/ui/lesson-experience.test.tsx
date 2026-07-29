@@ -139,13 +139,21 @@ describe("LessonExperience", () => {
     generatedClient.startLearnerLesson.mockResolvedValue(started)
   })
 
-  it("서버 출력에서는 hydration 전 레슨 시작을 막는다", () => {
+  it("시작 화면 CTA는 hydration 전에도 활성이다", () => {
     const container = document.createElement("div")
     container.innerHTML = renderToString(<LessonExperience lesson={lesson} />)
 
     expect(
       within(container).getByRole("button", { name: "시작하기" })
-    ).toBeDisabled()
+    ).toBeEnabled()
+  })
+
+  it("시작 화면에 활동 수를 보이고 예상 시간은 숨긴다", () => {
+    render(<LessonExperience lesson={lesson} />)
+
+    expect(screen.getByText("2개 활동")).toBeInTheDocument()
+    expect(screen.queryByText(/분/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/스텝/)).not.toBeInTheDocument()
   })
 
   it("AI provider 실패 후 명시적 skip transition으로 레슨 완료 CTA를 유지한다", async () => {

@@ -20,12 +20,14 @@ type LessonCheckedState = false | LessonStepCheckedState
 
 export function LessonShell({
   children,
+  contentLabelledBy,
   contentRef,
   fixedFooter = false,
   footer,
   header,
 }: {
   readonly children: ReactNode
+  readonly contentLabelledBy?: string
   readonly contentRef?: Ref<HTMLElement>
   readonly fixedFooter?: boolean
   readonly footer: ReactNode
@@ -40,7 +42,8 @@ export function LessonShell({
     >
       {header}
       <main
-        aria-label="레슨 콘텐츠"
+        aria-label={contentLabelledBy === undefined ? "레슨 콘텐츠" : undefined}
+        aria-labelledby={contentLabelledBy}
         className="min-h-0 flex-1 overflow-y-auto"
         ref={contentRef}
       >
@@ -70,12 +73,12 @@ export function LessonShell({
 
 export function LessonIntroHeader({ onExit }: { readonly onExit: () => void }) {
   return (
-    <header className="mx-auto flex w-full max-w-3xl shrink-0 items-center px-6 pb-4 pt-6">
+    <header className="mx-auto flex w-full max-w-2xl shrink-0 items-center px-6 pb-4 pt-6">
       <Button
         aria-label="나가기"
-        className="mr-4 text-muted-foreground hover:text-foreground"
+        className="-ml-2 size-11 text-muted-foreground hover:text-foreground"
         onClick={onExit}
-        size="icon-sm"
+        size="icon"
         type="button"
         variant="ghost"
       >
@@ -99,13 +102,13 @@ export function LessonProgressHeader({
   return (
     <header
       aria-label="레슨 진행"
-      className="mx-auto flex w-full max-w-3xl shrink-0 items-center px-6 pb-4 pt-6"
+      className="mx-auto flex w-full max-w-2xl shrink-0 items-center px-6 pb-4 pt-6"
     >
       <Button
         aria-label="나가기"
-        className="mr-4"
+        className="-ml-2 mr-4 size-11"
         onClick={onExit}
-        size="icon-sm"
+        size="icon"
         type="button"
         variant="ghost"
       >

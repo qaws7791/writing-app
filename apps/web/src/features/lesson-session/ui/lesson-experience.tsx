@@ -93,7 +93,6 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
 
   return (
     <LessonStartScreen
-      canStart={session.canStart}
       isSavingStart={session.isSavingStart}
       lesson={lesson}
       onExit={() => router.push(`/app/courses/${lesson.courseId}`)}
