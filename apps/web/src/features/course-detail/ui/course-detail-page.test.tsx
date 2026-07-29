@@ -74,6 +74,7 @@ describe("코스 상세 화면", () => {
       )
     ).toBeInTheDocument()
     expect(screen.getByText("0/2")).toBeInTheDocument()
+    expect(screen.queryByText("시작 전")).not.toBeInTheDocument()
     expect(
       screen.getByRole("progressbar", { name: "글쓰기 첫걸음 30일 진행률" })
     ).toHaveAttribute("aria-valuenow", "0")
@@ -85,12 +86,60 @@ describe("코스 상세 화면", () => {
       "href",
       "/app/lesson?lesson_id=l1"
     )
-    expect(screen.getByRole("link", { name: "돌아가기" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "코스 목록으로" })).toHaveAttribute(
       "href",
       "/app/courses"
     )
     expect(
       screen.getByRole("img", { name: "글쓰기 첫걸음 30일" })
     ).toHaveAttribute("loading", "eager")
+  })
+
+  it("모든 레슨 완료 시 CTA를 표시하지 않는다", () => {
+    const firstUnit = course.units[0]
+    if (firstUnit === undefined) {
+      throw new Error("테스트 fixture에 유닛이 필요합니다.")
+    }
+
+    const completedCourse: LearnerCourseDetailDto = {
+      ...course,
+      learning: {
+        ...course.learning,
+        completedAt: "2026-06-14T00:00:00.000Z",
+        completedLessons: 2,
+        lastActivityAt: "2026-06-14T00:00:00.000Z",
+        nextLesson: null,
+        progressPercent: 100,
+        status: "completed",
+      },
+      units: [
+        {
+          ...firstUnit,
+          lessons: firstUnit.lessons.map((lesson) => ({
+            ...lesson,
+            learning: {
+              completion: {
+                completedAt: "2026-06-14T00:00:00.000Z",
+                totalSteps: 1,
+              },
+              status: "completed" as const,
+              version,
+            },
+          })),
+        },
+      ],
+    }
+
+    render(<CourseDetailPage course={completedCourse} />)
+
+    expect(
+      screen.queryByRole("link", { name: "처음부터 복습하기" })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("link", { name: "학습 시작하기" })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("link", { name: "이어서 학습하기" })
+    ).not.toBeInTheDocument()
   })
 })

@@ -31,24 +31,22 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
         href="/app/courses"
       >
         <ChevronLeftIcon className="mr-1" size={20} />
-        돌아가기
+        코스 목록으로
       </Link>
       <Surface
         className="-mx-3 mb-12 px-5 py-8 border-none md:mx-0 md:p-10 rounded-4xl"
         size="none"
         variant="panel"
       >
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <Image
-            alt={resolveCourseImage(course).alt}
-            className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
-            height={128}
-            loading="eager"
-            sizes="(max-width: 768px) 96px, 128px"
-            src={resolveCourseImage(course).src}
-            width={128}
-          />
-        </div>
+        <Image
+          alt={resolveCourseImage(course).alt}
+          className="mb-6 w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
+          height={128}
+          loading="eager"
+          sizes="(max-width: 768px) 96px, 128px"
+          src={resolveCourseImage(course).src}
+          width={128}
+        />
         <h1 className="mb-4 text-heading-xl font-bold">{course.title}</h1>
         <p className="mb-8 text-body-lg font-medium text-fg-default leading-relaxed">
           {course.description}
@@ -57,7 +55,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
           <Progress
             aria-label={`${course.title} 진행률`}
             className="min-w-0 flex-1"
-            indicatorClassName="bg-primary"
+            indicatorClassName="bg-accent"
             value={progressPercent}
           />
           <span className="shrink-0 text-title-md font-black tabular-nums">
@@ -83,7 +81,10 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
           </div>
         )}
       </Surface>
-      <CourseCurriculum course={course} />
+      <CourseCurriculum
+        course={course}
+        currentLessonId={nextLesson?.id ?? null}
+      />
     </div>
   )
 }

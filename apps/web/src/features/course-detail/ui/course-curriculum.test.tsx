@@ -89,17 +89,17 @@ const course: LearnerCourseDetailDto = {
 }
 
 describe("코스 커리큘럼", () => {
-  it("현재 제품 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 링크로 제공한다", async () => {
+  it("유닛 진도와 현재 레슨을 구분하고 잠긴 레슨은 링크로 제공하지 않는다", async () => {
     const user = userEvent.setup()
 
-    render(<CourseCurriculum course={course} />)
+    render(<CourseCurriculum course={course} currentLessonId="l1" />)
 
     expect(
-      screen.getByRole("heading", { level: 3, name: "커리큘럼" })
+      screen.getByRole("heading", { level: 2, name: "커리큘럼" })
     ).toBeInTheDocument()
 
     const firstUnitToggle = screen.getByRole("button", {
-      name: /문장의 기본기\s*2개 레슨/,
+      name: /문장의 기본기\s*0\/2개 레슨/,
     })
     expect(firstUnitToggle).toHaveAttribute("aria-expanded", "true")
 
@@ -110,16 +110,21 @@ describe("코스 커리큘럼", () => {
     expect(firstUnitToggle).toHaveAttribute("aria-expanded", "true")
 
     const firstLessonLink = screen.getByRole("link", {
-      name: /좋은 문장이란 무엇인가/,
+      name: /좋은 문장이란 무엇인가.*다음/,
     })
     expect(firstLessonLink).toHaveAttribute("href", "/app/lesson?lesson_id=l1")
+    expect(screen.getByText("다음")).toBeInTheDocument()
 
     expect(
       screen.queryByRole("link", { name: /짧게 쓰기/ })
     ).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/짧게 쓰기, 잠김/)).toBeInTheDocument()
+    expect(
+      screen.queryByText(/이전 레슨을 완료하면 열립니다/)
+    ).not.toBeInTheDocument()
 
     const secondUnitToggle = screen.getByRole("button", {
-      name: /문단의 흐름\s*1개 레슨/,
+      name: /문단의 흐름\s*0\/1개 레슨/,
     })
     expect(secondUnitToggle).toHaveAttribute("aria-expanded", "false")
 
