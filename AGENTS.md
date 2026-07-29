@@ -30,8 +30,9 @@ The following principles guide technical decisions in this repository:
 - Build observable systems over black boxes.
 - Guarantee deterministic behavior over unpredictable outcomes.
 - Design isolated failures over cascading ones.
-- Write expressive code over code that depends on comments.
 - Trust resilient structures over those that rely solely on perfect prevention.
+
+When principles conflict, prioritize security and correctness, then authoritative project contracts, maintainability and consistency, and finally performance and convenience. Between otherwise valid options, choose the smallest reversible local change.
 
 ## Documentation Map
 
@@ -54,6 +55,7 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 - New planning, investigation, and audit documents go in `docs/work/<yyyy-mm-dd-name>/`. On completion, move the same work unit to `docs/archive/<yyyy-mm-dd-name>/`, folding any permanent conclusions into the relevant product/design/engineering authority documents first.
 - Whenever a change affects a fact that a doc describes, update the relevant `/docs` file: check it's current before starting, and update it again before finishing.
 - For local browser or E2E tests, use the test-specific login (`ENABLE_TEST_AUTH=true`) instead of Google OAuth. If this file is out of date, confirm the flag against its source.
+- Update this file when repository-wide agent instructions, project structure, authoritative workflows, required tooling, verification commands, security rules, or commit conventions change. Keep feature-specific facts in their authority source instead.
 
 ## Coding Guidelines
 
@@ -63,11 +65,14 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 - Every package has a narrow, obvious purpose.
 - Limit changes to the smallest possible diff.
 - Keep related files close to each other.
-- Prefer self-describing code over explanatory comments.
 - Prefer declarative, functional, predictable code.
 - Prefer domain language over technical filler words.
 - Keep runtime boundaries explicit.
-- Use TSDoc only to explain complex code.
+
+### Comment Guidelines
+
+- Prefer self-describing code. Add comments only to explain a non-obvious "why"; never restate the "what."
+- Use TSDoc only when a complex contract cannot be made clear through code and types.
 
 ### Scope Discipline
 
@@ -119,11 +124,22 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 - Write only the requested content — don't add sections automatically; add them only when explicitly requested.
 - Keep documentation short. If it exceeds a single screen, double-check whether all of it is necessary.
 - Before creating a new file, check whether adding to an existing document is enough.
-- Add code comments only to explain "why." Don't restate the "what" if it's already clear from the code.
+
+## Security Considerations
+
+- Never commit, log, paste, or expose secrets; keep credentials in approved environment-variable or secret-management facilities and use placeholders in examples.
+- Treat environment variables as untrusted input: validate them at runtime boundaries and never add insecure defaults or bypasses.
 
 ## Definition of Done
 
-- [ ] Build, lint, and typecheck pass. `bun lefthook run pre-commit` covers lint/format.
+- [ ] The required verification commands pass:
+
+```sh
+bun run build
+bun run typecheck
+bun lefthook run pre-commit
+```
+
 - [ ] `/docs` reflects the change, including moving finished `docs/work/` items to `docs/archive/` with conclusions folded into the relevant authority docs.
 - [ ] All processes started for the task (Node.js, bash, dev servers, etc.) are safely terminated.
 
@@ -138,5 +154,4 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 
 - [detailed description of changes 1 (optional)]
 - [detailed description of changes 2 (optional)]
--
 ```
