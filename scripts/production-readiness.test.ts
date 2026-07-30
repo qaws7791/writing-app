@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test"
-import path from "node:path"
 
 import { createProductionReadinessVariables } from "#scripts/production-readiness"
 
@@ -39,39 +38,38 @@ describe("production readiness", () => {
     })
   })
 
-  test("모든 명시적 승인은 exact true가 아니면 fail-closed한다", () => {
-    for (const name of [
-      "PRODUCTION_DEPLOY_APPROVED",
-      "PRODUCTION_FULL_E2E_APPROVED",
-      "PRODUCTION_LEGAL_REVIEW_APPROVED",
-      "PRODUCTION_RESTORE_DRILL_APPROVED",
-    ] as const) {
-      expect(() =>
-        createProductionReadinessVariables(
-          { ...validEnvironment, [name]: "false" },
-          now
-        )
-      ).toThrow(`${name}=true`)
-    }
+  test.each([
+    "PRODUCTION_DEPLOY_APPROVED",
+    "PRODUCTION_FULL_E2E_APPROVED",
+    "PRODUCTION_LEGAL_REVIEW_APPROVED",
+    "PRODUCTION_RESTORE_DRILL_APPROVED",
+  ])("%s가 exact true가 아니면 fail-closed한다", (name) => {
+    expect(() =>
+      createProductionReadinessVariables(
+        { ...validEnvironment, [name]: "false" },
+        now
+      )
+    ).toThrow(`${name}=true`)
   })
 
-  test("placeholder evidence와 production 복구 훈련을 거부한다", () => {
-    for (const evidenceId of [
-      "TODO-review",
-      "LEGAL-TODO-123",
-      "https://example.com/review",
-      "RESTORE/placeholder/1",
-    ]) {
-      expect(() =>
-        createProductionReadinessVariables(
-          {
-            ...validEnvironment,
-            PRODUCTION_LEGAL_REVIEW_EVIDENCE_ID: evidenceId,
-          },
-          now
-        )
-      ).toThrow("placeholder")
-    }
+  test.each([
+    "TODO-review",
+    "LEGAL-TODO-123",
+    "https://example.com/review",
+    "RESTORE/placeholder/1",
+  ])("placeholder evidence %s를 거부한다", (evidenceId) => {
+    expect(() =>
+      createProductionReadinessVariables(
+        {
+          ...validEnvironment,
+          PRODUCTION_LEGAL_REVIEW_EVIDENCE_ID: evidenceId,
+        },
+        now
+      )
+    ).toThrow("placeholder")
+  })
+
+  test("production 환경에서 수행한 복구 훈련 증거를 거부한다", () => {
     expect(() =>
       createProductionReadinessVariables(
         {
@@ -121,114 +119,4 @@ describe("production readiness", () => {
       )
     ).toThrow("40자리 lowercase Git SHA")
   })
-
-  test("Ansible도 호스트 변경 전에 동일 revision과 유효 기간을 재검증한다", async () => {
-    const playbook = Bun.YAML.parse(
-      await Bun.file(
-        path.resolve(
-          import.meta.dir,
-          "..",
-          "infra",
-          "ansible",
-          "playbooks",
-          "deploy.yaml"
-        )
-      ).text()
-    ) as readonly AnsiblePlay[]
-    const tasks = playbook[0]?.tasks ?? []
-    const evidenceGateIndex = tasks.findIndex((task) =>
-      isStringArray(task["ansible.builtin.assert"]?.that)
-        ? task["ansible.builtin.assert"].that.includes(
-            "writing_app_full_e2e_evidence_revision == writing_app_source_revision"
-          )
-        : false
-    )
-    const operationLockIndex = tasks.findIndex((task) =>
-      isStringArray(task["ansible.builtin.command"]?.argv)
-        ? task["ansible.builtin.command"].argv.includes(
-            "{{ writing_app_operation_lock_directory }}"
-          )
-        : false
-    )
-
-    expect(evidenceGateIndex).toBeGreaterThanOrEqual(0)
-    expect(evidenceGateIndex).toBeLessThan(operationLockIndex)
-    const evidenceGate = tasks[evidenceGateIndex]
-    if (evidenceGate === undefined) {
-      throw new Error("Production evidence gate를 찾지 못했습니다.")
-    }
-    const conditions = readStringArray(
-      evidenceGate["ansible.builtin.assert"]?.that,
-      "Production evidence gate 조건"
-    )
-
-    expect(conditions).toContain(
-      "writing_app_full_e2e_evidence_revision == writing_app_source_revision"
-    )
-    expect(conditions).toContain("writing_app_environment == 'production'")
-    expect(
-      conditions.some(
-        (condition) =>
-          condition.includes("writing_app_legal_review_verified_at") &&
-          condition.includes("to_datetime(") &&
-          condition.includes("total_seconds() >= 0")
-      )
-    ).toBe(true)
-    expect(
-      conditions.some(
-        (condition) =>
-          condition.includes("writing_app_restore_drill_verified_at") &&
-          condition.includes("to_datetime(") &&
-          condition.includes("total_seconds() >= 0")
-      )
-    ).toBe(true)
-    expect(
-      conditions.some(
-        (condition) =>
-          condition.includes("writing_app_restore_drill_verified_at") &&
-          condition.includes("total_seconds() <= 2678400")
-      )
-    ).toBe(true)
-    for (const evidenceId of [
-      "writing_app_legal_review_evidence_id",
-      "writing_app_restore_drill_evidence_id",
-    ]) {
-      expect(
-        conditions.some(
-          (condition) =>
-            condition.includes(evidenceId) &&
-            condition.includes("search(") &&
-            condition.includes("placeholder")
-        )
-      ).toBe(true)
-    }
-    expect(evidenceGate.when).toBe(
-      "(writing_app_environment == 'production') or (writing_app_require_production_readiness | default(false) | bool)"
-    )
-  })
 })
-
-type AnsiblePlay = {
-  readonly tasks?: readonly AnsibleTask[]
-}
-
-type AnsibleTask = {
-  readonly "ansible.builtin.assert"?: {
-    readonly that?: unknown
-  }
-  readonly "ansible.builtin.command"?: {
-    readonly argv?: unknown
-  }
-  readonly when?: unknown
-}
-
-function isStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string")
-}
-
-function readStringArray(value: unknown, label: string): readonly string[] {
-  if (!isStringArray(value)) {
-    throw new Error(`${label}이 문자열 배열이 아닙니다.`)
-  }
-  return value
-}

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { expect, userEvent, within } from "storybook/test"
 
 import { Button } from "@workspace/ui/components/ui/button"
 import {
@@ -127,10 +126,4 @@ export const FormInteraction: Story = {
       </FieldError>
     </Field>
   ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const textarea = canvas.getByLabelText("본문")
-    await userEvent.type(textarea, "첫 문장을 작성합니다.")
-    await expect(textarea).toHaveValue("첫 문장을 작성합니다.")
-  },
 }

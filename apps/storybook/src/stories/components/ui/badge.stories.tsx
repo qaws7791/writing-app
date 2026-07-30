@@ -68,20 +68,16 @@ export const Variants: Story = {
 }
 
 /**
- * tone 속성을 이용한 매핑 예제입니다.
- * - danger -> destructive
- * - success -> outline
- * - neutral, info, selected -> secondary
- * - 기타 -> default
+ * tone 속성으로 의미(tone)를 지정하는 예제입니다.
  */
 export const Tones: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
-      <Badge tone="neutral">Neutral (secondary)</Badge>
-      <Badge tone="success">Success (outline)</Badge>
-      <Badge tone="danger">Danger (destructive)</Badge>
-      <Badge tone="info">Info (secondary)</Badge>
-      <Badge tone="selected">Selected (secondary)</Badge>
+      <Badge tone="neutral">Neutral</Badge>
+      <Badge tone="success">Success</Badge>
+      <Badge tone="danger">Danger</Badge>
+      <Badge tone="info">Info</Badge>
+      <Badge tone="selected">Selected</Badge>
     </div>
   ),
 }
@@ -123,11 +119,11 @@ export const AsLink: Story = {
         render={(props) => (
           <a
             {...props}
-            href="https://google.com"
+            href="https://example.test/design-system"
             target="_blank"
             rel="noreferrer"
           >
-            Google로 이동
+            디자인 시스템 문서
           </a>
         )}
         variant="default"
@@ -136,11 +132,11 @@ export const AsLink: Story = {
         render={(props) => (
           <a
             {...props}
-            href="https://github.com"
+            href="https://example.test/changelog"
             target="_blank"
             rel="noreferrer"
           >
-            GitHub 프로젝트
+            변경 이력
           </a>
         )}
         variant="outline"

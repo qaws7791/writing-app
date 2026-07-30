@@ -122,9 +122,7 @@ export const LessonExit: Story = {
 export const FormInteraction: Story = {
   render: () => (
     <AlertDialog>
-      <AlertDialogTrigger
-        render={<Button data-testid="trigger-btn">인터랙션 테스트</Button>}
-      />
+      <AlertDialogTrigger render={<Button>인터랙션 테스트</Button>} />
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>중요 알림</AlertDialogTitle>
@@ -133,27 +131,24 @@ export const FormInteraction: Story = {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel data-testid="cancel-btn">취소</AlertDialogCancel>
-          <AlertDialogAction data-testid="confirm-btn">확인</AlertDialogAction>
+          <AlertDialogCancel>취소</AlertDialogCancel>
+          <AlertDialogAction>확인</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const trigger = canvas.getByTestId("trigger-btn")
 
-    // 대화상자 열기 클릭
-    await userEvent.click(trigger)
+    await userEvent.click(
+      canvas.getByRole("button", { name: "인터랙션 테스트" })
+    )
 
-    // 포털로 생성되는 다이얼로그 내용을 document.body에서 탐색
+    // 대화상자는 portal로 body에 렌더되므로 canvas 밖에서 탐색한다.
     const body = within(document.body)
-    const title = await body.findByText("중요 알림")
-    await expect(title).toBeInTheDocument()
+    const title = await body.findByRole("heading", { name: "중요 알림" })
 
-    const cancelBtn = body.getByTestId("cancel-btn")
-    // 취소 버튼 클릭하여 대화상자 닫기
-    await userEvent.click(cancelBtn)
+    await userEvent.click(body.getByRole("button", { name: "취소" }))
 
     await waitFor(() => expect(title).not.toBeInTheDocument())
   },

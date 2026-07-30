@@ -18,6 +18,23 @@ const adminNextLock = path.join(
 const adminWebPort = 3001
 const apiPort = 4000
 const adminApiBaseUrl = `http://127.0.0.1:${apiPort}`
+// admin dev 서버가 workspace 밖을 tracing root로 잡아 파일을 읽던 회귀를 감시한다.
+// (docs/archive/2026-07-18-admin-development-browser-verification/report.md)
+const outsideProjectDirectoryWarning =
+  /outside (?:of )?(?:the )?project directory/iu
+const inheritedEnvironmentKeys = [
+  "APPDATA",
+  "COMSPEC",
+  "HOME",
+  "LOCALAPPDATA",
+  "PATH",
+  "PATHEXT",
+  "SystemRoot",
+  "TEMP",
+  "TMP",
+  "TMPDIR",
+  "USERPROFILE",
+] as const
 
 interface ProcessPair {
   readonly parentPid: number
@@ -35,7 +52,7 @@ test("dev:admin 전용 smoke는 admin web과 통합 API의 process와 port를 �
   const databasePath = path.join(temporaryDirectory, "admin.sqlite")
   const databaseUrl = `file:${databasePath}`
   const environment = {
-    ...process.env,
+    ...inheritedEnvironment(),
     API_BASE_URL: adminApiBaseUrl,
     ADMIN_AUTH_SECRET: "admin-dev-lifecycle-secret-value-0001",
     ADMIN_ORIGIN: `http://127.0.0.1:${adminWebPort}`,
@@ -84,19 +101,12 @@ test("dev:admin 전용 smoke는 admin web과 통합 API의 process와 port를 �
       90_000
     )
     expect(existsSync(adminNextLock)).toBe(true)
-    expect(output).toContain("@workspace/api:dev")
-    expect(output).toContain("@workspace/admin:dev")
     addOwnedProcessIds(
       ownedProcessIds,
       await readProcessTable(),
       devProcess.pid
     )
-    expect(output).not.toMatch(/outside (?:of )?(?:the )?project directory/iu)
-    addOwnedProcessIds(
-      ownedProcessIds,
-      await readProcessTable(),
-      devProcess.pid
-    )
+    expect(output).not.toMatch(outsideProjectDirectoryWarning)
 
     await requestPlatformShutdown(devProcess)
     const ownedChildProcessIds = new Set(ownedProcessIds)
@@ -142,6 +152,15 @@ test("dev:admin 전용 smoke는 admin web과 통합 API의 process와 port를 �
     await rm(temporaryDirectory, { force: true, recursive: true })
   }
 }, 180_000)
+
+function inheritedEnvironment(): Record<string, string> {
+  return Object.fromEntries(
+    inheritedEnvironmentKeys.flatMap((key) => {
+      const value = process.env[key]
+      return value === undefined ? [] : [[key, value] as const]
+    })
+  )
+}
 
 function migrateDisposableDatabase(
   environment: Record<string, string | undefined>

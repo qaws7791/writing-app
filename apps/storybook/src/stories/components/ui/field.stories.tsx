@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { expect, within } from "storybook/test"
 
 import { Button } from "@workspace/ui/components/ui/button"
 import {
@@ -19,8 +20,6 @@ import {
   SelectValue,
 } from "@workspace/ui/components/ui/select"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
-
-import { KeyboardTable } from "#storybook/blocks/keyboard-table"
 
 const meta = {
   title: "Components/UI/Field",
@@ -129,34 +128,28 @@ export const LongContent: Story = {
 
 export const Accessibility: Story = {
   render: () => (
-    <div className="grid max-w-3xl gap-6">
-      <Field data-invalid>
-        <FieldLabel htmlFor="field-a11y-title">제목</FieldLabel>
-        <Input
-          aria-describedby="field-a11y-title-help field-a11y-title-error"
-          aria-invalid="true"
-          id="field-a11y-title"
-          placeholder="제목"
-        />
-        <FieldDescription id="field-a11y-title-help">
-          저장 전 사용자에게 보이는 이름을 확인한다.
-        </FieldDescription>
-        <FieldError id="field-a11y-title-error">
-          제목은 비워둘 수 없다.
-        </FieldError>
-      </Field>
-      <KeyboardTable
-        rows={[
-          {
-            action: "라벨 다음의 입력 컨트롤로 초점이 이동한다.",
-            keyName: "Tab",
-          },
-          {
-            action: "이전 컨트롤로 초점이 돌아간다.",
-            keyName: "Shift + Tab",
-          },
-        ]}
+    <Field className="max-w-3xl" data-invalid>
+      <FieldLabel htmlFor="field-a11y-title">제목</FieldLabel>
+      <Input
+        aria-describedby="field-a11y-title-help field-a11y-title-error"
+        aria-invalid="true"
+        id="field-a11y-title"
+        placeholder="제목"
       />
-    </div>
+      <FieldDescription id="field-a11y-title-help">
+        저장 전 사용자에게 보이는 이름을 확인한다.
+      </FieldDescription>
+      <FieldError id="field-a11y-title-error">
+        제목은 비워둘 수 없다.
+      </FieldError>
+    </Field>
   ),
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole("textbox", { name: "제목" })
+
+    await expect(input).toHaveAccessibleDescription(
+      /저장 전 사용자에게 보이는 이름을 확인한다\.[\s\S]*제목은 비워둘 수 없다\./u
+    )
+    await expect(input).toHaveAttribute("aria-invalid", "true")
+  },
 }

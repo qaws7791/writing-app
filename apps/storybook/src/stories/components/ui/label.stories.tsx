@@ -40,33 +40,14 @@ export const WithInput: Story = {
 }
 
 /**
- * Checkbox와의 결합 형태입니다.
- * 가로로 배치되며, `flex items-center gap-2`의 내부 스타일이 적용되어 깔끔하게 정렬됩니다.
- */
-export const WithCheckbox: Story = {
-  render: () => (
-    <div className="flex items-center space-x-2">
-      <input
-        type="checkbox"
-        id="terms-checkbox"
-        className="peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-      />
-      <Label htmlFor="terms-checkbox" className="cursor-pointer">
-        이용 약관 및 개인정보 처리방침에 동의합니다.
-      </Label>
-    </div>
-  ),
-}
-
-/**
  * 필수 입력 항목을 표시하는 예제입니다.
- * 라벨 텍스트 뒤에 붉은색 별 기호(*)를 추가하여 시각적으로 인지할 수 있게 돕습니다.
+ * 라벨 텍스트 뒤에 danger 토큰 색상의 별 기호(*)를 추가하여 시각적으로 인지할 수 있게 돕습니다.
  */
 export const RequiredField: Story = {
   render: () => (
     <div className="grid w-full max-w-sm items-center gap-2">
       <Label htmlFor="required-username">
-        사용자 이름 <span className="text-destructive font-semibold">*</span>
+        사용자 이름 <span className="text-danger-fg font-semibold">*</span>
       </Label>
       <Input type="text" id="required-username" placeholder="홍길동" required />
     </div>
@@ -80,26 +61,15 @@ export const RequiredField: Story = {
  */
 export const DisabledState: Story = {
   render: () => (
-    <div className="grid gap-6 max-w-sm">
-      <div className="grid w-full items-center gap-2">
-        <Label htmlFor="disabled-input">비활성 입력 필드</Label>
-        <Input
-          type="text"
-          id="disabled-input"
-          disabled
-          placeholder="입력할 수 없습니다"
-          className="peer"
-        />
-      </div>
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="disabled-checkbox"
-          disabled
-          className="peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <Label htmlFor="disabled-checkbox">비활성 체크박스 라벨</Label>
-      </div>
+    <div className="grid w-full max-w-sm items-center gap-2">
+      <Label htmlFor="disabled-input">비활성 입력 필드</Label>
+      <Input
+        type="text"
+        id="disabled-input"
+        disabled
+        placeholder="입력할 수 없습니다"
+        className="peer"
+      />
     </div>
   ),
 }

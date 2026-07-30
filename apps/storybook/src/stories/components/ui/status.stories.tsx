@@ -1,10 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Callout,
@@ -24,21 +19,6 @@ const meta = {
 
 export default meta
 type Story = StoryObj<typeof meta>
-
-export const Alerts: Story = {
-  render: () => (
-    <div className="grid max-w-3xl gap-4">
-      {tones.map((tone) => (
-        <Alert key={tone} tone={tone}>
-          <AlertTitle>{tone} alert</AlertTitle>
-          <AlertDescription>
-            작업 결과나 현재 상태를 짧게 알릴 때 사용한다.
-          </AlertDescription>
-        </Alert>
-      ))}
-    </div>
-  ),
-}
 
 export const Callouts: Story = {
   render: () => (

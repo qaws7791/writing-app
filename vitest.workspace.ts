@@ -24,6 +24,7 @@ export default defineConfig({
         ["@workspace/http-platform", "packages/infra/http-platform"],
         ["@workspace/identity", "packages/modules/identity"],
         ["@workspace/learning", "packages/modules/learning"],
+        ["@workspace/nextjs-config", "packages/config/nextjs-config"],
         ["@workspace/observability", "packages/infra/observability"],
         ["@workspace/operations", "packages/modules/operations"],
         ["@workspace/storage", "packages/infra/storage"],

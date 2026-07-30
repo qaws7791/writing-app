@@ -297,30 +297,23 @@ export const ComplexOverlay: Story = {
 export const FormInteraction: Story = {
   render: () => (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button data-testid="trigger-btn">메뉴 열기</Button>}
-      />
-      <DropdownMenuContent className="w-56" data-testid="menu-content">
-        <DropdownMenuItem data-testid="item-profile">프로필</DropdownMenuItem>
-        <DropdownMenuItem data-testid="item-settings">설정</DropdownMenuItem>
+      <DropdownMenuTrigger render={<Button>메뉴 열기</Button>} />
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuItem>프로필</DropdownMenuItem>
+        <DropdownMenuItem>설정</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const trigger = canvas.getByTestId("trigger-btn")
 
-    // 드롭다운 메뉴 열기
-    await userEvent.click(trigger)
+    await userEvent.click(canvas.getByRole("button", { name: "메뉴 열기" }))
 
-    // 포털 레이어 확인
+    // 메뉴는 portal로 body에 렌더되므로 canvas 밖에서 탐색한다.
     const body = within(document.body)
-    const profileItem = await body.findByTestId("item-profile")
-    await expect(profileItem).toBeInTheDocument()
+    const profileItem = await body.findByRole("menuitem", { name: "프로필" })
 
-    // 설정 메뉴 아이템 클릭
-    const settingsItem = body.getByTestId("item-settings")
-    await userEvent.click(settingsItem)
+    await userEvent.click(body.getByRole("menuitem", { name: "설정" }))
 
     await waitFor(() => expect(profileItem).not.toBeInTheDocument())
   },

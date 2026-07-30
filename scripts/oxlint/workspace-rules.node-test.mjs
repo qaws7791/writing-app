@@ -1,5 +1,4 @@
-import assert from "node:assert/strict"
-
+// RuleTester는 Node.js >= 22의 raw transfer 바인딩을 요구하므로 bun에서는 실행할 수 없다.
 import { RuleTester } from "oxlint/plugins-dev"
 
 import {
@@ -15,7 +14,7 @@ const tester = new RuleTester({
   },
 })
 
-tester.run("no-unsafe-unknown-cast", noUnsafeUnknownCastRule, {
+runRuleCases("no-unsafe-unknown-cast", noUnsafeUnknownCastRule, {
   invalid: [
     {
       code: "const userId = value as unknown as UserId",
@@ -29,7 +28,7 @@ tester.run("no-unsafe-unknown-cast", noUnsafeUnknownCastRule, {
   ],
 })
 
-tester.run("no-dto-domain-alias", noDtoDomainAliasRule, {
+runRuleCases("no-dto-domain-alias", noDtoDomainAliasRule, {
   invalid: [
     {
       code: 'import type { LearnerLessonDto as Lesson } from "@/shared/http/learner-api-client"',
@@ -46,9 +45,7 @@ tester.run("no-dto-domain-alias", noDtoDomainAliasRule, {
   ],
 })
 
-assert.ok(true)
-
-tester.run("catch-preserves-cause", catchPreservesCauseRule, {
+runRuleCases("catch-preserves-cause", catchPreservesCauseRule, {
   invalid: [
     {
       code: "try { save() } catch { return err({ kind: 'save-failed' }) }",
@@ -71,3 +68,10 @@ tester.run("catch-preserves-cause", catchPreservesCauseRule, {
     },
   ],
 })
+
+function runRuleCases(name, rule, cases) {
+  tester.run(name, rule, cases)
+  console.log(
+    `${name}: valid ${cases.valid.length}건, invalid ${cases.invalid.length}건 통과`
+  )
+}

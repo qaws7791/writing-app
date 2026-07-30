@@ -12,11 +12,13 @@
   },
   "scripts": {
     "lint": "oxlint .",
+    "test": "cd ../../.. && vitest run --config vitest.workspace.ts --project @workspace/nextjs-config",
     "typecheck": "tsc7 --noEmit"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@workspace/typescript-config": "workspace:*",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

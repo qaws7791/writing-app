@@ -1,4 +1,6 @@
-import { describe, expect, it } from "bun:test"
+import { createContext, runInContext } from "node:vm"
+
+import { describe, expect, it } from "vitest"
 
 import { recordCspViolation } from "@workspace/nextjs-config/csp-report"
 import {
@@ -35,10 +37,14 @@ describe("Next CSP 정책", () => {
     expect(csp).not.toContain("'unsafe-eval'")
   })
 
-  it("Zod JIT probe를 CSP 완화 없이 비활성화한다", () => {
-    expect(zodJitlessBootstrapScript).toContain("__zod_globalConfig")
-    expect(zodJitlessBootstrapScript).toContain("jitless = true")
-    expect(zodJitlessBootstrapScript).not.toContain("Function")
+  it("bootstrap script를 실행하면 Zod JIT probe가 꺼진다", () => {
+    const context = createContext({})
+
+    runInContext(zodJitlessBootstrapScript, context)
+
+    expect(runInContext("globalThis.__zod_globalConfig.jitless", context)).toBe(
+      true
+    )
   })
 
   it("rollout flag로 같은 정책을 report-only header로 되돌린다", () => {

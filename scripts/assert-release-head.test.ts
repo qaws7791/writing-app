@@ -10,6 +10,10 @@ const validInput = {
   token: "github-actions-token",
 } as const
 
+const unexpectedFetch = (): Promise<Response> => {
+  throw new Error("fetch가 호출되면 안 됩니다.")
+}
+
 describe("production release main head", () => {
   test("authenticated GitHub main commit과 release revision이 같으면 승인한다", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
@@ -24,9 +28,8 @@ describe("production release main head", () => {
       })
     }
 
-    await expect(
-      assertReleaseIsCurrentMain(validInput, fetchImplementation)
-    ).resolves.toBeUndefined()
+    await assertReleaseIsCurrentMain(validInput, fetchImplementation)
+
     expect(requests).toHaveLength(1)
     expect(requests[0]?.url).toBe(
       "https://api.github.com/repos/acme/writing-app/git/ref/heads/main"
@@ -52,12 +55,15 @@ describe("production release main head", () => {
     ).rejects.toThrow(`현재 main ${currentMainRevision}`)
   })
 
-  test("API 실패나 malformed reference 응답을 승인으로 바꾸지 않는다", async () => {
+  test("API 오류 응답을 승인으로 바꾸지 않는다", async () => {
     await expect(
       assertReleaseIsCurrentMain(validInput, () =>
         Promise.resolve(new Response("unavailable", { status: 503 }))
       )
     ).rejects.toThrow("HTTP 503")
+  })
+
+  test("commit이 아닌 reference 응답을 승인으로 바꾸지 않는다", async () => {
     await expect(
       assertReleaseIsCurrentMain(validInput, () =>
         Promise.resolve(
@@ -70,23 +76,25 @@ describe("production release main head", () => {
     ).rejects.toThrow("commit SHA")
   })
 
-  test("credential URL, 잘못된 repository와 SHA를 요청 전에 거부한다", async () => {
-    const unexpectedFetch = (): Promise<Response> => {
-      throw new Error("fetch가 호출되면 안 됩니다.")
-    }
-
+  test("credential이 담긴 API URL을 요청 전에 거부한다", async () => {
     await expect(
       assertReleaseIsCurrentMain(
         { ...validInput, apiUrl: "https://token@example.com" },
         unexpectedFetch
       )
     ).rejects.toThrow("credential 없는 HTTPS")
+  })
+
+  test("owner/repository 형식이 아닌 repository를 요청 전에 거부한다", async () => {
     await expect(
       assertReleaseIsCurrentMain(
         { ...validInput, repository: "acme/writing/app" },
         unexpectedFetch
       )
     ).rejects.toThrow("owner/repository")
+  })
+
+  test("40자리 SHA가 아닌 release revision을 요청 전에 거부한다", async () => {
     await expect(
       assertReleaseIsCurrentMain(
         { ...validInput, releaseRevision: "main" },

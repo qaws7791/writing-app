@@ -38,18 +38,19 @@ export const Playground: Story = {
  */
 export const Horizontal: Story = {
   render: () => (
-    <div className="w-[400px] rounded-lg border p-6 bg-card text-card-foreground shadow-sm">
-      <div className="space-y-1">
-        <h4 className="text-sm font-semibold leading-none">작성 학습 플랫폼</h4>
-        <p className="text-sm text-muted-foreground">
+    <div className="w-[400px] rounded-panel border bg-surface p-6 text-surface-foreground shadow-surface">
+      <div className="grid gap-1">
+        <h4 className="text-label-md font-semibold leading-none">
+          작성 학습 플랫폼
+        </h4>
+        <p className="text-body-sm text-muted-foreground">
           사용자의 글쓰기 역량 강화를 돕는 온라인 학습 시스템입니다.
         </p>
       </div>
       <Separator className="my-4" />
-      <div className="flex h-5 items-center space-x-4 text-sm text-muted-foreground">
+      <div className="flex h-5 items-center gap-4 text-body-sm text-muted-foreground">
         <div>Next.js</div>
         <div>Storybook</div>
-        <div>Shadcn UI</div>
       </div>
     </div>
   ),
@@ -61,7 +62,7 @@ export const Horizontal: Story = {
  */
 export const Vertical: Story = {
   render: () => (
-    <div className="flex items-center space-x-4 text-sm font-medium">
+    <div className="flex items-center gap-4 text-body-sm font-medium">
       <span className="hover:text-primary cursor-pointer">대시보드</span>
       <Separator orientation="vertical" className="h-4" />
       <span className="hover:text-primary cursor-pointer">내 서재</span>

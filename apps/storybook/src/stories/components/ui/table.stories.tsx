@@ -22,69 +22,75 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const invoices = [
+const courses = [
   {
-    invoice: "INV001",
-    paymentStatus: "결제 완료",
-    totalAmount: "₩250,000",
-    paymentMethod: "신용카드",
+    category: "입문",
+    id: "COURSE-001",
+    lessons: 24,
+    status: "active",
+    title: "문장의 중심 찾기",
+    units: 6,
   },
   {
-    invoice: "INV002",
-    paymentStatus: "대기 중",
-    totalAmount: "₩150,000",
-    paymentMethod: "페이코",
+    category: "입문",
+    id: "COURSE-002",
+    lessons: 18,
+    status: "active",
+    title: "근거를 쌓는 단락 쓰기",
+    units: 5,
   },
   {
-    invoice: "INV003",
-    paymentStatus: "결제 실패",
-    totalAmount: "₩350,000",
-    paymentMethod: "계좌이체",
+    category: "심화",
+    id: "COURSE-003",
+    lessons: 32,
+    status: "archived",
+    title: "설명문 구조 설계",
+    units: 8,
   },
   {
-    invoice: "INV004",
-    paymentStatus: "결제 완료",
-    totalAmount: "₩450,000",
-    paymentMethod: "신용카드",
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "결제 완료",
-    totalAmount: "₩550,000",
-    paymentMethod: "카카오페이",
+    category: "심화",
+    id: "COURSE-004",
+    lessons: 12,
+    status: "active",
+    title: "초안 다듬기 연습",
+    units: 4,
   },
 ]
 
 export const Default: Story = {
   render: () => (
     <Table>
-      <TableCaption>최근 결제된 송장 목록입니다.</TableCaption>
+      <TableCaption>관리자 코스 목록입니다.</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[100px]">송장 번호</TableHead>
-          <TableHead>상태</TableHead>
-          <TableHead>결제 수단</TableHead>
-          <TableHead className="text-right font-semibold">금액</TableHead>
+          <TableHead className="w-[120px]" scope="col">
+            코스 ID
+          </TableHead>
+          <TableHead scope="col">강의명</TableHead>
+          <TableHead scope="col">카테고리</TableHead>
+          <TableHead scope="col">상태</TableHead>
+          <TableHead className="text-right font-semibold" scope="col">
+            레슨
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {invoices.map((invoice) => (
-          <TableRow key={invoice.invoice}>
-            <TableCell className="font-medium">{invoice.invoice}</TableCell>
-            <TableCell>{invoice.paymentStatus}</TableCell>
-            <TableCell>{invoice.paymentMethod}</TableCell>
+        {courses.map((course) => (
+          <TableRow key={course.id}>
+            <TableCell className="font-mono">{course.id}</TableCell>
+            <TableCell className="font-medium">{course.title}</TableCell>
+            <TableCell>{course.category}</TableCell>
+            <TableCell>{course.status}</TableCell>
             <TableCell className="text-right font-mono">
-              {invoice.totalAmount}
+              {course.lessons}
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
       <TableFooter>
         <TableRow>
-          <TableCell colSpan={3}>총합계</TableCell>
-          <TableCell className="text-right font-bold font-mono">
-            ₩1,750,000
-          </TableCell>
+          <TableCell colSpan={4}>총 레슨</TableCell>
+          <TableCell className="text-right font-bold font-mono">86</TableCell>
         </TableRow>
       </TableFooter>
     </Table>

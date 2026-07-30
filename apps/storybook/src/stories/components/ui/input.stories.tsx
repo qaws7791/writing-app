@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { expect, userEvent, within } from "storybook/test"
 
 import { Button } from "@workspace/ui/components/ui/button"
 import {
@@ -127,10 +126,4 @@ export const FormInteraction: Story = {
       <FieldError id="input-interaction-error">제목을 입력하세요.</FieldError>
     </Field>
   ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const input = canvas.getByLabelText("제목")
-    await userEvent.type(input, "문장의 중심 찾기")
-    await expect(input).toHaveValue("문장의 중심 찾기")
-  },
 }

@@ -13,7 +13,7 @@ Storybook은 디자인 시스템의 실행 가능한 명세다. story source와 
 
 ## 소유 경계
 
-- MDX와 story는 `apps/storybook/src/stories`에 둔다.
+- story는 `apps/storybook/src/stories`, MDX 문서는 `apps/storybook/src/docs`에 둔다.
 - 둘 이상의 문서나 story에서 쓰는 Storybook helper block은 `apps/storybook/src/blocks`에 둔다. 한 story에서만 쓰는 얇은 layout wrapper는 소비 지점에 둔다.
 - `packages/shared/ui`에는 story 파일을 두지 않는다.
 - `apps/storybook/.storybook/main.ts`가 MDX와 story source를 수집한다.

@@ -1,12 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { useState, type ComponentProps } from "react"
 import { fn } from "storybook/test"
 
-import {
-  MatchAnswer,
-  type MatchAnswerChoiceSelection,
-  type MatchAnswerConnection,
-} from "@workspace/ui/components/lesson/match-answer"
+import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
 
 import { matchDefaults } from "#storybook/stories/components/lesson/mock-data"
 import {
@@ -89,18 +84,6 @@ const meta = {
   },
   decorators: lessonDecorators,
   parameters: lessonParameters,
-  render: (args) => (
-    <ControlledMatchAnswer
-      key={JSON.stringify({
-        checked: args.checked,
-        connections: args.connections,
-        leftChoices: args.leftChoices,
-        pendingChoice: args.pendingChoice,
-        rightChoices: args.rightChoices,
-      })}
-      {...args}
-    />
-  ),
 } satisfies Meta<typeof MatchAnswer>
 
 export default meta
@@ -110,6 +93,26 @@ type Story = StoryObj<typeof meta>
  * Controls로 제목·안내·선택지·연결·채점 상태를 조작할 수 있는 Playground입니다.
  */
 export const Playground: Story = {}
+
+/**
+ * 한쪽 선택지를 눌러 다음 짝을 기다리는 중간 상태입니다.
+ */
+export const PendingChoice: Story = {
+  args: {
+    pendingChoice: { id: "left-1", side: "left" },
+  },
+}
+
+/**
+ * 채점 전 연결이 하나 만들어진 상태입니다.
+ */
+export const Connected: Story = {
+  args: {
+    connections: [
+      { leftChoiceId: "left-1", rightChoiceId: "right-1", tone: "default" },
+    ],
+  },
+}
 
 /**
  * 정답 채점 후 시각 상태입니다.
@@ -129,69 +132,4 @@ export const CheckedWrong: Story = {
     checked: "wrong",
     connections: wrongConnections,
   },
-}
-
-function ControlledMatchAnswer(args: ComponentProps<typeof MatchAnswer>) {
-  const [connections, setConnections] = useState(args.connections)
-  const [pendingChoice, setPendingChoice] =
-    useState<MatchAnswerChoiceSelection | null>(args.pendingChoice ?? null)
-
-  function handleChoiceSelect(selection: MatchAnswerChoiceSelection) {
-    args.onChoiceSelect?.(selection)
-
-    if (args.checked !== false) return
-
-    if (pendingChoice === null) {
-      setPendingChoice(selection)
-      return
-    }
-
-    if (pendingChoice.side === selection.side) {
-      setPendingChoice(pendingChoice.id === selection.id ? null : selection)
-      return
-    }
-
-    const leftChoiceId =
-      selection.side === "left" ? selection.id : pendingChoice.id
-    const rightChoiceId =
-      selection.side === "right" ? selection.id : pendingChoice.id
-
-    setConnections((currentConnections) =>
-      toggleFixtureConnection(currentConnections, {
-        leftChoiceId,
-        rightChoiceId,
-        tone: "default",
-      })
-    )
-    setPendingChoice(null)
-  }
-
-  return (
-    <MatchAnswer
-      {...args}
-      connections={connections}
-      onChoiceSelect={handleChoiceSelect}
-      pendingChoice={pendingChoice}
-    />
-  )
-}
-
-function toggleFixtureConnection(
-  connections: readonly MatchAnswerConnection[],
-  selection: MatchAnswerConnection
-): readonly MatchAnswerConnection[] {
-  const isSelected = connections.some(
-    (connection) =>
-      connection.leftChoiceId === selection.leftChoiceId &&
-      connection.rightChoiceId === selection.rightChoiceId
-  )
-  const unassignedConnections = connections.filter(
-    (connection) =>
-      connection.leftChoiceId !== selection.leftChoiceId &&
-      connection.rightChoiceId !== selection.rightChoiceId
-  )
-
-  return isSelected
-    ? unassignedConnections
-    : [...unassignedConnections, selection]
 }

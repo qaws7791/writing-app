@@ -19,16 +19,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-  render: () => (
-    <Tabs className="w-[400px]" defaultValue="in_progress">
-      <TabsList>
-        <TabsTrigger value="in_progress">진행중</TabsTrigger>
-        <TabsTrigger value="completed">완료</TabsTrigger>
-      </TabsList>
-      <TabsContent value="in_progress">진행 중인 학습 목록</TabsContent>
-      <TabsContent value="completed">완료한 학습 목록</TabsContent>
-    </Tabs>
-  ),
+  render: () => <LearningProgressTabs />,
 }
 
 export const Line: Story = {
@@ -62,16 +53,7 @@ export const Vertical: Story = {
 }
 
 export const KeyboardInteraction: Story = {
-  render: () => (
-    <Tabs className="w-[400px]" defaultValue="in_progress">
-      <TabsList>
-        <TabsTrigger value="in_progress">진행중</TabsTrigger>
-        <TabsTrigger value="completed">완료</TabsTrigger>
-      </TabsList>
-      <TabsContent value="in_progress">진행 중인 학습 목록</TabsContent>
-      <TabsContent value="completed">완료한 학습 목록</TabsContent>
-    </Tabs>
-  ),
+  render: () => <LearningProgressTabs />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const completedTab = canvas.getByRole("tab", { name: "완료" })
@@ -81,4 +63,17 @@ export const KeyboardInteraction: Story = {
     await expect(completedTab).toHaveAttribute("aria-selected", "true")
     await expect(canvas.getByText("완료한 학습 목록")).toBeVisible()
   },
+}
+
+function LearningProgressTabs() {
+  return (
+    <Tabs className="w-[400px]" defaultValue="in_progress">
+      <TabsList>
+        <TabsTrigger value="in_progress">진행중</TabsTrigger>
+        <TabsTrigger value="completed">완료</TabsTrigger>
+      </TabsList>
+      <TabsContent value="in_progress">진행 중인 학습 목록</TabsContent>
+      <TabsContent value="completed">완료한 학습 목록</TabsContent>
+    </Tabs>
+  )
 }

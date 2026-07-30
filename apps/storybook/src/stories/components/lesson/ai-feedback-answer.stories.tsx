@@ -20,7 +20,7 @@ type AiFeedbackStoryArgs = {
   readonly allowRetry: boolean
   readonly draftText: string
   readonly focus: string
-  readonly mockOutcome: "error" | "limit" | "loading" | "quota" | "success"
+  readonly mockOutcome: "error" | "limit" | "quota" | "success"
   readonly onContinueWithoutFeedback: () => Promise<AiFeedbackContinueOutcome>
   readonly onRequest: () => Promise<AiFeedbackRequestOutcome>
 }
@@ -29,14 +29,6 @@ function createMockOnRequest(
   mockOutcome: AiFeedbackStoryArgs["mockOutcome"]
 ): () => Promise<AiFeedbackRequestOutcome> {
   return async () => {
-    if (mockOutcome === "loading") {
-      await new Promise((resolve) => setTimeout(resolve, 60_000))
-      return {
-        status: "ok",
-        feedback: aiFeedbackViewModel,
-      }
-    }
-
     if (mockOutcome === "error") {
       return {
         kind: "retryable",
@@ -95,7 +87,7 @@ const meta = {
     },
     mockOutcome: {
       control: "select",
-      options: ["success", "error", "quota", "limit", "loading"],
+      options: ["success", "error", "quota", "limit"],
       description: "AI 코칭 요청 mock 결과입니다.",
     },
     onRequest: {
@@ -146,60 +138,33 @@ export const WithFeedback: Story = {
   args: {
     mockOutcome: "success",
   },
-  play: async ({ canvasElement }) => {
-    const button = canvasElement.querySelector("button")
-    button?.click()
-  },
 }
 
 /**
- * AI 코칭 요청 실패 상태를 확인하는 예시입니다.
+ * AI 코칭 요청 실패 상태를 확인하는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.
  */
 export const RequestError: Story = {
   args: {
     mockOutcome: "error",
   },
-  play: async ({ canvasElement }) => {
-    const button = canvasElement.querySelector("button")
-    button?.click()
-  },
 }
 
 /**
- * AI 코칭 요청을 기다리는 상태를 확인하는 예시입니다.
- */
-export const RequestLoading: Story = {
-  args: {
-    mockOutcome: "loading",
-  },
-  play: async ({ canvasElement }) => {
-    const button = canvasElement.querySelector("button")
-    button?.click()
-  },
-}
-
-/**
- * 일일 요청 한도와 서울 시간 기준 재시도 안내를 확인하는 예시입니다.
+ * 일일 요청 한도와 서울 시간 기준 재시도 안내를 확인하는 예시입니다. 버튼을 눌러
+ * 결과 UI를 확인하세요.
  */
 export const DailyQuota: Story = {
   args: {
     mockOutcome: "quota",
   },
-  play: async ({ canvasElement }) => {
-    const button = canvasElement.querySelector("button")
-    button?.click()
-  },
 }
 
 /**
- * 한 스텝에서 성공한 AI 코칭 3회를 모두 사용한 영구 한도 예시입니다.
+ * 한 스텝에서 성공한 AI 코칭 3회를 모두 사용한 영구 한도 예시입니다. 버튼을 눌러
+ * 결과 UI를 확인하세요.
  */
 export const AttemptLimit: Story = {
   args: {
     mockOutcome: "limit",
-  },
-  play: async ({ canvasElement }) => {
-    const button = canvasElement.querySelector("button")
-    button?.click()
   },
 }

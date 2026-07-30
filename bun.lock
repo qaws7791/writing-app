@@ -10,7 +10,6 @@
         "@testing-library/dom": "^10.4.1",
         "@testing-library/user-event": "catalog:",
         "@workspace/contracts": "workspace:*",
-        "@workspace/nextjs-config": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
         "dependency-cruiser": "18.1.0",
         "eslint-plugin-react-hooks": "7.0.1",
@@ -193,6 +192,7 @@
         "@types/node": "catalog:",
         "@workspace/typescript-config": "workspace:*",
         "typescript": "catalog:",
+        "vitest": "catalog:",
       },
     },
     "packages/config/typescript-config": {
