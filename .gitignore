@@ -18,12 +18,8 @@ packages/infra/http-client/.generated/
 
 # Testing
 coverage
-/artifacts
 /.lighthouseci/
 /output/
-playwright-report
-test-results
-.playwright-cli/
 
 # Turbo
 .turbo

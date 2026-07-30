@@ -29,15 +29,14 @@
 
 ## 도구별 책임
 
-| 도구                                 | 책임과 선택 기준                                                                                                                                                                                                                   |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Vitest                               | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고 DOM·앱별 설정이 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다. |
-| Testing Library                      | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                 |
-| MSW                                  | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                   |
-| fast-check                           | grading·날짜·상태 전이처럼 입력 공간이 넓은 순수 규칙의 불변식과 반례를 탐색한다. I/O, component interaction이나 소수의 대표 예제로 충분한 규칙에는 사용하지 않는다.                                                               |
-| Playwright                           | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                              |
-| Lighthouse CI·route bundle budget·k6 | PR에서는 초기 client bundle 회귀를 빠르게 막고, main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.         |
-| Storybook                            | 둘 이상의 화면이 공유하는 UI primitive와 조합의 상태·접근성·interaction만 검증한다. 앱 전용 화면과 도메인 흐름을 옮기지 않으며, 삭제된 resource·chat 기능의 story나 fixture를 남기지 않는다.                                       |
+| 도구                                 | 책임과 선택 기준                                                                                                                                                                                                                                         |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vitest                               | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다. |
+| Testing Library                      | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                       |
+| MSW                                  | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                         |
+| Playwright                           | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                    |
+| Lighthouse CI·route bundle budget·k6 | PR에서는 초기 client bundle 회귀를 빠르게 막고, main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                               |
+| Storybook                            | 둘 이상의 화면이 공유하는 UI primitive와 조합의 상태·접근성·interaction만 검증한다. 앱 전용 화면과 도메인 흐름을 옮기지 않으며, 삭제된 resource·chat 기능의 story나 fixture를 남기지 않는다.                                                             |
 
 ## 테스트 데이터와 인증
 
@@ -73,7 +72,7 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 
 - 권한, 인증, migration, backup·restore, transaction, 입력 검증, 민감 데이터 보호 변경에는 회귀 테스트를 추가한다.
 - 테스트 수나 coverage 수치보다 권한, 상태 전이, transaction과 복구처럼 실패 비용이 큰 동작의 관찰 가능한 결과를 우선한다.
-- 전역 또는 package별 coverage 숫자 threshold를 품질 gate로 두지 않는다. coverage는 누락 탐색을 위한 진단 자료일 뿐이며 위험 기반 시나리오와 경계 assertion을 대신하지 않는다.
+- coverage 수치는 사각지대를 찾는 참고 자료일 뿐이며 위험 기반 시나리오와 경계 assertion을 대신하지 않는다.
 - 새 실행 경로는 기존 assertion을 약화하거나 삭제하는 방식으로 통과시키지 않는다.
 - UI markup만 바뀐 경우에도 접근성 또는 해당 화면의 사용자 흐름 영향을 확인한다.
 - flaky 실패는 retry로 성공 처리하지 않는다. 원인을 격리해 재현하고 수정하며, 해결 전까지 실패 사실과 영향을 기록한다.
@@ -101,7 +100,11 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 
 ## 실행과 검증
 
-공개 검증 명령과 tool version은 [root manifest](../../package.json), Vitest 대상 구성은 [Vitest workspace](../../vitest.workspace.ts), browser 실행 설정은 [Playwright config](../../playwright.config.ts), Storybook source와 task는 [Storybook manifest](../../apps/storybook/package.json)와 [Storybook config](../../apps/storybook/.storybook/main.ts)가 소유한다. CI trigger, job 배치와 실제 gate는 [quality workflow](../../.github/workflows/quality-gates.yml)를 확인한다. 이 문서는 현재 script, 대상 목록, retry 횟수, report 형식과 숫자 예산을 복제하지 않는다.
+공개 검증 명령과 tool version은 [root manifest](../../package.json), Vitest 대상 구성은 [Vitest workspace](../../vitest.workspace.ts), browser 실행 설정은 [Playwright config](../../playwright.config.ts), Storybook source는 [Storybook manifest](../../apps/storybook/package.json)와 [Storybook config](../../apps/storybook/.storybook/main.ts), Storybook 테스트 실행 설정은 [Storybook Vitest config](../../apps/storybook/vitest.storybook.config.ts)가 소유한다. CI trigger, job 배치와 실제 gate는 [quality workflow](../../.github/workflows/quality-gates.yml)를 확인한다. 이 문서는 현재 script, 대상 목록, retry 횟수, report 형식과 숫자 예산을 복제하지 않는다.
+
+Vitest workspace가 참조하는 앱 config는 각자 고유 사유가 있을 때만 둔다. `apps/api`는 migration `.sql`을 text로 불러오는 loader, web·admin·shared/ui는 DOM 환경과 React 단일 인스턴스 고정이 그 사유다. 앱·패키지 manifest의 `test` script는 개발자 편의용 부분 실행이고, 저장소 전체 실행 대상은 root manifest의 `test`가 소유한다.
+
+배포 runtime smoke(`test:frontend-production-runtime`)와 관리자 개발 서버 수명주기 smoke(`test:admin-dev-lifecycle`)는 전용 명령으로만 실행하며 CI 차단 gate가 아니다. coverage는 수집 설정을 두지 않고, 필요할 때 일회성으로만 측정한다. 전역·package별 coverage 숫자 threshold는 어떤 경계에서도 gate로 쓰지 않는다.
 
 CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원하거나 한 번 생성한 뒤 생성물과 Turbo cache를 단기 artifact로 배포한다. 정적 검사, repository 테스트, build와 browser job은 이 artifact를 받아 병렬 실행하며 각자 생성하지 않는다. 정적 job은 형식·lint·custom lint rule·architecture·dependency 일관성·Knip·type 검사를 한 번의 설치 뒤 병렬 실행하고, 테스트 job도 `scripts` 계약 테스트와 workspace 전체 unit·integration을 병렬 실행한다.
 
