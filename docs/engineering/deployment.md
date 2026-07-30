@@ -28,7 +28,7 @@ Production job은 protected environment 승인만으로 배포를 시작하지 �
 
 Production 배포 job은 repository 전체에서 동시에 하나만 실행하며 실행 중 job을 취소하지 않는다. GitHub concurrency는 FIFO 대기열을 보장하지 않고 pending job을 더 최신 요청으로 교체할 수 있으므로, 호스트 변경 직전에 GitHub API의 현재 `main` reference와 release revision을 다시 비교한다. 더 최신 main이 있거나 API 조회에 실패하면 배포를 시작하지 않는다. 이 직렬화는 서로 다른 revision의 image build·scan 병렬성은 유지하면서 오래된 승인 job이 새 revision을 덮어쓰는 것을 막는다.
 
-Evidence 식별자는 외부 기록을 연결하는 감사 reference이지 저장소가 법률 결과나 실제 복구 성공을 스스로 증명한다는 뜻이 아니다. GitHub `production` environment 관리자는 연결된 결과의 범위와 진위를 확인한 뒤 변수와 reviewer 승인을 관리해야 한다. 현재 [외부 법률 검토 기록](../work/2026-07-24-confirmed-product-baseline/privacy-legal-review-gate.md)과 [staging 복구 기준](./database-backup-restore.md)에는 실제 성공 증거가 없으므로 production launch gate가 해제됐다고 판정하지 않는다.
+Evidence 식별자는 외부 기록을 연결하는 감사 reference이지 저장소가 법률 결과나 실제 복구 성공을 스스로 증명한다는 뜻이 아니다. GitHub `production` environment 관리자는 연결된 결과의 범위와 진위를 확인한 뒤 변수와 reviewer 승인을 관리해야 한다. 현재 [외부 법률 검토 기록](../archive/2026-07-24-confirmed-product-baseline/privacy-legal-review-gate.md)과 [staging 복구 기준](./database-backup-restore.md)에는 실제 성공 증거가 없으므로 production launch gate가 해제됐다고 판정하지 않는다.
 
 Image release workflow의 k6 baseline은 release digest를 staging에 배포·공개 검증한 뒤 GitHub `staging` environment가 제공하는 staging·production origin, 전용 학습자 session과 고정 lesson fixture만 사용해 한 번 실행한다. 실행 source는 staging 부하 승인이 없거나 두 origin이 같으면 요청 전에 실패해야 한다. 상태를 전진시키지 않는 multiple-choice 오답 제출만 허용하고 AI provider 호출과 production 부하 실행은 이 gate의 범위에서 제외한다. Main 품질 workflow에서 같은 suite를 선행 실행하지 않아, 기존 staging 장애를 수정하는 release가 이전 상태의 부하 gate에 막히는 교착을 피한다.
 

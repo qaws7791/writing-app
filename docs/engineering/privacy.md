@@ -49,5 +49,5 @@
 ## 출시 법률 검토 gate
 
 - 외부 법률 검토 결과, 승인된 서비스 약관·개인정보처리방침과 필요한 변경 티켓이 모두 확정될 때까지 production launch는 차단한다.
-- 검토 항목과 미확인 증거는 [법률 검토 gate 작업 문서](../work/2026-07-24-confirmed-product-baseline/privacy-legal-review-gate.md)에서 추적한다. 현재 외부 검토 결과는 없으며 완료로 표시하지 않는다.
+- 현재 외부 검토 결과는 없으며 완료로 표시하지 않는다. 검토 항목 목록은 [보관된 법률 검토 gate 기록](../archive/2026-07-24-confirmed-product-baseline/privacy-legal-review-gate.md)에 남아 있고, 그 작업 단위의 진행 추적은 중단됐다.
 - 법률 검토가 AI 데이터 처리에 별도 동의를 요구하면 현재 범위를 조용히 넓히지 않는다. 별도 제품 요구·UI·철회·증거 저장 티켓을 승인받기 전까지 새로운 동의나 데이터 사용을 추가하지 않는다.
