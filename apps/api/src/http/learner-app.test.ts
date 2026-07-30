@@ -1,32 +1,16 @@
 import { describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import type { RequestLogEvent } from "@workspace/http-platform/app"
 import type { SessionResolver } from "@workspace/identity/ports"
 
-import { createTestLearnerApp } from "@/test-support/learner-app-fixture"
-
-type CapturedRequestLogEvent = {
-  readonly actorId?: string
-  readonly actorType?: "admin" | "learner"
-  readonly audience: "admin" | "learner"
-  readonly durationMs: number
-  readonly errorClass?: "client-error" | "server-error"
-  readonly method: string
-  readonly outcome: "failed" | "succeeded"
-  readonly path: string
-  readonly requestId?: string
-  readonly status: number
-}
-
-const activeSession = {
-  user: {
-    email: "learner@example.com",
-    id: "user-1",
-    image: null,
-    joinedAt: "2026-06-14T00:00:00.000Z",
-    name: "학습자",
-    status: "active",
-  },
-} as const
+import {
+  activeLearnerSession,
+  createTestLearnerApp,
+} from "@/test-support/learner-app-fixture"
+import {
+  learnerSessionCookieHeader,
+  readLearnerSessionToken,
+} from "@/test-support/learner-session-cookie"
 
 const profileStats = {
   completedLessons: 3,
@@ -38,7 +22,7 @@ const profileStats = {
 
 describe("플랫폼 API profile route", () => {
   it("요청 완료 로그에 request id와 응답 상태를 남긴다", async () => {
-    const requestEvents: CapturedRequestLogEvent[] = []
+    const requestEvents: RequestLogEvent[] = []
     const app = createFixture({
       runtime: {
         requestLogger(event) {
@@ -70,7 +54,7 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("인증 요청 완료 로그에 학습자 actor를 보강한다", async () => {
-    const requestEvents: CapturedRequestLogEvent[] = []
+    const requestEvents: RequestLogEvent[] = []
     const app = createFixture({
       runtime: {
         requestLogger(event) {
@@ -80,7 +64,7 @@ describe("플랫폼 API profile route", () => {
     })
 
     const response = await app.request("/profile", {
-      headers: { Cookie: "learner_session_token=active-token" },
+      headers: { Cookie: learnerSessionCookieHeader("active-token") },
     })
 
     expect(response.status).toBe(200)
@@ -97,7 +81,7 @@ describe("플랫폼 API profile route", () => {
   })
 
   it("identity와 독립된 learning 인증도 공통 actor context를 남긴다", async () => {
-    const requestEvents: CapturedRequestLogEvent[] = []
+    const requestEvents: RequestLogEvent[] = []
     const app = createFixture({
       runtime: {
         requestLogger(event) {
@@ -107,7 +91,7 @@ describe("플랫폼 API profile route", () => {
     })
 
     const response = await app.request("/courses", {
-      headers: { Cookie: "learner_session_token=active-token" },
+      headers: { Cookie: learnerSessionCookieHeader("active-token") },
     })
 
     expect(response.status).toBe(200)
@@ -131,7 +115,7 @@ describe("플랫폼 API profile route", () => {
       {
         body: "{}",
         headers: {
-          Cookie: "learner_session_token=active-token",
+          Cookie: learnerSessionCookieHeader("active-token"),
           "Content-Type": "application/json",
           Origin: "https://attacker.example.test",
           "Sec-Fetch-Site": "same-site",
@@ -233,7 +217,7 @@ describe("플랫폼 API profile route", () => {
 
     const response = await app.request("/profile", {
       headers: {
-        Cookie: "learner_session_token=active-token",
+        Cookie: learnerSessionCookieHeader("active-token"),
       },
     })
 
@@ -242,7 +226,7 @@ describe("플랫폼 API profile route", () => {
     expect(response.headers.get("Vary")).toContain("Cookie")
     await expect(response.json()).resolves.toEqual({
       stats: profileStats,
-      user: activeSession.user,
+      user: activeLearnerSession.user,
     })
   })
 
@@ -256,10 +240,11 @@ describe("플랫폼 API profile route", () => {
     expect(response.status).toBe(401)
   })
 
-  it("공개 health와 OpenAPI 응답에는 민감 응답 캐시 정책을 추가하지 않는다", async () => {
-    const app = createFixture()
+  it.each(["/health", "/openapi"])(
+    "공개 %s 응답에는 민감 응답 캐시 정책을 추가하지 않는다",
+    async (path) => {
+      const app = createFixture()
 
-    for (const path of ["/health", "/openapi"]) {
       const response = await app.request(path)
 
       expect(response.status).toBe(200)
@@ -267,15 +252,16 @@ describe("플랫폼 API profile route", () => {
         "private, no-store"
       )
     }
-  })
+  )
 
-  it("suspended 또는 deleted 사용자는 보호 route에서 차단한다", async () => {
-    const app = createFixture()
+  it.each(["suspended-token", "deleted-token"])(
+    "%s 사용자는 보호 route에서 차단한다",
+    async (token) => {
+      const app = createFixture()
 
-    for (const token of ["suspended-token", "deleted-token"]) {
       const response = await app.request("/profile", {
         headers: {
-          Cookie: `learner_session_token=${token}`,
+          Cookie: learnerSessionCookieHeader(token),
         },
       })
 
@@ -286,7 +272,7 @@ describe("플랫폼 API profile route", () => {
         requestId: response.headers.get("x-request-id"),
       })
     }
-  })
+  )
 
   it("단계 완료 transport validation 실패를 VALIDATION_FAILED 오류로 변환한다", async () => {
     const app = createFixture()
@@ -301,7 +287,7 @@ describe("플랫폼 API profile route", () => {
           kind: "answer",
         }),
         headers: {
-          Cookie: "learner_session_token=active-token",
+          Cookie: learnerSessionCookieHeader("active-token"),
           "Content-Type": "application/json",
           Origin: localRuntimeDefaults.learnerWebOrigin,
         },
@@ -321,42 +307,19 @@ describe("플랫폼 API profile route", () => {
       ]),
     })
   })
-
-  it("제거한 학습 쓰기 endpoint는 404를 반환한다", async () => {
-    const app = createFixture()
-
-    for (const path of [
-      "/learning/answers",
-      "/learning/lessons/lesson-1/progress",
-      "/learning/lessons/lesson-1/complete",
-      "/ai-feedback",
-    ]) {
-      const response = await app.request(path, {
-        body: "{}",
-        headers: {
-          Cookie: "learner_session_token=active-token",
-          "Content-Type": "application/json",
-          Origin: localRuntimeDefaults.learnerWebOrigin,
-        },
-        method: "POST",
-      })
-
-      expect(response.status).toBe(404)
-    }
-  })
 })
 
 function createFixture(input: Parameters<typeof createTestLearnerApp>[0] = {}) {
   const sessionResolver: SessionResolver = {
     async resolveSession(headers) {
-      const token = readTestSessionToken(headers)
+      const token = readLearnerSessionToken(headers)
 
-      if (token === "active-token") return activeSession
+      if (token === "active-token") return activeLearnerSession
       if (token === "suspended-token") {
-        return { user: { ...activeSession.user, status: "suspended" } }
+        return { user: { ...activeLearnerSession.user, status: "suspended" } }
       }
       if (token === "deleted-token") {
-        return { user: { ...activeSession.user, status: "deleted" } }
+        return { user: { ...activeLearnerSession.user, status: "deleted" } }
       }
 
       return null
@@ -368,18 +331,4 @@ function createFixture(input: Parameters<typeof createTestLearnerApp>[0] = {}) {
     profileStats,
     sessionResolver,
   })
-}
-
-function readTestSessionToken(headers: Headers): string | null {
-  const cookieToken = headers
-    .get("Cookie")
-    ?.split(";")
-    .map((cookie) => cookie.trim().split("="))
-    .find(([name]) => name === "learner_session_token")?.[1]
-
-  if (cookieToken !== undefined) {
-    return decodeURIComponent(cookieToken)
-  }
-
-  return null
 }

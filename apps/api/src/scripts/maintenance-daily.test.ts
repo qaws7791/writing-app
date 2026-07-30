@@ -76,14 +76,7 @@ describe("daily maintenance CLI guard", () => {
   })
 
   it("production actual은 외부 class retention 증거 파일 없이는 실행하지 않는다", () => {
-    const production = {
-      DAILY_MAINTENANCE_APPROVED: "true",
-      DAILY_MAINTENANCE_ENVIRONMENT: "production",
-      DAILY_MAINTENANCE_EXPECTED_DATABASE_URL: "production.sqlite",
-      DATABASE_URL: "production.sqlite",
-      DEPLOYMENT_ENVIRONMENT: "production",
-      NODE_ENV: "production",
-    }
+    const production = createProductionEnvironment()
 
     expect(() =>
       requireDailyMaintenanceApproval(production, {
@@ -91,6 +84,24 @@ describe("daily maintenance CLI guard", () => {
         dryRun: false,
       })
     ).toThrow(/retention 증거 파일/u)
+    expect(
+      requireDailyMaintenanceApproval(
+        {
+          ...production,
+          MAINTENANCE_LOG_RETENTION_EVIDENCE_FILE:
+            "/run/secrets/log-retention-evidence.json",
+        },
+        { batchSize: 100, dryRun: false }
+      )
+    ).toEqual({
+      databaseUrl: "production.sqlite",
+      logRetentionEvidenceFile: "/run/secrets/log-retention-evidence.json",
+    })
+  })
+
+  it("production dry-run과 staging actual은 retention 증거 파일 없이도 허용한다", () => {
+    const production = createProductionEnvironment()
+
     expect(
       requireDailyMaintenanceApproval(production, {
         batchSize: 100,
@@ -113,18 +124,16 @@ describe("daily maintenance CLI guard", () => {
       databaseUrl: "production.sqlite",
       logRetentionEvidenceFile: null,
     })
-    expect(
-      requireDailyMaintenanceApproval(
-        {
-          ...production,
-          MAINTENANCE_LOG_RETENTION_EVIDENCE_FILE:
-            "/run/secrets/log-retention-evidence.json",
-        },
-        { batchSize: 100, dryRun: false }
-      )
-    ).toEqual({
-      databaseUrl: "production.sqlite",
-      logRetentionEvidenceFile: "/run/secrets/log-retention-evidence.json",
-    })
   })
 })
+
+function createProductionEnvironment() {
+  return {
+    DAILY_MAINTENANCE_APPROVED: "true",
+    DAILY_MAINTENANCE_ENVIRONMENT: "production",
+    DAILY_MAINTENANCE_EXPECTED_DATABASE_URL: "production.sqlite",
+    DATABASE_URL: "production.sqlite",
+    DEPLOYMENT_ENVIRONMENT: "production",
+    NODE_ENV: "production",
+  }
+}

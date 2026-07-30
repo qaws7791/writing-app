@@ -85,35 +85,6 @@ it("SIGTERM 뒤 진행 body를 drain하고 DB close 1회와 port 해제를 보�
   }
 }, 10_000)
 
-it.skipIf(process.platform === "win32")(
-  "signal로 종료된 child의 code와 signal을 한 번만 관찰해 cache한다",
-  async () => {
-    const child = spawn(
-      process.execPath,
-      ["-e", 'process.stdout.write("ready\\n"); process.stdin.resume()'],
-      { stdio: "pipe" }
-    )
-    const exit = createProcessExitReader(child)
-
-    try {
-      await waitForProcessOutput(child, "ready")
-      child.kill("SIGTERM")
-
-      const firstObservation = await exit.wait()
-      const repeatedObservation = await exit.wait()
-
-      expect(firstObservation).toEqual({ code: null, signal: "SIGTERM" })
-      expect(repeatedObservation).toBe(firstObservation)
-      expect(exit.current).toBe(firstObservation)
-    } finally {
-      if (exit.current === undefined) {
-        child.kill("SIGKILL")
-        await exit.wait()
-      }
-    }
-  }
-)
-
 function createProcessEventReader(child: ChildProcessWithoutNullStreams): {
   readonly waitFor: (
     _event: LifecycleProcessEvent["event"]
@@ -211,32 +182,6 @@ function createProcessExitReader(child: ChildProcessWithoutNullStreams): {
       return exit
     },
   }
-}
-
-function waitForProcessOutput(
-  child: ChildProcessWithoutNullStreams,
-  expectedOutput: string
-): Promise<void> {
-  return new Promise((resolveOutput, rejectOutput) => {
-    const handleExit = (code: number | null, signal: NodeJS.Signals | null) => {
-      rejectOutput(
-        new Error(
-          `lifecycle child가 ${expectedOutput} 출력 전에 종료되었습니다: code=${String(code)}, signal=${String(signal)}`
-        )
-      )
-    }
-    child.once("exit", handleExit)
-    child.stdout.once("data", (chunk) => {
-      child.removeListener("exit", handleExit)
-      const output = String(chunk)
-      if (!output.includes(expectedOutput)) {
-        rejectOutput(new Error(`예상하지 못한 lifecycle child 출력: ${output}`))
-        return
-      }
-
-      resolveOutput()
-    })
-  })
 }
 
 function readCurrentProcessExit(

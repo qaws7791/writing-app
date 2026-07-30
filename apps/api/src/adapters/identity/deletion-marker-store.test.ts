@@ -26,7 +26,7 @@ describe("외부 삭제 marker store", () => {
     expect(storage.putObject).toHaveBeenCalledOnce()
     const input = vi.mocked(storage.putObject).mock.calls[0]?.[0]
     expect(input?.objectKey).toBe(
-      "privacy/deletion-markers/1784851200000-marker-1.json"
+      `privacy/deletion-markers/${requestedAt.getTime()}-marker-1.json`
     )
     expect(
       JSON.parse(new TextDecoder().decode(input?.body)) as unknown

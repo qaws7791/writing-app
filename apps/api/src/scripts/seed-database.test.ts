@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { getDefaultDatabaseUrl } from "@workspace/db/client"
 
 import { parseSeedDatabaseEnvironment } from "@/scripts/seed-database"
 
@@ -10,8 +11,8 @@ describe("통합 database seed 명령", () => {
         NODE_ENV: "development",
       })
     ).toBe("file:data/fixture.sqlite")
-    expect(parseSeedDatabaseEnvironment({ NODE_ENV: "test" })).toContain(
-      "api.sqlite"
+    expect(parseSeedDatabaseEnvironment({ NODE_ENV: "test" })).toBe(
+      getDefaultDatabaseUrl()
     )
   })
 

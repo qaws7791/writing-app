@@ -30,7 +30,11 @@ describe("identity auth session revocation adapter", () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
+      runApplicationMigrations(client.sqlite)
+      seedAuthUsers(client)
       const port = createIdentitySessionRevocation(client.db)
+      // 저장소 실패를 관찰 가능한 조치로 만든다: session table 자체를 제거한다.
+      client.sqlite.exec("DROP TABLE session")
 
       await expect(
         port.revokeLearnerSessions(userIdSchema.parse("user-1"))

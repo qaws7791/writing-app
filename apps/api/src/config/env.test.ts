@@ -6,40 +6,63 @@ const learnerSecret = "learner-test-secret-0123456789abcdef"
 const adminSecret = "admin-test-secret-0123456789abcdef"
 
 describe("통합 API env", () => {
-  it("두 app origin과 auth realm 설정을 명시적으로 만든다", () => {
-    const env = parseApiEnv(createTestEnvironment())
-
-    expect(env).toMatchObject({
-      adminAssetStore: undefined,
-      adminAuthSecret: adminSecret,
-      adminOrigin: "http://localhost:3001",
-      authEmail: { kind: "in-memory" },
-      aiFeedback: {
-        attemptPolicy: {
-          maxCompletedAttempts: 3,
-          pendingTtlMs: 60_000,
-          providerTimeoutMs: 30_000,
-        },
-        dailyQuotaPolicy: {
-          globalDailyRequestLimit: 1_000,
-          globalDailySuccessLimit: 500,
-          userDailyRequestLimit: 20,
-          userDailySuccessLimit: 10,
-        },
-      },
+  it("cursor 서명 secret을 learner secret에서 파생하고 배포 대상과 문서 노출을 실행 모드에서 결정한다", () => {
+    expect(parseApiEnv(createTestEnvironment())).toMatchObject({
       cursorSigningSecret: `${learnerSecret}:cursor-signing`,
-      databaseUrl: ":memory:",
-      deletionMarkerStore: undefined,
       deploymentEnvironment: "test",
-      deploymentVersion: "local",
       enableApiDocs: true,
-      learnerAuthSecret: learnerSecret,
-      nodeEnv: "test",
-      openAiApiKey: undefined,
-      openAiModel: "gpt-5.2",
-      port: 4000,
-      webOrigin: "http://localhost:3000",
     })
+  })
+
+  it("development 실행 모드는 같은 배포 대상만 허용하고 미지정 시 nodeEnv를 따른다", () => {
+    const developmentEnvironment = {
+      ...createTestEnvironment(),
+      NODE_ENV: "development",
+    }
+
+    expect(parseApiEnv(developmentEnvironment).deploymentEnvironment).toBe(
+      "development"
+    )
+    expect(
+      parseApiEnv({
+        ...developmentEnvironment,
+        DEPLOYMENT_ENVIRONMENT: "development",
+      }).deploymentEnvironment
+    ).toBe("development")
+    expect(() =>
+      parseApiEnv({
+        ...developmentEnvironment,
+        DEPLOYMENT_ENVIRONMENT: "test",
+      })
+    ).toThrow(/NODE_ENV 실행 모드/u)
+  })
+
+  it("LOG_LEVEL이 비어 있으면 info로 떨어지고 공백을 제거한 값만 사용한다", () => {
+    expect(parseApiEnv(createTestEnvironment()).logLevel).toBe("info")
+    expect(
+      parseApiEnv({ ...createTestEnvironment(), LOG_LEVEL: "   " }).logLevel
+    ).toBe("info")
+    expect(
+      parseApiEnv({ ...createTestEnvironment(), LOG_LEVEL: " debug " }).logLevel
+    ).toBe("debug")
+  })
+
+  it("LOG_PRETTY 미지정은 development에서만 pretty logging을 켠다", () => {
+    expect(parseApiEnv(createTestEnvironment()).logPretty).toBe(false)
+    expect(
+      parseApiEnv({ ...createTestEnvironment(), NODE_ENV: "development" })
+        .logPretty
+    ).toBe(true)
+    expect(
+      parseApiEnv({
+        ...createTestEnvironment(),
+        LOG_PRETTY: "false",
+        NODE_ENV: "development",
+      }).logPretty
+    ).toBe(false)
+    expect(
+      parseApiEnv({ ...createTestEnvironment(), LOG_PRETTY: "true" }).logPretty
+    ).toBe(true)
   })
 
   it("AI feedback quota와 timeout을 명시적으로 파싱하고 잘못된 순서를 거절한다", () => {

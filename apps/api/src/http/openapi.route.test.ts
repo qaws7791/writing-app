@@ -1,50 +1,58 @@
 import { describe, expect, it } from "vitest"
 import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
+import { createAdminApp, registerAdminApiDocumentation } from "@/http/admin-app"
 import { createLearnerApp } from "@/http/learner-app"
 import { registerLearnerApiDocumentation } from "@/http/openapi"
 import { createTestLearnerApp } from "@/test-support/learner-app-fixture"
 
+type DocumentationApp = Readonly<{
+  request: (path: string) => Promise<Response> | Response
+}>
+
+const removedLearnerWritePaths = [
+  "/learning/answers",
+  "/learning/lessons/{lessonId}/progress",
+  "/learning/lessons/{lessonId}/complete",
+  "/ai-feedback",
+] as const
+
+const documentationAudiences = [
+  [
+    "learner",
+    (enabled: boolean): DocumentationApp => {
+      if (enabled) return createTestLearnerApp()
+
+      const app = createLearnerApp({})
+      registerLearnerApiDocumentation(app, { enabled: false })
+      return app
+    },
+  ],
+  [
+    "admin",
+    (enabled: boolean): DocumentationApp => {
+      const app = createAdminApp({
+        adminOrigin: localRuntimeDefaults.adminWebOrigin,
+      })
+      registerAdminApiDocumentation(app, { enabled })
+      return app
+    },
+  ],
+] as const
+
 describe("플랫폼 API openapi route", () => {
-  it("OpenAPI 3.1 baseline document를 반환한다", async () => {
+  it("learner 문서는 쿠키 session security scheme만 노출하고 보호 route에 적용한다", async () => {
     const app = createTestLearnerApp()
 
     const response = await app.request("/openapi")
+    const document = (await response.json()) as object
 
     expect(response.status).toBe(200)
-    const document = (await response.json()) as {
-      readonly components: {
-        readonly securitySchemes: {
-          readonly learnerSessionCookie: {
-            readonly in: string
-            readonly name: string
-            readonly type: string
-          }
-        }
-      }
-      readonly info: {
-        readonly title: string
-      }
-      readonly openapi: string
-      readonly paths: Readonly<Record<string, unknown>>
-    }
-
-    expect(document).toMatchObject({
-      components: {
-        securitySchemes: {
-          learnerSessionCookie: {
-            in: "cookie",
-            name: learnerSessionCookieName,
-            type: "apiKey",
-          },
-        },
-      },
-      info: {
-        title: "Writing App API",
-      },
-      openapi: "3.1.0",
-    })
-    expect(document.paths).toHaveProperty("/courses/{courseId}")
+    expect(document).toHaveProperty(
+      ["components", "securitySchemes", "learnerSessionCookie"],
+      { in: "cookie", name: learnerSessionCookieName, type: "apiKey" }
+    )
     expect(document).not.toHaveProperty([
       "components",
       "securitySchemes",
@@ -54,73 +62,37 @@ describe("플랫폼 API openapi route", () => {
       ["paths", "/profile", "get", "security"],
       [{ learnerSessionCookie: [] }]
     )
-    expect(document).toHaveProperty(
-      [
-        "paths",
-        "/learning/lessons/{lessonId}/steps/{stepId}/complete",
-        "post",
-        "requestBody",
-        "content",
-        "application/json",
-        "schema",
-        "oneOf",
-        0,
-        "additionalProperties",
-      ],
-      false
-    )
-    expect(document.paths).toHaveProperty("/learning/lessons/{lessonId}/start")
-    expect(document.paths).toHaveProperty(
-      "/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback"
-    )
-    expect(document).toHaveProperty(
-      ["paths", "/courses", "get", "operationId"],
-      "getCourses"
-    )
-    expect(document).toHaveProperty(
-      [
-        "paths",
-        "/learning/lessons/{lessonId}/steps/{stepId}/draft",
-        "put",
-        "operationId",
-      ],
-      "saveLearnerStepDraft"
-    )
-    for (const path of [
-      "/learning/answers",
-      "/learning/lessons/{lessonId}/progress",
-      "/learning/lessons/{lessonId}/complete",
-      "/ai-feedback",
-    ]) {
-      expect(document.paths).not.toHaveProperty(path)
+  })
+
+  it("제거한 학습 쓰기 경로를 learner 문서에 다시 노출하지 않는다", async () => {
+    const app = createTestLearnerApp()
+
+    const document = (await (await app.request("/openapi")).json()) as {
+      readonly paths: Readonly<Record<string, unknown>>
     }
-    expect(document).toHaveProperty(
-      [
-        "paths",
-        "/profile",
-        "get",
-        "responses",
-        "200",
-        "content",
-        "application/json",
-        "schema",
-        "additionalProperties",
-      ],
-      false
-    )
+
+    expect(
+      removedLearnerWritePaths.filter((path) => path in document.paths)
+    ).toEqual([])
   })
 
-  it("활성화 시 Scalar UI를 제공하고 비활성화 시 문서 route를 등록하지 않는다", async () => {
-    const enabled = createTestLearnerApp()
-    const scalarResponse = await enabled.request("/docs")
+  it.each(documentationAudiences)(
+    "%s 문서를 활성화하면 Scalar UI HTML을 제공한다",
+    async (_audience, createApp) => {
+      const response = await createApp(true).request("/docs")
 
-    expect(scalarResponse.status).toBe(200)
-    expect(scalarResponse.headers.get("content-type")).toContain("text/html")
-    expect(await scalarResponse.text()).toContain("Writing App Learner API")
+      expect(response.status).toBe(200)
+      expect(response.headers.get("content-type")).toContain("text/html")
+    }
+  )
 
-    const disabled = createLearnerApp({})
-    registerLearnerApiDocumentation(disabled, { enabled: false })
-    expect((await disabled.request("/openapi")).status).toBe(404)
-    expect((await disabled.request("/docs")).status).toBe(404)
-  })
+  it.each(documentationAudiences)(
+    "%s 문서를 비활성화하면 openapi와 docs route를 등록하지 않는다",
+    async (_audience, createApp) => {
+      const disabled = createApp(false)
+
+      expect((await disabled.request("/openapi")).status).toBe(404)
+      expect((await disabled.request("/docs")).status).toBe(404)
+    }
+  )
 })

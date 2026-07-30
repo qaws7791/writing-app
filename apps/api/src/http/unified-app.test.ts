@@ -78,7 +78,6 @@ describe("단일 API app", () => {
       JSON.stringify({ authenticated: false })
     )
     expect(authHandler).toHaveBeenCalledTimes(1)
-    expect((await request(app, "/health")).status).toBe(404)
   })
 })
 

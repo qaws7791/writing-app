@@ -1,9 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { createUnifiedApiServerLifecycle } from "@/lifecycle/server-lifecycle"
 import {
-  createUnifiedApiServerLifecycle,
-  type ServerLifecycleScheduler,
-} from "@/lifecycle/server-lifecycle"
+  createControlledStream,
+  createDeferred,
+  createFakeScheduler,
+} from "@/test-support/server-lifecycle-fixture"
+
+const drainTimeoutMilliseconds = 125
 
 describe("통합 API server lifecycle", () => {
   it("drain 결과를 기록하고 container에 resource 정리를 위임한다", async () => {
@@ -12,6 +16,7 @@ describe("통합 API server lifecycle", () => {
       disposeContainer() {
         events.push("container")
       },
+      drainTimeoutMilliseconds,
       fetch: () => new Response(null),
       onDrainResult(observation) {
         events.push(
@@ -27,7 +32,11 @@ describe("통합 API server lifecycle", () => {
 
     await lifecycle.shutdown()
 
-    expect(events).toEqual(["stop:false", "drain:drained:0:20000", "container"])
+    expect(events).toEqual([
+      "stop:false",
+      `drain:drained:0:${drainTimeoutMilliseconds}`,
+      "container",
+    ])
   })
 
   it("container cleanup 실패를 구조화 phase로 격리한다", async () => {
@@ -54,6 +63,7 @@ describe("통합 API server lifecycle", () => {
     const stop = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
       disposeContainer,
+      drainTimeoutMilliseconds,
       fetch(request) {
         return new URL(request.url).hostname === "learner.example.com"
           ? learnerStream.response
@@ -77,7 +87,7 @@ describe("통합 API server lifecycle", () => {
     )
 
     expect(stop).toHaveBeenCalledWith(false)
-    expect(scheduler.delays).toEqual([20_000])
+    expect(scheduler.delays).toEqual([drainTimeoutMilliseconds])
     expect(disposeContainer).not.toHaveBeenCalled()
     expect(rejected.status).toBe(503)
     await expect(rejected.json()).resolves.toEqual({
@@ -205,7 +215,7 @@ describe("통합 API server lifecycle", () => {
     const scheduler = createFakeScheduler()
     let linkedSignal: AbortSignal | undefined
     const lifecycle = createUnifiedApiServerLifecycle({
-      drainTimeoutMilliseconds: 125,
+      drainTimeoutMilliseconds,
       disposeContainer() {
         events.push("container")
       },
@@ -225,7 +235,7 @@ describe("통합 API server lifecycle", () => {
     const lease = lifecycle.acquireLongLivedLease("long-lived-stream")
     const shutdown = lifecycle.shutdown()
 
-    expect(scheduler.delays).toEqual([125])
+    expect(scheduler.delays).toEqual([drainTimeoutMilliseconds])
     scheduler.runNext()
     await shutdown
 
@@ -240,7 +250,7 @@ describe("통합 API server lifecycle", () => {
     expect(stream.cancelReasons).toHaveLength(1)
     expect(stream.cancelReasons[0]).toBe(linkedSignal?.reason)
     expect(linkedSignal?.reason).toMatchObject({ name: "AbortError" })
-    expect(scheduler.delays).toEqual([125, 5_000])
+    expect(scheduler.delays).toEqual([drainTimeoutMilliseconds, 5_000])
     expect(scheduler.tasks[1]?.cancelled).toBe(true)
     lease.release()
     lease.release()
@@ -248,8 +258,10 @@ describe("통합 API server lifecycle", () => {
 
   it("force stop 후 두 server stop이 모두 종료될 때까지 container를 정리하지 않는다", async () => {
     const events: string[] = []
+    const bodyCancelled = createDeferred<void>()
     const stream = createControlledStream(() => {
       events.push("body-cancel")
+      bodyCancelled.resolve()
     })
     const scheduler = createFakeScheduler()
     const gracefulStop = createDeferred<void>()
@@ -258,7 +270,7 @@ describe("통합 API server lifecycle", () => {
       disposeContainer() {
         events.push("container")
       },
-      drainTimeoutMilliseconds: 125,
+      drainTimeoutMilliseconds,
       fetch: () => stream.response,
       scheduler: scheduler.value,
     })
@@ -278,7 +290,7 @@ describe("통합 API server lifecycle", () => {
     const shutdown = lifecycle.shutdown()
     scheduler.runNext()
     await forceStopStarted.promise
-    await waitForMicrotasks()
+    await bodyCancelled.promise
 
     expect(events).toEqual(["stop:false", "stop:true", "body-cancel"])
     gracefulStop.resolve()
@@ -290,7 +302,7 @@ describe("통합 API server lifecycle", () => {
       "body-cancel",
       "container",
     ])
-    expect(scheduler.delays).toEqual([125, 5_000])
+    expect(scheduler.delays).toEqual([drainTimeoutMilliseconds, 5_000])
     expect(scheduler.tasks[1]?.cancelled).toBe(true)
   })
 
@@ -303,7 +315,7 @@ describe("통합 API server lifecycle", () => {
     const disposeContainer = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
       disposeContainer,
-      drainTimeoutMilliseconds: 125,
+      drainTimeoutMilliseconds,
       fetch: () => new Response(null),
       forcedPhaseTimeoutMilliseconds: 50,
       onShutdownError,
@@ -324,10 +336,9 @@ describe("통합 API server lifecycle", () => {
     scheduler.runNext()
     await forceStopStarted.promise
     await activityAborted.promise
-    await waitForMicrotasks()
-    await waitForMicrotasks()
+    await scheduler.waitForScheduledTaskCount(2)
 
-    expect(scheduler.delays).toEqual([125, 50])
+    expect(scheduler.delays).toEqual([drainTimeoutMilliseconds, 50])
     scheduler.runNext()
     await shutdown
 
@@ -362,7 +373,7 @@ describe("통합 API server lifecycle", () => {
     lifecycle.attachServer({ stop })
 
     const shutdown = lifecycle.shutdown()
-    await waitForMicrotasks()
+    await scheduler.waitForScheduledTaskCount(1)
 
     expect(stop).toHaveBeenCalledTimes(1)
     expect(stop).toHaveBeenNthCalledWith(1, false)
@@ -392,7 +403,7 @@ describe("통합 API server lifecycle", () => {
     const scheduler = createFakeScheduler()
     const onShutdownError = vi.fn()
     const lifecycle = createUnifiedApiServerLifecycle({
-      drainTimeoutMilliseconds: 125,
+      drainTimeoutMilliseconds,
       disposeContainer() {
         events.push("container")
         return neverSettles
@@ -409,7 +420,7 @@ describe("통합 API server lifecycle", () => {
     scheduler.runNext()
     await cancellationStarted.promise
 
-    expect(scheduler.delays).toEqual([125, 50])
+    expect(scheduler.delays).toEqual([drainTimeoutMilliseconds, 50])
     scheduler.runNext()
     await shutdown
 
@@ -451,10 +462,12 @@ describe("통합 API server lifecycle", () => {
 
   it("반복 shutdown에서도 container dispose를 한 번만 호출한다", async () => {
     const disposal = createDeferred<void>()
+    const disposalStarted = createDeferred<void>()
     const events: string[] = []
     const lifecycle = createUnifiedApiServerLifecycle({
       async disposeContainer() {
         events.push("container")
+        disposalStarted.resolve()
         await disposal.promise
         events.push("container:done")
       },
@@ -468,7 +481,7 @@ describe("통합 API server lifecycle", () => {
 
     const firstShutdown = lifecycle.shutdown()
     const repeatedShutdown = lifecycle.shutdown()
-    await waitForMicrotasks()
+    await disposalStarted.promise
 
     expect(firstShutdown).toBe(repeatedShutdown)
     expect(events).toEqual(["stop:false", "container"])
@@ -494,122 +507,4 @@ function createRedirectResponseFixture(): Response {
     url: { value: "https://provider.test/final" },
   })
   return response
-}
-
-function createControlledStream(onCancel?: () => Promise<void> | void): {
-  readonly cancelReasons: unknown[]
-  readonly close: () => void
-  readonly enqueue: (_value: string) => void
-  readonly error: (_error: unknown) => void
-  readonly response: Response
-} {
-  const cancelReasons: unknown[] = []
-  const encoder = new TextEncoder()
-  let controller: ReadableStreamDefaultController<Uint8Array> | undefined
-  const body = new ReadableStream<Uint8Array>({
-    cancel(reason) {
-      cancelReasons.push(reason)
-      return onCancel?.()
-    },
-    start(startedController) {
-      controller = startedController
-    },
-  })
-
-  function readController(): ReadableStreamDefaultController<Uint8Array> {
-    if (controller === undefined) {
-      throw new Error("controlled stream controller가 준비되지 않았습니다.")
-    }
-    return controller
-  }
-
-  return {
-    cancelReasons,
-    close: () => readController().close(),
-    enqueue: (value) => readController().enqueue(encoder.encode(value)),
-    error: (error) => readController().error(error),
-    response: new Response(body),
-  }
-}
-
-function createDeferred<T>(): {
-  readonly promise: Promise<T>
-  readonly reject: (_reason?: unknown) => void
-  readonly resolve: (_value: T | PromiseLike<T>) => void
-} {
-  let reject: ((reason?: unknown) => void) | undefined
-  let resolve: ((value: T | PromiseLike<T>) => void) | undefined
-  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
-    reject = rejectPromise
-    resolve = resolvePromise
-  })
-
-  return {
-    promise,
-    reject(reason) {
-      reject?.(reason)
-    },
-    resolve(value) {
-      resolve?.(value)
-    },
-  }
-}
-
-function createFakeScheduler(): {
-  readonly delays: readonly number[]
-  readonly runNext: () => void
-  readonly tasks: readonly {
-    cancelled: boolean
-    readonly delayMilliseconds: number
-    ran: boolean
-    readonly run: () => void
-  }[]
-  readonly value: ServerLifecycleScheduler
-} {
-  const tasks: {
-    cancelled: boolean
-    readonly delayMilliseconds: number
-    ran: boolean
-    readonly run: () => void
-  }[] = []
-  const scheduler: ServerLifecycleScheduler = {
-    schedule(delayMilliseconds, task) {
-      const scheduledTask = {
-        cancelled: false,
-        delayMilliseconds,
-        ran: false,
-        run: task,
-      }
-      tasks.push(scheduledTask)
-
-      return {
-        cancel() {
-          scheduledTask.cancelled = true
-        },
-      }
-    },
-  }
-
-  return {
-    get delays() {
-      return tasks.map((task) => task.delayMilliseconds)
-    },
-    runNext() {
-      const task = tasks.find(
-        (candidate) => !candidate.cancelled && !candidate.ran
-      )
-      if (task === undefined) {
-        throw new Error("실행할 lifecycle scheduler task가 없습니다.")
-      }
-
-      task.ran = true
-      task.run()
-    },
-    tasks,
-    value: scheduler,
-  }
-}
-
-async function waitForMicrotasks(): Promise<void> {
-  for (let turn = 0; turn < 6; turn += 1) await Promise.resolve()
 }

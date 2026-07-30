@@ -22,13 +22,15 @@ describe("외부 log class retention 증거", () => {
       validUntil: new Date("2026-07-25T00:00:00.000Z"),
       verifiedAt: now,
     })
-    expect(() => parseExternalLogRetentionEvidence(true, now)).toThrow()
+    expect(() => parseExternalLogRetentionEvidence(true, now)).toThrow(
+      /expected.*object/isu
+    )
     expect(() =>
       parseExternalLogRetentionEvidence(
         { ...validEvidence, operatorConfirmed: true },
         now
       )
-    ).toThrow()
+    ).toThrow(/operatorConfirmed/u)
     expect(() =>
       parseExternalLogRetentionEvidence(
         { ...validEvidence, evidenceId: "log-placeholder-2026" },
@@ -49,13 +51,13 @@ describe("외부 log class retention 증거", () => {
         { ...validEvidence, applicationRequestRetentionDays: 31 },
         now
       )
-    ).toThrow()
+    ).toThrow(/applicationRequestRetentionDays/u)
     expect(() =>
       parseExternalLogRetentionEvidence(
         { ...validEvidence, securityRetentionDays: 91 },
         now
       )
-    ).toThrow()
+    ).toThrow(/securityRetentionDays/u)
     expect(() =>
       parseExternalLogRetentionEvidence(
         {

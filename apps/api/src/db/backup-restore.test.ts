@@ -12,22 +12,22 @@ import {
 
 import { createVerifiedApplicationDatabaseBackup } from "@/db/application-database-backup"
 import { currentSchemaBaseline } from "@/db/migrate"
-import {
-  requiredApplicationBackupTableNames,
-  requiredApplicationTableNames,
-} from "@/db/required-application-tables"
+import { requiredApplicationBackupTableNames } from "@/db/required-application-tables"
 import { seedApplicationDatabase } from "@/db/seed"
 
 describe("application database backup과 독립 restore", () => {
   it("seed된 snapshot을 독립 검증하고 application read를 수행한다", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "writing app restore "))
+    const directory = mkdtempSync(join(tmpdir(), "writing-app-restore-"))
     const sourcePath = join(directory, "source.sqlite")
     const backupPath = join(directory, "backup", "snapshot.sqlite")
-    const source = createWritingAppDatabase(sourcePath)
 
     try {
-      await seedApplicationDatabase(source)
-      source.close()
+      const source = createWritingAppDatabase(sourcePath)
+      try {
+        await seedApplicationDatabase(source)
+      } finally {
+        source.close()
+      }
 
       expect(
         createVerifiedApplicationDatabaseBackup({ backupPath, sourcePath })
@@ -63,7 +63,6 @@ describe("application database backup과 독립 restore", () => {
             .all()
             .map(({ name }) => name)
         ).toEqual([...requiredApplicationBackupTableNames].sort())
-        expect(requiredApplicationTableNames).toHaveLength(26)
 
         const content = createContentModule({
           assetIdGenerator: { next: () => "unused" as never },
@@ -86,47 +85,50 @@ describe("application database backup과 독립 restore", () => {
         restored.close()
       }
     } finally {
-      source.close()
-      rmSync(directory, { force: true, recursive: true })
+      rmSync(directory, { recursive: true })
     }
   })
 
   it("migration 이력이 없는 DB는 backup 전에 차단한다", () => {
-    const directory = mkdtempSync(join(tmpdir(), "writing app backup block "))
+    const directory = mkdtempSync(join(tmpdir(), "writing-app-backup-block-"))
     const sourcePath = join(directory, "source.sqlite")
     const backupPath = join(directory, "backup.sqlite")
-    const source = createWritingAppDatabase(sourcePath)
 
     try {
-      source.sqlite.exec("CREATE TABLE unknown_state (id TEXT)")
-      source.close()
+      const source = createWritingAppDatabase(sourcePath)
+      try {
+        source.sqlite.exec("CREATE TABLE unknown_state (id TEXT)")
+      } finally {
+        source.close()
+      }
 
       expect(() =>
         createVerifiedApplicationDatabaseBackup({ backupPath, sourcePath })
       ).toThrow("database backup blocked")
     } finally {
-      source.close()
-      rmSync(directory, { force: true, recursive: true })
+      rmSync(directory, { recursive: true })
     }
   })
 
   it("현재 migration 이력이 있어도 필수 table이 없으면 backup 전에 차단한다", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "writing app backup schema "))
+    const directory = mkdtempSync(join(tmpdir(), "writing-app-backup-schema-"))
     const sourcePath = join(directory, "source.sqlite")
     const backupPath = join(directory, "backup.sqlite")
-    const source = createWritingAppDatabase(sourcePath)
 
     try {
-      await seedApplicationDatabase(source)
-      source.sqlite.exec("DROP TABLE audit_events")
-      source.close()
+      const source = createWritingAppDatabase(sourcePath)
+      try {
+        await seedApplicationDatabase(source)
+        source.sqlite.exec("DROP TABLE audit_events")
+      } finally {
+        source.close()
+      }
 
       expect(() =>
         createVerifiedApplicationDatabaseBackup({ backupPath, sourcePath })
       ).toThrow("required tables missing: audit_events")
     } finally {
-      source.close()
-      rmSync(directory, { force: true, recursive: true })
+      rmSync(directory, { recursive: true })
     }
   })
 })

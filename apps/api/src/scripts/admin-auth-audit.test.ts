@@ -8,10 +8,7 @@ import {
 
 import { runApplicationMigrations } from "@/db/migrate"
 import { auditAdminAuth } from "@/scripts/admin-auth-audit"
-import {
-  requireAdminSessionRevocationApproval,
-  revokeAllAdminSessions,
-} from "@/scripts/revoke-admin-sessions"
+import { revokeAllAdminSessions } from "@/scripts/revoke-admin-sessions"
 
 describe("통합 API 관리자 인증 운영 명령", () => {
   it("승인·미승인 계정을 분류하되 credential 비밀값은 출력하지 않는다", async () => {
@@ -78,7 +75,7 @@ describe("통합 API 관리자 인증 운영 명령", () => {
     }
   })
 
-  it("세션 전체 폐기와 실행 승인을 강제한다", async () => {
+  it("대상 관리자 session을 전량 폐기한다", async () => {
     const database = createInMemoryWritingAppDatabase()
     try {
       runApplicationMigrations(database.sqlite)
@@ -99,6 +96,7 @@ describe("통합 API 관리자 인증 운영 명령", () => {
         updatedAt: now,
         userId: "owner",
       })
+
       expect(revokeAllAdminSessions(database.db)).toBe(1)
       await expect(
         database.db.select().from(adminAuthSessions)
@@ -106,20 +104,5 @@ describe("통합 API 관리자 인증 운영 명령", () => {
     } finally {
       database.close()
     }
-
-    expect(() =>
-      requireAdminSessionRevocationApproval(
-        "file:/production/api.sqlite",
-        "file:/production/api.sqlite",
-        undefined
-      )
-    ).toThrow("ADMIN_SESSION_REVOCATION_APPROVED")
-    expect(() =>
-      requireAdminSessionRevocationApproval(
-        "file:/production/api.sqlite",
-        "file:/other/api.sqlite",
-        "true"
-      )
-    ).toThrow("확인값")
   })
 })

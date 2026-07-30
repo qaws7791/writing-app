@@ -11,7 +11,7 @@ import { setupE2eContentDatabase } from "@/scripts/setup-e2e-content-database"
 import { setupE2eAuthDatabase } from "@/scripts/setup-e2e-database"
 
 describe("E2E database setup", () => {
-  it("현재 baseline에 owner·learner credential과 10개 활동 유형만 준비한다", async () => {
+  it("현재 baseline에 owner·learner credential과 정규 활동 유형 전체를 준비한다", async () => {
     const directory = mkdtempSync(join(tmpdir(), "writing-app-e2e-setup-"))
     const databasePath = join(directory, "e2e.sqlite")
 
@@ -75,7 +75,7 @@ describe("E2E database setup", () => {
         database.close()
       }
     } finally {
-      rmSync(directory, { force: true, recursive: true })
+      rmSync(directory, { recursive: true })
     }
   })
 })

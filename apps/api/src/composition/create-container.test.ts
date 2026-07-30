@@ -8,7 +8,10 @@ import { createWritingAppDatabase } from "@workspace/db/client"
 import { err } from "@workspace/kernel/result"
 
 import { createApp } from "@/composition/create-app"
-import { createContainer } from "@/composition/create-container"
+import {
+  createContainer,
+  type ApiContainer,
+} from "@/composition/create-container"
 import { parseApiEnv } from "@/config/env"
 
 const unavailableAiFeedbackProvider: AiFeedbackProvider = {
@@ -19,56 +22,73 @@ const unavailableAiFeedbackProvider: AiFeedbackProvider = {
   },
 }
 
+const openedContainers: ApiContainer[] = []
 const temporaryDirectories: string[] = []
 
 afterEach(async () => {
+  for (const container of openedContainers.splice(0)) {
+    await container.dispose()
+  }
   for (const directory of temporaryDirectories.splice(0)) {
-    await rm(directory, { force: true, recursive: true })
+    await rm(directory, { recursive: true })
   }
 })
 
 describe("API container", () => {
-  it("한 DB와 공통 runtime adapter로 learner·admin route를 조립하고 안전하게 종료한다", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "writing-app-p10-"))
-    temporaryDirectories.push(directory)
-    const databasePath = join(directory, "api.sqlite")
-    const migrationDatabase = createWritingAppDatabase(databasePath)
-    migrationDatabase.close()
-    let sequence = 0
-    const container = await createContainer(
-      parseApiEnv(createTestEnvironment(databasePath)),
-      {
-        aiFeedbackProvider: unavailableAiFeedbackProvider,
-        clock: { now: () => new Date("2026-07-23T00:00:00.000Z") },
-        idGenerator: { next: () => `test-id-${++sequence}` },
-      }
-    )
+  it("한 DB와 공통 runtime adapter로 learner·admin health와 OpenAPI 문서를 조립한다", async () => {
+    const container = await openContainer()
+    const app = createApp(container)
 
-    try {
-      const app = createApp(container)
-      const learnerHealth = await request(app.unified, "/api/health")
-      const adminHealth = await request(app.unified, "/api/admin/health")
-      const learnerOpenApi = await request(app.unified, "/api/openapi")
-      const adminOpenApi = await request(app.unified, "/api/admin/openapi")
+    const learnerHealth = await request(app.unified, "/api/health")
+    const adminHealth = await request(app.unified, "/api/admin/health")
+    const learnerOpenApi = await request(app.unified, "/api/openapi")
+    const adminOpenApi = await request(app.unified, "/api/admin/openapi")
 
-      expect(learnerHealth.status).toBe(200)
-      expect(adminHealth.status).toBe(200)
-      expect(learnerHealth.headers.get("x-request-id")).toBe("test-id-1")
-      expect(adminHealth.headers.get("x-request-id")).toBe("test-id-2")
-      expect((await learnerOpenApi.json()) as object).toHaveProperty(
-        "paths./learning/lessons/{lessonId}/steps/{stepId}/complete.post"
-      )
-      expect((await adminOpenApi.json()) as object).toHaveProperty(
-        "paths./api/admin/courses.get"
-      )
-    } finally {
-      await container.dispose()
-    }
+    expect(learnerHealth.status).toBe(200)
+    expect(adminHealth.status).toBe(200)
+    expect(learnerHealth.headers.get("x-request-id")).toBe("test-id-1")
+    expect(adminHealth.headers.get("x-request-id")).toBe("test-id-2")
+    expect((await learnerOpenApi.json()) as object).toHaveProperty([
+      "paths",
+      "/learning/lessons/{lessonId}/steps/{stepId}/complete",
+      "post",
+    ])
+    expect((await adminOpenApi.json()) as object).toHaveProperty([
+      "paths",
+      "/api/admin/courses",
+      "get",
+    ])
+  })
+
+  it("dispose는 DB 준비 상태를 해제하고 반복 호출에도 안전하다", async () => {
+    const container = await openContainer()
+    expect(container.health.isDatabaseReady()).toBe(true)
+
+    await container.dispose()
 
     expect(container.health.isDatabaseReady()).toBe(false)
     await expect(container.dispose()).resolves.toBeUndefined()
   })
 })
+
+async function openContainer(): Promise<ApiContainer> {
+  const directory = await mkdtemp(join(tmpdir(), "writing-app-api-container-"))
+  temporaryDirectories.push(directory)
+  const databasePath = join(directory, "api.sqlite")
+  const migrationDatabase = createWritingAppDatabase(databasePath)
+  migrationDatabase.close()
+  let sequence = 0
+  const container = await createContainer(
+    parseApiEnv(createTestEnvironment(databasePath)),
+    {
+      aiFeedbackProvider: unavailableAiFeedbackProvider,
+      clock: { now: () => new Date("2026-07-23T00:00:00.000Z") },
+      idGenerator: { next: () => `test-id-${++sequence}` },
+    }
+  )
+  openedContainers.push(container)
+  return container
+}
 
 function createTestEnvironment(
   databasePath: string

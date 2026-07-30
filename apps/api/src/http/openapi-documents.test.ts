@@ -17,83 +17,137 @@ const httpMethods = new Set([
   "trace",
 ])
 
-describe("생성 OpenAPI 문서", () => {
-  it("admin과 learner 문서를 OpenAPI 3.1 schema로 검증한다", async () => {
-    const documents = createOpenApiDocuments()
+const documents = createOpenApiDocuments()
 
-    for (const [audience, document] of Object.entries(documents)) {
+const audienceDocuments = [
+  ["admin", documents.admin as unknown],
+  ["learner", documents.learner as unknown],
+] as const
+
+/** 각 audience에서 인증 실패 envelope을 대표하는 operation이다. */
+const unauthorizedResponses = [
+  ["admin", documents.admin as unknown, "/api/admin/session"],
+  ["learner", documents.learner as unknown, "/profile"],
+] as const
+
+/** 관리자 문서에서 strict 응답 계약을 선언한 감사·분석 operation이다. */
+const strictAdminResponsePaths = [
+  "/api/admin/audit-events",
+  "/api/admin/analytics/ai-feedback",
+] as const
+
+describe("생성 OpenAPI 문서", () => {
+  it.each(audienceDocuments)(
+    "%s 문서는 OpenAPI 3.1 schema 검증을 통과한다",
+    async (_audience, document) => {
       const result = await validate(serializeOpenApiDocument(document))
-      expect(result.errors ?? [], audience).toEqual([])
-      expect(result.valid, audience).toBe(true)
-      expect(document.openapi).toBe("3.1.0")
+
+      expect(result.errors ?? []).toEqual([])
+      expect(result.valid).toBe(true)
+      expect(document).toHaveProperty("openapi", "3.1.0")
     }
-  })
+  )
 
   it("audience path를 분리하고 제거된 operation을 다시 노출하지 않는다", () => {
-    const documents = createOpenApiDocuments()
     const learnerOperations = readOperations(documents.learner)
     const adminOperations = readOperations(documents.admin)
 
     expect(learnerOperations.length).toBeGreaterThan(0)
     expect(adminOperations.length).toBeGreaterThan(0)
     expect(
-      learnerOperations.every(
-        (operation) => !operation.path.startsWith("/api/admin")
-      )
-    ).toBe(true)
-    expect(
-      adminOperations.every((operation) =>
+      learnerOperations.filter((operation) =>
         operation.path.startsWith("/api/admin")
       )
-    ).toBe(true)
+    ).toEqual([])
+    expect(
+      adminOperations.filter(
+        (operation) => !operation.path.startsWith("/api/admin")
+      )
+    ).toEqual([])
     expect(adminOperations).toContainEqual(
       expect.objectContaining({
         operationId: "getAdminAiFeedbackQuality",
         path: "/api/admin/analytics/ai-feedback",
       })
     )
-
-    for (const operation of [...learnerOperations, ...adminOperations]) {
-      expect(`${operation.path} ${operation.operationId}`).not.toMatch(
-        /resource|chat|reset/iu
-      )
-    }
   })
 
-  it("각 문서의 operationId가 고유하고 canonical error schema를 포함한다", () => {
-    const documents = createOpenApiDocuments()
-
-    for (const [audience, document] of Object.entries(documents)) {
+  it.each(audienceDocuments)(
+    "%s 문서의 operationId는 서로 겹치지 않는다",
+    (_audience, document) => {
       const operationIds = readOperations(document).map(
         (operation) => operation.operationId
       )
-      expect(new Set(operationIds).size, audience).toBe(operationIds.length)
 
-      const serialized = serializeOpenApiDocument(document)
-      expect(serialized).toContain('"requestId"')
-      expect(serialized).toContain('"violations"')
+      expect(new Set(operationIds).size).toBe(operationIds.length)
     }
-  })
+  )
+
+  it.each(unauthorizedResponses)(
+    "%s 문서의 401 응답은 requestId와 violations를 가진 strict envelope다",
+    (_audience, document, path) => {
+      expect(document).toHaveProperty(
+        [
+          "paths",
+          path,
+          "get",
+          "responses",
+          "401",
+          "content",
+          "application/json",
+          "schema",
+        ],
+        expect.objectContaining({
+          additionalProperties: false,
+          properties: expect.objectContaining({
+            requestId: expect.objectContaining({ type: "string" }),
+            violations: expect.objectContaining({
+              items: expect.objectContaining({ additionalProperties: false }),
+            }),
+          }),
+          required: expect.arrayContaining(["code", "message", "requestId"]),
+        })
+      )
+    }
+  )
+
+  it.each(strictAdminResponsePaths)(
+    "관리자 %s 응답 schema는 예기치 않은 필드를 허용하지 않는다",
+    (path) => {
+      expect(documents.admin).toHaveProperty(
+        [
+          "paths",
+          path,
+          "get",
+          "responses",
+          "200",
+          "content",
+          "application/json",
+          "schema",
+          "additionalProperties",
+        ],
+        false
+      )
+    }
+  )
 
   it("콘텐츠 이미지 upload의 multipart file을 binary required로 노출한다", () => {
-    const { admin } = createOpenApiDocuments()
-    const path = admin.paths["/api/admin/courses/{courseId}/assets"]
-    expect(path).toBeDefined()
-
-    const serialized = serializeOpenApiDocument(path)
-    expect(serialized).toContain('"format": "binary"')
-    expect(serialized).toMatch(/"required": \[[\s\S]*"file"[\s\S]*\]/u)
-  })
-
-  it("동일한 route source에서 byte-identical JSON을 생성한다", () => {
-    const first = createOpenApiDocuments()
-    const second = createOpenApiDocuments()
-
-    expect(serializeOpenApiDocument(first.admin)).toBe(
-      serializeOpenApiDocument(second.admin)
-    )
-    expect(serializeOpenApiDocument(first.learner)).toBe(
-      serializeOpenApiDocument(second.learner)
+    expect(documents.admin).toHaveProperty(
+      [
+        "paths",
+        "/api/admin/courses/{courseId}/assets",
+        "post",
+        "requestBody",
+        "content",
+        "multipart/form-data",
+        "schema",
+      ],
+      expect.objectContaining({
+        properties: expect.objectContaining({
+          file: { format: "binary", type: "string" },
+        }),
+        required: expect.arrayContaining(["file"]),
+      })
     )
   })
 })

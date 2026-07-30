@@ -1,305 +1,280 @@
 import { Hono } from "hono"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import type { Database } from "bun:sqlite"
+
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import {
-  createInMemoryWritingAppDatabase,
-  type WritingAppDatabase,
-} from "@workspace/db/client"
 import { AppError } from "@workspace/http-platform/errors"
 import {
   adminSessionExpiresAt,
   type AdminSessionResolver,
 } from "@workspace/identity/ports"
-import { createOperationsModule } from "@workspace/operations/module"
 import type {
   AuditEventFailureObserver,
   AuditTrail,
 } from "@workspace/operations/ports"
 import type { CourseId } from "@workspace/types/ids"
 
-type AuditEventFailure = Parameters<AuditEventFailureObserver>[0]
-
-function createTestAuditTrail(input: {
-  readonly clock: () => Date
-  readonly database: WritingAppDatabase
-  readonly failureObserver?: AuditEventFailureObserver
-  readonly nextId: () => string
-  readonly reportingDatabase: Database
-}): AuditTrail {
-  return createOperationsModule({
-    audit: {
-      failureObserver: input.failureObserver ?? (() => undefined),
-      idGenerator: { next: input.nextId },
-    },
-    clock: { now: input.clock },
-    database: input.database,
-    reportingDatabase: input.reportingDatabase,
-    reportingFailureObserver: () => undefined,
-  }).auditTrail
-}
-
 import type { AdminHonoEnv } from "@/http/admin-hono-env"
-import { runApplicationMigrations } from "@/db/migrate"
 import { createAdminAuditMiddleware } from "@/observability/admin-audit.middleware"
+import {
+  createAuditTrailFixture,
+  type AuditTrailFixture,
+} from "@/test-support/audit-trail-fixture"
+
+type AuditEventFailure = Parameters<AuditEventFailureObserver>[0]
 
 const now = new Date("2026-07-24T00:00:00.000Z")
 const adminCookie = "admin=valid"
+const auditedClientIp = "203.0.113.10"
+const learnerEmail = "person@example.test"
+const learnerName = "실명"
+
+/** audit_events_retention_check가 content-mutation category에 요구하는 보존 기간이다. */
+const contentMutationAuditRetentionMs = 365 * 24 * 60 * 60 * 1_000
+
+const forbiddenAuditColumnNames = [
+  "answer",
+  "email",
+  "name",
+  "payload",
+  "prompt",
+] as const
+
+const openedFixtures: AuditTrailFixture[] = []
+
+afterEach(() => {
+  for (const fixture of openedFixtures.splice(0)) fixture.close()
+})
 
 describe("관리자 DB audit SQLite + Hono integration", () => {
-  it("대상 관리자 요청의 actor·target·성공/실패만 저장하고 PII payload는 저장하지 않는다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    const reportingClient = createInMemoryWritingAppDatabase()
+  it("관리자 요청 6건의 action·actor·target·outcome과 client IP를 순서대로 저장한다", async () => {
+    const { auditTrail, sqlite } = openAuditTrail()
+    const app = createAuditedFixture(auditTrail)
 
-    try {
-      runApplicationMigrations(client.sqlite)
-      let sequence = 0
-      const trail = createTestAuditTrail({
-        clock: () => now,
-        database: client.db,
-        nextId: () => `audit-${++sequence}`,
-        reportingDatabase: reportingClient.sqlite,
-      })
-      const app = createAuditedFixture(trail)
+    const statuses = await requestSequentially(app, adminActionRequests())
 
-      const requests = [
-        new Request("http://localhost/users/user-1", {
-          headers: adminHeaders("request-read"),
-        }),
-        new Request("http://localhost/users/user-1/status", {
-          body: JSON.stringify({ status: "suspended" }),
-          headers: adminHeaders("request-suspend", true),
-          method: "PATCH",
-        }),
-        new Request("http://localhost/users/user-1/status", {
-          body: JSON.stringify({ status: "active" }),
-          headers: adminHeaders("request-activate", true),
-          method: "PATCH",
-        }),
-        new Request("http://localhost/users/user-1", {
-          headers: adminHeaders("request-delete"),
-          method: "DELETE",
-        }),
-        new Request("http://localhost/courses/course-1/publish", {
-          headers: adminHeaders("request-publish"),
-          method: "POST",
-        }),
-        new Request("http://localhost/courses/course-1", {
-          headers: adminHeaders("request-archive"),
-          method: "DELETE",
-        }),
-      ]
-
-      const responses = []
-      for (const request of requests) {
-        responses.push(await app.request(request))
-      }
-      expect(responses.map(({ status }) => status)).toEqual([
-        200, 200, 409, 200, 200, 200,
-      ])
-
-      const rows = readAuditRows(client.sqlite)
-      expect(
-        rows.map(({ action, actorId, outcome, targetId }) => ({
+    expect(statuses).toEqual([200, 200, 409, 200, 200, 200])
+    expect(
+      readAuditRows(sqlite).map(
+        ({ action, actorId, clientIp, outcome, targetId }) => ({
           action,
           actorId,
+          clientIp,
           outcome,
           targetId,
-        }))
-      ).toEqual([
-        {
-          action: "learner.detail.read",
-          actorId: "admin-1",
-          outcome: "succeeded",
-          targetId: "user-1",
-        },
-        {
-          action: "learner.status.suspend",
-          actorId: "admin-1",
-          outcome: "succeeded",
-          targetId: "user-1",
-        },
-        {
-          action: "learner.status.activate",
-          actorId: "admin-1",
-          outcome: "failed",
-          targetId: "user-1",
-        },
-        {
-          action: "learner.delete",
-          actorId: "admin-1",
-          outcome: "succeeded",
-          targetId: "user-1",
-        },
-        {
-          action: "course.publish",
-          actorId: "admin-1",
-          outcome: "succeeded",
-          targetId: "course-1",
-        },
-        {
-          action: "course.archive",
-          actorId: "admin-1",
-          outcome: "succeeded",
-          targetId: "course-1",
-        },
-      ])
-      expect(rows.every(({ clientIp }) => clientIp === "203.0.113.10")).toBe(
-        true
+        })
       )
-
-      const columns = client.sqlite
-        .query<{ readonly name: string }, []>(
-          "SELECT name FROM pragma_table_info('audit_events')"
-        )
-        .all()
-        .map(({ name }) => name)
-      expect(columns).not.toEqual(
-        expect.arrayContaining(["payload", "email", "name", "answer", "prompt"])
-      )
-      expect(JSON.stringify(rows)).not.toMatch(
-        /person@example\.test|실명|원문 답안|system prompt/u
-      )
-      expect(readAuditIndexes(client.sqlite)).toEqual(
-        expect.arrayContaining([
-          "audit_events_query_idx",
-          "audit_events_retention_purge_idx",
-        ])
-      )
-    } finally {
-      reportingClient.close()
-      client.close()
-    }
+    ).toEqual([
+      {
+        action: "learner.detail.read",
+        actorId: "admin-1",
+        clientIp: auditedClientIp,
+        outcome: "succeeded",
+        targetId: "user-1",
+      },
+      {
+        action: "learner.status.suspend",
+        actorId: "admin-1",
+        clientIp: auditedClientIp,
+        outcome: "succeeded",
+        targetId: "user-1",
+      },
+      {
+        action: "learner.status.activate",
+        actorId: "admin-1",
+        clientIp: auditedClientIp,
+        outcome: "failed",
+        targetId: "user-1",
+      },
+      {
+        action: "learner.delete",
+        actorId: "admin-1",
+        clientIp: auditedClientIp,
+        outcome: "succeeded",
+        targetId: "user-1",
+      },
+      {
+        action: "course.publish",
+        actorId: "admin-1",
+        clientIp: auditedClientIp,
+        outcome: "succeeded",
+        targetId: "course-1",
+      },
+      {
+        action: "course.archive",
+        actorId: "admin-1",
+        clientIp: auditedClientIp,
+        outcome: "succeeded",
+        targetId: "course-1",
+      },
+    ])
   })
 
-  it("retention cutoff의 정확한 경계를 batch로 삭제하고 재실행을 안전하게 처리한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    const reportingClient = createInMemoryWritingAppDatabase()
-
-    try {
-      runApplicationMigrations(client.sqlite)
-      let currentTime = new Date("2025-07-24T00:00:00.000Z")
-      let sequence = 0
-      const trail = createTestAuditTrail({
-        clock: () => currentTime,
-        database: client.db,
-        nextId: () => `audit-${++sequence}`,
-        reportingDatabase: reportingClient.sqlite,
-      })
-
-      await startAndCompleteCourseAudit(trail, "request-boundary")
-      currentTime = new Date("2025-07-24T00:00:00.001Z")
-      await startAndCompleteCourseAudit(trail, "request-recent")
-
-      await expect(
-        trail.purgeExpired({ batchSize: 1, cutoff: now })
-      ).resolves.toMatchObject({ value: 1 })
-      await expect(
-        trail.purgeExpired({ batchSize: 1, cutoff: now })
-      ).resolves.toMatchObject({ value: 0 })
-      expect(readAuditRows(client.sqlite)).toMatchObject([
-        {
-          requestId: "request-recent",
-          retentionUntil: 1_784_851_200_001,
-        },
-      ])
-    } finally {
-      reportingClient.close()
-      client.close()
+  it.each(forbiddenAuditColumnNames)(
+    "audit_events schema에 개인정보 컬럼 %s를 만들지 않는다",
+    (forbiddenColumnName) => {
+      expect(readAuditColumnNames(openAuditTrail().sqlite)).not.toContain(
+        forbiddenColumnName
+      )
     }
+  )
+
+  it("개인정보를 응답하는 관리자 조회도 audit 행에 개인정보 문자열을 남기지 않는다", async () => {
+    const { auditTrail, sqlite } = openAuditTrail()
+    const app = createAuditedFixture(auditTrail)
+
+    const response = await app.request(
+      new Request("http://localhost/users/user-1", {
+        headers: adminHeaders("request-read"),
+      })
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      email: learnerEmail,
+      name: learnerName,
+    })
+    expect(JSON.stringify(readAuditRows(sqlite))).not.toMatch(
+      new RegExp(`${learnerEmail}|${learnerName}`, "u")
+    )
+  })
+
+  it("retention cutoff와 같은 시각의 event만 batch로 삭제하고 재실행은 0건을 반환한다", async () => {
+    const boundaryAuditTime = new Date(
+      now.getTime() - contentMutationAuditRetentionMs
+    )
+    const recentAuditTime = new Date(boundaryAuditTime.getTime() + 1)
+    let currentTime = boundaryAuditTime
+    const { auditTrail, sqlite } = openAuditTrail({ clock: () => currentTime })
+
+    await startAndCompleteCourseAudit(auditTrail, "request-boundary")
+    currentTime = recentAuditTime
+    await startAndCompleteCourseAudit(auditTrail, "request-recent")
+
+    await expect(
+      auditTrail.purgeExpired({ batchSize: 1, cutoff: now })
+    ).resolves.toMatchObject({ value: 1 })
+    await expect(
+      auditTrail.purgeExpired({ batchSize: 1, cutoff: now })
+    ).resolves.toMatchObject({ value: 0 })
+    expect(readAuditRows(sqlite)).toMatchObject([
+      {
+        requestId: "request-recent",
+        retentionUntil:
+          recentAuditTime.getTime() + contentMutationAuditRetentionMs,
+      },
+    ])
   })
 
   it("사전 audit insert 실패 시 mutation을 실행하지 않고 인증 실패는 DB audit에서 제외한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    const reportingClient = createInMemoryWritingAppDatabase()
+    const observedFailures: AuditEventFailure[] = []
+    const { auditTrail, sqlite } = openAuditTrail({
+      failureObserver: (failure) => {
+        observedFailures.push(failure)
+      },
+    })
+    rejectAuditStatement(sqlite, "INSERT")
+    let mutationCount = 0
+    const app = createAuditedFixture(auditTrail, () => {
+      mutationCount += 1
+    })
 
-    try {
-      runApplicationMigrations(client.sqlite)
-      client.sqlite.exec(`
-        CREATE TRIGGER reject_audit_insert
-        BEFORE INSERT ON audit_events
-        BEGIN
-          SELECT RAISE(ABORT, 'audit unavailable');
-        END;
-      `)
-      const observedFailures: AuditEventFailure[] = []
-      const trail = createTestAuditTrail({
-        clock: () => now,
-        database: client.db,
-        failureObserver: (failure) => {
-          observedFailures.push(failure)
-        },
-        nextId: () => "audit-1",
-        reportingDatabase: reportingClient.sqlite,
-      })
-      let mutationCount = 0
-      const app = createAuditedFixture(trail, () => {
-        mutationCount += 1
-      })
+    const failedAudit = await app.request("/courses/course-1", {
+      headers: adminHeaders("request-1"),
+      method: "DELETE",
+    })
+    const unauthenticated = await app.request("/courses/course-1", {
+      headers: { "x-request-id": "request-2" },
+      method: "DELETE",
+    })
 
-      const failedAudit = await app.request("/courses/course-1", {
-        headers: adminHeaders("request-1"),
-        method: "DELETE",
-      })
-      const unauthenticated = await app.request("/courses/course-1", {
-        headers: { "x-request-id": "request-2" },
-        method: "DELETE",
-      })
-
-      expect(failedAudit.status).toBe(503)
-      expect(mutationCount).toBe(0)
-      expect(unauthenticated.status).toBe(401)
-      expect(readAuditRows(client.sqlite)).toEqual([])
-      expect(observedFailures).toMatchObject([
-        { kind: "audit-event-persistence-failed", operation: "insert" },
-      ])
-      expect(observedFailures[0]?.cause).toBeInstanceOf(Error)
-    } finally {
-      reportingClient.close()
-      client.close()
-    }
+    expect(failedAudit.status).toBe(503)
+    expect(mutationCount).toBe(0)
+    expect(unauthenticated.status).toBe(401)
+    expect(readAuditRows(sqlite)).toEqual([])
+    expect(observedFailures).toMatchObject([
+      { kind: "audit-event-persistence-failed", operation: "insert" },
+    ])
+    expect(observedFailures[0]?.cause).toBeInstanceOf(Error)
   })
 
   it("outcome update 실패 시 started 흔적을 보존하고 성공 응답을 반환하지 않는다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    const reportingClient = createInMemoryWritingAppDatabase()
+    const { auditTrail, sqlite } = openAuditTrail()
+    rejectAuditStatement(sqlite, "UPDATE")
+    let mutationCount = 0
+    const app = createAuditedFixture(auditTrail, () => {
+      mutationCount += 1
+    })
 
-    try {
-      runApplicationMigrations(client.sqlite)
-      client.sqlite.exec(`
-        CREATE TRIGGER reject_audit_update
-        BEFORE UPDATE ON audit_events
-        BEGIN
-          SELECT RAISE(ABORT, 'audit unavailable');
-        END;
-      `)
-      const trail = createTestAuditTrail({
-        clock: () => now,
-        database: client.db,
-        nextId: () => "audit-1",
-        reportingDatabase: reportingClient.sqlite,
-      })
-      let mutationCount = 0
-      const app = createAuditedFixture(trail, () => {
-        mutationCount += 1
-      })
+    const response = await app.request("/courses/course-1", {
+      headers: adminHeaders("request-1"),
+      method: "DELETE",
+    })
 
-      const response = await app.request("/courses/course-1", {
-        headers: adminHeaders("request-1"),
-        method: "DELETE",
-      })
-
-      expect(response.status).toBe(503)
-      expect(mutationCount).toBe(1)
-      expect(readAuditRows(client.sqlite)).toMatchObject([
-        { outcome: "started", requestId: "request-1" },
-      ])
-    } finally {
-      reportingClient.close()
-      client.close()
-    }
+    expect(response.status).toBe(503)
+    expect(mutationCount).toBe(1)
+    expect(readAuditRows(sqlite)).toMatchObject([
+      { outcome: "started", requestId: "request-1" },
+    ])
   })
 })
+
+function openAuditTrail(
+  input: {
+    readonly clock?: () => Date
+    readonly failureObserver?: AuditEventFailureObserver
+  } = {}
+): AuditTrailFixture {
+  let sequence = 0
+  const fixture = createAuditTrailFixture({
+    clock: input.clock ?? (() => now),
+    failureObserver: input.failureObserver,
+    nextId: () => `audit-${++sequence}`,
+  })
+  openedFixtures.push(fixture)
+  return fixture
+}
+
+function adminActionRequests(): readonly Request[] {
+  return [
+    new Request("http://localhost/users/user-1", {
+      headers: adminHeaders("request-read"),
+    }),
+    new Request("http://localhost/users/user-1/status", {
+      body: JSON.stringify({ status: "suspended" }),
+      headers: adminHeaders("request-suspend", true),
+      method: "PATCH",
+    }),
+    new Request("http://localhost/users/user-1/status", {
+      body: JSON.stringify({ status: "active" }),
+      headers: adminHeaders("request-activate", true),
+      method: "PATCH",
+    }),
+    new Request("http://localhost/users/user-1", {
+      headers: adminHeaders("request-delete"),
+      method: "DELETE",
+    }),
+    new Request("http://localhost/courses/course-1/publish", {
+      headers: adminHeaders("request-publish"),
+      method: "POST",
+    }),
+    new Request("http://localhost/courses/course-1", {
+      headers: adminHeaders("request-archive"),
+      method: "DELETE",
+    }),
+  ]
+}
+
+async function requestSequentially(
+  app: Hono<AdminHonoEnv>,
+  requests: readonly Request[]
+): Promise<readonly number[]> {
+  const statuses: number[] = []
+  for (const request of requests) {
+    statuses.push((await app.request(request)).status)
+  }
+  return statuses
+}
 
 function createAuditedFixture(
   trail: AuditTrail,
@@ -328,8 +303,8 @@ function createAuditedFixture(
   })
   app.get("/users/:userId", (context) =>
     context.json({
-      email: "person@example.test",
-      name: "실명",
+      email: learnerEmail,
+      name: learnerName,
     })
   )
   app.patch("/users/:userId/status", async (context) => {
@@ -360,6 +335,19 @@ function createAuditedFixture(
   return app
 }
 
+function rejectAuditStatement(
+  sqlite: Database,
+  statement: "INSERT" | "UPDATE"
+): void {
+  sqlite.exec(`
+    CREATE TRIGGER reject_audit_${statement.toLowerCase()}
+    BEFORE ${statement} ON audit_events
+    BEGIN
+      SELECT RAISE(ABORT, 'audit unavailable');
+    END;
+  `)
+}
+
 function adminSessionResolver(): AdminSessionResolver {
   return {
     async resolveSession(headers) {
@@ -381,7 +369,7 @@ function adminHeaders(requestId: string, json = false): HeadersInit {
     ...(json ? { "Content-Type": "application/json" } : {}),
     Cookie: adminCookie,
     "x-request-id": requestId,
-    "x-writing-app-client-ip": "203.0.113.10",
+    "x-writing-app-client-ip": auditedClientIp,
   }
 }
 
@@ -399,13 +387,20 @@ async function startAndCompleteCourseAudit(
       type: "course",
     },
   })
-  if (started.isErr()) throw new Error("audit fixture 저장에 실패했습니다.")
-
   const completed = await trail.complete({
-    eventId: started.value.id,
+    eventId: started._unsafeUnwrap().id,
     outcome: "succeeded",
   })
-  if (completed.isErr()) throw new Error("audit fixture 종결에 실패했습니다.")
+  completed._unsafeUnwrap()
+}
+
+function readAuditColumnNames(sqlite: Database): readonly string[] {
+  return sqlite
+    .query<{ readonly name: string }, []>(
+      "SELECT name FROM pragma_table_info('audit_events')"
+    )
+    .all()
+    .map(({ name }) => name)
 }
 
 function readAuditRows(sqlite: Database): readonly Readonly<{
@@ -442,13 +437,4 @@ function readAuditRows(sqlite: Database): readonly Readonly<{
       ORDER BY created_at, id
     `)
     .all()
-}
-
-function readAuditIndexes(sqlite: Database): readonly string[] {
-  return sqlite
-    .query<{ readonly name: string }, []>(
-      "SELECT name FROM pragma_index_list('audit_events')"
-    )
-    .all()
-    .map(({ name }) => name)
 }

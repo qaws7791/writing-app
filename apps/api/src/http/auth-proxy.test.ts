@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { createTestLearnerApp } from "@/test-support/learner-app-fixture"
+import {
+  activeLearnerSession,
+  createTestLearnerApp,
+} from "@/test-support/learner-app-fixture"
+import { learnerSessionCookieHeader } from "@/test-support/learner-session-cookie"
 
 describe("플랫폼 API auth route", () => {
   it("인증 없는 session 요청은 401이다", async () => {
@@ -16,25 +20,18 @@ describe("플랫폼 API auth route", () => {
     })
   })
 
-  it("인증된 session 요청은 사용자 정보를 반환한다", async () => {
+  it("인증된 session 요청은 fixture 학습자 정보를 반환한다", async () => {
     const app = createTestLearnerApp()
 
     const response = await app.request("/auth/session", {
       headers: {
-        Cookie: "learner_session_token=active-token",
+        Cookie: learnerSessionCookieHeader("active-token"),
       },
     })
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
-      user: {
-        email: "learner@example.com",
-        id: "user-1",
-        image: null,
-        joinedAt: "2026-06-14T00:00:00.000Z",
-        name: "학습자",
-        status: "active",
-      },
+      user: activeLearnerSession.user,
     })
   })
 })

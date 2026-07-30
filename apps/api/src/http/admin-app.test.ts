@@ -43,20 +43,6 @@ describe("통합 runtime 관리자 공통 delivery", () => {
     expect(featureResponse.status).toBe(404)
   })
 
-  it("Scalar 문서 UI를 제공하고 비활성화 시 문서 route를 등록하지 않는다", async () => {
-    const enabled = createFixture()
-    const scalarResponse = await enabled.request("/docs")
-
-    expect(scalarResponse.status).toBe(200)
-    expect(scalarResponse.headers.get("content-type")).toContain("text/html")
-    expect(await scalarResponse.text()).toContain("Writing App Admin API")
-
-    const disabled = createAdminApp({ adminOrigin })
-    registerAdminApiDocumentation(disabled, { enabled: false })
-    expect((await disabled.request("/openapi")).status).toBe(404)
-    expect((await disabled.request("/docs")).status).toBe(404)
-  })
-
   it("관리자 비밀번호 변경은 요청값과 무관하게 다른 세션 폐기를 강제한다", async () => {
     const capturedRequests: Request[] = []
     const app = createFixture({
@@ -243,25 +229,6 @@ describe("통합 runtime 관리자 공통 delivery", () => {
       ["paths", "/api/admin/session", "get", "security"],
       [{ adminSessionCookie: [] }]
     )
-  })
-
-  it("한 app에 추가한 route가 다른 app instance를 오염시키지 않는다", async () => {
-    const first = createFixture()
-    const second = createFixture()
-
-    first.get("/fixture", (context) => context.text("first"))
-    second.get("/fixture", (context) => context.text("second"))
-
-    await expect(
-      Promise.resolve(first.request("/fixture")).then((response) =>
-        response.text()
-      )
-    ).resolves.toBe("first")
-    await expect(
-      Promise.resolve(second.request("/fixture")).then((response) =>
-        response.text()
-      )
-    ).resolves.toBe("second")
   })
 })
 

@@ -46,61 +46,11 @@ describe("application seed composition", () => {
         SET status = 'suspended', display_name = '수정한 표시 이름', version = 7
         WHERE user_id = 'user-1';
       `)
-      const before = {
-        auth: database.sqlite
-          .query<
-            {
-              readonly email: string
-              readonly name: string
-              readonly updatedAt: number
-            },
-            []
-          >(
-            "SELECT email, name, updated_at AS updatedAt FROM user WHERE id = 'user-1'"
-          )
-          .get(),
-        profile: database.sqlite
-          .query<
-            {
-              readonly displayName: string
-              readonly status: string
-              readonly version: number
-            },
-            []
-          >(
-            "SELECT display_name AS displayName, status, version FROM learner_profiles WHERE user_id = 'user-1'"
-          )
-          .get(),
-      }
+      const before = readSeededLearnerState(database)
 
       await seedApplicationDatabase(database)
 
-      expect({
-        auth: database.sqlite
-          .query<
-            {
-              readonly email: string
-              readonly name: string
-              readonly updatedAt: number
-            },
-            []
-          >(
-            "SELECT email, name, updated_at AS updatedAt FROM user WHERE id = 'user-1'"
-          )
-          .get(),
-        profile: database.sqlite
-          .query<
-            {
-              readonly displayName: string
-              readonly status: string
-              readonly version: number
-            },
-            []
-          >(
-            "SELECT display_name AS displayName, status, version FROM learner_profiles WHERE user_id = 'user-1'"
-          )
-          .get(),
-      }).toEqual(before)
+      expect(readSeededLearnerState(database)).toEqual(before)
 
       expect(
         database.sqlite
@@ -196,6 +146,46 @@ describe("application seed composition", () => {
     }
   })
 })
+
+function readSeededLearnerState(database: WritingAppDatabaseClient): {
+  readonly auth: Readonly<{
+    email: string
+    name: string
+    updatedAt: number
+  }> | null
+  readonly profile: Readonly<{
+    displayName: string
+    status: string
+    version: number
+  }> | null
+} {
+  return {
+    auth: database.sqlite
+      .query<
+        {
+          readonly email: string
+          readonly name: string
+          readonly updatedAt: number
+        },
+        []
+      >(
+        "SELECT email, name, updated_at AS updatedAt FROM user WHERE id = 'user-1'"
+      )
+      .get(),
+    profile: database.sqlite
+      .query<
+        {
+          readonly displayName: string
+          readonly status: string
+          readonly version: number
+        },
+        []
+      >(
+        "SELECT display_name AS displayName, status, version FROM learner_profiles WHERE user_id = 'user-1'"
+      )
+      .get(),
+  }
+}
 
 function readSeedCounts(database: WritingAppDatabaseClient): {
   readonly content: number

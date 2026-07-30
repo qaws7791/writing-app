@@ -24,9 +24,7 @@ describe("Sharp content asset image processor", () => {
       kind: "course-cover",
     })
 
-    expect(result.isOk()).toBe(true)
-    if (result.isErr()) return
-    const metadata = await sharp(result.value.bytes).metadata()
+    const metadata = await sharp(result._unsafeUnwrap().bytes).metadata()
     expect(metadata).toMatchObject({
       format: "jpeg",
       height: 900,
@@ -56,9 +54,9 @@ describe("Sharp content asset image processor", () => {
       kind: "reading-illustration",
     })
 
-    expect(result.isOk()).toBe(true)
-    if (result.isErr()) return
-    await expect(sharp(result.value.bytes).metadata()).resolves.toMatchObject({
+    await expect(
+      sharp(result._unsafeUnwrap().bytes).metadata()
+    ).resolves.toMatchObject({
       format: "webp",
       height: 720,
       width: 1_440,

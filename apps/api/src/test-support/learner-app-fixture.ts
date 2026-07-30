@@ -1,4 +1,3 @@
-import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
   learnerCourseDetailSchema,
   learnerCoursePageSchema,
@@ -15,6 +14,7 @@ import { registerLearnerContractRoutes } from "@/composition/create-app"
 import { createLearnerApp, type ApiDependencies } from "@/http/learner-app"
 import { registerAuthProxy } from "@/http/auth-proxy"
 import { registerLearnerApiDocumentation } from "@/http/openapi"
+import { readLearnerSessionToken } from "@/test-support/learner-session-cookie"
 
 type LearnerProfileStats = Readonly<{
   completedLessons: number
@@ -24,7 +24,7 @@ type LearnerProfileStats = Readonly<{
   totalLessons: number
 }>
 
-const activeSession = {
+export const activeLearnerSession = {
   user: {
     email: "learner@example.com",
     id: "user-1",
@@ -207,18 +207,9 @@ function createLearningSession(sessionResolver: SessionResolver) {
 function createTestSessionResolver(): SessionResolver {
   return {
     async resolveSession(headers) {
-      return readTestSessionToken(headers) === "active-token"
-        ? activeSession
+      return readLearnerSessionToken(headers) === "active-token"
+        ? activeLearnerSession
         : null
     },
   }
-}
-
-function readTestSessionToken(headers: Headers): string | null {
-  const token = headers
-    .get("Cookie")
-    ?.split(";")
-    .map((cookie) => cookie.trim().split("="))
-    .find(([name]) => name === learnerSessionCookieName)?.[1]
-  return token === undefined ? null : decodeURIComponent(token)
 }

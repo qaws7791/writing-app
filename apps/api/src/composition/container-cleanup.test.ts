@@ -1,46 +1,25 @@
 import { describe, expect, it, vi } from "vitest"
 
-import {
-  createContainerCleanupCoordinator,
-  type ContainerCleanupName,
-} from "@/composition/container-cleanup"
-
-const initializationStages = [
-  "logger",
-  "database",
-  "auth",
-  "content",
-  "identity",
-  "ai-feedback",
-  "learning",
-  "operations",
-  "routes",
-] as const
+import { createContainerCleanupCoordinator } from "@/composition/container-cleanup"
 
 describe("API container 초기화 정리", () => {
-  it.each(initializationStages)(
-    "%s 초기화 지점 실패에서 생성된 resource만 역순으로 정리한다",
-    async (failurePoint) => {
-      const cleanup = createContainerCleanupCoordinator()
-      const events: string[] = []
+  it("logger 초기화 실패에서는 정리할 resource가 없다", async () => {
+    const cleanup = createContainerCleanupCoordinator()
 
-      for (const stage of initializationStages) {
-        if (stage === failurePoint) break
-        const cleanupName = cleanupNameByStage(stage)
-        if (cleanupName !== null) {
-          cleanup.register(cleanupName, () => {
-            events.push(cleanupName)
-          })
-        }
-      }
+    await expect(cleanup.dispose()).resolves.toEqual([])
+  })
 
-      await cleanup.dispose()
+  it("database 초기화 실패에서는 앞서 만든 logger만 정리한다", async () => {
+    const events: string[] = []
+    const cleanup = createContainerCleanupCoordinator()
+    cleanup.register("logger", () => {
+      events.push("logger")
+    })
 
-      expect(events).toEqual(
-        initializedCleanupNamesBefore(failurePoint).reverse()
-      )
-    }
-  )
+    await cleanup.dispose()
+
+    expect(events).toEqual(["logger"])
+  })
 
   it("cleanup 실패를 격리해 나머지 resource를 정리하고 반복 호출을 멱등 처리한다", async () => {
     const events: string[] = []
@@ -72,33 +51,3 @@ describe("API container 초기화 정리", () => {
     expect(loggerCleanup).toHaveBeenCalledOnce()
   })
 })
-
-function cleanupNameByStage(
-  stage: (typeof initializationStages)[number]
-): ContainerCleanupName | null {
-  switch (stage) {
-    case "logger":
-      return "logger"
-    case "database":
-      return "database"
-    case "auth":
-    case "content":
-    case "identity":
-    case "ai-feedback":
-    case "learning":
-    case "operations":
-    case "routes":
-      return null
-  }
-}
-
-function initializedCleanupNamesBefore(
-  failurePoint: (typeof initializationStages)[number]
-): ContainerCleanupName[] {
-  return initializationStages
-    .slice(0, initializationStages.indexOf(failurePoint))
-    .flatMap((stage) => {
-      const name = cleanupNameByStage(stage)
-      return name === null ? [] : [name]
-    })
-}

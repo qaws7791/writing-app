@@ -9,11 +9,10 @@ vi.mock("bun", async (importOriginal) => ({
 
 describe("API main module", () => {
   it("factory를 import해도 process와 server를 시작하지 않는다", async () => {
-    const module = await import("@/main")
+    await import("@/main")
 
-    expect(module.startApiServer).toBeTypeOf("function")
     expect(serve).not.toHaveBeenCalled()
-  }, 15_000)
+  }, 10_000)
 
   it("production runtime secret 누락은 server 시작 전에 값 비노출로 거절한다", async () => {
     const module = await import("@/main")
