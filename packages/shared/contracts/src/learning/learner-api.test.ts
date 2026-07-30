@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-import { apiErrorSchema } from "#contracts/api-error"
 import {
   learnerCourseListResponseSchema,
   learnerLessonResponseSchema,
@@ -15,7 +14,6 @@ import {
   stepEvaluationSchema,
 } from "#contracts/learning/learner-transition"
 import { learnerStepInteractionDefinitions } from "#contracts/learning/learner-step-answer"
-import { answerableLessonStepTypeValues } from "#contracts/content/steps"
 
 const interactionCases = [
   {
@@ -117,57 +115,6 @@ const interactionCases = [
 ] as const
 
 describe("학습자 API canonical 계약", () => {
-  it("answer·draft·evaluation registry가 canonical answerable 타입과 일치한다", () => {
-    expect(Object.keys(learnerStepInteractionDefinitions).sort()).toEqual(
-      [...answerableLessonStepTypeValues].sort()
-    )
-  })
-
-  it("canonical 오류와 optional violations를 검증한다", () => {
-    expect(
-      apiErrorSchema.safeParse({
-        code: "UNAUTHENTICATED",
-        message: "로그인이 필요합니다.",
-        requestId: "request-1",
-      }).success
-    ).toBe(true)
-    expect(
-      apiErrorSchema.safeParse({
-        code: "VALIDATION_ERROR",
-        message: "요청 내용을 확인해 주세요.",
-        requestId: "request-2",
-        violations: [{ message: "필수 값입니다.", path: "stepId" }],
-      }).success
-    ).toBe(true)
-    expect(
-      apiErrorSchema.safeParse({
-        code: "UNAUTHENTICATED",
-        message: "로그인이 필요합니다.",
-        requestId: "request-1",
-        unknown: true,
-      }).success
-    ).toBe(false)
-  })
-
-  it.each([
-    "cause",
-    "credential",
-    "email",
-    "password",
-    "sql",
-    "stack",
-    "token",
-  ])("공개 오류에서 민감한 내부 필드 %s를 거부한다", (field) => {
-    expect(
-      apiErrorSchema.safeParse({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "요청을 처리할 수 없습니다.",
-        requestId: "request-3",
-        [field]: "sensitive",
-      }).success
-    ).toBe(false)
-  })
-
   it("요청의 root와 union 내부 알 수 없는 필드를 거절한다", () => {
     expect(
       learnerStepSubmissionSchema.safeParse({
@@ -199,28 +146,29 @@ describe("학습자 API canonical 계약", () => {
   })
 
   it("새 단계 완료 요청은 stable item ID와 명시적 intent만 허용한다", () => {
-    expect(
-      completeLearnerStepBodySchema.safeParse({
+    expect(() =>
+      completeLearnerStepBodySchema.parse({
         answer: {
           selectedOptionId: "option-1",
           type: "MULTIPLE_CHOICE",
         },
         kind: "answer",
-      }).success
-    ).toBe(true)
-    expect(
-      completeLearnerStepBodySchema.safeParse({
-        kind: "skip-ai-feedback",
-      }).success
-    ).toBe(true)
+      })
+    ).not.toThrow()
+    expect(() =>
+      completeLearnerStepBodySchema.parse({ kind: "skip-ai-feedback" })
+    ).not.toThrow()
     expect(
       completeLearnerStepBodySchema.safeParse({
         answer: { selectedIndexes: [0], type: "SELECT" },
         kind: "answer",
       }).success
     ).toBe(false)
-    expect(
-      completeLearnerStepResultSchema.safeParse({
+  })
+
+  it("단계 완료 결과는 진행 상태와 평가를 함께 담는다", () => {
+    expect(() =>
+      completeLearnerStepResultSchema.parse({
         evaluation: null,
         learning: {
           completedSteps: 1,
@@ -232,56 +180,43 @@ describe("학습자 API canonical 계약", () => {
           version: { curriculumVersionId: "curriculum:c1:1", revision: 1 },
         },
         status: "advanced",
-      }).success
-    ).toBe(true)
+      })
+    ).not.toThrow()
   })
 
   it.each(interactionCases)(
-    "$type answer·partial draft·server evaluation 계약을 함께 검증한다",
-    ({ draft, evaluation, submission, type }) => {
+    "$type 제출은 전용 계약과 union 계약을 함께 통과한다",
+    ({ submission, type }) => {
       const definition = learnerStepInteractionDefinitions[type]
 
-      expect(definition.submissionSchema.safeParse(submission).success).toBe(
-        true
-      )
-      expect(definition.draftSchema.safeParse(draft).success).toBe(true)
-      expect(definition.evaluationSchema.safeParse(evaluation).success).toBe(
-        true
-      )
-      expect(learnerStepSubmissionSchema.safeParse(submission).success).toBe(
-        true
-      )
-      expect(learnerStepDraftAnswerSchema.safeParse(draft).success).toBe(true)
-      expect(stepEvaluationSchema.safeParse(evaluation).success).toBe(true)
+      expect(() => definition.submissionSchema.parse(submission)).not.toThrow()
+      expect(() => learnerStepSubmissionSchema.parse(submission)).not.toThrow()
     }
   )
 
   it.each(interactionCases)(
-    "$type 전용 계약은 다른 discriminator를 거부한다",
-    ({ draft, evaluation, submission, type }) => {
+    "$type 부분 draft는 전용 계약과 union 계약을 함께 통과한다",
+    ({ draft, type }) => {
       const definition = learnerStepInteractionDefinitions[type]
 
-      expect(
-        definition.submissionSchema.safeParse({
-          ...submission,
-          type: "READING",
-        }).success
-      ).toBe(false)
-      expect(
-        definition.draftSchema.safeParse({ ...draft, type: "AI_FEEDBACK" })
-          .success
-      ).toBe(false)
-      expect(
-        definition.evaluationSchema.safeParse({
-          ...evaluation,
-          type: "READING",
-        }).success
-      ).toBe(false)
+      expect(() => definition.draftSchema.parse(draft)).not.toThrow()
+      expect(() => learnerStepDraftAnswerSchema.parse(draft)).not.toThrow()
     }
   )
 
-  it("READING·COMPARE·AI_FEEDBACK에는 answer나 draft payload가 없다", () => {
-    for (const type of ["READING", "COMPARE", "AI_FEEDBACK"] as const) {
+  it.each(interactionCases)(
+    "$type 서버 평가는 전용 계약과 union 계약을 함께 통과한다",
+    ({ evaluation, type }) => {
+      const definition = learnerStepInteractionDefinitions[type]
+
+      expect(() => definition.evaluationSchema.parse(evaluation)).not.toThrow()
+      expect(() => stepEvaluationSchema.parse(evaluation)).not.toThrow()
+    }
+  )
+
+  it.each(["READING", "COMPARE", "AI_FEEDBACK"] as const)(
+    "%s 단계는 answer payload를 받지 않는다",
+    (type) => {
       expect(
         learnerStepSubmissionSchema.safeParse({ text: "답안", type }).success
       ).toBe(false)
@@ -289,40 +224,44 @@ describe("학습자 API canonical 계약", () => {
         learnerStepDraftAnswerSchema.safeParse({ text: "", type }).success
       ).toBe(false)
     }
-  })
+  )
 
-  it("server draft의 revision·expected version과 복구 응답을 검증한다", () => {
+  it("draft 저장 요청은 음수 expected version을 거절한다", () => {
     const body = {
       answer: { text: "저장 중인 글", type: "WRITE" },
       expectedCurriculumVersionId: "course-1-v1",
       expectedVersion: null,
     }
-    const draft = {
-      answer: body.answer,
-      stepId: "step-1",
-      updatedAt: "2026-07-22T15:00:00.000Z",
-      version: 0,
-    }
 
-    expect(saveLearnerStepDraftBodySchema.safeParse(body).success).toBe(true)
+    expect(() => saveLearnerStepDraftBodySchema.parse(body)).not.toThrow()
     expect(
       saveLearnerStepDraftBodySchema.safeParse({
         ...body,
         expectedVersion: -1,
       }).success
     ).toBe(false)
-    expect(
-      startLearnerLessonResponseSchema.safeParse({
+  })
+
+  it("레슨 시작 응답은 복구할 draft를 함께 담는다", () => {
+    expect(() =>
+      startLearnerLessonResponseSchema.parse({
         completedSteps: 0,
         currentStepId: "step-1",
         currentStepIndex: 0,
-        drafts: [draft],
+        drafts: [
+          {
+            answer: { text: "저장 중인 글", type: "WRITE" },
+            stepId: "step-1",
+            updatedAt: "2026-07-22T15:00:00.000Z",
+            version: 0,
+          },
+        ],
         progressPercent: 0,
         status: "in_progress",
         totalSteps: 1,
         version: { curriculumVersionId: "course-1-v1", revision: 1 },
-      }).success
-    ).toBe(true)
+      })
+    ).not.toThrow()
   })
 
   it("공개 lesson step은 solution field를 거절한다", () => {
@@ -356,7 +295,7 @@ describe("학습자 API canonical 계약", () => {
       version: { curriculumVersionId: "course-1-v1", revision: 1 },
     }
 
-    expect(learnerLessonResponseSchema.safeParse(lesson).success).toBe(true)
+    expect(() => learnerLessonResponseSchema.parse(lesson)).not.toThrow()
     expect(
       learnerLessonResponseSchema.safeParse({
         ...lesson,

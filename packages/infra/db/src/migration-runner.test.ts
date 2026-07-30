@@ -94,45 +94,37 @@ describe("SQLite migration runner", () => {
     }
   })
 
-  it("migration이 요청한 FK 모드를 강제하고 기존 connection 상태를 복원한다", () => {
-    const initiallyDisabled = new Database(":memory:")
-    const initiallyEnabled = new Database(":memory:")
-    initiallyEnabled.exec("PRAGMA foreign_keys = ON")
+  it.each([
+    ["on", true],
+    ["off", false],
+  ] as const)(
+    "migration이 요청한 FK 모드 %s를 적용하고 connection 상태를 복원한다",
+    (requestedMode, expectedDuringMigration) => {
+      const sqlite = new Database(":memory:")
+      const initialForeignKeys = requestedMode === "on" ? "OFF" : "ON"
+      sqlite.exec(`PRAGMA foreign_keys = ${initialForeignKeys}`)
 
-    try {
-      let enabledDuringMigration = false
-      let disabledDuringMigration = false
+      try {
+        let foreignKeysDuringMigration: boolean | undefined
 
-      runSqliteMigrations(initiallyDisabled, [
-        {
-          apply(database) {
-            enabledDuringMigration = readForeignKeysEnabled(database)
+        runSqliteMigrations(sqlite, [
+          {
+            apply(database) {
+              foreignKeysDuringMigration = readForeignKeysEnabled(database)
+            },
+            checksum,
+            foreignKeys: requestedMode,
+            id: `0000-foreign-keys-${requestedMode}`,
           },
-          checksum,
-          foreignKeys: "on",
-          id: "0000-enable-foreign-keys",
-        },
-      ])
-      runSqliteMigrations(initiallyEnabled, [
-        {
-          apply(database) {
-            disabledDuringMigration = !readForeignKeysEnabled(database)
-          },
-          checksum,
-          foreignKeys: "off",
-          id: "0000-disable-foreign-keys",
-        },
-      ])
+        ])
 
-      expect(enabledDuringMigration).toBe(true)
-      expect(disabledDuringMigration).toBe(true)
-      expect(readForeignKeysEnabled(initiallyDisabled)).toBe(false)
-      expect(readForeignKeysEnabled(initiallyEnabled)).toBe(true)
-    } finally {
-      initiallyEnabled.close()
-      initiallyDisabled.close()
+        expect(foreignKeysDuringMigration).toBe(expectedDuringMigration)
+        expect(readForeignKeysEnabled(sqlite)).toBe(initialForeignKeys === "ON")
+      } finally {
+        sqlite.close()
+      }
     }
-  })
+  )
 })
 
 function readForeignKeysEnabled(sqlite: Database): boolean {

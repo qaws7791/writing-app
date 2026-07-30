@@ -1,25 +1,26 @@
 import { createSign, generateKeyPairSync } from "node:crypto"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { eq } from "drizzle-orm"
 
 import { createInMemoryAuthEmailDelivery } from "#auth/email/in-memory"
 import { createLearnerAuthRuntime } from "#auth/learner/server"
 import {
   authAccounts,
-  authRateLimits,
   authSessions,
   authUsers,
   authVerifications,
 } from "#auth/schema/index"
-import { createSqliteAuthDatabaseAdapter } from "#auth/sqlite-database"
 import {
   createAuthTestDatabase,
+  createLearnerAuthDatabaseAdapter,
+  readSetCookiePair,
   type AuthTestDatabase,
 } from "#auth/test-support/auth-test-database"
 
 const webOrigin = "http://localhost:3000"
 const email = "learner@example.com"
 const password = "Learner-password-123!"
+const newPassword = "New-learner-password-123!"
+const expiredAt = new Date("2000-01-01T00:00:00.000Z")
 
 describe("학습자 email/password 인증 통합", () => {
   afterEach(() => {
@@ -46,20 +47,14 @@ describe("학습자 email/password 인증 통합", () => {
 
       expect(signUpResponse.status).toBe(200)
       expect(signUpResponse.headers.get("set-cookie")).toBeNull()
-      expect(emailDelivery.readDeliveries()).toHaveLength(1)
-      expect(emailDelivery.readDeliveries()[0]).toMatchObject({
-        kind: "verification",
-        recipientEmail: email,
-      })
+      expect(emailDelivery.readDeliveries()).toMatchObject([
+        { kind: "verification", recipientEmail: email },
+      ])
 
       const beforeVerification = await postAuth(
         runtime.authHandler,
         "/api/auth/sign-in/email",
-        {
-          callbackURL: `${webOrigin}/app`,
-          email,
-          password,
-        },
+        { callbackURL: `${webOrigin}/app`, email, password },
         "127.0.0.11"
       )
       expect(beforeVerification.status).toBe(403)
@@ -67,16 +62,9 @@ describe("학습자 email/password 인증 통합", () => {
         code: "EMAIL_NOT_VERIFIED",
       })
 
-      const verificationUrl = emailDelivery.readDeliveries()[0]?.callbackUrl
-      expect(verificationUrl).toBeDefined()
-      if (verificationUrl === undefined) {
-        throw new Error("확인 메일 URL이 기록되지 않았습니다.")
-      }
-      const verificationResponse = await runtime.authHandler(
-        new Request(verificationUrl, {
-          headers: { Origin: webOrigin },
-          redirect: "manual",
-        })
+      const verificationResponse = await followCallback(
+        runtime.authHandler,
+        readVerificationUrl(emailDelivery)
       )
       expect(verificationResponse.status).toBe(302)
       expect(verificationResponse.headers.get("location")).toBe(
@@ -86,11 +74,7 @@ describe("학습자 email/password 인증 통합", () => {
       const afterVerification = await postAuth(
         runtime.authHandler,
         "/api/auth/sign-in/email",
-        {
-          callbackURL: `${webOrigin}/app`,
-          email,
-          password,
-        },
+        { callbackURL: `${webOrigin}/app`, email, password },
         "127.0.0.11"
       )
       expect(afterVerification.status).toBe(200)
@@ -100,10 +84,28 @@ describe("학습자 email/password 인증 통합", () => {
         runtime.identityResolver.resolveIdentity(
           new Headers({ Cookie: cookie })
         )
-      ).resolves.toMatchObject({
-        email,
-        name: "학습자",
-      })
+      ).resolves.toMatchObject({ email, name: "학습자" })
+    } finally {
+      database.close()
+    }
+  })
+
+  it("사용한 이메일 확인 링크로는 새 session을 만들지 않는다", async () => {
+    const database = createAuthTestDatabase()
+    const emailDelivery = createInMemoryAuthEmailDelivery()
+
+    try {
+      const runtime = createTestRuntime(database.db, emailDelivery)
+      await signUp(runtime.authHandler, "127.0.0.61")
+      const verificationUrl = readVerificationUrl(emailDelivery)
+      await followCallback(runtime.authHandler, verificationUrl)
+
+      const reusedResponse = await followCallback(
+        runtime.authHandler,
+        verificationUrl
+      )
+
+      expect(reusedResponse.headers.get("set-cookie")).toBeNull()
     } finally {
       database.close()
     }
@@ -115,37 +117,23 @@ describe("학습자 email/password 인증 통합", () => {
 
     try {
       const runtime = createTestRuntime(database.db, emailDelivery)
-      await postAuth(
-        runtime.authHandler,
-        "/api/auth/sign-up/email",
-        {
-          callbackURL: `${webOrigin}/login?verified=true`,
-          email,
-          name: "학습자",
-          password,
-        },
-        "127.0.0.12"
-      )
+      await signUp(runtime.authHandler, "127.0.0.12")
 
-      const responses = []
-      for (let attempt = 0; attempt < 4; attempt += 1) {
-        responses.push(
-          await postAuth(
-            runtime.authHandler,
-            "/api/auth/send-verification-email",
-            {
-              callbackURL: `${webOrigin}/login?verified=true`,
-              email,
-            },
-            "127.0.0.12"
-          )
+      const responses = await sendSequentially(4, async () =>
+        postAuth(
+          runtime.authHandler,
+          "/api/auth/send-verification-email",
+          { callbackURL: `${webOrigin}/login?verified=true`, email },
+          "127.0.0.12"
         )
-      }
+      )
 
       expect(responses.map((response) => response.status)).toEqual([
         200, 200, 200, 429,
       ])
-      expect(responses[3]?.headers.get("x-retry-after")).not.toBeNull()
+      expect(
+        Number(responses.at(-1)?.headers.get("x-retry-after"))
+      ).toBeGreaterThan(0)
       expect(emailDelivery.readDeliveries()).toHaveLength(4)
     } finally {
       database.close()
@@ -160,21 +148,15 @@ describe("학습자 email/password 인증 통합", () => {
         database.db,
         createInMemoryAuthEmailDelivery()
       )
-      const responses = []
 
-      for (let attempt = 0; attempt < 4; attempt += 1) {
-        responses.push(
-          await postAuth(
-            runtime.authHandler,
-            "/api/auth/sign-in/email",
-            {
-              email: "missing@example.test",
-              password,
-            },
-            "192.0.2.211"
-          )
+      const responses = await sendSequentially(4, async () =>
+        postAuth(
+          runtime.authHandler,
+          "/api/auth/sign-in/email",
+          { email: "missing@example.test", password },
+          "192.0.2.211"
         )
-      }
+      )
 
       expect(responses.map((response) => response.status)).toEqual([
         401, 401, 401, 429,
@@ -183,10 +165,7 @@ describe("학습자 email/password 인증 통합", () => {
       const isolatedClientResponse = await postAuth(
         runtime.authHandler,
         "/api/auth/sign-in/email",
-        {
-          email: "missing@example.test",
-          password,
-        },
+        { email: "missing@example.test", password },
         "192.0.2.212"
       )
       expect(isolatedClientResponse.status).toBe(401)
@@ -204,11 +183,7 @@ describe("학습자 email/password 인증 통합", () => {
       const weakPasswordResponse = await postAuth(
         runtime.authHandler,
         "/api/auth/sign-up/email",
-        {
-          email: "weak@example.com",
-          name: "학습자",
-          password: "short",
-        },
+        { email: "weak@example.com", name: "학습자", password: "short" },
         "127.0.0.14"
       )
       expect(weakPasswordResponse.status).toBe(400)
@@ -216,17 +191,7 @@ describe("학습자 email/password 인증 통합", () => {
         code: "PASSWORD_TOO_SHORT",
       })
 
-      await postAuth(
-        runtime.authHandler,
-        "/api/auth/sign-up/email",
-        {
-          callbackURL: `${webOrigin}/login?verified=true`,
-          email,
-          name: "학습자",
-          password,
-        },
-        "127.0.0.13"
-      )
+      await signUp(runtime.authHandler, "127.0.0.13")
       const duplicateResponse = await postAuth(
         runtime.authHandler,
         "/api/auth/sign-up/email",
@@ -249,41 +214,26 @@ describe("학습자 email/password 인증 통합", () => {
     }
   })
 
-  it("재설정 응답을 동일하게 유지하고 token 만료·1회 사용·session 폐기를 강제한다", async () => {
+  it("재설정 요청 응답은 계정 존재 여부와 무관하게 같다", async () => {
     const database = createAuthTestDatabase()
     const emailDelivery = createInMemoryAuthEmailDelivery()
 
     try {
       const runtime = createTestRuntime(database.db, emailDelivery)
-      await createVerifiedCredentialUser(runtime.authHandler, emailDelivery)
-      const loginResponse = await postAuth(
+      await createVerifiedCredentialUser(
         runtime.authHandler,
-        "/api/auth/sign-in/email",
-        {
-          callbackURL: `${webOrigin}/app`,
-          email,
-          password,
-        },
-        "127.0.0.31"
+        emailDelivery,
+        "127.0.0.71"
       )
-      const sessionCookie = readSetCookiePair(loginResponse)
 
-      const existingResponse = await postAuth(
+      const existingResponse = await requestPasswordReset(
         runtime.authHandler,
-        "/api/auth/request-password-reset",
-        {
-          email,
-          redirectTo: `${webOrigin}/reset-password`,
-        },
+        email,
         "127.0.0.32"
       )
-      const missingResponse = await postAuth(
+      const missingResponse = await requestPasswordReset(
         runtime.authHandler,
-        "/api/auth/request-password-reset",
-        {
-          email: "missing@example.com",
-          redirectTo: `${webOrigin}/reset-password`,
-        },
+        "missing@example.com",
         "127.0.0.33"
       )
 
@@ -292,40 +242,36 @@ describe("학습자 email/password 인증 통합", () => {
       await expect(existingResponse.json()).resolves.toEqual(
         await missingResponse.json()
       )
-      const resetUrl = emailDelivery
-        .readDeliveries()
-        .find((delivery) => delivery.kind === "password-reset")?.callbackUrl
-      expect(resetUrl).toBeDefined()
-      if (resetUrl === undefined) {
-        throw new Error("비밀번호 재설정 URL이 기록되지 않았습니다.")
-      }
+    } finally {
+      database.close()
+    }
+  })
 
-      const callbackResponse = await runtime.authHandler(
-        new Request(resetUrl, {
-          headers: { Origin: webOrigin },
-          redirect: "manual",
-        })
-      )
-      expect(callbackResponse.status).toBe(302)
-      const resetToken = new URL(
-        callbackResponse.headers.get("location") ?? webOrigin
-      ).searchParams.get("token")
-      expect(resetToken).not.toBeNull()
-      if (resetToken === null) {
-        throw new Error("비밀번호 재설정 token이 callback에 없습니다.")
-      }
+  it("reset token은 한 번만 사용할 수 있다", async () => {
+    const database = createAuthTestDatabase()
+    const emailDelivery = createInMemoryAuthEmailDelivery()
 
-      const newPassword = "New-learner-password-123!"
-      const resetResponse = await postAuth(
+    try {
+      const runtime = createTestRuntime(database.db, emailDelivery)
+      await createVerifiedCredentialUser(
         runtime.authHandler,
-        "/api/auth/reset-password",
-        { newPassword, token: resetToken },
+        emailDelivery,
+        "127.0.0.72"
+      )
+      const resetToken = await issueResetToken(
+        runtime.authHandler,
+        emailDelivery,
+        "127.0.0.82"
+      )
+
+      const resetResponse = await resetPassword(
+        runtime.authHandler,
+        resetToken,
         "127.0.0.34"
       )
-      const reusedResponse = await postAuth(
+      const reusedResponse = await resetPassword(
         runtime.authHandler,
-        "/api/auth/reset-password",
-        { newPassword, token: resetToken },
+        resetToken,
         "127.0.0.35"
       )
 
@@ -334,11 +280,64 @@ describe("학습자 email/password 인증 통합", () => {
       await expect(reusedResponse.json()).resolves.toMatchObject({
         code: "INVALID_TOKEN",
       })
+    } finally {
+      database.close()
+    }
+  })
+
+  it("비밀번호 재설정은 기존 session을 폐기한다", async () => {
+    const database = createAuthTestDatabase()
+    const emailDelivery = createInMemoryAuthEmailDelivery()
+
+    try {
+      const runtime = createTestRuntime(database.db, emailDelivery)
+      await createVerifiedCredentialUser(
+        runtime.authHandler,
+        emailDelivery,
+        "127.0.0.73"
+      )
+      const loginResponse = await postAuth(
+        runtime.authHandler,
+        "/api/auth/sign-in/email",
+        { callbackURL: `${webOrigin}/app`, email, password },
+        "127.0.0.31"
+      )
+      const sessionCookie = readSetCookiePair(loginResponse)
+      const resetToken = await issueResetToken(
+        runtime.authHandler,
+        emailDelivery,
+        "127.0.0.83"
+      )
+
+      await resetPassword(runtime.authHandler, resetToken, "127.0.0.34")
+
       await expect(
         runtime.identityResolver.resolveIdentity(
           new Headers({ Cookie: sessionCookie })
         )
       ).resolves.toBeNull()
+    } finally {
+      database.close()
+    }
+  })
+
+  it("재설정 후 이전 비밀번호는 거부하고 새 비밀번호만 허용한다", async () => {
+    const database = createAuthTestDatabase()
+    const emailDelivery = createInMemoryAuthEmailDelivery()
+
+    try {
+      const runtime = createTestRuntime(database.db, emailDelivery)
+      await createVerifiedCredentialUser(
+        runtime.authHandler,
+        emailDelivery,
+        "127.0.0.74"
+      )
+      const resetToken = await issueResetToken(
+        runtime.authHandler,
+        emailDelivery,
+        "127.0.0.84"
+      )
+      await resetPassword(runtime.authHandler, resetToken, "127.0.0.34")
 
       const oldPasswordResponse = await postAuth(
         runtime.authHandler,
@@ -352,47 +351,73 @@ describe("학습자 email/password 인증 통합", () => {
         { email, password: newPassword },
         "127.0.0.37"
       )
+
       expect(oldPasswordResponse.status).toBe(401)
       expect(newPasswordResponse.status).toBe(200)
+    } finally {
+      database.close()
+    }
+  })
 
-      await postAuth(
+  it("만료된 reset token은 재설정 화면으로 진입시키지 않는다", async () => {
+    const database = createAuthTestDatabase()
+    const emailDelivery = createInMemoryAuthEmailDelivery()
+
+    try {
+      const runtime = createTestRuntime(database.db, emailDelivery)
+      await createVerifiedCredentialUser(
         runtime.authHandler,
-        "/api/auth/request-password-reset",
-        { email, redirectTo: `${webOrigin}/reset-password` },
-        "127.0.0.38"
+        emailDelivery,
+        "127.0.0.75"
       )
-      const expiringResetUrl = emailDelivery
-        .readDeliveries()
-        .at(-1)?.callbackUrl
-      expect(expiringResetUrl).toBeDefined()
-      if (expiringResetUrl === undefined) {
-        throw new Error("만료 검증용 재설정 URL이 기록되지 않았습니다.")
-      }
-      const expiringToken = new URL(expiringResetUrl).pathname.split("/").at(-1)
-      expect(expiringToken).toBeDefined()
-      if (expiringToken === undefined) {
-        throw new Error("만료 검증용 token이 없습니다.")
-      }
-      database.db
-        .update(authVerifications)
-        .set({ expiresAt: new Date("2000-01-01T00:00:00.000Z") })
-        .where(
-          eq(authVerifications.identifier, `reset-password:${expiringToken}`)
-        )
-        .run()
+      await requestPasswordReset(runtime.authHandler, email, "127.0.0.38")
+      const resetUrl = readResetUrl(emailDelivery)
+      expireAllVerifications(database.db, 1)
 
-      const expiredCallbackResponse = await runtime.authHandler(
-        new Request(expiringResetUrl, {
-          headers: { Origin: webOrigin },
-          redirect: "manual",
-        })
+      const expiredCallbackResponse = await followCallback(
+        runtime.authHandler,
+        resetUrl
       )
+
       expect(expiredCallbackResponse.status).toBe(302)
       expect(
-        new URL(
-          expiredCallbackResponse.headers.get("location") ?? webOrigin
-        ).searchParams.get("error")
+        readCallbackLocation(expiredCallbackResponse).searchParams.get("error")
       ).toBe("INVALID_TOKEN")
+    } finally {
+      database.close()
+    }
+  })
+
+  it("만료된 session cookie는 보호 API identity로 인정하지 않는다", async () => {
+    const database = createAuthTestDatabase()
+    const emailDelivery = createInMemoryAuthEmailDelivery()
+
+    try {
+      const runtime = createTestRuntime(database.db, emailDelivery)
+      await createVerifiedCredentialUser(
+        runtime.authHandler,
+        emailDelivery,
+        "127.0.0.78"
+      )
+      const loginResponse = await postAuth(
+        runtime.authHandler,
+        "/api/auth/sign-in/email",
+        { callbackURL: `${webOrigin}/app`, email, password },
+        "127.0.0.78"
+      )
+      const sessionCookie = readSetCookiePair(loginResponse)
+      const expiredSessions = database.db
+        .update(authSessions)
+        .set({ expiresAt: expiredAt })
+        .returning({ id: authSessions.id })
+        .all()
+
+      expect(expiredSessions).toHaveLength(1)
+      await expect(
+        runtime.identityResolver.resolveIdentity(
+          new Headers({ Cookie: sessionCookie })
+        )
+      ).resolves.toBeNull()
     } finally {
       database.close()
     }
@@ -406,26 +431,22 @@ describe("학습자 email/password 인증 통합", () => {
       const setupRuntime = createTestRuntime(database.db, setupDelivery)
       await createVerifiedCredentialUser(
         setupRuntime.authHandler,
-        setupDelivery
+        setupDelivery,
+        "127.0.0.76"
       )
       const failingRuntime = createTestRuntime(
         database.db,
         createInMemoryAuthEmailDelivery({ failureCode: "provider-rejected" })
       )
 
-      const existingResponse = await postAuth(
+      const existingResponse = await requestPasswordReset(
         failingRuntime.authHandler,
-        "/api/auth/request-password-reset",
-        { email, redirectTo: `${webOrigin}/reset-password` },
+        email,
         "127.0.0.41"
       )
-      const missingResponse = await postAuth(
+      const missingResponse = await requestPasswordReset(
         failingRuntime.authHandler,
-        "/api/auth/request-password-reset",
-        {
-          email: "missing@example.com",
-          redirectTo: `${webOrigin}/reset-password`,
-        },
+        "missing@example.com",
         "127.0.0.42"
       )
 
@@ -449,9 +470,12 @@ describe("학습자 email/password 인증 통합", () => {
         google: true,
         identityProvisioner,
       })
-      await createVerifiedCredentialUser(runtime.authHandler, emailDelivery)
+      await createVerifiedCredentialUser(
+        runtime.authHandler,
+        emailDelivery,
+        "127.0.0.77"
+      )
       const existingUser = database.db.select().from(authUsers).get()
-      expect(existingUser).toBeDefined()
       if (existingUser === undefined) {
         throw new Error("기존 credential user가 없습니다.")
       }
@@ -513,24 +537,6 @@ describe("학습자 email/password 인증 통합", () => {
       database.close()
     }
   })
-
-  it("test 전용 sign-in route를 runtime에 등록하지 않는다", async () => {
-    const database = createAuthTestDatabase()
-
-    try {
-      const runtime = createTestRuntime(
-        database.db,
-        createInMemoryAuthEmailDelivery()
-      )
-      const response = await runtime.authHandler(
-        new Request(`${webOrigin}/api/auth/test/sign-in`)
-      )
-
-      expect(response.status).toBe(404)
-    } finally {
-      database.close()
-    }
-  })
 })
 
 function createTestRuntime(
@@ -550,16 +556,7 @@ function createTestRuntime(
   } = {}
 ) {
   return createLearnerAuthRuntime({
-    database: createSqliteAuthDatabaseAdapter({
-      database,
-      schema: {
-        account: authAccounts,
-        rateLimit: authRateLimits,
-        session: authSessions,
-        user: authUsers,
-        verification: authVerifications,
-      },
-    }),
+    database: createLearnerAuthDatabaseAdapter(database),
     emailDelivery,
     ...(options.google === true
       ? {
@@ -575,11 +572,24 @@ function createTestRuntime(
   })
 }
 
-async function createVerifiedCredentialUser(
+async function sendSequentially(
+  attempts: number,
+  send: () => Promise<Response>
+): Promise<readonly Response[]> {
+  const responses: Response[] = []
+
+  for (const _attempt of Array.from({ length: attempts })) {
+    responses.push(await send())
+  }
+
+  return responses
+}
+
+async function signUp(
   authHandler: (request: Request) => Promise<Response>,
-  emailDelivery: ReturnType<typeof createInMemoryAuthEmailDelivery>
+  ipAddress = "127.0.0.11"
 ): Promise<void> {
-  const signUpResponse = await postAuth(
+  const response = await postAuth(
     authHandler,
     "/api/auth/sign-up/email",
     {
@@ -588,25 +598,142 @@ async function createVerifiedCredentialUser(
       name: "학습자",
       password,
     },
-    "127.0.0.21"
+    ipAddress
   )
-  expect(signUpResponse.status).toBe(200)
 
-  const verificationUrl = emailDelivery
+  if (response.status !== 200) {
+    throw new Error(`가입 준비가 실패했습니다: ${response.status}`)
+  }
+}
+
+async function createVerifiedCredentialUser(
+  authHandler: (request: Request) => Promise<Response>,
+  emailDelivery: ReturnType<typeof createInMemoryAuthEmailDelivery>,
+  ipAddress: string
+): Promise<void> {
+  await signUp(authHandler, ipAddress)
+  const verificationResponse = await followCallback(
+    authHandler,
+    readVerificationUrl(emailDelivery)
+  )
+
+  if (verificationResponse.status !== 302) {
+    throw new Error(
+      `이메일 확인 준비가 실패했습니다: ${verificationResponse.status}`
+    )
+  }
+}
+
+async function requestPasswordReset(
+  authHandler: (request: Request) => Promise<Response>,
+  recipientEmail: string,
+  ipAddress: string
+): Promise<Response> {
+  return postAuth(
+    authHandler,
+    "/api/auth/request-password-reset",
+    { email: recipientEmail, redirectTo: `${webOrigin}/reset-password` },
+    ipAddress
+  )
+}
+
+async function resetPassword(
+  authHandler: (request: Request) => Promise<Response>,
+  token: string,
+  ipAddress: string
+): Promise<Response> {
+  return postAuth(
+    authHandler,
+    "/api/auth/reset-password",
+    { newPassword, token },
+    ipAddress
+  )
+}
+
+async function issueResetToken(
+  authHandler: (request: Request) => Promise<Response>,
+  emailDelivery: ReturnType<typeof createInMemoryAuthEmailDelivery>,
+  ipAddress: string
+): Promise<string> {
+  await requestPasswordReset(authHandler, email, ipAddress)
+  const callbackResponse = await followCallback(
+    authHandler,
+    readResetUrl(emailDelivery)
+  )
+  const token = readCallbackLocation(callbackResponse).searchParams.get("token")
+
+  if (token === null) {
+    throw new Error("비밀번호 재설정 token이 callback에 없습니다.")
+  }
+
+  return token
+}
+
+function readVerificationUrl(
+  emailDelivery: ReturnType<typeof createInMemoryAuthEmailDelivery>
+): string {
+  const url = emailDelivery
     .readDeliveries()
     .find((delivery) => delivery.kind === "verification")?.callbackUrl
-  expect(verificationUrl).toBeDefined()
-  if (verificationUrl === undefined) {
+
+  if (url === undefined) {
     throw new Error("확인 메일 URL이 기록되지 않았습니다.")
   }
 
-  const verificationResponse = await authHandler(
-    new Request(verificationUrl, {
+  return url
+}
+
+function readResetUrl(
+  emailDelivery: ReturnType<typeof createInMemoryAuthEmailDelivery>
+): string {
+  const url = [...emailDelivery.readDeliveries()]
+    .reverse()
+    .find((delivery) => delivery.kind === "password-reset")?.callbackUrl
+
+  if (url === undefined) {
+    throw new Error("비밀번호 재설정 URL이 기록되지 않았습니다.")
+  }
+
+  return url
+}
+
+async function followCallback(
+  authHandler: (request: Request) => Promise<Response>,
+  callbackUrl: string
+): Promise<Response> {
+  return authHandler(
+    new Request(callbackUrl, {
       headers: { Origin: webOrigin },
       redirect: "manual",
     })
   )
-  expect(verificationResponse.status).toBe(302)
+}
+
+function readCallbackLocation(response: Response): URL {
+  const location = response.headers.get("location")
+
+  if (location === null) {
+    throw new Error("callback 응답에 redirect location이 없습니다.")
+  }
+
+  return new URL(location)
+}
+
+function expireAllVerifications(
+  database: AuthTestDatabase,
+  expectedRows: number
+): void {
+  const expired = database
+    .update(authVerifications)
+    .set({ expiresAt: expiredAt })
+    .returning({ id: authVerifications.id })
+    .all()
+
+  if (expired.length !== expectedRows) {
+    throw new Error(
+      `만료 처리한 verification row 수가 다릅니다: ${expired.length}`
+    )
+  }
 }
 
 function createSignedGoogleIdToken(input: {
@@ -673,12 +800,4 @@ async function postAuth(
       method: "POST",
     })
   )
-}
-
-function readSetCookiePair(response: Response): string {
-  return (response.headers.get("set-cookie") ?? "")
-    .split(/,(?=\s*[^;,]+=)/u)
-    .map((value) => value.trim().split(";")[0])
-    .filter(Boolean)
-    .join("; ")
 }

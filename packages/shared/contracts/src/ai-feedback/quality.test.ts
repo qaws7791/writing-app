@@ -28,19 +28,25 @@ describe("AI 코칭 품질 계약", () => {
     ])
   })
 
-  it("역전된 조회 기간과 원문 필드를 거절한다", () => {
+  it("조회 기간이 역전되면 거절한다", () => {
     expect(
       aiFeedbackQualityQuerySchema.safeParse({
         from: "2026-07-24T15:00:00.000Z",
         to: "2026-07-23T15:00:00.000Z",
       }).success
     ).toBe(false)
+  })
+
+  it("허용 조회 범위를 넘는 기간을 거절한다", () => {
     expect(
       aiFeedbackQualityQuerySchema.safeParse({
         from: "2025-07-23T15:00:00.000Z",
         to: "2026-07-24T15:00:00.000Z",
       }).success
     ).toBe(false)
+  })
+
+  it("snapshot에 답안 원문 필드가 있으면 거절한다", () => {
     expect(
       aiFeedbackQualitySnapshotSchema.safeParse({
         answer: "원문",

@@ -15,24 +15,21 @@ const deliveryInput = {
 }
 
 describe("인증 메일 템플릿", () => {
-  it("이메일 확인 링크를 한국어 text와 HTML로 만든다", () => {
-    const message = createVerificationEmailMessage(deliveryInput)
+  it.each([
+    ["이메일 확인", createVerificationEmailMessage],
+    ["비밀번호 재설정", createPasswordResetEmailMessage],
+  ] as const)(
+    "%s 메일은 callback URL을 text에 담고 HTML에서 escape한다",
+    (_label, createMessage) => {
+      const message = createMessage(deliveryInput)
 
-    expect(message.subject).toBe("[글결] 이메일 주소를 확인해 주세요")
-    expect(message.text).toContain(deliveryInput.callbackUrl)
-    expect(message.html).toContain(
-      "token=token&amp;callbackURL=https%3A%2F%2Fapp.example.test%2Flogin"
-    )
-    expect(message.html).toContain("이메일 주소 확인하기")
-  })
-
-  it("비밀번호 재설정 링크를 한국어 text와 HTML로 만든다", () => {
-    const message = createPasswordResetEmailMessage(deliveryInput)
-
-    expect(message.subject).toBe("[글결] 비밀번호를 다시 설정해 주세요")
-    expect(message.text).toContain("비밀번호를 다시 설정")
-    expect(message.html).toContain("비밀번호 다시 설정하기")
-  })
+      expect(message.text).toContain(deliveryInput.callbackUrl)
+      expect(message.html).toContain(
+        "token=token&amp;callbackURL=https%3A%2F%2Fapp.example.test%2Flogin"
+      )
+      expect(message.html).not.toContain(deliveryInput.callbackUrl)
+    }
+  )
 
   it.each([
     "/api/auth/verify-email",

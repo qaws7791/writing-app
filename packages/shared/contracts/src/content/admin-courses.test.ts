@@ -84,7 +84,7 @@ const stepContents = [
 
 describe("admin course editor contract", () => {
   it("10종 step discriminated union을 전체 문서에서 검증한다", () => {
-    const result = adminCourseEditorDocumentSchema.safeParse({
+    const document = {
       assets: [],
       category: "미분류",
       coverAssetId: null,
@@ -121,31 +121,15 @@ describe("admin course editor contract", () => {
           title: "유닛",
         },
       ],
-    })
+    }
 
-    expect(result.success).toBe(true)
+    expect(() => adminCourseEditorDocumentSchema.parse(document)).not.toThrow()
   })
 
-  it("중복 ID와 비연속 sortOrder를 거부한다", () => {
+  it("중복 ID를 거부한다", () => {
     const result = adminCourseEditorDocumentSchema.safeParse({
-      assets: [],
-      category: "",
-      coverAssetId: null,
-      curriculumVersionId: "course-1-v1",
-      description: "",
-      editVersion: 1,
-      id: "course-1",
-      revision: 0,
-      status: "active",
-      title: "코스",
+      ...createEditableCourse(),
       units: [
-        {
-          id: "duplicate",
-          lessons: [],
-          sortOrder: 2,
-          status: "active",
-          title: "유닛",
-        },
         {
           id: "duplicate",
           lessons: [],
@@ -153,10 +137,38 @@ describe("admin course editor contract", () => {
           status: "active",
           title: "유닛",
         },
+        {
+          id: "duplicate",
+          lessons: [],
+          sortOrder: 2,
+          status: "active",
+          title: "유닛",
+        },
       ],
     })
 
-    expect(result.success).toBe(false)
+    expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+      "ID는 중복될 수 없습니다.",
+    ])
+  })
+
+  it("1부터 연속되지 않는 sortOrder를 거부한다", () => {
+    const result = adminCourseEditorDocumentSchema.safeParse({
+      ...createEditableCourse(),
+      units: [
+        {
+          id: "unit-1",
+          lessons: [],
+          sortOrder: 2,
+          status: "active",
+          title: "유닛",
+        },
+      ],
+    })
+
+    expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+      "sortOrder는 1부터 연속되어야 합니다.",
+    ])
   })
 
   it("write 문서는 canonical asset metadata를 받지 않고 ID 참조만 받는다", () => {
@@ -185,6 +197,23 @@ describe("admin course editor contract", () => {
       units: [],
     })
 
-    expect(result.success).toBe(false)
+    expect(result.error?.issues).toMatchObject([
+      { code: "unrecognized_keys", keys: ["assets"] },
+    ])
   })
 })
+
+function createEditableCourse() {
+  return {
+    assets: [],
+    category: "미분류",
+    coverAssetId: null,
+    curriculumVersionId: "course-1-v1",
+    description: "설명",
+    editVersion: 1,
+    id: "course-1",
+    revision: 1,
+    status: "active",
+    title: "코스",
+  }
+}

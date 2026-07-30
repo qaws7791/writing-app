@@ -118,9 +118,10 @@ export function assertDestructiveDatabaseAllowed(
 }
 
 export function resetSqliteDatabaseFiles(
-  options: DestructiveDatabaseOptions
+  options: DestructiveDatabaseOptions,
+  dataDirectory = repositoryDataDirectory
 ): DatabaseResetTarget | null {
-  const target = inspectDatabaseResetTarget(options.databaseUrl)
+  const target = inspectDatabaseResetTarget(options.databaseUrl, dataDirectory)
 
   if (target === null) {
     throw new Error("메모리 또는 SQLite가 아닌 DB는 초기화할 수 없습니다.")

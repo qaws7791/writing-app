@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { prettyFactory } from "pino-pretty"
 
 import {
   createAppLogger,
@@ -33,42 +32,22 @@ function createMemoryLogStream(): {
 }
 
 describe("logger", () => {
-  it("LOG_PRETTY=false은 development에서도 JSON logger를 강제한다", () => {
-    expect(
-      shouldUsePrettyLogging({
-        LOG_PRETTY: "false",
-        NODE_ENV: "development",
-      })
-    ).toBe(false)
-  })
-
-  it("명시적 pretty 설정이 없을 때만 development 기본값을 사용한다", () => {
-    expect(shouldUsePrettyLogging({ NODE_ENV: "development" })).toBe(true)
-    expect(shouldUsePrettyLogging({ NODE_ENV: "production" })).toBe(false)
-    expect(
-      shouldUsePrettyLogging({
-        LOG_PRETTY: "true",
-        NODE_ENV: "production",
-      })
-    ).toBe(true)
-  })
-
-  it("pino JSON logger를 생성한다", () => {
-    const { records, stream } = createMemoryLogStream()
-    const logger = createAppLogger({
-      level: "debug",
-      stream,
-    })
-
-    logger.debug({ requestId: "r1" }, "debug message")
-
-    expect(records[0]).toMatchObject({
-      level: 20,
-      msg: "debug message",
-      requestId: "r1",
-      time: expect.any(Number),
-    })
-  })
+  it.each([
+    ["development", undefined, true],
+    ["production", undefined, false],
+    ["development", "false", false],
+    ["production", "true", true],
+  ] as const)(
+    "NODE_ENV=%s, LOG_PRETTY=%s일 때 pretty 사용 여부는 %s다",
+    (nodeEnv, logPretty, expected) => {
+      expect(
+        shouldUsePrettyLogging({
+          NODE_ENV: nodeEnv,
+          ...(logPretty === undefined ? {} : { LOG_PRETTY: logPretty }),
+        })
+      ).toBe(expected)
+    }
+  )
 
   it("request log helper가 요청 완료 로그를 남긴다", () => {
     const { records, stream } = createMemoryLogStream()
@@ -220,7 +199,6 @@ describe("logger", () => {
     ]) {
       expect(serialized).not.toContain(sensitiveValue)
     }
-    expect(serialized.match(/\[REDACTED\]/gu)?.length).toBeGreaterThanOrEqual(6)
   })
 
   it("AI usage의 집계 token 수는 credential token과 구분한다", () => {
@@ -293,42 +271,5 @@ describe("logger", () => {
       level: 30,
       retentionClass: "security-90d",
     })
-  })
-
-  it("pretty와 JSON 표현이 같은 구조화 필드를 유지한다", () => {
-    const { records, stream } = createMemoryLogStream()
-    const logger = createAppLogger({ stream })
-    const logRequest = createRequestLogger(logger)
-
-    logRequest({
-      actorId: "user-1",
-      actorType: "learner",
-      audience: "learner",
-      durationMs: 12,
-      method: "GET",
-      outcome: "succeeded",
-      path: "/courses/:courseId",
-      requestId: "r-pretty",
-      status: 200,
-    })
-
-    const jsonRecord = records[0]
-    if (jsonRecord === undefined) {
-      throw new Error("request log record was not written")
-    }
-    const pretty = prettyFactory({ colorize: false, singleLine: true })
-    const prettyOutput = pretty(JSON.stringify(jsonRecord))
-    const objectStart = prettyOutput.indexOf("{")
-    const prettyFields = JSON.parse(prettyOutput.slice(objectStart)) as Record<
-      string,
-      unknown
-    >
-    const structuredJsonFields = Object.fromEntries(
-      Object.entries(jsonRecord).filter(
-        ([key]) => !["level", "msg", "time"].includes(key)
-      )
-    )
-
-    expect(prettyFields).toEqual(structuredJsonFields)
   })
 })

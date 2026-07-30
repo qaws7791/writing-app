@@ -10,6 +10,8 @@ const nodeEnvSchema = z
   .default("development")
 const portSchema = z.coerce.number().int().min(1).max(65535)
 
+export const defaultOpenAiModel = "gpt-5.2"
+
 const appEnvBaseSchema = z.object({
   ADMIN_AUTH_SECRET: z.string().min(32),
   ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
@@ -21,7 +23,7 @@ const appEnvBaseSchema = z.object({
   LEARNER_AUTH_SECRET: z.string().min(32),
   NODE_ENV: nodeEnvSchema,
   OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_MODEL: z.string().min(1).default("gpt-5.2"),
+  OPENAI_MODEL: z.string().min(1).default(defaultOpenAiModel),
   WEB_ORIGIN: z.url().default(localRuntimeDefaults.learnerWebOrigin),
 })
 
@@ -92,11 +94,14 @@ function validateProductionEnvironment(
       "CURSOR_SIGNING_SECRET",
       env.CURSOR_SIGNING_SECRET
     )
-    if (env.CURSOR_SIGNING_SECRET === env.LEARNER_AUTH_SECRET) {
+    if (
+      env.CURSOR_SIGNING_SECRET === env.LEARNER_AUTH_SECRET ||
+      env.CURSOR_SIGNING_SECRET === env.ADMIN_AUTH_SECRET
+    ) {
       addProductionIssue(
         context,
         "CURSOR_SIGNING_SECRET",
-        "Better Auth secret과 다른 값을 사용해야 합니다."
+        "학습자·관리자 Better Auth secret과 다른 값을 사용해야 합니다."
       )
     }
   }

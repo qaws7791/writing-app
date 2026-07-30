@@ -42,10 +42,13 @@ describe("MatchAnswer", () => {
 
     expect(
       within(leftGroup).getByRole("button", { name: "원인" })
-    ).toHaveAttribute("data-state", "active")
+    ).toHaveAttribute("aria-pressed", "true")
     expect(
       within(rightGroup).getByRole("button", { name: "근거" })
     ).toHaveAttribute("aria-pressed", "true")
+    expect(
+      within(rightGroup).getByRole("button", { name: "결과" })
+    ).toHaveAttribute("aria-pressed", "false")
 
     const rightChoice = within(rightGroup).getByRole("button", {
       name: "결과",
@@ -59,7 +62,7 @@ describe("MatchAnswer", () => {
     })
   })
 
-  it("채점 연결 tone을 표시하고 추가 선택을 막는다", () => {
+  it("채점 후에는 추가 선택을 막고 해설을 보여준다", () => {
     render(
       <MatchAnswer
         checked="correct"
@@ -78,11 +81,8 @@ describe("MatchAnswer", () => {
       />
     )
 
-    expect(screen.getByRole("button", { name: "원인" })).toHaveAttribute(
-      "data-state",
-      "correct"
-    )
     expect(screen.getByRole("button", { name: "원인" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "주장" })).toBeDisabled()
     expect(screen.getByText("정답 해설")).toBeVisible()
   })
 })

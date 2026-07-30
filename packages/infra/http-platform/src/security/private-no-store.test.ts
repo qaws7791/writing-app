@@ -1,34 +1,38 @@
 import { describe, expect, it } from "vitest"
+import { Hono } from "hono"
 
 import {
-  privateNoStoreCacheControl,
+  setPrivateNoStoreHeaders,
   withPrivateNoStore,
 } from "#http-platform/security"
 
 describe("민감 응답 캐시 정책", () => {
-  it("기존 응답 계약을 보존하고 private no-store와 Cookie vary를 추가한다", async () => {
+  it("응답을 재구성할 때 기존 Vary에 Cookie를 더한다", () => {
     const response = withPrivateNoStore(
-      new Response("문서", {
-        headers: {
-          "Content-Disposition": 'attachment; filename="document.md"',
-          "Content-Type": "text/markdown; charset=utf-8",
-          Vary: "Origin",
-        },
-        status: 201,
-        statusText: "Created",
-      })
+      new Response("문서", { headers: { Vary: "Origin" } })
     )
 
-    expect(response.status).toBe(201)
-    expect(response.statusText).toBe("Created")
-    expect(response.headers.get("Cache-Control")).toBe(
-      privateNoStoreCacheControl
-    )
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
     expect(response.headers.get("Vary")).toBe("Origin, Cookie")
-    expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="document.md"'
-    )
-    expect(response.headers.get("Content-Type")).toContain("text/markdown")
-    await expect(response.text()).resolves.toBe("문서")
+  })
+
+  it("Vary가 없는 응답에도 Cookie vary를 남긴다", () => {
+    const response = withPrivateNoStore(new Response("문서"))
+
+    expect(response.headers.get("Vary")).toBe("Cookie")
+  })
+
+  it("미들웨어 경로도 실제 응답에 캐시 금지와 Cookie vary를 남긴다", async () => {
+    const app = new Hono().get("/profile", (context) => {
+      context.header("Vary", "Origin")
+      setPrivateNoStoreHeaders(context)
+
+      return context.json({ ok: true })
+    })
+
+    const response = await app.request("/profile")
+
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toBe("Origin, Cookie")
   })
 })

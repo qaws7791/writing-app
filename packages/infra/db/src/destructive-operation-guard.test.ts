@@ -1,6 +1,5 @@
 import {
   existsSync,
-  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -9,9 +8,8 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { basename, dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
 import { Database } from "bun:sqlite"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 
 import {
   assertDestructiveDatabaseAllowed,
@@ -19,159 +17,183 @@ import {
   resetSqliteDatabaseFiles,
 } from "#db/destructive-operation-guard"
 
-const dataDirectory = fileURLToPath(
-  new URL("../../../../data", import.meta.url)
-)
-mkdirSync(dataDirectory, { recursive: true })
+const temporaryRoots: string[] = []
+
+afterEach(() => {
+  while (temporaryRoots.length > 0) {
+    const root = temporaryRoots.pop()
+
+    if (root !== undefined) {
+      rmSync(root, { recursive: true })
+    }
+  }
+})
 
 describe("파괴적 DB 작업 보호 장치", () => {
-  it("저장소 data 밖 경로와 symlink escape를 거부한다", () => {
-    const outsideDirectory = mkdtempSync(join(tmpdir(), "db-reset-outside-"))
+  it("data 디렉터리 밖 경로를 거부한다", () => {
+    const dataDirectory = createTemporaryRoot("data-")
+    const outsideDirectory = createTemporaryRoot("outside-")
     const outsideDatabase = join(outsideDirectory, "outside.sqlite")
-    const linkDirectory = join(dataDirectory, `link-${crypto.randomUUID()}`)
-    createSqliteDatabase(outsideDatabase)
+    createSqliteFile(outsideDatabase)
 
-    try {
-      expect(() => inspectDatabaseResetTarget(outsideDatabase)).toThrow(
-        "저장소 data 디렉터리 밖"
+    expect(() =>
+      inspectDatabaseResetTarget(outsideDatabase, dataDirectory)
+    ).toThrow("저장소 data 디렉터리 밖")
+  })
+
+  it("data 안에서 밖을 가리키는 symlink를 거부한다", () => {
+    const dataDirectory = createTemporaryRoot("data-")
+    const outsideDirectory = createTemporaryRoot("outside-")
+    createSqliteFile(join(outsideDirectory, "outside.sqlite"))
+    const linkDirectory = join(dataDirectory, "linked")
+    symlinkSync(outsideDirectory, linkDirectory, "junction")
+
+    expect(() =>
+      inspectDatabaseResetTarget(
+        join(linkDirectory, "outside.sqlite"),
+        dataDirectory
       )
-      symlinkSync(outsideDirectory, linkDirectory, "junction")
-      expect(() =>
-        inspectDatabaseResetTarget(join(linkDirectory, "outside.sqlite"))
-      ).toThrow("저장소 data 디렉터리 밖")
-    } finally {
-      rmSync(linkDirectory, { force: true, recursive: true })
-      rmSync(outsideDirectory, { force: true, recursive: true })
-    }
+    ).toThrow("저장소 data 디렉터리 밖")
+  })
+
+  it("SQLite가 아닌 파일은 삭제 전에 거부한다", () => {
+    const dataDirectory = createTemporaryRoot("data-")
+    const databasePath = join(dataDirectory, "invalid.sqlite")
+    writeFileSync(databasePath, "not sqlite")
+
+    expect(() =>
+      inspectDatabaseResetTarget(databasePath, dataDirectory)
+    ).toThrow("SQLite 데이터베이스 파일이 아닙니다")
+    expect(existsSync(databasePath)).toBe(true)
   })
 
   it.each([
-    [false, false, false, "ALLOW_DATABASE_RESET=true와 --force"],
-    [true, false, false, "ALLOW_DATABASE_RESET=true와 --force"],
-    [true, true, false, "일치하는 대상 fingerprint"],
+    [
+      "reset 미허용",
+      false,
+      false,
+      false,
+      "ALLOW_DATABASE_RESET=true와 --force",
+    ],
+    ["force 미지정", true, false, false, "ALLOW_DATABASE_RESET=true와 --force"],
+    ["fingerprint 불일치", true, true, false, "일치하는 대상 fingerprint"],
   ])(
-    "production 승인이 불완전하면 거부한다 (%s, %s, %s)",
-    (allowDatabaseReset, forceDatabaseReset, hasFingerprint, errorMessage) => {
-      const target = createRepositoryDatabaseTarget()
+    "production에서 %s이면 거부한다",
+    (
+      _label,
+      allowDatabaseReset,
+      forceDatabaseReset,
+      hasFingerprint,
+      errorMessage
+    ) => {
+      const dataDirectory = createTemporaryRoot("data-")
+      const target = createResetTarget(dataDirectory)
 
-      try {
-        expect(() =>
-          assertDestructiveDatabaseAllowed(target, {
-            allowDatabaseReset,
-            databaseUrl: target.databasePath,
-            forceDatabaseReset,
-            nodeEnv: "production",
-            targetFingerprint: hasFingerprint ? target.fingerprint : undefined,
-          })
-        ).toThrow(errorMessage)
-      } finally {
-        cleanupTarget(target)
-      }
+      expect(() =>
+        assertDestructiveDatabaseAllowed(target, {
+          allowDatabaseReset,
+          databaseUrl: target.databasePath,
+          forceDatabaseReset,
+          nodeEnv: "production",
+          ...(hasFingerprint ? { targetFingerprint: target.fingerprint } : {}),
+        })
+      ).toThrow(errorMessage)
     }
   )
 
-  it("production은 세 승인 조건이 모두 일치할 때만 허용한다", () => {
-    const target = createRepositoryDatabaseTarget()
+  it.each([
+    ["reset 미허용", false, true],
+    ["force 미지정", true, false],
+  ])(
+    "non-production에서 %s이면 거부한다",
+    (_label, allowDatabaseReset, forceDatabaseReset) => {
+      const dataDirectory = createTemporaryRoot("data-")
+      const target = createResetTarget(dataDirectory)
 
-    try {
       expect(() =>
         assertDestructiveDatabaseAllowed(target, {
-          allowDatabaseReset: true,
+          allowDatabaseReset,
           databaseUrl: target.databasePath,
-          forceDatabaseReset: true,
-          nodeEnv: "production",
-          targetFingerprint: target.fingerprint,
+          forceDatabaseReset,
+          nodeEnv: "development",
         })
-      ).not.toThrow()
-    } finally {
-      cleanupTarget(target)
-    }
-  })
-
-  it.each([
-    [false, true],
-    [true, false],
-  ])(
-    "non-production도 명시적 reset 허용과 force를 요구한다 (%s, %s)",
-    (allowDatabaseReset, forceDatabaseReset) => {
-      const target = createRepositoryDatabaseTarget()
-
-      try {
-        expect(() =>
-          assertDestructiveDatabaseAllowed(target, {
-            allowDatabaseReset,
-            databaseUrl: target.databasePath,
-            forceDatabaseReset,
-            nodeEnv: "development",
-          })
-        ).toThrow("ALLOW_DATABASE_RESET=true와 --force")
-      } finally {
-        cleanupTarget(target)
-      }
+      ).toThrow("ALLOW_DATABASE_RESET=true와 --force")
     }
   )
 
   it("DB와 sidecar를 백업한 뒤 대상 파일만 삭제한다", () => {
-    const target = createRepositoryDatabaseTarget()
+    const dataDirectory = createTemporaryRoot("data-")
+    const target = createResetTarget(dataDirectory)
     const walPath = `${target.databasePath}-wal`
     const shmPath = `${target.databasePath}-shm`
-    const neighborPath = join(
-      dirname(target.databasePath),
-      `neighbor-${crypto.randomUUID()}.txt`
-    )
+    const neighborPath = join(dirname(target.databasePath), "neighbor.txt")
     writeFileSync(walPath, "wal")
     writeFileSync(shmPath, "shm")
     writeFileSync(neighborPath, "keep")
 
-    try {
-      const result = resetSqliteDatabaseFiles({
+    const result = resetSqliteDatabaseFiles(
+      {
         allowDatabaseReset: true,
         databaseUrl: target.databasePath,
         forceDatabaseReset: true,
         nodeEnv: "development",
-      })
+      },
+      dataDirectory
+    )
 
-      if (result === null) {
-        throw new Error("파일 DB reset 결과가 필요합니다.")
-      }
-
-      expect(existsSync(target.databasePath)).toBe(false)
-      expect(existsSync(walPath)).toBe(false)
-      expect(existsSync(shmPath)).toBe(false)
-      expect(readFileSync(neighborPath, "utf8")).toBe("keep")
-      expect(
-        existsSync(join(result.backupDirectory, basename(target.databasePath)))
-      ).toBe(true)
-      expect(
-        readFileSync(join(result.backupDirectory, basename(walPath)), "utf8")
-      ).toBe("wal")
-    } finally {
-      rmSync(neighborPath, { force: true })
-      cleanupTarget(target)
+    if (result === null) {
+      throw new Error("파일 DB reset 결과가 필요합니다.")
     }
+
+    expect(existsSync(target.databasePath)).toBe(false)
+    expect(existsSync(walPath)).toBe(false)
+    expect(existsSync(shmPath)).toBe(false)
+    expect(readFileSync(neighborPath, "utf8")).toBe("keep")
+    expect(
+      existsSync(join(result.backupDirectory, basename(target.databasePath)))
+    ).toBe(true)
+    expect(
+      readFileSync(join(result.backupDirectory, basename(walPath)), "utf8")
+    ).toBe("wal")
   })
 
-  it("SQLite가 아닌 파일은 삭제 전에 거부한다", () => {
-    const directory = mkdtempSync(join(dataDirectory, "invalid-reset-"))
-    const databasePath = join(directory, "invalid.sqlite")
-    writeFileSync(databasePath, "not sqlite")
+  it("production 3중 승인을 통과해도 백업 없이는 삭제하지 않는다", () => {
+    const dataDirectory = createTemporaryRoot("data-")
+    const target = createResetTarget(dataDirectory)
 
-    try {
-      expect(() => inspectDatabaseResetTarget(databasePath)).toThrow(
-        "SQLite 데이터베이스 파일이 아닙니다"
-      )
-      expect(existsSync(databasePath)).toBe(true)
-    } finally {
-      rmSync(directory, { force: true, recursive: true })
+    const result = resetSqliteDatabaseFiles(
+      {
+        allowDatabaseReset: true,
+        databaseUrl: target.databasePath,
+        forceDatabaseReset: true,
+        nodeEnv: "production",
+        targetFingerprint: target.fingerprint,
+      },
+      dataDirectory
+    )
+
+    if (result === null) {
+      throw new Error("파일 DB reset 결과가 필요합니다.")
     }
+
+    expect(existsSync(target.databasePath)).toBe(false)
+    expect(
+      existsSync(join(result.backupDirectory, basename(target.databasePath)))
+    ).toBe(true)
   })
 })
 
-function createRepositoryDatabaseTarget() {
-  const directory = mkdtempSync(join(dataDirectory, "reset-guard-"))
-  const databasePath = join(directory, "writing-app.sqlite")
-  createSqliteDatabase(databasePath)
-  const target = inspectDatabaseResetTarget(databasePath)
+function createTemporaryRoot(prefix: string): string {
+  const root = mkdtempSync(join(tmpdir(), `writing-app-${prefix}`))
+  temporaryRoots.push(root)
+
+  return root
+}
+
+function createResetTarget(dataDirectory: string) {
+  const databasePath = join(dataDirectory, "writing-app.sqlite")
+  createSqliteFile(databasePath)
+  const target = inspectDatabaseResetTarget(databasePath, dataDirectory)
 
   if (target === null) {
     throw new Error("파일 DB reset 대상이 필요합니다.")
@@ -180,7 +202,7 @@ function createRepositoryDatabaseTarget() {
   return target
 }
 
-function createSqliteDatabase(databasePath: string): void {
+function createSqliteFile(databasePath: string): void {
   const database = new Database(databasePath)
 
   try {
@@ -188,11 +210,4 @@ function createSqliteDatabase(databasePath: string): void {
   } finally {
     database.close()
   }
-}
-
-function cleanupTarget(
-  target: ReturnType<typeof createRepositoryDatabaseTarget>
-): void {
-  rmSync(dirname(target.databasePath), { force: true, recursive: true })
-  rmSync(target.backupDirectory, { force: true, recursive: true })
 }

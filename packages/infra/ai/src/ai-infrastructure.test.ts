@@ -9,13 +9,16 @@ describe("AI infrastructure", () => {
     ).toBe(true)
   })
 
-  it("timeout과 이미 중단된 AbortSignal을 validated config에서 거부한다", () => {
-    const controller = new AbortController()
-    controller.abort("shutdown")
-
+  it("timeout 0을 validated config에서 거부한다", () => {
     expect(
       createOpenAiClient({ apiKey: "key", maxRetries: 0, timeoutMs: 0 }).isErr()
     ).toBe(true)
+  })
+
+  it("이미 중단된 AbortSignal을 validated config에서 거부한다", () => {
+    const controller = new AbortController()
+    controller.abort("shutdown")
+
     expect(
       createOpenAiClient({
         apiKey: "key",
@@ -26,17 +29,17 @@ describe("AI infrastructure", () => {
     ).toBe(true)
   })
 
-  it("provider별 SDK retry 정책을 validated client config에 명시한다", () => {
-    const result = createOpenAiClient({
+  it("retry 정책을 provider SDK client에 전달한다", () => {
+    const validated = createOpenAiClient({
       apiKey: "key",
       maxRetries: 0,
       timeoutMs: 30_000,
-    })
+    })._unsafeUnwrap()
 
-    expect(result.isOk()).toBe(true)
-    if (result.isErr()) return
-    expect(result.value.maxRetries).toBe(0)
-    expect(result.value.client.maxRetries).toBe(0)
+    expect(validated.client.maxRetries).toBe(0)
+  })
+
+  it("음수 retry 정책을 validated config에서 거부한다", () => {
     expect(
       createOpenAiClient({
         apiKey: "key",

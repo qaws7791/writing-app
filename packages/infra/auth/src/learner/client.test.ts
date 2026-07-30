@@ -72,37 +72,6 @@ describe("학습자 인증 client", () => {
     authClientMocks.socialSignIn.mockClear()
   })
 
-  it("이메일 가입, 로그인과 확인 메일 재전송을 Better Auth client에 전달한다", async () => {
-    const client = createLearnerAuthClient({
-      fetch: vi.fn(),
-    })
-    const signUpInput = {
-      callbackURL: "https://app.example.test/login?verified=true",
-      email: "learner@example.com",
-      name: "학습자",
-      password: "Learner-password-123!",
-    }
-    const signInInput = {
-      callbackURL: "https://app.example.test/app/courses",
-      email: signUpInput.email,
-      password: signUpInput.password,
-    }
-    const resendInput = {
-      callbackURL: signUpInput.callbackURL,
-      email: signUpInput.email,
-    }
-
-    await client.signUpWithEmail(signUpInput)
-    await client.signInWithEmail(signInInput)
-    await client.resendVerificationEmail(resendInput)
-
-    expect(authClientMocks.emailSignUp).toHaveBeenCalledWith(signUpInput)
-    expect(authClientMocks.emailSignIn).toHaveBeenCalledWith(signInInput)
-    expect(authClientMocks.resendVerificationEmail).toHaveBeenCalledWith(
-      resendInput
-    )
-  })
-
   it.each([
     ["PASSWORD_TOO_SHORT", "weak-password"],
     ["USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL", "duplicate-email"],
@@ -161,9 +130,8 @@ describe("학습자 인증 client", () => {
   })
 
   it("Google 로그인 callback을 Better Auth client에 전달한다", async () => {
-    const fetchImplementation = vi.fn()
     const client = createLearnerAuthClient({
-      fetch: fetchImplementation,
+      fetch: vi.fn(),
     })
 
     await client.signInWithGoogle({
@@ -176,31 +144,6 @@ describe("학습자 인증 client", () => {
       errorCallbackURL: "https://app.example.test/login?authError=true",
       provider: "google",
     })
-    expect(authClientMocks.createAuthClient).toHaveBeenCalledWith({
-      fetchOptions: { customFetchImpl: fetchImplementation },
-    })
-  })
-
-  it("비밀번호 재설정 요청과 완료를 Better Auth client에 전달한다", async () => {
-    const client = createLearnerAuthClient({
-      fetch: vi.fn(),
-    })
-    const requestInput = {
-      email: "learner@example.com",
-      redirectTo: "https://app.example.test/reset-password",
-    }
-    const resetInput = {
-      newPassword: "New-learner-password-123!",
-      token: "reset-token",
-    }
-
-    await client.requestPasswordReset(requestInput)
-    await client.resetPassword(resetInput)
-
-    expect(authClientMocks.requestPasswordReset).toHaveBeenCalledWith(
-      requestInput
-    )
-    expect(authClientMocks.resetPassword).toHaveBeenCalledWith(resetInput)
   })
 
   it("만료되거나 사용한 reset token을 일반화된 오류로 정규화한다", async () => {

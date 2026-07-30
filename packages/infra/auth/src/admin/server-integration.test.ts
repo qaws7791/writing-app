@@ -2,25 +2,26 @@ import { describe, expect, it } from "vitest"
 import { eq } from "drizzle-orm"
 import {
   adminAuthAccounts,
-  adminAuthRateLimits,
   adminAuthSessions,
   adminAuthUsers,
-  adminAuthVerifications,
   authSessions,
   authUsers,
 } from "#auth/schema/index"
 
 import { createAdminAuthRuntime } from "#auth/admin/server"
 import { hashAuthPassword } from "#auth/password"
-import { createSqliteAuthDatabaseAdapter } from "#auth/sqlite-database"
 import {
+  createAdminAuthDatabaseAdapter,
   createAuthTestDatabase,
+  readSetCookiePair,
   type AuthTestDatabase,
 } from "#auth/test-support/auth-test-database"
 
+const ownerPassword = "Owner-password-123!"
+
 describe("관리자 인증 통합", () => {
   it("비밀번호 로그인은 관리자 cookie와 관리자 table만 사용한다", async () => {
-    const database = createMigratedTestDatabase()
+    const database = createAuthTestDatabase()
 
     try {
       await seedOwner(database.db)
@@ -28,10 +29,7 @@ describe("관리자 인증 통합", () => {
       const response = await postAuth(
         runtime.authHandler,
         "/api/admin/auth/sign-in/email",
-        {
-          email: "owner@example.com",
-          password: "Owner-password-123!",
-        }
+        { email: "owner@example.com", password: ownerPassword }
       )
 
       expect(response.ok).toBe(true)
@@ -51,7 +49,7 @@ describe("관리자 인증 통합", () => {
   })
 
   it("관리자 sign-up을 거부한다", async () => {
-    const database = createMigratedTestDatabase()
+    const database = createAuthTestDatabase()
 
     try {
       const runtime = createTestRuntime(database.db)
@@ -65,7 +63,7 @@ describe("관리자 인증 통합", () => {
         }
       )
 
-      expect([403, 404]).toContain(response.status)
+      expect(response.status).toBe(404)
       expect(database.db.select().from(adminAuthUsers).all()).toEqual([])
       expect(database.db.select().from(adminAuthAccounts).all()).toEqual([])
     } finally {
@@ -74,7 +72,7 @@ describe("관리자 인증 통합", () => {
   })
 
   it("비밀번호 변경 성공 시 관리자 session만 모두 폐기한다", async () => {
-    const database = createMigratedTestDatabase()
+    const database = createAuthTestDatabase()
 
     try {
       await seedOwner(database.db)
@@ -82,21 +80,18 @@ describe("관리자 인증 통합", () => {
       const firstLogin = await postAuth(
         runtime.authHandler,
         "/api/admin/auth/sign-in/email",
-        {
-          email: "owner@example.com",
-          password: "Owner-password-123!",
-        }
+        { email: "owner@example.com", password: ownerPassword }
       )
       await postAuth(runtime.authHandler, "/api/admin/auth/sign-in/email", {
         email: "owner@example.com",
-        password: "Owner-password-123!",
+        password: ownerPassword,
       })
 
       const response = await runtime.authHandler(
         createAuthRequest(
           "/api/admin/auth/change-password",
           {
-            currentPassword: "Owner-password-123!",
+            currentPassword: ownerPassword,
             newPassword: "New-owner-password-123!",
             revokeOtherSessions: true,
           },
@@ -114,24 +109,9 @@ describe("관리자 인증 통합", () => {
   })
 })
 
-type Database = AuthTestDatabase
-
-function createMigratedTestDatabase() {
-  return createAuthTestDatabase()
-}
-
-function createTestRuntime(database: Database) {
+function createTestRuntime(database: AuthTestDatabase) {
   return createAdminAuthRuntime({
-    database: createSqliteAuthDatabaseAdapter({
-      database,
-      schema: {
-        admin_account: adminAuthAccounts,
-        rateLimit: adminAuthRateLimits,
-        admin_session: adminAuthSessions,
-        admin_user: adminAuthUsers,
-        admin_verification: adminAuthVerifications,
-      },
-    }),
+    database: createAdminAuthDatabaseAdapter(database),
     secret: "admin-test-secret-0123456789abcdef",
     sessionRevoker: {
       revokeAllForAdmin(adminId) {
@@ -145,9 +125,9 @@ function createTestRuntime(database: Database) {
   })
 }
 
-async function seedOwner(database: Database): Promise<void> {
+async function seedOwner(database: AuthTestDatabase): Promise<void> {
   const now = new Date("2026-07-18T00:00:00.000Z")
-  const password = await hashAuthPassword("Owner-password-123!")
+  const password = await hashAuthPassword(ownerPassword)
 
   database
     .insert(adminAuthUsers)
@@ -197,12 +177,4 @@ function createAuthRequest(
     },
     method: "POST",
   })
-}
-
-function readSetCookiePair(response: Response): string {
-  return (response.headers.get("set-cookie") ?? "")
-    .split(/,(?=\s*[^;,]+=)/u)
-    .map((value) => value.trim().split(";")[0])
-    .filter(Boolean)
-    .join("; ")
 }

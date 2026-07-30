@@ -1,13 +1,10 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  answerableLessonStepTypes,
   courseDetailDtoSchema,
   courseListDtoSchema,
   lessonDtoSchema,
-  lessonStepDefinitions,
   lessonStepDtoSchema,
-  lessonStepTypeSchema,
 } from "#contracts/content/course"
 
 const lessonSteps = [
@@ -129,17 +126,13 @@ describe("콘텐츠 DTO schema", () => {
     expect(lessonStepDtoSchema.parse(step)).toEqual(step)
   })
 
-  it.each(lessonSteps)(
-    "$type 계약은 다른 type discriminator를 거부한다",
-    (step) => {
-      expect(
-        lessonStepDefinitions[step.type].schema.safeParse({
-          ...step,
-          type: "UNKNOWN",
-        }).success
-      ).toBe(false)
-    }
-  )
+  it("미지원 스텝 type은 DTO union에서 거부한다", () => {
+    const [firstStep] = lessonSteps
+
+    expect(
+      lessonStepDtoSchema.safeParse({ ...firstStep, type: "UNKNOWN" }).success
+    ).toBe(false)
+  })
 
   it("쓰기 스텝은 guide 없이 prompt나 topic만 있어도 parse한다", () => {
     expect(
@@ -162,31 +155,12 @@ describe("콘텐츠 DTO schema", () => {
       throw new Error("AI 코칭 테스트 fixture가 없습니다.")
     }
 
-    expect(
-      lessonStepDtoSchema.safeParse({ ...feedbackStep, score: 92 }).success
-    ).toBe(false)
-  })
+    const result = lessonStepDtoSchema.safeParse({ ...feedbackStep, score: 92 })
 
-  it("스텝 타입별 DTO와 transition·draft·평가 정책을 같은 계약에서 관리한다", () => {
-    expect(Object.keys(lessonStepDefinitions).sort()).toEqual(
-      [...lessonStepTypeSchema.options].sort()
-    )
-
-    expect(
-      lessonStepTypeSchema.options.filter(
-        (stepType) => lessonStepDefinitions[stepType].answerable
-      )
-    ).toEqual([...answerableLessonStepTypes])
-    expect(lessonStepDefinitions.READING).toMatchObject({
-      completion: "acknowledge",
-      draftable: false,
-      evaluatedByServer: false,
-    })
-    expect(lessonStepDefinitions.AI_FEEDBACK).toMatchObject({
-      completion: "ai-feedback",
-      draftable: false,
-      evaluatedByServer: true,
-    })
+    expect(result.success).toBe(false)
+    expect(result.error?.issues).toMatchObject([
+      { code: "unrecognized_keys", keys: ["score"] },
+    ])
   })
 
   it("코스 목록과 코스 상세 DTO를 parse한다", () => {

@@ -4,7 +4,7 @@ import {
   localRuntimeDefaults,
   localRuntimePorts,
 } from "#env/local-runtime-defaults"
-import { parseEnv } from "#env/parse-env"
+import { parseEnv, defaultOpenAiModel } from "#env/parse-env"
 
 const validSecret = "x".repeat(32)
 const validAdminSecret = "y".repeat(32)
@@ -59,7 +59,7 @@ describe("env parser", () => {
       LEARNER_AUTH_SECRET: validSecret,
       NODE_ENV: "test",
       OPENAI_API_KEY: undefined,
-      OPENAI_MODEL: "gpt-5.2",
+      OPENAI_MODEL: defaultOpenAiModel,
       WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
     })
   })
@@ -111,6 +111,10 @@ describe("env parser", () => {
     ["memory DB", { DATABASE_URL: ":memory:" }],
     ["동일 secret", { ADMIN_AUTH_SECRET: learnerProductionSecret }],
     ["동일 cursor secret", { CURSOR_SIGNING_SECRET: learnerProductionSecret }],
+    [
+      "관리자와 동일한 cursor secret",
+      { CURSOR_SIGNING_SECRET: adminProductionSecret },
+    ],
     ["낮은 entropy", { LEARNER_AUTH_SECRET: "x".repeat(48) }],
     [
       "placeholder",

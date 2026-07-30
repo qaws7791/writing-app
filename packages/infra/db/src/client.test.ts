@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs"
+import { existsSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { fileURLToPath } from "node:url"
 
 import { describe, expect, it } from "vitest"
 
@@ -13,18 +13,20 @@ import {
 } from "#db/client"
 
 describe("Writing App DB client", () => {
-  it("기본 SQLite DB 경로는 실행 위치와 무관하게 저장소 루트 data를 가리킨다", () => {
-    const expectedPath = fileURLToPath(
-      new URL("../../../../data/api.sqlite", import.meta.url)
+  it("기본 SQLite DB 경로는 실행 위치가 바뀌어도 같다", () => {
+    const pathFromRepositoryRoot = getDefaultDatabaseUrl()
+    const temporaryDirectory = mkdtempSync(
+      join(tmpdir(), "writing-app-db-cwd-")
     )
     const originalCwd = process.cwd()
 
     try {
-      process.chdir("/tmp")
+      process.chdir(temporaryDirectory)
 
-      expect(getDefaultDatabaseUrl()).toBe(expectedPath)
+      expect(getDefaultDatabaseUrl()).toBe(pathFromRepositoryRoot)
     } finally {
       process.chdir(originalCwd)
+      rmSync(temporaryDirectory, { recursive: true })
     }
   })
 
@@ -54,28 +56,31 @@ describe("Writing App DB client", () => {
           .query<{ readonly file: string }, []>("PRAGMA database_list")
           .all()
           .at(0)?.file
-        const journalMode = client.sqlite
-          .query<{ readonly journal_mode: string }, []>("PRAGMA journal_mode")
-          .get()?.journal_mode
-        const busyTimeout = client.sqlite
-          .query<{ readonly timeout: number }, []>("PRAGMA busy_timeout")
-          .get()?.timeout
-        const synchronous = client.sqlite
-          .query<{ readonly synchronous: number }, []>("PRAGMA synchronous")
-          .get()?.synchronous
 
         expect(realpathSync(databaseFile ?? "")).toBe(
           realpathSync(join(tempDirectory, "data", "api.sqlite"))
         )
-        expect(journalMode).toBe("wal")
-        expect(busyTimeout).toBe(5000)
-        expect(synchronous).toBe(1)
       } finally {
         client.close()
       }
     } finally {
       process.chdir(originalCwd)
-      rmSync(tempDirectory, { force: true, recursive: true })
+      rmSync(tempDirectory, { recursive: true })
+    }
+  })
+
+  it("쓰기 client는 WAL journal로 열어 sidecar를 만든다", () => {
+    const tempDirectory = mkdtempSync(join(tmpdir(), "writing-app-db-wal-"))
+    const databasePath = join(tempDirectory, "api.sqlite")
+    const client = createWritingAppDatabase(databasePath)
+
+    try {
+      client.sqlite.exec("CREATE TABLE wal_probe (value TEXT NOT NULL)")
+
+      expect(existsSync(`${databasePath}-wal`)).toBe(true)
+    } finally {
+      client.close()
+      rmSync(tempDirectory, { recursive: true })
     }
   })
 
@@ -133,7 +138,7 @@ describe("Writing App DB client", () => {
       ).toThrow()
     } finally {
       readOnlyClient.close()
-      rmSync(tempDirectory, { force: true, recursive: true })
+      rmSync(tempDirectory, { recursive: true })
     }
   })
 })

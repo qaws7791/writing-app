@@ -10,32 +10,37 @@ const config = {
   secretAccessKey: "secret",
 }
 
-describe("private S3-compatible object storage", () => {
-  it("공개 URL을 만들지 않고 object를 기록·조회한다", async () => {
-    const send = vi
-      .fn()
-      .mockResolvedValueOnce({})
-      .mockResolvedValueOnce({
-        Body: {
-          transformToByteArray: async () =>
-            new TextEncoder().encode('{"userId":"user-1"}'),
-        },
-      })
-    const storage = createS3PrivateObjectStorage(config, { client: { send } })
-    if (storage.isErr()) throw storage.error
+const markerObjectKey = "privacy/deletion-markers/marker.json"
 
-    await expect(
-      storage.value.putObject({
-        body: new Uint8Array([1]),
-        contentType: "application/json",
-        objectKey: "privacy/deletion-markers/marker.json",
-      })
-    ).resolves.toMatchObject({ value: undefined })
-    await expect(
-      storage.value.getObject("privacy/deletion-markers/marker.json")
-    ).resolves.toMatchObject({
-      value: expect.any(Uint8Array),
+describe("private S3-compatible object storage", () => {
+  it("object 기록 성공을 Result로 반환한다", async () => {
+    const send = vi.fn(async () => ({}))
+    const storage = createS3PrivateObjectStorage(config, {
+      client: { send },
+    })._unsafeUnwrap()
+
+    const putResult = await storage.putObject({
+      body: new Uint8Array([1]),
+      contentType: "application/json",
+      objectKey: markerObjectKey,
     })
+
+    expect(putResult.isOk()).toBe(true)
+    expect(send).toHaveBeenCalledOnce()
+  })
+
+  it("저장한 object 본문을 byte로 조회한다", async () => {
+    const body = new TextEncoder().encode('{"userId":"user-1"}')
+    const send = vi.fn(async () => ({
+      Body: { transformToByteArray: async () => body },
+    }))
+    const storage = createS3PrivateObjectStorage(config, {
+      client: { send },
+    })._unsafeUnwrap()
+
+    const getResult = await storage.getObject(markerObjectKey)
+
+    expect(getResult._unsafeUnwrap()).toEqual(body)
   })
 
   it("모든 list page의 key를 결정적 순서로 수집한다", async () => {
@@ -50,14 +55,16 @@ describe("private S3-compatible object storage", () => {
         Contents: [{ Key: "prefix/b.json" }],
         IsTruncated: false,
       })
-    const storage = createS3PrivateObjectStorage(config, { client: { send } })
-    if (storage.isErr()) throw storage.error
+    const storage = createS3PrivateObjectStorage(config, {
+      client: { send },
+    })._unsafeUnwrap()
 
-    await expect(
-      storage.value.listObjectKeys("prefix/")
-    ).resolves.toMatchObject({
-      value: ["prefix/a.json", "prefix/b.json"],
-    })
+    const listResult = await storage.listObjectKeys("prefix/")
+
+    expect(listResult._unsafeUnwrap()).toEqual([
+      "prefix/a.json",
+      "prefix/b.json",
+    ])
     expect(send).toHaveBeenCalledTimes(2)
   })
 

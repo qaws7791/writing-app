@@ -49,6 +49,8 @@ describe("Orval fetch mutator", () => {
       {},
       { baseUrl: "https://api.example.test", fetch }
     )
+
+    expect(fetch).toHaveBeenCalledOnce()
   })
 
   it("canonical HTTP error와 Retry-After를 단일 client error로 만든다", async () => {

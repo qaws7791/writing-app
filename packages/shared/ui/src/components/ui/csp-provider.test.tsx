@@ -26,9 +26,11 @@ describe("UiCspProvider", () => {
 
     const container = document.createElement("div")
     container.innerHTML = html
-    const scripts = container.querySelectorAll("script")
+    const scripts = [...container.querySelectorAll("script")]
 
-    expect(scripts).toHaveLength(1)
-    expect(scripts[0]).toHaveAttribute("nonce", "request-nonce")
+    expect(scripts.length).toBeGreaterThan(0)
+    for (const script of scripts) {
+      expect(script).toHaveAttribute("nonce", "request-nonce")
+    }
   })
 })

@@ -27,4 +27,23 @@ describe("canonical API error", () => {
       requestId: "request-2",
     })
   })
+
+  it.each([
+    "cause",
+    "credential",
+    "email",
+    "password",
+    "sql",
+    "stack",
+    "token",
+  ])("공개 오류에서 민감한 내부 필드 %s를 거부한다", (field) => {
+    expect(
+      apiErrorSchema.safeParse({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "요청을 처리할 수 없습니다.",
+        requestId: "request-3",
+        [field]: "sensitive",
+      }).success
+    ).toBe(false)
+  })
 })

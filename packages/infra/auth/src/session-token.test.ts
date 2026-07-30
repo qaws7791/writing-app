@@ -32,4 +32,13 @@ describe("인증 session token", () => {
     expect(normalizeAdminSessionToken(" ")).toBeNull()
     expect(normalizeAdminSessionToken(undefined)).toBeNull()
   })
+
+  // 관리자 token은 cookie store에서 직접 읽어 percent-encoding을 거치지 않는다.
+  // 학습자 경로와 달리 decode하지 않는 비대칭을 고정해, cookie header 파싱 경로가
+  // 추가되면 이 계약이 먼저 깨지게 한다.
+  it("관리자 token은 percent-encoding을 decode하지 않는다", () => {
+    expect(normalizeAdminSessionToken("session%20token")).toBe(
+      "session%20token"
+    )
+  })
 })

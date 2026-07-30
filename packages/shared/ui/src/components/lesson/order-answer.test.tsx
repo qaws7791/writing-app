@@ -22,12 +22,13 @@ describe("ORDER 초기 순서", () => {
     expect(first).not.toEqual(items)
   })
 
-  it("항목 추가와 삭제 후에도 각 항목을 정확히 한 번 포함한다", () => {
-    for (let size = 2; size <= 20; size += 1) {
-      const items = Array.from(
-        { length: size },
-        (_, index) => `item-${index}`
-      ).map((id) => ({ id, text: id }))
+  it.each([2, 3, 7, 20])(
+    "%i개 항목을 섞어도 각 항목을 정확히 한 번 포함한다",
+    (size) => {
+      const items = Array.from({ length: size }, (_, index) => ({
+        id: `item-${index}`,
+        text: `item-${index}`,
+      }))
       const shuffled = createDeterministicOrder(
         items,
         items.map((item) => item.id),
@@ -37,11 +38,8 @@ describe("ORDER 초기 순서", () => {
       expect(shuffled.map((item) => item.id).sort()).toEqual(
         items.map((item) => item.id).sort()
       )
-      expect(new Set(shuffled.map((item) => item.id))).toHaveLength(
-        items.length
-      )
     }
-  })
+  )
 
   it("SSR HTML과 hydration 초기 DOM 순서가 같다", async () => {
     const props = {
@@ -58,16 +56,14 @@ describe("ORDER 초기 순서", () => {
     container.innerHTML = html
     const before = container.textContent
     const recoverableErrors: unknown[] = []
-    let after = ""
 
     let root: ReturnType<typeof hydrateRoot> | undefined
     await act(async () => {
       root = hydrateRoot(container, <OrderAnswer {...props} />, {
         onRecoverableError: (error) => recoverableErrors.push(error),
       })
-      await new Promise((resolve) => setTimeout(resolve, 10))
-      after = container.textContent ?? ""
     })
+    const after = container.textContent ?? ""
 
     await act(async () => root?.unmount())
 

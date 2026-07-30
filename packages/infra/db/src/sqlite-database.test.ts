@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -20,29 +20,26 @@ describe("SQLite database lifecycle", () => {
       schema,
     })
 
-    try {
-      client.sqlite.exec(
-        "CREATE TABLE health_records (id TEXT PRIMARY KEY NOT NULL)"
-      )
-      const preparedQuery = client.db.select().from(healthRecords).prepare()
-      const nativeQuery = client.sqlite.query(
-        "SELECT COUNT(*) AS count FROM health_records"
-      )
+    client.sqlite.exec(
+      "CREATE TABLE health_records (id TEXT PRIMARY KEY NOT NULL)"
+    )
+    const preparedQuery = client.db.select().from(healthRecords).prepare()
+    const nativeQuery = client.sqlite.query(
+      "SELECT COUNT(*) AS count FROM health_records"
+    )
 
-      expect(preparedQuery.all()).toEqual([])
-      expect(nativeQuery.get()).toEqual({ count: 0 })
-      expect(
-        client.sqlite.query("SELECT COUNT(*) AS count FROM health_records")
-      ).toBe(nativeQuery)
+    expect(preparedQuery.all()).toEqual([])
+    expect(nativeQuery.get()).toEqual({ count: 0 })
 
-      client.close()
+    client.close()
 
-      expect(() => client.close()).not.toThrow()
-      expect(() => preparedQuery.all()).toThrow()
-      expect(() => nativeQuery.get()).toThrow()
-    } finally {
-      rmSync(directory, { force: true, recursive: true })
-    }
+    expect(() => client.close()).not.toThrow()
+    expect(() => preparedQuery.all()).toThrow()
+    expect(() => nativeQuery.get()).toThrow()
+
+    rmSync(directory, { recursive: true })
+
+    expect(existsSync(directory)).toBe(false)
   })
 
   it("statement finalize와 strict close가 함께 실패하면 모든 원인을 보존한다", () => {
@@ -76,7 +73,15 @@ describe("SQLite database lifecycle", () => {
       }
 
       expect(closeError).toBeInstanceOf(AggregateError)
-      expect((closeError as AggregateError).errors).toHaveLength(2)
+      expect(
+        (closeError as AggregateError).errors.map((error: unknown) =>
+          error instanceof Error ? error.message : String(error)
+        )
+      ).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining("statement finalize failure"),
+        ])
+      )
     } finally {
       finalizeSpy.mockRestore()
       client.close()

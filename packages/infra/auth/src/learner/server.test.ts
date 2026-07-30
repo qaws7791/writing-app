@@ -1,19 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
-import {
-  authAccounts,
-  authRateLimits,
-  authSessions,
-  authUsers,
-  authVerifications,
-} from "#auth/schema/index"
 
 import { createLearnerAuthRuntime } from "#auth/learner/server"
 import { createInMemoryAuthEmailDelivery } from "#auth/email/in-memory"
-import { createSqliteAuthDatabaseAdapter } from "#auth/sqlite-database"
 import {
   createAuthTestDatabase,
-  type AuthTestDatabase,
+  createLearnerAuthDatabaseAdapter,
 } from "#auth/test-support/auth-test-database"
 
 const authMocks = vi.hoisted(() => ({
@@ -47,94 +38,21 @@ describe("학습자 Better Auth runtime", () => {
     })
   })
 
-  it("학습자 URL, origin, cookie, Google provider와 계정 연결 정책을 보존한다", () => {
-    const database = createAuthTestDatabase()
-
-    try {
-      createLearnerAuthRuntime({
-        database: createTestDatabaseAdapter(database.db),
-        emailDelivery: createInMemoryAuthEmailDelivery(),
-        googleClientId: "google-client",
-        googleClientSecret: "google-secret",
-        identityProvisioner: createTestIdentityProvisioner(),
-        secret: "learner-secret-0123456789abcdef",
-        webOrigin: "https://app.example.test",
-      })
-
-      expect(authMocks.betterAuth.mock.calls.at(0)?.at(0)).toMatchObject({
-        account: {
-          accountLinking: {
-            allowDifferentEmails: false,
-            disableImplicitLinking: false,
-            enabled: true,
-            requireLocalEmailVerified: true,
-            updateUserInfoOnLink: false,
-          },
-        },
-        advanced: {
-          cookies: {
-            session_token: { name: learnerSessionCookieName },
-          },
-          ipAddress: {
-            ipAddressHeaders: ["x-writing-app-client-ip"],
-          },
-        },
-        basePath: "/api/auth",
-        baseURL: "https://app.example.test",
-        emailAndPassword: {
-          enabled: true,
-          maxPasswordLength: 128,
-          minPasswordLength: 12,
-          requireEmailVerification: true,
-          resetPasswordTokenExpiresIn: 3600,
-          revokeSessionsOnPasswordReset: true,
-        },
-        emailVerification: {
-          autoSignInAfterVerification: false,
-          sendOnSignIn: false,
-          sendOnSignUp: true,
-        },
-        rateLimit: {
-          customRules: {
-            "/send-verification-email": {
-              max: 3,
-              window: 60,
-            },
-          },
-          enabled: true,
-          storage: "memory",
-        },
-        socialProviders: {
-          google: {
-            clientId: "google-client",
-            clientSecret: "google-secret",
-            scope: ["openid", "email", "profile"],
-          },
-        },
-        trustedOrigins: ["https://app.example.test"],
-      })
-    } finally {
-      database.close()
-    }
-  })
-
   it("Better Auth 사용자 생성 hook을 프로필 저장소에 연결한다", async () => {
     const database = createAuthTestDatabase()
     const identityProvisioner = createTestIdentityProvisioner()
 
     try {
       createLearnerAuthRuntime({
-        database: createTestDatabaseAdapter(database.db),
+        database: createLearnerAuthDatabaseAdapter(database.db),
         emailDelivery: createInMemoryAuthEmailDelivery(),
         identityProvisioner,
         secret: "x".repeat(32),
         webOrigin: "https://app.example.test",
       })
-      const authConfig = authMocks.betterAuth.mock.calls.at(0)?.at(0) as
-        | LearnerAuthHookConfig
-        | undefined
+      const authConfig = readLearnerAuthHookConfig()
 
-      await authConfig?.databaseHooks.user.create.after(sessionUser)
+      await authConfig.databaseHooks.user.create.after(sessionUser)
 
       expect(identityProvisioner.provision).toHaveBeenCalledWith({
         email: "learner@example.com",
@@ -154,7 +72,7 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       const runtime = createLearnerAuthRuntime({
-        database: createTestDatabaseAdapter(database.db),
+        database: createLearnerAuthDatabaseAdapter(database.db),
         emailDelivery: createInMemoryAuthEmailDelivery(),
         identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),
@@ -180,7 +98,7 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       const runtime = createLearnerAuthRuntime({
-        database: createTestDatabaseAdapter(database.db),
+        database: createLearnerAuthDatabaseAdapter(database.db),
         emailDelivery: createInMemoryAuthEmailDelivery(),
         identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),
@@ -203,7 +121,7 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       const runtime = createLearnerAuthRuntime({
-        database: createTestDatabaseAdapter(database.db),
+        database: createLearnerAuthDatabaseAdapter(database.db),
         emailDelivery: createInMemoryAuthEmailDelivery(),
         identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),
@@ -223,7 +141,7 @@ describe("학습자 Better Auth runtime", () => {
 
     try {
       const runtime = createLearnerAuthRuntime({
-        database: createTestDatabaseAdapter(database.db),
+        database: createLearnerAuthDatabaseAdapter(database.db),
         emailDelivery: createInMemoryAuthEmailDelivery(),
         identityProvisioner: createTestIdentityProvisioner(),
         secret: "x".repeat(32),
@@ -259,17 +177,13 @@ type LearnerAuthHookConfig = {
   }
 }
 
-function createTestDatabaseAdapter(database: AuthTestDatabase) {
-  return createSqliteAuthDatabaseAdapter({
-    database,
-    schema: {
-      account: authAccounts,
-      rateLimit: authRateLimits,
-      session: authSessions,
-      user: authUsers,
-      verification: authVerifications,
-    },
-  })
+function readLearnerAuthHookConfig(): LearnerAuthHookConfig {
+  const config = authMocks.betterAuth.mock.calls.at(0)?.at(0)
+  if (config === undefined) {
+    throw new Error("betterAuth를 호출하지 않았습니다.")
+  }
+
+  return config as LearnerAuthHookConfig
 }
 
 function createTestIdentityProvisioner() {

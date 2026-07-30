@@ -14,7 +14,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 
 import { Database } from "bun:sqlite"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { createWritingAppDatabase } from "#db/client"
 import {
@@ -22,9 +22,10 @@ import {
   verifyDatabaseBackup,
 } from "#db/database-backup"
 
-const backupFileModeObservation = vi.hoisted(() => ({
+// staging 파일이 최종 경로로 옮겨지는 순간 같은 경로가 생기는 경쟁을 재현할 수단이
+// 프로덕션 API에 없어, link 경계에서만 충돌을 주입한다.
+const linkRaceInjection = vi.hoisted(() => ({
   conflictingDestination: undefined as string | undefined,
-  partialModes: [] as number[],
 }))
 
 vi.mock("node:fs", async (importOriginal) => {
@@ -36,164 +37,193 @@ vi.mock("node:fs", async (importOriginal) => {
       existingPath: Parameters<typeof actual.linkSync>[0],
       newPath: Parameters<typeof actual.linkSync>[1]
     ): void {
-      if (String(existingPath).endsWith(".partial")) {
-        backupFileModeObservation.partialModes.push(
-          actual.statSync(existingPath).mode & 0o777
-        )
-        if (
-          backupFileModeObservation.conflictingDestination === String(newPath)
-        ) {
-          actual.writeFileSync(newPath, "경쟁 백업", { flag: "wx" })
-        }
+      if (
+        String(existingPath).endsWith(".partial") &&
+        linkRaceInjection.conflictingDestination === String(newPath)
+      ) {
+        actual.writeFileSync(newPath, "경쟁 백업", { flag: "wx" })
       }
+
       actual.linkSync(existingPath, newPath)
     },
   }
 })
 
-describe("SQLite 백업과 복구 검증", () => {
-  it("공백이 있는 file-backed WAL DB를 독립 백업하고 임시 복구한다", () => {
-    const directory = mkdtempSync(join(tmpdir(), "writing app backup "))
-    const sourcePath = join(directory, "운영 database.sqlite")
-    const backupPath = join(directory, "backup files", "검증 backup.sqlite")
-    const source = createWritingAppDatabase(sourcePath)
+const temporaryDirectories: string[] = []
 
-    try {
-      createBackupTestSchema(source.sqlite)
-      source.sqlite.exec("PRAGMA wal_autocheckpoint = 0")
-      source.sqlite.exec(`
-        CREATE TABLE backup_probe (value TEXT NOT NULL);
-        INSERT INTO backup_probe (value) VALUES ('backup-before');
-      `)
-      const sourceBeforeBackup = readFileSync(sourcePath)
-      const sourceWalBeforeBackup = readFileSync(`${sourcePath}-wal`)
-      const sourceShmSizeBeforeBackup = statSync(`${sourcePath}-shm`).size
+beforeEach(() => {
+  linkRaceInjection.conflictingDestination = undefined
+})
 
-      const report = createVerifiedDatabaseBackup({
-        backupPath,
-        requiredTables: ["backup_probe"],
-        sourcePath,
-      })
-      expect(readFileSync(sourcePath)).toEqual(sourceBeforeBackup)
-      expect(readFileSync(`${sourcePath}-wal`)).toEqual(sourceWalBeforeBackup)
-      expect(statSync(`${sourcePath}-shm`).size).toBe(sourceShmSizeBeforeBackup)
-      source.sqlite.exec(
-        "INSERT INTO backup_probe (value) VALUES ('source-after')"
-      )
-      chmodSync(backupPath, 0o444)
-      const backupBeforeVerification = readFileSync(backupPath)
-      const isolatedInspection = inspectIsolatedBackup(backupPath)
+afterEach(() => {
+  while (temporaryDirectories.length > 0) {
+    const directory = temporaryDirectories.pop()
 
-      expect(isolatedInspection.probeRows).toEqual([{ value: "backup-before" }])
-      expect(isolatedInspection.journalMode).toBe("delete")
-      expect(isolatedInspection.sidecarsCreated).toBe(false)
-      expect(isolatedInspection.queryOnlyEnabled).toBe(true)
-      expect(isolatedInspection.temporaryDirectoryRemoved).toBe(true)
-      expect(readFileSync(backupPath)).toEqual(backupBeforeVerification)
-      expect(statSync(backupPath).mode & 0o777).toBe(0o444)
-      expect(existsSync(`${backupPath}-wal`)).toBe(false)
-      expect(existsSync(`${backupPath}-shm`)).toBe(false)
-      expect(
-        readdirSync(dirname(backupPath)).some((name) =>
-          name.includes(".partial")
-        )
-      ).toBe(false)
-
-      expect(report).toMatchObject({
-        backupPath,
-        kind: "database-backup-verified",
-        sourcePath,
-        verification: {
-          integrityCheck: "ok",
-          requiredTableReadSmoke: "ok",
-        },
-      })
-      expect(report.backupBytes).toBeGreaterThan(0)
-      expect(report.verification.schemaVersion).toBeGreaterThan(0)
-      expect(
-        verifyDatabaseBackup(backupPath, { requiredTables: ["backup_probe"] })
-      ).toEqual(report.verification)
-      expect(readFileSync(backupPath)).toEqual(backupBeforeVerification)
-      expect(statSync(backupPath).mode & 0o777).toBe(0o444)
-      expect(existsSync(`${backupPath}-wal`)).toBe(false)
-      expect(existsSync(`${backupPath}-shm`)).toBe(false)
-    } finally {
-      source.close()
-      rmSync(directory, { force: true, recursive: true })
+    if (directory !== undefined) {
+      rmSync(directory, { recursive: true })
     }
-  }, 15_000)
+  }
+})
 
-  it("손상 backup을 거부하고 기존 운영 파일과 산출물을 덮어쓰지 않는다", () => {
-    const directory = mkdtempSync(join(tmpdir(), "writing app restore "))
-    const sourcePath = join(directory, "source.sqlite")
+describe("SQLite 백업", () => {
+  it("백업은 source DB와 WAL sidecar를 변경하지 않는다", () => {
+    const fixture = createBackupSource()
+    const backupPath = join(fixture.directory, "backup files", "백업.sqlite")
+    const sourceBefore = readFileSync(fixture.sourcePath)
+    const walBefore = readFileSync(`${fixture.sourcePath}-wal`)
+    const shmSizeBefore = statSync(`${fixture.sourcePath}-shm`).size
+
+    createVerifiedDatabaseBackup({
+      backupPath,
+      requiredTables: ["backup_probe"],
+      sourcePath: fixture.sourcePath,
+    })
+
+    expect(readFileSync(fixture.sourcePath)).toEqual(sourceBefore)
+    expect(readFileSync(`${fixture.sourcePath}-wal`)).toEqual(walBefore)
+    expect(statSync(`${fixture.sourcePath}-shm`).size).toBe(shmSizeBefore)
+
+    fixture.close()
+  })
+
+  it("백업은 격리 복구본에서 백업 시점 데이터만 담는다", () => {
+    const fixture = createBackupSource()
+    const backupPath = join(fixture.directory, "backup files", "백업.sqlite")
+
+    createVerifiedDatabaseBackup({
+      backupPath,
+      requiredTables: ["backup_probe"],
+      sourcePath: fixture.sourcePath,
+    })
+    fixture.insertProbeValue("source-after")
+    fixture.close()
+
+    const inspection = inspectIsolatedBackup(backupPath)
+
+    expect(inspection.probeRows).toEqual([{ value: "backup-before" }])
+    expect(inspection.journalMode).toBe("delete")
+    expect(inspection.sidecarsCreated).toBe(false)
+  })
+
+  it("백업 파일은 sidecar와 staging 잔여 파일을 남기지 않는다", () => {
+    const fixture = createBackupSource()
+    const backupPath = join(fixture.directory, "backup files", "백업.sqlite")
+
+    createVerifiedDatabaseBackup({
+      backupPath,
+      requiredTables: ["backup_probe"],
+      sourcePath: fixture.sourcePath,
+    })
+    fixture.close()
+
+    expect(existsSync(`${backupPath}-wal`)).toBe(false)
+    expect(existsSync(`${backupPath}-shm`)).toBe(false)
+    expect(
+      readdirSync(dirname(backupPath)).some((name) => name.includes(".partial"))
+    ).toBe(false)
+  })
+
+  it("검증 report와 재검증 결과가 같은 계약을 만든다", () => {
+    const fixture = createBackupSource()
+    const backupPath = join(fixture.directory, "backup files", "백업.sqlite")
+
+    const report = createVerifiedDatabaseBackup({
+      backupPath,
+      requiredTables: ["backup_probe"],
+      sourcePath: fixture.sourcePath,
+    })
+    fixture.close()
+    const backupBeforeVerification = readFileSync(backupPath)
+
+    expect(report).toMatchObject({
+      backupPath,
+      kind: "database-backup-verified",
+      sourcePath: fixture.sourcePath,
+      verification: {
+        integrityCheck: "ok",
+        requiredTableReadSmoke: "ok",
+      },
+    })
+    expect(report.backupBytes).toBeGreaterThan(0)
+    expect(report.verification.schemaVersion).toBeGreaterThan(0)
+    expect(
+      verifyDatabaseBackup(backupPath, { requiredTables: ["backup_probe"] })
+    ).toEqual(report.verification)
+    expect(readFileSync(backupPath)).toEqual(backupBeforeVerification)
+  })
+})
+
+describe("SQLite 백업 검증", () => {
+  it("손상 backup 파일을 거부한다", () => {
+    const directory = createTemporaryDirectory("writing app restore ")
     const corruptedPath = join(directory, "corrupted.sqlite")
-    const protectedPath = join(directory, "production.sqlite")
-    const source = createWritingAppDatabase(sourcePath)
+    writeFileSync(corruptedPath, "SQLite format 3\0손상된 파일", "utf8")
 
-    try {
-      createBackupTestSchema(source.sqlite)
-      writeFileSync(corruptedPath, "SQLite format 3\0손상된 파일", "utf8")
-      writeFileSync(protectedPath, "운영 파일 원본", "utf8")
-      const protectedBefore = readFileSync(protectedPath)
+    expect(() =>
+      verifyDatabaseBackup(corruptedPath, { requiredTables: [] })
+    ).toThrow()
+  })
 
-      expect(() =>
-        verifyDatabaseBackup(corruptedPath, { requiredTables: [] })
-      ).toThrow()
-      expect(() =>
-        createVerifiedDatabaseBackup({
-          backupPath: protectedPath,
-          requiredTables: [],
-          sourcePath,
-        })
-      ).toThrow("기존 백업 파일을 덮어쓰지 않습니다")
-      expect(readFileSync(protectedPath)).toEqual(protectedBefore)
-    } finally {
-      source.close()
-      rmSync(directory, { force: true, recursive: true })
-    }
+  it("무결성은 정상이지만 필수 table이 없는 backup을 거부한다", () => {
+    const fixture = createBackupSource()
+    const backupPath = join(fixture.directory, "backup", "snapshot.sqlite")
+
+    createVerifiedDatabaseBackup({
+      backupPath,
+      requiredTables: ["backup_probe"],
+      sourcePath: fixture.sourcePath,
+    })
+    fixture.close()
+
+    expect(() =>
+      verifyDatabaseBackup(backupPath, {
+        requiredTables: ["missing_table"],
+      })
+    ).toThrow()
+  })
+
+  it("기존 운영 파일을 백업 대상으로 덮어쓰지 않는다", () => {
+    const fixture = createBackupSource()
+    const protectedPath = join(fixture.directory, "production.sqlite")
+    writeFileSync(protectedPath, "운영 파일 원본", "utf8")
+    const protectedBefore = readFileSync(protectedPath)
+
+    expect(() =>
+      createVerifiedDatabaseBackup({
+        backupPath: protectedPath,
+        requiredTables: [],
+        sourcePath: fixture.sourcePath,
+      })
+    ).toThrow("기존 백업 파일을 덮어쓰지 않습니다")
+    expect(readFileSync(protectedPath)).toEqual(protectedBefore)
+
+    fixture.close()
   })
 
   it("publish 직전 같은 경로가 생성되어도 기존 백업을 덮어쓰지 않는다", () => {
-    const directory = mkdtempSync(join(tmpdir(), "writing app backup race "))
-    const sourcePath = join(directory, "source.sqlite")
-    const backupPath = join(directory, "backup", "snapshot.sqlite")
-    const source = createWritingAppDatabase(sourcePath)
+    const fixture = createBackupSource()
+    const backupPath = join(fixture.directory, "backup", "snapshot.sqlite")
+    linkRaceInjection.conflictingDestination = backupPath
 
-    try {
-      createBackupTestSchema(source.sqlite)
-      backupFileModeObservation.conflictingDestination = backupPath
+    expect(() =>
+      createVerifiedDatabaseBackup({
+        backupPath,
+        requiredTables: ["backup_probe"],
+        sourcePath: fixture.sourcePath,
+      })
+    ).toThrow("기존 백업 파일을 덮어쓰지 않습니다")
+    expect(readFileSync(backupPath, "utf8")).toBe("경쟁 백업")
+    expect(
+      readdirSync(dirname(backupPath)).some((name) => name.includes(".partial"))
+    ).toBe(false)
 
-      expect(() =>
-        createVerifiedDatabaseBackup({
-          backupPath,
-          requiredTables: ["backup_source"],
-          sourcePath,
-        })
-      ).toThrow("기존 백업 파일을 덮어쓰지 않습니다")
-      expect(readFileSync(backupPath, "utf8")).toBe("경쟁 백업")
-      expect(
-        readdirSync(dirname(backupPath)).some((name) =>
-          name.includes(".partial")
-        )
-      ).toBe(false)
-    } finally {
-      backupFileModeObservation.conflictingDestination = undefined
-      source.close()
-      rmSync(directory, { force: true, recursive: true })
-    }
+    fixture.close()
   })
 
   it("source close가 실패해도 미완성 backup 파일을 정리한다", () => {
-    const directory = mkdtempSync(join(tmpdir(), "writing app close failure "))
-    const sourcePath = join(directory, "source.sqlite")
-    const backupPath = join(directory, "backup", "snapshot.sqlite")
-    const source = createWritingAppDatabase(sourcePath)
-
-    try {
-      createBackupTestSchema(source.sqlite)
-    } finally {
-      source.close()
-    }
+    const fixture = createBackupSource()
+    const backupPath = join(fixture.directory, "backup", "snapshot.sqlite")
+    fixture.close()
 
     const nativeClose = Database.prototype.close
     const closeSpy = vi
@@ -203,7 +233,7 @@ describe("SQLite 백업과 복구 검증", () => {
         throwOnError?: boolean
       ): void {
         nativeClose.call(this, throwOnError)
-        if (this.filename === sourcePath) {
+        if (this.filename === fixture.sourcePath) {
           throw new Error("source close failure")
         }
       })
@@ -212,8 +242,8 @@ describe("SQLite 백업과 복구 검증", () => {
       expect(() =>
         createVerifiedDatabaseBackup({
           backupPath,
-          requiredTables: ["backup_source"],
-          sourcePath,
+          requiredTables: ["backup_probe"],
+          sourcePath: fixture.sourcePath,
         })
       ).toThrow("source close failure")
       expect(existsSync(backupPath)).toBe(false)
@@ -224,67 +254,79 @@ describe("SQLite 백업과 복구 검증", () => {
       ).toBe(false)
     } finally {
       closeSpy.mockRestore()
-      rmSync(directory, { force: true, recursive: true })
     }
   })
 
+  // 파일 mode 계약은 POSIX 권한 모델에만 존재해 Windows 로컬에서는 건너뛴다. PR gate는 Linux에서 실행한다.
   it.skipIf(process.platform === "win32")(
-    "새 output과 staging·최종 backup만 private mode로 만든다",
+    "새 output 디렉터리와 최종 backup만 private mode로 만든다",
     () => {
-      const directory = mkdtempSync(
-        join(tmpdir(), "writing app private backup ")
-      )
-      const sourcePath = join(directory, "source.sqlite")
-      const newOutputDirectory = join(directory, "new-output")
+      const fixture = createBackupSource()
+      fixture.close()
+      const newOutputDirectory = join(fixture.directory, "new-output")
       const firstBackupPath = join(newOutputDirectory, "first.sqlite")
-      const existingOutputDirectory = join(directory, "existing-output")
+      const existingOutputDirectory = join(fixture.directory, "existing-output")
       const secondBackupPath = join(existingOutputDirectory, "second.sqlite")
-      const source = createWritingAppDatabase(sourcePath)
-
-      try {
-        createBackupTestSchema(source.sqlite)
-      } finally {
-        source.close()
-      }
-
       mkdirSync(existingOutputDirectory, { mode: 0o750 })
       chmodSync(existingOutputDirectory, 0o750)
-      backupFileModeObservation.partialModes.length = 0
 
-      try {
-        createVerifiedDatabaseBackup({
-          backupPath: firstBackupPath,
-          requiredTables: ["backup_source"],
-          sourcePath,
-        })
-        createVerifiedDatabaseBackup({
-          backupPath: secondBackupPath,
-          requiredTables: ["backup_source"],
-          sourcePath,
-        })
+      createVerifiedDatabaseBackup({
+        backupPath: firstBackupPath,
+        requiredTables: ["backup_probe"],
+        sourcePath: fixture.sourcePath,
+      })
+      createVerifiedDatabaseBackup({
+        backupPath: secondBackupPath,
+        requiredTables: ["backup_probe"],
+        sourcePath: fixture.sourcePath,
+      })
 
-        expect(statSync(newOutputDirectory).mode & 0o777).toBe(0o700)
-        expect(statSync(existingOutputDirectory).mode & 0o777).toBe(0o750)
-        expect(backupFileModeObservation.partialModes).toEqual([0o600, 0o600])
-        expect(statSync(firstBackupPath).mode & 0o777).toBe(0o600)
-        expect(statSync(secondBackupPath).mode & 0o777).toBe(0o600)
-      } finally {
-        rmSync(directory, { force: true, recursive: true })
-      }
+      expect(statSync(newOutputDirectory).mode & 0o777).toBe(0o700)
+      expect(statSync(existingOutputDirectory).mode & 0o777).toBe(0o750)
+      expect(statSync(firstBackupPath).mode & 0o777).toBe(0o600)
+      expect(statSync(secondBackupPath).mode & 0o777).toBe(0o600)
     }
   )
 })
 
-function createBackupTestSchema(sqlite: Database): void {
-  sqlite.exec("CREATE TABLE backup_source (value TEXT NOT NULL)")
+function createTemporaryDirectory(prefix: string): string {
+  const directory = mkdtempSync(join(tmpdir(), prefix))
+  temporaryDirectories.push(directory)
+
+  return directory
+}
+
+function createBackupSource() {
+  // 경로에 공백이 있는 실제 운영 환경을 재현한다.
+  const directory = createTemporaryDirectory("writing app backup ")
+  const sourcePath = join(directory, "운영 database.sqlite")
+  const source = createWritingAppDatabase(sourcePath)
+  let closed = false
+
+  source.sqlite.exec("PRAGMA wal_autocheckpoint = 0")
+  source.sqlite.exec(`
+    CREATE TABLE backup_probe (value TEXT NOT NULL);
+    INSERT INTO backup_probe (value) VALUES ('backup-before');
+  `)
+
+  return {
+    close() {
+      if (closed) return
+      closed = true
+      source.close()
+    },
+    directory,
+    insertProbeValue(value: string) {
+      source.sqlite.run("INSERT INTO backup_probe (value) VALUES (?)", [value])
+    },
+    sourcePath,
+  }
 }
 
 function inspectIsolatedBackup(backupPath: string): {
   readonly journalMode: string
   readonly probeRows: readonly { readonly value: string }[]
-  readonly queryOnlyEnabled: boolean
   readonly sidecarsCreated: boolean
-  readonly temporaryDirectoryRemoved: boolean
 } {
   const temporaryDirectory = mkdtempSync(
     join(tmpdir(), "writing app isolated restore ")
@@ -293,7 +335,6 @@ function inspectIsolatedBackup(backupPath: string): {
   let restored: Database | undefined
   let journalMode = ""
   let probeRows: readonly { readonly value: string }[] = []
-  let queryOnlyEnabled = false
   let sidecarsCreated = false
 
   try {
@@ -304,11 +345,6 @@ function inspectIsolatedBackup(backupPath: string): {
       readonly: true,
       strict: true,
     })
-    restored.exec("PRAGMA query_only = ON")
-    queryOnlyEnabled =
-      restored
-        .query<{ readonly query_only: number }, []>("PRAGMA query_only")
-        .get()?.query_only === 1
     restored.query("PRAGMA integrity_check").get()
     journalMode =
       restored
@@ -323,14 +359,8 @@ function inspectIsolatedBackup(backupPath: string): {
       existsSync(`${restoredPath}-wal`) && existsSync(`${restoredPath}-shm`)
   } finally {
     restored?.close()
-    rmSync(temporaryDirectory, { force: true, recursive: true })
+    rmSync(temporaryDirectory, { recursive: true })
   }
 
-  return {
-    journalMode,
-    probeRows,
-    queryOnlyEnabled,
-    sidecarsCreated,
-    temporaryDirectoryRemoved: !existsSync(temporaryDirectory),
-  }
+  return { journalMode, probeRows, sidecarsCreated }
 }

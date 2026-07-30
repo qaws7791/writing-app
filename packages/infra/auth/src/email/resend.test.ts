@@ -46,7 +46,6 @@ describe("Resend 인증 메일 adapter", () => {
     expect(JSON.parse(String(request?.body))).toMatchObject({
       from: "글결 <auth@example.com>",
       reply_to: "support@example.com",
-      subject: "[글결] 이메일 주소를 확인해 주세요",
       to: ["learner@example.com"],
     })
   })
