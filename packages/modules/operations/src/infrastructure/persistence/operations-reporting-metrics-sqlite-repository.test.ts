@@ -14,7 +14,7 @@ import {
   insertLearner,
   insertProgress,
   insertPublishedCourse,
-} from "@workspace/operations/test-fixtures"
+} from "#operations/test/fixtures/reporting-metrics-seed"
 
 import { createOperationsReportingQueries } from "#operations/application/operations-reporting"
 import { createSqliteOperationsReportingRepository } from "#operations/infrastructure/persistence/operations-reporting-sqlite-repository"
@@ -201,15 +201,32 @@ describe("operations reporting SQL metrics", () => {
         percentage: null,
         status: "empty",
       })
-      expect(analytics.value.dailySeries).toHaveLength(3)
-      expect(analytics.value.dailySeries).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            returns: 0,
-            returnStatus: "empty",
-          }),
-        ])
-      )
+      expect(analytics.value.dailySeries).toEqual([
+        {
+          completions: 0,
+          date: "2026-07-22",
+          returns: 0,
+          returnStatus: "empty",
+          signups: 0,
+          starts: 0,
+        },
+        {
+          completions: 0,
+          date: "2026-07-23",
+          returns: 0,
+          returnStatus: "empty",
+          signups: 0,
+          starts: 0,
+        },
+        {
+          completions: 0,
+          date: "2026-07-24",
+          returns: 0,
+          returnStatus: "empty",
+          signups: 0,
+          starts: 0,
+        },
+      ])
       expect(
         repository.readLessonAnalytics({
           direction: "asc",
@@ -229,7 +246,7 @@ describe("operations reporting SQL metrics", () => {
       ).toThrow(/read.?only/i)
     } finally {
       readOnly.close()
-      rmSync(directory, { force: true, recursive: true })
+      rmSync(directory, { recursive: true })
     }
   })
 })
@@ -269,32 +286,40 @@ function createReportingFixture(): Readonly<{
       id: "learner-e",
       status: "active",
     })
-    insertPublishedCourse(writer.sqlite)
+    const course = insertPublishedCourse(writer.sqlite)
     insertProgress(writer.sqlite, {
       completedAt: "2026-07-12T10:00:00+09:00",
+      course,
+      lessonId: course.lessonIds[0],
       startedAt: "2026-07-10T09:00:00+09:00",
       status: "completed",
       userId: "learner-a",
     })
     insertProgress(writer.sqlite, {
       completedAt: null,
+      course,
+      lessonId: course.lessonIds[0],
       startedAt: "2026-07-10T10:00:00+09:00",
       status: "in_progress",
       userId: "learner-b",
     })
     insertProgress(writer.sqlite, {
       completedAt: "2026-07-22T10:00:00+09:00",
+      course,
+      lessonId: course.lessonIds[0],
       startedAt: "2026-07-20T09:00:00+09:00",
       status: "completed",
       userId: "learner-c",
     })
     insertProgress(writer.sqlite, {
       completedAt: "2026-07-12T11:00:00+09:00",
+      course,
+      lessonId: course.lessonIds[0],
       startedAt: "2026-07-10T11:00:00+09:00",
       status: "completed",
       userId: "learner-d",
     })
-    insertAiFeedbackAttempts(writer.sqlite)
+    insertAiFeedbackAttempts(writer.sqlite, course)
     insertActivityDays(writer.sqlite, "learner-a", ["2026-07-10", "2026-07-11"])
     insertActivityDays(writer.sqlite, "learner-b", ["2026-07-10"])
     insertActivityDays(writer.sqlite, "learner-c", ["2026-07-20", "2026-07-21"])
@@ -307,7 +332,7 @@ function createReportingFixture(): Readonly<{
   return {
     close() {
       readOnly.close()
-      rmSync(directory, { force: true, recursive: true })
+      rmSync(directory, { recursive: true })
     },
     readOnly,
   }

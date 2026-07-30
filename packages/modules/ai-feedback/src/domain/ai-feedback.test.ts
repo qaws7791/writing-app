@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  createAiFeedback,
-  validateAiFeedbackProviderResponse,
-} from "#ai-feedback/domain/ai-feedback"
+import { validateAiFeedbackProviderResponse } from "#ai-feedback/domain/ai-feedback"
 import {
   calculateRemainingAiFeedbackAttempts,
   defaultAiFeedbackAttemptPolicy,
@@ -18,63 +15,85 @@ import {
   validateAiFeedbackDailyQuotaPolicy,
 } from "#ai-feedback/domain/ai-feedback-quota"
 
-const attemptStatuses = [
-  "pending",
-  "succeeded",
-  "failed",
-  "expired",
-] as const satisfies readonly AiFeedbackAttemptStatus[]
+type AttemptTransition = Readonly<{
+  from: AiFeedbackAttemptStatus
+  to: AiFeedbackAttemptStatus
+}>
+
+const allowedAttemptTransitions = [
+  { from: "pending", to: "succeeded" },
+  { from: "pending", to: "failed" },
+  { from: "pending", to: "expired" },
+] as const satisfies readonly AttemptTransition[]
+
+const rejectedAttemptTransitions = [
+  { from: "pending", to: "pending" },
+  { from: "succeeded", to: "pending" },
+  { from: "succeeded", to: "succeeded" },
+  { from: "succeeded", to: "failed" },
+  { from: "succeeded", to: "expired" },
+  { from: "failed", to: "pending" },
+  { from: "failed", to: "succeeded" },
+  { from: "failed", to: "failed" },
+  { from: "failed", to: "expired" },
+  { from: "expired", to: "pending" },
+  { from: "expired", to: "succeeded" },
+  { from: "expired", to: "failed" },
+  { from: "expired", to: "expired" },
+] as const satisfies readonly AttemptTransition[]
+
+const coachingResponse = {
+  improvements: ["근거를 더 구체화하세요."],
+  nextAction: "예시 한 문장을 추가하세요.",
+  strengths: ["주장이 명확합니다."],
+  summary: "좋은 초안입니다.",
+}
 
 describe("AI feedback domain", () => {
-  it("provider 결과를 허용된 한국어 coaching shape로 제한한다", () => {
-    const response = validateAiFeedbackProviderResponse({
-      improvements: ["근거를 더 구체화하세요."],
-      nextAction: "예시 한 문장을 추가하세요.",
-      strengths: ["주장이 명확합니다."],
-      summary: "좋은 초안입니다.",
-    })
-
-    expect(response.isOk()).toBe(true)
-    if (response.isErr()) return
-    expect(createAiFeedback(response.value)).toEqual(response.value)
+  it("허용된 4개 key만 담긴 provider 결과를 coaching shape로 통과시킨다", () => {
     expect(
-      validateAiFeedbackProviderResponse({
-        improvements: ["개선점"],
-        nextAction: "다음 행동",
-        score: 80,
-        strengths: ["강점"],
-        summary: "요약",
-      })
-    ).toEqual({ error: { kind: "provider-response-invalid" } })
-    expect(
-      validateAiFeedbackProviderResponse({
-        improvements: ["개선점"],
-        nextAction: "다음 행동",
-        providerRaw: "노출하면 안 되는 원문",
-        strengths: ["강점"],
-        summary: "요약",
-      })
-    ).toEqual({ error: { kind: "provider-response-invalid" } })
-    expect(
-      validateAiFeedbackProviderResponse({
-        improvements: ["개선점"],
-        nextAction: "가".repeat(4_001),
-        strengths: ["강점"],
-        summary: "요약",
-      })
-    ).toEqual({ error: { kind: "provider-response-invalid" } })
+      validateAiFeedbackProviderResponse(coachingResponse)._unsafeUnwrap()
+    ).toEqual(coachingResponse)
   })
 
-  it("완료 시도 한도, pending TTL과 provider timeout 순서를 검증한다", () => {
+  it("nextAction이 상한 4000자면 provider 결과를 통과시킨다", () => {
     expect(
-      validateAiFeedbackAttemptPolicy(defaultAiFeedbackAttemptPolicy).isOk()
-    ).toBe(true)
+      validateAiFeedbackProviderResponse({
+        ...coachingResponse,
+        nextAction: "가".repeat(4_000),
+      })._unsafeUnwrap().nextAction
+    ).toHaveLength(4_000)
+  })
+
+  it.each([
+    {
+      case: "점수 필드가 섞이면",
+      response: { ...coachingResponse, score: 80 },
+    },
+    {
+      case: "provider 원문 필드가 섞이면",
+      response: { ...coachingResponse, providerRaw: "노출하면 안 되는 원문" },
+    },
+    {
+      case: "nextAction이 상한을 1자 넘기면",
+      response: { ...coachingResponse, nextAction: "가".repeat(4_001) },
+    },
+  ])("$case provider 결과를 거절한다", ({ response }) => {
+    expect(
+      validateAiFeedbackProviderResponse(response)._unsafeUnwrapErr()
+    ).toEqual({ kind: "provider-response-invalid" })
+  })
+
+  it("provider timeout이 pending TTL보다 짧지 않은 정책을 거절한다", () => {
     expect(
       validateAiFeedbackAttemptPolicy({
         ...defaultAiFeedbackAttemptPolicy,
         providerTimeoutMs: defaultAiFeedbackAttemptPolicy.pendingTtlMs,
-      }).isErr()
-    ).toBe(true)
+      })._unsafeUnwrapErr()
+    ).toEqual({ kind: "attempt-policy-invalid" })
+  })
+
+  it("완료 시도가 한도를 넘으면 남은 시도를 음수 없이 0으로 계산한다", () => {
     expect(
       calculateRemainingAiFeedbackAttempts({
         completedAttempts: 4,
@@ -83,14 +102,21 @@ describe("AI feedback domain", () => {
     ).toBe(0)
   })
 
-  it.each(
-    attemptStatuses.flatMap((from) =>
-      attemptStatuses.map((to) => ({ from, to }))
-    )
-  )("$from → $to 상태 전이 정책을 적용한다", ({ from, to }) => {
-    const allowed = from === "pending" && to !== "pending"
-    expect(transitionAiFeedbackAttempt(from, to).isOk()).toBe(allowed)
-  })
+  it.each(allowedAttemptTransitions)(
+    "$from → $to 상태 전이를 허용한다",
+    ({ from, to }) => {
+      expect(transitionAiFeedbackAttempt(from, to)._unsafeUnwrap()).toBe(to)
+    }
+  )
+
+  it.each(rejectedAttemptTransitions)(
+    "$from → $to 상태 전이를 거절한다",
+    ({ from, to }) => {
+      expect(transitionAiFeedbackAttempt(from, to)._unsafeUnwrapErr()).toEqual({
+        kind: "invalid-attempt-transition",
+      })
+    }
+  )
 
   it("영구 성공 한도만 즉시 재시도 불가로 분류한다", () => {
     expect(
@@ -114,28 +140,26 @@ describe("AI feedback domain", () => {
     ).toBe(true)
   })
 
-  it("일일 quota를 양의 정수와 request 이하 success limit으로 제한한다", () => {
-    expect(
-      validateAiFeedbackDailyQuotaPolicy(
-        defaultAiFeedbackDailyQuotaPolicy
-      ).isOk()
-    ).toBe(true)
+  it("일일 success limit이 request limit보다 크면 quota 정책을 거절한다", () => {
     expect(
       validateAiFeedbackDailyQuotaPolicy({
         ...defaultAiFeedbackDailyQuotaPolicy,
         userDailyRequestLimit: 1,
         userDailySuccessLimit: 2,
-      }).isErr()
-    ).toBe(true)
+      })._unsafeUnwrapErr()
+    ).toEqual({ kind: "daily-quota-policy-invalid" })
   })
 
-  it("Asia/Seoul 자정으로 quota 날짜와 Retry-After를 계산한다", () => {
+  it("Asia/Seoul 자정 직전에는 같은 quota 날짜와 1초 Retry-After를 준다", () => {
     expect(
       createAsiaSeoulQuotaWindow(new Date("2026-07-23T14:59:59.250Z"))
     ).toEqual({
       date: "2026-07-23",
       retryAfterSeconds: 1,
     })
+  })
+
+  it("Asia/Seoul 자정에는 다음 quota 날짜와 하루치 Retry-After를 준다", () => {
     expect(
       createAsiaSeoulQuotaWindow(new Date("2026-07-23T15:00:00.000Z"))
     ).toEqual({

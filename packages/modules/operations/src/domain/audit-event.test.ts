@@ -10,6 +10,8 @@ import {
 const actorId = "admin-1" as AdminId
 const createdAt = new Date("2026-07-24T00:00:00.000Z")
 
+// 고위험 보존 기한은 달력 3년이 아니라 1095일(365일 × 3)이므로
+// 윤년(2028)을 지나 2029-07-24가 아닌 2029-07-23이 된다.
 describe("operations audit event", () => {
   it.each([
     [
@@ -71,7 +73,7 @@ describe("operations audit event", () => {
     }
   )
 
-  it("action과 target 종류가 다르거나 PII 형태 식별자가 들어오면 거절한다", () => {
+  it("action이 요구하는 target 종류와 다르면 감사 이벤트를 거절한다", () => {
     expect(
       createStartedAuditEvent({
         action: "course.publish",
@@ -81,8 +83,11 @@ describe("operations audit event", () => {
         id: "audit-1",
         requestId: "request-1",
         target: { id: "user-1" as UserId, type: "learner" },
-      }).isErr()
-    ).toBe(true)
+      })._unsafeUnwrapErr()
+    ).toEqual({ kind: "invalid-audit-event" })
+  })
+
+  it("PII 형태 식별자가 target으로 들어오면 감사 이벤트를 거절한다", () => {
     expect(
       createStartedAuditEvent({
         action: "learner.detail.read",
@@ -95,7 +100,7 @@ describe("operations audit event", () => {
           id: "person@example.test" as UserId,
           type: "learner",
         },
-      }).isErr()
-    ).toBe(true)
+      })._unsafeUnwrapErr()
+    ).toEqual({ kind: "invalid-audit-event" })
   })
 })

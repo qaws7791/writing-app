@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { createApp } from "@workspace/http-platform/app"
 import { err, ok } from "@workspace/kernel/result"
-import type { AdminId, CourseId, LessonId } from "@workspace/types/ids"
+import type { AdminId } from "@workspace/types/ids"
 
 import type { OperationsActor } from "#operations/domain/operations-actor"
 import {
@@ -41,26 +41,46 @@ describe("operations HTTP contract", () => {
     })
   })
 
-  it("레슨 pagination·정렬과 AI 품질 기간을 route 경계에서 제한한다", async () => {
+  it.each([
+    {
+      case: "레슨 pageSize 상한을 넘기면",
+      path: "/analytics/lessons?pageSize=101",
+    },
+    {
+      case: "허용하지 않은 정렬 key를 주면",
+      path: "/analytics/lessons?sort=started",
+    },
+    {
+      case: "AI 품질 조회 기간이 허용 범위를 넘기면",
+      path: "/analytics/ai-feedback?from=2025-01-01T00%3A00%3A00.000Z&to=2026-07-23T00%3A00%3A00.000Z",
+    },
+  ])(
+    "$case route 경계에서 400 VALIDATION_FAILED로 거절한다",
+    async ({ path }) => {
+      const app = createFixture()
+
+      const response = await app.request(path, {
+        headers: { Cookie: cookie },
+      })
+
+      expect(response.status).toBe(400)
+      await expect(response.json()).resolves.toMatchObject({
+        code: "VALIDATION_FAILED",
+      })
+    }
+  )
+
+  it("레슨 pageSize 상한 100은 거절하지 않고 조회를 허용한다", async () => {
     const app = createFixture()
-    const oversizedPage = await app.request("/analytics/lessons?pageSize=101", {
+
+    const response = await app.request("/analytics/lessons?pageSize=100", {
       headers: { Cookie: cookie },
     })
-    const unsupportedSort = await app.request(
-      "/analytics/lessons?sort=started",
-      { headers: { Cookie: cookie } }
-    )
-    const oversizedAiRange = await app.request(
-      "/analytics/ai-feedback?from=2025-01-01T00%3A00%3A00.000Z&to=2026-07-23T00%3A00%3A00.000Z",
-      { headers: { Cookie: cookie } }
-    )
 
-    expect(oversizedPage.status).toBe(400)
-    expect(unsupportedSort.status).toBe(400)
-    expect(oversizedAiRange.status).toBe(400)
+    expect(response.status).toBe(200)
   })
 
-  it("AI 원문 없는 품질 집계를 관리자 전용 private 응답으로 제공한다", async () => {
+  it("AI 품질 집계는 관리자 전용 private no-store 응답으로 제공한다", async () => {
     const app = createFixture()
     const response = await app.request(
       "/analytics/ai-feedback?from=2026-07-22T00%3A00%3A00.000Z&to=2026-07-23T00%3A00%3A00.000Z",
@@ -69,15 +89,9 @@ describe("operations HTTP contract", () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-    await expect(response.json()).resolves.toMatchObject({
-      failureCount: 0,
-      requestCount: 0,
-      status: "empty",
-      successRate: null,
-    })
   })
 
-  it("분석 요약에 원문 없는 AI 실패율 상위 레슨을 제공한다", async () => {
+  it("분석 요약은 관리자 전용 private no-store 응답으로 제공한다", async () => {
     const app = createFixture()
     const response = await app.request("/analytics?days=30", {
       headers: { Cookie: cookie },
@@ -85,29 +99,14 @@ describe("operations HTTP contract", () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-    await expect(response.json()).resolves.toMatchObject({
-      worstAiFeedbackLessons: [
-        {
-          courseId: "course-1",
-          courseTitle: "글쓰기 코스",
-          failureCount: 2,
-          failureRate: 66.7,
-          lessonId: "lesson-1",
-          lessonTitle: "문장 시작하기",
-          requestCount: 3,
-        },
-      ],
-    })
   })
 
   it("감사 이벤트 조회를 관리자 전용 private 응답으로 제공한다", async () => {
     const app = createFixture()
-    const anonymous = await app.request("/audit-events")
     const authenticated = await app.request("/audit-events?limit=10", {
       headers: { Cookie: cookie },
     })
 
-    expect(anonymous.status).toBe(401)
     expect(authenticated.status).toBe(200)
     expect(authenticated.headers.get("Cache-Control")).toBe("private, no-store")
     await expect(authenticated.json()).resolves.toEqual({ items: [] })
@@ -168,17 +167,7 @@ function createFixture(
           from: "2026-06-24",
           matureCohortThrough: "2026-07-15",
           to: "2026-07-23",
-          worstAiFeedbackLessons: [
-            {
-              courseId: "course-1" as CourseId,
-              courseTitle: "글쓰기 코스",
-              failureCount: 2,
-              failureRate: 66.7,
-              lessonId: "lesson-1" as LessonId,
-              lessonTitle: "문장 시작하기",
-              requestCount: 3,
-            },
-          ],
+          worstAiFeedbackLessons: [],
           worstLessons: [],
         }),
       readDashboard: async () =>

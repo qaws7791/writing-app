@@ -58,7 +58,21 @@ describe("content asset domain", () => {
     ).toEqual({ reason: "signature-mismatch", status: "invalid" })
   })
 
-  it("5MB 초과와 빈 alt text를 거절한다", () => {
+  it("상한과 같은 크기의 이미지는 허용한다", () => {
+    expect(
+      validateContentAssetUpload({
+        altText: "대체 텍스트",
+        bytes: aJpegOfBytes(contentAssetMaxBytes),
+        declaredContentType: "image/jpeg",
+      })
+    ).toEqual({
+      altText: "대체 텍스트",
+      contentType: "image/jpeg",
+      status: "valid",
+    })
+  })
+
+  it("상한을 1byte 넘긴 이미지를 거절한다", () => {
     expect(
       validateContentAssetUpload({
         altText: "대체 텍스트",
@@ -66,6 +80,9 @@ describe("content asset domain", () => {
         declaredContentType: "image/jpeg",
       })
     ).toEqual({ reason: "image-too-large", status: "invalid" })
+  })
+
+  it("공백만 남는 alt text를 거절한다", () => {
     expect(
       validateContentAssetUpload({
         altText: "  ",
@@ -87,3 +104,9 @@ describe("content asset domain", () => {
     )
   })
 })
+
+function aJpegOfBytes(byteLength: number): Uint8Array {
+  const bytes = new Uint8Array(byteLength)
+  bytes.set([0xff, 0xd8, 0xff, 0x00])
+  return bytes
+}

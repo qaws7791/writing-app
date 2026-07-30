@@ -1,6 +1,7 @@
 import { eq, inArray } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { createWritingAppDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import type { ContentAssetId } from "@workspace/types/ids"
 
@@ -20,14 +21,27 @@ import {
   courseCurriculumVersions,
 } from "#content/infrastructure/persistence/schema"
 
+type ContentRepositoryFixture = Readonly<{
+  databaseClient: WritingAppDatabaseClient
+  repository: ReturnType<typeof createDrizzleContentRepository>
+}>
+
+type ReferencedAssetsContext = Readonly<{
+  cover: ContentAsset
+  fixture: ContentRepositoryFixture
+  illustration: ContentAsset
+  referenced: CurriculumDraft
+}>
+
 const now = new Date("2026-07-22T03:00:00.000Z")
 const courseId = createCourseId("content-course-1")
+const removedAt = new Date("2026-07-23T03:00:00.000Z")
+const reactivatedAt = new Date("2026-07-29T03:00:00.000Z")
+const cleanupBoundary = new Date("2026-08-06T03:00:00.000Z")
 
 describe("content Drizzle repository", () => {
   it("course마다 draft 하나만 DB partial unique index로 허용한다", async () => {
-    const fixture = createRepositoryFixture()
-
-    try {
+    await withContentRepository(async (fixture) => {
       await fixture.repository.createCourse({ courseId, now })
 
       expect(() =>
@@ -49,15 +63,11 @@ describe("content Drizzle repository", () => {
           })
           .run()
       ).toThrow(/UNIQUE constraint failed/u)
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 
   it("optimistic conflict를 Result로 반환하고 이전 draft를 보존한다", async () => {
-    const fixture = createRepositoryFixture()
-
-    try {
+    await withContentRepository(async (fixture) => {
       await fixture.repository.createCourse({ courseId, now })
       const draft = await readDraftOrThrow(fixture.repository)
       const first = await fixture.repository.saveDraft({
@@ -76,15 +86,11 @@ describe("content Drizzle repository", () => {
         kind: "content-conflict",
       })
       expect((await readDraftOrThrow(fixture.repository)).editVersion).toBe(1)
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 
   it("publish를 원자적으로 commit하고 published revision을 trigger로 불변화한다", async () => {
-    const fixture = createRepositoryFixture()
-
-    try {
+    await withContentRepository(async (fixture) => {
       await fixture.repository.createCourse({ courseId, now })
       const initial = await readDraftOrThrow(fixture.repository)
       const saved = await fixture.repository.saveDraft({
@@ -119,16 +125,12 @@ describe("content Drizzle repository", () => {
           )
           .run()
       ).toThrow(/published curriculum version is immutable/u)
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 
   it("asset의 course/version FK와 published revision 불변성을 DB에서 강제한다", async () => {
-    const fixture = createRepositoryFixture()
-    const otherCourseId = createCourseId("content-course-2")
-
-    try {
+    await withContentRepository(async (fixture) => {
+      const otherCourseId = createCourseId("content-course-2")
       await fixture.repository.createCourse({ courseId, now })
       await fixture.repository.createCourse({ courseId: otherCourseId, now })
       const draft = await readDraftOrThrow(fixture.repository)
@@ -187,181 +189,164 @@ describe("content Drizzle repository", () => {
           error: { kind: "content-immutable-revision" },
         })
       )
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 
-  it("draft asset 참조 변경을 낙관적 저장과 같은 transaction에서 orphan·reactivate한다", async () => {
-    const fixture = createRepositoryFixture()
-    const removedAt = new Date("2026-07-23T03:00:00.000Z")
-    const reactivatedAt = new Date("2026-07-29T03:00:00.000Z")
-    const removedAgainAt = new Date("2026-07-30T03:00:00.000Z")
-    const cleanupBoundary = new Date("2026-08-06T03:00:00.000Z")
-
-    try {
-      await fixture.repository.createCourse({ courseId, now })
-      const initial = completeDraft(await readDraftOrThrow(fixture.repository))
-      const cover = createAsset(initial.curriculumVersionId)
-      const illustration = {
-        ...createAsset(initial.curriculumVersionId),
-        id: "content-asset-illustration" as ContentAssetId,
-        kind: "reading-illustration" as const,
-        objectKey:
-          "content-assets/reading-illustration/content-asset-illustration.jpg",
+  it("draft가 asset을 참조하면 cover와 삽화를 active로 기록한다", async () => {
+    await withReferencedAssets(
+      async ({ cover, fixture, illustration, referenced }) => {
+        expect(referenced.coverAssetId).toBe(cover.id)
+        expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
+          { id: cover.id, orphanedAt: null, status: "active" },
+          { id: illustration.id, orphanedAt: null, status: "active" },
+        ])
       }
-      for (const asset of [cover, illustration]) {
-        const created = await fixture.repository.createAsset(asset)
-        if (created.isErr()) throw new Error(created.error.kind)
-      }
+    )
+  })
 
-      const referenced = withAssetReferences(initial, cover.id, illustration.id)
-      const first = await fixture.repository.saveDraft({
-        draft: referenced,
-        expectedEditVersion: 0,
-        now,
-      })
-      if (first.isErr()) throw new Error(first.error.kind)
-      expect(first.value.coverAssetId).toBe(cover.id)
-      expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
-        { id: cover.id, orphanedAt: null, status: "active" },
-        { id: illustration.id, orphanedAt: null, status: "active" },
-      ])
+  it("draft가 참조 중인 asset의 직접 삭제를 FK로 막는다", async () => {
+    await withReferencedAssets(async ({ cover, fixture }) => {
       expect(() =>
         fixture.databaseClient.db
           .delete(contentAssets)
           .where(eq(contentAssets.id, cover.id))
           .run()
       ).toThrow(/FOREIGN KEY constraint failed/u)
+    })
+  })
 
-      fixture.databaseClient.sqlite.exec(`
-        CREATE TRIGGER force_content_conflict_after_asset_transition
-        BEFORE UPDATE ON content_assets
-        BEGIN
-          UPDATE course_curriculum_versions
-          SET edit_version = edit_version + 1
-          WHERE id = NEW.curriculum_version_id;
-        END;
-      `)
-      const raced = await fixture.repository.saveDraft({
-        draft: withoutAssetReferences(first.value),
-        expectedEditVersion: 1,
-        now: removedAt,
-      })
-      expect(raced).toEqual(
-        expect.objectContaining({ error: { kind: "content-conflict" } })
-      )
-      fixture.databaseClient.sqlite.exec(
-        "DROP TRIGGER force_content_conflict_after_asset_transition"
-      )
-      expect((await readDraftOrThrow(fixture.repository)).editVersion).toBe(1)
-      expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
-        { id: cover.id, orphanedAt: null, status: "active" },
-        { id: illustration.id, orphanedAt: null, status: "active" },
-      ])
+  it("asset 전이 중 edit_version이 바뀌면 conflict로 거절하고 asset 상태를 유지한다", async () => {
+    await withReferencedAssets(
+      async ({ cover, fixture, illustration, referenced }) => {
+        fixture.databaseClient.sqlite.exec(`
+          CREATE TRIGGER force_content_conflict_after_asset_transition
+          BEFORE UPDATE ON content_assets
+          BEGIN
+            UPDATE course_curriculum_versions
+            SET edit_version = edit_version + 1
+            WHERE id = NEW.curriculum_version_id;
+          END;
+        `)
 
-      const stale = await fixture.repository.saveDraft({
-        draft: { ...initial, editVersion: 0 },
-        expectedEditVersion: 0,
-        now: removedAt,
-      })
-      expect(stale).toEqual(
-        expect.objectContaining({ error: { kind: "content-conflict" } })
-      )
-      expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
-        { id: cover.id, orphanedAt: null, status: "active" },
-        { id: illustration.id, orphanedAt: null, status: "active" },
-      ])
+        const raced = await fixture.repository.saveDraft({
+          draft: withoutAssetReferences(referenced),
+          expectedEditVersion: 1,
+          now: removedAt,
+        })
 
-      const removed = await fixture.repository.saveDraft({
-        draft: withoutAssetReferences(first.value),
-        expectedEditVersion: 1,
-        now: removedAt,
-      })
-      if (removed.isErr()) throw new Error(removed.error.kind)
+        fixture.databaseClient.sqlite.exec(
+          "DROP TRIGGER force_content_conflict_after_asset_transition"
+        )
+        expect(raced).toEqual(
+          expect.objectContaining({ error: { kind: "content-conflict" } })
+        )
+        expect((await readDraftOrThrow(fixture.repository)).editVersion).toBe(1)
+        expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
+          { id: cover.id, orphanedAt: null, status: "active" },
+          { id: illustration.id, orphanedAt: null, status: "active" },
+        ])
+      }
+    )
+  })
+
+  it("stale expectedEditVersion 저장은 asset 상태를 바꾸지 않고 conflict로 거절한다", async () => {
+    await withReferencedAssets(
+      async ({ cover, fixture, illustration, referenced }) => {
+        const stale = await fixture.repository.saveDraft({
+          draft: { ...referenced, editVersion: 0 },
+          expectedEditVersion: 0,
+          now: removedAt,
+        })
+
+        expect(stale).toEqual(
+          expect.objectContaining({ error: { kind: "content-conflict" } })
+        )
+        expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
+          { id: cover.id, orphanedAt: null, status: "active" },
+          { id: illustration.id, orphanedAt: null, status: "active" },
+        ])
+      }
+    )
+  })
+
+  it("참조를 제거하면 두 asset을 저장 시각으로 orphan 전이한다", async () => {
+    await withOrphanedAssets(async ({ cover, fixture, illustration }) => {
       expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
-        {
-          id: cover.id,
-          orphanedAt: removedAt.getTime(),
-          status: "orphaned",
-        },
+        { id: cover.id, orphanedAt: removedAt.getTime(), status: "orphaned" },
         {
           id: illustration.id,
           orphanedAt: removedAt.getTime(),
           status: "orphaned",
         },
       ])
+    })
+  })
 
-      const reactivated = await fixture.repository.saveDraft({
-        draft: withAssetReferences(removed.value, cover.id, illustration.id),
-        expectedEditVersion: 2,
-        now: reactivatedAt,
-      })
-      if (reactivated.isErr()) throw new Error(reactivated.error.kind)
-      expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
-        { id: cover.id, orphanedAt: null, status: "active" },
-        { id: illustration.id, orphanedAt: null, status: "active" },
-      ])
-
-      const removedAgain = await fixture.repository.saveDraft({
-        draft: withoutAssetReferences(reactivated.value),
-        expectedEditVersion: 3,
-        now: removedAgainAt,
-      })
-      if (removedAgain.isErr()) throw new Error(removedAgain.error.kind)
-      const cleanupCandidates =
-        await fixture.repository.listOrphanedAssetCandidates({
-          batchSize: 10,
-          cutoff: removedAgainAt,
+  it("유예 기간 안에 참조를 되돌리면 orphan asset을 다시 active로 만든다", async () => {
+    await withOrphanedAssets(
+      async ({ cover, fixture, illustration, orphaned }) => {
+        const reactivated = await fixture.repository.saveDraft({
+          draft: withAssetReferences(orphaned, cover.id, illustration.id),
+          expectedEditVersion: 2,
+          now: reactivatedAt,
         })
-      if (cleanupCandidates.isErr()) {
-        throw new Error(cleanupCandidates.error.kind)
+
+        if (reactivated.isErr()) throw new Error(reactivated.error.kind)
+        expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
+          { id: cover.id, orphanedAt: null, status: "active" },
+          { id: illustration.id, orphanedAt: null, status: "active" },
+        ])
       }
-      expect(cleanupCandidates.value.map(({ id }) => id)).toEqual([
+    )
+  })
+
+  it("orphan 전이된 asset을 cutoff 기준 정리 대상으로 나열한다", async () => {
+    await withOrphanedAssets(async ({ cover, fixture, illustration }) => {
+      const candidates = await fixture.repository.listOrphanedAssetCandidates({
+        batchSize: 10,
+        cutoff: removedAt,
+      })
+
+      expect(candidates._unsafeUnwrap().map(({ id }) => id)).toEqual([
         cover.id,
         illustration.id,
       ])
-      await expect(
-        fixture.repository.saveDraft({
-          draft: withAssetReferences(
-            removedAgain.value,
-            cover.id,
-            illustration.id
-          ),
-          expectedEditVersion: 4,
-          now: cleanupBoundary,
-        })
-      ).resolves.toEqual(
-        expect.objectContaining({
-          error: {
-            kind: "content-validation-failed",
-            reason: "invalid-asset-reference",
+    })
+  })
+
+  it("유예 기간이 지난 orphan asset 재참조는 draft를 바꾸지 않고 거절한다", async () => {
+    await withOrphanedAssets(
+      async ({ cover, fixture, illustration, orphaned }) => {
+        await expect(
+          fixture.repository.saveDraft({
+            draft: withAssetReferences(orphaned, cover.id, illustration.id),
+            expectedEditVersion: 2,
+            now: cleanupBoundary,
+          })
+        ).resolves.toEqual(
+          expect.objectContaining({
+            error: {
+              kind: "content-validation-failed",
+              reason: "invalid-asset-reference",
+            },
+          })
+        )
+        expect((await readDraftOrThrow(fixture.repository)).editVersion).toBe(2)
+        expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
+          { id: cover.id, orphanedAt: removedAt.getTime(), status: "orphaned" },
+          {
+            id: illustration.id,
+            orphanedAt: removedAt.getTime(),
+            status: "orphaned",
           },
-        })
-      )
-      expect((await readDraftOrThrow(fixture.repository)).editVersion).toBe(4)
-      expect(readAssetStates(fixture, [cover.id, illustration.id])).toEqual([
-        {
-          id: cover.id,
-          orphanedAt: removedAgainAt.getTime(),
-          status: "orphaned",
-        },
-        {
-          id: illustration.id,
-          orphanedAt: removedAgainAt.getTime(),
-          status: "orphaned",
-        },
-      ])
-    } finally {
-      fixture.databaseClient.close()
-    }
+        ])
+      }
+    )
   })
 
   it("asset kind·course를 검증하고 같은 course published asset의 다음 draft 재사용을 허용한다", async () => {
-    const fixture = createRepositoryFixture()
-    const otherCourseId = createCourseId("content-course-other")
-
-    try {
+    await withContentRepository(async (fixture) => {
+      const otherCourseId = createCourseId("content-course-other")
       await fixture.repository.createCourse({ courseId, now })
       await fixture.repository.createCourse({ courseId: otherCourseId, now })
       const draft = completeDraft(await readDraftOrThrow(fixture.repository))
@@ -438,19 +423,16 @@ describe("content Drizzle repository", () => {
       expect(readAssetStates(fixture, [cover.id])).toEqual([
         { id: cover.id, orphanedAt: null, status: "active" },
       ])
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 
   it("7일 cutoff의 draft orphan만 정리하고 active·recent·published asset을 보존한다", async () => {
-    const fixture = createRepositoryFixture()
-    const publishedCourseId = createCourseId("content-course-published")
-    const cutoff = new Date("2026-07-17T00:00:00.000Z")
-    const beforeCutoff = new Date("2026-07-10T00:00:00.000Z")
-    const afterCutoff = new Date(cutoff.getTime() + 1)
+    await withContentRepository(async (fixture) => {
+      const publishedCourseId = createCourseId("content-course-published")
+      const cutoff = new Date("2026-07-17T00:00:00.000Z")
+      const beforeCutoff = new Date("2026-07-10T00:00:00.000Z")
+      const afterCutoff = new Date(cutoff.getTime() + 1)
 
-    try {
       await fixture.repository.createCourse({ courseId, now })
       const draft = await readDraftOrThrow(fixture.repository)
       const eligible = {
@@ -545,15 +527,11 @@ describe("content Drizzle repository", () => {
           .map(({ id }) => id)
           .sort()
       ).toEqual([active.id, publishedAsset.id, recent.id].sort())
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 
   it("publish transaction 실패 시 기존 draft 상태까지 rollback한다", async () => {
-    const fixture = createRepositoryFixture()
-
-    try {
+    await withContentRepository(async (fixture) => {
       await fixture.repository.createCourse({ courseId, now })
       const initial = await readDraftOrThrow(fixture.repository)
       const saved = await fixture.repository.saveDraft({
@@ -587,15 +565,11 @@ describe("content Drizzle repository", () => {
           )
           .get()?.publishedAt
       ).toBeNull()
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 
   it("archive가 새 조회만 숨기고 명시적으로 고정된 published revision은 보존한다", async () => {
-    const fixture = createRepositoryFixture()
-
-    try {
+    await withContentRepository(async (fixture) => {
       await fixture.repository.createCourse({ courseId, now })
       const draft = await readDraftOrThrow(fixture.repository)
       const saved = await fixture.repository.saveDraft({
@@ -628,19 +602,70 @@ describe("content Drizzle repository", () => {
           curriculumVersionId: saved.value.curriculumVersionId,
         })
       ).toMatchObject({ revision: 1, title: saved.value.title })
-    } finally {
-      fixture.databaseClient.close()
-    }
+    })
   })
 })
 
-function createRepositoryFixture() {
-  const databaseClient = createWritingAppDatabase(":memory:")
-  runCurrentTestMigration(databaseClient.sqlite)
-  return {
-    databaseClient,
-    repository: createDrizzleContentRepository(databaseClient.db),
+async function withContentRepository(
+  run: (fixture: ContentRepositoryFixture) => Promise<void>
+): Promise<void> {
+  const databaseClient = createInMemoryWritingAppDatabase()
+  try {
+    runCurrentTestMigration(databaseClient.sqlite)
+    await run({
+      databaseClient,
+      repository: createDrizzleContentRepository(databaseClient.db),
+    })
+  } finally {
+    databaseClient.close()
   }
+}
+
+async function withReferencedAssets(
+  run: (context: ReferencedAssetsContext) => Promise<void>
+): Promise<void> {
+  await withContentRepository(async (fixture) => {
+    await fixture.repository.createCourse({ courseId, now })
+    const initial = completeDraft(await readDraftOrThrow(fixture.repository))
+    const cover = createAsset(initial.curriculumVersionId)
+    const illustration = {
+      ...createAsset(initial.curriculumVersionId),
+      id: "content-asset-illustration" as ContentAssetId,
+      kind: "reading-illustration" as const,
+      objectKey:
+        "content-assets/reading-illustration/content-asset-illustration.jpg",
+    }
+    for (const asset of [cover, illustration]) {
+      const created = await fixture.repository.createAsset(asset)
+      if (created.isErr()) throw new Error(created.error.kind)
+    }
+
+    const saved = await fixture.repository.saveDraft({
+      draft: withAssetReferences(initial, cover.id, illustration.id),
+      expectedEditVersion: 0,
+      now,
+    })
+    if (saved.isErr()) throw new Error(saved.error.kind)
+
+    await run({ cover, fixture, illustration, referenced: saved.value })
+  })
+}
+
+async function withOrphanedAssets(
+  run: (
+    context: ReferencedAssetsContext & Readonly<{ orphaned: CurriculumDraft }>
+  ) => Promise<void>
+): Promise<void> {
+  await withReferencedAssets(async (context) => {
+    const removed = await context.fixture.repository.saveDraft({
+      draft: withoutAssetReferences(context.referenced),
+      expectedEditVersion: 1,
+      now: removedAt,
+    })
+    if (removed.isErr()) throw new Error(removed.error.kind)
+
+    await run({ ...context, orphaned: removed.value })
+  })
 }
 
 function createAsset(
@@ -775,7 +800,7 @@ function mapReadingContent(
 }
 
 function readAssetStates(
-  fixture: ReturnType<typeof createRepositoryFixture>,
+  fixture: ContentRepositoryFixture,
   assetIds: readonly ContentAssetId[]
 ): readonly Readonly<{
   id: ContentAssetId

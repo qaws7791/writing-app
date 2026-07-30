@@ -45,6 +45,25 @@ describe("학습 활동일 정책", () => {
     ).toBe(3)
   })
 
+  it.each([
+    { activityDates: [], case: "활동일이 없으면", expected: 0 },
+    {
+      activityDates: [key("2026-06-15")],
+      case: "활동일이 하루면",
+      expected: 1,
+    },
+    {
+      activityDates: [key("2026-06-13"), key("2026-06-12")],
+      case: "최신 활동일이 오늘이 아니어도",
+      expected: 2,
+    },
+  ])(
+    "$case 연속 학습일을 $expected로 계산한다",
+    ({ activityDates, expected }) => {
+      expect(calculateCurrentStreakDays(activityDates)).toBe(expected)
+    }
+  )
+
   it("학습 활동일을 사용자별 최신순으로 그룹화한다", () => {
     expect(
       groupLearningActivityDatesByUserId([

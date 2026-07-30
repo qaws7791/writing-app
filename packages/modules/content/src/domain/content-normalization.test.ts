@@ -7,33 +7,44 @@ import {
 
 describe("content normalization policy", () => {
   it.each([
-    [
-      "FILL_BLANK",
-      "words",
-      "wordIds",
-      ["하나", "둘"],
-      { answer: ["둘"] },
-      ["step-1:word:2"],
-    ],
-    [
-      "SELECT",
-      "segments",
-      "segmentIds",
-      ["하나", "둘"],
-      { correct: [1] },
-      ["step-1:segment:2"],
-    ],
-    [
-      "ORDER",
-      "items",
-      "itemIds",
-      ["하나", "둘"],
-      { correct: ["둘", "하나"] },
-      ["step-1:item:2", "step-1:item:1"],
-    ],
+    {
+      expectedIds: ["step-1:word:1", "step-1:word:2"],
+      expectedSolution: ["step-1:word:2"],
+      field: "words",
+      idField: "wordIds",
+      solution: { answer: ["둘"] },
+      type: "FILL_BLANK",
+      values: ["하나", "둘"],
+    },
+    {
+      expectedIds: ["step-1:segment:1", "step-1:segment:2"],
+      expectedSolution: ["step-1:segment:2"],
+      field: "segments",
+      idField: "segmentIds",
+      solution: { correct: [1] },
+      type: "SELECT",
+      values: ["하나", "둘"],
+    },
+    {
+      expectedIds: ["step-1:item:1", "step-1:item:2"],
+      expectedSolution: ["step-1:item:2", "step-1:item:1"],
+      field: "items",
+      idField: "itemIds",
+      solution: { correct: ["둘", "하나"] },
+      type: "ORDER",
+      values: ["하나", "둘"],
+    },
   ] as const)(
-    "%s 항목과 정답을 stable ID로 결정적으로 정규화한다",
-    (type, field, idField, values, solution, expectedSolution) => {
+    "$type 항목과 정답을 stable ID로 결정적으로 정규화한다",
+    ({
+      expectedIds,
+      expectedSolution,
+      field,
+      idField,
+      solution,
+      type,
+      values,
+    }) => {
       const first = normalizeVersionedStepContentOrThrow(
         "step-1",
         type,
@@ -44,10 +55,7 @@ describe("content normalization policy", () => {
       expect(second).toBe(first)
       expect(JSON.parse(first)).toMatchObject({
         [Object.keys(solution)[0] as string]: expectedSolution,
-        [idField]: [
-          "step-1:" + idField.replace("Ids", "") + ":1",
-          "step-1:" + idField.replace("Ids", "") + ":2",
-        ],
+        [idField]: expectedIds,
       })
     }
   )

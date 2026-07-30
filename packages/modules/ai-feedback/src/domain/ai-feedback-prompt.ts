@@ -1,4 +1,4 @@
-export const aiFeedbackPromptPolicyVersion = "writing-coach-v1"
+const aiFeedbackPromptPolicyVersion = "writing-coach-v1"
 
 export type AiFeedbackPromptInput = Readonly<{
   answer: string

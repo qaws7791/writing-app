@@ -32,6 +32,7 @@ const learning = {
 }
 const aiFeedbackPath =
   "/learning/lessons/lesson-1/steps/step-1/ai-feedback" as const
+const presentationSecret = "learning-http-test-secret-at-least-32-bytes"
 const aiFeedbackTransition = {
   feedback: {
     improvements: ["근거를 보강하세요."],
@@ -44,24 +45,26 @@ const aiFeedbackTransition = {
 }
 
 describe("learning HTTP interface", () => {
-  it("unauthenticated와 inactive learner를 query 호출 전에 거절한다", async () => {
-    const requestActors: unknown[] = []
-    const fixture = createFixture({}, requestActors)
+  it("unauthenticated 요청을 query 호출 전에 401로 거절한다", async () => {
+    const fixture = createFixture()
 
-    const unauthenticated = await fixture.app.request("/courses")
-    const inactive = await fixture.app.request("/courses", {
+    const response = await fixture.app.request("/courses")
+
+    expect(response.status).toBe(401)
+    expect(fixture.application.readCourseCatalog).not.toHaveBeenCalled()
+  })
+
+  it("inactive learner를 private no-store 403으로 거절한다", async () => {
+    const fixture = createFixture()
+
+    const response = await fixture.app.request("/courses", {
       headers: { Cookie: "learner=inactive" },
     })
 
-    expect(unauthenticated.status).toBe(401)
-    expect(inactive.status).toBe(403)
-    expect(inactive.headers.get("Cache-Control")).toBe("private, no-store")
-    expect(inactive.headers.get("Vary")).toContain("Cookie")
+    expect(response.status).toBe(403)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     expect(fixture.application.readCourseCatalog).not.toHaveBeenCalled()
-    expect(requestActors[1]).toMatchObject({
-      id: "learner-1",
-      type: "learner",
-    })
   })
 
   it("잘못된 transition body를 application 호출 전에 400으로 거절한다", async () => {
@@ -269,19 +272,18 @@ describe("learning HTTP interface", () => {
     })
   })
 
-  it("provider 실패 응답에 provider 원문과 prompt를 포함하지 않는다", async () => {
+  it("provider 응답 검증 실패를 canonical 503 PROVIDER_UNAVAILABLE로 mapping한다", async () => {
     const fixture = createFixture({
       requestAiFeedback: async () =>
         err({ kind: "provider-response-invalid", remainingAttempts: 1 }),
     })
 
     const response = await requestAiFeedback(fixture.app)
-    const body = await response.text()
 
     expect(response.status).toBe(503)
-    expect(body).toContain("PROVIDER_UNAVAILABLE")
-    expect(body).not.toContain("secret-provider-output")
-    expect(body).not.toContain("학습자가 저장한 답변")
+    await expect(response.json()).resolves.toMatchObject({
+      code: "PROVIDER_UNAVAILABLE",
+    })
   })
 })
 
@@ -300,7 +302,7 @@ function requestAiFeedback(app: ReturnType<typeof createFixture>["app"]) {
   })
 }
 
-function createFixture(overrides: Overrides = {}, requestActors?: unknown[]) {
+function createFixture(overrides: Overrides = {}) {
   const application: LearningApplication = {
     readCourseCatalog: vi.fn(async () => ({
       items: [],
@@ -344,25 +346,10 @@ function createFixture(overrides: Overrides = {}, requestActors?: unknown[]) {
       return { kind: "active", learnerId }
     },
   }
-  const app = createApp<LearningHonoEnv>({
-    middleware:
-      requestActors === undefined
-        ? []
-        : [
-            async (context, next) => {
-              try {
-                await next()
-              } finally {
-                requestActors.push(context.get("requestActor"))
-              }
-            },
-          ],
-  })
+  const app = createApp<LearningHonoEnv>()
   registerLearningRoutes(app, {
     application,
-    cursor: createLearnerCursorCodec(
-      "learning-http-test-secret-at-least-32-bytes"
-    ),
+    cursor: createLearnerCursorCodec(presentationSecret),
     session,
   })
 

@@ -16,7 +16,6 @@ import {
   decideFinalizeAiFeedback,
   decidePrepareAiFeedbackContext,
   decidePrepareAiFeedbackTarget,
-  type FinalizeAiFeedbackSnapshot,
   type PrepareAiFeedbackTargetSnapshot,
 } from "#learning/domain/ai-feedback-transition-decision"
 
@@ -85,49 +84,57 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     )
   })
 
-  it("잠금·순서·잘못된 target·답안 부재를 명시적 오류로 거절한다", () => {
-    expect(
-      decidePrepareAiFeedbackTarget(command, {
-        kind: "lesson-scope-missing",
+  it.each([
+    {
+      case: "lesson scope가 없으면",
+      expectedError: { kind: "lesson-locked" },
+      snapshot: {
+        kind: "lesson-scope-missing" as const,
         publishedLessonExists: true,
-      })
-    ).toMatchObject({ error: { kind: "lesson-locked" }, kind: "rejected" })
-    expect(
-      decidePrepareAiFeedbackTarget(command, {
+      },
+    },
+    {
+      case: "현재 step이 AI 피드백 step보다 앞이면",
+      expectedError: { kind: "step-sequence-conflict" },
+      snapshot: {
         ...readySnapshot(),
         progress: {
           currentStepId: lessonStepIdSchema.parse("write-step"),
-          kind: "in-progress",
+          kind: "in-progress" as const,
         },
-      })
-    ).toMatchObject({
-      error: { kind: "step-sequence-conflict" },
-      kind: "rejected",
-    })
-
-    const invalidTargetSnapshot = readySnapshot()
-    const invalidFeedbackStep = {
-      ...feedbackStep,
-      content: {
-        ...feedbackStep.content,
-        target: lessonStepIdSchema.parse("missing-step"),
       },
-    }
-    expect(
-      decidePrepareAiFeedbackTarget(command, {
-        ...invalidTargetSnapshot,
-        steps: [writeStep, invalidFeedbackStep],
-      })
-    ).toMatchObject({
-      error: {
+    },
+    {
+      case: "target step이 레슨에 없으면",
+      expectedError: {
         kind: "feedback-target-invalid",
         reason: "target-step-not-found",
       },
+      snapshot: {
+        ...readySnapshot(),
+        steps: [
+          writeStep,
+          {
+            ...feedbackStep,
+            content: {
+              ...feedbackStep.content,
+              target: lessonStepIdSchema.parse("missing-step"),
+            },
+          },
+        ],
+      },
+    },
+  ])("$case 준비를 거절한다", ({ expectedError, snapshot }) => {
+    expect(decidePrepareAiFeedbackTarget(command, snapshot)).toMatchObject({
+      error: expectedError,
       kind: "rejected",
     })
+  })
 
+  it("저장된 WRITE 답안이 없으면 answer-not-found로 거절한다", () => {
     const target = decidePrepareAiFeedbackTarget(command, readySnapshot())
     if (target.kind === "rejected") throw new Error("target rejected")
+
     expect(
       decidePrepareAiFeedbackContext(command, target, {
         answer: null,
@@ -144,10 +151,7 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
   })
 
   it("finalize를 진행·완료 replay·거절 분기로 결정한다", () => {
-    const advance = decideFinalizeAiFeedback(
-      completeCommand,
-      finalizableSnapshot()
-    )
+    const advance = decideFinalizeAiFeedback(completeCommand, readySnapshot())
     expect(advance).toMatchObject({
       aggregate: { kind: "advance", requestedStepIndex: 1 },
       kind: "advance",
@@ -155,7 +159,7 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     })
     expect(
       decideFinalizeAiFeedback(completeCommand, {
-        ...finalizableSnapshot(),
+        ...readySnapshot(),
         progress: {
           currentStepId: lessonStepIdSchema.parse("feedback-step"),
           kind: "completed",
@@ -167,7 +171,7 @@ describe("AI 피드백 학습 전이 순수 결정", () => {
     })
     expect(
       decideFinalizeAiFeedback(completeCommand, {
-        ...finalizableSnapshot(),
+        ...readySnapshot(),
         isUnlocked: false,
       })
     ).toMatchObject({ error: { kind: "lesson-locked" }, kind: "rejected" })
@@ -186,18 +190,5 @@ function readySnapshot(): Extract<
       kind: "in-progress",
     },
     steps: [writeStep, feedbackStep],
-  }
-}
-
-function finalizableSnapshot(): Extract<
-  FinalizeAiFeedbackSnapshot,
-  { readonly kind: "lesson" }
-> {
-  const snapshot = readySnapshot()
-  return {
-    isUnlocked: snapshot.isUnlocked,
-    kind: snapshot.kind,
-    progress: snapshot.progress,
-    steps: snapshot.steps,
   }
 }

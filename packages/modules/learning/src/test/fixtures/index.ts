@@ -3,5 +3,4 @@ export {
   learnerStepPresentationCases,
   learnerStepPresentationContext,
   learnerStepPresentationFutureSecret,
-  withFutureSecret,
 } from "#learning/test/fixtures/lesson-step-presentation-cases"

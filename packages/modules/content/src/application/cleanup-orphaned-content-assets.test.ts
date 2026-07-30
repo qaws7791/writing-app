@@ -3,7 +3,7 @@ import { err, ok } from "@workspace/kernel/result"
 import type { ContentAssetId } from "@workspace/types/ids"
 
 import { createCleanupOrphanedAssets } from "#content/application/cleanup-orphaned-content-assets"
-import type { ContentRepository } from "#content/application/ports/content-ports"
+import { aContentRepository } from "#content/test/fixtures/a-content-repository"
 
 const cutoff = new Date("2026-07-17T00:00:00.000Z")
 const candidates = [
@@ -21,9 +21,7 @@ describe("orphan content asset cleanup", () => {
       fixture.cleanup({ batchSize: 100, cutoff, dryRun: true })
     ).resolves.toEqual(ok({ deleted: 0, retained: 1, scanned: 1 }))
     expect(fixture.storage.deleteObjects).not.toHaveBeenCalled()
-    expect(
-      fixture.repository.deleteOrphanedAssetCandidates
-    ).not.toHaveBeenCalled()
+    expect(fixture.deleteOrphanedAssetCandidates).not.toHaveBeenCalled()
   })
 
   it("storage 삭제 뒤 조건부 DB 삭제를 수행한다", async () => {
@@ -35,9 +33,7 @@ describe("orphan content asset cleanup", () => {
     expect(fixture.storage.deleteObjects).toHaveBeenCalledWith([
       candidates[0]?.objectKey,
     ])
-    expect(
-      fixture.repository.deleteOrphanedAssetCandidates
-    ).toHaveBeenCalledWith({
+    expect(fixture.deleteOrphanedAssetCandidates).toHaveBeenCalledWith({
       assetIds: [candidates[0]?.id],
       cutoff,
     })
@@ -56,36 +52,16 @@ describe("orphan content asset cleanup", () => {
         retryable: true,
       })
     )
-    expect(
-      fixture.repository.deleteOrphanedAssetCandidates
-    ).not.toHaveBeenCalled()
+    expect(fixture.deleteOrphanedAssetCandidates).not.toHaveBeenCalled()
   })
 })
 
 function createFixture(input: Readonly<{ storageFailure?: boolean }> = {}) {
-  const repository = {
-    createAsset: vi.fn(),
-    createCourse: vi.fn(),
-    deleteOrphanedAssetCandidates: vi.fn(async () => ok(candidates.length)),
-    findCourse: vi.fn(),
-    findCurriculumByLesson: vi.fn(),
-    findDraft: vi.fn(),
-    listActiveAssetsForCourse: vi.fn(async () => {
-      throw new Error("cleanup은 editor asset 목록을 조회하지 않는다")
-    }),
-    listOrphanedAssetCandidates: vi.fn(async () => ok(candidates)),
-    listPublishedCourseSummaries: vi.fn(),
-    publishDraft: vi.fn(),
-    readAssetOwner: vi.fn(),
-    readActiveAssetsByIds: vi.fn(async () => {
-      throw new Error("cleanup은 참조 asset을 조회하지 않는다")
-    }),
-    readCourseEditor: vi.fn(),
-    readCourses: vi.fn(),
-    readCurriculum: vi.fn(),
-    saveCourse: vi.fn(),
-    saveDraft: vi.fn(),
-  } satisfies ContentRepository
+  const deleteOrphanedAssetCandidates = vi.fn(async () => ok(candidates.length))
+  const repository = aContentRepository({
+    deleteOrphanedAssetCandidates,
+    listOrphanedAssetCandidates: async () => ok(candidates),
+  })
   const storage = {
     deleteObjects: vi.fn(async () =>
       input.storageFailure === true ? err({ retryable: true }) : ok(undefined)
@@ -102,7 +78,7 @@ function createFixture(input: Readonly<{ storageFailure?: boolean }> = {}) {
 
   return {
     cleanup: createCleanupOrphanedAssets(dependencies),
-    repository,
+    deleteOrphanedAssetCandidates,
     storage,
   }
 }

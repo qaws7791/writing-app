@@ -11,10 +11,6 @@ import {
 
 import { presentLearnerStep } from "#learning/infrastructure/persistence/learner-read-mapping"
 
-const futureSecret = learnerStepPresentationFutureSecret
-const context = learnerStepPresentationContext
-const presentationCases = learnerStepPresentationCases
-
 describe("학습자 단계 보안 presenter", () => {
   it("READING asset ID를 canonical illustration과 대체 텍스트로 투영한다", () => {
     const assetId = contentAssetIdSchema.parse("reading-asset-1")
@@ -35,7 +31,7 @@ describe("학습자 단계 보안 presenter", () => {
         type: "READING",
       }),
       {
-        ...context,
+        ...learnerStepPresentationContext,
         assetReferencesById: new Map([[assetId, illustration]]),
       }
     )
@@ -44,21 +40,38 @@ describe("학습자 단계 보안 presenter", () => {
     expect(learnerLessonStepSchema.safeParse(presented).success).toBe(true)
   })
 
-  it.each(presentationCases)(
-    "$name 공개 허용 목록만 결정적으로 투영한다",
-    ({ expected, forbiddenKeys, step }) => {
-      const inputSnapshot = structuredClone(step)
-      const first = presentLearnerStep(step, context)
-      const replay = presentLearnerStep(step, context)
+  it.each(learnerStepPresentationCases)(
+    "$name 공개 허용 필드만 원본 항목의 순열로 투영한다",
+    ({ expected, step }) => {
+      const presented = presentLearnerStep(step, learnerStepPresentationContext)
 
-      expect(first).toEqual(expected)
+      expect(withItemsSortedById(presented)).toEqual(
+        withItemsSortedById(expected)
+      )
+    }
+  )
+
+  it.each(learnerStepPresentationCases)(
+    "$name 투영은 입력을 바꾸지 않고 같은 scope에서 같은 순서를 유지한다",
+    ({ step }) => {
+      const inputSnapshot = structuredClone(step)
+      const first = presentLearnerStep(step, learnerStepPresentationContext)
+      const replay = presentLearnerStep(step, learnerStepPresentationContext)
+
       expect(replay).toEqual(first)
       expect(step).toEqual(inputSnapshot)
-      expect(learnerLessonStepSchema.parse(first)).toEqual(first)
-      expect(collectObjectKeys(first)).not.toEqual(
-        expect.arrayContaining([...forbiddenKeys])
+    }
+  )
+
+  it.each(learnerStepPresentationCases)(
+    "$name 투영 결과는 계약 schema를 만족하고 미래 서버 필드를 담지 않는다",
+    ({ step }) => {
+      const presented = presentLearnerStep(step, learnerStepPresentationContext)
+
+      expect(learnerLessonStepSchema.parse(presented)).toEqual(presented)
+      expect(JSON.stringify(presented)).not.toContain(
+        learnerStepPresentationFutureSecret
       )
-      expect(JSON.stringify(first)).not.toContain(futureSecret)
     }
   )
 
@@ -82,14 +95,19 @@ describe("학습자 단계 보안 presenter", () => {
       ...step,
       options: step.options.map((option) => ({
         ...option,
-        futureOptionSecret: futureSecret,
+        futureOptionSecret: learnerStepPresentationFutureSecret,
       })),
     }
 
-    const presented = presentLearnerStep(stepWithNestedFutureField, context)
+    const presented = presentLearnerStep(
+      stepWithNestedFutureField,
+      learnerStepPresentationContext
+    )
 
     expect(collectObjectKeys(presented)).not.toContain("futureOptionSecret")
-    expect(JSON.stringify(presented)).not.toContain(futureSecret)
+    expect(JSON.stringify(presented)).not.toContain(
+      learnerStepPresentationFutureSecret
+    )
   })
 
   it.each([
@@ -145,6 +163,32 @@ describe("학습자 단계 보안 presenter", () => {
     expect(lessonStepDtoSchema.safeParse(step).success).toBe(false)
   })
 })
+
+function withItemsSortedById(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    const items = value.map(withItemsSortedById)
+    return items.every(hasStableId)
+      ? [...items].sort((left, right) => left.id.localeCompare(right.id))
+      : items
+  }
+  if (typeof value !== "object" || value === null) return value
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, child]) => [
+      key,
+      withItemsSortedById(child),
+    ])
+  )
+}
+
+function hasStableId(value: unknown): value is { readonly id: string } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    typeof (value as { readonly id: unknown }).id === "string"
+  )
+}
 
 function collectObjectKeys(value: unknown): readonly string[] {
   if (Array.isArray(value)) return value.flatMap(collectObjectKeys)

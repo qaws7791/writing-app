@@ -136,8 +136,17 @@ describe("학습 시작 의사결정", () => {
     })
 
     expect(replayed).toMatchObject({ kind: "replay" })
-    if (started.kind === "start" && replayed.kind === "replay") {
-      expect(replayed.effects).toEqual(started.effects)
-    }
+    expect(unwrapStartedEffects(replayed)).toEqual(
+      unwrapStartedEffects(started)
+    )
   })
 })
+
+function unwrapStartedEffects(
+  decision: ReturnType<typeof decideStartLesson>
+): readonly unknown[] {
+  if (decision.kind === "rejected") {
+    throw new Error(`학습 시작이 거절되었습니다: ${decision.error.kind}`)
+  }
+  return decision.effects
+}

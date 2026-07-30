@@ -15,6 +15,7 @@ import type {
   ContentRepository,
 } from "#content/application/ports/content-ports"
 import type { ContentAsset } from "#content/domain/content-asset"
+import { aContentRepository } from "#content/test/fixtures/a-content-repository"
 
 const adminId = "admin-1" as AdminId
 const courseId = "course-1" as CourseId
@@ -58,7 +59,7 @@ describe("content asset upload application", () => {
       })
     )
     expect(fixture.assets).toHaveLength(0)
-    expect(fixture.repository.createAsset).not.toHaveBeenCalled()
+    expect(fixture.createAsset).not.toHaveBeenCalled()
   })
 
   it("asset 등록 실패 시 object를 보상 삭제하고 active row를 남기지 않는다", async () => {
@@ -129,35 +130,17 @@ function createFixture(
           versionStatus: "draft" as const,
         }
       : overrides.owner
-  const repository = {
-    createAsset: vi.fn(
-      overrides.createAsset ??
-        (async (asset) => {
-          assets.push(asset)
-          return ok(asset)
-        })
-    ),
-    createCourse: vi.fn(),
-    findCourse: vi.fn(),
-    findCurriculumByLesson: vi.fn(),
-    findDraft: vi.fn(),
-    deleteOrphanedAssetCandidates: vi.fn(),
-    listPublishedCourseSummaries: vi.fn(),
-    listActiveAssetsForCourse: vi.fn(async () => {
-      throw new Error("upload는 editor asset 목록을 조회하지 않는다")
-    }),
-    listOrphanedAssetCandidates: vi.fn(),
-    publishDraft: vi.fn(),
-    readAssetOwner: vi.fn(async () => owner),
-    readActiveAssetsByIds: vi.fn(async () => {
-      throw new Error("upload는 참조 asset을 조회하지 않는다")
-    }),
-    readCourseEditor: vi.fn(),
-    readCourses: vi.fn(),
-    readCurriculum: vi.fn(),
-    saveCourse: vi.fn(),
-    saveDraft: vi.fn(),
-  } satisfies ContentRepository
+  const createAsset = vi.fn(
+    overrides.createAsset ??
+      (async (asset) => {
+        assets.push(asset)
+        return ok(asset)
+      })
+  )
+  const repository = aContentRepository({
+    createAsset,
+    readAssetOwner: async () => owner,
+  })
   const putObject: ContentAssetStoragePort["putObject"] =
     overrides.putObject ??
     (async () => ok({ url: "https://cdn.example.test/asset.jpg" }))
@@ -186,7 +169,7 @@ function createFixture(
 
   return {
     assets,
-    repository,
+    createAsset,
     storage,
     upload: createUploadContentAsset(dependencies),
   }

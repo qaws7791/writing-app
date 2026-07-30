@@ -138,25 +138,32 @@ describe("identity learner HTTP interface", () => {
     })
   })
 
-  it("표시 이름을 정규화해 수정하고 잘못된 입력은 canonical 400으로 거절한다", async () => {
+  it("표시 이름 앞뒤 공백을 route 경계에서 정규화해 반영한다", async () => {
     const app = createLearnerIdentityHttpFixture()
-    const headers = {
-      "Content-Type": "application/json",
-      Cookie: "learner=active",
-    }
     const updated = await app.request("/profile", {
       body: JSON.stringify({ name: "  새 이름  " }),
-      headers,
-      method: "PATCH",
-    })
-    const invalid = await app.request("/profile", {
-      body: JSON.stringify({ name: "   " }),
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "learner=active",
+      },
       method: "PATCH",
     })
 
     expect(updated.status).toBe(200)
     await expect(updated.json()).resolves.toEqual({ name: "새 이름" })
+  })
+
+  it("공백만 남는 표시 이름은 canonical 400으로 거절한다", async () => {
+    const app = createLearnerIdentityHttpFixture()
+    const invalid = await app.request("/profile", {
+      body: JSON.stringify({ name: "   " }),
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "learner=active",
+      },
+      method: "PATCH",
+    })
+
     expect(invalid.status).toBe(400)
     await expect(invalid.json()).resolves.toMatchObject({
       code: "VALIDATION_FAILED",
@@ -227,7 +234,7 @@ function createLearnerIdentityHttpFixture() {
       async changeLearnerDisplayName(command) {
         return ok({
           deletedAt: null,
-          displayName: command.displayName.trim(),
+          displayName: command.displayName,
           status: "active",
           userId: command.userId,
         })

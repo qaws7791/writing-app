@@ -6,6 +6,7 @@ import {
   createInMemoryWritingAppDatabase,
   createWritingAppDatabase,
 } from "@workspace/db/client"
+import type { WritingAppSqlite } from "@workspace/db/test-support/sqlite-types"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import { err, ok } from "@workspace/kernel/result"
 import {
@@ -15,6 +16,8 @@ import {
   lessonStepIdSchema,
 } from "@workspace/contracts/content/ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
+import { aPublishedCourse } from "@workspace/content/test-fixtures"
+import { aLearner } from "@workspace/identity/test-fixtures"
 
 import { createAiFeedbackApplication } from "#ai-feedback/application/ai-feedback-application"
 import { createAiFeedbackMaintenance } from "#ai-feedback/application/ai-feedback-maintenance"
@@ -31,6 +34,11 @@ import {
   aiFeedbackGlobalDailyCounters,
   aiFeedbackUserDailyCounters,
 } from "#ai-feedback/infrastructure/persistence/schema"
+
+type InMemoryDatabaseClient = ReturnType<
+  typeof createInMemoryWritingAppDatabase
+>
+type FileDatabaseClient = ReturnType<typeof createWritingAppDatabase>
 
 const now = new Date("2026-07-23T01:00:00.000Z")
 const input = {
@@ -61,9 +69,7 @@ const providerIdentity = {
 
 describe("AI feedback Drizzle repository", () => {
   it("다른 module row를 조회하지 않고 branded scope로 예약·완료·멱등 재생한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       let providerCalls = 0
       const application = createAiFeedbackApplication({
         attemptIdGenerator: {
@@ -123,15 +129,11 @@ describe("AI feedback Drizzle repository", () => {
           successCount: 1,
         }),
       ])
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("pending lease가 있으면 남은 TTL을 Retry-After 초 단위로 반환한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       const repository = createDrizzleAiFeedbackRepository(client.db)
       const reservation = await repository.reserveAttempt({
         ...scope(),
@@ -164,15 +166,11 @@ describe("AI feedback Drizzle repository", () => {
           retryAfterSeconds: 59,
         })
       )
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("succeeded attempt만 quota를 차감하고 한도 뒤 새 예약을 거절한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       const repository = createDrizzleAiFeedbackRepository(client.db)
 
       const failed = await repository.reserveAttempt({
@@ -235,15 +233,11 @@ describe("AI feedback Drizzle repository", () => {
           kind: "limit-exceeded",
         })
       )
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("동일 idempotency key 동시 요청은 provider를 한 번만 호출한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       const started = deferred<void>()
       const release = deferred<void>()
       let attemptSequence = 0
@@ -284,15 +278,11 @@ describe("AI feedback Drizzle repository", () => {
       release.resolve()
       expect((await first).isOk()).toBe(true)
       expect(providerCalls).toBe(1)
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("실패는 request에는 남고 success에는 남지 않으며 서울 날짜가 바뀌면 다시 허용한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       let attemptSequence = 0
       let currentTime = now
       const application = createAiFeedbackApplication({
@@ -354,15 +344,11 @@ describe("AI feedback Drizzle repository", () => {
           successCount: 0,
         }),
       ])
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("global request quota는 사용자별 quota와 독립적으로 모든 학습자에 적용한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       const repository = createDrizzleAiFeedbackRepository(client.db)
       const quotaPolicy = {
         globalDailyRequestLimit: 1,
@@ -410,15 +396,11 @@ describe("AI feedback Drizzle repository", () => {
           retryAfterSeconds: 50_400,
         })
       )
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("TTL이 지난 다른 scope의 pending은 global success quota를 점유하지 않는다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       const repository = createDrizzleAiFeedbackRepository(client.db)
       const quotaPolicy = {
         globalDailyRequestLimit: 5,
@@ -452,15 +434,11 @@ describe("AI feedback Drizzle repository", () => {
       })
 
       expect(second.isOk() && second.value.kind === "reserved").toBe(true)
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("pending 만료를 exact cutoff와 ID 순서로 한 건씩 처리하고 재실행한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       const repository = createDrizzleAiFeedbackRepository(client.db)
       const cutoff = new Date(now.getTime() + 120_000)
       const staleZ = await repository.reserveAttempt({
@@ -544,15 +522,11 @@ describe("AI feedback Drizzle repository", () => {
           },
         ])
       )
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("provider 완료와 maintenance 만료가 경쟁해도 먼저 확정된 상태를 덮어쓰지 않는다", async () => {
-    const client = createInMemoryWritingAppDatabase()
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackDatabase(async (client) => {
       const repository = createDrizzleAiFeedbackRepository(client.db)
       const cutoff = new Date(now.getTime() + 60_000)
       const succeeded = await repository.reserveAttempt({
@@ -620,18 +594,11 @@ describe("AI feedback Drizzle repository", () => {
           { id: "race-succeeded", status: "succeeded" },
         ])
       )
-    } finally {
-      client.close()
-    }
+    })
   })
 
   it("느린 provider 호출 중에는 SQLite write transaction을 열어 두지 않는다", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "ai-feedback-p6-"))
-    const databasePath = join(directory, "feedback.sqlite")
-    const client = createWritingAppDatabase(databasePath)
-    const observer = createWritingAppDatabase(databasePath)
-    try {
-      prepareAiFeedbackDatabase(client.sqlite)
+    await withAiFeedbackFileDatabase(async (client, observer) => {
       observer.sqlite.exec("PRAGMA busy_timeout = 50")
       let lockAcquired = false
       const application = createAiFeedbackApplication({
@@ -659,57 +626,54 @@ describe("AI feedback Drizzle repository", () => {
 
       expect((await application.requestFeedback(input)).isOk()).toBe(true)
       expect(lockAcquired).toBe(true)
-    } finally {
-      observer.close()
-      client.close()
-      rmSync(directory, { force: true, recursive: true })
-    }
+    })
   })
 })
 
-function prepareAiFeedbackDatabase(
-  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
-): void {
+async function withAiFeedbackDatabase(
+  run: (client: InMemoryDatabaseClient) => Promise<void>
+): Promise<void> {
+  const client = createInMemoryWritingAppDatabase()
+  try {
+    prepareAiFeedbackDatabase(client.sqlite)
+    await run(client)
+  } finally {
+    client.close()
+  }
+}
+
+async function withAiFeedbackFileDatabase(
+  run: (
+    client: FileDatabaseClient,
+    observer: FileDatabaseClient
+  ) => Promise<void>
+): Promise<void> {
+  const directory = mkdtempSync(join(tmpdir(), "ai-feedback-p6-"))
+  try {
+    const databasePath = join(directory, "feedback.sqlite")
+    const client = createWritingAppDatabase(databasePath)
+    try {
+      const observer = createWritingAppDatabase(databasePath)
+      try {
+        prepareAiFeedbackDatabase(client.sqlite)
+        await run(client, observer)
+      } finally {
+        observer.close()
+      }
+    } finally {
+      client.close()
+    }
+  } finally {
+    rmSync(directory, { recursive: true })
+  }
+}
+
+function prepareAiFeedbackDatabase(sqlite: WritingAppSqlite): void {
   runCurrentTestMigration(sqlite)
-  sqlite.exec(`
-    INSERT INTO user (
-      id, name, email, email_verified, image, created_at, updated_at
-    ) VALUES
-      ('learner-1', '학습자', 'learner-1@example.test', 1, NULL, 1, 1),
-      ('learner-2', '학습자 2', 'learner-2@example.test', 1, NULL, 1, 1),
-      ('learner-3', '학습자 3', 'learner-3@example.test', 1, NULL, 1, 1);
-    INSERT INTO courses (
-      id, status, sort_order, published_curriculum_version_id, created_at
-    ) VALUES ('course-1', 'active', 1, NULL, 1);
-    INSERT INTO course_curriculum_versions (
-      id, course_id, revision, edit_version, status, title, description,
-      category, visual_key, created_at, updated_at, published_at
-    ) VALUES (
-      'version-1', 'course-1', 1, 0, 'draft', '코스', '설명',
-      '기초', 'basic-sentence-writing', 1, 1, NULL
-    );
-    INSERT INTO course_unit_versions (
-      curriculum_version_id, id, title, status, sort_order
-    ) VALUES ('version-1', 'unit-1', '단원', 'active', 1);
-    INSERT INTO lesson_versions (
-      curriculum_version_id, id, unit_id, title, description, category,
-      summary_json, estimated_minutes, status, sort_order
-    ) VALUES (
-      'version-1', 'lesson-1', 'unit-1', '레슨', NULL, NULL,
-      '[]', 5, 'active', 1
-    );
-    INSERT INTO lesson_step_versions (
-      curriculum_version_id, id, lesson_id, type, content_json, status, sort_order
-    ) VALUES (
-      'version-1', 'step-2', 'lesson-1', 'AI_FEEDBACK', '{}', 'active', 1
-    );
-    UPDATE course_curriculum_versions
-    SET status = 'published', published_at = 1
-    WHERE id = 'version-1';
-    UPDATE courses
-    SET published_curriculum_version_id = 'version-1'
-    WHERE id = 'course-1';
-  `)
+  aLearner(sqlite, { id: "learner-1", name: "학습자" })
+  aLearner(sqlite, { id: "learner-2", name: "학습자 2" })
+  aLearner(sqlite, { id: "learner-3", name: "학습자 3" })
+  aPublishedCourse(sqlite, { stepId: "step-2" })
 }
 
 function scope() {

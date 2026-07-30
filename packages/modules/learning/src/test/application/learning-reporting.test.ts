@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import type {
   CourseId,
@@ -15,14 +15,6 @@ const learnerId = "learner-1" as UserId
 
 describe("learning reporting query", () => {
   it("content와 persistence report를 공개 query port로 조합한다", async () => {
-    const readLearnerReports = vi.fn(async () => [
-      {
-        completedLessons: 2,
-        currentStreakDays: 3,
-        lastActive: "2026-07-23",
-        userId: learnerId,
-      },
-    ])
     const reporting = createLearningReportingQuery({
       content: {
         async listPublishedCourses() {
@@ -32,14 +24,45 @@ describe("learning reporting query", () => {
           ]
         },
       },
-      repository: { readLearnerReports },
+      repository: {
+        async readLearnerReports() {
+          return [
+            {
+              completedLessons: 2,
+              currentStreakDays: 3,
+              lastActive: "2026-07-23",
+              userId: learnerId,
+            },
+          ]
+        },
+      },
     })
 
     await expect(reporting.readActiveLessonCount()).resolves.toBe(5)
     await expect(reporting.readLearnerReports([learnerId])).resolves.toEqual([
       expect.objectContaining({ userId: learnerId }),
     ])
-    expect(readLearnerReports).toHaveBeenCalledWith([learnerId])
+  })
+
+  it("발행 레슨이 없으면 progressPercent를 0으로 나눗셈 없이 계산한다", async () => {
+    const profile = createLearningProfileStatsQuery({
+      reporting: {
+        async readActiveLessonCount() {
+          return 0
+        },
+        async readLearnerReports() {
+          return []
+        },
+      },
+    })
+
+    await expect(profile.readProfileStats(learnerId)).resolves.toEqual({
+      completedLessons: 0,
+      currentStreakDays: 0,
+      lastActiveDate: null,
+      progressPercent: 0,
+      totalLessons: 0,
+    })
   })
 
   it("profile 통계를 같은 reporting 결과에서 계산한다", async () => {

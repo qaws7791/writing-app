@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { adminContentAssetMaxBytes } from "@workspace/contracts/content/admin-assets"
+import { adminCourseEditorWriteDocumentSchema } from "@workspace/contracts/content/admin-courses"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { createApp } from "@workspace/http-platform/app"
 import { err, ok } from "@workspace/kernel/result"
@@ -22,6 +23,7 @@ import type { ContentAdminHonoEnv } from "#content/interface/http/content-http-a
 
 const courseId = createCourseId("course-1")
 const curriculumVersionId = createCurriculumVersionId(courseId, 1)
+const adminCookie = "admin=valid"
 const editorDocument: CourseEditorDocument = {
   assets: [],
   category: "기초",
@@ -82,9 +84,24 @@ describe("content HTTP interface", () => {
     expect(createCourse).not.toHaveBeenCalled()
   })
 
+  it("일치하지 않는 관리자 session cookie를 401로 거절한다", async () => {
+    const createCourse = vi.fn(async () => ok(editorDocument))
+    const app = createContentHttpFixture({ createCourse })
+
+    const response = await app.request("/courses", {
+      headers: { Cookie: "admin=forged" },
+    })
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNAUTHORIZED",
+    })
+    expect(createCourse).not.toHaveBeenCalled()
+  })
+
   it("editor ETag를 읽고 If-Match가 일치하면 증가한 ETag를 반환한다", async () => {
     const app = createContentHttpFixture()
-    const headers = { Cookie: "admin=valid" }
+    const headers = { Cookie: adminCookie }
 
     const read = await app.request("/courses/course-1/editor", { headers })
     const save = await app.request("/courses/course-1/editor", {
@@ -294,9 +311,9 @@ function createContentHttpFixture(overrides: Partial<ContentApplication> = {}) {
   }
   const sessionPort: ContentAdminSessionPort = {
     async resolveAdminId(headers) {
-      const cookie = headers.get("Cookie")
-      if (cookie === null) return null
-      return adminIdSchema.parse("admin-1")
+      return headers.get("Cookie") === adminCookie
+        ? adminIdSchema.parse("admin-1")
+        : null
     },
   }
 
@@ -306,7 +323,7 @@ function createContentHttpFixture(overrides: Partial<ContentApplication> = {}) {
 }
 
 function toWireDocument(document: CourseEditorDocument) {
-  return {
+  return adminCourseEditorWriteDocumentSchema.parse({
     category: document.category,
     coverAssetId: document.coverAssetId,
     curriculumVersionId: document.curriculumVersionId,
@@ -321,15 +338,15 @@ function toWireDocument(document: CourseEditorDocument) {
       lessons: unit.lessons.map((lesson) => ({
         ...lesson,
         steps: lesson.steps.map((step) => ({
-          body: "본문",
-          guide: "",
+          ...(JSON.parse(step.contentJson) as Readonly<
+            Record<string, unknown>
+          >),
           id: step.id,
           sortOrder: step.sortOrder,
           status: step.status,
-          title: "읽기",
           type: step.type,
         })),
       })),
     })),
-  }
+  })
 }

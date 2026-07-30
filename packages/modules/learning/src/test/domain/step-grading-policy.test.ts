@@ -5,6 +5,37 @@ import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/step-
 
 import { gradeLearnerStep } from "#learning/domain/step-grading-policy"
 
+const orderStep = {
+  correct: ["item-b", "item-a"],
+  explanation: "순서 해설",
+  id: "order-boundary",
+  itemIds: ["item-a", "item-b"],
+  items: ["첫째", "둘째"],
+  sortOrder: 1,
+  title: "순서",
+  type: "ORDER",
+} as const
+const fillBlankStep = {
+  answer: ["word-a", "word-b"],
+  explanation: "어순 해설",
+  id: "blank-boundary",
+  sortOrder: 1,
+  template: "___ ___",
+  type: "FILL_BLANK",
+  wordIds: ["word-a", "word-b"],
+  words: ["나는", "쓴다"],
+} as const
+const selectStep = {
+  correct: ["segment-a", "segment-b"],
+  explanation: "선택 해설",
+  id: "select-boundary",
+  question: "고르기",
+  segmentIds: ["segment-a", "segment-b"],
+  segments: ["첫째", "둘째"],
+  sortOrder: 1,
+  type: "SELECT",
+} as const
+
 describe("학습 단계 서버 채점 정책", () => {
   it("수동 학습 단계만 답안 없이 acknowledge한다", () => {
     const reading = lessonStepDtoSchema.parse({
@@ -200,6 +231,66 @@ describe("학습 단계 서버 채점 정책", () => {
       kind: "retry",
     })
     expect(invalid).toEqual({ kind: "invalid" })
+  })
+
+  it.each([
+    { case: "min 미달이면", expectedKind: "invalid", text: "네글자" },
+    { case: "정확히 min이면", expectedKind: "accepted", text: "다섯글자야" },
+    { case: "max를 넘기면", expectedKind: "invalid", text: "일곱글자입니다" },
+  ] as const)(
+    "WRITE 답안이 $case $expectedKind로 판정한다",
+    ({ expectedKind, text }) => {
+      const step = lessonStepDtoSchema.parse({
+        id: "write-1",
+        max: 6,
+        min: 5,
+        prompt: "문장을 쓰세요.",
+        sortOrder: 1,
+        type: "WRITE",
+      })
+
+      const result = gradeLearnerStep(step, {
+        kind: "answer",
+        submission: learnerStepSubmissionSchema.parse({ text, type: "WRITE" }),
+      })
+
+      expect(result.kind).toBe(expectedKind)
+    }
+  )
+
+  it.each([
+    {
+      answer: { orderedItemIds: ["item-a"], type: "ORDER" },
+      case: "ORDER 항목 수가 부족하면",
+      step: orderStep,
+    },
+    {
+      answer: { selectedChoiceIds: ["word-a"], type: "FILL_BLANK" },
+      case: "FILL_BLANK 빈칸 수가 맞지 않으면",
+      step: fillBlankStep,
+    },
+  ])("$case invalid로 거부한다", ({ answer, step }) => {
+    expect(
+      gradeLearnerStep(lessonStepDtoSchema.parse(step), {
+        kind: "answer",
+        submission: learnerStepSubmissionSchema.parse(answer),
+      })
+    ).toEqual({ kind: "invalid" })
+  })
+
+  it("SELECT 정답 일부만 고른 제출은 invalid가 아니라 오답 retry다", () => {
+    expect(
+      gradeLearnerStep(lessonStepDtoSchema.parse(selectStep), {
+        kind: "answer",
+        submission: learnerStepSubmissionSchema.parse({
+          selectedItemIds: ["segment-a"],
+          type: "SELECT",
+        }),
+      })
+    ).toMatchObject({
+      evaluation: { correct: false, type: "SELECT" },
+      kind: "retry",
+    })
   })
 
   it.each([

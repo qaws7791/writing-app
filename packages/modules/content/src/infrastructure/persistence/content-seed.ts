@@ -5,7 +5,7 @@ import {
 } from "#content/domain/content-model"
 import { normalizeVersionedStepContentOrThrow } from "#content/domain/content-normalization"
 
-export type ContentSeedStepType =
+type ContentSeedStepType =
   | "reading"
   | "compare"
   | "multiple_choice"
@@ -17,7 +17,7 @@ export type ContentSeedStepType =
   | "match"
   | "categorize"
 
-export type StandardLessonStepType =
+type StandardLessonStepType =
   | "READING"
   | "COMPARE"
   | "MULTIPLE_CHOICE"
@@ -29,7 +29,7 @@ export type StandardLessonStepType =
   | "MATCH"
   | "CATEGORIZE"
 
-export type ContentSeedStep =
+type ContentSeedStep =
   | {
       readonly type: Exclude<ContentSeedStepType, "ai_feedback">
     }
@@ -123,7 +123,7 @@ const stepTypeMap = {
   categorize: "CATEGORIZE",
 } satisfies Record<ContentSeedStepType, StandardLessonStepType>
 
-export function toStandardLessonStepType(
+function toStandardLessonStepType(
   stepType: ContentSeedStepType
 ): StandardLessonStepType {
   return stepTypeMap[stepType]
@@ -245,7 +245,7 @@ function validateAiFeedbackSeedTargets(
   }
 }
 
-export function normalizeSeedStepContent(step: ContentSeedStep): string {
+function normalizeSeedStepContent(step: ContentSeedStep): string {
   return JSON.stringify(step)
 }
 

@@ -18,6 +18,7 @@ import type {
 } from "#content/application/ports/content-ports"
 import type { ContentAsset } from "#content/domain/content-asset"
 import type { CurriculumDraft } from "#content/domain/content-model"
+import { aContentRepository } from "#content/test/fixtures/a-content-repository"
 
 const adminId = "admin-1" as AdminId
 const now = new Date("2026-07-22T00:00:00.000Z")
@@ -32,7 +33,7 @@ describe("content application", () => {
       value: { courseId: "course-1" },
     })
 
-    expect(fixture.repository.createCourse).toHaveBeenCalledWith({
+    expect(fixture.createCourse).toHaveBeenCalledWith({
       courseId: "course-1",
       now,
     })
@@ -48,12 +49,11 @@ describe("content application", () => {
         expectedEditVersion: 1,
       })
     ).resolves.toEqual(err({ kind: "content-conflict" }))
-    expect(fixture.repository.saveDraft).not.toHaveBeenCalled()
+    expect(fixture.saveDraft).not.toHaveBeenCalled()
   })
 
   it("검증된 publish 결정을 repository transaction에 전달한다", async () => {
-    const order: string[] = []
-    const fixture = createApplicationFixture({ order })
+    const fixture = createApplicationFixture()
 
     const result = await fixture.application.publishCourse({
       adminId,
@@ -62,7 +62,15 @@ describe("content application", () => {
     })
 
     expect(result.isOk()).toBe(true)
-    expect(order).toEqual(["commit"])
+    expect(fixture.publishDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expectedEditVersion: draft.editVersion,
+        publishedRevision: expect.objectContaining({
+          courseId: draft.courseId,
+          revision: draft.revision,
+        }),
+      })
+    )
   })
 
   it("object key를 저장소 URL로 해석해 editor와 learner 참조에 반환한다", async () => {
@@ -74,9 +82,7 @@ describe("content application", () => {
       async putObject() {
         throw new Error("asset upload was not expected")
       },
-      resolveUrl: vi.fn(
-        (objectKey) => `https://assets.example.test/${objectKey}`
-      ),
+      resolveUrl: (objectKey) => `https://assets.example.test/${objectKey}`,
     }
     const fixture = createApplicationFixture({
       assetStorage,
@@ -109,57 +115,44 @@ describe("content application", () => {
         url: `https://assets.example.test/${asset.objectKey}`,
       },
     ])
-    expect(assetStorage.resolveUrl).toHaveBeenCalledTimes(2)
   })
 })
 
 function createApplicationFixture({
   assetStorage = null,
   assets = [],
-  order = [],
 }: {
   readonly assetStorage?: ContentAssetStoragePort | null
   readonly assets?: readonly ContentAsset[]
-  readonly order?: string[]
 } = {}) {
-  const repository = {
-    createAsset: vi.fn(),
-    createCourse: vi.fn(async () => ok(toEditorDocument(draft))),
-    findCourse: vi.fn(async () => ({
+  const createCourse = vi.fn(async () => ok(toEditorDocument(draft)))
+  const publishDraft = vi.fn(
+    async ({
+      publishedRevision,
+    }: Parameters<ContentRepository["publishDraft"]>[0]) =>
+      ok(publishedRevision)
+  )
+  const saveDraft = vi.fn(
+    async ({ draft: value }: Parameters<ContentRepository["saveDraft"]>[0]) =>
+      ok({ ...value, editVersion: value.editVersion + 1 })
+  )
+  const repository = aContentRepository({
+    createCourse,
+    findCourse: async () => ({
       createdAt: now,
       id: draft.courseId,
       publishedCurriculumVersionId: null,
       sortOrder: 1,
       status: "active" as const,
-    })),
-    findCurriculumByLesson: vi.fn(async () => null),
-    findDraft: vi.fn(async () => ok(draft)),
-    deleteOrphanedAssetCandidates: vi.fn(async () => ok(0)),
-    listPublishedCourseSummaries: vi.fn(async () => []),
-    listActiveAssetsForCourse: vi.fn(async () => assets),
-    listOrphanedAssetCandidates: vi.fn(async () => ok([])),
-    publishDraft: vi.fn(async ({ publishedRevision }) => {
-      order.push("commit")
-      return ok(publishedRevision)
     }),
-    readAssetOwner: vi.fn(async () => null),
-    readActiveAssetsByIds: vi.fn(async (assetIds) =>
-      assets.filter((asset) => assetIds.includes(asset.id))
-    ),
-    readCourseEditor: vi.fn(async () => toEditorDocument(draft)),
-    readCourses: vi.fn(async (input) => ({
-      items: [],
-      page: input.page,
-      pageSize: input.pageSize,
-      totalItems: 0,
-      totalPages: 1,
-    })),
-    readCurriculum: vi.fn(async () => null),
-    saveCourse: vi.fn(async ({ course }) => ok(course)),
-    saveDraft: vi.fn(async ({ draft: value }) =>
-      ok({ ...value, editVersion: value.editVersion + 1 })
-    ),
-  } satisfies ContentRepository
+    findDraft: async () => ok(draft),
+    listActiveAssetsForCourse: async () => assets,
+    publishDraft,
+    readActiveAssetsByIds: async (assetIds) =>
+      assets.filter((asset) => assetIds.includes(asset.id)),
+    readCourseEditor: async () => toEditorDocument(draft),
+    saveDraft,
+  })
   const dependencies = {
     assetIdGenerator: {
       next: vi.fn(() => "content-asset-1" as ContentAssetId),
@@ -177,8 +170,10 @@ function createApplicationFixture({
 
   return {
     application: createContentApplication(dependencies),
+    createCourse,
     dependencies,
-    repository,
+    publishDraft,
+    saveDraft,
   }
 }
 

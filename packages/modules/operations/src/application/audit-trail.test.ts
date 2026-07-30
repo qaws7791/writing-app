@@ -86,6 +86,20 @@ describe("operations audit trail", () => {
     expect(repository.listRecent).not.toHaveBeenCalled()
     expect(repository.purgeExpired).not.toHaveBeenCalled()
   })
+
+  it("조회 limit 상한 100은 거절하지 않고 repository로 전달한다", async () => {
+    const repository = createRepositoryFake()
+    const trail = createAuditTrail({
+      clock: { now: () => now },
+      idGenerator: { next: () => "audit-1" },
+      repository,
+    })
+
+    await expect(
+      trail.readRecent({ actor: { id: actorId }, limit: 100 })
+    ).resolves.toEqual(ok([]))
+    expect(repository.listRecent).toHaveBeenCalledWith(100)
+  })
 })
 
 function createRepositoryFake(

@@ -2,10 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { err, ok } from "@workspace/kernel/result"
 
 import { createDeletedLearnerPurgeCommand } from "#identity/application/deleted-learner-purge"
-import {
-  calculateDeletedLearnerPurgeCutoff,
-  deletedLearnerRetentionMs,
-} from "#identity/domain/deleted-learner-retention"
+import { calculateDeletedLearnerPurgeCutoff } from "#identity/domain/deleted-learner-retention"
 
 const now = new Date("2026-07-24T12:00:00.000Z")
 
@@ -31,7 +28,6 @@ describe("삭제 학습자 purge application", () => {
       cutoff: new Date("2026-07-19T12:00:00.000Z"),
       dryRun: false,
     })
-    expect(deletedLearnerRetentionMs).toBe(432_000_000)
   })
 
   it("repository 실패를 성공으로 숨기지 않는다", async () => {

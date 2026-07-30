@@ -3,15 +3,13 @@ import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 
 import {
   createContentSeedRows,
-  normalizeSeedStepContent,
   toCourseSeedRow,
   toLessonSeedRows,
   toLessonStepSeedRows,
   toStepSeedRows,
-  toStandardLessonStepType,
   toUnitSeedRows,
   type ContentSeedCourse,
-  type StandardLessonStepType,
+  type ContentSeedRows,
 } from "#content/infrastructure/persistence/content-seed"
 
 async function readSeedData(): Promise<readonly ContentSeedCourse[]> {
@@ -21,79 +19,22 @@ async function readSeedData(): Promise<readonly ContentSeedCourse[]> {
 }
 
 describe("기준 콘텐츠 seed 변환", () => {
-  it("기준 콘텐츠를 새 baseline row 수량으로 변환한다", async () => {
+  it("모든 계층의 parent 참조를 상위 row에 연결된 상태로 변환한다", async () => {
     const rows = createContentSeedRows(await readSeedData())
 
-    expect(rows.courses).toHaveLength(14)
-    expect(rows.units).toHaveLength(69)
-    expect(rows.lessons).toHaveLength(321)
-    expect(rows.steps).toHaveLength(831)
-
-    expect(rows.courses[0]).toMatchObject({
-      id: "course-word-sentence-meaning",
-      title: "어휘와 문장의 의미 정확히 읽기",
-      description:
-        "문맥, 문장 구조, 지시와 논리 관계를 함께 살펴 단어와 문장의 가능한 의미를 구별합니다.",
-      category: "언어와 읽기",
-      visualKey: "basic-sentence-writing",
-      status: "active",
-      sortOrder: 1,
-    })
-
-    expect(rows.units[0]).toMatchObject({
-      id: "unit-word-context-and-use",
-      courseId: "course-word-sentence-meaning",
-      title: "문맥에서 단어 의미와 쓰임 판단하기",
-      status: "active",
-      sortOrder: 1,
-    })
-
-    expect(rows.lessons[0]).toMatchObject({
-      id: "lesson-word-context-clues",
-      courseId: "course-word-sentence-meaning",
-      unitId: "unit-word-context-and-use",
-      title: "문맥 단서의 종류 찾기",
-      category: "문맥에서 단어 의미와 쓰임 판단하기",
-      description:
-        "같은 단어 주변의 대상·행동·상황 단서를 표시하고 각 단서가 배제하는 뜻을 말한다.",
-      estimatedMinutes: 8,
-      summaryJson: JSON.stringify([
-        "문맥 단서의 종류 찾기에서는 판단 대상과 적용 범위를 먼저 고정한다.",
-        "직접 확인한 근거와 해석, 남은 한계를 구분한다.",
-        "근거가 지지하는 범위에서 결론을 제시하고 다시 검토한다.",
-      ]),
-      status: "active",
-      sortOrder: 1,
-    })
-
-    expect(rows.steps[0]).toMatchObject({
-      id: "lesson-word-context-clues-s1",
-      lessonId: "lesson-word-context-clues",
-      type: "READING",
-      status: "active",
-      sortOrder: 1,
-    })
-    expect(JSON.parse(rows.steps[0]?.contentJson ?? "{}")).toMatchObject({
-      type: "reading",
-      title: "문맥 단서의 종류 찾기의 판단 기준",
-    })
-
-    expect(
-      rows.steps
-        .filter((step) => step.type === "AI_FEEDBACK")
-        .map((step) => JSON.parse(step.contentJson).target)
-    ).toEqual([
-      "lesson-expression-independent-edit-s3",
-      "lesson-argument-independent-s3",
-      "lesson-revision-new-task-s3",
-    ])
+    expect(readUnresolvedParentIds(rows)).toEqual([])
   })
 
-  it("표준 스텝 타입을 저장용 표준 타입으로 정규화한다", () => {
-    expect(toStandardLessonStepType("reading")).toBe("READING")
-    expect(toStandardLessonStepType("multiple_choice")).toBe("MULTIPLE_CHOICE")
-    expect(toStandardLessonStepType("ai_feedback")).toBe("AI_FEEDBACK")
-    expect(toStandardLessonStepType("categorize")).toBe("CATEGORIZE")
+  it("각 parent 안에서 sortOrder를 1부터 연속으로 부여한다", async () => {
+    const rows = createContentSeedRows(await readSeedData())
+
+    expect(readNonContiguousSortOrderGroups(rows)).toEqual([])
+  })
+
+  it("변환한 모든 step은 학습자 계약 schema를 만족한다", async () => {
+    const rows = createContentSeedRows(await readSeedData())
+
+    expect(readStepContractViolations(rows)).toEqual([])
   })
 
   it("계층별 row mapper가 parent id와 정렬 순서를 명시적으로 보존한다", () => {
@@ -145,19 +86,6 @@ describe("기준 콘텐츠 seed 변환", () => {
         type: "WRITE",
       },
     ])
-  })
-
-  it("lesson step mapper와 content 정규화 정책을 독립적으로 검증한다", () => {
-    const lesson = createCourseSeed().units[0]?.lessons[0]
-
-    if (lesson === undefined) {
-      throw new Error("테스트 lesson fixture가 없습니다.")
-    }
-
-    expect(toLessonStepSeedRows(lesson)).toHaveLength(2)
-    expect(normalizeSeedStepContent({ type: "match" })).toBe(
-      JSON.stringify({ type: "match" })
-    )
   })
 
   it("잘못된 lesson time은 lesson row 변환 위치에서 명시적으로 거절한다", () => {
@@ -214,57 +142,84 @@ describe("기준 콘텐츠 seed 변환", () => {
       })
     ).toThrow("Invalid AI feedback target")
   })
+})
 
-  it("표준 스텝 타입 분포를 보존한다", async () => {
-    const rows = createContentSeedRows(await readSeedData())
-    const distribution = rows.steps.reduce(
-      (counts, step) => ({
-        ...counts,
-        [step.type]: counts[step.type] + 1,
-      }),
-      {
-        AI_FEEDBACK: 0,
-        CATEGORIZE: 0,
-        COMPARE: 0,
-        FILL_BLANK: 0,
-        MATCH: 0,
-        MULTIPLE_CHOICE: 0,
-        ORDER: 0,
-        READING: 0,
-        SELECT: 0,
-        WRITE: 0,
-      } satisfies Record<StandardLessonStepType, number>
+function readUnresolvedParentIds(rows: ContentSeedRows): readonly string[] {
+  const courseIds = new Set(rows.courses.map((course) => course.id))
+  const unitIds = new Set(rows.units.map((unit) => unit.id))
+  const lessonIds = new Set(rows.lessons.map((lesson) => lesson.id))
+
+  return [
+    ...rows.units
+      .filter((unit) => !courseIds.has(unit.courseId))
+      .map((unit) => unit.id),
+    ...rows.lessons
+      .filter(
+        (lesson) =>
+          !courseIds.has(lesson.courseId) || !unitIds.has(lesson.unitId)
+      )
+      .map((lesson) => lesson.id),
+    ...rows.steps
+      .filter((step) => !lessonIds.has(step.lessonId))
+      .map((step) => step.id),
+  ]
+}
+
+function readNonContiguousSortOrderGroups(
+  rows: ContentSeedRows
+): readonly string[] {
+  return [
+    ...readNonContiguousGroups([["", rows.courses]]),
+    ...readNonContiguousGroups(groupBy(rows.units, (unit) => unit.courseId)),
+    ...readNonContiguousGroups(
+      groupBy(rows.lessons, (lesson) => lesson.unitId)
+    ),
+    ...readNonContiguousGroups(groupBy(rows.steps, (step) => step.lessonId)),
+  ]
+}
+
+function readNonContiguousGroups(
+  groups: readonly [string, readonly { readonly sortOrder: number }[]][]
+): readonly string[] {
+  return groups
+    .filter(([, items]) =>
+      items.some((item, index) => item.sortOrder !== index + 1)
     )
+    .map(([key]) => key)
+}
 
-    expect(distribution).toEqual({
-      AI_FEEDBACK: 3,
-      CATEGORIZE: 87,
-      COMPARE: 38,
-      FILL_BLANK: 4,
-      MATCH: 60,
-      MULTIPLE_CHOICE: 50,
-      ORDER: 22,
-      READING: 321,
-      SELECT: 60,
-      WRITE: 186,
+function groupBy<TItem>(
+  items: readonly TItem[],
+  readKey: (item: TItem) => string
+): readonly [string, readonly TItem[]][] {
+  const groups = new Map<string, TItem[]>()
+  for (const item of items) {
+    const key = readKey(item)
+    const group = groups.get(key)
+    if (group === undefined) groups.set(key, [item])
+    else group.push(item)
+  }
+  return [...groups]
+}
+
+function readStepContractViolations(rows: ContentSeedRows): readonly string[] {
+  return rows.steps.flatMap((step) => {
+    const { type: _seedType, ...content } = JSON.parse(step.contentJson) as {
+      readonly type?: unknown
+      readonly [field: string]: unknown
+    }
+    const parsed = lessonStepDtoSchema.safeParse({
+      ...content,
+      id: step.id,
+      sortOrder: step.sortOrder,
+      type: step.type,
     })
 
-    for (const step of rows.steps) {
-      const { type: _seedType, ...content } = JSON.parse(step.contentJson) as {
-        readonly type?: unknown
-        readonly [field: string]: unknown
-      }
-      expect(
-        lessonStepDtoSchema.safeParse({
-          ...content,
-          id: step.id,
-          sortOrder: step.sortOrder,
-          type: step.type,
-        }).success
-      ).toBe(true)
-    }
+    return parsed.success
+      ? []
+      : [`${step.id}: ${JSON.stringify(parsed.error.issues)}`]
   })
-})
+}
 
 function createCourseSeed(): ContentSeedCourse {
   return {

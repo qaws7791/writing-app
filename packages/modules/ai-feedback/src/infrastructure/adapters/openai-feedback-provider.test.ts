@@ -6,6 +6,7 @@ import {
   createConfiguredAiFeedbackProvider,
   createOpenAiFeedbackProvider,
   type OpenAiResponseCreateRequest,
+  type OpenAiResponsesClient,
 } from "#ai-feedback/infrastructure/adapters/openai-feedback-provider"
 
 const prompt = createAiFeedbackPrompt({
@@ -13,32 +14,24 @@ const prompt = createAiFeedbackPrompt({
   focus: "명확성",
   lessonTitle: "좋은 문장",
 })
+const coachingResponseText = JSON.stringify({
+  improvements: ["근거를 보강하세요."],
+  nextAction: "예시를 추가하세요.",
+  strengths: ["주장이 명확합니다."],
+  summary: "좋은 초안입니다.",
+})
 
 describe("module-local OpenAI feedback provider", () => {
-  it("strict JSON schema 요청을 보내고 제품 결과를 domain에서 검증한다", async () => {
-    const requests: OpenAiResponseCreateRequest[] = []
-    const signal = new AbortController().signal
-    const provider = createOpenAiFeedbackProvider({
-      client: {
-        responses: {
-          async create(request) {
-            requests.push(request)
-            return {
-              output_text: JSON.stringify({
-                improvements: ["근거를 보강하세요."],
-                nextAction: "예시를 추가하세요.",
-                strengths: ["주장이 명확합니다."],
-                summary: "좋은 초안입니다.",
-              }),
-            }
-          },
-        },
-      },
-      model: "gpt-test",
-      timeoutMs: 30_000,
-    })
+  it("provider가 반환한 결과를 domain coaching shape로 검증해 반환한다", async () => {
+    const provider = aFakeOpenAiFeedbackProvider(async () => ({
+      output_text: coachingResponseText,
+    }))
 
-    await expect(provider.createFeedback(prompt, { signal })).resolves.toEqual(
+    await expect(
+      provider.createFeedback(prompt, {
+        signal: new AbortController().signal,
+      })
+    ).resolves.toEqual(
       ok({
         feedback: {
           improvements: ["근거를 보강하세요."],
@@ -48,6 +41,19 @@ describe("module-local OpenAI feedback provider", () => {
         },
       })
     )
+  })
+
+  it("prompt와 model을 strict json_schema 요청으로 조립해 SDK에 보낸다", async () => {
+    const requests: OpenAiResponseCreateRequest[] = []
+    const provider = aFakeOpenAiFeedbackProvider(async (request) => {
+      requests.push(request)
+      return { output_text: coachingResponseText }
+    })
+
+    await provider.createFeedback(prompt, {
+      signal: new AbortController().signal,
+    })
+
     expect(requests[0]).toMatchObject({
       input: expect.stringContaining("학습자 답변"),
       model: "gpt-test",
@@ -59,30 +65,46 @@ describe("module-local OpenAI feedback provider", () => {
         },
       },
     })
-    expect(requests[0]?.text.format.schema.required).toEqual([
-      "summary",
-      "strengths",
-      "improvements",
-      "nextAction",
-    ])
+  })
+
+  it("strict json_schema는 4개 coaching 필드를 모두 required로 요구한다", async () => {
+    const requests: OpenAiResponseCreateRequest[] = []
+    const provider = aFakeOpenAiFeedbackProvider(async (request) => {
+      requests.push(request)
+      return { output_text: coachingResponseText }
+    })
+
+    await provider.createFeedback(prompt, {
+      signal: new AbortController().signal,
+    })
+
+    expect(
+      [...(requests[0]?.text.format.schema.required ?? [])].sort()
+    ).toEqual(["improvements", "nextAction", "strengths", "summary"])
+  })
+
+  it("caller가 넘긴 timeout signal을 SDK 호출 option으로 전달한다", async () => {
+    const signal = new AbortController().signal
+    const observedSignals: AbortSignal[] = []
+    const provider = aFakeOpenAiFeedbackProvider(async (_request, options) => {
+      observedSignals.push(options.signal)
+      return { output_text: coachingResponseText }
+    })
+
+    await provider.createFeedback(prompt, { signal })
+
+    expect(observedSignals).toEqual([signal])
   })
 
   it("provider 원문이 잘못되면 원문 없이 invalid-response로 반환한다", async () => {
-    const provider = createOpenAiFeedbackProvider({
-      client: {
-        responses: {
-          async create() {
-            return { output_text: "secret-provider-output" }
-          },
-        },
-      },
-      model: "gpt-test",
-      timeoutMs: 30_000,
-    })
+    const provider = aFakeOpenAiFeedbackProvider(async () => ({
+      output_text: "secret-provider-output",
+    }))
 
     const result = await provider.createFeedback(prompt, {
       signal: new AbortController().signal,
     })
+
     expect(result).toEqual(err({ kind: "provider-response-invalid" }))
     expect(JSON.stringify(result)).not.toContain("secret-provider-output")
   })
@@ -105,35 +127,25 @@ describe("module-local OpenAI feedback provider", () => {
   })
 
   it("usage는 provider 응답 원문 없이 정규화해 반환한다", async () => {
-    const provider = createOpenAiFeedbackProvider({
-      client: {
-        responses: {
-          async create() {
-            return {
-              output_text: JSON.stringify({
-                improvements: ["개선점"],
-                nextAction: "다음 행동",
-                strengths: ["강점"],
-                summary: "요약",
-              }),
-              usage: {
-                input_tokens: 10,
-                output_tokens: 20,
-                total_tokens: 30,
-              },
-            }
-          },
-        },
+    const provider = aFakeOpenAiFeedbackProvider(async () => ({
+      output_text: JSON.stringify({
+        improvements: ["개선점"],
+        nextAction: "다음 행동",
+        strengths: ["강점"],
+        summary: "요약",
+      }),
+      usage: {
+        input_tokens: 10,
+        output_tokens: 20,
+        total_tokens: 30,
       },
-      model: "gpt-test",
-      timeoutMs: 30_000,
-    })
+    }))
 
-    const result = await provider.createFeedback(prompt, {
-      signal: new AbortController().signal,
-    })
-
-    expect(result).toEqual(
+    await expect(
+      provider.createFeedback(prompt, {
+        signal: new AbortController().signal,
+      })
+    ).resolves.toEqual(
       ok({
         feedback: {
           improvements: ["개선점"],
@@ -147,6 +159,27 @@ describe("module-local OpenAI feedback provider", () => {
         },
       })
     )
+  })
+
+  it("관측 가능한 결과에 학습자 답변 원문을 담지 않는다", async () => {
+    const provider = aFakeOpenAiFeedbackProvider(async () => ({
+      output_text: coachingResponseText,
+    }))
+
+    const result = await provider.createFeedback(prompt, {
+      signal: new AbortController().signal,
+    })
+
     expect(JSON.stringify(result)).not.toContain("학습자 답변")
   })
 })
+
+function aFakeOpenAiFeedbackProvider(
+  create: OpenAiResponsesClient["responses"]["create"]
+) {
+  return createOpenAiFeedbackProvider({
+    client: { responses: { create } },
+    model: "gpt-test",
+    timeoutMs: 30_000,
+  })
+}

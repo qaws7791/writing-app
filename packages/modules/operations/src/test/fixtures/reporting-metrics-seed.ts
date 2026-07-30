@@ -1,5 +1,33 @@
 import type { WritingAppSqlite } from "@workspace/db/test-support/sqlite-types"
 
+export type PublishedCourseSeed = Readonly<{
+  courseId: string
+  curriculumVersionId: string
+  lessonIds: readonly [string, string]
+  stepIds: readonly [string, string]
+}>
+
+export type AiFeedbackAttemptSeed = Readonly<{
+  answerText?: string
+  attemptNumber?: number
+  course: PublishedCourseSeed
+  createdAt: string
+  failureCode: AiFeedbackSeedFailureCode | null
+  id: string
+  idempotencyKey: string
+  inputTokenCount?: number | null
+  latencyMs?: number | null
+  lessonId: string
+  outputTokenCount?: number | null
+  quotaDate: string
+  resultJson?: string | null
+  status: "failed" | "succeeded"
+  stepId: string
+  userId: string
+}>
+
+type AiFeedbackSeedFailureCode = "provider-timeout" | "provider-unavailable"
+
 export function insertLearner(
   sqlite: WritingAppSqlite,
   input: Readonly<{
@@ -27,7 +55,9 @@ export function insertLearner(
     .run(input.id, input.status, input.status === "deleted" ? createdAt : null)
 }
 
-export function insertPublishedCourse(sqlite: WritingAppSqlite): void {
+export function insertPublishedCourse(
+  sqlite: WritingAppSqlite
+): PublishedCourseSeed {
   sqlite.exec(`
     INSERT INTO courses (
       created_at, id, published_curriculum_version_id, sort_order, status
@@ -127,12 +157,21 @@ export function insertPublishedCourse(sqlite: WritingAppSqlite): void {
     SET published_curriculum_version_id = 'curriculum-1'
     WHERE id = 'course-1';
   `)
+
+  return {
+    courseId: "course-1",
+    curriculumVersionId: "curriculum-1",
+    lessonIds: ["lesson-1", "lesson-2"],
+    stepIds: ["step-1", "step-2"],
+  }
 }
 
 export function insertProgress(
   sqlite: WritingAppSqlite,
   input: Readonly<{
     completedAt: string | null
+    course: PublishedCourseSeed
+    lessonId: string
     startedAt: string
     status: "completed" | "in_progress"
     userId: string
@@ -143,7 +182,7 @@ export function insertProgress(
     input.completedAt === null ? null : Date.parse(input.completedAt)
   const updatedAt = completedAt ?? startedAt
   sqlite
-    .query<void, [string, number, number]>(`
+    .query<void, [string, string, string, number, number]>(`
       INSERT INTO learner_course_progress (
         user_id,
         course_id,
@@ -154,22 +193,29 @@ export function insertProgress(
         last_activity_at,
         updated_at
       )
-      VALUES (
-        ?1,
-        'course-1',
-        'curriculum-1',
-        'in_progress',
-        ?2,
-        NULL,
-        ?3,
-        ?3
-      );
+      VALUES (?1, ?2, ?3, 'in_progress', ?4, NULL, ?5, ?5);
     `)
-    .run(input.userId, startedAt, updatedAt)
+    .run(
+      input.userId,
+      input.course.courseId,
+      input.course.curriculumVersionId,
+      startedAt,
+      updatedAt
+    )
   sqlite
     .query<
       void,
-      [string, "completed" | "in_progress", number, number | null, number]
+      [
+        string,
+        string,
+        string,
+        string,
+        "completed" | "in_progress",
+        string,
+        number,
+        number | null,
+        number,
+      ]
     >(`
       INSERT INTO learner_lesson_progress (
         user_id,
@@ -182,19 +228,19 @@ export function insertProgress(
         completed_at,
         updated_at
       )
-      VALUES (
-        ?1,
-        'course-1',
-        'curriculum-1',
-        'lesson-1',
-        ?2,
-        'step-1',
-        ?3,
-        ?4,
-        ?5
-      );
+      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);
     `)
-    .run(input.userId, input.status, startedAt, completedAt, updatedAt)
+    .run(
+      input.userId,
+      input.course.courseId,
+      input.course.curriculumVersionId,
+      input.lessonId,
+      input.status,
+      input.course.stepIds[0],
+      startedAt,
+      completedAt,
+      updatedAt
+    )
 }
 
 export function insertActivityDays(
@@ -218,29 +264,96 @@ export function insertActivityDays(
   }
 }
 
-export function insertAiFeedbackAttempts(sqlite: WritingAppSqlite): void {
-  type Attempt = Readonly<{
-    createdAt: string
-    failureCode: "provider-timeout" | null
-    id: string
-    idempotencyKey: string
-    lessonId: "lesson-1" | "lesson-2"
-    quotaDate: string
-    status: "failed" | "succeeded"
-    stepId: "step-1" | "step-2"
-    userId: string
-  }>
+export function insertAiFeedbackAttempt(
+  sqlite: WritingAppSqlite,
+  seed: AiFeedbackAttemptSeed
+): void {
+  const createdAt = Date.parse(seed.createdAt)
+  sqlite
+    .query<
+      void,
+      [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        number,
+        "failed" | "succeeded",
+        AiFeedbackSeedFailureCode | null,
+        string,
+        number,
+        string,
+        number | null,
+        number | null,
+        number | null,
+        string | null,
+      ]
+    >(`
+      INSERT INTO ai_feedback_attempts (
+        id,
+        user_id,
+        course_id,
+        curriculum_version_id,
+        lesson_id,
+        step_id,
+        answer_text,
+        attempt_number,
+        status,
+        failure_code,
+        idempotency_key,
+        created_at,
+        updated_at,
+        expires_at,
+        quota_date,
+        input_token_count,
+        latency_ms,
+        output_token_count,
+        result_json,
+        model,
+        prompt_policy_version
+      )
+      VALUES (
+        ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?12, ?12 + 60000,
+        ?13, ?14, ?15, ?16, ?17, 'test-model', 'policy-v1'
+      )
+    `)
+    .run(
+      seed.id,
+      seed.userId,
+      seed.course.courseId,
+      seed.course.curriculumVersionId,
+      seed.lessonId,
+      seed.stepId,
+      seed.answerText ?? "절대 노출하지 않을 답안",
+      seed.attemptNumber ?? 1,
+      seed.status,
+      seed.failureCode,
+      seed.idempotencyKey,
+      createdAt,
+      seed.quotaDate,
+      seed.inputTokenCount ?? null,
+      seed.latencyMs ?? null,
+      seed.outputTokenCount ?? null,
+      seed.resultJson ?? null
+    )
+}
 
-  const attempts: readonly Attempt[] = [
+export function insertAiFeedbackAttempts(
+  sqlite: WritingAppSqlite,
+  course: PublishedCourseSeed
+): void {
+  const attempts = [
     {
       createdAt: "2026-07-20T10:00:00+09:00",
       failureCode: "provider-timeout",
       id: "attempt-lesson-1-failed",
       idempotencyKey: "lesson-1-failed",
-      lessonId: "lesson-1",
+      lessonIndex: 0,
       quotaDate: "2026-07-20",
       status: "failed",
-      stepId: "step-1",
       userId: "learner-a",
     },
     {
@@ -248,10 +361,9 @@ export function insertAiFeedbackAttempts(sqlite: WritingAppSqlite): void {
       failureCode: null,
       id: "attempt-lesson-1-succeeded",
       idempotencyKey: "lesson-1-succeeded",
-      lessonId: "lesson-1",
+      lessonIndex: 0,
       quotaDate: "2026-07-20",
       status: "succeeded",
-      stepId: "step-1",
       userId: "learner-b",
     },
     {
@@ -259,10 +371,9 @@ export function insertAiFeedbackAttempts(sqlite: WritingAppSqlite): void {
       failureCode: "provider-timeout",
       id: "attempt-lesson-2-failed",
       idempotencyKey: "lesson-2-failed",
-      lessonId: "lesson-2",
+      lessonIndex: 1,
       quotaDate: "2026-07-20",
       status: "failed",
-      stepId: "step-2",
       userId: "learner-b",
     },
     {
@@ -270,10 +381,9 @@ export function insertAiFeedbackAttempts(sqlite: WritingAppSqlite): void {
       failureCode: null,
       id: "attempt-lesson-2-succeeded",
       idempotencyKey: "lesson-2-succeeded",
-      lessonId: "lesson-2",
+      lessonIndex: 1,
       quotaDate: "2026-07-20",
       status: "succeeded",
-      stepId: "step-2",
       userId: "learner-a",
     },
     {
@@ -281,10 +391,9 @@ export function insertAiFeedbackAttempts(sqlite: WritingAppSqlite): void {
       failureCode: "provider-timeout",
       id: "attempt-deleted-learner",
       idempotencyKey: "deleted-learner",
-      lessonId: "lesson-1",
+      lessonIndex: 0,
       quotaDate: "2026-07-20",
       status: "failed",
-      stepId: "step-1",
       userId: "learner-d",
     },
     {
@@ -292,83 +401,35 @@ export function insertAiFeedbackAttempts(sqlite: WritingAppSqlite): void {
       failureCode: "provider-timeout",
       id: "attempt-outside-period",
       idempotencyKey: "outside-period",
-      lessonId: "lesson-2",
+      lessonIndex: 1,
       quotaDate: "2026-06-20",
       status: "failed",
-      stepId: "step-2",
       userId: "learner-c",
     },
-  ]
-  const statement = sqlite.query<
-    void,
-    [
-      string,
-      string,
-      string,
-      string,
-      string,
-      "failed" | "succeeded",
-      "provider-timeout" | null,
-      string,
-      number,
-      string | null,
-    ]
-  >(`
-    INSERT INTO ai_feedback_attempts (
-      answer_text,
-      attempt_number,
-      course_id,
-      created_at,
-      curriculum_version_id,
-      expires_at,
-      failure_code,
-      id,
-      idempotency_key,
-      lesson_id,
-      model,
-      prompt_policy_version,
-      quota_date,
-      result_json,
-      status,
-      step_id,
-      updated_at,
-      user_id
-    )
-    VALUES (
-      '절대 노출하지 않을 답안',
-      1,
-      'course-1',
-      ?9,
-      'curriculum-1',
-      ?9 + 60000,
-      ?7,
-      ?1,
-      ?5,
-      ?3,
-      'test-model',
-      'policy-v1',
-      ?8,
-      ?10,
-      ?6,
-      ?4,
-      ?9,
-      ?2
-    )
-  `)
+  ] as const satisfies readonly Readonly<{
+    createdAt: string
+    failureCode: AiFeedbackSeedFailureCode | null
+    id: string
+    idempotencyKey: string
+    lessonIndex: 0 | 1
+    quotaDate: string
+    status: "failed" | "succeeded"
+    userId: string
+  }>[]
 
   for (const attempt of attempts) {
-    const createdAt = Date.parse(attempt.createdAt)
-    statement.run(
-      attempt.id,
-      attempt.userId,
-      attempt.lessonId,
-      attempt.stepId,
-      attempt.idempotencyKey,
-      attempt.status,
-      attempt.failureCode,
-      attempt.quotaDate,
-      createdAt,
-      attempt.status === "succeeded" ? "{}" : null
-    )
+    insertAiFeedbackAttempt(sqlite, {
+      course,
+      createdAt: attempt.createdAt,
+      failureCode: attempt.failureCode,
+      id: attempt.id,
+      idempotencyKey: attempt.idempotencyKey,
+      lessonId: course.lessonIds[attempt.lessonIndex],
+      quotaDate: attempt.quotaDate,
+      resultJson: attempt.status === "succeeded" ? "{}" : null,
+      status: attempt.status,
+      stepId: course.stepIds[attempt.lessonIndex],
+      userId: attempt.userId,
+    })
   }
 }

@@ -39,32 +39,39 @@ const profileRecord: LearnerProfileRecord = {
   version: account.profile.version ?? 0,
 }
 describe("identity public query ports", () => {
-  it("learning에는 제품 사용자 상태만 Result로 공개한다", async () => {
-    const repository = createRepository()
+  it("정지된 학습자의 제품 상태를 learning에 그대로 공개한다", async () => {
     const query = createIdentityLearningQuery({
       learnerIdentityDirectory: createIdentityDirectory(),
-      repository,
+      repository: createRepository(),
     })
 
     await expect(query.readLearnerStatus(userId)).resolves.toMatchObject({
       value: "suspended",
     })
-    await expect(
-      createIdentityLearningQuery({
-        learnerIdentityDirectory: createIdentityDirectory(),
-        repository: createRepository({
-          findLearnerProfile: async () => null,
-        }),
-      }).readLearnerStatus(userId)
-    ).resolves.toMatchObject({ value: "active" })
-    await expect(
-      createIdentityLearningQuery({
-        learnerIdentityDirectory: createIdentityDirectory({
-          findLearnerIdentity: async () => null,
-        }),
-        repository,
-      }).readLearnerStatus(userId)
-    ).resolves.toEqual(err({ kind: "identity-not-found" }))
+  })
+
+  it("profile이 아직 없는 인증 학습자는 active로 공개한다", async () => {
+    const query = createIdentityLearningQuery({
+      learnerIdentityDirectory: createIdentityDirectory(),
+      repository: createRepository({ findLearnerProfile: async () => null }),
+    })
+
+    await expect(query.readLearnerStatus(userId)).resolves.toMatchObject({
+      value: "active",
+    })
+  })
+
+  it("인증 identity가 없으면 not-found를 Result로 반환한다", async () => {
+    const query = createIdentityLearningQuery({
+      learnerIdentityDirectory: createIdentityDirectory({
+        findLearnerIdentity: async () => null,
+      }),
+      repository: createRepository(),
+    })
+
+    await expect(query.readLearnerStatus(userId)).resolves.toEqual(
+      err({ kind: "identity-not-found" })
+    )
   })
 })
 

@@ -86,6 +86,23 @@ const inProgress = {
   version: { curriculumVersionId, revision: 1 },
 }
 
+const identityRejections: readonly Readonly<{
+  expectedKind: string
+  identityResult: Awaited<
+    ReturnType<LearningApplicationDependencies["identity"]["readLearnerStatus"]>
+  >
+}>[] = [
+  { expectedKind: "learner-inactive", identityResult: ok("suspended") },
+  {
+    expectedKind: "learner-not-found",
+    identityResult: err({ kind: "identity-not-found" }),
+  },
+  {
+    expectedKind: "identity-query-failed",
+    identityResult: err({ kind: "identity-conflict" }),
+  },
+]
+
 describe("learning application", () => {
   it("catalog 조회는 repository의 공개 허용 필드만 반환한다", async () => {
     const fixture = createFixture()
@@ -234,19 +251,20 @@ describe("learning application", () => {
     )
   })
 
-  it("오답 retry를 expected answer rejection 결과로 보존한다", async () => {
+  it("오답 retry는 채점 evaluation payload를 그대로 보존해 반환한다", async () => {
+    const evaluation = {
+      correct: false,
+      correctItemIds: ["answer-2"],
+      explanation: "다시 생각해 보세요.",
+      items: [
+        { id: "answer-1", verdict: "incorrect" },
+        { id: "answer-2", verdict: "missed" },
+      ],
+      type: "MULTIPLE_CHOICE",
+    } as const
     const fixture = createFixture({
       completeStepResult: ok({
-        evaluation: {
-          correct: false,
-          correctItemIds: ["answer-2"],
-          explanation: "다시 생각해 보세요.",
-          items: [
-            { id: "answer-1", verdict: "incorrect" },
-            { id: "answer-2", verdict: "missed" },
-          ],
-          type: "MULTIPLE_CHOICE",
-        },
+        evaluation,
         kind: "retry",
         learning: inProgress,
       }),
@@ -265,15 +283,12 @@ describe("learning application", () => {
       stepId,
     })
 
-    expect(result.isOk() && result.value.kind).toBe("retry")
+    expect(result._unsafeUnwrap()).toMatchObject({ evaluation, kind: "retry" })
   })
 
-  it("inactive, missing identity와 identity 실패를 transition 이전에 거부한다", async () => {
-    for (const [identityResult, expectedKind] of [
-      [ok("suspended" as const), "learner-inactive"],
-      [err({ kind: "identity-not-found" as const }), "learner-not-found"],
-      [err({ kind: "identity-conflict" as const }), "identity-query-failed"],
-    ] as const) {
+  it.each(identityRejections)(
+    "identity 결과가 $expectedKind 조건이면 transition 이전에 거부한다",
+    async ({ expectedKind, identityResult }) => {
       const fixture = createFixture({ identityResult })
 
       const result = await fixture.application.submitStep({
@@ -283,12 +298,12 @@ describe("learning application", () => {
         stepId,
       })
 
-      expect(result.isErr() && result.error.kind).toBe(expectedKind)
+      expect(result._unsafeUnwrapErr().kind).toBe(expectedKind)
       expect(
         fixture.dependencies.transitionRepository.completeStep
       ).not.toHaveBeenCalled()
     }
-  })
+  )
 
   it("content not-found와 transition conflict를 구분한다", async () => {
     const missing = createFixture({ curriculum: null })
@@ -438,11 +453,6 @@ type FixtureOverrides = Readonly<{
       LearningApplicationDependencies["transitionRepository"]["prepareAiFeedback"]
     >
   >
-  saveDraftResult?: Awaited<
-    ReturnType<
-      LearningApplicationDependencies["transitionRepository"]["saveStepDraft"]
-    >
-  >
 }>
 
 function createFixture(overrides: FixtureOverrides = {}): {
@@ -505,15 +515,13 @@ function createFixture(overrides: FixtureOverrides = {}): {
             lessonTitle: "첫 레슨",
           })
       ),
-      saveStepDraft: vi.fn(
-        async (command) =>
-          overrides.saveDraftResult ??
-          ok({
-            answer: command.answer,
-            stepId: command.stepId,
-            updatedAt: command.occurredAt.toISOString(),
-            version: command.expectedVersion === null ? 0 : 1,
-          })
+      saveStepDraft: vi.fn(async (command) =>
+        ok({
+          answer: command.answer,
+          stepId: command.stepId,
+          updatedAt: command.occurredAt.toISOString(),
+          version: command.expectedVersion === null ? 0 : 1,
+        })
       ),
       startLesson: vi.fn(async () => ok({ ...inProgress, drafts: [] })),
     },

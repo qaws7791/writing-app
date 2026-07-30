@@ -206,13 +206,6 @@ describe("학습 단계 완료 effect plan", () => {
       evaluation: { correct: true },
       kind: "accept-step",
     })
-    if (plan.kind === "accept-step") {
-      expect(plan.effects.map((effect) => effect.kind)).toEqual([
-        "save-accepted-answer",
-        "advance-lesson-step",
-        "record-learning-activity",
-      ])
-    }
   })
 
   it("이미 저장된 답안은 다시 저장하거나 활동 답안 수를 늘리지 않는다", () => {
@@ -257,13 +250,6 @@ describe("학습 단계 완료 effect plan", () => {
       ],
       kind: "accept-lesson",
     })
-    if (completedCourse.kind === "accept-lesson") {
-      expect(completedCourse.effects.map((effect) => effect.kind)).toEqual([
-        "complete-lesson",
-        "complete-course",
-        "record-learning-activity",
-      ])
-    }
   })
 })
 

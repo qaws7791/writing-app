@@ -7,6 +7,8 @@ export type LearnerFixtureInput = Readonly<{
   displayName?: string
   email?: string
   id: string
+  /** identity가 아직 profile을 provisioning하지 않은 인증 사용자 상태를 만든다. */
+  includeProfile?: boolean
   name?: string
   sessionId?: string
   sessionToken?: string
@@ -33,13 +35,15 @@ export function aLearner(
     )
     .run(input.id, name, email, createdAt)
 
-  sqlite
-    .query<void, [string, string, string, number | null, number]>(
-      `INSERT INTO learner_profiles (
-        user_id, status, display_name, deleted_at, version
-      ) VALUES (?1, ?2, ?3, ?4, ?5)`
-    )
-    .run(input.id, status, displayName, input.deletedAt ?? null, version)
+  if (input.includeProfile !== false) {
+    sqlite
+      .query<void, [string, string, string, number | null, number]>(
+        `INSERT INTO learner_profiles (
+          user_id, status, display_name, deleted_at, version
+        ) VALUES (?1, ?2, ?3, ?4, ?5)`
+      )
+      .run(input.id, status, displayName, input.deletedAt ?? null, version)
+  }
 
   if (input.sessionId !== undefined && input.sessionToken !== undefined) {
     sqlite

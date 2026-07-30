@@ -1,54 +1,51 @@
 import { and, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { createWritingAppDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 
 import {
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
-  lessonStepVersions,
-  lessonVersions,
 } from "#content/infrastructure/persistence/schema"
 import { seedContentDatabase } from "#content/infrastructure/persistence/seed"
 
+type CurriculumVersionShape = Readonly<{
+  courseId: string
+  revision: number
+  status: string
+}>
+
 describe("content seed provider", () => {
-  it("발행본과 다음 draft를 module-owned seed로 삽입한다", async () => {
-    const client = createWritingAppDatabase(":memory:")
+  it("course마다 발행본 1개와 revision이 하나 큰 다음 draft를 만든다", async () => {
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       runCurrentTestMigration(client.sqlite)
       await seedContentDatabase(client.db)
+      const courseIds = client.db
+        .select({ id: courses.id })
+        .from(courses)
+        .all()
+        .map(({ id }) => id)
+      const versions = client.db
+        .select({
+          courseId: courseCurriculumVersions.courseId,
+          revision: courseCurriculumVersions.revision,
+          status: courseCurriculumVersions.status,
+        })
+        .from(courseCurriculumVersions)
+        .all()
 
-      expect(client.db.select().from(courses).all()).toHaveLength(14)
-      expect(
-        client.db.select().from(courseCurriculumVersions).all()
-      ).toHaveLength(28)
-      expect(
-        client.db
-          .select()
-          .from(courseCurriculumVersions)
-          .where(eq(courseCurriculumVersions.status, "published"))
-          .all()
-      ).toHaveLength(14)
-      expect(
-        client.db
-          .select()
-          .from(courseCurriculumVersions)
-          .where(eq(courseCurriculumVersions.status, "draft"))
-          .all()
-      ).toHaveLength(14)
-      expect(client.db.select().from(lessonVersions).all()).toHaveLength(642)
-      expect(client.db.select().from(lessonStepVersions).all()).toHaveLength(
-        1662
-      )
+      expect(courseIds).not.toEqual([])
+      expect(readCourseVersionViolations(courseIds, versions)).toEqual([])
     } finally {
       client.close()
     }
   })
 
   it("재실행 시 기존 aggregate와 seed 밖 활성 course를 그대로 보존한다", async () => {
-    const client = createWritingAppDatabase(":memory:")
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       runCurrentTestMigration(client.sqlite)
@@ -88,21 +85,28 @@ describe("content seed provider", () => {
       if (draftUnit === undefined)
         throw new Error("draft unit fixture가 필요합니다.")
 
-      client.sqlite.exec(`
-        INSERT INTO user (
-          id, name, email, email_verified, created_at, updated_at
-        ) VALUES ('seed-user', '학습자', 'seed@example.com', 1, 1, 1);
-        INSERT INTO learner_course_progress (
-          user_id, course_id, curriculum_version_id,
-          status, started_at, last_activity_at, updated_at
-        ) VALUES (
-          'seed-user', '${firstSeedCourseId}', '${publishedVersionId}',
-          'in_progress', 1, 1, 1
-        );
-        INSERT INTO courses (
-          created_at, id, published_curriculum_version_id, sort_order, status
-        ) VALUES (1, 'custom-course', NULL, 999, 'active');
-      `)
+      client.sqlite
+        .query<void, []>(
+          `INSERT INTO user (
+            id, name, email, email_verified, created_at, updated_at
+          ) VALUES ('seed-user', '학습자', 'seed@example.test', 1, 1, 1)`
+        )
+        .run()
+      client.sqlite
+        .query<void, [string, string]>(
+          `INSERT INTO learner_course_progress (
+            user_id, course_id, curriculum_version_id,
+            status, started_at, last_activity_at, updated_at
+          ) VALUES ('seed-user', ?1, ?2, 'in_progress', 1, 1, 1)`
+        )
+        .run(firstSeedCourseId, publishedVersionId)
+      client.sqlite
+        .query<void, []>(
+          `INSERT INTO courses (
+            created_at, id, published_curriculum_version_id, sort_order, status
+          ) VALUES (1, 'custom-course', NULL, 999, 'active')`
+        )
+        .run()
       client.db
         .update(courseCurriculumVersions)
         .set({ editVersion: 7, title: "보존할 draft" })
@@ -184,3 +188,25 @@ describe("content seed provider", () => {
     }
   })
 })
+
+function readCourseVersionViolations(
+  courseIds: readonly string[],
+  versions: readonly CurriculumVersionShape[]
+): readonly string[] {
+  return courseIds.filter((courseId) => {
+    const forCourse = versions.filter(
+      (version) => version.courseId === courseId
+    )
+    const published = forCourse.filter(
+      (version) => version.status === "published"
+    )
+    const drafts = forCourse.filter((version) => version.status === "draft")
+
+    return !(
+      forCourse.length === 2 &&
+      published.length === 1 &&
+      drafts.length === 1 &&
+      drafts[0]?.revision === (published[0]?.revision ?? 0) + 1
+    )
+  })
+}

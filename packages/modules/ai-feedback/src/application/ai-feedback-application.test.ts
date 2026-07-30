@@ -43,29 +43,8 @@ const providerIdentity = {
 } as const
 
 describe("AI feedback application", () => {
-  it("attempt를 예약한 뒤 provider를 호출하고 안전한 usage metadata와 성공 결과를 저장한다", async () => {
-    const calls: string[] = []
-    const finalized: unknown[] = []
-    const transitions: unknown[] = []
-    const usage: unknown[] = []
-    const application = createApplication({
-      observeAttemptTransition: (event) => transitions.push(event),
-      observeUsage: (event) => usage.push(event),
-      provider: {
-        ...providerIdentity,
-        async createFeedback(prompt) {
-          calls.push(`provider:${prompt.policyVersion}`)
-          return ok(providerSuccess)
-        },
-      },
-      repository: repository({
-        calls,
-        async markAttemptSucceeded(input) {
-          finalized.push(input)
-          return ok({ kind: "transitioned" as const })
-        },
-      }),
-    })
+  it("provider 성공을 남은 시도 수와 함께 coaching 결과로 반환한다", async () => {
+    const application = createApplication()
 
     await expect(application.requestFeedback(request)).resolves.toEqual(
       ok({
@@ -73,6 +52,25 @@ describe("AI feedback application", () => {
         remainingAttempts: 2,
       })
     )
+  })
+
+  it("예약·provider·저장 순서로 진행하며 원문 없는 전이 event만 관측한다", async () => {
+    const calls: string[] = []
+    const transitions: unknown[] = []
+    const application = createApplication({
+      observeAttemptTransition: (event) => transitions.push(event),
+      provider: {
+        ...providerIdentity,
+        async createFeedback(prompt) {
+          calls.push(`provider:${prompt.policyVersion}`)
+          return ok(providerSuccess)
+        },
+      },
+      repository: repository({ calls }),
+    })
+
+    await application.requestFeedback(request)
+
     expect(calls).toEqual([
       "repository:reserve",
       "provider:writing-coach-v1",
@@ -90,6 +88,23 @@ describe("AI feedback application", () => {
     expect(observed).not.toContain(request.focus)
     expect(observed).not.toContain(request.lessonTitle)
     expect(observed).not.toContain("writing-coach-v1")
+  })
+
+  it("성공 usage는 token·latency만 저장하고 원문 없이 관측한다", async () => {
+    const finalized: unknown[] = []
+    const usage: unknown[] = []
+    const application = createApplication({
+      observeUsage: (event) => usage.push(event),
+      repository: repository({
+        async markAttemptSucceeded(input) {
+          finalized.push(input)
+          return ok({ kind: "transitioned" as const })
+        },
+      }),
+    })
+
+    await application.requestFeedback(request)
+
     expect(finalized).toEqual([
       expect.objectContaining({
         inputTokenCount: 10,

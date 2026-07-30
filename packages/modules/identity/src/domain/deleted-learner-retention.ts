@@ -1,4 +1,4 @@
-export const deletedLearnerRetentionMs = 5 * 24 * 60 * 60 * 1_000
+const deletedLearnerRetentionMs = 5 * 24 * 60 * 60 * 1_000
 
 export function calculateDeletedLearnerPurgeCutoff(now: Date): Date {
   const nowTime = now.getTime()

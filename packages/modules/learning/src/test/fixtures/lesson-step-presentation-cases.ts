@@ -1,13 +1,20 @@
 import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 
 const futureSecret = "__future_server_only_secret__"
-const context = {
+
+export const learnerStepPresentationFutureSecret = futureSecret
+
+export const learnerStepPresentationContext = {
   learnerScope: "learner-scope",
   lessonId: "lesson-1",
   versionId: "curriculum:course-1:1",
 } as const
 
-const presentationCases = [
+/**
+ * `expected`의 항목 순서는 원본 순서다. 결정적 shuffle의 hash 구현을 계약으로
+ * 고정하지 않도록, 소비 측은 항목을 stable ID로 정렬해 비교한다.
+ */
+export const learnerStepPresentationCases = [
   {
     expected: {
       body: "공개 본문",
@@ -18,7 +25,6 @@ const presentationCases = [
       title: "읽기",
       type: "READING",
     },
-    forbiddenKeys: ["futureSecret"],
     name: "READING",
     step: withFutureSecret({
       body: "공개 본문",
@@ -41,7 +47,6 @@ const presentationCases = [
         { label: "후", text: "수정 후" },
       ],
     },
-    forbiddenKeys: ["analysis", "futureSecret"],
     name: "COMPARE",
     step: withFutureSecret({
       analysis: "서버 전용 분석",
@@ -59,15 +64,14 @@ const presentationCases = [
     expected: {
       id: "choice-1",
       options: [
-        { id: "option-c", text: "셋째" },
         { id: "option-a", text: "첫째" },
         { id: "option-b", text: "둘째" },
+        { id: "option-c", text: "셋째" },
       ],
       question: "정답은?",
       sortOrder: 3,
       type: "MULTIPLE_CHOICE",
     },
-    forbiddenKeys: ["correct", "explanation", "futureSecret", "wrong"],
     name: "MULTIPLE_CHOICE",
     step: withFutureSecret({
       correct: "option-b",
@@ -81,7 +85,6 @@ const presentationCases = [
       question: "정답은?",
       sortOrder: 3,
       type: "MULTIPLE_CHOICE",
-      wrong: "서버 전용 오답 해설",
     }),
   },
   {
@@ -97,13 +100,6 @@ const presentationCases = [
       template: "___ ___",
       type: "FILL_BLANK",
     },
-    forbiddenKeys: [
-      "answer",
-      "explanation",
-      "futureSecret",
-      "wordIds",
-      "words",
-    ],
     name: "FILL_BLANK",
     step: withFutureSecret({
       answer: ["word-a", "word-c"],
@@ -129,13 +125,6 @@ const presentationCases = [
       sortOrder: 5,
       type: "SELECT",
     },
-    forbiddenKeys: [
-      "correct",
-      "explanation",
-      "futureSecret",
-      "segmentIds",
-      "segments",
-    ],
     name: "SELECT",
     step: withFutureSecret({
       correct: ["segment-a"],
@@ -153,16 +142,15 @@ const presentationCases = [
     expected: {
       id: "order-1",
       items: [
-        { id: "item-c", text: "쓴다" },
         { id: "item-a", text: "나는" },
         { id: "item-b", text: "글을" },
+        { id: "item-c", text: "쓴다" },
       ],
       showNumbers: true,
       sortOrder: 6,
       title: "순서",
       type: "ORDER",
     },
-    forbiddenKeys: ["correct", "explanation", "futureSecret", "itemIds"],
     name: "ORDER",
     step: withFutureSecret({
       correct: ["item-a", "item-b", "item-c"],
@@ -198,7 +186,6 @@ const presentationCases = [
       topic: "글쓰기",
       type: "WRITE",
     },
-    forbiddenKeys: ["futureSecret"],
     name: "WRITE",
     step: withFutureSecret({
       badge: "연습",
@@ -230,7 +217,6 @@ const presentationCases = [
       target: "write-1",
       type: "AI_FEEDBACK",
     },
-    forbiddenKeys: ["allowRetry", "feedback", "futureSecret"],
     name: "AI_FEEDBACK",
     step: withFutureSecret({
       allowRetry: true,
@@ -247,28 +233,19 @@ const presentationCases = [
       guide: "연결하세요.",
       id: "match-1",
       leftItems: [
-        { id: "left-c", text: "또한" },
         { id: "left-a", text: "그러나" },
         { id: "left-b", text: "따라서" },
+        { id: "left-c", text: "또한" },
       ],
       rightItems: [
-        { id: "right-b", text: "인과" },
         { id: "right-a", text: "역접" },
+        { id: "right-b", text: "인과" },
         { id: "right-c", text: "추가" },
       ],
       sortOrder: 9,
       title: "짝짓기",
       type: "MATCH",
     },
-    forbiddenKeys: [
-      "explanation",
-      "futureSecret",
-      "left",
-      "leftId",
-      "pairs",
-      "right",
-      "rightId",
-    ],
     name: "MATCH",
     step: withFutureSecret({
       explanation: "서버 전용 매칭 해설",
@@ -303,21 +280,20 @@ const presentationCases = [
     expected: {
       categories: [
         { id: "category-a", text: "주장" },
-        { id: "category-c", text: "예시" },
         { id: "category-b", text: "근거" },
+        { id: "category-c", text: "예시" },
       ],
       guide: "분류하세요.",
       id: "categorize-1",
       items: [
         { id: "cat-item-a", text: "첫 문장" },
-        { id: "cat-item-c", text: "셋째 문장" },
         { id: "cat-item-b", text: "둘째 문장" },
+        { id: "cat-item-c", text: "셋째 문장" },
       ],
       sortOrder: 10,
       title: "분류",
       type: "CATEGORIZE",
     },
-    forbiddenKeys: ["categoryId", "explanation", "futureSecret", "label"],
     name: "CATEGORIZE",
     step: withFutureSecret({
       categories: [
@@ -340,10 +316,6 @@ const presentationCases = [
   },
 ] as const
 
-export const learnerStepPresentationFutureSecret = futureSecret
-export const learnerStepPresentationContext = context
-export const learnerStepPresentationCases = presentationCases
-
-export function withFutureSecret(input: unknown) {
+function withFutureSecret(input: unknown) {
   return Object.assign({}, lessonStepDtoSchema.parse(input), { futureSecret })
 }

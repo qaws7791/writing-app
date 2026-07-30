@@ -9,7 +9,8 @@
       "#auth/*": ["../../infra/auth/src/*"],
       "#content/*": ["../content/src/*"],
       "#db/*": ["../../infra/db/src/*"],
-      "#http-platform/*": ["../../infra/http-platform/src/*"]
+      "#http-platform/*": ["../../infra/http-platform/src/*"],
+      "#identity/*": ["../identity/src/*"]
     },
     "types": ["bun"]
   },
