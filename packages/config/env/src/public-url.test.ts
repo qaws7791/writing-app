@@ -67,21 +67,21 @@ describe("public URL transport", () => {
         nodeEnvironment: "production",
       })
     ).toBeNull()
+  })
 
-    for (const value of [
-      "https://user:secret@assets.example.test/content",
-      "https://assets.example.test/content?variant=unsafe",
-      "https://assets.example.test/content?",
-      "https://assets.example.test/content#fragment",
-      "ftp://assets.example.test/content",
-    ]) {
-      expect(() =>
-        parseContentAssetPublicBaseUrl(value, {
-          description: "content asset base URL",
-          nodeEnvironment: "production",
-        })
-      ).toThrow("content asset base URL is not a safe public base URL")
-    }
+  it.each([
+    ["인증 정보", "https://user:secret@assets.example.test/content"],
+    ["query", "https://assets.example.test/content?variant=unsafe"],
+    ["빈 query", "https://assets.example.test/content?"],
+    ["fragment", "https://assets.example.test/content#fragment"],
+    ["HTTP 이외 프로토콜", "ftp://assets.example.test/content"],
+  ])("%s가 있는 콘텐츠 asset base URL을 거부한다", (_label, value) => {
+    expect(() =>
+      parseContentAssetPublicBaseUrl(value, {
+        description: "content asset base URL",
+        nodeEnvironment: "production",
+      })
+    ).toThrow("content asset base URL is not a safe public base URL")
   })
 
   it("asset production은 loopback HTTP를 허용하고 공개 HTTP를 거부한다", () => {
@@ -124,24 +124,35 @@ describe("public URL transport", () => {
         nodeEnvironment: "production",
       }).map((origin) => origin.origin)
     ).toEqual(["http://localhost:9000"])
+  })
 
-    for (const value of [
-      "https://*.example.test",
-      "http://assets.example.test",
-      "https://assets.example.test/path",
-      "https://assets.example.test/",
+  it.each([
+    ["wildcard", "https://*.example.test", "non-canonical origin"],
+    ["공개 HTTP", "http://assets.example.test", "must use HTTPS in production"],
+    ["경로", "https://assets.example.test/path", "non-canonical origin"],
+    ["후행 슬래시", "https://assets.example.test/", "non-canonical origin"],
+    [
+      "query",
       "https://assets.example.test?variant=unsafe",
-      "https://assets.example.test,",
+      "non-canonical origin",
+    ],
+    ["빈 항목", "https://assets.example.test,", "empty origin"],
+    [
+      "중복 origin",
       "https://assets.example.test,https://assets.example.test",
-    ]) {
+      "duplicate origin",
+    ],
+  ])(
+    "이미지 허용 origin 목록의 %s를 거부한다",
+    (_label, value, expectedMessage) => {
       expect(() =>
         parseContentAssetImageAllowedOrigins(value, {
           description: "content asset image allowed origins",
           nodeEnvironment: "production",
         })
-      ).toThrow()
+      ).toThrow(expectedMessage)
     }
-  })
+  )
 
   it("production asset base URL origin이 이미지 허용 목록에 있어야 한다", () => {
     const allowedOrigins = parseContentAssetImageAllowedOrigins(

@@ -9,11 +9,11 @@ import {
 } from "#auth/schema/index"
 
 import { createAdminAuthRuntime } from "#auth/admin/server"
-import { hashAuthPassword } from "#auth/password"
 import {
   createAdminAuthDatabaseAdapter,
   createAuthTestDatabase,
   readSetCookiePair,
+  seedAdminOwner,
   type AuthTestDatabase,
 } from "#auth/test-support/auth-test-database"
 
@@ -24,7 +24,7 @@ describe("관리자 인증 통합", () => {
     const database = createAuthTestDatabase()
 
     try {
-      await seedOwner(database.db)
+      await seedAdminOwner(database.db, { password: ownerPassword })
       const runtime = createTestRuntime(database.db)
       const response = await postAuth(
         runtime.authHandler,
@@ -75,7 +75,7 @@ describe("관리자 인증 통합", () => {
     const database = createAuthTestDatabase()
 
     try {
-      await seedOwner(database.db)
+      await seedAdminOwner(database.db, { password: ownerPassword })
       const runtime = createTestRuntime(database.db)
       const firstLogin = await postAuth(
         runtime.authHandler,
@@ -123,36 +123,6 @@ function createTestRuntime(database: AuthTestDatabase) {
     },
     webOrigin: "http://localhost:3001",
   })
-}
-
-async function seedOwner(database: AuthTestDatabase): Promise<void> {
-  const now = new Date("2026-07-18T00:00:00.000Z")
-  const password = await hashAuthPassword(ownerPassword)
-
-  database
-    .insert(adminAuthUsers)
-    .values({
-      createdAt: now,
-      email: "owner@example.com",
-      emailVerified: true,
-      id: "admin-1",
-      image: null,
-      name: "소유자",
-      updatedAt: now,
-    })
-    .run()
-  database
-    .insert(adminAuthAccounts)
-    .values({
-      accountId: "admin-1",
-      createdAt: now,
-      id: "admin-1-credential",
-      password,
-      providerId: "credential",
-      updatedAt: now,
-      userId: "admin-1",
-    })
-    .run()
 }
 
 async function postAuth(

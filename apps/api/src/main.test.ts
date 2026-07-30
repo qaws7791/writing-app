@@ -7,20 +7,21 @@ vi.mock("bun", async (importOriginal) => ({
   serve,
 }))
 
-describe("API main module", () => {
-  it("factory를 import해도 process와 server를 시작하지 않는다", async () => {
-    await import("@/main")
+// 전체 app 모듈 그래프를 test 본문이 아니라 파일 import 단계에서 지불해,
+// 저장소 전체 병렬 실행에서 test timeout이 그래프 크기에 좌우되지 않게 한다.
+import { startApiServer } from "@/main"
 
+describe("API main module", () => {
+  it("factory를 import해도 process와 server를 시작하지 않는다", () => {
     expect(serve).not.toHaveBeenCalled()
-  }, 10_000)
+  })
 
   it("production runtime secret 누락은 server 시작 전에 값 비노출로 거절한다", async () => {
-    const module = await import("@/main")
     const secret = "provider-secret-sentinel"
 
     let thrown: unknown
     try {
-      await module.startApiServer({
+      await startApiServer({
         ADMIN_ASSET_PUBLIC_BASE_URL: "https://assets.example.com",
         ADMIN_ASSET_S3_ACCESS_KEY: "asset-access-key",
         ADMIN_ASSET_S3_BUCKET: "writing-app-assets",
