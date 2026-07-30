@@ -93,7 +93,7 @@
     "format:check": "oxfmt --check",
     "generate": "turbo run generate",
     "storybook": "bun --filter @workspace/storybook dev",
-    "test": "turbo test --concurrency=50%",
+    "test": "bun run generate && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts",
     "test:watch": "vitest watch --config vitest.workspace.ts",
     "test:admin-dev-lifecycle": "bun test ./scripts/admin-dev-lifecycle.smoke.ts",
     "test:deployment-images": "bun run generate && bun scripts/test-deployment-images.ts",

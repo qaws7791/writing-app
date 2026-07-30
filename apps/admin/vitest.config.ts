@@ -22,7 +22,6 @@ export default mergeConfig(
     test: {
       // DOM이 필요한 `.test.tsx`만 파일 상단 `@vitest-environment jsdom`으로 jsdom을 지불한다.
       environment: "node",
-      maxWorkers: 2,
     },
   })
 )

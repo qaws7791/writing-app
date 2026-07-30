@@ -26,6 +26,9 @@ export function createReactVitestConfig(options: ReactVitestConfigOptions) {
       jsxImportSource: "react",
     },
     plugins: [tsconfigPaths()],
+    // root 단일 실행에서 zod가 package 밖 사본으로 externalize되면 schema helper가
+    // undefined가 된다. 모든 project가 같은 규칙을 쓰도록 factory가 고정한다.
+    ssr: { noExternal: ["zod"] },
     resolve: {
       alias: [
         { find: /^react$/, replacement: reactPath },

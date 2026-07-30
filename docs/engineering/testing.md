@@ -102,7 +102,9 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 
 공개 검증 명령과 tool version은 [root manifest](../../package.json), Vitest 대상 구성은 [Vitest workspace](../../vitest.workspace.ts), browser 실행 설정은 [Playwright config](../../playwright.config.ts), Storybook source는 [Storybook manifest](../../apps/storybook/package.json)와 [Storybook config](../../apps/storybook/.storybook/main.ts), Storybook 테스트 실행 설정은 [Storybook Vitest config](../../apps/storybook/vitest.storybook.config.ts)가 소유한다. CI trigger, job 배치와 실제 gate는 [quality workflow](../../.github/workflows/quality-gates.yml)를 확인한다. 이 문서는 현재 script, 대상 목록, retry 횟수, report 형식과 숫자 예산을 복제하지 않는다.
 
-Vitest workspace가 참조하는 앱 config는 각자 고유 사유가 있을 때만 둔다. `apps/api`는 migration `.sql`을 text로 불러오는 loader, web·admin·shared/ui는 DOM 환경과 React 단일 인스턴스 고정이 그 사유다. 앱·패키지 manifest의 `test` script는 개발자 편의용 부분 실행이고, 저장소 전체 실행 대상은 root manifest의 `test`가 소유한다.
+저장소 전체 unit·integration은 root manifest의 `test`가 Vitest workspace를 단일 process로 한 번 실행한다. 패키지마다 러너를 띄우면 실제 테스트 시간보다 기동·transform 비용이 커지므로 project를 나누되 process는 나누지 않는다. 앱·패키지 manifest의 `test` script는 `--project` 필터로 부분 실행하는 개발자 편의용이다.
+
+Vitest workspace가 참조하는 앱 config는 각자 고유 사유가 있을 때만 둔다. `apps/api`는 migration `.sql`을 text로 불러오는 loader, web·admin·shared/ui는 DOM 환경과 React 단일 인스턴스 고정이 그 사유이며 공통 부분은 [React Vitest factory](../../packages/config/vitest-config/src/react.ts)가 소유한다. 단일 process에서 project별 `maxWorkers`를 다르게 두면 Vitest가 실행 순서를 결정할 수 없으므로 worker 상한은 project별로 나누지 않는다.
 
 배포 runtime smoke(`test:frontend-production-runtime`)와 관리자 개발 서버 수명주기 smoke(`test:admin-dev-lifecycle`)는 전용 명령으로만 실행하며 CI 차단 gate가 아니다. coverage는 수집하지 않는다. provider를 manifest에 선언하지 않고 수집 설정·명령도 두지 않으며, coverage 숫자는 어떤 경계에서도 gate로 쓰지 않는다. `@vitest/coverage-v8`이 lockfile과 `node_modules`에 있는 것은 bun이 `vitest`의 optional peer를 함께 해석한 결과이고 저장소가 선언한 의존성이 아니다.
 
