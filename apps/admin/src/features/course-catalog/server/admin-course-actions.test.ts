@@ -31,7 +31,6 @@ const requestOptions = { cache: "no-store" } as const
 
 describe("admin course catalog actions", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     getServerAdminRequestOptionsMock.mockResolvedValue(requestOptions)
   })
 

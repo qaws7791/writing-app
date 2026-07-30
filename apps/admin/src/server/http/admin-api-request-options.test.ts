@@ -30,7 +30,6 @@ import {
 
 describe("admin generated API server options", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     createGeneratedRequestOptionsMock.mockImplementation(
       (_runtime, options) => options
     )

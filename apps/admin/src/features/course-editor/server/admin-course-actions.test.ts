@@ -34,21 +34,12 @@ import {
   saveAdminCourseEditorAction,
   uploadAdminContentAssetAction,
 } from "@/features/course-editor/server/admin-course-actions"
+import { createAdminCourseEditorFixture } from "@/features/course-editor/test/fixtures/admin-course-editor"
 import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
-const document = adminCourseEditorSchema.parse({
-  assets: [],
-  category: "미분류",
-  coverAssetId: null,
-  curriculumVersionId: "course-1-v2",
-  description: "설명",
-  editVersion: 1,
-  id: "course-1",
-  revision: 2,
-  status: "active",
-  title: "코스",
-  units: [],
-})
+const document = adminCourseEditorSchema.parse(
+  createAdminCourseEditorFixture({ description: "설명", title: "코스" })
+)
 const requestOptions = { cache: "no-store" } as const
 const nextDraft = {
   ...document,
@@ -59,12 +50,39 @@ const nextDraft = {
 
 describe("admin course editor actions", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     getServerAdminRequestOptionsMock.mockResolvedValue(requestOptions)
   })
 
-  it("generated 저장·발행 성공 시 write DTO와 If-Match를 전달하고 경로를 재검증한다", async () => {
+  it("저장 성공 시 asset을 제외한 write DTO를 editVersion If-Match와 함께 보낸다", async () => {
     saveCourseMock.mockResolvedValue(document)
+
+    await expect(saveAdminCourseEditorAction(document)).resolves.toEqual({
+      status: "ok",
+      value: document,
+    })
+
+    expect(getServerAdminRequestOptionsMock).toHaveBeenCalledWith({
+      headers: { "If-Match": '"1"' },
+    })
+    expect(saveCourseMock).toHaveBeenCalledWith(
+      "course-1",
+      expect.not.objectContaining({ assets: expect.anything() }),
+      requestOptions
+    )
+  })
+
+  it("저장 성공 시 목록과 편집 경로를 재검증한다", async () => {
+    saveCourseMock.mockResolvedValue(document)
+
+    await saveAdminCourseEditorAction(document)
+
+    expect(revalidatePathMock.mock.calls).toEqual([
+      ["/courses"],
+      ["/courses/course-1"],
+    ])
+  })
+
+  it("발행 성공 시 editVersion If-Match로 요청하고 다음 초안을 다시 읽어 반환한다", async () => {
     publishCourseMock.mockResolvedValue({
       curriculumVersionId: "course-1-v2",
       publishedAt: "2026-07-17T00:00:00.000Z",
@@ -72,43 +90,46 @@ describe("admin course editor actions", () => {
     })
     getCourseEditorMock.mockResolvedValue(nextDraft)
 
-    await expect(saveAdminCourseEditorAction(document)).resolves.toEqual({
-      status: "ok",
-      value: document,
-    })
     await expect(publishAdminCourseAction(document)).resolves.toEqual({
       status: "ok",
       value: nextDraft,
     })
 
-    expect(getServerAdminRequestOptionsMock).toHaveBeenNthCalledWith(1, {
+    expect(getServerAdminRequestOptionsMock).toHaveBeenCalledWith({
       headers: { "If-Match": '"1"' },
     })
-    expect(getServerAdminRequestOptionsMock).toHaveBeenNthCalledWith(2, {
-      headers: { "If-Match": '"1"' },
-    })
-    expect(getServerAdminRequestOptionsMock).toHaveBeenNthCalledWith(3)
-    expect(saveCourseMock).toHaveBeenCalledWith(
-      "course-1",
-      expect.not.objectContaining({ assets: expect.anything() }),
-      requestOptions
-    )
     expect(publishCourseMock).toHaveBeenCalledWith("course-1", requestOptions)
     expect(getCourseEditorMock).toHaveBeenCalledWith("course-1", requestOptions)
+  })
+
+  it("발행 성공 시 목록과 편집 경로를 재검증한다", async () => {
+    publishCourseMock.mockResolvedValue({
+      curriculumVersionId: "course-1-v2",
+      publishedAt: "2026-07-17T00:00:00.000Z",
+      revision: 2,
+    })
+    getCourseEditorMock.mockResolvedValue(nextDraft)
+
+    await publishAdminCourseAction(document)
+
     expect(revalidatePathMock.mock.calls).toEqual([
-      ["/courses"],
-      ["/courses/course-1"],
       ["/courses"],
       ["/courses/course-1"],
     ])
   })
 
-  it("잘못된 입력과 세션 없는 요청은 generated mutation을 호출하지 않는다", async () => {
+  it("잘못된 입력은 generated mutation을 호출하지 않는다", async () => {
     await saveAdminCourseEditorAction({ id: "" })
-    getServerAdminRequestOptionsMock.mockResolvedValue(null)
-    await publishAdminCourseAction(document)
 
     expect(saveCourseMock).not.toHaveBeenCalled()
+    expect(revalidatePathMock).not.toHaveBeenCalled()
+  })
+
+  it("세션 없는 요청은 generated mutation을 호출하지 않는다", async () => {
+    getServerAdminRequestOptionsMock.mockResolvedValue(null)
+
+    await publishAdminCourseAction(document)
+
     expect(publishCourseMock).not.toHaveBeenCalled()
     expect(revalidatePathMock).not.toHaveBeenCalled()
   })

@@ -21,21 +21,23 @@ describe("parseAdminAnalyticsFilters", () => {
     })
   })
 
-  it("배열, 허용되지 않은 정렬과 상한 밖 숫자를 canonical 기본값으로 복구한다", () => {
-    expect(
-      parseAdminAnalyticsFilters({
-        direction: "sideways",
-        page: "10001",
-        pageSize: "101",
-        query: ["문장", "강의"],
-        sort: "failureRate",
+  it.each<{
+    readonly expected: number | string
+    readonly field: string
+    readonly value: string | string[]
+  }>([
+    { expected: "asc", field: "direction", value: "sideways" },
+    { expected: 1, field: "page", value: "10001" },
+    { expected: 1, field: "page", value: "0" },
+    { expected: 10, field: "pageSize", value: "101" },
+    { expected: "", field: "query", value: ["문장", "강의"] },
+    { expected: "completionRate", field: "sort", value: "failureRate" },
+  ])(
+    "$field의 $value는 canonical 기본값 $expected로 복구한다",
+    ({ expected, field, value }) => {
+      expect(parseAdminAnalyticsFilters({ [field]: value })).toMatchObject({
+        [field]: expected,
       })
-    ).toEqual({
-      direction: "asc",
-      page: 1,
-      pageSize: 10,
-      query: "",
-      sort: "completionRate",
-    })
-  })
+    }
+  )
 })

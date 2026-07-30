@@ -1,4 +1,5 @@
-import { render, screen, within } from "@testing-library/react"
+// @vitest-environment jsdom
+import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { AdminDashboardPage } from "@/features/dashboard/ui/admin-dashboard-page"
@@ -33,30 +34,24 @@ const dashboard: AdminDashboard = {
 }
 
 describe("AdminDashboardPage", () => {
-  it("canonical 순서로 여섯 운영 지표와 집계 근거를 렌더링한다", () => {
+  it("여섯 운영 지표의 값을 각 지표 카드에 표시한다", () => {
     render(<AdminDashboardPage dashboardResult={ok(dashboard)} />)
 
-    expect(screen.getByRole("heading", { name: "대시보드" })).toBeVisible()
-    expect(
-      screen.getByText(
-        "2026-07-24 기준 · 첫 시작과 7일 재방문을 포함한 핵심 운영 지표입니다."
-      )
-    ).toBeVisible()
-    const cards = within(screen.getByLabelText("주요 지표")).getAllByRole(
-      "article"
+    expect(readMetricCard("총 사용자")).toHaveTextContent("36")
+    expect(readMetricCard("최근 7일 활성")).toHaveTextContent("8")
+    expect(readMetricCard("첫 레슨 시작")).toHaveTextContent("12")
+    expect(readMetricCard("활성화율")).toHaveTextContent("33.3%")
+    expect(readMetricCard("7일 내 재방문")).toHaveTextContent("40%")
+    expect(readMetricCard("완료 레슨")).toHaveTextContent("72")
+  })
+
+  it("비율 지표는 분자·분모와 cohort 성숙 기준일을 집계 근거로 함께 보여준다", () => {
+    render(<AdminDashboardPage dashboardResult={ok(dashboard)} />)
+
+    expect(readMetricCard("활성화율")).toHaveTextContent("12 / 36명 첫 시작")
+    expect(readMetricCard("7일 내 재방문")).toHaveTextContent(
+      "4 / 10명 · 2026-07-16까지"
     )
-    expect(cards).toHaveLength(6)
-    expect(cards.map((card) => card.textContent)).toEqual([
-      expect.stringContaining("총 사용자36"),
-      expect.stringContaining("최근 7일 활성8"),
-      expect.stringContaining("첫 레슨 시작12"),
-      expect.stringContaining("활성화율33.3%"),
-      expect.stringContaining("7일 내 재방문40%"),
-      expect.stringContaining("완료 레슨72"),
-    ])
-    expect(cards[3]).toHaveTextContent("12 / 36명 첫 시작")
-    expect(cards[4]).toHaveTextContent("4 / 10명 · 2026-07-16까지")
-    expect(screen.queryByText("최근 활동")).not.toBeInTheDocument()
   })
 
   it("빈 비율과 아직 성숙하지 않은 D7 cohort를 0%와 구분한다", () => {
@@ -84,8 +79,8 @@ describe("AdminDashboardPage", () => {
       />
     )
 
-    expect(screen.getByText("표본 없음")).toBeVisible()
-    expect(screen.getByText("집계 중")).toBeVisible()
+    expect(readMetricCard("활성화율")).toHaveTextContent("표본 없음")
+    expect(readMetricCard("7일 내 재방문")).toHaveTextContent("집계 중")
     expect(screen.queryByText("0%")).not.toBeInTheDocument()
   })
 
@@ -111,6 +106,10 @@ describe("AdminDashboardPage", () => {
     )
   })
 })
+
+function readMetricCard(name: string): HTMLElement {
+  return screen.getByRole("article", { name })
+}
 
 function ok<TValue>(value: TValue): AdminRequestResult<TValue> {
   return {

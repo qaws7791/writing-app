@@ -1,23 +1,30 @@
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { getAdminUserMock, notFoundMock } = vi.hoisted(() => ({
-  getAdminUserMock: vi.fn(),
-  notFoundMock: vi.fn(() => {
-    throw new Error("not-found")
-  }),
-}))
+const { getAdminUserMock, getServerAdminRequestOptionsMock, notFoundMock } =
+  vi.hoisted(() => ({
+    getAdminUserMock: vi.fn(),
+    getServerAdminRequestOptionsMock: vi.fn(),
+    notFoundMock: vi.fn(() => {
+      throw new Error("not-found")
+    }),
+  }))
 
 vi.mock("next/navigation", () => ({ notFound: notFoundMock }))
 vi.mock("@workspace/http-client/admin", () => ({
   getAdminUser: getAdminUserMock,
 }))
 vi.mock("@/server/http/admin-api-request-options", () => ({
-  getServerAdminRequestOptions: vi.fn(async () => ({})),
+  getServerAdminRequestOptions: getServerAdminRequestOptionsMock,
 }))
 
 import AdminUserDetailRoute from "@/app/(admin)/users/[id]/page"
 
 describe("admin user detail route", () => {
+  beforeEach(() => {
+    getServerAdminRequestOptionsMock.mockResolvedValue({ cache: "no-store" })
+    getAdminUserMock.mockResolvedValue({ id: "user-1", name: "민지" })
+  })
+
   it("잘못된 user ID는 API 호출 전에 notFound로 수렴한다", async () => {
     await expect(
       AdminUserDetailRoute({
@@ -25,7 +32,23 @@ describe("admin user detail route", () => {
       })
     ).rejects.toThrow("not-found")
 
-    expect(notFoundMock).toHaveBeenCalledTimes(1)
+    expect(getAdminUserMock).not.toHaveBeenCalled()
+  })
+
+  it("검증한 user ID로 인증된 generated reader를 직접 호출한다", async () => {
+    const requestOptions = { cache: "no-store" }
+    getServerAdminRequestOptionsMock.mockResolvedValue(requestOptions)
+
+    await AdminUserDetailRoute({ params: Promise.resolve({ id: "user-1" }) })
+
+    expect(getAdminUserMock).toHaveBeenCalledWith("user-1", requestOptions)
+  })
+
+  it("세션이 없으면 사용자 상세를 조회하지 않는다", async () => {
+    getServerAdminRequestOptionsMock.mockResolvedValue(null)
+
+    await AdminUserDetailRoute({ params: Promise.resolve({ id: "user-1" }) })
+
     expect(getAdminUserMock).not.toHaveBeenCalled()
   })
 })

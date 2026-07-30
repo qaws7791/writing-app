@@ -21,21 +21,23 @@ describe("admin user filters", () => {
     })
   })
 
-  it("배열, 0과 알 수 없는 정렬은 안전한 기본값으로 수렴한다", () => {
-    expect(
-      parseAdminUserFilters({
-        page: ["2"],
-        pageSize: "0",
-        query: ["학습자"],
-        sort: "unknown",
-        status: "unknown",
+  it.each<{
+    readonly expected: number | string
+    readonly field: string
+    readonly value: string | string[]
+  }>([
+    { expected: 1, field: "page", value: ["2"] },
+    { expected: 20, field: "pageSize", value: "0" },
+    { expected: "", field: "query", value: ["학습자"] },
+    { expected: "lastActive", field: "sort", value: "unknown" },
+    { expected: "lastActive", field: "sort", value: ["streak"] },
+    { expected: "all", field: "status", value: "unknown" },
+  ])(
+    "$field의 $value는 안전한 기본값 $expected로 수렴한다",
+    ({ expected, field, value }) => {
+      expect(parseAdminUserFilters({ [field]: value })).toMatchObject({
+        [field]: expected,
       })
-    ).toEqual({
-      page: 1,
-      pageSize: 20,
-      query: "",
-      sort: "lastActive",
-      status: "all",
-    })
-  })
+    }
+  )
 })

@@ -31,7 +31,6 @@ import {
 describe("admin user actions", () => {
   const userId = userIdSchema.parse("user-1")
   beforeEach(() => {
-    vi.clearAllMocks()
     getServerAdminRequestOptionsMock.mockResolvedValue({})
   })
 

@@ -16,6 +16,7 @@ import {
   isUnsaved as isUnsavedState,
 } from "@/features/course-editor/model/course-editor-reducer"
 import type { UploadAdminContentAsset } from "@/features/course-editor/model/content-asset-upload"
+import { shouldConfirmUnsavedNavigation } from "@/features/course-editor/model/unsaved-navigation"
 import { withConflictRecovery } from "@/features/course-editor/model/with-conflict-recovery"
 import type { ConfirmationIntent } from "@/features/course-editor/ui/confirmation-copy"
 import { CourseCurriculumTab } from "@/features/course-editor/ui/course-curriculum-tab"
@@ -153,11 +154,7 @@ export function CourseEditorShell({
             prefetch={false}
             onClick={(event) => {
               if (
-                !unsaved ||
-                event.altKey ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.shiftKey
+                !shouldConfirmUnsavedNavigation({ modifiers: event, unsaved })
               )
                 return
               event.preventDefault()

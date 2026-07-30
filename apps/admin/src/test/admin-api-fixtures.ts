@@ -1,33 +1,8 @@
-import type {
-  getAdminCourseEditor,
-  uploadAdminContentAsset,
-} from "@workspace/http-client/admin"
+import type { uploadAdminContentAsset } from "@workspace/http-client/admin"
 
-export type AdminCourseEditorFixture = Awaited<
-  ReturnType<typeof getAdminCourseEditor>
->
 export type AdminContentAssetFixture = Awaited<
   ReturnType<typeof uploadAdminContentAsset>
 >
-
-export function createAdminCourseEditorFixture(
-  overrides: Readonly<Partial<AdminCourseEditorFixture>> = {}
-): AdminCourseEditorFixture {
-  return {
-    assets: [],
-    category: "미분류",
-    coverAssetId: null,
-    curriculumVersionId: "course-1-v2",
-    description: "강의 설명",
-    editVersion: 1,
-    id: "course-1",
-    revision: 2,
-    status: "active",
-    title: "글쓰기 코스",
-    units: [],
-    ...overrides,
-  }
-}
 
 export function createAdminContentAssetFixture(
   overrides: Readonly<Partial<AdminContentAssetFixture>> = {}

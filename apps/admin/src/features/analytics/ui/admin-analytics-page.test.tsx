@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
@@ -113,8 +114,8 @@ describe("AdminAnalyticsPage", () => {
     ).toHaveTextContent("문장 시작하기")
   })
 
-  it("요약과 레슨 목록 오류를 한국어 alert로 구분한다", () => {
-    const { rerender } = render(
+  it("요약 조회가 실패하면 레슨 목록까지 열지 않고 요약 오류만 보여준다", () => {
+    render(
       <AdminAnalyticsPage
         analyticsResult={{
           error: networkError(),
@@ -124,11 +125,20 @@ describe("AdminAnalyticsPage", () => {
         lessonAnalyticsResult={ok(lessonAnalytics)}
       />
     )
+
     expect(screen.getByRole("alert")).toHaveTextContent(
       "네트워크 연결을 확인해 주세요."
     )
+    expect(
+      screen.queryByRole("table", { name: "레슨별 성과" })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("heading", { name: "레슨별 성과" })
+    ).not.toBeInTheDocument()
+  })
 
-    rerender(
+  it("레슨 목록 조회만 실패하면 요약은 유지하고 레슨별 성과에만 오류를 보여준다", () => {
+    render(
       <AdminAnalyticsPage
         analyticsResult={ok(analytics)}
         filters={filters}
@@ -138,10 +148,19 @@ describe("AdminAnalyticsPage", () => {
         }}
       />
     )
+
     expect(screen.getByRole("alert")).toHaveTextContent(
       "네트워크 연결을 확인해 주세요."
     )
+    expect(
+      screen.getByRole("table", {
+        name: "일별 가입, 첫 시작, 완료와 D7 재방문",
+      })
+    ).toBeVisible()
     expect(screen.getByRole("heading", { name: "레슨별 성과" })).toBeVisible()
+    expect(
+      screen.queryByRole("table", { name: "레슨별 성과" })
+    ).not.toBeInTheDocument()
   })
 })
 

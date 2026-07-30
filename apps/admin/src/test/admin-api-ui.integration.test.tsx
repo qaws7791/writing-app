@@ -1,6 +1,5 @@
-import { File as NodeFile } from "node:buffer"
-
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+// @vitest-environment jsdom
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import {
   afterAll,
@@ -14,11 +13,8 @@ import {
 import { setupServer } from "msw/node"
 
 import {
-  getAdminCourseEditor,
-  uploadAdminContentAsset,
-} from "@workspace/http-client/admin"
-import {
   getGetAdminCourseEditorMockHandler200,
+  getSaveAdminCourseEditorMockHandler409,
   getUploadAdminContentAssetMockHandler,
   getUploadAdminContentAssetMockHandler200,
   getUploadAdminContentAssetMockHandler409,
@@ -27,37 +23,32 @@ import {
   createApiErrorFixture,
   throwMswNetworkErrorFixture,
 } from "@workspace/http-client/msw-fixtures"
-import {
-  adminContentAssetAltTextSchema,
-  adminContentAssetKindSchema,
-} from "@workspace/contracts/content/admin-assets"
-import { curriculumVersionIdSchema } from "@workspace/contracts/content/ids"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
+import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
+import type { ApiError } from "@workspace/contracts/api-error"
 
-import { courseIdSchema } from "@/entities/course/model/course-id"
-import type { AdminCourseEditorCommandResult } from "@/features/course-editor/model/admin-course-editor"
-import type { UploadAdminContentAsset } from "@/features/course-editor/model/content-asset-upload"
+import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
+import {
+  saveAdminCourseEditorAction,
+  uploadAdminContentAssetAction,
+} from "@/features/course-editor/server/admin-course-actions"
+import { createAdminCourseEditorFixture } from "@/features/course-editor/test/fixtures/admin-course-editor"
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
-import { settleAdminApiRequest } from "@/shared/http/admin-api-client"
-import {
-  createAdminContentAssetFixture,
-  createAdminCourseEditorFixture,
-  type AdminContentAssetFixture,
-  type AdminCourseEditorFixture,
-} from "@/test/admin-api-fixtures"
+import { createAdminContentAssetFixture } from "@/test/admin-api-fixtures"
 
+const sessionToken = "integration-session-token"
+
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }))
+vi.mock("@/server/auth/get-admin-session-token", () => ({
+  getServerAdminSessionToken: async () => sessionToken,
+}))
 
 const server = setupServer()
-const nativeRequest = globalThis.Request
 
 beforeAll(() => {
-  globalThis.Request = class BrowserRequest extends nativeRequest {
-    constructor(input: RequestInfo | URL, init?: RequestInit) {
-      super(resolveBrowserRequestInput(input), init)
-    }
-  }
   server.listen({ onUnhandledRequest: "error" })
 })
 
@@ -67,49 +58,86 @@ afterEach(() => {
 
 afterAll(() => {
   server.close()
-  globalThis.Request = nativeRequest
 })
 
 describe("generated admin client UI integration", () => {
-  it("multipart write 필드를 제한하고 업로드 중 진행 상태 뒤 generated asset을 반영한다", async () => {
+  it("Server Action은 courseId를 path로만 보내고 multipart body는 write 필드로 제한한다", async () => {
     const user = userEvent.setup()
     const asset = createAdminContentAssetFixture()
-    let finishUpload: ((asset: AdminContentAssetFixture) => void) | undefined
-    const upload = new Promise<AdminContentAssetFixture>((resolve) => {
-      finishUpload = resolve
-    })
-    let uploadRequest: Request | undefined
+    const requests: Request[] = []
     server.use(
-      getUploadAdminContentAssetMockHandler200(async ({ request }) => {
-        uploadRequest = request
-        return upload
+      getUploadAdminContentAssetMockHandler200(({ request }) => {
+        requests.push(request.clone())
+        return asset
       })
     )
     renderEditor()
 
-    await selectCover(user, asset.altText)
+    await uploadCover(user, asset.altText)
     expect(
-      await screen.findByRole("progressbar", {
-        name: "코스 표지 업로드 진행 중",
-      })
+      await screen.findByRole("img", { name: asset.altText })
     ).toBeVisible()
-    expect(uploadRequest).toBeDefined()
-    if (uploadRequest === undefined) throw new Error("업로드 요청이 없습니다.")
-    const body = await uploadRequest.clone().formData()
-    const file = body.get("file")
-    expect([...body.keys()].sort()).toEqual([
+
+    const uploadRequest = requests.at(0)
+    expect(uploadRequest?.url).toContain(`/courses/${asset.courseId}/assets`)
+    const body = await uploadRequest?.text()
+    expect(readMultipartFieldNames(body)).toEqual([
       "altText",
       "curriculumVersionId",
       "file",
       "kind",
     ])
-    expect(body.get("altText")).toBe(asset.altText)
-    expect(body.get("curriculumVersionId")).toBe(asset.curriculumVersionId)
-    expect(body.get("kind")).toBe(asset.kind)
-    expect(file).not.toBeNull()
+    expect(body).toContain(asset.altText)
+    expect(body).toContain(asset.curriculumVersionId)
+    expect(body).toContain(asset.kind)
+  })
 
-    finishUpload?.(asset)
+  it("Server Action 요청은 검증된 Origin과 세션 cookie를 함께 실어 보낸다", async () => {
+    const user = userEvent.setup()
+    const asset = createAdminContentAssetFixture()
+    const requests: Request[] = []
+    server.use(
+      getUploadAdminContentAssetMockHandler200(({ request }) => {
+        requests.push(request.clone())
+        return asset
+      })
+    )
+    renderEditor()
 
+    await uploadCover(user, asset.altText)
+    await screen.findByRole("img", { name: asset.altText })
+
+    const uploadRequest = requests.at(0)
+    expect(uploadRequest?.headers.get("origin")).toBe(
+      localRuntimeDefaults.adminWebOrigin
+    )
+    expect(uploadRequest?.headers.get("cookie")).toBe(
+      `${adminSessionCookieName}=${sessionToken}`
+    )
+  })
+
+  it("업로드가 끝나기 전에는 진행 상태를 알린다", async () => {
+    const user = userEvent.setup()
+    const asset = createAdminContentAssetFixture()
+    let finishUpload: (() => void) | undefined
+    server.use(
+      getUploadAdminContentAssetMockHandler200(async () => {
+        await new Promise<void>((resolve) => {
+          finishUpload = resolve
+        })
+        return asset
+      })
+    )
+    renderEditor()
+
+    await uploadCover(user, asset.altText)
+
+    expect(
+      await screen.findByRole("progressbar", {
+        name: "코스 표지 업로드 진행 중",
+      })
+    ).toBeVisible()
+    finishUpload?.()
     expect(
       await screen.findByRole("img", { name: asset.altText })
     ).toBeVisible()
@@ -119,15 +147,17 @@ describe("generated admin client UI integration", () => {
     const user = userEvent.setup()
     server.use(
       getUploadAdminContentAssetMockHandler409(
-        createGeneratedAdminErrorFixture(409, {
-          code: "CONTENT_CONFLICT",
-          message: "발행된 리비전의 이미지는 변경할 수 없습니다.",
-        })
+        toGeneratedErrorBody(
+          createApiErrorFixture(409, {
+            code: "CONTENT_CONFLICT",
+            message: "발행된 리비전의 이미지는 변경할 수 없습니다.",
+          })
+        )
       )
     )
     renderEditor()
 
-    await selectCover(user, "발행된 코스 표지")
+    await uploadCover(user, "발행된 코스 표지")
 
     expect(
       await screen.findByText("발행된 리비전의 이미지는 변경할 수 없습니다.")
@@ -141,7 +171,7 @@ describe("generated admin client UI integration", () => {
     )
     renderEditor()
 
-    await selectCover(user, "네트워크 오류 표지")
+    await uploadCover(user, "네트워크 오류 표지")
 
     expect(
       await screen.findByText("네트워크 연결을 확인해 주세요.")
@@ -155,17 +185,18 @@ describe("generated admin client UI integration", () => {
       editVersion: 2,
       title: "서버 최신 제목",
     })
-    server.use(getGetAdminCourseEditorMockHandler200(latest))
-    renderEditor({
-      saveCourse: async () => {
-        const result = await settleAdminApiRequest(
-          getAdminCourseEditor(courseIdSchema.parse(latest.id))
+    server.use(
+      getSaveAdminCourseEditorMockHandler409(
+        toGeneratedErrorBody(
+          createApiErrorFixture(409, {
+            code: "CONTENT_CONFLICT",
+            message: "편집 버전이 충돌했습니다.",
+          })
         )
-        return result.status === "ok"
-          ? { latest: result.value, status: "conflict" }
-          : result
-      },
-    })
+      ),
+      getGetAdminCourseEditorMockHandler200(latest)
+    )
+    renderEditor()
 
     await user.clear(screen.getByLabelText("제목"))
     await user.type(screen.getByLabelText("제목"), "로컬 변경 제목")
@@ -181,95 +212,40 @@ describe("generated admin client UI integration", () => {
   })
 })
 
-function renderEditor({
-  course = createAdminCourseEditorFixture(),
-  saveCourse = async (document) => ok(document),
-}: {
-  readonly course?: AdminCourseEditorFixture
-  readonly saveCourse?: (
-    document: AdminCourseEditorFixture
-  ) => Promise<AdminCourseEditorCommandResult>
-} = {}): void {
+function renderEditor(
+  course: AdminCourseDetail = createAdminCourseEditorFixture()
+): void {
   render(
     <CourseEditorShell
       course={course}
-      publishCourse={async (document) => ok(document)}
-      saveCourse={saveCourse}
-      uploadAdminContentAsset={uploadWithGeneratedClient}
+      publishCourse={async (document) => ({ status: "ok", value: document })}
+      saveCourse={saveAdminCourseEditorAction}
+      uploadAdminContentAsset={uploadAdminContentAssetAction}
     />
   )
 }
 
-async function selectCover(
+async function uploadCover(
   user: ReturnType<typeof userEvent.setup>,
   altText: string
 ): Promise<void> {
-  fireEvent.change(screen.getByLabelText("이미지 파일"), {
-    target: {
-      files: [new File(["cover"], "cover.png", { type: "image/png" })],
-    },
-  })
+  await user.upload(
+    screen.getByLabelText("이미지 파일"),
+    new File(["cover"], "cover.png", { type: "image/png" })
+  )
   await user.type(screen.getByLabelText("대체 텍스트"), altText)
   await user.click(screen.getByRole("button", { name: "이미지 업로드" }))
 }
 
-function ok<TValue>(value: TValue) {
-  return { status: "ok" as const, value }
+function readMultipartFieldNames(body: string | undefined): readonly string[] {
+  return [...(body ?? "").matchAll(/form-data; name="([^"]+)"/gu)]
+    .flatMap((match) => (match[1] === undefined ? [] : [match[1]]))
+    .sort()
 }
 
-const uploadWithGeneratedClient: UploadAdminContentAsset = async (input) => {
-  const file = input.get("file")
-  if (file === null || typeof file === "string") {
-    throw new Error("업로드 파일이 없습니다.")
-  }
-  const generatedFile = await toNodeFile(file)
+/** generated 오류 타입은 exact optional이라 설정하지 않은 violations key를 남기지 않는다. */
+function toGeneratedErrorBody(fixture: ApiError): Omit<ApiError, "violations"> {
+  const { violations: _violations, ...error } = fixture
 
-  return settleAdminApiRequest(
-    uploadAdminContentAsset(courseIdSchema.parse(input.get("courseId")), {
-      altText: adminContentAssetAltTextSchema.parse(input.get("altText")),
-      curriculumVersionId: curriculumVersionIdSchema.parse(
-        input.get("curriculumVersionId")
-      ),
-      file: generatedFile,
-      kind: adminContentAssetKindSchema.parse(input.get("kind")),
-    })
-  )
-}
-
-async function toNodeFile(file: File): Promise<NodeFile> {
-  const bytes = await new Promise<ArrayBuffer>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.addEventListener("error", () =>
-      reject(reader.error ?? new Error("파일을 읽을 수 없습니다."))
-    )
-    reader.addEventListener("load", () => {
-      if (!(reader.result instanceof ArrayBuffer)) {
-        reject(new Error("파일을 읽을 수 없습니다."))
-        return
-      }
-      resolve(reader.result)
-    })
-    reader.readAsArrayBuffer(file)
-  })
-  return new NodeFile([bytes], file.name, { type: file.type })
-}
-
-function resolveBrowserRequestInput(
-  input: RequestInfo | URL
-): RequestInfo | URL {
-  return typeof input === "string" && input.startsWith("/")
-    ? new URL(input, "http://localhost")
-    : input
-}
-
-function createGeneratedAdminErrorFixture(
-  status: 409,
-  overrides: Readonly<{ code: string; message: string }>
-) {
-  const fixture = createApiErrorFixture(status, overrides)
-  return {
-    code: fixture.code,
-    message: fixture.message,
-    requestId: fixture.requestId,
-  }
+  return error
 }

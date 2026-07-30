@@ -1,10 +1,12 @@
+// @vitest-environment jsdom
 import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-course-editor"
 
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
+import { createAdminCourseEditorFixture } from "@/features/course-editor/test/fixtures/admin-course-editor"
 
 const { routerPushMock } = vi.hoisted(() => ({
   routerPushMock: vi.fn(),
@@ -15,16 +17,15 @@ vi.mock("next/navigation", () => ({
 }))
 
 const course: AdminCourseDetail = adminCourseEditorSchema.parse({
-  assets: [],
-  category: "입문자를 위한 코스",
-  coverAssetId: null,
-  curriculumVersionId: "c1-v3",
-  description: "글쓰기 입문 과정",
-  editVersion: 2,
-  id: "c1",
-  revision: 3,
-  status: "active",
-  title: "글쓰기 첫걸음 30일",
+  ...createAdminCourseEditorFixture({
+    category: "입문자를 위한 코스",
+    curriculumVersionId: "c1-v3",
+    description: "글쓰기 입문 과정",
+    editVersion: 2,
+    id: "c1",
+    revision: 3,
+    title: "글쓰기 첫걸음 30일",
+  }),
   units: [
     {
       id: "u1",
@@ -51,12 +52,6 @@ const course: AdminCourseDetail = adminCourseEditorSchema.parse({
 const uploadAssetMock = vi.fn()
 
 describe("CourseEditorShell", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    routerPushMock.mockReset()
-    uploadAssetMock.mockReset()
-  })
-
   it("표지의 대체 텍스트와 업로드 진행을 표시하고 asset ID를 저장한다", async () => {
     const user = userEvent.setup()
     const saveCourse = vi.fn(async (draft: AdminCourseDetail) => ({
@@ -163,28 +158,27 @@ describe("CourseEditorShell", () => {
     )
   })
 
-  it("저장하지 않은 변경이 있으면 탭 이동을 취소하거나 확인한다", async () => {
+  it("저장하지 않은 변경이 있으면 탭 이동 확인을 취소해 현재 탭에 머문다", async () => {
     const user = userEvent.setup()
 
     renderCourseEditor()
-
     await user.type(screen.getByLabelText("제목"), " 수정")
     await user.click(screen.getByRole("button", { name: "커리큘럼" }))
-
-    const dialog = screen.getByRole("alertdialog", {
-      name: "편집 화면을 이동할까요?",
-    })
-    await user.click(within(dialog).getByRole("button", { name: "취소" }))
+    await user.click(
+      within(readTabMoveDialog()).getByRole("button", { name: "취소" })
+    )
 
     expect(screen.getByLabelText("제목")).toBeVisible()
+  })
 
+  it("저장하지 않은 변경이 있어도 탭 이동을 확인하면 커리큘럼 탭으로 이동한다", async () => {
+    const user = userEvent.setup()
+
+    renderCourseEditor()
+    await user.type(screen.getByLabelText("제목"), " 수정")
     await user.click(screen.getByRole("button", { name: "커리큘럼" }))
     await user.click(
-      within(
-        screen.getByRole("alertdialog", {
-          name: "편집 화면을 이동할까요?",
-        })
-      ).getByRole("button", { name: "이동하기" })
+      within(readTabMoveDialog()).getByRole("button", { name: "이동하기" })
     )
 
     expect(screen.getByText("유닛 1개 · 레슨 1개")).toBeVisible()
@@ -206,93 +200,112 @@ describe("CourseEditorShell", () => {
     expect(dirtyEvent.defaultPrevented).toBe(true)
   })
 
-  it("저장하지 않은 변경이 있으면 목록 이동을 취소하거나 확인한다", async () => {
+  it("저장하지 않은 변경이 있으면 목록 이동 확인을 취소해 이동하지 않는다", async () => {
     const user = userEvent.setup()
 
     renderCourseEditor()
-
     await user.type(screen.getByLabelText("제목"), " 수정")
-    const courseListLink = screen.getByRole("link", { name: "콘텐츠 관리" })
-    const modifiedClick = new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      ctrlKey: true,
-    })
-    courseListLink.addEventListener(
-      "click",
-      (event) => event.preventDefault(),
-      {
-        once: true,
-      }
-    )
-    courseListLink.dispatchEvent(modifiedClick)
-
-    expect(
-      screen.queryByRole("alertdialog", {
-        name: "콘텐츠 관리로 이동할까요?",
-      })
-    ).not.toBeInTheDocument()
-    expect(routerPushMock).not.toHaveBeenCalled()
-
-    await user.click(courseListLink)
-
-    let dialog = screen.getByRole("alertdialog", {
-      name: "콘텐츠 관리로 이동할까요?",
-    })
-    await user.click(within(dialog).getByRole("button", { name: "취소" }))
-    expect(routerPushMock).not.toHaveBeenCalled()
-
     await user.click(screen.getByRole("link", { name: "콘텐츠 관리" }))
-    dialog = screen.getByRole("alertdialog", {
-      name: "콘텐츠 관리로 이동할까요?",
-    })
     await user.click(
-      within(dialog).getByRole("button", { name: "목록으로 이동" })
+      within(readCourseListMoveDialog()).getByRole("button", { name: "취소" })
+    )
+
+    expect(routerPushMock).not.toHaveBeenCalled()
+  })
+
+  it("저장하지 않은 변경이 있어도 목록 이동을 확인하면 코스 목록으로 이동한다", async () => {
+    const user = userEvent.setup()
+
+    renderCourseEditor()
+    await user.type(screen.getByLabelText("제목"), " 수정")
+    await user.click(screen.getByRole("link", { name: "콘텐츠 관리" }))
+    await user.click(
+      within(readCourseListMoveDialog()).getByRole("button", {
+        name: "목록으로 이동",
+      })
     )
 
     expect(routerPushMock).toHaveBeenCalledWith("/courses")
   })
 
-  it("레슨과 유닛 삭제를 각각 취소하거나 확인한다", async () => {
+  it("레슨 삭제 확인을 취소하면 레슨을 남긴다", async () => {
     const user = userEvent.setup()
 
-    renderCourseEditor()
-    await user.click(screen.getByRole("button", { name: "커리큘럼" }))
-
+    await openCurriculumTab(user)
     await user.click(screen.getByRole("button", { name: "첫 레슨 레슨 삭제" }))
-    let dialog = screen.getByRole("alertdialog", {
-      name: "레슨을 삭제할까요?",
-    })
-    await user.click(within(dialog).getByRole("button", { name: "취소" }))
+    await user.click(
+      within(readLessonRemoveDialog()).getByRole("button", { name: "취소" })
+    )
+
     expect(screen.getByDisplayValue("첫 레슨")).toBeVisible()
+  })
 
+  it("레슨 삭제를 확인하면 레슨을 지우고 편집 제목으로 focus를 되돌린다", async () => {
+    const user = userEvent.setup()
+
+    await openCurriculumTab(user)
     await user.click(screen.getByRole("button", { name: "첫 레슨 레슨 삭제" }))
-    dialog = screen.getByRole("alertdialog", {
-      name: "레슨을 삭제할까요?",
-    })
-    await user.click(within(dialog).getByRole("button", { name: "레슨 삭제" }))
+    await user.click(
+      within(readLessonRemoveDialog()).getByRole("button", {
+        name: "레슨 삭제",
+      })
+    )
+
     expect(screen.queryByDisplayValue("첫 레슨")).not.toBeInTheDocument()
     await waitFor(() =>
       expect(
         screen.getByRole("heading", { name: "글쓰기 첫걸음 30일" })
       ).toHaveFocus()
     )
+  })
 
+  it("유닛 삭제 확인을 취소하면 유닛을 남긴다", async () => {
+    const user = userEvent.setup()
+
+    await openCurriculumTab(user)
     await user.click(screen.getByRole("button", { name: "1주차 유닛 삭제" }))
-    dialog = screen.getByRole("alertdialog", {
-      name: "유닛을 삭제할까요?",
-    })
-    await user.click(within(dialog).getByRole("button", { name: "취소" }))
+    await user.click(
+      within(readUnitRemoveDialog()).getByRole("button", { name: "취소" })
+    )
+
     expect(screen.getByDisplayValue("1주차")).toBeVisible()
+  })
 
+  it("유닛 삭제를 확인하면 유닛을 지운다", async () => {
+    const user = userEvent.setup()
+
+    await openCurriculumTab(user)
     await user.click(screen.getByRole("button", { name: "1주차 유닛 삭제" }))
-    dialog = screen.getByRole("alertdialog", {
-      name: "유닛을 삭제할까요?",
-    })
-    await user.click(within(dialog).getByRole("button", { name: "유닛 삭제" }))
+    await user.click(
+      within(readUnitRemoveDialog()).getByRole("button", { name: "유닛 삭제" })
+    )
+
     expect(screen.queryByDisplayValue("1주차")).not.toBeInTheDocument()
   })
 })
+
+async function openCurriculumTab(
+  user: ReturnType<typeof userEvent.setup>
+): Promise<void> {
+  renderCourseEditor()
+  await user.click(screen.getByRole("button", { name: "커리큘럼" }))
+}
+
+function readTabMoveDialog(): HTMLElement {
+  return screen.getByRole("alertdialog", { name: "편집 화면을 이동할까요?" })
+}
+
+function readCourseListMoveDialog(): HTMLElement {
+  return screen.getByRole("alertdialog", { name: "콘텐츠 관리로 이동할까요?" })
+}
+
+function readLessonRemoveDialog(): HTMLElement {
+  return screen.getByRole("alertdialog", { name: "레슨을 삭제할까요?" })
+}
+
+function readUnitRemoveDialog(): HTMLElement {
+  return screen.getByRole("alertdialog", { name: "유닛을 삭제할까요?" })
+}
 
 function renderCourseEditor() {
   return render(

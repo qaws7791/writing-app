@@ -11,20 +11,17 @@ import {
   courseEditorReducer,
   createCourseEditorState,
 } from "@/features/course-editor/model/course-editor-reducer"
+import { createAdminCourseEditorFixture } from "@/features/course-editor/test/fixtures/admin-course-editor"
 
-const document = adminCourseEditorSchema.parse({
-  assets: [],
-  category: "미분류",
-  coverAssetId: null,
-  curriculumVersionId: "course-1-v1",
-  description: "설명",
-  editVersion: 0,
-  id: "course-1",
-  revision: 1,
-  status: "active",
-  title: "코스",
-  units: [],
-})
+const document = adminCourseEditorSchema.parse(
+  createAdminCourseEditorFixture({
+    curriculumVersionId: "course-1-v1",
+    description: "설명",
+    editVersion: 0,
+    revision: 1,
+    title: "코스",
+  })
+)
 
 describe("courseEditorReducer", () => {
   it("배열 변경마다 1-based sortOrder를 다시 계산한다", () => {

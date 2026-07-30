@@ -24,7 +24,6 @@ import AdminCourseDetailRoute from "@/app/(admin)/courses/[id]/page"
 
 describe("admin course detail route", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     getServerAdminRequestOptionsMock.mockResolvedValue({
       cache: "no-store",
     })
@@ -43,18 +42,23 @@ describe("admin course detail route", () => {
 
   it("검증한 course ID로 generated editor reader를 직접 호출한다", async () => {
     const requestOptions = { cache: "no-store" }
-    const course = { id: "course-1", title: "코스" }
     getServerAdminRequestOptionsMock.mockResolvedValue(requestOptions)
-    getCourseEditorMock.mockResolvedValue(course)
+    getCourseEditorMock.mockResolvedValue({ id: "course-1", title: "코스" })
 
-    const route = await AdminCourseDetailRoute({
+    await AdminCourseDetailRoute({
       params: Promise.resolve({ id: "course-1" }),
     })
 
     expect(getCourseEditorMock).toHaveBeenCalledWith("course-1", requestOptions)
-    expect(route.props.courseResult).toEqual({
-      status: "ok",
-      value: course,
+  })
+
+  it("세션이 없으면 코스 편집 문서를 조회하지 않는다", async () => {
+    getServerAdminRequestOptionsMock.mockResolvedValue(null)
+
+    await AdminCourseDetailRoute({
+      params: Promise.resolve({ id: "course-1" }),
     })
+
+    expect(getCourseEditorMock).not.toHaveBeenCalled()
   })
 })

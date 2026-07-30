@@ -19,19 +19,23 @@ describe("admin course filters", () => {
     })
   })
 
-  it("배열, 음수와 알 수 없는 상태는 안전한 기본값으로 수렴한다", () => {
-    expect(
-      parseAdminCourseFilters({
-        category: ["실전 글쓰기"],
-        page: "-1",
-        pageSize: "NaN",
-        status: "unknown",
+  it.each<{
+    readonly expected: number | string
+    readonly field: string
+    readonly value: string | string[]
+  }>([
+    { expected: "", field: "category", value: ["실전 글쓰기"] },
+    { expected: 1, field: "page", value: "-1" },
+    { expected: 1, field: "page", value: "0" },
+    { expected: 20, field: "pageSize", value: "NaN" },
+    { expected: "all", field: "status", value: "unknown" },
+    { expected: "all", field: "status", value: ["archived"] },
+  ])(
+    "$field의 $value는 안전한 기본값 $expected로 수렴한다",
+    ({ expected, field, value }) => {
+      expect(parseAdminCourseFilters({ [field]: value })).toMatchObject({
+        [field]: expected,
       })
-    ).toEqual({
-      category: "",
-      page: 1,
-      pageSize: 20,
-      status: "all",
-    })
-  })
+    }
+  )
 })

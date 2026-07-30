@@ -25,23 +25,10 @@ describe("admin generated API 경계", () => {
     { authenticated: false, code: "RATE_LIMITED", status: 429 },
   ] as const)(
     "$status HTTP 오류의 canonical code와 retry 정보를 보존한다",
-    async ({ authenticated, code, status }) => {
-      const result = await settleAdminApiRequest(
-        Promise.reject(
-          new GeneratedApiClientError({
-            error: {
-              code,
-              message: `${status} 오류`,
-              requestId: `request-${status}`,
-            },
-            kind: "http",
-            retryAfterSeconds: status === 429 ? 30 : null,
-            status,
-          })
-        )
-      )
-
-      expect(result).toEqual({
+    async ({ code, status }) => {
+      await expect(
+        settleAdminApiRequest(rejectWithHttpError(code, status))
+      ).resolves.toEqual({
         error: {
           code,
           kind: "http",
@@ -52,11 +39,25 @@ describe("admin generated API 경계", () => {
         },
         status: "error",
       })
-      if (result.status === "error") {
-        expect(isAdminRequestAuthenticationError(result.error)).toBe(
-          authenticated
-        )
-      }
+    }
+  )
+
+  it.each([
+    { authenticated: true, code: "UNAUTHORIZED", status: 401 },
+    { authenticated: true, code: "FORBIDDEN", status: 403 },
+    { authenticated: false, code: "CONTENT_CONFLICT", status: 409 },
+    { authenticated: false, code: "RATE_LIMITED", status: 429 },
+  ] as const)(
+    "$status 오류를 재인증이 필요한 오류로 분류할지 판정한다",
+    async ({ authenticated, code, status }) => {
+      const result = await settleAdminApiRequest(
+        rejectWithHttpError(code, status)
+      )
+
+      expect(
+        result.status === "error" &&
+          isAdminRequestAuthenticationError(result.error)
+      ).toBe(authenticated)
     }
   )
 
@@ -123,3 +124,18 @@ describe("admin generated API 경계", () => {
     ).rejects.toBe(unexpected)
   })
 })
+
+function rejectWithHttpError(code: string, status: number): Promise<never> {
+  return Promise.reject(
+    new GeneratedApiClientError({
+      error: {
+        code,
+        message: `${status} 오류`,
+        requestId: `request-${status}`,
+      },
+      kind: "http",
+      retryAfterSeconds: status === 429 ? 30 : null,
+      status,
+    })
+  )
+}

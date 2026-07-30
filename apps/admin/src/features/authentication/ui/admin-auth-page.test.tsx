@@ -1,6 +1,7 @@
+// @vitest-environment jsdom
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { AdminAuthPage } from "@/features/authentication/ui/admin-auth-page"
 import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
@@ -21,15 +22,10 @@ const authPageProps = {
 } as const
 
 describe("AdminAuthPage", () => {
-  beforeEach(() => {
-    replace.mockClear()
-    requestAdminPasswordLoginMock.mockReset()
-  })
-
-  it("로그인 성공 후 안전한 다음 경로로 이동한다", async () => {
+  it("로그인 성공 후 client가 되돌린 안전한 경로로 이동한다", async () => {
     const user = userEvent.setup()
-    requestAdminPasswordLoginMock.mockResolvedValue({ nextPath: "/courses" })
-    render(<AdminAuthPage {...authPageProps} nextPath="/courses" />)
+    requestAdminPasswordLoginMock.mockResolvedValue({ nextPath: "/" })
+    render(<AdminAuthPage {...authPageProps} nextPath="https://evil.example" />)
 
     await user.type(screen.getByLabelText("이메일"), "admin@example.com")
     await user.type(screen.getByLabelText("비밀번호"), "admin-password-123")
@@ -38,11 +34,11 @@ describe("AdminAuthPage", () => {
     await waitFor(() =>
       expect(requestAdminPasswordLoginMock).toHaveBeenCalledWith({
         email: "admin@example.com",
-        nextPath: "/courses",
+        nextPath: "https://evil.example",
         password: "admin-password-123",
       })
     )
-    expect(replace).toHaveBeenCalledWith("/courses")
+    expect(replace).toHaveBeenCalledWith("/")
   })
 
   it("로그인 실패를 한국어 오류로 표시한다", async () => {

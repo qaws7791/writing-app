@@ -35,24 +35,28 @@ export function AdminDashboardPage({
       <DashboardHeading asOfDate={asOfDate} />
       <StatGrid aria-label="주요 지표" className="lg:grid-cols-3">
         <StatCard
+          aria-label="총 사용자"
           detail={`${asOfDate} 기준`}
           icon={<UsersIcon aria-hidden="true" size={20} />}
           label="총 사용자"
           value={formatCount(metrics.totalUsers)}
         />
         <StatCard
+          aria-label="최근 7일 활성"
           detail={`${activeWindow.from}–${activeWindow.to}`}
           icon={<FlameIcon aria-hidden="true" size={20} />}
           label="최근 7일 활성"
           value={formatCount(metrics.activeUsersLast7Days)}
         />
         <StatCard
+          aria-label="첫 레슨 시작"
           detail="학습자별 최초 시작 누적"
           icon={<PlayIcon aria-hidden="true" size={20} />}
           label="첫 레슨 시작"
           value={formatCount(metrics.firstLessonStarts)}
         />
         <StatCard
+          aria-label="활성화율"
           detail={`${formatCount(metrics.activationRate.numerator)} / ${formatCount(metrics.activationRate.denominator)}명 첫 시작`}
           icon={<UserPlusIcon aria-hidden="true" size={20} />}
           label="활성화율"
@@ -62,6 +66,7 @@ export function AdminDashboardPage({
           )}
         />
         <StatCard
+          aria-label="7일 내 재방문"
           detail={`${formatCount(metrics.d7ReturnRate.numerator)} / ${formatCount(metrics.d7ReturnRate.denominator)}명 · ${metrics.d7ReturnRate.matureCohortThrough}까지`}
           icon={<BarChartIcon aria-hidden="true" size={20} />}
           label="7일 내 재방문"
@@ -71,6 +76,7 @@ export function AdminDashboardPage({
           )}
         />
         <StatCard
+          aria-label="완료 레슨"
           detail="삭제 학습자 제외 누적"
           icon={<CheckCircleIcon aria-hidden="true" size={20} />}
           label="완료 레슨"

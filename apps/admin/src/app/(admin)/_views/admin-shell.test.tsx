@@ -1,4 +1,4 @@
-import React from "react"
+// @vitest-environment jsdom
 import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
@@ -10,9 +10,8 @@ const shellProps = {
   learnerWebOrigin: readLearnerWebOrigin({}),
 } as const
 
-const { replaceMock, setThemeMock, signOutMock } = vi.hoisted(() => ({
+const { replaceMock, signOutMock } = vi.hoisted(() => ({
   replaceMock: vi.fn(),
-  setThemeMock: vi.fn(),
   signOutMock: vi.fn(),
 }))
 
@@ -29,21 +28,16 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("next-themes", () => ({
   useTheme: () => ({
-    setTheme: setThemeMock,
+    setTheme: vi.fn(),
     theme: "system",
   }),
 }))
 
 describe("AdminShell", () => {
-  it("좁은 화면 메뉴를 drawer로 열고 테마를 변경한다", async () => {
+  it("좁은 화면 메뉴를 drawer로 열면 현재 경로를 aria-current로 알린다", async () => {
     const user = userEvent.setup()
 
-    render(
-      <AdminShell {...shellProps} activePath="/courses">
-        <h1>콘텐츠 관리</h1>
-      </AdminShell>
-    )
-
+    renderShell()
     await user.click(screen.getByRole("button", { name: "메뉴 열기" }))
 
     const drawer = await screen.findByRole("dialog", { name: "어드민 메뉴" })
@@ -54,34 +48,44 @@ describe("AdminShell", () => {
     expect(
       within(navigation).getByRole("link", { name: "콘텐츠 관리" })
     ).toHaveAttribute("aria-current", "page")
-
-    await user.click(within(drawer).getByRole("button", { name: "다크" }))
-
-    expect(setThemeMock).toHaveBeenCalledWith("dark")
   })
 
-  it("로그아웃 실패를 alert로 보여주고 재시도할 수 있다", async () => {
+  it("로그아웃이 실패하면 로그인으로 보내지 않고 alert로 알린다", async () => {
     const user = userEvent.setup()
-    signOutMock
-      .mockRejectedValueOnce(new TypeError("network"))
-      .mockResolvedValueOnce(undefined)
-    render(
-      <AdminShell {...shellProps} activePath="/courses">
-        <h1>콘텐츠 관리</h1>
-      </AdminShell>
-    )
+    signOutMock.mockRejectedValueOnce(new TypeError("network"))
 
+    renderShell()
     await user.click(screen.getByRole("button", { name: "어드민 로그아웃" }))
+
     expect(
       await screen.findByText(
         "로그아웃하지 못했습니다. 연결을 확인하고 다시 시도해 주세요."
       )
     ).toBeVisible()
     expect(replaceMock).not.toHaveBeenCalled()
+  })
 
+  it("로그아웃 실패 뒤 재시도가 성공하면 로그인으로 보낸다", async () => {
+    const user = userEvent.setup()
+    signOutMock
+      .mockRejectedValueOnce(new TypeError("network"))
+      .mockResolvedValueOnce(undefined)
+
+    renderShell()
     await user.click(screen.getByRole("button", { name: "어드민 로그아웃" }))
-    await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/login")
-    })
+    await screen.findByText(
+      "로그아웃하지 못했습니다. 연결을 확인하고 다시 시도해 주세요."
+    )
+    await user.click(screen.getByRole("button", { name: "어드민 로그아웃" }))
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/login"))
   })
 })
+
+function renderShell() {
+  return render(
+    <AdminShell {...shellProps} activePath="/courses">
+      <h1>콘텐츠 관리</h1>
+    </AdminShell>
+  )
+}

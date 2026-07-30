@@ -32,9 +32,12 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   test: {
-    environment: "jsdom",
+    clearMocks: true,
+    // DOM이 필요한 `.test.tsx`만 파일 상단 `@vitest-environment jsdom`으로 jsdom을 지불한다.
+    environment: "node",
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
     maxWorkers: 2,
+    restoreMocks: true,
     setupFiles: ["./vitest.setup.ts"],
   },
 })

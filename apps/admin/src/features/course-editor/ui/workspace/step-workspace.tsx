@@ -86,7 +86,14 @@ export function StepWorkspace({
   }
 
   return (
-    <Surface ref={workspaceRef} className="mt-3" tabIndex={-1} variant="panel">
+    <Surface
+      ref={workspaceRef}
+      aria-label="스텝 편집 작업대"
+      className="mt-3"
+      role="group"
+      tabIndex={-1}
+      variant="panel"
+    >
       <SectionHeader
         description="확정 스텝 타입의 content를 편집합니다."
         title="스텝 편집"

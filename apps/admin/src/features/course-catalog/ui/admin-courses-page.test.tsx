@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
@@ -58,45 +59,35 @@ const courses: AdminCourseList = {
 }
 
 describe("AdminCoursesPage", () => {
-  it("필터, 페이지 크기, 목록과 보관 대화상자를 렌더링한다", async () => {
+  it("보관 확인 대화상자를 확인하면 해당 코스를 보관하고 결과를 알린다", async () => {
     const user = userEvent.setup()
     const archiveCourse = vi.fn<
       () => Promise<AdminRequestResult<AdminArchiveCourseResult>>
-    >(async () => ({
-      status: "ok",
-      value: {
-        archived: true,
-      },
-    }))
+    >(async () => ok({ archived: true }))
 
-    render(
-      <AdminCoursesPage
-        archiveCourse={archiveCourse}
-        coursesResult={ok(courses)}
-        createCourse={async () => ok(courseDetail("new-course"))}
-        filters={filters}
-      />
-    )
+    renderCoursesPage({ archiveCourse })
 
-    const activeRow = screen.getByRole("row", {
-      name: /글쓰기 첫걸음 30일/,
-    })
+    const activeRow = screen.getByRole("row", { name: /글쓰기 첫걸음 30일/ })
     await user.click(within(activeRow).getByRole("button", { name: "보관" }))
-    expect(
-      screen.getByRole("alertdialog", { name: "코스 보관 확인" })
-    ).toBeVisible()
-    await user.click(screen.getByRole("button", { name: "보관하기" }))
+    await user.click(
+      within(readArchiveDialog()).getByRole("button", { name: "보관하기" })
+    )
 
     expect(archiveCourse).toHaveBeenCalledWith("c1")
     expect(screen.getByText("코스를 보관했습니다.")).toBeVisible()
+  })
 
+  it("상태 필터를 바꾸면 같은 이동 URL에서 page를 1로 되돌린다", async () => {
+    const user = userEvent.setup()
+
+    renderCoursesPage({ filters: { ...filters, page: 3 } })
     await user.click(screen.getByRole("combobox", { name: "상태" }))
     await user.click(await screen.findByRole("option", { name: "활성" }))
-    expect(pushMock).toHaveBeenCalledWith(
-      expect.stringContaining("status=active")
-    )
-    expect(pushMock).toHaveBeenCalledWith(expect.stringContaining("page=1"))
-  }, 15_000)
+
+    const [href] = pushMock.mock.calls.at(-1) ?? []
+    expect(href).toContain("status=active")
+    expect(href).toContain("page=1")
+  })
 
   it("새 코스 생성 결과를 알려준다", async () => {
     const user = userEvent.setup()
@@ -104,14 +95,7 @@ describe("AdminCoursesPage", () => {
       () => Promise<AdminRequestResult<AdminCreatedCourse>>
     >(async () => ok(courseDetail("new-course")))
 
-    render(
-      <AdminCoursesPage
-        archiveCourse={async () => ok({ archived: true })}
-        coursesResult={ok(courses)}
-        createCourse={createCourse}
-        filters={filters}
-      />
-    )
+    renderCoursesPage({ createCourse })
 
     await user.click(screen.getByRole("button", { name: "새 강의" }))
 
@@ -120,21 +104,40 @@ describe("AdminCoursesPage", () => {
   })
 
   it("API 오류 상태를 보여준다", () => {
-    render(
-      <AdminCoursesPage
-        archiveCourse={async () => ok({ archived: true })}
-        coursesResult={{
-          error: networkError(),
-          status: "error",
-        }}
-        createCourse={async () => ok(courseDetail("new-course"))}
-        filters={filters}
-      />
-    )
+    renderCoursesPage({
+      coursesResult: { error: networkError(), status: "error" },
+    })
 
     expect(screen.getByText("네트워크 연결을 확인해 주세요.")).toBeVisible()
   })
 })
+
+function renderCoursesPage({
+  archiveCourse = async () => ok({ archived: true }),
+  coursesResult = ok(courses),
+  createCourse = async () => ok(courseDetail("new-course")),
+  filters: pageFilters = filters,
+}: {
+  readonly archiveCourse?: () => Promise<
+    AdminRequestResult<AdminArchiveCourseResult>
+  >
+  readonly coursesResult?: AdminRequestResult<AdminCourseList>
+  readonly createCourse?: () => Promise<AdminRequestResult<AdminCreatedCourse>>
+  readonly filters?: ReadAdminCoursesInput
+} = {}) {
+  return render(
+    <AdminCoursesPage
+      archiveCourse={archiveCourse}
+      coursesResult={coursesResult}
+      createCourse={createCourse}
+      filters={pageFilters}
+    />
+  )
+}
+
+function readArchiveDialog(): HTMLElement {
+  return screen.getByRole("alertdialog", { name: "코스 보관 확인" })
+}
 
 function ok<TValue>(value: TValue): AdminRequestResult<TValue> {
   return {
