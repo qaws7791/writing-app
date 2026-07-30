@@ -10,7 +10,9 @@ import { requiredApplicationBackupTableNames } from "@/db/required-application-t
 import { setupE2eContentDatabase } from "@/scripts/setup-e2e-content-database"
 import { setupE2eAuthDatabase } from "@/scripts/setup-e2e-database"
 
-describe("E2E database setup", () => {
+// 실제 콘텐츠 seed와 credential 해싱을 수행하는 suite이므로, 저장소 전체 병렬
+// 실행에서 CPU가 포화될 때 기본 5초 timeout을 넘긴다.
+describe("E2E database setup", { timeout: 20_000 }, () => {
   it("현재 baseline에 owner·learner credential과 정규 활동 유형 전체를 준비한다", async () => {
     const directory = mkdtempSync(join(tmpdir(), "writing-app-e2e-setup-"))
     const databasePath = join(directory, "e2e.sqlite")
@@ -77,9 +79,7 @@ describe("E2E database setup", () => {
     } finally {
       rmSync(directory, { recursive: true })
     }
-    // 실제 콘텐츠 seed와 credential 해싱을 수행하므로, 저장소 전체 병렬 실행에서
-    // CPU가 포화될 때 기본 5초 timeout을 넘긴다.
-  }, 20_000)
+  })
 })
 
 function readTableNames(

@@ -134,6 +134,71 @@ describe("콘텐츠 DTO schema", () => {
     ).toBe(false)
   })
 
+  it.each([
+    {
+      missingIdPath: "wordIds",
+      step: {
+        answer: ["정답"],
+        explanation: "해설",
+        id: "blank-missing-id",
+        sortOrder: 1,
+        template: "___",
+        type: "FILL_BLANK",
+        words: ["정답"],
+      },
+      type: "FILL_BLANK",
+    },
+    {
+      missingIdPath: "segmentIds",
+      step: {
+        correct: ["구간"],
+        explanation: "해설",
+        id: "select-missing-id",
+        question: "질문",
+        segments: ["구간"],
+        sortOrder: 1,
+        type: "SELECT",
+      },
+      type: "SELECT",
+    },
+    {
+      missingIdPath: "itemIds",
+      step: {
+        correct: ["문장"],
+        explanation: "해설",
+        id: "order-missing-id",
+        items: ["문장"],
+        sortOrder: 1,
+        title: "순서",
+        type: "ORDER",
+      },
+      type: "ORDER",
+    },
+    {
+      missingIdPath: "pairs.0.leftId",
+      step: {
+        explanation: "해설",
+        guide: "안내",
+        id: "match-missing-id",
+        pairs: [{ left: "왼쪽", right: "오른쪽" }],
+        sortOrder: 1,
+        title: "짝",
+        type: "MATCH",
+      },
+      type: "MATCH",
+    },
+  ] as const)(
+    "$type 스텝은 stable item ID $missingIdPath 없이는 거부한다",
+    ({ missingIdPath, step }) => {
+      const result = lessonStepDtoSchema.safeParse(step)
+
+      expect(result.success).toBe(false)
+      expect(
+        result.error?.issues.map((issue) => issue.path.join("."))
+      ).toContain(missingIdPath)
+    }
+  )
+
   it("쓰기 스텝은 guide 없이 prompt나 topic만 있어도 parse한다", () => {
     expect(
       lessonStepDtoSchema.parse({

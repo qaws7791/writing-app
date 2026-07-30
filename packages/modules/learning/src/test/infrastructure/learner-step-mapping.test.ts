@@ -109,59 +109,6 @@ describe("학습자 단계 보안 presenter", () => {
       learnerStepPresentationFutureSecret
     )
   })
-
-  it.each([
-    {
-      step: {
-        answer: ["정답"],
-        explanation: "해설",
-        id: "blank-missing-id",
-        sortOrder: 1,
-        template: "___",
-        type: "FILL_BLANK",
-        words: ["정답"],
-      },
-      type: "FILL_BLANK",
-    },
-    {
-      step: {
-        correct: [0],
-        explanation: "해설",
-        id: "select-missing-id",
-        question: "질문",
-        segments: ["구간"],
-        sortOrder: 1,
-        type: "SELECT",
-      },
-      type: "SELECT",
-    },
-    {
-      step: {
-        correct: ["문장"],
-        explanation: "해설",
-        id: "order-missing-id",
-        items: ["문장"],
-        sortOrder: 1,
-        title: "순서",
-        type: "ORDER",
-      },
-      type: "ORDER",
-    },
-    {
-      step: {
-        explanation: "해설",
-        guide: "안내",
-        id: "match-missing-id",
-        pairs: [{ left: "왼쪽", right: "오른쪽" }],
-        sortOrder: 1,
-        title: "짝",
-        type: "MATCH",
-      },
-      type: "MATCH",
-    },
-  ] as const)("$type stable item ID가 없으면 계약에서 거부한다", ({ step }) => {
-    expect(lessonStepDtoSchema.safeParse(step).success).toBe(false)
-  })
 })
 
 function withItemsSortedById(value: unknown): unknown {

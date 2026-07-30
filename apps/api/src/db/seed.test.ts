@@ -9,7 +9,9 @@ import { lessonStepTypeValues } from "@workspace/contracts/content/steps"
 import { runApplicationMigrations } from "@/db/migrate"
 import { seedApplicationDatabase } from "@/db/seed"
 
-describe("application seed composition", () => {
+// 실제 콘텐츠 seed를 수행하는 suite이므로, 저장소 전체 병렬 실행에서 CPU가
+// 포화될 때 기본 5초 timeout을 넘긴다.
+describe("application seed composition", { timeout: 20_000 }, () => {
   it("재실행 시 학습자 auth·profile과 학습 기록의 application state를 보존한다", async () => {
     const database = createInMemoryWritingAppDatabase()
 
