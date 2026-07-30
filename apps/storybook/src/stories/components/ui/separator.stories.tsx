@@ -79,7 +79,7 @@ export const Vertical: Story = {
  */
 export const CustomStyle: Story = {
   render: () => (
-    <div className="w-[350px] p-4 bg-muted/40 rounded-lg space-y-4">
+    <div className="w-[350px] space-y-4 rounded-panel bg-surface p-4">
       <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
         학습 과정 진도율
       </div>
@@ -89,7 +89,7 @@ export const CustomStyle: Story = {
 
       <div className="grid grid-cols-3 gap-2 text-center text-xs text-muted-foreground">
         <div>
-          <span className="block font-semibold text-foreground text-sm">
+          <span className="block font-semibold text-foreground text-body-sm">
             12
           </span>
           수행 완료
@@ -98,7 +98,9 @@ export const CustomStyle: Story = {
           <Separator orientation="vertical" className="h-8 bg-border" />
         </div>
         <div>
-          <span className="block font-semibold text-foreground text-sm">2</span>
+          <span className="block font-semibold text-foreground text-body-sm">
+            2
+          </span>
           진행 대기
         </div>
       </div>

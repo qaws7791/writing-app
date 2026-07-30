@@ -188,7 +188,7 @@ export const AsChild: Story = {
         render={(props) => (
           <a
             {...props}
-            href="https://google.com"
+            href="https://example.test/docs"
             target="_blank"
             rel="noopener noreferrer"
           >

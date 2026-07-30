@@ -24,6 +24,8 @@
 
 ## 남은 검증 공백
 
+- Ansible 배포 gate: playbook을 자체 parser로 재해석하던 테스트는 제거했지만, production 변수를 주입한 `deploy.yaml` `--check` 실행을 `ansible-static` job에 추가하지 못했다. 현재 `check:deployment-ansible`은 lint·syntax만, `test:deployment-bootstrap`은 bootstrap·maintenance playbook만 실행하므로 배포 전 재검증 assert task가 실제로 멈추는지는 검증되지 않는다.
+
 - 배포 smoke·E2E로 옮긴 항목: production origin 기준 `robots`·`sitemap` 출력, CSP 응답 header, lease 기반 강제 종료. 관리자 색인 차단은 PR smoke에서 `/robots.txt` 응답과 렌더된 `<meta name="robots">`로 검증한다.
 - 모듈 경계로 막힌 항목: content HTTP에 인가(403) 경로가 없어 권한 없는 actor 회귀를 만들 수 없다. `MatchAnswer` 중복 label은 접근 가능한 이름이 없어 UI 계층에서 구분할 수 없다. content의 seed 통합 테스트는 학습자 시드를 인라인 SQL로 유지한다 — `aLearner`·`aLearnerWithProgress`를 쓰려면 content가 identity·learning에 의존해야 하는데 learning이 content에 의존하므로 순환이다.
 - 중복 상수: `apps/api/src/privacy/deletion-marker-reapplication.ts`가 identity의 삭제 보존 기간을 다시 정의한다.
