@@ -9,7 +9,14 @@ import {
 type ShutdownProcessEvent =
   | { readonly event: "ready"; readonly port: number }
   | { readonly event: "request-started" }
+  | { readonly event: "lease-acquired" }
+  | { readonly event: "lease-aborted" }
   | { readonly event: "shutdown-started" }
+  | {
+      readonly activeActivities: number
+      readonly event: "drain-result"
+      readonly result: "drained" | "timed-out"
+    }
   | {
       readonly closeCount: number
       readonly databaseClosed: boolean
@@ -17,6 +24,7 @@ type ShutdownProcessEvent =
       readonly port: number
     }
 
+const drainTimeoutMilliseconds = readDrainTimeoutMilliseconds()
 let closeCount = 0
 let shutdownStarted = false
 const releaseRequest = createDeferred()
@@ -26,6 +34,7 @@ const lifecycle = createUnifiedApiServerLifecycle({
     closeCount += 1
     database.close()
   },
+  drainTimeoutMilliseconds,
   async fetch(request) {
     if (new URL(request.url).pathname === "/slow") {
       writeEvent({ event: "request-started" })
@@ -33,6 +42,13 @@ const lifecycle = createUnifiedApiServerLifecycle({
       return new Response("진행 요청 완료")
     }
     return new Response("ok")
+  },
+  onDrainResult(observation) {
+    writeEvent({
+      activeActivities: observation.activeActivities,
+      event: "drain-result",
+      result: observation.result,
+    })
   },
   onShutdownError(error, phase) {
     process.stderr.write(`${phase}: ${String(error)}\n`)
@@ -86,12 +102,36 @@ process.stdin.on("data", (chunk) => {
     const command = inputBuffer.slice(0, newlineIndex).trim()
     inputBuffer = inputBuffer.slice(newlineIndex + 1)
 
+    if (command === "acquire-lease") acquireLongLivedLease()
     if (command === "release-request") releaseRequest.resolve()
     if (command === "shutdown") void requestShutdown()
   }
 })
 
 writeEvent({ event: "ready", port })
+
+function acquireLongLivedLease(): void {
+  const lease = lifecycle.acquireLongLivedLease("long-lived-stream")
+  lease.signal.addEventListener(
+    "abort",
+    () => writeEvent({ event: "lease-aborted" }),
+    { once: true }
+  )
+  writeEvent({ event: "lease-acquired" })
+}
+
+function readDrainTimeoutMilliseconds(): number | undefined {
+  const argument = process.argv
+    .slice(2)
+    .find((value) => value.startsWith("--drain-timeout-ms="))
+  if (argument === undefined) return undefined
+
+  const parsed = Number(argument.slice("--drain-timeout-ms=".length))
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error("--drain-timeout-ms는 0 이상의 정수여야 합니다.")
+  }
+  return parsed
+}
 
 function writeEvent(event: ShutdownProcessEvent): void {
   process.stdout.write(`${JSON.stringify(event)}\n`)

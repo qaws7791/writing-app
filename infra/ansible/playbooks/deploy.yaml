@@ -20,6 +20,8 @@
           writing_app_allow_deploy=true와 공개 verify까지 lock을 유지하는
           writing_app_hold_operation_lock_for_verify=true를 명시해야 합니다.
           Production readiness 입력은 production 대상에서만 사용할 수 있습니다.
+      tags:
+        - approval
 
     - name: Production 외부 준비 증거 확인
       ansible.builtin.assert:
@@ -77,6 +79,8 @@
       when: >-
         (writing_app_environment == 'production') or
         (writing_app_require_production_readiness | default(false) | bool)
+      tags:
+        - approval
 
     - name: 배포 작업 공유 락 획득
       ansible.builtin.command:

@@ -6,7 +6,14 @@ import { expect, it } from "vitest"
 type LifecycleProcessEvent =
   | { readonly event: "ready"; readonly port: number }
   | { readonly event: "request-started" }
+  | { readonly event: "lease-acquired" }
+  | { readonly event: "lease-aborted" }
   | { readonly event: "shutdown-started" }
+  | {
+      readonly activeActivities: number
+      readonly event: "drain-result"
+      readonly result: "drained" | "timed-out"
+    }
   | {
       readonly closeCount: number
       readonly databaseClosed: boolean
@@ -19,7 +26,88 @@ type LifecycleProcessExit = {
   readonly signal: NodeJS.Signals | null
 }
 
+type LifecycleProcess = {
+  readonly events: ReturnType<typeof createProcessEventReader>
+  readonly exit: ReturnType<typeof createProcessExitReader>
+  readonly requestShutdown: () => void
+  readonly send: (_command: string) => void
+  readonly waitForReadyPort: () => Promise<number>
+}
+
 it("SIGTERM 뒤 진행 body를 drain하고 DB close 1회와 port 해제를 보장한다", async () => {
+  await withLifecycleProcess([], async (lifecycle) => {
+    const port = await lifecycle.waitForReadyPort()
+    const inFlight = fetch(`http://127.0.0.1:${port}/slow`)
+    await lifecycle.events.waitFor("request-started")
+
+    lifecycle.requestShutdown()
+    await lifecycle.events.waitFor("shutdown-started")
+    lifecycle.send("release-request")
+
+    await expect(inFlight.then((response) => response.text())).resolves.toBe(
+      "진행 요청 완료"
+    )
+    await expect(lifecycle.events.waitFor("drain-result")).resolves.toEqual({
+      activeActivities: 1,
+      event: "drain-result",
+      result: "drained",
+    })
+    await expectPortReleasedAfterShutdown(lifecycle, port)
+  })
+}, 10_000)
+
+it("long-lived lease가 걸린 채 drain deadline이 지나도 lease를 끊고 port를 해제한다", async () => {
+  await withLifecycleProcess(["--drain-timeout-ms=50"], async (lifecycle) => {
+    const port = await lifecycle.waitForReadyPort()
+    lifecycle.send("acquire-lease")
+    await lifecycle.events.waitFor("lease-acquired")
+
+    lifecycle.requestShutdown()
+    await lifecycle.events.waitFor("shutdown-started")
+
+    await expect(lifecycle.events.waitFor("drain-result")).resolves.toEqual({
+      activeActivities: 1,
+      event: "drain-result",
+      result: "timed-out",
+    })
+    await lifecycle.events.waitFor("lease-aborted")
+    await expectPortReleasedAfterShutdown(lifecycle, port)
+  })
+}, 10_000)
+
+async function expectPortReleasedAfterShutdown(
+  lifecycle: LifecycleProcess,
+  port: number
+): Promise<void> {
+  const completed = await lifecycle.events.waitFor("shutdown-complete")
+
+  await expect(lifecycle.exit.wait()).resolves.toEqual({
+    code: 0,
+    signal: null,
+  })
+  expect(completed).toEqual({
+    closeCount: 1,
+    databaseClosed: true,
+    event: "shutdown-complete",
+    port,
+  })
+
+  const reboundServer = Bun.serve({
+    fetch: () => new Response("ok"),
+    hostname: "127.0.0.1",
+    port,
+  })
+  try {
+    expect(reboundServer.port).toBe(port)
+  } finally {
+    await reboundServer.stop(true)
+  }
+}
+
+async function withLifecycleProcess(
+  args: readonly string[],
+  run: (_lifecycle: LifecycleProcess) => Promise<void>
+): Promise<void> {
   const child = spawn(
     process.execPath,
     [
@@ -27,6 +115,7 @@ it("SIGTERM 뒤 진행 body를 drain하고 DB close 1회와 port 해제를 보�
         import.meta.dirname,
         "../test-support/unified-api-shutdown-process.ts"
       ),
+      ...args,
     ],
     {
       cwd: resolve(import.meta.dirname, "../.."),
@@ -35,55 +124,35 @@ it("SIGTERM 뒤 진행 body를 drain하고 DB close 1회와 port 해제를 보�
   )
   const events = createProcessEventReader(child)
   const exit = createProcessExitReader(child)
+  const lifecycle: LifecycleProcess = {
+    events,
+    exit,
+    requestShutdown() {
+      if (process.platform === "win32") {
+        child.stdin.write("shutdown\n")
+      } else {
+        child.kill("SIGTERM")
+      }
+    },
+    send(command) {
+      child.stdin.write(`${command}\n`)
+    },
+    async waitForReadyPort() {
+      const ready = await events.waitFor("ready")
+      if (ready.event !== "ready") throw new Error("ready event가 필요합니다.")
+      return ready.port
+    },
+  }
 
   try {
-    const ready = await events.waitFor("ready")
-    if (ready.event !== "ready") throw new Error("ready event가 필요합니다.")
-
-    const inFlight = fetch(`http://127.0.0.1:${ready.port}/slow`)
-    await events.waitFor("request-started")
-
-    if (process.platform === "win32") {
-      child.stdin.write("shutdown\n")
-    } else {
-      child.kill("SIGTERM")
-    }
-    await events.waitFor("shutdown-started")
-    child.stdin.write("release-request\n")
-
-    await expect(inFlight.then((response) => response.text())).resolves.toBe(
-      "진행 요청 완료"
-    )
-    const completed = await events.waitFor("shutdown-complete")
-    if (completed.event !== "shutdown-complete") {
-      throw new Error("shutdown-complete event가 필요합니다.")
-    }
-
-    await expect(exit.wait()).resolves.toEqual({ code: 0, signal: null })
-    expect(completed).toEqual({
-      closeCount: 1,
-      databaseClosed: true,
-      event: "shutdown-complete",
-      port: ready.port,
-    })
-
-    const reboundServer = Bun.serve({
-      fetch: () => new Response("ok"),
-      hostname: "127.0.0.1",
-      port: ready.port,
-    })
-    try {
-      expect(reboundServer.port).toBe(ready.port)
-    } finally {
-      await reboundServer.stop(true)
-    }
+    await run(lifecycle)
   } finally {
     if (exit.current === undefined) {
       child.kill("SIGKILL")
       await exit.wait()
     }
   }
-}, 10_000)
+}
 
 function createProcessEventReader(child: ChildProcessWithoutNullStreams): {
   readonly waitFor: (

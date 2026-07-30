@@ -63,6 +63,7 @@
     "check:container-image-lock": "bun scripts/check-container-image-lock.ts",
     "check:dependencies": "syncpack lint --dependency-types dev,prod,peer",
     "check:deployment-ansible": "bun scripts/check-deployment-ansible.ts",
+    "check:deployment-approval": "bun scripts/check-deployment-approval.ts",
     "check:route-bundles": "bun scripts/check-route-bundles.ts",
     "check:workflow-scripts": "bun scripts/check-workflow-scripts.ts",
     "ci:static": "bun run --parallel --no-exit-on-error \"ci:static:*\"",

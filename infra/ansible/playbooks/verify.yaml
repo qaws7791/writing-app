@@ -556,9 +556,70 @@
               path: /api/admin/health
           loop_control:
             label: "{{ item.audience }}"
+          register: writing_app_public_route_smoke
           changed_when: false
           become: false
           delegate_to: localhost
+          when: writing_app_verify_public_routes | bool
+
+        - name: 공개 색인 정책 출력 probe
+          ansible.builtin.uri:
+            url: "{{ item.origin }}{{ item.path }}"
+            method: GET
+            status_code: 200
+            return_content: true
+            follow_redirects: none
+            timeout: 10
+            validate_certs: true
+          loop:
+            - audience: learner-robots-sitemap-origin
+              expected: "Sitemap: {{ writing_app_web_origin }}/sitemap.xml"
+              origin: "{{ writing_app_web_origin }}"
+              path: /robots.txt
+            - audience: learner-sitemap-origin
+              expected: "<loc>{{ writing_app_web_origin }}"
+              origin: "{{ writing_app_web_origin }}"
+              path: /sitemap.xml
+            - audience: admin-robots-disallow-all
+              expected: "Disallow: /"
+              origin: "{{ writing_app_admin_origin }}"
+              path: /robots.txt
+          loop_control:
+            label: "{{ item.audience }}"
+          register: writing_app_public_index_policy
+          changed_when: false
+          become: false
+          delegate_to: localhost
+          when: writing_app_verify_public_routes | bool
+
+        - name: 공개 색인 정책이 배포 origin을 사용하는지 검증
+          ansible.builtin.assert:
+            that:
+              - item.item.expected in item.content
+            fail_msg: >-
+              {{ item.item.audience }} 색인 응답이 배포 origin을 반영하지 않았습니다.
+              기대 문자열 "{{ item.item.expected }}"이 없습니다.
+          loop: "{{ writing_app_public_index_policy.results }}"
+          loop_control:
+            label: "{{ item.item.audience }}"
+          when: writing_app_verify_public_routes | bool
+
+        - name: 공개 페이지 강제 CSP header 검증
+          ansible.builtin.assert:
+            that:
+              - item.content_security_policy is defined
+              - item.content_security_policy_report_only is not defined
+            fail_msg: >-
+              {{ item.item.audience }} 공개 페이지가 강제 CSP header를 반환하지 않았습니다.
+              Report-only로 배포되었는지 확인해야 합니다.
+          loop: >-
+            {{
+              writing_app_public_route_smoke.results
+              | selectattr('item.expected_status', 'equalto', 200)
+              | list
+            }}
+          loop_control:
+            label: "{{ item.item.audience }}"
           when: writing_app_verify_public_routes | bool
 
         - name: 검증 완료 배포 입력 파일 checksum 계산

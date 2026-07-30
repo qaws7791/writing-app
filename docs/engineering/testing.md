@@ -122,6 +122,8 @@ PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는
 
 PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. 다른 운영체제의 로컬 개발 호환성은 매 PR 전체 검증이 아니라 필요할 때 설치 smoke나 주기 실행으로 확인한다. 배포 설정은 자체 parser로 재해석하지 않고 Compose, Caddy, Ansible과 실제 container가 직접 읽게 한다.
 
+배포 승인 gate도 같은 원칙을 따른다. playbook의 승인 task만 골라 `--check`로 실제 실행하고, 완결된 production 증거는 통과하며 승인 누락·증거 revision 불일치·placeholder 증거·기간이 지난 복구 훈련·대상 환경 불일치는 각각 멈추는지 확인한다. 조건식의 문자열이나 task 순서를 단정하지 않는다.
+
 Storybook interaction·접근성 검사는 browser runtime 비용 때문에 main push에서만 차단한다. 따라서 공유 UI primitive의 상태 전이·초점·axe 회귀는 PR을 통과해 main에서 처음 드러날 수 있고, PR 단계에서는 `packages/shared/ui`의 Vitest 범위만 이를 막는다. 이 지연을 허용하지 않으려면 PR gate에 browser 설치와 story 부분집합 실행을 함께 추가해야 한다.
 
 ## 검증 기록
