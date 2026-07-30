@@ -9,6 +9,7 @@ import {
   defaultAiFeedbackDailyQuotaPolicy,
   type AiFeedbackProvider,
 } from "@workspace/ai-feedback/ports"
+import { defaultDeletedLearnerRetentionDays } from "@workspace/identity/ports"
 import { aLearner } from "@workspace/identity/test-fixtures"
 import { createContentModule } from "@workspace/content/module"
 import {
@@ -39,7 +40,8 @@ import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 
 const now = new Date("2026-07-24T00:00:00.000Z")
 const dayMs = 86_400_000
-const deletedLearnerCutoff = now.getTime() - 5 * dayMs
+const retentionDays = defaultDeletedLearnerRetentionDays
+const deletedLearnerCutoff = now.getTime() - retentionDays * dayMs
 const orphanedAssetCutoff = now.getTime() - 7 * dayMs
 const orphanedAssetObjectKey = "content-assets/course-cover/orphan.jpg"
 
@@ -208,6 +210,7 @@ async function openDailyMaintenance(): Promise<DailyMaintenanceFixture> {
             database: client.db,
             learnerDataPurges: learnerDataPurgePorts,
           }),
+          retentionDays,
         }),
         expiredSessions: createExpiredSessionMaintenance(client.db),
         externalLogRetentionEvidence: {

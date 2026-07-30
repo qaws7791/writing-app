@@ -4,12 +4,11 @@ import type {
   LearnerDeletionMarker,
   LearnerDeletionMarkerStorePort,
 } from "@workspace/identity/ports"
+import { calculateDeletedLearnerPurgeCutoff } from "@workspace/identity/ports"
 import type { Clock } from "@workspace/kernel/clock"
 import { err, ok, type Result } from "@workspace/kernel/result"
 
 import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
-
-const deletedLearnerRetentionMs = 5 * 24 * 60 * 60 * 1_000
 
 type DeletionMarkerReapplicationResult = Readonly<{
   alreadyAppliedUsers: number
@@ -41,6 +40,7 @@ export function createDeletionMarkerReapplication(input: {
   readonly clock: Clock
   readonly database: WritingAppDatabase
   readonly markerStore: Pick<LearnerDeletionMarkerStorePort, "readAll">
+  readonly retentionDays: number
 }): DeletionMarkerReapplication {
   const repository = createDeletionMarkerReapplicationRepository({
     database: input.database,
@@ -82,7 +82,10 @@ export function createDeletionMarkerReapplication(input: {
         missingUsers: 0,
         purgedUsers: 0,
       }
-      const purgeCutoff = new Date(now.getTime() - deletedLearnerRetentionMs)
+      const purgeCutoff = calculateDeletedLearnerPurgeCutoff(
+        now,
+        input.retentionDays
+      )
 
       for (
         let offset = 0;

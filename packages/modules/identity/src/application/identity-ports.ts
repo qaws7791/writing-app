@@ -186,3 +186,7 @@ export type DeletionMarkerReapplicationRepository = Readonly<{
 
 export type { DeletedLearnerPurgeCommand } from "#identity/application/deleted-learner-purge"
 export { deletedLearnerDisplayName } from "#identity/domain/learner-profile"
+export {
+  calculateDeletedLearnerPurgeCutoff,
+  defaultDeletedLearnerRetentionDays,
+} from "#identity/domain/deleted-learner-retention"

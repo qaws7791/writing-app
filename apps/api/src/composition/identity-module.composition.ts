@@ -16,12 +16,14 @@ import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 export function composeIdentityModule(input: {
   readonly clock: Clock
   readonly database: WritingAppDatabase
+  readonly deletedLearnerRetentionDays: number
   readonly deletionMarkerStore?: LearnerDeletionMarkerStorePort
   readonly learningReport: IdentityLearningReportPort
 }): IdentityModule {
   return createIdentityModule({
     clock: input.clock,
     database: input.database,
+    deletedLearnerRetentionDays: input.deletedLearnerRetentionDays,
     deletionMarkerStore:
       input.deletionMarkerStore ?? createInMemoryDeletionMarkerStore(),
     deletedLearnerPurgeRepository: createDeletedLearnerPurgeRepository({

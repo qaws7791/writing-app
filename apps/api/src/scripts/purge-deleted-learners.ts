@@ -6,8 +6,10 @@ import {
   createDeletedLearnerPurgeCommand,
   createDeletedLearnerPurgeRepository,
 } from "@workspace/identity/module"
+import { defaultDeletedLearnerRetentionDays } from "@workspace/identity/ports"
 import type { Clock } from "@workspace/kernel/clock"
 
+import { readDeletedLearnerRetentionDays } from "@/config/env"
 import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 import { systemClock } from "@/runtime/system-clock"
 
@@ -42,7 +44,8 @@ export function requireDeletedLearnerPurgeApproval(
 
 export async function runDeletedLearnerPurge(
   client: WritingAppDatabaseClient,
-  clock: Clock = systemClock
+  clock: Clock = systemClock,
+  retentionDays: number = defaultDeletedLearnerRetentionDays
 ) {
   const command = createDeletedLearnerPurgeCommand({
     clock,
@@ -50,6 +53,7 @@ export async function runDeletedLearnerPurge(
       database: client.db,
       learnerDataPurges: learnerDataPurgePorts,
     }),
+    retentionDays,
   })
   const result = await command.execute()
   if (result.isErr()) {
@@ -71,7 +75,13 @@ if (import.meta.main) {
   })
   const client = createWritingAppDatabase(databaseUrl)
   try {
-    const result = await runDeletedLearnerPurge(client)
+    const result = await runDeletedLearnerPurge(
+      client,
+      systemClock,
+      readDeletedLearnerRetentionDays(
+        process.env["LEARNER_DELETION_RETENTION_DAYS"]
+      )
+    )
     process.stdout.write(
       `${JSON.stringify({
         cutoff: result.cutoff.toISOString(),

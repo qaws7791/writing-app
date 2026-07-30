@@ -119,11 +119,13 @@ export async function runDeletionMarkerReapplication(input: {
   readonly client: WritingAppDatabaseClient
   readonly markerStore: Pick<LearnerDeletionMarkerStorePort, "readAll">
   readonly options: ReapplyDeletionMarkersOptions
+  readonly retentionDays: number
 }) {
   const reapplication = createDeletionMarkerReapplication({
     clock: systemClock,
     database: input.client.db,
     markerStore: input.markerStore,
+    retentionDays: input.retentionDays,
   })
   const result = await reapplication.execute(input.options)
   if (result.isErr()) {
@@ -169,6 +171,7 @@ async function main(): Promise<void> {
       client,
       markerStore,
       options,
+      retentionDays: environment.deletedLearnerRetentionDays,
     })
     process.stdout.write(
       `${JSON.stringify({

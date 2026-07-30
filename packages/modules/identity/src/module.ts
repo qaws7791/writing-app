@@ -53,6 +53,7 @@ export function createIdentityModule(
   input: Omit<IdentityApplicationDependencies, "repository"> & {
     readonly database: WritingAppDatabase
     readonly deletedLearnerPurgeRepository: DeletedLearnerPurgeRepository
+    readonly deletedLearnerRetentionDays: number
     readonly learningReport: IdentityLearningReportPort
   }
 ): IdentityModule {
@@ -81,6 +82,7 @@ export function createIdentityModule(
     deletedLearnerPurge: createDeletedLearnerPurgeCommand({
       clock: input.clock,
       repository: input.deletedLearnerPurgeRepository,
+      retentionDays: input.deletedLearnerRetentionDays,
     }),
     learningQuery: createIdentityLearningQuery({
       learnerIdentityDirectory: input.learnerIdentityDirectory,

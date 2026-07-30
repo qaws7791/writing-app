@@ -30,6 +30,8 @@
 
 삭제 학습자 정리 명령은 명시적으로 지정한 database URL, destructive 승인, 예상 database URL의 일치를 모두 검증한 뒤 실행한다. 출력은 정리 기준 시각과 삭제 건수로 제한하며 사용자 식별자나 민감 데이터를 기록하지 않는다. 실제 변수명과 실행 계약은 [정리 명령 source](../../apps/api/src/scripts/purge-deleted-learners.ts)가 소유한다.
 
+삭제 보존 기간의 기본값은 identity module의 도메인 상수가 정본으로 소유하고, API 환경 parser가 검증한 같은 값을 정리 command와 marker 재적용에 함께 주입한다. 두 소비자가 서로 다른 기간으로 동작할 수 없다. 이 값은 제품 요구사항과 개인정보 정책이 소유하므로 환경 변수로 바꾸려면 해당 문서를 같은 변경에서 갱신한다.
+
 일일 maintenance는 deleted 학습자, 만료 session, AI pending, DB audit와 orphan 콘텐츠 asset을 bounded batch로 정리하고 request·security 외부 보존 상태를 함께 JSON으로 보고한다. dry-run은 같은 cutoff와 대상 수를 사용하며 actual만 affected 수를 만든다. production actual은 명시한 배포 환경·database 확인과 destructive 승인에 더해 유효한 외부 log class retention 증거 파일이 없으면 실패한다. 배포 timer의 반복 실행 승인은 root 전용 `0600` maintenance 환경 파일에만 저장하고 일반 API 환경에는 넣지 않는다.
 
 삭제 marker 복구는 timezone이 포함된 snapshot 시각, `DEPLOYMENT_ENVIRONMENT`와 같은 대상 환경, 격리 candidate DB 확인과 actual 승인을 요구한다. 복구·rollback처럼 작업마다 판단해야 하는 승인은 inventory나 지속 환경 파일에 저장하지 않고 해당 Ansible 실행의 extra vars와 container command에만 전달한다. 정확한 인자·변수와 guard는 [일일 명령](../../apps/api/src/scripts/maintenance-daily.ts), [복구 명령](../../apps/api/src/scripts/reapply-deletion-markers.ts)과 [restore playbook](../../infra/ansible/playbooks/restore.yaml)이 소유한다.

@@ -8,7 +8,10 @@ import type {
   LearnerDeletionMarker,
   LearnerDeletionMarkerStorePort,
 } from "@workspace/identity/ports"
-import { deletedLearnerDisplayName } from "@workspace/identity/ports"
+import {
+  defaultDeletedLearnerRetentionDays,
+  deletedLearnerDisplayName,
+} from "@workspace/identity/ports"
 import { aLearner } from "@workspace/identity/test-fixtures"
 import { ok } from "@workspace/kernel/result"
 
@@ -122,6 +125,7 @@ describe("삭제 marker 재적용 실제 SQLite integration", () => {
       const reapplication = createDeletionMarkerReapplication({
         clock: { now: () => now },
         database: client.db,
+        retentionDays: defaultDeletedLearnerRetentionDays,
         markerStore: {
           readAll: async () => {
             readCount += 1
@@ -161,6 +165,7 @@ function openReapplication(client: WritingAppDatabaseClient) {
     clock: { now: () => now },
     database: client.db,
     markerStore,
+    retentionDays: defaultDeletedLearnerRetentionDays,
   })
 }
 

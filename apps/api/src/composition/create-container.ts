@@ -213,6 +213,7 @@ export async function createContainer(
     const identity = composeIdentityModule({
       clock,
       database: database.db,
+      deletedLearnerRetentionDays: env.deletedLearnerRetentionDays,
       deletionMarkerStore: createDeletionMarkerStore({
         configuration: env.deletionMarkerStore,
         idGenerator,

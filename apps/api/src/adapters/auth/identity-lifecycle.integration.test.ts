@@ -18,6 +18,7 @@ import {
 } from "@workspace/identity/http"
 import {
   adminSessionExpiresAt,
+  defaultDeletedLearnerRetentionDays,
   deletedLearnerDisplayName,
   type AdminSessionResolver,
 } from "@workspace/identity/ports"
@@ -119,6 +120,7 @@ function openIdentityLifecycle(
   const identity = composeIdentityModule({
     clock: { now: () => now },
     database: client.db,
+    deletedLearnerRetentionDays: defaultDeletedLearnerRetentionDays,
     learningReport: {
       async readActiveLessonCount() {
         return 0

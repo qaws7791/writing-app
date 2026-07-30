@@ -25,10 +25,14 @@ export type DeletedLearnerPurgeCommand = Readonly<{
 export function createDeletedLearnerPurgeCommand(input: {
   readonly clock: Clock
   readonly repository: DeletedLearnerPurgeRepository
+  readonly retentionDays: number
 }): DeletedLearnerPurgeCommand {
   return {
     async execute(options = {}) {
-      const cutoff = calculateDeletedLearnerPurgeCutoff(input.clock.now())
+      const cutoff = calculateDeletedLearnerPurgeCutoff(
+        input.clock.now(),
+        input.retentionDays
+      )
       const result = await input.repository.purgeDeletedBefore({
         batchSize: options.batchSize ?? 1_000,
         cutoff,

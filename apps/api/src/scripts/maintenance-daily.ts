@@ -189,6 +189,7 @@ export async function runDailyMaintenance(input: {
         database: input.client.db,
         learnerDataPurges: learnerDataPurgePorts,
       }),
+      retentionDays: input.environment.deletedLearnerRetentionDays,
     }),
     expiredSessions: createExpiredSessionMaintenance(input.client.db),
     externalLogRetentionEvidence: input.externalLogRetentionEvidence,

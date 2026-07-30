@@ -30,7 +30,7 @@ Storybook은 디자인 시스템의 실행 가능한 명세다. story source와 
 
 - public component를 추가하거나 상태·variant를 바꾸면 같은 변경에서 해당 범주의 story를 갱신한다.
 - 기본 상태뿐 아니라 disabled, loading, error, empty, keyboard interaction과 접근성 상태 중 적용 가능한 항목을 포함한다.
-- 제품 화면 조합은 primitive story와 분리해 Pattern 또는 Recipe에 둔다.
+- 제품 화면 조합은 primitive story와 분리해 Pattern 또는 Recipe에 둔다. 공용 UI 패키지가 도메인 컴포넌트까지 소유하므로 이 배치가 정본이며 예외가 아니다.
 - story는 저장소 상대 import와 workspace 공개 Interface만 사용하며 로컬 절대 경로에 의존하지 않는다.
 
 ## 검증

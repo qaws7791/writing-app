@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { defaultDeletedLearnerRetentionDays } from "@workspace/identity/ports"
 
 import { parseApiEnv } from "@/config/env"
 
@@ -36,6 +37,30 @@ describe("통합 API env", () => {
       })
     ).toThrow(/NODE_ENV 실행 모드/u)
   })
+
+  it("삭제 보존 기간은 미지정 시 identity 기본값을 쓰고 지정 값을 정수로 받는다", () => {
+    expect(
+      parseApiEnv(createTestEnvironment()).deletedLearnerRetentionDays
+    ).toBe(defaultDeletedLearnerRetentionDays)
+    expect(
+      parseApiEnv({
+        ...createTestEnvironment(),
+        LEARNER_DELETION_RETENTION_DAYS: " 30 ",
+      }).deletedLearnerRetentionDays
+    ).toBe(30)
+  })
+
+  it.each(["0", "-1", "1.5", "many", "366"])(
+    "삭제 보존 기간 %s는 startup 전에 거부한다",
+    (value) => {
+      expect(() =>
+        parseApiEnv({
+          ...createTestEnvironment(),
+          LEARNER_DELETION_RETENTION_DAYS: value,
+        })
+      ).toThrow(/LEARNER_DELETION_RETENTION_DAYS/u)
+    }
+  )
 
   it("LOG_LEVEL이 비어 있으면 info로 떨어지고 공백을 제거한 값만 사용한다", () => {
     expect(parseApiEnv(createTestEnvironment()).logLevel).toBe("info")

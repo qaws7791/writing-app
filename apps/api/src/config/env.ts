@@ -1,6 +1,7 @@
 import { parseEnv, type AppEnvInput } from "@workspace/env/parse-env"
 import { parseContentAssetPublicBaseUrl } from "@workspace/env/public-url"
 import { shouldUsePrettyLogging } from "@workspace/observability/logger"
+import { defaultDeletedLearnerRetentionDays } from "@workspace/identity/ports"
 import { z } from "@workspace/http-platform/openapi"
 import {
   defaultAiFeedbackAttemptPolicy,
@@ -17,6 +18,7 @@ export type ApiEnv = {
   readonly aiFeedback: AiFeedbackEnv
   readonly cursorSigningSecret: string
   readonly databaseUrl: string | undefined
+  readonly deletedLearnerRetentionDays: number
   readonly deletionMarkerStore: DeletionMarkerStoreEnv | undefined
   readonly deploymentEnvironment:
     | "development"
@@ -117,6 +119,9 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     aiFeedback: parseAiFeedbackEnv(input),
     cursorSigningSecret,
     databaseUrl: env.DATABASE_URL,
+    deletedLearnerRetentionDays: readDeletedLearnerRetentionDays(
+      input["LEARNER_DELETION_RETENTION_DAYS"]
+    ),
     deletionMarkerStore,
     deploymentEnvironment: parseDeploymentEnvironment(
       env.NODE_ENV,
@@ -422,6 +427,28 @@ function readCursorSigningSecret(env: ReturnType<typeof parseEnv>): string {
   }
 
   return `${env.LEARNER_AUTH_SECRET}:cursor-signing`
+}
+
+/**
+ * 보존 기간은 제품 요구사항이 소유하고 identity module이 기본값을 정본으로 둔다. env는
+ * 같은 값을 두 소비자(purge command·marker 재적용)에 함께 주입하는 수단이다.
+ */
+export function readDeletedLearnerRetentionDays(
+  value: string | undefined
+): number {
+  const normalized = value?.trim()
+  if (normalized === undefined || normalized.length === 0) {
+    return defaultDeletedLearnerRetentionDays
+  }
+
+  const parsed = z.coerce.number().int().min(1).max(365).safeParse(normalized)
+  if (!parsed.success) {
+    throw new Error(
+      "Invalid environment variables: LEARNER_DELETION_RETENTION_DAYS: 1일 이상 365일 이하의 정수여야 합니다."
+    )
+  }
+
+  return parsed.data
 }
 
 function parseDeploymentVersion(
