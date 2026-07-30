@@ -4,7 +4,15 @@ import { adminCourseEditorWriteDocumentSchema } from "@workspace/contracts/conte
 import { adminWebOrigin, loginAdmin, loginLearner } from "#e2e/auth"
 import { installAiFeedbackFailures } from "#e2e/ai-feedback-fixture"
 import { createE2eAdminContentFixture } from "#e2e/admin-content-fixture"
-import { expect, readCreatedCourseId, test } from "#e2e/test"
+import { expect, test } from "#e2e/test"
+
+function readCreatedCourseId(href: string | null): string {
+  const match = href?.match(/^\/courses\/([^/?#]+)$/u)
+  if (match?.[1] === undefined) {
+    throw new Error("생성된 코스 링크에서 course ID를 읽을 수 없습니다.")
+  }
+  return decodeURIComponent(match[1])
+}
 
 test.describe.configure({ mode: "serial" })
 

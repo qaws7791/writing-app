@@ -10,7 +10,7 @@ export default defineConfig({
     jsx: "automatic",
     jsxImportSource: "react",
   },
-  plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
+  plugins: [tsconfigPaths()],
   test: {
     clearMocks: true,
     environment: "jsdom",

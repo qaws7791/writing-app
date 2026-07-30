@@ -12,7 +12,7 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && vitest run --config vitest.workspace.ts --project @workspace/nextjs-config",
+    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/nextjs-config",
     "typecheck": "tsc7 --noEmit"
   },
   "devDependencies": {

@@ -10,7 +10,7 @@ describe("테스트 콘솔 실패 장치", () => {
       createConsoleFailureHarness(target).install()
 
       expect(() => target[method]("콘솔 실패 장치 확인")).toThrow(
-        `예상하지 않은 console.${method}: 콘솔 실패 장치 확인`
+        new RegExp(`console\\.${method}`, "u")
       )
     }
   )

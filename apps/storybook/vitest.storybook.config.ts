@@ -6,6 +6,8 @@ import { defineConfig } from "vitest/config"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
+// storybookTest plugin은 import 시점에 이 플래그를 읽으므로 동적 import보다 먼저
+// 설정해야 한다. Storybook 서버를 띄우지 않고 story만 test 모드로 불러오게 한다.
 process.env["VITEST_STORYBOOK"] = "false"
 
 const { storybookTest } = await import("@storybook/addon-vitest/vitest-plugin")

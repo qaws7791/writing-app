@@ -17,6 +17,7 @@
 
 - **러너 통합.** 14개 패키지가 각자 프로세스를 띄워 실제 테스트 시간보다 기동 비용이 크다(`@workspace/http-client`는 0.21s 테스트에 4.03s). root 단일 실행으로 합치고 `bun test ./scripts`를 workspace project로 흡수하는 안이 감사에 있다.
 - **vitest config 중복.** web·admin·shared/ui가 React 단일 인스턴스 고정을 서로 다른 방식으로 구현한다. 공용 factory로 합치는 작업은 미적용이다.
+- **operations reporting fixture.** 감사는 `reporting-metrics-seed.ts`의 4개 seed 함수를 다른 모듈의 공개 fixture 소비로 대체하라고 권고했다. `insertLearner`·`insertPublishedCourse`는 `aLearner`·`aPublishedCourse`로 대체 가능하지만 `insertProgress`(레슨별 상태·시작·완료 시각)와 `insertAiFeedbackAttempt`(성공 attempt, quota 날짜, counter 미생성)는 reporting 전용 파라미터를 다른 모듈 fixture에 밀어 넣어야 표현된다. 절반만 대체하면 중복은 남고 cross-module devDependency만 늘어 미적용으로 둔다.
 - **learning 테스트 배치.** `packages/modules/learning/src/test/**` 12파일만 source 병렬 트리를 유지한다. 나머지 4개 모듈은 colocate다.
 - **console 실패 gate 범위.** `apps/admin`만 console.error·warn을 실패로 올린다. web·shared/ui·api로 넓히려면 harness를 공유 위치로 올려야 한다.
 - **E2E 지원 코드 위치.** E2E 전용 스크립트 4개가 `apps/api/src/scripts/`에 있어 `#e2e/*`에 닿지 못하고 topology 상수와 seeded credential이 3곳에 중복된다.
