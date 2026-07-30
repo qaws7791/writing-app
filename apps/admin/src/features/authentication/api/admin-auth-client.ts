@@ -21,13 +21,6 @@ export async function requestAdminPasswordLogin({
   return { nextPath: safeNextPath }
 }
 
-export async function requestAdminPasswordChange(input: {
-  readonly currentPassword: string
-  readonly newPassword: string
-}): Promise<void> {
-  await getAdminAuthClient().changePassword(input)
-}
-
 export async function requestAdminSignOut(): Promise<void> {
   await getAdminAuthClient().signOut()
 }

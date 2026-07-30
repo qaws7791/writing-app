@@ -8,11 +8,9 @@ import type {
 } from "@workspace/types/ids"
 
 import {
-  assertCurriculumRevisionMutable,
   createCurriculumDraft,
   decideArchiveCourse,
   decidePublishCurriculum,
-  selectSingleDraft,
 } from "#content/domain/curriculum"
 import type { CurriculumDraft } from "#content/domain/content-model"
 
@@ -25,16 +23,6 @@ const feedbackStepId = "step-feedback" as LessonStepId
 const now = new Date("2026-07-22T00:00:00.000Z")
 
 describe("content curriculum domain", () => {
-  it("course당 단일 draft를 선택하고 중복 draft를 conflict로 거절한다", () => {
-    const draft = createDraft()
-
-    expect(selectSingleDraft([])._unsafeUnwrap()).toBeNull()
-    expect(selectSingleDraft([draft])._unsafeUnwrap()).toBe(draft)
-    expect(selectSingleDraft([draft, draft])._unsafeUnwrapErr()).toEqual({
-      kind: "content-conflict",
-    })
-  })
-
   it("draft를 검증하고 version 범위의 AI target과 selectable ID를 강제한다", () => {
     expect(createCurriculumDraft(createDraft()).isOk()).toBe(true)
     expect(
@@ -63,7 +51,7 @@ describe("content curriculum domain", () => {
     })
   })
 
-  it("빈 hierarchy 발행과 published revision 변경을 명시적으로 거절한다", () => {
+  it("빈 hierarchy 발행을 명시적으로 거절한다", () => {
     const emptyDraft = { ...createDraft(), units: [] }
 
     expect(
@@ -75,9 +63,6 @@ describe("content curriculum domain", () => {
       kind: "content-validation-failed",
       reason: "empty-unit",
     })
-    expect(
-      assertCurriculumRevisionMutable("published")._unsafeUnwrapErr()
-    ).toEqual({ kind: "content-immutable-revision" })
   })
 
   it("active course만 archive하고 이미 archived인 course는 not-found로 처리한다", () => {

@@ -3,9 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   addLearningCalendarDays,
   calculateCurrentStreakDays,
-  createLearningActivityDatePolicy,
   groupLearningActivityDatesByUserId,
-  isLearningDateKeyInRange,
   toLearningDateKey,
   type LearningDateKey,
 } from "#learning/domain/learning-date"
@@ -19,15 +17,6 @@ describe("학습 활동일 정책", () => {
       "2026-06-15"
     )
   })
-
-  it("현재 학습일은 시스템 시간을 직접 읽지 않고 주입된 Clock만 사용한다", () => {
-    const policy = createLearningActivityDatePolicy({
-      now: () => new Date("2026-06-14T15:00:00.000Z"),
-    })
-
-    expect(policy.currentDateKey()).toBe("2026-06-15")
-  })
-
   it("학습 활동일은 UTC instant가 아니라 논리 날짜로 이동한다", () => {
     expect(addLearningCalendarDays(key("2026-12-31"), 1)).toBe("2027-01-01")
     expect(addLearningCalendarDays(key("2026-01-01"), -1)).toBe("2025-12-31")
@@ -77,21 +66,6 @@ describe("학습 활동일 정책", () => {
         ["user-2", ["2026-06-14"]],
       ])
     )
-  })
-
-  it("학습일 range 비교는 문자열 포맷의 정렬 가능성에만 의존한다", () => {
-    expect(
-      isLearningDateKeyInRange(key("2026-06-14"), {
-        end: key("2026-06-15"),
-        start: key("2026-06-13"),
-      })
-    ).toBe(true)
-    expect(
-      isLearningDateKeyInRange(key("2026-06-12"), {
-        end: key("2026-06-15"),
-        start: key("2026-06-13"),
-      })
-    ).toBe(false)
   })
 })
 

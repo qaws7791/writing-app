@@ -8,7 +8,6 @@ import {
   validateAiFeedbackAttemptPolicy,
   type AiFeedbackAttemptStatus,
 } from "#ai-feedback/domain/ai-feedback-attempt"
-import { isAiFeedbackErrorRetryable } from "#ai-feedback/domain/ai-feedback-error"
 import {
   createAsiaSeoulQuotaWindow,
   defaultAiFeedbackDailyQuotaPolicy,
@@ -117,29 +116,6 @@ describe("AI feedback domain", () => {
       })
     }
   )
-
-  it("영구 성공 한도만 즉시 재시도 불가로 분류한다", () => {
-    expect(
-      isAiFeedbackErrorRetryable({
-        kind: "attempt-limit-exceeded",
-        remainingAttempts: 0,
-      })
-    ).toBe(false)
-    expect(
-      isAiFeedbackErrorRetryable({
-        kind: "daily-quota-exceeded",
-        remainingAttempts: 2,
-        retryAfterSeconds: 60,
-      })
-    ).toBe(true)
-    expect(
-      isAiFeedbackErrorRetryable({
-        kind: "provider-timeout",
-        remainingAttempts: 2,
-      })
-    ).toBe(true)
-  })
-
   it("일일 success limit이 request limit보다 크면 quota 정책을 거절한다", () => {
     expect(
       validateAiFeedbackDailyQuotaPolicy({

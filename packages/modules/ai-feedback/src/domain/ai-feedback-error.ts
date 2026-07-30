@@ -25,7 +25,3 @@ export type AiFeedbackError =
       kind: "persistence-failed"
       operation: "fail-attempt" | "reserve-attempt" | "succeed-attempt"
     }>
-
-export function isAiFeedbackErrorRetryable(error: AiFeedbackError): boolean {
-  return error.kind !== "attempt-limit-exceeded"
-}

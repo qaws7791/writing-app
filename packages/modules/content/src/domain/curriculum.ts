@@ -56,21 +56,6 @@ export function decideArchiveCourse(
   })
 }
 
-export function assertCurriculumRevisionMutable(
-  status: "draft" | "published"
-): Result<void, ContentError> {
-  return status === "published"
-    ? err({ kind: "content-immutable-revision" })
-    : ok(undefined)
-}
-
-export function selectSingleDraft(
-  drafts: readonly CurriculumDraft[]
-): Result<CurriculumDraft | null, ContentError> {
-  if (drafts.length > 1) return err({ kind: "content-conflict" })
-  return ok(drafts[0] ?? null)
-}
-
 function validateCurriculumDraft(
   draft: CurriculumDraft,
   requireCompleteHierarchy: boolean

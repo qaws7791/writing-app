@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import {
-  requestAdminPasswordChange,
-  requestAdminPasswordLogin,
-} from "@/features/authentication/api/admin-auth-client"
+import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
 
 type StubbedFetch = ReturnType<typeof stubOkFetch>
 
@@ -50,20 +47,6 @@ describe("admin auth client", () => {
         password: "wrong-password",
       })
     ).rejects.toThrow("Failed to sign in")
-  })
-
-  it("비밀번호 변경 실패를 성공으로 삼키지 않는다", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(null, { status: 400 }))
-    )
-
-    await expect(
-      requestAdminPasswordChange({
-        currentPassword: "old-password",
-        newPassword: "new-password",
-      })
-    ).rejects.toThrow()
   })
 })
 

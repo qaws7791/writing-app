@@ -1,18 +1,7 @@
 import type { Brand } from "@workspace/types/brand"
-import type { Clock } from "@workspace/kernel/clock"
 import { toPlatformDayKey } from "@workspace/kernel/day-boundary"
 
 export type LearningDateKey = Brand<string, "LearningDateKey">
-
-export type LearningActivityDatePolicy = Readonly<{
-  currentDateKey: () => LearningDateKey
-}>
-
-export function createLearningActivityDatePolicy(
-  clock: Clock
-): LearningActivityDatePolicy {
-  return { currentDateKey: () => toLearningDateKey(clock.now()) }
-}
 
 export function toLearningDateKey(date: Date): LearningDateKey {
   return toPlatformDayKey(date) as LearningDateKey
@@ -34,26 +23,6 @@ export function addLearningCalendarDays(
   }
 
   return formatCalendarDate(current)
-}
-
-export function isLearningDateKeyInRange(
-  dateKey: LearningDateKey,
-  range: {
-    readonly end: LearningDateKey
-    readonly start: LearningDateKey
-  }
-): boolean {
-  return (
-    compareLearningDateKey(dateKey, range.start) >= 0 &&
-    compareLearningDateKey(dateKey, range.end) <= 0
-  )
-}
-
-function compareLearningDateKey(
-  left: LearningDateKey,
-  right: LearningDateKey
-): number {
-  return left.localeCompare(right)
 }
 
 export function groupLearningActivityDatesByUserId(
