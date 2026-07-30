@@ -87,7 +87,9 @@ describe("application database backup과 독립 restore", () => {
     } finally {
       rmSync(directory, { recursive: true })
     }
-  })
+    // 실제 콘텐츠 seed와 backup 검증을 수행하므로, 저장소 전체 병렬 실행에서
+    // CPU가 포화될 때 기본 5초 timeout을 넘긴다.
+  }, 20_000)
 
   it("migration 이력이 없는 DB는 backup 전에 차단한다", () => {
     const directory = mkdtempSync(join(tmpdir(), "writing-app-backup-block-"))

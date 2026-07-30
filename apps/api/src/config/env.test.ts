@@ -116,7 +116,7 @@ describe("통합 API env", () => {
         ...createTestEnvironment(),
         AI_FEEDBACK_PROVIDER_TIMEOUT_MS: "0",
       })
-    ).toThrow()
+    ).toThrow(/providerTimeoutMs/u)
   })
 
   it.each(["ADMIN_AUTH_SECRET", "LEARNER_AUTH_SECRET"] as const)(

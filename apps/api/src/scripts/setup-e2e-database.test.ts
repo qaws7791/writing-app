@@ -77,7 +77,9 @@ describe("E2E database setup", () => {
     } finally {
       rmSync(directory, { recursive: true })
     }
-  })
+    // 실제 콘텐츠 seed와 credential 해싱을 수행하므로, 저장소 전체 병렬 실행에서
+    // CPU가 포화될 때 기본 5초 timeout을 넘긴다.
+  }, 20_000)
 })
 
 function readTableNames(
