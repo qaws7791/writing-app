@@ -58,13 +58,13 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@workspace/typescript-config": "workspace:*",
+        "@workspace/vitest-config": "workspace:*",
         "babel-plugin-react-compiler": "catalog:",
         "jsdom": "catalog:",
         "msw": "catalog:",
         "tailwindcss": "catalog:",
         "tw-animate-css": "catalog:",
         "typescript": "catalog:",
-        "vite-tsconfig-paths": "catalog:",
         "vitest": "catalog:",
       },
     },
@@ -162,13 +162,13 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@workspace/typescript-config": "workspace:*",
+        "@workspace/vitest-config": "workspace:*",
         "babel-plugin-react-compiler": "catalog:",
         "jsdom": "catalog:",
         "msw": "catalog:",
         "tailwindcss": "catalog:",
         "tw-animate-css": "catalog:",
         "typescript": "catalog:",
-        "vite-tsconfig-paths": "catalog:",
         "vitest": "catalog:",
       },
     },
@@ -203,6 +203,19 @@
       },
       "dependencies": {
         "@typescript/native": "catalog:",
+      },
+    },
+    "packages/config/vitest-config": {
+      "name": "@workspace/vitest-config",
+      "version": "0.0.0",
+      "dependencies": {
+        "vite-tsconfig-paths": "catalog:",
+        "vitest": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "catalog:",
       },
     },
     "packages/infra/ai": {
@@ -469,6 +482,7 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@workspace/typescript-config": "workspace:*",
+        "@workspace/vitest-config": "workspace:*",
         "react": "catalog:",
         "react-dom": "catalog:",
         "typescript": "catalog:",
@@ -1458,6 +1472,8 @@
     "@workspace/typescript-config": ["@workspace/typescript-config@workspace:packages/config/typescript-config"],
 
     "@workspace/ui": ["@workspace/ui@workspace:packages/shared/ui"],
+
+    "@workspace/vitest-config": ["@workspace/vitest-config@workspace:packages/config/vitest-config"],
 
     "@workspace/web": ["@workspace/web@workspace:apps/web"],
 

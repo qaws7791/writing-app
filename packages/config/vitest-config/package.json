@@ -1,0 +1,22 @@
+{
+  "name": "@workspace/vitest-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./react": "./src/react.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "typecheck": "tsc7 --noEmit"
+  },
+  "dependencies": {
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

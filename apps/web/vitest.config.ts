@@ -1,8 +1,9 @@
 import { createRequire } from "node:module"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 
-import { defineConfig } from "vitest/config"
-import tsconfigPaths from "vite-tsconfig-paths"
+import { createReactVitestConfig } from "@workspace/vitest-config/react"
+import { defineConfig, mergeConfig } from "vitest/config"
 
 const require = createRequire(import.meta.url)
 const serverOnlyEmptyPath = path.join(
@@ -10,46 +11,16 @@ const serverOnlyEmptyPath = path.join(
   "empty.js"
 )
 
-export default defineConfig({
-  esbuild: {
-    jsx: "automatic",
-    jsxImportSource: "react",
-  },
-  plugins: [tsconfigPaths()],
-  resolve: {
-    alias: [
-      {
-        find: "server-only",
-        replacement: serverOnlyEmptyPath,
-      },
-      {
-        find: "react-dom/server",
-        replacement: require.resolve("react-dom/server"),
-      },
-      {
-        find: "react/jsx-dev-runtime",
-        replacement: require.resolve("react/jsx-dev-runtime"),
-      },
-      {
-        find: "react/jsx-runtime",
-        replacement: require.resolve("react/jsx-runtime"),
-      },
-      {
-        find: "react-dom/client",
-        replacement: require.resolve("react-dom/client"),
-      },
-      { find: "react-dom", replacement: require.resolve("react-dom") },
-      { find: "react", replacement: require.resolve("react") },
-    ],
-    dedupe: ["react", "react-dom"],
-  },
-  test: {
-    clearMocks: true,
-    environment: "jsdom",
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
-    restoreMocks: true,
-    setupFiles: ["./vitest.setup.ts"],
-    unstubEnvs: true,
-    unstubGlobals: true,
-  },
-})
+export default mergeConfig(
+  createReactVitestConfig({
+    packageDirectory: fileURLToPath(new URL(".", import.meta.url)),
+  }),
+  defineConfig({
+    resolve: {
+      alias: [{ find: "server-only", replacement: serverOnlyEmptyPath }],
+    },
+    test: {
+      environment: "jsdom",
+    },
+  })
+)
