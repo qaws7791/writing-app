@@ -48,7 +48,7 @@ export type LessonStepRendererProps = {
   readonly step: LessonStep
 }
 
-export const lessonStepRendererByType = {
+const lessonStepRendererByType = {
   AI_FEEDBACK: LessonAiFeedbackAnswer,
   CATEGORIZE: CategorizeAnswer,
   COMPARE: CompareStepView,

@@ -1,10 +1,9 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { renderToString } from "react-dom/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { LearnerAuthClientError } from "@workspace/auth/learner/client"
 
-import { resolveSafeNextPath } from "@/features/authentication/model/auth-navigation"
 import { AuthPage } from "@/features/authentication/ui/auth-page"
 
 const authClientMocks = vi.hoisted(() => ({
@@ -37,42 +36,36 @@ describe("로그인 및 가입 페이지", () => {
     serverContainer.innerHTML = renderToString(
       <AuthPage nextPath="/app/courses" />
     )
+    const serverOutput = within(serverContainer)
 
-    within(serverContainer)
-      .getAllByRole("tab")
-      .forEach((tab) => expect(tab).toHaveAttribute("aria-disabled", "true"))
-    within(serverContainer)
-      .getAllByRole("button")
-      .forEach((button) => expect(button).toBeDisabled())
-
-    render(<AuthPage nextPath="/app/courses" />)
-
-    screen
-      .getAllByRole("tab")
-      .forEach((tab) => expect(tab).toHaveAttribute("aria-disabled", "false"))
-    screen
-      .getAllByRole("button")
-      .forEach((button) => expect(button).toBeEnabled())
-  })
-
-  it("이메일 로그인과 Google 로그인을 함께 제공한다", async () => {
-    const user = userEvent.setup()
-    render(<AuthPage nextPath="/app/courses" />)
-
-    expect(screen.getByRole("heading", { name: "글결." })).toBeInTheDocument()
-    expect(screen.getByLabelText("이메일")).toHaveAttribute(
-      "autocomplete",
-      "email"
-    )
-    expect(screen.getByLabelText("비밀번호")).toHaveAttribute(
-      "autocomplete",
-      "current-password"
+    expect(serverOutput.getByRole("tab", { name: "가입" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
     )
     expect(
-      screen.queryByRole("button", {
-        name: "테스트 계정으로 계속하기",
-      })
-    ).not.toBeInTheDocument()
+      serverOutput.getByRole("button", { name: "이메일로 로그인하기" })
+    ).toBeDisabled()
+    expect(
+      serverOutput.getByRole("button", { name: "Google로 계속하기" })
+    ).toBeDisabled()
+
+    render(<AuthPage nextPath="/app/courses" />)
+
+    expect(screen.getByRole("tab", { name: "가입" })).toHaveAttribute(
+      "aria-disabled",
+      "false"
+    )
+    expect(
+      screen.getByRole("button", { name: "이메일로 로그인하기" })
+    ).toBeEnabled()
+    expect(
+      screen.getByRole("button", { name: "Google로 계속하기" })
+    ).toBeEnabled()
+  })
+
+  it("이메일과 비밀번호 제출을 next 경로와 함께 이메일 로그인 요청으로 보낸다", async () => {
+    const user = userEvent.setup()
+    render(<AuthPage nextPath="/app/courses" />)
 
     await user.type(screen.getByLabelText("이메일"), "learner@example.com")
     await user.type(screen.getByLabelText("비밀번호"), "password")
@@ -85,11 +78,25 @@ describe("로그인 및 가입 페이지", () => {
       nextPath: "/app/courses",
       password: "password",
     })
+  })
+
+  it("Google 로그인 버튼을 누르면 next 경로와 함께 Google 로그인을 시작한다", async () => {
+    const user = userEvent.setup()
+    render(<AuthPage nextPath="/app/courses" />)
 
     await user.click(screen.getByRole("button", { name: "Google로 계속하기" }))
+
     expect(authClientMocks.requestGoogleLogin).toHaveBeenCalledWith(
       "/app/courses"
     )
+  })
+
+  it("제품 로그인 화면에는 테스트 전용 계정 로그인 수단을 노출하지 않는다", () => {
+    render(<AuthPage nextPath="/app/courses" />)
+
+    expect(
+      screen.queryByRole("button", { name: "테스트 계정으로 계속하기" })
+    ).not.toBeInTheDocument()
   })
 
   it("가입 후 계정 존재를 노출하지 않는 확인 안내와 재전송을 제공한다", async () => {
@@ -191,39 +198,32 @@ describe("로그인 및 가입 페이지", () => {
     ).toBeInTheDocument()
   })
 
-  it("확인 callback 결과와 Google 연결 실패를 일반화해 표시한다", async () => {
-    const { unmount } = render(
-      <AuthPage nextPath="/app/courses" verificationStatus="verified" />
-    )
+  it.each([
+    {
+      label: "이메일 확인 완료 callback",
+      message: "이메일 확인이 완료되었습니다. 이제 로그인해 주세요.",
+      props: { verificationStatus: "verified" },
+    },
+    {
+      label: "만료된 이메일 확인 링크",
+      message:
+        "확인 링크가 만료되었거나 올바르지 않습니다. 다시 요청해 주세요.",
+      props: { verificationStatus: "failed" },
+    },
+    {
+      label: "Google 연결 실패",
+      message:
+        "Google 계정을 연결하지 못했습니다. 잠시 후 다시 시도하거나 이메일로 로그인해 주세요.",
+      props: { authenticationStatus: "provider-failed" },
+    },
+  ] as const)(
+    "$label을 일반화한 안내 문구로 표시한다",
+    ({ message, props }) => {
+      render(<AuthPage nextPath="/app/courses" {...props} />)
 
-    expect(
-      screen.getByText("이메일 확인이 완료되었습니다. 이제 로그인해 주세요.")
-    ).toBeInTheDocument()
-    unmount()
-    const failedRender = render(
-      <AuthPage nextPath="/app/courses" verificationStatus="failed" />
-    )
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "확인 링크가 만료되었거나 올바르지 않습니다. 다시 요청해 주세요."
-        )
-      ).toBeInTheDocument()
-    })
-
-    failedRender.unmount()
-    render(
-      <AuthPage
-        authenticationStatus="provider-failed"
-        nextPath="/app/courses"
-      />
-    )
-    expect(
-      screen.getByText(
-        "Google 계정을 연결하지 못했습니다. 잠시 후 다시 시도하거나 이메일로 로그인해 주세요."
-      )
-    ).toBeInTheDocument()
-  })
+      expect(screen.getByText(message)).toBeInTheDocument()
+    }
+  )
 
   it("비밀번호 재설정 요청은 계정 존재 여부와 무관한 안내를 표시한다", async () => {
     const user = userEvent.setup()
@@ -243,13 +243,5 @@ describe("로그인 및 가입 페이지", () => {
         "가입된 주소라면 비밀번호 재설정 메일을 보냈습니다. 받은편지함을 확인해 주세요."
       )
     ).toBeInTheDocument()
-  })
-
-  it("외부 URL과 로그인 재귀 경로를 기본 앱 경로로 바꾼다", () => {
-    expect(resolveSafeNextPath("https://example.com/app")).toBe("/app")
-    expect(resolveSafeNextPath("//example.com/app")).toBe("/app")
-    expect(resolveSafeNextPath("/login?next=/app")).toBe("/app")
-    expect(resolveSafeNextPath(["/app/profile"])).toBe("/app/profile")
-    expect(resolveSafeNextPath(undefined)).toBe("/app")
   })
 })

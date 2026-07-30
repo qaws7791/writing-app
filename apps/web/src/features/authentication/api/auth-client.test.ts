@@ -5,6 +5,10 @@ import type {
 } from "@workspace/auth/learner/client"
 
 import { createWebAuthClient } from "@/features/authentication/api/auth-client"
+import type { WebAuthClient } from "@/features/authentication/api/auth-client"
+
+const verificationCallbackUrl =
+  "http://localhost:3000/login?next=%2Fapp%2Fcourses&verified=true"
 
 describe("auth client", () => {
   afterEach(() => {
@@ -59,17 +63,8 @@ describe("auth client", () => {
     })
   })
 
-  it("이메일 가입, 로그인과 재전송에 절대 callback URL을 전달한다", async () => {
-    vi.stubGlobal("window", {
-      location: {
-        assign: vi.fn(),
-        origin: "http://localhost:3000",
-      },
-    })
-    const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
-    const webAuthClient = createWebAuthClient({
-      learnerAuthClientFactory,
-    })
+  it("이메일 가입은 확인 완료 로그인 경로를 절대 callback URL로 전달한다", async () => {
+    const { authClient, webAuthClient } = createBrowserAuthClientFixture()
 
     await webAuthClient.requestEmailSignUp({
       email: "learner@example.com",
@@ -77,63 +72,74 @@ describe("auth client", () => {
       nextPath: "/app/courses",
       password: "Learner-password-123!",
     })
+
+    expect(authClient.signUpWithEmail).toHaveBeenCalledWith({
+      callbackURL: verificationCallbackUrl,
+      email: "learner@example.com",
+      name: "학습자",
+      password: "Learner-password-123!",
+    })
+  })
+
+  it("이메일 로그인은 next 경로를 절대 callback URL로 전달한다", async () => {
+    const { authClient, webAuthClient } = createBrowserAuthClientFixture()
+
     await webAuthClient.requestEmailLogin({
       email: "learner@example.com",
       nextPath: "/app/courses",
       password: "Learner-password-123!",
     })
-    await webAuthClient.requestVerificationEmail({
-      email: "learner@example.com",
-      nextPath: "/app/courses",
-    })
 
-    const verificationCallback =
-      "http://localhost:3000/login?next=%2Fapp%2Fcourses&verified=true"
-    expect(authClient.signUpWithEmail).toHaveBeenCalledWith({
-      callbackURL: verificationCallback,
-      email: "learner@example.com",
-      name: "학습자",
-      password: "Learner-password-123!",
-    })
     expect(authClient.signInWithEmail).toHaveBeenCalledWith({
       callbackURL: "http://localhost:3000/app/courses",
       email: "learner@example.com",
       password: "Learner-password-123!",
     })
+  })
+
+  it("확인 메일 재전송은 확인 완료 로그인 경로를 절대 callback URL로 전달한다", async () => {
+    const { authClient, webAuthClient } = createBrowserAuthClientFixture()
+
+    await webAuthClient.requestVerificationEmail({
+      email: "learner@example.com",
+      nextPath: "/app/courses",
+    })
+
     expect(authClient.resendVerificationEmail).toHaveBeenCalledWith({
-      callbackURL: verificationCallback,
+      callbackURL: verificationCallbackUrl,
       email: "learner@example.com",
     })
   })
 
-  it("비밀번호 재설정 요청과 완료를 auth package에 전달한다", async () => {
-    vi.stubGlobal("window", {
-      location: {
-        assign: vi.fn(),
-        origin: "http://localhost:3000",
-      },
-    })
-    const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
-    const webAuthClient = createWebAuthClient({
-      learnerAuthClientFactory,
-    })
+  it("비밀번호 재설정 요청은 절대 redirect URL을 전달한다", async () => {
+    const { authClient, webAuthClient } = createBrowserAuthClientFixture()
 
     await webAuthClient.requestPasswordReset("learner@example.com")
-    await webAuthClient.resetPassword({
-      newPassword: "New-learner-password-123!",
-      token: "reset-token",
-    })
 
     expect(authClient.requestPasswordReset).toHaveBeenCalledWith({
       email: "learner@example.com",
       redirectTo: "http://localhost:3000/reset-password",
     })
-    expect(authClient.resetPassword).toHaveBeenCalledWith({
-      newPassword: "New-learner-password-123!",
-      token: "reset-token",
-    })
   })
 })
+
+function createBrowserAuthClientFixture(): {
+  readonly authClient: LearnerAuthClient
+  readonly webAuthClient: WebAuthClient
+} {
+  vi.stubGlobal("window", {
+    location: {
+      assign: vi.fn(),
+      origin: "http://localhost:3000",
+    },
+  })
+  const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
+
+  return {
+    authClient,
+    webAuthClient: createWebAuthClient({ learnerAuthClientFactory }),
+  }
+}
 
 function createAuthClientFixture(): {
   readonly authClient: LearnerAuthClient

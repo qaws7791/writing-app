@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   createLessonSessionState,
   transitionLessonSession,
+  type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
 import { learnerCompleteStepResponseSchema } from "@workspace/contracts/learning/learner-api"
 import {
@@ -77,20 +78,6 @@ describe("lesson session machine", () => {
   })
 
   it("accepted 전이를 확인한 뒤 서버가 준 index로 이동한다", () => {
-    const transition = learnerCompleteStepResponseSchema.parse({
-      evaluation: null,
-      learning: {
-        completedSteps: 1,
-        currentStepId: "step-2",
-        currentStepIndex: 1,
-        progressPercent: 50,
-        status: "in_progress",
-        totalSteps: 2,
-        version: { curriculumVersionId: "version-1", revision: 1 },
-      },
-      status: "advanced",
-    })
-    if (transition.status === "retry") throw new Error("advanced가 필요합니다.")
     const accepted = transitionLessonSession(
       createLessonSessionState(
         0,
@@ -99,7 +86,7 @@ describe("lesson session machine", () => {
         { "step-write": { text: "AI 대상 답안", type: "WRITE" } },
         0
       ),
-      { transition, type: "STEP_ACCEPTED" }
+      { transition: createAdvancedTransitionFixture(), type: "STEP_ACCEPTED" }
     )
     const continued = transitionLessonSession(accepted, {
       type: "ACCEPTED_CONTINUE_REQUESTED",
@@ -114,4 +101,72 @@ describe("lesson session machine", () => {
       status: "active",
     })
   })
+
+  it("제출 실패는 오류만 남기고 답안과 현재 step을 보존한다", () => {
+    const failed = transitionLessonSession(createSubmittingSession(), {
+      message: "제출을 완료하지 못했습니다.",
+      type: "SUBMIT_FAILED",
+    })
+
+    expect(failed).toMatchObject({
+      activity: "idle",
+      answerPayloads: {
+        "step-1": { selectedOptionId: "option-1", type: "MULTIPLE_CHOICE" },
+      },
+      checked: false,
+      currentStepIndex: 0,
+      status: "active",
+      submitError: "제출을 완료하지 못했습니다.",
+    })
+  })
+
+  it("제출 중에는 답안 변경 event를 거부한다", () => {
+    expect(() =>
+      transitionLessonSession(createSubmittingSession(), {
+        payload: learnerStepSubmissionSchema.parse({
+          selectedOptionId: "option-2",
+          type: "MULTIPLE_CHOICE",
+        }),
+        stepId: "step-1",
+        type: "ANSWER_PAYLOAD_CHANGED",
+      })
+    ).toThrow(
+      "레슨 세션의 active 상태에서는 ANSWER_PAYLOAD_CHANGED event를 처리할 수 없습니다."
+    )
+  })
 })
+
+function createSubmittingSession(): LessonSessionState {
+  const active = transitionLessonSession(createLessonSessionState(0, true), {
+    payload: learnerStepSubmissionSchema.parse({
+      selectedOptionId: "option-1",
+      type: "MULTIPLE_CHOICE",
+    }),
+    stepId: "step-1",
+    type: "ANSWER_PAYLOAD_CHANGED",
+  })
+
+  return transitionLessonSession(active, { type: "SUBMIT_REQUESTED" })
+}
+
+function createAdvancedTransitionFixture() {
+  const transition = learnerCompleteStepResponseSchema.parse({
+    evaluation: null,
+    learning: {
+      completedSteps: 1,
+      currentStepId: "step-2",
+      currentStepIndex: 1,
+      progressPercent: 50,
+      status: "in_progress",
+      totalSteps: 2,
+      version: { curriculumVersionId: "version-1", revision: 1 },
+    },
+    status: "advanced",
+  })
+
+  if (transition.status === "retry") {
+    throw new Error("advanced 전이 fixture가 필요합니다.")
+  }
+
+  return transition
+}

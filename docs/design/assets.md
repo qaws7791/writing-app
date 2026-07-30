@@ -75,12 +75,12 @@
 - `sentence-structure.png`
 - `vocabulary-basics.png`
 
-이미지 URL 생성은 `apps/web/src/entities/course/model/course-visual-assets.ts`의 `createCourseImageUrl`을 사용한다. 화면에서 경로를 직접 조합하지 않는다.
+이미지 URL 생성은 `apps/web/src/entities/course/model/course-visual-assets.ts`의 `resolveCourseImage`를 사용한다. 화면에서 경로를 직접 조합하지 않는다.
 
 ## 이미지 사용 원칙
 
 - 코스 카드와 코스 상세는 실제 코스 식별에 도움이 되는 썸네일을 사용한다.
-- 공개 랜딩의 제품 미리보기도 현재 코스 콘텐츠와 `createCourseImageUrl`의 실제 썸네일을 재사용한다. 제품 mock은 실제 학습자 UI와 콘텐츠 계약에 맞춰 작성하고 범용 예시 화면으로 대체하지 않는다.
+- 공개 랜딩의 제품 미리보기도 현재 코스 콘텐츠와 `resolveCourseImage`의 실제 썸네일을 재사용한다. 제품 mock은 실제 학습자 UI와 콘텐츠 계약에 맞춰 작성하고 범용 예시 화면으로 대체하지 않는다.
 - `next/image`를 우선 사용한다. 앱 UI-facing 파일에 native `<img>`를 새로 추가하지 않는다.
 - 반응형 이미지는 실제 레이아웃 폭에 맞는 `sizes`를 명시한다.
 - 임의 외부 placeholder 이미지는 코스 식별을 대신하지 않는다.

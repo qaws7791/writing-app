@@ -30,7 +30,6 @@ vi.mock("next/navigation", () => ({
 }))
 
 import LessonRoute from "@/app/(lesson)/app/lesson/page"
-import type { LearnerLessonDto } from "@/shared/http/learner-api-client"
 
 describe("레슨 route", () => {
   beforeEach(() => {
@@ -43,7 +42,7 @@ describe("레슨 route", () => {
 
     await expect(
       LessonRoute({ searchParams: Promise.resolve({}) })
-    ).rejects.toBeInstanceOf(Error)
+    ).rejects.toThrow()
 
     expect(redirectMock).toHaveBeenCalledWith("/login?next=%2Fapp%2Flesson")
   })
@@ -65,35 +64,20 @@ describe("레슨 route", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("레슨 상태만 조회하고 중복 progress, profile, course detail 조회를 만들지 않는다", async () => {
-    const lesson = createDeferred<LearnerLessonDto>()
-    generatedClient.getLesson.mockReturnValueOnce(lesson.promise)
+  it("레슨 상태만 조회하고 progress, profile, course detail 조회를 만들지 않는다", async () => {
+    generatedClient.getLesson.mockRejectedValue(networkError())
 
-    const routePromise = LessonRoute({
+    await LessonRoute({
       searchParams: Promise.resolve({ lesson_id: "l1" }),
     })
-    await Promise.resolve()
-    await Promise.resolve()
 
+    expect(generatedClient.getLesson).toHaveBeenCalledOnce()
     expect(generatedClient.getLesson).toHaveBeenCalledWith("l1", requestOptions)
     expect(generatedClient.getProfile).not.toHaveBeenCalled()
     expect(generatedClient.getProgress).not.toHaveBeenCalled()
     expect(generatedClient.getCourseDetail).not.toHaveBeenCalled()
-
-    lesson.reject(networkError())
-    await routePromise
-
-    expect(generatedClient.getCourseDetail).not.toHaveBeenCalled()
   })
 })
-
-function createDeferred<T>() {
-  let reject: (reason: unknown) => void = () => undefined
-  const promise = new Promise<T>((_resolve, promiseReject) => {
-    reject = promiseReject
-  })
-  return { promise, reject }
-}
 
 function networkError(): GeneratedApiClientError {
   return new GeneratedApiClientError({

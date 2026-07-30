@@ -43,8 +43,8 @@ describe("비밀번호 재설정 페이지", () => {
     ).toBeInTheDocument()
   })
 
-  it("사용할 수 없는 token과 provider 원문을 동일한 안내로 표시한다", async () => {
-    const { unmount } = render(<PasswordResetPage token={undefined} />)
+  it("token이 없으면 안내를 표시하고 변경 제출을 막는다", () => {
+    render(<PasswordResetPage token={undefined} />)
 
     expect(
       screen.getByText("재설정 링크가 만료되었거나 이미 사용되었습니다.")
@@ -52,13 +52,15 @@ describe("비밀번호 재설정 페이지", () => {
     expect(
       screen.getByRole("button", { name: "비밀번호 변경하기" })
     ).toBeDisabled()
+  })
 
-    unmount()
+  it("이미 사용된 token의 provider 오류를 동일한 안내로 일반화한다", async () => {
     authClientMocks.resetPassword.mockRejectedValueOnce(
       new LearnerAuthClientError("invalid-reset-token")
     )
     const user = userEvent.setup()
     render(<PasswordResetPage token="used-token" />)
+
     await user.type(
       screen.getByLabelText("새 비밀번호"),
       "New-learner-password-123!"

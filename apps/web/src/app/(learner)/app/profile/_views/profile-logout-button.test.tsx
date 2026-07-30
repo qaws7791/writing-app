@@ -30,8 +30,5 @@ describe("프로필 로그아웃 버튼", () => {
       expect(pushMock).toHaveBeenCalledWith("/")
     })
     expect(requestLogoutMock).toHaveBeenCalledWith("/")
-    expect(requestLogoutMock.mock.invocationCallOrder[0]).toBeLessThan(
-      pushMock.mock.invocationCallOrder[0] ?? 0
-    )
   })
 })

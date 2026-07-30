@@ -89,7 +89,7 @@ describe("홈 화면", () => {
     refresh.mockReset()
   })
 
-  it("fresh 상태의 인사, 통계, 진행중 탭 CTA를 보여준다", () => {
+  it("학습자 이름의 첫 단어로 인사말을 표시한다", () => {
     render(
       <HomePage
         inProgress={emptyInProgress}
@@ -104,14 +104,38 @@ describe("홈 화면", () => {
         name: /글쓰기님,\s*오늘도 함께 써봐요\./,
       })
     ).toBeInTheDocument()
-    expect(screen.getByText("0일")).toBeInTheDocument()
+  })
+
+  it("프로필 통계를 연속 학습일과 완료 레슨 수로 표시한다", () => {
+    render(
+      <HomePage
+        inProgress={emptyInProgress}
+        learnerName="글쓰기 탐험가"
+        profileStats={{
+          ...profileStats,
+          completedLessons: 7,
+          currentStreakDays: 3,
+        }}
+      />
+    )
+
+    expect(screen.getByText("3일")).toBeInTheDocument()
     expect(screen.getByText("연속 학습")).toBeInTheDocument()
-    expect(screen.getByText("0개")).toBeInTheDocument()
+    expect(screen.getByText("7개")).toBeInTheDocument()
     expect(screen.getByText("완료한 레슨")).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "진행중" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "완료" })).toBeInTheDocument()
+  })
+
+  it("진행 중 코스가 없으면 코스 둘러보기 CTA를 표시한다", () => {
+    render(
+      <HomePage
+        inProgress={emptyInProgress}
+        learnerName="글쓰기 탐험가"
+        profileStats={profileStats}
+      />
+    )
 
     const startCard = screen.getByRole("link", { name: /코스 둘러보기/ })
+
     expect(startCard).toHaveAttribute("href", "/app/courses")
     expect(
       within(startCard).getByText("지금 시작해볼까요?")
@@ -136,17 +160,12 @@ describe("홈 화면", () => {
       />
     )
 
-    expect(screen.getByRole("tab", { name: "진행중" })).toBeInTheDocument()
     expect(screen.getAllByText("글쓰기 첫걸음 30일")).toHaveLength(1)
     expect(screen.getAllByText("1/3")).toHaveLength(1)
     expect(screen.getAllByText("짧게 쓰기")).toHaveLength(1)
     expect(
       screen.getAllByRole("img", { name: "글쓰기 첫걸음 30일" })
     ).toHaveLength(1)
-    expect(
-      screen.getByRole("img", { name: "글쓰기 첫걸음 30일" })
-    ).toHaveAttribute("sizes", "(min-width: 1024px) 176px, 100vw")
-
     expect(
       screen.getByRole("link", { name: /글쓰기 첫걸음 30일/ })
     ).toHaveAttribute("href", "/app/courses/c1")

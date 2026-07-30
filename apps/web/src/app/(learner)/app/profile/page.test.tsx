@@ -37,7 +37,7 @@ describe("프로필 route", () => {
       httpError("UNAUTHENTICATED", 401, "로그인이 필요합니다.")
     )
 
-    await expect(ProfileRoute()).rejects.toBeInstanceOf(Error)
+    await expect(ProfileRoute()).rejects.toThrow()
     expect(redirectMock).toHaveBeenCalledWith("/login?next=%2Fapp%2Fprofile")
   })
 

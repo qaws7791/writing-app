@@ -42,16 +42,13 @@ describe("콘텐츠 이미지 origin 허용 목록", () => {
     ).toBe("https://assets.example.test")
   })
 
-  it("개발 localhost HTTP만 허용하고 production HTTP는 거부한다", () => {
-    const developmentBaseUrl = parseBaseUrl(
-      "http://127.0.0.1:4199/content-assets",
-      "development"
-    )
+  it("개발 localhost HTTP origin을 원격 pattern으로 허용한다", () => {
     const developmentOrigins = resolveContentAssetImageAllowedOrigins(
       [],
-      developmentBaseUrl,
+      parseBaseUrl("http://127.0.0.1:4199/content-assets", "development"),
       true
     )
+
     expect(createContentAssetRemotePatterns(developmentOrigins)).toEqual([
       {
         hostname: "127.0.0.1",
@@ -61,20 +58,43 @@ describe("콘텐츠 이미지 origin 허용 목록", () => {
         search: "",
       },
     ])
-    expect(shouldAllowLocalContentAssetImages(developmentOrigins, true)).toBe(
-      true
-    )
-    expect(shouldAllowLocalContentAssetImages(developmentOrigins, false)).toBe(
-      false
-    )
-    expect(
-      shouldAllowLocalContentAssetImages(
-        [new URL("http://assets.example.test")],
-        true
+  })
+
+  it.each([
+    {
+      allowLocal: true,
+      expected: true,
+      label: "로컬 origin이 허용 목록에 있고 로컬 허용이 켜지면",
+      origins: [new URL("http://127.0.0.1:4199")],
+    },
+    {
+      allowLocal: false,
+      expected: false,
+      label: "로컬 허용이 꺼지면",
+      origins: [new URL("http://127.0.0.1:4199")],
+    },
+    {
+      allowLocal: true,
+      expected: false,
+      label: "공개 origin만 허용 목록에 있으면",
+      origins: [new URL("http://assets.example.test")],
+    },
+  ])(
+    "$label 로컬 이미지 허용을 $expected로 판단한다",
+    ({ allowLocal, expected, origins }) => {
+      expect(shouldAllowLocalContentAssetImages(origins, allowLocal)).toBe(
+        expected
       )
-    ).toBe(false)
+    }
+  )
+
+  it("로컬 허용이 꺼지면 개발 base URL도 허용 목록에 넣지 않는다", () => {
     expect(
-      resolveContentAssetImageAllowedOrigins([], developmentBaseUrl, false)
+      resolveContentAssetImageAllowedOrigins(
+        [],
+        parseBaseUrl("http://127.0.0.1:4199/content-assets", "development"),
+        false
+      )
     ).toEqual([])
   })
 })

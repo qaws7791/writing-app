@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
@@ -45,6 +45,11 @@ const grammarCourse: LearnerCourseSummaryDto = {
   version: { curriculumVersionId: "c2-v1", revision: 1 },
 }
 describe("코스 목록 화면", () => {
+  beforeEach(() => {
+    getCourses.mockReset()
+    refresh.mockReset()
+  })
+
   it("카테고리 탐색과 코스 목록을 보여준다", () => {
     render(
       <CoursesPage
@@ -54,9 +59,6 @@ describe("코스 목록 화면", () => {
       />
     )
 
-    expect(
-      screen.queryByRole("combobox", { name: "정렬" })
-    ).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: "문법 심화" })).toHaveAttribute(
       "href",
       "/app/courses?category=%EB%AC%B8%EB%B2%95+%EC%8B%AC%ED%99%94"
@@ -66,6 +68,26 @@ describe("코스 목록 화면", () => {
       "/app/courses/c2"
     )
     expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
+  })
+
+  it("카테고리 필터가 적용된 상태의 더 보기는 같은 카테고리로만 다음 페이지를 요청한다", async () => {
+    const user = userEvent.setup()
+    getCourses.mockResolvedValueOnce({ items: [], nextCursor: null })
+    render(
+      <CoursesPage
+        categories={["입문자를 위한 코스", "문법 심화"]}
+        courses={[grammarCourse]}
+        filters={{ category: "문법 심화" }}
+        nextCursor="next-page"
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "코스 더 보기" }))
+
+    expect(getCourses).toHaveBeenCalledWith(
+      { category: "문법 심화", cursor: "next-page" },
+      { signal: expect.any(AbortSignal) }
+    )
   })
 
   it("카테고리에 코스가 없으면 전체 코스 링크를 보여준다", () => {
@@ -95,9 +117,6 @@ describe("코스 목록 화면", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "아직 열려 있는 코스가 없습니다."
     )
-    expect(
-      screen.queryByRole("link", { name: /글쓰기 첫걸음 30일/ })
-    ).not.toBeInTheDocument()
   })
 
   it.each([
@@ -120,6 +139,7 @@ describe("코스 목록 화면", () => {
       "API 계약을 해석할 수 없습니다.",
     ],
   ])("%s 실패를 더 보기 오류로 보여준다", async (_kind, error, message) => {
+    const user = userEvent.setup()
     getCourses.mockRejectedValueOnce(error)
     render(
       <CoursesPage
@@ -130,12 +150,13 @@ describe("코스 목록 화면", () => {
       />
     )
 
-    await userEvent.click(screen.getByRole("button", { name: "코스 더 보기" }))
+    await user.click(screen.getByRole("button", { name: "코스 더 보기" }))
 
     expect(await screen.findByRole("alert")).toHaveTextContent(message)
   })
 
   it("더 보기 중 401이면 서버 route를 다시 확인한다", async () => {
+    const user = userEvent.setup()
     getCourses.mockRejectedValueOnce(
       new GeneratedApiClientError({
         error: {
@@ -158,7 +179,7 @@ describe("코스 목록 화면", () => {
       />
     )
 
-    await userEvent.click(screen.getByRole("button", { name: "코스 더 보기" }))
+    await user.click(screen.getByRole("button", { name: "코스 더 보기" }))
 
     expect(refresh).toHaveBeenCalledOnce()
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()

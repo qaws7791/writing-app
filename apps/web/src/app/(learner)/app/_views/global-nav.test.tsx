@@ -10,16 +10,13 @@ vi.mock("next/navigation", () => ({
 }))
 
 describe("전역 내비게이션", () => {
-  it("현재 제품 header의 내부 이동을 링크 의미론으로 제공한다", async () => {
-    const user = userEvent.setup()
-
+  it("header 브랜드와 주요 링크의 목적지를 링크 의미론으로 제공한다", () => {
     render(<GlobalNav currentPath="/app/profile" />)
 
     expect(screen.getByRole("link", { name: "글결." })).toHaveAttribute(
       "href",
       "/app"
     )
-
     expect(screen.getByRole("link", { name: "홈" })).toHaveAttribute(
       "href",
       "/app"
@@ -28,12 +25,24 @@ describe("전역 내비게이션", () => {
       "href",
       "/app/courses"
     )
+  })
+
+  it("이모지 계정 메뉴 트리거는 이모지 대신 접근 가능한 이름을 노출한다", () => {
+    render(<GlobalNav currentPath="/app/profile" />)
+
+    expect(screen.getByRole("button", { name: "계정 메뉴" })).toHaveTextContent(
+      "✍️"
+    )
+    expect(screen.queryByRole("button", { name: "✍️" })).not.toBeInTheDocument()
+  })
+
+  it("계정 메뉴 트리거를 누르면 메뉴를 열고 계정 항목을 노출한다", async () => {
+    const user = userEvent.setup()
+    render(<GlobalNav currentPath="/app/profile" />)
 
     const accountMenuTrigger = screen.getByRole("button", {
       name: "계정 메뉴",
     })
-
-    expect(screen.queryByRole("button", { name: "✍️" })).not.toBeInTheDocument()
     expect(accountMenuTrigger).toHaveAttribute("aria-expanded", "false")
 
     await user.click(accountMenuTrigger)
@@ -41,11 +50,7 @@ describe("전역 내비게이션", () => {
     expect(
       await screen.findByRole("menu", { name: "계정 메뉴" })
     ).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "계정 메뉴" })).toHaveAttribute(
-      "aria-expanded",
-      "true"
-    )
-
+    expect(accountMenuTrigger).toHaveAttribute("aria-expanded", "true")
     expect(
       await screen.findByRole("menuitem", { name: "프로필" })
     ).toHaveAttribute("href", "/app/profile")

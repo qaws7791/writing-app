@@ -50,22 +50,26 @@ describe("createLessonSessionEffects", () => {
     generatedClient.startLearnerLesson.mockReset()
   })
 
-  it("생성 클라이언트 호출에 lesson 범위와 body를 전달한다", async () => {
+  it("레슨 시작 요청에 lesson 범위와 기대 curriculum version을 전달한다", async () => {
     generatedClient.startLearnerLesson.mockResolvedValue(start)
-    generatedClient.completeLearnerStep.mockResolvedValue(advanced)
-    const effects = createEffects()
 
-    await effects.start()
-    await effects.completeStep({
-      request: { kind: "acknowledge" },
-      stepId: "step-1",
-    })
+    await createEffects().start()
 
     expect(generatedClient.startLearnerLesson).toHaveBeenCalledWith(
       "lesson-1",
       { expectedCurriculumVersionId: "version-1" },
       { signal: abortSignal }
     )
+  })
+
+  it("step 완료 요청에 lesson·step 범위와 전이 body를 전달한다", async () => {
+    generatedClient.completeLearnerStep.mockResolvedValue(advanced)
+
+    await createEffects().completeStep({
+      request: { kind: "acknowledge" },
+      stepId: "step-1",
+    })
+
     expect(generatedClient.completeLearnerStep).toHaveBeenCalledWith(
       "lesson-1",
       "step-1",
@@ -170,12 +174,11 @@ describe("createLessonSessionEffects", () => {
           idempotencyKey: "feedback-1",
           stepId: "step-ai",
         })
-      ).resolves.toMatchObject({
+      ).resolves.toEqual({
         kind: expected.kind,
+        message: expect.any(String),
+        retryAfterSeconds: expected.retryAfterSeconds,
         reuseIdempotencyKey: expected.reuseIdempotencyKey,
-        ...(expected.retryAfterSeconds === undefined
-          ? {}
-          : { retryAfterSeconds: expected.retryAfterSeconds }),
         status: "error",
       })
     }

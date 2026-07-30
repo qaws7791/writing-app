@@ -29,8 +29,10 @@ vi.mock("next/navigation", () => ({
 }))
 
 import AppHomeRoute from "@/app/(learner)/app/page"
-import { emptyLearnerProgressFixture } from "@/test/learner-api-fixtures"
-import { learnerProfileFixture } from "@/test/learner-api-fixtures"
+import {
+  emptyLearnerProgressFixture,
+  learnerProfileFixture,
+} from "@/test/learner-api-fixtures"
 import type { LearnerProfileDto } from "@/shared/http/learner-api-client"
 
 const profile: LearnerProfileDto = {
@@ -104,7 +106,7 @@ describe("앱 홈 route", () => {
     )
     generatedClient.getProgress.mockResolvedValue(emptyProgress)
 
-    await expect(AppHomeRoute()).rejects.toBeInstanceOf(Error)
+    await expect(AppHomeRoute()).rejects.toThrow()
     expect(redirectMock).toHaveBeenCalledWith("/login?next=%2Fapp")
   })
 })

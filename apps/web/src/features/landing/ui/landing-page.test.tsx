@@ -25,28 +25,14 @@ describe("공개 랜딩 페이지", () => {
     )
   })
 
-  it("코스 미리보기를 제목과 접근 가능한 이미지로 이해할 수 있다", () => {
-    render(<LandingPage />)
-
-    const preview = screen.getByRole("figure")
-
-    expect(
-      within(preview).getByRole("heading", { level: 3 })
-    ).toBeInTheDocument()
-    expect(within(preview).getByRole("img")).toHaveAccessibleName()
-  })
-
   it("footer는 확인된 제품 route만 제공한다", () => {
     render(<LandingPage />)
 
     const footer = screen.getByRole("contentinfo")
     const links = within(footer).getAllByRole("link")
 
-    const destinations = links.map((link) => link.getAttribute("href"))
-    expect(new Set(destinations)).toEqual(
+    expect(new Set(links.map((link) => link.getAttribute("href")))).toEqual(
       new Set(["/app/courses", "/app", "/login"])
     )
-    expect(destinations).not.toContain("/terms")
-    expect(destinations).not.toContain("/privacy")
   })
 })

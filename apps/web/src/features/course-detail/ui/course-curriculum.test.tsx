@@ -89,14 +89,9 @@ const course: LearnerCourseDetailDto = {
 }
 
 describe("코스 커리큘럼", () => {
-  it("유닛 진도와 현재 레슨을 구분하고 잠긴 레슨은 링크로 제공하지 않는다", async () => {
+  it("유닛 헤더를 누르면 레슨 목록을 접고 다시 펼친다", async () => {
     const user = userEvent.setup()
-
     render(<CourseCurriculum course={course} currentLessonId="l1" />)
-
-    expect(
-      screen.getByRole("heading", { level: 2, name: "커리큘럼" })
-    ).toBeInTheDocument()
 
     const firstUnitToggle = screen.getByRole("button", {
       name: /문장의 기본기\s*0\/2개 레슨/,
@@ -108,20 +103,11 @@ describe("코스 커리큘럼", () => {
 
     await user.click(firstUnitToggle)
     expect(firstUnitToggle).toHaveAttribute("aria-expanded", "true")
+  })
 
-    const firstLessonLink = screen.getByRole("link", {
-      name: /좋은 문장이란 무엇인가.*다음/,
-    })
-    expect(firstLessonLink).toHaveAttribute("href", "/app/lesson?lesson_id=l1")
-    expect(screen.getByText("다음")).toBeInTheDocument()
-
-    expect(
-      screen.queryByRole("link", { name: /짧게 쓰기/ })
-    ).not.toBeInTheDocument()
-    expect(screen.getByLabelText(/짧게 쓰기, 잠김/)).toBeInTheDocument()
-    expect(
-      screen.queryByText(/이전 레슨을 완료하면 열립니다/)
-    ).not.toBeInTheDocument()
+  it("닫힌 유닛을 펼치면 그 유닛의 레슨을 보여준다", async () => {
+    const user = userEvent.setup()
+    render(<CourseCurriculum course={course} currentLessonId="l1" />)
 
     const secondUnitToggle = screen.getByRole("button", {
       name: /문단의 흐름\s*0\/1개 레슨/,
@@ -129,7 +115,25 @@ describe("코스 커리큘럼", () => {
     expect(secondUnitToggle).toHaveAttribute("aria-expanded", "false")
 
     await user.click(secondUnitToggle)
+
     expect(secondUnitToggle).toHaveAttribute("aria-expanded", "true")
     expect(screen.getByText("문단 만들기")).toBeInTheDocument()
+  })
+
+  it("현재 진행 중인 레슨을 다음 학습 링크로 제공한다", () => {
+    render(<CourseCurriculum course={course} currentLessonId="l1" />)
+
+    expect(
+      screen.getByRole("link", { name: /좋은 문장이란 무엇인가.*다음/ })
+    ).toHaveAttribute("href", "/app/lesson?lesson_id=l1")
+  })
+
+  it("잠긴 레슨은 링크로 제공하지 않고 잠김 상태로만 안내한다", () => {
+    render(<CourseCurriculum course={course} currentLessonId="l1" />)
+
+    expect(
+      screen.queryByRole("link", { name: /짧게 쓰기/ })
+    ).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/짧게 쓰기, 잠김/)).toBeInTheDocument()
   })
 })

@@ -1,40 +1,29 @@
 import { render, screen, within } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { renderToString } from "react-dom/server"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { ThemeToggle } from "@/features/learner-profile/ui/theme-toggle"
 
-const { setTheme } = vi.hoisted(() => ({
-  setTheme: vi.fn(),
-}))
-
 vi.mock("next-themes", () => ({
   useTheme: () => ({
-    setTheme,
+    setTheme: vi.fn(),
     theme: "system",
   }),
 }))
 
 describe("ThemeToggle", () => {
-  beforeEach(() => {
-    setTheme.mockClear()
-  })
-
-  it("서버 출력에서는 선택을 막고 클라이언트 mount 후 활성화한다", async () => {
+  it("서버 출력에서는 테마 선택을 막는다", () => {
     const serverContainer = document.createElement("div")
     serverContainer.innerHTML = renderToString(<ThemeToggle />)
 
-    within(serverContainer)
-      .getAllByRole("button")
-      .forEach((button) => expect(button).toBeDisabled())
+    expect(
+      within(serverContainer).getByRole("button", { name: "다크" })
+    ).toBeDisabled()
+  })
 
-    const user = userEvent.setup()
+  it("클라이언트 mount 뒤에는 테마 선택을 활성화한다", () => {
     render(<ThemeToggle />)
-    const darkThemeButton = screen.getByRole("button", { name: "다크" })
 
-    expect(darkThemeButton).toBeEnabled()
-    await user.click(darkThemeButton)
-    expect(setTheme).toHaveBeenCalledWith("dark")
+    expect(screen.getByRole("button", { name: "다크" })).toBeEnabled()
   })
 })

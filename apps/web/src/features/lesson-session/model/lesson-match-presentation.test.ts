@@ -8,7 +8,9 @@ import {
   toMatchAnswerPairs,
   transitionMatchChoiceSelection,
   toggleMatchSelection,
+  type MatchChoice,
   type MatchSelectionMap,
+  type MatchStepPresentation,
 } from "@/features/lesson-session/model/lesson-match-presentation"
 
 describe("매칭 스텝 표시와 상호작용 정책", () => {
@@ -24,29 +26,24 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
       { left: "마무리", right: "정리" },
     ])
 
-    expect(first.rightChoices.map((choice) => choice.id)).toEqual(
-      second.rightChoices.map((choice) => choice.id)
+    expect(first.rightChoices.map((choice) => choice.itemId)).toEqual(
+      second.rightChoices.map((choice) => choice.itemId)
     )
-    expect(first.rightChoices.map((choice) => choice.id).sort()).toEqual([
-      "right-1",
-      "right-2",
-      "right-3",
-    ])
   })
 
-  it("중복 텍스트도 stable choice id로 구분한다", () => {
-    const presentation = createPresentation([
-      { left: "문장 A", right: "강조" },
-      { left: "문장 B", right: "강조" },
-    ])
-
-    expect(presentation.leftChoices.map((choice) => choice.id)).toEqual([
-      "left-1",
-      "left-2",
-    ])
-    expect(presentation.rightChoices.map((choice) => choice.id).sort()).toEqual(
-      ["right-1", "right-2"]
+  it("중복 텍스트 선택지도 콘텐츠 item마다 서로 다른 choice id를 부여한다", () => {
+    const presentation = createDuplicateLabelPresentation()
+    const firstRight = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-1"
     )
+    const secondRight = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-2"
+    )
+
+    expect(firstRight.text).toBe(secondRight.text)
+    expect(firstRight.id).not.toBe(secondRight.id)
   })
 
   it("오른쪽 선택지는 하나의 왼쪽 선택지에만 배정한다", () => {
@@ -54,18 +51,18 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
       { left: "간결함", right: "짧게" },
       { left: "정확함", right: "분명하게" },
     ])
-    const [firstLeft, secondLeft] = presentation.leftChoices
-    const firstRight = presentation.rightChoices.find(
-      (choice) => choice.id === "right-1"
+    const firstLeft = readChoiceByItemId(
+      presentation.leftChoices,
+      "left-item-1"
     )
-
-    if (
-      firstLeft === undefined ||
-      secondLeft === undefined ||
-      firstRight === undefined
-    ) {
-      throw new Error("테스트 매칭 선택지가 준비되지 않았습니다.")
-    }
+    const secondLeft = readChoiceByItemId(
+      presentation.leftChoices,
+      "left-item-2"
+    )
+    const firstRight = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-1"
+    )
 
     const firstSelection = toggleMatchSelection(emptySelectionMap(), {
       leftChoiceId: firstLeft.id,
@@ -90,12 +87,14 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     const presentation = createPresentation([
       { left: "원인", right: "결과를 만든다" },
     ])
-    const leftChoice = presentation.leftChoices[0]
-    const rightChoice = presentation.rightChoices[0]
-
-    if (leftChoice === undefined || rightChoice === undefined) {
-      throw new Error("테스트 매칭 선택지가 준비되지 않았습니다.")
-    }
+    const leftChoice = readChoiceByItemId(
+      presentation.leftChoices,
+      "left-item-1"
+    )
+    const rightChoice = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-1"
+    )
 
     const selected = toggleMatchSelection(emptySelectionMap(), {
       leftChoiceId: leftChoice.id,
@@ -114,14 +113,14 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
       { left: "그러나", right: "역접" },
       { left: "따라서", right: "결론" },
     ])
-    const leftChoice = presentation.leftChoices[0]
-    const rightChoice = presentation.rightChoices.find(
-      (choice) => choice.id === "right-1"
+    const leftChoice = readChoiceByItemId(
+      presentation.leftChoices,
+      "left-item-1"
     )
-
-    if (leftChoice === undefined || rightChoice === undefined) {
-      throw new Error("테스트 매칭 선택지가 준비되지 않았습니다.")
-    }
+    const rightChoice = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-1"
+    )
 
     const selectionMap = toggleMatchSelection(emptySelectionMap(), {
       leftChoiceId: leftChoice.id,
@@ -138,19 +137,16 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     ])
   })
 
-  it("정오답 표시는 client pair 순서가 아니라 server evaluation만 따른다", () => {
-    const presentation = createPresentation([
-      { left: "문장 A", right: "강조" },
-      { left: "문장 B", right: "강조" },
-    ])
-    const firstLeft = presentation.leftChoices[0]
-    const secondRight = presentation.rightChoices.find(
-      (choice) => choice.id === "right-2"
+  it("server evaluation이 없으면 연결선을 기본 tone으로 표시한다", () => {
+    const presentation = createDuplicateLabelPresentation()
+    const firstLeft = readChoiceByItemId(
+      presentation.leftChoices,
+      "left-item-1"
     )
-
-    if (firstLeft === undefined || secondRight === undefined) {
-      throw new Error("테스트 매칭 선택지가 준비되지 않았습니다.")
-    }
+    const secondRight = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-2"
+    )
 
     expect(
       toMatchAnswerConnections(presentation, { [firstLeft.id]: secondRight.id })
@@ -161,6 +157,19 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
         tone: "default",
       },
     ])
+  })
+
+  it("정오답 표시는 client pair 순서가 아니라 server evaluation만 따른다", () => {
+    const presentation = createDuplicateLabelPresentation()
+    const firstLeft = readChoiceByItemId(
+      presentation.leftChoices,
+      "left-item-1"
+    )
+    const secondRight = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-2"
+    )
+
     expect(
       toMatchAnswerConnections(
         presentation,
@@ -184,12 +193,14 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
 
   it("양쪽 선택 순서와 같은 항목 재선택을 web interaction state로 전이한다", () => {
     const presentation = createPresentation([{ left: "원인", right: "결과" }])
-    const leftChoice = presentation.leftChoices[0]
-    const rightChoice = presentation.rightChoices[0]
-
-    if (leftChoice === undefined || rightChoice === undefined) {
-      throw new Error("테스트 매칭 선택지가 준비되지 않았습니다.")
-    }
+    const leftChoice = readChoiceByItemId(
+      presentation.leftChoices,
+      "left-item-1"
+    )
+    const rightChoice = readChoiceByItemId(
+      presentation.rightChoices,
+      "right-item-1"
+    )
 
     const pending = transitionMatchChoiceSelection(
       createMatchInteractionState(),
@@ -220,9 +231,16 @@ function emptySelectionMap(): MatchSelectionMap {
   return {}
 }
 
+function createDuplicateLabelPresentation(): MatchStepPresentation {
+  return createPresentation([
+    { left: "문장 A", right: "강조" },
+    { left: "문장 B", right: "강조" },
+  ])
+}
+
 function createPresentation(
   pairs: readonly { readonly left: string; readonly right: string }[]
-) {
+): MatchStepPresentation {
   return createMatchStepPresentation({
     leftItems: pairs.map((pair, index) => ({
       id: `left-item-${index + 1}`,
@@ -233,4 +251,17 @@ function createPresentation(
       text: pair.right,
     })),
   })
+}
+
+function readChoiceByItemId(
+  choices: readonly MatchChoice[],
+  itemId: string
+): MatchChoice {
+  const choice = choices.find((candidate) => candidate.itemId === itemId)
+
+  if (choice === undefined) {
+    throw new Error(`매칭 선택지 fixture에 ${itemId}가 없습니다.`)
+  }
+
+  return choice
 }

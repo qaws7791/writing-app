@@ -19,22 +19,18 @@ describe("learner API client boundary", () => {
     })
   })
 
-  it("401 canonical 오류를 인증 실패로 유지한다", async () => {
-    const error = new GeneratedApiClientError({
-      error: {
-        code: "UNAUTHENTICATED",
-        message: "로그인이 필요합니다.",
-        requestId: "request-1",
-      },
-      kind: "http",
-      retryAfterSeconds: null,
-      status: 401,
-    })
+  it("401 canonical 오류를 인증 실패로 분류한다", async () => {
+    const error = createUnauthenticatedError()
 
     const result = await settleLearnerApiRequest(Promise.reject(error))
 
     expect(result).toEqual({ error, status: "error" })
     expect(isLearnerApiAuthenticationError(error)).toBe(true)
+  })
+
+  it("401 canonical 오류에서 오류 코드와 재시도 대기 시간을 읽는다", () => {
+    const error = createUnauthenticatedError()
+
     expect(readLearnerApiErrorCode(error)).toBe("UNAUTHENTICATED")
     expect(readLearnerApiRetryAfterSeconds(error)).toBeNull()
   })
@@ -64,3 +60,16 @@ describe("learner API client boundary", () => {
     ).rejects.toBe(unexpected)
   })
 })
+
+function createUnauthenticatedError(): GeneratedApiClientError {
+  return new GeneratedApiClientError({
+    error: {
+      code: "UNAUTHENTICATED",
+      message: "로그인이 필요합니다.",
+      requestId: "request-1",
+    },
+    kind: "http",
+    retryAfterSeconds: null,
+    status: 401,
+  })
+}

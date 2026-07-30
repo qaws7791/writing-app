@@ -45,37 +45,52 @@ describe("useLessonDraftSync", () => {
     vi.useRealTimers()
   })
 
-  it("변경을 debounce하고 진행 중 변경은 병렬 요청 없이 후속 저장으로 합친다", async () => {
-    const firstSave = createDeferred<LearnerSaveStepDraftResultDto>()
-    const secondSave = createDeferred<LearnerSaveStepDraftResultDto>()
-    generatedClient.saveLearnerStepDraft
-      .mockReturnValueOnce(firstSave.promise)
-      .mockReturnValueOnce(secondSave.promise)
+  it.each([
+    {
+      advanceMs: 799,
+      expectedCalls: 0,
+      label: "debounce 경계 이전에는 초안을 저장하지 않는다",
+    },
+    {
+      advanceMs: 800,
+      expectedCalls: 1,
+      label: "debounce 경계에서 초안을 한 번 저장한다",
+    },
+  ])("$label", ({ advanceMs, expectedCalls }) => {
     const { result } = renderDraftSync()
 
     act(() => {
       result.current.stageDraft("step-write", localAnswer)
-      vi.advanceTimersByTime(799)
+      vi.advanceTimersByTime(advanceMs)
     })
-    expect(generatedClient.saveLearnerStepDraft).not.toHaveBeenCalled()
+
+    expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(
+      expectedCalls
+    )
+  })
+
+  it("저장 진행 중 변경은 병렬 요청 없이 최신 version의 후속 저장으로 합친다", async () => {
+    const firstSave = createDeferred<LearnerSaveStepDraftResultDto>()
+    generatedClient.saveLearnerStepDraft.mockReturnValueOnce(firstSave.promise)
+    const { result } = renderDraftSync()
 
     act(() => {
-      vi.advanceTimersByTime(1)
+      result.current.stageDraft("step-write", localAnswer)
+      vi.advanceTimersByTime(800)
     })
-    expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(1)
-
     act(() => {
       result.current.stageDraft("step-write", latestAnswer)
     })
+
     expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(1)
 
     await act(async () => {
       firstSave.resolve(createDraft(localAnswer, 1))
-      await firstSave.promise
-      await flushMicrotasks()
+      await vi.waitFor(() => {
+        expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
+      })
     })
 
-    expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
     expect(generatedClient.saveLearnerStepDraft).toHaveBeenLastCalledWith(
       "lesson-1",
       "step-write",
@@ -85,12 +100,25 @@ describe("useLessonDraftSync", () => {
       }),
       { signal: expect.any(AbortSignal) }
     )
+  })
+
+  it("후속 저장까지 성공하면 saved 상태로 마무리한다", async () => {
+    const { result } = renderDraftSync()
+
+    act(() => {
+      result.current.stageDraft("step-write", localAnswer)
+      vi.advanceTimersByTime(800)
+    })
+    act(() => {
+      result.current.stageDraft("step-write", latestAnswer)
+    })
 
     await act(async () => {
-      secondSave.resolve(createDraft(latestAnswer, 2))
-      await secondSave.promise
-      await flushMicrotasks()
+      await vi.waitFor(() => {
+        expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
+      })
     })
+
     expect(result.current.statusByStepId["step-write"]).toMatchObject({
       kind: "saved",
     })
@@ -113,14 +141,49 @@ describe("useLessonDraftSync", () => {
       setVisibility("hidden")
       document.dispatchEvent(new Event("visibilitychange"))
     })
-    await act(flushMicrotasks)
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
+      })
+    })
 
-    expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
     expect(generatedClient.saveLearnerStepDraft).toHaveBeenLastCalledWith(
       "lesson-1",
       "step-write",
       expect.objectContaining({ answer: latestAnswer }),
       { keepalive: true }
+    )
+  })
+
+  it("화면 숨김 keepalive 저장이 실패하면 로컬 입력을 유지하고 다시 저장한다", async () => {
+    generatedClient.saveLearnerStepDraft.mockRejectedValueOnce(
+      new GeneratedApiClientError({
+        kind: "network",
+        method: "PUT",
+        url: "/api/learning/lessons/lesson-1/steps/step-write/draft",
+      })
+    )
+    const { result } = renderDraftSync()
+
+    await act(async () => {
+      result.current.stageDraft("step-write", localAnswer)
+      setVisibility("hidden")
+      document.dispatchEvent(new Event("visibilitychange"))
+    })
+
+    expect(result.current.statusByStepId["step-write"]).toEqual({
+      kind: "offline",
+    })
+
+    await act(async () => {
+      await result.current.flushStepDraft("step-write")
+    })
+
+    expect(generatedClient.saveLearnerStepDraft).toHaveBeenLastCalledWith(
+      "lesson-1",
+      "step-write",
+      expect.objectContaining({ answer: localAnswer }),
+      { signal: expect.any(AbortSignal) }
     )
   })
 
@@ -149,7 +212,9 @@ describe("useLessonDraftSync", () => {
 
     await act(async () => {
       result.current.retryLocalDraft("step-write")
-      await flushMicrotasks()
+      await vi.waitFor(() => {
+        expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
+      })
     })
 
     expect(generatedClient.saveLearnerStepDraft).toHaveBeenLastCalledWith(
@@ -215,13 +280,14 @@ describe("useLessonDraftSync", () => {
 
     await act(async () => {
       window.dispatchEvent(new Event("focus"))
-      await flushMicrotasks()
+      await vi.waitFor(() => {
+        expect(onServerDraftApplied).toHaveBeenCalledWith(
+          "step-write",
+          latestAnswer
+        )
+      })
     })
 
-    expect(onServerDraftApplied).toHaveBeenCalledWith(
-      "step-write",
-      latestAnswer
-    )
     expect(result.current.renderRevisionByStepId["step-write"]).toBe(1)
     expect(result.current.statusByStepId["step-write"]).toEqual({
       kind: "saved",
@@ -313,11 +379,6 @@ function createDeferred<T>() {
     resolve = promiseResolve
   })
   return { promise, resolve }
-}
-
-async function flushMicrotasks(): Promise<void> {
-  await Promise.resolve()
-  await Promise.resolve()
 }
 
 function setOnline(value: boolean): void {

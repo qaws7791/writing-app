@@ -10,7 +10,7 @@ const courseVisualAssetUrls = {
   "grammar-complete": "/course-thumbnails/grammar-complete.png",
 } satisfies Record<CourseVisualKey, string>
 
-export function createCourseImageUrl(visualKey: CourseVisualKey): string {
+function createCourseImageUrl(visualKey: CourseVisualKey): string {
   return courseVisualAssetUrls[visualKey]
 }
 
