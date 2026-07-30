@@ -22,7 +22,7 @@ export const adminUserParamsSchema = z.object({
   userId: userIdSchema,
 })
 
-export const adminUserListItemDtoSchema = z.object({
+export const adminUserListItemDtoSchema = z.strictObject({
   email: z.email(),
   id: userIdSchema,
   joined: z.string(),
@@ -33,9 +33,9 @@ export const adminUserListItemDtoSchema = z.object({
   streak: adminNonNegativeIntegerSchema,
 })
 
-export const adminUserListDtoSchema = z.object({
+export const adminUserListDtoSchema = z.strictObject({
   items: z.array(adminUserListItemDtoSchema),
-  pagination: z.object({
+  pagination: z.strictObject({
     page: adminPositiveIntegerSchema,
     pageSize: adminPositiveIntegerSchema,
     totalItems: adminNonNegativeIntegerSchema,
@@ -48,7 +48,7 @@ export const adminUserDetailDtoSchema = adminUserListItemDtoSchema.extend({
   totalLessons: adminNonNegativeIntegerSchema,
 })
 
-export const adminDeleteUserResultSchema = z.object({
+export const adminDeleteUserResultSchema = z.strictObject({
   deleted: z.literal(true),
 })
 

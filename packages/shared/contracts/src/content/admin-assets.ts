@@ -22,7 +22,7 @@ export const adminContentAssetMimeTypeSchema = z.enum([
 
 export const adminContentAssetAltTextSchema = z.string().trim().min(1).max(500)
 
-export const adminContentAssetUploadDtoSchema = z.object({
+export const adminContentAssetUploadDtoSchema = z.strictObject({
   altText: adminContentAssetAltTextSchema,
   byteSize: positiveIntegerSchema.max(adminContentAssetMaxBytes),
   contentType: adminContentAssetMimeTypeSchema,

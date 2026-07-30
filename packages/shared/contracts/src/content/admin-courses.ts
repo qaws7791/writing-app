@@ -19,7 +19,7 @@ import {
   positiveIntegerSchema,
 } from "#contracts/shared/integer"
 
-export const adminCourseStepDtoSchema = z.object({
+export const adminCourseStepDtoSchema = z.strictObject({
   contentJson: z.string(),
   id: lessonStepIdSchema,
   sortOrder: positiveIntegerSchema,
@@ -27,7 +27,7 @@ export const adminCourseStepDtoSchema = z.object({
   type: z.string(),
 })
 
-export const adminCourseLessonDtoSchema = z.object({
+export const adminCourseLessonDtoSchema = z.strictObject({
   category: z.string().nullable(),
   description: z.string().nullable(),
   estimatedMinutes: positiveIntegerSchema,
@@ -39,7 +39,7 @@ export const adminCourseLessonDtoSchema = z.object({
   title: z.string(),
 })
 
-export const adminCourseUnitDtoSchema = z.object({
+export const adminCourseUnitDtoSchema = z.strictObject({
   id: unitIdSchema,
   lessons: z.array(adminCourseLessonDtoSchema),
   sortOrder: positiveIntegerSchema,
@@ -47,7 +47,7 @@ export const adminCourseUnitDtoSchema = z.object({
   title: z.string(),
 })
 
-export const adminCourseDetailDtoSchema = z.object({
+export const adminCourseDetailDtoSchema = z.strictObject({
   category: z.string(),
   curriculumVersionId: curriculumVersionIdSchema,
   description: z.string(),
@@ -59,7 +59,7 @@ export const adminCourseDetailDtoSchema = z.object({
   units: z.array(adminCourseUnitDtoSchema),
 })
 
-export const adminCourseListItemDtoSchema = z.object({
+export const adminCourseListItemDtoSchema = z.strictObject({
   category: z.string(),
   id: courseIdSchema,
   lessonCount: nonNegativeIntegerSchema,
@@ -70,9 +70,9 @@ export const adminCourseListItemDtoSchema = z.object({
   visualKey: courseVisualKeySchema,
 })
 
-export const adminCourseListDtoSchema = z.object({
+export const adminCourseListDtoSchema = z.strictObject({
   items: z.array(adminCourseListItemDtoSchema),
-  pagination: z.object({
+  pagination: z.strictObject({
     page: positiveIntegerSchema,
     pageSize: positiveIntegerSchema,
     totalItems: nonNegativeIntegerSchema,
@@ -80,7 +80,7 @@ export const adminCourseListDtoSchema = z.object({
   }),
 })
 
-export const adminArchiveCourseResultSchema = z.object({
+export const adminArchiveCourseResultSchema = z.strictObject({
   archived: z.literal(true),
 })
 
@@ -89,7 +89,7 @@ export const adminCourseEditorStepSchema = lessonStepDtoSchema.and(
   z.object({ status: activeEditorStatusSchema })
 )
 export const adminCourseEditorLessonSchema = z
-  .object({
+  .strictObject({
     category: z.string().nullable(),
     description: z.string().nullable(),
     estimatedMinutes: positiveIntegerSchema,
@@ -105,7 +105,7 @@ export const adminCourseEditorLessonSchema = z
     validateAiFeedbackTargets(lesson.steps, context)
   })
 export const adminCourseEditorUnitSchema = z
-  .object({
+  .strictObject({
     id: unitIdSchema,
     lessons: z.array(adminCourseEditorLessonSchema),
     sortOrder: positiveIntegerSchema,
@@ -139,7 +139,7 @@ export const adminCourseEditorDocumentSchema = z
   })
   .superRefine(validateEditorDocument)
 
-export const adminPublishCourseResultSchema = z.object({
+export const adminPublishCourseResultSchema = z.strictObject({
   curriculumVersionId: curriculumVersionIdSchema,
   publishedAt: z.iso.datetime(),
   revision: positiveIntegerSchema,

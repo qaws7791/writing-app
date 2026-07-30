@@ -199,6 +199,26 @@ describe("콘텐츠 DTO schema", () => {
     }
   )
 
+  it("연결 스텝은 한쪽에 같은 텍스트가 두 번 나오면 거부한다", () => {
+    const result = lessonStepDtoSchema.safeParse({
+      explanation: "해설",
+      guide: "안내",
+      id: "match-duplicate-text",
+      pairs: [
+        { left: "같음", leftId: "left-a", right: "역접", rightId: "right-a" },
+        { left: "같음", leftId: "left-b", right: "인과", rightId: "right-b" },
+      ],
+      sortOrder: 1,
+      title: "짝",
+      type: "MATCH",
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error?.issues.map((issue) => issue.path.join("."))).toContain(
+      "pairs"
+    )
+  })
+
   it("쓰기 스텝은 guide 없이 prompt나 topic만 있어도 parse한다", () => {
     expect(
       lessonStepDtoSchema.parse({

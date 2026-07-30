@@ -8,13 +8,13 @@ const adminMetricRateSchema = z.strictObject({
   percentage: adminMetricPercentageSchema.nullable(),
 })
 
-export const adminDashboardDtoSchema = z.object({
+export const adminDashboardDtoSchema = z.strictObject({
   activeWindow: z.strictObject({
     from: z.iso.date(),
     to: z.iso.date(),
   }),
   asOfDate: z.iso.date(),
-  metrics: z.object({
+  metrics: z.strictObject({
     activeUsersLast7Days: adminNonNegativeIntegerSchema,
     activationRate: adminMetricRateSchema.extend({
       status: z.enum(["available", "empty"]),

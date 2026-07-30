@@ -30,12 +30,6 @@ const unauthorizedResponses = [
   ["learner", documents.learner as unknown, "/profile"],
 ] as const
 
-/** 관리자 문서에서 strict 응답 계약을 선언한 감사·분석 operation이다. */
-const strictAdminResponsePaths = [
-  "/api/admin/audit-events",
-  "/api/admin/analytics/ai-feedback",
-] as const
-
 describe("생성 OpenAPI 문서", () => {
   it.each(audienceDocuments)(
     "%s 문서는 OpenAPI 3.1 schema 검증을 통과한다",
@@ -111,25 +105,13 @@ describe("생성 OpenAPI 문서", () => {
     }
   )
 
-  it.each(strictAdminResponsePaths)(
-    "관리자 %s 응답 schema는 예기치 않은 필드를 허용하지 않는다",
-    (path) => {
-      expect(documents.admin).toHaveProperty(
-        [
-          "paths",
-          path,
-          "get",
-          "responses",
-          "200",
-          "content",
-          "application/json",
-          "schema",
-          "additionalProperties",
-        ],
-        false
-      )
-    }
-  )
+  it("관리자 200 응답 schema는 모두 예기치 않은 필드를 허용하지 않는다", () => {
+    const looseResponses = readSuccessResponseSchemas(documents.admin)
+      .filter(({ schema }) => schema["additionalProperties"] !== false)
+      .map(({ operationId }) => operationId)
+
+    expect(looseResponses).toEqual([])
+  })
 
   it("콘텐츠 이미지 upload의 multipart file을 binary required로 노출한다", () => {
     expect(documents.admin).toHaveProperty(
@@ -157,6 +139,42 @@ type OpenApiOperation = Readonly<{
   operationId: string
   path: string
 }>
+
+function readSuccessResponseSchemas(document: unknown): readonly Readonly<{
+  operationId: string
+  schema: Readonly<Record<string, unknown>>
+}>[] {
+  if (!isRecord(document) || !isRecord(document["paths"])) return []
+
+  return Object.values(document["paths"]).flatMap((pathItem) => {
+    if (!isRecord(pathItem)) return []
+
+    return Object.entries(pathItem).flatMap(([method, operation]) => {
+      if (
+        !httpMethods.has(method) ||
+        !isRecord(operation) ||
+        typeof operation["operationId"] !== "string"
+      ) {
+        return []
+      }
+
+      const schema = readJsonSchema(operation["responses"])
+      return schema === null
+        ? []
+        : [{ operationId: operation["operationId"], schema }]
+    })
+  })
+}
+
+function readJsonSchema(
+  responses: unknown
+): Readonly<Record<string, unknown>> | null {
+  if (!isRecord(responses) || !isRecord(responses["200"])) return null
+  const content = responses["200"]["content"]
+  if (!isRecord(content) || !isRecord(content["application/json"])) return null
+  const schema = content["application/json"]["schema"]
+  return isRecord(schema) ? schema : null
+}
 
 function readOperations(document: unknown): OpenApiOperation[] {
   if (!isRecord(document) || !isRecord(document["paths"])) return []

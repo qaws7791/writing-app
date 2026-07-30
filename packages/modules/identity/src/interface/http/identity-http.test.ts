@@ -24,16 +24,19 @@ import {
 
 const userId = userIdSchema.parse("user-1")
 const adminId = adminIdSchema.parse("admin-1")
-const user: AdminUserDetail = {
+const userListItem = {
   email: "learner@example.com",
   id: userId,
   joined: "2026-06-14",
   lastActive: null,
   lessonsDone: 0,
   name: "학습자",
-  progressPercent: 0,
   status: "active",
   streak: 0,
+} as const
+const user: AdminUserDetail = {
+  ...userListItem,
+  progressPercent: 0,
   totalLessons: 0,
 }
 
@@ -197,7 +200,7 @@ function createIdentityHttpFixture(
     },
     async readUsers(query) {
       return {
-        items: [user],
+        items: [userListItem],
         page: query.page,
         pageSize: query.pageSize,
         totalItems: 1,

@@ -16,7 +16,7 @@
 ## 계약 원칙
 
 - request는 HTTP 경계에서 schema로 검증하고, handler는 검증된 값만 application 경계로 전달한다.
-- response는 전송 직전에 공개 schema로 검증한다.
+- response는 전송 직전에 공개 schema로 검증한다. 관리자 성공 응답 schema는 선언하지 않은 필드를 거부해 내부 필드가 새는 회귀를 생성 문서와 테스트가 함께 드러낸다. 단 두 schema를 `allOf`로 합치는 응답은 양쪽을 모두 닫으면 만족 불가능한 문서가 되므로 최상위 객체만 닫는다.
 - application 결과와 HTTP status·body·header 변환 책임은 route가 소유한다.
 - 인증·인가 실패, 검증 실패, domain rejection, provider 실패와 예상하지 못한 내부 오류는 구분 가능한 안정된 공개 오류 계약을 가진다.
 - 민감 입력, 내부 stack, provider 원문과 persistence 세부 사항을 오류 응답에 노출하지 않는다.

@@ -5,7 +5,7 @@ import {
 } from "#contracts/shared/integer"
 import { courseIdSchema, lessonIdSchema } from "#contracts/content/ids"
 
-export const adminLessonAnalyticsItemDtoSchema = z.object({
+export const adminLessonAnalyticsItemDtoSchema = z.strictObject({
   completed: adminNonNegativeIntegerSchema,
   completionRate: adminNonNegativeIntegerSchema.max(100),
   courseId: courseIdSchema,
@@ -16,7 +16,7 @@ export const adminLessonAnalyticsItemDtoSchema = z.object({
   started: adminNonNegativeIntegerSchema,
 })
 
-export const adminAiFeedbackLessonFailureDtoSchema = z.object({
+export const adminAiFeedbackLessonFailureDtoSchema = z.strictObject({
   courseId: courseIdSchema,
   courseTitle: z.string(),
   failureCount: adminPositiveIntegerSchema,
@@ -26,9 +26,9 @@ export const adminAiFeedbackLessonFailureDtoSchema = z.object({
   requestCount: adminPositiveIntegerSchema,
 })
 
-export const adminAnalyticsDtoSchema = z.object({
+export const adminAnalyticsDtoSchema = z.strictObject({
   dailySeries: z.array(
-    z.object({
+    z.strictObject({
       completions: adminNonNegativeIntegerSchema,
       date: z.string(),
       returns: adminNonNegativeIntegerSchema.nullable(),
@@ -44,9 +44,9 @@ export const adminAnalyticsDtoSchema = z.object({
   worstLessons: z.array(adminLessonAnalyticsItemDtoSchema),
 })
 
-export const adminLessonAnalyticsPageDtoSchema = z.object({
+export const adminLessonAnalyticsPageDtoSchema = z.strictObject({
   items: z.array(adminLessonAnalyticsItemDtoSchema),
-  pagination: z.object({
+  pagination: z.strictObject({
     page: adminPositiveIntegerSchema,
     pageSize: adminPositiveIntegerSchema,
     totalItems: adminNonNegativeIntegerSchema,

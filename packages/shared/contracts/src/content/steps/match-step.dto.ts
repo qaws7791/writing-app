@@ -23,11 +23,9 @@ export const matchStepDtoSchema = lessonStepBaseSchema
     explanation: z.string(),
   })
   .superRefine((step, context) => {
-    const leftIds = step.pairs.map((pair) => pair.leftId)
-    const rightIds = step.pairs.map((pair) => pair.rightId)
     if (
-      new Set(leftIds).size !== leftIds.length ||
-      new Set(rightIds).size !== rightIds.length
+      hasDuplicate(step.pairs.map((pair) => pair.leftId)) ||
+      hasDuplicate(step.pairs.map((pair) => pair.rightId))
     ) {
       context.addIssue({
         code: "custom",
@@ -35,4 +33,19 @@ export const matchStepDtoSchema = lessonStepBaseSchema
         path: ["pairs"],
       })
     }
+    if (
+      hasDuplicate(step.pairs.map((pair) => pair.left)) ||
+      hasDuplicate(step.pairs.map((pair) => pair.right))
+    ) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "양쪽 연결 항목 텍스트는 각각 중복될 수 없습니다. 학습자가 두 항목을 화면에서 구분할 수 없습니다.",
+        path: ["pairs"],
+      })
+    }
   })
+
+function hasDuplicate(values: readonly string[]): boolean {
+  return new Set(values).size !== values.length
+}

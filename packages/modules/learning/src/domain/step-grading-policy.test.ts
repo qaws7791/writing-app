@@ -296,38 +296,6 @@ describe("학습 단계 서버 채점 정책", () => {
   it.each([
     {
       answer: {
-        pairs: [
-          { leftItemId: "left-a", rightItemId: "right-b" },
-          { leftItemId: "left-b", rightItemId: "right-a" },
-        ],
-        type: "MATCH",
-      },
-      expectedCorrect: false,
-      step: {
-        explanation: "같은 표시 문자열도 ID로 구분합니다.",
-        guide: "연결",
-        id: "match-duplicate-text",
-        pairs: [
-          {
-            left: "같음",
-            leftId: "left-a",
-            right: "같음",
-            rightId: "right-a",
-          },
-          {
-            left: "같음",
-            leftId: "left-b",
-            right: "같음",
-            rightId: "right-b",
-          },
-        ],
-        sortOrder: 1,
-        title: "중복 표시 문자열 연결",
-        type: "MATCH",
-      },
-    },
-    {
-      answer: {
         assignments: [
           { categoryId: "category-b", itemId: "item-a" },
           { categoryId: "category-a", itemId: "item-b" },
