@@ -51,6 +51,7 @@
     "@scalar/openapi-parser": "catalog:",
     "@types/bun": "catalog:",
     "@workspace/typescript-config": "workspace:*",
+    "@workspace/vitest-config": "workspace:*",
     "drizzle-kit": "^0.31.0",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",

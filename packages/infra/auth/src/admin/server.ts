@@ -7,6 +7,10 @@ import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie
 
 import type { AuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
 import { readAuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
+import {
+  readAuthRuntimeLoggerOption,
+  type AuthRuntimeLogger,
+} from "#auth/shared/auth-runtime-logger"
 
 export type AdminAuthIdentity = Readonly<{
   email: string
@@ -25,6 +29,7 @@ export type AdminSessionRevoker = {
 
 export type CreateAdminAuthRuntimeInput = {
   readonly database: AuthDatabaseAdapter
+  readonly logger?: AuthRuntimeLogger
   readonly secret: string
   readonly sessionRevoker: AdminSessionRevoker
   readonly webOrigin: string
@@ -51,6 +56,7 @@ export function createAdminAuthRuntime(
     basePath: "/api/admin/auth",
     baseURL: input.webOrigin,
     database: readAuthDatabaseAdapter(input.database),
+    logger: readAuthRuntimeLoggerOption(input.logger),
     disabledPaths: ["/sign-up/email"],
     emailAndPassword: {
       disableSignUp: true,

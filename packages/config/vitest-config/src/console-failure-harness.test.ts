@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createConsoleFailureHarness } from "@/shared/test/console-failure-harness"
+import { createConsoleFailureHarness } from "#vitest-config/console-failure-harness"
 
 describe("테스트 콘솔 실패 장치", () => {
   it.each(["error", "warn"] as const)(

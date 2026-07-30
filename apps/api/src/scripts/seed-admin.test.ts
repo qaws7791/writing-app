@@ -3,6 +3,7 @@ import {
   createAdminAuthRuntime,
   type AdminAuthRuntime,
 } from "@workspace/auth/admin/server"
+import { silentAuthRuntimeLogger } from "@workspace/auth/auth-runtime-logger"
 import { adminAuthUsers } from "@workspace/auth/schema"
 import {
   createInMemoryWritingAppDatabase,
@@ -254,6 +255,8 @@ function readSeedAdminState(database: WritingAppDatabaseClient): {
 function createTestAdminAuth(database: WritingAppDatabase): AdminAuthRuntime {
   return createAdminAuthRuntime({
     database: createAdminAuthDatabase(database),
+    // 잘못된 비밀번호 로그인을 의도적으로 실행하므로 Better Auth 로그를 버린다.
+    logger: silentAuthRuntimeLogger,
     secret: "x".repeat(32),
     sessionRevoker: createDrizzleAdminSessionRevoker(database),
     webOrigin: "http://localhost:3001",

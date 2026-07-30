@@ -27,6 +27,7 @@ export default defineConfig({
         ["@workspace/learning", "packages/modules/learning"],
         ["@workspace/nextjs-config", "packages/config/nextjs-config"],
         ["@workspace/observability", "packages/infra/observability"],
+        ["@workspace/vitest-config", "packages/config/vitest-config"],
         ["@workspace/operations", "packages/modules/operations"],
         ["@workspace/storage", "packages/infra/storage"],
       ].map(([name, root]) => ({

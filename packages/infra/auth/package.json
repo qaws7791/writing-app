@@ -8,6 +8,7 @@
   },
   "exports": {
     "./admin/client": "./src/admin/client.ts",
+    "./auth-runtime-logger": "./src/shared/auth-runtime-logger.ts",
     "./admin/server": "./src/admin/server.ts",
     "./email/delivery": "./src/email/delivery.ts",
     "./email/in-memory": "./src/email/in-memory.ts",

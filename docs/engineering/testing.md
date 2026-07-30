@@ -10,6 +10,7 @@
 - 순수 정책은 단위 테스트로, I/O와 transaction은 통합 테스트로, 공개 HTTP·UI 흐름은 경계 테스트로 검증한다.
 - 테스트 편의를 위해 production 동작을 우회하거나 제품 코드에 조건문을 추가하지 않는다.
 - 테스트 fixture는 명시적으로 만들고, 개발자 데이터·설정·실행 중 process를 재사용하거나 삭제하지 않는다.
+- DOM·앱 테스트는 예상하지 않은 `console.error`·`console.warn`을 실패로 올린다. 실패 경로를 의도적으로 실행해 서드파티 runtime이 로그를 남긴다면 allowlist를 두지 않고 해당 runtime에 로그 목적지를 주입해 끊는다.
 - 실패 재현에 필요한 입력과 assertion은 test source에 두고, 특정 실행의 결과는 archive 보고서에 남긴다.
 - 테스트 이름은 방지할 사용자·시스템 위험을 드러내고, 공개 동작과 실패 경계를 검증한다. source 문자열, 내부 이름·배열 순서, `Object.freeze` 적용 여부나 한 줄 wrapper의 mock 전달 자체는 회귀 계약으로 삼지 않는다.
 - route 조립, health와 종료 signal 같은 runtime 연결은 반환 객체 단위 테스트보다 실제 HTTP, process 또는 배포 smoke 경계에서 검증한다.

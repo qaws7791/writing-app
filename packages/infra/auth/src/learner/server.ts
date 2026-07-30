@@ -4,9 +4,14 @@ import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cook
 import type { AuthEmailDeliveryPort } from "#auth/email/delivery"
 import type { AuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
 import { readAuthDatabaseAdapter } from "#auth/shared/auth-database-adapter"
+import {
+  readAuthRuntimeLoggerOption,
+  type AuthRuntimeLogger,
+} from "#auth/shared/auth-runtime-logger"
 
 export type CreateLearnerAuthRuntimeInput = {
   readonly database: AuthDatabaseAdapter
+  readonly logger?: AuthRuntimeLogger
   readonly emailDelivery: AuthEmailDeliveryPort
   readonly googleClientId?: string
   readonly googleClientSecret?: string
@@ -62,6 +67,7 @@ export function createLearnerAuthRuntime(
     basePath: "/api/auth",
     baseURL: input.webOrigin,
     database: readAuthDatabaseAdapter(input.database),
+    logger: readAuthRuntimeLoggerOption(input.logger),
     databaseHooks: createLearnerAuthHooks({
       identityProvisioner: input.identityProvisioner,
     }),

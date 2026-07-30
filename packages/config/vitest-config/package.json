@@ -3,11 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "#vitest-config/*": "./src/*"
+  },
   "exports": {
+    "./console-failure-harness": "./src/console-failure-harness.ts",
     "./react": "./src/react.ts"
   },
   "scripts": {
     "lint": "oxlint .",
+    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/vitest-config",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
