@@ -24,6 +24,6 @@
 
 ## 남은 검증 공백
 
-- 배포 smoke·E2E로 옮긴 항목: production origin 기준 `robots`·`sitemap` 출력, CSP 응답 header, 관리자 색인 차단, lease 기반 강제 종료.
+- 배포 smoke·E2E로 옮긴 항목: production origin 기준 `robots`·`sitemap` 출력, CSP 응답 header, lease 기반 강제 종료. 관리자 색인 차단은 PR smoke에서 `/robots.txt` 응답과 렌더된 `<meta name="robots">`로 검증한다.
 - 모듈 경계로 막힌 항목: content HTTP에 인가(403) 경로가 없어 권한 없는 actor 회귀를 만들 수 없다. `MatchAnswer` 중복 label은 접근 가능한 이름이 없어 UI 계층에서 구분할 수 없다.
 - 중복 상수: `apps/api/src/privacy/deletion-marker-reapplication.ts`가 identity의 삭제 보존 기간을 다시 정의한다.

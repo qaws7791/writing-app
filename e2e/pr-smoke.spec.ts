@@ -137,3 +137,14 @@ test("owner 관리자가 활성 학습자를 정지한다", async ({ page }) => 
   await expect(page.getByText("사용자를 정지했습니다.")).toBeVisible()
   await expect(learnerRow.getByText("정지", { exact: true })).toBeVisible()
 })
+
+test("관리자 콘솔은 크롤러 색인을 차단한다", async ({ page }) => {
+  const robots = await page.request.get(`${adminWebOrigin}/robots.txt`)
+  expect(robots.status()).toBe(200)
+  expect(await robots.text()).toContain("Disallow: /")
+
+  await page.goto(`${adminWebOrigin}/login`)
+  const robotsMeta = page.locator('head meta[name="robots"]')
+  await expect(robotsMeta).toHaveAttribute("content", /noindex/u)
+  await expect(robotsMeta).toHaveAttribute("content", /nofollow/u)
+})

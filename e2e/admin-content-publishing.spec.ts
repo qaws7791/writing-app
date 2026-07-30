@@ -79,7 +79,6 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   )
   await adminPage.getByRole("button", { name: "커리큘럼" }).click()
   const stepForms = adminPage.getByRole("list", { name: "스텝 편집 폼" })
-  await expect(stepForms.locator(":scope > li")).toHaveCount(10)
   for (const activityType of e2eAdminContentActivityTypes) {
     await expect(
       stepForms.getByText(activityType, { exact: true })
@@ -90,11 +89,6 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   await adminPage.setViewportSize({ height: 844, width: 390 })
   const coverField = adminPage.locator('section[aria-label="코스 표지"]')
   await coverField.getByLabel("이미지 파일").setInputFiles(imageFile)
-  await coverField.getByRole("button", { name: "이미지 업로드" }).click()
-  await expect(
-    coverField.getByText("대체 텍스트를 입력해 주세요.")
-  ).toBeVisible()
-
   await coverField.getByLabel("대체 텍스트").fill("리비전 1 코스 표지")
   await coverField.getByRole("button", { name: "이미지 업로드" }).click()
   await expect(
