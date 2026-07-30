@@ -19,7 +19,11 @@ export default defineConfig({
     noExternal: ["zod"],
   },
   test: {
+    clearMocks: true,
     environment: "node",
     include: ["src/**/*.test.ts"],
+    restoreMocks: true,
+    unstubEnvs: true,
+    unstubGlobals: true,
   },
 })

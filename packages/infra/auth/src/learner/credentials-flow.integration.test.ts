@@ -1,5 +1,5 @@
 import { createSign, generateKeyPairSync } from "node:crypto"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { createInMemoryAuthEmailDelivery } from "#auth/email/in-memory"
 import { createLearnerAuthRuntime } from "#auth/learner/server"
@@ -23,10 +23,6 @@ const newPassword = "New-learner-password-123!"
 const expiredAt = new Date("2000-01-01T00:00:00.000Z")
 
 describe("학습자 email/password 인증 통합", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
-
   it("가입, 확인 전 차단, 이메일 확인, 로그인 순서를 강제한다", async () => {
     const database = createAuthTestDatabase()
     const emailDelivery = createInMemoryAuthEmailDelivery()

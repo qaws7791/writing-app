@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
@@ -22,10 +22,6 @@ async function openProfileNameDialog(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("프로필 이름 편집", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
   it("닫힌 상태에서는 표시 이름 입력을 보여주지 않는다", () => {
     render(<ProfileNameEditor currentName="기존 이름" />)
 

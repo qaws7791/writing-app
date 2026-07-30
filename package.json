@@ -94,6 +94,7 @@
     "generate": "turbo run generate",
     "storybook": "bun --filter @workspace/storybook dev",
     "test": "turbo test --concurrency=50%",
+    "test:watch": "vitest watch --config vitest.workspace.ts",
     "test:admin-dev-lifecycle": "bun test ./scripts/admin-dev-lifecycle.smoke.ts",
     "test:deployment-images": "bun run generate && bun scripts/test-deployment-images.ts",
     "test:deployment-bootstrap": "bun scripts/test-deployment-bootstrap.ts",

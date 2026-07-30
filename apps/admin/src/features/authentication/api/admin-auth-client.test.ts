@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import {
   requestAdminPasswordChange,
@@ -8,10 +8,6 @@ import {
 type StubbedFetch = ReturnType<typeof stubOkFetch>
 
 describe("admin auth client", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
-
   it("안전한 내부 경로는 로그인 callback과 이동 경로에 그대로 쓴다", async () => {
     const fetch = stubOkFetch()
 

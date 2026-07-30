@@ -19,7 +19,6 @@
     "generate": "orval --config orval.config.ts && bun src/scripts/generate-msw-handler-exports.ts",
     "lint": "oxlint .",
     "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/http-client",
-    "test:watch": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs watch --config vitest.workspace.ts --project @workspace/http-client",
     "typecheck": "tsc7 --noEmit"
   },
   "devDependencies": {

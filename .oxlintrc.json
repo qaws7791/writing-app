@@ -248,7 +248,7 @@
       }
     },
     {
-      "files": ["apps/web/src/**/*.{ts,tsx}"],
+      "files": ["apps/admin/src/**/*.{ts,tsx}", "apps/web/src/**/*.{ts,tsx}"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -260,9 +260,10 @@
                   "../test/*",
                   "../../test/*",
                   "../../../test/*",
-                  "../../../../test/*"
+                  "../../../../test/*",
+                  "**/test/fixtures/*"
                 ],
-                "message": "제품 소스는 테스트 지원 경계를 import할 수 없습니다. 테스트 fixture와 fake는 apps/web/src/test 안에서만 사용하세요."
+                "message": "제품 소스는 테스트 지원 경계를 import할 수 없습니다. 테스트 fixture와 fake는 앱의 test 디렉터리 안에서만 사용하세요."
               }
             ]
           }
@@ -270,7 +271,12 @@
       }
     },
     {
-      "files": ["apps/web/src/**/*.test.ts", "apps/web/src/**/*.test.tsx"],
+      "files": [
+        "apps/admin/src/**/*.test.ts",
+        "apps/admin/src/**/*.test.tsx",
+        "apps/web/src/**/*.test.ts",
+        "apps/web/src/**/*.test.tsx"
+      ],
       "rules": {
         "no-restricted-imports": "off"
       }

@@ -28,7 +28,6 @@ import ProfileRoute from "@/app/(learner)/app/profile/page"
 
 describe("프로필 route", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     serverOptionsMock.mockResolvedValue(requestOptions)
   })
 

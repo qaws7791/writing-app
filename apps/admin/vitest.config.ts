@@ -39,5 +39,7 @@ export default defineConfig({
     maxWorkers: 2,
     restoreMocks: true,
     setupFiles: ["./vitest.setup.ts"],
+    unstubEnvs: true,
+    unstubGlobals: true,
   },
 })

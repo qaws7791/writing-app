@@ -19,7 +19,6 @@
   "scripts": {
     "lint": "oxlint .",
     "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest watch --config vitest.config.ts",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {

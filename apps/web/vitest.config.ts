@@ -44,14 +44,12 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   test: {
+    clearMocks: true,
     environment: "jsdom",
-    include: [
-      "src/**/*.test.ts",
-      "src/**/*.test.tsx",
-      "test/**/*.test.ts",
-      "test/**/*.test.tsx",
-    ],
-    maxWorkers: 2,
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    restoreMocks: true,
     setupFiles: ["./vitest.setup.ts"],
+    unstubEnvs: true,
+    unstubGlobals: true,
   },
 })

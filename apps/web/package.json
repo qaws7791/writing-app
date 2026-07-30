@@ -9,7 +9,6 @@
     "lint": "oxlint .",
     "start": "node ../../scripts/run-next-standalone.mjs web",
     "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest watch --config vitest.config.ts",
     "typecheck": "node ../../scripts/run-next-typegen.mjs && tsc7 --noEmit"
   },
   "dependencies": {

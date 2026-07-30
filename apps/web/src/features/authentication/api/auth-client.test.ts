@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import type {
   createLearnerAuthClient,
   LearnerAuthClient,
@@ -11,10 +11,6 @@ const verificationCallbackUrl =
   "http://localhost:3000/login?next=%2Fapp%2Fcourses&verified=true"
 
 describe("auth client", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
-
   it("로그아웃을 auth package에 위임하고 안전한 이동 경로를 반환한다", async () => {
     const { authClient, learnerAuthClientFactory } = createAuthClientFixture()
     const webAuthClient = createWebAuthClient({

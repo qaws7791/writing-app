@@ -24,7 +24,6 @@
   "scripts": {
     "lint": "oxlint .",
     "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/auth",
-    "test:watch": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs watch --config vitest.workspace.ts --project @workspace/auth",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {

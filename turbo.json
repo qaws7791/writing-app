@@ -26,8 +26,8 @@
       "dependsOn": ["generate", "^generate", "^typecheck"]
     },
     "test": {
-      "dependsOn": ["generate", "^generate", "^test"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"]
+      "dependsOn": ["generate", "^generate"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/api/drizzle/**"]
     },
     "dev": {
       "cache": false,

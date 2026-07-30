@@ -12,11 +12,13 @@ export default defineConfig({
   },
   plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
   test: {
+    clearMocks: true,
     environment: "jsdom",
-    globals: true,
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
     restoreMocks: true,
     setupFiles: ["./vitest.setup.ts"],
+    unstubEnvs: true,
+    unstubGlobals: true,
   },
   server: {
     fs: {

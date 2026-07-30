@@ -33,7 +33,6 @@ import LessonRoute from "@/app/(lesson)/app/lesson/page"
 
 describe("레슨 route", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     serverOptionsMock.mockResolvedValue(requestOptions)
   })
 

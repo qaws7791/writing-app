@@ -48,6 +48,12 @@ const server = setupServer()
 const nativeRequest = globalThis.Request
 
 beforeAll(() => {
+  server.listen({ onUnhandledRequest: "error" })
+})
+
+beforeEach(() => {
+  // jsdom의 상대 URL 요청을 MSW가 가로챌 수 있도록 origin을 채운다.
+  // config의 unstubGlobals가 테스트마다 stub을 되돌리므로 여기서 다시 세운다.
   vi.stubGlobal(
     "Request",
     class BrowserRequest extends nativeRequest {
@@ -56,10 +62,6 @@ beforeAll(() => {
       }
     }
   )
-  server.listen({ onUnhandledRequest: "error" })
-})
-
-beforeEach(() => {
   refresh.mockReset()
 })
 
@@ -69,7 +71,6 @@ afterEach(() => {
 
 afterAll(() => {
   server.close()
-  vi.unstubAllGlobals()
 })
 
 describe("generated learner client UI integration", () => {

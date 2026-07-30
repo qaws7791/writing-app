@@ -16,7 +16,6 @@ import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client
 
 describe("server learner API client boundary", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     readServerApiBaseUrlMock.mockReturnValue("https://api.example.test")
   })
 

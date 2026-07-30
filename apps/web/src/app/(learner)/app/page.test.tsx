@@ -50,7 +50,6 @@ const emptyProgress = emptyLearnerProgressFixture
 
 describe("앱 홈 route", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     serverOptionsMock.mockResolvedValue(requestOptions)
   })
 

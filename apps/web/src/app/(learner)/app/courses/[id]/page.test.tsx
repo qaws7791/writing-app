@@ -83,7 +83,6 @@ const course: LearnerCourseDetailDto = {
 
 describe("코스 상세 route", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
     serverOptionsMock.mockResolvedValue(requestOptions)
   })
 
