@@ -41,7 +41,7 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
-/.artifacts/repomix/
+/.artifacts/
 docs/.obsidian/
 
 # Agent skills (Antigravity)
