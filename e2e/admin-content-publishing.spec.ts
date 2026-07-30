@@ -70,13 +70,6 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   const adminContext = await browser.newContext()
   const adminDiagnostics = observeBrowserContext(adminContext)
   const adminPage = await adminContext.newPage()
-  let browserUploadRequestCount = 0
-
-  await adminPage.route("**/api/admin/courses/*/assets", async (route) => {
-    browserUploadRequestCount += 1
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    await route.continue()
-  })
 
   await loginAdmin(adminPage, "owner@example.test", { nextPath: "/courses" })
   const fixture = await createAdminContentDraft(adminPage, "publish")
@@ -101,29 +94,12 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   await expect(
     coverField.getByText("대체 텍스트를 입력해 주세요.")
   ).toBeVisible()
-  expect(browserUploadRequestCount).toBe(0)
 
   await coverField.getByLabel("대체 텍스트").fill("리비전 1 코스 표지")
-  const coverUploadResponsePromise = waitForAssetUploadResponse(adminPage)
   await coverField.getByRole("button", { name: "이미지 업로드" }).click()
-  await expect(
-    coverField.getByRole("progressbar", {
-      name: "코스 표지 업로드 진행 중",
-    })
-  ).toBeVisible()
-  const coverUploadResponse = await coverUploadResponsePromise
-  expect(coverUploadResponse.status()).toBe(200)
-  const coverAsset = adminContentAssetUploadDtoSchema.parse(
-    await coverUploadResponse.json()
-  )
   await expect(
     coverField.getByRole("img", { name: "리비전 1 코스 표지" })
   ).toBeVisible()
-  expect(browserUploadRequestCount).toBe(1)
-  expect(await readNaturalImageSize(adminPage, coverAsset.url)).toEqual({
-    height: 900,
-    width: 1600,
-  })
 
   await adminPage.getByRole("button", { name: "변경 저장" }).click()
   await expect(adminPage.getByText("코스를 저장했습니다.")).toBeVisible()
@@ -132,29 +108,29 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
     adminPage.getByRole("img", { name: "리비전 1 코스 표지" })
   ).toBeVisible()
   const coverReloadedEditor = await readAdminCourseEditor(adminPage, courseId)
-  expect(coverReloadedEditor.coverAssetId).toBe(coverAsset.id)
+  const coverAsset = coverReloadedEditor.assets.find(
+    (asset) => asset.id === coverReloadedEditor.coverAssetId
+  )
+  expect(coverAsset).toMatchObject({
+    altText: "리비전 1 코스 표지",
+    kind: "course-cover",
+  })
+  if (coverAsset === undefined)
+    throw new Error("코스 표지가 저장되지 않았습니다.")
+  expect(await readNaturalImageSize(adminPage, coverAsset.url)).toEqual({
+    height: 900,
+    width: 1600,
+  })
 
   await adminPage.setViewportSize({ height: 720, width: 1280 })
   await adminPage.getByRole("button", { name: "커리큘럼" }).click()
   const readingField = adminPage.locator('section[aria-label="읽기 삽화"]')
   await readingField.getByLabel("이미지 파일").setInputFiles(imageFile)
   await readingField.getByLabel("대체 텍스트").fill("리비전 1 읽기 삽화")
-  const readingUploadResponsePromise = waitForAssetUploadResponse(adminPage)
   await readingField.getByRole("button", { name: "이미지 업로드" }).click()
   await expect(
-    readingField.getByRole("progressbar", {
-      name: "읽기 삽화 업로드 진행 중",
-    })
+    readingField.getByRole("img", { name: "리비전 1 읽기 삽화" })
   ).toBeVisible()
-  const readingUploadResponse = await readingUploadResponsePromise
-  expect(readingUploadResponse.status()).toBe(200)
-  const readingAsset = adminContentAssetUploadDtoSchema.parse(
-    await readingUploadResponse.json()
-  )
-  expect(await readNaturalImageSize(adminPage, readingAsset.url)).toEqual({
-    height: 1,
-    width: 1,
-  })
   await adminPage.getByRole("button", { name: "변경 저장" }).click()
   await expect(adminPage.getByText("코스를 저장했습니다.")).toBeVisible()
   await adminPage.reload()
@@ -163,9 +139,22 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
     adminPage.getByRole("img", { name: "리비전 1 읽기 삽화" })
   ).toBeVisible()
   const imageReloadedEditor = await readAdminCourseEditor(adminPage, courseId)
-  expect(readReadingStep(imageReloadedEditor).illustrationAssetId).toBe(
-    readingAsset.id
+  const readingAssetId =
+    readReadingStep(imageReloadedEditor).illustrationAssetId
+  const readingAsset = imageReloadedEditor.assets.find(
+    (asset) => asset.id === readingAssetId
   )
+  expect(readingAsset).toMatchObject({
+    altText: "리비전 1 읽기 삽화",
+    kind: "reading-illustration",
+  })
+  if (readingAsset === undefined) {
+    throw new Error("읽기 삽화가 저장되지 않았습니다.")
+  }
+  expect(await readNaturalImageSize(adminPage, readingAsset.url)).toEqual({
+    height: 1,
+    width: 1,
+  })
 
   await adminPage.getByRole("button", { name: "초안 발행" }).click()
   await adminPage
@@ -192,8 +181,8 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   assertPublishedDatabaseMutationRejected(
     imageReloadedEditor.curriculumVersionId
   )
-  await adminContext.close()
   adminDiagnostics.expectNoIssues()
+  await adminContext.close()
 })
 
 test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된다", async ({
@@ -262,11 +251,14 @@ test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된�
   await revisionTwoImageField
     .getByLabel("대체 텍스트")
     .fill("리비전 2 읽기 삽화")
-  const replacementResponsePromise = waitForAssetUploadResponse(adminPage)
   await revisionTwoImageField
     .getByRole("button", { name: "이미지 교체" })
     .click()
-  expect((await replacementResponsePromise).status()).toBe(200)
+  await expect(
+    revisionTwoImageField.getByRole("img", {
+      name: "리비전 2 읽기 삽화",
+    })
+  ).toBeVisible()
   await adminPage.getByRole("button", { name: "변경 저장" }).click()
   await expect(adminPage.getByText("코스를 저장했습니다.")).toBeVisible()
   await adminPage.getByRole("button", { name: "초안 발행" }).click()
@@ -298,10 +290,10 @@ test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된�
     "리비전 3 draft는 발행본과 분리되어 수정됩니다."
   )
 
-  await learnerContext.close()
-  await adminContext.close()
   learnerDiagnostics.expectNoIssues()
   adminDiagnostics.expectNoIssues()
+  await learnerContext.close()
+  await adminContext.close()
 })
 
 test("학습자가 모바일에서 10개 활동 유형을 완료한다", async ({ browser }) => {
@@ -311,8 +303,8 @@ test("학습자가 모바일에서 10개 활동 유형을 완료한다", async (
   const adminPage = await adminContext.newPage()
   await loginAdmin(adminPage, "owner@example.test", { nextPath: "/courses" })
   const fixture = await createPublishedAdminContent(adminPage, "activities")
-  await adminContext.close()
   adminDiagnostics.expectNoIssues()
+  await adminContext.close()
 
   const learnerContext = await browser.newContext(learnerMobileContextOptions)
   const learnerDiagnostics = observeBrowserContext(learnerContext)
@@ -326,8 +318,8 @@ test("학습자가 모바일에서 10개 활동 유형을 완료한다", async (
   await expect(startButton).toBeEnabled()
   await startButton.click()
   await completeAllMobileActivityTypes(learnerPage, fixture)
-  await learnerContext.close()
   learnerDiagnostics.expectNoIssues()
+  await learnerContext.close()
 })
 
 async function createAdminContentDraft(
@@ -722,14 +714,6 @@ function readReadingStep(editor: AdminCourseEditorDocument) {
     throw new Error("E2E fixture 첫 스텝이 READING이 아닙니다.")
   }
   return step
-}
-
-function waitForAssetUploadResponse(page: Page) {
-  return page.waitForResponse(
-    (response) =>
-      response.request().method() === "POST" &&
-      /\/api\/admin\/courses\/[^/]+\/assets$/u.test(response.url())
-  )
 }
 
 async function readNaturalImageSize(

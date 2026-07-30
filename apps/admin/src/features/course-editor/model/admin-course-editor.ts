@@ -1,20 +1,30 @@
 import { adminCourseEditorDocumentSchema } from "@workspace/contracts/content/admin-courses"
 import type {
   getAdminCourseEditor,
-  publishAdminCourse,
   uploadAdminContentAsset,
 } from "@workspace/http-client/admin"
+import type { AdminRequestError } from "@/shared/http/admin-api-client"
 
 export type AdminCourseDetail = Awaited<ReturnType<typeof getAdminCourseEditor>>
-export type AdminCoursePublishResult = Awaited<
-  ReturnType<typeof publishAdminCourse>
->
 export type AdminContentAsset = Awaited<
   ReturnType<typeof uploadAdminContentAsset>
 >
 export type AdminContentAssetKind = NonNullable<
   Parameters<typeof uploadAdminContentAsset>[1]
 >["kind"]
+export type AdminCourseEditorCommandResult =
+  | Readonly<{
+      latest: AdminCourseDetail
+      status: "conflict"
+    }>
+  | Readonly<{
+      error: AdminRequestError
+      status: "error"
+    }>
+  | Readonly<{
+      status: "ok"
+      value: AdminCourseDetail
+    }>
 
 export const adminCourseEditorSchema =
   adminCourseEditorDocumentSchema.transform(

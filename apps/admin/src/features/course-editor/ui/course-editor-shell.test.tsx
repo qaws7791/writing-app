@@ -6,21 +6,12 @@ import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-co
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
 
-const { getCourseEditorMock, routerPushMock, uploadAssetMock } = vi.hoisted(
-  () => ({
-    getCourseEditorMock: vi.fn(),
-    routerPushMock: vi.fn(),
-    uploadAssetMock: vi.fn(),
-  })
-)
+const { routerPushMock } = vi.hoisted(() => ({
+  routerPushMock: vi.fn(),
+}))
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: routerPushMock }),
-}))
-
-vi.mock("@workspace/http-client/admin", () => ({
-  getAdminCourseEditor: getCourseEditorMock,
-  uploadAdminContentAsset: uploadAssetMock,
 }))
 
 const course: AdminCourseDetail = adminCourseEditorSchema.parse({
@@ -57,10 +48,11 @@ const course: AdminCourseDetail = adminCourseEditorSchema.parse({
   ],
 })
 
+const uploadAssetMock = vi.fn()
+
 describe("CourseEditorShell", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getCourseEditorMock.mockResolvedValue(course)
     routerPushMock.mockReset()
     uploadAssetMock.mockReset()
   })
@@ -72,7 +64,12 @@ describe("CourseEditorShell", () => {
       value: { ...draft, editVersion: draft.editVersion + 1 },
     }))
     let finishUpload:
-      | ((value: AdminCourseDetail["assets"][number]) => void)
+      | ((
+          value: Readonly<{
+            status: "ok"
+            value: AdminCourseDetail["assets"][number]
+          }>
+        ) => void)
       | undefined
     uploadAssetMock.mockReturnValue(
       new Promise((resolve) => {
@@ -83,15 +80,9 @@ describe("CourseEditorShell", () => {
     render(
       <CourseEditorShell
         course={course}
-        publishCourse={async () => ({
-          status: "ok",
-          value: {
-            curriculumVersionId: course.curriculumVersionId,
-            publishedAt: "2026-07-17T00:00:00.000Z",
-            revision: course.revision,
-          },
-        })}
+        publishCourse={async (draft) => ({ status: "ok", value: draft })}
         saveCourse={saveCourse}
+        uploadAdminContentAsset={uploadAssetMock}
       />
     )
 
@@ -107,14 +98,17 @@ describe("CourseEditorShell", () => {
     ).toBeVisible()
 
     finishUpload?.({
-      altText: "글쓰기 코스 표지",
-      byteSize: 1024,
-      contentType: "image/webp",
-      courseId: course.id,
-      curriculumVersionId: course.curriculumVersionId,
-      id: "asset-cover-1",
-      kind: "course-cover",
-      url: "https://assets.example.test/cover.webp",
+      status: "ok",
+      value: {
+        altText: "글쓰기 코스 표지",
+        byteSize: 1024,
+        contentType: "image/webp",
+        courseId: course.id,
+        curriculumVersionId: course.curriculumVersionId,
+        id: "asset-cover-1",
+        kind: "course-cover",
+        url: "https://assets.example.test/cover.webp",
+      },
     })
 
     expect(
@@ -130,7 +124,7 @@ describe("CourseEditorShell", () => {
     )
   })
 
-  it("저장된 draft를 확인 뒤 발행하고 다음 draft를 다시 읽는다", async () => {
+  it("저장된 draft를 확인 뒤 발행하고 action이 반환한 다음 draft를 반영한다", async () => {
     const user = userEvent.setup()
     const nextDraft = {
       ...course,
@@ -140,20 +134,15 @@ describe("CourseEditorShell", () => {
     }
     const publishCourse = vi.fn(async () => ({
       status: "ok" as const,
-      value: {
-        curriculumVersionId: course.curriculumVersionId,
-        publishedAt: "2026-07-17T00:00:00.000Z",
-        revision: course.revision,
-      },
+      value: nextDraft,
     }))
-    const loadLatestCourse = vi.fn(async () => nextDraft)
-    getCourseEditorMock.mockImplementation(loadLatestCourse)
 
     render(
       <CourseEditorShell
         course={course}
         publishCourse={publishCourse}
         saveCourse={async (draft) => ({ status: "ok", value: draft })}
+        uploadAdminContentAsset={uploadAssetMock}
       />
     )
 
@@ -166,7 +155,6 @@ describe("CourseEditorShell", () => {
     await user.click(within(dialog).getByRole("button", { name: "발행하기" }))
 
     expect(publishCourse).toHaveBeenCalledWith(course)
-    expect(loadLatestCourse).toHaveBeenCalledWith(course.id)
     expect(await screen.findByText("리비전 3을 발행했습니다.")).toBeVisible()
     await waitFor(() =>
       expect(
@@ -310,15 +298,9 @@ function renderCourseEditor() {
   return render(
     <CourseEditorShell
       course={course}
-      publishCourse={async () => ({
-        status: "ok",
-        value: {
-          curriculumVersionId: course.curriculumVersionId,
-          publishedAt: "2026-07-17T00:00:00.000Z",
-          revision: course.revision,
-        },
-      })}
+      publishCourse={async (draft) => ({ status: "ok", value: draft })}
       saveCourse={async (draft) => ({ status: "ok", value: draft })}
+      uploadAdminContentAsset={uploadAssetMock}
     />
   )
 }

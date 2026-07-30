@@ -136,6 +136,7 @@
     "typescript/triple-slash-reference": "error",
     "typescript/no-non-null-assertion": "error",
     "workspace/catch-preserves-cause": "error",
+    "workspace/no-dto-domain-alias": "error",
     "workspace/no-unsafe-unknown-cast": "error"
   },
   "overrides": [

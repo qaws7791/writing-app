@@ -3,12 +3,12 @@
 import { Button } from "@workspace/ui/components/ui/button"
 import { Surface } from "@workspace/ui/components/ui/surface"
 import type {
-  LearnerCompleteStepResultDto,
-  LearnerLessonDto as Lesson,
-} from "@/shared/http/learner-api-client"
+  Lesson,
+  LessonCompleteStepResult,
+} from "@/features/lesson-session/model/lesson-view-model"
 
 type LessonCompletionTransition = Extract<
-  LearnerCompleteStepResultDto,
+  LessonCompleteStepResult,
   { readonly status: "lesson_completed" }
 >
 

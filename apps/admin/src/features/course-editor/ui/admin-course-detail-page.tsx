@@ -2,8 +2,9 @@ import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-she
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type {
   AdminCourseDetail,
-  AdminCoursePublishResult,
+  AdminCourseEditorCommandResult,
 } from "@/features/course-editor/model/admin-course-editor"
+import type { UploadAdminContentAsset } from "@/features/course-editor/model/content-asset-upload"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 
@@ -11,14 +12,16 @@ export function AdminCourseDetailPage({
   courseResult,
   publishCourse,
   saveCourse,
+  uploadAdminContentAsset,
 }: {
   readonly courseResult: AdminRequestResult<AdminCourseDetail>
   readonly publishCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminRequestResult<AdminCoursePublishResult>>
+  ) => Promise<AdminCourseEditorCommandResult>
   readonly saveCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminRequestResult<AdminCourseDetail>>
+  ) => Promise<AdminCourseEditorCommandResult>
+  readonly uploadAdminContentAsset: UploadAdminContentAsset
 }) {
   if (courseResult.status === "error") {
     return (
@@ -39,6 +42,7 @@ export function AdminCourseDetailPage({
       course={courseResult.value}
       publishCourse={publishCourse}
       saveCourse={saveCourse}
+      uploadAdminContentAsset={uploadAdminContentAsset}
     />
   )
 }

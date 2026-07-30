@@ -20,6 +20,8 @@
 | `workspace-dependency-policy.md`        | 의존성 추가·갱신의 정책을 정의한다.                      |
 | `package-interface-and-import-rules.md` | package 공개 표면과 import 경계를 정의한다.              |
 | `repository-architecture-tooling.md`    | architecture 검증 도구의 책임과 사용 원칙을 정의한다.    |
+| `code-style.md`                         | 네이밍, 정본 위치, 오류 처리, 포맷·lint 원칙을 정의한다. |
+| `code-review.md`                        | PR·코드 리뷰에서 확인할 항목을 정의한다.                 |
 | `frontend-development.md`               | 프론트엔드 구현 경계와 성능 원칙을 정의한다.             |
 | `lesson-runtime.md`                     | 레슨 전이, draft, 채점과 편집기의 구현 경계를 정의한다.  |
 | `tech-stack.md`                         | 기술 선택과 교체 판단 기준을 정의한다.                   |
@@ -38,6 +40,9 @@
 | `database-backup-restore.md`            | 백업·독립 복구 검증 절차를 정의한다.                     |
 | `rollback.md`                           | 장애 시 코드·데이터 롤백 판단 기준을 정의한다.           |
 | `adr/`                                  | 되돌리기 어려운 기술 결정의 이유와 대안을 기록한다.      |
+| `adr/ADR-0025-*.md`                     | 모듈 공개 표면 4개 subpath 고정.                         |
+| `adr/ADR-0026-*.md`                     | 운영 리포팅 읽기 뷰 채택과 이벤트 대안 제외.             |
+| `adr/ADR-0027-*.md`                     | 학습자 데이터 삭제의 모듈 포트 소유.                     |
 
 ## 관리 기준
 

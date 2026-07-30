@@ -39,7 +39,7 @@ import { CoursesPage } from "@/features/course-catalog/ui/courses-page"
 import { LessonExperience } from "@/features/lesson-session/ui/lesson-experience"
 import {
   learnerAiLessonFixture,
-  learnerConflictingWriteLessonFixture,
+  learnerConflictingWriteLessonWireFixture,
   learnerCourseSummaryFixture,
   learnerWriteLessonFixture,
 } from "@/test/learner-api-fixtures"
@@ -110,7 +110,7 @@ describe("generated learner client UI integration", () => {
           message: "초안 버전이 충돌했습니다.",
         })
       ),
-      getGetLessonMockHandler200(learnerConflictingWriteLessonFixture)
+      getGetLessonMockHandler200(learnerConflictingWriteLessonWireFixture)
     )
     render(<LessonExperience lesson={learnerWriteLessonFixture} />)
 

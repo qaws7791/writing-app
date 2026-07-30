@@ -10,7 +10,7 @@
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
 - 공유 UI는 `packages/shared/ui`에 둔다. `components/ui`는 shadcn 프리미티브, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점, 라우팅은 각 앱 feature에서 조합한다.
 - 학습자 조회·변경 응답과 body는 `@workspace/http-client/learner`의 generated 함수에서 유도한 타입을 사용한다. `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
-- 어드민의 대시보드·분석·코스·사용자·세션 조회와 변경은 `@workspace/http-client/admin`의 generated 함수를 직접 호출한다. 서버 전용 request options는 base URL, canonical session cookie와 상태 변경 요청의 `Origin`만 제공하고, generated 오류는 직렬화 가능한 앱 오류로 한 번만 정규화한다.
+- 어드민의 대시보드·분석·코스·사용자·세션 조회와 변경은 route Server Component, Server Action 또는 가까운 브라우저 event handler에서 `@workspace/http-client/admin`의 generated 함수를 직접 호출한다. 서버 전용 request options는 base URL, canonical session cookie와 상태 변경 요청의 `Origin`만 제공하고, generated 오류는 직렬화 가능한 앱 오류로 한 번만 정규화한다.
 
 ## 기술과 적용 범위
 
@@ -89,7 +89,7 @@
 
 `apps/web`은 `@workspace/http-client/learner`의 generated 함수만 endpoint 경계로 사용한다. `src/shared/http/learner-api-client.ts`는 generated 오류 정착과 함수 반환 타입 별칭만, `src/server/http/learner-api-client.ts`는 내부 API base URL·학습자 cookie를 담은 서버 request options만 소유한다. 브라우저 함수는 현재 origin의 상대 learner API 경계를 사용한다. `WritingAppApi`, feature별 `Pick<>` Port, 수동 URL adapter와 feature server DAL은 두지 않는다.
 
-`apps/admin`은 `@workspace/http-client/admin`의 generated 함수만 endpoint 경계로 사용한다. `src/shared/http/admin-api-client.ts`는 generated 오류를 직렬화 가능한 result로 정착하고, `src/server/http/admin-api-request-options.ts`는 내부 API base URL·관리자 cookie·상태 변경 요청의 `Origin`을 제공한다. route Server Component와 코스 편집기의 가까운 event handler가 generated 함수를 직접 호출하며 feature DAL·브라우저 adapter·중앙 `AdminApi`를 두지 않는다. 변경 입력은 canonical Zod schema로 검증하되 성공 응답 DTO는 generated 반환 타입을 그대로 사용한다.
+`apps/admin`은 `@workspace/http-client/admin`의 generated 함수만 endpoint 경계로 사용한다. `src/shared/http/admin-api-client.ts`는 generated 오류를 직렬화 가능한 result로 정착하고, `src/server/http/admin-api-request-options.ts`는 내부 API base URL·관리자 cookie·상태 변경 요청의 `Origin`을 제공한다. route Server Component는 초기 조회를 직접 수행한다. 코스 편집 저장·발행·파일 업로드는 feature Server Action이 입력과 세션을 검증한 뒤 generated 함수를 호출하며, 충돌 시 같은 서버 경계에서 최신 draft를 조회해 직렬화 가능한 명령 결과로 반환한다. Client Component에는 초기 데이터와 Server Action 참조만 전달하고 feature DAL·브라우저 adapter·중앙 `AdminApi`를 두지 않는다. Next의 Action 본문 한도는 canonical 파일 상한에 multipart 오버헤드만 허용하고, 실제 파일 크기 제한은 API가 계속 소유한다. 성공 응답 DTO는 generated 반환 타입을 그대로 사용한다.
 
 두 앱의 browser generated client는 현재 앱 origin의 상대 API 경계를 사용한다. 서버 request options는 검증된 내부 `API_BASE_URL`을 사용하며 이 값은 Client Component prop이나 browser bundle에 전달하지 않는다. 로컬 개발에서는 각 Next 설정의 development rewrite가 같은 상대 경로를 내부 API로 전달하고 production에서는 Caddy가 이를 소유한다.
 
@@ -125,7 +125,7 @@
 
 ## 인증과 redirect
 
-학습자 앱의 보호 라우트는 `apps/web/src/server/http/learner-api-client.ts`가 canonical 학습자 cookie를 읽어 server request options를 만들 수 있는지 확인하고, cookie 부재나 generated API 인증 실패를 `/login`으로 보낸다. 로그인 `next` 값은 `src/features/authentication/model/auth-navigation.ts`의 허용 규칙을 통과해야 한다. `app`의 page와 layout은 URL·redirect·generated 호출·화면 조립만 담당한다.
+학습자 앱의 보호 라우트는 `apps/web/src/server/http/learner-api-client.ts`가 canonical 학습자 cookie를 읽어 server request options를 만들 수 있는지 확인하고, cookie 부재나 generated API 인증 실패를 `/login`으로 보낸다. 보호 layout은 generated profile 조회로 세션 유효성을 확인한 뒤에만 인증 전용 shell을 렌더링하며, route별 안전한 `next` redirect는 각 page가 소유한다. 로그인 `next` 값은 `src/features/authentication/model/auth-navigation.ts`의 허용 규칙을 통과해야 한다. `app`의 page와 layout은 URL·redirect·generated 호출·화면 조립만 담당한다.
 
 학습자 feature adapter는 안전한 `next` 검증, 절대 callback URL 생성과 한국어 화면 상태만 소유하고 `@workspace/auth/learner/client`에 Google·email/password 인증과 확인 메일 재전송을 위임한다. admin·learner client는 `@workspace/contracts/api-error`의 canonical parser를 사용하며, 해석할 수 없는 응답은 `CONTRACT_ERROR`로 정규화한다. 브라우저 요청은 학습자 origin의 상대 `/api/auth` 경로와 host-only cookie를 사용한다. API는 Better Auth `trustedOrigins`와 상태 변경 요청의 origin 검증으로 학습자 웹 origin을 확인한다.
 

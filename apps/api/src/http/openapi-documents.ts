@@ -18,10 +18,6 @@ const contractOnly = (): never => {
 }
 
 const learnerDependencies = {
-  aiFeedback: {
-    command: { requestFeedback: contractOnly },
-    session: { resolveLearner: contractOnly },
-  },
   health: { isDatabaseReady: contractOnly },
   identity: {
     application: { changeLearnerDisplayName: contractOnly },

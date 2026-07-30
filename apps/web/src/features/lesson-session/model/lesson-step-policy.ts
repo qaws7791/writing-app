@@ -1,14 +1,14 @@
 import type {
-  LearnerLessonStepDto,
-  LearnerStepDraftAnswerDto,
-  LearnerStepEvaluationDto,
-} from "@/shared/http/learner-api-client"
+  LessonStep,
+  LessonStepDraftAnswer,
+  LessonStepEvaluation,
+} from "@/features/lesson-session/model/lesson-view-model"
 
-export type LessonStepCheckedState = NonNullable<LearnerStepEvaluationDto>
+export type LessonStepCheckedState = NonNullable<LessonStepEvaluation>
 
 export function isLessonStepSubmittable(
-  step: LearnerLessonStepDto,
-  payload: LearnerStepDraftAnswerDto | undefined
+  step: LessonStep,
+  payload: LessonStepDraftAnswer | undefined
 ): boolean {
   switch (step.type) {
     case "AI_FEEDBACK":
@@ -47,7 +47,7 @@ export function isLessonStepSubmittable(
   }
 }
 
-export function getLessonStepActionLabel(step: LearnerLessonStepDto): string {
+export function getLessonStepActionLabel(step: LessonStep): string {
   return step.type === "READING" || step.type === "COMPARE"
     ? "이해했어요"
     : step.type === "AI_FEEDBACK"

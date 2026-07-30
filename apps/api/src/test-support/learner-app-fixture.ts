@@ -121,14 +121,6 @@ export function createTestLearnerApp(
   const app = createLearnerApp(input.runtime ?? {})
 
   registerLearnerContractRoutes(app, {
-    aiFeedback: {
-      command: {
-        async requestFeedback() {
-          throw new Error("Unexpected test fixture call: AI feedback")
-        },
-      },
-      session: learningSession,
-    },
     health: input.health ?? { isDatabaseReady: () => true },
     identity: {
       application: {

@@ -83,7 +83,7 @@ export type LearningCommandError =
   | LearningCollaboratorError
   | LearningAiFeedbackError
 
-type LearningReadError =
+export type LearningReadError =
   | Readonly<{ kind: "course-not-found" }>
   | Readonly<{ kind: "lesson-locked" }>
   | Readonly<{ kind: "lesson-not-found" }>

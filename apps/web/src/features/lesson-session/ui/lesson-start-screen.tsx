@@ -1,6 +1,6 @@
 "use client"
 
-import type { LearnerLessonDto as Lesson } from "@/shared/http/learner-api-client"
+import type { Lesson } from "@/features/lesson-session/model/lesson-view-model"
 import {
   LessonIntroHeader,
   LessonShell,

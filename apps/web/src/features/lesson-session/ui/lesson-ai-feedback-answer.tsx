@@ -7,7 +7,7 @@ import type {
   LessonAiFeedbackRequest,
   LessonAiFeedbackSkipOutcome,
 } from "@/features/lesson-session/model/lesson-logic"
-import type { LearnerLessonStepDto as LessonStep } from "@/shared/http/learner-api-client"
+import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 
 type AiFeedbackLessonStep = Extract<
   LessonStep,

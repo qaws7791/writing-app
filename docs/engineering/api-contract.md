@@ -24,6 +24,20 @@
 - 예상하지 못한 내부 오류는 원인을 숨기고 응답과 구조화 로그에 같은 request ID를 남긴다.
 - HTTP contract 변경은 consumer와 server를 같은 변경에서 갱신하며, 호환되지 않는 변경은 명시적인 migration 경로를 제공한다.
 
+## 서버 내부 오류 변환
+
+공개 wire 오류(`packages/shared/contracts`의 `api-error`)는 바꾸지 않는다. 서버 내부만 아래 3층으로 축약한다.
+
+1. **domain / application 실패** — `packages/shared/kernel`의 `Failure`와 모듈 실패 union. 예외에서 만든 실패는 `cause`를 담는다.
+2. **`AppError`** — HTTP interface mapper가 status·code·header를 결정한다. 이름만 바꾸는 중간 shape는 두지 않는다.
+3. **wire 응답** — 공개 schema로 직렬화한다.
+
+규칙:
+
+- 계층 간 변환은 정보를 추가할 때만 허용한다.
+- 실패 variant 누락은 `assertExhaustiveHttpResult`와 `.typecheck.ts`가 컴파일 시 차단한다.
+- 재시도 가능 여부는 전송 계층이 추측하지 않는다. wire의 `Retry-After`는 위 계약 원칙을 따른다.
+
 ## 인증과 브라우저 경계
 
 - 인증 방식과 권한 정책은 제품·보안 문서가 소유하고, 현재 endpoint와 middleware 배치는 코드가 소유한다.

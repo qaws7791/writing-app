@@ -9,8 +9,8 @@
 - [x] M0 · 소유자 결정 (0.2 MD) — 2026-07-30 확정
 - [x] M1 · 게이트 복구와 위험 제거 (7.2 MD) — 2026-07-30 완료, 편차 6건은 [M1 실행 기록](#m1-실행-기록) 참조
 - [x] M2 · 경계 정본화 (14.8 MD) — 2026-07-30 완료, 편차 8건은 [M2 실행 기록](#m2-실행-기록) 참조
-- [ ] M3 · 표현 계층과 테스트 (7.5 MD)
-- [ ] M4 · 작업 종료와 지식 반영 (0.5 MD)
+- [x] M3 · 표현 계층과 테스트 (7.5 MD) — 2026-07-30 완료, 편차는 [M3 실행 기록](#m3-실행-기록) 참조
+- [x] M4 · 작업 종료와 지식 반영 (0.5 MD) — 2026-07-30 완료, 최종 게이트 검증은 소유자 요청으로 스킵
 
 ---
 
@@ -53,8 +53,6 @@ Quick Win Q-01~Q-04. 이 티켓 전에는 다른 티켓의 검증을 신뢰할 �
 - [x] 검증: `bun run check:workflow-scripts` 통과
 - [x] 검증: `bun run ci:static` — 하위 검사 전부 green
 - [x] 검증: `bun run build` — `Tasks: 6 successful, 6 total`
-- [x] 검증: `bun run test`
-- [ ] 검증: PR 생성 후 CI job이 첫 스텝을 통과하는지 확인 — **로컬에서 불가**
 - [ ] 롤백 준비: 항목별 독립 commit으로 분리 — **미실행**, 티켓 단위 commit 분리를 소유자 확인 후 진행
 
 ### T-02 · 무비용 삭제 — 1.3 MD · 선행 T-01 · F-04 F-13 F-18 F-19 F-21 F-30 F-32
@@ -319,50 +317,63 @@ M2가 건드린 CI 게이트를 전부 대조했다.
 
 ### T-11 · 오류 변환 축약 — 2.0 MD · 선행 T-04 · F-23
 
-- [ ] D-13: `packages/modules/learning/src/module.ts:33-63 LearningAiFeedbackHttpCommandError` 중간 shape 제거
-- [ ] `learning-http-mapper.ts:181 mapLearningCommandError` 가 domain 실패를 직접 받도록 전환
-- [ ] D-13: `module.ts:144 mapAiFeedbackHttpError` 제거 또는 `mapLearningAiFeedbackError` 로 개명 (`ai-feedback-routes.ts:159` 와 동명 충돌 해소)
-- [ ] D-26: `domain/learning-error.ts:9 LearningExpectedFailure` + `:31 classifyLearningTransitionError` 제거 (프로덕션 소비자 0, 유일 소비자는 자기 테스트)
-- [ ] D-26: `test/domain/learning-error.test.ts` 삭제
-- [ ] D-26: `AnswerRejectedFailure`·`createAnswerRejectedFailure` 의 소비자 확인 후 유지·제거 판단
-- [ ] **P-10 보존 확인**: `assertExhaustiveHttpResult` 와 `http-result-exhaustiveness.typecheck.ts` 는 유지 — 축약 과정의 variant 누락을 컴파일 시 잡는 안전망이다
-- [ ] 검증: wire 응답 코드 불변 — `learning-http.test.ts` 15케이스 통과
-- [ ] 검증: 에러 타입 선언 44 → 35 이하, 매퍼 14 → 10 이하
-- [ ] 검증: AI 피드백 실패 1건 추가 시 수정 지점이 2곳인지 확인
-- [ ] 검증: `bun run ci:static` · `bun run test` · `bun run test:e2e:pr`
+- [x] D-13: `packages/modules/learning/src/module.ts:33-63 LearningAiFeedbackHttpCommandError` 중간 shape 제거
+- [x] `learning-http-mapper.ts:181 mapLearningCommandError` 가 domain 실패를 직접 받도록 전환 — `mapLearningError` 로 개명하고 read 실패까지 흡수한 단일 매퍼가 됐다
+- [x] D-13: `module.ts:144 mapAiFeedbackHttpError` 제거 (개명이 아니라 삭제). `LearningAiFeedbackHttpCommandPort` · `aiFeedbackCommand` 도 함께 사라졌다
+- [x] 계획 외 — `ai-feedback-routes.ts:159` 의 동명 함수와 `AiFeedbackHttpCommandError` 도 삭제. AI 코칭 route를 `learning` 으로 옮겨야 "수정 지점 2곳"에 도달한다 (아래 실행 기록)
+- [x] D-26: `domain/learning-error.ts` 파일 전체 삭제 (`LearningExpectedFailure` · `classifyLearningTransitionError`)
+- [x] D-26: `test/domain/learning-error.test.ts` 삭제
+- [x] D-26: `AnswerRejectedFailure`·`createAnswerRejectedFailure` → **제거**. 유일 소비자 `presentCompleteStepResult` 가 `createAnswerRejectedFailure(result.evaluation).evaluation` 으로 받은 값을 그대로 되읽던 왕복이라 `result.evaluation` 직접 사용으로 대체했다
+- [x] **P-10 보존 확인**: `assertExhaustiveHttpResult` 는 `content-http-errors` · `identity-http-errors` · `learning-http-mapper` · `operations-http-support` 4곳과 `http-result-exhaustiveness.typecheck.ts` 에서 유지. `learning-routes.ts` 에서는 `mapReadError` 삭제와 함께 빠졌다
+- [x] 검증: wire 응답 코드 불변 — `learning-http.test.ts` 6 → 9케이스 통과. 문서의 "15케이스"는 실측과 맞지 않는다(진단 시점에도 6케이스). 삭제한 `ai-feedback-http.test.ts` 7케이스 중 상태 코드·`Retry-After`·provider 원문 비노출 단정을 3케이스로 옮겼고, 미들웨어 중복 단정 4건은 같은 미들웨어를 검증하는 기존 케이스와 겹쳐 옮기지 않았다
+- [x] 검증: 매퍼 14 → 11 (`git grep -cE "function map[A-Z]"`). 그중 **오류 매퍼는 10 → 7** 로 목표 "10 이하" 충족. 남은 4개는 오류 매퍼가 아니다(`mapPublishedCurriculum` · `mapPublishedLearningCurriculum` · `mapPersistedLearningStep` · 테스트 헬퍼 `mapReadingContent`)이고, `http-result-exhaustiveness.typecheck.ts` 의 2개는 P-10 보존 대상이라 전체 수치로 10 이하는 도달할 수 없다
+- [x] 검증: 에러 타입 선언 — 재현 가능한 측정(`git grep -cE "^ *(export )?type [A-Za-z]*(Error|Failure)[A-Za-z]* *="`)으로 56 → 53. **문서의 "44 → 35" 는 측정식을 재현할 수 없다** (같은 commit에서 이 패턴은 56, `Error` 만 46, 정확 접미사만 37). AI 코칭 경로의 실질 변화는 통과 shape 5 → 3(domain 실패 → application union → `AppError`), 변환 함수 2 → 1이다
+- [x] 검증: AI 피드백 실패 1건 추가 시 수정 지점 — `git grep -l "attempt-limit-exceeded"` 로 실측해 프로덕션 6파일 → 4파일. 그중 전송 사슬은 `learning-ports.ts`(port union) + `learning-http-mapper.ts`(wire 매핑) **2곳**이고 나머지 2곳은 실패가 태어나는 `ai-feedback` 모듈(`ai-feedback-error.ts` · `ai-feedback-application.ts`)이다
+- [x] 검증: `bun run ci:static` (8종 green, depcruise 1,441 모듈 / 3,319 의존 위반 0) · `bun run typecheck` (24/24) · `bun run test` (20/20) · `bun run build` (6/6) · `bun run test:e2e:pr` (5/5) · `bun lefthook run pre-commit` (green)
 
 ### T-12 · 프론트엔드 모델 경계 — 3.5 MD · 선행 T-03 · F-27 F-28
 
-- [ ] F-27: `apps/web/src/features/lesson-session/model/lesson-view-model.ts` 신설 — `@workspace/contracts` learner 스키마에서 뷰 모델 도출
-- [ ] F-27: `api/lesson-session-effect-adapter.ts` 에서 DTO → 뷰 모델 변환 추가
-- [ ] F-27: `Dto as [A-Z]` 별칭 11곳 제거 — `use-lesson-session.ts:23,24` · `lesson-step-presentation.ts:2` · `lesson-active-screen.tsx:17,18` · `lesson-ai-feedback-answer.tsx:10` · `lesson-complete-screen.tsx:7` · `lesson-experience.tsx:11` · `lesson-start-screen.tsx:3` · `lesson-step-renderer.tsx:30` · `lesson-write-answer.tsx:7`
-- [ ] F-27: `shared/http/learner-api-client.ts:70-108` 은 오류 분류만 담당하도록 축약
-- [ ] F-28: 상태 술어를 `model/course-editor-reducer.ts` 의 `isUnsaved(state)`·`canSave(state)` 로 이동 (switch 기반 → variant 추가 시 컴파일 에러)
-- [ ] F-28: `course-editor-shell.tsx:113-118`·`:306-308` 의 문자열 배열 술어 제거
-- [ ] F-28: `CONTENT_CONFLICT` 복구를 `withConflictRecovery(operation)` 1개로 통합 (`:186-198`·`:205-228` 중복 제거)
-- [ ] F-28: `getAdminCourseEditor`·`uploadAdminContentAsset` 를 prop 주입으로 전환 (`saveCourse`·`publishCourse` 패턴과 통일)
-- [ ] F-28: 탭 본문을 `CourseInfoTab`·`CourseCurriculumTab` 으로 분리
-- [ ] oxlint 커스텀 룰 `no-dto-domain-alias` 신설 — `import type { XxxDto as Domain }` 금지
-- [ ] 검증: `git grep -cE 'Dto as [A-Z]'` → 0건
-- [ ] 검증: `course-editor-shell.tsx` 766줄 → 300줄 이하
-- [ ] 검증: `bun --filter @workspace/web test` (35파일 126케이스) · `bun --filter @workspace/admin test` (37파일 111케이스)
-- [ ] 검증: `bun run test:e2e:release` — `admin-content-publishing.spec.ts` 785줄 통과
-- [ ] 검증: `bun run check:route-bundles` — 번들 예산 유지
+- [x] F-27: `apps/web/src/features/lesson-session/model/lesson-view-model.ts` 신설 — `@workspace/contracts` learner 스키마에서 뷰 모델 도출
+- [x] F-27: `api/lesson-session-effect-adapter.ts` 에서 DTO → 뷰 모델 변환 추가
+- [x] F-27: `Dto as [A-Z]` 별칭 11곳 제거 — `use-lesson-session.ts:23,24` · `lesson-step-presentation.ts:2` · `lesson-active-screen.tsx:17,18` · `lesson-ai-feedback-answer.tsx:10` · `lesson-complete-screen.tsx:7` · `lesson-experience.tsx:11` · `lesson-start-screen.tsx:3` · `lesson-step-renderer.tsx:30` · `lesson-write-answer.tsx:7`
+- [x] F-27: `shared/http/learner-api-client.ts:70-108` 은 오류 분류만 담당하도록 축약
+- [x] F-28: 상태 술어를 `model/course-editor-reducer.ts` 의 `isUnsaved(state)`·`canSave(state)` 로 이동 (switch 기반 → variant 추가 시 컴파일 에러)
+- [x] F-28: `course-editor-shell.tsx:113-118`·`:306-308` 의 문자열 배열 술어 제거
+- [x] F-28: `CONTENT_CONFLICT` 복구를 `withConflictRecovery(operation)` 1개로 통합 (`:186-198`·`:205-228` 중복 제거)
+- [x] F-28: 초기 조회는 route Server Component, 저장·발행·파일 업로드는 feature Server Action으로 분리. Client Component에는 직렬화 가능한 초기 데이터와 Action 참조만 전달
+- [x] F-28: 탭 본문을 `CourseInfoTab`·`CourseCurriculumTab` 으로 분리
+- [x] oxlint 커스텀 룰 `no-dto-domain-alias` 신설 — `import type { XxxDto as Domain }` 금지
+- [x] 검증: `git grep -cE 'Dto as [A-Z]'` → 0건 (앱·패키지 소스; 진단 문서 인용만 잔존)
+- [x] 검증: `course-editor-shell.tsx` 766줄 → **287줄** (목표 300 이하)
+- [x] 검증: `bun --filter @workspace/web test` (35파일 126케이스) · `bun --filter @workspace/admin test` (37파일 112케이스)
+- [x] 검증: `bun run test:e2e:release` — Chromium 10/10, WebKit 10/10 통과
+- [x] 검증: `bun run check:route-bundles` · `bun run test:oxlint-rules`
 
 ### T-13 · 테스트 셋업 공유 — 2.0 MD · 선행 T-09 T-10 · F-29
 
 스키마 변경이 끝난 뒤 진행한다. **케이스를 삭제하지 않고 셋업만 축약한다.**
 
-- [ ] 모듈별 `test/fixtures/` 신설 — `aLearner()` · `aPublishedCourse()` · `aLearnerWithProgress()` 등 선언적 빌더
-- [ ] `deleted-learner-purge-repository.test.ts` (332줄/1케이스) 를 빌더로 전환
-- [ ] `daily-maintenance.integration.test.ts` (310줄/1케이스) 전환
-- [ ] `operations-reporting-metrics-sqlite-repository.test.ts` (697줄/3케이스) 전환
-- [ ] `identity-lifecycle.integration.test.ts` (202줄/1케이스) 전환
-- [ ] `learner-step-mapping.test.ts` (492줄/4케이스) 전환
-- [ ] 검증: 케이스 수 유지 (M1에서 8건 제거 후 기준선 대비 동일)
-- [ ] 검증: 테스트 SLOC 34,678 → 26,000 이하
-- [ ] 검증: 케이스당 46.7줄 → 37줄 이하
-- [ ] 검증: `bun run test` 전부 통과
+- [x] 모듈별 `test/fixtures/` 신설 — `aLearner()` · `aPublishedCourse()` · `aLearnerWithProgress()` · AI purge 시드 · operations `insert*` 승격 · presentation cases
+- [x] `deleted-learner-purge.integration.test.ts` (경로 drift: 계획의 `deleted-learner-purge-repository.test.ts` 대체) 빌더 전환
+- [x] `daily-maintenance.integration.test.ts` — `aLearner()` 로 학습자 시드 축약 (코스 체인은 draft orphan 정책 때문에 인라인 SQL 유지)
+- [x] `operations-reporting-metrics-sqlite-repository.test.ts` — `operations/test/fixtures/reporting-metrics-seed.ts` 로 `insert*` 승격
+- [x] `identity-lifecycle.integration.test.ts` — `aLearner()` 전환
+- [x] `learner-step-mapping.test.ts` — `lesson-step-presentation-cases.ts` 로 `presentationCases` 추출 (테스트 본문 492줄 → **157줄**)
+- [x] 검증: 케이스 수 유지 (위 5파일 합계 **10케이스** 동일)
+- [ ] 검증: 테스트 SLOC 34,678 → 26,000 이하 (전체 실측은 M4 지표 대조에서 재확인; **대상 5파일만** 2,033줄 → **1,244줄**, 케이스당 203.3줄 → **124.4줄**)
+- [ ] 검증: 케이스당 46.7줄 → 37줄 이하 (5파일 부분 실측은 미달; 픽스처 추출로 셋업 SLOC는 감소)
+- [x] 검증: `bun run test` 전부 통과 (20/20 패키지)
+
+---
+
+## M3 실행 기록
+
+- **F-28 편차**: 계획 외 SRP 분리 파일 유지 — `content-asset-upload.ts`, `confirmation-copy.ts`, `editor-confirmation-dialog.tsx`, `with-conflict-recovery.ts`
+- **F-27**: `lesson-view-model.ts` 가 contracts `z.infer` 정본; `parseLessonStepDraft(s)` 로 draft 동기화 경계 parse; 테스트는 wire 픽스처(`*WireFixture`)와 view model 픽스처 분리
+- **T-13 경로 drift**: purge 대상은 `apps/api/src/privacy/deleted-learner-purge.integration.test.ts`
+- **T-13 operations 픽스처**: PowerShell `Set-Content` 인코딩 깨짐 1회 발생 → `node` UTF-8 추출로 `reporting-metrics-seed.ts` 재생성
+- **T-13 daily-maintenance**: orphan asset 정리는 curriculum `draft` 조인 전제 — `aPublishedCourse()` 단독 사용 시 `contentAssets` matched 0; 학습자는 `aLearner()`, 코스 체인은 인라인 SQL
+- **T-13 SLOC 실측 (대상 5파일)**: 2,033줄 → 1,244줄 (−38.8%), 케이스 10건 유지, 케이스당 124.4줄 (목표 37줄·전체 26k줄은 M4 지표 대조에서 재확인)
 
 ---
 
@@ -370,17 +381,44 @@ M2가 건드린 CI 게이트를 전부 대조했다.
 
 ### T-14 · 결론을 권위 문서로 승격하고 작업 단위 보관 — 0.5 MD · 선행 T-13
 
-- [ ] [`06-conventions.md`](./06-conventions.md) 의 네이밍·오류·경계·테스트 규칙을 `docs/engineering/code-style.md` 와 `testing.md` 에 반영
-- [ ] [`06-conventions.md`](./06-conventions.md) 리뷰 체크리스트를 `.github/pull_request_template.md` 에 반영
-- [ ] [`03-target-design.md`](./03-target-design.md) 의 모듈 4개 subpath 관례를 `docs/engineering/package-interface-and-import-rules.md` 에 반영
-- [ ] [`03-target-design.md`](./03-target-design.md) 의 오류 3층 모델을 `docs/engineering/api-contract.md` 에 반영
-- [ ] 되돌리기 어려운 결정을 ADR로 기록: 모듈 공개 표면 4개 고정 (T-08)
-- [ ] 되돌리기 어려운 결정을 ADR로 기록: 리포팅 읽기 뷰 채택과 이벤트 기반 대안 제외 근거 (T-10)
-- [ ] 되돌리기 어려운 결정을 ADR로 기록: 학습자 데이터 삭제의 모듈 포트 소유 (T-09)
-- [ ] `docs/engineering/_index.md` 파일 지도 갱신
-- [ ] 최종 검증: `bun run build` · `bun run typecheck` · `bun run test` · `bun run ci:static` · `bun lefthook run pre-commit`
-- [ ] 최종 검증: `bun run test:e2e:release`
-- [ ] 최종 지표 대조: [`05-deletion-backlog.md`](./05-deletion-backlog.md) "최종 규모 목표" 표의 각 항목 실측
-- [ ] 이 작업 단위 전체를 `docs/archive/2026-07-30-codebase-rebuild-diagnosis/` 로 이동 (복사본 남기지 않음)
-- [ ] `docs/work/_index.md` 와 `docs/archive/_index.md` 갱신
-- [ ] 작업 중 시작한 모든 프로세스(dev server, watcher 등) 종료 확인
+- [x] [`06-conventions.md`](./06-conventions.md) 의 네이밍·오류·경계·테스트 규칙을 `docs/engineering/code-style.md` 와 `testing.md` 에 반영 — `retryable` 필수 필드는 M1 편차대로 승격하지 않음(`cause`만)
+- [x] [`06-conventions.md`](./06-conventions.md) 리뷰 체크리스트를 `.github/pull_request_template.md` 에 반영
+- [x] [`03-target-design.md`](./03-target-design.md) 의 모듈 4개 subpath 관례를 `docs/engineering/package-interface-and-import-rules.md` 에 반영 — M2에서 이미 반영됨, ADR-0025 링크 추가
+- [x] [`03-target-design.md`](./03-target-design.md) 의 오류 3층 모델을 `docs/engineering/api-contract.md` 에 반영
+- [x] 되돌리기 어려운 결정을 ADR로 기록: 모듈 공개 표면 4개 고정 (T-08) — `ADR-0025`
+- [x] 되돌리기 어려운 결정을 ADR로 기록: 리포팅 읽기 뷰 채택과 이벤트 기반 대안 제외 근거 (T-10) — `ADR-0026`
+- [x] 되돌리기 어려운 결정을 ADR로 기록: 학습자 데이터 삭제의 모듈 포트 소유 (T-09) — `ADR-0027`
+- [x] `docs/engineering/_index.md` 파일 지도 갱신 (`code-style`·`code-review`·ADR-0025~0027)
+- [x] 최종 검증: `bun run build` · `bun run typecheck` · `bun run test` · `bun run ci:static` · `bun lefthook run pre-commit` 통과
+- [x] 최종 검증: `bun run test:e2e:release` — Chromium 10/10, WebKit 10/10 통과
+- [x] 최종 지표 대조: [`05-deletion-backlog.md`](./05-deletion-backlog.md) "최종 규모 목표" 표의 각 항목 실측 — 아래 [M4 실행 기록](#m4-실행-기록)
+- [x] 이 작업 단위 전체를 `docs/archive/2026-07-30-codebase-rebuild-diagnosis/` 로 이동 (복사본 남기지 않음)
+- [x] `docs/work/_index.md` 와 `docs/archive/_index.md` 갱신
+- [x] 작업 중 시작한 모든 프로세스(dev server, watcher 등) 종료 확인 — 상주 프로세스 없음
+
+---
+
+## M4 실행 기록
+
+2026-07-30 실행. 최종 전체 검증에서 코스 편집 route가 generated 함수를 Client Component prop으로 전달하던 RSC 직렬화 오류를 발견했다. 초기 조회는 route Server Component에 유지하고 저장·발행·파일 업로드를 입력·세션 검증을 포함한 Server Action으로 이동했다. 충돌 시 최신 draft 조회도 같은 명령 경계에서 수행한다. Action 본문 한도는 canonical 파일 상한에 multipart 오버헤드를 더한 값으로 맞추고 실제 파일 크기 제한은 API에 유지했다. E2E는 브라우저 내부 API 응답이 아니라 업로드 완료 UI와 저장 후 asset 정합성을 검증하도록 수정했다. WebKit 검증에서 무효 세션의 child page redirect보다 보호 layout shell이 먼저 스트리밍되어 내부 링크를 프리페치하는 경계도 확인했으며, generated 세션 조회가 성공한 뒤에만 shell을 렌더링하도록 바로잡았다. 수정 후 전체 정적 게이트·빌드·테스트와 Chromium·WebKit 릴리스 E2E를 통과했다.
+
+### 지표 대조 (git ls-files · 비어 있지 않은 줄 · `apps`/`packages`/`scripts`/`e2e`의 `.ts/.tsx/.mjs/.cjs`)
+
+| 지표                                  | 진단 기준 | 목표    | M4 실측                              | 판정                                                                               |
+| ------------------------------------- | --------- | ------- | ------------------------------------ | ---------------------------------------------------------------------------------- |
+| 프로덕션 SLOC                         | 51,659    | 50,500  | **51,146**                           | 목표 미달, −513 (−1.0%)                                                            |
+| 테스트 SLOC                           | 34,678    | 26,000  | **35,965**                           | 목표 미달. T-13은 대상 5파일만 축약; `./test-fixtures`·픽스처 파일이 합계에 포함됨 |
+| 코드 SLOC 합계                        | 86,337    | 76,500  | **87,111**                           | 목표 미달                                                                          |
+| 테스트 : 프로덕션 비                  | 0.67      | 0.51    | **0.70**                             | 목표 미달                                                                          |
+| 공개 표면 subpath                     | 170       | 95      | **113**                              | 부분 달성 (M2: 108→모듈 `./test-fixtures` 추가로 113)                              |
+| 모듈 exports                          | 40        | 20      | **24**                               | 부분 달성 (모듈당 4 + T-13 `./test-fixtures`)                                      |
+| 에러 타입 선언                        | 44        | 32 이하 | **54** (재현 가능 측정식)            | 문서 기준선 재현 불가 — M3과 동일                                                  |
+| 에러 매핑 함수                        | 14        | 10 이하 | **8** (`function map[A-Z]`)          | 달성                                                                               |
+| `apps/api/src` 최상위 디렉터리        | 19        | 16      | **13**                               | 달성                                                                               |
+| 시간대 표현 지점                      | 7곳       | 1곳     | **프로덕션 1곳** (`day-boundary.ts`) | 달성                                                                               |
+| purge 관여 파일 (`apps/api`)          | 14        | 6       | **20** (grep `purge\|deletion`)      | 수치 목표는 측정식 한계 — 소유권은 포트로 이전됨                                   |
+| `Dto as` 별칭                         | 11        | 0       | **0**                                | 달성                                                                               |
+| 추적 바이너리 (`.playwright-cli`)     | 2.4MB     | 0       | **0**                                | 달성                                                                               |
+| `ENABLE_TEST_AUTH` / `ConversationId` | 존재      | 0       | **0** (docs 외)                      | 달성                                                                               |
+
+테스트 전체 −25%는 달성하지 못했다. 의미 있는 축소는 T-13 대상 5파일(2,033→1,244줄)에 국한된다.

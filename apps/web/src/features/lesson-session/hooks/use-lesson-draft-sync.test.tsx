@@ -11,6 +11,7 @@ const generatedClient = vi.hoisted(() => ({
 vi.mock("@workspace/http-client/learner", () => generatedClient)
 
 import { useLessonDraftSync } from "@/features/lesson-session/hooks/use-lesson-draft-sync"
+import { parseLessonStepDrafts } from "@/features/lesson-session/model/lesson-view-model"
 import type {
   LearnerLessonDto,
   LearnerSaveStepDraftBodyDto,
@@ -230,14 +231,17 @@ describe("useLessonDraftSync", () => {
 })
 
 function renderDraftSync(
-  initialDrafts = [createDraft(initialAnswer, 1)],
+  initialDrafts: readonly LearnerStepDraftDto[] = [
+    createDraft(initialAnswer, 1),
+  ],
   onServerDraftApplied = vi.fn()
 ) {
   const lesson = createLesson(initialDrafts)
+  const parsedDrafts = parseLessonStepDrafts(initialDrafts)
   return renderHook(() =>
     useLessonDraftSync({
       expectedCurriculumVersionId: lesson.version.curriculumVersionId,
-      initialDrafts,
+      initialDrafts: parsedDrafts,
       lessonId: lesson.id,
       onServerDraftApplied,
     })

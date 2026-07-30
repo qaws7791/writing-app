@@ -1,7 +1,6 @@
 import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 import type {
   completeLearnerStep,
-  createLearnerStepAiFeedback,
   getCourseDetail,
   getCourses,
   getLesson,
@@ -86,14 +85,6 @@ export type LearnerProgressPageDto = Awaited<ReturnType<typeof getProgress>>
 export type LearnerProgressCourseDto = LearnerProgressPageDto["items"][number]
 export type LearnerCompleteStepResultDto = Awaited<
   ReturnType<typeof completeLearnerStep>
->
-export type LearnerCompleteStepBodyDto = Parameters<
-  typeof completeLearnerStep
->[2]
-export type LearnerStepEvaluationDto =
-  LearnerCompleteStepResultDto["evaluation"]
-export type LearnerAiFeedbackResultDto = Awaited<
-  ReturnType<typeof createLearnerStepAiFeedback>
 >
 export type LearnerSaveStepDraftResultDto = Awaited<
   ReturnType<typeof saveLearnerStepDraft>

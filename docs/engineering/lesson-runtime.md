@@ -17,7 +17,7 @@
 - `@workspace/contracts/content/steps`는 10개 활동 DTO와 각 타입의 완료 방식·draft 가능 여부·서버 평가 정책을 소유한다. admin form registry와 learner renderer registry는 이 같은 타입 집합을 빠짐없이 소비한다.
 - `@workspace/contracts/learning/learner-content`와 `@workspace/contracts/learning/learner-transition`은 공개 레슨, 타입별 final answer·부분 draft, stable item ID 제출, 서버 평가와 학습 상태 전이 계약을 소유한다.
 - `@workspace/learning`은 채점, 순서, 잠금, 진도, 레슨·코스 완료와 AI 단계의 저장 답안 문맥·진행 전이를 소유한다. `@workspace/ai-feedback`은 prompt, provider 호출·검증과 attempt 정책·기록을 소유하며 API composition이 두 공개 port를 연결한다.
-- application 공개 경계는 `readLearnerHome`, `readCourseCatalog`, `readCourseDetail`, `readLesson`, `startLesson`, `saveStepDraft`, `submitStep`을 중심으로 구성한다. HTTP route는 application을 다시 감싸는 전달 전용 query·command factory 없이 이 use case를 호출한다.
+- application 공개 경계는 `readLearnerHome`, `readCourseCatalog`, `readCourseDetail`, `readLesson`, `startLesson`, `saveStepDraft`, `submitStep`, `requestAiFeedback`을 중심으로 구성한다. HTTP route는 application을 다시 감싸는 전달 전용 query·command factory 없이 이 use case를 호출한다.
 - 학습 시작 정책은 lesson scope, 잠금, 기존 진행과 정렬된 step ID snapshot만 받아 rejection·start·replay와 readonly effect를 결정한다. Drizzle repository는 한 transaction에서 load → decide → apply만 수행한다.
 - 일반 단계 완료 정책은 rejection·retry·replay·step/lesson acceptance를 구분하고, 답안 저장 → step/lesson 전진 → 필요한 course 완료 → 활동 집계 effect를 SQL·table 이름 없이 계획한다. interpreter는 이 순서를 한 transaction에서 적용한다.
 - `@workspace/learning`은 현재 스텝의 서버 드래프트 접근·revision·version 검증을 소유한다. 드래프트 저장은 `BEGIN IMMEDIATE` transaction에서 compare-and-swap으로 처리하고, 답변 제출 성공 시 답안 저장과 드래프트 삭제를 같은 transaction에서 확정한다.

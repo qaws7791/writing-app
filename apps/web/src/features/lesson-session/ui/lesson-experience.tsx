@@ -8,7 +8,7 @@ import { LessonActiveScreen } from "@/features/lesson-session/ui/lesson-active-s
 import { LessonCompleteScreen } from "@/features/lesson-session/ui/lesson-complete-screen"
 import { LessonStartScreen } from "@/features/lesson-session/ui/lesson-start-screen"
 import { useLessonSession } from "@/features/lesson-session/hooks/use-lesson-session"
-import type { LearnerLessonDto as Lesson } from "@/shared/http/learner-api-client"
+import type { Lesson } from "@/features/lesson-session/model/lesson-view-model"
 
 type LessonExperienceProps = {
   readonly lesson: Lesson

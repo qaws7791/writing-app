@@ -7,26 +7,30 @@ import type { GeneratedApiClientError } from "@workspace/http-client/generated-f
 
 import type { LessonAiFeedback } from "@/features/lesson-session/model/lesson-logic"
 import {
+  toLessonCompleteStepResult,
+  toLessonStartResult,
+  type LessonCompleteStepBody,
+  type LessonCompleteStepResult,
+  type LessonStartResult,
+} from "@/features/lesson-session/model/lesson-view-model"
+import {
   readLearnerApiErrorCode,
   readLearnerApiRetryAfterSeconds,
   settleLearnerApiRequest,
-  type LearnerCompleteStepBodyDto,
-  type LearnerCompleteStepResultDto,
-  type LearnerStartLessonResultDto,
 } from "@/shared/http/learner-api-client"
 
 type TransitionEffectOutcome =
   | { readonly status: "error"; readonly message: string }
   | {
       readonly status: "ok"
-      readonly transition: LearnerCompleteStepResultDto
+      readonly transition: LessonCompleteStepResult
     }
 
 type AiFeedbackEffectOutcome =
   | {
       readonly feedback: LessonAiFeedback
       readonly status: "ok"
-      readonly transition: LearnerCompleteStepResultDto
+      readonly transition: LessonCompleteStepResult
     }
   | {
       readonly kind: "fatal" | "limit" | "quota" | "retryable"
@@ -38,7 +42,7 @@ type AiFeedbackEffectOutcome =
 
 export type LessonSessionEffects = {
   readonly completeStep: (input: {
-    readonly request: LearnerCompleteStepBodyDto
+    readonly request: LessonCompleteStepBody
     readonly stepId: string
   }) => Promise<TransitionEffectOutcome>
   readonly requestAiFeedback: (input: {
@@ -47,7 +51,7 @@ export type LessonSessionEffects = {
   }) => Promise<AiFeedbackEffectOutcome>
   readonly start: () => Promise<
     | {
-        readonly learning: LearnerStartLessonResultDto
+        readonly learning: LessonStartResult
         readonly status: "ok"
       }
     | { readonly message: string; readonly status: "error" }
@@ -69,7 +73,7 @@ export function createLessonSessionEffects(input: {
 
       return result.status === "error"
         ? { message: result.error.message, status: "error" }
-        : { status: "ok", transition: result.value }
+        : { status: "ok", transition: toLessonCompleteStepResult(result.value) }
     },
     async requestAiFeedback({ idempotencyKey, stepId }) {
       const result = await settleLearnerApiRequest(
@@ -84,7 +88,7 @@ export function createLessonSessionEffects(input: {
         : {
             feedback: result.value.feedback,
             status: "ok",
-            transition: result.value.transition,
+            transition: toLessonCompleteStepResult(result.value.transition),
           }
     },
     async start() {
@@ -99,7 +103,7 @@ export function createLessonSessionEffects(input: {
       )
       return result.status === "error"
         ? { message: result.error.message, status: "error" }
-        : { learning: result.value, status: "ok" }
+        : { learning: toLessonStartResult(result.value), status: "ok" }
     },
   }
 }

@@ -9,12 +9,14 @@ import {
   defaultAiFeedbackDailyQuotaPolicy,
   type AiFeedbackProvider,
 } from "@workspace/ai-feedback/ports"
+import { aLearner } from "@workspace/identity/test-fixtures"
 import { createContentModule } from "@workspace/content/module"
 import type { ContentAssetStoragePort } from "@workspace/content/ports"
 import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabase,
 } from "@workspace/db/client"
+import type { WritingAppSqlite } from "@workspace/db/test-support/sqlite-types"
 import {
   createDeletedLearnerPurgeCommand,
   createDeletedLearnerPurgeRepository,
@@ -240,11 +242,10 @@ function readAffectedCounts(result: Parameters<typeof readMatchedCounts>[0]) {
   }
 }
 
-function seedDailyMaintenanceFixture(
-  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
-): void {
+function seedDailyMaintenanceFixture(sqlite: WritingAppSqlite): void {
   const deletedCutoff = now.getTime() - 5 * dayMs
   const assetCutoff = now.getTime() - 7 * dayMs
+
   sqlite.exec(`
     INSERT INTO courses (
       id, status, sort_order, published_curriculum_version_id, created_at
@@ -280,19 +281,35 @@ function seedDailyMaintenanceFixture(
       3, 'content-assets/course-cover/orphan.jpg', '표지', 'orphaned',
       ${assetCutoff - dayMs}, ${assetCutoff}, ${assetCutoff}
     );
+  `)
 
-    INSERT INTO user (
-      id, name, email, email_verified, image, created_at, updated_at
-    ) VALUES
-      ('eligible', '삭제 대상', 'eligible@example.test', 1, NULL, 1, 1),
-      ('recent', '보존 대상', 'recent@example.test', 1, NULL, 1, 1),
-      ('active', '활성 사용자', 'active@example.test', 1, NULL, 1, 1);
-    INSERT INTO learner_profiles (
-      user_id, status, display_name, deleted_at, version
-    ) VALUES
-      ('eligible', 'deleted', '삭제된 사용자', ${deletedCutoff}, 1),
-      ('recent', 'deleted', '삭제된 사용자', ${deletedCutoff + 1}, 1),
-      ('active', 'active', '활성 사용자', NULL, 0);
+  aLearner(sqlite, {
+    deletedAt: deletedCutoff,
+    displayName: "삭제 대상",
+    email: "eligible@example.test",
+    id: "eligible",
+    name: "삭제 대상",
+    status: "deleted",
+    version: 1,
+  })
+  aLearner(sqlite, {
+    deletedAt: deletedCutoff + 1,
+    displayName: "삭제된 사용자",
+    email: "recent@example.test",
+    id: "recent",
+    name: "보존 대상",
+    status: "deleted",
+    version: 1,
+  })
+  aLearner(sqlite, {
+    displayName: "활성 사용자",
+    email: "active@example.test",
+    id: "active",
+    name: "활성 사용자",
+    status: "active",
+  })
+
+  sqlite.exec(`
     INSERT INTO session (
       id, user_id, token, expires_at, created_at, updated_at
     ) VALUES
@@ -324,9 +341,7 @@ function seedDailyMaintenanceFixture(
   `)
 }
 
-function readFixtureState(
-  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
-) {
+function readFixtureState(sqlite: WritingAppSqlite) {
   return {
     activeAuditRows: readScalar(
       sqlite,
@@ -359,9 +374,6 @@ function readFixtureState(
   }
 }
 
-function readScalar(
-  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"],
-  query: string
-): number {
+function readScalar(sqlite: WritingAppSqlite, query: string): number {
   return sqlite.query<{ readonly value: number }, []>(query).get()?.value ?? 0
 }

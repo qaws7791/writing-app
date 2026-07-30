@@ -4,6 +4,7 @@ import { RuleTester } from "oxlint/plugins-dev"
 
 import {
   catchPreservesCauseRule,
+  noDtoDomainAliasRule,
   noUnsafeUnknownCastRule,
 } from "./workspace-rules.mjs"
 
@@ -24,6 +25,23 @@ tester.run("no-unsafe-unknown-cast", noUnsafeUnknownCastRule, {
   valid: [
     {
       code: "const userId = toUserId(value)",
+    },
+  ],
+})
+
+tester.run("no-dto-domain-alias", noDtoDomainAliasRule, {
+  invalid: [
+    {
+      code: 'import type { LearnerLessonDto as Lesson } from "@/shared/http/learner-api-client"',
+      errors: [{ messageId: "dtoDomainAlias" }],
+    },
+  ],
+  valid: [
+    {
+      code: 'import type { Lesson } from "@/features/lesson-session/model/lesson-view-model"',
+    },
+    {
+      code: 'import type { LearnerLessonDto } from "@/shared/http/learner-api-client"',
     },
   ],
 })

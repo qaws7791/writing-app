@@ -109,6 +109,36 @@ export type CourseEditorAction =
   | { readonly type: "latest-selected" }
   | { readonly type: "local-rebased" }
 
+export function isUnsaved(state: CourseEditorState): boolean {
+  switch (state.status) {
+    case "conflict":
+    case "dirty":
+    case "server-error":
+    case "validation-error":
+      return true
+    case "clean":
+    case "publishing":
+    case "saved":
+    case "saving":
+      return false
+  }
+}
+
+export function canSave(state: CourseEditorState): boolean {
+  switch (state.status) {
+    case "dirty":
+    case "server-error":
+    case "validation-error":
+      return true
+    case "clean":
+    case "conflict":
+    case "publishing":
+    case "saved":
+    case "saving":
+      return false
+  }
+}
+
 export function createCourseEditorState(
   document: AdminCourseDetail
 ): CourseEditorState {

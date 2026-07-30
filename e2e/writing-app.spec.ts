@@ -1,4 +1,9 @@
-import { learnerWebOrigin, loginAdmin, loginLearner } from "#e2e/auth"
+import {
+  createLearnerSession,
+  learnerWebOrigin,
+  loginAdmin,
+  loginLearner,
+} from "#e2e/auth"
 import { installAiFeedbackFailures } from "#e2e/ai-feedback-fixture"
 import { expect, observeBrowserContext, test } from "#e2e/test"
 
@@ -111,8 +116,11 @@ test("owner 관리자의 삭제 처리가 학습자 세션을 폐기한다", asy
 }) => {
   const learnerContext = await browser.newContext()
   const learnerDiagnostics = observeBrowserContext(learnerContext)
-  const learnerPage = await learnerContext.newPage()
-  await loginLearner(learnerPage, "/app/profile")
+  await createLearnerSession(learnerContext)
+  const activeProfile = await learnerContext.request.get(
+    `${learnerWebOrigin}/api/profile`
+  )
+  expect(activeProfile.status()).toBe(200)
 
   const adminContext = await browser.newContext()
   const adminDiagnostics = observeBrowserContext(adminContext)
@@ -129,7 +137,7 @@ test("owner 관리자의 삭제 처리가 학습자 세션을 폐기한다", asy
   await adminPage.getByRole("button", { name: "삭제 처리" }).click()
   await expect(adminPage.getByText("삭제 요청을 처리했습니다.")).toBeVisible()
 
-  const revokedProfile = await learnerPage.request.get(
+  const revokedProfile = await learnerContext.request.get(
     `${learnerWebOrigin}/api/profile`
   )
   expect(revokedProfile.status()).toBe(401)
@@ -139,8 +147,8 @@ test("owner 관리자의 삭제 처리가 학습자 세션을 폐기한다", asy
     `${learnerWebOrigin}/login?next=%2Fapp%2Fprofile`
   )
 
-  await learnerContext.close()
-  await adminContext.close()
   learnerDiagnostics.expectNoIssues()
   adminDiagnostics.expectNoIssues()
+  await learnerContext.close()
+  await adminContext.close()
 })

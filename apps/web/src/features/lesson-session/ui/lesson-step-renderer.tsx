@@ -27,7 +27,7 @@ import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-c
 import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
-import type { LearnerLessonStepDto as LessonStep } from "@/shared/http/learner-api-client"
+import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 import type { LessonStepType } from "@workspace/contracts/content/steps"
 
 export type LessonStepRendererProps = {
@@ -236,7 +236,9 @@ function renderStep({
           items={step.items}
           onChange={(orderedItemIds) =>
             emitAnswer({
-              orderedItemIds: [...orderedItemIds],
+              orderedItemIds: orderedItemIds.map((itemId) =>
+                findLessonStepItemId(step.items, itemId)
+              ),
               type: "ORDER",
             })
           }

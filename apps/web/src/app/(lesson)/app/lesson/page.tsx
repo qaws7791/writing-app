@@ -3,6 +3,7 @@ import { getLesson } from "@workspace/http-client/learner"
 
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { LessonExperience } from "@/features/lesson-session/ui/lesson-experience"
+import { toLessonViewModel } from "@/features/lesson-session/model/lesson-view-model"
 import { parseLessonRouteSearchParams } from "@/features/lesson-session/model/lesson-route-search-params"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import {
@@ -58,6 +59,6 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     )
   }
 
-  const lesson = lessonResult.value
+  const lesson = toLessonViewModel(lessonResult.value)
   return <LessonExperience lesson={lesson} />
 }

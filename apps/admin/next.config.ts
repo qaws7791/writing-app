@@ -13,8 +13,10 @@ import {
   resolveContentAssetImageAllowedOrigins,
   shouldAllowLocalContentAssetImages,
 } from "@workspace/nextjs-config/content-asset-images"
+import { adminContentAssetMaxBytes } from "@workspace/contracts/content/admin-assets"
 
 const appDirectory = dirname(fileURLToPath(import.meta.url))
+const contentAssetServerActionBodyLimit = adminContentAssetMaxBytes + 64 * 1024
 const development = process.env.NODE_ENV !== "production"
 const contentAssetPublicBaseUrl = parseContentAssetPublicBaseUrl(
   process.env.CONTENT_ASSET_PUBLIC_BASE_URL,
@@ -38,6 +40,10 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 const nextConfig: NextConfig = {
   experimental: {
     cpus: 1,
+    serverActions: {
+      // 파일 상한은 API가 검증하고, 이 경계는 multipart 메타데이터 여유만 둔다.
+      bodySizeLimit: contentAssetServerActionBodyLimit,
+    },
   },
   output: "standalone",
   outputFileTracingRoot: join(appDirectory, "../.."),

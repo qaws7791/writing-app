@@ -22,11 +22,12 @@
 
 각 개념의 값과 규칙은 아래 코드가 소유한다. 문서는 값을 복제하지 않고 위치만 가리킨다.
 
-| 개념                 | 정본 위치                                                                       | 금지                           |
-| -------------------- | ------------------------------------------------------------------------------- | ------------------------------ |
-| 학습 날짜 경계       | [`kernel/src/day-boundary.ts`](../packages/shared/kernel/src/day-boundary.ts)   | 시간대·offset 리터럴 재선언    |
-| 식별자 브랜드        | [`types/src/ids.ts`](../packages/shared/types/src/ids.ts)                       | 모듈 내 브랜드 재선언          |
-| 식별자 스키마 팩토리 | [`contracts/src/identifier.ts`](../packages/shared/contracts/src/identifier.ts) | ID 스키마 팩토리 중복 정의     |
-| 실패 표현            | [`kernel/src/failure.ts`](../packages/shared/kernel/src/failure.ts)             | 계층별 실패 타입 재선언        |
-| Result               | [`kernel/src/result.ts`](../packages/shared/kernel/src/result.ts)               | 성공 flag 형태의 결과 shape    |
-| wire 스키마          | [`contracts/src`](../packages/shared/contracts/src)                             | 앱에서 요청·응답 스키마 재선언 |
+| 개념                 | 정본 위치                                                                                                                               | 금지                                    |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 학습 날짜 경계       | [`kernel/src/day-boundary.ts`](../packages/shared/kernel/src/day-boundary.ts)                                                           | 시간대·offset 리터럴 재선언             |
+| 식별자 브랜드        | [`types/src/ids.ts`](../packages/shared/types/src/ids.ts)                                                                               | 모듈 내 브랜드 재선언                   |
+| 식별자 스키마 팩토리 | [`contracts/src/identifier.ts`](../packages/shared/contracts/src/identifier.ts)                                                         | ID 스키마 팩토리 중복 정의              |
+| 실패 표현            | [`kernel/src/failure.ts`](../packages/shared/kernel/src/failure.ts)                                                                     | 계층별 실패 타입 재선언                 |
+| Result               | [`kernel/src/result.ts`](../packages/shared/kernel/src/result.ts)                                                                       | 성공 flag 형태의 결과 shape             |
+| 학습자 화면 모델     | [`apps/web/src/features/lesson-session/model/lesson-view-model.ts`](../apps/web/src/features/lesson-session/model/lesson-view-model.ts) | `Dto as Lesson` 등 전송 DTO 도메인 별칭 |
+| wire 스키마          | [`contracts/src`](../packages/shared/contracts/src)                                                                                     | 앱에서 요청·응답 스키마 재선언          |

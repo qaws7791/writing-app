@@ -1,6 +1,11 @@
+import {
+  toLessonViewModel,
+  type Lesson,
+} from "@/features/lesson-session/model/lesson-view-model"
 import type {
   LearnerCourseSummaryDto,
   LearnerLessonDto,
+  LearnerLessonStepDto,
   LearnerProgressPageDto,
   LearnerProfileDto,
 } from "@/shared/http/learner-api-client"
@@ -45,7 +50,7 @@ export const learnerCourseSummaryFixture: LearnerCourseSummaryDto = {
   visualKey: "basic-sentence-writing",
 }
 
-export const learnerAiLessonFixture: LearnerLessonDto = {
+const learnerAiLessonWireFixture = {
   category: "글쓰기 기초",
   courseId: "course-1",
   description: "작성한 문장을 바탕으로 AI 코칭을 받습니다.",
@@ -80,9 +85,13 @@ export const learnerAiLessonFixture: LearnerLessonDto = {
   title: "AI 코칭 레슨",
   unitId: "unit-1",
   version: learnerFixtureVersion,
-}
+} satisfies LearnerLessonDto
 
-export const learnerWriteLessonFixture: LearnerLessonDto = {
+export const learnerAiLessonFixture: Lesson = toLessonViewModel(
+  learnerAiLessonWireFixture
+)
+
+const learnerWriteLessonWireFixture = {
   category: "글쓰기 기초",
   courseId: "course-1",
   description: "문장을 작성합니다.",
@@ -118,10 +127,14 @@ export const learnerWriteLessonFixture: LearnerLessonDto = {
   title: "문장 쓰기",
   unitId: "unit-1",
   version: learnerFixtureVersion,
-}
+} satisfies LearnerLessonDto
 
-export const learnerConflictingWriteLessonFixture: LearnerLessonDto = {
-  ...learnerWriteLessonFixture,
+export const learnerWriteLessonFixture: Lesson = toLessonViewModel(
+  learnerWriteLessonWireFixture
+)
+
+export const learnerConflictingWriteLessonWireFixture = {
+  ...learnerWriteLessonWireFixture,
   drafts: [
     {
       answer: { text: "다른 탭의 초안", type: "WRITE" },
@@ -130,4 +143,33 @@ export const learnerConflictingWriteLessonFixture: LearnerLessonDto = {
       version: 3,
     },
   ],
+} satisfies LearnerLessonDto
+
+const lessonStepFixtureShell = {
+  category: null,
+  courseId: "course-1",
+  description: null,
+  drafts: [],
+  estimatedMinutes: 5,
+  id: "lesson-1",
+  learning: {
+    status: "not_started",
+    totalSteps: 1,
+    version: { curriculumVersionId: "version-1", revision: 1 },
+  },
+  summary: [],
+  title: "fixture",
+  unitId: "unit-1",
+  version: { curriculumVersionId: "version-1", revision: 1 },
+} as const satisfies Omit<LearnerLessonDto, "steps">
+
+export function parseLessonStepFixture(step: LearnerLessonStepDto) {
+  const [parsed] = toLessonViewModel({
+    ...lessonStepFixtureShell,
+    steps: [step],
+  }).steps
+  if (!parsed) {
+    throw new Error("expected one lesson step")
+  }
+  return parsed
 }

@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
-import { expect, type Page } from "@playwright/test"
+import { expect, type BrowserContext, type Page } from "@playwright/test"
 import { e2eRuntime, readRequiredE2eEnvironment } from "#e2e/runtime"
 
 export const learnerWebOrigin = e2eRuntime.learnerOrigin
@@ -63,6 +63,23 @@ export async function loginLearner(
   await expect(page).toHaveURL(`${learnerWebOrigin}${nextPath}`)
   await page.waitForLoadState("networkidle")
   await waitForSettledFrames(page)
+}
+
+export async function createLearnerSession(
+  context: BrowserContext
+): Promise<void> {
+  const response = await context.request.post(
+    `${learnerWebOrigin}/api/auth/sign-in/email`,
+    {
+      data: {
+        callbackURL: `${learnerWebOrigin}/app/courses`,
+        email: learnerEmail,
+        password: learnerPassword,
+      },
+    }
+  )
+
+  expect(response.status()).toBe(200)
 }
 
 async function waitForSettledFrames(page: Page): Promise<void> {

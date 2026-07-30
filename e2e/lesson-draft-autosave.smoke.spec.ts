@@ -15,20 +15,14 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
   if (courseHref === null) {
     throw new Error("초안 복구 코스 링크에 이동 경로가 없습니다.")
   }
-  await Promise.all([
-    page.waitForURL(new URL(courseHref, learnerWebOrigin).toString()),
-    courseLink.click(),
-  ])
+  await page.goto(new URL(courseHref, learnerWebOrigin).toString())
   await page.waitForLoadState("networkidle")
   const startLink = page.getByRole("link", { name: "학습 시작하기" })
   const startHref = await startLink.getAttribute("href")
   if (startHref === null) {
     throw new Error("학습 시작 링크에 이동 경로가 없습니다.")
   }
-  await Promise.all([
-    page.waitForURL(new URL(startHref, learnerWebOrigin).toString()),
-    startLink.click(),
-  ])
+  await page.goto(new URL(startHref, learnerWebOrigin).toString())
 
   const startButton = page.getByRole("button", { name: "시작하기" })
   const answer = page.getByRole("textbox")
@@ -86,8 +80,8 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
     }
   )
   expect(latestDraftResponse.ok()).toBe(true)
-  await otherDevice.close()
   otherDeviceDiagnostics.expectNoIssues()
+  await otherDevice.close()
 
   await page.bringToFront()
   await page.evaluate(() => window.dispatchEvent(new Event("focus")))
@@ -144,6 +138,6 @@ test("debounce가 끝나기 전에 탭을 닫아도 초안을 잃지 않는다",
   await loginLearner(reopenedPage, lessonPath)
   await expect(reopenedPage.getByRole("textbox")).toHaveValue(draft)
 
-  await context.close()
   diagnostics.expectNoIssues()
+  await context.close()
 })

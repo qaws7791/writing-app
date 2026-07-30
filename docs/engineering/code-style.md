@@ -103,6 +103,37 @@ bun run lint:fix
 - 복잡한 public API 또는 도메인 규칙에는 Tsdoc을 사용할 수 있다.
 - 문서는 한국어로 작성한다. 기술 고유명사와 코드 식별자는 원문을 유지한다.
 
+## 네이밍과 정본 위치
+
+- 도메인 개념은 [`docs/glossary.md`](../glossary.md) 용어를 그대로 쓴다. 용어집에 없는 개념을 코드에 도입하면 같은 변경에서 용어집을 갱신한다.
+- 전송 DTO를 도메인 이름으로 별칭하지 않는다. `import type { XxxDto as Domain }` 형태는 oxlint `no-dto-domain-alias`가 금지한다.
+- 같은 이름의 함수를 서로 다른 패키지에 두지 않는다. 관련되어 있고 다르다면 이름으로 구분한다.
+- `xxx-error.ts`는 실패 선언만, `xxx-http-errors.ts`(또는 HTTP mapper)는 HTTP 사상만 담는다.
+- 새 개념을 추가할 때 아래 표에서 소유자를 먼저 찾는다. 표에 없으면 소유자를 정하고 표와 용어집을 함께 갱신한다.
+
+| 개념 종류            | 정본 위치                                        | 금지                                                    |
+| -------------------- | ------------------------------------------------ | ------------------------------------------------------- |
+| 시간·날짜 경계       | `packages/shared/kernel/src/day-boundary.ts`     | 리터럴 `"Asia/Seoul"`, `9*60*60*1000`, SQL `'+9 hours'` |
+| 식별자 브랜드        | `packages/shared/types/src/ids.ts`               | 모듈 내 재선언                                          |
+| 식별자 스키마 팩토리 | `packages/shared/contracts/src/identifier.ts`    | 두 번째 `createIdSchema` / `createIdentifierSchema`     |
+| 실패 표현            | `packages/shared/kernel/src/failure.ts`          | 계층별 재선언                                           |
+| wire 스키마          | `packages/shared/contracts/**`                   | 앱·모듈에서 재선언                                      |
+| 환경 설정            | `packages/config/env` (공통) + 앱별 `config/env` | 도메인 경계 너머로 원문 전달                            |
+| 화면 모델            | `apps/*/src/features/*/model/**`                 | 생성 fetcher 반환 타입을 도메인 이름으로 역산           |
+
+## 오류 처리
+
+- `catch`에서 만드는 실패는 반드시 `cause`를 담는다. oxlint `catch-preserves-cause`가 강제한다.
+- 감사·개인정보·인증 실패는 `cause` 외에 `logger.error`도 남긴다.
+- 계층 간 변환은 정보를 추가할 때만 만든다. 이름만 바꾸는 중간 shape는 만들지 않는다.
+- 실패 union에 variant를 추가하면 `assertExhaustive*`가 컴파일 에러를 낸다. 이 장치를 우회하지 않는다.
+- 의도적으로 비운 `catch`는 왜 비웠는지를 한 줄 주석으로 남긴다. 다음을 모두 만족할 때만 허용한다.
+  1. 이 실패를 보고하는 것이 더 중요한 실패를 가릴 수 있다
+  2. 대안 경로가 이미 실패를 기록하고 있다
+  3. 주석이 위 두 가지를 명시한다
+
+서버 내부 오류 변환 층과 wire 계약은 [`api-contract.md`](./api-contract.md)가 소유한다.
+
 ## 금지 패턴
 
 - 같은 목적의 utility 중복 생성

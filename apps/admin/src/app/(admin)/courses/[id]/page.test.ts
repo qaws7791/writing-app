@@ -14,6 +14,7 @@ vi.mock("@workspace/http-client/admin", () => ({
   getAdminCourseEditor: getCourseEditorMock,
   publishAdminCourse: vi.fn(),
   saveAdminCourseEditor: vi.fn(),
+  uploadAdminContentAsset: vi.fn(),
 }))
 vi.mock("@/server/http/admin-api-request-options", () => ({
   getServerAdminRequestOptions: getServerAdminRequestOptionsMock,

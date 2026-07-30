@@ -23,6 +23,7 @@ import type { LearnerId } from "@workspace/types/ids"
 import type {
   LearningAiFeedbackTransition,
   LearningCommandError,
+  LearningReadError,
 } from "#learning/application/learning-application"
 import type {
   LearnerCourseReadQuery,
@@ -38,7 +39,6 @@ import type {
   LearnerCursorPosition,
 } from "#learning/infrastructure/persistence/learner-cursor"
 import type { CompleteLearnerStepTransitionResult } from "#learning/domain/learner-transition"
-import { createAnswerRejectedFailure } from "#learning/domain/learning-error"
 
 export type LearnerReadTransportError = Readonly<{ kind: "invalid-cursor" }>
 
@@ -126,9 +126,9 @@ export function encodeLearnerProgressPage(
 }
 
 export function unwrapLearningResult<TValue>(
-  result: Result<TValue, LearningCommandError>
+  result: Result<TValue, LearningCommandError | LearningReadError>
 ): TValue {
-  if (result.isErr()) throw mapLearningCommandError(result.error)
+  if (result.isErr()) throw mapLearningError(result.error)
   return result.value
 }
 
@@ -138,9 +138,8 @@ export function presentCompleteStepResult(
   let presented: unknown
   switch (result.kind) {
     case "retry": {
-      const rejected = createAnswerRejectedFailure(result.evaluation)
       presented = {
-        evaluation: rejected.evaluation,
+        evaluation: result.evaluation,
         learning: result.learning,
         status: "retry",
       }
@@ -178,19 +177,28 @@ export function presentAiFeedbackResult(
   }
 }
 
-function mapLearningCommandError(error: LearningCommandError): AppError {
+function mapLearningError(
+  error: LearningCommandError | LearningReadError
+): AppError {
   switch (error.kind) {
     case "invalid-request":
       return httpError(400, "VALIDATION_ERROR", "요청 내용을 확인해 주세요.")
     case "learner-inactive":
     case "learner-not-found":
       return httpError(403, "FORBIDDEN", "사용할 수 없는 계정입니다.")
+    case "course-not-found":
+      return httpError(404, "COURSE_NOT_FOUND", "코스를 찾을 수 없습니다.")
     case "identity-query-failed":
-    case "persistence-failed":
       return httpError(
         500,
         "INTERNAL_SERVER_ERROR",
         "학습 요청을 완료하지 못했습니다."
+      )
+    case "persistence-failed":
+      return httpError(
+        500,
+        "INTERNAL_SERVER_ERROR",
+        "AI 코칭 요청을 완료하지 못했습니다."
       )
     case "lesson-not-found":
       return httpError(404, "LESSON_NOT_FOUND", "레슨을 찾을 수 없습니다.")
@@ -236,13 +244,15 @@ function mapLearningCommandError(error: LearningCommandError): AppError {
       return httpError(
         409,
         "ATTEMPT_IN_PROGRESS",
-        "AI 코칭 요청을 처리하고 있습니다."
+        "AI 코칭 요청을 처리하고 있습니다.",
+        { "Retry-After": String(error.retryAfterSeconds) }
       )
     case "daily-quota-exceeded":
       return httpError(
         429,
         "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED",
-        "오늘 사용할 수 있는 AI 코칭 요청량을 모두 사용했습니다."
+        "오늘의 AI 코칭 요청 한도를 모두 사용했습니다.",
+        { "Retry-After": String(error.retryAfterSeconds) }
       )
     case "provider-response-invalid":
     case "provider-timeout":
@@ -271,7 +281,8 @@ function decodePosition(
 function httpError(
   status: 400 | 403 | 404 | 409 | 429 | 500 | 503,
   code: string,
-  message: string
+  message: string,
+  headers?: Readonly<Record<string, string>>
 ): AppError {
-  return new AppError({ code, message, status })
+  return new AppError({ code, headers, message, status })
 }

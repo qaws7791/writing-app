@@ -78,6 +78,27 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 - UI markup만 바뀐 경우에도 접근성 또는 해당 화면의 사용자 흐름 영향을 확인한다.
 - flaky 실패는 retry로 성공 처리하지 않는다. 원인을 격리해 재현하고 수정하며, 해결 전까지 실패 사실과 영향을 기록한다.
 
+## 테스트를 추가할 때
+
+| 추가한다                   | 추가하지 않는다           |
+| -------------------------- | ------------------------- |
+| 권한·인증 경계 변경        | 상수 값                   |
+| 상태 전이와 불변식         | 타입이 이미 강제하는 사실 |
+| 트랜잭션·복구 경로         | 한 줄 wrapper의 위임      |
+| 재현된 결함                | 정적 markup 존재 여부     |
+| 데이터 삭제·보존 정책      | 프레임워크 동작           |
+| 외부 계약(wire, migration) | 계층마다 같은 동작 중복   |
+
+정적 검사·타입·lint 룰로 막을 수 있으면 테스트를 쓰지 않는다. 예: `catch`의 `cause` 보존은 커스텀 lint 룰이 강제한다.
+
+## 테스트 작성 규약
+
+- 상수가 자기 리터럴과 같은지 단정하지 않는다.
+- 동작이 없는 설정·플래그를 검증하는 테스트를 만들지 않는다.
+- 테스트 조립이 프로덕션 조립을 복제하지 않는다. 실제 조립 함수를 재사용하고 의존성만 주입한다.
+- 통합 테스트 셋업은 모듈별 `test/fixtures` 빌더를 쓴다. 새 테스트가 시드를 인라인으로 다시 짜지 않는다.
+- 테스트 지원 코드는 `test/` 또는 `test-support/` 아래에만 둔다. 제품 소스에서 `@/test/*`를 import하지 않는다.
+
 ## 실행과 검증
 
 공개 검증 명령과 tool version은 [root manifest](../../package.json), Vitest 대상 구성은 [Vitest workspace](../../vitest.workspace.ts), browser 실행 설정은 [Playwright config](../../playwright.config.ts), Storybook source와 task는 [Storybook manifest](../../apps/storybook/package.json)와 [Storybook config](../../apps/storybook/.storybook/main.ts)가 소유한다. CI trigger, job 배치와 실제 gate는 [quality workflow](../../.github/workflows/quality-gates.yml)를 확인한다. 이 문서는 현재 script, 대상 목록, retry 횟수, report 형식과 숫자 예산을 복제하지 않는다.

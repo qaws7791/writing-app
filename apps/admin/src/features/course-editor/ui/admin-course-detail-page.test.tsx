@@ -1,7 +1,11 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { AdminCourseDetailPage } from "@/features/course-editor/ui/admin-course-detail-page"
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}))
 
 describe("AdminCourseDetailPage", () => {
   it("API 오류를 코스 편집 화면에서 보여준다", () => {
@@ -40,6 +44,7 @@ describe("AdminCourseDetailPage", () => {
           },
           status: "error",
         })}
+        uploadAdminContentAsset={vi.fn()}
       />
     )
 

@@ -12,8 +12,8 @@
 - concrete persistence adapter는 해당 module infrastructure가 소유하고 실행 의존성 조립은 API composition이 맡는다.
 - 여러 runtime이 공유하는 인증 vendor integration과 credential·session schema는 좁은 auth infra package가 소유한다. identity module은 학습자 profile·사용자 상태와 관리자 session 해석을 소유하며, API의 auth adapter가 vendor-neutral identity directory port를 구현한다. 관리자 권한은 별도 관리자 인증 경계의 유효한 session으로 결정하고 제품 role profile을 두지 않는다.
 - content module은 draft 편집, immutable published revision, 발행·보관과 콘텐츠 schema·seed를 함께 소유한다.
-- ai-feedback module은 coaching prompt, provider 응답 검증, 완료 attempt 제한과 기록, module-local provider adapter와 HTTP interface를 소유한다. API composition은 learning의 저장 답안 문맥·진행 전이와 ai-feedback application port를 연결하며 어느 쪽도 상대 table을 읽지 않는다.
-- learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query, identity의 상태 query와 ai-feedback application port는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
+- ai-feedback module은 coaching prompt, provider 응답 검증, 완료 attempt 제한과 기록, module-local provider adapter를 소유하고 HTTP interface는 두지 않는다. API composition은 learning의 저장 답안 문맥·진행 전이와 ai-feedback application port를 연결하며 어느 쪽도 상대 table을 읽지 않는다.
+- learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 AI 코칭 단계를 포함한 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query, identity의 상태 query와 ai-feedback application port는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
 - operations module은 대시보드·분석용 읽기 전용 reporting과 관리자 HTTP interface를 소유한다. reporting SQL은 같은 SQLite의 여러 module table을 join할 수 있지만 다른 module의 command나 repository를 대신하지 않는다.
 - 외부 provider SDK, logger와 DB runtime 구현은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다. HTTP framework의 공통 app·middleware·error·security 구현은 http-platform infra가 소유하되, endpoint를 소유하는 module interface는 공개 platform helper와 필요한 Hono route type을 사용한다. API composition은 module route와 실행 경계 route를 최종 app에 등록한다.
 - 각 module과 auth infra는 자기 최종 Drizzle schema를 소유하고, 실제 seed가 있는 경계만 seed provider를 공개한다. API SQL이 유일한 migration 계보를 소유하고 schema·seed 실행을 조립한다.

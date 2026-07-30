@@ -25,17 +25,21 @@ vi.mock("next/navigation", () => ({
 }))
 
 import { LessonExperience } from "@/features/lesson-session/ui/lesson-experience"
+import {
+  toLessonViewModel,
+  type Lesson,
+} from "@/features/lesson-session/model/lesson-view-model"
 import type {
   LearnerCompleteStepResultDto,
-  LearnerLessonDto,
   LearnerLessonLearningDto,
   LearnerSaveStepDraftBodyDto,
   LearnerStartLessonResultDto,
 } from "@/shared/http/learner-api-client"
+import type { LearnerLessonDto } from "@/shared/http/learner-api-client"
 
 const version = { curriculumVersionId: "version-1", revision: 1 } as const
 
-const lesson: LearnerLessonDto = {
+const lesson: Lesson = toLessonViewModel({
   category: "기초",
   courseId: "course-1",
   description: "설명",
@@ -71,9 +75,9 @@ const lesson: LearnerLessonDto = {
   title: "테스트 레슨",
   unitId: "unit-1",
   version,
-}
+} satisfies LearnerLessonDto)
 
-const aiLesson: LearnerLessonDto = {
+const aiLesson: Lesson = toLessonViewModel({
   ...lesson,
   drafts: [],
   learning: {
@@ -100,7 +104,7 @@ const aiLesson: LearnerLessonDto = {
       type: "AI_FEEDBACK",
     },
   ],
-}
+} satisfies LearnerLessonDto)
 
 const startedLearning: Extract<
   LearnerLessonLearningDto,
@@ -114,6 +118,40 @@ const startedLearning: Extract<
   totalSteps: 2,
   version,
 }
+
+const startedLesson: Lesson = toLessonViewModel({
+  category: "기초",
+  courseId: "course-1",
+  description: "설명",
+  drafts: [],
+  estimatedMinutes: 5,
+  id: "lesson-1",
+  learning: startedLearning,
+  steps: [
+    {
+      id: "step-1",
+      options: [
+        { id: "option-1", text: "오답" },
+        { id: "option-2", text: "정답" },
+      ],
+      question: "정답을 고르세요",
+      sortOrder: 1,
+      type: "MULTIPLE_CHOICE",
+    },
+    {
+      body: "본문",
+      guide: "가이드",
+      id: "step-2",
+      sortOrder: 2,
+      title: "읽기",
+      type: "READING",
+    },
+  ],
+  summary: [],
+  title: "테스트 레슨",
+  unitId: "unit-1",
+  version,
+} satisfies LearnerLessonDto)
 
 const started: LearnerStartLessonResultDto = {
   ...startedLearning,
@@ -246,8 +284,10 @@ describe("LessonExperience", () => {
   })
 
   it("서버 초안을 즉시 복원하고 변경된 입력을 debounce 저장한다", async () => {
-    const writeLesson: LearnerLessonDto = {
-      ...lesson,
+    const writeLesson: Lesson = toLessonViewModel({
+      category: "기초",
+      courseId: "course-1",
+      description: "설명",
       drafts: [
         {
           answer: { text: "서버에서 복원한 문장", type: "WRITE" },
@@ -256,6 +296,8 @@ describe("LessonExperience", () => {
           version: 2,
         },
       ],
+      estimatedMinutes: 5,
+      id: "lesson-1",
       learning: {
         completedSteps: 0,
         currentStepId: "step-write",
@@ -274,7 +316,11 @@ describe("LessonExperience", () => {
           type: "WRITE",
         },
       ],
-    }
+      summary: [],
+      title: "테스트 레슨",
+      unitId: "unit-1",
+      version,
+    } satisfies LearnerLessonDto)
 
     render(<LessonExperience lesson={writeLesson} />)
 
@@ -337,7 +383,9 @@ describe("LessonExperience", () => {
     }
     generatedClient.completeLearnerStep.mockResolvedValue(retry)
     render(
-      <LessonExperience lesson={{ ...lesson, learning: startedLearning }} />
+      <LessonExperience
+        lesson={{ ...lesson, learning: startedLesson.learning }}
+      />
     )
 
     await userEvent.click(screen.getByRole("button", { name: "오답" }))
@@ -379,7 +427,9 @@ describe("LessonExperience", () => {
     }
     generatedClient.completeLearnerStep.mockResolvedValue(advanced)
     render(
-      <LessonExperience lesson={{ ...lesson, learning: startedLearning }} />
+      <LessonExperience
+        lesson={{ ...lesson, learning: startedLesson.learning }}
+      />
     )
 
     await userEvent.click(screen.getByRole("button", { name: "정답" }))

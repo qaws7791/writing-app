@@ -1,4 +1,3 @@
-import { registerAiFeedbackRoutes } from "@workspace/ai-feedback/http"
 import type { ContentAdminSessionPort } from "@workspace/content/ports"
 import { registerContentRoutes } from "@workspace/content/http"
 import { defaultRequestLoggingRuntime } from "@workspace/http-platform/app"
@@ -32,7 +31,6 @@ import type { ApiHonoEnv } from "@/middleware/hono-env"
 import type { ApiHealthProbe } from "@/runtime/api-health"
 
 export type LearnerContractRouteDependencies = Readonly<{
-  aiFeedback: Parameters<typeof registerAiFeedbackRoutes>[1]
   health: ApiHealthProbe
   identity: Parameters<typeof registerLearnerIdentityRoutes>[1]
   learning: Parameters<typeof registerLearningRoutes>[1]
@@ -68,10 +66,6 @@ export function createApp(container: ApiContainer) {
     webOrigin: env.webOrigin,
   })
   registerLearnerContractRoutes(learner, {
-    aiFeedback: {
-      command: container.modules.learning.aiFeedbackCommand,
-      session: container.learner.learningSession,
-    },
     health: container.health,
     identity: {
       application: container.modules.identity.application,
@@ -145,7 +139,6 @@ export function registerLearnerContractRoutes(
   dependencies: LearnerContractRouteDependencies
 ): void {
   registerHealthRoutes(app, dependencies.health)
-  registerAiFeedbackRoutes(app, dependencies.aiFeedback)
   registerLearnerIdentityRoutes(app, dependencies.identity)
   registerLearningRoutes(app, dependencies.learning)
 }

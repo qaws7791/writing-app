@@ -19,12 +19,12 @@ import {
 import { isLessonStepSubmittable } from "@/features/lesson-session/model/lesson-step-policy"
 import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/learner-transition"
 import type {
-  LearnerCompleteStepBodyDto,
-  LearnerLessonDto as Lesson,
-  LearnerLessonStepDto as LessonStep,
-  LearnerStepDraftAnswerDto,
-  LearnerStepDraftDto,
-} from "@/shared/http/learner-api-client"
+  Lesson,
+  LessonCompleteStepBody,
+  LessonStep,
+  LessonStepDraft,
+  LessonStepDraftAnswer,
+} from "@/features/lesson-session/model/lesson-view-model"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 const LESSON_START_ERROR =
@@ -47,7 +47,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
   const [sessionState, send] = useReducer(transitionLessonSession, initialState)
   const sessionStateRef = useRef(sessionState)
   const applyServerDraft = useCallback(
-    (stepId: string, answer: LearnerStepDraftAnswerDto | null) => {
+    (stepId: string, answer: LessonStepDraftAnswer | null) => {
       if (sessionStateRef.current.status !== "active") return
       send({ payload: answer, stepId, type: "DRAFT_RECONCILED" })
     },
@@ -361,7 +361,7 @@ function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
 function createCompleteStepRequest(
   step: LessonStep,
   answer: LessonStepAnswerPayload | undefined
-): LearnerCompleteStepBodyDto | null {
+): LessonCompleteStepBody | null {
   if (step.type === "READING" || step.type === "COMPARE") {
     return { kind: "acknowledge" as const }
   }
@@ -372,14 +372,14 @@ function createCompleteStepRequest(
 }
 
 function toDraftAnswerPayloads(
-  drafts: readonly LearnerStepDraftDto[]
-): Readonly<Record<string, LearnerStepDraftAnswerDto>> {
+  drafts: readonly LessonStepDraft[]
+): Readonly<Record<string, LessonStepDraftAnswer>> {
   return Object.fromEntries(drafts.map((draft) => [draft.stepId, draft.answer]))
 }
 
 function getAiFeedbackDraftText(
   step: LessonStep | null,
-  answerPayloads: Readonly<Record<string, LearnerStepDraftAnswerDto>>
+  answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
 ): string {
   if (step?.type !== "AI_FEEDBACK") return ""
   const targetAnswer = answerPayloads[step.target]

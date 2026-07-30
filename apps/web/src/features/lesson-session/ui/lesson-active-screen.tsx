@@ -14,9 +14,9 @@ import { getLessonStepActionLabel } from "@/features/lesson-session/model/lesson
 import { LessonDraftStatus } from "@/features/lesson-session/ui/lesson-draft-status"
 import { LessonStepRenderer } from "@/features/lesson-session/ui/lesson-step-renderer"
 import type {
-  LearnerLessonDto as Lesson,
-  LearnerLessonStepDto as LessonStep,
-} from "@/shared/http/learner-api-client"
+  Lesson,
+  LessonStep,
+} from "@/features/lesson-session/model/lesson-view-model"
 import {
   LessonCheckedFooter,
   LessonProgressHeader,

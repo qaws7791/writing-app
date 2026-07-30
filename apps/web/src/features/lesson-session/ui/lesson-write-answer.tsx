@@ -4,7 +4,7 @@ import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
 import type { LessonStepCheckedVisual } from "@workspace/ui/lib/lesson-step-checked-visual"
 
 import type { LessonStepAnswerPayload } from "@/features/lesson-session/model/lesson-logic"
-import type { LearnerLessonStepDto as LessonStep } from "@/shared/http/learner-api-client"
+import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 
 type WriteLessonStep = Extract<LessonStep, { readonly type: "WRITE" }>
 

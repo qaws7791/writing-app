@@ -13,9 +13,13 @@ import {
   isLearnerApiNetworkError,
   readLearnerApiErrorCode,
   settleLearnerApiRequest,
-  type LearnerStepDraftAnswerDto,
-  type LearnerStepDraftDto,
 } from "@/shared/http/learner-api-client"
+import {
+  parseLessonStepDraft,
+  parseLessonStepDrafts,
+  type LessonStepDraft,
+  type LessonStepDraftAnswer,
+} from "@/features/lesson-session/model/lesson-view-model"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 const AUTOSAVE_DELAY_MS = 800
@@ -29,20 +33,20 @@ export type LessonDraftSyncStatus =
   | { readonly kind: "error"; readonly message: string }
   | {
       readonly kind: "conflict"
-      readonly localAnswer: LearnerStepDraftAnswerDto
-      readonly serverDraft: LearnerStepDraftDto | null
+      readonly localAnswer: LessonStepDraftAnswer
+      readonly serverDraft: LessonStepDraft | null
     }
 
 type DraftRecord = {
-  answer: LearnerStepDraftAnswerDto
+  answer: LessonStepDraftAnswer
   conflict: {
-    readonly localAnswer: LearnerStepDraftAnswerDto
-    readonly serverDraft: LearnerStepDraftDto | null
+    readonly localAnswer: LessonStepDraftAnswer
+    readonly serverDraft: LessonStepDraft | null
   } | null
   dirty: boolean
   expectedVersion: number | null
   inFlight: boolean
-  savedAnswer: LearnerStepDraftAnswerDto | null
+  savedAnswer: LessonStepDraftAnswer | null
   updatedAt: string | null
 }
 
@@ -53,11 +57,11 @@ export function useLessonDraftSync({
   onServerDraftApplied,
 }: {
   readonly expectedCurriculumVersionId: string
-  readonly initialDrafts: readonly LearnerStepDraftDto[]
+  readonly initialDrafts: readonly LessonStepDraft[]
   readonly lessonId: string
   readonly onServerDraftApplied: (
     stepId: string,
-    answer: LearnerStepDraftAnswerDto | null
+    answer: LessonStepDraftAnswer | null
   ) => void
 }) {
   const recordsRef = useRef<Map<string, DraftRecord> | null>(null)
@@ -143,9 +147,9 @@ export function useLessonDraftSync({
   )
 
   const applyServerDrafts = useCallback(
-    (serverDrafts: readonly LearnerStepDraftDto[]) => {
+    (serverDrafts: readonly LessonStepDraft[]) => {
       const records = readDraftRecords(recordsRef)
-      const serverDraftByStepId = new Map<string, LearnerStepDraftDto>(
+      const serverDraftByStepId = new Map<string, LessonStepDraft>(
         serverDrafts.map((draft) => [draft.stepId, draft])
       )
 
@@ -255,7 +259,7 @@ export function useLessonDraftSync({
         return
       }
 
-      applyServerDrafts(result.value.drafts)
+      applyServerDrafts(parseLessonStepDrafts(result.value.drafts))
 
       const pendingStepIds = [...readDraftRecords(recordsRef)]
         .filter(([, record]) => record.dirty && record.conflict === null)
@@ -335,16 +339,17 @@ export function useLessonDraftSync({
         return
       }
 
-      record.expectedVersion = result.value.version
-      record.savedAnswer = result.value.answer
-      record.updatedAt = result.value.updatedAt
+      const savedDraft = parseLessonStepDraft(result.value)
+      record.expectedVersion = savedDraft.version
+      record.savedAnswer = savedDraft.answer
+      record.updatedAt = savedDraft.updatedAt
       record.dirty = !sameDraftAnswer(record.answer, sentAnswer)
       record.conflict = null
 
       if (!record.dirty) {
         setStepStatus(stepId, {
           kind: "saved",
-          updatedAt: result.value.updatedAt,
+          updatedAt: savedDraft.updatedAt,
         })
         return
       }
@@ -390,7 +395,7 @@ export function useLessonDraftSync({
   )
 
   const stageDraft = useCallback(
-    (stepId: string, answer: LearnerStepDraftAnswerDto) => {
+    (stepId: string, answer: LessonStepDraftAnswer) => {
       const records = readDraftRecords(recordsRef)
       const record = records.get(stepId) ?? createUnsavedDraftRecord(answer)
       records.set(stepId, record)
@@ -550,14 +555,14 @@ export function useLessonDraftSync({
 }
 
 function createDraftRecords(
-  drafts: readonly LearnerStepDraftDto[]
+  drafts: readonly LessonStepDraft[]
 ): Map<string, DraftRecord> {
   return new Map(
     drafts.map((draft) => [draft.stepId, createServerDraftRecord(draft)])
   )
 }
 
-function createServerDraftRecord(draft: LearnerStepDraftDto): DraftRecord {
+function createServerDraftRecord(draft: LessonStepDraft): DraftRecord {
   return {
     answer: draft.answer,
     conflict: null,
@@ -569,9 +574,7 @@ function createServerDraftRecord(draft: LearnerStepDraftDto): DraftRecord {
   }
 }
 
-function createUnsavedDraftRecord(
-  answer: LearnerStepDraftAnswerDto
-): DraftRecord {
+function createUnsavedDraftRecord(answer: LessonStepDraftAnswer): DraftRecord {
   return {
     answer,
     conflict: null,
@@ -585,7 +588,7 @@ function createUnsavedDraftRecord(
 
 function updateRecordFromServer(
   record: DraftRecord,
-  draft: LearnerStepDraftDto
+  draft: LessonStepDraft
 ): void {
   record.answer = draft.answer
   record.conflict = null
@@ -610,8 +613,8 @@ function browserIsOnline(): boolean {
 }
 
 function sameOptionalAnswer(
-  left: LearnerStepDraftAnswerDto | undefined,
-  right: LearnerStepDraftAnswerDto | null
+  left: LessonStepDraftAnswer | undefined,
+  right: LessonStepDraftAnswer | null
 ): boolean {
   return left === undefined
     ? right === null
@@ -619,8 +622,8 @@ function sameOptionalAnswer(
 }
 
 function sameDraftAnswer(
-  left: LearnerStepDraftAnswerDto,
-  right: LearnerStepDraftAnswerDto | null
+  left: LessonStepDraftAnswer,
+  right: LessonStepDraftAnswer | null
 ): boolean {
   return right !== null && JSON.stringify(left) === JSON.stringify(right)
 }

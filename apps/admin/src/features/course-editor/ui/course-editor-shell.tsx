@@ -2,170 +2,80 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import {
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-  useTransition,
-} from "react"
-import {
-  lessonIdSchema,
-  lessonStepIdSchema,
-  unitIdSchema,
-} from "@workspace/contracts/content/ids"
-import {
-  getAdminCourseEditor,
-  uploadAdminContentAsset,
-} from "@workspace/http-client/admin"
+import { useEffect, useReducer, useRef, useState, useTransition } from "react"
 
 import {
   adminCourseEditorSchema,
-  type AdminContentAsset,
-  type AdminContentAssetKind,
   type AdminCourseDetail,
-  type AdminCoursePublishResult,
+  type AdminCourseEditorCommandResult,
 } from "@/features/course-editor/model/admin-course-editor"
 import {
+  canSave,
   courseEditorReducer,
   createCourseEditorState,
+  isUnsaved as isUnsavedState,
 } from "@/features/course-editor/model/course-editor-reducer"
-import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
-import { ContentAssetUploadField } from "@/features/course-editor/ui/content-asset-upload-field"
-import {
-  settleAdminApiRequest,
-  type AdminRequestResult,
-} from "@/shared/http/admin-api-client"
-import {
-  ChevronRightIcon,
-  PlusIcon,
-  TrashIcon,
-} from "@workspace/ui/components/icons"
+import type { UploadAdminContentAsset } from "@/features/course-editor/model/content-asset-upload"
+import { withConflictRecovery } from "@/features/course-editor/model/with-conflict-recovery"
+import type { ConfirmationIntent } from "@/features/course-editor/ui/confirmation-copy"
+import { CourseCurriculumTab } from "@/features/course-editor/ui/course-curriculum-tab"
+import { CourseInfoTab } from "@/features/course-editor/ui/course-info-tab"
+import { EditorConfirmationDialog } from "@/features/course-editor/ui/editor-confirmation-dialog"
+import { ChevronRightIcon } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/ui/select"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { cn } from "@workspace/ui/lib/utils"
-
-type EditorTab = "curriculum" | "info"
-type EditorUnit = AdminCourseDetail["units"][number]
-type EditorLesson = EditorUnit["lessons"][number]
-type ConfirmationIntent =
-  | { readonly type: "change-tab"; readonly tab: EditorTab }
-  | { readonly type: "navigate-course-list" }
-  | { readonly type: "publish" }
-  | {
-      readonly type: "remove-lesson"
-      readonly lessonId: EditorLesson["id"]
-      readonly lessonTitle: string
-      readonly unitId: EditorUnit["id"]
-    }
-  | {
-      readonly type: "remove-unit"
-      readonly unitId: EditorUnit["id"]
-      readonly unitTitle: string
-    }
 
 export function CourseEditorShell({
   course,
   publishCourse,
   saveCourse,
+  uploadAdminContentAsset,
 }: {
   readonly course: AdminCourseDetail
   readonly publishCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminRequestResult<AdminCoursePublishResult>>
+  ) => Promise<AdminCourseEditorCommandResult>
   readonly saveCourse: (
     course: AdminCourseDetail
-  ) => Promise<AdminRequestResult<AdminCourseDetail>>
+  ) => Promise<AdminCourseEditorCommandResult>
+  readonly uploadAdminContentAsset: UploadAdminContentAsset
 }) {
   const router = useRouter()
-  const loadLatestCourse = (courseId: string) =>
-    settleAdminApiRequest(getAdminCourseEditor(courseId))
   const [state, dispatch] = useReducer(
     courseEditorReducer,
     course,
     createCourseEditorState
   )
-  const [tab, setTab] = useState<EditorTab>("info")
+  const [tab, setTab] = useState<"curriculum" | "info">("info")
   const [confirmationIntent, setConfirmationIntent] =
     useState<ConfirmationIntent | null>(null)
   const editorHeadingRef = useRef<HTMLHeadingElement>(null)
   const [isPending, startTransition] = useTransition()
-  const isUnsaved = [
-    "conflict",
-    "dirty",
-    "server-error",
-    "validation-error",
-  ].includes(state.status)
-  const lessonCount = useMemo(
-    () =>
-      state.draft.units.reduce((count, unit) => count + unit.lessons.length, 0),
-    [state.draft.units]
+  const unsaved = isUnsavedState(state)
+  const lessonCount = state.draft.units.reduce(
+    (count, unit) => count + unit.lessons.length,
+    0
   )
   const coverAsset = state.draft.assets.find(
     (asset) =>
       asset.id === state.draft.coverAssetId && asset.kind === "course-cover"
   )
-  const uploadAsset = async (input: {
-    readonly altText: string
-    readonly file: File
-    readonly kind: AdminContentAssetKind
-  }): Promise<AdminRequestResult<AdminContentAsset>> => {
-    const result = await settleAdminApiRequest(
-      uploadAdminContentAsset(state.draft.id, {
-        altText: input.altText,
-        curriculumVersionId: state.draft.curriculumVersionId,
-        file: input.file,
-        kind: input.kind,
-      })
-    )
-    if (result.status === "ok") {
-      dispatch({ asset: result.value, type: "asset-registered" })
-    }
-    return result
-  }
 
   useEffect(() => {
-    if (!isUnsaved) return
-    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-    }
-    window.addEventListener("beforeunload", warnBeforeUnload)
-    return () => window.removeEventListener("beforeunload", warnBeforeUnload)
-  }, [isUnsaved])
+    if (!unsaved) return
+    const handler = (event: BeforeUnloadEvent) => event.preventDefault()
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [unsaved])
 
-  const changeTab = (nextTab: EditorTab) => {
-    if (nextTab === tab) {
-      return
-    }
-    if (isUnsaved) {
-      requestConfirmation({ tab: nextTab, type: "change-tab" })
+  const changeTab = (nextTab: "curriculum" | "info") => {
+    if (nextTab === tab) return
+    if (unsaved) {
+      setConfirmationIntent({ tab: nextTab, type: "change-tab" })
       return
     }
     setTab(nextTab)
-  }
-
-  const requestConfirmation = (intent: ConfirmationIntent) => {
-    setConfirmationIntent(intent)
   }
 
   const save = () => {
@@ -178,63 +88,36 @@ export function CourseEditorShell({
       })
       return
     }
-
     dispatch({ type: "save-started" })
     startTransition(async () => {
-      const result = await saveCourse(parsed.data)
-      if (result.status === "ok") {
-        dispatch({ document: result.value, type: "save-succeeded" })
-        return
-      }
-      if (result.error.code !== "CONTENT_CONFLICT") {
-        dispatch({ message: result.error.message, type: "server-failed" })
-        return
-      }
-
-      const latest = await loadLatestCourse(state.draft.id)
-      if (latest.status === "error") {
-        dispatch({ message: latest.error.message, type: "server-failed" })
-        return
-      }
-      dispatch({ latest: latest.value, type: "conflict-detected" })
+      await withConflictRecovery({
+        dispatch,
+        onSuccess: async (document) => {
+          dispatch({ document, type: "save-succeeded" })
+        },
+        operation: () => saveCourse(parsed.data),
+      })
     })
   }
 
   const publish = () => {
     dispatch({ type: "publish-started" })
     startTransition(async () => {
-      const result = await publishCourse(state.draft)
-      if (result.status === "error") {
-        if (result.error.code !== "CONTENT_CONFLICT") {
-          dispatch({ message: result.error.message, type: "server-failed" })
-          return
-        }
-
-        const latest = await loadLatestCourse(state.draft.id)
-        if (latest.status === "error") {
-          dispatch({ message: latest.error.message, type: "server-failed" })
-          return
-        }
-        dispatch({ latest: latest.value, type: "conflict-detected" })
-        return
-      }
-
-      const latest = await loadLatestCourse(state.draft.id)
-      if (latest.status === "error") {
-        dispatch({ message: latest.error.message, type: "server-failed" })
-        return
-      }
-      dispatch({ document: latest.value, type: "publish-succeeded" })
+      await withConflictRecovery({
+        dispatch,
+        onSuccess: async (document) => {
+          dispatch({ document, type: "publish-succeeded" })
+        },
+        operation: () => publishCourse(state.draft),
+      })
     })
   }
 
   const confirmIntent = () => {
     if (confirmationIntent === null) return
-
     const intent = confirmationIntent
     setConfirmationIntent(null)
     requestAnimationFrame(() => editorHeadingRef.current?.focus())
-
     switch (intent.type) {
       case "change-tab":
         setTab(intent.tab)
@@ -257,8 +140,6 @@ export function CourseEditorShell({
     }
   }
 
-  const confirmationCopy = getConfirmationCopy(confirmationIntent)
-
   return (
     <div className="-mx-5 -mt-8 flex min-h-full flex-col md:-mx-10">
       <div className="border-b border-surface-hover px-6 pb-0 pt-8 md:px-10">
@@ -272,16 +153,15 @@ export function CourseEditorShell({
             prefetch={false}
             onClick={(event) => {
               if (
-                !isUnsaved ||
+                !unsaved ||
                 event.altKey ||
                 event.ctrlKey ||
                 event.metaKey ||
                 event.shiftKey
-              ) {
+              )
                 return
-              }
               event.preventDefault()
-              requestConfirmation({ type: "navigate-course-list" })
+              setConfirmationIntent({ type: "navigate-course-list" })
             }}
           >
             콘텐츠 관리
@@ -301,36 +181,35 @@ export function CourseEditorShell({
           </h1>
           <div className="flex items-center gap-2">
             <Button
-              disabled={
-                isPending ||
-                !["dirty", "server-error", "validation-error"].includes(
-                  state.status
-                )
-              }
+              disabled={isPending || !canSave(state)}
               onClick={save}
               variant="outline"
             >
               {state.status === "saving" ? "저장 중…" : "변경 저장"}
             </Button>
             <Button
-              disabled={isPending || isUnsaved}
-              onClick={() => requestConfirmation({ type: "publish" })}
+              disabled={isPending || unsaved}
+              onClick={() => setConfirmationIntent({ type: "publish" })}
             >
               {state.status === "publishing" ? "발행 중…" : "초안 발행"}
             </Button>
           </div>
         </div>
         <div className="-mb-px flex">
-          <TabButton
-            active={tab === "info"}
-            label="강의 정보"
+          <button
+            className={tabClassName(tab === "info")}
             onClick={() => changeTab("info")}
-          />
-          <TabButton
-            active={tab === "curriculum"}
-            label="커리큘럼"
+            type="button"
+          >
+            강의 정보
+          </button>
+          <button
+            className={tabClassName(tab === "curriculum")}
             onClick={() => changeTab("curriculum")}
-          />
+            type="button"
+          >
+            커리큘럼
+          </button>
         </div>
       </div>
       <div className="flex-1 px-6 py-8 md:px-10">
@@ -364,403 +243,36 @@ export function CourseEditorShell({
           </div>
         ) : null}
         {tab === "info" ? (
-          <div className="max-w-xl">
-            <Field>
-              <FieldLabel htmlFor="course-editor-title">제목</FieldLabel>
-              <Input
-                id="course-editor-title"
-                onChange={(event) =>
-                  dispatch({
-                    field: "title",
-                    type: "course-changed",
-                    value: event.target.value,
-                  })
-                }
-                value={state.draft.title}
-              />
-            </Field>
-            <Field className="mt-4">
-              <FieldLabel htmlFor="course-editor-description">설명</FieldLabel>
-              <Textarea
-                id="course-editor-description"
-                onChange={(event) =>
-                  dispatch({
-                    field: "description",
-                    type: "course-changed",
-                    value: event.target.value,
-                  })
-                }
-                value={state.draft.description}
-              />
-            </Field>
-            <Field className="mt-4">
-              <FieldLabel htmlFor="course-editor-category">카테고리</FieldLabel>
-              <Input
-                id="course-editor-category"
-                onChange={(event) =>
-                  dispatch({
-                    field: "category",
-                    type: "course-changed",
-                    value: event.target.value,
-                  })
-                }
-                value={state.draft.category}
-              />
-            </Field>
-            <div className="mt-6">
-              <ContentAssetUploadField
-                asset={coverAsset}
-                kind="course-cover"
-                label="코스 표지"
-                onRemove={() =>
-                  dispatch({ assetId: null, type: "cover-asset-changed" })
-                }
-                onUploaded={(asset) =>
-                  dispatch({
-                    assetId: asset.id,
-                    type: "cover-asset-changed",
-                  })
-                }
-                upload={uploadAsset}
-              />
-            </div>
-          </div>
+          <CourseInfoTab
+            coverAsset={coverAsset}
+            dispatch={dispatch}
+            draft={state.draft}
+            uploadAdminContentAsset={uploadAdminContentAsset}
+          />
         ) : (
-          <div>
-            <div className="mb-6 flex items-center justify-between">
-              <p className="text-[0.875rem] font-medium text-muted-foreground">
-                유닛 {state.draft.units.length}개 · 레슨 {lessonCount}개
-              </p>
-              <Button
-                onClick={() =>
-                  dispatch({
-                    type: "unit-added",
-                    unitId: unitIdSchema.parse(`unit_${crypto.randomUUID()}`),
-                  })
-                }
-                type="button"
-              >
-                <PlusIcon aria-hidden="true" size={15} /> 유닛 추가
-              </Button>
-            </div>
-            <div className="flex flex-col gap-6">
-              {state.draft.units.map((unit, unitIndex) => (
-                <section key={unit.id}>
-                  <div className="mb-2 flex items-center gap-3">
-                    <span className="text-xs font-bold text-muted-foreground">
-                      UNIT {unitIndex + 1}
-                    </span>
-                    <div className="h-px flex-1 bg-surface-hover" />
-                    <Button
-                      aria-label={`${unit.title} 유닛 삭제`}
-                      onClick={() =>
-                        requestConfirmation({
-                          type: "remove-unit",
-                          unitId: unit.id,
-                          unitTitle: unit.title,
-                        })
-                      }
-                      size="icon"
-                      variant="ghost"
-                    >
-                      <TrashIcon aria-hidden="true" size={15} />
-                    </Button>
-                  </div>
-                  <Input
-                    aria-label={`유닛 ${unitIndex + 1} 제목`}
-                    className="mb-3 font-bold"
-                    onChange={(event) =>
-                      dispatch({
-                        title: event.target.value,
-                        type: "unit-title-changed",
-                        unitId: unit.id,
-                      })
-                    }
-                    value={unit.title}
-                  />
-                  <div className="flex flex-col gap-2">
-                    {unit.lessons.map((lesson, lessonIndex) => (
-                      <div className="grid gap-2" key={lesson.id}>
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 text-sm font-bold text-muted-foreground">
-                            {lessonIndex + 1}
-                          </span>
-                          <Input
-                            aria-label={`${unit.title} 레슨 ${lessonIndex + 1} 제목`}
-                            onChange={(event) =>
-                              dispatch({
-                                lessonId: lesson.id,
-                                title: event.target.value,
-                                type: "lesson-title-changed",
-                                unitId: unit.id,
-                              })
-                            }
-                            value={lesson.title}
-                          />
-                          <span className="whitespace-nowrap text-xs text-muted-foreground">
-                            스텝 {lesson.steps.length}개
-                          </span>
-                          <Button
-                            aria-label={`${lesson.title} 레슨 삭제`}
-                            onClick={() =>
-                              requestConfirmation({
-                                lessonId: lesson.id,
-                                lessonTitle: lesson.title,
-                                type: "remove-lesson",
-                                unitId: unit.id,
-                              })
-                            }
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <TrashIcon aria-hidden="true" size={14} />
-                          </Button>
-                        </div>
-                        <AiFeedbackTargetFields
-                          lesson={lesson}
-                          onTargetChange={(stepId, targetStepId) => {
-                            const step = lesson.steps.find(
-                              (candidate) => candidate.id === stepId
-                            )
-                            if (step?.type !== "AI_FEEDBACK") return
-                            dispatch({
-                              lessonId: lesson.id,
-                              step: { ...step, target: targetStepId },
-                              type: "step-changed",
-                              unitId: unit.id,
-                            })
-                          }}
-                        />
-                        <StepWorkspace
-                          assetUpload={{
-                            assets: state.draft.assets,
-                            disabled: false,
-                            upload: uploadAsset,
-                          }}
-                          onAdd={(step) =>
-                            dispatch({
-                              lessonId: lesson.id,
-                              step,
-                              type: "step-added",
-                              unitId: unit.id,
-                            })
-                          }
-                          onChange={(step) =>
-                            dispatch({
-                              lessonId: lesson.id,
-                              step,
-                              type: "step-changed",
-                              unitId: unit.id,
-                            })
-                          }
-                          onMove={(step, direction) =>
-                            dispatch({
-                              direction,
-                              lessonId: lesson.id,
-                              stepId: step.id,
-                              type: "step-moved",
-                              unitId: unit.id,
-                            })
-                          }
-                          onRemove={(step) =>
-                            dispatch({
-                              lessonId: lesson.id,
-                              stepId: step.id,
-                              type: "step-removed",
-                              unitId: unit.id,
-                            })
-                          }
-                          steps={lesson.steps}
-                        />
-                      </div>
-                    ))}
-                    <Button
-                      className="self-start"
-                      onClick={() =>
-                        dispatch({
-                          lessonId: lessonIdSchema.parse(
-                            `lesson_${crypto.randomUUID()}`
-                          ),
-                          type: "lesson-added",
-                          unitId: unit.id,
-                        })
-                      }
-                      type="button"
-                      variant="ghost"
-                    >
-                      <PlusIcon aria-hidden="true" size={15} /> 레슨 추가
-                    </Button>
-                  </div>
-                </section>
-              ))}
-            </div>
-          </div>
+          <CourseCurriculumTab
+            dispatch={dispatch}
+            draft={state.draft}
+            lessonCount={lessonCount}
+            requestConfirmation={setConfirmationIntent}
+            uploadAdminContentAsset={uploadAdminContentAsset}
+          />
         )}
       </div>
-      <AlertDialog
-        onOpenChange={(open) => {
-          if (!open) setConfirmationIntent(null)
-        }}
-        open={confirmationIntent !== null}
-      >
-        {confirmationCopy === null ? null : (
-          <AlertDialogContent>
-            <AlertDialogTitle>{confirmationCopy.title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirmationCopy.description}
-            </AlertDialogDescription>
-            <AlertDialogFooter>
-              <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmIntent}
-                variant={
-                  confirmationCopy.destructive ? "destructive" : "default"
-                }
-              >
-                {confirmationCopy.action}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        )}
-      </AlertDialog>
+      <EditorConfirmationDialog
+        intent={confirmationIntent}
+        onConfirm={confirmIntent}
+        onDismiss={() => setConfirmationIntent(null)}
+      />
     </div>
   )
 }
 
-type LessonStepId = EditorLesson["steps"][number]["id"]
-
-function getConfirmationCopy(intent: ConfirmationIntent | null): {
-  readonly action: string
-  readonly description: string
-  readonly destructive: boolean
-  readonly title: string
-} | null {
-  if (intent === null) return null
-
-  switch (intent.type) {
-    case "change-tab":
-      return {
-        action: "이동하기",
-        description: "저장하지 않은 변경은 현재 초안에 남아 있습니다.",
-        destructive: false,
-        title: "편집 화면을 이동할까요?",
-      }
-    case "navigate-course-list":
-      return {
-        action: "목록으로 이동",
-        description: "저장하지 않은 변경을 버리고 콘텐츠 관리로 이동합니다.",
-        destructive: false,
-        title: "콘텐츠 관리로 이동할까요?",
-      }
-    case "publish":
-      return {
-        action: "발행하기",
-        description: "현재 초안을 학습자에게 공개합니다.",
-        destructive: false,
-        title: "현재 초안을 발행할까요?",
-      }
-    case "remove-lesson":
-      return {
-        action: "레슨 삭제",
-        description: `${intent.lessonTitle} 레슨과 포함된 스텝을 삭제합니다.`,
-        destructive: true,
-        title: "레슨을 삭제할까요?",
-      }
-    case "remove-unit":
-      return {
-        action: "유닛 삭제",
-        description: `${intent.unitTitle} 유닛과 포함된 레슨을 삭제합니다.`,
-        destructive: true,
-        title: "유닛을 삭제할까요?",
-      }
-  }
-}
-
-function AiFeedbackTargetFields({
-  lesson,
-  onTargetChange,
-}: {
-  readonly lesson: EditorLesson
-  readonly onTargetChange: (
-    stepId: LessonStepId,
-    targetStepId: LessonStepId
-  ) => void
-}) {
-  const aiSteps = lesson.steps.filter((step) => step.type === "AI_FEEDBACK")
-
-  if (aiSteps.length === 0) return null
-
-  return (
-    <div className="ml-8 grid gap-3 rounded-2xl bg-surface p-3">
-      {aiSteps.map((aiStep) => {
-        const targets = lesson.steps
-          .filter(
-            (step) => step.type === "WRITE" && step.sortOrder < aiStep.sortOrder
-          )
-          .map((step) => ({
-            label: `${step.sortOrder}. ${getWriteStepLabel(step)}`,
-            value: step.id,
-          }))
-        const inputId = `${aiStep.id}-target-step`
-
-        return (
-          <Field key={aiStep.id}>
-            <FieldLabel htmlFor={inputId}>AI 코칭 대상 쓰기 스텝</FieldLabel>
-            <Select
-              items={targets}
-              onValueChange={(value) => {
-                if (value === null) return
-                onTargetChange(
-                  lessonStepIdSchema.parse(aiStep.id),
-                  lessonStepIdSchema.parse(value)
-                )
-              }}
-              value={aiStep.target}
-            >
-              <SelectTrigger id={inputId}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {targets.map((target) => (
-                  <SelectItem key={target.value} value={target.value}>
-                    {target.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        )
-      })}
-    </div>
-  )
-}
-
-function getWriteStepLabel(step: EditorLesson["steps"][number]): string {
-  if (step.type !== "WRITE") return "쓰기"
-  return step.title ?? step.prompt ?? "쓰기"
-}
-
-function TabButton({
-  active,
-  label,
-  onClick,
-}: {
-  readonly active: boolean
-  readonly label: string
-  readonly onClick: () => void
-}) {
-  return (
-    <button
-      className={cn(
-        "border-b-2 px-5 py-3 text-[0.9375rem] font-bold transition-colors",
-        active
-          ? "border-foreground text-foreground"
-          : "border-transparent text-muted-foreground hover:text-foreground"
-      )}
-      onClick={onClick}
-      type="button"
-    >
-      {label}
-    </button>
+function tabClassName(active: boolean): string {
+  return cn(
+    "border-b-2 px-5 py-3 text-[0.9375rem] font-bold transition-colors",
+    active
+      ? "border-foreground text-foreground"
+      : "border-transparent text-muted-foreground hover:text-foreground"
   )
 }

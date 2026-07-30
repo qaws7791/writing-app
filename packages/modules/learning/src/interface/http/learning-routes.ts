@@ -5,8 +5,13 @@ import {
 } from "@hono/zod-openapi"
 import type { MiddlewareHandler } from "hono"
 
+import {
+  createAiFeedbackHeadersSchema,
+  createAiFeedbackParamsSchema,
+} from "@workspace/contracts/ai-feedback/feedback"
 import { apiErrorSchema } from "@workspace/contracts/api-error"
 import {
+  learnerAiFeedbackTransitionResponseSchema,
   learnerCompleteStepResponseSchema,
   learnerCourseCategoriesResponseSchema,
   learnerCourseDetailResponseSchema,
@@ -28,10 +33,7 @@ import {
 } from "@workspace/contracts/learning/learner-transition"
 import type { LearnerId } from "@workspace/types/ids"
 import type { HttpPlatformEnv } from "@workspace/http-platform/app"
-import {
-  AppError,
-  assertExhaustiveHttpResult,
-} from "@workspace/http-platform/errors"
+import { AppError } from "@workspace/http-platform/errors"
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import {
   setPrivateNoStoreHeaders,
@@ -45,6 +47,7 @@ import {
   decodeLearnerProgressListQuery,
   encodeLearnerCoursePage,
   encodeLearnerProgressPage,
+  presentAiFeedbackResult,
   presentCompleteStepResult,
   unwrapLearningResult,
 } from "#learning/interface/http/learning-http-mapper"
@@ -84,6 +87,7 @@ export function registerLearningRoutes<TEnv extends LearningHonoEnv>(
   registerStartLessonRoute(app, input, authenticated)
   registerSaveStepDraftRoute(app, input, authenticated)
   registerCompleteStepRoute(app, input, authenticated)
+  registerAiFeedbackRoute(app, input, authenticated)
 }
 
 function registerListCoursesRoute<TEnv extends LearningHonoEnv>(
@@ -172,9 +176,8 @@ function registerGetCourseDetailRoute<TEnv extends LearningHonoEnv>(
       courseId: context.req.valid("param").courseId,
       learnerId: context.var.learningLearner.learnerId,
     })
-    if (result.isErr()) throw mapReadError(result.error.kind)
     return context.json(
-      learnerCourseDetailResponseSchema.parse(result.value),
+      learnerCourseDetailResponseSchema.parse(unwrapLearningResult(result)),
       200
     )
   })
@@ -202,8 +205,10 @@ function registerGetLessonRoute<TEnv extends LearningHonoEnv>(
       lessonId: context.req.valid("param").lessonId,
       learnerId: context.var.learningLearner.learnerId,
     })
-    if (result.isErr()) throw mapReadError(result.error.kind)
-    return context.json(learnerLessonResponseSchema.parse(result.value), 200)
+    return context.json(
+      learnerLessonResponseSchema.parse(unwrapLearningResult(result)),
+      200
+    )
   })
 }
 
@@ -398,6 +403,56 @@ function registerSaveStepDraftRoute<TEnv extends LearningHonoEnv>(
   })
 }
 
+function registerAiFeedbackRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: LearningRouteDependencies,
+  authenticated: AuthenticatedRouteOptions
+): void {
+  const route = createRoute({
+    method: "post",
+    operationId: "createLearnerStepAiFeedback",
+    path: "/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback",
+    request: {
+      headers: createAiFeedbackHeadersSchema,
+      params: createAiFeedbackParamsSchema,
+    },
+    responses: authenticatedResponses(
+      jsonResponse(
+        "AI 코칭 결과와 다음 학습 상태입니다.",
+        learnerAiFeedbackTransitionResponseSchema
+      ),
+      {
+        400: errorResponse("잘못된 요청입니다."),
+        404: errorResponse("레슨을 찾을 수 없습니다."),
+        409: errorResponse("AI 코칭 요청 상태가 충돌합니다."),
+        429: errorResponse("AI 코칭 시도 횟수를 모두 사용했습니다."),
+        500: errorResponse("AI 코칭 요청을 완료하지 못했습니다."),
+        503: errorResponse("AI provider를 사용할 수 없습니다."),
+      }
+    ),
+    summary: "현재 AI 코칭 단계 완료",
+    ...authenticated,
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const params = context.req.valid("param")
+    const result = await input.application.requestAiFeedback(
+      {
+        idempotencyKey: context.req.valid("header")["idempotency-key"],
+        learnerId: context.var.learningLearner.learnerId,
+        lessonId: params.lessonId,
+        stepId: params.stepId,
+      },
+      { signal: context.req.raw.signal }
+    )
+    return context.json(
+      learnerAiFeedbackTransitionResponseSchema.parse(
+        presentAiFeedbackResult(unwrapLearningResult(result))
+      ),
+      200
+    )
+  })
+}
+
 type LearningRouteDependencies = Readonly<{
   application: LearningApplication
   cursor: LearnerCursorCodec
@@ -445,21 +500,6 @@ function errorResponse(description: string) {
 
 function invalidCursorError(): AppError {
   return httpError(400, "INVALID_CURSOR", "cursor가 유효하지 않습니다.")
-}
-
-function mapReadError(
-  kind: "course-not-found" | "lesson-locked" | "lesson-not-found"
-): AppError {
-  switch (kind) {
-    case "course-not-found":
-      return httpError(404, "COURSE_NOT_FOUND", "코스를 찾을 수 없습니다.")
-    case "lesson-not-found":
-      return httpError(404, "LESSON_NOT_FOUND", "레슨을 찾을 수 없습니다.")
-    case "lesson-locked":
-      return httpError(403, "LESSON_LOCKED", "아직 학습할 수 없는 레슨입니다.")
-  }
-
-  return assertExhaustiveHttpResult(kind)
 }
 
 function httpError(

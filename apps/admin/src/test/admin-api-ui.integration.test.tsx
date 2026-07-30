@@ -14,6 +14,10 @@ import {
 import { setupServer } from "msw/node"
 
 import {
+  getAdminCourseEditor,
+  uploadAdminContentAsset,
+} from "@workspace/http-client/admin"
+import {
   getGetAdminCourseEditorMockHandler200,
   getUploadAdminContentAssetMockHandler,
   getUploadAdminContentAssetMockHandler200,
@@ -23,9 +27,17 @@ import {
   createApiErrorFixture,
   throwMswNetworkErrorFixture,
 } from "@workspace/http-client/msw-fixtures"
+import {
+  adminContentAssetAltTextSchema,
+  adminContentAssetKindSchema,
+} from "@workspace/contracts/content/admin-assets"
+import { curriculumVersionIdSchema } from "@workspace/contracts/content/ids"
 
+import { courseIdSchema } from "@/entities/course/model/course-id"
+import type { AdminCourseEditorCommandResult } from "@/features/course-editor/model/admin-course-editor"
+import type { UploadAdminContentAsset } from "@/features/course-editor/model/content-asset-upload"
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
-import type { AdminRequestResult } from "@/shared/http/admin-api-client"
+import { settleAdminApiRequest } from "@/shared/http/admin-api-client"
 import {
   createAdminContentAssetFixture,
   createAdminCourseEditorFixture,
@@ -145,17 +157,14 @@ describe("generated admin client UI integration", () => {
     })
     server.use(getGetAdminCourseEditorMockHandler200(latest))
     renderEditor({
-      saveCourse: async () => ({
-        error: {
-          code: "CONTENT_CONFLICT",
-          kind: "http",
-          message: "편집 버전이 충돌했습니다.",
-          requestId: "save-conflict",
-          retryAfterSeconds: null,
-          status: 409,
-        },
-        status: "error",
-      }),
+      saveCourse: async () => {
+        const result = await settleAdminApiRequest(
+          getAdminCourseEditor(courseIdSchema.parse(latest.id))
+        )
+        return result.status === "ok"
+          ? { latest: result.value, status: "conflict" }
+          : result
+      },
     })
 
     await user.clear(screen.getByLabelText("제목"))
@@ -179,19 +188,14 @@ function renderEditor({
   readonly course?: AdminCourseEditorFixture
   readonly saveCourse?: (
     document: AdminCourseEditorFixture
-  ) => Promise<AdminRequestResult<AdminCourseEditorFixture>>
+  ) => Promise<AdminCourseEditorCommandResult>
 } = {}): void {
   render(
     <CourseEditorShell
       course={course}
-      publishCourse={async () =>
-        ok({
-          curriculumVersionId: course.curriculumVersionId,
-          publishedAt: "2026-07-24T00:00:00.000Z",
-          revision: course.revision,
-        })
-      }
+      publishCourse={async (document) => ok(document)}
       saveCourse={saveCourse}
+      uploadAdminContentAsset={uploadWithGeneratedClient}
     />
   )
 }
@@ -200,19 +204,54 @@ async function selectCover(
   user: ReturnType<typeof userEvent.setup>,
   altText: string
 ): Promise<void> {
-  // Vitest의 generated client는 Node FormData를 사용하므로 jsdom과 다른
-  // realm의 File 대신 같은 runtime brand를 전달한다.
   fireEvent.change(screen.getByLabelText("이미지 파일"), {
     target: {
-      files: [new NodeFile(["cover"], "cover.png", { type: "image/png" })],
+      files: [new File(["cover"], "cover.png", { type: "image/png" })],
     },
   })
   await user.type(screen.getByLabelText("대체 텍스트"), altText)
   await user.click(screen.getByRole("button", { name: "이미지 업로드" }))
 }
 
-function ok<TValue>(value: TValue): AdminRequestResult<TValue> {
-  return { status: "ok", value }
+function ok<TValue>(value: TValue) {
+  return { status: "ok" as const, value }
+}
+
+const uploadWithGeneratedClient: UploadAdminContentAsset = async (input) => {
+  const file = input.get("file")
+  if (file === null || typeof file === "string") {
+    throw new Error("업로드 파일이 없습니다.")
+  }
+  const generatedFile = await toNodeFile(file)
+
+  return settleAdminApiRequest(
+    uploadAdminContentAsset(courseIdSchema.parse(input.get("courseId")), {
+      altText: adminContentAssetAltTextSchema.parse(input.get("altText")),
+      curriculumVersionId: curriculumVersionIdSchema.parse(
+        input.get("curriculumVersionId")
+      ),
+      file: generatedFile,
+      kind: adminContentAssetKindSchema.parse(input.get("kind")),
+    })
+  )
+}
+
+async function toNodeFile(file: File): Promise<NodeFile> {
+  const bytes = await new Promise<ArrayBuffer>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener("error", () =>
+      reject(reader.error ?? new Error("파일을 읽을 수 없습니다."))
+    )
+    reader.addEventListener("load", () => {
+      if (!(reader.result instanceof ArrayBuffer)) {
+        reject(new Error("파일을 읽을 수 없습니다."))
+        return
+      }
+      resolve(reader.result)
+    })
+    reader.readAsArrayBuffer(file)
+  })
+  return new NodeFile([bytes], file.name, { type: file.type })
 }
 
 function resolveBrowserRequestInput(

@@ -1,18 +1,18 @@
 import type {
-  LearnerCompleteStepResultDto,
-  LearnerStepDraftAnswerDto,
-  LearnerStepEvaluationDto,
-} from "@/shared/http/learner-api-client"
+  LessonCompleteStepResult,
+  LessonStepDraftAnswer,
+  LessonStepEvaluation,
+} from "@/features/lesson-session/model/lesson-view-model"
 
 type PendingAcceptedTransition = Exclude<
-  LearnerCompleteStepResultDto,
+  LessonCompleteStepResult,
   { readonly status: "retry" }
 >
 
 type ActiveLessonSession = {
   readonly activity: "idle" | "submitting"
-  readonly answerPayloads: Readonly<Record<string, LearnerStepDraftAnswerDto>>
-  readonly checked: false | NonNullable<LearnerStepEvaluationDto>
+  readonly answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
+  readonly checked: false | NonNullable<LessonStepEvaluation>
   readonly currentStepIndex: number
   readonly pendingTransition: PendingAcceptedTransition | null
   readonly progressPercent: number
@@ -25,7 +25,7 @@ export type LessonSessionState =
   | (ActiveLessonSession & { readonly status: "active" })
   | {
       readonly completion: Extract<
-        LearnerCompleteStepResultDto,
+        LessonCompleteStepResult,
         { readonly status: "lesson_completed" }
       > | null
       readonly currentStepIndex: number
@@ -35,28 +35,26 @@ export type LessonSessionState =
 export type LessonSessionEvent =
   | { readonly type: "START_REQUESTED" }
   | {
-      readonly answerPayloads: Readonly<
-        Record<string, LearnerStepDraftAnswerDto>
-      >
+      readonly answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
       readonly currentStepIndex: number
       readonly progressPercent: number
       readonly type: "START_SUCCEEDED"
     }
   | { readonly message: string; readonly type: "START_FAILED" }
   | {
-      readonly payload: LearnerStepDraftAnswerDto
+      readonly payload: LessonStepDraftAnswer
       readonly stepId: string
       readonly type: "ANSWER_PAYLOAD_CHANGED"
     }
   | {
-      readonly payload: LearnerStepDraftAnswerDto | null
+      readonly payload: LessonStepDraftAnswer | null
       readonly stepId: string
       readonly type: "DRAFT_RECONCILED"
     }
   | { readonly type: "SUBMIT_REQUESTED" }
   | { readonly message: string; readonly type: "SUBMIT_FAILED" }
   | {
-      readonly evaluation: NonNullable<LearnerStepEvaluationDto>
+      readonly evaluation: NonNullable<LessonStepEvaluation>
       readonly type: "STEP_RETRY"
     }
   | {
@@ -79,9 +77,7 @@ export function createLessonSessionState(
   currentStepIndex: number,
   hasStarted: boolean,
   isComplete = false,
-  initialAnswerPayloads: Readonly<
-    Record<string, LearnerStepDraftAnswerDto>
-  > = {},
+  initialAnswerPayloads: Readonly<Record<string, LessonStepDraftAnswer>> = {},
   initialProgressPercent = 0
 ): LessonSessionState {
   if (isComplete) {
@@ -219,7 +215,7 @@ export function transitionLessonSession(
 
 function createActiveLessonSession(
   currentStepIndex: number,
-  answerPayloads: Readonly<Record<string, LearnerStepDraftAnswerDto>>,
+  answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>,
   progressPercent: number
 ): Extract<LessonSessionState, { readonly status: "active" }> {
   return {

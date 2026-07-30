@@ -8,6 +8,8 @@ import {
   lessonStepRendererByType,
 } from "@/features/lesson-session/ui/lesson-step-renderer"
 import type { LearnerLessonStepDto } from "@/shared/http/learner-api-client"
+import { parseLessonStepFixture } from "@/test/learner-api-fixtures"
+import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 import { lessonStepDefinitions } from "@workspace/contracts/content/steps"
 import { stepEvaluationSchema } from "@workspace/contracts/learning/learner-transition"
 
@@ -111,7 +113,7 @@ describe("LessonStepRenderer", () => {
     for (const step of steps) {
       const { container, unmount } = render(
         <div style={{ width: 390 }}>
-          <LessonStepRenderer step={step} />
+          <LessonStepRenderer step={createLessonStep(step)} />
         </div>
       )
 
@@ -345,6 +347,6 @@ describe("LessonStepRenderer", () => {
   })
 })
 
-function createLessonStep(step: LearnerLessonStepDto): LearnerLessonStepDto {
-  return step
+function createLessonStep(step: LearnerLessonStepDto): LessonStep {
+  return parseLessonStepFixture(step)
 }

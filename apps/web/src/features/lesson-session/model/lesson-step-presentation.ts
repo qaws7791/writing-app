@@ -1,5 +1,5 @@
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
-import type { LearnerLessonStepDto as LessonStep } from "@/shared/http/learner-api-client"
+import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 
 type LessonStepCheckedPresentation =
   | false

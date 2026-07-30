@@ -30,6 +30,18 @@ const learning = {
   totalSteps: 2,
   version: { curriculumVersionId, revision: 1 },
 }
+const aiFeedbackPath =
+  "/learning/lessons/lesson-1/steps/step-1/ai-feedback" as const
+const aiFeedbackTransition = {
+  feedback: {
+    improvements: ["근거를 보강하세요."],
+    nextAction: "예시를 추가하세요.",
+    remainingAttempts: 2,
+    strengths: ["주장이 명확합니다."],
+    summary: "좋은 초안입니다.",
+  },
+  transition: { evaluation: null, kind: "advanced" as const, learning },
+}
 
 describe("learning HTTP interface", () => {
   it("unauthenticated와 inactive learner를 query 호출 전에 거절한다", async () => {
@@ -188,14 +200,105 @@ describe("learning HTTP interface", () => {
       code: "STEP_DRAFT_VERSION_CONFLICT",
     })
   })
+
+  it("AI 코칭 요청에 idempotency key와 요청 signal을 전달한다", async () => {
+    const requestAiFeedback = vi.fn(async () => ok(aiFeedbackTransition))
+    const controller = new AbortController()
+    const fixture = createFixture({ requestAiFeedback })
+
+    const response = await fixture.app.request(aiFeedbackPath, {
+      headers: { Cookie: "learner=active", "Idempotency-Key": "request-1" },
+      method: "POST",
+      signal: controller.signal,
+    })
+
+    expect(response.status).toBe(200)
+    expect(requestAiFeedback).toHaveBeenCalledWith(
+      {
+        idempotencyKey: "request-1",
+        learnerId,
+        lessonId,
+        stepId,
+      },
+      { signal: controller.signal }
+    )
+  })
+
+  it("일시적 AI 코칭 제한만 Retry-After를 붙이고 영구 제한은 붙이지 않는다", async () => {
+    const inProgress = createFixture({
+      requestAiFeedback: async () =>
+        err({
+          kind: "attempt-in-progress",
+          remainingAttempts: 2,
+          retryAfterSeconds: 17,
+        }),
+    })
+    const dailyQuota = createFixture({
+      requestAiFeedback: async () =>
+        err({
+          kind: "daily-quota-exceeded",
+          remainingAttempts: 2,
+          retryAfterSeconds: 7_200,
+        }),
+    })
+    const attemptLimit = createFixture({
+      requestAiFeedback: async () =>
+        err({ kind: "attempt-limit-exceeded", remainingAttempts: 0 }),
+    })
+
+    const [lease, quota, limit] = await Promise.all([
+      requestAiFeedback(inProgress.app),
+      requestAiFeedback(dailyQuota.app),
+      requestAiFeedback(attemptLimit.app),
+    ])
+
+    expect(lease.status).toBe(409)
+    expect(lease.headers.get("retry-after")).toBe("17")
+    await expect(lease.json()).resolves.toMatchObject({
+      code: "ATTEMPT_IN_PROGRESS",
+    })
+    expect(quota.status).toBe(429)
+    expect(quota.headers.get("retry-after")).toBe("7200")
+    await expect(quota.json()).resolves.toMatchObject({
+      code: "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED",
+    })
+    expect(limit.status).toBe(429)
+    expect(limit.headers.get("retry-after")).toBeNull()
+    await expect(limit.json()).resolves.toMatchObject({
+      code: "ATTEMPT_LIMIT_EXCEEDED",
+    })
+  })
+
+  it("provider 실패 응답에 provider 원문과 prompt를 포함하지 않는다", async () => {
+    const fixture = createFixture({
+      requestAiFeedback: async () =>
+        err({ kind: "provider-response-invalid", remainingAttempts: 1 }),
+    })
+
+    const response = await requestAiFeedback(fixture.app)
+    const body = await response.text()
+
+    expect(response.status).toBe(503)
+    expect(body).toContain("PROVIDER_UNAVAILABLE")
+    expect(body).not.toContain("secret-provider-output")
+    expect(body).not.toContain("학습자가 저장한 답변")
+  })
 })
 
 type Overrides = Readonly<{
   getCourseDetail?: LearningApplication["readCourseDetail"]
   getLesson?: LearningApplication["readLesson"]
+  requestAiFeedback?: LearningApplication["requestAiFeedback"]
   saveStepDraft?: LearningApplication["saveStepDraft"]
   submitStep?: LearningApplication["submitStep"]
 }>
+
+function requestAiFeedback(app: ReturnType<typeof createFixture>["app"]) {
+  return app.request(aiFeedbackPath, {
+    headers: { Cookie: "learner=active", "Idempotency-Key": "request-1" },
+    method: "POST",
+  })
+}
 
 function createFixture(overrides: Overrides = {}, requestActors?: unknown[]) {
   const application: LearningApplication = {
@@ -211,9 +314,11 @@ function createFixture(overrides: Overrides = {}, requestActors?: unknown[]) {
     readLesson:
       overrides.getLesson ??
       vi.fn(async () => err({ kind: "lesson-not-found" as const })),
-    requestAiFeedback: vi.fn(async () =>
-      err({ kind: "provider-unavailable" as const, remainingAttempts: 1 })
-    ),
+    requestAiFeedback:
+      overrides.requestAiFeedback ??
+      vi.fn(async () =>
+        err({ kind: "provider-unavailable" as const, remainingAttempts: 1 })
+      ),
     saveStepDraft:
       overrides.saveStepDraft ??
       vi.fn(async () =>

@@ -20,6 +20,7 @@ import {
 
 import { composeIdentityModule } from "@/composition/identity-module.composition"
 import { runApplicationMigrations } from "@/db/migrate"
+import { aLearner } from "@workspace/identity/test-fixtures"
 
 const now = new Date("2026-07-24T12:00:00.000Z")
 const userId = userIdSchema.parse("user-1")
@@ -177,23 +178,16 @@ function adminSessionResolver(): AdminSessionResolver {
 function seedActiveLearner(
   sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
 ): void {
-  sqlite.exec(`
-    INSERT INTO user (
-      id, name, email, email_verified, image, created_at, updated_at
-    ) VALUES (
-      'user-1', '학습자', 'learner@example.test', 1, NULL,
-      1782864000000, 1782864000000
-    );
-    INSERT INTO learner_profiles (
-      user_id, status, display_name, deleted_at, version
-    ) VALUES ('user-1', 'active', '학습자', NULL, 0);
-    INSERT INTO session (
-      id, user_id, token, expires_at, created_at, updated_at
-    ) VALUES (
-      'session-1', 'user-1', 'learner-token', 4102444800000,
-      1782864000000, 1782864000000
-    );
-  `)
+  aLearner(sqlite, {
+    createdAt: 1_782_864_000_000,
+    displayName: "학습자",
+    email: "learner@example.test",
+    id: "user-1",
+    name: "학습자",
+    sessionId: "session-1",
+    sessionToken: "learner-token",
+    status: "active",
+  })
 }
 
 function readCookie(headers: Headers, name: string): string | null {

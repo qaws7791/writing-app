@@ -98,6 +98,7 @@ test("학습자가 이메일 가입, 확인, 로그인과 비밀번호 재설정
   )
   expect(protectedAfterVerification.status()).toBe(200)
 
+  await page.waitForLoadState("networkidle")
   await page.goto(`${learnerWebOrigin}/login`)
   await expect(
     page.getByRole("button", { name: "이메일로 로그인하기" })

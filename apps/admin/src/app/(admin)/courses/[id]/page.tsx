@@ -3,6 +3,7 @@ import { courseIdSchema } from "@/entities/course/model/course-id"
 import {
   publishAdminCourseAction,
   saveAdminCourseEditorAction,
+  uploadAdminContentAssetAction,
 } from "@/features/course-editor/server/admin-course-actions"
 import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
 import {
@@ -34,6 +35,7 @@ export default async function AdminCourseDetailRoute({
       courseResult={courseResult}
       publishCourse={publishAdminCourseAction}
       saveCourse={saveAdminCourseEditorAction}
+      uploadAdminContentAsset={uploadAdminContentAssetAction}
     />
   )
 }

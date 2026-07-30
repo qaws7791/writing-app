@@ -1,12 +1,12 @@
 import type {
-  LearnerAiFeedbackResultDto,
-  LearnerLessonDto,
-  LearnerLessonStepDto,
-  LearnerStepDraftAnswerDto,
-} from "@/shared/http/learner-api-client"
+  Lesson,
+  LessonAiFeedback,
+  LessonStep,
+  LessonStepDraftAnswer,
+} from "@/features/lesson-session/model/lesson-view-model"
 
-export type LessonAiFeedback = LearnerAiFeedbackResultDto["feedback"]
-export type LessonStepAnswerPayload = LearnerStepDraftAnswerDto
+export type { LessonAiFeedback }
+export type LessonStepAnswerPayload = LessonStepDraftAnswer
 
 export type LessonAiFeedbackRequest = { readonly stepId: string }
 export type LessonAiFeedbackSkipOutcome =
@@ -22,8 +22,8 @@ export type LessonAiFeedbackOutcome =
     }
 
 export function getLessonStep(
-  lesson: LearnerLessonDto,
+  lesson: Lesson,
   stepIndex: number
-): LearnerLessonStepDto | null {
+): LessonStep | null {
   return lesson.steps[stepIndex] ?? null
 }
