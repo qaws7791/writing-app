@@ -126,6 +126,13 @@ PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. �
 
 Storybook interaction·접근성 검사는 browser runtime 비용 때문에 main push에서만 차단한다. 따라서 공유 UI primitive의 상태 전이·초점·axe 회귀는 PR을 통과해 main에서 처음 드러날 수 있고, PR 단계에서는 `packages/shared/ui`의 Vitest 범위만 이를 막는다. 이 지연을 허용하지 않으려면 PR gate에 browser 설치와 story 부분집합 실행을 함께 추가해야 한다.
 
+## 알려진 검증 공백
+
+모듈 경계 때문에 아직 만들 수 없는 회귀가 두 개 있다. 우회 코드로 덮지 않고 공백으로 남긴다.
+
+- content HTTP에는 인가 거부(403) 경로가 없어 인증은 되지만 권한이 없는 actor의 회귀를 어느 계층에서도 만들 수 없다. 인가 경계를 추가할 때 함께 검증한다.
+- content의 seed 통합 테스트는 학습자 시드를 인라인 SQL로 유지한다. `@workspace/identity`·`@workspace/learning`의 fixture를 쓰려면 content가 두 모듈에 의존해야 하는데 learning이 content에 의존하므로 순환이다.
+
 ## 검증 기록
 
 특정 날짜의 실행 시간, toolchain, 테스트 수치, CI 결과와 production 적용 여부는 living guide에 기록하지 않는다. 재현 가능한 검증 보고서는 기준 commit, 실행 시각·환경, 명령, 결과와 artifact 위치를 포함해 작업 완료 후 archive에 보관한다.
