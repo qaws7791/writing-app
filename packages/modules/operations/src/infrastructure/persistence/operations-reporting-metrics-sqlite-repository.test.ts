@@ -3,18 +3,17 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import { describe, expect, it } from "vitest"
+import { aAiFeedbackAttempt } from "@workspace/ai-feedback/test-fixtures"
+import type { PublishedCourseFixture } from "@workspace/content/test-fixtures"
+import { aPublishedCourse } from "@workspace/content/test-fixtures"
 import {
   createReadOnlyWritingAppDatabase,
   createWritingAppDatabase,
 } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
-import {
-  insertActivityDays,
-  insertAiFeedbackAttempts,
-  insertLearner,
-  insertProgress,
-  insertPublishedCourse,
-} from "#operations/test/fixtures/reporting-metrics-seed"
+import type { WritingAppSqlite } from "@workspace/db/test-support/sqlite-types"
+import { aLearner } from "@workspace/identity/test-fixtures"
+import { aLearnerWithProgress } from "@workspace/learning/test-fixtures"
 
 import { createOperationsReportingQueries } from "#operations/application/operations-reporting"
 import { createSqliteOperationsReportingRepository } from "#operations/infrastructure/persistence/operations-reporting-sqlite-repository"
@@ -261,69 +260,61 @@ function createReportingFixture(): Readonly<{
 
   try {
     runCurrentTestMigration(writer.sqlite)
-    insertLearner(writer.sqlite, {
-      createdAt: "2026-07-01T09:00:00+09:00",
-      id: "learner-a",
-      status: "active",
-    })
-    insertLearner(writer.sqlite, {
-      createdAt: "2026-07-01T09:00:00+09:00",
-      id: "learner-b",
-      status: "active",
-    })
-    insertLearner(writer.sqlite, {
-      createdAt: "2026-07-20T09:00:00+09:00",
-      id: "learner-c",
-      status: "active",
-    })
-    insertLearner(writer.sqlite, {
-      createdAt: "2026-07-20T09:00:00+09:00",
+    for (const learner of [
+      { createdAt: "2026-07-01T09:00:00+09:00", id: "learner-a" },
+      { createdAt: "2026-07-01T09:00:00+09:00", id: "learner-b" },
+      { createdAt: "2026-07-20T09:00:00+09:00", id: "learner-c" },
+      { createdAt: "2026-07-24T09:00:00+09:00", id: "learner-e" },
+    ]) {
+      aLearner(writer.sqlite, {
+        createdAt: Date.parse(learner.createdAt),
+        id: learner.id,
+        status: "active",
+      })
+    }
+    aLearner(writer.sqlite, {
+      createdAt: Date.parse("2026-07-20T09:00:00+09:00"),
+      deletedAt: Date.parse("2026-07-20T09:00:00+09:00"),
       id: "learner-d",
       status: "deleted",
     })
-    insertLearner(writer.sqlite, {
-      createdAt: "2026-07-24T09:00:00+09:00",
-      id: "learner-e",
-      status: "active",
+
+    const course = aPublishedCourse(writer.sqlite, {
+      additionalLessons: [{ lessonTitle: "두 번째 레슨" }],
+      courseTitle: "글쓰기 코스",
+      lessonTitle: "첫 번째 레슨",
     })
-    const course = insertPublishedCourse(writer.sqlite)
-    insertProgress(writer.sqlite, {
-      completedAt: "2026-07-12T10:00:00+09:00",
+    aLearnerWithProgress(writer.sqlite, {
+      activityDates: ["2026-07-10", "2026-07-11"],
+      completedAt: Date.parse("2026-07-12T10:00:00+09:00"),
       course,
-      lessonId: course.lessonIds[0],
-      startedAt: "2026-07-10T09:00:00+09:00",
+      startedAt: Date.parse("2026-07-10T09:00:00+09:00"),
       status: "completed",
       userId: "learner-a",
     })
-    insertProgress(writer.sqlite, {
-      completedAt: null,
+    aLearnerWithProgress(writer.sqlite, {
+      activityDates: ["2026-07-10"],
       course,
-      lessonId: course.lessonIds[0],
-      startedAt: "2026-07-10T10:00:00+09:00",
-      status: "in_progress",
+      startedAt: Date.parse("2026-07-10T10:00:00+09:00"),
       userId: "learner-b",
     })
-    insertProgress(writer.sqlite, {
-      completedAt: "2026-07-22T10:00:00+09:00",
+    aLearnerWithProgress(writer.sqlite, {
+      activityDates: ["2026-07-20", "2026-07-21"],
+      completedAt: Date.parse("2026-07-22T10:00:00+09:00"),
       course,
-      lessonId: course.lessonIds[0],
-      startedAt: "2026-07-20T09:00:00+09:00",
+      startedAt: Date.parse("2026-07-20T09:00:00+09:00"),
       status: "completed",
       userId: "learner-c",
     })
-    insertProgress(writer.sqlite, {
-      completedAt: "2026-07-12T11:00:00+09:00",
+    aLearnerWithProgress(writer.sqlite, {
+      activityDates: ["2026-07-10", "2026-07-12"],
+      completedAt: Date.parse("2026-07-12T11:00:00+09:00"),
       course,
-      lessonId: course.lessonIds[0],
-      startedAt: "2026-07-10T11:00:00+09:00",
+      startedAt: Date.parse("2026-07-10T11:00:00+09:00"),
       status: "completed",
       userId: "learner-d",
     })
     insertAiFeedbackAttempts(writer.sqlite, course)
-    insertActivityDays(writer.sqlite, "learner-a", ["2026-07-10", "2026-07-11"])
-    insertActivityDays(writer.sqlite, "learner-b", ["2026-07-10"])
-    insertActivityDays(writer.sqlite, "learner-c", ["2026-07-20", "2026-07-21"])
-    insertActivityDays(writer.sqlite, "learner-d", ["2026-07-10", "2026-07-12"])
   } finally {
     writer.close()
   }
@@ -335,6 +326,100 @@ function createReportingFixture(): Readonly<{
       rmSync(directory, { recursive: true })
     },
     readOnly,
+  }
+}
+
+function insertAiFeedbackAttempts(
+  sqlite: WritingAppSqlite,
+  course: PublishedCourseFixture
+): void {
+  const attempts = [
+    {
+      createdAt: "2026-07-20T10:00:00+09:00",
+      failureCode: "provider-timeout",
+      id: "attempt-lesson-1-failed",
+      lesson: "lesson-1",
+      quotaDate: "2026-07-20",
+      status: "failed",
+      step: "step-1",
+      userId: "learner-a",
+    },
+    {
+      createdAt: "2026-07-20T10:01:00+09:00",
+      failureCode: null,
+      id: "attempt-lesson-1-succeeded",
+      lesson: "lesson-1",
+      quotaDate: "2026-07-20",
+      status: "succeeded",
+      step: "step-1",
+      userId: "learner-b",
+    },
+    {
+      createdAt: "2026-07-20T10:02:00+09:00",
+      failureCode: "provider-timeout",
+      id: "attempt-lesson-2-failed",
+      lesson: "lesson-2",
+      quotaDate: "2026-07-20",
+      status: "failed",
+      step: "step-2",
+      userId: "learner-b",
+    },
+    {
+      createdAt: "2026-07-20T10:03:00+09:00",
+      failureCode: null,
+      id: "attempt-lesson-2-succeeded",
+      lesson: "lesson-2",
+      quotaDate: "2026-07-20",
+      status: "succeeded",
+      step: "step-2",
+      userId: "learner-a",
+    },
+    {
+      createdAt: "2026-07-20T10:04:00+09:00",
+      failureCode: "provider-timeout",
+      id: "attempt-deleted-learner",
+      lesson: "lesson-1",
+      quotaDate: "2026-07-20",
+      status: "failed",
+      step: "step-1",
+      userId: "learner-d",
+    },
+    {
+      createdAt: "2026-06-20T10:00:00+09:00",
+      failureCode: "provider-timeout",
+      id: "attempt-outside-period",
+      lesson: "lesson-2",
+      quotaDate: "2026-06-20",
+      status: "failed",
+      step: "step-2",
+      userId: "learner-c",
+    },
+  ] as const satisfies readonly Readonly<{
+    createdAt: string
+    failureCode: string | null
+    id: string
+    lesson: string
+    quotaDate: string
+    status: "failed" | "succeeded"
+    step: string
+    userId: string
+  }>[]
+
+  for (const attempt of attempts) {
+    aAiFeedbackAttempt(sqlite, {
+      answerText: "절대 노출하지 않을 답안",
+      attemptId: attempt.id,
+      course,
+      createdAt: Date.parse(attempt.createdAt),
+      failureCode: attempt.failureCode,
+      idempotencyKey: attempt.id,
+      lessonId: attempt.lesson,
+      quotaDate: attempt.quotaDate,
+      resultJson: attempt.status === "succeeded" ? "{}" : null,
+      status: attempt.status,
+      stepId: attempt.step,
+      userId: attempt.userId,
+    })
   }
 }
 

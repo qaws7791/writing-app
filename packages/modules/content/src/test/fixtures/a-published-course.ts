@@ -18,6 +18,7 @@ type PublishedCourseLessonOptions = Readonly<{
 type PublishedCourseOptions = Readonly<{
   additionalLessons?: readonly PublishedCourseLessonOptions[]
   courseId?: string
+  courseTitle?: string
   curriculumVersionId?: string
   lessonId?: string
   lessonTitle?: string
@@ -37,6 +38,7 @@ export function aPublishedCourse(
   const stepId = options.stepId ?? "step-1"
   const lessonTitle = options.lessonTitle ?? "레슨"
   const stepType = options.stepType ?? "AI_FEEDBACK"
+  const courseTitle = options.courseTitle ?? "코스"
 
   sqlite
     .query<void, [string]>(
@@ -47,16 +49,16 @@ export function aPublishedCourse(
     .run(courseId)
 
   sqlite
-    .query<void, [string, string]>(
+    .query<void, [string, string, string]>(
       `INSERT INTO course_curriculum_versions (
         id, course_id, revision, edit_version, status, title, description,
         category, visual_key, created_at, updated_at, published_at
       ) VALUES (
-        ?1, ?2, 1, 0, 'draft', '코스', '설명',
+        ?1, ?2, 1, 0, 'draft', ?3, '설명',
         '기초', 'basic-sentence-writing', 1, 1, NULL
       )`
     )
-    .run(curriculumVersionId, courseId)
+    .run(curriculumVersionId, courseId, courseTitle)
 
   sqlite
     .query<void, [string, string]>(

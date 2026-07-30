@@ -427,6 +427,10 @@
       },
       "devDependencies": {
         "@types/bun": "catalog:",
+        "@workspace/ai-feedback": "workspace:*",
+        "@workspace/content": "workspace:*",
+        "@workspace/identity": "workspace:*",
+        "@workspace/learning": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
         "typescript": "catalog:",
         "vitest": "catalog:",

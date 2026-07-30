@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest"
+import { aAiFeedbackAttempt } from "@workspace/ai-feedback/test-fixtures"
+import type { PublishedCourseFixture } from "@workspace/content/test-fixtures"
+import { aPublishedCourse } from "@workspace/content/test-fixtures"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
-import {
-  insertAiFeedbackAttempt,
-  insertLearner,
-  insertPublishedCourse,
-  type PublishedCourseSeed,
-} from "#operations/test/fixtures/reporting-metrics-seed"
+import { aLearner } from "@workspace/identity/test-fixtures"
 
 import { createSqliteOperationsReportingRepository } from "#operations/infrastructure/persistence/operations-reporting-sqlite-repository"
 
@@ -16,11 +14,7 @@ const period = { from: new Date(999), to: new Date(4_000) }
 describe("operations reporting SQLite repository", () => {
   it("활성 학습자 attempt를 요청·성공·실패·재시도·latency·token으로 집계한다", () => {
     withReportingDatabase((client, course) => {
-      insertLearner(client.sqlite, {
-        createdAt: "1970-01-01T00:00:00.000Z",
-        id: "active-learner",
-        status: "active",
-      })
+      aLearner(client.sqlite, { id: "active-learner", status: "active" })
       insertActiveLearnerAttempts(client, course)
 
       const repository = createSqliteOperationsReportingRepository(
@@ -45,22 +39,19 @@ describe("operations reporting SQLite repository", () => {
 
   it("삭제된 학습자의 attempt는 집계 대상에서 제외한다", () => {
     withReportingDatabase((client, course) => {
-      insertLearner(client.sqlite, {
-        createdAt: "1970-01-01T00:00:00.000Z",
+      aLearner(client.sqlite, {
+        deletedAt: 0,
         id: "deleted-learner",
         status: "deleted",
       })
-      insertAiFeedbackAttempt(client.sqlite, {
+      aAiFeedbackAttempt(client.sqlite, {
+        attemptId: "attempt-deleted",
         course,
-        createdAt: "1970-01-01T00:00:02.000Z",
+        createdAt: 2_000,
         failureCode: "provider-unavailable",
-        id: "attempt-deleted",
         idempotencyKey: "deleted-1",
         latencyMs: 900,
-        lessonId: course.lessonIds[0],
         quotaDate: "1970-01-01",
-        status: "failed",
-        stepId: course.stepIds[0],
         userId: "deleted-learner",
       })
 
@@ -79,11 +70,7 @@ describe("operations reporting SQLite repository", () => {
 
   it("집계 결과에 학습자 답안과 provider 피드백 원문을 담지 않는다", () => {
     withReportingDatabase((client, course) => {
-      insertLearner(client.sqlite, {
-        createdAt: "1970-01-01T00:00:00.000Z",
-        id: "active-learner",
-        status: "active",
-      })
+      aLearner(client.sqlite, { id: "active-learner", status: "active" })
       insertActiveLearnerAttempts(client, course)
 
       const repository = createSqliteOperationsReportingRepository(
@@ -125,12 +112,15 @@ describe("operations reporting SQLite repository", () => {
 })
 
 function withReportingDatabase(
-  run: (client: WritingAppDatabaseClient, course: PublishedCourseSeed) => void
+  run: (
+    client: WritingAppDatabaseClient,
+    course: PublishedCourseFixture
+  ) => void
 ): void {
   const client = createInMemoryWritingAppDatabase()
   try {
     runCurrentTestMigration(client.sqlite)
-    run(client, insertPublishedCourse(client.sqlite))
+    run(client, aPublishedCourse(client.sqlite))
   } finally {
     client.close()
   }
@@ -138,53 +128,47 @@ function withReportingDatabase(
 
 function insertActiveLearnerAttempts(
   client: WritingAppDatabaseClient,
-  course: PublishedCourseSeed
+  course: PublishedCourseFixture
 ): void {
-  insertAiFeedbackAttempt(client.sqlite, {
+  aAiFeedbackAttempt(client.sqlite, {
+    answerText: "절대 노출하지 않을 답안",
+    attemptId: "attempt-1",
     course,
-    createdAt: "1970-01-01T00:00:01.000Z",
-    failureCode: null,
-    id: "attempt-1",
+    createdAt: 1_000,
     idempotencyKey: "active-1",
     inputTokenCount: 12,
     latencyMs: 100,
-    lessonId: course.lessonIds[0],
     outputTokenCount: 7,
     quotaDate: "1970-01-01",
     resultJson: '{"summary":"노출되면 안 되는 피드백"}',
     status: "succeeded",
-    stepId: course.stepIds[0],
     userId: "active-learner",
   })
-  insertAiFeedbackAttempt(client.sqlite, {
+  aAiFeedbackAttempt(client.sqlite, {
+    answerText: "절대 노출하지 않을 답안",
+    attemptId: "attempt-2",
     attemptNumber: 2,
     course,
-    createdAt: "1970-01-01T00:00:02.000Z",
+    createdAt: 2_000,
     failureCode: "provider-timeout",
-    id: "attempt-2",
     idempotencyKey: "active-2",
     latencyMs: 300,
-    lessonId: course.lessonIds[0],
     quotaDate: "1970-01-01",
-    status: "failed",
-    stepId: course.stepIds[0],
     userId: "active-learner",
   })
-  insertAiFeedbackAttempt(client.sqlite, {
+  aAiFeedbackAttempt(client.sqlite, {
+    answerText: "절대 노출하지 않을 답안",
+    attemptId: "attempt-3",
     attemptNumber: 3,
     course,
-    createdAt: "1970-01-01T00:00:03.000Z",
-    failureCode: null,
-    id: "attempt-3",
+    createdAt: 3_000,
     idempotencyKey: "active-3",
     inputTokenCount: 18,
     latencyMs: 200,
-    lessonId: course.lessonIds[0],
     outputTokenCount: 6,
     quotaDate: "1970-01-01",
     resultJson: '{"summary":"좋은 초안입니다."}',
     status: "succeeded",
-    stepId: course.stepIds[0],
     userId: "active-learner",
   })
 }

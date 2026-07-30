@@ -5,9 +5,13 @@
     "moduleResolution": "Bundler",
     "paths": {
       "#ai/*": ["../../infra/ai/src/*"],
+      "#ai-feedback/*": ["../ai-feedback/src/*"],
       "#auth/*": ["../../infra/auth/src/*"],
+      "#content/*": ["../content/src/*"],
       "#db/*": ["../../infra/db/src/*"],
       "#http-platform/*": ["../../infra/http-platform/src/*"],
+      "#identity/*": ["../identity/src/*"],
+      "#learning/*": ["../learning/src/*"],
       "#operations/*": ["./src/*"]
     },
     "types": ["bun"]
