@@ -45,12 +45,12 @@
 - SQLite fixture는 추적 중인 statement를 모두 finalize한 뒤 strict close하고 파일을 즉시 제거한다. 강제 GC, 지연 또는 삭제 재시도로 수명주기 결함을 숨기지 않는다.
 - browser와 E2E 테스트는 production OAuth provider에 credential을 제출하지 않는다. Google 로그인은 가짜 client 설정으로 실제 시작 handler와 callback URL까지만 검증하고 외부 이동 직전에 가로챈다. 이메일 인증은 fixture DB의 확인된 사용자를 production과 같은 handler로 검증한다.
 - 로컬 E2E는 Caddy를 기동하지 않으므로 기본 browser context마다 RFC 5737 문서용 trusted client IP를 주입하며, 이는 production Caddy의 client IP header 덮어쓰기 경계를 대체하거나 검증한 증거가 아니다.
-- E2E fixture를 위한 test-only 인증 route나 제품 UI 조건문을 두지 않는다.
+- E2E fixture를 위한 test-only 인증 route나 제품 UI 조건문을 두지 않는다. 인증 runtime은 주입받은 입력만으로 조립하며, 환경을 직접 읽어 분기를 켜는 통로가 생기지 않도록 커스텀 lint 룰이 `process.env`·`Bun.env`·`import.meta.env` 접근을 차단한다.
 - secret, 실제 사용자 데이터, production endpoint와 공유 storage를 fixture에 사용하지 않는다.
 
 ## 브라우저 지원 smoke
 
-브라우저 지원 profile과 실행 대상은 [Playwright config](../../playwright.config.ts)가 소유한다. 각 페이지의 console warning·error와 page error는 allowlist 없이 실패로 처리한다.
+브라우저 지원 profile과 실행 대상은 [Playwright config](../../playwright.config.ts)가 소유한다. 각 페이지의 console warning·error와 page error는 allowlist 없이 실패로 처리한다. spec이 `@playwright/test`에서 `test`·`expect`를 직접 가져와 이 gate를 우회하지 못하도록 lint가 value import를 차단한다.
 
 | 지원 대상                           | 저장소 자동화 증거                                                    | 출시 승인 증거                                      |
 | ----------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------- |
@@ -96,7 +96,8 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 - 동작이 없는 설정·플래그를 검증하는 테스트를 만들지 않는다.
 - 테스트 조립이 프로덕션 조립을 복제하지 않는다. 실제 조립 함수를 재사용하고 의존성만 주입한다.
 - 통합 테스트 셋업은 모듈별 `test/fixtures` 빌더를 쓴다. 새 테스트가 시드를 인라인으로 다시 짜지 않는다.
-- 테스트 지원 코드는 `test/` 또는 `test-support/` 아래에만 둔다. 제품 소스에서 `@/test/*`를 import하지 않는다.
+- 테스트 지원 코드는 `test/` 또는 `test-support/` 아래에만 둔다. 제품 소스에서 `@/test/*`를 import하지 않으며, 이 경계는 dependency 규칙이 차단한다.
+- 모듈의 fixture 공개 표면에는 실제 소비자가 있는 export만 둔다. 소비자가 없어지면 표면도 함께 지운다.
 
 ## 실행과 검증
 

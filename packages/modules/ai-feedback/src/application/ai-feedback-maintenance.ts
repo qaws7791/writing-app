@@ -1,7 +1,7 @@
 import type { Clock } from "@workspace/kernel/clock"
 import { err, type Result } from "@workspace/kernel/result"
 
-export type ExpireStaleAiFeedbackResult = Readonly<{
+type ExpireStaleAiFeedbackResult = Readonly<{
   cutoff: Date
   expiredAttempts: number
   matchedAttempts: number
@@ -12,7 +12,7 @@ type ExpireStaleAiFeedbackCounts = Readonly<{
   matchedAttempts: number
 }>
 
-export type AiFeedbackMaintenanceError =
+type AiFeedbackMaintenanceError =
   | Readonly<{
       batchSize: number
       kind: "invalid-batch-size"

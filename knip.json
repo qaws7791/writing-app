@@ -45,7 +45,11 @@
       "entry": [".storybook/**/*.{ts,tsx}!", "src/**/*.stories.tsx"],
       "project": [".storybook/**/*.{ts,tsx}", "src/**/*.{css,mdx,ts,tsx}"]
     },
-    "packages/{config,infra,modules,shared}/*": {
+    "packages/{config,infra,shared}/*": {
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/modules/*": {
+      "includeEntryExports": true,
       "project": ["src/**/*.{ts,tsx}"]
     },
     "packages/config/typescript-config": {

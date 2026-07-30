@@ -18,7 +18,7 @@ export type IdentityAdminHonoEnv = HttpPlatformEnv<{
   adminActor: AdminActor
 }>
 
-export function createRequireAdminSessionMiddleware(
+function createRequireAdminSessionMiddleware(
   sessionResolver: AdminSessionResolver
 ): MiddlewareHandler<IdentityAdminHonoEnv> {
   return async (context, next) => {
@@ -48,7 +48,7 @@ export function adminSessionRouteOptions(
   }
 }
 
-export function unauthorizedIdentityError(): AppError {
+function unauthorizedIdentityError(): AppError {
   return new AppError({
     code: "UNAUTHORIZED",
     message: "Unauthorized",

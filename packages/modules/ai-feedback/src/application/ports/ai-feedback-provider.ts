@@ -3,7 +3,7 @@ import type { Result } from "@workspace/kernel/result"
 import type { AiFeedbackProviderResponse } from "#ai-feedback/domain/ai-feedback"
 import type { AiFeedbackPrompt } from "#ai-feedback/domain/ai-feedback-prompt"
 
-export type AiFeedbackProviderUsage = Readonly<{
+type AiFeedbackProviderUsage = Readonly<{
   inputTokens: number
   outputTokens: number
 }>

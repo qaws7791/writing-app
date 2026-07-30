@@ -46,7 +46,7 @@ export type LearningContentQueryPort = Readonly<{
   }) => Promise<LearningCurriculum | null>
 }>
 
-export type LearningIdentityQueryError = Readonly<{
+type LearningIdentityQueryError = Readonly<{
   kind:
     | "identity-conflict"
     | "identity-not-found"
@@ -94,7 +94,7 @@ export type LearningAiFeedbackError =
       operation: "fail-attempt" | "reserve-attempt" | "succeed-attempt"
     }>
 
-export type LearningAiFeedbackApplicationPort = Readonly<{
+type LearningAiFeedbackApplicationPort = Readonly<{
   requestFeedback: (
     input: Readonly<{
       answer: string
@@ -111,7 +111,7 @@ export type LearningAiFeedbackApplicationPort = Readonly<{
   ) => Promise<Result<LearningAiFeedbackResult, LearningAiFeedbackError>>
 }>
 
-export type LearnerPinnedScope = Readonly<{
+type LearnerPinnedScope = Readonly<{
   courseId: CourseId
   curriculumVersionId: CurriculumVersionId
   lessonId: LessonId

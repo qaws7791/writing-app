@@ -94,12 +94,41 @@ export const noDtoDomainAliasRule = {
   },
 }
 
+export const noAmbientEnvironmentReadRule = {
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow reading the ambient environment where configuration must be injected.",
+    },
+    messages: {
+      ambientEnvironmentRead:
+        "이 런타임은 주입받은 입력만으로 조립돼야 합니다. 환경을 직접 읽으면 test 전용 인증 route나 E2E 분기를 켤 수 있는 통로가 생깁니다. 값은 호출자가 주입하세요.",
+    },
+  },
+  create(context) {
+    function reportEnvironmentRead(node) {
+      context.report({ node, messageId: "ambientEnvironmentRead" })
+    }
+
+    return {
+      'MemberExpression[object.name="process"][property.name="env"]':
+        reportEnvironmentRead,
+      'MemberExpression[object.name="Bun"][property.name="env"]':
+        reportEnvironmentRead,
+      'MemberExpression[object.type="MetaProperty"][property.name="env"]':
+        reportEnvironmentRead,
+    }
+  },
+}
+
 export default {
   meta: {
     name: "workspace",
   },
   rules: {
     "catch-preserves-cause": catchPreservesCauseRule,
+    "no-ambient-environment-read": noAmbientEnvironmentReadRule,
     "no-dto-domain-alias": noDtoDomainAliasRule,
     "no-unsafe-unknown-cast": noUnsafeUnknownCastRule,
   },

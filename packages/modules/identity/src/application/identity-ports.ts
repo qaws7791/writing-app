@@ -75,8 +75,7 @@ export type AdminAuthenticationPort = Readonly<{
   ) => Promise<AuthenticatedAdminIdentity | null>
 }>
 
-export type IdentitySessionRevocationError =
-  Failure<"session-revocation-failed">
+type IdentitySessionRevocationError = Failure<"session-revocation-failed">
 
 export type IdentitySessionRevocationPort = Readonly<{
   revokeLearnerSessions: (
@@ -89,8 +88,7 @@ export type LearnerDeletionMarker = Readonly<{
   userId: UserId
 }>
 
-export type LearnerDeletionMarkerError =
-  Failure<"deletion-marker-storage-failed">
+type LearnerDeletionMarkerError = Failure<"deletion-marker-storage-failed">
 
 export type LearnerDeletionMarkerStorePort = Readonly<{
   readAll: () => Promise<
@@ -117,7 +115,7 @@ export type DeletedLearnerPurgeRepository = Readonly<{
   >
 }>
 
-export type LearnerLearningReport = Readonly<{
+type LearnerLearningReport = Readonly<{
   completedLessons: number
   currentStreakDays: number
   lastActive: string | null
@@ -131,7 +129,7 @@ export type IdentityLearningReportPort = Readonly<{
   ) => Promise<readonly LearnerLearningReport[]>
 }>
 
-export type LearnerProfileStats = Readonly<{
+type LearnerProfileStats = Readonly<{
   completedLessons: number
   currentStreakDays: number
   lastActiveDate: string | null
@@ -161,10 +159,9 @@ export {
   adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
-  type AuthenticatedSession,
   type SessionResolver,
 } from "#identity/application/identity-session"
-export type DeletionMarkerBatchResult = Readonly<{
+type DeletionMarkerBatchResult = Readonly<{
   alreadyAppliedUsers: number
   markedDeletedUsers: number
   missingUsers: number

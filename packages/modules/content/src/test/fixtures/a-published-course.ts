@@ -8,14 +8,14 @@ export type PublishedCourseFixture = Readonly<{
   unitId: string
 }>
 
-export type PublishedCourseLessonOptions = Readonly<{
+type PublishedCourseLessonOptions = Readonly<{
   lessonId?: string
   lessonTitle?: string
   stepId?: string
   stepType?: string
 }>
 
-export type PublishedCourseOptions = Readonly<{
+type PublishedCourseOptions = Readonly<{
   additionalLessons?: readonly PublishedCourseLessonOptions[]
   courseId?: string
   curriculumVersionId?: string

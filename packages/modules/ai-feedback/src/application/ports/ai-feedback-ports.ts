@@ -1,19 +1,10 @@
-export type {
-  AiFeedbackProvider,
-  AiFeedbackProviderError,
-  AiFeedbackProviderSuccess,
-  AiFeedbackProviderUsage,
-} from "#ai-feedback/application/ports/ai-feedback-provider"
+export type { AiFeedbackProvider } from "#ai-feedback/application/ports/ai-feedback-provider"
 export type {
   AiFeedbackApplication,
   AiFeedbackAttemptTransition,
   AiFeedbackUsageEvent,
 } from "#ai-feedback/application/ai-feedback-application"
-export type {
-  AiFeedbackMaintenance,
-  AiFeedbackMaintenanceError,
-  ExpireStaleAiFeedbackResult,
-} from "#ai-feedback/application/ai-feedback-maintenance"
+export type { AiFeedbackMaintenance } from "#ai-feedback/application/ai-feedback-maintenance"
 export {
   defaultAiFeedbackAttemptPolicy,
   type AiFeedbackAttemptPolicy,

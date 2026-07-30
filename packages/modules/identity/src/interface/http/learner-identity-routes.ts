@@ -128,7 +128,7 @@ export function registerLearnerIdentityRoutes<
   })
 }
 
-export function createRequireActiveLearnerSessionMiddleware(
+function createRequireActiveLearnerSessionMiddleware(
   sessionResolver: SessionResolver
 ): MiddlewareHandler<IdentityLearnerHonoEnv> {
   return async (context, next) => {

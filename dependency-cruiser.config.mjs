@@ -111,6 +111,31 @@ const config = {
       },
     },
     {
+      name: "test-support-is-test-only",
+      severity: "error",
+      comment:
+        "test fixture와 test-support는 테스트 파일, test 디렉터리, E2E와 저장소 script에서만 소비한다. 제품 소스가 이들을 import하면 fixture가 런타임 표면으로 새어 나간다.",
+      from: {
+        pathNot: [
+          "\\.test\\.tsx?$",
+          "^apps/[^/]+/src/test/",
+          "^apps/[^/]+/src/test-support/",
+          "^packages/[^/]+/[^/]+/src/test/",
+          "^packages/[^/]+/[^/]+/src/test-support/",
+          "^e2e/",
+          "^scripts/",
+        ],
+      },
+      to: {
+        path: [
+          "^apps/[^/]+/src/test/",
+          "^apps/[^/]+/src/test-support/",
+          "^packages/[^/]+/[^/]+/src/test/",
+          "^packages/[^/]+/[^/]+/src/test-support/",
+        ],
+      },
+    },
+    {
       name: "operations-reporting-does-not-import-module-implementations",
       severity: "error",
       from: {

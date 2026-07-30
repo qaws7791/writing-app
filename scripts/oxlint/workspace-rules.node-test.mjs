@@ -3,6 +3,7 @@ import { RuleTester } from "oxlint/plugins-dev"
 
 import {
   catchPreservesCauseRule,
+  noAmbientEnvironmentReadRule,
   noDtoDomainAliasRule,
   noUnsafeUnknownCastRule,
 } from "./workspace-rules.mjs"
@@ -65,6 +66,31 @@ runRuleCases("catch-preserves-cause", catchPreservesCauseRule, {
     },
     {
       code: "return err({ kind: 'conflict' })",
+    },
+  ],
+})
+
+runRuleCases("no-ambient-environment-read", noAmbientEnvironmentReadRule, {
+  invalid: [
+    {
+      code: "const enabled = process.env.E2E_AUTH_ROUTES === 'true'",
+      errors: [{ messageId: "ambientEnvironmentRead" }],
+    },
+    {
+      code: "const enabled = Bun.env.NODE_ENV === 'test'",
+      errors: [{ messageId: "ambientEnvironmentRead" }],
+    },
+    {
+      code: "const enabled = import.meta.env.MODE === 'test'",
+      errors: [{ messageId: "ambientEnvironmentRead" }],
+    },
+  ],
+  valid: [
+    {
+      code: "function createRuntime(input) { return betterAuth({ secret: input.secret }) }",
+    },
+    {
+      code: "const child = spawn(command, { env: process.argv })",
     },
   ],
 })

@@ -1,4 +1,1 @@
-export {
-  aLearner,
-  type LearnerFixtureInput,
-} from "#identity/test/fixtures/a-learner"
+export { aLearner } from "#identity/test/fixtures/a-learner"

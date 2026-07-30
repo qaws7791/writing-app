@@ -1,6 +1,6 @@
 import type { WritingAppSqlite } from "@workspace/db/test-support/sqlite-types"
 
-export type LearnerFixtureInput = Readonly<{
+type LearnerFixtureInput = Readonly<{
   accountId?: string
   createdAt?: number
   deletedAt?: number | null
