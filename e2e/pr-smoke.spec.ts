@@ -1,7 +1,12 @@
 import { adminCourseEditorDocumentSchema } from "@workspace/contracts/content/admin-courses"
 import { adminCourseEditorWriteDocumentSchema } from "@workspace/contracts/content/admin-courses"
 
-import { adminWebOrigin, loginAdmin, loginLearner } from "#e2e/auth"
+import {
+  adminWebOrigin,
+  learnerWebOrigin,
+  loginAdmin,
+  loginLearner,
+} from "#e2e/auth"
 import { installAiFeedbackFailures } from "#e2e/ai-feedback-fixture"
 import { createE2eAdminContentFixture } from "#e2e/admin-content-fixture"
 import { expect, test } from "#e2e/test"
@@ -155,4 +160,20 @@ test("관리자 콘솔은 크롤러 색인을 차단한다", async ({ page }) =>
   const robotsMeta = page.locator('head meta[name="robots"]')
   await expect(robotsMeta).toHaveAttribute("content", /noindex/u)
   await expect(robotsMeta).toHaveAttribute("content", /nofollow/u)
+})
+
+test("학습자 웹은 공개 화면만 색인하고 metadata origin을 설정에서 읽는다", async ({
+  page,
+}) => {
+  const robots = await page.request.get(`${learnerWebOrigin}/robots.txt`)
+  expect(robots.status()).toBe(200)
+  const robotsBody = await robots.text()
+  expect(robotsBody).toContain("Allow: /")
+  expect(robotsBody).toContain("Disallow: /app/")
+  expect(robotsBody).toContain("Disallow: /login")
+  expect(robotsBody).toContain(`${learnerWebOrigin}/sitemap.xml`)
+
+  const sitemap = await page.request.get(`${learnerWebOrigin}/sitemap.xml`)
+  expect(sitemap.status()).toBe(200)
+  expect(await sitemap.text()).toContain(`<loc>${learnerWebOrigin}</loc>`)
 })
