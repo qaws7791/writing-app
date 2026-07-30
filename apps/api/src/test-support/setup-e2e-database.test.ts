@@ -7,8 +7,8 @@ import { lessonStepTypeValues } from "@workspace/contracts/content/steps"
 import { createWritingAppDatabase } from "@workspace/db/client"
 
 import { requiredApplicationBackupTableNames } from "@/db/required-application-tables"
-import { setupE2eContentDatabase } from "@/scripts/setup-e2e-content-database"
-import { setupE2eAuthDatabase } from "@/scripts/setup-e2e-database"
+import { setupE2eContentDatabase } from "@/test-support/setup-e2e-content-database"
+import { setupE2eAuthDatabase } from "@/test-support/setup-e2e-database"
 
 // 실제 콘텐츠 seed와 credential 해싱을 수행하는 suite이므로, 저장소 전체 병렬
 // 실행에서 CPU가 포화될 때 기본 5초 timeout을 넘긴다.

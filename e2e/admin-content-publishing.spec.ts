@@ -749,7 +749,7 @@ function assertPublishedDatabaseMutationRejected(
   const result = spawnSync(
     "bun",
     [
-      "apps/api/src/scripts/assert-e2e-published-content-immutable.ts",
+      "apps/api/src/test-support/assert-e2e-published-content-immutable.ts",
       curriculumVersionId,
     ],
     {

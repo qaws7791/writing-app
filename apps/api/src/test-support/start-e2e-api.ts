@@ -7,6 +7,10 @@ import type {
   AuthEmailDeliveryPort,
 } from "@workspace/auth/email/delivery"
 import { createInMemoryAuthEmailDelivery } from "@workspace/auth/email/in-memory"
+import {
+  e2eRuntimeOrigins,
+  readRequiredE2eEnvironment,
+} from "@workspace/env/e2e-runtime"
 import type { ContentAssetStoragePort } from "@workspace/content/ports"
 import { err, ok } from "@workspace/kernel/result"
 
@@ -32,7 +36,7 @@ const provider: AiFeedbackProvider = {
 }
 
 if (import.meta.main) {
-  const e2eRunRoot = readRequiredEnvironment("E2E_RUN_ROOT")
+  const e2eRunRoot = path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT"))
   const authEmailDelivery = createE2eAuthEmailDelivery(e2eRunRoot)
   await startApiServer(process.env, {
     container: {
@@ -52,7 +56,7 @@ function createE2eContentAssetStorage(
   e2eRunRoot: string
 ): ContentAssetStoragePort {
   const assetRoot = path.resolve(e2eRunRoot, "content-assets")
-  const publicBaseUrl = "http://127.0.0.1:4199"
+  const publicBaseUrl = e2eRuntimeOrigins.assetOrigin
   const resolveObjectPath = (objectKey: string): string => {
     const target = path.resolve(e2eRunRoot, objectKey)
     if (!target.startsWith(`${assetRoot}${path.sep}`)) {
@@ -123,13 +127,4 @@ async function writeMailbox(
       mode: 0o600,
     }
   )
-}
-
-function readRequiredEnvironment(name: string): string {
-  const value = process.env[name]?.trim()
-  if (value === undefined || value === "") {
-    throw new Error(`E2E API에 ${name}이 필요합니다.`)
-  }
-
-  return path.resolve(value)
 }

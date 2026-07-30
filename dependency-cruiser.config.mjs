@@ -102,7 +102,7 @@ const config = {
       from: {
         pathNot: [
           "^apps/api/src/db/",
-          "^apps/api/src/scripts/(?:assert-e2e|setup-e2e)",
+          "^apps/api/src/test-support/(?:assert-e2e|setup-e2e)",
           "^packages/modules/[^/]+/src/infrastructure/persistence/",
         ],
       },

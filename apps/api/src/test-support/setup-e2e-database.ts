@@ -5,11 +5,11 @@ import {
   authAccounts,
 } from "@workspace/auth/schema"
 import { createWritingAppDatabase } from "@workspace/db/client"
+import { e2eSeededCredentials } from "@workspace/env/e2e-runtime"
 
 import { runApplicationMigrations } from "@/db/migrate"
 
-const adminPassword = "e2e-password-123"
-const learnerPassword = "e2e-password-123"
+const { adminPassword, learnerPassword } = e2eSeededCredentials
 
 if (import.meta.main) {
   const e2eDatabaseUrl = process.env["DATABASE_URL"]

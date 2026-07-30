@@ -2,7 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { chromium } from "@playwright/test"
-import { e2eRuntime } from "#e2e/runtime"
+import { e2eCredentials, e2eRuntime } from "#e2e/runtime"
 
 const repositoryRoot = path.resolve(import.meta.dir, "..")
 const runRoot = await mkdtemp(path.join(tmpdir(), "writing-app-lighthouse-"))
@@ -21,7 +21,7 @@ try {
     e2eRuntime.assetOrigin
   )
   await start(
-    ["bun", "apps/api/src/scripts/start-e2e-api.ts"],
+    ["bun", "apps/api/src/test-support/start-e2e-api.ts"],
     {
       ...sharedEnvironment,
       ADMIN_AUTH_SECRET: "lighthouse-admin-auth-secret-must-have-32-characters",
@@ -108,8 +108,8 @@ async function createLearnerSessionCookie(): Promise<string> {
     new URL("/api/auth/sign-in/email", e2eRuntime.apiOrigin),
     {
       body: JSON.stringify({
-        email: "learner@example.com",
-        password: "e2e-password-123",
+        email: e2eCredentials.learnerEmail,
+        password: e2eCredentials.learnerPassword,
       }),
       headers: {
         "Content-Type": "application/json",

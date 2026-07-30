@@ -2,14 +2,16 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 
 import { expect, type BrowserContext, type Page } from "@playwright/test"
-import { e2eRuntime, readRequiredE2eEnvironment } from "#e2e/runtime"
+import {
+  e2eCredentials,
+  e2eRuntime,
+  readRequiredE2eEnvironment,
+} from "#e2e/runtime"
 
 export const learnerWebOrigin = e2eRuntime.learnerOrigin
 export const adminWebOrigin = e2eRuntime.adminOrigin
 
-const adminPassword = "e2e-password-123"
-const learnerEmail = "learner@example.com"
-const learnerPassword = "e2e-password-123"
+const { adminPassword, learnerEmail, learnerPassword } = e2eCredentials
 
 export async function loginAdmin(
   page: Page,

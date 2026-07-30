@@ -6,8 +6,8 @@ const databaseUrl = path.resolve(readRequiredE2eEnvironment("E2E_DATABASE_URL"))
 const e2eRunRoot = path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT"))
 const contentAssetRoot = path.resolve(e2eRunRoot, "content-assets")
 const setupScripts = [
-  "apps/api/src/scripts/setup-e2e-content-database.ts",
-  "apps/api/src/scripts/setup-e2e-database.ts",
+  "apps/api/src/test-support/setup-e2e-content-database.ts",
+  "apps/api/src/test-support/setup-e2e-database.ts",
 ] as const
 
 for (const setupScript of setupScripts) {

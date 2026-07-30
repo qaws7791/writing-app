@@ -7,6 +7,7 @@
     "#env/*": "./src/*"
   },
   "exports": {
+    "./e2e-runtime": "./src/e2e-runtime.ts",
     "./local-runtime-defaults": "./src/local-runtime-defaults.ts",
     "./parse-env": "./src/parse-env.ts",
     "./public-url": "./src/public-url.ts"

@@ -17,7 +17,7 @@
         "scripts/**/*.{js,cjs,mjs,ts,cts,mts}"
       ],
       "ignoreUnresolved": [
-        "^apps/api/src/scripts/assert-e2e-published-content-immutable\\.ts$"
+        "^apps/api/src/test-support/assert-e2e-published-content-immutable\\.ts$"
       ],
       "ignoreDependencies": ["@lhci/cli", "^k6(?:/|$)"],
       "playwright": false
@@ -32,6 +32,10 @@
     "apps/api": {
       "entry": [
         "src/scripts/*.ts!",
+        "src/test-support/assert-e2e-published-content-immutable.ts!",
+        "src/test-support/setup-e2e-content-database.ts!",
+        "src/test-support/setup-e2e-database.ts!",
+        "src/test-support/start-e2e-api.ts!",
         "src/test-support/unified-api-shutdown-process.ts",
         "src/**/*.{test,spec}.ts"
       ],

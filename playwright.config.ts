@@ -74,7 +74,7 @@ function createWebServers() {
       url: e2eRuntime.assetOrigin,
     },
     {
-      command: "bun apps/api/src/scripts/start-e2e-api.ts",
+      command: "bun apps/api/src/test-support/start-e2e-api.ts",
       env: {
         ...sharedEnvironment,
         ADMIN_AUTH_SECRET: "e2e-admin-auth-secret-must-have-32-characters",
