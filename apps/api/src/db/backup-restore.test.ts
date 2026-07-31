@@ -55,6 +55,7 @@ describe(
           ).toEqual([
             { id: currentSchemaBaseline.id },
             { id: "0001-reporting-views" },
+            { id: "0002-audit-events-course-restore" },
           ])
           expect(
             restored.sqlite

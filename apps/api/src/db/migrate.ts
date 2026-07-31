@@ -8,11 +8,13 @@ import {
 
 import currentSchemaBaselineSql from "../../drizzle/0000-current-schema-baseline.sql" with { type: "text" }
 import reportingViewsSql from "../../drizzle/0001-reporting-views.sql" with { type: "text" }
+import auditEventsCourseRestoreSql from "../../drizzle/0002-audit-events-course-restore.sql" with { type: "text" }
 import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 
 const migrationSqlByFileName = {
   "0000-current-schema-baseline.sql": currentSchemaBaselineSql,
   "0001-reporting-views.sql": reportingViewsSql,
+  "0002-audit-events-course-restore.sql": auditEventsCourseRestoreSql,
 } as const
 
 const migrationSources = applicationMigrationManifest.map((migration) => ({

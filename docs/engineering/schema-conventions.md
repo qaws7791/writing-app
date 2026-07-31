@@ -63,3 +63,4 @@ export const learnerLessonAnswers = sqliteTable("learner_lesson_answers", {
 - 독립 DB 분리를 전제로 FK를 제거할 때는 outbox/API 검증과 장애 시 reconciliation 책임을 별도 결정으로 남긴다.
 - version 범위 콘텐츠 FK는 `curriculum_version_id`와 논리 ID의 복합 키로 같은 version 안의 부모만 참조하게 한다.
 - published 콘텐츠 변경 금지와 course당 단일 draft처럼 DB에서 보장할 수 있는 불변조건은 trigger·partial unique index와 통합 테스트로 고정한다.
+- 도메인 값 집합을 check 제약으로 복제한 컬럼에 값을 추가할 때는 같은 변경에서 제약도 넓힌다. 타입은 통과하고 런타임 insert만 실패하므로 새 값을 저장하는 테스트를 함께 추가한다.

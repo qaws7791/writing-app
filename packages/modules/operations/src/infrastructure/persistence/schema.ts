@@ -40,7 +40,7 @@ export const auditEvents = sqliteTable(
     ),
     check(
       "audit_events_action_check",
-      sql`${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete', 'course.publish', 'course.archive')`
+      sql`${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete', 'course.publish', 'course.archive', 'course.restore')`
     ),
     check(
       "audit_events_outcome_check",
@@ -52,11 +52,11 @@ export const auditEvents = sqliteTable(
     ),
     check(
       "audit_events_target_action_check",
-      sql`(${table.targetType} = 'learner' AND ${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.targetType} = 'course' AND ${table.action} IN ('course.publish', 'course.archive'))`
+      sql`(${table.targetType} = 'learner' AND ${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.targetType} = 'course' AND ${table.action} IN ('course.publish', 'course.archive', 'course.restore'))`
     ),
     check(
       "audit_events_category_action_check",
-      sql`(${table.category} = 'privacy-access' AND ${table.action} = 'learner.detail.read') OR (${table.category} = 'identity-mutation' AND ${table.action} IN ('learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.category} = 'content-mutation' AND ${table.action} IN ('course.publish', 'course.archive'))`
+      sql`(${table.category} = 'privacy-access' AND ${table.action} = 'learner.detail.read') OR (${table.category} = 'identity-mutation' AND ${table.action} IN ('learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.category} = 'content-mutation' AND ${table.action} IN ('course.publish', 'course.archive', 'course.restore'))`
     ),
     check(
       "audit_events_identifier_check",

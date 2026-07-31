@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest"
+import { readFileSync } from "node:fs"
+
 import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
 
+import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 import { currentSchemaBaseline, runApplicationMigrations } from "@/db/migrate"
 import { requiredApplicationTableNames } from "@/db/required-application-tables"
 
@@ -15,10 +18,12 @@ describe("application migration", () => {
       expect(runApplicationMigrations(client.sqlite)).toEqual([
         { execution: "applied", id: currentSchemaBaseline.id },
         { execution: "applied", id: "0001-reporting-views" },
+        { execution: "applied", id: "0002-audit-events-course-restore" },
       ])
       expect(runApplicationMigrations(client.sqlite)).toEqual([
         { execution: "skipped", id: currentSchemaBaseline.id },
         { execution: "skipped", id: "0001-reporting-views" },
+        { execution: "skipped", id: "0002-audit-events-course-restore" },
       ])
       expect(
         client.sqlite
@@ -95,6 +100,42 @@ describe("application migration", () => {
     }
   })
 
+  it("audit_events 재구성 migration은 기존 기록을 보존하고 코스 보관 해제를 허용한다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      applyMigrationsBefore(client, "0002-audit-events-course-restore")
+      insertAuditEvent(client, {
+        action: "course.publish",
+        id: "audit-existing",
+      })
+
+      expect(() =>
+        insertAuditEvent(client, {
+          action: "course.restore",
+          id: "audit-restore-before",
+        })
+      ).toThrow("audit_events_action_check")
+
+      expect(runApplicationMigrations(client.sqlite)).toEqual([
+        { execution: "skipped", id: currentSchemaBaseline.id },
+        { execution: "skipped", id: "0001-reporting-views" },
+        { execution: "applied", id: "0002-audit-events-course-restore" },
+      ])
+
+      insertAuditEvent(client, {
+        action: "course.restore",
+        id: "audit-restore-after",
+      })
+      expect(readAuditEventIds(client)).toEqual([
+        "audit-existing",
+        "audit-restore-after",
+      ])
+    } finally {
+      client.close()
+    }
+  })
+
   it("migration 이력 없이 application table이 있는 DB를 변경하지 않고 거부한다", () => {
     const client = createInMemoryWritingAppDatabase()
 
@@ -142,6 +183,65 @@ describe("application migration", () => {
     }
   })
 })
+
+/** 재구성 migration의 row 보존을 확인하려면 직전 계보 상태를 먼저 만들어야 한다. */
+function applyMigrationsBefore(
+  client: WritingAppDatabaseClient,
+  migrationId: string
+): void {
+  client.sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS api_schema_migrations (
+      id TEXT PRIMARY KEY NOT NULL,
+      checksum TEXT NOT NULL,
+      applied_at INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `)
+
+  for (const migration of applicationMigrationManifest) {
+    if (migration.id === migrationId) return
+
+    client.sqlite.exec(readMigrationSql(migration.fileName))
+    client.sqlite
+      .query<void, [string, string]>(`
+        INSERT INTO api_schema_migrations (id, checksum)
+        VALUES (?, ?)
+      `)
+      .run(migration.id, migration.checksum)
+  }
+}
+
+function readMigrationSql(fileName: string): string {
+  return readFileSync(
+    new URL(`../../drizzle/${fileName}`, import.meta.url),
+    "utf8"
+  ).replaceAll("\r\n", "\n")
+}
+
+function insertAuditEvent(
+  client: WritingAppDatabaseClient,
+  event: Readonly<{ action: string; id: string }>
+): void {
+  client.sqlite
+    .query<void, [string, string]>(`
+      INSERT INTO audit_events (
+        action, actor_id, category, client_ip, created_at,
+        id, outcome, request_id, retention_until, target_id, target_type
+      )
+      VALUES (?, 'admin-1', 'content-mutation', NULL, 0, ?, 'started', 'request-1', 31536000000, 'course-1', 'course')
+    `)
+    .run(event.action, event.id)
+}
+
+function readAuditEventIds(
+  client: WritingAppDatabaseClient
+): readonly string[] {
+  return client.sqlite
+    .query<{ readonly id: string }, []>(
+      "SELECT id FROM audit_events ORDER BY id"
+    )
+    .all()
+    .map(({ id }) => id)
+}
 
 function readMigratedTableNames(
   client: WritingAppDatabaseClient

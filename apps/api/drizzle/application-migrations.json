@@ -10,5 +10,11 @@
     "fileName": "0001-reporting-views.sql",
     "foreignKeys": "on",
     "id": "0001-reporting-views"
+  },
+  {
+    "checksum": "85e3033fdab00f8ec6f90c9355d5d64f43326c3b02344c638bfaa98d72e3123c",
+    "fileName": "0002-audit-events-course-restore.sql",
+    "foreignKeys": "on",
+    "id": "0002-audit-events-course-restore"
   }
 ]
