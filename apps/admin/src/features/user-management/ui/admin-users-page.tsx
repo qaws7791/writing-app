@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useTransition } from "react"
+import { useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -18,19 +18,8 @@ import {
   createGetFilterHref,
   readGetFormFields,
 } from "@/shared/navigation/get-filter-url"
-import {
-  readUserStatusTransition,
-  type UserStatusTransition,
-} from "@/features/user-management/model/user-status-transition"
+import { UserOperationActions } from "@/features/user-management/ui/user-operation-actions"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Table,
@@ -59,6 +48,11 @@ const userStatusFilterItems = [
   { label: "활성", value: "active" },
   { label: "정지", value: "suspended" },
   { label: "삭제", value: "deleted" },
+] as const
+const userPageSizeItems = [
+  { label: "10명", value: "10" },
+  { label: "20명", value: "20" },
+  { label: "50명", value: "50" },
 ] as const
 
 const userSortItems = [
@@ -89,15 +83,7 @@ export function AdminUsersPage({
   }) => Promise<AdminRequestResult<AdminUserDetail>>
   readonly usersResult: AdminRequestResult<AdminUserList>
 }) {
-  const [deleteTarget, setDeleteTarget] = useState<
-    AdminUserList["items"][number] | null
-  >(null)
-  const [statusTarget, setStatusTarget] = useState<{
-    readonly transition: UserStatusTransition
-    readonly user: AdminUserList["items"][number]
-  } | null>(null)
   const [message, setMessage] = useState<StatusMessage | null>(null)
-  const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
 
@@ -122,9 +108,11 @@ export function AdminUsersPage({
     )
   }
 
+  const { pagination } = usersResult.value
+
   return (
     <>
-      <UsersHeading totalUsers={usersResult.value.pagination.totalItems} />
+      <UsersHeading totalUsers={pagination.totalItems} />
       <form
         ref={formRef}
         aria-label="사용자 필터"
@@ -201,6 +189,31 @@ export function AdminUsersPage({
             </SelectContent>
           </Select>
         </FilterToolbarField>
+        <FilterToolbarField className="gap-0">
+          <FilterToolbarLabel className="sr-only">
+            페이지 크기
+          </FilterToolbarLabel>
+          <Select
+            aria-label="페이지 크기"
+            items={userPageSizeItems}
+            name="pageSize"
+            onValueChange={(value) => {
+              submitSelectValue("pageSize", value)
+            }}
+            value={String(filters.pageSize)}
+          >
+            <SelectTrigger className="w-30 font-semibold" variant="outlined">
+              <SelectValue placeholder="20개" />
+            </SelectTrigger>
+            <SelectContent>
+              {userPageSizeItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FilterToolbarField>
         <Button type="submit" variant="outline">
           검색
         </Button>
@@ -258,8 +271,6 @@ export function AdminUsersPage({
           </TableHeader>
           <TableBody>
             {usersResult.value.items.map((user) => {
-              const transition = readUserStatusTransition(user.status)
-
               return (
                 <TableRow
                   className="group border-b border-border/50 last:border-0"
@@ -289,34 +300,12 @@ export function AdminUsersPage({
                     {user.streak}일
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                      {transition === null ? (
-                        <span className="text-sm font-semibold text-muted-foreground">
-                          읽기 전용
-                        </span>
-                      ) : (
-                        <>
-                          <Button
-                            variant="outline"
-                            disabled={isPending}
-                            onClick={() =>
-                              setStatusTarget({ transition, user })
-                            }
-                            type="button"
-                          >
-                            {transition.label}
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            disabled={isPending}
-                            onClick={() => setDeleteTarget(user)}
-                            type="button"
-                          >
-                            삭제 요청
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                    <UserOperationActions
+                      deleteUser={deleteUser}
+                      onResult={setMessage}
+                      updateUserStatus={updateUserStatus}
+                      user={user}
+                    />
                   </TableCell>
                 </TableRow>
               )
@@ -324,104 +313,50 @@ export function AdminUsersPage({
           </TableBody>
         </Table>
       </div>
-      <AlertDialog
-        open={statusTarget !== null}
-        onOpenChange={(open) => {
-          if (!open && !isPending) {
-            setStatusTarget(null)
-          }
-        }}
-      >
-        {statusTarget === null ? null : (
-          <AlertDialogContent>
-            <AlertDialogTitle>사용자 상태 변경 확인</AlertDialogTitle>
-            <AlertDialogDescription>
-              {statusTarget.user.email} 사용자를 확인합니다.{" "}
-              {statusTarget.transition.confirmation}
-            </AlertDialogDescription>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isPending}>취소</AlertDialogCancel>
-              <Button
-                disabled={isPending}
-                size="extra"
-                onClick={() => {
-                  if (isPending) return
-
-                  const { transition, user } = statusTarget
-                  startTransition(async () => {
-                    const result = await updateUserStatus({
-                      status: transition.targetStatus,
-                      userId: user.id,
-                    })
-
-                    setMessage(
-                      result.status === "ok"
-                        ? {
-                            message: transition.successMessage,
-                            tone: "success",
-                          }
-                        : {
-                            message: result.error.message,
-                            tone: "danger",
-                          }
-                    )
-                    setStatusTarget(null)
-                  })
-                }}
-                type="button"
-              >
-                {statusTarget.transition.label} 처리
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        )}
-      </AlertDialog>
-      <AlertDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteTarget(null)
-          }
-        }}
-      >
-        {deleteTarget === null ? null : (
-          <AlertDialogContent>
-            <AlertDialogTitle>삭제 요청 처리 확인</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteTarget.email} 계정을 삭제 상태로 전환합니다.
-            </AlertDialogDescription>
-            <AlertDialogFooter>
-              <AlertDialogCancel>취소</AlertDialogCancel>
-              <Button
-                variant="destructive"
-                disabled={isPending}
-                size="extra"
-                onClick={() => {
-                  const userId = deleteTarget.id
-
-                  startTransition(async () => {
-                    const result = await deleteUser(userId)
-
-                    setMessage(
-                      result.status === "ok"
-                        ? {
-                            message: "삭제 요청을 처리했습니다.",
-                            tone: "success",
-                          }
-                        : { message: result.error.message, tone: "danger" }
-                    )
-                    setDeleteTarget(null)
-                  })
-                }}
-                type="button"
-              >
-                삭제 처리
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        )}
-      </AlertDialog>
+      <UserPagination filters={filters} pagination={pagination} />
     </>
+  )
+}
+
+function UserPagination({
+  filters,
+  pagination,
+}: {
+  readonly filters: ReadAdminUsersInput
+  readonly pagination: AdminUserList["pagination"]
+}) {
+  if (pagination.totalPages <= 1) return null
+
+  const pageHref = (page: number) =>
+    createGetFilterHref(
+      [
+        ["query", filters.query],
+        ["status", filters.status],
+        ["sort", filters.sort],
+        ["pageSize", filters.pageSize],
+      ],
+      { page }
+    )
+
+  return (
+    <nav
+      aria-label="사용자 목록 페이지"
+      className="mt-4 flex items-center justify-end gap-3"
+    >
+      {pagination.page > 1 ? (
+        <Link className="font-bold" href={pageHref(pagination.page - 1)}>
+          이전 페이지
+        </Link>
+      ) : null}
+      <span className="text-sm font-bold text-muted-foreground">
+        {pagination.page} / {pagination.totalPages}
+      </span>
+      {pagination.page < pagination.totalPages ? (
+        <Link className="font-bold" href={pageHref(pagination.page + 1)}>
+          다음 페이지
+        </Link>
+      ) : null}
+    </nav>
   )
 }
 

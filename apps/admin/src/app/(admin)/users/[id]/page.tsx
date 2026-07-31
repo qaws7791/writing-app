@@ -1,6 +1,10 @@
 import { AdminUserDetailPage } from "@/features/user-management/ui/admin-user-detail-page"
 import { userIdSchema } from "@/entities/learner-account/model/learner-account-id"
 import {
+  deleteAdminUserAction,
+  updateAdminUserStatusAction,
+} from "@/features/user-management/server/admin-user-actions"
+import {
   settleAdminApiRequest,
   unauthenticatedAdminRequestFailure,
 } from "@/shared/http/admin-api-client"
@@ -23,5 +27,11 @@ export default async function AdminUserDetailRoute({
       ? unauthenticatedAdminRequestFailure()
       : await settleAdminApiRequest(getAdminUser(parsedId.data, requestOptions))
 
-  return <AdminUserDetailPage userResult={userResult} />
+  return (
+    <AdminUserDetailPage
+      deleteUser={deleteAdminUserAction}
+      updateUserStatus={updateAdminUserStatusAction}
+      userResult={userResult}
+    />
+  )
 }

@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useState } from "react"
 import {
   ArrowLeft,
   CalendarDays,
@@ -8,15 +11,29 @@ import {
 } from "lucide-react"
 
 import { StatusBadge } from "@/entities/learner-account/ui/status-badge"
+import {
+  UserOperationActions,
+  type UserOperationResult,
+} from "@/features/user-management/ui/user-operation-actions"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminUserDetail } from "@/entities/learner-account/model/admin-learner-account"
+import type { LearnerOperationalStatus } from "@workspace/contracts/identity/status"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 
 export function AdminUserDetailPage({
+  deleteUser,
+  updateUserStatus,
   userResult,
 }: {
+  readonly deleteUser: (userId: string) => Promise<AdminRequestResult<unknown>>
+  readonly updateUserStatus: (input: {
+    readonly status: LearnerOperationalStatus
+    readonly userId: string
+  }) => Promise<AdminRequestResult<unknown>>
   readonly userResult: AdminRequestResult<AdminUserDetail>
 }) {
+  const [message, setMessage] = useState<UserOperationResult | null>(null)
+
   if (userResult.status === "error") {
     return (
       <>
@@ -55,7 +72,18 @@ export function AdminUserDetailPage({
             {user.email}
           </div>
         </div>
+        <UserOperationActions
+          deleteUser={deleteUser}
+          onResult={setMessage}
+          updateUserStatus={updateUserStatus}
+          user={user}
+        />
       </div>
+      {message === null ? null : (
+        <Alert className="mb-4" role="status" tone={message.tone}>
+          <AlertDescription>{message.message}</AlertDescription>
+        </Alert>
+      )}
       <div className="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <UserStat
           icon={<CalendarDays aria-hidden="true" size={18} />}
