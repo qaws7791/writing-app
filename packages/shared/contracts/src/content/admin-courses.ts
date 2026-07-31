@@ -1,5 +1,9 @@
 import { z } from "zod"
-import { adminContentAssetUploadDtoSchema } from "#contracts/content/admin-assets"
+import {
+  adminContentAssetUploadDtoSchema,
+  contentAssetReferenceDtoSchema,
+} from "#contracts/content/admin-assets"
+import { courseCategoryValues } from "#contracts/content/category"
 import { courseVisualKeySchema } from "#contracts/content/course"
 import {
   contentAssetIdSchema,
@@ -61,6 +65,9 @@ export const adminCourseDetailDtoSchema = z.strictObject({
 
 export const adminCourseListItemDtoSchema = z.strictObject({
   category: z.string(),
+  cover: contentAssetReferenceDtoSchema
+    .extend({ kind: z.literal("course-cover") })
+    .nullable(),
   id: courseIdSchema,
   lessonCount: nonNegativeIntegerSchema,
   revision: nonNegativeIntegerSchema,
@@ -82,6 +89,10 @@ export const adminCourseListDtoSchema = z.strictObject({
 
 export const adminArchiveCourseResultSchema = z.strictObject({
   archived: z.literal(true),
+})
+
+export const adminRestoreCourseResultSchema = z.strictObject({
+  restored: z.literal(true),
 })
 
 const activeEditorStatusSchema = z.literal("active")
@@ -115,7 +126,7 @@ export const adminCourseEditorUnitSchema = z
   .superRefine((unit, context) => {
     validateContiguousSortOrders(unit.lessons, context)
   })
-const adminCourseEditorWriteDocumentFields = {
+const adminCourseEditorDocumentFields = {
   category: z.string(),
   coverAssetId: contentAssetIdSchema.nullable(),
   curriculumVersionId: curriculumVersionIdSchema,
@@ -128,11 +139,30 @@ const adminCourseEditorWriteDocumentFields = {
   units: z.array(adminCourseEditorUnitSchema),
 } as const
 
+/**
+ * 저장 경로만 카테고리를 값 집합으로 좁힌다. 읽기 경로까지 좁히면 값 집합에 없는
+ * 기존 row 하나가 조회 응답 전체를 실패시키므로 읽기는 문자열을 그대로 통과시킨다.
+ */
+const adminCourseEditorWriteDocumentFields = {
+  ...adminCourseEditorDocumentFields,
+  category: z.enum(courseCategoryValues, {
+    error: "카테고리를 목록에서 선택해 주세요.",
+  }),
+} as const
+
 export const adminCourseEditorWriteDocumentSchema = z
   .strictObject(adminCourseEditorWriteDocumentFields)
   .superRefine(validateEditorDocument)
 
 export const adminCourseEditorDocumentSchema = z
+  .strictObject({
+    assets: z.array(adminContentAssetUploadDtoSchema),
+    ...adminCourseEditorDocumentFields,
+  })
+  .superRefine(validateEditorDocument)
+
+/** 관리자 앱이 저장 직전 draft를 검증할 때 쓰는, 쓰기 규칙을 그대로 따르는 문서다. */
+export const adminCourseEditorSaveDocumentSchema = z
   .strictObject({
     assets: z.array(adminContentAssetUploadDtoSchema),
     ...adminCourseEditorWriteDocumentFields,

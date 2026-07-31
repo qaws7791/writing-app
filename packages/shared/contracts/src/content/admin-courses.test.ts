@@ -201,6 +201,30 @@ describe("admin course editor contract", () => {
       { code: "unrecognized_keys", keys: ["assets"] },
     ])
   })
+
+  it("값 집합에 없는 카테고리 저장은 조치를 알리는 한국어 메시지로 거절한다", () => {
+    const { assets: _assets, ...writeDocument } = createEditableCourse()
+
+    const result = adminCourseEditorWriteDocumentSchema.safeParse({
+      ...writeDocument,
+      category: "입문자를 위한 코스",
+      units: [],
+    })
+
+    expect(result.error?.issues).toMatchObject([
+      { message: "카테고리를 목록에서 선택해 주세요.", path: ["category"] },
+    ])
+  })
+
+  it("값 집합에 없는 카테고리를 가진 기존 코스의 조회는 계속 성공한다", () => {
+    const result = adminCourseEditorDocumentSchema.safeParse({
+      ...createEditableCourse(),
+      category: "입문자를 위한 코스",
+      units: [],
+    })
+
+    expect(result.success).toBe(true)
+  })
 })
 
 function createEditableCourse() {

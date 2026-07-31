@@ -26,7 +26,7 @@ const curriculumVersionId = createCurriculumVersionId(courseId, 1)
 const adminCookie = "admin=valid"
 const editorDocument: CourseEditorDocument = {
   assets: [],
-  category: "기초",
+  category: "미분류",
   courseId,
   coverAssetId: null,
   curriculumVersionId,
@@ -275,12 +275,15 @@ function createContentHttpFixture(overrides: Partial<ContentApplication> = {}) {
     cleanupOrphanedAssets: async () =>
       ok({ deleted: 0, retained: 0, scanned: 0 }),
     createCourse: async () => ok(editorDocument),
+    restoreCourse: async () => ok(undefined),
     findCurriculumByLesson: async () => null,
+    getCourseAssets: async () => [],
     getCourseEditor: async () => editorDocument,
     getCourses: async (query) => ({
       items: [
         {
           category: editorDocument.category,
+          cover: null,
           id: courseId,
           lessonCount: 1,
           revision: editorDocument.revision,

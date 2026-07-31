@@ -1,5 +1,6 @@
-import { adminCourseEditorDocumentSchema } from "@workspace/contracts/content/admin-courses"
+import { adminCourseEditorSaveDocumentSchema } from "@workspace/contracts/content/admin-courses"
 import type {
+  getAdminCourseAssets,
   getAdminCourseEditor,
   uploadAdminContentAsset,
 } from "@workspace/http-client/admin"
@@ -9,6 +10,8 @@ export type AdminCourseDetail = Awaited<ReturnType<typeof getAdminCourseEditor>>
 export type AdminContentAsset = Awaited<
   ReturnType<typeof uploadAdminContentAsset>
 >
+export type AdminCourseAssets = Awaited<ReturnType<typeof getAdminCourseAssets>>
+export type AdminCourseAsset = AdminCourseAssets["items"][number]
 export type AdminContentAssetKind = NonNullable<
   Parameters<typeof uploadAdminContentAsset>[1]
 >["kind"]
@@ -26,9 +29,13 @@ export type AdminCourseEditorCommandResult =
       value: AdminCourseDetail
     }>
 
+/**
+ * 저장 직전 draft는 쓰기 규칙으로 검증한다. 카테고리 값 집합이 좁혀진 채로 남아야
+ * 전송 계약의 body 타입과 그대로 맞는다.
+ */
 export const adminCourseEditorSchema =
-  adminCourseEditorDocumentSchema.transform(
-    (document): AdminCourseDetail => omitUndefinedProperties(document)
+  adminCourseEditorSaveDocumentSchema.transform((document) =>
+    omitUndefinedProperties(document)
   )
 
 type WithoutUndefinedProperties<TValue> = TValue extends
