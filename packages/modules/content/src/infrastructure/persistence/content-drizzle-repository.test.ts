@@ -66,6 +66,33 @@ describe("content Drizzle repository", () => {
     })
   })
 
+  it("코스 검색은 부분 일치로 좁히고 LIKE 와일드카드를 문자로 다룬다", async () => {
+    await withContentRepository(async ({ repository }) => {
+      await repository.createCourse({ courseId, now })
+      const draft = await readDraftOrThrow(repository)
+      await repository.saveDraft({
+        draft: { ...draft, title: "문장 다듬기" },
+        expectedEditVersion: draft.editVersion,
+        now,
+      })
+
+      const search = async (query: string) =>
+        (
+          await repository.readCourses({
+            category: "",
+            page: 1,
+            pageSize: 10,
+            query,
+            status: "all",
+          })
+        ).items.map((item) => item.title)
+
+      expect(await search("다듬")).toEqual(["문장 다듬기"])
+      expect(await search("없는 제목")).toEqual([])
+      expect(await search("%")).toEqual([])
+    })
+  })
+
   it("optimistic conflict를 Result로 반환하고 이전 draft를 보존한다", async () => {
     await withContentRepository(async (fixture) => {
       await fixture.repository.createCourse({ courseId, now })
@@ -298,6 +325,22 @@ describe("content Drizzle repository", () => {
         ])
       }
     )
+  })
+
+  it("코스 asset 목록은 정리 대기 asset까지 포함해 상태와 함께 돌려준다", async () => {
+    await withOrphanedAssets(async ({ cover, fixture, illustration }) => {
+      const all = await fixture.repository.listAssetsForCourse(courseId)
+      const active =
+        await fixture.repository.listActiveAssetsForCourse(courseId)
+
+      expect(
+        all.map((asset) => ({ id: asset.id, status: asset.status }))
+      ).toEqual([
+        { id: cover.id, status: "orphaned" },
+        { id: illustration.id, status: "orphaned" },
+      ])
+      expect(active).toEqual([])
+    })
   })
 
   it("orphan 전이된 asset을 cutoff 기준 정리 대상으로 나열한다", async () => {

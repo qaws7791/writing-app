@@ -41,10 +41,25 @@ export const contentAssetReferenceDtoSchema =
     url: true,
   })
 
+/** `orphaned`는 어떤 콘텐츠도 참조하지 않아 정리 작업 대기 중임을 뜻한다. */
+export const adminContentAssetStatusSchema = z.enum(["active", "orphaned"])
+
+export const adminCourseAssetDtoSchema =
+  adminContentAssetUploadDtoSchema.extend({
+    status: adminContentAssetStatusSchema,
+  })
+
+export const adminCourseAssetsDtoSchema = z.strictObject({
+  items: z.array(adminCourseAssetDtoSchema),
+})
+
 export type AdminContentAssetUploadDto = z.infer<
   typeof adminContentAssetUploadDtoSchema
 >
 export type AdminContentAssetKind = z.infer<typeof adminContentAssetKindSchema>
+export type AdminContentAssetStatus = z.infer<
+  typeof adminContentAssetStatusSchema
+>
 export type ContentAssetReferenceDto = z.infer<
   typeof contentAssetReferenceDtoSchema
 >

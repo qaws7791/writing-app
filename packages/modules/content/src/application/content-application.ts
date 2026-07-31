@@ -10,6 +10,7 @@ import type {
   ContentApplicationDependencies,
   ContentAssetReference,
   ContentCoursePage,
+  CourseContentAsset,
   CourseEditorDocument,
   ReadContentCoursesInput,
   ResolvedContentAsset,
@@ -26,6 +27,10 @@ import {
   createArchiveCourseUseCase,
   type ArchiveCourseUseCase,
 } from "#content/application/use-cases/archive-course"
+import {
+  createRestoreCourseUseCase,
+  type RestoreCourseUseCase,
+} from "#content/application/use-cases/restore-course"
 import {
   createCreateCourseUseCase,
   type CreateCourseUseCase,
@@ -52,6 +57,9 @@ export type ContentApplication = Readonly<{
     readonly curriculumVersionId?: CurriculumVersionId
     readonly lessonId: LessonId
   }) => Promise<PublishedLessonReference | null>
+  getCourseAssets: (
+    courseId: CourseId
+  ) => Promise<readonly CourseContentAsset[] | null>
   getCourseEditor: (courseId: CourseId) => Promise<CourseEditorDocument | null>
   getCourses: (query: ReadContentCoursesInput) => Promise<ContentCoursePage>
   listPublishedCourses: () => Promise<readonly PublishedCourseSummary[]>
@@ -63,6 +71,7 @@ export type ContentApplication = Readonly<{
   resolveAssetReferences: (
     assetIds: readonly ContentAssetId[]
   ) => Promise<readonly ContentAssetReference[]>
+  restoreCourse: RestoreCourseUseCase
   saveCourseEditor: SaveCourseEditorUseCase
   uploadAsset: UploadContentAsset
 }>
@@ -73,7 +82,7 @@ export function createContentApplication(
   const createCourse = createCreateCourseUseCase(dependencies)
   const saveCourseEditor = createSaveCourseEditorUseCase(dependencies)
 
-  return {
+  const application: ContentApplication = {
     archiveCourse: createArchiveCourseUseCase(dependencies),
     cleanupOrphanedAssets: createCleanupOrphanedAssets(dependencies),
     createCourse: async (adminId) => {
@@ -84,13 +93,54 @@ export function createContentApplication(
     },
     findCurriculumByLesson: (input) =>
       dependencies.repository.findCurriculumByLesson(input),
+    async getCourseAssets(courseId) {
+      const course = await dependencies.repository.findCourse(courseId)
+      if (course === null) return null
+
+      const storage = dependencies.assetStorage
+      if (storage === null) return []
+
+      const assets = await dependencies.repository.listAssetsForCourse(courseId)
+      return assets.map(
+        (asset): CourseContentAsset => ({
+          altText: asset.altText,
+          byteSize: asset.byteSize,
+          contentType: asset.contentType,
+          courseId: asset.courseId,
+          curriculumVersionId: asset.curriculumVersionId,
+          id: asset.id,
+          kind: asset.kind,
+          status: asset.status,
+          url: storage.resolveUrl(asset.objectKey),
+        })
+      )
+    },
     async getCourseEditor(courseId) {
       const document = await dependencies.repository.readCourseEditor(courseId)
       return document === null
         ? null
         : attachResolvedEditorAssets(dependencies, document)
     },
-    getCourses: (query) => dependencies.repository.readCourses(query),
+    async getCourses(query) {
+      const page = await dependencies.repository.readCourses(query)
+      const covers = await application.resolveAssetReferences(
+        page.items.flatMap((item) =>
+          item.coverAssetId === null ? [] : [item.coverAssetId]
+        )
+      )
+      const coverById = new Map(covers.map((cover) => [cover.id, cover]))
+
+      return {
+        ...page,
+        items: page.items.map(({ coverAssetId, ...item }) => ({
+          ...item,
+          cover:
+            coverAssetId === null
+              ? null
+              : (coverById.get(coverAssetId) ?? null),
+        })),
+      }
+    },
     listPublishedCourses: () =>
       dependencies.repository.listPublishedCourseSummaries(),
     publishCourse: createPublishCourseUseCase(dependencies),
@@ -117,6 +167,7 @@ export function createContentApplication(
             ]
       })
     },
+    restoreCourse: createRestoreCourseUseCase(dependencies),
     saveCourseEditor: async (command) => {
       const result = await saveCourseEditor(command)
       return result.isErr()
@@ -125,6 +176,8 @@ export function createContentApplication(
     },
     uploadAsset: createUploadContentAsset(dependencies),
   }
+
+  return application
 }
 
 async function attachResolvedEditorAssets(

@@ -32,7 +32,10 @@ import {
   saveAdminCourseEditorAction,
   uploadAdminContentAssetAction,
 } from "@/features/course-editor/server/admin-course-actions"
-import { createAdminCourseEditorFixture } from "@/features/course-editor/test/fixtures/admin-course-editor"
+import {
+  createAdminCourseEditorFixture,
+  emptyAssetsResult,
+} from "@/features/course-editor/test/fixtures/admin-course-editor"
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
 import { createAdminContentAssetFixture } from "@/test/admin-api-fixtures"
 
@@ -202,6 +205,7 @@ function renderEditor(
 ): void {
   render(
     <CourseEditorShell
+      assetsResult={emptyAssetsResult}
       course={course}
       publishCourse={async (document) => ({ status: "ok", value: document })}
       saveCourse={saveAdminCourseEditorAction}

@@ -10,7 +10,10 @@ import {
   settleAdminApiRequest,
   unauthenticatedAdminRequestFailure,
 } from "@/shared/http/admin-api-client"
-import { getAdminCourseEditor } from "@workspace/http-client/admin"
+import {
+  getAdminCourseAssets,
+  getAdminCourseEditor,
+} from "@workspace/http-client/admin"
 import { notFound } from "next/navigation"
 
 export default async function AdminCourseDetailRoute({
@@ -23,15 +26,24 @@ export default async function AdminCourseDetailRoute({
   const parsedCourseId = courseIdSchema.safeParse((await params).id)
   if (!parsedCourseId.success) notFound()
   const requestOptions = await getServerAdminRequestOptions()
-  const courseResult =
+  const [courseResult, assetsResult] =
     requestOptions === null
-      ? unauthenticatedAdminRequestFailure()
-      : await settleAdminApiRequest(
-          getAdminCourseEditor(parsedCourseId.data, requestOptions)
-        )
+      ? ([
+          unauthenticatedAdminRequestFailure(),
+          unauthenticatedAdminRequestFailure(),
+        ] as const)
+      : await Promise.all([
+          settleAdminApiRequest(
+            getAdminCourseEditor(parsedCourseId.data, requestOptions)
+          ),
+          settleAdminApiRequest(
+            getAdminCourseAssets(parsedCourseId.data, requestOptions)
+          ),
+        ])
 
   return (
     <AdminCourseDetailPage
+      assetsResult={assetsResult}
       courseResult={courseResult}
       publishCourse={publishAdminCourseAction}
       saveCourse={saveAdminCourseEditorAction}

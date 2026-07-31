@@ -12,6 +12,7 @@ import type {
   ContentAsset,
   ContentAssetKind,
   ContentAssetMimeType,
+  ContentAssetStatus,
   ContentAssetValidationReason,
 } from "#content/domain/content-asset"
 import type { ContentError } from "#content/domain/content-error"
@@ -34,6 +35,9 @@ export type ResolvedContentAsset = Readonly<{
   url: string
 }>
 
+export type CourseContentAsset = ResolvedContentAsset &
+  Readonly<{ status: ContentAssetStatus }>
+
 export type ContentAssetReference = Pick<
   ResolvedContentAsset,
   "altText" | "id" | "kind" | "url"
@@ -44,6 +48,7 @@ export type CourseEditorDocument = Omit<CurriculumDraft, "visualKey"> &
 
 type ContentCourseListItem = Readonly<{
   category: string
+  cover: ContentAssetReference | null
   id: CourseId
   lessonCount: number
   revision: number
@@ -51,6 +56,17 @@ type ContentCourseListItem = Readonly<{
   title: string
   unitCount: number
   visualKey: CurriculumDraft["visualKey"]
+}>
+
+type ContentCourseListRow = Omit<ContentCourseListItem, "cover"> &
+  Readonly<{ coverAssetId: ContentAssetId | null }>
+
+export type ContentCourseRowPage = Readonly<{
+  items: readonly ContentCourseListRow[]
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
 }>
 
 export type ContentCoursePage = Readonly<{
@@ -65,6 +81,7 @@ export type ReadContentCoursesInput = Readonly<{
   category: string
   page: number
   pageSize: number
+  query: string
   status: "active" | "all" | "archived"
 }>
 
@@ -125,6 +142,7 @@ export type ContentRepository = Readonly<{
   listActiveAssetsForCourse: (
     courseId: CourseId
   ) => Promise<readonly ContentAsset[]>
+  listAssetsForCourse: (courseId: CourseId) => Promise<readonly ContentAsset[]>
   listOrphanedAssetCandidates: (input: {
     readonly batchSize: number
     readonly cutoff: Date
@@ -146,7 +164,7 @@ export type ContentRepository = Readonly<{
     readonly publishedRevision: PublishedCurriculumRevision
   }) => Promise<Result<PublishedCurriculumRevision, ContentError>>
   readCourseEditor: (courseId: CourseId) => Promise<CourseEditorDocument | null>
-  readCourses: (input: ReadContentCoursesInput) => Promise<ContentCoursePage>
+  readCourses: (input: ReadContentCoursesInput) => Promise<ContentCourseRowPage>
   readCurriculum: (input: {
     readonly courseId: CourseId
     readonly curriculumVersionId?: CurriculumVersionId

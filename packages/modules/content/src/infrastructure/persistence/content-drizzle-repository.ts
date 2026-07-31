@@ -1,4 +1,14 @@
-import { and, asc, count, eq, inArray, isNotNull, lte, sql } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  like,
+  lte,
+  sql,
+} from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type {
@@ -35,7 +45,7 @@ import {
 } from "#content/domain/content-model"
 import { createCurriculumDraft } from "#content/domain/curriculum"
 import type {
-  ContentCoursePage,
+  ContentCourseRowPage,
   ContentAssetOwner,
   ContentRepository,
   CourseEditorDocument,
@@ -81,6 +91,9 @@ export function createDrizzleContentRepository(
     },
     async listActiveAssetsForCourse(courseId) {
       return listActiveAssetsForCourse(database, courseId)
+    },
+    async listAssetsForCourse(courseId) {
+      return listAssetsForCourse(database, courseId)
     },
     async listOrphanedAssetCandidates(input) {
       return listOrphanedAssetCandidates(database, input)
@@ -132,6 +145,19 @@ function listActiveAssetsForCourse(
         eq(contentAssets.status, "active")
       )
     )
+    .orderBy(asc(contentAssets.createdAt), asc(contentAssets.id))
+    .all()
+    .map(toContentAsset)
+}
+
+function listAssetsForCourse(
+  database: CourseReadDatabase,
+  courseId: CourseId
+): readonly ContentAsset[] {
+  return database
+    .select()
+    .from(contentAssets)
+    .where(eq(contentAssets.courseId, courseId))
     .orderBy(asc(contentAssets.createdAt), asc(contentAssets.id))
     .all()
     .map(toContentAsset)
@@ -975,10 +1001,11 @@ function saveCourse(
 function readCourses(
   database: WritingAppDatabase,
   input: ReadContentCoursesInput
-): ContentCoursePage {
+): ContentCourseRowPage {
   const category = input.category.trim()
   const whereCondition = createReadCoursesWhereCondition({
     category,
+    query: input.query.trim(),
     status: input.status,
   })
   const totalItems =
@@ -1000,6 +1027,7 @@ function readCourses(
   const rows = database
     .select({
       category: courseCurriculumVersions.category,
+      coverAssetId: courseCurriculumVersions.coverAssetId,
       id: courses.id,
       lessonCount: lessonCountExpression,
       revision: courseCurriculumVersions.revision,
@@ -1038,8 +1066,10 @@ function readCourses(
     .all()
 
   return {
-    items: rows.map((row) => ({
+    items: rows.map(({ coverAssetId, ...row }) => ({
       ...row,
+      coverAssetId:
+        coverAssetId === null ? null : (coverAssetId as ContentAssetId),
       id: createCourseId(row.id),
       visualKey: readCourseVisualKey(row.visualKey),
     })),
@@ -1052,9 +1082,11 @@ function readCourses(
 
 function createReadCoursesWhereCondition({
   category,
+  query,
   status,
 }: {
   readonly category: string
+  readonly query: string
   readonly status: ReadContentCoursesInput["status"]
 }) {
   const statusCondition =
@@ -1063,8 +1095,17 @@ function createReadCoursesWhereCondition({
     category.length === 0
       ? undefined
       : eq(courseCurriculumVersions.category, category)
+  const titleCondition =
+    query.length === 0
+      ? undefined
+      : like(courseCurriculumVersions.title, `%${escapeLikePattern(query)}%`)
 
-  return and(statusCondition, categoryCondition)
+  return and(statusCondition, categoryCondition, titleCondition)
+}
+
+/** `LIKE` 와일드카드를 포함한 검색어가 조건을 넓히지 않도록 escape한다. */
+function escapeLikePattern(value: string): string {
+  return value.replace(/[%_\\]/gu, (match) => `\\${match}`)
 }
 
 function listPublishedCourseSummaries(

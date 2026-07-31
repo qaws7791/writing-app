@@ -6,7 +6,10 @@ import { adminCourseEditorSchema } from "@/features/course-editor/model/admin-co
 
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
 import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
-import { createAdminCourseEditorFixture } from "@/features/course-editor/test/fixtures/admin-course-editor"
+import {
+  createAdminCourseEditorFixture,
+  emptyAssetsResult,
+} from "@/features/course-editor/test/fixtures/admin-course-editor"
 
 const { routerPushMock } = vi.hoisted(() => ({
   routerPushMock: vi.fn(),
@@ -18,7 +21,7 @@ vi.mock("next/navigation", () => ({
 
 const course: AdminCourseDetail = adminCourseEditorSchema.parse({
   ...createAdminCourseEditorFixture({
-    category: "입문자를 위한 코스",
+    category: "언어와 읽기",
     curriculumVersionId: "c1-v3",
     description: "글쓰기 입문 과정",
     editVersion: 2,
@@ -74,6 +77,7 @@ describe("CourseEditorShell", () => {
 
     render(
       <CourseEditorShell
+        assetsResult={emptyAssetsResult}
         course={course}
         publishCourse={async (draft) => ({ status: "ok", value: draft })}
         saveCourse={saveCourse}
@@ -134,6 +138,7 @@ describe("CourseEditorShell", () => {
 
     render(
       <CourseEditorShell
+        assetsResult={emptyAssetsResult}
         course={course}
         publishCourse={publishCourse}
         saveCourse={async (draft) => ({ status: "ok", value: draft })}
@@ -310,6 +315,7 @@ function readUnitRemoveDialog(): HTMLElement {
 function renderCourseEditor() {
   return render(
     <CourseEditorShell
+      assetsResult={emptyAssetsResult}
       course={course}
       publishCourse={async (draft) => ({ status: "ok", value: draft })}
       saveCourse={async (draft) => ({ status: "ok", value: draft })}

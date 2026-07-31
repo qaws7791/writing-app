@@ -12,6 +12,7 @@ import {
   adminContentAssetKindSchema,
   adminContentAssetMaxBytes,
   adminContentAssetUploadDtoSchema,
+  adminCourseAssetsDtoSchema,
 } from "@workspace/contracts/content/admin-assets"
 import {
   courseIdSchema,
@@ -56,7 +57,44 @@ export function registerAdminContentAssetRoutes<
   app: OpenAPIHono<TEnv>,
   dependencies: AdminContentAssetRouteDependencies
 ): void {
+  registerListContentAssetsRoute(app, dependencies)
   registerUploadContentAssetRoute(app, dependencies)
+}
+
+function registerListContentAssetsRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminContentAssetRouteDependencies
+): void {
+  const routeConfig = {
+    method: "get",
+    operationId: "getAdminCourseAssets",
+    path: "/courses/{courseId}/assets",
+    request: { params: contentAssetParamsSchema },
+    responses: {
+      ...contentAuthenticatedResponses(
+        jsonResponse(
+          "코스에 업로드된 콘텐츠 이미지 목록입니다.",
+          adminCourseAssetsDtoSchema
+        )
+      ),
+      404: contentErrorJsonResponse("코스를 찾을 수 없습니다."),
+    },
+    summary: "코스 콘텐츠 이미지 목록 조회",
+    ...contentSessionRouteOptions(sessionPort),
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
+
+  app.openapi(route, async (context) => {
+    const assets = await application.getCourseAssets(
+      context.req.valid("param").courseId
+    )
+    if (assets === null) throw mapContentError({ kind: "content-not-found" })
+
+    return context.json(
+      adminCourseAssetsDtoSchema.parse({ items: assets }),
+      200
+    )
+  })
 }
 
 function registerUploadContentAssetRoute<TEnv extends ContentAdminHonoEnv>(

@@ -1,6 +1,7 @@
 import { CourseEditorShell } from "@/features/course-editor/ui/course-editor-shell"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type {
+  AdminCourseAssets,
   AdminCourseDetail,
   AdminCourseEditorCommandResult,
 } from "@/features/course-editor/model/admin-course-editor"
@@ -9,11 +10,13 @@ import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 
 export function AdminCourseDetailPage({
+  assetsResult,
   courseResult,
   publishCourse,
   saveCourse,
   uploadAdminContentAsset,
 }: {
+  readonly assetsResult: AdminRequestResult<AdminCourseAssets>
   readonly courseResult: AdminRequestResult<AdminCourseDetail>
   readonly publishCourse: (
     course: AdminCourseDetail
@@ -39,6 +42,7 @@ export function AdminCourseDetailPage({
 
   return (
     <CourseEditorShell
+      assetsResult={assetsResult}
       course={courseResult.value}
       publishCourse={publishCourse}
       saveCourse={saveCourse}

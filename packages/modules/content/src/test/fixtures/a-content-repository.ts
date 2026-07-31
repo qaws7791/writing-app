@@ -18,6 +18,8 @@ export function aContentRepository(
     listActiveAssetsForCourse:
       overrides.listActiveAssetsForCourse ??
       unexpectedCall("listActiveAssetsForCourse"),
+    listAssetsForCourse:
+      overrides.listAssetsForCourse ?? unexpectedCall("listAssetsForCourse"),
     listOrphanedAssetCandidates:
       overrides.listOrphanedAssetCandidates ??
       unexpectedCall("listOrphanedAssetCandidates"),

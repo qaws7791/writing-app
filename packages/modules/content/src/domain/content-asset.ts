@@ -22,7 +22,7 @@ export const contentAssetMimeTypeValues = [
 export type ContentAssetMimeType = (typeof contentAssetMimeTypeValues)[number]
 
 export const contentAssetStatusValues = ["active", "orphaned"] as const
-type ContentAssetStatus = (typeof contentAssetStatusValues)[number]
+export type ContentAssetStatus = (typeof contentAssetStatusValues)[number]
 
 export type ContentAsset = Readonly<{
   altText: string

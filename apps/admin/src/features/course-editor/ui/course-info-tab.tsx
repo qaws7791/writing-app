@@ -1,5 +1,6 @@
 import type {
   AdminContentAsset,
+  AdminCourseAssets,
   AdminCourseDetail,
 } from "@/features/course-editor/model/admin-course-editor"
 import {
@@ -8,16 +9,33 @@ import {
 } from "@/features/course-editor/model/content-asset-upload"
 import type { CourseEditorAction } from "@/features/course-editor/model/course-editor-reducer"
 import { ContentAssetUploadField } from "@/features/course-editor/ui/content-asset-upload-field"
+import { CourseAssetInventory } from "@/features/course-editor/ui/course-asset-inventory"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
+import { courseCategoryValues } from "@workspace/contracts/content/category"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
+const courseCategoryItems = courseCategoryValues.map((category) => ({
+  label: category,
+  value: category,
+}))
+
 export function CourseInfoTab({
+  assetsResult,
   coverAsset,
   dispatch,
   draft,
   uploadAdminContentAsset,
 }: {
+  readonly assetsResult: AdminRequestResult<AdminCourseAssets>
   readonly coverAsset: AdminContentAsset | undefined
   readonly dispatch: (action: CourseEditorAction) => void
   readonly draft: AdminCourseDetail
@@ -61,17 +79,29 @@ export function CourseInfoTab({
       </Field>
       <Field className="mt-4">
         <FieldLabel htmlFor="course-editor-category">카테고리</FieldLabel>
-        <Input
-          id="course-editor-category"
-          onChange={(event) =>
+        <Select
+          items={courseCategoryItems}
+          onValueChange={(value) => {
+            if (value === null) return
             dispatch({
               field: "category",
               type: "course-changed",
-              value: event.target.value,
+              value,
             })
-          }
+          }}
           value={draft.category}
-        />
+        >
+          <SelectTrigger id="course-editor-category" variant="outlined">
+            <SelectValue placeholder="카테고리를 선택하세요." />
+          </SelectTrigger>
+          <SelectContent>
+            {courseCategoryItems.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <div className="mt-6">
         <ContentAssetUploadField
@@ -89,6 +119,9 @@ export function CourseInfoTab({
           }
           upload={uploadAsset}
         />
+      </div>
+      <div className="mt-6">
+        <CourseAssetInventory assetsResult={assetsResult} />
       </div>
     </div>
   )

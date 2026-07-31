@@ -6,9 +6,11 @@ import { useEffect, useReducer, useRef, useState, useTransition } from "react"
 
 import {
   adminCourseEditorSchema,
+  type AdminCourseAssets,
   type AdminCourseDetail,
   type AdminCourseEditorCommandResult,
 } from "@/features/course-editor/model/admin-course-editor"
+import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import {
   canSave,
   courseEditorReducer,
@@ -28,11 +30,13 @@ import { Button } from "@workspace/ui/components/ui/button"
 import { cn } from "@workspace/ui/lib/utils"
 
 export function CourseEditorShell({
+  assetsResult,
   course,
   publishCourse,
   saveCourse,
   uploadAdminContentAsset,
 }: {
+  readonly assetsResult: AdminRequestResult<AdminCourseAssets>
   readonly course: AdminCourseDetail
   readonly publishCourse: (
     course: AdminCourseDetail
@@ -241,6 +245,7 @@ export function CourseEditorShell({
         ) : null}
         {tab === "info" ? (
           <CourseInfoTab
+            assetsResult={assetsResult}
             coverAsset={coverAsset}
             dispatch={dispatch}
             draft={state.draft}
