@@ -4,6 +4,7 @@ import {
   BarChartIcon,
   BookOpenIcon,
   LayoutDashboardIcon,
+  ShieldCheckIcon,
   UsersIcon,
 } from "@workspace/ui/components/icons"
 
@@ -42,6 +43,12 @@ export const adminNavigationItems = [
     href: "/analytics",
     icon: BarChartIcon,
     label: "분석",
+  },
+  {
+    end: false,
+    href: "/audit",
+    icon: ShieldCheckIcon,
+    label: "감사 이력",
   },
 ] as const satisfies readonly AdminNavigationItem[]
 

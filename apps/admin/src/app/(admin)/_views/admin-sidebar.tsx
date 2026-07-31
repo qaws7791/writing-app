@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 
-import { AdminThemeToggle } from "@/app/(admin)/_views/admin-theme-toggle"
 import {
   isAdminNavigationActive,
   type AdminNavigationItem,
@@ -107,8 +106,6 @@ function AdminSidebarContent({
         })}
       </nav>
       <div className="flex flex-col gap-2 pt-4">
-        <p className="px-3 text-label-sm font-bold text-fg-muted">화면 테마</p>
-        <AdminThemeToggle />
         <a
           className="flex h-auto w-full items-center justify-start gap-3 rounded-3xl px-4 py-3 text-[0.9375rem] text-fg-muted hover:bg-bg-canvas"
           href={learnerWebOrigin}

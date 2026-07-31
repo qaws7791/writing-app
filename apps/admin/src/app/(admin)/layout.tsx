@@ -10,6 +10,7 @@ import {
 } from "@/shared/http/admin-api-client"
 import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
 import {
+  adminLoginReasons,
   createAdminLoginPath,
   resolveSafeAdminNextPath,
 } from "@/features/authentication/model/admin-auth-navigation"
@@ -37,7 +38,9 @@ export default async function AdminLayout({
 
   if (sessionResult.status === "error") {
     if (isAdminRequestAuthenticationError(sessionResult.error)) {
-      redirect(createAdminLoginPath(requestPath))
+      redirect(
+        createAdminLoginPath(requestPath, adminLoginReasons.sessionExpired)
+      )
     }
 
     return <AdminServiceUnavailable retryHref={requestPath} />
