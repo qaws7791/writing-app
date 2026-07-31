@@ -7,6 +7,8 @@ import {
   type LessonStepType,
 } from "@workspace/contracts/content/steps"
 import { lessonStepIdSchema } from "@workspace/contracts/content/ids"
+
+import { LearnerStepPreview } from "@/features/course-editor/ui/learner-step-preview"
 import { PlusIcon, TrashIcon } from "@workspace/ui/components/icons"
 import {
   AlertDialog,
@@ -49,6 +51,7 @@ export function StepWorkspace({
   assetUpload,
   onAdd,
   onChange,
+  onDuplicate,
   onMove,
   onRemove,
   steps,
@@ -56,6 +59,7 @@ export function StepWorkspace({
   readonly assetUpload: StepFormProps<EditorStep["type"]>["assetUpload"]
   readonly onAdd: (step: EditorStep) => void
   readonly onChange: (step: EditorStep) => void
+  readonly onDuplicate: (step: EditorStep) => void
   readonly onMove: (step: EditorStep, direction: "down" | "up") => void
   readonly onRemove: (step: EditorStep) => void
   readonly steps: readonly EditorStep[]
@@ -164,6 +168,15 @@ export function StepWorkspace({
                   아래로
                 </Button>
                 <Button
+                  aria-label={`${step.type} 스텝 복제`}
+                  onClick={() => onDuplicate(step)}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  복제
+                </Button>
+                <Button
                   aria-label={`${step.type} 스텝 삭제`}
                   onClick={() => setRemoveTarget(step)}
                   size="icon"
@@ -174,6 +187,18 @@ export function StepWorkspace({
                 </Button>
               </div>
               {renderStepForm(step, onChange, assetUpload)}
+              <details className="rounded-2xl bg-surface p-3">
+                <summary className="cursor-pointer font-bold">
+                  학습자 화면 미리보기
+                </summary>
+                <div
+                  aria-label={`${step.type} 스텝 학습자 미리보기`}
+                  className="mt-3"
+                  role="group"
+                >
+                  <LearnerStepPreview step={step} />
+                </div>
+              </details>
             </li>
           ))}
         </ol>
