@@ -127,13 +127,13 @@ async function readAdminAuditDescriptor(
   if (
     request.method === "POST" &&
     segments[0] === "courses" &&
-    segments[2] === "publish" &&
-    segments.length === 3
+    segments.length === 3 &&
+    (segments[2] === "publish" || segments[2] === "restore")
   ) {
     const courseId = courseIdSchema.safeParse(segments[1])
     if (!courseId.success) return null
     return {
-      action: "course.publish",
+      action: segments[2] === "publish" ? "course.publish" : "course.restore",
       target: { id: courseId.data, type: "course" },
     }
   }

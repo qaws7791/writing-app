@@ -105,6 +105,7 @@ function renderWorkspace({
       assetUpload={assetUpload}
       onAdd={onAdd}
       onChange={vi.fn()}
+      onDuplicate={vi.fn()}
       onMove={vi.fn()}
       onRemove={onRemove}
       steps={steps}

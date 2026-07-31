@@ -2,6 +2,7 @@ import { parseAdminCourseFilters } from "@/features/course-catalog/model/admin-c
 import {
   archiveAdminCourseAction,
   createAdminCourseAction,
+  restoreAdminCourseAction,
 } from "@/features/course-catalog/server/admin-course-actions"
 import { AdminCoursesPage } from "@/features/course-catalog/ui/admin-courses-page"
 import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
@@ -29,6 +30,7 @@ export default async function AdminCoursesRoute({
       coursesResult={coursesResult}
       createCourse={createAdminCourseAction}
       filters={filters}
+      restoreCourse={restoreAdminCourseAction}
     />
   )
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { courseCategorySchema } from "@workspace/contracts/content/category"
 import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
 
 import {
@@ -23,6 +24,14 @@ describe("기준 콘텐츠 seed 변환", () => {
     const rows = createContentSeedRows(await readSeedData())
 
     expect(readStepContractViolations(rows)).toEqual([])
+  })
+
+  it("모든 코스 카테고리가 카테고리 계약에 속한다", async () => {
+    const unknownCategories = (await readSeedData())
+      .map((course) => course.cat)
+      .filter((category) => !courseCategorySchema.safeParse(category).success)
+
+    expect([...new Set(unknownCategories)]).toEqual([])
   })
 
   it("계층별 row mapper가 parent id와 정렬 순서를 명시적으로 보존한다", () => {

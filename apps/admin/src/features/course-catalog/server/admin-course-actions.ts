@@ -9,6 +9,7 @@ import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-op
 import {
   archiveAdminCourse,
   createAdminCourse,
+  restoreAdminCourse,
 } from "@workspace/http-client/admin"
 import {
   invalidAdminRequestFailure,
@@ -35,6 +36,21 @@ export async function archiveAdminCourseAction(input: unknown) {
 
   const result = await settleAdminApiRequest(
     archiveAdminCourse(courseId.data, requestOptions)
+  )
+
+  if (result.status === "ok") revalidatePath("/courses")
+  return result
+}
+
+export async function restoreAdminCourseAction(input: unknown) {
+  const courseId = courseIdSchema.safeParse(input)
+  if (!courseId.success) return invalidAdminRequestFailure()
+
+  const requestOptions = await getServerAdminRequestOptions()
+  if (requestOptions === null) return unauthenticatedAdminRequestFailure()
+
+  const result = await settleAdminApiRequest(
+    restoreAdminCourse(courseId.data, requestOptions)
   )
 
   if (result.status === "ok") revalidatePath("/courses")

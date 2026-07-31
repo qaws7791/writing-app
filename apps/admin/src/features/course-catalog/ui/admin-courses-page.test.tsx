@@ -8,6 +8,7 @@ import type {
   AdminArchiveCourseResult,
   AdminCreatedCourse,
   AdminCourseList,
+  AdminRestoreCourseResult,
   ReadAdminCoursesInput,
 } from "@/features/course-catalog/model/admin-course-catalog"
 import type {
@@ -24,6 +25,7 @@ const filters: ReadAdminCoursesInput = {
   category: "",
   page: 1,
   pageSize: 20,
+  query: "",
   status: "all",
 }
 
@@ -31,6 +33,7 @@ const courses: AdminCourseList = {
   items: [
     {
       category: "입문자를 위한 코스",
+      cover: null,
       id: "c1",
       lessonCount: 10,
       revision: 2,
@@ -41,6 +44,7 @@ const courses: AdminCourseList = {
     },
     {
       category: "문법 심화",
+      cover: null,
       id: "c2",
       lessonCount: 8,
       revision: 1,
@@ -68,7 +72,9 @@ describe("AdminCoursesPage", () => {
     renderCoursesPage({ archiveCourse })
 
     const activeRow = screen.getByRole("row", { name: /글쓰기 첫걸음 30일/ })
-    await user.click(within(activeRow).getByRole("button", { name: "보관" }))
+    await user.click(
+      within(activeRow).getByRole("button", { name: "글쓰기 첫걸음 30일 보관" })
+    )
     await user.click(
       within(readArchiveDialog()).getByRole("button", { name: "보관하기" })
     )
@@ -110,6 +116,28 @@ describe("AdminCoursesPage", () => {
 
     expect(screen.getByText("네트워크 연결을 확인해 주세요.")).toBeVisible()
   })
+
+  it("보관된 코스는 확인 없이 보관 해제만 제공한다", async () => {
+    const user = userEvent.setup()
+    const restoreCourse = vi.fn<
+      () => Promise<AdminRequestResult<AdminRestoreCourseResult>>
+    >(async () => ok({ restored: true }))
+
+    renderCoursesPage({ restoreCourse })
+
+    const archivedRow = screen.getByRole("row", { name: /문장의 기본 문법/ })
+    expect(
+      within(archivedRow).queryByRole("button", { name: /보관$/ })
+    ).not.toBeInTheDocument()
+    await user.click(
+      within(archivedRow).getByRole("button", {
+        name: "문장의 기본 문법 보관 해제",
+      })
+    )
+
+    expect(restoreCourse).toHaveBeenCalledWith("c2")
+    expect(screen.getByText("코스 보관을 해제했습니다.")).toBeVisible()
+  })
 })
 
 function renderCoursesPage({
@@ -117,6 +145,7 @@ function renderCoursesPage({
   coursesResult = ok(courses),
   createCourse = async () => ok(courseDetail("new-course")),
   filters: pageFilters = filters,
+  restoreCourse = async () => ok({ restored: true }),
 }: {
   readonly archiveCourse?: () => Promise<
     AdminRequestResult<AdminArchiveCourseResult>
@@ -124,6 +153,9 @@ function renderCoursesPage({
   readonly coursesResult?: AdminRequestResult<AdminCourseList>
   readonly createCourse?: () => Promise<AdminRequestResult<AdminCreatedCourse>>
   readonly filters?: ReadAdminCoursesInput
+  readonly restoreCourse?: () => Promise<
+    AdminRequestResult<AdminRestoreCourseResult>
+  >
 } = {}) {
   return render(
     <AdminCoursesPage
@@ -131,6 +163,7 @@ function renderCoursesPage({
       coursesResult={coursesResult}
       createCourse={createCourse}
       filters={pageFilters}
+      restoreCourse={restoreCourse}
     />
   )
 }

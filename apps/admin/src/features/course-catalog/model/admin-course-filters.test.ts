@@ -9,12 +9,14 @@ describe("admin course filters", () => {
         category: "실전 글쓰기",
         page: "2",
         pageSize: "50",
+        query: "문장",
         status: "archived",
       })
     ).toEqual({
       category: "실전 글쓰기",
       page: 2,
       pageSize: 50,
+      query: "문장",
       status: "archived",
     })
   })
@@ -25,6 +27,7 @@ describe("admin course filters", () => {
     readonly value: string | string[]
   }>([
     { expected: "", field: "category", value: ["실전 글쓰기"] },
+    { expected: "", field: "query", value: ["문장"] },
     { expected: 1, field: "page", value: "-1" },
     { expected: 1, field: "page", value: "0" },
     { expected: 20, field: "pageSize", value: "NaN" },

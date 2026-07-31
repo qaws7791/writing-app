@@ -48,6 +48,42 @@ describe("courseEditorReducer", () => {
     expect(removed.status).toBe("dirty")
   })
 
+  it("레슨 이동은 sortOrder를 다시 계산하고 경계를 넘는 이동은 무시한다", () => {
+    const unitId = unitIdSchema.parse("unit-1")
+    const firstLessonId = lessonIdSchema.parse("lesson-1")
+    const withLessons = [
+      firstLessonId,
+      lessonIdSchema.parse("lesson-2"),
+    ].reduce(
+      (state, lessonId) =>
+        courseEditorReducer(state, { lessonId, type: "lesson-added", unitId }),
+      courseEditorReducer(createCourseEditorState(document), {
+        type: "unit-added",
+        unitId,
+      })
+    )
+
+    const moved = courseEditorReducer(withLessons, {
+      direction: "down",
+      lessonId: firstLessonId,
+      type: "lesson-moved",
+      unitId,
+    })
+
+    expect(moved.draft.units[0]?.lessons).toMatchObject([
+      { id: "lesson-2", sortOrder: 1 },
+      { id: "lesson-1", sortOrder: 2 },
+    ])
+    expect(
+      courseEditorReducer(moved, {
+        direction: "up",
+        lessonId: lessonIdSchema.parse("lesson-2"),
+        type: "lesson-moved",
+        unitId,
+      })
+    ).toBe(moved)
+  })
+
   it("충돌에서 최신본 교체와 로컬 초안 편집 버전 재기준을 구분한다", () => {
     const dirty = courseEditorReducer(createCourseEditorState(document), {
       field: "title",
@@ -156,5 +192,123 @@ describe("courseEditorReducer", () => {
       target: nextWriteStepId,
     })
     expect(changed.status).toBe("dirty")
+  })
+
+  it("레슨 사본의 AI 코칭 대상을 사본 안의 쓰기 스텝으로 다시 매핑한다", () => {
+    const unitId = unitIdSchema.parse("unit-1")
+    const lessonId = lessonIdSchema.parse("lesson-1")
+    const writeStepId = lessonStepIdSchema.parse("write-1")
+    const newStepIds = [
+      lessonStepIdSchema.parse("write-copy"),
+      lessonStepIdSchema.parse("ai-copy"),
+    ]
+    const editableDocument = adminCourseEditorSchema.parse({
+      ...document,
+      units: [
+        {
+          id: unitId,
+          lessons: [
+            {
+              category: null,
+              description: null,
+              estimatedMinutes: 5,
+              id: lessonId,
+              sortOrder: 1,
+              status: "active",
+              steps: [
+                {
+                  id: writeStepId,
+                  min: 1,
+                  prompt: "쓰기",
+                  sortOrder: 1,
+                  status: "active",
+                  type: "WRITE",
+                },
+                {
+                  allowRetry: true,
+                  feedback: "피드백",
+                  focus: "명확성",
+                  id: lessonStepIdSchema.parse("ai-1"),
+                  sortOrder: 2,
+                  status: "active",
+                  target: writeStepId,
+                  type: "AI_FEEDBACK",
+                },
+              ],
+              summary: [],
+              title: "레슨",
+            },
+          ],
+          sortOrder: 1,
+          status: "active",
+          title: "유닛",
+        },
+      ],
+    })
+
+    const duplicated = courseEditorReducer(
+      createCourseEditorState(editableDocument),
+      {
+        lessonId,
+        newLessonId: lessonIdSchema.parse("lesson-copy"),
+        newStepIds,
+        type: "lesson-duplicated",
+        unitId,
+      }
+    )
+    const copy = duplicated.draft.units[0]?.lessons[1]
+
+    expect(copy).toMatchObject({
+      id: "lesson-copy",
+      sortOrder: 2,
+      title: "레슨 사본",
+    })
+    expect(copy?.steps[1]).toMatchObject({
+      id: "ai-copy",
+      target: "write-copy",
+    })
+    expect(adminCourseEditorSchema.safeParse(duplicated.draft).success).toBe(
+      true
+    )
+  })
+
+  it("레슨을 다른 유닛으로 옮기면 양쪽 유닛의 sortOrder를 다시 계산한다", () => {
+    const firstUnitId = unitIdSchema.parse("unit-1")
+    const secondUnitId = unitIdSchema.parse("unit-2")
+    const movedLessonId = lessonIdSchema.parse("lesson-2")
+    const withLessons = [
+      { lessonId: lessonIdSchema.parse("lesson-1"), unitId: firstUnitId },
+      { lessonId: movedLessonId, unitId: firstUnitId },
+    ].reduce(
+      (state, action) =>
+        courseEditorReducer(state, { ...action, type: "lesson-added" }),
+      [firstUnitId, secondUnitId].reduce(
+        (state, unitId) =>
+          courseEditorReducer(state, { type: "unit-added", unitId }),
+        createCourseEditorState(document)
+      )
+    )
+
+    const moved = courseEditorReducer(withLessons, {
+      lessonId: movedLessonId,
+      targetUnitId: secondUnitId,
+      type: "lesson-unit-changed",
+      unitId: firstUnitId,
+    })
+
+    expect(moved.draft.units[0]?.lessons).toMatchObject([
+      { id: "lesson-1", sortOrder: 1 },
+    ])
+    expect(moved.draft.units[1]?.lessons).toMatchObject([
+      { id: "lesson-2", sortOrder: 1 },
+    ])
+    expect(
+      courseEditorReducer(moved, {
+        lessonId: movedLessonId,
+        targetUnitId: secondUnitId,
+        type: "lesson-unit-changed",
+        unitId: secondUnitId,
+      })
+    ).toBe(moved)
   })
 })

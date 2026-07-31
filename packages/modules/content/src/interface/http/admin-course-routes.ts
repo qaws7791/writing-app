@@ -6,6 +6,7 @@ import {
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import {
   adminArchiveCourseResultSchema,
+  adminRestoreCourseResultSchema,
   adminCourseDetailDtoSchema,
   adminCourseListDtoSchema,
 } from "@workspace/contracts/content/admin-courses"
@@ -40,6 +41,44 @@ export function registerAdminCourseRoutes<TEnv extends ContentAdminHonoEnv>(
   registerListCoursesRoute(app, dependencies)
   registerCreateCourseRoute(app, dependencies)
   registerArchiveCourseRoute(app, dependencies)
+  registerRestoreCourseRoute(app, dependencies)
+}
+
+function registerRestoreCourseRoute<TEnv extends ContentAdminHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  { application, sessionPort }: AdminCourseRouteDependencies
+): void {
+  const routeConfig = {
+    method: "post",
+    operationId: "restoreAdminCourse",
+    path: "/courses/{courseId}/restore",
+    request: { params: adminCourseParamsSchema },
+    responses: {
+      ...contentAuthenticatedResponses(
+        jsonResponse(
+          "복원된 어드민 코스 결과입니다.",
+          adminRestoreCourseResultSchema
+        )
+      ),
+      404: contentErrorJsonResponse("보관된 코스를 찾을 수 없습니다."),
+      409: contentErrorJsonResponse("코스 상태 변경이 충돌했습니다."),
+    },
+    summary: "어드민 코스 보관 해제",
+    ...contentSessionRouteOptions(sessionPort),
+  } satisfies RouteConfig
+  const route = createRoute(routeConfig)
+
+  app.openapi(route, async (context) => {
+    const result = await application.restoreCourse({
+      adminId: context.var.contentAdminId,
+      courseId: context.req.valid("param").courseId,
+    })
+    if (result.isErr()) throw mapContentError(result.error)
+    return context.json(
+      adminRestoreCourseResultSchema.parse({ restored: true }),
+      200
+    )
+  })
 }
 
 function registerListCoursesRoute<TEnv extends ContentAdminHonoEnv>(

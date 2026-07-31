@@ -56,6 +56,20 @@ export function decideArchiveCourse(
   })
 }
 
+export function decideRestoreCourse(
+  course: Course
+): Result<Course, ContentError> {
+  if (course.status !== contentStatuses.archived) {
+    return err({ kind: "content-not-found" })
+  }
+
+  return ok({
+    ...course,
+    createdAt: new Date(course.createdAt),
+    status: contentStatuses.active,
+  })
+}
+
 function validateCurriculumDraft(
   draft: CurriculumDraft,
   requireCompleteHierarchy: boolean

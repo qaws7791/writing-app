@@ -15,6 +15,7 @@
     "./content/admin-assets": "./src/content/admin-assets.ts",
     "./content/admin-courses": "./src/content/admin-courses.ts",
     "./content/admin-routes": "./src/content/admin-routes.ts",
+    "./content/category": "./src/content/category.ts",
     "./content/course": "./src/content/course.ts",
     "./content/ids": "./src/content/ids.ts",
     "./content/status": "./src/content/status.ts",

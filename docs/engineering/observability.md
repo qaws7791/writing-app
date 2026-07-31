@@ -40,7 +40,7 @@ AI 코칭 attempt metadata와 runtime 상태는 `@workspace/ai-feedback`이 소�
 
 - operations의 DB audit는 인증된 owner가 수행한 개인정보 조회와 고위험 작업의 장기 보존 원장이다. request log는 HTTP 결과와 지연을, `security.audit`는 인증·인가 거절과 보안 판단을 소유하며 같은 row나 payload를 서로 복제하지 않는다.
 - DB audit는 작업 전에 `started`로 기록하고 응답 결과에 따라 `succeeded | failed`로 종결한다. 사전 기록 실패는 작업을 차단하고 종결 실패는 성공 응답을 차단하되, 이미 저장한 `started` row는 조사 가능한 흔적으로 유지한다.
-- 사용자 상세와 콘텐츠 발행·보관은 표준 감사 보존 class, 사용자 정지·활성화·삭제는 고위험 감사 보존 class를 적용한다. 실제 보존 기한과 index는 [operations schema](../../packages/modules/operations/src/infrastructure/persistence/schema.ts)가 소유한다.
+- 사용자 상세와 콘텐츠 발행·보관·보관 해제는 표준 감사 보존 class, 사용자 정지·활성화·삭제는 고위험 감사 보존 class를 적용한다. 실제 보존 기한과 index는 [operations schema](../../packages/modules/operations/src/infrastructure/persistence/schema.ts)가 소유한다.
 - 감사 조회는 유효한 관리자 session을 다시 검증하고 private no-store 응답으로 제공한다. 이메일·이름·답안·prompt 같은 원문을 조회 계약에 추가하지 않는다.
 
 ## 운영 대응

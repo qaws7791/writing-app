@@ -9,7 +9,14 @@ import {
   createContentAssetUpload,
   type UploadAdminContentAsset,
 } from "@/features/course-editor/model/content-asset-upload"
-import type { CourseEditorAction } from "@/features/course-editor/model/course-editor-reducer"
+import type {
+  CourseEditorAction,
+  LessonFieldChange,
+} from "@/features/course-editor/model/course-editor-reducer"
+import {
+  readLessonSummaryLines,
+  readOptionalLessonText,
+} from "@/features/course-editor/model/lesson-field-input"
 import type { ConfirmationIntent } from "@/features/course-editor/ui/confirmation-copy"
 import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
 import { PlusIcon, TrashIcon } from "@workspace/ui/components/icons"
@@ -23,10 +30,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/ui/select"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type EditorUnit = AdminCourseDetail["units"][number]
 type EditorLesson = EditorUnit["lessons"][number]
 type LessonStepId = EditorLesson["steps"][number]["id"]
+
+function createLessonId() {
+  return lessonIdSchema.parse(`lesson_${crypto.randomUUID()}`)
+}
+
+function createStepId() {
+  return lessonStepIdSchema.parse(`step_${crypto.randomUUID()}`)
+}
+
+function unitMoveItems(
+  units: readonly EditorUnit[],
+  currentUnitId: EditorUnit["id"]
+) {
+  return units
+    .filter((unit) => unit.id !== currentUnitId)
+    .map((unit) => ({ label: `${unit.title}(으)로 이동`, value: unit.id }))
+}
 
 export function CourseCurriculumTab({
   dispatch,
@@ -111,9 +136,12 @@ export function CourseCurriculumTab({
                       aria-label={`${unit.title} 레슨 ${lessonIndex + 1} 제목`}
                       onChange={(event) =>
                         dispatch({
+                          change: {
+                            field: "title",
+                            value: event.target.value,
+                          },
                           lessonId: lesson.id,
-                          title: event.target.value,
-                          type: "lesson-title-changed",
+                          type: "lesson-changed",
                           unitId: unit.id,
                         })
                       }
@@ -122,6 +150,84 @@ export function CourseCurriculumTab({
                     <span className="whitespace-nowrap text-xs text-muted-foreground">
                       스텝 {lesson.steps.length}개
                     </span>
+                    <Button
+                      aria-label={`${lesson.title} 레슨 위로 이동`}
+                      disabled={lessonIndex === 0}
+                      onClick={() =>
+                        dispatch({
+                          direction: "up",
+                          lessonId: lesson.id,
+                          type: "lesson-moved",
+                          unitId: unit.id,
+                        })
+                      }
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      위로
+                    </Button>
+                    <Button
+                      aria-label={`${lesson.title} 레슨 아래로 이동`}
+                      disabled={lessonIndex === unit.lessons.length - 1}
+                      onClick={() =>
+                        dispatch({
+                          direction: "down",
+                          lessonId: lesson.id,
+                          type: "lesson-moved",
+                          unitId: unit.id,
+                        })
+                      }
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      아래로
+                    </Button>
+                    <Button
+                      aria-label={`${lesson.title} 레슨 복제`}
+                      onClick={() =>
+                        dispatch({
+                          lessonId: lesson.id,
+                          newLessonId: createLessonId(),
+                          newStepIds: lesson.steps.map(() => createStepId()),
+                          type: "lesson-duplicated",
+                          unitId: unit.id,
+                        })
+                      }
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      복제
+                    </Button>
+                    {draft.units.length < 2 ? null : (
+                      <Select
+                        aria-label={`${lesson.title} 레슨 유닛 이동`}
+                        items={unitMoveItems(draft.units, unit.id)}
+                        onValueChange={(value) => {
+                          if (value === null) return
+                          dispatch({
+                            lessonId: lesson.id,
+                            targetUnitId: unitIdSchema.parse(value),
+                            type: "lesson-unit-changed",
+                            unitId: unit.id,
+                          })
+                        }}
+                        value=""
+                      >
+                        <SelectTrigger className="w-36" variant="outlined">
+                          <SelectValue placeholder="유닛 이동" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {unitMoveItems(draft.units, unit.id).map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                     <Button
                       aria-label={`${lesson.title} 레슨 삭제`}
                       onClick={() =>
@@ -138,6 +244,17 @@ export function CourseCurriculumTab({
                       <TrashIcon aria-hidden="true" size={14} />
                     </Button>
                   </div>
+                  <LessonInfoFields
+                    lesson={lesson}
+                    onChange={(change) =>
+                      dispatch({
+                        change,
+                        lessonId: lesson.id,
+                        type: "lesson-changed",
+                        unitId: unit.id,
+                      })
+                    }
+                  />
                   <AiFeedbackTargetFields
                     lesson={lesson}
                     onTargetChange={(stepId, targetStepId) => {
@@ -175,6 +292,15 @@ export function CourseCurriculumTab({
                         unitId: unit.id,
                       })
                     }
+                    onDuplicate={(step) =>
+                      dispatch({
+                        lessonId: lesson.id,
+                        newStepId: createStepId(),
+                        stepId: step.id,
+                        type: "step-duplicated",
+                        unitId: unit.id,
+                      })
+                    }
                     onMove={(step, direction) =>
                       dispatch({
                         direction,
@@ -200,9 +326,7 @@ export function CourseCurriculumTab({
                 className="self-start"
                 onClick={() =>
                   dispatch({
-                    lessonId: lessonIdSchema.parse(
-                      `lesson_${crypto.randomUUID()}`
-                    ),
+                    lessonId: createLessonId(),
                     type: "lesson-added",
                     unitId: unit.id,
                   })
@@ -216,6 +340,80 @@ export function CourseCurriculumTab({
           </section>
         ))}
       </div>
+    </div>
+  )
+}
+
+function LessonInfoFields({
+  lesson,
+  onChange,
+}: {
+  readonly lesson: EditorLesson
+  readonly onChange: (change: LessonFieldChange) => void
+}) {
+  return (
+    <div className="ml-8 grid gap-3 rounded-2xl bg-surface p-3 md:grid-cols-2">
+      <Field>
+        <FieldLabel htmlFor={`${lesson.id}-category`}>카테고리</FieldLabel>
+        <Input
+          id={`${lesson.id}-category`}
+          onChange={(event) =>
+            onChange({
+              field: "category",
+              value: readOptionalLessonText(event.target.value),
+            })
+          }
+          value={lesson.category ?? ""}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor={`${lesson.id}-estimated-minutes`}>
+          예상 시간(분)
+        </FieldLabel>
+        <Input
+          id={`${lesson.id}-estimated-minutes`}
+          inputMode="numeric"
+          min={1}
+          onChange={(event) =>
+            onChange({
+              field: "estimatedMinutes",
+              value: Number(event.target.value),
+            })
+          }
+          type="number"
+          value={lesson.estimatedMinutes}
+        />
+      </Field>
+      <Field className="md:col-span-2">
+        <FieldLabel htmlFor={`${lesson.id}-description`}>설명</FieldLabel>
+        <Textarea
+          id={`${lesson.id}-description`}
+          onChange={(event) =>
+            onChange({
+              field: "description",
+              value: readOptionalLessonText(event.target.value),
+            })
+          }
+          rows={2}
+          value={lesson.description ?? ""}
+        />
+      </Field>
+      <Field className="md:col-span-2">
+        <FieldLabel htmlFor={`${lesson.id}-summary`}>
+          완료 화면 핵심 요약 (한 줄에 하나)
+        </FieldLabel>
+        <Textarea
+          id={`${lesson.id}-summary`}
+          onChange={(event) =>
+            onChange({
+              field: "summary",
+              value: readLessonSummaryLines(event.target.value),
+            })
+          }
+          rows={3}
+          value={lesson.summary.join("\n")}
+        />
+      </Field>
     </div>
   )
 }

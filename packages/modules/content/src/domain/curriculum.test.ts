@@ -11,6 +11,7 @@ import {
   createCurriculumDraft,
   decideArchiveCourse,
   decidePublishCurriculum,
+  decideRestoreCourse,
 } from "#content/domain/curriculum"
 import type { CurriculumDraft } from "#content/domain/content-model"
 
@@ -77,6 +78,12 @@ describe("content curriculum domain", () => {
 
     expect(archived.status).toBe("archived")
     expect(decideArchiveCourse(archived)._unsafeUnwrapErr()).toEqual({
+      kind: "content-not-found",
+    })
+
+    const restored = decideRestoreCourse(archived)._unsafeUnwrap()
+    expect(restored.status).toBe("active")
+    expect(decideRestoreCourse(restored)._unsafeUnwrapErr()).toEqual({
       kind: "content-not-found",
     })
   })

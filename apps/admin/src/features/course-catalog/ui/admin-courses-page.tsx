@@ -20,8 +20,10 @@ import type {
   AdminArchiveCourseResult,
   AdminCreatedCourse,
   AdminCourseList,
+  AdminRestoreCourseResult,
   ReadAdminCoursesInput,
 } from "@/features/course-catalog/model/admin-course-catalog"
+import { courseCategoryValues } from "@workspace/contracts/content/category"
 import { contentStatuses } from "@workspace/contracts/content/status"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import {
@@ -46,6 +48,7 @@ import {
   FilterToolbarField,
   FilterToolbarLabel,
 } from "@workspace/ui/components/ui/filter-toolbar"
+import { Input } from "@workspace/ui/components/ui/input"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import {
   Select,
@@ -66,6 +69,14 @@ const courseStatusFilterItems = [
   { label: "보관", value: contentStatuses.archived },
 ] as const
 
+const courseCategoryFilterItems = [
+  { label: "전체 카테고리", value: "" },
+  ...courseCategoryValues.map((category) => ({
+    label: category,
+    value: category,
+  })),
+]
+
 const coursePageSizeItems = [
   { label: "10개", value: "10" },
   { label: "20개", value: "20" },
@@ -82,6 +93,7 @@ export function AdminCoursesPage({
   coursesResult,
   createCourse,
   filters,
+  restoreCourse,
 }: {
   readonly archiveCourse: (
     courseId: string
@@ -89,6 +101,9 @@ export function AdminCoursesPage({
   readonly coursesResult: AdminRequestResult<AdminCourseList>
   readonly createCourse: () => Promise<AdminRequestResult<AdminCreatedCourse>>
   readonly filters: ReadAdminCoursesInput
+  readonly restoreCourse: (
+    courseId: string
+  ) => Promise<AdminRequestResult<AdminRestoreCourseResult>>
 }) {
   const [archiveTarget, setArchiveTarget] = useState<
     AdminCourseList["items"][number] | null
@@ -117,6 +132,7 @@ export function AdminCoursesPage({
   const createPageLink = (pageNumber: number) => {
     return createGetFilterHref(
       [
+        ["query", filters.query],
         ["category", filters.category],
         ["status", filters.status],
         ["pageSize", filters.pageSize],
@@ -173,11 +189,28 @@ export function AdminCoursesPage({
         <div className="flex flex-wrap items-center gap-3 w-full">
           <FilterToolbarField className="gap-0">
             <FilterToolbarLabel className="sr-only">
+              강의명 검색
+            </FilterToolbarLabel>
+            <Input
+              aria-label="강의명 검색"
+              className="w-56"
+              defaultValue={filters.query}
+              name="query"
+              placeholder="강의명"
+              type="search"
+            />
+          </FilterToolbarField>
+          <Button type="submit" variant="outline">
+            검색
+          </Button>
+          <FilterToolbarField className="gap-0">
+            <FilterToolbarLabel className="sr-only">
               카테고리
             </FilterToolbarLabel>
             <Select
               aria-label="카테고리"
               value={filters.category}
+              items={courseCategoryFilterItems}
               name="category"
               onValueChange={(value) => {
                 submitSelectValue("category", value)
@@ -190,15 +223,11 @@ export function AdminCoursesPage({
                 <SelectValue placeholder="전체 카테고리" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체 카테고리</SelectItem>
-                <SelectItem value="입문자를 위한 코스">
-                  입문자를 위한 코스
-                </SelectItem>
-                <SelectItem value="문법 심화">문법 심화</SelectItem>
-                <SelectItem value="실전 글쓰기">실전 글쓰기</SelectItem>
-                <SelectItem value="중급 글쓰기">중급 글쓰기</SelectItem>
-                <SelectItem value="심화 글쓰기">심화 글쓰기</SelectItem>
-                <SelectItem value="미분류">미분류</SelectItem>
+                {courseCategoryFilterItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </FilterToolbarField>
@@ -269,7 +298,9 @@ export function AdminCoursesPage({
                 >
                   레슨
                 </TableHead>
-                <TableHead scope="col" className="px-4 py-3.5 w-[60px]" />
+                <TableHead scope="col" className="px-4 py-3.5 w-[60px]">
+                  <span className="sr-only">작업</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -292,11 +323,15 @@ export function AdminCoursesPage({
                       <div className="flex items-center gap-3">
                         <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border/50 bg-background">
                           <Image
-                            alt=""
+                            alt={course.cover?.altText ?? ""}
                             fill
                             sizes="36px"
-                            src={createAdminCourseImageUrl(course.visualKey)}
+                            src={
+                              course.cover?.url ??
+                              createAdminCourseImageUrl(course.visualKey)
+                            }
                             className="object-cover"
+                            unoptimized={course.cover !== null}
                           />
                         </div>
                         <div className="grid min-w-0">
@@ -336,20 +371,49 @@ export function AdminCoursesPage({
                       </span>
                     </TableCell>
                     <TableCell className="px-4 py-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={
-                          course.status === contentStatuses.archived ||
-                          isPending
-                        }
-                        onClick={() => setArchiveTarget(course)}
-                        type="button"
-                        className="h-8 w-8 rounded-xl text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-label="보관"
-                      >
-                        <ArchiveIcon aria-hidden="true" size={15} />
-                      </Button>
+                      {course.status === contentStatuses.archived ? (
+                        <Button
+                          aria-label={`${course.title} 보관 해제`}
+                          className="rounded-xl font-bold"
+                          disabled={isPending}
+                          onClick={() => {
+                            const courseId = course.id
+
+                            startTransition(async () => {
+                              const result = await restoreCourse(courseId)
+
+                              setMessage(
+                                result.status === "ok"
+                                  ? {
+                                      message: "코스 보관을 해제했습니다.",
+                                      tone: "success",
+                                    }
+                                  : {
+                                      message: result.error.message,
+                                      tone: "danger",
+                                    }
+                              )
+                            })
+                          }}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          보관 해제
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={isPending}
+                          onClick={() => setArchiveTarget(course)}
+                          type="button"
+                          className="h-8 w-8 rounded-xl text-destructive hover:bg-destructive/10"
+                          aria-label={`${course.title} 보관`}
+                        >
+                          <ArchiveIcon aria-hidden="true" size={15} />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))

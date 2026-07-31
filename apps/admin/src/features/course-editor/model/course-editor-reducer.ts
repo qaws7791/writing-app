@@ -21,6 +21,15 @@ type CourseEditorStatus =
   | "server-error"
   | "validation-error"
 
+export type LessonFieldChange =
+  | {
+      readonly field: "category" | "description"
+      readonly value: string | null
+    }
+  | { readonly field: "estimatedMinutes"; readonly value: number }
+  | { readonly field: "summary"; readonly value: readonly string[] }
+  | { readonly field: "title"; readonly value: string }
+
 export type CourseEditorState = {
   readonly draft: AdminCourseDetail
   readonly latest: AdminCourseDetail | null
@@ -61,8 +70,28 @@ export type CourseEditorAction =
     }
   | {
       readonly lessonId: LessonId
-      readonly title: string
-      readonly type: "lesson-title-changed"
+      readonly newLessonId: LessonId
+      readonly newStepIds: readonly LessonStepId[]
+      readonly type: "lesson-duplicated"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly lessonId: LessonId
+      readonly targetUnitId: UnitId
+      readonly type: "lesson-unit-changed"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly lessonId: LessonId
+      readonly newStepId: LessonStepId
+      readonly stepId: LessonStepId
+      readonly type: "step-duplicated"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly change: LessonFieldChange
+      readonly lessonId: LessonId
+      readonly type: "lesson-changed"
       readonly unitId: UnitId
     }
   | {
@@ -75,6 +104,12 @@ export type CourseEditorAction =
       readonly lessonId: LessonId
       readonly step: EditorStep
       readonly type: "step-changed"
+      readonly unitId: UnitId
+    }
+  | {
+      readonly direction: "down" | "up"
+      readonly lessonId: LessonId
+      readonly type: "lesson-moved"
       readonly unitId: UnitId
     }
   | {
@@ -237,7 +272,7 @@ export function courseEditorReducer(
             : unit
         ),
       })
-    case "lesson-title-changed":
+    case "lesson-changed":
       return changed(state, {
         ...state.draft,
         units: state.draft.units.map((unit) =>
@@ -246,13 +281,103 @@ export function courseEditorReducer(
                 ...unit,
                 lessons: unit.lessons.map((lesson) =>
                   lesson.id === action.lessonId
-                    ? { ...lesson, title: action.title }
+                    ? { ...lesson, [action.change.field]: action.change.value }
                     : lesson
                 ),
               }
             : unit
         ),
       })
+    case "lesson-duplicated": {
+      const unit = state.draft.units.find(
+        (candidate) => candidate.id === action.unitId
+      )
+      const source = unit?.lessons.find(
+        (candidate) => candidate.id === action.lessonId
+      )
+      if (unit === undefined || source === undefined) return state
+      if (action.newStepIds.length !== source.steps.length) return state
+
+      return changed(state, {
+        ...state.draft,
+        units: state.draft.units.map((candidate) =>
+          candidate.id === action.unitId
+            ? {
+                ...candidate,
+                lessons: reorder([
+                  ...candidate.lessons,
+                  duplicateLesson(source, action),
+                ]),
+              }
+            : candidate
+        ),
+      })
+    }
+    case "lesson-unit-changed": {
+      const source = state.draft.units
+        .find((candidate) => candidate.id === action.unitId)
+        ?.lessons.find((candidate) => candidate.id === action.lessonId)
+      if (source === undefined || action.targetUnitId === action.unitId) {
+        return state
+      }
+      if (
+        !state.draft.units.some(
+          (candidate) => candidate.id === action.targetUnitId
+        )
+      ) {
+        return state
+      }
+
+      return changed(state, {
+        ...state.draft,
+        units: state.draft.units.map((candidate) => {
+          if (candidate.id === action.unitId) {
+            return {
+              ...candidate,
+              lessons: reorder(
+                candidate.lessons.filter(
+                  (lesson) => lesson.id !== action.lessonId
+                )
+              ),
+            }
+          }
+          return candidate.id === action.targetUnitId
+            ? { ...candidate, lessons: reorder([...candidate.lessons, source]) }
+            : candidate
+        }),
+      })
+    }
+    case "step-duplicated":
+      return updateLessonSteps(state, action, (steps) => {
+        const source = steps.find((step) => step.id === action.stepId)
+
+        // AI 코칭 사본은 같은 레슨의 같은 쓰기 스텝을 계속 가리키므로 target을
+        // 다시 매핑하지 않는다.
+        return source === undefined
+          ? steps
+          : reorder([...steps, { ...source, id: action.newStepId }])
+      })
+    case "lesson-moved": {
+      const unit = state.draft.units.find(
+        (candidate) => candidate.id === action.unitId
+      )
+      if (unit === undefined) return state
+      const lessons = moveByDirection(
+        unit.lessons,
+        action.direction,
+        (lesson) => lesson.id === action.lessonId
+      )
+      if (lessons === unit.lessons) return state
+
+      return changed(state, {
+        ...state.draft,
+        units: state.draft.units.map((candidate) =>
+          candidate.id === action.unitId
+            ? { ...candidate, lessons: [...lessons] }
+            : candidate
+        ),
+      })
+    }
     case "step-added":
       return updateLessonSteps(state, action, (steps) =>
         reorder([...steps, action.step])
@@ -266,25 +391,13 @@ export function courseEditorReducer(
         )
       )
     case "step-moved":
-      return updateLessonSteps(state, action, (steps) => {
-        const currentIndex = steps.findIndex(
+      return updateLessonSteps(state, action, (steps) =>
+        moveByDirection(
+          steps,
+          action.direction,
           (step) => step.id === action.stepId
         )
-        const targetIndex =
-          action.direction === "up" ? currentIndex - 1 : currentIndex + 1
-        if (
-          currentIndex < 0 ||
-          targetIndex < 0 ||
-          targetIndex >= steps.length
-        ) {
-          return steps
-        }
-        const reordered = [...steps]
-        const [step] = reordered.splice(currentIndex, 1)
-        if (step === undefined) return steps
-        reordered.splice(targetIndex, 0, step)
-        return reorder(reordered)
-      })
+      )
     case "step-removed":
       return updateLessonSteps(state, action, (steps) =>
         reorder(steps.filter((step) => step.id !== action.stepId))
@@ -356,6 +469,58 @@ function reorder<TItem extends { readonly sortOrder: number }>(
   items: readonly TItem[]
 ): TItem[] {
   return items.map((item, index) => ({ ...item, sortOrder: index + 1 }))
+}
+
+/**
+ * 레슨 사본은 스텝 ID가 모두 새로 발급되므로 AI 코칭 target을 사본 안의
+ * 대응 스텝으로 다시 매핑한다. 매핑하지 않으면 사본의 AI 스텝이 원본 레슨의
+ * 스텝을 가리켜 저장 검증에서 거절된다.
+ */
+function duplicateLesson(
+  source: EditorLesson,
+  action: Readonly<{
+    newLessonId: LessonId
+    newStepIds: readonly LessonStepId[]
+  }>
+): EditorLesson {
+  const newStepIdByOldId = new Map(
+    source.steps.map((step, index) => [step.id, action.newStepIds[index]])
+  )
+
+  return {
+    ...source,
+    id: action.newLessonId,
+    steps: source.steps.map((step, index) => {
+      const id = action.newStepIds[index] ?? step.id
+      return step.type === "AI_FEEDBACK"
+        ? {
+            ...step,
+            id,
+            target: newStepIdByOldId.get(step.target) ?? step.target,
+          }
+        : { ...step, id }
+    }),
+    title: `${source.title} 사본`,
+  }
+}
+
+/** 경계를 벗어나는 이동은 같은 배열 참조를 돌려주어 dirty 전이를 만들지 않는다. */
+function moveByDirection<TItem extends { readonly sortOrder: number }>(
+  items: readonly TItem[],
+  direction: "down" | "up",
+  matches: (item: TItem) => boolean
+): readonly TItem[] {
+  const currentIndex = items.findIndex(matches)
+  const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1
+  if (currentIndex < 0 || targetIndex < 0 || targetIndex >= items.length) {
+    return items
+  }
+  const reordered = [...items]
+  const [moved] = reordered.splice(currentIndex, 1)
+  if (moved === undefined) return items
+  reordered.splice(targetIndex, 0, moved)
+
+  return reorder(reordered)
 }
 
 function updateLessonSteps(
