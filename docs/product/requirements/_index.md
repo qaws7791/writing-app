@@ -43,3 +43,4 @@
 | [REQ-ADM-3](./admin/req-adm-3-content-operations.md)  | 콘텐츠 운영       | `US-ADM-3`       | `SCR-103`, `SCR-104`                       | 기준 |
 | [REQ-ADM-4](./admin/req-adm-4-user-operations.md)     | 사용자 운영       | `US-ADM-4`       | `SCR-105`, `SCR-106`                       | 기준 |
 | [REQ-ADM-6](./admin/req-adm-6-admin-navigation.md)    | 어드민 내비게이션 | `US-ADM-6`       | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107` | 기준 |
+| [REQ-ADM-7](./admin/req-adm-7-audit-review.md)        | 감사 이력 조회    | `US-ADM-7`       | `SCR-108`                                  | 기준 |

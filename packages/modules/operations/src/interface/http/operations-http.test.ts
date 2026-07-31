@@ -109,7 +109,10 @@ describe("operations HTTP contract", () => {
 
     expect(authenticated.status).toBe(200)
     expect(authenticated.headers.get("Cache-Control")).toBe("private, no-store")
-    await expect(authenticated.json()).resolves.toEqual({ items: [] })
+    await expect(authenticated.json()).resolves.toEqual({
+      items: [],
+      pagination: { page: 1, pageSize: 50, totalItems: 0, totalPages: 1 },
+    })
   })
 })
 
@@ -141,8 +144,14 @@ function createFixture(
       async purgeExpired() {
         return ok(0)
       },
-      async readRecent() {
-        return ok([])
+      async readEvents() {
+        return ok({
+          items: [],
+          page: 1,
+          pageSize: 50,
+          totalItems: 0,
+          totalPages: 1,
+        })
       },
     },
     now: () => now,
@@ -192,8 +201,6 @@ function createFixture(
                   percentage: null,
                   status: "empty",
                 },
-                firstLessonStarts: 0,
-                totalUsers: 0,
               },
             }),
       readLessonAnalytics: async () =>

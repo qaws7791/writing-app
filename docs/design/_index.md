@@ -47,6 +47,7 @@
 | `screens/SCR-105-admin-users.md`           | 사용자 관리 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
 | `screens/SCR-106-admin-user-detail.md`     | 사용자 상세 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
 | `screens/SCR-107-admin-analytics.md`       | 분석 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                        |
+| `screens/SCR-108-admin-audit.md`           | 감사 이력 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
 
 ## 관리 기준
 

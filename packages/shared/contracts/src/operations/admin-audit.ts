@@ -1,5 +1,10 @@
 import { z } from "zod"
 
+import {
+  nonNegativeIntegerSchema,
+  positiveIntegerSchema,
+} from "#contracts/shared/integer"
+
 export const adminAuditCategorySchema = z.enum([
   "privacy-access",
   "identity-mutation",
@@ -13,6 +18,7 @@ export const adminAuditActionSchema = z.enum([
   "learner.delete",
   "course.publish",
   "course.archive",
+  "course.restore",
 ])
 
 export const adminAuditOutcomeSchema = z.enum([
@@ -39,15 +45,27 @@ export const adminAuditEventDtoSchema = z
   })
   .strict()
 
+/** 기간은 플랫폼 날짜 경계를 따르는 논리 날짜이며 `from`과 `to` 모두 포함이다. */
 export const adminAuditEventsQuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(100).default(50),
+  category: adminAuditCategorySchema.optional(),
+  from: z.iso.date().optional(),
+  page: z.coerce.number().int().positive().optional().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).optional().default(50),
+  to: z.iso.date().optional(),
 })
 
 export const adminAuditEventsDtoSchema = z
   .object({
     items: z.array(adminAuditEventDtoSchema),
+    pagination: z.strictObject({
+      page: positiveIntegerSchema,
+      pageSize: positiveIntegerSchema,
+      totalItems: nonNegativeIntegerSchema,
+      totalPages: positiveIntegerSchema,
+    }),
   })
   .strict()
 
+export type AdminAuditCategory = z.infer<typeof adminAuditCategorySchema>
 export type AdminAuditEventDto = z.infer<typeof adminAuditEventDtoSchema>
 export type AdminAuditEventsDto = z.infer<typeof adminAuditEventsDtoSchema>

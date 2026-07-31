@@ -1,14 +1,26 @@
 import type { Failure } from "@workspace/kernel/failure"
 import type { Result } from "@workspace/kernel/result"
 
-import type { AuditEvent, AuditEventId } from "#operations/domain/audit-event"
+import type {
+  AuditCategory,
+  AuditEvent,
+  AuditEventId,
+} from "#operations/domain/audit-event"
 
 export type AuditEventOperation =
   | "complete"
+  | "count-events"
   | "count-expired"
   | "insert"
-  | "list-recent"
+  | "list-events"
   | "purge-expired"
+
+/** `createdBefore`는 상한 제외이며 `null`은 해당 경계를 두지 않는다는 뜻이다. */
+export type AuditEventFilter = Readonly<{
+  category: AuditCategory | null
+  createdBefore: Date | null
+  createdFrom: Date | null
+}>
 
 export type AuditEventRepositoryError =
   | Failure<"audit-event-conflict">
@@ -24,6 +36,9 @@ export type AuditEventFailureObserver = (
 ) => void
 
 export type AuditEventRepository = Readonly<{
+  countEvents: (
+    filter: AuditEventFilter
+  ) => Promise<Result<number, AuditEventRepositoryError>>
   countExpired: (input: {
     readonly batchSize: number
     readonly cutoff: Date
@@ -35,8 +50,12 @@ export type AuditEventRepository = Readonly<{
   insert: (
     event: AuditEvent
   ) => Promise<Result<void, AuditEventRepositoryError>>
-  listRecent: (
-    limit: number
+  listEvents: (
+    input: AuditEventFilter &
+      Readonly<{
+        limit: number
+        offset: number
+      }>
   ) => Promise<Result<readonly AuditEvent[], AuditEventRepositoryError>>
   purgeExpired: (input: {
     readonly batchSize: number

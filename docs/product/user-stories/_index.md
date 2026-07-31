@@ -45,3 +45,4 @@
 | [US-ADM-3](./admin/us-adm-3-operate-content.md)        | 콘텐츠 운영           | 소유자 관리자 | `REQ-ADM-3`   | `SCR-103`, `SCR-104`                       | 기준 |
 | [US-ADM-4](./admin/us-adm-4-operate-users.md)          | 사용자 운영           | 소유자 관리자 | `REQ-ADM-4`   | `SCR-105`, `SCR-106`                       | 기준 |
 | [US-ADM-6](./admin/us-adm-6-navigate-admin-console.md) | 어드민 주요 메뉴 이동 | 소유자 관리자 | `REQ-ADM-6`   | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107` | 기준 |
+| [US-ADM-7](./admin/us-adm-7-review-audit-events.md)    | 감사 이력 확인        | 소유자 관리자 | `REQ-ADM-7`   | `SCR-108`                                  | 기준 |

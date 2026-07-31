@@ -1,5 +1,6 @@
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
-import { err, type Result } from "@workspace/kernel/result"
+import { platformDayBoundary } from "@workspace/kernel/day-boundary"
+import { err, ok, type Result } from "@workspace/kernel/result"
 import type { AdminId } from "@workspace/types/ids"
 
 import type {
@@ -9,6 +10,7 @@ import type {
 import {
   createStartedAuditEvent,
   type AuditAction,
+  type AuditCategory,
   type AuditEvent,
   type AuditEventId,
   type AuditEventValidationError,
@@ -20,6 +22,30 @@ type AuditTrailError =
   | AuditEventRepositoryError
   | AuditEventValidationError
   | Readonly<{ kind: "invalid-audit-query" }>
+
+export type AuditEventQuery = Readonly<{
+  actor: OperationsActor
+  category: AuditCategory | null
+  from: string | null
+  page: number
+  pageSize: number
+  to: string | null
+}>
+
+type AuditEventPage = Readonly<{
+  items: readonly AuditEvent[]
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
+}>
+
+type AuditDayRange = Readonly<{
+  createdBefore: Date | null
+  createdFrom: Date | null
+}>
+
+const platformDayKeyPattern = /^\d{4}-\d{2}-\d{2}$/u
 
 export type AuditTrail = Readonly<{
   begin: (input: {
@@ -41,10 +67,9 @@ export type AuditTrail = Readonly<{
     readonly batchSize: number
     readonly cutoff: Date
   }) => Promise<Result<number, AuditTrailError>>
-  readRecent: (input: {
-    readonly actor: OperationsActor
-    readonly limit: number
-  }) => Promise<Result<readonly AuditEvent[], AuditTrailError>>
+  readEvents: (
+    query: AuditEventQuery
+  ) => Promise<Result<AuditEventPage, AuditTrailError>>
 }>
 
 export function createAuditTrail(input: {
@@ -79,17 +104,86 @@ export function createAuditTrail(input: {
       }
       return input.repository.purgeExpired(command)
     },
-    async readRecent(query) {
-      if (
-        !Number.isInteger(query.limit) ||
-        query.limit < 1 ||
-        query.limit > 100
-      ) {
-        return err({ kind: "invalid-audit-query" })
-      }
-      return input.repository.listRecent(query.limit)
+    async readEvents(query) {
+      const range = readAuditDayRange(query)
+      if (range === null) return err({ kind: "invalid-audit-query" })
+
+      const counted = await input.repository.countEvents({
+        category: query.category,
+        ...range,
+      })
+      if (counted.isErr()) return err(counted.error)
+
+      const totalItems = counted.value
+      const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize))
+      const page = Math.min(query.page, totalPages)
+      const listed = await input.repository.listEvents({
+        category: query.category,
+        limit: query.pageSize,
+        offset: (page - 1) * query.pageSize,
+        ...range,
+      })
+
+      return listed.isErr()
+        ? err(listed.error)
+        : ok({
+            items: listed.value,
+            page,
+            pageSize: query.pageSize,
+            totalItems,
+            totalPages,
+          })
     },
   }
+}
+
+/**
+ * 논리 날짜를 조회 구간으로 바꾼다. `to`는 포함이므로 다음 날 시작을 상한으로 쓴다.
+ * 시작이 끝보다 늦으면 조용히 빈 결과를 주는 대신 잘못된 질의로 거절한다.
+ */
+function readAuditDayRange(
+  query: Pick<AuditEventQuery, "from" | "page" | "pageSize" | "to">
+): AuditDayRange | null {
+  if (
+    !Number.isInteger(query.page) ||
+    query.page < 1 ||
+    !Number.isInteger(query.pageSize) ||
+    query.pageSize < 1 ||
+    query.pageSize > 100 ||
+    !isPlatformDayKey(query.from) ||
+    !isPlatformDayKey(query.to)
+  ) {
+    return null
+  }
+
+  const createdFrom =
+    query.from === null ? null : toPlatformDayStart(query.from, 0)
+  const createdBefore =
+    query.to === null ? null : toPlatformDayStart(query.to, 1)
+
+  if (
+    createdFrom !== null &&
+    createdBefore !== null &&
+    createdFrom.getTime() >= createdBefore.getTime()
+  ) {
+    return null
+  }
+
+  return { createdBefore, createdFrom }
+}
+
+function isPlatformDayKey(value: string | null): boolean {
+  return value === null || platformDayKeyPattern.test(value)
+}
+
+function toPlatformDayStart(dayKey: string, addDays: number): Date {
+  return new Date(
+    Date.UTC(
+      Number(dayKey.slice(0, 4)),
+      Number(dayKey.slice(5, 7)) - 1,
+      Number(dayKey.slice(8, 10)) + addDays
+    ) - platformDayBoundary.offsetMs
+  )
 }
 
 function isValidRetentionQuery(input: {

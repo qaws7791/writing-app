@@ -1,10 +1,11 @@
-import { and, asc, desc, eq, inArray, lte } from "drizzle-orm"
+import { and, asc, count, desc, eq, gte, inArray, lt, lte } from "drizzle-orm"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { err, ok } from "@workspace/kernel/result"
 import type { AdminId, CourseId, UserId } from "@workspace/types/ids"
 
 import type {
   AuditEventFailureObserver,
+  AuditEventFilter,
   AuditEventOperation,
   AuditEventRepository,
 } from "#operations/application/ports/audit-event-repository"
@@ -26,6 +27,19 @@ export function createAuditEventDrizzleRepository(
   }
 
   return {
+    async countEvents(filter) {
+      try {
+        const row = database
+          .select({ total: count() })
+          .from(auditEvents)
+          .where(createAuditEventFilterCondition(filter))
+          .get()
+
+        return ok(row?.total ?? 0)
+      } catch (cause) {
+        return persistenceFailed(cause, "count-events")
+      }
+    },
     async countExpired(input) {
       try {
         return ok(
@@ -70,19 +84,21 @@ export function createAuditEventDrizzleRepository(
         return persistenceFailed(cause, "insert")
       }
     },
-    async listRecent(limit) {
+    async listEvents(input) {
       try {
         return ok(
           database
             .select()
             .from(auditEvents)
+            .where(createAuditEventFilterCondition(input))
             .orderBy(desc(auditEvents.createdAt), desc(auditEvents.id))
-            .limit(limit)
+            .limit(input.limit)
+            .offset(input.offset)
             .all()
             .map(toAuditEvent)
         )
       } catch (cause) {
-        return persistenceFailed(cause, "list-recent")
+        return persistenceFailed(cause, "list-events")
       }
     },
     async purgeExpired(input) {
@@ -106,6 +122,20 @@ export function createAuditEventDrizzleRepository(
       }
     },
   }
+}
+
+function createAuditEventFilterCondition(filter: AuditEventFilter) {
+  return and(
+    ...(filter.category === null
+      ? []
+      : [eq(auditEvents.category, filter.category)]),
+    ...(filter.createdFrom === null
+      ? []
+      : [gte(auditEvents.createdAt, filter.createdFrom)]),
+    ...(filter.createdBefore === null
+      ? []
+      : [lt(auditEvents.createdAt, filter.createdBefore)])
+  )
 }
 
 function toAuditEventRow(event: AuditEvent) {

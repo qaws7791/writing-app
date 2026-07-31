@@ -40,6 +40,9 @@ export function registerOperationsAuditRoutes<TEnv extends OperationsHonoEnv>(
           adminAuditEventsDtoSchema
         )
       ),
+      400: operationsErrorResponse(
+        "감사 이벤트 조회 조건이 올바르지 않습니다."
+      ),
       503: operationsErrorResponse("감사 이벤트를 조회할 수 없습니다."),
     },
     summary: "관리자 감사 이벤트 조회",
@@ -47,21 +50,32 @@ export function registerOperationsAuditRoutes<TEnv extends OperationsHonoEnv>(
   } satisfies RouteConfig)
 
   app.openapi(route, async (context) => {
-    const result = await input.auditTrail.readRecent({
+    const query = context.req.valid("query")
+    const result = await input.auditTrail.readEvents({
       actor: context.var.operationsActor,
-      limit: context.req.valid("query").limit,
+      category: query.category ?? null,
+      from: query.from ?? null,
+      page: query.page,
+      pageSize: query.pageSize,
+      to: query.to ?? null,
     })
     if (result.isErr()) {
-      throw new AppError({
-        code: "AUDIT_READ_FAILED",
-        message: "Audit trail is unavailable",
-        status: 503,
-      })
+      throw result.error.kind === "invalid-audit-query"
+        ? new AppError({
+            code: "AUDIT_QUERY_INVALID",
+            message: "Audit query is invalid",
+            status: 400,
+          })
+        : new AppError({
+            code: "AUDIT_READ_FAILED",
+            message: "Audit trail is unavailable",
+            status: 503,
+          })
     }
 
     return context.json(
       adminAuditEventsDtoSchema.parse({
-        items: result.value.map((event) => ({
+        items: result.value.items.map((event) => ({
           action: event.action,
           actorId: event.actorId,
           category: event.category,
@@ -73,6 +87,12 @@ export function registerOperationsAuditRoutes<TEnv extends OperationsHonoEnv>(
           retentionUntil: event.retentionUntil.toISOString(),
           target: event.target,
         })),
+        pagination: {
+          page: result.value.page,
+          pageSize: result.value.pageSize,
+          totalItems: result.value.totalItems,
+          totalPages: result.value.totalPages,
+        },
       }),
       200
     )

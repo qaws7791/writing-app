@@ -14,7 +14,7 @@ export const auditCategoryValues = [
   "content-mutation",
 ] as const
 
-type AuditCategory = (typeof auditCategoryValues)[number]
+export type AuditCategory = (typeof auditCategoryValues)[number]
 
 export const auditActionValues = [
   "learner.detail.read",
@@ -23,6 +23,7 @@ export const auditActionValues = [
   "learner.delete",
   "course.publish",
   "course.archive",
+  "course.restore",
 ] as const
 
 export type AuditAction = (typeof auditActionValues)[number]
@@ -76,6 +77,11 @@ const auditPolicies = {
     targetType: "course",
   },
   "course.publish": {
+    category: "content-mutation",
+    retentionMs: applicationAuditRetentionMs,
+    targetType: "course",
+  },
+  "course.restore": {
     category: "content-mutation",
     retentionMs: applicationAuditRetentionMs,
     targetType: "course",
