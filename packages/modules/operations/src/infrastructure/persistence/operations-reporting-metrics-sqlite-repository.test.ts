@@ -49,8 +49,6 @@ describe("operations reporting SQL metrics", () => {
             percentage: 50,
             status: "available",
           },
-          firstLessonStarts: 3,
-          totalUsers: 4,
         },
       })
     } finally {

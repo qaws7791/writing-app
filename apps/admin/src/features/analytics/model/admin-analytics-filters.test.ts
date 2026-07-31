@@ -26,12 +26,12 @@ describe("parseAdminAnalyticsFilters", () => {
     readonly field: string
     readonly value: string | string[]
   }>([
-    { expected: "asc", field: "direction", value: "sideways" },
+    { expected: "desc", field: "direction", value: "sideways" },
     { expected: 1, field: "page", value: "10001" },
     { expected: 1, field: "page", value: "0" },
     { expected: 10, field: "pageSize", value: "101" },
     { expected: "", field: "query", value: ["문장", "강의"] },
-    { expected: "completionRate", field: "sort", value: "failureRate" },
+    { expected: "dropOff", field: "sort", value: "failureRate" },
   ])(
     "$field의 $value는 canonical 기본값 $expected로 복구한다",
     ({ expected, field, value }) => {

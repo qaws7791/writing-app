@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { AdminAnalyticsPage } from "@/features/analytics/ui/admin-analytics-page"
@@ -9,6 +9,7 @@ import type {
 } from "@/shared/http/admin-api-client"
 import type { AdminAnalyticsFilters } from "@/features/analytics/model/admin-analytics-filters"
 import type {
+  AdminAiFeedbackQuality,
   AdminAnalytics,
   AdminLessonAnalyticsPage,
 } from "@/entities/admin-analytics/model/admin-analytics"
@@ -82,6 +83,23 @@ const lessonAnalytics: AdminLessonAnalyticsPage = {
   },
 }
 
+const aiFeedbackQuality: AdminAiFeedbackQuality = {
+  failureCount: 3,
+  failureCounts: [
+    { code: "provider-timeout", count: 2 },
+    { code: "pending-expired", count: 1 },
+  ],
+  from: "2026-05-15T00:00:00.000Z",
+  latency: { averageMs: 1234.6, sampleCount: 9, totalMs: 11111 },
+  requestCount: 12,
+  retryCount: 4,
+  status: "available",
+  successCount: 9,
+  successRate: 0.75,
+  to: "2026-06-14T00:00:00.000Z",
+  tokens: { input: 5000, output: 2500, sampleCount: 9 },
+}
+
 describe("AdminAnalyticsPage", () => {
   it("서버 검색·정렬·페이지 상태를 URL 링크와 form에 보존한다", () => {
     renderPage()
@@ -117,6 +135,7 @@ describe("AdminAnalyticsPage", () => {
   it("요약 조회가 실패하면 레슨 목록까지 열지 않고 요약 오류만 보여준다", () => {
     render(
       <AdminAnalyticsPage
+        aiFeedbackQualityResult={ok(aiFeedbackQuality)}
         analyticsResult={{
           error: networkError(),
           status: "error",
@@ -140,6 +159,7 @@ describe("AdminAnalyticsPage", () => {
   it("레슨 목록 조회만 실패하면 요약은 유지하고 레슨별 성과에만 오류를 보여준다", () => {
     render(
       <AdminAnalyticsPage
+        aiFeedbackQualityResult={ok(aiFeedbackQuality)}
         analyticsResult={ok(analytics)}
         filters={filters}
         lessonAnalyticsResult={{
@@ -162,11 +182,42 @@ describe("AdminAnalyticsPage", () => {
       screen.queryByRole("table", { name: "레슨별 성과" })
     ).not.toBeInTheDocument()
   })
+
+  it("AI 품질 집계를 원문 없이 요청·실패·지연·token으로 보여준다", () => {
+    renderPage()
+
+    const quality = within(
+      screen.getByRole("region", { name: "AI 코칭 서비스 품질" })
+    )
+
+    expect(quality.getByText("12건")).toBeVisible()
+    expect(quality.getByText("75%")).toBeVisible()
+    expect(quality.getByText("1,235ms")).toBeVisible()
+    expect(quality.getByText("제공자 timeout")).toBeVisible()
+    expect(quality.getByText("5,000")).toBeVisible()
+  })
+
+  it("AI 품질 조회만 실패하면 다른 영역을 유지하고 해당 영역에만 오류를 보여준다", () => {
+    render(
+      <AdminAnalyticsPage
+        aiFeedbackQualityResult={{ error: networkError(), status: "error" }}
+        analyticsResult={ok(analytics)}
+        filters={filters}
+        lessonAnalyticsResult={ok(lessonAnalytics)}
+      />
+    )
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "네트워크 연결을 확인해 주세요."
+    )
+    expect(screen.getByRole("table", { name: "레슨별 성과" })).toBeVisible()
+  })
 })
 
 function renderPage() {
   return render(
     <AdminAnalyticsPage
+      aiFeedbackQualityResult={ok(aiFeedbackQuality)}
       analyticsResult={ok(analytics)}
       filters={filters}
       lessonAnalyticsResult={ok(lessonAnalytics)}

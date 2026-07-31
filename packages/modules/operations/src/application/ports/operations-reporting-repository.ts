@@ -22,8 +22,6 @@ export type OperationsDashboard = Readonly<{
         matureCohortThrough: string
         status: "available" | "empty" | "immature"
       }>
-    firstLessonStarts: number
-    totalUsers: number
   }>
 }>
 

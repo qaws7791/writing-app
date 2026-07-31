@@ -509,8 +509,6 @@ export function createSqliteOperationsReportingRepository(
               row.matureCohortLearners
             ),
           },
-          firstLessonStarts: row.firstLessonStarts,
-          totalUsers: row.totalUsers,
         },
       } satisfies OperationsDashboard
     },

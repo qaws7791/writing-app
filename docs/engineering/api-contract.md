@@ -56,7 +56,7 @@
 
 ## 운영 Reporting 계약
 
-- 관리자 대시보드는 보고 기준일, 최근 7일 활성 구간과 6개 핵심 지표를 반환한다. 비율은 분자·분모와 `available | empty | immature` 상태를 함께 반환해 데이터 없음과 성과 0을 구분한다.
+- 관리자 대시보드는 보고 기준일, 최근 7일 활성 구간과 핵심 지표를 반환한다. 비율은 분자·분모와 `available | empty | immature` 상태를 함께 반환해 데이터 없음과 성과 0을 구분하며, 비율의 분자·분모와 값이 같은 지표는 따로 반환하지 않는다. 현재 필드 목록은 [대시보드 계약](../../packages/shared/contracts/src/operations/admin-dashboard.ts)이 소유한다.
 - 분석은 요청한 논리 날짜 범위의 일별 가입·첫 시작·완료·D7 재방문, 개선 후보 레슨과 AI 실패율 상위 레슨을 반환한다. 미성숙 D7 값은 `0`이 아니라 `null`이다.
 - 레슨별 분석의 검색·정렬·페이지 이동은 서버 query로 실행한다. 기간, 검색 문자열, page, page size와 정렬 값은 공개 contract의 bounded schema로 검증한다.
 - AI 품질 분석은 반개구간 `[from, to)`의 aggregate만 반환한다. 성공·실패·latency·token·retry를 집계하되 답안, prompt와 피드백 원문은 wire 응답에 포함하지 않는다.

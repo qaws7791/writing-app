@@ -24,8 +24,6 @@ export const adminDashboardDtoSchema = z.strictObject({
       matureCohortThrough: z.iso.date(),
       status: z.enum(["available", "empty", "immature"]),
     }),
-    firstLessonStarts: adminNonNegativeIntegerSchema,
-    totalUsers: adminNonNegativeIntegerSchema,
   }),
 })
 

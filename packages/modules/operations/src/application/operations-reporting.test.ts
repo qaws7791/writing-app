@@ -100,8 +100,6 @@ function createRepository() {
           percentage: null,
           status: "empty" as const,
         },
-        firstLessonStarts: 0,
-        totalUsers: 0,
       },
     })),
     readLessonAnalytics: vi.fn((input) => ({
