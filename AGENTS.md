@@ -1,5 +1,17 @@
 # Project Structure Guide
 
+## Tone & Style
+
+Use only one term and one meaning for each concept. Write directly with simple verbs, and avoid ambiguous pronouns, vague degree modifiers, generic verbs, and unnecessary nominalization.
+
+Include only one key item of information or one action in each sentence and procedural step.
+
+State conditions, prerequisites, and safety precautions before the relevant action. When the actor changes, explicitly identify the subject and object. Separate multiple actions, conditions, or options into numbered lists or tables rather than combining them in a sentence.
+
+Specify time, quantity, units, ranges, versions, completion criteria, and error conditions in observable or measurable terms. Use distinct expressions to differentiate capability, permission, possibility, obligation, and prohibition.
+
+Before producing the final output, revise any sentence that violates these requirements. Each safety statement must include the hazard, the consequence, and the action required to avoid it. Preserve all code, paths, API identifiers, UI identifiers, and project-approved terminology exactly.
+
 ## Repository Overview
 
 - This repository is a Bun-managed monorepo for a writing-focused learning platform.
@@ -38,13 +50,23 @@ When principles conflict, prioritize security and correctness, then authoritativ
 
 - `docs/_index.md` — single entry point for exploring project knowledge. Start here.
 - `docs/authority-map.md` — maps which source owns which facts.
+- `docs/glossary.md` — canonical definition of each shared product and architecture term. Register every new concept here.
 - `docs/product/` — product issues, requirements, domain rules.
 - `docs/design/` — screens, UI, accessibility standards.
 - `docs/engineering/` — current system structure, implementation and operational contracts.
+- `docs/research/` — sources and synthesis behind content decisions. Not an authority for current product facts.
 - `docs/work/` — documents for work in progress.
 - `docs/archive/` — records of completed or discarded work.
 
 This map is a quick reference — `docs/_index.md` is the authoritative, up-to-date index.
+
+## Agent Instruction Files
+
+A directory-level `AGENTS.md` narrows this file's rules for its own path and may define exceptions to them. Read the file that covers a directory before you change anything in that directory.
+
+- `docs/AGENTS.md` — documentation structure, navigation flow, and writing rules.
+- `apps/web/AGENTS.md` — required Next.js reading before you write app code.
+- `packages/shared/ui/AGENTS.md` — shared UI component boundaries, import conventions, and edit permission.
 
 ## Working with the Repository
 
@@ -59,7 +81,8 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 
 ## Coding Guidelines
 
-- All files use kebab-case.
+- Source files use kebab-case.
+- Documentation files keep their existing naming conventions, such as `_index.md` and `ADR-0028-admin-learner-step-preview-reuse.md`.
 - Avoid unrelated refactoring, large-scale renaming, and formatting-only changes.
 - Keep code readable and maintainable.
 - Every package has a narrow, obvious purpose.
@@ -97,7 +120,6 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 - Prefer discriminated unions or explicit result variants over vague success flags.
 - Avoid `any`, weak `Record<string, unknown>` where a real type should exist, and generic `{ success: boolean, data?: unknown, error?: string }` result shapes.
 - Do not include the file extension in import paths.
-- Always use absolute paths for imports.
 
 ### Formatting & Linting
 
@@ -135,24 +157,19 @@ This map is a quick reference — `docs/_index.md` is the authoritative, up-to-d
 - [ ] The required verification commands pass:
 
 ```sh
+bun run ci:static
+bun run ci:tests
 bun run build
-bun run typecheck
-bun run test
-bun lefthook run pre-commit
+bun run check:route-bundles
 ```
+
+`.github/workflows/quality-gates.yml` owns the required gate set, including the E2E, Storybook and performance tiers that run in CI.
+
+Run the commands that can observe your change. A change limited to Markdown files needs `bun oxfmt --check` on the touched files and the `/docs` check below. A change touching `apps/`, `packages/`, `scripts/`, `deploy/`, `infra/`, or root configuration needs the full command set. Add the E2E, Storybook or performance tier when your change touches what that tier covers.
 
 - [ ] `/docs` reflects the change, including moving finished `docs/work/` items to `docs/archive/` with conclusions folded into the relevant authority docs.
 - [ ] All processes started for the task (Node.js, bash, dev servers, etc.) are safely terminated.
 
 ## Commit Guidelines
 
-- Use Korean for commit messages.
-- Keep the summary under 80 characters.
-- Format:
-
-```
-<short summary of changes>
-
-- [detailed description of changes 1 (optional)]
-- [detailed description of changes 2 (optional)]
-```
+`docs/engineering/git-workflow.md` owns branch naming, commit message language and format, PR body requirements, and merge policy. Read it before you create a branch, a commit, or a PR.

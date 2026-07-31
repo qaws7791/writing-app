@@ -22,14 +22,19 @@
 | `repository-architecture-tooling.md`    | architecture 검증 도구의 책임과 사용 원칙을 정의한다.    |
 | `code-style.md`                         | 네이밍, 정본 위치, 오류 처리, 포맷·lint 원칙을 정의한다. |
 | `code-review.md`                        | PR·코드 리뷰에서 확인할 항목을 정의한다.                 |
+| `git-workflow.md`                       | 브랜치, 커밋, PR과 머지 정책을 정의한다.                 |
 | `frontend-development.md`               | 프론트엔드 구현 경계와 성능 원칙을 정의한다.             |
 | `lesson-runtime.md`                     | 레슨 전이, draft, 채점과 편집기의 구현 경계를 정의한다.  |
+| `lesson-session-state-machine.md`       | 레슨 세션 상태와 전이 검증 기준을 정의한다.              |
 | `tech-stack.md`                         | 기술 선택과 교체 판단 기준을 정의한다.                   |
 | `runtime-configuration.md`              | 설정 소유권·변경·보안 원칙을 정의한다.                   |
 | `deployment.md`                         | 배포 승인, 실행, 복구 절차를 정의한다.                   |
 | `release-runbook.md`                    | 새 VPS의 첫 staging·production 출시 순서를 정의한다.     |
 | `api-contract.md`                       | HTTP 호환성, 인증, 오류와 계약 변경 원칙을 정의한다.     |
 | `auth-permissions.md`                   | 인증·인가 정책과 권한 변경 절차를 정의한다.              |
+| `admin-identity-types.md`               | 관리자·학습자 식별자 타입 경계를 정의한다.               |
+| `admin-auth-security-operations.md`     | 관리자 계정 생성, 감사와 세션 폐기 기준을 정의한다.      |
+| `admin-transport-security.md`           | 새 transport의 관리자 인증 경계를 정의한다.              |
 | `security.md`                           | 신뢰 경계와 보안 변경 원칙을 정의한다.                   |
 | `privacy.md`                            | 개인정보와 AI 데이터의 사용·최소화·보존 원칙을 정의한다. |
 | `data-model.md`                         | 데이터 불변식과 모델 변경 원칙을 정의한다.               |
@@ -39,6 +44,7 @@
 | `migration.md`                          | migration 실행과 호환성 판단 기준을 정의한다.            |
 | `database-backup-restore.md`            | 백업·독립 복구 검증 절차를 정의한다.                     |
 | `rollback.md`                           | 장애 시 코드·데이터 롤백 판단 기준을 정의한다.           |
+| `codex-skill-invocation-policy.md`      | 워크플로 스킬의 호출 조건을 정의한다.                    |
 | `adr/`                                  | 되돌리기 어려운 기술 결정의 이유와 대안을 기록한다.      |
 | `adr/ADR-0025-*.md`                     | 모듈 공개 표면 4개 subpath 고정.                         |
 | `adr/ADR-0026-*.md`                     | 운영 리포팅 읽기 뷰 채택과 이벤트 대안 제외.             |

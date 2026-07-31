@@ -52,10 +52,7 @@
 
 ## 검증
 
-- [ ] `bun run build`
-- [ ] `bun run typecheck`
-- [ ] `bun run test`
-- [ ] `bun run ci:static`
+- [ ] `AGENTS.md`의 Definition of Done 명령을 실행하고 결과를 본문에 남겼다.
+- [ ] 변경 범위가 닿는 추가 게이트를 함께 실행했다. 필수 게이트 집합은 `.github/workflows/quality-gates.yml`이 소유한다.
 - [ ] script를 삭제·개명했다면 workflow·문서·다른 script의 참조를 갱신했다.
 - [ ] 설정에서 참조한 경로가 실제로 존재한다.
-- [ ] 필요한 경우 `bun --filter storybook build`
