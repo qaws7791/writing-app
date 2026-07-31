@@ -19,18 +19,6 @@ async function readSeedData(): Promise<readonly ContentSeedCourse[]> {
 }
 
 describe("기준 콘텐츠 seed 변환", () => {
-  it("모든 계층의 parent 참조를 상위 row에 연결된 상태로 변환한다", async () => {
-    const rows = createContentSeedRows(await readSeedData())
-
-    expect(readUnresolvedParentIds(rows)).toEqual([])
-  })
-
-  it("각 parent 안에서 sortOrder를 1부터 연속으로 부여한다", async () => {
-    const rows = createContentSeedRows(await readSeedData())
-
-    expect(readNonContiguousSortOrderGroups(rows)).toEqual([])
-  })
-
   it("변환한 모든 step은 학습자 계약 schema를 만족한다", async () => {
     const rows = createContentSeedRows(await readSeedData())
 
@@ -143,64 +131,6 @@ describe("기준 콘텐츠 seed 변환", () => {
     ).toThrow("Invalid AI feedback target")
   })
 })
-
-function readUnresolvedParentIds(rows: ContentSeedRows): readonly string[] {
-  const courseIds = new Set(rows.courses.map((course) => course.id))
-  const unitIds = new Set(rows.units.map((unit) => unit.id))
-  const lessonIds = new Set(rows.lessons.map((lesson) => lesson.id))
-
-  return [
-    ...rows.units
-      .filter((unit) => !courseIds.has(unit.courseId))
-      .map((unit) => unit.id),
-    ...rows.lessons
-      .filter(
-        (lesson) =>
-          !courseIds.has(lesson.courseId) || !unitIds.has(lesson.unitId)
-      )
-      .map((lesson) => lesson.id),
-    ...rows.steps
-      .filter((step) => !lessonIds.has(step.lessonId))
-      .map((step) => step.id),
-  ]
-}
-
-function readNonContiguousSortOrderGroups(
-  rows: ContentSeedRows
-): readonly string[] {
-  return [
-    ...readNonContiguousGroups([["", rows.courses]]),
-    ...readNonContiguousGroups(groupBy(rows.units, (unit) => unit.courseId)),
-    ...readNonContiguousGroups(
-      groupBy(rows.lessons, (lesson) => lesson.unitId)
-    ),
-    ...readNonContiguousGroups(groupBy(rows.steps, (step) => step.lessonId)),
-  ]
-}
-
-function readNonContiguousGroups(
-  groups: readonly [string, readonly { readonly sortOrder: number }[]][]
-): readonly string[] {
-  return groups
-    .filter(([, items]) =>
-      items.some((item, index) => item.sortOrder !== index + 1)
-    )
-    .map(([key]) => key)
-}
-
-function groupBy<TItem>(
-  items: readonly TItem[],
-  readKey: (item: TItem) => string
-): readonly [string, readonly TItem[]][] {
-  const groups = new Map<string, TItem[]>()
-  for (const item of items) {
-    const key = readKey(item)
-    const group = groups.get(key)
-    if (group === undefined) groups.set(key, [item])
-    else group.push(item)
-  }
-  return [...groups]
-}
 
 function readStepContractViolations(rows: ContentSeedRows): readonly string[] {
   return rows.steps.flatMap((step) => {

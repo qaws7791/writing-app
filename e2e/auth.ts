@@ -44,9 +44,7 @@ export async function loginLearner(
   page: Page,
   nextPath = "/app/courses"
 ): Promise<void> {
-  await page.goto(`${learnerWebOrigin}/login?next=${nextPath}`, {
-    waitUntil: "networkidle",
-  })
+  await page.goto(`${learnerWebOrigin}/login?next=${nextPath}`)
   await page.getByLabel("이메일").fill(learnerEmail)
   await page.getByLabel("비밀번호", { exact: true }).fill(learnerPassword)
   const loginButton = page.getByRole("button", {
@@ -63,20 +61,23 @@ export async function loginLearner(
   ])
   expect(loginResponse.status()).toBe(200)
   await expect(page).toHaveURL(`${learnerWebOrigin}${nextPath}`)
-  await page.waitForLoadState("networkidle")
   await waitForSettledFrames(page)
 }
 
 export async function createLearnerSession(
-  context: BrowserContext
+  context: BrowserContext,
+  credentials: Readonly<{
+    email?: string
+    password?: string
+  }> = {}
 ): Promise<void> {
   const response = await context.request.post(
     `${learnerWebOrigin}/api/auth/sign-in/email`,
     {
       data: {
         callbackURL: `${learnerWebOrigin}/app/courses`,
-        email: learnerEmail,
-        password: learnerPassword,
+        email: credentials.email ?? learnerEmail,
+        password: credentials.password ?? learnerPassword,
       },
     }
   )

@@ -50,17 +50,25 @@ vi.mock("node:fs", async (importOriginal) => {
 })
 
 const temporaryDirectories: string[] = []
+const openBackupSources = new Set<ReturnType<typeof createWritingAppDatabase>>()
 
 beforeEach(() => {
   linkRaceInjection.conflictingDestination = undefined
 })
 
 afterEach(() => {
-  while (temporaryDirectories.length > 0) {
-    const directory = temporaryDirectories.pop()
+  try {
+    for (const source of openBackupSources) {
+      source.close()
+      openBackupSources.delete(source)
+    }
+  } finally {
+    while (temporaryDirectories.length > 0) {
+      const directory = temporaryDirectories.pop()
 
-    if (directory !== undefined) {
-      rmSync(directory, { recursive: true })
+      if (directory !== undefined) {
+        rmSync(directory, { recursive: true })
+      }
     }
   }
 })
@@ -68,22 +76,25 @@ afterEach(() => {
 describe("SQLite 백업", () => {
   it("백업은 source DB와 WAL sidecar를 변경하지 않는다", () => {
     const fixture = createBackupSource()
-    const backupPath = join(fixture.directory, "backup files", "백업.sqlite")
-    const sourceBefore = readFileSync(fixture.sourcePath)
-    const walBefore = readFileSync(`${fixture.sourcePath}-wal`)
-    const shmSizeBefore = statSync(`${fixture.sourcePath}-shm`).size
 
-    createVerifiedDatabaseBackup({
-      backupPath,
-      requiredTables: ["backup_probe"],
-      sourcePath: fixture.sourcePath,
-    })
+    try {
+      const backupPath = join(fixture.directory, "backup files", "백업.sqlite")
+      const sourceBefore = readFileSync(fixture.sourcePath)
+      const walBefore = readFileSync(`${fixture.sourcePath}-wal`)
+      const shmSizeBefore = statSync(`${fixture.sourcePath}-shm`).size
 
-    expect(readFileSync(fixture.sourcePath)).toEqual(sourceBefore)
-    expect(readFileSync(`${fixture.sourcePath}-wal`)).toEqual(walBefore)
-    expect(statSync(`${fixture.sourcePath}-shm`).size).toBe(shmSizeBefore)
+      createVerifiedDatabaseBackup({
+        backupPath,
+        requiredTables: ["backup_probe"],
+        sourcePath: fixture.sourcePath,
+      })
 
-    fixture.close()
+      expect(readFileSync(fixture.sourcePath)).toEqual(sourceBefore)
+      expect(readFileSync(`${fixture.sourcePath}-wal`)).toEqual(walBefore)
+      expect(statSync(`${fixture.sourcePath}-shm`).size).toBe(shmSizeBefore)
+    } finally {
+      fixture.close()
+    }
   })
 
   it("백업은 격리 복구본에서 백업 시점 데이터만 담는다", () => {
@@ -301,6 +312,7 @@ function createBackupSource() {
   const directory = createTemporaryDirectory("writing app backup ")
   const sourcePath = join(directory, "운영 database.sqlite")
   const source = createWritingAppDatabase(sourcePath)
+  openBackupSources.add(source)
   let closed = false
 
   source.sqlite.exec("PRAGMA wal_autocheckpoint = 0")
@@ -312,8 +324,9 @@ function createBackupSource() {
   return {
     close() {
       if (closed) return
-      closed = true
       source.close()
+      closed = true
+      openBackupSources.delete(source)
     },
     directory,
     insertProbeValue(value: string) {

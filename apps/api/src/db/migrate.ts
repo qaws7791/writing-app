@@ -8,37 +8,37 @@ import {
 
 import currentSchemaBaselineSql from "../../drizzle/0000-current-schema-baseline.sql" with { type: "text" }
 import reportingViewsSql from "../../drizzle/0001-reporting-views.sql" with { type: "text" }
+import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 
-export const currentSchemaBaseline = readMigration(
-  "0000-current-schema-baseline",
-  currentSchemaBaselineSql,
-  "52cf51e62305886f6056a6bdfcfb42f99886805c65ac33ebdd2f35856bb2b65e"
+const migrationSqlByFileName = {
+  "0000-current-schema-baseline.sql": currentSchemaBaselineSql,
+  "0001-reporting-views.sql": reportingViewsSql,
+} as const
+
+const migrationSources = applicationMigrationManifest.map((migration) => ({
+  ...readMigration(
+    migration.id,
+    readMigrationSql(migration.fileName),
+    migration.checksum
+  ),
+  foreignKeys: readForeignKeysMode(migration.foreignKeys),
+}))
+
+export const currentSchemaBaseline = readRequiredMigration(
+  migrationSources,
+  "0000-current-schema-baseline"
 )
 
-const reportingViews = readMigration(
-  "0001-reporting-views",
-  reportingViewsSql,
-  "3733a851c5c3646d1f8f42b76ff94b688918020d7f1377eb33ab1f974abd770c"
+const applicationMigrations = migrationSources.map(
+  ({ checksum, foreignKeys, id, sql }) => ({
+    apply(database: Database) {
+      database.exec(sql)
+    },
+    checksum,
+    foreignKeys,
+    id,
+  })
 )
-
-const applicationMigrations = [
-  {
-    apply(database: Database) {
-      database.exec(currentSchemaBaseline.sql)
-    },
-    checksum: currentSchemaBaseline.checksum,
-    foreignKeys: "on" as const,
-    id: currentSchemaBaseline.id,
-  },
-  {
-    apply(database: Database) {
-      database.exec(reportingViews.sql)
-    },
-    checksum: reportingViews.checksum,
-    foreignKeys: "on" as const,
-    id: reportingViews.id,
-  },
-]
 
 export type ApplicationMigrationHistoryInspection =
   | Readonly<{
@@ -166,6 +166,37 @@ function readMigration(
     throw new Error(`migration checksum이 변경됐습니다: ${id}`)
   }
   return { checksum, id, sql }
+}
+
+function readRequiredMigration<
+  TMigration extends Readonly<{ readonly id: string }>,
+>(migrations: readonly TMigration[], id: string): TMigration {
+  const migration = migrations.find((candidate) => candidate.id === id)
+  if (migration === undefined) {
+    throw new Error(`필수 application migration이 없습니다: ${id}`)
+  }
+
+  return migration
+}
+
+function readMigrationSql(fileName: string): string {
+  if (fileName in migrationSqlByFileName) {
+    return migrationSqlByFileName[
+      fileName as keyof typeof migrationSqlByFileName
+    ]
+  }
+
+  throw new Error(
+    `manifest에 알 수 없는 migration 파일이 있습니다: ${fileName}`
+  )
+}
+
+function readForeignKeysMode(value: string): "on" | "off" {
+  if (value === "on" || value === "off") {
+    return value
+  }
+
+  throw new Error(`manifest의 foreignKeys 값이 잘못되었습니다: ${value}`)
 }
 
 function normalizeLineEndings(value: string): string {

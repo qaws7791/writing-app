@@ -29,17 +29,30 @@ export function aLearnerWithProgress(
   const lastActivityAt = completedAt ?? startedAt
 
   sqlite
-    .query<void, [string, string, string, number, number]>(
+    .query<
+      void,
+      [
+        string,
+        string,
+        string,
+        "completed" | "in_progress",
+        number,
+        number | null,
+        number,
+      ]
+    >(
       `INSERT INTO learner_course_progress (
         user_id, course_id, curriculum_version_id, status, started_at,
         completed_at, last_activity_at, updated_at
-      ) VALUES (?1, ?2, ?3, 'in_progress', ?4, NULL, ?5, ?5)`
+      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)`
     )
     .run(
       userId,
       course.courseId,
       course.curriculumVersionId,
+      status,
       startedAt,
+      completedAt,
       lastActivityAt
     )
 
@@ -82,7 +95,9 @@ export function aLearnerWithProgress(
       `INSERT INTO learner_lesson_answers (
         user_id, course_id, curriculum_version_id, lesson_id, step_id,
         answer_json, answered_at, updated_at
-      ) VALUES (?1, ?2, ?3, ?4, ?5, '{"text":"answer"}', 1, 1)`
+      ) VALUES (
+        ?1, ?2, ?3, ?4, ?5, '{"text":"answer","type":"WRITE"}', 1, 1
+      )`
     )
     .run(userId, course.courseId, course.curriculumVersionId, lessonId, stepId)
 
@@ -91,21 +106,24 @@ export function aLearnerWithProgress(
       `INSERT INTO learner_step_drafts (
         user_id, course_id, curriculum_version_id, lesson_id, step_id,
         answer_json, version, updated_at
-      ) VALUES (?1, ?2, ?3, ?4, ?5, '{"text":"draft"}', 0, 1)`
+      ) VALUES (
+        ?1, ?2, ?3, ?4, ?5, '{"text":"draft","type":"WRITE"}', 0, 1
+      )`
     )
     .run(userId, course.courseId, course.curriculumVersionId, lessonId, stepId)
 
-  const activityDay = sqlite.query<void, [string, string, number]>(
+  const activityDay = sqlite.query<void, [string, string, number, number]>(
     `INSERT INTO learner_activity_days (
       user_id, activity_date, first_activity_at, last_activity_at,
       completed_lessons, saved_answers
-    ) VALUES (?1, ?2, ?3, ?3, 0, 1)`
+    ) VALUES (?1, ?2, ?3, ?3, ?4, 1)`
   )
-  for (const activityDate of activityDates) {
+  for (const [index, activityDate] of activityDates.entries()) {
     activityDay.run(
       userId,
       activityDate,
-      Date.parse(`${activityDate}T09:00:00+09:00`)
+      Date.parse(`${activityDate}T09:00:00+09:00`),
+      status === "completed" && index === activityDates.length - 1 ? 1 : 0
     )
   }
 }

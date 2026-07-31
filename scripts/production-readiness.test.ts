@@ -81,23 +81,50 @@ describe("production readiness", () => {
     ).toThrow("staging이어야")
   })
 
-  test("31일을 넘었거나 미래인 restore 증거를 거부한다", () => {
+  test("정확히 31일 된 restore 증거를 허용한다", () => {
     expect(() =>
       createProductionReadinessVariables(
         {
           ...validEnvironment,
-          PRODUCTION_RESTORE_DRILL_VERIFIED_AT: "2026-06-01T00:00:00Z",
+          PRODUCTION_RESTORE_DRILL_VERIFIED_AT: "2026-06-23T12:00:00Z",
         },
         now
       )
-    ).toThrow("31일 이내")
+    ).not.toThrow()
+  })
+
+  test("31일보다 1ms 오래된 restore 증거를 거부한다", () => {
     expect(() =>
       createProductionReadinessVariables(
         {
           ...validEnvironment,
-          PRODUCTION_RESTORE_DRILL_VERIFIED_AT: "2026-07-24T12:06:00Z",
+          PRODUCTION_RESTORE_DRILL_VERIFIED_AT: "2026-06-23T12:00:00Z",
+        },
+        new Date(now.getTime() + 1)
+      )
+    ).toThrow("31일 이내")
+  })
+
+  test("현재보다 정확히 5분 미래인 restore 증거를 clock skew로 허용한다", () => {
+    expect(() =>
+      createProductionReadinessVariables(
+        {
+          ...validEnvironment,
+          PRODUCTION_RESTORE_DRILL_VERIFIED_AT: "2026-07-24T12:05:00Z",
         },
         now
+      )
+    ).not.toThrow()
+  })
+
+  test("허용 clock skew보다 1ms 더 미래인 restore 증거를 거부한다", () => {
+    expect(() =>
+      createProductionReadinessVariables(
+        {
+          ...validEnvironment,
+          PRODUCTION_RESTORE_DRILL_VERIFIED_AT: "2026-07-24T12:05:00Z",
+        },
+        new Date(now.getTime() - 1)
       )
     ).toThrow("미래 시각")
   })

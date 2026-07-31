@@ -116,33 +116,6 @@ describe("generated admin client UI integration", () => {
     )
   })
 
-  it("업로드가 끝나기 전에는 진행 상태를 알린다", async () => {
-    const user = userEvent.setup()
-    const asset = createAdminContentAssetFixture()
-    let finishUpload: (() => void) | undefined
-    server.use(
-      getUploadAdminContentAssetMockHandler200(async () => {
-        await new Promise<void>((resolve) => {
-          finishUpload = resolve
-        })
-        return asset
-      })
-    )
-    renderEditor()
-
-    await uploadCover(user, asset.altText)
-
-    expect(
-      await screen.findByRole("progressbar", {
-        name: "코스 표지 업로드 진행 중",
-      })
-    ).toBeVisible()
-    finishUpload?.()
-    expect(
-      await screen.findByRole("img", { name: asset.altText })
-    ).toBeVisible()
-  })
-
   it("generated upload 409를 편집 맥락의 오류로 표시한다", async () => {
     const user = userEvent.setup()
     server.use(
@@ -164,8 +137,9 @@ describe("generated admin client UI integration", () => {
     ).toBeVisible()
   })
 
-  it("generated upload network 실패를 다시 시도 가능한 inline 오류로 표시한다", async () => {
+  it("generated upload network 실패 뒤 다시 시도하면 업로드를 완료한다", async () => {
     const user = userEvent.setup()
+    const asset = createAdminContentAssetFixture()
     server.use(
       getUploadAdminContentAssetMockHandler(() => throwMswNetworkErrorFixture())
     )
@@ -176,7 +150,18 @@ describe("generated admin client UI integration", () => {
     expect(
       await screen.findByText("네트워크 연결을 확인해 주세요.")
     ).toBeVisible()
-    expect(screen.getByRole("button", { name: "이미지 업로드" })).toBeEnabled()
+    const uploadButton = screen.getByRole("button", { name: "이미지 업로드" })
+    expect(uploadButton).toBeEnabled()
+
+    server.use(getUploadAdminContentAssetMockHandler200(asset))
+    await user.click(uploadButton)
+
+    expect(
+      await screen.findByRole("img", { name: asset.altText })
+    ).toBeVisible()
+    expect(
+      screen.queryByText("네트워크 연결을 확인해 주세요.")
+    ).not.toBeInTheDocument()
   })
 
   it("저장 409 뒤 generated editor read로 최신 충돌 문서를 제공한다", async () => {

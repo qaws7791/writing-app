@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { renderToString } from "react-dom/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -67,8 +67,8 @@ describe("로그인 및 가입 페이지", () => {
     const user = userEvent.setup()
     render(<AuthPage nextPath="/app/courses" />)
 
-    await user.type(screen.getByLabelText("이메일"), "learner@example.com")
-    await user.type(screen.getByLabelText("비밀번호"), "password")
+    changeInput("이메일", "learner@example.com")
+    changeInput("비밀번호", "password")
     await user.click(
       screen.getByRole("button", { name: "이메일로 로그인하기" })
     )
@@ -104,9 +104,9 @@ describe("로그인 및 가입 페이지", () => {
     render(<AuthPage nextPath="/app/courses" />)
 
     await user.click(screen.getByRole("tab", { name: "가입" }))
-    await user.type(screen.getByLabelText("이름"), "학습자")
-    await user.type(screen.getByLabelText("이메일"), "learner@example.com")
-    await user.type(screen.getByLabelText("비밀번호"), "Learner-password-123!")
+    changeInput("이름", "학습자")
+    changeInput("이메일", "learner@example.com")
+    changeInput("비밀번호", "Learner-password-123!")
     await user.click(screen.getByRole("button", { name: "이메일로 가입하기" }))
 
     expect(authClientMocks.requestEmailSignUp).toHaveBeenCalledWith({
@@ -140,9 +140,9 @@ describe("로그인 및 가입 페이지", () => {
     render(<AuthPage nextPath="/app" />)
 
     await user.click(screen.getByRole("tab", { name: "가입" }))
-    await user.type(screen.getByLabelText("이름"), "학습자")
-    await user.type(screen.getByLabelText("이메일"), "learner@example.com")
-    await user.type(screen.getByLabelText("비밀번호"), "short")
+    changeInput("이름", "학습자")
+    changeInput("이메일", "learner@example.com")
+    changeInput("비밀번호", "short")
     await user.click(screen.getByRole("button", { name: "이메일로 가입하기" }))
 
     expect(
@@ -159,9 +159,9 @@ describe("로그인 및 가입 페이지", () => {
     render(<AuthPage nextPath="/app" />)
 
     await user.click(screen.getByRole("tab", { name: "가입" }))
-    await user.type(screen.getByLabelText("이름"), "학습자")
-    await user.type(screen.getByLabelText("이메일"), "learner@example.com")
-    await user.type(screen.getByLabelText("비밀번호"), "Learner-password-123!")
+    changeInput("이름", "학습자")
+    changeInput("이메일", "learner@example.com")
+    changeInput("비밀번호", "Learner-password-123!")
     await user.click(screen.getByRole("button", { name: "이메일로 가입하기" }))
 
     expect(
@@ -179,8 +179,8 @@ describe("로그인 및 가입 페이지", () => {
     const user = userEvent.setup()
     render(<AuthPage nextPath="/app" />)
 
-    await user.type(screen.getByLabelText("이메일"), "learner@example.com")
-    await user.type(screen.getByLabelText("비밀번호"), "password")
+    changeInput("이메일", "learner@example.com")
+    changeInput("비밀번호", "password")
     await user.click(
       screen.getByRole("button", { name: "이메일로 로그인하기" })
     )
@@ -232,7 +232,7 @@ describe("로그인 및 가입 페이지", () => {
     await user.click(
       screen.getByRole("button", { name: "비밀번호를 잊으셨나요?" })
     )
-    await user.type(screen.getByLabelText("이메일"), "learner@example.com")
+    changeInput("이메일", "learner@example.com")
     await user.click(screen.getByRole("button", { name: "재설정 링크 받기" }))
 
     expect(authClientMocks.requestPasswordReset).toHaveBeenCalledWith(
@@ -245,3 +245,7 @@ describe("로그인 및 가입 페이지", () => {
     ).toBeInTheDocument()
   })
 })
+
+function changeInput(label: string, value: string): void {
+  fireEvent.change(screen.getByLabelText(label), { target: { value } })
+}

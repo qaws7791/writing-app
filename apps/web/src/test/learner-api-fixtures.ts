@@ -3,6 +3,7 @@ import {
   type Lesson,
 } from "@/features/lesson-session/model/lesson-view-model"
 import type {
+  LearnerCourseDetailDto,
   LearnerCourseSummaryDto,
   LearnerLessonDto,
   LearnerLessonStepDto,
@@ -50,12 +51,108 @@ export const learnerCourseSummaryFixture: LearnerCourseSummaryDto = {
   visualKey: "basic-sentence-writing",
 }
 
-const learnerAiLessonWireFixture = {
+export function createLearnerCourseDetailFixture(
+  overrides: Readonly<Partial<LearnerCourseDetailDto>> = {}
+): LearnerCourseDetailDto {
+  const version = {
+    curriculumVersionId: "c1-v1",
+    revision: 1,
+  } as const
+
+  return {
+    category: "입문자를 위한 코스",
+    contentStatus: "active",
+    cover: null,
+    description:
+      "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
+    id: "c1",
+    learning: {
+      completedLessons: 0,
+      nextLesson: {
+        currentStepId: "l1-s1",
+        currentStepIndex: 0,
+        estimatedMinutes: 5,
+        id: "l1",
+        title: "좋은 문장이란 무엇인가",
+      },
+      progressPercent: 0,
+      status: "not_started",
+      totalLessons: 2,
+      version,
+    },
+    lessonCount: 2,
+    title: "글쓰기 첫걸음 30일",
+    units: [
+      {
+        id: "u1",
+        lessons: [
+          {
+            category: "문장",
+            contentStatus: "active",
+            description: "좋은 문장을 배웁니다.",
+            estimatedMinutes: 5,
+            id: "l1",
+            learning: { status: "not_started", totalSteps: 1, version },
+            sortOrder: 1,
+            title: "좋은 문장이란 무엇인가",
+          },
+          {
+            category: "문장",
+            contentStatus: "active",
+            description: "짧게 써봅니다.",
+            estimatedMinutes: 7,
+            id: "l2",
+            learning: { status: "locked", version },
+            sortOrder: 2,
+            title: "짧게 쓰기",
+          },
+        ],
+        sortOrder: 1,
+        title: "문장의 기본기",
+      },
+    ],
+    version,
+    visualKey: "basic-sentence-writing",
+    ...overrides,
+  }
+}
+
+export function createLearnerLessonWireFixture(
+  overrides: Readonly<Partial<LearnerLessonDto>> = {}
+): LearnerLessonDto {
+  return {
+    category: "글쓰기 기초",
+    courseId: "course-1",
+    description: null,
+    drafts: [],
+    estimatedMinutes: 5,
+    id: "lesson-1",
+    learning: {
+      status: "not_started",
+      totalSteps: 1,
+      version: learnerFixtureVersion,
+    },
+    steps: [
+      {
+        body: "읽기 본문",
+        guide: "읽기 안내",
+        id: "step-1",
+        sortOrder: 1,
+        title: "읽기",
+        type: "READING",
+      },
+    ],
+    summary: [],
+    title: "테스트 레슨",
+    unitId: "unit-1",
+    version: learnerFixtureVersion,
+    ...overrides,
+  }
+}
+
+const learnerAiLessonWireFixture = createLearnerLessonWireFixture({
   category: "글쓰기 기초",
-  courseId: "course-1",
   description: "작성한 문장을 바탕으로 AI 코칭을 받습니다.",
-  drafts: [],
-  estimatedMinutes: 5,
   id: "lesson-ai",
   learning: {
     completedSteps: 1,
@@ -81,19 +178,14 @@ const learnerAiLessonWireFixture = {
       type: "AI_FEEDBACK",
     },
   ],
-  summary: [],
   title: "AI 코칭 레슨",
-  unitId: "unit-1",
-  version: learnerFixtureVersion,
-} satisfies LearnerLessonDto
+})
 
 export const learnerAiLessonFixture: Lesson = toLessonViewModel(
   learnerAiLessonWireFixture
 )
 
-const learnerWriteLessonWireFixture = {
-  category: "글쓰기 기초",
-  courseId: "course-1",
+const learnerWriteLessonWireFixture = createLearnerLessonWireFixture({
   description: "문장을 작성합니다.",
   drafts: [
     {
@@ -103,7 +195,6 @@ const learnerWriteLessonWireFixture = {
       version: 2,
     },
   ],
-  estimatedMinutes: 5,
   id: "lesson-write",
   learning: {
     completedSteps: 0,
@@ -123,11 +214,8 @@ const learnerWriteLessonWireFixture = {
       type: "WRITE",
     },
   ],
-  summary: [],
   title: "문장 쓰기",
-  unitId: "unit-1",
-  version: learnerFixtureVersion,
-} satisfies LearnerLessonDto
+})
 
 export const learnerWriteLessonFixture: Lesson = toLessonViewModel(
   learnerWriteLessonWireFixture

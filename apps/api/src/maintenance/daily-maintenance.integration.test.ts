@@ -91,11 +91,16 @@ afterEach(() => {
 
 describe("daily maintenance 실제 SQLite integration", () => {
   it("dry-run은 actual과 같은 대상 수를 집계하면서 아무 것도 변경하지 않는다", async () => {
-    const { maintenance } = await openDailyMaintenance()
+    const { maintenance, sqlite, storage } = await openDailyMaintenance()
+    const stateBeforePreview = readFixtureState(sqlite)
 
     const preview = (
       await maintenance.execute({ batchSize: 100, dryRun: true })
     )._unsafeUnwrap()
+
+    expect(readFixtureState(sqlite)).toEqual(stateBeforePreview)
+    expect(storage.deleteObjects).not.toHaveBeenCalled()
+
     const applied = (
       await maintenance.execute({ batchSize: 100, dryRun: false })
     )._unsafeUnwrap()

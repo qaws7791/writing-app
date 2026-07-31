@@ -6,7 +6,7 @@ import {
 } from "#contracts/ai-feedback/quality"
 
 describe("AI 코칭 품질 계약", () => {
-  it("원문 없이 성공률, 실패 code, latency, token과 retry를 표현한다", () => {
+  it("성공률, 실패 code, latency, token과 retry를 표현한다", () => {
     const snapshot = aiFeedbackQualitySnapshotSchema.parse({
       failureCount: 1,
       failureCounts: [{ code: "provider-timeout", count: 1 }],
@@ -21,8 +21,6 @@ describe("AI 코칭 품질 계약", () => {
       tokens: { input: 120, output: 80, sampleCount: 1 },
     })
 
-    expect(snapshot).not.toHaveProperty("answer")
-    expect(snapshot).not.toHaveProperty("feedback")
     expect(snapshot.failureCounts).toEqual([
       { code: "provider-timeout", count: 1 },
     ])

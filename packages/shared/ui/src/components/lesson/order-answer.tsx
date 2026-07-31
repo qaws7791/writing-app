@@ -109,12 +109,8 @@ export function OrderAnswer<TId extends string>({
   const onPointerDown = (e: PointerEvent, index: number) => {
     if (checked !== false) return
     e.preventDefault()
-    if (typeof (e.target as HTMLElement).setPointerCapture === "function") {
-      try {
-        ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-      } catch {
-        // ignore in headless test environments
-      }
+    if (typeof e.currentTarget.setPointerCapture === "function") {
+      e.currentTarget.setPointerCapture(e.pointerId)
     }
     const rects = itemRefs.current
       .filter((el): el is HTMLDivElement => el !== null)
@@ -153,10 +149,12 @@ export function OrderAnswer<TId extends string>({
   const onPointerUp = (e: PointerEvent) => {
     const state = dragStateRef.current
     if (!state) return
-    try {
-      ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
-    } catch {
-      // releasePointerCapture can throw in non-pointer/headless test environments
+    if (
+      typeof e.currentTarget.releasePointerCapture === "function" &&
+      (typeof e.currentTarget.hasPointerCapture !== "function" ||
+        e.currentTarget.hasPointerCapture(e.pointerId))
+    ) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
     }
     if (hoverIndex !== null && hoverIndex !== state.startIndex) {
       const next = [...orderedItems]

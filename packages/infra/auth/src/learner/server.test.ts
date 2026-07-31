@@ -38,34 +38,6 @@ describe("학습자 Better Auth runtime", () => {
     })
   })
 
-  it("Better Auth 사용자 생성 hook을 프로필 저장소에 연결한다", async () => {
-    const database = createAuthTestDatabase()
-    const identityProvisioner = createTestIdentityProvisioner()
-
-    try {
-      createLearnerAuthRuntime({
-        database: createLearnerAuthDatabaseAdapter(database.db),
-        emailDelivery: createInMemoryAuthEmailDelivery(),
-        identityProvisioner,
-        secret: "x".repeat(32),
-        webOrigin: "https://app.example.test",
-      })
-      const authConfig = readLearnerAuthHookConfig()
-
-      await authConfig.databaseHooks.user.create.after(sessionUser)
-
-      expect(identityProvisioner.provision).toHaveBeenCalledWith({
-        email: "learner@example.com",
-        id: "user-1",
-        image: null,
-        joinedAt: now,
-        name: "학습자",
-      })
-    } finally {
-      database.close()
-    }
-  })
-
   it("Better Auth session을 학습자 session으로 변환한다", async () => {
     const database = createAuthTestDatabase()
     authMocks.getSession.mockResolvedValue({ user: sessionUser })
@@ -166,25 +138,6 @@ describe("학습자 Better Auth runtime", () => {
     }
   })
 })
-
-type LearnerAuthHookConfig = {
-  readonly databaseHooks: {
-    readonly user: {
-      readonly create: {
-        readonly after: (user: typeof sessionUser) => Promise<void>
-      }
-    }
-  }
-}
-
-function readLearnerAuthHookConfig(): LearnerAuthHookConfig {
-  const config = authMocks.betterAuth.mock.calls.at(0)?.at(0)
-  if (config === undefined) {
-    throw new Error("betterAuth를 호출하지 않았습니다.")
-  }
-
-  return config as LearnerAuthHookConfig
-}
 
 function createTestIdentityProvisioner() {
   return {

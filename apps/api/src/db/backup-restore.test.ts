@@ -11,7 +11,7 @@ import {
 } from "@workspace/db/client"
 
 import { createVerifiedApplicationDatabaseBackup } from "@/db/application-database-backup"
-import { currentSchemaBaseline } from "@/db/migrate"
+import { currentSchemaBaseline, runApplicationMigrations } from "@/db/migrate"
 import { requiredApplicationBackupTableNames } from "@/db/required-application-tables"
 import { seedApplicationDatabase } from "@/db/seed"
 
@@ -115,7 +115,7 @@ describe(
       }
     })
 
-    it("현재 migration 이력이 있어도 필수 table이 없으면 backup 전에 차단한다", async () => {
+    it("현재 migration 이력이 있어도 필수 table이 없으면 backup 전에 차단한다", () => {
       const directory = mkdtempSync(
         join(tmpdir(), "writing-app-backup-schema-")
       )
@@ -125,7 +125,7 @@ describe(
       try {
         const source = createWritingAppDatabase(sourcePath)
         try {
-          await seedApplicationDatabase(source)
+          runApplicationMigrations(source.sqlite)
           source.sqlite.exec("DROP TABLE audit_events")
         } finally {
           source.close()

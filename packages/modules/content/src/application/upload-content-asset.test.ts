@@ -75,6 +75,26 @@ describe("content asset upload application", () => {
     expect(fixture.assets).toHaveLength(0)
   })
 
+  it("asset 등록과 보상 삭제가 모두 실패하면 cleanup 실패를 드러낸다", async () => {
+    const fixture = createFixture({
+      createAsset: async () => err({ kind: "content-conflict" }),
+      deleteObjects: async () => err({ retryable: false }),
+    })
+
+    await expect(fixture.upload(command())).resolves.toEqual(
+      err({
+        compensation: "failed",
+        kind: "content-asset-storage-failed",
+        operation: "compensate-delete",
+        retryable: false,
+      })
+    )
+    expect(fixture.storage.deleteObjects).toHaveBeenCalledWith([
+      "content-assets/course-cover/content-asset-1.jpg",
+    ])
+    expect(fixture.assets).toHaveLength(0)
+  })
+
   it("decode 실패와 published version 대상 업로드를 storage 전에 거절한다", async () => {
     const decodeFailure = createFixture({
       process: async () => err({ reason: "image-decode-failed" }),
@@ -116,6 +136,7 @@ function command() {
 function createFixture(
   overrides: {
     readonly createAsset?: ContentRepository["createAsset"]
+    readonly deleteObjects?: ContentAssetStoragePort["deleteObjects"]
     readonly owner?: ContentAssetOwner | null
     readonly process?: ContentApplicationDependencies["assetImageProcessor"]["process"]
     readonly putObject?: ContentAssetStoragePort["putObject"]
@@ -145,7 +166,9 @@ function createFixture(
     overrides.putObject ??
     (async () => ok({ url: "https://cdn.example.test/asset.jpg" }))
   const storage: ContentAssetStoragePort = {
-    deleteObjects: vi.fn(async () => ok(undefined)),
+    deleteObjects: vi.fn(
+      overrides.deleteObjects ?? (async () => ok(undefined))
+    ),
     putObject: vi.fn(putObject),
     resolveUrl: vi.fn(() => {
       throw new Error("upload 결과 URL은 putObject 결과가 소유한다")

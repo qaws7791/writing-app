@@ -110,35 +110,45 @@ describe("Writing App DB client", () => {
       join(tmpdir(), "writing-app-db-readonly-")
     )
     const databasePath = join(tempDirectory, "audit.sqlite")
-    const writableClient = createWritingAppDatabase(databasePath)
+    let readOnlyClient:
+      | ReturnType<typeof createReadOnlyWritingAppDatabase>
+      | undefined
+    let writableClient: ReturnType<typeof createWritingAppDatabase> | undefined
 
     try {
+      writableClient = createWritingAppDatabase(databasePath)
       writableClient.sqlite.exec(`
         CREATE TABLE readonly_probe (value TEXT NOT NULL);
         INSERT INTO readonly_probe (value) VALUES ('stored');
       `)
-    } finally {
       writableClient.close()
-    }
 
-    const readOnlyClient = createReadOnlyWritingAppDatabase(databasePath)
+      const activeReadOnlyClient =
+        createReadOnlyWritingAppDatabase(databasePath)
+      readOnlyClient = activeReadOnlyClient
 
-    try {
       expect(
-        readOnlyClient.sqlite
+        activeReadOnlyClient.sqlite
           .query<{ readonly count: number }, []>(
             "SELECT COUNT(*) AS count FROM readonly_probe"
           )
           .get()?.count
       ).toBe(1)
       expect(() =>
-        readOnlyClient.sqlite.exec(
+        activeReadOnlyClient.sqlite.exec(
           "INSERT INTO readonly_probe (value) VALUES ('blocked')"
         )
       ).toThrow()
     } finally {
-      readOnlyClient.close()
-      rmSync(tempDirectory, { recursive: true })
+      try {
+        readOnlyClient?.close()
+      } finally {
+        try {
+          writableClient?.close()
+        } finally {
+          rmSync(tempDirectory, { recursive: true })
+        }
+      }
     }
   })
 })

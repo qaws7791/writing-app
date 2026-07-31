@@ -28,21 +28,18 @@ describe("Resend 인증 메일 adapter", () => {
 
     await delivery.deliverVerification(deliveryInput)
 
-    expect(fetchImplementation).toHaveBeenCalledOnce()
-    const requestCall = fetchImplementation.mock.calls[0]
-    if (requestCall === undefined) {
-      throw new Error("Resend 요청이 기록되지 않았습니다.")
-    }
-    const [url, request] = requestCall
-    expect(url).toBe("https://api.resend.com/emails")
-    expect(request).toMatchObject({
-      headers: {
-        Authorization: "Bearer resend-secret",
-        "Content-Type": "application/json",
-        "User-Agent": "writing-app-auth/1.0",
-      },
-      method: "POST",
-    })
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      "https://api.resend.com/emails",
+      expect.objectContaining({
+        headers: {
+          Authorization: "Bearer resend-secret",
+          "Content-Type": "application/json",
+          "User-Agent": "writing-app-auth/1.0",
+        },
+        method: "POST",
+      })
+    )
+    const request = fetchImplementation.mock.calls[0]?.[1]
     expect(JSON.parse(String(request?.body))).toMatchObject({
       from: "글결 <auth@example.com>",
       reply_to: "support@example.com",
@@ -74,27 +71,36 @@ describe("Resend 인증 메일 adapter", () => {
   })
 
   it("제한 시간에 도달하면 timeout으로 정규화한다", async () => {
-    const fetchImplementation = vi.fn<AuthEmailFetch>(
-      async (_input: RequestInfo | URL, init?: RequestInit) =>
-        await new Promise<Response>((_resolve, reject) => {
-          init?.signal?.addEventListener("abort", () => {
-            reject(new DOMException("Aborted", "AbortError"))
-          })
-        })
-    )
-    const delivery = createResendAuthEmailDelivery({
-      apiKey: "resend-secret",
-      fetch: fetchImplementation,
-      from: "auth@example.com",
-      timeoutMilliseconds: 1,
-    })
+    vi.useFakeTimers()
 
-    await expect(
-      delivery.deliverVerification(deliveryInput)
-    ).rejects.toMatchObject({
-      code: "timeout",
-      message: "Auth email delivery failed: timeout",
-    })
+    try {
+      const fetchImplementation = vi.fn<AuthEmailFetch>(
+        async (_input: RequestInfo | URL, init?: RequestInit) =>
+          await new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener("abort", () => {
+              reject(new DOMException("Aborted", "AbortError"))
+            })
+          })
+      )
+      const delivery = createResendAuthEmailDelivery({
+        apiKey: "resend-secret",
+        fetch: fetchImplementation,
+        from: "auth@example.com",
+        timeoutMilliseconds: 1,
+      })
+
+      const assertion = expect(
+        delivery.deliverVerification(deliveryInput)
+      ).rejects.toMatchObject({
+        code: "timeout",
+        message: "Auth email delivery failed: timeout",
+      })
+
+      await vi.advanceTimersByTimeAsync(1)
+      await assertion
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("불완전한 구성은 provider 호출 전 fail-closed한다", () => {

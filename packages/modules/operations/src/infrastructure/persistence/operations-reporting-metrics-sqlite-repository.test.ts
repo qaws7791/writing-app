@@ -21,26 +21,16 @@ import { createSqliteOperationsReportingRepository } from "#operations/infrastru
 const reportNow = new Date("2026-07-24T03:00:00.000Z")
 
 describe("operations reporting SQL metrics", () => {
-  it("첫 시작·D7·완료·이탈을 SQL로 집계하고 deleted learner를 전부 제외한다", async () => {
-    const fixture = createReportingFixture()
+  it("dashboard와 D7 cohort는 활성 learner만 집계한다", async () => {
+    const fixture = createReportingFixture("dashboard", seedDashboardCohort)
 
     try {
-      const repository = createSqliteOperationsReportingRepository(
-        fixture.readOnly.sqlite
-      )
-      const reporting = createOperationsReportingQueries({
-        observer: () => undefined,
-        repository,
-      })
-      const dashboardResult = await reporting.readDashboard({ now: reportNow })
-      const analyticsResult = await reporting.readAnalytics({
-        days: 15,
-        now: reportNow,
-      })
-      if (dashboardResult.isErr()) throw new Error("dashboard query failed")
-      if (analyticsResult.isErr()) throw new Error("analytics query failed")
+      const reporting = createReportingQueries(fixture)
 
-      expect(dashboardResult.value).toEqual({
+      const result = await reporting.readDashboard({ now: reportNow })
+
+      if (result.isErr()) throw new Error("dashboard query failed")
+      expect(result.value).toEqual({
         activeWindow: { from: "2026-07-18", to: "2026-07-24" },
         asOfDate: "2026-07-24",
         metrics: {
@@ -63,20 +53,67 @@ describe("operations reporting SQL metrics", () => {
           totalUsers: 4,
         },
       })
-      expect(readDailyPoint(analyticsResult.value, "2026-07-10")).toEqual({
+    } finally {
+      fixture.close()
+    }
+  })
+
+  it("learner가 없으면 dashboard 비율을 empty로 반환한다", async () => {
+    const fixture = createReportingFixture("empty-dashboard")
+
+    try {
+      const reporting = createReportingQueries(fixture)
+
+      const result = await reporting.readDashboard({ now: reportNow })
+
+      if (result.isErr()) throw new Error("empty dashboard query failed")
+      expect(result.value.metrics.activationRate).toEqual({
+        denominator: 0,
+        numerator: 0,
+        percentage: null,
+        status: "empty",
+      })
+      expect(result.value.metrics.d7ReturnRate).toEqual({
+        denominator: 0,
+        matureCohortThrough: "2026-07-16",
+        numerator: 0,
+        percentage: null,
+        status: "empty",
+      })
+    } finally {
+      fixture.close()
+    }
+  })
+
+  it("daily series는 signup·첫 시작·완료와 cohort 성숙도를 날짜별로 집계한다", async () => {
+    const fixture = createReportingFixture("daily", seedDailySeries)
+
+    try {
+      const reporting = createReportingQueries(fixture)
+
+      const result = await reporting.readAnalytics({
+        days: 15,
+        now: reportNow,
+      })
+
+      if (result.isErr()) throw new Error("daily analytics query failed")
+      expect(readDailyPoint(result.value, "2026-07-10")).toEqual({
         completions: 0,
         date: "2026-07-10",
         returns: 1,
         returnStatus: "available",
-        signups: 0,
-        starts: 2,
+        signups: 1,
+        starts: 1,
       })
-      expect(readDailyPoint(analyticsResult.value, "2026-07-12")).toMatchObject(
-        {
-          completions: 1,
-        }
-      )
-      expect(readDailyPoint(analyticsResult.value, "2026-07-20")).toEqual({
+      expect(readDailyPoint(result.value, "2026-07-12")).toEqual({
+        completions: 1,
+        date: "2026-07-12",
+        returns: 0,
+        returnStatus: "empty",
+        signups: 0,
+        starts: 0,
+      })
+      expect(readDailyPoint(result.value, "2026-07-20")).toEqual({
         completions: 0,
         date: "2026-07-20",
         returns: null,
@@ -84,53 +121,51 @@ describe("operations reporting SQL metrics", () => {
         signups: 1,
         starts: 1,
       })
-      expect(readDailyPoint(analyticsResult.value, "2026-07-24")).toMatchObject(
-        {
-          signups: 1,
-        }
-      )
-      expect(analyticsResult.value.worstLessons[0]).toMatchObject({
-        completed: 2,
-        completionRate: 67,
-        dropOffRate: 33,
-        lessonId: "lesson-1",
-        started: 3,
+      expect(readDailyPoint(result.value, "2026-07-24")).toEqual({
+        completions: 0,
+        date: "2026-07-24",
+        returns: 0,
+        returnStatus: "empty",
+        signups: 1,
+        starts: 0,
       })
-      expect(analyticsResult.value.worstAiFeedbackLessons).toEqual([
-        {
-          courseId: "course-1",
-          courseTitle: "글쓰기 코스",
-          failureCount: 1,
-          failureRate: 50,
-          lessonId: "lesson-2",
-          lessonTitle: "두 번째 레슨",
-          requestCount: 2,
-        },
-        {
-          courseId: "course-1",
-          courseTitle: "글쓰기 코스",
-          failureCount: 1,
-          failureRate: 50,
-          lessonId: "lesson-1",
-          lessonTitle: "첫 번째 레슨",
-          requestCount: 2,
-        },
-      ])
-      expect(
-        JSON.stringify(analyticsResult.value.worstAiFeedbackLessons)
-      ).not.toContain("절대 노출하지 않을 답안")
     } finally {
       fixture.close()
     }
   })
 
-  it("레슨 검색·허용 정렬·pagination을 SQL에서 처리한다", () => {
-    const fixture = createReportingFixture()
+  it("lesson ranking은 시작 learner의 완료율과 이탈률로 정렬한다", async () => {
+    const fixture = createReportingFixture("lesson-ranking", seedLessonRanking)
 
     try {
-      const repository = createSqliteOperationsReportingRepository(
-        fixture.readOnly.sqlite
-      )
+      const reporting = createReportingQueries(fixture)
+
+      const result = await reporting.readAnalytics({
+        days: 1,
+        now: reportNow,
+      })
+
+      if (result.isErr()) throw new Error("lesson ranking query failed")
+      expect(result.value.worstLessons).toEqual([
+        expect.objectContaining({
+          completed: 1,
+          completionRate: 50,
+          dropOffRate: 50,
+          lessonId: "lesson-1",
+          started: 2,
+        }),
+      ])
+    } finally {
+      fixture.close()
+    }
+  })
+
+  it("lesson 검색·허용 정렬·pagination을 SQL에서 처리한다", () => {
+    const fixture = createReportingFixture("lesson-search", seedLessonSearch)
+
+    try {
+      const repository = createReportingRepository(fixture)
+
       const searched = repository.readLessonAnalytics({
         direction: "asc",
         page: 1,
@@ -163,80 +198,54 @@ describe("operations reporting SQL metrics", () => {
     }
   })
 
-  it("빈 데이터와 미성숙 cohort를 구분하고 reporting connection의 mutation을 거부한다", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "operations-reporting-empty-"))
-    const databasePath = join(directory, "reporting.sqlite")
-    const writer = createWritingAppDatabase(databasePath)
-    runCurrentTestMigration(writer.sqlite)
-    writer.close()
-    const readOnly = createReadOnlyWritingAppDatabase(databasePath)
+  it("AI 실패 ranking은 삭제 learner·기간 밖 시도·PII 원문을 제외한다", async () => {
+    const fixture = createReportingFixture("ai-feedback", seedAiFeedback)
 
     try {
-      const repository = createSqliteOperationsReportingRepository(
-        readOnly.sqlite
-      )
-      const reporting = createOperationsReportingQueries({
-        observer: () => undefined,
-        repository,
-      })
-      const dashboard = await reporting.readDashboard({ now: reportNow })
-      const analytics = await reporting.readAnalytics({
-        days: 3,
+      const reporting = createReportingQueries(fixture)
+
+      const result = await reporting.readAnalytics({
+        days: 15,
         now: reportNow,
       })
-      if (dashboard.isErr()) throw new Error("empty dashboard query failed")
-      if (analytics.isErr()) throw new Error("empty analytics query failed")
 
-      expect(dashboard.value.metrics.activationRate).toEqual({
-        denominator: 0,
-        numerator: 0,
-        percentage: null,
-        status: "empty",
-      })
-      expect(dashboard.value.metrics.d7ReturnRate).toEqual({
-        denominator: 0,
-        matureCohortThrough: "2026-07-16",
-        numerator: 0,
-        percentage: null,
-        status: "empty",
-      })
-      expect(analytics.value.dailySeries).toEqual([
+      if (result.isErr()) throw new Error("AI feedback analytics query failed")
+      expect(result.value.worstAiFeedbackLessons).toEqual([
         {
-          completions: 0,
-          date: "2026-07-22",
-          returns: 0,
-          returnStatus: "empty",
-          signups: 0,
-          starts: 0,
+          courseId: "course-1",
+          courseTitle: "글쓰기 코스",
+          failureCount: 1,
+          failureRate: 50,
+          lessonId: "lesson-2",
+          lessonTitle: "두 번째 레슨",
+          requestCount: 2,
         },
         {
-          completions: 0,
-          date: "2026-07-23",
-          returns: 0,
-          returnStatus: "empty",
-          signups: 0,
-          starts: 0,
-        },
-        {
-          completions: 0,
-          date: "2026-07-24",
-          returns: 0,
-          returnStatus: "empty",
-          signups: 0,
-          starts: 0,
+          courseId: "course-1",
+          courseTitle: "글쓰기 코스",
+          failureCount: 1,
+          failureRate: 50,
+          lessonId: "lesson-1",
+          lessonTitle: "첫 번째 레슨",
+          requestCount: 2,
         },
       ])
-      expect(
-        repository.readLessonAnalytics({
-          direction: "asc",
-          page: 1,
-          pageSize: 10,
-          query: "",
-          sort: "lesson",
-        })
-      ).toMatchObject({ items: [], totalItems: 0, totalPages: 0 })
+      expect(JSON.stringify(result.value.worstAiFeedbackLessons)).not.toContain(
+        "절대 노출하지 않을 답안"
+      )
+    } finally {
+      fixture.close()
+    }
+  })
+
+  it("reporting repository는 read-only connection의 mutation을 거부한다", () => {
+    const fixture = createReportingFixture("read-only")
+
+    try {
+      createReportingRepository(fixture)
+
       expect(() =>
-        readOnly.sqlite.exec(`
+        fixture.readOnly.sqlite.exec(`
           INSERT INTO user (
             id, name, email, email_verified, created_at, updated_at
           )
@@ -244,168 +253,279 @@ describe("operations reporting SQL metrics", () => {
         `)
       ).toThrow(/read.?only/i)
     } finally {
-      readOnly.close()
-      rmSync(directory, { recursive: true })
+      fixture.close()
     }
   })
 })
 
-function createReportingFixture(): Readonly<{
+type ReportingFixture = Readonly<{
   close: () => void
   readOnly: ReturnType<typeof createReadOnlyWritingAppDatabase>
-}> {
-  const directory = mkdtempSync(join(tmpdir(), "operations-reporting-"))
+}>
+
+function createReportingFixture(
+  name: string,
+  seed: (sqlite: WritingAppSqlite) => void = () => undefined
+): ReportingFixture {
+  const directory = mkdtempSync(join(tmpdir(), `operations-reporting-${name}-`))
   const databasePath = join(directory, "reporting.sqlite")
-  const writer = createWritingAppDatabase(databasePath)
+  let readOnly: ReturnType<typeof createReadOnlyWritingAppDatabase> | undefined
+  let writer: ReturnType<typeof createWritingAppDatabase> | undefined
 
   try {
+    writer = createWritingAppDatabase(databasePath)
     runCurrentTestMigration(writer.sqlite)
-    for (const learner of [
-      { createdAt: "2026-07-01T09:00:00+09:00", id: "learner-a" },
-      { createdAt: "2026-07-01T09:00:00+09:00", id: "learner-b" },
-      { createdAt: "2026-07-20T09:00:00+09:00", id: "learner-c" },
-      { createdAt: "2026-07-24T09:00:00+09:00", id: "learner-e" },
-    ]) {
-      aLearner(writer.sqlite, {
-        createdAt: Date.parse(learner.createdAt),
-        id: learner.id,
-        status: "active",
-      })
-    }
-    aLearner(writer.sqlite, {
-      createdAt: Date.parse("2026-07-20T09:00:00+09:00"),
-      deletedAt: Date.parse("2026-07-20T09:00:00+09:00"),
-      id: "learner-d",
-      status: "deleted",
-    })
-
-    const course = aPublishedCourse(writer.sqlite, {
-      additionalLessons: [{ lessonTitle: "두 번째 레슨" }],
-      courseTitle: "글쓰기 코스",
-      lessonTitle: "첫 번째 레슨",
-    })
-    aLearnerWithProgress(writer.sqlite, {
-      activityDates: ["2026-07-10", "2026-07-11"],
-      completedAt: Date.parse("2026-07-12T10:00:00+09:00"),
-      course,
-      startedAt: Date.parse("2026-07-10T09:00:00+09:00"),
-      status: "completed",
-      userId: "learner-a",
-    })
-    aLearnerWithProgress(writer.sqlite, {
-      activityDates: ["2026-07-10"],
-      course,
-      startedAt: Date.parse("2026-07-10T10:00:00+09:00"),
-      userId: "learner-b",
-    })
-    aLearnerWithProgress(writer.sqlite, {
-      activityDates: ["2026-07-20", "2026-07-21"],
-      completedAt: Date.parse("2026-07-22T10:00:00+09:00"),
-      course,
-      startedAt: Date.parse("2026-07-20T09:00:00+09:00"),
-      status: "completed",
-      userId: "learner-c",
-    })
-    aLearnerWithProgress(writer.sqlite, {
-      activityDates: ["2026-07-10", "2026-07-12"],
-      completedAt: Date.parse("2026-07-12T11:00:00+09:00"),
-      course,
-      startedAt: Date.parse("2026-07-10T11:00:00+09:00"),
-      status: "completed",
-      userId: "learner-d",
-    })
-    insertAiFeedbackAttempts(writer.sqlite, course)
-  } finally {
+    seed(writer.sqlite)
     writer.close()
+    readOnly = createReadOnlyWritingAppDatabase(databasePath)
+  } catch (error) {
+    try {
+      closeReportingDatabases(readOnly, writer, directory)
+    } catch (cleanupError) {
+      throw new AggregateError(
+        [error, cleanupError],
+        "Operations reporting fixture setup과 정리에 실패했습니다."
+      )
+    }
+    throw error
   }
 
-  const readOnly = createReadOnlyWritingAppDatabase(databasePath)
+  if (readOnly === undefined) {
+    closeReportingDatabases(readOnly, writer, directory)
+    throw new Error("Operations reporting read-only fixture가 없습니다.")
+  }
+
+  const activeReadOnly = readOnly
+  let closed = false
   return {
     close() {
-      readOnly.close()
-      rmSync(directory, { recursive: true })
+      if (closed) return
+      closed = true
+      closeReportingDatabases(activeReadOnly, writer, directory)
     },
-    readOnly,
+    readOnly: activeReadOnly,
   }
+}
+
+function closeReportingDatabases(
+  readOnly: ReturnType<typeof createReadOnlyWritingAppDatabase> | undefined,
+  writer: ReturnType<typeof createWritingAppDatabase> | undefined,
+  directory: string
+): void {
+  try {
+    readOnly?.close()
+  } finally {
+    try {
+      writer?.close()
+    } finally {
+      rmSync(directory, { recursive: true })
+    }
+  }
+}
+
+function createReportingRepository(fixture: ReportingFixture) {
+  return createSqliteOperationsReportingRepository(fixture.readOnly.sqlite)
+}
+
+function createReportingQueries(fixture: ReportingFixture) {
+  return createOperationsReportingQueries({
+    observer: () => undefined,
+    repository: createReportingRepository(fixture),
+  })
+}
+
+function seedDashboardCohort(sqlite: WritingAppSqlite): void {
+  const course = aPublishedCourse(sqlite)
+  for (const learner of [
+    { createdAt: "2026-07-01T09:00:00+09:00", id: "learner-a" },
+    { createdAt: "2026-07-01T09:00:00+09:00", id: "learner-b" },
+    { createdAt: "2026-07-20T09:00:00+09:00", id: "learner-c" },
+    { createdAt: "2026-07-24T09:00:00+09:00", id: "learner-e" },
+  ]) {
+    aLearner(sqlite, {
+      createdAt: Date.parse(learner.createdAt),
+      id: learner.id,
+      status: "active",
+    })
+  }
+  aLearner(sqlite, {
+    createdAt: Date.parse("2026-07-20T09:00:00+09:00"),
+    deletedAt: Date.parse("2026-07-20T09:00:00+09:00"),
+    id: "learner-d",
+    status: "deleted",
+  })
+
+  aLearnerWithProgress(sqlite, {
+    activityDates: ["2026-07-10", "2026-07-11"],
+    completedAt: Date.parse("2026-07-12T10:00:00+09:00"),
+    course,
+    startedAt: Date.parse("2026-07-10T09:00:00+09:00"),
+    status: "completed",
+    userId: "learner-a",
+  })
+  aLearnerWithProgress(sqlite, {
+    activityDates: ["2026-07-10"],
+    course,
+    startedAt: Date.parse("2026-07-10T10:00:00+09:00"),
+    userId: "learner-b",
+  })
+  aLearnerWithProgress(sqlite, {
+    activityDates: ["2026-07-20", "2026-07-21"],
+    completedAt: Date.parse("2026-07-22T10:00:00+09:00"),
+    course,
+    startedAt: Date.parse("2026-07-20T09:00:00+09:00"),
+    status: "completed",
+    userId: "learner-c",
+  })
+  aLearnerWithProgress(sqlite, {
+    activityDates: ["2026-07-10", "2026-07-12"],
+    completedAt: Date.parse("2026-07-12T11:00:00+09:00"),
+    course,
+    startedAt: Date.parse("2026-07-10T11:00:00+09:00"),
+    status: "completed",
+    userId: "learner-d",
+  })
+}
+
+function seedDailySeries(sqlite: WritingAppSqlite): void {
+  const course = aPublishedCourse(sqlite)
+  aLearner(sqlite, {
+    createdAt: Date.parse("2026-07-10T09:00:00+09:00"),
+    id: "learner-a",
+  })
+  aLearner(sqlite, {
+    createdAt: Date.parse("2026-07-20T09:00:00+09:00"),
+    id: "learner-b",
+  })
+  aLearner(sqlite, {
+    createdAt: Date.parse("2026-07-24T09:00:00+09:00"),
+    id: "learner-c",
+  })
+  aLearnerWithProgress(sqlite, {
+    activityDates: ["2026-07-10", "2026-07-11"],
+    completedAt: Date.parse("2026-07-12T10:00:00+09:00"),
+    course,
+    startedAt: Date.parse("2026-07-10T09:00:00+09:00"),
+    status: "completed",
+    userId: "learner-a",
+  })
+  aLearnerWithProgress(sqlite, {
+    activityDates: ["2026-07-20", "2026-07-21"],
+    course,
+    startedAt: Date.parse("2026-07-20T09:00:00+09:00"),
+    userId: "learner-b",
+  })
+}
+
+function seedLessonRanking(sqlite: WritingAppSqlite): void {
+  const course = aPublishedCourse(sqlite)
+  aLearner(sqlite, { id: "learner-a" })
+  aLearner(sqlite, { id: "learner-b" })
+  aLearnerWithProgress(sqlite, {
+    course,
+    completedAt: 2,
+    status: "completed",
+    userId: "learner-a",
+  })
+  aLearnerWithProgress(sqlite, {
+    course,
+    userId: "learner-b",
+  })
+}
+
+function seedLessonSearch(sqlite: WritingAppSqlite): void {
+  const course = aPublishedCourse(sqlite, {
+    additionalLessons: [{ lessonTitle: "두 번째 레슨" }],
+    lessonTitle: "첫 번째 레슨",
+  })
+  aLearner(sqlite, { id: "learner-a" })
+  aLearnerWithProgress(sqlite, {
+    course,
+    userId: "learner-a",
+  })
+}
+
+function seedAiFeedback(sqlite: WritingAppSqlite): void {
+  const course = aPublishedCourse(sqlite, {
+    additionalLessons: [{ lessonTitle: "두 번째 레슨" }],
+    courseTitle: "글쓰기 코스",
+    lessonTitle: "첫 번째 레슨",
+  })
+  aLearner(sqlite, { id: "learner-a" })
+  aLearner(sqlite, {
+    deletedAt: 2,
+    id: "learner-deleted",
+    status: "deleted",
+  })
+  insertAiFeedbackAttempts(sqlite, course)
 }
 
 function insertAiFeedbackAttempts(
   sqlite: WritingAppSqlite,
   course: PublishedCourseFixture
 ): void {
-  const attempts = [
+  for (const attempt of [
     {
       createdAt: "2026-07-20T10:00:00+09:00",
       failureCode: "provider-timeout",
-      id: "attempt-lesson-1-failed",
-      lesson: "lesson-1",
+      id: "attempt-failed",
+      lessonId: "lesson-1",
       quotaDate: "2026-07-20",
       status: "failed",
-      step: "step-1",
+      stepId: "step-1",
       userId: "learner-a",
     },
     {
       createdAt: "2026-07-20T10:01:00+09:00",
       failureCode: null,
-      id: "attempt-lesson-1-succeeded",
-      lesson: "lesson-1",
+      id: "attempt-succeeded",
+      lessonId: "lesson-1",
       quotaDate: "2026-07-20",
       status: "succeeded",
-      step: "step-1",
-      userId: "learner-b",
+      stepId: "step-1",
+      userId: "learner-a",
     },
     {
       createdAt: "2026-07-20T10:02:00+09:00",
       failureCode: "provider-timeout",
       id: "attempt-lesson-2-failed",
-      lesson: "lesson-2",
+      lessonId: "lesson-2",
       quotaDate: "2026-07-20",
       status: "failed",
-      step: "step-2",
-      userId: "learner-b",
+      stepId: "step-2",
+      userId: "learner-a",
     },
     {
       createdAt: "2026-07-20T10:03:00+09:00",
       failureCode: null,
       id: "attempt-lesson-2-succeeded",
-      lesson: "lesson-2",
+      lessonId: "lesson-2",
       quotaDate: "2026-07-20",
       status: "succeeded",
-      step: "step-2",
+      stepId: "step-2",
       userId: "learner-a",
     },
     {
       createdAt: "2026-07-20T10:04:00+09:00",
       failureCode: "provider-timeout",
       id: "attempt-deleted-learner",
-      lesson: "lesson-1",
+      lessonId: "lesson-1",
       quotaDate: "2026-07-20",
       status: "failed",
-      step: "step-1",
-      userId: "learner-d",
+      stepId: "step-1",
+      userId: "learner-deleted",
     },
     {
       createdAt: "2026-06-20T10:00:00+09:00",
       failureCode: "provider-timeout",
       id: "attempt-outside-period",
-      lesson: "lesson-2",
+      lessonId: "lesson-2",
       quotaDate: "2026-06-20",
       status: "failed",
-      step: "step-2",
-      userId: "learner-c",
+      stepId: "step-2",
+      userId: "learner-a",
     },
-  ] as const satisfies readonly Readonly<{
-    createdAt: string
-    failureCode: string | null
-    id: string
-    lesson: string
-    quotaDate: string
-    status: "failed" | "succeeded"
-    step: string
-    userId: string
-  }>[]
-
-  for (const attempt of attempts) {
+  ] as const) {
     aAiFeedbackAttempt(sqlite, {
       answerText: "절대 노출하지 않을 답안",
       attemptId: attempt.id,
@@ -413,11 +533,11 @@ function insertAiFeedbackAttempts(
       createdAt: Date.parse(attempt.createdAt),
       failureCode: attempt.failureCode,
       idempotencyKey: attempt.id,
-      lessonId: attempt.lesson,
+      lessonId: attempt.lessonId,
       quotaDate: attempt.quotaDate,
       resultJson: attempt.status === "succeeded" ? "{}" : null,
       status: attempt.status,
-      stepId: attempt.step,
+      stepId: attempt.stepId,
       userId: attempt.userId,
     })
   }

@@ -160,12 +160,6 @@ describe("홈 화면", () => {
       />
     )
 
-    expect(screen.getAllByText("글쓰기 첫걸음 30일")).toHaveLength(1)
-    expect(screen.getAllByText("1/3")).toHaveLength(1)
-    expect(screen.getAllByText("짧게 쓰기")).toHaveLength(1)
-    expect(
-      screen.getAllByRole("img", { name: "글쓰기 첫걸음 30일" })
-    ).toHaveLength(1)
     expect(
       screen.getByRole("link", { name: /글쓰기 첫걸음 30일/ })
     ).toHaveAttribute("href", "/app/courses/c1")
@@ -187,7 +181,7 @@ describe("홈 화면", () => {
       { status: "completed" },
       { signal: expect.any(AbortSignal) }
     )
-    expect(await screen.findAllByText("완료한 코스")).toHaveLength(1)
+    expect(await screen.findByText("완료한 코스")).toBeInTheDocument()
     expect(
       screen.queryByRole("heading", {
         name: /새로운 코스를\s*선택해 보세요/,

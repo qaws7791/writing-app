@@ -16,8 +16,8 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
     throw new Error("초안 복구 코스 링크에 이동 경로가 없습니다.")
   }
   await page.goto(new URL(courseHref, learnerWebOrigin).toString())
-  await page.waitForLoadState("networkidle")
   const startLink = page.getByRole("link", { name: "학습 시작하기" })
+  await expect(startLink).toBeVisible()
   const startHref = await startLink.getAttribute("href")
   if (startHref === null) {
     throw new Error("학습 시작 링크에 이동 경로가 없습니다.")
@@ -26,11 +26,8 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
 
   const startButton = page.getByRole("button", { name: "시작하기" })
   const answer = page.getByRole("textbox")
-  await expect(startButton.or(answer)).toBeVisible()
-  if (await startButton.isVisible()) {
-    await expect(startButton).toBeEnabled()
-    await startButton.click()
-  }
+  await expect(startButton).toBeEnabled()
+  await startButton.click()
 
   const lessonPath = `${new URL(page.url()).pathname}${new URL(page.url()).search}`
   const firstDraft = `${testInfo.project.name} 새로고침 복구 초안`
@@ -102,7 +99,7 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
 test("debounce가 끝나기 전에 탭을 닫아도 초안을 잃지 않는다", async ({
   browser,
 }, testInfo) => {
-  const lessonPath = "/app/lesson?lesson_id=e2e-draft-lesson"
+  const lessonPath = "/app/lesson?lesson_id=e2e-unload-draft-lesson"
   const draft = `${testInfo.project.name} 탭 종료 직전 초안`
   const context = await browser.newContext()
   const diagnostics = observeBrowserContext(context)
@@ -111,11 +108,8 @@ test("debounce가 끝나기 전에 탭을 닫아도 초안을 잃지 않는다",
 
   const startButton = page.getByRole("button", { name: "시작하기" })
   const answer = page.getByRole("textbox")
-  await expect(startButton.or(answer)).toBeVisible()
-  if (await startButton.isVisible()) {
-    await expect(startButton).toBeEnabled()
-    await startButton.click()
-  }
+  await expect(startButton).toBeEnabled()
+  await startButton.click()
   await expect(answer).toBeVisible()
 
   const completedDraftSaves: number[] = []

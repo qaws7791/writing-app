@@ -68,6 +68,39 @@ describe("private S3-compatible object storage", () => {
     expect(send).toHaveBeenCalledTimes(2)
   })
 
+  it("다음 page token이 없는 truncated 응답을 실패로 처리한다", async () => {
+    const storage = createS3PrivateObjectStorage(config, {
+      client: {
+        send: async () => ({
+          Contents: [{ Key: "prefix/a.json" }],
+          IsTruncated: true,
+        }),
+      },
+    })._unsafeUnwrap()
+
+    expect(
+      (await storage.listObjectKeys("prefix/"))._unsafeUnwrapErr()
+    ).toMatchObject({
+      kind: "operation-failed",
+      operation: "list-objects",
+      retryable: true,
+    })
+  })
+
+  it("본문 없는 get 응답을 성공으로 처리하지 않는다", async () => {
+    const storage = createS3PrivateObjectStorage(config, {
+      client: { send: async () => ({}) },
+    })._unsafeUnwrap()
+
+    expect(
+      (await storage.getObject(markerObjectKey))._unsafeUnwrapErr()
+    ).toMatchObject({
+      kind: "operation-failed",
+      operation: "get-object",
+      retryable: true,
+    })
+  })
+
   it("불완전한 private config를 fail-closed한다", () => {
     expect(
       createS3PrivateObjectStorage({ ...config, bucket: "" }).isErr()

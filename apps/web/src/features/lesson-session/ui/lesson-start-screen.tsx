@@ -14,12 +14,14 @@ import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
 const LESSON_TITLE_ID = "lesson-start-title"
 
 export function LessonStartScreen({
+  isInteractive,
   isSavingStart,
   lesson,
   onExit,
   onStart,
   startError,
 }: {
+  readonly isInteractive: boolean
   readonly isSavingStart: boolean
   readonly lesson: Lesson
   readonly onExit: () => void
@@ -38,7 +40,7 @@ export function LessonStartScreen({
           <Button
             aria-busy={isSavingStart || undefined}
             className="w-full"
-            disabled={isSavingStart}
+            disabled={!isInteractive || isSavingStart}
             onClick={onStart}
             size="extra"
           >

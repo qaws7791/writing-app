@@ -63,10 +63,9 @@ describe("코스 목록 화면", () => {
       "href",
       "/app/courses?category=%EB%AC%B8%EB%B2%95+%EC%8B%AC%ED%99%94"
     )
-    expect(screen.getAllByRole("link", { name: /문장/ })[0]).toHaveAttribute(
-      "href",
-      "/app/courses/c2"
-    )
+    expect(
+      screen.getByRole("link", { name: /문장의 기본 문법/ })
+    ).toHaveAttribute("href", "/app/courses/c2")
     expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
   })
 
@@ -119,55 +118,13 @@ describe("코스 목록 화면", () => {
     )
   })
 
-  it.each([
-    [
-      "network",
-      new GeneratedApiClientError({
-        kind: "network",
-        method: "GET",
-        url: "courses",
-      }),
-      "API에 연결할 수 없습니다.",
-    ],
-    [
-      "contract",
+  it("contract 실패를 더 보기 오류로 보여준다", async () => {
+    const user = userEvent.setup()
+    getCourses.mockRejectedValueOnce(
       new GeneratedApiClientError({
         kind: "contract",
         reason: "invalid-json-response",
         status: 200,
-      }),
-      "API 계약을 해석할 수 없습니다.",
-    ],
-  ])("%s 실패를 더 보기 오류로 보여준다", async (_kind, error, message) => {
-    const user = userEvent.setup()
-    getCourses.mockRejectedValueOnce(error)
-    render(
-      <CoursesPage
-        categories={[]}
-        courses={[beginnerCourse]}
-        filters={{ category: "" }}
-        nextCursor="next-page"
-      />
-    )
-
-    await user.click(screen.getByRole("button", { name: "코스 더 보기" }))
-
-    expect(await screen.findByRole("alert")).toHaveTextContent(message)
-  })
-
-  it("더 보기 중 401이면 서버 route를 다시 확인한다", async () => {
-    const user = userEvent.setup()
-    getCourses.mockRejectedValueOnce(
-      new GeneratedApiClientError({
-        error: {
-          code: "UNAUTHENTICATED",
-          message: "로그인이 필요합니다.",
-          requestId: "request-1",
-          violations: [],
-        },
-        kind: "http",
-        retryAfterSeconds: null,
-        status: 401,
       })
     )
     render(
@@ -181,7 +138,8 @@ describe("코스 목록 화면", () => {
 
     await user.click(screen.getByRole("button", { name: "코스 더 보기" }))
 
-    expect(refresh).toHaveBeenCalledOnce()
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "API 계약을 해석할 수 없습니다."
+    )
   })
 })

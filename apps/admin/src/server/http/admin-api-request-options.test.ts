@@ -23,10 +23,7 @@ vi.mock("@/server/env/admin-runtime-config", () => ({
   readServerApiBaseUrl: readServerApiBaseUrlMock,
 }))
 
-import {
-  createServerAdminRequestOptions,
-  getServerAdminRequestOptions,
-} from "@/server/http/admin-api-request-options"
+import { getServerAdminRequestOptions } from "@/server/http/admin-api-request-options"
 
 describe("admin generated API server options", () => {
   beforeEach(() => {
@@ -60,13 +57,6 @@ describe("admin generated API server options", () => {
 
     await expect(getServerAdminRequestOptions()).resolves.toBeNull()
     expect(createGeneratedRequestOptionsMock).not.toHaveBeenCalled()
-  })
-
-  it("Server Action이 이미 확인한 token으로 cookie를 한 번만 구성할 수 있다", () => {
-    createServerAdminRequestOptions("session-token")
-
-    expect(getServerAdminSessionTokenMock).not.toHaveBeenCalled()
-    expect(createGeneratedRequestOptionsMock).toHaveBeenCalledOnce()
   })
 
   it("Orval JSON mutation이 spread할 조건부 header를 plain record로 보존한다", async () => {

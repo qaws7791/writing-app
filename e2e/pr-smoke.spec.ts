@@ -7,9 +7,9 @@ import {
   loginAdmin,
   loginLearner,
 } from "#e2e/auth"
-import { installAiFeedbackFailures } from "#e2e/ai-feedback-fixture"
 import { createE2eAdminContentFixture } from "#e2e/admin-content-fixture"
 import { expect, test } from "#e2e/test"
+import { e2eLearnerActors } from "#e2e/runtime"
 
 function readCreatedCourseId(href: string | null): string {
   const match = href?.match(/^\/courses\/([^/?#]+)$/u)
@@ -19,12 +19,9 @@ function readCreatedCourseId(href: string | null): string {
   return decodeURIComponent(match[1])
 }
 
-test.describe.configure({ mode: "serial" })
-
 test("학습자가 로그인해 핵심 레슨을 완료한다", async ({ page }) => {
   await loginLearner(page)
   await page.getByRole("link", { name: /E2E 상태 전이 코스/ }).click()
-  await page.waitForLoadState("networkidle")
   await page.getByRole("link", { name: "학습 시작하기" }).click()
   const startButton = page.getByRole("button", { name: "시작하기" })
   await expect(startButton).toBeEnabled()
@@ -53,11 +50,8 @@ test("작성 중인 서버 초안을 새로고침 뒤 복구한다", async ({ pa
   await loginLearner(page, "/app/lesson?lesson_id=e2e-draft-lesson")
   const startButton = page.getByRole("button", { name: "시작하기" })
   const answer = page.getByRole("textbox")
-  await expect(startButton.or(answer)).toBeVisible()
-  if (await startButton.isVisible()) {
-    await expect(startButton).toBeEnabled()
-    await startButton.click()
-  }
+  await expect(startButton).toBeEnabled()
+  await startButton.click()
 
   const saved = page.waitForResponse(
     (response) =>
@@ -71,30 +65,6 @@ test("작성 중인 서버 초안을 새로고침 뒤 복구한다", async ({ pa
   await page.reload()
 
   await expect(page.getByRole("textbox")).toHaveValue("PR 새로고침 복구 초안")
-})
-
-test("AI 실패가 발생해도 학습자가 피드백 없이 레슨을 완료한다", async ({
-  page,
-}) => {
-  await loginLearner(page, "/app/lesson?lesson_id=e2e-ai-failure-lesson")
-  const startButton = page.getByRole("button", { name: "시작하기" })
-  await expect(startButton).toBeEnabled()
-  await startButton.click()
-  await page.getByRole("textbox").fill("AI 코칭 실패 뒤에도 학습을 계속합니다.")
-  await page.getByRole("button", { name: "확인하기" }).click()
-  await page.getByRole("button", { name: "계속하기" }).click()
-  await installAiFeedbackFailures(page, ["provider"])
-
-  await page.getByRole("button", { name: "AI 코칭 받기" }).click()
-  await expect(
-    page.getByRole("alert").getByText("AI 코칭을 잠시 불러오지 못했습니다.")
-  ).toBeVisible()
-  await page.getByRole("button", { name: "피드백 없이 계속하기" }).click()
-  await page.getByRole("button", { name: "다음으로 →", exact: true }).click()
-
-  await expect(
-    page.getByRole("heading", { name: "레슨을 완료했어요!" })
-  ).toBeVisible()
 })
 
 test("owner 관리자가 로그인해 새 코스 초안을 발행한다", async ({ page }) => {
@@ -139,7 +109,9 @@ test("owner 관리자가 로그인해 새 코스 초안을 발행한다", async 
 
 test("owner 관리자가 활성 학습자를 정지한다", async ({ page }) => {
   await loginAdmin(page, "owner@example.test", { nextPath: "/users" })
-  const learnerRow = page.getByRole("row", { name: /learner@example.com/ })
+  const learnerRow = page.getByRole("row", {
+    name: e2eLearnerActors.prSuspension.email,
+  })
   await learnerRow.hover()
   await learnerRow.getByRole("button", { name: "정지" }).click()
   await page

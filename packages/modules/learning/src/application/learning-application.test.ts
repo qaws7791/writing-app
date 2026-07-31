@@ -164,55 +164,6 @@ describe("learning application", () => {
     )
   })
 
-  it("answer, acknowledge와 AI fallback을 명시적 completion으로 전달한다", async () => {
-    const fixture = createFixture()
-    const submission = {
-      selectedOptionId: lessonStepItemIdSchema.parse("answer-1"),
-      type: "MULTIPLE_CHOICE" as const,
-    }
-
-    await fixture.application.submitStep({
-      completion: { kind: "answer", submission },
-      learnerId,
-      lessonId,
-      stepId,
-    })
-    await fixture.application.submitStep({
-      completion: { kind: "acknowledge" },
-      learnerId,
-      lessonId,
-      stepId,
-    })
-    await fixture.application.submitStep({
-      completion: { kind: "skip-ai-feedback" },
-      learnerId,
-      lessonId,
-      stepId: nextStepId,
-    })
-
-    expect(
-      fixture.dependencies.transitionRepository.completeStep
-    ).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({ completion: { kind: "answer", submission } }),
-      curriculum
-    )
-    expect(
-      fixture.dependencies.transitionRepository.completeStep
-    ).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({ completion: { kind: "acknowledge" } }),
-      curriculum
-    )
-    expect(
-      fixture.dependencies.transitionRepository.completeStep
-    ).toHaveBeenNthCalledWith(
-      3,
-      expect.objectContaining({ completion: { kind: "skip-ai-feedback" } }),
-      curriculum
-    )
-  })
-
   it("draft command에 인증·pinned revision·expected version을 적용한다", async () => {
     const fixture = createFixture({ pinned: true })
     const answer = { text: "저장할 초안", type: "WRITE" as const }
@@ -379,48 +330,56 @@ describe("learning application", () => {
     )
   })
 
-  it("AI 준비 거부, provider 실패와 finalize conflict를 각각 그대로 반환한다", async () => {
-    const cases = [
-      createFixture({
-        prepareResult: err({
-          kind: "feedback-answer-not-found",
-          targetStepId: stepId,
+  it.each([
+    {
+      createCase: () =>
+        createFixture({
+          prepareResult: err({
+            kind: "feedback-answer-not-found",
+            targetStepId: stepId,
+          }),
         }),
-      }),
-      createFixture({
-        aiResult: err({
-          kind: "provider-unavailable",
-          remainingAttempts: 1,
+      expectedKind: "feedback-answer-not-found",
+      name: "AI 준비 거부",
+    },
+    {
+      createCase: () =>
+        createFixture({
+          aiResult: err({
+            kind: "provider-unavailable",
+            remainingAttempts: 1,
+          }),
         }),
-      }),
-      createFixture({
-        completeAiResult: err({
-          kind: "step-sequence-conflict",
-          lessonId,
-          stepId: nextStepId,
+      expectedKind: "provider-unavailable",
+      name: "provider 실패",
+    },
+    {
+      createCase: () =>
+        createFixture({
+          completeAiResult: err({
+            kind: "step-sequence-conflict",
+            lessonId,
+            stepId: nextStepId,
+          }),
         }),
-      }),
-    ]
+      expectedKind: "step-sequence-conflict",
+      name: "finalize conflict",
+    },
+  ] as const)(
+    "$name 결과를 그대로 반환한다",
+    async ({ createCase, expectedKind }) => {
+      const fixture = createCase()
 
-    const results = await Promise.all(
-      cases.map((fixture) =>
-        fixture.application.requestAiFeedback({
-          idempotencyKey: "request-1",
-          learnerId,
-          lessonId,
-          stepId: nextStepId,
-        })
-      )
-    )
+      const result = await fixture.application.requestAiFeedback({
+        idempotencyKey: "request-1",
+        learnerId,
+        lessonId,
+        stepId: nextStepId,
+      })
 
-    expect(
-      results.map((result) => (result.isErr() ? result.error.kind : null))
-    ).toEqual([
-      "feedback-answer-not-found",
-      "provider-unavailable",
-      "step-sequence-conflict",
-    ])
-  })
+      expect(result._unsafeUnwrapErr().kind).toBe(expectedKind)
+    }
+  )
 })
 
 const advanced = {

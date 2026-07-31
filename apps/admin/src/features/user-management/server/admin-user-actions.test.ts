@@ -34,25 +34,28 @@ describe("admin user actions", () => {
     getServerAdminRequestOptionsMock.mockResolvedValue({})
   })
 
-  it("상태 변경과 삭제 성공 시 목록과 상세를 재검증한다", async () => {
+  it("상태 변경 성공 시 목록과 상세를 재검증한다", async () => {
     updateAdminUserStatusMock.mockResolvedValue({})
-    deleteAdminUserMock.mockResolvedValue({ deleted: true })
 
     await updateAdminUserStatusAction({ status: "active", userId })
-    await deleteAdminUserAction(userId)
 
     expect(updateAdminUserStatusMock).toHaveBeenCalledWith(
       "user-1",
       { status: "active" },
       {}
     )
+    expect(revalidatePathMock).toHaveBeenCalledWith("/users")
+    expect(revalidatePathMock).toHaveBeenCalledWith("/users/user-1")
+  })
+
+  it("삭제 성공 시 목록과 상세를 재검증한다", async () => {
+    deleteAdminUserMock.mockResolvedValue({ deleted: true })
+
+    await deleteAdminUserAction(userId)
+
     expect(deleteAdminUserMock).toHaveBeenCalledWith("user-1", {})
-    expect(revalidatePathMock.mock.calls).toEqual([
-      ["/users"],
-      ["/users/user-1"],
-      ["/users"],
-      ["/users/user-1"],
-    ])
+    expect(revalidatePathMock).toHaveBeenCalledWith("/users")
+    expect(revalidatePathMock).toHaveBeenCalledWith("/users/user-1")
   })
 
   it("API 실패에서는 경로를 재검증하지 않는다", async () => {
@@ -69,12 +72,18 @@ describe("admin user actions", () => {
     expect(revalidatePathMock).not.toHaveBeenCalled()
   })
 
-  it("잘못된 입력과 미인증 요청은 API를 호출하지 않는다", async () => {
+  it("잘못된 상태 입력은 상태 변경 API를 호출하지 않는다", async () => {
     await updateAdminUserStatusAction({ status: "deleted", userId })
-    getServerAdminRequestOptionsMock.mockResolvedValue(null)
-    await deleteAdminUserAction(userId)
 
     expect(updateAdminUserStatusMock).not.toHaveBeenCalled()
+    expect(revalidatePathMock).not.toHaveBeenCalled()
+  })
+
+  it("미인증 삭제 요청은 API를 호출하지 않는다", async () => {
+    getServerAdminRequestOptionsMock.mockResolvedValue(null)
+
+    await deleteAdminUserAction(userId)
+
     expect(deleteAdminUserMock).not.toHaveBeenCalled()
     expect(revalidatePathMock).not.toHaveBeenCalled()
   })

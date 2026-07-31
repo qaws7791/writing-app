@@ -1,23 +1,16 @@
 "use client"
 
-import { useSyncExternalStore } from "react"
 import { useTheme } from "next-themes"
 
+import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 import {
   ThemeSelector,
   type ThemeValue,
 } from "@workspace/ui/components/ui/theme-selector"
-const noopSubscribe = () => () => {}
-const clientMountedSnapshot = () => true
-const serverMountedSnapshot = () => false
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme()
-  const mounted = useSyncExternalStore(
-    noopSubscribe,
-    clientMountedSnapshot,
-    serverMountedSnapshot
-  )
+  const mounted = useIsHydrated()
   const active = mounted && isThemeValue(theme) ? theme : "system"
 
   return (

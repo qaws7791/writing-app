@@ -81,11 +81,21 @@ describe("identity HTTP interface", () => {
     })
   })
 
-  it("인증된 read와 관리자 mutation 성공 응답을 canonical schema로 검증한다", async () => {
+  it("인증된 관리자 목록 응답을 canonical schema로 반환한다", async () => {
     const app = createIdentityHttpFixture()
     const listResponse = await app.request("/users?page=1&pageSize=12", {
       headers: { Cookie: "admin=valid" },
     })
+
+    expect(listResponse.status).toBe(200)
+    await expect(listResponse.json()).resolves.toMatchObject({
+      items: [{ id: "user-1", status: "active" }],
+      pagination: { page: 1, pageSize: 12 },
+    })
+  })
+
+  it("인증된 관리자 mutation 응답을 canonical schema로 반환한다", async () => {
+    const app = createIdentityHttpFixture()
     const mutationResponse = await app.request("/users/user-1/status", {
       body: JSON.stringify({ status: "suspended" }),
       headers: {
@@ -95,11 +105,6 @@ describe("identity HTTP interface", () => {
       method: "PATCH",
     })
 
-    expect(listResponse.status).toBe(200)
-    await expect(listResponse.json()).resolves.toMatchObject({
-      items: [{ id: "user-1", status: "active" }],
-      pagination: { page: 1, pageSize: 12 },
-    })
     expect(mutationResponse.status).toBe(200)
     await expect(mutationResponse.json()).resolves.toMatchObject({
       id: "user-1",
@@ -109,30 +114,42 @@ describe("identity HTTP interface", () => {
 })
 
 describe("identity learner HTTP interface", () => {
-  it("unauthenticated와 suspended 제품 identity를 각각 401·403으로 거절한다", async () => {
+  it("unauthenticated 제품 identity를 401로 거절한다", async () => {
     const app = createLearnerIdentityHttpFixture()
 
     const unauthenticated = await app.request("/profile")
+
+    expect(unauthenticated.status).toBe(401)
+  })
+
+  it("suspended 제품 identity를 private 403으로 거절한다", async () => {
+    const app = createLearnerIdentityHttpFixture()
     const suspended = await app.request("/profile", {
       headers: { Cookie: "learner=suspended" },
     })
 
-    expect(unauthenticated.status).toBe(401)
     expect(suspended.status).toBe(403)
     expect(suspended.headers.get("Cache-Control")).toBe("private, no-store")
     expect(suspended.headers.get("Vary")).toContain("Cookie")
   })
 
-  it("active 제품 identity의 session과 profile 응답을 canonical schema로 반환한다", async () => {
+  it("active 제품 identity의 session 응답을 canonical schema로 반환한다", async () => {
     const app = createLearnerIdentityHttpFixture()
     const headers = { Cookie: "learner=active" }
     const sessionResponse = await app.request("/auth/session", { headers })
-    const profileResponse = await app.request("/profile", { headers })
 
     expect(sessionResponse.status).toBe(200)
     await expect(sessionResponse.json()).resolves.toMatchObject({
       user: { id: "user-1", status: "active" },
     })
+  })
+
+  it("active 제품 identity의 profile 응답을 canonical schema로 반환한다", async () => {
+    const app = createLearnerIdentityHttpFixture()
+    const profileResponse = await app.request("/profile", {
+      headers: { Cookie: "learner=active" },
+    })
+
     expect(profileResponse.status).toBe(200)
     expect(profileResponse.headers.get("cache-control")).toContain("no-store")
     await expect(profileResponse.json()).resolves.toMatchObject({

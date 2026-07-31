@@ -1,12 +1,6 @@
 "use client"
 
-import {
-  useState,
-  useSyncExternalStore,
-  useTransition,
-  type FormEvent,
-  type ReactNode,
-} from "react"
+import { useState, useTransition, type FormEvent, type ReactNode } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import {
   isLearnerAuthClientError,
@@ -20,6 +14,7 @@ import {
   requestPasswordReset,
   requestVerificationEmail,
 } from "@/features/authentication/api/auth-client"
+import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Field,
@@ -59,11 +54,7 @@ export function AuthPage({
   const [verificationEmail, setVerificationEmail] = useState<string | null>(
     null
   )
-  const isHydrated = useSyncExternalStore(
-    subscribeToHydration,
-    readHydrated,
-    readNotHydrated
-  )
+  const isHydrated = useIsHydrated()
   const [isPending, startTransition] = useTransition()
   const authActionsDisabled = !isHydrated || isPending
   const tabValue = mode === "signup" ? "signup" : "login"
@@ -328,18 +319,6 @@ export function AuthPage({
       </div>
     </main>
   )
-}
-
-function subscribeToHydration(): () => void {
-  return () => {}
-}
-
-function readHydrated(): true {
-  return true
-}
-
-function readNotHydrated(): false {
-  return false
 }
 
 function AuthTextLink({

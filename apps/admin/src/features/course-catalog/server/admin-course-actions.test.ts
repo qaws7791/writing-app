@@ -34,24 +34,36 @@ describe("admin course catalog actions", () => {
     getServerAdminRequestOptionsMock.mockResolvedValue(requestOptions)
   })
 
-  it("generated 생성·보관 성공에서만 코스 목록을 재검증한다", async () => {
+  it("코스 생성 성공 시 코스 목록을 재검증한다", async () => {
     createCourseMock.mockResolvedValue({ id: "c1" })
-    archiveCourseMock.mockResolvedValue({ archived: true })
 
     await createAdminCourseAction()
-    await archiveAdminCourseAction("c1")
 
     expect(createCourseMock).toHaveBeenCalledWith(requestOptions)
-    expect(archiveCourseMock).toHaveBeenCalledWith("c1", requestOptions)
-    expect(revalidatePathMock.mock.calls).toEqual([["/courses"], ["/courses"]])
+    expect(revalidatePathMock).toHaveBeenCalledWith("/courses")
   })
 
-  it("잘못된 입력과 세션 없는 요청은 generated mutation을 호출하지 않는다", async () => {
+  it("코스 보관 성공 시 코스 목록을 재검증한다", async () => {
+    archiveCourseMock.mockResolvedValue({ archived: true })
+
+    await archiveAdminCourseAction("c1")
+
+    expect(archiveCourseMock).toHaveBeenCalledWith("c1", requestOptions)
+    expect(revalidatePathMock).toHaveBeenCalledWith("/courses")
+  })
+
+  it("잘못된 course ID는 보관 mutation을 호출하지 않는다", async () => {
     await archiveAdminCourseAction("")
-    getServerAdminRequestOptionsMock.mockResolvedValue(null)
-    await createAdminCourseAction()
 
     expect(archiveCourseMock).not.toHaveBeenCalled()
+    expect(revalidatePathMock).not.toHaveBeenCalled()
+  })
+
+  it("세션 없는 요청은 생성 mutation을 호출하지 않는다", async () => {
+    getServerAdminRequestOptionsMock.mockResolvedValue(null)
+
+    await createAdminCourseAction()
+
     expect(createCourseMock).not.toHaveBeenCalled()
     expect(revalidatePathMock).not.toHaveBeenCalled()
   })

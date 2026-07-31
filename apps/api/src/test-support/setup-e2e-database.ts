@@ -3,20 +3,22 @@ import {
   adminAuthAccounts,
   adminAuthUsers,
   authAccounts,
+  authUsers,
 } from "@workspace/auth/schema"
 import { createWritingAppDatabase } from "@workspace/db/client"
-import { e2eSeededCredentials } from "@workspace/env/e2e-runtime"
+import {
+  e2eSeededCredentials,
+  e2eSeededLearnerActors,
+} from "@workspace/env/e2e-runtime"
+import { learnerProfiles } from "@workspace/identity/migration-schema"
 
 import { runApplicationMigrations } from "@/db/migrate"
+import { requireE2eDatabaseUrl } from "@/test-support/e2e-database-url"
 
 const { adminPassword, learnerPassword } = e2eSeededCredentials
 
 if (import.meta.main) {
-  const e2eDatabaseUrl = process.env["DATABASE_URL"]
-  if (process.env["NODE_ENV"] !== "test" || e2eDatabaseUrl === undefined) {
-    throw new Error("E2E 인증 fixture에는 NODE_ENV=test가 필요합니다.")
-  }
-  await setupE2eAuthDatabase(e2eDatabaseUrl)
+  await setupE2eAuthDatabase(requireE2eDatabaseUrl(process.env))
 }
 
 export async function setupE2eAuthDatabase(databaseUrl: string): Promise<void> {
@@ -53,15 +55,46 @@ export async function setupE2eAuthDatabase(databaseUrl: string): Promise<void> {
         userId: admin.id,
       }))
     )
+    const learnerActors = Object.values(e2eSeededLearnerActors)
+    await database.db.insert(authUsers).values(
+      learnerActors.map((actor) => ({
+        ...actor,
+        createdAt: now,
+        emailVerified: true,
+        image: null,
+        updatedAt: now,
+      }))
+    )
+    const learnerPasswordHash = await hashAuthPassword(learnerPassword)
     await database.db.insert(authAccounts).values({
       accountId: "user-1",
       createdAt: now,
       id: "e2e-learner-credential",
-      password: await hashAuthPassword(learnerPassword),
+      password: learnerPasswordHash,
       providerId: "credential",
       updatedAt: now,
       userId: "user-1",
     })
+    await database.db.insert(authAccounts).values(
+      learnerActors.map((actor) => ({
+        accountId: actor.id,
+        createdAt: now,
+        id: `${actor.id}-credential`,
+        password: learnerPasswordHash,
+        providerId: "credential",
+        updatedAt: now,
+        userId: actor.id,
+      }))
+    )
+    await database.db.insert(learnerProfiles).values(
+      learnerActors.map((actor) => ({
+        deletedAt: null,
+        displayName: actor.name,
+        status: "active" as const,
+        userId: actor.id,
+        version: 0,
+      }))
+    )
   } finally {
     database.close()
   }

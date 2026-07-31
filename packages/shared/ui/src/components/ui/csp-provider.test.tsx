@@ -29,8 +29,8 @@ describe("UiCspProvider", () => {
     const scripts = [...container.querySelectorAll("script")]
 
     expect(scripts.length).toBeGreaterThan(0)
-    for (const script of scripts) {
-      expect(script).toHaveAttribute("nonce", "request-nonce")
-    }
+    expect(
+      new Set(scripts.map((script) => script.getAttribute("nonce")))
+    ).toEqual(new Set(["request-nonce"]))
   })
 })

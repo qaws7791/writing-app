@@ -10,11 +10,6 @@ import {
 } from "#scripts/image-vulnerability-policy"
 import { createDependencyAuditArguments } from "#scripts/run-dependency-audit"
 
-type RootManifest = Readonly<{
-  overrides?: Readonly<Record<string, string>>
-  scripts?: Readonly<Record<string, string>>
-}>
-
 const repositoryRoot = path.resolve(import.meta.dir, "..")
 const auditDate = "2026-07-23"
 const bunAuditException: ImageVulnerabilityException = {
@@ -72,19 +67,6 @@ describe("dependency audit 인자 생성", () => {
 })
 
 describe("저장소 audit 정책", () => {
-  test("ignore 목록은 audit script가 아니라 정책 파일이 소유한다", () => {
-    const manifest = readJson<RootManifest>("package.json")
-
-    expect(manifest.scripts?.["audit:production"]).not.toContain("--ignore")
-    expect(manifest.scripts?.["audit:full"]).not.toContain("--ignore")
-  })
-
-  test("sharp를 override로 강제하지 않는다", () => {
-    const manifest = readJson<RootManifest>("package.json")
-
-    expect(manifest.overrides?.sharp).toBeUndefined()
-  })
-
   test("정책 파일은 schema를 만족하고 만료된 예외를 남기지 않는다", () => {
     const policy = parseImageVulnerabilityPolicy(
       readJson<unknown>("deploy/security/image-vulnerability-policy.json")

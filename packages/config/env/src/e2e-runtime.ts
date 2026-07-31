@@ -16,6 +16,44 @@ export const e2eSeededCredentials = {
   learnerPassword: "e2e-password-123",
 } as const
 
+export const e2eSeededLearnerActors = {
+  credentialsPasswordReset: {
+    email: "credentials-password-reset@example.test",
+    id: "e2e-credentials-password-reset",
+    name: "비밀번호 재설정 학습자",
+  },
+  prSuspension: {
+    email: "pr-suspension@example.test",
+    id: "e2e-pr-suspension",
+    name: "PR 정지 대상",
+  },
+  releaseDeletion: {
+    email: "release-deletion@example.test",
+    id: "e2e-release-deletion",
+    name: "릴리스 삭제 대상",
+  },
+  releaseProviderLesson: {
+    email: "release-provider-lesson@example.test",
+    id: "e2e-release-provider-lesson",
+    name: "릴리스 provider 레슨 학습자",
+  },
+  releaseProfile: {
+    email: "release-profile@example.test",
+    id: "e2e-release-profile",
+    name: "릴리스 프로필 학습자",
+  },
+  releasePublishedActivities: {
+    email: "release-published-activities@example.test",
+    id: "e2e-release-published-activities",
+    name: "릴리스 발행 활동 학습자",
+  },
+  releaseRevisionPinning: {
+    email: "release-revision-pinning@example.test",
+    id: "e2e-release-revision-pinning",
+    name: "릴리스 리비전 고정 학습자",
+  },
+} as const
+
 export function readRequiredE2eEnvironment(name: string): string {
   const value = process.env[name]?.trim()
   if (value === undefined || value === "") {

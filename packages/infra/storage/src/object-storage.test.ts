@@ -53,6 +53,47 @@ describe("S3-compatible object storage", () => {
     )
   })
 
+  it("1000개를 초과한 object 삭제를 provider 제한에 맞춰 나눈다", async () => {
+    const send = vi.fn(async () => ({}))
+    const storage = createS3ObjectStorage(config, {
+      client: { send },
+    })._unsafeUnwrap()
+    const objectKeys = Array.from(
+      { length: 1001 },
+      (_, index) => `folder/object-${index}.bin`
+    )
+
+    expect((await storage.deleteObjects(objectKeys)).isOk()).toBe(true)
+    expect(send).toHaveBeenCalledTimes(2)
+  })
+
+  it("provider가 일부 object 삭제 오류를 반환하면 전체 성공으로 숨기지 않는다", async () => {
+    const send = vi.fn(async () => ({
+      Errors: [{ Key: "folder/failed.bin" }],
+    }))
+    const storage = createS3ObjectStorage(config, {
+      client: { send },
+    })._unsafeUnwrap()
+
+    const result = await storage.deleteObjects(["folder/failed.bin"])
+
+    expect(result._unsafeUnwrapErr()).toMatchObject({
+      kind: "operation-failed",
+      operation: "delete-objects",
+      retryable: true,
+    })
+  })
+
+  it("빈 object 목록은 provider를 호출하지 않는다", async () => {
+    const send = vi.fn(async () => ({}))
+    const storage = createS3ObjectStorage(config, {
+      client: { send },
+    })._unsafeUnwrap()
+
+    expect((await storage.deleteObjects([])).isOk()).toBe(true)
+    expect(send).not.toHaveBeenCalled()
+  })
+
   it("불완전한 config를 fail-closed한다", () => {
     expect(
       createS3ObjectStorage({ ...config, secretAccessKey: "" }).isErr()

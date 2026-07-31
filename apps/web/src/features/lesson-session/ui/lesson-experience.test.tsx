@@ -1,6 +1,5 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { renderToString } from "react-dom/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
@@ -30,15 +29,13 @@ import type {
   LearnerStartLessonResultDto,
 } from "@/shared/http/learner-api-client"
 import type { LearnerLessonDto } from "@/shared/http/learner-api-client"
+import { createLearnerLessonWireFixture } from "@/test/learner-api-fixtures"
 
 const version = { curriculumVersionId: "version-1", revision: 1 } as const
 
-const lessonWire = {
+const lessonWire = createLearnerLessonWireFixture({
   category: "기초",
-  courseId: "course-1",
   description: "설명",
-  drafts: [],
-  estimatedMinutes: 5,
   id: "lesson-1",
   learning: {
     status: "not_started",
@@ -65,11 +62,9 @@ const lessonWire = {
       type: "READING",
     },
   ],
-  summary: [],
   title: "테스트 레슨",
-  unitId: "unit-1",
   version,
-} as const satisfies LearnerLessonDto
+})
 
 const lesson: Lesson = toLessonViewModel(lessonWire)
 
@@ -127,12 +122,13 @@ const startedLesson: Lesson = toLessonViewModel({
 
 describe("LessonExperience", () => {
   beforeEach(() => {
+    vi.stubGlobal("scrollTo", vi.fn())
     generatedClient.completeLearnerStep.mockReset()
     generatedClient.createLearnerStepAiFeedback.mockReset()
     generatedClient.getLesson.mockReset()
     generatedClient.saveLearnerStepDraft.mockReset()
     generatedClient.startLearnerLesson.mockReset()
-    generatedClient.getLesson.mockResolvedValue(lesson)
+    generatedClient.getLesson.mockResolvedValue(lessonWire)
     generatedClient.saveLearnerStepDraft.mockImplementation(
       async (
         _lessonId: string,
@@ -146,21 +142,6 @@ describe("LessonExperience", () => {
       })
     )
     generatedClient.startLearnerLesson.mockResolvedValue(started)
-  })
-
-  it("시작 화면 CTA는 hydration 전에도 활성이다", () => {
-    const container = document.createElement("div")
-    container.innerHTML = renderToString(<LessonExperience lesson={lesson} />)
-
-    expect(
-      within(container).getByRole("button", { name: "시작하기" })
-    ).toBeEnabled()
-  })
-
-  it("시작 화면에 활동 수를 보인다", () => {
-    render(<LessonExperience lesson={lesson} />)
-
-    expect(screen.getByText("2개 활동")).toBeInTheDocument()
   })
 
   it("AI provider 실패 후 명시적 skip transition으로 레슨 완료 CTA를 유지한다", async () => {
@@ -251,43 +232,41 @@ describe("LessonExperience", () => {
   })
 
   it("서버 초안을 활성 step 입력값으로 즉시 복원한다", () => {
-    const writeLesson: Lesson = toLessonViewModel({
-      category: "기초",
-      courseId: "course-1",
-      description: "설명",
-      drafts: [
-        {
-          answer: { text: "서버에서 복원한 문장", type: "WRITE" },
-          stepId: "step-write",
-          updatedAt: "2026-07-24T00:00:00.000Z",
-          version: 2,
+    const writeLesson: Lesson = toLessonViewModel(
+      createLearnerLessonWireFixture({
+        category: "기초",
+        description: "설명",
+        drafts: [
+          {
+            answer: { text: "서버에서 복원한 문장", type: "WRITE" },
+            stepId: "step-write",
+            updatedAt: "2026-07-24T00:00:00.000Z",
+            version: 2,
+          },
+        ],
+        id: "lesson-1",
+        learning: {
+          completedSteps: 0,
+          currentStepId: "step-write",
+          currentStepIndex: 0,
+          progressPercent: 0,
+          status: "in_progress",
+          totalSteps: 1,
+          version,
         },
-      ],
-      estimatedMinutes: 5,
-      id: "lesson-1",
-      learning: {
-        completedSteps: 0,
-        currentStepId: "step-write",
-        currentStepIndex: 0,
-        progressPercent: 0,
-        status: "in_progress",
-        totalSteps: 1,
+        steps: [
+          {
+            id: "step-write",
+            min: 1,
+            prompt: "문장을 작성하세요",
+            sortOrder: 1,
+            type: "WRITE",
+          },
+        ],
+        title: "테스트 레슨",
         version,
-      },
-      steps: [
-        {
-          id: "step-write",
-          min: 1,
-          prompt: "문장을 작성하세요",
-          sortOrder: 1,
-          type: "WRITE",
-        },
-      ],
-      summary: [],
-      title: "테스트 레슨",
-      unitId: "unit-1",
-      version,
-    } satisfies LearnerLessonDto)
+      })
+    )
 
     render(<LessonExperience lesson={writeLesson} />)
 

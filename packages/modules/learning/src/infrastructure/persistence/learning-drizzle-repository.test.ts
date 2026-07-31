@@ -16,10 +16,15 @@ import {
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import { aPublishedCourse } from "@workspace/content/test-fixtures"
 import { aLearner } from "@workspace/identity/test-fixtures"
+import { err, ok } from "@workspace/kernel/result"
 
 import type { LearningContentQueryPort } from "#learning/application/ports/learning-ports"
 import type { LearningCurriculum } from "#learning/domain/learning-types"
 import { createDrizzleLearningReadRepository } from "#learning/infrastructure/persistence/learning-read-drizzle-repository"
+import {
+  createDrizzleLearningReportingRepository,
+  toLearningUserId,
+} from "#learning/infrastructure/persistence/learning-reporting-drizzle-repository"
 import { createDrizzleLearnerTransitionRepository } from "#learning/infrastructure/persistence/learning-transition-drizzle-repository"
 import {
   learnerActivityDays,
@@ -43,6 +48,7 @@ const firstLessonId = lessonIdSchema.parse("lesson-1")
 const secondLessonId = lessonIdSchema.parse("lesson-2")
 const firstStepId = lessonStepIdSchema.parse("step-1")
 const secondStepId = lessonStepIdSchema.parse("step-2")
+const feedbackStepId = lessonStepIdSchema.parse("feedback-step")
 const occurredAt = new Date("2026-07-22T15:00:00.000Z")
 const presentationSecret = "presentation-secret-at-least-32-bytes"
 
@@ -132,6 +138,33 @@ const writingCurriculum: LearningCurriculum = {
   ],
 }
 
+const aiFeedbackCurriculum: LearningCurriculum = {
+  ...curriculum,
+  lessons: [
+    {
+      ...firstCurriculumLesson,
+      steps: [
+        {
+          id: firstStepId,
+          min: 1,
+          sortOrder: 1,
+          type: "WRITE",
+        },
+        {
+          allowRetry: true,
+          feedback: "문장을 구체적으로 다듬습니다.",
+          focus: "명확성",
+          id: feedbackStepId,
+          sortOrder: 2,
+          target: firstStepId,
+          type: "AI_FEEDBACK",
+        },
+      ],
+    },
+    secondCurriculumLesson,
+  ],
+}
+
 const startFirstLesson = {
   expectedCurriculumVersionId: curriculumVersionId,
   lessonId: firstLessonId,
@@ -213,6 +246,141 @@ describe("learning SQLite repositories", () => {
           .get()
       ).toEqual({ status: "completed" })
     })
+  })
+
+  it("저장된 WRITE 답안으로 AI context를 만들고 feedback step을 완료한다", async () => {
+    await withLearningDatabase(async (fixture) => {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(startFirstLesson, aiFeedbackCurriculum)
+      await repository.completeStep(
+        {
+          completion: {
+            kind: "answer",
+            submission: { text: "구체적인 답안", type: "WRITE" },
+          },
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        aiFeedbackCurriculum
+      )
+
+      await expect(
+        repository.prepareAiFeedback(
+          {
+            lessonId: firstLessonId,
+            stepId: feedbackStepId,
+            userId: learnerId,
+          },
+          aiFeedbackCurriculum
+        )
+      ).resolves.toEqual(
+        ok({
+          answer: "구체적인 답안",
+          courseId,
+          curriculumVersionId,
+          focus: "명확성",
+          lessonTitle: "첫 레슨",
+        })
+      )
+
+      const completed = await repository.completeAiFeedbackStep(
+        {
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: feedbackStepId,
+          userId: learnerId,
+        },
+        aiFeedbackCurriculum
+      )
+      expect(completed.isOk() && completed.value.kind).toBe("lesson-completed")
+      expect(
+        fixture.database.db
+          .select({ status: learnerLessonProgress.status })
+          .from(learnerLessonProgress)
+          .get()
+      ).toEqual({ status: "completed" })
+    }, aiFeedbackCurriculum)
+  })
+
+  it("현재 AI step에 대응하는 저장 답안이 없으면 prepare를 거절한다", async () => {
+    await withLearningDatabase(async (fixture) => {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(startFirstLesson, aiFeedbackCurriculum)
+      fixture.database.db
+        .update(learnerLessonProgress)
+        .set({ currentStepId: feedbackStepId })
+        .where(eq(learnerLessonProgress.userId, learnerId))
+        .run()
+
+      await expect(
+        repository.prepareAiFeedback(
+          {
+            lessonId: firstLessonId,
+            stepId: feedbackStepId,
+            userId: learnerId,
+          },
+          aiFeedbackCurriculum
+        )
+      ).resolves.toEqual(
+        err({
+          kind: "feedback-answer-not-found",
+          targetStepId: firstStepId,
+        })
+      )
+    }, aiFeedbackCurriculum)
+  })
+
+  it("완료된 AI feedback replay가 progress와 완료 집계를 중복 변경하지 않는다", async () => {
+    await withLearningDatabase(async (fixture) => {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(startFirstLesson, aiFeedbackCurriculum)
+      await repository.completeStep(
+        {
+          completion: {
+            kind: "answer",
+            submission: { text: "재실행 답안", type: "WRITE" },
+          },
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        aiFeedbackCurriculum
+      )
+      const command = {
+        lessonId: firstLessonId,
+        occurredAt,
+        stepId: feedbackStepId,
+        userId: learnerId,
+      }
+
+      const first = await repository.completeAiFeedbackStep(
+        command,
+        aiFeedbackCurriculum
+      )
+      const replay = await repository.completeAiFeedbackStep(
+        command,
+        aiFeedbackCurriculum
+      )
+
+      expect(first.isOk() && first.value.kind).toBe("lesson-completed")
+      expect(replay.isOk() && replay.value.kind).toBe("lesson-completed")
+      expect(
+        fixture.database.db
+          .select({ completedLessons: learnerActivityDays.completedLessons })
+          .from(learnerActivityDays)
+          .where(eq(learnerActivityDays.userId, learnerId))
+          .get()
+      ).toEqual({ completedLessons: 1 })
+    }, aiFeedbackCurriculum)
   })
 
   it("현재 단계와 다른 완료 요청은 conflict이며 어떤 row도 변경하지 않는다", async () => {
@@ -576,6 +744,77 @@ describe("learning SQLite repositories", () => {
       ).toHaveLength(0)
     }, writingCurriculum)
   })
+
+  it("reporting은 사용자별 완료 lesson과 비연속 활동일을 격리해 집계한다", async () => {
+    await withLearningDatabase(async (fixture) => {
+      const otherLearnerId = learnerIdSchema.parse("learner-2")
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      const reporting = createDrizzleLearningReportingRepository(
+        fixture.database.db
+      )
+      aLearner(fixture.database.sqlite, {
+        id: otherLearnerId,
+        name: "다른 학습자",
+      })
+
+      await repository.startLesson(
+        {
+          ...startFirstLesson,
+          occurredAt: new Date("2026-07-20T09:00:00+09:00"),
+        },
+        curriculum
+      )
+      await repository.completeStep(
+        {
+          completion: { kind: "acknowledge" },
+          lessonId: firstLessonId,
+          occurredAt: new Date("2026-07-20T09:05:00+09:00"),
+          stepId: firstStepId,
+          userId: learnerId,
+        },
+        curriculum
+      )
+      await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: secondLessonId,
+          occurredAt: new Date("2026-07-22T09:00:00+09:00"),
+          userId: learnerId,
+        },
+        curriculum
+      )
+      await repository.startLesson(
+        {
+          ...startFirstLesson,
+          occurredAt: new Date("2026-07-21T09:00:00+09:00"),
+          userId: otherLearnerId,
+        },
+        curriculum
+      )
+
+      await expect(
+        reporting.readLearnerReports([
+          toLearningUserId(learnerId),
+          toLearningUserId(otherLearnerId),
+        ])
+      ).resolves.toEqual([
+        {
+          completedLessons: 1,
+          currentStreakDays: 1,
+          lastActive: "2026-07-22",
+          userId: toLearningUserId(learnerId),
+        },
+        {
+          completedLessons: 0,
+          currentStreakDays: 1,
+          lastActive: "2026-07-21",
+          userId: toLearningUserId(otherLearnerId),
+        },
+      ])
+    })
+  })
 })
 
 async function withLearningDatabase(
@@ -586,7 +825,15 @@ async function withLearningDatabase(
   try {
     runCurrentTestMigration(database.sqlite)
     aLearner(database.sqlite, { id: learnerId, name: "학습자" })
+    const selectedFirstLesson = selectedCurriculum.lessons[0]
+    if (selectedFirstLesson === undefined) {
+      throw new Error("Learning repository fixture requires a first lesson")
+    }
     aPublishedCourse(database.sqlite, {
+      additionalSteps: selectedFirstLesson.steps.slice(1).map((step) => ({
+        stepId: step.id,
+        stepType: step.type,
+      })),
       additionalLessons: [
         {
           lessonId: secondLessonId,
@@ -597,7 +844,7 @@ async function withLearningDatabase(
       ],
       curriculumVersionId,
       lessonTitle: "첫 레슨",
-      stepType: "READING",
+      stepType: selectedFirstLesson.steps[0]?.type ?? "READING",
     })
 
     await run({ content: createContentPort(selectedCurriculum), database })

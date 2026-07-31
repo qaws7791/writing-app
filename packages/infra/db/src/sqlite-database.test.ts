@@ -15,29 +15,38 @@ const schema = { healthRecords }
 describe("SQLite database lifecycle", () => {
   it("Drizzle prepared statement를 finalize한 뒤 파일을 즉시 제거할 수 있다", () => {
     const directory = mkdtempSync(join(tmpdir(), "writing-app-sqlite-close-"))
-    const client = createSqliteDatabase({
-      filename: join(directory, "database.sqlite"),
-      schema,
-    })
+    let closeClient: (() => void) | undefined
 
-    client.sqlite.exec(
-      "CREATE TABLE health_records (id TEXT PRIMARY KEY NOT NULL)"
-    )
-    const preparedQuery = client.db.select().from(healthRecords).prepare()
-    const nativeQuery = client.sqlite.query(
-      "SELECT COUNT(*) AS count FROM health_records"
-    )
+    try {
+      const client = createSqliteDatabase({
+        filename: join(directory, "database.sqlite"),
+        schema,
+      })
+      closeClient = client.close
 
-    expect(preparedQuery.all()).toEqual([])
-    expect(nativeQuery.get()).toEqual({ count: 0 })
+      client.sqlite.exec(
+        "CREATE TABLE health_records (id TEXT PRIMARY KEY NOT NULL)"
+      )
+      const preparedQuery = client.db.select().from(healthRecords).prepare()
+      const nativeQuery = client.sqlite.query(
+        "SELECT COUNT(*) AS count FROM health_records"
+      )
 
-    client.close()
+      expect(preparedQuery.all()).toEqual([])
+      expect(nativeQuery.get()).toEqual({ count: 0 })
 
-    expect(() => client.close()).not.toThrow()
-    expect(() => preparedQuery.all()).toThrow()
-    expect(() => nativeQuery.get()).toThrow()
+      client.close()
 
-    rmSync(directory, { recursive: true })
+      expect(() => client.close()).not.toThrow()
+      expect(() => preparedQuery.all()).toThrow()
+      expect(() => nativeQuery.get()).toThrow()
+    } finally {
+      try {
+        closeClient?.()
+      } finally {
+        rmSync(directory, { recursive: true })
+      }
+    }
 
     expect(existsSync(directory)).toBe(false)
   })

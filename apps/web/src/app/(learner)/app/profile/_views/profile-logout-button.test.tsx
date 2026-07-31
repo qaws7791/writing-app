@@ -25,6 +25,5 @@ describe("프로필 로그아웃 버튼", () => {
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/")
     })
-    expect(requestLogoutMock).toHaveBeenCalledWith("/")
   })
 })

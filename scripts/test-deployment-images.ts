@@ -236,48 +236,53 @@ function createFixture(
   runId: string
 ) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "writing-app-images-"))
-  const config = path.join(root, "config")
-  const data = path.join(root, "data")
-  const backups = path.join(root, "backups")
-  for (const directory of [config, data, backups]) fs.mkdirSync(directory)
-  fs.chmodSync(data, 0o777)
-  for (const spec of specs) {
-    writeEnvironment(path.join(config, `${spec.name}.env`), spec.environment)
-  }
-  writeEnvironment(path.join(config, "caddy.env"), {
-    ADMIN_HOST: "admin.example.test",
-    WEB_HOST: "web.example.test",
-  })
-  writeEnvironment(path.join(config, "litestream.env"), {
-    LITESTREAM_ACCESS_KEY_ID: "smoke-access-key",
-    LITESTREAM_BUCKET: "writing-app-smoke",
-    LITESTREAM_ENDPOINT: "https://example.invalid",
-    LITESTREAM_PATH: "api.sqlite",
-    LITESTREAM_SECRET_ACCESS_KEY: "smoke-secret-key",
-  })
-  fs.copyFileSync(
-    path.join(repositoryRoot, "deploy", "caddy", "caddyfile"),
-    path.join(config, "caddyfile")
-  )
-  fs.copyFileSync(
-    path.join(repositoryRoot, "deploy", "litestream", "litestream.yaml"),
-    path.join(config, "litestream.yaml")
-  )
-  const env = path.join(root, "compose.env")
-  writeEnvironment(env, {
-    ADMIN_IMAGE: images.admin,
-    API_IMAGE: images.api,
-    BACKUP_DIRECTORY: backups.replaceAll("\\", "/"),
-    CADDY_IMAGE: caddyImage,
-    CONFIG_DIRECTORY: config.replaceAll("\\", "/"),
-    DATA_DIRECTORY: data.replaceAll("\\", "/"),
-    LITESTREAM_IMAGE: `writing-app-smoke-litestream-unused:${runId}`,
-    WEB_IMAGE: images.web,
-  })
-  return {
-    env,
-    project: `writing-app-smoke-${runId}`,
-    root,
+  try {
+    const config = path.join(root, "config")
+    const data = path.join(root, "data")
+    const backups = path.join(root, "backups")
+    for (const directory of [config, data, backups]) fs.mkdirSync(directory)
+    fs.chmodSync(data, 0o777)
+    for (const spec of specs) {
+      writeEnvironment(path.join(config, `${spec.name}.env`), spec.environment)
+    }
+    writeEnvironment(path.join(config, "caddy.env"), {
+      ADMIN_HOST: "admin.example.test",
+      WEB_HOST: "web.example.test",
+    })
+    writeEnvironment(path.join(config, "litestream.env"), {
+      LITESTREAM_ACCESS_KEY_ID: "smoke-access-key",
+      LITESTREAM_BUCKET: "writing-app-smoke",
+      LITESTREAM_ENDPOINT: "https://example.invalid",
+      LITESTREAM_PATH: "api.sqlite",
+      LITESTREAM_SECRET_ACCESS_KEY: "smoke-secret-key",
+    })
+    fs.copyFileSync(
+      path.join(repositoryRoot, "deploy", "caddy", "caddyfile"),
+      path.join(config, "caddyfile")
+    )
+    fs.copyFileSync(
+      path.join(repositoryRoot, "deploy", "litestream", "litestream.yaml"),
+      path.join(config, "litestream.yaml")
+    )
+    const env = path.join(root, "compose.env")
+    writeEnvironment(env, {
+      ADMIN_IMAGE: images.admin,
+      API_IMAGE: images.api,
+      BACKUP_DIRECTORY: backups.replaceAll("\\", "/"),
+      CADDY_IMAGE: caddyImage,
+      CONFIG_DIRECTORY: config.replaceAll("\\", "/"),
+      DATA_DIRECTORY: data.replaceAll("\\", "/"),
+      LITESTREAM_IMAGE: `writing-app-smoke-litestream-unused:${runId}`,
+      WEB_IMAGE: images.web,
+    })
+    return {
+      env,
+      project: `writing-app-smoke-${runId}`,
+      root,
+    }
+  } catch (error) {
+    fs.rmSync(root, { force: true, recursive: true })
+    throw error
   }
 }
 

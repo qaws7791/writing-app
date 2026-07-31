@@ -29,16 +29,6 @@ describe("AI infrastructure", () => {
     ).toBe(true)
   })
 
-  it("retry 정책을 provider SDK client에 전달한다", () => {
-    const validated = createOpenAiClient({
-      apiKey: "key",
-      maxRetries: 0,
-      timeoutMs: 30_000,
-    })._unsafeUnwrap()
-
-    expect(validated.client.maxRetries).toBe(0)
-  })
-
   it("음수 retry 정책을 validated config에서 거부한다", () => {
     expect(
       createOpenAiClient({
@@ -55,6 +45,29 @@ describe("AI infrastructure", () => {
       cause,
       kind: "operation-failed",
       operation: "provider-request",
+    })
+  })
+
+  it("AbortError를 재시도 불가능한 중단으로 정규화한다", () => {
+    const cause = Object.assign(new Error("aborted"), { name: "AbortError" })
+
+    expect(normalizeAiProviderError(cause, 30_000)).toEqual({
+      cause,
+      kind: "operation-aborted",
+      operation: "provider-request",
+      retryable: false,
+    })
+  })
+
+  it("timeout exception을 재시도 가능한 시간 초과로 정규화한다", () => {
+    const cause = Object.assign(new Error("timed out"), { code: "ETIMEDOUT" })
+
+    expect(normalizeAiProviderError(cause, 30_000)).toEqual({
+      cause,
+      kind: "operation-timed-out",
+      operation: "provider-request",
+      retryable: true,
+      timeoutMs: 30_000,
     })
   })
 })

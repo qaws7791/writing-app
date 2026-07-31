@@ -47,68 +47,26 @@ afterEach(() => {
 })
 
 describe("관리자 DB audit SQLite + Hono integration", () => {
-  it("관리자 요청 6건의 action·actor·target·outcome과 client IP를 순서대로 저장한다", async () => {
-    const { auditTrail, sqlite } = openAuditTrail()
-    const app = createAuditedFixture(auditTrail)
+  it.each(adminActionCases())(
+    "$name 요청의 audit 결과를 독립적으로 저장한다",
+    async ({ action, createRequest, outcome, status, targetId }) => {
+      const { auditTrail, sqlite } = openAuditTrail()
+      const app = createAuditedFixture(auditTrail)
 
-    const statuses = await requestSequentially(app, adminActionRequests())
+      const response = await app.request(createRequest())
 
-    expect(statuses).toEqual([200, 200, 409, 200, 200, 200])
-    expect(
-      readAuditRows(sqlite).map(
-        ({ action, actorId, clientIp, outcome, targetId }) => ({
+      expect(response.status).toBe(status)
+      expect(readAuditRows(sqlite)).toMatchObject([
+        {
           action,
-          actorId,
-          clientIp,
+          actorId: "admin-1",
+          clientIp: auditedClientIp,
           outcome,
           targetId,
-        })
-      )
-    ).toEqual([
-      {
-        action: "learner.detail.read",
-        actorId: "admin-1",
-        clientIp: auditedClientIp,
-        outcome: "succeeded",
-        targetId: "user-1",
-      },
-      {
-        action: "learner.status.suspend",
-        actorId: "admin-1",
-        clientIp: auditedClientIp,
-        outcome: "succeeded",
-        targetId: "user-1",
-      },
-      {
-        action: "learner.status.activate",
-        actorId: "admin-1",
-        clientIp: auditedClientIp,
-        outcome: "failed",
-        targetId: "user-1",
-      },
-      {
-        action: "learner.delete",
-        actorId: "admin-1",
-        clientIp: auditedClientIp,
-        outcome: "succeeded",
-        targetId: "user-1",
-      },
-      {
-        action: "course.publish",
-        actorId: "admin-1",
-        clientIp: auditedClientIp,
-        outcome: "succeeded",
-        targetId: "course-1",
-      },
-      {
-        action: "course.archive",
-        actorId: "admin-1",
-        clientIp: auditedClientIp,
-        outcome: "succeeded",
-        targetId: "course-1",
-      },
-    ])
-  })
+        },
+      ])
+    }
+  )
 
   it.each(forbiddenAuditColumnNames)(
     "audit_events schema에 개인정보 컬럼 %s를 만들지 않는다",
@@ -235,45 +193,82 @@ function openAuditTrail(
   return fixture
 }
 
-function adminActionRequests(): readonly Request[] {
+function adminActionCases() {
   return [
-    new Request("http://localhost/users/user-1", {
-      headers: adminHeaders("request-read"),
-    }),
-    new Request("http://localhost/users/user-1/status", {
-      body: JSON.stringify({ status: "suspended" }),
-      headers: adminHeaders("request-suspend", true),
-      method: "PATCH",
-    }),
-    new Request("http://localhost/users/user-1/status", {
-      body: JSON.stringify({ status: "active" }),
-      headers: adminHeaders("request-activate", true),
-      method: "PATCH",
-    }),
-    new Request("http://localhost/users/user-1", {
-      headers: adminHeaders("request-delete"),
-      method: "DELETE",
-    }),
-    new Request("http://localhost/courses/course-1/publish", {
-      headers: adminHeaders("request-publish"),
-      method: "POST",
-    }),
-    new Request("http://localhost/courses/course-1", {
-      headers: adminHeaders("request-archive"),
-      method: "DELETE",
-    }),
-  ]
-}
-
-async function requestSequentially(
-  app: Hono<AdminHonoEnv>,
-  requests: readonly Request[]
-): Promise<readonly number[]> {
-  const statuses: number[] = []
-  for (const request of requests) {
-    statuses.push((await app.request(request)).status)
-  }
-  return statuses
+    {
+      action: "learner.detail.read",
+      createRequest: () =>
+        new Request("http://localhost/users/user-1", {
+          headers: adminHeaders("request-read"),
+        }),
+      name: "학습자 상세 조회",
+      outcome: "succeeded",
+      status: 200,
+      targetId: "user-1",
+    },
+    {
+      action: "learner.status.suspend",
+      createRequest: () =>
+        new Request("http://localhost/users/user-1/status", {
+          body: JSON.stringify({ status: "suspended" }),
+          headers: adminHeaders("request-suspend", true),
+          method: "PATCH",
+        }),
+      name: "학습자 정지",
+      outcome: "succeeded",
+      status: 200,
+      targetId: "user-1",
+    },
+    {
+      action: "learner.status.activate",
+      createRequest: () =>
+        new Request("http://localhost/users/user-1/status", {
+          body: JSON.stringify({ status: "active" }),
+          headers: adminHeaders("request-activate", true),
+          method: "PATCH",
+        }),
+      name: "학습자 활성화 실패",
+      outcome: "failed",
+      status: 409,
+      targetId: "user-1",
+    },
+    {
+      action: "learner.delete",
+      createRequest: () =>
+        new Request("http://localhost/users/user-1", {
+          headers: adminHeaders("request-delete"),
+          method: "DELETE",
+        }),
+      name: "학습자 삭제",
+      outcome: "succeeded",
+      status: 200,
+      targetId: "user-1",
+    },
+    {
+      action: "course.publish",
+      createRequest: () =>
+        new Request("http://localhost/courses/course-1/publish", {
+          headers: adminHeaders("request-publish"),
+          method: "POST",
+        }),
+      name: "코스 발행",
+      outcome: "succeeded",
+      status: 200,
+      targetId: "course-1",
+    },
+    {
+      action: "course.archive",
+      createRequest: () =>
+        new Request("http://localhost/courses/course-1", {
+          headers: adminHeaders("request-archive"),
+          method: "DELETE",
+        }),
+      name: "코스 보관",
+      outcome: "succeeded",
+      status: 200,
+      targetId: "course-1",
+    },
+  ] as const
 }
 
 function createAuditedFixture(

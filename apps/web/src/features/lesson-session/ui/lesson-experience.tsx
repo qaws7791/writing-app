@@ -9,6 +9,7 @@ import { LessonCompleteScreen } from "@/features/lesson-session/ui/lesson-comple
 import { LessonStartScreen } from "@/features/lesson-session/ui/lesson-start-screen"
 import { useLessonSession } from "@/features/lesson-session/hooks/use-lesson-session"
 import type { Lesson } from "@/features/lesson-session/model/lesson-view-model"
+import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 
 type LessonExperienceProps = {
   readonly lesson: Lesson
@@ -21,6 +22,7 @@ export function LessonExperience(props: LessonExperienceProps) {
 function LessonExperienceSession({ lesson }: LessonExperienceProps) {
   const router = useRouter()
   const contentRef = useRef<HTMLElement>(null)
+  const isHydrated = useIsHydrated()
   const [showExit, setShowExit] = useState(false)
   const session = useLessonSession({ lesson })
 
@@ -93,6 +95,7 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
 
   return (
     <LessonStartScreen
+      isInteractive={isHydrated}
       isSavingStart={session.isSavingStart}
       lesson={lesson}
       onExit={() => router.push(`/app/courses/${lesson.courseId}`)}
@@ -103,9 +106,5 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
 }
 
 function scrollWindowToTop() {
-  if (navigator.userAgent.toLowerCase().includes("jsdom")) {
-    return
-  }
-
   window.scrollTo(0, 0)
 }

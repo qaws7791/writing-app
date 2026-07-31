@@ -65,6 +65,9 @@ describe("module-local OpenAI feedback provider", () => {
         },
       },
     })
+    expect(requests[0]?.input).toContain("좋은 문장")
+    expect(requests[0]?.input).toContain("명확성")
+    expect(JSON.stringify(requests[0])).not.toContain(prompt.policyVersion)
   })
 
   it("strict json_schema는 4개 coaching 필드를 모두 required로 요구한다", async () => {
@@ -108,6 +111,34 @@ describe("module-local OpenAI feedback provider", () => {
     expect(result).toEqual(err({ kind: "provider-response-invalid" }))
     expect(JSON.stringify(result)).not.toContain("secret-provider-output")
   })
+
+  it.each([
+    {
+      cause: Object.assign(new Error("aborted"), { name: "AbortError" }),
+      kind: "request-aborted",
+    },
+    {
+      cause: Object.assign(new Error("timed out"), { code: "ETIMEDOUT" }),
+      kind: "provider-timeout",
+    },
+    {
+      cause: new Error("provider unavailable"),
+      kind: "provider-unavailable",
+    },
+  ] as const)(
+    "provider exception을 $kind로 구분한다",
+    async ({ cause, kind }) => {
+      const provider = aFakeOpenAiFeedbackProvider(async () =>
+        Promise.reject(cause)
+      )
+
+      await expect(
+        provider.createFeedback(prompt, {
+          signal: new AbortController().signal,
+        })
+      ).resolves.toEqual(err({ cause, kind }))
+    }
+  )
 
   it("설정 실패는 fail-closed unavailable provider가 된다", async () => {
     const provider = createConfiguredAiFeedbackProvider({

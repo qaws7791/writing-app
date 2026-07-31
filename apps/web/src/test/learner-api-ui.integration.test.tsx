@@ -52,6 +52,7 @@ beforeAll(() => {
 })
 
 beforeEach(() => {
+  vi.stubGlobal("scrollTo", vi.fn())
   // jsdom의 상대 URL 요청을 MSW가 가로챌 수 있도록 origin을 채운다.
   // config의 unstubGlobals가 테스트마다 stub을 되돌리므로 여기서 다시 세운다.
   vi.stubGlobal(
@@ -92,8 +93,14 @@ describe("generated learner client UI integration", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
   })
 
-  it("generated handler의 network 실패를 재시도 가능한 inline 오류로 보여준다", async () => {
+  it("generated handler의 network 실패 뒤 다시 시도하면 다음 코스를 불러온다", async () => {
     const user = userEvent.setup()
+    const recoveredCourse = {
+      ...learnerCourseSummaryFixture,
+      id: "course-2",
+      title: "재시도 성공 코스",
+      version: { curriculumVersionId: "fixture-curriculum-v2", revision: 1 },
+    }
     server.use(getGetCoursesMockHandler(() => throwMswNetworkErrorFixture()))
     renderCoursePagination()
 
@@ -102,7 +109,19 @@ describe("generated learner client UI integration", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "API에 연결할 수 없습니다."
     )
-    expect(screen.getByRole("button", { name: "코스 더 보기" })).toBeEnabled()
+    const retryButton = screen.getByRole("button", { name: "코스 더 보기" })
+    expect(retryButton).toBeEnabled()
+
+    server.use(
+      getGetCoursesMockHandler({
+        items: [recoveredCourse],
+        nextCursor: null,
+      })
+    )
+    await user.click(retryButton)
+
+    expect(await screen.findByText("재시도 성공 코스")).toBeVisible()
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument()
   })
 
   it("generated 409 handler를 서버 draft 충돌 해결 UI로 연결한다", async () => {

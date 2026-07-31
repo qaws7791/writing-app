@@ -41,6 +41,13 @@ describe("학습자 cursor codec", () => {
     expect(
       codec.decode(cursor, {
         endpoint: "progress",
+        fingerprint: codec.createFingerprint({ status: "completed" }),
+        learnerScope,
+      })
+    ).toBeNull()
+    expect(
+      codec.decode(cursor, {
+        endpoint: "progress",
         fingerprint,
         learnerScope: codec.createLearnerScope("learner-2"),
       })

@@ -1,6 +1,11 @@
 import { expect, test } from "#e2e/test"
 
-import { learnerWebOrigin, readLatestAuthEmail } from "#e2e/auth"
+import {
+  createLearnerSession,
+  learnerWebOrigin,
+  readLatestAuthEmail,
+} from "#e2e/auth"
+import { e2eCredentials, e2eLearnerActors } from "#e2e/runtime"
 
 test("학습자가 앱에서 Google OAuth 시작 경계까지 이동한다", async ({
   page,
@@ -35,9 +40,7 @@ test("학습자가 앱에서 Google OAuth 시작 경계까지 이동한다", asy
   ).toBeVisible()
 })
 
-test("학습자가 이메일 가입, 확인, 로그인과 비밀번호 재설정을 완료한다", async ({
-  page,
-}) => {
+test("학습자가 이메일로 가입하고 주소 확인을 완료한다", async ({ page }) => {
   const email = "credentials-learner@example.test"
   const password = "Learner-password-123!"
 
@@ -85,26 +88,27 @@ test("학습자가 이메일 가입, 확인, 로그인과 비밀번호 재설정
   await expect(
     page.getByText("이메일 확인이 완료되었습니다. 이제 로그인해 주세요.")
   ).toBeVisible()
+})
 
-  await page.getByLabel("이메일").fill(email)
-  await page.getByLabel("비밀번호", { exact: true }).fill(password)
-  await Promise.all([
-    page.waitForURL(`${learnerWebOrigin}/app/courses`),
-    page.getByRole("button", { name: "이메일로 로그인하기" }).click(),
-  ])
-
-  const protectedAfterVerification = await page.request.get(
+test("독립 seeded 학습자의 비밀번호 재설정이 기존 세션을 폐기한다", async ({
+  page,
+}) => {
+  const actor = e2eLearnerActors.credentialsPasswordReset
+  await createLearnerSession(page.context(), {
+    email: actor.email,
+    password: e2eCredentials.learnerPassword,
+  })
+  const protectedBeforeReset = await page.request.get(
     `${learnerWebOrigin}/api/progress`
   )
-  expect(protectedAfterVerification.status()).toBe(200)
+  expect(protectedBeforeReset.status()).toBe(200)
 
-  await page.waitForLoadState("networkidle")
   await page.goto(`${learnerWebOrigin}/login`)
   await expect(
     page.getByRole("button", { name: "이메일로 로그인하기" })
   ).toBeEnabled()
   await page.getByRole("button", { name: "비밀번호를 잊으셨나요?" }).click()
-  await page.getByLabel("이메일").fill(email)
+  await page.getByLabel("이메일").fill(actor.email)
   await page.getByRole("button", { name: "재설정 링크 받기" }).click()
   await expect(
     page.getByText(
@@ -133,7 +137,7 @@ test("학습자가 이메일 가입, 확인, 로그인과 비밀번호 재설정
   expect(protectedAfterReset.status()).toBe(401)
 
   await page.goto(`${learnerWebOrigin}/login?next=/app/courses`)
-  await page.getByLabel("이메일").fill(email)
+  await page.getByLabel("이메일").fill(actor.email)
   await page.getByLabel("비밀번호", { exact: true }).fill(newPassword)
   await Promise.all([
     page.waitForURL(`${learnerWebOrigin}/app/courses`),

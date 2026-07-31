@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { LearnerAuthClientError } from "@workspace/auth/learner/client"
@@ -22,14 +22,8 @@ describe("비밀번호 재설정 페이지", () => {
     const user = userEvent.setup()
     render(<PasswordResetPage token="reset-token" />)
 
-    await user.type(
-      screen.getByLabelText("새 비밀번호"),
-      "New-learner-password-123!"
-    )
-    await user.type(
-      screen.getByLabelText("새 비밀번호 확인"),
-      "New-learner-password-123!"
-    )
+    changeInput("새 비밀번호", "New-learner-password-123!")
+    changeInput("새 비밀번호 확인", "New-learner-password-123!")
     await user.click(screen.getByRole("button", { name: "비밀번호 변경하기" }))
 
     expect(authClientMocks.resetPassword).toHaveBeenCalledWith({
@@ -61,14 +55,8 @@ describe("비밀번호 재설정 페이지", () => {
     const user = userEvent.setup()
     render(<PasswordResetPage token="used-token" />)
 
-    await user.type(
-      screen.getByLabelText("새 비밀번호"),
-      "New-learner-password-123!"
-    )
-    await user.type(
-      screen.getByLabelText("새 비밀번호 확인"),
-      "New-learner-password-123!"
-    )
+    changeInput("새 비밀번호", "New-learner-password-123!")
+    changeInput("새 비밀번호 확인", "New-learner-password-123!")
     await user.click(screen.getByRole("button", { name: "비밀번호 변경하기" }))
 
     expect(
@@ -76,3 +64,7 @@ describe("비밀번호 재설정 페이지", () => {
     ).toBeInTheDocument()
   })
 })
+
+function changeInput(label: string, value: string): void {
+  fireEvent.change(screen.getByLabelText(label), { target: { value } })
+}

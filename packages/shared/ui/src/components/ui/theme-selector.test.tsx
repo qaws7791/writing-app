@@ -37,9 +37,11 @@ describe("ThemeSelector", () => {
       />
     )
 
-    for (const label of ["라이트", "다크", "시스템"]) {
-      expect(screen.getByRole("button", { name: label })).toBeDisabled()
-    }
+    const themeButtons = screen.getAllByRole("button")
+    expect(themeButtons).toHaveLength(3)
+    expect(
+      themeButtons.every((button) => button.hasAttribute("disabled"))
+    ).toBe(true)
 
     await user.click(screen.getByRole("button", { name: "다크" }))
 

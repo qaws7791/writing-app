@@ -15,8 +15,14 @@ type PublishedCourseLessonOptions = Readonly<{
   stepType?: string
 }>
 
+type PublishedCourseStepOptions = Readonly<{
+  stepId: string
+  stepType: string
+}>
+
 type PublishedCourseOptions = Readonly<{
   additionalLessons?: readonly PublishedCourseLessonOptions[]
+  additionalSteps?: readonly PublishedCourseStepOptions[]
   courseId?: string
   courseTitle?: string
   curriculumVersionId?: string
@@ -75,6 +81,7 @@ export function aPublishedCourse(
     sortOrder: 1,
     stepId,
     stepType,
+    additionalSteps: options.additionalSteps ?? [],
     unitId,
   })
 
@@ -86,6 +93,7 @@ export function aPublishedCourse(
       sortOrder: index + 2,
       stepId: lesson.stepId ?? `step-${index + 2}`,
       stepType: lesson.stepType ?? stepType,
+      additionalSteps: [],
       unitId,
     })
   })
@@ -118,6 +126,7 @@ function insertLesson(
     sortOrder: number
     stepId: string
     stepType: string
+    additionalSteps: readonly PublishedCourseStepOptions[]
     unitId: string
   }>
 ): void {
@@ -136,17 +145,46 @@ function insertLesson(
       lesson.sortOrder
     )
 
+  insertStep(sqlite, {
+    curriculumVersionId: lesson.curriculumVersionId,
+    lessonId: lesson.lessonId,
+    sortOrder: 1,
+    stepId: lesson.stepId,
+    stepType: lesson.stepType,
+  })
+  lesson.additionalSteps.forEach((step, index) => {
+    insertStep(sqlite, {
+      curriculumVersionId: lesson.curriculumVersionId,
+      lessonId: lesson.lessonId,
+      sortOrder: index + 2,
+      stepId: step.stepId,
+      stepType: step.stepType,
+    })
+  })
+}
+
+function insertStep(
+  sqlite: WritingAppSqlite,
+  step: Readonly<{
+    curriculumVersionId: string
+    lessonId: string
+    sortOrder: number
+    stepId: string
+    stepType: string
+  }>
+): void {
   sqlite
-    .query<void, [string, string, string, string]>(
+    .query<void, [string, string, string, string, number]>(
       `INSERT INTO lesson_step_versions (
         curriculum_version_id, id, lesson_id, type, content_json, status,
         sort_order
-      ) VALUES (?1, ?2, ?3, ?4, '{}', 'active', 1)`
+      ) VALUES (?1, ?2, ?3, ?4, '{}', 'active', ?5)`
     )
     .run(
-      lesson.curriculumVersionId,
-      lesson.stepId,
-      lesson.lessonId,
-      lesson.stepType
+      step.curriculumVersionId,
+      step.stepId,
+      step.lessonId,
+      step.stepType,
+      step.sortOrder
     )
 }

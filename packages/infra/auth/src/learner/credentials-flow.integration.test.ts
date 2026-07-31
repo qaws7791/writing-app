@@ -23,6 +23,42 @@ const newPassword = "New-learner-password-123!"
 const expiredAt = new Date("2000-01-01T00:00:00.000Z")
 
 describe("학습자 email/password 인증 통합", () => {
+  it("공개 가입 흐름이 생성된 학습자 identity를 provision한다", async () => {
+    const database = createAuthTestDatabase()
+    const emailDelivery = createInMemoryAuthEmailDelivery()
+    const identityProvisioner = { provision: vi.fn(async () => undefined) }
+
+    try {
+      const runtime = createTestRuntime(database.db, emailDelivery, {
+        identityProvisioner,
+      })
+
+      const response = await postAuth(
+        runtime.authHandler,
+        "/api/auth/sign-up/email",
+        {
+          callbackURL: `${webOrigin}/login?verified=true`,
+          email,
+          name: "학습자",
+          password,
+        },
+        "127.0.0.10"
+      )
+
+      expect(response.status).toBe(200)
+      expect(identityProvisioner.provision).toHaveBeenCalledOnce()
+      expect(identityProvisioner.provision).toHaveBeenCalledWith({
+        email,
+        id: expect.any(String),
+        image: null,
+        joinedAt: expect.any(Date),
+        name: "학습자",
+      })
+    } finally {
+      database.close()
+    }
+  })
+
   it("가입, 확인 전 차단, 이메일 확인, 로그인 순서를 강제한다", async () => {
     const database = createAuthTestDatabase()
     const emailDelivery = createInMemoryAuthEmailDelivery()

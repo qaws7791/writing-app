@@ -18,6 +18,7 @@ import {
 } from "#learning/interface/http/learning-routes"
 
 const learnerId = learnerIdSchema.parse("learner-1")
+const otherLearnerId = learnerIdSchema.parse("learner-2")
 const lessonId = lessonIdSchema.parse("lesson-1")
 const stepId = lessonStepIdSchema.parse("step-1")
 const curriculumVersionId = curriculumVersionIdSchema.parse("curriculum-1")
@@ -84,6 +85,25 @@ describe("learning HTTP interface", () => {
 
     expect(response.status).toBe(400)
     expect(fixture.application.submitStep).not.toHaveBeenCalled()
+  })
+
+  it("다른 학습자 범위의 progress cursor를 query 호출 전에 400으로 거절한다", async () => {
+    const fixture = createFixture()
+    const cursor = createLearnerCursorCodec(presentationSecret)
+    const otherLearnerCursor = cursor.encode({
+      endpoint: "progress",
+      fingerprint: cursor.createFingerprint({ status: "in_progress" }),
+      learnerScope: cursor.createLearnerScope(otherLearnerId),
+      position: { courseId: "course-1", primary: 1_752_000_000_000 },
+    })
+
+    const response = await fixture.app.request(
+      `/progress?status=in_progress&cursor=${encodeURIComponent(otherLearnerCursor)}`,
+      { headers: { Cookie: "learner=active" } }
+    )
+
+    expect(response.status).toBe(400)
+    expect(fixture.application.readLearnerHome).not.toHaveBeenCalled()
   })
 
   it("course·lesson not-found를 canonical 404 code로 mapping한다", async () => {

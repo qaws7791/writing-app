@@ -33,53 +33,11 @@ vi.mock("next/navigation", () => ({
 import CourseDetailRoute, {
   generateMetadata,
 } from "@/app/(learner)/app/courses/[id]/page"
-import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
+import { createLearnerCourseDetailFixture } from "@/test/learner-api-fixtures"
 
-const version = { curriculumVersionId: "c1-v1", revision: 1 }
-const course: LearnerCourseDetailDto = {
-  category: "입문자를 위한 코스",
-  contentStatus: "active",
-  cover: null,
+const course = createLearnerCourseDetailFixture({
   description: "매일 조금씩 쓰는 습관을 만듭니다.",
-  id: "c1",
-  learning: {
-    completedLessons: 0,
-    nextLesson: {
-      currentStepId: "l1-s1",
-      currentStepIndex: 0,
-      estimatedMinutes: 5,
-      id: "l1",
-      title: "좋은 문장이란 무엇인가",
-    },
-    progressPercent: 0,
-    status: "not_started",
-    totalLessons: 1,
-    version,
-  },
-  lessonCount: 1,
-  title: "글쓰기 첫걸음 30일",
-  units: [
-    {
-      id: "u1",
-      lessons: [
-        {
-          category: "문장",
-          contentStatus: "active",
-          description: "좋은 문장을 배웁니다.",
-          estimatedMinutes: 5,
-          id: "l1",
-          learning: { status: "not_started", totalSteps: 1, version },
-          sortOrder: 1,
-          title: "좋은 문장이란 무엇인가",
-        },
-      ],
-      sortOrder: 1,
-      title: "문장의 기본기",
-    },
-  ],
-  version,
-  visualKey: "basic-sentence-writing",
-}
+})
 
 describe("코스 상세 route", () => {
   beforeEach(() => {

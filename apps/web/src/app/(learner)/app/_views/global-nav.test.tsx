@@ -10,23 +10,6 @@ vi.mock("next/navigation", () => ({
 }))
 
 describe("전역 내비게이션", () => {
-  it("header 브랜드와 주요 링크의 목적지를 링크 의미론으로 제공한다", () => {
-    render(<GlobalNav currentPath="/app/profile" />)
-
-    expect(screen.getByRole("link", { name: "글결." })).toHaveAttribute(
-      "href",
-      "/app"
-    )
-    expect(screen.getByRole("link", { name: "홈" })).toHaveAttribute(
-      "href",
-      "/app"
-    )
-    expect(screen.getByRole("link", { name: "배우기" })).toHaveAttribute(
-      "href",
-      "/app/courses"
-    )
-  })
-
   it("이모지 계정 메뉴 트리거는 이모지 대신 접근 가능한 이름을 노출한다", () => {
     render(<GlobalNav currentPath="/app/profile" />)
 

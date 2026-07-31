@@ -46,6 +46,7 @@
 - browser와 E2E 테스트는 production OAuth provider에 credential을 제출하지 않는다. Google 로그인은 가짜 client 설정으로 실제 시작 handler와 callback URL까지만 검증하고 외부 이동 직전에 가로챈다. 이메일 인증은 fixture DB의 확인된 사용자를 production과 같은 handler로 검증한다.
 - 로컬 E2E는 Caddy를 기동하지 않으므로 기본 browser context마다 RFC 5737 문서용 trusted client IP를 주입하며, 이는 production Caddy의 client IP header 덮어쓰기 경계를 대체하거나 검증한 증거가 아니다.
 - E2E fixture를 위한 test-only 인증 route나 제품 UI 조건문을 두지 않는다. 인증 runtime은 주입받은 입력만으로 조립하며, 환경을 직접 읽어 분기를 켜는 통로가 생기지 않도록 커스텀 lint 룰이 `process.env`·`Bun.env`·`import.meta.env` 접근을 차단한다.
+- E2E에서 정지·삭제·탭 종료처럼 상태를 변경하거나 중간 실패 시 오염을 남길 수 있는 시나리오는 전용 seeded actor·lesson을 사용한다. 다른 시나리오의 선행 실행이나 조건부 시작 경로에 의존하지 않는다.
 - secret, 실제 사용자 데이터, production endpoint와 공유 storage를 fixture에 사용하지 않는다.
 
 ## 브라우저 지원 smoke

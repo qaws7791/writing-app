@@ -188,13 +188,13 @@ describe("학습 단계 서버 채점 정책", () => {
       submission: learnerStepSubmissionSchema.parse(answer),
     })
 
-    expect(result.kind).toBe("accepted")
-    if (result.kind === "accepted") {
-      expect(result.evaluation).toMatchObject({
+    expect(result).toMatchObject({
+      kind: "accepted",
+      evaluation: {
         correct: true,
         type: step.type,
-      })
-    }
+      },
+    })
   })
 
   it("유효한 오답은 evaluation을 포함한 retry이고 잘못된 ID는 invalid다", () => {

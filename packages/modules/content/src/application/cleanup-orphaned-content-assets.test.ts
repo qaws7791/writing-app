@@ -54,10 +54,29 @@ describe("orphan content asset cleanup", () => {
     )
     expect(fixture.deleteOrphanedAssetCandidates).not.toHaveBeenCalled()
   })
+
+  it("storage 삭제 뒤 DB 정리가 실패하면 성공 건수를 보고하지 않는다", async () => {
+    const fixture = createFixture({ deleteFailure: true })
+
+    await expect(
+      fixture.cleanup({ batchSize: 100, cutoff, dryRun: false })
+    ).resolves.toEqual(err({ kind: "content-conflict" }))
+    expect(fixture.storage.deleteObjects).toHaveBeenCalledOnce()
+    expect(fixture.deleteOrphanedAssetCandidates).toHaveBeenCalledOnce()
+  })
 })
 
-function createFixture(input: Readonly<{ storageFailure?: boolean }> = {}) {
-  const deleteOrphanedAssetCandidates = vi.fn(async () => ok(candidates.length))
+function createFixture(
+  input: Readonly<{
+    deleteFailure?: boolean
+    storageFailure?: boolean
+  }> = {}
+) {
+  const deleteOrphanedAssetCandidates = vi.fn(async () =>
+    input.deleteFailure === true
+      ? err({ kind: "content-conflict" as const })
+      : ok(candidates.length)
+  )
   const repository = aContentRepository({
     deleteOrphanedAssetCandidates,
     listOrphanedAssetCandidates: async () => ok(candidates),

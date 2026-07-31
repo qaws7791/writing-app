@@ -15,13 +15,6 @@ export async function getServerAdminRequestOptions(
   const sessionToken = await getServerAdminSessionToken()
   if (sessionToken === null) return null
 
-  return createServerAdminRequestOptions(sessionToken, options)
-}
-
-export function createServerAdminRequestOptions(
-  sessionToken: string,
-  options: RequestInit = {}
-): RequestInit {
   const headers = Object.fromEntries(new Headers(options.headers).entries())
   headers["origin"] = readAdminWebOrigin()
 

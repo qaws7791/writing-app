@@ -46,12 +46,12 @@ function normalizeReport(body: unknown) {
     : envelope
 
   return {
-    blockedUri: readString(raw["blocked-uri"]),
+    blockedUri: readUri(raw["blocked-uri"]),
     disposition: readString(raw["disposition"]),
-    documentUri: readString(raw["document-uri"]),
+    documentUri: readUri(raw["document-uri"]),
     effectiveDirective: readString(raw["effective-directive"]),
     lineNumber: readNumber(raw["line-number"]),
-    sourceFile: readString(raw["source-file"]),
+    sourceFile: readUri(raw["source-file"]),
   }
 }
 
@@ -65,6 +65,34 @@ function readString(value: unknown): string | null {
   return typeof value === "string"
     ? value.slice(0, MAX_REPORT_VALUE_LENGTH)
     : null
+}
+
+function readUri(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const limited = value.slice(0, MAX_REPORT_VALUE_LENGTH)
+  try {
+    const url = new URL(limited)
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return stripQueryAndFragment(limited)
+    }
+    url.username = ""
+    url.password = ""
+    url.search = ""
+    url.hash = ""
+    return url.toString()
+  } catch {
+    return stripQueryAndFragment(limited)
+  }
+}
+
+function stripQueryAndFragment(value: string): string {
+  const queryIndex = value.indexOf("?")
+  const fragmentIndex = value.indexOf("#")
+  const indices = [queryIndex, fragmentIndex].filter((index) => index >= 0)
+  return indices.length === 0 ? value : value.slice(0, Math.min(...indices))
 }
 
 function readNumber(value: unknown): number | null {
