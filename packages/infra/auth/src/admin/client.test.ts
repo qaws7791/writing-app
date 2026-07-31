@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createAdminAuthClient } from "#auth/admin/client"
+import {
+  createAdminAuthClient,
+  isAdminAuthClientError,
+} from "#auth/admin/client"
 
 describe("관리자 인증 client", () => {
   it("비밀번호 변경은 다른 session 폐기를 항상 강제한다", async () => {
@@ -26,18 +29,27 @@ describe("관리자 인증 client", () => {
     )
   })
 
-  it("로그아웃 실패와 인증 요청 실패를 구분해 거절한다", async () => {
+  it.each([
+    { code: "invalid-credentials", status: 401 },
+    { code: "rate-limited", status: 429 },
+    { code: "unknown", status: 500 },
+  ])("실패 status $status를 $code 코드로 옮긴다", async ({ code, status }) => {
     const client = createAdminAuthClient({
-      fetch: vi.fn(async () => new Response(null, { status: 401 })),
+      fetch: vi.fn(async () => new Response(null, { status })),
     })
 
-    await expect(client.signOut()).rejects.toThrow("Failed to sign out")
-    await expect(
-      client.signInWithPassword({
-        callbackURL: "/",
-        email: "owner@example.test",
-        password: "password",
-      })
-    ).rejects.toThrow("Failed to sign in")
+    for (const request of [
+      () => client.signOut(),
+      () =>
+        client.signInWithPassword({
+          callbackURL: "/",
+          email: "owner@example.test",
+          password: "password",
+        }),
+    ]) {
+      const error = await request().catch((cause: unknown) => cause)
+
+      expect(isAdminAuthClientError(error) && error.code).toBe(code)
+    }
   })
 })

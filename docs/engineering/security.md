@@ -26,6 +26,7 @@
 
 - client IP 기반 제어는 Caddy가 직접 연결의 remote address로 덮어쓴 전용 header만 입력으로 사용한다. 외부 요청의 일반 전달 header와 client IP 주장은 신뢰하지 않으며 애플리케이션도 이를 직접 해석하지 않는다. 현재 경계는 [Caddy 설정](../../deploy/caddy/caddyfile)과 [HTTP 보안 adapter](../../packages/infra/http-platform/src/security/trusted-client-ip.ts)가 소유한다.
 - 인증 남용 방지와 학습자 AI feedback 제한은 각 capability가 독립된 상태와 정책을 소유한다. 실제 owner와 저장 구조는 [auth schema](../../packages/infra/auth/src/schema)와 [ai-feedback schema](../../packages/modules/ai-feedback/src/infrastructure/persistence/schema.ts)에서 확인한다.
+- 관리자 로그인은 기본 제한보다 강한 sign-in 경로 제한을 적용하고 그 결과를 일반 인증 실패와 구분되는 사용자 안내로 옮긴다. 관리자는 owner 단일 계정이고 자기 잠금 해제 경로가 없으므로 계정 단위 잠금은 도입하지 않는다. 계정 잠금이 필요해지면 잠금 해제 주체와 절차를 먼저 정한다. 현재 값은 [관리자 auth runtime](../../packages/infra/auth/src/admin/server.ts)이 소유한다.
 - 확인 메일 재전송 제한은 현재 단일 API process의 메모리 저장소를 사용한다. 여러 API instance로 확장하기 전 auth schema migration과 함께 공유·원자적 저장소로 전환해야 한다.
 
 ## 입력·출력·브라우저

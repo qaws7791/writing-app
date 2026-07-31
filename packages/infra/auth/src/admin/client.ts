@@ -1,5 +1,26 @@
 import type { FetchImplementation } from "#auth/shared/client"
 
+export type AdminAuthClientErrorCode =
+  | "invalid-credentials"
+  | "rate-limited"
+  | "unknown"
+
+export class AdminAuthClientError extends Error {
+  readonly code: AdminAuthClientErrorCode
+
+  constructor(code: AdminAuthClientErrorCode) {
+    super(`Admin authentication failed: ${code}`)
+    this.name = "AdminAuthClientError"
+    this.code = code
+  }
+}
+
+export function isAdminAuthClientError(
+  error: unknown
+): error is AdminAuthClientError {
+  return error instanceof AdminAuthClientError
+}
+
 export type AdminAuthClient = {
   readonly changePassword: (input: {
     readonly currentPassword: string
@@ -18,22 +39,16 @@ export function createAdminAuthClient(input: {
 }): AdminAuthClient {
   return {
     async changePassword(passwordInput) {
-      await requestAdminAuthJson(
-        input,
-        "/api/admin/auth/change-password",
-        {
-          ...passwordInput,
-          revokeOtherSessions: true,
-        },
-        "Admin authentication request failed"
-      )
+      await requestAdminAuthJson(input, "/api/admin/auth/change-password", {
+        ...passwordInput,
+        revokeOtherSessions: true,
+      })
     },
     async signInWithPassword(credentials) {
       await requestAdminAuthJson(
         input,
         "/api/admin/auth/sign-in/email",
-        credentials,
-        "Failed to sign in"
+        credentials
       )
     },
     async signOut() {
@@ -43,7 +58,7 @@ export function createAdminAuthClient(input: {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to sign out")
+        throw new AdminAuthClientError(readAdminAuthErrorCode(response.status))
       }
     },
   }
@@ -54,8 +69,7 @@ async function requestAdminAuthJson(
     readonly fetch: FetchImplementation
   },
   path: string,
-  body: Readonly<object>,
-  errorMessage: string
+  body: Readonly<object>
 ): Promise<void> {
   const response = await client.fetch(path, {
     body: JSON.stringify(body),
@@ -65,6 +79,15 @@ async function requestAdminAuthJson(
   })
 
   if (!response.ok) {
-    throw new Error(errorMessage)
+    throw new AdminAuthClientError(readAdminAuthErrorCode(response.status))
   }
+}
+
+function readAdminAuthErrorCode(status: number): AdminAuthClientErrorCode {
+  if (status === 429) return "rate-limited"
+  if (status === 400 || status === 401 || status === 403) {
+    return "invalid-credentials"
+  }
+
+  return "unknown"
 }

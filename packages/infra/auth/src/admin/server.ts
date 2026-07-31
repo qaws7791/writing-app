@@ -62,7 +62,12 @@ export function createAdminAuthRuntime(
       disableSignUp: true,
       enabled: true,
     },
-    rateLimit: { storage: "database" },
+    rateLimit: {
+      // 관리자 콘솔은 owner 단일 계정이므로 계정 잠금은 유일한 운영자를 잠글 수
+      // 있다. 대신 sign-in 경로에만 기본값보다 강한 요청 제한을 적용한다.
+      customRules: { "/sign-in/email": { max: 5, window: 60 } },
+      storage: "database",
+    },
     secret: input.secret,
     session: { modelName: "admin_session" },
     trustedOrigins: [input.webOrigin],

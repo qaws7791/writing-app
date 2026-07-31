@@ -9,7 +9,11 @@ import {
   type FormEvent,
 } from "react"
 
-import { requestAdminPasswordLogin } from "@/features/authentication/api/admin-auth-client"
+import {
+  readAdminLoginErrorMessage,
+  requestAdminPasswordLogin,
+} from "@/features/authentication/api/admin-auth-client"
+import type { AdminLoginReason } from "@/features/authentication/model/admin-auth-navigation"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
@@ -18,9 +22,11 @@ import { Input } from "@workspace/ui/components/ui/input"
 export function AdminAuthPage({
   learnerWebOrigin,
   nextPath,
+  reason,
 }: {
   readonly learnerWebOrigin: string
   readonly nextPath: string
+  readonly reason: AdminLoginReason | null
 }) {
   const router = useRouter()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -43,8 +49,8 @@ export function AdminAuthPage({
           password: String(formData.get("password") ?? ""),
         })
         router.replace(result.nextPath)
-      } catch {
-        setErrorMessage("이메일 또는 비밀번호를 확인하세요.")
+      } catch (error) {
+        setErrorMessage(readAdminLoginErrorMessage(error))
       }
     })
   }
@@ -59,6 +65,14 @@ export function AdminAuthPage({
         <p className="m-0 mb-6 text-[1rem] font-medium text-muted-foreground">
           접근하려면 관리자 계정으로 로그인하세요.
         </p>
+        {reason === null ? null : (
+          <Alert className="mb-4" role="status" tone="warning">
+            <AlertDescription>
+              로그인 세션이 만료되어 다시 로그인해야 합니다. 저장하지 않은 편집
+              내용은 복구할 수 없습니다.
+            </AlertDescription>
+          </Alert>
+        )}
         <form className="grid gap-3.5" onSubmit={submitLogin}>
           <AuthInput
             autoComplete="email"
