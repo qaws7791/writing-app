@@ -8,6 +8,7 @@ Storybook은 디자인 시스템의 실행 가능한 명세다. story source와 
 - theme과 motion을 toolbar global로 제공한다.
 - custom viewport는 `mobile-sm`, `mobile-lg`, `tablet`, `desktop`, `wide`를 제공한다.
 - Foundation story는 Color, Typography, Spacing, Motion 단위로 나눈다.
+- `Foundations/Color`는 `docs/design/foundations.md` Semantic Color 표 전체를 역할 그룹별 스와치로 보여 주고, 토큰명 복사·해석 hex·WCAG 대비 검증을 제공한다. Overview, SemanticTokens, ContrastPairs 세 스토리로 구성한다.
 - Components story는 공유 UI primitive를 `Components/UI`에, 레슨 활동 컴포넌트를 `Components/Lesson`에 둔다.
 - Patterns, Recipes와 Quality는 조합 예시와 검증 체크리스트를 제공한다.
 
