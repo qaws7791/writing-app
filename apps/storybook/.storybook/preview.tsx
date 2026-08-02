@@ -16,35 +16,38 @@ import { viewports } from "#storybook-config/viewports"
 
 const GLOBALS_UPDATED = "globalsUpdated"
 type MotionName = "full" | "reduced"
+type ThemeSubscriber = () => void
+
+let currentTheme: ThemeName | undefined
+const themeSubscribers = new Set<ThemeSubscriber>()
+
+function getCurrentTheme() {
+  return currentTheme
+}
+
+function subscribeToTheme(subscriber: ThemeSubscriber) {
+  themeSubscribers.add(subscriber)
+  return () => themeSubscribers.delete(subscriber)
+}
+
+function updateCurrentTheme({ globals }: { globals: Record<string, unknown> }) {
+  const nextTheme = globals.theme as ThemeName | undefined
+
+  if (currentTheme === nextTheme) return
+
+  currentTheme = nextTheme
+  themeSubscribers.forEach((subscriber) => subscriber())
+}
 
 function ThemedDocsContainer({
   children,
   context,
 }: React.PropsWithChildren<DocsContainerProps>) {
-  const [theme, setTheme] = React.useState<ThemeName | undefined>(() => {
-    try {
-      const story = context.storyById()
-      const storyContext = context.getStoryContext(story)
-      return storyContext.globals.theme as ThemeName | undefined
-    } catch {
-      return undefined
-    }
-  })
-
-  React.useEffect(() => {
-    const channel = addons.getChannel()
-    const handleGlobalsUpdated = ({
-      globals,
-    }: {
-      globals: Record<string, unknown>
-    }) => {
-      setTheme(globals.theme as ThemeName | undefined)
-    }
-    channel.on(GLOBALS_UPDATED, handleGlobalsUpdated)
-    return () => {
-      channel.off(GLOBALS_UPDATED, handleGlobalsUpdated)
-    }
-  }, [])
+  const theme = React.useSyncExternalStore(
+    subscribeToTheme,
+    getCurrentTheme,
+    getCurrentTheme
+  )
 
   return (
     <DocsContainer context={context} theme={getStorybookTheme(theme)}>
@@ -55,6 +58,12 @@ function ThemedDocsContainer({
 
 const preview: Preview = {
   tags: ["autodocs"],
+  beforeAll() {
+    const channel = addons.getChannel()
+    channel.on(GLOBALS_UPDATED, updateCurrentTheme)
+
+    return () => channel.off(GLOBALS_UPDATED, updateCurrentTheme)
+  },
   parameters: {
     controls: {
       matchers: {
