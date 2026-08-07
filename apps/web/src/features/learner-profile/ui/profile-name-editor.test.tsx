@@ -22,12 +22,6 @@ async function openProfileNameDialog(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("프로필 이름 편집", () => {
-  it("닫힌 상태에서는 표시 이름 입력을 보여주지 않는다", () => {
-    render(<ProfileNameEditor currentName="기존 이름" />)
-
-    expect(screen.queryByLabelText("표시 이름")).not.toBeInTheDocument()
-  })
-
   it("접근 가능한 form으로 이름을 저장하고 Dialog를 닫는다", async () => {
     const user = userEvent.setup()
     updateProfile.mockResolvedValue({ name: "새 이름" })

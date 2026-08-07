@@ -7,33 +7,18 @@ import {
 import { createAdminCourseEditorFixture } from "@/features/course-editor/test/fixtures/admin-course-editor"
 
 describe("adminCourseEditorSchema", () => {
-  it("generated DTO 경계에서 명시적인 undefined 속성을 제거한다", () => {
-    const document = parseWithSteps([multipleChoiceStep({ wrong: undefined })])
-
-    expect(readSteps(document)[0]).not.toHaveProperty("wrong")
-  })
-
-  it("첫 원소뿐 아니라 배열의 모든 스텝에서 undefined 속성을 제거한다", () => {
+  it("중첩 DTO에서 undefined를 제거하고 값과 null을 보존한다", () => {
     const document = parseWithSteps([
       multipleChoiceStep({ wrong: undefined }),
       readingStep({ illustrationAssetId: undefined, source: undefined }),
+      multipleChoiceStep({ id: "step-3", sortOrder: 3, wrong: "오답 해설" }),
     ])
+    const steps = readSteps(document)
 
-    expect(readSteps(document)[1]).not.toHaveProperty("illustrationAssetId")
-    expect(readSteps(document)[1]).not.toHaveProperty("source")
-  })
-
-  it("값이 있는 optional 속성은 그대로 남긴다", () => {
-    const document = parseWithSteps([
-      multipleChoiceStep({ wrong: "오답 해설" }),
-    ])
-
-    expect(readSteps(document)[0]).toMatchObject({ wrong: "오답 해설" })
-  })
-
-  it("null 속성은 undefined와 구분해 최상위와 중첩 객체 모두에서 보존한다", () => {
-    const document = parseWithSteps([multipleChoiceStep({ wrong: undefined })])
-
+    expect(steps[0]).not.toHaveProperty("wrong")
+    expect(steps[1]).not.toHaveProperty("illustrationAssetId")
+    expect(steps[1]).not.toHaveProperty("source")
+    expect(steps[2]).toMatchObject({ wrong: "오답 해설" })
     expect(document.coverAssetId).toBeNull()
     expect(document.units[0]?.lessons[0]).toMatchObject({
       category: null,
@@ -80,7 +65,11 @@ function readSteps(document: AdminCourseDetail) {
 }
 
 function multipleChoiceStep(
-  overrides: Readonly<{ wrong: string | undefined }>
+  overrides: Readonly<{
+    id?: string
+    sortOrder?: number
+    wrong: string | undefined
+  }>
 ): Readonly<Record<string, unknown>> {
   return {
     correct: "option-1",

@@ -45,6 +45,7 @@ export const TypesAndSizes: Story = {
 }
 
 export const States: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="grid w-[min(32rem,calc(100vw-2rem))] gap-4">
       <Input aria-label="default input" placeholder="기본" />
@@ -114,6 +115,7 @@ export const LongContent: Story = {
 }
 
 export const FormInteraction: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Field data-invalid className="w-[min(32rem,calc(100vw-2rem))]">
       <FieldLabel htmlFor="input-interaction">제목</FieldLabel>

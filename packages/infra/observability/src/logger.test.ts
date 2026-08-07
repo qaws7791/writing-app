@@ -49,37 +49,6 @@ describe("logger", () => {
     }
   )
 
-  it("request log helper가 요청 완료 로그를 남긴다", () => {
-    const { records, stream } = createMemoryLogStream()
-    const logger = createAppLogger({
-      stream,
-    })
-    const logRequest = createRequestLogger(logger)
-
-    logRequest({
-      audience: "learner",
-      durationMs: 12,
-      method: "GET",
-      outcome: "succeeded",
-      path: "/courses/:courseId",
-      requestId: "r1",
-      status: 200,
-    })
-
-    expect(records[0]).toMatchObject({
-      audience: "learner",
-      durationMs: 12,
-      event: "request.completed",
-      method: "GET",
-      msg: "request.completed",
-      outcome: "succeeded",
-      path: "/courses/:courseId",
-      requestId: "r1",
-      retentionClass: "application-30d",
-      status: 200,
-    })
-  })
-
   it("request log helper가 actor 식별자를 구조화하고 허용하지 않은 필드를 버린다", () => {
     const { records, stream } = createMemoryLogStream()
     const logger = createAppLogger({
@@ -112,10 +81,13 @@ describe("logger", () => {
       actorType: "learner",
       audience: "learner",
       durationMs: 15,
+      event: "request.completed",
       method: "GET",
       msg: "request.completed",
+      outcome: "succeeded",
       path: "/profile",
       requestId: "r2",
+      retentionClass: "application-30d",
       status: 200,
     })
     const serialized = JSON.stringify(records[0])

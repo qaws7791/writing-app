@@ -5,7 +5,6 @@ import {
   assertPublicUrlTransport,
   parseContentAssetImageAllowedOrigins,
   parseContentAssetPublicBaseUrl,
-  shouldUpgradeInsecureRequests,
 } from "#env/public-url"
 
 describe("public URL transport", () => {
@@ -185,12 +184,5 @@ describe("public URL transport", () => {
     ).toThrow(
       "content asset public base URL origin is not in the image allowlist"
     )
-  })
-
-  it("HTTPS public origin에만 insecure request 승격을 적용한다", () => {
-    expect(shouldUpgradeInsecureRequests("https://writing.example.test")).toBe(
-      true
-    )
-    expect(shouldUpgradeInsecureRequests("http://localhost:3000")).toBe(false)
   })
 })

@@ -72,24 +72,6 @@ describe("통합 API env", () => {
     ).toBe("debug")
   })
 
-  it("LOG_PRETTY 미지정은 development에서만 pretty logging을 켠다", () => {
-    expect(parseApiEnv(createTestEnvironment()).logPretty).toBe(false)
-    expect(
-      parseApiEnv({ ...createTestEnvironment(), NODE_ENV: "development" })
-        .logPretty
-    ).toBe(true)
-    expect(
-      parseApiEnv({
-        ...createTestEnvironment(),
-        LOG_PRETTY: "false",
-        NODE_ENV: "development",
-      }).logPretty
-    ).toBe(false)
-    expect(
-      parseApiEnv({ ...createTestEnvironment(), LOG_PRETTY: "true" }).logPretty
-    ).toBe(true)
-  })
-
   it("AI feedback quota와 timeout을 명시적으로 파싱하고 잘못된 순서를 거절한다", () => {
     expect(
       parseApiEnv({

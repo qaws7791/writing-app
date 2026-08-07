@@ -87,6 +87,7 @@ export const EmptyTrackOnSurface: Story = {
  * 극단값(0%, 100%) 및 경계 상태에서의 렌더링 검증 예제입니다.
  */
 export const BoundaryStates: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="grid max-w-xl gap-6">
       {[0, 1, 99, 100].map((value) => (
@@ -152,6 +153,7 @@ export const Interactive: Story = {
  * 스크린 리더가 progressbar 역할·현재 값·접근 이름을 함께 받는지 확인하는 스토리입니다.
  */
 export const Accessibility: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Progress aria-label="전체 코스 진행률" className="max-w-3xl" value={58}>
       <ProgressLabel>전체 코스 진행률</ProgressLabel>

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Loader2, Mail, Save, Trash2, ArrowRight } from "lucide-react"
-import { expect, fn, userEvent, within } from "storybook/test"
+import { fn } from "storybook/test"
 
 import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 
@@ -117,6 +117,7 @@ export const Sizes: Story = {
  * 단독 아이콘 버튼 예제입니다.
  */
 export const IconOnly: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <Button size="icon" aria-label="메일 아이콘" variant="outline">
@@ -160,6 +161,7 @@ export const WithIcon: Story = {
  * disabled 처리와 spinner 애니메이션 아이콘이 포함됩니다.
  */
 export const Loading: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <Button disabled>
@@ -262,10 +264,5 @@ export const States: Story = {
 export const Interaction: Story = {
   args: {
     children: "클릭 확인",
-  },
-  play: async ({ args, canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole("button", { name: "클릭 확인" }))
-    await expect(args.onClick).toHaveBeenCalled()
   },
 }

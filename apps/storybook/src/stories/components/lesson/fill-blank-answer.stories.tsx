@@ -47,6 +47,7 @@ type Story = StoryObj<typeof meta>
  * Controls로 템플릿·단어·빈칸 수·채점 상태를 조작할 수 있는 Playground입니다.
  */
 export const Playground: Story = {
+  tags: ["ci-test"],
   render: (args) => (
     <FillBlankAnswer
       key={`${args.template}-${args.blankCount}-${args.choices.map((choice) => choice.id).join(",")}`}
@@ -68,6 +69,7 @@ export const CheckedCorrect: Story = {
  * 오답 채점 후 시각 상태입니다.
  */
 export const CheckedWrong: Story = {
+  tags: ["ci-test"],
   args: {
     checked: "wrong",
   },

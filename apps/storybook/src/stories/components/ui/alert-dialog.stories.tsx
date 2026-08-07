@@ -103,6 +103,7 @@ export const SmallSize: Story = {
 }
 
 export const LessonExit: Story = {
+  tags: ["ci-test"],
   render: () => (
     <AlertDialog open>
       <AlertDialogContent>
@@ -120,6 +121,7 @@ export const LessonExit: Story = {
 }
 
 export const FormInteraction: Story = {
+  tags: ["ci-test"],
   render: () => (
     <AlertDialog>
       <AlertDialogTrigger render={<Button>인터랙션 테스트</Button>} />

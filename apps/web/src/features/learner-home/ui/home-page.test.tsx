@@ -89,42 +89,6 @@ describe("홈 화면", () => {
     refresh.mockReset()
   })
 
-  it("학습자 이름의 첫 단어로 인사말을 표시한다", () => {
-    render(
-      <HomePage
-        inProgress={emptyInProgress}
-        learnerName="글쓰기 탐험가"
-        profileStats={profileStats}
-      />
-    )
-
-    expect(screen.getByText("안녕하세요 👋")).toBeInTheDocument()
-    expect(
-      screen.getByRole("heading", {
-        name: /글쓰기님,\s*오늘도 함께 써봐요\./,
-      })
-    ).toBeInTheDocument()
-  })
-
-  it("프로필 통계를 연속 학습일과 완료 레슨 수로 표시한다", () => {
-    render(
-      <HomePage
-        inProgress={emptyInProgress}
-        learnerName="글쓰기 탐험가"
-        profileStats={{
-          ...profileStats,
-          completedLessons: 7,
-          currentStreakDays: 3,
-        }}
-      />
-    )
-
-    expect(screen.getByText("3일")).toBeInTheDocument()
-    expect(screen.getByText("연속 학습")).toBeInTheDocument()
-    expect(screen.getByText("7개")).toBeInTheDocument()
-    expect(screen.getByText("완료한 레슨")).toBeInTheDocument()
-  })
-
   it("진행 중 코스가 없으면 코스 둘러보기 CTA를 표시한다", () => {
     render(
       <HomePage

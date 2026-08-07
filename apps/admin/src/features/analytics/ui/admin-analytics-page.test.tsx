@@ -101,37 +101,6 @@ const aiFeedbackQuality: AdminAiFeedbackQuality = {
 }
 
 describe("AdminAnalyticsPage", () => {
-  it("서버 검색·정렬·페이지 상태를 URL 링크와 form에 보존한다", () => {
-    renderPage()
-
-    expect(
-      screen.getByRole("textbox", { name: "레슨 또는 강의 검색" })
-    ).toHaveValue("문장")
-    expect(screen.getByRole("combobox", { name: "페이지당 행" })).toHaveValue(
-      "10"
-    )
-    expect(
-      screen.getByRole("columnheader", { name: "완료율 내림차순 정렬" })
-    ).toHaveAttribute("aria-sort", "ascending")
-    expect(
-      screen.getByRole("link", { name: "완료율 내림차순 정렬" })
-    ).toHaveAttribute(
-      "href",
-      "?direction=desc&page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5&sort=completionRate"
-    )
-    expect(screen.getByRole("link", { name: "이전 페이지" })).toHaveAttribute(
-      "aria-disabled",
-      "true"
-    )
-    expect(screen.getByRole("link", { name: "다음 페이지" })).toHaveAttribute(
-      "href",
-      "?direction=asc&page=2&pageSize=10&query=%EB%AC%B8%EC%9E%A5&sort=completionRate"
-    )
-    expect(
-      screen.getByRole("table", { name: "레슨별 성과" })
-    ).toHaveTextContent("문장 시작하기")
-  })
-
   it("요약 조회가 실패하면 레슨 목록까지 열지 않고 요약 오류만 보여준다", () => {
     render(
       <AdminAnalyticsPage

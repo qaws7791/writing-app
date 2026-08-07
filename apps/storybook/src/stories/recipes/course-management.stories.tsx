@@ -39,6 +39,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const CardRecipe: Story = {
+  tags: ["ci-test"],
   render: () => (
     <section className="grid gap-4 rounded-panel border border-border/50 bg-background p-surface-padding-md">
       <h3 className="text-title-lg font-black">Course Card</h3>
@@ -63,6 +64,7 @@ export const CardRecipe: Story = {
 }
 
 export const ResponsiveForm: Story = {
+  tags: ["ci-test"],
   render: () => (
     <form
       className="grid max-w-4xl gap-4 rounded-panel border border-border/50 bg-background p-surface-padding-md md:grid-cols-[1fr_12rem_auto] md:items-end"

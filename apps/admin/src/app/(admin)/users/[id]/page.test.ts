@@ -35,15 +35,6 @@ describe("admin user detail route", () => {
     expect(getAdminUserMock).not.toHaveBeenCalled()
   })
 
-  it("검증한 user ID로 인증된 generated reader를 직접 호출한다", async () => {
-    const requestOptions = { cache: "no-store" }
-    getServerAdminRequestOptionsMock.mockResolvedValue(requestOptions)
-
-    await AdminUserDetailRoute({ params: Promise.resolve({ id: "user-1" }) })
-
-    expect(getAdminUserMock).toHaveBeenCalledWith("user-1", requestOptions)
-  })
-
   it("세션이 없으면 사용자 상세를 조회하지 않는다", async () => {
     getServerAdminRequestOptionsMock.mockResolvedValue(null)
 

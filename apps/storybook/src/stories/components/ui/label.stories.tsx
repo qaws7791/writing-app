@@ -31,6 +31,7 @@ export const Playground: Story = {
  * Label의 `htmlFor` 속성에 Input의 `id`를 매핑하여 라벨 클릭 시 인풋이 포커스되도록 합니다.
  */
 export const WithInput: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="grid w-full max-w-sm items-center gap-2">
       <Label htmlFor="email-input">이메일 주소</Label>
@@ -60,6 +61,7 @@ export const RequiredField: Story = {
  * 자동으로 투명도가 조절되며 선택이 불가능해집니다.
  */
 export const DisabledState: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="grid w-full max-w-sm items-center gap-2">
       <Label htmlFor="disabled-input">비활성 입력 필드</Label>

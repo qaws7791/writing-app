@@ -62,6 +62,7 @@ export const Multiple: Story = {
 }
 
 export const WithDisabledItem: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Accordion className="max-w-2xl" defaultValue={["lesson-1"]}>
       <AccordionItem value="lesson-1">
@@ -116,6 +117,7 @@ export const CustomLayout: Story = {
 }
 
 export const Interaction: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Accordion className="max-w-2xl">
       <AccordionItem value="lesson-1">

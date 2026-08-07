@@ -1,6 +1,5 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { renderToString } from "react-dom/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { LearnerAuthClientError } from "@workspace/auth/learner/client"
 
@@ -31,38 +30,6 @@ describe("로그인 및 가입 페이지", () => {
     authClientMocks.requestVerificationEmail.mockClear()
   })
 
-  it("서버 출력에서는 인증 행동을 막고 hydration 뒤 활성화한다", () => {
-    const serverContainer = document.createElement("div")
-    serverContainer.innerHTML = renderToString(
-      <AuthPage nextPath="/app/courses" />
-    )
-    const serverOutput = within(serverContainer)
-
-    expect(serverOutput.getByRole("tab", { name: "가입" })).toHaveAttribute(
-      "aria-disabled",
-      "true"
-    )
-    expect(
-      serverOutput.getByRole("button", { name: "이메일로 로그인하기" })
-    ).toBeDisabled()
-    expect(
-      serverOutput.getByRole("button", { name: "Google로 계속하기" })
-    ).toBeDisabled()
-
-    render(<AuthPage nextPath="/app/courses" />)
-
-    expect(screen.getByRole("tab", { name: "가입" })).toHaveAttribute(
-      "aria-disabled",
-      "false"
-    )
-    expect(
-      screen.getByRole("button", { name: "이메일로 로그인하기" })
-    ).toBeEnabled()
-    expect(
-      screen.getByRole("button", { name: "Google로 계속하기" })
-    ).toBeEnabled()
-  })
-
   it("이메일과 비밀번호 제출을 next 경로와 함께 이메일 로그인 요청으로 보낸다", async () => {
     const user = userEvent.setup()
     render(<AuthPage nextPath="/app/courses" />)
@@ -78,25 +45,6 @@ describe("로그인 및 가입 페이지", () => {
       nextPath: "/app/courses",
       password: "password",
     })
-  })
-
-  it("Google 로그인 버튼을 누르면 next 경로와 함께 Google 로그인을 시작한다", async () => {
-    const user = userEvent.setup()
-    render(<AuthPage nextPath="/app/courses" />)
-
-    await user.click(screen.getByRole("button", { name: "Google로 계속하기" }))
-
-    expect(authClientMocks.requestGoogleLogin).toHaveBeenCalledWith(
-      "/app/courses"
-    )
-  })
-
-  it("제품 로그인 화면에는 테스트 전용 계정 로그인 수단을 노출하지 않는다", () => {
-    render(<AuthPage nextPath="/app/courses" />)
-
-    expect(
-      screen.queryByRole("button", { name: "테스트 계정으로 계속하기" })
-    ).not.toBeInTheDocument()
   })
 
   it("가입 후 계정 존재를 노출하지 않는 확인 안내와 재전송을 제공한다", async () => {

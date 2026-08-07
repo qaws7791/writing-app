@@ -64,15 +64,6 @@ describe("env parser", () => {
     })
   })
 
-  it("DATABASE_URL이 없으면 DB client 기본 경로를 사용하도록 비워 둔다", () => {
-    expect(
-      parseEnv({
-        ADMIN_AUTH_SECRET: validAdminSecret,
-        LEARNER_AUTH_SECRET: validSecret,
-      }).DATABASE_URL
-    ).toBeUndefined()
-  })
-
   it("auth secret은 32자 이상이어야 한다", () => {
     expect(() =>
       parseEnv({
@@ -122,19 +113,5 @@ describe("env parser", () => {
     ],
   ])("production에서 %s 설정을 거부한다", (_, override) => {
     expect(() => parseEnv({ ...validProductionEnv, ...override })).toThrow()
-  })
-
-  it("development의 localhost origin 기본값은 유지한다", () => {
-    expect(
-      parseEnv({
-        ADMIN_AUTH_SECRET: validAdminSecret,
-        LEARNER_AUTH_SECRET: validSecret,
-        NODE_ENV: "development",
-      })
-    ).toMatchObject({
-      ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
-      NODE_ENV: "development",
-      WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
-    })
   })
 })

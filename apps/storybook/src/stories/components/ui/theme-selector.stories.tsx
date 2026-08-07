@@ -37,6 +37,7 @@ type Story = StoryObj<typeof meta>
 export const Playground: Story = {}
 
 export const SelectedStates: Story = {
+  tags: ["ci-test"],
   render: (args) => (
     <div className="grid gap-3">
       {themeValues.map((theme) => (

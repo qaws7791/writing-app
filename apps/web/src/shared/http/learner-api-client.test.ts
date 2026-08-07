@@ -10,15 +10,6 @@ import {
 } from "@/shared/http/learner-api-client"
 
 describe("learner API client boundary", () => {
-  it("generated 성공 값을 변경하지 않는다", async () => {
-    await expect(
-      settleLearnerApiRequest(Promise.resolve({ id: "course-1" }))
-    ).resolves.toEqual({
-      status: "ok",
-      value: { id: "course-1" },
-    })
-  })
-
   it("401 canonical 오류를 인증 실패로 분류한다", async () => {
     const error = createUnauthenticatedError()
 

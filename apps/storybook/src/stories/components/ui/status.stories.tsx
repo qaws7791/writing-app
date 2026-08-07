@@ -21,6 +21,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Callouts: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="grid max-w-3xl gap-4">
       {tones.map((tone) => (
@@ -36,6 +37,7 @@ export const Callouts: Story = {
 }
 
 export const LoadingStates: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="flex flex-wrap items-center gap-5">
       <div className="flex items-center gap-2">

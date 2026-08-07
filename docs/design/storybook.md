@@ -42,6 +42,11 @@ bun --filter @workspace/storybook build
 ```
 
 - interaction test는 사용자 동작과 상태 전이를 검증한다.
+- 자동 브라우저 검증 대상 story에는 `ci-test` 태그를 붙인다.
+- `ci-test` 태그는 DOM·ARIA·초점·키보드·오류·비활성·대비 계약을 독립적으로 검증하는 story에만 붙인다.
+- 크기·색조·배치만 다른 시각 예시와 정적 카탈로그 story에는 `ci-test` 태그를 붙이지 않는다.
+- `play` 함수는 사용자 상호작용 계약을 검증할 때만 사용한다. 브라우저 기본 이벤트 전달만 확인하는 `play` 함수는 만들지 않는다.
+- `apps/storybook/vitest.storybook.config.ts`가 `ci-test` 태그 필터를 소유한다.
 - 접근성 검사는 Storybook test runner의 a11y 계약을 따른다.
 - production CSS 검사는 typography, animation, semantic token과 custom utility sentinel을 web·admin과 함께 확인한다.
 - 시각 회귀가 필요한 제품 흐름은 저장소가 관리하는 Playwright screenshot 기준선을 사용한다.

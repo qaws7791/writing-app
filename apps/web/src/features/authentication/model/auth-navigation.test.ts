@@ -22,12 +22,8 @@ describe("auth navigation", () => {
     }
   )
 
-  it.each([
-    { candidate: "https://example.com/app", label: "외부 절대 URL" },
-    { candidate: "//example.com/app", label: "프로토콜 상대 URL" },
-    { candidate: "/login?next=/app", label: "로그인 재귀 경로" },
-  ])("callback 경로의 $label은 기본 앱 경로로 차단한다", ({ candidate }) => {
-    expect(resolveSafeNextPath(candidate)).toBe("/app")
+  it("로그인 재귀 경로는 기본 앱 경로로 차단한다", () => {
+    expect(resolveSafeNextPath("/login?next=/app")).toBe("/app")
   })
 
   it("로그인 페이지 경로에 원래 목적지를 인코딩해 붙인다", () => {

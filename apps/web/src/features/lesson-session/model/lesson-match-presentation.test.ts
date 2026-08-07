@@ -83,31 +83,6 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
     ).toBe(secondLeft.id)
   })
 
-  it("같은 짝을 다시 선택하면 해당 배정을 해제한다", () => {
-    const presentation = createPresentation([
-      { left: "원인", right: "결과를 만든다" },
-    ])
-    const leftChoice = readChoiceByItemId(
-      presentation.leftChoices,
-      "left-item-1"
-    )
-    const rightChoice = readChoiceByItemId(
-      presentation.rightChoices,
-      "right-item-1"
-    )
-
-    const selected = toggleMatchSelection(emptySelectionMap(), {
-      leftChoiceId: leftChoice.id,
-      rightChoiceId: rightChoice.id,
-    })
-    const unselected = toggleMatchSelection(selected, {
-      leftChoiceId: leftChoice.id,
-      rightChoiceId: rightChoice.id,
-    })
-
-    expect(unselected[leftChoice.id]).toBeUndefined()
-  })
-
   it("저장 payload는 학습 콘텐츠의 stable item ID와 표시 텍스트로 만든다", () => {
     const presentation = createPresentation([
       { left: "그러나", right: "역접" },
@@ -133,28 +108,6 @@ describe("매칭 스텝 표시와 상호작용 정책", () => {
         leftItemId: "left-item-1",
         right: "역접",
         rightItemId: "right-item-1",
-      },
-    ])
-  })
-
-  it("server evaluation이 없으면 연결선을 기본 tone으로 표시한다", () => {
-    const presentation = createDuplicateLabelPresentation()
-    const firstLeft = readChoiceByItemId(
-      presentation.leftChoices,
-      "left-item-1"
-    )
-    const secondRight = readChoiceByItemId(
-      presentation.rightChoices,
-      "right-item-2"
-    )
-
-    expect(
-      toMatchAnswerConnections(presentation, { [firstLeft.id]: secondRight.id })
-    ).toEqual([
-      {
-        leftChoiceId: firstLeft.id,
-        rightChoiceId: secondRight.id,
-        tone: "default",
       },
     ])
   })

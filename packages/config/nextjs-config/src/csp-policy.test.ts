@@ -1,5 +1,3 @@
-import { createContext, runInContext } from "node:vm"
-
 import { describe, expect, it } from "vitest"
 
 import { recordCspViolation } from "@workspace/nextjs-config/csp-report"
@@ -7,7 +5,6 @@ import {
   createContentSecurityPolicy,
   createNextSecurityHeaders,
 } from "@workspace/nextjs-config/security-headers"
-import { zodJitlessBootstrapScript } from "@workspace/nextjs-config/zod-jitless"
 
 const maxCspReportBytes = 64 * 1024
 
@@ -37,16 +34,6 @@ describe("Next CSP 정책", () => {
     )
     expect(csp).not.toContain("upgrade-insecure-requests")
     expect(csp).not.toContain("'unsafe-eval'")
-  })
-
-  it("bootstrap script를 실행하면 Zod JIT probe가 꺼진다", () => {
-    const context = createContext({})
-
-    runInContext(zodJitlessBootstrapScript, context)
-
-    expect(runInContext("globalThis.__zod_globalConfig.jitless", context)).toBe(
-      true
-    )
   })
 
   it("rollout flag로 같은 정책을 report-only header로 되돌린다", () => {

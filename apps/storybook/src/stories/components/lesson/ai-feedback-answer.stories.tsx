@@ -110,7 +110,9 @@ type Story = StoryObj<typeof meta>
 /**
  * Controls로 초점·작성 내용·재시도·mock 결과를 조작할 수 있는 Playground입니다.
  */
-export const Playground: Story = {}
+export const Playground: Story = {
+  tags: ["ci-test"],
+}
 
 /**
  * 작성 내용이 없을 때의 표시입니다.
@@ -144,6 +146,7 @@ export const WithFeedback: Story = {
  * AI 코칭 요청 실패 상태를 확인하는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.
  */
 export const RequestError: Story = {
+  tags: ["ci-test"],
   args: {
     mockOutcome: "error",
   },
@@ -154,6 +157,7 @@ export const RequestError: Story = {
  * 결과 UI를 확인하세요.
  */
 export const DailyQuota: Story = {
+  tags: ["ci-test"],
   args: {
     mockOutcome: "quota",
   },

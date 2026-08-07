@@ -37,12 +37,12 @@ describe("AI feedback maintenance", () => {
     const maintenance = createAiFeedbackMaintenance({ clock, repository })
 
     const result = await maintenance.expireStalePending({
-      batchSize: 25,
+      batchSize: 1_000,
       dryRun: false,
     })
 
     expect(repository.expireStalePending).toHaveBeenCalledWith({
-      batchSize: 25,
+      batchSize: 1_000,
       dryRun: false,
       occurredAt: cutoff,
     })
@@ -50,27 +50,6 @@ describe("AI feedback maintenance", () => {
       cutoff,
       expiredAttempts: 1,
       matchedAttempts: 1,
-    })
-  })
-
-  it("batchSize 상한 1000은 거절하지 않고 repository에 그대로 전달한다", async () => {
-    const cutoff = new Date("2026-07-23T01:00:00.000Z")
-    const repository = {
-      expireStalePending: vi.fn(async () =>
-        ok({ expiredAttempts: 0, matchedAttempts: 0 })
-      ),
-    }
-    const maintenance = createAiFeedbackMaintenance({
-      clock: { now: () => cutoff },
-      repository,
-    })
-
-    await maintenance.expireStalePending({ batchSize: 1_000 })
-
-    expect(repository.expireStalePending).toHaveBeenCalledWith({
-      batchSize: 1_000,
-      dryRun: false,
-      occurredAt: cutoff,
     })
   })
 })

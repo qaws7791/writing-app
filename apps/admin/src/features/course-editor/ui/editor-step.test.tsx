@@ -60,7 +60,7 @@ describe("코스 스텝 편집", () => {
     expect(onRemove).not.toHaveBeenCalled()
   })
 
-  it("스텝 삭제를 확인하면 해당 스텝만 삭제 대상으로 넘긴다", async () => {
+  it("스텝 삭제를 확인하면 사라진 스텝 대신 작업대로 focus를 되돌린다", async () => {
     const user = userEvent.setup()
     const onRemove = vi.fn()
     const step = createStep("READING")
@@ -71,23 +71,12 @@ describe("코스 스텝 편집", () => {
       within(readStepRemoveDialog()).getByRole("button", { name: "스텝 삭제" })
     )
 
-    expect(onRemove).toHaveBeenCalledWith(step)
-  })
-
-  it("스텝 삭제를 확인하면 사라진 스텝 대신 작업대로 focus를 되돌린다", async () => {
-    const user = userEvent.setup()
-
-    renderWorkspace({ steps: [createStep("READING")] })
-    await openStepRemoveDialog(user)
-    await user.click(
-      within(readStepRemoveDialog()).getByRole("button", { name: "스텝 삭제" })
-    )
-
     await waitFor(() =>
       expect(
         screen.getByRole("group", { name: "스텝 편집 작업대" })
       ).toHaveFocus()
     )
+    expect(onRemove).toHaveBeenCalledWith(step)
   })
 })
 

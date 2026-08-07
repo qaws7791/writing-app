@@ -1,4 +1,4 @@
-export type Rgb = { a: number; b: number; g: number; r: number }
+type Rgb = { a: number; b: number; g: number; r: number }
 
 export type WcagLevel = "fail" | "aa-large" | "aa" | "aaa-large" | "aaa"
 
@@ -30,13 +30,13 @@ function normalizeCssVar(cssVar: string): string {
   return cssVar.startsWith("--") ? cssVar : `--${cssVar}`
 }
 
-export function resolveCssColor(cssVar: string): string {
+function resolveCssColor(cssVar: string): string {
   const probe = getColorProbe()
   probe.style.backgroundColor = `var(${normalizeCssVar(cssVar)})`
   return getComputedStyle(probe).backgroundColor
 }
 
-export function parseRgb(color: string): Rgb | null {
+function parseRgb(color: string): Rgb | null {
   const rgbMatch = color.match(
     /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/
   )
@@ -51,7 +51,7 @@ export function parseRgb(color: string): Rgb | null {
   }
 }
 
-export function rgbToHex({ r, g, b }: Rgb): string {
+function rgbToHex({ r, g, b }: Rgb): string {
   const toHex = (channel: number) =>
     Math.round(channel).toString(16).padStart(2, "0")
 
@@ -63,7 +63,7 @@ function linearize(channel: number): number {
   return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
 }
 
-export function getRelativeLuminance(rgb: Rgb): number {
+function getRelativeLuminance(rgb: Rgb): number {
   const r = linearize(rgb.r)
   const g = linearize(rgb.g)
   const b = linearize(rgb.b)
@@ -71,7 +71,7 @@ export function getRelativeLuminance(rgb: Rgb): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-export function getContrastRatio(foreground: Rgb, background: Rgb): number {
+function getContrastRatio(foreground: Rgb, background: Rgb): number {
   const foregroundLuminance = getRelativeLuminance(foreground)
   const backgroundLuminance = getRelativeLuminance(background)
   const lighter = Math.max(foregroundLuminance, backgroundLuminance)

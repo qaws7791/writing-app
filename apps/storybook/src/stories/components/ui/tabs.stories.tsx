@@ -53,6 +53,7 @@ export const Vertical: Story = {
 }
 
 export const KeyboardInteraction: Story = {
+  tags: ["ci-test"],
   render: () => <LearningProgressTabs />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

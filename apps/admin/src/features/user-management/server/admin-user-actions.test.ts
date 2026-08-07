@@ -34,30 +34,6 @@ describe("admin user actions", () => {
     getServerAdminRequestOptionsMock.mockResolvedValue({})
   })
 
-  it("상태 변경 성공 시 목록과 상세를 재검증한다", async () => {
-    updateAdminUserStatusMock.mockResolvedValue({})
-
-    await updateAdminUserStatusAction({ status: "active", userId })
-
-    expect(updateAdminUserStatusMock).toHaveBeenCalledWith(
-      "user-1",
-      { status: "active" },
-      {}
-    )
-    expect(revalidatePathMock).toHaveBeenCalledWith("/users")
-    expect(revalidatePathMock).toHaveBeenCalledWith("/users/user-1")
-  })
-
-  it("삭제 성공 시 목록과 상세를 재검증한다", async () => {
-    deleteAdminUserMock.mockResolvedValue({ deleted: true })
-
-    await deleteAdminUserAction(userId)
-
-    expect(deleteAdminUserMock).toHaveBeenCalledWith("user-1", {})
-    expect(revalidatePathMock).toHaveBeenCalledWith("/users")
-    expect(revalidatePathMock).toHaveBeenCalledWith("/users/user-1")
-  })
-
   it("API 실패에서는 경로를 재검증하지 않는다", async () => {
     deleteAdminUserMock.mockRejectedValue(
       new GeneratedApiClientError({

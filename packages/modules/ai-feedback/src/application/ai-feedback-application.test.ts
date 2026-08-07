@@ -43,17 +43,6 @@ const providerIdentity = {
 } as const
 
 describe("AI feedback application", () => {
-  it("provider 성공을 남은 시도 수와 함께 coaching 결과로 반환한다", async () => {
-    const application = createApplication()
-
-    await expect(application.requestFeedback(request)).resolves.toEqual(
-      ok({
-        ...providerResponse,
-        remainingAttempts: 2,
-      })
-    )
-  })
-
   it("예약·provider·저장 순서로 진행하며 원문 없는 전이 event만 관측한다", async () => {
     const calls: string[] = []
     const transitions: unknown[] = []
@@ -69,7 +58,12 @@ describe("AI feedback application", () => {
       repository: repository({ calls }),
     })
 
-    await application.requestFeedback(request)
+    await expect(application.requestFeedback(request)).resolves.toEqual(
+      ok({
+        ...providerResponse,
+        remainingAttempts: 2,
+      })
+    )
 
     expect(calls).toEqual([
       "repository:reserve",

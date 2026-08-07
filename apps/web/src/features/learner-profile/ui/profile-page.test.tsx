@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { ProfilePage } from "@/features/learner-profile/ui/profile-page"
@@ -59,20 +59,5 @@ describe("프로필 화면", () => {
     expect(
       screen.getByRole("img", { name: "민지 기본 프로필" })
     ).toHaveTextContent("✍️")
-  })
-
-  it("학습 요약 통계와 가입일을 표시한다", () => {
-    render(
-      <ProfilePage
-        logoutAction={<button type="button">로그아웃</button>}
-        profile={profile}
-      />
-    )
-
-    const summary = screen.getByRole("region", { name: "나의 학습 요약" })
-
-    expect(within(summary).getByText("📚 12")).toBeVisible()
-    expect(within(summary).getByText("🔥 4")).toBeVisible()
-    expect(screen.getByText("가입일: 2026.06.01")).toBeVisible()
   })
 })

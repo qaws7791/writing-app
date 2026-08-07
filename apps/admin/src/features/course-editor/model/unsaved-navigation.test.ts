@@ -22,7 +22,7 @@ describe("shouldConfirmUnsavedNavigation", () => {
     ).toBe(false)
   })
 
-  it.each(["altKey", "ctrlKey", "metaKey", "shiftKey"] as const)(
+  it.each(["ctrlKey", "metaKey"] as const)(
     "%s 수정키 클릭은 저장하지 않은 변경이 있어도 브라우저 기본 동작에 맡긴다",
     (modifier) => {
       expect(

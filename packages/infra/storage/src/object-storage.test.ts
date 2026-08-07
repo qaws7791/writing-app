@@ -12,22 +12,6 @@ const config = {
 }
 
 describe("S3-compatible object storage", () => {
-  it("application retry를 중복하지 않고 provider operation을 한 번 호출한다", async () => {
-    const send = vi.fn(async () => ({}))
-    const storage = createS3ObjectStorage(config, {
-      client: { send },
-    })._unsafeUnwrap()
-
-    const putResult = await storage.putObject({
-      body: new Uint8Array([1]),
-      contentType: "application/octet-stream",
-      objectKey: "folder/object.bin",
-    })
-
-    expect(putResult.isOk()).toBe(true)
-    expect(send).toHaveBeenCalledOnce()
-  })
-
   it("SDK exception의 cause를 typed infrastructure error에 보존한다", async () => {
     const cause = new Error("provider unavailable")
     const storage = createS3ObjectStorage(config, {

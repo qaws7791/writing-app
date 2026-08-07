@@ -45,6 +45,7 @@ export const SizesAndResize: Story = {
 }
 
 export const States: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="grid w-[min(34rem,calc(100vw-2rem))] gap-4">
       <Textarea aria-label="default textarea" placeholder="기본" />
@@ -112,6 +113,7 @@ export const CounterComposition: Story = {
 }
 
 export const FormInteraction: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Field data-invalid className="w-[min(36rem,calc(100vw-2rem))]">
       <FieldLabel htmlFor="textarea-interaction">본문</FieldLabel>

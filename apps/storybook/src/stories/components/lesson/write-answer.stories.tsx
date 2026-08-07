@@ -88,7 +88,9 @@ type Story = StoryObj<typeof meta>
 /**
  * Controls로 제목·안내·참고문·글자 수 제한·채점 상태를 조작할 수 있는 Playground입니다.
  */
-export const Playground: Story = {}
+export const Playground: Story = {
+  tags: ["ci-test"],
+}
 
 /**
  * 주장·반박 모드 예시입니다.
@@ -109,6 +111,7 @@ export const WithClaim: Story = {
  * 채점 후 참조 답안이 표시되는 상태입니다.
  */
 export const CheckedWithSample: Story = {
+  tags: ["ci-test"],
   args: {
     checked: "correct",
   },

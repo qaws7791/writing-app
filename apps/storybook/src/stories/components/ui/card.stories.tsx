@@ -118,6 +118,7 @@ export const LongContent: Story = {
 }
 
 export const HeadingSemantics: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Card className="max-w-xl">
       <CardHeader>

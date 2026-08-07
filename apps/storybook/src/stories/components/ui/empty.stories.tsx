@@ -37,6 +37,7 @@ export const Anatomy: Story = {
 }
 
 export const WithMedia: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Empty>
       <EmptyHeader>

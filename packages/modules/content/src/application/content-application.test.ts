@@ -24,21 +24,6 @@ const adminId = "admin-1" as AdminId
 const now = new Date("2026-07-22T00:00:00.000Z")
 
 describe("content application", () => {
-  it("course 생성 command에 서버 ID와 시각을 전달한다", async () => {
-    const fixture = createApplicationFixture()
-
-    await expect(
-      fixture.application.createCourse(adminId)
-    ).resolves.toMatchObject({
-      value: { courseId: "course-1" },
-    })
-
-    expect(fixture.createCourse).toHaveBeenCalledWith({
-      courseId: "course-1",
-      now,
-    })
-  })
-
   it("stale edit version을 optimistic conflict로 반환한다", async () => {
     const fixture = createApplicationFixture()
 

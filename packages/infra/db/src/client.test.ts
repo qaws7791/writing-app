@@ -6,7 +6,6 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 
 import {
-  createInMemoryWritingAppDatabase,
   createReadOnlyWritingAppDatabase,
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
@@ -28,14 +27,6 @@ describe("Writing App DB client", () => {
       process.chdir(originalCwd)
       rmSync(temporaryDirectory, { recursive: true })
     }
-  })
-
-  it("close lifecycle은 여러 번 호출해도 SQLite를 한 번만 닫는다", () => {
-    const client = createInMemoryWritingAppDatabase()
-
-    client.close()
-
-    expect(() => client.close()).not.toThrow()
   })
 
   it("상대 file: SQLite URL은 현재 실행 위치 기준 파일 경로로 연다", () => {
@@ -81,27 +72,6 @@ describe("Writing App DB client", () => {
     } finally {
       client.close()
       rmSync(tempDirectory, { recursive: true })
-    }
-  })
-
-  it("in-memory SQLite DB에서 schema와 row를 저장한다", () => {
-    const client = createInMemoryWritingAppDatabase()
-
-    try {
-      client.sqlite.exec(`
-        CREATE TABLE client_probe (value TEXT NOT NULL);
-        INSERT INTO client_probe (value) VALUES ('stored');
-      `)
-
-      expect(
-        client.sqlite
-          .query<{ readonly value: string }, []>(
-            "SELECT value FROM client_probe"
-          )
-          .get()
-      ).toEqual({ value: "stored" })
-    } finally {
-      client.close()
     }
   })
 

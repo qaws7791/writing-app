@@ -61,6 +61,7 @@ export const Horizontal: Story = {
  * 내비게이션 메뉴나 메타데이터 항목들을 좌우로 나열하고 구분하는 용도로 적합합니다.
  */
 export const Vertical: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="flex items-center gap-4 text-body-sm font-medium">
       <span className="hover:text-primary cursor-pointer">대시보드</span>

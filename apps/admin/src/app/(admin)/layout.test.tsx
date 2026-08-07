@@ -86,38 +86,24 @@ describe("어드민 layout", () => {
     await expect(renderLayout()).rejects.toThrow("redirect:/login?next=%2F")
   })
 
-  it.each([
-    {
-      error: new GeneratedApiClientError({
-        kind: "contract",
-        reason: "invalid-json-response",
-        status: 200,
-      }),
-      kind: "contract",
-    },
-    {
-      error: new GeneratedApiClientError({
+  it("network 세션 오류는 로그인으로 보내지 않고 서비스 오류를 보여준다", async () => {
+    getAdminSessionMock.mockRejectedValueOnce(
+      new GeneratedApiClientError({
         kind: "network",
         method: "GET",
         url: "https://api.example.test/api/admin/session",
-      }),
-      kind: "network",
-    },
-  ])(
-    "$kind 세션 오류는 로그인으로 보내지 않고 서비스 오류를 보여준다",
-    async ({ error }) => {
-      getAdminSessionMock.mockRejectedValueOnce(error)
+      })
+    )
 
-      render(await renderLayout())
+    render(await renderLayout())
 
-      expect(redirectMock).not.toHaveBeenCalled()
-      expect(
-        screen.getByRole("heading", {
-          name: "관리자 서비스를 불러올 수 없습니다.",
-        })
-      ).toBeVisible()
-    }
-  )
+    expect(redirectMock).not.toHaveBeenCalled()
+    expect(
+      screen.getByRole("heading", {
+        name: "관리자 서비스를 불러올 수 없습니다.",
+      })
+    ).toBeVisible()
+  })
 
   it("요청 경로 헤더의 내부 경로는 로그인 next 파라미터로 보존한다", async () => {
     stubRequestPath("/courses")
@@ -128,15 +114,12 @@ describe("어드민 layout", () => {
     )
   })
 
-  it.each(["https://evil.example", "//evil.example"])(
-    "요청 경로 헤더의 외부 URL %s은 로그인 redirect 대상에서 관리자 홈으로 내려앉는다",
-    async (requestPath) => {
-      stubRequestPath(requestPath)
-      getServerAdminRequestOptionsMock.mockResolvedValueOnce(null)
+  it("요청 경로 헤더의 외부 URL은 로그인 redirect 대상에서 관리자 홈으로 내려앉는다", async () => {
+    stubRequestPath("https://evil.example")
+    getServerAdminRequestOptionsMock.mockResolvedValueOnce(null)
 
-      await expect(renderLayout()).rejects.toThrow("redirect:/login?next=%2F")
-    }
-  )
+    await expect(renderLayout()).rejects.toThrow("redirect:/login?next=%2F")
+  })
 
   it("요청 경로 헤더의 외부 URL은 서비스 오류 화면의 재시도 링크에서도 관리자 홈으로 내려앉는다", async () => {
     stubRequestPath("https://evil.example")

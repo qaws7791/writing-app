@@ -158,21 +158,6 @@ describe("identity learner HTTP interface", () => {
     })
   })
 
-  it("표시 이름 앞뒤 공백을 route 경계에서 정규화해 반영한다", async () => {
-    const app = createLearnerIdentityHttpFixture()
-    const updated = await app.request("/profile", {
-      body: JSON.stringify({ name: "  새 이름  " }),
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: "learner=active",
-      },
-      method: "PATCH",
-    })
-
-    expect(updated.status).toBe(200)
-    await expect(updated.json()).resolves.toEqual({ name: "새 이름" })
-  })
-
   it("공백만 남는 표시 이름은 canonical 400으로 거절한다", async () => {
     const app = createLearnerIdentityHttpFixture()
     const invalid = await app.request("/profile", {

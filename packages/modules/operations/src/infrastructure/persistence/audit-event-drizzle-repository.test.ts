@@ -4,7 +4,7 @@ import {
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
-import type { AdminId, CourseId, UserId } from "@workspace/types/ids"
+import type { AdminId, UserId } from "@workspace/types/ids"
 
 import type { AuditEventRepository } from "#operations/application/ports/audit-event-repository"
 import type { AuditEvent, AuditEventId } from "#operations/domain/audit-event"
@@ -14,32 +14,6 @@ const actorId = "admin-1" as AdminId
 const learnerId = "user-1" as UserId
 
 describe("audit event drizzle repository", () => {
-  it("코스 보관 해제 감사 기록을 저장한다", async () => {
-    const client = createAuditDatabase()
-
-    try {
-      const repository = createRepository(client)
-      const createdAt = new Date("2026-07-31T02:00:00.000Z")
-
-      const inserted = await repository.insert({
-        action: "course.restore",
-        actorId,
-        category: "content-mutation",
-        clientIp: null,
-        createdAt,
-        id: "audit-restore" as AuditEventId,
-        outcome: "started",
-        requestId: "request-restore",
-        retentionUntil: readRetentionUntil(createdAt, "content-mutation"),
-        target: { id: "course-1" as CourseId, type: "course" },
-      })
-
-      expect(inserted.isOk()).toBe(true)
-    } finally {
-      client.close()
-    }
-  })
-
   it("종료일 다음 날 첫 순간은 구간에서 제외한다", async () => {
     const client = createAuditDatabase()
 

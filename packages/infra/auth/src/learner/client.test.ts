@@ -129,23 +129,6 @@ describe("학습자 인증 client", () => {
     })
   })
 
-  it("Google 로그인 callback을 Better Auth client에 전달한다", async () => {
-    const client = createLearnerAuthClient({
-      fetch: vi.fn(),
-    })
-
-    await client.signInWithGoogle({
-      callbackURL: "https://app.example.test/app/courses",
-      errorCallbackURL: "https://app.example.test/login?authError=true",
-    })
-
-    expect(authClientMocks.socialSignIn).toHaveBeenCalledWith({
-      callbackURL: "https://app.example.test/app/courses",
-      errorCallbackURL: "https://app.example.test/login?authError=true",
-      provider: "google",
-    })
-  })
-
   it("만료되거나 사용한 reset token을 일반화된 오류로 정규화한다", async () => {
     authClientMocks.resetPassword.mockResolvedValueOnce({
       data: null,

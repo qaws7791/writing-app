@@ -94,6 +94,7 @@ export const Default: Story = {
 }
 
 export const Checkboxes: Story = {
+  tags: ["ci-test"],
   render: () => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [showStatusBar, setShowStatusBar] = React.useState<boolean>(true)
@@ -168,6 +169,7 @@ export const RadioGroup: Story = {
 }
 
 export const Submenu: Story = {
+  tags: ["ci-test"],
   render: () => (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -295,6 +297,7 @@ export const ComplexOverlay: Story = {
 }
 
 export const FormInteraction: Story = {
+  tags: ["ci-test"],
   render: () => (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button>메뉴 열기</Button>} />

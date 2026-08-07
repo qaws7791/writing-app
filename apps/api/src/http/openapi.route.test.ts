@@ -77,16 +77,6 @@ describe("플랫폼 API openapi route", () => {
   })
 
   it.each(documentationAudiences)(
-    "%s 문서를 활성화하면 Scalar UI HTML을 제공한다",
-    async (_audience, createApp) => {
-      const response = await createApp(true).request("/docs")
-
-      expect(response.status).toBe(200)
-      expect(response.headers.get("content-type")).toContain("text/html")
-    }
-  )
-
-  it.each(documentationAudiences)(
     "%s 문서를 비활성화하면 openapi와 docs route를 등록하지 않는다",
     async (_audience, createApp) => {
       const disabled = createApp(false)

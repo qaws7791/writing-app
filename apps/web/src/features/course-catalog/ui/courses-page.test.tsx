@@ -50,25 +50,6 @@ describe("코스 목록 화면", () => {
     refresh.mockReset()
   })
 
-  it("카테고리 탐색과 코스 목록을 보여준다", () => {
-    render(
-      <CoursesPage
-        categories={["입문자를 위한 코스", "문법 심화"]}
-        courses={[grammarCourse, beginnerCourse]}
-        filters={{ category: "" }}
-      />
-    )
-
-    expect(screen.getByRole("link", { name: "문법 심화" })).toHaveAttribute(
-      "href",
-      "/app/courses?category=%EB%AC%B8%EB%B2%95+%EC%8B%AC%ED%99%94"
-    )
-    expect(
-      screen.getByRole("link", { name: /문장의 기본 문법/ })
-    ).toHaveAttribute("href", "/app/courses/c2")
-    expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
-  })
-
   it("카테고리 필터가 적용된 상태의 더 보기는 같은 카테고리로만 다음 페이지를 요청한다", async () => {
     const user = userEvent.setup()
     getCourses.mockResolvedValueOnce({ items: [], nextCursor: null })

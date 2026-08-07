@@ -1,6 +1,6 @@
 export type TokenGroup = "background" | "foreground" | "action" | "status"
 
-export type SwatchKind = "fill" | "text"
+type SwatchKind = "fill" | "text"
 
 export type SemanticToken = {
   cssVar: string

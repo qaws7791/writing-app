@@ -44,7 +44,9 @@ type Story = StoryObj<typeof meta>
 /**
  * Controls로 제목·안내·본문·출처를 조작할 수 있는 Playground입니다.
  */
-export const Playground: Story = {}
+export const Playground: Story = {
+  tags: ["ci-test"],
+}
 
 /**
  * 출처 없이 본문만 표시하는 예시입니다.

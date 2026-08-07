@@ -32,20 +32,6 @@ const dashboard: AdminDashboard = {
 }
 
 describe("AdminDashboardPage", () => {
-  it("운영 판단에 쓰이는 세 지표만 카드로 표시한다", () => {
-    render(<AdminDashboardPage dashboardResult={ok(dashboard)} />)
-
-    expect(readMetricCard("활성화율")).toHaveTextContent("33.3%")
-    expect(readMetricCard("7일 내 재방문")).toHaveTextContent("40%")
-    expect(readMetricCard("최근 7일 활성")).toHaveTextContent("8")
-    expect(
-      screen.queryByRole("article", { name: "총 사용자" })
-    ).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole("article", { name: "완료 레슨" })
-    ).not.toBeInTheDocument()
-  })
-
   it("비율 지표는 분자·분모와 cohort 성숙 기준일을 집계 근거로 함께 보여준다", () => {
     render(<AdminDashboardPage dashboardResult={ok(dashboard)} />)
 

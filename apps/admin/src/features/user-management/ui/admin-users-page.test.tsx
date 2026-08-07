@@ -48,25 +48,6 @@ const users: AdminUserList = {
 }
 
 describe("AdminUsersPage", () => {
-  it("상태 변경 확인 대화상자는 대상과 전환 결과를 알리고 확인 전에는 변경하지 않는다", async () => {
-    const user = userEvent.setup()
-    const updateUserStatus = vi.fn<
-      () => Promise<AdminRequestResult<AdminUserDetail>>
-    >(async () => ok(userDetail("suspended")))
-
-    renderUsersPage({ updateUserStatus })
-    await user.click(
-      within(readUserRow()).getByRole("button", { name: "정지" })
-    )
-
-    expect(
-      within(readStatusDialog()).getByText(
-        "minji@example.com 사용자를 확인합니다. 사용자를 정지 상태로 전환합니다."
-      )
-    ).toBeVisible()
-    expect(updateUserStatus).not.toHaveBeenCalled()
-  })
-
   it("상태 변경을 취소하면 대화상자를 닫고 상태를 바꾸지 않는다", async () => {
     const user = userEvent.setup()
     const updateUserStatus = vi.fn<
@@ -77,6 +58,12 @@ describe("AdminUsersPage", () => {
     await user.click(
       within(readUserRow()).getByRole("button", { name: "정지" })
     )
+    expect(
+      within(readStatusDialog()).getByText(
+        "minji@example.com 사용자를 확인합니다. 사용자를 정지 상태로 전환합니다."
+      )
+    ).toBeVisible()
+    expect(updateUserStatus).not.toHaveBeenCalled()
     await user.click(
       within(readStatusDialog()).getByRole("button", { name: "취소" })
     )

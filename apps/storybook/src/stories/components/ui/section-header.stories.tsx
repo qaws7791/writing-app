@@ -26,6 +26,7 @@ export const WithDescription: Story = {
 }
 
 export const WithActions: Story = {
+  tags: ["ci-test"],
   args: {
     actions: (
       <>

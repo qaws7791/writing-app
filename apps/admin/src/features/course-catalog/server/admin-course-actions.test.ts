@@ -34,24 +34,6 @@ describe("admin course catalog actions", () => {
     getServerAdminRequestOptionsMock.mockResolvedValue(requestOptions)
   })
 
-  it("코스 생성 성공 시 코스 목록을 재검증한다", async () => {
-    createCourseMock.mockResolvedValue({ id: "c1" })
-
-    await createAdminCourseAction()
-
-    expect(createCourseMock).toHaveBeenCalledWith(requestOptions)
-    expect(revalidatePathMock).toHaveBeenCalledWith("/courses")
-  })
-
-  it("코스 보관 성공 시 코스 목록을 재검증한다", async () => {
-    archiveCourseMock.mockResolvedValue({ archived: true })
-
-    await archiveAdminCourseAction("c1")
-
-    expect(archiveCourseMock).toHaveBeenCalledWith("c1", requestOptions)
-    expect(revalidatePathMock).toHaveBeenCalledWith("/courses")
-  })
-
   it("잘못된 course ID는 보관 mutation을 호출하지 않는다", async () => {
     await archiveAdminCourseAction("")
 

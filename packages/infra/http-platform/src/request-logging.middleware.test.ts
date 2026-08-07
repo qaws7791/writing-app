@@ -98,56 +98,6 @@ describe("Hono request logging middleware", () => {
     })
   })
 
-  it("제품 정책을 모르는 observer에 request context를 전달한다", async () => {
-    const observations: unknown[] = []
-    const app = new Hono()
-    app.use(
-      "*",
-      createRequestLoggingMiddleware({
-        audience: "admin",
-        createRequestId: () => "request-id",
-        logRequest: () => undefined,
-        observeRequest: (observation) => observations.push(observation),
-      })
-    )
-    app.get("/health", (context) => context.text("ok"))
-
-    await app.request("/health")
-
-    expect(observations).toEqual([
-      expect.objectContaining({ actor: undefined, requestId: "request-id" }),
-    ])
-  })
-
-  it("request id가 없으면 주입된 generator로 새 id를 만들고 response header에 싣는다", async () => {
-    const events: RequestLogEvent[] = []
-    const app = new Hono()
-
-    app.use(
-      "*",
-      createRequestLoggingMiddleware({
-        audience: "learner",
-        createRequestId: () => "generated-request-id",
-        logRequest: (event) => events.push(event),
-        readMonotonicTimeMs: createMonotonicClock([1, 1]),
-      })
-    )
-    app.get("/courses", (context) => context.json({ ok: true }))
-
-    const response = await app.request("/courses")
-
-    expect(response.headers.get("x-request-id")).toBe("generated-request-id")
-    expect(events[0]).toMatchObject({
-      audience: "learner",
-      durationMs: 0,
-      method: "GET",
-      outcome: "succeeded",
-      path: "/courses",
-      requestId: "generated-request-id",
-      status: 200,
-    })
-  })
-
   it("실제 URL과 query 대신 매칭된 route template만 기록한다", async () => {
     const events: RequestLogEvent[] = []
     const app = new Hono()

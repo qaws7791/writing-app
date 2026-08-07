@@ -45,6 +45,7 @@ export const WithAction: Story = {
 }
 
 export const Tones: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="flex flex-col gap-4">
       <Alert tone="neutral">

@@ -55,6 +55,7 @@ type Story = StoryObj<typeof meta>
  * Controls로 제목·카테고리·항목·채점 상태를 조작할 수 있는 Playground입니다.
  */
 export const Playground: Story = {
+  tags: ["ci-test"],
   render: (args) => (
     <CategorizeAnswer
       key={`${args.items.map((item) => item.id).join(",")}-${args.categories.map((category) => category.id).join(",")}`}

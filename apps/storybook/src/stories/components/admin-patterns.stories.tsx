@@ -39,6 +39,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="grid gap-5">
       <PageHeader
@@ -94,6 +95,7 @@ export const Overview: Story = {
 }
 
 export const EmptyResult: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Empty>
       <EmptyHeader>

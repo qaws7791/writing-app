@@ -92,12 +92,15 @@ type Story = StoryObj<typeof meta>
 /**
  * Controls로 제목·안내·선택지·연결·채점 상태를 조작할 수 있는 Playground입니다.
  */
-export const Playground: Story = {}
+export const Playground: Story = {
+  tags: ["ci-test"],
+}
 
 /**
  * 한쪽 선택지를 눌러 다음 짝을 기다리는 중간 상태입니다.
  */
 export const PendingChoice: Story = {
+  tags: ["ci-test"],
   args: {
     pendingChoice: { id: "left-1", side: "left" },
   },
@@ -128,6 +131,7 @@ export const CheckedCorrect: Story = {
  * 오답 채점 후 시각 상태입니다.
  */
 export const CheckedWrong: Story = {
+  tags: ["ci-test"],
   args: {
     checked: "wrong",
     connections: wrongConnections,

@@ -45,6 +45,7 @@ export const SemanticTokens: Story = {
 }
 
 export const ContrastPairs: Story = {
+  tags: ["ci-test"],
   parameters: {
     docs: {
       description: {

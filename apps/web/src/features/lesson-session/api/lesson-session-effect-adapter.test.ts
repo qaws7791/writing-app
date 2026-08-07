@@ -50,34 +50,6 @@ describe("createLessonSessionEffects", () => {
     generatedClient.startLearnerLesson.mockReset()
   })
 
-  it("레슨 시작 요청에 lesson 범위와 기대 curriculum version을 전달한다", async () => {
-    generatedClient.startLearnerLesson.mockResolvedValue(start)
-
-    await createEffects().start()
-
-    expect(generatedClient.startLearnerLesson).toHaveBeenCalledWith(
-      "lesson-1",
-      { expectedCurriculumVersionId: "version-1" },
-      { signal: abortSignal }
-    )
-  })
-
-  it("step 완료 요청에 lesson·step 범위와 전이 body를 전달한다", async () => {
-    generatedClient.completeLearnerStep.mockResolvedValue(advanced)
-
-    await createEffects().completeStep({
-      request: { kind: "acknowledge" },
-      stepId: "step-1",
-    })
-
-    expect(generatedClient.completeLearnerStep).toHaveBeenCalledWith(
-      "lesson-1",
-      "step-1",
-      { kind: "acknowledge" },
-      { signal: abortSignal }
-    )
-  })
-
   it("AI 요청의 멱등성 키를 generated RequestInit에 전달한다", async () => {
     generatedClient.createLearnerStepAiFeedback.mockResolvedValue({
       feedback: {

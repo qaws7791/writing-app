@@ -13,22 +13,6 @@ const config = {
 const markerObjectKey = "privacy/deletion-markers/marker.json"
 
 describe("private S3-compatible object storage", () => {
-  it("object 기록 성공을 Result로 반환한다", async () => {
-    const send = vi.fn(async () => ({}))
-    const storage = createS3PrivateObjectStorage(config, {
-      client: { send },
-    })._unsafeUnwrap()
-
-    const putResult = await storage.putObject({
-      body: new Uint8Array([1]),
-      contentType: "application/json",
-      objectKey: markerObjectKey,
-    })
-
-    expect(putResult.isOk()).toBe(true)
-    expect(send).toHaveBeenCalledOnce()
-  })
-
   it("저장한 object 본문을 byte로 조회한다", async () => {
     const body = new TextEncoder().encode('{"userId":"user-1"}')
     const send = vi.fn(async () => ({

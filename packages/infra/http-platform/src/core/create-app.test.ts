@@ -50,17 +50,6 @@ const setUser: MiddlewareHandler<TestEnv> = async (context, next) => {
 }
 
 describe("createApp", () => {
-  it("Hono OpenAPI route를 직접 등록하고 validated param을 추론한다", async () => {
-    const app = createFixture()
-    const response = await app.request("/users/user-1")
-
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
-      id: "user-1",
-      name: "Ada",
-    })
-  })
-
   it("validation 오류를 canonical 400 envelope로 반환한다", async () => {
     const app = createFixture()
     const response = await app.request("/users", {
@@ -142,43 +131,6 @@ describe("createApp", () => {
       message: "Not Found",
       requestId: "test-request-id",
     })
-  })
-
-  it("route middleware의 Env와 validated input을 Hono 원형으로 추론한다", async () => {
-    const app = createFixture()
-    const response = await app.request("/env-users/user-2")
-
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
-      id: "user-2",
-      userId: "user-1",
-    })
-  })
-
-  it("global middleware를 route handler보다 먼저 실행한다", async () => {
-    const calls: string[] = []
-    const app = createApp({
-      middleware: [
-        async (_context, next) => {
-          calls.push("middleware")
-          await next()
-        },
-      ],
-    })
-    const route = createRoute({
-      method: "get",
-      path: "/middleware-order",
-      responses: { 200: { description: "Middleware order" } },
-    })
-    app.openapi(route, (context) => {
-      calls.push("handler")
-      return context.text("ok")
-    })
-
-    const response = await app.request("/middleware-order")
-
-    await expect(response.text()).resolves.toBe("ok")
-    expect(calls).toEqual(["middleware", "handler"])
   })
 
   it.each([

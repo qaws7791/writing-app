@@ -58,6 +58,7 @@ const courses = [
 ]
 
 export const Default: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Table>
       <TableCaption>관리자 코스 목록입니다.</TableCaption>

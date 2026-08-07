@@ -113,6 +113,7 @@ export const WithIcon: Story = {
  * a 태그로 렌더링하면 호버 시 스타일 효과가 추가로 적용됩니다.
  */
 export const AsLink: Story = {
+  tags: ["ci-test"],
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <Badge

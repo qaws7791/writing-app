@@ -51,6 +51,7 @@ type Story = StoryObj<typeof meta>
  * Controls로 항목·정답 순서·번호 표시·채점 상태를 조작할 수 있는 Playground입니다.
  */
 export const Playground: Story = {
+  tags: ["ci-test"],
   render: (args) => (
     <OrderAnswer key={args.items.map((item) => item.id).join("|")} {...args} />
   ),
@@ -78,6 +79,7 @@ export const CheckedCorrect: Story = {
  * 오답 채점 후 시각 상태입니다.
  */
 export const CheckedWrong: Story = {
+  tags: ["ci-test"],
   args: {
     checked: "wrong",
   },

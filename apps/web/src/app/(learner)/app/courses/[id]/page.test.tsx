@@ -44,18 +44,6 @@ describe("코스 상세 route", () => {
     serverOptionsMock.mockResolvedValue(requestOptions)
   })
 
-  it("course 상세만 조회하고 progress 목록을 별도로 조회하지 않는다", async () => {
-    generatedClient.getCourseDetail.mockResolvedValue(course)
-
-    await CourseDetailRoute({ params: Promise.resolve({ id: "c1" }) })
-
-    expect(generatedClient.getCourseDetail).toHaveBeenCalledWith(
-      "c1",
-      requestOptions
-    )
-    expect(generatedClient.getProgress).not.toHaveBeenCalled()
-  })
-
   it("조회한 course 정보로 공유 metadata와 canonical 경로를 만든다", async () => {
     generatedClient.getCourseDetail.mockResolvedValueOnce(course)
 

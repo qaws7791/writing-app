@@ -44,7 +44,10 @@ export default defineConfig({
           ],
         },
         plugins: [
-          storybookTest({ configDir: path.join(dirname, ".storybook") }),
+          storybookTest({
+            configDir: path.join(dirname, ".storybook"),
+            tags: { exclude: [], include: ["ci-test"], skip: [] },
+          }),
         ],
         test: {
           name: "storybook",

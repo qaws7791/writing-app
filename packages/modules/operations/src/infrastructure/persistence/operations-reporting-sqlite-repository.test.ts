@@ -21,7 +21,9 @@ describe("operations reporting SQLite repository", () => {
         client.sqlite
       )
 
-      expect(repository.readAiFeedbackQuality(period)).toEqual({
+      const quality = repository.readAiFeedbackQuality(period)
+
+      expect(quality).toEqual({
         failureCount: 1,
         failureCounts: [{ code: "provider-timeout", count: 1 }],
         from: "1970-01-01T00:00:00.999Z",
@@ -34,6 +36,8 @@ describe("operations reporting SQLite repository", () => {
         to: "1970-01-01T00:00:04.000Z",
         tokens: { input: 30, output: 13, sampleCount: 2 },
       })
+      expect(JSON.stringify(quality)).not.toContain("답안")
+      expect(JSON.stringify(quality)).not.toContain("피드백")
     })
   })
 
@@ -65,21 +69,6 @@ describe("operations reporting SQLite repository", () => {
         requestCount: 0,
         status: "empty",
       })
-    })
-  })
-
-  it("집계 결과에 학습자 답안과 provider 피드백 원문을 담지 않는다", () => {
-    withReportingDatabase((client, course) => {
-      aLearner(client.sqlite, { id: "active-learner", status: "active" })
-      insertActiveLearnerAttempts(client, course)
-
-      const repository = createSqliteOperationsReportingRepository(
-        client.sqlite
-      )
-      const quality = JSON.stringify(repository.readAiFeedbackQuality(period))
-
-      expect(quality).not.toContain("답안")
-      expect(quality).not.toContain("피드백")
     })
   })
 

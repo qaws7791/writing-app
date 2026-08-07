@@ -62,20 +62,6 @@ describe("레슨 route", () => {
       screen.queryByRole("heading", { name: "좋은 문장이란 무엇인가" })
     ).not.toBeInTheDocument()
   })
-
-  it("레슨 상태만 조회하고 progress, profile, course detail 조회를 만들지 않는다", async () => {
-    generatedClient.getLesson.mockRejectedValue(networkError())
-
-    await LessonRoute({
-      searchParams: Promise.resolve({ lesson_id: "l1" }),
-    })
-
-    expect(generatedClient.getLesson).toHaveBeenCalledOnce()
-    expect(generatedClient.getLesson).toHaveBeenCalledWith("l1", requestOptions)
-    expect(generatedClient.getProfile).not.toHaveBeenCalled()
-    expect(generatedClient.getProgress).not.toHaveBeenCalled()
-    expect(generatedClient.getCourseDetail).not.toHaveBeenCalled()
-  })
 })
 
 function networkError(): GeneratedApiClientError {

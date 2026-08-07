@@ -194,6 +194,7 @@ export const LongContent: Story = {
 }
 
 export const FormInteraction: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Field data-invalid className="w-[min(24rem,calc(100vw-2rem))]">
       <FieldLabel htmlFor="select-interaction">상태</FieldLabel>
@@ -287,6 +288,7 @@ export const Scrollable: Story = {
 }
 
 export const DisabledItems: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Select defaultValue="apple">
       <SelectTrigger aria-label="과일" className="w-[180px]" variant="outlined">

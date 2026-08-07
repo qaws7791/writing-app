@@ -42,17 +42,11 @@ describe("identity application", () => {
     expect(fixture.repository.provisionLearnerProfile).not.toHaveBeenCalled()
   })
 
-  it("인증 identity를 active 제품 사용자로 provisioning한다", async () => {
+  it("provisioning된 학습자 profile을 표시 이름과 함께 조회한다", async () => {
     const fixture = createApplicationFixture({ account: null })
-
     await expect(
       fixture.application.provisionLearner(authenticatedLearner)
     ).resolves.toMatchObject({ value: { status: "active" } })
-  })
-
-  it("provisioning된 학습자 profile을 표시 이름과 함께 조회한다", async () => {
-    const fixture = createApplicationFixture({ account: null })
-    await fixture.application.provisionLearner(authenticatedLearner)
 
     await expect(
       fixture.application.readLearnerProfile(userId)

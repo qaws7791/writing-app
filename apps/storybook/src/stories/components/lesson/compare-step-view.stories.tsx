@@ -40,7 +40,9 @@ type Story = StoryObj<typeof meta>
 /**
  * Controls로 제목·버전·분석 문구를 조작할 수 있는 Playground입니다.
  */
-export const Playground: Story = {}
+export const Playground: Story = {
+  tags: ["ci-test"],
+}
 
 /**
  * 두 개 이상의 버전 탭을 확인하는 예시입니다.

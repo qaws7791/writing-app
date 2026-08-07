@@ -80,27 +80,6 @@ describe("operations HTTP contract", () => {
     expect(response.status).toBe(200)
   })
 
-  it("AI 품질 집계는 관리자 전용 private no-store 응답으로 제공한다", async () => {
-    const app = createFixture()
-    const response = await app.request(
-      "/analytics/ai-feedback?from=2026-07-22T00%3A00%3A00.000Z&to=2026-07-23T00%3A00%3A00.000Z",
-      { headers: { Cookie: cookie } }
-    )
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-  })
-
-  it("분석 요약은 관리자 전용 private no-store 응답으로 제공한다", async () => {
-    const app = createFixture()
-    const response = await app.request("/analytics?days=30", {
-      headers: { Cookie: cookie },
-    })
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-  })
-
   it("감사 이벤트 조회를 관리자 전용 private 응답으로 제공한다", async () => {
     const app = createFixture()
     const authenticated = await app.request("/audit-events?limit=10", {

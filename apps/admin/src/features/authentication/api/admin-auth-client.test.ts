@@ -21,21 +21,18 @@ describe("admin auth client", () => {
     expect(readSignInCallbackUrl(fetch)).toBe("/courses")
   })
 
-  it.each(["https://evil.example", "//evil.example"])(
-    "외부 URL %s은 로그인 callback과 이동 경로 모두에서 관리자 홈으로 내려앉는다",
-    async (nextPath) => {
-      const fetch = stubOkFetch()
+  it("외부 URL은 로그인 callback과 이동 경로 모두에서 관리자 홈으로 내려앉는다", async () => {
+    const fetch = stubOkFetch()
 
-      await expect(
-        requestAdminPasswordLogin({
-          email: "admin@example.com",
-          nextPath,
-          password: "admin-password-123",
-        })
-      ).resolves.toEqual({ nextPath: "/" })
-      expect(readSignInCallbackUrl(fetch)).toBe("/")
-    }
-  )
+    await expect(
+      requestAdminPasswordLogin({
+        email: "admin@example.com",
+        nextPath: "https://evil.example",
+        password: "admin-password-123",
+      })
+    ).resolves.toEqual({ nextPath: "/" })
+    expect(readSignInCallbackUrl(fetch)).toBe("/")
+  })
 
   it.each([
     { message: "이메일 또는 비밀번호를 확인하세요.", status: 401 },

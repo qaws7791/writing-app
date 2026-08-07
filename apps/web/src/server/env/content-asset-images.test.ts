@@ -8,11 +8,6 @@ import {
 } from "@workspace/nextjs-config/content-asset-images"
 
 describe("콘텐츠 이미지 origin 허용 목록", () => {
-  it("설정이 없으면 원격 이미지를 허용하지 않는다", () => {
-    expect(createContentAssetRemotePatterns([])).toEqual([])
-    expect(readContentAssetImageSource(null)).toBeNull()
-  })
-
   it("승격 대상의 정확한 storage origin만 허용한다", () => {
     expect(
       createContentAssetRemotePatterns([

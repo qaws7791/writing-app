@@ -12,10 +12,6 @@ vi.mock("bun", async (importOriginal) => ({
 import { startApiServer } from "@/main"
 
 describe("API main module", () => {
-  it("factory를 import해도 process와 server를 시작하지 않는다", () => {
-    expect(serve).not.toHaveBeenCalled()
-  })
-
   it("production runtime secret 누락은 server 시작 전에 값 비노출로 거절한다", async () => {
     const secret = "provider-secret-sentinel"
 

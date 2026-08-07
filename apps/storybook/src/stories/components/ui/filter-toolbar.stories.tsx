@@ -65,6 +65,7 @@ export const Anatomy: Story = {
 }
 
 export const HiddenLabels: Story = {
+  tags: ["ci-test"],
   render: () => (
     <FilterToolbar
       aria-label="사용자 필터"

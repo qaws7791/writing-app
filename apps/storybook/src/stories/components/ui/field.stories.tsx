@@ -44,6 +44,7 @@ export const Anatomy: Story = {
 }
 
 export const States: Story = {
+  tags: ["ci-test"],
   render: () => (
     <FieldGroup className="max-w-lg">
       <Field>
@@ -127,6 +128,7 @@ export const LongContent: Story = {
 }
 
 export const Accessibility: Story = {
+  tags: ["ci-test"],
   render: () => (
     <Field className="max-w-3xl" data-invalid>
       <FieldLabel htmlFor="field-a11y-title">제목</FieldLabel>
