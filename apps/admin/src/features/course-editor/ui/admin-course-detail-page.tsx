@@ -6,8 +6,8 @@ import type {
   AdminCourseEditorCommandResult,
 } from "@/features/course-editor/model/admin-course-editor"
 import type { UploadAdminContentAsset } from "@/features/course-editor/model/content-asset-upload"
+import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { PageHeader } from "@workspace/ui/components/ui/page-header"
 
 export function AdminCourseDetailPage({
   assetsResult,
@@ -29,11 +29,11 @@ export function AdminCourseDetailPage({
   if (courseResult.status === "error") {
     return (
       <>
-        <PageHeader
+        <AdminPageHeader
           description="코스의 유닛, 레슨, 스텝을 편집합니다."
           title="코스 편집"
         />
-        <Alert role="alert" tone="danger">
+        <Alert role="alert" variant="destructive">
           <AlertDescription>{courseResult.error.message}</AlertDescription>
         </Alert>
       </>

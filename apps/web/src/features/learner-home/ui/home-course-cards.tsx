@@ -6,38 +6,43 @@ import {
   ChevronRightIcon,
   PlayIcon,
   SparklesIcon,
-} from "@workspace/ui/components/icons"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
-import { Progress } from "@workspace/ui/components/ui/progress"
-import { Surface } from "@workspace/ui/components/ui/surface"
+} from "@workspace/ui/components/icons/action-icons"
+import {
+  Card,
+  CardContent,
+  cardVariants,
+} from "@workspace/ui/components/ui/card"
+import { Progress, ProgressLabel } from "@workspace/ui/components/ui/progress"
+import { cn } from "@workspace/ui/lib/utils"
 
 import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
 
 export function StartCourseCta() {
   return (
     <Link
-      className="block cursor-pointer rounded-panel bg-surface p-7"
+      className={cn(
+        cardVariants({ size: "lg", variant: "muted" }),
+        "gap-6 px-8 outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
+      )}
       href="/app/courses"
     >
-      <div className="flex items-center gap-2 mb-5">
-        <SparklesIcon className="text-muted-foreground" size={16} />
-        <span className="text-label-md font-bold text-muted-foreground">
+      <div className="flex items-center gap-2">
+        <SparklesIcon
+          aria-hidden="true"
+          className="size-4 text-muted-foreground"
+        />
+        <span className="text-sm font-medium text-muted-foreground">
           지금 시작해볼까요?
         </span>
       </div>
-      <h2 className="mb-7 text-heading-sm font-black">
+      <h2 className="font-heading text-2xl leading-tight font-semibold tracking-[-0.025em]">
         새로운 코스를
         <br />
         선택해 보세요
       </h2>
-      <div
-        className={buttonVariants({
-          className: "w-full justify-between",
-          size: "lg",
-        })}
-      >
+      <div className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-xs">
         <span>코스 둘러보기</span>
-        <ChevronRightIcon size={20} />
+        <ChevronRightIcon aria-hidden="true" className="size-4" />
       </div>
     </Link>
   )
@@ -57,11 +62,7 @@ export function ContinueCourseCard({
   const courseHref = `/app/courses/${course.id}`
 
   return (
-    <Surface
-      variant="panel"
-      size="none"
-      className="flex w-full min-w-0 flex-col overflow-hidden rounded-[28px] select-none lg:rounded-[24px]"
-    >
+    <Card className="w-full min-w-0 gap-0 py-0 select-none" size="sm">
       <Link
         className="flex w-full cursor-pointer flex-col text-left lg:flex-row"
         href={courseHref}
@@ -77,25 +78,25 @@ export function ContinueCourseCard({
             src={resolveCourseImage(course).src}
           />
         </div>
-        <div className="px-6 pt-5 pb-4 lg:min-w-0 lg:flex-1 lg:px-5 lg:py-4">
+        <CardContent className="pt-5 pb-4 lg:min-w-0 lg:flex-1 lg:py-4">
           <ContinueCourseSummary
             completedLessonCount={completedLessonCount}
             course={course}
             progressPercent={progressPercent}
             totalLessonCount={totalLessonCount}
           />
-        </div>
+        </CardContent>
       </Link>
-      <div className="flex flex-col gap-1 px-3 pb-4 lg:gap-0.5 lg:py-3">
+      <div className="flex flex-col gap-1 border-t border-border/60 px-3 py-3">
         {nextLesson !== null ? (
           <NextLessonLink lesson={nextLesson} />
         ) : (
-          <div className="px-4 py-3 text-label-md font-bold text-muted-foreground">
+          <div className="px-3 py-2 text-sm font-medium text-muted-foreground">
             모든 레슨을 완료했어요
           </div>
         )}
       </div>
-    </Surface>
+    </Card>
   )
 }
 
@@ -113,7 +114,7 @@ function ContinueCourseSummary({
   return (
     <>
       <p
-        className="mb-3 text-title-md font-bold lg:text-body-md"
+        className="mb-3 font-heading text-base font-semibold tracking-[-0.014em]"
         style={{
           display: "-webkit-box",
           overflow: "hidden",
@@ -125,12 +126,11 @@ function ContinueCourseSummary({
       </p>
       <Progress
         aria-label={`${course.title} 진행률`}
-        className="items-center gap-3"
-        indicatorClassName="bg-action-primary-bg"
-        trackClassName="h-2"
+        className="gap-2"
         value={progressPercent}
       >
-        <span className="shrink-0 text-label-sm font-bold text-muted-foreground">
+        <ProgressLabel className="sr-only">{course.title} 진행률</ProgressLabel>
+        <span className="ml-auto text-xs font-medium text-muted-foreground tabular-nums">
           {completedLessonCount}/{totalLessonCount}
         </span>
       </Progress>
@@ -147,17 +147,17 @@ function NextLessonLink({
 }) {
   return (
     <Link
-      className="flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left hover:bg-surface-hover lg:gap-3 lg:px-3 lg:py-3"
+      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/25"
       href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground lg:size-8">
-        <PlayIcon className="size-3.5 lg:size-3" fill="currentColor" />
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+        <PlayIcon aria-hidden="true" className="size-3.5" fill="currentColor" />
       </span>
       <span className="flex-1 min-w-0">
-        <span className="block truncate text-body-md font-bold lg:text-body-sm">
+        <span className="block truncate text-sm font-medium">
           {lesson.title}
         </span>
-        <span className="mt-1 block text-label-sm font-bold text-muted-foreground lg:mt-0.5">
+        <span className="mt-0.5 block text-xs text-muted-foreground">
           {lesson.estimatedMinutes}분
         </span>
       </span>

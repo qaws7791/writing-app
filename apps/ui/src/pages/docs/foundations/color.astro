@@ -1,0 +1,35 @@
+---
+import ColorFoundation from "@/src/components/foundations/color-foundation"
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+
+const toc = [
+  { id: "story-overview", label: "Overview" },
+  { id: "story-semantic-tokens", label: "Semantic Tokens" },
+  { id: "story-contrast-pairs", label: "Contrast Pairs" },
+]
+---
+
+<DocsLayout title="Color" description="Luma semantic color token의 역할과 대비를 검증합니다." pathname="/docs/foundations/color" toc={toc}>
+  <article>
+    <DocsPageHeader eyebrow="Foundation" title="Color" description="Luma semantic color token의 역할, 사용 규칙과 대비 검증을 제공합니다. 외관의 테마를 바꾸면 swatch와 대비 수치가 함께 갱신됩니다." />
+
+    <section id="story-overview" class="scroll-mt-24">
+      <h2 class="sr-only">Overview</h2>
+      <p class="mb-6 text-sm leading-6 text-muted-foreground">제품 색상 규칙과 역할 그룹을 먼저 읽고 대표 token으로 전체 흐름을 확인합니다.</p>
+      <ColorFoundation section="overview" client:only="react" />
+    </section>
+
+    <section id="story-semantic-tokens" class="scroll-mt-24 pt-20">
+      <h2 class="font-heading text-2xl font-semibold">Semantic Tokens</h2>
+      <p class="mt-3 mb-6 leading-7 text-muted-foreground">Canonical semantic token을 역할 그룹별로 나열합니다. Token 이름을 복사하고 현재 테마에서 해석된 hex를 확인할 수 있습니다.</p>
+      <ColorFoundation section="semantic-tokens" client:only="react" />
+    </section>
+
+    <section id="story-contrast-pairs" class="scroll-mt-24 pt-20">
+      <h2 class="font-heading text-2xl font-semibold">Contrast Pairs</h2>
+      <p class="mt-3 mb-6 leading-7 text-muted-foreground">전경·배경 semantic pair를 실제 샘플과 WCAG 대비비로 검증합니다. Light와 dark에서 수치 변화를 확인합니다.</p>
+      <ColorFoundation section="contrast-pairs" client:only="react" />
+    </section>
+  </article>
+</DocsLayout>

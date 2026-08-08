@@ -30,14 +30,14 @@
 
 ## 도구별 책임
 
-| 도구                                 | 책임과 선택 기준                                                                                                                                                                                                                                                                                                                           |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Vitest                               | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                                                                                   |
-| Testing Library                      | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                                                                                         |
-| MSW                                  | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                                                                                           |
-| Playwright                           | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                                                                                                      |
-| Lighthouse CI·route bundle budget·k6 | PR에서는 초기 client bundle 회귀를 빠르게 막고, main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                                                                 |
-| Storybook                            | story source는 실행 가능한 UI 카탈로그를 제공한다. `ci-test` 태그가 있는 story만 상태 전이·초점·키보드·오류·비활성·접근성 계약을 자동 검증한다. 공용 UI 패키지가 도메인 컴포넌트까지 소유하므로 제품 화면 조합도 Storybook의 대상이며, primitive story와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 story나 fixture는 남기지 않는다. |
+| 도구                                 | 책임과 선택 기준                                                                                                                                                                                                                                                                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vitest                               | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                                    |
+| Testing Library                      | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                                          |
+| MSW                                  | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                                            |
+| Playwright                           | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                                                       |
+| Lighthouse CI·route bundle budget·k6 | PR에서는 초기 client bundle 회귀를 빠르게 막고, main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                  |
+| Astro UI 문서·Playwright             | `apps/ui`는 실행 가능한 UI 카탈로그, 격리 예제와 shadcn registry를 제공한다. browser contract는 상태 전이·초점·키보드·오류·비활성·접근성을 실제 정적 build에서 검증한다. 제품 화면 조합은 primitive 문서와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 예제나 fixture는 남기지 않는다. |
 
 ## 테스트 데이터와 인증
 
@@ -106,7 +106,7 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 
 ## 실행과 검증
 
-공개 검증 명령과 tool version은 [root manifest](../../package.json), Vitest 대상 구성은 [Vitest workspace](../../vitest.workspace.ts), browser 실행 설정은 [Playwright config](../../playwright.config.ts), Storybook source는 [Storybook manifest](../../apps/storybook/package.json)와 [Storybook config](../../apps/storybook/.storybook/main.ts), Storybook 테스트 실행 설정은 [Storybook Vitest config](../../apps/storybook/vitest.storybook.config.ts)가 소유한다. CI trigger, job 배치와 실제 gate는 [quality workflow](../../.github/workflows/quality-gates.yml)를 확인한다. 이 문서는 현재 script, 대상 목록, retry 횟수, report 형식과 숫자 예산을 복제하지 않는다.
+공개 검증 명령과 tool version은 [root manifest](../../package.json), Vitest 대상 구성은 [Vitest workspace](../../vitest.workspace.ts), 제품 browser 실행 설정은 [Playwright config](../../playwright.config.ts), UI 문서 source와 browser 검증 설정은 [Astro UI manifest](../../apps/ui/package.json)와 [UI Playwright config](../../apps/ui/playwright.config.ts)가 소유한다. CI trigger, job 배치와 실제 gate는 [quality workflow](../../.github/workflows/quality-gates.yml)를 확인한다. 이 문서는 현재 script, 대상 목록, retry 횟수, report 형식과 숫자 예산을 복제하지 않는다.
 
 저장소 전체 unit·integration은 root manifest의 `test`가 Vitest workspace를 단일 process로 한 번 실행한다. 패키지마다 러너를 띄우면 실제 테스트 시간보다 기동·transform 비용이 커지므로 project를 나누되 process는 나누지 않는다. 앱·패키지 manifest의 `test` script는 `--project` 필터로 부분 실행하는 개발자 편의용이다.
 
@@ -119,7 +119,7 @@ CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원�
 | 경계          | 차단 검증                                                                                                                                                                     |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pull request  | 형식·lint·architecture·dependency·생성물·type, repository와 workspace 전체 unit·integration, production build와 route bundle, 현재 Chromium의 학습자·관리자 핵심 smoke        |
-| Main push     | 위 정적·생성 계약, repository와 workspace 전체 unit·integration, Storybook interaction, 설정된 Chromium·WebKit 전체 E2E, Lighthouse, source image Compose smoke               |
+| Main push     | 위 정적·생성 계약, repository와 workspace 전체 unit·integration, Astro UI 문서 browser contract, 설정된 Chromium·WebKit 전체 E2E, Lighthouse, source image Compose smoke      |
 | Image release | 성공한 동일 revision main 품질 결과, 취약점 정책·attestation, registry digest의 격리 Compose smoke, 동일 digest staging 배포 후 k6, production 외부 준비 증거와 public verify |
 
 PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는 단일 Chromium 실행이다. fixture, API와 Next runtime의 준비·종료는 Playwright `webServer`가 소유하고 실행 wrapper는 격리 디렉터리와 환경만 제공한다. Main release E2E는 web과 admin의 최적화 build를 새로 만든 뒤 production standalone runtime으로 실행한다. Chromium과 WebKit은 브라우저별 새 DB·서버·임시 디렉터리에서 순차 실행하고 PR 전용 smoke spec을 중복 실행하지 않는다. 브라우저별 실제 test 범위는 config의 project 계약이 소유하며, 모든 시나리오가 모든 engine에서 동작한다고 과장하지 않는다.
@@ -128,7 +128,7 @@ PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. �
 
 배포 승인 gate도 같은 원칙을 따른다. playbook의 승인 task만 골라 `--check`로 실제 실행하고, 완결된 production 증거는 통과하며 승인 누락·증거 revision 불일치·placeholder 증거·기간이 지난 복구 훈련·대상 환경 불일치는 각각 멈추는지 확인한다. 조건식의 문자열이나 task 순서를 단정하지 않는다.
 
-Storybook interaction·접근성 검사는 browser runtime 비용 때문에 main push에서만 차단한다. 따라서 공유 UI primitive의 상태 전이·초점·axe 회귀는 PR을 통과해 main에서 처음 드러날 수 있고, PR 단계에서는 `packages/shared/ui`의 Vitest 범위만 이를 막는다. 이 지연을 허용하지 않으려면 PR gate에 browser 설치와 story 부분집합 실행을 함께 추가해야 한다.
+Astro UI 문서의 interaction·접근성 검사는 browser runtime 비용 때문에 main push에서만 차단한다. 따라서 공유 UI primitive의 상태 전이·초점·axe 회귀는 PR을 통과해 main에서 처음 드러날 수 있고, PR 단계에서는 `packages/shared/ui`의 Vitest 범위만 이를 막는다. 이 지연을 허용하지 않으려면 PR gate에 browser 설치와 문서 contract 실행을 추가해야 한다.
 
 ## 알려진 검증 공백
 

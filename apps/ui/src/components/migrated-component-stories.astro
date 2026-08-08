@@ -1,0 +1,118 @@
+---
+import ExampleShowcase from "@/src/components/example-showcase.astro"
+import InteractionContractPreview, { type InteractionContract } from "@/src/components/interaction-contract-preview"
+import type { ComponentGuide } from "@/src/lib/component-guides/types"
+import type { MigratedStory } from "@/src/lib/design-system-inventory"
+import { getStoryAnchor } from "@/src/lib/design-system-inventory"
+
+type Props = {
+  slug: string
+  stories: MigratedStory[]
+  guide: ComponentGuide
+  isLearning?: boolean
+}
+
+const { slug, stories, guide, isLearning = false } = Astro.props
+const interactionSlugs = new Set(["accordion", "alert-dialog", "dialog", "dropdown-menu", "field", "popover", "progress", "select", "tabs"])
+
+const aliases: Record<string, string[]> = {
+  default: ["basic"],
+  playground: ["basic"],
+  single: ["basic"],
+  interaction: ["controlled", "basic"],
+  forminteraction: ["controlled", "form", "basic"],
+  selectedstates: ["states", "basic"],
+  semanticstates: ["variants", "states", "basic"],
+  loadingstates: ["button", "basic"],
+  variantsandsizes: ["variants", "sizes", "basic"],
+  boundarystates: ["range", "basic"],
+  labelsandlongcontent: ["localized", "basic"],
+  emptytrackonsurface: ["basic"],
+  typesandsizes: ["types", "sizes", "basic"],
+  sizesandresize: ["sizes", "basic"],
+  optionsandgroups: ["groups", "basic"],
+  keyboardinteraction: ["basic"],
+  customlayout: ["card", "secondary", "basic"],
+  withdisableditem: ["disabled", "basic"],
+  withmedia: ["media", "image", "basic"],
+  lessonexit: ["media", "basic"],
+  aschild: ["as-link", "basic"],
+  variantreuse: ["variants", "basic"],
+  mediaandactions: ["action-footer", "image", "basic"],
+  longcontent: ["scrollable", "basic"],
+  headingsemantics: ["basic"],
+  framedsheets: ["sheets", "basic"],
+  titleonly: ["basic"],
+  accessibility: ["errors", "invalid", "basic"],
+  countercomposition: ["controlled-count", "basic"],
+  withoutnumbers: ["basic"],
+  blocklayout: ["basic"],
+  checkedcorrect: ["basic"],
+  checkedwrong: ["basic"],
+  inprogress: ["session", "basic"],
+  complete: ["complete", "basic"],
+  striped: ["basic"],
+}
+
+function selectExample(exportName: string) {
+  const normalized = exportName.toLowerCase()
+  const candidates = [
+    exportName.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase(),
+    ...(aliases[normalized] ?? []),
+  ]
+
+  return (
+    candidates
+      .map((candidate) =>
+        guide.examples.find(
+          (example) =>
+            example.id === candidate ||
+            example.id.endsWith(`-${candidate}`) ||
+            example.id.includes(candidate),
+        ),
+      )
+      .find(Boolean) ?? guide.examples[0]
+  )
+}
+---
+
+{stories.length > 0 && (
+  <section id="migrated-states" class="scroll-mt-24 pt-16">
+    <p class="text-sm font-medium text-muted-foreground">Migrated states</p>
+    <h2 class="mt-2 font-heading text-2xl font-semibold tracking-tight">이전된 실행 상태</h2>
+    <p class="mt-3 max-w-2xl leading-7 text-muted-foreground">
+      기존 실행 명세의 이름, 설명, 렌더링 상태와 브라우저 검증 범위를 이 문서에 연결했습니다.
+    </p>
+    <div class="mt-8 grid gap-12">
+      {stories.map((story) => {
+        const example = selectExample(story.exportName)
+        if (!example) return null
+
+        return (
+          <article id={getStoryAnchor(story.exportName)} class="scroll-mt-24">
+            <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 class="font-heading text-lg font-semibold">{story.label}</h3>
+                <p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  {story.description || `${story.label} 상태의 공개 렌더링 계약입니다.`}
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
+                {story.hasCiTest && <span class="rounded-full border px-2 py-1">browser</span>}
+                {story.hasPlay && <span class="rounded-full border px-2 py-1">interaction</span>}
+                {(story.hasArgs || story.hasArgTypes) && <span class="rounded-full border px-2 py-1">controls</span>}
+              </div>
+            </div>
+            {story.hasPlay && interactionSlugs.has(slug) ? (
+              <div class="grid min-h-72 place-items-center overflow-hidden rounded-4xl border bg-background p-7 sm:p-10">
+                <InteractionContractPreview contract={slug as InteractionContract} client:only="react" />
+              </div>
+            ) : (
+              <ExampleShowcase slug={slug} example={example.id} code={example.code} isLearning={isLearning} />
+            )}
+          </article>
+        )
+      })}
+    </div>
+  </section>
+)}

@@ -15,7 +15,8 @@ import {
   type LearnerCourseSummaryDto,
 } from "@/shared/http/learner-api-client"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+import { cardVariants } from "@workspace/ui/components/ui/card"
 import {
   Empty,
   EmptyHeader,
@@ -23,6 +24,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@workspace/ui/components/ui/empty"
+import { cn } from "@workspace/ui/lib/utils"
 
 const eagerCourseImageCount = 3
 
@@ -81,7 +83,7 @@ export function CourseCatalogClient({
   return (
     <div>
       {visibleCourses.length === 0 && filters.category === "" ? (
-        <Empty role="status">
+        <Empty role="status" variant="frame">
           <EmptyHeader>
             <EmptyTitle>아직 열려 있는 코스가 없습니다.</EmptyTitle>
             <EmptyDescription>
@@ -93,25 +95,26 @@ export function CourseCatalogClient({
         <>
           <div
             aria-label="코스 카테고리"
-            className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:-mx-12 md:px-12 mb-8 pb-2"
+            className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-2 sm:-mx-8 sm:px-8"
+            role="group"
           >
             {["", ...categories].map((category) => (
-              <Link
-                className={buttonVariants({
-                  className:
-                    "rounded-full px-6 py-3 h-auto text-body-sm font-bold",
-                  variant:
-                    filters.category === category ? "default" : "secondary",
-                })}
-                href={createCoursesHref(category)}
+              <Button
+                aria-pressed={filters.category === category}
+                className="shrink-0"
                 key={category}
+                onClick={() => router.push(createCoursesHref(category))}
+                type="button"
+                variant={
+                  filters.category === category ? "default" : "secondary"
+                }
               >
                 {category === "" ? "전체" : category}
-              </Link>
+              </Button>
             ))}
           </div>
           {visibleCourses.length === 0 ? (
-            <Empty role="status">
+            <Empty role="status" variant="frame">
               <EmptyHeader>
                 <EmptyTitle>이 카테고리에는 코스가 없습니다.</EmptyTitle>
                 <EmptyDescription>
@@ -129,11 +132,10 @@ export function CourseCatalogClient({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {visibleCourses.map((course, index) => (
                   <Link
-                    className={buttonVariants({
-                      className:
-                        "h-auto w-full flex-row items-stretch justify-start overflow-hidden whitespace-normal rounded-2xl border-0 bg-surface p-0 text-left text-foreground hover:bg-surface md:flex-col md:rounded-4xl",
-                      variant: "secondary",
-                    })}
+                    className={cn(
+                      cardVariants({ size: "sm", variant: "muted" }),
+                      "w-full flex-row items-stretch gap-0 py-0 text-left outline-none hover:bg-muted/80 focus-visible:ring-3 focus-visible:ring-ring/25 md:flex-col"
+                    )}
                     href={`/app/courses/${course.id}`}
                     key={course.id}
                   >
@@ -151,14 +153,14 @@ export function CourseCatalogClient({
                         src={resolveCourseImage(course).src}
                       />
                     </div>
-                    <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">
-                      <h2 className="mb-1 mt-3 text-title-md font-bold">
+                    <div className="flex min-w-0 flex-1 flex-col p-4 md:p-6">
+                      <h2 className="font-heading text-base font-semibold tracking-[-0.014em]">
                         {course.title}
                       </h2>
-                      <p className="hidden text-body-sm font-medium text-foreground md:block">
+                      <p className="mt-2 hidden text-sm leading-6 text-muted-foreground md:block">
                         {course.description}
                       </p>
-                      <div className="mt-auto pt-2 text-label-sm font-bold text-foreground">
+                      <div className="mt-auto pt-3 text-xs font-medium text-foreground/80">
                         {course.lessonCount}개 레슨
                       </div>
                     </div>
@@ -169,20 +171,20 @@ export function CourseCatalogClient({
                 <div className="mt-8 flex flex-col items-center gap-2">
                   {loadMoreError === null ? null : (
                     <p
-                      className="text-body-sm font-bold text-destructive"
+                      className="text-sm font-medium text-destructive"
                       role="alert"
                     >
                       {loadMoreError}
                     </p>
                   )}
-                  <button
-                    className={buttonVariants({ variant: "secondary" })}
+                  <Button
                     disabled={isLoadingMore}
                     onClick={() => void loadMore()}
                     type="button"
+                    variant="secondary"
                   >
                     {isLoadingMore ? "불러오는 중" : "코스 더 보기"}
-                  </button>
+                  </Button>
                 </div>
               )}
             </>

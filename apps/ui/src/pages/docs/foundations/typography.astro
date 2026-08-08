@@ -1,0 +1,35 @@
+---
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+
+const textTokens = [
+  ["Display", "짧은 제품 또는 페이지 표제", "글결 학습 경험", "text-[2.5rem] leading-[3rem]"],
+  ["Heading", "주요 section 제목", "오늘의 쓰기 루틴", "text-3xl leading-10"],
+  ["Title", "화면 또는 panel 제목", "문장의 중심 찾기", "text-2xl leading-8"],
+  ["Subtitle", "콘텐츠 group 제목", "코스 진행률", "text-lg leading-7"],
+  ["Body", "읽기와 설명", "짧은 학습과 즉시 쓰기를 반복하며 글쓰기 감각을 쌓습니다.", "text-base leading-[1.625rem]"],
+  ["Label", "control과 row 제목", "필드 라벨", "text-sm leading-5"],
+  ["Meta", "날짜, 상태와 보조 정보", "최근 수정 2026.08.08", "text-xs leading-[1.125rem]"],
+]
+---
+
+<DocsLayout title="Typography" description="한국어 학습 UI의 type scale과 긴 콘텐츠 기준입니다." pathname="/docs/foundations/typography" toc={[{ id: "story-scale", label: "Scale" }, { id: "story-long-content", label: "Long Content" }]}>
+  <article>
+    <DocsPageHeader eyebrow="Foundation" title="Typography" description="크기만으로 위계를 만들지 않고 weight, 농도와 공간을 함께 조절합니다." />
+    <section id="story-scale" class="scroll-mt-24 grid gap-5">
+      {textTokens.map(([token, usage, sample, className]) => (
+        <div class="grid gap-3 border-b pb-5 md:grid-cols-[12rem_1fr]">
+          <div><p class="text-sm font-semibold">{token}</p><p class="text-xs text-muted-foreground">{usage}</p></div>
+          <p class={`${className} font-semibold tracking-[-0.014em]`}>{sample}</p>
+        </div>
+      ))}
+    </section>
+    <section id="story-long-content" class="scroll-mt-24 pt-20">
+      <article class="grid max-w-3xl gap-5 rounded-4xl border p-7">
+        <h2 class="font-heading text-3xl leading-10 font-semibold tracking-[-0.014em] text-balance">길이가 긴 제목도 행간과 줄바꿈을 유지한다</h2>
+        <p class="text-base leading-[1.625rem] text-pretty text-muted-foreground">Luma 타이포그래피는 크기만으로 위계를 만들지 않고 weight, 농도와 공간을 함께 조절합니다.</p>
+        <p class="text-base leading-[1.625rem] text-pretty">문서형 화면, 학습 진행 화면과 관리자 도구에서 같은 계층을 반복해 사용해도 텍스트가 컨테이너를 밀어내지 않는지 확인합니다.</p>
+      </article>
+    </section>
+  </article>
+</DocsLayout>

@@ -1,0 +1,15 @@
+---
+import InteractionContractPreview, { interactionContracts, type InteractionContract } from "@/src/components/interaction-contract-preview"
+import PreviewLayout from "@/src/layouts/preview-layout.astro"
+
+export function getStaticPaths() {
+  return interactionContracts.map((contract) => ({ params: { contract }, props: { contract } }))
+}
+
+type Props = { contract: InteractionContract }
+const { contract } = Astro.props
+---
+
+<PreviewLayout title={`${contract} interaction`}>
+  <InteractionContractPreview contract={contract} client:only="react" />
+</PreviewLayout>

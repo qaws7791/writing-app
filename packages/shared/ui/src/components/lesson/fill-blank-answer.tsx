@@ -2,8 +2,13 @@
 
 import { useState } from "react"
 
-import { buttonVariants } from "#ui/components/ui/button"
-import { cn } from "#ui/lib/utils"
+import { StepBody, StepHeader, StepTitle } from "#ui/components/ui/step"
+import {
+  Token,
+  TokenBank,
+  TokenSentence,
+  TokenSlot,
+} from "#ui/components/ui/token"
 import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 
 type FillBlankChoice<TId extends string> = {
@@ -64,65 +69,63 @@ export function FillBlankAnswer<TId extends string>({
   }
 
   return (
-    <div className="an-fi flex flex-col gap-5">
-      <h2 className="font-bold mb-8" style={{ fontSize: "1.75rem" }}>
-        빈칸을 채워보세요
-      </h2>
-      <p
-        className="font-medium leading-relaxed mb-10"
-        style={{ fontSize: "1.25rem" }}
-      >
-        {template.split("___").map((part, index) => (
-          <span key={index}>
-            {part}
-            {index < blankCount ? (
-              <button
-                aria-label={`${index + 1}번째 빈칸${selectedChoiceIds[index] ? ` ${getChoiceText(choices, selectedChoiceIds[index])}, 선택 해제` : ", 비어 있음"}`}
-                disabled={
-                  checked !== false || selectedChoiceIds[index] === null
-                }
-                onClick={() => handleRemoveChoice(index)}
-                className={cn(
-                  "inline-block min-w-[80px] px-3 py-1 rounded-xl mx-1 text-center",
-                  selectedChoiceIds[index]
-                    ? "bg-action-selected-bg text-action-selected-fg font-bold cursor-pointer"
-                    : "bg-bg-surface"
-                )}
-                type="button"
+    <>
+      <StepHeader>
+        <StepTitle>
+          <h2>빈칸을 채워보세요</h2>
+        </StepTitle>
+      </StepHeader>
+      <StepBody>
+        <TokenSentence>
+          {template.split("___").map((part, index) => {
+            const selectedChoiceId = selectedChoiceIds[index]
+            const selectedChoiceText = getChoiceText(choices, selectedChoiceId)
+            const state =
+              checked === false
+                ? selectedChoiceId === null || selectedChoiceId === undefined
+                  ? "empty"
+                  : "filled"
+                : selectedChoiceId === null || selectedChoiceId === undefined
+                  ? "locked"
+                  : checked === "correct"
+                    ? "correct"
+                    : "incorrect"
+
+            return (
+              <span key={index}>
+                {part}
+                {index < blankCount ? (
+                  <TokenSlot
+                    aria-label={`${index + 1}번째 빈칸${selectedChoiceText ? ` ${selectedChoiceText}, 선택 해제` : ", 비어 있음"}`}
+                    disabled={checked !== false || selectedChoiceId === null}
+                    onClick={() => handleRemoveChoice(index)}
+                    state={state}
+                  >
+                    {selectedChoiceText ?? "___"}
+                  </TokenSlot>
+                ) : null}
+              </span>
+            )
+          })}
+        </TokenSentence>
+        <TokenBank aria-label="선택할 낱말">
+          {choices.map((choice) => {
+            const used = selectedChoiceIds.includes(choice.id)
+            return (
+              <Token
+                aria-pressed={used}
+                key={choice.id}
+                disabled={used || checked !== false}
+                onClick={() => handleSelectChoice(choice.id)}
+                state={used ? "used" : checked === false ? "idle" : "locked"}
               >
-                {getChoiceText(choices, selectedChoiceIds[index]) ?? "___"}
-              </button>
-            ) : null}
-          </span>
-        ))}
-      </p>
-      <div className="flex flex-wrap gap-3">
-        {choices.map((choice) => {
-          const used = selectedChoiceIds.includes(choice.id)
-          return (
-            <button
-              aria-pressed={used}
-              key={choice.id}
-              disabled={used || checked !== false}
-              onClick={() => handleSelectChoice(choice.id)}
-              className={buttonVariants({
-                className: cn(
-                  "h-auto rounded-full px-5 py-3 text-base disabled:opacity-100",
-                  used
-                    ? "bg-bg-surface text-fg-muted hover:bg-bg-surface"
-                    : "bg-bg-surface text-fg-default hover:bg-action-selected-bg hover:text-action-selected-fg"
-                ),
-                variant: "secondary",
-              })}
-              style={{ fontSize: "1rem" }}
-              type="button"
-            >
-              {choice.text}
-            </button>
-          )
-        })}
-      </div>
-    </div>
+                {choice.text}
+              </Token>
+            )
+          })}
+        </TokenBank>
+      </StepBody>
+    </>
   )
 }
 

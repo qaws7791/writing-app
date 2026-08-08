@@ -3,34 +3,9 @@
 import * as React from "react"
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog"
 
-import { cn } from "#ui/lib/utils"
 import { Button } from "#ui/components/ui/button"
+import { cn } from "#ui/lib/utils"
 
-/**
- * `AlertDialog` 컴포넌트는 사용자에게 중요한 정보를 전달하거나 확인을 요구할 때 사용합니다.
- * 
- * @example
- * ```tsx
- * <AlertDialog>
-  <AlertDialogTrigger render={<Button variant="outline" />}>
-    Show Dialog
-  </AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-      <AlertDialogDescription>
-        This action cannot be undone. This will permanently delete your account
-        from our servers.
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction>Continue</AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
- * ```
- */
 function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
 }
@@ -55,7 +30,7 @@ function AlertDialogOverlay({
     <AlertDialogPrimitive.Backdrop
       data-slot="alert-dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-backdrop duration-100 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-foreground/15 duration-200 supports-backdrop-filter:bg-foreground/10 supports-backdrop-filter:backdrop-blur-md dark:bg-black/55 dark:supports-backdrop-filter:bg-black/45 data-open:animate-in data-open:fade-in-0 data-closed:duration-150 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -77,7 +52,7 @@ function AlertDialogContent({
         data-slot="alert-dialog-content"
         data-size={size}
         className={cn(
-          "group/alert-dialog-content an-fi fixed top-1/2 left-1/2 z-50 grid w-full min-w-0 -translate-x-1/2 -translate-y-1/2 gap-6 overflow-hidden rounded-4xl bg-bg-elevated p-8 text-fg-default shadow-xl ring-1 ring-border duration-100 outline-none data-[size=default]:max-w-md data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-4xl border border-border/70 bg-popover p-7 text-sm text-popover-foreground shadow-xl duration-200 outline-none supports-backdrop-filter:bg-popover/85 supports-backdrop-filter:backdrop-blur-2xl data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-98 data-open:slide-in-from-bottom-1 data-closed:duration-150 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-98",
           className
         )}
         {...props}
@@ -110,7 +85,7 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "flex w-full min-w-0 flex-row gap-3 [&_[data-slot=button]]:min-w-0 [&_[data-slot=button]]:flex-1 [&_[data-slot=button]]:!shrink [&_[data-slot=button]]:basis-0 [&_[data-slot=button]]:w-full group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2",
+        "flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end",
         className
       )}
       {...props}
@@ -126,7 +101,7 @@ function AlertDialogMedia({
     <div
       data-slot="alert-dialog-media"
       className={cn(
-        "mb-2 inline-flex size-16 items-center justify-center rounded-full bg-muted sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-8",
+        "mb-2 inline-flex size-16 items-center justify-center rounded-full bg-muted text-foreground sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-8",
         className
       )}
       {...props}
@@ -142,7 +117,7 @@ function AlertDialogTitle({
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
       className={cn(
-        "font-heading text-heading-sm font-bold text-foreground sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2",
+        "font-heading text-base leading-6 font-semibold tracking-[-0.014em] sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2",
         className
       )}
       {...props}
@@ -158,7 +133,7 @@ function AlertDialogDescription({
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
       className={cn(
-        "text-body-lg font-medium text-balance text-muted-foreground md:text-pretty *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        "text-sm leading-6 text-balance text-muted-foreground md:text-pretty *:[a]:underline *:[a]:decoration-muted-foreground/40 *:[a]:underline-offset-[0.3em] *:[a]:hover:text-foreground",
         className
       )}
       {...props}
@@ -166,18 +141,14 @@ function AlertDialogDescription({
   )
 }
 
-const alertDialogButtonClassName = "min-w-0 w-full flex-1 !shrink basis-0"
-
 function AlertDialogAction({
   className,
-  size = "extra",
   ...props
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
       data-slot="alert-dialog-action"
-      className={cn(alertDialogButtonClassName, className)}
-      size={size}
+      className={cn(className)}
       {...props}
     />
   )
@@ -185,21 +156,16 @@ function AlertDialogAction({
 
 function AlertDialogCancel({
   className,
-  variant = "secondary",
-  size = "extra",
+  variant = "outline",
+  size = "default",
   ...props
 }: AlertDialogPrimitive.Close.Props &
-  Partial<Pick<React.ComponentProps<typeof Button>, "variant" | "size">>) {
+  Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
   return (
     <AlertDialogPrimitive.Close
       data-slot="alert-dialog-cancel"
-      render={
-        <Button
-          variant={variant}
-          size={size}
-          className={cn(alertDialogButtonClassName, className)}
-        />
-      }
+      className={cn(className)}
+      render={<Button variant={variant} size={size} />}
       {...props}
     />
   )

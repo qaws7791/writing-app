@@ -14,23 +14,23 @@
 
 ## 정보 구조
 
-- `PageHeader`
-- `FilterToolbar`
+- `AdminPageHeader`
+- `Field`, `Input`, `Select`와 `Button`을 조합한 필터 form
 - 처리 상태 메시지
-- `DataTable` 사용자 목록
+- `Card` 안의 `Table` 사용자 목록
 - 페이지 크기 선택과 페이지 이동
 - `AlertDialog` 사용자 상태 변경 확인
 - `AlertDialog` 삭제 요청 확인
 
 ## UI 기준
 
-- 검색, 상태, 정렬 필터를 `FilterToolbar`에 둔다.
+- 검색, 상태와 정렬 필터를 native `GET` form에 둔다.
 - 필터 toolbar는 `GET` form이며, 사용자 검색 `query`, 상태 `status`, 정렬 `sort`를 query string으로 제출한다.
 - 필터 적용 버튼은 `Button variant="outline"`이다.
 - 페이지 크기 선택은 코스 목록과 같은 옵션을 제공한다.
 - row action은 포인터 hover에 의존하지 않고 항상 확인할 수 있어야 한다.
 - 사용자 첫 열은 이름과 이메일을 함께 표시한다.
-- 상태는 app-local `StatusBadge`가 Kwep 어드민 기준의 중립 `Badge`로 표시한다.
+- 상태는 app-local `StatusBadge`가 Luma `Badge` variant로 표시한다.
 - row action은 정지와 삭제 요청을 제공한다.
 
 ## 상태

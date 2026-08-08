@@ -13,22 +13,27 @@ import {
 } from "@/features/audit/model/admin-audit-presentation"
 import { createGetFilterHref } from "@/shared/navigation/get-filter-url"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
+import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import { adminAuditCategorySchema } from "@workspace/contracts/operations/admin-audit"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { Button } from "@workspace/ui/components/ui/button"
-import {
-  FilterToolbarField,
-  FilterToolbarLabel,
-} from "@workspace/ui/components/ui/filter-toolbar"
+import { Card } from "@workspace/ui/components/ui/card"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
-import { PageHeader } from "@workspace/ui/components/ui/page-header"
-import { Surface } from "@workspace/ui/components/ui/surface"
-import { cn } from "@workspace/ui/lib/utils"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/ui/table"
 
-const outcomeToneClassNames = {
-  danger: "bg-danger text-danger-foreground",
-  neutral: "bg-surface text-muted-foreground",
-  success: "bg-success text-success-foreground",
+const outcomeBadgeVariants = {
+  danger: "destructive",
+  neutral: "secondary",
+  success: "success",
 } as const
 
 export function AdminAuditPage({
@@ -40,81 +45,77 @@ export function AdminAuditPage({
 }) {
   return (
     <>
-      <PageHeader
+      <AdminPageHeader
         description="개인정보 조회와 고위험 변경 이력을 최신순으로 확인합니다."
         title="감사 이력"
       />
       <AuditFilterForm filters={filters} />
       {auditResult.status === "error" ? (
-        <Alert role="alert" tone="danger">
+        <Alert role="alert" variant="destructive">
           <AlertDescription>{auditResult.error.message}</AlertDescription>
         </Alert>
       ) : (
-        <Surface variant="panel">
+        <Card className="gap-0 overflow-hidden py-0">
           <div className="overflow-x-auto">
-            <table
-              aria-label="감사 이력"
-              className="w-full min-w-180 text-body-sm"
-            >
-              <thead>
-                <tr className="border-b border-border">
+            <Table aria-label="감사 이력" className="min-w-180">
+              <TableHeader>
+                <TableRow>
                   <TableHeading>실행 시각</TableHeading>
                   <TableHeading>작업</TableHeading>
                   <TableHeading>대상</TableHeading>
                   <TableHeading>결과</TableHeading>
                   <TableHeading>요청 식별자</TableHeading>
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {auditResult.value.items.length === 0 ? (
-                  <tr>
-                    <td
+                  <TableRow>
+                    <TableCell
                       className="px-4 py-10 text-center font-semibold text-muted-foreground"
                       colSpan={5}
                     >
                       {hasAuditFilter(filters)
                         ? "조건에 맞는 감사 이력이 없습니다."
                         : "아직 감사 이력이 없습니다."}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   auditResult.value.items.map((event) => (
-                    <tr className="border-b border-border/60" key={event.id}>
-                      <td className="px-4 py-3 font-semibold whitespace-nowrap">
+                    <TableRow key={event.id}>
+                      <TableCell className="px-4 py-3 font-semibold whitespace-nowrap">
                         {formatAuditTime(event.createdAt)}
-                      </td>
-                      <td className="px-4 py-3 font-semibold">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 font-semibold">
                         {readAuditActionLabel(event.action)}
-                      </td>
-                      <td className="px-4 py-3 font-semibold">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 font-semibold">
                         {readAuditTargetLabel(event.target)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-full px-2.5 py-1 text-[0.75rem] font-bold",
-                            outcomeToneClassNames[
+                      </TableCell>
+                      <TableCell className="px-4 py-3">
+                        <Badge
+                          variant={
+                            outcomeBadgeVariants[
                               readAuditOutcomeTone(event.outcome)
                             ]
-                          )}
+                          }
                         >
                           {readAuditOutcomeLabel(event.outcome)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-medium whitespace-nowrap text-muted-foreground">
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="px-4 py-3 font-medium whitespace-nowrap text-muted-foreground">
                         {event.requestId}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
           <AuditPagination
             filters={filters}
             pagination={auditResult.value.pagination}
           />
-        </Surface>
+        </Card>
       )}
     </>
   )
@@ -136,19 +137,25 @@ function AuditFilterForm({
       method="get"
     >
       <input name="page" type="hidden" value="1" />
-      <FilterToolbarField className="gap-1">
-        <FilterToolbarLabel>시작일</FilterToolbarLabel>
-        <Input defaultValue={filters.from} name="from" type="date" />
-      </FilterToolbarField>
-      <FilterToolbarField className="gap-1">
-        <FilterToolbarLabel>종료일</FilterToolbarLabel>
-        <Input defaultValue={filters.to} name="to" type="date" />
-      </FilterToolbarField>
-      <FilterToolbarField className="gap-1">
-        <FilterToolbarLabel>작업 종류</FilterToolbarLabel>
+      <Field className="w-auto">
+        <FieldLabel htmlFor="audit-from">시작일</FieldLabel>
+        <Input
+          id="audit-from"
+          defaultValue={filters.from}
+          name="from"
+          type="date"
+        />
+      </Field>
+      <Field className="w-auto">
+        <FieldLabel htmlFor="audit-to">종료일</FieldLabel>
+        <Input id="audit-to" defaultValue={filters.to} name="to" type="date" />
+      </Field>
+      <Field className="w-auto">
+        <FieldLabel htmlFor="audit-category">작업 종류</FieldLabel>
         <select
-          className="h-10 rounded-xl border border-border bg-background px-3 font-semibold"
+          className="h-10 rounded-2xl border border-border/70 bg-input/35 px-4 text-sm font-medium shadow-2xs outline-none hover:border-border focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25"
           defaultValue={filters.category}
+          id="audit-category"
           name="category"
         >
           <option value="">전체 종류</option>
@@ -158,7 +165,7 @@ function AuditFilterForm({
             </option>
           ))}
         </select>
-      </FilterToolbarField>
+      </Field>
       <Button type="submit" variant="outline">
         조회
       </Button>
@@ -189,7 +196,7 @@ function AuditPagination({
   return (
     <nav
       aria-label="감사 이력 페이지"
-      className="mt-4 flex items-center justify-end gap-3"
+      className="flex items-center justify-end gap-3 p-4"
     >
       {pagination.page > 1 ? (
         <Link className="font-bold" href={pageHref(pagination.page - 1)}>
@@ -210,12 +217,12 @@ function AuditPagination({
 
 function TableHeading({ children }: { readonly children: string }) {
   return (
-    <th
-      className="px-4 py-3 text-left text-label-sm font-bold text-muted-foreground"
+    <TableHead
+      className="px-4 py-3 text-left text-xs font-semibold"
       scope="col"
     >
       {children}
-    </th>
+    </TableHead>
   )
 }
 

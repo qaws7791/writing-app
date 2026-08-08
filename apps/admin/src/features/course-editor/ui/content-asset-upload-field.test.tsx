@@ -6,6 +6,37 @@ import { describe, expect, it, vi } from "vitest"
 import { ContentAssetUploadField } from "@/features/course-editor/ui/content-asset-upload-field"
 
 describe("ContentAssetUploadField", () => {
+  it("같은 종류의 반복 업로드 필드를 서로 다른 label과 연결한다", () => {
+    render(
+      <>
+        <ContentAssetUploadField
+          asset={undefined}
+          kind="reading-illustration"
+          label="첫 번째 읽기 삽화"
+          onRemove={vi.fn()}
+          onUploaded={vi.fn()}
+          upload={vi.fn()}
+        />
+        <ContentAssetUploadField
+          asset={undefined}
+          kind="reading-illustration"
+          label="두 번째 읽기 삽화"
+          onRemove={vi.fn()}
+          onUploaded={vi.fn()}
+          upload={vi.fn()}
+        />
+      </>
+    )
+
+    const fileInputs = screen.getAllByLabelText("이미지 파일")
+    const altTextInputs = screen.getAllByLabelText("대체 텍스트")
+
+    expect(fileInputs).toHaveLength(2)
+    expect(fileInputs[0]).not.toHaveAttribute("id", fileInputs[1]?.id)
+    expect(altTextInputs).toHaveLength(2)
+    expect(altTextInputs[0]).not.toHaveAttribute("id", altTextInputs[1]?.id)
+  })
+
   it("대체 텍스트 없이 업로드하지 않는다", async () => {
     const user = userEvent.setup()
     const upload = vi.fn()

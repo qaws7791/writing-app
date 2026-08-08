@@ -26,7 +26,7 @@
 - 제품 module은 `./module`, `./http`, `./ports`, `./migration-schema` subpath만 공개한다([ADR-0025](./adr/ADR-0025-module-public-surface-four-subpaths.md)). `./module`은 조립 팩토리와 DB tooling이 쓰는 seed·purge 진입점, `./http`는 route 등록과 Hono env 계약, `./ports`는 외부가 구현하거나 소비하는 포트 타입·도메인 상수, `./migration-schema`는 Drizzle table 정의를 소유한다. consumer는 domain·infrastructure 내부 경로를 import하지 않는다.
 - HTTP route는 wire 어휘를 소유한 module이 등록한다. 다른 module의 계약으로 응답하는 route는 만들지 않으며, 자기 route가 없는 module은 `./http`를 공개하지 않는다.
 - 제품 module은 wildcard subpath를 쓰지 않는다. `dependency-cruiser.config.mjs`가 manifest `exports`에서 경계 패턴을 파생하므로 wildcard는 경계 검사를 무력화한다.
-- `packages/shared/ui`는 순수 표현 계층이므로 `./components/*`·`./lib/*` wildcard와 font·style 진입점만 공개한다.
+- `packages/shared/ui`는 순수 표현 계층이므로 `./blocks/*`, `./components/*`, `./hooks/*`, `./lib/*` wildcard와 font·style 진입점을 공개한다. Registry block은 example composition이며 제품 API나 production data를 소유하지 않는다.
 - schema와 bootstrap seed capability는 통합 DB tooling과 격리 fixture만 소비한다. 다른 module과 일반 runtime consumer에는 제품 persistence를 공개하지 않는다.
 - 현재 export key는 package manifest만 소유한다. 별도 exact 목록이나 export 형태 검사기를 복제하지 않고 TypeScript와 실제 consumer build가 target을 해석한다.
 - 인증 cookie 이름은 `@workspace/contracts/auth-session-cookie`가 canonical 계약으로 소유하며 auth package는 이를 재수출하지 않는다.

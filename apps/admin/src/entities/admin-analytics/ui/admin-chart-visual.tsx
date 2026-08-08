@@ -23,7 +23,7 @@ export function AdminChartVisual(props: AdminChartPanelProps) {
 function ChartLoading() {
   return (
     <div
-      className="h-[260px] animate-pulse rounded-3xl bg-bg-surface"
+      className="h-[260px] animate-pulse rounded-3xl bg-muted"
       role="presentation"
     />
   )

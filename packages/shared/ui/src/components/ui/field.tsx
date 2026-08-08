@@ -3,9 +3,9 @@
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "#ui/lib/utils"
 import { Label } from "#ui/components/ui/label"
 import { Separator } from "#ui/components/ui/separator"
+import { cn } from "#ui/lib/utils"
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
@@ -30,7 +30,7 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-3 font-medium data-[variant=label]:text-sm data-[variant=legend]:text-base",
+        "mb-3 font-medium data-[variant=label]:text-sm data-[variant=label]:tracking-[-0.005em] data-[variant=label]:text-foreground/90 data-[variant=legend]:text-xs data-[variant=legend]:tracking-[0.05em] data-[variant=legend]:text-muted-foreground data-[variant=legend]:uppercase",
         className
       )}
       {...props}
@@ -52,15 +52,15 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const fieldVariants = cva(
-  "group/field flex w-full gap-3 data-[invalid=true]:text-danger-foreground",
+  "group/field flex w-full gap-2.5 data-[invalid=true]:text-destructive",
   {
     variants: {
       orientation: {
         vertical: "flex-col *:w-full [&>.sr-only]:w-auto",
         horizontal:
-          "flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
+          "flex-row items-center gap-4 has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-0.5",
         responsive:
-          "flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
+          "flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:gap-4 @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-0.5",
       },
     },
     defaultVariants: {
@@ -69,33 +69,6 @@ const fieldVariants = cva(
   }
 )
 
-/**
- * `Field` 컴포넌트는 입력 필드와 관련된 레이블, 설명, 오류 메시지 등을 그룹화하는 컨테이너 역할을 합니다.
- * 
- * @example
- * ```tsx
- * <FieldSet>
-  <FieldLegend>Profile</FieldLegend>
-  <FieldDescription>This appears on invoices and emails.</FieldDescription>
-  <FieldGroup>
-    <Field>
-      <FieldLabel htmlFor="name">Full name</FieldLabel>
-      <Input id="name" autoComplete="off" placeholder="Evil Rabbit" />
-      <FieldDescription>This appears on invoices and emails.</FieldDescription>
-    </Field>
-    <Field>
-      <FieldLabel htmlFor="username">Username</FieldLabel>
-      <Input id="username" autoComplete="off" aria-invalid />
-      <FieldError>Choose another username.</FieldError>
-    </Field>
-    <Field orientation="horizontal">
-      <Switch id="newsletter" />
-      <FieldLabel htmlFor="newsletter">Subscribe to the newsletter</FieldLabel>
-    </Field>
-  </FieldGroup>
-</FieldSet>
-```
- */
 function Field({
   className,
   orientation = "vertical",
@@ -117,7 +90,7 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-content"
       className={cn(
-        "group/field-content flex flex-1 flex-col gap-1 leading-snug",
+        "group/field-content flex flex-1 flex-col gap-1.5 leading-snug",
         className
       )}
       {...props}
@@ -133,7 +106,8 @@ function FieldLabel({
     <Label
       data-slot="field-label"
       className={cn(
-        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-field-border has-data-checked:bg-transparent has-[>[data-slot=field]]:rounded-2xl has-[>[data-slot=field]]:border *:data-[slot=field]:p-4",
+        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-45 *:data-[slot=field]:p-4",
+        "has-[>[data-slot=field]]:rounded-3xl has-[>[data-slot=field]]:border has-[>[data-slot=field]]:border-border/80 has-[>[data-slot=field]]:bg-card has-[>[data-slot=field]]:shadow-2xs has-[>[data-slot=field]]:transition-[background-color,border-color,box-shadow] has-data-checked:border-primary/40 has-data-checked:bg-accent/50",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
         className
       )}
@@ -147,7 +121,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-label"
       className={cn(
-        "flex w-fit items-center gap-2 text-sm font-medium group-data-[disabled=true]/field:opacity-50",
+        "flex w-fit items-center gap-2 text-sm font-medium tracking-[-0.005em] text-foreground/90 group-data-[disabled=true]/field:opacity-45",
         className
       )}
       {...props}
@@ -160,9 +134,9 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="field-description"
       className={cn(
-        "text-left text-sm leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
+        "text-left text-sm leading-6 font-normal text-pretty text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
         "last:mt-0 nth-last-2:-mt-1",
-        "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
+        "[&>a]:underline [&>a]:decoration-muted-foreground/40 [&>a]:underline-offset-[0.3em] [&>a:hover]:text-foreground [&>a:hover]:decoration-foreground/70",
         className
       )}
       {...props}
@@ -177,10 +151,12 @@ function FieldSeparator({
 }: React.ComponentProps<"div"> & {
   children?: React.ReactNode
 }) {
+  const hasContent = children !== undefined && children !== null
+
   return (
     <div
       data-slot="field-separator"
-      data-content={!!children}
+      data-content={hasContent}
       className={cn(
         "relative -my-2 h-5 text-sm group-data-[variant=outline]/field-group:-mb-2",
         className
@@ -188,14 +164,14 @@ function FieldSeparator({
       {...props}
     >
       <Separator className="absolute inset-0 top-1/2" />
-      {children && (
+      {hasContent ? (
         <span
-          className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
+          className="relative mx-auto block w-fit bg-background px-2.5 text-xs font-medium tracking-[0.05em] text-muted-foreground uppercase"
           data-slot="field-separator-content"
         >
           {children}
         </span>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -209,7 +185,7 @@ function FieldError({
   errors?: Array<{ message?: string } | undefined>
 }) {
   const content = useMemo(() => {
-    if (children) {
+    if (children !== undefined && children !== null) {
       return children
     }
 
@@ -221,21 +197,20 @@ function FieldError({
       ...new Map(errors.map((error) => [error?.message, error])).values(),
     ]
 
-    if (uniqueErrors?.length == 1) {
+    if (uniqueErrors.length === 1) {
       return uniqueErrors[0]?.message
     }
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
-        {uniqueErrors.map(
-          (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>
+        {uniqueErrors.map((error, index) =>
+          error?.message ? <li key={index}>{error.message}</li> : null
         )}
       </ul>
     )
   }, [children, errors])
 
-  if (!content) {
+  if (content === undefined || content === null) {
     return null
   }
 
@@ -243,7 +218,7 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-sm font-normal text-danger-foreground", className)}
+      className={cn("text-sm font-normal text-destructive", className)}
       {...props}
     >
       {content}

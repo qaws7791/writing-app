@@ -1,0 +1,2539 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "ui",
+  "homepage": "https://github.com/YOUR_GITHUB_ID/ui",
+  "items": [
+    {
+      "name": "base",
+      "title": "Luma Base",
+      "description": "Luma foundation on Base UI: warm paper-and-ink palette, continuous corners, quiet motion, Pretendard, and Hugeicons.",
+      "dependencies": [
+        "shadcn",
+        "@base-ui/react",
+        "@hugeicons/react",
+        "@hugeicons/core-free-icons",
+        "class-variance-authority",
+        "clsx",
+        "pretendard",
+        "tailwind-merge",
+        "tw-animate-css"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/utils.json"
+      ],
+      "cssVars": {
+        "theme": {
+          "font-heading": "var(--font-sans)",
+          "font-sans": "\"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+          "radius-sm": "calc(var(--radius) * 0.6)",
+          "radius-md": "calc(var(--radius) * 0.8)",
+          "radius-lg": "var(--radius)",
+          "radius-xl": "calc(var(--radius) * 1.4)",
+          "radius-2xl": "calc(var(--radius) * 1.8)",
+          "radius-3xl": "calc(var(--radius) * 2.2)",
+          "radius-4xl": "calc(var(--radius) * 2.6)",
+          "radius-5xl": "calc(var(--radius) * 3.2)",
+          "shadow-2xs": "var(--elevation-2xs)",
+          "shadow-xs": "var(--elevation-xs)",
+          "shadow-sm": "var(--elevation-sm)",
+          "shadow-md": "var(--elevation-md)",
+          "shadow-lg": "var(--elevation-lg)",
+          "shadow-xl": "var(--elevation-xl)",
+          "shadow-2xl": "var(--elevation-2xl)",
+          "ease-quiet": "cubic-bezier(0.32, 0.72, 0, 1)",
+          "ease-quiet-in": "cubic-bezier(0.62, 0.04, 0.86, 0.4)",
+          "default-transition-duration": "180ms",
+          "default-transition-timing-function": "cubic-bezier(0.32, 0.72, 0, 1)",
+          "animate-breathe": "breathe 2.4s cubic-bezier(0.32, 0.72, 0, 1) infinite",
+          "animate-drift-in": "drift-in 320ms cubic-bezier(0.32, 0.72, 0, 1) both"
+        },
+        "light": {
+          "background": "oklch(0.9845 0.0035 92)",
+          "foreground": "oklch(0.2178 0.0086 67)",
+          "card": "oklch(0.9958 0.0018 95)",
+          "card-foreground": "oklch(0.2178 0.0086 67)",
+          "popover": "oklch(0.9958 0.0018 95)",
+          "popover-foreground": "oklch(0.2178 0.0086 67)",
+          "primary": "oklch(0.2712 0.0104 67)",
+          "primary-foreground": "oklch(0.9845 0.0035 92)",
+          "secondary": "oklch(0.9522 0.0043 92)",
+          "secondary-foreground": "oklch(0.2712 0.0104 67)",
+          "muted": "oklch(0.9603 0.0038 92)",
+          "muted-foreground": "oklch(0.5413 0.0104 72)",
+          "accent": "oklch(0.9394 0.005 90)",
+          "accent-foreground": "oklch(0.2178 0.0086 67)",
+          "destructive": "oklch(0.54 0.1598 27.5)",
+          "success": "oklch(0.508 0.1186 155)",
+          "warning": "oklch(0.532 0.1364 55)",
+          "info": "oklch(0.519 0.1084 245)",
+          "purple": "oklch(0.534 0.1262 305)",
+          "border": "oklch(0.9165 0.0037 90)",
+          "input": "oklch(0.9345 0.0037 90)",
+          "ring": "oklch(0.6118 0.0125 70)",
+          "surface": "oklch(0.9712 0.0037 92)",
+          "surface-foreground": "oklch(0.2178 0.0086 67)",
+          "selection": "oklch(0.2712 0.0104 67)",
+          "selection-foreground": "oklch(0.9845 0.0035 92)",
+          "chart-1": "oklch(0.8412 0.0072 88)",
+          "chart-2": "oklch(0.7182 0.0091 78)",
+          "chart-3": "oklch(0.5989 0.0108 72)",
+          "chart-4": "oklch(0.4571 0.0119 68)",
+          "chart-5": "oklch(0.3288 0.0112 66)",
+          "sidebar": "oklch(0.9712 0.0037 92)",
+          "sidebar-foreground": "oklch(0.2178 0.0086 67)",
+          "sidebar-primary": "oklch(0.2712 0.0104 67)",
+          "sidebar-primary-foreground": "oklch(0.9845 0.0035 92)",
+          "sidebar-accent": "oklch(0.9394 0.005 90)",
+          "sidebar-accent-foreground": "oklch(0.2178 0.0086 67)",
+          "sidebar-border": "oklch(0.9165 0.0037 90)",
+          "sidebar-ring": "oklch(0.6118 0.0125 70)",
+          "radius": "0.625rem",
+          "elevation-2xs": "0 1px 1px -1px oklch(0.28 0.02 70 / 0.08)",
+          "elevation-xs": "0 1px 1px -0.5px oklch(0.28 0.02 70 / 0.05), 0 2px 4px -2px oklch(0.28 0.02 70 / 0.06)",
+          "elevation-sm": "0 1px 2px -1px oklch(0.28 0.02 70 / 0.05), 0 4px 8px -4px oklch(0.28 0.02 70 / 0.07)",
+          "elevation-md": "0 2px 4px -2px oklch(0.28 0.02 70 / 0.05), 0 10px 20px -10px oklch(0.28 0.02 70 / 0.09)",
+          "elevation-lg": "0 3px 6px -3px oklch(0.28 0.02 70 / 0.05), 0 18px 34px -14px oklch(0.28 0.02 70 / 0.1)",
+          "elevation-xl": "0 6px 12px -6px oklch(0.28 0.02 70 / 0.06), 0 30px 56px -22px oklch(0.28 0.02 70 / 0.13)",
+          "elevation-2xl": "0 10px 20px -10px oklch(0.28 0.02 70 / 0.07), 0 48px 84px -32px oklch(0.28 0.02 70 / 0.16)"
+        },
+        "dark": {
+          "background": "oklch(0.1908 0.0043 72)",
+          "foreground": "oklch(0.9403 0.0031 92)",
+          "card": "oklch(0.2276 0.0048 72)",
+          "card-foreground": "oklch(0.9403 0.0031 92)",
+          "popover": "oklch(0.2402 0.005 72)",
+          "popover-foreground": "oklch(0.9403 0.0031 92)",
+          "primary": "oklch(0.9247 0.0035 92)",
+          "primary-foreground": "oklch(0.2276 0.0048 72)",
+          "secondary": "oklch(0.2761 0.0051 72)",
+          "secondary-foreground": "oklch(0.9403 0.0031 92)",
+          "muted": "oklch(0.2694 0.005 72)",
+          "muted-foreground": "oklch(0.7093 0.0071 80)",
+          "accent": "oklch(0.3021 0.0055 74)",
+          "accent-foreground": "oklch(0.9403 0.0031 92)",
+          "destructive": "oklch(0.849 0.1552 25)",
+          "success": "oklch(0.778 0.1186 155)",
+          "warning": "oklch(0.8 0.1248 58)",
+          "info": "oklch(0.789 0.0984 245)",
+          "purple": "oklch(0.802 0.1122 305)",
+          "border": "oklch(1 0 0 / 9%)",
+          "input": "oklch(1 0 0 / 13%)",
+          "ring": "oklch(0.5563 0.0086 74)",
+          "surface": "oklch(0.2135 0.0045 72)",
+          "surface-foreground": "oklch(0.9403 0.0031 92)",
+          "selection": "oklch(0.9247 0.0035 92)",
+          "selection-foreground": "oklch(0.2276 0.0048 72)",
+          "chart-1": "oklch(0.8412 0.0072 88)",
+          "chart-2": "oklch(0.7182 0.0091 78)",
+          "chart-3": "oklch(0.5989 0.0108 72)",
+          "chart-4": "oklch(0.4571 0.0119 68)",
+          "chart-5": "oklch(0.3288 0.0112 66)",
+          "sidebar": "oklch(0.2135 0.0045 72)",
+          "sidebar-foreground": "oklch(0.9403 0.0031 92)",
+          "sidebar-primary": "oklch(0.9247 0.0035 92)",
+          "sidebar-primary-foreground": "oklch(0.2276 0.0048 72)",
+          "sidebar-accent": "oklch(0.3021 0.0055 74)",
+          "sidebar-accent-foreground": "oklch(0.9403 0.0031 92)",
+          "sidebar-border": "oklch(1 0 0 / 9%)",
+          "sidebar-ring": "oklch(0.5563 0.0086 74)",
+          "elevation-2xs": "0 1px 1px -1px oklch(0 0 0 / 0.4)",
+          "elevation-xs": "0 1px 2px -1px oklch(0 0 0 / 0.44), inset 0 1px 0 oklch(1 0 0 / 0.04)",
+          "elevation-sm": "0 2px 5px -2px oklch(0 0 0 / 0.48), inset 0 1px 0 oklch(1 0 0 / 0.05)",
+          "elevation-md": "0 5px 12px -5px oklch(0 0 0 / 0.54), inset 0 1px 0 oklch(1 0 0 / 0.05)",
+          "elevation-lg": "0 10px 26px -10px oklch(0 0 0 / 0.6), inset 0 1px 0 oklch(1 0 0 / 0.06)",
+          "elevation-xl": "0 18px 44px -18px oklch(0 0 0 / 0.66), inset 0 1px 0 oklch(1 0 0 / 0.07)",
+          "elevation-2xl": "0 30px 68px -26px oklch(0 0 0 / 0.72), inset 0 1px 0 oklch(1 0 0 / 0.08)"
+        }
+      },
+      "css": {
+        "@import \"tw-animate-css\"": {},
+        "@import \"shadcn/tailwind.css\"": {},
+        "@import \"pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css\"": {},
+        "@keyframes breathe": {
+          "0%, 100%": {
+            "opacity": "1"
+          },
+          "50%": {
+            "opacity": "0.55"
+          }
+        },
+        "@keyframes drift-in": {
+          "from": {
+            "opacity": "0",
+            "transform": "translateY(4px)"
+          },
+          "to": {
+            "opacity": "1",
+            "transform": "none"
+          }
+        },
+        "@utility squircle": {
+          "@supports (corner-shape: squircle)": {
+            "corner-shape": "squircle"
+          }
+        },
+        "@utility squircle-soft": {
+          "@supports (corner-shape: superellipse(1.5))": {
+            "corner-shape": "superellipse(1.5)"
+          }
+        },
+        "@layer base": {
+          "*": {
+            "@apply border-border outline-ring/50": {}
+          },
+          "body": {
+            "@apply bg-background text-foreground antialiased": {}
+          },
+          "html": {
+            "@apply font-sans": {}
+          },
+          "::selection": {
+            "@apply bg-selection text-selection-foreground": {}
+          },
+          "th, td, time, kbd": {
+            "font-variant-numeric": "tabular-nums"
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            "*, ::before, ::after": {
+              "animation-duration": "0.01ms !important",
+              "animation-iteration-count": "1 !important",
+              "transition-duration": "0.01ms !important"
+            }
+          }
+        }
+      },
+      "type": "registry:base"
+    },
+    {
+      "name": "accordion",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/accordion.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "admin-overview",
+      "title": "Admin Overview",
+      "description": "조치가 필요한 운영 항목을 우선 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/admin-overview.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "alert",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/alert.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "alert-dialog",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/alert-dialog.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "argument-map",
+      "title": "Argument Map",
+      "description": "주장·근거·반론·재반박 관계를 시각적으로 점검합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/argument-map.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "aspect-ratio",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/aspect-ratio.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "attachment",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/attachment.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "audit-log",
+      "title": "Audit Log",
+      "description": "콘텐츠·루브릭·권한 변경과 환경·복원 지점을 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/audit-log.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "avatar",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/avatar.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "badge",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/badge.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "breadcrumb",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/breadcrumb.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "bubble",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/bubble.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "button",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "button-group",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/button-group.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "cadence",
+      "title": "Cadence",
+      "description": "최근 학습 리듬과 연속성을 주간 채움 마크로 보여 줍니다. 스트릭 불꽃 대신 연습·휴식·오늘·예정의 형태와 아이콘으로 다음 행동을 남깁니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/cadence.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "calendar",
+      "dependencies": [
+        "react-day-picker@latest",
+        "date-fns"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/calendar.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "card",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/card.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "chart",
+      "dependencies": [
+        "recharts@3.8.0"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/card.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/chart.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "checkbox",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "checkpoint",
+      "title": "Checkpoint",
+      "description": "여러 레슨을 종합 평가하고 다음 유닛 준비 여부를 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/checkpoint.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "choice",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/choice.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "classify",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/classify.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "coaching",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/spinner.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/coaching.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "cohort-assignment",
+      "title": "Cohort Assignment",
+      "description": "코호트·과제 배정·기한·예외를 관리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/cohort-assignment.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "collapsible",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/collapsible.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "combobox",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input-group.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/combobox.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "command",
+      "dependencies": [
+        "cmdk"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dialog.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/command.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "compare",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/compare.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "compose",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/textarea.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/compose.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "content-review",
+      "title": "Content Review",
+      "description": "변경 diff·댓글·담당자·승인·수정 요청을 처리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/content-review.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "content-validation",
+      "title": "Content Validation",
+      "description": "빈 정답·중복 ID·모호한 선택지·접근성·출처·목표 연결을 검사합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/content-validation.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "course-overview",
+      "title": "Course Overview",
+      "description": "코스 목표, 대상 수준, 예상 기간, 선수 개념, 글쓰기 장르와 샘플 활동을 보여 줍니다. 경로 노드 대신 코스 선택에 필요한 맥락을 전달합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/course-overview.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "curriculum-map",
+      "title": "Curriculum Map",
+      "description": "목표·개념·선수·레슨·체크포인트 연결과 누락을 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/curriculum-map.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "curriculum-tree",
+      "title": "Curriculum Tree",
+      "description": "코스→유닛→레슨→스텝 구조와 상태·선후를 관리합니다. 접기·인라인 이름 변경·행 전체 드래그 재정렬을 제공합니다.",
+      "dependencies": [
+        "@hugeicons/core-free-icons",
+        "@hugeicons/react"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/curriculum-tree.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "dialog",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "draft",
+      "title": "Draft",
+      "description": "장문 편집기의 자동 저장·글자 수·오프라인·버전·제출 가능 상태를 관리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/textarea.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/draft.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "dropdown-menu",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/dropdown-menu.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "empty",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/empty.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "exemplar-library",
+      "title": "Exemplar Library",
+      "description": "좋은 예·경계 사례·반례를 루브릭 annotation과 함께 관리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/exemplar-library.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "feedback-audit",
+      "title": "Feedback Audit",
+      "description": "AI·교사 피드백 표본을 정확성·근거·어조·범위·효과로 검수합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/feedback-audit.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "feedback-summary",
+      "title": "Feedback Summary",
+      "description": "첨삭을 우선순위·적용 범위별로 묶고 이번 수정의 할 일을 제시합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/feedback-summary.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "field",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/label.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/field.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "goal",
+      "title": "Goal",
+      "description": "오늘이나 이번 주 학습 목표와 남은 작업량을 점수 없이 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/progress.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/goal.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "hint-ladder",
+      "title": "Hint Ladder",
+      "description": "관찰 질문→방향 제시→부분 예시 순으로 힌트를 공개합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/hint-ladder.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "input",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "input-group",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/textarea.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/input-group.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "input-otp",
+      "dependencies": [
+        "input-otp"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/input-otp.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "insight",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/insight.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "intervention-queue",
+      "title": "Intervention Queue",
+      "description": "반복 오답·미접속·제출 지연 근거로 지원 대상을 정렬합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/intervention-queue.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "item",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/item.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "item-analysis",
+      "title": "Item Analysis",
+      "description": "정답률·오답 분포·힌트·재시도·이탈로 문제 문항을 찾습니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/item-analysis.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "item-bank",
+      "title": "Item Bank",
+      "description": "문항·예문·해설·힌트를 개념·난이도·장르·상태별로 재사용합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/item-bank.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "kbd",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/kbd.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "label",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/label.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "learner-preview",
+      "title": "Learner Preview",
+      "description": "기기·숙련도·정오답·오프라인 상태로 학습 흐름을 재생합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/learner-preview.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "learner-record",
+      "title": "Learner Record",
+      "description": "경로·숙련도·시도·제출물·지원 이력을 한 문맥에서 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/learner-record.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "learning-analytics",
+      "title": "Learning Analytics",
+      "description": "시작→완료·중단·복습 복귀·목표별 숙련 변화를 분석합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/learning-analytics.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "learning-profile",
+      "title": "Learning Profile",
+      "description": "학습 목적, 현재 수준, 관심 장르, 주당 학습 시간과 피드백 선호를 수집합니다. 온보딩과 학습 설정에서 개인화의 출발점으로 씁니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/learning-profile.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "lesson",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/progress.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/lesson.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "lesson-builder",
+      "title": "Lesson Builder",
+      "description": "스텝 팔레트·캔버스·인라인 편집 슬롯으로 레슨 스텝을 구성합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/lesson-builder.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "admin-analytics",
+      "title": "Admin Analytics",
+      "description": "통합 운영자용 분석 화면입니다. 기간·코호트 필터, 학습 KPI, 완료·세션 추이, 개입 큐와 학습·쓰기·문항 드릴다운을 한곳에서 봅니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/chart.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/intervention-queue.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/item-analysis.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/learning-analytics.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/writing-analytics.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/admin-analytics.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "analytics"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "admin-settings",
+      "title": "Admin Settings",
+      "description": "통합 운영자용 설정 화면입니다. 좌측 섹션 탭과 우측 설정 폼으로 조직·알림·보안·환경을 다룹니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/switch.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/admin-settings.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "settings"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "agent-mission-control",
+      "title": "Agent Mission Control",
+      "description": "통합 운영자용 Hermes 에이전트 미션 컨트롤입니다. 읽기 전용 실행 큐·처리량·인시던트와 스텝 트레이스로 진행 상태를 확인합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/badge.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/chart.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/empty.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/provenance-panel.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/run-queue.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sheet.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/step-trace.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/agent-mission-control.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "agents"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "agent-session-detail",
+      "title": "Agent Session Detail",
+      "description": "통합 운영자용 Hermes 에이전트 세션 상세입니다. 읽기 전용 스텝 트레이스·실행 설정·활동·출처로 한 실행의 진행과 실패를 확인합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/audit-log.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/badge.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/provenance-panel.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/run-queue.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/step-trace.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/agent-session-detail.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "agents"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "audit-admin",
+      "title": "Audit Admin",
+      "description": "통합 운영자용 감사 로그 화면입니다. 검색·환경·유형·기간 필터와 상세·복원 확인으로 변경 이력을 추적합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/alert-dialog.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/audit-log.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/empty.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sheet.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/audit-admin.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "audit"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "course-admin",
+      "title": "Course Admin",
+      "description": "통합 운영자용 코스 상세입니다. 코스 정보·커리큘럼 빌더·검증·게시를 탭으로 나눠 편집합니다.",
+      "dependencies": [
+        "@dnd-kit/dom",
+        "@dnd-kit/react",
+        "@hugeicons/core-free-icons",
+        "@hugeicons/react"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/badge.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/content-validation.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/curriculum-tree.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/empty.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/learner-preview.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/lesson-builder.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/popover.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/publish-workflow.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sheet.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/step.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/textarea.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/course-admin.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/curriculum-builder.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "courses"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "courses-admin",
+      "title": "Courses Admin",
+      "description": "통합 운영자용 코스 관리 화면입니다. 검색·상태 필터·페이지네이션이 있는 데이터 테이블로 코스를 다루고, 빠른 생성 팝업으로 초안을 만듭니다.",
+      "dependencies": [
+        "@tanstack/react-table"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/badge.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dialog.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/table.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/textarea.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/courses-admin.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "courses"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "home-admin",
+      "title": "Home Admin",
+      "description": "통합 운영자용 어드민 홈입니다. 사이드바·지표·일별 레슨 완료 차트와 조치 큐로 운영 현황을 한눈에 봅니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/admin-overview.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/chart.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/home-admin.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "home"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "users-admin",
+      "title": "Users Admin",
+      "description": "통합 운영자용 사용자 관리 화면입니다. 검색·역할·상태 필터와 선택 작업, 기록 시트가 있는 데이터 테이블로 학습자와 강사를 다룹니다. 전체 기록은 user-admin 상세를 참고합니다.",
+      "dependencies": [
+        "@tanstack/react-table"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/badge.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/checkbox.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/learner-record.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/person.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sheet.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/table.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/users-admin.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "users"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "user-admin",
+      "title": "User Admin",
+      "description": "통합 운영자용 사용자 상세입니다. 계정·학습 기록·지원·코호트를 탭으로 나눠 관리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/alert-dialog.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/audit-log.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/badge.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/breadcrumb.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/cadence.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/cohort-assignment.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/intervention-queue.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/learner-record.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/mastery.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/person.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/select.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sidebar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/user-admin.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/admin-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "admin",
+        "users"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "home-learner",
+      "title": "Home Learner",
+      "description": "로그인한 학습자 홈입니다. 인사와 학습 요약, 진행중·완료 탭의 코스 카드에서 다음 레슨을 이어갑니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/progress.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/home-learner.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/learner-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "learning",
+        "home"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "learn-catalog",
+      "title": "Learn Catalog",
+      "description": "로그인한 학습자의 코스 탐색 화면입니다. 주제별 섹션 아래 패턴 썸네일·제목·설명·레슨 수 목록만 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/learn-catalog.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/learner-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "learning",
+        "catalog"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "course-detail",
+      "title": "Course Detail",
+      "description": "로그인한 학습자의 코스 상세입니다. 히어로에서 요약·진행·CTA를 보고, 유닛 아코디언으로 커리큘럼을 둘러봅니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/accordion.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/progress.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/course-detail.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/learner-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "learning",
+        "course"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "profile-learner",
+      "title": "Profile Learner",
+      "description": "학습자 프로필입니다. 정체성·리듬·숙련·작품을 보고, 학습 기록과 설정으로 들어갑니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/cadence.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/dropdown-menu.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/goal.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/item.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/learning-profile.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/mastery.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/milestone.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/mistake-journal.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/next-action.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/person.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/portfolio.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/practice-queue.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/skill-map.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/profile-learner.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/luma/blocks/learner-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": [
+        "learning",
+        "profile"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "lesson-session",
+      "title": "Lesson Session",
+      "description": "학습자 레슨 세션입니다. 읽기·객관식·빈칸·구간 선택·순서·짝 맞추기·분류·비교·쓰기·AI 코칭 열 가지 스텝을 순서대로 둘러봅니다.",
+      "dependencies": [
+        "@dnd-kit/dom",
+        "@dnd-kit/react"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/choice.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/classify.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/coaching.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/compare.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/compose.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/insight.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/lesson.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/pair.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/progress.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/prose.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/segment.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sortable.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/step.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/token.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/lesson-session.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "learning",
+        "lesson"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "login-otp",
+      "title": "Login OTP",
+      "description": "비밀번호 없이 이메일 코드를 받아 로그인하는 패스워드리스 흐름입니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input-otp.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/login-otp.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "authentication",
+        "login"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "login-quiet",
+      "title": "Login Quiet",
+      "description": "브랜드가 중심인 절제된 중앙 정렬 로그인 화면입니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/login-quiet.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "authentication",
+        "login"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "login-social",
+      "title": "Login Social",
+      "description": "소셜 로그인을 우선하고 이메일은 보조 경로로 두는 소비자형 로그인입니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/login-social.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "authentication",
+        "login"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "login-split",
+      "title": "Login Split",
+      "description": "브랜드 분위기 패널과 자격 증명 폼을 좌우로 나눈 로그인 화면입니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/checkbox.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/login-split.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "authentication",
+        "login"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "login-workspace",
+      "title": "Login Workspace",
+      "description": "워크스페이스 URL과 SSO를 우선하는 B2B 조직 로그인 흐름입니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/field.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/blocks/login-workspace.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "authentication",
+        "login"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "marker",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/marker.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "mastery",
+      "title": "Mastery",
+      "description": "개념 숙련도를 입문·익히는 중·안정·숙련의 이산 단계로 표현합니다. XP나 레벨 폭죽 대신 다음 연습 초점을 남깁니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/mastery.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "message",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/message.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "message-scroller",
+      "dependencies": [
+        "@shadcn/react"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/message-scroller.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "milestone",
+      "title": "Milestone",
+      "description": "희소한 학습 이정표를 날짜와 맥락과 함께 기록합니다. 배지 벽 대신 의미 있는 완료만 남깁니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/milestone.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "mistake-journal",
+      "title": "Mistake Journal",
+      "description": "오답을 오류 패턴별로 묶어 재도전하게 합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/mistake-journal.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "navigation-menu",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/navigation-menu.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "next-action",
+      "title": "Next Action",
+      "description": "다음에 이어갈 활동 하나와 추천 이유, 예상 시간을 제시합니다. 홈·레슨 완료·재방문에서 다음 행동을 하나로 좁힙니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/next-action.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "outline",
+      "title": "Outline",
+      "description": "서론·본론·결론과 주장·근거·예시 블록을 만들고 재정렬합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/outline.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "pagination",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/pagination.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "pair",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/pair.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "path",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/path.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "person",
+      "title": "Person",
+      "description": "아바타·이름·보조 설명으로 사람을 표현합니다. 목록용 가로 배치와 프로필 히어로용 세로 배치를 지원합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/avatar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/person.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "popover",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/popover.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "portfolio",
+      "title": "Portfolio",
+      "description": "완성한 글·수정 과정·피드백·공개 범위를 관리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/portfolio.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "practice-queue",
+      "title": "Practice Queue",
+      "description": "복습 시점·오답·취약 개념으로 연습 세트를 정렬하고 추천 이유를 설명합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/practice-queue.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "progress",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/progress.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "prompt-builder",
+      "title": "Prompt Builder",
+      "description": "독자·목적·장르·분량·자료·제한을 포함한 글쓰기 과제를 제작합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/prompt-builder.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "prose",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/prose.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "provenance-panel",
+      "title": "Provenance Panel",
+      "description": "사람·AI·외부 출처와 생성 모델·확인 상태를 기록합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/provenance-panel.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "publish-workflow",
+      "title": "Publish Workflow",
+      "description": "draft부터 rolled-back까지 게시 상태와 preview·live 환경을 관리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/publish-workflow.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "radio-group",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/radio-group.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "reflection",
+      "title": "Reflection",
+      "description": "바꾼 점·어려운 점·다음 연습 목표를 짧게 기록합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/reflection.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "revision-history",
+      "title": "Revision History",
+      "description": "초고·수정본·최종본을 시간순으로 보존하고 비교·복원합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/revision-history.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "rubric",
+      "title": "Rubric",
+      "description": "평가 기준·단계·가중치·판정과 근거를 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/rubric.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "rubric-editor",
+      "title": "Rubric Editor",
+      "description": "평가 항목·단계·가중치·예시와 적용 버전을 편집합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/rubric-editor.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "run-queue",
+      "title": "Run Queue",
+      "description": "에이전트 실행을 상태 그룹·환경·진행률·결과로 읽어 모니터링합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/run-queue.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "scroll-area",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/scroll-area.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "segment",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/segment.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "select",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/select.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "separator",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/separator.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "sheet",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/sheet.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "sidebar",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/input.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/separator.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/sheet.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/skeleton.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/tooltip.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/use-mobile.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/sidebar.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "skeleton",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "skill-map",
+      "title": "Skill Map",
+      "description": "영역별 숙련도·선수 관계·다음 연습 초점을 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/skill-map.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "slider",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/slider.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "toast",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/toast.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "sortable",
+      "dependencies": [
+        "@dnd-kit/dom@^0.5.0",
+        "@dnd-kit/react@^0.5.0"
+      ],
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/sortable.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "source-pack",
+      "title": "Source Pack",
+      "description": "읽기 자료·통계·발췌문·외부 출처를 메모·인용 가능한 형태로 제공합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/source-pack.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "spinner",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/spinner.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "standing",
+      "title": "Standing",
+      "description": "코호트 안에서의 상대 위치를 조용히 보여 줍니다. 주간 리그·승급 연출 없이 완료한 작업량으로 읽히게 합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/standing.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "step",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/step.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "step-trace",
+      "title": "Step Trace",
+      "description": "에이전트 실행의 단계·도구 호출·오류를 읽기 전용 타임라인으로 보여 줍니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/step-trace.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "submission",
+      "title": "Submission",
+      "description": "초안부터 평가 완료까지 제출 상태와 기한을 관리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/submission.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "switch",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/switch.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "table",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/table.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "tabs",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/tabs.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "text-annotation",
+      "title": "Text Annotation",
+      "description": "원문 범위에 피드백을 연결하고 수락·거절·해결합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/text-annotation.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "textarea",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/textarea.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "toggle",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/toggle.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "toggle-group",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+        "https://YOUR_GITHUB_ID.github.io/ui/r/toggle.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/toggle-group.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "token",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/token.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "tooltip",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "use-mobile",
+      "files": [
+        {
+          "path": "registry/luma/hooks/use-mobile.ts",
+          "type": "registry:hook"
+        }
+      ],
+      "type": "registry:hook"
+    },
+    {
+      "name": "utils",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/lib/utils.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "type": "registry:lib"
+    },
+    {
+      "name": "writing-analytics",
+      "title": "Writing Analytics",
+      "description": "루브릭 변화·수정 깊이·피드백 수용률·장르 난도를 집계합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/writing-analytics.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "writing-brief",
+      "title": "Writing Brief",
+      "description": "주제·독자·목적·장르·분량·평가 기준·제출 조건을 한곳에 정리합니다.",
+      "registryDependencies": [
+        "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+      ],
+      "files": [
+        {
+          "path": "registry/luma/ui/writing-brief.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "type": "registry:ui"
+    }
+  ]
+}

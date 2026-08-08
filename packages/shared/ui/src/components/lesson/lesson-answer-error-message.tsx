@@ -8,8 +8,14 @@ export function LessonAnswerErrorMessage({
   }
 
   return (
-    <p className="rounded-lg border border-danger-fg/30 bg-danger/15 px-4 py-3 text-sm text-danger-foreground">
-      {answerError}
-    </p>
+    <Insight role="alert" tone="incorrect">
+      <InsightEyebrow>답안 오류</InsightEyebrow>
+      <InsightDescription>{answerError}</InsightDescription>
+    </Insight>
   )
 }
+import {
+  Insight,
+  InsightDescription,
+  InsightEyebrow,
+} from "#ui/components/ui/insight"

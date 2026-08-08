@@ -3,14 +3,7 @@
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
 
 import { cn } from "#ui/lib/utils"
-/**
- * `Separator` 컴포넌트는 콘텐츠를 시각적으로 구분하는 데 사용됩니다.
- *
- * @example
- * ```tsx
- * <Separator orientation="horizontal" />
- * ```
- */
+
 function Separator({
   className,
   orientation = "horizontal",

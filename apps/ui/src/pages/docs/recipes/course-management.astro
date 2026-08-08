@@ -1,0 +1,18 @@
+---
+import CompositionPreview from "@/src/components/composition-preview"
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import ResponsivePreview from "@/src/components/responsive-preview"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+
+const baseUrl = import.meta.env.BASE_URL
+---
+
+<DocsLayout title="Course Management" description="코스 card와 반응형 관리 form의 조합입니다." pathname="/docs/recipes/course-management" toc={[{ id: "responsive-preview", label: "반응형 미리보기" }, { id: "story-card-recipe", label: "Card Recipe" }, { id: "story-responsive-form", label: "Responsive Form" }, { id: "contract", label: "조합 계약" }]}>
+  <article>
+    <DocsPageHeader eyebrow="Recipe" title="Course Management" description="Card는 학습 맥락과 진행률, 다음 행동을 묶습니다. Form은 작은 viewport에서 한 열로 쌓입니다." />
+    <section id="responsive-preview" class="scroll-mt-24"><ResponsivePreview src={`${baseUrl}preview/compositions/course-management/ResponsiveForm`} title="Course management form 반응형 미리보기" client:load /></section>
+    <section id="story-card-recipe" class="scroll-mt-24 pt-16"><h2 class="font-heading text-2xl font-semibold">Card Recipe</h2><p class="mt-3 mb-6 leading-7 text-muted-foreground">코스 제목, 예상 시간, 난도, 진행률과 검토·이어 하기 행동을 한 card에 조합합니다.</p><CompositionPreview kind="course-management" story="CardRecipe" client:only="react" /></section>
+    <section id="story-responsive-form" class="scroll-mt-24 pt-16"><h2 class="font-heading text-2xl font-semibold">Responsive Form</h2><p class="mt-3 mb-6 leading-7 text-muted-foreground">제목, 상태와 저장 행동은 mobile에서 한 열로 쌓이고 medium viewport부터 한 행으로 정렬됩니다.</p><CompositionPreview kind="course-management" story="ResponsiveForm" client:only="react" /></section>
+    <section id="contract" class="scroll-mt-24 pt-16"><h2 class="font-heading text-2xl font-semibold">조합 계약</h2><ul class="mt-5 grid gap-3 text-sm leading-6"><li class="rounded-3xl bg-muted p-5">진행률은 label과 숫자 값을 함께 제공합니다.</li><li class="rounded-3xl bg-muted p-5">Form field는 visible label과 description을 유지합니다.</li><li class="rounded-3xl bg-muted p-5">Mobile layout에서 입력과 저장 행동의 순서를 바꾸지 않습니다.</li></ul></section>
+  </article>
+</DocsLayout>

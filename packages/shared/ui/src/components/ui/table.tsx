@@ -4,31 +4,6 @@ import * as React from "react"
 
 import { cn } from "#ui/lib/utils"
 
-/**
- * `Table` 컴포넌트는 데이터를 행과 열로 구성하여 표시하는 표를 제공합니다.
- * @example
- * ```tsx
- * <Table>
-  <TableCaption>A list of your recent invoices.</TableCaption>
-  <TableHeader>
-    <TableRow>
-      <TableHead className="w-[100px]">Invoice</TableHead>
-      <TableHead>Status</TableHead>
-      <TableHead>Method</TableHead>
-      <TableHead className="text-right">Amount</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    <TableRow>
-      <TableCell className="font-medium">INV001</TableCell>
-      <TableCell>Paid</TableCell>
-      <TableCell>Credit Card</TableCell>
-      <TableCell className="text-right">$250.00</TableCell>
-    </TableRow>
-  </TableBody>
-</Table>
- * ```
- */
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
@@ -48,7 +23,10 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn(
+        "[&_tr]:border-b [&_tr]:border-border [&_tr]:hover:bg-transparent",
+        className
+      )}
       {...props}
     />
   )
@@ -69,7 +47,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+        "border-t border-border bg-surface/70 font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -82,7 +60,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-border transition-colors hover:bg-bg-surface has-aria-expanded:bg-bg-surface data-[state=selected]:bg-bg-surface",
+        "border-b border-border/70 transition-colors last:border-b-0 hover:bg-muted/45 has-aria-expanded:bg-muted/45 data-[state=selected]:bg-accent/60",
         className
       )}
       {...props}
@@ -95,7 +73,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-12 px-4 text-left align-middle text-label-sm font-bold whitespace-nowrap text-fg-muted [&:has([role=checkbox])]:pr-0",
+        "h-10 px-3 text-left align-middle text-xs font-medium tracking-[0.05em] whitespace-nowrap text-muted-foreground uppercase [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -108,7 +86,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "px-4 py-4 align-middle text-body-sm [&:has([role=checkbox])]:pr-0",
+        "px-3 py-3.5 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -123,7 +101,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-4 text-sm text-fg-muted", className)}
+      className={cn("mt-4 text-xs leading-5 text-muted-foreground", className)}
       {...props}
     />
   )

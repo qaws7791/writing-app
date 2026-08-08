@@ -1,683 +1,123 @@
 @import "./tokens/reference.css";
 @import "./tokens/semantic.css";
-@import "./tokens/component.css";
-@import "./tokens/radius.css";
 @import "./tokens/motion.css";
-@import "./utilities.css";
-
-@layer base {
-  /* HeroUI Default Theme */
-  :root,
-  .light,
-  .default,
-  [data-theme="light"],
-  [data-theme="default"] {
-    color-scheme: light;
-
-    /* Button and entrance motion variables */
-    --motion-duration-normal: 200ms;
-    --motion-ease-press: cubic-bezier(0.4, 0, 0.2, 1);
-    --motion-press-scale: 0.96;
-    --motion-duration-enter: 400ms;
-    --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
-
-    /* == Common Variables == */
-
-    /* Primitive Colors (Do not change between light and dark) */
-    --white: oklch(100% 0 0);
-    --black: oklch(0% 0 0);
-
-    /* Spacing scale */
-    --spacing: 0.25rem;
-
-    /* Border */
-    --border-width: 1px;
-    --field-border-width: 1px;
-    --disabled-opacity: 0.5;
-
-    /* Ring offset - Used for focus ring */
-    --ring-offset-width: 2px;
-
-    /* Cursor */
-    --cursor-interactive: pointer;
-    --cursor-disabled: not-allowed;
-
-    /* Radius */
-    --radius: 0.625rem;
-    --field-radius: calc(var(--radius) * 1.5);
-
-    /* == Light Theme Variables == */
-
-    /* Base Colors */
-    --background: oklch(0.9885 0.0057 84.57);
-    --foreground: oklch(0.27 0.01 73.41);
-
-    /* Surface: Used for non-overlay components (cards, accordions, disclosure groups) */
-    --surface: oklch(0.9535 0.0131 82.4);
-    --surface-foreground: var(--foreground);
-
-    /* Overlay: Used for floating/overlay components (tooltips, popovers, modals, menus) */
-    --overlay: var(--background);
-    --overlay-foreground: var(--foreground);
-
-    --muted: oklch(0.8306 0.0119 84.58);
-    --muted-foreground: oklch(0.4231 0.0118 72.5);
-
-    --scrollbar: var(--scrollbar-thumb);
-    --scrollbar-thumb: color-mix(in oklch, var(--foreground) 15%, transparent);
-    --scrollbar-track: transparent;
-    --scrollbar-gutter: auto;
-    --scrollbar-width: thin;
-    --scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-
-    --default: oklch(0.94 0.001 73.41);
-    --default-foreground: oklch(0.27 0.01 73.41);
-
-    --primary: oklch(0.2712 0.0108 73.47);
-    --primary-foreground: var(--white);
-
-    --secondary: oklch(0.9156 0.0077 61.45);
-    --secondary-foreground: oklch(0.4036 0.0064 67.65);
-
-    --accent: oklch(0.9065 0.0131 82.4);
-    --accent-foreground: oklch(0.2712 0.0108 73.47);
-
-    /* Form Fields */
-    --field-background: transparent;
-    --field-foreground: var(--foreground);
-    --field-placeholder: var(--muted);
-    --field-border: var(--border);
-
-    /* Status Colors */
-    --success: oklch(0.7329 0.1935 150.81);
-    --success-foreground: oklch(0.27 0.01 73.41);
-
-    --warning: oklch(0.7819 0.1585 72.33);
-    --warning-foreground: oklch(0.27 0.01 73.41);
-
-    --destructive: oklch(0.6532 0.2328 25.74);
-    --destructive-foreground: var(--white);
-
-    --info: oklch(0.6204 0.195 253.83);
-    --info-foreground: var(--white);
-
-    /* Chart Colors */
-
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-
-    /* Misc Colors */
-    --border: oklch(0.9223 0.0058 84.57);
-    --focus: var(--primary);
-    --link: var(--foreground);
-
-    /* Backdrop */
-    --backdrop: rgba(0, 0, 0, 0.5);
-
-    /* Calculated Colors */
-    --surface-hover: color-mix(
-      in oklab,
-      var(--surface) 92%,
-      var(--surface-foreground) 8%
-    );
-
-    --default-hover: color-mix(
-      in oklab,
-      var(--default) 96%,
-      var(--default-foreground) 4%
-    );
-    --primary-hover: color-mix(
-      in oklab,
-      var(--primary) 90%,
-      var(--primary-foreground) 10%
-    );
-    --success-hover: color-mix(
-      in oklab,
-      var(--success) 90%,
-      var(--success-foreground) 10%
-    );
-    --warning-hover: color-mix(
-      in oklab,
-      var(--warning) 90%,
-      var(--warning-foreground) 10%
-    );
-    --destructive-hover: color-mix(
-      in oklab,
-      var(--destructive) 90%,
-      var(--destructive-foreground) 10%
-    );
-    --info-hover: color-mix(
-      in oklab,
-      var(--info) 90%,
-      var(--info-foreground) 10%
-    );
-
-    --field-hover: transparent;
-    --field-focus: transparent;
-    --field-border-hover: color-mix(
-      in oklab,
-      var(--field-border, var(--border)) 88%,
-      var(--field-foreground, var(--foreground)) 10%
-    );
-    --field-border-focus: color-mix(
-      in oklab,
-      var(--field-border, var(--border)) 74%,
-      var(--field-foreground, var(--foreground)) 22%
-    );
-
-    --default-soft: color-mix(in oklab, var(--default) 50%, transparent);
-    --default-soft-foreground: var(--default-foreground);
-    --default-soft-hover: color-mix(in oklab, var(--default) 60%, transparent);
-
-    --primary-soft: color-mix(in oklab, var(--primary) 15%, transparent);
-    --primary-soft-foreground: color-mix(
-      in oklab,
-      var(--primary) 70%,
-      var(--foreground) 30%
-    );
-    --primary-soft-hover: color-mix(in oklab, var(--primary) 20%, transparent);
-
-    --destructive-soft: color-mix(
-      in oklab,
-      var(--destructive) 15%,
-      transparent
-    );
-    --destructive-soft-foreground: color-mix(
-      in oklab,
-      var(--destructive) 70%,
-      var(--foreground) 40%
-    );
-    --destructive-soft-hover: color-mix(
-      in oklab,
-      var(--destructive) 20%,
-      transparent
-    );
-
-    --warning-soft: color-mix(in oklab, var(--warning) 15%, transparent);
-    --warning-soft-foreground: color-mix(
-      in oklab,
-      var(--warning) 80%,
-      var(--foreground) 70%
-    );
-    --warning-soft-hover: color-mix(in oklab, var(--warning) 20%, transparent);
-
-    --success-soft: color-mix(in oklab, var(--success) 15%, transparent);
-    --success-soft-foreground: color-mix(
-      in oklab,
-      var(--success) 80%,
-      var(--foreground) 60%
-    );
-    --success-soft-hover: color-mix(in oklab, var(--success) 20%, transparent);
-
-    --info-soft: color-mix(in oklab, var(--info) 15%, transparent);
-    --info-soft-foreground: color-mix(
-      in oklab,
-      var(--info) 80%,
-      var(--foreground) 60%
-    );
-    --info-soft-hover: color-mix(in oklab, var(--info) 20%, transparent);
-
-    /* Shadows */
-    /* --surface-shadow: 0 0px 0px 0 rgba(24, 24, 27, 0.03), 0 2px 10px 0 rgba(24, 24, 27, 0.08); */
-    --surface-shadow:
-      0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
-      0 0 1px 0 rgba(0, 0, 0, 0.06);
-    /* Overlay shadow */
-    --overlay-shadow:
-      0 2px 8px 0 rgba(0, 0, 0, 0.06), 0 -6px 12px 0 rgba(0, 0, 0, 0.03),
-      0 14px 28px 0 rgba(0, 0, 0, 0.08);
-    --field-shadow:
-      0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
-      0 0 1px 0 rgba(0, 0, 0, 0.06);
-    /* Skeleton Default Global Animation */
-    --skeleton-animation: shimmer; /* shimmer, pulse, none */
-
-    /* Tooltip Default Delays */
-    --tooltip-delay: 1500ms;
-    --tooltip-close-delay: 500ms;
-  }
-
-  .dark,
-  [data-theme="dark"] {
-    color-scheme: dark;
-    /* == Dark Theme Variables == */
-
-    /* Base Colors */
-    --background: oklch(0.2146 0.0066 78.18);
-    --foreground: var(--white);
-
-    /* Surface: Used for non-overlay components (cards, accordions, disclosure groups) */
-    --surface: oklch(0.2583 0.0071 67.5);
-    --surface-foreground: var(--foreground);
-
-    /* Overlay: Used for floating/overlay components (tooltips, popovers, modals, menus) - lighter for contrast */
-    --overlay: var(--background);
-    --overlay-foreground: var(--foreground);
-
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-
-    --scrollbar: var(--scrollbar-thumb);
-    --scrollbar-thumb: color-mix(in oklch, var(--foreground) 15%, transparent);
-    --scrollbar-track: transparent;
-    --scrollbar-gutter: auto;
-    --scrollbar-width: thin;
-    --scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-
-    --default: oklch(27.4% 0.006 286.033);
-    --default-foreground: var(--white);
-
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.2712 0.0108 73.47);
-
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-
-    /* Form Fields */
-    --field-background: transparent;
-    --field-foreground: var(--foreground);
-    --field-placeholder: var(--muted);
-    --field-border: var(--border);
-
-    /* Status Colors */
-    --warning: oklch(0.8203 0.1388 76.34);
-    --warning-foreground: oklch(0.27 0.01 73.41);
-
-    --destructive: oklch(0.594 0.1967 24.63);
-    --destructive-foreground: var(--white);
-
-    /* Chart Colors */
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-
-    /* Misc Colors */
-    --border: oklch(0.2988 0.0075 3.85);
-    --focus: var(--primary);
-    --link: var(--foreground);
-
-    /* Backdrop */
-    --backdrop: rgba(0, 0, 0, 0.6);
-
-    /* Shadows */
-    --surface-shadow: 0 0 0 0 transparent inset; /* No shadow on dark mode */
-    --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.3) inset;
-    --field-shadow: 0 0 0 0 transparent inset; /* Transparent shadow to allow ring utilities to work */
-
-    /* Calculated Colors */
-    --surface-hover: color-mix(
-      in oklab,
-      var(--surface) 92%,
-      var(--surface-foreground) 8%
-    );
-
-    --default-hover: color-mix(
-      in oklab,
-      var(--default) 96%,
-      var(--default-foreground) 4%
-    );
-    --primary-hover: color-mix(
-      in oklab,
-      var(--primary) 90%,
-      var(--primary-foreground) 10%
-    );
-    --success-hover: color-mix(
-      in oklab,
-      var(--success) 90%,
-      var(--success-foreground) 10%
-    );
-    --warning-hover: color-mix(
-      in oklab,
-      var(--warning) 90%,
-      var(--warning-foreground) 10%
-    );
-    --destructive-hover: color-mix(
-      in oklab,
-      var(--destructive) 90%,
-      var(--destructive-foreground) 10%
-    );
-    --info-hover: color-mix(
-      in oklab,
-      var(--info) 90%,
-      var(--info-foreground) 10%
-    );
-
-    --field-hover: transparent;
-    --field-focus: transparent;
-    --field-border-hover: color-mix(
-      in oklab,
-      var(--field-border, var(--border)) 88%,
-      var(--field-foreground, var(--foreground)) 10%
-    );
-    --field-border-focus: color-mix(
-      in oklab,
-      var(--field-border, var(--border)) 74%,
-      var(--field-foreground, var(--foreground)) 22%
-    );
-
-    --default-soft: color-mix(in oklab, var(--default) 50%, transparent);
-    --default-soft-foreground: var(--default-foreground);
-    --default-soft-hover: color-mix(in oklab, var(--default) 60%, transparent);
-
-    --primary-soft: color-mix(in oklab, var(--primary) 12%, transparent);
-    --primary-soft-foreground: color-mix(
-      in oklab,
-      var(--primary) 80%,
-      var(--foreground) 30%
-    );
-    --primary-soft-hover: color-mix(in oklab, var(--primary) 16%, transparent);
-
-    --destructive-soft: color-mix(
-      in oklab,
-      var(--destructive) 15%,
-      transparent
-    );
-    --destructive-soft-foreground: color-mix(
-      in oklab,
-      var(--destructive) 80%,
-      var(--foreground) 30%
-    );
-    --destructive-soft-hover: color-mix(
-      in oklab,
-      var(--destructive) 20%,
-      transparent
-    );
-
-    --warning-soft: color-mix(in oklab, var(--warning) 12%, transparent);
-    --warning-soft-foreground: color-mix(
-      in oklab,
-      var(--warning) 80%,
-      var(--foreground) 30%
-    );
-    --warning-soft-hover: color-mix(in oklab, var(--warning) 16%, transparent);
-
-    --success-soft: color-mix(in oklab, var(--success) 12%, transparent);
-    --success-soft-foreground: color-mix(
-      in oklab,
-      var(--success) 80%,
-      var(--foreground) 30%
-    );
-    --success-soft-hover: color-mix(in oklab, var(--success) 16%, transparent);
-
-    --info-soft: color-mix(in oklab, var(--info) 12%, transparent);
-    --info-soft-foreground: color-mix(
-      in oklab,
-      var(--info) 80%,
-      var(--foreground) 30%
-    );
-    --info-soft-hover: color-mix(in oklab, var(--info) 16%, transparent);
-  }
-}
 
 @theme inline {
-  /* Font Family */
+  --font-heading: var(--font-sans);
   --font-sans:
     "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕",
-    system-ui, sans-serif;
-  --font-heading: var(--font-sans);
-  /* Text Sizes */
-  --text-display-lg: 5rem;
-  --text-display-lg--line-height: 1.05;
-  --text-display-md: 2.75rem;
-  --text-display-md--line-height: 1.1;
-  --text-heading-xl: 2.5rem;
-  --text-heading-xl--line-height: 1.2;
-  --text-heading-lg: 2.25rem;
-  --text-heading-lg--line-height: 1.2;
-  --text-heading-md: 1.625rem;
-  --text-heading-md--line-height: 1.3;
-  --text-heading-sm: 1.5rem;
-  --text-heading-sm--line-height: 1.3;
-  --text-title-lg: 1.25rem;
-  --text-title-lg--line-height: 1.35;
-  --text-title-md: 1.125rem;
-  --text-title-md--line-height: 1.4;
-  --text-body-lg: 1.125rem;
-  --text-body-lg--line-height: 1.65;
-  --text-body-md: 1rem;
-  --text-body-md--line-height: 1.6;
-  --text-body-sm: 0.9375rem;
-  --text-body-sm--line-height: 1.55;
-  --text-label-md: 0.875rem;
-  --text-label-md--line-height: 1.4;
-  --text-label-sm: 0.8125rem;
-  --text-label-sm--line-height: 1.4;
-  --text-caption: 0.75rem;
-  --text-caption--line-height: 1.4;
-
-  /* Colors */
-  --color-background: var(--background);
+    system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-purple: var(--purple);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
   --color-foreground: var(--foreground);
-
+  --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
-  --color-surface-hover: var(--surface-hover);
+  --color-selection: var(--selection);
+  --color-selection-foreground: var(--selection-foreground);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-5xl: calc(var(--radius) * 3.2);
+  --shadow-2xs: var(--elevation-2xs);
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
+  --shadow-2xl: var(--elevation-2xl);
+}
 
-  --color-overlay: var(--overlay);
-  --color-overlay-foreground: var(--overlay-foreground);
-
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-
-  --color-border: var(--border);
-  --color-focus: var(--focus);
-  --color-link: var(--link);
-
-  --color-default: var(--default);
-  --color-default-foreground: var(--default-foreground);
-
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-success-bg: var(--success-bg);
-  --color-success-fg: var(--success-fg);
-
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-
-  --color-danger: var(--danger-bg);
-  --color-danger-bg: var(--danger-bg);
-  --color-danger-fg: var(--danger-fg);
-  --color-danger-foreground: var(--danger-fg);
-
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
-  --color-info-bg: var(--info-bg);
-  --color-info-fg: var(--info-fg);
-
-  --color-backdrop: var(--backdrop);
-
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent-soft: var(--accent-soft);
-
-  --color-action-selected-bg: var(--action-selected-bg);
-  --color-action-selected-fg: var(--action-selected-fg);
-  --color-action-primary-bg: var(--action-primary-bg);
-  --color-action-primary-fg: var(--action-primary-fg);
-
-  --color-fg-default: var(--fg-default);
-  --color-fg-muted: var(--fg-muted);
-  --color-fg-subtle: var(--fg-subtle);
-  --color-bg-elevated: var(--bg-elevated);
-  --color-bg-canvas: var(--bg-canvas);
-  --color-bg-surface: var(--bg-surface);
-  --color-cream: var(--cream);
-  --color-charcoal: var(--charcoal);
-  --color-ink: var(--ink);
-  --color-mint: var(--mint);
-  --color-mint-light: var(--mint-light);
-  --color-coral: var(--coral);
-  --color-coral-light: var(--coral-light);
-  --color-mint-dark: var(--mint-dark);
-  --color-coral-dark: var(--coral-dark);
-
-  --radius-control: var(--radius-control);
-  --radius-card: var(--radius-card);
-  --radius-panel: var(--radius-panel);
-  --radius-dialog: var(--radius-dialog);
-  --radius-pill: var(--radius-pill);
-
-  --shadow-surface: var(--surface-shadow);
-  --shadow-overlay: var(--overlay-shadow);
-  --shadow-field: var(--field-shadow);
-
-  /* Form Field Tokens */
-  --color-field: var(--field-background, var(--default));
-  --color-field-hover: var(--field-hover);
-  --color-field-foreground: var(--field-foreground, var(--foreground));
-  --color-field-placeholder: var(--field-placeholder, var(--muted));
-  --color-field-border: var(--field-border, var(--border));
-  --radius-field: var(--field-radius, calc(var(--radius) * 1.5));
-  --border-width-field: var(--field-border-width, var(--border-width));
-
-  /* Color Tokens */
-
-  --color-default-hover: var(--default-hover);
-  --color-primary-hover: var(--primary-hover);
-  --color-success-hover: var(--success-hover);
-  --color-warning-hover: var(--warning-hover);
-  --color-destructive-hover: var(--destructive-hover);
-  --color-info-hover: var(--info-hover);
-  /* Form Field Colors */
-  --color-field-focus: var(--field-focus);
-  --color-field-border-hover: var(--field-border-hover);
-  --color-field-border-focus: var(--field-border-focus);
-
-  /* Soft Colors */
-  --color-default-soft: var(--default-soft);
-  --color-default-soft-foreground: var(--default-soft-foreground);
-  --color-default-soft-hover: var(--default-soft-hover);
-
-  --color-primary-soft: var(--primary-soft);
-  --color-primary-soft-foreground: var(--primary-soft-foreground);
-  --color-primary-soft-hover: var(--primary-soft-hover);
-
-  --color-destructive-soft: var(--destructive-soft);
-  --color-destructive-soft-foreground: var(--destructive-soft-foreground);
-  --color-destructive-soft-hover: var(--destructive-soft-hover);
-
-  --color-warning-soft: var(--warning-soft);
-  --color-warning-soft-foreground: var(--warning-soft-foreground);
-  --color-warning-soft-hover: var(--warning-soft-hover);
-
-  --color-success-soft: var(--success-soft);
-  --color-success-soft-foreground: var(--success-soft-foreground);
-  --color-success-soft-hover: var(--success-soft-hover);
-
-  --color-info-soft: var(--info-soft);
-  --color-info-soft-foreground: var(--info-soft-foreground);
-  --color-info-soft-hover: var(--info-soft-hover);
-
-  /* Radius and default sizes - defaults can change by just changing the --radius */
-  --radius-xs: calc(var(--radius) * 0.25); /* 0.125rem (2px) */
-  --radius-sm: calc(var(--radius) * 0.5); /* 0.25rem (4px) */
-  --radius-md: calc(var(--radius) * 0.75); /* 0.375rem (6px) */
-  --radius-lg: calc(var(--radius) * 1); /* 0.5rem (8px) */
-  --radius-xl: calc(var(--radius) * 1.5); /* 0.75rem (12px) */
-  --radius-2xl: calc(var(--radius) * 2); /* 1rem (16px) */
-  --radius-3xl: 1.5rem;
-  --radius-4xl: calc(var(--radius) * 4); /* 2rem (32px) */
-
-  /* Transition Timing Functions  */
-  --ease-smooth: ease; /* same as transition: ease; */
-  /* These custom curves are made by https://twitter.com/bdc */
-
-  /* From smoother to faster */
-  --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53);
-  --ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  --ease-in-quart: cubic-bezier(0.895, 0.03, 0.685, 0.22);
-  --ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
-  --ease-in-expo: cubic-bezier(0.95, 0.05, 0.795, 0.035);
-  --ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.335);
-  /* From slower to faster */
-  --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
-  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
-  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-  --ease-out-circ: cubic-bezier(0.075, 0.82, 0.165, 1);
-  /* Custom smooth-out curve: fast start, smooth stop - Apple style */
-  --ease-out-fluid: cubic-bezier(0.32, 0.72, 0, 1);
-  /* From slower to faster */
-  --ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-  --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
-  --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
-  --ease-in-out-expo: cubic-bezier(1, 0, 0, 1);
-  --ease-in-out-circ: cubic-bezier(0.785, 0.135, 0.15, 0.86);
-
-  /* Linear */
-  --ease-linear: linear;
-
-  /* Compatible shadcn colors */
-  --color-card: var(--surface); /* Card 컴포넌트 */
-  --color-card-foreground: var(--surface-foreground);
-  --color-popover: var(
-    --surface
-  ); /*  Popover, Dropdown, Tooltip 등 플로팅 컴포넌트 */
-  --color-popover-foreground: var(--overlay-foreground);
-  --color-input: var(--border); /* input 컴포넌트의 테두리 색상 */
-  --color-ring: var(--focus); /* 포커스 링 색상 */
-
-  /* Animations */
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(
-        --radix-accordion-content-height,
-        var(--accordion-panel-height, auto)
-      );
-    }
-  }
-
-  @keyframes accordion-up {
-    from {
-      height: var(
-        --radix-accordion-content-height,
-        var(--accordion-panel-height, auto)
-      );
-    }
-    to {
-      height: 0;
-    }
-  }
+@theme {
+  --ease-quiet: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-quiet-in: cubic-bezier(0.62, 0.04, 0.86, 0.4);
+  --ease-press: cubic-bezier(0.24, 1, 0.4, 1);
+  --default-transition-duration: 180ms;
+  --default-transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-breathe: breathe 2.4s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+  --animate-skeleton: skeleton-breathe 2.4s cubic-bezier(0.32, 0.72, 0, 1)
+    infinite;
+  --animate-drift-in: drift-in 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 @layer base {
   * {
-    @apply border-border outline-focus;
+    @apply border-border outline-ring/50;
   }
 
-  button:not(:disabled),
-  [role="button"]:not(:disabled) {
-    cursor: pointer;
+  html {
+    @apply font-sans;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply min-h-svh bg-background text-foreground antialiased;
+  }
+
+  ::selection {
+    @apply bg-selection text-selection-foreground;
+  }
+
+  th,
+  td,
+  time,
+  kbd,
+  [data-slot$="-value"] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@utility squircle {
+  @supports (corner-shape: squircle) {
+    corner-shape: squircle;
+  }
+}
+
+@utility squircle-soft {
+  @supports (corner-shape: superellipse(1.5)) {
+    corner-shape: superellipse(1.5);
   }
 }
 
 @utility no-scrollbar {
-  -ms-overflow-style: none;
   scrollbar-width: none;
+  -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
     display: none;

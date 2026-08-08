@@ -1,9 +1,10 @@
 import ReactMarkdown from "react-markdown"
 
+import { ProseBody } from "#ui/components/ui/prose"
 import { cn } from "#ui/lib/utils"
 
 const markdownClassName =
-  "max-w-none space-y-4 [&_h1]:text-heading-md [&_h2]:text-heading-sm [&_h3]:text-title-lg [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h1]:text-fg-default [&_h2]:text-fg-default [&_h3]:text-fg-default [&_p]:font-medium [&_p]:text-fg-muted [&_strong]:text-fg-default [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li]:font-medium [&_li]:text-fg-muted [&_code]:rounded [&_code]:bg-bg-surface [&_code]:px-1 [&_code]:text-fg-default [&_blockquote]:border-l-4 [&_blockquote]:border-action-primary-bg [&_blockquote]:pl-4 [&_blockquote]:text-fg-muted [&_a]:underline [&_a]:underline-offset-3 [&_hr]:border-border"
+  "max-w-none [&_h1]:font-heading [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:font-heading [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:font-heading [&_h3]:text-lg [&_h3]:font-semibold [&_code]:rounded-md [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-3 [&_hr]:border-border"
 
 export function MarkdownContent({
   children,
@@ -13,8 +14,8 @@ export function MarkdownContent({
   readonly className?: string
 }) {
   return (
-    <div className={cn(markdownClassName, className)}>
+    <ProseBody className={cn(markdownClassName, className)}>
       <ReactMarkdown>{children}</ReactMarkdown>
-    </div>
+    </ProseBody>
   )
 }

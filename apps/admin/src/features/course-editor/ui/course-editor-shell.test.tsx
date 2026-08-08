@@ -168,7 +168,7 @@ describe("CourseEditorShell", () => {
 
     renderCourseEditor()
     await user.type(screen.getByLabelText("제목"), " 수정")
-    await user.click(screen.getByRole("button", { name: "커리큘럼" }))
+    await user.click(screen.getByRole("tab", { name: "커리큘럼" }))
     await user.click(
       within(readTabMoveDialog()).getByRole("button", { name: "취소" })
     )
@@ -181,7 +181,7 @@ describe("CourseEditorShell", () => {
 
     renderCourseEditor()
     await user.type(screen.getByLabelText("제목"), " 수정")
-    await user.click(screen.getByRole("button", { name: "커리큘럼" }))
+    await user.click(screen.getByRole("tab", { name: "커리큘럼" }))
     await user.click(
       within(readTabMoveDialog()).getByRole("button", { name: "이동하기" })
     )
@@ -293,7 +293,7 @@ async function openCurriculumTab(
   user: ReturnType<typeof userEvent.setup>
 ): Promise<void> {
   renderCourseEditor()
-  await user.click(screen.getByRole("button", { name: "커리큘럼" }))
+  await user.click(screen.getByRole("tab", { name: "커리큘럼" }))
 }
 
 function readTabMoveDialog(): HTMLElement {

@@ -1,0 +1,29 @@
+---
+import CodeBlock from "@/src/components/code-block"
+import ComponentPreview from "@/src/components/component-preview"
+
+type Props = {
+  slug: string
+  code: string
+  example?: string
+  isLearning?: boolean
+  featured?: boolean
+}
+
+const { slug, code, example, isLearning = false, featured = false } = Astro.props
+---
+
+<div class="overflow-hidden rounded-4xl border bg-background">
+  <div class:list={[
+    "grid place-items-center border-b bg-background",
+    featured && isLearning && "min-h-165 place-items-start justify-items-center p-4 sm:p-6",
+    featured && !isLearning && "min-h-105 p-8 sm:p-12",
+    !featured && isLearning && "min-h-72 place-items-center justify-items-center p-6 sm:p-8",
+    !featured && !isLearning && "min-h-72 p-7 sm:p-10",
+  ]}>
+    <div class="flex w-full items-center justify-center">
+      <ComponentPreview slug={slug} example={example} client:only="react" />
+    </div>
+  </div>
+  <CodeBlock code={code} label="TSX" joined collapsible collapsedLines={4} client:load />
+</div>

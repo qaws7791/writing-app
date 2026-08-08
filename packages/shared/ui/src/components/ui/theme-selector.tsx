@@ -1,7 +1,11 @@
 "use client"
 
-import { MonitorIcon, MoonIcon, SunIcon } from "#ui/components/icons"
-import { buttonVariants } from "#ui/components/ui/button"
+import {
+  MonitorIcon,
+  MoonIcon,
+  SunIcon,
+} from "#ui/components/icons/profile-icons"
+import { Button } from "#ui/components/ui/button"
 import { cn } from "#ui/lib/utils"
 
 export type ThemeValue = "dark" | "light" | "system"
@@ -27,7 +31,7 @@ export function ThemeSelector({
     <div
       aria-label="화면 테마"
       className={cn(
-        "grid grid-cols-3 gap-2 rounded-4xl bg-bg-surface p-2",
+        "grid grid-cols-3 gap-1.5 rounded-3xl bg-muted/70 p-1.5",
         className
       )}
       role="group"
@@ -36,25 +40,23 @@ export function ThemeSelector({
         const isActive = activeTheme === value
 
         return (
-          <button
+          <Button
             aria-pressed={isActive}
-            className={buttonVariants({
-              className: cn(
-                "h-auto flex-col gap-2 rounded-[1.75rem] py-4 text-body-sm",
-                isActive
-                  ? "bg-action-selected-bg text-action-selected-fg hover:bg-action-selected-bg"
-                  : "text-fg-muted hover:bg-surface-hover hover:text-fg-default"
-              ),
-              variant: "ghost",
-            })}
+            className={cn(
+              "h-auto flex-col gap-2 rounded-2xl py-4",
+              isActive
+                ? "bg-background text-foreground shadow-xs hover:bg-background"
+                : "text-foreground/75 hover:bg-background/55 hover:text-foreground"
+            )}
             disabled={disabled}
             key={value}
             onClick={() => onThemeChange(value)}
             type="button"
+            variant="ghost"
           >
-            <Icon aria-hidden="true" size={22} strokeWidth={2.5} />
+            <Icon aria-hidden="true" className="size-5" />
             {label}
-          </button>
+          </Button>
         )
       })}
     </div>

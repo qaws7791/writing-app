@@ -27,6 +27,7 @@
 | 관리자 운영 정책                          | `docs/product/admin-operations.md`                                                                                | owner 관리자의 권한·책임 정책  |
 | 개인정보와 AI 데이터 사용 목적            | `docs/engineering/privacy.md`                                                                                     | 사용·최소화·보존 원칙          |
 | 화면 목적과 정보 구조                     | `docs/design/screens/`, `docs/design/ia-spec.md`                                                                  | 화면 목적, 흐름, 접근성 기준   |
+| UI 문서 경로·예제·브라우저 계약           | `apps/ui`의 route, catalog, inventory와 Playwright 설정                                                           | 작성·검증 정책                 |
 | workspace 집합·패키지 이름·script         | 루트와 각 workspace의 `package.json`                                                                              | 없음                           |
 | package 공개 표면·private alias           | 각 package manifest의 `exports`·`imports`                                                                         | 공개 경계 원칙                 |
 | 선언 dependency·실제 import edge          | 각 workspace manifest의 dependency 필드와 production·test source import                                           | 의존 방향 원칙                 |

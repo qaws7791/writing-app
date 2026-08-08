@@ -3,7 +3,13 @@ import type {
   AdminChartPanelProps,
 } from "@/entities/admin-analytics/model/admin-chart-types"
 import { AdminChartVisual } from "@/entities/admin-analytics/ui/admin-chart-visual"
-import { Surface } from "@workspace/ui/components/ui/surface"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/ui/card"
 
 const chartCopy = {
   "d7-return": {
@@ -27,31 +33,29 @@ export function AdminChartPanel(props: AdminChartPanelProps) {
   const copy = chartCopy[props.kind]
 
   return (
-    <Surface
+    <Card
       aria-labelledby={`${props.kind}-chart-title`}
       className="min-w-0"
-      role="group"
-      variant="panel"
+      role="region"
     >
-      <h2
-        className="m-0 text-title-md font-black"
-        id={`${props.kind}-chart-title`}
-      >
-        {copy.title}
-      </h2>
-      <p className="mt-1 text-body-sm font-semibold text-muted-foreground">
-        {copy.description}
-      </p>
-      <ChartSummary {...props} />
-      <AdminChartVisual {...props} />
-    </Surface>
+      <CardHeader>
+        <CardTitle>
+          <h2 id={`${props.kind}-chart-title`}>{copy.title}</h2>
+        </CardTitle>
+        <CardDescription>{copy.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartSummary {...props} />
+        <AdminChartVisual {...props} />
+      </CardContent>
+    </Card>
   )
 }
 
 function ChartSummary({ data, kind }: AdminChartPanelProps) {
   if (kind === "signup-activation") {
     return (
-      <p className="mt-3 text-label-md font-black text-foreground">
+      <p className="text-sm font-semibold text-foreground">
         기간 합계 가입 {formatTotal(data, "signups")}명 · 첫 시작{" "}
         {formatTotal(data, "starts")}명
       </p>
@@ -59,7 +63,7 @@ function ChartSummary({ data, kind }: AdminChartPanelProps) {
   }
   if (kind === "start-completion") {
     return (
-      <p className="mt-3 text-label-md font-black text-foreground">
+      <p className="text-sm font-semibold text-foreground">
         기간 합계 첫 시작 {formatTotal(data, "starts")}명 · 완료{" "}
         {formatTotal(data, "completions")}건
       </p>
@@ -74,7 +78,7 @@ function ChartSummary({ data, kind }: AdminChartPanelProps) {
     (point) => point.returnStatus === "immature"
   ).length
   return (
-    <p className="mt-3 text-label-md font-black text-foreground">
+    <p className="text-sm font-semibold text-foreground">
       성숙 cohort 재방문 합계 {returnTotal.toLocaleString("ko-KR")}명
       {immatureDays === 0
         ? null

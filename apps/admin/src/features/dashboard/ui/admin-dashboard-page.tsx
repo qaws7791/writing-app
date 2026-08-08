@@ -1,5 +1,6 @@
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminDashboard } from "@/features/dashboard/model/admin-dashboard"
+import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import {
   BarChartIcon,
   CheckCircleIcon,
@@ -8,8 +9,7 @@ import {
   UserPlusIcon,
 } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { PageHeader } from "@workspace/ui/components/ui/page-header"
-import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
 
 export function AdminDashboardPage({
   dashboardResult,
@@ -20,7 +20,7 @@ export function AdminDashboardPage({
     return (
       <>
         <DashboardHeading />
-        <Alert role="alert" tone="danger">
+        <Alert role="alert" variant="destructive">
           <AlertDescription>{dashboardResult.error.message}</AlertDescription>
         </Alert>
       </>
@@ -32,9 +32,11 @@ export function AdminDashboardPage({
   return (
     <>
       <DashboardHeading asOfDate={asOfDate} />
-      <StatGrid aria-label="주요 지표" className="lg:grid-cols-3">
-        <StatCard
-          aria-label="활성화율"
+      <section
+        aria-label="주요 지표"
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <DashboardMetric
           detail={`${formatCount(metrics.activationRate.numerator)} / ${formatCount(metrics.activationRate.denominator)}명 첫 시작 · ${asOfDate} 기준`}
           icon={<UserPlusIcon aria-hidden="true" size={20} />}
           label="활성화율"
@@ -43,8 +45,7 @@ export function AdminDashboardPage({
             metrics.activationRate.status
           )}
         />
-        <StatCard
-          aria-label="7일 내 재방문"
+        <DashboardMetric
           detail={`${formatCount(metrics.d7ReturnRate.numerator)} / ${formatCount(metrics.d7ReturnRate.denominator)}명 · ${metrics.d7ReturnRate.matureCohortThrough}까지`}
           icon={<BarChartIcon aria-hidden="true" size={20} />}
           label="7일 내 재방문"
@@ -53,15 +54,13 @@ export function AdminDashboardPage({
             metrics.d7ReturnRate.status
           )}
         />
-        <StatCard
-          aria-label="최근 7일 활성"
+        <DashboardMetric
           detail={`${activeWindow.from}–${activeWindow.to}`}
           icon={<FlameIcon aria-hidden="true" size={20} />}
           label="최근 7일 활성"
           value={formatCount(metrics.activeUsersLast7Days)}
         />
-        <StatCard
-          aria-label="자기 점검 시작률"
+        <DashboardMetric
           detail={`${formatCount(metrics.writingSelfCheckStartRate.numerator)} / ${formatCount(metrics.writingSelfCheckStartRate.denominator)}개 글`}
           icon={<FileTextIcon aria-hidden="true" size={20} />}
           label="자기 점검 시작률"
@@ -70,8 +69,7 @@ export function AdminDashboardPage({
             metrics.writingSelfCheckStartRate.status
           )}
         />
-        <StatCard
-          aria-label="점검 뒤 수정률"
+        <DashboardMetric
           detail={`${formatCount(metrics.writingRevisionAfterSelfCheckRate.numerator)} / ${formatCount(metrics.writingRevisionAfterSelfCheckRate.denominator)}개 점검 시작 글`}
           icon={<CheckCircleIcon aria-hidden="true" size={20} />}
           label="점검 뒤 수정률"
@@ -80,14 +78,14 @@ export function AdminDashboardPage({
             metrics.writingRevisionAfterSelfCheckRate.status
           )}
         />
-      </StatGrid>
+      </section>
     </>
   )
 }
 
 function DashboardHeading({ asOfDate }: { readonly asOfDate?: string }) {
   return (
-    <PageHeader
+    <AdminPageHeader
       description={
         asOfDate === undefined
           ? "첫 시작과 7일 재방문을 포함한 핵심 운영 지표입니다."
@@ -95,6 +93,35 @@ function DashboardHeading({ asOfDate }: { readonly asOfDate?: string }) {
       }
       title="대시보드"
     />
+  )
+}
+
+function DashboardMetric({
+  detail,
+  icon,
+  label,
+  value,
+}: {
+  readonly detail: string
+  readonly icon: ReactNode
+  readonly label: string
+  readonly value: string
+}) {
+  return (
+    <Card aria-label={label} role="article" size="sm" variant="muted">
+      <CardContent className="flex flex-col gap-1">
+        <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+          <span aria-hidden="true" className="shrink-0">
+            {icon}
+          </span>
+          <span className="text-xs font-medium">{label}</span>
+        </div>
+        <strong className="font-heading text-2xl font-semibold tracking-[-0.03em] tabular-nums">
+          {value}
+        </strong>
+        <p className="text-xs leading-5 text-muted-foreground">{detail}</p>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -109,3 +136,4 @@ function formatRate(
   if (percentage !== null) return `${percentage.toLocaleString("ko-KR")}%`
   return status === "immature" ? "집계 중" : "표본 없음"
 }
+import type { ReactNode } from "react"

@@ -16,6 +16,7 @@ import {
   ChevronsRightIcon,
 } from "@workspace/ui/components/icons"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
+import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import type {
   AdminArchiveCourseResult,
   AdminCreatedCourse,
@@ -26,6 +27,7 @@ import type {
 import { courseCategoryValues } from "@workspace/contracts/content/category"
 import { contentStatuses } from "@workspace/contracts/content/status"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -34,7 +36,7 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "@workspace/ui/components/ui/alert-dialog"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   Table,
   TableBody,
@@ -44,12 +46,8 @@ import {
   TableRow,
   TableCaption,
 } from "@workspace/ui/components/ui/table"
-import {
-  FilterToolbarField,
-  FilterToolbarLabel,
-} from "@workspace/ui/components/ui/filter-toolbar"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
-import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import {
   Select,
   SelectContent,
@@ -116,11 +114,11 @@ export function AdminCoursesPage({
   if (coursesResult.status === "error") {
     return (
       <>
-        <PageHeader
+        <AdminPageHeader
           description="코스를 확인하고 새 강의를 생성하거나 보관합니다."
           title="콘텐츠 관리"
         />
-        <Alert role="alert" tone="danger">
+        <Alert role="alert" variant="destructive">
           <AlertDescription>{coursesResult.error.message}</AlertDescription>
         </Alert>
       </>
@@ -153,7 +151,7 @@ export function AdminCoursesPage({
 
   return (
     <>
-      <PageHeader
+      <AdminPageHeader
         description={`강의 ${courses.pagination.totalItems}개 · 편집 내용은 학습자 앱에 즉시 반영됩니다.`}
         title="콘텐츠 관리"
         actions={
@@ -171,7 +169,6 @@ export function AdminCoursesPage({
                 })
               }}
               type="button"
-              className="rounded-full bg-fg-default text-bg-canvas hover:bg-fg-default/90 px-5 py-3 font-bold flex items-center gap-2 text-sm"
             >
               <PlusIcon aria-hidden="true" size={16} />새 강의
             </Button>
@@ -187,10 +184,8 @@ export function AdminCoursesPage({
       >
         <input name="page" type="hidden" value="1" />
         <div className="flex flex-wrap items-center gap-3 w-full">
-          <FilterToolbarField className="gap-0">
-            <FilterToolbarLabel className="sr-only">
-              강의명 검색
-            </FilterToolbarLabel>
+          <Field className="gap-0">
+            <FieldLabel className="sr-only">강의명 검색</FieldLabel>
             <Input
               aria-label="강의명 검색"
               className="w-56"
@@ -199,16 +194,13 @@ export function AdminCoursesPage({
               placeholder="강의명"
               type="search"
             />
-          </FilterToolbarField>
+          </Field>
           <Button type="submit" variant="outline">
             검색
           </Button>
-          <FilterToolbarField className="gap-0">
-            <FilterToolbarLabel className="sr-only">
-              카테고리
-            </FilterToolbarLabel>
+          <Field className="gap-0">
+            <FieldLabel className="sr-only">카테고리</FieldLabel>
             <Select
-              aria-label="카테고리"
               value={filters.category}
               items={courseCategoryFilterItems}
               name="category"
@@ -217,8 +209,8 @@ export function AdminCoursesPage({
               }}
             >
               <SelectTrigger
+                aria-label="카테고리"
                 className="w-[180px] font-semibold"
-                variant="outlined"
               >
                 <SelectValue placeholder="전체 카테고리" />
               </SelectTrigger>
@@ -230,11 +222,10 @@ export function AdminCoursesPage({
                 ))}
               </SelectContent>
             </Select>
-          </FilterToolbarField>
-          <FilterToolbarField className="gap-0">
-            <FilterToolbarLabel className="sr-only">상태</FilterToolbarLabel>
+          </Field>
+          <Field className="gap-0">
+            <FieldLabel className="sr-only">상태</FieldLabel>
             <Select
-              aria-label="상태"
               value={filters.status}
               items={courseStatusFilterItems}
               name="status"
@@ -243,8 +234,8 @@ export function AdminCoursesPage({
               }}
             >
               <SelectTrigger
+                aria-label="상태"
                 className="w-[140px] font-semibold"
-                variant="outlined"
               >
                 <SelectValue placeholder="전체 상태" />
               </SelectTrigger>
@@ -256,14 +247,18 @@ export function AdminCoursesPage({
                 ))}
               </SelectContent>
             </Select>
-          </FilterToolbarField>
+          </Field>
           <span className="text-muted-foreground font-bold ml-auto text-sm">
             {courses.pagination.totalItems}개 결과
           </span>
         </div>
 
         {message === null ? null : (
-          <Alert className="mb-2" role="status" tone={message.tone}>
+          <Alert
+            className="mb-2"
+            role="status"
+            variant={message.tone === "danger" ? "destructive" : "default"}
+          >
             <AlertDescription>{message.message}</AlertDescription>
           </Alert>
         )}
@@ -317,7 +312,7 @@ export function AdminCoursesPage({
                 courses.items.map((course) => (
                   <TableRow
                     key={course.id}
-                    className="group transition-colors hover:bg-fg-default/5 border-b border-border/50 last:border-b-0"
+                    className="group border-b border-border/50 transition-colors last:border-b-0 hover:bg-muted/45"
                   >
                     <TableCell className="px-5 py-4">
                       <div className="flex items-center gap-3">
@@ -347,9 +342,7 @@ export function AdminCoursesPage({
                     </TableCell>
                     <TableCell className="px-4 py-4 text-center">
                       {course.category && (
-                        <span className="inline-block border border-border/50 rounded-full px-3 py-0.5 font-bold text-[0.75rem] text-foreground bg-transparent">
-                          {course.category}
-                        </span>
+                        <Badge variant="outline">{course.category}</Badge>
                       )}
                     </TableCell>
                     <TableCell className="px-4 py-4 text-center">
@@ -428,12 +421,9 @@ export function AdminCoursesPage({
             {/* 페이지 크기 선택 */}
             <div className="flex items-center gap-2 text-muted-foreground font-semibold text-sm">
               <span>페이지당</span>
-              <FilterToolbarField className="gap-0">
-                <FilterToolbarLabel className="sr-only">
-                  페이지 크기
-                </FilterToolbarLabel>
+              <Field className="gap-0">
+                <FieldLabel className="sr-only">페이지 크기</FieldLabel>
                 <Select
-                  aria-label="페이지 크기"
                   value={String(filters.pageSize)}
                   items={coursePageSizeItems}
                   name="pageSize"
@@ -442,8 +432,9 @@ export function AdminCoursesPage({
                   }}
                 >
                   <SelectTrigger
-                    className="h-8 font-semibold"
-                    variant="outlined"
+                    aria-label="페이지 크기"
+                    className="font-semibold"
+                    size="sm"
                   >
                     <SelectValue placeholder="20개" />
                   </SelectTrigger>
@@ -455,7 +446,7 @@ export function AdminCoursesPage({
                     ))}
                   </SelectContent>
                 </Select>
-              </FilterToolbarField>
+              </Field>
             </div>
 
             {/* 4개 이동 버튼 페이지네이션 */}
@@ -464,35 +455,45 @@ export function AdminCoursesPage({
                 <Link
                   href={createPageLink(1)}
                   aria-label="첫 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className={buttonVariants({
+                    size: "icon-xs",
+                    variant: "ghost",
+                  })}
                 >
                   <ChevronsLeftIcon size={16} />
                 </Link>
               ) : (
-                <button
-                  type="button"
+                <Button
+                  aria-label="첫 페이지"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  size="icon-xs"
+                  type="button"
+                  variant="ghost"
                 >
                   <ChevronsLeftIcon size={16} />
-                </button>
+                </Button>
               )}
               {courses.pagination.page > 1 ? (
                 <Link
                   href={createPageLink(courses.pagination.page - 1)}
                   aria-label="이전 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className={buttonVariants({
+                    size: "icon-xs",
+                    variant: "ghost",
+                  })}
                 >
                   <ChevronLeftIcon size={16} />
                 </Link>
               ) : (
-                <button
-                  type="button"
+                <Button
+                  aria-label="이전 페이지"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  size="icon-xs"
+                  type="button"
+                  variant="ghost"
                 >
                   <ChevronLeftIcon size={16} />
-                </button>
+                </Button>
               )}
               <span className="px-3 font-bold text-foreground text-sm">
                 {courses.pagination.page} / {courses.pagination.totalPages}
@@ -501,35 +502,45 @@ export function AdminCoursesPage({
                 <Link
                   href={createPageLink(courses.pagination.page + 1)}
                   aria-label="다음 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className={buttonVariants({
+                    size: "icon-xs",
+                    variant: "ghost",
+                  })}
                 >
                   <ChevronRightIcon size={16} />
                 </Link>
               ) : (
-                <button
-                  type="button"
+                <Button
+                  aria-label="다음 페이지"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  size="icon-xs"
+                  type="button"
+                  variant="ghost"
                 >
                   <ChevronRightIcon size={16} />
-                </button>
+                </Button>
               )}
               {courses.pagination.page < courses.pagination.totalPages ? (
                 <Link
                   href={createPageLink(courses.pagination.totalPages)}
                   aria-label="마지막 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className={buttonVariants({
+                    size: "icon-xs",
+                    variant: "ghost",
+                  })}
                 >
                   <ChevronsRightIcon size={16} />
                 </Link>
               ) : (
-                <button
-                  type="button"
+                <Button
+                  aria-label="마지막 페이지"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  size="icon-xs"
+                  type="button"
+                  variant="ghost"
                 >
                   <ChevronsRightIcon size={16} />
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -555,7 +566,7 @@ export function AdminCoursesPage({
               <Button
                 variant="destructive"
                 disabled={isPending}
-                size="extra"
+                size="lg"
                 onClick={() => {
                   const courseId = archiveTarget.id
 

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "radio-group",
+  "registryDependencies": [
+    "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+  ],
+  "files": [
+    {
+      "path": "registry/luma/ui/radio-group.tsx",
+      "content": "\"use client\";\n\nimport { Radio as RadioPrimitive } from \"@base-ui/react/radio\";\nimport { RadioGroup as RadioGroupPrimitive } from \"@base-ui/react/radio-group\";\n\nimport { cn } from \"@/registry/luma/lib/utils\";\n\nfunction RadioGroup({ className, ...props }: RadioGroupPrimitive.Props) {\n  return (\n    <RadioGroupPrimitive\n      data-slot=\"radio-group\"\n      className={cn(\"grid w-full gap-3\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {\n  return (\n    <RadioPrimitive.Root\n      data-slot=\"radio-group-item\"\n      className={cn(\n        \"group/radio-group-item peer relative flex aspect-square size-6 shrink-0 items-center justify-center rounded-full border border-border bg-card shadow-xs transition-[background-color,border-color,box-shadow,color,scale] duration-125 ease-press outline-none after:absolute after:-inset-2 group-has-disabled/field:opacity-45 not-data-checked:hover:border-foreground/18 not-data-checked:hover:bg-accent/55 active:not-disabled:scale-[0.94] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-card/70 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground data-checked:shadow-xs data-disabled:pointer-events-none data-disabled:opacity-45\",\n        className,\n      )}\n      {...props}\n    >\n      <RadioPrimitive.Indicator\n        data-slot=\"radio-group-indicator\"\n        className=\"flex items-center justify-center\"\n      >\n        <span className=\"size-2.5 rounded-full bg-primary-foreground\" />\n      </RadioPrimitive.Indicator>\n    </RadioPrimitive.Root>\n  );\n}\n\nexport { RadioGroup, RadioGroupItem };\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

@@ -21,11 +21,16 @@
     "apps/api/.generated/",
     "packages/infra/http-client/.generated/",
     "coverage",
+    "test-results",
+    "playwright-report",
     ".turbo",
     ".worktrees/",
     ".vscode/",
     ".vercel",
     ".next/",
+    "apps/ui/.astro/",
+    "apps/ui/public/",
+    "apps/ui/src/generated/",
     "apps/*/next-env.d.ts",
     "out/",
     "build",
@@ -42,5 +47,15 @@
     "Kwep/",
     "data",
     "credentials"
+  ],
+  "overrides": [
+    {
+      "files": ["apps/ui/**/*"],
+      "options": {
+        "printWidth": 100,
+        "semi": true,
+        "trailingComma": "all"
+      }
+    }
   ]
 }

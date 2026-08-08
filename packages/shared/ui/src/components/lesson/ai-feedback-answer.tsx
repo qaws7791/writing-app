@@ -5,6 +5,29 @@ import { useState } from "react"
 import { platformDayBoundary } from "@workspace/kernel/day-boundary"
 
 import { Button } from "#ui/components/ui/button"
+import {
+  Coaching,
+  CoachingActions,
+  CoachingFocus,
+  CoachingItem,
+  CoachingList,
+  CoachingResult,
+  CoachingSection,
+  CoachingSectionTitle,
+  CoachingSource,
+  CoachingSourceBody,
+  CoachingSourceLabel,
+  CoachingStatus,
+  CoachingSummary,
+  type CoachingPhase,
+} from "#ui/components/ui/coaching"
+import {
+  Insight,
+  InsightDescription,
+  InsightEyebrow,
+  InsightTitle,
+} from "#ui/components/ui/insight"
+import { StepBody, StepHeader, StepTitle } from "#ui/components/ui/step"
 
 export type AiFeedbackViewModel = {
   readonly improvements: readonly string[]
@@ -98,115 +121,119 @@ export function AiFeedbackAnswer({
     feedback !== null && allowRetry && feedback.remainingAttempts > 0
   const displayText =
     draftText.trim() === "" ? "(작성된 내용이 없습니다)" : draftText
+  const status: CoachingPhase = isLoading
+    ? "loading"
+    : failure === null
+      ? feedback === null
+        ? "idle"
+        : "ready"
+      : failure.kind === "limit" || failure.kind === "quota"
+        ? "limited"
+        : "error"
 
   return (
-    <div className="an-fi">
-      <h2 className="font-bold mb-6" style={{ fontSize: "1.75rem" }}>
-        AI 코칭
-      </h2>
-      {focus ? (
-        <div
-          className="inline-block bg-bg-surface text-fg-default font-bold px-4 py-2 rounded-full mb-4"
-          style={{ fontSize: "0.875rem" }}
-        >
-          코칭 초점: {focus}
-        </div>
-      ) : null}
+    <>
+      <StepHeader>
+        <StepTitle>
+          <h2>AI 코칭</h2>
+        </StepTitle>
+      </StepHeader>
+      <StepBody>
+        <Coaching status={status}>
+          {focus ? <CoachingFocus>코칭 초점: {focus}</CoachingFocus> : null}
 
-      <div className="bg-bg-surface rounded-4xl p-6 mb-6">
-        <div className="font-bold text-fg-muted mb-2">작성 내용</div>
-        <p className="font-medium whitespace-pre-line">{displayText}</p>
-      </div>
+          <CoachingSource>
+            <CoachingSourceLabel>작성 내용</CoachingSourceLabel>
+            <CoachingSourceBody>{displayText}</CoachingSourceBody>
+          </CoachingSource>
 
-      {isLoading ? (
-        <div
-          aria-live="polite"
-          className="bg-bg-surface rounded-4xl p-6 mb-6 text-center"
-          role="status"
-        >
-          <div className="mb-2" style={{ fontSize: "1.75rem" }}>
-            🤖
-          </div>
-          <p className="font-bold">AI가 코칭 중입니다...</p>
-        </div>
-      ) : null}
+          {isLoading ? (
+            <CoachingStatus>AI가 코칭 중입니다...</CoachingStatus>
+          ) : null}
 
-      {failure === null ? null : <AiFeedbackFailureView failure={failure} />}
+          {failure === null ? null : (
+            <AiFeedbackFailureView failure={failure} />
+          )}
 
-      {feedback === null ? null : <AiFeedbackResultView feedback={feedback} />}
+          {feedback === null ? null : (
+            <AiFeedbackResultView feedback={feedback} />
+          )}
 
-      {continueError === null ? null : (
-        <p
-          className="mb-4 rounded-4xl bg-danger p-4 font-medium text-danger-foreground"
-          role="alert"
-        >
-          {continueError}
-        </p>
-      )}
+          {continueError === null ? null : (
+            <Insight role="alert" tone="incorrect">
+              <InsightEyebrow>저장 오류</InsightEyebrow>
+              <InsightDescription>{continueError}</InsightDescription>
+            </Insight>
+          )}
 
-      <div className="flex flex-col gap-3 mt-2">
-        {isContinueSaved ? (
-          <p
-            className="rounded-4xl bg-success p-4 text-center font-bold text-success-foreground"
-            role="status"
-          >
-            피드백 없이 학습 진행을 저장했습니다. 아래 다음 버튼을 눌러
-            계속하세요.
-          </p>
-        ) : failure !== null ? (
-          <>
-            {failure.kind === "retryable" ? (
-              <Button
-                className="w-full font-bold"
-                disabled={isLoading || isContinuing}
-                onClick={handleRequest}
-                size="lg"
-                variant="secondary"
-              >
-                AI 코칭 다시 시도
-              </Button>
-            ) : null}
-            {onContinueWithoutFeedback === undefined ? null : (
-              <Button
-                className="w-full font-bold"
-                disabled={isLoading || isContinuing}
-                onClick={handleContinueWithoutFeedback}
-                size="lg"
-                variant="ink"
-              >
-                {isContinuing ? "학습 진행 저장 중..." : "피드백 없이 계속하기"}
-              </Button>
-            )}
-          </>
-        ) : feedback === null ? (
-          <Button
-            className="w-full font-bold"
-            disabled={isLoading}
-            onClick={handleRequest}
-            size="lg"
-            variant="ink"
-          >
-            AI 코칭 받기
-          </Button>
-        ) : canRetry ? (
-          <Button
-            className="w-full font-bold"
-            disabled={isLoading}
-            onClick={handleRequest}
-            size="lg"
-            variant="secondary"
-          >
-            {isLoading
-              ? "코칭 중..."
-              : `AI 코칭 다시 받기 (${feedback.remainingAttempts}회 남음)`}
-          </Button>
-        ) : (
-          <div className="bg-bg-surface text-fg-muted p-4 text-center rounded-4xl font-bold">
-            남은 AI 코칭 시도 횟수가 없습니다.
-          </div>
-        )}
-      </div>
-    </div>
+          {isContinueSaved ? (
+            <Insight role="status" tone="correct">
+              <InsightTitle>피드백 없이 학습 진행을 저장했습니다.</InsightTitle>
+              <InsightDescription>
+                아래 다음 버튼을 눌러 계속하세요.
+              </InsightDescription>
+            </Insight>
+          ) : (
+            <CoachingActions>
+              {failure !== null ? (
+                <>
+                  {failure.kind === "retryable" ? (
+                    <Button
+                      className="w-full sm:w-auto"
+                      disabled={isLoading || isContinuing}
+                      onClick={handleRequest}
+                      size="lg"
+                      variant="secondary"
+                    >
+                      AI 코칭 다시 시도
+                    </Button>
+                  ) : null}
+                  {onContinueWithoutFeedback === undefined ? null : (
+                    <Button
+                      className="w-full sm:w-auto"
+                      disabled={isLoading || isContinuing}
+                      onClick={handleContinueWithoutFeedback}
+                      size="lg"
+                    >
+                      {isContinuing
+                        ? "학습 진행 저장 중..."
+                        : "피드백 없이 계속하기"}
+                    </Button>
+                  )}
+                </>
+              ) : feedback === null ? (
+                <Button
+                  className="w-full sm:ml-auto sm:w-auto"
+                  disabled={isLoading}
+                  onClick={handleRequest}
+                  size="lg"
+                >
+                  AI 코칭 받기
+                </Button>
+              ) : canRetry ? (
+                <Button
+                  className="w-full sm:ml-auto sm:w-auto"
+                  disabled={isLoading}
+                  onClick={handleRequest}
+                  size="lg"
+                  variant="secondary"
+                >
+                  {isLoading
+                    ? "코칭 중..."
+                    : `AI 코칭 다시 받기 (${feedback.remainingAttempts}회 남음)`}
+                </Button>
+              ) : (
+                <Insight className="w-full" tone="neutral">
+                  <InsightDescription>
+                    남은 AI 코칭 시도 횟수가 없습니다.
+                  </InsightDescription>
+                </Insight>
+              )}
+            </CoachingActions>
+          )}
+        </Coaching>
+      </StepBody>
+    </>
   )
 }
 
@@ -223,23 +250,20 @@ function AiFeedbackFailureView({
   readonly failure: AiFeedbackFailureState
 }) {
   return (
-    <div
-      className="mb-6 rounded-4xl bg-danger p-4 text-danger-foreground"
-      role="alert"
-    >
-      <p className="font-bold">{getAiFeedbackFailureTitle(failure)}</p>
-      <p className="mt-2 font-medium">
-        {getAiFeedbackFailureGuidance(failure)}
-      </p>
-      {failure.kind === "quota" && failure.retryAt !== null ? (
-        <p className="mt-2 font-medium">
-          <time dateTime={failure.retryAt}>
-            {formatRetryAt(failure.retryAt)}
-          </time>{" "}
-          이후 다시 요청할 수 있습니다.
-        </p>
-      ) : null}
-    </div>
+    <Insight role="alert" tone="incorrect">
+      <InsightTitle>{getAiFeedbackFailureTitle(failure)}</InsightTitle>
+      <InsightDescription>
+        <p>{getAiFeedbackFailureGuidance(failure)}</p>
+        {failure.kind === "quota" && failure.retryAt !== null ? (
+          <p>
+            <time dateTime={failure.retryAt}>
+              {formatRetryAt(failure.retryAt)}
+            </time>{" "}
+            이후 다시 요청할 수 있습니다.
+          </p>
+        ) : null}
+      </InsightDescription>
+    </Insight>
   )
 }
 
@@ -289,35 +313,26 @@ function AiFeedbackResultView({
   readonly feedback: AiFeedbackViewModel
 }) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="bg-accent-soft rounded-4xl p-6 mb-2">
-        <div className="font-bold text-fg-muted mb-2">🤖 총평</div>
-        <p className="font-medium" style={{ fontSize: "1.0625rem" }}>
-          {feedback.summary}
-        </p>
-      </div>
+    <CoachingResult>
+      {feedback.summary ? (
+        <CoachingSummary>{feedback.summary}</CoachingSummary>
+      ) : null}
 
       {feedback.strengths.length > 0 ? (
-        <div className="rounded-4xl bg-success p-6 text-success-foreground mb-2">
-          <FeedbackList items={feedback.strengths} title="✅ 잘된 점" />
-        </div>
+        <FeedbackList items={feedback.strengths} title="잘된 점" />
       ) : null}
 
       {feedback.improvements.length > 0 ? (
-        <div className="bg-danger rounded-4xl p-6 text-danger-foreground mb-2">
-          <FeedbackList items={feedback.improvements} title="🔧 다듬을 점" />
-        </div>
+        <FeedbackList items={feedback.improvements} title="다듬을 점" />
       ) : null}
 
       {feedback.nextAction ? (
-        <div className="bg-action-primary-bg text-action-primary-fg rounded-4xl p-6 mb-2">
-          <div className="font-bold opacity-70 mb-2">🎯 다음 시도</div>
-          <p className="font-medium" style={{ fontSize: "1.0625rem" }}>
-            {feedback.nextAction}
-          </p>
-        </div>
+        <CoachingSection>
+          <CoachingSectionTitle>다음 시도</CoachingSectionTitle>
+          <CoachingSummary>{feedback.nextAction}</CoachingSummary>
+        </CoachingSection>
       ) : null}
-    </div>
+    </CoachingResult>
   )
 }
 
@@ -329,15 +344,13 @@ function FeedbackList({
   readonly title: string
 }) {
   return (
-    <div>
-      <div className="font-bold mb-3">{title}</div>
-      <ul className="space-y-2">
+    <CoachingSection>
+      <CoachingSectionTitle>{title}</CoachingSectionTitle>
+      <CoachingList>
         {items.map((item) => (
-          <li className="font-medium" key={item} style={{ fontSize: "1rem" }}>
-            · {item}
-          </li>
+          <CoachingItem key={item}>{item}</CoachingItem>
         ))}
-      </ul>
-    </div>
+      </CoachingList>
+    </CoachingSection>
   )
 }

@@ -1,9 +1,16 @@
-"use client"
-
-import { useState } from "react"
-
-import { buttonVariants } from "#ui/components/ui/button"
-import { cn } from "#ui/lib/utils"
+import {
+  Compare,
+  ComparePanel,
+  CompareVersion,
+  CompareVersionList,
+  CompareVersions,
+} from "#ui/components/ui/compare"
+import {
+  Insight,
+  InsightDescription,
+  InsightEyebrow,
+} from "#ui/components/ui/insight"
+import { StepHeader, StepTitle } from "#ui/components/ui/step"
 
 export function CompareStepView({
   analysis,
@@ -17,50 +24,41 @@ export function CompareStepView({
     readonly text: string
   }[]
 }) {
-  const [tab, setTab] = useState(0)
-
   return (
-    <div className="an-fi">
-      <h2 className="font-bold mb-6" style={{ fontSize: "1.75rem" }}>
-        {title || "두 버전을 비교해보세요"}
-      </h2>
-      <div className="flex gap-2 mb-6">
-        {versions.map((version, index) => (
-          <button
-            className={buttonVariants({
-              className: cn(
-                "h-auto flex-1 rounded-full py-3 text-body-sm",
-                tab === index
-                  ? "bg-action-primary-bg text-action-primary-fg"
-                  : "bg-bg-surface text-fg-default hover:bg-surface-hover"
-              ),
-              variant: tab === index ? "default" : "secondary",
-            })}
-            key={version.label}
-            onClick={() => setTab(index)}
-            style={{ fontSize: "0.9375rem" }}
-            type="button"
-          >
-            {version.label}
-          </button>
-        ))}
-      </div>
-      <div className="bg-bg-surface rounded-4xl p-6 md:p-8">
-        <p
-          className="font-medium leading-relaxed whitespace-pre-line"
-          style={{ fontSize: "1.125rem" }}
-        >
-          {versions[tab]?.text}
-        </p>
-      </div>
-      {analysis ? (
-        <div className="mt-6 bg-accent-soft rounded-4xl p-6">
-          <div className="font-bold text-fg-muted mb-2">💡 생각해보기</div>
-          <p className="font-medium" style={{ fontSize: "1.0625rem" }}>
-            {analysis}
-          </p>
-        </div>
-      ) : null}
-    </div>
+    <>
+      <StepHeader>
+        <StepTitle>
+          <h2>{title || "두 버전을 비교해보세요"}</h2>
+        </StepTitle>
+      </StepHeader>
+      <Compare>
+        <CompareVersions defaultValue="0">
+          <CompareVersionList aria-label="비교할 버전">
+            {versions.map((version, index) => (
+              <CompareVersion
+                key={`${version.label}-${index}`}
+                value={String(index)}
+              >
+                {version.label}
+              </CompareVersion>
+            ))}
+          </CompareVersionList>
+          {versions.map((version, index) => (
+            <ComparePanel
+              key={`${version.label}-${index}`}
+              value={String(index)}
+            >
+              <p className="whitespace-pre-line">{version.text}</p>
+            </ComparePanel>
+          ))}
+        </CompareVersions>
+        {analysis ? (
+          <Insight tone="think">
+            <InsightEyebrow>생각해보기</InsightEyebrow>
+            <InsightDescription>{analysis}</InsightDescription>
+          </Insight>
+        ) : null}
+      </Compare>
+    </>
   )
 }

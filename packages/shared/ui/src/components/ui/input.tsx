@@ -1,24 +1,15 @@
 import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
-import { fieldControlVariants } from "#ui/lib/field-control-variants"
+
 import { cn } from "#ui/lib/utils"
 
-/**
- * `Input` 컴포넌트는 사용자가 텍스트를 입력할 수 있는 필드입니다.
- *
- * @example
- * ```tsx
- * <Input placeholder="Enter text" />
- * ```
- */
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <InputPrimitive
       type={type}
       data-slot="input"
       className={cn(
-        fieldControlVariants(),
-        "h-11 rounded-3xl px-3 py-1 text-base file:inline-flex file:h-11 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground md:text-sm",
+        "squircle h-10 w-full min-w-0 rounded-2xl border border-border/70 bg-input/35 px-4 py-1 text-base shadow-2xs transition-[color,box-shadow,background-color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/80 hover:border-border hover:bg-input/50 focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/25 dark:hover:bg-input/35 dark:focus-visible:bg-input/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
         className
       )}
       {...props}

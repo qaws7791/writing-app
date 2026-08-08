@@ -1,21 +1,24 @@
 # 접근성 기준
 
-이 문서는 WCAG 2.1 AA 기준, 색 대비, 키보드 탐색, 상태 노출의 현재 기준이다.
+이 문서는 WCAG 2.2 AA 기준, 색 대비, 키보드 탐색, 상태 노출의 현재 기준이다.
 
 ## 목표 기준
 
-- 신규 UI는 WCAG 2.1 AA를 목표로 한다.
+- 신규 UI는 WCAG 2.2 AA를 목표로 한다.
 - 일반 텍스트 대비는 최소 4.5:1을 목표로 한다.
 - 18pt 이상 또는 14pt bold 이상의 큰 텍스트 대비는 최소 3:1을 목표로 한다.
 - 아이콘, focus indicator, 입력 border처럼 의미 있는 비텍스트 UI 대비는 최소 3:1을 목표로 한다.
+- Pointer target은 최소 24×24 CSS px 또는 동등한 간격을 제공한다.
+- 일반 주요 control은 가능한 40×40 CSS px 이상의 target을 제공한다.
 
-## 현재 색상 주의점
+## 색상 주의점
 
-- 학습자 `primary` 노랑 위에는 `ink` 또는 `charcoal` 계열 텍스트를 사용한다.
-- 학습자 `charcoal` 버튼 위에는 `cream` 텍스트를 사용한다.
-- `muted` 텍스트는 긴 본문보다 보조 정보에 사용한다.
-- `danger-bg`, `success-bg` 위에는 각각 `danger-fg`, `success-fg` 또는 `fg-default`를 사용한다.
-- 어드민 위험 버튼은 `danger-*` semantic token과 `Button variant="destructive"`를 사용한다.
+- `primary` 위에는 `primary-foreground`를 사용한다.
+- `secondary` 위에는 `secondary-foreground`를 사용한다.
+- `accent` 위에는 `accent-foreground`를 사용한다.
+- `muted-foreground`는 긴 본문보다 보조 정보에 사용한다.
+- 성공, 경고, 오류와 정보는 색상만으로 구분하지 않는다.
+- 위험 버튼은 `destructive` semantic token과 `Button variant="destructive"`를 사용한다.
 
 색 조합을 새로 만들 때는 구현 전 대비를 확인한다.
 
@@ -34,7 +37,9 @@
 - 레슨 콘텐츠 영역은 `aria-label="레슨 콘텐츠"`를 사용한다.
 - 레슨 행동 영역은 `aria-label="레슨 행동"`을 사용한다.
 - 나가기 버튼은 `aria-label="나가기"`를 제공한다.
-- 순서 스텝의 항목 재정렬은 포인터 드래그에만 의존하지 않고 키보드로 위/아래 이동할 수 있어야 한다.
+- 순서 스텝의 항목 재정렬은 포인터 드래그에만 의존하지 않는다.
+- 키보드 사용자는 드래그 핸들에서 Space 또는 Enter로 항목을 들고 방향키로 이동한 뒤 Space 또는 Enter로 놓을 수 있어야 한다.
+- 순서 변경 안내는 한국어 `status` 메시지로 현재 항목과 위치를 전달한다.
 - 답변 저장 실패와 완료 실패는 화면에 보이는 한국어 오류로 제공한다.
 
 ## 쓰기 접근성
@@ -64,9 +69,16 @@
 
 ## Motion 접근성
 
-- 현재 Button의 `buttonVariants` press motion과 `.an-fi`가 존재한다. 공개 랜딩은 Button press와 짧은 색상·opacity 전환만 사용한다.
+- Button press와 짧은 상태 전환만 기본 motion으로 사용한다.
 - 학습 흐름과 공개 랜딩의 핵심 정보는 motion에만 의존하지 않는다.
 - 새 장시간 반복 애니메이션을 추가할 때는 `prefers-reduced-motion` 대응을 함께 추가한다.
+
+## 사용자 설정 접근성
+
+- `prefers-contrast: more`에서 border, text와 focus indicator 대비를 강화한다.
+- `forced-colors: active`에서 shadow와 배경 이미지 없이 상태를 읽을 수 있어야 한다.
+- `prefers-reduced-transparency`에서 blur와 반투명 Surface를 제거한다.
+- 투명 Surface는 지원 여부와 관계없이 불투명 fallback을 제공한다.
 
 ## 언어와 문구
 

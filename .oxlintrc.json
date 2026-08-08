@@ -169,7 +169,7 @@
     {
       "files": [
         "apps/admin/**/*.{ts,tsx,js,jsx,mjs,cjs}",
-        "apps/storybook/**/*.{ts,tsx,js,jsx,mjs,cjs}",
+        "apps/ui/**/*.{ts,tsx,js,jsx,mjs,cjs}",
         "apps/web/**/*.{ts,tsx,js,jsx,mjs,cjs}",
         "packages/shared/ui/**/*.{ts,tsx,js,jsx,mjs,cjs}"
       ],

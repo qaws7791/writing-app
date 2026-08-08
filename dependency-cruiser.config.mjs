@@ -148,7 +148,7 @@ const config = {
   ],
   options: {
     exclude: {
-      path: "(^|/)(?:\\.next|\\.turbo|coverage|dist|storybook-static)(?:/|$)",
+      path: "(^|/)(?:\\.next|\\.turbo|coverage|dist)(?:/|$)",
     },
     doNotFollow: {
       path: "node_modules",

@@ -7,7 +7,7 @@ import {
   FileTextIcon,
   HomeIcon,
   UserIcon,
-} from "@workspace/ui/components/icons"
+} from "@workspace/ui/components/icons/navigation-icons"
 
 import {
   type GlobalNavPathProps,
@@ -31,7 +31,8 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t-2 border-surface bg-background px-4 py-2 sm:hidden"
+      aria-label="모바일 주요 메뉴"
+      className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-border/60 bg-background/95 px-3 py-2 backdrop-blur-lg sm:hidden"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       {globalNavMobileItems.map((item) => {
@@ -42,21 +43,21 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
           <Link
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex flex-col items-center gap-0.5 text-caption font-bold transition-colors",
+              "min-w-14 rounded-xl px-2 py-1 text-xs font-medium outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/25",
               isActive ? "text-foreground" : "text-muted-foreground"
             )}
             href={item.href}
             key={item.key}
           >
-            <div
+            <span
               className={cn(
-                "w-7 h-7 rounded-full flex justify-center items-center transition-colors",
-                isActive ? "bg-accent-soft text-accent" : "bg-transparent"
+                "mx-auto flex size-7 items-center justify-center rounded-xl transition-colors",
+                isActive ? "bg-muted text-foreground" : "bg-transparent"
               )}
             >
-              <Icon size={16} />
-            </div>
-            <span className="mt-0.5">{item.label}</span>
+              <Icon aria-hidden="true" className="size-4" />
+            </span>
+            <span className="mt-0.5 block text-center">{item.label}</span>
           </Link>
         )
       })}

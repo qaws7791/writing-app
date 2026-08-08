@@ -14,7 +14,7 @@
 
 ## 정보 구조
 
-- `PageHeader`
+- `AdminPageHeader`
 - 사용자 기본 정보
 - `StatusBadge`
 - 운영 액션
@@ -26,9 +26,9 @@
 
 ## UI 기준
 
-- 상세 정보는 `Surface variant="panel"` 안에 배치한다.
+- 상세 정보는 Luma `Card` 안에 배치한다.
 - 수치 요약은 `dl` 구조를 사용한다.
-- 상태는 app-local `StatusBadge`가 Kwep 어드민 기준의 중립 `Badge`로 표시한다.
+- 상태는 app-local `StatusBadge`가 Luma `Badge` variant로 표시한다.
 - 운영 액션은 사용자 기본 정보 카드 안에 둔다. 판단 근거와 실행을 같은 화면에 둔다.
 - 상태 변경과 삭제 요청은 [SCR-105](./SCR-105-admin-users.md)와 같은 확인 대화상자를 쓴다. 두 화면이 같은 컴포넌트를 공유한다.
 - 삭제 상태 사용자에게는 액션 대신 읽기 전용임을 알린다.

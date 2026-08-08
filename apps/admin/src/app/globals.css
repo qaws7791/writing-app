@@ -5,8 +5,3 @@
 @custom-variant dark (&:is(.dark *));
 @source "../**/*.{ts,tsx}";
 @source "../../../../packages/shared/ui/src/**/*.{ts,tsx}";
-
-[data-slot="page-header"] h1,
-[data-slot="section-header"] h2 {
-  font-weight: 800;
-}

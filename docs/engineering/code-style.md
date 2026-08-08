@@ -18,7 +18,7 @@
 - workspace 간 import는 `@workspace/*`의 명시적인 공개 subpath를 사용한다.
 - canonical DTO와 wire status는 가장 구체적인 `@workspace/contracts/*` 공개 subpath에서, brand ID는 `@workspace/types/ids`에서 직접 import한다. 예상 가능한 실패의 공통 Result API는 `@workspace/kernel/result`를 사용한다.
 - 의미, 정책 또는 validation을 추가하지 않는 한 줄 forwarding 파일을 만들지 않는다. 공개 capability는 소유 package의 좁은 subpath에서 직접 제공한다.
-- 패키지 내부 Implementation은 package별 private alias를 사용한다. 예를 들어 `auth`, `ui`, `env`는 각각 `#auth/*`, `#ui/*`, `#env/*`, Storybook source는 `#storybook/*`를 사용한다. API 내부 composition·foundation route와 제품별 observability adapter는 `@/*` 앱 alias를 사용한다.
+- 패키지 내부 Implementation은 package별 private alias를 사용한다. 예를 들어 `auth`, `ui`, `env`는 각각 `#auth/*`, `#ui/*`, `#env/*`를 사용한다. API 내부 composition·foundation route와 제품별 observability adapter는 `@/*` 앱 alias를 사용한다.
 - 패키지 내부에서 자기 `@workspace/*` 공개 Interface를 역참조하거나 상대 경로로 우회하지 않는다.
 - 앱 간 상대 import를 만들지 않는다.
 - 레거시 실험 디렉터리의 구현 파일은 제품 런타임에서 import하지 않는다.

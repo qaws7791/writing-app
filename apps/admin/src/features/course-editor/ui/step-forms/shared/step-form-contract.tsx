@@ -50,10 +50,10 @@ export function StepFormShell({
   readonly step: EditorStep
 }) {
   return (
-    <article className="grid gap-4 rounded-card border border-border/50 bg-background p-4">
+    <article className="grid gap-4 rounded-3xl border border-border/70 bg-card p-4">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <Badge variant="secondary">{step.type}</Badge>
-        <span className="text-label-sm font-semibold text-muted-foreground">
+        <span className="text-xs font-semibold text-muted-foreground">
           {step.id}
         </span>
       </header>

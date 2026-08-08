@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "reflection",
+  "title": "Reflection",
+  "description": "바꾼 점·어려운 점·다음 연습 목표를 짧게 기록합니다.",
+  "registryDependencies": [
+    "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+  ],
+  "files": [
+    {
+      "path": "registry/luma/ui/reflection.tsx",
+      "content": "import * as React from \"react\";\n\nimport { cn } from \"@/registry/luma/lib/utils\";\n\nfunction Reflection({ className, ...props }: React.ComponentProps<\"section\">) {\n  return (\n    <section\n      data-slot=\"reflection\"\n      className={cn(\"flex w-full flex-col gap-4\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionHeader({ className, ...props }: React.ComponentProps<\"header\">) {\n  return (\n    <header\n      data-slot=\"reflection-header\"\n      className={cn(\"flex flex-col gap-1\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionTitle({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"reflection-title\"\n      className={cn(\"text-sm font-medium tracking-[-0.01em]\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionDescription({ className, ...props }: React.ComponentProps<\"p\">) {\n  return (\n    <p\n      data-slot=\"reflection-description\"\n      className={cn(\"text-xs leading-5 text-pretty text-muted-foreground\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionFields({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"reflection-fields\"\n      className={cn(\"flex flex-col gap-4\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionField({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div data-slot=\"reflection-field\" className={cn(\"flex flex-col gap-2\", className)} {...props} />\n  );\n}\n\nfunction ReflectionFieldLabel({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"reflection-field-label\"\n      className={cn(\"text-xs font-medium tracking-[0.02em] text-muted-foreground\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionFieldInput({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"reflection-field-input\"\n      className={cn(\n        \"[&_[data-slot=textarea]]:min-h-24 [&_[data-slot=textarea]]:rounded-2xl\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionHint({ className, ...props }: React.ComponentProps<\"p\">) {\n  return (\n    <p\n      data-slot=\"reflection-hint\"\n      className={cn(\"text-xs leading-5 text-pretty text-muted-foreground\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction ReflectionActions({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"reflection-actions\"\n      className={cn(\"flex flex-wrap items-center gap-2\", className)}\n      {...props}\n    />\n  );\n}\n\nexport {\n  Reflection,\n  ReflectionHeader,\n  ReflectionTitle,\n  ReflectionDescription,\n  ReflectionFields,\n  ReflectionField,\n  ReflectionFieldLabel,\n  ReflectionFieldInput,\n  ReflectionHint,\n  ReflectionActions,\n};\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

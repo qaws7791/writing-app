@@ -13,9 +13,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/ui/alert-dialog"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Compose,
+  ComposeActions,
+  ComposeBadge,
+  ComposeEditor,
+  ComposeMeter,
+} from "@workspace/ui/components/ui/compose"
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
+import {
+  Insight,
+  InsightDescription,
+  InsightTitle,
+} from "@workspace/ui/components/ui/insight"
 
 import { useWritingAutosave } from "@/features/focused-writing/hooks/use-writing-autosave"
 import { readWritingModeOption } from "@/features/focused-writing/model/writing-copy"
@@ -143,81 +160,72 @@ export function WritingEditor({
         }
       >
         <form
-          className="flex flex-1 flex-col gap-6"
+          className="flex flex-1 flex-col"
           onSubmit={(event) => event.preventDefault()}
         >
-          <p className="text-body-sm font-bold text-muted-foreground">
-            {mode.label}
-          </p>
+          <Compose className="flex-1">
+            <ComposeBadge>{mode.label}</ComposeBadge>
 
-          <div className="space-y-2">
-            <label
-              className="block text-body-sm font-bold"
-              htmlFor="writing-title"
-            >
-              제목
-            </label>
-            <Input
-              className="h-auto rounded-none border-x-0 border-t-0 px-0 py-3 font-heading text-heading-md font-bold shadow-none focus-visible:ring-0"
-              id="writing-title"
-              disabled={startingSelfCheck}
-              onBlur={() => void autosave.flushWriting()}
-              onChange={(event) => handleTitleChange(event.target.value)}
-              value={title}
-            />
-          </div>
+            <Field>
+              <FieldLabel htmlFor="writing-title">제목</FieldLabel>
+              <Input
+                className="h-auto rounded-2xl px-4 py-3 font-heading text-xl font-semibold tracking-[-0.02em]"
+                id="writing-title"
+                disabled={startingSelfCheck}
+                onBlur={() => void autosave.flushWriting()}
+                onChange={(event) => handleTitleChange(event.target.value)}
+                value={title}
+              />
+            </Field>
 
-          <div className="flex flex-1 flex-col gap-2">
-            <label
-              className="block text-body-sm font-bold"
-              htmlFor="writing-body"
-            >
-              본문
-            </label>
-            <Textarea
-              className="min-h-[52dvh] flex-1 resize-none rounded-3xl px-4 py-4 text-body-lg leading-8 sm:min-h-[56dvh]"
-              id="writing-body"
-              disabled={startingSelfCheck}
-              onBlur={() => void autosave.flushWriting()}
-              onChange={(event) => handleBodyChange(event.target.value)}
-              value={body}
-            />
-            <div className="flex flex-wrap items-center justify-between gap-2 text-body-sm text-muted-foreground">
-              <span>{Array.from(body).length.toLocaleString("ko-KR")}자</span>
-              <span aria-hidden="true">일반 텍스트로 저장됩니다.</span>
-            </div>
-          </div>
-
-          {autosave.status.kind === "conflict" ? (
-            <div
-              className="space-y-3 rounded-3xl border border-border bg-surface p-4"
-              role="alert"
-            >
-              <p className="font-bold">다른 화면에서 이 글이 변경되었습니다.</p>
-              <p className="text-body-sm text-muted-foreground">
-                입력한 내용은 이 화면에 남아 있습니다. 사용할 내용을 선택해
-                주세요.
-              </p>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button
-                  onClick={autosave.useServerWriting}
-                  type="button"
-                  variant="secondary"
-                >
-                  서버 글 불러오기
-                </Button>
-                <Button onClick={autosave.retryLocalWriting} type="button">
-                  내 내용 다시 저장하기
-                </Button>
+            <Field className="flex-1">
+              <FieldLabel htmlFor="writing-body">본문</FieldLabel>
+              <ComposeEditor
+                className="min-h-[52dvh] flex-1 resize-none px-4 py-4 text-base leading-8 sm:min-h-[56dvh]"
+                id="writing-body"
+                disabled={startingSelfCheck}
+                onBlur={() => void autosave.flushWriting()}
+                onChange={(event) => handleBodyChange(event.target.value)}
+                value={body}
+              />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <ComposeMeter value={Array.from(body).length} />
+                <FieldDescription aria-hidden="true">
+                  일반 텍스트로 저장됩니다.
+                </FieldDescription>
               </div>
-            </div>
-          ) : null}
+            </Field>
 
-          {actionError === null ? null : (
-            <p className="text-body-sm text-danger-foreground" role="alert">
-              {actionError}
-            </p>
-          )}
+            {autosave.status.kind === "conflict" ? (
+              <Insight role="alert" tone="incorrect">
+                <InsightTitle>
+                  다른 화면에서 이 글이 변경되었습니다.
+                </InsightTitle>
+                <InsightDescription>
+                  입력한 내용은 이 화면에 남아 있습니다. 사용할 내용을 선택해
+                  주세요.
+                </InsightDescription>
+                <ComposeActions>
+                  <Button
+                    onClick={autosave.useServerWriting}
+                    type="button"
+                    variant="secondary"
+                  >
+                    서버 글 불러오기
+                  </Button>
+                  <Button onClick={autosave.retryLocalWriting} type="button">
+                    내 내용 다시 저장하기
+                  </Button>
+                </ComposeActions>
+              </Insight>
+            ) : null}
+
+            {actionError === null ? null : (
+              <Insight role="alert" tone="incorrect">
+                <InsightDescription>{actionError}</InsightDescription>
+              </Insight>
+            )}
+          </Compose>
         </form>
       </WritingFocusShell>
 
@@ -235,7 +243,7 @@ export function WritingEditor({
             <Button
               className="min-w-0 flex-1 basis-0"
               onClick={() => router.push("/app/writing")}
-              size="extra"
+              size="lg"
               variant="destructive"
             >
               저장하지 않고 나가기
@@ -255,48 +263,33 @@ function WritingSaveStatus({
   switch (status.kind) {
     case "saving":
       return (
-        <p
-          className="shrink-0 text-body-sm text-muted-foreground"
-          role="status"
-        >
+        <Badge aria-live="polite" role="status" variant="secondary">
           저장 중
-        </p>
+        </Badge>
       )
     case "saved":
       return (
-        <p
-          className="shrink-0 text-body-sm text-muted-foreground"
-          role="status"
-        >
+        <Badge aria-live="polite" role="status" variant="success">
           저장됨
-        </p>
+        </Badge>
       )
     case "offline":
       return (
-        <p
-          className="shrink-0 text-body-sm text-danger-foreground"
-          role="alert"
-        >
+        <Badge aria-live="assertive" role="alert" variant="destructive">
           오프라인 · 입력 보존 중
-        </p>
+        </Badge>
       )
     case "error":
       return (
-        <p
-          className="shrink-0 text-body-sm text-danger-foreground"
-          role="alert"
-        >
+        <Badge aria-live="assertive" role="alert" variant="destructive">
           저장하지 못함 · 입력 보존 중
-        </p>
+        </Badge>
       )
     case "conflict":
       return (
-        <p
-          className="shrink-0 text-body-sm text-danger-foreground"
-          role="alert"
-        >
+        <Badge aria-live="assertive" role="alert" variant="destructive">
           저장 충돌 · 입력 보존 중
-        </p>
+        </Badge>
       )
   }
 }

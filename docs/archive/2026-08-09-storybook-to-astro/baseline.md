@@ -1,0 +1,76 @@
+# Storybook 이전 기준선
+
+- 기준 시각: 2026-08-09 KST
+- 기준 범위: 현재 작업 트리의 `apps/storybook`
+- 해시 알고리즘: SHA-256
+- 파일 수: 63개
+
+이미 삭제된 legacy story 5개는 이 기준선에서 제외한다.
+
+아래 목록의 파일은 Astro 대체 계약이 검증될 때까지 삭제하지 않는다.
+
+```text
+b20559167a6fbeb1ec4d1813cb2d1e19e46a7b29110f4aafcfa33bfdaf8b9eae  apps/storybook/.storybook/main.ts
+eb207f19dabe9852a62008c9e2ff2bed30ddf496cc4a95049fe2b3aa73a78de4  apps/storybook/.storybook/manager.ts
+828feaf36c267e29cd0f9c2fe7f3e1a38a89236cff1b9099134a513644980938  apps/storybook/.storybook/preview.tsx
+ef8b67e944fc5fd68c4d9f3c3d2ae6a6ca82c457cca000af68d621d3e101529e  apps/storybook/.storybook/preview-body.html
+e44589d3a99982187671467888ceb32b45d327ba9e13af89c3360cd53dc166a2  apps/storybook/.storybook/storybook-theme.ts
+4bf13d4c62d69bfcf5490abb0f318085f2d0ec2e2d6c67f1dc736a710ea0d4aa  apps/storybook/.storybook/style-imports.d.ts
+eca0d37c270c464a80ea623832f06d1460a4e0ceab396513f6baa40b72a7efe7  apps/storybook/.storybook/viewports.ts
+ae42c8fb76d8fc15c0b3d86b8d7931f5d8e712340fff873d3dc1f04c3dc815f8  apps/storybook/.storybook/vitest.setup.ts
+64ffa11c9ef5a99b8ac1e92b19619c4ad53dcbaab9ff1cf4484d028a3bef516d  apps/storybook/package.json
+7c013693fe1a211c61c8825d2f24a55435a81f48f03dd5affdbdad5679fd17cd  apps/storybook/postcss.config.mjs
+4bf7437f264d410b708c8852ae3a3ac49b7384825467d9eddb47d4b47e2a8493  apps/storybook/README.md
+5f8f541f4f485cc070db2b03f8fae34563bca31ecbe71abbadaab9620b6273a8  apps/storybook/src/docs/getting-started/welcome.mdx
+cc942e8ae62eee4d4cdb14804d8ce5d7bc0e3e386ba5bf8b21254c9593a91981  apps/storybook/src/docs/quality/accessibility-checklist.mdx
+86c469ceae6e26c5a8211b743cd592fb53169958650c4abc738c9d805d957548  apps/storybook/src/stories/components/admin-patterns.stories.tsx
+e300a4b911b48bb51fcb8912416f86264a39bc4d90d5b8b0d58640de1d307835  apps/storybook/src/stories/components/lesson/ai-feedback-answer.stories.tsx
+9d23e185d50881253faaefedc2b98a65428dc2c796cee45733a9d8e4b9737886  apps/storybook/src/stories/components/lesson/categorize-answer.stories.tsx
+85d4d9899f59414eae309b8701ed1a006fe1f4211e6eecfa8515a34496ad9ff8  apps/storybook/src/stories/components/lesson/compare-step-view.stories.tsx
+47a9303b773c2875356a391d8df9b99eaacca9e6a18288e7bb208cb01098f251  apps/storybook/src/stories/components/lesson/fill-blank-answer.stories.tsx
+db304b6b7a1804de71c98302cc00410a8af8155f92bbbee73767e87b27635cbd  apps/storybook/src/stories/components/lesson/lesson-story-shared.tsx
+ecd74e3a66b18a0d404b21b19862f5267f50c1115a263c3cd7ad11453fc4a479  apps/storybook/src/stories/components/lesson/match-answer.stories.tsx
+25d4df40aa63b79500578da4b4ba8aed1417b733bfc9ff9b621def4919e968e9  apps/storybook/src/stories/components/lesson/mock-data.ts
+dc28b350610c13c59cf1704bad5393872461e8145927f5ecfdb2ea8dfe11f4e6  apps/storybook/src/stories/components/lesson/multiple-choice-answer.stories.tsx
+5a910ed933e0949473c6506ee56593cfd80404cce35da6abaf9dfc37a60aa478  apps/storybook/src/stories/components/lesson/order-answer.stories.tsx
+8deafd43742e036c254542bea0ada7dd4545826d25bd3784186eb73a8693c666  apps/storybook/src/stories/components/lesson/reading-step-view.stories.tsx
+c77742b9dde7b6288a7d84d4c779ef709c7e8f3153e04695b5e1cd2ff2f50490  apps/storybook/src/stories/components/lesson/select-answer.stories.tsx
+f15c51e461f4e5dde1c8b46b1595b9c38094778aad456484abb63211fd7c0cf1  apps/storybook/src/stories/components/lesson/write-answer.stories.tsx
+1fe5e4ad716cf1979e0620ca3b4bbecccbeca4b4643cb032d8871527383bedb8  apps/storybook/src/stories/components/ui/accordion.stories.tsx
+ebf249ad449a1fc987d4a294b238d5549a715967be151c48e0b771c2fa0f8a47  apps/storybook/src/stories/components/ui/alert.stories.tsx
+61ee9a58fd621dd4ba3174f4d67fc9ff3983e73931183187f54b604cf65c2f94  apps/storybook/src/stories/components/ui/alert-dialog.stories.tsx
+bb5366b47717bd83b875b5c40dc9450eed6c7c2976ebcaf0b9b2766a02bc6ea2  apps/storybook/src/stories/components/ui/badge.stories.tsx
+0b665c375bb672e8cefa457128a7f1d54166ddf945d8bea4d8f75865d9dca111  apps/storybook/src/stories/components/ui/button.stories.tsx
+6d5f14aea8cfdfcf35fa245399b9287d131c142113a74631a599170c995b42d9  apps/storybook/src/stories/components/ui/card.stories.tsx
+202bf5bf9605bbe6093d38313736be4642cf46db54999c72baa8954f16c50a06  apps/storybook/src/stories/components/ui/dialog.stories.tsx
+d056bcfdf8675ec336f4b48bd175bd0b23d33e6711b4590d7d79fd053bc260af  apps/storybook/src/stories/components/ui/dropdown-menu.stories.tsx
+5faac158d7a4f140233573ce0d1bcb60f08315e1dab2a609cfedd2c3637581a0  apps/storybook/src/stories/components/ui/empty.stories.tsx
+c8f6553573eefb3b4b39688bd4f0289716352c860befa8c7f3a8c91f7689f349  apps/storybook/src/stories/components/ui/field.stories.tsx
+3825c983eff65004e103d282b645198ecfb4321aaedad0656f36d420708729e5  apps/storybook/src/stories/components/ui/input.stories.tsx
+ecc3bfab3f390702782d7d0fdbff636c8324389c9b4d64edc618559e9ce6795e  apps/storybook/src/stories/components/ui/label.stories.tsx
+d4e8f6deca5da4f563f24420041b58798d88889e57f34ff1a09dd382d1b3f053  apps/storybook/src/stories/components/ui/lesson.stories.tsx
+40110fba1fef07c6bdbc46a94bb3fb17612a4879fc6ef92f402d889c1979da5d  apps/storybook/src/stories/components/ui/popover.stories.tsx
+03f38588431016c5c2dae7aa7e3003a7ca2e561944091f45e83ab0608ee93e6f  apps/storybook/src/stories/components/ui/progress.stories.tsx
+7bf9f5a506f54c543f9f471e9c8920c911023fb97df383c610289e3363e9908b  apps/storybook/src/stories/components/ui/select.stories.tsx
+e3dc016728f495032603567ef1fc9d876537e55bd5b423badb5c6e68095024fd  apps/storybook/src/stories/components/ui/separator.stories.tsx
+a718067762c93ba024a6d9d4b9315c53c0273caa6f4c8d8f62ecd9b81add443b  apps/storybook/src/stories/components/ui/status.stories.tsx
+57ee59176ce51bbe043083ef3de0977cfbd1487d0995830b4c159796267e26da  apps/storybook/src/stories/components/ui/table.stories.tsx
+f293011711bb3e237c2edde78dc4dc65f719a6c431e0cc330280cf4939ee6382  apps/storybook/src/stories/components/ui/tabs.stories.tsx
+d22304cce9db1e49c6644e6076ae2bdfc4d086f1fa78b90e958eb0380f39b849  apps/storybook/src/stories/components/ui/textarea.stories.tsx
+19b7f98ce23f7a42687004abc1ecb99a04123613ab39ddd73e21869c2b89552a  apps/storybook/src/stories/components/ui/theme-selector.stories.tsx
+2ca22a664361710a1a152f5721315589af55ea85e9e8790ed70a2fa0c8930eaa  apps/storybook/src/stories/foundations/color.stories.tsx
+74591e38ddc207e4ebbddddf4e2996a4621d64528921eba32f004f75f9ed1bb1  apps/storybook/src/stories/foundations/color/color-swatch.tsx
+18a64876cb5e77307ee31954cc5fc4bf82ef140de9771142e2ba7661c1c45dc3  apps/storybook/src/stories/foundations/color/color-utils.ts
+3a0b05006da890a7f230bcecade9ceb479116c4159e2d45585abe079df23b5b3  apps/storybook/src/stories/foundations/color/contrast-pair-card.tsx
+7a26d080838066e39544db40453057527547463860559ec33243e1d597f15a6c  apps/storybook/src/stories/foundations/color/overview-panel.tsx
+6fc4271e117a5f71a3e4bfc7cab7621afe35f318de0d91269e17c9caaaef1e5e  apps/storybook/src/stories/foundations/color/token-data.ts
+3fe4ca28ebb59026794c2c5468eca3e770f9001ffe1914ca90771f202367b5ee  apps/storybook/src/stories/foundations/color/use-theme-revision.ts
+20f1138b671f54d9d2cae867d1fd64bc3b390c34cb2e8d00392e89b720e7ec38  apps/storybook/src/stories/foundations/motion.stories.tsx
+eacfe15e8043c8248c3934ad6f75cf2b6f2021869abb2a322a06787ec623c6be  apps/storybook/src/stories/foundations/spacing.stories.tsx
+63ecf78bb9974aead09c46c24489de82e83f9ddd14f02e0f78762870e67f9d37  apps/storybook/src/stories/foundations/typography.stories.tsx
+0fed21202ec1abda3e7095e188842a47304166816e34118b5fb0731d473d4636  apps/storybook/src/stories/quality/checklist.stories.tsx
+8b7373c282b42d60fb9c5140daa792d8bc0c649031cd5d6f99f1a74c4bb2c557  apps/storybook/src/stories/recipes/course-management.stories.tsx
+0f7bb1109721297c68f659a3ba930f360cb0e152976e425e7330ee4fcc644571  apps/storybook/styles.css
+cb82f6fe6042293e08cf61b06c4015b2d5ee143703bc478ace7f761e6ce0819a  apps/storybook/tsconfig.json
+3c0fae36da0ba684e24e20404a002c1f96603bf6f07bb86c435e01da49a7e312  apps/storybook/vitest.storybook.config.ts
+```

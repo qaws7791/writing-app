@@ -3,12 +3,12 @@
 import Link from "next/link"
 import { useState } from "react"
 import {
-  ArrowLeft,
-  CalendarDays,
-  CheckCircle2,
-  Clock,
-  Flame,
-} from "lucide-react"
+  ArrowLeftIcon as ArrowLeft,
+  CalendarDaysIcon as CalendarDays,
+  CheckCircleIcon as CheckCircle2,
+  ClockIcon as Clock,
+  FlameIcon as Flame,
+} from "@workspace/ui/components/icons"
 
 import { StatusBadge } from "@/entities/learner-account/ui/status-badge"
 import {
@@ -18,7 +18,14 @@ import {
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminUserDetail } from "@/entities/learner-account/model/admin-learner-account"
 import type { LearnerOperationalStatus } from "@workspace/contracts/identity/status"
+import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/ui/progress"
 
 export function AdminUserDetailPage({
   deleteUser,
@@ -38,7 +45,7 @@ export function AdminUserDetailPage({
     return (
       <>
         <UserDetailNotFoundHeading />
-        <Alert role="alert" tone="danger">
+        <Alert role="alert" variant="destructive">
           <AlertDescription>{userResult.error.message}</AlertDescription>
         </Alert>
       </>
@@ -57,34 +64,40 @@ export function AdminUserDetailPage({
         <ArrowLeft aria-hidden="true" size={16} />
         사용자 관리
       </Link>
-      <div className="mb-5 flex flex-wrap items-center gap-4 rounded-4xl bg-surface p-6">
-        <div className="flex size-16 items-center justify-center rounded-full bg-background text-[1.5rem] font-black text-foreground">
-          {user.name.slice(0, 1)}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="m-0 truncate text-[1.5rem] font-bold text-foreground">
-              {user.name}
-            </h1>
-            <StatusBadge status={user.status} />
+      <Card className="mb-5" size="sm" variant="muted">
+        <CardContent className="flex flex-wrap items-center gap-4">
+          <div className="flex size-16 items-center justify-center rounded-full bg-card font-heading text-2xl font-semibold text-foreground shadow-xs">
+            {user.name.slice(0, 1)}
           </div>
-          <div className="truncate text-[0.9375rem] font-medium text-muted-foreground">
-            {user.email}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="truncate font-heading text-2xl font-semibold text-foreground">
+                {user.name}
+              </h1>
+              <StatusBadge status={user.status} />
+            </div>
+            <div className="truncate text-sm font-medium text-muted-foreground">
+              {user.email}
+            </div>
           </div>
-        </div>
-        <UserOperationActions
-          deleteUser={deleteUser}
-          onResult={setMessage}
-          updateUserStatus={updateUserStatus}
-          user={user}
-        />
-      </div>
+          <UserOperationActions
+            deleteUser={deleteUser}
+            onResult={setMessage}
+            updateUserStatus={updateUserStatus}
+            user={user}
+          />
+        </CardContent>
+      </Card>
       {message === null ? null : (
-        <Alert className="mb-4" role="status" tone={message.tone}>
+        <Alert
+          className="mb-4"
+          role="status"
+          variant={message.tone === "danger" ? "destructive" : "default"}
+        >
           <AlertDescription>{message.message}</AlertDescription>
         </Alert>
       )}
-      <div className="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <dl className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <UserStat
           icon={<CalendarDays aria-hidden="true" size={18} />}
           label="가입일"
@@ -105,37 +118,27 @@ export function AdminUserDetailPage({
           label="완료 레슨"
           value={`${user.lessonsDone}개`}
         />
-      </div>
-      <article className="rounded-4xl border border-surface-hover p-6">
-        <h2 className="m-0 mb-4 text-[1.125rem] font-bold text-foreground">
-          학습 진도
-        </h2>
-        <div className="mb-2 flex items-center justify-between text-[0.875rem] font-bold text-muted-foreground">
-          <span>전체 진도</span>
-          <span className="text-foreground">{progressPercent}%</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-background">
-          <div
-            className="h-full rounded-full bg-primary"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-        <p className="mt-3 text-[0.875rem] font-medium text-muted-foreground">
-          {user.lessonsDone} / {user.totalLessons} 레슨 완료
-        </p>
-      </article>
+      </dl>
+      <Card>
+        <CardContent>
+          <h2 className="mb-4 font-heading text-lg font-semibold text-foreground">
+            학습 진도
+          </h2>
+          <Progress value={progressPercent}>
+            <ProgressLabel>전체 진도</ProgressLabel>
+            <ProgressValue />
+          </Progress>
+          <p className="mt-3 text-sm font-medium text-muted-foreground">
+            {user.lessonsDone} / {user.totalLessons} 레슨 완료
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }
 
 function UserDetailNotFoundHeading() {
-  return (
-    <header className="mb-6">
-      <h1 className="m-0 text-[2rem] font-bold text-foreground">
-        사용자를 찾을 수 없어요
-      </h1>
-    </header>
-  )
+  return <AdminPageHeader title="사용자를 찾을 수 없어요" />
 }
 
 function UserStat({
@@ -148,14 +151,16 @@ function UserStat({
   readonly value: string
 }) {
   return (
-    <article className="rounded-4xl bg-surface p-5">
-      <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <span className="text-[0.8125rem] font-bold">{label}</span>
-      </div>
-      <strong className="text-[1.5rem] font-bold text-foreground">
-        {value}
-      </strong>
-    </article>
+    <Card size="sm" variant="muted">
+      <CardContent>
+        <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+          {icon}
+          <dt className="text-xs font-semibold">{label}</dt>
+        </div>
+        <dd className="font-heading text-2xl font-semibold text-foreground">
+          {value}
+        </dd>
+      </CardContent>
+    </Card>
   )
 }

@@ -38,7 +38,7 @@ describe("AdminShell", () => {
     const user = userEvent.setup()
 
     renderShell()
-    await user.click(screen.getByRole("button", { name: "메뉴 열기" }))
+    await user.click(await screen.findByRole("button", { name: "메뉴 열기" }))
 
     const drawer = await screen.findByRole("dialog", { name: "어드민 메뉴" })
     const navigation = within(drawer).getByRole("navigation", {

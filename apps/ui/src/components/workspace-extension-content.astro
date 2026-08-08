@@ -1,0 +1,57 @@
+---
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import ResponsivePreview from "@/src/components/responsive-preview"
+import WorkspaceExtensionPreview from "@/src/components/workspace-extension-preview"
+import type { WorkspaceExtensionDoc } from "@/src/lib/workspace-extension-docs"
+import { getMigratedStories, getStoryAnchor } from "@/src/lib/design-system-inventory"
+
+type Props = { doc: WorkspaceExtensionDoc }
+const { doc } = Astro.props
+const stories = getMigratedStories(doc.moduleTitle)
+const baseUrl = import.meta.env.BASE_URL
+---
+
+<article>
+  <DocsPageHeader eyebrow="Workspace extension" title={doc.title} description={doc.description} />
+
+  <section id="responsive-preview" class="scroll-mt-24">
+    <h2 class="font-heading text-2xl font-semibold">반응형 미리보기</h2>
+    <p class="mt-3 max-w-2xl leading-7 text-muted-foreground">첫 상태를 격리된 browser context에서 theme, motion과 5개 viewport로 확인합니다.</p>
+    {stories[0] && <div class="mt-6"><ResponsivePreview src={`${baseUrl}preview/extensions/${doc.slug}/${stories[0].exportName}`} title={`${doc.title} ${stories[0].label} 미리보기`} client:load /></div>}
+  </section>
+
+  <section id="states" class="scroll-mt-24 pt-16">
+    <h2 class="font-heading text-2xl font-semibold">실행 상태</h2>
+    <div class="mt-8 grid gap-12">
+      {stories.map((story) => (
+        <article id={getStoryAnchor(story.exportName)} class="scroll-mt-24">
+          <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div><h3 class="font-heading text-lg font-semibold">{story.label}</h3><p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{story.description || `${story.label} 상태의 공개 렌더링 계약입니다.`}</p></div>
+            <div class="flex gap-1.5 text-[10px] text-muted-foreground">{story.hasCiTest && <span class="rounded-full border px-2 py-1">browser</span>}{story.hasPlay && <span class="rounded-full border px-2 py-1">interaction</span>}{(story.hasArgs || story.hasArgTypes) && <span class="rounded-full border px-2 py-1">controls</span>}</div>
+          </div>
+          <div class="grid min-h-72 place-items-center overflow-hidden rounded-4xl border bg-background p-5 sm:p-8">
+            <WorkspaceExtensionPreview slug={doc.slug} story={story.exportName} client:only="react" />
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section id="props" class="scroll-mt-24 pt-16">
+    <p class="text-sm font-medium text-muted-foreground">Controls and API</p>
+    <h2 class="mt-2 font-heading text-2xl font-semibold">Props</h2>
+    <p class="mt-3 leading-7 text-muted-foreground">이전 control의 이름과 설명을 public package API에 연결했습니다.</p>
+    <div class="mt-6 overflow-hidden rounded-3xl border"><div class="overflow-x-auto"><table class="w-full min-w-160 text-left text-sm"><thead class="bg-muted"><tr><th class="px-4 py-3">Prop</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">설명</th></tr></thead><tbody class="divide-y">{doc.props.map((prop) => <tr><td class="px-4 py-3 font-mono text-xs">{prop.name}</td><td class="px-4 py-3 font-mono text-xs text-muted-foreground">{prop.type}</td><td class="px-4 py-3 leading-6 text-muted-foreground">{prop.description}</td></tr>)}</tbody></table></div></div>
+    <div class="mt-5 rounded-3xl bg-muted/45 p-5"><code class="text-xs">import &#123; {doc.title.replaceAll(" ", "")} &#125; from &quot;{doc.importPath}&quot;</code></div>
+  </section>
+
+  <section id="guidelines" class="scroll-mt-24 pt-16">
+    <h2 class="font-heading text-2xl font-semibold">사용 지침</h2>
+    <ul class="mt-5 grid gap-3">{doc.usageNotes.map((note) => <li class="rounded-3xl bg-muted/35 px-5 py-4 text-sm leading-6">{note}</li>)}</ul>
+  </section>
+
+  <section id="accessibility" class="scroll-mt-24 pt-16">
+    <h2 class="font-heading text-2xl font-semibold">접근성</h2>
+    <ol class="mt-5 grid gap-3">{doc.accessibility.map((note, index) => <li class="grid grid-cols-[2rem_1fr] gap-2 rounded-3xl border px-5 py-4 text-sm leading-6"><span class="font-mono text-muted-foreground">{index + 1}</span><span>{note}</span></li>)}</ol>
+  </section>
+</article>

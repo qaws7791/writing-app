@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "badge",
+  "registryDependencies": [
+    "https://YOUR_GITHUB_ID.github.io/ui/r/base.json"
+  ],
+  "files": [
+    {
+      "path": "registry/luma/ui/badge.tsx",
+      "content": "import { mergeProps } from \"@base-ui/react/merge-props\";\nimport { useRender } from \"@base-ui/react/use-render\";\nimport { cva, type VariantProps } from \"class-variance-authority\";\n\nimport { cn } from \"@/registry/luma/lib/utils\";\n\nconst badgeVariants = cva(\n  \"group/badge inline-flex h-5.5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2.5 text-xs font-semibold tracking-[0.005em] whitespace-nowrap transition-[background-color,border-color,color,box-shadow] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!\",\n  {\n    variants: {\n      variant: {\n        default: \"bg-primary text-primary-foreground [a]:hover:bg-primary/88\",\n        secondary: \"bg-secondary text-secondary-foreground [a]:hover:bg-accent\",\n        destructive:\n          \"bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/10 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/12\",\n        success:\n          \"bg-success/10 text-success focus-visible:ring-success/20 dark:bg-success/10 dark:focus-visible:ring-success/40 [a]:hover:bg-success/12\",\n        warning:\n          \"bg-warning/10 text-warning focus-visible:ring-warning/20 dark:bg-warning/10 dark:focus-visible:ring-warning/40 [a]:hover:bg-warning/12\",\n        info: \"bg-info/10 text-info focus-visible:ring-info/20 dark:bg-info/10 dark:focus-visible:ring-info/40 [a]:hover:bg-info/12\",\n        purple:\n          \"bg-purple/10 text-purple focus-visible:ring-purple/20 dark:bg-purple/10 dark:focus-visible:ring-purple/40 [a]:hover:bg-purple/12\",\n        outline:\n          \"border-border bg-card/60 text-foreground/85 [a]:hover:border-border [a]:hover:bg-accent/60 [a]:hover:text-foreground\",\n        ghost:\n          \"text-muted-foreground hover:bg-accent/70 hover:text-foreground dark:hover:bg-accent/60\",\n        link: \"text-foreground underline decoration-foreground/25 underline-offset-[0.3em] hover:decoration-foreground/70\",\n      },\n    },\n    defaultVariants: {\n      variant: \"default\",\n    },\n  },\n);\n\nfunction Badge({\n  className,\n  variant = \"default\",\n  render,\n  ...props\n}: useRender.ComponentProps<\"span\"> & VariantProps<typeof badgeVariants>) {\n  return useRender({\n    defaultTagName: \"span\",\n    props: mergeProps<\"span\">(\n      {\n        className: cn(badgeVariants({ variant }), className),\n      },\n      props,\n    ),\n    render,\n    state: {\n      slot: \"badge\",\n      variant,\n    },\n  });\n}\n\nexport { Badge, badgeVariants };\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

@@ -21,6 +21,12 @@ import {
 } from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/ui/card"
+import {
   Field,
   FieldDescription,
   FieldLabel,
@@ -32,8 +38,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/ui/select"
-import { SectionHeader } from "@workspace/ui/components/ui/section-header"
-import { Surface } from "@workspace/ui/components/ui/surface"
 
 import {
   createEditorStep,
@@ -90,18 +94,21 @@ export function StepWorkspace({
   }
 
   return (
-    <Surface
+    <Card
       ref={workspaceRef}
       aria-label="스텝 편집 작업대"
-      className="mt-3"
+      className="mt-3 gap-0 py-0"
       role="group"
       tabIndex={-1}
-      variant="panel"
     >
-      <SectionHeader
-        description="확정 스텝 타입의 content를 편집합니다."
-        title="스텝 편집"
-      />
+      <CardHeader className="border-b py-5">
+        <CardTitle>
+          <h2>스텝 편집</h2>
+        </CardTitle>
+        <CardDescription>
+          확정 스텝 타입의 content를 편집합니다.
+        </CardDescription>
+      </CardHeader>
       <div className="grid gap-3 border-b border-border/50 p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <Field>
           <FieldLabel htmlFor={stepTypeControlId}>추가할 스텝 타입</FieldLabel>
@@ -112,7 +119,7 @@ export function StepWorkspace({
             }}
             value={stepType}
           >
-            <SelectTrigger id={stepTypeControlId} variant="outlined">
+            <SelectTrigger id={stepTypeControlId}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -187,7 +194,7 @@ export function StepWorkspace({
                 </Button>
               </div>
               {renderStepForm(step, onChange, assetUpload)}
-              <details className="rounded-2xl bg-surface p-3">
+              <details className="rounded-3xl bg-muted p-4">
                 <summary className="cursor-pointer font-bold">
                   학습자 화면 미리보기
                 </summary>
@@ -232,6 +239,6 @@ export function StepWorkspace({
           </AlertDialogContent>
         )}
       </AlertDialog>
-    </Surface>
+    </Card>
   )
 }

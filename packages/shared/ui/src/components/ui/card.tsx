@@ -1,40 +1,45 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "#ui/lib/utils"
 
-/**
- * `Card` 컴포넌트는 콘텐츠를 그룹화하고 시각적으로 구분하는 데 사용됩니다.
- * 
- * @example
- * ```tsx
- * <Card>
-  <CardHeader>
-    <CardTitle>Card Title</CardTitle>
-    <CardDescription>Card Description</CardDescription>
-    <CardAction>Card Action</CardAction>
-  </CardHeader>
-  <CardContent>
-    <p>Card Content</p>
-  </CardContent>
-  <CardFooter>
-    <p>Card Footer</p>
-  </CardFooter>
-</Card>
-```
- */
+const cardVariants = cva(
+  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-4xl py-(--card-spacing) text-sm text-card-foreground transition-[background-color,border-color,box-shadow] has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-4xl *:[img:last-child]:rounded-b-4xl",
+  {
+    variants: {
+      // A card is a way of holding content, not a single shape. Pick the
+      // weight the content asks for instead of boxing everything the same way.
+      variant: {
+        surface: "border border-border/80 bg-card shadow-xs",
+        muted: "border border-transparent bg-muted",
+        frame: "border border-border bg-transparent",
+        plain: "border border-transparent bg-transparent",
+      },
+      size: {
+        default: "[--card-spacing:--spacing(6)]",
+        sm: "[--card-spacing:--spacing(4)]",
+        lg: "[--card-spacing:--spacing(8)]",
+      },
+    },
+    defaultVariants: {
+      variant: "surface",
+      size: "default",
+    },
+  }
+)
+
 function Card({
   className,
+  variant = "surface",
   size = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & VariantProps<typeof cardVariants>) {
   return (
     <div
       data-slot="card"
+      data-variant={variant}
       data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-4xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/5 [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] dark:ring-foreground/10 *:[img:first-child]:rounded-t-4xl *:[img:last-child]:rounded-b-4xl",
-        className
-      )}
+      className={cn(cardVariants({ variant, size }), className)}
       {...props}
     />
   )
@@ -53,16 +58,27 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({
-  className,
-  as: Component = "div",
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { as?: React.ElementType }) {
-  const Tag = Component
+function CardEyebrow({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <Tag
+    <div
+      data-slot="card-eyebrow"
+      className={cn(
+        "text-xs font-medium tracking-[0.06em] text-muted-foreground uppercase",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
       data-slot="card-title"
-      className={cn("font-heading text-base font-medium", className)}
+      className={cn(
+        "font-heading text-base font-semibold tracking-[-0.014em]",
+        className
+      )}
       {...props}
     />
   )
@@ -72,7 +88,10 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn(
+        "text-sm leading-6 text-pretty text-muted-foreground",
+        className
+      )}
       {...props}
     />
   )
@@ -122,4 +141,6 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  CardEyebrow,
+  cardVariants,
 }

@@ -56,10 +56,12 @@ export function PasswordResetPage({
   return (
     <main className="flex min-h-[80vh] items-center justify-center px-6 py-10">
       <div className="w-full max-w-sm space-y-5">
-        <h1 className="text-display-sm font-black">비밀번호 재설정</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-[-0.03em]">
+          비밀번호 재설정
+        </h1>
         {isCompleted ? (
           <>
-            <Alert role="status" tone="success">
+            <Alert role="status">
               <AlertDescription>
                 비밀번호를 변경했습니다. 모든 기존 로그인은 종료되었습니다.
               </AlertDescription>
@@ -67,8 +69,8 @@ export function PasswordResetPage({
             <Link
               className={buttonVariants({
                 className: "w-full",
-                size: "extra",
-                variant: "ink",
+                size: "lg",
+                variant: "default",
               })}
               href="/login"
             >
@@ -85,9 +87,9 @@ export function PasswordResetPage({
             <Button
               className="w-full"
               disabled={isPending || token === undefined}
-              size="extra"
+              size="lg"
               type="submit"
-              variant="ink"
+              variant="default"
             >
               {isPending ? "변경 중…" : "비밀번호 변경하기"}
             </Button>
@@ -95,7 +97,7 @@ export function PasswordResetPage({
         )}
 
         {feedback === null ? null : (
-          <Alert role="alert" tone="danger">
+          <Alert role="alert" variant="destructive">
             <AlertDescription>{feedback}</AlertDescription>
           </Alert>
         )}

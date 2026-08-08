@@ -1,0 +1,55 @@
+<script is:inline>
+  (() => {
+    const themeKey = "luma-ui-theme"
+    const colorKey = "luma-ui-color"
+    const radiusKey = "luma-ui-radius"
+    const colorIds = ["black", "blue", "red", "orange", "green", "yellow", "pink", "purple"]
+    const radiusIds = ["small", "medium", "large"]
+    const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    let isDark = systemIsDark
+
+    try {
+      const savedTheme = window.localStorage.getItem(themeKey)
+
+      if (savedTheme === "dark") {
+        isDark = true
+      } else if (savedTheme === "light") {
+        isDark = false
+      } else {
+        // "system", missing, or unknown → follow the OS preference.
+        isDark = systemIsDark
+      }
+    } catch {
+      // Use the system preference when storage is unavailable.
+    }
+
+    document.documentElement.classList.toggle("dark", isDark)
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", isDark ? "#171717" : "#ffffff")
+
+    try {
+      const savedColor = window.localStorage.getItem(colorKey)
+
+      if (savedColor && colorIds.includes(savedColor) && savedColor !== "black") {
+        document.documentElement.setAttribute("data-color", savedColor)
+      } else {
+        document.documentElement.removeAttribute("data-color")
+      }
+    } catch {
+      // Keep the default black primary when storage is unavailable.
+    }
+
+    try {
+      const savedRadius = window.localStorage.getItem(radiusKey)
+
+      if (savedRadius && radiusIds.includes(savedRadius) && savedRadius !== "medium") {
+        document.documentElement.setAttribute("data-radius", savedRadius)
+      } else {
+        document.documentElement.removeAttribute("data-radius")
+      }
+    } catch {
+      // Keep the default medium radius when storage is unavailable.
+    }
+  })()
+</script>

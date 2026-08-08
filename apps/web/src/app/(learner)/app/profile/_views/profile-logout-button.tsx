@@ -17,7 +17,7 @@ export function ProfileLogoutButton() {
           router.push(path)
         })
       }}
-      size="extra"
+      size="lg"
       type="button"
       variant="destructive"
     >

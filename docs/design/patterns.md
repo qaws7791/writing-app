@@ -8,7 +8,7 @@
 
 - 학습 홈, 코스, 쓰기 홈과 프로필은 `AppShell`을 사용한다.
 - 데스크톱은 상단 nav, 모바일은 하단 nav를 사용한다.
-- 본문은 `an-fi`로 가볍게 진입하되, 주요 고정 요소에는 transform 애니메이션을 적용하지 않는다.
+- 필요한 본문은 `animate-drift-in`으로 가볍게 진입한다. 주요 고정 요소에는 transform 애니메이션을 적용하지 않는다.
 
 ### 코스 카드
 
@@ -28,7 +28,7 @@
 
 - 코스 진행률은 공용 `Progress`로 표시한다.
 - 수치가 필요한 곳은 `completed/total`처럼 명확한 분수를 같이 제공한다.
-- `Surface` 위 progress track은 기본 `bg-default-soft`를 유지한다. `bg-surface`나 `bg-bg-surface`로 트랙 색을 덮어쓰지 않는다.
+- progress track은 공용 `Progress`의 `secondary` 색을 유지한다. 호출자는 track 색을 덮어쓰지 않는다.
 - 레슨 진행률은 `role="progressbar"`와 `aria-valuenow`, `aria-valuemin`, `aria-valuemax`를 제공한다.
 
 ### 레슨 몰입 화면
@@ -49,8 +49,8 @@
 
 ### 정답과 오답 피드백
 
-- 정답은 `success-*`, 오답은 `danger-*` semantic token을 사용한다.
-- 피드백 footer는 `StickyActionBar`와 `Callout`으로 표시하고, 다음 행동은 `계속하기`로 유지한다.
+- 정답과 오답은 `Insight`의 `correct`와 `incorrect` tone으로 표시한다.
+- 피드백과 다음 행동은 `LessonFooter`, `LessonFeedback`과 `LessonActions`로 표시한다. 다음 행동은 `계속하기`로 유지한다.
 
 ### 빈 상태
 
@@ -61,20 +61,20 @@
 
 - 프로필의 테마 전환은 3분할 segmented control이다.
 - 옵션은 라이트, 다크, 시스템이다.
-- 활성 상태는 `aria-pressed="true"`와 `data-pressed`로 검증하며, 색상은 `action-selected-*` token을 사용한다.
+- 활성 상태는 `aria-pressed="true"`와 `data-pressed`로 검증하며, 색상은 `accent`와 `foreground` token을 사용한다.
 
 ## 어드민 패턴
 
 ### 화면 구조
 
 - 모든 보호된 어드민 화면은 `AdminShell` 안에서 렌더링한다.
-- 본문 상단에는 `PageHeader`를 직접 둔다.
+- 본문 상단에는 앱 전용 `AdminPageHeader`를 둔다.
 - 조회 실패는 헤더 아래 `Alert role="alert"`로 표시한다.
 
 ### 목록 화면
 
-- 필터는 `FilterToolbar`에 모은다.
-- 목록은 `Surface variant="panel"` 안의 `DataTable`로 표시한다.
+- 필터는 native `GET` form 안에서 `Field`, `Input`, `Select`와 `Button`으로 조합한다.
+- 목록은 `Card` 안의 공유 `Table`로 표시한다.
 - 페이지네이션 메타는 섹션 heading 설명에 표시한다.
 - 복원 가능한 검색·정렬·페이지 상태는 native GET form과 `Link`로 URL query에 보존하고 서버 조회에 사용한다.
 
@@ -89,7 +89,7 @@
 
 ### 상태 pill
 
-- 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Kwep 어드민 기준의 중립 `Badge`로 표시한다.
+- 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Luma `Badge` variant로 표시한다.
 - enum 값은 외부 계약이므로 `active`, `archived`, `suspended`, `deleted` 같은 영어 식별자를 유지할 수 있다.
 
 ### 위험 작업

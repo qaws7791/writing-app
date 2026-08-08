@@ -1,0 +1,58 @@
+---
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+
+const toc = [
+  { id: "how-to-use", label: "사용 방법" },
+  { id: "scope", label: "문서 범위" },
+  { id: "contribution", label: "기여 기준" },
+  { id: "verification", label: "검증 기준" },
+]
+---
+
+<DocsLayout title="Luma UI 시작하기" description="Luma UI의 실행 가능한 디자인 시스템 문서를 사용하는 방법입니다." pathname="/docs/getting-started" toc={toc}>
+  <article>
+    <DocsPageHeader eyebrow="Getting started" title="글결 디자인 시스템" description="이 Astro 앱은 @workspace/ui와 공개 Luma registry의 설명, 실행 예제, 접근성 계약을 한곳에서 제공합니다." />
+
+    <section id="how-to-use" class="scroll-mt-24">
+      <h2 class="font-heading text-2xl font-semibold">사용 방법</h2>
+      <ul class="mt-5 grid gap-3 text-sm leading-6 text-muted-foreground">
+        <li class="rounded-3xl bg-muted/35 px-5 py-4"><strong class="text-foreground">외관</strong> 메뉴로 light, dark, system과 색상·radius를 전환합니다.</li>
+        <li class="rounded-3xl bg-muted/35 px-5 py-4"><strong class="text-foreground">반응형 미리보기</strong>에서 full·reduced motion과 5개 기준 viewport를 확인합니다.</li>
+        <li class="rounded-3xl bg-muted/35 px-5 py-4"><strong class="text-foreground">컴포넌트 문서</strong>에서 public API, 설치 코드, 상태와 접근성 계약을 확인합니다.</li>
+        <li class="rounded-3xl bg-muted/35 px-5 py-4"><strong class="text-foreground">패턴과 레시피</strong>에서 제품 route를 가져오지 않는 primitive 조합을 확인합니다.</li>
+      </ul>
+    </section>
+
+    <section id="scope" class="scroll-mt-24 pt-16">
+      <h2 class="font-heading text-2xl font-semibold">문서 범위</h2>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-4xl border p-6">
+          <h3 class="font-heading font-semibold">Registry</h3>
+          <p class="mt-2 text-sm leading-6 text-muted-foreground">공개 shadcn item, 설치 명령, source와 실행 예제를 소유합니다.</p>
+        </div>
+        <div class="rounded-4xl border p-6">
+          <h3 class="font-heading font-semibold">Workspace extension</h3>
+          <p class="mt-2 text-sm leading-6 text-muted-foreground">제품 앱에서만 사용하는 ThemeSelector와 lesson presentation adapter를 소유합니다.</p>
+        </div>
+      </div>
+      <p class="mt-5 text-sm leading-6 text-muted-foreground">이 문서는 앱의 routing, 인증, API, 채점 정책과 제품 상태를 가져오지 않습니다.</p>
+    </section>
+
+    <section id="contribution" class="scroll-mt-24 pt-16">
+      <h2 class="font-heading text-2xl font-semibold">기여 기준</h2>
+      <ol class="mt-5 grid gap-3 text-sm leading-6 text-muted-foreground">
+        <li class="rounded-3xl border px-5 py-4"><span class="mr-2 font-mono text-foreground">01</span>Public component의 상태나 variant를 바꾸면 같은 변경에서 해당 문서와 실행 예제를 갱신합니다.</li>
+        <li class="rounded-3xl border px-5 py-4"><span class="mr-2 font-mono text-foreground">02</span>Keyboard interaction과 접근성 상태는 browser contract로 검증합니다.</li>
+        <li class="rounded-3xl border px-5 py-4"><span class="mr-2 font-mono text-foreground">03</span>사용자 문구는 한국어를 기본으로 작성합니다.</li>
+        <li class="rounded-3xl border px-5 py-4"><span class="mr-2 font-mono text-foreground">04</span>Loading, empty, error 상태에는 다음 행동이나 복구 행동을 표시합니다.</li>
+      </ol>
+    </section>
+
+    <section id="verification" class="scroll-mt-24 pt-16">
+      <h2 class="font-heading text-2xl font-semibold">검증 기준</h2>
+      <p class="mt-3 leading-7 text-muted-foreground">정적 문서 검증, Chromium render, keyboard interaction, axe 접근성 검사와 registry source 동기화 검사가 변경을 차단합니다.</p>
+      <a href="/docs/quality/migration-coverage" class="mt-5 inline-flex rounded-2xl border px-4 py-2 text-sm font-medium hover:bg-muted">이전 범위 156개 항목 보기 →</a>
+    </section>
+  </article>
+</DocsLayout>

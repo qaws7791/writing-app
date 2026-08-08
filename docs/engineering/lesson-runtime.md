@@ -59,5 +59,5 @@
 - 서버 드래프트 SQLite 테스트는 사용자·revision·레슨·스텝 격리, 크기·version 제약, 낙관적 충돌, 조회·시작 복구, 부모 삭제 cascade와 제출 실패 시 답안·드래프트 rollback을 확인한다.
 - 레슨 세션이 서버 전이 결과만으로 이동하는지 web 테스트로 확인한다.
 - 웹 초안 테스트는 debounce·즉시 flush·진행 중 저장 합치기, 네트워크 재시도, stale version 충돌의 양쪽 값 보존, focus 조정과 첫 render 복원을 확인한다. Chromium과 Safari smoke는 새로고침·다른 탭·재로그인 복구와 debounce 전 탭 종료 복구를 확인한다.
-- 매칭 정책의 결정성·중복 label·일대일 재배정·재선택·정답 tone·item-ID payload는 web 테스트로, controlled 표시·keyboard callback·접근성 상태는 UI와 Storybook 테스트로 확인한다.
-- step 시각 상태는 Storybook fixture로, 어드민 편집 union은 editor 테스트로 확인한다.
+- 매칭 정책의 결정성·중복 label·일대일 재배정·재선택·정답 tone·item-ID payload는 web 테스트로, controlled 표시·keyboard callback·접근성 상태는 UI와 Astro UI 문서의 browser 테스트로 확인한다.
+- step 시각 상태는 Astro UI 문서의 lesson fixture로, 어드민 편집 union은 editor 테스트로 확인한다.

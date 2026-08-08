@@ -65,7 +65,7 @@ export function UserOperationActions({
 
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           disabled={isPending}
           onClick={() => setConfirming("status")}
@@ -118,7 +118,7 @@ export function UserOperationActions({
                     setConfirming(null)
                   })
                 }}
-                size="extra"
+                size="lg"
                 type="button"
               >
                 {transition.label} 처리
@@ -159,7 +159,7 @@ export function UserOperationActions({
                     setConfirming(null)
                   })
                 }}
-                size="extra"
+                size="lg"
                 type="button"
                 variant="destructive"
               >

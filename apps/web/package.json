@@ -18,7 +18,6 @@
     "@workspace/http-client": "workspace:*",
     "@workspace/nextjs-config": "workspace:*",
     "@workspace/ui": "workspace:*",
-    "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",

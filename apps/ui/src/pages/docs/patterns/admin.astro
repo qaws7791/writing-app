@@ -1,0 +1,18 @@
+---
+import CompositionPreview from "@/src/components/composition-preview"
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import ResponsivePreview from "@/src/components/responsive-preview"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+
+const baseUrl = import.meta.env.BASE_URL
+---
+
+<DocsLayout title="Admin Pattern" description="관리자 지표, 필터, 표와 empty state의 조합입니다." pathname="/docs/patterns/admin" toc={[{ id: "responsive-preview", label: "반응형 미리보기" }, { id: "story-overview", label: "Overview" }, { id: "story-empty-result", label: "Empty Result" }, { id: "contract", label: "조합 계약" }]}>
+  <article>
+    <DocsPageHeader eyebrow="Pattern" title="Admin" description="페이지 목적과 대표 행동, 주요 지표, filter와 결과를 읽는 순서로 구성합니다." />
+    <section id="responsive-preview" class="scroll-mt-24"><ResponsivePreview src={`${baseUrl}preview/compositions/admin/Overview`} title="Admin overview 반응형 미리보기" client:load /></section>
+    <section id="story-overview" class="scroll-mt-24 pt-16"><h2 class="font-heading text-2xl font-semibold">Overview</h2><p class="mt-3 mb-6 leading-7 text-muted-foreground">콘텐츠 수, 사용자, 신규 가입과 완료 레슨을 먼저 보여 주고 상태 filter와 결과 table을 이어서 배치합니다.</p><div class="overflow-hidden rounded-4xl border p-5"><CompositionPreview kind="admin" story="Overview" client:only="react" /></div></section>
+    <section id="story-empty-result" class="scroll-mt-24 pt-16"><h2 class="font-heading text-2xl font-semibold">Empty Result</h2><p class="mt-3 mb-6 leading-7 text-muted-foreground">Filter 결과가 없으면 원인을 설명하고 filter 초기화 행동을 제공합니다.</p><div class="grid min-h-72 place-items-center rounded-4xl border p-5"><CompositionPreview kind="admin" story="EmptyResult" client:only="react" /></div></section>
+    <section id="contract" class="scroll-mt-24 pt-16"><h2 class="font-heading text-2xl font-semibold">조합 계약</h2><ul class="mt-5 grid gap-3 text-sm leading-6"><li class="rounded-3xl bg-muted p-5">대표 행동은 page header에 하나만 둡니다.</li><li class="rounded-3xl bg-muted p-5">지표는 수치, label과 기준 기간을 함께 표시합니다.</li><li class="rounded-3xl bg-muted p-5">Empty state는 사용자가 결과를 복구하는 행동을 제공합니다.</li></ul></section>
+  </article>
+</DocsLayout>

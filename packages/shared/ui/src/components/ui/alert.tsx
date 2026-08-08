@@ -4,13 +4,14 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "#ui/lib/utils"
 
 const alertVariants = cva(
-  "group/alert relative grid w-full gap-0.5 rounded-2xl border px-4 py-3 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
+  "group/alert relative grid w-full gap-1 rounded-3xl border px-5 py-4 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-3 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-card text-card-foreground",
+        default:
+          "border-border/80 bg-card text-card-foreground *:[svg]:text-muted-foreground",
         destructive:
-          "bg-card text-danger-foreground *:data-[slot=alert-description]:text-danger-foreground *:[svg]:text-current",
+          "border-destructive/25 bg-destructive/6 text-destructive *:data-[slot=alert-description]:text-destructive *:[svg]:text-destructive/80 dark:bg-destructive/10",
       },
     },
     defaultVariants: {
@@ -19,49 +20,16 @@ const alertVariants = cva(
   }
 )
 
-/**
- * `Alert` 컴포넌트는 사용자의 주의를 끌기 위한 알림을 표시합니다.
- * 
- * @example
- * ```tsx
- * <Alert>
-  <InfoIcon />
-  <AlertTitle>Heads up!</AlertTitle>
-  <AlertDescription>
-    You can add components and dependencies to your app using the cli.
-  </AlertDescription>
-  <AlertAction>
-    <Button variant="outline">Enable</Button>
-  </AlertAction>
-</Alert>
- * ```
- */
 function Alert({
   className,
   variant,
-  tone,
   ...props
-}: React.ComponentProps<"div"> &
-  VariantProps<typeof alertVariants> & {
-    tone?:
-      | "neutral"
-      | "info"
-      | "success"
-      | "warning"
-      | "danger"
-      | "destructive"
-      | "selected"
-  }) {
-  const resolvedVariant =
-    variant ||
-    (tone === "danger" || tone === "destructive" || tone === "warning"
-      ? "destructive"
-      : "default")
+}: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
   return (
     <div
       data-slot="alert"
       role="alert"
-      className={cn(alertVariants({ variant: resolvedVariant }), className)}
+      className={cn(alertVariants({ variant }), className)}
       {...props}
     />
   )
@@ -72,7 +40,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="alert-title"
       className={cn(
-        "font-medium group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground",
+        "font-medium tracking-[-0.01em] group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:decoration-current/30 [&_a]:underline-offset-[0.3em] [&_a]:hover:decoration-current/70",
         className
       )}
       {...props}
@@ -88,7 +56,7 @@ function AlertDescription({
     <div
       data-slot="alert-description"
       className={cn(
-        "text-sm text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
+        "text-sm leading-6 text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:decoration-current/30 [&_a]:underline-offset-[0.3em] [&_a]:hover:decoration-current/70 [&_p:not(:last-child)]:mb-4",
         className
       )}
       {...props}
@@ -100,7 +68,7 @@ function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="alert-action"
-      className={cn("absolute top-2.5 right-3", className)}
+      className={cn("absolute top-3.5 right-4", className)}
       {...props}
     />
   )

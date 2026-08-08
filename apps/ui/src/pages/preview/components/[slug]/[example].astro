@@ -1,0 +1,26 @@
+---
+import ComponentPreview from "@/src/components/component-preview"
+import PreviewLayout from "@/src/layouts/preview-layout.astro"
+import { componentDocs } from "@/src/lib/component-docs"
+import { getComponentGuide } from "@/src/lib/component-guides"
+
+export function getStaticPaths() {
+  return componentDocs.flatMap((doc) => {
+    const guide = getComponentGuide(doc.slug, doc.title)
+    return guide.examples
+      .filter((example) => example.preview !== false)
+      .map((example) => ({
+        params: { slug: doc.slug, example: example.id },
+        props: { title: `${doc.title} · ${example.title}` },
+      }))
+  })
+}
+
+type Props = { title: string }
+const { slug, example } = Astro.params
+const { title } = Astro.props
+---
+
+<PreviewLayout title={title}>
+  <ComponentPreview slug={slug!} example={example!} client:only="react" />
+</PreviewLayout>

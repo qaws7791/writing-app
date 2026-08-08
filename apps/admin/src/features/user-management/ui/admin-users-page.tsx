@@ -19,8 +19,10 @@ import {
   readGetFormFields,
 } from "@/shared/navigation/get-filter-url"
 import { UserOperationActions } from "@/features/user-management/ui/user-operation-actions"
+import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
+import { Card } from "@workspace/ui/components/ui/card"
 import {
   Table,
   TableBody,
@@ -30,10 +32,7 @@ import {
   TableRow,
   TableCaption,
 } from "@workspace/ui/components/ui/table"
-import {
-  FilterToolbarField,
-  FilterToolbarLabel,
-} from "@workspace/ui/components/ui/filter-toolbar"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import {
   Select,
@@ -91,7 +90,7 @@ export function AdminUsersPage({
     return (
       <>
         <UsersHeading />
-        <Alert role="alert" tone="danger">
+        <Alert role="alert" variant="destructive">
           <AlertDescription>{usersResult.error.message}</AlertDescription>
         </Alert>
       </>
@@ -120,10 +119,8 @@ export function AdminUsersPage({
         method="get"
       >
         <input name="page" type="hidden" value="1" />
-        <FilterToolbarField className="relative min-w-[220px] flex-1 gap-0">
-          <FilterToolbarLabel className="sr-only">
-            사용자 검색
-          </FilterToolbarLabel>
+        <Field className="relative min-w-[220px] flex-1 gap-0">
+          <FieldLabel className="sr-only">사용자 검색</FieldLabel>
           <SearchIcon
             aria-hidden="true"
             className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -136,11 +133,10 @@ export function AdminUsersPage({
             name="query"
             placeholder="이름 또는 이메일 검색…"
           />
-        </FilterToolbarField>
-        <FilterToolbarField className="gap-0">
-          <FilterToolbarLabel className="sr-only">상태</FilterToolbarLabel>
+        </Field>
+        <Field className="w-auto gap-0">
+          <FieldLabel className="sr-only">상태</FieldLabel>
           <Select
-            aria-label="상태"
             value={filters.status}
             items={userStatusFilterItems}
             name="status"
@@ -149,8 +145,8 @@ export function AdminUsersPage({
             }}
           >
             <SelectTrigger
+              aria-label="상태"
               className="w-[140px] font-semibold"
-              variant="outlined"
             >
               <SelectValue placeholder="전체" />
             </SelectTrigger>
@@ -162,11 +158,10 @@ export function AdminUsersPage({
               ))}
             </SelectContent>
           </Select>
-        </FilterToolbarField>
-        <FilterToolbarField className="gap-0">
-          <FilterToolbarLabel className="sr-only">정렬</FilterToolbarLabel>
+        </Field>
+        <Field className="w-auto gap-0">
+          <FieldLabel className="sr-only">정렬</FieldLabel>
           <Select
-            aria-label="정렬"
             value={filters.sort}
             items={userSortItems}
             name="sort"
@@ -175,8 +170,8 @@ export function AdminUsersPage({
             }}
           >
             <SelectTrigger
+              aria-label="정렬"
               className="w-[160px] font-semibold"
-              variant="outlined"
             >
               <SelectValue placeholder="최근 접속" />
             </SelectTrigger>
@@ -188,13 +183,10 @@ export function AdminUsersPage({
               ))}
             </SelectContent>
           </Select>
-        </FilterToolbarField>
-        <FilterToolbarField className="gap-0">
-          <FilterToolbarLabel className="sr-only">
-            페이지 크기
-          </FilterToolbarLabel>
+        </Field>
+        <Field className="w-auto gap-0">
+          <FieldLabel className="sr-only">페이지 크기</FieldLabel>
           <Select
-            aria-label="페이지 크기"
             items={userPageSizeItems}
             name="pageSize"
             onValueChange={(value) => {
@@ -202,7 +194,10 @@ export function AdminUsersPage({
             }}
             value={String(filters.pageSize)}
           >
-            <SelectTrigger className="w-30 font-semibold" variant="outlined">
+            <SelectTrigger
+              aria-label="페이지 크기"
+              className="w-30 font-semibold"
+            >
               <SelectValue placeholder="20개" />
             </SelectTrigger>
             <SelectContent>
@@ -213,7 +208,7 @@ export function AdminUsersPage({
               ))}
             </SelectContent>
           </Select>
-        </FilterToolbarField>
+        </Field>
         <Button type="submit" variant="outline">
           검색
         </Button>
@@ -222,11 +217,19 @@ export function AdminUsersPage({
         </span>
       </form>
       {message === null ? null : (
-        <Alert className="mb-4" role="status" tone={message.tone}>
+        <Alert
+          className="mb-4"
+          role="status"
+          variant={message.tone === "danger" ? "destructive" : "default"}
+        >
           <AlertDescription>{message.message}</AlertDescription>
         </Alert>
       )}
-      <div className="overflow-hidden rounded-[24px] border border-border/50">
+      <Card
+        aria-label="사용자 목록"
+        className="gap-0 overflow-x-auto py-0"
+        role="region"
+      >
         <Table className="min-w-[880px]">
           <TableCaption className="sr-only">사용자 목록</TableCaption>
           <TableHeader>
@@ -312,7 +315,7 @@ export function AdminUsersPage({
             })}
           </TableBody>
         </Table>
-      </div>
+      </Card>
       <UserPagination filters={filters} pagination={pagination} />
     </>
   )
@@ -362,13 +365,13 @@ function UserPagination({
 
 function UsersHeading({ totalUsers }: { readonly totalUsers?: number }) {
   return (
-    <header className="mb-6">
-      <h1 className="m-0 text-[2rem] font-bold text-foreground">사용자 관리</h1>
-      <p className="mt-1 text-[1.0625rem] font-medium text-muted-foreground">
-        {totalUsers === undefined
+    <AdminPageHeader
+      description={
+        totalUsers === undefined
           ? "학습자 상태와 진행 현황을 관리합니다."
-          : `학습자 ${totalUsers}명 · 상태와 진행 현황을 관리합니다.`}
-      </p>
-    </header>
+          : `학습자 ${totalUsers}명 · 상태와 진행 현황을 관리합니다.`
+      }
+      title="사용자 관리"
+    />
   )
 }

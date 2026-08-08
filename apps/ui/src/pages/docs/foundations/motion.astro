@@ -1,0 +1,24 @@
+---
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+import { Button } from "@/registry/luma/ui/button"
+---
+
+<DocsLayout title="Motion" description="Full motion과 reduced motion의 실행 계약입니다." pathname="/docs/foundations/motion" toc={[{ id: "story-motion-preference", label: "Motion Preference" }]}>
+  <article>
+    <DocsPageHeader eyebrow="Foundation" title="Motion" description="동작은 상태 변화를 설명합니다. 진입 동작은 320 ms 안에 끝나며 reduced motion에서는 즉시 완료됩니다." />
+    <section id="story-motion-preference" class="scroll-mt-24 grid gap-6 lg:grid-cols-2">
+      {(["full", "reduced"] as const).map((motion) => (
+        <div class:list={["grid gap-5 rounded-4xl border bg-card p-6 shadow-xs", motion === "reduced" && "motion-reduced"]}>
+          <div><h2 class="font-heading text-lg font-semibold">{motion}</h2><p class="text-sm text-muted-foreground">미리보기의 motion 설정과 같은 상태입니다.</p></div>
+          <Button className="w-fit" type="button">누름 반응 확인</Button>
+          <div class="motion-sample animate-drift-in rounded-3xl bg-surface p-5 text-sm text-muted-foreground">콘텐츠 진입은 최대 320 ms 이내로 끝납니다.</div>
+        </div>
+      ))}
+    </section>
+  </article>
+</DocsLayout>
+
+<style>
+  .motion-reduced .motion-sample { animation-duration: 0.01ms !important; }
+</style>

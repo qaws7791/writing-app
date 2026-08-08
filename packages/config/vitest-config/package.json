@@ -8,7 +8,8 @@
   },
   "exports": {
     "./console-failure-harness": "./src/console-failure-harness.ts",
-    "./react": "./src/react.ts"
+    "./react": "./src/react.ts",
+    "./resize-observer-stub": "./src/resize-observer-stub.ts"
   },
   "scripts": {
     "lint": "oxlint .",

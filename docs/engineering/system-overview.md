@@ -19,6 +19,7 @@
 - 외부 provider SDK, logger와 DB runtime 구현은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다. HTTP framework의 공통 app·middleware·error·security 구현은 http-platform infra가 소유하되, endpoint를 소유하는 module interface는 공개 platform helper와 필요한 Hono route type을 사용한다. API composition은 module route와 실행 경계 route를 최종 app에 등록한다.
 - 각 module과 auth infra는 자기 최종 Drizzle schema를 소유하고, 실제 seed가 있는 경계만 seed provider를 공개한다. API SQL이 유일한 migration 계보를 소유하고 schema·seed 실행을 조립한다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
+- UI registry 앱은 Luma source, 정적 문서, preview와 shadcn 배포 artifact를 소유한다. Registry block의 fixture와 local state는 제품 runtime 경계가 아니다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.
 - API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, 외부 I/O와 `content`, `learning`, `writing`, `identity`, `ai-feedback`, `operations` 여섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
 - API 종료는 신규 요청 차단과 진행 응답 drain 뒤 `container.dispose()`에 resource 정리를 위임한다. container는 AI, DB, logger를 역순으로 정리하고 각 실패를 격리하며 signal 중복 수신은 같은 종료 작업으로 수렴시킨다.

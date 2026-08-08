@@ -1,0 +1,18 @@
+---
+import WorkspaceExtensionPreview from "@/src/components/workspace-extension-preview"
+import PreviewLayout from "@/src/layouts/preview-layout.astro"
+import { getMigratedStories } from "@/src/lib/design-system-inventory"
+import { workspaceExtensionDocs } from "@/src/lib/workspace-extension-docs"
+
+export function getStaticPaths() {
+  return workspaceExtensionDocs.flatMap((doc) => getMigratedStories(doc.moduleTitle).map((story) => ({ params: { slug: doc.slug, story: story.exportName }, props: { title: `${doc.title} · ${story.label}` } })))
+}
+
+type Props = { title: string }
+const { slug, story } = Astro.params
+const { title } = Astro.props
+---
+
+<PreviewLayout title={title}>
+  <WorkspaceExtensionPreview slug={slug!} story={story!} client:only="react" />
+</PreviewLayout>

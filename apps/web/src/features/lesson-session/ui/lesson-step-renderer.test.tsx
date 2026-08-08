@@ -52,7 +52,7 @@ describe("LessonStepRenderer", () => {
         step={step}
       />
     )
-    await user.click(screen.getByRole("button", { name: "둘째 답" }))
+    await user.click(screen.getByRole("radio", { name: "둘째 답" }))
 
     expect(onAnswerPayloadChange).toHaveBeenCalledWith({
       payload: { selectedOptionId: "option-b", type: "MULTIPLE_CHOICE" },
@@ -84,8 +84,8 @@ describe("LessonStepRenderer", () => {
 
     render(<LessonStepRenderer checked={checked} step={step} />)
 
-    expect(screen.getByRole("button", { name: "둘째 답" })).toBeEnabled()
-    expect(screen.getByRole("button", { name: "첫 답" })).toBeDisabled()
+    expect(screen.getByRole("radio", { name: "둘째 답" })).toBeEnabled()
+    expect(screen.getByRole("radio", { name: "첫 답" })).toBeDisabled()
   })
 
   it("구간 선택 평가를 받으면 서버 해설을 화면에 노출한다", () => {

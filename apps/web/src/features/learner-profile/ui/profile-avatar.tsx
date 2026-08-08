@@ -14,7 +14,7 @@ export function ProfileAvatar({
   const showImage = image !== null && failedImage !== image
 
   return (
-    <div className="mb-6 flex size-32 items-center justify-center overflow-hidden rounded-[3rem] bg-action-selected-bg text-display-lg text-action-selected-fg">
+    <div className="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-4xl bg-background/80 text-4xl text-foreground sm:size-32">
       {showImage ? (
         <Image
           alt={`${name} 프로필`}

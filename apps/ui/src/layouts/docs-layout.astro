@@ -1,0 +1,83 @@
+---
+import SiteHeader from "@/src/components/site-header.astro"
+import ThemeInitializer from "@/src/components/theme-initializer.astro"
+import { docsNavigation, withBase } from "@/src/lib/docs-catalog"
+import { ClientRouter } from "astro:transitions"
+import "@/src/styles/global.css"
+
+type Props = {
+  title: string
+  description: string
+  pathname: string
+  registrySlug?: string
+  toc?: { id: string; label: string }[]
+}
+
+const { title, description, pathname, registrySlug, toc = [] } = Astro.props
+const baseUrl = import.meta.env.BASE_URL
+const pageTitle = `${title} — Luma UI`
+const canonical = new URL(withBase(baseUrl, pathname), Astro.site).toString()
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+    <ThemeInitializer />
+    <ClientRouter />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={`${baseUrl}favicon.svg`} />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <SiteHeader active={pathname === "/docs/blocks" ? "blocks" : "docs"} pathname={pathname} />
+
+    <div class="mx-auto grid max-w-[1500px] lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,820px)_220px]">
+      <aside transition:persist="docs-sidebar" class="sticky top-15 hidden h-[calc(100vh-3.75rem)] overflow-y-auto border-r px-4 py-8 lg:block">
+        <nav aria-label="디자인 시스템 문서" class="space-y-7">
+          {docsNavigation.map((section) => (
+            <section>
+              <h2 class="mb-2 px-3 text-xs font-medium text-muted-foreground">{section.title}</h2>
+              <div class="space-y-0.5">
+                {section.items.map((item) => (
+                  <a href={withBase(baseUrl, item.href)} aria-current={pathname === item.href ? "page" : undefined} class:list={["block rounded-xl px-3 py-1.5 text-sm transition-colors hover:bg-muted/60 hover:text-foreground", pathname === item.href ? "bg-muted font-medium text-foreground" : "text-foreground/90"]}>{item.title}</a>
+                ))}
+              </div>
+            </section>
+          ))}
+        </nav>
+      </aside>
+
+      <script>
+        document.addEventListener("astro:before-swap", () => {
+          const activeElement = document.activeElement
+          if (activeElement instanceof HTMLElement && activeElement.closest('[data-astro-transition-persist="docs-sidebar"]')) {
+            document.querySelector("main")?.focus({ preventScroll: true })
+          }
+        })
+      </script>
+
+      <main tabindex="-1" class="min-w-0 px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+        <slot />
+      </main>
+
+      <aside class="sticky top-15 hidden h-[calc(100vh-3.75rem)] overflow-y-auto px-6 py-14 xl:block">
+        <p class="mb-4 text-xs font-medium text-muted-foreground">이 페이지에서</p>
+        <nav class="space-y-2 text-sm text-muted-foreground" aria-label="페이지 목차">
+          {toc.map((item) => <a class="block hover:text-foreground" href={`#${item.id}`}>{item.label}</a>)}
+        </nav>
+        <div class="mt-10 rounded-3xl bg-muted/55 p-5">
+          <p class="font-heading text-sm font-semibold">{registrySlug ? "Luma Registry" : "Luma UI 문서"}</p>
+          <p class="mt-2 text-xs leading-5 text-muted-foreground">
+            {registrySlug ? "이 컴포넌트는 공개 shadcn registry item입니다." : "이 페이지는 실행 가능한 디자인 시스템 계약을 설명합니다."}
+          </p>
+          {registrySlug && <a href={`${baseUrl}r/${registrySlug}.json`} class="mt-4 inline-flex rounded-xl border bg-background px-3 py-1.5 text-xs font-medium">JSON 보기</a>}
+        </div>
+      </aside>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+---
+import "@/src/styles/global.css"
+
+type Props = { title: string }
+const { title } = Astro.props
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title} — Luma UI Preview</title>
+    <script is:inline>
+      (() => {
+        const parameters = new URLSearchParams(window.location.search)
+        const theme = parameters.get("theme") ?? "system"
+        const motion = parameters.get("motion") ?? "full"
+        const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+        document.documentElement.classList.toggle("dark", isDark)
+        document.documentElement.dataset.motion = motion
+      })()
+    </script>
+  </head>
+  <body>
+    <main class="grid min-h-svh place-items-center bg-background p-6 text-foreground">
+      <div class="w-full"><slot /></div>
+    </main>
+  </body>
+</html>

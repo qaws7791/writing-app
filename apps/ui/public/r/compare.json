@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "compare",
+  "registryDependencies": [
+    "https://YOUR_GITHUB_ID.github.io/ui/r/base.json",
+    "https://YOUR_GITHUB_ID.github.io/ui/r/tabs.json"
+  ],
+  "files": [
+    {
+      "path": "registry/luma/ui/compare.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\n\nimport { cn } from \"@/registry/luma/lib/utils\";\nimport { Tabs, TabsContent, TabsList, TabsTrigger } from \"@/registry/luma/ui/tabs\";\n\nfunction Compare({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div data-slot=\"compare\" className={cn(\"flex w-full flex-col gap-5\", className)} {...props} />\n  );\n}\n\nfunction CompareVersions({ className, ...props }: React.ComponentProps<typeof Tabs>) {\n  return <Tabs data-slot=\"compare-versions\" className={cn(\"w-full gap-4\", className)} {...props} />;\n}\n\nfunction CompareVersionList({ className, ...props }: React.ComponentProps<typeof TabsList>) {\n  return (\n    <TabsList\n      data-slot=\"compare-version-list\"\n      className={cn(\"w-full justify-start sm:w-fit\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction CompareVersion({ className, ...props }: React.ComponentProps<typeof TabsTrigger>) {\n  return <TabsTrigger data-slot=\"compare-version\" className={cn(className)} {...props} />;\n}\n\nfunction ComparePanel({ className, ...props }: React.ComponentProps<typeof TabsContent>) {\n  return (\n    <TabsContent\n      data-slot=\"compare-panel\"\n      className={cn(\n        \"rounded-4xl border border-border/80 bg-card px-5 py-5 text-base leading-7 text-pretty shadow-2xs sm:px-6 sm:py-6\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nexport { Compare, CompareVersions, CompareVersionList, CompareVersion, ComparePanel };\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

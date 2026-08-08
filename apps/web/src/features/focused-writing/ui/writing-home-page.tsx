@@ -23,6 +23,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/ui/card"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@workspace/ui/components/ui/empty"
+import {
+  Insight,
+  InsightDescription,
+} from "@workspace/ui/components/ui/insight"
 import { cn } from "@workspace/ui/lib/utils"
 
 import {
@@ -117,12 +127,12 @@ export function WritingHomePage({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
             <h1
-              className="font-heading text-heading-lg font-black"
+              className="font-heading text-3xl font-semibold tracking-[-0.03em] text-balance"
               id="writing-home-title"
             >
               쓰기
             </h1>
-            <p className="text-body-md text-muted-foreground">
+            <p className="text-base leading-7 text-pretty text-muted-foreground">
               생각을 글로 옮기고 세 가지 질문으로 다시 읽어 보세요.
             </p>
           </div>
@@ -171,31 +181,33 @@ export function WritingHomePage({
       </section>
 
       {statusMessage === null ? null : (
-        <p className="text-body-sm text-muted-foreground" role="status">
-          {statusMessage}
-        </p>
+        <Insight role="status">
+          <InsightDescription>{statusMessage}</InsightDescription>
+        </Insight>
       )}
       {errorMessage === null ? null : (
-        <p className="text-body-sm text-danger-foreground" role="alert">
-          {errorMessage}
-        </p>
+        <Insight role="alert" tone="incorrect">
+          <InsightDescription>{errorMessage}</InsightDescription>
+        </Insight>
       )}
 
       <section className="space-y-4" aria-labelledby="saved-writings-title">
         <h2
-          className="font-heading text-heading-sm font-bold"
+          className="font-heading text-xl font-semibold tracking-[-0.02em]"
           id="saved-writings-title"
         >
           저장한 글
         </h2>
 
         {writings.length === 0 ? (
-          <div className="rounded-4xl bg-surface px-6 py-12 text-center">
-            <p className="font-bold">아직 저장한 글이 없습니다.</p>
-            <p className="mt-2 text-body-sm text-muted-foreground">
-              위의 새 글 쓰기에서 첫 글을 시작해 보세요.
-            </p>
-          </div>
+          <Empty variant="frame">
+            <EmptyHeader>
+              <EmptyTitle>아직 저장한 글이 없습니다.</EmptyTitle>
+              <EmptyDescription>
+                쓰기 방식을 선택하고 첫 글을 시작해 보세요.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <ul className="grid gap-3">
             {writings.map((writing) => {
@@ -204,19 +216,18 @@ export function WritingHomePage({
                 <li key={writing.id}>
                   <Card size="sm">
                     <CardHeader>
-                      <CardTitle
-                        as="h3"
-                        className="pr-12 text-body-lg font-bold"
-                      >
-                        <Link
-                          className={cn(
-                            buttonVariants({ variant: "link" }),
-                            "h-auto justify-start whitespace-normal p-0 text-left text-foreground"
-                          )}
-                          href={`/app/writing/${encodeURIComponent(writing.id)}`}
-                        >
-                          {readWritingTitle(writing.title)}
-                        </Link>
+                      <CardTitle className="pr-12 text-base font-semibold">
+                        <h3>
+                          <Link
+                            className={cn(
+                              buttonVariants({ variant: "link" }),
+                              "h-auto justify-start whitespace-normal p-0 text-left text-foreground"
+                            )}
+                            href={`/app/writing/${encodeURIComponent(writing.id)}`}
+                          >
+                            {readWritingTitle(writing.title)}
+                          </Link>
+                        </h3>
                       </CardTitle>
                       <CardDescription className="flex flex-wrap items-center gap-2">
                         <span>{mode.label}</span>
@@ -227,8 +238,10 @@ export function WritingHomePage({
                           )}
                         </time>
                         <Badge
-                          tone={
-                            writing.status === "checked" ? "success" : "neutral"
+                          variant={
+                            writing.status === "checked"
+                              ? "success"
+                              : "secondary"
                           }
                         >
                           {readWritingStatusLabel(writing.status)}
@@ -273,7 +286,7 @@ export function WritingHomePage({
               className="min-w-0 flex-1 basis-0"
               disabled={deleting}
               onClick={() => void handleDelete()}
-              size="extra"
+              size="lg"
               variant="destructive"
             >
               {deleting ? "삭제 중" : "삭제하기"}

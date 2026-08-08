@@ -1,182 +1,157 @@
-import type { ReactNode, SVGProps } from "react"
+import ArchiveSvg from "@hugeicons/core-free-icons/Archive02Icon"
+import ArrowDownSvg from "@hugeicons/core-free-icons/ArrowDown01Icon"
+import ArrowLeftSvg from "@hugeicons/core-free-icons/ArrowLeft01Icon"
+import ArrowLeftDoubleSvg from "@hugeicons/core-free-icons/ArrowLeftDoubleIcon"
+import ArrowRightSvg from "@hugeicons/core-free-icons/ArrowRight01Icon"
+import ArrowRightDoubleSvg from "@hugeicons/core-free-icons/ArrowRightDoubleIcon"
+import ArrowUpSvg from "@hugeicons/core-free-icons/ArrowUp01Icon"
+import ArrowUpDownSvg from "@hugeicons/core-free-icons/ArrowUpDownIcon"
+import AlertCircleSvg from "@hugeicons/core-free-icons/AlertCircleIcon"
+import BanSvg from "@hugeicons/core-free-icons/BanIcon"
+import BarChartSvg from "@hugeicons/core-free-icons/BarChartIcon"
+import BookOpenSvg from "@hugeicons/core-free-icons/BookOpen02Icon"
+import BotSvg from "@hugeicons/core-free-icons/BotIcon"
+import CalendarDaysSvg from "@hugeicons/core-free-icons/CalendarDaysIcon"
+import CancelSvg from "@hugeicons/core-free-icons/Cancel01Icon"
+import CheckCircleSvg from "@hugeicons/core-free-icons/CheckmarkCircle02Icon"
+import ClockSvg from "@hugeicons/core-free-icons/Clock01Icon"
+import CloudSvg from "@hugeicons/core-free-icons/CloudIcon"
+import ComputerSvg from "@hugeicons/core-free-icons/ComputerIcon"
+import CopySvg from "@hugeicons/core-free-icons/Copy01Icon"
+import CreditCardSvg from "@hugeicons/core-free-icons/CreditCardIcon"
+import DashboardSvg from "@hugeicons/core-free-icons/DashboardSquare02Icon"
+import DeleteSvg from "@hugeicons/core-free-icons/Delete02Icon"
+import ExternalLinkSvg from "@hugeicons/core-free-icons/ExternalLinkIcon"
+import FileTextSvg from "@hugeicons/core-free-icons/FileScriptIcon"
+import FlameSvg from "@hugeicons/core-free-icons/FlameIcon"
+import FolderOpenSvg from "@hugeicons/core-free-icons/FolderOpenIcon"
+import GraduationCapSvg from "@hugeicons/core-free-icons/GraduationCapIcon"
+import GripVerticalSvg from "@hugeicons/core-free-icons/GripVerticalIcon"
+import HelpCircleSvg from "@hugeicons/core-free-icons/HelpCircleIcon"
+import HomeSvg from "@hugeicons/core-free-icons/Home01Icon"
+import InformationCircleSvg from "@hugeicons/core-free-icons/InformationCircleIcon"
+import KeyboardSvg from "@hugeicons/core-free-icons/KeyboardIcon"
+import LayersSvg from "@hugeicons/core-free-icons/Layers01Icon"
+import LinkSvg from "@hugeicons/core-free-icons/Link01Icon"
+import LoadingSvg from "@hugeicons/core-free-icons/Loading03Icon"
+import LockSvg from "@hugeicons/core-free-icons/LockIcon"
+import LoginSvg from "@hugeicons/core-free-icons/Login03Icon"
+import LogoutSvg from "@hugeicons/core-free-icons/Logout03Icon"
+import MailSvg from "@hugeicons/core-free-icons/Mail01Icon"
+import MenuSvg from "@hugeicons/core-free-icons/Menu01Icon"
+import MessageSvg from "@hugeicons/core-free-icons/Message01Icon"
+import MessageAddSvg from "@hugeicons/core-free-icons/MessageAdd02Icon"
+import MoonSvg from "@hugeicons/core-free-icons/Moon02Icon"
+import PencilSvg from "@hugeicons/core-free-icons/PencilEdit02Icon"
+import PlaySvg from "@hugeicons/core-free-icons/PlayIcon"
+import PlusSignSvg from "@hugeicons/core-free-icons/PlusSignIcon"
+import PlusSignCircleSvg from "@hugeicons/core-free-icons/PlusSignCircleIcon"
+import PuzzleSvg from "@hugeicons/core-free-icons/PuzzleIcon"
+import RefreshSvg from "@hugeicons/core-free-icons/Refresh01Icon"
+import SaveSvg from "@hugeicons/core-free-icons/SaveIcon"
+import SearchSvg from "@hugeicons/core-free-icons/Search01Icon"
+import SearchRemoveSvg from "@hugeicons/core-free-icons/SearchRemoveIcon"
+import SecurityCheckSvg from "@hugeicons/core-free-icons/SecurityCheckIcon"
+import SentSvg from "@hugeicons/core-free-icons/SentIcon"
+import SettingsSvg from "@hugeicons/core-free-icons/Settings02Icon"
+import SparklesSvg from "@hugeicons/core-free-icons/SparklesIcon"
+import StarSvg from "@hugeicons/core-free-icons/StarIcon"
+import SunSvg from "@hugeicons/core-free-icons/Sun03Icon"
+import TickSvg from "@hugeicons/core-free-icons/Tick02Icon"
+import UserSvg from "@hugeicons/core-free-icons/UserIcon"
+import UserAddSvg from "@hugeicons/core-free-icons/UserAdd02Icon"
+import UserGroupSvg from "@hugeicons/core-free-icons/UserGroupIcon"
+import ViewSvg from "@hugeicons/core-free-icons/ViewIcon"
+import ViewOffSvg from "@hugeicons/core-free-icons/ViewOffIcon"
+import WarningSvg from "@hugeicons/core-free-icons/Alert02Icon"
+import { createIcon } from "#ui/components/icons/create-icon"
 
-export {
-  Archive as ArchiveIcon,
-  ArrowRight as ArrowRightIcon,
-  BarChart3 as BarChartIcon,
-  Bot as BotIcon,
-  CheckCircle2 as CheckCircleIcon,
-  FileText as FileTextIcon,
-  FolderOpen as FolderOpenIcon,
-  GraduationCap as GraduationCapIcon,
-  Layers as LayersIcon,
-  LayoutDashboard as LayoutDashboardIcon,
-  LogOut as LogOutIcon,
-  LogIn as LogInIcon,
-  Menu as MenuIcon,
-  MessageSquarePlus as MessageSquarePlusIcon,
-  Plus as PlusIcon,
-  Puzzle as PuzzleIcon,
-  Search as SearchIcon,
-  Send as SendIcon,
-  Settings as SettingsIcon,
-  ShieldCheck as ShieldCheckIcon,
-  Sparkles as SparklesIcon,
-  Monitor as MonitorIcon,
-  Moon as MoonIcon,
-  ExternalLink as ExternalLinkIcon,
-  Sun as SunIcon,
-  Trash2 as TrashIcon,
-  UserPlus as UserPlusIcon,
-  Users as UsersIcon,
-  ChevronsLeft as ChevronsLeftIcon,
-  ChevronsRight as ChevronsRightIcon,
-} from "lucide-react"
+export type { IconProps } from "#ui/components/icons/create-icon"
 
-type IconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {
-  readonly size?: number
-}
+export const ArchiveIcon = createIcon("ArchiveIcon", ArchiveSvg)
+export const ArrowLeftIcon = createIcon("ArrowLeftIcon", ArrowLeftSvg)
+export const ArrowRightIcon = createIcon("ArrowRightIcon", ArrowRightSvg)
+export const BarChartIcon = createIcon("BarChartIcon", BarChartSvg)
+export const BotIcon = createIcon("BotIcon", BotSvg)
+export const BookOpenIcon = createIcon("BookOpenIcon", BookOpenSvg)
+export const CheckCircleIcon = createIcon("CheckCircleIcon", CheckCircleSvg)
+export const CheckIcon = createIcon("CheckIcon", TickSvg)
+export const ChevronDownIcon = createIcon("ChevronDownIcon", ArrowDownSvg)
+export const ChevronLeftIcon = createIcon("ChevronLeftIcon", ArrowLeftSvg)
+export const ChevronRightIcon = createIcon("ChevronRightIcon", ArrowRightSvg)
+export const ChevronUpIcon = createIcon("ChevronUpIcon", ArrowUpSvg)
+export const ChevronsLeftIcon = createIcon(
+  "ChevronsLeftIcon",
+  ArrowLeftDoubleSvg
+)
+export const ChevronsRightIcon = createIcon(
+  "ChevronsRightIcon",
+  ArrowRightDoubleSvg
+)
+export const ChevronsUpDownIcon = createIcon(
+  "ChevronsUpDownIcon",
+  ArrowUpDownSvg
+)
+export const ExternalLinkIcon = createIcon("ExternalLinkIcon", ExternalLinkSvg)
+export const FileTextIcon = createIcon("FileTextIcon", FileTextSvg)
+export const FlameIcon = createIcon("FlameIcon", FlameSvg)
+export const FolderOpenIcon = createIcon("FolderOpenIcon", FolderOpenSvg)
+export const GraduationCapIcon = createIcon(
+  "GraduationCapIcon",
+  GraduationCapSvg
+)
+export const HomeIcon = createIcon("HomeIcon", HomeSvg)
+export const LayersIcon = createIcon("LayersIcon", LayersSvg)
+export const LayoutDashboardIcon = createIcon(
+  "LayoutDashboardIcon",
+  DashboardSvg
+)
+export const LockIcon = createIcon("LockIcon", LockSvg)
+export const LogInIcon = createIcon("LogInIcon", LoginSvg)
+export const LogOutIcon = createIcon("LogOutIcon", LogoutSvg)
+export const MenuIcon = createIcon("MenuIcon", MenuSvg)
+export const MessageSquarePlusIcon = createIcon(
+  "MessageSquarePlusIcon",
+  MessageAddSvg
+)
+export const MonitorIcon = createIcon("MonitorIcon", ComputerSvg)
+export const MoonIcon = createIcon("MoonIcon", MoonSvg)
+export const PlayIcon = createIcon("PlayIcon", PlaySvg)
+export const PlusIcon = createIcon("PlusIcon", PlusSignSvg)
+export const PuzzleIcon = createIcon("PuzzleIcon", PuzzleSvg)
+export const SearchIcon = createIcon("SearchIcon", SearchSvg)
+export const SendIcon = createIcon("SendIcon", SentSvg)
+export const SettingsIcon = createIcon("SettingsIcon", SettingsSvg)
+export const ShieldCheckIcon = createIcon("ShieldCheckIcon", SecurityCheckSvg)
+export const SparklesIcon = createIcon("SparklesIcon", SparklesSvg)
+export const SunIcon = createIcon("SunIcon", SunSvg)
+export const TrashIcon = createIcon("TrashIcon", DeleteSvg)
+export const UserIcon = createIcon("UserIcon", UserSvg)
+export const UserPlusIcon = createIcon("UserPlusIcon", UserAddSvg)
+export const UsersIcon = createIcon("UsersIcon", UserGroupSvg)
+export const XIcon = createIcon("XIcon", CancelSvg)
 
-export function BookOpenIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="book-open" size={size} {...props}>
-      <path d="M12 7v14" />
-      <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
-    </SvgIcon>
-  )
-}
-
-export function CheckIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="check" size={size} {...props}>
-      <path d="M20 6 9 17l-5-5" />
-    </SvgIcon>
-  )
-}
-
-export function ChevronDownIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon
-      className={className}
-      iconName="chevron-down"
-      size={size}
-      {...props}
-    >
-      <path d="m6 9 6 6 6-6" />
-    </SvgIcon>
-  )
-}
-
-export function ChevronLeftIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon
-      className={className}
-      iconName="chevron-left"
-      size={size}
-      {...props}
-    >
-      <path d="m15 18-6-6 6-6" />
-    </SvgIcon>
-  )
-}
-
-export function ChevronRightIcon({
-  className,
-  size = 24,
-  ...props
-}: IconProps) {
-  return (
-    <SvgIcon
-      className={className}
-      iconName="chevron-right"
-      size={size}
-      {...props}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </SvgIcon>
-  )
-}
-
-export function FlameIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="flame" size={size} {...props}>
-      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-    </SvgIcon>
-  )
-}
-
-export function LockIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="lock" size={size} {...props}>
-      <rect height="11" rx="2" ry="2" width="18" x="3" y="11" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </SvgIcon>
-  )
-}
-
-export function PlayIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="play" size={size} {...props}>
-      <polygon points="6 3 20 12 6 21 6 3" />
-    </SvgIcon>
-  )
-}
-
-export function HomeIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="house" size={size} {...props}>
-      <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-      <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    </SvgIcon>
-  )
-}
-
-export function UserIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="user" size={size} {...props}>
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </SvgIcon>
-  )
-}
-
-export function XIcon({ className, size = 24, ...props }: IconProps) {
-  return (
-    <SvgIcon className={className} iconName="x" size={size} {...props}>
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </SvgIcon>
-  )
-}
-
-function SvgIcon({
-  children,
-  className,
-  iconName,
-  size,
-  ...props
-}: IconProps & {
-  readonly children: ReactNode
-  readonly iconName: string
-  readonly size: number
-}) {
-  const mergedClassName = `lucide lucide-${iconName}${className ? ` ${className}` : ""}`
-
-  return (
-    <svg
-      className={mergedClassName}
-      fill="none"
-      height={size}
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-      width={size}
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      {children}
-    </svg>
-  )
-}
+export const AlertCircleIcon = createIcon("AlertCircleIcon", AlertCircleSvg)
+export const BanIcon = createIcon("BanIcon", BanSvg)
+export const CalendarDaysIcon = createIcon("CalendarDaysIcon", CalendarDaysSvg)
+export const ClockIcon = createIcon("ClockIcon", ClockSvg)
+export const CloudIcon = createIcon("CloudIcon", CloudSvg)
+export const CopyIcon = createIcon("CopyIcon", CopySvg)
+export const CreditCardIcon = createIcon("CreditCardIcon", CreditCardSvg)
+export const EyeIcon = createIcon("EyeIcon", ViewSvg)
+export const EyeOffIcon = createIcon("EyeOffIcon", ViewOffSvg)
+export const GripVerticalIcon = createIcon("GripVerticalIcon", GripVerticalSvg)
+export const HelpCircleIcon = createIcon("HelpCircleIcon", HelpCircleSvg)
+export const InfoIcon = createIcon("InfoIcon", InformationCircleSvg)
+export const KeyboardIcon = createIcon("KeyboardIcon", KeyboardSvg)
+export const LinkIcon = createIcon("LinkIcon", LinkSvg)
+export const LoadingIcon = createIcon("LoadingIcon", LoadingSvg)
+export const MailIcon = createIcon("MailIcon", MailSvg)
+export const MessageIcon = createIcon("MessageIcon", MessageSvg)
+export const PencilIcon = createIcon("PencilIcon", PencilSvg)
+export const PlusCircleIcon = createIcon("PlusCircleIcon", PlusSignCircleSvg)
+export const ResetIcon = createIcon("ResetIcon", RefreshSvg)
+export const SaveIcon = createIcon("SaveIcon", SaveSvg)
+export const SearchOffIcon = createIcon("SearchOffIcon", SearchRemoveSvg)
+export const StarIcon = createIcon("StarIcon", StarSvg)
+export const WarningIcon = createIcon("WarningIcon", WarningSvg)

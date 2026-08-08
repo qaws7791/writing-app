@@ -3,6 +3,7 @@
 import { type FormEvent, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { updateProfile } from "@workspace/http-client/learner"
+import { PencilIcon } from "@workspace/ui/components/icons/profile-icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
@@ -13,8 +14,7 @@ import {
   DialogTrigger,
 } from "@workspace/ui/components/ui/dialog"
 import { Input } from "@workspace/ui/components/ui/input"
-import { Label } from "@workspace/ui/components/ui/label"
-import { PencilIcon } from "lucide-react"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import {
@@ -86,15 +86,14 @@ export function ProfileNameEditor({
         </DialogHeader>
         <form
           aria-label="프로필 이름 수정"
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-5"
           key={`${currentName}-${open}`}
           onSubmit={submitName}
         >
-          <div>
-            <Label htmlFor="profile-display-name">표시 이름</Label>
+          <Field>
+            <FieldLabel htmlFor="profile-display-name">표시 이름</FieldLabel>
             <Input
               autoComplete="name"
-              className="mt-2"
               defaultValue={currentName}
               disabled={isPending}
               id="profile-display-name"
@@ -102,13 +101,13 @@ export function ProfileNameEditor({
               name="name"
               required
             />
-          </div>
+          </Field>
           <Button disabled={isPending} type="submit">
             {isPending ? "저장 중…" : "이름 저장"}
           </Button>
         </form>
         {message === null ? null : (
-          <Alert role="alert" tone="danger">
+          <Alert role="alert" variant="destructive">
             <AlertDescription>{message.text}</AlertDescription>
           </Alert>
         )}

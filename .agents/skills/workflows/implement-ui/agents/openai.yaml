@@ -1,4 +1,4 @@
 interface:
   display_name: "UI 구현 워크플로"
-  short_description: "토큰·공용 컴포넌트·Storybook을 일관되게 갱신"
+  short_description: "토큰·공용 컴포넌트·Astro UI 문서를 일관되게 갱신"
   default_prompt: "$implement-ui를 사용해 이 UI를 저장소 규칙에 맞게 구현하거나 수정해 주세요."

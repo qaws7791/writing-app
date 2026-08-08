@@ -18,18 +18,18 @@ import type { AdminChartPanelProps } from "@/entities/admin-analytics/model/admi
 const chartMargin = { bottom: 0, left: -20, right: 8, top: 8 }
 const axisTick = { fill: "var(--chart-5)", fontSize: 11 }
 const tooltipContentStyle = {
-  background: "var(--bg-elevated)",
+  background: "var(--card)",
   border: "1px solid var(--border)",
   borderRadius: 16,
-  color: "var(--fg-default)",
+  color: "var(--foreground)",
   fontSize: 13,
   fontWeight: 700,
 } satisfies CSSProperties
 const tooltipItemStyle = {
-  color: "var(--fg-default)",
+  color: "var(--foreground)",
 } satisfies CSSProperties
 const tooltipLabelStyle = {
-  color: "var(--fg-muted)",
+  color: "var(--muted-foreground)",
 } satisfies CSSProperties
 
 export function AdminAnalyticsChart({ data, kind }: AdminChartPanelProps) {

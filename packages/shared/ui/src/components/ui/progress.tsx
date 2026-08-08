@@ -4,38 +4,22 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 
 import { cn } from "#ui/lib/utils"
 
-/**
- * `Progress` 컴포넌트는 진행 상황을 시각적으로 나타내는 데 사용됩니다.
- * 
- * @example
- * ```tsx
- * <Progress value={56} className="w-full max-w-sm">
-  <ProgressLabel>Upload progress</ProgressLabel>
-  <ProgressValue />
-</Progress>
- * ```
- */
 function Progress({
   className,
   children,
   value,
-  indicatorClassName,
-  trackClassName,
   ...props
-}: ProgressPrimitive.Root.Props & {
-  indicatorClassName?: string
-  trackClassName?: string
-}) {
+}: ProgressPrimitive.Root.Props) {
   return (
     <ProgressPrimitive.Root
       value={value}
       data-slot="progress"
-      className={cn("flex flex-wrap gap-3", className)}
+      className={cn("flex flex-wrap items-baseline gap-2.5", className)}
       {...props}
     >
       {children}
-      <ProgressTrack className={trackClassName}>
-        <ProgressIndicator className={indicatorClassName} />
+      <ProgressTrack>
+        <ProgressIndicator />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   )
@@ -45,7 +29,7 @@ function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
       className={cn(
-        "relative flex h-4 w-full items-center overflow-x-hidden rounded-full bg-default-soft",
+        "relative flex h-2 w-full items-center overflow-x-hidden rounded-full bg-secondary",
         className
       )}
       data-slot="progress-track"
@@ -62,7 +46,8 @@ function ProgressIndicator({
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
       className={cn(
-        "h-full bg-accent transition-[width] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+        // Filling is a slow, even movement; waiting is a quiet pulse.
+        "h-full rounded-full bg-primary transition-all duration-500 ease-quiet data-indeterminate:w-full data-indeterminate:animate-breathe data-indeterminate:bg-primary/45",
         className
       )}
       {...props}
@@ -73,7 +58,7 @@ function ProgressIndicator({
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   return (
     <ProgressPrimitive.Label
-      className={cn("text-sm font-medium", className)}
+      className={cn("text-sm font-medium tracking-[-0.005em]", className)}
       data-slot="progress-label"
       {...props}
     />

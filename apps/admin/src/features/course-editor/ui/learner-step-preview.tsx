@@ -1,17 +1,41 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import type { ReactNode } from "react"
 
 import type { EditorStep } from "@/features/course-editor/model/editor-step"
 import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer"
-import { CompareStepView } from "@workspace/ui/components/lesson/compare-step-view"
 import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer"
 import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
 import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer"
-import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
 import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
+import {
+  Coaching,
+  CoachingFocus,
+  CoachingSource,
+  CoachingSourceBody,
+  CoachingSourceLabel,
+} from "@workspace/ui/components/ui/coaching"
+import {
+  Step,
+  StepBody,
+  StepHeader,
+  StepTitle,
+} from "@workspace/ui/components/ui/step"
+
+const OrderAnswer = dynamic(() =>
+  import("@workspace/ui/components/lesson/order-answer").then(
+    (module) => module.OrderAnswer
+  )
+)
+
+const CompareStepView = dynamic(() =>
+  import("@workspace/ui/components/lesson/compare-step-view").then(
+    (module) => module.CompareStepView
+  )
+)
 
 /**
  * 학습자 앱과 같은 `@workspace/ui/components/lesson` 렌더러로 draft를 보여준다.
@@ -22,6 +46,10 @@ export function LearnerStepPreview({
 }: {
   readonly step: EditorStep
 }): ReactNode {
+  return <Step data-step-id={step.id}>{renderStepPreview(step)}</Step>
+}
+
+function renderStepPreview(step: EditorStep): ReactNode {
   switch (step.type) {
     case "READING":
       return (
@@ -135,10 +163,27 @@ export function LearnerStepPreview({
       )
     case "AI_FEEDBACK":
       return (
-        <p className="m-0 font-semibold text-muted-foreground">
-          학습자는 앞선 쓰기 답안으로 AI 코칭을 요청합니다. 코칭 초점:{" "}
-          {step.focus.trim().length === 0 ? "미입력" : step.focus}
-        </p>
+        <>
+          <StepHeader>
+            <StepTitle>
+              <h2>AI 코칭</h2>
+            </StepTitle>
+          </StepHeader>
+          <StepBody>
+            <Coaching status="idle">
+              <CoachingFocus>
+                코칭 초점:{" "}
+                {step.focus.trim().length === 0 ? "미입력" : step.focus}
+              </CoachingFocus>
+              <CoachingSource>
+                <CoachingSourceLabel>작성 내용</CoachingSourceLabel>
+                <CoachingSourceBody>
+                  학습자는 앞선 쓰기 답안으로 AI 코칭을 요청합니다.
+                </CoachingSourceBody>
+              </CoachingSource>
+            </Coaching>
+          </StepBody>
+        </>
       )
   }
 }

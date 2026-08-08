@@ -1,0 +1,15 @@
+---
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+import { Button } from "@/registry/luma/ui/button"
+---
+
+<DocsLayout title="Content Contracts" description="예측 가능한 사용자 문구의 작성 기준입니다." pathname="/docs/quality/content" toc={[{ id: "story-content-contracts", label: "Do / Do not" }]}>
+  <article>
+    <DocsPageHeader eyebrow="Quality" title="Content Contracts" description="하나의 행동에는 하나의 동사를 사용합니다. 버튼 문구는 실행 뒤의 결과를 예측할 수 있어야 합니다." />
+    <section id="story-content-contracts" class="scroll-mt-24 grid gap-4 md:grid-cols-2">
+      <div class="grid gap-3 rounded-4xl border border-success/25 bg-card p-6"><h2 class="font-heading text-lg font-semibold text-success">Do</h2><Button>저장</Button><p class="text-sm font-semibold">동사는 짧게 쓰고 결과를 예측할 수 있게 합니다.</p></div>
+      <div class="grid gap-3 rounded-4xl border border-destructive/25 bg-card p-6"><h2 class="font-heading text-lg font-semibold text-destructive">Do not</h2><Button>확인</Button><p class="text-sm font-semibold">같은 화면에서 확인, 적용, 완료를 섞어 쓰지 않습니다.</p></div>
+    </section>
+  </article>
+</DocsLayout>

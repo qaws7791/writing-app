@@ -24,7 +24,7 @@ export default function NotFound() {
       <div className="w-64">
         <Link
           href={redirectHref}
-          className={buttonVariants({ size: "extra", className: "w-full" })}
+          className={buttonVariants({ size: "lg", className: "w-full" })}
         >
           {redirectLabel}
         </Link>

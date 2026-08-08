@@ -43,7 +43,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? undefined
 
   return (
-    <html data-density="comfortable" lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{ __html: zodJitlessBootstrapScript }}

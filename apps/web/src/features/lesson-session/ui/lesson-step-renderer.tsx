@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import dynamic from "next/dynamic"
 import { useCallback, type ReactNode } from "react"
 
 import type {
@@ -20,15 +21,25 @@ import {
   toLessonStepCheckedVisual,
 } from "@/features/lesson-session/model/lesson-step-presentation"
 import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer"
-import { CompareStepView } from "@workspace/ui/components/lesson/compare-step-view"
 import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer"
 import { LessonStepFrame } from "@workspace/ui/components/lesson/lesson-step-frame"
 import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer"
-import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
 import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 import type { LessonStepType } from "@workspace/contracts/content/steps"
+
+const OrderAnswer = dynamic(() =>
+  import("@workspace/ui/components/lesson/order-answer").then(
+    (module) => module.OrderAnswer
+  )
+)
+
+const CompareStepView = dynamic(() =>
+  import("@workspace/ui/components/lesson/compare-step-view").then(
+    (module) => module.CompareStepView
+  )
+)
 
 export type LessonStepRendererProps = {
   readonly aiFeedbackDraftText?: string

@@ -7,34 +7,25 @@ import {
   footerLinks,
   learningMethods,
 } from "@/features/landing/ui/landing-content"
-import {
-  ArrowRightIcon,
-  BookOpenIcon,
-  CheckCircleIcon,
-  SparklesIcon,
-} from "@workspace/ui/components/icons"
+import { ChevronRightIcon } from "@workspace/ui/components/icons/action-icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
-
-const learningMethodIcons = {
-  "AI 코칭": SparklesIcon,
-  "직접 쓰기": CheckCircleIcon,
-  "짧은 레슨": BookOpenIcon,
-} as const
 
 export function LandingNav() {
   return (
-    <header className="border-b border-border bg-bg-canvas">
+    <header className="border-b border-border/60 bg-background">
       <nav
         aria-label="공개 주요 메뉴"
-        className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 md:px-10"
+        className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 lg:px-8"
       >
-        <Link className="text-title-lg font-black text-fg-default" href="/">
+        <Link
+          className="font-heading text-lg font-semibold tracking-[-0.03em]"
+          href="/"
+        >
           글결.
         </Link>
         <div className="flex items-center gap-2">
           <Link
             className={buttonVariants({
-              className: "text-fg-muted",
               size: "sm",
               variant: "ghost",
             })}
@@ -44,8 +35,6 @@ export function LandingNav() {
           </Link>
           <Link
             className={buttonVariants({
-              className:
-                "bg-action-primary-bg text-action-primary-fg hover:opacity-90",
               size: "sm",
             })}
             href="/app"
@@ -62,40 +51,38 @@ export function HeroSection() {
   return (
     <section
       aria-labelledby="landing-value-title"
-      className="px-5 py-20 text-center md:px-10 md:py-28"
+      className="border-b border-border/60 px-5 py-24 sm:py-28 lg:px-8 lg:py-36"
     >
-      <div className="mx-auto max-w-4xl">
-        <p className="mx-auto mb-6 w-fit rounded-pill bg-action-selected-bg px-4 py-2 text-label-md font-bold text-action-selected-fg">
+      <div className="mx-auto max-w-6xl">
+        <p className="mb-7 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
           한국어 글쓰기 학습
         </p>
         <h1
-          className="text-heading-lg font-black text-fg-default min-[360px]:text-heading-xl sm:text-display-lg"
+          className="max-w-4xl font-heading text-4xl leading-[1.12] font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl"
           id="landing-value-title"
         >
-          <span className="block whitespace-nowrap">생각을 문장으로,</span>
-          <span className="block whitespace-nowrap">문장을 내 글로.</span>
+          생각을 문장으로,
+          <br />
+          문장을 내 글로.
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-body-lg text-fg-muted">
+        <p className="mt-7 max-w-2xl text-base leading-7 text-pretty text-muted-foreground sm:text-lg sm:leading-8">
           짧게 배우고 직접 쓴 뒤 AI 코칭으로 다듬어 보세요. 글결.은 한국어
           글쓰기 연습을 한 흐름으로 이어 줍니다.
         </p>
-        <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link
             className={buttonVariants({
-              className:
-                "bg-action-primary-bg text-action-primary-fg hover:opacity-90",
               size: "lg",
             })}
             href="/app"
           >
             글쓰기 시작하기
-            <ArrowRightIcon aria-hidden size={19} />
+            <ChevronRightIcon aria-hidden data-icon="inline-end" />
           </Link>
           <Link
             className={buttonVariants({
-              className: "bg-bg-surface text-fg-default",
               size: "lg",
-              variant: "secondary",
+              variant: "outline",
             })}
             href="/app/courses"
           >
@@ -111,39 +98,35 @@ export function LearningMethodSection() {
   return (
     <section
       aria-labelledby="learning-method-title"
-      className="bg-bg-surface px-5 py-20 md:px-10 md:py-24"
+      className="border-b border-border/60 px-5 py-20 lg:px-8 lg:py-28"
     >
       <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-label-md font-bold text-fg-muted">
+        <p className="mb-3 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
           글결.의 학습 방식
         </p>
         <h2
-          className="max-w-2xl text-heading-lg font-black text-fg-default"
+          className="max-w-2xl font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl"
           id="learning-method-title"
         >
           배우고, 쓰고, 바로 다듬습니다.
         </h2>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {learningMethods.map((method) => {
-            const Icon = learningMethodIcons[method.title]
-
-            return (
-              <article
-                className="rounded-card bg-bg-elevated p-7"
-                key={method.title}
-              >
-                <span className="mb-6 flex size-12 items-center justify-center rounded-control bg-action-selected-bg text-action-selected-fg">
-                  <Icon aria-hidden size={22} />
-                </span>
-                <h3 className="text-title-lg font-black text-fg-default">
-                  {method.title}
-                </h3>
-                <p className="mt-3 text-body-md text-fg-muted">
-                  {method.description}
-                </p>
-              </article>
-            )
-          })}
+        <div className="mt-12 grid border-t border-border/70 md:grid-cols-3">
+          {learningMethods.map((method, index) => (
+            <article
+              className="border-b border-border/70 py-7 md:border-r md:px-7 md:last:border-r-0 md:first:pl-0"
+              key={method.title}
+            >
+              <span className="text-xs font-medium tracking-[0.12em] text-muted-foreground">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3 className="mt-8 font-heading text-xl font-semibold tracking-[-0.025em]">
+                {method.title}
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-pretty text-muted-foreground">
+                {method.description}
+              </p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -154,50 +137,50 @@ export function ProductPreviewSection() {
   return (
     <section
       aria-labelledby="product-preview-title"
-      className="px-5 py-20 md:px-10 md:py-24"
+      className="border-b border-border/60 bg-surface/30 px-5 py-20 lg:px-8 lg:py-28"
     >
-      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.85fr_1.15fr]">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div>
-          <p className="mb-3 text-label-md font-bold text-fg-muted">
+          <p className="mb-3 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
             실제 코스로 미리보기
           </p>
           <h2
-            className="text-heading-lg font-black text-fg-default"
+            className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl"
             id="product-preview-title"
           >
             무엇을 배우는지
             <br />
             시작 전에 확인하세요.
           </h2>
-          <p className="mt-5 max-w-lg text-body-lg text-fg-muted">
+          <p className="mt-5 max-w-lg text-base leading-7 text-pretty text-muted-foreground">
             현재 제공하는 코스와 같은 콘텐츠를 공개 화면에서도 보여 줍니다. 범용
             예시가 아닌 실제 글쓰기 학습 흐름을 살펴보세요.
           </p>
           <Link
             className={buttonVariants({
-              className: "mt-8 bg-bg-surface text-fg-default",
+              className: "mt-8",
               size: "lg",
-              variant: "secondary",
+              variant: "outline",
             })}
             href="/app/courses"
           >
             코스에서 보기
-            <ArrowRightIcon aria-hidden size={19} />
+            <ChevronRightIcon aria-hidden data-icon="inline-end" />
           </Link>
         </div>
 
         <figure aria-label="실제 코스를 사용한 글결. 코스 화면 미리보기">
-          <div className="overflow-hidden rounded-panel border border-border bg-bg-elevated">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <span className="text-title-md font-black text-fg-default">
+          <div className="overflow-hidden rounded-4xl border border-border/80 bg-background shadow-2xs">
+            <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
+              <span className="font-heading text-sm font-semibold tracking-[-0.02em]">
                 글결.
               </span>
-              <span className="text-label-md font-bold text-fg-muted">
+              <span className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
                 코스
               </span>
             </div>
             <div className="p-4 sm:p-6">
-              <article className="overflow-hidden rounded-card bg-bg-surface">
+              <article className="overflow-hidden rounded-3xl border border-border/60 bg-card">
                 <div className="relative aspect-[16/9] w-full">
                   <Image
                     alt={resolveCourseImage(featuredCourse).alt}
@@ -208,13 +191,13 @@ export function ProductPreviewSection() {
                   />
                 </div>
                 <div className="p-6">
-                  <p className="text-label-md font-bold text-fg-muted">
+                  <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
                     {featuredCourse.category}
                   </p>
-                  <h3 className="mt-2 text-heading-sm font-black text-fg-default">
+                  <h3 className="mt-2 font-heading text-xl font-semibold tracking-[-0.025em]">
                     {featuredCourse.title}
                   </h3>
-                  <p className="mt-3 text-body-md text-fg-muted">
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
                     {featuredCourse.description}
                   </p>
                 </div>
@@ -234,30 +217,29 @@ export function FinalCtaSection() {
   return (
     <section
       aria-labelledby="landing-final-cta-title"
-      className="px-5 pb-20 pt-4 md:px-10 md:pb-24"
+      className="px-5 py-20 lg:px-8 lg:py-28"
     >
-      <div className="mx-auto max-w-6xl rounded-panel bg-action-primary-bg px-7 py-16 text-center md:px-12 md:py-20">
+      <div className="mx-auto max-w-3xl text-center">
         <h2
-          className="text-heading-xl font-black text-action-primary-fg sm:text-display-md"
+          className="font-heading text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-5xl"
           id="landing-final-cta-title"
         >
           한 문장부터
           <br />
           써 보세요.
         </h2>
-        <p className="mx-auto mt-5 max-w-xl text-body-lg text-action-primary-fg/80">
+        <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-muted-foreground">
           코스를 고르고 첫 글쓰기 연습을 시작하세요.
         </p>
         <Link
           className={buttonVariants({
-            className:
-              "mt-8 bg-action-selected-bg text-action-selected-fg hover:opacity-90",
+            className: "mt-8",
             size: "lg",
           })}
           href="/app"
         >
           첫 글쓰기 시작하기
-          <ArrowRightIcon aria-hidden size={19} />
+          <ChevronRightIcon aria-hidden data-icon="inline-end" />
         </Link>
       </div>
     </section>
@@ -266,11 +248,13 @@ export function FinalCtaSection() {
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-bg-surface">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between md:px-10">
+    <footer className="border-t border-border/60 bg-background">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between lg:px-8">
         <div>
-          <p className="text-title-md font-black text-fg-default">글결.</p>
-          <p className="mt-1 text-body-sm text-fg-muted">
+          <p className="font-heading text-sm font-semibold tracking-[-0.02em]">
+            글결.
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
             생각을 글로 완성하는 한국어 글쓰기 학습
           </p>
         </div>
@@ -279,7 +263,7 @@ export function Footer() {
             {footerLinks.map((link) => (
               <li key={link.href}>
                 <Link
-                  className="text-body-sm font-bold text-fg-muted transition-colors hover:text-fg-default"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   href={link.href}
                 >
                   {link.label}

@@ -12,7 +12,11 @@ import { ContentAssetUploadField } from "@/features/course-editor/ui/content-ass
 import { CourseAssetInventory } from "@/features/course-editor/ui/course-asset-inventory"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import { courseCategoryValues } from "@workspace/contracts/content/category"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import {
   Select,
@@ -49,60 +53,62 @@ export function CourseInfoTab({
 
   return (
     <div className="max-w-xl">
-      <Field>
-        <FieldLabel htmlFor="course-editor-title">제목</FieldLabel>
-        <Input
-          id="course-editor-title"
-          onChange={(event) =>
-            dispatch({
-              field: "title",
-              type: "course-changed",
-              value: event.target.value,
-            })
-          }
-          value={draft.title}
-        />
-      </Field>
-      <Field className="mt-4">
-        <FieldLabel htmlFor="course-editor-description">설명</FieldLabel>
-        <Textarea
-          id="course-editor-description"
-          onChange={(event) =>
-            dispatch({
-              field: "description",
-              type: "course-changed",
-              value: event.target.value,
-            })
-          }
-          value={draft.description}
-        />
-      </Field>
-      <Field className="mt-4">
-        <FieldLabel htmlFor="course-editor-category">카테고리</FieldLabel>
-        <Select
-          items={courseCategoryItems}
-          onValueChange={(value) => {
-            if (value === null) return
-            dispatch({
-              field: "category",
-              type: "course-changed",
-              value,
-            })
-          }}
-          value={draft.category}
-        >
-          <SelectTrigger id="course-editor-category" variant="outlined">
-            <SelectValue placeholder="카테고리를 선택하세요." />
-          </SelectTrigger>
-          <SelectContent>
-            {courseCategoryItems.map((item) => (
-              <SelectItem key={item.value} value={item.value}>
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+      <FieldGroup className="gap-5">
+        <Field>
+          <FieldLabel htmlFor="course-editor-title">제목</FieldLabel>
+          <Input
+            id="course-editor-title"
+            onChange={(event) =>
+              dispatch({
+                field: "title",
+                type: "course-changed",
+                value: event.target.value,
+              })
+            }
+            value={draft.title}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="course-editor-description">설명</FieldLabel>
+          <Textarea
+            id="course-editor-description"
+            onChange={(event) =>
+              dispatch({
+                field: "description",
+                type: "course-changed",
+                value: event.target.value,
+              })
+            }
+            value={draft.description}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="course-editor-category">카테고리</FieldLabel>
+          <Select
+            items={courseCategoryItems}
+            onValueChange={(value) => {
+              if (value === null) return
+              dispatch({
+                field: "category",
+                type: "course-changed",
+                value,
+              })
+            }}
+            value={draft.category}
+          >
+            <SelectTrigger id="course-editor-category">
+              <SelectValue placeholder="카테고리를 선택하세요." />
+            </SelectTrigger>
+            <SelectContent>
+              {courseCategoryItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      </FieldGroup>
       <div className="mt-6">
         <ContentAssetUploadField
           asset={coverAsset}

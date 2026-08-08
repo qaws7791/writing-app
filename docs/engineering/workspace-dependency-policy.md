@@ -16,7 +16,7 @@ dependency audit는 HIGH 이상을 예외 없이 차단하는 상태를 기본�
 
 - 제품 lint는 warning도 실패로 처리한다. 로컬 root `lint`와 CI가 모두 Oxlint `--deny-warnings`를 사용한다.
 - raw hex color는 CSS token을 사용할 수 없는 정적 metadata와 theme owner에서만 허용한다.
-- 미정의 `--semantic-color-*` 호환 별칭은 허용하지 않는다. 앱과 패키지는 `--bg-*`, `--fg-*`, `--action-*`, `--success-*`, `--danger-*`, `--info-*` 공식 의미 토큰을 직접 참조한다.
+- 앱과 패키지는 `background`, `foreground`, `card`, `surface`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`과 `info` Luma semantic token을 직접 참조한다. 이전 `--bg-*`, `--fg-*`, `--action-*`, `--danger-*` alias는 허용하지 않는다.
 - 예외에는 실제 사용 근거와 owner가 필요하다.
 
 ## 검증

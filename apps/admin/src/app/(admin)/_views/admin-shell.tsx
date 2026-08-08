@@ -1,17 +1,22 @@
 "use client"
 
 import type { ReactNode } from "react"
+import dynamic from "next/dynamic"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTransition } from "react"
 import { useState } from "react"
 
-import {
-  AdminMobileSidebar,
-  AdminSidebar,
-} from "@/app/(admin)/_views/admin-sidebar"
+import { AdminSidebar } from "@/app/(admin)/_views/admin-sidebar"
 import { requestAdminSignOut } from "@/features/authentication/api/admin-auth-client"
 import { adminNavigationItems } from "@/app/(admin)/_views/admin-navigation"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+
+const AdminMobileSidebar = dynamic(() =>
+  import("@/app/(admin)/_views/admin-mobile-sidebar").then(
+    (module) => module.AdminMobileSidebar
+  )
+)
 
 export function AdminShell({
   activePath,
@@ -29,7 +34,7 @@ export function AdminShell({
   const currentPath = activePath ?? pathname
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-svh bg-background text-foreground">
       <AdminSidebar
         activePath={currentPath}
         isSigningOut={isPending}
@@ -38,9 +43,9 @@ export function AdminShell({
         onSignOut={signOut}
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between bg-bg-surface px-5 py-4 md:hidden">
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border/60 bg-background/90 px-5 py-4 backdrop-blur-xl md:hidden">
           <Link
-            className="text-[1.25rem] font-bold text-fg-default"
+            className="font-heading text-lg font-semibold tracking-[-0.02em] text-foreground"
             href="/"
             prefetch={false}
           >
@@ -55,14 +60,15 @@ export function AdminShell({
           />
         </header>
         {signOutError === null ? null : (
-          <p
-            className="mx-5 mt-4 rounded-2xl bg-danger px-4 py-3 text-sm font-bold text-danger-foreground md:mx-10"
+          <Alert
+            className="mx-5 mt-4 md:mx-10"
             role="alert"
+            variant="destructive"
           >
-            {signOutError}
-          </p>
+            <AlertDescription>{signOutError}</AlertDescription>
+          </Alert>
         )}
-        <main className="an-fi mx-auto w-full max-w-6xl flex-1 px-5 py-8 md:px-10">
+        <main className="animate-drift-in mx-auto w-full max-w-6xl flex-1 px-5 py-8 md:px-10">
           {children}
         </main>
       </div>

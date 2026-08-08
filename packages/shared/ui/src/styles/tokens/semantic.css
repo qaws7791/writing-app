@@ -1,147 +1,85 @@
-/* Kwep semantic mapping — HeroUI 변수를 제품 역할 토큰으로 덮어씀 */
+/* Luma semantic contract pinned by reference.css. */
 
 :root,
 .light,
 .default,
 [data-theme="light"],
 [data-theme="default"] {
-  --cream: var(--ref-cream);
-  --charcoal: var(--ref-charcoal);
-  --ink: var(--ref-ink);
-
-  --background: var(--ref-cream);
-  --foreground: var(--ref-charcoal);
-
+  color-scheme: light;
+  --background: var(--ref-background);
+  --foreground: var(--ref-foreground);
+  --card: var(--ref-card);
+  --card-foreground: var(--ref-card-foreground);
+  --popover: var(--ref-popover);
+  --popover-foreground: var(--ref-popover-foreground);
+  --primary: var(--ref-primary);
+  --primary-foreground: var(--ref-primary-foreground);
+  --secondary: var(--ref-secondary);
+  --secondary-foreground: var(--ref-secondary-foreground);
+  --muted: var(--ref-muted);
+  --muted-foreground: var(--ref-muted-foreground);
+  --accent: var(--ref-accent);
+  --accent-foreground: var(--ref-accent-foreground);
+  --destructive: var(--ref-destructive);
+  --success: var(--ref-success);
+  --warning: var(--ref-warning);
+  --info: var(--ref-info);
+  --purple: var(--ref-purple);
+  --border: var(--ref-border);
+  --input: var(--ref-input);
+  --ring: var(--ref-ring);
   --surface: var(--ref-surface);
-  --surface-foreground: var(--ref-charcoal);
-  --surface-hover: var(--ref-surface-hover);
-
-  --overlay: var(--ref-cream);
-  --overlay-foreground: var(--ref-charcoal);
-
-  --muted: var(--ref-default-soft);
-  --muted-foreground: var(--ref-muted);
-
-  --default: var(--ref-surface-hover);
-  --default-foreground: var(--ref-charcoal);
-  --default-soft: color-mix(in oklab, var(--ref-default-soft) 65%, transparent);
-
-  --primary: var(--ref-charcoal);
-  --primary-foreground: var(--ref-cream);
-  --primary-hover: color-mix(
-    in oklab,
-    var(--ref-charcoal) 92%,
-    var(--ref-cream) 8%
-  );
-
-  --secondary: var(--ref-surface);
-  --secondary-foreground: var(--ref-charcoal);
-
-  --accent: var(--ref-primary-yellow);
-  --accent-foreground: var(--ref-charcoal);
-  --accent-soft: color-mix(
-    in oklab,
-    var(--ref-primary-yellow) 22%,
-    transparent
-  );
-  --accent-soft-foreground: var(--ref-charcoal);
-
-  --success-bg: var(--ref-mint-light);
-  --success-fg: var(--ref-mint-dark);
-  --success: var(--success-bg);
-  --success-foreground: var(--success-fg);
-
-  --warning: var(--ref-primary-yellow);
-  --warning-foreground: var(--ref-charcoal);
-
-  --destructive: var(--ref-coral);
-  --destructive-foreground: var(--ref-cream);
-
-  --danger-bg: var(--ref-coral-light);
-  --danger-fg: var(--ref-coral-dark);
-  --danger: var(--danger-bg);
-  --danger-foreground: var(--danger-fg);
-
-  --info-bg: var(--ref-info-bg);
-  --info-fg: var(--ref-info-fg);
-  --info: var(--info-bg);
-  --info-foreground: var(--info-fg);
-
-  --chart-1: var(--ref-charcoal);
-  --chart-2: var(--ref-mint-dark);
-  --chart-3: var(--ref-coral-dark);
-  --chart-4: var(--ref-info-fg);
-  --chart-5: var(--ref-muted);
-
-  --border: color-mix(in oklab, var(--ref-charcoal) 12%, transparent);
-  --focus: var(--ref-charcoal);
-  --link: var(--ref-charcoal);
-
-  --field-background: transparent;
-  --field-foreground: var(--ref-charcoal);
-  --field-placeholder: var(--ref-muted);
-  --field-border: color-mix(in oklab, var(--ref-charcoal) 18%, transparent);
-
-  --mint: var(--ref-mint);
-  --mint-light: var(--ref-mint-light);
-  --coral: var(--ref-coral);
-  --coral-light: var(--ref-coral-light);
-  --mint-dark: var(--ref-mint-dark);
-  --coral-dark: var(--ref-coral-dark);
-
-  --action-primary-bg: var(--ref-charcoal);
-  --action-primary-fg: var(--ref-cream);
-  --action-selected-bg: var(--ref-primary-yellow);
-  --action-selected-fg: var(--ref-ink);
-  --fg-default: var(--ref-charcoal);
-  --fg-muted: var(--ref-muted);
-  --fg-subtle: #8c857a;
-  --bg-canvas: var(--ref-cream);
-  --bg-surface: var(--ref-surface);
-  --bg-elevated: #ffffff;
+  --surface-foreground: var(--ref-surface-foreground);
+  --selection: var(--ref-selection);
+  --selection-foreground: var(--ref-selection-foreground);
+  --chart-1: var(--ref-chart-1);
+  --chart-2: var(--ref-chart-2);
+  --chart-3: var(--ref-chart-3);
+  --chart-4: var(--ref-chart-4);
+  --chart-5: var(--ref-chart-5);
+  --sidebar: var(--ref-sidebar);
+  --sidebar-foreground: var(--ref-sidebar-foreground);
+  --sidebar-primary: var(--ref-sidebar-primary);
+  --sidebar-primary-foreground: var(--ref-sidebar-primary-foreground);
+  --sidebar-accent: var(--ref-sidebar-accent);
+  --sidebar-accent-foreground: var(--ref-sidebar-accent-foreground);
+  --sidebar-border: var(--ref-sidebar-border);
+  --sidebar-ring: var(--ref-sidebar-ring);
+  --elevation-2xs: var(--ref-elevation-2xs);
+  --elevation-xs: var(--ref-elevation-xs);
+  --elevation-sm: var(--ref-elevation-sm);
+  --elevation-md: var(--ref-elevation-md);
+  --elevation-lg: var(--ref-elevation-lg);
+  --elevation-xl: var(--ref-elevation-xl);
+  --elevation-2xl: var(--ref-elevation-2xl);
+  --radius: 0.625rem;
 }
 
 .dark,
 [data-theme="dark"] {
-  --cream: var(--ref-cream);
-  --charcoal: var(--ref-charcoal);
-  --ink: var(--ref-ink);
-  --background: var(--ref-cream);
-  --foreground: var(--ref-charcoal);
-  --surface: var(--ref-surface);
-  --surface-foreground: var(--ref-charcoal);
-  --surface-hover: var(--ref-surface-hover);
-  --overlay: var(--ref-cream);
-  --overlay-foreground: var(--ref-charcoal);
-  --muted: var(--ref-default-soft);
-  --muted-foreground: var(--ref-muted);
-  --default: var(--ref-surface-hover);
-  --default-foreground: var(--ref-charcoal);
-  --primary: var(--ref-charcoal);
-  --primary-foreground: var(--ref-cream);
-  --primary-hover: color-mix(
-    in oklab,
-    var(--ref-charcoal) 92%,
-    var(--ref-cream) 8%
-  );
-  --secondary: var(--ref-surface);
-  --secondary-foreground: var(--ref-charcoal);
-  --accent: var(--ref-primary-yellow);
-  --accent-foreground: var(--ref-charcoal);
-  --accent-soft: color-mix(
-    in oklab,
-    var(--ref-primary-yellow) 18%,
-    transparent
-  );
-  --destructive: var(--ref-coral);
-  --destructive-foreground: var(--ref-cream);
-  --border: color-mix(in oklab, var(--ref-charcoal) 14%, transparent);
-  --focus: var(--ref-primary-yellow);
-  --field-border: color-mix(in oklab, var(--ref-charcoal) 22%, transparent);
-  --action-primary-bg: var(--ref-charcoal);
-  --action-primary-fg: var(--ref-cream);
-  --bg-canvas: var(--ref-cream);
-  --bg-surface: var(--ref-surface);
-  --bg-elevated: #211f1c;
-  --fg-subtle: #7f766b;
+  color-scheme: dark;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: oklch(0.655 0.006 90);
+    --input: oklch(0.655 0.006 90);
+    --sidebar-border: oklch(0.655 0.006 90);
+    --ring: oklch(0.45 0.014 70);
+    --muted: oklch(0.928 0.0045 92);
+    --secondary: oklch(0.915 0.0048 92);
+    --accent: oklch(0.9 0.0052 90);
+    --surface: oklch(0.952 0.0042 92);
+  }
+
+  .dark,
+  [data-theme="dark"] {
+    --border: oklch(1 0 0 / 22%);
+    --input: oklch(1 0 0 / 28%);
+    --sidebar-border: oklch(1 0 0 / 22%);
+    --ring: oklch(0.72 0.01 74);
+    --muted: oklch(0.3 0.0055 72);
+    --secondary: oklch(0.31 0.0055 72);
+    --accent: oklch(0.34 0.006 74);
+  }
 }

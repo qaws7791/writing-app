@@ -1,0 +1,19 @@
+---
+import CompositionPreview from "@/src/components/composition-preview"
+import PreviewLayout from "@/src/layouts/preview-layout.astro"
+
+export function getStaticPaths() {
+  return [
+    ["admin", "Overview"], ["admin", "EmptyResult"],
+    ["course-management", "CardRecipe"], ["course-management", "ResponsiveForm"],
+  ].map(([kind, story]) => ({ params: { kind, story }, props: { title: `${kind} · ${story}` } }))
+}
+
+type Props = { title: string }
+const { kind, story } = Astro.params
+const { title } = Astro.props
+---
+
+<PreviewLayout title={title}>
+  <CompositionPreview kind={kind as "admin" | "course-management"} story={story!} client:only="react" />
+</PreviewLayout>

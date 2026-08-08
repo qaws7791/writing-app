@@ -2,16 +2,29 @@
 
 이 문서는 공유 UI와 앱별 주요 컴포넌트의 현재 스펙이다. 공통 컴포넌트는 `packages/shared/ui`를 우선하고, 앱별 조합은 각 앱의 feature 또는 component 폴더에 둔다.
 
+공유 UI의 시각 기반과 primitive API는 Luma의 paper, ink와 semantic state 계약을 따른다.
+
 ## 공통 원칙
 
 - 버튼, 카드, 입력, 진행률처럼 여러 앱에서 반복되는 primitive는 `@workspace/ui`를 우선 사용한다.
 - 라우팅, 데이터 조회, 앱 전용 상태가 섞인 컴포넌트는 각 앱에 둔다.
+- 컴포넌트는 `background`, `foreground`, `card`, `surface`, `primary`, `secondary`, `muted`, `accent`, `border`, `input`, `ring`과 semantic state token을 사용한다.
+- 한 작업 영역은 Primary 행동 하나만 강하게 표시한다.
+- 오류, 성공, 주의와 정보 상태는 색상 외에 text, icon, shape 또는 semantic 중 하나 이상을 함께 사용한다.
 - 목적지가 있는 UI는 버튼처럼 보여도 `Link`를 사용한다.
 - 화면 텍스트와 `aria-label`은 한국어로 작성한다.
 - destructive 동작은 즉시 실행하지 않고 확인 dialog를 거친다.
-- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. `@workspace/ui/styles`는 token과 공통 style만 제공하며 Tailwind/PostCSS 실행은 각 앱 Adapter가 소유한다. 공개 entrypoint는 `packages/shared/ui/README.md`를 따른다.
-- 앱 `tsconfig.json`은 `packages/shared/ui/src` 내부를 직접 가리키는 source alias를 만들지 않는다. 공유 UI 소비는 `@workspace/ui/*` package export map을 통한다.
+- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/blocks/*`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/hooks/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. `@workspace/ui/styles`는 token과 공통 style만 제공하며 Tailwind/PostCSS 실행은 각 앱 Adapter가 소유한다. 공개 entrypoint는 `packages/shared/ui/README.md`를 따른다.
+- 앱 source는 공유 UI를 `@workspace/ui/*` package export map으로 가져온다. 앱 build adapter의 `#ui/*` mapping은 source 상태의 공유 UI 내부 import만 해석한다.
 - `packages/shared/ui` 소스는 `@/`를 사용하지 않는다. 공유 UI 내부 참조는 `#ui/*` private alias를 사용하고, 앱 소스는 `@/`를 유지한다.
+
+## Luma registry
+
+전체 registry item과 문서 source는 `apps/ui/registry/luma/registry.json`과 `apps/ui`가 소유한다.
+
+전체 registry UI, block source와 hook은 `packages/shared/ui`에도 같은 이름으로 제공한다.
+
+Registry block은 조합과 상태 표현 예제다. 제품 화면은 fixture, 임시 link와 local state를 production data flow로 사용하지 않는다.
 
 ## Button
 
@@ -21,19 +34,14 @@
 
 ### Variant
 
-| variant       | 용도                                                  |
-| ------------- | ----------------------------------------------------- |
-| `solid`       | 주요 행동 (`bg-charcoal text-cream`)                  |
-| `default`     | 기존 호출 호환용 주요 행동 (`bg-charcoal text-cream`) |
-| `outline`     | 보조 행동, 확장 메뉴 trigger                          |
-| `secondary`   | 낮은 강조의 보조 행동                                 |
-| `ghost`       | 표면 없는 보조 행동                                   |
-| `correct`     | 레슨 정답 피드백 CTA                                  |
-| `wrong`       | 레슨 오답 피드백 CTA                                  |
-| `white`       | 강조 배경 위의 밝은 CTA                               |
-| `ink`         | OAuth 등 테마 무관 고정 CTA (`bg-ink text-white`)     |
-| `destructive` | 삭제, 실패, 위험 행동                                 |
-| `link`        | 텍스트 링크형 행동                                    |
+| variant       | 용도                                    |
+| ------------- | --------------------------------------- |
+| `default`     | 한 작업 영역의 Primary 행동             |
+| `outline`     | 카드 위의 보조 행동과 확장 메뉴 trigger |
+| `secondary`   | 낮은 강조의 보조 행동                   |
+| `ghost`       | 표면 없는 보조 행동                     |
+| `destructive` | 삭제와 되돌리기 어려운 위험 행동        |
+| `link`        | 문장 안의 텍스트 링크형 행동            |
 
 ### Size
 
@@ -41,26 +49,34 @@
 | --------- | ----------- |
 | `xs`      | 높이 28px   |
 | `sm`      | 높이 36px   |
-| `default` | 높이 44px   |
+| `default` | 높이 40px   |
 | `lg`      | 높이 48px   |
 | `icon-xs` | 28px 정사각 |
 | `icon-sm` | 36px 정사각 |
-| `icon`    | 44px 정사각 |
+| `icon`    | 40px 정사각 |
 | `icon-lg` | 48px 정사각 |
 
 아이콘은 `data-icon="inline-start"` 또는 `data-icon="inline-end"`로 padding 보정을 받는다.
-버튼과 버튼처럼 보이는 링크·trigger의 공통 시각 스타일은 `buttonVariants`로 재사용한다. 호출부에서 `.btn-squish`를 직접 붙이지 않는다. `buttonVariants`는 focus-visible, disabled, 아이콘, 텍스트 줄바꿈 방지와 누름 모션을 한 계약으로 제공한다. 상세 이관 범위와 완료 기준은 `button-variants-migration-plan.md`를 따른다. `lg`·`extra` 크기는 레슨 CTA 기준의 `rounded-4xl`, `text-body-lg`(1.125rem), `py-5`를 사용한다.
+
+버튼과 버튼처럼 보이는 링크·trigger는 `buttonVariants`를 재사용한다.
+
+Button은 squircle, `rounded-2xl`, 125ms press motion과 3px focus ring을 하나의 계약으로 제공한다.
+
+정답, 오답과 성공 상태는 Button variant로 표현하지 않는다. 별도 상태 메시지와 semantic surface를 사용한다.
 
 ## Card
 
 구현 위치: `packages/shared/ui/src/components/ui/card.tsx`
 
-현재 `Card`는 `variant` prop을 갖지 않는다. 과거 Material Design 3식 variant 실험 기록은 정식 계약으로 유지하지 않는다.
+Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용한다.
+
+`variant`는 `surface`, `muted`, `frame`, `plain`을 제공한다.
 
 ### 구조
 
 - `Card`
 - `CardHeader`
+- `CardEyebrow`
 - `CardTitle`
 - `CardDescription`
 - `CardAction`
@@ -73,29 +89,26 @@
 | --------- | ----------------- |
 | `default` | 내부 spacing 24px |
 | `sm`      | 내부 spacing 16px |
+| `lg`      | 내부 spacing 32px |
 
-`CardTitle`은 `as` prop으로 `div`, `h1`, `h2`, `h3`를 받을 수 있다. 의미 있는 제목 계층이 필요하면 적절한 heading을 선택한다.
-
-## Surface
-
-구현 위치: `packages/shared/ui/src/components/ui/surface.tsx`
-
-`Surface`는 anatomy가 없는 일반 표면이다. admin panel, 간단한 목록 컨테이너, web의 반복 표면을 흡수한다. `variant`는 `default`, `elevated`, `panel`만 제공하고, padding은 `size` 토큰을 따른다.
+`CardTitle`은 시각 title wrapper다. 의미 있는 제목 계층은 `CardTitle` 안에 `h1`, `h2` 또는 `h3`를 배치한다.
 
 ## Field
 
 구현 위치: `packages/shared/ui/src/components/ui/field.tsx`
 
-구성은 `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FormSection`이다. `Field`는 label과 description, error를 자동으로 연결하지 않는다. 호출자가 `htmlFor`, `id`, `aria-describedby`, `aria-invalid`를 명시해 관계를 드러낸다. `FieldError`는 `role="alert"`를 사용한다.
+구성은 `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FieldSet`, `FieldLegend`, `FieldSeparator`, `FieldContent`, `FieldTitle`이다.
+
+`Field`는 `vertical`, `horizontal`, `responsive` orientation을 제공한다.
+
+`Field`는 label, description과 error를 자동으로 연결하지 않는다. 호출자는 `htmlFor`, `id`, `aria-describedby`, `aria-invalid`를 명시한다. `FieldError`는 `role="alert"`를 사용한다.
 
 ## Input
 
 구현 위치: `packages/shared/ui/src/components/ui/input.tsx`
 
-공통 field control contract는 `packages/shared/ui/src/lib/field-control-variants.ts`에 정의한다.
-
-- 높이는 density token의 `control-height-md`를 따른다.
-- `bg-transparent`, `border-field-border`, `rounded-control`, hover/focus 시 border 강조, `focus-visible:ring-3`을 사용한다.
+- 높이는 40px이다.
+- `bg-input`, `border-border`, `rounded-2xl`, squircle, hover/focus surface와 `focus-visible:ring-3`을 사용한다.
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -103,21 +116,23 @@
 
 구현 위치: `packages/shared/ui/src/components/ui/select.tsx`
 
-- Base UI select primitive다.
-- `SelectTrigger`는 `variant`로 표현 스타일을 선택한다.
-  - `default`: `bg-surface` filled, `rounded-full`, 학습자 목록 툴바(정렬·필터) 기본
-  - `outlined`: Input/Textarea와 동일한 field control contract (`border-field-border`, `bg-transparent`)
-- 높이는 density token의 `control-height-md`를 따른다.
-- 라우팅이나 데이터 정책이 없는 필터, 정렬, 페이지 크기 선택에 사용한다.
+- 기반은 `@base-ui/react/select`다.
+- `SelectTrigger`는 Input과 같은 Luma field surface를 사용한다.
+- `SelectTrigger`의 `size="default"` 높이는 40px이다.
+- `SelectTrigger`의 `size="sm"` 높이는 36px이다.
+- `SelectContent`는 trigger 너비에 맞추고 선택 항목과 키보드 탐색을 제공한다.
+- client interaction이 필요한 필터와 정렬에 사용한다.
+- 단순 `GET` 제출만 필요한 Server Component는 native `select`를 사용할 수 있다.
+- native `select`는 Luma field token과 focus ring을 사용해야 한다.
 - 복잡한 combobox나 다중 선택이 필요해지면 Base UI 기반 별도 primitive를 추가한다.
 
 ## Textarea
 
 구현 위치: `packages/shared/ui/src/components/ui/textarea.tsx`
 
-- Input과 동일한 field control contract를 따른다.
-- 최소 높이 96px.
-- `bg-transparent`, `border-field-border`, `rounded-control`, hover/focus 시 border 강조, `focus-visible:ring-3`을 사용한다.
+- Input과 동일한 Luma field surface를 사용한다.
+- 최소 높이는 96px이다.
+- squircle, `rounded-2xl`과 3px focus ring을 사용한다.
 - 긴 본문 편집처럼 화면별 높이가 필요한 경우 `className`으로 `min-h-*`를 조정한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -125,19 +140,21 @@
 
 구현 위치: `packages/shared/ui/src/components/ui/progress.tsx`
 
-구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 기본적으로 `bg-accent`를 사용하고, track은 `bg-default-soft` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 호출부에서 `trackClassName`으로 `bg-surface`나 `bg-bg-surface`를 덮어쓰지 않는다. 높이 조정만 필요하면 `trackClassName`에 `h-*`만 전달한다. 레슨과 코스 상세처럼 kwep 기준의 노란 진행률이 필요한 화면은 `indicatorClassName="bg-accent"`와 `trackClassName`으로 높이와 색을 명시한다.
+구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. `Progress`는 8px `secondary` track과 `primary` indicator를 자동으로 렌더링한다. indicator 전환 시간은 500ms다. 완료 시점을 알 수 없는 작업은 `value={null}`로 표시한다. 불확정 indicator는 `animate-breathe`를 사용한다. 호출부는 track이나 indicator의 색을 덮어쓰지 않는다.
 
 ## Badge
 
 구현 위치: `packages/shared/ui/src/components/ui/badge.tsx`
 
-`Badge`는 domain status를 직접 해석하지 않는다. app이 상태를 `tone`으로 변환해 전달한다. 지원 tone은 `neutral`, `success`, `danger`, `info`, `selected`다.
+`Badge`는 domain status를 직접 해석하지 않는다. app은 domain status를 `variant`로 변환해 전달한다.
+
+지원 variant는 `default`, `secondary`, `destructive`, `success`, `warning`, `info`, `purple`, `outline`, `ghost`, `link`다.
 
 ## Accordion
 
 구현 위치: `packages/shared/ui/src/components/ui/accordion.tsx`
 
-기반은 `@base-ui/react/accordion`이다. 구조는 `Accordion`, `AccordionItem`, `AccordionHeader`, `AccordionTrigger`, `AccordionPanel`이다. 수동 disclosure 구현 대신 사용하며, `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
+기반은 `@base-ui/react/accordion`이다. 공개 구조는 `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent`다. 수동 disclosure 구현 대신 사용한다. `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
 
 ## Tabs
 
@@ -154,45 +171,70 @@
 
 ### `default` 스타일
 
-- `TabsList`는 `rounded-pill`, `bg-surface`, `p-1` 트랙으로 탭을 한 그룹으로 묶는다.
-- `TabsTrigger`는 `h-9`, `rounded-pill`, `px-4`, `text-body-sm`, `font-bold`를 사용한다.
-- 비활성은 트랙 위 투명 배경, `text-muted-foreground`다.
-- 활성 pill은 `TabsList` 안의 `Tabs.Indicator`가 `bg-bg-elevated`, `shadow-sm`으로 렌더되며, 탭 전환 시 활성 위치로 슬라이드한다.
-- 활성 `TabsTrigger`는 `text-fg-default`만 바뀌고 배경은 투명을 유지한다.
-- Indicator 전환은 `--motion-duration-normal`, `--motion-ease-press`를 사용한다.
-- focus는 `focus-visible:ring-3`을 유지한다.
+- `TabsList`는 squircle, `rounded-2xl`, `bg-secondary`, `p-1` 트랙을 사용한다.
+- `TabsTrigger`는 기본 높이 36px와 모바일 이후 높이 32px를 사용한다.
+- 활성 indicator는 `bg-card`, `shadow-sm`, `rounded-xl`을 사용한다.
+- indicator 전환 시간은 200ms다.
+- reduced motion에서는 indicator 전환을 제거한다.
+- focus는 `focus-visible:ring-2`를 사용한다.
 
 ### `line` 스타일
 
-- 활성 탭은 `text-fg-default`, `font-bold`로 표시한다.
-- charcoal 밑줄은 `Tabs.Indicator`가 슬라이드하며, 비활성은 `text-muted-foreground`다.
+- 활성 탭은 `text-foreground`로 표시한다.
+- foreground 밑줄은 `Tabs.Indicator`가 슬라이드한다.
+- 비활성 탭은 `text-muted-foreground`를 사용한다.
 
 ## DropdownMenu
 
 구현 위치: `packages/shared/ui/src/components/ui/dropdown-menu.tsx`
 
-기반은 `@base-ui/react/menu`다. 계정 메뉴처럼 trigger와 메뉴 항목이 필요한 경우 사용한다. 구조는 `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuLinkItem`, `DropdownMenuSeparator`다. 항목 tone은 `neutral`, `danger`만 제공한다. 링크 항목도 메뉴 안에서는 `role="menuitem"` 의미를 따른다.
+기반은 `@base-ui/react/menu`다. 계정 메뉴처럼 trigger와 메뉴 항목이 필요한 경우 사용한다. 기본 항목은 `DropdownMenuItem`을 사용한다. 위험 항목은 `variant="destructive"`를 명시한다. 체크 항목, 라디오 항목과 하위 메뉴는 전용 primitive를 사용한다. 링크 항목은 `DropdownMenuItem`의 `render`에 `Link`를 전달해 menuitem 의미를 유지한다.
+
+## Dialog
+
+구현 위치: `packages/shared/ui/src/components/ui/dialog.tsx`
+
+기반은 `@base-ui/react/dialog`다. 일반 설정과 정보 입력처럼 사용자의 확인이 필요한 overlay에 사용한다. 패널은 `rounded-4xl`, `bg-popover`, 28px padding을 사용한다. 닫기 버튼의 접근 가능한 이름은 `닫기`다. 위험한 전이는 일반 Dialog 대신 AlertDialog를 사용한다.
+
+## Popover
+
+구현 위치: `packages/shared/ui/src/components/ui/popover.tsx`
+
+기반은 `@base-ui/react/popover`다. 짧은 보조 정보와 작은 비모달 조작 표면에 사용한다. 패널은 `rounded-3xl`, `bg-popover`, 16px padding을 사용한다. 복잡한 작업 흐름은 Dialog로 분리한다.
 
 ## AlertDialog
 
 구현 위치: `packages/shared/ui/src/components/ui/alert-dialog.tsx`
 
-기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 기본 스타일은 Kwep `Modal`과 동일하다. `bg-cream` 패널, `bg-charcoal/30` 오버레이, 제목 `text-heading-sm font-bold`, 설명 `text-body-lg`, footer는 동일 너비 `size="extra"` pill 버튼 2개(`AlertDialogCancel`은 `secondary`, `AlertDialogAction`은 `default`)를 가로로 배치한다. 레슨 나가기처럼 일반 확인은 `AlertDialogAction` 기본 variant를 쓴다. 삭제·보관처럼 되돌릴 수 없는 작업만 `variant="destructive"`를 명시한다.
+기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기와 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원한다. 패널은 `rounded-4xl`, `bg-popover`, 28px padding을 사용한다. `size="default"`는 데스크톱에서 최대 448px다. `size="sm"`은 최대 320px다. `AlertDialogCancel`은 기본 `outline` variant다. 삭제와 보관처럼 되돌릴 수 없는 작업은 `AlertDialogAction`에 `variant="destructive"`를 명시한다.
 
-## Alert와 Callout
+## Alert
+
+구현 위치: `packages/shared/ui/src/components/ui/alert.tsx`
+
+`Alert`는 상태 메시지다. 일반 안내는 기본 variant를 사용한다. 오류는 `variant="destructive"`와 `role="alert"`를 함께 사용한다. 처리 완료처럼 즉시 끼어들 필요가 없는 결과는 `role="status"`를 사용한다.
+
+## Lesson과 학습 상태
 
 구현 위치:
 
-- `packages/shared/ui/src/components/ui/alert.tsx`
-- `packages/shared/ui/src/components/ui/callout.tsx`
+- `packages/shared/ui/src/components/ui/lesson.tsx`
+- `packages/shared/ui/src/components/ui/step.tsx`
+- `packages/shared/ui/src/components/ui/insight.tsx`
+- `packages/shared/ui/src/components/ui/prose.tsx`
+- `packages/shared/ui/src/components/ui/compare.tsx`
+- `packages/shared/ui/src/components/ui/choice.tsx`
+- `packages/shared/ui/src/components/ui/token.tsx`
+- `packages/shared/ui/src/components/ui/segment.tsx`
+- `packages/shared/ui/src/components/ui/sortable.tsx`
+- `packages/shared/ui/src/components/ui/pair.tsx`
+- `packages/shared/ui/src/components/ui/classify.tsx`
+- `packages/shared/ui/src/components/ui/compose.tsx`
+- `packages/shared/ui/src/components/ui/coaching.tsx`
 
-`Alert`는 상태 메시지이고 기본 role은 `status`다. 오류처럼 assertive announcement가 필요한 경우 호출자가 role을 바꾼다. `Callout`은 본문 안의 참고, 설명, 안내 표면이며 사용자 문자열을 포함하지 않는다.
+`Lesson`은 진행 헤더, 중앙 스크롤 본문과 하단 행동을 같은 `max-w-2xl` 열에 배치한다. `Step`은 각 학습 활동의 제목, 안내, 본문과 보조 상태를 조합한다. 채점 결과와 해설은 `Insight` tone으로 표현한다.
 
-## StickyActionBar와 레슨 선택 상태
-
-구현 위치: `packages/shared/ui/src/components/ui/sticky-action-bar.tsx`
-
-`StickyActionBar`는 모바일 safe-area를 포함한 하단 고정 행동 영역이다. tone은 `default`, `success`, `danger`만 제공한다. `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 lesson step 컴포넌트의 미채점 선택 상태는 동일한 accent 토큰을 따른다. `MatchAnswer`는 미채점 상태에서 연결된 항목은 공통 accent fill과 연결선으로 표시하고, 아직 짝이 없는 항목은 surface 상태를 유지한다. 왼쪽·오른쪽 어느 쪽이든 먼저 탭해 짝을 맞출 수 있다. 채점 후에는 연결선과 버튼이 정오답 톤으로 바뀐다. monorepo에서 `primary`는 차콜(주요 CTA)이므로 선택 fill에 `bg-primary`를 쓰지 않는다.
+선택형 상태는 `Choice`, `Token`과 `Segment`의 `data-state`로 표현한다. 이동형 상태는 `Sortable`, `Pair`와 `Classify`로 표현한다. 서술형 상태는 `Compose`와 `Coaching`으로 표현한다. 앱은 서버 evaluation을 이 상태로 변환하며 공유 UI는 정답을 계산하지 않는다.
 
 ## Spinner와 Separator
 
@@ -201,33 +243,39 @@
 - `packages/shared/ui/src/components/ui/spinner.tsx`
 - `packages/shared/ui/src/components/ui/separator.tsx`
 
-`Spinner`는 caller가 `label`을 제공할 때만 접근 가능한 `status`가 된다. label이 없으면 장식으로 처리한다. `Separator`는 기본 decorative이고, 의미 있는 구분선이 필요할 때 `decorative={false}`를 사용한다.
+`Spinner`는 기본 `role="status"`와 `aria-label="로딩 중"`을 제공한다. 호출자는 더 구체적인 `aria-label`을 전달할 수 있다. 장식 spinner는 `aria-hidden="true"`를 사용한다. 장식 spinner에는 `status` role을 제공하지 않는다. `Separator`는 기본 decorative다. 의미 있는 구분선은 `decorative={false}`를 사용한다.
 
-## Page와 Admin Pattern
+## Table과 Empty
 
 구현 위치:
 
-- `packages/shared/ui/src/components/ui/page-header.tsx`
-- `packages/shared/ui/src/components/ui/section-header.tsx`
-- `packages/shared/ui/src/components/ui/stat-card.tsx`
-- `packages/shared/ui/src/components/ui/filter-toolbar.tsx`
-- `packages/shared/ui/src/components/ui/data-table.tsx`
-- `packages/shared/ui/src/components/ui/empty-state.tsx`
+- `packages/shared/ui/src/components/ui/table.tsx`
+- `packages/shared/ui/src/components/ui/empty.tsx`
 
-`PageHeader`와 `SectionHeader`는 제목, 설명, 선택적 action 영역만 제공한다. `StatGrid`와 `StatCard`는 dashboard 지표 같은 반복 metric에 사용한다. 학습자 홈 기준으로 `StatCard`는 `layout="compact"`(`rounded-2xl`, `px-5 py-3.5`, 작은 라벨과 `text-title-lg` 값)을 쓴다. 학습자 프로필 요약은 `layout="profile"`(`bg-surface`, `p-8`, 중앙 정렬, border 없음, `text-heading-lg font-black` 값)을 쓴다. 어드민·대시보드 metric은 기본 `layout="metric"`(border, 좌측 정렬)이다. `FilterToolbar`는 검색과 select filter를 배치하는 form이고, `FilterToolbarField`와 `FilterToolbarLabel`을 함께 사용한다. `DataTableContainer`와 `DataTable`은 horizontal overflow와 기본 table cell 스타일만 제공한다. `EmptyState`는 결과 없음과 초기 상태를 표현하며, 도메인 메시지는 호출자가 전달한다.
+`Table`은 native table 의미를 유지한다. container는 좁은 화면에서 가로 스크롤을 제공한다. 호출자는 caption 또는 `aria-label`을 제공해야 한다. `TableHead`에는 `scope="col"` 또는 `scope="row"`를 지정한다.
 
-`StatGrid`와 `StatCard`는 어드민 전용이 아니다. 학습자 프로필의 완료 레슨, 연속 학습일처럼 숫자 지표를 반복해 보여주는 web 화면에서도 같은 primitive를 사용한다.
+`Empty` variant는 `default`, `frame`, `compact`다. `EmptyMedia` variant는 `default`, `icon`, `sheets`다. `sheets`는 새 콘텐츠 생성을 안내하는 상태에 사용한다. 도메인 제목, 설명과 행동은 호출자가 전달한다.
+
+## Page와 Admin Pattern
+
+어드민 화면 제목은 앱 전용 `apps/admin/src/shared/ui/admin-page-header.tsx`가 조합한다. 이 컴포넌트는 제목, 설명과 선택적 action 영역만 제공한다.
+
+반복 지표와 독립 콘텐츠는 `Card` anatomy로 구성한다. 검색과 선택 필터는 native `GET` form 안에서 `Field`, `Input`, `Select`와 `Button`을 조합한다. Server Component 경계가 필요한 단순 선택 필터는 native `select`를 사용할 수 있다. 목록은 공유 `Table`을 `Card` 안에 배치한다. 빈 상태는 `Empty`를 사용하거나 table의 전체 열을 차지하는 명시적 행으로 표시한다.
 
 ## Guardrail
 
-legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic color alias는 사용하지 않는다. UI source의 raw hex color는 token 정의 밖에서 사용하지 않는다. 이 기준은 공용 primitive, token의 공개 표면과 코드 리뷰로 유지한다.
+이전 디자인 class, 앱 inline typography style와 미정의 semantic color alias는 사용하지 않는다. UI source의 raw color는 reference token 정의 밖에서 사용하지 않는다. 이 기준은 공용 primitive, token의 공개 표면과 코드 리뷰로 유지한다.
 
 ## Icon
 
-구현 위치: `packages/shared/ui/src/components/icons.tsx`
+구현 위치:
 
-기본 아이콘 라이브러리는 `lucide-react`다. 새 아이콘이 필요하면 먼저 `lucide-react` export를 추가한다. 직접 SVG를 추가할 때는 lucide와 같은 stroke 규칙을 유지하고, 장식 아이콘은 `aria-hidden="true"`를 지정한다.
-여러 화면에서 반복되는 브랜드형 아이콘은 앱 파일에 직접 SVG helper를 두지 않고 `@workspace/ui/components/icons`에서 가져온다. 화면 의미가 강한 도메인 전용 그림이나 외부 브랜드 로고만 앱 내부에 둘 수 있다.
+- `packages/shared/ui/src/components/icons.tsx`
+- `packages/shared/ui/src/components/icons/`
+
+기본 아이콘 라이브러리는 `@hugeicons/react`와 `@hugeicons/core-free-icons`다. 공유 UI는 각 icon data를 package subpath에서 직접 가져온다. 앱은 `@workspace/ui/components/icons` 또는 용도별 `@workspace/ui/components/icons/*-icons` 경로를 사용한다. 앱은 Hugeicons package를 직접 가져오지 않는다.
+
+route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈을 사용한다. 이 경로는 사용하지 않는 전체 icon 집합이 초기 chunk에 포함되는 문제를 방지한다. 장식 아이콘은 `aria-hidden="true"`를 지정한다. 화면 의미가 강한 도메인 전용 그림과 외부 브랜드 로고만 앱 내부에 둘 수 있다.
 
 ## 학습자 앱 컴포넌트
 
@@ -258,8 +306,8 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - 쓰기 홈에서는 `쓰기`가 활성화된다.
 - 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
 - 이모지만 표시하는 계정 메뉴 trigger의 접근성 이름은 `계정 메뉴`로 제공한다.
-- 계정 메뉴 드롭다운은 `bg-elevated`, `border-border`, `rounded-4xl`, `w-48`, `p-4`를 쓰고 그림자는 없다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
-- 메뉴 항목은 `w-full text-left`, `py-3 px-4`, `rounded-3xl`, `font-bold`이며 hover/focus/highlight 시 `bg-surface`를 쓴다. 로그아웃만 `danger-fg`로 구분한다.
+- 계정 메뉴 드롭다운은 `bg-popover`, `border-border`, `rounded-3xl`과 elevation token을 사용한다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
+- 메뉴 항목은 공유 `DropdownMenuItem`을 사용한다. 로그아웃은 `variant="destructive"`로 구분한다.
 - `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.
 
 ### LessonShell
@@ -267,11 +315,14 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 구현 위치: `apps/web/src/features/lesson-session/ui/lesson-shell.tsx`
 
 - 전체 viewport를 차지하는 몰입형 shell이다.
-- 상단 진행 헤더와 하단 행동 영역은 `shrink-0`으로 고정한다.
+- 공유 `Lesson`, `LessonHeader`, `LessonBody`와 `LessonFooter`를 조합한다.
+- 상단 진행 헤더와 하단 행동 영역은 스크롤 영역 밖에 둔다.
 - 중앙 `main`만 `overflow-y-auto`로 스크롤한다.
-- 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다. 기본 CTA는 cream gradient footer를 사용하고, 정답/오답 피드백은 상단 gradient와 색상 구분선 뒤에 `correct` 또는 `wrong` 버튼을 배치한다.
-- 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant, 취소는 `secondary`다.
-- 선택형 레슨 UI는 `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 전용 lesson 컴포넌트를 사용하고 markdown 본문은 내부 `MarkdownContent`에서 렌더링한다.
+- 하단 CTA는 `LessonActions` 안의 `Button`을 사용한다.
+- 정답과 오답 피드백은 `Insight`의 `correct`와 `incorrect` tone을 사용한다.
+- 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant다.
+- markdown 본문은 `MarkdownContent`가 `ReactMarkdown` 결과를 `ProseBody` 안에 렌더링한다.
+- `ORDER`와 `COMPARE` renderer는 동적 경계로 분리한다. 이 경계는 drag-and-drop과 Tabs 코드를 해당 활동에서만 불러온다.
 
 ### WritingFocusShell
 
@@ -280,17 +331,19 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - 전체 viewport를 사용하는 한 열 집중 shell이다.
 - 글로벌 내비게이션, 도구 모음과 사이드바를 포함하지 않는다.
 - 상단에는 현재 단계의 최소 문맥과 상태만 둔다.
-- 중앙에는 편집 form 또는 자기 점검 내용을 둔다.
+- 편집 form은 `Compose`, `Field`, `ComposeEditor`와 `ComposeMeter`를 사용한다.
+- 자기 점검은 `Prose`, `Card`, `Badge`와 `Insight`를 사용한다.
+- 자동 저장 상태는 `Badge`로 표시한다.
+- 저장 충돌과 실패는 `Insight tone="incorrect"`로 표시한다.
 - 하단 주요 행동은 모바일 safe area를 반영한다.
 
-### CompareStepView 및 레슨 콜아웃
+### CompareStepView와 Insight
 
 구현 위치: `packages/shared/ui/src/components/lesson/compare-step-view.tsx`
 
-- Kwep `StepRenderer` compare 분기와 동일한 마크업·토큰을 따른다.
-- 버전 본문은 `bg-surface` 패널 + `1.125rem` 본문 `p` 태그다.
-- 「생각해보기」 등 노란 힌트 박스는 `bg-accent-soft`를 쓴다. `bg-primary/20`은 monorepo에서 `primary`가 차콜이므로 사용하지 않는다.
-- 콜아웃 제목·보조 라벨은 `text-muted-foreground`(`fg-muted`)를 쓴다. `text-muted`는 배경용 soft 토큰이라 대비가 부족하다.
+- 버전 전환은 `CompareVersions`, `CompareVersionList`, `CompareVersion`과 `ComparePanel`을 사용한다.
+- 비교 분석은 `Insight tone="think"`를 사용한다.
+- 버전 control은 Tabs keyboard 계약을 유지한다.
 - compare·reading·write 등 정보 제시형 스텝 CTA 라벨은 「이해했어요」다.
 
 ## 어드민 앱 컴포넌트
@@ -305,43 +358,46 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - 사이드바와 본문은 semantic Tailwind class와 공용 토큰을 사용한다.
 - 본문은 `max-w-6xl`, `px-5 md:px-10`, `py-8`을 사용한다.
 - 좁은 화면에서는 고정 사이드바를 숨기고 같은 정보 구조를 modal drawer로 제공한다.
+- 모바일 drawer는 별도 동적 client 경계에서 불러온다.
 
 ### AdminSidebar
 
 구현 위치: `apps/admin/src/app/(admin)/_views/admin-sidebar.tsx`
 
-- 주요 메뉴: 대시보드, 강의 관리, 사용자 관리, 분석.
+- 주요 메뉴: 대시보드, 콘텐츠 관리, 사용자 관리, 분석, 감사 이력.
 - 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
-- 아이콘은 `@workspace/ui/components/icons`에서 가져온다.
-- 활성 링크는 `aria-current="page"`와 `action-primary-*` semantic token으로 표시한다.
-- 사이드바와 drawer는 라이트, 다크, 시스템 테마 선택과 앱 이동, 로그아웃을 동일하게 제공한다.
+- 아이콘은 `@workspace/ui/components/icons/navigation-icons`에서 가져온다.
+- 활성 링크는 `aria-current="page"`와 `sidebar-primary` 계열 semantic token으로 표시한다.
+- 사이드바와 drawer는 앱 이동과 로그아웃을 동일하게 제공한다.
+- 어드민 테마는 운영체제의 라이트 또는 다크 설정을 따른다.
 
 ### Admin Page Header
 
-구현 위치: `packages/shared/ui/src/components/ui/page-header.tsx`
+구현 위치: `apps/admin/src/shared/ui/admin-page-header.tsx`
 
-- 모든 어드민 주요 화면은 `PageHeader`를 직접 사용한다.
-- 앱 전용 `AdminHeader` 래퍼는 유지하지 않는다.
+- 모든 어드민 주요 화면은 `AdminPageHeader`를 사용한다.
+- 공유 package는 앱의 페이지 구조를 소유하지 않는다.
 
-### Admin Surface
+### Admin Card
 
-구현 위치: `packages/shared/ui/src/components/ui/surface.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/card.tsx`
 
-- 반복 업무 화면의 기본 표면은 `Surface variant="panel"`이다.
-- 화면별 grid, flex, spacing 조합은 feature component의 semantic utility class로 둔다.
+- 반복 업무 화면의 독립 표면은 `Card` anatomy로 구성한다.
+- 화면별 grid, flex와 spacing 조합은 feature component에 둔다.
 
 ### Admin Filter
 
-구현 위치: `packages/shared/ui/src/components/ui/filter-toolbar.tsx`
+구현 위치: 각 목록 feature의 `GET` form
 
-- 목록 화면의 검색, select filter, 페이지 크기, 주요 행동은 `FilterToolbar`에 둔다.
-- 각 필드는 `FilterToolbarField`와 `FilterToolbarLabel`을 사용한다.
+- client interaction이 필요한 필터는 `Field`, `Input`, `Select`와 `Button`을 조합한다.
+- 단순 `GET` 제출만 필요한 선택 필터는 native `select`를 사용할 수 있다.
+- 복원 가능한 필터 상태는 URL query에 보존한다.
 
 ### Admin Data Table
 
-구현 위치: `packages/shared/ui/src/components/ui/data-table.tsx`
+구현 위치: `packages/shared/ui/src/components/ui/table.tsx`
 
-- 표는 `DataTableContainer`와 `DataTable`을 사용한다.
+- 표는 `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`와 `TableCell`을 사용한다.
 - table semantic은 앱이 유지하고, `th scope="col"`과 caption 또는 `aria-label`을 제공한다.
 - 좁은 화면에서도 열과 작업을 숨기지 않고 table 최소 폭과 수평 스크롤을 유지한다.
 - 첫 열의 제목, 보조 식별자, thumbnail 조립은 feature component가 담당한다.
@@ -354,6 +410,6 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - `packages/shared/ui/src/components/ui/alert.tsx`
 - `packages/shared/ui/src/components/ui/alert-dialog.tsx`
 
-- 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Kwep 어드민 기준의 중립 `Badge`로 표시한다.
+- 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Luma `Badge` variant로 표시한다.
 - 오류와 성공 메시지는 `Alert`를 사용하고, 오류는 `role="alert"`, 처리 완료는 `role="status"`로 노출한다.
 - 위험 작업 확인은 `AlertDialog`를 사용한다. 비동기 destructive action은 자동 close action 대신 footer 안의 `Button variant="destructive"`로 실행한다.

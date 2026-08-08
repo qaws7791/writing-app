@@ -7,13 +7,16 @@ import type {
   LearnerCourseLessonDto,
   LearnerCourseUnitDto,
 } from "@/shared/http/learner-api-client"
-import { CheckIcon, LockIcon, PlayIcon } from "@workspace/ui/components/icons"
+import { PlayIcon } from "@workspace/ui/components/icons/action-icons"
+import { CheckIcon } from "@workspace/ui/components/icons/control-icons"
+import { LockIcon } from "@workspace/ui/components/icons/learning-icons"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@workspace/ui/components/ui/accordion"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { cn } from "@workspace/ui/lib/utils"
 
 type CourseCurriculumProps = {
@@ -31,12 +34,13 @@ export function CourseCurriculum({
   return (
     <section aria-labelledby="course-curriculum-title">
       <h2
-        className="mb-2 text-heading-sm font-bold"
+        className="mb-5 font-heading text-2xl font-semibold tracking-[-0.025em]"
         id="course-curriculum-title"
       >
         커리큘럼
       </h2>
       <Accordion
+        className="gap-3"
         defaultValue={course.units[0] ? [course.units[0].id] : []}
         multiple
       >
@@ -69,33 +73,39 @@ function CurriculumUnit({
   const unitDone = completedCount === totalCount && totalCount > 0
 
   return (
-    <AccordionItem value={unit.id}>
-      <AccordionTrigger>
-        <div className="flex items-center gap-4">
-          <div
+    <AccordionItem
+      className="min-w-0 rounded-3xl border-0 bg-muted/55 px-4"
+      value={unit.id}
+    >
+      <AccordionTrigger className="min-w-0 py-5">
+        <div className="flex min-w-0 items-center gap-3 pr-2">
+          <span
+            aria-hidden="true"
             className={cn(
-              "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
+              "flex size-10 shrink-0 items-center justify-center rounded-2xl font-heading font-semibold",
               unitDone
-                ? "bg-success text-success-foreground"
-                : "bg-bg-surface text-fg-default"
+                ? "bg-primary text-primary-foreground"
+                : "bg-background/80 text-foreground"
             )}
           >
             {unitDone ? (
-              <CheckIcon size={18} />
+              <CheckIcon className="size-4" />
             ) : (
-              <span className="text-label-md">{unitIndex + 1}</span>
+              <span>{unitIndex + 1}</span>
             )}
-          </div>
-          <div>
-            <div className="text-title-md font-bold">{unit.title}</div>
-            <div className="mt-1 text-label-sm font-medium text-muted-foreground">
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate font-heading text-base font-semibold tracking-[-0.014em]">
+              {unit.title}
+            </span>
+            <span className="mt-1 block text-xs font-normal text-muted-foreground">
               {completedCount}/{totalCount}개 레슨
-            </div>
-          </div>
+            </span>
+          </span>
         </div>
       </AccordionTrigger>
-      <AccordionContent>
-        <div className="grid gap-1 pb-1">
+      <AccordionContent className="pb-3">
+        <div className="grid min-w-0 gap-1">
           {unit.lessons.map((lesson) => (
             <CurriculumLesson
               isCurrent={currentLessonId === lesson.id}
@@ -127,62 +137,66 @@ function CurriculumLesson({
       ? "완료"
       : isCurrent
         ? "다음"
-        : "이동 가능"
+        : "학습 가능"
   const accessibleName = `${lesson.title}, ${statusLabel}, ${lesson.estimatedMinutes}분`
 
   const className = cn(
-    "flex min-h-14 items-center gap-3 py-3.5 pl-4 -mr-2 pr-3 rounded-2xl transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+    "flex min-h-14 min-w-0 items-center gap-3 rounded-2xl px-3 py-3 outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/25",
     locked
-      ? "cursor-not-allowed opacity-55"
+      ? "cursor-not-allowed opacity-60"
       : isCurrent
-        ? "bg-action-selected-bg/35 hover:bg-action-selected-bg/45"
-        : "hover:bg-muted/15"
+        ? "bg-background hover:bg-background"
+        : "hover:bg-background/65"
   )
   const content = (
     <>
-      <div className="w-8 shrink-0 flex justify-center">
-        <div
-          aria-hidden="true"
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-xl",
+          done
+            ? "bg-success/10 text-success"
+            : locked
+              ? "bg-background text-muted-foreground"
+              : isCurrent
+                ? "bg-primary text-primary-foreground"
+                : "bg-background text-foreground"
+        )}
+      >
+        {done ? (
+          <CheckIcon className="size-3.5" />
+        ) : locked ? (
+          <LockIcon className="size-3.5" />
+        ) : (
+          <PlayIcon className="size-3" fill="currentColor" />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span
           className={cn(
-            "w-7 h-7 rounded-full flex justify-center items-center",
-            done
-              ? "bg-success text-success-foreground"
-              : locked
-                ? "bg-bg-surface text-fg-muted"
-                : isCurrent
-                  ? "bg-action-selected-bg text-action-selected-fg"
-                  : "bg-bg-surface text-fg-default"
+            "block truncate text-sm font-medium",
+            locked ? "text-muted-foreground" : "text-foreground"
           )}
         >
-          {done ? (
-            <CheckIcon size={14} />
-          ) : locked ? (
-            <LockIcon size={14} />
-          ) : (
-            <PlayIcon fill="currentColor" size={12} />
-          )}
-        </div>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <div
-            className={cn(
-              "text-body-sm font-bold",
-              locked ? "text-muted-foreground" : "text-foreground"
-            )}
-          >
-            {lesson.title}
-          </div>
-          {isCurrent && !locked ? (
-            <span className="text-label-sm font-bold text-fg-default">
-              다음
-            </span>
-          ) : null}
-        </div>
-        <div className="mt-0.5 text-label-sm font-medium text-muted-foreground">
+          {lesson.title}
+        </span>
+        <span className="mt-0.5 block text-xs text-muted-foreground">
           {lesson.estimatedMinutes}분
-        </div>
-      </div>
+        </span>
+      </span>
+      <Badge
+        variant={
+          done
+            ? "success"
+            : locked
+              ? "outline"
+              : isCurrent
+                ? "default"
+                : "secondary"
+        }
+      >
+        {statusLabel}
+      </Badge>
     </>
   )
 

@@ -22,13 +22,15 @@ bun run dev
 ```bash
 bun run dev:app
 bun run dev:admin
-bun run storybook
+bun run dev:ui
 bun run doctor
 bun run lint
 bun run typecheck
 bun run test
 bun run build
 ```
+
+`dev:ui`는 Luma 컴포넌트 문서, 격리 예제와 shadcn registry를 제공하는 Astro 앱을 실행한다.
 
 테스트 전용 인증, 데이터 초기화, 배포 관련 검증은 [테스트 기준](docs/engineering/testing.md)과 [배포 절차](docs/engineering/deployment.md)를 먼저 확인한다.
 

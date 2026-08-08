@@ -308,7 +308,7 @@ describe("LessonExperience", () => {
     generatedClient.completeLearnerStep.mockResolvedValue(retry)
     render(<LessonExperience lesson={startedLesson} />)
 
-    await user.click(screen.getByRole("button", { name: "오답" }))
+    await user.click(screen.getByRole("radio", { name: "오답" }))
     await user.click(screen.getByRole("button", { name: "확인하기" }))
 
     expect(await screen.findByText("다시 확인해보세요")).toBeInTheDocument()
@@ -349,7 +349,7 @@ describe("LessonExperience", () => {
     generatedClient.completeLearnerStep.mockResolvedValue(advanced)
     render(<LessonExperience lesson={startedLesson} />)
 
-    await user.click(screen.getByRole("button", { name: "정답" }))
+    await user.click(screen.getByRole("radio", { name: "정답" }))
     await user.click(screen.getByRole("button", { name: "확인하기" }))
     expect(await screen.findByText("완벽해요!")).toBeInTheDocument()
 

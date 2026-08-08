@@ -1,0 +1,1607 @@
+{
+  "generatedAt": "2026-08-09",
+  "counts": {
+    "modules": 39,
+    "stories": 154,
+    "ciTestModules": 35,
+    "playStories": 9,
+    "mdx": 2
+  },
+  "modules": [
+    {
+      "source": "legacy-catalog/stories/components/admin-patterns.stories.tsx",
+      "title": "Patterns/Admin",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "patterns-admin--overview",
+          "exportName": "Overview",
+          "label": "Overview",
+          "description": "",
+          "destination": "/docs/patterns/admin#story-overview",
+          "hasPlay": false
+        },
+        {
+          "id": "patterns-admin--empty-result",
+          "exportName": "EmptyResult",
+          "label": "EmptyResult",
+          "description": "",
+          "destination": "/docs/patterns/admin#story-empty-result",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/ai-feedback-answer.stories.tsx",
+      "title": "Components/Lesson/AiFeedbackAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-ai-feedback-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 초점·작성 내용·재시도·mock 결과를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-ai-feedback-answer--empty-draft",
+          "exportName": "EmptyDraft",
+          "label": "EmptyDraft",
+          "description": "작성 내용이 없을 때의 표시입니다.",
+          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-empty-draft",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-ai-feedback-answer--no-retry",
+          "exportName": "NoRetry",
+          "label": "NoRetry",
+          "description": "재시도가 비활성화된 상태입니다.",
+          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-no-retry",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-ai-feedback-answer--with-feedback",
+          "exportName": "WithFeedback",
+          "label": "WithFeedback",
+          "description": "AI 코칭 결과가 즉시 반환되는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
+          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-with-feedback",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-ai-feedback-answer--request-error",
+          "exportName": "RequestError",
+          "label": "RequestError",
+          "description": "AI 코칭 요청 실패 상태를 확인하는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
+          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-request-error",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-ai-feedback-answer--daily-quota",
+          "exportName": "DailyQuota",
+          "label": "DailyQuota",
+          "description": "일일 요청 한도와 서울 시간 기준 재시도 안내를 확인하는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
+          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-daily-quota",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-ai-feedback-answer--attempt-limit",
+          "exportName": "AttemptLimit",
+          "label": "AttemptLimit",
+          "description": "한 스텝에서 성공한 AI 코칭 3회를 모두 사용한 영구 한도 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
+          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-attempt-limit",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/categorize-answer.stories.tsx",
+      "title": "Components/Lesson/CategorizeAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-categorize-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 제목·카테고리·항목·채점 상태를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/categorize-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-categorize-answer--checked-correct",
+          "exportName": "CheckedCorrect",
+          "label": "CheckedCorrect",
+          "description": "정답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/categorize-answer#story-checked-correct",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-categorize-answer--checked-wrong",
+          "exportName": "CheckedWrong",
+          "label": "CheckedWrong",
+          "description": "오답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/categorize-answer#story-checked-wrong",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-categorize-answer--narrow-with-long-tags",
+          "exportName": "NarrowWithLongTags",
+          "label": "NarrowWithLongTags",
+          "description": "긴 태그 라벨과 좁은 모바일 폭에서 분류된 항목 레이아웃입니다.",
+          "destination": "/docs/extensions/lesson/categorize-answer#story-narrow-with-long-tags",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/compare-step-view.stories.tsx",
+      "title": "Components/Lesson/CompareStepView",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-compare-step-view--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 제목·버전·분석 문구를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/compare-step-view#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-compare-step-view--three-versions",
+          "exportName": "ThreeVersions",
+          "label": "ThreeVersions",
+          "description": "두 개 이상의 버전 탭을 확인하는 예시입니다.",
+          "destination": "/docs/extensions/lesson/compare-step-view#story-three-versions",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/fill-blank-answer.stories.tsx",
+      "title": "Components/Lesson/FillBlankAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-fill-blank-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 템플릿·단어·빈칸 수·채점 상태를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/fill-blank-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-fill-blank-answer--checked-correct",
+          "exportName": "CheckedCorrect",
+          "label": "CheckedCorrect",
+          "description": "정답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/fill-blank-answer#story-checked-correct",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-fill-blank-answer--checked-wrong",
+          "exportName": "CheckedWrong",
+          "label": "CheckedWrong",
+          "description": "오답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/fill-blank-answer#story-checked-wrong",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/match-answer.stories.tsx",
+      "title": "Components/Lesson/MatchAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-match-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 제목·안내·선택지·연결·채점 상태를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/match-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-match-answer--pending-choice",
+          "exportName": "PendingChoice",
+          "label": "PendingChoice",
+          "description": "한쪽 선택지를 눌러 다음 짝을 기다리는 중간 상태입니다.",
+          "destination": "/docs/extensions/lesson/match-answer#story-pending-choice",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-match-answer--connected",
+          "exportName": "Connected",
+          "label": "Connected",
+          "description": "채점 전 연결이 하나 만들어진 상태입니다.",
+          "destination": "/docs/extensions/lesson/match-answer#story-connected",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-match-answer--checked-correct",
+          "exportName": "CheckedCorrect",
+          "label": "CheckedCorrect",
+          "description": "정답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/match-answer#story-checked-correct",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-match-answer--checked-wrong",
+          "exportName": "CheckedWrong",
+          "label": "CheckedWrong",
+          "description": "오답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/match-answer#story-checked-wrong",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/multiple-choice-answer.stories.tsx",
+      "title": "Components/Lesson/MultipleChoiceAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-multiple-choice-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 질문·선택지·정답·채점 상태를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/multiple-choice-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-multiple-choice-answer--checked-correct",
+          "exportName": "CheckedCorrect",
+          "label": "CheckedCorrect",
+          "description": "정답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/multiple-choice-answer#story-checked-correct",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-multiple-choice-answer--checked-wrong",
+          "exportName": "CheckedWrong",
+          "label": "CheckedWrong",
+          "description": "오답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/multiple-choice-answer#story-checked-wrong",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/order-answer.stories.tsx",
+      "title": "Components/Lesson/OrderAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-order-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 항목·정답 순서·번호 표시·채점 상태를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/order-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-order-answer--without-numbers",
+          "exportName": "WithoutNumbers",
+          "label": "WithoutNumbers",
+          "description": "순번 없이 표시하는 예시입니다.",
+          "destination": "/docs/extensions/lesson/order-answer#story-without-numbers",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-order-answer--checked-correct",
+          "exportName": "CheckedCorrect",
+          "label": "CheckedCorrect",
+          "description": "정답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/order-answer#story-checked-correct",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-order-answer--checked-wrong",
+          "exportName": "CheckedWrong",
+          "label": "CheckedWrong",
+          "description": "오답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/order-answer#story-checked-wrong",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/reading-step-view.stories.tsx",
+      "title": "Components/Lesson/ReadingStepView",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-reading-step-view--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 제목·안내·본문·출처를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/reading-step-view#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-reading-step-view--without-source",
+          "exportName": "WithoutSource",
+          "label": "WithoutSource",
+          "description": "출처 없이 본문만 표시하는 예시입니다.",
+          "destination": "/docs/extensions/lesson/reading-step-view#story-without-source",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-reading-step-view--long-body",
+          "exportName": "LongBody",
+          "label": "LongBody",
+          "description": "긴 마크다운 본문을 확인하는 예시입니다.",
+          "destination": "/docs/extensions/lesson/reading-step-view#story-long-body",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/select-answer.stories.tsx",
+      "title": "Components/Lesson/SelectAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-select-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 질문·구간·정답·레이아웃·채점 상태를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/select-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-select-answer--block-layout",
+          "exportName": "BlockLayout",
+          "label": "BlockLayout",
+          "description": "블록 레이아웃 예시입니다.",
+          "destination": "/docs/extensions/lesson/select-answer#story-block-layout",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-select-answer--checked-correct",
+          "exportName": "CheckedCorrect",
+          "label": "CheckedCorrect",
+          "description": "정답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/select-answer#story-checked-correct",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-select-answer--checked-wrong",
+          "exportName": "CheckedWrong",
+          "label": "CheckedWrong",
+          "description": "오답 채점 후 시각 상태입니다.",
+          "destination": "/docs/extensions/lesson/select-answer#story-checked-wrong",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/lesson/write-answer.stories.tsx",
+      "title": "Components/Lesson/WriteAnswer",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-lesson-write-answer--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "Controls로 제목·안내·참고문·글자 수 제한·채점 상태를 조작할 수 있는 Playground입니다.",
+          "destination": "/docs/extensions/lesson/write-answer#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-write-answer--with-claim",
+          "exportName": "WithClaim",
+          "label": "WithClaim",
+          "description": "주장·반박 모드 예시입니다.",
+          "destination": "/docs/extensions/lesson/write-answer#story-with-claim",
+          "hasPlay": false
+        },
+        {
+          "id": "components-lesson-write-answer--checked-with-sample",
+          "exportName": "CheckedWithSample",
+          "label": "CheckedWithSample",
+          "description": "채점 후 참조 답안이 표시되는 상태입니다.",
+          "destination": "/docs/extensions/lesson/write-answer#story-checked-with-sample",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/accordion.stories.tsx",
+      "title": "Components/UI/Accordion",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-accordion--single",
+          "exportName": "Single",
+          "label": "Single",
+          "description": "",
+          "destination": "/docs/components/accordion#story-single",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-accordion--multiple",
+          "exportName": "Multiple",
+          "label": "Multiple",
+          "description": "",
+          "destination": "/docs/components/accordion#story-multiple",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-accordion--with-disabled-item",
+          "exportName": "WithDisabledItem",
+          "label": "WithDisabledItem",
+          "description": "",
+          "destination": "/docs/components/accordion#story-with-disabled-item",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-accordion--custom-layout",
+          "exportName": "CustomLayout",
+          "label": "CustomLayout",
+          "description": "",
+          "destination": "/docs/components/accordion#story-custom-layout",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-accordion--interaction",
+          "exportName": "Interaction",
+          "label": "Interaction",
+          "description": "",
+          "destination": "/docs/components/accordion#story-interaction",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/alert-dialog.stories.tsx",
+      "title": "Components/UI/AlertDialog",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-alert-dialog--default",
+          "exportName": "Default",
+          "label": "Default",
+          "description": "",
+          "destination": "/docs/components/alert-dialog#story-default",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-alert-dialog--with-media",
+          "exportName": "WithMedia",
+          "label": "WithMedia",
+          "description": "",
+          "destination": "/docs/components/alert-dialog#story-with-media",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-alert-dialog--small-size",
+          "exportName": "SmallSize",
+          "label": "SmallSize",
+          "description": "",
+          "destination": "/docs/components/alert-dialog#story-small-size",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-alert-dialog--lesson-exit",
+          "exportName": "LessonExit",
+          "label": "LessonExit",
+          "description": "",
+          "destination": "/docs/components/alert-dialog#story-lesson-exit",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-alert-dialog--form-interaction",
+          "exportName": "FormInteraction",
+          "label": "FormInteraction",
+          "description": "",
+          "destination": "/docs/components/alert-dialog#story-form-interaction",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/alert.stories.tsx",
+      "title": "Components/UI/Alert",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-alert--with-action",
+          "exportName": "WithAction",
+          "label": "WithAction",
+          "description": "",
+          "destination": "/docs/components/alert#story-with-action",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-alert--variants",
+          "exportName": "Variants",
+          "label": "Variants",
+          "description": "",
+          "destination": "/docs/components/alert#story-variants",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-alert--simple",
+          "exportName": "Simple",
+          "label": "Simple",
+          "description": "",
+          "destination": "/docs/components/alert#story-simple",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/badge.stories.tsx",
+      "title": "Components/UI/Badge",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-ui-badge--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "기본 Playground 스토리입니다. 컨트롤을 사용하여 직접 속성을 테스트할 수 있습니다.",
+          "destination": "/docs/components/badge#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-badge--variants",
+          "exportName": "Variants",
+          "label": "Variants",
+          "description": "지원하는 모든 Variant 예제입니다.",
+          "destination": "/docs/components/badge#story-variants",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-badge--semantic-states",
+          "exportName": "SemanticStates",
+          "label": "SemanticStates",
+          "description": "의미 상태를 variant로 지정하는 예제입니다.",
+          "destination": "/docs/components/badge#story-semantic-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-badge--with-icon",
+          "exportName": "WithIcon",
+          "label": "WithIcon",
+          "description": "아이콘과 함께 복합적으로 사용하는 예제입니다.",
+          "destination": "/docs/components/badge#story-with-icon",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-badge--as-link",
+          "exportName": "AsLink",
+          "label": "AsLink",
+          "description": "render prop을 사용하여 링크나 다른 태그로 커스텀 렌더링하는 예제입니다. a 태그로 렌더링하면 호버 시 스타일 효과가 추가로 적용됩니다.",
+          "destination": "/docs/components/badge#story-as-link",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/button.stories.tsx",
+      "title": "Components/UI/Button",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-ui-button--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "기본 Playground 스토리입니다. 컨트롤을 사용하여 직접 속성을 테스트할 수 있습니다.",
+          "destination": "/docs/components/button#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--variants",
+          "exportName": "Variants",
+          "label": "Variants",
+          "description": "지원하는 모든 Variant 예제입니다.",
+          "destination": "/docs/components/button#story-variants",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--sizes",
+          "exportName": "Sizes",
+          "label": "Sizes",
+          "description": "지원하는 모든 Size 예제입니다. (아이콘 크기 포함)",
+          "destination": "/docs/components/button#story-sizes",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--icon-only",
+          "exportName": "IconOnly",
+          "label": "IconOnly",
+          "description": "단독 아이콘 버튼 예제입니다.",
+          "destination": "/docs/components/button#story-icon-only",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--with-icon",
+          "exportName": "WithIcon",
+          "label": "WithIcon",
+          "description": "텍스트와 아이콘을 결합하여 사용하는 예제입니다. data-icon 속성이나 레이아웃 유틸리티를 활용하여 정렬을 맞출 수 있습니다.",
+          "destination": "/docs/components/button#story-with-icon",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--loading",
+          "exportName": "Loading",
+          "label": "Loading",
+          "description": "작업이 진행 중임을 보여주는 로딩 상태 예제입니다. disabled 처리와 spinner 애니메이션 아이콘이 포함됩니다.",
+          "destination": "/docs/components/button#story-loading",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--as-child",
+          "exportName": "AsChild",
+          "label": "AsChild",
+          "description": "`render` 프로퍼티를 사용하여 다른 HTML 엘리먼트나 커스텀 컴포넌트(예: Next.js Link)로 렌더링하는 예제입니다. base-ui의 Button Primitive는 `render` prop을 통해 다형성(polymorphism)을 지원합니다.",
+          "destination": "/docs/components/button#story-as-child",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--variant-reuse",
+          "exportName": "VariantReuse",
+          "label": "VariantReuse",
+          "description": "Link나 다른 primitive가 Button 시각 계약을 재사용하는 예제입니다.",
+          "destination": "/docs/components/button#story-variant-reuse",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--states",
+          "exportName": "States",
+          "label": "States",
+          "description": "비활성화(disabled) 및 에러(aria-invalid) 등 다양한 상태를 시뮬레이션한 예제입니다.",
+          "destination": "/docs/components/button#story-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-button--interaction",
+          "exportName": "Interaction",
+          "label": "Interaction",
+          "description": "상호작용 및 클릭 이벤트 확인용 스토리입니다.",
+          "destination": "/docs/components/button#story-interaction",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/card.stories.tsx",
+      "title": "Components/UI/Card",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-card--anatomy",
+          "exportName": "Anatomy",
+          "label": "Anatomy",
+          "description": "",
+          "destination": "/docs/components/card#story-anatomy",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-card--sizes",
+          "exportName": "Sizes",
+          "label": "Sizes",
+          "description": "",
+          "destination": "/docs/components/card#story-sizes",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-card--variants",
+          "exportName": "Variants",
+          "label": "Variants",
+          "description": "",
+          "destination": "/docs/components/card#story-variants",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-card--media-and-actions",
+          "exportName": "MediaAndActions",
+          "label": "MediaAndActions",
+          "description": "",
+          "destination": "/docs/components/card#story-media-and-actions",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-card--long-content",
+          "exportName": "LongContent",
+          "label": "LongContent",
+          "description": "",
+          "destination": "/docs/components/card#story-long-content",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-card--heading-semantics",
+          "exportName": "HeadingSemantics",
+          "label": "HeadingSemantics",
+          "description": "",
+          "destination": "/docs/components/card#story-heading-semantics",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/dialog.stories.tsx",
+      "title": "Components/UI/Dialog",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-dialog--default",
+          "exportName": "Default",
+          "label": "Default",
+          "description": "",
+          "destination": "/docs/components/dialog#story-default",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/dropdown-menu.stories.tsx",
+      "title": "Components/UI/DropdownMenu",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-dropdown-menu--default",
+          "exportName": "Default",
+          "label": "Default",
+          "description": "",
+          "destination": "/docs/components/dropdown-menu#story-default",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-dropdown-menu--checkboxes",
+          "exportName": "Checkboxes",
+          "label": "Checkboxes",
+          "description": "",
+          "destination": "/docs/components/dropdown-menu#story-checkboxes",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-dropdown-menu--radio-group",
+          "exportName": "RadioGroup",
+          "label": "RadioGroup",
+          "description": "",
+          "destination": "/docs/components/dropdown-menu#story-radio-group",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-dropdown-menu--submenu",
+          "exportName": "Submenu",
+          "label": "Submenu",
+          "description": "",
+          "destination": "/docs/components/dropdown-menu#story-submenu",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-dropdown-menu--complex-overlay",
+          "exportName": "ComplexOverlay",
+          "label": "ComplexOverlay",
+          "description": "",
+          "destination": "/docs/components/dropdown-menu#story-complex-overlay",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-dropdown-menu--form-interaction",
+          "exportName": "FormInteraction",
+          "label": "FormInteraction",
+          "description": "",
+          "destination": "/docs/components/dropdown-menu#story-form-interaction",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/empty.stories.tsx",
+      "title": "Components/UI/Empty",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-empty--anatomy",
+          "exportName": "Anatomy",
+          "label": "Anatomy",
+          "description": "",
+          "destination": "/docs/components/empty#story-anatomy",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-empty--with-media",
+          "exportName": "WithMedia",
+          "label": "WithMedia",
+          "description": "",
+          "destination": "/docs/components/empty#story-with-media",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-empty--framed-sheets",
+          "exportName": "FramedSheets",
+          "label": "FramedSheets",
+          "description": "",
+          "destination": "/docs/components/empty#story-framed-sheets",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-empty--title-only",
+          "exportName": "TitleOnly",
+          "label": "TitleOnly",
+          "description": "",
+          "destination": "/docs/components/empty#story-title-only",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/field.stories.tsx",
+      "title": "Components/UI/Field",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-field--anatomy",
+          "exportName": "Anatomy",
+          "label": "Anatomy",
+          "description": "",
+          "destination": "/docs/components/field#story-anatomy",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-field--states",
+          "exportName": "States",
+          "label": "States",
+          "description": "",
+          "destination": "/docs/components/field#story-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-field--groups",
+          "exportName": "Groups",
+          "label": "Groups",
+          "description": "",
+          "destination": "/docs/components/field#story-groups",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-field--long-content",
+          "exportName": "LongContent",
+          "label": "LongContent",
+          "description": "",
+          "destination": "/docs/components/field#story-long-content",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-field--accessibility",
+          "exportName": "Accessibility",
+          "label": "Accessibility",
+          "description": "",
+          "destination": "/docs/components/field#story-accessibility",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/input.stories.tsx",
+      "title": "Components/UI/Input",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-input--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "",
+          "destination": "/docs/components/input#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--types-and-sizes",
+          "exportName": "TypesAndSizes",
+          "label": "TypesAndSizes",
+          "description": "",
+          "destination": "/docs/components/input#story-types-and-sizes",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--states",
+          "exportName": "States",
+          "label": "States",
+          "description": "",
+          "destination": "/docs/components/input#story-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--file",
+          "exportName": "File",
+          "label": "File",
+          "description": "",
+          "destination": "/docs/components/input#story-file",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--with-label",
+          "exportName": "WithLabel",
+          "label": "WithLabel",
+          "description": "",
+          "destination": "/docs/components/input#story-with-label",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--with-button",
+          "exportName": "WithButton",
+          "label": "WithButton",
+          "description": "",
+          "destination": "/docs/components/input#story-with-button",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--with-text",
+          "exportName": "WithText",
+          "label": "WithText",
+          "description": "",
+          "destination": "/docs/components/input#story-with-text",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--long-content",
+          "exportName": "LongContent",
+          "label": "LongContent",
+          "description": "",
+          "destination": "/docs/components/input#story-long-content",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-input--form-interaction",
+          "exportName": "FormInteraction",
+          "label": "FormInteraction",
+          "description": "",
+          "destination": "/docs/components/input#story-form-interaction",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/label.stories.tsx",
+      "title": "Components/UI/Label",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-label--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "기본 Playground 스토리입니다.",
+          "destination": "/docs/components/label#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-label--with-input",
+          "exportName": "WithInput",
+          "label": "WithInput",
+          "description": "가장 널리 사용되는 Input 필드와의 결합 형태입니다. Label의 `htmlFor` 속성에 Input의 `id`를 매핑하여 라벨 클릭 시 인풋이 포커스되도록 합니다.",
+          "destination": "/docs/components/label#story-with-input",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-label--required-field",
+          "exportName": "RequiredField",
+          "label": "RequiredField",
+          "description": "필수 입력 항목을 표시하는 예제입니다. 라벨 텍스트 뒤에 danger 토큰 색상의 별 기호(*)를 추가하여 시각적으로 인지할 수 있게 돕습니다.",
+          "destination": "/docs/components/label#story-required-field",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-label--disabled-state",
+          "exportName": "DisabledState",
+          "label": "DisabledState",
+          "description": "필드가 비활성화되었을 때 라벨의 반응성을 확인하는 스토리입니다. Label 컴포넌트는 인접한 피어 요소가 disabled되면 `peer-disabled:opacity-50` 스타일을 통해 자동으로 투명도가 조절되며 선택이 불가능해집니다.",
+          "destination": "/docs/components/label#story-disabled-state",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/lesson.stories.tsx",
+      "title": "Components/UI/Lesson",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-lesson--in-progress",
+          "exportName": "InProgress",
+          "label": "InProgress",
+          "description": "고정 헤더, 스크롤 본문과 하단 행동으로 구성한 몰입형 레슨 anatomy입니다.",
+          "destination": "/docs/components/lesson#story-in-progress",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-lesson--complete",
+          "exportName": "Complete",
+          "label": "Complete",
+          "description": "요약과 후속 행동을 제공하는 완료 상태입니다.",
+          "destination": "/docs/components/lesson#story-complete",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/popover.stories.tsx",
+      "title": "Components/UI/Popover",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-popover--default",
+          "exportName": "Default",
+          "label": "Default",
+          "description": "",
+          "destination": "/docs/components/popover#story-default",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/progress.stories.tsx",
+      "title": "Components/UI/Progress",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-progress--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "기본 Playground 스토리입니다. 컨트롤을 사용하여 직접 속성을 테스트할 수 있습니다.",
+          "destination": "/docs/components/progress#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-progress--variants-and-sizes",
+          "exportName": "VariantsAndSizes",
+          "label": "VariantsAndSizes",
+          "description": "트랙의 높이(Size)나 클래스 조작을 통해 크기를 조정한 예제입니다.",
+          "destination": "/docs/components/progress#story-variants-and-sizes",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-progress--empty-track-on-surface",
+          "exportName": "EmptyTrackOnSurface",
+          "label": "EmptyTrackOnSurface",
+          "description": "카드 위 0% 진행률에서도 빈 트랙이 보이는지 검증하는 스토리입니다.",
+          "destination": "/docs/components/progress#story-empty-track-on-surface",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-progress--boundary-states",
+          "exportName": "BoundaryStates",
+          "label": "BoundaryStates",
+          "description": "극단값(0%, 100%) 및 경계 상태에서의 렌더링 검증 예제입니다.",
+          "destination": "/docs/components/progress#story-boundary-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-progress--labels-and-long-content",
+          "exportName": "LabelsAndLongContent",
+          "label": "LabelsAndLongContent",
+          "description": "긴 타이틀이나 레이아웃이 밀리는 문제를 예방하기 위한 레이아웃 검증 스토리입니다.",
+          "destination": "/docs/components/progress#story-labels-and-long-content",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-progress--indeterminate",
+          "exportName": "Indeterminate",
+          "label": "Indeterminate",
+          "description": "완료 시점을 알 수 없는 작업의 불확정 진행 상태를 표시합니다.",
+          "destination": "/docs/components/progress#story-indeterminate",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-progress--interactive",
+          "exportName": "Interactive",
+          "label": "Interactive",
+          "description": "버튼으로 진행 상황을 직접 제어할 수 있는 대화형(Interactive) 예제입니다.",
+          "destination": "/docs/components/progress#story-interactive",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-progress--accessibility",
+          "exportName": "Accessibility",
+          "label": "Accessibility",
+          "description": "스크린 리더가 progressbar 역할·현재 값·접근 이름을 함께 받는지 확인하는 스토리입니다.",
+          "destination": "/docs/components/progress#story-accessibility",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/select.stories.tsx",
+      "title": "Components/UI/Select",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-select--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "",
+          "destination": "/docs/components/select#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-select--options-and-groups",
+          "exportName": "OptionsAndGroups",
+          "label": "OptionsAndGroups",
+          "description": "",
+          "destination": "/docs/components/select#story-options-and-groups",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-select--states",
+          "exportName": "States",
+          "label": "States",
+          "description": "",
+          "destination": "/docs/components/select#story-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-select--long-content",
+          "exportName": "LongContent",
+          "label": "LongContent",
+          "description": "",
+          "destination": "/docs/components/select#story-long-content",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-select--form-interaction",
+          "exportName": "FormInteraction",
+          "label": "FormInteraction",
+          "description": "",
+          "destination": "/docs/components/select#story-form-interaction",
+          "hasPlay": true
+        },
+        {
+          "id": "components-ui-select--scrollable",
+          "exportName": "Scrollable",
+          "label": "Scrollable",
+          "description": "",
+          "destination": "/docs/components/select#story-scrollable",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-select--disabled-items",
+          "exportName": "DisabledItems",
+          "label": "DisabledItems",
+          "description": "",
+          "destination": "/docs/components/select#story-disabled-items",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-select--sizes",
+          "exportName": "Sizes",
+          "label": "Sizes",
+          "description": "",
+          "destination": "/docs/components/select#story-sizes",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/separator.stories.tsx",
+      "title": "Components/UI/Separator",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-ui-separator--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "기본 Playground 스토리입니다.",
+          "destination": "/docs/components/separator#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-separator--horizontal",
+          "exportName": "Horizontal",
+          "label": "Horizontal",
+          "description": "가로 구분선(Horizontal)을 사용하는 가장 보편적인 예시입니다. 제목 영역과 본문 텍스트 영역을 구분하는 용도로 사용됩니다.",
+          "destination": "/docs/components/separator#story-horizontal",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-separator--vertical",
+          "exportName": "Vertical",
+          "label": "Vertical",
+          "description": "세로 구분선(Vertical)을 사용하는 예시입니다. 내비게이션 메뉴나 메타데이터 항목들을 좌우로 나열하고 구분하는 용도로 적합합니다.",
+          "destination": "/docs/components/separator#story-vertical",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-separator--custom-style",
+          "exportName": "CustomStyle",
+          "label": "CustomStyle",
+          "description": "텍스트 레이아웃 및 여백 유틸리티와 조합하여 복합적으로 사용하는 시각적 가이드 예제입니다.",
+          "destination": "/docs/components/separator#story-custom-style",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/status.stories.tsx",
+      "title": "Components/UI/Status",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-status--loading-states",
+          "exportName": "LoadingStates",
+          "label": "LoadingStates",
+          "description": "",
+          "destination": "/docs/components/spinner#story-loading-states",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/table.stories.tsx",
+      "title": "Components/UI/Table",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-table--default",
+          "exportName": "Default",
+          "label": "Default",
+          "description": "",
+          "destination": "/docs/components/table#story-default",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-table--striped",
+          "exportName": "Striped",
+          "label": "Striped",
+          "description": "",
+          "destination": "/docs/components/table#story-striped",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/tabs.stories.tsx",
+      "title": "Components/UI/Tabs",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-tabs--default",
+          "exportName": "Default",
+          "label": "Default",
+          "description": "",
+          "destination": "/docs/components/tabs#story-default",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-tabs--line",
+          "exportName": "Line",
+          "label": "Line",
+          "description": "",
+          "destination": "/docs/components/tabs#story-line",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-tabs--vertical",
+          "exportName": "Vertical",
+          "label": "Vertical",
+          "description": "",
+          "destination": "/docs/components/tabs#story-vertical",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-tabs--keyboard-interaction",
+          "exportName": "KeyboardInteraction",
+          "label": "KeyboardInteraction",
+          "description": "",
+          "destination": "/docs/components/tabs#story-keyboard-interaction",
+          "hasPlay": true
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/textarea.stories.tsx",
+      "title": "Components/UI/Textarea",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "components-ui-textarea--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "",
+          "destination": "/docs/components/textarea#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-textarea--sizes-and-resize",
+          "exportName": "SizesAndResize",
+          "label": "SizesAndResize",
+          "description": "",
+          "destination": "/docs/components/textarea#story-sizes-and-resize",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-textarea--states",
+          "exportName": "States",
+          "label": "States",
+          "description": "",
+          "destination": "/docs/components/textarea#story-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-textarea--with-label",
+          "exportName": "WithLabel",
+          "label": "WithLabel",
+          "description": "",
+          "destination": "/docs/components/textarea#story-with-label",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-textarea--with-text",
+          "exportName": "WithText",
+          "label": "WithText",
+          "description": "",
+          "destination": "/docs/components/textarea#story-with-text",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-textarea--with-button",
+          "exportName": "WithButton",
+          "label": "WithButton",
+          "description": "",
+          "destination": "/docs/components/textarea#story-with-button",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-textarea--counter-composition",
+          "exportName": "CounterComposition",
+          "label": "CounterComposition",
+          "description": "",
+          "destination": "/docs/components/textarea#story-counter-composition",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-textarea--form-interaction",
+          "exportName": "FormInteraction",
+          "label": "FormInteraction",
+          "description": "",
+          "destination": "/docs/components/textarea#story-form-interaction",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/components/ui/theme-selector.stories.tsx",
+      "title": "Components/UI/ThemeSelector",
+      "hasCiTest": true,
+      "hasArgs": true,
+      "hasArgTypes": true,
+      "stories": [
+        {
+          "id": "components-ui-theme-selector--playground",
+          "exportName": "Playground",
+          "label": "Playground",
+          "description": "",
+          "destination": "/docs/extensions/theme-selector#story-playground",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-theme-selector--selected-states",
+          "exportName": "SelectedStates",
+          "label": "SelectedStates",
+          "description": "",
+          "destination": "/docs/extensions/theme-selector#story-selected-states",
+          "hasPlay": false
+        },
+        {
+          "id": "components-ui-theme-selector--disabled",
+          "exportName": "Disabled",
+          "label": "Disabled",
+          "description": "",
+          "destination": "/docs/extensions/theme-selector#story-disabled",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/foundations/color.stories.tsx",
+      "title": "Foundations/Color",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "foundations-color--overview",
+          "exportName": "Overview",
+          "label": "Overview",
+          "description": "",
+          "destination": "/docs/foundations/color#story-overview",
+          "hasPlay": false
+        },
+        {
+          "id": "foundations-color--semantic-tokens",
+          "exportName": "SemanticTokens",
+          "label": "SemanticTokens",
+          "description": "",
+          "destination": "/docs/foundations/color#story-semantic-tokens",
+          "hasPlay": false
+        },
+        {
+          "id": "foundations-color--contrast-pairs",
+          "exportName": "ContrastPairs",
+          "label": "ContrastPairs",
+          "description": "",
+          "destination": "/docs/foundations/color#story-contrast-pairs",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/foundations/motion.stories.tsx",
+      "title": "Foundations/Motion",
+      "hasCiTest": false,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "foundations-motion--motion-preference",
+          "exportName": "MotionPreference",
+          "label": "MotionPreference",
+          "description": "",
+          "destination": "/docs/foundations/motion#story-motion-preference",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/foundations/spacing.stories.tsx",
+      "title": "Foundations/Spacing",
+      "hasCiTest": false,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "foundations-spacing--scale",
+          "exportName": "Scale",
+          "label": "Scale",
+          "description": "",
+          "destination": "/docs/foundations/spacing#story-scale",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/foundations/typography.stories.tsx",
+      "title": "Foundations/Typography",
+      "hasCiTest": false,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "foundations-typography--scale",
+          "exportName": "Scale",
+          "label": "Scale",
+          "description": "",
+          "destination": "/docs/foundations/typography#story-scale",
+          "hasPlay": false
+        },
+        {
+          "id": "foundations-typography--long-content",
+          "exportName": "LongContent",
+          "label": "LongContent",
+          "description": "",
+          "destination": "/docs/foundations/typography#story-long-content",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/quality/checklist.stories.tsx",
+      "title": "Quality/Checklist",
+      "hasCiTest": false,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "quality-checklist--content-contracts",
+          "exportName": "ContentContracts",
+          "label": "ContentContracts",
+          "description": "",
+          "destination": "/docs/quality/content#story-content-contracts",
+          "hasPlay": false
+        }
+      ]
+    },
+    {
+      "source": "legacy-catalog/stories/recipes/course-management.stories.tsx",
+      "title": "Recipes/Course Management",
+      "hasCiTest": true,
+      "hasArgs": false,
+      "hasArgTypes": false,
+      "stories": [
+        {
+          "id": "recipes-course-management--card-recipe",
+          "exportName": "CardRecipe",
+          "label": "CardRecipe",
+          "description": "",
+          "destination": "/docs/recipes/course-management#story-card-recipe",
+          "hasPlay": false
+        },
+        {
+          "id": "recipes-course-management--responsive-form",
+          "exportName": "ResponsiveForm",
+          "label": "ResponsiveForm",
+          "description": "",
+          "destination": "/docs/recipes/course-management#story-responsive-form",
+          "hasPlay": false
+        }
+      ]
+    }
+  ],
+  "mdx": [
+    {
+      "id": "getting-started-welcome",
+      "source": "legacy-catalog/docs/getting-started/welcome.mdx",
+      "destination": "/docs/getting-started"
+    },
+    {
+      "id": "quality-accessibility-checklist",
+      "source": "legacy-catalog/docs/quality/accessibility-checklist.mdx",
+      "destination": "/docs/quality/accessibility"
+    }
+  ]
+}

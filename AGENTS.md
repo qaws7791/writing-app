@@ -163,9 +163,9 @@ bun run build
 bun run check:route-bundles
 ```
 
-`.github/workflows/quality-gates.yml` owns the required gate set, including the E2E, Storybook and performance tiers that run in CI.
+`.github/workflows/quality-gates.yml` owns the required gate set, including the UI documentation, E2E and performance tiers that run in CI.
 
-Run the commands that can observe your change. A change limited to Markdown files needs `bun oxfmt --check` on the touched files and the `/docs` check below. A change touching `apps/`, `packages/`, `scripts/`, `deploy/`, `infra/`, or root configuration needs the full command set. Add the E2E, Storybook or performance tier when your change touches what that tier covers.
+Run the commands that can observe your change. A change limited to Markdown files needs `bun oxfmt --check` on the touched files and the `/docs` check below. A change touching `apps/`, `packages/`, `scripts/`, `deploy/`, `infra/`, or root configuration needs the full command set. Add the UI documentation, E2E or performance tier when your change touches what that tier covers.
 
 - [ ] `/docs` reflects the change, including moving finished `docs/work/` items to `docs/archive/` with conclusions folded into the relevant authority docs.
 - [ ] All processes started for the task (Node.js, bash, dev servers, etc.) are safely terminated.

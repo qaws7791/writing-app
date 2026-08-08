@@ -1,0 +1,27 @@
+---
+import DocsPageHeader from "@/src/components/docs-page-header.astro"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+
+const spacingTokens = [
+  ["spacing-1", "4 px", "w-1"], ["spacing-1.5", "6 px", "w-1.5"],
+  ["spacing-2", "8 px", "w-2"], ["spacing-3", "12 px", "w-3"],
+  ["spacing-4", "16 px", "w-4"], ["spacing-5", "20 px", "w-5"],
+  ["spacing-6", "24 px", "w-6"], ["spacing-8", "32 px", "w-8"],
+  ["spacing-10", "40 px", "w-10"], ["spacing-12", "48 px", "w-12"],
+  ["spacing-16", "64 px", "w-16"],
+]
+---
+
+<DocsLayout title="Spacing" description="Luma 레이아웃과 컴포넌트에 사용하는 spacing scale입니다." pathname="/docs/foundations/spacing" toc={[{ id: "story-scale", label: "Scale" }]}>
+  <article>
+    <DocsPageHeader eyebrow="Foundation" title="Spacing" description="4 CSS px 기준의 제한된 scale로 component 내부와 layout 사이의 리듬을 만듭니다." />
+    <section id="story-scale" class="scroll-mt-24 grid max-w-3xl gap-3 rounded-4xl border p-7">
+      {spacingTokens.map(([token, label, className]) => (
+        <div class="grid grid-cols-[7rem_1fr] items-center gap-4">
+          <span class="text-sm font-medium text-muted-foreground">{token}</span>
+          <div class="flex items-center gap-3"><span class={`${className} block h-6 rounded-sm bg-primary`}></span><span class="text-xs font-medium text-muted-foreground">{label}</span></div>
+        </div>
+      ))}
+    </section>
+  </article>
+</DocsLayout>

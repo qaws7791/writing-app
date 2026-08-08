@@ -5,11 +5,24 @@ import {
   LessonIntroHeader,
   LessonShell,
 } from "@/features/lesson-session/ui/lesson-shell"
-import { LayersIcon } from "@workspace/ui/components/icons"
+import { LayersIcon } from "@workspace/ui/components/icons/navigation-icons"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { Button } from "@workspace/ui/components/ui/button"
-import { Callout, CalloutContent } from "@workspace/ui/components/ui/callout"
+import {
+  Insight,
+  InsightDescription,
+  InsightEyebrow,
+} from "@workspace/ui/components/ui/insight"
+import { LessonActions, LessonFooter } from "@workspace/ui/components/ui/lesson"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
-import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
+import {
+  Step,
+  StepBody,
+  StepEyebrow,
+  StepHeader,
+  StepPrompt,
+  StepTitle,
+} from "@workspace/ui/components/ui/step"
 
 const LESSON_TITLE_ID = "lesson-start-title"
 
@@ -33,56 +46,53 @@ export function LessonStartScreen({
       contentLabelledBy={LESSON_TITLE_ID}
       fixedFooter
       footer={
-        <StickyActionBar
-          className="pointer-events-auto mx-auto max-w-2xl"
-          tone="plain"
-        >
-          <Button
-            aria-busy={isSavingStart || undefined}
-            className="w-full"
-            disabled={!isInteractive || isSavingStart}
-            onClick={onStart}
-            size="extra"
-          >
-            {isSavingStart ? (
-              <>
-                <Spinner aria-hidden data-icon="inline-start" />
-                시작하는 중…
-              </>
-            ) : (
-              "시작하기"
-            )}
-          </Button>
-        </StickyActionBar>
+        <LessonFooter aria-label="레슨 행동">
+          <LessonActions>
+            <Button
+              aria-busy={isSavingStart || undefined}
+              disabled={!isInteractive || isSavingStart}
+              onClick={onStart}
+              size="lg"
+            >
+              {isSavingStart ? (
+                <>
+                  <Spinner aria-hidden data-icon="inline-start" />
+                  시작하는 중…
+                </>
+              ) : (
+                "시작하기"
+              )}
+            </Button>
+          </LessonActions>
+        </LessonFooter>
       }
       header={<LessonIntroHeader onExit={onExit} />}
     >
-      <div className="an-fi">
-        {lesson.category === null ? null : (
-          <div className="mb-4 text-label-sm font-bold text-muted-foreground">
-            {lesson.category}
-          </div>
-        )}
-        <h1 className="mb-6 text-heading-xl font-bold" id={LESSON_TITLE_ID}>
-          {lesson.title}
-        </h1>
-        {lesson.description === null ? null : (
-          <p className="mb-8 text-body-lg font-medium text-muted-foreground">
-            {lesson.description}
-          </p>
-        )}
-        <div className="flex gap-6 text-body-sm font-medium text-muted-foreground">
-          <span className="inline-flex items-center gap-2">
-            <LayersIcon aria-hidden size={18} />
+      <Step className="my-auto py-10">
+        <StepHeader>
+          {lesson.category === null ? null : (
+            <StepEyebrow>{lesson.category}</StepEyebrow>
+          )}
+          <StepTitle>
+            <h1 id={LESSON_TITLE_ID}>{lesson.title}</h1>
+          </StepTitle>
+          {lesson.description === null ? null : (
+            <StepPrompt>{lesson.description}</StepPrompt>
+          )}
+        </StepHeader>
+        <StepBody>
+          <Badge variant="outline">
+            <LayersIcon aria-hidden data-icon="inline-start" />
             {`${lesson.steps.length}개 활동`}
-          </span>
-        </div>
-        {startError === null ? null : (
-          <Callout className="mt-8" role="alert" tone="danger">
-            <CalloutContent>{startError}</CalloutContent>
-          </Callout>
-        )}
-      </div>
+          </Badge>
+          {startError === null ? null : (
+            <Insight role="alert" tone="incorrect">
+              <InsightEyebrow>시작 오류</InsightEyebrow>
+              <InsightDescription>{startError}</InsightDescription>
+            </Insight>
+          )}
+        </StepBody>
+      </Step>
     </LessonShell>
   )
 }

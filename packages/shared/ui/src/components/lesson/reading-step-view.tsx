@@ -1,6 +1,8 @@
 import type { ReactNode } from "react"
 
 import { MarkdownContent } from "#ui/components/lesson/markdown-content"
+import { Prose, ProseFigure, ProseSource } from "#ui/components/ui/prose"
+import { StepHeader, StepTitle } from "#ui/components/ui/step"
 
 export function ReadingStepView({
   body,
@@ -16,27 +18,26 @@ export function ReadingStepView({
   readonly title: string
 }) {
   return (
-    <div className="an-fi">
-      <h2 className="font-bold mb-2" style={{ fontSize: "1.5rem" }}>
-        {title}
-      </h2>
-      {guide === "" ? null : (
-        <MarkdownContent className="mb-6">{guide}</MarkdownContent>
-      )}
-      {illustration === undefined ? null : (
-        <div className="mb-6 overflow-hidden rounded-card">{illustration}</div>
-      )}
-      <MarkdownContent className="mb-6 [&_p]:text-fg-default [&_li]:text-fg-default">
-        {body}
-      </MarkdownContent>
-      {source === undefined ? null : (
-        <div
-          className="text-fg-muted font-bold"
-          style={{ fontSize: "0.8125rem" }}
-        >
-          출처: {source}
-        </div>
-      )}
-    </div>
+    <>
+      <StepHeader>
+        <StepTitle>
+          <h2>{title}</h2>
+        </StepTitle>
+        {guide === "" ? null : (
+          <MarkdownContent className="text-sm leading-6 text-muted-foreground [&_p]:leading-6">
+            {guide}
+          </MarkdownContent>
+        )}
+      </StepHeader>
+      <Prose>
+        {illustration === undefined ? null : (
+          <ProseFigure>{illustration}</ProseFigure>
+        )}
+        <MarkdownContent>{body}</MarkdownContent>
+        {source === undefined ? null : (
+          <ProseSource>출처: {source}</ProseSource>
+        )}
+      </Prose>
+    </>
   )
 }

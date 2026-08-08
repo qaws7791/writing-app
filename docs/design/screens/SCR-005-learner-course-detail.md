@@ -26,11 +26,12 @@
 
 ## UI 기준
 
-- 상세 hero 카드는 `Surface`와 `rounded-panel`을 사용한다.
-- 코스 진행률은 공용 `Progress`를 사용한다. track은 기본 `bg-default-soft`, indicator는 `bg-accent`다.
-- CTA는 `action-primary` 토큰과 `rounded-full`이다. primary 진입은 CTA, 커리큘럼의 현재 레슨 행은 같은 목적지를 시각적으로 맞춘다.
+- 상세 hero는 `Card variant="muted"` 조합을 사용한다.
+- 코스 진행률은 공용 `Progress`, `ProgressLabel`, `ProgressValue`를 사용한다.
+- CTA는 공유 `Button`의 기본 조합을 사용한다. 커리큘럼의 현재 레슨 행은 같은 목적지를 시각적으로 맞춘다.
 - `nextLesson`이 없으면 CTA를 표시하지 않는다.
 - 커리큘럼 disclosure는 공용 `Accordion`을 사용한다.
+- 유닛은 낮은 강조의 `muted` surface를 사용한다.
 - 유닛 헤더는 제목과 `완료 수/전체 레슨 수`를 보여 준다.
 - 레슨 행은 제목과 함께 예상 시간을 표시하고, 접근성 이름에도 예상 시간을 포함한다.
 - `learning.nextLesson`과 id가 같은 레슨 행은 현재 위치로 강조하고 “다음” 라벨을 붙인다.
@@ -51,5 +52,5 @@
 
 - 코스 목록 복귀는 `Link`로 구현한다.
 - 진행률은 텍스트 분수와 시각 bar를 함께 제공한다.
-- 레슨 상태는 색상만이 아니라 아이콘과 접근 가능한 이름(완료·잠김·다음·이동 가능)으로 구분한다.
+- 레슨 상태는 색상만이 아니라 아이콘, 상태 `Badge`, 접근 가능한 이름(완료·잠김·다음·학습 가능)으로 구분한다.
 - 잠긴 행은 링크가 아니다.

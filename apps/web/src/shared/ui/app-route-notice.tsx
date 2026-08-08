@@ -27,7 +27,9 @@ export function AppRouteNotice({
       <div className="mx-auto flex max-w-3xl px-6 py-10 sm:px-8">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle as="h1">{title}</CardTitle>
+            <CardTitle>
+              <h1>{title}</h1>
+            </CardTitle>
             <CardDescription>{description}</CardDescription>
           </CardHeader>
           <CardContent>

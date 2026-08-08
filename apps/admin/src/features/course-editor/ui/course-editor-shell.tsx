@@ -27,7 +27,12 @@ import { EditorConfirmationDialog } from "@/features/course-editor/ui/editor-con
 import { ChevronRightIcon } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
-import { cn } from "@workspace/ui/lib/utils"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/ui/tabs"
 
 export function CourseEditorShell({
   assetsResult,
@@ -146,8 +151,12 @@ export function CourseEditorShell({
   }
 
   return (
-    <div className="-mx-5 -mt-8 flex min-h-full flex-col md:-mx-10">
-      <div className="border-b border-surface-hover px-6 pb-0 pt-8 md:px-10">
+    <Tabs
+      className="-mx-5 -mt-8 min-h-full gap-0 md:-mx-10"
+      onValueChange={(value) => changeTab(value as "curriculum" | "info")}
+      value={tab}
+    >
+      <div className="border-b border-border px-6 pt-8 md:px-10">
         <nav
           aria-label="코스 편집 경로"
           className="mb-4 flex items-center gap-1.5 text-[0.8125rem]"
@@ -172,15 +181,15 @@ export function CourseEditorShell({
             {state.draft.title || "제목 없음"}
           </span>
         </nav>
-        <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
           <h1
             ref={editorHeadingRef}
-            className="text-[1.375rem] font-bold text-foreground"
+            className="font-heading text-2xl font-semibold tracking-[-0.02em] text-foreground"
             tabIndex={-1}
           >
             {state.draft.title || "제목 없음"}
           </h1>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               disabled={isPending || !canSave(state)}
               onClick={save}
@@ -196,29 +205,17 @@ export function CourseEditorShell({
             </Button>
           </div>
         </div>
-        <div className="-mb-px flex">
-          <button
-            className={tabClassName(tab === "info")}
-            onClick={() => changeTab("info")}
-            type="button"
-          >
-            강의 정보
-          </button>
-          <button
-            className={tabClassName(tab === "curriculum")}
-            onClick={() => changeTab("curriculum")}
-            type="button"
-          >
-            커리큘럼
-          </button>
-        </div>
+        <TabsList className="-mb-px" variant="line">
+          <TabsTrigger value="info">강의 정보</TabsTrigger>
+          <TabsTrigger value="curriculum">커리큘럼</TabsTrigger>
+        </TabsList>
       </div>
       <div className="flex-1 px-6 py-8 md:px-10">
         {state.message === null ? null : (
           <Alert
             className="mb-5"
             role="status"
-            tone={state.status === "saved" ? "success" : "danger"}
+            variant={state.status === "saved" ? "default" : "destructive"}
           >
             <AlertDescription>{state.message}</AlertDescription>
           </Alert>
@@ -243,7 +240,7 @@ export function CourseEditorShell({
             </Button>
           </div>
         ) : null}
-        {tab === "info" ? (
+        <TabsContent value="info">
           <CourseInfoTab
             assetsResult={assetsResult}
             coverAsset={coverAsset}
@@ -251,7 +248,8 @@ export function CourseEditorShell({
             draft={state.draft}
             uploadAdminContentAsset={uploadAdminContentAsset}
           />
-        ) : (
+        </TabsContent>
+        <TabsContent value="curriculum">
           <CourseCurriculumTab
             dispatch={dispatch}
             draft={state.draft}
@@ -259,22 +257,13 @@ export function CourseEditorShell({
             requestConfirmation={setConfirmationIntent}
             uploadAdminContentAsset={uploadAdminContentAsset}
           />
-        )}
+        </TabsContent>
       </div>
       <EditorConfirmationDialog
         intent={confirmationIntent}
         onConfirm={confirmIntent}
         onDismiss={() => setConfirmationIntent(null)}
       />
-    </div>
-  )
-}
-
-function tabClassName(active: boolean): string {
-  return cn(
-    "border-b-2 px-5 py-3 text-[0.9375rem] font-bold transition-colors",
-    active
-      ? "border-foreground text-foreground"
-      : "border-transparent text-muted-foreground hover:text-foreground"
+    </Tabs>
   )
 }

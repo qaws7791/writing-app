@@ -1,0 +1,250 @@
+---
+import LandingComposition from "@/src/components/landing-composition"
+import SiteHeader from "@/src/components/site-header.astro"
+import ThemeInitializer from "@/src/components/theme-initializer.astro"
+import { componentDocs } from "@/src/lib/component-docs"
+import { buttonVariants } from "@/registry/luma/ui/button"
+import { cn } from "@/registry/luma/lib/utils"
+import "@/src/styles/global.css"
+
+const title = "Luma UI"
+const description =
+  "콘텐츠를 조용히 정돈하면서도 정밀한 공간과 표면에서 독립적인 인상이 드러나는 shadcn 레지스트리"
+const ogImage = new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site).toString()
+const baseUrl = import.meta.env.BASE_URL
+const docsHref = `${baseUrl}docs/components/accordion`
+const registryHref = `${baseUrl}r/registry.json`
+const componentCount = componentDocs.length
+
+const categoryOrder = [
+  "Learning",
+  "Actions",
+  "Forms",
+  "Typography",
+  "Data Display",
+  "Navigation",
+  "Overlay",
+  "Feedback",
+  "Disclosure",
+  "Layout",
+  "Date & Time",
+  "Data Visualization",
+  "AI & Files",
+]
+
+const componentsByCategory = categoryOrder
+  .map((category) => ({
+    category,
+    items: componentDocs.filter((doc) => doc.category === category),
+  }))
+  .filter((group) => group.items.length > 0)
+
+const principles = [
+  {
+    title: "콘텐츠가 전경을 차지한다",
+    body: "이미지, 글, 데이터와 작업물이 화면의 감정과 색을 만듭니다. 컴포넌트는 이를 정돈하는 프레임입니다.",
+  },
+  {
+    title: "구조는 느껴져야 한다",
+    body: "박스와 구분선의 수가 아니라 공간, 정렬, 밀도, 농도와 표면 차이로 계층을 읽게 합니다.",
+  },
+  {
+    title: "절제는 예산이다",
+    body: "한 영역은 하나의 강조 수단만 씁니다. 색, 그림자, blur와 motion을 동시에 주장하지 않습니다.",
+  },
+]
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href={`${import.meta.env.BASE_URL}favicon.svg`}
+    />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f9f8f5" />
+    <ThemeInitializer />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="site-root min-h-svh">
+      <SiteHeader active="home" />
+
+      <main>
+        <section class="landing-hero relative overflow-hidden">
+          <div class="landing-wash pointer-events-none absolute inset-0" aria-hidden="true"></div>
+          <div class="relative mx-auto max-w-6xl px-5 pt-16 sm:pt-24 lg:px-8 lg:pt-28">
+            <div class="landing-reveal max-w-3xl">
+              <p
+                class="font-heading text-[clamp(3.5rem,12vw,8.5rem)] leading-[0.9] font-semibold tracking-[-0.06em]"
+              >
+                Luma
+              </p>
+              <h1
+                class="mt-8 max-w-2xl font-heading text-2xl leading-snug font-semibold tracking-[-0.03em] text-balance sm:text-3xl sm:leading-snug lg:text-[2.125rem]"
+              >
+                인터페이스는 콘텐츠보다 앞서지 않는다.
+              </h1>
+              <p
+                class="mt-5 max-w-xl text-base leading-7 text-pretty text-muted-foreground sm:text-lg sm:leading-8"
+              >
+                정밀하되 차갑지 않고, 미니멀하되 비어 있지 않은 한국어 UI 레지스트리.
+                Pretendard와 Base UI 위에서 제품에 바로 붙일 수 있습니다.
+              </p>
+              <div class="mt-10 flex flex-wrap items-center gap-3">
+                <a href={docsHref} class={cn(buttonVariants({ size: "lg" }))}>
+                  문서 보기
+                </a>
+                <a
+                  href="#install"
+                  class={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
+                >
+                  설치 방법
+                </a>
+              </div>
+            </div>
+
+            <div
+              id="composition"
+              class="landing-reveal-delay mt-16 border-t border-border/50 pt-12 pb-16 sm:mt-20 sm:pt-16 sm:pb-20 lg:mt-24 lg:pb-28"
+              aria-label="Luma 컴포넌트 조성물"
+            >
+              <LandingComposition client:visible />
+            </div>
+          </div>
+        </section>
+
+        <section id="principles" class="mx-auto max-w-6xl px-5 py-20 lg:px-8 lg:py-28">
+          <div class="max-w-2xl">
+            <p class="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+              원칙
+            </p>
+            <h2
+              class="mt-4 font-heading text-3xl font-semibold tracking-[-0.035em] text-balance sm:text-4xl"
+            >
+              효과의 수가 아니라<br class="hidden sm:block" />완성도의 기준.
+            </h2>
+          </div>
+          <ol class="mt-14 grid gap-12 sm:grid-cols-3 sm:gap-10">
+            {
+              principles.map((principle, index) => (
+                <li class="min-w-0">
+                  <p class="font-mono text-xs tabular-nums text-muted-foreground">
+                    {String(index + 1).padStart(2, "0")}
+                  </p>
+                  <h3 class="mt-4 font-heading text-lg font-semibold tracking-[-0.02em]">
+                    {principle.title}
+                  </h3>
+                  <p class="mt-3 text-sm leading-7 text-pretty text-muted-foreground">
+                    {principle.body}
+                  </p>
+                </li>
+              ))
+            }
+          </ol>
+        </section>
+
+        <section id="install" class="border-y border-border/60">
+          <div class="mx-auto grid max-w-6xl gap-10 px-5 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-16 lg:px-8 lg:py-24">
+            <div class="max-w-md">
+              <p class="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+                설치
+              </p>
+              <h2
+                class="mt-4 font-heading text-3xl font-semibold tracking-[-0.035em] text-balance sm:text-4xl"
+              >
+                필요한 소스만 가져와 소유하세요.
+              </h2>
+              <p class="mt-4 text-base leading-7 text-pretty text-muted-foreground">
+                shadcn 레지스트리로 컴포넌트를 프로젝트에 직접 추가합니다.
+                {componentCount}개 컴포넌트와 학습 활동 UI를 문서로 확인할 수 있습니다.
+              </p>
+            </div>
+            <div class="min-w-0">
+              <pre
+                class="overflow-x-auto rounded-2xl bg-muted/80 px-5 py-4 font-mono text-sm leading-7"
+              ><code>bunx shadcn@latest add \
+  https://YOUR_GITHUB_ID.github.io/ui/r/button.json</code></pre>
+              <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                <a class="hover:text-foreground" href={docsHref}>컴포넌트 문서</a>
+                <a class="hover:text-foreground" href={registryHref}>registry.json</a>
+                <a
+                  class="hover:text-foreground"
+                  href="https://github.com/YOUR_GITHUB_ID/ui"
+                  target="_blank"
+                  rel="noreferrer">GitHub</a
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="components" class="mx-auto max-w-6xl px-5 py-20 lg:px-8 lg:py-28">
+          <div class="max-w-2xl">
+            <p class="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+              레지스트리
+            </p>
+            <h2
+              class="mt-4 font-heading text-3xl font-semibold tracking-[-0.035em] text-balance sm:text-4xl"
+            >
+              {componentCount}개의 컴포넌트.
+            </h2>
+            <p class="mt-4 text-base leading-7 text-pretty text-muted-foreground">
+              항목을 선택하면 문서 페이지로 이동합니다. 배포되는 레지스트리 JSON은 각
+              문서에서도 확인할 수 있습니다.
+            </p>
+          </div>
+
+          <div class="mt-14 space-y-12">
+            {
+              componentsByCategory.map((group) => (
+                <div>
+                  <h3 class="text-sm font-medium text-muted-foreground">{group.category}</h3>
+                  <ul class="mt-4 grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {group.items.map((component) => (
+                      <li>
+                        <a
+                          href={`${baseUrl}docs/components/${component.slug}`}
+                          class="group flex items-baseline justify-between gap-4 py-2"
+                        >
+                          <span class="font-medium tracking-[-0.01em] group-hover:underline group-hover:underline-offset-[0.22em]">
+                            {component.title}
+                          </span>
+                          <span class="shrink-0 font-mono text-xs text-muted-foreground/80">
+                            {component.slug}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+      </main>
+
+      <footer class="border-t border-border/60">
+        <div
+          class="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-8"
+        >
+          <p>Luma — 콘텐츠를 앞세우는 UI 레지스트리</p>
+          <p>Astro · React · Base UI · Tailwind CSS v4</p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

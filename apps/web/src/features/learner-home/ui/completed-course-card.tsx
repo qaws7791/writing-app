@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
 import type { LearnerProgressCourseDto } from "@/shared/http/learner-api-client"
-import { Surface } from "@workspace/ui/components/ui/surface"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
 
 type CompletedCourseCardProps = {
   readonly course: LearnerProgressCourseDto
@@ -17,11 +17,7 @@ export function CompletedCourseCard({
   const courseHref = `/app/courses/${course.id}`
 
   return (
-    <Surface
-      variant="panel"
-      size="none"
-      className="flex w-full min-w-0 flex-col overflow-hidden rounded-[28px] select-none lg:rounded-[24px]"
-    >
+    <Card className="w-full min-w-0 gap-0 py-0 select-none" size="sm">
       <Link
         className="flex w-full cursor-pointer flex-col text-left lg:flex-row"
         href={courseHref}
@@ -37,9 +33,9 @@ export function CompletedCourseCard({
             src={resolveCourseImage(course).src}
           />
         </div>
-        <div className="px-6 py-5 lg:flex lg:min-w-0 lg:flex-1 lg:items-center lg:px-5 lg:py-4">
+        <CardContent className="py-5 lg:flex lg:min-w-0 lg:flex-1 lg:items-center lg:py-4">
           <p
-            className="text-title-md font-bold lg:text-body-md"
+            className="font-heading text-base font-semibold tracking-[-0.014em]"
             style={{
               display: "-webkit-box",
               overflow: "hidden",
@@ -49,8 +45,8 @@ export function CompletedCourseCard({
           >
             {course.title}
           </p>
-        </div>
+        </CardContent>
       </Link>
-    </Surface>
+    </Card>
   )
 }

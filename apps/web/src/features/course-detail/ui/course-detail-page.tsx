@@ -1,13 +1,13 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
 import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
+import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
 import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
-import { ChevronLeftIcon } from "@workspace/ui/components/icons"
+import { ChevronLeftIcon } from "@workspace/ui/components/icons/direction-icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
-import { Progress } from "@workspace/ui/components/ui/progress"
-import { Surface } from "@workspace/ui/components/ui/surface"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { Progress, ProgressLabel } from "@workspace/ui/components/ui/progress"
 
 type CourseDetailPageProps = {
   readonly course: LearnerCourseDetailDto
@@ -20,67 +20,69 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
   const nextLesson = course.learning.nextLesson
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto max-w-3xl">
       <Link
-        className={buttonVariants({
-          className:
-            "mb-8 h-auto w-fit justify-start rounded-sm border-0 bg-transparent p-0 text-label-md text-muted-foreground no-underline hover:bg-transparent hover:text-foreground hover:no-underline",
-          size: "sm",
-          variant: "link",
-        })}
+        className="mb-7 inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/25"
         href="/app/courses"
       >
-        <ChevronLeftIcon className="mr-1" size={20} />
+        <ChevronLeftIcon aria-hidden="true" className="size-4" />
         코스 목록으로
       </Link>
-      <Surface
-        className="-mx-3 mb-12 px-5 py-8 border-none md:mx-0 md:p-10 rounded-4xl"
-        size="none"
-        variant="panel"
-      >
-        <Image
-          alt={resolveCourseImage(course).alt}
-          className="mb-6 w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
-          height={128}
-          loading="eager"
-          sizes="(max-width: 768px) 96px, 128px"
-          src={resolveCourseImage(course).src}
-          width={128}
-        />
-        <h1 className="mb-4 text-heading-xl font-bold">{course.title}</h1>
-        <p className="mb-8 text-body-lg font-medium text-fg-default leading-relaxed">
-          {course.description}
-        </p>
-        <div className="mb-10 flex items-center gap-6">
-          <Progress
-            aria-label={`${course.title} 진행률`}
-            className="min-w-0 flex-1"
-            indicatorClassName="bg-accent"
-            value={progressPercent}
+      <Card className="mb-12" size="lg" variant="muted">
+        <CardContent className="grid gap-7 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-start">
+          <Image
+            alt={resolveCourseImage(course).alt}
+            className="size-24 rounded-3xl object-cover sm:size-32"
+            height={128}
+            loading="eager"
+            sizes="(max-width: 640px) 96px, 128px"
+            src={resolveCourseImage(course).src}
+            width={128}
           />
-          <span className="shrink-0 text-title-md font-black tabular-nums">
-            {completedLessonCount}/{totalLessonCount}
-          </span>
-        </div>
-        {nextLesson === null ? null : (
-          <div>
-            <p className="mb-4 text-label-md font-bold text-muted-foreground">
-              {completedLessonCount > 0 ? "다음 레슨" : "첫 번째 레슨"}:{" "}
-              {nextLesson.title}
+          <div className="min-w-0">
+            <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.035em] sm:text-4xl">
+              {course.title}
+            </h1>
+            <p className="mt-4 text-base leading-7 text-muted-foreground">
+              {course.description}
             </p>
-            <Link
-              className={buttonVariants({
-                className:
-                  "w-full rounded-full bg-action-primary-bg px-10 text-action-primary-fg md:w-auto h-auto py-5 text-lg font-bold hover:opacity-90",
-                size: "lg",
-              })}
-              href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}
+            <Progress
+              aria-label={`${course.title} 진행률`}
+              className="mt-7"
+              value={progressPercent}
             >
-              {completedLessonCount > 0 ? "이어서 학습하기" : "학습 시작하기"}
-            </Link>
+              <ProgressLabel className="sr-only">
+                {course.title} 진행률
+              </ProgressLabel>
+              <span aria-hidden="true" className="text-sm font-medium">
+                학습 진행
+              </span>
+              <span className="ml-auto text-sm font-medium text-foreground tabular-nums">
+                {completedLessonCount}/{totalLessonCount}
+              </span>
+            </Progress>
+            {nextLesson === null ? null : (
+              <div className="mt-8">
+                <p className="mb-4 text-sm font-medium text-muted-foreground">
+                  {completedLessonCount > 0 ? "다음 레슨" : "첫 번째 레슨"}:{" "}
+                  {nextLesson.title}
+                </p>
+                <Link
+                  className={buttonVariants({
+                    className: "w-full sm:w-fit",
+                    size: "lg",
+                  })}
+                  href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}
+                >
+                  {completedLessonCount > 0
+                    ? "이어서 학습하기"
+                    : "학습 시작하기"}
+                </Link>
+              </div>
+            )}
           </div>
-        )}
-      </Surface>
+        </CardContent>
+      </Card>
       <CourseCurriculum
         course={course}
         currentLessonId={nextLesson?.id ?? null}

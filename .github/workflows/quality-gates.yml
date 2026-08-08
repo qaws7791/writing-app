@@ -214,7 +214,7 @@ jobs:
           name: generated-contract-${{ github.sha }}
           path: .
       - run: bunx playwright install --with-deps chromium webkit
-      - run: bun run test:storybook
+      - run: bun run test:ui-docs
       - run: bun run test:e2e:release
 
   lighthouse:

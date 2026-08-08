@@ -9,7 +9,7 @@ import {
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-bg-canvas text-fg-default">
+    <div className="min-h-svh bg-background text-foreground">
       <LandingNav />
       <main>
         <HeroSection />

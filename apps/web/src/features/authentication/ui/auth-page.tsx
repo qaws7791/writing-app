@@ -1,11 +1,14 @@
 "use client"
 
 import { useState, useTransition, type FormEvent, type ReactNode } from "react"
-import { Eye, EyeOff } from "lucide-react"
 import {
   isLearnerAuthClientError,
   type LearnerAuthClientErrorCode,
 } from "@workspace/auth/learner/client"
+import {
+  EyeIcon as Eye,
+  EyeOffIcon as EyeOff,
+} from "@workspace/ui/components/icons/authentication-icons"
 
 import {
   requestEmailLogin,
@@ -21,6 +24,7 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
+  FieldSeparator,
 } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs"
@@ -162,36 +166,53 @@ export function AuthPage({
   }
 
   return (
-    <main className="an-fi flex min-h-[80vh] flex-col items-center justify-center px-6 py-10">
-      <header className="mb-8 text-center">
-        <h1 className="text-heading-lg font-black text-fg-default">글결.</h1>
-        <p className="mt-2 text-body-lg font-medium text-muted-foreground">
-          매일 한 단락씩, 글의 결을 다듬는 한국어 글쓰기 학습
-        </p>
-      </header>
+    <main className="flex min-h-svh w-full bg-background">
+      <section className="mx-auto flex w-full max-w-[24rem] flex-col justify-center px-6 py-16">
+        <header className="mb-10">
+          <div
+            aria-hidden="true"
+            className="mb-8 grid size-11 place-items-center rounded-2xl bg-foreground text-sm font-semibold text-background"
+          >
+            글
+          </div>
+          <h1 className="font-heading text-2xl font-semibold tracking-[-0.03em] text-balance">
+            {mode === "reset-request"
+              ? "비밀번호 재설정"
+              : mode === "signup"
+                ? "글결. 시작하기"
+                : "글결.에 로그인"}
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {mode === "reset-request"
+              ? "가입한 이메일로 재설정 링크를 보내 드립니다."
+              : "Google 계정으로 빠르게 시작하거나 이메일로 이어가세요."}
+          </p>
+        </header>
 
-      <div className="w-full max-w-sm">
-        <div className="space-y-5">
-          {mode === "reset-request" ? (
-            <h2 className="text-title-md font-bold text-fg-default">
-              비밀번호 재설정
-            </h2>
-          ) : (
-            <Tabs
-              onValueChange={(value) => {
-                selectMode(value === "signup" ? "signup" : "login")
-              }}
-              value={tabValue}
-            >
-              <TabsList className="w-full">
-                <TabsTrigger disabled={authActionsDisabled} value="login">
-                  로그인
-                </TabsTrigger>
-                <TabsTrigger disabled={authActionsDisabled} value="signup">
-                  가입
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        <div className="flex flex-col gap-5">
+          {mode === "reset-request" ? null : (
+            <>
+              <GoogleSignInButton
+                disabled={authActionsDisabled}
+                onClick={loginWithGoogle}
+              />
+              <FieldSeparator>또는</FieldSeparator>
+              <Tabs
+                onValueChange={(value) => {
+                  selectMode(value === "signup" ? "signup" : "login")
+                }}
+                value={tabValue}
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger disabled={authActionsDisabled} value="login">
+                    로그인
+                  </TabsTrigger>
+                  <TabsTrigger disabled={authActionsDisabled} value="signup">
+                    가입
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </>
           )}
 
           <form className="grid gap-4" onSubmit={submitCredentials}>
@@ -262,9 +283,9 @@ export function AuthPage({
             <Button
               className="w-full"
               disabled={authActionsDisabled}
-              size="extra"
+              size="lg"
               type="submit"
-              variant="ink"
+              variant="default"
             >
               {isPending
                 ? "처리 중…"
@@ -298,25 +319,8 @@ export function AuthPage({
               확인 메일 다시 보내기
             </Button>
           )}
-
-          {mode === "reset-request" ? null : (
-            <>
-              <div className="flex items-center gap-3" role="separator">
-                <span className="h-px flex-1 bg-border" />
-                <span className="text-label-md text-muted-foreground">
-                  또는
-                </span>
-                <span className="h-px flex-1 bg-border" />
-              </div>
-
-              <GoogleSignInButton
-                disabled={authActionsDisabled}
-                onClick={loginWithGoogle}
-              />
-            </>
-          )}
         </div>
-      </div>
+      </section>
     </main>
   )
 }
@@ -332,7 +336,7 @@ function AuthTextLink({
 }) {
   return (
     <button
-      className="text-label-md text-muted-foreground hover:text-foreground underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
+      className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:pointer-events-none disabled:opacity-50"
       disabled={disabled}
       onClick={onClick}
       type="button"
@@ -476,15 +480,17 @@ function GoogleSignInButton({
   readonly onClick: () => void
 }) {
   return (
-    <button
-      className="inline-flex h-16 w-full shrink-0 items-center justify-center gap-3 rounded-4xl border border-[#747775] bg-[#ffffff] px-8 text-sm leading-5 font-medium text-[#1f1f1f] outline-none transition-[transform,opacity] duration-(--motion-duration-normal) ease-(--motion-ease-press) focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 [&:active:not(:disabled)]:transform-[scale(var(--motion-press-scale))]"
+    <Button
+      className="w-full justify-start gap-3"
       disabled={disabled}
       onClick={onClick}
+      size="lg"
       type="button"
+      variant="outline"
     >
-      <GoogleGLogo aria-hidden="true" className="size-5 shrink-0" />
+      <GoogleGLogo aria-hidden="true" className="size-4 shrink-0" />
       Google로 계속하기
-    </button>
+    </Button>
   )
 }
 

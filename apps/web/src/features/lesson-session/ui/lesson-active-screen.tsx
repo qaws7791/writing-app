@@ -24,8 +24,12 @@ import {
 } from "@/features/lesson-session/ui/lesson-shell"
 import { LessonExitModal } from "@/features/lesson-session/ui/lesson-exit-modal"
 import { Button } from "@workspace/ui/components/ui/button"
-import { Callout, CalloutContent } from "@workspace/ui/components/ui/callout"
-import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
+import {
+  Insight,
+  InsightDescription,
+  InsightEyebrow,
+} from "@workspace/ui/components/ui/insight"
+import { LessonActions, LessonFooter } from "@workspace/ui/components/ui/lesson"
 
 type LessonCheckedState = false | LessonStepCheckedState
 
@@ -98,17 +102,20 @@ export function LessonActiveScreen({
       contentRef={contentRef}
       footer={
         checked === false ? (
-          <StickyActionBar className="mx-auto max-w-2xl">
-            <Button
-              className="w-full"
-              disabled={!isReady || isSubmitting}
-              onClick={onSubmitCurrentStep}
-              size="lg"
-              variant={isReady ? "default" : "secondary"}
-            >
-              {isSubmitting ? "저장 중" : getLessonStepActionLabel(currentStep)}
-            </Button>
-          </StickyActionBar>
+          <LessonFooter aria-label="레슨 행동">
+            <LessonActions>
+              <Button
+                disabled={!isReady || isSubmitting}
+                onClick={onSubmitCurrentStep}
+                size="lg"
+                variant={isReady ? "default" : "secondary"}
+              >
+                {isSubmitting
+                  ? "저장 중"
+                  : getLessonStepActionLabel(currentStep)}
+              </Button>
+            </LessonActions>
+          </LessonFooter>
         ) : (
           <LessonCheckedFooter checked={checked} onNext={onSubmitCurrentStep} />
         )
@@ -122,7 +129,7 @@ export function LessonActiveScreen({
         />
       }
     >
-      <div className="an-fi" onBlurCapture={onDraftFlush}>
+      <div className="flex flex-col gap-4" onBlurCapture={onDraftFlush}>
         <LessonStepRenderer
           aiFeedbackDraftText={aiFeedbackDraftText}
           answerError={answerError}
@@ -143,9 +150,10 @@ export function LessonActiveScreen({
           />
         ) : null}
         {completeError === null || currentStep.type === "AI_FEEDBACK" ? null : (
-          <Callout className="mt-6" role="alert" tone="danger">
-            <CalloutContent>{completeError}</CalloutContent>
-          </Callout>
+          <Insight role="alert" tone="incorrect">
+            <InsightEyebrow>제출 오류</InsightEyebrow>
+            <InsightDescription>{completeError}</InsightDescription>
+          </Insight>
         )}
       </div>
       {showExit ? (

@@ -4,7 +4,14 @@ import { useState } from "react"
 import Link from "next/link"
 import { completeWritingSelfCheck } from "@workspace/http-client/learner"
 import { CheckCircleIcon } from "@workspace/ui/components/icons"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import {
+  Insight,
+  InsightDescription,
+} from "@workspace/ui/components/ui/insight"
+import { Prose, ProseBody } from "@workspace/ui/components/ui/prose"
 
 import {
   readWritingModeOption,
@@ -90,80 +97,89 @@ export function WritingSelfCheck({
       }
       header={
         <>
-          <p className="font-bold">{mode.label} 자기 점검</p>
+          <p className="font-medium">{mode.label} 자기 점검</p>
           {completed ? (
-            <p
-              className="flex items-center gap-1 text-body-sm font-bold text-muted-foreground"
-              role="status"
-            >
+            <Badge role="status" variant="success">
               <CheckCircleIcon aria-hidden="true" size={16} />
               점검 완료
-            </p>
+            </Badge>
           ) : (
-            <p className="text-body-sm text-muted-foreground">점수 없음</p>
+            <Badge variant="outline">점수 없음</Badge>
           )}
         </>
       }
     >
-      <article className="space-y-8">
-        <section className="space-y-4" aria-labelledby="writing-review-title">
-          <div className="space-y-1">
-            <p className="text-body-sm font-bold text-muted-foreground">
-              내가 쓴 글
-            </p>
-            <h1
-              className="font-heading text-heading-md font-bold"
-              id="writing-review-title"
-            >
-              {readWritingTitle(writing.title)}
-            </h1>
-          </div>
-          <div className="whitespace-pre-wrap break-words rounded-3xl bg-surface px-5 py-6 text-body-lg leading-8">
-            {writing.body.length === 0 ? (
-              <span className="text-muted-foreground">
-                본문이 비어 있습니다.
-              </span>
-            ) : (
-              writing.body
-            )}
-          </div>
-        </section>
-
-        <section
-          className="space-y-4"
-          aria-labelledby="self-check-questions-title"
-        >
-          <div className="space-y-1">
-            <h2
-              className="font-heading text-heading-sm font-bold"
-              id="self-check-questions-title"
-            >
-              세 가지 질문
-            </h2>
-            <p className="text-body-sm text-muted-foreground">
-              정답을 고르지 말고 글을 다시 읽으며 생각해 보세요.
-            </p>
-          </div>
-          <ol className="grid gap-3">
-            {mode.selfCheckQuestions.map((question, index) => (
-              <li
-                className="flex gap-4 rounded-3xl border border-border px-5 py-5 text-body-lg font-bold"
-                key={question}
+      <article>
+        <Prose>
+          <section className="space-y-4" aria-labelledby="writing-review-title">
+            <div className="space-y-1">
+              <p className="text-xs font-medium tracking-[0.06em] text-muted-foreground uppercase">
+                내가 쓴 글
+              </p>
+              <h1
+                className="font-heading text-2xl font-semibold tracking-[-0.025em] text-balance"
+                id="writing-review-title"
               >
-                <span aria-hidden="true" className="text-muted-foreground">
-                  {index + 1}
-                </span>
-                <span>{question}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+                {readWritingTitle(writing.title)}
+              </h1>
+            </div>
+            <Card variant="muted">
+              <CardContent>
+                <ProseBody className="break-words whitespace-pre-wrap">
+                  <p>
+                    {writing.body.length === 0 ? (
+                      <span className="text-muted-foreground">
+                        본문이 비어 있습니다.
+                      </span>
+                    ) : (
+                      writing.body
+                    )}
+                  </p>
+                </ProseBody>
+              </CardContent>
+            </Card>
+          </section>
 
-        {errorMessage === null ? null : (
-          <p className="text-body-sm text-danger-foreground" role="alert">
-            {errorMessage}
-          </p>
-        )}
+          <section
+            className="space-y-4"
+            aria-labelledby="self-check-questions-title"
+          >
+            <div className="space-y-1">
+              <h2
+                className="font-heading text-xl font-semibold tracking-[-0.02em]"
+                id="self-check-questions-title"
+              >
+                세 가지 질문
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                정답을 고르지 말고 글을 다시 읽으며 생각해 보세요.
+              </p>
+            </div>
+            <ol className="grid gap-3">
+              {mode.selfCheckQuestions.map((question, index) => (
+                <li key={question}>
+                  <Card size="sm" variant="frame">
+                    <CardContent className="flex gap-4 text-base font-medium leading-7">
+                      <span
+                        aria-hidden="true"
+                        className="text-muted-foreground"
+                      >
+                        {index + 1}
+                      </span>
+                      <span>{question}</span>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {errorMessage === null ? null : (
+            <Insight role="alert" tone="incorrect">
+              <InsightDescription>{errorMessage}</InsightDescription>
+            </Insight>
+          )}
+        </Prose>
       </article>
     </WritingFocusShell>
   )

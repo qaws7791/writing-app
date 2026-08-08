@@ -21,6 +21,7 @@ import type { ConfirmationIntent } from "@/features/course-editor/ui/confirmatio
 import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
 import { PlusIcon, TrashIcon } from "@workspace/ui/components/icons"
 import { Button } from "@workspace/ui/components/ui/button"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import {
@@ -74,8 +75,8 @@ export function CourseCurriculumTab({
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <p className="text-[0.875rem] font-medium text-muted-foreground">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-medium text-muted-foreground">
           유닛 {draft.units.length}개 · 레슨 {lessonCount}개
         </p>
         <Button
@@ -97,7 +98,7 @@ export function CourseCurriculumTab({
               <span className="text-xs font-bold text-muted-foreground">
                 UNIT {unitIndex + 1}
               </span>
-              <div className="h-px flex-1 bg-surface-hover" />
+              <div className="h-px flex-1 bg-border" />
               <Button
                 aria-label={`${unit.title} 유닛 삭제`}
                 onClick={() =>
@@ -127,200 +128,217 @@ export function CourseCurriculumTab({
             />
             <div className="flex flex-col gap-2">
               {unit.lessons.map((lesson, lessonIndex) => (
-                <div className="grid gap-2" key={lesson.id}>
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 text-sm font-bold text-muted-foreground">
-                      {lessonIndex + 1}
-                    </span>
-                    <Input
-                      aria-label={`${unit.title} 레슨 ${lessonIndex + 1} 제목`}
-                      onChange={(event) =>
+                <Card
+                  className="gap-3"
+                  key={lesson.id}
+                  size="sm"
+                  variant="muted"
+                >
+                  <CardContent className="grid gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="w-6 text-sm font-bold text-muted-foreground">
+                        {lessonIndex + 1}
+                      </span>
+                      <Input
+                        aria-label={`${unit.title} 레슨 ${lessonIndex + 1} 제목`}
+                        className="min-w-48 flex-1"
+                        onChange={(event) =>
+                          dispatch({
+                            change: {
+                              field: "title",
+                              value: event.target.value,
+                            },
+                            lessonId: lesson.id,
+                            type: "lesson-changed",
+                            unitId: unit.id,
+                          })
+                        }
+                        value={lesson.title}
+                      />
+                      <span className="whitespace-nowrap text-xs text-muted-foreground">
+                        스텝 {lesson.steps.length}개
+                      </span>
+                    </div>
+                    <div
+                      aria-label={`${lesson.title} 레슨 순서와 작업`}
+                      className="flex flex-wrap items-center gap-2"
+                      role="group"
+                    >
+                      <Button
+                        aria-label={`${lesson.title} 레슨 위로 이동`}
+                        disabled={lessonIndex === 0}
+                        onClick={() =>
+                          dispatch({
+                            direction: "up",
+                            lessonId: lesson.id,
+                            type: "lesson-moved",
+                            unitId: unit.id,
+                          })
+                        }
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        위로
+                      </Button>
+                      <Button
+                        aria-label={`${lesson.title} 레슨 아래로 이동`}
+                        disabled={lessonIndex === unit.lessons.length - 1}
+                        onClick={() =>
+                          dispatch({
+                            direction: "down",
+                            lessonId: lesson.id,
+                            type: "lesson-moved",
+                            unitId: unit.id,
+                          })
+                        }
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        아래로
+                      </Button>
+                      <Button
+                        aria-label={`${lesson.title} 레슨 복제`}
+                        onClick={() =>
+                          dispatch({
+                            lessonId: lesson.id,
+                            newLessonId: createLessonId(),
+                            newStepIds: lesson.steps.map(() => createStepId()),
+                            type: "lesson-duplicated",
+                            unitId: unit.id,
+                          })
+                        }
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        복제
+                      </Button>
+                      {draft.units.length < 2 ? null : (
+                        <Select
+                          items={unitMoveItems(draft.units, unit.id)}
+                          onValueChange={(value) => {
+                            if (value === null) return
+                            dispatch({
+                              lessonId: lesson.id,
+                              targetUnitId: unitIdSchema.parse(value),
+                              type: "lesson-unit-changed",
+                              unitId: unit.id,
+                            })
+                          }}
+                          value=""
+                        >
+                          <SelectTrigger
+                            aria-label={`${lesson.title} 레슨 유닛 이동`}
+                            className="w-36"
+                            size="sm"
+                          >
+                            <SelectValue placeholder="유닛 이동" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {unitMoveItems(draft.units, unit.id).map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <Button
+                        aria-label={`${lesson.title} 레슨 삭제`}
+                        onClick={() =>
+                          requestConfirmation({
+                            lessonId: lesson.id,
+                            lessonTitle: lesson.title,
+                            type: "remove-lesson",
+                            unitId: unit.id,
+                          })
+                        }
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <TrashIcon aria-hidden="true" size={14} />
+                      </Button>
+                    </div>
+                    <LessonInfoFields
+                      lesson={lesson}
+                      onChange={(change) =>
                         dispatch({
-                          change: {
-                            field: "title",
-                            value: event.target.value,
-                          },
+                          change,
                           lessonId: lesson.id,
                           type: "lesson-changed",
                           unitId: unit.id,
                         })
                       }
-                      value={lesson.title}
                     />
-                    <span className="whitespace-nowrap text-xs text-muted-foreground">
-                      스텝 {lesson.steps.length}개
-                    </span>
-                    <Button
-                      aria-label={`${lesson.title} 레슨 위로 이동`}
-                      disabled={lessonIndex === 0}
-                      onClick={() =>
-                        dispatch({
-                          direction: "up",
-                          lessonId: lesson.id,
-                          type: "lesson-moved",
-                          unitId: unit.id,
-                        })
-                      }
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      위로
-                    </Button>
-                    <Button
-                      aria-label={`${lesson.title} 레슨 아래로 이동`}
-                      disabled={lessonIndex === unit.lessons.length - 1}
-                      onClick={() =>
-                        dispatch({
-                          direction: "down",
-                          lessonId: lesson.id,
-                          type: "lesson-moved",
-                          unitId: unit.id,
-                        })
-                      }
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      아래로
-                    </Button>
-                    <Button
-                      aria-label={`${lesson.title} 레슨 복제`}
-                      onClick={() =>
+                    <AiFeedbackTargetFields
+                      lesson={lesson}
+                      onTargetChange={(stepId, targetStepId) => {
+                        const step = lesson.steps.find(
+                          (candidate) => candidate.id === stepId
+                        )
+                        if (step?.type !== "AI_FEEDBACK") return
                         dispatch({
                           lessonId: lesson.id,
-                          newLessonId: createLessonId(),
-                          newStepIds: lesson.steps.map(() => createStepId()),
-                          type: "lesson-duplicated",
+                          step: { ...step, target: targetStepId },
+                          type: "step-changed",
                           unitId: unit.id,
                         })
-                      }
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      복제
-                    </Button>
-                    {draft.units.length < 2 ? null : (
-                      <Select
-                        aria-label={`${lesson.title} 레슨 유닛 이동`}
-                        items={unitMoveItems(draft.units, unit.id)}
-                        onValueChange={(value) => {
-                          if (value === null) return
-                          dispatch({
-                            lessonId: lesson.id,
-                            targetUnitId: unitIdSchema.parse(value),
-                            type: "lesson-unit-changed",
-                            unitId: unit.id,
-                          })
-                        }}
-                        value=""
-                      >
-                        <SelectTrigger className="w-36" variant="outlined">
-                          <SelectValue placeholder="유닛 이동" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {unitMoveItems(draft.units, unit.id).map((item) => (
-                            <SelectItem key={item.value} value={item.value}>
-                              {item.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    <Button
-                      aria-label={`${lesson.title} 레슨 삭제`}
-                      onClick={() =>
-                        requestConfirmation({
+                      }}
+                    />
+                    <StepWorkspace
+                      assetUpload={{
+                        assets: draft.assets,
+                        disabled: false,
+                        upload: uploadAsset,
+                      }}
+                      onAdd={(step) =>
+                        dispatch({
                           lessonId: lesson.id,
-                          lessonTitle: lesson.title,
-                          type: "remove-lesson",
+                          step,
+                          type: "step-added",
                           unitId: unit.id,
                         })
                       }
-                      size="icon"
-                      variant="ghost"
-                    >
-                      <TrashIcon aria-hidden="true" size={14} />
-                    </Button>
-                  </div>
-                  <LessonInfoFields
-                    lesson={lesson}
-                    onChange={(change) =>
-                      dispatch({
-                        change,
-                        lessonId: lesson.id,
-                        type: "lesson-changed",
-                        unitId: unit.id,
-                      })
-                    }
-                  />
-                  <AiFeedbackTargetFields
-                    lesson={lesson}
-                    onTargetChange={(stepId, targetStepId) => {
-                      const step = lesson.steps.find(
-                        (candidate) => candidate.id === stepId
-                      )
-                      if (step?.type !== "AI_FEEDBACK") return
-                      dispatch({
-                        lessonId: lesson.id,
-                        step: { ...step, target: targetStepId },
-                        type: "step-changed",
-                        unitId: unit.id,
-                      })
-                    }}
-                  />
-                  <StepWorkspace
-                    assetUpload={{
-                      assets: draft.assets,
-                      disabled: false,
-                      upload: uploadAsset,
-                    }}
-                    onAdd={(step) =>
-                      dispatch({
-                        lessonId: lesson.id,
-                        step,
-                        type: "step-added",
-                        unitId: unit.id,
-                      })
-                    }
-                    onChange={(step) =>
-                      dispatch({
-                        lessonId: lesson.id,
-                        step,
-                        type: "step-changed",
-                        unitId: unit.id,
-                      })
-                    }
-                    onDuplicate={(step) =>
-                      dispatch({
-                        lessonId: lesson.id,
-                        newStepId: createStepId(),
-                        stepId: step.id,
-                        type: "step-duplicated",
-                        unitId: unit.id,
-                      })
-                    }
-                    onMove={(step, direction) =>
-                      dispatch({
-                        direction,
-                        lessonId: lesson.id,
-                        stepId: step.id,
-                        type: "step-moved",
-                        unitId: unit.id,
-                      })
-                    }
-                    onRemove={(step) =>
-                      dispatch({
-                        lessonId: lesson.id,
-                        stepId: step.id,
-                        type: "step-removed",
-                        unitId: unit.id,
-                      })
-                    }
-                    steps={lesson.steps}
-                  />
-                </div>
+                      onChange={(step) =>
+                        dispatch({
+                          lessonId: lesson.id,
+                          step,
+                          type: "step-changed",
+                          unitId: unit.id,
+                        })
+                      }
+                      onDuplicate={(step) =>
+                        dispatch({
+                          lessonId: lesson.id,
+                          newStepId: createStepId(),
+                          stepId: step.id,
+                          type: "step-duplicated",
+                          unitId: unit.id,
+                        })
+                      }
+                      onMove={(step, direction) =>
+                        dispatch({
+                          direction,
+                          lessonId: lesson.id,
+                          stepId: step.id,
+                          type: "step-moved",
+                          unitId: unit.id,
+                        })
+                      }
+                      onRemove={(step) =>
+                        dispatch({
+                          lessonId: lesson.id,
+                          stepId: step.id,
+                          type: "step-removed",
+                          unitId: unit.id,
+                        })
+                      }
+                      steps={lesson.steps}
+                    />
+                  </CardContent>
+                </Card>
               ))}
               <Button
                 className="self-start"
@@ -352,7 +370,7 @@ function LessonInfoFields({
   readonly onChange: (change: LessonFieldChange) => void
 }) {
   return (
-    <div className="ml-8 grid gap-3 rounded-2xl bg-surface p-3 md:grid-cols-2">
+    <div className="grid gap-4 rounded-3xl border border-border/70 bg-card p-4 md:grid-cols-2">
       <Field>
         <FieldLabel htmlFor={`${lesson.id}-category`}>카테고리</FieldLabel>
         <Input
@@ -433,7 +451,7 @@ function AiFeedbackTargetFields({
   if (aiSteps.length === 0) return null
 
   return (
-    <div className="ml-8 grid gap-3 rounded-2xl bg-surface p-3">
+    <div className="grid gap-4 rounded-3xl border border-border/70 bg-card p-4">
       {aiSteps.map((aiStep) => {
         const targets = lesson.steps
           .filter(

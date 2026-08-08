@@ -1,23 +1,13 @@
 import * as React from "react"
 
-import { fieldControlVariants } from "#ui/lib/field-control-variants"
 import { cn } from "#ui/lib/utils"
 
-/**
- * `Textarea` 컴포넌트는 사용자가 여러 줄의 텍스트를 입력할 수 있는 입력 필드를 제공합니다.
- *
- * @example
- * ```tsx
- * <Textarea placeholder="Enter your text here..." />
- * ```
- */
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea
       data-slot="textarea"
       className={cn(
-        fieldControlVariants(),
-        "field-sizing-content flex min-h-16 resize-none rounded-2xl px-3 py-3 text-base md:text-sm",
+        "squircle flex field-sizing-content min-h-24 w-full resize-none rounded-2xl border border-border/70 bg-input/35 px-4 py-3 text-base leading-6 shadow-2xs transition-[color,box-shadow,background-color,border-color] outline-none placeholder:text-muted-foreground/80 hover:border-border hover:bg-input/50 focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-45 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/25 dark:hover:bg-input/35 dark:focus-visible:bg-input/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
         className
       )}
       {...props}

@@ -37,9 +37,25 @@
       ],
       "project": ["src/**/*.ts"]
     },
-    "apps/storybook": {
-      "entry": [".storybook/**/*.{ts,tsx}!", "src/**/*.stories.tsx"],
-      "project": [".storybook/**/*.{ts,tsx}", "src/**/*.{css,mdx,ts,tsx}"]
+    "apps/ui": {
+      "entry": [
+        "scripts/*.ts!",
+        "src/components/**/*.tsx!",
+        "src/pages/**/*.astro!",
+        "tests/**/*.spec.ts"
+      ],
+      "project": [
+        "registry/**/*.{ts,tsx}",
+        "scripts/**/*.ts",
+        "src/**/*.{astro,css,ts,tsx}",
+        "tests/**/*.ts"
+      ],
+      "ignoreIssues": {
+        "src/lib/block-docs.ts": ["exports", "types"],
+        "src/lib/component-docs.ts": ["exports"],
+        "src/lib/component-guides/index.ts": ["types"],
+        "src/lib/component-guides/types.ts": ["types"]
+      }
     },
     "packages/{config,infra,shared}/*": {
       "project": ["src/**/*.{ts,tsx}"]
@@ -72,6 +88,12 @@
           "nsTypes",
           "types"
         ]
+      }
+    },
+    "packages/shared/ui": {
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignoreIssues": {
+        "src/blocks/**": ["duplicates"]
       }
     }
   }

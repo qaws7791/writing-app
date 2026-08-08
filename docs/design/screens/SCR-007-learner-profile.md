@@ -26,12 +26,13 @@
 
 ## UI 기준
 
-- avatar는 `action-selected-*`, `rounded-[3rem]`, `size-32`를 사용한다. Google 이미지가 없거나 로드에 실패하면 `✍️` fallback을 쓴다.
-- 이름은 `text-[1.75rem] font-black`이다.
+- 프로필 요약은 `Card variant="muted"` 조합을 사용한다.
+- avatar는 실제 Google 이미지를 사용한다. 이미지가 없거나 로드에 실패하면 `✍️` fallback을 쓴다.
+- 이름은 heading font와 `h1`을 사용한다.
 - 표시 이름 수정은 이름 옆 `Button variant="ghost" size="icon-sm"` 트리거로 `Dialog`를 연다. Dialog 안에서 현재 이름을 초깃값으로 사용하고 저장 중 중복 제출을 막는다. 저장에 성공하면 Dialog를 닫고 프로필을 갱신한다.
-- 학습 요약은 2열 `StatGrid`와 `StatCard layout="profile"` 타일이다. 카드는 `bg-surface`, `p-8`, 중앙 정렬, border 없음.
-- 테마 전환은 라이트, 다크, 시스템 3분할 control이며 활성 옵션은 `action-selected-*`를 사용한다.
-- 로그아웃은 `Button variant="destructive" size="extra"`를 사용한다.
+- 학습 요약은 2열 `Card variant="muted"` 조합을 사용한다.
+- 테마 전환은 라이트, 다크, 시스템 3분할 control이다. 활성 옵션은 배경 surface와 `aria-pressed`로 구분한다.
+- 로그아웃은 `Button variant="destructive"`를 사용한다.
 
 ## 상태
 

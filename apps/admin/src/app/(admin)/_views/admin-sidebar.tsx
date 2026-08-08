@@ -1,6 +1,3 @@
-"use client"
-
-import { useState } from "react"
 import Link from "next/link"
 
 import {
@@ -10,18 +7,11 @@ import {
 import {
   ExternalLinkIcon,
   LogOutIcon,
-  MenuIcon,
-} from "@workspace/ui/components/icons"
-import { Button } from "@workspace/ui/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@workspace/ui/components/ui/dialog"
+} from "@workspace/ui/components/icons/navigation-icons"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 import { cn } from "@workspace/ui/lib/utils"
 
-type AdminSidebarProps = {
+export type AdminSidebarProps = {
   readonly activePath: string
   readonly isSigningOut: boolean
   readonly learnerWebOrigin: string
@@ -31,33 +21,13 @@ type AdminSidebarProps = {
 
 export function AdminSidebar(props: AdminSidebarProps) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-bg-surface p-5 md:flex">
+    <aside className="sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-e border-sidebar-border/80 bg-sidebar p-4 text-sidebar-foreground md:flex">
       <AdminSidebarContent {...props} />
     </aside>
   )
 }
 
-export function AdminMobileSidebar(props: AdminSidebarProps) {
-  const [open, setOpen] = useState(false)
-
-  return (
-    <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger
-        render={
-          <Button aria-label="메뉴 열기" size="icon" variant="ghost">
-            <MenuIcon aria-hidden="true" />
-          </Button>
-        }
-      />
-      <DialogContent className="left-0 top-0 h-dvh w-[min(20rem,calc(100vw-2rem))] max-w-none translate-x-0 translate-y-0 content-start rounded-none rounded-r-4xl bg-bg-elevated p-5 sm:max-w-none">
-        <DialogTitle className="sr-only">어드민 메뉴</DialogTitle>
-        <AdminSidebarContent {...props} onNavigate={() => setOpen(false)} />
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function AdminSidebarContent({
+export function AdminSidebarContent({
   activePath,
   isSigningOut,
   learnerWebOrigin,
@@ -68,11 +38,11 @@ function AdminSidebarContent({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <Link
-        className="mb-6 px-3 py-2 text-[1.375rem] font-bold text-fg-default"
+        className="mb-6 px-3 py-2 font-heading text-xl font-semibold tracking-[-0.025em] text-sidebar-foreground"
         href="/"
         prefetch={false}
       >
-        글결 <span className="text-fg-muted">어드민</span>
+        글결 <span className="text-muted-foreground">어드민</span>
       </Link>
       <nav aria-label="어드민 주요 메뉴" className="flex flex-1 flex-col gap-1">
         {navigationItems.map((item) => {
@@ -87,10 +57,10 @@ function AdminSidebarContent({
             <Link
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex h-auto w-full items-center justify-start gap-3 rounded-3xl px-4 py-3 text-body-md font-bold transition-colors",
+                "flex h-auto w-full items-center justify-start gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/25",
                 isActive
-                  ? "bg-action-primary-bg text-action-primary-fg"
-                  : "text-fg-default hover:bg-bg-canvas"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/65 hover:text-sidebar-accent-foreground"
               )}
               href={item.href}
               key={item.href}
@@ -107,7 +77,10 @@ function AdminSidebarContent({
       </nav>
       <div className="flex flex-col gap-2 pt-4">
         <a
-          className="flex h-auto w-full items-center justify-start gap-3 rounded-3xl px-4 py-3 text-[0.9375rem] text-fg-muted hover:bg-bg-canvas"
+          className={cn(
+            buttonVariants({ variant: "ghost" }),
+            "w-full justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          )}
           href={learnerWebOrigin}
           rel="noreferrer"
           target="_blank"
@@ -115,15 +88,16 @@ function AdminSidebarContent({
           <ExternalLinkIcon aria-hidden="true" size={18} />
           앱으로 이동
         </a>
-        <button
-          className="flex h-auto w-full items-center justify-start gap-3 rounded-3xl bg-transparent px-4 py-3 text-left text-[0.9375rem] text-danger-fg hover:bg-danger disabled:opacity-60"
+        <Button
+          className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
           disabled={isSigningOut}
           onClick={onSignOut}
           type="button"
+          variant="ghost"
         >
           <LogOutIcon aria-hidden="true" size={18} />
           어드민 로그아웃
-        </button>
+        </Button>
       </div>
     </div>
   )

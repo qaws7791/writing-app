@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { cn } from "@workspace/ui/lib/utils"
 
 import {
   type GlobalNavPathProps,
@@ -17,20 +17,19 @@ export function GlobalNavLinks({ currentPath }: GlobalNavPathProps) {
   const pathname = useGlobalNavCurrentPath(currentPath)
 
   return (
-    <nav className="hidden sm:flex gap-2">
+    <nav aria-label="주요 메뉴" className="hidden items-center gap-1 sm:flex">
       {globalNavPrimaryItems.map((item) => {
         const isActive = isGlobalNavRouteActive(pathname, item.key)
 
         return (
           <Link
             aria-current={isActive ? "page" : undefined}
-            className={buttonVariants({
-              className: isActive
-                ? "h-auto rounded-full bg-surface px-4 py-2 text-body-sm text-foreground font-semibold hover:bg-surface"
-                : "h-auto rounded-full px-4 py-2 text-body-sm text-muted-foreground font-semibold hover:bg-surface/50",
-              size: "sm",
-              variant: isActive ? "secondary" : "ghost",
-            })}
+            className={cn(
+              "rounded-xl px-3 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/25",
+              isActive
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:bg-muted/65 hover:text-foreground"
+            )}
             href={item.href}
             key={item.key}
           >

@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+채택됨. 실행 가능한 UI 카탈로그와 browser 검증 결정은 ADR-0029가 대체한다.
 
 ## 날짜
 
@@ -57,8 +57,8 @@
 - PR 템플릿은 디자인 시스템 변경 체크리스트를 포함한다.
 - `packages/ui` token은 호환 alias를 유지한 채 reference, semantic, component token으로 재편한다.
 - 앱 migration은 pilot 화면 단위로 진행하고 전체 admin CSS를 한 번에 삭제하지 않는다.
-- 접근성 primitive는 Storybook과 interaction test를 추가한 뒤 앱에 적용한다.
-- Tailwind import, plugin, source scan, PostCSS 설정은 web, admin, Storybook의 앱 Adapter가 각각 소유한다.
+- 접근성 primitive는 실행 가능한 문서 예제와 browser interaction test를 추가한 뒤 앱에 적용한다.
+- Tailwind import, plugin과 source scan 설정은 web, admin, Astro UI 문서 앱의 Adapter가 각각 소유한다.
 - `packages/ui`는 Tailwind build engine 설정을 공개하지 않고 token, 공통 utility, 도메인 비의존 style Implementation만 제공한다.
 - 각 앱은 `source(none)`과 명시적 `@source`로 자신의 소스와 `packages/ui/src`만 scan하며, CSS에서 해석하는 plugin을 직접 의존성으로 선언한다.
 
@@ -69,7 +69,7 @@
 ```bash
 bun --filter @workspace/ui test
 bun --filter @workspace/ui typecheck
-bun --filter @workspace/storybook build
+bun --filter @workspace/ui-registry build
 bun run lint
 ```
 
@@ -78,4 +78,5 @@ bun run lint
 - `docs/design/foundations.md`
 - `docs/design/components.md`
 - `docs/design/accessibility.md`
+- `docs/engineering/adr/ADR-0029-astro-ui-documentation.md`
 - `packages/ui/README.md`

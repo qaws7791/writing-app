@@ -6,7 +6,7 @@ import {
   LayoutDashboardIcon,
   ShieldCheckIcon,
   UsersIcon,
-} from "@workspace/ui/components/icons"
+} from "@workspace/ui/components/icons/navigation-icons"
 
 export type AdminNavigationItem = {
   readonly end?: boolean

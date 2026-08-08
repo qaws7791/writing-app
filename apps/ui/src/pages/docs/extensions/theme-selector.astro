@@ -1,0 +1,12 @@
+---
+import WorkspaceExtensionContent from "@/src/components/workspace-extension-content.astro"
+import DocsLayout from "@/src/layouts/docs-layout.astro"
+import { workspaceExtensionDocsBySlug } from "@/src/lib/workspace-extension-docs"
+
+const doc = workspaceExtensionDocsBySlug.get("theme-selector")!
+const toc = [{ id: "responsive-preview", label: "반응형 미리보기" }, { id: "states", label: "실행 상태" }, { id: "props", label: "Props" }, { id: "guidelines", label: "사용 지침" }, { id: "accessibility", label: "접근성" }]
+---
+
+<DocsLayout title={doc.title} description={doc.description} pathname="/docs/extensions/theme-selector" toc={toc}>
+  <WorkspaceExtensionContent doc={doc} />
+</DocsLayout>

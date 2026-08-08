@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 
 import { LessonAnswerErrorMessage } from "#ui/components/lesson/lesson-answer-error-message"
+import { Step } from "#ui/components/ui/step"
 
 export function LessonStepFrame({
   answerError,
@@ -11,14 +12,12 @@ export function LessonStepFrame({
   readonly children: ReactNode
   readonly stepId: string
 }) {
-  const headingId = `lesson-step-${stepId}`
-
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-5">
+    <Step data-step-id={stepId}>
       {children}
       <LessonAnswerErrorMessage
         {...(answerError === undefined ? {} : { answerError })}
       />
-    </section>
+    </Step>
   )
 }
