@@ -56,6 +56,7 @@ describe(
             { id: currentSchemaBaseline.id },
             { id: "0001-reporting-views" },
             { id: "0002-audit-events-course-restore" },
+            { id: "0003-focused-writing" },
           ])
           expect(
             restored.sqlite

@@ -12,7 +12,8 @@
       "#http-platform/*": ["../../infra/http-platform/src/*"],
       "#identity/*": ["../identity/src/*"],
       "#learning/*": ["../learning/src/*"],
-      "#operations/*": ["./src/*"]
+      "#operations/*": ["./src/*"],
+      "#writing/*": ["../writing/src/*"]
     },
     "types": ["bun"]
   },

@@ -39,12 +39,14 @@ import {
   type AppLogger,
 } from "@workspace/observability/logger"
 import type { OperationsModule } from "@workspace/operations/module"
+import type { WritingModule } from "@workspace/writing/module"
+import type { WritingLearnerSessionPort } from "@workspace/writing/http"
 import {
   logEventNames,
   logRetentionClasses,
   type AiUsageEvent,
 } from "@workspace/observability/events"
-import type { ContentAssetId, CourseId } from "@workspace/types/ids"
+import type { ContentAssetId, CourseId, WritingId } from "@workspace/types/ids"
 import { createS3PrivateObjectStorage } from "@workspace/storage/private-object-storage"
 
 import {
@@ -61,6 +63,7 @@ import {
 import { composeIdentityModule } from "@/composition/identity-module.composition"
 import { composeLearningModule } from "@/composition/learning-module.composition"
 import { composeOperationsModule } from "@/composition/operations-module.composition"
+import { composeWritingModule } from "@/composition/writing-module.composition"
 import type { ApiEnv } from "@/config/env"
 import { runApplicationMigrations } from "@/db/migrate"
 import { createApiHealthProbe, type ApiHealthProbe } from "@/runtime/api-health"
@@ -85,6 +88,7 @@ export type ApiContainer = Readonly<{
     authHandler: LearnerAuthRuntime["authHandler"]
     learningSession: LearningLearnerSessionPort
     sessionResolver: SessionResolver
+    writingSession: WritingLearnerSessionPort
   }>
   modules: Readonly<{
     aiFeedback: AiFeedbackModule
@@ -92,6 +96,7 @@ export type ApiContainer = Readonly<{
     identity: IdentityModule
     learning: LearningModule
     operations: OperationsModule
+    writing: WritingModule
   }>
   platform: Readonly<{
     clock: Clock
@@ -244,6 +249,14 @@ export async function createContainer(
       logger,
       reportingDatabase: reportingDatabase.sqlite,
     })
+    const writing = composeWritingModule({
+      clock,
+      database: database.db,
+      idGenerator: createPrefixedIdGenerator<WritingId>(
+        "writing-",
+        idGenerator
+      ),
+    })
 
     const learnerSession = createLearningLearnerSessionPort(
       learnerSessionResolver
@@ -261,6 +274,7 @@ export async function createContainer(
         authHandler: learnerAuth.authHandler,
         learningSession: learnerSession,
         sessionResolver: learnerSessionResolver,
+        writingSession: learnerSession,
       },
       modules: {
         aiFeedback,
@@ -268,6 +282,7 @@ export async function createContainer(
         identity,
         learning,
         operations,
+        writing,
       },
       platform: { clock, env, idGenerator, logger },
     }

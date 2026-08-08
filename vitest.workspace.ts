@@ -30,6 +30,7 @@ export default defineConfig({
         ["@workspace/vitest-config", "packages/config/vitest-config"],
         ["@workspace/operations", "packages/modules/operations"],
         ["@workspace/storage", "packages/infra/storage"],
+        ["@workspace/writing", "packages/modules/writing"],
       ].map(([name, root]) => ({
         plugins: [
           tsconfigPaths({

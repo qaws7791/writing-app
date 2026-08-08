@@ -2,6 +2,8 @@ import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminDashboard } from "@/features/dashboard/model/admin-dashboard"
 import {
   BarChartIcon,
+  CheckCircleIcon,
+  FileTextIcon,
   FlameIcon,
   UserPlusIcon,
 } from "@workspace/ui/components/icons"
@@ -57,6 +59,26 @@ export function AdminDashboardPage({
           icon={<FlameIcon aria-hidden="true" size={20} />}
           label="최근 7일 활성"
           value={formatCount(metrics.activeUsersLast7Days)}
+        />
+        <StatCard
+          aria-label="자기 점검 시작률"
+          detail={`${formatCount(metrics.writingSelfCheckStartRate.numerator)} / ${formatCount(metrics.writingSelfCheckStartRate.denominator)}개 글`}
+          icon={<FileTextIcon aria-hidden="true" size={20} />}
+          label="자기 점검 시작률"
+          value={formatRate(
+            metrics.writingSelfCheckStartRate.percentage,
+            metrics.writingSelfCheckStartRate.status
+          )}
+        />
+        <StatCard
+          aria-label="점검 뒤 수정률"
+          detail={`${formatCount(metrics.writingRevisionAfterSelfCheckRate.numerator)} / ${formatCount(metrics.writingRevisionAfterSelfCheckRate.denominator)}개 점검 시작 글`}
+          icon={<CheckCircleIcon aria-hidden="true" size={20} />}
+          label="점검 뒤 수정률"
+          value={formatRate(
+            metrics.writingRevisionAfterSelfCheckRate.percentage,
+            metrics.writingRevisionAfterSelfCheckRate.status
+          )}
         />
       </StatGrid>
     </>

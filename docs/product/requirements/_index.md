@@ -33,6 +33,7 @@
 | [REQ-LRN-8](./platform/req-lrn-8-public-landing.md)         | 공개 랜딩            | `US-LRN-9`             | `SCR-001`                       | 기준 |
 | [REQ-LRN-9](./platform/req-lrn-9-learner-navigation.md)     | 학습자 앱 내비게이션 | `US-LRN-10`            | `SCR-003`, `SCR-004`, `SCR-007` | 기준 |
 | [REQ-LRN-10](./platform/req-lrn-10-checkable-activities.md) | 정답 확인형 활동     | `US-LRN-11`            | `SCR-006`                       | 기준 |
+| [REQ-LRN-11](./platform/req-lrn-11-focused-writing.md)      | 집중형 쓰기          | `US-LRN-12`            | `SCR-008`, `SCR-009`, `SCR-010` | 기준 |
 
 ## 어드민
 

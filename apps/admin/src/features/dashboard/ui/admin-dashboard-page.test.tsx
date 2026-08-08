@@ -28,6 +28,18 @@ const dashboard: AdminDashboard = {
       percentage: 40,
       status: "available",
     },
+    writingRevisionAfterSelfCheckRate: {
+      denominator: 6,
+      numerator: 3,
+      percentage: 50,
+      status: "available",
+    },
+    writingSelfCheckStartRate: {
+      denominator: 10,
+      numerator: 6,
+      percentage: 60,
+      status: "available",
+    },
   },
 }
 
@@ -38,6 +50,10 @@ describe("AdminDashboardPage", () => {
     expect(readMetricCard("활성화율")).toHaveTextContent("12 / 36명 첫 시작")
     expect(readMetricCard("7일 내 재방문")).toHaveTextContent(
       "4 / 10명 · 2026-07-16까지"
+    )
+    expect(readMetricCard("자기 점검 시작률")).toHaveTextContent("6 / 10개 글")
+    expect(readMetricCard("점검 뒤 수정률")).toHaveTextContent(
+      "3 / 6개 점검 시작 글"
     )
   })
 

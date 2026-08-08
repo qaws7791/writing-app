@@ -1,6 +1,7 @@
 import type { HttpPlatformEnv } from "@workspace/http-platform/app"
 import type { IdentityLearnerHonoEnv } from "@workspace/identity/http"
 import type { LearningHonoEnv } from "@workspace/learning/http"
+import type { WritingHonoEnv } from "@workspace/writing/http"
 
 import type { ApiRequestContext } from "@/middleware/create-request-context"
 
@@ -10,4 +11,5 @@ type ApiRuntimeHonoEnv = HttpPlatformEnv<{
 
 export type ApiHonoEnv = ApiRuntimeHonoEnv &
   IdentityLearnerHonoEnv &
-  LearningHonoEnv
+  LearningHonoEnv &
+  WritingHonoEnv

@@ -180,6 +180,18 @@ function createFixture(
                   percentage: null,
                   status: "empty",
                 },
+                writingRevisionAfterSelfCheckRate: {
+                  denominator: 0,
+                  numerator: 0,
+                  percentage: null,
+                  status: "empty",
+                },
+                writingSelfCheckStartRate: {
+                  denominator: 0,
+                  numerator: 0,
+                  percentage: null,
+                  status: "empty",
+                },
               },
             }),
       readLessonAnalytics: async () =>

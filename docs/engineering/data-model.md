@@ -48,6 +48,15 @@
 - 단계 초안은 사용자·코스·curriculum version·레슨·스텝별 한 건, 음수가 아닌 version과 64 KiB 이하의 UTF-8 JSON으로 제한한다.
 - 단계 완료는 답안 저장, 해당 초안 삭제, 진행 전이, 레슨·코스 완료와 활동 집계를 하나의 learning transaction에서 적용한다.
 
+## Writing 데이터 경계
+
+- writing module은 레슨과 독립된 학습자 글과 쓰기 event schema·repository를 소유한다.
+- 글은 학습자, 쓰기 방식, 제목, 일반 텍스트 본문, `drafting | checked` 상태, 음수가 아닌 version과 생성·수정·자기 점검 시작·완료 시각을 가진다.
+- 저장은 학습자와 글 ID를 함께 확인하고 expected version이 현재 version과 같을 때만 version을 증가시킨다.
+- 점검 완료 뒤 본문이 바뀌면 상태를 `drafting`으로 바꾸고 점검 완료 시각을 제거한다.
+- 쓰기 event는 글 생성, 자기 점검 시작, 자기 점검 뒤 본문 수정, 자기 점검 완료와 글 삭제만 저장한다. event는 제목과 본문을 저장하지 않는다.
+- 학습자 삭제 정리는 글과 쓰기 event를 auth 사용자 삭제보다 먼저 같은 transaction에서 제거한다.
+
 ## Audit 데이터 경계
 
 - operations module은 관리자 개인정보 조회와 고위험 변경의 `audit_events` schema·repository를 소유한다. 일반 request log나 인증·인가 실패 security log를 이 table에 복제하지 않는다.
@@ -59,6 +68,7 @@
 ## 운영 Reporting 데이터 경계
 
 - operations module의 reporting repository는 각 module이 공개한 리포팅 읽기 뷰만 join·aggregate한다. 뷰는 소유 module의 `infrastructure/persistence/reporting-view.ts`가 이름과 컬럼을 선언하고 API의 append-only migration이 생성하므로, 원본 컬럼이 사라지면 배포 전 migration에서 실패한다. 원본 schema와 제품 불변식의 소유권은 각 module에 그대로 남으며 reporting projection은 원본을 변경하지 않는다.
+- 쓰기 지표는 writing module의 원문 없는 event reporting view만 사용한다.
 - API composition은 writer와 분리한 SQLite read-only connection을 주입하고 repository는 `query_only`를 확인한다. 보고 조회가 쓰기 transaction이나 다른 module command repository로 우회해서는 안 된다.
 - 집계 SQL은 필요한 projection과 aggregate만 반환한다. 전체 table row를 application memory로 읽어 join하지 않고, AI 답안·prompt·피드백 원문을 선택하거나 반환하지 않는다.
 - 삭제 상태 학습자는 모든 운영 지표에서 제외한다. 첫 레슨 시작, `Asia/Seoul` 날짜 경계, D7 성숙 cohort와 완료·이탈의 제품 의미는 `docs/product/metrics.md`가 소유한다.

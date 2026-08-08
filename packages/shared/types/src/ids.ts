@@ -10,3 +10,4 @@ export type LessonStepId = Brand<string, "LessonStepId">
 export type LessonStepItemId = Brand<string, "LessonStepItemId">
 export type UnitId = Brand<string, "UnitId">
 export type UserId = Brand<string, "UserId">
+export type WritingId = Brand<string, "WritingId">

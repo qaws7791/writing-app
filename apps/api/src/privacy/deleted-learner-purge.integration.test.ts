@@ -11,6 +11,7 @@ import {
 import { aPublishedCourse } from "@workspace/content/test-fixtures"
 import { aLearner } from "@workspace/identity/test-fixtures"
 import { aLearnerWithProgress } from "@workspace/learning/test-fixtures"
+import { aWriting } from "@workspace/writing/test-fixtures"
 
 import { runDeletedLearnerPurge } from "@/scripts/purge-deleted-learners"
 
@@ -32,6 +33,8 @@ const learnerOwnedTableNames = [
   "learner_activity_days",
   "ai_feedback_attempts",
   "ai_feedback_user_daily_counters",
+  "writings",
+  "writing_events",
 ] as const
 
 describe("삭제 학습자 purge SQLite repository", () => {
@@ -119,6 +122,10 @@ function preparePurgeDatabase(client: WritingAppDatabaseClient): void {
       attemptId: `attempt-${learner.id}`,
       course,
       idempotencyKey: `${learner.id}-key`,
+      userId: learner.id,
+    })
+    aWriting(client.sqlite, {
+      id: `writing-${learner.id}`,
       userId: learner.id,
     })
   }

@@ -39,6 +39,18 @@ const learnerDependencies = {
     cursor: createLearnerCursorCodec("openapi-cursor-signing-secret-32-bytes"),
     session: { resolveLearner: contractOnly },
   },
+  writing: {
+    application: {
+      completeSelfCheck: contractOnly,
+      create: contractOnly,
+      delete: contractOnly,
+      get: contractOnly,
+      list: contractOnly,
+      save: contractOnly,
+      startSelfCheck: contractOnly,
+    },
+    session: { resolveLearner: contractOnly },
+  },
 } satisfies LearnerContractRouteDependencies
 
 const adminSessionResolver = { resolveSession: contractOnly }

@@ -22,6 +22,10 @@ export type OperationsDashboard = Readonly<{
         matureCohortThrough: string
         status: "available" | "empty" | "immature"
       }>
+    writingRevisionAfterSelfCheckRate: OperationsMetricRate &
+      Readonly<{ status: "available" | "empty" }>
+    writingSelfCheckStartRate: OperationsMetricRate &
+      Readonly<{ status: "available" | "empty" }>
   }>
 }>
 

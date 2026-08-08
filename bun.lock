@@ -89,6 +89,7 @@
         "@workspace/operations": "workspace:*",
         "@workspace/storage": "workspace:*",
         "@workspace/types": "workspace:*",
+        "@workspace/writing": "workspace:*",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
         "sharp": "catalog:",
@@ -431,6 +432,29 @@
         "@workspace/content": "workspace:*",
         "@workspace/identity": "workspace:*",
         "@workspace/learning": "workspace:*",
+        "@workspace/typescript-config": "workspace:*",
+        "@workspace/writing": "workspace:*",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/modules/writing": {
+      "name": "@workspace/writing",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hono/zod-openapi": "catalog:",
+        "@workspace/auth": "workspace:*",
+        "@workspace/contracts": "workspace:*",
+        "@workspace/db": "workspace:*",
+        "@workspace/http-platform": "workspace:*",
+        "@workspace/kernel": "workspace:*",
+        "@workspace/types": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@workspace/identity": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
         "typescript": "catalog:",
         "vitest": "catalog:",
@@ -1482,6 +1506,8 @@
     "@workspace/vitest-config": ["@workspace/vitest-config@workspace:packages/config/vitest-config"],
 
     "@workspace/web": ["@workspace/web@workspace:apps/web"],
+
+    "@workspace/writing": ["@workspace/writing@workspace:packages/modules/writing"],
 
     "accepts": ["accepts@1.3.8", "", { "dependencies": { "mime-types": "~2.1.34", "negotiator": "0.6.3" } }, "sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw=="],
 

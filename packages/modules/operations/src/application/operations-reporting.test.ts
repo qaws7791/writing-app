@@ -100,6 +100,18 @@ function createRepository() {
           percentage: null,
           status: "empty" as const,
         },
+        writingRevisionAfterSelfCheckRate: {
+          denominator: 0,
+          numerator: 0,
+          percentage: null,
+          status: "empty" as const,
+        },
+        writingSelfCheckStartRate: {
+          denominator: 0,
+          numerator: 0,
+          percentage: null,
+          status: "empty" as const,
+        },
       },
     })),
     readLessonAnalytics: vi.fn((input) => ({

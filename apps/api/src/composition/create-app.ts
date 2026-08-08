@@ -11,6 +11,7 @@ import { registerLearningRoutes } from "@workspace/learning/http"
 import { createRequestLogger } from "@workspace/observability/request-logger"
 import { createSecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 import { registerOperationsRoutes } from "@workspace/operations/http"
+import { registerWritingRoutes } from "@workspace/writing/http"
 
 import { registerAdminFoundationRoutes } from "@/http/admin-foundation.routes"
 import type { AdminHonoEnv } from "@/http/admin-hono-env"
@@ -34,6 +35,7 @@ export type LearnerContractRouteDependencies = Readonly<{
   health: ApiHealthProbe
   identity: Parameters<typeof registerLearnerIdentityRoutes>[1]
   learning: Parameters<typeof registerLearningRoutes>[1]
+  writing: Parameters<typeof registerWritingRoutes>[1]
 }>
 
 export type AdminContractRouteDependencies = Readonly<{
@@ -76,6 +78,10 @@ export function createApp(container: ApiContainer) {
       application: container.modules.learning.application,
       cursor: container.modules.learning.cursor,
       session: container.learner.learningSession,
+    },
+    writing: {
+      application: container.modules.writing.application,
+      session: container.learner.writingSession,
     },
   })
   registerAuthProxy(learner, container.learner.authHandler)
@@ -141,6 +147,7 @@ export function registerLearnerContractRoutes(
   registerHealthRoutes(app, dependencies.health)
   registerLearnerIdentityRoutes(app, dependencies.identity)
   registerLearningRoutes(app, dependencies.learning)
+  registerWritingRoutes(app, dependencies.writing)
 }
 
 export function registerAdminContractRoutes(

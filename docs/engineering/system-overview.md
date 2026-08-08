@@ -14,12 +14,13 @@
 - content module은 draft 편집, immutable published revision, 발행·보관과 콘텐츠 schema·seed를 함께 소유한다.
 - ai-feedback module은 coaching prompt, provider 응답 검증, 완료 attempt 제한과 기록, module-local provider adapter를 소유하고 HTTP interface는 두지 않는다. API composition은 learning의 저장 답안 문맥·진행 전이와 ai-feedback application port를 연결하며 어느 쪽도 상대 table을 읽지 않는다.
 - learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 AI 코칭 단계를 포함한 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query, identity의 상태 query와 ai-feedback application port는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
+- writing module은 레슨과 독립된 글의 생성·조회·version 저장·자기 점검·삭제, 원문 없는 쓰기 event와 학습자 HTTP interface를 소유한다. 다른 module table을 직접 읽지 않는다.
 - operations module은 대시보드·분석용 읽기 전용 reporting과 관리자 HTTP interface를 소유한다. reporting SQL은 같은 SQLite의 여러 module table을 join할 수 있지만 다른 module의 command나 repository를 대신하지 않는다.
 - 외부 provider SDK, logger와 DB runtime 구현은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다. HTTP framework의 공통 app·middleware·error·security 구현은 http-platform infra가 소유하되, endpoint를 소유하는 module interface는 공개 platform helper와 필요한 Hono route type을 사용한다. API composition은 module route와 실행 경계 route를 최종 app에 등록한다.
 - 각 module과 auth infra는 자기 최종 Drizzle schema를 소유하고, 실제 seed가 있는 경계만 seed provider를 공개한다. API SQL이 유일한 migration 계보를 소유하고 schema·seed 실행을 조립한다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.
-- API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, 외부 I/O와 `content`, `learning`, `identity`, `ai-feedback`, `operations` 다섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
+- API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, 외부 I/O와 `content`, `learning`, `writing`, `identity`, `ai-feedback`, `operations` 여섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
 - API 종료는 신규 요청 차단과 진행 응답 drain 뒤 `container.dispose()`에 resource 정리를 위임한다. container는 AI, DB, logger를 역순으로 정리하고 각 실패를 격리하며 signal 중복 수신은 같은 종료 작업으로 수렴시킨다.
 
 ## 의존성 판단

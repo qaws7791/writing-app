@@ -42,6 +42,7 @@
     "@workspace/operations": "workspace:*",
     "@workspace/storage": "workspace:*",
     "@workspace/types": "workspace:*",
+    "@workspace/writing": "workspace:*",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "sharp": "catalog:",

@@ -67,6 +67,60 @@ test("작성 중인 서버 초안을 새로고침 뒤 복구한다", async ({ pa
   await expect(page.getByRole("textbox")).toHaveValue("PR 새로고침 복구 초안")
 })
 
+test("학습자가 글을 쓰고 다시 다듬은 뒤 자기 점검을 마친다", async ({
+  page,
+}, testInfo) => {
+  const title = `${testInfo.project.name} 자기 점검 글`
+  const draft = "처음 쓴 문장입니다."
+  const revision = "세 가지 질문으로 다시 읽고 다듬은 문장입니다."
+  await loginLearner(page, "/app/writing")
+
+  await expect(page.getByRole("link", { name: "쓰기" })).toHaveAttribute(
+    "aria-current",
+    "page"
+  )
+  await page.getByRole("button", { name: "새 글 쓰기" }).click()
+  await page.getByRole("button", { name: /자유롭게 쓰기/ }).click()
+  await expect(page).toHaveURL(/\/app\/writing\/[^/]+$/u)
+
+  const titleInput = page.getByLabel("제목")
+  const bodyInput = page.getByLabel("본문")
+  await titleInput.fill(title)
+  const firstSave = page.waitForResponse(
+    (response) =>
+      response.request().method() === "PUT" &&
+      /\/api\/writings\/[^/]+$/u.test(new URL(response.url()).pathname) &&
+      response.ok()
+  )
+  await bodyInput.fill(draft)
+  await bodyInput.blur()
+  await firstSave
+  await expect(page.getByRole("status")).toHaveText("저장됨")
+
+  await page.getByRole("button", { name: "글 점검하기" }).click()
+  await expect(page).toHaveURL(/\/self-check$/u)
+  await expect(page.getByText("한 가지 중심이 보이는가?")).toBeVisible()
+  await page.getByRole("link", { name: "다시 다듬기" }).click()
+
+  const revisionSave = page.waitForResponse(
+    (response) =>
+      response.request().method() === "PUT" &&
+      /\/api\/writings\/[^/]+$/u.test(new URL(response.url()).pathname) &&
+      response.ok()
+  )
+  await page.getByLabel("본문").fill(revision)
+  await page.getByLabel("본문").blur()
+  await revisionSave
+
+  await page.getByRole("button", { name: "글 점검하기" }).click()
+  await page.getByRole("button", { name: "점검 마치기" }).click()
+  await expect(page.getByRole("status")).toHaveText("점검 완료")
+  await page.getByRole("link", { name: "쓰기 홈으로" }).click()
+
+  const savedWriting = page.getByRole("listitem").filter({ hasText: title })
+  await expect(savedWriting).toContainText("점검 완료")
+})
+
 test("owner 관리자가 로그인해 새 코스 초안을 발행한다", async ({ page }) => {
   test.setTimeout(60_000)
   await loginAdmin(page, "owner@example.test", { nextPath: "/courses" })

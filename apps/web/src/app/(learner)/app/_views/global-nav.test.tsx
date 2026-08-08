@@ -58,9 +58,22 @@ describe("전역 내비게이션", () => {
       "aria-current",
       "page"
     )
+    expect(screen.getByRole("link", { name: "쓰기" })).toHaveAttribute(
+      "href",
+      "/app/writing"
+    )
     expect(screen.getByRole("link", { name: "프로필" })).toHaveAttribute(
       "href",
       "/app/profile"
+    )
+  })
+
+  it("쓰기 홈에서 쓰기 링크를 현재 페이지로 표시한다", () => {
+    render(<MobileNav currentPath="/app/writing" />)
+
+    expect(screen.getByRole("link", { name: "쓰기" })).toHaveAttribute(
+      "aria-current",
+      "page"
     )
   })
 })

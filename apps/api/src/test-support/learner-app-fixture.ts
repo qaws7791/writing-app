@@ -147,6 +147,32 @@ export function createTestLearnerApp(
       ),
       session: learningSession,
     },
+    writing: {
+      application: {
+        async completeSelfCheck() {
+          throw new Error("Unexpected test fixture call: completeSelfCheck")
+        },
+        async create() {
+          throw new Error("Unexpected test fixture call: createWriting")
+        },
+        async delete() {
+          throw new Error("Unexpected test fixture call: deleteWriting")
+        },
+        async get() {
+          throw new Error("Unexpected test fixture call: getWriting")
+        },
+        async list() {
+          return []
+        },
+        async save() {
+          throw new Error("Unexpected test fixture call: saveWriting")
+        },
+        async startSelfCheck() {
+          throw new Error("Unexpected test fixture call: startSelfCheck")
+        },
+      },
+      session: learningSession,
+    },
   })
   registerAuthProxy(app, input.authHandler)
   registerLearnerApiDocumentation(app, { enabled: true })

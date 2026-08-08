@@ -35,6 +35,7 @@
 | [US-LRN-9](./platform/us-lrn-9-understand-product-before-login.md) | 로그인 전 제품 이해      | 학습자    | `REQ-LRN-8`   | `SCR-001`                       | 기준 |
 | [US-LRN-10](./platform/us-lrn-10-navigate-learner-app.md)          | 학습자 앱 주요 화면 이동 | 학습자    | `REQ-LRN-9`   | `SCR-003`, `SCR-004`, `SCR-007` | 기준 |
 | [US-LRN-11](./platform/us-lrn-11-solve-checkable-activities.md)    | 정답 확인형 활동 풀이    | 학습자    | `REQ-LRN-10`  | `SCR-006`                       | 기준 |
+| [US-LRN-12](./platform/us-lrn-12-write-and-self-check.md)          | 글 작성과 자기 점검      | 학습자    | `REQ-LRN-11`  | `SCR-008`, `SCR-009`, `SCR-010` | 기준 |
 
 ## 어드민
 

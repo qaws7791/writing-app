@@ -15,6 +15,7 @@
       "#learning/*": ["../../packages/modules/learning/src/*"],
       "#observability/*": ["../../packages/infra/observability/src/*"],
       "#operations/*": ["../../packages/modules/operations/src/*"],
+      "#writing/*": ["../../packages/modules/writing/src/*"],
       "@/*": ["./src/*"]
     },
     "types": ["bun"]

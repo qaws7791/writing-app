@@ -37,7 +37,8 @@
     "./operations/admin-analytics": "./src/operations/admin-analytics.ts",
     "./operations/admin-audit": "./src/operations/admin-audit.ts",
     "./operations/admin-dashboard": "./src/operations/admin-dashboard.ts",
-    "./operations/analytics-query": "./src/operations/analytics-query.ts"
+    "./operations/analytics-query": "./src/operations/analytics-query.ts",
+    "./writing/writing": "./src/writing/writing.ts"
   },
   "scripts": {
     "lint": "oxlint .",

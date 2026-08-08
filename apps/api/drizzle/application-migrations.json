@@ -16,5 +16,11 @@
     "fileName": "0002-audit-events-course-restore.sql",
     "foreignKeys": "on",
     "id": "0002-audit-events-course-restore"
+  },
+  {
+    "checksum": "87bcf8cc32360052a0982d4a5e72c4a5d50349ee953b0fabbe8613a527611432",
+    "fileName": "0003-focused-writing.sql",
+    "foreignKeys": "on",
+    "id": "0003-focused-writing"
   }
 ]

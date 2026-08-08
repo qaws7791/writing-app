@@ -2,6 +2,7 @@ const globalNavRoutePaths = {
   home: "/app",
   learn: "/app/courses",
   profile: "/app/profile",
+  writing: "/app/writing",
 } as const
 
 export type GlobalNavRouteKey = keyof typeof globalNavRoutePaths
@@ -22,6 +23,11 @@ export const globalNavPrimaryItems = [
     key: "learn",
     label: "배우기",
   },
+  {
+    href: globalNavRoutePaths.writing,
+    key: "writing",
+    label: "쓰기",
+  },
 ] as const
 
 export const globalNavMobileItems = [
@@ -34,6 +40,11 @@ export const globalNavMobileItems = [
     href: globalNavRoutePaths.learn,
     key: "learn",
     label: "배우기",
+  },
+  {
+    href: globalNavRoutePaths.writing,
+    key: "writing",
+    label: "쓰기",
   },
   {
     href: globalNavRoutePaths.profile,
@@ -63,6 +74,13 @@ export function isGlobalNavRouteActive(
     return (
       pathname === globalNavRoutePaths.learn ||
       pathname.startsWith(`${globalNavRoutePaths.learn}/`)
+    )
+  }
+
+  if (key === "writing") {
+    return (
+      pathname === globalNavRoutePaths.writing ||
+      pathname.startsWith(`${globalNavRoutePaths.writing}/`)
     )
   }
 

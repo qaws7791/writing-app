@@ -19,11 +19,13 @@ describe("application migration", () => {
         { execution: "applied", id: currentSchemaBaseline.id },
         { execution: "applied", id: "0001-reporting-views" },
         { execution: "applied", id: "0002-audit-events-course-restore" },
+        { execution: "applied", id: "0003-focused-writing" },
       ])
       expect(runApplicationMigrations(client.sqlite)).toEqual([
         { execution: "skipped", id: currentSchemaBaseline.id },
         { execution: "skipped", id: "0001-reporting-views" },
         { execution: "skipped", id: "0002-audit-events-course-restore" },
+        { execution: "skipped", id: "0003-focused-writing" },
       ])
       expect(
         client.sqlite
@@ -121,6 +123,7 @@ describe("application migration", () => {
         { execution: "skipped", id: currentSchemaBaseline.id },
         { execution: "skipped", id: "0001-reporting-views" },
         { execution: "applied", id: "0002-audit-events-course-restore" },
+        { execution: "applied", id: "0003-focused-writing" },
       ])
 
       insertAuditEvent(client, {

@@ -35,6 +35,7 @@
     "@workspace/identity": "workspace:*",
     "@workspace/learning": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "@workspace/writing": "workspace:*",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

@@ -4,6 +4,7 @@ import Link from "next/link"
 
 import {
   BookOpenIcon,
+  FileTextIcon,
   HomeIcon,
   UserIcon,
 } from "@workspace/ui/components/icons"
@@ -13,7 +14,6 @@ import {
   useGlobalNavCurrentPath,
 } from "@/app/(learner)/app/_views/global-nav-current-path"
 import {
-  type GlobalNavRouteKey,
   globalNavMobileItems,
   isGlobalNavRouteActive,
 } from "@/app/(learner)/app/_views/global-nav-routes"
@@ -23,7 +23,8 @@ const mobileNavIcons = {
   home: HomeIcon,
   learn: BookOpenIcon,
   profile: UserIcon,
-} as const satisfies Record<GlobalNavRouteKey, typeof HomeIcon>
+  writing: FileTextIcon,
+} as const
 
 export function MobileNav({ currentPath }: GlobalNavPathProps) {
   const pathname = useGlobalNavCurrentPath(currentPath)

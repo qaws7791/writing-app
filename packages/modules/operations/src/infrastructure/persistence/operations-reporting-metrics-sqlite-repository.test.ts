@@ -14,6 +14,7 @@ import { runCurrentTestMigration } from "@workspace/db/test-support/application-
 import type { WritingAppSqlite } from "@workspace/db/test-support/sqlite-types"
 import { aLearner } from "@workspace/identity/test-fixtures"
 import { aLearnerWithProgress } from "@workspace/learning/test-fixtures"
+import { aWriting } from "@workspace/writing/test-fixtures"
 
 import { createOperationsReportingQueries } from "#operations/application/operations-reporting"
 import { createSqliteOperationsReportingRepository } from "#operations/infrastructure/persistence/operations-reporting-sqlite-repository"
@@ -49,6 +50,18 @@ describe("operations reporting SQL metrics", () => {
             percentage: 50,
             status: "available",
           },
+          writingRevisionAfterSelfCheckRate: {
+            denominator: 2,
+            numerator: 1,
+            percentage: 50,
+            status: "available",
+          },
+          writingSelfCheckStartRate: {
+            denominator: 3,
+            numerator: 2,
+            percentage: 66.7,
+            status: "available",
+          },
         },
       })
     } finally {
@@ -74,6 +87,18 @@ describe("operations reporting SQL metrics", () => {
       expect(result.value.metrics.d7ReturnRate).toEqual({
         denominator: 0,
         matureCohortThrough: "2026-07-16",
+        numerator: 0,
+        percentage: null,
+        status: "empty",
+      })
+      expect(result.value.metrics.writingSelfCheckStartRate).toEqual({
+        denominator: 0,
+        numerator: 0,
+        percentage: null,
+        status: "empty",
+      })
+      expect(result.value.metrics.writingRevisionAfterSelfCheckRate).toEqual({
+        denominator: 0,
         numerator: 0,
         percentage: null,
         status: "empty",
@@ -381,6 +406,31 @@ function seedDashboardCohort(sqlite: WritingAppSqlite): void {
     course,
     startedAt: Date.parse("2026-07-10T11:00:00+09:00"),
     status: "completed",
+    userId: "learner-d",
+  })
+
+  aWriting(sqlite, {
+    eventTypes: [
+      "writing_created",
+      "self_check_started",
+      "revised_after_self_check",
+    ],
+    id: "writing-a",
+    userId: "learner-a",
+  })
+  aWriting(sqlite, {
+    eventTypes: ["writing_created", "self_check_started"],
+    id: "writing-b",
+    userId: "learner-b",
+  })
+  aWriting(sqlite, { id: "writing-c", userId: "learner-c" })
+  aWriting(sqlite, {
+    eventTypes: [
+      "writing_created",
+      "self_check_started",
+      "revised_after_self_check",
+    ],
+    id: "writing-deleted-learner",
     userId: "learner-d",
   })
 }

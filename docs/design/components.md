@@ -238,7 +238,7 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - 배경은 `bg-background`, 텍스트는 `text-foreground`.
 - 데스크톱 상단 `GlobalNav`와 모바일 하단 `MobileNav`를 포함한다.
 - 본문은 `max-w-6xl`, `px-4 md:px-12`, `pb-24`를 사용한다.
-- `/app/lesson`은 몰입형 route group으로 분리되어 `AppShell`을 사용하지 않는다.
+- 레슨, 글 편집과 자기 점검은 몰입형 route group으로 분리되어 `AppShell`을 사용하지 않는다.
 
 ### GlobalNav와 MobileNav
 
@@ -252,9 +252,10 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - `apps/web/src/app/(learner)/app/_views/mobile-nav.tsx`: 모바일 하단 nav
 
 - 상단 브랜드는 `글결.`이다.
-- `홈`, `배우기`, `프로필`의 활성 상태는 `aria-current="page"`로 표시한다.
+- `홈`, `배우기`, `쓰기`, `프로필`의 활성 상태는 `aria-current="page"`로 표시한다.
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
+- 쓰기 홈에서는 `쓰기`가 활성화된다.
 - 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
 - 이모지만 표시하는 계정 메뉴 trigger의 접근성 이름은 `계정 메뉴`로 제공한다.
 - 계정 메뉴 드롭다운은 `bg-elevated`, `border-border`, `rounded-4xl`, `w-48`, `p-4`를 쓰고 그림자는 없다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
@@ -271,6 +272,16 @@ legacy admin 디자인 class, 앱 inline typography style와 미정의 semantic 
 - 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다. 기본 CTA는 cream gradient footer를 사용하고, 정답/오답 피드백은 상단 gradient와 색상 구분선 뒤에 `correct` 또는 `wrong` 버튼을 배치한다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant, 취소는 `secondary`다.
 - 선택형 레슨 UI는 `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 전용 lesson 컴포넌트를 사용하고 markdown 본문은 내부 `MarkdownContent`에서 렌더링한다.
+
+### WritingFocusShell
+
+구현 위치: `apps/web/src/features/focused-writing/ui/writing-focus-shell.tsx`
+
+- 전체 viewport를 사용하는 한 열 집중 shell이다.
+- 글로벌 내비게이션, 도구 모음과 사이드바를 포함하지 않는다.
+- 상단에는 현재 단계의 최소 문맥과 상태만 둔다.
+- 중앙에는 편집 form 또는 자기 점검 내용을 둔다.
+- 하단 주요 행동은 모바일 safe area를 반영한다.
 
 ### CompareStepView 및 레슨 콜아웃
 
