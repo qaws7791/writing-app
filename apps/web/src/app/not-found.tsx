@@ -10,25 +10,22 @@ export default function NotFound() {
   const isAppPage = pathname?.startsWith("/app")
 
   const redirectHref = isAppPage ? "/app" : "/"
-  const redirectLabel = isAppPage ? "대시보드로 돌아가기" : "홈으로 돌아가기"
+  const redirectLabel = isAppPage ? "학습 홈으로 돌아가기" : "홈으로 돌아가기"
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-12 text-center text-foreground">
-      <div className="mb-6 text-[3.5rem]">🌌</div>
-      <h1 className="mb-4 text-[1.75rem] font-black text-foreground">
+    <main className="flex min-h-svh flex-col items-center justify-center bg-background px-5 py-12 text-center text-foreground">
+      <h1 className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance">
         페이지를 찾을 수 없어요
       </h1>
-      <p className="mb-8 text-[1.125rem] font-medium text-muted-foreground">
+      <p className="mt-4 max-w-sm text-base leading-7 text-pretty text-muted-foreground">
         요청하신 페이지가 존재하지 않거나 삭제되었습니다.
       </p>
-      <div className="w-64">
-        <Link
-          href={redirectHref}
-          className={buttonVariants({ size: "lg", className: "w-full" })}
-        >
-          {redirectLabel}
-        </Link>
-      </div>
+      <Link
+        className={buttonVariants({ className: "mt-8 min-w-56", size: "lg" })}
+        href={redirectHref}
+      >
+        {redirectLabel}
+      </Link>
     </main>
   )
 }

@@ -38,6 +38,20 @@ test.describe("실행 가능한 디자인 시스템 문서", () => {
   }
 });
 
+test("Separator는 방향에 맞는 1px 두께를 유지한다", async ({ page }) => {
+  await page.goto("/preview/components/separator/separator-basic");
+
+  await expect(page.locator('[data-slot="separator"][data-orientation="horizontal"]')).toHaveCSS(
+    "height",
+    "1px",
+  );
+
+  await page.goto("/preview/components/separator/separator-vertical");
+  await expect(
+    page.locator('[data-slot="separator"][data-orientation="vertical"]').first(),
+  ).toHaveCSS("width", "1px");
+});
+
 test.describe("Keyboard와 상태 전이", () => {
   test("accordion을 펼친다", async ({ page }) => {
     await page.goto("/preview/interactions/accordion");

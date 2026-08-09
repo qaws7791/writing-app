@@ -95,7 +95,7 @@ export function CourseCatalogClient({
         <>
           <div
             aria-label="코스 카테고리"
-            className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-2 sm:-mx-8 sm:px-8"
+            className="no-scrollbar -mx-5 mb-8 flex gap-2 overflow-x-auto overscroll-x-contain px-5 pb-2 sm:-mx-8 sm:px-8"
             role="group"
           >
             {["", ...categories].map((category) => (
