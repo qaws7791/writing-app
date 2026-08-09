@@ -41,7 +41,6 @@ export type CompleteStepSnapshot =
       readonly courseCompletionLessonIds: readonly LessonId[]
       readonly hasSavedAnswer: boolean
       readonly kind: "lesson"
-      readonly orderedLessonIds: readonly LessonId[]
       readonly progress: LessonProgressSnapshot
       readonly scope: LearnerLessonScope
       readonly steps: readonly LearningStep[]
@@ -145,10 +144,6 @@ function createCompleteStepPlan(
       command
     )
   }
-  if (!isLessonUnlocked(snapshot)) {
-    return reject("lesson-locked", command)
-  }
-
   const requestedStepIndex = snapshot.steps.findIndex(
     (step) => step.id === command.stepId
   )
@@ -332,17 +327,6 @@ function createActivityEffect(
     savedAnswers: input.answerWasSaved ? 1 : 0,
     userId: command.userId,
   }
-}
-
-function isLessonUnlocked(
-  snapshot: Extract<CompleteStepSnapshot, { readonly kind: "lesson" }>
-): boolean {
-  const lessonIndex = snapshot.orderedLessonIds.indexOf(snapshot.scope.lessonId)
-  if (lessonIndex < 0) return false
-  const completedLessonIds = new Set(snapshot.completedLessonIds)
-  return snapshot.orderedLessonIds
-    .slice(0, lessonIndex)
-    .every((lessonId) => completedLessonIds.has(lessonId))
 }
 
 function shouldCompleteCourse(

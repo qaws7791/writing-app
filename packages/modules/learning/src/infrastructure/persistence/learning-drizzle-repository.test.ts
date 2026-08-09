@@ -248,6 +248,48 @@ describe("learning SQLite repositories", () => {
     })
   })
 
+  it("선행 lesson 완료 없이 뒤 lesson을 시작하고 완료한다", async () => {
+    await withLearningDatabase(async (fixture) => {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      const lessonBeforeStart = await createReadRepository(fixture).findLesson({
+        lessonId: secondLessonId,
+        userId: learnerId,
+      })
+      const started = await repository.startLesson(
+        {
+          expectedCurriculumVersionId: curriculumVersionId,
+          lessonId: secondLessonId,
+          occurredAt,
+          userId: learnerId,
+        },
+        curriculum
+      )
+      const completed = await repository.completeStep(
+        {
+          completion: { kind: "acknowledge" },
+          lessonId: secondLessonId,
+          occurredAt,
+          stepId: secondStepId,
+          userId: learnerId,
+        },
+        curriculum
+      )
+      const course = await createReadRepository(fixture).findCourseDetail({
+        courseId,
+        userId: learnerId,
+      })
+
+      expect(lessonBeforeStart.kind).toBe("found")
+      expect(started.isOk() && started.value.status).toBe("in_progress")
+      expect(completed.isOk() && completed.value.kind).toBe("lesson-completed")
+      expect(
+        course?.units[0]?.lessons.map((lesson) => lesson.learning.status)
+      ).toEqual(["not_started", "completed"])
+    }, curriculum)
+  })
+
   it("저장된 WRITE 답안으로 AI context를 만들고 feedback step을 완료한다", async () => {
     await withLearningDatabase(async (fixture) => {
       const repository = createDrizzleLearnerTransitionRepository(

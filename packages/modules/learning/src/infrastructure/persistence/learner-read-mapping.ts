@@ -172,9 +172,6 @@ export function projectLearnerCourseDetail(
   const progressByLessonId = new Map(
     bundle.lessonProgress.map((progress) => [progress.lessonId, progress])
   )
-  const firstIncompleteLesson = bundle.lessons.find(
-    (lesson) => progressByLessonId.get(lesson.id)?.status !== "completed"
-  )
   const lessonLearning = new Map<string, LessonLearningState>(
     bundle.lessons.map((lesson) => {
       const steps = stepsByLessonId.get(lesson.id) ?? []
@@ -183,7 +180,6 @@ export function projectLearnerCourseDetail(
       return [
         lesson.id,
         projectLearnerLessonLearningState({
-          isFirstIncomplete: lesson.id === firstIncompleteLesson?.id,
           progress,
           steps,
           version,
@@ -231,7 +227,6 @@ export function projectLearnerCourseDetail(
 }
 
 function projectLearnerLessonLearningState(input: {
-  readonly isFirstIncomplete: boolean
   readonly progress: LearnerLessonProgressProjectionRow | undefined
   readonly steps: readonly LearnerCourseProjectionStep[]
   readonly version: CurriculumVersionRef
@@ -245,13 +240,6 @@ function projectLearnerLessonLearningState(input: {
         totalSteps: input.steps.length,
       },
       status: "completed",
-      version: input.version,
-    }
-  }
-
-  if (!input.isFirstIncomplete) {
-    return {
-      status: "locked",
       version: input.version,
     }
   }

@@ -138,12 +138,7 @@ function prepareAiFeedback(
             findCurriculumLesson(curriculum, command.lessonId) !== null,
         }
       : {
-          isUnlocked: isLessonUnlocked(
-            db,
-            command.userId,
-            scope,
-            readOrderedLessons(curriculum)
-          ),
+          isUnlocked: true,
           kind: "lesson",
           progress: toAiFeedbackProgressSnapshot(
             readLessonProgress(db, command.userId, scope)
@@ -218,17 +213,6 @@ function saveStepDraft(
       stepId: command.stepId,
     })
   }
-  if (
-    !isLessonUnlocked(
-      transaction,
-      command.userId,
-      scope,
-      readOrderedLessons(curriculum)
-    )
-  ) {
-    return err({ kind: "lesson-locked", lessonId: command.lessonId })
-  }
-
   const progress = readLessonProgress(transaction, command.userId, scope)
   if (
     progress === null ||
@@ -370,10 +354,9 @@ function loadStartLessonSnapshot(
   const scope = existingScope ?? toLessonScope(curriculum, command.lessonId)
   if (scope === null) return { kind: "lesson-not-found" }
 
-  const lessons = readOrderedLessons(curriculum)
   const progress = readLessonProgress(transaction, command.userId, scope)
   return {
-    isUnlocked: isLessonUnlocked(transaction, command.userId, scope, lessons),
+    isUnlocked: true,
     kind: "lesson",
     progress: progress === null ? { kind: "not-started" } : { kind: "started" },
     scope,
@@ -480,7 +463,6 @@ function loadCompleteStepSnapshot(
     }
   }
 
-  const orderedLessons = readOrderedLessons(curriculum)
   const completedLessonIds = readCompletedLessonIds(
     transaction,
     command.userId,
@@ -492,9 +474,6 @@ function loadCompleteStepSnapshot(
     courseCompletionLessonIds: readCourseCompletionLessonIds(curriculum),
     hasSavedAnswer: hasSavedAnswer(transaction, command, scope),
     kind: "lesson",
-    orderedLessonIds: orderedLessons.map((lesson) =>
-      lessonIdSchema.parse(lesson.id)
-    ),
     progress:
       progress === null
         ? { kind: "not-started" }
@@ -696,11 +675,10 @@ function completeAiFeedbackStep(
     if (decision.kind === "rejected") return err(decision.error)
     throw new Error("Missing lesson scope produced an accepted AI decision")
   }
-  const lessons = readOrderedLessons(curriculum)
   const steps = readLessonSteps(curriculum, scope)
   const progress = readLessonProgress(transaction, command.userId, scope)
   const snapshot: FinalizeAiFeedbackSnapshot = {
-    isUnlocked: isLessonUnlocked(transaction, command.userId, scope, lessons),
+    isUnlocked: true,
     kind: "lesson",
     progress: toAiFeedbackProgressSnapshot(progress),
     steps: toAiFeedbackStepSnapshots(steps),
@@ -930,24 +908,6 @@ function readOrderedLessons(
       id,
       title,
     }))
-}
-
-function isLessonUnlocked(
-  db: TransitionDatabase,
-  userId: string,
-  scope: LessonScope,
-  lessons: readonly OrderedLesson[]
-): boolean {
-  const lessonIndex = lessons.findIndex(
-    (lesson) => lesson.id === scope.lessonId
-  )
-  if (lessonIndex < 0) return false
-  const completedLessonIds = new Set<string>(
-    readCompletedLessonIds(db, userId, scope)
-  )
-  return lessons
-    .slice(0, lessonIndex)
-    .every((lesson) => completedLessonIds.has(lesson.id))
 }
 
 function readCompletedLessonIds(

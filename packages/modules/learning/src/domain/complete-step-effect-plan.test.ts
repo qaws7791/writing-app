@@ -60,7 +60,6 @@ const snapshot = {
   courseCompletionLessonIds: [lessonId, nextLessonId],
   hasSavedAnswer: false,
   kind: "lesson",
-  orderedLessonIds: [lessonId, nextLessonId],
   progress: { currentStepId: choiceStep.id, kind: "in-progress" },
   scope: { courseId, curriculumVersionId, lessonId, revision: 1 },
   steps: [choiceStep, readingStep],
@@ -90,18 +89,15 @@ describe("학습 단계 완료 effect plan", () => {
     })
   })
 
-  it("선행 lesson 미완료는 쓰기 없는 locked plan이다", () => {
+  it("선행 lesson을 완료하지 않아도 현재 lesson step을 수락한다", () => {
     const plan = planCompleteStep(
       createCommand(choiceStep.id, correctCompletion),
-      {
-        ...snapshot,
-        orderedLessonIds: [nextLessonId, lessonId],
-      }
+      snapshot
     )
 
-    expect(plan).toEqual({
-      error: { kind: "lesson-locked", lessonId },
-      kind: "rejected",
+    expect(plan).toMatchObject({
+      evaluation: { correct: true },
+      kind: "accept-step",
     })
   })
 

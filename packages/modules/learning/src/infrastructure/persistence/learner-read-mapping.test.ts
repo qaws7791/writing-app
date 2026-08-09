@@ -73,7 +73,7 @@ describe("learner read page projection", () => {
 })
 
 describe("learner course learning projection", () => {
-  it("완료·진행·잠금 lesson과 course percent·next lesson을 결정한다", () => {
+  it("완료·진행·시작 전 lesson과 course percent·next lesson을 결정한다", () => {
     const course = projectLearnerCourseDetail(
       createCourseProjectionBundle({
         courseProgress: {
@@ -133,7 +133,7 @@ describe("learner course learning projection", () => {
         totalSteps: 2,
         version,
       },
-      { status: "locked", version },
+      { status: "not_started", totalSteps: 1, version },
     ])
   })
 
@@ -153,7 +153,7 @@ describe("learner course learning projection", () => {
     })
     expect(
       course.units[0]?.lessons.map((lesson) => lesson.learning.status)
-    ).toEqual(["not_started", "locked", "locked"])
+    ).toEqual(["not_started", "not_started", "not_started"])
   })
 
   it("completedAt null은 last activity로 대체하고 완료 course는 next lesson이 없다", () => {
