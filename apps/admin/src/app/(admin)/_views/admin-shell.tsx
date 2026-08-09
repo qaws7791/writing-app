@@ -8,6 +8,7 @@ import { useTransition } from "react"
 import { useState } from "react"
 
 import { AdminSidebar } from "@/app/(admin)/_views/admin-sidebar"
+import type { AdminProfile } from "@/app/(admin)/_views/admin-profile-menu"
 import { requestAdminSignOut } from "@/features/authentication/api/admin-auth-client"
 import { adminNavigationItems } from "@/app/(admin)/_views/admin-navigation"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
@@ -20,10 +21,12 @@ const AdminMobileSidebar = dynamic(() =>
 
 export function AdminShell({
   activePath,
+  adminProfile,
   children,
   learnerWebOrigin,
 }: {
   readonly activePath?: string
+  readonly adminProfile: AdminProfile
   readonly children: ReactNode
   readonly learnerWebOrigin: string
 }) {
@@ -37,6 +40,7 @@ export function AdminShell({
     <div className="flex min-h-svh bg-background text-foreground">
       <AdminSidebar
         activePath={currentPath}
+        adminProfile={adminProfile}
         isSigningOut={isPending}
         learnerWebOrigin={learnerWebOrigin}
         navigationItems={adminNavigationItems}
@@ -53,6 +57,7 @@ export function AdminShell({
           </Link>
           <AdminMobileSidebar
             activePath={currentPath}
+            adminProfile={adminProfile}
             isSigningOut={isPending}
             learnerWebOrigin={learnerWebOrigin}
             navigationItems={adminNavigationItems}

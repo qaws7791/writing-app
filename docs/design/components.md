@@ -362,6 +362,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 본문은 `max-w-6xl`, `px-5 md:px-10`, `py-8`을 사용한다.
 - 좁은 화면에서는 고정 사이드바를 숨기고 같은 정보 구조를 modal drawer로 제공한다.
 - 모바일 drawer는 별도 동적 client 경계에서 불러온다.
+- 세션의 관리자 이름과 이메일은 아바타 없이 사이드바 하단 프로필 메뉴 trigger에 표시한다.
 
 ### AdminSidebar
 
@@ -371,8 +372,8 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
 - 아이콘은 `@workspace/ui/components/icons/navigation-icons`에서 가져온다.
 - 활성 링크는 `aria-current="page"`와 `sidebar-primary` 계열 semantic token으로 표시한다.
-- 사이드바와 drawer는 앱 이동과 로그아웃을 동일하게 제공한다.
-- 어드민 테마는 운영체제의 라이트 또는 다크 설정을 따른다.
+- 사이드바와 drawer는 같은 프로필 메뉴를 제공한다.
+- 프로필 메뉴는 앱 이동, 시스템·라이트·다크 테마 선택과 어드민 로그아웃을 제공한다.
 
 ### Admin Page Header
 

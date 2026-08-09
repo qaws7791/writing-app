@@ -47,7 +47,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <AdminShell learnerWebOrigin={readLearnerWebOrigin()}>
+    <AdminShell
+      adminProfile={{
+        email: sessionResult.value.admin.email,
+        name: sessionResult.value.admin.name,
+      }}
+      learnerWebOrigin={readLearnerWebOrigin()}
+    >
       {children}
     </AdminShell>
   )
