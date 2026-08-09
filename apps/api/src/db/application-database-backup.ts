@@ -34,7 +34,7 @@ export function createVerifiedApplicationDatabaseBackup(input: {
   })
 }
 
-function resolveApplicationDatabasePath(databaseUrl: string): string {
+export function resolveApplicationDatabasePath(databaseUrl: string): string {
   if (databaseUrl.startsWith("file://")) {
     return fileURLToPath(databaseUrl)
   }

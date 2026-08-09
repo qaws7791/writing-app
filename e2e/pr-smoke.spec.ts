@@ -27,7 +27,7 @@ test("학습자가 로그인해 핵심 레슨을 완료한다", async ({ page })
   await expect(startButton).toBeEnabled()
   await startButton.click()
 
-  await page.getByRole("button", { name: "서버가 채점한다" }).click()
+  await page.getByRole("radio", { name: "서버가 채점한다" }).click()
   await page.getByRole("button", { name: "확인하기" }).click()
   await page.getByRole("button", { name: "계속하기" }).click()
   await page

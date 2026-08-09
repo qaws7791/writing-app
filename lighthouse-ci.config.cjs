@@ -2,6 +2,7 @@
 
 const learnerCookie = readRequiredEnvironment("LIGHTHOUSE_AUTH_COOKIE")
 const chromePath = readRequiredEnvironment("LIGHTHOUSE_CHROME_PATH")
+const chromePort = readOptionalPort("LIGHTHOUSE_CHROME_PORT")
 
 module.exports = {
   ci: {
@@ -29,6 +30,7 @@ module.exports = {
       chromePath,
       numberOfRuns: 3,
       settings: {
+        ...(chromePort === undefined ? {} : { port: chromePort }),
         extraHeaders: JSON.stringify({ Cookie: learnerCookie }),
         onlyCategories: ["performance"],
       },
@@ -53,4 +55,16 @@ function readRequiredEnvironment(name) {
   }
 
   return value
+}
+
+function readOptionalPort(name) {
+  const value = process.env[name]?.trim()
+  if (value === undefined || value.length === 0) return undefined
+
+  const port = Number(value)
+  if (!Number.isInteger(port) || port < 1 || port > 65_535) {
+    throw new Error(`${name} 환경 변수는 1부터 65535까지의 정수여야 합니다.`)
+  }
+
+  return port
 }

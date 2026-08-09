@@ -1,8 +1,8 @@
-import { mkdtemp, rm } from "node:fs/promises"
+import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
 import { createWritingAppDatabase } from "@workspace/db/client"
 import { err } from "@workspace/kernel/result"
@@ -69,29 +69,90 @@ describe("API container", () => {
     expect(container.health.isDatabaseReady()).toBe(false)
     await expect(container.dispose()).resolves.toBeUndefined()
   })
+
+  it("development email 인증 링크를 local mailbox에 전달한다", async () => {
+    const stdout = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true)
+    const mailboxDirectory = await createTemporaryDirectory(
+      "writing-app-local-auth-mailbox-"
+    )
+    const mailboxPath = join(mailboxDirectory, "auth-email.json")
+
+    try {
+      const container = await openContainer({
+        localAuthMailboxPath: mailboxPath,
+        nodeEnvironment: "development",
+      })
+      const app = createApp(container)
+      const response = await app.unified.fetch(
+        new Request("http://localhost:4000/api/auth/sign-up/email", {
+          body: JSON.stringify({
+            callbackURL: "http://localhost:3000/login?verified=true",
+            email: "local-learner@example.com",
+            name: "로컬 학습자",
+            password: "Local-learner-password-123!",
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Host: "localhost:4000",
+            Origin: "http://localhost:3000",
+            "X-Writing-App-Client-IP": "127.0.0.42",
+          },
+          method: "POST",
+        })
+      )
+
+      expect(response.status).toBe(200)
+      expect(stdout).toHaveBeenCalledWith(
+        `[local auth] 인증 메일 파일: ${mailboxPath}\n`
+      )
+      await expect(readFile(mailboxPath, "utf8")).resolves.toMatch(
+        /"callbackUrl": ".*\/api\/auth\/verify-email\?token=/u
+      )
+    } finally {
+      stdout.mockRestore()
+    }
+  })
 })
 
-async function openContainer(): Promise<ApiContainer> {
-  const directory = await mkdtemp(join(tmpdir(), "writing-app-api-container-"))
-  temporaryDirectories.push(directory)
+async function openContainer(
+  options: Readonly<{
+    localAuthMailboxPath?: string
+    nodeEnvironment?: "development" | "test"
+  }> = {}
+): Promise<ApiContainer> {
+  const directory = await createTemporaryDirectory("writing-app-api-container-")
   const databasePath = join(directory, "api.sqlite")
   const migrationDatabase = createWritingAppDatabase(databasePath)
   migrationDatabase.close()
   let sequence = 0
   const container = await createContainer(
-    parseApiEnv(createTestEnvironment(databasePath)),
+    parseApiEnv(
+      createTestEnvironment(databasePath, options.nodeEnvironment ?? "test")
+    ),
     {
       aiFeedbackProvider: unavailableAiFeedbackProvider,
       clock: { now: () => new Date("2026-07-23T00:00:00.000Z") },
       idGenerator: { next: () => `test-id-${++sequence}` },
+      ...(options.localAuthMailboxPath === undefined
+        ? {}
+        : { localAuthMailboxPath: options.localAuthMailboxPath }),
     }
   )
   openedContainers.push(container)
   return container
 }
 
+async function createTemporaryDirectory(prefix: string): Promise<string> {
+  const directory = await mkdtemp(join(tmpdir(), prefix))
+  temporaryDirectories.push(directory)
+  return directory
+}
+
 function createTestEnvironment(
-  databasePath: string
+  databasePath: string,
+  nodeEnvironment: "development" | "test"
 ): Record<string, string | undefined> {
   return {
     ADMIN_AUTH_SECRET: "admin-test-secret-0123456789abcdef",
@@ -100,7 +161,7 @@ function createTestEnvironment(
     DATABASE_URL: databasePath,
     LEARNER_AUTH_SECRET: "learner-test-secret-0123456789abcdef",
     LOG_LEVEL: "silent",
-    NODE_ENV: "test",
+    NODE_ENV: nodeEnvironment,
     WEB_ORIGIN: "http://localhost:3000",
   }
 }

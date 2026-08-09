@@ -10,6 +10,8 @@ TypeScript compiler CLI는 native TypeScript 7 package가 소유한다. TypeScri
 
 dependency audit는 HIGH 이상을 예외 없이 차단하는 상태를 기본으로 한다. 수정 버전이 없어 예외가 불가피하다면 advisory와 package, 실제 도달 경로, 완화 근거, owner, 만료일과 제거 조건을 실행 가능한 정책 source에 먼저 기록해야 하며 명령문에 `--ignore`를 직접 추가하지 않는다.
 
+[정기 security maintenance workflow](../../.github/workflows/security-maintenance.yml)는 매일 전체 dependency audit와 image 취약점 예외 정책을 검사한다. 예외 만료 14일 전부터 workflow log에 owner, advisory와 남은 일수를 경고한다. 만료된 예외는 검사 실패로 처리한다.
+
 내부 package는 `workspace:*`를 사용하고 source가 import하는 runtime·test·build dependency를 해당 manifest에 직접 선언한다. package manager가 catalog와 workspace reference를 해석하고, architecture 검사가 source import에 대응하는 manifest 선언 누락을 차단한다.
 
 ## 디자인·lint 기준

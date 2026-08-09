@@ -6,6 +6,7 @@ import { learnerWebOrigin, loginLearner } from "#e2e/auth"
 
 test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복구한다", async ({
   browser,
+  e2eClientHeaders,
   page,
 }, testInfo) => {
   test.setTimeout(90_000)
@@ -47,7 +48,9 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
   await page.reload()
   await expect(page.getByRole("textbox")).toHaveValue(firstDraft)
 
-  const otherDevice = await browser.newContext()
+  const otherDevice = await browser.newContext({
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const otherDeviceDiagnostics = observeBrowserContext(otherDevice)
   const otherDevicePage = await otherDevice.newPage()
   await loginLearner(otherDevicePage, lessonPath)
@@ -98,10 +101,13 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
 
 test("debounce가 끝나기 전에 탭을 닫아도 초안을 잃지 않는다", async ({
   browser,
+  e2eClientHeaders,
 }, testInfo) => {
   const lessonPath = "/app/lesson?lesson_id=e2e-unload-draft-lesson"
   const draft = `${testInfo.project.name} 탭 종료 직전 초안`
-  const context = await browser.newContext()
+  const context = await browser.newContext({
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const diagnostics = observeBrowserContext(context)
   const page = await context.newPage()
   await loginLearner(page, lessonPath)

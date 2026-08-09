@@ -40,6 +40,7 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 const nextConfig: NextConfig = {
   experimental: {
     cpus: 1,
+    useTypeScriptCli: false,
     serverActions: {
       // 파일 상한은 API가 검증하고, 이 경계는 multipart 메타데이터 여유만 둔다.
       bodySizeLimit: contentAssetServerActionBodyLimit,

@@ -1,3 +1,7 @@
+import { mkdirSync, writeFileSync } from "node:fs"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
 import type { AiFeedbackModule } from "@workspace/ai-feedback/module"
 import type {
   AiFeedbackAttemptTransition,
@@ -9,7 +13,10 @@ import {
   type AdminAuthRuntime,
 } from "@workspace/auth/admin/server"
 import type { AuthEmailDeliveryPort } from "@workspace/auth/email/delivery"
-import { createInMemoryAuthEmailDelivery } from "@workspace/auth/email/in-memory"
+import {
+  createInMemoryAuthEmailDelivery,
+  type InMemoryAuthEmailDeliveryRecord,
+} from "@workspace/auth/email/in-memory"
 import { createResendAuthEmailDelivery } from "@workspace/auth/email/resend"
 import {
   createLearnerAuthRuntime,
@@ -77,6 +84,10 @@ import {
   createS3DeletionMarkerStore,
 } from "@/adapters/identity/deletion-marker-store"
 
+const defaultLocalAuthMailboxPath = fileURLToPath(
+  new URL("../../../../data/local-auth-email.json", import.meta.url)
+)
+
 export type ApiContainer = Readonly<{
   admin: Readonly<{
     authHandler: AdminAuthRuntime["authHandler"]
@@ -112,6 +123,7 @@ export type CreateContainerOptions = Readonly<{
   clock?: Clock
   contentAssetStorage?: ContentAssetStoragePort
   idGenerator?: IdGenerator<string>
+  localAuthMailboxPath?: string
   onAiFeedbackAttemptTransition?: (event: AiFeedbackAttemptTransition) => void
   onAiFeedbackUsage?: (event: AiFeedbackUsageEvent) => void
 }>
@@ -229,7 +241,11 @@ export async function createContainer(
     const learnerAuth = createLearnerAuthRuntime({
       database: createLearnerAuthDatabase(database.db),
       emailDelivery:
-        options.authEmailDelivery ?? createAuthEmailDelivery(env.authEmail),
+        options.authEmailDelivery ??
+        createAuthEmailDelivery(
+          env,
+          options.localAuthMailboxPath ?? defaultLocalAuthMailboxPath
+        ),
       googleClientId: env.googleClientId,
       googleClientSecret: env.googleClientSecret,
       identityProvisioner: createLearnerIdentityProvisioner(identity),
@@ -312,15 +328,35 @@ function createDeletionMarkerStore(input: {
 }
 
 function createAuthEmailDelivery(
-  configuration: ApiEnv["authEmail"]
+  environment: Pick<ApiEnv, "authEmail" | "nodeEnv">,
+  localAuthMailboxPath: string
 ): AuthEmailDeliveryPort {
-  return configuration.kind === "resend"
+  return environment.authEmail.kind === "resend"
     ? createResendAuthEmailDelivery({
-        apiKey: configuration.apiKey,
-        from: configuration.from,
-        replyTo: configuration.replyTo,
+        apiKey: environment.authEmail.apiKey,
+        from: environment.authEmail.from,
+        replyTo: environment.authEmail.replyTo,
       })
-    : createInMemoryAuthEmailDelivery()
+    : createInMemoryAuthEmailDelivery({
+        onDelivery:
+          environment.nodeEnv === "development"
+            ? (delivery) =>
+                writeLocalAuthMailbox(delivery, localAuthMailboxPath)
+            : undefined,
+      })
+}
+
+function writeLocalAuthMailbox(
+  delivery: InMemoryAuthEmailDeliveryRecord,
+  mailboxPath: string
+): void {
+  mkdirSync(path.dirname(mailboxPath), { recursive: true })
+  writeFileSync(
+    mailboxPath,
+    `${JSON.stringify({ callbackUrl: delivery.callbackUrl, kind: delivery.kind }, null, 2)}\n`,
+    { encoding: "utf8", mode: 0o600 }
+  )
+  process.stdout.write(`[local auth] 인증 메일 파일: ${mailboxPath}\n`)
 }
 
 /**

@@ -76,7 +76,9 @@ describe("AdminShell", () => {
     await screen.findByText(
       "로그아웃하지 못했습니다. 연결을 확인하고 다시 시도해 주세요."
     )
-    await user.click(screen.getByRole("button", { name: "어드민 로그아웃" }))
+    const retryButton = screen.getByRole("button", { name: "어드민 로그아웃" })
+    await waitFor(() => expect(retryButton).toBeEnabled())
+    await user.click(retryButton)
 
     await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/login"))
   })

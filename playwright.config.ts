@@ -47,6 +47,7 @@ export default defineConfig({
   ],
   timeout: 30_000,
   use: {
+    actionTimeout: 10_000,
     baseURL: e2eRuntime.learnerOrigin,
     launchOptions: {
       downloadsPath: path.join(e2eRunRoot, "downloads"),
@@ -96,7 +97,7 @@ function createWebServers() {
       command:
         runtime === "standalone"
           ? "node scripts/run-next-standalone.mjs web"
-          : "bun node_modules/next/dist/bin/next dev --hostname localhost --port 3100",
+          : "node node_modules/next/dist/bin/next dev --hostname localhost --port 3100",
       cwd:
         runtime === "standalone"
           ? repositoryRoot
@@ -104,14 +105,8 @@ function createWebServers() {
       env: {
         ...sharedEnvironment,
         API_BASE_URL: e2eRuntime.apiOrigin,
-        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS:
-          runtime === "standalone"
-            ? "https://assets.example.test"
-            : e2eRuntime.assetOrigin,
-        CONTENT_ASSET_PUBLIC_BASE_URL:
-          runtime === "standalone"
-            ? "https://assets.example.test/content-assets"
-            : `${e2eRuntime.assetOrigin}/content-assets`,
+        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS: e2eRuntime.assetOrigin,
+        CONTENT_ASSET_PUBLIC_BASE_URL: `${e2eRuntime.assetOrigin}/content-assets`,
         HOSTNAME: "localhost",
         ...(runtime === "standalone" ? { NODE_ENV: "production" } : {}),
         PORT: new URL(e2eRuntime.learnerOrigin).port,
@@ -131,7 +126,7 @@ function createWebServers() {
       command:
         runtime === "standalone"
           ? "node scripts/run-next-standalone.mjs admin"
-          : "bun node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3101",
+          : "node node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3101",
       cwd:
         runtime === "standalone"
           ? repositoryRoot
@@ -140,14 +135,8 @@ function createWebServers() {
         ...sharedEnvironment,
         ADMIN_ORIGIN: e2eRuntime.adminOrigin,
         API_BASE_URL: e2eRuntime.apiOrigin,
-        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS:
-          runtime === "standalone"
-            ? "https://assets.example.test"
-            : e2eRuntime.assetOrigin,
-        CONTENT_ASSET_PUBLIC_BASE_URL:
-          runtime === "standalone"
-            ? "https://assets.example.test/content-assets"
-            : `${e2eRuntime.assetOrigin}/content-assets`,
+        CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS: e2eRuntime.assetOrigin,
+        CONTENT_ASSET_PUBLIC_BASE_URL: `${e2eRuntime.assetOrigin}/content-assets`,
         HOSTNAME: "127.0.0.1",
         NEXT_PUBLIC_LEARNER_WEB_ORIGIN: e2eRuntime.learnerOrigin,
         ...(runtime === "standalone" ? { NODE_ENV: "production" } : {}),

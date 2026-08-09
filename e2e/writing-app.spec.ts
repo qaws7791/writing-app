@@ -18,11 +18,11 @@ test("학습자가 실제 provider fixture로 핵심 레슨을 완료한다", as
   await expect(firstLessonStartButton).toBeEnabled()
   await firstLessonStartButton.click()
 
-  await page.getByRole("button", { name: "클라이언트가 채점한다" }).click()
+  await page.getByRole("radio", { name: "클라이언트가 채점한다" }).click()
   await page.getByRole("button", { name: "확인하기" }).click()
   await expect(page.getByText("다시 확인해보세요")).toBeVisible()
   await page.getByRole("button", { name: "계속하기" }).click()
-  await page.getByRole("button", { name: "서버가 채점한다" }).click()
+  await page.getByRole("radio", { name: "서버가 채점한다" }).click()
   await page.getByRole("button", { name: "확인하기" }).click()
   await expect(page.getByText("완벽해요!")).toBeVisible()
   await page.getByRole("button", { name: "계속하기" }).click()
@@ -69,16 +69,20 @@ test("독립 seeded 학습자가 프로필을 수정하고 로그아웃한다", 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "생각을 문장으로"
   )
-  await page.goto(`${learnerWebOrigin}/app/profile`)
-  await expect(page).toHaveURL(
+  const protectedPage = await page.context().newPage()
+  await protectedPage.goto(`${learnerWebOrigin}/app/profile`)
+  await expect(protectedPage).toHaveURL(
     `${learnerWebOrigin}/login?next=%2Fapp%2Fprofile`
   )
 })
 
 test("owner 관리자의 삭제 처리가 학습자 세션을 폐기한다", async ({
   browser,
+  e2eClientHeaders,
 }) => {
-  const learnerContext = await browser.newContext()
+  const learnerContext = await browser.newContext({
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const learnerDiagnostics = observeBrowserContext(learnerContext)
   await createLearnerSession(learnerContext, {
     email: e2eLearnerActors.releaseDeletion.email,
@@ -89,7 +93,9 @@ test("owner 관리자의 삭제 처리가 학습자 세션을 폐기한다", asy
   )
   expect(activeProfile.status()).toBe(200)
 
-  const adminContext = await browser.newContext()
+  const adminContext = await browser.newContext({
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const adminDiagnostics = observeBrowserContext(adminContext)
   const adminPage = await adminContext.newPage()
   await loginAdmin(adminPage, "owner@example.test", {

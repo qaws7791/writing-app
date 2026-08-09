@@ -66,9 +66,12 @@ test.describe.configure({ mode: "parallel" })
 
 test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발행한다", async ({
   browser,
+  e2eClientHeaders,
 }) => {
   test.setTimeout(300_000)
-  const adminContext = await browser.newContext()
+  const adminContext = await browser.newContext({
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const adminDiagnostics = observeBrowserContext(adminContext)
   const adminPage = await adminContext.newPage()
 
@@ -78,7 +81,7 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   await adminPage.goto(
     `${adminWebOrigin}/courses/${encodeURIComponent(courseId)}`
   )
-  await adminPage.getByRole("button", { name: "커리큘럼" }).click()
+  await adminPage.getByRole("tab", { name: "커리큘럼" }).click()
   const stepForms = adminPage.getByRole("list", { name: "스텝 편집 폼" })
   for (const activityType of e2eAdminContentActivityTypes) {
     await expect(
@@ -86,9 +89,9 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
     ).toBeVisible()
   }
 
-  await adminPage.getByRole("button", { name: "강의 정보" }).click()
+  await adminPage.getByRole("tab", { name: "강의 정보" }).click()
   await adminPage.setViewportSize({ height: 844, width: 390 })
-  const coverField = adminPage.locator('section[aria-label="코스 표지"]')
+  const coverField = adminPage.getByRole("region", { name: "코스 표지" })
   await coverField.getByLabel("이미지 파일").setInputFiles(imageFile)
   await coverField.getByLabel("대체 텍스트").fill("리비전 1 코스 표지")
   await coverField.getByRole("button", { name: "이미지 업로드" }).click()
@@ -113,8 +116,8 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   if (coverAsset === undefined)
     throw new Error("코스 표지가 저장되지 않았습니다.")
   await adminPage.setViewportSize({ height: 720, width: 1280 })
-  await adminPage.getByRole("button", { name: "커리큘럼" }).click()
-  const readingField = adminPage.locator('section[aria-label="읽기 삽화"]')
+  await adminPage.getByRole("tab", { name: "커리큘럼" }).click()
+  const readingField = adminPage.getByRole("region", { name: "읽기 삽화" })
   await readingField.getByLabel("이미지 파일").setInputFiles(imageFile)
   await readingField.getByLabel("대체 텍스트").fill("리비전 1 읽기 삽화")
   await readingField.getByRole("button", { name: "이미지 업로드" }).click()
@@ -124,7 +127,7 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
   await adminPage.getByRole("button", { name: "변경 저장" }).click()
   await expect(adminPage.getByText("코스를 저장했습니다.")).toBeVisible()
   await adminPage.reload()
-  await adminPage.getByRole("button", { name: "커리큘럼" }).click()
+  await adminPage.getByRole("tab", { name: "커리큘럼" }).click()
   await expect(
     adminPage.getByRole("img", { name: "리비전 1 읽기 삽화" })
   ).toBeVisible()
@@ -169,15 +172,21 @@ test("관리자가 10개 활동과 이미지를 저장하고 첫 revision을 발
 
 test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된다", async ({
   browser,
+  e2eClientHeaders,
 }) => {
   test.setTimeout(300_000)
-  const adminContext = await browser.newContext()
+  const adminContext = await browser.newContext({
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const adminDiagnostics = observeBrowserContext(adminContext)
   const adminPage = await adminContext.newPage()
   await loginAdmin(adminPage, "owner@example.test", { nextPath: "/courses" })
   const fixture = await createPublishedAdminContent(adminPage, "revision")
   const { courseId, readingAssetUrl } = fixture
-  const learnerContext = await browser.newContext(learnerMobileContextOptions)
+  const learnerContext = await browser.newContext({
+    ...learnerMobileContextOptions,
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const learnerDiagnostics = observeBrowserContext(learnerContext)
   const learnerPage = await learnerContext.newPage()
   await createLearnerSession(learnerContext, {
@@ -222,14 +231,14 @@ test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된�
   await adminPage.goto(
     `${adminWebOrigin}/courses/${encodeURIComponent(courseId)}`
   )
-  await adminPage.getByRole("button", { name: "커리큘럼" }).click()
+  await adminPage.getByRole("tab", { name: "커리큘럼" }).click()
   const revisionTwoReading = adminPage
     .getByRole("article")
     .filter({ hasText: "READING" })
   await revisionTwoReading.getByLabel("제목").fill("리비전 2 이미지 읽기")
-  const revisionTwoImageField = revisionTwoReading.locator(
-    'section[aria-label="읽기 삽화"]'
-  )
+  const revisionTwoImageField = revisionTwoReading.getByRole("region", {
+    name: "읽기 삽화",
+  })
   await revisionTwoImageField
     .getByLabel("교체할 이미지 파일")
     .setInputFiles(imageFile)
@@ -264,7 +273,7 @@ test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된�
     learnerPage.getByRole("img", { name: "리비전 2 읽기 삽화" })
   ).toHaveCount(0)
 
-  await adminPage.getByRole("button", { name: "강의 정보" }).click()
+  await adminPage.getByRole("tab", { name: "강의 정보" }).click()
   await adminPage
     .getByLabel("설명")
     .fill("리비전 3 draft는 발행본과 분리되어 수정됩니다.")
@@ -283,9 +292,12 @@ test("새 발행 뒤에도 기존 학습자는 시작한 revision에 고정된�
 
 test("학습자가 모바일에서 대표 활동 조립 경계를 완료한다", async ({
   browser,
+  e2eClientHeaders,
 }) => {
   test.setTimeout(120_000)
-  const adminContext = await browser.newContext()
+  const adminContext = await browser.newContext({
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const adminDiagnostics = observeBrowserContext(adminContext)
   const adminPage = await adminContext.newPage()
   await loginAdmin(adminPage, "owner@example.test", { nextPath: "/courses" })
@@ -298,7 +310,10 @@ test("학습자가 모바일에서 대표 활동 조립 경계를 완료한다",
   adminDiagnostics.expectNoIssues()
   await adminContext.close()
 
-  const learnerContext = await browser.newContext(learnerMobileContextOptions)
+  const learnerContext = await browser.newContext({
+    ...learnerMobileContextOptions,
+    extraHTTPHeaders: e2eClientHeaders,
+  })
   const learnerDiagnostics = observeBrowserContext(learnerContext)
   const learnerPage = await learnerContext.newPage()
   await createLearnerSession(learnerContext, {
@@ -478,8 +493,10 @@ async function completeRepresentativeMobileActivities(
     1,
     page.getByText("더 명확한 문장을 고르세요.", { exact: true })
   )
-  await page.getByRole("button", { name: "명확한 문장" }).click()
-  await expect(page.getByRole("status")).toHaveText("서버에 저장됨")
+  await page.getByRole("radio", { name: "명확한 문장" }).click()
+  await expect(
+    page.getByRole("status").filter({ hasText: /^서버에 저장됨$/ })
+  ).toHaveText("서버에 저장됨")
   await submitAndContinue(page, "확인하기")
 
   await expectMobileLessonStep(
@@ -488,10 +505,12 @@ async function completeRepresentativeMobileActivities(
     page.getByRole("heading", { name: "문장 순서" })
   )
   const orderHandles = page.getByRole("button", {
-    name: "드래그하여 순서 변경",
+    name: /항목 이동$/,
   })
   await expect(orderHandles).toHaveCount(2)
-  await expect(page.getByRole("status")).toHaveText("서버에 저장됨")
+  await expect(
+    page.getByRole("status").filter({ hasText: /^서버에 저장됨$/ })
+  ).toHaveText("서버에 저장됨")
   const canonicalOrderItemIds = fixture.orderItems.map((item) => item.id)
   const initialOrderItemIds = await readOrderActivityItemIds(
     orderHandles,
@@ -503,7 +522,7 @@ async function completeRepresentativeMobileActivities(
 
   const reversedCanonicalOrderItemIds = canonicalOrderItemIds.toReversed()
   if (sameOrder(initialOrderItemIds, canonicalOrderItemIds)) {
-    await dragFirstOrderItemDown(
+    await moveFirstOrderItemDown(
       page,
       orderHandles,
       reversedCanonicalOrderItemIds,
@@ -518,7 +537,7 @@ async function completeRepresentativeMobileActivities(
       fixture.orderItems
     )
   } else {
-    await dragFirstOrderItemDown(
+    await moveFirstOrderItemDown(
       page,
       orderHandles,
       canonicalOrderItemIds,
@@ -560,7 +579,9 @@ async function completeRepresentativeMobileActivities(
   )
   await page.getByRole("textbox").fill("모바일에서도 명확한 문장을 작성합니다.")
   expect((await updatedWriteDraft).status()).toBe(200)
-  await expect(page.getByRole("status")).toHaveText("서버에 저장됨")
+  await expect(
+    page.getByRole("status").filter({ hasText: /^서버에 저장됨$/ })
+  ).toHaveText("서버에 저장됨")
   await submitAndContinue(page, "확인하기")
 
   await expectMobileLessonStep(
@@ -624,7 +645,10 @@ async function moveFirstOrderItemDown(
       response.request().method() === "PUT" &&
       response.url().includes(`/steps/${encodeURIComponent(orderStepId)}/draft`)
   )
-  await orderHandles.first().press("ArrowDown")
+  await orderHandles.first().focus()
+  await page.keyboard.press("Space")
+  await page.keyboard.press("ArrowDown")
+  await page.keyboard.press("Space")
   await expect
     .poll(() => readOrderActivityItemIds(orderHandles, orderItems))
     .toEqual(expectedOrderItemIds)
@@ -638,66 +662,27 @@ async function moveFirstOrderItemDown(
     orderedItemIds: expectedOrderItemIds,
     type: "ORDER",
   })
-  await expect(page.getByRole("status")).toHaveText("서버에 저장됨")
-}
-
-async function dragFirstOrderItemDown(
-  page: Page,
-  orderHandles: Locator,
-  expectedOrderItemIds: readonly string[],
-  orderStepId: string,
-  orderItems: readonly OrderItem[]
-): Promise<void> {
-  const updatedOrderDraft = page.waitForResponse(
-    (response) =>
-      response.request().method() === "PUT" &&
-      response.url().includes(`/steps/${encodeURIComponent(orderStepId)}/draft`)
-  )
-  const source = await orderHandles.first().boundingBox()
-  const destination = await orderHandles.nth(1).boundingBox()
-  if (source === null || destination === null) {
-    throw new Error("ORDER pointer drag 좌표를 계산할 수 없습니다.")
-  }
-
-  await page.mouse.move(
-    source.x + source.width / 2,
-    source.y + source.height / 2
-  )
-  await page.mouse.down()
-  await page.mouse.move(
-    destination.x + destination.width / 2,
-    destination.y + destination.height,
-    { steps: 5 }
-  )
-  await page.mouse.up()
-
-  await expect
-    .poll(() => readOrderActivityItemIds(orderHandles, orderItems))
-    .toEqual(expectedOrderItemIds)
-
-  const response = await updatedOrderDraft
-  expect(response.status()).toBe(200)
-  const body = saveLearnerStepDraftBodySchema.parse(
-    response.request().postDataJSON()
-  )
-  expect(body.answer).toEqual({
-    orderedItemIds: expectedOrderItemIds,
-    type: "ORDER",
-  })
-  await expect(page.getByRole("status")).toHaveText("서버에 저장됨")
+  await expect(
+    page.getByRole("status").filter({ hasText: /^서버에 저장됨$/ })
+  ).toHaveText("서버에 저장됨")
 }
 
 async function readOrderActivityItemIds(
   orderHandles: Locator,
   orderItems: readonly OrderItem[]
 ): Promise<readonly string[]> {
-  const rows = orderHandles.locator("..")
-  const texts = await Promise.all(
-    Array.from({ length: await rows.count() }, (_, index) =>
-      rows.nth(index).locator("span").last().innerText()
+  const labels = await Promise.all(
+    Array.from({ length: await orderHandles.count() }, (_, index) =>
+      orderHandles.nth(index).getAttribute("aria-label")
     )
   )
-  return texts.map((text) => readOrderActivityItemId(text, orderItems))
+  return labels.map((label) => {
+    const suffix = " 항목 이동"
+    if (label === null || !label.endsWith(suffix)) {
+      throw new Error(`ORDER 활동 손잡이 이름이 올바르지 않습니다: ${label}`)
+    }
+    return readOrderActivityItemId(label.slice(0, -suffix.length), orderItems)
+  })
 }
 
 function readOrderActivityItemId(

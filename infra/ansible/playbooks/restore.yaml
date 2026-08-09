@@ -202,7 +202,7 @@
             mode: "0750"
             recurse: true
 
-        - name: migration 전 candidate integrity와 FK 검증
+        - name: Migration 전 candidate integrity와 FK 검증
           ansible.builtin.command:
             argv:
               - docker
@@ -222,7 +222,7 @@
               - /workspace/bin/database-integrity-check
           changed_when: false
 
-        - name: candidate DB migration 적용
+        - name: Candidate DB migration 적용
           ansible.builtin.command:
             argv:
               - docker
@@ -244,7 +244,7 @@
               - /workspace/bin/database-migrate
           changed_when: true
 
-        - name: migration 후 candidate application DB 검증
+        - name: Migration 후 candidate application DB 검증
           ansible.builtin.command:
             argv:
               - docker
@@ -395,7 +395,7 @@
             fail_msg: 삭제 marker 재적용 재실행이 수렴하지 않았습니다.
           no_log: true
 
-        - name: marker 재적용 후 candidate application DB 재검증
+        - name: Marker 재적용 후 candidate application DB 재검증
           ansible.builtin.command:
             argv:
               - docker

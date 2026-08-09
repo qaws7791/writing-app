@@ -344,7 +344,7 @@ ansible writing_app \
   -a "src=${evidence_file} dest=/etc/writing-app/evidence/log-retention.json owner=root group=root mode=0600"
 ```
 
-Production은 수동 명령이 아니라 [image release workflow](../../.github/workflows/image-release.yml)의 production environment job으로만 배포한다. Workflow가 최근 staging 배포·핵심 흐름, 외부 법률 검토, restore drill과 동일 revision full E2E를 확인하지 못하면 진행하지 않는다.
+Production은 수동 명령이 아니라 [image release workflow](../../.github/workflows/image-release.yml)의 `Production` environment job으로만 배포한다. Release operator는 배포 전에 저장소 root에서 `bun run preflight:release`를 실행한다. 명령이 누락된 GitHub 입력 이름을 하나라도 보고하면 다음 단계로 진행하지 않는다. Workflow가 최근 staging 배포·핵심 흐름, 외부 법률 검토, restore drill과 동일 revision full E2E를 확인하지 못하면 진행하지 않는다.
 
 Protected environment 배포와 공개 검증이 끝나면 release operator와 security owner가 production host의 root shell에서 첫 owner만 만든다. 아래 one-shot은 exact production DB URL guard와 atomic operation lock을 사용하고 secret 값을 command 인자에 넣지 않는다. 첫 로그인 확인 뒤 secret manager가 새 장기 password를 발급하면 같은 명령에 `ADMIN_SEED_RESET_PASSWORD=true`를 추가해 즉시 회전하고 초기 password를 폐기한다.
 

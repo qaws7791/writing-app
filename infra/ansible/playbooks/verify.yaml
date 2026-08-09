@@ -1006,7 +1006,13 @@
               failed_at={{ ansible_date_time.iso8601 }}
               failure_stage={{ writing_app_verify_failure_stage }}
               operation_lock_retained={{ not (writing_app_verify_release_operation_lock | default(false) | bool) }}
-              next_action=operation lock과 handoff marker를 유지한 채 실제 container digest, public health와 현재·verified·previous Compose 환경 이력을 읽기 전용으로 확인하고 incident commander가 재검증 또는 수동 복구를 결정합니다.
+              next_action={{
+                [
+                  'operation lock과 handoff marker를 유지한 채 실제 container digest,',
+                  'public health와 현재·verified·previous Compose 환경 이력을 읽기 전용으로 확인하고',
+                  'incident commander가 재검증 또는 수동 복구를 결정합니다.'
+                ] | join(' ')
+              }}
           failed_when: false
 
         - name: 실패한 verifier의 handoff claim 소유권 읽기

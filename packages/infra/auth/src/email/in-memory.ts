@@ -23,6 +23,7 @@ export type InMemoryAuthEmailDelivery = AuthEmailDeliveryPort &
 export function createInMemoryAuthEmailDelivery(
   input: {
     readonly failureCode?: AuthEmailDeliveryFailureCode
+    readonly onDelivery?: (delivery: InMemoryAuthEmailDeliveryRecord) => void
   } = {}
 ): InMemoryAuthEmailDelivery {
   const deliveries: InMemoryAuthEmailDeliveryRecord[] = []
@@ -35,6 +36,7 @@ export function createInMemoryAuthEmailDelivery(
         deliveryInput,
         failureCode: input.failureCode,
         kind: "password-reset",
+        onDelivery: input.onDelivery,
       })
     },
     async deliverVerification(deliveryInput) {
@@ -44,6 +46,7 @@ export function createInMemoryAuthEmailDelivery(
         deliveryInput,
         failureCode: input.failureCode,
         kind: "verification",
+        onDelivery: input.onDelivery,
       })
     },
     readDeliveries() {
@@ -57,14 +60,19 @@ function recordOrFail(input: {
   readonly deliveryInput: AuthEmailDeliveryInput
   readonly failureCode: AuthEmailDeliveryFailureCode | undefined
   readonly kind: InMemoryAuthEmailDeliveryRecord["kind"]
+  readonly onDelivery:
+    | ((delivery: InMemoryAuthEmailDeliveryRecord) => void)
+    | undefined
 }): void {
   if (input.failureCode !== undefined) {
     throw new AuthEmailDeliveryError(input.failureCode)
   }
 
-  input.deliveries.push({
+  const delivery = {
     callbackUrl: input.deliveryInput.callbackUrl,
     kind: input.kind,
     recipientEmail: input.deliveryInput.recipient.email,
-  })
+  } as const
+  input.deliveries.push(delivery)
+  input.onDelivery?.({ ...delivery })
 }

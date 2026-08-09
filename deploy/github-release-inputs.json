@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "workflow": ".github/workflows/image-release.yml",
+  "automaticSecrets": ["GITHUB_TOKEN"],
+  "repository": {
+    "variables": [
+      "PRODUCTION_ADMIN_ORIGIN",
+      "PRODUCTION_CONTENT_ASSET_PUBLIC_BASE_URL",
+      "PRODUCTION_WEB_ORIGIN",
+      "STAGING_CONTENT_ASSET_PUBLIC_BASE_URL"
+    ],
+    "secrets": []
+  },
+  "environments": {
+    "Production": {
+      "variables": [
+        "PRODUCTION_DEPLOY_APPROVED",
+        "PRODUCTION_FULL_E2E_APPROVED",
+        "PRODUCTION_LEGAL_REVIEW_APPROVED",
+        "PRODUCTION_LEGAL_REVIEW_EVIDENCE_ID",
+        "PRODUCTION_LEGAL_REVIEW_VERIFIED_AT",
+        "PRODUCTION_RESTORE_DRILL_APPROVED",
+        "PRODUCTION_RESTORE_DRILL_ENVIRONMENT",
+        "PRODUCTION_RESTORE_DRILL_EVIDENCE_ID",
+        "PRODUCTION_RESTORE_DRILL_VERIFIED_AT"
+      ],
+      "secrets": [
+        "ANSIBLE_GROUP_VARS_YAML",
+        "ANSIBLE_HOSTS_YAML",
+        "ANSIBLE_VAULT_PASSWORD",
+        "ANSIBLE_VAULT_YAML",
+        "SSH_KNOWN_HOSTS",
+        "SSH_PRIVATE_KEY"
+      ]
+    },
+    "staging": {
+      "variables": [
+        "K6_CURRICULUM_VERSION_ID",
+        "K6_LESSON_ID",
+        "K6_STEP_ID",
+        "K6_WRONG_OPTION_ID",
+        "STAGING_WEB_ORIGIN"
+      ],
+      "secrets": [
+        "ANSIBLE_GROUP_VARS_YAML",
+        "ANSIBLE_HOSTS_YAML",
+        "ANSIBLE_VAULT_PASSWORD",
+        "ANSIBLE_VAULT_YAML",
+        "K6_LEARNER_COOKIE",
+        "SSH_KNOWN_HOSTS",
+        "SSH_PRIVATE_KEY"
+      ]
+    }
+  }
+}

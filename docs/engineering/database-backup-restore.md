@@ -83,9 +83,9 @@ bun run db:backup --source=data/api.sqlite --output="backups/api-2026-07-12.sqli
 
 저장소의 fixture·정적 검증은 이 실제 외부 복원을 대체하지 않는다. 현재 변경에서는 외부 staging S3 replica 복원이나 Ubuntu host 훈련을 실행했다는 증거가 없으므로, 빈 staging 복원·API 기동·삭제 사용자 비부활은 아직 production 출시 gate다. 최초 성공 증거가 생기기 전에는 GG-1104의 실제 복구 수용 기준을 완료로 판정하지 않는다.
 
-로컬 setup도 같은 application backup entry를 사용한다. 현재 baseline 이력의 기존 DB에 다음 migration이 필요하면 파일 크기와 관계없이 검증 백업을 먼저 만들고, recovery backup은 쓰기 연결로 열지 않는다. 별도 임시 candidate에 복제한 뒤 실제 DB와 같은 migration entrypoint를 실행하고 read-only application 진단이 `current/ok`인지 확인한다. 이력 없는 비어 있지 않은 DB, 알 수 없는 migration ID와 checksum 불일치는 자동 변환하지 않고 중단한다. 백업·사본 migration·진단 중 하나라도 실패하면 실제 DB migration과 seed를 시작하지 않으며, candidate만 삭제하고 recovery backup은 보존한다.
+로컬 setup은 기존 DB를 발견하면 application backup entry로 검증된 snapshot을 `data/backups/setup/`에 만든다. 백업이 실패하면 migration과 seed를 시작하지 않는다. 신규 DB에는 백업할 source가 없으므로 명시적인 `source-missing` 결과로 생략한다. 로컬 DB를 쓰는 다른 process가 있으면 snapshot 또는 migration이 충돌할 수 있으므로 사용자는 해당 process를 먼저 종료해야 한다. setup은 설정된 API port 점유를 차단하지만 해당 port를 사용하지 않는 DB writer는 감지하지 못한다.
 
-저장소 단위 operation lock은 같은 checkout의 setup 전체를 직렬화한다. 비정상 종료로 lock이 남으면 자동 삭제하지 않으며, 실행 중인 setup process가 없음을 확인한 뒤에만 수동으로 제거한다. 이 lock은 API·Web·Admin process의 DB 접근을 중지시키지 않으므로 setup 전에 개발 서버를 종료해야 한다.
+같은 checkout에서는 저장소 단위 `data/.setup.lock`이 두 번째 setup을 차단한다. 비정상 종료로 남은 lock은 자동 제거하지 않는다. 사용자는 `owner.json`의 PID가 실행 중이 아닌지 확인한 뒤에만 lock을 직접 제거한다. setup은 공개 migration 진입점을 실행한 뒤 read-only application 진단이 `current/ok`인지 확인한다. 알 수 없거나 변조된 migration 이력과 무결성 오류는 자동 보정하지 않고 중단한다.
 
 ## 자동 검증
 

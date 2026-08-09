@@ -12,18 +12,24 @@ export { expect }
 const clientIpByTestId = new Map<string, string>()
 const reservedClientIps = new Set<string>()
 
-export const test = playwrightTest.extend<{ browserDiagnostics: void }>({
+export const test = playwrightTest.extend<{
+  browserDiagnostics: void
+  e2eClientHeaders: Readonly<Record<string, string>>
+}>({
   browserDiagnostics: [
-    async ({ context }, use, testInfo) => {
-      await context.setExtraHTTPHeaders({
-        "x-writing-app-client-ip": reserveE2eClientIp(testInfo.testId),
-      })
+    async ({ context, e2eClientHeaders }, use) => {
+      await context.setExtraHTTPHeaders(e2eClientHeaders)
       const diagnostics = observeBrowserContext(context)
       await use()
       diagnostics.expectNoIssues()
     },
     { auto: true },
   ],
+  async e2eClientHeaders({}, use, testInfo) {
+    await use({
+      "x-writing-app-client-ip": reserveE2eClientIp(testInfo.testId),
+    })
+  },
 })
 
 function reserveE2eClientIp(testId: string): string {

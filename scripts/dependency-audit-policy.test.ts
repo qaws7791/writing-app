@@ -5,6 +5,7 @@ import path from "node:path"
 import {
   type ImageVulnerabilityException,
   type ImageVulnerabilityPolicy,
+  listVulnerabilityExpiryWarnings,
   parseImageVulnerabilityPolicy,
   validateImageVulnerabilityPolicy,
 } from "#scripts/image-vulnerability-policy"
@@ -78,6 +79,24 @@ describe("저장소 audit 정책", () => {
         new Date().toISOString().slice(0, 10)
       )
     ).toEqual([])
+  })
+})
+
+describe("취약점 예외 만료 경고", () => {
+  test("14일 이내 예외에 owner와 남은 기간을 연결한다", () => {
+    const policy = fixturePolicy([
+      { ...bunAuditException, expiresOn: "2026-08-06" },
+    ])
+
+    expect(listVulnerabilityExpiryWarnings(policy, "2026-07-23")).toEqual([
+      {
+        daysRemaining: 14,
+        expiresOn: "2026-08-06",
+        owner: "@fixture-owner",
+        vulnerability: "GHSA-2222-3333-4444",
+      },
+    ])
+    expect(listVulnerabilityExpiryWarnings(policy, "2026-07-22")).toEqual([])
   })
 })
 

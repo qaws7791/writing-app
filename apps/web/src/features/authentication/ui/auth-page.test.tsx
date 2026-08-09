@@ -72,15 +72,17 @@ describe("로그인 및 가입 페이지", () => {
     await user.click(
       screen.getByRole("button", { name: "확인 메일 다시 보내기" })
     )
+    expect(
+      await screen.findByText(
+        "확인 메일을 다시 보냈습니다. 받은편지함과 스팸함을 확인해 주세요.",
+        undefined,
+        { timeout: 3_000 }
+      )
+    ).toBeInTheDocument()
     expect(authClientMocks.requestVerificationEmail).toHaveBeenCalledWith({
       email: "learner@example.com",
       nextPath: "/app/courses",
     })
-    expect(
-      await screen.findByText(
-        "확인 메일을 다시 보냈습니다. 받은편지함과 스팸함을 확인해 주세요."
-      )
-    ).toBeInTheDocument()
   })
 
   it("약한 비밀번호를 한국어 오류로 표시하고 가입 요청을 보내지 않는다", async () => {

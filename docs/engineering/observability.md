@@ -50,6 +50,14 @@ AI 코칭 attempt metadata와 runtime 상태는 `@workspace/ai-feedback`이 소�
 3. code rollback, 설정 복구, 데이터 복구 중 안전한 경로를 결정한다.
 4. incident 결과와 개선 조치는 commit·환경·증거를 고정한 archive 기록으로 남긴다.
 
+## 외부 운영 준비 조건
+
+Production 배포 전에 operations owner는 telemetry backend와 접근 권한 owner를 지정해야 한다. Operations owner는 실제 sink의 class별 보존 기간을 검증하고 [maintenance evidence 계약](../../apps/api/src/maintenance/log-retention-evidence.ts)에 맞는 증거를 host에 설치해야 한다.
+
+Operations owner는 alert channel, 일차 on-call contact와 전달 실패 시 fallback contact를 지정해야 한다. Operations owner는 실제 test alert를 보내고 수신 시각과 evidence 식별자를 release 기록에 연결해야 한다. 이 항목 중 하나라도 없으면 alert 준비를 완료로 판정하면 안 된다.
+
+Incident commander는 alert에서 source revision, 영향 route와 request 식별자를 찾을 수 있는지 확인해야 한다. Release operator는 같은 revision의 Actions run, container digest, Caddy·service health, maintenance 결과와 operation lock을 순서대로 확인해야 한다. DB 무결성 또는 migration 상태가 불명확하면 code rollback을 실행하면 안 된다. Incident commander는 [백업·복구 절차](./database-backup-restore.md)로 전환해야 한다.
+
 ## 도입 판단
 
 새 telemetry backend, dashboard 또는 alert channel은 운영자, 보존 기간, 접근 제어, 비용, 장애 시 동작과 복구 훈련 방법을 함께 결정한다.

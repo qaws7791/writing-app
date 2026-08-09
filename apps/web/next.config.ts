@@ -38,6 +38,7 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 const nextConfig: NextConfig = {
   experimental: {
     cpus: 1,
+    useTypeScriptCli: false,
   },
   output: "standalone",
   outputFileTracingRoot: join(appDirectory, "../.."),

@@ -33,7 +33,7 @@ export function createE2eAdminContentFixture(
 
   return adminCourseEditorWriteDocumentSchema.parse({
     ...writeDocument,
-    category: "E2E",
+    category: "구성과 표현",
     coverAssetId: null,
     description: "실제 콘텐츠 이미지 작성과 revision 고정을 검증합니다.",
     title: e2eAdminContentCourseTitle,
@@ -42,7 +42,7 @@ export function createE2eAdminContentFixture(
         id: id("e2e-image-unit"),
         lessons: [
           {
-            category: "E2E",
+            category: "구성과 표현",
             description: "10개 활동 유형을 실제 계약으로 검증합니다.",
             estimatedMinutes: 10,
             id: id("e2e-image-lesson"),

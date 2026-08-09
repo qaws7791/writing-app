@@ -73,7 +73,7 @@ export function ContinueCourseCard({
             className="object-cover pointer-events-none"
             draggable={false}
             fill
-            priority={priority}
+            loading={priority ? "eager" : "lazy"}
             sizes="(min-width: 1024px) 176px, 100vw"
             src={resolveCourseImage(course).src}
           />

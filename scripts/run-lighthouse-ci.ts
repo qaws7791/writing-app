@@ -51,15 +51,33 @@ try {
     e2eRuntime.learnerOrigin
   )
 
+  const lighthouseEnvironment: Record<string, string | undefined> = {
+    ...process.env,
+    LIGHTHOUSE_AUTH_COOKIE: await createLearnerSessionCookie(),
+    LIGHTHOUSE_CHROME_PATH: chromium.executablePath(),
+  }
+  if (process.platform === "win32") {
+    const chromePort = await reserveAvailablePort()
+    await start(
+      [
+        chromium.executablePath(),
+        "--headless=new",
+        "--no-first-run",
+        "--remote-debugging-address=127.0.0.1",
+        `--remote-debugging-port=${chromePort}`,
+        `--user-data-dir=${path.join(runRoot, "chromium-profile")}`,
+      ],
+      {},
+      `http://127.0.0.1:${chromePort}/json/version`
+    )
+    lighthouseEnvironment.LIGHTHOUSE_CHROME_PORT = String(chromePort)
+  }
+
   const lighthouse = Bun.spawn(
     ["bunx", "lhci", "autorun", "--config=lighthouse-ci.config.cjs"],
     {
       cwd: repositoryRoot,
-      env: {
-        ...process.env,
-        LIGHTHOUSE_AUTH_COOKIE: await createLearnerSessionCookie(),
-        LIGHTHOUSE_CHROME_PATH: chromium.executablePath(),
-      },
+      env: lighthouseEnvironment,
       stderr: "inherit",
       stdout: "inherit",
     }
@@ -68,10 +86,26 @@ try {
 } finally {
   for (const childProcess of processes.reverse()) childProcess.kill()
   await Promise.allSettled(processes.map((childProcess) => childProcess.exited))
-  await rm(runRoot, { force: true, recursive: true })
+  await rm(runRoot, {
+    force: true,
+    maxRetries: 10,
+    recursive: true,
+    retryDelay: 200,
+  })
 }
 
 process.exit(exitCode)
+
+async function reserveAvailablePort(): Promise<number> {
+  const reservation = Bun.serve({
+    fetch: () => new Response(null, { status: 204 }),
+    hostname: "127.0.0.1",
+    port: 0,
+  })
+  const port = reservation.port
+  await reservation.stop(true)
+  return port
+}
 
 async function start(
   command: readonly string[],

@@ -66,7 +66,7 @@ Playwright WebKit과 device descriptor는 실제 iOS Safari 기기 자체가 아
 
 PR production build는 [route bundle 검사](../../scripts/check-route-bundles.ts)로 web의 landing·learner home·lesson shell과 admin 초기 client chunk의 gzip 합계를 검사한다. 예산을 넘으면 큰 chunk부터 경로와 gzip 크기를 출력해 원인을 찾을 수 있어야 한다. 이 검사는 `size-limit`과 같은 빠른 build artifact 예산 역할이며 별도 cache나 측정 우회 계층을 두지 않는다.
 
-main 품질 workflow는 격리 fixture와 테스트 인증 위에 web production standalone을 새로 조립하고 [Lighthouse CI 설정](../../lighthouse-ci.config.cjs)의 landing·learner home·lesson shell mobile 예산을 세 번 측정한다. 실행 wrapper는 fixture와 서버 수명주기, 인증 cookie와 Playwright Chromium 경로만 제공하고 측정·재시도·판정은 Lighthouse CI에 맡긴다. `error` assertion은 [Lighthouse CI 공식 설정 계약](https://github.com/GoogleChrome/lighthouse-ci/blob/v0.15.1/docs/configuration.md)에 따라 non-zero로 실패하며 report는 CI artifact로 보존한다.
+main 품질 workflow는 격리 fixture와 테스트 인증 위에 web production standalone을 새로 조립하고 [Lighthouse CI 설정](../../lighthouse-ci.config.cjs)의 landing·learner home·lesson shell mobile 예산을 세 번 측정한다. 실행 wrapper는 fixture와 서버 수명주기, 인증 cookie와 Playwright Chromium 경로를 제공한다. Windows에서는 wrapper가 관리하는 Chromium debugging port를 사용해서 종료 직후의 임시 profile 잠금과 측정 결과 유실을 막는다. 측정·재시도·판정은 Lighthouse CI가 담당한다. `error` assertion은 [Lighthouse CI 공식 설정 계약](https://github.com/GoogleChrome/lighthouse-ci/blob/v0.15.1/docs/configuration.md)에 따라 non-zero로 실패하며 report는 CI artifact로 보존한다.
 
 staging k6는 전용 학습자 session과 고정 fixture로 health, course list, lesson start, multiple-choice 오답 submit만 실행한다. 오답은 `retry`에 머물러 같은 시나리오를 반복할 수 있고 AI feedback endpoint와 provider는 호출하지 않는다. [k6 threshold](https://grafana.com/docs/k6/latest/using-k6/thresholds/)가 check·오류율·지연 경계를 넘으면 실패하며, [시나리오](https://grafana.com/docs/k6/latest/using-k6/scenarios/)와 숫자 예산은 [실행 설정](../../scripts/k6-staging-config.js)이 소유한다. 로컬에서는 source·설정·bundle 산출물만 검증한다. 실제 외부 부하는 image release가 검증한 동일 digest를 승인된 `staging` environment에 배포한 뒤 실행하며, 성공해야 production 배포로 진행한다.
 
@@ -123,6 +123,10 @@ CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원�
 | Image release | 성공한 동일 revision main 품질 결과, 취약점 정책·attestation, registry digest의 격리 Compose smoke, 동일 digest staging 배포 후 k6, production 외부 준비 증거와 public verify |
 
 PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는 단일 Chromium 실행이다. fixture, API와 Next runtime의 준비·종료는 Playwright `webServer`가 소유하고 실행 wrapper는 격리 디렉터리와 환경만 제공한다. Main release E2E는 web과 admin의 최적화 build를 새로 만든 뒤 production standalone runtime으로 실행한다. Chromium과 WebKit은 브라우저별 새 DB·서버·임시 디렉터리에서 순차 실행하고 PR 전용 smoke spec을 중복 실행하지 않는다. 브라우저별 실제 test 범위는 config의 project 계약이 소유하며, 모든 시나리오가 모든 engine에서 동작한다고 과장하지 않는다.
+
+로컬 browser tier를 처음 실행하는 개발자는 `bunx playwright install chromium webkit`으로 저장소 Playwright가 요구하는 engine을 설치한다. CI의 engine과 Linux system dependency 설치는 [quality workflow](../../.github/workflows/quality-gates.yml)가 소유한다. 일반 `setup`은 큰 browser cache를 자동으로 설치하지 않는다.
+
+[Playwright 설정](../../playwright.config.ts)은 locator action timeout과 시나리오 전체 timeout을 분리한다. 존재하지 않는 접근성 role은 짧은 action timeout으로 실패해야 한다. 긴 발행 시나리오의 전체 timeout은 실제 후속 단계에만 사용한다.
 
 PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. 다른 운영체제의 로컬 개발 호환성은 매 PR 전체 검증이 아니라 필요할 때 설치 smoke나 주기 실행으로 확인한다. 배포 설정은 자체 parser로 재해석하지 않고 Compose, Caddy, Ansible과 실제 container가 직접 읽게 한다.
 

@@ -22,13 +22,13 @@
 
 Production image release의 유일한 자동 진입점은 [image release workflow](../../.github/workflows/image-release.yml)다. `main` push의 [필수 품질 게이트](../../.github/workflows/quality-gates.yml)가 같은 revision에서 성공한 뒤에만 web, API, admin image를 각각 빌드한다. 각 digest는 [취약점 정책](../../deploy/security/image-vulnerability-policy.json)의 HIGH 이상 기준과 만료되지 않은 명시적 예외를 통과해야 release tag, attestation과 manifest를 만들 수 있다. 외부 Action은 full commit SHA로 고정한다.
 
-Release manifest는 source revision과 세 service의 immutable digest만 소유한다. Main의 deployment smoke는 현재 source Dockerfile을 검증한다. Release workflow는 취약점 검사를 통과해 registry에 게시된 바로 그 digest를 먼저 runner의 격리 Compose에서 실행한 뒤, 분리된 staging inventory에 배포해 실제 container digest·public DNS/TLS를 검증하고 승인된 fixture로 course 조회·lesson 시작·답안 제출 흐름을 실행한다. 이 전체 staging 경로가 통과한 뒤에만 `production` environment 배포 job을 연다.
+Release manifest는 source revision과 세 service의 immutable digest만 소유한다. Main의 deployment smoke는 현재 source Dockerfile을 검증한다. Release workflow는 취약점 검사를 통과해 registry에 게시된 바로 그 digest를 먼저 runner의 격리 Compose에서 실행한 뒤, 분리된 staging inventory에 배포해 실제 container digest·public DNS/TLS를 검증하고 승인된 fixture로 course 조회·lesson 시작·답안 제출 흐름을 실행한다. 이 전체 staging 경로가 통과한 뒤에만 `Production` environment 배포 job을 연다.
 
 Production job은 protected environment 승인만으로 배포를 시작하지 않는다. [준비 증거 검사](../../scripts/production-readiness.ts)가 명시적 deploy 승인, 외부 법률 검토 식별자·검증 시각, 최근 31일 이내 staging 복구 훈련 식별자·검증 시각, 성공한 동일 revision main 전체 E2E run을 모두 확인해 일회성 Ansible 변수 파일을 만든다. Playbook도 호스트 변경 전에 source revision, 승인, evidence 형식과 복구 훈련 유효 기간을 다시 확인한다. 하나라도 없거나 placeholder·production 복구·만료·revision 불일치이면 실패한다.
 
 Production 배포 job은 repository 전체에서 동시에 하나만 실행하며 실행 중 job을 취소하지 않는다. GitHub concurrency는 FIFO 대기열을 보장하지 않고 pending job을 더 최신 요청으로 교체할 수 있으므로, 호스트 변경 직전에 GitHub API의 현재 `main` reference와 release revision을 다시 비교한다. 더 최신 main이 있거나 API 조회에 실패하면 배포를 시작하지 않는다. 이 직렬화는 서로 다른 revision의 image build·scan 병렬성은 유지하면서 오래된 승인 job이 새 revision을 덮어쓰는 것을 막는다.
 
-Evidence 식별자는 외부 기록을 연결하는 감사 reference이지 저장소가 법률 결과나 실제 복구 성공을 스스로 증명한다는 뜻이 아니다. GitHub `production` environment 관리자는 연결된 결과의 범위와 진위를 확인한 뒤 변수와 reviewer 승인을 관리해야 한다. 현재 [외부 법률 검토 기록](../archive/2026-07-24-confirmed-product-baseline/privacy-legal-review-gate.md)과 [staging 복구 기준](./database-backup-restore.md)에는 실제 성공 증거가 없으므로 production launch gate가 해제됐다고 판정하지 않는다.
+Evidence 식별자는 외부 기록을 연결하는 감사 reference이지 저장소가 법률 결과나 실제 복구 성공을 스스로 증명한다는 뜻이 아니다. GitHub `Production` environment 관리자는 연결된 결과의 범위와 진위를 확인한 뒤 변수와 reviewer 승인을 관리해야 한다. 현재 [외부 법률 검토 기록](../archive/2026-07-24-confirmed-product-baseline/privacy-legal-review-gate.md)과 [staging 복구 기준](./database-backup-restore.md)에는 실제 성공 증거가 없으므로 production launch gate가 해제됐다고 판정하지 않는다.
 
 Image release workflow의 k6 baseline은 release digest를 staging에 배포·공개 검증한 뒤 GitHub `staging` environment가 제공하는 staging·production origin, 전용 학습자 session과 고정 lesson fixture만 사용해 한 번 실행한다. 실행 source는 staging 부하 승인이 없거나 두 origin이 같으면 요청 전에 실패해야 한다. 상태를 전진시키지 않는 multiple-choice 오답 제출만 허용하고 AI provider 호출과 production 부하 실행은 이 gate의 범위에서 제외한다. Main 품질 workflow에서 같은 suite를 선행 실행하지 않아, 기존 staging 장애를 수정하는 release가 이전 상태의 부하 gate에 막히는 교착을 피한다.
 
@@ -42,6 +42,8 @@ Image release workflow의 k6 baseline은 release digest를 staging에 배포·�
 ## Ansible 입력
 
 현재 변수 이름과 기본값은 [defaults](../../infra/ansible/vars/defaults.yaml), 환경별 비밀이 아닌 입력과 Vault 계약은 [production](../../infra/ansible/inventories/production/)과 [staging](../../infra/ansible/inventories/staging/) inventory 예시가 소유한다. 디렉터리·container identity·고정 infrastructure image, AI quota·timeout과 계산된 origin은 defaults, public host·application image·provider·storage 위치는 group variables, 인증·서명·Resend·Google·OpenAI·S3 credential은 환경별 Vault에서 관리한다. deploy role은 runtime 파일을 렌더링하기 전에 이 입력, 환경별 backup path·marker prefix와 public/private bucket 분리를 값 비노출로 검증한다.
+
+GitHub Actions의 repository·environment 입력 이름은 [release 입력 계약](../../deploy/github-release-inputs.json)이 소유한다. `bun run check:release-input-contract`는 계약과 workflow 참조의 이름·environment 대소문자를 정적으로 비교한다. `bun run preflight:release`는 현재 GitHub 설정을 읽기 전용으로 조회하고 누락된 이름만 scope별로 출력한다. 이 명령은 secret과 variable 값을 출력하지 않는다. 누락이 하나라도 있으면 staging 또는 production 배포를 시도하지 않는다.
 
 Staging은 production과 다른 host, config·data·backup·deployment 경로, Vault, backup bucket·object path, public asset bucket과 private marker bucket·prefix를 사용한다. 별도 public asset bucket은 논리 prefix보다 강한 접근 경계를 제공한다. `NODE_ENV`는 최적화된 실행 모드이고 `DEPLOYMENT_ENVIRONMENT`는 실제 production/staging 대상을 나타낸다. API schema와 파괴적 maintenance·restore guard는 두 의미를 섞지 않고 대상 환경 확인값을 후자와 비교한다.
 
