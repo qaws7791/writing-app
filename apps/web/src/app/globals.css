@@ -5,3 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 @source "../**/*.{ts,tsx}";
 @source "../../../../packages/shared/ui/src/**/*.{ts,tsx}";
+
+@media (pointer: fine) {
+  @layer base {
+    html {
+      scrollbar-gutter: stable;
+    }
+  }
+}
