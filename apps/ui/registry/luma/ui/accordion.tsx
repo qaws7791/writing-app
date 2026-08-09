@@ -40,7 +40,7 @@ function AccordionTrigger({ className, children, ...props }: AccordionPrimitive.
           icon={ArrowDown01Icon}
           strokeWidth={2}
           data-slot="accordion-trigger-icon"
-          className="pointer-events-none mt-px shrink-0 text-muted-foreground transition-[rotate,color] group-hover/accordion-trigger:text-foreground group-aria-expanded/accordion-trigger:-rotate-180"
+          className="pointer-events-none mt-px shrink-0 text-muted-foreground transition-[rotate,color] duration-(--motion-duration-overlay) ease-quiet group-hover/accordion-trigger:text-foreground group-aria-expanded/accordion-trigger:-rotate-180"
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
@@ -51,12 +51,12 @@ function AccordionContent({ className, children, ...props }: AccordionPrimitive.
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className="overflow-hidden text-sm data-open:animate-accordion-down data-closed:animate-accordion-up"
+      className="h-(--accordion-panel-height) overflow-hidden text-sm transition-[height] duration-(--motion-duration-enter) ease-quiet data-ending-style:h-0 data-ending-style:duration-(--motion-duration-overlay) data-ending-style:ease-quiet-in data-starting-style:h-0"
       {...props}
     >
       <div
         className={cn(
-          "h-(--accordion-panel-height) pt-0 pb-5 text-sm leading-6 text-pretty text-muted-foreground data-ending-style:h-0 data-starting-style:h-0 [&_a]:underline [&_a]:decoration-muted-foreground/40 [&_a]:underline-offset-[0.3em] [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
+          "origin-top pt-0 pb-5 text-sm leading-6 text-pretty text-muted-foreground transition-[opacity,transform] duration-(--motion-duration-enter) ease-quiet in-data-ending-style:translate-y-1 in-data-ending-style:opacity-0 in-data-ending-style:duration-(--motion-duration-overlay) in-data-ending-style:ease-quiet-in in-data-starting-style:translate-y-1.5 in-data-starting-style:opacity-0 [&_a]:underline [&_a]:decoration-muted-foreground/40 [&_a]:underline-offset-[0.3em] [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
           className,
         )}
       >

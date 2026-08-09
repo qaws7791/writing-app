@@ -156,6 +156,8 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 기반은 `@base-ui/react/accordion`이다. 공개 구조는 `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent`다. 수동 disclosure 구현 대신 사용한다. `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
 
+패널 높이 전환은 Base UI의 `--accordion-panel-height`와 `data-starting-style` / `data-ending-style` CSS transition을 사용한다. Enter는 `--motion-duration-enter`(320ms)와 `ease-quiet`, exit는 `--motion-duration-overlay`(220ms)와 `ease-quiet-in`이다. 패널 내용은 같은 타이밍으로 opacity와 작은 translateY를 함께 전환한다. Chevron은 overlay duration으로 회전한다. `prefers-reduced-motion`은 motion token이 처리한다.
+
 ## Tabs
 
 구현 위치: `packages/shared/ui/src/components/ui/tabs.tsx`

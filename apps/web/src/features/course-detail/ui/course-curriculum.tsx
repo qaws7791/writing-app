@@ -74,7 +74,7 @@ function CurriculumUnit({
 
   return (
     <AccordionItem
-      className="min-w-0 rounded-3xl border-0 bg-muted/55 px-4"
+      className="min-w-0 overflow-hidden rounded-3xl border-0 bg-muted/55 px-4"
       value={unit.id}
     >
       <AccordionTrigger className="min-w-0 py-5">
