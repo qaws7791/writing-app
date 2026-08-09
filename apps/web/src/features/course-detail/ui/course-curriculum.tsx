@@ -73,7 +73,7 @@ function CurriculumUnit({
 
   return (
     <AccordionItem className="min-w-0" value={unit.id}>
-      <AccordionTrigger className="min-w-0 px-4 py-5">
+      <AccordionTrigger className="min-w-0 items-center px-4 py-5 **:data-[slot=accordion-trigger-icon]:mt-0">
         <div className="flex min-w-0 items-center gap-3 pr-2">
           <span
             aria-hidden="true"
