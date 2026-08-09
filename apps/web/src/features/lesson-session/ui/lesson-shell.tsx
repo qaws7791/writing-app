@@ -57,7 +57,7 @@ export function LessonShell({
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           ref={contentRef}
         >
-          <div className="flex min-h-full flex-col py-2 pb-8 sm:py-4 sm:pb-10">
+          <div className="flex min-h-full flex-col pt-2 pb-8 sm:pt-4 sm:pb-10">
             {children}
           </div>
         </main>

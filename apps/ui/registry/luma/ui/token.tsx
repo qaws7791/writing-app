@@ -11,10 +11,7 @@ function TokenSentence({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
       data-slot="token-sentence"
-      className={cn(
-        "flex flex-wrap items-center gap-x-1 gap-y-2.5 text-base leading-9 tracking-[-0.01em]",
-        className,
-      )}
+      className={cn("flex flex-wrap items-baseline gap-x-1 gap-y-3 text-base leading-9", className)}
       {...props}
     />
   );

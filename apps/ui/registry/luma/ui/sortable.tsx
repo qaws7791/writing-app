@@ -138,7 +138,7 @@ function Sortable<T extends SortableValue>({
         <ol
           data-slot="sortable"
           data-disabled={disabled || undefined}
-          className={cn("flex w-full flex-col gap-2.5", className)}
+          className={cn("flex w-full flex-col gap-3", className)}
           {...props}
         >
           {children}
@@ -206,7 +206,7 @@ function SortableItem({
         data-drop-target={isDropTarget || undefined}
         data-disabled={isDisabled || undefined}
         className={cn(
-          "group/sortable-item flex items-center gap-2 rounded-3xl border px-2.5 py-2 text-sm transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none",
+          "group/sortable-item flex items-center gap-2 rounded-3xl border px-2 py-1.5 text-sm transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none",
           state === "idle" && "border-border/80 bg-card shadow-2xs",
           state === "correct" && "border-foreground/20 bg-foreground/[0.035]",
           state === "incorrect" && "border-destructive/30 bg-destructive/6 text-destructive",
@@ -265,7 +265,7 @@ function SortableIndex({ className, children, ...props }: React.ComponentProps<"
     <span
       data-slot="sortable-index"
       className={cn(
-        "flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium tabular-nums text-muted-foreground",
+        "flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium tabular-nums text-muted-foreground",
         className,
       )}
       {...props}
@@ -279,10 +279,7 @@ function SortableContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sortable-content"
-      className={cn(
-        "min-w-0 flex-1 px-1.5 py-1.5 leading-6 font-medium tracking-[-0.01em]",
-        className,
-      )}
+      className={cn("min-w-0 flex-1 px-2 leading-6 font-medium", className)}
       {...props}
     />
   );

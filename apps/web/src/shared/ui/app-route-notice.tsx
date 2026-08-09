@@ -24,7 +24,7 @@ export function AppRouteNotice({
 }: AppRouteNoticeProps) {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-3xl px-6 py-10 sm:px-8">
+      <div className="mx-auto flex w-full max-w-2xl px-4 py-10 sm:px-6">
         <Card className="w-full">
           <CardHeader>
             <CardTitle>

@@ -36,6 +36,7 @@
 - 레슨 진행 헤더의 진행률은 `role="progressbar"`와 `aria-valuemin`, `aria-valuemax`, `aria-valuenow`를 제공한다.
 - 레슨 콘텐츠 영역은 `aria-label="레슨 콘텐츠"`를 사용한다.
 - 레슨 행동 영역은 `aria-label="레슨 행동"`을 사용한다.
+- 레슨 하단 CTA는 모바일 safe area inset을 반영한다.
 - 나가기 버튼은 `aria-label="나가기"`를 제공한다.
 - 순서 스텝의 항목 재정렬은 포인터 드래그에만 의존하지 않는다.
 - 키보드 사용자는 드래그 핸들에서 Space 또는 Enter로 항목을 들고 방향키로 이동한 뒤 Space 또는 Enter로 놓을 수 있어야 한다.

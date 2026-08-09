@@ -19,7 +19,7 @@ function ChoiceGroup({
       role={type === "single" ? "radiogroup" : "group"}
       data-slot="choice-group"
       data-type={type}
-      className={cn("flex w-full flex-col gap-2.5", className)}
+      className={cn("flex w-full flex-col gap-3", className)}
       {...props}
     />
   );

@@ -52,7 +52,7 @@ export function LessonCompleteScreen({
             </LessonCompleteDescription>
 
             {lesson.summary.length === 0 ? null : (
-              <Insight className="max-w-md" tone="neutral">
+              <Insight className="w-full text-left" tone="neutral">
                 <InsightEyebrow>이번 레슨 요약</InsightEyebrow>
                 <InsightList>
                   {lesson.summary.map((point) => (
@@ -62,7 +62,7 @@ export function LessonCompleteScreen({
               </Insight>
             )}
 
-            <div className="flex w-full max-w-md flex-col gap-2 sm:flex-row">
+            <div className="flex w-full flex-col gap-2 sm:flex-row">
               <Button
                 className="flex-1"
                 onClick={onCourse}

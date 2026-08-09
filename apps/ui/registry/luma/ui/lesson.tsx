@@ -22,7 +22,7 @@ function LessonHeader({ className, ...props }: React.ComponentProps<"header">) {
   return (
     <header
       data-slot="lesson-header"
-      className={cn("flex items-center gap-3 pb-5", className)}
+      className={cn("flex min-h-9 items-center gap-3 pb-4", className)}
       {...props}
     />
   );
@@ -36,7 +36,7 @@ function LessonClose({ className, ...props }: React.ComponentProps<typeof Button
       size="icon-sm"
       aria-label="레슨 나가기"
       data-slot="lesson-close"
-      className={cn(className)}
+      className={cn("-ml-2.5", className)}
       {...props}
     >
       <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.75} />
@@ -56,7 +56,7 @@ function LessonProgress({
     <Progress
       value={value}
       data-slot="lesson-progress"
-      className={cn("min-w-0 flex-1 gap-1.5", className)}
+      className={cn("h-9 min-w-0 flex-1 flex-nowrap items-center gap-0", className)}
       {...props}
     >
       <ProgressLabel className="sr-only">{label}</ProgressLabel>
@@ -69,7 +69,10 @@ function LessonMeta({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="lesson-meta"
-      className={cn("shrink-0 text-xs tabular-nums text-muted-foreground", className)}
+      className={cn(
+        "flex h-9 shrink-0 items-center text-xs tabular-nums text-muted-foreground",
+        className,
+      )}
       {...props}
     />
   );
@@ -90,7 +93,7 @@ function LessonFooter({ className, ...props }: React.ComponentProps<"footer">) {
     <footer
       data-slot="lesson-footer"
       className={cn(
-        "sticky bottom-0 mt-auto border-t border-border/70 bg-background/90 pt-4 pb-4 backdrop-blur-md",
+        "sticky bottom-0 mt-auto border-t border-border/70 bg-background/90 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md",
         className,
       )}
       {...props}
@@ -115,10 +118,7 @@ function LessonComplete({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="lesson-complete"
-      className={cn(
-        "mx-auto flex w-full max-w-lg flex-col items-center gap-5 py-16 text-center",
-        className,
-      )}
+      className={cn("mx-auto flex w-full flex-col items-center gap-5 py-16 text-center", className)}
       {...props}
     />
   );
@@ -128,10 +128,7 @@ function LessonCompleteTitle({ className, ...props }: React.ComponentProps<"div"
   return (
     <div
       data-slot="lesson-complete-title"
-      className={cn(
-        "font-heading text-3xl font-semibold tracking-[-0.03em] text-balance",
-        className,
-      )}
+      className={cn("font-heading text-3xl font-semibold text-balance", className)}
       {...props}
     />
   );
@@ -141,7 +138,7 @@ function LessonCompleteDescription({ className, ...props }: React.ComponentProps
   return (
     <p
       data-slot="lesson-complete-description"
-      className={cn("max-w-md text-base leading-7 text-pretty text-muted-foreground", className)}
+      className={cn("max-w-prose text-base leading-7 text-pretty text-muted-foreground", className)}
       {...props}
     />
   );

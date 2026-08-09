@@ -22,7 +22,7 @@ function SegmentGroup({
       className={cn(
         "w-full text-base leading-8 tracking-[-0.01em]",
         layout === "inline" && "flex flex-wrap items-baseline gap-x-1 gap-y-1.5",
-        layout === "block" && "flex flex-col gap-2.5",
+        layout === "block" && "flex flex-col gap-3",
         className,
       )}
       {...props}

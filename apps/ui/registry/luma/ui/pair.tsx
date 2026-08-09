@@ -24,7 +24,7 @@ function PairBoard({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="pair-board"
       className={cn(
-        "@container/pair relative grid w-full grid-cols-2 gap-x-3 gap-y-2.5 @[28rem]/pair:gap-x-6 @[40rem]/pair:gap-x-10",
+        "@container/pair relative grid w-full grid-cols-2 gap-x-3 gap-y-3 @[28rem]/pair:gap-x-6 @[40rem]/pair:gap-x-10",
         className,
       )}
       {...props}
@@ -44,7 +44,7 @@ function PairColumn({
       data-slot="pair-column"
       data-side={side}
       className={cn(
-        "flex flex-col gap-2.5",
+        "flex flex-col gap-3",
         side === "left" && "[&_[data-slot=pair-item]]:flex-row-reverse",
         className,
       )}

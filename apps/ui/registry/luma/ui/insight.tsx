@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/registry/luma/lib/utils";
 
 const insightVariants = cva(
-  "group/insight flex w-full flex-col gap-2 rounded-3xl border px-5 py-4 text-left text-sm",
+  "group/insight flex w-full flex-col gap-2 rounded-3xl border px-4 py-4 text-left text-sm",
   {
     variants: {
       tone: {
@@ -42,7 +42,7 @@ function InsightEyebrow({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="insight-eyebrow"
       className={cn(
-        "text-xs font-medium tracking-[0.06em] text-muted-foreground uppercase group-data-[tone=incorrect]/insight:text-destructive/75",
+        "text-xs font-medium text-muted-foreground group-data-[tone=incorrect]/insight:text-destructive/75",
         className,
       )}
       {...props}

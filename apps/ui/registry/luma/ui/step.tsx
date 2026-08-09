@@ -26,10 +26,7 @@ function StepEyebrow({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="step-eyebrow"
-      className={cn(
-        "text-xs font-medium tracking-[0.06em] text-muted-foreground uppercase",
-        className,
-      )}
+      className={cn("text-xs font-medium text-muted-foreground", className)}
       {...props}
     />
   );
@@ -40,7 +37,7 @@ function StepTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="step-title"
       className={cn(
-        "font-heading text-2xl font-semibold tracking-[-0.028em] text-balance sm:text-[1.75rem]",
+        "font-heading text-2xl font-semibold text-balance sm:text-[1.75rem]",
         className,
       )}
       {...props}

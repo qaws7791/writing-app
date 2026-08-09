@@ -79,7 +79,7 @@ function ClassifyPool({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="classify-pool"
-      className={cn("flex flex-col gap-2.5", className)}
+      className={cn("flex flex-col gap-3", className)}
       {...props}
     />
   )

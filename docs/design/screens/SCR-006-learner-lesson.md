@@ -26,6 +26,10 @@
 - `AppShell`을 사용하지 않는 몰입형 전체 화면이다.
 - root는 `h-dvh min-h-screen overflow-hidden bg-background text-foreground`이다.
 - 상단 헤더·본문·하단 CTA는 동일 콘텐츠 열(`max-w-2xl`)과 동일 수평 패딩을 쓴다.
+- 나가기 아이콘 글리프는 본문 왼쪽 엣지에 광학 정렬한다. hit area는 최소 터치 목표를 유지한다.
+- 진행 헤더의 나가기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다.
+- 하단 CTA는 모바일 safe area inset을 반영한다.
+- 완료 화면도 동일 `max-w-2xl` 열 폭을 유지한다.
 - 상단 진행 헤더와 하단 CTA는 고정 영역으로 유지한다.
 - 중앙 콘텐츠만 스크롤된다.
 - 몰입형 구조는 공유 `Lesson`, `LessonHeader`, `LessonBody`, `LessonFooter`를 사용한다.
