@@ -5,11 +5,14 @@ My Shadcn Registry for modern design system
 
 # Monorepo integration
 
-- `apps/ui` owns the Astro documentation site and the complete shadcn registry source.
+- `packages/shared/ui` owns shared runtime design tokens and styles.
+- `apps/ui` consumes `@workspace/ui/styles` and owns only Astro documentation styles and demo theme presets.
+- `apps/ui` owns the Astro documentation site and the external shadcn registry packaging source.
+- The `registry:base` theme payload must match `packages/shared/ui/src/styles`; `source:validate` enforces this direction.
 - The root `package.json` and root `bun.lock` own active workspace dependencies.
 - `upstream-bun.lock.snapshot`, `upstream-oxfmtrc.snapshot`, and
   `upstream-package.snapshot` preserve upstream integration inputs.
-- A registry source change must keep `packages/shared/ui` coverage synchronized.
+- A registry component source change must keep `packages/shared/ui` coverage synchronized.
 - Product apps must not connect registry block fixtures to production data.
 
 # DESIGN

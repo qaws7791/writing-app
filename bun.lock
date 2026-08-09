@@ -122,7 +122,6 @@
         "cmdk": "catalog:",
         "date-fns": "4.4.0",
         "input-otp": "catalog:",
-        "pretendard": "catalog:",
         "react": "catalog:",
         "react-day-picker": "catalog:",
         "react-dom": "catalog:",

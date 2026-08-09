@@ -11,11 +11,12 @@
 - 공통 token과 primitive: `packages/shared/ui/src/styles/`
 - 학습자 앱 조합: `apps/web/src/app/globals.css`
 - 관리자 앱 조합: `apps/admin/src/app/globals.css`
+- UI 문서 조합과 demo preset: `apps/ui/src/styles/global.css`
 - 실행 가능한 표본: Astro UI 문서 `/docs/foundations/*`
 
 학습자 앱과 관리자 앱은 같은 Luma 시각 언어를 사용한다.
 
-각 앱의 `globals.css`는 Tailwind 실행과 앱 전용 layout만 소유한다.
+각 앱의 전역 CSS는 `@workspace/ui/styles`를 소비하고 Tailwind 실행과 앱 전용 layout만 소유한다.
 
 ## Luma 원칙
 

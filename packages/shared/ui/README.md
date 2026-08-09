@@ -20,7 +20,9 @@
 
 ## 스타일 구조
 
-전역 스타일 entrypoint는 `@workspace/ui/styles`를 사용한다. 내부 구현은 `src/styles/tokens/` 아래에서 reference, semantic, typography, spacing, radius, elevation, motion, z-index, component token으로 나눈다. Tailwind import, plugin, source scan, PostCSS 설정은 이 패키지가 아니라 각 앱 Adapter가 소유한다.
+전역 스타일 entrypoint는 `@workspace/ui/styles`를 사용한다. `src/styles/tokens/reference.css`, `semantic.css`, `motion.css`와 `src/styles/globals.css`가 공통 runtime 디자인 값의 단일 원천이다. Tailwind import, plugin, source scan, PostCSS 설정은 각 앱 Adapter가 소유한다.
+
+`apps/ui`, `apps/admin`, `apps/web`은 이 entrypoint를 직접 소비한다. 앱은 공통 light·dark·contrast·motion 값을 다시 선언하지 않는다.
 
 제품 앱과 Astro UI 문서 앱의 root는 `@workspace/ui/pretendard-font`를 한 번 import해 로컬 가변 동적 서브셋을 명시적으로 활성화한다.
 

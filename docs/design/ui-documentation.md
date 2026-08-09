@@ -20,7 +20,10 @@
 - `apps/ui/src/pages/docs`는 설명 문서를 소유한다.
 - `apps/ui/src/pages/preview`는 격리 실행 경로를 소유한다.
 - `apps/ui/tests/design-system.spec.ts`는 렌더, 접근성과 상호작용 검증을 소유한다.
-- `apps/ui/registry`는 외부 배포용 registry source를 소유한다.
+- `packages/shared/ui/src/styles`는 공통 runtime token과 style을 소유한다.
+- `apps/ui/src/styles/global.css`는 `@workspace/ui/styles`를 소비하고 문서 전용 color·radius preset과 layout utility만 소유한다.
+- `apps/ui/registry`는 외부 배포용 registry packaging source를 소유한다.
+- `apps/ui/registry/base/registry.json`의 theme payload는 패키지 token과 일치해야 한다.
 - `packages/shared/ui`에는 문서 route나 fixture를 두지 않는다.
 
 ## 작성 계약
@@ -41,4 +44,4 @@ bun --filter @workspace/ui-registry test:browser
 bun --filter @workspace/ui-registry build
 ```
 
-`docs:validate`는 카탈로그와 이관 인벤토리의 완전성을 검사한다. `source:validate`는 registry와 workspace 공개 source의 동기화를 검사한다. `test:browser`는 실제 Astro 정적 build에서 렌더, axe와 상호작용 계약을 검사한다.
+`docs:validate`는 카탈로그와 이관 인벤토리의 완전성을 검사한다. `source:validate`는 패키지 token과 Astro·registry theme의 일치 여부를 검사하고 registry와 workspace 공개 source의 동기화를 검사한다. `test:browser`는 실제 Astro 정적 build에서 렌더, axe와 상호작용 계약을 검사한다.

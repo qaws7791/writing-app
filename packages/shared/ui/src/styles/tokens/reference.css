@@ -1,30 +1,30 @@
-/* Luma reference values from qaws7791/ui@010ddc4421d0d2875c858f3cec69a4a93dbf2f28. */
+/* Luma runtime values. Product apps and the UI documentation consume this file. */
 
 :root {
   --ref-background: oklch(0.9845 0.0035 92);
   --ref-foreground: oklch(0.2178 0.0086 67);
   --ref-card: oklch(0.9958 0.0018 95);
-  --ref-card-foreground: oklch(0.2178 0.0086 67);
+  --ref-card-foreground: var(--ref-foreground);
   --ref-popover: oklch(0.9958 0.0018 95);
-  --ref-popover-foreground: oklch(0.2178 0.0086 67);
+  --ref-popover-foreground: var(--ref-foreground);
   --ref-primary: oklch(0.2712 0.0104 67);
   --ref-primary-foreground: oklch(0.9845 0.0035 92);
-  --ref-secondary: oklch(0.9522 0.0043 92);
+  --ref-secondary: oklch(0.936 0.0045 92);
   --ref-secondary-foreground: oklch(0.2712 0.0104 67);
-  --ref-muted: oklch(0.9603 0.0038 92);
-  --ref-muted-foreground: oklch(0.5 0.0104 72);
-  --ref-accent: oklch(0.9394 0.005 90);
+  --ref-muted: oklch(0.948 0.0042 92);
+  --ref-muted-foreground: oklch(0.5413 0.0104 72);
+  --ref-accent: oklch(0.922 0.005 90);
   --ref-accent-foreground: oklch(0.2178 0.0086 67);
-  --ref-destructive: oklch(0.525 0.1598 27.5);
+  --ref-destructive: oklch(0.54 0.1598 27.5);
   --ref-success: oklch(0.508 0.1186 155);
   --ref-warning: oklch(0.532 0.1364 55);
   --ref-info: oklch(0.519 0.1084 245);
   --ref-purple: oklch(0.534 0.1262 305);
-  --ref-border: oklch(0.9165 0.0037 90);
-  --ref-input: oklch(0.9345 0.0037 90);
+  --ref-border: oklch(0.895 0.0042 90);
+  --ref-input: oklch(0.912 0.004 90);
   --ref-ring: oklch(0.6118 0.0125 70);
-  --ref-surface: oklch(0.9712 0.0037 92);
-  --ref-surface-foreground: oklch(0.2178 0.0086 67);
+  --ref-surface: oklch(0.968 0.0038 92);
+  --ref-surface-foreground: var(--ref-foreground);
   --ref-selection: oklch(0.2712 0.0104 67);
   --ref-selection-foreground: oklch(0.9845 0.0035 92);
   --ref-chart-1: oklch(0.8412 0.0072 88);
@@ -32,13 +32,13 @@
   --ref-chart-3: oklch(0.5989 0.0108 72);
   --ref-chart-4: oklch(0.4571 0.0119 68);
   --ref-chart-5: oklch(0.3288 0.0112 66);
-  --ref-sidebar: oklch(0.9712 0.0037 92);
-  --ref-sidebar-foreground: oklch(0.2178 0.0086 67);
+  --ref-sidebar: oklch(0.968 0.0042 92);
+  --ref-sidebar-foreground: var(--ref-foreground);
   --ref-sidebar-primary: oklch(0.2712 0.0104 67);
   --ref-sidebar-primary-foreground: oklch(0.9845 0.0035 92);
-  --ref-sidebar-accent: oklch(0.9394 0.005 90);
+  --ref-sidebar-accent: oklch(0.936 0.005 90);
   --ref-sidebar-accent-foreground: oklch(0.2178 0.0086 67);
-  --ref-sidebar-border: oklch(0.9165 0.0037 90);
+  --ref-sidebar-border: oklch(0.888 0.0042 90);
   --ref-sidebar-ring: oklch(0.6118 0.0125 70);
   --ref-elevation-2xs: 0 1px 1px -1px oklch(0.28 0.02 70 / 0.08);
   --ref-elevation-xs:
@@ -66,9 +66,9 @@
   --ref-background: oklch(0.1908 0.0043 72);
   --ref-foreground: oklch(0.9403 0.0031 92);
   --ref-card: oklch(0.2276 0.0048 72);
-  --ref-card-foreground: oklch(0.9403 0.0031 92);
+  --ref-card-foreground: var(--ref-foreground);
   --ref-popover: oklch(0.2402 0.005 72);
-  --ref-popover-foreground: oklch(0.9403 0.0031 92);
+  --ref-popover-foreground: var(--ref-foreground);
   --ref-primary: oklch(0.9247 0.0035 92);
   --ref-primary-foreground: oklch(0.2276 0.0048 72);
   --ref-secondary: oklch(0.2761 0.0051 72);
@@ -86,11 +86,11 @@
   --ref-input: oklch(1 0 0 / 13%);
   --ref-ring: oklch(0.5563 0.0086 74);
   --ref-surface: oklch(0.2135 0.0045 72);
-  --ref-surface-foreground: oklch(0.9403 0.0031 92);
+  --ref-surface-foreground: var(--ref-foreground);
   --ref-selection: oklch(0.9247 0.0035 92);
   --ref-selection-foreground: oklch(0.2276 0.0048 72);
   --ref-sidebar: oklch(0.2135 0.0045 72);
-  --ref-sidebar-foreground: oklch(0.9403 0.0031 92);
+  --ref-sidebar-foreground: var(--ref-foreground);
   --ref-sidebar-primary: oklch(0.9247 0.0035 92);
   --ref-sidebar-primary-foreground: oklch(0.2276 0.0048 72);
   --ref-sidebar-accent: oklch(0.3021 0.0055 74);

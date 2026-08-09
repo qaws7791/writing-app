@@ -24,7 +24,6 @@
     "verify": "bun run format:check && bun run lint && bun run docs:validate && bun run source:validate && bun run check && bun run registry:validate && bun run build"
   },
   "dependencies": {
-    "@workspace/ui": "workspace:*",
     "@base-ui/react": "catalog:",
     "@dnd-kit/dom": "catalog:",
     "@dnd-kit/react": "catalog:",
@@ -32,12 +31,12 @@
     "@hugeicons/react": "catalog:",
     "@shadcn/react": "catalog:",
     "@tanstack/react-table": "catalog:",
+    "@workspace/ui": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "catalog:",
     "date-fns": "4.4.0",
     "input-otp": "catalog:",
-    "pretendard": "catalog:",
     "react": "catalog:",
     "react-day-picker": "catalog:",
     "react-dom": "catalog:",

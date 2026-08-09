@@ -19,8 +19,9 @@ Registry는 다음 계층을 구분한다.
 
 ## 2. Token Source of Truth
 
-- Token은 code와 design tool이 공유할 수 있는 직렬화 가능한 원본을 source of truth로 관리한다.
-- Generated CSS, theme payload와 documentation table은 원본 token의 산출물이며 독립적으로 다른 값을 유지하지 않는다.
+- `packages/shared/ui/src/styles/tokens`와 `packages/shared/ui/src/styles/globals.css`가 runtime token의 단일 원천이다.
+- `apps/ui/src/styles/global.css`는 `@workspace/ui/styles`를 소비하고 문서 전용 preset만 소유한다.
+- Registry Base theme payload와 documentation table은 패키지 token의 산출물이며 독립적으로 다른 값을 유지하지 않는다.
 - Component 내부에서 raw hex, 임의 spacing, 개별 duration, ad-hoc z-index와 고정 shadow를 반복하지 않는다.
 - 필수 범주는 color와 semantic state, typography, spacing과 density, radius와 surface, border와 elevation, motion, z-index와 scrim, focus와 selection, container adaptation이다.
 - Token 이름 변경, 의미 변경과 삭제는 시각 수정이 아니라 public contract 변경으로 취급한다.

@@ -24,7 +24,7 @@
       "cssVars": {
         "theme": {
           "font-heading": "var(--font-sans)",
-          "font-sans": "\"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+          "font-sans": "\"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, \"Helvetica Neue\", \"Segoe UI\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", sans-serif",
           "radius-sm": "calc(var(--radius) * 0.6)",
           "radius-md": "calc(var(--radius) * 0.8)",
           "radius-lg": "var(--radius)",
@@ -42,36 +42,38 @@
           "shadow-2xl": "var(--elevation-2xl)",
           "ease-quiet": "cubic-bezier(0.32, 0.72, 0, 1)",
           "ease-quiet-in": "cubic-bezier(0.62, 0.04, 0.86, 0.4)",
+          "ease-press": "cubic-bezier(0.24, 1, 0.4, 1)",
           "default-transition-duration": "180ms",
           "default-transition-timing-function": "cubic-bezier(0.32, 0.72, 0, 1)",
           "animate-breathe": "breathe 2.4s cubic-bezier(0.32, 0.72, 0, 1) infinite",
+          "animate-skeleton": "skeleton-breathe 2.4s cubic-bezier(0.32, 0.72, 0, 1) infinite",
           "animate-drift-in": "drift-in 320ms cubic-bezier(0.32, 0.72, 0, 1) both"
         },
         "light": {
           "background": "oklch(0.9845 0.0035 92)",
           "foreground": "oklch(0.2178 0.0086 67)",
           "card": "oklch(0.9958 0.0018 95)",
-          "card-foreground": "oklch(0.2178 0.0086 67)",
+          "card-foreground": "var(--foreground)",
           "popover": "oklch(0.9958 0.0018 95)",
-          "popover-foreground": "oklch(0.2178 0.0086 67)",
+          "popover-foreground": "var(--foreground)",
           "primary": "oklch(0.2712 0.0104 67)",
           "primary-foreground": "oklch(0.9845 0.0035 92)",
-          "secondary": "oklch(0.9522 0.0043 92)",
+          "secondary": "oklch(0.936 0.0045 92)",
           "secondary-foreground": "oklch(0.2712 0.0104 67)",
-          "muted": "oklch(0.9603 0.0038 92)",
+          "muted": "oklch(0.948 0.0042 92)",
           "muted-foreground": "oklch(0.5413 0.0104 72)",
-          "accent": "oklch(0.9394 0.005 90)",
+          "accent": "oklch(0.922 0.005 90)",
           "accent-foreground": "oklch(0.2178 0.0086 67)",
           "destructive": "oklch(0.54 0.1598 27.5)",
           "success": "oklch(0.508 0.1186 155)",
           "warning": "oklch(0.532 0.1364 55)",
           "info": "oklch(0.519 0.1084 245)",
           "purple": "oklch(0.534 0.1262 305)",
-          "border": "oklch(0.9165 0.0037 90)",
-          "input": "oklch(0.9345 0.0037 90)",
+          "border": "oklch(0.895 0.0042 90)",
+          "input": "oklch(0.912 0.004 90)",
           "ring": "oklch(0.6118 0.0125 70)",
-          "surface": "oklch(0.9712 0.0037 92)",
-          "surface-foreground": "oklch(0.2178 0.0086 67)",
+          "surface": "oklch(0.968 0.0038 92)",
+          "surface-foreground": "var(--foreground)",
           "selection": "oklch(0.2712 0.0104 67)",
           "selection-foreground": "oklch(0.9845 0.0035 92)",
           "chart-1": "oklch(0.8412 0.0072 88)",
@@ -79,15 +81,23 @@
           "chart-3": "oklch(0.5989 0.0108 72)",
           "chart-4": "oklch(0.4571 0.0119 68)",
           "chart-5": "oklch(0.3288 0.0112 66)",
-          "sidebar": "oklch(0.9712 0.0037 92)",
-          "sidebar-foreground": "oklch(0.2178 0.0086 67)",
+          "sidebar": "oklch(0.968 0.0042 92)",
+          "sidebar-foreground": "var(--foreground)",
           "sidebar-primary": "oklch(0.2712 0.0104 67)",
           "sidebar-primary-foreground": "oklch(0.9845 0.0035 92)",
-          "sidebar-accent": "oklch(0.9394 0.005 90)",
+          "sidebar-accent": "oklch(0.936 0.005 90)",
           "sidebar-accent-foreground": "oklch(0.2178 0.0086 67)",
-          "sidebar-border": "oklch(0.9165 0.0037 90)",
+          "sidebar-border": "oklch(0.888 0.0042 90)",
           "sidebar-ring": "oklch(0.6118 0.0125 70)",
           "radius": "0.625rem",
+          "motion-duration-fast": "125ms",
+          "motion-duration-normal": "180ms",
+          "motion-duration-overlay": "220ms",
+          "motion-duration-enter": "320ms",
+          "motion-ease-press": "cubic-bezier(0.24, 1, 0.4, 1)",
+          "motion-ease-enter": "cubic-bezier(0.32, 0.72, 0, 1)",
+          "motion-ease-exit": "cubic-bezier(0.62, 0.04, 0.86, 0.4)",
+          "motion-press-scale": "0.98",
           "elevation-2xs": "0 1px 1px -1px oklch(0.28 0.02 70 / 0.08)",
           "elevation-xs": "0 1px 1px -0.5px oklch(0.28 0.02 70 / 0.05), 0 2px 4px -2px oklch(0.28 0.02 70 / 0.06)",
           "elevation-sm": "0 1px 2px -1px oklch(0.28 0.02 70 / 0.05), 0 4px 8px -4px oklch(0.28 0.02 70 / 0.07)",
@@ -100,9 +110,9 @@
           "background": "oklch(0.1908 0.0043 72)",
           "foreground": "oklch(0.9403 0.0031 92)",
           "card": "oklch(0.2276 0.0048 72)",
-          "card-foreground": "oklch(0.9403 0.0031 92)",
+          "card-foreground": "var(--foreground)",
           "popover": "oklch(0.2402 0.005 72)",
-          "popover-foreground": "oklch(0.9403 0.0031 92)",
+          "popover-foreground": "var(--foreground)",
           "primary": "oklch(0.9247 0.0035 92)",
           "primary-foreground": "oklch(0.2276 0.0048 72)",
           "secondary": "oklch(0.2761 0.0051 72)",
@@ -120,7 +130,7 @@
           "input": "oklch(1 0 0 / 13%)",
           "ring": "oklch(0.5563 0.0086 74)",
           "surface": "oklch(0.2135 0.0045 72)",
-          "surface-foreground": "oklch(0.9403 0.0031 92)",
+          "surface-foreground": "var(--foreground)",
           "selection": "oklch(0.9247 0.0035 92)",
           "selection-foreground": "oklch(0.2276 0.0048 72)",
           "chart-1": "oklch(0.8412 0.0072 88)",
@@ -129,7 +139,7 @@
           "chart-4": "oklch(0.4571 0.0119 68)",
           "chart-5": "oklch(0.3288 0.0112 66)",
           "sidebar": "oklch(0.2135 0.0045 72)",
-          "sidebar-foreground": "oklch(0.9403 0.0031 92)",
+          "sidebar-foreground": "var(--foreground)",
           "sidebar-primary": "oklch(0.9247 0.0035 92)",
           "sidebar-primary-foreground": "oklch(0.2276 0.0048 72)",
           "sidebar-accent": "oklch(0.3021 0.0055 74)",
@@ -157,6 +167,14 @@
             "opacity": "0.55"
           }
         },
+        "@keyframes skeleton-breathe": {
+          "0%, 100%": {
+            "opacity": "1"
+          },
+          "50%": {
+            "opacity": "0.85"
+          }
+        },
         "@keyframes drift-in": {
           "from": {
             "opacity": "0",
@@ -177,28 +195,71 @@
             "corner-shape": "superellipse(1.5)"
           }
         },
+        "@utility no-scrollbar": {
+          "scrollbar-width": "none",
+          "-ms-overflow-style": "none",
+          "&::-webkit-scrollbar": {
+            "display": "none"
+          }
+        },
+        "@media (prefers-contrast: more)": {
+          ":root": {
+            "--border": "oklch(0.655 0.006 90)",
+            "--input": "oklch(0.655 0.006 90)",
+            "--sidebar-border": "oklch(0.655 0.006 90)",
+            "--ring": "oklch(0.45 0.014 70)",
+            "--muted": "oklch(0.928 0.0045 92)",
+            "--secondary": "oklch(0.915 0.0048 92)",
+            "--accent": "oklch(0.9 0.0052 90)",
+            "--surface": "oklch(0.952 0.0042 92)"
+          },
+          ".dark": {
+            "--border": "oklch(1 0 0 / 22%)",
+            "--input": "oklch(1 0 0 / 28%)",
+            "--sidebar-border": "oklch(1 0 0 / 22%)",
+            "--ring": "oklch(0.72 0.01 74)",
+            "--muted": "oklch(0.3 0.0055 72)",
+            "--secondary": "oklch(0.31 0.0055 72)",
+            "--accent": "oklch(0.34 0.006 74)"
+          }
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          ":root": {
+            "--motion-duration-fast": "1ms",
+            "--motion-duration-normal": "1ms",
+            "--motion-duration-overlay": "1ms",
+            "--motion-duration-enter": "1ms",
+            "--motion-press-scale": "1"
+          },
+          ":root:not([data-motion=\"full\"]) *, :root:not([data-motion=\"full\"]) ::before, :root:not([data-motion=\"full\"]) ::after": {
+            "animation-duration": "0.01ms !important",
+            "animation-iteration-count": "1 !important",
+            "scroll-behavior": "auto !important",
+            "transition-duration": "0.01ms !important"
+          }
+        },
+        ":root[data-motion=\"reduced\"] *, :root[data-motion=\"reduced\"] ::before, :root[data-motion=\"reduced\"] ::after": {
+          "animation-duration": "0.01ms !important",
+          "animation-iteration-count": "1 !important",
+          "scroll-behavior": "auto !important",
+          "transition-duration": "0.01ms !important"
+        },
         "@layer base": {
           "*": {
             "@apply border-border outline-ring/50": {}
           },
           "body": {
-            "@apply bg-background text-foreground antialiased": {}
+            "@apply min-h-svh bg-background text-foreground antialiased": {}
           },
           "html": {
-            "@apply font-sans": {}
+            "@apply font-sans": {},
+            "text-rendering": "optimizeLegibility"
           },
           "::selection": {
             "@apply bg-selection text-selection-foreground": {}
           },
-          "th, td, time, kbd": {
+          "th, td, time, kbd, [data-slot$=\"-value\"]": {
             "font-variant-numeric": "tabular-nums"
-          },
-          "@media (prefers-reduced-motion: reduce)": {
-            "*, ::before, ::after": {
-              "animation-duration": "0.01ms !important",
-              "animation-iteration-count": "1 !important",
-              "transition-duration": "0.01ms !important"
-            }
           }
         }
       },
