@@ -77,6 +77,37 @@ describe("createLessonSessionEffects", () => {
     )
   })
 
+  it("레슨 시작 오류 원문을 학습자 행동 안내로 바꾼다", async () => {
+    generatedClient.startLearnerLesson.mockRejectedValue(
+      httpError("CURRICULUM_VERSION_CHANGED", 409)
+    )
+
+    await expect(createEffects().start()).resolves.toEqual({
+      message: "레슨 내용이 바뀌었어요. 코스에서 다시 열어 주세요.",
+      status: "error",
+    })
+  })
+
+  it("답 확인 오류 원문 대신 작성 내용과 재시도를 안내한다", async () => {
+    generatedClient.completeLearnerStep.mockRejectedValue(
+      new GeneratedApiClientError({
+        kind: "network",
+        method: "POST",
+        url: "/api/learning/lessons/lesson-1/steps/step-1/complete",
+      })
+    )
+
+    await expect(
+      createEffects().completeStep({
+        request: { kind: "acknowledge" },
+        stepId: "step-1",
+      })
+    ).resolves.toEqual({
+      message: "작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요.",
+      status: "error",
+    })
+  })
+
   it.each([
     [
       "provider",
@@ -148,7 +179,6 @@ describe("createLessonSessionEffects", () => {
         })
       ).resolves.toEqual({
         kind: expected.kind,
-        message: expect.any(String),
         retryAfterSeconds: expected.retryAfterSeconds,
         reuseIdempotencyKey: expected.reuseIdempotencyKey,
         status: "error",

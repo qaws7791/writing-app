@@ -55,6 +55,12 @@ export function getLessonStepActionLabel(step: LessonStep): string {
       : "확인하기"
 }
 
+export function getLessonStepPendingLabel(step: LessonStep): string {
+  return step.type === "READING" || step.type === "COMPARE"
+    ? "계속하는 중…"
+    : "확인하는 중…"
+}
+
 export function isLessonStepCheckedCorrect(
   checked: LessonStepCheckedState
 ): boolean {

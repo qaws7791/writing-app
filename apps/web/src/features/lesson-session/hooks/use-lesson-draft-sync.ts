@@ -10,7 +10,6 @@ import {
 } from "@/features/lesson-session/api/draft-transport"
 import {
   isLearnerApiAbortedError,
-  isLearnerApiNetworkError,
   readLearnerApiErrorCode,
   settleLearnerApiRequest,
 } from "@/shared/http/learner-api-client"
@@ -25,30 +24,22 @@ import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 const AUTOSAVE_DELAY_MS = 800
 const RECONCILE_INTERVAL_MS = 30_000
 
-export type LessonDraftSyncStatus =
-  | { readonly kind: "idle" }
-  | { readonly kind: "saving" }
-  | { readonly kind: "saved"; readonly updatedAt: string }
-  | { readonly kind: "offline" }
-  | { readonly kind: "error"; readonly message: string }
-  | {
-      readonly kind: "conflict"
-      readonly localAnswer: LessonStepDraftAnswer
-      readonly serverDraft: LessonStepDraft | null
-    }
+export type LessonDraftFlushResult =
+  | { readonly status: "blocked" }
+  | { readonly status: "ready" }
 
 type DraftRecord = {
   answer: LessonStepDraftAnswer
-  conflict: {
-    readonly localAnswer: LessonStepDraftAnswer
-    readonly serverDraft: LessonStepDraft | null
-  } | null
   dirty: boolean
   expectedVersion: number | null
-  inFlight: boolean
+  inFlight: Promise<void> | null
   savedAnswer: LessonStepDraftAnswer | null
   updatedAt: string | null
 }
+
+type CurrentDraftResult =
+  | { readonly draft: LessonStepDraft | null; readonly status: "ok" }
+  | { readonly status: "error" }
 
 export function useLessonDraftSync({
   expectedCurriculumVersionId,
@@ -78,16 +69,6 @@ export function useLessonDraftSync({
   const [renderRevisionByStepId, setRenderRevisionByStepId] = useState<
     Readonly<Record<string, number>>
   >({})
-  const [statusByStepId, setStatusByStepId] = useState<
-    Readonly<Record<string, LessonDraftSyncStatus>>
-  >(() =>
-    Object.fromEntries(
-      initialDrafts.map((draft) => [
-        draft.stepId,
-        { kind: "saved", updatedAt: draft.updatedAt },
-      ])
-    )
-  )
 
   if (recordsRef.current === null) {
     recordsRef.current = createDraftRecords(initialDrafts)
@@ -104,15 +85,8 @@ export function useLessonDraftSync({
     onServerDraftAppliedRef.current = onServerDraftApplied
   }, [onServerDraftApplied])
 
-  const setStepStatus = useCallback(
-    (stepId: string, status: LessonDraftSyncStatus) => {
-      if (!mountedRef.current) return
-      setStatusByStepId((current) => ({ ...current, [stepId]: status }))
-    },
-    []
-  )
-
   const bumpRenderRevision = useCallback((stepId: string) => {
+    if (!mountedRef.current) return
     setRenderRevisionByStepId((current) => ({
       ...current,
       [stepId]: (current[stepId] ?? 0) + 1,
@@ -154,53 +128,26 @@ export function useLessonDraftSync({
       )
 
       for (const [stepId, record] of records) {
-        if (record.inFlight) continue
+        if (record.inFlight !== null) continue
         const serverDraft = serverDraftByStepId.get(stepId) ?? null
 
         if (record.dirty) {
-          const serverChanged =
-            (serverDraft?.version ?? null) !== record.expectedVersion ||
-            !sameOptionalAnswer(serverDraft?.answer, record.savedAnswer)
-
-          if (serverChanged) {
-            record.conflict = {
-              localAnswer: record.answer,
-              serverDraft,
-            }
-            setStepStatus(stepId, {
-              kind: "conflict",
-              ...record.conflict,
-            })
+          if (serverBaseChanged(record, serverDraft)) {
+            rebaseDirtyRecord(record, serverDraft)
           }
           continue
         }
 
         if (serverDraft === null) {
-          if (record.expectedVersion !== null) {
-            record.conflict = {
-              localAnswer: record.answer,
-              serverDraft: null,
-            }
-            setStepStatus(stepId, {
-              kind: "conflict",
-              ...record.conflict,
-            })
-          }
+          records.delete(stepId)
+          onServerDraftAppliedRef.current(stepId, null)
+          bumpRenderRevision(stepId)
           continue
         }
 
-        if (
-          serverDraft.version === record.expectedVersion &&
-          sameDraftAnswer(serverDraft.answer, record.savedAnswer)
-        ) {
-          continue
-        }
+        if (!serverBaseChanged(record, serverDraft)) continue
 
         updateRecordFromServer(record, serverDraft)
-        setStepStatus(stepId, {
-          kind: "saved",
-          updatedAt: serverDraft.updatedAt,
-        })
         onServerDraftAppliedRef.current(stepId, serverDraft.answer)
         bumpRenderRevision(stepId)
       }
@@ -208,164 +155,108 @@ export function useLessonDraftSync({
       for (const serverDraft of serverDrafts) {
         if (records.has(serverDraft.stepId)) continue
         records.set(serverDraft.stepId, createServerDraftRecord(serverDraft))
-        setStepStatus(serverDraft.stepId, {
-          kind: "saved",
-          updatedAt: serverDraft.updatedAt,
-        })
         onServerDraftAppliedRef.current(serverDraft.stepId, serverDraft.answer)
         bumpRenderRevision(serverDraft.stepId)
       }
     },
-    [bumpRenderRevision, setStepStatus]
+    [bumpRenderRevision]
   )
 
-  const reconcile = useCallback((): Promise<void> => {
-    if (reconcilePromiseRef.current !== null) {
-      return reconcilePromiseRef.current
-    }
-
-    const reconciliation = (async () => {
+  const readCurrentDraft = useCallback(
+    async (stepId: string): Promise<CurrentDraftResult> => {
       const result = await settleLearnerApiRequest(
         getLesson(lessonId, { signal: readAbortSignal() })
       )
-
-      if (result.status === "error") {
-        if (isLearnerApiAbortedError(result.error)) return
-        const records = readDraftRecords(recordsRef)
-        for (const [stepId, record] of records) {
-          if (!record.dirty) continue
-          setStepStatus(
-            stepId,
-            isLearnerApiNetworkError(result.error)
-              ? { kind: "offline" }
-              : { kind: "error", message: result.error.message }
-          )
-        }
-        return
-      }
-
+      if (result.status === "error") return { status: "error" }
       if (
         result.value.version.curriculumVersionId !== expectedCurriculumVersionId
       ) {
-        const records = readDraftRecords(recordsRef)
-        for (const [stepId, record] of records) {
-          if (!record.dirty) continue
-          setStepStatus(stepId, {
-            kind: "error",
-            message:
-              "학습 콘텐츠 버전이 변경되었습니다. 레슨을 다시 열어 주세요.",
-          })
-        }
-        return
+        return { status: "error" }
       }
 
-      applyServerDrafts(parseLessonStepDrafts(result.value.drafts))
-
-      const pendingStepIds = [...readDraftRecords(recordsRef)]
-        .filter(([, record]) => record.dirty && record.conflict === null)
-        .map(([stepId]) => stepId)
-      await Promise.all(
-        pendingStepIds.map((stepId) =>
-          flushStepDraftRef.current(stepId, defaultTransport())
-        )
+      const draft = parseLessonStepDrafts(result.value.drafts).find(
+        (candidate) => candidate.stepId === stepId
       )
-    })().finally(() => {
-      reconcilePromiseRef.current = null
-    })
+      return { draft: draft ?? null, status: "ok" }
+    },
+    [expectedCurriculumVersionId, lessonId, readAbortSignal]
+  )
 
-    reconcilePromiseRef.current = reconciliation
-    return reconciliation
-  }, [
-    applyServerDrafts,
-    defaultTransport,
-    expectedCurriculumVersionId,
-    lessonId,
-    readAbortSignal,
-    setStepStatus,
-  ])
+  const saveDirtyRecord = useCallback(
+    async (
+      stepId: string,
+      record: DraftRecord,
+      transport: DraftSaveTransport
+    ): Promise<void> => {
+      let conflictRetryAvailable = true
+
+      while (record.dirty) {
+        if (!browserIsOnline()) return
+
+        const sentAnswer = record.answer
+        const result = await settleLearnerApiRequest(
+          saveStepDraft({
+            body: {
+              answer: sentAnswer,
+              expectedCurriculumVersionId,
+              expectedVersion: record.expectedVersion,
+            },
+            lessonId,
+            stepId,
+            transport,
+          })
+        )
+
+        if (result.status === "error") {
+          if (isLearnerApiAbortedError(result.error)) return
+          if (
+            conflictRetryAvailable &&
+            readLearnerApiErrorCode(result.error) ===
+              "STEP_DRAFT_VERSION_CONFLICT"
+          ) {
+            conflictRetryAvailable = false
+            const currentDraft = await readCurrentDraft(stepId)
+            if (currentDraft.status === "error") return
+            rebaseDirtyRecord(record, currentDraft.draft)
+            continue
+          }
+          return
+        }
+
+        const savedDraft = parseLessonStepDraft(result.value)
+        record.expectedVersion = savedDraft.version
+        record.savedAnswer = savedDraft.answer
+        record.updatedAt = savedDraft.updatedAt
+        record.dirty = !sameDraftAnswer(record.answer, sentAnswer)
+      }
+    },
+    [expectedCurriculumVersionId, lessonId, readCurrentDraft]
+  )
 
   const flushStepDraftWithTransport = useCallback(
     async (stepId: string, transport: DraftSaveTransport): Promise<void> => {
       clearScheduledSave(stepId)
       const record = readDraftRecords(recordsRef).get(stepId)
-      if (
-        record === undefined ||
-        !record.dirty ||
-        record.inFlight ||
-        record.conflict !== null
-      ) {
-        return
-      }
+      if (record === undefined || !record.dirty) return
 
-      if (!browserIsOnline()) {
-        setStepStatus(stepId, { kind: "offline" })
-        return
-      }
-
-      const sentAnswer = record.answer
-      record.inFlight = true
-      setStepStatus(stepId, { kind: "saving" })
-
-      const result = await settleLearnerApiRequest(
-        saveStepDraft({
-          body: {
-            answer: sentAnswer,
-            expectedCurriculumVersionId,
-            expectedVersion: record.expectedVersion,
-          },
-          lessonId,
-          stepId,
-          transport,
-        })
-      )
-      record.inFlight = false
-
-      if (result.status === "error") {
-        if (isLearnerApiAbortedError(result.error)) return
-        if (
-          readLearnerApiErrorCode(result.error) ===
-          "STEP_DRAFT_VERSION_CONFLICT"
-        ) {
-          await reconcile()
-          return
+      if (record.inFlight !== null) {
+        await record.inFlight
+        const currentRecord = readDraftRecords(recordsRef).get(stepId)
+        if (currentRecord?.dirty) {
+          await flushStepDraftRef.current(stepId, transport)
         }
-
-        setStepStatus(
-          stepId,
-          isLearnerApiNetworkError(result.error)
-            ? { kind: "offline" }
-            : { kind: "error", message: result.error.message }
-        )
         return
       }
 
-      const savedDraft = parseLessonStepDraft(result.value)
-      record.expectedVersion = savedDraft.version
-      record.savedAnswer = savedDraft.answer
-      record.updatedAt = savedDraft.updatedAt
-      record.dirty = !sameDraftAnswer(record.answer, sentAnswer)
-      record.conflict = null
-
-      if (!record.dirty) {
-        setStepStatus(stepId, {
-          kind: "saved",
-          updatedAt: savedDraft.updatedAt,
-        })
-        return
+      const operation = saveDirtyRecord(stepId, record, transport)
+      record.inFlight = operation
+      try {
+        await operation
+      } finally {
+        if (record.inFlight === operation) record.inFlight = null
       }
-
-      setStepStatus(stepId, { kind: "saving" })
-      queueMicrotask(() => {
-        void flushStepDraftRef.current(stepId, transport)
-      })
     },
-    [
-      clearScheduledSave,
-      expectedCurriculumVersionId,
-      lessonId,
-      reconcile,
-      setStepStatus,
-    ]
+    [clearScheduledSave, saveDirtyRecord]
   )
 
   useEffect(() => {
@@ -389,10 +280,53 @@ export function useLessonDraftSync({
     []
   )
 
-  const flushAll = useCallback(
-    (): Promise<void> => flushAllWithTransport(defaultTransport()),
-    [defaultTransport, flushAllWithTransport]
-  )
+  const flushAll = useCallback(async (): Promise<LessonDraftFlushResult> => {
+    await flushAllWithTransport(defaultTransport())
+    const isReady = [...readDraftRecords(recordsRef).values()].every(
+      (record) => !record.dirty && record.inFlight === null
+    )
+    return { status: isReady ? "ready" : "blocked" }
+  }, [defaultTransport, flushAllWithTransport])
+
+  const reconcile = useCallback((): Promise<void> => {
+    if (reconcilePromiseRef.current !== null) {
+      return reconcilePromiseRef.current
+    }
+
+    const reconciliation = (async () => {
+      const result = await settleLearnerApiRequest(
+        getLesson(lessonId, { signal: readAbortSignal() })
+      )
+      if (result.status === "error") return
+      if (
+        result.value.version.curriculumVersionId !== expectedCurriculumVersionId
+      ) {
+        return
+      }
+
+      applyServerDrafts(parseLessonStepDrafts(result.value.drafts))
+
+      const pendingStepIds = [...readDraftRecords(recordsRef)]
+        .filter(([, record]) => record.dirty)
+        .map(([stepId]) => stepId)
+      await Promise.all(
+        pendingStepIds.map((stepId) =>
+          flushStepDraftRef.current(stepId, defaultTransport())
+        )
+      )
+    })().finally(() => {
+      reconcilePromiseRef.current = null
+    })
+
+    reconcilePromiseRef.current = reconciliation
+    return reconciliation
+  }, [
+    applyServerDrafts,
+    defaultTransport,
+    expectedCurriculumVersionId,
+    lessonId,
+    readAbortSignal,
+  ])
 
   const stageDraft = useCallback(
     (stepId: string, answer: LessonStepDraftAnswer) => {
@@ -401,96 +335,24 @@ export function useLessonDraftSync({
       records.set(stepId, record)
 
       record.answer = answer
-      record.dirty = !sameOptionalAnswer(answer, record.savedAnswer)
+      record.dirty = !sameNullableAnswer(answer, record.savedAnswer)
 
       if (!record.dirty) {
-        record.conflict = null
         clearScheduledSave(stepId)
-        setStepStatus(
-          stepId,
-          record.updatedAt === null
-            ? { kind: "idle" }
-            : { kind: "saved", updatedAt: record.updatedAt }
-        )
         return
       }
 
-      if (record.conflict !== null) {
-        record.conflict = {
-          ...record.conflict,
-          localAnswer: answer,
-        }
-        setStepStatus(stepId, {
-          kind: "conflict",
-          ...record.conflict,
-        })
-        return
-      }
-
-      if (!browserIsOnline()) {
-        setStepStatus(stepId, { kind: "offline" })
-        return
-      }
-
-      setStepStatus(stepId, { kind: "saving" })
-      scheduleSave(stepId)
+      if (browserIsOnline()) scheduleSave(stepId)
     },
-    [clearScheduledSave, scheduleSave, setStepStatus]
+    [clearScheduledSave, scheduleSave]
   )
 
   const discardSubmittedDraft = useCallback(
     (stepId: string) => {
       clearScheduledSave(stepId)
       readDraftRecords(recordsRef).delete(stepId)
-      setStatusByStepId((current) =>
-        Object.fromEntries(
-          Object.entries(current).filter(([id]) => id !== stepId)
-        )
-      )
     },
     [clearScheduledSave]
-  )
-
-  const retryLocalDraft = useCallback(
-    (stepId: string) => {
-      const record = readDraftRecords(recordsRef).get(stepId)
-      if (record?.conflict === null || record?.conflict === undefined) return
-      const serverDraft = record.conflict.serverDraft
-      record.savedAnswer = serverDraft?.answer ?? null
-      record.expectedVersion = serverDraft?.version ?? null
-      record.updatedAt = serverDraft?.updatedAt ?? null
-      record.conflict = null
-      record.dirty = true
-      setStepStatus(stepId, { kind: "saving" })
-      void flushStepDraftRef.current(stepId, defaultTransport())
-    },
-    [defaultTransport, setStepStatus]
-  )
-
-  const useServerDraft = useCallback(
-    (stepId: string) => {
-      const records = readDraftRecords(recordsRef)
-      const record = records.get(stepId)
-      if (record?.conflict === null || record?.conflict === undefined) return
-      clearScheduledSave(stepId)
-      const serverDraft = record.conflict.serverDraft
-
-      if (serverDraft === null) {
-        records.delete(stepId)
-        onServerDraftAppliedRef.current(stepId, null)
-        setStepStatus(stepId, { kind: "idle" })
-      } else {
-        updateRecordFromServer(record, serverDraft)
-        onServerDraftAppliedRef.current(stepId, serverDraft.answer)
-        setStepStatus(stepId, {
-          kind: "saved",
-          updatedAt: serverDraft.updatedAt,
-        })
-      }
-
-      bumpRenderRevision(stepId)
-    },
-    [bumpRenderRevision, clearScheduledSave, setStepStatus]
   )
 
   useEffect(() => {
@@ -500,11 +362,6 @@ export function useLessonDraftSync({
     }
     const handleOnline = () => {
       void reconcile()
-    }
-    const handleOffline = () => {
-      for (const [stepId, record] of readDraftRecords(recordsRef)) {
-        if (record.dirty) setStepStatus(stepId, { kind: "offline" })
-      }
     }
     const handlePageHide = () => {
       void flushAllWithTransport({ kind: "unload" })
@@ -522,7 +379,6 @@ export function useLessonDraftSync({
 
     window.addEventListener("focus", handleFocus)
     window.addEventListener("online", handleOnline)
-    window.addEventListener("offline", handleOffline)
     window.addEventListener("pagehide", handlePageHide)
     document.addEventListener("visibilitychange", handleVisibilityChange)
 
@@ -530,7 +386,6 @@ export function useLessonDraftSync({
       globalThis.clearInterval(interval)
       window.removeEventListener("focus", handleFocus)
       window.removeEventListener("online", handleOnline)
-      window.removeEventListener("offline", handleOffline)
       window.removeEventListener("pagehide", handlePageHide)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
       for (const timer of scheduledTimers.values()) {
@@ -538,19 +393,15 @@ export function useLessonDraftSync({
       }
       scheduledTimers.clear()
     }
-  }, [flushAllWithTransport, reconcile, setStepStatus])
+  }, [flushAllWithTransport, reconcile])
 
   return {
     applyServerDrafts,
     discardSubmittedDraft,
     flushAll,
     flushStepDraft,
-    reconcile,
     renderRevisionByStepId,
-    retryLocalDraft,
     stageDraft,
-    statusByStepId,
-    useServerDraft,
   }
 }
 
@@ -565,10 +416,9 @@ function createDraftRecords(
 function createServerDraftRecord(draft: LessonStepDraft): DraftRecord {
   return {
     answer: draft.answer,
-    conflict: null,
     dirty: false,
     expectedVersion: draft.version,
-    inFlight: false,
+    inFlight: null,
     savedAnswer: draft.answer,
     updatedAt: draft.updatedAt,
   }
@@ -577,13 +427,22 @@ function createServerDraftRecord(draft: LessonStepDraft): DraftRecord {
 function createUnsavedDraftRecord(answer: LessonStepDraftAnswer): DraftRecord {
   return {
     answer,
-    conflict: null,
     dirty: true,
     expectedVersion: null,
-    inFlight: false,
+    inFlight: null,
     savedAnswer: null,
     updatedAt: null,
   }
+}
+
+function rebaseDirtyRecord(
+  record: DraftRecord,
+  draft: LessonStepDraft | null
+): void {
+  record.expectedVersion = draft?.version ?? null
+  record.savedAnswer = draft?.answer ?? null
+  record.updatedAt = draft?.updatedAt ?? null
+  record.dirty = !sameNullableAnswer(record.answer, record.savedAnswer)
 }
 
 function updateRecordFromServer(
@@ -591,11 +450,20 @@ function updateRecordFromServer(
   draft: LessonStepDraft
 ): void {
   record.answer = draft.answer
-  record.conflict = null
   record.dirty = false
   record.expectedVersion = draft.version
   record.savedAnswer = draft.answer
   record.updatedAt = draft.updatedAt
+}
+
+function serverBaseChanged(
+  record: DraftRecord,
+  draft: LessonStepDraft | null
+): boolean {
+  return (
+    (draft?.version ?? null) !== record.expectedVersion ||
+    !sameOptionalAnswer(draft?.answer, record.savedAnswer)
+  )
 }
 
 function readDraftRecords(
@@ -603,7 +471,7 @@ function readDraftRecords(
 ): Map<string, DraftRecord> {
   const records = recordsRef.current
   if (records === null) {
-    throw new Error("레슨 드래프트 동기화가 초기화되지 않았습니다.")
+    throw new Error("레슨을 준비하지 못했습니다.")
   }
   return records
 }
@@ -621,9 +489,16 @@ function sameOptionalAnswer(
     : right !== null && sameDraftAnswer(left, right)
 }
 
-function sameDraftAnswer(
+function sameNullableAnswer(
   left: LessonStepDraftAnswer,
   right: LessonStepDraftAnswer | null
 ): boolean {
-  return right !== null && JSON.stringify(left) === JSON.stringify(right)
+  return right !== null && sameDraftAnswer(left, right)
+}
+
+function sameDraftAnswer(
+  left: LessonStepDraftAnswer,
+  right: LessonStepDraftAnswer
+): boolean {
+  return JSON.stringify(left) === JSON.stringify(right)
 }

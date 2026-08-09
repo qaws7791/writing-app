@@ -8,10 +8,11 @@ import type {
   LessonAiFeedbackSkipOutcome,
   LessonStepAnswerPayload,
 } from "@/features/lesson-session/model/lesson-logic"
-import type { LessonDraftSyncStatus } from "@/features/lesson-session/hooks/use-lesson-draft-sync"
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
-import { getLessonStepActionLabel } from "@/features/lesson-session/model/lesson-step-policy"
-import { LessonDraftStatus } from "@/features/lesson-session/ui/lesson-draft-status"
+import {
+  getLessonStepActionLabel,
+  getLessonStepPendingLabel,
+} from "@/features/lesson-session/model/lesson-step-policy"
 import { LessonStepRenderer } from "@/features/lesson-session/ui/lesson-step-renderer"
 import type {
   Lesson,
@@ -40,10 +41,11 @@ export function LessonActiveScreen({
   checked,
   completeError,
   contentRef,
-  currentDraftStatus,
   currentStep,
   currentStepIndex,
+  exitError,
   isReady,
+  isLeaving,
   isSubmitting,
   lesson,
   onAiFeedbackRequest,
@@ -53,10 +55,7 @@ export function LessonActiveScreen({
   onConfirmExit,
   onDraftFlush,
   onExit,
-  onRetryDraft,
-  onRetryLocalDraft,
   onSubmitCurrentStep,
-  onUseServerDraft,
   progress,
   renderRevision,
   showExit,
@@ -68,10 +67,11 @@ export function LessonActiveScreen({
   readonly checked: LessonCheckedState
   readonly completeError: null | string
   readonly contentRef: Ref<HTMLElement>
-  readonly currentDraftStatus: LessonDraftSyncStatus
   readonly currentStep: LessonStep
   readonly currentStepIndex: number
+  readonly exitError: null | string
   readonly isReady: boolean
+  readonly isLeaving: boolean
   readonly isSubmitting: boolean
   readonly lesson: Lesson
   readonly onAiFeedbackRequest: (
@@ -88,10 +88,7 @@ export function LessonActiveScreen({
   readonly onConfirmExit: () => void
   readonly onDraftFlush: () => void
   readonly onExit: () => void
-  readonly onRetryDraft: () => void
-  readonly onRetryLocalDraft: () => void
   readonly onSubmitCurrentStep: () => void
-  readonly onUseServerDraft: () => void
   readonly progress: number
   readonly renderRevision: number
   readonly showExit: boolean
@@ -111,7 +108,7 @@ export function LessonActiveScreen({
                 variant={isReady ? "default" : "secondary"}
               >
                 {isSubmitting
-                  ? "저장 중"
+                  ? getLessonStepPendingLabel(currentStep)
                   : getLessonStepActionLabel(currentStep)}
               </Button>
             </LessonActions>
@@ -141,32 +138,21 @@ export function LessonActiveScreen({
           step={currentStep}
           {...(answerPayload === undefined ? {} : { answerPayload })}
         />
-        {isDraftableLessonStep(currentStep) ? (
-          <LessonDraftStatus
-            onRetry={onRetryDraft}
-            onRetryLocal={onRetryLocalDraft}
-            onUseServer={onUseServerDraft}
-            status={currentDraftStatus}
-          />
-        ) : null}
         {completeError === null || currentStep.type === "AI_FEEDBACK" ? null : (
           <Insight role="alert" tone="incorrect">
-            <InsightEyebrow>제출 오류</InsightEyebrow>
+            <InsightEyebrow>답을 확인하지 못했어요</InsightEyebrow>
             <InsightDescription>{completeError}</InsightDescription>
           </Insight>
         )}
       </div>
       {showExit ? (
-        <LessonExitModal onCancel={onCancelExit} onConfirm={onConfirmExit} />
+        <LessonExitModal
+          error={exitError}
+          isLeaving={isLeaving}
+          onCancel={onCancelExit}
+          onConfirm={onConfirmExit}
+        />
       ) : null}
     </LessonShell>
-  )
-}
-
-function isDraftableLessonStep(step: LessonStep): boolean {
-  return (
-    step.type !== "AI_FEEDBACK" &&
-    step.type !== "COMPARE" &&
-    step.type !== "READING"
   )
 }

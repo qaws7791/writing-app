@@ -18,6 +18,7 @@ import {
   getGetCoursesMockHandler,
   getGetCoursesMockHandler401,
   getGetLessonMockHandler200,
+  getSaveLearnerStepDraftMockHandler200,
   getSaveLearnerStepDraftMockHandler409,
 } from "@workspace/http-client/learner/msw"
 import {
@@ -124,15 +125,28 @@ describe("generated learner client UI integration", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
   })
 
-  it("generated 409 handler를 서버 draft 충돌 해결 UI로 연결한다", async () => {
+  it("generated 409 handler 뒤 현재 입력을 최신 초안에 자동으로 재적용한다", async () => {
     const user = userEvent.setup()
+    const retryDraft = vi.fn(async ({ request }: { request: Request }) => {
+      const body = (await request.json()) as {
+        readonly answer: { readonly text: string; readonly type: "WRITE" }
+      }
+      return {
+        answer: body.answer,
+        stepId: "step-write",
+        updatedAt: "2026-07-24T00:00:03.000Z",
+        version: 4,
+      }
+    })
     server.use(
       getSaveLearnerStepDraftMockHandler409(
         createGeneratedLearnerErrorFixture(409, {
           code: "STEP_DRAFT_VERSION_CONFLICT",
           message: "초안 버전이 충돌했습니다.",
-        })
+        }),
+        { once: true }
       ),
+      getSaveLearnerStepDraftMockHandler200(retryDraft),
       getGetLessonMockHandler200(learnerConflictingWriteLessonWireFixture)
     )
     render(<LessonExperience lesson={learnerWriteLessonFixture} />)
@@ -142,15 +156,8 @@ describe("generated learner client UI integration", () => {
     await user.type(draftInput, " 현재 탭의 수정")
     await user.tab()
 
-    expect(
-      await screen.findByRole("group", { name: "초안 충돌 해결" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("button", { name: "현재 내용 다시 저장" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("button", { name: "서버 초안 불러오기" })
-    ).toBeInTheDocument()
+    await waitFor(() => expect(retryDraft).toHaveBeenCalledOnce())
+    expect(screen.queryByText(/저장|충돌|version/i)).not.toBeInTheDocument()
   })
 
   it("generated 429 handler를 AI 일일 quota UI로 연결한다", async () => {
@@ -168,7 +175,7 @@ describe("generated learner client UI integration", () => {
     await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "오늘의 AI 코칭 요청 한도를 모두 사용했습니다."
+      "오늘 받을 수 있는 AI 코칭을 모두 사용했어요."
     )
     expect(
       screen.getByRole("button", { name: "피드백 없이 계속하기" })
@@ -190,9 +197,9 @@ describe("generated learner client UI integration", () => {
     await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "AI 코칭 요청을 완료하지 못했습니다."
+      "AI 코칭을 받지 못했어요."
     )
-    expect(screen.getByRole("alert")).toHaveTextContent(
+    expect(screen.getByRole("alert")).not.toHaveTextContent(
       "AI 코칭 처리에 실패했습니다."
     )
   })

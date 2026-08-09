@@ -1,7 +1,5 @@
 "use client"
 
-import { useRef } from "react"
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,37 +11,45 @@ import {
 } from "@workspace/ui/components/ui/alert-dialog"
 
 export function LessonExitModal({
+  error,
+  isLeaving,
   onCancel,
   onConfirm,
 }: {
+  readonly error: null | string
+  readonly isLeaving: boolean
   readonly onCancel: () => void
   readonly onConfirm: () => void
 }) {
-  const confirmedRef = useRef(false)
-
   return (
     <AlertDialog
       onOpenChange={(open) => {
-        if (!open && !confirmedRef.current) {
-          onCancel()
-        }
+        if (!open && !isLeaving) onCancel()
       }}
       open
     >
       <AlertDialogContent>
         <AlertDialogTitle>학습을 중단할까요?</AlertDialogTitle>
         <AlertDialogDescription>
-          진행 상황은 자동으로 저장되어 있어요.
+          코스로 돌아가면 이 레슨을 잠시 멈춥니다.
         </AlertDialogDescription>
+        {error === null ? null : (
+          <p className="text-destructive text-sm" role="alert">
+            {error}
+          </p>
+        )}
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>계속 학습</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLeaving} onClick={onCancel}>
+            계속 학습
+          </AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => {
-              confirmedRef.current = true
+            disabled={isLeaving}
+            onClick={(event) => {
+              event.preventDefault()
               onConfirm()
             }}
           >
-            나가기
+            {isLeaving ? "나가는 중…" : "나가기"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

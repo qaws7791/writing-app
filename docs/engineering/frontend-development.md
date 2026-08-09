@@ -180,7 +180,10 @@
 - 코스 상세는 유닛별 커리큘럼과 레슨의 완료, 진행 가능, 잠금 상태를 보여준다.
 - 레슨은 시작 화면을 먼저 보여주고 사용자가 시작한 뒤 첫 스텝으로 진입한다.
 - 답변 가능 스텝은 stable item ID 기반 제출을 `completeStep`으로 보내며, 서버의 `retry | advanced | lesson_completed` 결과를 세션 event로 소비한다.
-- 답변 가능한 스텝의 입력은 가까운 reducer에 유지하고 서버 초안 version과 조정한다. 800ms debounce와 blur·hidden·나가기·제출 flush를 사용하며 saving·saved·offline·conflict를 화면에 표시한다. 네트워크 실패 중 입력과 stale 충돌의 로컬 미전송 값은 지우지 않는다.
+- 답변 가능한 스텝의 입력은 가까운 reducer에 유지하고 서버 초안 version과 조정한다. 800ms debounce와 blur·hidden·나가기·제출 flush를 사용한다.
+- stale 충돌은 최신 서버 version에 현재 입력을 한 번 다시 적용한다. 재시도가 실패하면 미전송 입력을 유지하고 다음 입력, focus 또는 online 시점에 다시 시도한다.
+- 레슨 화면은 saving, saved, offline, version과 conflict를 표시하지 않는다.
+- 나가기는 모든 미전송 입력이 서버에 반영된 뒤에만 경로를 이동한다. 입력을 반영할 수 없으면 작성한 내용을 유지하고 레슨에 머문다.
 - 채점, 진도율, 다음 레슨과 완료 여부는 서버 결과를 표시하며 프론트엔드가 다시 계산하지 않는다.
 - 매칭 스텝의 로컬 선택 전이와 stable ID 제출 변환은 web feature가 소유하고, 정답 pair와 verdict는 제출 후 서버 evaluation만 사용한다.
 - AI 코칭 스텝은 `target`이 가리키는 같은 레슨의 앞선 WRITE 초안을 작성 내용으로 보여주고, 요청에는 레슨 ID와 AI 코칭 스텝 ID만 전달한다. 서버 저장 답변 없음, 콘텐츠 target 오류, 네트워크 실패, AI 제공자 실패, 일일 한도와 스텝당 3회 한도는 서로 다른 한국어 상태로 표시한다.

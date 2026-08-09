@@ -87,7 +87,7 @@ export function LessonStartScreen({
           </Badge>
           {startError === null ? null : (
             <Insight role="alert" tone="incorrect">
-              <InsightEyebrow>시작 오류</InsightEyebrow>
+              <InsightEyebrow>레슨을 시작하지 못했어요</InsightEyebrow>
               <InsightDescription>{startError}</InsightDescription>
             </Insight>
           )}

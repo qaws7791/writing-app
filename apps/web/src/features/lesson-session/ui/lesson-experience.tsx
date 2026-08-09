@@ -23,6 +23,8 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
   const router = useRouter()
   const contentRef = useRef<HTMLElement>(null)
   const isHydrated = useIsHydrated()
+  const [exitError, setExitError] = useState<null | string>(null)
+  const [isLeaving, setIsLeaving] = useState(false)
   const [showExit, setShowExit] = useState(false)
   const session = useLessonSession({ lesson })
 
@@ -59,32 +61,43 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
         checked={session.checked}
         completeError={session.completeError}
         contentRef={contentRef}
-        currentDraftStatus={session.currentDraftStatus}
         currentStep={session.currentStep}
         currentStepIndex={session.currentStepIndex}
+        exitError={exitError}
         isReady={session.isReady}
+        isLeaving={isLeaving}
         isSubmitting={session.isSubmitting}
         lesson={lesson}
         onAiFeedbackRequest={session.requestAiFeedback}
         onAiFeedbackSkip={session.skipAiFeedback}
         onAnswerPayloadChange={session.saveAnswer}
-        onCancelExit={() => setShowExit(false)}
+        onCancelExit={() => {
+          setExitError(null)
+          setShowExit(false)
+        }}
         onConfirmExit={() => {
           void (async () => {
-            await session.flushDrafts()
+            if (isLeaving) return
+            setExitError(null)
+            setIsLeaving(true)
+            const result = await session.prepareToLeave()
+            if (result.status === "blocked") {
+              setExitError(
+                "지금은 나갈 수 없어요. 작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요."
+              )
+              setIsLeaving(false)
+              return
+            }
             setShowExit(false)
             router.push(`/app/courses/${lesson.courseId}`)
           })()
         }}
         onDraftFlush={() => void session.flushCurrentDraft()}
         onExit={() => {
-          void session.flushCurrentDraft()
+          setExitError(null)
           setShowExit(true)
         }}
-        onRetryDraft={() => void session.retryDraftSync()}
-        onRetryLocalDraft={session.retryLocalDraft}
         onSubmitCurrentStep={() => void session.submitCurrentStep()}
-        onUseServerDraft={session.useServerDraft}
         progress={session.progress}
         renderRevision={session.renderRevision}
         showExit={showExit}

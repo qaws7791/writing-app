@@ -44,14 +44,13 @@ export type AiFeedbackRequestOutcome =
     }
   | {
       readonly kind: "fatal" | "limit" | "quota" | "retryable"
-      readonly message: string
       readonly retryAfterSeconds?: number
       readonly status: "error"
     }
 
 export type AiFeedbackContinueOutcome =
   | { readonly status: "ok" }
-  | { readonly message: string; readonly status: "error" }
+  | { readonly status: "error" }
 
 export function AiFeedbackAnswer({
   allowRetry,
@@ -68,8 +67,8 @@ export function AiFeedbackAnswer({
 }) {
   const [failure, setFailure] = useState<AiFeedbackFailureState | null>(null)
   const [feedback, setFeedback] = useState<AiFeedbackViewModel | null>(null)
-  const [isContinueSaved, setIsContinueSaved] = useState(false)
-  const [continueError, setContinueError] = useState<null | string>(null)
+  const [hasContinued, setHasContinued] = useState(false)
+  const [continueError, setContinueError] = useState(false)
   const [isContinuing, setIsContinuing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -77,7 +76,6 @@ export function AiFeedbackAnswer({
     if (onRequest === undefined) {
       setFailure({
         kind: "fatal",
-        message: "AI 코칭을 사용할 수 없습니다.",
         retryAt: null,
         status: "error",
       })
@@ -104,17 +102,17 @@ export function AiFeedbackAnswer({
 
   async function handleContinueWithoutFeedback() {
     if (onContinueWithoutFeedback === undefined) return
-    setContinueError(null)
+    setContinueError(false)
     setIsContinuing(true)
     const result = await onContinueWithoutFeedback()
     setIsContinuing(false)
 
     if (result.status === "error") {
-      setContinueError(result.message)
+      setContinueError(true)
       return
     }
 
-    setIsContinueSaved(true)
+    setHasContinued(true)
   }
 
   const canRetry =
@@ -159,19 +157,18 @@ export function AiFeedbackAnswer({
             <AiFeedbackResultView feedback={feedback} />
           )}
 
-          {continueError === null ? null : (
+          {!continueError ? null : (
             <Insight role="alert" tone="incorrect">
-              <InsightEyebrow>저장 오류</InsightEyebrow>
-              <InsightDescription>{continueError}</InsightDescription>
+              <InsightEyebrow>계속하지 못했어요</InsightEyebrow>
+              <InsightDescription>
+                작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요.
+              </InsightDescription>
             </Insight>
           )}
 
-          {isContinueSaved ? (
+          {hasContinued ? (
             <Insight role="status" tone="correct">
-              <InsightTitle>피드백 없이 학습 진행을 저장했습니다.</InsightTitle>
-              <InsightDescription>
-                아래 다음 버튼을 눌러 계속하세요.
-              </InsightDescription>
+              <InsightTitle>다음 학습으로 이동합니다.</InsightTitle>
             </Insight>
           ) : (
             <CoachingActions>
@@ -185,7 +182,7 @@ export function AiFeedbackAnswer({
                       size="lg"
                       variant="secondary"
                     >
-                      AI 코칭 다시 시도
+                      AI 코칭 다시 받기
                     </Button>
                   ) : null}
                   {onContinueWithoutFeedback === undefined ? null : (
@@ -195,9 +192,7 @@ export function AiFeedbackAnswer({
                       onClick={handleContinueWithoutFeedback}
                       size="lg"
                     >
-                      {isContinuing
-                        ? "학습 진행 저장 중..."
-                        : "피드백 없이 계속하기"}
+                      {isContinuing ? "계속하는 중…" : "피드백 없이 계속하기"}
                     </Button>
                   )}
                 </>
@@ -259,7 +254,7 @@ function AiFeedbackFailureView({
             <time dateTime={failure.retryAt}>
               {formatRetryAt(failure.retryAt)}
             </time>{" "}
-            이후 다시 요청할 수 있습니다.
+            이후 다시 받을 수 있습니다.
           </p>
         ) : null}
       </InsightDescription>
@@ -272,24 +267,24 @@ function getAiFeedbackFailureTitle(failure: AiFeedbackFailureState): string {
     case "retryable":
       return "AI 코칭을 잠시 불러오지 못했습니다."
     case "quota":
-      return "오늘의 AI 코칭 요청 한도를 모두 사용했습니다."
+      return "오늘 받을 수 있는 AI 코칭을 모두 사용했어요."
     case "limit":
-      return "이 단계의 AI 코칭 3회를 모두 사용했습니다."
+      return "이 단계에서 받을 수 있는 AI 코칭 3회를 모두 사용했어요."
     case "fatal":
-      return "AI 코칭 요청을 완료하지 못했습니다."
+      return "AI 코칭을 받지 못했어요."
   }
 }
 
 function getAiFeedbackFailureGuidance(failure: AiFeedbackFailureState): string {
   switch (failure.kind) {
     case "retryable":
-      return `${failure.message} 다시 시도하거나 피드백 없이 계속할 수 있습니다.`
+      return "잠시 후 다시 받거나 피드백 없이 계속할 수 있어요."
     case "quota":
-      return "한도가 갱신된 뒤 다시 요청하거나 피드백 없이 계속할 수 있습니다."
+      return "표시된 시간 이후 다시 받거나 피드백 없이 계속할 수 있어요."
     case "limit":
-      return "이 단계에서는 더 요청할 수 없지만 학습은 계속할 수 있습니다."
+      return "이 단계에서는 더 받을 수 없지만 학습은 계속할 수 있어요."
     case "fatal":
-      return `${failure.message} 피드백 없이 학습을 계속할 수 있습니다.`
+      return "피드백 없이 학습을 계속할 수 있어요."
   }
 }
 

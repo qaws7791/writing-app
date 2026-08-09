@@ -5,9 +5,11 @@ import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { LessonExperience } from "@/features/lesson-session/ui/lesson-experience"
 import { toLessonViewModel } from "@/features/lesson-session/model/lesson-view-model"
 import { parseLessonRouteSearchParams } from "@/features/lesson-session/model/lesson-route-search-params"
+import { getLessonUserMessage } from "@/features/lesson-session/model/lesson-user-message"
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import {
   isLearnerApiAuthenticationError,
+  readLearnerApiErrorCode,
   settleLearnerApiRequest,
 } from "@/shared/http/learner-api-client"
 import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
@@ -53,8 +55,11 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
 
     return (
       <AppRouteNotice
-        description={lessonResult.error.message}
-        title="레슨을 열 수 없습니다."
+        description={getLessonUserMessage(
+          "open",
+          readLearnerApiErrorCode(lessonResult.error)
+        )}
+        title="레슨을 열지 못했어요."
       />
     )
   }

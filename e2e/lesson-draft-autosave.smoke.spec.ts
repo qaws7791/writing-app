@@ -43,7 +43,9 @@ test("서버 초안을 새로고침, 다른 기기, 재로그인 뒤에도 복�
   )
   await answer.fill(firstDraft)
   await firstDraftSaved
-  await expect(page.getByRole("status")).toHaveText("서버에 저장됨")
+  await expect(page.getByText(/서버에 저장|저장 중|오프라인|충돌/)).toHaveCount(
+    0
+  )
 
   await page.reload()
   await expect(page.getByRole("textbox")).toHaveValue(firstDraft)

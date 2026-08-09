@@ -6,6 +6,7 @@ import {
 import type { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
 import type { LessonAiFeedback } from "@/features/lesson-session/model/lesson-logic"
+import { getLessonUserMessage } from "@/features/lesson-session/model/lesson-user-message"
 import {
   toLessonCompleteStepResult,
   toLessonStartResult,
@@ -34,7 +35,6 @@ type AiFeedbackEffectOutcome =
     }
   | {
       readonly kind: "fatal" | "limit" | "quota" | "retryable"
-      readonly message: string
       readonly reuseIdempotencyKey: boolean
       readonly retryAfterSeconds?: number
       readonly status: "error"
@@ -72,7 +72,13 @@ export function createLessonSessionEffects(input: {
       )
 
       return result.status === "error"
-        ? { message: result.error.message, status: "error" }
+        ? {
+            message: getLessonUserMessage(
+              "complete",
+              readLearnerApiErrorCode(result.error)
+            ),
+            status: "error",
+          }
         : { status: "ok", transition: toLessonCompleteStepResult(result.value) }
     },
     async requestAiFeedback({ idempotencyKey, stepId }) {
@@ -102,7 +108,13 @@ export function createLessonSessionEffects(input: {
         )
       )
       return result.status === "error"
-        ? { message: result.error.message, status: "error" }
+        ? {
+            message: getLessonUserMessage(
+              "start",
+              readLearnerApiErrorCode(result.error)
+            ),
+            status: "error",
+          }
         : { learning: toLessonStartResult(result.value), status: "ok" }
     },
   }
@@ -116,7 +128,6 @@ function toAiFeedbackEffectError(
 
   return {
     ...classification,
-    message: error.message,
     ...(retryAfterSeconds === null ? {} : { retryAfterSeconds }),
     status: "error",
   }

@@ -27,10 +27,9 @@ import type {
 } from "@/features/lesson-session/model/lesson-view-model"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
-const LESSON_START_ERROR =
-  "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
+const LESSON_START_ERROR = "잠시 후 다시 시도해 주세요."
 const LESSON_STEP_ERROR =
-  "학습 단계를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+  "작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요."
 
 export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
   const initialState = resolveInitialSessionState(lesson)
@@ -58,12 +57,8 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     discardSubmittedDraft,
     flushAll,
     flushStepDraft,
-    reconcile,
     renderRevisionByStepId,
-    retryLocalDraft,
     stageDraft,
-    statusByStepId,
-    useServerDraft,
   } = useLessonDraftSync({
     expectedCurriculumVersionId: lesson.version.curriculumVersionId,
     initialDrafts: lesson.drafts,
@@ -97,16 +92,11 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     isActive && currentStep !== null
       ? sessionState.answerPayloads[currentStep.id]
       : undefined
-  const currentDraftStatus =
-    currentStep === null
-      ? ({ kind: "idle" } as const)
-      : (statusByStepId[currentStep.id] ?? ({ kind: "idle" } as const))
   const checked = isActive ? sessionState.checked : false
   const hasPendingTransition =
     isActive && sessionState.pendingTransition !== null
   const isReady =
     currentStep !== null &&
-    currentDraftStatus.kind !== "conflict" &&
     (hasPendingTransition ||
       isLessonStepSubmittable(currentStep, currentAnswerPayload))
   const visibleStepNumber = currentStepIndex + 1
@@ -178,7 +168,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
         }
         return {
           kind: result.kind,
-          message: result.message,
           ...(result.retryAfterSeconds === undefined
             ? {}
             : { retryAfterSeconds: result.retryAfterSeconds }),
@@ -190,7 +179,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
         aiFeedbackRequestRef.current = null
         return {
           kind: "fatal",
-          message: LESSON_STEP_ERROR,
           status: "error",
         }
       }
@@ -218,7 +206,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
         step?.type !== "AI_FEEDBACK" ||
         step.id !== stepId
       ) {
-        return { message: LESSON_STEP_ERROR, status: "error" }
+        return { status: "error" }
       }
 
       send({ type: "SUBMIT_REQUESTED" })
@@ -227,7 +215,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
         stepId,
       })
       if (!isMountedRef.current) {
-        return { message: LESSON_STEP_ERROR, status: "error" }
+        return { status: "error" }
       }
       if (result.status === "error" || result.transition.status === "retry") {
         const message =
@@ -235,10 +223,11 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
             ? result.message || LESSON_STEP_ERROR
             : LESSON_STEP_ERROR
         send({ message, type: "SUBMIT_FAILED" })
-        return { message, status: "error" }
+        return { status: "error" }
       }
 
       send({ transition: result.transition, type: "STEP_ACCEPTED" })
+      send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
       return { status: "ok" }
     },
     [effects, lesson, send]
@@ -304,12 +293,10 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     completion:
       sessionState.status === "complete" ? sessionState.completion : null,
     currentAnswerPayload,
-    currentDraftStatus,
     currentStep,
     currentStepIndex,
     flushCurrentDraft: () =>
       currentStep === null ? Promise.resolve() : flushStepDraft(currentStep.id),
-    flushDrafts: flushAll,
     hasStarted: isActive || sessionState.status === "complete",
     isComplete: sessionState.status === "complete",
     isSubmitting: isActive && sessionState.activity === "submitting",
@@ -317,24 +304,16 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     isReady,
     isSavingStart: sessionState.status === "starting",
     progress,
+    prepareToLeave: flushAll,
     renderRevision:
       currentStep === null ? 0 : (renderRevisionByStepId[currentStep.id] ?? 0),
     requestAiFeedback,
-    retryDraftSync: reconcile,
-    retryLocalDraft:
-      currentStep === null
-        ? () => undefined
-        : () => retryLocalDraft(currentStep.id),
     saveAnswer,
     skipAiFeedback,
     startError:
       sessionState.status === "not-started" ? sessionState.startError : null,
     startLesson,
     submitCurrentStep,
-    useServerDraft:
-      currentStep === null
-        ? () => undefined
-        : () => useServerDraft(currentStep.id),
     visibleStepNumber,
   }
 }

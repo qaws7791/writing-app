@@ -79,12 +79,12 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
       },
     ],
     usageNotes: [
-      "Request callback은 API와 quota 정책을 소유하지 않습니다.",
+      "Request callback은 오류 원문을 전달하지 않고 오류 종류와 재시도 시각만 반환합니다.",
       "오류 종류는 retryable, quota와 limit를 구분합니다.",
     ],
     accessibility: [
       "Loading 상태는 진행 중임을 text로 알립니다.",
-      "오류에는 원인과 가능한 다음 행동을 함께 표시합니다.",
+      "오류에는 오류 종류와 가능한 다음 행동을 함께 표시합니다.",
     ],
   },
   {

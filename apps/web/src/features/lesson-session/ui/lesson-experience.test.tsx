@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -11,10 +11,11 @@ const generatedClient = vi.hoisted(() => ({
   saveLearnerStepDraft: vi.fn(),
   startLearnerLesson: vi.fn(),
 }))
+const pushMock = vi.hoisted(() => vi.fn())
 
 vi.mock("@workspace/http-client/learner", () => generatedClient)
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: pushMock }),
 }))
 
 import { LessonExperience } from "@/features/lesson-session/ui/lesson-experience"
@@ -128,6 +129,7 @@ describe("LessonExperience", () => {
     generatedClient.getLesson.mockReset()
     generatedClient.saveLearnerStepDraft.mockReset()
     generatedClient.startLearnerLesson.mockReset()
+    pushMock.mockReset()
     generatedClient.getLesson.mockResolvedValue(lessonWire)
     generatedClient.saveLearnerStepDraft.mockImplementation(
       async (
@@ -144,7 +146,7 @@ describe("LessonExperience", () => {
     generatedClient.startLearnerLesson.mockResolvedValue(started)
   })
 
-  it("AI provider 실패 후 명시적 skip transition으로 레슨 완료 CTA를 유지한다", async () => {
+  it("AI 코칭 없이 계속하면 확정된 완료 화면으로 바로 이동한다", async () => {
     const user = userEvent.setup()
     const completed: LearnerCompleteStepResultDto = {
       courseLearning: {
@@ -187,8 +189,6 @@ describe("LessonExperience", () => {
       { signal: expect.any(AbortSignal) }
     )
 
-    await user.click(await screen.findByRole("button", { name: "다음으로 →" }))
-
     expect(
       await screen.findByRole("heading", { name: "레슨을 완료했어요!" })
     ).toBeInTheDocument()
@@ -216,10 +216,10 @@ describe("LessonExperience", () => {
 
     await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
     await user.click(
-      await screen.findByRole("button", { name: "AI 코칭 다시 시도" })
+      await screen.findByRole("button", { name: "AI 코칭 다시 받기" })
     )
     await user.click(
-      await screen.findByRole("button", { name: "AI 코칭 다시 시도" })
+      await screen.findByRole("button", { name: "AI 코칭 다시 받기" })
     )
 
     expect(generatedClient.createLearnerStepAiFeedback).toHaveBeenCalledTimes(3)
@@ -271,6 +271,55 @@ describe("LessonExperience", () => {
     render(<LessonExperience lesson={writeLesson} />)
 
     expect(screen.getByRole("textbox")).toHaveValue("서버에서 복원한 문장")
+  })
+
+  it("작성한 내용을 반영하지 못하면 코스로 나가지 않는다", async () => {
+    const user = userEvent.setup()
+    generatedClient.saveLearnerStepDraft.mockRejectedValue(
+      new GeneratedApiClientError({
+        kind: "network",
+        method: "PUT",
+        url: "/api/learning/lessons/lesson-1/steps/step-write/draft",
+      })
+    )
+    const writeLesson = toLessonViewModel(
+      createLearnerLessonWireFixture({
+        id: "lesson-1",
+        learning: {
+          completedSteps: 0,
+          currentStepId: "step-write",
+          currentStepIndex: 0,
+          progressPercent: 0,
+          status: "in_progress",
+          totalSteps: 1,
+          version,
+        },
+        steps: [
+          {
+            id: "step-write",
+            min: 1,
+            prompt: "문장을 작성하세요",
+            sortOrder: 1,
+            type: "WRITE",
+          },
+        ],
+        version,
+      })
+    )
+
+    render(<LessonExperience lesson={writeLesson} />)
+
+    await user.type(screen.getByRole("textbox"), "작성 중인 문장")
+    await user.click(screen.getByRole("button", { name: "나가기" }))
+    const dialog = await screen.findByRole("alertdialog")
+    await user.click(within(dialog).getByRole("button", { name: "나가기" }))
+
+    expect(
+      await within(dialog).findByText(
+        "지금은 나갈 수 없어요. 작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요."
+      )
+    ).toBeInTheDocument()
+    expect(pushMock).not.toHaveBeenCalled()
   })
 
   it("고정 curriculum version으로 레슨을 시작한다", async () => {

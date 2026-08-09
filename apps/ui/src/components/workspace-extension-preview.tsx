@@ -66,20 +66,17 @@ function AiFeedbackPreview({ story }: { story: string }) {
     if (outcome === "error")
       return {
         kind: "retryable",
-        message: "AI 코칭 요청에 실패했습니다. 잠시 후 다시 시도해 주세요.",
         status: "error",
       };
     if (outcome === "quota")
       return {
         kind: "quota",
-        message: "오늘의 AI 코칭 요청 한도를 모두 사용했습니다.",
         retryAfterSeconds: 3_600,
         status: "error",
       };
     if (outcome === "limit")
       return {
         kind: "limit",
-        message: "이 단계의 AI 코칭 3회를 모두 사용했습니다.",
         status: "error",
       };
     return { status: "ok", feedback: aiFeedbackViewModel };

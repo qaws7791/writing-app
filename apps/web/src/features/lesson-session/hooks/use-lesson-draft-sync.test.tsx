@@ -102,7 +102,7 @@ describe("useLessonDraftSync", () => {
     )
   })
 
-  it("후속 저장까지 성공하면 saved 상태로 마무리한다", async () => {
+  it("후속 저장까지 성공하면 나갈 준비가 된다", async () => {
     const { result } = renderDraftSync()
 
     act(() => {
@@ -119,8 +119,8 @@ describe("useLessonDraftSync", () => {
       })
     })
 
-    expect(result.current.statusByStepId["step-write"]).toMatchObject({
-      kind: "saved",
+    await expect(result.current.flushAll()).resolves.toEqual({
+      status: "ready",
     })
   })
 
@@ -171,10 +171,6 @@ describe("useLessonDraftSync", () => {
       document.dispatchEvent(new Event("visibilitychange"))
     })
 
-    expect(result.current.statusByStepId["step-write"]).toEqual({
-      kind: "offline",
-    })
-
     await act(async () => {
       await result.current.flushStepDraft("step-write")
     })
@@ -187,7 +183,7 @@ describe("useLessonDraftSync", () => {
     )
   })
 
-  it("409이면 최신 서버 초안과 미전송 입력을 함께 보존하고 최신 version으로 재시도한다", async () => {
+  it("409이면 현재 입력을 최신 version에 자동으로 재적용한다", async () => {
     const serverDraft = createDraft(latestAnswer, 3)
     generatedClient.getLesson.mockResolvedValue(createLesson([serverDraft]))
     generatedClient.saveLearnerStepDraft
@@ -204,19 +200,7 @@ describe("useLessonDraftSync", () => {
       await result.current.flushStepDraft("step-write")
     })
 
-    expect(result.current.statusByStepId["step-write"]).toEqual({
-      kind: "conflict",
-      localAnswer,
-      serverDraft,
-    })
-
-    await act(async () => {
-      result.current.retryLocalDraft("step-write")
-      await vi.waitFor(() => {
-        expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
-      })
-    })
-
+    expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
     expect(generatedClient.saveLearnerStepDraft).toHaveBeenLastCalledWith(
       "lesson-1",
       "step-write",
@@ -250,13 +234,11 @@ describe("useLessonDraftSync", () => {
       await result.current.flushStepDraft("step-write")
     })
 
-    expect(result.current.statusByStepId["step-write"]).toEqual({
-      kind: "offline",
-    })
-
     await act(async () => {
       window.dispatchEvent(new Event("online"))
-      await result.current.reconcile()
+      await vi.waitFor(() => {
+        expect(generatedClient.saveLearnerStepDraft).toHaveBeenCalledTimes(2)
+      })
     })
 
     expect(generatedClient.getLesson).toHaveBeenCalledOnce()
@@ -289,9 +271,24 @@ describe("useLessonDraftSync", () => {
     })
 
     expect(result.current.renderRevisionByStepId["step-write"]).toBe(1)
-    expect(result.current.statusByStepId["step-write"]).toEqual({
-      kind: "saved",
-      updatedAt: serverDraft.updatedAt,
+  })
+
+  it("입력을 반영하지 못하면 나가기를 보류한다", async () => {
+    generatedClient.saveLearnerStepDraft.mockRejectedValue(
+      new GeneratedApiClientError({
+        kind: "network",
+        method: "PUT",
+        url: "/api/learning/lessons/lesson-1/steps/step-write/draft",
+      })
+    )
+    const { result } = renderDraftSync()
+
+    act(() => {
+      result.current.stageDraft("step-write", localAnswer)
+    })
+
+    await expect(result.current.flushAll()).resolves.toEqual({
+      status: "blocked",
     })
   })
 })

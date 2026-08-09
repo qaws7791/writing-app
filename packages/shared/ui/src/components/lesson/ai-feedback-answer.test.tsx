@@ -48,7 +48,6 @@ describe("AiFeedbackAnswer", () => {
         onContinueWithoutFeedback={onContinueWithoutFeedback}
         onRequest={async () => ({
           kind: "retryable",
-          message: "AI 코칭을 잠시 사용할 수 없습니다.",
           status: "error",
         })}
       />
@@ -60,7 +59,7 @@ describe("AiFeedbackAnswer", () => {
       "AI 코칭을 잠시 불러오지 못했습니다."
     )
     expect(
-      screen.getByRole("button", { name: "AI 코칭 다시 시도" })
+      screen.getByRole("button", { name: "AI 코칭 다시 받기" })
     ).toBeInTheDocument()
 
     await userEvent.click(
@@ -69,7 +68,7 @@ describe("AiFeedbackAnswer", () => {
 
     expect(onContinueWithoutFeedback).toHaveBeenCalledOnce()
     expect(screen.getByRole("status")).toHaveTextContent(
-      "피드백 없이 학습 진행을 저장했습니다."
+      "다음 학습으로 이동합니다."
     )
   })
 
@@ -84,7 +83,6 @@ describe("AiFeedbackAnswer", () => {
         onContinueWithoutFeedback={async () => ({ status: "ok" })}
         onRequest={async () => ({
           kind: "quota",
-          message: "오늘의 요청 한도를 모두 사용했습니다.",
           retryAfterSeconds: 3_600,
           status: "error",
         })}
@@ -94,14 +92,14 @@ describe("AiFeedbackAnswer", () => {
     await userEvent.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "오늘의 AI 코칭 요청 한도를 모두 사용했습니다."
+      "오늘 받을 수 있는 AI 코칭을 모두 사용했어요."
     )
     expect(screen.getByRole("alert").querySelector("time")).toHaveAttribute(
       "datetime",
       "2026-07-24T01:00:00.000Z"
     )
     expect(
-      screen.queryByRole("button", { name: "AI 코칭 다시 시도" })
+      screen.queryByRole("button", { name: "AI 코칭 다시 받기" })
     ).not.toBeInTheDocument()
   })
 
@@ -113,7 +111,6 @@ describe("AiFeedbackAnswer", () => {
         onContinueWithoutFeedback={async () => ({ status: "ok" })}
         onRequest={async () => ({
           kind: "limit",
-          message: "AI 코칭 시도 횟수를 모두 사용했습니다.",
           status: "error",
         })}
       />
@@ -122,10 +119,10 @@ describe("AiFeedbackAnswer", () => {
     await userEvent.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "이 단계의 AI 코칭 3회를 모두 사용했습니다."
+      "이 단계에서 받을 수 있는 AI 코칭 3회를 모두 사용했어요."
     )
     expect(
-      screen.queryByRole("button", { name: "AI 코칭 다시 시도" })
+      screen.queryByRole("button", { name: "AI 코칭 다시 받기" })
     ).not.toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "피드백 없이 계속하기" })

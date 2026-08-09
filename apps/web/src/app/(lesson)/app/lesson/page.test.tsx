@@ -56,8 +56,9 @@ describe("레슨 route", () => {
     )
 
     expect(
-      screen.getByRole("heading", { name: "레슨을 열 수 없습니다." })
+      screen.getByRole("heading", { name: "레슨을 열지 못했어요." })
     ).toBeInTheDocument()
+    expect(screen.getByText("잠시 후 다시 열어 주세요.")).toBeInTheDocument()
     expect(
       screen.queryByRole("heading", { name: "좋은 문장이란 무엇인가" })
     ).not.toBeInTheDocument()

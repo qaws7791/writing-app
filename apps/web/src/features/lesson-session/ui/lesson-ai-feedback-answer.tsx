@@ -44,7 +44,6 @@ export function LessonAiFeedbackAnswer({
         onAiFeedbackRequest === undefined
           ? {
               kind: "fatal",
-              message: "AI 코칭을 사용할 수 없습니다.",
               status: "error",
             }
           : onAiFeedbackRequest({ stepId: step.id })
