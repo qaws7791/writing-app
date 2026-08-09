@@ -22,8 +22,8 @@ export function HomePage({
   const firstName = normalizeFirstName(learnerName)
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-14">
-      <aside className="lg:sticky lg:top-24 lg:self-start">
+    <div className="flex flex-col gap-8 lg:flex-row lg:gap-10 xl:gap-14">
+      <aside className="lg:sticky lg:top-20 lg:w-[360px] lg:shrink-0 lg:self-start">
         <div className="mb-7">
           <p className="mb-2 text-sm font-medium text-muted-foreground">
             안녕하세요 👋
