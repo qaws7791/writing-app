@@ -40,7 +40,6 @@ export function CourseCurriculum({
         커리큘럼
       </h2>
       <Accordion
-        className="gap-3"
         defaultValue={course.units[0] ? [course.units[0].id] : []}
         multiple
       >
@@ -73,19 +72,16 @@ function CurriculumUnit({
   const unitDone = completedCount === totalCount && totalCount > 0
 
   return (
-    <AccordionItem
-      className="min-w-0 overflow-hidden rounded-3xl border-0 bg-muted/55 px-4"
-      value={unit.id}
-    >
-      <AccordionTrigger className="min-w-0 py-5">
+    <AccordionItem className="min-w-0" value={unit.id}>
+      <AccordionTrigger className="min-w-0 px-4 py-5">
         <div className="flex min-w-0 items-center gap-3 pr-2">
           <span
             aria-hidden="true"
             className={cn(
-              "flex size-10 shrink-0 items-center justify-center rounded-2xl font-heading font-semibold",
+              "flex size-10 shrink-0 items-center justify-center rounded-full font-heading font-semibold",
               unitDone
                 ? "bg-primary text-primary-foreground"
-                : "bg-background/80 text-foreground"
+                : "bg-secondary text-secondary-foreground"
             )}
           >
             {unitDone ? (
@@ -104,7 +100,7 @@ function CurriculumUnit({
           </span>
         </div>
       </AccordionTrigger>
-      <AccordionContent className="pb-3">
+      <AccordionContent className="px-4 pb-3">
         <div className="grid min-w-0 gap-1">
           {unit.lessons.map((lesson) => (
             <CurriculumLesson
@@ -145,22 +141,22 @@ function CurriculumLesson({
     locked
       ? "cursor-not-allowed opacity-60"
       : isCurrent
-        ? "bg-background hover:bg-background"
-        : "hover:bg-background/65"
+        ? "bg-accent/70 hover:bg-accent"
+        : "hover:bg-muted/55"
   )
   const content = (
     <>
       <span
         aria-hidden="true"
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-xl",
+          "flex size-8 shrink-0 items-center justify-center rounded-full",
           done
             ? "bg-success/10 text-success"
             : locked
-              ? "bg-background text-muted-foreground"
+              ? "bg-secondary text-muted-foreground"
               : isCurrent
                 ? "bg-primary text-primary-foreground"
-                : "bg-background text-foreground"
+                : "bg-secondary text-secondary-foreground"
         )}
       >
         {done ? (
