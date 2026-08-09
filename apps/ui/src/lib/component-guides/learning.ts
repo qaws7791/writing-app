@@ -1299,7 +1299,8 @@ export function LessonSession() {
       {
         id: "sticky-footer",
         title: "고정 하단",
-        description: "LessonFooter는 스크롤해도 행동이 보이도록 sticky입니다.",
+        description:
+          "LessonFooter는 상단 구분선 없이 sticky로 유지되며, 스크롤해도 행동이 보입니다.",
         code: `<LessonFooter>
   <LessonActions>
     <Button variant="outline">계속하기</Button>

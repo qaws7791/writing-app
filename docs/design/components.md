@@ -234,7 +234,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 - `packages/shared/ui/src/components/ui/compose.tsx`
 - `packages/shared/ui/src/components/ui/coaching.tsx`
 
-`Lesson`은 진행 헤더, 중앙 스크롤 본문과 하단 행동을 같은 `max-w-2xl` 열에 배치한다. 나가기 아이콘은 hit area를 유지한 채 글리프를 본문 왼쪽 엣지에 광학 정렬한다. 진행 헤더의 닫기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다. 하단 `LessonFooter`는 모바일 safe area inset을 반영한다. 완료 화면은 같은 `max-w-2xl` 열 폭을 유지한다. `Step`은 각 학습 활동의 제목, 안내, 본문과 보조 상태를 조합한다. `StepEyebrow`는 한국어에 Latin `uppercase`와 과도한 letter-spacing을 쓰지 않는다. 채점 결과와 해설은 `Insight` tone으로 표현한다.
+`Lesson`은 진행 헤더, 중앙 스크롤 본문과 하단 행동을 같은 `max-w-2xl` 열에 배치한다. 나가기 아이콘은 hit area를 유지한 채 글리프를 본문 왼쪽 엣지에 광학 정렬한다. 진행 헤더의 닫기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다. 하단 `LessonFooter`는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다. 완료 화면은 같은 `max-w-2xl` 열 폭을 유지한다. `Step`은 각 학습 활동의 제목, 안내, 본문과 보조 상태를 조합한다. `StepEyebrow`는 한국어에 Latin `uppercase`와 과도한 letter-spacing을 쓰지 않는다. 채점 결과와 해설은 `Insight` tone으로 표현한다.
 
 선택형 상태는 `Choice`, `Token`과 `Segment`의 `data-state`로 표현한다. 이동형 상태는 `Sortable`, `Pair`와 `Classify`로 표현한다. 서술형 상태는 `Compose`와 `Coaching`으로 표현한다. 앱은 서버 evaluation을 이 상태로 변환하며 공유 UI는 정답을 계산하지 않는다.
 
@@ -321,7 +321,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 상단 진행 헤더와 하단 행동 영역은 스크롤 영역 밖에 둔다.
 - 중앙 `main`만 `overflow-y-auto`로 스크롤한다.
 - 하단 CTA는 `LessonActions` 안의 `Button`을 사용한다.
-- 하단 `LessonFooter`는 모바일 safe area inset을 반영한다.
+- 하단 `LessonFooter`는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다.
 - 정답과 오답 피드백은 `Insight`의 `correct`와 `incorrect` tone을 사용한다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant다.
 - markdown 본문은 `MarkdownContent`가 `ReactMarkdown` 결과를 `ProseBody` 안에 렌더링한다.
