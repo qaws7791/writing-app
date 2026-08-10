@@ -193,7 +193,7 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
   )
 
   return (
-    <div className="flex-1 min-w-0">
+    <section aria-label="학습 진행" className="min-w-0">
       <Tabs
         className="flex w-full flex-col gap-4"
         defaultValue="in_progress"
@@ -203,7 +203,10 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
           <TabsTrigger value="in_progress">진행중</TabsTrigger>
           <TabsTrigger value="completed">완료</TabsTrigger>
         </TabsList>
-        <TabsContent className="w-full flex-none" value="in_progress">
+        <TabsContent
+          className="flex w-full flex-col gap-3 outline-none"
+          value="in_progress"
+        >
           {inProgressState.courses.length > 0 ? (
             <ProgressCourseList
               courses={inProgressState.courses}
@@ -214,12 +217,8 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
               onLoadMore={() => {
                 void loadMoreInProgressCourses()
               }}
-              renderCard={(course, index) => (
-                <ContinueCourseCard
-                  course={course}
-                  key={course.id}
-                  priority={index === 0}
-                />
+              renderCard={(course) => (
+                <ContinueCourseCard course={course} key={course.id} />
               )}
             />
           ) : (
@@ -227,7 +226,10 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
           )}
         </TabsContent>
 
-        <TabsContent className="w-full flex-none" value="completed">
+        <TabsContent
+          className="flex w-full flex-col gap-3 outline-none"
+          value="completed"
+        >
           <CompletedCoursesPanel
             onLoadMore={() => {
               void loadMoreCompletedCourses()
@@ -239,6 +241,6 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
           />
         </TabsContent>
       </Tabs>
-    </div>
+    </section>
   )
 }

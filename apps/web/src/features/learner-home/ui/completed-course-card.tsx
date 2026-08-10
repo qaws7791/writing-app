@@ -1,52 +1,44 @@
-import Image from "next/image"
 import Link from "next/link"
 
-import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
+import { HomeCourseMark } from "@/features/learner-home/ui/home-course-mark"
 import type { LearnerProgressCourseDto } from "@/shared/http/learner-api-client"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { cardVariants } from "@workspace/ui/components/ui/card"
+import { cn } from "@workspace/ui/lib/utils"
 
 type CompletedCourseCardProps = {
   readonly course: LearnerProgressCourseDto
-  readonly priority?: boolean
 }
 
-export function CompletedCourseCard({
-  course,
-  priority = false,
-}: CompletedCourseCardProps) {
+export function CompletedCourseCard({ course }: CompletedCourseCardProps) {
   const courseHref = `/app/courses/${course.id}`
+  const totalLessons = course.learning.totalLessons
 
   return (
-    <Card className="w-full min-w-0 gap-0 py-0 select-none" size="sm">
+    <article
+      className={cn(
+        cardVariants({ size: "sm", variant: "surface" }),
+        "flex-row items-center gap-4 rounded-[1.75rem] py-4"
+      )}
+    >
       <Link
-        className="flex w-full cursor-pointer flex-col text-left lg:flex-row"
+        className="flex w-full items-center gap-4 px-(--card-spacing) outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
         href={courseHref}
       >
-        <div className="relative h-36 w-full shrink-0 overflow-hidden lg:h-28 lg:min-h-28 lg:w-44">
-          <Image
-            alt={resolveCourseImage(course).alt}
-            className="object-cover pointer-events-none"
-            draggable={false}
-            fill
-            loading={priority ? "eager" : "lazy"}
-            sizes="(min-width: 1024px) 176px, 100vw"
-            src={resolveCourseImage(course).src}
-          />
-        </div>
-        <CardContent className="py-5 lg:flex lg:min-w-0 lg:flex-1 lg:items-center lg:py-4">
-          <p
-            className="font-heading text-base font-semibold tracking-[-0.014em]"
-            style={{
-              display: "-webkit-box",
-              overflow: "hidden",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: 2,
-            }}
-          >
-            {course.title}
+        <HomeCourseMark label={course.title} />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-medium tracking-[0.04em] text-muted-foreground uppercase">
+            <span className="tabular-nums normal-case tracking-normal">
+              완료
+            </span>
           </p>
-        </CardContent>
+          <h3 className="mt-1 font-heading text-base font-semibold tracking-[-0.02em] text-balance">
+            {course.title}
+          </h3>
+          <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+            {totalLessons}레슨
+          </p>
+        </div>
       </Link>
-    </Card>
+    </article>
   )
 }

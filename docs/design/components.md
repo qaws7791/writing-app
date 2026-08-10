@@ -309,7 +309,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
 - 이모지만 표시하는 계정 메뉴 trigger의 접근성 이름은 `계정 메뉴`로 제공한다.
 - 계정 메뉴 드롭다운은 `bg-popover`, `border-border`, `rounded-3xl`과 elevation token을 사용한다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
-- 메뉴 항목은 공유 `DropdownMenuItem`을 사용한다. 로그아웃은 `variant="destructive"`로 구분한다.
+- 메뉴 항목은 공유 `DropdownMenuItem`을 사용한다. `프로필`은 `UserIcon`, `로그아웃`은 `LogOutIcon`을 함께 표시하고, 로그아웃은 `variant="destructive"`로 구분한다.
 - `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.
 
 ### LessonShell

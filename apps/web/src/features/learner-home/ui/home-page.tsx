@@ -22,33 +22,42 @@ export function HomePage({
   const firstName = normalizeFirstName(learnerName)
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row lg:gap-10 xl:gap-14">
-      <aside className="lg:sticky lg:top-20 lg:w-[360px] lg:shrink-0 lg:self-start">
-        <div className="mb-7">
-          <p className="mb-2 text-sm font-medium text-muted-foreground">
-            안녕하세요 👋
-          </p>
-          <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.035em] sm:text-4xl">
-            {firstName}님,
-            <br />
-            오늘도 함께 써봐요.
-          </h1>
-        </div>
-        <div aria-label="학습 현황" className="grid grid-cols-2 gap-3">
-          <HomeStat
-            icon={<FlameIcon size={20} />}
-            label="연속 학습"
-            value={`${profileStats.currentStreakDays}일`}
-          />
-          <HomeStat
-            icon={<BookOpenIcon size={20} />}
-            label="완료한 레슨"
-            value={`${profileStats.completedLessons}개`}
-          />
-        </div>
-      </aside>
+    <div className="@container w-full">
+      <div className="grid w-full grid-cols-1 gap-10 @[48rem]:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] @[48rem]:items-start @[48rem]:gap-12">
+        <section
+          aria-labelledby="home-learner-hello"
+          className="flex flex-col gap-8"
+        >
+          <header className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">안녕하세요</p>
+            <h1
+              className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl sm:leading-[1.15]"
+              id="home-learner-hello"
+            >
+              {firstName}님, 오늘도
+              <br className="hidden @[32rem]:block" /> 이어서 써 볼까요
+            </h1>
+          </header>
 
-      <HomeProgressClient inProgress={inProgress} />
+          <div
+            aria-label="학습 현황"
+            className="flex flex-col gap-3 @[32rem]:flex-row"
+          >
+            <HomeStat
+              icon={<FlameIcon size={16} />}
+              label="연속 학습"
+              value={`${profileStats.currentStreakDays}일`}
+            />
+            <HomeStat
+              icon={<BookOpenIcon size={16} />}
+              label="완료한 레슨"
+              value={`${profileStats.completedLessons}개`}
+            />
+          </div>
+        </section>
+
+        <HomeProgressClient inProgress={inProgress} />
+      </div>
     </div>
   )
 }
@@ -63,19 +72,19 @@ function HomeStat({
   readonly value: string
 }) {
   return (
-    <Card size="sm" variant="muted">
+    <Card className="min-w-0 flex-1 rounded-3xl" size="sm" variant="muted">
       <CardContent className="flex flex-col gap-3">
         <span
           aria-hidden="true"
-          className="flex size-9 items-center justify-center rounded-xl bg-background/70 text-foreground"
+          className="grid size-9 shrink-0 place-items-center rounded-2xl bg-background text-muted-foreground"
         >
           {icon}
         </span>
-        <div>
-          <p className="font-heading text-xl font-semibold tabular-nums">
+        <div className="min-w-0">
+          <p className="font-heading text-xl font-semibold tracking-[-0.02em] tabular-nums">
             {value}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground">{label}</p>
         </div>
       </CardContent>
     </Card>

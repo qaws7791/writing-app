@@ -3,6 +3,10 @@
 import Link from "next/link"
 
 import { globalNavAccountItems } from "@/app/(learner)/app/_views/global-nav-routes"
+import {
+  LogOutIcon,
+  UserIcon,
+} from "@workspace/ui/components/icons/navigation-icons"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   DropdownMenu,
@@ -35,6 +39,7 @@ export function GlobalNavAccountMenu() {
             render={<Link href={item.href} />}
             variant={item.tone === "danger" ? "destructive" : "default"}
           >
+            {item.tone === "danger" ? <LogOutIcon /> : <UserIcon />}
             {item.label}
           </DropdownMenuItem>
         ))}

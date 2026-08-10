@@ -64,12 +64,8 @@ export function CompletedCoursesPanel({
       loadMoreStatus={state.loadMoreStatus}
       nextCursor={state.nextCursor}
       onLoadMore={onLoadMore}
-      renderCard={(course, index) => (
-        <CompletedCourseCard
-          course={course}
-          key={course.id}
-          priority={index === 0}
-        />
+      renderCard={(course) => (
+        <CompletedCourseCard course={course} key={course.id} />
       )}
     />
   )
@@ -96,7 +92,7 @@ export function ProgressCourseList({
   readonly loadMoreError?: string | null
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {courses.map((course, index) => (
         <div className="w-full min-w-0" key={course.id}>
           {renderCard(course, index)}
@@ -125,7 +121,7 @@ export function ProgressCourseList({
 
 function CompletedCourseCardSkeletonList() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {["mobile-1", "mobile-2", "mobile-3"].map((key) => (
         <div className="w-full min-w-0" key={key}>
           <CompletedCourseCardSkeleton />
@@ -139,12 +135,16 @@ function CompletedCourseCardSkeleton() {
   return (
     <Card
       aria-hidden="true"
-      className="w-full gap-0 py-0 lg:flex-row"
+      className="w-full flex-row items-center gap-4 rounded-[1.75rem] py-4"
       size="sm"
     >
-      <div className="h-36 w-full animate-pulse bg-muted lg:h-28 lg:w-44 lg:shrink-0" />
-      <div className="px-6 py-5 lg:flex lg:flex-1 lg:items-center lg:px-5 lg:py-4">
-        <div className="h-5 w-4/5 animate-pulse rounded-full bg-muted lg:w-3/5" />
+      <div className="flex w-full items-center gap-4 px-(--card-spacing)">
+        <div className="size-20 shrink-0 animate-pulse rounded-3xl bg-muted @[32rem]:size-24" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-3 w-10 animate-pulse rounded-full bg-muted" />
+          <div className="h-5 w-4/5 animate-pulse rounded-full bg-muted" />
+          <div className="h-3 w-14 animate-pulse rounded-full bg-muted" />
+        </div>
       </div>
     </Card>
   )
