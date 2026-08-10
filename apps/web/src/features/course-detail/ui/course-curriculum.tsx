@@ -16,7 +16,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@workspace/ui/components/ui/accordion"
-import { Badge } from "@workspace/ui/components/ui/badge"
 import { cn } from "@workspace/ui/lib/utils"
 
 type CourseCurriculumProps = {
@@ -43,12 +42,11 @@ export function CourseCurriculum({
         defaultValue={course.units[0] ? [course.units[0].id] : []}
         multiple
       >
-        {course.units.map((unit, unitIndex) => (
+        {course.units.map((unit) => (
           <CurriculumUnit
             currentLessonId={currentLessonId}
             key={unit.id}
             unit={unit}
-            unitIndex={unitIndex}
           />
         ))}
       </Accordion>
@@ -59,11 +57,9 @@ export function CourseCurriculum({
 function CurriculumUnit({
   currentLessonId,
   unit,
-  unitIndex,
 }: {
   readonly currentLessonId: string | null
   readonly unit: CourseUnit
-  readonly unitIndex: number
 }) {
   const completedCount = unit.lessons.filter(
     (lesson) => lesson.learning.status === "completed"
@@ -73,34 +69,31 @@ function CurriculumUnit({
 
   return (
     <AccordionItem className="min-w-0" value={unit.id}>
-      <AccordionTrigger className="min-w-0 items-center px-4 py-5 **:data-[slot=accordion-trigger-icon]:mt-0">
-        <div className="flex min-w-0 items-center gap-3 pr-2">
+      <AccordionTrigger className="min-w-0 items-center px-0 py-5 **:data-[slot=accordion-trigger-icon]:mt-0">
+        <div className="flex min-w-0 flex-col pr-2">
+          <span className="block truncate font-heading text-base font-semibold tracking-[-0.014em]">
+            {unit.title}
+          </span>
           <span
-            aria-hidden="true"
             className={cn(
-              "flex size-10 shrink-0 items-center justify-center rounded-full font-heading font-semibold",
+              "mt-1 flex items-center gap-1 text-xs",
               unitDone
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground"
+                ? "font-medium text-success"
+                : "font-normal text-muted-foreground"
             )}
           >
             {unitDone ? (
-              <CheckIcon className="size-4" />
-            ) : (
-              <span>{unitIndex + 1}</span>
-            )}
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate font-heading text-base font-semibold tracking-[-0.014em]">
-              {unit.title}
-            </span>
-            <span className="mt-1 block text-xs font-normal text-muted-foreground">
-              {completedCount}/{totalCount}개 레슨
+              <CheckIcon aria-hidden="true" className="size-3.5 shrink-0" />
+            ) : null}
+            <span>
+              {unitDone
+                ? `${completedCount}/${totalCount}개 레슨 완료`
+                : `${completedCount}/${totalCount}개 레슨`}
             </span>
           </span>
         </div>
       </AccordionTrigger>
-      <AccordionContent className="px-4 pb-3">
+      <AccordionContent className="px-0 pb-3">
         <div className="grid min-w-0 gap-1">
           {unit.lessons.map((lesson) => (
             <CurriculumLesson
@@ -180,19 +173,6 @@ function CurriculumLesson({
           {lesson.estimatedMinutes}분
         </span>
       </span>
-      <Badge
-        variant={
-          done
-            ? "success"
-            : locked
-              ? "outline"
-              : isCurrent
-                ? "default"
-                : "secondary"
-        }
-      >
-        {statusLabel}
-      </Badge>
     </>
   )
 
