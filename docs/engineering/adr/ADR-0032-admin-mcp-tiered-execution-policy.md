@@ -2,7 +2,13 @@
 
 ## 상태
 
-채택됨
+부분 대체됨
+
+실행 단계와 변경 정책은 유지한다.
+
+protocol 호환성은 [ADR-0033](./ADR-0033-admin-mcp-oauth-principal-separation.md)의 결정을 [ADR-0034](./ADR-0034-admin-mcp-static-bearer-credentials.md)가 다시 대체한다.
+
+인증 주체 binding은 [ADR-0034](./ADR-0034-admin-mcp-static-bearer-credentials.md)가 대체한다.
 
 ## 날짜
 
@@ -21,12 +27,12 @@
 - 1단계는 관리자 조회만 제공한다.
 - 2단계는 코스 초안 생성·저장과 코스 보관 해제를 제한적으로 자동 실행한다.
 - 2단계는 조회 scope와 기능별 변경 scope를 요구한다.
-- 2단계는 owner 관리자 ID, OAuth client ID, Tool, 멱등 키와 입력 digest를 실행 식별자에 묶는다.
+- 2단계는 owner 관리자 ID, MCP credential ID, Tool, 멱등 키와 입력 digest를 실행 식별자에 묶는다.
 - 2단계 콘텐츠 변경과 실행 영수증은 같은 transaction에서 확정한다.
 - 2단계는 대상 편집 버전 또는 상태가 다르면 실행하지 않는다.
 - 3단계는 코스 발행·보관과 사용자 상태 변경·삭제를 제공한다.
 - 3단계는 조회 scope, 기능별 변경 scope와 서버에 저장된 owner 승인을 요구한다.
-- 3단계 승인은 OAuth client ID, Tool, 입력 digest와 대상 버전·상태에 묶는다.
+- 3단계 승인은 MCP credential ID, Tool, 입력 digest와 대상 버전·상태에 묶는다.
 - 3단계는 승인 뒤 대상 버전·상태를 다시 검증한다.
 - 사용자 승인 대상과 결과에는 opaque 사용자 ID와 상태만 포함한다.
 - 이미지 업로드와 이미지 연결은 제공하지 않는다.
@@ -47,7 +53,7 @@
 
 코스 발행·보관과 사용자 변경은 학습자 노출 또는 계정 수명에 영향을 준다.
 
-OAuth scope만으로는 owner가 특정 요청을 검토했다는 증거가 없으므로 제외한다.
+Credential scope만으로는 owner가 특정 요청을 검토했다는 증거가 없으므로 제외한다.
 
 ### 이미지 변경 포함
 

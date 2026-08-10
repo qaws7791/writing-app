@@ -77,6 +77,7 @@ import type { ApiEnv } from "@/config/env"
 import { runApplicationMigrations } from "@/db/migrate"
 import { createApiHealthProbe, type ApiHealthProbe } from "@/runtime/api-health"
 import { systemClock } from "@/runtime/system-clock"
+import { createAdminMcpAccessTokenStore } from "@/mcp/admin/admin-mcp-access-token-store"
 import { createAdminMcpAuthentication } from "@/mcp/admin/admin-mcp-auth"
 import {
   createAdminMcpRuntime,
@@ -283,35 +284,38 @@ export async function createContainer(
       ),
     })
 
-    const adminMcp =
-      env.adminMcp === undefined
-        ? undefined
-        : createAdminMcpRuntime({
-            authentication: await createAdminMcpAuthentication({
-              configuration: env.adminMcp,
-              now: clock.now,
-            }),
-            configuration: env.adminMcp,
-            reportProtocolError() {
-              logger?.error(
-                { errorClass: "protocol-error" },
-                "admin.mcp.protocol_failed"
-              )
-            },
-            requestLogger: createRequestLogger(logger),
-            securityAuditLogger: createSecurityAuditLogger(logger),
-            tools: {
-              adminMcpApprovals: operations.adminMcpApprovals,
-              auditTrail: operations.auditTrail,
-              content: content.application,
-              identity,
-              now: clock.now,
-              reportUnexpectedError(event) {
-                logger?.error(event, "admin.mcp.tool_failed")
-              },
-              reporting: operations.reporting,
-            },
-          })
+    let adminMcp: AdminMcpRuntime | undefined
+    if (env.adminMcp !== undefined) {
+      const adminMcpConfiguration = env.adminMcp
+      const authentication = createAdminMcpAuthentication({
+        accessTokenStore: createAdminMcpAccessTokenStore(database.db),
+        configuration: adminMcpConfiguration,
+        now: clock.now,
+      })
+      adminMcp = createAdminMcpRuntime({
+        authentication,
+        configuration: adminMcpConfiguration,
+        reportProtocolError() {
+          logger?.error(
+            { errorClass: "protocol-error" },
+            "admin.mcp.protocol_failed"
+          )
+        },
+        requestLogger: createRequestLogger(logger),
+        securityAuditLogger: createSecurityAuditLogger(logger),
+        tools: {
+          adminMcpApprovals: operations.adminMcpApprovals,
+          auditTrail: operations.auditTrail,
+          content: content.application,
+          identity,
+          now: clock.now,
+          reportUnexpectedError(event) {
+            logger?.error(event, "admin.mcp.tool_failed")
+          },
+          reporting: operations.reporting,
+        },
+      })
+    }
     if (adminMcp !== undefined) {
       cleanup.register("admin-mcp", onceAsync(adminMcp.close))
     }

@@ -23,7 +23,12 @@
 - rollback: 실패한 변경의 영향을 줄이기 위해 code, 설정 또는 데이터를 안전한 상태로 복구하는 절차.
 - 검증 보고서: 기준 commit, 환경, 명령, 결과와 artifact를 고정한 과거 실행 증거.
 - 관리자 MCP: 승인된 AI 에이전트가 읽기 전용 조회, 제한적 자동 변경과 owner 승인 변경을 호출하는 MCP 도구 경계.
-- MCP 변경 승인: owner 관리자가 특정 OAuth client, 도구, 입력 digest와 대상 상태에 묶인 3단계 변경 요청을 허용하거나 거절하는 기록.
+- MCP credential: 기존 owner `AdminId`, scope, 만료와 폐기 lifecycle에 연결된 개인·장치별 static bearer 인증 수단.
+- MCP credential ID: raw token 없이 request, 승인, 실행 영수증과 감사를 같은 credential provenance로 연결하는 opaque 식별자.
+- MCP credential lifecycle event: credential 발급 또는 폐기 action과 관리 actor를 append-only로 보존하는 영속 기록.
+- MCP 합성 client: 별도 static bearer credential로 staging 관리자 MCP의 read-only Tool 호출을 검증하는 자동 client.
+- Codex MCP client: 환경 변수에서 static bearer token을 읽고 관리자 MCP에 직접 연결하는 Codex host.
+- MCP 변경 승인: owner 관리자가 특정 MCP credential, 도구, 입력 digest와 대상 상태에 묶인 3단계 변경 요청을 허용하거나 거절하는 기록.
 - MCP 실행 식별자: 자동 또는 승인 실행과 감사 이벤트를 연결하는 opaque 식별자.
 - MCP 콘텐츠 실행 영수증: MCP 콘텐츠 변경과 같은 transaction에서 저장하며 같은 요청의 결과를 재생하는 기록.
 

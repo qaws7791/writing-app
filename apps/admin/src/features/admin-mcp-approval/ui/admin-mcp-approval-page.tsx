@@ -175,8 +175,8 @@ export function AdminMcpApprovalPage({
             <dl className="grid gap-x-8 gap-y-5 rounded-3xl bg-muted/55 p-5 sm:grid-cols-2">
               <ApprovalTargetDetails target={approval.target} />
               <ApprovalDetail
-                label="요청 클라이언트"
-                value={approval.oauthClientId}
+                label="MCP 자격 증명"
+                value={approval.mcpCredentialId}
               />
               <ApprovalDetail
                 label="요청 시각"

@@ -22,8 +22,11 @@ RUN mkdir -p /workspace/image-bin \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/check-database-integrity.ts --outfile /workspace/image-bin/database-integrity-check \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/maintenance-daily.ts --outfile /workspace/image-bin/maintenance-daily \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/reapply-deletion-markers.ts --outfile /workspace/image-bin/deletion-marker-restore \
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/issue-admin-mcp-token.ts --outfile /workspace/image-bin/admin-mcp-token-issue \
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/revoke-admin-mcp-token.ts --outfile /workspace/image-bin/admin-mcp-token-revoke \
     && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/seed-admin.ts --outfile /workspace/image-bin/owner-seed \
-    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/seed-database.ts --outfile /workspace/image-bin/database-seed
+    && bun build --target=bun --external=prismjs --external='prismjs/*' apps/api/src/scripts/seed-database.ts --outfile /workspace/image-bin/database-seed \
+    && chmod 0555 /workspace/image-bin/admin-mcp-token-issue /workspace/image-bin/admin-mcp-token-revoke
 
 FROM oven/bun:1.3.10@sha256:b86c67b531d87b4db11470d9b2bd0c519b1976eee6fcd71634e73abfa6230d2e AS runner
 

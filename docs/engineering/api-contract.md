@@ -69,22 +69,33 @@
 ## 관리자 MCP 계약
 
 - 관리자 MCP는 OpenAPI 계약과 분리된 Streamable HTTP 도구 경계다.
+- Loopback 외 관리자 MCP endpoint는 HTTPS를 사용한다.
+- 관리자 MCP는 `Authorization` header의 server-issued bearer token만 인증에 사용한다.
+- Query, cookie와 Tool 입력의 token은 인증에 사용하지 않는다.
+- 모든 MCP route는 Host와 Origin을 credential 조회와 Tool application 호출보다 먼저 검증한다.
+- 누락되거나 유효하지 않은 token은 `resource_metadata` parameter가 없는 Bearer `401` challenge로 거부한다.
+- 유효한 credential의 scope가 부족하면 `403`으로 거부한다.
+- modern 요청은 `2026-07-28` envelope를 사용한다.
+- 현재 Codex CLI의 claim-less initialize는 stateless legacy fallback으로 처리한다.
+- stateless legacy fallback은 조회 Tool만 제공하고 GET·DELETE session lifecycle을 제공하지 않는다.
 - MCP 입력과 출력은 기존 `@workspace/contracts` Zod schema를 재사용한다.
 - 성공 결과는 검증된 `structuredContent`와 짧은 text 요약을 함께 반환한다.
 - 예상된 실패는 안정된 code와 request ID를 포함한 `isError` 결과로 반환한다.
 - 내부 stack, persistence 세부 정보와 provider 원문은 MCP 결과에 포함하지 않는다.
 - 코스 편집 문서는 직렬화 크기 상한을 넘으면 안정된 초과 오류를 반환한다.
 - 현대 protocol의 2단계 변경 호출은 별도 owner 승인 없이 실행한다.
-- 2단계 변경 호출은 owner 관리자 ID, OAuth client ID, Tool, 멱등 키와 입력 digest에 묶인 실행 식별자를 사용한다.
+- 2단계 변경 호출은 owner 관리자 ID, MCP credential ID, Tool, 멱등 키와 입력 digest에 묶인 실행 식별자를 사용한다.
 - 2단계 콘텐츠 변경과 실행 영수증은 같은 transaction에서 확정한다.
 - 같은 2단계 binding의 재시도는 저장된 결과를 반환한다. 다른 입력에 같은 멱등 키를 사용하면 충돌로 거부한다.
 - 코스 초안 저장 문서는 직렬화 크기 상한과 편집 버전을 검증한다.
 - 코스 초안 저장은 이미지 참조의 추가, 교체, 이동과 제거를 거부한다.
 - 현대 protocol의 3단계 변경 호출은 영속 승인이 없으면 URL elicitation과 서명된 `requestState`를 가진 `input_required` 결과를 반환한다.
+- 3단계 승인과 `requestState`는 owner 관리자 ID와 MCP credential ID에 묶는다.
 - 3단계 변경 호출은 승인 binding, 대상 상태와 편집 버전을 실행 직전에 다시 검증한다.
 - 같은 3단계 승인 binding의 재시도는 저장된 결과를 반환한다. 다른 binding의 재시도는 충돌로 거부한다.
 - owner 승인 조회·승인·거절 HTTP 계약은 operations interface와 공유 contract가 소유한다.
 - 현재 tool allowlist와 크기 상한은 [관리자 MCP tool 등록](../../apps/api/src/mcp/admin/admin-mcp-tools.ts)이 소유한다.
+- 현재 인증과 token lifecycle 계약은 [bearer verifier](../../apps/api/src/mcp/admin/admin-mcp-auth.ts), [request 경계](../../apps/api/src/mcp/admin/admin-mcp-request-boundary.ts)와 [token store](../../apps/api/src/mcp/admin/admin-mcp-access-token-store.ts)가 소유한다.
 
 ## 계약 변경 절차
 

@@ -439,7 +439,7 @@ function executeApprovedMcpChange(
         createdAt: new Date(input.now),
         executionId: input.executionId,
         inputDigest: input.inputDigest,
-        oauthClientId: input.oauthClientId,
+        mcpCredentialId: input.mcpCredentialId,
         ...result,
         toolName: input.toolName,
       }
@@ -528,7 +528,7 @@ function executeAutomaticMcpChange(
         executionId: input.executionId,
         idempotencyKey: input.idempotencyKey,
         inputDigest: input.inputDigest,
-        oauthClientId: input.oauthClientId,
+        mcpCredentialId: input.mcpCredentialId,
         resultKind: result,
         toolName: input.toolName,
       }
@@ -655,7 +655,7 @@ function readReceiptRow(
     createdAt: new Date(row.createdAt),
     executionId: row.executionId as AdminMcpExecutionId,
     inputDigest: row.inputDigest,
-    oauthClientId: row.oauthClientId,
+    mcpCredentialId: row.mcpCredentialId,
     toolName: row.toolName,
   }
   if (row.resultKind !== "course-published") {
@@ -684,7 +684,7 @@ function toReceiptRow(receipt: AdminMcpContentChangeReceipt) {
     createdAt: receipt.createdAt,
     executionId: receipt.executionId,
     inputDigest: receipt.inputDigest,
-    oauthClientId: receipt.oauthClientId,
+    mcpCredentialId: receipt.mcpCredentialId,
     resultKind: receipt.resultKind,
     resultCurriculumVersionId:
       receipt.resultKind === "course-published"
@@ -728,7 +728,7 @@ function readAutomaticReceiptRow(
         executionId: row.executionId as AdminMcpExecutionId,
         idempotencyKey: row.idempotencyKey,
         inputDigest: row.inputDigest,
-        oauthClientId: row.oauthClientId,
+        mcpCredentialId: row.mcpCredentialId,
         resultKind: row.resultKind,
         toolName: row.toolName,
       }
@@ -741,7 +741,7 @@ function toAutomaticReceiptRow(receipt: AdminMcpAutomaticContentChangeReceipt) {
     executionId: receipt.executionId,
     idempotencyKey: receipt.idempotencyKey,
     inputDigest: receipt.inputDigest,
-    oauthClientId: receipt.oauthClientId,
+    mcpCredentialId: receipt.mcpCredentialId,
     resultKind: receipt.resultKind,
     targetCourseId: receipt.courseId,
     toolName: receipt.toolName,

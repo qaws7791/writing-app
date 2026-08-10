@@ -44,7 +44,7 @@ export type AdminMcpApproval = Readonly<{
   id: AdminMcpApprovalId
   idempotencyKey: string
   inputDigest: string
-  oauthClientId: string
+  mcpCredentialId: string
   ownerAdminId: AdminId
   requestId: string
   status: AdminMcpApprovalStatus
@@ -67,7 +67,7 @@ export type CreateAdminMcpApprovalInput = Readonly<{
   id: string
   idempotencyKey: string
   inputDigest: string
-  oauthClientId: string
+  mcpCredentialId: string
   ownerAdminId: AdminId
   requestId: string
   target: AdminMcpApprovalTarget
@@ -91,8 +91,8 @@ export function createAdminMcpApproval(
     !safeIdentifierPattern.test(input.requestId) ||
     !idempotencyKeyPattern.test(input.idempotencyKey) ||
     !sha256DigestPattern.test(input.inputDigest) ||
-    input.oauthClientId.length < 1 ||
-    input.oauthClientId.length > 200 ||
+    input.mcpCredentialId.length < 1 ||
+    input.mcpCredentialId.length > 200 ||
     !isValidTarget(input.target) ||
     !isCompatibleTarget(input)
   ) {
@@ -109,7 +109,7 @@ export function createAdminMcpApproval(
     id: input.id as AdminMcpApprovalId,
     idempotencyKey: input.idempotencyKey,
     inputDigest: input.inputDigest,
-    oauthClientId: input.oauthClientId,
+    mcpCredentialId: input.mcpCredentialId,
     ownerAdminId: input.ownerAdminId,
     requestId: input.requestId,
     status: "pending",
@@ -182,14 +182,14 @@ export function hasAdminMcpApprovalBinding(
   approval: AdminMcpApproval,
   binding: Readonly<{
     inputDigest: string
-    oauthClientId: string
+    mcpCredentialId: string
     ownerAdminId: AdminId
     toolName: AdminMcpChangeToolName
   }>
 ): boolean {
   return (
     approval.inputDigest === binding.inputDigest &&
-    approval.oauthClientId === binding.oauthClientId &&
+    approval.mcpCredentialId === binding.mcpCredentialId &&
     approval.ownerAdminId === binding.ownerAdminId &&
     approval.toolName === binding.toolName
   )

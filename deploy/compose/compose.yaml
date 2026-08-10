@@ -111,6 +111,10 @@ services:
         source: ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/caddyfile
         target: /etc/caddy/caddyfile
         read_only: true
+      - type: bind
+        source: ${CONFIG_DIRECTORY:?CONFIG_DIRECTORY가 필요합니다}/caddy-sites
+        target: /etc/caddy/sites
+        read_only: true
       - type: volume
         source: caddy-data
         target: /data

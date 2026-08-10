@@ -4,6 +4,8 @@ writing_app_admin_host: admin.example.com
 # verify playbook에서 DNS, TLS와 public route 경계를 검증한다.
 writing_app_verify_public_routes: true
 writing_app_enable_api_docs: false
+# Production 관리자 MCP 활성화는 금지한다.
+writing_app_admin_mcp_enabled: false
 writing_app_maintenance_log_retention_evidence_file: >-
   /etc/writing-app/evidence/log-retention.json
 writing_app_maintenance_on_calendar: "*-*-* 03:15:00"

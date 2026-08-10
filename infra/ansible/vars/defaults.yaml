@@ -58,6 +58,14 @@ writing_app_verify_uses_existing_operation_lock: false
 writing_app_hold_operation_lock_for_verify: false
 writing_app_operation_handoff_token: ""
 writing_app_enable_api_docs: false
+writing_app_admin_mcp_enabled: false
+writing_app_admin_mcp_host: ""
+writing_app_admin_mcp_static_bearer_rebaseline_approved: false
+writing_app_admin_mcp_static_bearer_rebaseline_image: ""
+writing_app_admin_mcp_changes_enabled: false
+writing_app_admin_mcp_approval_ttl_seconds: ""
+writing_app_admin_mcp_execution_lease_seconds: ""
+writing_app_admin_mcp_request_state_secret: ""
 writing_app_maintenance_batch_size: 100
 writing_app_maintenance_log_retention_evidence_file: ""
 writing_app_maintenance_manage_timer: true

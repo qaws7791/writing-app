@@ -49,7 +49,7 @@ export function toAdminMcpApprovalDto(value: AdminMcpApproval) {
     decidedAt: value.decidedAt?.toISOString() ?? null,
     expiresAt: value.expiresAt.toISOString(),
     id: value.id,
-    oauthClientId: value.oauthClientId,
+    mcpCredentialId: value.mcpCredentialId,
     requestId: value.requestId,
     status: value.status,
     target: value.target,

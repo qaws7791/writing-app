@@ -238,9 +238,12 @@ function createFixture(
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "writing-app-images-"))
   try {
     const config = path.join(root, "config")
+    const caddySites = path.join(config, "caddy-sites")
     const data = path.join(root, "data")
     const backups = path.join(root, "backups")
     for (const directory of [config, data, backups]) fs.mkdirSync(directory)
+    fs.mkdirSync(caddySites)
+    fs.writeFileSync(path.join(caddySites, "admin-mcp.caddy"), "")
     fs.chmodSync(data, 0o777)
     for (const spec of specs) {
       writeEnvironment(path.join(config, `${spec.name}.env`), spec.environment)
@@ -294,6 +297,14 @@ function nodeCheck(
   compose(fixture, ["exec", "-T", service, "node", "-e", script])
 }
 
+function bunCheck(
+  fixture: { readonly env: string; readonly project: string },
+  service: Service,
+  script: string
+) {
+  compose(fixture, ["exec", "-T", service, "bun", "-e", script])
+}
+
 function smokeCompose(
   specs: readonly DeploymentImageSpec[],
   images: Readonly<Record<Service, string>>,
@@ -332,6 +343,11 @@ function smokeCompose(
       fixture,
       "admin",
       "fetch(process.env.API_BASE_URL+'/api/admin/health').then(async r=>{const b=await r.json();if(!r.ok||b.service!=='api')throw Error(JSON.stringify(b))}).catch(e=>{console.error(e);process.exit(1)})"
+    )
+    bunCheck(
+      fixture,
+      "api",
+      "const{accessSync,constants}=require('node:fs');for(const p of ['/workspace/bin/admin-mcp-token-issue','/workspace/bin/admin-mcp-token-revoke'])accessSync(p,constants.X_OK)"
     )
     for (const [service, port] of [
       ["web", 3000],

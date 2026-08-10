@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { createAppLogger, createChildLogger } from "#observability/logger"
+import { createRequestLogger } from "#observability/request-logger"
 import { createSecurityAuditLogger } from "#observability/security-audit-logger"
 
 type LogRecord = Readonly<Record<string, unknown>>
@@ -74,6 +75,49 @@ describe("structured log privacy", () => {
         userAgent: "Browser/1.0",
       },
     ])
+  })
+
+  it("최상위 MCP credential ID만 보존하고 secret과 유사 key는 가린다", () => {
+    const { records, stream } = aMemoryLogStream()
+    const logger = createAppLogger({ stream })
+
+    createRequestLogger(logger)({
+      audience: "admin-mcp",
+      durationMs: 1,
+      mcpCredentialId: "wmcp_0123456789abcdef0123456789abcdef",
+      method: "POST",
+      outcome: "succeeded",
+      path: "/mcp/admin",
+      requestId: "request-admin-mcp",
+      status: 200,
+    })
+
+    logger.info({
+      clientSecret: "client-secret-value",
+      mcpCredentialIdentifier: "similar-credential-value",
+      nested: {
+        mcpCredentialId: "nested-credential-value",
+      },
+      rawToken: "raw-token-value",
+      tokenCount: 42,
+    })
+
+    expect(records[0]).toMatchObject({
+      audience: "admin-mcp",
+      mcpCredentialId: "wmcp_0123456789abcdef0123456789abcdef",
+      requestId: "request-admin-mcp",
+    })
+    expect(records[1]).toMatchObject({
+      clientSecret: "[REDACTED]",
+      mcpCredentialIdentifier: "[REDACTED]",
+      nested: {
+        mcpCredentialId: "[REDACTED]",
+      },
+      rawToken: "[REDACTED]",
+      tokenCount: 42,
+    })
+    expect(JSON.stringify(records)).not.toContain("client-secret-value")
+    expect(JSON.stringify(records)).not.toContain("raw-token-value")
   })
 })
 

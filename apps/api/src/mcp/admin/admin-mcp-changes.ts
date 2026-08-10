@@ -80,7 +80,7 @@ type AdminMcpChangeDependencies = Readonly<{
 type AdminMcpAuthenticatedRequest = Readonly<{
   adminId: AdminId
   context: ServerContext
-  oauthClientId: string
+  mcpCredentialId: string
   requestId: string
 }>
 
@@ -275,7 +275,7 @@ function automaticBinding(
         canonicalJson({
           adminId: request.adminId,
           idempotencyKey: input.idempotencyKey,
-          oauthClientId: request.oauthClientId,
+          mcpCredentialId: request.mcpCredentialId,
           toolName,
         })
       )
@@ -287,7 +287,7 @@ function automaticBinding(
     executionId,
     idempotencyKey: input.idempotencyKey,
     inputDigest,
-    oauthClientId: request.oauthClientId,
+    mcpCredentialId: request.mcpCredentialId,
     toolName,
   }
 }
@@ -305,7 +305,7 @@ async function executeAutomaticContentChange(
     approvalId: null,
     executionId: command.executionId,
     inputDigest: command.inputDigest,
-    oauthClientId: request.oauthClientId,
+    mcpCredentialId: request.mcpCredentialId,
     requestId: request.requestId,
     target: { id: courseId, type: "course" },
   })
@@ -351,7 +351,7 @@ async function requestCourseApproval(
     expiresAt: approvalExpiresAt(dependencies),
     idempotencyKey: input.idempotencyKey,
     inputDigest,
-    oauthClientId: request.oauthClientId,
+    mcpCredentialId: request.mcpCredentialId,
     ownerAdminId: request.adminId,
     requestId: request.requestId,
     target:
@@ -409,7 +409,7 @@ async function requestUserApproval(
     expiresAt: approvalExpiresAt(dependencies),
     idempotencyKey: input.idempotencyKey,
     inputDigest,
-    oauthClientId: request.oauthClientId,
+    mcpCredentialId: request.mcpCredentialId,
     ownerAdminId: request.adminId,
     requestId: request.requestId,
     target:
@@ -489,7 +489,7 @@ async function executeApprovedChange(
     approvalId: state.approvalId,
     executionLeaseMs: dependencies.configuration.executionLeaseMs,
     inputDigest: state.inputDigest,
-    oauthClientId: request.oauthClientId,
+    mcpCredentialId: request.mcpCredentialId,
     ownerAdminId: request.adminId,
     toolName: state.toolName,
   })
@@ -525,7 +525,7 @@ async function executeApprovedChange(
     eventId: auditEventId(approval.id),
     executionId,
     inputDigest: approval.inputDigest,
-    oauthClientId: approval.oauthClientId,
+    mcpCredentialId: approval.mcpCredentialId,
     requestId: approval.requestId,
     target: descriptor.target,
   })
@@ -653,7 +653,7 @@ async function readCompletedResult(
     approvalId: approval.id,
     executionId,
     inputDigest: approval.inputDigest,
-    oauthClientId: request.oauthClientId,
+    mcpCredentialId: request.mcpCredentialId,
     toolName: approval.toolName,
   })
   if (receipt.isErr() || receipt.value === null) {
@@ -672,7 +672,7 @@ function approvedContentCommand(
     approvalId: approval.id,
     executionId,
     inputDigest: approval.inputDigest,
-    oauthClientId: approval.oauthClientId,
+    mcpCredentialId: approval.mcpCredentialId,
   }
   switch (approval.toolName) {
     case "admin_create_course_draft":

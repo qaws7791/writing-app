@@ -82,6 +82,26 @@
       tags:
         - approval
 
+    - name: 관리자 MCP synthetic bearer token 배포 사전 검증
+      ansible.builtin.assert:
+        that:
+          - >-
+            lookup(
+              'ansible.builtin.env',
+              'ADMIN_MCP_SYNTHETIC_BEARER_TOKEN',
+              default=''
+            ) | trim | length > 0
+        fail_msg: >-
+          관리자 MCP staging 배포에는 controller의
+          ADMIN_MCP_SYNTHETIC_BEARER_TOKEN이 필요합니다.
+      no_log: true
+      become: false
+      delegate_to: localhost
+      run_once: true
+      when: writing_app_admin_mcp_enabled | bool
+      tags:
+        - approval
+
     - name: 배포 작업 공유 락 획득
       ansible.builtin.command:
         argv:

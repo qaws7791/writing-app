@@ -9,6 +9,17 @@ writing_app_web_host: staging-app.example.com
 writing_app_admin_host: staging-admin.example.com
 writing_app_verify_public_routes: true
 writing_app_enable_api_docs: true
+writing_app_admin_mcp_enabled: false
+# 승인된 staging smoke에서만 위 값을 true로 바꾸고 아래 입력을 활성화한다.
+# writing_app_admin_mcp_host: staging-mcp.example.com
+# read-only synthetic bearer token은 inventory가 아닌 staging runner secret으로만 주입한다.
+# writing_app_admin_mcp_changes_enabled: false
+# 변경 기능을 승인한 경우에만 아래 네 줄을 활성화한다.
+# writing_app_admin_mcp_changes_enabled: true
+# writing_app_admin_mcp_approval_ttl_seconds: 300
+# writing_app_admin_mcp_execution_lease_seconds: 30
+# writing_app_admin_mcp_request_state_secret: >-
+#   {{ vault_writing_app_admin_mcp_request_state_secret }}
 writing_app_maintenance_log_retention_evidence_file: >-
   /etc/writing-app-staging/evidence/log-retention.json
 writing_app_maintenance_on_calendar: "*-*-* 02:15:00"

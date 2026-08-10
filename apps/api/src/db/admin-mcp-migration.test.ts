@@ -123,7 +123,7 @@ describe("admin MCP application migration", () => {
             mcpApprovalId: string | null
             mcpExecutionId: string | null
             mcpInputDigest: string | null
-            mcpOauthClientId: string | null
+            mcpCredentialId: string | null
             outcome: string
           },
           []
@@ -133,7 +133,7 @@ describe("admin MCP application migration", () => {
             mcp_approval_id AS mcpApprovalId,
             mcp_execution_id AS mcpExecutionId,
             mcp_input_digest AS mcpInputDigest,
-            mcp_oauth_client_id AS mcpOauthClientId,
+            mcp_oauth_client_id AS mcpCredentialId,
             outcome
           FROM audit_events
           WHERE id = 'audit-before-admin-mcp'`
@@ -144,7 +144,7 @@ describe("admin MCP application migration", () => {
       mcpApprovalId: null,
       mcpExecutionId: null,
       mcpInputDigest: null,
-      mcpOauthClientId: null,
+      mcpCredentialId: null,
       outcome: "succeeded",
     })
     expect(

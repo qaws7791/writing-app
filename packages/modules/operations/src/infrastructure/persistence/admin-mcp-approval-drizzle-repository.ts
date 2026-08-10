@@ -134,8 +134,8 @@ export function createAdminMcpApprovalDrizzleRepository(
               and(
                 eq(adminMcpChangeApprovals.ownerAdminId, approval.ownerAdminId),
                 eq(
-                  adminMcpChangeApprovals.oauthClientId,
-                  approval.oauthClientId
+                  adminMcpChangeApprovals.mcpCredentialId,
+                  approval.mcpCredentialId
                 ),
                 eq(adminMcpChangeApprovals.toolName, approval.toolName),
                 eq(
@@ -266,7 +266,7 @@ function readApprovalByIdempotency(
     .where(
       and(
         eq(adminMcpChangeApprovals.ownerAdminId, approval.ownerAdminId),
-        eq(adminMcpChangeApprovals.oauthClientId, approval.oauthClientId),
+        eq(adminMcpChangeApprovals.mcpCredentialId, approval.mcpCredentialId),
         eq(adminMcpChangeApprovals.toolName, approval.toolName),
         eq(adminMcpChangeApprovals.idempotencyKey, approval.idempotencyKey)
       )
@@ -302,7 +302,7 @@ function toApprovalRow(approval: AdminMcpApproval) {
     id: approval.id,
     idempotencyKey: approval.idempotencyKey,
     inputDigest: approval.inputDigest,
-    oauthClientId: approval.oauthClientId,
+    mcpCredentialId: approval.mcpCredentialId,
     ownerAdminId: approval.ownerAdminId,
     requestId: approval.requestId,
     status: approval.status,
@@ -333,7 +333,7 @@ function toAdminMcpApproval(
     id: row.id as AdminMcpApprovalId,
     idempotencyKey: row.idempotencyKey,
     inputDigest: row.inputDigest,
-    oauthClientId: row.oauthClientId,
+    mcpCredentialId: row.mcpCredentialId,
     ownerAdminId: row.ownerAdminId as AdminId,
     requestId: row.requestId,
     status: row.status,

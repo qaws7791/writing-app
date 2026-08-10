@@ -11,6 +11,7 @@ const restoreDrillExpiredDays = 32
 
 type ApprovalCase = Readonly<{
   accepted: boolean
+  environment?: Readonly<Record<string, string>>
   name: string
   variables: Readonly<Record<string, unknown>>
 }>
@@ -54,9 +55,34 @@ function createApprovedVariables(now: Date): Readonly<Record<string, unknown>> {
 
 function createApprovalCases(now: Date): readonly ApprovalCase[] {
   const approved = createApprovedVariables(now)
+  const staging = {
+    ...approved,
+    writing_app_environment: "staging",
+    writing_app_require_production_readiness: false,
+  }
 
   return [
     { accepted: true, name: "완결된 production 증거", variables: approved },
+    {
+      accepted: true,
+      environment: { ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "" },
+      name: "관리자 MCP 비활성 staging 배포",
+      variables: { ...staging, writing_app_admin_mcp_enabled: false },
+    },
+    {
+      accepted: true,
+      environment: {
+        ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "controller-only-test-token",
+      },
+      name: "관리자 MCP 활성 staging controller key",
+      variables: { ...staging, writing_app_admin_mcp_enabled: true },
+    },
+    {
+      accepted: false,
+      environment: { ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "" },
+      name: "관리자 MCP 활성 staging controller key 누락",
+      variables: { ...staging, writing_app_admin_mcp_enabled: true },
+    },
     ...(
       [
         ["배포 승인 누락", { writing_app_allow_deploy: false }],
@@ -135,8 +161,10 @@ function runApprovalCase(
       cwd: ansibleRoot,
       env: {
         ...process.env,
+        ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "",
         ANSIBLE_FORCE_COLOR: "false",
         ANSIBLE_NOCOLOR: "true",
+        ...approvalCase.environment,
       },
       stderr: "pipe",
       stdout: "pipe",
@@ -172,8 +200,12 @@ function runDeploymentApprovalCheck(): void {
   fs.rmSync(path.dirname(inventory), { force: true, recursive: true })
 
   if (failures.length > 0) process.exit(1)
+  const acceptedCount = cases.filter(
+    (approvalCase) => approvalCase.accepted
+  ).length
+  const rejectedCount = cases.length - acceptedCount
   console.log(
-    `deploy 승인 gate가 완결된 증거를 통과시키고 ${cases.length - 1}개 불완전 입력을 멈췄습니다.`
+    `deploy 승인 gate가 ${acceptedCount}개 완결 입력을 통과시키고 ${rejectedCount}개 불완전 입력을 멈췄습니다.`
   )
 }
 

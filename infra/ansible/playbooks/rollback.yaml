@@ -155,6 +155,37 @@
               digest여야 하며 다른 image reference로 롤백하지 않습니다.
           no_log: true
 
+        - name: 관리자 MCP rollback target Static Bearer binary 검증
+          vars:
+            writing_app_rollback_target_api_image: >-
+              {{
+                (writing_app_rollback_target_compose_configuration.stdout | from_json).services.api.image
+              }}
+          ansible.builtin.command:
+            argv:
+              - docker
+              - run
+              - --rm
+              - --network
+              - none
+              - --pull
+              - never
+              - --read-only
+              - --cap-drop
+              - ALL
+              - --security-opt
+              - no-new-privileges:true
+              - --entrypoint
+              - bun
+              - "{{ writing_app_rollback_target_api_image }}"
+              - -e
+              - >-
+                const{accessSync,constants}=require('node:fs');for(const p of
+                ['/workspace/bin/admin-mcp-token-issue','/workspace/bin/admin-mcp-token-revoke'])
+                accessSync(p,constants.X_OK)
+          changed_when: false
+          when: writing_app_admin_mcp_enabled | bool
+
         - name: 코드 롤백 mutation 전 operation lock 보존 설정
           ansible.builtin.set_fact:
             writing_app_rollback_mutation_started: true

@@ -188,7 +188,7 @@ function toAuditEventRow(event: AuditEvent) {
     mcpApprovalId: event.mcp?.approvalId ?? null,
     mcpExecutionId: event.mcp?.executionId ?? null,
     mcpInputDigest: event.mcp?.inputDigest ?? null,
-    mcpOauthClientId: event.mcp?.oauthClientId ?? null,
+    mcpCredentialId: event.mcp?.mcpCredentialId ?? null,
     outcome: event.outcome,
     requestId: event.requestId,
     retentionUntil: event.retentionUntil,
@@ -208,7 +208,7 @@ function toAuditEvent(row: typeof auditEvents.$inferSelect): AuditEvent {
     mcp:
       row.mcpExecutionId === null ||
       row.mcpInputDigest === null ||
-      row.mcpOauthClientId === null
+      row.mcpCredentialId === null
         ? null
         : {
             approvalId:
@@ -217,7 +217,7 @@ function toAuditEvent(row: typeof auditEvents.$inferSelect): AuditEvent {
                 : (row.mcpApprovalId as AdminMcpApprovalId),
             executionId: row.mcpExecutionId as AdminMcpExecutionId,
             inputDigest: row.mcpInputDigest,
-            oauthClientId: row.mcpOauthClientId,
+            mcpCredentialId: row.mcpCredentialId,
           },
     outcome: row.outcome,
     requestId: row.requestId,
@@ -244,6 +244,6 @@ function hasSameAuditIdentity(left: AuditEvent, right: AuditEvent): boolean {
     left.mcp?.approvalId === right.mcp?.approvalId &&
     left.mcp?.executionId === right.mcp?.executionId &&
     left.mcp?.inputDigest === right.mcp?.inputDigest &&
-    left.mcp?.oauthClientId === right.mcp?.oauthClientId
+    left.mcp?.mcpCredentialId === right.mcp?.mcpCredentialId
   )
 }

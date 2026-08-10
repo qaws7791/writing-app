@@ -1,0 +1,9 @@
+{% if writing_app_admin_mcp_enabled | bool %}
+{$ADMIN_MCP_HOST} {
+	import admin-mcp-routes
+}
+
+http://{$ADMIN_MCP_HOST}:8080 {
+	import admin-mcp-routes
+}
+{% endif %}

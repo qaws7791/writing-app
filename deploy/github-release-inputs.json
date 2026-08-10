@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "workflow": ".github/workflows/image-release.yml",
   "automaticSecrets": ["GITHUB_TOKEN"],
   "repository": {
@@ -13,6 +13,7 @@
   },
   "environments": {
     "Production": {
+      "optionalSecrets": [],
       "variables": [
         "PRODUCTION_DEPLOY_APPROVED",
         "PRODUCTION_FULL_E2E_APPROVED",
@@ -34,6 +35,7 @@
       ]
     },
     "staging": {
+      "optionalSecrets": ["ADMIN_MCP_SYNTHETIC_BEARER_TOKEN"],
       "variables": [
         "K6_CURRICULUM_VERSION_ID",
         "K6_LESSON_ID",

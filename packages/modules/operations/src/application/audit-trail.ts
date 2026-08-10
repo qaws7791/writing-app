@@ -65,7 +65,7 @@ export type AuditTrail = Readonly<{
     readonly approvalId: AdminMcpApprovalId | null
     readonly executionId: AdminMcpExecutionId
     readonly inputDigest: string
-    readonly oauthClientId: string
+    readonly mcpCredentialId: string
     readonly requestId: string
     readonly target: AuditTarget
   }) => Promise<Result<AuditEvent, AuditTrailError>>
@@ -81,7 +81,7 @@ export type AuditTrail = Readonly<{
     readonly eventId: string
     readonly executionId: AdminMcpExecutionId
     readonly inputDigest: string
-    readonly oauthClientId: string
+    readonly mcpCredentialId: string
     readonly requestId: string
     readonly target: AuditTarget
   }) => Promise<Result<AuditEvent, AuditTrailError>>
@@ -126,7 +126,7 @@ export function createAuditTrail(input: {
           approvalId: command.approvalId,
           executionId: command.executionId,
           inputDigest: command.inputDigest,
-          oauthClientId: command.oauthClientId,
+          mcpCredentialId: command.mcpCredentialId,
         },
         requestId: command.requestId,
         target: command.target,
@@ -150,7 +150,7 @@ export function createAuditTrail(input: {
           approvalId: command.approvalId,
           executionId: command.executionId,
           inputDigest: command.inputDigest,
-          oauthClientId: command.oauthClientId,
+          mcpCredentialId: command.mcpCredentialId,
         },
         requestId: command.requestId,
         target: command.target,

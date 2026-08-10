@@ -12,6 +12,7 @@ import auditEventsCourseRestoreSql from "../../drizzle/0002-audit-events-course-
 import focusedWritingSql from "../../drizzle/0003-focused-writing.sql" with { type: "text" }
 import adminMcpApprovedContentChangesSql from "../../drizzle/0004-admin-mcp-approved-content-changes.sql" with { type: "text" }
 import adminMcpFullAdminToolsSql from "../../drizzle/0005-admin-mcp-full-admin-tools.sql" with { type: "text" }
+import adminMcpStaticAccessTokensSql from "../../drizzle/0006-admin-mcp-static-access-tokens.sql" with { type: "text" }
 import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 
 const migrationSqlByFileName = {
@@ -22,6 +23,7 @@ const migrationSqlByFileName = {
   "0004-admin-mcp-approved-content-changes.sql":
     adminMcpApprovedContentChangesSql,
   "0005-admin-mcp-full-admin-tools.sql": adminMcpFullAdminToolsSql,
+  "0006-admin-mcp-static-access-tokens.sql": adminMcpStaticAccessTokensSql,
 } as const
 
 const migrationSources = applicationMigrationManifest.map((migration) => ({

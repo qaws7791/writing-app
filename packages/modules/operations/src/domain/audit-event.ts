@@ -50,7 +50,7 @@ type AuditMcpProvenance = Readonly<{
   approvalId: AdminMcpApprovalId | null
   executionId: AdminMcpExecutionId
   inputDigest: string
-  oauthClientId: string
+  mcpCredentialId: string
 }>
 
 export type AuditEvent = Readonly<{
@@ -193,7 +193,7 @@ function isValidMcpProvenance(value: AuditMcpProvenance | null): boolean {
     (isSafeAuditIdentifier(value.executionId) &&
       (value.approvalId === null || isSafeAuditIdentifier(value.approvalId)) &&
       sha256HexPattern.test(value.inputDigest) &&
-      value.oauthClientId.length >= 1 &&
-      value.oauthClientId.length <= 200)
+      value.mcpCredentialId.length >= 1 &&
+      value.mcpCredentialId.length <= 200)
   )
 }

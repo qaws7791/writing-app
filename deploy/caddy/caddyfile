@@ -38,6 +38,19 @@
 	}
 }
 
+(admin-mcp-routes) {
+	@admin-mcp path /mcp/admin
+	handle @admin-mcp {
+		reverse_proxy api:4000 {
+			header_up X-Writing-App-Client-IP {http.request.remote.host}
+		}
+	}
+
+	handle {
+		respond "not found" 404
+	}
+}
+
 {$WEB_HOST} {
 	import learner-routes
 }
@@ -45,6 +58,8 @@
 {$ADMIN_HOST} {
 	import admin-routes
 }
+
+import /etc/caddy/sites/*.caddy
 
 http://127.0.0.1:8080 {
 	handle /healthz {

@@ -18,7 +18,7 @@ export type SecurityAuditEvent = SecurityEvent & {
   readonly actorId?: string
   readonly actorType?: "admin" | "learner"
   readonly clientIp?: string
-  readonly oauthClientId?: string
+  readonly mcpCredentialId?: string
   readonly reasonCode?: string
   readonly userAgent?: string
 }
@@ -56,9 +56,9 @@ function createSecurityAuditLogRecord(
     ...(event.actorType === undefined ? {} : { actorType: event.actorType }),
     ...(clientIp === undefined ? {} : { clientIp }),
     event: logEventNames.securityAudit,
-    ...(event.oauthClientId === undefined
+    ...(event.mcpCredentialId === undefined
       ? {}
-      : { oauthClientId: event.oauthClientId }),
+      : { mcpCredentialId: event.mcpCredentialId }),
     outcome: event.outcome,
     ...(reasonCode === undefined ? {} : { reasonCode }),
     requestId: event.requestId,

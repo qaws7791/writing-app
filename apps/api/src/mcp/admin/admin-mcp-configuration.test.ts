@@ -4,13 +4,6 @@ import { parseAdminMcpConfiguration } from "@/mcp/admin/admin-mcp-configuration"
 
 const validConfiguration = {
   ADMIN_MCP_ENABLED: "true",
-  ADMIN_MCP_INTROSPECTION_CLIENT_ID: "writing-app-resource-server",
-  ADMIN_MCP_INTROSPECTION_CLIENT_SECRET: "test-secret",
-  ADMIN_MCP_OAUTH_ISSUER: "https://auth.example.com",
-  ADMIN_MCP_OAUTH_METADATA_URL:
-    "https://auth.example.com/.well-known/oauth-authorization-server",
-  ADMIN_MCP_OWNER_ADMIN_ID: "admin-owner",
-  ADMIN_MCP_OWNER_SUBJECT: "owner-subject",
   ADMIN_MCP_RESOURCE_URL: "https://api.example.com/mcp/admin",
 } as const
 
@@ -22,18 +15,11 @@ describe("parseAdminMcpConfiguration", () => {
   it("parses a complete non-production configuration", () => {
     expect(parseAdminMcpConfiguration(validConfiguration, "staging")).toEqual({
       changes: undefined,
-      introspectionClientId: "writing-app-resource-server",
-      introspectionClientSecret: "test-secret",
-      oauthIssuer: "https://auth.example.com",
-      oauthMetadataUrl:
-        "https://auth.example.com/.well-known/oauth-authorization-server",
-      ownerAdminId: "admin-owner",
-      ownerSubject: "owner-subject",
       resourceUrl: "https://api.example.com/mcp/admin",
     })
   })
 
-  it("parses explicitly enabled content-change configuration", () => {
+  it("parses explicitly enabled change configuration", () => {
     expect(
       parseAdminMcpConfiguration(
         {
@@ -42,22 +28,23 @@ describe("parseAdminMcpConfiguration", () => {
           ADMIN_MCP_CHANGES_ENABLED: "true",
           ADMIN_MCP_EXECUTION_LEASE_SECONDS: "30",
           ADMIN_MCP_REQUEST_STATE_SECRET:
-            "distinct-request-state-secret-at-least-32-bytes",
+            "request-state-secret-with-at-least-32-bytes",
         },
         "staging",
         "https://admin.example.com"
       )
-    ).toMatchObject({
+    ).toEqual({
       changes: {
         adminOrigin: "https://admin.example.com",
         approvalTtlMs: 300_000,
         executionLeaseMs: 30_000,
-        requestStateSecret: "distinct-request-state-secret-at-least-32-bytes",
+        requestStateSecret: "request-state-secret-with-at-least-32-bytes",
       },
+      resourceUrl: "https://api.example.com/mcp/admin",
     })
   })
 
-  it("rejects partial content-change configuration", () => {
+  it("rejects partial change configuration", () => {
     expect(() =>
       parseAdminMcpConfiguration(
         {
@@ -69,36 +56,51 @@ describe("parseAdminMcpConfiguration", () => {
     ).toThrow("approvalTtlSeconds")
   })
 
-  it("rejects reuse of the introspection secret for request state", () => {
-    const sharedSecret = "shared-secret-value-with-at-least-32-bytes"
+  it("rejects change configuration while changes are disabled", () => {
     expect(() =>
       parseAdminMcpConfiguration(
         {
           ...validConfiguration,
           ADMIN_MCP_APPROVAL_TTL_SECONDS: "300",
-          ADMIN_MCP_CHANGES_ENABLED: "true",
-          ADMIN_MCP_EXECUTION_LEASE_SECONDS: "30",
-          ADMIN_MCP_INTROSPECTION_CLIENT_SECRET: sharedSecret,
-          ADMIN_MCP_REQUEST_STATE_SECRET: sharedSecret,
         },
         "staging"
       )
-    ).toThrow("introspection client secret과 다른 값")
+    ).toThrow("ADMIN_MCP_CHANGES_ENABLED=true")
   })
 
   it("rejects configuration values when the feature is not enabled", () => {
     expect(() =>
       parseAdminMcpConfiguration(
-        { ADMIN_MCP_OWNER_SUBJECT: "owner-subject" },
+        { ADMIN_MCP_RESOURCE_URL: "https://api.example.com/mcp/admin" },
         "development"
       )
     ).toThrow("ADMIN_MCP_ENABLED=true")
   })
 
+  it.each([
+    "ADMIN_MCP_INTROSPECTION_CLIENT_ID",
+    "ADMIN_MCP_INTROSPECTION_CLIENT_SECRET",
+    "ADMIN_MCP_OAUTH_ISSUER",
+    "ADMIN_MCP_OAUTH_METADATA_URL",
+    "ADMIN_MCP_PRINCIPAL_BINDINGS_JSON",
+    "ADMIN_MCP_OWNER_ADMIN_ID",
+    "ADMIN_MCP_OWNER_SUBJECT",
+  ])("rejects the removed %s environment variable", (name) => {
+    expect(() =>
+      parseAdminMcpConfiguration({ [name]: "removed-value" }, "development")
+    ).toThrow("더 이상 사용할 수 없습니다")
+  })
+
   it("rejects partial configuration", () => {
     expect(() =>
       parseAdminMcpConfiguration({ ADMIN_MCP_ENABLED: "true" }, "development")
-    ).toThrow("값이 없거나 올바르지 않습니다")
+    ).toThrow("resourceUrl")
+  })
+
+  it("rejects an invalid feature flag", () => {
+    expect(() =>
+      parseAdminMcpConfiguration({ ADMIN_MCP_ENABLED: "yes" }, "development")
+    ).toThrow("true 또는 false")
   })
 
   it("rejects an external plaintext resource URL", () => {
@@ -113,25 +115,29 @@ describe("parseAdminMcpConfiguration", () => {
     ).toThrow("HTTPS 또는 loopback URL")
   })
 
-  it("rejects a resource URL outside the fixed MCP path", () => {
+  it.each([
+    "https://api.example.com/another-path",
+    "https://api.example.com/mcp/admin?token=value",
+    "https://api.example.com/mcp/admin#fragment",
+  ])("rejects a resource URL outside the fixed endpoint: %s", (resourceUrl) => {
     expect(() =>
       parseAdminMcpConfiguration(
         {
           ...validConfiguration,
-          ADMIN_MCP_RESOURCE_URL: "https://api.example.com/another-path",
+          ADMIN_MCP_RESOURCE_URL: resourceUrl,
         },
         "staging"
       )
     ).toThrow("/mcp/admin 경로만")
   })
 
-  it("rejects credentials embedded in an OAuth URL", () => {
+  it("rejects credentials embedded in the resource URL", () => {
     expect(() =>
       parseAdminMcpConfiguration(
         {
           ...validConfiguration,
-          ADMIN_MCP_OAUTH_METADATA_URL:
-            "https://user:password@auth.example.com/.well-known/oauth-authorization-server",
+          ADMIN_MCP_RESOURCE_URL:
+            "https://user:password@api.example.com/mcp/admin",
         },
         "staging"
       )

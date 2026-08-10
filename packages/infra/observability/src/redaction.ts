@@ -44,7 +44,9 @@ const sensitiveKeyParts = [
   "answertext",
   "authtoken",
   "authorization",
+  "bearertoken",
   "clientip",
+  "clientsecret",
   "credential",
   "csrftoken",
   "displayname",
@@ -67,13 +69,16 @@ const sensitiveKeyParts = [
   "rawanswer",
   "rawprompt",
   "rawprovider",
+  "rawtoken",
   "refreshtoken",
   "remoteip",
   "requestbody",
   "responsebody",
   "searchparam",
   "sessiontoken",
+  "secretdigest",
   "systemprompt",
+  "tokendigest",
   "useragent",
   "username",
   "userprompt",
@@ -120,7 +125,10 @@ function redactValue(
   allowSecurityNetworkFields: boolean,
   depth: number
 ): unknown {
-  if (isSensitiveKey(key, allowSecurityNetworkFields && depth === 1)) {
+  if (
+    !isPublicMcpCredentialId(key, depth) &&
+    isSensitiveKey(key, allowSecurityNetworkFields && depth === 1)
+  ) {
     return redactedValue
   }
   if (Array.isArray(value)) {
@@ -139,6 +147,10 @@ function redactValue(
       redactValue(entryValue, entryKey, allowSecurityNetworkFields, depth + 1),
     ])
   )
+}
+
+function isPublicMcpCredentialId(key: string, depth: number): boolean {
+  return depth === 1 && key === "mcpCredentialId"
 }
 
 function isSensitiveKey(

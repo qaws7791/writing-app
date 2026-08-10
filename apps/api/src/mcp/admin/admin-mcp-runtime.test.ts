@@ -1,5 +1,6 @@
 import {
   Client,
+  isJSONRPCRequest,
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client"
 import {
@@ -15,8 +16,13 @@ import { adminMcpApprovalIdSchema } from "@workspace/contracts/operations/admin-
 import { ok, type Result } from "@workspace/kernel/result"
 import type { OperationsModule } from "@workspace/operations/module"
 import type { AdminMcpApproval } from "@workspace/operations/ports"
+import { Hono } from "hono"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import {
+  adminMcpRequestBodyLimitBytes,
+  createUnifiedApp,
+} from "@/http/unified-app"
 import type { AdminMcpAuthentication } from "@/mcp/admin/admin-mcp-auth"
 import type { AdminMcpConfiguration } from "@/mcp/admin/admin-mcp-configuration"
 import {
@@ -39,7 +45,6 @@ type AuditPage =
   ReadAuditResult extends Result<infer Value, unknown> ? Value : never
 
 const resourceUrl = "http://localhost:8787/mcp/admin"
-const issuer = "http://localhost:9000"
 const adminId = adminIdSchema.parse("admin-owner")
 const courseId = courseIdSchema.parse("course-1")
 const curriculumVersionId = curriculumVersionIdSchema.parse("curriculum-1")
@@ -48,24 +53,11 @@ const userId = userIdSchema.parse("user-1")
 const approvalId = adminMcpApprovalIdSchema.parse(
   "admin-mcp-approval-runtime-test"
 )
+const maximumCourseDraftDocumentBytes = 256 * 1_024
 
 const configuration: AdminMcpConfiguration = {
   changes: undefined,
-  introspectionClientId: "resource-server",
-  introspectionClientSecret: "resource-secret",
-  oauthIssuer: issuer,
-  oauthMetadataUrl: `${issuer}/.well-known/oauth-authorization-server`,
-  ownerAdminId: adminId,
-  ownerSubject: "owner-subject",
   resourceUrl,
-}
-
-const oauthMetadata = {
-  authorization_endpoint: `${issuer}/authorize`,
-  introspection_endpoint: `${issuer}/introspect`,
-  issuer,
-  response_types_supported: ["code"],
-  token_endpoint: `${issuer}/token`,
 }
 
 const openRuntimes: AdminMcpRuntime[] = []
@@ -85,11 +77,22 @@ describe("admin MCP runtime", () => {
       tools,
     })
     const responseCacheControls: string[] = []
+    const protocolRequests: Array<{
+      readonly method: string
+      readonly protocolVersion: string | null
+    }> = []
     let requestSequence = 0
     const transport = new StreamableHTTPClientTransport(new URL(resourceUrl), {
       authProvider: { token: async () => "super-secret-token" },
       fetch: async (input, init) => {
         const outgoing = new Request(input, init)
+        const message: unknown = await outgoing.clone().json()
+        if (isJSONRPCRequest(message)) {
+          protocolRequests.push({
+            method: message.method,
+            protocolVersion: outgoing.headers.get("mcp-protocol-version"),
+          })
+        }
         const headers = new Headers(outgoing.headers)
         headers.set("host", new URL(resourceUrl).host)
         const response = await runtime.fetch(
@@ -108,6 +111,7 @@ describe("admin MCP runtime", () => {
 
     try {
       await client.connect(transport)
+      expect(client.getProtocolEra()).toBe("modern")
       const listed = await client.listTools()
       expect(listed.tools.map((tool) => tool.name)).toEqual([
         "admin_list_courses",
@@ -169,6 +173,21 @@ describe("admin MCP runtime", () => {
     expect(tools.reporting.readAiFeedbackQuality).toHaveBeenCalledOnce()
     expect(tools.auditTrail.readEvents).toHaveBeenCalledOnce()
     expect(securityLogs).toEqual([])
+    expect(protocolRequests[0]).toEqual({
+      method: "server/discover",
+      protocolVersion: "2026-07-28",
+    })
+    expect(protocolRequests).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ method: "tools/list" }),
+        expect.objectContaining({ method: "tools/call" }),
+      ])
+    )
+    expect(
+      protocolRequests.every(
+        (request) => request.protocolVersion === "2026-07-28"
+      )
+    ).toBe(true)
     expect(
       responseCacheControls.every((value) => value === "private, no-store")
     ).toBe(true)
@@ -176,7 +195,7 @@ describe("admin MCP runtime", () => {
       expect.objectContaining({
         actorId: adminId,
         audience: "admin-mcp",
-        oauthClientId: "approved-agent-client",
+        mcpCredentialId: "approved-agent-client",
       })
     )
     const serializedLogs = JSON.stringify(requestLogs)
@@ -185,7 +204,7 @@ describe("admin MCP runtime", () => {
     expect(serializedLogs).not.toContain("private-course-title")
   })
 
-  it("executes a draft creation automatically on the modern protocol", async () => {
+  it("accepts a 256 KiB draft document through the unified modern endpoint", async () => {
     const tools = createToolDependencies()
     vi.mocked(tools.content.executeAutomaticMcpChange).mockImplementation(
       async (input) =>
@@ -197,7 +216,7 @@ describe("admin MCP runtime", () => {
             executionId: input.executionId,
             idempotencyKey: input.idempotencyKey,
             inputDigest: input.inputDigest,
-            oauthClientId: "approved-agent-client",
+            mcpCredentialId: "approved-agent-client",
             resultKind:
               input.kind === "save-course-draft"
                 ? "course-draft-saved"
@@ -207,23 +226,34 @@ describe("admin MCP runtime", () => {
           replayed: false,
         })
     )
-    const runtime = createRuntime({
-      configuration: {
-        ...configuration,
-        changes: {
-          adminOrigin: "http://localhost:3001",
-          approvalTtlMs: 5 * 60 * 1_000,
-          executionLeaseMs: 30 * 1_000,
-          requestStateSecret: "runtime-test-request-state-secret-with-32-bytes",
-        },
+    const changeConfiguration: AdminMcpConfiguration = {
+      ...configuration,
+      changes: {
+        adminOrigin: "http://localhost:3001",
+        approvalTtlMs: 5 * 60 * 1_000,
+        executionLeaseMs: 30 * 1_000,
+        requestStateSecret: "runtime-test-request-state-secret-with-32-bytes",
       },
+    }
+    const runtime = createRuntime({
+      configuration: changeConfiguration,
       scopes: ["admin:mcp:read", adminMcpDraftScope],
       tools,
     })
+    const toolCallRequestSizes: number[] = []
     let requestSequence = 0
-    const transport = createClientTransport(
+    const transport = createUnifiedClientTransport(
       runtime,
-      () => `mcp-change-request-${++requestSequence}`
+      () => `mcp-change-request-${++requestSequence}`,
+      {
+        async observeRequest(request) {
+          const body = await request.text()
+          const message: unknown = JSON.parse(body)
+          if (isJSONRPCRequest(message) && message.method === "tools/call") {
+            toolCallRequestSizes.push(serializedByteLength(body))
+          }
+        },
+      }
     )
     const client = new Client(
       { name: "admin-mcp-change-test-client", version: "1.0.0" },
@@ -264,20 +294,13 @@ describe("admin MCP runtime", () => {
         replayed: false,
       })
 
+      const document = createMaximumSizedCourseDraftDocument()
+      expect(serializedByteLength(document)).toBe(
+        maximumCourseDraftDocumentBytes
+      )
       const saved = await client.callTool({
         arguments: {
-          document: {
-            category: "미분류",
-            coverAssetId: null,
-            curriculumVersionId,
-            description: "자동 저장 설명",
-            editVersion: 0,
-            id: courseId,
-            revision: 1,
-            status: "active",
-            title: "자동 저장 코스",
-            units: [],
-          },
+          document,
           expectedEditVersion: 0,
           idempotencyKey: "save-course-runtime-test",
         },
@@ -300,11 +323,79 @@ describe("admin MCP runtime", () => {
     expect(tools.auditTrail.beginMcp).toHaveBeenCalledTimes(2)
     expect(tools.auditTrail.complete).toHaveBeenCalledTimes(2)
     expect(tools.adminMcpApprovals.complete).not.toHaveBeenCalled()
+    expect(Math.max(...toolCallRequestSizes)).toBeGreaterThan(
+      maximumCourseDraftDocumentBytes
+    )
+    expect(Math.max(...toolCallRequestSizes)).toBeLessThanOrEqual(
+      adminMcpRequestBodyLimitBytes
+    )
   })
 
-  it("rejects request state replay from a different OAuth client", async () => {
+  it("rejects an MCP JSON-RPC request above 320 KiB at the unified boundary", async () => {
     const tools = createToolDependencies()
-    let oauthClientId = "approved-agent-client"
+    const changeConfiguration: AdminMcpConfiguration = {
+      ...configuration,
+      changes: {
+        adminOrigin: "http://localhost:3001",
+        approvalTtlMs: 5 * 60 * 1_000,
+        executionLeaseMs: 30 * 1_000,
+        requestStateSecret: "runtime-test-request-state-secret-with-32-bytes",
+      },
+    }
+    const runtime = createRuntime({
+      configuration: changeConfiguration,
+      scopes: ["admin:mcp:read", adminMcpDraftScope],
+      tools,
+    })
+    const requestSizes: number[] = []
+    const responseStatuses: number[] = []
+    let requestSequence = 0
+    const transport = createUnifiedClientTransport(
+      runtime,
+      () => `oversized-mcp-request-${++requestSequence}`,
+      {
+        async observeRequest(request) {
+          requestSizes.push(serializedByteLength(await request.text()))
+        },
+        observeResponse(response) {
+          responseStatuses.push(response.status)
+        },
+      }
+    )
+    const client = new Client(
+      { name: "admin-mcp-body-limit-test-client", version: "1.0.0" },
+      { versionNegotiation: { mode: { pin: "2026-07-28" } } }
+    )
+
+    try {
+      await client.connect(transport)
+      await expect(
+        client.callTool({
+          arguments: {
+            document: {
+              ...createMaximumSizedCourseDraftDocument(),
+              description: "x".repeat(adminMcpRequestBodyLimitBytes),
+            },
+            expectedEditVersion: 0,
+            idempotencyKey: "oversized-save-course-runtime-test",
+          },
+          name: "admin_save_course_draft",
+        })
+      ).rejects.toThrow()
+    } finally {
+      await client.close()
+    }
+
+    expect(Math.max(...requestSizes)).toBeGreaterThan(
+      adminMcpRequestBodyLimitBytes
+    )
+    expect(responseStatuses).toContain(413)
+    expect(tools.content.executeAutomaticMcpChange).not.toHaveBeenCalled()
+  })
+
+  it("rejects request state replay from a different MCP credential", async () => {
+    const tools = createToolDependencies()
+    let mcpCredentialId = "approved-agent-client"
     vi.mocked(tools.adminMcpApprovals.request).mockImplementation(
       async (input) =>
         ok({
@@ -333,7 +424,7 @@ describe("admin MCP runtime", () => {
           requestStateSecret: "runtime-test-request-state-secret-with-32-bytes",
         },
       },
-      oauthClientId: () => oauthClientId,
+      mcpCredentialId: () => mcpCredentialId,
       scopes: ["admin:mcp:read", "admin:mcp:lifecycle"],
       tools,
     })
@@ -355,7 +446,7 @@ describe("admin MCP runtime", () => {
       }
     )
     client.setRequestHandler("elicitation/create", async () => {
-      oauthClientId = "different-agent-client"
+      mcpCredentialId = "different-agent-client"
       return { action: "accept" }
     })
 
@@ -379,7 +470,9 @@ describe("admin MCP runtime", () => {
     expect(tools.content.executeApprovedMcpChange).not.toHaveBeenCalled()
   })
 
-  it("keeps mutation tools hidden from legacy protocol clients", async () => {
+  it("serves read tools to a stateless legacy client", async () => {
+    const reportProtocolError = vi.fn()
+    const tools = createToolDependencies()
     const runtime = createRuntime({
       configuration: {
         ...configuration,
@@ -390,11 +483,22 @@ describe("admin MCP runtime", () => {
           requestStateSecret: "runtime-test-request-state-secret-with-32-bytes",
         },
       },
+      reportProtocolError,
       scopes: ["admin:mcp:read", adminMcpDraftScope, "admin:mcp:lifecycle"],
+      tools,
     })
+    const protocolMethods: string[] = []
+    const responseStatuses: number[] = []
     const transport = createClientTransport(
       runtime,
-      () => "legacy-tool-list-request"
+      () => "legacy-initialize-request",
+      async (request) => {
+        const message: unknown = await request.json()
+        if (isJSONRPCRequest(message)) protocolMethods.push(message.method)
+      },
+      (response) => {
+        responseStatuses.push(response.status)
+      }
     )
     const client = new Client(
       { name: "admin-mcp-legacy-test-client", version: "1.0.0" },
@@ -403,6 +507,7 @@ describe("admin MCP runtime", () => {
 
     try {
       await client.connect(transport)
+      expect(client.getProtocolEra()).toBe("legacy")
       const listed = await client.listTools()
       expect(listed.tools.map((tool) => tool.name)).toEqual([
         "admin_list_courses",
@@ -413,9 +518,15 @@ describe("admin MCP runtime", () => {
         "admin_get_ai_feedback_quality",
         "admin_list_audit_events",
       ])
+      await expectSuccessfulCall(client, "admin_list_courses", {})
     } finally {
       await client.close()
     }
+
+    expect(protocolMethods).toEqual(["initialize", "tools/list", "tools/call"])
+    expect(responseStatuses).toEqual([200, 202, 200, 200])
+    expect(tools.content.getCourses).toHaveBeenCalledOnce()
+    expect(reportProtocolError).not.toHaveBeenCalled()
   })
 
   it("exposes only lifecycle mutations to a lifecycle-scoped modern client", async () => {
@@ -687,7 +798,7 @@ describe("admin MCP runtime", () => {
             curriculumVersionId,
             executionId: input.executionId,
             inputDigest: input.inputDigest,
-            oauthClientId: "approved-agent-client",
+            mcpCredentialId: "approved-agent-client",
             publishedAt: new Date("2026-08-10T00:00:03.000Z"),
             resultKind: "course-published",
             revision: 1,
@@ -767,19 +878,20 @@ describe("admin MCP runtime", () => {
     expect(tools.adminMcpApprovals.complete).toHaveBeenCalledOnce()
   })
 
-  it("rejects a missing token before an application call", async () => {
+  it("rejects a legacy request with a missing token before an application call", async () => {
     const securityLogs: unknown[] = []
     const tools = createToolDependencies()
     const runtime = createRuntime({
       securityAuditLogger: (event) => securityLogs.push(event),
       tools,
     })
-    const response = await runtime.fetch(createMcpRequest(), {
+    const response = await runtime.fetch(createLegacyMcpRequest(), {
       requestId: "missing-token-request",
     })
 
     expect(response.status).toBe(401)
-    expect(response.headers.get("www-authenticate")).toContain(
+    expect(response.headers.get("www-authenticate")).toContain("Bearer")
+    expect(response.headers.get("www-authenticate")).not.toContain(
       "resource_metadata="
     )
     expect(tools.content.getCourses).not.toHaveBeenCalled()
@@ -791,34 +903,44 @@ describe("admin MCP runtime", () => {
     )
   })
 
-  it("rejects a valid token without the read scope before an application call", async () => {
+  it("rejects a legacy request without the read scope before an application call", async () => {
     const tools = createToolDependencies()
     const runtime = createRuntime({ scopes: [], tools })
-    const request = createMcpRequest({ authorization: "Bearer valid-token" })
+    const request = createLegacyMcpRequest({
+      authorization: "Bearer valid-token",
+    })
     const response = await runtime.fetch(request, {
       requestId: "missing-scope-request",
     })
 
     expect(response.status).toBe(403)
+    expect(response.headers.get("www-authenticate") ?? "").not.toContain(
+      "resource_metadata="
+    )
     expect(tools.content.getCourses).not.toHaveBeenCalled()
   })
 
-  it("serves protected resource metadata without a bearer token", async () => {
+  it("does not expose OAuth metadata routes", async () => {
     const runtime = createRuntime()
-    const response = await runtime.fetch(
-      new Request(
-        "http://localhost:8787/.well-known/oauth-protected-resource/mcp/admin",
-        { headers: { host: "localhost:8787" } }
-      ),
-      { requestId: "metadata-request" }
-    )
-
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
-      authorization_servers: [issuer],
-      resource: resourceUrl,
-      scopes_supported: ["admin:mcp:read"],
+    const fetch = vi.fn(runtime.fetch)
+    const app = createUnifiedApp({
+      adminApp: new Hono(),
+      adminMcp: { runtime: { ...runtime, fetch } },
+      learnerApp: new Hono(),
     })
+
+    for (const path of [
+      "/.well-known/oauth-protected-resource/mcp/admin",
+      "/.well-known/oauth-authorization-server",
+    ]) {
+      const response = await app.fetch(
+        new Request(`http://localhost:8787${path}`, {
+          headers: { host: "localhost:8787" },
+        })
+      )
+      expect(response.status).toBe(404)
+    }
+    expect(fetch).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -828,25 +950,51 @@ describe("admin MCP runtime", () => {
       { host: "localhost:8787", origin: "https://attacker.example.com" },
       "invalid_origin",
     ],
+    [
+      "host before origin",
+      {
+        host: "attacker.example.com",
+        origin: "https://attacker.example.com",
+      },
+      "invalid_host",
+    ],
   ])(
     "rejects an unapproved %s before an application call",
     async (_name, headers, reasonCode) => {
+      const requestLogs: unknown[] = []
       const securityLogs: unknown[] = []
       const tools = createToolDependencies()
       const runtime = createRuntime({
+        requestLogger: (event) => requestLogs.push(event),
         securityAuditLogger: (event) => securityLogs.push(event),
         tools,
       })
+      const requestId = `invalid-${_name}-request`
       const response = await runtime.fetch(
-        createMcpRequest({
+        createLegacyMcpRequest({
           authorization: "Bearer valid-token",
           ...headers,
         }),
-        { requestId: `invalid-${_name}-request` }
+        { requestId }
       )
 
       expect(response.status).toBe(403)
+      await expect(response.clone().json()).resolves.toMatchObject({
+        error: { code: -32_000 },
+      })
+      expect(response.headers.get("cache-control")).toBe("private, no-store")
+      expect(response.headers.get("vary")).toContain("Cookie")
+      expect(response.headers.get("x-request-id")).toBe(requestId)
       expect(tools.content.getCourses).not.toHaveBeenCalled()
+      expect(requestLogs).toEqual([
+        expect.objectContaining({
+          audience: "admin-mcp",
+          errorClass: "client-error",
+          outcome: "failed",
+          requestId,
+          status: 403,
+        }),
+      ])
       expect(securityLogs).toContainEqual(
         expect.objectContaining({ reasonCode })
       )
@@ -903,18 +1051,17 @@ describe("admin MCP runtime", () => {
 function createRuntime(
   override: Partial<RuntimeInput> &
     Readonly<{
-      oauthClientId?: () => string
+      mcpCredentialId?: () => string
       scopes?: readonly string[]
       tools?: RuntimeInput["tools"]
     }> = {}
 ): AdminMcpRuntime {
   const scopes = [...(override.scopes ?? ["admin:mcp:read"])]
   const authentication: AdminMcpAuthentication = {
-    oauthMetadata,
     verifier: {
       async verifyAccessToken(token) {
         return {
-          clientId: override.oauthClientId?.() ?? "approved-agent-client",
+          clientId: override.mcpCredentialId?.() ?? "approved-agent-client",
           expiresAt: 4_102_444_800,
           extra: { adminId },
           resource: new URL(resourceUrl),
@@ -927,6 +1074,7 @@ function createRuntime(
   const runtime = createAdminMcpRuntime({
     authentication,
     configuration: override.configuration ?? configuration,
+    reportProtocolError: override.reportProtocolError,
     requestLogger: override.requestLogger ?? vi.fn(),
     securityAuditLogger: override.securityAuditLogger ?? vi.fn(),
     tools: override.tools ?? createToolDependencies(),
@@ -937,19 +1085,90 @@ function createRuntime(
 
 function createClientTransport(
   runtime: AdminMcpRuntime,
-  nextRequestId: () => string
+  nextRequestId: () => string,
+  observeRequest?: (request: Request) => void | Promise<void>,
+  observeResponse?: (response: Response) => void | Promise<void>
 ): StreamableHTTPClientTransport {
   return new StreamableHTTPClientTransport(new URL(resourceUrl), {
     authProvider: { token: async () => "valid-token" },
     fetch: async (input, init) => {
       const outgoing = new Request(input, init)
+      await observeRequest?.(outgoing.clone())
       const headers = new Headers(outgoing.headers)
       headers.set("host", "localhost:8787")
-      return runtime.fetch(new Request(outgoing, { headers }), {
+      const response = await runtime.fetch(new Request(outgoing, { headers }), {
         requestId: nextRequestId(),
       })
+      await observeResponse?.(response.clone())
+      return response
     },
   })
+}
+
+function createUnifiedClientTransport(
+  runtime: AdminMcpRuntime,
+  nextRequestId: () => string,
+  observers: Readonly<{
+    observeRequest?: (request: Request) => void | Promise<void>
+    observeResponse?: (response: Response) => void | Promise<void>
+  }> = {}
+): StreamableHTTPClientTransport {
+  const app = createUnifiedApp({
+    adminApp: new Hono(),
+    adminMcp: { runtime },
+    createRequestId: nextRequestId,
+    learnerApp: new Hono(),
+  })
+
+  return new StreamableHTTPClientTransport(new URL(resourceUrl), {
+    authProvider: { token: async () => "valid-token" },
+    fetch: async (input, init) => {
+      const outgoing = new Request(input, init)
+      await observers.observeRequest?.(outgoing.clone())
+      const headers = new Headers(outgoing.headers)
+      headers.set("host", "localhost:8787")
+      const response = await app.fetch(new Request(outgoing, { headers }))
+      await observers.observeResponse?.(response.clone())
+      return response
+    },
+  })
+}
+
+function createMaximumSizedCourseDraftDocument() {
+  const baseDocument = {
+    category: "미분류" as const,
+    coverAssetId: null,
+    curriculumVersionId,
+    description: "",
+    editVersion: 0,
+    id: courseId,
+    revision: 1,
+    status: "active" as const,
+    title: "자동 저장 코스",
+    units: [],
+  }
+  const escapeUnit = '\\"\n'
+  const emptyDocumentBytes = serializedByteLength(baseDocument)
+  const escapeUnitBytes =
+    serializedByteLength({ ...baseDocument, description: escapeUnit }) -
+    emptyDocumentBytes
+  const description = escapeUnit.repeat(
+    Math.floor(
+      (maximumCourseDraftDocumentBytes - emptyDocumentBytes) / escapeUnitBytes
+    )
+  )
+  const remainingBytes =
+    maximumCourseDraftDocumentBytes -
+    serializedByteLength({ ...baseDocument, description })
+  return {
+    ...baseDocument,
+    description: `${description}${"x".repeat(remainingBytes)}`,
+  }
+}
+
+function serializedByteLength(value: unknown): number {
+  const serialized = typeof value === "string" ? value : JSON.stringify(value)
+  return new TextEncoder().encode(serialized).byteLength
 }
 
 function createApproval(
@@ -965,7 +1184,7 @@ function createApproval(
     failureCode: null,
     id: approvalId,
     idempotencyKey: "create-course-runtime-test",
-    oauthClientId: "approved-agent-client",
+    mcpCredentialId: "approved-agent-client",
     ownerAdminId: adminId,
     requestId: "mcp-change-request-1",
     target: {
@@ -1177,7 +1396,7 @@ function createToolDependencies(): RuntimeInput["tools"] {
   }
 }
 
-function createMcpRequest(headers?: HeadersInit): Request {
+function createLegacyMcpRequest(headers?: HeadersInit): Request {
   return new Request(resourceUrl, {
     body: JSON.stringify({ jsonrpc: "2.0", method: "tools/list", id: 1 }),
     headers: {

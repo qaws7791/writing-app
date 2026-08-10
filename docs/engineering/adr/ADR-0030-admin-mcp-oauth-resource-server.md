@@ -2,11 +2,9 @@
 
 ## 상태
 
-부분 대체됨
+대체됨
 
-OAuth resource server와 조회 경계 결정은 유지한다.
-
-변경 도구 제외와 adapter 의존 범위 결정은 [ADR-0032](./ADR-0032-admin-mcp-tiered-execution-policy.md)가 대체한다.
+[ADR-0033](./ADR-0033-admin-mcp-oauth-principal-separation.md)이 이 결정을 전체 대체한다.
 
 ## 날짜
 

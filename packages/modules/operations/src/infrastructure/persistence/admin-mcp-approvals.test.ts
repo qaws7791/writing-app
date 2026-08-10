@@ -51,7 +51,7 @@ describe("admin MCP approvals", () => {
       expiresAt: new Date("2026-08-10T00:05:00.000Z"),
       idempotencyKey: "delete-user-approval-test",
       inputDigest,
-      oauthClientId: "approved-agent-client",
+      mcpCredentialId: "approved-mcp-credential",
       ownerAdminId,
       requestId: "mcp-user-delete-request",
       target: {
@@ -77,7 +77,7 @@ describe("admin MCP approvals", () => {
     })
   })
 
-  it("binds approval and execution to the owner, OAuth client, tool, and input", async () => {
+  it("binds approval and execution to the owner, MCP credential, tool, and input", async () => {
     let now = new Date("2026-08-10T00:00:00.000Z")
     let idSequence = 0
     const approvals = createOperationsModule({
@@ -94,7 +94,7 @@ describe("admin MCP approvals", () => {
       expiresAt: new Date("2026-08-10T00:05:00.000Z"),
       idempotencyKey: "archive-course-test-1",
       inputDigest,
-      oauthClientId: "approved-agent-client",
+      mcpCredentialId: "approved-mcp-credential",
       ownerAdminId,
       requestId: "mcp-request-1",
       target: {
@@ -143,7 +143,7 @@ describe("admin MCP approvals", () => {
       approvalId: approved.value.id,
       executionLeaseMs: 30_000,
       inputDigest,
-      oauthClientId: "different-agent-client",
+      mcpCredentialId: "different-mcp-credential",
       ownerAdminId,
       toolName: "admin_archive_course",
     })
@@ -157,7 +157,7 @@ describe("admin MCP approvals", () => {
       approvalId: approved.value.id,
       executionLeaseMs: 30_000,
       inputDigest,
-      oauthClientId: "approved-agent-client",
+      mcpCredentialId: "approved-mcp-credential",
       ownerAdminId,
       toolName: "admin_archive_course",
     })
@@ -170,7 +170,7 @@ describe("admin MCP approvals", () => {
       approvalId: approved.value.id,
       executionLeaseMs: 30_000,
       inputDigest,
-      oauthClientId: "approved-agent-client",
+      mcpCredentialId: "approved-mcp-credential",
       ownerAdminId,
       toolName: "admin_archive_course",
     })
@@ -192,7 +192,7 @@ describe("admin MCP approvals", () => {
       approvalId: approved.value.id,
       executionLeaseMs: 30_000,
       inputDigest,
-      oauthClientId: "approved-agent-client",
+      mcpCredentialId: "approved-mcp-credential",
       ownerAdminId,
       toolName: "admin_archive_course",
     })
@@ -225,7 +225,7 @@ describe("admin MCP approvals", () => {
       eventId: "mcp-audit:0123456789abcdef0123456789abcdef",
       executionId,
       inputDigest,
-      oauthClientId: "approved-agent-client",
+      mcpCredentialId: "approved-mcp-credential",
       requestId: "mcp-request-1",
       target: { id: courseId, type: "course" as const },
     }
@@ -237,7 +237,7 @@ describe("admin MCP approvals", () => {
       approvalId,
       executionId,
       inputDigest,
-      oauthClientId: "approved-agent-client",
+      mcpCredentialId: "approved-mcp-credential",
     })
 
     const completed = await auditTrail.complete({
@@ -270,7 +270,7 @@ describe("admin MCP approvals", () => {
           approvalId,
           executionId,
           inputDigest,
-          oauthClientId: "approved-agent-client",
+          mcpCredentialId: "approved-mcp-credential",
         },
         outcome: "succeeded",
       }),

@@ -6,7 +6,9 @@
 
 2A 범위와 실행 정책은 [ADR-0032](./ADR-0032-admin-mcp-tiered-execution-policy.md)가 대체한다.
 
-OAuth resource server, 영속 owner 승인과 콘텐츠 transaction 원칙은 유지한다.
+인증 주체와 protocol 호환성 결정은 [ADR-0033](./ADR-0033-admin-mcp-oauth-principal-separation.md)과 [ADR-0034](./ADR-0034-admin-mcp-static-bearer-credentials.md)가 대체한다.
+
+영속 owner 승인과 콘텐츠 transaction 원칙은 유지한다.
 
 ## 날짜
 
@@ -14,7 +16,7 @@ OAuth resource server, 영속 owner 승인과 콘텐츠 transaction 원칙은 �
 
 ## 맥락
 
-조회 전용 관리자 MCP는 반복 조회를 위임하지만 콘텐츠 운영을 완료할 수 없다. OAuth scope나 MCP client의 확인만으로 변경을 허용하면 owner가 실제 대상을 검토했다는 서버 증거가 없다. MCP 호출은 재시도될 수 있으므로 코스 중복 생성과 상태 중복 전이도 막아야 한다.
+조회 전용 관리자 MCP는 반복 조회를 위임하지만 콘텐츠 운영을 완료할 수 없다. Credential scope나 MCP client의 확인만으로 변경을 허용하면 owner가 실제 대상을 검토했다는 서버 증거가 없다. MCP 호출은 재시도될 수 있으므로 코스 중복 생성과 상태 중복 전이도 막아야 한다.
 
 ## 결정
 
@@ -25,12 +27,12 @@ OAuth resource server, 영속 owner 승인과 콘텐츠 transaction 원칙은 �
 - 첫 호출은 operations module에 owner 승인 요청을 저장하고 URL elicitation을 반환한다.
 - owner는 기존 관리자 session과 trusted Origin 경계에서 요청을 승인하거나 거절한다.
 - URL elicitation 응답과 client 자체 확인은 승인으로 인정하지 않는다.
-- 서명된 `requestState`는 MCP method, owner 관리자 ID와 OAuth client ID에 묶는다.
-- 승인 요청은 OAuth client ID, 도구, idempotency key, 입력 digest와 대상 상태·편집 버전에 묶는다.
+- 서명된 `requestState`는 MCP method, owner 관리자 ID와 MCP credential ID에 묶는다.
+- 승인 요청은 MCP credential ID, 도구, idempotency key, 입력 digest와 대상 상태·편집 버전에 묶는다.
 - 승인된 요청은 한 실행자만 `executing`으로 선점한다.
 - content module은 콘텐츠 변경과 실행 영수증을 하나의 SQLite transaction에서 확정한다.
 - 같은 승인 binding의 재시도는 영수증을 재생한다. 다른 binding은 충돌로 거부한다.
-- MCP 변경 감사는 승인 ID, 입력 digest와 OAuth client ID를 저장한다.
+- MCP 변경 감사는 승인 ID, 입력 digest와 MCP credential ID를 저장한다.
 - 감사 시작 실패는 콘텐츠 변경을 차단한다.
 - production의 관리자 MCP 활성화 금지는 유지한다.
 

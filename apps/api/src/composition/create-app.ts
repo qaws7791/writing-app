@@ -136,7 +136,6 @@ export function createApp(container: ApiContainer) {
       ? {}
       : {
           adminMcp: {
-            configuration: env.adminMcp,
             runtime: container.admin.mcp,
           },
         }),

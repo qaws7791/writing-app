@@ -82,7 +82,7 @@ export const adminMcpApprovalDtoSchema = z
     decidedAt: z.iso.datetime().nullable(),
     expiresAt: z.iso.datetime(),
     id: adminMcpApprovalIdSchema,
-    oauthClientId: z.string().min(1).max(200),
+    mcpCredentialId: z.string().min(1).max(200),
     requestId: z.string().min(1).max(200),
     status: adminMcpApprovalStatusSchema,
     target: adminMcpApprovalTargetSchema,

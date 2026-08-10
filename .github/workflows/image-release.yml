@@ -332,6 +332,7 @@ jobs:
       - name: Staging 배포와 공개 경계 검증
         shell: bash
         env:
+          ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: ${{ secrets.ADMIN_MCP_SYNTHETIC_BEARER_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_REVISION: ${{ github.event.workflow_run.head_sha }}
         run: |

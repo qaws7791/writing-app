@@ -221,7 +221,7 @@ type AdminMcpToolName =
 type AdminMcpRequestContext = Readonly<{
   adminId: AdminId
   context: ServerContext
-  oauthClientId: string
+  mcpCredentialId: string
   requestId: string
 }>
 
@@ -655,7 +655,7 @@ async function executeTool(
     return await operation({
       adminId: adminIdSchema.parse(context.http?.authInfo?.extra?.["adminId"]),
       context,
-      oauthClientId: z
+      mcpCredentialId: z
         .string()
         .min(1)
         .max(200)

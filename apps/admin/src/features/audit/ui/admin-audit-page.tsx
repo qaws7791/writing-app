@@ -116,7 +116,7 @@ export function AdminAuditPage({
                                 : "MCP 승인"}
                             </Badge>
                             <span className="text-xs font-medium text-muted-foreground">
-                              {event.mcp.oauthClientId}
+                              {event.mcp.mcpCredentialId}
                             </span>
                             <span className="text-xs font-medium text-muted-foreground">
                               {event.mcp.executionId}

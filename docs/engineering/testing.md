@@ -49,6 +49,42 @@
 - E2E에서 정지·삭제·탭 종료처럼 상태를 변경하거나 중간 실패 시 오염을 남길 수 있는 시나리오는 전용 seeded actor·lesson을 사용한다. 다른 시나리오의 선행 실행이나 조건부 시작 경로에 의존하지 않는다.
 - secret, 실제 사용자 데이터, production endpoint와 공유 storage를 fixture에 사용하지 않는다.
 
+## 관리자 MCP 검증
+
+- 발급 테스트는 raw token을 한 번만 반환하고 DB에는 SHA-256 digest만 저장하는지 확인해야 한다.
+- 발급 테스트는 owner 관리자 ID, scope와 필수 만료 시각이 없는 입력을 거부해야 한다.
+- 발급 테스트는 credential row와 append-only lifecycle event를 같은 transaction에 저장하는지 확인해야 한다.
+- 폐기 테스트는 credential 상태와 lifecycle event를 같은 transaction에 저장하는지 확인해야 한다.
+- 폐기 테스트는 같은 token의 다음 검증이 즉시 실패하는지 확인해야 한다.
+- verifier 테스트는 형식 오류, 알 수 없는 credential, digest 불일치, 만료와 폐기를 같은 invalid-token 경계로 거부해야 한다.
+- verifier 테스트는 유효한 credential의 owner 관리자 ID, MCP credential ID, scope와 만료를 인증 결과로 전달해야 한다.
+- 실제 HTTP 조립 테스트는 invalid token의 `401` challenge와 scope 부족의 `403` challenge를 검증해야 한다.
+- `401` challenge 테스트는 resource metadata가 없는지 확인해야 한다.
+- 공개 요청 경계 테스트는 Host와 Origin 거부가 모든 MCP route에서 credential 조회보다 먼저 실행되는지 확인해야 한다.
+- 공개 요청 경계 테스트는 Host와 Origin 거부가 `403`, private no-store, request log와 security audit를 함께 만드는지 확인해야 한다.
+- 실제 HTTP 조립 테스트는 modern `2026-07-28` 협상을 허용해야 한다.
+- stateless legacy 테스트는 initialize, initialized notification, `tools/list`와 `tools/call`을 허용해야 한다.
+- stateless legacy 테스트는 변경 Tool을 노출하지 않고 GET·DELETE session lifecycle을 제공하지 않는지 확인해야 한다.
+- 실제 HTTP 조립 테스트는 Tool 최대 입력을 Hono request body 경계까지 통과시켜야 한다.
+- 실제 HTTP 조립 테스트는 상한을 넘는 요청을 Tool 호출 전에 거부해야 한다.
+- 직접 SDK handler 테스트는 Hono와 reverse proxy 경계의 증거를 대신할 수 없다.
+- staging 합성 검증은 보호된 release controller secret의 별도 read-only bearer token을 사용해야 한다.
+- staging 합성 검증은 노출된 Tool 집합과 안전 annotation이 현재 read-only 계약과 정확히 일치하는지 먼저 확인해야 한다.
+- staging 합성 검증은 변경 scope가 있는 credential을 거부한 뒤 사전 발급한 read-only credential로 무해한 Tool을 호출해야 한다.
+- MCP conformance 검증은 wire protocol `2026-07-28` 요구사항을 대상으로 staging 공개 endpoint에서 실행해야 한다.
+- MCP conformance 성공은 인증 방식의 표준 준수 증거로 해석하면 안 된다.
+- Codex 검증은 합성 client와 다른 개인·장치별 bearer credential을 사용해야 한다.
+- Codex 검증은 환경 변수 token으로 read-only Tool을 호출하고 검증된 MCP credential ID가 request log에 연결되는지 확인해야 한다.
+- 합성 검증 성공은 Codex 검증 성공을 대신할 수 없다.
+- 감사 테스트는 lifecycle과 변경 request provenance에 MCP credential ID를 기록해야 한다.
+- 감사 테스트는 raw token과 digest를 request log, security audit, lifecycle event와 영속 변경 감사에서 제외해야 한다.
+- 배포 테스트는 MCP 활성 배포가 사전 발급한 synthetic bearer secret 없이 검증을 시작하지 않는지 확인해야 한다.
+- 배포 테스트는 MCP 비활성 배포와 rollback이 synthetic bearer secret을 요구하지 않는지 확인해야 한다.
+- API runner image 테스트는 one-shot 발급·폐기 binary의 존재와 실행 권한을 확인해야 한다.
+- 변경 Tool 검증은 외부 데이터 처리 승인과 변경 기능 활성화가 완료된 staging에서만 실행해야 한다.
+
+현재 합성 검증의 입력과 실행 순서는 [staging synthetic check](../../apps/api/src/scripts/admin-mcp-staging-synthetic-check.ts)가 소유한다.
+
 ## 브라우저 지원 smoke
 
 브라우저 지원 profile과 실행 대상은 [Playwright config](../../playwright.config.ts)가 소유한다. 각 페이지의 console warning·error와 page error는 allowlist 없이 실패로 처리한다. spec이 `@playwright/test`에서 `test`·`expect`를 직접 가져와 이 gate를 우회하지 못하도록 lint가 value import를 차단한다.

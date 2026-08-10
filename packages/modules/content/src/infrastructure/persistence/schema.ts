@@ -37,7 +37,7 @@ export const contentMcpChangeReceipts = sqliteTable(
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     executionId: text("execution_id").notNull(),
     inputDigest: text("input_digest").notNull(),
-    oauthClientId: text("oauth_client_id").notNull(),
+    mcpCredentialId: text("oauth_client_id").notNull(),
     resultKind: text("result_kind", {
       enum: adminMcpContentChangeResultKindValues,
     }).notNull(),
@@ -71,7 +71,7 @@ export const contentMcpChangeReceipts = sqliteTable(
     ),
     check(
       "content_mcp_change_receipts_client_check",
-      sql`length(${table.oauthClientId}) BETWEEN 1 AND 200`
+      sql`length(${table.mcpCredentialId}) BETWEEN 1 AND 200`
     ),
     index("content_mcp_change_receipts_course_idx").on(
       table.targetCourseId,
@@ -88,7 +88,7 @@ export const contentMcpAutomaticChangeReceipts = sqliteTable(
     executionId: text("execution_id").primaryKey().notNull(),
     idempotencyKey: text("idempotency_key").notNull(),
     inputDigest: text("input_digest").notNull(),
-    oauthClientId: text("oauth_client_id").notNull(),
+    mcpCredentialId: text("oauth_client_id").notNull(),
     resultKind: text("result_kind", {
       enum: adminMcpAutomaticContentChangeResultKindValues,
     }).notNull(),
@@ -116,11 +116,11 @@ export const contentMcpAutomaticChangeReceipts = sqliteTable(
     ),
     check(
       "content_mcp_automatic_change_receipts_client_check",
-      sql`length(${table.oauthClientId}) BETWEEN 1 AND 200`
+      sql`length(${table.mcpCredentialId}) BETWEEN 1 AND 200`
     ),
     uniqueIndex("content_mcp_automatic_change_receipts_idempotency_idx").on(
       table.actorId,
-      table.oauthClientId,
+      table.mcpCredentialId,
       table.toolName,
       table.idempotencyKey
     ),

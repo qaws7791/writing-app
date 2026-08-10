@@ -562,6 +562,106 @@
           delegate_to: localhost
           when: writing_app_verify_public_routes | bool
 
+        - name: 공개 관리자 MCP 무인증 challenge probe
+          ansible.builtin.uri:
+            url: "https://{{ writing_app_admin_mcp_host }}/mcp/admin"
+            method: GET
+            status_code: 401
+            return_content: false
+            follow_redirects: none
+            timeout: 10
+            validate_certs: true
+          register: writing_app_public_admin_mcp_challenge
+          changed_when: false
+          become: false
+          delegate_to: localhost
+          when: writing_app_admin_mcp_enabled | bool
+
+        - name: 공개 관리자 MCP 무인증 challenge 검증
+          ansible.builtin.assert:
+            that:
+              - writing_app_public_admin_mcp_challenge.www_authenticate is defined
+              - >-
+                writing_app_public_admin_mcp_challenge.www_authenticate
+                is match('^Bearer(?:\s|$)')
+              - >-
+                'resource_metadata='
+                not in writing_app_public_admin_mcp_challenge.www_authenticate
+            fail_msg: >-
+              관리자 MCP의 401 응답이 static Bearer challenge가 아닙니다.
+          when: writing_app_admin_mcp_enabled | bool
+
+        - name: 공개 관리자 MCP 비허용 route probe
+          ansible.builtin.uri:
+            url: "https://{{ writing_app_admin_mcp_host }}{{ item }}"
+            method: GET
+            status_code: 404
+            return_content: false
+            follow_redirects: none
+            timeout: 10
+            validate_certs: true
+          loop:
+            - /
+            - /health
+            - /api/health
+            - /mcp/admin/
+            - /mcp/admin/extra
+            - /.well-known/oauth-protected-resource
+            - /.well-known/oauth-protected-resource/mcp/admin
+            - /.well-known/oauth-protected-resource/mcp/admin/extra
+            - /.well-known/oauth-authorization-server
+            - /.well-known/oauth-authorization-server/
+            - /.well-known/oauth-authorization-server/extra
+          register: writing_app_public_admin_mcp_denied_routes
+          changed_when: false
+          become: false
+          delegate_to: localhost
+          when: writing_app_admin_mcp_enabled | bool
+
+        - name: 관리자 MCP synthetic bearer token 입력 검증
+          ansible.builtin.assert:
+            that:
+              - >-
+                lookup(
+                  'ansible.builtin.env',
+                  'ADMIN_MCP_SYNTHETIC_BEARER_TOKEN',
+                  default=''
+                ) | trim | length > 0
+            fail_msg: >-
+              관리자 MCP staging synthetic check에는 controller의
+              ADMIN_MCP_SYNTHETIC_BEARER_TOKEN이 필요합니다.
+          no_log: true
+          become: false
+          delegate_to: localhost
+          when: writing_app_admin_mcp_enabled | bool
+
+        - name: Static Bearer 관리자 MCP staging synthetic check
+          ansible.builtin.command:
+            argv:
+              - bun
+              - --filter
+              - "@workspace/api"
+              - smoke:admin-mcp-staging
+          args:
+            chdir: "{{ writing_app_source_root }}"
+          environment:
+            ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: >-
+              {{
+                lookup(
+                  'ansible.builtin.env',
+                  'ADMIN_MCP_SYNTHETIC_BEARER_TOKEN'
+                )
+              }}
+            ADMIN_MCP_SYNTHETIC_RESOURCE_URL: >-
+              https://{{ writing_app_admin_mcp_host }}/mcp/admin
+          async: 90
+          poll: 5
+          changed_when: false
+          no_log: true
+          become: false
+          delegate_to: localhost
+          when: writing_app_admin_mcp_enabled | bool
+
         - name: 공개 색인 정책 출력 probe
           ansible.builtin.uri:
             url: "{{ item.origin }}{{ item.path }}"
@@ -630,6 +730,7 @@
             - "{{ writing_app_compose_directory }}/compose.yaml"
             - "{{ writing_app_compose_directory }}/.env"
             - "{{ writing_app_config_directory }}/caddyfile"
+            - "{{ writing_app_config_directory }}/caddy-sites/admin-mcp.caddy"
             - "{{ writing_app_config_directory }}/litestream.yaml"
             - "{{ writing_app_config_directory }}/web.env"
             - "{{ writing_app_config_directory }}/admin.env"
@@ -718,6 +819,29 @@
           no_log: true
           when: writing_app_verify_finalize_deployment | bool
 
+        - name: 관리자 MCP Static Bearer rollback rebaseline 입력 검증
+          ansible.builtin.assert:
+            that:
+              - writing_app_admin_mcp_static_bearer_rebaseline_approved | bool
+              - not (writing_app_admin_mcp_enabled | bool)
+              - writing_app_environment == 'staging'
+              - >-
+                writing_app_admin_mcp_static_bearer_rebaseline_image
+                == writing_app_api_image
+              - >-
+                writing_app_admin_mcp_static_bearer_rebaseline_image
+                is match('^.+@sha256:[0-9a-f]{64}\Z')
+              - writing_app_verify_previous_verified_environment.stat.exists
+              - >-
+                writing_app_verify_previous_verified_environment.stat.checksum
+                == writing_app_verify_current_environment.stat.checksum
+            fail_msg: >-
+              Static Bearer rollback rebaseline은 MCP 비활성 staging에서 명시적으로 승인하고
+              현재 검증 성공 API digest를 정확히 지정한 경우에만 허용합니다.
+          when:
+            - writing_app_verify_finalize_deployment | bool
+            - writing_app_admin_mcp_static_bearer_rebaseline_approved | bool
+
         - name: 직전 검증 성공 Compose 환경을 rollback 후보로 승격
           ansible.builtin.copy:
             src: "{{ writing_app_compose_directory }}/.env.verified"
@@ -742,6 +866,18 @@
           when:
             - writing_app_verify_finalize_deployment | bool
             - not (writing_app_verify_deployment_snapshot_already_promoted | bool)
+
+        - name: Static Bearer 호환 Compose rollback baseline 재설정
+          ansible.builtin.copy:
+            src: "{{ writing_app_compose_directory }}/.env.verified"
+            dest: "{{ writing_app_compose_directory }}/.env.previous"
+            remote_src: true
+            owner: root
+            group: root
+            mode: "0640"
+          when:
+            - writing_app_verify_finalize_deployment | bool
+            - writing_app_admin_mcp_static_bearer_rebaseline_approved | bool
 
         - name: 검증 완료 배포 image reference 기록
           ansible.builtin.copy:

@@ -18,6 +18,8 @@
 
 두 public hostname의 DNS A/AAAA는 VPS를 직접 가리키고 Caddy만 호스트의 80/443을 공개한다. Caddy는 두 hostname의 인증서 발급과 갱신을 automatic HTTPS로 관리하며, 별도 tunnel이나 외부 proxy가 전달한 client IP header를 신뢰하지 않는다. API에 전달하는 client IP 전용 header는 Caddy가 직접 연결의 remote address로 항상 덮어쓴다.
 
+Staging 관리자 MCP는 브라우저 앱과 분리된 전용 public origin을 사용한다. Caddy는 전용 origin에서 관리자 MCP에 필요한 정확한 route만 API로 전달한다. Caddy는 전용 origin의 다른 route를 `404`로 거부한다. 정확한 host와 matcher는 [Caddy 설정](../../deploy/caddy/caddyfile)과 환경 inventory가 소유한다.
+
 ## 승인과 실행
 
 Production image release의 유일한 자동 진입점은 [image release workflow](../../.github/workflows/image-release.yml)다. `main` push의 [필수 품질 게이트](../../.github/workflows/quality-gates.yml)가 같은 revision에서 성공한 뒤에만 web, API, admin image를 각각 빌드한다. 각 digest는 [취약점 정책](../../deploy/security/image-vulnerability-policy.json)의 HIGH 이상 기준과 만료되지 않은 명시적 예외를 통과해야 release tag, attestation과 manifest를 만들 수 있다. 외부 Action은 full commit SHA로 고정한다.
@@ -45,7 +47,89 @@ Image release workflow의 k6 baseline은 release digest를 staging에 배포·�
 
 GitHub Actions의 repository·environment 입력 이름은 [release 입력 계약](../../deploy/github-release-inputs.json)이 소유한다. `bun run check:release-input-contract`는 계약과 workflow 참조의 이름·environment 대소문자를 정적으로 비교한다. `bun run preflight:release`는 현재 GitHub 설정을 읽기 전용으로 조회하고 누락된 이름만 scope별로 출력한다. 이 명령은 secret과 variable 값을 출력하지 않는다. 누락이 하나라도 있으면 staging 또는 production 배포를 시도하지 않는다.
 
+[Release 입력 계약](../../deploy/github-release-inputs.json)은 staging 합성 bearer token을 optional secret으로 분류한다. MCP 활성 배포는 operation lock 획득 전에 controller 환경의 token을 확인한다. MCP 비활성 배포와 rollback은 이 token을 요구하지 않는다. 배포는 token을 controller 환경 밖으로 전달하지 않는다.
+
 Staging은 production과 다른 host, config·data·backup·deployment 경로, Vault, backup bucket·object path, public asset bucket과 private marker bucket·prefix를 사용한다. 별도 public asset bucket은 논리 prefix보다 강한 접근 경계를 제공한다. `NODE_ENV`는 최적화된 실행 모드이고 `DEPLOYMENT_ENVIRONMENT`는 실제 production/staging 대상을 나타낸다. API schema와 파괴적 maintenance·restore guard는 두 의미를 섞지 않고 대상 환경 확인값을 후자와 비교한다.
+
+운영자는 MCP 활성 배포 전에 one-shot binary로 staging DB에 합성 credential row를 사전 발급한다. 운영자는 발급된 raw token을 release controller의 optional secret으로 옮긴다. 배포는 credential을 발급하거나 DB에 token을 쓰지 않는다. 배포 검증은 controller secret으로 인증된 read-only smoke를 실행한다. raw token은 API runtime 환경, Vault, image와 배포 host 파일에 전달하지 않는다. Codex credential은 합성 credential과 분리하고 배포 host로 전달하지 않는다. Production inventory는 별도 승인 결정 전까지 관리자 MCP 활성화를 거부한다.
+
+### 관리자 MCP credential one-shot
+
+발급 binary는 raw token을 표준 출력에 한 번 표시한다. terminal transcript나 화면 기록이 켜져 있으면 token이 남으므로 두 기록을 끈 뒤 다음 명령을 실행한다.
+
+다른 배포·복구 작업이 operation lock을 소유하면 같은 SQLite DB를 동시에 바꿀 수 있다. lock 생성이 실패하면 기존 lock을 삭제하거나 명령을 우회하지 말고 실행 중인 작업의 책임자와 조정한다.
+
+```bash
+sudo -i
+(
+  set -euo pipefail
+  operation_lock=/var/lock/writing-app-operation.lock
+  mkdir -m 0700 "$operation_lock"
+  cleanup_admin_mcp_token() {
+    unset ADMIN_MCP_TOKEN_MANAGEMENT_APPROVED
+    unset ADMIN_MCP_TOKEN_EXPECTED_DATABASE_URL
+    rmdir "$operation_lock" || true
+  }
+  trap cleanup_admin_mcp_token EXIT
+
+  cd /opt/writing-app-staging
+  export ADMIN_MCP_TOKEN_MANAGEMENT_APPROVED=true
+  export ADMIN_MCP_TOKEN_EXPECTED_DATABASE_URL=file:/var/lib/writing-app/api.sqlite
+  docker compose --env-file .env --file compose.yaml \
+    run --rm --no-deps \
+    -e ADMIN_MCP_TOKEN_MANAGEMENT_APPROVED \
+    -e ADMIN_MCP_TOKEN_EXPECTED_DATABASE_URL \
+    api bun /workspace/bin/admin-mcp-token-issue \
+    --actor-admin-id=<actor-admin-id> \
+    --owner-admin-id=<owner-admin-id> \
+    --expires-at=<UTC-ISO-8601> \
+    --scope=admin:mcp:read
+)
+```
+
+운영자는 출력에서 raw token만 승인된 secret store로 즉시 옮긴다. 운영자는 credential ID만 lifecycle 운영 기록에 남긴다. 전체 출력을 ticket, log 또는 shell 변수에 보존하면 안 된다. 현재 binary 이름과 build 위치는 [API Dockerfile](../../deploy/docker/api.dockerfile)이 소유한다. 현재 인자와 production DB guard는 [발급 명령](../../apps/api/src/scripts/issue-admin-mcp-token.ts)과 [공통 명령 guard](../../apps/api/src/scripts/admin-mcp-token-command.ts)가 소유한다.
+
+### 관리자 MCP 최초 활성화
+
+1. Release operator는 staging 관리자 MCP를 비활성화한 상태로 새 API image를 배포한다.
+2. Release operator는 [정적 credential migration](../../apps/api/drizzle/0006-admin-mcp-static-access-tokens.sql)이 적용됐는지 확인한다.
+3. Release operator는 위 one-shot으로 합성 read-only credential을 발급한다.
+4. Release operator는 raw token을 controller에서 `gh secret set ADMIN_MCP_SYNTHETIC_BEARER_TOKEN --env staging`으로 입력한다.
+5. Release operator는 raw token을 명령 인자나 `--body` 값으로 전달하지 않는다.
+6. Release operator는 staging 관리자 MCP를 활성화한 release를 다시 실행한다.
+7. Release 검증은 controller secret으로 인증된 synthetic smoke를 통과해야 한다.
+
+### 관리자 MCP credential 긴급 폐기
+
+token 노출이나 장치 분실 뒤 폐기를 늦추면 해당 scope가 계속 사용될 수 있다. Incident operator는 다른 DB 작업과 조정한 뒤 다음 one-shot으로 credential을 즉시 폐기한다.
+
+```bash
+sudo -i
+(
+  set -euo pipefail
+  operation_lock=/var/lock/writing-app-operation.lock
+  mkdir -m 0700 "$operation_lock"
+  cleanup_admin_mcp_token() {
+    unset ADMIN_MCP_TOKEN_MANAGEMENT_APPROVED
+    unset ADMIN_MCP_TOKEN_EXPECTED_DATABASE_URL
+    rmdir "$operation_lock" || true
+  }
+  trap cleanup_admin_mcp_token EXIT
+
+  cd /opt/writing-app-staging
+  export ADMIN_MCP_TOKEN_MANAGEMENT_APPROVED=true
+  export ADMIN_MCP_TOKEN_EXPECTED_DATABASE_URL=file:/var/lib/writing-app/api.sqlite
+  docker compose --env-file .env --file compose.yaml \
+    run --rm --no-deps \
+    -e ADMIN_MCP_TOKEN_MANAGEMENT_APPROVED \
+    -e ADMIN_MCP_TOKEN_EXPECTED_DATABASE_URL \
+    api bun /workspace/bin/admin-mcp-token-revoke \
+    --actor-admin-id=<actor-admin-id> \
+    --credential-id=<credential-id>
+)
+```
+
+Incident operator는 같은 token의 다음 요청이 `401`인지 확인한다. 연결을 유지해야 하면 새 credential을 발급하고 해당 secret store 값만 교체한다. 현재 폐기 계약은 [폐기 명령](../../apps/api/src/scripts/revoke-admin-mcp-token.ts)이 소유한다.
 
 동일한 web·admin image digest를 staging에서 검증한 뒤 production으로 승격하려면 두 환경의 public asset origin을 image build 시점에 정확한 HTTPS origin 목록으로 고정한다. Wildcard, credential, path, query와 fragment는 허용하지 않으며, staging·production inventory는 같은 목록을 사용하고 각 환경의 runtime public asset base URL origin이 목록에 포함되지 않으면 배포 전에 실패한다. 이 목록은 공개 image 최적화 입력일 뿐 storage credential이나 bucket 접근 권한을 포함하지 않는다.
 

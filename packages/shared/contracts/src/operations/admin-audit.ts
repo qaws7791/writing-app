@@ -42,7 +42,7 @@ export const adminAuditEventDtoSchema = z
         approvalId: z.string().min(1).nullable(),
         executionId: z.string().min(1),
         inputDigest: z.string().regex(/^[a-f0-9]{64}$/u),
-        oauthClientId: z.string().min(1).max(200),
+        mcpCredentialId: z.string().min(1).max(200),
       })
       .strict()
       .nullable(),

@@ -96,6 +96,67 @@
       private 삭제 marker 저장소 설정을 모두 명시해야 합니다.
   no_log: true
 
+- name: 관리자 MCP 배포 대상 검증
+  ansible.builtin.assert:
+    that:
+      - >-
+        not (writing_app_admin_mcp_enabled | bool)
+        or writing_app_environment == 'staging'
+      - >-
+        not (writing_app_admin_mcp_enabled | bool)
+        or (writing_app_verify_public_routes | bool)
+      - >-
+        not (writing_app_admin_mcp_changes_enabled | bool)
+        or (writing_app_admin_mcp_enabled | bool)
+      - >-
+        (writing_app_admin_mcp_static_bearer_rebaseline_approved | bool)
+        == (writing_app_admin_mcp_static_bearer_rebaseline_image | length > 0)
+      - >-
+        not (writing_app_admin_mcp_static_bearer_rebaseline_approved | bool)
+        or not (writing_app_admin_mcp_enabled | bool)
+      - >-
+        not (writing_app_admin_mcp_static_bearer_rebaseline_approved | bool)
+        or writing_app_environment == 'staging'
+      - >-
+        not (writing_app_admin_mcp_static_bearer_rebaseline_approved | bool)
+        or writing_app_admin_mcp_static_bearer_rebaseline_image
+        == writing_app_api_image
+    fail_msg: >-
+      관리자 MCP는 public route 검증을 사용하는 staging에서만 활성화할 수 있습니다.
+      Production 활성화는 금지합니다.
+      Static Bearer rollback rebaseline은 MCP 비활성 staging에서 현재 API digest를 정확히
+      지정한 one-shot 배포만 허용합니다.
+
+- name: 관리자 MCP staging 입력 검증
+  ansible.builtin.assert:
+    that:
+      - writing_app_admin_mcp_host is match(writing_app_public_hostname_pattern)
+      - writing_app_admin_mcp_host | lower != writing_app_web_host | lower
+      - writing_app_admin_mcp_host | lower != writing_app_admin_host | lower
+      - writing_app_admin_mcp_host | lower not in ['web', 'web:3000', 'api', 'api:4000', 'admin', 'admin:3001']
+    fail_msg: >-
+      관리자 MCP에는 다른 앱 host와 분리된 전용 staging host가 필요합니다.
+  no_log: true
+  when: writing_app_admin_mcp_enabled | bool
+
+- name: 관리자 MCP 변경 설정 검증
+  ansible.builtin.assert:
+    that:
+      - writing_app_admin_mcp_approval_ttl_seconds | int >= 60
+      - writing_app_admin_mcp_approval_ttl_seconds | int <= 3600
+      - writing_app_admin_mcp_execution_lease_seconds | int >= 1
+      - writing_app_admin_mcp_execution_lease_seconds | int <= 600
+      - writing_app_admin_mcp_request_state_secret | length >= 32
+      - not writing_app_admin_mcp_request_state_secret.startswith('replace-with')
+      - writing_app_admin_mcp_request_state_secret != writing_app_learner_auth_secret
+      - writing_app_admin_mcp_request_state_secret != writing_app_cursor_signing_secret
+      - writing_app_admin_mcp_request_state_secret != writing_app_admin_auth_secret
+    fail_msg: >-
+      관리자 MCP 변경 기능에는 허용 범위의 TTL, lease와 다른 인증 secret과 분리된
+      32자 이상의 request state secret이 필요합니다.
+  no_log: true
+  when: writing_app_admin_mcp_changes_enabled | bool
+
 - name: Daily maintenance 외부 증거 사전 검증
   ansible.builtin.include_role:
     name: writing_app_maintenance
@@ -122,6 +183,23 @@
     group: root
     mode: "0644"
   register: writing_app_deploy_caddy_file
+
+- name: 선택적 Caddy site 디렉터리 생성
+  ansible.builtin.file:
+    path: "{{ writing_app_config_directory }}/caddy-sites"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: 관리자 MCP Caddy site 배치
+  ansible.builtin.template:
+    src: admin-mcp.caddyfile.j2
+    dest: "{{ writing_app_config_directory }}/caddy-sites/admin-mcp.caddy"
+    owner: root
+    group: root
+    mode: "0640"
+  register: writing_app_deploy_admin_mcp_caddy_file
 
 - name: Litestream 설정 배치
   ansible.builtin.copy:
@@ -181,6 +259,7 @@
     - "{{ writing_app_compose_directory }}/compose.yaml"
     - "{{ writing_app_compose_directory }}/.env"
     - "{{ writing_app_config_directory }}/caddyfile"
+    - "{{ writing_app_config_directory }}/caddy-sites/admin-mcp.caddy"
     - "{{ writing_app_config_directory }}/litestream.yaml"
     - "{{ writing_app_config_directory }}/web.env"
     - "{{ writing_app_config_directory }}/admin.env"
@@ -237,6 +316,7 @@
       {{
         writing_app_deploy_compose_file.changed
         or writing_app_deploy_caddy_file.changed
+        or writing_app_deploy_admin_mcp_caddy_file.changed
         or writing_app_deploy_litestream_file.changed
         or writing_app_deploy_compose_environment.changed
         or (
@@ -263,6 +343,200 @@
       - --quiet
     chdir: "{{ writing_app_compose_directory }}"
   changed_when: false
+
+- name: 관리자 MCP rollback Compose snapshot 확인
+  ansible.builtin.stat:
+    path: "{{ writing_app_compose_directory }}/{{ item }}"
+    checksum_algorithm: sha256
+  loop:
+    - .env
+    - .env.verified
+    - .env.previous
+  register: writing_app_deploy_admin_mcp_compose_environments
+  changed_when: false
+  no_log: true
+  when: >-
+    (writing_app_admin_mcp_enabled | bool)
+    or (writing_app_admin_mcp_static_bearer_rebaseline_approved | bool)
+
+- name: 관리자 MCP rollback Compose snapshot 보호 속성 검증
+  ansible.builtin.assert:
+    that:
+      - writing_app_deploy_admin_mcp_compose_environments.results[0].stat.exists
+      - writing_app_deploy_admin_mcp_compose_environments.results[0].stat.isreg
+      - writing_app_deploy_admin_mcp_compose_environments.results[0].stat.pw_name == 'root'
+      - writing_app_deploy_admin_mcp_compose_environments.results[0].stat.mode == '0640'
+      - writing_app_deploy_admin_mcp_compose_environments.results[1].stat.exists
+      - writing_app_deploy_admin_mcp_compose_environments.results[1].stat.isreg
+      - writing_app_deploy_admin_mcp_compose_environments.results[1].stat.pw_name == 'root'
+      - writing_app_deploy_admin_mcp_compose_environments.results[1].stat.mode == '0640'
+      - >-
+        not (writing_app_admin_mcp_static_bearer_rebaseline_approved | bool)
+        or writing_app_deploy_admin_mcp_compose_environments.results[0].stat.checksum
+        == writing_app_deploy_admin_mcp_compose_environments.results[1].stat.checksum
+    fail_msg: >-
+      관리자 MCP 활성화와 Static Bearer rebaseline에는 보호된 현재·검증 성공 Compose
+      snapshot이 필요합니다. Rebaseline은 현재와 검증 성공 snapshot이 같아야 합니다.
+  no_log: true
+  when: >-
+    (writing_app_admin_mcp_enabled | bool)
+    or (writing_app_admin_mcp_static_bearer_rebaseline_approved | bool)
+
+- name: Static Bearer rebaseline API image 해석
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --env-file
+      - .env.verified
+      - -f
+      - compose.yaml
+      - config
+      - --format
+      - json
+  args:
+    chdir: "{{ writing_app_compose_directory }}"
+  register: writing_app_deploy_admin_mcp_rebaseline_configuration
+  changed_when: false
+  no_log: true
+  when: writing_app_admin_mcp_static_bearer_rebaseline_approved | bool
+
+- name: Static Bearer rebaseline API image 검증
+  ansible.builtin.assert:
+    that:
+      - >-
+        (writing_app_deploy_admin_mcp_rebaseline_configuration.stdout | from_json).services.api.image
+        == writing_app_admin_mcp_static_bearer_rebaseline_image
+    fail_msg: >-
+      Rebaseline 승인 digest가 현재 검증 성공 API image와 일치하지 않습니다.
+  no_log: true
+  when: writing_app_admin_mcp_static_bearer_rebaseline_approved | bool
+
+- name: Static Bearer rebaseline API image binary 검증
+  ansible.builtin.command:
+    argv:
+      - docker
+      - run
+      - --rm
+      - --network
+      - none
+      - --pull
+      - never
+      - --read-only
+      - --cap-drop
+      - ALL
+      - --security-opt
+      - no-new-privileges:true
+      - --entrypoint
+      - bun
+      - "{{ writing_app_admin_mcp_static_bearer_rebaseline_image }}"
+      - -e
+      - >-
+        const{accessSync,constants}=require('node:fs');for(const p of
+        ['/workspace/bin/admin-mcp-token-issue','/workspace/bin/admin-mcp-token-revoke'])
+        accessSync(p,constants.X_OK)
+  changed_when: false
+  when: writing_app_admin_mcp_static_bearer_rebaseline_approved | bool
+
+- name: 관리자 MCP 활성 배포 rollback 후보 선택
+  ansible.builtin.set_fact:
+    writing_app_deploy_admin_mcp_rollback_environment_file: >-
+      {{
+        (
+          writing_app_deploy_admin_mcp_compose_environments.results[0].stat.checksum
+          == writing_app_deploy_admin_mcp_compose_environments.results[1].stat.checksum
+        )
+        | ternary('.env.previous', '.env.verified')
+      }}
+  no_log: true
+  when: writing_app_admin_mcp_enabled | bool
+
+- name: 관리자 MCP 활성 배포 rollback 후보 확인
+  ansible.builtin.stat:
+    path: >-
+      {{ writing_app_compose_directory }}/{{ writing_app_deploy_admin_mcp_rollback_environment_file }}
+    checksum_algorithm: sha256
+  register: writing_app_deploy_admin_mcp_rollback_environment
+  changed_when: false
+  no_log: true
+  when: writing_app_admin_mcp_enabled | bool
+
+- name: 관리자 MCP 활성 배포 rollback 후보 보호 속성 검증
+  ansible.builtin.assert:
+    that:
+      - writing_app_deploy_admin_mcp_rollback_environment.stat.exists
+      - writing_app_deploy_admin_mcp_rollback_environment.stat.isreg
+      - writing_app_deploy_admin_mcp_rollback_environment.stat.pw_name == 'root'
+      - writing_app_deploy_admin_mcp_rollback_environment.stat.mode == '0640'
+    fail_msg: >-
+      관리자 MCP 활성 배포에는 보호된 rollback 후보 Compose snapshot이 필요합니다.
+  no_log: true
+  when: writing_app_admin_mcp_enabled | bool
+
+- name: 관리자 MCP 활성 배포 rollback 후보 API image 해석
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --env-file
+      - "{{ writing_app_deploy_admin_mcp_rollback_environment_file }}"
+      - -f
+      - compose.yaml
+      - config
+      - --format
+      - json
+  args:
+    chdir: "{{ writing_app_compose_directory }}"
+  register: writing_app_deploy_admin_mcp_rollback_configuration
+  changed_when: false
+  no_log: true
+  when: writing_app_admin_mcp_enabled | bool
+
+- name: 관리자 MCP 활성 배포 rollback 후보 API image 기록
+  ansible.builtin.set_fact:
+    writing_app_deploy_admin_mcp_rollback_api_image: >-
+      {{
+        (writing_app_deploy_admin_mcp_rollback_configuration.stdout | from_json).services.api.image
+      }}
+  no_log: true
+  when: writing_app_admin_mcp_enabled | bool
+
+- name: 관리자 MCP 활성 배포 rollback 후보 API image 불변성 검증
+  ansible.builtin.assert:
+    that:
+      - >-
+        writing_app_deploy_admin_mcp_rollback_api_image
+        is match('^.+@sha256:[0-9a-f]{64}\Z')
+    fail_msg: >-
+      관리자 MCP 활성 배포의 rollback 후보 API image는 immutable digest여야 합니다.
+  no_log: true
+  when: writing_app_admin_mcp_enabled | bool
+
+- name: 관리자 MCP 활성 배포 rollback 후보 Static Bearer binary 검증
+  ansible.builtin.command:
+    argv:
+      - docker
+      - run
+      - --rm
+      - --network
+      - none
+      - --pull
+      - never
+      - --read-only
+      - --cap-drop
+      - ALL
+      - --security-opt
+      - no-new-privileges:true
+      - --entrypoint
+      - bun
+      - "{{ writing_app_deploy_admin_mcp_rollback_api_image }}"
+      - -e
+      - >-
+        const{accessSync,constants}=require('node:fs');for(const p of
+        ['/workspace/bin/admin-mcp-token-issue','/workspace/bin/admin-mcp-token-revoke'])
+        accessSync(p,constants.X_OK)
+  changed_when: false
+  when: writing_app_admin_mcp_enabled | bool
 
 - name: GHCR 로그인
   community.docker.docker_login:
@@ -299,6 +573,8 @@
           - "{{ writing_app_config_directory }}/caddy.env"
           - --mount
           - "type=bind,source={{ writing_app_config_directory }}/caddyfile,target=/etc/caddy/caddyfile,readonly"
+          - --mount
+          - "type=bind,source={{ writing_app_config_directory }}/caddy-sites,target=/etc/caddy/sites,readonly"
           - "{{ writing_app_caddy_image }}"
           - caddy
           - validate

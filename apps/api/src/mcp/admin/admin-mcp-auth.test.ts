@@ -1,132 +1,98 @@
-import { Buffer } from "node:buffer"
-
 import { OAuthErrorCode } from "@modelcontextprotocol/server"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { describe, expect, it, vi } from "vitest"
 
-import {
-  createAdminMcpAuthentication,
-  type AdminMcpFetch,
-} from "@/mcp/admin/admin-mcp-auth"
+import { createAdminMcpAuthentication } from "@/mcp/admin/admin-mcp-auth"
+import type { AdminMcpAccessTokenVerifier } from "@/mcp/admin/admin-mcp-access-token-store"
 import type { AdminMcpConfiguration } from "@/mcp/admin/admin-mcp-configuration"
 
 const configuration: AdminMcpConfiguration = {
   changes: undefined,
-  introspectionClientId: "resource server",
-  introspectionClientSecret: "secret:value",
-  oauthIssuer: "http://localhost:9000",
-  oauthMetadataUrl:
-    "http://localhost:9000/.well-known/oauth-authorization-server",
-  ownerAdminId: "admin-owner" as AdminMcpConfiguration["ownerAdminId"],
-  ownerSubject: "owner-subject",
   resourceUrl: "http://localhost:8787/mcp/admin",
 }
-
-const oauthMetadata = {
-  authorization_endpoint: "http://localhost:9000/authorize",
-  introspection_endpoint: "http://localhost:9000/introspect",
-  issuer: configuration.oauthIssuer,
-  response_types_supported: ["code"],
-  token_endpoint: "http://localhost:9000/token",
-}
+const now = new Date("2029-01-01T00:00:00.000Z")
 
 describe("createAdminMcpAuthentication", () => {
-  it("loads metadata and maps a valid introspection response to AuthInfo", async () => {
-    const requests: { init: RequestInit | undefined; url: string }[] = []
-    const fetchImplementation: AdminMcpFetch = vi.fn(
-      async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input)
-        requests.push({ init, url })
-        if (url === configuration.oauthMetadataUrl) {
-          return Response.json(oauthMetadata)
-        }
-        return Response.json({
-          active: true,
-          aud: [configuration.resourceUrl],
-          client_id: "approved-agent-client",
-          exp: 1_893_456_000,
-          iss: configuration.oauthIssuer,
-          scope: "admin:mcp:read profile",
-          sub: configuration.ownerSubject,
-        })
-      }
-    )
-
-    const authentication = await createAdminMcpAuthentication({
+  it("maps a valid stored credential to AuthInfo", async () => {
+    const verify = vi.fn<AdminMcpAccessTokenVerifier["verify"]>(async () => ({
+      credentialId: "mcp-credential-codex",
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+      kind: "valid",
+      ownerAdminId: adminIdSchema.parse("admin-owner"),
+      scopes: ["admin:mcp:read", "admin:mcp:draft"],
+    }))
+    const authentication = createAdminMcpAuthentication({
+      accessTokenStore: { verify },
       configuration,
-      fetch: fetchImplementation,
-      now: () => new Date("2029-01-01T00:00:00.000Z"),
+      now: () => now,
     })
-    const authInfo =
-      await authentication.verifier.verifyAccessToken("access-token-value")
 
-    expect(authInfo).toEqual({
-      clientId: "approved-agent-client",
+    await expect(
+      authentication.verifier.verifyAccessToken("stored-bearer-token")
+    ).resolves.toEqual({
+      clientId: "mcp-credential-codex",
       expiresAt: 1_893_456_000,
       extra: { adminId: "admin-owner" },
       resource: new URL(configuration.resourceUrl),
-      scopes: ["admin:mcp:read", "profile"],
-      token: "access-token-value",
+      scopes: ["admin:mcp:read", "admin:mcp:draft"],
+      token: "stored-bearer-token",
     })
-    const introspectionRequest = requests.at(-1)
-    expect(introspectionRequest?.url).toBe(oauthMetadata.introspection_endpoint)
-    expect(introspectionRequest?.init?.method).toBe("POST")
-    expect(
-      new Headers(introspectionRequest?.init?.headers).get("authorization")
-    ).toBe(
-      `Basic ${Buffer.from("resource+server:secret%3Avalue").toString("base64")}`
-    )
-    expect(String(introspectionRequest?.init?.body)).toContain(
-      "token=access-token-value"
-    )
+    expect(verify).toHaveBeenCalledWith({
+      now,
+      rawToken: "stored-bearer-token",
+    })
   })
 
   it.each([
-    ["inactive", { active: false }],
-    ["wrong issuer", { iss: "http://localhost:9000/another-issuer" }],
-    ["wrong audience", { aud: ["http://localhost:8787/another-resource"] }],
-    ["wrong subject", { sub: "another-subject" }],
-    ["expired", { exp: 1_830_297_600 }],
-  ])("rejects an %s token", async (_name, override) => {
-    const fetchImplementation: AdminMcpFetch = vi.fn(
-      async (input: RequestInfo | URL) => {
-        if (String(input) === configuration.oauthMetadataUrl) {
-          return Response.json(oauthMetadata)
-        }
-        return Response.json({
-          active: true,
-          aud: [configuration.resourceUrl],
-          client_id: "approved-agent-client",
-          exp: 1_893_456_000,
-          iss: configuration.oauthIssuer,
-          scope: "admin:mcp:read",
-          sub: configuration.ownerSubject,
-          ...override,
-        })
-      }
-    )
-    const authentication = await createAdminMcpAuthentication({
+    ["missing", ""],
+    ["unknown", "unknown-token"],
+    ["revoked", "revoked-token"],
+    ["expired", "expired-token"],
+    ["hash-mismatched", "hash-mismatched-token"],
+  ])("rejects a %s stored credential", async (_name, rawToken) => {
+    const authentication = createAdminMcpAuthentication({
+      accessTokenStore: { verify: async () => ({ kind: "invalid" }) },
       configuration,
-      fetch: fetchImplementation,
-      now: () => new Date("2029-01-01T00:00:00.000Z"),
+      now: () => now,
     })
-
-    const verification = authentication.verifier.verifyAccessToken("token")
-    await expect(verification).rejects.toMatchObject({
-      code: OAuthErrorCode.InvalidToken,
-    })
-  })
-
-  it("rejects metadata whose issuer differs from configuration", async () => {
-    const fetchImplementation: AdminMcpFetch = vi.fn(async () =>
-      Response.json({ ...oauthMetadata, issuer: "http://localhost:9000/other" })
-    )
 
     await expect(
-      createAdminMcpAuthentication({
-        configuration,
-        fetch: fetchImplementation,
-        now: () => new Date("2029-01-01T00:00:00.000Z"),
-      })
-    ).rejects.toThrow("OAuth metadata is invalid")
+      authentication.verifier.verifyAccessToken(rawToken)
+    ).rejects.toMatchObject({ code: OAuthErrorCode.InvalidToken })
+  })
+
+  it("rejects an invalid expiry in a nominally valid store result", async () => {
+    const authentication = createAdminMcpAuthentication({
+      accessTokenStore: {
+        verify: async () => ({
+          credentialId: "mcp-credential-expired",
+          expiresAt: now,
+          kind: "valid",
+          ownerAdminId: adminIdSchema.parse("admin-owner"),
+          scopes: ["admin:mcp:read"],
+        }),
+      },
+      configuration,
+      now: () => now,
+    })
+
+    await expect(
+      authentication.verifier.verifyAccessToken("expired-token")
+    ).rejects.toMatchObject({ code: OAuthErrorCode.InvalidToken })
+  })
+
+  it("does not convert token store failures into invalid credentials", async () => {
+    const storeFailure = new Error("database unavailable")
+    const authentication = createAdminMcpAuthentication({
+      accessTokenStore: {
+        verify: async () => Promise.reject(storeFailure),
+      },
+      configuration,
+      now: () => now,
+    })
+
+    await expect(
+      authentication.verifier.verifyAccessToken("stored-bearer-token")
+    ).rejects.toBe(storeFailure)
   })
 })

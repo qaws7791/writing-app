@@ -1,7 +1,3 @@
-import {
-  adminIdSchema,
-  type AdminId,
-} from "@workspace/contracts/identity/admin-ids"
 import { z } from "zod"
 
 export const adminMcpPath = "/mcp/admin"
@@ -21,22 +17,10 @@ export type AdminMcpChangeConfiguration = Readonly<{
 
 export type AdminMcpConfiguration = Readonly<{
   changes: AdminMcpChangeConfiguration | undefined
-  introspectionClientId: string
-  introspectionClientSecret: string
-  oauthIssuer: string
-  oauthMetadataUrl: string
-  ownerAdminId: AdminId
-  ownerSubject: string
   resourceUrl: string
 }>
 
 const adminMcpConfigurationSchema = z.strictObject({
-  introspectionClientId: z.string().trim().min(1).max(200),
-  introspectionClientSecret: z.string().min(1),
-  oauthIssuer: z.url(),
-  oauthMetadataUrl: z.url(),
-  ownerAdminId: adminIdSchema,
-  ownerSubject: z.string().trim().min(1).max(200),
   resourceUrl: z.url(),
 })
 
@@ -51,14 +35,16 @@ const adminMcpChangeConfigurationSchema = z.strictObject({
     ),
 })
 
-const adminMcpEnvironmentNames = [
+const adminMcpEnvironmentNames = ["ADMIN_MCP_RESOURCE_URL"] as const
+
+const removedAdminMcpEnvironmentNames = [
   "ADMIN_MCP_INTROSPECTION_CLIENT_ID",
   "ADMIN_MCP_INTROSPECTION_CLIENT_SECRET",
   "ADMIN_MCP_OAUTH_ISSUER",
   "ADMIN_MCP_OAUTH_METADATA_URL",
+  "ADMIN_MCP_PRINCIPAL_BINDINGS_JSON",
   "ADMIN_MCP_OWNER_ADMIN_ID",
   "ADMIN_MCP_OWNER_SUBJECT",
-  "ADMIN_MCP_RESOURCE_URL",
 ] as const
 
 const adminMcpChangeEnvironmentNames = [
@@ -74,6 +60,14 @@ export function parseAdminMcpConfiguration(
   deploymentEnvironment: DeploymentEnvironment,
   adminOrigin = "http://localhost:3001"
 ): AdminMcpConfiguration | undefined {
+  if (
+    removedAdminMcpEnvironmentNames.some((name) => input[name] !== undefined)
+  ) {
+    throw invalidAdminMcpConfiguration(
+      "외부 OAuth와 principal binding 환경 변수는 더 이상 사용할 수 없습니다."
+    )
+  }
+
   const enabled = input["ADMIN_MCP_ENABLED"]?.trim()
   if (enabled !== undefined && enabled !== "true" && enabled !== "false") {
     throw invalidAdminMcpConfiguration(
@@ -111,12 +105,6 @@ export function parseAdminMcpConfiguration(
   }
 
   const parsed = adminMcpConfigurationSchema.safeParse({
-    introspectionClientId: input["ADMIN_MCP_INTROSPECTION_CLIENT_ID"],
-    introspectionClientSecret: input["ADMIN_MCP_INTROSPECTION_CLIENT_SECRET"],
-    oauthIssuer: input["ADMIN_MCP_OAUTH_ISSUER"],
-    oauthMetadataUrl: input["ADMIN_MCP_OAUTH_METADATA_URL"],
-    ownerAdminId: input["ADMIN_MCP_OWNER_ADMIN_ID"],
-    ownerSubject: input["ADMIN_MCP_OWNER_SUBJECT"],
     resourceUrl: input["ADMIN_MCP_RESOURCE_URL"],
   })
   if (!parsed.success) {
@@ -142,24 +130,6 @@ export function parseAdminMcpConfiguration(
   assertSecureOrLoopbackUrl(resourceUrl, "ADMIN_MCP_RESOURCE_URL")
   assertUrlHasNoCredentials(resourceUrl, "ADMIN_MCP_RESOURCE_URL")
 
-  const oauthIssuer = new URL(parsed.data.oauthIssuer)
-  assertSecureOrLoopbackUrl(oauthIssuer, "ADMIN_MCP_OAUTH_ISSUER")
-  assertUrlHasNoCredentials(oauthIssuer, "ADMIN_MCP_OAUTH_ISSUER")
-  if (oauthIssuer.search !== "" || oauthIssuer.hash !== "") {
-    throw invalidAdminMcpConfiguration(
-      "ADMIN_MCP_OAUTH_ISSUER에는 query 또는 fragment를 사용할 수 없습니다."
-    )
-  }
-
-  const oauthMetadataUrl = new URL(parsed.data.oauthMetadataUrl)
-  assertSecureOrLoopbackUrl(oauthMetadataUrl, "ADMIN_MCP_OAUTH_METADATA_URL")
-  assertUrlHasNoCredentials(oauthMetadataUrl, "ADMIN_MCP_OAUTH_METADATA_URL")
-  if (oauthMetadataUrl.hash !== "") {
-    throw invalidAdminMcpConfiguration(
-      "ADMIN_MCP_OAUTH_METADATA_URL에는 fragment를 사용할 수 없습니다."
-    )
-  }
-
   if (!changesEnabled && hasChangeConfigurationValue) {
     throw invalidAdminMcpConfiguration(
       "ADMIN_MCP 변경 설정값은 ADMIN_MCP_CHANGES_ENABLED=true와 함께 지정해야 합니다."
@@ -169,11 +139,6 @@ export function parseAdminMcpConfiguration(
   const changes = changesEnabled
     ? parseAdminMcpChangeConfiguration(input, adminOrigin)
     : undefined
-  if (changes?.requestStateSecret === parsed.data.introspectionClientSecret) {
-    throw invalidAdminMcpConfiguration(
-      "ADMIN_MCP_REQUEST_STATE_SECRET은 introspection client secret과 다른 값을 사용해야 합니다."
-    )
-  }
 
   return { ...parsed.data, changes }
 }

@@ -1,3 +1,19 @@
 [agents]
 max_threads = 6
 max_depth = 1
+
+[mcp_servers.writing_admin_local]
+url = "http://localhost:4000/mcp/admin"
+bearer_token_env_var = "WRITING_ADMIN_MCP_TOKEN"
+enabled = true
+required = false
+default_tools_approval_mode = "writes"
+enabled_tools = [
+  "admin_get_ai_feedback_quality",
+  "admin_get_analytics",
+  "admin_get_course_editor",
+  "admin_get_dashboard",
+  "admin_list_audit_events",
+  "admin_list_courses",
+  "admin_list_lesson_analytics",
+]

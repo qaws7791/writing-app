@@ -14,12 +14,12 @@
 
 ## 인증 경계 매트릭스
 
-| 경계              | 자격 증명·provider                    | 사용자 생성·연결                                                                                               | 보호 자원 접근                                                                           |
-| ----------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 학습자 Google     | Google이 검증한 이메일                | 신규 이메일은 학습자 user를 생성하고, 확인된 동일 이메일의 기존 credential user에는 Google account만 연결한다. | 학습자 cookie와 active identity가 모두 유효할 때만 허용한다.                             |
-| 학습자 credential | 확인된 이메일과 비밀번호              | 가입 후 이메일 확인을 완료하며, 비밀번호 재설정은 기존 session을 모두 폐기한다.                                | 확인된 이메일의 학습자 cookie와 active identity가 모두 유효할 때만 허용한다.             |
-| owner 관리자      | seed CLI가 만든 별도 credential       | self-signup과 학습자 account 연결을 허용하지 않는다.                                                           | 별도 관리자 cookie가 유효할 때 승인된 관리 기능만 허용한다.                              |
-| owner 관리자 MCP  | 승인된 OAuth bearer token과 client ID | OAuth subject는 서버 설정의 기존 owner 관리자 ID에만 연결한다.                                                 | 조회 scope는 고정된 조회 도구를 허용한다. 기능별 변경 scope는 해당 변경 Tool만 허용한다. |
+| 경계              | 자격 증명·provider                     | 사용자 생성·연결                                                                                               | 보호 자원 접근                                                                           |
+| ----------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 학습자 Google     | Google이 검증한 이메일                 | 신규 이메일은 학습자 user를 생성하고, 확인된 동일 이메일의 기존 credential user에는 Google account만 연결한다. | 학습자 cookie와 active identity가 모두 유효할 때만 허용한다.                             |
+| 학습자 credential | 확인된 이메일과 비밀번호               | 가입 후 이메일 확인을 완료하며, 비밀번호 재설정은 기존 session을 모두 폐기한다.                                | 확인된 이메일의 학습자 cookie와 active identity가 모두 유효할 때만 허용한다.             |
+| owner 관리자      | seed CLI가 만든 별도 credential        | self-signup과 학습자 account 연결을 허용하지 않는다.                                                           | 별도 관리자 cookie가 유효할 때 승인된 관리 기능만 허용한다.                              |
+| owner 관리자 MCP  | server-issued static bearer credential | 발급 CLI는 credential을 기존 owner 관리자 ID, scope와 필수 만료 시각에 연결한다.                               | 조회 scope는 고정된 조회 도구를 허용한다. 기능별 변경 scope는 해당 변경 Tool만 허용한다. |
 
 ## 정책 원칙
 
@@ -37,7 +37,13 @@
 - E2E는 별도 auth route를 추가하지 않고 fixture DB에 검증된 credential user를 직접 만든 뒤 실제 로그인 경계를 사용한다.
 - 사용자 상태·삭제 같은 관리자 변경은 인증된 관리자 ID를 command actor로 전달하며 optimistic conflict를 성공으로 숨기지 않는다.
 - 관리자 MCP는 이메일, 요청 입력의 관리자 ID와 MCP client 자체 식별자를 인증 주체로 사용하지 않는다.
-- 관리자 MCP는 issuer, audience, 만료, subject, OAuth client ID와 조회 scope를 application 호출 전에 검증한다.
+- 운영자는 개인과 장치 조합마다 별도 MCP credential을 발급한다.
+- 관리자 MCP는 credential digest, 만료, 폐기, owner `AdminId`와 scope를 application 호출 전에 검증한다.
+- 관리자 MCP는 raw token 대신 SHA-256 digest만 저장한다.
+- 만료되거나 폐기된 credential은 재활성화하지 않는다.
+- 폐기는 다음 검증부터 즉시 적용한다.
+- staging 합성 client와 Codex는 서로 다른 MCP credential을 사용한다.
+- Credential scope가 요청한 Tool에 부족하면 서버는 요청을 거부한다.
 - 초안, lifecycle, 발행, 사용자 상태와 사용자 삭제 scope는 서로 대체할 수 없다.
 - 모든 변경에는 조회 scope와 해당 변경 scope가 필요하다.
 - 코스 초안 생성·저장과 코스 보관 해제는 별도 owner 승인 없이 제한적으로 자동 실행한다.

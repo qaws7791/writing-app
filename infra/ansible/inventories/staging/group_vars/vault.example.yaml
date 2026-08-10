@@ -15,4 +15,7 @@ vault_writing_app_google_client_id: replace-with-staging-google-client-id
 vault_writing_app_google_client_secret: replace-with-staging-google-client-secret
 vault_writing_app_openai_api_key: replace-with-staging-openai-api-key
 vault_writing_app_resend_api_key: replace-with-staging-resend-api-key
+vault_writing_app_admin_mcp_request_state_secret: >-
+  replace-with-distinct-staging-admin-mcp-request-state-secret
+# ADMIN_MCP synthetic bearer token은 이 Vault에 저장하지 않는다.
 vault_writing_app_registry_token: ""

@@ -13,7 +13,7 @@ export type AdminMcpApprovalRepository = Readonly<{
     readonly executionLeaseCutoff: Date
     readonly inputDigest: string
     readonly now: Date
-    readonly oauthClientId: string
+    readonly mcpCredentialId: string
     readonly ownerAdminId: AdminId
     readonly toolName: AdminMcpChangeToolName
   }) => Promise<

@@ -35,6 +35,7 @@
 | `admin-identity-types.md`               | 관리자·학습자 식별자 타입 경계를 정의한다.               |
 | `admin-auth-security-operations.md`     | 관리자 계정 생성, 감사와 세션 폐기 기준을 정의한다.      |
 | `admin-transport-security.md`           | 새 transport의 관리자 인증 경계를 정의한다.              |
+| `admin-mcp-codex-runbook.md`            | Staging 관리자 MCP의 bearer 연결과 검증 절차를 정의한다. |
 | `security.md`                           | 신뢰 경계와 보안 변경 원칙을 정의한다.                   |
 | `privacy.md`                            | 개인정보와 AI 데이터의 사용·최소화·보존 원칙을 정의한다. |
 | `data-model.md`                         | 데이터 불변식과 모델 변경 원칙을 정의한다.               |
@@ -51,9 +52,11 @@
 | `adr/ADR-0027-*.md`                     | 학습자 데이터 삭제의 모듈 포트 소유.                     |
 | `adr/ADR-0028-*.md`                     | 어드민 학습자 미리보기의 렌더러 재사용 경계.             |
 | `adr/ADR-0029-*.md`                     | Astro UI 문서와 registry의 통합 결정.                    |
-| `adr/ADR-0030-*.md`                     | 조회 전용 관리자 MCP와 OAuth resource server 결정.       |
+| `adr/ADR-0030-*.md`                     | ADR-0033이 대체한 초기 관리자 MCP OAuth 결정.            |
 | `adr/ADR-0031-*.md`                     | owner 승인 기반 관리자 MCP 콘텐츠 변경 결정.             |
 | `adr/ADR-0032-*.md`                     | 관리자 MCP 단계별 실행 정책과 전체 변경 범위 결정.       |
+| `adr/ADR-0033-*.md`                     | ADR-0034가 대체한 OAuth와 strict-only protocol 결정.     |
+| `adr/ADR-0034-*.md`                     | 관리자 MCP 정적 bearer credential과 protocol 호환 결정.  |
 
 ## 관리 기준
 

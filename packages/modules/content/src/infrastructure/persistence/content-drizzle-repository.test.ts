@@ -347,7 +347,7 @@ describe("MCP content changes", () => {
         inputDigest: createDigest,
         kind: "create-course",
         now: new Date("2026-08-10T00:00:00.000Z"),
-        oauthClientId: "approved-agent-client",
+        mcpCredentialId: "approved-mcp-credential",
         toolName: "admin_create_course_draft",
       })
 
@@ -364,7 +364,7 @@ describe("MCP content changes", () => {
         inputDigest: createDigest,
         kind: "create-course",
         now: new Date("2026-08-10T00:00:01.000Z"),
-        oauthClientId: "approved-agent-client",
+        mcpCredentialId: "approved-mcp-credential",
         toolName: "admin_create_course_draft",
       })
 
@@ -386,7 +386,7 @@ describe("MCP content changes", () => {
         inputDigest: createDigest,
         kind: "create-course",
         now: new Date("2026-08-10T00:00:00.000Z"),
-        oauthClientId: "approved-agent-client",
+        mcpCredentialId: "approved-mcp-credential",
         toolName: "admin_create_course_draft",
       })
       expect(created.isOk()).toBe(true)
@@ -401,7 +401,7 @@ describe("MCP content changes", () => {
         inputDigest: archiveDigest,
         kind: "archive-course",
         now: new Date("2026-08-10T00:01:00.000Z"),
-        oauthClientId: "approved-agent-client",
+        mcpCredentialId: "approved-mcp-credential",
         toolName: "admin_archive_course",
       })
 
@@ -415,7 +415,7 @@ describe("MCP content changes", () => {
         approvalId: archiveApprovalId,
         executionId: archiveExecutionId,
         inputDigest: archiveDigest,
-        oauthClientId: "approved-agent-client",
+        mcpCredentialId: "approved-mcp-credential",
         toolName: "admin_archive_course",
       })
       expect(receipt.isOk()).toBe(true)
@@ -435,7 +435,7 @@ describe("MCP content changes", () => {
         inputDigest: createDigest,
         kind: "create-course" as const,
         now: new Date("2026-08-10T00:00:00.000Z"),
-        oauthClientId: "automatic-agent-client",
+        mcpCredentialId: "automatic-mcp-credential",
         toolName: "admin_create_course_draft" as const,
       }
 
@@ -477,7 +477,7 @@ describe("MCP content changes", () => {
         inputDigest: archiveDigest,
         kind: "save-course-draft" as const,
         now: new Date("2026-08-10T00:01:00.000Z"),
-        oauthClientId: "automatic-agent-client",
+        mcpCredentialId: "automatic-mcp-credential",
         toolName: "admin_save_course_draft" as const,
       }
 
@@ -623,7 +623,7 @@ describe("MCP content changes", () => {
         inputDigest: createDigest,
         kind: "save-course-draft",
         now: new Date("2026-08-10T00:00:03.000Z"),
-        oauthClientId: "automatic-agent-client",
+        mcpCredentialId: "automatic-mcp-credential",
         toolName: "admin_save_course_draft",
       })
 
@@ -661,7 +661,7 @@ describe("MCP content changes", () => {
         inputDigest: createDigest,
         kind: "restore-course" as const,
         now: new Date("2026-08-10T00:01:00.000Z"),
-        oauthClientId: "automatic-agent-client",
+        mcpCredentialId: "automatic-mcp-credential",
         toolName: "admin_restore_course" as const,
       }
 

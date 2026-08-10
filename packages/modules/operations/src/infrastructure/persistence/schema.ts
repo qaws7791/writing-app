@@ -40,7 +40,7 @@ export const adminMcpChangeApprovals = sqliteTable(
     id: text("id").primaryKey().notNull(),
     idempotencyKey: text("idempotency_key").notNull(),
     inputDigest: text("input_digest").notNull(),
-    oauthClientId: text("oauth_client_id").notNull(),
+    mcpCredentialId: text("oauth_client_id").notNull(),
     ownerAdminId: text("owner_admin_id").notNull(),
     requestId: text("request_id").notNull(),
     status: text("status", { enum: adminMcpApprovalStatusValues }).notNull(),
@@ -85,7 +85,7 @@ export const adminMcpChangeApprovals = sqliteTable(
     ),
     check(
       "admin_mcp_change_approvals_text_check",
-      sql`length(${table.oauthClientId}) BETWEEN 1 AND 200 AND (${table.targetTitle} IS NULL OR length(trim(${table.targetTitle})) BETWEEN 1 AND 200)`
+      sql`length(${table.mcpCredentialId}) BETWEEN 1 AND 200 AND (${table.targetTitle} IS NULL OR length(trim(${table.targetTitle})) BETWEEN 1 AND 200)`
     ),
     check(
       "admin_mcp_change_approvals_time_check",
@@ -97,7 +97,7 @@ export const adminMcpChangeApprovals = sqliteTable(
     ),
     uniqueIndex("admin_mcp_change_approvals_idempotency_idx").on(
       table.ownerAdminId,
-      table.oauthClientId,
+      table.mcpCredentialId,
       table.toolName,
       table.idempotencyKey
     ),
@@ -125,7 +125,7 @@ export const auditEvents = sqliteTable(
     mcpApprovalId: text("mcp_approval_id"),
     mcpExecutionId: text("mcp_execution_id"),
     mcpInputDigest: text("mcp_input_digest"),
-    mcpOauthClientId: text("mcp_oauth_client_id"),
+    mcpCredentialId: text("mcp_oauth_client_id"),
     outcome: text("outcome", { enum: auditOutcomeValues }).notNull(),
     requestId: text("request_id").notNull(),
     retentionUntil: integer("retention_until", {
@@ -175,7 +175,7 @@ export const auditEvents = sqliteTable(
     ),
     check(
       "audit_events_mcp_provenance_check",
-      sql`(${table.mcpExecutionId} IS NULL AND ${table.mcpApprovalId} IS NULL AND ${table.mcpInputDigest} IS NULL AND ${table.mcpOauthClientId} IS NULL) OR (length(${table.mcpExecutionId}) BETWEEN 1 AND 200 AND ${table.mcpExecutionId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND (${table.mcpApprovalId} IS NULL OR (length(${table.mcpApprovalId}) BETWEEN 1 AND 200 AND ${table.mcpApprovalId} NOT GLOB '*[^A-Za-z0-9._:-]*')) AND length(${table.mcpInputDigest}) = 64 AND ${table.mcpInputDigest} NOT GLOB '*[^a-f0-9]*' AND length(${table.mcpOauthClientId}) BETWEEN 1 AND 200)`
+      sql`(${table.mcpExecutionId} IS NULL AND ${table.mcpApprovalId} IS NULL AND ${table.mcpInputDigest} IS NULL AND ${table.mcpCredentialId} IS NULL) OR (length(${table.mcpExecutionId}) BETWEEN 1 AND 200 AND ${table.mcpExecutionId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND (${table.mcpApprovalId} IS NULL OR (length(${table.mcpApprovalId}) BETWEEN 1 AND 200 AND ${table.mcpApprovalId} NOT GLOB '*[^A-Za-z0-9._:-]*')) AND length(${table.mcpInputDigest}) = 64 AND ${table.mcpInputDigest} NOT GLOB '*[^a-f0-9]*' AND length(${table.mcpCredentialId}) BETWEEN 1 AND 200)`
     ),
     index("audit_events_query_idx").on(table.createdAt, table.id),
     index("audit_events_retention_purge_idx").on(

@@ -20,12 +20,25 @@ const inputScope = z
     variables: sortedUniqueInputNames,
   })
   .strict()
+const environmentInputScope = inputScope
+  .extend({ optionalSecrets: sortedUniqueInputNames })
+  .superRefine((value, context) => {
+    const requiredSecrets = new Set(value.secrets)
+    for (const name of value.optionalSecrets) {
+      if (!requiredSecrets.has(name)) continue
+      context.addIssue({
+        code: "custom",
+        message: `${name}은 secrets와 optionalSecrets에 함께 넣을 수 없습니다.`,
+        path: ["optionalSecrets"],
+      })
+    }
+  })
 const releaseInputContractSchema = z
   .object({
     automaticSecrets: sortedUniqueInputNames,
-    environments: z.record(z.string().min(1), inputScope),
+    environments: z.record(z.string().min(1), environmentInputScope),
     repository: inputScope,
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     workflow: z
       .string()
       .regex(/^\.github\/workflows\/[A-Za-z0-9._-]+\.ya?ml$/u),
@@ -109,6 +122,9 @@ export function assertWorkflowMatchesReleaseInputContract(
     ...contract.automaticSecrets,
     ...contract.repository.secrets,
     ...Object.values(contract.environments).flatMap((scope) => scope.secrets),
+    ...Object.values(contract.environments).flatMap(
+      (scope) => scope.optionalSecrets
+    ),
   ])
   const expectedEnvironments = new Set(Object.keys(contract.environments))
 

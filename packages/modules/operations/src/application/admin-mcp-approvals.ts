@@ -18,7 +18,7 @@ export type AdminMcpApprovals = Readonly<{
     readonly approvalId: AdminMcpApprovalId
     readonly executionLeaseMs: number
     readonly inputDigest: string
-    readonly oauthClientId: string
+    readonly mcpCredentialId: string
     readonly ownerAdminId: AdminId
     readonly toolName: AdminMcpApproval["toolName"]
   }) => Promise<
@@ -77,7 +77,7 @@ export function createAdminMcpApprovals(input: {
         ),
         inputDigest: command.inputDigest,
         now,
-        oauthClientId: command.oauthClientId,
+        mcpCredentialId: command.mcpCredentialId,
         ownerAdminId: command.ownerAdminId,
         toolName: command.toolName,
       })

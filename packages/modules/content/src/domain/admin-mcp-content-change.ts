@@ -47,7 +47,7 @@ export type AdminMcpContentChangeBinding = Readonly<{
   approvalId: AdminMcpApprovalId
   executionId: AdminMcpExecutionId
   inputDigest: string
-  oauthClientId: string
+  mcpCredentialId: string
   toolName: AdminMcpApprovedContentToolName
 }>
 
@@ -56,7 +56,7 @@ export type AdminMcpAutomaticContentChangeBinding = Readonly<{
   executionId: AdminMcpExecutionId
   idempotencyKey: string
   inputDigest: string
-  oauthClientId: string
+  mcpCredentialId: string
   toolName: AdminMcpAutomaticContentToolName
 }>
 
@@ -152,7 +152,7 @@ export function hasAdminMcpContentChangeBinding(
     receipt.approvalId === binding.approvalId &&
     receipt.executionId === binding.executionId &&
     receipt.inputDigest === binding.inputDigest &&
-    receipt.oauthClientId === binding.oauthClientId &&
+    receipt.mcpCredentialId === binding.mcpCredentialId &&
     receipt.toolName === binding.toolName
   )
 }
@@ -166,7 +166,7 @@ export function hasAdminMcpAutomaticContentChangeBinding(
     receipt.executionId === binding.executionId &&
     receipt.idempotencyKey === binding.idempotencyKey &&
     receipt.inputDigest === binding.inputDigest &&
-    receipt.oauthClientId === binding.oauthClientId &&
+    receipt.mcpCredentialId === binding.mcpCredentialId &&
     receipt.toolName === binding.toolName
   )
 }
