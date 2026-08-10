@@ -121,11 +121,6 @@ import {
 type UserRole = "learner" | "instructor"
 type UserStatus = "active" | "invited" | "suspended"
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  learner: "학습자",
-  instructor: "강사",
-}
-
 const STATUS_LABELS: Record<UserStatus, string> = {
   active: "활성",
   invited: "초대됨",
@@ -469,7 +464,6 @@ export function UserAdmin({
       data-slot="user-admin"
       activeNav="users"
       title={USER.name}
-      description={`${USER.id} · ${ROLE_LABELS[role]} · ${STATUS_LABELS[status]}`}
       breadcrumb={[{ label: "사용자", href: "#users" }]}
       contentClassName="min-h-0 gap-3 overflow-hidden sm:gap-4"
       className={cn("h-full min-h-0!", className)}

@@ -369,7 +369,6 @@ export function AdminSettings({ className, ...props }: React.ComponentProps<"div
       data-slot="admin-settings"
       activeNav="settings"
       title="설정"
-      description="조직·알림·보안과 운영 환경을 관리합니다"
       className={cn(className)}
       {...props}
     >

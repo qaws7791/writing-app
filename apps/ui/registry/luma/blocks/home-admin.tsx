@@ -260,8 +260,6 @@ export function HomeAdmin({ className, ...props }: React.ComponentProps<"div">) 
       data-slot="home-admin"
       activeNav="home"
       title="홈"
-      description="운영 현황을 한눈에 봅니다"
-      showSearch
       className={cn(className)}
       {...props}
     >

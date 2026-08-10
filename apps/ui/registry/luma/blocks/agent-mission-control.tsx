@@ -616,7 +616,6 @@ export function AgentMissionControl({ className, ...props }: React.ComponentProp
       data-slot="agent-mission-control"
       activeNav="agents"
       title="미션 컨트롤"
-      description="Hermes 에이전트 실행 상태를 확인합니다"
       className={cn(className)}
       {...props}
     >

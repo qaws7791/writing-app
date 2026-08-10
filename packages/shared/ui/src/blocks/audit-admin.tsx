@@ -696,7 +696,6 @@ export function AuditAdmin({
       data-slot="audit-admin"
       activeNav="audit"
       title="감사 로그"
-      description="게시·권한·AI·복원 이력을 추적합니다"
       className={cn(className)}
       {...props}
     >

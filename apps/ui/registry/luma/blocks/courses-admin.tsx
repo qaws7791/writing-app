@@ -918,7 +918,6 @@ export function CoursesAdmin({ className, ...props }: React.ComponentProps<"div"
       data-slot="courses-admin"
       activeNav="courses"
       title="코스"
-      description="발행·미리보기·초안 코스를 관리합니다"
       className={cn(className)}
       {...props}
     >

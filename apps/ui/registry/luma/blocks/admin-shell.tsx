@@ -4,21 +4,21 @@ import * as React from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Analytics01Icon,
+  ArrowUpDownIcon,
   Audit01Icon,
   BookOpen01Icon,
+  ComputerIcon,
   Home01Icon,
+  LinkSquare02Icon,
   Logout03Icon,
-  Menu01Icon,
-  Notification03Icon,
+  MoonIcon,
   Robot01Icon,
-  Search01Icon,
   Settings02Icon,
-  UserIcon,
+  Sun03Icon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/registry/luma/lib/utils";
-import { Avatar, AvatarFallback } from "@/registry/luma/ui/avatar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -30,24 +30,20 @@ import {
 import { Button } from "@/registry/luma/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/registry/luma/ui/dropdown-menu";
-import { Input } from "@/registry/luma/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/registry/luma/ui/sheet";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -57,6 +53,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
 } from "@/registry/luma/ui/sidebar";
 
 export type AdminBreadcrumbItem = {
@@ -84,6 +82,19 @@ type NavGroup = {
   label: string;
   items: NavItem[];
 };
+
+type ThemeValue = "system" | "light" | "dark";
+
+const DEMO_PROFILE = {
+  name: "수진",
+  email: "sujin@luma.example",
+} as const;
+
+const THEME_OPTIONS = [
+  { icon: ComputerIcon, label: "시스템", value: "system" as const },
+  { icon: Sun03Icon, label: "라이트", value: "light" as const },
+  { icon: MoonIcon, label: "다크", value: "dark" as const },
+];
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -121,13 +132,19 @@ function preventNav(event: React.MouseEvent | React.SyntheticEvent) {
   event.preventDefault();
 }
 
-function AdminNavGroups({
-  activeNav,
-  onNavigate,
-}: {
-  activeNav: AdminNavId;
-  onNavigate?: () => void;
-}) {
+function resolveIsDark(mode: ThemeValue) {
+  if (mode === "dark") return true;
+  if (mode === "light") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function applyThemeMode(mode: ThemeValue) {
+  document.documentElement.classList.toggle("dark", resolveIsDark(mode));
+}
+
+function AdminNavGroups({ activeNav }: { activeNav: AdminNavId }) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
   return (
     <>
       {NAV_GROUPS.map((group) => (
@@ -149,7 +166,7 @@ function AdminNavGroups({
                           aria-current={current ? "page" : undefined}
                           onClick={(event) => {
                             preventNav(event);
-                            onNavigate?.();
+                            if (isMobile) setOpenMobile(false);
                           }}
                         />
                       }
@@ -182,35 +199,115 @@ function AdminBrand() {
   );
 }
 
+function AdminProfileMenu() {
+  const [theme, setTheme] = React.useState<ThemeValue>("system");
+
+  React.useEffect(() => {
+    if (theme !== "system") return;
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    function onChange() {
+      applyThemeMode("system");
+    }
+
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [theme]);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            aria-label="프로필 메뉴"
+            className="h-auto w-full justify-start gap-3 rounded-2xl px-2.5 py-2 text-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground"
+            variant="ghost"
+          />
+        }
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold">{DEMO_PROFILE.name}</span>
+          <span className="block truncate text-xs font-normal text-muted-foreground">
+            {DEMO_PROFILE.email}
+          </span>
+        </span>
+        <HugeiconsIcon
+          icon={ArrowUpDownIcon}
+          strokeWidth={2}
+          aria-hidden="true"
+          className="size-4 shrink-0 text-muted-foreground"
+        />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="w-(--anchor-width) min-w-56"
+        side="top"
+        sideOffset={8}
+      >
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex items-center gap-3 px-2.5 py-2">
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold text-popover-foreground">
+                {DEMO_PROFILE.name}
+              </span>
+              <span className="block truncate text-xs font-normal text-muted-foreground">
+                {DEMO_PROFILE.email}
+              </span>
+            </span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
+        <DropdownMenuItem onClick={preventNav}>
+          <HugeiconsIcon icon={LinkSquare02Icon} strokeWidth={2} />
+          앱으로 이동
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <HugeiconsIcon icon={ComputerIcon} strokeWidth={2} />
+            화면 테마
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {THEME_OPTIONS.map(({ icon, label, value }) => (
+              <DropdownMenuCheckboxItem
+                key={value}
+                checked={theme === value}
+                onCheckedChange={(checked) => {
+                  if (!checked) return;
+                  applyThemeMode(value);
+                  setTheme(value);
+                }}
+              >
+                <HugeiconsIcon icon={icon} strokeWidth={2} aria-hidden="true" />
+                {label}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuItem variant="destructive">
+          <HugeiconsIcon icon={Logout03Icon} strokeWidth={2} />
+          어드민 로그아웃
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function AdminSidebar({ activeNav }: { activeNav: AdminNavId }) {
   return (
-    <Sidebar
-      collapsible="none"
-      className="hidden h-full min-h-0 w-(--sidebar-width) shrink-0 border-e border-sidebar-border/80 @[56rem]/admin-shell:flex"
-    >
+    <Sidebar className="absolute! h-full!">
       <SidebarHeader>
         <AdminBrand />
       </SidebarHeader>
       <SidebarContent>
         <AdminNavGroups activeNav={activeNav} />
       </SidebarContent>
+      <SidebarFooter>
+        <AdminProfileMenu />
+      </SidebarFooter>
     </Sidebar>
   );
 }
 
-function AdminHeader({
-  title,
-  description,
-  breadcrumb,
-  showSearch = false,
-  onOpenNav,
-}: {
-  title: string;
-  description?: string;
-  breadcrumb?: AdminBreadcrumbItem[];
-  showSearch?: boolean;
-  onOpenNav: () => void;
-}) {
+function AdminHeader({ title, breadcrumb }: { title: string; breadcrumb?: AdminBreadcrumbItem[] }) {
   const hasBreadcrumb = Boolean(breadcrumb?.length);
 
   return (
@@ -218,16 +315,7 @@ function AdminHeader({
       data-slot="admin-shell-header"
       className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border/50 bg-background/90 px-3 backdrop-blur-xl @[40rem]/admin-shell:h-15 @[40rem]/admin-shell:gap-3 @[40rem]/admin-shell:px-5 @[56rem]/admin-shell:gap-4 @[56rem]/admin-shell:px-6"
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        className="shrink-0 rounded-full @[56rem]/admin-shell:hidden"
-        aria-label="메뉴 열기"
-        onClick={onOpenNav}
-      >
-        <HugeiconsIcon icon={Menu01Icon} strokeWidth={2} />
-      </Button>
+      <SidebarTrigger aria-label="사이드바 전환" className="shrink-0" />
 
       <div className="min-w-0 flex-1">
         {hasBreadcrumb ? (
@@ -235,7 +323,7 @@ function AdminHeader({
             <h1 className="sr-only">{title}</h1>
             <Breadcrumb className="min-w-0">
               <BreadcrumbList className="flex-wrap gap-1 @[40rem]/admin-shell:gap-1.5">
-                {breadcrumb!.map((item) => (
+                {breadcrumb?.map((item) => (
                   <React.Fragment key={`${item.label}-${item.href ?? "page"}`}>
                     <BreadcrumbItem className="shrink-0">
                       <BreadcrumbLink
@@ -262,73 +350,6 @@ function AdminHeader({
             {title}
           </h1>
         )}
-        {description ? (
-          <p className="mt-0.5 hidden truncate text-xs text-muted-foreground @[40rem]/admin-shell:block">
-            {description}
-          </p>
-        ) : null}
-      </div>
-
-      {showSearch ? (
-        <div className="relative ms-auto hidden min-w-0 max-w-[14rem] flex-1 @[48rem]/admin-shell:block @[64rem]/admin-shell:max-w-sm">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            strokeWidth={2}
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            type="search"
-            placeholder="코스·학습자·문항 검색"
-            className="h-9 ps-9"
-            aria-label="코스·학습자·문항 검색"
-          />
-        </div>
-      ) : (
-        <div className="ms-auto" />
-      )}
-
-      <div className="flex shrink-0 items-center gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="relative rounded-full"
-          aria-label="알림 3건"
-        >
-          <HugeiconsIcon icon={Notification03Icon} strokeWidth={2} />
-          <span className="absolute top-1 right-1 grid min-w-4 place-items-center rounded-full bg-foreground px-1 text-[0.6rem] leading-4 font-semibold text-background tabular-nums">
-            3
-          </span>
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon-sm" className="rounded-full" />}
-            aria-label="프로필 메뉴 열기"
-          >
-            <Avatar size="sm">
-              <AvatarFallback>수</AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-52">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>수진</DropdownMenuLabel>
-              <DropdownMenuItem>
-                <HugeiconsIcon icon={UserIcon} strokeWidth={2} />
-                프로필
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
-                설정
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">
-              <HugeiconsIcon icon={Logout03Icon} strokeWidth={2} />
-              로그아웃
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </header>
   );
@@ -337,9 +358,7 @@ function AdminHeader({
 export function AdminShell({
   activeNav,
   title,
-  description,
   breadcrumb,
-  showSearch = false,
   className,
   contentClassName,
   children,
@@ -347,58 +366,24 @@ export function AdminShell({
 }: {
   activeNav: AdminNavId;
   title: string;
-  description?: string;
   breadcrumb?: AdminBreadcrumbItem[];
-  showSearch?: boolean;
   contentClassName?: string;
   children: React.ReactNode;
 } & React.ComponentProps<"div">) {
-  const [navOpen, setNavOpen] = React.useState(false);
-
   return (
     <div
       data-slot="admin-shell"
       className={cn(
-        "@container/admin-shell relative flex h-full min-h-svh w-full overflow-hidden bg-background",
+        "@container/admin-shell relative flex h-full min-h-0 w-full overflow-hidden bg-background",
         className,
       )}
       {...props}
     >
-      <SidebarProvider className="relative flex h-full min-h-0 w-full flex-1 overflow-hidden">
+      <SidebarProvider className="relative flex h-full min-h-0! w-full flex-1 overflow-hidden">
         <AdminSidebar activeNav={activeNav} />
 
-        <Sheet open={navOpen} onOpenChange={setNavOpen}>
-          <SheetContent
-            side="left"
-            className="w-[min(100%,18rem)] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-          >
-            <SheetHeader className="sr-only">
-              <SheetTitle>운영 메뉴</SheetTitle>
-              <SheetDescription>운영 화면 탐색 메뉴</SheetDescription>
-            </SheetHeader>
-            <div className="flex h-full w-full flex-col">
-              <div className="flex h-14 items-center border-b border-sidebar-border/80 px-3">
-                <AdminBrand />
-              </div>
-              <div className="min-h-0 flex-1 overflow-auto p-2">
-                <Sidebar collapsible="none" className="h-auto w-full bg-transparent">
-                  <SidebarContent>
-                    <AdminNavGroups activeNav={activeNav} onNavigate={() => setNavOpen(false)} />
-                  </SidebarContent>
-                </Sidebar>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-
         <SidebarInset className="min-h-0 min-w-0 flex-1 overflow-hidden">
-          <AdminHeader
-            title={title}
-            description={description}
-            breadcrumb={breadcrumb}
-            showSearch={showSearch}
-            onOpenNav={() => setNavOpen(true)}
-          />
+          <AdminHeader title={title} breadcrumb={breadcrumb} />
           <div
             data-slot="admin-shell-main"
             className={cn(

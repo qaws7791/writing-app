@@ -584,7 +584,6 @@ export function CourseAdmin({
 
   const issues = React.useMemo(() => validateCurriculum(units), [units])
   const errorCount = issues.filter((issue) => issue.severity === "error").length
-  const lessonCount = units.reduce((sum, unit) => sum + unit.lessons.length, 0)
   const previewStep = React.useMemo(() => findPreviewStep(units), [units])
 
   const handleUnitsChange = React.useCallback((next: UnitNode[]) => {
@@ -608,7 +607,6 @@ export function CourseAdmin({
       data-slot="course-admin"
       activeNav="courses"
       title={courseTitle}
-      description={`${COURSE.id} · 유닛 ${units.length} · 레슨 ${lessonCount} · 미리보기`}
       breadcrumb={[{ label: "코스", href: "#courses" }]}
       contentClassName="min-h-0 gap-3 overflow-hidden sm:gap-4"
       className={cn("h-full min-h-0!", className)}

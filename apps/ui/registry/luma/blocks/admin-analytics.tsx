@@ -550,7 +550,6 @@ export function AdminAnalytics({ className, ...props }: React.ComponentProps<"di
       data-slot="admin-analytics"
       activeNav="analytics"
       title="분석"
-      description="코호트 학습·쓰기·문항 지표를 살펴봅니다"
       className={cn(className)}
       {...props}
     >

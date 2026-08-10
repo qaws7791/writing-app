@@ -575,7 +575,6 @@ export function AgentSessionDetail({
       data-slot="agent-session-detail"
       activeNav="agents"
       title={SESSION.title}
-      description={`${SESSION.runId} · ${SESSION.agent}`}
       breadcrumb={[{ label: "미션 컨트롤", href: "#agents" }]}
       className={cn(className)}
       {...props}

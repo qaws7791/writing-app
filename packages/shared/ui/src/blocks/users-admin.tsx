@@ -974,7 +974,6 @@ export function UsersAdmin({
       data-slot="users-admin"
       activeNav="users"
       title="사용자"
-      description="학습자와 강사 계정을 검색·필터·초대합니다"
       className={cn(className)}
       {...props}
     >
