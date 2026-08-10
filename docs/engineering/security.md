@@ -19,6 +19,9 @@
 - 검증된 동일 이메일의 Google account만 기존 credential user에 연결하며, 다른 이메일 연결과 provider profile의 기존 사용자 덮어쓰기를 허용하지 않는다.
 - 인증 메일 전달은 절대 HTTP(S) callback, 제한 시간과 정규화된 실패만 허용하며 API key, 메일 본문과 provider 원문을 로그에 남기지 않는다.
 - 보호된 read와 write 모두 server-side authorization을 요구한다.
+- 관리자 MCP 변경은 조회 scope와 기능별 변경 scope를 요구한다.
+- 2단계 자동 변경은 멱등 키, 입력 digest와 대상 버전·상태를 검증한다.
+- 3단계 변경은 owner의 영속 승인을 추가로 요구한다. URL elicitation 응답과 client 자체 확인은 server-side authorization을 대체할 수 없다.
 - 권한 변경, password 변경, 계정 정지·삭제는 기존 session과 장기 token의 영향을 함께 검토한다.
 - 테스트 fixture도 공개 인증 handler를 우회하는 전용 route를 추가하지 않는다.
 
@@ -44,8 +47,8 @@
 - IP는 `security.audit`와 operations DB audit에서만 명시적으로 허용하고, User-Agent는 `security.audit`에만 허용한다. IP는 신뢰 경계가 검증한 단일 주소만, User-Agent는 제어 문자를 제거한 제한 길이 값만 사용한다.
 - audit와 AI usage event는 원문 payload를 받지 않는 schema를 사용한다. AI usage에는 model, prompt policy version, token 수, latency, outcome과 정규화한 실패 code만 기록한다. global redaction은 최종 방어선이며 schema의 허용 목록을 대신하지 않는다.
 - 현재 필드, redaction과 보존 class의 실행 계약은 [observability event](../../packages/infra/observability/src/events.ts), [request logger](../../packages/infra/observability/src/request-logger.ts), [security logger](../../packages/infra/observability/src/security-audit-logger.ts)가 소유한다.
-- 인증된 owner의 사용자 상세 조회·상태 변경·삭제와 콘텐츠 발행·보관은 operations가 소유한 DB audit에 기록한다. 인증·인가에 실패해 신뢰할 수 있는 actor를 확정하지 못한 요청은 DB audit에 넣지 않고 `security.audit`에만 기록한다.
-- DB audit는 임의 payload를 받지 않고 허용된 action과 opaque actor·target ID만 저장한다. client IP는 reverse proxy 신뢰 경계가 검증한 값만 저장하며 검증할 수 없으면 `NULL`로 남긴다.
+- 인증된 owner의 사용자 상세 조회·상태 변경·삭제와 콘텐츠 생성·발행·보관은 operations가 소유한 DB audit에 기록한다. 인증·인가에 실패해 신뢰할 수 있는 actor를 확정하지 못한 요청은 DB audit에 넣지 않고 `security.audit`에만 기록한다.
+- DB audit는 임의 payload를 받지 않고 허용된 action과 opaque actor·target ID를 저장한다. MCP 변경은 실행 ID, nullable 승인 ID, 입력 digest와 검증된 OAuth client ID도 저장한다. client IP는 reverse proxy 신뢰 경계가 검증한 값만 저장하며 검증할 수 없으면 `NULL`로 남긴다.
 - 개인정보 조회와 고위험 mutation은 `started` 감사 row의 사전 저장이 실패하면 실행하지 않는다. 결과 종결 실패도 성공 응답으로 숨기지 않으며, 남은 `started` row는 누락 없는 보수적 장애 신호다.
 
 ## 데이터·provider·공급망

@@ -50,6 +50,12 @@ export function mapContentError(error: ContentError): AppError {
         "CONTENT_IMMUTABLE_REVISION",
         "Published content revision is immutable"
       )
+    case "content-idempotency-conflict":
+      return contentHttpError(
+        409,
+        "CONTENT_IDEMPOTENCY_CONFLICT",
+        "Content change idempotency conflict"
+      )
     case "content-not-found":
       return contentHttpError(404, "NOT_FOUND", "Not Found")
     case "content-validation-failed":
@@ -83,6 +89,7 @@ function contentHttpError(
     | "CONTENT_ASSET_STORAGE_UNAVAILABLE"
     | "CONTENT_ASSET_TOO_LARGE"
     | "CONTENT_CONFLICT"
+    | "CONTENT_IDEMPOTENCY_CONFLICT"
     | "CONTENT_IMMUTABLE_REVISION"
     | "NOT_FOUND"
     | "PRECONDITION_REQUIRED"

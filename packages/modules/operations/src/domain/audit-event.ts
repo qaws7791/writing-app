@@ -1,6 +1,12 @@
 import type { Result } from "@workspace/kernel/result"
 import { err, ok } from "@workspace/kernel/result"
-import type { AdminId, CourseId, UserId } from "@workspace/types/ids"
+import type {
+  AdminId,
+  AdminMcpApprovalId,
+  AdminMcpExecutionId,
+  CourseId,
+  UserId,
+} from "@workspace/types/ids"
 
 declare const auditEventIdBrand: unique symbol
 
@@ -21,6 +27,8 @@ export const auditActionValues = [
   "learner.status.suspend",
   "learner.status.activate",
   "learner.delete",
+  "course.create",
+  "course.draft.save",
   "course.publish",
   "course.archive",
   "course.restore",
@@ -38,6 +46,13 @@ export type AuditTarget =
   | Readonly<{ id: CourseId; type: "course" }>
   | Readonly<{ id: UserId; type: "learner" }>
 
+type AuditMcpProvenance = Readonly<{
+  approvalId: AdminMcpApprovalId | null
+  executionId: AdminMcpExecutionId
+  inputDigest: string
+  oauthClientId: string
+}>
+
 export type AuditEvent = Readonly<{
   action: AuditAction
   actorId: AdminId
@@ -45,6 +60,7 @@ export type AuditEvent = Readonly<{
   clientIp: string | null
   createdAt: Date
   id: AuditEventId
+  mcp: AuditMcpProvenance | null
   outcome: AuditOutcome
   requestId: string
   retentionUntil: Date
@@ -61,6 +77,7 @@ export type StartAuditEventInput = Readonly<{
   clientIp: string | null
   createdAt: Date
   id: string
+  mcp?: AuditMcpProvenance | null
   requestId: string
   target: AuditTarget
 }>
@@ -69,8 +86,19 @@ const applicationAuditRetentionMs = 365 * 24 * 60 * 60 * 1_000
 const highRiskAuditRetentionMs = 3 * applicationAuditRetentionMs
 const safeAuditIdentifierPattern = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u
 const safeClientIpPattern = /^[0-9A-Fa-f:.]{2,45}$/u
+const sha256HexPattern = /^[a-f0-9]{64}$/u
 
 const auditPolicies = {
+  "course.create": {
+    category: "content-mutation",
+    retentionMs: applicationAuditRetentionMs,
+    targetType: "course",
+  },
+  "course.draft.save": {
+    category: "content-mutation",
+    retentionMs: applicationAuditRetentionMs,
+    targetType: "course",
+  },
   "course.archive": {
     category: "content-mutation",
     retentionMs: applicationAuditRetentionMs,
@@ -130,7 +158,8 @@ export function createStartedAuditEvent(
     !isSafeAuditIdentifier(input.actorId) ||
     !isSafeAuditIdentifier(input.target.id) ||
     !isSafeAuditIdentifier(input.requestId) ||
-    !isSafeClientIp(input.clientIp)
+    !isSafeClientIp(input.clientIp) ||
+    !isValidMcpProvenance(input.mcp ?? null)
   ) {
     return err({ kind: "invalid-audit-event" })
   }
@@ -142,6 +171,7 @@ export function createStartedAuditEvent(
     clientIp: input.clientIp,
     createdAt: new Date(createdAtMs),
     id: input.id as AuditEventId,
+    mcp: input.mcp ?? null,
     outcome: "started",
     requestId: input.requestId,
     retentionUntil: new Date(createdAtMs + policy.retentionMs),
@@ -155,4 +185,15 @@ function isSafeAuditIdentifier(value: string): boolean {
 
 function isSafeClientIp(value: string | null): boolean {
   return value === null || safeClientIpPattern.test(value)
+}
+
+function isValidMcpProvenance(value: AuditMcpProvenance | null): boolean {
+  return (
+    value === null ||
+    (isSafeAuditIdentifier(value.executionId) &&
+      (value.approvalId === null || isSafeAuditIdentifier(value.approvalId)) &&
+      sha256HexPattern.test(value.inputDigest) &&
+      value.oauthClientId.length >= 1 &&
+      value.oauthClientId.length <= 200)
+  )
 }

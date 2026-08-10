@@ -1,7 +1,11 @@
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import { platformDayBoundary } from "@workspace/kernel/day-boundary"
 import { err, ok, type Result } from "@workspace/kernel/result"
-import type { AdminId } from "@workspace/types/ids"
+import type {
+  AdminId,
+  AdminMcpApprovalId,
+  AdminMcpExecutionId,
+} from "@workspace/types/ids"
 
 import type {
   AuditEventRepository,
@@ -32,7 +36,7 @@ type AuditEventQuery = Readonly<{
   to: string | null
 }>
 
-type AuditEventPage = Readonly<{
+export type AuditEventPage = Readonly<{
   items: readonly AuditEvent[]
   page: number
   pageSize: number
@@ -55,10 +59,32 @@ export type AuditTrail = Readonly<{
     readonly requestId: string
     readonly target: AuditTarget
   }) => Promise<Result<AuditEvent, AuditTrailError>>
+  beginMcp: (input: {
+    readonly action: AuditAction
+    readonly actorId: AdminId
+    readonly approvalId: AdminMcpApprovalId | null
+    readonly executionId: AdminMcpExecutionId
+    readonly inputDigest: string
+    readonly oauthClientId: string
+    readonly requestId: string
+    readonly target: AuditTarget
+  }) => Promise<Result<AuditEvent, AuditTrailError>>
   complete: (input: {
     readonly eventId: AuditEventId
     readonly outcome: "failed" | "succeeded"
   }) => Promise<Result<void, AuditTrailError>>
+  ensureMcpStarted: (input: {
+    readonly action: AuditAction
+    readonly actorId: AdminId
+    readonly approvalId: AdminMcpApprovalId | null
+    readonly createdAt: Date
+    readonly eventId: string
+    readonly executionId: AdminMcpExecutionId
+    readonly inputDigest: string
+    readonly oauthClientId: string
+    readonly requestId: string
+    readonly target: AuditTarget
+  }) => Promise<Result<AuditEvent, AuditTrailError>>
   inspectExpired: (input: {
     readonly batchSize: number
     readonly cutoff: Date
@@ -89,8 +115,48 @@ export function createAuditTrail(input: {
       const inserted = await input.repository.insert(event.value)
       return inserted.isErr() ? err(inserted.error) : event
     },
+    async beginMcp(command) {
+      const event = createStartedAuditEvent({
+        action: command.action,
+        actorId: command.actorId,
+        clientIp: null,
+        createdAt: input.clock.now(),
+        id: input.idGenerator.next(),
+        mcp: {
+          approvalId: command.approvalId,
+          executionId: command.executionId,
+          inputDigest: command.inputDigest,
+          oauthClientId: command.oauthClientId,
+        },
+        requestId: command.requestId,
+        target: command.target,
+      })
+      if (event.isErr()) return err(event.error)
+
+      const inserted = await input.repository.insert(event.value)
+      return inserted.isErr() ? err(inserted.error) : event
+    },
     async complete(command) {
       return input.repository.complete(command)
+    },
+    async ensureMcpStarted(command) {
+      const event = createStartedAuditEvent({
+        action: command.action,
+        actorId: command.actorId,
+        clientIp: null,
+        createdAt: command.createdAt,
+        id: command.eventId,
+        mcp: {
+          approvalId: command.approvalId,
+          executionId: command.executionId,
+          inputDigest: command.inputDigest,
+          oauthClientId: command.oauthClientId,
+        },
+        requestId: command.requestId,
+        target: command.target,
+      })
+      if (event.isErr()) return err(event.error)
+      return input.repository.insertOrRead(event.value)
     },
     async inspectExpired(command) {
       if (!isValidRetentionQuery(command)) {

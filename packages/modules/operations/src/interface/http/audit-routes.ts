@@ -20,6 +20,7 @@ import {
   operationsAuthenticatedResponses,
   operationsErrorResponse,
 } from "#operations/interface/http/operations-http-support"
+import { toAdminAuditEventsDto } from "#operations/interface/http/operations-http-presenter"
 
 export function registerOperationsAuditRoutes<TEnv extends OperationsHonoEnv>(
   app: OpenAPIHono<TEnv>,
@@ -73,28 +74,6 @@ export function registerOperationsAuditRoutes<TEnv extends OperationsHonoEnv>(
           })
     }
 
-    return context.json(
-      adminAuditEventsDtoSchema.parse({
-        items: result.value.items.map((event) => ({
-          action: event.action,
-          actorId: event.actorId,
-          category: event.category,
-          clientIp: event.clientIp,
-          createdAt: event.createdAt.toISOString(),
-          id: event.id,
-          outcome: event.outcome,
-          requestId: event.requestId,
-          retentionUntil: event.retentionUntil.toISOString(),
-          target: event.target,
-        })),
-        pagination: {
-          page: result.value.page,
-          pageSize: result.value.pageSize,
-          totalItems: result.value.totalItems,
-          totalPages: result.value.totalPages,
-        },
-      }),
-      200
-    )
+    return context.json(toAdminAuditEventsDto(result.value), 200)
   })
 }

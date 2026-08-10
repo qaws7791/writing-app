@@ -44,6 +44,8 @@ AI feedback의 사용자별·전체 일일 request/success 한도, provider time
 
 인증 메일은 API 조립 경계가 검증한 설정을 `@workspace/auth` 전달 Port에 주입한다. development에서 provider 설정이 없으면 git 제외 대상인 `data/local-auth-email.json`이 최신 이메일 확인 또는 비밀번호 재설정 메일을 보관한다. API 표준 출력은 token이 없는 mailbox 경로만 전달한다. test에서 provider 설정이 없으면 격리된 인메모리 adapter를 사용한다. production API는 Resend, Google OAuth, OpenAI, public content asset과 private 삭제 marker 설정이 완전하지 않으면 server를 열기 전에 실패한다. private marker는 public asset과 다른 bucket을 사용하고 production endpoint는 HTTPS여야 한다. Litestream credential과 replica 위치는 API 설정과 분리한 전용 runtime 파일로만 전달하며 Ansible이 service 시작 전에 검증한다.
 
+관리자 MCP 설정은 기본으로 비활성화한다. 활성화 시 resource, OAuth metadata, introspection client와 고정 owner subject 설정을 모두 함께 검증한다. 변경 기능은 관리자 MCP와 분리된 flag로 기본 비활성화한다. 변경 기능을 켜면 승인 만료, 실행 lease와 전용 `requestState` secret을 모두 검증한다. 2단계와 3단계 Tool 노출은 introspection 결과의 기능별 scope가 결정한다. `requestState` secret은 인증, cursor와 introspection secret을 재사용할 수 없다. loopback 외 URL은 HTTPS를 사용한다. parser는 production 대상을 거부한다. 실제 입력 이름과 URL 계약은 [관리자 MCP 설정 parser](../../apps/api/src/mcp/admin/admin-mcp-configuration.ts)와 환경별 API 입력 예시가 소유한다.
+
 Next image build에는 공개 origin과 비밀이 아닌 내부 routing 값만 전달한다. 인증·provider·storage credential은 build argument나 `NEXT_PUBLIC_` 변수로 전달하지 않고 배포 host의 권한 제한 runtime 파일에서만 주입한다. release smoke는 web/admin container에 API 전용 변수가 전달되지 않는지도 확인한다.
 
 환경별 API 입력 예시는 [local](../../apps/api/.env.example), [test](../../apps/api/.env.test.example), [staging](../../apps/api/.env.staging.example), [production](../../apps/api/.env.production.example)으로 분리한다. staging과 production 예시의 placeholder는 실행값이 아니며, 실제 production 입력은 Ansible inventory와 Vault가 소유한다.

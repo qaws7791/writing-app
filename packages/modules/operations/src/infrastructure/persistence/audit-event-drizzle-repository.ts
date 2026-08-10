@@ -1,7 +1,13 @@
 import { and, asc, count, desc, eq, gte, inArray, lt, lte } from "drizzle-orm"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { err, ok } from "@workspace/kernel/result"
-import type { AdminId, CourseId, UserId } from "@workspace/types/ids"
+import type {
+  AdminId,
+  AdminMcpApprovalId,
+  AdminMcpExecutionId,
+  CourseId,
+  UserId,
+} from "@workspace/types/ids"
 
 import type {
   AuditEventFailureObserver,
@@ -57,21 +63,32 @@ export function createAuditEventDrizzleRepository(
     },
     async complete(input) {
       try {
-        const updated = database
-          .update(auditEvents)
-          .set({ outcome: input.outcome })
-          .where(
-            and(
-              eq(auditEvents.id, input.eventId),
-              eq(auditEvents.outcome, "started")
-            )
-          )
-          .returning({ id: auditEvents.id })
-          .get()
+        return database.transaction((transaction) => {
+          const current = transaction
+            .select({ outcome: auditEvents.outcome })
+            .from(auditEvents)
+            .where(eq(auditEvents.id, input.eventId))
+            .get()
+          if (current?.outcome === input.outcome) return ok(undefined)
+          if (current?.outcome !== "started") {
+            return err({ kind: "audit-event-conflict" } as const)
+          }
 
-        return updated === undefined
-          ? err({ kind: "audit-event-conflict" } as const)
-          : ok(undefined)
+          const updated = transaction
+            .update(auditEvents)
+            .set({ outcome: input.outcome })
+            .where(
+              and(
+                eq(auditEvents.id, input.eventId),
+                eq(auditEvents.outcome, "started")
+              )
+            )
+            .returning({ id: auditEvents.id })
+            .get()
+          return updated === undefined
+            ? err({ kind: "audit-event-conflict" } as const)
+            : ok(undefined)
+        })
       } catch (cause) {
         return persistenceFailed(cause, "complete")
       }
@@ -82,6 +99,28 @@ export function createAuditEventDrizzleRepository(
         return ok(undefined)
       } catch (cause) {
         return persistenceFailed(cause, "insert")
+      }
+    },
+    async insertOrRead(event) {
+      try {
+        return database.transaction((transaction) => {
+          const row = transaction
+            .select()
+            .from(auditEvents)
+            .where(eq(auditEvents.id, event.id))
+            .get()
+          if (row !== undefined) {
+            const current = toAuditEvent(row)
+            return hasSameAuditIdentity(current, event)
+              ? ok(current)
+              : err({ kind: "audit-event-conflict" } as const)
+          }
+
+          transaction.insert(auditEvents).values(toAuditEventRow(event)).run()
+          return ok(event)
+        })
+      } catch (cause) {
+        return persistenceFailed(cause, "insert-or-read")
       }
     },
     async listEvents(input) {
@@ -146,6 +185,10 @@ function toAuditEventRow(event: AuditEvent) {
     clientIp: event.clientIp,
     createdAt: event.createdAt,
     id: event.id,
+    mcpApprovalId: event.mcp?.approvalId ?? null,
+    mcpExecutionId: event.mcp?.executionId ?? null,
+    mcpInputDigest: event.mcp?.inputDigest ?? null,
+    mcpOauthClientId: event.mcp?.oauthClientId ?? null,
     outcome: event.outcome,
     requestId: event.requestId,
     retentionUntil: event.retentionUntil,
@@ -162,6 +205,20 @@ function toAuditEvent(row: typeof auditEvents.$inferSelect): AuditEvent {
     clientIp: row.clientIp,
     createdAt: new Date(row.createdAt),
     id: row.id as AuditEventId,
+    mcp:
+      row.mcpExecutionId === null ||
+      row.mcpInputDigest === null ||
+      row.mcpOauthClientId === null
+        ? null
+        : {
+            approvalId:
+              row.mcpApprovalId === null
+                ? null
+                : (row.mcpApprovalId as AdminMcpApprovalId),
+            executionId: row.mcpExecutionId as AdminMcpExecutionId,
+            inputDigest: row.mcpInputDigest,
+            oauthClientId: row.mcpOauthClientId,
+          },
     outcome: row.outcome,
     requestId: row.requestId,
     retentionUntil: new Date(row.retentionUntil),
@@ -170,4 +227,23 @@ function toAuditEvent(row: typeof auditEvents.$inferSelect): AuditEvent {
         ? { id: row.targetId as UserId, type: "learner" }
         : { id: row.targetId as CourseId, type: "course" },
   }
+}
+
+function hasSameAuditIdentity(left: AuditEvent, right: AuditEvent): boolean {
+  return (
+    left.action === right.action &&
+    left.actorId === right.actorId &&
+    left.category === right.category &&
+    left.clientIp === right.clientIp &&
+    left.createdAt.getTime() === right.createdAt.getTime() &&
+    left.id === right.id &&
+    left.requestId === right.requestId &&
+    left.retentionUntil.getTime() === right.retentionUntil.getTime() &&
+    left.target.id === right.target.id &&
+    left.target.type === right.target.type &&
+    left.mcp?.approvalId === right.mcp?.approvalId &&
+    left.mcp?.executionId === right.mcp?.executionId &&
+    left.mcp?.inputDigest === right.mcp?.inputDigest &&
+    left.mcp?.oauthClientId === right.mcp?.oauthClientId
+  )
 }

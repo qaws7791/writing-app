@@ -29,6 +29,12 @@ import {
   operationsAuthenticatedResponses,
   operationsErrorResponse,
 } from "#operations/interface/http/operations-http-support"
+import {
+  toAdminAiFeedbackQualityDto,
+  toAdminAnalyticsDto,
+  toAdminDashboardDto,
+  toAdminLessonAnalyticsPageDto,
+} from "#operations/interface/http/operations-http-presenter"
 
 type OperationsReportingRouteDependencies = Readonly<{
   now: () => Date
@@ -73,10 +79,7 @@ function registerAiFeedbackQualityRoute<TEnv extends OperationsHonoEnv>(
       to: new Date(query.to),
     })
     if (result.isErr()) throw mapOperationsError(result.error)
-    return context.json(
-      aiFeedbackQualitySnapshotSchema.parse(result.value),
-      200
-    )
+    return context.json(toAdminAiFeedbackQualityDto(result.value), 200)
   })
 }
 
@@ -100,7 +103,7 @@ function registerDashboardRoute<TEnv extends OperationsHonoEnv>(
   app.openapi(route, async (context) => {
     const result = await input.queries.readDashboard({ now: input.now() })
     if (result.isErr()) throw mapOperationsError(result.error)
-    return context.json(adminDashboardDtoSchema.parse(result.value), 200)
+    return context.json(toAdminDashboardDto(result.value), 200)
   })
 }
 
@@ -129,7 +132,7 @@ function registerAnalyticsRoute<TEnv extends OperationsHonoEnv>(
       now: input.now(),
     })
     if (result.isErr()) throw mapOperationsError(result.error)
-    return context.json(adminAnalyticsDtoSchema.parse(result.value), 200)
+    return context.json(toAdminAnalyticsDto(result.value), 200)
   })
 }
 
@@ -159,17 +162,6 @@ function registerLessonAnalyticsRoute<TEnv extends OperationsHonoEnv>(
       context.req.valid("query")
     )
     if (result.isErr()) throw mapOperationsError(result.error)
-    return context.json(
-      adminLessonAnalyticsPageDtoSchema.parse({
-        items: result.value.items,
-        pagination: {
-          page: result.value.page,
-          pageSize: result.value.pageSize,
-          totalItems: result.value.totalItems,
-          totalPages: result.value.totalPages,
-        },
-      }),
-      200
-    )
+    return context.json(toAdminLessonAnalyticsPageDto(result.value), 200)
   })
 }

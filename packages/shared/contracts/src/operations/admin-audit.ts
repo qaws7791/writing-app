@@ -16,6 +16,8 @@ export const adminAuditActionSchema = z.enum([
   "learner.status.suspend",
   "learner.status.activate",
   "learner.delete",
+  "course.create",
+  "course.draft.save",
   "course.publish",
   "course.archive",
   "course.restore",
@@ -35,6 +37,15 @@ export const adminAuditEventDtoSchema = z
     clientIp: z.string().nullable(),
     createdAt: z.iso.datetime(),
     id: z.string().min(1),
+    mcp: z
+      .object({
+        approvalId: z.string().min(1).nullable(),
+        executionId: z.string().min(1),
+        inputDigest: z.string().regex(/^[a-f0-9]{64}$/u),
+        oauthClientId: z.string().min(1).max(200),
+      })
+      .strict()
+      .nullable(),
     outcome: adminAuditOutcomeSchema,
     requestId: z.string().min(1),
     retentionUntil: z.iso.datetime(),
@@ -66,6 +77,26 @@ export const adminAuditEventsDtoSchema = z
   })
   .strict()
 
+export const adminMcpAuditEventDtoSchema = adminAuditEventDtoSchema.omit({
+  clientIp: true,
+})
+
+export const adminMcpAuditEventsDtoSchema = z
+  .object({
+    items: z.array(adminMcpAuditEventDtoSchema),
+    pagination: z.strictObject({
+      page: positiveIntegerSchema,
+      pageSize: positiveIntegerSchema,
+      totalItems: nonNegativeIntegerSchema,
+      totalPages: positiveIntegerSchema,
+    }),
+  })
+  .strict()
+
 export type AdminAuditCategory = z.infer<typeof adminAuditCategorySchema>
 export type AdminAuditEventDto = z.infer<typeof adminAuditEventDtoSchema>
 export type AdminAuditEventsDto = z.infer<typeof adminAuditEventsDtoSchema>
+export type AdminMcpAuditEventDto = z.infer<typeof adminMcpAuditEventDtoSchema>
+export type AdminMcpAuditEventsDto = z.infer<
+  typeof adminMcpAuditEventsDtoSchema
+>

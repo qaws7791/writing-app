@@ -2,6 +2,8 @@ import type { AdminAuditEvent } from "@/entities/admin-audit/model/admin-audit"
 
 const actionLabels = {
   "course.archive": "코스 보관",
+  "course.create": "코스 생성",
+  "course.draft.save": "코스 초안 저장",
   "course.publish": "커리큘럼 발행",
   "course.restore": "코스 보관 해제",
   "learner.delete": "학습자 삭제 처리",

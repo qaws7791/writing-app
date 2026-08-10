@@ -66,6 +66,26 @@
 
 콘텐츠 asset 업로드는 multipart 경계에서 필수 필드와 파일 크기를 먼저 검증하고 application 경계에서 signature, decode, MIME 일치를 다시 검증한다. 처리한 object를 S3 호환 storage에 저장한 뒤에만 `active` row를 등록하며, 등록 실패에는 object 보상 삭제를 시도한다. 따라서 storage·처리 실패가 `active` row를 남겨서는 안 된다.
 
+## 관리자 MCP 계약
+
+- 관리자 MCP는 OpenAPI 계약과 분리된 Streamable HTTP 도구 경계다.
+- MCP 입력과 출력은 기존 `@workspace/contracts` Zod schema를 재사용한다.
+- 성공 결과는 검증된 `structuredContent`와 짧은 text 요약을 함께 반환한다.
+- 예상된 실패는 안정된 code와 request ID를 포함한 `isError` 결과로 반환한다.
+- 내부 stack, persistence 세부 정보와 provider 원문은 MCP 결과에 포함하지 않는다.
+- 코스 편집 문서는 직렬화 크기 상한을 넘으면 안정된 초과 오류를 반환한다.
+- 현대 protocol의 2단계 변경 호출은 별도 owner 승인 없이 실행한다.
+- 2단계 변경 호출은 owner 관리자 ID, OAuth client ID, Tool, 멱등 키와 입력 digest에 묶인 실행 식별자를 사용한다.
+- 2단계 콘텐츠 변경과 실행 영수증은 같은 transaction에서 확정한다.
+- 같은 2단계 binding의 재시도는 저장된 결과를 반환한다. 다른 입력에 같은 멱등 키를 사용하면 충돌로 거부한다.
+- 코스 초안 저장 문서는 직렬화 크기 상한과 편집 버전을 검증한다.
+- 코스 초안 저장은 이미지 참조의 추가, 교체, 이동과 제거를 거부한다.
+- 현대 protocol의 3단계 변경 호출은 영속 승인이 없으면 URL elicitation과 서명된 `requestState`를 가진 `input_required` 결과를 반환한다.
+- 3단계 변경 호출은 승인 binding, 대상 상태와 편집 버전을 실행 직전에 다시 검증한다.
+- 같은 3단계 승인 binding의 재시도는 저장된 결과를 반환한다. 다른 binding의 재시도는 충돌로 거부한다.
+- owner 승인 조회·승인·거절 HTTP 계약은 operations interface와 공유 contract가 소유한다.
+- 현재 tool allowlist와 크기 상한은 [관리자 MCP tool 등록](../../apps/api/src/mcp/admin/admin-mcp-tools.ts)이 소유한다.
+
 ## 계약 변경 절차
 
 1. 제품 요구와 호환성 영향을 먼저 확인한다.

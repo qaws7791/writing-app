@@ -12,6 +12,7 @@ export type AuditEventOperation =
   | "count-events"
   | "count-expired"
   | "insert"
+  | "insert-or-read"
   | "list-events"
   | "purge-expired"
 
@@ -50,6 +51,9 @@ export type AuditEventRepository = Readonly<{
   insert: (
     event: AuditEvent
   ) => Promise<Result<void, AuditEventRepositoryError>>
+  insertOrRead: (
+    event: AuditEvent
+  ) => Promise<Result<AuditEvent, AuditEventRepositoryError>>
   listEvents: (
     input: AuditEventFilter &
       Readonly<{

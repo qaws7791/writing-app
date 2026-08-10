@@ -10,9 +10,15 @@ import {
   type AiFeedbackDailyQuotaPolicy,
 } from "@workspace/ai-feedback/ports"
 
+import {
+  parseAdminMcpConfiguration,
+  type AdminMcpConfiguration,
+} from "@/mcp/admin/admin-mcp-configuration"
+
 export type ApiEnv = {
   readonly adminAssetStore: AdminAssetStoreEnv | undefined
   readonly adminAuthSecret: string
+  readonly adminMcp: AdminMcpConfiguration | undefined
   readonly adminOrigin: string
   readonly authEmail: AuthEmailEnv
   readonly aiFeedback: AiFeedbackEnv
@@ -111,9 +117,26 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
   })
   validateProviderConfiguration(env)
 
+  const deploymentEnvironment = parseDeploymentEnvironment(
+    env.NODE_ENV,
+    input["DEPLOYMENT_ENVIRONMENT"]
+  )
+  const adminMcp = parseAdminMcpConfiguration(
+    input,
+    deploymentEnvironment,
+    env.ADMIN_ORIGIN
+  )
+  validateAdminMcpRequestStateSecret({
+    adminAuthSecret: env.ADMIN_AUTH_SECRET,
+    adminMcp,
+    cursorSigningSecret,
+    learnerAuthSecret: env.LEARNER_AUTH_SECRET,
+  })
+
   return {
     adminAssetStore,
     adminAuthSecret: env.ADMIN_AUTH_SECRET,
+    adminMcp,
     adminOrigin: env.ADMIN_ORIGIN,
     authEmail: parseAuthEmailEnv(input, env.NODE_ENV),
     aiFeedback: parseAiFeedbackEnv(input),
@@ -123,10 +146,7 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
       input["LEARNER_DELETION_RETENTION_DAYS"]
     ),
     deletionMarkerStore,
-    deploymentEnvironment: parseDeploymentEnvironment(
-      env.NODE_ENV,
-      input["DEPLOYMENT_ENVIRONMENT"]
-    ),
+    deploymentEnvironment,
     deploymentVersion: parseDeploymentVersion(
       env.NODE_ENV,
       input["DEPLOYMENT_VERSION"]
@@ -145,6 +165,25 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     openAiModel: env.OPENAI_MODEL,
     port: env.API_PORT,
     webOrigin: env.WEB_ORIGIN,
+  }
+}
+
+function validateAdminMcpRequestStateSecret(input: {
+  readonly adminAuthSecret: string
+  readonly adminMcp: AdminMcpConfiguration | undefined
+  readonly cursorSigningSecret: string
+  readonly learnerAuthSecret: string
+}): void {
+  const requestStateSecret = input.adminMcp?.changes?.requestStateSecret
+  if (requestStateSecret === undefined) return
+  if (
+    requestStateSecret === input.adminAuthSecret ||
+    requestStateSecret === input.cursorSigningSecret ||
+    requestStateSecret === input.learnerAuthSecret
+  ) {
+    throw new Error(
+      "Invalid environment variables: ADMIN_MCP_REQUEST_STATE_SECRET: 다른 인증 및 서명 secret과 구분된 값을 사용해야 합니다."
+    )
   }
 }
 

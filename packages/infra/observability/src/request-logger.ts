@@ -7,12 +7,13 @@ import {
 } from "#observability/events"
 import { redactUrlQuery } from "#observability/redaction"
 
-export type RequestAudience = "admin" | "learner"
+export type RequestAudience = "admin" | "admin-mcp" | "learner"
 
 export type RequestLogEvent = RequestCompletedEvent & {
   readonly actorId?: string
   readonly actorType?: "admin" | "learner"
   readonly externalRequestId?: string
+  readonly oauthClientId?: string
 }
 
 export type RequestLogger = (event: RequestLogEvent) => void
@@ -42,6 +43,9 @@ function createRequestLogRecord(event: RequestLogEvent): RequestLogRecord {
       ? {}
       : { externalRequestId: event.externalRequestId }),
     method: event.method,
+    ...(event.oauthClientId === undefined
+      ? {}
+      : { oauthClientId: event.oauthClientId }),
     outcome: event.outcome,
     path: redactUrlQuery(event.path),
     requestId: event.requestId,

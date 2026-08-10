@@ -23,6 +23,113 @@ import {
   contentStatusValues,
   courseVisualKeyValues,
 } from "#content/domain/content-model"
+import {
+  adminMcpAutomaticContentChangeResultKindValues,
+  adminMcpAutomaticContentToolNameValues,
+  adminMcpContentChangeResultKindValues,
+} from "#content/domain/admin-mcp-content-change"
+
+export const contentMcpChangeReceipts = sqliteTable(
+  "content_mcp_change_receipts",
+  {
+    actorId: text("actor_id").notNull(),
+    approvalId: text("approval_id").primaryKey().notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    executionId: text("execution_id").notNull(),
+    inputDigest: text("input_digest").notNull(),
+    oauthClientId: text("oauth_client_id").notNull(),
+    resultKind: text("result_kind", {
+      enum: adminMcpContentChangeResultKindValues,
+    }).notNull(),
+    resultCurriculumVersionId: text("result_curriculum_version_id"),
+    resultPublishedAt: integer("result_published_at", {
+      mode: "timestamp_ms",
+    }),
+    resultRevision: integer("result_revision"),
+    targetCourseId: text("target_course_id").notNull(),
+    toolName: text("tool_name", {
+      enum: [
+        "admin_create_course_draft",
+        "admin_archive_course",
+        "admin_restore_course",
+        "admin_publish_course",
+      ],
+    }).notNull(),
+  },
+  (table) => [
+    check(
+      "content_mcp_change_receipts_result_check",
+      sql`((${table.toolName} = 'admin_create_course_draft' AND ${table.resultKind} = 'course-created') OR (${table.toolName} = 'admin_archive_course' AND ${table.resultKind} = 'course-archived') OR (${table.toolName} = 'admin_restore_course' AND ${table.resultKind} = 'course-restored')) AND ${table.resultCurriculumVersionId} IS NULL AND ${table.resultPublishedAt} IS NULL AND ${table.resultRevision} IS NULL OR (${table.toolName} = 'admin_publish_course' AND ${table.resultKind} = 'course-published' AND ${table.resultCurriculumVersionId} IS NOT NULL AND ${table.resultPublishedAt} IS NOT NULL AND ${table.resultRevision} > 0)`
+    ),
+    check(
+      "content_mcp_change_receipts_identifier_check",
+      sql`length(${table.approvalId}) BETWEEN 1 AND 200 AND ${table.approvalId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND length(${table.executionId}) BETWEEN 1 AND 200 AND ${table.executionId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND length(${table.actorId}) BETWEEN 1 AND 200 AND ${table.actorId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND length(${table.targetCourseId}) BETWEEN 1 AND 200 AND ${table.targetCourseId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND (${table.resultCurriculumVersionId} IS NULL OR (length(${table.resultCurriculumVersionId}) BETWEEN 1 AND 200 AND ${table.resultCurriculumVersionId} NOT GLOB '*[^A-Za-z0-9._:-]*'))`
+    ),
+    check(
+      "content_mcp_change_receipts_digest_check",
+      sql`length(${table.inputDigest}) = 64 AND ${table.inputDigest} NOT GLOB '*[^a-f0-9]*'`
+    ),
+    check(
+      "content_mcp_change_receipts_client_check",
+      sql`length(${table.oauthClientId}) BETWEEN 1 AND 200`
+    ),
+    index("content_mcp_change_receipts_course_idx").on(
+      table.targetCourseId,
+      table.createdAt
+    ),
+  ]
+)
+
+export const contentMcpAutomaticChangeReceipts = sqliteTable(
+  "content_mcp_automatic_change_receipts",
+  {
+    actorId: text("actor_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    executionId: text("execution_id").primaryKey().notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    inputDigest: text("input_digest").notNull(),
+    oauthClientId: text("oauth_client_id").notNull(),
+    resultKind: text("result_kind", {
+      enum: adminMcpAutomaticContentChangeResultKindValues,
+    }).notNull(),
+    targetCourseId: text("target_course_id").notNull(),
+    toolName: text("tool_name", {
+      enum: adminMcpAutomaticContentToolNameValues,
+    }).notNull(),
+  },
+  (table) => [
+    check(
+      "content_mcp_automatic_change_receipts_result_check",
+      sql`(${table.toolName} = 'admin_create_course_draft' AND ${table.resultKind} = 'course-created') OR (${table.toolName} = 'admin_save_course_draft' AND ${table.resultKind} = 'course-draft-saved') OR (${table.toolName} = 'admin_restore_course' AND ${table.resultKind} = 'course-restored')`
+    ),
+    check(
+      "content_mcp_automatic_change_receipts_identifier_check",
+      sql`length(${table.executionId}) BETWEEN 1 AND 200 AND ${table.executionId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND length(${table.actorId}) BETWEEN 1 AND 200 AND ${table.actorId} NOT GLOB '*[^A-Za-z0-9._:-]*' AND length(${table.targetCourseId}) BETWEEN 1 AND 200 AND ${table.targetCourseId} NOT GLOB '*[^A-Za-z0-9._:-]*'`
+    ),
+    check(
+      "content_mcp_automatic_change_receipts_idempotency_check",
+      sql`length(${table.idempotencyKey}) BETWEEN 16 AND 128 AND ${table.idempotencyKey} NOT GLOB '*[^A-Za-z0-9._:-]*'`
+    ),
+    check(
+      "content_mcp_automatic_change_receipts_digest_check",
+      sql`length(${table.inputDigest}) = 64 AND ${table.inputDigest} NOT GLOB '*[^a-f0-9]*'`
+    ),
+    check(
+      "content_mcp_automatic_change_receipts_client_check",
+      sql`length(${table.oauthClientId}) BETWEEN 1 AND 200`
+    ),
+    uniqueIndex("content_mcp_automatic_change_receipts_idempotency_idx").on(
+      table.actorId,
+      table.oauthClientId,
+      table.toolName,
+      table.idempotencyKey
+    ),
+    index("content_mcp_automatic_change_receipts_course_idx").on(
+      table.targetCourseId,
+      table.createdAt
+    ),
+  ]
+)
 
 export const curriculumVersionStatusValues = ["draft", "published"] as const
 

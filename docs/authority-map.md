@@ -34,6 +34,7 @@
 | dependency graph 허용 정책·위반 판정      | `dependency-cruiser.config.mjs`, architecture 검사                                                                | 정책과 예외 기준               |
 | 로컬 URL·port·환경 변수 기본값            | 환경 parser, `.env.example`, `packages/config/env/src/local-runtime-defaults.ts`                                  | 설정 분류와 변경 원칙          |
 | API path·method·wire schema               | module HTTP interface의 직접 Hono 등록, `apps/api` composition root, runtime OpenAPI, `packages/shared/contracts` | 호환성·오류·인증 정책          |
+| 관리자 MCP path·tool·wire schema          | `apps/api/src/mcp/admin`, API composition root, `packages/shared/contracts`                                       | 기능 범위·인증·외부 처리 정책  |
 | 인증·권한의 현재 middleware 배치          | module HTTP interface와 API composition의 인증·인가 경계                                                          | 권한 정책과 보안 원칙          |
 | 데이터 schema·migration                   | module schema·migration, `packages/infra/auth`, `apps/api/src/db`, `apps/api/drizzle`                             | 데이터 불변식과 migration 절차 |
 | production service·image·network topology | `deploy/compose/compose.yaml`, Caddy 설정, release workflow                                                       | 배포 승인·복구·안전 절차       |
@@ -53,7 +54,7 @@
 
 1. workspace, package, script, tool 버전, 선언 dependency와 공개·private subpath는 루트와 각 workspace의 `package.json`을 확인한다. 실제 import edge는 production·test source를 확인하고 dependency-cruiser로 전체 graph를 탐색하며, 자동 차단 범위는 dependency-cruiser 설정과 architecture 검사를 확인한다.
 2. 로컬 runtime 기본값과 환경 변수는 `packages/config/env`, 각 앱의 parser와 `.env.example`을 확인한다.
-3. API path·method·schema는 module HTTP interface의 `register*Routes`, `apps/api` composition root, `packages/shared/contracts`, 실행 중인 OpenAPI를 확인한다.
+3. HTTP API path·method·schema는 module HTTP interface의 `register*Routes`, `apps/api` composition root, `packages/shared/contracts`, 실행 중인 OpenAPI를 확인한다. 관리자 MCP path·tool·schema는 `apps/api/src/mcp/admin`과 `packages/shared/contracts`를 확인한다.
 4. 배포 service, image, port, network와 proxy는 `deploy/compose/`, Caddy 설정과 release workflow를 확인한다.
 5. credential·session schema는 `packages/infra/auth`, 제품 schema는 각 module, SQLite primitive는 `packages/infra/db`, 통합 schema·migration·seed 실행 지점은 `apps/api/src/db`와 `apps/api/drizzle`을 확인한다. 테스트 실행 대상은 root task와 workspace test 설정을 확인한다.
 

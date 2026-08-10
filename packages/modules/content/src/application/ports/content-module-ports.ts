@@ -6,4 +6,5 @@ export type {
   ContentAssetStoragePort,
 } from "#content/application/ports/content-ports"
 export { contentAssetOrphanRetentionMs } from "#content/domain/content-asset"
+export type { AdminMcpContentChangeReceipt } from "#content/domain/admin-mcp-content-change"
 export { normalizeVersionedStepContentOrThrow } from "#content/domain/content-normalization"

@@ -30,6 +30,9 @@
 - 일일 정리는 `orphaned_at`이 7일 경계에 도달한 draft asset만 bounded batch로 조회한다. 이 경계에 도달한 asset은 다시 draft에 연결할 수 없어 cleanup 조회와 저장의 경쟁이 active object 삭제로 이어지지 않는다. dry-run은 object와 row를 바꾸지 않는다. actual은 storage object를 먼저 멱등 삭제하고 같은 cutoff·상태 조건으로 metadata를 삭제한다. storage 실패에는 row를 orphan 상태로 보존해 재시도하고, storage 성공 뒤 DB 실패에는 다음 실행이 이미 없는 object 삭제를 반복한 후 row 정리를 재시도한다. 두 저장소가 transaction을 공유하지 않는 한 가능한 짧은 불일치이며 active·published asset은 대상이 아니다.
 - 발행 transaction은 기존 draft를 published로 전환하고 다음 draft를 만든 뒤 course의 최신 published reference를 함께 갱신한다.
 - 보관은 course 상태만 바꾸어 신규 학습 조회에서 숨기고 기존 published revision과 학습자의 version 고정을 물리적으로 삭제하지 않는다. 기본 seed는 기존 course aggregate 전체를 보존하고 누락된 seed aggregate만 삽입한다.
+- 자동 MCP 콘텐츠 변경은 실행 ID, owner 관리자 ID, OAuth client ID, 도구, 멱등 키와 입력 digest에 묶인 영수증을 콘텐츠 변경과 같은 transaction에 저장한다.
+- 승인된 MCP 콘텐츠 변경은 승인 ID와 실행 ID에 묶인 영수증을 콘텐츠 변경과 같은 transaction에 저장한다.
+- 같은 binding의 재시도는 저장된 영수증을 재생한다. 다른 binding은 충돌로 거부한다.
 - 현재 Drizzle schema와 trigger 정의는 content module이 소유한다. API의 현재 baseline과 이후 append-only migration은 이 최종 구조를 SQLite에 적용한다.
 
 ## AI feedback 데이터 경계
@@ -57,10 +60,19 @@
 - 쓰기 event는 글 생성, 자기 점검 시작, 자기 점검 뒤 본문 수정, 자기 점검 완료와 글 삭제만 저장한다. event는 제목과 본문을 저장하지 않는다.
 - 학습자 삭제 정리는 글과 쓰기 event를 auth 사용자 삭제보다 먼저 같은 transaction에서 제거한다.
 
+## 관리자 MCP 승인 데이터 경계
+
+- operations module은 owner 승인 요청과 `pending | approved | rejected | expired | executing | succeeded | failed` 상태 전이를 소유한다.
+- 승인 요청은 owner 관리자 ID, OAuth client ID, 도구, idempotency key, 입력 digest와 request ID를 저장한다.
+- 코스 승인 대상은 코스 ID, 제목, 상태와 편집 버전만 저장한다.
+- 사용자 승인 대상은 opaque 사용자 ID, 현재 상태와 목표 상태만 저장한다.
+- 승인 요청은 임의 JSON payload, access token, 이메일과 이름을 저장하지 않는다.
+- 승인, 실행 선점과 종결은 허용된 이전 상태를 조건으로 갱신한다. 실행 lease 안의 중복 요청은 콘텐츠 application을 호출하지 않는다.
+
 ## Audit 데이터 경계
 
 - operations module은 관리자 개인정보 조회와 고위험 변경의 `audit_events` schema·repository를 소유한다. 일반 request log나 인증·인가 실패 security log를 이 table에 복제하지 않는다.
-- audit row는 허용된 category·action, owner actor ID, learner 또는 course target ID, outcome, request ID, 신뢰 경계가 확인한 client IP, 생성·보존 시각만 저장한다. 임의 JSON payload와 이메일·이름·답안·prompt column은 두지 않는다.
+- audit row는 허용된 category·action, owner actor ID, learner 또는 course target ID, outcome, request ID, 신뢰 경계가 확인한 client IP, 생성·보존 시각을 저장한다. MCP 변경은 실행 ID, nullable 승인 ID, 입력 digest와 검증된 OAuth client ID도 저장한다. 임의 JSON payload와 이메일·이름·답안·prompt column은 두지 않는다.
 - 사용자 상세 조회와 콘텐츠 발행·보관은 1년, 사용자 정지·활성화·삭제는 3년을 보존한다. 보존 기한과 action·category·target 조합은 application과 database check가 함께 고정한다.
 - 감사 대상 요청은 mutation 또는 개인정보 조회 전에 `started` row를 먼저 저장한다. 사전 저장 실패에는 작업을 실행하지 않고, 작업 결과를 `succeeded | failed`로 종결하지 못하면 성공 응답을 반환하지 않으며 `started` 흔적을 조사 대상으로 보존한다.
 - 관리자 credential과 audit row 사이에는 FK를 두지 않는다. 계정 lifecycle과 무관하게 actor ID를 보존하며, 최근 조회와 `retention_until` batch purge는 서로 다른 index를 사용한다.

@@ -1,5 +1,15 @@
 import { eq } from "drizzle-orm"
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import {
+  contentAssetIdSchema,
+  courseIdSchema,
+  lessonIdSchema,
+  lessonStepIdSchema,
+  unitIdSchema,
+} from "@workspace/contracts/content/ids"
+import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
+import { adminMcpApprovalIdSchema } from "@workspace/contracts/operations/admin-mcp-approvals"
+import { adminMcpExecutionIdSchema } from "@workspace/contracts/operations/admin-mcp-executions"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
@@ -289,3 +299,381 @@ function unwrap<T, E>(result: Result<T, E>): T {
     }
   )
 }
+describe("MCP content changes", () => {
+  const adminId = adminIdSchema.parse("admin-owner")
+  const courseId = courseIdSchema.parse("mcp-course-1")
+  const createApprovalId = adminMcpApprovalIdSchema.parse(
+    "admin-mcp-approval-create-1"
+  )
+  const archiveApprovalId = adminMcpApprovalIdSchema.parse(
+    "admin-mcp-approval-archive-1"
+  )
+  const createExecutionId = adminMcpExecutionIdSchema.parse(createApprovalId)
+  const archiveExecutionId = adminMcpExecutionIdSchema.parse(archiveApprovalId)
+  const automaticCreateExecutionId = adminMcpExecutionIdSchema.parse(
+    "admin-mcp-execution-create-1"
+  )
+  const automaticSaveExecutionId = adminMcpExecutionIdSchema.parse(
+    "admin-mcp-execution-save-1"
+  )
+  const automaticRestoreExecutionId = adminMcpExecutionIdSchema.parse(
+    "admin-mcp-execution-restore-1"
+  )
+  const contentAssetId = contentAssetIdSchema.parse("content-asset-1")
+  const unitId = unitIdSchema.parse("unit-1")
+  const lessonId = lessonIdSchema.parse("lesson-1")
+  const firstStepId = lessonStepIdSchema.parse("step-1")
+  const secondStepId = lessonStepIdSchema.parse("step-2")
+  const createDigest = "a".repeat(64)
+  const archiveDigest = "b".repeat(64)
+
+  let client: ReturnType<typeof createInMemoryWritingAppDatabase>
+
+  beforeEach(() => {
+    client = createInMemoryWritingAppDatabase()
+    runCurrentTestMigration(client.sqlite)
+  })
+
+  afterEach(() => client.close())
+
+  describe("approved MCP content changes", () => {
+    it("persists the mutation and receipt atomically and replays one approval", async () => {
+      const repository = createDrizzleContentRepository(client.db)
+      const created = await repository.executeApprovedMcpChange({
+        adminId,
+        approvalId: createApprovalId,
+        courseId,
+        executionId: createExecutionId,
+        inputDigest: createDigest,
+        kind: "create-course",
+        now: new Date("2026-08-10T00:00:00.000Z"),
+        oauthClientId: "approved-agent-client",
+        toolName: "admin_create_course_draft",
+      })
+
+      expect(created.isOk()).toBe(true)
+      if (created.isErr()) return
+      expect(created.value.replayed).toBe(false)
+      expect((await repository.findCourse(courseId))?.status).toBe("active")
+
+      const replayed = await repository.executeApprovedMcpChange({
+        adminId,
+        approvalId: createApprovalId,
+        courseId,
+        executionId: createExecutionId,
+        inputDigest: createDigest,
+        kind: "create-course",
+        now: new Date("2026-08-10T00:00:01.000Z"),
+        oauthClientId: "approved-agent-client",
+        toolName: "admin_create_course_draft",
+      })
+
+      expect(replayed.isOk()).toBe(true)
+      if (replayed.isErr()) return
+      expect(replayed.value.replayed).toBe(true)
+      expect(replayed.value.receipt.createdAt.toISOString()).toBe(
+        "2026-08-10T00:00:00.000Z"
+      )
+    })
+
+    it("does not write a receipt when the approved edit version is stale", async () => {
+      const repository = createDrizzleContentRepository(client.db)
+      const created = await repository.executeApprovedMcpChange({
+        adminId,
+        approvalId: createApprovalId,
+        courseId,
+        executionId: createExecutionId,
+        inputDigest: createDigest,
+        kind: "create-course",
+        now: new Date("2026-08-10T00:00:00.000Z"),
+        oauthClientId: "approved-agent-client",
+        toolName: "admin_create_course_draft",
+      })
+      expect(created.isOk()).toBe(true)
+
+      const archived = await repository.executeApprovedMcpChange({
+        adminId,
+        approvalId: archiveApprovalId,
+        courseId,
+        expectedEditVersion: 1,
+        expectedStatus: "active",
+        executionId: archiveExecutionId,
+        inputDigest: archiveDigest,
+        kind: "archive-course",
+        now: new Date("2026-08-10T00:01:00.000Z"),
+        oauthClientId: "approved-agent-client",
+        toolName: "admin_archive_course",
+      })
+
+      expect(archived.isErr()).toBe(true)
+      if (archived.isOk()) return
+      expect(archived.error.kind).toBe("content-conflict")
+      expect((await repository.findCourse(courseId))?.status).toBe("active")
+
+      const receipt = await repository.readApprovedMcpChangeReceipt({
+        adminId,
+        approvalId: archiveApprovalId,
+        executionId: archiveExecutionId,
+        inputDigest: archiveDigest,
+        oauthClientId: "approved-agent-client",
+        toolName: "admin_archive_course",
+      })
+      expect(receipt.isOk()).toBe(true)
+      if (receipt.isErr()) return
+      expect(receipt.value).toBeNull()
+    })
+  })
+
+  describe("automatic MCP content changes", () => {
+    it("creates one course for one idempotency binding", async () => {
+      const repository = createDrizzleContentRepository(client.db)
+      const command = {
+        adminId,
+        courseId,
+        executionId: automaticCreateExecutionId,
+        idempotencyKey: "automatic-create-course-1",
+        inputDigest: createDigest,
+        kind: "create-course" as const,
+        now: new Date("2026-08-10T00:00:00.000Z"),
+        oauthClientId: "automatic-agent-client",
+        toolName: "admin_create_course_draft" as const,
+      }
+
+      const created = await repository.executeAutomaticMcpChange(command)
+      const replayed = await repository.executeAutomaticMcpChange({
+        ...command,
+        now: new Date("2026-08-10T00:00:01.000Z"),
+      })
+      const conflicted = await repository.executeAutomaticMcpChange({
+        ...command,
+        inputDigest: archiveDigest,
+        now: new Date("2026-08-10T00:00:02.000Z"),
+      })
+
+      expect(created.isOk() && created.value.replayed).toBe(false)
+      expect(replayed.isOk() && replayed.value.replayed).toBe(true)
+      expect(conflicted.isErr() && conflicted.error.kind).toBe(
+        "content-idempotency-conflict"
+      )
+      expect((await repository.findCourse(courseId))?.status).toBe("active")
+    })
+
+    it("saves one draft and replays without incrementing the edit version", async () => {
+      const repository = createDrizzleContentRepository(client.db)
+      const created = await repository.createCourse({
+        courseId,
+        now: new Date("2026-08-10T00:00:00.000Z"),
+      })
+      expect(created.isOk()).toBe(true)
+      const draft = await repository.findDraft(courseId)
+      expect(draft.isOk() && draft.value !== null).toBe(true)
+      if (draft.isErr() || draft.value === null) return
+      const command = {
+        adminId,
+        draft: { ...draft.value, title: "자동 저장 강의" },
+        executionId: automaticSaveExecutionId,
+        expectedEditVersion: 0,
+        idempotencyKey: "automatic-save-course-1",
+        inputDigest: archiveDigest,
+        kind: "save-course-draft" as const,
+        now: new Date("2026-08-10T00:01:00.000Z"),
+        oauthClientId: "automatic-agent-client",
+        toolName: "admin_save_course_draft" as const,
+      }
+
+      const saved = await repository.executeAutomaticMcpChange(command)
+      const replayed = await repository.executeAutomaticMcpChange({
+        ...command,
+        now: new Date("2026-08-10T00:01:01.000Z"),
+      })
+      const editor = await repository.readCourseEditor(courseId)
+
+      expect(saved.isOk() && saved.value.replayed).toBe(false)
+      expect(replayed.isOk() && replayed.value.replayed).toBe(true)
+      expect(editor).toMatchObject({
+        editVersion: 1,
+        title: "자동 저장 강의",
+      })
+    })
+
+    it("rejects moving an existing image reference to another step", async () => {
+      const repository = createDrizzleContentRepository(client.db)
+      const created = await repository.createCourse({
+        courseId,
+        now: new Date("2026-08-10T00:00:00.000Z"),
+      })
+      expect(created.isOk()).toBe(true)
+      const draft = await repository.findDraft(courseId)
+      expect(draft.isOk() && draft.value !== null).toBe(true)
+      if (draft.isErr() || draft.value === null) return
+
+      const assetCreated = await repository.createAsset({
+        altText: "설명 이미지",
+        byteSize: 100,
+        contentType: "image/png",
+        courseId,
+        createdAt: new Date("2026-08-10T00:00:01.000Z"),
+        curriculumVersionId: draft.value.curriculumVersionId,
+        id: contentAssetId,
+        kind: "reading-illustration",
+        objectKey: "content-assets/reading-illustration/content-asset-1.png",
+        orphanedAt: null,
+        status: "active",
+        updatedAt: new Date("2026-08-10T00:00:01.000Z"),
+      })
+      expect(assetCreated.isOk()).toBe(true)
+
+      const initialDraft = {
+        ...draft.value,
+        units: [
+          {
+            id: unitId,
+            lessons: [
+              {
+                category: null,
+                description: null,
+                estimatedMinutes: 5,
+                id: lessonId,
+                sortOrder: 1,
+                status: "active" as const,
+                steps: [
+                  {
+                    contentJson: JSON.stringify({
+                      illustrationAssetId: contentAssetId,
+                      text: "첫 번째 글",
+                    }),
+                    id: firstStepId,
+                    sortOrder: 1,
+                    status: "active" as const,
+                    type: "READING" as const,
+                  },
+                  {
+                    contentJson: JSON.stringify({ text: "두 번째 글" }),
+                    id: secondStepId,
+                    sortOrder: 2,
+                    status: "active" as const,
+                    type: "READING" as const,
+                  },
+                ],
+                summary: [],
+                title: "레슨",
+              },
+            ],
+            sortOrder: 1,
+            status: "active" as const,
+            title: "유닛",
+          },
+        ],
+      }
+      const saved = await repository.saveDraft({
+        draft: initialDraft,
+        expectedEditVersion: 0,
+        now: new Date("2026-08-10T00:00:02.000Z"),
+      })
+      expect(saved.isOk()).toBe(true)
+      if (saved.isErr()) return
+
+      const [savedUnit] = saved.value.units
+      const [savedLesson] = savedUnit?.lessons ?? []
+      const [savedFirstStep, savedSecondStep] = savedLesson?.steps ?? []
+      expect(savedUnit).toBeDefined()
+      expect(savedLesson).toBeDefined()
+      expect(savedFirstStep).toBeDefined()
+      expect(savedSecondStep).toBeDefined()
+      if (
+        savedUnit === undefined ||
+        savedLesson === undefined ||
+        savedFirstStep === undefined ||
+        savedSecondStep === undefined
+      ) {
+        return
+      }
+      const movedDraft = {
+        ...saved.value,
+        units: [
+          {
+            ...savedUnit,
+            lessons: [
+              {
+                ...savedLesson,
+                steps: [
+                  {
+                    ...savedFirstStep,
+                    contentJson: JSON.stringify({ text: "첫 번째 글" }),
+                  },
+                  {
+                    ...savedSecondStep,
+                    contentJson: JSON.stringify({
+                      illustrationAssetId: contentAssetId,
+                      text: "두 번째 글",
+                    }),
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }
+      const moved = await repository.executeAutomaticMcpChange({
+        adminId,
+        draft: movedDraft,
+        executionId: automaticSaveExecutionId,
+        expectedEditVersion: 1,
+        idempotencyKey: "automatic-move-image-reference-1",
+        inputDigest: createDigest,
+        kind: "save-course-draft",
+        now: new Date("2026-08-10T00:00:03.000Z"),
+        oauthClientId: "automatic-agent-client",
+        toolName: "admin_save_course_draft",
+      })
+
+      expect(moved.isErr()).toBe(true)
+      if (moved.isOk()) return
+      expect(moved.error).toMatchObject({
+        kind: "content-validation-failed",
+        reason: "invalid-asset-reference",
+      })
+      expect((await repository.readCourseEditor(courseId))?.editVersion).toBe(1)
+    })
+
+    it("restores one archived course and replays the receipt", async () => {
+      const repository = createDrizzleContentRepository(client.db)
+      const created = await repository.createCourse({
+        courseId,
+        now: new Date("2026-08-10T00:00:00.000Z"),
+      })
+      expect(created.isOk()).toBe(true)
+      const activeCourse = await repository.findCourse(courseId)
+      expect(activeCourse).not.toBeNull()
+      if (activeCourse === null) return
+      const archived = await repository.saveCourse({
+        course: { ...activeCourse, status: "archived" },
+        expectedStatus: "active",
+      })
+      expect(archived.isOk()).toBe(true)
+      const command = {
+        adminId,
+        courseId,
+        executionId: automaticRestoreExecutionId,
+        expectedEditVersion: 0,
+        expectedStatus: "archived" as const,
+        idempotencyKey: "automatic-restore-course-1",
+        inputDigest: createDigest,
+        kind: "restore-course" as const,
+        now: new Date("2026-08-10T00:01:00.000Z"),
+        oauthClientId: "automatic-agent-client",
+        toolName: "admin_restore_course" as const,
+      }
+
+      const restored = await repository.executeAutomaticMcpChange(command)
+      const replayed = await repository.executeAutomaticMcpChange({
+        ...command,
+        now: new Date("2026-08-10T00:01:01.000Z"),
+      })
+
+      expect(restored.isOk() && restored.value.replayed).toBe(false)
+      expect(replayed.isOk() && replayed.value.replayed).toBe(true)
+      expect((await repository.findCourse(courseId))?.status).toBe("active")
+    })
+  })
+})

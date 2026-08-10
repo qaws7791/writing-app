@@ -34,6 +34,7 @@ export type ContentError =
   | Failure<"content-maintenance-invalid">
   | Failure<"content-conflict">
   | Failure<"content-immutable-revision">
+  | Failure<"content-idempotency-conflict">
   | Failure<"content-not-found">
   | Failure<
       "content-validation-failed",

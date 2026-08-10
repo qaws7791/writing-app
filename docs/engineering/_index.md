@@ -51,6 +51,9 @@
 | `adr/ADR-0027-*.md`                     | 학습자 데이터 삭제의 모듈 포트 소유.                     |
 | `adr/ADR-0028-*.md`                     | 어드민 학습자 미리보기의 렌더러 재사용 경계.             |
 | `adr/ADR-0029-*.md`                     | Astro UI 문서와 registry의 통합 결정.                    |
+| `adr/ADR-0030-*.md`                     | 조회 전용 관리자 MCP와 OAuth resource server 결정.       |
+| `adr/ADR-0031-*.md`                     | owner 승인 기반 관리자 MCP 콘텐츠 변경 결정.             |
+| `adr/ADR-0032-*.md`                     | 관리자 MCP 단계별 실행 정책과 전체 변경 범위 결정.       |
 
 ## 관리 기준
 

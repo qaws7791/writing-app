@@ -13,11 +13,14 @@
 
 ## 진행 중 작업
 
-| 작업                                 | 문서                                                                                                                                                                                          | 상태                                                      |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 2026-07-31 제품 경험 검토            | [`report.md`](./2026-07-31-product-experience-review/report.md)                                                                                                                               | 검토 완료, 방향과 선택지 승인 대기                        |
-| 2026-08-08 Luma UI 전환              | [`plan.md`](./2026-08-08-luma-ui-migration/plan.md), [`baseline.md`](./2026-08-08-luma-ui-migration/baseline.md), [`migration-ledger.md`](./2026-08-08-luma-ui-migration/migration-ledger.md) | 전체 upstream 이관과 UI 검증 완료, 기존 gate 장애 추적 중 |
-| 2026-08-09 온보딩·출시 생명주기 감사 | [`report.md`](./2026-08-09-onboarding-lifecycle-audit/report.md)                                                                                                                              | 로컬 개선과 사전 점검 완료, 외부 staging·관측성 입력 대기 |
+| 작업                                    | 문서                                                                                                                                                                                          | 상태                                                      |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 2026-07-31 제품 경험 검토               | [`report.md`](./2026-07-31-product-experience-review/report.md)                                                                                                                               | 검토 완료, 방향과 선택지 승인 대기                        |
+| 2026-08-08 Luma UI 전환                 | [`plan.md`](./2026-08-08-luma-ui-migration/plan.md), [`baseline.md`](./2026-08-08-luma-ui-migration/baseline.md), [`migration-ledger.md`](./2026-08-08-luma-ui-migration/migration-ledger.md) | 전체 upstream 이관과 UI 검증 완료, 기존 gate 장애 추적 중 |
+| 2026-08-09 온보딩·출시 생명주기 감사    | [`report.md`](./2026-08-09-onboarding-lifecycle-audit/report.md)                                                                                                                              | 로컬 개선과 사전 점검 완료, 외부 staging·관측성 입력 대기 |
+| 2026-08-10 관리자 MCP 조회 도구         | [`plan.md`](./2026-08-10-admin-mcp-read-tools/plan.md), [`report.md`](./2026-08-10-admin-mcp-read-tools/report.md)                                                                            | 로컬 구현·검증 완료, 승인된 staging smoke 대기            |
+| 2026-08-10 관리자 MCP 콘텐츠 변경       | [`plan.md`](./2026-08-10-admin-mcp-approved-content-changes/plan.md), [`report.md`](./2026-08-10-admin-mcp-approved-content-changes/report.md)                                                | 2A 로컬 구현·검증 완료, 외부 staging 결정 대기            |
+| 2026-08-10 관리자 MCP 1~3단계 전체 Tool | [`plan.md`](./2026-08-10-admin-mcp-full-admin-tools/plan.md)                                                                                                                                  | 로컬 구현 완료, 저장소 기준선 gate 장애 확인              |
 
 ## 사용 기준
 

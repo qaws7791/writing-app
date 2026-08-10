@@ -20,3 +20,8 @@ export function registerContentRoutes<TEnv extends ContentAdminHonoEnv>(
 }
 
 export type { ContentAdminHonoEnv } from "#content/interface/http/content-http-auth"
+export {
+  toAdminCourseEditorDocument,
+  toAdminCourseList,
+  toCourseEditorDocument,
+} from "#content/interface/http/content-http-mapper"

@@ -23,6 +23,23 @@ import type {
   PublishedCurriculumRevision,
   PublishedLessonReference,
 } from "#content/domain/content-model"
+import type {
+  AdminMcpContentChangeBinding,
+  AdminMcpContentChangeCommand,
+  AdminMcpContentChangeExecution,
+  AdminMcpContentChangeReceipt,
+  AdminMcpAutomaticContentChangeBinding,
+  AdminMcpAutomaticContentChangeCommand,
+  AdminMcpAutomaticContentChangeExecution,
+  AdminMcpAutomaticContentChangeReceipt,
+} from "#content/domain/admin-mcp-content-change"
+
+export type CourseChangeTarget = Readonly<{
+  courseId: CourseId
+  editVersion: number
+  status: Course["status"]
+  title: string
+}>
 
 export type ResolvedContentAsset = Readonly<{
   altText: string
@@ -134,6 +151,12 @@ export type ContentRepository = Readonly<{
     readonly courseId: CourseId
     readonly now: Date
   }) => Promise<Result<CourseEditorDocument, ContentError>>
+  executeApprovedMcpChange: (
+    input: AdminMcpContentChangeCommand & Readonly<{ now: Date }>
+  ) => Promise<Result<AdminMcpContentChangeExecution, ContentError>>
+  executeAutomaticMcpChange: (
+    input: AdminMcpAutomaticContentChangeCommand & Readonly<{ now: Date }>
+  ) => Promise<Result<AdminMcpAutomaticContentChangeExecution, ContentError>>
   findCourse: (courseId: CourseId) => Promise<Course | null>
   findDraft: (
     courseId: CourseId
@@ -164,11 +187,22 @@ export type ContentRepository = Readonly<{
     readonly publishedRevision: PublishedCurriculumRevision
   }) => Promise<Result<PublishedCurriculumRevision, ContentError>>
   readCourseEditor: (courseId: CourseId) => Promise<CourseEditorDocument | null>
+  readCourseChangeTarget: (
+    courseId: CourseId
+  ) => Promise<CourseChangeTarget | null>
   readCourses: (input: ReadContentCoursesInput) => Promise<ContentCourseRowPage>
   readCurriculum: (input: {
     readonly courseId: CourseId
     readonly curriculumVersionId?: CurriculumVersionId
   }) => Promise<PublishedCurriculumRevision | null>
+  readApprovedMcpChangeReceipt: (
+    binding: AdminMcpContentChangeBinding
+  ) => Promise<Result<AdminMcpContentChangeReceipt | null, ContentError>>
+  readAutomaticMcpChangeReceipt: (
+    binding: AdminMcpAutomaticContentChangeBinding
+  ) => Promise<
+    Result<AdminMcpAutomaticContentChangeReceipt | null, ContentError>
+  >
   findCurriculumByLesson: (input: {
     readonly curriculumVersionId?: CurriculumVersionId
     readonly lessonId: LessonId

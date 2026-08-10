@@ -1,6 +1,8 @@
 import type { Brand } from "#types/brand"
 
 export type AdminId = Brand<string, "AdminId">
+export type AdminMcpApprovalId = Brand<string, "AdminMcpApprovalId">
+export type AdminMcpExecutionId = Brand<string, "AdminMcpExecutionId">
 export type ContentAssetId = Brand<string, "ContentAssetId">
 export type CourseId = Brand<string, "CourseId">
 export type CurriculumVersionId = Brand<string, "CurriculumVersionId">

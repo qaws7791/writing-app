@@ -12,6 +12,9 @@ import {
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type {
+  AdminId,
+  AdminMcpApprovalId,
+  AdminMcpExecutionId,
   CourseId,
   ContentAssetId,
   CurriculumVersionId,
@@ -43,16 +46,29 @@ import {
   type PublishedCurriculumRevision,
   type PublishedLessonReference,
 } from "#content/domain/content-model"
+import {
+  hasAdminMcpAutomaticContentChangeBinding,
+  hasAdminMcpContentChangeBinding,
+  type AdminMcpAutomaticContentChangeBinding,
+  type AdminMcpAutomaticContentChangeCommand,
+  type AdminMcpAutomaticContentChangeReceipt,
+  type AdminMcpContentChangeBinding,
+  type AdminMcpContentChangeCommand,
+  type AdminMcpContentChangeReceipt,
+} from "#content/domain/admin-mcp-content-change"
 import { createCurriculumDraft } from "#content/domain/curriculum"
 import type {
   ContentCourseRowPage,
   ContentAssetOwner,
   ContentRepository,
+  CourseChangeTarget,
   CourseEditorDocument,
   ReadContentCoursesInput,
 } from "#content/application/ports/content-ports"
 import {
   contentAssets,
+  contentMcpAutomaticChangeReceipts,
+  contentMcpChangeReceipts,
   courseCurriculumVersions,
   courses,
   courseUnitVersions,
@@ -76,6 +92,12 @@ export function createDrizzleContentRepository(
     },
     async createCourse(input) {
       return createCourse(database, input)
+    },
+    async executeApprovedMcpChange(input) {
+      return executeApprovedMcpChange(database, input)
+    },
+    async executeAutomaticMcpChange(input) {
+      return executeAutomaticMcpChange(database, input)
     },
     async findCourse(courseId) {
       return findCourse(database, courseId)
@@ -117,11 +139,20 @@ export function createDrizzleContentRepository(
       }
       return draft.value === null ? null : toCourseEditorDocument(draft.value)
     },
+    async readCourseChangeTarget(courseId) {
+      return readCourseChangeTarget(database, courseId)
+    },
     async readCourses(input) {
       return readCourses(database, input)
     },
     async readCurriculum(input) {
       return readCurriculum(database, input)
+    },
+    async readApprovedMcpChangeReceipt(binding) {
+      return readApprovedMcpChangeReceipt(database, binding)
+    },
+    async readAutomaticMcpChangeReceipt(binding) {
+      return readAutomaticMcpChangeReceipt(database, binding)
     },
     async saveCourse(input) {
       return saveCourse(database, input)
@@ -321,48 +352,55 @@ function createCourse(
   database: WritingAppDatabase,
   input: { readonly courseId: CourseId; readonly now: Date }
 ): Result<CourseEditorDocument, ContentError> {
-  const curriculumVersionId = createCurriculumVersionId(input.courseId, 1)
-  const sortOrder = readNextCourseSortOrder(database)
-
   try {
-    database.transaction((transaction) => {
-      transaction
-        .insert(courses)
-        .values({
-          createdAt: input.now,
-          id: input.courseId,
-          publishedCurriculumVersionId: null,
-          sortOrder,
-          status: activeStatus,
-        })
-        .run()
-      transaction
-        .insert(courseCurriculumVersions)
-        .values({
-          category: "미분류",
-          courseId: input.courseId,
-          coverAssetId: null,
-          createdAt: input.now,
-          description: "강의 설명을 입력하세요.",
-          editVersion: 0,
-          id: curriculumVersionId,
-          publishedAt: null,
-          revision: 1,
-          status: "draft",
-          title: "새 강의",
-          updatedAt: input.now,
-          visualKey: "basic-sentence-writing",
-        })
-        .run()
-    })
+    return ok(
+      database.transaction((transaction) => insertCourse(transaction, input))
+    )
   } catch (cause) {
     if (isUniqueConstraintViolation(cause)) {
       return err({ cause, kind: "content-conflict" })
     }
     throw cause
   }
+}
 
-  return ok({
+function insertCourse(
+  transaction: WritingAppDatabaseTransaction,
+  input: { readonly courseId: CourseId; readonly now: Date }
+): CourseEditorDocument {
+  const curriculumVersionId = createCurriculumVersionId(input.courseId, 1)
+  const sortOrder = readNextCourseSortOrder(transaction)
+
+  transaction
+    .insert(courses)
+    .values({
+      createdAt: input.now,
+      id: input.courseId,
+      publishedCurriculumVersionId: null,
+      sortOrder,
+      status: activeStatus,
+    })
+    .run()
+  transaction
+    .insert(courseCurriculumVersions)
+    .values({
+      category: "미분류",
+      courseId: input.courseId,
+      coverAssetId: null,
+      createdAt: input.now,
+      description: "강의 설명을 입력하세요.",
+      editVersion: 0,
+      id: curriculumVersionId,
+      publishedAt: null,
+      revision: 1,
+      status: "draft",
+      title: "새 강의",
+      updatedAt: input.now,
+      visualKey: "basic-sentence-writing",
+    })
+    .run()
+
+  return {
     assets: [],
     category: "미분류",
     courseId: input.courseId,
@@ -373,7 +411,348 @@ function createCourse(
     revision: 1,
     title: "새 강의",
     units: [],
-  })
+  }
+}
+
+function executeApprovedMcpChange(
+  database: WritingAppDatabase,
+  input: AdminMcpContentChangeCommand & Readonly<{ now: Date }>
+) {
+  try {
+    return database.transaction((transaction) => {
+      const existing = readReceiptRow(transaction, input.approvalId)
+      if (existing !== null) {
+        return hasAdminMcpContentChangeBinding(existing, input)
+          ? ok({ receipt: existing, replayed: true })
+          : err({ kind: "content-idempotency-conflict" } as const)
+      }
+
+      const result = executeApprovedMcpMutation(transaction, input)
+      if (result === null) {
+        return err({ kind: "content-idempotency-conflict" } as const)
+      }
+
+      const receipt: AdminMcpContentChangeReceipt = {
+        adminId: input.adminId,
+        approvalId: input.approvalId,
+        courseId: input.courseId,
+        createdAt: new Date(input.now),
+        executionId: input.executionId,
+        inputDigest: input.inputDigest,
+        oauthClientId: input.oauthClientId,
+        ...result,
+        toolName: input.toolName,
+      }
+      transaction
+        .insert(contentMcpChangeReceipts)
+        .values(toReceiptRow(receipt))
+        .run()
+      return ok({ receipt, replayed: false })
+    })
+  } catch (cause) {
+    if (cause instanceof McpContentChangeError) {
+      return err(cause.contentError)
+    }
+    if (isUniqueConstraintViolation(cause)) {
+      const receipt = readReceiptRow(database, input.approvalId)
+      return receipt !== null && hasAdminMcpContentChangeBinding(receipt, input)
+        ? ok({ receipt, replayed: true })
+        : err({ cause, kind: "content-idempotency-conflict" } as const)
+    }
+    throw cause
+  }
+}
+
+function executeApprovedMcpMutation(
+  transaction: WritingAppDatabaseTransaction,
+  input: AdminMcpContentChangeCommand & Readonly<{ now: Date }>
+) {
+  if (input.kind === "create-course") {
+    if (input.toolName !== "admin_create_course_draft") return null
+    insertCourse(transaction, { courseId: input.courseId, now: input.now })
+    return { resultKind: "course-created" as const }
+  }
+
+  if (input.kind === "publish-course") {
+    if (input.toolName !== "admin_publish_course") return null
+    const published = publishDraftInTransaction(transaction, input)
+    if (published.isErr()) throw new McpContentChangeError(published.error)
+    return {
+      curriculumVersionId: published.value.curriculumVersionId,
+      publishedAt: published.value.publishedAt,
+      resultKind: "course-published" as const,
+      revision: published.value.revision,
+    }
+  }
+
+  const expectedToolName =
+    input.kind === "archive-course"
+      ? "admin_archive_course"
+      : "admin_restore_course"
+  if (input.toolName !== expectedToolName) return null
+
+  executeLifecycleMcpMutation(transaction, input)
+  return {
+    resultKind:
+      input.kind === "archive-course"
+        ? ("course-archived" as const)
+        : ("course-restored" as const),
+  }
+}
+
+function executeAutomaticMcpChange(
+  database: WritingAppDatabase,
+  input: AdminMcpAutomaticContentChangeCommand & Readonly<{ now: Date }>
+) {
+  try {
+    return database.transaction((transaction) => {
+      const existing = readAutomaticReceiptRow(transaction, input.executionId)
+      if (existing !== null) {
+        return hasAdminMcpAutomaticContentChangeBinding(existing, input)
+          ? ok({ receipt: existing, replayed: true })
+          : err({ kind: "content-idempotency-conflict" } as const)
+      }
+
+      const result = executeAutomaticMcpMutation(transaction, input)
+      if (result === null) {
+        return err({ kind: "content-idempotency-conflict" } as const)
+      }
+      const courseId =
+        input.kind === "save-course-draft"
+          ? input.draft.courseId
+          : input.courseId
+      const receipt: AdminMcpAutomaticContentChangeReceipt = {
+        adminId: input.adminId,
+        courseId,
+        createdAt: new Date(input.now),
+        executionId: input.executionId,
+        idempotencyKey: input.idempotencyKey,
+        inputDigest: input.inputDigest,
+        oauthClientId: input.oauthClientId,
+        resultKind: result,
+        toolName: input.toolName,
+      }
+      transaction
+        .insert(contentMcpAutomaticChangeReceipts)
+        .values(toAutomaticReceiptRow(receipt))
+        .run()
+      return ok({ receipt, replayed: false })
+    })
+  } catch (cause) {
+    if (
+      cause instanceof McpContentChangeError ||
+      cause instanceof DraftSaveAbort
+    ) {
+      return err(cause.contentError)
+    }
+    if (isUniqueConstraintViolation(cause)) {
+      const receipt = readAutomaticReceiptRow(database, input.executionId)
+      return receipt !== null &&
+        hasAdminMcpAutomaticContentChangeBinding(receipt, input)
+        ? ok({ receipt, replayed: true })
+        : err({ cause, kind: "content-idempotency-conflict" } as const)
+    }
+    throw cause
+  }
+}
+
+function executeAutomaticMcpMutation(
+  transaction: WritingAppDatabaseTransaction,
+  input: AdminMcpAutomaticContentChangeCommand & Readonly<{ now: Date }>
+): AdminMcpAutomaticContentChangeReceipt["resultKind"] | null {
+  if (input.kind === "create-course") {
+    if (input.toolName !== "admin_create_course_draft") return null
+    insertCourse(transaction, { courseId: input.courseId, now: input.now })
+    return "course-created"
+  }
+  if (input.kind === "save-course-draft") {
+    if (input.toolName !== "admin_save_course_draft") return null
+    const saved = saveDraftInTransaction(transaction, {
+      ...input,
+      preserveAssetReferences: true,
+    })
+    if (saved.isErr()) throw new McpContentChangeError(saved.error)
+    return "course-draft-saved"
+  }
+  if (input.toolName !== "admin_restore_course") return null
+  executeLifecycleMcpMutation(transaction, input)
+  return "course-restored"
+}
+
+function executeLifecycleMcpMutation(
+  transaction: WritingAppDatabaseTransaction,
+  input:
+    | Extract<AdminMcpContentChangeCommand, { kind: "archive-course" }>
+    | Extract<AdminMcpContentChangeCommand, { kind: "restore-course" }>
+    | Extract<AdminMcpAutomaticContentChangeCommand, { kind: "restore-course" }>
+): void {
+  const targetStatus = input.kind === "archive-course" ? "archived" : "active"
+  const current = transaction
+    .select({
+      editVersion: courseCurriculumVersions.editVersion,
+      status: courses.status,
+    })
+    .from(courses)
+    .innerJoin(
+      courseCurriculumVersions,
+      and(
+        eq(courseCurriculumVersions.courseId, courses.id),
+        eq(courseCurriculumVersions.status, "draft")
+      )
+    )
+    .where(eq(courses.id, input.courseId))
+    .get()
+  if (current === undefined) {
+    throw new McpContentChangeError({ kind: "content-not-found" })
+  }
+  if (
+    current.status !== input.expectedStatus ||
+    current.editVersion !== input.expectedEditVersion
+  ) {
+    throw new McpContentChangeError({ kind: "content-conflict" })
+  }
+  const updated = transaction
+    .update(courses)
+    .set({ status: targetStatus })
+    .where(
+      and(
+        eq(courses.id, input.courseId),
+        eq(courses.status, input.expectedStatus)
+      )
+    )
+    .returning({ id: courses.id })
+    .get()
+  if (updated === undefined) {
+    throw new McpContentChangeError({ kind: "content-conflict" })
+  }
+}
+
+function readApprovedMcpChangeReceipt(
+  database: CourseReadDatabase,
+  binding: AdminMcpContentChangeBinding
+): Result<AdminMcpContentChangeReceipt | null, ContentError> {
+  const receipt = readReceiptRow(database, binding.approvalId)
+  if (receipt === null) return ok(null)
+  return hasAdminMcpContentChangeBinding(receipt, binding)
+    ? ok(receipt)
+    : err({ kind: "content-idempotency-conflict" })
+}
+
+function readReceiptRow(
+  database: CourseReadDatabase,
+  approvalId: AdminMcpApprovalId
+): AdminMcpContentChangeReceipt | null {
+  const row = database
+    .select()
+    .from(contentMcpChangeReceipts)
+    .where(eq(contentMcpChangeReceipts.approvalId, approvalId))
+    .get()
+  if (row === undefined) return null
+  const binding = {
+    adminId: row.actorId as AdminId,
+    approvalId: row.approvalId as AdminMcpApprovalId,
+    courseId: createCourseId(row.targetCourseId),
+    createdAt: new Date(row.createdAt),
+    executionId: row.executionId as AdminMcpExecutionId,
+    inputDigest: row.inputDigest,
+    oauthClientId: row.oauthClientId,
+    toolName: row.toolName,
+  }
+  if (row.resultKind !== "course-published") {
+    return { ...binding, resultKind: row.resultKind }
+  }
+  if (
+    row.resultCurriculumVersionId === null ||
+    row.resultPublishedAt === null ||
+    row.resultRevision === null
+  ) {
+    throw new Error(`Invalid MCP publish receipt: ${row.approvalId}`)
+  }
+  return {
+    ...binding,
+    curriculumVersionId: readCurriculumVersionId(row.resultCurriculumVersionId),
+    publishedAt: new Date(row.resultPublishedAt),
+    resultKind: "course-published",
+    revision: row.resultRevision,
+  }
+}
+
+function toReceiptRow(receipt: AdminMcpContentChangeReceipt) {
+  return {
+    actorId: receipt.adminId,
+    approvalId: receipt.approvalId,
+    createdAt: receipt.createdAt,
+    executionId: receipt.executionId,
+    inputDigest: receipt.inputDigest,
+    oauthClientId: receipt.oauthClientId,
+    resultKind: receipt.resultKind,
+    resultCurriculumVersionId:
+      receipt.resultKind === "course-published"
+        ? receipt.curriculumVersionId
+        : null,
+    resultPublishedAt:
+      receipt.resultKind === "course-published" ? receipt.publishedAt : null,
+    resultRevision:
+      receipt.resultKind === "course-published" ? receipt.revision : null,
+    targetCourseId: receipt.courseId,
+    toolName: receipt.toolName,
+  }
+}
+
+function readAutomaticMcpChangeReceipt(
+  database: CourseReadDatabase,
+  binding: AdminMcpAutomaticContentChangeBinding
+): Result<AdminMcpAutomaticContentChangeReceipt | null, ContentError> {
+  const receipt = readAutomaticReceiptRow(database, binding.executionId)
+  if (receipt === null) return ok(null)
+  return hasAdminMcpAutomaticContentChangeBinding(receipt, binding)
+    ? ok(receipt)
+    : err({ kind: "content-idempotency-conflict" })
+}
+
+function readAutomaticReceiptRow(
+  database: CourseReadDatabase,
+  executionId: AdminMcpExecutionId
+): AdminMcpAutomaticContentChangeReceipt | null {
+  const row = database
+    .select()
+    .from(contentMcpAutomaticChangeReceipts)
+    .where(eq(contentMcpAutomaticChangeReceipts.executionId, executionId))
+    .get()
+  return row === undefined
+    ? null
+    : {
+        adminId: row.actorId as AdminId,
+        courseId: createCourseId(row.targetCourseId),
+        createdAt: new Date(row.createdAt),
+        executionId: row.executionId as AdminMcpExecutionId,
+        idempotencyKey: row.idempotencyKey,
+        inputDigest: row.inputDigest,
+        oauthClientId: row.oauthClientId,
+        resultKind: row.resultKind,
+        toolName: row.toolName,
+      }
+}
+
+function toAutomaticReceiptRow(receipt: AdminMcpAutomaticContentChangeReceipt) {
+  return {
+    actorId: receipt.adminId,
+    createdAt: receipt.createdAt,
+    executionId: receipt.executionId,
+    idempotencyKey: receipt.idempotencyKey,
+    inputDigest: receipt.inputDigest,
+    oauthClientId: receipt.oauthClientId,
+    resultKind: receipt.resultKind,
+    targetCourseId: receipt.courseId,
+    toolName: receipt.toolName,
+  }
+}
+
+class McpContentChangeError extends Error {
+  constructor(readonly contentError: ContentError) {
+    super(contentError.kind)
+    this.name = "McpContentChangeError"
+  }
 }
 
 function findCourse(
@@ -397,6 +776,38 @@ function findCourse(
     sortOrder: row.sortOrder,
     status: row.status,
   }
+}
+
+function readCourseChangeTarget(
+  database: CourseReadDatabase,
+  courseId: CourseId
+): CourseChangeTarget | null {
+  const row = database
+    .select({
+      courseId: courses.id,
+      editVersion: courseCurriculumVersions.editVersion,
+      status: courses.status,
+      title: courseCurriculumVersions.title,
+    })
+    .from(courses)
+    .innerJoin(
+      courseCurriculumVersions,
+      and(
+        eq(courseCurriculumVersions.courseId, courses.id),
+        eq(courseCurriculumVersions.status, "draft")
+      )
+    )
+    .where(eq(courses.id, courseId))
+    .get()
+
+  return row === undefined
+    ? null
+    : {
+        courseId: createCourseId(row.courseId),
+        editVersion: row.editVersion,
+        status: row.status,
+        title: row.title,
+      }
 }
 
 function readDraft(
@@ -535,98 +946,112 @@ function saveDraft(
     readonly draft: CurriculumDraft
     readonly expectedEditVersion: number
     readonly now: Date
+    readonly preserveAssetReferences?: boolean
   }
 ): Result<CurriculumDraft, ContentError> {
   try {
-    return database.transaction((transaction) => {
-      const currentDraft = transaction
-        .select({
-          courseStatus: courses.status,
-          coverAssetId: courseCurriculumVersions.coverAssetId,
-          editVersion: courseCurriculumVersions.editVersion,
-          id: courseCurriculumVersions.id,
-          status: courseCurriculumVersions.status,
-        })
-        .from(courses)
-        .innerJoin(
-          courseCurriculumVersions,
-          eq(courseCurriculumVersions.courseId, courses.id)
-        )
-        .where(
-          and(
-            eq(courses.id, input.draft.courseId),
-            eq(courseCurriculumVersions.id, input.draft.curriculumVersionId)
-          )
-        )
-        .get()
-
-      if (
-        currentDraft === undefined ||
-        currentDraft.courseStatus !== activeStatus
-      ) {
-        abortDraftSave({ kind: "content-not-found" })
-      }
-      if (currentDraft.status === "published") {
-        abortDraftSave({ kind: "content-immutable-revision" })
-      }
-      if (
-        currentDraft.editVersion !== input.expectedEditVersion ||
-        input.draft.editVersion !== input.expectedEditVersion
-      ) {
-        abortDraftSave({ kind: "content-conflict" })
-      }
-
-      const assetReferences = validateAndTransitionDraftAssetReferences(
-        transaction,
-        {
-          currentCoverAssetId:
-            currentDraft.coverAssetId === null
-              ? null
-              : (currentDraft.coverAssetId as ContentAssetId),
-          currentDraftId: readCurriculumVersionId(currentDraft.id),
-          draft: input.draft,
-          now: input.now,
-        }
-      )
-      if (assetReferences.isErr()) abortDraftSave(assetReferences.error)
-
-      const updatedDraft = transaction
-        .update(courseCurriculumVersions)
-        .set({
-          category: input.draft.category,
-          coverAssetId: input.draft.coverAssetId,
-          description: input.draft.description,
-          editVersion: input.expectedEditVersion + 1,
-          title: input.draft.title,
-          updatedAt: input.now,
-        })
-        .where(
-          and(
-            eq(courseCurriculumVersions.id, currentDraft.id),
-            eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
-            eq(courseCurriculumVersions.status, "draft")
-          )
-        )
-        .returning({ id: courseCurriculumVersions.id })
-        .get()
-      if (updatedDraft === undefined) {
-        abortDraftSave({ kind: "content-conflict" })
-      }
-
-      deleteDraftContent(transaction, currentDraft.id)
-      insertCurriculumContent(transaction, currentDraft.id, input.draft.units)
-
-      const saved = readDraft(transaction, input.draft.courseId)
-      if (saved.isErr()) abortDraftSave(saved.error)
-      if (saved.value === null) {
-        throw new Error("Saved content draft was not found")
-      }
-      return ok(saved.value)
-    })
+    return database.transaction((transaction) =>
+      saveDraftInTransaction(transaction, input)
+    )
   } catch (error) {
     if (error instanceof DraftSaveAbort) return err(error.contentError)
     throw error
   }
+}
+
+function saveDraftInTransaction(
+  transaction: WritingAppDatabaseTransaction,
+  input: {
+    readonly draft: CurriculumDraft
+    readonly expectedEditVersion: number
+    readonly now: Date
+    readonly preserveAssetReferences?: boolean
+  }
+): Result<CurriculumDraft, ContentError> {
+  const currentDraft = transaction
+    .select({
+      courseStatus: courses.status,
+      coverAssetId: courseCurriculumVersions.coverAssetId,
+      editVersion: courseCurriculumVersions.editVersion,
+      id: courseCurriculumVersions.id,
+      status: courseCurriculumVersions.status,
+    })
+    .from(courses)
+    .innerJoin(
+      courseCurriculumVersions,
+      eq(courseCurriculumVersions.courseId, courses.id)
+    )
+    .where(
+      and(
+        eq(courses.id, input.draft.courseId),
+        eq(courseCurriculumVersions.id, input.draft.curriculumVersionId)
+      )
+    )
+    .get()
+
+  if (
+    currentDraft === undefined ||
+    currentDraft.courseStatus !== activeStatus
+  ) {
+    abortDraftSave({ kind: "content-not-found" })
+  }
+  if (currentDraft.status === "published") {
+    abortDraftSave({ kind: "content-immutable-revision" })
+  }
+  if (
+    currentDraft.editVersion !== input.expectedEditVersion ||
+    input.draft.editVersion !== input.expectedEditVersion
+  ) {
+    abortDraftSave({ kind: "content-conflict" })
+  }
+
+  const assetReferences = validateAndTransitionDraftAssetReferences(
+    transaction,
+    {
+      currentCoverAssetId:
+        currentDraft.coverAssetId === null
+          ? null
+          : (currentDraft.coverAssetId as ContentAssetId),
+      currentDraftId: readCurriculumVersionId(currentDraft.id),
+      draft: input.draft,
+      now: input.now,
+      preserveAssetReferences: input.preserveAssetReferences ?? false,
+    }
+  )
+  if (assetReferences.isErr()) abortDraftSave(assetReferences.error)
+
+  const updatedDraft = transaction
+    .update(courseCurriculumVersions)
+    .set({
+      category: input.draft.category,
+      coverAssetId: input.draft.coverAssetId,
+      description: input.draft.description,
+      editVersion: input.expectedEditVersion + 1,
+      title: input.draft.title,
+      updatedAt: input.now,
+    })
+    .where(
+      and(
+        eq(courseCurriculumVersions.id, currentDraft.id),
+        eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
+        eq(courseCurriculumVersions.status, "draft")
+      )
+    )
+    .returning({ id: courseCurriculumVersions.id })
+    .get()
+  if (updatedDraft === undefined) {
+    abortDraftSave({ kind: "content-conflict" })
+  }
+
+  deleteDraftContent(transaction, currentDraft.id)
+  insertCurriculumContent(transaction, currentDraft.id, input.draft.units)
+
+  const saved = readDraft(transaction, input.draft.courseId)
+  if (saved.isErr()) abortDraftSave(saved.error)
+  if (saved.value === null) {
+    throw new Error("Saved content draft was not found")
+  }
+  return ok(saved.value)
 }
 
 class DraftSaveAbort extends Error {
@@ -655,11 +1080,13 @@ function validateAndTransitionDraftAssetReferences(
     readonly currentDraftId: CurriculumVersionId
     readonly draft: CurriculumDraft
     readonly now: Date
+    readonly preserveAssetReferences: boolean
   }
 ): Result<void, ContentError> {
   const currentSteps = transaction
     .select({
       contentJson: lessonStepVersions.contentJson,
+      id: lessonStepVersions.id,
       type: lessonStepVersions.type,
     })
     .from(lessonStepVersions)
@@ -676,6 +1103,12 @@ function validateAndTransitionDraftAssetReferences(
     ),
   })
   if (currentReferences === null || nextReferences === null) {
+    return invalidAssetReference()
+  }
+  if (
+    input.preserveAssetReferences &&
+    !hasSameAssetReferences(currentReferences, nextReferences)
+  ) {
     return invalidAssetReference()
   }
 
@@ -737,7 +1170,9 @@ function validateAndTransitionDraftAssetReferences(
     reactivatedIds.push(expected.id)
   }
 
-  const nextIds = new Set(nextReferences.keys())
+  const nextIds = new Set(
+    [...nextReferences.values()].map((reference) => reference.id)
+  )
   const orphanedIds = [...currentReferences.values()].flatMap(({ id }) => {
     const asset = assetsById.get(id)
     return !nextIds.has(id) &&
@@ -785,17 +1220,35 @@ function validateAndTransitionDraftAssetReferences(
   return ok(undefined)
 }
 
+function hasSameAssetReferences(
+  current: ReadonlyMap<string, ExpectedAssetReference>,
+  next: ReadonlyMap<string, ExpectedAssetReference>
+): boolean {
+  if (current.size !== next.size) return false
+  for (const [location, reference] of current) {
+    const nextReference = next.get(location)
+    if (
+      nextReference?.id !== reference.id ||
+      nextReference.kind !== reference.kind
+    ) {
+      return false
+    }
+  }
+  return true
+}
+
 function readExpectedAssetReferences(input: {
   readonly coverAssetId: ContentAssetId | null
   readonly steps: readonly Readonly<{
     contentJson: string
+    id: string
     type: string
   }>[]
-}): ReadonlyMap<ContentAssetId, ExpectedAssetReference> | null {
-  const references = new Map<ContentAssetId, ExpectedAssetReference>()
+}): ReadonlyMap<string, ExpectedAssetReference> | null {
+  const references = new Map<string, ExpectedAssetReference>()
   if (
     input.coverAssetId !== null &&
-    !addExpectedAssetReference(references, {
+    !addExpectedAssetReference(references, "course-cover", {
       id: input.coverAssetId,
       kind: "course-cover",
     })
@@ -825,7 +1278,7 @@ function readExpectedAssetReferences(input: {
     if (
       typeof illustrationAssetId !== "string" ||
       illustrationAssetId.length === 0 ||
-      !addExpectedAssetReference(references, {
+      !addExpectedAssetReference(references, `step:${step.id}`, {
         id: illustrationAssetId as ContentAssetId,
         kind: "reading-illustration",
       })
@@ -838,12 +1291,20 @@ function readExpectedAssetReferences(input: {
 }
 
 function addExpectedAssetReference(
-  references: Map<ContentAssetId, ExpectedAssetReference>,
+  references: Map<string, ExpectedAssetReference>,
+  location: string,
   reference: ExpectedAssetReference
 ): boolean {
-  const current = references.get(reference.id)
-  if (current !== undefined && current.kind !== reference.kind) return false
-  references.set(reference.id, reference)
+  if (references.has(location)) return false
+  if (
+    [...references.values()].some(
+      (current) =>
+        current.id === reference.id && current.kind !== reference.kind
+    )
+  ) {
+    return false
+  }
+  references.set(location, reference)
   return true
 }
 
@@ -858,64 +1319,77 @@ function publishDraft(
   database: WritingAppDatabase,
   input: Parameters<ContentRepository["publishDraft"]>[0]
 ): Result<PublishedCurriculumRevision, ContentError> {
-  return database.transaction((transaction) => {
-    const publishedRevision = input.publishedRevision
-    const published = transaction
-      .update(courseCurriculumVersions)
-      .set({
-        publishedAt: publishedRevision.publishedAt,
-        status: "published",
-        updatedAt: publishedRevision.publishedAt,
-      })
-      .where(
-        and(
-          eq(
-            courseCurriculumVersions.id,
-            publishedRevision.curriculumVersionId
-          ),
-          eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
-          eq(courseCurriculumVersions.status, "draft")
-        )
+  return database.transaction((transaction) =>
+    publishDraftInTransaction(transaction, input)
+  )
+}
+
+function publishDraftInTransaction(
+  transaction: WritingAppDatabaseTransaction,
+  input: Parameters<ContentRepository["publishDraft"]>[0]
+): Result<PublishedCurriculumRevision, ContentError> {
+  const publishedRevision = input.publishedRevision
+  const course = transaction
+    .select({ status: courses.status })
+    .from(courses)
+    .where(eq(courses.id, publishedRevision.courseId))
+    .get()
+  if (course?.status !== "active") {
+    return err({ kind: "content-conflict" })
+  }
+
+  const published = transaction
+    .update(courseCurriculumVersions)
+    .set({
+      publishedAt: publishedRevision.publishedAt,
+      status: "published",
+      updatedAt: publishedRevision.publishedAt,
+    })
+    .where(
+      and(
+        eq(courseCurriculumVersions.id, publishedRevision.curriculumVersionId),
+        eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
+        eq(courseCurriculumVersions.status, "draft")
       )
-      .returning({ id: courseCurriculumVersions.id })
-      .get()
-    if (published === undefined) return err({ kind: "content-conflict" })
-
-    transaction
-      .update(courses)
-      .set({
-        publishedCurriculumVersionId: publishedRevision.curriculumVersionId,
-      })
-      .where(eq(courses.id, publishedRevision.courseId))
-      .run()
-
-    const nextRevision = publishedRevision.revision + 1
-    transaction
-      .insert(courseCurriculumVersions)
-      .values({
-        category: publishedRevision.category,
-        courseId: publishedRevision.courseId,
-        coverAssetId: publishedRevision.coverAssetId,
-        createdAt: publishedRevision.publishedAt,
-        description: publishedRevision.description,
-        editVersion: 0,
-        id: input.nextDraftId,
-        publishedAt: null,
-        revision: nextRevision,
-        status: "draft",
-        title: publishedRevision.title,
-        updatedAt: publishedRevision.publishedAt,
-        visualKey: publishedRevision.visualKey,
-      })
-      .run()
-    insertCurriculumContent(
-      transaction,
-      input.nextDraftId,
-      publishedRevision.units
     )
+    .returning({ id: courseCurriculumVersions.id })
+    .get()
+  if (published === undefined) return err({ kind: "content-conflict" })
 
-    return ok(publishedRevision)
-  })
+  transaction
+    .update(courses)
+    .set({
+      publishedCurriculumVersionId: publishedRevision.curriculumVersionId,
+    })
+    .where(eq(courses.id, publishedRevision.courseId))
+    .run()
+
+  const nextRevision = publishedRevision.revision + 1
+  transaction
+    .insert(courseCurriculumVersions)
+    .values({
+      category: publishedRevision.category,
+      courseId: publishedRevision.courseId,
+      coverAssetId: publishedRevision.coverAssetId,
+      createdAt: publishedRevision.publishedAt,
+      description: publishedRevision.description,
+      editVersion: 0,
+      id: input.nextDraftId,
+      publishedAt: null,
+      revision: nextRevision,
+      status: "draft",
+      title: publishedRevision.title,
+      updatedAt: publishedRevision.publishedAt,
+      visualKey: publishedRevision.visualKey,
+    })
+    .run()
+  insertCurriculumContent(
+    transaction,
+    input.nextDraftId,
+    publishedRevision.units
+  )
+
+  return ok(publishedRevision)
 }
 
 function insertCurriculumContent(
@@ -1258,7 +1732,7 @@ function findCurriculumByLesson(
       }
 }
 
-function readNextCourseSortOrder(database: WritingAppDatabase): number {
+function readNextCourseSortOrder(database: CourseReadDatabase): number {
   return (
     database
       .select({

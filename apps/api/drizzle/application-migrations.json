@@ -22,5 +22,17 @@
     "fileName": "0003-focused-writing.sql",
     "foreignKeys": "on",
     "id": "0003-focused-writing"
+  },
+  {
+    "checksum": "3d4ca5852b7e8635c5a3ca5387b2a33b9324208d2c4da779348fbb9251dd3ef1",
+    "fileName": "0004-admin-mcp-approved-content-changes.sql",
+    "foreignKeys": "on",
+    "id": "0004-admin-mcp-approved-content-changes"
+  },
+  {
+    "checksum": "e1c665635d6bad1d6ad6db55ed7c30b39e5f909adf35e4f4a62b4e63ae3ce169",
+    "fileName": "0005-admin-mcp-full-admin-tools.sql",
+    "foreignKeys": "on",
+    "id": "0005-admin-mcp-full-admin-tools"
   }
 ]

@@ -2,6 +2,7 @@ import type { OperationsActor } from "#operations/domain/operations-actor"
 
 export type { AuditTrail } from "#operations/application/audit-trail"
 export type { AuditAction, AuditTarget } from "#operations/domain/audit-event"
+export type { AdminMcpApproval } from "#operations/domain/admin-mcp-approval"
 export type { AuditEventFailureObserver } from "#operations/application/ports/audit-event-repository"
 
 export type OperationsAdminSessionPort = Readonly<{

@@ -1,15 +1,24 @@
 import type {
+  AdminMcpAutomaticContentChangeBinding,
+  AdminMcpAutomaticContentChangeExecution,
+  AdminMcpAutomaticContentChangeReceipt,
+  AdminMcpContentChangeBinding,
+  AdminMcpContentChangeExecution,
+  AdminMcpContentChangeReceipt,
+} from "#content/domain/admin-mcp-content-change"
+import type {
   ContentAssetId,
   CourseId,
   CurriculumVersionId,
   LessonId,
 } from "@workspace/types/ids"
-import { ok } from "@workspace/kernel/result"
+import { err, ok, type Result } from "@workspace/kernel/result"
 
 import type {
   ContentApplicationDependencies,
   ContentAssetReference,
   ContentCoursePage,
+  CourseChangeTarget,
   CourseContentAsset,
   CourseEditorDocument,
   ReadContentCoursesInput,
@@ -48,11 +57,62 @@ import type {
   PublishedCurriculumRevision,
   PublishedLessonReference,
 } from "#content/domain/content-model"
+import type { ContentError } from "#content/domain/content-error"
+import { createCurriculumVersionId } from "#content/domain/content-model"
+import {
+  createCurriculumDraft,
+  decidePublishCurriculum,
+} from "#content/domain/curriculum"
+
+type AdminMcpApprovedContentApplicationCommand = AdminMcpContentChangeBinding &
+  (
+    | Readonly<{ courseId: CourseId; kind: "create-course" }>
+    | Readonly<{
+        courseId: CourseId
+        expectedEditVersion: number
+        expectedStatus: "active"
+        kind: "archive-course"
+      }>
+    | Readonly<{
+        courseId: CourseId
+        expectedEditVersion: number
+        kind: "publish-course"
+      }>
+    | Readonly<{
+        courseId: CourseId
+        expectedEditVersion: number
+        expectedStatus: "archived"
+        kind: "restore-course"
+      }>
+  )
+
+type AdminMcpAutomaticContentApplicationCommand =
+  AdminMcpAutomaticContentChangeBinding &
+    (
+      | Readonly<{ courseId: CourseId; kind: "create-course" }>
+      | Readonly<{
+          document: CourseEditorDocument
+          expectedEditVersion: number
+          kind: "save-course-draft"
+        }>
+      | Readonly<{
+          courseId: CourseId
+          expectedEditVersion: number
+          expectedStatus: "archived"
+          kind: "restore-course"
+        }>
+    )
 
 export type ContentApplication = Readonly<{
   archiveCourse: ArchiveCourseUseCase
   cleanupOrphanedAssets: CleanupOrphanedAssets
   createCourse: CreateCourseUseCase
+  executeApprovedMcpChange: (
+    command: AdminMcpApprovedContentApplicationCommand
+  ) => Promise<Result<AdminMcpContentChangeExecution, ContentError>>
+  executeAutomaticMcpChange: (
+    command: AdminMcpAutomaticContentApplicationCommand
+  ) => Promise<Result<AdminMcpAutomaticContentChangeExecution, ContentError>>
   findCurriculumByLesson: (input: {
     readonly curriculumVersionId?: CurriculumVersionId
     readonly lessonId: LessonId
@@ -61,6 +121,9 @@ export type ContentApplication = Readonly<{
     courseId: CourseId
   ) => Promise<readonly CourseContentAsset[] | null>
   getCourseEditor: (courseId: CourseId) => Promise<CourseEditorDocument | null>
+  getCourseChangeTarget: (
+    courseId: CourseId
+  ) => Promise<CourseChangeTarget | null>
   getCourses: (query: ReadContentCoursesInput) => Promise<ContentCoursePage>
   listPublishedCourses: () => Promise<readonly PublishedCourseSummary[]>
   publishCourse: PublishCourseUseCase
@@ -68,6 +131,14 @@ export type ContentApplication = Readonly<{
     readonly courseId: CourseId
     readonly curriculumVersionId?: CurriculumVersionId
   }) => Promise<PublishedCurriculumRevision | null>
+  readApprovedMcpChangeReceipt: (
+    binding: AdminMcpContentChangeBinding
+  ) => Promise<Result<AdminMcpContentChangeReceipt | null, ContentError>>
+  readAutomaticMcpChangeReceipt: (
+    binding: AdminMcpAutomaticContentChangeBinding
+  ) => Promise<
+    Result<AdminMcpAutomaticContentChangeReceipt | null, ContentError>
+  >
   resolveAssetReferences: (
     assetIds: readonly ContentAssetId[]
   ) => Promise<readonly ContentAssetReference[]>
@@ -90,6 +161,80 @@ export function createContentApplication(
       return result.isErr()
         ? result
         : ok(await attachResolvedEditorAssets(dependencies, result.value))
+    },
+    async executeApprovedMcpChange(command) {
+      const now = dependencies.clock.now()
+      if (command.kind !== "publish-course") {
+        return dependencies.repository.executeApprovedMcpChange({
+          ...command,
+          now,
+        })
+      }
+
+      const draftResult = await dependencies.repository.findDraft(
+        command.courseId
+      )
+      if (draftResult.isErr()) return err(draftResult.error)
+      const draft = draftResult.value
+      if (draft === null) return err({ kind: "content-not-found" })
+      if (draft.editVersion !== command.expectedEditVersion) {
+        return err({ kind: "content-conflict" })
+      }
+      const decision = decidePublishCurriculum({ draft, now })
+      if (decision.isErr()) return err(decision.error)
+
+      return dependencies.repository.executeApprovedMcpChange({
+        ...command,
+        nextDraftId: createCurriculumVersionId(
+          command.courseId,
+          draft.revision + 1
+        ),
+        now,
+        publishedRevision: decision.value,
+      })
+    },
+    async executeAutomaticMcpChange(command) {
+      const now = dependencies.clock.now()
+      if (command.kind !== "save-course-draft") {
+        return dependencies.repository.executeAutomaticMcpChange({
+          ...command,
+          now,
+        })
+      }
+
+      const currentResult = await dependencies.repository.findDraft(
+        command.document.courseId
+      )
+      if (currentResult.isErr()) return err(currentResult.error)
+      const current = currentResult.value
+      if (current === null) return err({ kind: "content-not-found" })
+      if (
+        current.curriculumVersionId !== command.document.curriculumVersionId ||
+        current.revision !== command.document.revision
+      ) {
+        return err({
+          kind: "content-validation-failed",
+          reason: "invalid-course-reference",
+        })
+      }
+      if (
+        current.editVersion !== command.expectedEditVersion ||
+        command.document.editVersion !== command.expectedEditVersion
+      ) {
+        return err({ kind: "content-conflict" })
+      }
+      const draft = createCurriculumDraft({
+        ...command.document,
+        visualKey: current.visualKey,
+      })
+      if (draft.isErr()) return err(draft.error)
+
+      const { document: _document, ...binding } = command
+      return dependencies.repository.executeAutomaticMcpChange({
+        ...binding,
+        draft: draft.value,
+        now,
+      })
     },
     findCurriculumByLesson: (input) =>
       dependencies.repository.findCurriculumByLesson(input),
@@ -121,6 +266,8 @@ export function createContentApplication(
         ? null
         : attachResolvedEditorAssets(dependencies, document)
     },
+    getCourseChangeTarget: (courseId) =>
+      dependencies.repository.readCourseChangeTarget(courseId),
     async getCourses(query) {
       const page = await dependencies.repository.readCourses(query)
       const covers = await application.resolveAssetReferences(
@@ -145,6 +292,10 @@ export function createContentApplication(
       dependencies.repository.listPublishedCourseSummaries(),
     publishCourse: createPublishCourseUseCase(dependencies),
     readCurriculum: (input) => dependencies.repository.readCurriculum(input),
+    readApprovedMcpChangeReceipt: (binding) =>
+      dependencies.repository.readApprovedMcpChangeReceipt(binding),
+    readAutomaticMcpChangeReceipt: (binding) =>
+      dependencies.repository.readAutomaticMcpChangeReceipt(binding),
     async resolveAssetReferences(assetIds) {
       if (dependencies.assetStorage === null || assetIds.length === 0) {
         return []
