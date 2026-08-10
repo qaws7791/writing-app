@@ -133,7 +133,7 @@
 
 어드민 앱의 보호 라우트는 `apps/admin/src/app/(admin)/layout.tsx`에서 generated `getAdminSession` 결과를 확인한다. 인증·인가 실패만 어드민 로그인 경로로 redirect한다.
 
-두 앱은 root `loading.tsx`, `error.tsx`, `global-error.tsx`와 보호 route group skeleton을 제공한다. error boundary의 다시 시도는 Next `reset()`을 호출한다. 어드민은 세션 응답의 `unauthorized | forbidden`만 로그인으로 보내고 network·contract·5xx 오류는 로그인 상태를 유지한 서비스 오류 UI로 표시한다. 로그아웃 요청 실패는 화면 alert와 같은 버튼의 재시도로 처리하며 unhandled rejection을 만들지 않는다. 어드민은 알 수 없는 경로에 전용 not-found 화면을 제공한다.
+두 앱은 root `loading.tsx`, `error.tsx`와 `global-error.tsx`를 제공한다. 학습자 앱은 보호 route group skeleton을 제공한다. 어드민 앱은 사이드바 화면 이동 중 현재 본문을 유지하고 150ms 뒤 대상 링크에 pending 상태를 표시한다. error boundary의 다시 시도는 Next `reset()`을 호출한다. 어드민은 세션 응답의 `unauthorized | forbidden`만 로그인으로 보내고 network·contract·5xx 오류는 로그인 상태를 유지한 서비스 오류 UI로 표시한다. 로그아웃 요청 실패는 화면 alert와 같은 버튼의 재시도로 처리하며 unhandled rejection을 만들지 않는다. 어드민은 알 수 없는 경로에 전용 not-found 화면을 제공한다.
 
 관리자 feature adapter는 안전한 `next` 검증만 소유하고 `@workspace/auth/admin/client`에 ID/password 로그인·비밀번호 변경·로그아웃을 위임한다. 다른 관리자 세션 폐기 옵션은 auth client가 강제한다. 브라우저 요청은 관리자 origin의 상대 `/api/admin` 경로와 host-only cookie를 사용하고, API는 관리자 인증의 `trustedOrigins`와 상태 변경 요청의 origin 검증으로 어드민 웹 origin을 확인한다. 로그인 `next` 경로 검증은 `src/features/authentication/model/admin-auth-navigation.ts`가 단일 출처이며, 로그인 성공 후 이동은 `next/navigation`의 router를 사용한다. 어드민 앱 source에서 `window.location.*` 직접 이동은 금지한다.
 

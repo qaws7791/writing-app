@@ -29,7 +29,7 @@ export function AdminMobileSidebar(props: AdminSidebarProps) {
       />
       <DialogContent className="top-0 left-0 h-dvh w-[min(20rem,calc(100vw-2rem))] max-w-none translate-x-0 translate-y-0 content-start rounded-none rounded-r-4xl bg-sidebar p-4 text-sidebar-foreground sm:max-w-none">
         <DialogTitle className="sr-only">어드민 메뉴</DialogTitle>
-        <AdminSidebarContent {...props} onNavigate={() => setOpen(false)} />
+        <AdminSidebarContent {...props} />
       </DialogContent>
     </Dialog>
   )

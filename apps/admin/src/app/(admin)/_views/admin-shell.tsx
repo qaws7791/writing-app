@@ -59,6 +59,7 @@ export function AdminShell({
             activePath={currentPath}
             adminProfile={adminProfile}
             isSigningOut={isPending}
+            key={currentPath}
             learnerWebOrigin={learnerWebOrigin}
             navigationItems={adminNavigationItems}
             onSignOut={signOut}

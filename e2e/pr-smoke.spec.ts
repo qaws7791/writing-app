@@ -2,6 +2,7 @@ import {
   adminCourseEditorDocumentSchema,
   adminCourseEditorWriteDocumentSchema,
 } from "@workspace/contracts/content/admin-courses"
+import type { Page } from "@playwright/test"
 
 import {
   adminWebOrigin,
@@ -48,6 +49,34 @@ test("학습자가 로그인해 서버가 확정한 레슨 완료를 다시 조�
   await page.reload()
 
   await expect(completionHeading).toBeVisible()
+})
+
+test("관리자 사이드바 이동 중 현재 본문을 유지한다", async ({ page }) => {
+  await loginAdmin(page, "owner@example.test", { nextPath: "/courses" })
+
+  await expectAdminNavigationToKeepContent(page, {
+    linkName: "사용자 관리",
+    sourceHeading: "콘텐츠 관리",
+    sourcePath: "/courses",
+    targetHeading: "사용자 관리",
+    targetPath: "/users",
+  })
+
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" })
+  await page.setViewportSize({ height: 844, width: 390 })
+  await expect(page.locator("html")).toHaveClass(/dark/u)
+  await page.getByRole("button", { name: "메뉴 열기" }).click()
+  const mobileSidebar = page.getByRole("dialog", { name: "어드민 메뉴" })
+  await expect(mobileSidebar).toBeVisible()
+
+  await expectAdminNavigationToKeepContent(page, {
+    linkName: "콘텐츠 관리",
+    sourcePath: "/users",
+    targetHeading: "콘텐츠 관리",
+    targetPath: "/courses",
+  })
+
+  await expect(mobileSidebar).toBeHidden()
 })
 
 test("관리자가 발행한 코스를 별도 학습자가 읽는다", async ({
@@ -119,6 +148,55 @@ test("관리자가 발행한 코스를 별도 학습자가 읽는다", async ({
     await learnerContext.close()
   }
 })
+
+async function expectAdminNavigationToKeepContent(
+  page: Page,
+  options: Readonly<{
+    linkName: string
+    sourceHeading?: string
+    sourcePath: string
+    targetHeading: string
+    targetPath: string
+  }>
+): Promise<void> {
+  let releaseRequest = () => {}
+  const requestGate = new Promise<void>((resolve) => {
+    releaseRequest = resolve
+  })
+  await page.route(
+    (url) =>
+      url.pathname === options.targetPath && url.searchParams.has("_rsc"),
+    async (route) => {
+      await requestGate
+      await route.continue()
+    },
+    { times: 1 }
+  )
+
+  const targetLink = page.getByRole("link", { name: options.linkName })
+  await targetLink.click({ noWaitAfter: true })
+
+  try {
+    await page.waitForTimeout(350)
+    await expect(page).toHaveURL(`${adminWebOrigin}${options.sourcePath}`)
+    if (options.sourceHeading !== undefined) {
+      await expect(
+        page.getByRole("heading", { name: options.sourceHeading })
+      ).toBeVisible()
+    }
+    await expect(targetLink.getByText("이동 중", { exact: true })).toHaveCSS(
+      "opacity",
+      "1"
+    )
+  } finally {
+    releaseRequest()
+  }
+
+  await expect(page).toHaveURL(`${adminWebOrigin}${options.targetPath}`)
+  await expect(
+    page.getByRole("heading", { name: options.targetHeading })
+  ).toBeVisible()
+}
 
 function readCreatedCourseId(href: string | null): string {
   const match = href?.match(/^\/courses\/([^/?#]+)$/u)

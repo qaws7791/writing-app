@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link, { useLinkStatus } from "next/link"
 
 import {
   AdminProfileMenu,
@@ -33,9 +33,8 @@ export function AdminSidebarContent({
   isSigningOut,
   learnerWebOrigin,
   navigationItems,
-  onNavigate,
   onSignOut,
-}: AdminSidebarProps & { readonly onNavigate?: () => void }) {
+}: AdminSidebarProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <Link
@@ -66,10 +65,10 @@ export function AdminSidebarContent({
               href={item.href}
               key={item.href}
               prefetch={false}
-              {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
             >
               <Icon aria-hidden="true" size={20} strokeWidth={2} />
               <span>{item.label}</span>
+              <AdminNavigationPendingStatus />
             </Link>
           )
 
@@ -85,5 +84,21 @@ export function AdminSidebarContent({
         />
       </div>
     </div>
+  )
+}
+
+function AdminNavigationPendingStatus() {
+  const { pending } = useLinkStatus()
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "ml-auto w-10 shrink-0 text-right text-xs text-sidebar-foreground/60 opacity-0 transition-opacity duration-(--motion-duration-fast) ease-quiet",
+        pending ? "delay-150 opacity-100" : "delay-0"
+      )}
+    >
+      이동 중
+    </span>
   )
 }
