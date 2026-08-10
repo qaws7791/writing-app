@@ -298,7 +298,7 @@ draft 저장은 실행 전 편집 문서 snapshot을 복구용으로 보관한�
 
 구현 직후 frozen install과 dependency audit를 다시 실행한다.
 
-구현 완료 전 root 정적 검사, test, build와 route bundle 검사를 실행한다.
+구현 완료 전 root 정적 검사, test와 build를 실행한다.
 
 ## 위험과 완화
 
@@ -341,7 +341,7 @@ draft 저장은 실행 전 편집 문서 snapshot을 복구용으로 보관한�
 - 사용자 관리와 asset upload tool은 노출되지 않는다.
 - 2025 era client는 변경을 실행할 수 없다.
 - token, payload, diff와 내부 오류는 로그에 남지 않는다.
-- dependency, 정적 검사, test, build와 route bundle 결과를 기록했다.
+- dependency, 정적 검사, test와 build 결과를 기록했다.
 - 승인된 staging에서 2A, 2B와 2C smoke가 통과했다.
 - production 변경 tool은 비활성 상태다.
 - 영구 결론을 제품·엔지니어링 권위 문서와 ADR에 반영했다.

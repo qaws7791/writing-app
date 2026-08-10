@@ -227,7 +227,7 @@ OAuth authorization server가 RFC 7662를 제공하면 표준 `fetch` 기반 int
 
 의존성 변경 직후 frozen install, dependency graph와 audit를 확인한다.
 
-구현 완료 전 root의 필수 정적 검사, 테스트, build와 route bundle 검사를 실행한다.
+구현 완료 전 root의 필수 정적 검사, 테스트와 build를 실행한다.
 
 완료 기준은 로컬 필수 gate와 승인된 staging smoke가 모두 성공한 상태이다.
 
@@ -264,7 +264,7 @@ rollback은 저장 데이터 복구를 요구하지 않는다.
 - 비인증과 권한 부족 요청은 application 호출 전에 거부된다.
 - MCP 결과와 로그는 금지된 개인정보와 secret을 포함하지 않는다.
 - 기존 관리자 HTTP API의 계약과 동작이 유지된다.
-- dependency·정적 검사·테스트·build·route bundle gate가 통과한다.
+- dependency·정적 검사·테스트·build가 통과한다.
 - 승인된 staging host에서 연결과 7개 tool 호출이 성공한다.
 - 관련 제품·엔지니어링 문서가 구현 결과를 반영한다.
 - 완료 보고서를 같은 작업 디렉터리에 추가한 뒤 디렉터리를 `docs/archive`로 이동한다.

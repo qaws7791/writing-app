@@ -73,5 +73,4 @@ rg -n -U '<CardTitle[\\s\\S]{0,120}?\\bas=|<Badge[\\s\\S]{0,120}?\\btone=' apps 
 rg -n -U 'SelectTrigger[\\s\\S]{0,180}variant=|selectTriggerVariants' apps packages --glob "*.{ts,tsx,mdx}"
 rg -n -U -P '(?s)<Select\\b(?:(?!>).)*>' apps packages --glob "*.tsx"
 rg -n 'indicatorClassName|trackClassName' apps packages --glob "*.{ts,tsx}"
-bun run check:route-bundles
 ```

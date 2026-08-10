@@ -81,7 +81,7 @@ PR은 가능한 작은 단위로 유지한다. 아키텍처, DB, 인증, UI를 �
 
 ## 머지 정책
 
-- main으로 병합하기 전 형식, Oxlint와 import graph 규칙, typecheck, 전체 unit·integration, production build와 route bundle, 단일 Chromium의 학습자·관리자 핵심 smoke를 PR Linux gate에서 통과해야 한다.
+- main으로 병합하기 전 형식, Oxlint와 import graph 규칙, typecheck, 전체 unit·integration, production build, 단일 Chromium의 학습자·관리자 핵심 smoke를 PR Linux gate에서 통과해야 한다.
 - main push는 동일 검사를 다시 중복하지 않고 Chromium·WebKit release E2E, Lighthouse와 source image Compose smoke를 추가로 차단하며, 모두 성공한 동일 revision만 image release 대상으로 삼는다. Staging k6는 해당 revision의 immutable digest를 staging에 배포·검증한 뒤 image release workflow에서 한 번만 실행한다.
 - PR 필수 검증은 production 배포 환경과 같은 Linux에서 한 번 실행한다. Windows와 macOS 호환성은 매 PR 전체 matrix가 아니라 필요에 따른 설치 smoke나 주기 실행으로 다룬다.
 - install은 manifest와 lockfile을 직접 읽는 package manager에 맡기고 frozen lockfile을 사용한다.

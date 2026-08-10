@@ -30,14 +30,14 @@
 
 ## 도구별 책임
 
-| 도구                                 | 책임과 선택 기준                                                                                                                                                                                                                                                                            |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Vitest                               | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                                    |
-| Testing Library                      | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                                          |
-| MSW                                  | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                                            |
-| Playwright                           | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                                                       |
-| Lighthouse CI·route bundle budget·k6 | PR에서는 초기 client bundle 회귀를 빠르게 막고, main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                  |
-| Astro UI 문서·Playwright             | `apps/ui`는 실행 가능한 UI 카탈로그, 격리 예제와 shadcn registry를 제공한다. browser contract는 상태 전이·초점·키보드·오류·비활성·접근성을 실제 정적 build에서 검증한다. 제품 화면 조합은 primitive 문서와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 예제나 fixture는 남기지 않는다. |
+| 도구                     | 책임과 선택 기준                                                                                                                                                                                                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vitest                   | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                                    |
+| Testing Library          | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                                          |
+| MSW                      | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                                            |
+| Playwright               | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                                                       |
+| Lighthouse CI·k6         | Lighthouse CI는 main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                                                  |
+| Astro UI 문서·Playwright | `apps/ui`는 실행 가능한 UI 카탈로그, 격리 예제와 shadcn registry를 제공한다. browser contract는 상태 전이·초점·키보드·오류·비활성·접근성을 실제 정적 build에서 검증한다. 제품 화면 조합은 primitive 문서와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 예제나 fixture는 남기지 않는다. |
 
 ## 테스트 데이터와 인증
 
@@ -63,8 +63,6 @@
 Playwright WebKit과 device descriptor는 실제 iOS Safari 기기 자체가 아니다. 따라서 `release-webkit` 성공을 최신·직전 iOS Safari 지원의 완료 증거로 과장하지 않는다.
 
 ## 성능 회귀 gate
-
-PR production build는 [route bundle 검사](../../scripts/check-route-bundles.ts)로 web의 landing·learner home·lesson shell과 admin 초기 client chunk의 gzip 합계를 검사한다. 예산을 넘으면 큰 chunk부터 경로와 gzip 크기를 출력해 원인을 찾을 수 있어야 한다. 이 검사는 `size-limit`과 같은 빠른 build artifact 예산 역할이며 별도 cache나 측정 우회 계층을 두지 않는다.
 
 main 품질 workflow는 격리 fixture와 테스트 인증 위에 web production standalone을 새로 조립하고 [Lighthouse CI 설정](../../lighthouse-ci.config.cjs)의 landing·learner home·lesson shell mobile 예산을 세 번 측정한다. 실행 wrapper는 fixture와 서버 수명주기, 인증 cookie와 Playwright Chromium 경로를 제공한다. Windows에서는 wrapper가 관리하는 Chromium debugging port를 사용해서 종료 직후의 임시 profile 잠금과 측정 결과 유실을 막는다. 측정·재시도·판정은 Lighthouse CI가 담당한다. `error` assertion은 [Lighthouse CI 공식 설정 계약](https://github.com/GoogleChrome/lighthouse-ci/blob/v0.15.1/docs/configuration.md)에 따라 non-zero로 실패하며 report는 CI artifact로 보존한다.
 
@@ -118,7 +116,7 @@ CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원�
 
 | 경계          | 차단 검증                                                                                                                                                                     |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pull request  | 형식·lint·architecture·dependency·생성물·type, repository와 workspace 전체 unit·integration, production build와 route bundle, 현재 Chromium의 학습자·관리자 핵심 smoke        |
+| Pull request  | 형식·lint·architecture·dependency·생성물·type, repository와 workspace 전체 unit·integration, production build, 현재 Chromium의 학습자·관리자 핵심 smoke                       |
 | Main push     | 위 정적·생성 계약, repository와 workspace 전체 unit·integration, Astro UI 문서 browser contract, 설정된 Chromium·WebKit 전체 E2E, Lighthouse, source image Compose smoke      |
 | Image release | 성공한 동일 revision main 품질 결과, 취약점 정책·attestation, registry digest의 격리 Compose smoke, 동일 digest staging 배포 후 k6, production 외부 준비 증거와 public verify |
 

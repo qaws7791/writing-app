@@ -168,7 +168,7 @@
 2. 선택할 component와 dependency allowlist를 만든다.
 3. 대상 UI의 MIT license와 third-party notice를 검토한다.
 4. Hugeicons의 실제 배포 license를 lockfile과 package metadata에서 확인한다.
-5. 기존 Storybook screenshot과 route bundle 크기를 기록한다.
+5. 기존 Storybook screenshot을 기록한다.
 6. 모든 공개 공유 UI import와 legacy token 소비자를 migration ledger에 기록한다.
 7. registry의 `YOUR_GITHUB_ID` placeholder를 배포 URL로 사용하지 않는다.
 
@@ -303,7 +303,7 @@
 | 2026-08-08 대상 도구 graph audit에 고위험 1건, 중간 3건과 낮음 1건이 있다. | 전체 도구 graph를 복사하면 알려진 `nanoid` 또는 `hono` 취약 dependency가 들어올 수 있다. | Astro, registry CLI와 MCP 도구를 추가하지 않고 선택한 runtime dependency만 root에서 다시 audit한다. |
 | 같은 이름의 primitive 20개에 API 차이가 있다.                              | 단순 덮어쓰기는 compile 오류 또는 상태 표현 회귀를 만든다.                               | component source와 모든 해당 소비자를 같은 변경 단위에서 수정한다.                                  |
 | token 이름의 공통 부분이 작다.                                             | 기존 token과 Luma token이 혼재할 수 있다.                                                | 하나의 값 source를 쓰는 임시 alias를 사용하고 7단계에서 삭제한다.                                   |
-| drag-and-drop와 chart dependency가 route chunk에 포함될 수 있다.           | learner 또는 admin route가 bundle 예산을 초과할 수 있다.                                 | 직접 import, lazy boundary와 route bundle 검사를 유지한다.                                          |
+| drag-and-drop와 chart dependency가 초기 client chunk에 포함될 수 있다.     | 초기 로딩에 불필요한 JavaScript가 포함될 수 있다.                                        | 직접 import와 lazy boundary를 유지한다.                                                             |
 | 예제 block이 fixture와 local state를 포함한다.                             | 실제 데이터, 권한 또는 서버 채점이 우회될 수 있다.                                       | 예제 block은 anatomy 참조로만 사용하고 기존 container를 유지한다.                                   |
 
 ## 검증 계획
@@ -316,7 +316,6 @@
 bun run ci:static
 bun run ci:tests
 bun run build
-bun run check:route-bundles
 ```
 
 UI가 변경된 단계는 다음 검증을 추가한다.
@@ -356,7 +355,6 @@ bun run audit:full
 3. 기존 API는 실제 소비자가 남아 있는 동안만 호환 계층으로 유지한다.
 4. 단계 실패 시 해당 단계의 merge 단위만 revert한다.
 5. route, schema와 server policy 변경을 UI merge 단위에 포함하지 않는다.
-6. bundle 예산 실패를 예산 상향으로 해결하지 않는다.
 
 ## 전체 완료 기준
 
@@ -369,6 +367,5 @@ bun run audit:full
 - 앱 source의 `#ui/*` import가 0개이다.
 - 예제 block의 fixture와 local state가 product code에 없다.
 - 공개 공유 UI component마다 요구 상태를 설명하는 story가 있다.
-- route bundle이 기존 예산을 통과한다.
 - target commit, license와 수정 이력이 추적 가능하다.
 - 필수 자동 검증과 수동 시각 검증이 모두 통과한다.

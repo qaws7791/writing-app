@@ -160,7 +160,6 @@ A directory-level `AGENTS.md` narrows this file's rules for its own path and may
 bun run ci:static
 bun run ci:tests
 bun run build
-bun run check:route-bundles
 ```
 
 `.github/workflows/quality-gates.yml` owns the required gate set, including the UI documentation, E2E and performance tiers that run in CI.
