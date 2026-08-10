@@ -5,13 +5,21 @@ import {
 
 export function CoursesPage(props: CoursesPageProps) {
   return (
-    <div>
-      <h1 className="font-heading text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-        무엇을 써볼까요?
-      </h1>
-      <p className="mt-3 mb-9 max-w-2xl text-base leading-7 text-muted-foreground">
-        관심 있는 주제를 골라 매일 한 단락씩 글의 결을 다듬어 보세요.
-      </p>
+    <div className="@container flex w-full flex-col gap-12">
+      <header
+        aria-labelledby="courses-catalog-title"
+        className="flex max-w-xl flex-col gap-2"
+      >
+        <h1
+          className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl sm:leading-[1.15]"
+          id="courses-catalog-title"
+        >
+          코스
+        </h1>
+        <p className="text-sm leading-6 text-pretty text-muted-foreground sm:text-[0.9375rem]">
+          주제별로 코스를 살펴보세요
+        </p>
+      </header>
       <CourseCatalogClient {...props} />
     </div>
   )

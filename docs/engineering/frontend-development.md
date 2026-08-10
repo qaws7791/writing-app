@@ -95,7 +95,7 @@
 
 두 앱의 browser generated client는 현재 앱 origin의 상대 API 경계를 사용한다. 서버 request options는 검증된 내부 `API_BASE_URL`을 사용하며 이 값은 Client Component prop이나 browser bundle에 전달하지 않는다. 로컬 개발에서는 각 Next 설정의 development rewrite가 같은 상대 경로를 내부 API로 전달하고 production에서는 Caddy가 이를 소유한다.
 
-서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 학습자 코스 목록은 course page와 category, 홈은 profile과 in-progress page를 병렬 조회한다. 레슨 진입은 lesson만 조회하고 초기 step은 같은 응답의 `learning`에서 읽는다. 별도 progress나 course detail 조회를 시작하지 않는다. 각 요청의 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
+서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 학습자 코스 목록은 course page를 조회하고, 홈은 profile과 in-progress page를 병렬 조회한다. 레슨 진입은 lesson만 조회하고 초기 step은 같은 응답의 `learning`에서 읽는다. 별도 progress나 course detail 조회를 시작하지 않는다. 각 요청의 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
 
 ### 데이터 소유권
 

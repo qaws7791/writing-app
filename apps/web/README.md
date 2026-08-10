@@ -7,7 +7,7 @@
 - `/`: 학습자 랜딩 페이지.
 - `/login`: Google 로그인 화면. `next` query는 허용된 앱 내부 경로만 사용한다.
 - `/app`: 로그인한 학습자의 홈. `/progress` 읽기 모델로 진행 중 코스와 다음 학습 위치를 표시한다.
-- `/app/courses`: 코스 카테고리와 코스 목록.
+- `/app/courses`: 카테고리 섹션으로 묶은 코스 목록.
 - `/app/courses/[id]`: 코스 상세와 커리큘럼.
 - `/app/lesson?lesson_id=...`: step 기반 레슨 경험.
 - 인증 요청: `apps/api`의 `/api/auth/*` Better Auth endpoint를 직접 호출한다.
