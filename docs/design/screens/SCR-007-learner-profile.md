@@ -6,7 +6,7 @@
 
 ## 목적
 
-학습자가 계정 정보와 학습 요약을 확인하고 표시 이름, 테마 또는 로그아웃을 관리한다.
+학습자가 계정 정보를 확인하고 표시 이름, 테마 또는 로그아웃을 관리한다.
 
 ## 주요 사용자
 
@@ -19,8 +19,6 @@
 - 이름 옆 표시 이름 수정 아이콘 버튼
 - 표시 이름 수정 Dialog
 - 가입일
-- 완료한 레슨
-- 연속 학습일
 - 화면 테마 segmented control
 - 로그아웃 버튼
 
@@ -30,7 +28,6 @@
 - avatar는 실제 Google 이미지를 사용한다. 이미지가 없거나 로드에 실패하면 `✍️` fallback을 쓴다.
 - 이름은 heading font와 `h1`을 사용한다.
 - 표시 이름 수정은 이름 옆 `Button variant="ghost" size="icon-sm"` 트리거로 `Dialog`를 연다. Dialog 안에서 현재 이름을 초깃값으로 사용하고 저장 중 중복 제출을 막는다. 저장에 성공하면 Dialog를 닫고 프로필을 갱신한다.
-- 학습 요약은 2열 `Card variant="muted"` 조합을 사용한다.
 - 테마 전환은 라이트, 다크, 시스템 3분할 control이다. 활성 옵션은 배경 surface와 `aria-pressed`로 구분한다.
 - 로그아웃은 `Button variant="destructive"`를 사용한다.
 

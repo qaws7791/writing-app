@@ -34,29 +34,6 @@ export function ProfilePage({ logoutAction, profile }: ProfilePageProps) {
         </CardContent>
       </Card>
 
-      <section aria-labelledby="profile-learning-summary-title">
-        <h2
-          className="mb-5 font-heading text-xl font-semibold tracking-[-0.02em]"
-          id="profile-learning-summary-title"
-        >
-          나의 학습 요약
-        </h2>
-        <div
-          aria-label="나의 학습 요약"
-          className="grid grid-cols-2 gap-3"
-          role="group"
-        >
-          <ProfileStat
-            label="완료한 레슨"
-            value={`${profile.stats.completedLessons}개`}
-          />
-          <ProfileStat
-            label="연속 학습"
-            value={`${profile.stats.currentStreakDays}일`}
-          />
-        </div>
-      </section>
-
       <section aria-labelledby="profile-theme-title">
         <h2
           className="mb-5 font-heading text-xl font-semibold tracking-[-0.02em]"
@@ -69,25 +46,6 @@ export function ProfilePage({ logoutAction, profile }: ProfilePageProps) {
 
       {logoutAction}
     </div>
-  )
-}
-
-function ProfileStat({
-  label,
-  value,
-}: {
-  readonly label: string
-  readonly value: string
-}) {
-  return (
-    <Card size="sm" variant="muted">
-      <CardContent>
-        <p className="font-heading text-2xl font-semibold tabular-nums">
-          {value}
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">{label}</p>
-      </CardContent>
-    </Card>
   )
 }
 
