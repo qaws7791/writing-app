@@ -37,8 +37,11 @@
 
 ## 검증 상태
 
-- MCP 집중 테스트 42개, 변경 package 타입 검사, lint, format과 architecture 검사가 통과했다.
-- `bun run ci:static`은 저장소 기준선의 누락된 Oxlint 테스트 파일, `http-platform` Node 타입 설정과 기존 Knip 항목 때문에 실패했다.
-- `bun run ci:tests`의 workspace 테스트 42개는 통과했다. repository tier는 `scripts` 아래 테스트 파일이 없어서 실패했다.
-- `bun run build`는 Web production origin이 없어서 실패했다. API build와 Admin TypeScript 단계는 통과했다.
-- `bun run check:route-bundles`는 기존 Web `/` 경로가 gzip 예산을 초과해 실패했다.
+- MCP API 집중 테스트 33개와 content 테스트 16개가 통과했다.
+- `bun run ci:static`이 통과했다.
+- `bun run ci:tests`의 repository 테스트 7개와 workspace 테스트 182개가 통과했다.
+- `bun run build`가 통과했고 `/mcp-approvals/[approvalId]` 경로를 생성했다.
+- `bun run doctor`가 통과했고 로컬 DB schema, 무결성과 외래 키 검사가 정상이다.
+- 로컬 API health, 관리자 API health, 관리자 health와 로그인 화면이 모두 HTTP 200을 반환했다.
+- `bun run check:route-bundles`는 Admin `/` 초기 JS gzip 예산 초과로 실패했다.
+- 같은 검사는 변경 전 기준 커밋 `f7fb789f01e5515cf33f4dc5f7849b9f5d125004`에서도 `113757 > 75000`으로 실패했다.
