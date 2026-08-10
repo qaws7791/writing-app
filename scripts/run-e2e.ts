@@ -6,6 +6,7 @@ const repositoryRoot = path.resolve(import.meta.dir, "..")
 const options = readOptions(Bun.argv.slice(2))
 const runRoot = await mkdtemp(path.join(tmpdir(), "writing-app-e2e-"))
 const databaseUrl = path.join(runRoot, "writing-app.sqlite")
+const runId = path.basename(runRoot)
 
 try {
   const playwright = Bun.spawn(
@@ -31,7 +32,17 @@ try {
   )
   process.exitCode = await playwright.exited
 } finally {
-  await rm(runRoot, { force: true, recursive: true })
+  await Promise.all([
+    rm(runRoot, { force: true, recursive: true }),
+    rm(path.join(repositoryRoot, "apps/admin/.next/e2e", runId), {
+      force: true,
+      recursive: true,
+    }),
+    rm(path.join(repositoryRoot, "apps/web/.next/e2e", runId), {
+      force: true,
+      recursive: true,
+    }),
+  ])
 }
 
 interface E2eOptions {

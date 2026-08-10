@@ -23,7 +23,7 @@ type AuditTrailError =
   | AuditEventValidationError
   | Readonly<{ kind: "invalid-audit-query" }>
 
-export type AuditEventQuery = Readonly<{
+type AuditEventQuery = Readonly<{
   actor: OperationsActor
   category: AuditCategory | null
   from: string | null

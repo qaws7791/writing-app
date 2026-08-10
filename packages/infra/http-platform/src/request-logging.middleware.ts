@@ -117,7 +117,7 @@ function classifyRequestResult(status: number): Readonly<{
   }
 }
 
-export function normalizeExternalRequestId(
+function normalizeExternalRequestId(
   value: string | undefined
 ): string | undefined {
   if (value === undefined || value.length === 0 || value.length > 128) {

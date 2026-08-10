@@ -242,7 +242,7 @@ async function findLesson(
   presentationSecret: string,
   input: Readonly<{ lessonId: LessonId; userId: LearnerId }>
 ) {
-  const pinned = database
+  const lessonPinned = database
     .select({
       courseId: learnerLessonProgress.courseId,
       curriculumVersionId: learnerLessonProgress.curriculumVersionId,
@@ -255,17 +255,41 @@ async function findLesson(
       )
     )
     .get()
-  const curriculum =
-    pinned === undefined
+  const published =
+    lessonPinned === undefined
       ? await content.findCurriculumByLesson({
           lessonId: lessonIdSchema.parse(input.lessonId),
         })
-      : await content.readCurriculum({
-          courseId: courseIdSchema.parse(pinned.courseId),
+      : null
+  const scopedCourseId = lessonPinned?.courseId ?? published?.courseId
+  if (scopedCourseId === undefined) return { kind: "not-found" as const }
+
+  const courseProgress = database
+    .select()
+    .from(learnerCourseProgress)
+    .where(
+      and(
+        eq(learnerCourseProgress.userId, input.userId),
+        eq(learnerCourseProgress.courseId, scopedCourseId)
+      )
+    )
+    .get()
+  const curriculum =
+    lessonPinned !== undefined
+      ? await content.readCurriculum({
+          courseId: courseIdSchema.parse(lessonPinned.courseId),
           curriculumVersionId: curriculumVersionIdSchema.parse(
-            pinned.curriculumVersionId
+            lessonPinned.curriculumVersionId
           ),
         })
+      : courseProgress === undefined
+        ? published
+        : await content.readCurriculum({
+            courseId: courseIdSchema.parse(courseProgress.courseId),
+            curriculumVersionId: curriculumVersionIdSchema.parse(
+              courseProgress.curriculumVersionId
+            ),
+          })
   if (curriculum === null) return { kind: "not-found" as const }
 
   const lesson = curriculum.lessons.find(
@@ -276,16 +300,6 @@ async function findLesson(
     return { kind: "not-found" as const }
   }
 
-  const courseProgress = database
-    .select()
-    .from(learnerCourseProgress)
-    .where(
-      and(
-        eq(learnerCourseProgress.userId, input.userId),
-        eq(learnerCourseProgress.courseId, curriculum.courseId)
-      )
-    )
-    .get()
   const assetReferencesById = await resolveAssetReferencesById(content, [
     ...(curriculum.coverAssetId === null ? [] : [curriculum.coverAssetId]),
     ...curriculum.lessons.flatMap((curriculumLesson) =>

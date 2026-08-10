@@ -2,6 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "globalPassThroughEnv": [
     "CI",
+    "E2E_RUN_ROOT",
     "NEXT_RUNTIME",
     "WRITING_APP_DISPOSABLE_UBUNTU"
   ],

@@ -1,13 +1,4 @@
-import type {
-  AdminCourseAssets,
-  AdminCourseDetail,
-} from "@/features/course-editor/model/admin-course-editor"
-import type { AdminRequestResult } from "@/shared/http/admin-api-client"
-
-export const emptyAssetsResult: AdminRequestResult<AdminCourseAssets> = {
-  status: "ok",
-  value: { items: [] },
-}
+import type { AdminCourseDetail } from "@/features/course-editor/model/admin-course-editor"
 
 export function createAdminCourseEditorFixture(
   overrides: Readonly<Partial<AdminCourseDetail>> = {}

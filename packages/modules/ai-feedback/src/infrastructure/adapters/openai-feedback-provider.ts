@@ -9,7 +9,7 @@ import { err, ok } from "@workspace/kernel/result"
 import type { AiFeedbackProvider } from "#ai-feedback/application/ports/ai-feedback-provider"
 import { validateAiFeedbackProviderResponse } from "#ai-feedback/domain/ai-feedback"
 
-export type OpenAiResponseCreateRequest = Readonly<{
+type OpenAiResponseCreateRequest = Readonly<{
   input: string
   instructions: string
   model: string

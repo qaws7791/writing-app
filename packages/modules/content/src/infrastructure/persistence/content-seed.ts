@@ -38,7 +38,7 @@ type ContentSeedStep =
       readonly type: "ai_feedback"
     }
 
-export type ContentSeedLesson = {
+type ContentSeedLesson = {
   readonly id: string
   readonly title: string
   readonly time: string
@@ -54,7 +54,7 @@ type ContentSeedUnit = {
   readonly lessons: readonly ContentSeedLesson[]
 }
 
-export type ContentSeedCourse = {
+type ContentSeedCourse = {
   readonly id: string
   readonly title: string
   readonly desc: string
@@ -73,7 +73,7 @@ export type CourseSeedRow = {
   readonly sortOrder: number
 }
 
-export type CourseUnitSeedRow = {
+type CourseUnitSeedRow = {
   readonly id: string
   readonly courseId: string
   readonly title: string
@@ -81,7 +81,7 @@ export type CourseUnitSeedRow = {
   readonly sortOrder: number
 }
 
-export type LessonSeedRow = {
+type LessonSeedRow = {
   readonly id: string
   readonly courseId: string
   readonly unitId: string
@@ -94,7 +94,7 @@ export type LessonSeedRow = {
   readonly sortOrder: number
 }
 
-export type LessonStepSeedRow = {
+type LessonStepSeedRow = {
   readonly id: string
   readonly lessonId: string
   readonly type: StandardLessonStepType
@@ -129,7 +129,7 @@ function toStandardLessonStepType(
   return stepTypeMap[stepType]
 }
 
-export function createContentSeedRows(
+function createContentSeedRows(
   courses: readonly ContentSeedCourse[]
 ): ContentSeedRows {
   return {
@@ -140,7 +140,7 @@ export function createContentSeedRows(
   }
 }
 
-export function toCourseSeedRow(
+function toCourseSeedRow(
   course: ContentSeedCourse,
   courseIndex: number
 ): CourseSeedRow {
@@ -155,7 +155,7 @@ export function toCourseSeedRow(
   }
 }
 
-export function toUnitSeedRows(course: ContentSeedCourse): CourseUnitSeedRow[] {
+function toUnitSeedRows(course: ContentSeedCourse): CourseUnitSeedRow[] {
   return course.units.map((unit, unitIndex) => ({
     courseId: course.id,
     id: unit.id,
@@ -165,7 +165,7 @@ export function toUnitSeedRows(course: ContentSeedCourse): CourseUnitSeedRow[] {
   }))
 }
 
-export function toLessonSeedRows(course: ContentSeedCourse): LessonSeedRow[] {
+function toLessonSeedRows(course: ContentSeedCourse): LessonSeedRow[] {
   return course.units.flatMap((unit) =>
     unit.lessons.map((lesson, lessonIndex) => ({
       category: lesson.cat ?? null,
@@ -182,15 +182,13 @@ export function toLessonSeedRows(course: ContentSeedCourse): LessonSeedRow[] {
   )
 }
 
-export function toStepSeedRows(course: ContentSeedCourse): LessonStepSeedRow[] {
+function toStepSeedRows(course: ContentSeedCourse): LessonStepSeedRow[] {
   return course.units.flatMap((unit) =>
     unit.lessons.flatMap(toLessonStepSeedRows)
   )
 }
 
-export function toLessonStepSeedRows(
-  lesson: ContentSeedLesson
-): LessonStepSeedRow[] {
+function toLessonStepSeedRows(lesson: ContentSeedLesson): LessonStepSeedRow[] {
   const rows = lesson.steps.map((step, stepIndex) => {
     const id = `${lesson.id}-s${stepIndex + 1}`
     const type = toStandardLessonStepType(step.type)

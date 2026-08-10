@@ -1,4 +1,4 @@
-import { dirname, join } from "node:path"
+import { basename, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
@@ -15,6 +15,11 @@ import {
 } from "@workspace/nextjs-config/content-asset-images"
 
 const appDirectory = dirname(fileURLToPath(import.meta.url))
+const e2eRunRoot = process.env.E2E_RUN_ROOT?.trim()
+const e2eDistDirectory =
+  e2eRunRoot === undefined || e2eRunRoot === ""
+    ? undefined
+    : join(".next/e2e", basename(e2eRunRoot))
 const development = process.env.NODE_ENV !== "production"
 const contentAssetPublicBaseUrl = parseContentAssetPublicBaseUrl(
   process.env.CONTENT_ASSET_PUBLIC_BASE_URL,
@@ -36,6 +41,7 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 )
 
 const nextConfig: NextConfig = {
+  ...(e2eDistDirectory === undefined ? {} : { distDir: e2eDistDirectory }),
   experimental: {
     cpus: 1,
     useTypeScriptCli: false,

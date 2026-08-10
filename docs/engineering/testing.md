@@ -112,7 +112,7 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 
 Vitest workspace가 참조하는 앱 config는 각자 고유 사유가 있을 때만 둔다. `apps/api`는 migration `.sql`을 text로 불러오는 loader, web·admin·shared/ui는 DOM 환경과 React 단일 인스턴스 고정이 그 사유이며 공통 부분은 [React Vitest factory](../../packages/config/vitest-config/src/react.ts)가 소유한다. 단일 process에서 project별 `maxWorkers`를 다르게 두면 Vitest가 실행 순서를 결정할 수 없으므로 worker 상한은 project별로 나누지 않는다.
 
-배포 runtime smoke(`test:frontend-production-runtime`)와 관리자 개발 서버 수명주기 smoke(`test:admin-dev-lifecycle`)는 전용 명령으로만 실행하며 CI 차단 gate가 아니다. coverage는 수집하지 않는다. provider를 manifest에 선언하지 않고 수집 설정·명령도 두지 않으며, coverage 숫자는 어떤 경계에서도 gate로 쓰지 않는다. `@vitest/coverage-v8`이 lockfile과 `node_modules`에 있는 것은 bun이 `vitest`의 optional peer를 함께 해석한 결과이고 저장소가 선언한 의존성이 아니다.
+배포 runtime은 image와 bootstrap smoke에서 검증한다. coverage는 수집하지 않는다. provider를 manifest에 선언하지 않고 수집 설정·명령도 두지 않으며, coverage 숫자는 어떤 경계에서도 gate로 쓰지 않는다. `@vitest/coverage-v8`이 lockfile과 `node_modules`에 있는 것은 bun이 `vitest`의 optional peer를 함께 해석한 결과이고 저장소가 선언한 의존성이 아니다.
 
 CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원하거나 한 번 생성한 뒤 생성물과 Turbo cache를 단기 artifact로 배포한다. 정적 검사, repository 테스트, build와 browser job은 이 artifact를 받아 병렬 실행하며 각자 생성하지 않는다. 정적 job은 형식·lint·custom lint rule·architecture·dependency 일관성·Knip·type 검사를 한 번의 설치 뒤 병렬 실행하고, 테스트 job도 `scripts` 계약 테스트와 workspace 전체 unit·integration을 병렬 실행한다.
 
@@ -122,7 +122,7 @@ CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원�
 | Main push     | 위 정적·생성 계약, repository와 workspace 전체 unit·integration, Astro UI 문서 browser contract, 설정된 Chromium·WebKit 전체 E2E, Lighthouse, source image Compose smoke      |
 | Image release | 성공한 동일 revision main 품질 결과, 취약점 정책·attestation, registry digest의 격리 Compose smoke, 동일 digest staging 배포 후 k6, production 외부 준비 증거와 public verify |
 
-PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는 단일 Chromium 실행이다. fixture, API와 Next runtime의 준비·종료는 Playwright `webServer`가 소유하고 실행 wrapper는 격리 디렉터리와 환경만 제공한다. Main release E2E는 web과 admin의 최적화 build를 새로 만든 뒤 production standalone runtime으로 실행한다. Chromium과 WebKit은 브라우저별 새 DB·서버·임시 디렉터리에서 순차 실행하고 PR 전용 smoke spec을 중복 실행하지 않는다. 브라우저별 실제 test 범위는 config의 project 계약이 소유하며, 모든 시나리오가 모든 engine에서 동작한다고 과장하지 않는다.
+PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는 단일 Chromium 실행이다. fixture, API와 Next runtime의 준비·종료는 Playwright `webServer`가 소유하고 실행 wrapper는 격리 디렉터리와 환경만 제공한다. Main release E2E는 web과 admin의 최적화 build를 새로 만든 뒤 release 전용 standalone runtime으로 실행한다. Chromium과 WebKit은 브라우저별 새 DB·서버·임시 디렉터리에서 같은 핵심 smoke를 순차 실행한다. 브라우저별 실제 test 범위는 config의 project 계약이 소유하며, 모든 시나리오가 모든 engine에서 동작한다고 과장하지 않는다.
 
 로컬 browser tier를 처음 실행하는 개발자는 `bunx playwright install chromium webkit`으로 저장소 Playwright가 요구하는 engine을 설치한다. CI의 engine과 Linux system dependency 설치는 [quality workflow](../../.github/workflows/quality-gates.yml)가 소유한다. 일반 `setup`은 큰 browser cache를 자동으로 설치하지 않는다.
 

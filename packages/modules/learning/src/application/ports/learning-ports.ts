@@ -29,8 +29,6 @@ import type {
 import type { LearnerReadModelRepository } from "#learning/application/ports/learner-read-model-repository"
 import type { LearnerContentAssetReference } from "#learning/application/learning-read-model"
 
-export type { LearningApplication } from "#learning/application/learning-application"
-
 export type LearningContentQueryPort = Readonly<{
   findCurriculumByLesson: (input: {
     readonly curriculumVersionId?: CurriculumVersionId
@@ -131,6 +129,7 @@ export type LearningTransitionRepository = Readonly<{
     Result<CompleteLearnerStepTransitionResult, LearnerTransitionError>
   >
   findPinnedScope: (input: {
+    readonly courseId?: CourseId
     readonly learnerId: LearnerId
     readonly lessonId: LessonId
   }) => Promise<LearnerPinnedScope | null>

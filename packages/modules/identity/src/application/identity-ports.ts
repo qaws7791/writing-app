@@ -157,7 +157,6 @@ export type ChangeUserStatusCommand = Readonly<{
 
 export {
   adminSessionExpiresAt,
-  type AdminAuthenticatedSession,
   type AdminSessionResolver,
   type SessionResolver,
 } from "#identity/application/identity-session"

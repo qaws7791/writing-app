@@ -149,7 +149,7 @@ export function transitionMatchChoiceSelection(
   }
 }
 
-export function findMatchedLeftChoiceIdForRightChoiceId(
+function findMatchedLeftChoiceIdForRightChoiceId(
   selectionMap: MatchSelectionMap,
   rightChoiceId: MatchChoiceId
 ): MatchChoiceId | null {

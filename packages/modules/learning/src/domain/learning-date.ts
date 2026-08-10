@@ -7,7 +7,7 @@ export function toLearningDateKey(date: Date): LearningDateKey {
   return toPlatformDayKey(date) as LearningDateKey
 }
 
-export function addLearningCalendarDays(
+function addLearningCalendarDays(
   dateKey: LearningDateKey,
   days: number
 ): LearningDateKey {

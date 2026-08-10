@@ -1,4 +1,4 @@
-import { dirname, join } from "node:path"
+import { basename, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
@@ -16,6 +16,11 @@ import {
 import { adminContentAssetMaxBytes } from "@workspace/contracts/content/admin-assets"
 
 const appDirectory = dirname(fileURLToPath(import.meta.url))
+const e2eRunRoot = process.env.E2E_RUN_ROOT?.trim()
+const e2eDistDirectory =
+  e2eRunRoot === undefined || e2eRunRoot === ""
+    ? undefined
+    : join(".next/e2e", basename(e2eRunRoot))
 const contentAssetServerActionBodyLimit = adminContentAssetMaxBytes + 64 * 1024
 const development = process.env.NODE_ENV !== "production"
 const contentAssetPublicBaseUrl = parseContentAssetPublicBaseUrl(
@@ -38,6 +43,7 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 )
 
 const nextConfig: NextConfig = {
+  ...(e2eDistDirectory === undefined ? {} : { distDir: e2eDistDirectory }),
   experimental: {
     cpus: 1,
     useTypeScriptCli: false,

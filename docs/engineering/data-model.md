@@ -18,7 +18,7 @@
 - credential·session table은 auth infra가 소유하며 identity schema에 포함하지 않는다. identity profile은 인증 계정을 FK로 참조하고 credential의 물리 삭제에는 함께 삭제된다.
 - 상태 전이는 `active → suspended | deleted`, `suspended → active | deleted`만 허용한다. `deleted`는 종단 상태이며 정리 전까지 관리자 조회만 허용하고 상태 변경·재삭제와 보호 API 접근을 거부한다.
 - 삭제 command는 private object storage에 user ID와 요청 시각만 가진 marker 한 개를 먼저 기록한다. 기록 실패에는 profile이나 session을 변경하지 않는다. 기록 성공 뒤 profile을 비식별화하고 삭제 시각을 기록한 다음 해당 학습자의 모든 session을 즉시 폐기한다. 삭제 시각부터 5일 동안 사용자 소유 데이터는 보존한다.
-- 삭제 시각이 5일 이상 지난 사용자는 명시적 정리 command가 AI 시도·사용자별 quota, 학습 초안·답변·진행·활동, 인증 사용자를 하나의 SQLite transaction에서 순서대로 삭제한다. 인증 사용자의 account·session·profile은 cascade로 함께 삭제하고 콘텐츠 revision과 사용자 식별자가 없는 전체 AI quota는 보존한다.
+- 삭제 시각이 5일 이상 지난 사용자는 명시적 정리 command가 AI 시도·사용자별 quota, 학습 초안·답변·진행·활동, 인증 verification과 인증 사용자를 하나의 SQLite transaction에서 순서대로 삭제한다. 인증 verification은 이메일 식별자 또는 사용자 ID 연결로 삭제한다. 인증 사용자의 account·session·profile은 cascade로 함께 삭제하고 콘텐츠 revision과 사용자 식별자가 없는 전체 AI quota는 보존한다.
 - backup 복원에서는 정확한 snapshot 시각 이후의 private marker를 사용자별 가장 이른 요청으로 축약해 삭제 상태와 session 폐기를 다시 적용하고, 이미 5일 경계를 지난 사용자는 같은 물리 삭제 경계로 정리한다. 반복 실행은 이미 적용·이미 삭제 상태로 수렴한다.
 - profile과 사용자 상태 변경은 version을 비교해 경쟁 변경을 명시적인 conflict로 반환한다.
 - 관리자 권한은 별도 제품 role 없이 유효한 관리자 session으로 판정하며, 관리자 계정은 seed CLI로만 만든다.

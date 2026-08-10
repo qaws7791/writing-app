@@ -142,7 +142,7 @@ type LearnerStepInteractionDefinition = {
   readonly submissionSchema: z.ZodType
 }
 
-export const learnerStepInteractionDefinitions = {
+const learnerStepInteractionDefinitions = {
   MULTIPLE_CHOICE: {
     draftSchema: multipleChoiceDraftSchema,
     evaluationSchema: multipleChoiceEvaluationSchema,

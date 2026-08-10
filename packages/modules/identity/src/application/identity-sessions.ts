@@ -11,7 +11,6 @@ import type {
 } from "#identity/application/identity-session"
 
 export {
-  adminSessionExpiresAt,
   type AdminAuthenticatedSession,
   type AuthenticatedSession,
   type AdminSessionResolver,

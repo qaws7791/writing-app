@@ -321,11 +321,28 @@ async function readLessonCurriculum(
   dependencies: LearningApplicationDependencies,
   input: Readonly<{ learnerId: LearnerId; lessonId: LessonId }>
 ) {
-  const pinned = await dependencies.transitionRepository.findPinnedScope(input)
-  return pinned === null
-    ? dependencies.content.findCurriculumByLesson({ lessonId: input.lessonId })
+  const lessonPinned =
+    await dependencies.transitionRepository.findPinnedScope(input)
+  if (lessonPinned !== null) {
+    return dependencies.content.readCurriculum({
+      courseId: lessonPinned.courseId,
+      curriculumVersionId: lessonPinned.curriculumVersionId,
+    })
+  }
+
+  const published = await dependencies.content.findCurriculumByLesson({
+    lessonId: input.lessonId,
+  })
+  if (published === null) return null
+
+  const coursePinned = await dependencies.transitionRepository.findPinnedScope({
+    courseId: published.courseId,
+    ...input,
+  })
+  return coursePinned === null
+    ? published
     : dependencies.content.readCurriculum({
-        courseId: pinned.courseId,
-        curriculumVersionId: pinned.curriculumVersionId,
+        courseId: coursePinned.courseId,
+        curriculumVersionId: coursePinned.curriculumVersionId,
       })
 }

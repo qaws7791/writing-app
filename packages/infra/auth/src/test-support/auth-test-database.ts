@@ -17,7 +17,6 @@ import {
   authUsers,
   authVerifications,
 } from "#auth/schema/index"
-import { hashAuthPassword } from "#auth/password"
 import { createSqliteAuthDatabaseAdapter } from "#auth/sqlite-database"
 
 export type AuthTestDatabase = SqliteDatabaseClient<typeof authSchema>["db"]
@@ -60,46 +59,6 @@ export function createAdminAuthDatabaseAdapter(database: AuthTestDatabase) {
       admin_verification: adminAuthVerifications,
     },
   })
-}
-
-export async function seedAdminOwner(
-  database: AuthTestDatabase,
-  input: Readonly<{
-    adminId?: string
-    email?: string
-    name?: string
-    now?: Date
-    password: string
-  }>
-): Promise<void> {
-  const adminId = input.adminId ?? "admin-1"
-  const now = input.now ?? new Date("2026-07-18T00:00:00.000Z")
-  const password = await hashAuthPassword(input.password)
-
-  database
-    .insert(adminAuthUsers)
-    .values({
-      createdAt: now,
-      email: input.email ?? "owner@example.com",
-      emailVerified: true,
-      id: adminId,
-      image: null,
-      name: input.name ?? "소유자",
-      updatedAt: now,
-    })
-    .run()
-  database
-    .insert(adminAuthAccounts)
-    .values({
-      accountId: adminId,
-      createdAt: now,
-      id: `${adminId}-credential`,
-      password,
-      providerId: "credential",
-      updatedAt: now,
-      userId: adminId,
-    })
-    .run()
 }
 
 export function readSetCookiePair(response: Response): string {

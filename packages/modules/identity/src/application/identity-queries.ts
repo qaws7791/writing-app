@@ -32,7 +32,7 @@ type AdminUserListItem = Readonly<{
   streak: number
 }>
 
-export type AdminUserDetail = AdminUserListItem &
+type AdminUserDetail = AdminUserListItem &
   Readonly<{
     progressPercent: number
     totalLessons: number

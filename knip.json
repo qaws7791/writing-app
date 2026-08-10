@@ -16,7 +16,7 @@
         "e2e/**/*.{ts,tsx}",
         "scripts/**/*.{js,cjs,mjs,ts,cts,mts}"
       ],
-      "ignoreDependencies": ["@lhci/cli", "^k6(?:/|$)"],
+      "ignoreDependencies": ["@lhci/cli", "@testing-library/dom", "^k6(?:/|$)"],
       "playwright": false
     },
     "apps/*": {
@@ -71,7 +71,6 @@
     },
     "packages/infra/http-client": {
       "includeEntryExports": true,
-      "entry": ["src/**/*.{test,spec}.ts"],
       "project": [
         ".generated/**/*.ts",
         "*.{js,cjs,mjs,ts,cts,mts}",

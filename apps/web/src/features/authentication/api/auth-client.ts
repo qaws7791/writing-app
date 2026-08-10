@@ -51,7 +51,7 @@ export async function requestLogout(callbackPath: string): Promise<string> {
   return getDefaultWebAuthClient().requestLogout(callbackPath)
 }
 
-export type WebAuthClient = {
+type WebAuthClient = {
   readonly requestEmailLogin: (input: {
     readonly email: string
     readonly nextPath: string
@@ -81,7 +81,7 @@ type FetchImplementation = (
   init?: RequestInit
 ) => Promise<Response>
 
-export function createWebAuthClient({
+function createWebAuthClient({
   fetchImplementation = globalThis.fetch.bind(globalThis),
   learnerAuthClientFactory = createLearnerAuthClient,
 }: {

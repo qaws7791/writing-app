@@ -1,6 +1,5 @@
 import { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 import type {
-  completeLearnerStep,
   getCourseDetail,
   getCourses,
   getLesson,
@@ -10,7 +9,6 @@ import type {
   getWritings,
   saveLearnerStepDraft,
   saveWriting,
-  startLearnerLesson,
 } from "@workspace/http-client/learner"
 
 export type LearnerApiRequestResult<TValue> =
@@ -78,26 +76,18 @@ export type LearnerCourseSummaryDto = Awaited<
   ReturnType<typeof getCourses>
 >["items"][number]
 export type LearnerLessonDto = Awaited<ReturnType<typeof getLesson>>
-export type LearnerLessonLearningDto = LearnerLessonDto["learning"]
-export type LearnerLessonStepDto = LearnerLessonDto["steps"][number]
 export type LearnerStepDraftDto = LearnerLessonDto["drafts"][number]
 export type LearnerStepDraftAnswerDto = LearnerStepDraftDto["answer"]
 export type LearnerProfileDto = Awaited<ReturnType<typeof getProfile>>
 export type LearnerProfileStatsDto = LearnerProfileDto["stats"]
 export type LearnerProgressPageDto = Awaited<ReturnType<typeof getProgress>>
 export type LearnerProgressCourseDto = LearnerProgressPageDto["items"][number]
-export type LearnerCompleteStepResultDto = Awaited<
-  ReturnType<typeof completeLearnerStep>
->
 export type LearnerSaveStepDraftResultDto = Awaited<
   ReturnType<typeof saveLearnerStepDraft>
 >
 export type LearnerSaveStepDraftBodyDto = Parameters<
   typeof saveLearnerStepDraft
 >[2]
-export type LearnerStartLessonResultDto = Awaited<
-  ReturnType<typeof startLearnerLesson>
->
 export type LearnerWritingDetailDto = Awaited<ReturnType<typeof getWriting>>
 export type LearnerWritingSummaryDto = Awaited<
   ReturnType<typeof getWritings>

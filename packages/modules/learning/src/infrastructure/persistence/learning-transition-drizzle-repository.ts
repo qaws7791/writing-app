@@ -852,13 +852,16 @@ function findPinnedLessonScope(
 
 function readPinnedLearningScope(
   db: TransitionDatabase,
-  input: { readonly learnerId: string; readonly lessonId: string }
+  input: {
+    readonly courseId?: string
+    readonly learnerId: string
+    readonly lessonId: string
+  }
 ) {
-  const row = db
+  const lessonRow = db
     .select({
       courseId: learnerLessonProgress.courseId,
       curriculumVersionId: learnerLessonProgress.curriculumVersionId,
-      lessonId: learnerLessonProgress.lessonId,
     })
     .from(learnerLessonProgress)
     .where(
@@ -868,6 +871,23 @@ function readPinnedLearningScope(
       )
     )
     .get()
+  const row =
+    lessonRow ??
+    (input.courseId === undefined
+      ? undefined
+      : db
+          .select({
+            courseId: learnerCourseProgress.courseId,
+            curriculumVersionId: learnerCourseProgress.curriculumVersionId,
+          })
+          .from(learnerCourseProgress)
+          .where(
+            and(
+              eq(learnerCourseProgress.userId, input.learnerId),
+              eq(learnerCourseProgress.courseId, input.courseId)
+            )
+          )
+          .get())
   return row === undefined
     ? null
     : {
@@ -875,7 +895,7 @@ function readPinnedLearningScope(
         curriculumVersionId: curriculumVersionIdSchema.parse(
           row.curriculumVersionId
         ),
-        lessonId: lessonIdSchema.parse(row.lessonId),
+        lessonId: lessonIdSchema.parse(input.lessonId),
       }
 }
 

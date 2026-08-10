@@ -8,7 +8,6 @@
         "@lhci/cli": "0.15.1",
         "@playwright/test": "^1.58.2",
         "@testing-library/dom": "^10.4.1",
-        "@testing-library/user-event": "catalog:",
         "@workspace/contracts": "workspace:*",
         "@workspace/env": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
@@ -52,7 +51,6 @@
         "@tailwindcss/postcss": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
-        "@testing-library/user-event": "catalog:",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
@@ -61,7 +59,6 @@
         "@workspace/vitest-config": "workspace:*",
         "babel-plugin-react-compiler": "catalog:",
         "jsdom": "catalog:",
-        "msw": "catalog:",
         "tailwindcss": "catalog:",
         "tw-animate-css": "catalog:",
         "typescript": "catalog:",
@@ -167,7 +164,6 @@
         "@tailwindcss/postcss": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
-        "@testing-library/user-event": "catalog:",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
@@ -240,7 +236,6 @@
       "devDependencies": {
         "@workspace/typescript-config": "workspace:*",
         "typescript": "catalog:",
-        "vitest": "catalog:",
       },
     },
     "packages/infra/auth": {
@@ -288,7 +283,6 @@
         "msw": "catalog:",
         "orval": "catalog:",
         "typescript": "catalog:",
-        "vitest": "catalog:",
       },
     },
     "packages/infra/http-platform": {
@@ -301,6 +295,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@types/node": "catalog:",
         "@workspace/typescript-config": "workspace:*",
         "typescript": "catalog:",
         "vitest": "catalog:",
@@ -436,10 +431,7 @@
       },
       "devDependencies": {
         "@types/bun": "catalog:",
-        "@workspace/ai-feedback": "workspace:*",
-        "@workspace/content": "workspace:*",
         "@workspace/identity": "workspace:*",
-        "@workspace/learning": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
         "@workspace/writing": "workspace:*",
         "typescript": "catalog:",
@@ -525,6 +517,7 @@
       "devDependencies": {
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
+        "@testing-library/user-event": "catalog:",
         "@types/bun": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",

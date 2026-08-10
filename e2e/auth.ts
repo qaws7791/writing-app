@@ -1,12 +1,5 @@
-import { readFile } from "node:fs/promises"
-import path from "node:path"
-
 import { expect, type BrowserContext, type Page } from "@playwright/test"
-import {
-  e2eCredentials,
-  e2eRuntime,
-  readRequiredE2eEnvironment,
-} from "#e2e/runtime"
+import { e2eCredentials, e2eRuntime } from "#e2e/runtime"
 
 export const learnerWebOrigin = e2eRuntime.learnerOrigin
 export const adminWebOrigin = e2eRuntime.adminOrigin
@@ -92,33 +85,4 @@ async function waitForSettledFrames(page: Page): Promise<void> {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
       })
   )
-}
-
-export async function readLatestAuthEmail(): Promise<
-  Readonly<{
-    callbackUrl: string
-    kind: "password-reset" | "verification"
-  }>
-> {
-  const mailboxPath = path.join(
-    path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT")),
-    "auth-email.json"
-  )
-  const parsed: unknown = JSON.parse(await readFile(mailboxPath, "utf8"))
-
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    !("callbackUrl" in parsed) ||
-    typeof parsed.callbackUrl !== "string" ||
-    !("kind" in parsed) ||
-    (parsed.kind !== "password-reset" && parsed.kind !== "verification")
-  ) {
-    throw new Error("E2E 인증 메일 기록 형식이 올바르지 않습니다.")
-  }
-
-  return {
-    callbackUrl: parsed.callbackUrl,
-    kind: parsed.kind,
-  }
 }

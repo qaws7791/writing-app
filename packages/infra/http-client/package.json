@@ -18,7 +18,6 @@
   "scripts": {
     "generate": "orval --config orval.config.ts && bun src/scripts/generate-msw-handler-exports.ts",
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/http-client",
     "typecheck": "tsc7 --noEmit"
   },
   "devDependencies": {
@@ -27,8 +26,7 @@
     "@workspace/typescript-config": "workspace:*",
     "msw": "catalog:",
     "orval": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "dependencies": {
     "@workspace/contracts": "workspace:*"

@@ -1,6 +1,6 @@
-import { inArray } from "drizzle-orm"
+import { inArray, or } from "drizzle-orm"
 import { aiFeedbackLearnerDataPurge } from "@workspace/ai-feedback/module"
-import { authUsers } from "@workspace/auth/schema"
+import { authUsers, authVerifications } from "@workspace/auth/schema"
 import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
 import { identityLearnerDataPurge } from "@workspace/identity/module"
 import { learningLearnerDataPurge } from "@workspace/learning/module"
@@ -12,6 +12,22 @@ const authUserPurge: LearnerDataPurgePort = {
   purge(transaction, userIds) {
     if (userIds.length === 0) return
 
+    const userEmails = transaction
+      .select({ email: authUsers.email })
+      .from(authUsers)
+      .where(inArray(authUsers.id, userIds))
+      .all()
+      .map(({ email }) => email)
+
+    transaction
+      .delete(authVerifications)
+      .where(
+        or(
+          inArray(authVerifications.identifier, userEmails),
+          inArray(authVerifications.value, userIds)
+        )
+      )
+      .run()
     transaction.delete(authUsers).where(inArray(authUsers.id, userIds)).run()
   },
 }

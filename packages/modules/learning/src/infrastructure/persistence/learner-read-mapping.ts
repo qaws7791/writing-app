@@ -35,7 +35,7 @@ export type LearnerCourseListProjectionRow = {
   readonly visualKey: LearnerCourseDetail["visualKey"]
 }
 
-export type LearnerCourseProjectionLesson = {
+type LearnerCourseProjectionLesson = {
   readonly category: string | null
   readonly contentStatus: LearnerCourseDetail["contentStatus"]
   readonly description: string | null
@@ -46,19 +46,19 @@ export type LearnerCourseProjectionLesson = {
   readonly unitId: string
 }
 
-export type LearnerCourseProjectionStep = {
+type LearnerCourseProjectionStep = {
   readonly id: string
   readonly lessonId: string
   readonly sortOrder: number
 }
 
-export type LearnerCourseProgressProjectionRow = {
+type LearnerCourseProgressProjectionRow = {
   readonly completedAt: Date | null
   readonly lastActivityAt: Date
   readonly status: "completed" | "in_progress"
 }
 
-export type LearnerLessonProgressProjectionRow = {
+type LearnerLessonProgressProjectionRow = {
   readonly completedAt: Date | null
   readonly currentStepId: string
   readonly lessonId: string
