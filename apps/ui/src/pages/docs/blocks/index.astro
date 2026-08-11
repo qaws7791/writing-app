@@ -4,13 +4,13 @@ import ThemeInitializer from "@/src/components/theme-initializer.astro"
 import BlocksCatalog from "@/src/components/blocks-catalog"
 import { blockSections } from "@/src/lib/block-docs"
 import { getBlockSource } from "@/src/lib/block-source"
-import { getInstallCommand } from "@/src/lib/component-docs"
+import { getBlockImportCommand } from "@/src/lib/component-docs"
 import "@workspace/ui/pretendard-font"
 import "@/src/styles/global.css"
 
 const title = "블록"
 const description =
-  "로그인·학습·운영 홈 등 완성된 화면 구성을 registry:block으로 제공합니다."
+  "로그인·학습·운영 홈 등 완성된 화면 구성을 @workspace/ui/blocks로 제공합니다."
 const baseUrl = import.meta.env.BASE_URL
 const pageTitle = `${title} — Luma UI`
 
@@ -18,7 +18,7 @@ const sections = blockSections.map((section) =>
   Object.assign({}, section, {
     blocks: section.blocks.map((block) =>
       Object.assign({}, block, {
-        installCommand: getInstallCommand(block.installName),
+        installCommand: getBlockImportCommand(block.installName),
         code: getBlockSource(block.slug),
       }),
     ),

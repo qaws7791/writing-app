@@ -15,13 +15,13 @@ The upstream registry records shadcn/ui commit `cb2bcd88d93b2f9bddb030e9136f1f87
 
 `@workspace/ui` keeps its package name and public subpath exports.
 
-Every registry UI source, block source and hook is copied into `packages/shared/ui`.
+Every UI source, block source and hook lives in `packages/shared/ui`.
 
-Registry imports are converted to the package-private `#ui/*` alias.
+Package-private imports use the `#ui/*` alias.
 
-Registry block fixtures remain example data and are not connected to product routes or production data.
+Block fixtures remain example data and are not connected to product routes or production data.
 
-The complete Astro site, registry tooling, previews, documentation and tracked repository files are imported into `apps/ui`.
+The Astro documentation site, previews and tracked documentation files live in `apps/ui`. The site consumes `@workspace/ui` and does not package an external registry.
 
 The light `muted-foreground` and `destructive` lightness values are reduced locally to preserve WCAG 2.2 AA contrast in existing product compositions. Destructive alert descriptions use the full status color instead of the upstream 85% opacity.
 

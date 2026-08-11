@@ -2,13 +2,13 @@
 
 ## Rules
 
-- `src/components/ui/` holds the complete Luma registry UI inventory.
+- `src/components/ui/` holds the complete shared UI inventory.
 - `src/components/<domain>/` holds pure domain presentation components (for example `lesson/`).
-- `src/blocks/` holds registry example blocks and their helper blocks.
-- `src/hooks/` holds registry hooks.
+- `src/blocks/` holds example blocks and their helper blocks.
+- `src/hooks/` holds shared hooks.
 - Domain components accept display props and simple change callbacks only.
 - Do not put API calls, session/routing, OpenAPI or core imports, or grading policy in this package.
-- Registry block fixtures must remain isolated from product routes and production data.
+- Block fixtures must remain isolated from product routes and production data.
 - Prefer path imports over barrel re-exports for both primitives and domain components.
 - Important: don't edit without user request
 

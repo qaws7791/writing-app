@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+대체됨 — ADR-0035가 외부 registry packaging과 registry↔package 이중 소스를 폐기한다. Astro 문서·Playwright 검증 결정은 유지한다.
 
 ## 날짜
 

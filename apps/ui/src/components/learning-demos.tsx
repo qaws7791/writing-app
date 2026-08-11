@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { LEARNING_EXTENDED_PREVIEWS } from "./learning-extended-demos";
 
-import { Button } from "@/registry/luma/ui/button";
+import { Button } from "@workspace/ui/components/ui/button";
 import {
   Cadence,
   CadenceDay,
@@ -13,14 +13,14 @@ import {
   CadenceSummary,
   CadenceTitle,
   CadenceWeek,
-} from "@/registry/luma/ui/cadence";
+} from "@workspace/ui/components/ui/cadence";
 import {
   Choice,
   ChoiceContent,
   ChoiceGroup,
   ChoiceLabel,
   type ChoiceState,
-} from "@/registry/luma/ui/choice";
+} from "@workspace/ui/components/ui/choice";
 import {
   Classify,
   ClassifyCategories,
@@ -30,7 +30,7 @@ import {
   ClassifyItemTag,
   ClassifyPool,
   type ClassifyState,
-} from "@/registry/luma/ui/classify";
+} from "@workspace/ui/components/ui/classify";
 import {
   Coaching,
   CoachingActions,
@@ -47,14 +47,14 @@ import {
   CoachingStatus,
   CoachingSummary,
   type CoachingPhase,
-} from "@/registry/luma/ui/coaching";
+} from "@workspace/ui/components/ui/coaching";
 import {
   Compare,
   ComparePanel,
   CompareVersion,
   CompareVersionList,
   CompareVersions,
-} from "@/registry/luma/ui/compare";
+} from "@workspace/ui/components/ui/compare";
 import {
   Compose,
   ComposeBadge,
@@ -62,7 +62,7 @@ import {
   ComposeContext,
   ComposeEditor,
   ComposeMeter,
-} from "@/registry/luma/ui/compose";
+} from "@workspace/ui/components/ui/compose";
 import {
   CourseOverview,
   CourseOverviewEyebrow,
@@ -80,14 +80,14 @@ import {
   CourseOverviewSection,
   CourseOverviewSectionTitle,
   CourseOverviewTitle,
-} from "@/registry/luma/ui/course-overview";
-import { Goal } from "@/registry/luma/ui/goal";
+} from "@workspace/ui/components/ui/course-overview";
+import { Goal } from "@workspace/ui/components/ui/goal";
 import {
   Insight,
   InsightDescription,
   InsightEyebrow,
   InsightTitle,
-} from "@/registry/luma/ui/insight";
+} from "@workspace/ui/components/ui/insight";
 import {
   Lesson,
   LessonActions,
@@ -100,7 +100,7 @@ import {
   LessonHeader,
   LessonMeta,
   LessonProgress,
-} from "@/registry/luma/ui/lesson";
+} from "@workspace/ui/components/ui/lesson";
 import {
   LearningProfile,
   LearningProfileDescription,
@@ -112,7 +112,7 @@ import {
   LearningProfileSectionHint,
   LearningProfileSectionLabel,
   LearningProfileTitle,
-} from "@/registry/luma/ui/learning-profile";
+} from "@workspace/ui/components/ui/learning-profile";
 import {
   Mastery,
   MasteryBadge,
@@ -120,7 +120,7 @@ import {
   MasteryHeader,
   MasteryLabel,
   MasteryStages,
-} from "@/registry/luma/ui/mastery";
+} from "@workspace/ui/components/ui/mastery";
 import {
   Milestone,
   MilestoneBody,
@@ -128,7 +128,7 @@ import {
   MilestoneMark,
   MilestoneMeta,
   MilestoneTitle,
-} from "@/registry/luma/ui/milestone";
+} from "@workspace/ui/components/ui/milestone";
 import {
   NextAction,
   NextActionActions,
@@ -137,7 +137,7 @@ import {
   NextActionMeta,
   NextActionReason,
   NextActionTitle,
-} from "@/registry/luma/ui/next-action";
+} from "@workspace/ui/components/ui/next-action";
 import {
   PairBoard,
   PairColumn,
@@ -146,7 +146,7 @@ import {
   PairLabel,
   PairMarker,
   type PairState,
-} from "@/registry/luma/ui/pair";
+} from "@workspace/ui/components/ui/pair";
 import {
   Path,
   PathConnector,
@@ -161,9 +161,9 @@ import {
   PathUnitHeader,
   PathUnitTitle,
   type PathNodeState,
-} from "@/registry/luma/ui/path";
-import { Prose, ProseBody, ProseSource } from "@/registry/luma/ui/prose";
-import { Segment, SegmentGroup, type SegmentState } from "@/registry/luma/ui/segment";
+} from "@workspace/ui/components/ui/path";
+import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/ui/prose";
+import { Segment, SegmentGroup, type SegmentState } from "@workspace/ui/components/ui/segment";
 import {
   Sortable,
   SortableContent,
@@ -171,7 +171,7 @@ import {
   SortableIndex,
   SortableItem,
   type SortableState,
-} from "@/registry/luma/ui/sortable";
+} from "@workspace/ui/components/ui/sortable";
 import {
   Standing,
   StandingHeader,
@@ -182,9 +182,9 @@ import {
   StandingName,
   StandingRow,
   StandingTitle,
-} from "@/registry/luma/ui/standing";
-import { Step, StepBody, StepGuide, StepHeader, StepTitle } from "@/registry/luma/ui/step";
-import { Token, TokenBank, TokenSentence, TokenSlot } from "@/registry/luma/ui/token";
+} from "@workspace/ui/components/ui/standing";
+import { Step, StepBody, StepGuide, StepHeader, StepTitle } from "@workspace/ui/components/ui/step";
+import { Token, TokenBank, TokenSentence, TokenSlot } from "@workspace/ui/components/ui/token";
 
 const TOTAL_STEPS = 5;
 

@@ -105,27 +105,17 @@
       },
     },
     "apps/ui": {
-      "name": "@workspace/ui-registry",
+      "name": "@workspace/ui-docs",
       "version": "0.1.0",
       "dependencies": {
-        "@base-ui/react": "catalog:",
-        "@dnd-kit/dom": "catalog:",
-        "@dnd-kit/react": "catalog:",
         "@hugeicons/core-free-icons": "catalog:",
         "@hugeicons/react": "catalog:",
-        "@shadcn/react": "catalog:",
-        "@tanstack/react-table": "catalog:",
         "@workspace/ui": "workspace:*",
-        "class-variance-authority": "catalog:",
-        "clsx": "catalog:",
-        "cmdk": "catalog:",
-        "date-fns": "4.4.0",
         "input-otp": "catalog:",
         "react": "catalog:",
         "react-day-picker": "catalog:",
         "react-dom": "catalog:",
         "recharts": "catalog:",
-        "tailwind-merge": "catalog:",
       },
       "devDependencies": {
         "@astrojs/check": "0.9.10",
@@ -1748,7 +1738,7 @@
 
     "@workspace/ui": ["@workspace/ui@workspace:packages/shared/ui"],
 
-    "@workspace/ui-registry": ["@workspace/ui-registry@workspace:apps/ui"],
+    "@workspace/ui-docs": ["@workspace/ui-docs@workspace:apps/ui"],
 
     "@workspace/vitest-config": ["@workspace/vitest-config@workspace:packages/config/vitest-config"],
 

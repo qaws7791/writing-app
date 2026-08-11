@@ -20,31 +20,30 @@
 | `package.json`  | `upstream-package.snapshot`  | 원본 manifest 보존            |
 | `package.json`  | `package.json`               | workspace 이름과 catalog 적용 |
 
-`public/r`은 통합된 source와 lockfile로 registry build를 실행한 결과를 사용합니다.
+`public/r`은 이관 당시 registry build 산출물이었으며, ADR-0035 이후 제거되었습니다.
 
 텍스트 source는 root Git 계약에 맞춰 LF로 정규화했습니다.
 
-## Registry 범위
+## Registry 범위 (이관 시점)
 
-`registry/luma/registry.json`의 모든 `registry:ui`, `registry:block`, `registry:hook`,
-`registry:lib` 항목을 포함합니다.
+이관 당시 `registry/luma/registry.json`의 모든 `registry:ui`, `registry:block`, `registry:hook`,
+`registry:lib` 항목을 포함했습니다. 이후 UI·block·hook의 단일 소스는 `packages/shared/ui`로
+고정되었고 `apps/ui/registry`는 제거되었습니다.
 
-Registry가 참조하는 block helper source도 모두 포함합니다.
+전체 UI source는 `packages/shared/ui/src/components/ui`에 같은 이름으로 존재합니다.
 
-전체 UI source는 `packages/shared/ui/src/components/ui`에도 같은 이름으로 존재합니다.
+전체 block source는 `packages/shared/ui/src/blocks`에 같은 이름으로 존재합니다.
 
-전체 block source는 `packages/shared/ui/src/blocks`에도 같은 이름으로 존재합니다.
-
-`use-mobile`은 `packages/shared/ui/src/hooks/use-mobile.ts`에도 존재합니다.
+`use-mobile`은 `packages/shared/ui/src/hooks/use-mobile.ts`에 존재합니다.
 
 ## 검증
 
 다음 검증을 통과해야 이관이 완료됩니다.
 
 ```bash
-bun --filter @workspace/ui-registry lint
-bun --filter @workspace/ui-registry check
-bun --filter @workspace/ui-registry build
+bun --filter @workspace/ui-docs lint
+bun --filter @workspace/ui-docs check
+bun --filter @workspace/ui-docs build
 bun --filter @workspace/ui lint
 bun --filter @workspace/ui typecheck
 ```

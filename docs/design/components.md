@@ -18,13 +18,11 @@
 - 앱 source는 공유 UI를 `@workspace/ui/*` package export map으로 가져온다. 앱 build adapter의 `#ui/*` mapping은 source 상태의 공유 UI 내부 import만 해석한다.
 - `packages/shared/ui` 소스는 `@/`를 사용하지 않는다. 공유 UI 내부 참조는 `#ui/*` private alias를 사용하고, 앱 소스는 `@/`를 유지한다.
 
-## Luma registry
+## `@workspace/ui` 단일 소스
 
-전체 registry item과 문서 source는 `apps/ui/registry/luma/registry.json`과 `apps/ui`가 소유한다.
+UI·block·hook·utils source는 `packages/shared/ui`만 소유한다. `apps/ui`는 그 패키지를 소비하는 내부 Astro 문서다.
 
-전체 registry UI, block source와 hook은 `packages/shared/ui`에도 같은 이름으로 제공한다.
-
-Registry block은 조합과 상태 표현 예제다. 제품 화면은 fixture, 임시 link와 local state를 production data flow로 사용하지 않는다.
+Block은 조합과 상태 표현 예제다. 제품 화면은 fixture, 임시 link와 local state를 production data flow로 사용하지 않는다.
 
 ## Button
 

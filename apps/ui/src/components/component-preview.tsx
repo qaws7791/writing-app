@@ -20,8 +20,13 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/registry/luma/ui/accordion";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/registry/luma/ui/alert";
+} from "@workspace/ui/components/ui/accordion";
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,17 +37,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/registry/luma/ui/alert-dialog";
-import { AspectRatio } from "@/registry/luma/ui/aspect-ratio";
+} from "@workspace/ui/components/ui/alert-dialog";
+import { AspectRatio } from "@workspace/ui/components/ui/aspect-ratio";
 import {
   Attachment,
   AttachmentContent,
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@/registry/luma/ui/attachment";
-import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "@/registry/luma/ui/avatar";
-import { Badge } from "@/registry/luma/ui/badge";
+} from "@workspace/ui/components/ui/attachment";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+} from "@workspace/ui/components/ui/avatar";
+import { Badge } from "@workspace/ui/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -50,15 +60,20 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/registry/luma/ui/breadcrumb";
-import { Bubble, BubbleContent, BubbleGroup, BubbleReactions } from "@/registry/luma/ui/bubble";
-import { Button } from "@/registry/luma/ui/button";
+} from "@workspace/ui/components/ui/breadcrumb";
+import {
+  Bubble,
+  BubbleContent,
+  BubbleGroup,
+  BubbleReactions,
+} from "@workspace/ui/components/ui/bubble";
+import { Button } from "@workspace/ui/components/ui/button";
 import {
   ButtonGroup,
   ButtonGroupSeparator,
   ButtonGroupText,
-} from "@/registry/luma/ui/button-group";
-import { Calendar } from "@/registry/luma/ui/calendar";
+} from "@workspace/ui/components/ui/button-group";
+import { Calendar } from "@workspace/ui/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -66,10 +81,19 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/registry/luma/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/registry/luma/ui/chart";
-import { Checkbox } from "@/registry/luma/ui/checkbox";
-import { Choice, ChoiceContent, ChoiceGroup, ChoiceLabel } from "@/registry/luma/ui/choice";
+} from "@workspace/ui/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@workspace/ui/components/ui/chart";
+import { Checkbox } from "@workspace/ui/components/ui/checkbox";
+import {
+  Choice,
+  ChoiceContent,
+  ChoiceGroup,
+  ChoiceLabel,
+} from "@workspace/ui/components/ui/choice";
 import {
   Classify,
   ClassifyCategories,
@@ -78,7 +102,7 @@ import {
   ClassifyItemLabel,
   ClassifyItemTag,
   ClassifyPool,
-} from "@/registry/luma/ui/classify";
+} from "@workspace/ui/components/ui/classify";
 import {
   Coaching,
   CoachingActions,
@@ -87,12 +111,12 @@ import {
   CoachingSource,
   CoachingSourceBody,
   CoachingSourceLabel,
-} from "@/registry/luma/ui/coaching";
+} from "@workspace/ui/components/ui/coaching";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/registry/luma/ui/collapsible";
+} from "@workspace/ui/components/ui/collapsible";
 import {
   Combobox,
   ComboboxContent,
@@ -100,7 +124,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/registry/luma/ui/combobox";
+} from "@workspace/ui/components/ui/combobox";
 import {
   Command,
   CommandEmpty,
@@ -108,15 +132,15 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/registry/luma/ui/command";
+} from "@workspace/ui/components/ui/command";
 import {
   Compare,
   ComparePanel,
   CompareVersion,
   CompareVersionList,
   CompareVersions,
-} from "@/registry/luma/ui/compare";
-import { Compose, ComposeEditor, ComposeMeter } from "@/registry/luma/ui/compose";
+} from "@workspace/ui/components/ui/compare";
+import { Compose, ComposeEditor, ComposeMeter } from "@workspace/ui/components/ui/compose";
 import {
   Dialog,
   DialogContent,
@@ -125,7 +149,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/luma/ui/dialog";
+} from "@workspace/ui/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -134,7 +158,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/registry/luma/ui/dropdown-menu";
+} from "@workspace/ui/components/ui/dropdown-menu";
 import {
   Empty,
   EmptyContent,
@@ -142,27 +166,27 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/registry/luma/ui/empty";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/registry/luma/ui/field";
-import { Input } from "@/registry/luma/ui/input";
+} from "@workspace/ui/components/ui/empty";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@workspace/ui/components/ui/field";
+import { Input } from "@workspace/ui/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@/registry/luma/ui/input-group";
+} from "@workspace/ui/components/ui/input-group";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@/registry/luma/ui/input-otp";
+} from "@workspace/ui/components/ui/input-otp";
 import {
   Insight,
   InsightDescription,
   InsightEyebrow,
   InsightTitle,
-} from "@/registry/luma/ui/insight";
+} from "@workspace/ui/components/ui/insight";
 import {
   Item,
   ItemActions,
@@ -170,9 +194,9 @@ import {
   ItemDescription,
   ItemMedia,
   ItemTitle,
-} from "@/registry/luma/ui/item";
-import { Kbd, KbdGroup } from "@/registry/luma/ui/kbd";
-import { Label } from "@/registry/luma/ui/label";
+} from "@workspace/ui/components/ui/item";
+import { Kbd, KbdGroup } from "@workspace/ui/components/ui/kbd";
+import { Label } from "@workspace/ui/components/ui/label";
 import {
   Lesson,
   LessonActions,
@@ -182,8 +206,8 @@ import {
   LessonHeader,
   LessonMeta,
   LessonProgress,
-} from "@/registry/luma/ui/lesson";
-import { Marker, MarkerContent, MarkerIcon } from "@/registry/luma/ui/marker";
+} from "@workspace/ui/components/ui/lesson";
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/components/ui/marker";
 import {
   Message,
   MessageAvatar,
@@ -191,14 +215,14 @@ import {
   MessageFooter,
   MessageGroup,
   MessageHeader,
-} from "@/registry/luma/ui/message";
+} from "@workspace/ui/components/ui/message";
 import {
   MessageScroller,
   MessageScrollerContent,
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@/registry/luma/ui/message-scroller";
+} from "@workspace/ui/components/ui/message-scroller";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -206,7 +230,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/registry/luma/ui/navigation-menu";
+} from "@workspace/ui/components/ui/navigation-menu";
 import {
   Pagination,
   PaginationContent,
@@ -215,8 +239,14 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/registry/luma/ui/pagination";
-import { PairBoard, PairColumn, PairItem, PairLabel, PairMarker } from "@/registry/luma/ui/pair";
+} from "@workspace/ui/components/ui/pagination";
+import {
+  PairBoard,
+  PairColumn,
+  PairItem,
+  PairLabel,
+  PairMarker,
+} from "@workspace/ui/components/ui/pair";
 import {
   Path,
   PathConnector,
@@ -229,7 +259,7 @@ import {
   PathUnitDescription,
   PathUnitHeader,
   PathUnitTitle,
-} from "@/registry/luma/ui/path";
+} from "@workspace/ui/components/ui/path";
 import {
   Popover,
   PopoverContent,
@@ -237,20 +267,20 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/luma/ui/popover";
-import { Progress, ProgressLabel, ProgressValue } from "@/registry/luma/ui/progress";
-import { Prose, ProseBody, ProseSource } from "@/registry/luma/ui/prose";
-import { RadioGroup, RadioGroupItem } from "@/registry/luma/ui/radio-group";
-import { ScrollArea } from "@/registry/luma/ui/scroll-area";
-import { Segment, SegmentGroup } from "@/registry/luma/ui/segment";
+} from "@workspace/ui/components/ui/popover";
+import { Progress, ProgressLabel, ProgressValue } from "@workspace/ui/components/ui/progress";
+import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/ui/prose";
+import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/ui/radio-group";
+import { ScrollArea } from "@workspace/ui/components/ui/scroll-area";
+import { Segment, SegmentGroup } from "@workspace/ui/components/ui/segment";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/luma/ui/select";
-import { Separator } from "@/registry/luma/ui/separator";
+} from "@workspace/ui/components/ui/select";
+import { Separator } from "@workspace/ui/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -258,7 +288,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/registry/luma/ui/sheet";
+} from "@workspace/ui/components/ui/sheet";
 import {
   SidebarCard,
   SidebarContent,
@@ -278,17 +308,17 @@ import {
   SidebarMenuSubItem,
   SidebarProvider,
   SidebarSearch,
-} from "@/registry/luma/ui/sidebar";
-import { Skeleton } from "@/registry/luma/ui/skeleton";
-import { Slider } from "@/registry/luma/ui/slider";
+} from "@workspace/ui/components/ui/sidebar";
+import { Skeleton } from "@workspace/ui/components/ui/skeleton";
+import { Slider } from "@workspace/ui/components/ui/slider";
 import {
   Sortable,
   SortableContent,
   SortableHandle,
   SortableIndex,
   SortableItem,
-} from "@/registry/luma/ui/sortable";
-import { Spinner } from "@/registry/luma/ui/spinner";
+} from "@workspace/ui/components/ui/sortable";
+import { Spinner } from "@workspace/ui/components/ui/spinner";
 import {
   Step,
   StepActions,
@@ -296,8 +326,8 @@ import {
   StepGuide,
   StepHeader,
   StepTitle,
-} from "@/registry/luma/ui/step";
-import { Switch } from "@/registry/luma/ui/switch";
+} from "@workspace/ui/components/ui/step";
+import { Switch } from "@workspace/ui/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -306,19 +336,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/luma/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/luma/ui/tabs";
-import { Textarea } from "@/registry/luma/ui/textarea";
-import { Toaster, toast } from "@/registry/luma/ui/toast";
-import { Token, TokenBank, TokenSentence, TokenSlot } from "@/registry/luma/ui/token";
-import { Toggle } from "@/registry/luma/ui/toggle";
-import { ToggleGroup, ToggleGroupItem } from "@/registry/luma/ui/toggle-group";
+} from "@workspace/ui/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs";
+import { Textarea } from "@workspace/ui/components/ui/textarea";
+import { Toaster, toast } from "@workspace/ui/components/ui/toast";
+import { Token, TokenBank, TokenSentence, TokenSlot } from "@workspace/ui/components/ui/token";
+import { Toggle } from "@workspace/ui/components/ui/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@workspace/ui/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/luma/ui/tooltip";
+} from "@workspace/ui/components/ui/tooltip";
 
 type ComponentPreviewProps = { slug: string; example?: string };
 
@@ -1390,7 +1420,7 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
             Luma 스타일 컴포넌트 미리보기입니다.
           </TabsContent>
           <TabsContent value="code" className="rounded-3xl bg-muted p-5 font-mono text-sm">
-            bunx shadcn add tabs
+            {'import { Tabs } from "@workspace/ui/components/ui/tabs"'}
           </TabsContent>
           <TabsContent value="accessibility" className="rounded-3xl border p-5 text-sm">
             키보드 방향키 탐색을 지원합니다.
@@ -1452,7 +1482,7 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
             <CardDescription>컴포넌트 미리보기</CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            이 컴포넌트는 레지스트리에서 바로 설치할 수 있습니다.
+            이 컴포넌트는 @workspace/ui에서 가져올 수 있습니다.
           </CardContent>
         </Card>
       );

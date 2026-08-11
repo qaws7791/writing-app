@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 
-import { Button } from "@/registry/luma/ui/button";
+import { Button } from "@workspace/ui/components/ui/button";
 import {
   ArgumentEdge,
   ArgumentMap,
@@ -13,7 +13,7 @@ import {
   ArgumentNode,
   ArgumentNodeBody,
   ArgumentNodeLabel,
-} from "@/registry/luma/ui/argument-map";
+} from "@workspace/ui/components/ui/argument-map";
 import {
   Checkpoint,
   CheckpointActions,
@@ -25,7 +25,7 @@ import {
   CheckpointObjectives,
   CheckpointScore,
   CheckpointTitle,
-} from "@/registry/luma/ui/checkpoint";
+} from "@workspace/ui/components/ui/checkpoint";
 import {
   Draft,
   DraftActions,
@@ -34,7 +34,7 @@ import {
   DraftMeter,
   DraftStatus,
   DraftTitle,
-} from "@/registry/luma/ui/draft";
+} from "@workspace/ui/components/ui/draft";
 import {
   FeedbackSummary,
   FeedbackSummaryHeader,
@@ -45,7 +45,7 @@ import {
   FeedbackSummaryMeta,
   FeedbackSummaryPriority,
   FeedbackSummaryTitle,
-} from "@/registry/luma/ui/feedback-summary";
+} from "@workspace/ui/components/ui/feedback-summary";
 import {
   HintLadder,
   HintLadderHeader,
@@ -56,7 +56,7 @@ import {
   HintStepActions,
   HintStepBody,
   HintStepLabel,
-} from "@/registry/luma/ui/hint-ladder";
+} from "@workspace/ui/components/ui/hint-ladder";
 import {
   MistakeJournal,
   MistakeJournalHeader,
@@ -67,7 +67,7 @@ import {
   MistakePatternCount,
   MistakePatternDescription,
   MistakePatternLabel,
-} from "@/registry/luma/ui/mistake-journal";
+} from "@workspace/ui/components/ui/mistake-journal";
 import {
   Outline,
   OutlineBlock,
@@ -78,7 +78,7 @@ import {
   OutlineHint,
   OutlineList,
   OutlineTitle,
-} from "@/registry/luma/ui/outline";
+} from "@workspace/ui/components/ui/outline";
 import {
   Portfolio,
   PortfolioHeader,
@@ -89,7 +89,7 @@ import {
   PortfolioPieceMeta,
   PortfolioPieceTitle,
   PortfolioTitle,
-} from "@/registry/luma/ui/portfolio";
+} from "@workspace/ui/components/ui/portfolio";
 import {
   PracticeQueue,
   PracticeQueueHeader,
@@ -100,7 +100,7 @@ import {
   PracticeQueueList,
   PracticeQueueMeta,
   PracticeQueueTitle,
-} from "@/registry/luma/ui/practice-queue";
+} from "@workspace/ui/components/ui/practice-queue";
 import {
   Reflection,
   ReflectionActions,
@@ -111,7 +111,7 @@ import {
   ReflectionFields,
   ReflectionHeader,
   ReflectionTitle,
-} from "@/registry/luma/ui/reflection";
+} from "@workspace/ui/components/ui/reflection";
 import {
   RevisionEntry,
   RevisionEntryMark,
@@ -121,7 +121,7 @@ import {
   RevisionHistoryHeader,
   RevisionHistoryList,
   RevisionHistoryTitle,
-} from "@/registry/luma/ui/revision-history";
+} from "@workspace/ui/components/ui/revision-history";
 import {
   Rubric,
   RubricCriterion,
@@ -137,7 +137,7 @@ import {
   RubricList,
   RubricMeta,
   RubricTitle,
-} from "@/registry/luma/ui/rubric";
+} from "@workspace/ui/components/ui/rubric";
 import {
   SkillMap,
   SkillMapHeader,
@@ -149,7 +149,7 @@ import {
   SkillNodeLabel,
   SkillNodeLevel,
   SkillNodePrereq,
-} from "@/registry/luma/ui/skill-map";
+} from "@workspace/ui/components/ui/skill-map";
 import {
   SourceItem,
   SourceItemBody,
@@ -161,7 +161,7 @@ import {
   SourcePackList,
   SourcePackMeta,
   SourcePackTitle,
-} from "@/registry/luma/ui/source-pack";
+} from "@workspace/ui/components/ui/source-pack";
 import {
   Submission,
   SubmissionActions,
@@ -170,8 +170,8 @@ import {
   SubmissionMeta,
   SubmissionStatus,
   SubmissionTitle,
-} from "@/registry/luma/ui/submission";
-import { Textarea } from "@/registry/luma/ui/textarea";
+} from "@workspace/ui/components/ui/submission";
+import { Textarea } from "@workspace/ui/components/ui/textarea";
 import {
   TextAnnotation,
   TextAnnotationDocument,
@@ -181,7 +181,7 @@ import {
   TextAnnotationItemLabel,
   TextAnnotationMark,
   TextAnnotationPanel,
-} from "@/registry/luma/ui/text-annotation";
+} from "@workspace/ui/components/ui/text-annotation";
 import {
   WritingBrief,
   WritingBriefCriteria,
@@ -194,7 +194,7 @@ import {
   WritingBriefSection,
   WritingBriefSectionTitle,
   WritingBriefTitle,
-} from "@/registry/luma/ui/writing-brief";
+} from "@workspace/ui/components/ui/writing-brief";
 
 function CheckpointDemo() {
   return (

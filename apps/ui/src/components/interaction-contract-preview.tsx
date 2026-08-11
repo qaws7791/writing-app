@@ -5,7 +5,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/registry/luma/ui/accordion";
+} from "@workspace/ui/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,8 +16,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/registry/luma/ui/alert-dialog";
-import { Button } from "@/registry/luma/ui/button";
+} from "@workspace/ui/components/ui/alert-dialog";
+import { Button } from "@workspace/ui/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -27,15 +27,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/luma/ui/dialog";
+} from "@workspace/ui/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/luma/ui/dropdown-menu";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/registry/luma/ui/field";
-import { Input } from "@/registry/luma/ui/input";
+} from "@workspace/ui/components/ui/dropdown-menu";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@workspace/ui/components/ui/field";
+import { Input } from "@workspace/ui/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -43,16 +43,16 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/luma/ui/popover";
-import { Progress, ProgressLabel, ProgressValue } from "@/registry/luma/ui/progress";
+} from "@workspace/ui/components/ui/popover";
+import { Progress, ProgressLabel, ProgressValue } from "@workspace/ui/components/ui/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/luma/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/luma/ui/tabs";
+} from "@workspace/ui/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs";
 
 export const interactionContracts = [
   "accordion",

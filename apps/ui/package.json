@@ -1,11 +1,11 @@
 {
-  "name": "@workspace/ui-registry",
+  "name": "@workspace/ui-docs",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "bun run docs:generate-previews && astro dev",
-    "build": "bun run registry:build && bun run docs:generate-previews && astro check && astro build",
+    "build": "bun run docs:generate-previews && astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "check": "bun run docs:generate-previews && astro check",
@@ -16,32 +16,19 @@
     "format:check": "oxfmt --check .",
     "docs:validate": "bun scripts/validate-docs.ts",
     "docs:generate-previews": "bun scripts/generate-doc-previews.ts",
-    "source:validate": "bun scripts/validate-source-sync.ts",
     "test:browser": "playwright test --config playwright.config.ts",
-    "registry:build": "shadcn build registry.json -o public/r",
-    "registry:validate": "shadcn registry validate registry.json",
     "audit": "bun audit",
-    "verify": "bun run format:check && bun run lint && bun run docs:validate && bun run source:validate && bun run check && bun run registry:validate && bun run build"
+    "verify": "bun run format:check && bun run lint && bun run docs:validate && bun run check && bun run build"
   },
   "dependencies": {
-    "@base-ui/react": "catalog:",
-    "@dnd-kit/dom": "catalog:",
-    "@dnd-kit/react": "catalog:",
     "@hugeicons/core-free-icons": "catalog:",
     "@hugeicons/react": "catalog:",
-    "@shadcn/react": "catalog:",
-    "@tanstack/react-table": "catalog:",
     "@workspace/ui": "workspace:*",
-    "class-variance-authority": "catalog:",
-    "clsx": "catalog:",
-    "cmdk": "catalog:",
-    "date-fns": "4.4.0",
     "input-otp": "catalog:",
     "react": "catalog:",
     "react-day-picker": "catalog:",
     "react-dom": "catalog:",
-    "recharts": "catalog:",
-    "tailwind-merge": "catalog:"
+    "recharts": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

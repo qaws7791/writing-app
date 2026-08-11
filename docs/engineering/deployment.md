@@ -156,7 +156,7 @@ Incident operator는 같은 token의 다음 요청이 `401`인지 확인한다. 
 
 정적 설정 검증, image smoke, host bootstrap, 실제 deploy와 복구 훈련은 서로 다른 위험 수준이다. 각 명령의 현재 이름·입력·실행 환경은 root task, CI workflow와 deployment automation source를 확인한다. 운영 서버나 개발자의 기존 데이터를 대상으로 destructive 검증을 실행하지 않는다. Windows의 YAML parse와 fixture unit test는 Ubuntu에서의 `ansible-lint`, syntax check, bootstrap·maintenance role 두 번째 실행 `changed=0`을 대체하지 않는다. 실제 외부 staging replica 복원과 Ubuntu 재적용 증거가 없으면 해당 출시 gate는 미충족이다.
 
-OpenAPI와 Orval client는 runtime과 같은 route source에서 build task로 결정적으로 재생성하며 산출물을 Git에 보존하지 않는다. 생성 순서와 schema 검증은 Turbo dependency와 계약 테스트로 확인한다. migration SQL은 application migration source를 Git에 보존한다. Astro UI 문서와 registry 정적 산출물은 source가 아니며 필요할 때 `apps/ui` manifest의 build task로 재생성한다. 현재 source는 API route, migration directory와 `apps/ui` manifest를 직접 확인한다.
+OpenAPI와 Orval client는 runtime과 같은 route source에서 build task로 결정적으로 재생성하며 산출물을 Git에 보존하지 않는다. 생성 순서와 schema 검증은 Turbo dependency와 계약 테스트로 확인한다. migration SQL은 application migration source를 Git에 보존한다. Astro UI 문서 정적 산출물은 source가 아니며 필요할 때 `apps/ui` manifest의 build task로 재생성한다. 현재 source는 API route, migration directory와 `apps/ui` manifest를 직접 확인한다.
 
 ## 변경 검토
 

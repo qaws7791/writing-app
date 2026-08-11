@@ -30,14 +30,14 @@
 
 ## 도구별 책임
 
-| 도구                     | 책임과 선택 기준                                                                                                                                                                                                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Vitest                   | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                                    |
-| Testing Library          | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                                          |
-| MSW                      | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                                            |
-| Playwright               | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                                                       |
-| Lighthouse CI·k6         | Lighthouse CI는 main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                                                  |
-| Astro UI 문서·Playwright | `apps/ui`는 실행 가능한 UI 카탈로그, 격리 예제와 shadcn registry를 제공한다. browser contract는 상태 전이·초점·키보드·오류·비활성·접근성을 실제 정적 build에서 검증한다. 제품 화면 조합은 primitive 문서와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 예제나 fixture는 남기지 않는다. |
+| 도구                     | 책임과 선택 기준                                                                                                                                                                                                                                                           |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vitest                   | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                   |
+| Testing Library          | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                         |
+| MSW                      | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                           |
+| Playwright               | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                                      |
+| Lighthouse CI·k6         | Lighthouse CI는 main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                                 |
+| Astro UI 문서·Playwright | `apps/ui`는 실행 가능한 UI 카탈로그와 격리 예제를 제공한다. browser contract는 상태 전이·초점·키보드·오류·비활성·접근성을 실제 정적 build에서 검증한다. 제품 화면 조합은 primitive 문서와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 예제나 fixture는 남기지 않는다. |
 
 ## 테스트 데이터와 인증
 

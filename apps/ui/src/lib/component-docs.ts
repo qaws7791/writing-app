@@ -502,7 +502,11 @@ export function getPropDocs(slug: string): PropDoc[] {
 }
 
 export function getInstallCommand(slug: string) {
-  return `bunx shadcn@latest add https://YOUR_GITHUB_ID.github.io/ui/r/${slug}.json`;
+  return `import { … } from "@workspace/ui/components/ui/${slug}"`;
+}
+
+export function getBlockImportCommand(slug: string) {
+  return `import { … } from "@workspace/ui/blocks/${slug}"`;
 }
 
 const apiOverrides: Record<string, string> = {

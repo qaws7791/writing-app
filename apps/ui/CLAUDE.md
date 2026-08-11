@@ -1,7 +1,7 @@
-My Shadcn Registry for modern design system
+# Luma UI documentation (internal)
 
 - Astro Demo Site
-- React Component Library
+- Consumes `@workspace/ui` React components
 
 # DESIGN
 
@@ -9,8 +9,8 @@ Always read `DESIGN.md` for design and component work.
 
 Load only the additional contract required by the task:
 
-- Registry components, blocks, previews, and component docs: `design/COMPONENTS.md`
-- Public APIs, tokens, registry structure, releases, or breaking changes: `design/GOVERNANCE.md`
+- Components, blocks, previews, and component docs: `design/COMPONENTS.md`
+- Public APIs, tokens, releases, or breaking changes: `design/GOVERNANCE.md`
 - Learning paths, lessons, steps, and learning activities: `design/LEARNING.md`
 - AI content, provenance, permissions, environments, or high-risk actions: `design/AI_AND_RISK.md`
 - Final verification for new components or large changes: `design/QUALITY.md`

@@ -32,9 +32,9 @@ const allowedScopes = new Set<string>([
   adminMcpUserStatusScope,
 ])
 
-export type AdminMcpCredentialId = string
+type AdminMcpCredentialId = string
 
-export type AdminMcpAccessTokenVerification =
+type AdminMcpAccessTokenVerification =
   | Readonly<{
       credentialId: AdminMcpCredentialId
       expiresAt: Date
@@ -44,7 +44,7 @@ export type AdminMcpAccessTokenVerification =
     }>
   | Readonly<{ kind: "invalid" }>
 
-export type AdminMcpAccessTokenIssueResult =
+type AdminMcpAccessTokenIssueResult =
   | Readonly<{
       createdAt: Date
       credentialId: AdminMcpCredentialId
@@ -56,7 +56,7 @@ export type AdminMcpAccessTokenIssueResult =
     }>
   | Readonly<{ kind: "actor-not-found" | "invalid-input" | "owner-not-found" }>
 
-export type AdminMcpAccessTokenRevokeResult = Readonly<{
+type AdminMcpAccessTokenRevokeResult = Readonly<{
   kind:
     | "actor-not-found"
     | "already-revoked"

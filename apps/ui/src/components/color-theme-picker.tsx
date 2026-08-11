@@ -10,15 +10,15 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Button } from "@/registry/luma/ui/button";
+import { Button } from "@workspace/ui/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/luma/ui/popover";
-import { cn } from "@/registry/luma/lib/utils";
+} from "@workspace/ui/components/ui/popover";
+import { cn } from "@workspace/ui/lib/utils";
 
 const THEME_KEY = "luma-ui-theme";
 const COLOR_KEY = "luma-ui-color";

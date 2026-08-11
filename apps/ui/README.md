@@ -1,16 +1,15 @@
-# UI Registry
+# Luma UI 문서
 
-개인용 공개 shadcn 레지스트리와 Astro 데모 사이트입니다.
+모노레포 내부용 Astro 디자인 시스템 문서 사이트입니다.
 
-현재 registry source의 모든 Luma UI 컴포넌트, block과 `use-mobile` 훅을
-포함합니다. 각 registry item은 독립적인 `/r/{name}.json` URL로 설치할 수
-있습니다. 현재 item 목록과 수는 `registry/luma/registry.json`이 소유합니다.
+`@workspace/ui`의 UI 컴포넌트, block과 hook을 문서와 실행 예제로 제공합니다.
+구현 소스는 `packages/shared/ui`가 소유합니다.
 
 ## 기술 구성
 
 - Astro와 React
 - Tailwind CSS v4
-- shadcn Luma 스타일과 Base UI
+- Base UI 기반 Luma 스타일
 - TypeScript
 - Pretendard Variable
 - Hugeicons Free
@@ -33,26 +32,10 @@ bun run verify
 bun run audit
 ```
 
-## 레지스트리 사용
-
-`registry.json`의 `YOUR_GITHUB_ID`를 실제 GitHub 사용자 이름으로 변경한 뒤
-저장소를 공개하세요.
-
-```bash
-bunx shadcn@latest add https://YOUR_GITHUB_ID.github.io/ui/r/button.json
-```
-
-GitHub Pages 배포 시 `bun run build`가 레지스트리 JSON을 `public/r`에 생성하고,
-Astro가 데모와 함께 정적 파일로 배포합니다. 로컬에서 레지스트리 산출물만 만들려면:
-
-```bash
-bun run registry:build
-```
-
 ## 컴포넌트 문서
 
 `/docs/components/accordion`부터 전체 컴포넌트별 정적 문서 페이지를
-제공합니다. 각 페이지에는 실제 Luma 프리뷰, 설치 명령, 사용 예제,
+제공합니다. 각 페이지에는 실제 Luma 프리뷰, workspace import 경로, 사용 예제,
 자주 사용하는 Props와 현재 소스의 export 목록이 포함됩니다.
 
 새 문서를 추가하거나 수정할 때는 [`DOCS_GUIDELINES.md`](./DOCS_GUIDELINES.md)의

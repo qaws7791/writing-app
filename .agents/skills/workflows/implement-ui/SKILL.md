@@ -78,9 +78,9 @@ Astro UI 문서는 다음 조건으로 갱신한다.
 5. Astro UI 문서를 갱신했으면 다음을 실행한다.
 
 ```bash
-bun --filter @workspace/ui-registry docs:validate
-bun --filter @workspace/ui-registry test:browser
-bun --filter @workspace/ui-registry build
+bun --filter @workspace/ui-docs docs:validate
+bun --filter @workspace/ui-docs test:browser
+bun --filter @workspace/ui-docs build
 ```
 
 6. 저장소 완료 기준에 따라 다음을 실행한다.

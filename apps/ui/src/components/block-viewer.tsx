@@ -12,16 +12,16 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Button } from "@/registry/luma/ui/button";
-import { Separator } from "@/registry/luma/ui/separator";
-import { Tabs, TabsList, TabsTrigger } from "@/registry/luma/ui/tabs";
+import { Button } from "@workspace/ui/components/ui/button";
+import { Separator } from "@workspace/ui/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/luma/ui/tooltip";
-import { cn } from "@/registry/luma/lib/utils";
+} from "@workspace/ui/components/ui/tooltip";
+import { cn } from "@workspace/ui/lib/utils";
 
 import CodeBlock from "@/src/components/code-block";
 import { BlockDemo, type BlockDemoSlug } from "@/src/components/login-block-demos";
@@ -256,12 +256,12 @@ export default function BlockViewer({
               variant="outline"
               size="sm"
               onClick={copyInstall}
-              aria-label={copied ? "설치 명령 복사됨" : "설치 명령 복사"}
+              aria-label={copied ? "가져오기 경로 복사됨" : "가져오기 경로 복사"}
               title={installCommand}
               className="h-8 max-w-full gap-2 rounded-xl px-2.5 font-normal text-muted-foreground shadow-none"
             >
               <HugeiconsIcon icon={TerminalIcon} strokeWidth={1.8} className="size-3.5 shrink-0" />
-              <span className="truncate font-mono text-xs">bunx shadcn add {installName}</span>
+              <span className="truncate font-mono text-xs">@workspace/ui/blocks/{installName}</span>
               <HugeiconsIcon
                 icon={copied ? Tick02Icon : Copy01Icon}
                 strokeWidth={1.8}
@@ -347,7 +347,7 @@ export default function BlockViewer({
         )}
 
         <span className="sr-only" aria-live="polite">
-          {copied ? "설치 명령을 클립보드에 복사했습니다." : ""}
+          {copied ? "가져오기 경로를 클립보드에 복사했습니다." : ""}
         </span>
       </div>
     </TooltipProvider>

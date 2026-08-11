@@ -3,8 +3,8 @@
 import { BookOpen01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Badge } from "@/registry/luma/ui/badge";
-import { Button } from "@/registry/luma/ui/button";
+import { Badge } from "@workspace/ui/components/ui/badge";
+import { Button } from "@workspace/ui/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,24 +12,24 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/registry/luma/ui/card";
+} from "@workspace/ui/components/ui/card";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/registry/luma/ui/empty";
-import { Field, FieldDescription, FieldLabel } from "@/registry/luma/ui/field";
-import { Input } from "@/registry/luma/ui/input";
-import { Progress, ProgressLabel, ProgressValue } from "@/registry/luma/ui/progress";
+} from "@workspace/ui/components/ui/empty";
+import { Field, FieldDescription, FieldLabel } from "@workspace/ui/components/ui/field";
+import { Input } from "@workspace/ui/components/ui/input";
+import { Progress, ProgressLabel, ProgressValue } from "@workspace/ui/components/ui/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/luma/ui/select";
+} from "@workspace/ui/components/ui/select";
 import {
   Table,
   TableBody,
@@ -37,7 +37,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/luma/ui/table";
+} from "@workspace/ui/components/ui/table";
 
 type CompositionPreviewProps = { kind: "admin" | "course-management"; story: string };
 

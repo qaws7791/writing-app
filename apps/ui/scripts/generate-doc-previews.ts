@@ -4,20 +4,23 @@ import { dirname, join, relative } from "node:path";
 import { componentGuides } from "../src/lib/component-guides";
 
 const workspaceRoot = dirname(dirname(import.meta.filename));
-const registryRoot = join(workspaceRoot, "registry", "luma", "ui");
+const repositoryRoot = dirname(dirname(workspaceRoot));
+const packageUiRoot = join(repositoryRoot, "packages", "shared", "ui", "src", "components", "ui");
 const outputRoot = join(workspaceRoot, "src", "generated", "component-examples");
 
 const exportLocations = new Map<string, string>();
-const registryFiles = (await readdir(registryRoot)).filter((fileName) => fileName.endsWith(".tsx"));
+const packageUiFiles = (await readdir(packageUiRoot)).filter((fileName) =>
+  fileName.endsWith(".tsx"),
+);
 
-const registrySources = await Promise.all(
-  registryFiles.map(async (fileName) => ({
+const packageUiSources = await Promise.all(
+  packageUiFiles.map(async (fileName) => ({
     fileName,
-    source: await readFile(join(registryRoot, fileName), "utf8"),
+    source: await readFile(join(packageUiRoot, fileName), "utf8"),
   })),
 );
 
-for (const { fileName, source } of registrySources) {
+for (const { fileName, source } of packageUiSources) {
   const slug = fileName.replace(/\.tsx$/, "");
   const exportBlocks = [...source.matchAll(/export\s*\{([\s\S]*?)\}/g)];
   const exportBlock = exportBlocks.at(-1)?.[1] ?? "";
@@ -34,7 +37,7 @@ for (const { fileName, source } of registrySources) {
   }
 }
 
-function rewriteRegistryImports(source: string) {
+function rewriteExampleImports(source: string) {
   return source
     .replace(/\\u\{([\dA-Fa-f]+)\}/g, (_, codePoint: string) =>
       String.fromCodePoint(Number.parseInt(codePoint, 16)),
@@ -42,7 +45,11 @@ function rewriteRegistryImports(source: string) {
     .replace(/\\u([\dA-Fa-f]{4})/g, (_, codePoint: string) =>
       String.fromCharCode(Number.parseInt(codePoint, 16)),
     )
-    .replaceAll("@/components/ui/", "@/registry/luma/ui/");
+    .replaceAll("@/components/ui/", "@workspace/ui/components/ui/")
+    .replaceAll("@/registry/luma/ui/", "@workspace/ui/components/ui/")
+    .replaceAll("@/registry/luma/blocks/", "@workspace/ui/blocks/")
+    .replaceAll("@/registry/luma/hooks/", "@workspace/ui/hooks/")
+    .replaceAll("@/registry/luma/lib/", "@workspace/ui/lib/");
 }
 
 function rewritePreviewAssetUrls(source: string) {
@@ -99,7 +106,7 @@ function inferredImports(body: string, imports: string[]) {
 
   return [...symbols.entries()].map(
     ([slug, names]) =>
-      `import { ${names.toSorted().join(", ")} } from "@/registry/luma/ui/${slug}";`,
+      `import { ${names.toSorted().join(", ")} } from "@workspace/ui/components/ui/${slug}";`,
   );
 }
 
@@ -112,7 +119,7 @@ function wrapSnippet(source: string) {
 }
 
 function makeExampleModule(source: string) {
-  const rewritten = rewritePreviewAssetUrls(rewriteRegistryImports(source)).trim();
+  const rewritten = rewritePreviewAssetUrls(rewriteExampleImports(source)).trim();
   const hasDefaultExport = /export\s+default\s+function\s+/.test(rewritten);
   const hasNamedFunction = /export\s+function\s+[A-Za-z0-9_]+\s*\(/.test(rewritten);
 

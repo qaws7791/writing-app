@@ -132,5 +132,5 @@ const exampleCount = Object.values(componentGuides).reduce(
   0,
 );
 console.log(
-  `${componentDocs.length}개 컴포넌트, ${exampleCount}개 registry 예제, ${inventoryStories.length}개 이전 예제와 ${designSystemInventory.mdx.length}개 문서의 규칙을 확인했습니다.`,
+  `${componentDocs.length}개 컴포넌트, ${exampleCount}개 문서 예제, ${inventoryStories.length}개 이전 예제와 ${designSystemInventory.mdx.length}개 문서의 규칙을 확인했습니다.`,
 );

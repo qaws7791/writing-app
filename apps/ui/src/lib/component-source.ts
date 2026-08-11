@@ -1,4 +1,4 @@
-const sourceModules = import.meta.glob("../../registry/luma/ui/*.tsx", {
+const sourceModules = import.meta.glob("../../../../packages/shared/ui/src/components/ui/*.tsx", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -19,7 +19,7 @@ export function getComponentSource(slug: string) {
   const source = sources.get(slug);
 
   if (source === undefined) {
-    throw new Error(`컴포넌트 '${slug}'의 수동 설치용 소스를 찾을 수 없습니다.`);
+    throw new Error(`컴포넌트 '${slug}'의 소스를 찾을 수 없습니다.`);
   }
 
   return source;
@@ -40,7 +40,7 @@ export function getUsageCode(slug: string, exports: string[]) {
   const primary = exports[0] ?? "Component";
   const importNames = exports.slice(0, Math.min(exports.length, 5)).join(", ");
 
-  return `import { ${importNames} } from "@/components/ui/${slug}"
+  return `import { ${importNames} } from "@workspace/ui/components/ui/${slug}"
 
 export function ${primary}Demo() {
   return <${primary}>콘텐츠</${primary}>

@@ -3,8 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "@workspace/ui/styles";
 
-@source "../../registry/luma/**/*.tsx";
-@source "../../../packages/shared/ui/src/**/*.{ts,tsx}";
+@source "../../../../packages/shared/ui/src/**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 

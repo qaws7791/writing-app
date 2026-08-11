@@ -45,7 +45,6 @@
         "tests/**/*.spec.ts"
       ],
       "project": [
-        "registry/**/*.{ts,tsx}",
         "scripts/**/*.ts",
         "src/**/*.{astro,css,ts,tsx}",
         "tests/**/*.ts"

@@ -1,4 +1,4 @@
-const sourceModules = import.meta.glob("../../registry/luma/blocks/*.tsx", {
+const sourceModules = import.meta.glob("../../../../packages/shared/ui/src/blocks/*.tsx", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -19,7 +19,7 @@ export function getBlockSource(slug: string) {
   const source = sources.get(slug);
 
   if (source === undefined) {
-    throw new Error(`블록 '${slug}'의 수동 설치용 소스를 찾을 수 없습니다.`);
+    throw new Error(`블록 '${slug}'의 소스를 찾을 수 없습니다.`);
   }
 
   return source;

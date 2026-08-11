@@ -1,25 +1,25 @@
 "use client";
 
-import { AdminAnalytics } from "@/registry/luma/blocks/admin-analytics";
-import { AdminSettings } from "@/registry/luma/blocks/admin-settings";
-import { AgentMissionControl } from "@/registry/luma/blocks/agent-mission-control";
-import { AgentSessionDetail } from "@/registry/luma/blocks/agent-session-detail";
-import { AuditAdmin } from "@/registry/luma/blocks/audit-admin";
-import { CourseAdmin } from "@/registry/luma/blocks/course-admin";
-import { CourseDetail } from "@/registry/luma/blocks/course-detail";
-import { CoursesAdmin } from "@/registry/luma/blocks/courses-admin";
-import { HomeAdmin } from "@/registry/luma/blocks/home-admin";
-import { HomeLearner } from "@/registry/luma/blocks/home-learner";
-import { LearnCatalog } from "@/registry/luma/blocks/learn-catalog";
-import { LessonSession } from "@/registry/luma/blocks/lesson-session";
-import { LoginOtp } from "@/registry/luma/blocks/login-otp";
-import { LoginQuiet } from "@/registry/luma/blocks/login-quiet";
-import { LoginSocial } from "@/registry/luma/blocks/login-social";
-import { LoginSplit } from "@/registry/luma/blocks/login-split";
-import { LoginWorkspace } from "@/registry/luma/blocks/login-workspace";
-import { ProfileLearner } from "@/registry/luma/blocks/profile-learner";
-import { UserAdmin } from "@/registry/luma/blocks/user-admin";
-import { UsersAdmin } from "@/registry/luma/blocks/users-admin";
+import { AdminAnalytics } from "@workspace/ui/blocks/admin-analytics";
+import { AdminSettings } from "@workspace/ui/blocks/admin-settings";
+import { AgentMissionControl } from "@workspace/ui/blocks/agent-mission-control";
+import { AgentSessionDetail } from "@workspace/ui/blocks/agent-session-detail";
+import { AuditAdmin } from "@workspace/ui/blocks/audit-admin";
+import { CourseAdmin } from "@workspace/ui/blocks/course-admin";
+import { CourseDetail } from "@workspace/ui/blocks/course-detail";
+import { CoursesAdmin } from "@workspace/ui/blocks/courses-admin";
+import { HomeAdmin } from "@workspace/ui/blocks/home-admin";
+import { HomeLearner } from "@workspace/ui/blocks/home-learner";
+import { LearnCatalog } from "@workspace/ui/blocks/learn-catalog";
+import { LessonSession } from "@workspace/ui/blocks/lesson-session";
+import { LoginOtp } from "@workspace/ui/blocks/login-otp";
+import { LoginQuiet } from "@workspace/ui/blocks/login-quiet";
+import { LoginSocial } from "@workspace/ui/blocks/login-social";
+import { LoginSplit } from "@workspace/ui/blocks/login-split";
+import { LoginWorkspace } from "@workspace/ui/blocks/login-workspace";
+import { ProfileLearner } from "@workspace/ui/blocks/profile-learner";
+import { UserAdmin } from "@workspace/ui/blocks/user-admin";
+import { UsersAdmin } from "@workspace/ui/blocks/users-admin";
 
 const demos = {
   "home-learner": HomeLearner,

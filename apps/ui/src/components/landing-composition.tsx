@@ -4,22 +4,22 @@ import { useState } from "react";
 import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Avatar, AvatarFallback } from "@/registry/luma/ui/avatar";
-import { Bubble, BubbleContent, BubbleGroup } from "@/registry/luma/ui/bubble";
-import { Button } from "@/registry/luma/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/registry/luma/ui/field";
+import { Avatar, AvatarFallback } from "@workspace/ui/components/ui/avatar";
+import { Bubble, BubbleContent, BubbleGroup } from "@workspace/ui/components/ui/bubble";
+import { Button } from "@workspace/ui/components/ui/button";
+import { Field, FieldDescription, FieldLabel } from "@workspace/ui/components/ui/field";
 import {
   Message,
   MessageAvatar,
   MessageContent,
   MessageGroup,
   MessageHeader,
-} from "@/registry/luma/ui/message";
-import { Prose, ProseBody, ProseSource } from "@/registry/luma/ui/prose";
-import { Switch } from "@/registry/luma/ui/switch";
-import { Textarea } from "@/registry/luma/ui/textarea";
+} from "@workspace/ui/components/ui/message";
+import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/ui/prose";
+import { Switch } from "@workspace/ui/components/ui/switch";
+import { Textarea } from "@workspace/ui/components/ui/textarea";
 
-const installCommand = "bunx shadcn@latest add https://YOUR_GITHUB_ID.github.io/ui/r/button.json";
+const installCommand = 'import { Button } from "@workspace/ui/components/ui/button"';
 
 export default function LandingComposition() {
   const [copied, setCopied] = useState(false);
@@ -139,7 +139,7 @@ export default function LandingComposition() {
 
         <div className="space-y-3">
           <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
-            설치
+            가져오기
           </p>
           <div className="flex items-center gap-2 rounded-2xl bg-muted/70 p-2 pl-4">
             <code className="min-w-0 flex-1 truncate font-mono text-xs sm:text-sm">
@@ -149,7 +149,7 @@ export default function LandingComposition() {
               type="button"
               size="icon-sm"
               variant="outline"
-              aria-label={copied ? "복사됨" : "설치 명령 복사"}
+              aria-label={copied ? "복사됨" : "가져오기 경로 복사"}
               onClick={copyInstallCommand}
             >
               <HugeiconsIcon icon={copied ? Tick02Icon : Copy01Icon} strokeWidth={1.8} />
@@ -158,7 +158,7 @@ export default function LandingComposition() {
           <p className="text-xs text-muted-foreground" aria-live="polite">
             {copied
               ? "클립보드에 복사했습니다."
-              : "소스를 프로젝트에 직접 추가하는 shadcn 레지스트리입니다."}
+              : "모노레포 내부 workspace 패키지 @workspace/ui에서 가져옵니다."}
           </p>
         </div>
       </aside>

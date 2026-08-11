@@ -8,15 +8,15 @@
 - 앱은 조립자 역할을 한다. 서버 비즈니스 규칙은 소유 module에, 화면에만 필요한 상태 전이는 feature 내부 순수 함수에 둔다.
 - 외부 HTTP 계약은 OpenAPI에서 생성한 client와 DTO를 단일 소비 경계로 사용한다. 앱에서 성공 응답을 같은 Zod schema로 다시 파싱하거나 wire 타입을 복제하지 않고, 실제 UI 의미가 다를 때만 mapper를 둔다.
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
-- 공유 UI는 `packages/shared/ui`에 둔다. `components/ui`는 전체 Luma registry UI, `blocks`는 registry example block, `hooks`는 registry hook, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점과 라우팅은 각 제품 앱 feature에서 조합한다.
-- `apps/ui`는 전체 Luma source, shadcn registry, 컴포넌트 문서와 preview를 제공하는 정적 Astro 앱이다. Registry block fixture는 제품 route와 production data에 연결하지 않는다.
+- 공유 UI는 `packages/shared/ui`에 둔다. `components/ui`는 공유 UI 인벤토리, `blocks`는 화면 조합 예제 block, `hooks`는 공유 hook, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점과 라우팅은 각 제품 앱 feature에서 조합한다.
+- `apps/ui`는 `@workspace/ui`를 소비하는 정적 Astro 문서 앱이다. Block fixture는 제품 route와 production data에 연결하지 않는다.
 - 학습자 조회·변경 응답과 body는 `@workspace/http-client/learner`의 generated 함수에서 유도한 타입을 사용한다. `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
 - 어드민의 대시보드·분석·코스·사용자·세션 조회와 변경은 route Server Component, Server Action 또는 가까운 브라우저 event handler에서 `@workspace/http-client/admin`의 generated 함수를 직접 호출한다. 서버 전용 request options는 base URL, canonical session cookie와 상태 변경 요청의 `Origin`만 제공하고, generated 오류는 직렬화 가능한 앱 오류로 한 번만 정규화한다.
 
 ## 기술과 적용 범위
 
 - 학습자 웹과 어드민 웹은 manifest가 선언한 Next.js App Router와 React를 사용한다. 기본 서버 런타임은 현재 앱 설정을 따르며, Edge runtime은 지연 개선이 실측되고 모든 의존성이 호환되는 좁은 경계에서만 검토한다.
-- UI registry 앱은 manifest가 선언한 Astro와 React를 사용하고 정적 산출물만 생성한다.
+- UI 문서 앱은 manifest가 선언한 Astro와 React를 사용하고 정적 산출물만 생성한다.
 - 패키지 관리와 workspace 실행은 Bun과 Turborepo, 정적 타입 검사는 TypeScript strict, 런타임 신뢰 경계 검증은 Zod를 사용한다.
 - 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/shared/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
 - Better Auth integration과 credential·session schema는 auth infra, 학습자 profile·상태 repository와 관리자 session 해석은 identity module이 소유한다. API composition은 두 경계를 vendor-neutral port로 연결하며, Next.js 앱은 DB나 ORM에 직접 접근하지 않고 공개 HTTP API를 호출한다.

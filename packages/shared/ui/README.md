@@ -1,8 +1,8 @@
 # `@workspace/ui`
 
-`packages/shared/ui`는 전체 Luma registry UI, block source, hook, 앱 공통 아이콘과
+`packages/shared/ui`는 공유 UI, block source, hook, 앱 공통 아이콘과
 스타일 entrypoint를 제공한다. 라우팅, 인증, 앱 layout provider, 데이터 조회 같은
-런타임 조립 책임은 각 앱에 둔다. Registry block의 fixture는 제품 데이터로 사용하지 않는다.
+런타임 조립 책임은 각 앱에 둔다. Block fixture는 제품 데이터로 사용하지 않는다.
 
 ## 공개 entrypoint
 
@@ -10,17 +10,17 @@
 
 | entrypoint                               | 책임                              |
 | ---------------------------------------- | --------------------------------- |
-| `@workspace/ui/blocks/{block}`           | Luma registry example block       |
+| `@workspace/ui/blocks/{block}`           | 화면 조합 예제 block              |
 | `@workspace/ui/styles`                   | 공통 token과 style Implementation |
 | `@workspace/ui/pretendard-font`          | 로컬 Pretendard font-face         |
-| `@workspace/ui/hooks/{hook}`             | Luma registry hook                |
+| `@workspace/ui/hooks/{hook}`             | 공유 hook                         |
 | `@workspace/ui/lib/utils`                | `cn` helper                       |
 | `@workspace/ui/components/icons`         | 앱에서 반복 사용하는 공통 아이콘  |
-| `@workspace/ui/components/ui/{컴포넌트}` | shadcn/Base UI 기반 primitive     |
+| `@workspace/ui/components/ui/{컴포넌트}` | Base UI 기반 primitive            |
 
 ## 스타일 구조
 
-전역 스타일 entrypoint는 `@workspace/ui/styles`를 사용한다. `src/styles/tokens/reference.css`, `semantic.css`, `motion.css`와 `src/styles/globals.css`가 공통 runtime 디자인 값의 단일 원천이다. Tailwind import, plugin, source scan, PostCSS 설정은 각 앱 Adapter가 소유한다.
+전역 스타일 entrypoint는 `@workspace/ui/styles`를 사용한다. `src/styles/tokens/reference.css`, `semantic.css`, `motion.css`와 `src/styles/globals.css`가 공통 runtime 디자인 값의 단일 원천이다. Tailwind import, plugin, style scan, PostCSS 설정은 각 앱 Adapter가 소유한다.
 
 `apps/ui`, `apps/admin`, `apps/web`은 이 entrypoint를 직접 소비한다. 앱은 공통 light·dark·contrast·motion 값을 다시 선언하지 않는다.
 
@@ -28,11 +28,11 @@
 
 새 공용 컴포넌트는 legacy 색상 이름보다 `bg-*`, `fg-*`, `action-*`, `success-*`, `danger-*`, `info-*` semantic token을 먼저 사용한다. `cream`, `surface`, `charcoal`, `primary`, `destructive`는 앱 이관이 끝날 때까지 유지하는 compatibility alias다.
 
-## Registry 범위
+## 범위
 
-`apps/ui/registry/luma/registry.json`의 전체 UI source는
-`components/ui/<name>`의 좁은 subpath에서 노출한다. 전체 block source는
-`blocks/<name>`에서 노출한다. Registry hook은 `hooks/<name>`에서 노출한다.
+UI source는 `components/ui/<name>`의 좁은 subpath에서 노출한다. block source는
+`blocks/<name>`에서 노출한다. hook은 `hooks/<name>`에서 노출한다.
+`apps/ui`는 이 패키지를 소비하는 내부 문서 앱이다.
 
 ## 사용 예시
 

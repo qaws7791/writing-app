@@ -1,6 +1,6 @@
 # Astro UI 문서 실행 명세
 
-`apps/ui`는 디자인 시스템의 실행 가능한 문서와 shadcn registry를 함께 제공한다. 이 문서는 예제 작성과 자동 검증 정책을 소유한다.
+`apps/ui`는 디자인 시스템의 실행 가능한 문서를 제공한다. 이 문서는 예제 작성과 자동 검증 정책을 소유한다.
 
 ## 정보 구조
 
@@ -11,7 +11,6 @@
 - `/docs/patterns/*`와 `/docs/recipes/*`는 제품 화면 조합을 제공한다.
 - `/docs/quality/*`는 콘텐츠, 접근성, 이관 범위를 설명한다.
 - `/preview/*`는 문서 shell과 분리된 반응형 예제와 interaction contract를 제공한다.
-- `/r/*`는 shadcn registry 산출물을 제공한다.
 
 ## 소유 경계
 
@@ -20,11 +19,11 @@
 - `apps/ui/src/pages/docs`는 설명 문서를 소유한다.
 - `apps/ui/src/pages/preview`는 격리 실행 경로를 소유한다.
 - `apps/ui/tests/design-system.spec.ts`는 렌더, 접근성과 상호작용 검증을 소유한다.
+- `packages/shared/ui`는 UI·block·hook·utils·token의 단일 소스다.
 - `packages/shared/ui/src/styles`는 공통 runtime token과 style을 소유한다.
 - `apps/ui/src/styles/global.css`는 `@workspace/ui/styles`를 소비하고 문서 전용 color·radius preset과 layout utility만 소유한다.
-- `apps/ui/registry`는 외부 배포용 registry packaging source를 소유한다.
-- `apps/ui/registry/base/registry.json`의 theme payload는 패키지 token과 일치해야 한다.
 - `packages/shared/ui`에는 문서 route나 fixture를 두지 않는다.
+- `apps/ui`는 `@workspace/ui`를 소비하는 내부 문서 앱이며 외부 배포용 registry packaging을 소유하지 않는다.
 
 ## 작성 계약
 
@@ -38,10 +37,9 @@
 ## 검증
 
 ```bash
-bun --filter @workspace/ui-registry docs:validate
-bun --filter @workspace/ui-registry source:validate
-bun --filter @workspace/ui-registry test:browser
-bun --filter @workspace/ui-registry build
+bun --filter @workspace/ui-docs docs:validate
+bun --filter @workspace/ui-docs test:browser
+bun --filter @workspace/ui-docs build
 ```
 
-`docs:validate`는 카탈로그와 이관 인벤토리의 완전성을 검사한다. `source:validate`는 패키지 token과 Astro·registry theme의 일치 여부를 검사하고 registry와 workspace 공개 source의 동기화를 검사한다. `test:browser`는 실제 Astro 정적 build에서 렌더, axe와 상호작용 계약을 검사한다.
+`docs:validate`는 카탈로그와 이관 인벤토리의 완전성을 검사한다. `test:browser`는 실제 Astro 정적 build에서 렌더, axe와 상호작용 계약을 검사한다.
