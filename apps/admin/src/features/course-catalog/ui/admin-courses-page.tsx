@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useRef } from "react"
+import { useEffect, useState, useTransition, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -14,6 +14,7 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
+  SearchIcon,
 } from "@workspace/ui/components/icons"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import { AdminPageHeader } from "@/shared/ui/admin-page-header"
@@ -24,6 +25,10 @@ import type {
   AdminRestoreCourseResult,
   ReadAdminCoursesInput,
 } from "@/features/course-catalog/model/admin-course-catalog"
+import {
+  CreateCourseDialog,
+  type CreateCourseFormValues,
+} from "@/features/course-catalog/ui/create-course-dialog"
 import { courseCategoryValues } from "@workspace/contracts/content/category"
 import { contentStatuses } from "@workspace/contracts/content/status"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
@@ -47,7 +52,6 @@ import {
   TableCaption,
 } from "@workspace/ui/components/ui/table"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -60,6 +64,14 @@ import {
   createGetFilterHref,
   readGetFormFields,
 } from "@/shared/navigation/get-filter-url"
+import { cn } from "@workspace/ui/lib/utils"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "#ui/components/ui/input-group"
+
+const QUERY_SEARCH_DEBOUNCE_MS = 300
 
 const courseStatusFilterItems = [
   { label: "전체 상태", value: "all" },
@@ -68,7 +80,7 @@ const courseStatusFilterItems = [
 ] as const
 
 const courseCategoryFilterItems = [
-  { label: "전체 카테고리", value: "" },
+  { label: "전체 카테고리", value: "all" },
   ...courseCategoryValues.map((category) => ({
     label: category,
     value: category,
@@ -97,7 +109,9 @@ export function AdminCoursesPage({
     courseId: string
   ) => Promise<AdminRequestResult<AdminArchiveCourseResult>>
   readonly coursesResult: AdminRequestResult<AdminCourseList>
-  readonly createCourse: () => Promise<AdminRequestResult<AdminCreatedCourse>>
+  readonly createCourse: (
+    input: CreateCourseFormValues
+  ) => Promise<AdminRequestResult<AdminCreatedCourse>>
   readonly filters: ReadAdminCoursesInput
   readonly restoreCourse: (
     courseId: string
@@ -106,23 +120,80 @@ export function AdminCoursesPage({
   const [archiveTarget, setArchiveTarget] = useState<
     AdminCourseList["items"][number] | null
   >(null)
+  const [createOpen, setCreateOpen] = useState(false)
   const [message, setMessage] = useState<StatusMessage | null>(null)
+  const [queryInput, setQueryInput] = useState(filters.query)
+  const [syncedQuery, setSyncedQuery] = useState(filters.query)
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
 
+  if (filters.query !== syncedQuery) {
+    setSyncedQuery(filters.query)
+    setQueryInput(filters.query)
+  }
+
+  useEffect(() => {
+    if (queryInput === filters.query) return
+
+    const timeoutId = window.setTimeout(() => {
+      if (formRef.current === null) return
+      router.push(
+        createGetFilterHref(readGetFormFields(formRef.current), {
+          query: queryInput,
+          page: 1,
+        })
+      )
+    }, QUERY_SEARCH_DEBOUNCE_MS)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [filters.query, queryInput, router])
+
   if (coursesResult.status === "error") {
     return (
       <>
-        <AdminPageHeader description="코스를 확인하고 새 강의를 생성하거나 보관합니다." />
+        <AdminPageHeader
+          actions={
+            <Button
+              disabled={isPending}
+              onClick={() => setCreateOpen(true)}
+              type="button"
+            >
+              <PlusIcon aria-hidden="true" size={16} />
+              코스 만들기
+            </Button>
+          }
+        />
         <Alert role="alert" variant="destructive">
           <AlertDescription>{coursesResult.error.message}</AlertDescription>
         </Alert>
+        <CreateCourseDialog
+          key={createOpen ? "create-open" : "create-closed"}
+          isPending={isPending}
+          onCreate={(values) => {
+            startTransition(async () => {
+              const result = await createCourse(values)
+              setMessage(
+                result.status === "ok"
+                  ? { message: "새 코스를 만들었습니다.", tone: "success" }
+                  : { message: result.error.message, tone: "danger" }
+              )
+              if (result.status === "ok") setCreateOpen(false)
+            })
+          }}
+          onOpenChange={setCreateOpen}
+          open={createOpen}
+        />
       </>
     )
   }
 
   const courses = coursesResult.value
+  const { page, pageSize, totalItems, totalPages } = courses.pagination
+  const rangeStart = totalItems === 0 ? 0 : (page - 1) * pageSize + 1
+  const rangeEnd = Math.min(page * pageSize, totalItems)
 
   const createPageLink = (pageNumber: number) => {
     return createGetFilterHref(
@@ -146,29 +217,26 @@ export function AdminCoursesPage({
     )
   }
 
+  const paginationButtonClassName = cn(
+    buttonVariants({
+      size: "icon-sm",
+      variant: "outline",
+    }),
+    "rounded-xl"
+  )
+
   return (
     <>
       <AdminPageHeader
-        description={`강의 ${courses.pagination.totalItems}개 · 편집 내용은 학습자 앱에 즉시 반영됩니다.`}
         actions={
-          <div className="flex flex-col items-end gap-2">
-            <Button
-              disabled={isPending}
-              onClick={() => {
-                startTransition(async () => {
-                  const result = await createCourse()
-                  setMessage(
-                    result.status === "ok"
-                      ? { message: "새 코스를 만들었습니다.", tone: "success" }
-                      : { message: result.error.message, tone: "danger" }
-                  )
-                })
-              }}
-              type="button"
-            >
-              <PlusIcon aria-hidden="true" size={16} />새 강의
-            </Button>
-          </div>
+          <Button
+            disabled={isPending}
+            onClick={() => setCreateOpen(true)}
+            type="button"
+          >
+            <PlusIcon aria-hidden="true" size={16} />
+            코스 만들기
+          </Button>
         }
       />
 
@@ -179,74 +247,80 @@ export function AdminCoursesPage({
         className="flex flex-col gap-4 w-full"
       >
         <input name="page" type="hidden" value="1" />
-        <div className="flex flex-wrap items-center gap-3 w-full">
-          <Field className="gap-0">
-            <FieldLabel className="sr-only">강의명 검색</FieldLabel>
-            <Input
-              aria-label="강의명 검색"
-              className="w-56"
-              defaultValue={filters.query}
-              name="query"
-              placeholder="강의명"
-              type="search"
-            />
-          </Field>
-          <Button type="submit" variant="outline">
-            검색
-          </Button>
-          <Field className="gap-0">
-            <FieldLabel className="sr-only">카테고리</FieldLabel>
-            <Select
-              value={filters.category}
-              items={courseCategoryFilterItems}
-              name="category"
-              onValueChange={(value) => {
-                submitSelectValue("category", value)
-              }}
-            >
-              <SelectTrigger
-                aria-label="카테고리"
-                className="w-[180px] font-semibold"
+        <div className="flex w-full flex-wrap items-center justify-between gap-3">
+          <div className="relative">
+            <Field className="gap-0">
+              <FieldLabel className="sr-only">강의명 검색</FieldLabel>
+
+              <InputGroup>
+                <InputGroupAddon>
+                  <SearchIcon aria-hidden="true" size={16} />
+                </InputGroupAddon>
+                <InputGroupInput
+                  aria-label="강의명 검색"
+                  name="query"
+                  onChange={(event) => setQueryInput(event.target.value)}
+                  placeholder="강의명"
+                  type="search"
+                  value={queryInput}
+                />
+              </InputGroup>
+            </Field>
+          </div>
+          <div className="flex gap-3">
+            <Field className="gap-0">
+              <FieldLabel className="sr-only">카테고리</FieldLabel>
+              <Select
+                value={filters.category}
+                items={courseCategoryFilterItems}
+                name="category"
+                onValueChange={(value) => {
+                  submitSelectValue("category", value)
+                }}
               >
-                <SelectValue placeholder="전체 카테고리" />
-              </SelectTrigger>
-              <SelectContent>
-                {courseCategoryFilterItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field className="gap-0">
-            <FieldLabel className="sr-only">상태</FieldLabel>
-            <Select
-              value={filters.status}
-              items={courseStatusFilterItems}
-              name="status"
-              onValueChange={(value) => {
-                submitSelectValue("status", value)
-              }}
-            >
-              <SelectTrigger
-                aria-label="상태"
-                className="w-[140px] font-semibold"
+                <SelectTrigger
+                  aria-label="카테고리"
+                  className="w-[11rem] font-semibold"
+                  size="sm"
+                >
+                  <SelectValue placeholder="전체 카테고리" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courseCategoryFilterItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field className="gap-0">
+              <FieldLabel className="sr-only">상태</FieldLabel>
+              <Select
+                value={filters.status}
+                items={courseStatusFilterItems}
+                name="status"
+                onValueChange={(value) => {
+                  submitSelectValue("status", value)
+                }}
               >
-                <SelectValue placeholder="전체 상태" />
-              </SelectTrigger>
-              <SelectContent>
-                {courseStatusFilterItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <span className="text-muted-foreground font-bold ml-auto text-sm">
-            {courses.pagination.totalItems}개 결과
-          </span>
+                <SelectTrigger
+                  aria-label="상태"
+                  className="w-[8.5rem] font-semibold"
+                  size="sm"
+                >
+                  <SelectValue placeholder="전체 상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courseStatusFilterItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
         </div>
 
         {message === null ? null : (
@@ -259,12 +333,11 @@ export function AdminCoursesPage({
           </Alert>
         )}
 
-        {/* 테이블 박스: 배경 없음, 테두리, 둥근 모서리 */}
-        <div className="border border-border/50 rounded-[24px] overflow-hidden">
+        <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card">
           <Table className="min-w-[720px]">
             <TableCaption className="sr-only">코스 목록</TableCaption>
             <TableHeader>
-              <TableRow className="border-b border-border/50 bg-transparent">
+              <TableRow className="border-b border-border/50 bg-transparent hover:bg-transparent">
                 <TableHead
                   scope="col"
                   className="px-5 py-3.5 text-muted-foreground font-bold text-[0.8125rem] w-[50%]"
@@ -296,10 +369,10 @@ export function AdminCoursesPage({
             </TableHeader>
             <TableBody>
               {courses.items.length === 0 ? (
-                <TableRow>
+                <TableRow className="hover:bg-transparent">
                   <TableCell
                     colSpan={5}
-                    className="p-12 text-center text-muted-foreground font-semibold"
+                    className="h-28 p-12 text-center text-muted-foreground font-semibold"
                   >
                     선택한 조건에 맞는 코스가 없습니다.
                   </TableCell>
@@ -411,12 +484,10 @@ export function AdminCoursesPage({
           </Table>
         </div>
 
-        {/* 테이블 하단 페이징 영역 */}
         {courses.items.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-            {/* 페이지 크기 선택 */}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-muted-foreground font-semibold text-sm">
-              <span>페이지당</span>
+              <span className="whitespace-nowrap">페이지당 행 수</span>
               <Field className="gap-0">
                 <FieldLabel className="sr-only">페이지 크기</FieldLabel>
                 <Select
@@ -445,103 +516,117 @@ export function AdminCoursesPage({
               </Field>
             </div>
 
-            {/* 4개 이동 버튼 페이지네이션 */}
-            <div className="flex items-center gap-1">
-              {courses.pagination.page > 1 ? (
-                <Link
-                  href={createPageLink(1)}
-                  aria-label="첫 페이지"
-                  className={buttonVariants({
-                    size: "icon-xs",
-                    variant: "ghost",
-                  })}
-                >
-                  <ChevronsLeftIcon size={16} />
-                </Link>
-              ) : (
-                <Button
-                  aria-label="첫 페이지"
-                  disabled
-                  size="icon-xs"
-                  type="button"
-                  variant="ghost"
-                >
-                  <ChevronsLeftIcon size={16} />
-                </Button>
-              )}
-              {courses.pagination.page > 1 ? (
-                <Link
-                  href={createPageLink(courses.pagination.page - 1)}
-                  aria-label="이전 페이지"
-                  className={buttonVariants({
-                    size: "icon-xs",
-                    variant: "ghost",
-                  })}
-                >
-                  <ChevronLeftIcon size={16} />
-                </Link>
-              ) : (
-                <Button
-                  aria-label="이전 페이지"
-                  disabled
-                  size="icon-xs"
-                  type="button"
-                  variant="ghost"
-                >
-                  <ChevronLeftIcon size={16} />
-                </Button>
-              )}
-              <span className="px-3 font-bold text-foreground text-sm">
-                {courses.pagination.page} / {courses.pagination.totalPages}
-              </span>
-              {courses.pagination.page < courses.pagination.totalPages ? (
-                <Link
-                  href={createPageLink(courses.pagination.page + 1)}
-                  aria-label="다음 페이지"
-                  className={buttonVariants({
-                    size: "icon-xs",
-                    variant: "ghost",
-                  })}
-                >
-                  <ChevronRightIcon size={16} />
-                </Link>
-              ) : (
-                <Button
-                  aria-label="다음 페이지"
-                  disabled
-                  size="icon-xs"
-                  type="button"
-                  variant="ghost"
-                >
-                  <ChevronRightIcon size={16} />
-                </Button>
-              )}
-              {courses.pagination.page < courses.pagination.totalPages ? (
-                <Link
-                  href={createPageLink(courses.pagination.totalPages)}
-                  aria-label="마지막 페이지"
-                  className={buttonVariants({
-                    size: "icon-xs",
-                    variant: "ghost",
-                  })}
-                >
-                  <ChevronsRightIcon size={16} />
-                </Link>
-              ) : (
-                <Button
-                  aria-label="마지막 페이지"
-                  disabled
-                  size="icon-xs"
-                  type="button"
-                  variant="ghost"
-                >
-                  <ChevronsRightIcon size={16} />
-                </Button>
-              )}
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <p className="text-xs tabular-nums text-muted-foreground sm:text-sm">
+                전체 {totalItems}개 중 {rangeStart} - {rangeEnd}
+              </p>
+              <div className="flex items-center gap-1">
+                {page > 1 ? (
+                  <Link
+                    href={createPageLink(1)}
+                    aria-label="첫 페이지"
+                    className={paginationButtonClassName}
+                  >
+                    <ChevronsLeftIcon size={16} />
+                  </Link>
+                ) : (
+                  <Button
+                    aria-label="첫 페이지"
+                    className="rounded-xl"
+                    disabled
+                    size="icon-sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <ChevronsLeftIcon size={16} />
+                  </Button>
+                )}
+                {page > 1 ? (
+                  <Link
+                    href={createPageLink(page - 1)}
+                    aria-label="이전 페이지"
+                    className={paginationButtonClassName}
+                  >
+                    <ChevronLeftIcon size={16} />
+                  </Link>
+                ) : (
+                  <Button
+                    aria-label="이전 페이지"
+                    className="rounded-xl"
+                    disabled
+                    size="icon-sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <ChevronLeftIcon size={16} />
+                  </Button>
+                )}
+                <span className="px-3 font-bold text-foreground text-sm">
+                  {page} / {totalPages}
+                </span>
+                {page < totalPages ? (
+                  <Link
+                    href={createPageLink(page + 1)}
+                    aria-label="다음 페이지"
+                    className={paginationButtonClassName}
+                  >
+                    <ChevronRightIcon size={16} />
+                  </Link>
+                ) : (
+                  <Button
+                    aria-label="다음 페이지"
+                    className="rounded-xl"
+                    disabled
+                    size="icon-sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <ChevronRightIcon size={16} />
+                  </Button>
+                )}
+                {page < totalPages ? (
+                  <Link
+                    href={createPageLink(totalPages)}
+                    aria-label="마지막 페이지"
+                    className={paginationButtonClassName}
+                  >
+                    <ChevronsRightIcon size={16} />
+                  </Link>
+                ) : (
+                  <Button
+                    aria-label="마지막 페이지"
+                    className="rounded-xl"
+                    disabled
+                    size="icon-sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <ChevronsRightIcon size={16} />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )}
       </form>
+
+      <CreateCourseDialog
+        key={createOpen ? "create-open" : "create-closed"}
+        isPending={isPending}
+        onCreate={(values) => {
+          startTransition(async () => {
+            const result = await createCourse(values)
+            setMessage(
+              result.status === "ok"
+                ? { message: "새 코스를 만들었습니다.", tone: "success" }
+                : { message: result.error.message, tone: "danger" }
+            )
+            if (result.status === "ok") setCreateOpen(false)
+          })
+        }}
+        onOpenChange={setCreateOpen}
+        open={createOpen}
+      />
 
       <AlertDialog
         open={archiveTarget !== null}

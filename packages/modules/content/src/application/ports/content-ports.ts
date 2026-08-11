@@ -148,8 +148,11 @@ export type ContentRepository = Readonly<{
     asset: ContentAsset
   ) => Promise<Result<ContentAsset, ContentError>>
   createCourse: (input: {
+    readonly category: string
     readonly courseId: CourseId
+    readonly description: string
     readonly now: Date
+    readonly title: string
   }) => Promise<Result<CourseEditorDocument, ContentError>>
   executeApprovedMcpChange: (
     input: AdminMcpContentChangeCommand & Readonly<{ now: Date }>

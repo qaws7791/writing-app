@@ -22,7 +22,15 @@ export default async function AdminCoursesRoute({
   const coursesResult =
     requestOptions === null
       ? unauthenticatedAdminRequestFailure()
-      : await settleAdminApiRequest(getAdminCourses(filters, requestOptions))
+      : await settleAdminApiRequest(
+          getAdminCourses(
+            {
+              ...filters,
+              category: filters.category === "all" ? "" : filters.category,
+            },
+            requestOptions
+          )
+        )
 
   return (
     <AdminCoursesPage

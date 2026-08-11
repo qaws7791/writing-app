@@ -350,7 +350,13 @@ function createAsset(
 
 function createCourse(
   database: WritingAppDatabase,
-  input: { readonly courseId: CourseId; readonly now: Date }
+  input: {
+    readonly category: string
+    readonly courseId: CourseId
+    readonly description: string
+    readonly now: Date
+    readonly title: string
+  }
 ): Result<CourseEditorDocument, ContentError> {
   try {
     return ok(
@@ -366,10 +372,19 @@ function createCourse(
 
 function insertCourse(
   transaction: WritingAppDatabaseTransaction,
-  input: { readonly courseId: CourseId; readonly now: Date }
+  input: {
+    readonly category?: string
+    readonly courseId: CourseId
+    readonly description?: string
+    readonly now: Date
+    readonly title?: string
+  }
 ): CourseEditorDocument {
   const curriculumVersionId = createCurriculumVersionId(input.courseId, 1)
   const sortOrder = readNextCourseSortOrder(transaction)
+  const category = input.category ?? "미분류"
+  const description = input.description ?? "강의 설명을 입력하세요."
+  const title = input.title ?? "새 강의"
 
   transaction
     .insert(courses)
@@ -384,17 +399,17 @@ function insertCourse(
   transaction
     .insert(courseCurriculumVersions)
     .values({
-      category: "미분류",
+      category,
       courseId: input.courseId,
       coverAssetId: null,
       createdAt: input.now,
-      description: "강의 설명을 입력하세요.",
+      description,
       editVersion: 0,
       id: curriculumVersionId,
       publishedAt: null,
       revision: 1,
       status: "draft",
-      title: "새 강의",
+      title,
       updatedAt: input.now,
       visualKey: "basic-sentence-writing",
     })
@@ -402,14 +417,14 @@ function insertCourse(
 
   return {
     assets: [],
-    category: "미분류",
+    category,
     courseId: input.courseId,
     coverAssetId: null,
     curriculumVersionId,
-    description: "강의 설명을 입력하세요.",
+    description,
     editVersion: 0,
     revision: 1,
-    title: "새 강의",
+    title,
     units: [],
   }
 }

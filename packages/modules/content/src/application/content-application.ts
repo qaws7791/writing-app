@@ -156,8 +156,8 @@ export function createContentApplication(
   const application: ContentApplication = {
     archiveCourse: createArchiveCourseUseCase(dependencies),
     cleanupOrphanedAssets: createCleanupOrphanedAssets(dependencies),
-    createCourse: async (adminId) => {
-      const result = await createCourse(adminId)
+    createCourse: async (adminId, input) => {
+      const result = await createCourse(adminId, input)
       return result.isErr()
         ? result
         : ok(await attachResolvedEditorAssets(dependencies, result.value))

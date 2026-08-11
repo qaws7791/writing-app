@@ -4,7 +4,10 @@ import { z } from "zod"
 import type { ReadAdminCoursesInput } from "@/features/course-catalog/model/admin-course-catalog"
 
 const courseFiltersSchema = z.object({
-  category: stringValue(""),
+  category: z.preprocess(
+    (value) => (typeof value === "string" && value.length > 0 ? value : "all"),
+    z.string()
+  ),
   page: positiveInteger(1),
   pageSize: positiveInteger(20),
   query: stringValue(""),

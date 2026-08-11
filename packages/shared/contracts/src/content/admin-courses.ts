@@ -3,7 +3,10 @@ import {
   adminContentAssetUploadDtoSchema,
   contentAssetReferenceDtoSchema,
 } from "#contracts/content/admin-assets"
-import { courseCategoryValues } from "#contracts/content/category"
+import {
+  courseCategorySchema,
+  courseCategoryValues,
+} from "#contracts/content/category"
 import { courseVisualKeySchema } from "#contracts/content/course"
 import {
   contentAssetIdSchema,
@@ -61,6 +64,12 @@ export const adminCourseDetailDtoSchema = z.strictObject({
   status: contentStatusSchema,
   title: z.string(),
   units: z.array(adminCourseUnitDtoSchema),
+})
+
+export const adminCreateCourseBodySchema = z.strictObject({
+  category: courseCategorySchema,
+  description: z.string(),
+  title: z.string().trim().min(1),
 })
 
 export const adminCourseListItemDtoSchema = z.strictObject({
@@ -239,6 +248,7 @@ function validateUniqueEditorIds(
   }
 }
 
+export type AdminCreateCourseBody = z.infer<typeof adminCreateCourseBodySchema>
 export type AdminArchiveCourseResultDto = z.infer<
   typeof adminArchiveCourseResultSchema
 >

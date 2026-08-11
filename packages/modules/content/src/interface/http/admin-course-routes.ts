@@ -6,6 +6,7 @@ import {
 import { jsonResponse } from "@workspace/http-platform/openapi"
 import {
   adminArchiveCourseResultSchema,
+  adminCreateCourseBodySchema,
   adminRestoreCourseResultSchema,
   adminCourseDetailDtoSchema,
   adminCourseListDtoSchema,
@@ -112,6 +113,14 @@ function registerCreateCourseRoute<TEnv extends ContentAdminHonoEnv>(
     method: "post",
     operationId: "createAdminCourse",
     path: "/courses",
+    request: {
+      body: {
+        content: {
+          "application/json": { schema: adminCreateCourseBodySchema },
+        },
+        required: true,
+      },
+    },
     responses: contentAuthenticatedResponses(
       jsonResponse("생성된 어드민 코스입니다.", adminCourseDetailDtoSchema)
     ),
@@ -121,7 +130,11 @@ function registerCreateCourseRoute<TEnv extends ContentAdminHonoEnv>(
   const route = createRoute(routeConfig)
 
   app.openapi(route, async (context) => {
-    const result = await application.createCourse(context.var.contentAdminId)
+    const body = context.req.valid("json")
+    const result = await application.createCourse(
+      context.var.contentAdminId,
+      body
+    )
     if (result.isErr()) throw mapContentError(result.error)
     return context.json(toAdminCourseDetail(result.value), 200)
   })

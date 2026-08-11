@@ -11,17 +11,23 @@ import {
   createAdminCourse,
   restoreAdminCourse,
 } from "@workspace/http-client/admin"
+import { adminCreateCourseBodySchema } from "@workspace/contracts/content/admin-courses"
 import {
   invalidAdminRequestFailure,
   settleAdminApiRequest,
   unauthenticatedAdminRequestFailure,
 } from "@/shared/http/admin-api-client"
 
-export async function createAdminCourseAction() {
+export async function createAdminCourseAction(input: unknown) {
+  const body = adminCreateCourseBodySchema.safeParse(input)
+  if (!body.success) return invalidAdminRequestFailure()
+
   const requestOptions = await getServerAdminRequestOptions()
   if (requestOptions === null) return unauthenticatedAdminRequestFailure()
 
-  const result = await settleAdminApiRequest(createAdminCourse(requestOptions))
+  const result = await settleAdminApiRequest(
+    createAdminCourse(body.data, requestOptions)
+  )
 
   if (result.status === "ok") revalidatePath("/courses")
   return result

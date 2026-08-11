@@ -44,7 +44,13 @@ const courseId = createCourseId("content-course-1")
 describe("content Drizzle repository", () => {
   it("draft를 발행하면 다음 draft를 만들고 발행 revision을 변경할 수 없다", async () => {
     await withContentRepository(async (fixture) => {
-      await fixture.repository.createCourse({ courseId, now })
+      await fixture.repository.createCourse({
+        category: "미분류",
+        courseId,
+        description: "강의 설명을 입력하세요.",
+        now,
+        title: "새 강의",
+      })
       const initial = await readDraftOrThrow(fixture.repository)
       const saved = unwrap(
         await fixture.repository.saveDraft({
@@ -87,7 +93,13 @@ describe("content Drizzle repository", () => {
 
   it("publish transaction이 실패하면 발행 전 draft를 보존한다", async () => {
     await withContentRepository(async (fixture) => {
-      await fixture.repository.createCourse({ courseId, now })
+      await fixture.repository.createCourse({
+        category: "미분류",
+        courseId,
+        description: "강의 설명을 입력하세요.",
+        now,
+        title: "새 강의",
+      })
       const initial = await readDraftOrThrow(fixture.repository)
       const saved = unwrap(
         await fixture.repository.saveDraft({
@@ -188,7 +200,13 @@ async function withReferencedAsset(
   ) => Promise<void>
 ): Promise<void> {
   await withContentRepository(async (fixture) => {
-    await fixture.repository.createCourse({ courseId, now })
+    await fixture.repository.createCourse({
+      category: "미분류",
+      courseId,
+      description: "강의 설명을 입력하세요.",
+      now,
+      title: "새 강의",
+    })
     const initial = completeDraft(await readDraftOrThrow(fixture.repository))
     const asset = createAsset(initial.curriculumVersionId)
     unwrap(await fixture.repository.createAsset(asset))
@@ -461,8 +479,11 @@ describe("MCP content changes", () => {
     it("saves one draft and replays without incrementing the edit version", async () => {
       const repository = createDrizzleContentRepository(client.db)
       const created = await repository.createCourse({
+        category: "미분류",
         courseId,
+        description: "강의 설명을 입력하세요.",
         now: new Date("2026-08-10T00:00:00.000Z"),
+        title: "새 강의",
       })
       expect(created.isOk()).toBe(true)
       const draft = await repository.findDraft(courseId)
@@ -499,8 +520,11 @@ describe("MCP content changes", () => {
     it("rejects moving an existing image reference to another step", async () => {
       const repository = createDrizzleContentRepository(client.db)
       const created = await repository.createCourse({
+        category: "미분류",
         courseId,
+        description: "강의 설명을 입력하세요.",
         now: new Date("2026-08-10T00:00:00.000Z"),
+        title: "새 강의",
       })
       expect(created.isOk()).toBe(true)
       const draft = await repository.findDraft(courseId)
@@ -639,8 +663,11 @@ describe("MCP content changes", () => {
     it("restores one archived course and replays the receipt", async () => {
       const repository = createDrizzleContentRepository(client.db)
       const created = await repository.createCourse({
+        category: "미분류",
         courseId,
+        description: "강의 설명을 입력하세요.",
         now: new Date("2026-08-10T00:00:00.000Z"),
+        title: "새 강의",
       })
       expect(created.isOk()).toBe(true)
       const activeCourse = await repository.findCourse(courseId)
