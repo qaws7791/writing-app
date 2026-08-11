@@ -1,23 +1,21 @@
 "use client"
 
 import type { ReactNode } from "react"
-import dynamic from "next/dynamic"
-import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTransition } from "react"
 import { useState } from "react"
 
 import { AdminSidebar } from "@/app/(admin)/_views/admin-sidebar"
 import type { AdminProfile } from "@/app/(admin)/_views/admin-profile-menu"
+import { AdminShellChromeProvider } from "@/app/(admin)/_views/admin-shell-chrome"
+import { AdminShellHeader } from "@/app/(admin)/_views/admin-shell-header"
 import { requestAdminSignOut } from "@/features/authentication/api/admin-auth-client"
-import { adminNavigationItems } from "@/app/(admin)/_views/admin-navigation"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-
-const AdminMobileSidebar = dynamic(() =>
-  import("@/app/(admin)/_views/admin-mobile-sidebar").then(
-    (module) => module.AdminMobileSidebar
-  )
-)
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@workspace/ui/components/ui/sidebar"
+import { cn } from "@workspace/ui/lib/utils"
 
 export function AdminShell({
   activePath,
@@ -37,47 +35,43 @@ export function AdminShell({
   const currentPath = activePath ?? pathname
 
   return (
-    <div className="flex min-h-svh bg-background text-foreground">
-      <AdminSidebar
-        activePath={currentPath}
-        adminProfile={adminProfile}
-        isSigningOut={isPending}
-        learnerWebOrigin={learnerWebOrigin}
-        navigationItems={adminNavigationItems}
-        onSignOut={signOut}
-      />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border/60 bg-background/90 px-5 py-4 backdrop-blur-xl md:hidden">
-          <Link
-            className="font-heading text-lg font-semibold tracking-[-0.02em] text-foreground"
-            href="/"
-            prefetch={false}
-          >
-            글결 어드민
-          </Link>
-          <AdminMobileSidebar
+    <div
+      data-slot="admin-shell"
+      className="@container/admin-shell relative flex h-svh min-h-0 w-full overflow-hidden bg-background text-foreground"
+    >
+      <SidebarProvider className="relative flex h-full min-h-0! w-full flex-1 overflow-hidden">
+        <AdminShellChromeProvider>
+          <AdminSidebar
             activePath={currentPath}
             adminProfile={adminProfile}
             isSigningOut={isPending}
-            key={currentPath}
             learnerWebOrigin={learnerWebOrigin}
-            navigationItems={adminNavigationItems}
             onSignOut={signOut}
           />
-        </header>
-        {signOutError === null ? null : (
-          <Alert
-            className="mx-5 mt-4 md:mx-10"
-            role="alert"
-            variant="destructive"
-          >
-            <AlertDescription>{signOutError}</AlertDescription>
-          </Alert>
-        )}
-        <main className="animate-drift-in mx-auto w-full max-w-6xl flex-1 px-5 py-8 md:px-10">
-          {children}
-        </main>
-      </div>
+          <SidebarInset className="min-h-0 min-w-0 flex-1 overflow-hidden">
+            <AdminShellHeader />
+            {signOutError === null ? null : (
+              <Alert
+                className="mx-3 mt-4 @[40rem]/admin-shell:mx-5 @[56rem]/admin-shell:mx-6"
+                role="alert"
+                variant="destructive"
+              >
+                <AlertDescription>{signOutError}</AlertDescription>
+              </Alert>
+            )}
+            <div
+              data-slot="admin-shell-main"
+              className={cn(
+                "@container/admin-main animate-drift-in flex min-h-0 flex-1 flex-col gap-6 overflow-auto px-3 py-5",
+                "@[40rem]/admin-shell:gap-8 @[40rem]/admin-shell:px-5 @[40rem]/admin-shell:py-7",
+                "@[56rem]/admin-shell:px-6 @[56rem]/admin-shell:py-8"
+              )}
+            >
+              {children}
+            </div>
+          </SidebarInset>
+        </AdminShellChromeProvider>
+      </SidebarProvider>
     </div>
   )
 

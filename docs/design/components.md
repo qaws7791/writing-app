@@ -357,11 +357,11 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 구현 위치: `apps/admin/src/app/(admin)/_views/admin-shell.tsx`
 
-- 256px 사이드바와 본문 1fr 구성을 사용한다.
-- 사이드바와 본문은 semantic Tailwind class와 공용 토큰을 사용한다.
-- 본문은 `max-w-6xl`, `px-5 md:px-10`, `py-8`을 사용한다.
-- 좁은 화면에서는 고정 사이드바를 숨기고 같은 정보 구조를 modal drawer로 제공한다.
-- 모바일 drawer는 별도 동적 client 경계에서 불러온다.
+- `@workspace/ui`의 `SidebarProvider`, `Sidebar`, `SidebarInset`로 셸을 구성한다.
+- sticky 셸 헤더는 `SidebarTrigger`와 페이지 제목 또는 breadcrumb를 표시한다.
+- 페이지 제목과 breadcrumb는 pathname 기본값과 `useAdminShellChrome` override로 셸이 소유한다.
+- 본문은 전폭이며 `@container/admin-shell` 기준 패딩·간격을 사용한다.
+- 좁은 화면에서는 `Sidebar` 내장 Sheet와 헤더의 `SidebarTrigger`로 메뉴를 연다.
 - 사이드바 화면 이동 중에는 현재 본문을 유지한다.
 - 세션의 관리자 이름과 이메일은 아바타 없이 사이드바 하단 프로필 메뉴 trigger에 표시한다.
 
@@ -369,19 +369,22 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 구현 위치: `apps/admin/src/app/(admin)/_views/admin-sidebar.tsx`
 
-- 주요 메뉴: 대시보드, 콘텐츠 관리, 사용자 관리, 분석, 감사 이력.
+- 상단 브랜드는 「글결 어드민」 텍스트를 유지한다.
+- 대시보드는 그룹 라벨 없이 최상단 메뉴로 둔다.
+- 나머지 메뉴는 그룹 라벨을 둔다: 콘텐츠(콘텐츠 관리), 학습자(사용자 관리), 인사이트(분석), 시스템(감사 이력).
+- 설정·에이전트 메뉴는 포함하지 않는다.
 - 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
 - 아이콘은 `@workspace/ui/components/icons/navigation-icons`에서 가져온다.
-- 활성 링크는 `aria-current="page"`와 `sidebar-primary` 계열 semantic token으로 표시한다.
+- 활성 링크는 `aria-current="page"`와 `SidebarMenuButton` active 상태로 표시한다.
 - 화면 이동이 150ms 이상 걸리면 대상 링크 안에 고정 크기 `이동 중` 상태를 표시한다.
-- 사이드바와 drawer는 같은 프로필 메뉴를 제공한다.
 - 프로필 메뉴는 앱 이동, 시스템·라이트·다크 테마 선택과 어드민 로그아웃을 제공한다.
 
 ### Admin Page Header
 
 구현 위치: `apps/admin/src/shared/ui/admin-page-header.tsx`
 
-- 모든 어드민 주요 화면은 `AdminPageHeader`를 사용한다.
+- 페이지 제목은 셸 헤더가 담당한다.
+- `AdminPageHeader`는 설명과 액션만 렌더한다.
 - 공유 package는 앱의 페이지 구조를 소유하지 않는다.
 
 ### Admin Card

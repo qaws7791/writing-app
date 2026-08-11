@@ -45,10 +45,7 @@ export function AdminAuditPage({
 }) {
   return (
     <>
-      <AdminPageHeader
-        description="개인정보 조회와 고위험 변경 이력을 최신순으로 확인합니다."
-        title="감사 이력"
-      />
+      <AdminPageHeader description="개인정보 조회와 고위험 변경 이력을 최신순으로 확인합니다." />
       <AuditFilterForm filters={filters} />
       {auditResult.status === "error" ? (
         <Alert role="alert" variant="destructive">

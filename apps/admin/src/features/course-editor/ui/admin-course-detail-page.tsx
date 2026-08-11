@@ -29,10 +29,7 @@ export function AdminCourseDetailPage({
   if (courseResult.status === "error") {
     return (
       <>
-        <AdminPageHeader
-          description="코스의 유닛, 레슨, 스텝을 편집합니다."
-          title="코스 편집"
-        />
+        <AdminPageHeader description="코스의 유닛, 레슨, 스텝을 편집합니다." />
         <Alert role="alert" variant="destructive">
           <AlertDescription>{courseResult.error.message}</AlertDescription>
         </Alert>

@@ -114,10 +114,7 @@ export function AdminCoursesPage({
   if (coursesResult.status === "error") {
     return (
       <>
-        <AdminPageHeader
-          description="코스를 확인하고 새 강의를 생성하거나 보관합니다."
-          title="콘텐츠 관리"
-        />
+        <AdminPageHeader description="코스를 확인하고 새 강의를 생성하거나 보관합니다." />
         <Alert role="alert" variant="destructive">
           <AlertDescription>{coursesResult.error.message}</AlertDescription>
         </Alert>
@@ -153,7 +150,6 @@ export function AdminCoursesPage({
     <>
       <AdminPageHeader
         description={`강의 ${courses.pagination.totalItems}개 · 편집 내용은 학습자 앱에 즉시 반영됩니다.`}
-        title="콘텐츠 관리"
         actions={
           <div className="flex flex-col items-end gap-2">
             <Button

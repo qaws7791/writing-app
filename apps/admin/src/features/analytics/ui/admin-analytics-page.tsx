@@ -114,7 +114,6 @@ function AnalyticsHeading({
           ? "가입, 첫 시작, 완료와 D7 재방문을 분석합니다."
           : `${analytics.from}–${analytics.to} · D7 성숙 cohort ${analytics.matureCohortThrough}까지`
       }
-      title="분석"
     />
   )
 }

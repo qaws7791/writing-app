@@ -1,15 +1,14 @@
 "use client"
 
-import Link from "next/link"
 import { useState } from "react"
 import {
-  ArrowLeftIcon as ArrowLeft,
   CalendarDaysIcon as CalendarDays,
   CheckCircleIcon as CheckCircle2,
   ClockIcon as Clock,
   FlameIcon as Flame,
 } from "@workspace/ui/components/icons"
 
+import { useAdminShellChrome } from "@/app/(admin)/_views/admin-shell-chrome"
 import { StatusBadge } from "@/entities/learner-account/ui/status-badge"
 import {
   UserOperationActions,
@@ -18,7 +17,6 @@ import {
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminUserDetail } from "@/entities/learner-account/model/admin-learner-account"
 import type { LearnerOperationalStatus } from "@workspace/contracts/identity/status"
-import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Card, CardContent } from "@workspace/ui/components/ui/card"
 import {
@@ -42,28 +40,58 @@ export function AdminUserDetailPage({
   const [message, setMessage] = useState<UserOperationResult | null>(null)
 
   if (userResult.status === "error") {
-    return (
-      <>
-        <UserDetailNotFoundHeading />
-        <Alert role="alert" variant="destructive">
-          <AlertDescription>{userResult.error.message}</AlertDescription>
-        </Alert>
-      </>
-    )
+    return <UserDetailNotFoundState message={userResult.error.message} />
   }
 
-  const user = userResult.value
+  return (
+    <UserDetailContent
+      deleteUser={deleteUser}
+      message={message}
+      setMessage={setMessage}
+      updateUserStatus={updateUserStatus}
+      user={userResult.value}
+    />
+  )
+}
+
+function UserDetailNotFoundState({ message }: { readonly message: string }) {
+  useAdminShellChrome({
+    breadcrumb: [{ href: "/users", label: "사용자 관리" }],
+    title: "사용자를 찾을 수 없어요",
+  })
+
+  return (
+    <Alert role="alert" variant="destructive">
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
+  )
+}
+
+function UserDetailContent({
+  deleteUser,
+  message,
+  setMessage,
+  updateUserStatus,
+  user,
+}: {
+  readonly deleteUser: (userId: string) => Promise<AdminRequestResult<unknown>>
+  readonly message: UserOperationResult | null
+  readonly setMessage: (message: UserOperationResult | null) => void
+  readonly updateUserStatus: (input: {
+    readonly status: LearnerOperationalStatus
+    readonly userId: string
+  }) => Promise<AdminRequestResult<unknown>>
+  readonly user: AdminUserDetail
+}) {
   const progressPercent = user.progressPercent
+
+  useAdminShellChrome({
+    breadcrumb: [{ href: "/users", label: "사용자 관리" }],
+    title: user.name,
+  })
 
   return (
     <div>
-      <Link
-        className="mb-5 inline-flex items-center gap-1 text-[0.875rem] font-bold text-muted-foreground transition-colors hover:text-foreground"
-        href="/users"
-      >
-        <ArrowLeft aria-hidden="true" size={16} />
-        사용자 관리
-      </Link>
       <Card className="mb-5" size="sm" variant="muted">
         <CardContent className="flex flex-wrap items-center gap-4">
           <div className="flex size-16 items-center justify-center rounded-full bg-card font-heading text-2xl font-semibold text-foreground shadow-xs">
@@ -71,9 +99,9 @@ export function AdminUserDetailPage({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate font-heading text-2xl font-semibold text-foreground">
+              <p className="truncate font-heading text-2xl font-semibold text-foreground">
                 {user.name}
-              </h1>
+              </p>
               <StatusBadge status={user.status} />
             </div>
             <div className="truncate text-sm font-medium text-muted-foreground">
@@ -135,10 +163,6 @@ export function AdminUserDetailPage({
       </Card>
     </div>
   )
-}
-
-function UserDetailNotFoundHeading() {
-  return <AdminPageHeader title="사용자를 찾을 수 없어요" />
 }
 
 function UserStat({

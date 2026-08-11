@@ -371,7 +371,6 @@ function UsersHeading({ totalUsers }: { readonly totalUsers?: number }) {
           ? "학습자 상태와 진행 현황을 관리합니다."
           : `학습자 ${totalUsers}명 · 상태와 진행 현황을 관리합니다.`
       }
-      title="사용자 관리"
     />
   )
 }

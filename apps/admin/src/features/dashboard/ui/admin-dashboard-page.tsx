@@ -91,7 +91,6 @@ function DashboardHeading({ asOfDate }: { readonly asOfDate?: string }) {
           ? "첫 시작과 7일 재방문을 포함한 핵심 운영 지표입니다."
           : `${asOfDate} 기준 · 첫 시작과 7일 재방문을 포함한 핵심 운영 지표입니다.`
       }
-      title="대시보드"
     />
   )
 }

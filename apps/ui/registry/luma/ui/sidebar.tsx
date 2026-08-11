@@ -25,7 +25,7 @@ import { ArrowRight01Icon, Search01Icon, SidebarLeftIcon } from "@hugeicons/core
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
-const SIDEBAR_WIDTH_MOBILE = "18rem";
+const SIDEBAR_WIDTH_MOBILE = "16rem";
 const SIDEBAR_WIDTH_ICON = "3.25rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
@@ -174,7 +174,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+          className="w-(--sidebar-width) max-w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground data-[side=left]:w-(--sidebar-width) data-[side=left]:sm:max-w-(--sidebar-width) data-[side=right]:w-(--sidebar-width) data-[side=right]:sm:max-w-(--sidebar-width) [&>button]:hidden"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -454,7 +454,7 @@ function SidebarGroupLabel({
     props: mergeProps<"div">(
       {
         className: cn(
-          "flex h-7 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-[0.6875rem] font-medium tracking-[0.04em] text-muted-foreground uppercase outline-none transition-[margin,opacity,color] duration-180 ease-quiet group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-3 focus-visible:ring-sidebar-ring/25 [&>svg]:size-3.5 [&>svg]:shrink-0",
+          "flex h-7 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium tracking-[0.04em] text-muted-foreground uppercase outline-none transition-[margin,opacity,color] duration-180 ease-quiet group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-3 focus-visible:ring-sidebar-ring/25 [&>svg]:size-3.5 [&>svg]:shrink-0",
           className,
         ),
       },

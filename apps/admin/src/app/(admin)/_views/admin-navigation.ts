@@ -8,7 +8,7 @@ import {
   UsersIcon,
 } from "@workspace/ui/components/icons/navigation-icons"
 
-export type AdminNavigationItem = {
+type AdminNavigationItem = {
   readonly end?: boolean
   readonly href: string
   readonly icon: ComponentType<{
@@ -19,38 +19,127 @@ export type AdminNavigationItem = {
   readonly label: string
 }
 
-export const adminNavigationItems = [
+export type AdminNavigationGroup = {
+  readonly id: string
+  readonly label: string | null
+  readonly items: readonly AdminNavigationItem[]
+}
+
+export const adminNavigationGroups = [
   {
-    end: true,
-    href: "/",
-    icon: LayoutDashboardIcon,
-    label: "대시보드",
+    id: "overview",
+    label: null,
+    items: [
+      {
+        end: true,
+        href: "/",
+        icon: LayoutDashboardIcon,
+        label: "대시보드",
+      },
+    ],
   },
   {
-    end: false,
-    href: "/courses",
-    icon: BookOpenIcon,
-    label: "콘텐츠 관리",
+    id: "content",
+    label: "콘텐츠",
+    items: [
+      {
+        end: false,
+        href: "/courses",
+        icon: BookOpenIcon,
+        label: "콘텐츠 관리",
+      },
+    ],
   },
   {
-    end: false,
-    href: "/users",
-    icon: UsersIcon,
-    label: "사용자 관리",
+    id: "learners",
+    label: "학습자",
+    items: [
+      {
+        end: false,
+        href: "/users",
+        icon: UsersIcon,
+        label: "사용자 관리",
+      },
+    ],
   },
   {
-    end: false,
-    href: "/analytics",
-    icon: BarChartIcon,
-    label: "분석",
+    id: "insights",
+    label: "인사이트",
+    items: [
+      {
+        end: false,
+        href: "/analytics",
+        icon: BarChartIcon,
+        label: "분석",
+      },
+    ],
   },
   {
-    end: false,
-    href: "/audit",
-    icon: ShieldCheckIcon,
-    label: "감사 이력",
+    id: "system",
+    label: "시스템",
+    items: [
+      {
+        end: false,
+        href: "/audit",
+        icon: ShieldCheckIcon,
+        label: "감사 이력",
+      },
+    ],
   },
-] as const satisfies readonly AdminNavigationItem[]
+] as const satisfies readonly AdminNavigationGroup[]
+
+export type AdminShellBreadcrumbItem = {
+  readonly href?: string
+  readonly label: string
+}
+
+export type AdminShellChromeValue = {
+  readonly breadcrumb?: readonly AdminShellBreadcrumbItem[]
+  readonly title: string
+}
+
+const COURSE_DETAIL_PATH = /^\/courses\/[^/]+$/
+const USER_DETAIL_PATH = /^\/users\/[^/]+$/
+
+export function resolveAdminShellChrome(
+  pathname: string
+): AdminShellChromeValue {
+  if (pathname === "/") {
+    return { title: "대시보드" }
+  }
+
+  if (pathname === "/courses") {
+    return { title: "콘텐츠 관리" }
+  }
+
+  if (COURSE_DETAIL_PATH.test(pathname)) {
+    return {
+      breadcrumb: [{ href: "/courses", label: "콘텐츠 관리" }],
+      title: "코스 편집",
+    }
+  }
+
+  if (pathname === "/users") {
+    return { title: "사용자 관리" }
+  }
+
+  if (USER_DETAIL_PATH.test(pathname)) {
+    return {
+      breadcrumb: [{ href: "/users", label: "사용자 관리" }],
+      title: "사용자",
+    }
+  }
+
+  if (pathname === "/analytics") {
+    return { title: "분석" }
+  }
+
+  if (pathname === "/audit") {
+    return { title: "감사 이력" }
+  }
+
+  return { title: "글결 어드민" }
+}
 
 export function isAdminNavigationActive(
   activePath: string,

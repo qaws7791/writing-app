@@ -1,9 +1,9 @@
 "use client"
 
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useReducer, useRef, useState, useTransition } from "react"
 
+import { useAdminShellChrome } from "@/app/(admin)/_views/admin-shell-chrome"
 import {
   adminCourseEditorSchema,
   type AdminCourseAssets,
@@ -24,7 +24,6 @@ import type { ConfirmationIntent } from "@/features/course-editor/ui/confirmatio
 import { CourseCurriculumTab } from "@/features/course-editor/ui/course-curriculum-tab"
 import { CourseInfoTab } from "@/features/course-editor/ui/course-info-tab"
 import { EditorConfirmationDialog } from "@/features/course-editor/ui/editor-confirmation-dialog"
-import { ChevronRightIcon } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
@@ -60,9 +59,10 @@ export function CourseEditorShell({
   const [tab, setTab] = useState<"curriculum" | "info">("info")
   const [confirmationIntent, setConfirmationIntent] =
     useState<ConfirmationIntent | null>(null)
-  const editorHeadingRef = useRef<HTMLHeadingElement>(null)
+  const editorHeadingRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
   const unsaved = isUnsavedState(state)
+  const courseTitle = state.draft.title || "제목 없음"
   const lessonCount = state.draft.units.reduce(
     (count, unit) => count + unit.lessons.length,
     0
@@ -71,6 +71,19 @@ export function CourseEditorShell({
     (asset) =>
       asset.id === state.draft.coverAssetId && asset.kind === "course-cover"
   )
+
+  useAdminShellChrome({
+    breadcrumb: [{ href: "/courses", label: "콘텐츠 관리" }],
+    onBreadcrumbNavigate: (href, modifiers) => {
+      if (href !== "/courses") return true
+      if (!shouldConfirmUnsavedNavigation({ modifiers, unsaved })) {
+        return true
+      }
+      setConfirmationIntent({ type: "navigate-course-list" })
+      return false
+    },
+    title: courseTitle,
+  })
 
   useEffect(() => {
     if (!unsaved) return
@@ -152,43 +165,16 @@ export function CourseEditorShell({
 
   return (
     <Tabs
-      className="-mx-5 -mt-8 min-h-full gap-0 md:-mx-10"
+      className="-mx-3 -mt-5 min-h-full gap-0 @[40rem]/admin-shell:-mx-5 @[40rem]/admin-shell:-mt-7 @[56rem]/admin-shell:-mx-6 @[56rem]/admin-shell:-mt-8"
       onValueChange={(value) => changeTab(value as "curriculum" | "info")}
       value={tab}
     >
-      <div className="border-b border-border px-6 pt-8 md:px-10">
-        <nav
-          aria-label="코스 편집 경로"
-          className="mb-4 flex items-center gap-1.5 text-[0.8125rem]"
+      <div className="border-b border-border px-3 pt-5 @[40rem]/admin-shell:px-5 @[40rem]/admin-shell:pt-7 @[56rem]/admin-shell:px-6 @[56rem]/admin-shell:pt-8">
+        <div
+          className="mb-5 flex flex-wrap items-center justify-end gap-4"
+          ref={editorHeadingRef}
+          tabIndex={-1}
         >
-          <Link
-            className="font-medium text-muted-foreground transition-colors hover:text-foreground"
-            href="/courses"
-            prefetch={false}
-            onClick={(event) => {
-              if (
-                !shouldConfirmUnsavedNavigation({ modifiers: event, unsaved })
-              )
-                return
-              event.preventDefault()
-              setConfirmationIntent({ type: "navigate-course-list" })
-            }}
-          >
-            콘텐츠 관리
-          </Link>
-          <ChevronRightIcon aria-hidden="true" size={13} />
-          <span className="font-medium text-foreground">
-            {state.draft.title || "제목 없음"}
-          </span>
-        </nav>
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-          <h1
-            ref={editorHeadingRef}
-            className="font-heading text-2xl font-semibold tracking-[-0.02em] text-foreground"
-            tabIndex={-1}
-          >
-            {state.draft.title || "제목 없음"}
-          </h1>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               disabled={isPending || !canSave(state)}
@@ -210,7 +196,7 @@ export function CourseEditorShell({
           <TabsTrigger value="curriculum">커리큘럼</TabsTrigger>
         </TabsList>
       </div>
-      <div className="flex-1 px-6 py-8 md:px-10">
+      <div className="flex-1 px-3 py-5 @[40rem]/admin-shell:px-5 @[40rem]/admin-shell:py-7 @[56rem]/admin-shell:px-6 @[56rem]/admin-shell:py-8">
         {state.message === null ? null : (
           <Alert
             className="mb-5"

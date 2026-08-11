@@ -129,10 +129,12 @@ export function AdminMcpApprovalPage({
       </header>
 
       <main className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
-        <AdminPageHeader
-          description="AI 에이전트가 요청한 변경을 확인한 뒤 승인하거나 거절해 주세요. 승인 전에는 대상이 변경되지 않습니다."
-          title="변경 요청 검토"
-        />
+        <div className="mb-7 flex flex-col gap-2">
+          <h1 className="font-heading text-3xl font-semibold tracking-[-0.03em] text-balance">
+            변경 요청 검토
+          </h1>
+          <AdminPageHeader description="AI 에이전트가 요청한 변경을 확인한 뒤 승인하거나 거절해 주세요. 승인 전에는 대상이 변경되지 않습니다." />
+        </div>
 
         {errorMessage === null ? null : (
           <Alert className="mb-5" variant="destructive">

@@ -1,3 +1,5 @@
+"use client"
+
 import Link, { useLinkStatus } from "next/link"
 
 import {
@@ -5,85 +7,141 @@ import {
   type AdminProfile,
 } from "@/app/(admin)/_views/admin-profile-menu"
 import {
+  adminNavigationGroups,
   isAdminNavigationActive,
-  type AdminNavigationItem,
 } from "@/app/(admin)/_views/admin-navigation"
+import { XIcon } from "@workspace/ui/components/icons/control-icons"
+import { Button } from "@workspace/ui/components/ui/button"
 import { cn } from "@workspace/ui/lib/utils"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@workspace/ui/components/ui/sidebar"
 
 export type AdminSidebarProps = {
   readonly activePath: string
   readonly adminProfile: AdminProfile
   readonly isSigningOut: boolean
   readonly learnerWebOrigin: string
-  readonly navigationItems: readonly AdminNavigationItem[]
   readonly onSignOut: () => void
 }
 
-export function AdminSidebar(props: AdminSidebarProps) {
-  return (
-    <aside className="sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-e border-sidebar-border/80 bg-sidebar p-4 text-sidebar-foreground md:flex">
-      <AdminSidebarContent {...props} />
-    </aside>
-  )
-}
-
-export function AdminSidebarContent({
+export function AdminSidebar({
   activePath,
   adminProfile,
   isSigningOut,
   learnerWebOrigin,
-  navigationItems,
   onSignOut,
 }: AdminSidebarProps) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <Link
-        className="mb-6 px-3 py-2 font-heading text-xl font-semibold tracking-[-0.025em] text-sidebar-foreground"
-        href="/"
-        prefetch={false}
-      >
-        글결 <span className="text-muted-foreground">어드민</span>
-      </Link>
-      <nav aria-label="어드민 주요 메뉴" className="flex flex-1 flex-col gap-1">
-        {navigationItems.map((item) => {
-          const isActive = isAdminNavigationActive(
-            activePath,
-            item.href,
-            item.end
-          )
-          const Icon = item.icon
-
-          const link = (
-            <Link
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "flex h-auto w-full items-center justify-start gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/25",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/65 hover:text-sidebar-accent-foreground"
-              )}
-              href={item.href}
-              key={item.href}
-              prefetch={false}
-            >
-              <Icon aria-hidden="true" size={20} strokeWidth={2} />
-              <span>{item.label}</span>
-              <AdminNavigationPendingStatus />
-            </Link>
-          )
-
-          return link
-        })}
-      </nav>
-      <div className="border-t border-sidebar-border/70 pt-3">
+    <Sidebar className="absolute! h-full!">
+      <SidebarHeader>
+        <AdminSidebarBrand />
+      </SidebarHeader>
+      <SidebarContent>
+        <AdminNavGroups activePath={activePath} />
+      </SidebarContent>
+      <SidebarFooter>
         <AdminProfileMenu
           adminProfile={adminProfile}
           isSigningOut={isSigningOut}
           learnerWebOrigin={learnerWebOrigin}
           onSignOut={onSignOut}
         />
-      </div>
+      </SidebarFooter>
+    </Sidebar>
+  )
+}
+
+function AdminSidebarBrand() {
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  return (
+    <div className="flex items-center gap-2 px-0.5">
+      <Link
+        className="min-w-0 flex-1 py-1 font-heading text-xl font-semibold tracking-[-0.025em] text-sidebar-foreground"
+        href="/"
+        prefetch={false}
+        onClick={() => {
+          if (isMobile) setOpenMobile(false)
+        }}
+      >
+        글결 <span className="text-muted-foreground">어드민</span>
+      </Link>
+      {isMobile ? (
+        <Button
+          aria-label="사이드바 닫기"
+          className="shrink-0 text-muted-foreground hover:text-sidebar-accent-foreground"
+          size="icon-sm"
+          type="button"
+          variant="ghost"
+          onClick={() => setOpenMobile(false)}
+        >
+          <XIcon aria-hidden="true" />
+        </Button>
+      ) : null}
     </div>
+  )
+}
+
+function AdminNavGroups({ activePath }: { readonly activePath: string }) {
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  return (
+    <>
+      {adminNavigationGroups.map((group) => (
+        <SidebarGroup key={group.id}>
+          {group.label === null ? null : (
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {group.items.map((item) => {
+                const isActive = isAdminNavigationActive(
+                  activePath,
+                  item.href,
+                  item.end
+                )
+                const Icon = item.icon
+
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      tooltip={item.label}
+                      render={
+                        <Link
+                          aria-current={isActive ? "page" : undefined}
+                          aria-label={item.label}
+                          href={item.href}
+                          prefetch={false}
+                          onClick={() => {
+                            if (isMobile) setOpenMobile(false)
+                          }}
+                        />
+                      }
+                    >
+                      <Icon aria-hidden="true" size={16} strokeWidth={2} />
+                      <span>{item.label}</span>
+                      <AdminNavigationPendingStatus />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      ))}
+    </>
   )
 }
 
@@ -93,8 +151,9 @@ function AdminNavigationPendingStatus() {
   return (
     <span
       aria-hidden="true"
+      data-slot="sidebar-menu-trailing"
       className={cn(
-        "ml-auto w-10 shrink-0 text-right text-xs text-sidebar-foreground/60 opacity-0 transition-opacity duration-(--motion-duration-fast) ease-quiet",
+        "w-10 shrink-0 text-right text-xs text-sidebar-foreground/60 opacity-0 transition-opacity duration-(--motion-duration-fast) ease-quiet",
         pending ? "delay-150 opacity-100" : "delay-0"
       )}
     >
