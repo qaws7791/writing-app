@@ -9,7 +9,6 @@ import {
   normalizeUnits,
   validateCurriculum,
   type CurriculumSelection,
-  type LessonStep,
   type UnitNode,
   type ValidationIssue,
 } from "#ui/blocks/curriculum-builder"
@@ -27,30 +26,8 @@ import {
   ContentValidationSummary,
   ContentValidationTitle,
 } from "#ui/components/ui/content-validation"
-import type { CurriculumNodeState } from "#ui/components/ui/curriculum-tree"
 import { Field, FieldGroup, FieldLabel } from "#ui/components/ui/field"
 import { Input } from "#ui/components/ui/input"
-import {
-  LearnerPreview,
-  LearnerPreviewDevice,
-  LearnerPreviewFrame,
-  LearnerPreviewHeader,
-  LearnerPreviewPersona,
-  LearnerPreviewStage,
-  LearnerPreviewState,
-  LearnerPreviewTitle,
-  LearnerPreviewToolbar,
-} from "#ui/components/ui/learner-preview"
-import {
-  PublishWorkflow,
-  PublishWorkflowActions,
-  PublishWorkflowEnvironment,
-  PublishWorkflowHeader,
-  PublishWorkflowMeta,
-  PublishWorkflowStep,
-  PublishWorkflowSteps,
-  PublishWorkflowTitle,
-} from "#ui/components/ui/publish-workflow"
 import {
   Select,
   SelectContent,
@@ -58,7 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#ui/components/ui/select"
-import { Step, StepBody, StepHeader, StepTitle } from "#ui/components/ui/step"
 import {
   Tabs,
   TabsContent,
@@ -66,6 +42,14 @@ import {
   TabsTrigger,
 } from "#ui/components/ui/tabs"
 import { Textarea } from "#ui/components/ui/textarea"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "#ui/components/ui/tooltip"
+
+type PublishStatus = "draft" | "published" | "published-with-changes"
 
 type CourseFixture = {
   id: string
@@ -73,8 +57,12 @@ type CourseFixture = {
   topic: string
   level: string
   description: string
-  listStatus: "preview"
-  treeState: CurriculumNodeState
+  publishStatus: PublishStatus
+  thumbnailUrl: string | null
+  createdAt: string
+  createdBy: string
+  updatedAt: string
+  updatedBy: string
   units: UnitNode[]
 }
 
@@ -94,10 +82,16 @@ const LEVEL_ITEMS = [
   { label: "고급", value: "고급" },
 ] as const
 
+const PUBLISH_STATUS_LABEL: Record<PublishStatus, string> = {
+  draft: "초안",
+  published: "게시됨",
+  "published-with-changes": "게시됨·변경있음",
+}
+
 const INITIAL_UNITS: UnitNode[] = normalizeUnits([
   {
     id: "unit-1",
-    title: "문단의 중심 생각",
+    title: "문단의 기초",
     description: "주제문과 뒷받침 문장을 가려 읽습니다.",
     state: "ready",
     lessons: [
@@ -136,6 +130,7 @@ const INITIAL_UNITS: UnitNode[] = normalizeUnits([
             minChars: 20,
             targetChars: 60,
             maxChars: 120,
+            rubricRef: "주제문 한 문장, 근거 표현 포함",
           },
         ],
       },
@@ -181,32 +176,46 @@ const INITIAL_UNITS: UnitNode[] = normalizeUnits([
           },
         ],
       },
+      {
+        id: "lesson-2b",
+        title: "정보 추론하기",
+        state: "draft",
+        steps: [
+          {
+            id: "step-2d",
+            type: "READING",
+            title: "읽기",
+            prompt: "생략된 정보를 추론하며 읽습니다.",
+            body: "생략된 정보를 추론하며 읽습니다.",
+          },
+        ],
+      },
     ],
   },
   {
     id: "unit-2",
-    title: "추론하며 읽기",
-    description: "글에 드러나지 않은 정보를 문맥으로 채웁니다.",
+    title: "세부 정보 읽기",
+    description: "그래프와 표를 읽고 정보를 추출합니다.",
     state: "draft",
     lessons: [
       {
         id: "lesson-3",
-        title: "생략된 정보 채우기",
+        title: "그래프 읽기",
         state: "draft",
         steps: [
           {
             id: "step-3a",
             type: "READING",
             title: "읽기",
-            prompt: "대화 일부를 읽고 빠진 상황을 추론하세요.",
-            body: "대화 일부를 읽고 빠진 상황을 추론하세요.",
+            prompt: "그래프의 축과 범례를 확인하세요.",
+            body: "그래프의 축과 범례를 확인하세요.",
           },
           {
             id: "step-3b",
             type: "MULTIPLE_CHOICE",
             title: "객관식",
-            prompt: "화자가 다음에 할 행동으로 알맞은 것은?",
-            body: "화자가 다음에 할 행동으로 알맞은 것은?",
+            prompt: "가장 큰 값을 나타내는 항목은?",
+            body: "가장 큰 값을 나타내는 항목은?",
             options: [
               { id: "opt-3b-a", label: "선택지 A" },
               { id: "opt-3b-b", label: "선택지 B" },
@@ -219,22 +228,22 @@ const INITIAL_UNITS: UnitNode[] = normalizeUnits([
       },
       {
         id: "lesson-4",
-        title: "필자의 의도",
+        title: "표 읽기",
         state: "ready",
         steps: [
           {
             id: "step-4a",
             type: "READING",
             title: "읽기",
-            prompt: "칼럼의 일부입니다. 필자의 태도를 파악하세요.",
-            body: "칼럼의 일부입니다. 필자의 태도를 파악하세요.",
+            prompt: "표의 행과 열을 따라 읽으세요.",
+            body: "표의 행과 열을 따라 읽으세요.",
           },
           {
             id: "step-4b",
             type: "MULTIPLE_CHOICE",
             title: "객관식",
-            prompt: "필자의 의도로 가장 알맞은 것은?",
-            body: "필자의 의도로 가장 알맞은 것은?",
+            prompt: "표에서 확인할 수 있는 사실은?",
+            body: "표에서 확인할 수 있는 사실은?",
             options: [
               { id: "opt-4b-a", label: "선택지 A" },
               { id: "opt-4b-b", label: "선택지 B" },
@@ -247,15 +256,9 @@ const INITIAL_UNITS: UnitNode[] = normalizeUnits([
             id: "step-4c",
             type: "WRITE",
             title: "쓰기",
-            prompt: "근거가 되는 표현을 문장에서 찾아 적어 보세요.",
-            body: "근거가 되는 표현을 문장에서 찾아 적어 보세요.",
-          },
-          {
-            id: "step-4d",
-            type: "WRITE",
-            title: "힌트 쓰기",
-            prompt: "힌트: 접속 표현에 주목하세요.",
-            body: "힌트: 접속 표현에 주목하세요.",
+            prompt: "표의 핵심 정보를 한 문장으로 요약하세요.",
+            body: "표의 핵심 정보를 한 문장으로 요약하세요.",
+            rubricRef: "수치와 단위를 포함해 요약",
           },
         ],
       },
@@ -263,28 +266,28 @@ const INITIAL_UNITS: UnitNode[] = normalizeUnits([
   },
   {
     id: "unit-3",
-    title: "비평적 읽기",
-    description: "주장과 근거를 가려 읽고 타당성을 점검합니다.",
+    title: "정보 추론",
+    description: "글에 드러나지 않은 정보를 문맥으로 채웁니다.",
     state: "draft",
     lessons: [
       {
         id: "lesson-5",
-        title: "주장과 근거 가려내기",
+        title: "생략된 정보 채우기",
         state: "draft",
         steps: [
           {
             id: "step-5a",
             type: "READING",
             title: "읽기",
-            prompt: "짧은 의견문을 읽고 주장 문장을 표시하세요.",
-            body: "짧은 의견문을 읽고 주장 문장을 표시하세요.",
+            prompt: "대화 일부를 읽고 빠진 상황을 추론하세요.",
+            body: "대화 일부를 읽고 빠진 상황을 추론하세요.",
           },
           {
             id: "step-5b",
             type: "MULTIPLE_CHOICE",
             title: "객관식",
-            prompt: "근거로 쓰인 문장을 고르세요.",
-            body: "근거로 쓰인 문장을 고르세요.",
+            prompt: "화자가 다음에 할 행동으로 알맞은 것은?",
+            body: "화자가 다음에 할 행동으로 알맞은 것은?",
             options: [
               { id: "opt-5b-a", label: "선택지 A" },
               { id: "opt-5b-b", label: "선택지 B" },
@@ -292,13 +295,6 @@ const INITIAL_UNITS: UnitNode[] = normalizeUnits([
               { id: "opt-5b-d", label: "선택지 D" },
             ],
             correctOptionIds: ["opt-5b-a"],
-          },
-          {
-            id: "step-5c",
-            type: "WRITE",
-            title: "쓰기",
-            prompt: "근거가 주장을 얼마나 지지하는지 한 문장으로 평가하세요.",
-            body: "근거가 주장을 얼마나 지지하는지 한 문장으로 평가하세요.",
           },
         ],
       },
@@ -313,21 +309,129 @@ const COURSE: CourseFixture = {
   level: "중급",
   description:
     "문단의 중심 생각과 세부 정보를 구분하고, 생략된 정보를 추론하며 읽는 중급 코스입니다.",
-  listStatus: "preview",
-  treeState: "ready",
+  publishStatus: "draft",
+  thumbnailUrl: null,
+  createdAt: "2026-03-02T10:00:00+09:00",
+  createdBy: "수진",
+  updatedAt: "2026-08-09T15:24:00+09:00",
+  updatedBy: "수진",
   units: INITIAL_UNITS,
 }
 
-function findPreviewStep(units: UnitNode[]): LessonStep | undefined {
-  for (const unit of units) {
-    for (const lesson of unit.lessons) {
-      const step =
-        lesson.steps.find((item) => item.type === "MULTIPLE_CHOICE") ??
-        lesson.steps[0]
-      if (step) return step
-    }
+function formatSavedAgo(savedAt: number, now: number) {
+  const minutes = Math.max(0, Math.floor((now - savedAt) / 60_000))
+  if (minutes <= 0) return "방금"
+  return `${minutes}분 전`
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, "0")
+  const dd = String(date.getDate()).padStart(2, "0")
+  const hh = String(date.getHours()).padStart(2, "0")
+  const mi = String(date.getMinutes()).padStart(2, "0")
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`
+}
+
+function formatDate(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, "0")
+  const dd = String(date.getDate()).padStart(2, "0")
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function withCourseIssues(
+  units: UnitNode[],
+  description: string
+): ValidationIssue[] {
+  const issues = validateCurriculum(units)
+  if (!description.trim()) {
+    issues.unshift({
+      id: "course-description-empty",
+      severity: "warning",
+      title: "설명 없음",
+      detail: "코스 설명이 비어 있습니다.",
+      selection: { kind: "unit", id: units[0]?.id ?? "" },
+    })
   }
-  return undefined
+  return issues
+}
+
+function CoursePageChrome({
+  title,
+  topic,
+  level,
+  publishStatus,
+  savedLabel,
+  canPublish,
+  errorCount,
+  onPreview,
+  onPublish,
+}: {
+  title: string
+  topic: string
+  level: string
+  publishStatus: PublishStatus
+  savedLabel: string
+  canPublish: boolean
+  errorCount: number
+  onPreview: () => void
+  onPublish: () => void
+}) {
+  const publishButton = (
+    <Button type="button" size="sm" disabled={!canPublish} onClick={onPublish}>
+      게시하기
+    </Button>
+  )
+
+  return (
+    <div
+      data-slot="course-admin-page-chrome"
+      className="flex shrink-0 flex-col gap-3 border-b border-border/60 pb-3"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-heading text-xl font-semibold tracking-[-0.02em]">
+              {title}
+            </h2>
+            <Badge variant="secondary">
+              {PUBLISH_STATUS_LABEL[publishStatus]}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              저장됨 · {savedLabel}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {topic} · {level}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Button type="button" size="sm" variant="outline" onClick={onPreview}>
+            미리보기
+          </Button>
+          {canPublish ? (
+            publishButton
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger render={<span className="inline-flex" />}>
+                  {publishButton}
+                </TooltipTrigger>
+                <TooltipContent>
+                  오류 {errorCount}건을 해결해야 게시할 수 있습니다
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function CourseMetaForm({
@@ -335,20 +439,34 @@ function CourseMetaForm({
   topic,
   level,
   description,
+  thumbnailUrl,
+  createdAt,
+  createdBy,
+  updatedAt,
+  updatedBy,
   onTitleChange,
   onTopicChange,
   onLevelChange,
   onDescriptionChange,
+  onThumbnailChange,
 }: {
   title: string
   topic: string
   level: string
   description: string
+  thumbnailUrl: string | null
+  createdAt: string
+  createdBy: string
+  updatedAt: string
+  updatedBy: string
   onTitleChange: (value: string) => void
   onTopicChange: (value: string) => void
   onLevelChange: (value: string) => void
   onDescriptionChange: (value: string) => void
+  onThumbnailChange: (value: string | null) => void
 }) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
   return (
     <section
       data-slot="course-admin-course-form"
@@ -362,203 +480,254 @@ function CourseMetaForm({
           학습자에게 보이는 기본 정보를 수정합니다.
         </p>
       </header>
-      <FieldGroup className="gap-5">
+      <div className="@container grid gap-5 @[40rem]:grid-cols-[10rem_minmax(0,1fr)]">
         <Field>
-          <FieldLabel htmlFor="course-title">제목</FieldLabel>
-          <Input
-            id="course-title"
-            value={title}
-            onChange={(event) => onTitleChange(event.target.value)}
+          <FieldLabel>썸네일</FieldLabel>
+          <button
+            type="button"
+            className="flex aspect-square w-full max-w-40 flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border border-dashed border-border/80 bg-muted/20 text-xs text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {thumbnailUrl ? (
+              <img
+                src={thumbnailUrl}
+                alt=""
+                className="size-full object-cover"
+              />
+            ) : (
+              <>
+                <span className="font-medium text-foreground">썸네일</span>
+                <span>업로드</span>
+              </>
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (!file) {
+                onThumbnailChange(null)
+                return
+              }
+              onThumbnailChange(URL.createObjectURL(file))
+            }}
           />
-        </Field>
-        <div className="@container grid gap-5 @[32rem]:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="course-topic">주제</FieldLabel>
-            <Select
-              items={[...TOPIC_ITEMS]}
-              value={topic}
-              onValueChange={(value) => {
-                const next = Array.isArray(value) ? value[0] : value
-                if (typeof next === "string") onTopicChange(next)
-              }}
+          {thumbnailUrl ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="w-fit"
+              onClick={() => onThumbnailChange(null)}
             >
-              <SelectTrigger id="course-topic" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="start">
-                {TOPIC_ITEMS.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="course-level">수준</FieldLabel>
-            <Select
-              items={[...LEVEL_ITEMS]}
-              value={level}
-              onValueChange={(value) => {
-                const next = Array.isArray(value) ? value[0] : value
-                if (typeof next === "string") onLevelChange(next)
-              }}
-            >
-              <SelectTrigger id="course-level" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="start">
-                {LEVEL_ITEMS.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
-        <Field>
-          <FieldLabel htmlFor="course-description">설명</FieldLabel>
-          <Textarea
-            id="course-description"
-            value={description}
-            onChange={(event) => onDescriptionChange(event.target.value)}
-            className="min-h-28"
-          />
+              제거
+            </Button>
+          ) : null}
         </Field>
-      </FieldGroup>
+        <FieldGroup className="gap-5">
+          <Field>
+            <FieldLabel htmlFor="course-title">제목</FieldLabel>
+            <Input
+              id="course-title"
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+            />
+          </Field>
+          <div className="@container grid gap-5 @[32rem]:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="course-topic">주제</FieldLabel>
+              <Select
+                items={[...TOPIC_ITEMS]}
+                value={topic}
+                onValueChange={(value) => {
+                  const next = Array.isArray(value) ? value[0] : value
+                  if (typeof next === "string") onTopicChange(next)
+                }}
+              >
+                <SelectTrigger id="course-topic" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="start">
+                  {TOPIC_ITEMS.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="course-level">수준</FieldLabel>
+              <Select
+                items={[...LEVEL_ITEMS]}
+                value={level}
+                onValueChange={(value) => {
+                  const next = Array.isArray(value) ? value[0] : value
+                  if (typeof next === "string") onLevelChange(next)
+                }}
+              >
+                <SelectTrigger id="course-level" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="start">
+                  {LEVEL_ITEMS.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+        </FieldGroup>
+      </div>
+      <Field>
+        <FieldLabel htmlFor="course-description">설명</FieldLabel>
+        <Textarea
+          id="course-description"
+          value={description}
+          onChange={(event) => onDescriptionChange(event.target.value)}
+          className="min-h-28"
+        />
+      </Field>
+      <footer className="border-t border-border/60 pt-4 text-xs text-muted-foreground">
+        생성 {formatDate(createdAt)} · {createdBy}
+        <span className="mx-2" aria-hidden>
+          ·
+        </span>
+        마지막 수정 {formatDateTime(updatedAt)} · {updatedBy}
+      </footer>
     </section>
   )
 }
 
-function ToolsPanel({
+function ReleasePanel({
+  publishStatus,
   issues,
-  onNavigate,
   canPublish,
-  previewStep,
+  lastPublishedLabel,
+  onNavigate,
+  onRevalidate,
+  onPublish,
 }: {
+  publishStatus: PublishStatus
   issues: ValidationIssue[]
-  onNavigate: (selection: CurriculumSelection) => void
   canPublish: boolean
-  previewStep?: LessonStep
+  lastPublishedLabel: string
+  onNavigate: (selection: CurriculumSelection) => void
+  onRevalidate: () => void
+  onPublish: () => void
 }) {
   const errors = issues.filter((issue) => issue.severity === "error").length
   const warnings = issues.filter((issue) => issue.severity === "warning").length
 
   return (
-    <Tabs
-      defaultValue="validation"
-      className="flex min-h-0 flex-1 flex-col gap-4"
-    >
-      <TabsList variant="line" className="w-fit shrink-0 justify-start">
-        <TabsTrigger value="validation">검증</TabsTrigger>
-        <TabsTrigger value="publish">게시</TabsTrigger>
-        <TabsTrigger value="preview">미리보기</TabsTrigger>
-      </TabsList>
+    <div data-slot="course-admin-release" className="flex flex-col gap-6">
+      <section className="flex flex-col gap-3 rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
+        <header className="flex flex-col gap-1">
+          <h2 className="font-heading text-base font-semibold tracking-[-0.02em]">
+            게시 상태
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            ● {PUBLISH_STATUS_LABEL[publishStatus]}
+            {publishStatus === "draft" ? " (미게시)" : ""}
+            <span className="mx-2" aria-hidden>
+              ·
+            </span>
+            마지막 게시 : {lastPublishedLabel}
+          </p>
+        </header>
+        {errors > 0 ? (
+          <p className="text-sm text-muted-foreground">
+            ⓘ 게시하려면 아래 오류 {errors}건을 모두 해결해야 합니다.
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            ⓘ 검증 오류가 없습니다. 게시할 수 있습니다.
+          </p>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onRevalidate}
+          >
+            다시 검증
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={!canPublish}
+            onClick={onPublish}
+          >
+            게시하기
+          </Button>
+        </div>
+      </section>
 
-      <TabsContent value="validation" className="min-h-0 overflow-auto">
-        <ContentValidation>
-          <ContentValidationHeader>
-            <ContentValidationTitle>콘텐츠 검증</ContentValidationTitle>
-            <ContentValidationSummary>
-              오류 {errors} · 경고 {warnings}
-            </ContentValidationSummary>
-          </ContentValidationHeader>
-          <ContentValidationList>
-            {issues.length === 0 ? (
-              <p className="px-1 py-6 text-sm text-muted-foreground">
-                검증 이슈가 없습니다.
-              </p>
-            ) : (
-              issues.map((issue) => (
-                <ContentValidationIssue
-                  key={issue.id}
-                  severity={issue.severity}
-                >
-                  <ContentValidationIssueTitle>
-                    {issue.title}
-                  </ContentValidationIssueTitle>
-                  <ContentValidationIssueDetail>
-                    {issue.detail}
-                  </ContentValidationIssueDetail>
-                  <ContentValidationIssueMeta severity={issue.severity} />
-                  <ContentValidationIssueActions>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      type="button"
-                      onClick={() => onNavigate(issue.selection)}
-                    >
-                      이동
-                    </Button>
-                  </ContentValidationIssueActions>
-                </ContentValidationIssue>
-              ))
-            )}
-          </ContentValidationList>
-        </ContentValidation>
-      </TabsContent>
+      <ContentValidation>
+        <ContentValidationHeader>
+          <ContentValidationTitle>검증 결과</ContentValidationTitle>
+          <ContentValidationSummary>
+            오류 {errors} · 경고 {warnings}
+          </ContentValidationSummary>
+        </ContentValidationHeader>
+        <ContentValidationList>
+          {issues.length === 0 ? (
+            <p className="px-1 py-6 text-sm text-muted-foreground">
+              검증 이슈가 없습니다.
+            </p>
+          ) : (
+            issues.map((issue) => (
+              <ContentValidationIssue key={issue.id} severity={issue.severity}>
+                <ContentValidationIssueTitle>
+                  {issue.severity === "error" ? "⛔ " : "⚠ "}
+                  {issue.title}
+                </ContentValidationIssueTitle>
+                <ContentValidationIssueDetail>
+                  {issue.detail}
+                </ContentValidationIssueDetail>
+                <ContentValidationIssueMeta severity={issue.severity} />
+                <ContentValidationIssueActions>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    type="button"
+                    onClick={() => onNavigate(issue.selection)}
+                  >
+                    이동
+                  </Button>
+                </ContentValidationIssueActions>
+              </ContentValidationIssue>
+            ))
+          )}
+        </ContentValidationList>
+      </ContentValidation>
 
-      <TabsContent value="publish" className="min-h-0 overflow-auto">
-        <PublishWorkflow>
-          <PublishWorkflowHeader>
-            <PublishWorkflowTitle>게시</PublishWorkflowTitle>
-            <PublishWorkflowEnvironment env="preview" />
-          </PublishWorkflowHeader>
-          <PublishWorkflowSteps>
-            <PublishWorkflowStep state="draft" />
-            <PublishWorkflowStep state="review" active />
-            <PublishWorkflowStep state="scheduled" />
-            <PublishWorkflowStep state="published" />
-          </PublishWorkflowSteps>
-          <PublishWorkflowMeta>
-            {canPublish
-              ? "Preview에서 검토를 마친 뒤 Live로 승격합니다. Live 원클릭은 막혀 있습니다."
-              : `검증 오류 ${errors}건을 해결한 뒤 Preview에 게시할 수 있습니다.`}
-          </PublishWorkflowMeta>
-          <PublishWorkflowActions>
-            <Button
-              size="sm"
-              variant="outline"
-              type="button"
-              disabled={!canPublish}
-            >
-              예약
-            </Button>
-            <Button size="sm" type="button" disabled={!canPublish}>
-              Preview 게시
-            </Button>
-          </PublishWorkflowActions>
-        </PublishWorkflow>
-      </TabsContent>
-
-      <TabsContent value="preview" className="min-h-0 overflow-auto">
-        <LearnerPreview>
-          <LearnerPreviewHeader>
-            <LearnerPreviewTitle>학습자 미리보기</LearnerPreviewTitle>
-          </LearnerPreviewHeader>
-          <LearnerPreviewToolbar>
-            <LearnerPreviewDevice device="desktop" active />
-            <LearnerPreviewDevice device="mobile" />
-            <LearnerPreviewPersona persona="novice" active />
-            <LearnerPreviewState scenario="correct" />
-          </LearnerPreviewToolbar>
-          <LearnerPreviewStage device="desktop" className="mt-2">
-            <LearnerPreviewFrame className="min-h-40 max-w-md rounded-2xl border border-border/70 bg-muted/30 p-2">
-              <Step className="rounded-xl bg-card p-3 shadow-2xs">
-                <StepHeader>
-                  <StepTitle>{previewStep?.title ?? "주제문 찾기"}</StepTitle>
-                </StepHeader>
-                <StepBody>
-                  {previewStep?.prompt ??
-                    "이 문단의 중심 생각을 가장 잘 나타낸 문장은 무엇입니까?"}
-                </StepBody>
-              </Step>
-            </LearnerPreviewFrame>
-          </LearnerPreviewStage>
-        </LearnerPreview>
-      </TabsContent>
-    </Tabs>
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-heading text-base font-semibold tracking-[-0.02em]">
+            게시 이력
+          </h2>
+          <a
+            href="#audit-log"
+            className="text-sm text-muted-foreground underline-offset-2 hover:underline"
+            onClick={(event) => event.preventDefault()}
+          >
+            감사 로그 →
+          </a>
+        </div>
+        <div className="rounded-[1.25rem] border border-border/70 px-4 py-6 text-sm text-muted-foreground">
+          {publishStatus === "draft"
+            ? "게시된 버전이 없습니다."
+            : "가장 최근 게시본이 학습자에게 노출됩니다."}
+        </div>
+      </section>
+    </div>
   )
 }
 
@@ -576,18 +745,57 @@ export function CourseAdmin({
   const [courseDescription, setCourseDescription] = React.useState(
     COURSE.description
   )
+  const [thumbnailUrl, setThumbnailUrl] = React.useState<string | null>(
+    COURSE.thumbnailUrl
+  )
+  const [publishStatus, setPublishStatus] = React.useState<PublishStatus>(
+    COURSE.publishStatus
+  )
+  const [lastPublishedAt, setLastPublishedAt] = React.useState<string | null>(
+    null
+  )
+  const [updatedAt, setUpdatedAt] = React.useState(COURSE.updatedAt)
+  const [lastSavedAt, setLastSavedAt] = React.useState(() => Date.now())
+  const [now, setNow] = React.useState(() => Date.now())
+  const [previewMessage, setPreviewMessage] = React.useState<string | null>(
+    null
+  )
+  const [revalidateMessage, setRevalidateMessage] = React.useState<
+    string | null
+  >(null)
   const [units, setUnits] = React.useState<UnitNode[]>(COURSE.units)
   const [selection, setSelection] = React.useState<CurriculumSelection | null>({
     kind: "lesson",
     id: "lesson-1",
   })
 
-  const issues = React.useMemo(() => validateCurriculum(units), [units])
+  React.useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 30_000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  const issues = React.useMemo(
+    () => withCourseIssues(units, courseDescription),
+    [units, courseDescription]
+  )
   const errorCount = issues.filter((issue) => issue.severity === "error").length
-  const previewStep = React.useMemo(() => findPreviewStep(units), [units])
+  const canPublish = errorCount === 0
+
+  function markDirty() {
+    setLastSavedAt(Date.now())
+    setUpdatedAt(new Date().toISOString())
+    setPublishStatus((current) =>
+      current === "published" ? "published-with-changes" : current
+    )
+  }
 
   const handleUnitsChange = React.useCallback((next: UnitNode[]) => {
     setUnits(next)
+    setLastSavedAt(Date.now())
+    setUpdatedAt(new Date().toISOString())
+    setPublishStatus((current) =>
+      current === "published" ? "published-with-changes" : current
+    )
   }, [])
 
   const handleSelectionChange = React.useCallback(
@@ -598,8 +806,19 @@ export function CourseAdmin({
   )
 
   function handleNavigate(next: CurriculumSelection) {
+    if (next.kind === "unit" && !next.id) {
+      setTab("curriculum")
+      return
+    }
     setSelection(next)
     setTab("curriculum")
+  }
+
+  function handlePublish() {
+    if (!canPublish) return
+    setPublishStatus("published")
+    setLastPublishedAt(new Date().toISOString())
+    setLastSavedAt(Date.now())
   }
 
   return (
@@ -612,24 +831,46 @@ export function CourseAdmin({
       className={cn("h-full min-h-0!", className)}
       {...props}
     >
+      <CoursePageChrome
+        title={courseTitle}
+        topic={courseTopic}
+        level={courseLevel}
+        publishStatus={publishStatus}
+        savedLabel={formatSavedAgo(lastSavedAt, now)}
+        canPublish={canPublish}
+        errorCount={errorCount}
+        onPreview={() =>
+          setPreviewMessage(
+            "학습자 미리보기는 데모에서 별도 창 대신 안내만 표시합니다."
+          )
+        }
+        onPublish={handlePublish}
+      />
+
+      {previewMessage ? (
+        <output className="rounded-2xl border border-border/70 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+          {previewMessage}
+        </output>
+      ) : null}
+      {revalidateMessage ? (
+        <output className="rounded-2xl border border-border/70 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+          {revalidateMessage}
+        </output>
+      ) : null}
+
       <Tabs
         value={tab}
         onValueChange={setTab}
         className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden"
       >
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <TabsList className="w-fit">
-            <TabsTrigger value="info">코스 정보</TabsTrigger>
-            <TabsTrigger value="curriculum">커리큘럼</TabsTrigger>
-            <TabsTrigger value="release">검증·게시</TabsTrigger>
-          </TabsList>
-          <Badge variant="info">미리보기</Badge>
-          {errorCount > 0 ? (
-            <Badge variant="destructive" className="tabular-nums">
-              오류 {errorCount}
-            </Badge>
-          ) : null}
-        </div>
+        <TabsList className="w-fit shrink-0">
+          <TabsTrigger value="info">코스 정보</TabsTrigger>
+          <TabsTrigger value="curriculum">커리큘럼</TabsTrigger>
+          <TabsTrigger value="release">
+            검증·게시
+            {errorCount > 0 ? ` ⚠${errorCount}` : ""}
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent
           value="info"
@@ -640,10 +881,31 @@ export function CourseAdmin({
             topic={courseTopic}
             level={courseLevel}
             description={courseDescription}
-            onTitleChange={setCourseTitle}
-            onTopicChange={setCourseTopic}
-            onLevelChange={setCourseLevel}
-            onDescriptionChange={setCourseDescription}
+            thumbnailUrl={thumbnailUrl}
+            createdAt={COURSE.createdAt}
+            createdBy={COURSE.createdBy}
+            updatedAt={updatedAt}
+            updatedBy={COURSE.updatedBy}
+            onTitleChange={(value) => {
+              setCourseTitle(value)
+              markDirty()
+            }}
+            onTopicChange={(value) => {
+              setCourseTopic(value)
+              markDirty()
+            }}
+            onLevelChange={(value) => {
+              setCourseLevel(value)
+              markDirty()
+            }}
+            onDescriptionChange={(value) => {
+              setCourseDescription(value)
+              markDirty()
+            }}
+            onThumbnailChange={(value) => {
+              setThumbnailUrl(value)
+              markDirty()
+            }}
           />
         </TabsContent>
 
@@ -656,6 +918,7 @@ export function CourseAdmin({
             onUnitsChange={handleUnitsChange}
             selection={selection}
             onSelectionChange={handleSelectionChange}
+            issues={issues}
             className="min-h-0 flex-1"
           />
         </TabsContent>
@@ -664,11 +927,20 @@ export function CourseAdmin({
           value="release"
           className="min-h-0 overflow-auto rounded-[1.25rem] border border-border/70 bg-card p-4 sm:p-5"
         >
-          <ToolsPanel
+          <ReleasePanel
+            publishStatus={publishStatus}
             issues={issues}
+            canPublish={canPublish}
+            lastPublishedLabel={
+              lastPublishedAt ? formatDateTime(lastPublishedAt) : "없음"
+            }
             onNavigate={handleNavigate}
-            canPublish={errorCount === 0}
-            previewStep={previewStep}
+            onRevalidate={() =>
+              setRevalidateMessage(
+                `검증을 다시 실행했습니다. 오류 ${errorCount}건 · 경고 ${issues.length - errorCount}건`
+              )
+            }
+            onPublish={handlePublish}
           />
         </TabsContent>
       </Tabs>

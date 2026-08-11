@@ -83,7 +83,7 @@ function CurriculumTreeList({ className, role = "tree", ...props }: React.Compon
 }
 
 const curriculumNodeVariants = cva(
-  "group/node relative flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-2xl px-1.5 py-1 outline-none",
+  "group/node flex w-full min-w-0 items-center gap-x-1.5 rounded-xl px-1.5 py-1 outline-none",
   {
     variants: {
       state: {
@@ -93,7 +93,7 @@ const curriculumNodeVariants = cva(
         published: "bg-foreground/[0.03] hover:bg-foreground/[0.05] dark:bg-foreground/[0.05]",
       },
       selected: {
-        true: "bg-foreground/[0.05] ring-1 ring-foreground/10 dark:bg-foreground/[0.08]",
+        true: "bg-foreground/[0.05] ring-1 ring-inset ring-foreground/10 dark:bg-foreground/[0.08]",
         false: "",
       },
     },
@@ -103,6 +103,16 @@ const curriculumNodeVariants = cva(
     },
   },
 );
+
+function isCurriculumNodeChildren(child: React.ReactNode): child is React.ReactElement {
+  return (
+    React.isValidElement(child) &&
+    (child.type === CurriculumNodeChildren ||
+      (typeof child.type !== "string" &&
+        "displayName" in child.type &&
+        (child.type as { displayName?: string }).displayName === "CurriculumNodeChildren"))
+  );
+}
 
 function CurriculumNode({
   className,
@@ -124,6 +134,9 @@ function CurriculumNode({
     depth?: number;
   }) {
   const resolvedDepth = depth ?? CURRICULUM_NODE_DEPTH[level];
+  const childList = React.Children.toArray(children);
+  const nested = childList.filter(isCurriculumNodeChildren);
+  const header = childList.filter((child) => !isCurriculumNodeChildren(child));
 
   return (
     <li
@@ -143,14 +156,19 @@ function CurriculumNode({
           "--curriculum-depth": resolvedDepth,
         } as React.CSSProperties
       }
-      className={cn(
-        curriculumNodeVariants({ state, selected }),
-        "ps-[calc(0.375rem+var(--curriculum-depth)*0.875rem)]",
-        className,
-      )}
+      className={cn("flex list-none flex-col gap-0.5", className)}
       {...props}
     >
-      {children}
+      <div
+        data-slot="curriculum-node-row"
+        className={cn(
+          curriculumNodeVariants({ state, selected }),
+          "ps-[calc(0.375rem+var(--curriculum-depth)*0.875rem)]",
+        )}
+      >
+        {header}
+      </div>
+      {nested}
     </li>
   );
 }
@@ -270,10 +288,7 @@ function CurriculumNodeCount({ className, ...props }: React.ComponentProps<"span
   return (
     <span
       data-slot="curriculum-node-count"
-      className={cn(
-        "shrink-0 text-[11px] tabular-nums text-muted-foreground group-hover/node:hidden group-focus-within/node:hidden",
-        className,
-      )}
+      className={cn("shrink-0 text-[11px] tabular-nums text-muted-foreground", className)}
       {...props}
     />
   );
@@ -284,7 +299,7 @@ function CurriculumNodeActions({ className, ...props }: React.ComponentProps<"di
     <div
       data-slot="curriculum-node-actions"
       className={cn(
-        "-me-0.5 hidden shrink-0 items-center gap-0.5 group-hover/node:flex group-focus-within/node:flex",
+        "ms-auto flex size-7 shrink-0 items-center justify-center opacity-0 transition-opacity group-hover/node:opacity-100 group-focus-within/node:opacity-100",
         className,
       )}
       {...props}
@@ -301,11 +316,13 @@ function CurriculumNodeChildren({
     <ul
       data-slot="curriculum-node-children"
       role={role}
-      className={cn("flex w-full basis-full flex-col gap-0.5", className)}
+      className={cn("flex w-full flex-col gap-0.5", className)}
       {...props}
     />
   );
 }
+
+CurriculumNodeChildren.displayName = "CurriculumNodeChildren";
 
 function CurriculumNodeDropIndicator({ className, ...props }: React.ComponentProps<"div">) {
   return (

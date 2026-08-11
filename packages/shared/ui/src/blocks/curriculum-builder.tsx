@@ -12,12 +12,12 @@ import { isSortable, useSortable } from "@dnd-kit/react/sortable"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Delete02Icon,
-  Menu01Icon,
   MoreHorizontalIcon,
   PlusSignIcon,
 } from "@hugeicons/core-free-icons"
 
 import { cn } from "#ui/lib/utils"
+import { Badge } from "#ui/components/ui/badge"
 import { Button } from "#ui/components/ui/button"
 import {
   CurriculumNode,
@@ -61,7 +61,6 @@ import {
   LessonBuilderStep,
   LessonBuilderStepActions,
   LessonBuilderStepBody,
-  LessonBuilderStepEditor,
   LessonBuilderStepHandle,
   LessonBuilderStepInsert,
   LessonBuilderStepType,
@@ -86,9 +85,11 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "#ui/components/ui/sheet"
+import { Step, StepBody, StepHeader, StepTitle } from "#ui/components/ui/step"
 import { Textarea } from "#ui/components/ui/textarea"
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -218,7 +219,7 @@ type BuilderAction =
 
 /* ─── Constants & helpers ───────────────────────────────────────────────── */
 
-const STEP_TYPE_LABELS: Record<StepType, string> = {
+export const STEP_TYPE_LABELS: Record<StepType, string> = {
   READING: "읽기",
   MULTIPLE_CHOICE: "객관식",
   FILL_BLANK: "빈칸 채우기",
@@ -426,36 +427,302 @@ function selectionEquals(
   return a.id === b.id
 }
 
+function formatUnitLabel(unitIndex: number, unit: UnitNode) {
+  return `${unitIndex + 1}단원 · ${unit.title.trim() || "제목 없음"}`
+}
+
+function formatLessonLabel(lessonIndex: number, lesson: LessonNode) {
+  return `${lessonIndex + 1}과 ${lesson.title.trim() || "제목 없음"}`
+}
+
+function formatStepPath(
+  unitIndex: number,
+  unit: UnitNode,
+  lessonIndex: number,
+  lesson: LessonNode,
+  stepIndex: number,
+  step: LessonStep
+) {
+  return `${unitIndex + 1}단원 › ${formatLessonLabel(lessonIndex, lesson)} › 스텝 ${stepIndex + 1}(${STEP_TYPE_LABELS[step.type]})`
+}
+
+function collectStepIssues(
+  unitIndex: number,
+  unit: UnitNode,
+  lessonIndex: number,
+  lesson: LessonNode,
+  stepIndex: number,
+  step: LessonStep
+): ValidationIssue[] {
+  const issues: ValidationIssue[] = []
+  const path = formatStepPath(
+    unitIndex,
+    unit,
+    lessonIndex,
+    lesson,
+    stepIndex,
+    step
+  )
+  const selection: CurriculumSelection = {
+    kind: "step",
+    lessonId: lesson.id,
+    stepId: step.id,
+  }
+
+  if (!step.prompt.trim() && step.type !== "READING") {
+    issues.push({
+      id: `step-prompt-${step.id}`,
+      severity: "warning",
+      title: "지시문 없음",
+      detail: path,
+      selection,
+    })
+  }
+
+  if (step.type === "READING" && !step.body.trim()) {
+    issues.push({
+      id: `reading-body-${step.id}`,
+      severity: "warning",
+      title: "읽기 본문 없음",
+      detail: path,
+      selection,
+    })
+  }
+
+  if (step.type === "MULTIPLE_CHOICE") {
+    const options = step.options ?? []
+    if (options.length < 2) {
+      issues.push({
+        id: `opt-count-${step.id}`,
+        severity: "error",
+        title: "선택지 부족",
+        detail: `${path} · 선택지가 2개 미만입니다.`,
+        selection,
+      })
+    }
+    const emptyIndexes = options
+      .map((opt, index) => (!opt.label.trim() ? index + 1 : null))
+      .filter((value): value is number => value !== null)
+    if (emptyIndexes.length > 0) {
+      issues.push({
+        id: `opt-empty-${step.id}`,
+        severity: "error",
+        title: "빈 선택지",
+        detail: `${path} · 선택지 ${emptyIndexes.join(", ")}`,
+        selection,
+      })
+    }
+    if (!(step.correctOptionIds ?? []).length) {
+      issues.push({
+        id: `opt-answer-${step.id}`,
+        severity: "error",
+        title: "정답 미지정",
+        detail: path,
+        selection,
+      })
+    }
+  }
+
+  if (step.type === "FILL_BLANK") {
+    if (!step.body.includes("___")) {
+      issues.push({
+        id: `blank-marker-${step.id}`,
+        severity: "error",
+        title: "빈칸 마커 없음",
+        detail: `${path} · 본문에 ___ 마커가 없습니다.`,
+        selection,
+      })
+    }
+    if (!(step.answerTokens ?? []).some((token) => token.trim())) {
+      issues.push({
+        id: `blank-answer-${step.id}`,
+        severity: "error",
+        title: "빈칸 정답 없음",
+        detail: path,
+        selection,
+      })
+    }
+  }
+
+  if (step.type === "SELECT") {
+    const segments = step.segments ?? []
+    if (segments.length === 0) {
+      issues.push({
+        id: `select-empty-${step.id}`,
+        severity: "error",
+        title: "구간 없음",
+        detail: `${path} · 본문에 선택 구간이 없습니다.`,
+        selection,
+      })
+    }
+    if (!segments.some((segment) => segment.correct)) {
+      issues.push({
+        id: `select-answer-${step.id}`,
+        severity: "error",
+        title: "정답 구간 미지정",
+        detail: path,
+        selection,
+      })
+    }
+  }
+
+  if (step.type === "ORDER") {
+    const items = step.items ?? []
+    if (items.length < 2) {
+      issues.push({
+        id: `order-count-${step.id}`,
+        severity: "error",
+        title: "순서 항목 부족",
+        detail: `${path} · 항목이 2개 미만입니다.`,
+        selection,
+      })
+    }
+    if (items.some((item) => !item.label.trim())) {
+      issues.push({
+        id: `order-empty-${step.id}`,
+        severity: "error",
+        title: "빈 순서 항목",
+        detail: path,
+        selection,
+      })
+    }
+  }
+
+  if (step.type === "MATCH") {
+    const pairs = step.pairs ?? []
+    if (pairs.length === 0) {
+      issues.push({
+        id: `match-empty-${step.id}`,
+        severity: "error",
+        title: "짝 목록 없음",
+        detail: path,
+        selection,
+      })
+    }
+    if (pairs.some((pair) => !pair.left.trim() || !pair.right.trim())) {
+      issues.push({
+        id: `match-blank-${step.id}`,
+        severity: "error",
+        title: "빈 짝 항목",
+        detail: path,
+        selection,
+      })
+    }
+  }
+
+  if (step.type === "CATEGORIZE") {
+    const items = step.items ?? []
+    const categories = step.categories ?? []
+    if (items.some((item) => !item.label.trim())) {
+      issues.push({
+        id: `cat-item-empty-${step.id}`,
+        severity: "error",
+        title: "빈 분류 항목",
+        detail: path,
+        selection,
+      })
+    }
+    if (categories.some((category) => !category.label.trim())) {
+      issues.push({
+        id: `cat-label-empty-${step.id}`,
+        severity: "error",
+        title: "빈 카테고리",
+        detail: path,
+        selection,
+      })
+    }
+    if (categories.length === 0 || items.length === 0) {
+      issues.push({
+        id: `cat-structure-${step.id}`,
+        severity: "error",
+        title: "분류 구조 부족",
+        detail: path,
+        selection,
+      })
+    } else {
+      const assigned = new Set(
+        categories.flatMap((category) => category.itemIds)
+      )
+      if (items.some((item) => !assigned.has(item.id))) {
+        issues.push({
+          id: `cat-answer-${step.id}`,
+          severity: "error",
+          title: "정답 카테고리 미지정",
+          detail: path,
+          selection,
+        })
+      }
+    }
+  }
+
+  if (step.type === "WRITE" && !(step.rubricRef ?? "").trim()) {
+    issues.push({
+      id: `write-rubric-${step.id}`,
+      severity: "warning",
+      title: "채점 기준 없음",
+      detail: path,
+      selection,
+    })
+  }
+
+  if (step.type === "AI_FEEDBACK" && !(step.rubricRef ?? "").trim()) {
+    issues.push({
+      id: `ai-rubric-${step.id}`,
+      severity: "warning",
+      title: "루브릭 없음",
+      detail: path,
+      selection,
+    })
+  }
+
+  return issues
+}
+
 export function validateCurriculum(units: UnitNode[]): ValidationIssue[] {
   const issues: ValidationIssue[] = []
 
-  for (const unit of units) {
+  if (units.length === 0) {
+    issues.push({
+      id: "course-no-units",
+      severity: "error",
+      title: "유닛 없음",
+      detail: "코스에 유닛이 1개도 없습니다.",
+      selection: { kind: "unit", id: "" },
+    })
+    return issues
+  }
+
+  for (const [unitIndex, unit] of units.entries()) {
+    const unitLabel = formatUnitLabel(unitIndex, unit)
+
     if (!unit.title.trim()) {
       issues.push({
         id: `unit-title-${unit.id}`,
         severity: "error",
         title: "유닛 제목 없음",
-        detail: "제목이 비어 있는 유닛이 있습니다.",
+        detail: unitLabel,
         selection: { kind: "unit", id: unit.id },
       })
     }
     if (unit.lessons.length === 0) {
       issues.push({
         id: `unit-empty-${unit.id}`,
-        severity: "warning",
+        severity: "error",
         title: "빈 유닛",
-        detail: `「${unit.title || "제목 없음"}」에 레슨이 없습니다.`,
+        detail: `${unitLabel} · 레슨이 없습니다.`,
         selection: { kind: "unit", id: unit.id },
       })
     }
 
-    for (const lesson of unit.lessons) {
+    for (const [lessonIndex, lesson] of unit.lessons.entries()) {
+      const lessonPath = `${unitIndex + 1}단원 › ${formatLessonLabel(lessonIndex, lesson)}`
+
       if (!lesson.title.trim()) {
         issues.push({
           id: `lesson-title-${lesson.id}`,
           severity: "error",
           title: "레슨 제목 없음",
-          detail: `「${unit.title}」의 레슨 제목이 비어 있습니다.`,
+          detail: lessonPath,
           selection: { kind: "lesson", id: lesson.id },
         })
       }
@@ -464,60 +731,70 @@ export function validateCurriculum(units: UnitNode[]): ValidationIssue[] {
           id: `lesson-empty-${lesson.id}`,
           severity: "error",
           title: "스텝 없는 레슨",
-          detail: `「${lesson.title || "제목 없음"}」에 스텝이 없습니다.`,
+          detail: `${lessonPath} · 스텝이 없습니다.`,
           selection: { kind: "lesson", id: lesson.id },
         })
       }
 
-      for (const step of lesson.steps) {
-        if (step.type === "MULTIPLE_CHOICE") {
-          const empty = (step.options ?? []).find((opt) => !opt.label.trim())
-          if (empty) {
-            issues.push({
-              id: `opt-empty-${step.id}`,
-              severity: "error",
-              title: "빈 선택지",
-              detail: `「${lesson.title}」의 「${step.title}」에 비어 있는 선택지가 있습니다.`,
-              selection: { kind: "step", lessonId: lesson.id, stepId: step.id },
-            })
-          }
-          if (!(step.correctOptionIds ?? []).length) {
-            issues.push({
-              id: `opt-answer-${step.id}`,
-              severity: "error",
-              title: "정답 미지정",
-              detail: `「${lesson.title}」의 「${step.title}」에 정답이 없습니다.`,
-              selection: { kind: "step", lessonId: lesson.id, stepId: step.id },
-            })
-          }
-        }
-        if (
-          step.type === "READING" &&
-          !step.body.trim() &&
-          !step.prompt.trim()
-        ) {
-          issues.push({
-            id: `reading-empty-${step.id}`,
-            severity: "warning",
-            title: "읽기 본문 없음",
-            detail: `「${lesson.title}」의 읽기 스텝에 본문이 없습니다.`,
-            selection: { kind: "step", lessonId: lesson.id, stepId: step.id },
-          })
-        }
-        if (step.type === "WRITE" && !step.prompt.trim()) {
-          issues.push({
-            id: `write-empty-${step.id}`,
-            severity: "warning",
-            title: "쓰기 프롬프트 없음",
-            detail: `「${lesson.title}」의 쓰기 스텝에 프롬프트가 없습니다.`,
-            selection: { kind: "step", lessonId: lesson.id, stepId: step.id },
-          })
-        }
+      const stepIssues: ValidationIssue[] = []
+      for (const [stepIndex, step] of lesson.steps.entries()) {
+        stepIssues.push(
+          ...collectStepIssues(
+            unitIndex,
+            unit,
+            lessonIndex,
+            lesson,
+            stepIndex,
+            step
+          )
+        )
+      }
+      issues.push(...stepIssues)
+
+      const stepErrorCount = stepIssues.filter(
+        (issue) => issue.severity === "error"
+      ).length
+      if (lesson.state === "ready" && stepErrorCount > 0) {
+        issues.push({
+          id: `lesson-ready-${lesson.id}`,
+          severity: "error",
+          title: "준비됨 레슨에 오류",
+          detail: `${lessonPath} · 내부 스텝 오류 ${stepErrorCount}건`,
+          selection: { kind: "lesson", id: lesson.id },
+        })
       }
     }
   }
 
   return issues
+}
+
+export function countIssuesForLesson(
+  issues: ValidationIssue[],
+  lessonId: string
+) {
+  return issues.filter((issue) => {
+    if (issue.selection.kind === "lesson") {
+      return issue.selection.id === lessonId
+    }
+    if (issue.selection.kind === "step") {
+      return issue.selection.lessonId === lessonId
+    }
+    return false
+  }).length
+}
+
+export function countIssuesForStep(
+  issues: ValidationIssue[],
+  lessonId: string,
+  stepId: string
+) {
+  return issues.filter(
+    (issue) =>
+      issue.selection.kind === "step" &&
+      issue.selection.lessonId === lessonId &&
+      issue.selection.stepId === stepId
+  ).length
 }
 
 /* ─── Reducer ───────────────────────────────────────────────────────────── */
@@ -780,11 +1057,17 @@ function reducer(state: BuilderState, action: BuilderAction): BuilderState {
             ...lesson,
             steps: lesson.steps.map((step) => {
               if (step.id !== action.stepId) return step
-              const next = { ...step, ...action.patch }
               if (action.patch.type && action.patch.type !== step.type) {
-                return normalizeStep({ ...next, type: action.patch.type })
+                const fresh = createEmptyStep(action.patch.type)
+                return {
+                  ...fresh,
+                  id: step.id,
+                  prompt: step.prompt,
+                  title:
+                    action.patch.title ?? STEP_TYPE_LABELS[action.patch.type],
+                }
               }
-              return next
+              return { ...step, ...action.patch }
             }),
           }
         }),
@@ -1158,6 +1441,9 @@ function StepTypeForm({
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground">
+            유형을 바꾸면 아래 입력값이 초기화됩니다.
+          </p>
         </Field>
       </div>
 
@@ -1220,6 +1506,23 @@ function StepTypeForm({
             items={step.tokens ?? []}
             onChange={(tokens) => onChange({ tokens })}
           />
+          <Field>
+            <FieldLabel htmlFor={`step-answers-${step.id}`}>
+              정답 토큰 (쉼표로 구분)
+            </FieldLabel>
+            <Input
+              id={`step-answers-${step.id}`}
+              value={(step.answerTokens ?? []).join(", ")}
+              onChange={(event) =>
+                onChange({
+                  answerTokens: event.target.value
+                    .split(",")
+                    .map((token) => token.trim())
+                    .filter(Boolean),
+                })
+              }
+            />
+          </Field>
         </>
       ) : null}
 
@@ -1233,22 +1536,91 @@ function StepTypeForm({
             rows={4}
             onChange={(value) => onChange({ body: value })}
           />
-          <ItemListEditor
-            label="선택 가능 구간"
-            items={(step.segments ?? []).map((segment) => ({
-              id: segment.id,
-              label: segment.label,
-            }))}
-            onChange={(items) =>
-              onChange({
-                segments: items.map((item) => ({
-                  ...item,
-                  correct: (step.segments ?? []).find((s) => s.id === item.id)
-                    ?.correct,
-                })),
-              })
-            }
-          />
+          <Field>
+            <FieldLabel>선택 가능 구간</FieldLabel>
+            <div className="flex flex-col gap-2">
+              {(step.segments ?? []).map((segment, index) => {
+                const checked = Boolean(segment.correct)
+                return (
+                  <div key={segment.id} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label={checked ? "정답 해제" : "정답 구간으로 지정"}
+                      aria-pressed={checked}
+                      onClick={() =>
+                        onChange({
+                          segments: (step.segments ?? []).map((row) =>
+                            row.id === segment.id
+                              ? Object.assign({}, row, { correct: !checked })
+                              : row
+                          ),
+                        })
+                      }
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-medium tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/25",
+                        checked
+                          ? "border-foreground/30 bg-foreground text-background"
+                          : "border-border/70 bg-muted/40 text-muted-foreground"
+                      )}
+                    >
+                      {index + 1}
+                    </button>
+                    <Input
+                      value={segment.label}
+                      aria-label={`구간 ${index + 1}`}
+                      onChange={(event) =>
+                        onChange({
+                          segments: (step.segments ?? []).map((row) =>
+                            row.id === segment.id
+                              ? Object.assign({}, row, {
+                                  label: event.target.value,
+                                })
+                              : row
+                          ),
+                        })
+                      }
+                    />
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      variant="ghost"
+                      aria-label="구간 삭제"
+                      onClick={() =>
+                        onChange({
+                          segments: (step.segments ?? []).filter(
+                            (row) => row.id !== segment.id
+                          ),
+                        })
+                      }
+                    >
+                      <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+                    </Button>
+                  </div>
+                )
+              })}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="w-fit"
+                onClick={() =>
+                  onChange({
+                    segments: [
+                      ...(step.segments ?? []),
+                      { id: nextId("seg"), label: "", correct: false },
+                    ],
+                  })
+                }
+              >
+                <HugeiconsIcon
+                  icon={PlusSignIcon}
+                  strokeWidth={2}
+                  data-icon="inline-start"
+                />
+                구간 추가
+              </Button>
+            </div>
+          </Field>
         </>
       ) : null}
 
@@ -1350,21 +1722,80 @@ function StepTypeForm({
             <FieldLabel>카테고리</FieldLabel>
             <div className="flex flex-col gap-2">
               {(step.categories ?? []).map((category) => (
-                <Input
-                  key={category.id}
-                  value={category.label}
-                  onChange={(event) =>
-                    onChange({
-                      categories: (step.categories ?? []).map((row) =>
-                        row.id === category.id
-                          ? Object.assign({}, row, {
-                              label: event.target.value,
+                <div key={category.id} className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={category.label}
+                      aria-label="카테고리 이름"
+                      onChange={(event) =>
+                        onChange({
+                          categories: (step.categories ?? []).map((row) =>
+                            row.id === category.id
+                              ? Object.assign({}, row, {
+                                  label: event.target.value,
+                                })
+                              : row
+                          ),
+                        })
+                      }
+                    />
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      variant="ghost"
+                      aria-label="카테고리 삭제"
+                      onClick={() =>
+                        onChange({
+                          categories: (step.categories ?? []).filter(
+                            (row) => row.id !== category.id
+                          ),
+                        })
+                      }
+                    >
+                      <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 ps-1">
+                    {(step.items ?? []).map((item) => {
+                      const assigned = category.itemIds.includes(item.id)
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          aria-pressed={assigned}
+                          className={cn(
+                            "rounded-full border px-2.5 py-1 text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/25",
+                            assigned
+                              ? "border-foreground/30 bg-foreground text-background"
+                              : "border-border/70 bg-muted/40 text-muted-foreground"
+                          )}
+                          onClick={() =>
+                            onChange({
+                              categories: (step.categories ?? []).map((row) => {
+                                if (row.id === category.id) {
+                                  return Object.assign({}, row, {
+                                    itemIds: assigned
+                                      ? row.itemIds.filter(
+                                          (id) => id !== item.id
+                                        )
+                                      : [...row.itemIds, item.id],
+                                  })
+                                }
+                                return Object.assign({}, row, {
+                                  itemIds: row.itemIds.filter(
+                                    (id) => id !== item.id
+                                  ),
+                                })
+                              }),
                             })
-                          : row
-                      ),
-                    })
-                  }
-                />
+                          }
+                        >
+                          {item.label || "이름 없음"}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               ))}
               <Button
                 type="button"
@@ -1443,6 +1874,22 @@ function StepTypeForm({
               onChange={(value) => onChange({ maxChars: Number(value) || 0 })}
             />
           </div>
+          <StepFieldText
+            id={`step-example-${step.id}`}
+            label="예시 답안"
+            value={step.insight ?? ""}
+            multiline
+            rows={2}
+            onChange={(value) => onChange({ insight: value })}
+          />
+          <StepFieldText
+            id={`step-rubric-${step.id}`}
+            label="채점 기준"
+            value={step.rubricRef ?? ""}
+            multiline
+            rows={2}
+            onChange={(value) => onChange({ rubricRef: value })}
+          />
           <StepFieldText
             id={`step-submit-${step.id}`}
             label="제출 조건"
@@ -1670,6 +2117,7 @@ function SortableLessonRow({
   selected,
   renaming,
   stepCount,
+  issueCount,
   onSelect,
   onRename,
   onCancelRename,
@@ -1681,6 +2129,7 @@ function SortableLessonRow({
   selected: boolean
   renaming: boolean
   stepCount: number
+  issueCount: number
   onSelect: () => void
   onRename: (title: string) => void
   onCancelRename: () => void
@@ -1719,6 +2168,15 @@ function SortableLessonRow({
         <CurriculumNodeLabel level="lesson">{lesson.title}</CurriculumNodeLabel>
       )}
       <CurriculumNodeMeta level="lesson" state={lesson.state} quiet />
+      {issueCount > 0 ? (
+        <Badge variant="destructive" className="tabular-nums">
+          ⚠{issueCount}
+        </Badge>
+      ) : (
+        <span className="text-xs text-muted-foreground" aria-label="오류 없음">
+          ✓
+        </span>
+      )}
       <CurriculumNodeCount>{stepCount}</CurriculumNodeCount>
       <CurriculumNodeActions
         onPointerDown={(event) => event.stopPropagation()}
@@ -1767,15 +2225,15 @@ function SortableStepCard({
   step,
   index,
   selected,
+  issueCount,
   onSelect,
-  onUpdate,
   onMenu,
 }: {
   step: LessonStep
   index: number
   selected: boolean
+  issueCount: number
   onSelect: () => void
-  onUpdate: (patch: Partial<LessonStep>) => void
   onMenu: (action: "up" | "down" | "duplicate" | "remove") => void
 }) {
   const { ref, handleRef, isDragging } = useSortable({
@@ -1803,20 +2261,28 @@ function SortableStepCard({
       />
       <LessonBuilderStepBody>
         <div className="flex flex-col gap-1.5">
-          <LessonBuilderStepType>
-            {STEP_TYPE_LABELS[step.type]}
-          </LessonBuilderStepType>
+          <div className="flex flex-wrap items-center gap-2">
+            <LessonBuilderStepType>
+              {STEP_TYPE_LABELS[step.type]}
+            </LessonBuilderStepType>
+            {issueCount > 0 ? (
+              <Badge variant="destructive" className="tabular-nums">
+                ⚠{issueCount}
+              </Badge>
+            ) : null}
+          </div>
           <p className="font-medium tracking-[-0.01em]">
             {step.title || "제목 없음"}
           </p>
-          {!selected ? (
-            <p className="line-clamp-2 text-muted-foreground">
-              {step.prompt || step.body || "내용 없음"}
-            </p>
-          ) : null}
+          <p className="line-clamp-2 text-muted-foreground">
+            {step.prompt || step.body || "내용 없음"}
+          </p>
         </div>
       </LessonBuilderStepBody>
       <LessonBuilderStepActions onClick={(event) => event.stopPropagation()}>
+        <span className="px-1 text-muted-foreground" aria-hidden>
+          ›
+        </span>
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
@@ -1846,11 +2312,6 @@ function SortableStepCard({
           </DropdownMenuContent>
         </DropdownMenu>
       </LessonBuilderStepActions>
-      {selected ? (
-        <LessonBuilderStepEditor onClick={(event) => event.stopPropagation()}>
-          <StepTypeForm step={step} onChange={onUpdate} />
-        </LessonBuilderStepEditor>
-      ) : null}
     </LessonBuilderStep>
   )
 }
@@ -1862,6 +2323,7 @@ function OutlinePanel({
   selection,
   expanded,
   renaming,
+  lessonIssueCounts,
   dispatch,
   className,
 }: {
@@ -1869,6 +2331,7 @@ function OutlinePanel({
   selection: CurriculumSelection | null
   expanded: Record<string, boolean>
   renaming: BuilderState["renaming"]
+  lessonIssueCounts: Record<string, number>
   dispatch: React.Dispatch<BuilderAction>
   className?: string
 }) {
@@ -1910,25 +2373,11 @@ function OutlinePanel({
     >
       <CurriculumTreeHeader className="mb-1 shrink-0 px-0.5">
         <div className="min-w-0">
-          <CurriculumTreeTitle>커리큘럼</CurriculumTreeTitle>
+          <CurriculumTreeTitle>구조</CurriculumTreeTitle>
           <CurriculumTreeSummary>
             유닛 {stats.units} · 레슨 {stats.lessons} · 스텝 {stats.steps}
           </CurriculumTreeSummary>
         </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          type="button"
-          className="h-7 px-2 text-xs"
-          onClick={() => dispatch({ type: "unit/add" })}
-        >
-          <HugeiconsIcon
-            icon={PlusSignIcon}
-            strokeWidth={2}
-            data-icon="inline-start"
-          />
-          유닛 추가
-        </Button>
       </CurriculumTreeHeader>
 
       {units.length === 0 ? (
@@ -2074,6 +2523,7 @@ function OutlinePanel({
                             renaming.id === lesson.id
                           }
                           stepCount={lesson.steps.length}
+                          issueCount={lessonIssueCounts[lesson.id] ?? 0}
                           onSelect={() =>
                             dispatch({
                               type: "select",
@@ -2123,24 +2573,30 @@ function OutlinePanel({
                         />
                       )
                     })}
-                    {unit.lessons.length === 0 ? (
-                      <li className="px-3 py-2 ps-10 text-xs text-muted-foreground">
-                        레슨이 없습니다.{" "}
-                        <button
-                          type="button"
-                          className="underline underline-offset-2 hover:text-foreground"
-                          onClick={() =>
-                            dispatch({ type: "lesson/add", unitId: unit.id })
-                          }
-                        >
-                          레슨 추가
-                        </button>
-                      </li>
-                    ) : null}
+                    <li className="list-none px-3 py-1.5 ps-10">
+                      <button
+                        type="button"
+                        className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                        onClick={() =>
+                          dispatch({ type: "lesson/add", unitId: unit.id })
+                        }
+                      >
+                        + 레슨 추가
+                      </button>
+                    </li>
                   </SortableUnitRow>
                 </React.Fragment>
               )
             })}
+            <li className="list-none px-2 pt-2">
+              <button
+                type="button"
+                className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                onClick={() => dispatch({ type: "unit/add" })}
+              >
+                + 유닛 추가
+              </button>
+            </li>
           </CurriculumTreeList>
         </DragDropProvider>
       )}
@@ -2353,11 +2809,19 @@ function AddStepMenu({
 
 function LessonEditor({
   lesson,
+  unitTitle,
+  unitIndex,
+  lessonIndex,
   selectedStepId,
+  issues,
   dispatch,
 }: {
   lesson: LessonNode
+  unitTitle: string
+  unitIndex: number
+  lessonIndex: number
   selectedStepId?: string
+  issues: ValidationIssue[]
   dispatch: React.Dispatch<BuilderAction>
 }) {
   const [insertIndex, setInsertIndex] = React.useState<number | null>(null)
@@ -2393,11 +2857,14 @@ function LessonEditor({
     <LessonBuilder data-slot="curriculum-builder-lesson-editor">
       <LessonBuilderHeader className="items-center">
         <div className="min-w-0 flex-1">
+          <p className="mb-1 text-xs text-muted-foreground">
+            {unitIndex + 1}단원 › {lessonIndex + 1}과 {lesson.title}
+          </p>
           <LessonBuilderTitle>{lesson.title}</LessonBuilderTitle>
           <LessonBuilderMeta>
             {lesson.steps.length} 스텝 ·{" "}
             {lesson.state === "draft"
-              ? "초안"
+              ? "작성 중"
               : lesson.state === "ready"
                 ? "준비됨"
                 : "게시됨"}
@@ -2438,7 +2905,11 @@ function LessonEditor({
           <Field>
             <FieldLabel htmlFor="lesson-state">상태</FieldLabel>
             <Select
-              items={[...STATE_ITEMS]}
+              items={[
+                { label: "작성 중", value: "draft" },
+                { label: "준비됨", value: "ready" },
+                { label: "게시됨", value: "published" },
+              ]}
               value={lesson.state === "locked" ? "draft" : lesson.state}
               onValueChange={(value) => {
                 const next = Array.isArray(value) ? value[0] : value
@@ -2455,16 +2926,18 @@ function LessonEditor({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="start">
-                {STATE_ITEMS.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="draft">작성 중</SelectItem>
+                <SelectItem value="ready">준비됨</SelectItem>
+                <SelectItem value="published">게시됨</SelectItem>
               </SelectContent>
             </Select>
           </Field>
         </div>
       </FieldGroup>
+
+      <div className="flex items-center justify-between gap-2 pt-2">
+        <h3 className="text-sm font-medium">스텝 ({lesson.steps.length})</h3>
+      </div>
 
       <DragDropProvider
         plugins={(defaults) => [
@@ -2524,6 +2997,7 @@ function LessonEditor({
                   step={step}
                   index={index}
                   selected={step.id === selectedStepId}
+                  issueCount={countIssuesForStep(issues, lesson.id, step.id)}
                   onSelect={() =>
                     dispatch({
                       type: "select",
@@ -2532,14 +3006,6 @@ function LessonEditor({
                         lessonId: lesson.id,
                         stepId: step.id,
                       },
-                    })
-                  }
-                  onUpdate={(patch) =>
-                    dispatch({
-                      type: "step/update",
-                      lessonId: lesson.id,
-                      stepId: step.id,
-                      patch,
                     })
                   }
                   onMenu={(action) => {
@@ -2577,7 +3043,109 @@ function LessonEditor({
           )}
         </LessonBuilderCanvas>
       </DragDropProvider>
+      <span className="sr-only">{unitTitle}</span>
     </LessonBuilder>
+  )
+}
+
+function StepEditSheet({
+  open,
+  pathLabel,
+  step,
+  issues,
+  onOpenChange,
+  onChange,
+}: {
+  open: boolean
+  pathLabel: string
+  step: LessonStep | null
+  issues: ValidationIssue[]
+  onOpenChange: (open: boolean) => void
+  onChange: (patch: Partial<LessonStep>) => void
+}) {
+  const stepIssues = step
+    ? issues.filter(
+        (issue) =>
+          issue.selection.kind === "step" && issue.selection.stepId === step.id
+      )
+    : []
+  const errorCount = stepIssues.filter(
+    (issue) => issue.severity === "error"
+  ).length
+  const warningCount = stepIssues.filter(
+    (issue) => issue.severity === "warning"
+  ).length
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-[min(100%,32rem)] gap-0 p-0 sm:max-w-lg"
+        showCloseButton
+      >
+        <SheetHeader>
+          <SheetTitle>스텝 편집</SheetTitle>
+          <SheetDescription>{pathLabel}</SheetDescription>
+        </SheetHeader>
+        {step ? (
+          <>
+            <div className="min-h-0 flex-1 overflow-y-auto p-6">
+              <StepTypeForm step={step} onChange={onChange} />
+              {stepIssues.length > 0 ? (
+                <div className="mt-5 rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-3 text-sm">
+                  <p className="font-medium text-destructive">
+                    ⚠ 오류 {errorCount} · 경고 {warningCount}
+                  </p>
+                  <ul className="mt-2 list-disc space-y-1 ps-4 text-muted-foreground">
+                    {stepIssues.map((issue) => (
+                      <li key={issue.id}>
+                        {issue.title}
+                        {issue.detail.includes("·")
+                          ? ` — ${issue.detail.split("·").slice(1).join("·").trim()}`
+                          : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="mt-5 text-sm text-muted-foreground">
+                  ✓ 이 스텝에 검증 이슈가 없습니다.
+                </p>
+              )}
+              <details className="mt-5 rounded-2xl border border-border/70 bg-muted/20 p-3">
+                <summary className="cursor-pointer text-sm font-medium">
+                  미리보기(학습자 화면)
+                </summary>
+                <div className="mt-3">
+                  <Step className="rounded-xl bg-card p-3 shadow-2xs">
+                    <StepHeader>
+                      <StepTitle>
+                        {step.title || STEP_TYPE_LABELS[step.type]}
+                      </StepTitle>
+                    </StepHeader>
+                    <StepBody>
+                      {step.prompt || step.body || "내용 없음"}
+                    </StepBody>
+                  </Step>
+                </div>
+              </details>
+            </div>
+            <SheetFooter className="flex-row justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                닫기
+              </Button>
+              <Button type="button" onClick={() => onOpenChange(false)}>
+                저장
+              </Button>
+            </SheetFooter>
+          </>
+        ) : null}
+      </SheetContent>
+    </Sheet>
   )
 }
 
@@ -2588,6 +3156,7 @@ export type CurriculumBuilderProps = {
   onUnitsChange?: (units: UnitNode[]) => void
   selection?: CurriculumSelection | null
   onSelectionChange?: (selection: CurriculumSelection | null) => void
+  issues?: ValidationIssue[]
   className?: string
 }
 
@@ -2599,6 +3168,7 @@ export function CurriculumBuilder({
   onUnitsChange,
   selection: selectionProp,
   onSelectionChange,
+  issues: issuesProp,
   className,
 }: CurriculumBuilderProps) {
   const [state, dispatch] = React.useReducer(reducer, undefined, () => {
@@ -2621,7 +3191,6 @@ export function CurriculumBuilder({
     } satisfies BuilderState
   })
 
-  const [outlineOpen, setOutlineOpen] = React.useState(false)
   const rootRef = React.useRef<HTMLDivElement>(null)
   const unitsRef = React.useRef(state.units)
   const selectionRef = React.useRef(state.selection)
@@ -2655,11 +3224,8 @@ export function CurriculumBuilder({
 
   React.useEffect(() => {
     if (selectionEquals(lastNotifiedSelection.current, state.selection)) return
-    const previous = lastNotifiedSelection.current
     lastNotifiedSelection.current = state.selection
     onSelectionChangeRef.current?.(state.selection)
-    // Close mobile outline only after a real user-driven selection change.
-    if (previous !== undefined) setOutlineOpen(false)
   }, [state.selection])
 
   React.useEffect(() => {
@@ -2760,6 +3326,20 @@ export function CurriculumBuilder({
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [state.selection, state.units])
 
+  const issues = React.useMemo(
+    () => issuesProp ?? validateCurriculum(state.units),
+    [issuesProp, state.units]
+  )
+  const lessonIssueCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const unit of state.units) {
+      for (const lesson of unit.lessons) {
+        counts[lesson.id] = countIssuesForLesson(issues, lesson.id)
+      }
+    }
+    return counts
+  }, [issues, state.units])
+
   const selectedUnit =
     state.selection?.kind === "unit"
       ? findUnit(state.units, state.selection.id)
@@ -2771,9 +3351,38 @@ export function CurriculumBuilder({
         ? state.selection.lessonId
         : undefined
   const lessonHit = lessonId ? findLesson(state.units, lessonId) : undefined
-  // Lesson selection must not fake-select steps[0]; Delete still targets the lesson.
   const selectedStepId =
     state.selection?.kind === "step" ? state.selection.stepId : undefined
+  const editingStep =
+    state.selection?.kind === "step"
+      ? (findStep(state.units, state.selection.lessonId, state.selection.stepId)
+          ?.step ?? null)
+      : null
+  const editingPathLabel = React.useMemo(() => {
+    if (!state.selection || state.selection.kind !== "step" || !lessonHit) {
+      return ""
+    }
+    const stepSelection = state.selection
+    const unitIndex = state.units.findIndex(
+      (unit) => unit.id === lessonHit.unit.id
+    )
+    const lessonIndex = lessonHit.unit.lessons.findIndex(
+      (lesson) => lesson.id === lessonHit.lesson.id
+    )
+    const stepIndex = lessonHit.lesson.steps.findIndex(
+      (step) => step.id === stepSelection.stepId
+    )
+    const step = lessonHit.lesson.steps[stepIndex]
+    if (!step || unitIndex < 0 || lessonIndex < 0 || stepIndex < 0) return ""
+    return formatStepPath(
+      unitIndex,
+      lessonHit.unit,
+      lessonIndex,
+      lessonHit.lesson,
+      stepIndex,
+      step
+    )
+  }, [lessonHit, state.selection, state.units])
 
   const outline = (
     <OutlinePanel
@@ -2781,6 +3390,7 @@ export function CurriculumBuilder({
       selection={state.selection}
       expanded={state.expanded}
       renaming={state.renaming}
+      lessonIssueCounts={lessonIssueCounts}
       dispatch={dispatch}
       className="h-full"
     />
@@ -2795,37 +3405,56 @@ export function CurriculumBuilder({
         className
       )}
     >
-      <div className="flex shrink-0 items-center gap-2 @[56rem]/curriculum-builder:hidden">
+      <div className="flex shrink-0 items-center justify-between gap-2">
+        <h2 className="font-heading text-base font-semibold tracking-[-0.02em]">
+          커리큘럼
+        </h2>
         <Button
           type="button"
           size="sm"
           variant="outline"
-          onClick={() => setOutlineOpen(true)}
+          className="shrink-0"
+          onClick={() => dispatch({ type: "unit/add" })}
         >
           <HugeiconsIcon
-            icon={Menu01Icon}
+            icon={PlusSignIcon}
             strokeWidth={2}
             data-icon="inline-start"
           />
-          구조
+          유닛 추가
         </Button>
-        <p className="truncate text-xs text-muted-foreground">
-          {selectedUnit?.title ??
-            lessonHit?.lesson.title ??
-            "항목을 선택하세요"}
-        </p>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 @[56rem]/curriculum-builder:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)] @[56rem]/curriculum-builder:grid-rows-[minmax(0,1fr)]">
-        <div className="hidden min-h-0 min-w-0 @[56rem]/curriculum-builder:block @[56rem]/curriculum-builder:h-full">
-          {outline}
-        </div>
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-3">
+        <div className="min-h-0 min-w-0 h-full overflow-hidden">{outline}</div>
 
         <div
           data-slot="curriculum-builder-workspace"
           className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-[1.25rem] border border-border/70 bg-card p-4 sm:p-5"
         >
-          {!state.selection ? (
+          {state.units.length === 0 ? (
+            <Empty variant="compact" className="min-h-48">
+              <EmptyHeader>
+                <EmptyTitle className="text-base">
+                  먼저 유닛을 추가해 주세요
+                </EmptyTitle>
+                <EmptyDescription>
+                  유닛을 만들면 레슨과 스텝을 구성할 수 있습니다.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => dispatch({ type: "unit/add" })}
+                >
+                  첫 유닛 만들기
+                </Button>
+              </EmptyContent>
+            </Empty>
+          ) : null}
+
+          {state.units.length > 0 && !state.selection ? (
             <Empty variant="compact" className="min-h-48">
               <EmptyHeader>
                 <EmptyTitle className="text-base">
@@ -2836,15 +3465,6 @@ export function CurriculumBuilder({
                   편집합니다.
                 </EmptyDescription>
               </EmptyHeader>
-              <EmptyContent>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => dispatch({ type: "unit/add" })}
-                >
-                  유닛 추가
-                </Button>
-              </EmptyContent>
             </Empty>
           ) : null}
 
@@ -2855,7 +3475,15 @@ export function CurriculumBuilder({
           {lessonHit ? (
             <LessonEditor
               lesson={lessonHit.lesson}
+              unitTitle={lessonHit.unit.title}
+              unitIndex={state.units.findIndex(
+                (unit) => unit.id === lessonHit.unit.id
+              )}
+              lessonIndex={lessonHit.unit.lessons.findIndex(
+                (lesson) => lesson.id === lessonHit.lesson.id
+              )}
               selectedStepId={selectedStepId}
+              issues={issues}
               dispatch={dispatch}
             />
           ) : null}
@@ -2888,18 +3516,30 @@ export function CurriculumBuilder({
         </output>
       ) : null}
 
-      <Sheet open={outlineOpen} onOpenChange={setOutlineOpen}>
-        <SheetContent
-          side="left"
-          className="w-[min(100%,22rem)] p-0 sm:max-w-sm"
-        >
-          <SheetHeader className="sr-only">
-            <SheetTitle>커리큘럼 구조</SheetTitle>
-            <SheetDescription>유닛과 레슨을 선택합니다.</SheetDescription>
-          </SheetHeader>
-          <div className="h-full p-3">{outline}</div>
-        </SheetContent>
-      </Sheet>
+      <StepEditSheet
+        open={state.selection?.kind === "step" && Boolean(editingStep)}
+        pathLabel={editingPathLabel}
+        step={editingStep}
+        issues={issues}
+        onOpenChange={(open) => {
+          if (open) return
+          if (state.selection?.kind === "step") {
+            dispatch({
+              type: "select",
+              selection: { kind: "lesson", id: state.selection.lessonId },
+            })
+          }
+        }}
+        onChange={(patch) => {
+          if (state.selection?.kind !== "step") return
+          dispatch({
+            type: "step/update",
+            lessonId: state.selection.lessonId,
+            stepId: state.selection.stepId,
+            patch,
+          })
+        }}
+      />
     </div>
   )
 }
