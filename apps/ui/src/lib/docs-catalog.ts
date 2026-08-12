@@ -170,10 +170,12 @@ export const docsNavigation: DocNavSection[] = [
   { title: "컴포넌트", items: componentItems },
   { title: "프로젝트 확장", items: extensionItems },
   ...compositionSections,
-  { title: "블록", items: blockItems },
 ];
 
-export const docsSearchRecords = docsNavigation.flatMap((section) => section.items);
+export const docsSearchRecords = [
+  ...docsNavigation.flatMap((section) => section.items),
+  ...blockItems,
+];
 
 export function withBase(baseUrl: string, href: string) {
   return `${baseUrl}${href.replace(/^\//, "")}`;

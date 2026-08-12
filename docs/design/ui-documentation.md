@@ -10,11 +10,13 @@
 - `/docs/extensions/*`는 workspace 전용 ThemeSelector와 lesson 컴포넌트를 제공한다.
 - `/docs/patterns/*`와 `/docs/recipes/*`는 제품 화면 조합을 제공한다.
 - `/docs/quality/*`는 콘텐츠, 접근성, 이관 범위를 설명한다.
+- `/docs/blocks`는 화면 단위 block 카탈로그를 제공한다. 개별 block은 문서 사이드바와 모바일 문서 메뉴에 두지 않으며, 전역 「블록」 진입과 이 페이지에서만 확인한다.
 - `/preview/*`는 문서 shell과 분리된 반응형 예제와 interaction contract를 제공한다.
 
 ## 소유 경계
 
-- `apps/ui/src/lib/docs-catalog.ts`는 탐색과 검색 항목을 소유한다.
+- `apps/ui/src/lib/docs-catalog.ts`는 문서 사이드바 탐색과 검색 항목을 소유한다. 문서 탐색에는 개별 block을 넣지 않는다.
+- `apps/ui/src/lib/block-docs.ts`와 `/docs/blocks`는 block 카탈로그를 소유한다.
 - `apps/ui/src/lib/design-system-inventory.json`은 이관한 모듈, 예제와 검증 계약의 완전한 대응을 소유한다.
 - `apps/ui/src/pages/docs`는 설명 문서를 소유한다.
 - `apps/ui/src/pages/preview`는 격리 실행 경로를 소유한다.
