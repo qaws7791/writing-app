@@ -4,7 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 
 import { LEARNING_EXTENDED_PREVIEWS } from "./learning-extended-demos";
 
-import { Button } from "@workspace/ui/components/ui/button";
+import { Button } from "@workspace/ui/components/primitives/button";
 import {
   Cadence,
   CadenceDay,
@@ -13,14 +13,14 @@ import {
   CadenceSummary,
   CadenceTitle,
   CadenceWeek,
-} from "@workspace/ui/components/ui/cadence";
+} from "@workspace/ui/components/learning/cadence";
 import {
   Choice,
   ChoiceContent,
   ChoiceGroup,
   ChoiceLabel,
   type ChoiceState,
-} from "@workspace/ui/components/ui/choice";
+} from "@workspace/ui/components/learning/choice";
 import {
   Classify,
   ClassifyCategories,
@@ -30,14 +30,14 @@ import {
   ClassifyItemTag,
   ClassifyPool,
   type ClassifyState,
-} from "@workspace/ui/components/ui/classify";
+} from "@workspace/ui/components/learning/classify";
 import {
   Compare,
   ComparePanel,
   CompareVersion,
   CompareVersionList,
   CompareVersions,
-} from "@workspace/ui/components/ui/compare";
+} from "@workspace/ui/components/learning/compare";
 import {
   Compose,
   ComposeBadge,
@@ -45,7 +45,7 @@ import {
   ComposeContext,
   ComposeEditor,
   ComposeMeter,
-} from "@workspace/ui/components/ui/compose";
+} from "@workspace/ui/components/learning/compose";
 import {
   CourseOverview,
   CourseOverviewEyebrow,
@@ -63,14 +63,14 @@ import {
   CourseOverviewSection,
   CourseOverviewSectionTitle,
   CourseOverviewTitle,
-} from "@workspace/ui/components/ui/course-overview";
-import { Goal } from "@workspace/ui/components/ui/goal";
+} from "@workspace/ui/components/learning/course-overview";
+import { Goal } from "@workspace/ui/components/learning/goal";
 import {
   Insight,
   InsightDescription,
   InsightEyebrow,
   InsightTitle,
-} from "@workspace/ui/components/ui/insight";
+} from "@workspace/ui/components/learning/insight";
 import {
   Lesson,
   LessonActions,
@@ -83,7 +83,7 @@ import {
   LessonHeader,
   LessonMeta,
   LessonProgress,
-} from "@workspace/ui/components/ui/lesson";
+} from "@workspace/ui/components/learning/lesson";
 import {
   LearningProfile,
   LearningProfileDescription,
@@ -95,7 +95,7 @@ import {
   LearningProfileSectionHint,
   LearningProfileSectionLabel,
   LearningProfileTitle,
-} from "@workspace/ui/components/ui/learning-profile";
+} from "@workspace/ui/components/learning/learning-profile";
 import {
   Mastery,
   MasteryBadge,
@@ -103,7 +103,7 @@ import {
   MasteryHeader,
   MasteryLabel,
   MasteryStages,
-} from "@workspace/ui/components/ui/mastery";
+} from "@workspace/ui/components/learning/mastery";
 import {
   Milestone,
   MilestoneBody,
@@ -111,7 +111,7 @@ import {
   MilestoneMark,
   MilestoneMeta,
   MilestoneTitle,
-} from "@workspace/ui/components/ui/milestone";
+} from "@workspace/ui/components/learning/milestone";
 import {
   NextAction,
   NextActionActions,
@@ -120,7 +120,7 @@ import {
   NextActionMeta,
   NextActionReason,
   NextActionTitle,
-} from "@workspace/ui/components/ui/next-action";
+} from "@workspace/ui/components/learning/next-action";
 import {
   PairBoard,
   PairColumn,
@@ -129,7 +129,7 @@ import {
   PairLabel,
   PairMarker,
   type PairState,
-} from "@workspace/ui/components/ui/pair";
+} from "@workspace/ui/components/learning/pair";
 import {
   Path,
   PathConnector,
@@ -144,9 +144,13 @@ import {
   PathUnitHeader,
   PathUnitTitle,
   type PathNodeState,
-} from "@workspace/ui/components/ui/path";
-import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/ui/prose";
-import { Segment, SegmentGroup, type SegmentState } from "@workspace/ui/components/ui/segment";
+} from "@workspace/ui/components/learning/path";
+import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/learning/prose";
+import {
+  Segment,
+  SegmentGroup,
+  type SegmentState,
+} from "@workspace/ui/components/learning/segment";
 import {
   Sortable,
   SortableContent,
@@ -154,7 +158,7 @@ import {
   SortableIndex,
   SortableItem,
   type SortableState,
-} from "@workspace/ui/components/ui/sortable";
+} from "@workspace/ui/components/learning/sortable";
 import {
   Standing,
   StandingHeader,
@@ -165,9 +169,20 @@ import {
   StandingName,
   StandingRow,
   StandingTitle,
-} from "@workspace/ui/components/ui/standing";
-import { Step, StepBody, StepGuide, StepHeader, StepTitle } from "@workspace/ui/components/ui/step";
-import { Token, TokenBank, TokenSentence, TokenSlot } from "@workspace/ui/components/ui/token";
+} from "@workspace/ui/components/learning/standing";
+import {
+  Step,
+  StepBody,
+  StepGuide,
+  StepHeader,
+  StepTitle,
+} from "@workspace/ui/components/learning/step";
+import {
+  Token,
+  TokenBank,
+  TokenSentence,
+  TokenSlot,
+} from "@workspace/ui/components/learning/token";
 
 const TOTAL_STEPS = 5;
 

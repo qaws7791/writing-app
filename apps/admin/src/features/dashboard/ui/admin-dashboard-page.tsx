@@ -8,8 +8,11 @@ import {
   FlameIcon,
   UserPlusIcon,
 } from "@workspace/ui/components/icons"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 
 export function AdminDashboardPage({
   dashboardResult,

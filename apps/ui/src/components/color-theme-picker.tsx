@@ -10,14 +10,14 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Button } from "@workspace/ui/components/ui/button";
+import { Button } from "@workspace/ui/components/primitives/button";
 import {
   Popover,
   PopoverContent,
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@workspace/ui/components/ui/popover";
+} from "@workspace/ui/components/primitives/popover";
 import { cn } from "@workspace/ui/lib/utils";
 
 const THEME_KEY = "luma-ui-theme";

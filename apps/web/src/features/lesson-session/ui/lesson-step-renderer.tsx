@@ -13,23 +13,23 @@ import {
   getLessonStepEvaluationExplanation,
   toLessonStepCheckedVisual,
 } from "@/features/lesson-session/model/lesson-step-presentation"
-import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer"
-import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer"
-import { LessonStepFrame } from "@workspace/ui/components/lesson/lesson-step-frame"
-import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer"
-import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
-import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
+import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
+import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer"
+import { LessonStepFrame } from "@workspace/ui/components/learning/lesson-step-frame"
+import { MultipleChoiceAnswer } from "@workspace/ui/components/learning/multiple-choice-answer"
+import { ReadingStepView } from "@workspace/ui/components/learning/reading-step-view"
+import { SelectAnswer } from "@workspace/ui/components/learning/select-answer"
 import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 import type { LessonStepType } from "@workspace/contracts/content/steps"
 
 const OrderAnswer = dynamic(() =>
-  import("@workspace/ui/components/lesson/order-answer").then(
+  import("@workspace/ui/components/learning/order-answer").then(
     (module) => module.OrderAnswer
   )
 )
 
 const CompareStepView = dynamic(() =>
-  import("@workspace/ui/components/lesson/compare-step-view").then(
+  import("@workspace/ui/components/learning/compare-step-view").then(
     (module) => module.CompareStepView
   )
 )

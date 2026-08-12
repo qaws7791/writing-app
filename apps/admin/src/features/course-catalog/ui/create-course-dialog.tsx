@@ -7,7 +7,7 @@ import {
   courseCategoryValues,
   type CourseCategory,
 } from "@workspace/contracts/content/category"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Dialog,
   DialogClose,
@@ -16,23 +16,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@workspace/ui/components/ui/dialog"
+} from "@workspace/ui/components/primitives/dialog"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+} from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
+} from "@workspace/ui/components/primitives/select"
+import { Textarea } from "@workspace/ui/components/primitives/textarea"
 
 export type CreateCourseFormValues = {
   readonly category: CourseCategory

@@ -20,9 +20,12 @@ import {
 } from "@/shared/navigation/get-filter-url"
 import { UserOperationActions } from "@/features/user-management/ui/user-operation-actions"
 import { AdminPageHeader } from "@/shared/ui/admin-page-header"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Button } from "@workspace/ui/components/ui/button"
-import { Card } from "@workspace/ui/components/ui/card"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Button } from "@workspace/ui/components/primitives/button"
+import { Card } from "@workspace/ui/components/primitives/card"
 import {
   Table,
   TableBody,
@@ -31,16 +34,16 @@ import {
   TableHeader,
   TableRow,
   TableCaption,
-} from "@workspace/ui/components/ui/table"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+} from "@workspace/ui/components/primitives/table"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select"
+} from "@workspace/ui/components/primitives/select"
 
 const userStatusFilterItems = [
   { label: "전체", value: "all" },

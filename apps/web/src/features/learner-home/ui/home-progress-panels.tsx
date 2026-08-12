@@ -1,14 +1,14 @@
 import type { ReactNode } from "react"
 
-import { Button } from "@workspace/ui/components/ui/button"
-import { Card } from "@workspace/ui/components/ui/card"
+import { Button } from "@workspace/ui/components/primitives/button"
+import { Card } from "@workspace/ui/components/primitives/card"
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@workspace/ui/components/ui/empty"
+} from "@workspace/ui/components/primitives/empty"
 
 import { CompletedCourseCard } from "@/features/learner-home/ui/completed-course-card"
 import type { CompletedCoursesState } from "@/features/learner-home/model/home-progress-state"

@@ -6,12 +6,12 @@ import {
   PlayIcon,
   SparklesIcon,
 } from "@workspace/ui/components/icons/action-icons"
-import { cardVariants } from "@workspace/ui/components/ui/card"
+import { cardVariants } from "@workspace/ui/components/primitives/card"
 import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from "@workspace/ui/components/ui/progress"
+} from "@workspace/ui/components/primitives/progress"
 import { cn } from "@workspace/ui/lib/utils"
 
 import { HomeCourseMark } from "@/features/learner-home/ui/home-course-mark"

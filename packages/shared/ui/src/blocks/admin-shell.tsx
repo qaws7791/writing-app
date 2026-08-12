@@ -26,8 +26,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "#ui/components/ui/breadcrumb"
-import { Button } from "#ui/components/ui/button"
+} from "#ui/components/primitives/breadcrumb"
+import { Button } from "#ui/components/primitives/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -39,7 +39,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "#ui/components/ui/dropdown-menu"
+} from "#ui/components/primitives/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -55,7 +55,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
-} from "#ui/components/ui/sidebar"
+} from "#ui/components/primitives/sidebar"
 
 export type AdminBreadcrumbItem = {
   label: string

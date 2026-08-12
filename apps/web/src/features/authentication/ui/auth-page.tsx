@@ -18,16 +18,20 @@ import {
   requestVerificationEmail,
 } from "@/features/authentication/api/auth-client"
 import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
   FieldSeparator,
-} from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs"
+} from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/primitives/tabs"
 import { cn } from "@workspace/ui/lib/utils"
 
 type AuthPageProps = {

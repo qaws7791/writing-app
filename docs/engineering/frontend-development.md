@@ -8,7 +8,7 @@
 - 앱은 조립자 역할을 한다. 서버 비즈니스 규칙은 소유 module에, 화면에만 필요한 상태 전이는 feature 내부 순수 함수에 둔다.
 - 외부 HTTP 계약은 OpenAPI에서 생성한 client와 DTO를 단일 소비 경계로 사용한다. 앱에서 성공 응답을 같은 Zod schema로 다시 파싱하거나 wire 타입을 복제하지 않고, 실제 UI 의미가 다를 때만 mapper를 둔다.
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
-- 공유 UI는 `packages/shared/ui`에 둔다. `components/ui`는 공유 UI 인벤토리, `blocks`는 화면 조합 예제 block, `hooks`는 공유 hook, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점과 라우팅은 각 제품 앱 feature에서 조합한다.
+- 공유 UI는 `packages/shared/ui`에 둔다. `components/primitives`는 shadcn 공용 primitive, `components/learning`은 학습 도메인 프레젠테이션, `blocks`는 화면 조합 예제 block, `hooks`는 공유 hook이다. API 호출, 세션, 채점과 라우팅은 각 제품 앱 feature에서 조합한다.
 - `apps/ui`는 `@workspace/ui`를 소비하는 정적 Astro 문서 앱이다. Block fixture는 제품 route와 production data에 연결하지 않는다.
 - 학습자 조회·변경 응답과 body는 `@workspace/http-client/learner`의 generated 함수에서 유도한 타입을 사용한다. `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
 - 어드민의 대시보드·분석·코스·사용자·세션 조회와 변경은 route Server Component, Server Action 또는 가까운 브라우저 event handler에서 `@workspace/http-client/admin`의 generated 함수를 직접 호출한다. 서버 전용 request options는 base URL, canonical session cookie와 상태 변경 요청의 `Origin`만 제공하고, generated 오류는 직렬화 가능한 앱 오류로 한 번만 정규화한다.

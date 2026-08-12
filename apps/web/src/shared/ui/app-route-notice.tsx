@@ -1,13 +1,13 @@
 import Link from "next/link"
 
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
+} from "@workspace/ui/components/primitives/card"
 
 type AppRouteNoticeProps = {
   readonly description: string

@@ -6,12 +6,12 @@ import {
   isLessonStepCheckedCorrect,
   type LessonStepCheckedState,
 } from "@/features/lesson-session/model/lesson-step-policy"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Insight,
   InsightDescription,
   InsightTitle,
-} from "@workspace/ui/components/ui/insight"
+} from "@workspace/ui/components/learning/insight"
 import {
   Lesson,
   LessonActions,
@@ -20,7 +20,7 @@ import {
   LessonHeader,
   LessonMeta,
   LessonProgress,
-} from "@workspace/ui/components/ui/lesson"
+} from "@workspace/ui/components/learning/lesson"
 import { cn } from "@workspace/ui/lib/utils"
 
 type LessonCheckedState = false | LessonStepCheckedState

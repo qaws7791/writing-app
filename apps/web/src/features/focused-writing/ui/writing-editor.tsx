@@ -12,27 +12,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button } from "@workspace/ui/components/ui/button"
+} from "@workspace/ui/components/primitives/alert-dialog"
+import { Badge } from "@workspace/ui/components/primitives/badge"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Compose,
   ComposeActions,
   ComposeBadge,
   ComposeEditor,
   ComposeMeter,
-} from "@workspace/ui/components/ui/compose"
+} from "@workspace/ui/components/learning/compose"
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+} from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 import {
   Insight,
   InsightDescription,
   InsightTitle,
-} from "@workspace/ui/components/ui/insight"
+} from "@workspace/ui/components/learning/insight"
 
 import { useWritingAutosave } from "@/features/focused-writing/hooks/use-writing-autosave"
 import { readWritingModeOption } from "@/features/focused-writing/model/writing-copy"

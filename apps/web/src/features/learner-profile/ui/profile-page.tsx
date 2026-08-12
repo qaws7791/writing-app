@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 
 import { ProfileAvatar } from "@/features/learner-profile/ui/profile-avatar"
 import { ProfileNameEditor } from "@/features/learner-profile/ui/profile-name-editor"

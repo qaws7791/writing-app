@@ -15,13 +15,13 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "#ui/components/ui/accordion"
-import { Button } from "#ui/components/ui/button"
+} from "#ui/components/primitives/accordion"
+import { Button } from "#ui/components/primitives/button"
 import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from "#ui/components/ui/progress"
+} from "#ui/components/primitives/progress"
 
 type CoursePatternKind = "dots" | "lines" | "grid" | "rings"
 type CourseStatus = "not-started" | "in-progress" | "completed"

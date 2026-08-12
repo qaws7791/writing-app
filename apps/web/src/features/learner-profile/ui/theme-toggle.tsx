@@ -6,7 +6,7 @@ import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 import {
   ThemeSelector,
   type ThemeValue,
-} from "@workspace/ui/components/ui/theme-selector"
+} from "@workspace/ui/components/primitives/theme-selector"
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme()

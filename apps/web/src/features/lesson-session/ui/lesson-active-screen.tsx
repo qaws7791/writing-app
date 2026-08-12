@@ -19,13 +19,16 @@ import {
   LessonShell,
 } from "@/features/lesson-session/ui/lesson-shell"
 import { LessonExitModal } from "@/features/lesson-session/ui/lesson-exit-modal"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Insight,
   InsightDescription,
   InsightEyebrow,
-} from "@workspace/ui/components/ui/insight"
-import { LessonActions, LessonFooter } from "@workspace/ui/components/ui/lesson"
+} from "@workspace/ui/components/learning/insight"
+import {
+  LessonActions,
+  LessonFooter,
+} from "@workspace/ui/components/learning/lesson"
 
 type LessonCheckedState = false | LessonStepCheckedState
 

@@ -1,13 +1,16 @@
 import type { AdminCourseAsset } from "@/features/course-editor/model/admin-course-editor"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Badge } from "@workspace/ui/components/ui/badge"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Badge } from "@workspace/ui/components/primitives/badge"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
+} from "@workspace/ui/components/primitives/card"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 
 const assetKindLabels = {

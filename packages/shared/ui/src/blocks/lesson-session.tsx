@@ -3,19 +3,19 @@
 import * as React from "react"
 
 import { cn } from "#ui/lib/utils"
-import { ErrorCorrectAnswer } from "#ui/components/lesson/error-correct-answer"
-import { ParagraphOrganizeAnswer } from "#ui/components/lesson/paragraph-organize-answer"
-import { SentenceBuildAnswer } from "#ui/components/lesson/sentence-build-answer"
-import { TranscribeAnswer } from "#ui/components/lesson/transcribe-answer"
-import { TrueFalseAnswer } from "#ui/components/lesson/true-false-answer"
-import { Button } from "#ui/components/ui/button"
+import { ErrorCorrectAnswer } from "#ui/components/learning/error-correct-answer"
+import { ParagraphOrganizeAnswer } from "#ui/components/learning/paragraph-organize-answer"
+import { SentenceBuildAnswer } from "#ui/components/learning/sentence-build-answer"
+import { TranscribeAnswer } from "#ui/components/learning/transcribe-answer"
+import { TrueFalseAnswer } from "#ui/components/learning/true-false-answer"
+import { Button } from "#ui/components/primitives/button"
 import {
   Choice,
   ChoiceContent,
   ChoiceGroup,
   ChoiceLabel,
   type ChoiceState,
-} from "#ui/components/ui/choice"
+} from "#ui/components/learning/choice"
 import {
   Classify,
   ClassifyCategories,
@@ -25,20 +25,20 @@ import {
   ClassifyItemTag,
   ClassifyPool,
   type ClassifyState,
-} from "#ui/components/ui/classify"
+} from "#ui/components/learning/classify"
 import {
   Compare,
   ComparePanel,
   CompareVersion,
   CompareVersionList,
   CompareVersions,
-} from "#ui/components/ui/compare"
+} from "#ui/components/learning/compare"
 import {
   Insight,
   InsightDescription,
   InsightEyebrow,
   InsightTitle,
-} from "#ui/components/ui/insight"
+} from "#ui/components/learning/insight"
 import {
   Lesson,
   LessonActions,
@@ -51,7 +51,7 @@ import {
   LessonHeader,
   LessonMeta,
   LessonProgress,
-} from "#ui/components/ui/lesson"
+} from "#ui/components/learning/lesson"
 import {
   PairBoard,
   PairColumn,
@@ -60,13 +60,13 @@ import {
   PairLabel,
   PairMarker,
   type PairState,
-} from "#ui/components/ui/pair"
-import { Prose, ProseBody } from "#ui/components/ui/prose"
+} from "#ui/components/learning/pair"
+import { Prose, ProseBody } from "#ui/components/learning/prose"
 import {
   Segment,
   SegmentGroup,
   type SegmentState,
-} from "#ui/components/ui/segment"
+} from "#ui/components/learning/segment"
 import {
   Sortable,
   SortableContent,
@@ -74,20 +74,20 @@ import {
   SortableIndex,
   SortableItem,
   type SortableState,
-} from "#ui/components/ui/sortable"
+} from "#ui/components/learning/sortable"
 import {
   Step,
   StepBody,
   StepGuide,
   StepHeader,
   StepTitle,
-} from "#ui/components/ui/step"
+} from "#ui/components/learning/step"
 import {
   Token,
   TokenBank,
   TokenSentence,
   TokenSlot,
-} from "#ui/components/ui/token"
+} from "#ui/components/learning/token"
 
 type StepType =
   | "READING"

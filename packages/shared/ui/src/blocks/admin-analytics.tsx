@@ -5,7 +5,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import { cn } from "#ui/lib/utils"
 import { AdminShell } from "#ui/blocks/admin-shell"
-import { Button } from "#ui/components/ui/button"
+import { Button } from "#ui/components/primitives/button"
 import {
   ChartContainer,
   ChartLegend,
@@ -13,7 +13,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "#ui/components/ui/chart"
+} from "#ui/components/primitives/chart"
 import {
   InterventionItem,
   InterventionItemActions,
@@ -26,7 +26,7 @@ import {
   InterventionQueueMeta,
   InterventionQueueTitle,
   type InterventionReason,
-} from "#ui/components/ui/intervention-queue"
+} from "#ui/components/learning/intervention-queue"
 import {
   ItemAnalysis,
   ItemAnalysisDistractor,
@@ -43,7 +43,7 @@ import {
   ItemAnalysisStatValue,
   ItemAnalysisStats,
   ItemAnalysisTitle,
-} from "#ui/components/ui/item-analysis"
+} from "#ui/components/learning/item-analysis"
 import {
   LearningAnalytics,
   LearningAnalyticsGrid,
@@ -56,20 +56,20 @@ import {
   LearningAnalyticsRow,
   LearningAnalyticsSeries,
   LearningAnalyticsTitle,
-} from "#ui/components/ui/learning-analytics"
+} from "#ui/components/learning/learning-analytics"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "#ui/components/ui/tabs"
+} from "#ui/components/primitives/tabs"
 import {
   WritingAnalytics,
   WritingAnalyticsCriteria,
@@ -83,7 +83,7 @@ import {
   WritingAnalyticsMetricLabel,
   WritingAnalyticsMetricValue,
   WritingAnalyticsTitle,
-} from "#ui/components/ui/writing-analytics"
+} from "#ui/components/learning/writing-analytics"
 
 type PeriodId = "7d" | "30d" | "90d"
 type CohortId = "all" | "reading" | "writing"

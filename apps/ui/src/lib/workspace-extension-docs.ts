@@ -33,7 +33,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Theme Selector",
     moduleTitle: "Components/UI/ThemeSelector",
     description: "제품 앱의 light, dark, system 테마 선택 상태를 표시하고 변경합니다.",
-    importPath: "@workspace/ui/components/ui/theme-selector",
+    importPath: "@workspace/ui/components/primitives/theme-selector",
     props: [
       {
         name: "activeTheme",
@@ -61,7 +61,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Categorize Answer",
     moduleTitle: "Components/Lesson/CategorizeAnswer",
     description: "Stable ID를 가진 항목을 카테고리에 배치하고 채점 결과를 표시합니다.",
-    importPath: "@workspace/ui/components/lesson/categorize-answer",
+    importPath: "@workspace/ui/components/learning/categorize-answer",
     props: [
       { name: "title", type: "string", description: "분류 단계 제목입니다." },
       { name: "guide", type: "string", description: "Markdown 안내 문구입니다." },
@@ -85,7 +85,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Compare Step View",
     moduleTitle: "Components/Lesson/CompareStepView",
     description: "둘 이상의 글 version을 tab으로 전환하고 비교 분석을 제시합니다.",
-    importPath: "@workspace/ui/components/lesson/compare-step-view",
+    importPath: "@workspace/ui/components/learning/compare-step-view",
     props: [
       { name: "title", type: "string", description: "비교 단계 제목입니다." },
       { name: "versions", type: "Version[]", description: "Tab으로 전환할 version 목록입니다." },
@@ -105,7 +105,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Fill Blank Answer",
     moduleTitle: "Components/Lesson/FillBlankAnswer",
     description: "문장 template의 빈칸에 stable ID를 가진 단어를 배치합니다.",
-    importPath: "@workspace/ui/components/lesson/fill-blank-answer",
+    importPath: "@workspace/ui/components/learning/fill-blank-answer",
     props: [
       { name: "template", type: "string", description: "빈칸을 ___로 표시한 문장 template입니다." },
       {
@@ -131,7 +131,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Match Answer",
     moduleTitle: "Components/Lesson/MatchAnswer",
     description: "왼쪽과 오른쪽 선택지를 연결하고 대기, 연결, 정답과 오답 상태를 표시합니다.",
-    importPath: "@workspace/ui/components/lesson/match-answer",
+    importPath: "@workspace/ui/components/learning/match-answer",
     props: [
       { name: "title", type: "string", description: "매칭 단계 제목입니다." },
       { name: "guide", type: "string", description: "Markdown 안내 문구입니다." },
@@ -165,7 +165,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Multiple Choice Answer",
     moduleTitle: "Components/Lesson/MultipleChoiceAnswer",
     description: "여러 선택지 중 하나를 고르고 정답·오답 상태를 표시합니다.",
-    importPath: "@workspace/ui/components/lesson/multiple-choice-answer",
+    importPath: "@workspace/ui/components/learning/multiple-choice-answer",
     props: [
       { name: "question", type: "string", description: "객관식 질문입니다." },
       { name: "options", type: "Option[]", description: "선택지 목록입니다." },
@@ -191,7 +191,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Order Answer",
     moduleTitle: "Components/Lesson/OrderAnswer",
     description: "Stable ID를 가진 항목을 순서대로 재배치하고 채점 결과를 표시합니다.",
-    importPath: "@workspace/ui/components/lesson/order-answer",
+    importPath: "@workspace/ui/components/learning/order-answer",
     props: [
       { name: "items", type: "OrderItem[]", description: "정렬할 항목입니다." },
       {
@@ -218,7 +218,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Reading Step View",
     moduleTitle: "Components/Lesson/ReadingStepView",
     description: "학습 안내, Markdown 본문과 선택적 출처를 읽기 좋은 폭으로 표시합니다.",
-    importPath: "@workspace/ui/components/lesson/reading-step-view",
+    importPath: "@workspace/ui/components/learning/reading-step-view",
     props: [
       { name: "title", type: "string", description: "읽기 단계 제목입니다." },
       { name: "guide", type: "string", description: "학습자 안내 Markdown입니다." },
@@ -239,7 +239,7 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     title: "Select Answer",
     moduleTitle: "Components/Lesson/SelectAnswer",
     description: "문장 안의 하나 이상 text segment를 선택하고 채점 결과를 표시합니다.",
-    importPath: "@workspace/ui/components/lesson/select-answer",
+    importPath: "@workspace/ui/components/learning/select-answer",
     props: [
       { name: "question", type: "string", description: "구간 선택 질문입니다." },
       { name: "segments", type: "string[]", description: "선택 가능한 text segment입니다." },

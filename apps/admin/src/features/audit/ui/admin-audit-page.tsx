@@ -15,12 +15,15 @@ import { createGetFilterHref } from "@/shared/navigation/get-filter-url"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import { AdminPageHeader } from "@/shared/ui/admin-page-header"
 import { adminAuditCategorySchema } from "@workspace/contracts/operations/admin-audit"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button } from "@workspace/ui/components/ui/button"
-import { Card } from "@workspace/ui/components/ui/card"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Badge } from "@workspace/ui/components/primitives/badge"
+import { Button } from "@workspace/ui/components/primitives/button"
+import { Card } from "@workspace/ui/components/primitives/card"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 import {
   Table,
   TableBody,
@@ -28,7 +31,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/ui/table"
+} from "@workspace/ui/components/primitives/table"
 
 const outcomeBadgeVariants = {
   danger: "destructive",

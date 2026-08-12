@@ -10,11 +10,14 @@ import type { AdminProfile } from "@/app/(admin)/_views/admin-profile-menu"
 import { AdminShellChromeProvider } from "@/app/(admin)/_views/admin-shell-chrome"
 import { AdminShellHeader } from "@/app/(admin)/_views/admin-shell-header"
 import { requestAdminSignOut } from "@/features/authentication/api/admin-auth-client"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
 import {
   SidebarInset,
   SidebarProvider,
-} from "@workspace/ui/components/ui/sidebar"
+} from "@workspace/ui/components/primitives/sidebar"
 import { cn } from "@workspace/ui/lib/utils"
 
 export function AdminShell({

@@ -14,7 +14,7 @@
 - 목적지가 있는 UI는 버튼처럼 보여도 `Link`를 사용한다.
 - 화면 텍스트와 `aria-label`은 한국어로 작성한다.
 - destructive 동작은 즉시 실행하지 않고 확인 dialog를 거친다.
-- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/blocks/*`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/hooks/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. `@workspace/ui/styles`는 token과 공통 style만 제공하며 Tailwind/PostCSS 실행은 각 앱 Adapter가 소유한다. 공개 entrypoint는 `packages/shared/ui/README.md`를 따른다.
+- 컴포넌트와 스타일 import 경계는 `@workspace/ui/styles`, `@workspace/ui/blocks/*`, `@workspace/ui/components/icons`, `@workspace/ui/components/primitives/*`, `@workspace/ui/components/learning/*`, `@workspace/ui/hooks/*`, `@workspace/ui/lib/*`의 좁은 subpath를 사용한다. `@workspace/ui/styles`는 token과 공통 style만 제공하며 Tailwind/PostCSS 실행은 각 앱 Adapter가 소유한다. 공개 entrypoint는 `packages/shared/ui/README.md`를 따른다.
 - 앱 source는 공유 UI를 `@workspace/ui/*` package export map으로 가져온다. 앱 build adapter의 `#ui/*` mapping은 source 상태의 공유 UI 내부 import만 해석한다.
 - `packages/shared/ui` 소스는 `@/`를 사용하지 않는다. 공유 UI 내부 참조는 `#ui/*` private alias를 사용하고, 앱 소스는 `@/`를 유지한다.
 
@@ -26,7 +26,7 @@ Block은 조합과 상태 표현 예제다. 제품 화면은 fixture, 임시 lin
 
 ## Button
 
-구현 위치: `packages/shared/ui/src/components/ui/button.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/button.tsx`
 
 기반은 `@base-ui/react/button`이다.
 
@@ -64,7 +64,7 @@ Button은 squircle, `rounded-2xl`, 125ms press motion과 3px focus ring을 하�
 
 ## Card
 
-구현 위치: `packages/shared/ui/src/components/ui/card.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/card.tsx`
 
 Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용한다.
 
@@ -93,7 +93,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## Field
 
-구현 위치: `packages/shared/ui/src/components/ui/field.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/field.tsx`
 
 구성은 `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FieldSet`, `FieldLegend`, `FieldSeparator`, `FieldContent`, `FieldTitle`이다.
 
@@ -103,7 +103,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## Input
 
-구현 위치: `packages/shared/ui/src/components/ui/input.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/input.tsx`
 
 - 높이는 40px이다.
 - `bg-input`, `border-border`, `rounded-2xl`, squircle, hover/focus surface와 `focus-visible:ring-3`을 사용한다.
@@ -112,7 +112,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## Select
 
-구현 위치: `packages/shared/ui/src/components/ui/select.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/select.tsx`
 
 - 기반은 `@base-ui/react/select`다.
 - `SelectTrigger`는 Input과 같은 Luma field surface를 사용한다.
@@ -126,7 +126,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## Textarea
 
-구현 위치: `packages/shared/ui/src/components/ui/textarea.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/textarea.tsx`
 
 - Input과 동일한 Luma field surface를 사용한다.
 - 최소 높이는 96px이다.
@@ -136,13 +136,13 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## Progress
 
-구현 위치: `packages/shared/ui/src/components/ui/progress.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/progress.tsx`
 
 구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. `Progress`는 8px `secondary` track과 `primary` indicator를 자동으로 렌더링한다. indicator 전환 시간은 500ms다. 완료 시점을 알 수 없는 작업은 `value={null}`로 표시한다. 불확정 indicator는 `animate-breathe`를 사용한다. 호출부는 track이나 indicator의 색을 덮어쓰지 않는다.
 
 ## Badge
 
-구현 위치: `packages/shared/ui/src/components/ui/badge.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/badge.tsx`
 
 `Badge`는 domain status를 직접 해석하지 않는다. app은 domain status를 `variant`로 변환해 전달한다.
 
@@ -150,7 +150,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## Accordion
 
-구현 위치: `packages/shared/ui/src/components/ui/accordion.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/accordion.tsx`
 
 기반은 `@base-ui/react/accordion`이다. 공개 구조는 `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent`다. 수동 disclosure 구현 대신 사용한다. `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
 
@@ -158,7 +158,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## Tabs
 
-구현 위치: `packages/shared/ui/src/components/ui/tabs.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/tabs.tsx`
 
 기반은 `@base-ui/react/tabs`다. 구조는 `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`이다. 한 화면에서 관련 섹션을 전환할 때 사용하며, `role="tablist"` / `tab` / `tabpanel`과 키보드 탐색은 Base UI 계약을 따른다. 라우팅이나 URL 복원이 필요한 필터는 `Link` pill을 쓰고, 클라이언트 상태 전환만 필요한 경우 `Tabs`를 쓴다.
 
@@ -186,31 +186,31 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ## DropdownMenu
 
-구현 위치: `packages/shared/ui/src/components/ui/dropdown-menu.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/dropdown-menu.tsx`
 
 기반은 `@base-ui/react/menu`다. 계정 메뉴처럼 trigger와 메뉴 항목이 필요한 경우 사용한다. 기본 항목은 `DropdownMenuItem`을 사용한다. 위험 항목은 `variant="destructive"`를 명시한다. 체크 항목, 라디오 항목과 하위 메뉴는 전용 primitive를 사용한다. 링크 항목은 `DropdownMenuItem`의 `render`에 `Link`를 전달해 menuitem 의미를 유지한다.
 
 ## Dialog
 
-구현 위치: `packages/shared/ui/src/components/ui/dialog.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/dialog.tsx`
 
 기반은 `@base-ui/react/dialog`다. 일반 설정과 정보 입력처럼 사용자의 확인이 필요한 overlay에 사용한다. 패널은 `rounded-4xl`, `bg-popover`, 28px padding을 사용한다. 닫기 버튼의 접근 가능한 이름은 `닫기`다. 위험한 전이는 일반 Dialog 대신 AlertDialog를 사용한다.
 
 ## Popover
 
-구현 위치: `packages/shared/ui/src/components/ui/popover.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/popover.tsx`
 
 기반은 `@base-ui/react/popover`다. 짧은 보조 정보와 작은 비모달 조작 표면에 사용한다. 패널은 `rounded-3xl`, `bg-popover`, 16px padding을 사용한다. 복잡한 작업 흐름은 Dialog로 분리한다.
 
 ## AlertDialog
 
-구현 위치: `packages/shared/ui/src/components/ui/alert-dialog.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/alert-dialog.tsx`
 
 기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기와 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원한다. 패널은 `rounded-4xl`, `bg-popover`, 28px padding을 사용한다. `size="default"`는 데스크톱에서 최대 448px다. `size="sm"`은 최대 320px다. `AlertDialogCancel`은 기본 `outline` variant다. 삭제와 보관처럼 되돌릴 수 없는 작업은 `AlertDialogAction`에 `variant="destructive"`를 명시한다.
 
 ## Alert
 
-구현 위치: `packages/shared/ui/src/components/ui/alert.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/alert.tsx`
 
 `Alert`는 상태 메시지다. 일반 안내는 기본 variant를 사용한다. 오류는 `variant="destructive"`와 `role="alert"`를 함께 사용한다. 처리 완료처럼 즉시 끼어들 필요가 없는 결과는 `role="status"`를 사용한다.
 
@@ -218,19 +218,19 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 구현 위치:
 
-- `packages/shared/ui/src/components/ui/lesson.tsx`
-- `packages/shared/ui/src/components/ui/step.tsx`
-- `packages/shared/ui/src/components/ui/insight.tsx`
-- `packages/shared/ui/src/components/ui/prose.tsx`
-- `packages/shared/ui/src/components/ui/compare.tsx`
-- `packages/shared/ui/src/components/ui/choice.tsx`
-- `packages/shared/ui/src/components/ui/token.tsx`
-- `packages/shared/ui/src/components/ui/segment.tsx`
-- `packages/shared/ui/src/components/ui/sortable.tsx`
-- `packages/shared/ui/src/components/ui/pair.tsx`
-- `packages/shared/ui/src/components/ui/classify.tsx`
-- `packages/shared/ui/src/components/ui/compose.tsx`
-- `packages/shared/ui/src/components/ui/coaching.tsx`
+- `packages/shared/ui/src/components/learning/lesson.tsx`
+- `packages/shared/ui/src/components/learning/step.tsx`
+- `packages/shared/ui/src/components/learning/insight.tsx`
+- `packages/shared/ui/src/components/learning/prose.tsx`
+- `packages/shared/ui/src/components/learning/compare.tsx`
+- `packages/shared/ui/src/components/learning/choice.tsx`
+- `packages/shared/ui/src/components/learning/token.tsx`
+- `packages/shared/ui/src/components/learning/segment.tsx`
+- `packages/shared/ui/src/components/learning/sortable.tsx`
+- `packages/shared/ui/src/components/learning/pair.tsx`
+- `packages/shared/ui/src/components/learning/classify.tsx`
+- `packages/shared/ui/src/components/learning/compose.tsx`
+- `packages/shared/ui/src/components/learning/coaching.tsx`
 
 `Lesson`은 진행 헤더, 중앙 스크롤 본문과 하단 행동을 같은 `max-w-2xl` 열에 배치한다. 나가기 아이콘은 hit area를 유지한 채 글리프를 본문 왼쪽 엣지에 광학 정렬한다. 진행 헤더의 닫기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다. 하단 `LessonFooter`는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다. 완료 화면은 같은 `max-w-2xl` 열 폭을 유지한다. `Step`은 각 학습 활동의 제목, 안내, 본문과 보조 상태를 조합한다. `StepEyebrow`는 한국어에 Latin `uppercase`와 과도한 letter-spacing을 쓰지 않는다. 채점 결과와 해설은 `Insight` tone으로 표현한다.
 
@@ -240,8 +240,8 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 구현 위치:
 
-- `packages/shared/ui/src/components/ui/spinner.tsx`
-- `packages/shared/ui/src/components/ui/separator.tsx`
+- `packages/shared/ui/src/components/primitives/spinner.tsx`
+- `packages/shared/ui/src/components/primitives/separator.tsx`
 
 `Spinner`는 기본 `role="status"`와 `aria-label="로딩 중"`을 제공한다. 호출자는 더 구체적인 `aria-label`을 전달할 수 있다. 장식 spinner는 `aria-hidden="true"`를 사용한다. 장식 spinner에는 `status` role을 제공하지 않는다. `Separator`는 기본 decorative다. 의미 있는 구분선은 `decorative={false}`를 사용한다.
 
@@ -249,8 +249,8 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 구현 위치:
 
-- `packages/shared/ui/src/components/ui/table.tsx`
-- `packages/shared/ui/src/components/ui/empty.tsx`
+- `packages/shared/ui/src/components/primitives/table.tsx`
+- `packages/shared/ui/src/components/primitives/empty.tsx`
 
 `Table`은 native table 의미를 유지한다. container는 좁은 화면에서 가로 스크롤을 제공한다. 호출자는 caption 또는 `aria-label`을 제공해야 한다. `TableHead`에는 `scope="col"` 또는 `scope="row"`를 지정한다.
 
@@ -340,7 +340,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 ### CompareStepView와 Insight
 
-구현 위치: `packages/shared/ui/src/components/lesson/compare-step-view.tsx`
+구현 위치: `packages/shared/ui/src/components/learning/compare-step-view.tsx`
 
 - 버전 전환은 `CompareVersions`, `CompareVersionList`, `CompareVersion`과 `ComparePanel`을 사용한다.
 - 비교 분석은 `Insight tone="think"`를 사용한다.
@@ -387,7 +387,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 ### Admin Card
 
-구현 위치: `packages/shared/ui/src/components/ui/card.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/card.tsx`
 
 - 반복 업무 화면의 독립 표면은 `Card` anatomy로 구성한다.
 - 화면별 grid, flex와 spacing 조합은 feature component에 둔다.
@@ -402,7 +402,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 ### Admin Data Table
 
-구현 위치: `packages/shared/ui/src/components/ui/table.tsx`
+구현 위치: `packages/shared/ui/src/components/primitives/table.tsx`
 
 - 표는 `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`와 `TableCell`을 사용한다.
 - table semantic은 앱이 유지하고, `th scope="col"`과 caption 또는 `aria-label`을 제공한다.
@@ -413,9 +413,9 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 구현 위치:
 
-- `packages/shared/ui/src/components/ui/badge.tsx`
-- `packages/shared/ui/src/components/ui/alert.tsx`
-- `packages/shared/ui/src/components/ui/alert-dialog.tsx`
+- `packages/shared/ui/src/components/primitives/badge.tsx`
+- `packages/shared/ui/src/components/primitives/alert.tsx`
+- `packages/shared/ui/src/components/primitives/alert-dialog.tsx`
 
 - 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Luma `Badge` variant로 표시한다.
 - 오류와 성공 메시지는 `Alert`를 사용하고, 오류는 `role="alert"`, 처리 완료는 `role="status"`로 노출한다.

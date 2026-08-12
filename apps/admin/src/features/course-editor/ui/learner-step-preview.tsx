@@ -4,28 +4,28 @@ import dynamic from "next/dynamic"
 import type { ReactNode } from "react"
 
 import type { EditorStep } from "@/features/course-editor/model/editor-step"
-import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer"
-import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer"
-import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
-import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer"
-import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
-import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
-import { Step } from "@workspace/ui/components/ui/step"
+import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
+import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer"
+import { MatchAnswer } from "@workspace/ui/components/learning/match-answer"
+import { MultipleChoiceAnswer } from "@workspace/ui/components/learning/multiple-choice-answer"
+import { ReadingStepView } from "@workspace/ui/components/learning/reading-step-view"
+import { SelectAnswer } from "@workspace/ui/components/learning/select-answer"
+import { Step } from "@workspace/ui/components/learning/step"
 
 const OrderAnswer = dynamic(() =>
-  import("@workspace/ui/components/lesson/order-answer").then(
+  import("@workspace/ui/components/learning/order-answer").then(
     (module) => module.OrderAnswer
   )
 )
 
 const CompareStepView = dynamic(() =>
-  import("@workspace/ui/components/lesson/compare-step-view").then(
+  import("@workspace/ui/components/learning/compare-step-view").then(
     (module) => module.CompareStepView
   )
 )
 
 /**
- * 학습자 앱과 같은 `@workspace/ui/components/lesson` 렌더러로 draft를 보여준다.
+ * 학습자 앱과 같은 `@workspace/ui/components/learning` 렌더러로 draft를 보여준다.
  * 답안·채점·AI 호출은 발행 전 검토 대상이 아니므로 handler를 넘기지 않는다.
  */
 export function LearnerStepPreview({

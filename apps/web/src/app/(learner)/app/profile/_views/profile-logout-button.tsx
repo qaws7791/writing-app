@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 
 import { requestLogout } from "@/features/authentication/api/auth-client"
 

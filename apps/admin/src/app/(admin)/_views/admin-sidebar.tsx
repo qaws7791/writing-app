@@ -11,7 +11,7 @@ import {
   isAdminNavigationActive,
 } from "@/app/(admin)/_views/admin-navigation"
 import { XIcon } from "@workspace/ui/components/icons/control-icons"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import { cn } from "@workspace/ui/lib/utils"
 import {
   Sidebar,
@@ -25,7 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@workspace/ui/components/ui/sidebar"
+} from "@workspace/ui/components/primitives/sidebar"
 
 export type AdminSidebarProps = {
   readonly activePath: string

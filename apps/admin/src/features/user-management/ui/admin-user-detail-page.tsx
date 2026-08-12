@@ -17,13 +17,16 @@ import {
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminUserDetail } from "@/entities/learner-account/model/admin-learner-account"
 import type { LearnerOperationalStatus } from "@workspace/contracts/identity/status"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from "@workspace/ui/components/ui/progress"
+} from "@workspace/ui/components/primitives/progress"
 
 export function AdminUserDetailPage({
   deleteUser,

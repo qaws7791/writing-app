@@ -4,21 +4,21 @@ import type {
   Lesson as LessonViewModel,
   LessonCompleteStepResult,
 } from "@/features/lesson-session/model/lesson-view-model"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Badge } from "@workspace/ui/components/primitives/badge"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Insight,
   InsightEyebrow,
   InsightItem,
   InsightList,
-} from "@workspace/ui/components/ui/insight"
+} from "@workspace/ui/components/learning/insight"
 import {
   Lesson,
   LessonBody,
   LessonComplete,
   LessonCompleteDescription,
   LessonCompleteTitle,
-} from "@workspace/ui/components/ui/lesson"
+} from "@workspace/ui/components/learning/lesson"
 
 type LessonCompletionTransition = Extract<
   LessonCompleteStepResult,

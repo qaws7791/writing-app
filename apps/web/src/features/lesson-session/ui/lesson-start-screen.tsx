@@ -6,15 +6,18 @@ import {
   LessonShell,
 } from "@/features/lesson-session/ui/lesson-shell"
 import { LayersIcon } from "@workspace/ui/components/icons/navigation-icons"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Badge } from "@workspace/ui/components/primitives/badge"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Insight,
   InsightDescription,
   InsightEyebrow,
-} from "@workspace/ui/components/ui/insight"
-import { LessonActions, LessonFooter } from "@workspace/ui/components/ui/lesson"
-import { Spinner } from "@workspace/ui/components/ui/spinner"
+} from "@workspace/ui/components/learning/insight"
+import {
+  LessonActions,
+  LessonFooter,
+} from "@workspace/ui/components/learning/lesson"
+import { Spinner } from "@workspace/ui/components/primitives/spinner"
 import {
   Step,
   StepBody,
@@ -22,7 +25,7 @@ import {
   StepHeader,
   StepPrompt,
   StepTitle,
-} from "@workspace/ui/components/ui/step"
+} from "@workspace/ui/components/learning/step"
 
 const LESSON_TITLE_ID = "lesson-start-title"
 

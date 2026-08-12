@@ -24,7 +24,7 @@
 - `apps/web/src/features/lesson-session`은 loading, editing, saving, checking, advancing, 복구 가능한 오류, 아직 전송하지 않은 입력과 시각 컴포넌트 조립만 소유한다. 내부 machine event와 서버 transition DTO를 분리하며 revision, 현재 스텝, 채점, 잠금과 완료를 계산하지 않는다.
 - `apps/web/src/features/lesson-session/model/lesson-match-presentation.ts`와 `ui/lesson-match-answer.tsx`는 매칭 choice ID, 결정적 shuffle, pending·일대일 selection 전이, 서버 evaluation 기반 tone과 stable item-ID payload를 소유한다.
 - `apps/web/src/features/lesson-session/hooks/use-lesson-draft-sync.ts`는 입력 debounce, 즉시 flush, 서버 version 조정과 화면에 표시할 저장 상태만 소유한다. 초안의 권위와 충돌 판정은 서버 응답을 따른다.
-- `packages/shared/ui/src/components/lesson`은 API 계약과 채점 규칙을 import하지 않는 순수 props 기반 시각 컴포넌트만 제공한다. `MatchAnswer`는 controlled choice·connection·pending 값과 선택 callback을 받아 버튼 접근성과 연결선 DOM 측정만 담당한다.
+- `packages/shared/ui/src/components/learning`은 API 계약과 채점 규칙을 import하지 않는 순수 props 기반 시각 컴포넌트만 제공한다. `MatchAnswer`는 controlled choice·connection·pending 값과 선택 callback을 받아 버튼 접근성과 연결선 DOM 측정만 담당한다.
 - `apps/admin` 코스 편집기는 내부 콘텐츠 계약을 검증하고 8개 스텝 편집 폼과 학습자 미리보기를 제공한다.
 
 ## 학습자 동작

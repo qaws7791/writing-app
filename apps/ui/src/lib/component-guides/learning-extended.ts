@@ -21,8 +21,8 @@ export const learningExtendedGuides: ComponentGuideMap = {
   CheckpointObjectives,
   CheckpointScore,
   CheckpointTitle,
-} from "@/components/ui/checkpoint"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/checkpoint"
+import { Button } from "@/components/primitives/button"
 
 export function UnitCheckpoint() {
   return (
@@ -125,7 +125,7 @@ export function UnitCheckpoint() {
   PracticeQueueList,
   PracticeQueueMeta,
   PracticeQueueTitle,
-} from "@/components/ui/practice-queue"
+} from "@/components/learning/practice-queue"
 
 export function DailyPractice() {
   return (
@@ -163,8 +163,8 @@ export function DailyPractice() {
         id: "hint-actions",
         title: "힌트와 행동",
         description: "큐 하단 PracticeQueueHint와 PracticeQueueActions를 둘 수 있습니다.",
-        code: `import { PracticeQueueActions, PracticeQueueHint } from "@/components/ui/practice-queue"
-import { Button } from "@/components/ui/button"
+        code: `import { PracticeQueueActions, PracticeQueueHint } from "@/components/learning/practice-queue"
+import { Button } from "@/components/primitives/button"
 
 <PracticeQueueHint>오늘은 집중 연습 두 개만 완료해도 됩니다.</PracticeQueueHint>
 <PracticeQueueActions>
@@ -222,7 +222,7 @@ import { Button } from "@/components/ui/button"
   MistakePatternCount,
   MistakePatternDescription,
   MistakePatternLabel,
-} from "@/components/ui/mistake-journal"
+} from "@/components/learning/mistake-journal"
 
 export function MistakePatterns() {
   return (
@@ -267,8 +267,8 @@ export function MistakePatterns() {
         id: "actions",
         title: "연습 연결",
         description: "MistakePatternActions로 연습 항목을 연결합니다.",
-        code: `import { MistakePatternActions } from "@/components/ui/mistake-journal"
-import { Button } from "@/components/ui/button"
+        code: `import { MistakePatternActions } from "@/components/learning/mistake-journal"
+import { Button } from "@/components/primitives/button"
 
 <MistakePatternActions>
   <Button size="sm" variant="outline">연습 추가</Button>
@@ -317,7 +317,7 @@ import { Button } from "@/components/ui/button"
   HintStep,
   HintStepBody,
   HintStepLabel,
-} from "@/components/ui/hint-ladder"
+} from "@/components/learning/hint-ladder"
 
 export function ArgumentHints() {
   return (
@@ -344,8 +344,8 @@ export function ArgumentHints() {
         id: "reveal-next",
         title: "다음 힌트 공개",
         description: "HintStepActions로 다음 단계 공개 버튼을 둡니다.",
-        code: `import { HintStepActions } from "@/components/ui/hint-ladder"
-import { Button } from "@/components/ui/button"
+        code: `import { HintStepActions } from "@/components/learning/hint-ladder"
+import { Button } from "@/components/primitives/button"
 
 <HintStep level="example" revealed={false}>
   <HintStepBody>예: 「따라서 숙제량을 줄여야 한다」→「주 5일 반복 학습이 부담이 된다」</HintStepBody>
@@ -415,7 +415,7 @@ import { Button } from "@/components/ui/button"
   WritingBriefSection,
   WritingBriefSectionTitle,
   WritingBriefTitle,
-} from "@/components/ui/writing-brief"
+} from "@/components/learning/writing-brief"
 
 export function EssayBrief() {
   return (
@@ -514,7 +514,7 @@ export function EssayBrief() {
   SourcePackList,
   SourcePackMeta,
   SourcePackTitle,
-} from "@/components/ui/source-pack"
+} from "@/components/learning/source-pack"
 
 export function ReadingPack() {
   return (
@@ -559,8 +559,8 @@ export function ReadingPack() {
         id: "actions",
         title: "항목 행동",
         description: "SourceItemActions에 북마크·펼치기 등을 둡니다.",
-        code: `import { SourceItemActions } from "@/components/ui/source-pack"
-import { Button } from "@/components/ui/button"
+        code: `import { SourceItemActions } from "@/components/learning/source-pack"
+import { Button } from "@/components/primitives/button"
 
 <SourceItemActions>
   <Button size="sm" variant="outline">자료 열기</Button>
@@ -605,7 +605,7 @@ import { Button } from "@/components/ui/button"
   OutlineHint,
   OutlineList,
   OutlineTitle,
-} from "@/components/ui/outline"
+} from "@/components/learning/outline"
 
 export function ParagraphOutline() {
   return (
@@ -648,8 +648,8 @@ export function ParagraphOutline() {
         id: "block-actions",
         title: "블록 행동",
         description: "OutlineBlockActions에 삭제·추가 버튼을 둡니다.",
-        code: `import { OutlineBlockActions } from "@/components/ui/outline"
-import { Button } from "@/components/ui/button"
+        code: `import { OutlineBlockActions } from "@/components/learning/outline"
+import { Button } from "@/components/primitives/button"
 
 <OutlineBlockActions>
   <Button size="icon-sm" variant="ghost">×</Button>
@@ -701,7 +701,7 @@ import { Button } from "@/components/ui/button"
   ArgumentNode,
   ArgumentNodeBody,
   ArgumentNodeLabel,
-} from "@/components/ui/argument-map"
+} from "@/components/learning/argument-map"
 
 export function ClaimStructure() {
   return (
@@ -791,8 +791,8 @@ export function ClaimStructure() {
   DraftMeter,
   DraftStatus,
   DraftTitle,
-} from "@/components/ui/draft"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/draft"
+import { Button } from "@/components/primitives/button"
 
 export function FirstDraft() {
   return (
@@ -830,8 +830,8 @@ export function FirstDraft() {
         id: "versions",
         title: "버전 탭",
         description: "DraftVersions로 초안 버전 전환 UI를 둡니다.",
-        code: `import { DraftVersions } from "@/components/ui/draft"
-import { Button } from "@/components/ui/button"
+        code: `import { DraftVersions } from "@/components/learning/draft"
+import { Button } from "@/components/primitives/button"
 
 <DraftVersions>
   <Button size="sm" variant="ghost">1차</Button>
@@ -881,7 +881,7 @@ import { Button } from "@/components/ui/button"
   TextAnnotationItemLabel,
   TextAnnotationMark,
   TextAnnotationPanel,
-} from "@/components/ui/text-annotation"
+} from "@/components/learning/text-annotation"
 
 export function LogicAnnotation() {
   return (
@@ -921,8 +921,8 @@ export function LogicAnnotation() {
         id: "actions",
         title: "수용·거절",
         description: "TextAnnotationItemActions에 수락·거절 버튼을 둡니다.",
-        code: `import { TextAnnotationItemActions } from "@/components/ui/text-annotation"
-import { Button } from "@/components/ui/button"
+        code: `import { TextAnnotationItemActions } from "@/components/learning/text-annotation"
+import { Button } from "@/components/primitives/button"
 
 <TextAnnotationItemActions>
   <Button size="sm" variant="outline">수용</Button>
@@ -978,7 +978,7 @@ import { Button } from "@/components/ui/button"
   RubricList,
   RubricMeta,
   RubricTitle,
-} from "@/components/ui/rubric"
+} from "@/components/learning/rubric"
 
 export function EssayRubric() {
   return (
@@ -1079,7 +1079,7 @@ export function EssayRubric() {
   FeedbackSummaryMeta,
   FeedbackSummaryPriority,
   FeedbackSummaryTitle,
-} from "@/components/ui/feedback-summary"
+} from "@/components/learning/feedback-summary"
 
 export function RevisionPriorities() {
   return (
@@ -1119,8 +1119,8 @@ export function RevisionPriorities() {
         id: "actions",
         title: "다음 행동",
         description: "FeedbackSummaryActions에 수정·기록 보기를 둡니다.",
-        code: `import { FeedbackSummaryActions } from "@/components/ui/feedback-summary"
-import { Button } from "@/components/ui/button"
+        code: `import { FeedbackSummaryActions } from "@/components/learning/feedback-summary"
+import { Button } from "@/components/primitives/button"
 
 <FeedbackSummaryActions>
   <Button size="sm">수정하기</Button>
@@ -1169,7 +1169,7 @@ import { Button } from "@/components/ui/button"
   RevisionHistoryHeader,
   RevisionHistoryList,
   RevisionHistoryTitle,
-} from "@/components/ui/revision-history"
+} from "@/components/learning/revision-history"
 
 export function DraftTimeline() {
   return (
@@ -1202,7 +1202,7 @@ export function DraftTimeline() {
         id: "compare",
         title: "버전 비교",
         description: "RevisionHistoryCompare에 diff·나란히 보기를 둡니다.",
-        code: `import { RevisionHistoryCompare } from "@/components/ui/revision-history"
+        code: `import { RevisionHistoryCompare } from "@/components/learning/revision-history"
 
 <RevisionHistoryCompare>
   {/* 두 버전 diff UI */}
@@ -1212,8 +1212,8 @@ export function DraftTimeline() {
         id: "entry-actions",
         title: "항목 행동",
         description: "RevisionEntryActions에 보기·복원을 둡니다.",
-        code: `import { RevisionEntryActions } from "@/components/ui/revision-history"
-import { Button } from "@/components/ui/button"
+        code: `import { RevisionEntryActions } from "@/components/learning/revision-history"
+import { Button } from "@/components/primitives/button"
 
 <RevisionEntryActions>
   <Button size="sm" variant="ghost">보기</Button>
@@ -1263,8 +1263,8 @@ import { Button } from "@/components/ui/button"
   SubmissionMeta,
   SubmissionStatus,
   SubmissionTitle,
-} from "@/components/ui/submission"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/submission"
+import { Button } from "@/components/primitives/button"
 
 export function EssaySubmission() {
   return (
@@ -1341,9 +1341,9 @@ export function EssaySubmission() {
   ReflectionFields,
   ReflectionHeader,
   ReflectionTitle,
-} from "@/components/ui/reflection"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/learning/reflection"
+import { Button } from "@/components/primitives/button"
+import { Textarea } from "@/components/primitives/textarea"
 
 export function PostSubmitReflection() {
   return (
@@ -1388,7 +1388,7 @@ export function PostSubmitReflection() {
         id: "hint",
         title: "작성 힌트",
         description: "ReflectionHint로 예시 답변을 안내합니다.",
-        code: `import { ReflectionHint } from "@/components/ui/reflection"
+        code: `import { ReflectionHint } from "@/components/learning/reflection"
 
 <ReflectionHint>한 문장으로 구체적으로 적어 보세요.</ReflectionHint>`,
       },
@@ -1441,7 +1441,7 @@ export function PostSubmitReflection() {
   SkillNodeLabel,
   SkillNodeLevel,
   SkillNodePrereq,
-} from "@/components/ui/skill-map"
+} from "@/components/learning/skill-map"
 
 export function ArgumentSkills() {
   return (
@@ -1541,7 +1541,7 @@ export function ArgumentSkills() {
   PortfolioPieceMeta,
   PortfolioPieceTitle,
   PortfolioTitle,
-} from "@/components/ui/portfolio"
+} from "@/components/learning/portfolio"
 
 export function WritingPortfolio() {
   return (
@@ -1572,7 +1572,7 @@ export function WritingPortfolio() {
         id: "feedback",
         title: "피드백 요약",
         description: "PortfolioPieceFeedback에 채점·코멘트 요약을 둡니다.",
-        code: `import { PortfolioPieceFeedback } from "@/components/ui/portfolio"
+        code: `import { PortfolioPieceFeedback } from "@/components/learning/portfolio"
 
 <PortfolioPieceFeedback>우수 · 근거 연결 보완</PortfolioPieceFeedback>`,
       },
@@ -1588,8 +1588,8 @@ export function WritingPortfolio() {
         id: "actions",
         title: "작품 행동",
         description: "PortfolioPieceActions에 열기·공유를 둡니다.",
-        code: `import { PortfolioPieceActions } from "@/components/ui/portfolio"
-import { Button } from "@/components/ui/button"
+        code: `import { PortfolioPieceActions } from "@/components/learning/portfolio"
+import { Button } from "@/components/primitives/button"
 
 <PortfolioPieceActions>
   <Button size="sm" variant="outline">글 열기</Button>

@@ -5,10 +5,16 @@ import Link from "next/link"
 import { isLearnerAuthClientError } from "@workspace/auth/learner/client"
 
 import { resetPassword } from "@/features/authentication/api/auth-client"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import {
+  Button,
+  buttonVariants,
+} from "@workspace/ui/components/primitives/button"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 
 export function PasswordResetPage({
   token,

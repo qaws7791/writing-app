@@ -4,22 +4,22 @@ import { useState } from "react";
 import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Avatar, AvatarFallback } from "@workspace/ui/components/ui/avatar";
-import { Bubble, BubbleContent, BubbleGroup } from "@workspace/ui/components/ui/bubble";
-import { Button } from "@workspace/ui/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@workspace/ui/components/ui/field";
+import { Avatar, AvatarFallback } from "@workspace/ui/components/primitives/avatar";
+import { Bubble, BubbleContent, BubbleGroup } from "@workspace/ui/components/primitives/bubble";
+import { Button } from "@workspace/ui/components/primitives/button";
+import { Field, FieldDescription, FieldLabel } from "@workspace/ui/components/primitives/field";
 import {
   Message,
   MessageAvatar,
   MessageContent,
   MessageGroup,
   MessageHeader,
-} from "@workspace/ui/components/ui/message";
-import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/ui/prose";
-import { Switch } from "@workspace/ui/components/ui/switch";
-import { Textarea } from "@workspace/ui/components/ui/textarea";
+} from "@workspace/ui/components/primitives/message";
+import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/learning/prose";
+import { Switch } from "@workspace/ui/components/primitives/switch";
+import { Textarea } from "@workspace/ui/components/primitives/textarea";
 
-const installCommand = 'import { Button } from "@workspace/ui/components/ui/button"';
+const installCommand = 'import { Button } from "@workspace/ui/components/primitives/button"';
 
 export default function LandingComposition() {
   const [copied, setCopied] = useState(false);

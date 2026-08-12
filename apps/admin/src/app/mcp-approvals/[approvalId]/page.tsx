@@ -13,7 +13,10 @@ import {
 } from "@/shared/http/admin-api-client"
 import { adminMcpApprovalIdSchema } from "@workspace/contracts/operations/admin-mcp-approvals"
 import { getAdminMcpApproval } from "@workspace/http-client/admin"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
 
 export default async function AdminMcpApprovalRoute({
   params,

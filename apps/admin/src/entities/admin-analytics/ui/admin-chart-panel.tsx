@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
+} from "@workspace/ui/components/primitives/card"
 
 const chartCopy = {
   "d7-return": {

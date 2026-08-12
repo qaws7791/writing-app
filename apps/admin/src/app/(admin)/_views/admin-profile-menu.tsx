@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes"
 
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import { ChevronsUpDownIcon } from "@workspace/ui/components/icons/control-icons"
 import {
   ExternalLinkIcon,
@@ -23,7 +23,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/ui/dropdown-menu"
+} from "@workspace/ui/components/primitives/dropdown-menu"
 
 export type AdminProfile = {
   readonly email: string

@@ -7,6 +7,7 @@ import { getComponentGuide } from "@/src/lib/component-guides"
 import {
   componentDocs,
   getApiReference,
+  getComponentGroup,
   getInstallCommand,
   getOfficialDocs,
   getPropDocs,
@@ -26,9 +27,12 @@ export function getStaticPaths() {
 type Props = { doc: ComponentDoc }
 
 const { doc } = Astro.props
-const currentIndex = componentDocs.findIndex((component) => component.slug === doc.slug)
-const previous = currentIndex > 0 ? componentDocs.at(currentIndex - 1) : undefined
-const next = componentDocs.at(currentIndex + 1)
+const groupDocs = componentDocs.filter(
+  (component) => getComponentGroup(component.slug) === getComponentGroup(doc.slug),
+)
+const currentIndex = groupDocs.findIndex((component) => component.slug === doc.slug)
+const previous = currentIndex > 0 ? groupDocs.at(currentIndex - 1) : undefined
+const next = groupDocs.at(currentIndex + 1)
 const exports = getComponentExports(doc.slug)
 const source = getComponentSource(doc.slug)
 const guide = getComponentGuide(doc.slug, doc.title)

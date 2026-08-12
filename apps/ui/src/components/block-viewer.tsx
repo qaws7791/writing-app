@@ -12,15 +12,15 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Button } from "@workspace/ui/components/ui/button";
-import { Separator } from "@workspace/ui/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs";
+import { Button } from "@workspace/ui/components/primitives/button";
+import { Separator } from "@workspace/ui/components/primitives/separator";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/primitives/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@workspace/ui/components/ui/tooltip";
+} from "@workspace/ui/components/primitives/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
 
 import CodeBlock from "@/src/components/code-block";

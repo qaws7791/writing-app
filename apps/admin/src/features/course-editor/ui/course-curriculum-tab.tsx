@@ -20,18 +20,18 @@ import {
 import type { ConfirmationIntent } from "@/features/course-editor/ui/confirmation-copy"
 import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-workspace"
 import { PlusIcon, TrashIcon } from "@workspace/ui/components/icons"
-import { Button } from "@workspace/ui/components/ui/button"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+import { Button } from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
+} from "@workspace/ui/components/primitives/select"
+import { Textarea } from "@workspace/ui/components/primitives/textarea"
 
 type EditorUnit = AdminCourseDetail["units"][number]
 type EditorLesson = EditorUnit["lessons"][number]

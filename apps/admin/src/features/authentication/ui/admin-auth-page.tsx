@@ -14,11 +14,14 @@ import {
   requestAdminPasswordLogin,
 } from "@/features/authentication/api/admin-auth-client"
 import type { AdminLoginReason } from "@/features/authentication/model/admin-auth-navigation"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Button } from "@workspace/ui/components/ui/button"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Button } from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 
 export function AdminAuthPage({
   learnerWebOrigin,

@@ -31,8 +31,11 @@ import {
 } from "@/features/course-catalog/ui/create-course-dialog"
 import { courseCategoryValues } from "@workspace/contracts/content/category"
 import { contentStatuses } from "@workspace/contracts/content/status"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Badge } from "@workspace/ui/components/ui/badge"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Badge } from "@workspace/ui/components/primitives/badge"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -40,8 +43,11 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
-import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+} from "@workspace/ui/components/primitives/alert-dialog"
+import {
+  Button,
+  buttonVariants,
+} from "@workspace/ui/components/primitives/button"
 import {
   Table,
   TableBody,
@@ -50,15 +56,15 @@ import {
   TableHeader,
   TableRow,
   TableCaption,
-} from "@workspace/ui/components/ui/table"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
+} from "@workspace/ui/components/primitives/table"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select"
+} from "@workspace/ui/components/primitives/select"
 import { createAdminCourseImageUrl } from "@/entities/course/model/course-visual-assets"
 import {
   createGetFilterHref,
@@ -69,7 +75,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "#ui/components/ui/input-group"
+} from "#ui/components/primitives/input-group"
 
 const QUERY_SEARCH_DEBOUNCE_MS = 300
 

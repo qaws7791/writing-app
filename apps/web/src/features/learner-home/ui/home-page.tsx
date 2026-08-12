@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 
 import { FlameIcon } from "@workspace/ui/components/icons/learning-icons"
 import { BookOpenIcon } from "@workspace/ui/components/icons/navigation-icons"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 
 import { HomeProgressClient } from "@/features/learner-home/ui/home-progress-client"
 import type {

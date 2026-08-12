@@ -24,14 +24,17 @@ import type { ConfirmationIntent } from "@/features/course-editor/ui/confirmatio
 import { CourseCurriculumTab } from "@/features/course-editor/ui/course-curriculum-tab"
 import { CourseInfoTab } from "@/features/course-editor/ui/course-info-tab"
 import { EditorConfirmationDialog } from "@/features/course-editor/ui/editor-confirmation-dialog"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@workspace/ui/components/ui/tabs"
+} from "@workspace/ui/components/primitives/tabs"
 
 export function CourseEditorShell({
   assetsResult,

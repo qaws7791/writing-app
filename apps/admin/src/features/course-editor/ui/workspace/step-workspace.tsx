@@ -18,22 +18,22 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
-import { Button } from "@workspace/ui/components/ui/button"
+} from "@workspace/ui/components/primitives/alert-dialog"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
+} from "@workspace/ui/components/primitives/card"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select"
+} from "@workspace/ui/components/primitives/select"
 
 import {
   createEditorStep,

@@ -30,7 +30,7 @@
 `registry:lib` 항목을 포함했습니다. 이후 UI·block·hook의 단일 소스는 `packages/shared/ui`로
 고정되었고 `apps/ui/registry`는 제거되었습니다.
 
-전체 UI source는 `packages/shared/ui/src/components/ui`에 같은 이름으로 존재합니다.
+전체 UI source는 `packages/shared/ui/src/components/primitives`에 같은 이름으로 존재합니다.
 
 전체 block source는 `packages/shared/ui/src/blocks`에 같은 이름으로 존재합니다.
 

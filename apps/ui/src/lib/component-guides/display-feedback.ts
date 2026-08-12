@@ -13,7 +13,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "제목과 설명을 짧게 나누어 사용자가 현재 상황과 의미를 한 번에 파악하도록 구성합니다.",
         preview: "default",
         code: [
-          'import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"',
+          'import { Alert, AlertDescription, AlertTitle } from "@/components/primitives/alert"',
           "",
           "export function AlertBasic() {",
           "  return (",
@@ -35,7 +35,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { InformationCircleIcon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"',
+          'import { Alert, AlertDescription, AlertTitle } from "@/components/primitives/alert"',
           "",
           "export function AlertWithIcon() {",
           "  return (",
@@ -56,7 +56,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { Alert02Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"',
+          'import { Alert, AlertDescription, AlertTitle } from "@/components/primitives/alert"',
           "",
           "export function AlertDestructive() {",
           "  return (",
@@ -75,8 +75,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "즉시 수행할 수 있는 보조 작업 하나를 AlertAction에 배치합니다. 긴 작업 묶음은 별도 영역으로 분리합니다.",
         code: [
-          'import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert"',
-          'import { Button } from "@/components/ui/button"',
+          'import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/primitives/alert"',
+          'import { Button } from "@/components/primitives/button"',
           "",
           "export function AlertActionDemo() {",
           "  return (",
@@ -129,7 +129,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "대표 이미지와 동영상 썸네일에는 16:9 비율을 사용하고 자식 미디어가 프레임을 채우도록 설정합니다.",
         preview: "default",
         code: [
-          'import { AspectRatio } from "@/components/ui/aspect-ratio"',
+          'import { AspectRatio } from "@/components/primitives/aspect-ratio"',
           "",
           "export function AspectRatioLandscape() {",
           "  return (",
@@ -150,7 +150,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "프로필, 앨범, 제품 이미지처럼 모든 방향에서 같은 무게가 필요한 콘텐츠에는 1:1 비율을 사용합니다.",
         code: [
-          'import { AspectRatio } from "@/components/ui/aspect-ratio"',
+          'import { AspectRatio } from "@/components/primitives/aspect-ratio"',
           "",
           "export function AspectRatioSquare() {",
           "  return (",
@@ -171,7 +171,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "포스터나 인물 사진은 3:4처럼 세로로 긴 비율을 사용해 원본의 편집 의도를 보존합니다.",
         code: [
-          'import { AspectRatio } from "@/components/ui/aspect-ratio"',
+          'import { AspectRatio } from "@/components/primitives/aspect-ratio"',
           "",
           "export function AspectRatioPortrait() {",
           "  return (",
@@ -192,7 +192,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "iframe이나 video에도 같은 컨테이너를 사용하면 반응형 너비에서 높이를 별도로 계산할 필요가 없습니다.",
         code: [
-          'import { AspectRatio } from "@/components/ui/aspect-ratio"',
+          'import { AspectRatio } from "@/components/primitives/aspect-ratio"',
           "",
           "export function AspectRatioVideo() {",
           "  return (",
@@ -254,7 +254,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  AttachmentDescription,",
           "  AttachmentMedia,",
           "  AttachmentTitle,",
-          '} from "@/components/ui/attachment"',
+          '} from "@/components/primitives/attachment"',
           "",
           "export function AttachmentBasic() {",
           "  return (",
@@ -277,14 +277,14 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "idle, uploading, processing, error, done 상태를 파일별로 전달해 테두리, 텍스트, 미디어의 변화를 일관되게 표현합니다.",
         code: [
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "import {",
           "  Attachment,",
           "  AttachmentContent,",
           "  AttachmentDescription,",
           "  AttachmentMedia,",
           "  AttachmentTitle,",
-          '} from "@/components/ui/attachment"',
+          '} from "@/components/primitives/attachment"',
           "",
           "export function AttachmentStates() {",
           "  return (",
@@ -319,7 +319,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  AttachmentDescription,",
           "  AttachmentMedia,",
           "  AttachmentTitle,",
-          '} from "@/components/ui/attachment"',
+          '} from "@/components/primitives/attachment"',
           "",
           "export function AttachmentImage() {",
           "  return (",
@@ -342,7 +342,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "default, sm, xs를 주변 콘텐츠의 밀도에 맞춰 사용하며 같은 그룹 안에서는 크기를 통일합니다.",
         code: [
-          'import { Attachment, AttachmentContent, AttachmentDescription, AttachmentTitle } from "@/components/ui/attachment"',
+          'import { Attachment, AttachmentContent, AttachmentDescription, AttachmentTitle } from "@/components/primitives/attachment"',
           "",
           "export function AttachmentSizes() {",
           "  return (",
@@ -367,7 +367,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  AttachmentDescription,",
           "  AttachmentMedia,",
           "  AttachmentTitle,",
-          '} from "@/components/ui/attachment"',
+          '} from "@/components/primitives/attachment"',
           "",
           "export function AttachmentVertical() {",
           "  return (",
@@ -400,7 +400,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  AttachmentDescription,",
           "  AttachmentTitle,",
           "  AttachmentTrigger,",
-          '} from "@/components/ui/attachment"',
+          '} from "@/components/primitives/attachment"',
           "",
           "export function AttachmentInteractive() {",
           "  return (",
@@ -426,7 +426,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "여러 첨부 파일은 스냅되는 가로 스크롤 그룹으로 묶어 좁은 화면에서도 각 파일의 크기를 유지합니다.",
         code: [
-          'import { Attachment, AttachmentContent, AttachmentGroup, AttachmentTitle } from "@/components/ui/attachment"',
+          'import { Attachment, AttachmentContent, AttachmentGroup, AttachmentTitle } from "@/components/primitives/attachment"',
           "",
           'const files = ["brief.pdf", "cover.jpg", "research.csv"]',
           "",
@@ -506,7 +506,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "이미지를 먼저 제공하고 로드에 실패하거나 이미지가 없을 때 짧은 이니셜을 대체 표시로 사용합니다.",
         preview: "default",
         code: [
-          'import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"',
+          'import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"',
           "",
           "export function AvatarBasic() {",
           "  return (",
@@ -524,7 +524,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "sm, default, lg를 목록·메타데이터·프로필 헤더처럼 주변 정보의 위계에 맞춰 선택합니다.",
         code: [
-          'import { Avatar, AvatarFallback } from "@/components/ui/avatar"',
+          'import { Avatar, AvatarFallback } from "@/components/primitives/avatar"',
           "",
           "export function AvatarSizes() {",
           "  return (",
@@ -543,7 +543,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "AvatarBadge는 존재 여부나 간단한 상태를 시각적으로 보조합니다. 중요한 상태는 인접 텍스트에도 명시합니다.",
         code: [
-          'import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@/components/ui/avatar"',
+          'import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"',
           "",
           "export function AvatarWithBadge() {",
           "  return (",
@@ -565,7 +565,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "참여자 목록은 겹친 AvatarGroup으로 압축하되, 숨겨진 인원은 AvatarGroupCount로 정확히 표시합니다.",
         code: [
-          'import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage } from "@/components/ui/avatar"',
+          'import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage } from "@/components/primitives/avatar"',
           "",
           "const people = [",
           '  { name: "김미나", src: "/avatars/mina.svg", initials: "김미" },',
@@ -594,7 +594,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "빠르게 로드되는 이미지가 잠깐 깜박이지 않도록 Fallback의 delay로 대체 표시 노출을 늦출 수 있습니다.",
         code: [
-          'import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"',
+          'import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"',
           "",
           "export function AvatarFallbackDelay() {",
           "  return (",
@@ -651,7 +651,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "핵심 분류나 짧은 상태를 한두 단어로 표시합니다. 배지 자체가 본문보다 더 큰 목소리를 내지 않게 사용합니다.",
         preview: "default",
         code: [
-          'import { Badge } from "@/components/ui/badge"',
+          'import { Badge } from "@/components/primitives/badge"',
           "",
           "export function BadgeBasic() {",
           "  return <Badge>새로 공개됨</Badge>",
@@ -664,7 +664,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "정보 위계와 의미에 따라 변형을 선택하되 한 화면에서 여러 강조 변형을 경쟁시키지 않습니다.",
         code: [
-          'import { Badge } from "@/components/ui/badge"',
+          'import { Badge } from "@/components/primitives/badge"',
           "",
           "export function BadgeVariants() {",
           "  return (",
@@ -692,7 +692,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Badge } from "@/components/ui/badge"',
+          'import { Badge } from "@/components/primitives/badge"',
           "",
           "export function BadgeWithIcon() {",
           "  return (",
@@ -710,8 +710,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "짧은 비동기 상태에는 Spinner를 조합하고, 구체적인 상태를 텍스트로 함께 제공합니다.",
         code: [
-          'import { Badge } from "@/components/ui/badge"',
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Badge } from "@/components/primitives/badge"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function BadgeWithSpinner() {",
           "  return (",
@@ -729,7 +729,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "다른 위치로 이동하는 배지는 render로 실제 링크를 렌더링해 올바른 키보드와 브라우저 동작을 유지합니다.",
         code: [
-          'import { Badge } from "@/components/ui/badge"',
+          'import { Badge } from "@/components/primitives/badge"',
           "",
           "export function BadgeLink() {",
           "  return (",
@@ -779,7 +779,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "Bubble이 표면과 정렬을, BubbleContent가 실제 텍스트와 상호작용 요소를 담당합니다.",
         preview: "default",
         code: [
-          'import { Bubble, BubbleContent } from "@/components/ui/bubble"',
+          'import { Bubble, BubbleContent } from "@/components/primitives/bubble"',
           "",
           "export function BubbleBasic() {",
           "  return (",
@@ -796,7 +796,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "발신자 역할과 메시지 성격에 맞게 일곱 가지 변형을 사용하며, 역할을 색 하나로만 구분하지 않습니다.",
         code: [
-          'import { Bubble, BubbleContent, BubbleGroup } from "@/components/ui/bubble"',
+          'import { Bubble, BubbleContent, BubbleGroup } from "@/components/primitives/bubble"',
           "",
           "export function BubbleVariants() {",
           "  return (",
@@ -819,7 +819,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "단독 Bubble에서는 align을 사용할 수 있지만 전체 대화에서는 Message의 align이 행 전체를 함께 정렬합니다.",
         code: [
-          'import { Bubble, BubbleContent, BubbleGroup } from "@/components/ui/bubble"',
+          'import { Bubble, BubbleContent, BubbleGroup } from "@/components/primitives/bubble"',
           "",
           "export function BubbleAlignment() {",
           "  return (",
@@ -839,8 +839,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           '"use client"',
           "",
-          'import { Bubble, BubbleContent, BubbleGroup } from "@/components/ui/bubble"',
-          'import { toast } from "@/components/ui/toast"',
+          'import { Bubble, BubbleContent, BubbleGroup } from "@/components/primitives/bubble"',
+          'import { toast } from "@/components/primitives/toast"',
           "",
           "export function BubbleQuickReplies() {",
           "  return (",
@@ -863,7 +863,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "BubbleReactions는 말풍선 가장자리에 겹치므로 행 사이에 충분한 간격을 두고 반응의 위치를 조절합니다.",
         code: [
-          'import { Bubble, BubbleContent, BubbleReactions } from "@/components/ui/bubble"',
+          'import { Bubble, BubbleContent, BubbleReactions } from "@/components/primitives/bubble"',
           "",
           "export function BubbleReactionDemo() {",
           "  return (",
@@ -883,7 +883,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "파일이나 참조로 이동하는 메시지는 BubbleContent를 링크로 렌더링하고 목적지가 드러나는 문구를 사용합니다.",
         code: [
-          'import { Bubble, BubbleContent } from "@/components/ui/bubble"',
+          'import { Bubble, BubbleContent } from "@/components/primitives/bubble"',
           "",
           "export function BubbleLink() {",
           "  return (",
@@ -953,7 +953,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "페이지에서 가장 중요한 한 가지 작업에 default 변형을 사용하고 동사로 시작하는 짧은 레이블을 붙입니다.",
         preview: "default",
         code: [
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "",
           "export function ButtonBasic() {",
           "  return <Button>변경 저장</Button>",
@@ -966,7 +966,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "주요, 보조, 조용한, 위험 작업을 여섯 변형으로 구분하되 주요 버튼을 화면마다 반복하지 않습니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "",
           "export function ButtonVariants() {",
           "  return (",
@@ -988,7 +988,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "xs부터 lg까지는 콘텐츠 밀도에, icon 계열은 아이콘 버튼의 터치 영역과 주변 컨트롤 크기에 맞춥니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "",
           "export function ButtonSizes() {",
           "  return (",
@@ -1010,7 +1010,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { File01Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "",
           "export function ButtonWithIcon() {",
           "  return (",
@@ -1030,7 +1030,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { MoreHorizontalIcon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "",
           "export function IconButton() {",
           "  return (",
@@ -1047,8 +1047,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "비동기 작업 중에는 버튼을 비활성화하고 Spinner와 진행 상태 레이블을 함께 보여 중복 제출을 막습니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function LoadingButton() {",
           "  return (",
@@ -1066,7 +1066,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "다른 URL로 이동하는 작업은 render로 실제 링크를 사용해 새 탭, 주소 복사 같은 브라우저 기능을 유지합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "",
           "export function ButtonAsLink() {",
           "  return (",
@@ -1133,8 +1133,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description: "같은 대상에 작용하는 인접 작업을 하나의 role=group 컨테이너로 묶습니다.",
         preview: "default",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { ButtonGroup } from "@/components/ui/button-group"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { ButtonGroup } from "@/components/primitives/button-group"',
           "",
           "export function ButtonGroupBasic() {",
           "  return (",
@@ -1152,8 +1152,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "가로 공간이 좁거나 작업 레이블이 긴 경우 orientation=vertical로 쌓아 연결된 모서리를 유지합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { ButtonGroup } from "@/components/ui/button-group"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { ButtonGroup } from "@/components/primitives/button-group"',
           "",
           "export function ButtonGroupVertical() {",
           "  return (",
@@ -1174,8 +1174,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { MoreHorizontalIcon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
-          'import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { ButtonGroup, ButtonGroupSeparator } from "@/components/primitives/button-group"',
           "",
           "export function SplitButton() {",
           "  return (",
@@ -1196,8 +1196,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "ButtonGroupText는 값의 단위나 변하지 않는 접두 정보를 같은 표면에 정렬합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { ButtonGroup, ButtonGroupText } from "@/components/primitives/button-group"',
           "",
           "export function ButtonGroupWithText() {",
           "  return (",
@@ -1215,9 +1215,9 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "짧은 입력과 실행 버튼이 한 작업을 이룰 때 Input을 그룹에 직접 배치해 연결된 컨트롤로 표현합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group"',
-          'import { Input } from "@/components/ui/input"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { ButtonGroup, ButtonGroupText } from "@/components/primitives/button-group"',
+          'import { Input } from "@/components/primitives/input"',
           "",
           "export function ButtonGroupInput() {",
           "  return (",
@@ -1236,8 +1236,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "시각적으로 연결할 작업 묶음이 둘 이상이면 내부 ButtonGroup을 나눠 그룹 사이에 여백을 유지합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { ButtonGroup } from "@/components/ui/button-group"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { ButtonGroup } from "@/components/primitives/button-group"',
           "",
           "export function NestedButtonGroups() {",
           "  return (",
@@ -1304,7 +1304,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  CardDescription,",
           "  CardHeader,",
           "  CardTitle,",
-          '} from "@/components/ui/card"',
+          '} from "@/components/primitives/card"',
           "",
           "export function CardBasic() {",
           "  return (",
@@ -1325,7 +1325,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "plain, muted, frame, surface를 콘텐츠의 독립성과 주변 배경에 맞춰 선택해 모든 정보를 같은 상자에 가두지 않습니다.",
         code: [
-          'import { Card, CardContent, CardTitle } from "@/components/ui/card"',
+          'import { Card, CardContent, CardTitle } from "@/components/primitives/card"',
           "",
           "export function CardVariants() {",
           "  return (",
@@ -1345,7 +1345,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "sm, default, lg는 동일한 --card-spacing 값을 헤더, 본문, 푸터에 공유해 전체 리듬을 함께 바꿉니다.",
         code: [
-          'import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"',
+          'import { Card, CardContent, CardHeader, CardTitle } from "@/components/primitives/card"',
           "",
           "export function CardSizes() {",
           "  return (",
@@ -1366,7 +1366,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { MoreHorizontalIcon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "import {",
           "  Card,",
           "  CardAction,",
@@ -1375,7 +1375,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  CardFooter,",
           "  CardHeader,",
           "  CardTitle,",
-          '} from "@/components/ui/card"',
+          '} from "@/components/primitives/card"',
           "",
           "export function CardActions() {",
           "  return (",
@@ -1402,7 +1402,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "루트의 첫 이미지가 카드 가장자리까지 이어지도록 배치하고 텍스트는 공유 여백 안에서 정돈합니다.",
         code: [
-          'import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"',
+          'import { Card, CardDescription, CardHeader, CardTitle } from "@/components/primitives/card"',
           "",
           "export function ImageCard() {",
           "  return (",
@@ -1465,8 +1465,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"',
-          'import type { ChartConfig } from "@/components/ui/chart"',
-          'import { ChartContainer } from "@/components/ui/chart"',
+          'import type { ChartConfig } from "@/components/primitives/chart"',
+          'import { ChartContainer } from "@/components/primitives/chart"',
           "",
           "const data = [",
           '  { month: "1월", visitors: 186 },',
@@ -1500,8 +1500,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { Line, LineChart, XAxis } from "recharts"',
-          'import type { ChartConfig } from "@/components/ui/chart"',
-          'import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"',
+          'import type { ChartConfig } from "@/components/primitives/chart"',
+          'import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/primitives/chart"',
           "",
           'const data = [{ day: "월", value: 24 }, { day: "화", value: 31 }, { day: "수", value: 28 }]',
           'const config = { value: { label: "완료한 작업", color: "var(--chart-2)" } } satisfies ChartConfig',
@@ -1528,8 +1528,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"',
-          'import type { ChartConfig } from "@/components/ui/chart"',
-          'import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart"',
+          'import type { ChartConfig } from "@/components/primitives/chart"',
+          'import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/primitives/chart"',
           "",
           "const data = [",
           '  { month: "4월", desktop: 184, mobile: 96 },',
@@ -1564,8 +1564,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { Pie, PieChart } from "recharts"',
-          'import type { ChartConfig } from "@/components/ui/chart"',
-          'import { ChartContainer } from "@/components/ui/chart"',
+          'import type { ChartConfig } from "@/components/primitives/chart"',
+          'import { ChartContainer } from "@/components/primitives/chart"',
           "",
           'const data = [{ source: "direct", value: 62, fill: "var(--color-direct)" }]',
           "const config = {",
@@ -1593,8 +1593,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { Bar, BarChart } from "recharts"',
-          'import type { ChartConfig } from "@/components/ui/chart"',
-          'import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"',
+          'import type { ChartConfig } from "@/components/primitives/chart"',
+          'import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/primitives/chart"',
           "",
           'const data = [{ label: "구독", revenue: 1280000 }]',
           'const config = { revenue: { label: "매출", color: "var(--chart-3)" } } satisfies ChartConfig',
@@ -1670,7 +1670,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { File01Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "import {",
           "  Empty,",
           "  EmptyContent,",
@@ -1678,7 +1678,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  EmptyHeader,",
           "  EmptyMedia,",
           "  EmptyTitle,",
-          '} from "@/components/ui/empty"',
+          '} from "@/components/primitives/empty"',
           "",
           "export function EmptyBasic() {",
           "  return (",
@@ -1700,7 +1700,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "페이지의 열린 공간, 경계가 필요한 영역, 좁은 패널에 default, frame, compact를 각각 사용합니다.",
         code: [
-          'import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"',
+          'import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/primitives/empty"',
           "",
           "export function EmptyVariants() {",
           "  return (",
@@ -1721,7 +1721,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { File01Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"',
+          'import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/primitives/empty"',
           "",
           "export function EmptySheets() {",
           "  return (",
@@ -1742,8 +1742,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "검색 빈 상태에서는 무엇이 없었는지 보여주고 필터 초기화처럼 즉시 복구할 수 있는 행동을 제공합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/primitives/empty"',
           "",
           "export function EmptySearch() {",
           "  return (",
@@ -1764,9 +1764,9 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "빈 협업 공간처럼 다음 행동에 값 입력이 필요한 경우 EmptyContent에 간결한 InputGroup을 조합합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"',
-          'import { Input } from "@/components/ui/input"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/primitives/empty"',
+          'import { Input } from "@/components/primitives/input"',
           "",
           "export function EmptyInvite() {",
           "  return (",
@@ -1824,7 +1824,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { File01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "import {",
           "  Item,",
           "  ItemActions,",
@@ -1832,7 +1832,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  ItemDescription,",
           "  ItemMedia,",
           "  ItemTitle,",
-          '} from "@/components/ui/item"',
+          '} from "@/components/primitives/item"',
           "",
           "export function ItemBasic() {",
           "  return (",
@@ -1856,7 +1856,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "default, outline, muted 표면과 default, sm, xs 밀도를 목록의 위계와 사용 환경에 맞춰 조합합니다.",
         code: [
-          'import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item"',
+          'import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/primitives/item"',
           "",
           "export function ItemVariants() {",
           "  return (",
@@ -1875,7 +1875,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "ItemMedia image 변형은 고정된 작은 프레임으로 썸네일을 정렬하고 크기에 맞춰 자동 축소합니다.",
         code: [
-          'import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"',
+          'import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/primitives/item"',
           "",
           "export function ImageItem() {",
           "  return (",
@@ -1896,7 +1896,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "관련 행은 ItemGroup으로 묶고 정보 흐름상 필요한 위치에만 ItemSeparator를 사용합니다.",
         code: [
-          'import { Item, ItemContent, ItemGroup, ItemSeparator, ItemTitle } from "@/components/ui/item"',
+          'import { Item, ItemContent, ItemGroup, ItemSeparator, ItemTitle } from "@/components/primitives/item"',
           "",
           "export function ItemGroupDemo() {",
           "  return (",
@@ -1916,7 +1916,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "행 전체가 탐색 대상이면 render로 실제 링크를 사용하고 내부에 별도의 상호작용 컨트롤을 중첩하지 않습니다.",
         code: [
-          'import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item"',
+          'import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/primitives/item"',
           "",
           "export function LinkedItem() {",
           "  return (",
@@ -1980,7 +1980,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description: "한 키를 지칭할 때 의미 요소인 kbd와 일치하는 Kbd를 사용합니다.",
         preview: "default",
         code: [
-          'import { Kbd } from "@/components/ui/kbd"',
+          'import { Kbd } from "@/components/primitives/kbd"',
           "",
           "export function KbdBasic() {",
           '  return <p className="text-sm"><Kbd>Esc</Kbd>를 눌러 닫습니다.</p>',
@@ -1993,7 +1993,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "동시에 누르는 키는 KbdGroup 안에 순서대로 배치해 하나의 단축키로 읽히게 합니다.",
         code: [
-          'import { Kbd, KbdGroup } from "@/components/ui/kbd"',
+          'import { Kbd, KbdGroup } from "@/components/primitives/kbd"',
           "",
           "export function KbdShortcut() {",
           "  return (",
@@ -2011,8 +2011,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "버튼의 레이블과 단축키를 함께 보여 작업과 빠른 실행 방법을 동시에 안내합니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { Kbd, KbdGroup } from "@/components/ui/kbd"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Kbd, KbdGroup } from "@/components/primitives/kbd"',
           "",
           "export function KbdButton() {",
           "  return (",
@@ -2032,9 +2032,9 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { Settings02Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
-          'import { Kbd, KbdGroup } from "@/components/ui/kbd"',
-          'import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Kbd, KbdGroup } from "@/components/primitives/kbd"',
+          'import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/primitives/tooltip"',
           "",
           "export function KbdTooltip() {",
           "  return (",
@@ -2088,7 +2088,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker"',
+          'import { Marker, MarkerContent, MarkerIcon } from "@/components/primitives/marker"',
           "",
           "export function MarkerBasic() {",
           "  return (",
@@ -2106,8 +2106,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "스트리밍이나 도구 실행 중인 표식에는 role=status와 Spinner를 조합해 상태 변화를 알립니다.",
         code: [
-          'import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker"',
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Marker, MarkerContent, MarkerIcon } from "@/components/primitives/marker"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function MarkerStatus() {",
           "  return (",
@@ -2125,7 +2125,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "날짜나 대화 구간을 나눌 때 separator 변형을 사용해 텍스트 양쪽에 조용한 선을 배치합니다.",
         code: [
-          'import { Marker, MarkerContent } from "@/components/ui/marker"',
+          'import { Marker, MarkerContent } from "@/components/primitives/marker"',
           "",
           "export function MarkerSeparator() {",
           "  return (",
@@ -2144,7 +2144,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { File01Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker"',
+          'import { Marker, MarkerContent, MarkerIcon } from "@/components/primitives/marker"',
           "",
           "export function MarkerBorder() {",
           "  return (",
@@ -2164,7 +2164,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { File01Icon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker"',
+          'import { Marker, MarkerContent, MarkerIcon } from "@/components/primitives/marker"',
           "",
           "export function MarkerLink() {",
           "  return (",
@@ -2215,9 +2215,9 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "Message가 행과 정렬을, Bubble이 실제 메시지 표면을 담당하도록 역할을 분리합니다.",
         preview: "default",
         code: [
-          'import { Avatar, AvatarFallback } from "@/components/ui/avatar"',
-          'import { Bubble, BubbleContent } from "@/components/ui/bubble"',
-          'import { Message, MessageAvatar, MessageContent, MessageGroup } from "@/components/ui/message"',
+          'import { Avatar, AvatarFallback } from "@/components/primitives/avatar"',
+          'import { Bubble, BubbleContent } from "@/components/primitives/bubble"',
+          'import { Message, MessageAvatar, MessageContent, MessageGroup } from "@/components/primitives/message"',
           "",
           "export function MessageBasic() {",
           "  return (",
@@ -2240,9 +2240,9 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "align=end를 Message에 적용하면 아바타와 모든 콘텐츠가 발신자 쪽으로 함께 이동합니다.",
         code: [
-          'import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"',
-          'import { Bubble, BubbleContent } from "@/components/ui/bubble"',
-          'import { Message, MessageAvatar, MessageContent } from "@/components/ui/message"',
+          'import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"',
+          'import { Bubble, BubbleContent } from "@/components/primitives/bubble"',
+          'import { Message, MessageAvatar, MessageContent } from "@/components/primitives/message"',
           "",
           "export function MessageAligned() {",
           "  return (",
@@ -2264,13 +2264,13 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "MessageHeader에는 발신자, Footer에는 시간·전달 상태처럼 메시지를 보조하는 메타데이터를 배치합니다.",
         code: [
-          'import { Bubble, BubbleContent } from "@/components/ui/bubble"',
+          'import { Bubble, BubbleContent } from "@/components/primitives/bubble"',
           "import {",
           "  Message,",
           "  MessageContent,",
           "  MessageFooter,",
           "  MessageHeader,",
-          '} from "@/components/ui/message"',
+          '} from "@/components/primitives/message"',
           "",
           "export function MessageMetadata() {",
           "  return (",
@@ -2293,9 +2293,9 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { MoreHorizontalIcon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Bubble, BubbleContent } from "@/components/ui/bubble"',
-          'import { Button } from "@/components/ui/button"',
-          'import { Message, MessageContent, MessageFooter } from "@/components/ui/message"',
+          'import { Bubble, BubbleContent } from "@/components/primitives/bubble"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Message, MessageContent, MessageFooter } from "@/components/primitives/message"',
           "",
           "export function MessageActions() {",
           "  return (",
@@ -2317,9 +2317,9 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "응답이나 도구 실행 중에는 Marker를 MessageContent에 넣어 표면 없이도 현재 상태를 알려줍니다.",
         code: [
-          'import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker"',
-          'import { Message, MessageContent } from "@/components/ui/message"',
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Marker, MarkerContent, MarkerIcon } from "@/components/primitives/marker"',
+          'import { Message, MessageContent } from "@/components/primitives/message"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function MessageStatus() {",
           "  return (",
@@ -2379,7 +2379,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "  MessageScrollerItem,",
           "  MessageScrollerProvider,",
           "  MessageScrollerViewport,",
-          '} from "@/components/ui/message-scroller"',
+          '} from "@/components/primitives/message-scroller"',
           "",
           "export function MessageScrollerBasic() {",
           "  return (",
@@ -2411,7 +2411,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "import {",
           "  MessageScroller, MessageScrollerContent, MessageScrollerItem,",
           "  MessageScrollerProvider, MessageScrollerViewport,",
-          '} from "@/components/ui/message-scroller"',
+          '} from "@/components/primitives/message-scroller"',
           "",
           "const messages = [",
           '  { id: "user-1", role: "user", text: "오늘 작업을 요약해 주세요." },',
@@ -2450,7 +2450,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "import {",
           "  MessageScroller, MessageScrollerButton, MessageScrollerContent,",
           "  MessageScrollerItem, MessageScrollerProvider, MessageScrollerViewport,",
-          '} from "@/components/ui/message-scroller"',
+          '} from "@/components/primitives/message-scroller"',
           "",
           "export function MessageScrollerLiveEdge() {",
           "  return (",
@@ -2479,7 +2479,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "import {",
           "  MessageScroller, MessageScrollerContent, MessageScrollerItem,",
           "  MessageScrollerProvider, MessageScrollerViewport,",
-          '} from "@/components/ui/message-scroller"',
+          '} from "@/components/primitives/message-scroller"',
           "",
           "export function SavedConversation() {",
           "  return (",
@@ -2505,11 +2505,11 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           '"use client"',
           "",
-          'import { Button } from "@/components/ui/button"',
+          'import { Button } from "@/components/primitives/button"',
           "import {",
           "  MessageScroller, MessageScrollerContent, MessageScrollerItem,",
           "  MessageScrollerProvider, MessageScrollerViewport, useMessageScroller,",
-          '} from "@/components/ui/message-scroller"',
+          '} from "@/components/primitives/message-scroller"',
           "",
           "function ConversationTools() {",
           "  const { scrollToMessage, scrollToEnd } = useMessageScroller()",
@@ -2591,7 +2591,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "ProgressLabel과 ProgressValue를 함께 사용해 무엇이 얼마나 진행되었는지 한 줄에서 이해하게 합니다.",
         preview: "default",
         code: [
-          'import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress"',
+          'import { Progress, ProgressLabel, ProgressValue } from "@/components/primitives/progress"',
           "",
           "export function ProgressBasic() {",
           "  return (",
@@ -2612,8 +2612,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { useState } from "react"',
-          'import { Button } from "@/components/ui/button"',
-          'import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Progress, ProgressLabel, ProgressValue } from "@/components/primitives/progress"',
           "",
           "export function ControlledProgress() {",
           "  const [value, setValue] = useState(24)",
@@ -2636,7 +2636,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "전체 양을 계산할 수 없을 때 value=null로 indeterminate 상태를 사용하고 퍼센트 대신 현재 활동을 설명합니다.",
         code: [
-          'import { Progress, ProgressLabel } from "@/components/ui/progress"',
+          'import { Progress, ProgressLabel } from "@/components/primitives/progress"',
           "",
           "export function IndeterminateProgress() {",
           "  return (",
@@ -2653,7 +2653,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "min과 max가 퍼센트가 아닌 단위라면 ProgressValue의 렌더 함수로 현재 값과 단위를 직접 표시합니다.",
         code: [
-          'import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress"',
+          'import { Progress, ProgressLabel, ProgressValue } from "@/components/primitives/progress"',
           "",
           "export function ProgressRange() {",
           "  return (",
@@ -2671,7 +2671,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "locale과 format으로 숫자를 표시하고 getAriaValueText로 스크린 리더에 자연스러운 진행 문장을 제공합니다.",
         code: [
-          'import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress"',
+          'import { Progress, ProgressLabel, ProgressValue } from "@/components/primitives/progress"',
           "",
           "export function LocalizedProgress() {",
           "  return (",
@@ -2739,7 +2739,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "최종 콘텐츠의 크기와 정렬을 그대로 반영해 로드 완료 시 레이아웃이 움직이지 않게 합니다.",
         preview: "default",
         code: [
-          'import { Skeleton } from "@/components/ui/skeleton"',
+          'import { Skeleton } from "@/components/primitives/skeleton"',
           "",
           "export function SkeletonBasic() {",
           "  return (",
@@ -2760,7 +2760,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "이미지, 제목, 본문의 최종 비율을 그대로 사용해 카드가 갑자기 늘어나거나 줄어들지 않게 합니다.",
         code: [
-          'import { Skeleton } from "@/components/ui/skeleton"',
+          'import { Skeleton } from "@/components/primitives/skeleton"',
           "",
           "export function SkeletonCard() {",
           "  return (",
@@ -2779,7 +2779,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "레이블과 컨트롤 높이를 각각 모사하되 사용자가 Skeleton을 실제 입력으로 오해하지 않게 합니다.",
         code: [
-          'import { Skeleton } from "@/components/ui/skeleton"',
+          'import { Skeleton } from "@/components/primitives/skeleton"',
           "",
           "export function SkeletonForm() {",
           "  return (",
@@ -2801,7 +2801,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "열 너비와 행 높이를 유지하는 Skeleton으로 데이터가 도착하기 전 표의 구조를 안정적으로 보여줍니다.",
         code: [
-          'import { Skeleton } from "@/components/ui/skeleton"',
+          'import { Skeleton } from "@/components/primitives/skeleton"',
           "",
           "export function SkeletonTable() {",
           "  return (",
@@ -2852,8 +2852,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           '"use client"',
           "",
-          'import { Button } from "@/components/ui/button"',
-          'import { Toaster, toast } from "@/components/ui/toast"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Toaster, toast } from "@/components/primitives/toast"',
           "",
           "export function ToastBasic() {",
           "  return (",
@@ -2882,8 +2882,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           '"use client"',
           "",
-          'import { Button } from "@/components/ui/button"',
-          'import { toast } from "@/components/ui/toast"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { toast } from "@/components/primitives/toast"',
           "",
           "export function ToastTypes() {",
           "  return (",
@@ -2933,8 +2933,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           '"use client"',
           "",
-          'import { Button } from "@/components/ui/button"',
-          'import { toast } from "@/components/ui/toast"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { toast } from "@/components/primitives/toast"',
           "",
           "export function ToastActionExample() {",
           "  return (",
@@ -2968,8 +2968,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           '"use client"',
           "",
-          'import { Button } from "@/components/ui/button"',
-          'import { toast } from "@/components/ui/toast"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { toast } from "@/components/primitives/toast"',
           "",
           "const publish = () =>",
           "  new Promise<{ name: string }>((resolve) =>",
@@ -2999,7 +2999,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "레이아웃 루트에 Toaster를 두고 timeout 같은 Provider 옵션으로 기본 표시 시간을 맞춥니다.",
         code: [
-          'import { Toaster } from "@/components/ui/toast"',
+          'import { Toaster } from "@/components/primitives/toast"',
           "",
           "export function AppToaster({ children }: { children: React.ReactNode }) {",
           "  return (",
@@ -3055,7 +3055,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "독립적으로 사용할 때는 무엇을 불러오는지 보이는 텍스트와 접근 가능한 이름을 함께 제공합니다.",
         preview: "default",
         code: [
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function SpinnerBasic() {",
           "  return (",
@@ -3073,7 +3073,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "className으로 주변 텍스트와 컨트롤에 맞는 크기를 선택하되 로딩 표시를 과도하게 키우지 않습니다.",
         code: [
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function SpinnerSizes() {",
           "  return (",
@@ -3092,8 +3092,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "비동기 버튼에서는 Spinner를 장식으로 숨기고 레이블을 진행형으로 바꿔 중복 읽기와 중복 제출을 막습니다.",
         code: [
-          'import { Button } from "@/components/ui/button"',
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function SpinnerButton() {",
           "  return (",
@@ -3111,8 +3111,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "작은 동기화 상태에는 Badge와 조합하고 상태 변화가 필요한 경우 role=status를 컨테이너에 둡니다.",
         code: [
-          'import { Badge } from "@/components/ui/badge"',
-          'import { Spinner } from "@/components/ui/spinner"',
+          'import { Badge } from "@/components/primitives/badge"',
+          'import { Spinner } from "@/components/primitives/spinner"',
           "",
           "export function SpinnerBadge() {",
           "  return (",
@@ -3157,7 +3157,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           "import {",
           "  Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow,",
-          '} from "@/components/ui/table"',
+          '} from "@/components/primitives/table"',
           "",
           "export function TableBasic() {",
           "  return (",
@@ -3183,7 +3183,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "합계나 요약은 TableFooter로 분리하고 숫자 열의 정렬과 tabular 숫자를 유지합니다.",
         code: [
-          'import { Table, TableBody, TableCell, TableFooter, TableRow } from "@/components/ui/table"',
+          'import { Table, TableBody, TableCell, TableFooter, TableRow } from "@/components/primitives/table"',
           "",
           "export function TableFooterDemo() {",
           "  return (",
@@ -3206,8 +3206,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "선택 상태는 data-state=selected 표면과 실제 폼 상태를 함께 갱신해 시각적 표현만 남지 않게 합니다.",
         code: [
-          'import { Checkbox } from "@/components/ui/checkbox"',
-          'import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"',
+          'import { Checkbox } from "@/components/primitives/checkbox"',
+          'import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/primitives/table"',
           "",
           "export function SelectableTable() {",
           "  return (",
@@ -3235,8 +3235,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         code: [
           'import { MoreHorizontalIcon } from "@hugeicons/core-free-icons"',
           'import { HugeiconsIcon } from "@hugeicons/react"',
-          'import { Button } from "@/components/ui/button"',
-          'import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"',
+          'import { Button } from "@/components/primitives/button"',
+          'import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/primitives/table"',
           "",
           "export function TableActions() {",
           "  return (",
@@ -3260,8 +3260,8 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "짧은 상태는 Badge로, 숫자는 오른쪽 정렬과 tabular-nums로 표현해 행 간 비교를 쉽게 합니다.",
         code: [
-          'import { Badge } from "@/components/ui/badge"',
-          'import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"',
+          'import { Badge } from "@/components/primitives/badge"',
+          'import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/primitives/table"',
           "",
           "export function TableStatus() {",
           "  return (",
@@ -3316,7 +3316,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "아이콘 전용 토글은 눌림 여부와 관계없이 기능이 드러나는 접근 가능한 이름을 제공합니다.",
         preview: "default",
         code: [
-          'import { Toggle } from "@/components/ui/toggle"',
+          'import { Toggle } from "@/components/primitives/toggle"',
           "",
           "export function ToggleBasic() {",
           '  return <Toggle aria-label="굵게">B</Toggle>',
@@ -3328,7 +3328,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         title: "외곽선 토글",
         description: "도구 모음의 경계를 조금 더 분명히 해야 할 때 outline 변형을 사용합니다.",
         code: [
-          'import { Toggle } from "@/components/ui/toggle"',
+          'import { Toggle } from "@/components/primitives/toggle"',
           "",
           "export function ToggleOutline() {",
           '  return <Toggle variant="outline" aria-label="미리보기 표시">미리보기</Toggle>',
@@ -3341,7 +3341,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "sm, default, lg를 주변 버튼과 같은 높이로 맞추고 같은 도구 모음에서 혼합하지 않습니다.",
         code: [
-          'import { Toggle } from "@/components/ui/toggle"',
+          'import { Toggle } from "@/components/primitives/toggle"',
           "",
           "export function ToggleSizes() {",
           "  return (",
@@ -3363,7 +3363,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { useState } from "react"',
-          'import { Toggle } from "@/components/ui/toggle"',
+          'import { Toggle } from "@/components/primitives/toggle"',
           "",
           "export function ControlledToggle() {",
           "  const [compact, setCompact] = useState(false)",
@@ -3432,7 +3432,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           "기본 multiple=false에서는 한 항목만 눌리며 값은 선택된 항목을 담은 배열로 관리됩니다.",
         preview: "default",
         code: [
-          'import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"',
+          'import { ToggleGroup, ToggleGroupItem } from "@/components/primitives/toggle-group"',
           "",
           "export function ToggleGroupBasic() {",
           "  return (",
@@ -3451,7 +3451,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "서로 동시에 적용할 수 있는 서식 도구에는 multiple을 사용해 여러 pressed 값을 허용합니다.",
         code: [
-          'import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"',
+          'import { ToggleGroup, ToggleGroupItem } from "@/components/primitives/toggle-group"',
           "",
           "export function ToggleGroupMultiple() {",
           "  return (",
@@ -3470,7 +3470,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "spacing=0과 outline을 조합하면 하나의 도구처럼 이어지고 자식 사이에는 가는 경계만 남습니다.",
         code: [
-          'import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"',
+          'import { ToggleGroup, ToggleGroupItem } from "@/components/primitives/toggle-group"',
           "",
           "export function ConnectedToggleGroup() {",
           "  return (",
@@ -3488,7 +3488,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
         description:
           "좁은 사이드 패널이나 긴 레이블에는 vertical 방향을 사용하고 위아래 화살표 탐색을 제공합니다.",
         code: [
-          'import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"',
+          'import { ToggleGroup, ToggleGroupItem } from "@/components/primitives/toggle-group"',
           "",
           "export function VerticalToggleGroup() {",
           "  return (",
@@ -3510,7 +3510,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
           '"use client"',
           "",
           'import { useState } from "react"',
-          'import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"',
+          'import { ToggleGroup, ToggleGroupItem } from "@/components/primitives/toggle-group"',
           "",
           "export function ControlledToggleGroup() {",
           '  const [value, setValue] = useState<string[]>(["week"])',

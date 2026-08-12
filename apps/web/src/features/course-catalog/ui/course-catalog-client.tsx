@@ -18,13 +18,13 @@ import {
   type LearnerCourseSummaryDto,
 } from "@/shared/http/learner-api-client"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Empty,
   EmptyHeader,
   EmptyTitle,
   EmptyDescription,
-} from "@workspace/ui/components/ui/empty"
+} from "@workspace/ui/components/primitives/empty"
 
 const eagerCourseImageCount = 3
 

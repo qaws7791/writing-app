@@ -13,26 +13,29 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+} from "@workspace/ui/components/primitives/alert-dialog"
+import { Badge } from "@workspace/ui/components/primitives/badge"
+import {
+  Button,
+  buttonVariants,
+} from "@workspace/ui/components/primitives/button"
 import {
   Card,
   CardAction,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
+} from "@workspace/ui/components/primitives/card"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@workspace/ui/components/ui/empty"
+} from "@workspace/ui/components/primitives/empty"
 import {
   Insight,
   InsightDescription,
-} from "@workspace/ui/components/ui/insight"
+} from "@workspace/ui/components/learning/insight"
 import { cn } from "@workspace/ui/lib/utils"
 
 import {

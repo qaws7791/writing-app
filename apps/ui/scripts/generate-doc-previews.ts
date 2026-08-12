@@ -5,22 +5,37 @@ import { componentGuides } from "../src/lib/component-guides";
 
 const workspaceRoot = dirname(dirname(import.meta.filename));
 const repositoryRoot = dirname(dirname(workspaceRoot));
-const packageUiRoot = join(repositoryRoot, "packages", "shared", "ui", "src", "components", "ui");
+const componentRoots = [
+  {
+    group: "primitives",
+    dir: join(repositoryRoot, "packages", "shared", "ui", "src", "components", "primitives"),
+  },
+  {
+    group: "learning",
+    dir: join(repositoryRoot, "packages", "shared", "ui", "src", "components", "learning"),
+  },
+] as const;
 const outputRoot = join(workspaceRoot, "src", "generated", "component-examples");
 
-const exportLocations = new Map<string, string>();
-const packageUiFiles = (await readdir(packageUiRoot)).filter((fileName) =>
-  fileName.endsWith(".tsx"),
-);
+type ComponentGroup = (typeof componentRoots)[number]["group"];
+const exportLocations = new Map<string, { slug: string; group: ComponentGroup }>();
 
-const packageUiSources = await Promise.all(
-  packageUiFiles.map(async (fileName) => ({
-    fileName,
-    source: await readFile(join(packageUiRoot, fileName), "utf8"),
-  })),
-);
+const packageSources = (
+  await Promise.all(
+    componentRoots.map(async ({ group, dir }) => {
+      const fileNames = (await readdir(dir)).filter((fileName) => fileName.endsWith(".tsx"));
+      return Promise.all(
+        fileNames.map(async (fileName) => ({
+          group,
+          fileName,
+          source: await readFile(join(dir, fileName), "utf8"),
+        })),
+      );
+    }),
+  )
+).flat();
 
-for (const { fileName, source } of packageUiSources) {
+for (const { group, fileName, source } of packageSources) {
   const slug = fileName.replace(/\.tsx$/, "");
   const exportBlocks = [...source.matchAll(/export\s*\{([\s\S]*?)\}/g)];
   const exportBlock = exportBlocks.at(-1)?.[1] ?? "";
@@ -33,7 +48,7 @@ for (const { fileName, source } of packageUiSources) {
       .at(-1)
       ?.trim();
 
-    if (exportName) exportLocations.set(exportName, slug);
+    if (exportName) exportLocations.set(exportName, { slug, group });
   }
 }
 
@@ -45,8 +60,9 @@ function rewriteExampleImports(source: string) {
     .replace(/\\u([\dA-Fa-f]{4})/g, (_, codePoint: string) =>
       String.fromCharCode(Number.parseInt(codePoint, 16)),
     )
-    .replaceAll("@/components/ui/", "@workspace/ui/components/ui/")
-    .replaceAll("@/registry/luma/ui/", "@workspace/ui/components/ui/")
+    .replaceAll("@/components/primitives/", "@workspace/ui/components/primitives/")
+    .replaceAll("@/components/learning/", "@workspace/ui/components/learning/")
+    .replaceAll("@/registry/luma/ui/", "@workspace/ui/components/primitives/")
     .replaceAll("@/registry/luma/blocks/", "@workspace/ui/blocks/")
     .replaceAll("@/registry/luma/hooks/", "@workspace/ui/hooks/")
     .replaceAll("@/registry/luma/lib/", "@workspace/ui/lib/");
@@ -93,20 +109,24 @@ function importedNames(imports: string[]) {
 
 function inferredImports(body: string, imports: string[]) {
   const knownNames = importedNames(imports);
-  const symbols = new Map<string, string[]>();
+  const symbols = new Map<string, { group: ComponentGroup; names: string[] }>();
 
   for (const match of body.matchAll(/<([A-Z][A-Za-z0-9]*)\b/g)) {
     const symbol = match[1];
     if (knownNames.has(symbol)) continue;
-    const slug = exportLocations.get(symbol);
-    if (!slug) continue;
-    symbols.set(slug, [...(symbols.get(slug) ?? []), symbol]);
+    const location = exportLocations.get(symbol);
+    if (!location) continue;
+    const current = symbols.get(location.slug);
+    symbols.set(location.slug, {
+      group: location.group,
+      names: [...(current?.names ?? []), symbol],
+    });
     knownNames.add(symbol);
   }
 
   return [...symbols.entries()].map(
-    ([slug, names]) =>
-      `import { ${names.toSorted().join(", ")} } from "@workspace/ui/components/ui/${slug}";`,
+    ([slug, { group, names }]) =>
+      `import { ${names.toSorted().join(", ")} } from "@workspace/ui/components/${group}/${slug}";`,
   );
 }
 

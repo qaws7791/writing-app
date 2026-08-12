@@ -15,7 +15,7 @@ import {
   AdminOverviewList,
   AdminOverviewMeta,
   AdminOverviewTitle,
-} from "@workspace/ui/components/ui/admin-overview";
+} from "@workspace/ui/components/learning/admin-overview";
 import {
   AuditLog,
   AuditLogAction,
@@ -30,7 +30,7 @@ import {
   AuditLogTarget,
   AuditLogTime,
   AuditLogTitle,
-} from "@workspace/ui/components/ui/audit-log";
+} from "@workspace/ui/components/learning/audit-log";
 import {
   CohortAssignment,
   CohortAssignmentActions,
@@ -44,7 +44,7 @@ import {
   CohortTarget,
   CohortTargetLabel,
   CohortTargetTitle,
-} from "@workspace/ui/components/ui/cohort-assignment";
+} from "@workspace/ui/components/learning/cohort-assignment";
 import {
   ContentReview,
   ContentReviewActions,
@@ -58,7 +58,7 @@ import {
   ContentReviewMeta,
   ContentReviewStatus,
   ContentReviewTitle,
-} from "@workspace/ui/components/ui/content-review";
+} from "@workspace/ui/components/learning/content-review";
 import {
   ContentValidation,
   ContentValidationHeader,
@@ -70,7 +70,7 @@ import {
   ContentValidationList,
   ContentValidationSummary,
   ContentValidationTitle,
-} from "@workspace/ui/components/ui/content-validation";
+} from "@workspace/ui/components/learning/content-validation";
 import {
   CurriculumMap,
   CurriculumMapEdge,
@@ -83,7 +83,7 @@ import {
   CurriculumMapNodeBody,
   CurriculumMapNodeLabel,
   CurriculumMapTitle,
-} from "@workspace/ui/components/ui/curriculum-map";
+} from "@workspace/ui/components/learning/curriculum-map";
 import {
   CurriculumNode,
   CurriculumNodeActions,
@@ -96,7 +96,7 @@ import {
   CurriculumTreeHeader,
   CurriculumTreeList,
   CurriculumTreeTitle,
-} from "@workspace/ui/components/ui/curriculum-tree";
+} from "@workspace/ui/components/learning/curriculum-tree";
 import {
   Exemplar,
   ExemplarActions,
@@ -109,7 +109,7 @@ import {
   ExemplarList,
   ExemplarMeta,
   ExemplarTitle,
-} from "@workspace/ui/components/ui/exemplar-library";
+} from "@workspace/ui/components/learning/exemplar-library";
 import {
   FeedbackAudit,
   FeedbackAuditActions,
@@ -124,7 +124,7 @@ import {
   FeedbackAuditScoreValue,
   FeedbackAuditScores,
   FeedbackAuditTitle,
-} from "@workspace/ui/components/ui/feedback-audit";
+} from "@workspace/ui/components/learning/feedback-audit";
 import {
   InterventionItem,
   InterventionItemActions,
@@ -136,7 +136,7 @@ import {
   InterventionQueueList,
   InterventionQueueMeta,
   InterventionQueueTitle,
-} from "@workspace/ui/components/ui/intervention-queue";
+} from "@workspace/ui/components/learning/intervention-queue";
 import {
   RunQueue,
   RunQueueEnvironment,
@@ -158,7 +158,7 @@ import {
   RunQueueMeta,
   RunQueueOutcome,
   RunQueueTitle,
-} from "@workspace/ui/components/ui/run-queue";
+} from "@workspace/ui/components/learning/run-queue";
 import {
   StepTrace,
   StepTraceBody,
@@ -178,7 +178,7 @@ import {
   StepTraceToolName,
   StepTraceToolStatus,
   StepTraceTools,
-} from "@workspace/ui/components/ui/step-trace";
+} from "@workspace/ui/components/learning/step-trace";
 import {
   ItemAnalysis,
   ItemAnalysisDistractor,
@@ -195,7 +195,7 @@ import {
   ItemAnalysisStatValue,
   ItemAnalysisStats,
   ItemAnalysisTitle,
-} from "@workspace/ui/components/ui/item-analysis";
+} from "@workspace/ui/components/learning/item-analysis";
 import {
   ItemBank,
   ItemBankFilters,
@@ -208,7 +208,7 @@ import {
   ItemBankItemTitle,
   ItemBankList,
   ItemBankTitle,
-} from "@workspace/ui/components/ui/item-bank";
+} from "@workspace/ui/components/learning/item-bank";
 import {
   LearnerPreview,
   LearnerPreviewDevice,
@@ -219,7 +219,7 @@ import {
   LearnerPreviewState,
   LearnerPreviewTitle,
   LearnerPreviewToolbar,
-} from "@workspace/ui/components/ui/learner-preview";
+} from "@workspace/ui/components/learning/learner-preview";
 import {
   LearnerRecord,
   LearnerRecordAttempts,
@@ -230,15 +230,15 @@ import {
   LearnerRecordSection,
   LearnerRecordSectionTitle,
   LearnerRecordTitle,
-} from "@workspace/ui/components/ui/learner-record";
-import { AvatarFallback } from "@workspace/ui/components/ui/avatar";
+} from "@workspace/ui/components/learning/learner-record";
+import { AvatarFallback } from "@workspace/ui/components/primitives/avatar";
 import {
   Person,
   PersonAvatar,
   PersonDescription,
   PersonInfo,
   PersonName,
-} from "@workspace/ui/components/ui/person";
+} from "@workspace/ui/components/learning/person";
 import {
   LearningAnalytics,
   LearningAnalyticsGrid,
@@ -251,7 +251,7 @@ import {
   LearningAnalyticsRow,
   LearningAnalyticsSeries,
   LearningAnalyticsTitle,
-} from "@workspace/ui/components/ui/learning-analytics";
+} from "@workspace/ui/components/learning/learning-analytics";
 import {
   LessonBuilder,
   LessonBuilderBody,
@@ -267,7 +267,7 @@ import {
   LessonBuilderStepIndex,
   LessonBuilderStepType,
   LessonBuilderTitle,
-} from "@workspace/ui/components/ui/lesson-builder";
+} from "@workspace/ui/components/learning/lesson-builder";
 import {
   PromptBuilder,
   PromptBuilderConstraint,
@@ -279,7 +279,7 @@ import {
   PromptBuilderSection,
   PromptBuilderSectionTitle,
   PromptBuilderTitle,
-} from "@workspace/ui/components/ui/prompt-builder";
+} from "@workspace/ui/components/learning/prompt-builder";
 import {
   ProvenancePanel,
   ProvenanceList,
@@ -291,7 +291,7 @@ import {
   ProvenanceRowMeta,
   ProvenanceRowModel,
   ProvenanceRowStatus,
-} from "@workspace/ui/components/ui/provenance-panel";
+} from "@workspace/ui/components/learning/provenance-panel";
 import {
   PublishWorkflow,
   PublishWorkflowActions,
@@ -301,7 +301,7 @@ import {
   PublishWorkflowStep,
   PublishWorkflowSteps,
   PublishWorkflowTitle,
-} from "@workspace/ui/components/ui/publish-workflow";
+} from "@workspace/ui/components/learning/publish-workflow";
 import {
   RubricEditor,
   RubricEditorActions,
@@ -317,9 +317,9 @@ import {
   RubricEditorTitle,
   RubricEditorVersion,
   RubricEditorWeight,
-} from "@workspace/ui/components/ui/rubric-editor";
-import { Step, StepBody, StepHeader, StepTitle } from "@workspace/ui/components/ui/step";
-import { Button } from "@workspace/ui/components/ui/button";
+} from "@workspace/ui/components/learning/rubric-editor";
+import { Step, StepBody, StepHeader, StepTitle } from "@workspace/ui/components/learning/step";
+import { Button } from "@workspace/ui/components/primitives/button";
 import {
   WritingAnalytics,
   WritingAnalyticsCriteria,
@@ -333,7 +333,7 @@ import {
   WritingAnalyticsMetricLabel,
   WritingAnalyticsMetricValue,
   WritingAnalyticsTitle,
-} from "@workspace/ui/components/ui/writing-analytics";
+} from "@workspace/ui/components/learning/writing-analytics";
 
 function AdminOverviewDemo() {
   return (

@@ -1,5 +1,5 @@
 import { blockSections } from "@/src/lib/block-docs";
-import { componentDocs } from "@/src/lib/component-docs";
+import { componentDocs, isLearningComponent } from "@/src/lib/component-docs";
 import { getComponentGuide } from "@/src/lib/component-guides";
 
 export type DocSearchRecord = {
@@ -81,6 +81,31 @@ const componentItems = componentDocs.map((component) => {
   };
 });
 
+const primitiveItems = componentItems.filter(
+  (item) => !isLearningComponent(item.href.replace("/docs/components/", "")),
+);
+
+const learningCatalogItems = componentItems.filter((item) =>
+  isLearningComponent(item.href.replace("/docs/components/", "")),
+);
+
+const lessonItems: DocSearchRecord[] = [
+  ["categorize-answer", "Categorize Answer", "항목을 카테고리로 분류하는 답안"],
+  ["compare-step-view", "Compare Step View", "여러 글 버전을 비교하는 읽기 뷰"],
+  ["fill-blank-answer", "Fill Blank Answer", "문장 빈칸에 단어를 배치하는 답안"],
+  ["match-answer", "Match Answer", "두 선택지 집합을 연결하는 답안"],
+  ["multiple-choice-answer", "Multiple Choice Answer", "하나의 정답을 고르는 답안"],
+  ["order-answer", "Order Answer", "문장 조각의 순서를 정하는 답안"],
+  ["reading-step-view", "Reading Step View", "마크다운 학습 본문과 출처"],
+  ["select-answer", "Select Answer", "문장 안 텍스트 구간을 고르는 답안"],
+].map(([slug, title, description]) => ({
+  title,
+  href: `/docs/extensions/lesson/${slug}`,
+  description,
+  category: "learning",
+  searchText: `${slug} checked playground`,
+}));
+
 const extensionItems: DocSearchRecord[] = [
   {
     title: "Theme Selector",
@@ -89,22 +114,6 @@ const extensionItems: DocSearchRecord[] = [
     category: "프로젝트 확장",
     searchText: "activeTheme disabled onThemeChange",
   },
-  ...[
-    ["categorize-answer", "Categorize Answer", "항목을 카테고리로 분류하는 답안"],
-    ["compare-step-view", "Compare Step View", "여러 글 버전을 비교하는 읽기 뷰"],
-    ["fill-blank-answer", "Fill Blank Answer", "문장 빈칸에 단어를 배치하는 답안"],
-    ["match-answer", "Match Answer", "두 선택지 집합을 연결하는 답안"],
-    ["multiple-choice-answer", "Multiple Choice Answer", "하나의 정답을 고르는 답안"],
-    ["order-answer", "Order Answer", "문장 조각의 순서를 정하는 답안"],
-    ["reading-step-view", "Reading Step View", "마크다운 학습 본문과 출처"],
-    ["select-answer", "Select Answer", "문장 안 텍스트 구간을 고르는 답안"],
-  ].map(([slug, title, description]) => ({
-    title,
-    href: `/docs/extensions/lesson/${slug}`,
-    description,
-    category: "Lesson 확장",
-    searchText: `${slug} checked playground`,
-  })),
 ];
 
 const compositionSections: DocNavSection[] = [
@@ -144,7 +153,8 @@ const blockItems = blockSections.flatMap((section) =>
 
 export const docsNavigation: DocNavSection[] = [
   ...staticSections,
-  { title: "컴포넌트", items: componentItems },
+  { title: "primitives", items: primitiveItems },
+  { title: "learning", items: [...learningCatalogItems, ...lessonItems] },
   { title: "프로젝트 확장", items: extensionItems },
   ...compositionSections,
 ];

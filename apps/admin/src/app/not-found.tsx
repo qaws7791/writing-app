@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
 
 export default function AdminNotFound() {
   return (

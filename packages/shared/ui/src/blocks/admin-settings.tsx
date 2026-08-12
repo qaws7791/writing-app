@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { cn } from "#ui/lib/utils"
 import { AdminShell } from "#ui/blocks/admin-shell"
-import { Button } from "#ui/components/ui/button"
+import { Button } from "#ui/components/primitives/button"
 import {
   Field,
   FieldContent,
@@ -13,22 +13,22 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-} from "#ui/components/ui/field"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/field"
+import { Input } from "#ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
-import { Switch } from "#ui/components/ui/switch"
+} from "#ui/components/primitives/select"
+import { Switch } from "#ui/components/primitives/switch"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "#ui/components/ui/tabs"
+} from "#ui/components/primitives/tabs"
 
 const TIMEZONE_ITEMS = [
   { value: "asia-seoul", label: "Asia/Seoul (UTC+9)" },

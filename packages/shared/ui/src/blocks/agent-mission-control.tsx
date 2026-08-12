@@ -16,22 +16,22 @@ import {
 
 import { cn } from "#ui/lib/utils"
 import { AdminShell } from "#ui/blocks/admin-shell"
-import { Avatar, AvatarFallback } from "#ui/components/ui/avatar"
-import { Badge } from "#ui/components/ui/badge"
-import { Button } from "#ui/components/ui/button"
+import { Avatar, AvatarFallback } from "#ui/components/primitives/avatar"
+import { Badge } from "#ui/components/primitives/badge"
+import { Button } from "#ui/components/primitives/button"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "#ui/components/ui/chart"
+} from "#ui/components/primitives/chart"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "#ui/components/ui/empty"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/empty"
+import { Input } from "#ui/components/primitives/input"
 import {
   ProvenanceList,
   ProvenancePanel,
@@ -42,7 +42,7 @@ import {
   ProvenanceRowMeta,
   ProvenanceRowModel,
   ProvenanceRowStatus,
-} from "#ui/components/ui/provenance-panel"
+} from "#ui/components/learning/provenance-panel"
 import {
   RUN_QUEUE_STATUS_LABELS,
   RunQueue,
@@ -73,21 +73,21 @@ import {
   type RunQueueEnv,
   type RunQueueOutcomeKind,
   type RunQueueStatus,
-} from "#ui/components/ui/run-queue"
+} from "#ui/components/learning/run-queue"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "#ui/components/ui/sheet"
+} from "#ui/components/primitives/sheet"
 import {
   StepTrace,
   StepTraceBody,
@@ -110,7 +110,7 @@ import {
   StepTraceTools,
   type StepTraceStatus,
   type StepTraceToolKind,
-} from "#ui/components/ui/step-trace"
+} from "#ui/components/learning/step-trace"
 
 type AgentIcon = typeof CreditCardIcon
 

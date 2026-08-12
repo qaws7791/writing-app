@@ -15,7 +15,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@workspace/ui/components/ui/accordion"
+} from "@workspace/ui/components/primitives/accordion"
 import { cn } from "@workspace/ui/lib/utils"
 
 type CourseCurriculumProps = {

@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Badge } from "@workspace/ui/components/ui/badge"
+import { Badge } from "@workspace/ui/components/primitives/badge"
 import {
   Field,
   FieldError,
   FieldLabel,
-} from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
+} from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
+import { Textarea } from "@workspace/ui/components/primitives/textarea"
 import { adminCourseEditorStepSchema } from "@workspace/contracts/content/admin-courses"
 import type {
   AdminContentAsset,

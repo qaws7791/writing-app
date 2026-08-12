@@ -1,8 +1,17 @@
-const sourceModules = import.meta.glob("../../../../packages/shared/ui/src/components/ui/*.tsx", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-}) as Record<string, string>;
+import { getComponentGroup } from "@/src/lib/component-docs";
+
+const sourceModules = {
+  ...import.meta.glob("../../../../packages/shared/ui/src/components/primitives/*.tsx", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }),
+  ...import.meta.glob("../../../../packages/shared/ui/src/components/learning/*.tsx", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }),
+} as Record<string, string>;
 
 const sources = new Map(
   Object.entries(sourceModules).map(([path, source]) => {
@@ -40,7 +49,7 @@ export function getUsageCode(slug: string, exports: string[]) {
   const primary = exports[0] ?? "Component";
   const importNames = exports.slice(0, Math.min(exports.length, 5)).join(", ");
 
-  return `import { ${importNames} } from "@workspace/ui/components/ui/${slug}"
+  return `import { ${importNames} } from "@workspace/ui/components/${getComponentGroup(slug)}/${slug}"
 
 export function ${primary}Demo() {
   return <${primary}>콘텐츠</${primary}>

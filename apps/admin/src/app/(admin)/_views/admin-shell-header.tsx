@@ -11,8 +11,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@workspace/ui/components/ui/breadcrumb"
-import { SidebarTrigger } from "@workspace/ui/components/ui/sidebar"
+} from "@workspace/ui/components/primitives/breadcrumb"
+import { SidebarTrigger } from "@workspace/ui/components/primitives/sidebar"
 
 export function AdminShellHeader() {
   const { breadcrumb, onBreadcrumbNavigate, title } = useAdminShellChromeValue()

@@ -1,7 +1,7 @@
 "use client"
 
-import { Button } from "@workspace/ui/components/ui/button"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { Button } from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 
 export default function LearnerRouteError({
   reset,

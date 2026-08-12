@@ -19,7 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "#ui/components/ui/alert-dialog"
+} from "#ui/components/primitives/alert-dialog"
 import {
   AUDIT_LOG_ENV_LABELS,
   AUDIT_LOG_KIND_LABELS,
@@ -38,22 +38,22 @@ import {
   AuditLogTitle,
   type AuditLogEnv,
   type AuditLogKindValue,
-} from "#ui/components/ui/audit-log"
-import { Button } from "#ui/components/ui/button"
+} from "#ui/components/learning/audit-log"
+import { Button } from "#ui/components/primitives/button"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "#ui/components/ui/empty"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/empty"
+import { Input } from "#ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Sheet,
   SheetContent,
@@ -61,7 +61,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "#ui/components/ui/sheet"
+} from "#ui/components/primitives/sheet"
 
 type AuditEntry = {
   id: string

@@ -17,7 +17,10 @@ import {
   ChevronRightIcon,
   SearchIcon,
 } from "@workspace/ui/components/icons"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
 import {
   Card,
   CardAction,
@@ -25,15 +28,18 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
+} from "@workspace/ui/components/primitives/card"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@workspace/ui/components/ui/empty"
-import { Input } from "@workspace/ui/components/ui/input"
-import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+} from "@workspace/ui/components/primitives/empty"
+import { Input } from "@workspace/ui/components/primitives/input"
+import {
+  Button,
+  buttonVariants,
+} from "@workspace/ui/components/primitives/button"
 
 const pageSizeOptions = [10, 20, 50] as const
 const fieldLabelClassName =

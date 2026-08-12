@@ -1,7 +1,7 @@
 import Link from "next/link"
 
-import { buttonVariants } from "@workspace/ui/components/ui/button"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 
 export function AdminServiceUnavailable({
   retryHref,

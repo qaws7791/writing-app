@@ -10,18 +10,18 @@ import {
 
 import { cn } from "#ui/lib/utils"
 import { LearnerShell } from "#ui/blocks/learner-shell"
-import { Card, cardVariants } from "#ui/components/ui/card"
+import { Card, cardVariants } from "#ui/components/primitives/card"
 import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from "#ui/components/ui/progress"
+} from "#ui/components/primitives/progress"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "#ui/components/ui/tabs"
+} from "#ui/components/primitives/tabs"
 
 type CourseProgress = {
   id: string

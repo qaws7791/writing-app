@@ -11,8 +11,8 @@ export const learningGuides: ComponentGuideMap = {
         title: "읽기 프레임",
         description: "제목, 안내, 본문 영역으로 읽기 스텝의 골격을 만듭니다.",
         preview: "default",
-        code: `import { Step, StepActions, StepBody, StepGuide, StepHeader, StepTitle } from "@/components/ui/step"
-import { Button } from "@/components/ui/button"
+        code: `import { Step, StepActions, StepBody, StepGuide, StepHeader, StepTitle } from "@/components/learning/step"
+import { Button } from "@/components/primitives/button"
 
 export function ReadingStep() {
   return (
@@ -33,7 +33,7 @@ export function ReadingStep() {
         id: "with-media",
         title: "삽화 포함",
         description: "본문 위에 시각 자료를 둘 때 StepMedia를 사용합니다.",
-        code: `import { Step, StepBody, StepHeader, StepMedia, StepTitle } from "@/components/ui/step"
+        code: `import { Step, StepBody, StepHeader, StepMedia, StepTitle } from "@/components/learning/step"
 
 <Step>
   <StepHeader><StepTitle>비유의 힘</StepTitle></StepHeader>
@@ -45,7 +45,7 @@ export function ReadingStep() {
         id: "question-prompt",
         title: "질문형 제목",
         description: "객관식·구간 선택처럼 질문이 중심일 때는 StepTitle에 질문을 둡니다.",
-        code: `import { Step, StepBody, StepHeader, StepTitle } from "@/components/ui/step"
+        code: `import { Step, StepBody, StepHeader, StepTitle } from "@/components/learning/step"
 
 <Step>
   <StepHeader>
@@ -58,8 +58,8 @@ export function ReadingStep() {
         id: "footer-actions",
         title: "하단 행동",
         description: "확인하기·계속하기·건너뛰기는 StepActions에 모아 한 흐름으로 둡니다.",
-        code: `import { StepActions, StepFooter } from "@/components/ui/step"
-import { Button } from "@/components/ui/button"
+        code: `import { StepActions, StepFooter } from "@/components/learning/step"
+import { Button } from "@/components/primitives/button"
 
 <StepFooter>
   <StepActions>
@@ -97,7 +97,7 @@ import { Button } from "@/components/ui/button"
         title: "단일 선택",
         description: "객관식에서 하나만 고르는 기본 구성입니다.",
         preview: "default",
-        code: `import { Choice, ChoiceContent, ChoiceGroup, ChoiceLabel } from "@/components/ui/choice"
+        code: `import { Choice, ChoiceContent, ChoiceGroup, ChoiceLabel } from "@/components/learning/choice"
 
 export function MultipleChoice() {
   return (
@@ -186,7 +186,7 @@ export function MultipleChoice() {
         title: "빈칸 문장",
         description: "문장 템플릿과 단어 뱅크를 함께 구성합니다.",
         preview: "default",
-        code: `import { Token, TokenBank, TokenSentence, TokenSlot } from "@/components/ui/token"
+        code: `import { Token, TokenBank, TokenSentence, TokenSlot } from "@/components/learning/token"
 
 export function FillBlank() {
   return (
@@ -259,7 +259,7 @@ export function FillBlank() {
         description: "흐름을 유지하며 구간을 고릅니다. 구간을 눌러 선택·해제할 수 있습니다.",
         preview: "default",
         code: `import { useState } from "react"
-import { Segment, SegmentGroup } from "@/components/ui/segment"
+import { Segment, SegmentGroup } from "@/components/learning/segment"
 
 const segments = [
   { id: "s1", text: "기후 위기는" },
@@ -292,7 +292,7 @@ export function SelectInline() {
         title: "블록형 구간",
         description: "단락 단위 선택에는 block 배치를 사용합니다. 단락을 눌러 골라 보세요.",
         code: `import { useState } from "react"
-import { Segment, SegmentGroup } from "@/components/ui/segment"
+import { Segment, SegmentGroup } from "@/components/learning/segment"
 
 const paragraphs = [
   { id: "p1", text: "첫 문단은 문제의 배경을 짧게 제시합니다." },
@@ -327,8 +327,8 @@ export function SelectBlock() {
         description:
           "확인하기 뒤 맞춘·잘못 고른·놓친 구간을 state로 구분합니다. 다시 풀기로 재시도할 수 있습니다.",
         code: `import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Segment, SegmentGroup, type SegmentState } from "@/components/ui/segment"
+import { Button } from "@/components/primitives/button"
+import { Segment, SegmentGroup, type SegmentState } from "@/components/learning/segment"
 
 const segments = [
   { id: "s1", text: "모든 독자는" },
@@ -395,7 +395,7 @@ export function GradedSegments() {
         description:
           "하나 이상 고를 수 있으며 제출 전 selected만 강조합니다. 눌러서 토글해 보세요.",
         code: `import { useState } from "react"
-import { Segment, SegmentGroup } from "@/components/ui/segment"
+import { Segment, SegmentGroup } from "@/components/learning/segment"
 
 const segments = [
   { id: "claim", text: "주장" },
@@ -463,7 +463,7 @@ export function MultiSelect() {
         title: "해설",
         description: "확인하기 후 서버가 준 해설을 보여줍니다.",
         preview: "default",
-        code: `import { Insight, InsightDescription, InsightEyebrow, InsightTitle } from "@/components/ui/insight"
+        code: `import { Insight, InsightDescription, InsightEyebrow, InsightTitle } from "@/components/learning/insight"
 
 export function Explanation() {
   return (
@@ -537,7 +537,7 @@ export function Explanation() {
         description: "섞인 항목을 세로로 배열합니다.",
         preview: "default",
         code: `import { useState } from "react"
-import { Sortable, SortableContent, SortableHandle, SortableIndex, SortableItem } from "@/components/ui/sortable"
+import { Sortable, SortableContent, SortableHandle, SortableIndex, SortableItem } from "@/components/learning/sortable"
 
 const items = [
   { id: "claim", label: "주장 제시" },
@@ -659,7 +659,7 @@ export function OrderStep() {
         title: "짝 보드",
         description: "왼쪽·오른쪽 열을 나란히 두고 연결선으로 짝을 보여줍니다.",
         preview: "default",
-        code: `import { PairBoard, PairColumn, PairConnections, PairItem, PairLabel, PairMarker } from "@/components/ui/pair"
+        code: `import { PairBoard, PairColumn, PairConnections, PairItem, PairLabel, PairMarker } from "@/components/learning/pair"
 
 export function MatchStep() {
   return (
@@ -794,7 +794,7 @@ export function MatchStep() {
         title: "분류 보드",
         description: "카테고리 칩과 항목 목록을 구성합니다.",
         preview: "default",
-        code: `import { Classify, ClassifyCategories, ClassifyCategory, ClassifyItem, ClassifyItemLabel, ClassifyItemTag, ClassifyPool } from "@/components/ui/classify"
+        code: `import { Classify, ClassifyCategories, ClassifyCategory, ClassifyItem, ClassifyItemLabel, ClassifyItemTag, ClassifyPool } from "@/components/learning/classify"
 
 export function CategorizeStep() {
   return (
@@ -869,7 +869,7 @@ export function CategorizeStep() {
         title: "읽기 본문",
         description: "삽화와 본문, 출처를 순서대로 둡니다.",
         preview: "default",
-        code: `import { Prose, ProseBody, ProseFigure, ProseSource } from "@/components/ui/prose"
+        code: `import { Prose, ProseBody, ProseFigure, ProseSource } from "@/components/learning/prose"
 
 export function ReadingBody() {
   return (
@@ -942,7 +942,7 @@ export function ReadingBody() {
         title: "버전 전환",
         description: "라벨이 있는 버전 탭과 본문 패널을 구성합니다.",
         preview: "default",
-        code: `import { Compare, ComparePanel, CompareVersion, CompareVersionList, CompareVersions } from "@/components/ui/compare"
+        code: `import { Compare, ComparePanel, CompareVersion, CompareVersionList, CompareVersions } from "@/components/learning/compare"
 
 export function CompareStep() {
   return (
@@ -1016,7 +1016,7 @@ export function CompareStep() {
         title: "기본 쓰기",
         description: "프롬프트와 입력, 글자 수 미터를 구성합니다.",
         preview: "default",
-        code: `import { Compose, ComposeEditor, ComposeMeter } from "@/components/ui/compose"
+        code: `import { Compose, ComposeEditor, ComposeMeter } from "@/components/learning/compose"
 
 export function WriteStep() {
   return (
@@ -1083,7 +1083,7 @@ export function WriteStep() {
         title: "학습 경로",
         description: "유닛 아래 레슨 노드를 세로로 연결합니다.",
         preview: "default",
-        code: `import { Path, PathConnector, PathNode, PathNodeDescription, PathNodeMeta, PathNodeTitle, PathStep, PathTrail, PathUnit, PathUnitDescription, PathUnitHeader, PathUnitTitle } from "@/components/ui/path"
+        code: `import { Path, PathConnector, PathNode, PathNodeDescription, PathNodeMeta, PathNodeTitle, PathStep, PathTrail, PathUnit, PathUnitDescription, PathUnitHeader, PathUnitTitle } from "@/components/learning/path"
 
 export function CoursePath() {
   return (
@@ -1173,9 +1173,9 @@ export function CoursePath() {
         title: "세션 프레임",
         description: "진행률과 본문, 하단 확인 행동을 한 화면에 둡니다.",
         preview: "default",
-        code: `import { Lesson, LessonActions, LessonBody, LessonClose, LessonFooter, LessonHeader, LessonMeta, LessonProgress } from "@/components/ui/lesson"
-import { Button } from "@/components/ui/button"
-import { Step, StepTitle } from "@/components/ui/step"
+        code: `import { Lesson, LessonActions, LessonBody, LessonClose, LessonFooter, LessonHeader, LessonMeta, LessonProgress } from "@/components/learning/lesson"
+import { Button } from "@/components/primitives/button"
+import { Step, StepTitle } from "@/components/learning/step"
 
 export function LessonSession() {
   return (
@@ -1258,7 +1258,7 @@ export function LessonSession() {
         description:
           "채운 원(학습), 열린 원(휴식), 링(오늘), 윤곽(예정)으로 이번 주 이력을 읽습니다.",
         preview: "default",
-        code: `import { Cadence, CadenceDay, CadenceHeader, CadenceHint, CadenceSummary, CadenceTitle, CadenceWeek } from "@/components/ui/cadence"
+        code: `import { Cadence, CadenceDay, CadenceHeader, CadenceHint, CadenceSummary, CadenceTitle, CadenceWeek } from "@/components/learning/cadence"
 
 export function WeekCadence() {
   return (
@@ -1358,7 +1358,7 @@ export function WeekCadence() {
         title: "오늘 목표",
         description: "남은 레슨 수로 오늘의 목표를 표현합니다.",
         preview: "default",
-        code: `import { Goal } from "@/components/ui/goal"
+        code: `import { Goal } from "@/components/learning/goal"
 
 export function DailyGoal() {
   return <Goal value={1} target={2} unit="레슨" />
@@ -1368,7 +1368,7 @@ export function DailyGoal() {
         id: "custom-slots",
         title: "슬롯 구성",
         description: "헤더·트랙·힌트를 직접 조합할 수 있습니다.",
-        code: `import { Goal, GoalHeader, GoalHint, GoalTitle, GoalTrack, GoalValue } from "@/components/ui/goal"
+        code: `import { Goal, GoalHeader, GoalHint, GoalTitle, GoalTrack, GoalValue } from "@/components/learning/goal"
 
 <Goal value={20} target={30} unit="분">
   <GoalHeader>
@@ -1435,7 +1435,7 @@ export function DailyGoal() {
         title: "개념 숙련도",
         description: "한 개념의 현재 단계와 설명을 보여 줍니다.",
         preview: "default",
-        code: `import { Mastery, MasteryBadge, MasteryDescription, MasteryHeader, MasteryLabel, MasteryStages } from "@/components/ui/mastery"
+        code: `import { Mastery, MasteryBadge, MasteryDescription, MasteryHeader, MasteryLabel, MasteryStages } from "@/components/learning/mastery"
 
 export function ConceptMastery() {
   return (
@@ -1516,7 +1516,7 @@ export function ConceptMastery() {
         title: "이정표 목록",
         description: "도달한 이정표와 다가올 이정표를 함께 둡니다.",
         preview: "default",
-        code: `import { Milestone, MilestoneBody, MilestoneList, MilestoneMark, MilestoneMeta, MilestoneTitle } from "@/components/ui/milestone"
+        code: `import { Milestone, MilestoneBody, MilestoneList, MilestoneMark, MilestoneMeta, MilestoneTitle } from "@/components/learning/milestone"
 
 export function MilestoneTimeline() {
   return (
@@ -1603,7 +1603,7 @@ export function MilestoneTimeline() {
         title: "코호트 순위",
         description: "나와 인접한 학습자의 완료량을 비교합니다.",
         preview: "default",
-        code: `import { Standing, StandingHeader, StandingHint, StandingList, StandingMeta, StandingMetric, StandingName, StandingRow, StandingTitle } from "@/components/ui/standing"
+        code: `import { Standing, StandingHeader, StandingHint, StandingList, StandingMeta, StandingMetric, StandingName, StandingRow, StandingTitle } from "@/components/learning/standing"
 
 export function CohortStanding() {
   return (
@@ -1703,8 +1703,8 @@ export function CohortStanding() {
   LearningProfileSectionHint,
   LearningProfileSectionLabel,
   LearningProfileTitle,
-} from "@/components/ui/learning-profile"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/learning-profile"
+import { Button } from "@/components/primitives/button"
 
 export function OnboardingProfile() {
   return (
@@ -1785,7 +1785,7 @@ export function OnboardingProfile() {
   LearningProfileSummaryTerm,
   LearningProfileSummaryValue,
   LearningProfileTitle,
-} from "@/components/ui/learning-profile"
+} from "@/components/learning/learning-profile"
 
 <LearningProfile>
   <LearningProfileHeader>
@@ -1850,8 +1850,8 @@ export function OnboardingProfile() {
   NextActionMeta,
   NextActionReason,
   NextActionTitle,
-} from "@/components/ui/next-action"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/next-action"
+import { Button } from "@/components/primitives/button"
 
 export function HomeNextAction() {
   return (
@@ -1955,7 +1955,7 @@ export function HomeNextAction() {
   CourseOverviewSection,
   CourseOverviewSectionTitle,
   CourseOverviewTitle,
-} from "@/components/ui/course-overview"
+} from "@/components/learning/course-overview"
 
 export function ArgumentCourse() {
   return (

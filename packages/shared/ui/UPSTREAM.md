@@ -39,57 +39,58 @@ Icons use `@hugeicons/react` with direct `@hugeicons/core-free-icons/*` data imp
 
 ## Complete source coverage
 
-| Local path                | Upstream path                                           |
-| ------------------------- | ------------------------------------------------------- |
-| `apps/ui/`                | all Git-tracked repository files except `.git` metadata |
-| `src/components/ui/*.tsx` | `registry/luma/ui/*.tsx`                                |
-| `src/blocks/*.tsx`        | `registry/luma/blocks/*.tsx`                            |
-| `src/hooks/use-mobile.ts` | `registry/luma/hooks/use-mobile.ts`                     |
-| `src/lib/utils.ts`        | `registry/luma/lib/utils.ts`                            |
+| Local path                        | Upstream path                                           |
+| --------------------------------- | ------------------------------------------------------- |
+| `apps/ui/`                        | all Git-tracked repository files except `.git` metadata |
+| `src/components/primitives/*.tsx` | `registry/luma/ui/*.tsx`                                |
+| `src/components/learning/*.tsx`   | `registry/luma/ui/*.tsx`                                |
+| `src/blocks/*.tsx`                | `registry/luma/blocks/*.tsx`                            |
+| `src/hooks/use-mobile.ts`         | `registry/luma/hooks/use-mobile.ts`                     |
+| `src/lib/utils.ts`                | `registry/luma/lib/utils.ts`                            |
 
 The fixed import inventory and integration mappings are recorded in `apps/ui/UPSTREAM_IMPORT.md`.
 
 ## Locally adapted source
 
-| Local path                            | Upstream path                        |
-| ------------------------------------- | ------------------------------------ |
-| `src/lib/utils.ts`                    | `registry/luma/lib/utils.ts`         |
-| `src/components/ui/button.tsx`        | `registry/luma/ui/button.tsx`        |
-| `src/components/ui/field.tsx`         | `registry/luma/ui/field.tsx`         |
-| `src/components/ui/input.tsx`         | `registry/luma/ui/input.tsx`         |
-| `src/components/ui/textarea.tsx`      | `registry/luma/ui/textarea.tsx`      |
-| `src/components/ui/label.tsx`         | `registry/luma/ui/label.tsx`         |
-| `src/components/ui/card.tsx`          | `registry/luma/ui/card.tsx`          |
-| `src/components/ui/badge.tsx`         | `registry/luma/ui/badge.tsx`         |
-| `src/components/ui/separator.tsx`     | `registry/luma/ui/separator.tsx`     |
-| `src/components/ui/dialog.tsx`        | `registry/luma/ui/dialog.tsx`        |
-| `src/components/ui/alert-dialog.tsx`  | `registry/luma/ui/alert-dialog.tsx`  |
-| `src/components/ui/dropdown-menu.tsx` | `registry/luma/ui/dropdown-menu.tsx` |
-| `src/components/ui/select.tsx`        | `registry/luma/ui/select.tsx`        |
-| `src/components/ui/tabs.tsx`          | `registry/luma/ui/tabs.tsx`          |
-| `src/components/ui/accordion.tsx`     | `registry/luma/ui/accordion.tsx`     |
-| `src/components/ui/popover.tsx`       | `registry/luma/ui/popover.tsx`       |
-| `src/components/ui/progress.tsx`      | `registry/luma/ui/progress.tsx`      |
-| `src/components/ui/table.tsx`         | `registry/luma/ui/table.tsx`         |
-| `src/components/ui/empty.tsx`         | `registry/luma/ui/empty.tsx`         |
-| `src/components/ui/spinner.tsx`       | `registry/luma/ui/spinner.tsx`       |
-| `src/components/ui/lesson.tsx`        | `registry/luma/ui/lesson.tsx`        |
-| `src/components/ui/step.tsx`          | `registry/luma/ui/step.tsx`          |
-| `src/components/ui/insight.tsx`       | `registry/luma/ui/insight.tsx`       |
-| `src/components/ui/prose.tsx`         | `registry/luma/ui/prose.tsx`         |
-| `src/components/ui/compare.tsx`       | `registry/luma/ui/compare.tsx`       |
-| `src/components/ui/choice.tsx`        | `registry/luma/ui/choice.tsx`        |
-| `src/components/ui/token.tsx`         | `registry/luma/ui/token.tsx`         |
-| `src/components/ui/segment.tsx`       | `registry/luma/ui/segment.tsx`       |
-| `src/components/ui/sortable.tsx`      | `registry/luma/ui/sortable.tsx`      |
-| `src/components/ui/pair.tsx`          | `registry/luma/ui/pair.tsx`          |
-| `src/components/ui/classify.tsx`      | `registry/luma/ui/classify.tsx`      |
-| `src/components/ui/compose.tsx`       | `registry/luma/ui/compose.tsx`       |
-| `src/components/ui/coaching.tsx`      | `registry/luma/ui/coaching.tsx`      |
-| `src/styles/tokens/reference.css`     | `registry/base/registry.json`        |
-| `src/styles/tokens/semantic.css`      | `registry/base/registry.json`        |
-| `src/styles/tokens/motion.css`        | `registry/base/registry.json`        |
-| `src/styles/globals.css`              | `src/styles/global.css`              |
+| Local path                                    | Upstream path                        |
+| --------------------------------------------- | ------------------------------------ |
+| `src/lib/utils.ts`                            | `registry/luma/lib/utils.ts`         |
+| `src/components/primitives/button.tsx`        | `registry/luma/ui/button.tsx`        |
+| `src/components/primitives/field.tsx`         | `registry/luma/ui/field.tsx`         |
+| `src/components/primitives/input.tsx`         | `registry/luma/ui/input.tsx`         |
+| `src/components/primitives/textarea.tsx`      | `registry/luma/ui/textarea.tsx`      |
+| `src/components/primitives/label.tsx`         | `registry/luma/ui/label.tsx`         |
+| `src/components/primitives/card.tsx`          | `registry/luma/ui/card.tsx`          |
+| `src/components/primitives/badge.tsx`         | `registry/luma/ui/badge.tsx`         |
+| `src/components/primitives/separator.tsx`     | `registry/luma/ui/separator.tsx`     |
+| `src/components/primitives/dialog.tsx`        | `registry/luma/ui/dialog.tsx`        |
+| `src/components/primitives/alert-dialog.tsx`  | `registry/luma/ui/alert-dialog.tsx`  |
+| `src/components/primitives/dropdown-menu.tsx` | `registry/luma/ui/dropdown-menu.tsx` |
+| `src/components/primitives/select.tsx`        | `registry/luma/ui/select.tsx`        |
+| `src/components/primitives/tabs.tsx`          | `registry/luma/ui/tabs.tsx`          |
+| `src/components/primitives/accordion.tsx`     | `registry/luma/ui/accordion.tsx`     |
+| `src/components/primitives/popover.tsx`       | `registry/luma/ui/popover.tsx`       |
+| `src/components/primitives/progress.tsx`      | `registry/luma/ui/progress.tsx`      |
+| `src/components/primitives/table.tsx`         | `registry/luma/ui/table.tsx`         |
+| `src/components/primitives/empty.tsx`         | `registry/luma/ui/empty.tsx`         |
+| `src/components/primitives/spinner.tsx`       | `registry/luma/ui/spinner.tsx`       |
+| `src/components/learning/lesson.tsx`          | `registry/luma/ui/lesson.tsx`        |
+| `src/components/learning/step.tsx`            | `registry/luma/ui/step.tsx`          |
+| `src/components/learning/insight.tsx`         | `registry/luma/ui/insight.tsx`       |
+| `src/components/learning/prose.tsx`           | `registry/luma/ui/prose.tsx`         |
+| `src/components/learning/compare.tsx`         | `registry/luma/ui/compare.tsx`       |
+| `src/components/learning/choice.tsx`          | `registry/luma/ui/choice.tsx`        |
+| `src/components/learning/token.tsx`           | `registry/luma/ui/token.tsx`         |
+| `src/components/learning/segment.tsx`         | `registry/luma/ui/segment.tsx`       |
+| `src/components/learning/sortable.tsx`        | `registry/luma/ui/sortable.tsx`      |
+| `src/components/learning/pair.tsx`            | `registry/luma/ui/pair.tsx`          |
+| `src/components/learning/classify.tsx`        | `registry/luma/ui/classify.tsx`      |
+| `src/components/learning/compose.tsx`         | `registry/luma/ui/compose.tsx`       |
+| `src/components/learning/coaching.tsx`        | `registry/luma/ui/coaching.tsx`      |
+| `src/styles/tokens/reference.css`             | `registry/base/registry.json`        |
+| `src/styles/tokens/semantic.css`              | `registry/base/registry.json`        |
+| `src/styles/tokens/motion.css`                | `registry/base/registry.json`        |
+| `src/styles/globals.css`                      | `src/styles/global.css`              |
 
 Upstream import paths are rewritten to `#ui/*`.
 

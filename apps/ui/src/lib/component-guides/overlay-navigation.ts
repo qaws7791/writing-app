@@ -16,7 +16,7 @@ export const overlayNavigationGuides: ComponentGuideMap = {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/primitives/accordion"
 
 export function AccordionBasic() {
   return (
@@ -43,7 +43,7 @@ export function AccordionBasic() {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/primitives/accordion"
 
 export function AccordionMultiple() {
   return (
@@ -70,7 +70,7 @@ export function AccordionMultiple() {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/primitives/accordion"
 
 export function AccordionBorder() {
   return (
@@ -101,7 +101,7 @@ export function AccordionBorder() {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/primitives/accordion"
 
 export function AccordionSecondary() {
   return (
@@ -141,7 +141,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/primitives/accordion"
 
 export function AccordionControlled() {
   const [value, setValue] = React.useState<string[]>(["details"])
@@ -165,7 +165,7 @@ export function AccordionControlled() {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/primitives/accordion"
 
 export function AccordionDisabled() {
   return (
@@ -192,8 +192,8 @@ export function AccordionDisabled() {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+} from "@/components/primitives/accordion"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/primitives/card"
 
 export function AccordionCard() {
   return (
@@ -278,7 +278,7 @@ export function AccordionCard() {
         title: "기본",
         description: "제목과 결과를 설명하고 취소와 확인 행동을 명확히 분리합니다.",
         preview: "default",
-        code: `import { Button } from "@/components/ui/button"
+        code: `import { Button } from "@/components/primitives/button"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -289,7 +289,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/primitives/alert-dialog"
 
 export function AlertDialogBasic() {
   return (
@@ -313,12 +313,12 @@ export function AlertDialogBasic() {
         id: "alert-dialog-small",
         title: "작은 크기",
         description: "짧고 단순한 선택은 size=sm으로 더 응축된 확인 흐름을 만듭니다.",
-        code: `import { Button } from "@/components/ui/button"
+        code: `import { Button } from "@/components/primitives/button"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/primitives/alert-dialog"
 
 export function AlertDialogSmall() {
   return (
@@ -344,12 +344,12 @@ export function AlertDialogSmall() {
         description: "AlertDialogMedia에 상태 아이콘을 넣어 중요한 맥락을 한 번만 강조합니다.",
         code: `import { Delete02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/primitives/button"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/primitives/alert-dialog"
 
 export function AlertDialogMediaExample() {
   return (
@@ -375,12 +375,12 @@ export function AlertDialogMediaExample() {
         title: "비동기 작업과 제어 상태",
         description: "서버 작업이 끝날 때까지 open을 유지하고 성공한 뒤에만 닫습니다.",
         code: `import * as React from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/primitives/button"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/primitives/alert-dialog"
 
 export function AlertDialogControlled() {
   const [open, setOpen] = React.useState(false)
@@ -470,7 +470,7 @@ export function AlertDialogControlled() {
         code: `import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
   BreadcrumbPage, BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/primitives/breadcrumb"
 
 export function BreadcrumbBasic() {
   return (
@@ -494,7 +494,7 @@ export function BreadcrumbBasic() {
         code: `import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
   BreadcrumbPage, BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/primitives/breadcrumb"
 
 export function BreadcrumbCustomSeparator() {
   return (
@@ -516,10 +516,10 @@ export function BreadcrumbCustomSeparator() {
         code: `import {
   Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink,
   BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/primitives/breadcrumb"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/primitives/dropdown-menu"
 
 export function BreadcrumbCollapsed() {
   return (
@@ -552,7 +552,7 @@ export function BreadcrumbCollapsed() {
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
   BreadcrumbPage, BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/primitives/breadcrumb"
 
 function AppLink(props: ComponentProps<"a">) {
   return <a {...props} />
@@ -615,8 +615,8 @@ export function BreadcrumbRouterLink() {
         title: "기본",
         description: "트리거와 콘텐츠의 외형을 사용 맥락에 맞는 Button과 표면으로 구성합니다.",
         preview: "default",
-        code: `import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+        code: `import { Button } from "@/components/primitives/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/primitives/collapsible"
 
 export function CollapsibleBasic() {
   return (
@@ -637,8 +637,8 @@ export function CollapsibleBasic() {
         title: "제어된 상태",
         description: "트리거 문구와 아이콘을 실제 open 상태에 맞춰 바꿉니다.",
         code: `import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Button } from "@/components/primitives/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/primitives/collapsible"
 
 export function CollapsibleControlled() {
   const [open, setOpen] = React.useState(false)
@@ -659,9 +659,9 @@ export function CollapsibleControlled() {
         id: "collapsible-settings",
         title: "설정 패널",
         description: "자주 쓰지 않는 설정을 숨기되 현재 값이 무엇인지 트리거 근처에서 알려 줍니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+        code: `import { Button } from "@/components/primitives/button"
+import { Switch } from "@/components/primitives/switch"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/primitives/collapsible"
 
 export function CollapsibleSettings() {
   return (
@@ -684,8 +684,8 @@ export function CollapsibleSettings() {
         title: "비활성 상태",
         description:
           "권한이나 선행 조건이 부족한 영역은 Root의 disabled로 전체 상호작용을 막습니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+        code: `import { Button } from "@/components/primitives/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/primitives/collapsible"
 
 export function CollapsibleDisabled() {
   return (
@@ -748,7 +748,7 @@ export function CollapsibleDisabled() {
         preview: "default",
         code: `import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
-} from "@/components/ui/command"
+} from "@/components/primitives/command"
 
 export function CommandBasic() {
   return (
@@ -773,7 +773,7 @@ export function CommandBasic() {
 import {
   Command, CommandDialog, CommandEmpty, CommandGroup,
   CommandInput, CommandItem, CommandList, CommandShortcut,
-} from "@/components/ui/command"
+} from "@/components/primitives/command"
 
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false)
@@ -811,7 +811,7 @@ export function CommandPalette() {
         code: `import {
   Command, CommandGroup, CommandInput, CommandItem, CommandList,
   CommandSeparator, CommandShortcut,
-} from "@/components/ui/command"
+} from "@/components/primitives/command"
 
 export function CommandGroups() {
   return (
@@ -838,7 +838,7 @@ export function CommandGroups() {
         description:
           "CommandInput의 검색어를 제어하고 keywords와 filter로 한국어 동의어 검색을 보완합니다.",
         code: `import * as React from "react"
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/primitives/command"
 
 export function CommandControlledSearch() {
   const [search, setSearch] = React.useState("")
@@ -864,7 +864,7 @@ export function CommandControlledSearch() {
         description:
           "checked data 상태가 필요한 선택 목록은 value를 안정적으로 지정하고 Item 선택으로 외부 상태를 갱신합니다.",
         code: `import * as React from "react"
-import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
+import { Command, CommandGroup, CommandItem, CommandList } from "@/components/primitives/command"
 
 export function CommandSelection() {
   const [team, setTeam] = React.useState("design")
@@ -961,11 +961,11 @@ export function CommandSelection() {
         description:
           "Trigger, Content, Header, Title, Description, Footer를 기본 골격으로 사용합니다.",
         preview: "default",
-        code: `import { Button } from "@/components/ui/button"
+        code: `import { Button } from "@/components/primitives/button"
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/primitives/dialog"
 
 export function DialogBasic() {
   return (
@@ -986,10 +986,10 @@ export function DialogBasic() {
         id: "dialog-form",
         title: "폼",
         description: "Field와 Input을 조합하고 제출 행동은 Footer에 고정된 순서로 배치합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: `import { Button } from "@/components/primitives/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/primitives/dialog"
+import { Field, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function DialogForm() {
   return (
@@ -1012,8 +1012,8 @@ export function DialogForm() {
         title: "닫기 컨트롤",
         description:
           "기본 우측 상단 닫기 버튼을 숨기고 문맥이 분명한 DialogClose를 직접 배치합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+        code: `import { Button } from "@/components/primitives/button"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/primitives/dialog"
 
 export function DialogCustomClose() {
   return (
@@ -1038,8 +1038,8 @@ export function DialogCustomClose() {
         description:
           "open을 외부에서 관리하고 닫힌 뒤 초점이 돌아갈 요소를 finalFocus로 지정합니다.",
         code: `import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/primitives/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/primitives/dialog"
 
 export function DialogControlled() {
   const [open, setOpen] = React.useState(false)
@@ -1065,8 +1065,8 @@ export function DialogControlled() {
         title: "긴 콘텐츠와 고정 Footer",
         description:
           "Content의 높이를 제한하고 본문만 스크롤해 행동 버튼이 화면 밖으로 밀리지 않게 합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+        code: `import { Button } from "@/components/primitives/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/primitives/dialog"
 
 export function DialogScrollable() {
   return (
@@ -1149,8 +1149,8 @@ export function DialogScrollable() {
         title: "기본",
         description: "관련 행동은 Separator로만 나누고, 라벨은 꼭 필요할 때만 둡니다.",
         preview: "default",
-        code: `import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+        code: `import { Button } from "@/components/primitives/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu"
 
 export function DropdownMenuBasic() {
   return (
@@ -1177,15 +1177,15 @@ export function DropdownMenuBasic() {
   Settings02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/primitives/badge"
+import { Button } from "@/components/primitives/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/primitives/dropdown-menu"
 
 export function DropdownMenuAccount() {
   return (
@@ -1256,7 +1256,7 @@ import {
   Settings02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/primitives/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -1268,7 +1268,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/primitives/dropdown-menu"
 
 export function DropdownMenuActions() {
   const [pinned, setPinned] = React.useState(true)
@@ -1331,8 +1331,8 @@ export function DropdownMenuActions() {
           "아이콘은 스캔을 돕고 Shortcut은 이미 동작하는 키 조합을 보조적으로 표시합니다.",
         code: `import { Copy01Icon, Edit02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/primitives/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu"
 
 export function DropdownMenuShortcuts() {
   return (
@@ -1351,8 +1351,8 @@ export function DropdownMenuShortcuts() {
         title: "체크박스 항목",
         description: "서로 독립적인 표시 옵션은 메뉴를 닫지 않는 CheckboxItem으로 토글합니다.",
         code: `import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/primitives/button"
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu"
 
 export function DropdownMenuCheckboxes() {
   const [grid, setGrid] = React.useState(true)
@@ -1376,8 +1376,8 @@ export function DropdownMenuCheckboxes() {
         title: "라디오 그룹",
         description: "서로 배타적인 정렬이나 밀도 선택은 RadioGroup으로 하나만 활성화합니다.",
         code: `import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/primitives/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu"
 
 export function DropdownMenuRadio() {
   const [density, setDensity] = React.useState("comfortable")
@@ -1400,8 +1400,8 @@ export function DropdownMenuRadio() {
         title: "하위 메뉴와 비활성 항목",
         description:
           "두 번째 단계의 행동만 Submenu에 두고 현재 실행할 수 없는 항목은 disabled로 설명 가능한 상태를 유지합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+        code: `import { Button } from "@/components/primitives/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu"
 
 export function DropdownMenuSubmenu() {
   return (
@@ -1508,7 +1508,7 @@ export function DropdownMenuSubmenu() {
         description:
           "Trigger와 Content를 가진 항목, 직접 이동하는 Link 항목을 한 목록에 조합합니다.",
         preview: "default",
-        code: `import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu"
+        code: `import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/primitives/navigation-menu"
 
 export function NavigationMenuBasic() {
   return (
@@ -1531,7 +1531,7 @@ export function NavigationMenuBasic() {
         id: "navigation-menu-rich-content",
         title: "설명형 링크 그리드",
         description: "하위 링크가 많으면 제목과 한 줄 설명을 가진 열린 그리드로 묶습니다.",
-        code: `import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu"
+        code: `import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/primitives/navigation-menu"
 
 export function NavigationMenuRichContent() {
   return (
@@ -1558,7 +1558,7 @@ export function NavigationMenuRichContent() {
         title: "라우터 링크와 활성 상태",
         description: "render로 라우터 Link를 합성하고 active로 현재 페이지를 표시합니다.",
         code: `import type { ComponentProps } from "react"
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu"
+import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/primitives/navigation-menu"
 
 function AppLink(props: ComponentProps<"a">) {
   return <a {...props} />
@@ -1585,7 +1585,7 @@ export function NavigationMenuRouterLink() {
         description:
           "value를 제어해 열린 항목을 추적하고 포인터 이동이 잦은 헤더에서는 delay를 조정합니다.",
         code: `import * as React from "react"
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu"
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/primitives/navigation-menu"
 
 export function NavigationMenuControlled() {
   const [value, setValue] = React.useState<string | null>(null)
@@ -1674,7 +1674,7 @@ export function NavigationMenuControlled() {
         title: "기본",
         description: "이전, 페이지 번호, Ellipsis, 다음을 의미 있는 list 구조로 배치합니다.",
         preview: "default",
-        code: `import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+        code: `import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/primitives/pagination"
 
 export function PaginationBasic() {
   return (
@@ -1695,7 +1695,7 @@ export function PaginationBasic() {
         title: "간단한 페이지 번호",
         description:
           "페이지 수가 적으면 생략 기호 없이 현재 위치와 가까운 페이지를 모두 보여 줍니다.",
-        code: `import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@/components/ui/pagination"
+        code: `import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@/components/primitives/pagination"
 
 export function PaginationSimple() {
   return (
@@ -1716,7 +1716,7 @@ export function PaginationSimple() {
         title: "이전·다음만 표시",
         description:
           "표처럼 현재 범위를 별도로 설명하는 화면에서는 아이콘 크기의 이동만 남길 수 있습니다.",
-        code: `import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+        code: `import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/primitives/pagination"
 
 export function PaginationIconsOnly() {
   return (
@@ -1737,7 +1737,7 @@ export function PaginationIconsOnly() {
         title: "경계 페이지",
         description:
           "이동할 페이지가 없을 때 링크를 제거하지 않고 aria-disabled와 키보드 제외를 함께 적용합니다.",
-        code: `import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+        code: `import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/primitives/pagination"
 
 export function PaginationBoundary() {
   return (
@@ -1803,8 +1803,8 @@ export function PaginationBoundary() {
         title: "기본",
         description: "Header, Title, Description으로 팝오버의 짧은 목적을 먼저 설명합니다.",
         preview: "default",
-        code: `import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/ui/popover"
+        code: `import { Button } from "@/components/primitives/button"
+import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/primitives/popover"
 
 export function PopoverBasic() {
   return (
@@ -1821,8 +1821,8 @@ export function PopoverBasic() {
         id: "popover-position",
         title: "위치와 정렬",
         description: "side, align, offset으로 트리거와 팝오버의 시각적 연결을 조정합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+        code: `import { Button } from "@/components/primitives/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/primitives/popover"
 
 export function PopoverPosition() {
   return (
@@ -1839,10 +1839,10 @@ export function PopoverPosition() {
         id: "popover-form",
         title: "간단한 폼",
         description: "두세 개의 가벼운 입력은 Popover 안에서 바로 수정하고 저장할 수 있습니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/ui/popover"
+        code: `import { Button } from "@/components/primitives/button"
+import { Field, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
+import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/primitives/popover"
 
 export function PopoverForm() {
   return (
@@ -1865,8 +1865,8 @@ export function PopoverForm() {
         title: "제어된 열림 상태",
         description: "선택이 완료되면 애플리케이션 상태를 갱신하고 Popover를 명시적으로 닫습니다.",
         code: `import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/primitives/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/primitives/popover"
 
 export function PopoverControlled() {
   const [open, setOpen] = React.useState(false)
@@ -1949,8 +1949,8 @@ export function PopoverControlled() {
         title: "기본",
         description: "기본 side=right인 패널에 Header, 본문, Footer를 구성합니다.",
         preview: "default",
-        code: `import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+        code: `import { Button } from "@/components/primitives/button"
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/primitives/sheet"
 
 export function SheetBasic() {
   return (
@@ -1969,8 +1969,8 @@ export function SheetBasic() {
         id: "sheet-side",
         title: "열리는 면",
         description: "side로 top, right, bottom, left 중 정보 구조에 자연스러운 방향을 선택합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+        code: `import { Button } from "@/components/primitives/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/primitives/sheet"
 
 const sides = ["top", "right", "bottom", "left"] as const
 
@@ -1992,10 +1992,10 @@ export function SheetSides() {
         title: "설정 폼",
         description:
           "본문만 스크롤하고 Header와 Footer를 고정해 긴 설정에서도 행동을 잃지 않게 합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+        code: `import { Button } from "@/components/primitives/button"
+import { Field, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/primitives/sheet"
 
 export function SheetForm() {
   return (
@@ -2015,8 +2015,8 @@ export function SheetForm() {
         title: "제어 상태와 닫기 버튼",
         description: "제품 전용 닫기 행동이 있을 때 기본 버튼을 숨기고 open을 직접 관리합니다.",
         code: `import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Button } from "@/components/primitives/button"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/primitives/sheet"
 
 export function SheetControlled() {
   const [open, setOpen] = React.useState(false)
@@ -2095,7 +2095,7 @@ export function SheetControlled() {
         description:
           "Provider 아래에 Sidebar와 main 영역을 형제로 두고 Trigger로 전체 레이아웃을 전환합니다.",
         preview: "default",
-        code: `import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+        code: `import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/primitives/sidebar"
 
 export function SidebarBasic() {
   return (
@@ -2130,7 +2130,7 @@ import {
   SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuBadge, SidebarMenuButton,
   SidebarMenuChevron, SidebarMenuItem, SidebarMenuStatus, SidebarMenuSub, SidebarMenuSubButton,
   SidebarMenuSubItem, SidebarProvider, SidebarSearch,
-} from "@/components/ui/sidebar"
+} from "@/components/primitives/sidebar"
 
 export function SidebarComposition() {
   return (
@@ -2191,7 +2191,7 @@ export function SidebarComposition() {
           "inset은 main 표면과 함께 사용하고 icon은 축소 상태에서도 주요 아이콘을 남깁니다.",
         code: `import { Home01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Sidebar, SidebarContent, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail } from "@/components/primitives/sidebar"
 
 export function SidebarInsetVariant() {
   return (
@@ -2210,7 +2210,7 @@ export function SidebarInsetVariant() {
         title: "메뉴 Variant, 크기, 상태",
         description:
           "MenuButton은 outline variant, 세 가지 size, active, disabled, tooltip 상태를 제공합니다.",
-        code: `import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider } from "@/components/ui/sidebar"
+        code: `import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider } from "@/components/primitives/sidebar"
 
 export function SidebarMenuStates() {
   return (
@@ -2235,7 +2235,7 @@ export function SidebarMenuStates() {
         description: "주 탐색과 별도의 MenuAction, 읽기 전용 Badge, 한 단계 Sub 구조를 조합합니다.",
         code: `import { MoreHorizontalIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider } from "@/components/primitives/sidebar"
 
 export function SidebarActions() {
   return (
@@ -2257,7 +2257,7 @@ export function SidebarActions() {
         title: "제어 상태",
         description: "Provider의 open을 제어해 앱 상태나 서버에서 읽은 사용자 선호와 동기화합니다.",
         code: `import * as React from "react"
-import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from "@/components/primitives/sidebar"
 
 export function SidebarControlled() {
   const [open, setOpen] = React.useState(true)
@@ -2276,7 +2276,7 @@ export function SidebarControlled() {
         title: "입력과 로딩 상태",
         description:
           "검색 슬롯과 Skeleton을 사용해 탐색 구조를 유지한 채 데이터 준비 상태를 알립니다.",
-        code: `import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton, SidebarProvider, SidebarSearch } from "@/components/ui/sidebar"
+        code: `import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton, SidebarProvider, SidebarSearch } from "@/components/primitives/sidebar"
 
 export function SidebarLoading() {
   return (
@@ -2422,7 +2422,7 @@ export function SidebarLoading() {
         description:
           "각 Trigger와 Content에 같은 value를 연결하고 처음 표시할 패널을 defaultValue로 정합니다.",
         preview: "default",
-        code: `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+        code: `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/primitives/tabs"
 
 export function TabsBasic() {
   return (
@@ -2442,7 +2442,7 @@ export function TabsBasic() {
         title: "Line variant",
         description:
           "페이지 섹션처럼 열린 표면에서는 TabsList의 line variant로 경계를 가볍게 만듭니다.",
-        code: `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+        code: `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/primitives/tabs"
 
 export function TabsLine() {
   return (
@@ -2464,7 +2464,7 @@ export function TabsLine() {
         title: "세로 방향",
         description:
           "관련 설정 범주가 길면 orientation=vertical로 목록과 패널을 나란히 배치합니다.",
-        code: `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+        code: `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/primitives/tabs"
 
 export function TabsVertical() {
   return (
@@ -2488,7 +2488,7 @@ export function TabsVertical() {
           "아이콘은 텍스트와 함께 사용하고 아직 접근할 수 없는 패널의 Trigger만 disabled 처리합니다.",
         code: `import { CodeIcon, ViewIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/primitives/tabs"
 
 export function TabsDisabledIcons() {
   return (
@@ -2509,7 +2509,7 @@ export function TabsDisabledIcons() {
         title: "제어된 탭",
         description: "현재 탭을 URL이나 분석 이벤트와 동기화할 때 value를 제어합니다.",
         code: `import * as React from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/primitives/tabs"
 
 export function TabsControlled() {
   const [tab, setTab] = React.useState("monthly")
@@ -2598,8 +2598,8 @@ export function TabsControlled() {
         preview: "default",
         code: `import { InformationCircleIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Button } from "@/components/primitives/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/primitives/tooltip"
 
 export function TooltipBasic() {
   return (
@@ -2616,8 +2616,8 @@ export function TooltipBasic() {
         id: "tooltip-side",
         title: "위치",
         description: "side와 align으로 주변 컨트롤을 가리지 않는 면을 선택합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+        code: `import { Button } from "@/components/primitives/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/primitives/tooltip"
 
 const sides = ["top", "right", "bottom", "left"] as const
 
@@ -2637,9 +2637,9 @@ export function TooltipSides() {
         id: "tooltip-keyboard",
         title: "키보드 단축키",
         description: "Kbd를 함께 배치해 컨트롤 설명과 실제 단축키를 한 줄로 안내합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Kbd, KbdGroup } from "@/components/ui/kbd"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+        code: `import { Button } from "@/components/primitives/button"
+import { Kbd, KbdGroup } from "@/components/primitives/kbd"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/primitives/tooltip"
 
 export function TooltipKeyboard() {
   return (
@@ -2657,8 +2657,8 @@ export function TooltipKeyboard() {
         title: "비활성 버튼",
         description:
           "disabled 버튼은 포인터와 초점을 받지 않으므로 span을 Trigger로 사용하고 이유를 설명합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+        code: `import { Button } from "@/components/primitives/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/primitives/tooltip"
 
 export function TooltipDisabledButton() {
   return (
@@ -2676,8 +2676,8 @@ export function TooltipDisabledButton() {
         title: "공유 지연 시간",
         description:
           "정보 탐색 화면에서는 Provider의 delay와 closeDelay를 조정해 우발적인 팝업을 줄입니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+        code: `import { Button } from "@/components/primitives/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/primitives/tooltip"
 
 export function TooltipDelay() {
   return (
@@ -2761,7 +2761,7 @@ export function TooltipDelay() {
         title: "기본 세로 스크롤",
         description: "높이를 명시한 Root 안에서 콘텐츠가 넘칠 때 기본 세로 ScrollBar가 나타납니다.",
         preview: "default",
-        code: `import { ScrollArea } from "@/components/ui/scroll-area"
+        code: `import { ScrollArea } from "@/components/primitives/scroll-area"
 
 export function ScrollAreaBasic() {
   return (
@@ -2778,7 +2778,7 @@ export function ScrollAreaBasic() {
         title: "가로 스크롤",
         description:
           "너비가 고정된 Viewport에 가로 콘텐츠와 orientation=horizontal인 ScrollBar를 추가합니다.",
-        code: `import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+        code: `import { ScrollArea, ScrollBar } from "@/components/primitives/scroll-area"
 
 export function ScrollAreaHorizontal() {
   return (
@@ -2796,7 +2796,7 @@ export function ScrollAreaHorizontal() {
         title: "양방향 스크롤",
         description:
           "넓고 긴 콘텐츠에는 기본 세로 ScrollBar와 추가 가로 ScrollBar를 함께 사용합니다.",
-        code: `import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+        code: `import { ScrollArea, ScrollBar } from "@/components/primitives/scroll-area"
 
 export function ScrollAreaBothAxes() {
   return (
@@ -2811,8 +2811,8 @@ export function ScrollAreaBothAxes() {
         id: "scroll-area-menu",
         title: "긴 선택 목록",
         description: "목록 전체 페이지가 아닌 선택 영역만 제한해 주변 문맥을 유지합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
+        code: `import { Button } from "@/components/primitives/button"
+import { ScrollArea } from "@/components/primitives/scroll-area"
 
 export function ScrollAreaMenu() {
   return (
@@ -2871,7 +2871,7 @@ export function ScrollAreaMenu() {
         title: "기본 가로 구분선",
         description: "관련 정보 묶음 사이에 기본 horizontal Separator를 둡니다.",
         preview: "default",
-        code: `import { Separator } from "@/components/ui/separator"
+        code: `import { Separator } from "@/components/primitives/separator"
 
 export function SeparatorBasic() {
   return (
@@ -2888,7 +2888,7 @@ export function SeparatorBasic() {
         title: "세로 구분선",
         description:
           "같은 행의 짧은 메타데이터나 행동 그룹 사이에는 vertical을 사용하고 높이를 제공합니다.",
-        code: `import { Separator } from "@/components/ui/separator"
+        code: `import { Separator } from "@/components/primitives/separator"
 
 export function SeparatorVertical() {
   return (
@@ -2903,8 +2903,8 @@ export function SeparatorVertical() {
         title: "메뉴 그룹",
         description:
           "텍스트 링크 그룹 사이를 가볍게 나누되 각 링크의 간격을 먼저 충분히 확보합니다.",
-        code: `import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+        code: `import { Button } from "@/components/primitives/button"
+import { Separator } from "@/components/primitives/separator"
 
 export function SeparatorMenu() {
   return (
@@ -2923,7 +2923,7 @@ export function SeparatorMenu() {
         description:
           "반복 목록에서는 마지막 항목 뒤에 불필요한 선이 생기지 않도록 항목 사이에만 렌더링합니다.",
         code: `import { Fragment } from "react"
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/components/primitives/separator"
 
 const updates = ["검색 개선", "새로운 Sheet", "RTL 지원"]
 

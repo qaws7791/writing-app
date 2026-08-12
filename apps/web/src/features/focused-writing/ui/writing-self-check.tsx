@@ -4,14 +4,17 @@ import { useState } from "react"
 import Link from "next/link"
 import { completeWritingSelfCheck } from "@workspace/http-client/learner"
 import { CheckCircleIcon } from "@workspace/ui/components/icons"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { Badge } from "@workspace/ui/components/primitives/badge"
+import {
+  Button,
+  buttonVariants,
+} from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 import {
   Insight,
   InsightDescription,
-} from "@workspace/ui/components/ui/insight"
-import { Prose, ProseBody } from "@workspace/ui/components/ui/prose"
+} from "@workspace/ui/components/learning/insight"
+import { Prose, ProseBody } from "@workspace/ui/components/learning/prose"
 
 import {
   readWritingModeOption,

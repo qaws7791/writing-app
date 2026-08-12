@@ -13,8 +13,8 @@ import {
   type MatchEvaluationItemInput,
   type MatchStepPresentationInput,
 } from "@/features/lesson-session/model/lesson-match-presentation"
-import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
-import type { MatchAnswerChoiceSelection } from "@workspace/ui/components/lesson/match-answer"
+import { MatchAnswer } from "@workspace/ui/components/learning/match-answer"
+import type { MatchAnswerChoiceSelection } from "@workspace/ui/components/learning/match-answer"
 import type { LessonStepCheckedVisual } from "@workspace/ui/lib/lesson-step-checked-visual"
 
 export function LessonMatchAnswer({

@@ -16,16 +16,16 @@ import {
   Field,
   FieldGroup,
   FieldLabel,
-} from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+} from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
+} from "@workspace/ui/components/primitives/select"
+import { Textarea } from "@workspace/ui/components/primitives/textarea"
 
 const courseCategoryItems = courseCategoryValues.map((category) => ({
   label: category,

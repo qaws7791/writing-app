@@ -8,7 +8,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
+} from "@workspace/ui/components/primitives/alert-dialog"
 
 export function LessonExitModal({
   error,

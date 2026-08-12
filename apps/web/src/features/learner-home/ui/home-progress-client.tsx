@@ -9,7 +9,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@workspace/ui/components/ui/tabs"
+} from "@workspace/ui/components/primitives/tabs"
 import {
   ContinueCourseCard,
   StartCourseCta,

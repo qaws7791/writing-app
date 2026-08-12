@@ -15,7 +15,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "#ui/components/ui/alert-dialog"
+} from "#ui/components/primitives/alert-dialog"
 import {
   AuditLog,
   AuditLogAction,
@@ -29,10 +29,10 @@ import {
   AuditLogTarget,
   AuditLogTime,
   AuditLogTitle,
-} from "#ui/components/ui/audit-log"
-import { AvatarFallback } from "#ui/components/ui/avatar"
-import { Badge } from "#ui/components/ui/badge"
-import { Button } from "#ui/components/ui/button"
+} from "#ui/components/learning/audit-log"
+import { AvatarFallback } from "#ui/components/primitives/avatar"
+import { Badge } from "#ui/components/primitives/badge"
+import { Button } from "#ui/components/primitives/button"
 import {
   Cadence,
   CadenceDay,
@@ -41,7 +41,7 @@ import {
   CadenceSummary,
   CadenceTitle,
   CadenceWeek,
-} from "#ui/components/ui/cadence"
+} from "#ui/components/learning/cadence"
 import {
   CohortAssignment,
   CohortAssignmentDeadline,
@@ -54,16 +54,16 @@ import {
   CohortTarget,
   CohortTargetLabel,
   CohortTargetTitle,
-} from "#ui/components/ui/cohort-assignment"
+} from "#ui/components/learning/cohort-assignment"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#ui/components/ui/dropdown-menu"
-import { Field, FieldGroup, FieldLabel } from "#ui/components/ui/field"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/dropdown-menu"
+import { Field, FieldGroup, FieldLabel } from "#ui/components/primitives/field"
+import { Input } from "#ui/components/primitives/input"
 import {
   InterventionItem,
   InterventionItemActions,
@@ -75,7 +75,7 @@ import {
   InterventionQueueList,
   InterventionQueueMeta,
   InterventionQueueTitle,
-} from "#ui/components/ui/intervention-queue"
+} from "#ui/components/learning/intervention-queue"
 import {
   LearnerRecord,
   LearnerRecordAttempts,
@@ -88,7 +88,7 @@ import {
   LearnerRecordSubmissions,
   LearnerRecordSupport,
   LearnerRecordTitle,
-} from "#ui/components/ui/learner-record"
+} from "#ui/components/learning/learner-record"
 import {
   Mastery,
   MasteryBadge,
@@ -96,27 +96,27 @@ import {
   MasteryHeader,
   MasteryLabel,
   MasteryStages,
-} from "#ui/components/ui/mastery"
+} from "#ui/components/learning/mastery"
 import {
   Person,
   PersonAvatar,
   PersonDescription,
   PersonInfo,
   PersonName,
-} from "#ui/components/ui/person"
+} from "#ui/components/learning/person"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "#ui/components/ui/tabs"
+} from "#ui/components/primitives/tabs"
 
 type UserRole = "learner" | "instructor"
 type UserStatus = "active" | "invited" | "suspended"

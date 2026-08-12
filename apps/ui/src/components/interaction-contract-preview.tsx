@@ -5,7 +5,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@workspace/ui/components/ui/accordion";
+} from "@workspace/ui/components/primitives/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,8 +16,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@workspace/ui/components/ui/alert-dialog";
-import { Button } from "@workspace/ui/components/ui/button";
+} from "@workspace/ui/components/primitives/alert-dialog";
+import { Button } from "@workspace/ui/components/primitives/button";
 import {
   Dialog,
   DialogClose,
@@ -27,15 +27,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@workspace/ui/components/ui/dialog";
+} from "@workspace/ui/components/primitives/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/ui/dropdown-menu";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@workspace/ui/components/ui/field";
-import { Input } from "@workspace/ui/components/ui/input";
+} from "@workspace/ui/components/primitives/dropdown-menu";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@workspace/ui/components/primitives/field";
+import { Input } from "@workspace/ui/components/primitives/input";
 import {
   Popover,
   PopoverContent,
@@ -43,16 +48,20 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@workspace/ui/components/ui/popover";
-import { Progress, ProgressLabel, ProgressValue } from "@workspace/ui/components/ui/progress";
+} from "@workspace/ui/components/primitives/popover";
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/primitives/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs";
+} from "@workspace/ui/components/primitives/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/primitives/tabs";
 
 export const interactionContracts = [
   "accordion",

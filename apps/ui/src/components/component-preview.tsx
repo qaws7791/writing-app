@@ -20,13 +20,13 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@workspace/ui/components/ui/accordion";
+} from "@workspace/ui/components/primitives/accordion";
 import {
   Alert,
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@workspace/ui/components/ui/alert";
+} from "@workspace/ui/components/primitives/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,22 +37,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@workspace/ui/components/ui/alert-dialog";
-import { AspectRatio } from "@workspace/ui/components/ui/aspect-ratio";
+} from "@workspace/ui/components/primitives/alert-dialog";
+import { AspectRatio } from "@workspace/ui/components/primitives/aspect-ratio";
 import {
   Attachment,
   AttachmentContent,
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@workspace/ui/components/ui/attachment";
+} from "@workspace/ui/components/primitives/attachment";
 import {
   Avatar,
   AvatarFallback,
   AvatarGroup,
   AvatarGroupCount,
-} from "@workspace/ui/components/ui/avatar";
-import { Badge } from "@workspace/ui/components/ui/badge";
+} from "@workspace/ui/components/primitives/avatar";
+import { Badge } from "@workspace/ui/components/primitives/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -60,20 +60,20 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@workspace/ui/components/ui/breadcrumb";
+} from "@workspace/ui/components/primitives/breadcrumb";
 import {
   Bubble,
   BubbleContent,
   BubbleGroup,
   BubbleReactions,
-} from "@workspace/ui/components/ui/bubble";
-import { Button } from "@workspace/ui/components/ui/button";
+} from "@workspace/ui/components/primitives/bubble";
+import { Button } from "@workspace/ui/components/primitives/button";
 import {
   ButtonGroup,
   ButtonGroupSeparator,
   ButtonGroupText,
-} from "@workspace/ui/components/ui/button-group";
-import { Calendar } from "@workspace/ui/components/ui/calendar";
+} from "@workspace/ui/components/primitives/button-group";
+import { Calendar } from "@workspace/ui/components/primitives/calendar";
 import {
   Card,
   CardContent,
@@ -81,19 +81,19 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card";
+} from "@workspace/ui/components/primitives/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@workspace/ui/components/ui/chart";
-import { Checkbox } from "@workspace/ui/components/ui/checkbox";
+} from "@workspace/ui/components/primitives/chart";
+import { Checkbox } from "@workspace/ui/components/primitives/checkbox";
 import {
   Choice,
   ChoiceContent,
   ChoiceGroup,
   ChoiceLabel,
-} from "@workspace/ui/components/ui/choice";
+} from "@workspace/ui/components/learning/choice";
 import {
   Classify,
   ClassifyCategories,
@@ -102,12 +102,12 @@ import {
   ClassifyItemLabel,
   ClassifyItemTag,
   ClassifyPool,
-} from "@workspace/ui/components/ui/classify";
+} from "@workspace/ui/components/learning/classify";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@workspace/ui/components/ui/collapsible";
+} from "@workspace/ui/components/primitives/collapsible";
 import {
   Combobox,
   ComboboxContent,
@@ -115,7 +115,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@workspace/ui/components/ui/combobox";
+} from "@workspace/ui/components/primitives/combobox";
 import {
   Command,
   CommandEmpty,
@@ -123,15 +123,15 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@workspace/ui/components/ui/command";
+} from "@workspace/ui/components/primitives/command";
 import {
   Compare,
   ComparePanel,
   CompareVersion,
   CompareVersionList,
   CompareVersions,
-} from "@workspace/ui/components/ui/compare";
-import { Compose, ComposeEditor, ComposeMeter } from "@workspace/ui/components/ui/compose";
+} from "@workspace/ui/components/learning/compare";
+import { Compose, ComposeEditor, ComposeMeter } from "@workspace/ui/components/learning/compose";
 import {
   Dialog,
   DialogContent,
@@ -140,7 +140,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@workspace/ui/components/ui/dialog";
+} from "@workspace/ui/components/primitives/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -149,7 +149,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/ui/dropdown-menu";
+} from "@workspace/ui/components/primitives/dropdown-menu";
 import {
   Empty,
   EmptyContent,
@@ -157,27 +157,32 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@workspace/ui/components/ui/empty";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@workspace/ui/components/ui/field";
-import { Input } from "@workspace/ui/components/ui/input";
+} from "@workspace/ui/components/primitives/empty";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@workspace/ui/components/primitives/field";
+import { Input } from "@workspace/ui/components/primitives/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@workspace/ui/components/ui/input-group";
+} from "@workspace/ui/components/primitives/input-group";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@workspace/ui/components/ui/input-otp";
+} from "@workspace/ui/components/primitives/input-otp";
 import {
   Insight,
   InsightDescription,
   InsightEyebrow,
   InsightTitle,
-} from "@workspace/ui/components/ui/insight";
+} from "@workspace/ui/components/learning/insight";
 import {
   Item,
   ItemActions,
@@ -185,9 +190,9 @@ import {
   ItemDescription,
   ItemMedia,
   ItemTitle,
-} from "@workspace/ui/components/ui/item";
-import { Kbd, KbdGroup } from "@workspace/ui/components/ui/kbd";
-import { Label } from "@workspace/ui/components/ui/label";
+} from "@workspace/ui/components/primitives/item";
+import { Kbd, KbdGroup } from "@workspace/ui/components/primitives/kbd";
+import { Label } from "@workspace/ui/components/primitives/label";
 import {
   Lesson,
   LessonActions,
@@ -197,8 +202,8 @@ import {
   LessonHeader,
   LessonMeta,
   LessonProgress,
-} from "@workspace/ui/components/ui/lesson";
-import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/components/ui/marker";
+} from "@workspace/ui/components/learning/lesson";
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/components/primitives/marker";
 import {
   Message,
   MessageAvatar,
@@ -206,14 +211,14 @@ import {
   MessageFooter,
   MessageGroup,
   MessageHeader,
-} from "@workspace/ui/components/ui/message";
+} from "@workspace/ui/components/primitives/message";
 import {
   MessageScroller,
   MessageScrollerContent,
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@workspace/ui/components/ui/message-scroller";
+} from "@workspace/ui/components/primitives/message-scroller";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -221,7 +226,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@workspace/ui/components/ui/navigation-menu";
+} from "@workspace/ui/components/primitives/navigation-menu";
 import {
   Pagination,
   PaginationContent,
@@ -230,14 +235,14 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@workspace/ui/components/ui/pagination";
+} from "@workspace/ui/components/primitives/pagination";
 import {
   PairBoard,
   PairColumn,
   PairItem,
   PairLabel,
   PairMarker,
-} from "@workspace/ui/components/ui/pair";
+} from "@workspace/ui/components/learning/pair";
 import {
   Path,
   PathConnector,
@@ -250,7 +255,7 @@ import {
   PathUnitDescription,
   PathUnitHeader,
   PathUnitTitle,
-} from "@workspace/ui/components/ui/path";
+} from "@workspace/ui/components/learning/path";
 import {
   Popover,
   PopoverContent,
@@ -258,20 +263,24 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@workspace/ui/components/ui/popover";
-import { Progress, ProgressLabel, ProgressValue } from "@workspace/ui/components/ui/progress";
-import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/ui/prose";
-import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/ui/radio-group";
-import { ScrollArea } from "@workspace/ui/components/ui/scroll-area";
-import { Segment, SegmentGroup } from "@workspace/ui/components/ui/segment";
+} from "@workspace/ui/components/primitives/popover";
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/primitives/progress";
+import { Prose, ProseBody, ProseSource } from "@workspace/ui/components/learning/prose";
+import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/primitives/radio-group";
+import { ScrollArea } from "@workspace/ui/components/primitives/scroll-area";
+import { Segment, SegmentGroup } from "@workspace/ui/components/learning/segment";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select";
-import { Separator } from "@workspace/ui/components/ui/separator";
+} from "@workspace/ui/components/primitives/select";
+import { Separator } from "@workspace/ui/components/primitives/separator";
 import {
   Sheet,
   SheetContent,
@@ -279,7 +288,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@workspace/ui/components/ui/sheet";
+} from "@workspace/ui/components/primitives/sheet";
 import {
   SidebarCard,
   SidebarContent,
@@ -299,17 +308,17 @@ import {
   SidebarMenuSubItem,
   SidebarProvider,
   SidebarSearch,
-} from "@workspace/ui/components/ui/sidebar";
-import { Skeleton } from "@workspace/ui/components/ui/skeleton";
-import { Slider } from "@workspace/ui/components/ui/slider";
+} from "@workspace/ui/components/primitives/sidebar";
+import { Skeleton } from "@workspace/ui/components/primitives/skeleton";
+import { Slider } from "@workspace/ui/components/primitives/slider";
 import {
   Sortable,
   SortableContent,
   SortableHandle,
   SortableIndex,
   SortableItem,
-} from "@workspace/ui/components/ui/sortable";
-import { Spinner } from "@workspace/ui/components/ui/spinner";
+} from "@workspace/ui/components/learning/sortable";
+import { Spinner } from "@workspace/ui/components/primitives/spinner";
 import {
   Step,
   StepActions,
@@ -317,8 +326,8 @@ import {
   StepGuide,
   StepHeader,
   StepTitle,
-} from "@workspace/ui/components/ui/step";
-import { Switch } from "@workspace/ui/components/ui/switch";
+} from "@workspace/ui/components/learning/step";
+import { Switch } from "@workspace/ui/components/primitives/switch";
 import {
   Table,
   TableBody,
@@ -327,19 +336,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs";
-import { Textarea } from "@workspace/ui/components/ui/textarea";
-import { Toaster, toast } from "@workspace/ui/components/ui/toast";
-import { Token, TokenBank, TokenSentence, TokenSlot } from "@workspace/ui/components/ui/token";
-import { Toggle } from "@workspace/ui/components/ui/toggle";
-import { ToggleGroup, ToggleGroupItem } from "@workspace/ui/components/ui/toggle-group";
+} from "@workspace/ui/components/primitives/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/primitives/tabs";
+import { Textarea } from "@workspace/ui/components/primitives/textarea";
+import { Toaster, toast } from "@workspace/ui/components/primitives/toast";
+import {
+  Token,
+  TokenBank,
+  TokenSentence,
+  TokenSlot,
+} from "@workspace/ui/components/learning/token";
+import { Toggle } from "@workspace/ui/components/primitives/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@workspace/ui/components/primitives/toggle-group";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@workspace/ui/components/ui/tooltip";
+} from "@workspace/ui/components/primitives/tooltip";
 
 type ComponentPreviewProps = { slug: string; example?: string };
 
@@ -1395,7 +1409,7 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
             Luma 스타일 컴포넌트 미리보기입니다.
           </TabsContent>
           <TabsContent value="code" className="rounded-3xl bg-muted p-5 font-mono text-sm">
-            {'import { Tabs } from "@workspace/ui/components/ui/tabs"'}
+            {'import { Tabs } from "@workspace/ui/components/primitives/tabs"'}
           </TabsContent>
           <TabsContent value="accessibility" className="rounded-3xl border p-5 text-sm">
             키보드 방향키 탐색을 지원합니다.

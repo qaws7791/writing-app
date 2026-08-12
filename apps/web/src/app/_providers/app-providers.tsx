@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react"
 import { ThemeProvider } from "next-themes"
-import { UiCspProvider } from "@workspace/ui/components/ui/csp-provider"
+import { UiCspProvider } from "@workspace/ui/components/primitives/csp-provider"
 
 export function AppProviders({
   children,

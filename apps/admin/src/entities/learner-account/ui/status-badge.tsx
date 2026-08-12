@@ -7,7 +7,7 @@ import {
   type LearnerAccountStatus,
 } from "@workspace/contracts/identity/status"
 import { BanIcon as Ban } from "@workspace/ui/components/icons"
-import { Badge } from "@workspace/ui/components/ui/badge"
+import { Badge } from "@workspace/ui/components/primitives/badge"
 
 type StatusBadgeProps = {
   readonly status: ContentStatus | LearnerAccountStatus

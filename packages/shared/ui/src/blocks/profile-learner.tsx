@@ -14,8 +14,8 @@ import {
   LearnerShell,
   type LearnerProfileAction,
 } from "#ui/blocks/learner-shell"
-import { AvatarFallback } from "#ui/components/ui/avatar"
-import { Button } from "#ui/components/ui/button"
+import { AvatarFallback } from "#ui/components/primitives/avatar"
+import { Button } from "#ui/components/primitives/button"
 import {
   Cadence,
   CadenceDay,
@@ -24,10 +24,10 @@ import {
   CadenceSummary,
   CadenceTitle,
   CadenceWeek,
-} from "#ui/components/ui/cadence"
-import { Field, FieldGroup, FieldLabel } from "#ui/components/ui/field"
-import { Goal } from "#ui/components/ui/goal"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/learning/cadence"
+import { Field, FieldGroup, FieldLabel } from "#ui/components/primitives/field"
+import { Goal } from "#ui/components/learning/goal"
+import { Input } from "#ui/components/primitives/input"
 import {
   Item,
   ItemActions,
@@ -36,7 +36,7 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-} from "#ui/components/ui/item"
+} from "#ui/components/primitives/item"
 import {
   LearningProfile,
   LearningProfileFooter,
@@ -51,7 +51,7 @@ import {
   LearningProfileSummaryTerm,
   LearningProfileSummaryValue,
   LearningProfileTitle,
-} from "#ui/components/ui/learning-profile"
+} from "#ui/components/learning/learning-profile"
 import {
   Mastery,
   MasteryBadge,
@@ -59,7 +59,7 @@ import {
   MasteryHeader,
   MasteryLabel,
   MasteryStages,
-} from "#ui/components/ui/mastery"
+} from "#ui/components/learning/mastery"
 import {
   Milestone,
   MilestoneBody,
@@ -67,7 +67,7 @@ import {
   MilestoneMark,
   MilestoneMeta,
   MilestoneTitle,
-} from "#ui/components/ui/milestone"
+} from "#ui/components/learning/milestone"
 import {
   MistakeJournal,
   MistakeJournalHeader,
@@ -78,7 +78,7 @@ import {
   MistakePatternCount,
   MistakePatternDescription,
   MistakePatternLabel,
-} from "#ui/components/ui/mistake-journal"
+} from "#ui/components/learning/mistake-journal"
 import {
   NextAction,
   NextActionActions,
@@ -87,14 +87,14 @@ import {
   NextActionMeta,
   NextActionReason,
   NextActionTitle,
-} from "#ui/components/ui/next-action"
+} from "#ui/components/learning/next-action"
 import {
   Person,
   PersonAvatar,
   PersonDescription,
   PersonInfo,
   PersonName,
-} from "#ui/components/ui/person"
+} from "#ui/components/learning/person"
 import {
   Portfolio,
   PortfolioHeader,
@@ -105,7 +105,7 @@ import {
   PortfolioPieceMeta,
   PortfolioPieceTitle,
   PortfolioTitle,
-} from "#ui/components/ui/portfolio"
+} from "#ui/components/learning/portfolio"
 import {
   PracticeQueue,
   PracticeQueueHeader,
@@ -116,7 +116,7 @@ import {
   PracticeQueueList,
   PracticeQueueMeta,
   PracticeQueueTitle,
-} from "#ui/components/ui/practice-queue"
+} from "#ui/components/learning/practice-queue"
 import {
   SkillMap,
   SkillMapHeader,
@@ -128,7 +128,7 @@ import {
   SkillNodeLabel,
   SkillNodeLevel,
   SkillNodePrereq,
-} from "#ui/components/ui/skill-map"
+} from "#ui/components/learning/skill-map"
 
 type ProfileView = "profile" | "history" | "settings"
 

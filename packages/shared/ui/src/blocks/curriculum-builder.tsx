@@ -17,8 +17,8 @@ import {
 } from "@hugeicons/core-free-icons"
 
 import { cn } from "#ui/lib/utils"
-import { Badge } from "#ui/components/ui/badge"
-import { Button } from "#ui/components/ui/button"
+import { Badge } from "#ui/components/primitives/badge"
+import { Button } from "#ui/components/primitives/button"
 import {
   CurriculumNode,
   CurriculumNodeActions,
@@ -34,7 +34,7 @@ import {
   CurriculumTreeSummary,
   CurriculumTreeTitle,
   type CurriculumNodeState,
-} from "#ui/components/ui/curriculum-tree"
+} from "#ui/components/learning/curriculum-tree"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,16 +42,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "#ui/components/ui/dropdown-menu"
+} from "#ui/components/primitives/dropdown-menu"
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "#ui/components/ui/empty"
-import { Field, FieldGroup, FieldLabel } from "#ui/components/ui/field"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/empty"
+import { Field, FieldGroup, FieldLabel } from "#ui/components/primitives/field"
+import { Input } from "#ui/components/primitives/input"
 import {
   LessonBuilder,
   LessonBuilderCanvas,
@@ -65,7 +65,7 @@ import {
   LessonBuilderStepInsert,
   LessonBuilderStepType,
   LessonBuilderTitle,
-} from "#ui/components/ui/lesson-builder"
+} from "#ui/components/learning/lesson-builder"
 import {
   Popover,
   PopoverContent,
@@ -73,14 +73,14 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "#ui/components/ui/popover"
+} from "#ui/components/primitives/popover"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Sheet,
   SheetContent,
@@ -88,9 +88,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "#ui/components/ui/sheet"
-import { Step, StepBody, StepHeader, StepTitle } from "#ui/components/ui/step"
-import { Textarea } from "#ui/components/ui/textarea"
+} from "#ui/components/primitives/sheet"
+import {
+  Step,
+  StepBody,
+  StepHeader,
+  StepTitle,
+} from "#ui/components/learning/step"
+import { Textarea } from "#ui/components/primitives/textarea"
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 

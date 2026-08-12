@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
 
 export default function NotFound() {
   const pathname = usePathname()

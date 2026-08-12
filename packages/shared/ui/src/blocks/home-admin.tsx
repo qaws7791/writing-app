@@ -17,14 +17,14 @@ import {
   AdminOverviewMeta,
   AdminOverviewTitle,
   type AdminOverviewSeverity,
-} from "#ui/components/ui/admin-overview"
-import { Button } from "#ui/components/ui/button"
+} from "#ui/components/learning/admin-overview"
+import { Button } from "#ui/components/primitives/button"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "#ui/components/ui/chart"
+} from "#ui/components/primitives/chart"
 
 type MetricCardData = {
   id: string

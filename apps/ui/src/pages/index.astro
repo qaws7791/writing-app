@@ -3,7 +3,7 @@ import LandingComposition from "@/src/components/landing-composition"
 import SiteHeader from "@/src/components/site-header.astro"
 import ThemeInitializer from "@/src/components/theme-initializer.astro"
 import { componentDocs } from "@/src/lib/component-docs"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
 import { cn } from "@workspace/ui/lib/utils"
 import "@workspace/ui/pretendard-font"
 import "@/src/styles/global.css"
@@ -177,7 +177,7 @@ const principles = [
             <div class="min-w-0">
               <pre
                 class="overflow-x-auto rounded-2xl bg-muted/80 px-5 py-4 font-mono text-sm leading-7"
-              ><code>import &#123; Button &#125; from "@workspace/ui/components/ui/button"</code></pre>
+              ><code>import &#123; Button &#125; from "@workspace/ui/components/primitives/button"</code></pre>
               <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
                 <a class="hover:text-foreground" href={docsHref}>컴포넌트 문서</a>
                 <a class="hover:text-foreground" href={`${baseUrl}docs/getting-started`}>시작하기</a>

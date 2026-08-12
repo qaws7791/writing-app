@@ -7,13 +7,13 @@ import {
   LogOutIcon,
   UserIcon,
 } from "@workspace/ui/components/icons/navigation-icons"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/ui/dropdown-menu"
+} from "@workspace/ui/components/primitives/dropdown-menu"
 
 export function GlobalNavAccountMenu() {
   return (

@@ -6,7 +6,10 @@ import { useState, useTransition } from "react"
 import type { AdminMcpApproval } from "@/entities/admin-mcp-approval/model/admin-mcp-approval"
 import type { decideAdminMcpApprovalAction } from "@/features/admin-mcp-approval/server/admin-mcp-approval-actions"
 import { AdminPageHeader } from "@/shared/ui/admin-page-header"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -14,9 +17,9 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button } from "@workspace/ui/components/ui/button"
+} from "@workspace/ui/components/primitives/alert-dialog"
+import { Badge } from "@workspace/ui/components/primitives/badge"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Card,
   CardContent,
@@ -24,7 +27,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
+} from "@workspace/ui/components/primitives/card"
 
 type DecisionAction = typeof decideAdminMcpApprovalAction
 type Decision = "approve" | "reject"

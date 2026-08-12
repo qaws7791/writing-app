@@ -1,15 +1,15 @@
 "use client";
 
-import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer";
-import { CompareStepView } from "@workspace/ui/components/lesson/compare-step-view";
-import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer";
-import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer";
-import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer";
-import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer";
-import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view";
-import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer";
-import { ThemeSelector } from "@workspace/ui/components/ui/theme-selector";
-import type { ThemeValue } from "@workspace/ui/components/ui/theme-selector";
+import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer";
+import { CompareStepView } from "@workspace/ui/components/learning/compare-step-view";
+import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer";
+import { MatchAnswer } from "@workspace/ui/components/learning/match-answer";
+import { MultipleChoiceAnswer } from "@workspace/ui/components/learning/multiple-choice-answer";
+import { OrderAnswer } from "@workspace/ui/components/learning/order-answer";
+import { ReadingStepView } from "@workspace/ui/components/learning/reading-step-view";
+import { SelectAnswer } from "@workspace/ui/components/learning/select-answer";
+import { ThemeSelector } from "@workspace/ui/components/primitives/theme-selector";
+import type { ThemeValue } from "@workspace/ui/components/primitives/theme-selector";
 import { useState } from "react";
 
 import {

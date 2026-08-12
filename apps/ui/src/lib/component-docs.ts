@@ -500,8 +500,16 @@ export function getPropDocs(slug: string): PropDoc[] {
   return props;
 }
 
+export function isLearningComponent(slug: string) {
+  return learningComponents.has(slug);
+}
+
+export function getComponentGroup(slug: string): "primitives" | "learning" {
+  return learningComponents.has(slug) ? "learning" : "primitives";
+}
+
 export function getInstallCommand(slug: string) {
-  return `import { … } from "@workspace/ui/components/ui/${slug}"`;
+  return `import { … } from "@workspace/ui/components/${getComponentGroup(slug)}/${slug}"`;
 }
 
 export function getBlockImportCommand(slug: string) {

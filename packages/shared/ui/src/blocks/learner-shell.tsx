@@ -10,8 +10,8 @@ import {
 } from "@hugeicons/core-free-icons"
 
 import { cn } from "#ui/lib/utils"
-import { Avatar, AvatarFallback } from "#ui/components/ui/avatar"
-import { Button } from "#ui/components/ui/button"
+import { Avatar, AvatarFallback } from "#ui/components/primitives/avatar"
+import { Button } from "#ui/components/primitives/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#ui/components/ui/dropdown-menu"
+} from "#ui/components/primitives/dropdown-menu"
 
 export type LearnerNavId = "home" | "learn"
 

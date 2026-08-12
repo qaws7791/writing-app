@@ -8,22 +8,25 @@ import type {
 } from "@/features/course-editor/model/admin-course-editor"
 
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card"
+} from "@workspace/ui/components/primitives/card"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
+} from "@workspace/ui/components/primitives/field"
+import { Input } from "@workspace/ui/components/primitives/input"
 
 const acceptedImageTypes = "image/jpeg,image/png,image/webp"
 

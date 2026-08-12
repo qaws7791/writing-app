@@ -8,7 +8,7 @@ import {
   learningMethods,
 } from "@/features/landing/ui/landing-content"
 import { ChevronRightIcon } from "@workspace/ui/components/icons/action-icons"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
 
 export function LandingNav() {
   return (

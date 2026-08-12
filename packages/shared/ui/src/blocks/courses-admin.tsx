@@ -25,8 +25,8 @@ import {
 
 import { cn } from "#ui/lib/utils"
 import { AdminShell } from "#ui/blocks/admin-shell"
-import { Badge } from "#ui/components/ui/badge"
-import { Button } from "#ui/components/ui/button"
+import { Badge } from "#ui/components/primitives/badge"
+import { Button } from "#ui/components/primitives/button"
 import {
   Dialog,
   DialogClose,
@@ -35,29 +35,29 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "#ui/components/ui/dialog"
+} from "#ui/components/primitives/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#ui/components/ui/dropdown-menu"
+} from "#ui/components/primitives/dropdown-menu"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "#ui/components/ui/field"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/field"
+import { Input } from "#ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Table,
   TableBody,
@@ -65,8 +65,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "#ui/components/ui/table"
-import { Textarea } from "#ui/components/ui/textarea"
+} from "#ui/components/primitives/table"
+import { Textarea } from "#ui/components/primitives/textarea"
 
 type CourseStatus = "draft" | "preview" | "live"
 type CoursePatternKind = "dots" | "lines" | "grid" | "rings"

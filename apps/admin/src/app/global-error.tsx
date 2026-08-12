@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button } from "@workspace/ui/components/primitives/button"
 
 export default function AdminGlobalError({
   reset,

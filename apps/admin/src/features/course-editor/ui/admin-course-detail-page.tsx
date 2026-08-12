@@ -7,7 +7,10 @@ import type {
 } from "@/features/course-editor/model/admin-course-editor"
 import type { UploadAdminContentAsset } from "@/features/course-editor/model/content-asset-upload"
 import { AdminPageHeader } from "@/shared/ui/admin-page-header"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
 
 export function AdminCourseDetailPage({
   assetsResult,

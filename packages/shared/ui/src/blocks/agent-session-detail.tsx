@@ -25,9 +25,9 @@ import {
   AuditLogTarget,
   AuditLogTime,
   AuditLogTitle,
-} from "#ui/components/ui/audit-log"
-import { Avatar, AvatarFallback } from "#ui/components/ui/avatar"
-import { Badge } from "#ui/components/ui/badge"
+} from "#ui/components/learning/audit-log"
+import { Avatar, AvatarFallback } from "#ui/components/primitives/avatar"
+import { Badge } from "#ui/components/primitives/badge"
 import {
   ProvenanceList,
   ProvenancePanel,
@@ -38,7 +38,7 @@ import {
   ProvenanceRowMeta,
   ProvenanceRowModel,
   ProvenanceRowStatus,
-} from "#ui/components/ui/provenance-panel"
+} from "#ui/components/learning/provenance-panel"
 import {
   RUN_QUEUE_ENVIRONMENT_LABELS,
   RUN_QUEUE_OUTCOME_LABELS,
@@ -49,7 +49,7 @@ import {
   type RunQueueEnv,
   type RunQueueOutcomeKind,
   type RunQueueStatus,
-} from "#ui/components/ui/run-queue"
+} from "#ui/components/learning/run-queue"
 import {
   StepTrace,
   StepTraceBody,
@@ -72,13 +72,13 @@ import {
   StepTraceTools,
   type StepTraceStatus,
   type StepTraceToolKind,
-} from "#ui/components/ui/step-trace"
+} from "#ui/components/learning/step-trace"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "#ui/components/ui/tabs"
+} from "#ui/components/primitives/tabs"
 
 type ToolCall = {
   name: string

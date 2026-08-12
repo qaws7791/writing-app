@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/primitives/tabs";
 
 import BlockViewer from "@/src/components/block-viewer";
 import { type BlockDemoSlug } from "@/src/components/login-block-demos";

@@ -15,7 +15,7 @@
   "aliases": {
     "components": "@/components",
     "utils": "@workspace/ui/lib/utils",
-    "ui": "@workspace/ui/components/ui",
+    "ui": "@workspace/ui/components/primitives",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

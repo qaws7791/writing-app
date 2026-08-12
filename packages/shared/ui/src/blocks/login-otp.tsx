@@ -3,19 +3,19 @@
 import * as React from "react"
 
 import { cn } from "#ui/lib/utils"
-import { Button } from "#ui/components/ui/button"
+import { Button } from "#ui/components/primitives/button"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "#ui/components/ui/field"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/field"
+import { Input } from "#ui/components/primitives/input"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "#ui/components/ui/input-otp"
+} from "#ui/components/primitives/input-otp"
 
 /**
  * Passwordless login: email first, then one-time code.

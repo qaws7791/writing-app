@@ -26,18 +26,18 @@ import {
 
 import { cn } from "#ui/lib/utils"
 import { AdminShell } from "#ui/blocks/admin-shell"
-import { AvatarFallback } from "#ui/components/ui/avatar"
-import { Badge } from "#ui/components/ui/badge"
-import { Button } from "#ui/components/ui/button"
-import { Checkbox } from "#ui/components/ui/checkbox"
+import { AvatarFallback } from "#ui/components/primitives/avatar"
+import { Badge } from "#ui/components/primitives/badge"
+import { Button } from "#ui/components/primitives/button"
+import { Checkbox } from "#ui/components/primitives/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#ui/components/ui/dropdown-menu"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/dropdown-menu"
+import { Input } from "#ui/components/primitives/input"
 import {
   LearnerRecord,
   LearnerRecordAttempts,
@@ -49,28 +49,28 @@ import {
   LearnerRecordSectionTitle,
   LearnerRecordSupport,
   LearnerRecordTitle,
-} from "#ui/components/ui/learner-record"
+} from "#ui/components/learning/learner-record"
 import {
   Person,
   PersonAvatar,
   PersonDescription,
   PersonInfo,
   PersonName,
-} from "#ui/components/ui/person"
+} from "#ui/components/learning/person"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "#ui/components/ui/sheet"
+} from "#ui/components/primitives/sheet"
 import {
   Table,
   TableBody,
@@ -78,7 +78,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "#ui/components/ui/table"
+} from "#ui/components/primitives/table"
 
 type UserRole = "learner" | "instructor"
 type UserStatus = "active" | "invited" | "suspended"

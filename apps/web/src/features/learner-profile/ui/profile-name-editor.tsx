@@ -4,17 +4,20 @@ import { type FormEvent, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { updateProfile } from "@workspace/http-client/learner"
 import { PencilIcon } from "@workspace/ui/components/icons/profile-icons"
-import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace/ui/components/primitives/alert"
+import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@workspace/ui/components/ui/dialog"
-import { Input } from "@workspace/ui/components/ui/input"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
+} from "@workspace/ui/components/primitives/dialog"
+import { Input } from "@workspace/ui/components/primitives/input"
+import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import {

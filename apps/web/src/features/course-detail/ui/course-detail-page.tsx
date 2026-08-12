@@ -5,9 +5,12 @@ import { resolveCourseImage } from "@/entities/course/model/course-visual-assets
 import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
 import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons/direction-icons"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
-import { Progress, ProgressLabel } from "@workspace/ui/components/ui/progress"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
+import {
+  Progress,
+  ProgressLabel,
+} from "@workspace/ui/components/primitives/progress"
 
 type CourseDetailPageProps = {
   readonly course: LearnerCourseDetailDto

@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 
-import { Button } from "@workspace/ui/components/ui/button";
+import { Button } from "@workspace/ui/components/primitives/button";
 import {
   ArgumentEdge,
   ArgumentMap,
@@ -13,7 +13,7 @@ import {
   ArgumentNode,
   ArgumentNodeBody,
   ArgumentNodeLabel,
-} from "@workspace/ui/components/ui/argument-map";
+} from "@workspace/ui/components/learning/argument-map";
 import {
   Checkpoint,
   CheckpointActions,
@@ -25,7 +25,7 @@ import {
   CheckpointObjectives,
   CheckpointScore,
   CheckpointTitle,
-} from "@workspace/ui/components/ui/checkpoint";
+} from "@workspace/ui/components/learning/checkpoint";
 import {
   Draft,
   DraftActions,
@@ -34,7 +34,7 @@ import {
   DraftMeter,
   DraftStatus,
   DraftTitle,
-} from "@workspace/ui/components/ui/draft";
+} from "@workspace/ui/components/learning/draft";
 import {
   FeedbackSummary,
   FeedbackSummaryHeader,
@@ -45,7 +45,7 @@ import {
   FeedbackSummaryMeta,
   FeedbackSummaryPriority,
   FeedbackSummaryTitle,
-} from "@workspace/ui/components/ui/feedback-summary";
+} from "@workspace/ui/components/learning/feedback-summary";
 import {
   HintLadder,
   HintLadderHeader,
@@ -56,7 +56,7 @@ import {
   HintStepActions,
   HintStepBody,
   HintStepLabel,
-} from "@workspace/ui/components/ui/hint-ladder";
+} from "@workspace/ui/components/learning/hint-ladder";
 import {
   MistakeJournal,
   MistakeJournalHeader,
@@ -67,7 +67,7 @@ import {
   MistakePatternCount,
   MistakePatternDescription,
   MistakePatternLabel,
-} from "@workspace/ui/components/ui/mistake-journal";
+} from "@workspace/ui/components/learning/mistake-journal";
 import {
   Outline,
   OutlineBlock,
@@ -78,7 +78,7 @@ import {
   OutlineHint,
   OutlineList,
   OutlineTitle,
-} from "@workspace/ui/components/ui/outline";
+} from "@workspace/ui/components/learning/outline";
 import {
   Portfolio,
   PortfolioHeader,
@@ -89,7 +89,7 @@ import {
   PortfolioPieceMeta,
   PortfolioPieceTitle,
   PortfolioTitle,
-} from "@workspace/ui/components/ui/portfolio";
+} from "@workspace/ui/components/learning/portfolio";
 import {
   PracticeQueue,
   PracticeQueueHeader,
@@ -100,7 +100,7 @@ import {
   PracticeQueueList,
   PracticeQueueMeta,
   PracticeQueueTitle,
-} from "@workspace/ui/components/ui/practice-queue";
+} from "@workspace/ui/components/learning/practice-queue";
 import {
   Reflection,
   ReflectionActions,
@@ -111,7 +111,7 @@ import {
   ReflectionFields,
   ReflectionHeader,
   ReflectionTitle,
-} from "@workspace/ui/components/ui/reflection";
+} from "@workspace/ui/components/learning/reflection";
 import {
   RevisionEntry,
   RevisionEntryMark,
@@ -121,7 +121,7 @@ import {
   RevisionHistoryHeader,
   RevisionHistoryList,
   RevisionHistoryTitle,
-} from "@workspace/ui/components/ui/revision-history";
+} from "@workspace/ui/components/learning/revision-history";
 import {
   Rubric,
   RubricCriterion,
@@ -137,7 +137,7 @@ import {
   RubricList,
   RubricMeta,
   RubricTitle,
-} from "@workspace/ui/components/ui/rubric";
+} from "@workspace/ui/components/learning/rubric";
 import {
   SkillMap,
   SkillMapHeader,
@@ -149,7 +149,7 @@ import {
   SkillNodeLabel,
   SkillNodeLevel,
   SkillNodePrereq,
-} from "@workspace/ui/components/ui/skill-map";
+} from "@workspace/ui/components/learning/skill-map";
 import {
   SourceItem,
   SourceItemBody,
@@ -161,7 +161,7 @@ import {
   SourcePackList,
   SourcePackMeta,
   SourcePackTitle,
-} from "@workspace/ui/components/ui/source-pack";
+} from "@workspace/ui/components/learning/source-pack";
 import {
   Submission,
   SubmissionActions,
@@ -170,8 +170,8 @@ import {
   SubmissionMeta,
   SubmissionStatus,
   SubmissionTitle,
-} from "@workspace/ui/components/ui/submission";
-import { Textarea } from "@workspace/ui/components/ui/textarea";
+} from "@workspace/ui/components/learning/submission";
+import { Textarea } from "@workspace/ui/components/primitives/textarea";
 import {
   TextAnnotation,
   TextAnnotationDocument,
@@ -181,7 +181,7 @@ import {
   TextAnnotationItemLabel,
   TextAnnotationMark,
   TextAnnotationPanel,
-} from "@workspace/ui/components/ui/text-annotation";
+} from "@workspace/ui/components/learning/text-annotation";
 import {
   WritingBrief,
   WritingBriefCriteria,
@@ -194,7 +194,7 @@ import {
   WritingBriefSection,
   WritingBriefSectionTitle,
   WritingBriefTitle,
-} from "@workspace/ui/components/ui/writing-brief";
+} from "@workspace/ui/components/learning/writing-brief";
 
 function CheckpointDemo() {
   return (

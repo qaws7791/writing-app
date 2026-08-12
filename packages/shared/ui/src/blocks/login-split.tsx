@@ -3,16 +3,16 @@
 import * as React from "react"
 
 import { cn } from "#ui/lib/utils"
-import { Button } from "#ui/components/ui/button"
-import { Checkbox } from "#ui/components/ui/checkbox"
+import { Button } from "#ui/components/primitives/button"
+import { Checkbox } from "#ui/components/primitives/checkbox"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "#ui/components/ui/field"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/primitives/field"
+import { Input } from "#ui/components/primitives/input"
 
 /**
  * Split login: brand atmosphere on one side, credentials on the other.

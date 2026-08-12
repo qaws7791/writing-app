@@ -22,8 +22,8 @@ export const adminGuides: ComponentGuideMap = {
   AdminOverviewList,
   AdminOverviewMeta,
   AdminOverviewTitle,
-} from "@/components/ui/admin-overview"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/admin-overview"
+import { Button } from "@/components/primitives/button"
 
 export function AdminDashboard() {
   return (
@@ -112,7 +112,7 @@ export function AdminDashboard() {
   CurriculumTreeHeader,
   CurriculumTreeList,
   CurriculumTreeTitle,
-} from "@/components/ui/curriculum-tree"
+} from "@/components/learning/curriculum-tree"
 
 export function CurriculumNav() {
   return (
@@ -200,7 +200,7 @@ export function CurriculumNav() {
   CurriculumMapNodeBody,
   CurriculumMapNodeLabel,
   CurriculumMapTitle,
-} from "@/components/ui/curriculum-map"
+} from "@/components/learning/curriculum-map"
 
 export function ConceptMap() {
   return (
@@ -292,7 +292,7 @@ export function ConceptMap() {
   LessonBuilderStep,
   LessonBuilderStepBody,
   LessonBuilderTitle,
-} from "@/components/ui/lesson-builder"
+} from "@/components/learning/lesson-builder"
 
 export function LessonEditor() {
   return (
@@ -381,7 +381,7 @@ export function LessonEditor() {
   ItemBankItemTitle,
   ItemBankList,
   ItemBankTitle,
-} from "@/components/ui/item-bank"
+} from "@/components/learning/item-bank"
 
 export function QuestionBank() {
   return (
@@ -464,7 +464,7 @@ export function QuestionBank() {
   PromptBuilderSection,
   PromptBuilderSectionTitle,
   PromptBuilderTitle,
-} from "@/components/ui/prompt-builder"
+} from "@/components/learning/prompt-builder"
 
 export function CoachingPrompt() {
   return (
@@ -552,7 +552,7 @@ export function CoachingPrompt() {
   RubricEditorTitle,
   RubricEditorVersion,
   RubricEditorWeight,
-} from "@/components/ui/rubric-editor"
+} from "@/components/learning/rubric-editor"
 
 export function WritingRubric() {
   return (
@@ -639,7 +639,7 @@ export function WritingRubric() {
   ExemplarList,
   ExemplarMeta,
   ExemplarTitle,
-} from "@/components/ui/exemplar-library"
+} from "@/components/learning/exemplar-library"
 
 export function ExemplarPanel() {
   return (
@@ -721,8 +721,8 @@ export function ExemplarPanel() {
   LearnerPreviewStage,
   LearnerPreviewTitle,
   LearnerPreviewToolbar,
-} from "@/components/ui/learner-preview"
-import { Step, StepBody, StepHeader, StepTitle } from "@/components/ui/step"
+} from "@/components/learning/learner-preview"
+import { Step, StepBody, StepHeader, StepTitle } from "@/components/learning/step"
 
 export function LessonPreview() {
   return (
@@ -807,7 +807,7 @@ export function LessonPreview() {
   ContentValidationList,
   ContentValidationSummary,
   ContentValidationTitle,
-} from "@/components/ui/content-validation"
+} from "@/components/learning/content-validation"
 
 export function ValidationPanel() {
   return (
@@ -886,7 +886,7 @@ export function ValidationPanel() {
   ContentReviewHeader,
   ContentReviewStatus,
   ContentReviewTitle,
-} from "@/components/ui/content-review"
+} from "@/components/learning/content-review"
 
 export function LessonReview() {
   return (
@@ -967,8 +967,8 @@ export function LessonReview() {
   PublishWorkflowStep,
   PublishWorkflowSteps,
   PublishWorkflowTitle,
-} from "@/components/ui/publish-workflow"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/publish-workflow"
+import { Button } from "@/components/primitives/button"
 
 export function PublishPanel() {
   return (
@@ -1048,7 +1048,7 @@ export function PublishPanel() {
   ProvenanceRowMeta,
   ProvenanceRowModel,
   ProvenanceRowStatus,
-} from "@/components/ui/provenance-panel"
+} from "@/components/learning/provenance-panel"
 
 export function ProvenanceView() {
   return (
@@ -1125,14 +1125,14 @@ export function ProvenanceView() {
         title: "기본 구성",
         description: "아바타와 이름·이메일을 한 행으로 배치합니다.",
         preview: "default",
-        code: `import { AvatarFallback } from "@/components/ui/avatar"
+        code: `import { AvatarFallback } from "@/components/primitives/avatar"
 import {
   Person,
   PersonAvatar,
   PersonDescription,
   PersonInfo,
   PersonName,
-} from "@/components/ui/person"
+} from "@/components/learning/person"
 
 export function UserCell() {
   return (
@@ -1231,7 +1231,7 @@ export function UserCell() {
   LearnerRecordSection,
   LearnerRecordSectionTitle,
   LearnerRecordTitle,
-} from "@/components/ui/learner-record"
+} from "@/components/learning/learner-record"
 
 export function StudentRecord() {
   return (
@@ -1319,7 +1319,7 @@ export function StudentRecord() {
   CohortTarget,
   CohortTargetLabel,
   CohortTargetTitle,
-} from "@/components/ui/cohort-assignment"
+} from "@/components/learning/cohort-assignment"
 
 export function ClassAssignment() {
   return (
@@ -1408,8 +1408,8 @@ export function ClassAssignment() {
   InterventionQueueList,
   InterventionQueueMeta,
   InterventionQueueTitle,
-} from "@/components/ui/intervention-queue"
-import { Button } from "@/components/ui/button"
+} from "@/components/learning/intervention-queue"
+import { Button } from "@/components/primitives/button"
 
 export function InterventionPanel() {
   return (
@@ -1490,7 +1490,7 @@ export function InterventionPanel() {
   LearningAnalyticsMetricLabel,
   LearningAnalyticsMetricValue,
   LearningAnalyticsTitle,
-} from "@/components/ui/learning-analytics"
+} from "@/components/learning/learning-analytics"
 
 export function CohortAnalytics() {
   return (
@@ -1579,7 +1579,7 @@ export function CohortAnalytics() {
   ItemAnalysisStatValue,
   ItemAnalysisStats,
   ItemAnalysisTitle,
-} from "@/components/ui/item-analysis"
+} from "@/components/learning/item-analysis"
 
 export function QuestionAnalysis() {
   return (
@@ -1668,7 +1668,7 @@ export function QuestionAnalysis() {
   WritingAnalyticsMetricLabel,
   WritingAnalyticsMetricValue,
   WritingAnalyticsTitle,
-} from "@/components/ui/writing-analytics"
+} from "@/components/learning/writing-analytics"
 
 export function WritingReport() {
   return (
@@ -1756,7 +1756,7 @@ export function WritingReport() {
   FeedbackAuditScoreValue,
   FeedbackAuditScores,
   FeedbackAuditTitle,
-} from "@/components/ui/feedback-audit"
+} from "@/components/learning/feedback-audit"
 
 export function FeedbackQuality() {
   return (
@@ -1847,7 +1847,7 @@ export function FeedbackQuality() {
   AuditLogTarget,
   AuditLogTime,
   AuditLogTitle,
-} from "@/components/ui/audit-log"
+} from "@/components/learning/audit-log"
 
 export function AdminAuditLog() {
   return (
@@ -1970,7 +1970,7 @@ export function AdminAuditLog() {
   RunQueueMeta,
   RunQueueOutcome,
   RunQueueTitle,
-} from "@/components/ui/run-queue"
+} from "@/components/learning/run-queue"
 
 export function AgentRuns() {
   return (
@@ -2083,7 +2083,7 @@ export function AgentRuns() {
   StepTraceToolName,
   StepTraceToolStatus,
   StepTraceTools,
-} from "@/components/ui/step-trace"
+} from "@/components/learning/step-trace"
 
 export function RefundTrace() {
   return (

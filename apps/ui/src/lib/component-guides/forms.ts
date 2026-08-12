@@ -11,8 +11,8 @@ export const formGuides: ComponentGuideMap = {
         title: "기본",
         description: "id와 htmlFor를 연결해 체크박스 전체의 의미를 분명하게 전달합니다.",
         preview: "default",
-        code: String.raw`import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldLabel } from "@/components/ui/field"
+        code: String.raw`import { Checkbox } from "@/components/primitives/checkbox"
+import { Field, FieldLabel } from "@/components/primitives/field"
 
 export function CheckboxBasic() {
   return (
@@ -28,8 +28,8 @@ export function CheckboxBasic() {
         title: "제어 상태",
         description: "checked와 onCheckedChange로 선택 상태를 애플리케이션 상태와 동기화합니다.",
         code: String.raw`import * as React from "react"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Checkbox } from "@/components/primitives/checkbox"
+import { Field, FieldLabel } from "@/components/primitives/field"
 
 export function CheckboxControlled() {
   const [checked, setChecked] = React.useState(false)
@@ -48,8 +48,8 @@ export function CheckboxControlled() {
         id: "indeterminate",
         title: "일부 선택",
         description: "하위 항목이 일부만 선택된 경우 indeterminate 상태로 부분 선택을 표현합니다.",
-        code: String.raw`import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldLabel } from "@/components/ui/field"
+        code: String.raw`import { Checkbox } from "@/components/primitives/checkbox"
+import { Field, FieldLabel } from "@/components/primitives/field"
 
 export function CheckboxIndeterminate() {
   return (
@@ -65,13 +65,13 @@ export function CheckboxIndeterminate() {
         title: "설명이 있는 항목",
         description:
           "FieldContent로 레이블과 보조 설명을 묶어 긴 설정 문구도 안정적으로 정렬합니다.",
-        code: String.raw`import { Checkbox } from "@/components/ui/checkbox"
+        code: String.raw`import { Checkbox } from "@/components/primitives/checkbox"
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldLabel,
-} from "@/components/ui/field"
+} from "@/components/primitives/field"
 
 export function CheckboxDescription() {
   return (
@@ -89,8 +89,8 @@ export function CheckboxDescription() {
         id: "states",
         title: "비활성 및 오류",
         description: "컨트롤의 의미 상태와 Field의 시각 상태를 함께 설정합니다.",
-        code: String.raw`import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+        code: String.raw`import { Checkbox } from "@/components/primitives/checkbox"
+import { Field, FieldError, FieldLabel } from "@/components/primitives/field"
 
 export function CheckboxStates() {
   return (
@@ -114,14 +114,14 @@ export function CheckboxStates() {
         id: "group",
         title: "선택 목록",
         description: "관련된 체크박스는 fieldset과 legend로 하나의 질문처럼 그룹화합니다.",
-        code: String.raw`import { Checkbox } from "@/components/ui/checkbox"
+        code: String.raw`import { Checkbox } from "@/components/primitives/checkbox"
 import {
   Field,
   FieldGroup,
   FieldLabel,
   FieldLegend,
   FieldSet,
-} from "@/components/ui/field"
+} from "@/components/primitives/field"
 
 const channels = ["이메일", "문자 메시지", "앱 푸시"]
 
@@ -232,7 +232,7 @@ export function CheckboxGroup() {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox"
+} from "@/components/primitives/combobox"
 
 const frameworks = ["Astro", "Next.js", "Remix", "SvelteKit"]
 
@@ -262,7 +262,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox"
+} from "@/components/primitives/combobox"
 
 const teams = ["Design", "Engineering", "Marketing"]
 
@@ -299,7 +299,7 @@ export function ComboboxControlled() {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox"
+} from "@/components/primitives/combobox"
 
 const people = [
   { id: "ada", name: "Ada Lovelace" },
@@ -341,7 +341,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxValue,
-} from "@/components/ui/combobox"
+} from "@/components/primitives/combobox"
 
 const skills = ["React", "TypeScript", "Astro", "Tailwind CSS"]
 
@@ -379,7 +379,7 @@ export function ComboboxMultiple() {
   ComboboxLabel,
   ComboboxList,
   ComboboxSeparator,
-} from "@/components/ui/combobox"
+} from "@/components/primitives/combobox"
 
 const groups = [
   { label: "한국", items: ["서울", "부산"] },
@@ -419,7 +419,7 @@ export function ComboboxGroups() {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox"
+} from "@/components/primitives/combobox"
 
 const commands = ["새 문서", "파일 열기", "설정 열기"]
 
@@ -441,7 +441,7 @@ export function ComboboxAutoHighlight() {
         id: "popup",
         title: "버튼에서 여는 팝업",
         description: "외부 트리거를 사용할 때는 검색 입력을 Content 안으로 이동합니다.",
-        code: String.raw`import { Button } from "@/components/ui/button"
+        code: String.raw`import { Button } from "@/components/primitives/button"
 import {
   Combobox,
   ComboboxContent,
@@ -450,7 +450,7 @@ import {
   ComboboxList,
   ComboboxTrigger,
   ComboboxValue,
-} from "@/components/ui/combobox"
+} from "@/components/primitives/combobox"
 
 const statuses = ["예정", "진행 중", "완료"]
 
@@ -474,8 +474,8 @@ export function ComboboxPopup() {
         id: "states",
         title: "비활성 및 오류",
         description: "비활성은 Root와 Input에 함께 전달하고 오류는 입력과 Field에 함께 표시합니다.",
-        code: String.raw`import { Combobox, ComboboxInput } from "@/components/ui/combobox"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+        code: String.raw`import { Combobox, ComboboxInput } from "@/components/primitives/combobox"
+import { Field, FieldError, FieldLabel } from "@/components/primitives/field"
 
 export function ComboboxStates() {
   return (
@@ -598,8 +598,8 @@ export function ComboboxStates() {
         title: "기본 필드",
         description: "레이블과 입력의 id를 연결하고 필요한 설명을 같은 Field 안에 둡니다.",
         preview: "default",
-        code: String.raw`import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function FieldBasic() {
   return (
@@ -620,8 +620,8 @@ export function FieldBasic() {
   FieldContent,
   FieldDescription,
   FieldLabel,
-} from "@/components/ui/field"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/primitives/field"
+import { Switch } from "@/components/primitives/switch"
 
 export function FieldHorizontal() {
   return (
@@ -640,8 +640,8 @@ export function FieldHorizontal() {
         title: "반응형 배치",
         description:
           "responsive 방향은 FieldGroup의 컨테이너 너비에 따라 세로와 가로 배치를 전환합니다.",
-        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function FieldResponsive() {
   return (
@@ -669,8 +669,8 @@ export function FieldResponsive() {
   FieldLabel,
   FieldLegend,
   FieldSet,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function FieldFieldset() {
   return (
@@ -689,8 +689,8 @@ export function FieldFieldset() {
         id: "legend-variants",
         title: "Legend 표현",
         description: "중첩된 작은 그룹에는 label variant를 사용해 제목의 위계를 낮춥니다.",
-        code: String.raw`import { FieldGroup, FieldLegend, FieldSet } from "@/components/ui/field"
-import { Checkbox } from "@/components/ui/checkbox"
+        code: String.raw`import { FieldGroup, FieldLegend, FieldSet } from "@/components/primitives/field"
+import { Checkbox } from "@/components/primitives/checkbox"
 
 export function FieldLegendVariants() {
   return (
@@ -720,8 +720,8 @@ export function FieldLegendVariants() {
   FieldDescription,
   FieldLabel,
   FieldTitle,
-} from "@/components/ui/field"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+} from "@/components/primitives/field"
+import { RadioGroup, RadioGroupItem } from "@/components/primitives/radio-group"
 
 export function FieldChoiceCard() {
   return (
@@ -743,8 +743,8 @@ export function FieldChoiceCard() {
         id: "separator",
         title: "필드 그룹 구분",
         description: "긴 설정 묶음은 FieldSeparator로 필요한 지점만 조용하게 구분합니다.",
-        code: String.raw`import { Field, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldGroup, FieldLabel, FieldSeparator } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function FieldWithSeparator() {
   return (
@@ -760,8 +760,8 @@ export function FieldWithSeparator() {
         id: "errors",
         title: "검증 오류",
         description: "FieldError는 단일 메시지뿐 아니라 중복을 제거한 여러 검증 결과도 표시합니다.",
-        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function FieldErrors() {
   const errors = [
@@ -846,8 +846,8 @@ export function FieldErrors() {
         title: "기본",
         description: "placeholder는 입력 형식을 돕고, 실제 필드 이름은 FieldLabel로 제공합니다.",
         preview: "default",
-        code: String.raw`import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputBasic() {
   return (
@@ -863,8 +863,8 @@ export function InputBasic() {
         title: "입력 타입",
         description:
           "브라우저 키보드와 자동완성을 활용하도록 데이터에 맞는 type과 autoComplete를 지정합니다.",
-        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputTypes() {
   return (
@@ -882,8 +882,8 @@ export function InputTypes() {
         description:
           "value와 onChange로 입력을 제어할 때 사용자가 입력할 때마다 상태를 갱신합니다.",
         code: String.raw`import * as React from "react"
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { Field, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputControlled() {
   const [slug, setSlug] = React.useState("")
@@ -900,8 +900,8 @@ export function InputControlled() {
         id: "file",
         title: "파일",
         description: "file 타입은 허용할 형식과 다중 선택 여부를 명시해 선택 범위를 좁힙니다.",
-        code: String.raw`import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputFile() {
   return (
@@ -917,9 +917,9 @@ export function InputFile() {
         id: "required",
         title: "필수 입력",
         description: "required 속성과 보이는 필수 표시를 함께 제공해 제출 조건을 미리 알립니다.",
-        code: String.raw`import { Badge } from "@/components/ui/badge"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Badge } from "@/components/primitives/badge"
+import { Field, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputRequired() {
   return (
@@ -936,8 +936,8 @@ export function InputRequired() {
         id: "states",
         title: "비활성 및 읽기 전용",
         description: "수정할 수 없는 값은 목적에 따라 disabled와 readOnly를 구분합니다.",
-        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputStates() {
   return (
@@ -959,8 +959,8 @@ export function InputStates() {
         title: "오류 상태",
         description:
           "aria-invalid와 FieldError를 연결해 오류의 위치와 해결 방법을 함께 전달합니다.",
-        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputInvalid() {
   return (
@@ -976,9 +976,9 @@ export function InputInvalid() {
         id: "inline",
         title: "인라인 작업",
         description: "짧은 제출 흐름은 가로 Field와 Button으로 하나의 읽기 순서를 유지합니다.",
-        code: String.raw`import { Button } from "@/components/ui/button"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Button } from "@/components/primitives/button"
+import { Field, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputInline() {
   return (
@@ -996,8 +996,8 @@ export function InputInline() {
         id: "grid",
         title: "그리드 폼",
         description: "관련된 짧은 입력은 반응형 그리드로 묶되 모바일에서는 한 열로 유지합니다.",
-        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldGroup, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function InputGrid() {
   return (
@@ -1096,7 +1096,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/components/ui/input-group"
+} from "@/components/primitives/input-group"
 
 export function InputGroupBasic() {
   return (
@@ -1119,7 +1119,7 @@ export function InputGroupBasic() {
   InputGroupButton,
   InputGroupInput,
   InputGroupText,
-} from "@/components/ui/input-group"
+} from "@/components/primitives/input-group"
 
 export function InputGroupInlineAlign() {
   return (
@@ -1145,7 +1145,7 @@ export function InputGroupInlineAlign() {
   InputGroupButton,
   InputGroupText,
   InputGroupTextarea,
-} from "@/components/ui/input-group"
+} from "@/components/primitives/input-group"
 
 export function InputGroupBlockAlign() {
   return (
@@ -1173,8 +1173,8 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@/components/ui/input-group"
-import { Kbd } from "@/components/ui/kbd"
+} from "@/components/primitives/input-group"
+import { Kbd } from "@/components/primitives/kbd"
 
 export function InputGroupActions() {
   return (
@@ -1200,7 +1200,7 @@ export function InputGroupActions() {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@/components/ui/input-group"
+} from "@/components/primitives/input-group"
 
 export function InputGroupStates() {
   return (
@@ -1222,7 +1222,7 @@ export function InputGroupStates() {
         title: "사용자 정의 컨트롤",
         description:
           "직접 만든 입력에는 input-group-control 슬롯을 지정해 그룹 포커스 스타일을 연결합니다.",
-        code: String.raw`import { InputGroup, InputGroupAddon, InputGroupText } from "@/components/ui/input-group"
+        code: String.raw`import { InputGroup, InputGroupAddon, InputGroupText } from "@/components/primitives/input-group"
 
 export function InputGroupCustomControl() {
   return (
@@ -1307,7 +1307,7 @@ export function InputGroupCustomControl() {
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@/components/ui/input-otp"
+} from "@/components/primitives/input-otp"
 
 export function InputOTPBasic() {
   return (
@@ -1328,7 +1328,7 @@ export function InputOTPBasic() {
         title: "숫자 PIN",
         description: "숫자 전용 pattern과 inputMode를 함께 사용해 모바일 숫자 키보드를 유도합니다.",
         code: String.raw`import { REGEXP_ONLY_DIGITS } from "input-otp"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/primitives/input-otp"
 
 export function InputOTPDigits() {
   return (
@@ -1345,7 +1345,7 @@ export function InputOTPDigits() {
         title: "영문·숫자 코드",
         description: "초대 코드처럼 문자와 숫자를 함께 받는 경우 제공된 정규식 상수를 사용합니다.",
         code: String.raw`import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/primitives/input-otp"
 
 export function InputOTPAlphanumeric() {
   return (
@@ -1363,7 +1363,7 @@ export function InputOTPAlphanumeric() {
         description:
           "value와 onChange로 값을 제어하고 onComplete에서 전체 코드가 채워진 시점을 처리합니다.",
         code: String.raw`import * as React from "react"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/primitives/input-otp"
 
 export function InputOTPControlled() {
   const [value, setValue] = React.useState("")
@@ -1384,7 +1384,7 @@ export function InputOTPControlled() {
         id: "states",
         title: "비활성 및 오류",
         description: "InputOTP의 의미 상태와 각 시각 슬롯의 aria-invalid를 함께 설정합니다.",
-        code: String.raw`import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+        code: String.raw`import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/primitives/input-otp"
 
 export function InputOTPStates() {
   return (
@@ -1474,8 +1474,8 @@ export function InputOTPStates() {
         title: "기본",
         description: "htmlFor와 컨트롤 id를 일치시켜 레이블을 클릭해도 입력에 포커스되게 합니다.",
         preview: "default",
-        code: String.raw`import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+        code: String.raw`import { Input } from "@/components/primitives/input"
+import { Label } from "@/components/primitives/label"
 
 export function LabelBasic() {
   return (
@@ -1491,8 +1491,8 @@ export function LabelBasic() {
         title: "Field 안의 레이블",
         description:
           "설명과 오류가 있는 실제 폼에서는 FieldLabel을 사용해 필드 간격과 상태를 함께 관리합니다.",
-        code: String.raw`import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function LabelInField() {
   return (
@@ -1508,8 +1508,8 @@ export function LabelInField() {
         id: "choice",
         title: "선택 컨트롤",
         description: "작은 선택 컨트롤에도 각 항목별로 고유한 id와 레이블을 제공합니다.",
-        code: String.raw`import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+        code: String.raw`import { Checkbox } from "@/components/primitives/checkbox"
+import { Label } from "@/components/primitives/label"
 
 export function LabelChoice() {
   return (
@@ -1525,8 +1525,8 @@ export function LabelChoice() {
         title: "비활성 레이블",
         description:
           "Field의 data-disabled를 사용하면 컨트롤과 레이블이 같은 비활성 상태로 보입니다.",
-        code: String.raw`import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+        code: String.raw`import { Field, FieldLabel } from "@/components/primitives/field"
+import { Input } from "@/components/primitives/input"
 
 export function LabelDisabled() {
   return (
@@ -1580,8 +1580,8 @@ export function LabelDisabled() {
         title: "기본",
         description: "각 RadioGroupItem에 고유한 value와 id를 주고 레이블을 연결합니다.",
         preview: "default",
-        code: String.raw`import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+        code: String.raw`import { Label } from "@/components/primitives/label"
+import { RadioGroup, RadioGroupItem } from "@/components/primitives/radio-group"
 
 export function RadioGroupBasic() {
   return (
@@ -1603,8 +1603,8 @@ export function RadioGroupBasic() {
         title: "제어 선택",
         description: "value와 onValueChange로 현재 선택을 다른 가격이나 설정 화면과 동기화합니다.",
         code: String.raw`import * as React from "react"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/primitives/label"
+import { RadioGroup, RadioGroupItem } from "@/components/primitives/radio-group"
 
 export function RadioGroupControlled() {
   const [value, setValue] = React.useState("standard")
@@ -1628,8 +1628,8 @@ export function RadioGroupControlled() {
         title: "설명이 있는 선택지",
         description:
           "FieldContent로 옵션 이름과 차이를 함께 보여 주되 한 항목 전체의 읽기 순서를 유지합니다.",
-        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { RadioGroup, RadioGroupItem } from "@/components/primitives/radio-group"
 
 export function RadioGroupDescription() {
   return (
@@ -1656,8 +1656,8 @@ export function RadioGroupDescription() {
         id: "choice-card",
         title: "선택 카드",
         description: "FieldLabel로 Field를 감싸 여백이 넉넉한 카드 전체를 선택 영역으로 만듭니다.",
-        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui/field"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@/components/primitives/field"
+import { RadioGroup, RadioGroupItem } from "@/components/primitives/radio-group"
 
 export function RadioGroupChoiceCard() {
   return (
@@ -1682,8 +1682,8 @@ export function RadioGroupChoiceCard() {
         title: "필드셋, 비활성 및 오류",
         description:
           "그룹 질문은 legend로, 상태는 RadioGroup과 실제 항목 및 Field에 함께 전달합니다.",
-        code: String.raw`import { Field, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+        code: String.raw`import { Field, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/primitives/field"
+import { RadioGroup, RadioGroupItem } from "@/components/primitives/radio-group"
 
 export function RadioGroupStates() {
   return (
@@ -1786,7 +1786,7 @@ export function RadioGroupStates() {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/primitives/select"
 
 const themes = [
   { label: "라이트", value: "light" },
@@ -1811,7 +1811,7 @@ export function SelectBasic() {
         description:
           "Trigger는 default와 sm 크기를 지원하며 value와 onValueChange로 선택을 제어할 수 있습니다.",
         code: String.raw`import * as React from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/primitives/select"
 
 const densities = [
   { label: "편안하게", value: "comfortable" },
@@ -1837,7 +1837,7 @@ export function SelectSizes() {
         code: String.raw`import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel,
   SelectSeparator, SelectTrigger, SelectValue,
-} from "@/components/ui/select"
+} from "@/components/primitives/select"
 
 export function SelectGroups() {
   return (
@@ -1864,7 +1864,7 @@ export function SelectGroups() {
         title: "팝업 정렬과 긴 목록",
         description:
           "alignItemWithTrigger를 끄면 팝업이 트리거 가장자리에 맞고 긴 항목은 내부에서 스크롤됩니다.",
-        code: String.raw`import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+        code: String.raw`import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/primitives/select"
 
 const years = Array.from({ length: 30 }, (_, index) => 2026 - index)
 
@@ -1884,8 +1884,8 @@ export function SelectScrollable() {
         title: "비활성 및 오류",
         description:
           "전체 비활성은 Root에, 개별 비활성은 Item에, 오류 표시는 Trigger와 Field에 적용합니다.",
-        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/primitives/field"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/primitives/select"
 
 export function SelectStates() {
   return (
@@ -1990,8 +1990,8 @@ export function SelectStates() {
         description:
           "현재 구현에서는 thumb 수가 배열 길이로 결정되므로 단일 값도 한 원소 배열로 전달합니다.",
         preview: "default",
-        code: String.raw`import { Field, FieldLabel } from "@/components/ui/field"
-import { Slider } from "@/components/ui/slider"
+        code: String.raw`import { Field, FieldLabel } from "@/components/primitives/field"
+import { Slider } from "@/components/primitives/slider"
 
 export function SliderBasic() {
   return (
@@ -2008,7 +2008,7 @@ export function SliderBasic() {
         description:
           "드래그 중에는 onValueChange로 화면을 갱신하고 필요한 경우 onValueCommitted에서 저장합니다.",
         code: String.raw`import * as React from "react"
-import { Slider } from "@/components/ui/slider"
+import { Slider } from "@/components/primitives/slider"
 
 export function SliderControlled() {
   const [value, setValue] = React.useState([24])
@@ -2031,7 +2031,7 @@ export function SliderControlled() {
         title: "범위 선택",
         description:
           "두 값 배열로 최소와 최대 범위를 선택하고 thumb 사이의 최소 간격을 제한합니다.",
-        code: String.raw`import { Slider } from "@/components/ui/slider"
+        code: String.raw`import { Slider } from "@/components/primitives/slider"
 
 export function SliderRange() {
   return (
@@ -2053,7 +2053,7 @@ export function SliderRange() {
         id: "multiple",
         title: "여러 구간점",
         description: "세 개 이상의 배열 값도 각각 하나의 thumb로 렌더링됩니다.",
-        code: String.raw`import { Slider } from "@/components/ui/slider"
+        code: String.raw`import { Slider } from "@/components/primitives/slider"
 
 export function SliderMultiple() {
   return (
@@ -2073,7 +2073,7 @@ export function SliderMultiple() {
         title: "세로 및 비활성",
         description:
           "세로 Slider는 높이가 있는 컨테이너에 두고 disabled 상태도 같은 범위 문맥을 유지합니다.",
-        code: String.raw`import { Slider } from "@/components/ui/slider"
+        code: String.raw`import { Slider } from "@/components/primitives/slider"
 
 export function SliderVerticalStates() {
   return (
@@ -2166,8 +2166,8 @@ export function SliderVerticalStates() {
         title: "기본",
         description: "id와 레이블을 연결해 스위치뿐 아니라 문구를 눌러도 상태를 바꿀 수 있습니다.",
         preview: "default",
-        code: String.raw`import { Field, FieldLabel } from "@/components/ui/field"
-import { Switch } from "@/components/ui/switch"
+        code: String.raw`import { Field, FieldLabel } from "@/components/primitives/field"
+import { Switch } from "@/components/primitives/switch"
 
 export function SwitchBasic() {
   return (
@@ -2183,8 +2183,8 @@ export function SwitchBasic() {
         title: "제어 상태",
         description: "checked와 onCheckedChange로 설정 상태와 화면의 설명을 동기화합니다.",
         code: String.raw`import * as React from "react"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Switch } from "@/components/ui/switch"
+import { Field, FieldLabel } from "@/components/primitives/field"
+import { Switch } from "@/components/primitives/switch"
 
 export function SwitchControlled() {
   const [enabled, setEnabled] = React.useState(true)
@@ -2200,8 +2200,8 @@ export function SwitchControlled() {
         id: "description",
         title: "설명이 있는 설정",
         description: "FieldContent에 효과와 범위를 설명해 사용자가 전환 결과를 예측하게 합니다.",
-        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Switch } from "@/components/ui/switch"
+        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { Switch } from "@/components/primitives/switch"
 
 export function SwitchDescription() {
   return (
@@ -2219,8 +2219,8 @@ export function SwitchDescription() {
         id: "choice-card",
         title: "설정 카드",
         description: "FieldLabel로 전체 Field를 감싸 넓고 편안한 선택 영역을 만듭니다.",
-        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui/field"
-import { Switch } from "@/components/ui/switch"
+        code: String.raw`import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@/components/primitives/field"
+import { Switch } from "@/components/primitives/switch"
 
 export function SwitchChoiceCard() {
   return (
@@ -2241,8 +2241,8 @@ export function SwitchChoiceCard() {
         title: "크기, 비활성 및 오류",
         description:
           "기본과 sm 크기를 문맥에 맞게 사용하고 상태는 Field와 컨트롤에 함께 적용합니다.",
-        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { Switch } from "@/components/ui/switch"
+        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/primitives/field"
+import { Switch } from "@/components/primitives/switch"
 
 export function SwitchSizesStates() {
   return (
@@ -2337,8 +2337,8 @@ export function SwitchSizesStates() {
         title: "기본",
         description: "레이블과 구체적인 placeholder로 사용자가 작성할 내용의 범위를 알려 줍니다.",
         preview: "default",
-        code: String.raw`import { Field, FieldLabel } from "@/components/ui/field"
-import { Textarea } from "@/components/ui/textarea"
+        code: String.raw`import { Field, FieldLabel } from "@/components/primitives/field"
+import { Textarea } from "@/components/primitives/textarea"
 
 export function TextareaBasic() {
   return (
@@ -2355,8 +2355,8 @@ export function TextareaBasic() {
         description:
           "제어 상태로 글자 수를 계산하고 maxLength로 브라우저 입력도 같은 범위로 제한합니다.",
         code: String.raw`import * as React from "react"
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Textarea } from "@/components/ui/textarea"
+import { Field, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { Textarea } from "@/components/primitives/textarea"
 
 export function TextareaCount() {
   const [value, setValue] = React.useState("")
@@ -2373,8 +2373,8 @@ export function TextareaCount() {
         id: "states",
         title: "비활성 및 오류",
         description: "비활성은 Field에도 전달하고 오류는 aria-describedby로 메시지와 연결합니다.",
-        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { Textarea } from "@/components/ui/textarea"
+        code: String.raw`import { Field, FieldError, FieldLabel } from "@/components/primitives/field"
+import { Textarea } from "@/components/primitives/textarea"
 
 export function TextareaStates() {
   return (
@@ -2393,9 +2393,9 @@ export function TextareaStates() {
         id: "button",
         title: "제출 버튼 조합",
         description: "작성과 제출이 한 작업이면 버튼을 Field 안의 다음 포커스 순서에 둡니다.",
-        code: String.raw`import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Textarea } from "@/components/ui/textarea"
+        code: String.raw`import { Button } from "@/components/primitives/button"
+import { Field, FieldDescription, FieldLabel } from "@/components/primitives/field"
+import { Textarea } from "@/components/primitives/textarea"
 
 export function TextareaButton() {
   return (
@@ -2421,7 +2421,7 @@ export function TextareaButton() {
   InputGroupButton,
   InputGroupText,
   InputGroupTextarea,
-} from "@/components/ui/input-group"
+} from "@/components/primitives/input-group"
 
 export function TextareaInputGroup() {
   return (
@@ -2516,7 +2516,7 @@ export function TextareaInputGroup() {
         description: "mode=single에서 selected와 onSelect로 선택 날짜를 제어합니다.",
         preview: "default",
         code: String.raw`import * as React from "react"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/primitives/calendar"
 
 export function CalendarBasic() {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
@@ -2530,7 +2530,7 @@ export function CalendarBasic() {
           "range 모드와 numberOfMonths를 조합해 체크인과 체크아웃 범위를 한 화면에서 선택합니다.",
         code: String.raw`import * as React from "react"
 import type { DateRange } from "react-day-picker"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/primitives/calendar"
 
 export function CalendarRange() {
   const [range, setRange] = React.useState<DateRange | undefined>()
@@ -2549,7 +2549,7 @@ export function CalendarRange() {
         id: "caption-week",
         title: "월·연도 선택과 주 번호",
         description: "긴 날짜 범위를 탐색할 때 dropdown caption과 주 번호를 제공합니다.",
-        code: String.raw`import { Calendar } from "@/components/ui/calendar"
+        code: String.raw`import { Calendar } from "@/components/primitives/calendar"
 
 export function CalendarCaption() {
   return (
@@ -2569,7 +2569,7 @@ export function CalendarCaption() {
         title: "예약 불가 날짜",
         description:
           "disabled matcher로 과거, 휴무일, 이미 예약된 날짜를 선택 대상에서 제외합니다.",
-        code: String.raw`import { Calendar } from "@/components/ui/calendar"
+        code: String.raw`import { Calendar } from "@/components/primitives/calendar"
 
 const booked = [new Date(2026, 7, 12), new Date(2026, 7, 13)]
 
@@ -2592,9 +2592,9 @@ export function CalendarDisabledDates() {
         description:
           "Calendar를 Popover와 Button에 조합하면 폼 안에서 쓰는 날짜 선택기를 만들 수 있습니다.",
         code: String.raw`import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/primitives/button"
+import { Calendar } from "@/components/primitives/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/primitives/popover"
 
 export function CalendarDatePicker() {
   const [date, setDate] = React.useState<Date | undefined>()
@@ -2617,7 +2617,7 @@ export function CalendarDatePicker() {
           "서버 렌더링 뒤 클라이언트에서 시간대를 감지하고 locale과 함께 전달해 날짜 어긋남을 막습니다.",
         code: String.raw`import * as React from "react"
 import { ko } from "react-day-picker/locale"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/primitives/calendar"
 
 export function CalendarTimezone() {
   const [date, setDate] = React.useState<Date | undefined>()

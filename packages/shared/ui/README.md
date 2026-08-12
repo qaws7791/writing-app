@@ -8,15 +8,16 @@
 
 현재 public export는 실제 파일이 있는 아래 경계만 유지한다.
 
-| entrypoint                               | 책임                              |
-| ---------------------------------------- | --------------------------------- |
-| `@workspace/ui/blocks/{block}`           | 화면 조합 예제 block              |
-| `@workspace/ui/styles`                   | 공통 token과 style Implementation |
-| `@workspace/ui/pretendard-font`          | 로컬 Pretendard font-face         |
-| `@workspace/ui/hooks/{hook}`             | 공유 hook                         |
-| `@workspace/ui/lib/utils`                | `cn` helper                       |
-| `@workspace/ui/components/icons`         | 앱에서 반복 사용하는 공통 아이콘  |
-| `@workspace/ui/components/ui/{컴포넌트}` | Base UI 기반 primitive            |
+| entrypoint                                       | 책임                              |
+| ------------------------------------------------ | --------------------------------- |
+| `@workspace/ui/blocks/{block}`                   | 화면 조합 예제 block              |
+| `@workspace/ui/styles`                           | 공통 token과 style Implementation |
+| `@workspace/ui/pretendard-font`                  | 로컬 Pretendard font-face         |
+| `@workspace/ui/hooks/{hook}`                     | 공유 hook                         |
+| `@workspace/ui/lib/utils`                        | `cn` helper                       |
+| `@workspace/ui/components/icons`                 | 앱에서 반복 사용하는 공통 아이콘  |
+| `@workspace/ui/components/primitives/{컴포넌트}` | Base UI 기반 primitive            |
+| `@workspace/ui/components/learning/{컴포넌트}`   | 학습 도메인 프레젠테이션          |
 
 ## 스타일 구조
 
@@ -30,9 +31,9 @@
 
 ## 범위
 
-UI source는 `components/ui/<name>`의 좁은 subpath에서 노출한다. block source는
-`blocks/<name>`에서 노출한다. hook은 `hooks/<name>`에서 노출한다.
-`apps/ui`는 이 패키지를 소비하는 내부 문서 앱이다.
+UI source는 `components/primitives/<name>`과 `components/learning/<name>`의 좁은
+subpath에서 노출한다. block source는 `blocks/<name>`에서 노출한다. hook은
+`hooks/<name>`에서 노출한다. `apps/ui`는 이 패키지를 소비하는 내부 문서 앱이다.
 
 ## 사용 예시
 
@@ -53,8 +54,9 @@ UI source는 `components/ui/<name>`의 좁은 subpath에서 노출한다. block 
 
 ```tsx
 import { BookOpenIcon } from "@workspace/ui/components/icons"
-import { Button } from "@workspace/ui/components/ui/button"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { MultipleChoiceAnswer } from "@workspace/ui/components/learning/multiple-choice-answer"
+import { Button } from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 ```
 
 ## import 규칙

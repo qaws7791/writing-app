@@ -12,8 +12,8 @@ import {
   type UnitNode,
   type ValidationIssue,
 } from "#ui/blocks/curriculum-builder"
-import { Badge } from "#ui/components/ui/badge"
-import { Button } from "#ui/components/ui/button"
+import { Badge } from "#ui/components/primitives/badge"
+import { Button } from "#ui/components/primitives/button"
 import {
   ContentValidation,
   ContentValidationHeader,
@@ -25,29 +25,29 @@ import {
   ContentValidationList,
   ContentValidationSummary,
   ContentValidationTitle,
-} from "#ui/components/ui/content-validation"
-import { Field, FieldGroup, FieldLabel } from "#ui/components/ui/field"
-import { Input } from "#ui/components/ui/input"
+} from "#ui/components/learning/content-validation"
+import { Field, FieldGroup, FieldLabel } from "#ui/components/primitives/field"
+import { Input } from "#ui/components/primitives/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#ui/components/ui/select"
+} from "#ui/components/primitives/select"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "#ui/components/ui/tabs"
-import { Textarea } from "#ui/components/ui/textarea"
+} from "#ui/components/primitives/tabs"
+import { Textarea } from "#ui/components/primitives/textarea"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "#ui/components/ui/tooltip"
+} from "#ui/components/primitives/tooltip"
 
 type PublishStatus = "draft" | "published" | "published-with-changes"
 

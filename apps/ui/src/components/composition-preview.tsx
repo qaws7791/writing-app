@@ -3,8 +3,8 @@
 import { BookOpen01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { Badge } from "@workspace/ui/components/ui/badge";
-import { Button } from "@workspace/ui/components/ui/button";
+import { Badge } from "@workspace/ui/components/primitives/badge";
+import { Button } from "@workspace/ui/components/primitives/button";
 import {
   Card,
   CardContent,
@@ -12,24 +12,28 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/card";
+} from "@workspace/ui/components/primitives/card";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@workspace/ui/components/ui/empty";
-import { Field, FieldDescription, FieldLabel } from "@workspace/ui/components/ui/field";
-import { Input } from "@workspace/ui/components/ui/input";
-import { Progress, ProgressLabel, ProgressValue } from "@workspace/ui/components/ui/progress";
+} from "@workspace/ui/components/primitives/empty";
+import { Field, FieldDescription, FieldLabel } from "@workspace/ui/components/primitives/field";
+import { Input } from "@workspace/ui/components/primitives/input";
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/primitives/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/select";
+} from "@workspace/ui/components/primitives/select";
 import {
   Table,
   TableBody,
@@ -37,7 +41,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/ui/table";
+} from "@workspace/ui/components/primitives/table";
 
 type CompositionPreviewProps = { kind: "admin" | "course-management"; story: string };
 

@@ -2,7 +2,7 @@ import Link from "next/link"
 
 import { HomeCourseMark } from "@/features/learner-home/ui/home-course-mark"
 import type { LearnerProgressCourseDto } from "@/shared/http/learner-api-client"
-import { cardVariants } from "@workspace/ui/components/ui/card"
+import { cardVariants } from "@workspace/ui/components/primitives/card"
 import { cn } from "@workspace/ui/lib/utils"
 
 type CompletedCourseCardProps = {

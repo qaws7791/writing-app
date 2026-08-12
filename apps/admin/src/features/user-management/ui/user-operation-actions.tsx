@@ -15,8 +15,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogTitle,
-} from "@workspace/ui/components/ui/alert-dialog"
-import { Button } from "@workspace/ui/components/ui/button"
+} from "@workspace/ui/components/primitives/alert-dialog"
+import { Button } from "@workspace/ui/components/primitives/button"
 
 export type UserOperationTarget = Readonly<{
   email: string
