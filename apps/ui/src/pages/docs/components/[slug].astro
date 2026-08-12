@@ -2,7 +2,6 @@
 import CodeBlock from "@/src/components/code-block"
 import ExampleShowcase from "@/src/components/example-showcase.astro"
 import MigratedComponentStories from "@/src/components/migrated-component-stories.astro"
-import ResponsivePreview from "@/src/components/responsive-preview"
 import DocsLayout from "@/src/layouts/docs-layout.astro"
 import { getComponentGuide } from "@/src/lib/component-guides"
 import {
@@ -45,7 +44,6 @@ const migratedStoryModules = [storyModuleTitle]
 const migratedStories = migratedStoryModules.flatMap((title) => getMigratedStories(title))
 const toc = [
   { id: "preview", label: "미리보기" },
-  { id: "preview-lab", label: "반응형 미리보기" },
   { id: "usage", label: "가져오기" },
   ...guide.examples.map((example) => ({ id: example.id, label: example.title })),
   ...(migratedStories.length > 0 ? [{ id: "migrated-states", label: "이전된 실행 상태" }] : []),
@@ -88,23 +86,6 @@ const toc = [
         </p>
       )}
       <ExampleShowcase slug={doc.slug} code={usageCode} isLearning={isLearning} featured />
-    </section>
-
-    <section id="preview-lab" class="scroll-mt-24 pt-16">
-      <p class="text-sm font-medium text-muted-foreground">Preview lab</p>
-      <h2 class="mt-2 font-heading text-2xl font-semibold tracking-tight">반응형 미리보기</h2>
-      <p class="mt-3 max-w-2xl leading-7 text-muted-foreground">
-        테마, 모션과 5개 기준 뷰포트를 바꾸며 격리된 브라우저 문맥에서 확인합니다.
-      </p>
-      {guide.examples[0]?.preview !== false && (
-        <div class="mt-6">
-          <ResponsivePreview
-            src={`${baseUrl}preview/components/${doc.slug}/${guide.examples[0].id}`}
-            title={`${doc.title} ${guide.examples[0].title} 미리보기`}
-            client:load
-          />
-        </div>
-      )}
     </section>
 
     <section id="usage" class="scroll-mt-24 pt-16">
