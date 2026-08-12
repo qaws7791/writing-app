@@ -1,6 +1,5 @@
 import {
   parseEditorStepChange,
-  StepBooleanField,
   StepFormShell,
   StepJsonField,
   StepTextField,
@@ -40,12 +39,6 @@ export function OrderStepForm({ onChange, step }: StepFormProps<"ORDER">) {
         label="정답 순서"
         onCommit={(correct) => commitJson({ correct })}
         value={step.correct}
-      />
-      <StepBooleanField
-        checked={step.showNumbers ?? false}
-        id={`${step.id}-show-numbers`}
-        label="순서 번호 표시"
-        onChange={(showNumbers) => onChange({ ...step, showNumbers })}
       />
       <StepTextField
         id={`${step.id}-explanation`}

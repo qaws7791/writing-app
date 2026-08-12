@@ -57,7 +57,7 @@ Course
 - `MULTIPLE_CHOICE`: 질문, 선택지, 정답, 해설을 제공한다.
 - `FILL_BLANK`: 문장 템플릿, stable ID가 있는 단어, 정답 ID 순서와 해설을 제공한다.
 - `SELECT`: stable ID가 있는 문장 구간, 정답 ID, 해설, `inline` 또는 `block` layout을 제공한다.
-- `ORDER`: stable ID가 있는 항목, 정답 ID 순서, 번호 표시 여부와 해설을 제공한다.
+- `ORDER`: stable ID가 있는 항목, 정답 ID 순서와 해설을 제공한다.
 - `MATCH`: 왼쪽 항목과 오른쪽 항목의 짝, 결정적 오른쪽 표시 순서, stable choice id 기반 선택 정책, 해설을 제공한다. 한쪽에 같은 표시 텍스트가 두 번 나오는 짝은 학습자가 화면에서 구분할 수 없으므로 계약이 거부한다.
 - `CATEGORIZE`: 카테고리, 항목, 정답 카테고리, 해설을 제공한다.
 

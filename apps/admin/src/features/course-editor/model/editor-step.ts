@@ -100,7 +100,6 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
         explanation: "",
         itemIds: [firstId],
         items: ["새 항목"],
-        showNumbers: true,
         title: "새 순서",
         type: input.type,
       }

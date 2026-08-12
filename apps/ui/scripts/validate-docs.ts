@@ -23,7 +23,7 @@ const failures: string[] = [];
 
 const expectedInventoryCounts = {
   modules: 36,
-  stories: 143,
+  stories: 142,
   ciTestModules: 35,
   playStories: 9,
   mdx: 1,

@@ -2,7 +2,7 @@
   "generatedAt": "2026-08-09",
   "counts": {
     "modules": 36,
-    "stories": 143,
+    "stories": 142,
     "ciTestModules": 35,
     "playStories": 9,
     "mdx": 1
@@ -225,16 +225,8 @@
           "id": "components-lesson-order-answer--playground",
           "exportName": "Playground",
           "label": "Playground",
-          "description": "Controls로 항목·정답 순서·번호 표시·채점 상태를 조작할 수 있는 Playground입니다.",
+          "description": "Controls로 항목·정답 순서·채점 상태를 조작할 수 있는 Playground입니다.",
           "destination": "/docs/extensions/lesson/order-answer#story-playground",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-order-answer--without-numbers",
-          "exportName": "WithoutNumbers",
-          "label": "WithoutNumbers",
-          "description": "순번 없이 표시하는 예시입니다.",
-          "destination": "/docs/extensions/lesson/order-answer#story-without-numbers",
           "hasPlay": false
         },
         {

@@ -67,7 +67,6 @@ export type LearningStep =
         explanation: string
         itemIds: readonly string[]
         items: readonly string[]
-        showNumbers?: boolean
         title: string
         type: "ORDER"
       }>)

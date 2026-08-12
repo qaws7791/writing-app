@@ -71,7 +71,6 @@ import {
   Sortable,
   SortableContent,
   SortableHandle,
-  SortableIndex,
   SortableItem,
   type SortableState,
 } from "#ui/components/learning/sortable"
@@ -665,7 +664,6 @@ function OrderStep({
               if (!item) return null
               return (
                 <SortableItem key={id} value={id} state={stateFor(id, index)}>
-                  <SortableIndex />
                   <SortableContent>{item.label}</SortableContent>
                   <SortableHandle />
                 </SortableItem>

@@ -482,7 +482,6 @@ export function presentLearnerStep(
             text,
           }))
         ),
-        showNumbers: step.showNumbers,
         sortOrder: step.sortOrder,
         title: step.title,
         type: "ORDER",

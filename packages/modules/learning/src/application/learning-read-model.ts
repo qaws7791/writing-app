@@ -126,7 +126,6 @@ export type LearnerLessonStep =
   | (LearnerStepBase &
       Readonly<{
         items: readonly LearnerStepItem[]
-        showNumbers?: boolean
         title: string
         type: "ORDER"
       }>)

@@ -155,7 +155,6 @@ import {
   Sortable,
   SortableContent,
   SortableHandle,
-  SortableIndex,
   SortableItem,
   type SortableState,
 } from "@workspace/ui/components/learning/sortable";
@@ -746,7 +745,6 @@ function SortableDemo() {
               const item = ORDER_ITEMS.find((entry) => entry.id === id)!;
               return (
                 <SortableItem key={id} value={id} state={stateFor(id, index)}>
-                  <SortableIndex />
                   <SortableContent>{item.label}</SortableContent>
                   <SortableHandle />
                 </SortableItem>
@@ -1764,7 +1762,6 @@ function FlowSortable({
                         : "incorrect"
                   }
                 >
-                  <SortableIndex />
                   <SortableContent>{item.label}</SortableContent>
                   <SortableHandle />
                 </SortableItem>

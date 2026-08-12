@@ -225,9 +225,6 @@ function renderStep({
             })
           }
           seed={step.id}
-          {...(step.showNumbers === undefined
-            ? {}
-            : { showNumbers: step.showNumbers })}
           {...(answerPayload?.type === "ORDER"
             ? { defaultOrderedItemIds: answerPayload.orderedItemIds }
             : {})}

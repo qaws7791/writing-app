@@ -94,9 +94,6 @@ function renderStepPreview(step: EditorStep): ReactNode {
             text: step.items[index] ?? "",
           }))}
           seed={step.id}
-          {...(step.showNumbers === undefined
-            ? {}
-            : { showNumbers: step.showNumbers })}
           title={step.title}
         />
       )

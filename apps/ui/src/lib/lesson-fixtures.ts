@@ -60,7 +60,6 @@ export const orderDefaults = {
     { id: "item-5", text: "읽었다" },
   ],
   correctItemIds: ["item-1", "item-2", "item-3", "item-4", "item-5"],
-  showNumbers: true,
   explanation: "한국어 기본 어순은 주어 - 시간 - 장소 - 목적어 - 서술어 입니다.",
   checked: false as const,
 } as const;

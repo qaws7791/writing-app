@@ -148,7 +148,6 @@ const learnerSelectStepSchema = learnerStepBaseSchema.extend({
 
 const learnerOrderStepSchema = learnerStepBaseSchema.extend({
   items: z.array(learnerStepItemSchema).min(1),
-  showNumbers: z.boolean().optional(),
   title: z.string(),
   type: z.literal("ORDER"),
 })

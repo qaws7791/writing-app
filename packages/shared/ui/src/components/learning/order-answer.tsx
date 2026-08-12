@@ -11,7 +11,6 @@ import {
   Sortable,
   SortableContent,
   SortableHandle,
-  SortableIndex,
   SortableItem,
 } from "#ui/components/learning/sortable"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
@@ -74,7 +73,6 @@ export function OrderAnswer<TId extends string>({
   items,
   onChange,
   seed,
-  showNumbers,
   title,
 }: {
   readonly checked?: LessonStepCheckedVisual
@@ -84,7 +82,6 @@ export function OrderAnswer<TId extends string>({
   readonly items: readonly OrderAnswerItem<TId>[]
   readonly onChange?: (orderedItemIds: readonly TId[]) => void
   readonly seed?: string
-  readonly showNumbers?: boolean
   readonly title?: string
 }) {
   const [orderedItems, setOrderedItems] = useState<
@@ -149,7 +146,6 @@ export function OrderAnswer<TId extends string>({
                 value={item.id}
               >
                 <SortableHandle />
-                {showNumbers ? <SortableIndex /> : null}
                 <SortableContent>{item.text}</SortableContent>
               </SortableItem>
             )

@@ -1095,7 +1095,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "전체 읽기·선택 읽기·재읽기 가운데 목적에 맞는 경로와 이유를 고른다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -1495,7 +1494,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "시간 순서와 절차상 의존 순서를 구별하고 빠진 단계를 찾는다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -2067,7 +2065,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "새 글에서 목적·핵심·구조·관계·공백과 복구 과정을 하나의 기록으로 제시한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -2902,7 +2899,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "핵심 메시지와 필수 의미를 먼저 고정한 뒤 문장 표현을 단계적으로 수정한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -5376,7 +5372,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "후보 생성·평가·개선과 최종 선택 이유를 하나의 추적 가능한 기록으로 낸다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -5536,7 +5531,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "독자가 다음 관계를 이해하는 데 빠진 전제·단계·근거를 표시한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -5876,7 +5870,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "사건의 시간 순서와 수행에 필요한 단계 순서를 구별해 배열한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -6015,7 +6008,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "문제·원인·기준·대안·제약의 관계를 독자가 판단할 순서로 배열한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -6384,7 +6376,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "같은 대상의 반복·상하어·관련어가 문단 사이 중심을 유지하는지 설명한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -6534,7 +6525,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "새 글을 역개요로 진단하고 조직·일관성·응집성 문제를 구별해 고친다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -7121,7 +7111,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "독자가 결정·수행하는 데 필요한 이유·조건·절차를 선택한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -7552,7 +7541,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "같은 자료를 다른 독자 행동과 목적에 맞는 순서로 재배열한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -7994,7 +7982,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "시간 순서와 필수 의존 관계를 구별하고 단계별 결과를 제시한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -8133,7 +8120,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "무엇·왜·어떻게·언제라는 예상 질문에 답하는 순서로 구조를 조정한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -10049,7 +10035,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "질의·도구·선택 결과·다음 변경을 재현 가능한 순서로 남긴다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -10795,7 +10780,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "확인 경로·독립성·충돌·공백에 맞춰 확신 수준을 설명한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -11962,7 +11946,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "결론을 약화할 수 있는 근거와 확인 경로를 정한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -13031,7 +13014,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "독자의 질문과 판단 순서에 맞춰 주장·근거·반론을 배열한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -13435,7 +13417,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "핵심 의미와 독자 이해에 미치는 영향으로 문제 순서를 정한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -13665,7 +13646,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "문단·정보의 순서를 독자가 판단할 흐름에 맞게 바꾼다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -13907,7 +13887,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "의미·조직 수정 뒤 남은 표기·문법 오류를 별도로 확인한다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]
@@ -14886,7 +14865,6 @@
                   "compare-evidence",
                   "record-judgment"
                 ],
-                "showNumbers": true,
                 "explanation": "재게시·편집·인용 단계를 거슬러 원자료와 맥락을 찾는다. 목표를 수행할 때는 질문과 범위를 먼저 고정해야 뒤의 근거 대조와 최종 판단이 같은 대상을 향합니다."
               }
             ]

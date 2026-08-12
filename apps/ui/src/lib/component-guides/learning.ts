@@ -616,7 +616,7 @@ export function Explanation() {
         description: "섞인 항목을 세로로 배열합니다.",
         preview: "default",
         code: `import { useState } from "react"
-import { Sortable, SortableContent, SortableHandle, SortableIndex, SortableItem } from "@/components/learning/sortable"
+import { Sortable, SortableContent, SortableHandle, SortableItem } from "@/components/learning/sortable"
 
 const items = [
   { id: "claim", label: "주장 제시" },
@@ -637,7 +637,6 @@ export function OrderStep() {
         const item = items.find((entry) => entry.id === id)!
         return (
           <SortableItem key={id} value={id}>
-            <SortableIndex />
             <SortableContent>{item.label}</SortableContent>
             <SortableHandle />
           </SortableItem>
@@ -648,11 +647,12 @@ export function OrderStep() {
 }`,
       },
       {
-        id: "without-index",
-        title: "번호 숨김",
-        description: "번호 표시가 꺼진 콘텐츠에서는 SortableIndex를 생략합니다.",
+        id: "with-index",
+        title: "문단 순서 번호",
+        description: "PARAGRAPH_ORGANIZE처럼 문단 순서를 맞출 때만 SortableIndex를 둡니다.",
         code: `<Sortable value={["intro"]} onValueChange={() => {}}>
   <SortableItem value="intro">
+    <SortableIndex />
     <SortableContent>서론</SortableContent>
     <SortableHandle />
   </SortableItem>
@@ -682,6 +682,7 @@ export function OrderStep() {
     ],
     usageNotes: [
       "Sortable은 value와 onValueChange로 순서를 제어하며 각 SortableItem에는 안정적인 value를 제공하세요.",
+      "ORDER는 항목 앞에 순번을 두지 않습니다. PARAGRAPH_ORGANIZE만 SortableIndex를 사용합니다.",
       "핸들은 항목 오른쪽에 두어 오른손 엄지 도달 범위를 맞춥니다.",
     ],
     accessibility: [

@@ -91,31 +91,6 @@ export function StepTextField({
   )
 }
 
-export function StepBooleanField({
-  checked,
-  id,
-  label,
-  onChange,
-}: {
-  readonly checked: boolean
-  readonly id: string
-  readonly label: string
-  readonly onChange: (checked: boolean) => void
-}) {
-  return (
-    <Field orientation="horizontal">
-      <input
-        checked={checked}
-        className="size-4"
-        id={id}
-        onChange={(event) => onChange(event.target.checked)}
-        type="checkbox"
-      />
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-    </Field>
-  )
-}
-
 export function StepJsonField({
   id,
   label,

@@ -315,7 +315,6 @@ import {
   Sortable,
   SortableContent,
   SortableHandle,
-  SortableIndex,
   SortableItem,
 } from "@workspace/ui/components/learning/sortable";
 import { Spinner } from "@workspace/ui/components/primitives/spinner";
@@ -1327,7 +1326,6 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
             const item = sortablePreviewItems.find((entry) => entry.id === id)!;
             return (
               <SortableItem key={id} value={id}>
-                <SortableIndex />
                 <SortableContent>{item.label}</SortableContent>
                 <SortableHandle />
               </SortableItem>

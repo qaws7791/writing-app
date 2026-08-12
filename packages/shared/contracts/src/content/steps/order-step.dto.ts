@@ -12,7 +12,6 @@ export const orderStepDtoSchema = lessonStepBaseSchema
     items: z.array(z.string()).min(1),
     itemIds: z.array(stableStepItemIdSchema).min(1),
     correct: z.array(stableStepItemIdSchema).min(1),
-    showNumbers: z.boolean().optional(),
     explanation: z.string(),
   })
   .superRefine((step, context) => {

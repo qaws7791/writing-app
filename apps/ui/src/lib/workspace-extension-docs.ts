@@ -197,14 +197,13 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
         type: "string[]",
         description: "Stable ID 기준의 정답 순서입니다.",
       },
-      { name: "showNumbers", type: "boolean", description: "항목 앞에 순번을 표시합니다." },
       { name: "explanation", type: "string", description: "채점 뒤 표시할 해설입니다." },
       checked,
       onChange("순서가 바뀔 때 호출됩니다."),
     ],
     usageNotes: [
       "표시 배열의 index를 item ID로 사용하지 않습니다.",
-      "번호를 숨겨도 현재 순서를 이해할 수 있어야 합니다.",
+      "항목 앞에 순번을 표시하지 않습니다.",
     ],
     accessibility: [
       "Drag 외에 keyboard 재정렬 수단을 제공합니다.",

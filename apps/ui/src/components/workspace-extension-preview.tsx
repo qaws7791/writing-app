@@ -147,7 +147,6 @@ function OrderPreview({ story }: { story: string }) {
       {...orderDefaults}
       items={[...orderDefaults.items]}
       correctItemIds={[...orderDefaults.correctItemIds]}
-      showNumbers={story !== "WithoutNumbers"}
       checked={story === "CheckedWrong" ? "wrong" : story === "CheckedCorrect" ? "correct" : false}
       onChange={() => undefined}
     />

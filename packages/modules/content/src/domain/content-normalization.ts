@@ -57,6 +57,8 @@ export function normalizeVersionedStepContent(
           itemIds,
           readArray(parsed, "correct")
         )
+        // Existing ORDER content may still include the removed showNumbers field.
+        delete parsed["showNumbers"]
         break
       }
       case "MATCH":
