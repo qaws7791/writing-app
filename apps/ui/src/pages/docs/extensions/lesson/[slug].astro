@@ -9,7 +9,7 @@ export function getStaticPaths() {
 
 type Props = { doc: WorkspaceExtensionDoc }
 const { doc } = Astro.props
-const toc = [{ id: "responsive-preview", label: "반응형 미리보기" }, { id: "states", label: "실행 상태" }, { id: "props", label: "Props" }, { id: "guidelines", label: "사용 지침" }, { id: "accessibility", label: "접근성" }]
+const toc = [{ id: "states", label: "실행 상태" }, { id: "props", label: "Props" }, { id: "guidelines", label: "사용 지침" }, { id: "accessibility", label: "접근성" }]
 ---
 
 <DocsLayout title={doc.title} description={doc.description} pathname={`/docs/extensions/lesson/${doc.slug}`} toc={toc}>

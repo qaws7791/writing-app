@@ -9,8 +9,8 @@
 - `/docs/components/*`는 공유 UI의 props, 지침, 접근성과 실행 가능한 예제를 제공한다. 사이드바는 shadcn 공용 컴포넌트를 `primitives` 그룹에, 학습 도메인 컴포넌트를 `learning` 그룹에 둔다.
 - `/docs/extensions/*`는 workspace 전용 ThemeSelector와 lesson 활동 컴포넌트를 제공한다. lesson 활동 문서는 `learning` 사이드바 그룹에서 탐색한다.
 - `/docs/patterns/*`와 `/docs/recipes/*`는 제품 화면 조합을 제공한다.
-- `/docs/blocks`는 화면 단위 block 카탈로그를 제공한다. 개별 block은 문서 사이드바와 모바일 문서 메뉴에 두지 않으며, 전역 「블록」 진입과 이 페이지에서만 확인한다.
-- `/preview/*`는 문서 shell과 분리된 반응형 예제와 interaction contract를 제공한다.
+- `/docs/blocks`는 화면 단위 block 카탈로그를 제공한다. 개별 block은 문서 사이드바와 모바일 문서 메뉴에 두지 않으며, 전역 「블록」 진입과 이 페이지에서만 확인한다. 뷰포트 전환이 있는 반응형 미리보기는 이 페이지에만 둔다.
+- `/preview/*`는 문서 shell과 분리된 예제와 interaction contract를 제공한다.
 
 ## 소유 경계
 
@@ -34,6 +34,7 @@
 - 각 컴포넌트 문서는 props, 사용 지침과 접근성 설명을 제공한다.
 - 사용자 상호작용 계약은 키보드, 초점, ARIA와 상태 전이를 관찰 가능한 결과로 검증한다.
 - 모든 격리 예제는 light, dark, system theme와 full, reduced motion을 확인할 수 있어야 한다.
+- 뷰포트 전환이 있는 반응형 미리보기는 `/docs/blocks`에만 둔다.
 
 ## 검증
 

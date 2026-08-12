@@ -1,6 +1,5 @@
 ---
 import DocsPageHeader from "@/src/components/docs-page-header.astro"
-import ResponsivePreview from "@/src/components/responsive-preview"
 import WorkspaceExtensionPreview from "@/src/components/workspace-extension-preview"
 import type { WorkspaceExtensionDoc } from "@/src/lib/workspace-extension-docs"
 import { getMigratedStories, getStoryAnchor } from "@/src/lib/design-system-inventory"
@@ -8,19 +7,12 @@ import { getMigratedStories, getStoryAnchor } from "@/src/lib/design-system-inve
 type Props = { doc: WorkspaceExtensionDoc }
 const { doc } = Astro.props
 const stories = getMigratedStories(doc.moduleTitle)
-const baseUrl = import.meta.env.BASE_URL
 ---
 
 <article>
   <DocsPageHeader eyebrow="Workspace extension" title={doc.title} description={doc.description} />
 
-  <section id="responsive-preview" class="scroll-mt-24">
-    <h2 class="font-heading text-2xl font-semibold">반응형 미리보기</h2>
-    <p class="mt-3 max-w-2xl leading-7 text-muted-foreground">첫 상태를 격리된 browser context에서 theme, motion과 5개 viewport로 확인합니다.</p>
-    {stories[0] && <div class="mt-6"><ResponsivePreview src={`${baseUrl}preview/extensions/${doc.slug}/${stories[0].exportName}`} title={`${doc.title} ${stories[0].label} 미리보기`} client:load /></div>}
-  </section>
-
-  <section id="states" class="scroll-mt-24 pt-16">
+  <section id="states" class="scroll-mt-24">
     <h2 class="font-heading text-2xl font-semibold">실행 상태</h2>
     <div class="mt-8 grid gap-12">
       {stories.map((story) => (
