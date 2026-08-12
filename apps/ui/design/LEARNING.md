@@ -64,16 +64,21 @@
 | `skill-map`        | 영역별 숙련·선수·다음 초점                          |
 | `portfolio`        | 완성 글·피드백·공개 범위                            |
 
-| 타입              | 조합                            |
-| ----------------- | ------------------------------- |
-| `READING`         | `step` + `prose`                |
-| `COMPARE`         | `step` + `compare` + `insight`  |
-| `MULTIPLE_CHOICE` | `step` + `choice` + `insight`   |
-| `FILL_BLANK`      | `step` + `token` + `insight`    |
-| `SELECT`          | `step` + `segment` + `insight`  |
-| `ORDER`           | `step` + `sortable` + `insight` |
-| `MATCH`           | `step` + `pair` + `insight`     |
-| `CATEGORIZE`      | `step` + `classify` + `insight` |
+| 타입                 | 조합                                        |
+| -------------------- | ------------------------------------------- |
+| `READING`            | `step` + `prose`                            |
+| `COMPARE`            | `step` + `compare` + `insight`              |
+| `MULTIPLE_CHOICE`    | `step` + `choice` + `insight`               |
+| `TRUE_FALSE`         | `step` + `choice` + `insight`               |
+| `FILL_BLANK`         | `step` + `token` + `insight`                |
+| `SELECT`             | `step` + `segment` + `insight`              |
+| `ORDER`              | `step` + `sortable` + `insight`             |
+| `MATCH`              | `step` + `pair` + `insight`                 |
+| `CATEGORIZE`         | `step` + `classify` + `insight`             |
+| `SENTENCE_BUILD`     | `step` + `token` + `insight`                |
+| `TRANSCRIBE`         | `step` + `compose` + `insight`              |
+| `ERROR_CORRECT`      | `step` + `segment` + `choice` + `insight`   |
+| `PARAGRAPH_ORGANIZE` | `step` + `segment` + `sortable` + `insight` |
 
 읽기 본문을 카드로 다시 감싸지 않는다. `prose`는 캔버스의 주 콘텐츠로 직접 놓고 선택하거나 조작하는 영역만 표면 밀도와 경계로 구분한다. 새 타입은 기존 부품 조합으로 표현할 수 있는지 먼저 검토한다.
 

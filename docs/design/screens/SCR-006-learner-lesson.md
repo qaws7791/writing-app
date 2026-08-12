@@ -55,7 +55,7 @@
 - 순서 스텝은 `Sortable` 항목 목록과 드래그 핸들을 제공한다.
 - 순서 스텝의 드래그 핸들은 pointer와 keyboard 입력을 모두 지원한다.
 - 순서 스텝의 드래그 핸들은 항목 이름과 현재 위치를 이해할 수 있는 한국어 접근성 이름과 이동 안내를 제공한다.
-- 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`, `MULTIPLE_CHOICE`의 `Choice`, `FILL_BLANK`의 `Token`, `SELECT`의 `Segment`, `ORDER`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify` 조합을 사용한다.
+- 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`, `MULTIPLE_CHOICE`·`TRUE_FALSE`의 `Choice`, `FILL_BLANK`·`SENTENCE_BUILD`의 `Token`, `SELECT`·`ERROR_CORRECT`의 `Segment`, `ORDER`·`PARAGRAPH_ORGANIZE`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify`, `TRANSCRIBE`의 `Compose`, `ERROR_CORRECT`의 `Choice` 조합을 사용한다.
 - 채점 가능 스텝(퀴즈)에서 오답인 경우 '계속하기'를 누르면 다음 스텝으로 넘어가지 않고, 정오답 피드백 바가 닫히며 사용자가 다시 답을 입력하고 재채점("확인하기")할 수 있는 상태로 돌아간다. 정답인 경우에만 다음 스텝으로 진행한다.
 - 정오답, 해설, 다음 스텝과 완료 화면은 서버 evaluation과 transition 결과로만 표시한다. 클라이언트는 표시 문자열이나 배열 위치로 정답을 추론하지 않는다.
 - 저장, 동기화, 오프라인, version과 충돌 상태는 레슨에 표시하지 않는다. 진행 중 문구는 학습자가 실행한 행동을 설명한다.

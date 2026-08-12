@@ -3,6 +3,11 @@
 import * as React from "react"
 
 import { cn } from "#ui/lib/utils"
+import { ErrorCorrectAnswer } from "#ui/components/lesson/error-correct-answer"
+import { ParagraphOrganizeAnswer } from "#ui/components/lesson/paragraph-organize-answer"
+import { SentenceBuildAnswer } from "#ui/components/lesson/sentence-build-answer"
+import { TranscribeAnswer } from "#ui/components/lesson/transcribe-answer"
+import { TrueFalseAnswer } from "#ui/components/lesson/true-false-answer"
 import { Button } from "#ui/components/ui/button"
 import {
   Choice,
@@ -87,24 +92,34 @@ import {
 type StepType =
   | "READING"
   | "MULTIPLE_CHOICE"
+  | "TRUE_FALSE"
   | "FILL_BLANK"
   | "SELECT"
   | "ORDER"
   | "MATCH"
   | "CATEGORIZE"
   | "COMPARE"
+  | "SENTENCE_BUILD"
+  | "TRANSCRIBE"
+  | "ERROR_CORRECT"
+  | "PARAGRAPH_ORGANIZE"
 
 type GradePhase = "answering" | "checked"
 
 const FLOW: StepType[] = [
   "READING",
   "MULTIPLE_CHOICE",
+  "TRUE_FALSE",
   "FILL_BLANK",
   "SELECT",
   "ORDER",
   "MATCH",
   "CATEGORIZE",
   "COMPARE",
+  "SENTENCE_BUILD",
+  "TRANSCRIBE",
+  "ERROR_CORRECT",
+  "PARAGRAPH_ORGANIZE",
 ]
 
 const TOTAL_STEPS = FLOW.length
@@ -157,6 +172,45 @@ const CLASSIFY_ITEMS = [
   { id: "i2", label: "참여 학생이 늘었다는 조사", answer: "evidence" },
   { id: "i3", label: "숙제 없는 날이 필요하다", answer: "claim" },
 ] as const
+
+const TRUE_FALSE_STATEMENT =
+  "설득문에서 근거는 주장을 반복하는 문장으로 충분하다."
+const TRUE_FALSE_ANSWER = false
+
+const SENTENCE_TILES = [
+  { id: "t1", text: "주장은" },
+  { id: "t2", text: "한 문장으로" },
+  { id: "t3", text: "분명해야" },
+  { id: "t4", text: "한다" },
+  { id: "t5", text: "여러 문장으로" },
+] as const
+const SENTENCE_ANSWER = ["t1", "t2", "t3", "t4"] as const
+
+const TRANSCRIBE_SOURCE = "근거는 주장을 반복하지 않고 사실과 사례를 제시한다."
+
+const ERROR_SEGMENTS = [
+  { id: "e1", text: "좋은 근거는" },
+  { id: "e2", text: "주장을 되풀이하며" },
+  { id: "e3", text: "독자를 설득한다." },
+] as const
+const ERROR_CORRECT_SEGMENT = "e2"
+const ERROR_FIXES = [
+  { id: "f1", text: "주장을 되풀이하며" },
+  { id: "f2", text: "사실과 사례로" },
+  { id: "f3", text: "감정을 강조하며" },
+] as const
+const ERROR_CORRECT_FIX = "f2"
+
+const PARAGRAPH_CARDS = [
+  { id: "p1", text: "학교는 토론 수업을 늘려야 한다." },
+  {
+    id: "p2",
+    text: "토론에 참여한 학생이 발표 자신감이 높아졌다는 조사가 있다.",
+  },
+  { id: "p3", text: "따라서 토론은 설득력 훈련에 도움이 된다." },
+  { id: "p4", text: "급식 메뉴는 매주 바뀌는 편이 좋다." },
+] as const
+const PARAGRAPH_ANSWER = ["p1", "p2", "p3"] as const
 
 type SessionChromeProps = {
   stepIndex: number
@@ -972,6 +1026,336 @@ function CompareStep({
   )
 }
 
+function TrueFalseStep({
+  stepIndex,
+  onComplete,
+  onClose,
+}: {
+  stepIndex: number
+  onComplete: () => void
+  onClose: () => void
+}) {
+  const [selected, setSelected] = React.useState<boolean | null>(null)
+  const [phase, setPhase] = React.useState<GradePhase>("answering")
+  const [resetNonce, setResetNonce] = React.useState(0)
+  const correct = selected === TRUE_FALSE_ANSWER
+
+  const retry = () => {
+    setSelected(null)
+    setPhase("answering")
+    setResetNonce((value) => value + 1)
+  }
+
+  return (
+    <SessionChrome
+      stepIndex={stepIndex}
+      primaryLabel={
+        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      }
+      primaryDisabled={phase === "answering" && selected === null}
+      onPrimary={() => {
+        if (phase === "answering") {
+          setPhase("checked")
+          return
+        }
+        if (!correct) {
+          retry()
+          return
+        }
+        onComplete()
+      }}
+      showReset={phase !== "answering"}
+      onReset={retry}
+      onClose={onClose}
+    >
+      <Step>
+        <TrueFalseAnswer
+          key={resetNonce}
+          checked={
+            phase === "answering" ? false : correct ? "correct" : "wrong"
+          }
+          correctAnswer={TRUE_FALSE_ANSWER}
+          onSelect={setSelected}
+          statement={TRUE_FALSE_STATEMENT}
+        />
+        {phase !== "answering" ? (
+          <Insight tone={correct ? "correct" : "incorrect"}>
+            <InsightTitle>
+              {correct ? "정답입니다" : "다시 살펴보세요"}
+            </InsightTitle>
+            <InsightDescription>
+              근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.
+            </InsightDescription>
+          </Insight>
+        ) : null}
+      </Step>
+    </SessionChrome>
+  )
+}
+
+function SentenceBuildStep({
+  stepIndex,
+  onComplete,
+  onClose,
+}: {
+  stepIndex: number
+  onComplete: () => void
+  onClose: () => void
+}) {
+  const [selected, setSelected] = React.useState<readonly string[]>([])
+  const [phase, setPhase] = React.useState<GradePhase>("answering")
+  const [resetNonce, setResetNonce] = React.useState(0)
+  const correct =
+    phase !== "answering" &&
+    selected.length === SENTENCE_ANSWER.length &&
+    selected.every((id, index) => id === SENTENCE_ANSWER[index])
+
+  const retry = () => {
+    setSelected([])
+    setPhase("answering")
+    setResetNonce((value) => value + 1)
+  }
+
+  return (
+    <SessionChrome
+      stepIndex={stepIndex}
+      primaryLabel={
+        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      }
+      primaryDisabled={phase === "answering" && selected.length === 0}
+      onPrimary={() => {
+        if (phase === "answering") {
+          setPhase("checked")
+          return
+        }
+        if (!correct) {
+          retry()
+          return
+        }
+        onComplete()
+      }}
+      showReset={phase !== "answering"}
+      onReset={retry}
+      onClose={onClose}
+    >
+      <Step>
+        <SentenceBuildAnswer
+          key={resetNonce}
+          checked={
+            phase === "answering" ? false : correct ? "correct" : "wrong"
+          }
+          correctTileIds={[...SENTENCE_ANSWER]}
+          explanation="주장을 짧고 분명한 한 문장으로 두는 것이 기본입니다."
+          onChange={setSelected}
+          prompt="타일을 모아 완전한 문장을 만드세요"
+          tiles={[...SENTENCE_TILES]}
+        />
+      </Step>
+    </SessionChrome>
+  )
+}
+
+function TranscribeStep({
+  stepIndex,
+  onComplete,
+  onClose,
+}: {
+  stepIndex: number
+  onComplete: () => void
+  onClose: () => void
+}) {
+  const [value, setValue] = React.useState("")
+  const [phase, setPhase] = React.useState<GradePhase>("answering")
+  const [resetNonce, setResetNonce] = React.useState(0)
+  const normalized = (text: string) => text.replace(/\s+/g, " ").trim()
+  const correct =
+    phase !== "answering" && normalized(value) === normalized(TRANSCRIBE_SOURCE)
+
+  const retry = () => {
+    setValue("")
+    setPhase("answering")
+    setResetNonce((value) => value + 1)
+  }
+
+  return (
+    <SessionChrome
+      stepIndex={stepIndex}
+      primaryLabel={
+        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      }
+      primaryDisabled={phase === "answering" && value.trim() === ""}
+      onPrimary={() => {
+        if (phase === "answering") {
+          setPhase("checked")
+          return
+        }
+        if (!correct) {
+          retry()
+          return
+        }
+        onComplete()
+      }}
+      showReset={phase !== "answering"}
+      onReset={retry}
+      onClose={onClose}
+    >
+      <Step>
+        <TranscribeAnswer
+          key={resetNonce}
+          checked={
+            phase === "answering" ? false : correct ? "correct" : "wrong"
+          }
+          explanation="맞춤법·띄어쓰기·문장부호까지 원문과 같아야 합니다."
+          onChange={setValue}
+          sourceText={TRANSCRIBE_SOURCE}
+        />
+      </Step>
+    </SessionChrome>
+  )
+}
+
+function ErrorCorrectStep({
+  stepIndex,
+  onComplete,
+  onClose,
+}: {
+  stepIndex: number
+  onComplete: () => void
+  onClose: () => void
+}) {
+  const [errorSegmentId, setErrorSegmentId] = React.useState<string | null>(
+    null
+  )
+  const [fixId, setFixId] = React.useState<string | null>(null)
+  const [phase, setPhase] = React.useState<GradePhase>("answering")
+  const [resetNonce, setResetNonce] = React.useState(0)
+  const correct =
+    phase !== "answering" &&
+    errorSegmentId === ERROR_CORRECT_SEGMENT &&
+    fixId === ERROR_CORRECT_FIX
+
+  const retry = () => {
+    setErrorSegmentId(null)
+    setFixId(null)
+    setPhase("answering")
+    setResetNonce((value) => value + 1)
+  }
+
+  return (
+    <SessionChrome
+      stepIndex={stepIndex}
+      primaryLabel={
+        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      }
+      primaryDisabled={
+        phase === "answering" && (errorSegmentId === null || fixId === null)
+      }
+      onPrimary={() => {
+        if (phase === "answering") {
+          setPhase("checked")
+          return
+        }
+        if (!correct) {
+          retry()
+          return
+        }
+        onComplete()
+      }}
+      showReset={phase !== "answering"}
+      onReset={retry}
+      onClose={onClose}
+    >
+      <Step>
+        <ErrorCorrectAnswer
+          key={resetNonce}
+          checked={
+            phase === "answering" ? false : correct ? "correct" : "wrong"
+          }
+          correctErrorSegmentId={ERROR_CORRECT_SEGMENT}
+          correctFixId={ERROR_CORRECT_FIX}
+          fixes={[...ERROR_FIXES]}
+          onChange={({ errorSegmentId: nextError, fixId: nextFix }) => {
+            setErrorSegmentId(nextError)
+            setFixId(nextFix)
+          }}
+          segments={[...ERROR_SEGMENTS]}
+        />
+        {phase !== "answering" ? (
+          <Insight tone={correct ? "correct" : "incorrect"}>
+            <InsightTitle>
+              {correct ? "정답입니다" : "다시 고쳐 보세요"}
+            </InsightTitle>
+            <InsightDescription>
+              “주장을 되풀이하며”가 오류이고, “사실과 사례로”가 바른 교정입니다.
+            </InsightDescription>
+          </Insight>
+        ) : null}
+      </Step>
+    </SessionChrome>
+  )
+}
+
+function ParagraphOrganizeStep({
+  stepIndex,
+  onComplete,
+  onClose,
+}: {
+  stepIndex: number
+  onComplete: () => void
+  onClose: () => void
+}) {
+  const [selected, setSelected] = React.useState<readonly string[]>([])
+  const [phase, setPhase] = React.useState<GradePhase>("answering")
+  const [resetNonce, setResetNonce] = React.useState(0)
+  const correct =
+    phase !== "answering" &&
+    selected.length === PARAGRAPH_ANSWER.length &&
+    selected.every((id, index) => id === PARAGRAPH_ANSWER[index])
+
+  const retry = () => {
+    setSelected([])
+    setPhase("answering")
+    setResetNonce((value) => value + 1)
+  }
+
+  return (
+    <SessionChrome
+      stepIndex={stepIndex}
+      primaryLabel={
+        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      }
+      primaryDisabled={phase === "answering" && selected.length === 0}
+      onPrimary={() => {
+        if (phase === "answering") {
+          setPhase("checked")
+          return
+        }
+        if (!correct) {
+          retry()
+          return
+        }
+        onComplete()
+      }}
+      showReset={phase !== "answering"}
+      onReset={retry}
+      onClose={onClose}
+    >
+      <Step>
+        <ParagraphOrganizeAnswer
+          key={resetNonce}
+          cards={[...PARAGRAPH_CARDS]}
+          checked={
+            phase === "answering" ? false : correct ? "correct" : "wrong"
+          }
+          correctCardIds={[...PARAGRAPH_ANSWER]}
+          explanation="주제문 → 근거 → 결론 순으로 이어지고, 주제와 무관한 문장은 제외합니다."
+          onChange={setSelected}
+        />
+      </Step>
+    </SessionChrome>
+  )
+}
+
 function LessonFlowStep({
   kind,
   stepIndex,
@@ -995,6 +1379,14 @@ function LessonFlowStep({
     case "MULTIPLE_CHOICE":
       return (
         <ChoiceStep
+          stepIndex={stepIndex}
+          onComplete={onComplete}
+          onClose={onClose}
+        />
+      )
+    case "TRUE_FALSE":
+      return (
+        <TrueFalseStep
           stepIndex={stepIndex}
           onComplete={onComplete}
           onClose={onClose}
@@ -1048,6 +1440,38 @@ function LessonFlowStep({
           onClose={onClose}
         />
       )
+    case "SENTENCE_BUILD":
+      return (
+        <SentenceBuildStep
+          stepIndex={stepIndex}
+          onComplete={onComplete}
+          onClose={onClose}
+        />
+      )
+    case "TRANSCRIBE":
+      return (
+        <TranscribeStep
+          stepIndex={stepIndex}
+          onComplete={onComplete}
+          onClose={onClose}
+        />
+      )
+    case "ERROR_CORRECT":
+      return (
+        <ErrorCorrectStep
+          stepIndex={stepIndex}
+          onComplete={onComplete}
+          onClose={onClose}
+        />
+      )
+    case "PARAGRAPH_ORGANIZE":
+      return (
+        <ParagraphOrganizeStep
+          stepIndex={stepIndex}
+          onComplete={onComplete}
+          onClose={onClose}
+        />
+      )
   }
 }
 
@@ -1095,8 +1519,9 @@ function LessonSession({ className, ...props }: React.ComponentProps<"div">) {
             <LessonComplete>
               <LessonCompleteTitle>레슨을 마쳤습니다</LessonCompleteTitle>
               <LessonCompleteDescription>
-                주장과 근거를 읽고, 고르고, 연결하는 여덟 가지 활동을 모두
-                둘러보았습니다. 다시 시작하면 처음부터 연습할 수 있습니다.
+                읽기부터 문장 조립·받아쓰기·오류 교정·문단 구성까지 열세 가지
+                활동을 모두 둘러보았습니다. 다시 시작하면 처음부터 연습할 수
+                있습니다.
               </LessonCompleteDescription>
             </LessonComplete>
           </LessonBody>
