@@ -1,11 +1,11 @@
 {
   "generatedAt": "2026-08-09",
   "counts": {
-    "modules": 37,
-    "stories": 144,
+    "modules": 36,
+    "stories": 143,
     "ciTestModules": 35,
     "playStories": 9,
-    "mdx": 2
+    "mdx": 1
   },
   "modules": [
     {
@@ -1452,23 +1452,6 @@
       ]
     },
     {
-      "source": "legacy-catalog/stories/quality/checklist.stories.tsx",
-      "title": "Quality/Checklist",
-      "hasCiTest": false,
-      "hasArgs": false,
-      "hasArgTypes": false,
-      "stories": [
-        {
-          "id": "quality-checklist--content-contracts",
-          "exportName": "ContentContracts",
-          "label": "ContentContracts",
-          "description": "",
-          "destination": "/docs/quality/content#story-content-contracts",
-          "hasPlay": false
-        }
-      ]
-    },
-    {
       "source": "legacy-catalog/stories/recipes/course-management.stories.tsx",
       "title": "Recipes/Course Management",
       "hasCiTest": true,
@@ -1499,11 +1482,6 @@
       "id": "getting-started-welcome",
       "source": "legacy-catalog/docs/getting-started/welcome.mdx",
       "destination": "/docs/getting-started"
-    },
-    {
-      "id": "quality-accessibility-checklist",
-      "source": "legacy-catalog/docs/quality/accessibility-checklist.mdx",
-      "destination": "/docs/quality/accessibility"
     }
   ]
 }

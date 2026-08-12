@@ -9,7 +9,6 @@
 - `/docs/components/*`는 공유 UI의 props, 지침, 접근성과 실행 가능한 예제를 제공한다.
 - `/docs/extensions/*`는 workspace 전용 ThemeSelector와 lesson 컴포넌트를 제공한다.
 - `/docs/patterns/*`와 `/docs/recipes/*`는 제품 화면 조합을 제공한다.
-- `/docs/quality/*`는 콘텐츠, 접근성, 이관 범위를 설명한다.
 - `/docs/blocks`는 화면 단위 block 카탈로그를 제공한다. 개별 block은 문서 사이드바와 모바일 문서 메뉴에 두지 않으며, 전역 「블록」 진입과 이 페이지에서만 확인한다.
 - `/preview/*`는 문서 shell과 분리된 반응형 예제와 interaction contract를 제공한다.
 

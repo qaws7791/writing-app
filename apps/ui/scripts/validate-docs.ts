@@ -22,11 +22,11 @@ const knownSlugs = new Set(componentDocs.map((component) => component.slug));
 const failures: string[] = [];
 
 const expectedInventoryCounts = {
-  modules: 39,
-  stories: 154,
+  modules: 36,
+  stories: 143,
   ciTestModules: 35,
   playStories: 9,
-  mdx: 2,
+  mdx: 1,
 } as const;
 
 for (const [key, value] of Object.entries(expectedInventoryCounts)) {

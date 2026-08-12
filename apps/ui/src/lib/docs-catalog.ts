@@ -130,29 +130,6 @@ const compositionSections: DocNavSection[] = [
       },
     ],
   },
-  {
-    title: "품질",
-    items: [
-      {
-        title: "Content Contracts",
-        href: "/docs/quality/content",
-        description: "명확하고 관찰 가능한 UI 문구의 작성 기준입니다.",
-        category: "품질",
-      },
-      {
-        title: "Accessibility Checklist",
-        href: "/docs/quality/accessibility",
-        description: "자동 검사와 수동 키보드 검사의 완료 기준입니다.",
-        category: "품질",
-      },
-      {
-        title: "Migration Coverage",
-        href: "/docs/quality/migration-coverage",
-        description: "이전된 154개 실행 예제와 2개 문서의 목적지를 공개합니다.",
-        category: "품질",
-      },
-    ],
-  },
 ];
 
 const blockItems = blockSections.flatMap((section) =>
