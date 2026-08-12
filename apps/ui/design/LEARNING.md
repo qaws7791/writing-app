@@ -31,6 +31,7 @@
 | `step`             | 제목, 안내, 본문과 행동을 정렬하는 활동 프레임      |
 | `insight`          | 해설, 생각해 보기와 정오답 안내                     |
 | `choice`           | 선택지와 채점 상태                                  |
+| `verdict`          | 참·거짓 판정의 O·X 버튼                             |
 | `token`            | 빈칸 슬롯과 단어 칩                                 |
 | `segment`          | 문장·단락 구간 선택                                 |
 | `sortable`         | 순서 재정렬                                         |
@@ -69,7 +70,7 @@
 | `READING`            | `step` + `prose`                            |
 | `COMPARE`            | `step` + `compare` + `insight`              |
 | `MULTIPLE_CHOICE`    | `step` + `choice` + `insight`               |
-| `TRUE_FALSE`         | `step` + `choice` + `insight`               |
+| `TRUE_FALSE`         | `step` + `verdict` + `insight`              |
 | `FILL_BLANK`         | `step` + `token` + `insight`                |
 | `SELECT`             | `step` + `segment` + `insight`              |
 | `ORDER`              | `step` + `sortable` + `insight`             |

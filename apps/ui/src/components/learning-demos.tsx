@@ -177,6 +177,12 @@ import {
   TokenSentence,
   TokenSlot,
 } from "@workspace/ui/components/learning/token";
+import {
+  Verdict,
+  VerdictClaim,
+  VerdictOption,
+  type VerdictState,
+} from "@workspace/ui/components/learning/verdict";
 
 const TOTAL_STEPS = 5;
 
@@ -401,6 +407,81 @@ function ChoiceDemo() {
               <InsightTitle>{correct ? "정답입니다" : "다시 살펴보세요"}</InsightTitle>
               <InsightDescription>
                 설득문은 주장을 먼저 두고 근거로 뒷받침할 때 읽기 쉬워집니다.
+              </InsightDescription>
+            </Insight>
+          ) : null}
+        </StepBody>
+      </Step>
+    </DemoFrame>
+  );
+}
+
+function VerdictDemo() {
+  const [selected, setSelected] = useState<boolean | null>(null);
+  const [phase, setPhase] = useState<Phase>("answering");
+  const answer = false;
+  const correct = selected === answer;
+
+  const reset = () => {
+    setSelected(null);
+    setPhase("answering");
+  };
+
+  const stateFor = (value: boolean): VerdictState => {
+    if (phase === "answering") return selected === value ? "selected" : "idle";
+    if (value === answer) return "correct";
+    if (selected === value) return "incorrect";
+    return "locked";
+  };
+
+  return (
+    <DemoFrame
+      stepIndex={2}
+      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
+      primaryDisabled={phase === "answering" && selected === null}
+      onPrimary={() => {
+        if (phase === "answering") {
+          setPhase("checked");
+          return;
+        }
+        if (!correct) {
+          reset();
+          return;
+        }
+        setPhase("done");
+      }}
+      showReset={phase !== "answering"}
+      onReset={reset}
+      onClose={reset}
+    >
+      <Step>
+        <StepHeader>
+          <StepTitle>참인지 거짓인지 판단하세요</StepTitle>
+        </StepHeader>
+        <StepBody>
+          <div className="flex flex-col gap-8">
+            <VerdictClaim>설득문에서 근거는 주장을 반복하는 문장으로 충분하다.</VerdictClaim>
+            <Verdict aria-label="참 또는 거짓">
+              <VerdictOption
+                kind="true"
+                selected={selected === true}
+                state={stateFor(true)}
+                onClick={() => phase === "answering" && setSelected(true)}
+              />
+              <VerdictOption
+                kind="false"
+                selected={selected === false}
+                state={stateFor(false)}
+                onClick={() => phase === "answering" && setSelected(false)}
+              />
+            </Verdict>
+          </div>
+          {phase !== "answering" ? (
+            <Insight tone={correct ? "correct" : "incorrect"}>
+              <InsightEyebrow>해설</InsightEyebrow>
+              <InsightTitle>{correct ? "정답입니다" : "다시 살펴보세요"}</InsightTitle>
+              <InsightDescription>
+                근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.
               </InsightDescription>
             </Insight>
           ) : null}
@@ -1766,6 +1847,7 @@ const LEARNING_PREVIEWS: Record<string, () => ReactNode> = {
   prose: () => <ReadingDemo />,
   compare: () => <CompareDemo />,
   choice: () => <ChoiceDemo />,
+  verdict: () => <VerdictDemo />,
   token: () => <TokenDemo />,
   segment: () => <SegmentDemo />,
   sortable: () => <SortableDemo />,

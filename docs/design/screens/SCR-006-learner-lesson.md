@@ -44,7 +44,7 @@
 - 나가기 확인은 `AlertDialog`를 사용한다. 취소는 `계속 학습`, 확인은 `나가기`이며 확인 action은 `default`(charcoal) variant를 쓴다. 레슨은 입력을 보존할 수 있을 때만 코스로 이동한다.
 - 완료 화면은 semantic `background` 위에 `LessonComplete` anatomy를 사용한다.
 - markdown 본문은 앱의 `ReactMarkdown` 결과를 `ProseBody`로 감싼다.
-- 선택형 UI는 `Choice`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `incorrect`, `missed`, `locked` 상태를 표현한다.
+- 선택형 UI는 `Choice`와 `Verdict`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `incorrect`, `missed`, `locked` 상태를 표현한다. `TRUE_FALSE`는 `missed`를 쓰지 않는다.
 - 완료 화면은 레슨 요약이 있으면 `이번 레슨 요약` 목록을 표시한다.
 - 레슨 요약이 없으면 완료 화면의 핵심 요약 영역을 표시하지 않는다.
 - 레슨 화면 구현은 시작, 진행, 완료 화면 파일을 분리하고, 다음 레슨 탐색은 `lesson-next-course-lesson.ts` selector가 담당한다.
@@ -55,7 +55,8 @@
 - 순서 스텝은 `Sortable` 항목 목록과 드래그 핸들을 제공한다.
 - 순서 스텝의 드래그 핸들은 pointer와 keyboard 입력을 모두 지원한다.
 - 순서 스텝의 드래그 핸들은 항목 이름과 현재 위치를 이해할 수 있는 한국어 접근성 이름과 이동 안내를 제공한다.
-- 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`, `MULTIPLE_CHOICE`·`TRUE_FALSE`의 `Choice`, `FILL_BLANK`·`SENTENCE_BUILD`의 `Token`, `SELECT`·`ERROR_CORRECT`의 `Segment`, `ORDER`·`PARAGRAPH_ORGANIZE`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify`, `TRANSCRIBE`의 `Compose`, `ERROR_CORRECT`의 `Choice` 조합을 사용한다.
+- 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`, `MULTIPLE_CHOICE`의 `Choice`, `TRUE_FALSE`의 `Verdict`, `FILL_BLANK`·`SENTENCE_BUILD`의 `Token`, `SELECT`·`ERROR_CORRECT`의 `Segment`, `ORDER`·`PARAGRAPH_ORGANIZE`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify`, `TRANSCRIBE`의 `Compose`, `ERROR_CORRECT`의 `Choice` 조합을 사용한다.
+- 참거짓 스텝은 본문 주장 아래에 1행 2열 O·X 버튼을 둔다. O는 참, X는 거짓이다. 보이는 텍스트 레이블은 두지 않고 접근 가능한 이름으로 참·거짓을 제공한다.
 - 채점 가능 스텝(퀴즈)에서 오답인 경우 '계속하기'를 누르면 다음 스텝으로 넘어가지 않고, 정오답 피드백 바가 닫히며 사용자가 다시 답을 입력하고 재채점("확인하기")할 수 있는 상태로 돌아간다. 정답인 경우에만 다음 스텝으로 진행한다.
 - 정오답, 해설, 다음 스텝과 완료 화면은 서버 evaluation과 transition 결과로만 표시한다. 클라이언트는 표시 문자열이나 배열 위치로 정답을 추론하지 않는다.
 - 저장, 동기화, 오프라인, version과 충돌 상태는 레슨에 표시하지 않는다. 진행 중 문구는 학습자가 실행한 행동을 설명한다.

@@ -3,26 +3,25 @@
 import { useState } from "react"
 
 import {
-  Choice,
-  ChoiceContent,
-  ChoiceGroup,
-  ChoiceLabel,
-  type ChoiceState,
-} from "#ui/components/learning/choice"
-import {
   Insight,
   InsightDescription,
   InsightEyebrow,
 } from "#ui/components/learning/insight"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
+import {
+  Verdict,
+  VerdictClaim,
+  VerdictOption,
+  type VerdictState,
+} from "#ui/components/learning/verdict"
 import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 
 export type TrueFalseValue = boolean
 
 const OPTIONS = [
-  { id: "true", label: "참", value: true as const },
-  { id: "false", label: "거짓", value: false as const },
-] as const
+  { kind: "true" as const, value: true },
+  { kind: "false" as const, value: false },
+]
 
 export function TrueFalseAnswer({
   checked = false,
@@ -53,43 +52,39 @@ export function TrueFalseAnswer({
         </StepTitle>
       </StepHeader>
       <StepBody>
-        <p className="text-base leading-7 text-pretty text-foreground">
-          {statement}
-        </p>
-        <ChoiceGroup aria-label="참 또는 거짓" type="single">
-          {OPTIONS.map((option) => {
-            const isSelected = selected === option.value
-            const state: ChoiceState =
-              checked === false
-                ? isSelected
-                  ? "selected"
-                  : "idle"
-                : option.value === correctAnswer
-                  ? "correct"
-                  : isSelected
-                    ? "incorrect"
-                    : "locked"
+        <div className="flex flex-col gap-8">
+          <VerdictClaim>{statement}</VerdictClaim>
+          <Verdict aria-label="참 또는 거짓">
+            {OPTIONS.map((option) => {
+              const isSelected = selected === option.value
+              const state: VerdictState =
+                checked === false
+                  ? isSelected
+                    ? "selected"
+                    : "idle"
+                  : option.value === correctAnswer
+                    ? "correct"
+                    : isSelected
+                      ? "incorrect"
+                      : "locked"
 
-            return (
-              <Choice
-                key={option.id}
-                mode="single"
-                onClick={() => {
-                  if (checked === false) {
-                    setSelected(option.value)
-                    onSelect?.(option.value)
-                  }
-                }}
-                selected={isSelected}
-                state={state}
-              >
-                <ChoiceContent>
-                  <ChoiceLabel>{option.label}</ChoiceLabel>
-                </ChoiceContent>
-              </Choice>
-            )
-          })}
-        </ChoiceGroup>
+              return (
+                <VerdictOption
+                  key={option.kind}
+                  kind={option.kind}
+                  onClick={() => {
+                    if (checked === false) {
+                      setSelected(option.value)
+                      onSelect?.(option.value)
+                    }
+                  }}
+                  selected={isSelected}
+                  state={state}
+                />
+              )
+            })}
+          </Verdict>
+        </div>
         {checked !== false && explanation ? (
           <Insight tone="think">
             <InsightEyebrow>해설</InsightEyebrow>

@@ -157,6 +157,7 @@ const definitions = [
     "Actions",
   ],
   ["tooltip", "Tooltip", "요소에 대한 짧은 보조 설명을 포인터나 포커스로 표시합니다.", "Overlay"],
+  ["verdict", "Verdict", "참·거짓 판정에서 본문 아래 1행 2열로 O·X 버튼을 표시합니다.", "Learning"],
 
   ["admin-overview", "Admin Overview", "조치가 필요한 운영 항목을 우선 보여 줍니다.", "Admin"],
   [
@@ -579,6 +580,7 @@ const learningComponents = new Set([
   "standing",
   "step",
   "token",
+  "verdict",
 
   "admin-overview",
   "argument-map",

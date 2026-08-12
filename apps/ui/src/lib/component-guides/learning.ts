@@ -84,7 +84,7 @@ import { Button } from "@/components/primitives/button"
         description: "프레임 너비나 간격을 조정할 때 사용합니다.",
       },
     ],
-    related: ["lesson", "insight", "prose", "choice"],
+    related: ["lesson", "insight", "prose", "choice", "verdict"],
   },
   choice: {
     slug: "choice",
@@ -173,7 +173,87 @@ export function MultipleChoice() {
         description: "라디오 또는 체크박스 역할을 결정합니다.",
       },
     ],
-    related: ["step", "insight", "segment"],
+    related: ["step", "insight", "segment", "verdict"],
+  },
+  verdict: {
+    slug: "verdict",
+    summary:
+      "참·거짓 판정 표면입니다. 본문 주장 아래에 1행 2열 O·X 버튼을 두고 idle·selected·correct·incorrect·locked 상태로 채점 전후를 표현합니다.",
+    examples: [
+      {
+        id: "ox-buttons",
+        title: "O·X 버튼",
+        description: "참은 원, 거짓은 가름표로 구분하는 기본 구성입니다.",
+        preview: "default",
+        code: `import { Verdict, VerdictOption } from "@/components/learning/verdict"
+
+export function TrueFalseButtons() {
+  return (
+    <Verdict aria-label="참 또는 거짓" className="max-w-md">
+      <VerdictOption kind="true" selected />
+      <VerdictOption kind="false" />
+    </Verdict>
+  )
+}`,
+      },
+      {
+        id: "with-claim",
+        title: "주장과 판정",
+        description: "본문 주장을 먼저 두고 그 아래에 O·X 버튼을 배치합니다.",
+        code: `import { Verdict, VerdictClaim, VerdictOption } from "@/components/learning/verdict"
+
+<div className="flex w-full max-w-md flex-col gap-8">
+  <VerdictClaim>설득문에서 근거는 주장을 반복하는 문장으로 충분하다.</VerdictClaim>
+  <Verdict aria-label="참 또는 거짓">
+    <VerdictOption kind="true" />
+    <VerdictOption kind="false" selected />
+  </Verdict>
+</div>`,
+      },
+      {
+        id: "graded",
+        title: "채점 상태",
+        description:
+          "서버 채점 결과를 state로 표시합니다. 정답은 과장된 색 대신 농도와 도형으로 구분합니다.",
+        code: `<Verdict aria-label="참 또는 거짓" className="max-w-md">
+  <VerdictOption kind="true" state="incorrect" selected />
+  <VerdictOption kind="false" state="correct" />
+</Verdict>`,
+      },
+      {
+        id: "locked",
+        title: "잠금",
+        description: "확인 후 고르지 않은 선택지는 locked로 재선택을 막습니다.",
+        code: `<Verdict aria-label="참 또는 거짓" className="max-w-md">
+  <VerdictOption kind="true" state="correct" selected />
+  <VerdictOption kind="false" state="locked" />
+</Verdict>`,
+      },
+    ],
+    usageNotes: [
+      "객관식 Choice 목록을 재사용하지 마세요. 참거짓은 주장 본문과 O·X 판정으로 구성합니다.",
+      "O와 X는 도형으로 구분하고, 보이는 텍스트 대신 aria-label로 참·거짓을 제공합니다.",
+      "채점 전에는 정답을 색이나 위치로 암시하지 마세요.",
+    ],
+    accessibility: [
+      "그룹은 role=radiogroup, 각 버튼은 role=radio와 aria-checked를 사용합니다.",
+      "O·X 도형은 장식이며 각 버튼의 aria-label은 참 또는 거짓입니다.",
+    ],
+    props: [
+      {
+        name: "kind",
+        type: '"true" | "false"',
+        defaultValue: "—",
+        description: "O(참) 또는 X(거짓) 도형을 결정합니다.",
+      },
+      {
+        name: "state",
+        type: '"idle" | "selected" | "correct" | "incorrect" | "locked"',
+        defaultValue: '"idle"',
+        description: "선택·채점·잠금 상태를 시각적으로 전달합니다.",
+      },
+    ],
+    related: ["step", "choice", "insight"],
   },
   token: {
     slug: "token",
