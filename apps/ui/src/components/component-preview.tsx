@@ -104,15 +104,6 @@ import {
   ClassifyPool,
 } from "@workspace/ui/components/ui/classify";
 import {
-  Coaching,
-  CoachingActions,
-  CoachingFocus,
-  CoachingMeta,
-  CoachingSource,
-  CoachingSourceBody,
-  CoachingSourceLabel,
-} from "@workspace/ui/components/ui/coaching";
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -641,22 +632,6 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
             </ClassifyItem>
           </ClassifyPool>
         </Classify>
-      );
-    case "coaching":
-      return (
-        <Coaching status="idle" className="w-full max-w-md">
-          <CoachingFocus>코칭 초점 · 논리 연결</CoachingFocus>
-          <CoachingSource>
-            <CoachingSourceLabel>작성 내용</CoachingSourceLabel>
-            <CoachingSourceBody>
-              숙제를 없애면 학습 부담은 줄지만, 복습의 리듬도 함께 사라질 수 있다.
-            </CoachingSourceBody>
-          </CoachingSource>
-          <CoachingActions>
-            <CoachingMeta>남은 요청 2회</CoachingMeta>
-            <Button size="sm">AI 코칭 요청</Button>
-          </CoachingActions>
-        </Coaching>
       );
     case "collapsible":
       return (

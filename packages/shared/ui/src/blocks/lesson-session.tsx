@@ -22,37 +22,12 @@ import {
   type ClassifyState,
 } from "#ui/components/ui/classify"
 import {
-  Coaching,
-  CoachingActions,
-  CoachingFocus,
-  CoachingItem,
-  CoachingList,
-  CoachingMeta,
-  CoachingResult,
-  CoachingSection,
-  CoachingSectionTitle,
-  CoachingSource,
-  CoachingSourceBody,
-  CoachingSourceLabel,
-  CoachingStatus,
-  CoachingSummary,
-  type CoachingPhase,
-} from "#ui/components/ui/coaching"
-import {
   Compare,
   ComparePanel,
   CompareVersion,
   CompareVersionList,
   CompareVersions,
 } from "#ui/components/ui/compare"
-import {
-  Compose,
-  ComposeBadge,
-  ComposeClaim,
-  ComposeContext,
-  ComposeEditor,
-  ComposeMeter,
-} from "#ui/components/ui/compose"
 import {
   Insight,
   InsightDescription,
@@ -118,8 +93,6 @@ type StepType =
   | "MATCH"
   | "CATEGORIZE"
   | "COMPARE"
-  | "WRITE"
-  | "AI_FEEDBACK"
 
 type GradePhase = "answering" | "checked"
 
@@ -132,8 +105,6 @@ const FLOW: StepType[] = [
   "MATCH",
   "CATEGORIZE",
   "COMPARE",
-  "WRITE",
-  "AI_FEEDBACK",
 ]
 
 const TOTAL_STEPS = FLOW.length
@@ -186,10 +157,6 @@ const CLASSIFY_ITEMS = [
   { id: "i2", label: "참여 학생이 늘었다는 조사", answer: "evidence" },
   { id: "i3", label: "숙제 없는 날이 필요하다", answer: "claim" },
 ] as const
-
-const WRITE_MIN = 40
-const WRITE_GOAL = 80
-const WRITE_MAX = 160
 
 type SessionChromeProps = {
   stepIndex: number
@@ -1005,176 +972,15 @@ function CompareStep({
   )
 }
 
-function WriteStep({
-  stepIndex,
-  initialValue = "",
-  onComplete,
-  onClose,
-}: {
-  stepIndex: number
-  initialValue?: string
-  onComplete: (response: string) => void
-  onClose: () => void
-}) {
-  const [value, setValue] = React.useState(initialValue)
-  const [submitted, setSubmitted] = React.useState(false)
-  const ready = value.trim().length >= WRITE_MIN && value.length <= WRITE_MAX
-
-  return (
-    <SessionChrome
-      stepIndex={stepIndex}
-      primaryLabel={submitted ? "다음으로" : "제출하기"}
-      primaryDisabled={!submitted && !ready}
-      onPrimary={() => (submitted ? onComplete(value) : setSubmitted(true))}
-      showReset={submitted}
-      onReset={() => {
-        setValue("")
-        setSubmitted(false)
-      }}
-      onClose={onClose}
-    >
-      <Step>
-        <StepHeader>
-          <StepTitle>반박 문단을 작성하세요</StepTitle>
-          <StepGuide>글자 수 기준을 충족하면 제출할 수 있습니다.</StepGuide>
-        </StepHeader>
-        <StepBody>
-          <Compose>
-            <ComposeBadge>반박 쓰기</ComposeBadge>
-            <ComposeClaim>모든 숙제는 폐지해야 한다.</ComposeClaim>
-            <ComposeContext>
-              위 주장에 대해 한 단락으로 반박하세요.
-            </ComposeContext>
-            <ComposeEditor
-              value={value}
-              disabled={submitted}
-              placeholder="전제를 지적하고, 반례와 대안을 이어서 적어 보세요."
-              onChange={(event) => setValue(event.target.value)}
-            />
-            <ComposeMeter
-              value={value.length}
-              min={WRITE_MIN}
-              goal={WRITE_GOAL}
-              max={WRITE_MAX}
-            />
-          </Compose>
-          {submitted ? (
-            <Insight tone="neutral">
-              <InsightEyebrow>제출됨</InsightEyebrow>
-              <InsightDescription>
-                글자 수 기준을 만족했습니다. 다음 스텝에서 AI 코칭을 요청할 수
-                있습니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
-        </StepBody>
-      </Step>
-    </SessionChrome>
-  )
-}
-
-function CoachingStep({
-  stepIndex,
-  sourceText,
-  onComplete,
-  onClose,
-}: {
-  stepIndex: number
-  sourceText: string
-  onComplete: () => void
-  onClose: () => void
-}) {
-  const [status, setStatus] = React.useState<CoachingPhase>("idle")
-  const [remaining, setRemaining] = React.useState(3)
-
-  React.useEffect(() => {
-    if (status !== "loading") return
-    const timer = window.setTimeout(() => {
-      setStatus("ready")
-      setRemaining((value) => Math.max(0, value - 1))
-    }, 900)
-    return () => window.clearTimeout(timer)
-  }, [status])
-
-  const reset = () => {
-    setStatus("idle")
-    setRemaining(3)
-  }
-
-  return (
-    <SessionChrome
-      stepIndex={stepIndex}
-      primaryLabel="계속하기"
-      onPrimary={onComplete}
-      secondaryLabel={
-        status !== "loading" && remaining > 0
-          ? status === "ready"
-            ? "다시 요청"
-            : "AI 코칭 요청"
-          : undefined
-      }
-      onSecondary={remaining > 0 ? () => setStatus("loading") : undefined}
-      showReset={status === "ready"}
-      onReset={reset}
-      onClose={onClose}
-    >
-      <Step>
-        <StepHeader>
-          <StepTitle>AI 코칭</StepTitle>
-          <StepGuide>
-            앞서 작성한 쓰기 답안을 바탕으로 피드백을 받아보세요.
-          </StepGuide>
-        </StepHeader>
-        <StepBody>
-          <Coaching status={status}>
-            <CoachingFocus>코칭 초점 · 논리 연결</CoachingFocus>
-            <CoachingSource>
-              <CoachingSourceLabel>작성 내용</CoachingSourceLabel>
-              <CoachingSourceBody>{sourceText}</CoachingSourceBody>
-            </CoachingSource>
-            {status === "loading" ? <CoachingStatus /> : null}
-            {status === "ready" ? (
-              <CoachingResult>
-                <CoachingSummary>
-                  반론을 인정한 뒤 대안을 제시해 균형이 좋습니다.
-                </CoachingSummary>
-                <CoachingSection>
-                  <CoachingSectionTitle>강점</CoachingSectionTitle>
-                  <CoachingList>
-                    <CoachingItem>전제를 분명히 짚었습니다</CoachingItem>
-                  </CoachingList>
-                </CoachingSection>
-                <CoachingSection>
-                  <CoachingSectionTitle>개선점</CoachingSectionTitle>
-                  <CoachingList>
-                    <CoachingItem>반례를 한 문장 더 보강하세요</CoachingItem>
-                  </CoachingList>
-                </CoachingSection>
-              </CoachingResult>
-            ) : null}
-            <CoachingActions>
-              <CoachingMeta>남은 요청 {remaining}회</CoachingMeta>
-            </CoachingActions>
-          </Coaching>
-        </StepBody>
-      </Step>
-    </SessionChrome>
-  )
-}
-
 function LessonFlowStep({
   kind,
   stepIndex,
-  writeResponse,
   onComplete,
-  onWriteComplete,
   onClose,
 }: {
   kind: StepType
   stepIndex: number
-  writeResponse: string
   onComplete: () => void
-  onWriteComplete: (response: string) => void
   onClose: () => void
 }) {
   switch (kind) {
@@ -1242,24 +1048,6 @@ function LessonFlowStep({
           onClose={onClose}
         />
       )
-    case "WRITE":
-      return (
-        <WriteStep
-          stepIndex={stepIndex}
-          initialValue={writeResponse}
-          onComplete={onWriteComplete}
-          onClose={onClose}
-        />
-      )
-    case "AI_FEEDBACK":
-      return (
-        <CoachingStep
-          stepIndex={stepIndex}
-          sourceText={writeResponse}
-          onComplete={onComplete}
-          onClose={onClose}
-        />
-      )
   }
 }
 
@@ -1267,12 +1055,10 @@ function LessonSession({ className, ...props }: React.ComponentProps<"div">) {
   const [index, setIndex] = React.useState(0)
   const [finished, setFinished] = React.useState(false)
   const [seed, setSeed] = React.useState(0)
-  const [writeResponse, setWriteResponse] = React.useState("")
 
   const resetAll = () => {
     setIndex(0)
     setFinished(false)
-    setWriteResponse("")
     setSeed((value) => value + 1)
   }
 
@@ -1283,11 +1069,6 @@ function LessonSession({ className, ...props }: React.ComponentProps<"div">) {
     }
     setIndex((value) => value + 1)
     setSeed((value) => value + 1)
-  }
-
-  const completeWrite = (response: string) => {
-    setWriteResponse(response)
-    advance()
   }
 
   const currentStep = FLOW[index]
@@ -1314,7 +1095,7 @@ function LessonSession({ className, ...props }: React.ComponentProps<"div">) {
             <LessonComplete>
               <LessonCompleteTitle>레슨을 마쳤습니다</LessonCompleteTitle>
               <LessonCompleteDescription>
-                주장과 근거를 읽고, 고르고, 연결하고, 쓰는 열 가지 활동을 모두
+                주장과 근거를 읽고, 고르고, 연결하는 여덟 가지 활동을 모두
                 둘러보았습니다. 다시 시작하면 처음부터 연습할 수 있습니다.
               </LessonCompleteDescription>
             </LessonComplete>
@@ -1335,9 +1116,7 @@ function LessonSession({ className, ...props }: React.ComponentProps<"div">) {
           key={`${currentStep}-${seed}`}
           kind={currentStep}
           stepIndex={index + 1}
-          writeResponse={writeResponse}
           onComplete={advance}
-          onWriteComplete={completeWrite}
           onClose={resetAll}
         />
       )}

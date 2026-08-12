@@ -25,12 +25,6 @@ export function gradeLearnerStep(
       ? { answer: null, evaluation: null, kind: "accepted" }
       : { kind: "invalid" }
   }
-  if (completion.kind === "skip-ai-feedback") {
-    return step.type === "AI_FEEDBACK"
-      ? { answer: null, evaluation: null, kind: "accepted" }
-      : { kind: "invalid" }
-  }
-
   switch (completion.submission.type) {
     case "MULTIPLE_CHOICE":
       return step.type === completion.submission.type
@@ -55,10 +49,6 @@ export function gradeLearnerStep(
     case "CATEGORIZE":
       return step.type === completion.submission.type
         ? gradeCategorize(step, completion.submission)
-        : { kind: "invalid" }
-    case "WRITE":
-      return step.type === completion.submission.type
-        ? gradeWrite(step, completion.submission)
         : { kind: "invalid" }
   }
 }
@@ -262,21 +252,6 @@ function gradeCategorize(
     items,
     type: step.type,
   })
-}
-
-function gradeWrite(
-  step: Extract<LearningStep, { readonly type: "WRITE" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "WRITE" }>
-): StepGradingResult {
-  const length = answer.text.trim().length
-  if (length < step.min || (step.max !== undefined && length > step.max)) {
-    return { kind: "invalid" }
-  }
-  return {
-    answer,
-    evaluation: { accepted: true, type: step.type },
-    kind: "accepted",
-  }
 }
 
 function evaluatedResult(

@@ -93,61 +93,17 @@ export const courseDetailDtoSchema = courseSummaryDtoSchema.extend({
   units: z.array(courseUnitDtoSchema),
 })
 
-export const lessonDtoSchema = z
-  .strictObject({
-    id: lessonIdSchema,
-    courseId: courseIdSchema,
-    unitId: unitIdSchema,
-    title: z.string(),
-    category: z.string().nullable(),
-    description: z.string().nullable(),
-    estimatedMinutes: z.number().int().positive(),
-    summary: z.array(z.string()),
-    steps: z.array(lessonStepDtoSchema),
-  })
-  .superRefine((lesson, context) => {
-    validateAiFeedbackTargets(lesson.steps, context)
-  })
-
-export function validateAiFeedbackTargets(
-  steps: readonly LessonStepDto[],
-  context: z.RefinementCtx
-): void {
-  const stepsById = new Map(steps.map((step) => [step.id, step]))
-
-  steps.forEach((step, index) => {
-    if (step.type !== "AI_FEEDBACK") return
-
-    const target = stepsById.get(step.target)
-    const path = ["steps", index, "target"]
-
-    if (target === undefined) {
-      context.addIssue({
-        code: "custom",
-        message: "AI 코칭 대상 스텝은 같은 레슨에 존재해야 합니다.",
-        path,
-      })
-      return
-    }
-
-    if (target.type !== "WRITE") {
-      context.addIssue({
-        code: "custom",
-        message: "AI 코칭 대상 스텝은 WRITE 타입이어야 합니다.",
-        path,
-      })
-      return
-    }
-
-    if (target.sortOrder >= step.sortOrder) {
-      context.addIssue({
-        code: "custom",
-        message: "AI 코칭 대상 스텝은 AI 코칭 스텝보다 앞에 있어야 합니다.",
-        path,
-      })
-    }
-  })
-}
+export const lessonDtoSchema = z.strictObject({
+  id: lessonIdSchema,
+  courseId: courseIdSchema,
+  unitId: unitIdSchema,
+  title: z.string(),
+  category: z.string().nullable(),
+  description: z.string().nullable(),
+  estimatedMinutes: z.number().int().positive(),
+  summary: z.array(z.string()),
+  steps: z.array(lessonStepDtoSchema),
+})
 
 export type LessonStepType = z.infer<typeof lessonStepTypeSchema>
 export type LessonStepDto = z.infer<typeof lessonStepDtoSchema>

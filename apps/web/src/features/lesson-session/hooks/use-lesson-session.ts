@@ -4,9 +4,6 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from "react"
 
 import {
   getLessonStep,
-  type LessonAiFeedbackOutcome,
-  type LessonAiFeedbackRequest,
-  type LessonAiFeedbackSkipOutcome,
   type LessonStepAnswerPayload,
 } from "@/features/lesson-session/model/lesson-logic"
 import { useLessonDraftSync } from "@/features/lesson-session/hooks/use-lesson-draft-sync"
@@ -65,10 +62,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     lessonId: lesson.id,
     onServerDraftApplied: applyServerDraft,
   })
-  const aiFeedbackRequestRef = useRef<{
-    readonly idempotencyKey: string
-    readonly stepId: string
-  } | null>(null)
   const isMountedRef = useRef(false)
 
   useEffect(() => {
@@ -150,89 +143,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     [send, stageDraft]
   )
 
-  const requestAiFeedback = useCallback(
-    async ({
-      stepId,
-    }: LessonAiFeedbackRequest): Promise<LessonAiFeedbackOutcome> => {
-      const previousRequest = aiFeedbackRequestRef.current
-      const idempotencyKey =
-        previousRequest?.stepId === stepId
-          ? previousRequest.idempotencyKey
-          : crypto.randomUUID()
-      aiFeedbackRequestRef.current = { idempotencyKey, stepId }
-      const result = await effects.requestAiFeedback({ idempotencyKey, stepId })
-
-      if (result.status === "error") {
-        if (!result.reuseIdempotencyKey) {
-          aiFeedbackRequestRef.current = null
-        }
-        return {
-          kind: result.kind,
-          ...(result.retryAfterSeconds === undefined
-            ? {}
-            : { retryAfterSeconds: result.retryAfterSeconds }),
-          status: "error",
-        }
-      }
-
-      if (result.transition.status === "retry") {
-        aiFeedbackRequestRef.current = null
-        return {
-          kind: "fatal",
-          status: "error",
-        }
-      }
-
-      aiFeedbackRequestRef.current = null
-      send({ transition: result.transition, type: "STEP_ACCEPTED" })
-      return { feedback: result.feedback, status: "ok" }
-    },
-    [effects, send]
-  )
-
-  const skipAiFeedback = useCallback(
-    async ({
-      stepId,
-    }: LessonAiFeedbackRequest): Promise<LessonAiFeedbackSkipOutcome> => {
-      const state = sessionStateRef.current
-      const step =
-        state.status === "active"
-          ? getLessonStep(lesson, state.currentStepIndex)
-          : null
-      if (
-        state.status !== "active" ||
-        state.activity !== "idle" ||
-        state.pendingTransition !== null ||
-        step?.type !== "AI_FEEDBACK" ||
-        step.id !== stepId
-      ) {
-        return { status: "error" }
-      }
-
-      send({ type: "SUBMIT_REQUESTED" })
-      const result = await effects.completeStep({
-        request: { kind: "skip-ai-feedback" },
-        stepId,
-      })
-      if (!isMountedRef.current) {
-        return { status: "error" }
-      }
-      if (result.status === "error" || result.transition.status === "retry") {
-        const message =
-          result.status === "error"
-            ? result.message || LESSON_STEP_ERROR
-            : LESSON_STEP_ERROR
-        send({ message, type: "SUBMIT_FAILED" })
-        return { status: "error" }
-      }
-
-      send({ transition: result.transition, type: "STEP_ACCEPTED" })
-      send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
-      return { status: "ok" }
-    },
-    [effects, lesson, send]
-  )
-
   async function submitCurrentStep(): Promise<void> {
     const state = sessionStateRef.current
     if (state.status !== "active" || state.activity !== "idle") return
@@ -248,8 +158,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
       send({ stepId: step.id, type: "RETRY_EDIT_REQUESTED" })
       return
     }
-
-    if (step.type === "AI_FEEDBACK") return
 
     const request = createCompleteStepRequest(
       step,
@@ -284,10 +192,6 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
 
   return {
     answerError: null,
-    aiFeedbackDraftText: getAiFeedbackDraftText(
-      currentStep,
-      sessionState.status === "active" ? sessionState.answerPayloads : {}
-    ),
     checked,
     completeError: isActive ? sessionState.submitError : null,
     completion:
@@ -307,9 +211,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     prepareToLeave: flushAll,
     renderRevision:
       currentStep === null ? 0 : (renderRevisionByStepId[currentStep.id] ?? 0),
-    requestAiFeedback,
     saveAnswer,
-    skipAiFeedback,
     startError:
       sessionState.status === "not-started" ? sessionState.startError : null,
     startLesson,
@@ -354,15 +256,6 @@ function toDraftAnswerPayloads(
   drafts: readonly LessonStepDraft[]
 ): Readonly<Record<string, LessonStepDraftAnswer>> {
   return Object.fromEntries(drafts.map((draft) => [draft.stepId, draft.answer]))
-}
-
-function getAiFeedbackDraftText(
-  step: LessonStep | null,
-  answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
-): string {
-  if (step?.type !== "AI_FEEDBACK") return ""
-  const targetAnswer = answerPayloads[step.target]
-  return targetAnswer?.type === "WRITE" ? targetAnswer.text : ""
 }
 
 function isEvaluatedChoiceStep(step: LessonStep): boolean {

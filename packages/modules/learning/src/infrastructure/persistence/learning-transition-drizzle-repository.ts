@@ -5,7 +5,6 @@ import {
   curriculumVersionIdSchema,
   inProgressLessonLearningStateSchema,
   lessonLearningStateSchema,
-  learnerStepSubmissionSchema,
   type CourseLearningState,
   type LessonLearningState,
 } from "@workspace/contracts/learning/step-data"
@@ -27,30 +26,17 @@ import {
 } from "#learning/infrastructure/persistence/schema"
 import { readLearnerStepDrafts } from "#learning/infrastructure/persistence/learner-step-draft-drizzle"
 import {
-  decideFinalizeAiFeedback,
-  decidePrepareAiFeedbackContext,
-  decidePrepareAiFeedbackTarget,
-  type FinalizeAiFeedbackSnapshot,
-  type PrepareAiFeedbackTargetSnapshot,
-} from "#learning/domain/ai-feedback-transition-decision"
-import {
   planCompleteStep,
   type CompleteStepEffect,
   type CompleteStepPlan,
   type CompleteStepSnapshot,
 } from "#learning/domain/complete-step-effect-plan"
-import {
-  toLearningDateKey,
-  type LearningDateKey,
-} from "#learning/domain/learning-date"
+import { type LearningDateKey } from "#learning/domain/learning-date"
 import type {
-  CompleteLearnerAiFeedbackCommand,
   CompleteLearnerStepCommand,
   CompleteLearnerStepTransitionResult,
-  LearnerAiFeedbackContext,
   LearnerLessonScope,
   LearnerTransitionError,
-  PrepareLearnerAiFeedbackCommand,
   SaveLearnerStepDraftCommand,
   SaveLearnerStepDraftResult,
   StartLearnerLessonCommand,
@@ -90,13 +76,6 @@ export function createDrizzleLearnerTransitionRepository(
   db: WritingAppDatabase
 ): LearningTransitionRepository {
   return {
-    async completeAiFeedbackStep(command, curriculum) {
-      return db.transaction(
-        (transaction) =>
-          completeAiFeedbackStep(transaction, command, curriculum),
-        { behavior: "immediate" }
-      )
-    },
     async completeStep(command, curriculum) {
       return db.transaction(
         (transaction) => completeStep(transaction, command, curriculum),
@@ -105,9 +84,6 @@ export function createDrizzleLearnerTransitionRepository(
     },
     async findPinnedScope(input) {
       return readPinnedLearningScope(db, input)
-    },
-    async prepareAiFeedback(command, curriculum) {
-      return prepareAiFeedback(db, command, curriculum)
     },
     async saveStepDraft(command, curriculum) {
       return db.transaction(
@@ -121,64 +97,6 @@ export function createDrizzleLearnerTransitionRepository(
         { behavior: "immediate" }
       )
     },
-  }
-}
-
-function prepareAiFeedback(
-  db: WritingAppDatabase,
-  command: PrepareLearnerAiFeedbackCommand,
-  curriculum: LearningCurriculum
-): Result<LearnerAiFeedbackContext, LearnerTransitionError> {
-  const scope = findPinnedLessonScope(db, command, curriculum)
-  const snapshot: PrepareAiFeedbackTargetSnapshot =
-    scope === null
-      ? {
-          kind: "lesson-scope-missing",
-          publishedLessonExists:
-            findCurriculumLesson(curriculum, command.lessonId) !== null,
-        }
-      : {
-          isUnlocked: true,
-          kind: "lesson",
-          progress: toAiFeedbackProgressSnapshot(
-            readLessonProgress(db, command.userId, scope)
-          ),
-          steps: toAiFeedbackStepSnapshots(readLessonSteps(curriculum, scope)),
-        }
-  const target = decidePrepareAiFeedbackTarget(command, snapshot)
-  if (target.kind === "rejected") return err(target.error)
-  if (scope === null) {
-    throw new Error("Accepted AI feedback target has no pinned lesson scope")
-  }
-
-  const answerRow = db
-    .select({ answerJson: learnerLessonAnswers.answerJson })
-    .from(learnerLessonAnswers)
-    .where(
-      and(
-        eq(learnerLessonAnswers.userId, command.userId),
-        eq(learnerLessonAnswers.curriculumVersionId, scope.curriculumVersionId),
-        eq(learnerLessonAnswers.lessonId, command.lessonId),
-        eq(learnerLessonAnswers.stepId, target.targetStepId)
-      )
-    )
-    .get()
-  const lesson = findCurriculumLesson(curriculum, command.lessonId)
-  return decidePrepareAiFeedbackContext(command, target, {
-    answer: parseStoredAnswer(answerRow?.answerJson),
-    courseId: scope.courseId,
-    curriculumVersionId: scope.curriculumVersionId,
-    lessonTitle: lesson?.title ?? null,
-  })
-}
-
-function parseStoredAnswer(value: string | undefined) {
-  if (value === undefined) return null
-  try {
-    const result = learnerStepSubmissionSchema.safeParse(JSON.parse(value))
-    return result.success ? result.data : null
-  } catch {
-    return null
   }
 }
 
@@ -662,178 +580,6 @@ function applyCompleteStepEffect(
   }
 }
 
-function completeAiFeedbackStep(
-  transaction: LearningTransaction,
-  command: CompleteLearnerAiFeedbackCommand,
-  curriculum: LearningCurriculum
-): Result<CompleteLearnerStepTransitionResult, LearnerTransitionError> {
-  const scope = findPinnedLessonScope(transaction, command, curriculum)
-  if (scope === null) {
-    const decision = decideFinalizeAiFeedback(command, {
-      kind: "lesson-locked",
-    })
-    if (decision.kind === "rejected") return err(decision.error)
-    throw new Error("Missing lesson scope produced an accepted AI decision")
-  }
-  const steps = readLessonSteps(curriculum, scope)
-  const progress = readLessonProgress(transaction, command.userId, scope)
-  const snapshot: FinalizeAiFeedbackSnapshot = {
-    isUnlocked: true,
-    kind: "lesson",
-    progress: toAiFeedbackProgressSnapshot(progress),
-    steps: toAiFeedbackStepSnapshots(steps),
-  }
-  const decision = decideFinalizeAiFeedback(command, snapshot)
-  if (decision.kind === "rejected") return err(decision.error)
-
-  switch (decision.kind) {
-    case "replay-completed":
-      return ok(
-        readCompletedResult(
-          transaction,
-          command.userId,
-          scope,
-          steps,
-          curriculum
-        )
-      )
-    case "replay-advanced":
-      return ok({
-        evaluation: null,
-        kind: "advanced",
-        learning: readInProgressState(
-          transaction,
-          command.userId,
-          scope,
-          steps
-        ),
-      })
-    case "advance": {
-      const value = advanceAcceptedStep(transaction, {
-        answerWasSaved: false,
-        curriculum,
-        evaluation: null,
-        lessonId: command.lessonId,
-        occurredAt: command.occurredAt,
-        requestedStepIndex: decision.requestedStepIndex,
-        scope,
-        stepId: command.stepId,
-        steps,
-        userId: command.userId,
-      })
-      return ok(value)
-    }
-  }
-}
-
-function toAiFeedbackStepSnapshots(steps: ReturnType<typeof readLessonSteps>) {
-  return steps.map((step) => ({
-    content: step.content,
-    id: step.content.id,
-  }))
-}
-
-function toAiFeedbackProgressSnapshot(
-  progress: ReturnType<typeof readLessonProgress>
-) {
-  if (progress === null) return { kind: "not-started" } as const
-  return {
-    currentStepId: lessonStepIdSchema.parse(progress.currentStepId),
-    kind: progress.status === completedStatus ? "completed" : "in-progress",
-  } as const
-}
-
-function advanceAcceptedStep(
-  transaction: LearningTransaction,
-  input: {
-    readonly answerWasSaved: boolean
-    readonly curriculum: LearningCurriculum
-    readonly evaluation: CompleteLearnerStepTransitionResult["evaluation"]
-    readonly lessonId: CompleteLearnerStepCommand["lessonId"]
-    readonly occurredAt: Date
-    readonly requestedStepIndex: number
-    readonly scope: LessonScope
-    readonly stepId: CompleteLearnerStepCommand["stepId"]
-    readonly steps: ReturnType<typeof readLessonSteps>
-    readonly userId: CompleteLearnerStepCommand["userId"]
-  }
-): CompleteLearnerStepTransitionResult {
-  const nextStep = input.steps[input.requestedStepIndex + 1]
-  if (nextStep !== undefined) {
-    transaction
-      .update(learnerLessonProgress)
-      .set({ currentStepId: nextStep.id, updatedAt: input.occurredAt })
-      .where(
-        and(
-          eq(learnerLessonProgress.userId, input.userId),
-          eq(
-            learnerLessonProgress.curriculumVersionId,
-            input.scope.curriculumVersionId
-          ),
-          eq(learnerLessonProgress.lessonId, input.scope.lessonId),
-          eq(learnerLessonProgress.currentStepId, input.stepId),
-          eq(learnerLessonProgress.status, inProgressStatus)
-        )
-      )
-      .run()
-    recordTransitionActivity(
-      transaction,
-      input,
-      input.scope,
-      input.answerWasSaved,
-      false
-    )
-    return {
-      evaluation: input.evaluation,
-      kind: "advanced",
-      learning: readInProgressState(
-        transaction,
-        input.userId,
-        input.scope,
-        input.steps
-      ),
-    }
-  }
-
-  transaction
-    .update(learnerLessonProgress)
-    .set({
-      completedAt: input.occurredAt,
-      status: completedStatus,
-      updatedAt: input.occurredAt,
-    })
-    .where(
-      and(
-        eq(learnerLessonProgress.userId, input.userId),
-        eq(
-          learnerLessonProgress.curriculumVersionId,
-          input.scope.curriculumVersionId
-        ),
-        eq(learnerLessonProgress.lessonId, input.scope.lessonId),
-        eq(learnerLessonProgress.currentStepId, input.stepId),
-        eq(learnerLessonProgress.status, inProgressStatus)
-      )
-    )
-    .run()
-  updateCourseCompletion(transaction, input)
-  recordTransitionActivity(
-    transaction,
-    input,
-    input.scope,
-    input.answerWasSaved,
-    true
-  )
-
-  const completed = readCompletedResult(
-    transaction,
-    input.userId,
-    input.scope,
-    input.steps,
-    input.curriculum
-  )
-  return { ...completed, evaluation: input.evaluation }
-}
-
 function findPinnedLessonScope(
   db: TransitionDatabase,
   command: { readonly lessonId: string; readonly userId: string },
@@ -1248,65 +994,6 @@ function readStepIndex(
   const index = orderedSteps?.findIndex((step) => step.id === stepId) ?? -1
   if (index < 0) throw new Error("Current step was not found")
   return index
-}
-
-function updateCourseCompletion(
-  transaction: LearningTransaction,
-  input: Readonly<{
-    curriculum: LearningCurriculum
-    occurredAt: Date
-    scope: LessonScope
-    userId: string
-  }>
-): void {
-  const completedLessonIds = new Set(
-    readCompletedLessonIds(transaction, input.userId, input.scope)
-  )
-  if (
-    readCourseCompletionLessonIds(input.curriculum).some(
-      (lessonId) => !completedLessonIds.has(lessonId)
-    )
-  ) {
-    return
-  }
-
-  transaction
-    .update(learnerCourseProgress)
-    .set({
-      completedAt: input.occurredAt,
-      lastActivityAt: input.occurredAt,
-      status: completedStatus,
-      updatedAt: input.occurredAt,
-    })
-    .where(
-      and(
-        eq(learnerCourseProgress.userId, input.userId),
-        eq(learnerCourseProgress.courseId, input.scope.courseId),
-        eq(
-          learnerCourseProgress.curriculumVersionId,
-          input.scope.curriculumVersionId
-        ),
-        eq(learnerCourseProgress.status, inProgressStatus)
-      )
-    )
-    .run()
-}
-
-function recordTransitionActivity(
-  transaction: LearningTransaction,
-  command: Pick<CompleteLearnerStepCommand, "occurredAt" | "userId">,
-  scope: LessonScope,
-  answerWasSaved: boolean,
-  lessonWasCompleted: boolean
-): void {
-  recordActivity(transaction, scope, command.userId, command.occurredAt)
-  recordActivityDay(transaction, {
-    activityDate: toLearningDateKey(command.occurredAt),
-    completedLessons: lessonWasCompleted ? 1 : 0,
-    occurredAt: command.occurredAt,
-    savedAnswers: answerWasSaved ? 1 : 0,
-    userId: command.userId,
-  })
 }
 
 function recordActivity(

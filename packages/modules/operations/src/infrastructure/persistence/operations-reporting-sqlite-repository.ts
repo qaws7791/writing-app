@@ -3,7 +3,6 @@ import type { CourseId, LessonId } from "@workspace/types/ids"
 import { platformDayBoundary } from "@workspace/kernel/day-boundary"
 
 import type {
-  OperationsAiFeedbackLessonFailure,
   OperationsDashboard,
   OperationsLessonAnalyticsItem,
   OperationsLessonAnalyticsSort,
@@ -41,29 +40,6 @@ type LessonAnalyticsRow = Readonly<{
   lessonId: string
   lessonTitle: string
   started: number
-}>
-
-type AiFeedbackQualityRow = Readonly<{
-  failureCount: number
-  inputTokens: number
-  latencyAverageMs: number | null
-  latencySampleCount: number
-  latencyTotalMs: number
-  outputTokens: number
-  requestCount: number
-  retryCount: number
-  successCount: number
-  tokenSampleCount: number
-}>
-
-type AiFeedbackLessonFailureRow = Readonly<{
-  courseId: string
-  courseTitle: string
-  failureCount: number
-  failureRate: number
-  lessonId: string
-  lessonTitle: string
-  requestCount: number
 }>
 
 const dashboardSql = `
@@ -307,124 +283,6 @@ const lessonAnalyticsCte = `
   )
 `
 
-const aiFeedbackQualitySql = `
-  WITH eligible_learners AS (
-    SELECT user_id AS id
-    FROM identity_reporting_learners
-  )
-  SELECT
-    coalesce(
-      sum(
-        CASE
-          WHEN attempt.status IN ('failed', 'expired') THEN 1
-          ELSE 0
-        END
-      ),
-      0
-    ) AS failureCount,
-    coalesce(sum(attempt.input_token_count), 0) AS inputTokens,
-    avg(attempt.latency_ms) AS latencyAverageMs,
-    count(attempt.latency_ms) AS latencySampleCount,
-    coalesce(sum(attempt.latency_ms), 0) AS latencyTotalMs,
-    coalesce(sum(attempt.output_token_count), 0) AS outputTokens,
-    count(*) AS requestCount,
-    coalesce(
-      sum(CASE WHEN attempt.attempt_number > 1 THEN 1 ELSE 0 END),
-      0
-    ) AS retryCount,
-    coalesce(
-      sum(CASE WHEN attempt.status = 'succeeded' THEN 1 ELSE 0 END),
-      0
-    ) AS successCount,
-    coalesce(
-      sum(
-        CASE
-          WHEN attempt.input_token_count IS NOT NULL THEN 1
-          ELSE 0
-        END
-      ),
-      0
-    ) AS tokenSampleCount
-  FROM ai_feedback_reporting_attempts AS attempt
-  INNER JOIN eligible_learners
-    ON eligible_learners.id = attempt.user_id
-  WHERE attempt.created_at >= ?1
-    AND attempt.created_at < ?2
-`
-
-const aiFeedbackFailureCountsSql = `
-  WITH eligible_learners AS (
-    SELECT user_id AS id
-    FROM identity_reporting_learners
-  )
-  SELECT attempt.failure_code AS code, count(*) AS count
-  FROM ai_feedback_reporting_attempts AS attempt
-  INNER JOIN eligible_learners
-    ON eligible_learners.id = attempt.user_id
-  WHERE attempt.created_at >= ?1
-    AND attempt.created_at < ?2
-    AND attempt.failure_code IS NOT NULL
-  GROUP BY attempt.failure_code
-  ORDER BY attempt.failure_code
-`
-
-const aiFeedbackLessonFailuresSql = `
-  WITH
-  eligible_learners AS (
-    SELECT user_id AS id
-    FROM identity_reporting_learners
-  ),
-  current_lessons AS (
-    SELECT
-      course_id,
-      course_title,
-      lesson_id,
-      lesson_title
-    FROM content_reporting_current_lessons
-  ),
-  attempt_counts AS (
-    SELECT
-      attempt.course_id,
-      attempt.lesson_id,
-      sum(
-        CASE
-          WHEN attempt.status IN ('failed', 'expired') THEN 1
-          ELSE 0
-        END
-      ) AS failure_count,
-      count(*) AS request_count
-    FROM ai_feedback_reporting_attempts AS attempt
-    INNER JOIN eligible_learners
-      ON eligible_learners.id = attempt.user_id
-    WHERE attempt.quota_date BETWEEN ?1 AND ?2
-    GROUP BY attempt.course_id, attempt.lesson_id
-  )
-  SELECT
-    current_lessons.course_id AS courseId,
-    current_lessons.course_title AS courseTitle,
-    attempt_counts.failure_count AS failureCount,
-    round(
-      1000.0 * attempt_counts.failure_count / attempt_counts.request_count
-    ) / 10.0 AS failureRate,
-    current_lessons.lesson_id AS lessonId,
-    current_lessons.lesson_title AS lessonTitle,
-    attempt_counts.request_count AS requestCount
-  FROM current_lessons
-  INNER JOIN attempt_counts
-    ON attempt_counts.course_id = current_lessons.course_id
-    AND attempt_counts.lesson_id = current_lessons.lesson_id
-  WHERE attempt_counts.failure_count > 0
-  ORDER BY
-    failureRate DESC,
-    failureCount DESC,
-    requestCount DESC,
-    current_lessons.course_title COLLATE NOCASE ASC,
-    current_lessons.lesson_title COLLATE NOCASE ASC,
-    current_lessons.course_id ASC,
-    current_lessons.lesson_id ASC
-  LIMIT 8
-`
-
 export function createSqliteOperationsReportingRepository(
   sqlite: Database
 ): OperationsReportingRepository {
@@ -437,47 +295,6 @@ export function createSqliteOperationsReportingRepository(
   }
 
   return {
-    readAiFeedbackQuality(input) {
-      const from = input.from.getTime()
-      const to = input.to.getTime()
-      const aggregate = sqlite
-        .query<AiFeedbackQualityRow, [number, number]>(aiFeedbackQualitySql)
-        .get(from, to)
-      if (aggregate === null) {
-        throw new Error("AI feedback quality aggregate could not be read")
-      }
-      const failureCounts = sqlite
-        .query<
-          { readonly code: string; readonly count: number },
-          [number, number]
-        >(aiFeedbackFailureCountsSql)
-        .all(from, to)
-
-      return {
-        failureCount: aggregate.failureCount,
-        failureCounts,
-        from: input.from.toISOString(),
-        latency: {
-          averageMs: aggregate.latencyAverageMs,
-          sampleCount: aggregate.latencySampleCount,
-          totalMs: aggregate.latencyTotalMs,
-        },
-        requestCount: aggregate.requestCount,
-        retryCount: aggregate.retryCount,
-        status: aggregate.requestCount === 0 ? "empty" : "available",
-        successCount: aggregate.successCount,
-        successRate:
-          aggregate.requestCount === 0
-            ? null
-            : aggregate.successCount / aggregate.requestCount,
-        to: input.to.toISOString(),
-        tokens: {
-          input: aggregate.inputTokens,
-          output: aggregate.outputTokens,
-          sampleCount: aggregate.tokenSampleCount,
-        },
-      }
-    },
     readAnalytics(input) {
       const dailySeries = sqlite
         .query<DailySeriesRow, [string, string, string, string]>(dailySeriesSql)
@@ -487,7 +304,6 @@ export function createSqliteOperationsReportingRepository(
           input.matureCohortThrough,
           platformDayBoundary.sqliteOffset
         )
-      const worstAiFeedbackLessons = readWorstAiFeedbackLessons(sqlite, input)
       const worstLessons = readWorstLessons(sqlite)
 
       return {
@@ -495,7 +311,6 @@ export function createSqliteOperationsReportingRepository(
         from: input.from,
         matureCohortThrough: input.matureCohortThrough,
         to: input.to,
-        worstAiFeedbackLessons,
         worstLessons,
       }
     },
@@ -599,22 +414,6 @@ export function createSqliteOperationsReportingRepository(
       }
     },
   }
-}
-
-function readWorstAiFeedbackLessons(
-  sqlite: Database,
-  input: Readonly<{ from: string; to: string }>
-): readonly OperationsAiFeedbackLessonFailure[] {
-  return sqlite
-    .query<AiFeedbackLessonFailureRow, [string, string]>(
-      aiFeedbackLessonFailuresSql
-    )
-    .all(input.from, input.to)
-    .map((row) => ({
-      ...row,
-      courseId: row.courseId as CourseId,
-      lessonId: row.lessonId as LessonId,
-    }))
 }
 
 function readWorstLessons(

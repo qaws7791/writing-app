@@ -3,12 +3,6 @@ import { parseContentAssetPublicBaseUrl } from "@workspace/env/public-url"
 import { shouldUsePrettyLogging } from "@workspace/observability/logger"
 import { defaultDeletedLearnerRetentionDays } from "@workspace/identity/ports"
 import { z } from "@workspace/http-platform/openapi"
-import {
-  defaultAiFeedbackAttemptPolicy,
-  defaultAiFeedbackDailyQuotaPolicy,
-  type AiFeedbackAttemptPolicy,
-  type AiFeedbackDailyQuotaPolicy,
-} from "@workspace/ai-feedback/ports"
 
 import {
   parseAdminMcpConfiguration,
@@ -21,7 +15,6 @@ export type ApiEnv = {
   readonly adminMcp: AdminMcpConfiguration | undefined
   readonly adminOrigin: string
   readonly authEmail: AuthEmailEnv
-  readonly aiFeedback: AiFeedbackEnv
   readonly cursorSigningSecret: string
   readonly databaseUrl: string | undefined
   readonly deletedLearnerRetentionDays: number
@@ -39,16 +32,9 @@ export type ApiEnv = {
   readonly logLevel: string
   readonly logPretty: boolean
   readonly nodeEnv: "development" | "test" | "production"
-  readonly openAiApiKey: string | undefined
-  readonly openAiModel: string
   readonly port: number
   readonly webOrigin: string
 }
-
-type AiFeedbackEnv = Readonly<{
-  attemptPolicy: AiFeedbackAttemptPolicy
-  dailyQuotaPolicy: AiFeedbackDailyQuotaPolicy
-}>
 
 type AuthEmailEnv =
   | Readonly<{
@@ -78,23 +64,6 @@ const deletionMarkerStoreEnvSchema = z.object({
   region: z.string().min(1),
   secretAccessKey: z.string().min(1),
 })
-
-const aiFeedbackEnvSchema = z
-  .object({
-    globalDailyRequestLimit: z.coerce.number().int().positive(),
-    globalDailySuccessLimit: z.coerce.number().int().positive(),
-    pendingTtlMs: z.coerce.number().int().positive(),
-    providerTimeoutMs: z.coerce.number().int().positive(),
-    userDailyRequestLimit: z.coerce.number().int().positive(),
-    userDailySuccessLimit: z.coerce.number().int().positive(),
-  })
-  .refine(
-    (value) =>
-      value.providerTimeoutMs < value.pendingTtlMs &&
-      value.userDailySuccessLimit <= value.userDailyRequestLimit &&
-      value.globalDailySuccessLimit <= value.globalDailyRequestLimit,
-    { message: "AI feedback quota와 timeout 설정의 순서가 올바르지 않습니다." }
-  )
 
 export type AdminAssetStoreEnv = z.infer<typeof adminAssetStoreEnvSchema>
 type DeletionMarkerStoreEnv = z.infer<typeof deletionMarkerStoreEnvSchema>
@@ -139,7 +108,6 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     adminMcp,
     adminOrigin: env.ADMIN_ORIGIN,
     authEmail: parseAuthEmailEnv(input, env.NODE_ENV),
-    aiFeedback: parseAiFeedbackEnv(input),
     cursorSigningSecret,
     databaseUrl: env.DATABASE_URL,
     deletedLearnerRetentionDays: readDeletedLearnerRetentionDays(
@@ -161,8 +129,6 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
       NODE_ENV: env.NODE_ENV,
     }),
     nodeEnv: env.NODE_ENV,
-    openAiApiKey: env.OPENAI_API_KEY,
-    openAiModel: env.OPENAI_MODEL,
     port: env.API_PORT,
     webOrigin: env.WEB_ORIGIN,
   }
@@ -248,43 +214,6 @@ function parseAuthEmailEnv(
 function readNonEmptyValue(value: string | undefined): string | undefined {
   const normalized = value?.trim()
   return normalized === undefined || normalized === "" ? undefined : normalized
-}
-
-function parseAiFeedbackEnv(input: AppEnvInput): AiFeedbackEnv {
-  const parsed = aiFeedbackEnvSchema.parse({
-    globalDailyRequestLimit:
-      input["AI_FEEDBACK_GLOBAL_DAILY_REQUEST_LIMIT"] ??
-      defaultAiFeedbackDailyQuotaPolicy.globalDailyRequestLimit,
-    globalDailySuccessLimit:
-      input["AI_FEEDBACK_GLOBAL_DAILY_SUCCESS_LIMIT"] ??
-      defaultAiFeedbackDailyQuotaPolicy.globalDailySuccessLimit,
-    pendingTtlMs:
-      input["AI_FEEDBACK_PENDING_TTL_MS"] ??
-      defaultAiFeedbackAttemptPolicy.pendingTtlMs,
-    providerTimeoutMs:
-      input["AI_FEEDBACK_PROVIDER_TIMEOUT_MS"] ??
-      defaultAiFeedbackAttemptPolicy.providerTimeoutMs,
-    userDailyRequestLimit:
-      input["AI_FEEDBACK_USER_DAILY_REQUEST_LIMIT"] ??
-      defaultAiFeedbackDailyQuotaPolicy.userDailyRequestLimit,
-    userDailySuccessLimit:
-      input["AI_FEEDBACK_USER_DAILY_SUCCESS_LIMIT"] ??
-      defaultAiFeedbackDailyQuotaPolicy.userDailySuccessLimit,
-  })
-
-  return {
-    attemptPolicy: {
-      maxCompletedAttempts: defaultAiFeedbackAttemptPolicy.maxCompletedAttempts,
-      pendingTtlMs: parsed.pendingTtlMs,
-      providerTimeoutMs: parsed.providerTimeoutMs,
-    },
-    dailyQuotaPolicy: {
-      globalDailyRequestLimit: parsed.globalDailyRequestLimit,
-      globalDailySuccessLimit: parsed.globalDailySuccessLimit,
-      userDailyRequestLimit: parsed.userDailyRequestLimit,
-      userDailySuccessLimit: parsed.userDailySuccessLimit,
-    },
-  }
 }
 
 function parseAdminAssetStore(
@@ -424,12 +353,9 @@ function validateProviderConfiguration(env: ReturnType<typeof parseEnv>): void {
       "Invalid environment variables: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: Google OAuth 설정은 함께 지정해야 합니다."
     )
   }
-  if (
-    env.NODE_ENV === "production" &&
-    (!hasGoogleClientId || env.OPENAI_API_KEY === undefined)
-  ) {
+  if (env.NODE_ENV === "production" && !hasGoogleClientId) {
     throw new Error(
-      "Invalid environment variables: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, OPENAI_API_KEY: production에서는 Google OAuth와 OpenAI 설정이 필요합니다."
+      "Invalid environment variables: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: production에서는 Google OAuth 설정이 필요합니다."
     )
   }
 }

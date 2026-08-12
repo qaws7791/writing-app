@@ -132,32 +132,6 @@ export type LearnerLessonStep =
       }>)
   | (LearnerStepBase &
       Readonly<{
-        badge?: string
-        claim?: string
-        context?: string
-        draft?: boolean
-        goal?: number
-        guide?: string
-        max?: number
-        min: number
-        mode?: string
-        placeholder?: string
-        prompt?: string
-        reference?: string
-        sample?: string
-        structure?: string
-        title?: string
-        topic?: string
-        type: "WRITE"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        focus: string
-        target: string
-        type: "AI_FEEDBACK"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
         guide: string
         leftItems: readonly LearnerStepItem[]
         rightItems: readonly LearnerStepItem[]

@@ -63,15 +63,6 @@ const orderStep = {
   type: "ORDER",
 } as const
 
-const writeStep = {
-  id: "write-boundary",
-  max: 6,
-  min: 5,
-  prompt: "문장을 쓰세요.",
-  sortOrder: 1,
-  type: "WRITE",
-} as const
-
 describe("학습 단계 서버 채점 정책", () => {
   it.each([
     {
@@ -115,30 +106,6 @@ describe("학습 단계 서버 채점 정책", () => {
       expectedKind: "retry",
       name: "ORDER 유효하지만 잘못된 ID 순서",
       step: orderStep,
-    },
-    {
-      answer: { text: "1234", type: "WRITE" },
-      expectedKind: "invalid",
-      name: "WRITE min 미달",
-      step: writeStep,
-    },
-    {
-      answer: { text: "12345", type: "WRITE" },
-      expectedKind: "accepted",
-      name: "WRITE min 경계",
-      step: writeStep,
-    },
-    {
-      answer: { text: "123456", type: "WRITE" },
-      expectedKind: "accepted",
-      name: "WRITE max 경계",
-      step: writeStep,
-    },
-    {
-      answer: { text: "1234567", type: "WRITE" },
-      expectedKind: "invalid",
-      name: "WRITE max 초과",
-      step: writeStep,
     },
   ] as const)(
     "$name 제출을 $expectedKind로 판정한다",

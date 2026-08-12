@@ -392,7 +392,7 @@ import { Button } from "@/components/ui/button"
         description: "false면 내용을 숨기고 공개 전 UI를 표시합니다.",
       },
     ],
-    related: ["step", "coaching", "choice", "compose"],
+    related: ["step", "choice", "compose"],
   },
   "writing-brief": {
     slug: "writing-brief",
@@ -952,7 +952,7 @@ import { Button } from "@/components/ui/button"
         description: "피드백 처리 상태입니다.",
       },
     ],
-    related: ["draft", "feedback-summary", "coaching", "compose"],
+    related: ["draft", "feedback-summary", "compose"],
   },
   rubric: {
     slug: "rubric",

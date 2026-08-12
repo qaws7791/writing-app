@@ -28,7 +28,6 @@
 | [REQ-LRN-3](./platform/req-lrn-3-course-discovery.md)       | 코스 탐색과 시작     | `US-LRN-3`, `US-LRN-4` | `SCR-003`, `SCR-004`, `SCR-005` | 기준 |
 | [REQ-LRN-4](./platform/req-lrn-4-lesson-progression.md)     | 레슨 진행            | `US-LRN-5`             | `SCR-006`                       | 기준 |
 | [REQ-LRN-5](./platform/req-lrn-5-writing-answer.md)         | 쓰기 답변            | `US-LRN-6`             | `SCR-006`                       | 기준 |
-| [REQ-LRN-6](./platform/req-lrn-6-ai-coaching.md)            | AI 코칭              | `US-LRN-7`             | `SCR-006`                       | 기준 |
 | [REQ-LRN-7](./platform/req-lrn-7-profile-account.md)        | 프로필과 계정 관리   | `US-LRN-8`             | `SCR-007`                       | 기준 |
 | [REQ-LRN-8](./platform/req-lrn-8-public-landing.md)         | 공개 랜딩            | `US-LRN-9`             | `SCR-001`                       | 기준 |
 | [REQ-LRN-9](./platform/req-lrn-9-learner-navigation.md)     | 학습자 앱 내비게이션 | `US-LRN-10`            | `SCR-003`, `SCR-004`, `SCR-007` | 기준 |

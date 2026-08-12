@@ -40,16 +40,6 @@ export type OperationsLessonAnalyticsItem = Readonly<{
   started: number
 }>
 
-export type OperationsAiFeedbackLessonFailure = Readonly<{
-  courseId: CourseId
-  courseTitle: string
-  failureCount: number
-  failureRate: number
-  lessonId: LessonId
-  lessonTitle: string
-  requestCount: number
-}>
-
 export type OperationsAnalytics = Readonly<{
   dailySeries: readonly Readonly<{
     completions: number
@@ -62,7 +52,6 @@ export type OperationsAnalytics = Readonly<{
   from: string
   matureCohortThrough: string
   to: string
-  worstAiFeedbackLessons: readonly OperationsAiFeedbackLessonFailure[]
   worstLessons: readonly OperationsLessonAnalyticsItem[]
 }>
 
@@ -74,31 +63,6 @@ export type OperationsLessonAnalyticsPage = Readonly<{
   totalPages: number
 }>
 
-export type OperationsAiFeedbackQuality = Readonly<{
-  failureCount: number
-  failureCounts: readonly Readonly<{
-    code: string
-    count: number
-  }>[]
-  from: string
-  latency: Readonly<{
-    averageMs: number | null
-    sampleCount: number
-    totalMs: number
-  }>
-  requestCount: number
-  retryCount: number
-  status: "available" | "empty"
-  successCount: number
-  successRate: number | null
-  to: string
-  tokens: Readonly<{
-    input: number
-    output: number
-    sampleCount: number
-  }>
-}>
-
 export type OperationsLessonAnalyticsSort =
   | "completionRate"
   | "course"
@@ -108,10 +72,6 @@ export type OperationsLessonAnalyticsSort =
 export type OperationsSortDirection = "asc" | "desc"
 
 export type OperationsReportingRepository = Readonly<{
-  readAiFeedbackQuality: (input: {
-    readonly from: Date
-    readonly to: Date
-  }) => OperationsAiFeedbackQuality
   readAnalytics: (input: {
     readonly from: string
     readonly matureCohortThrough: string

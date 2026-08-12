@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import { LEARNING_EXTENDED_PREVIEWS } from "./learning-extended-demos";
 
@@ -31,23 +31,6 @@ import {
   ClassifyPool,
   type ClassifyState,
 } from "@workspace/ui/components/ui/classify";
-import {
-  Coaching,
-  CoachingActions,
-  CoachingFocus,
-  CoachingItem,
-  CoachingList,
-  CoachingMeta,
-  CoachingResult,
-  CoachingSection,
-  CoachingSectionTitle,
-  CoachingSource,
-  CoachingSourceBody,
-  CoachingSourceLabel,
-  CoachingStatus,
-  CoachingSummary,
-  type CoachingPhase,
-} from "@workspace/ui/components/ui/coaching";
 import {
   Compare,
   ComparePanel,
@@ -1007,90 +990,10 @@ function ComposeDemo() {
             <Insight tone="neutral">
               <InsightEyebrow>제출됨</InsightEyebrow>
               <InsightDescription>
-                글자 수 기준을 만족했습니다. 다음 스텝에서 AI 코칭을 요청할 수 있습니다.
+                글자 수 기준을 만족했습니다. 다음 스텝으로 이어갈 수 있습니다.
               </InsightDescription>
             </Insight>
           ) : null}
-        </StepBody>
-      </Step>
-    </DemoFrame>
-  );
-}
-
-function CoachingDemo() {
-  const [status, setStatus] = useState<CoachingPhase>("idle");
-  const [remaining, setRemaining] = useState(3);
-  const [phase, setPhase] = useState<Phase>("answering");
-
-  useEffect(() => {
-    if (status !== "loading") return;
-    const timer = window.setTimeout(() => {
-      setStatus("ready");
-      setRemaining((value) => value - 1);
-    }, 900);
-    return () => window.clearTimeout(timer);
-  }, [status]);
-
-  const reset = () => {
-    setStatus("idle");
-    setRemaining(3);
-    setPhase("answering");
-  };
-
-  return (
-    <DemoFrame
-      stepIndex={5}
-      primaryLabel={phase === "answering" ? "피드백 없이 계속하기" : "다음으로"}
-      onPrimary={() => setPhase("done")}
-      secondaryLabel={
-        phase === "answering" && status !== "loading" && remaining > 0
-          ? status === "ready"
-            ? "다시 요청"
-            : "AI 코칭 요청"
-          : undefined
-      }
-      onSecondary={phase === "answering" && remaining > 0 ? () => setStatus("loading") : undefined}
-      showReset={phase !== "answering" || status === "ready"}
-      onReset={reset}
-      onClose={reset}
-    >
-      <Step>
-        <StepHeader>
-          <StepTitle>AI 코칭</StepTitle>
-          <StepGuide>앞서 작성한 쓰기 답안을 바탕으로 피드백을 받아보세요.</StepGuide>
-        </StepHeader>
-        <StepBody>
-          <Coaching status={status}>
-            <CoachingFocus>코칭 초점 · 논리 연결</CoachingFocus>
-            <CoachingSource>
-              <CoachingSourceLabel>작성 내용</CoachingSourceLabel>
-              <CoachingSourceBody>
-                숙제를 없애면 학습 부담은 줄지만, 복습의 리듬도 함께 사라질 수 있다. 양은 줄이되
-                목적을 분명히 해야 한다.
-              </CoachingSourceBody>
-            </CoachingSource>
-            {status === "loading" ? <CoachingStatus /> : null}
-            {status === "ready" ? (
-              <CoachingResult>
-                <CoachingSummary>반론을 인정한 뒤 대안을 제시해 균형이 좋습니다.</CoachingSummary>
-                <CoachingSection>
-                  <CoachingSectionTitle>강점</CoachingSectionTitle>
-                  <CoachingList>
-                    <CoachingItem>전제를 분명히 짚었습니다</CoachingItem>
-                  </CoachingList>
-                </CoachingSection>
-                <CoachingSection>
-                  <CoachingSectionTitle>개선점</CoachingSectionTitle>
-                  <CoachingList>
-                    <CoachingItem>반례를 한 문장 더 보강하세요</CoachingItem>
-                  </CoachingList>
-                </CoachingSection>
-              </CoachingResult>
-            ) : null}
-            <CoachingActions>
-              <CoachingMeta>남은 요청 {remaining}회</CoachingMeta>
-            </CoachingActions>
-          </Coaching>
         </StepBody>
       </Step>
     </DemoFrame>
@@ -1109,7 +1012,7 @@ function PathDemo() {
       { id: 2, title: "근거 붙이기" },
       { id: 3, title: "자기반박" },
       { id: 4, title: "다시 쓰기" },
-      { id: 5, title: "AI 코칭" },
+      { id: 5, title: "정리하기" },
     ],
     [],
   );
@@ -1867,7 +1770,6 @@ const LEARNING_PREVIEWS: Record<string, () => ReactNode> = {
   pair: () => <PairDemo />,
   classify: () => <ClassifyDemo />,
   compose: () => <ComposeDemo />,
-  coaching: () => <CoachingDemo />,
   insight: () => <InsightDemo />,
 };
 

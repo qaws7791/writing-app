@@ -4,9 +4,8 @@
 
 - `packages/modules/identity`는 학습자 profile·사용자 상태, 관리자 session 해석, application port, persistence와 learner/admin HTTP interface를 하나의 수직 module로 소유한다.
 - `packages/modules/content`는 curriculum draft, immutable published revision, 발행·보관 정책, persistence·seed와 관리자 HTTP interface를 하나의 수직 module로 소유한다.
-- `packages/modules/ai-feedback`은 coaching prompt·provider 검증, attempt 정책·persistence와 provider adapter를 하나의 수직 module로 소유한다. 학습자 wire 계약은 learning이 소유하므로 HTTP interface는 두지 않는다.
-- `packages/modules/learning`은 학습 진행·채점·활동일 정책, read/command application, persistence·reporting과 AI 코칭 단계를 포함한 학습자 HTTP interface를 하나의 수직 module로 소유한다.
-- `packages/modules/operations`는 대시보드·분석용 읽기 전용 reporting과 관리자 HTTP interface를 하나의 수직 module로 소유한다. reporting repository만 같은 SQLite의 identity·content·learning·ai-feedback table을 정적 SQL로 join·aggregate할 수 있고 다른 module의 command 저장소로 사용하지 않는다.
+- `packages/modules/learning`은 학습 진행·채점·활동일 정책, read/command application, persistence·reporting과 학습자 HTTP interface를 하나의 수직 module로 소유한다.
+- `packages/modules/operations`는 대시보드·분석용 읽기 전용 reporting과 관리자 HTTP interface를 하나의 수직 module로 소유한다. reporting repository만 같은 SQLite의 identity·content·learning table을 정적 SQL로 join·aggregate할 수 있고 다른 module의 command 저장소로 사용하지 않는다.
 - 실행 앱 전용 bootstrap과 infrastructure 조립은 API의 명시적 app·container factory가 소유한다. API의 DB composition은 통합 schema entry, append-only migration 계보와 seed provider 실행 순서를 소유한다. app-owned module·platform facade를 별도로 두지 않으며 module은 공개 subpath로만 소비한다.
 - `packages/infra/http-platform`은 Hono/OpenAPI app, canonical error, request security, OpenAPI helper를 소유한다. 자체 route framework는 두지 않으며 각 제품 module의 HTTP interface가 `app.openapi(route, handler)`로 endpoint method·path·canonical contract·auth·handler를 직접 등록한다. 제품 정책은 같은 module의 domain·application에 두고, API composition root는 module 등록 함수와 health·OpenAPI 같은 실행 경계 route를 명시적으로 호출한다.
 - `packages/infra/observability`는 Pino logger와 공통 관측 event 계약을 소유하고 제품별 audit 분류는 API에 남긴다.
@@ -36,8 +35,7 @@
 
 | capability          | transport-neutral data                                   | transport에 남는 계약                                             |
 | ------------------- | -------------------------------------------------------- | ----------------------------------------------------------------- |
-| learner command     | step, submission, evaluation, learning state, branded ID | start/complete body·params·response와 AI transition 응답          |
-| learner AI coaching | prompt·attempt·provider 결과와 재시도 오류               | idempotency header, coaching 결과와 공개 오류                     |
+| learner command     | step, submission, evaluation, learning state, branded ID | start/complete body·params·response                               |
 | learner read        | course·lesson·progress item, sort/filter projection      | cursor query, page와 learner HTTP response                        |
 | admin content       | editor document, projection item와 publish data          | course page, archive acknowledgement와 request                    |
 | admin identity      | admin/user ID, user item와 filter 값                     | admin session, user page, status request와 delete acknowledgement |
@@ -49,7 +47,7 @@
 
 - workspace 간 import는 `@workspace/*` 공개 subpath를 사용한다.
 - module 구현이 canonical DTO 또는 status를 소비할 때는 가장 구체적인 `@workspace/contracts/*` 공개 subpath를, brand ID는 `@workspace/types/ids`를 직접 import한다.
-- package 내부 구현은 해당 package의 `#identity/*`, `#content/*`, `#ai-feedback/*`, `#learning/*`, `#operations/*`, `#auth/*`, `#db/*`, `#ai/*` 같은 private alias를 사용하고 자기 공개 경로를 역참조하지 않는다.
+- package 내부 구현은 해당 package의 `#identity/*`, `#content/*`, `#learning/*`, `#operations/*`, `#auth/*`, `#db/*`, `#ai/*` 같은 private alias를 사용하고 자기 공개 경로를 역참조하지 않는다.
 - 앱은 의존 package의 private alias를 import하지 않는다.
 - 같은 package의 공개 `@workspace/*` 경로를 구현이 역참조하거나 상대 경로로 우회하지 않는다.
 - `packages/shared/ui`는 app, module, DB, HTTP client, auth SDK와 Next.js navigation을 import하지 않는다.

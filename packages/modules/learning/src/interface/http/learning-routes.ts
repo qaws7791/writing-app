@@ -5,13 +5,8 @@ import {
 } from "@hono/zod-openapi"
 import type { MiddlewareHandler } from "hono"
 
-import {
-  createAiFeedbackHeadersSchema,
-  createAiFeedbackParamsSchema,
-} from "@workspace/contracts/ai-feedback/feedback"
 import { apiErrorSchema } from "@workspace/contracts/api-error"
 import {
-  learnerAiFeedbackTransitionResponseSchema,
   learnerCompleteStepResponseSchema,
   learnerCourseCategoriesResponseSchema,
   learnerCourseDetailResponseSchema,
@@ -47,7 +42,6 @@ import {
   decodeLearnerProgressListQuery,
   encodeLearnerCoursePage,
   encodeLearnerProgressPage,
-  presentAiFeedbackResult,
   presentCompleteStepResult,
   unwrapLearningResult,
 } from "#learning/interface/http/learning-http-mapper"
@@ -87,7 +81,6 @@ export function registerLearningRoutes<TEnv extends LearningHonoEnv>(
   registerStartLessonRoute(app, input, authenticated)
   registerSaveStepDraftRoute(app, input, authenticated)
   registerCompleteStepRoute(app, input, authenticated)
-  registerAiFeedbackRoute(app, input, authenticated)
 }
 
 function registerListCoursesRoute<TEnv extends LearningHonoEnv>(
@@ -398,56 +391,6 @@ function registerSaveStepDraftRoute<TEnv extends LearningHonoEnv>(
     })
     return context.json(
       learnerSaveStepDraftResponseSchema.parse(unwrapLearningResult(result)),
-      200
-    )
-  })
-}
-
-function registerAiFeedbackRoute<TEnv extends LearningHonoEnv>(
-  app: OpenAPIHono<TEnv>,
-  input: LearningRouteDependencies,
-  authenticated: AuthenticatedRouteOptions
-): void {
-  const route = createRoute({
-    method: "post",
-    operationId: "createLearnerStepAiFeedback",
-    path: "/learning/lessons/{lessonId}/steps/{stepId}/ai-feedback",
-    request: {
-      headers: createAiFeedbackHeadersSchema,
-      params: createAiFeedbackParamsSchema,
-    },
-    responses: authenticatedResponses(
-      jsonResponse(
-        "AI 코칭 결과와 다음 학습 상태입니다.",
-        learnerAiFeedbackTransitionResponseSchema
-      ),
-      {
-        400: errorResponse("잘못된 요청입니다."),
-        404: errorResponse("레슨을 찾을 수 없습니다."),
-        409: errorResponse("AI 코칭 요청 상태가 충돌합니다."),
-        429: errorResponse("AI 코칭 시도 횟수를 모두 사용했습니다."),
-        500: errorResponse("AI 코칭 요청을 완료하지 못했습니다."),
-        503: errorResponse("AI provider를 사용할 수 없습니다."),
-      }
-    ),
-    summary: "현재 AI 코칭 단계 완료",
-    ...authenticated,
-  } satisfies RouteConfig)
-  app.openapi(route, async (context) => {
-    const params = context.req.valid("param")
-    const result = await input.application.requestAiFeedback(
-      {
-        idempotencyKey: context.req.valid("header")["idempotency-key"],
-        learnerId: context.var.learningLearner.learnerId,
-        lessonId: params.lessonId,
-        stepId: params.stepId,
-      },
-      { signal: context.req.raw.signal }
-    )
-    return context.json(
-      learnerAiFeedbackTransitionResponseSchema.parse(
-        presentAiFeedbackResult(unwrapLearningResult(result))
-      ),
       200
     )
   })

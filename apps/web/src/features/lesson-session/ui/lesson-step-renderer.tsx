@@ -4,15 +4,8 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 import { useCallback, type ReactNode } from "react"
 
-import type {
-  LessonAiFeedbackOutcome,
-  LessonAiFeedbackRequest,
-  LessonAiFeedbackSkipOutcome,
-  LessonStepAnswerPayload,
-} from "@/features/lesson-session/model/lesson-logic"
+import type { LessonStepAnswerPayload } from "@/features/lesson-session/model/lesson-logic"
 import { LessonMatchAnswer } from "@/features/lesson-session/ui/lesson-match-answer"
-import { LessonAiFeedbackAnswer } from "@/features/lesson-session/ui/lesson-ai-feedback-answer"
-import { LessonWriteAnswer } from "@/features/lesson-session/ui/lesson-write-answer"
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
 import {
   findLessonStepItemId,
@@ -42,16 +35,9 @@ const CompareStepView = dynamic(() =>
 )
 
 export type LessonStepRendererProps = {
-  readonly aiFeedbackDraftText?: string
   readonly answerError?: null | string
   readonly answerPayload?: LessonStepAnswerPayload
   readonly checked?: LessonStepCheckedState | false
-  readonly onAiFeedbackRequest?: (
-    request: LessonAiFeedbackRequest
-  ) => Promise<LessonAiFeedbackOutcome>
-  readonly onAiFeedbackSkip?: (
-    request: LessonAiFeedbackRequest
-  ) => Promise<LessonAiFeedbackSkipOutcome>
   readonly onAnswerPayloadChange?: (change: {
     readonly payload: LessonStepAnswerPayload
     readonly stepId: string
@@ -60,7 +46,6 @@ export type LessonStepRendererProps = {
 }
 
 const lessonStepRendererByType = {
-  AI_FEEDBACK: LessonAiFeedbackAnswer,
   CATEGORIZE: CategorizeAnswer,
   COMPARE: CompareStepView,
   FILL_BLANK: FillBlankAnswer,
@@ -69,16 +54,12 @@ const lessonStepRendererByType = {
   ORDER: OrderAnswer,
   READING: ReadingStepView,
   SELECT: SelectAnswer,
-  WRITE: LessonWriteAnswer,
 } satisfies Record<LessonStepType, unknown>
 
 export function LessonStepRenderer({
-  aiFeedbackDraftText = "",
   answerError,
   answerPayload,
   checked = false,
-  onAiFeedbackRequest,
-  onAiFeedbackSkip,
   onAnswerPayloadChange,
   step,
 }: LessonStepRendererProps) {
@@ -95,12 +76,9 @@ export function LessonStepRenderer({
       stepId={step.id}
     >
       {renderStep({
-        aiFeedbackDraftText,
         answerPayload,
         checked,
         emitAnswer,
-        onAiFeedbackRequest,
-        onAiFeedbackSkip,
         step,
       })}
     </LessonStepFrame>
@@ -108,20 +86,14 @@ export function LessonStepRenderer({
 }
 
 function renderStep({
-  aiFeedbackDraftText,
   answerPayload,
   checked,
   emitAnswer,
-  onAiFeedbackRequest,
-  onAiFeedbackSkip,
   step,
 }: {
-  readonly aiFeedbackDraftText: string
   readonly answerPayload: LessonStepAnswerPayload | undefined
   readonly checked: LessonStepCheckedState | false
   readonly emitAnswer: (payload: LessonStepAnswerPayload) => void
-  readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
-  readonly onAiFeedbackSkip: LessonStepRendererProps["onAiFeedbackSkip"]
   readonly step: LessonStep
 }): ReactNode {
   const checkedVisual = toLessonStepCheckedVisual(step, checked)
@@ -348,30 +320,6 @@ function renderStep({
             })
           }
           title={step.title}
-        />
-      )
-    }
-    case "WRITE": {
-      const StepRenderer = lessonStepRendererByType.WRITE
-      return (
-        <StepRenderer
-          checked={checkedVisual}
-          emitAnswer={emitAnswer}
-          step={step}
-          text={answerPayload?.type === "WRITE" ? answerPayload.text : ""}
-        />
-      )
-    }
-    case "AI_FEEDBACK": {
-      const StepRenderer = lessonStepRendererByType.AI_FEEDBACK
-      return (
-        <StepRenderer
-          draftText={aiFeedbackDraftText}
-          {...(onAiFeedbackRequest === undefined
-            ? {}
-            : { onAiFeedbackRequest })}
-          {...(onAiFeedbackSkip === undefined ? {} : { onAiFeedbackSkip })}
-          step={step}
         />
       )
     }

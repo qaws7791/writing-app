@@ -1,7 +1,6 @@
 import { mkdir, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
-import type { AiFeedbackProvider } from "@workspace/ai-feedback/ports"
 import type {
   AuthEmailDeliveryInput,
   AuthEmailDeliveryPort,
@@ -16,31 +15,11 @@ import { err, ok } from "@workspace/kernel/result"
 
 import { startApiServer } from "@/main"
 
-const provider: AiFeedbackProvider = {
-  model: "e2e-deterministic",
-  provider: "e2e",
-  async createFeedback(prompt) {
-    if (prompt.input.includes("[E2E_AI_FAILURE]")) {
-      return err({ kind: "provider-unavailable" })
-    }
-
-    return ok({
-      feedback: {
-        improvements: ["근거를 한 문장 더 구체화해 보세요."],
-        nextAction: "같은 주장을 더 짧게 다시 써보세요.",
-        strengths: ["핵심 장점을 명확하게 표현했습니다."],
-        summary: "서버 상태 전이의 장점을 잘 설명했습니다.",
-      },
-    })
-  },
-}
-
 if (import.meta.main) {
   const e2eRunRoot = path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT"))
   const authEmailDelivery = createE2eAuthEmailDelivery(e2eRunRoot)
   await startApiServer(process.env, {
     container: {
-      aiFeedbackProvider: provider,
       authEmailDelivery,
       contentAssetStorage: createE2eContentAssetStorage(e2eRunRoot),
     },

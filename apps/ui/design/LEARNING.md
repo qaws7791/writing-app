@@ -38,8 +38,6 @@
 | `classify`         | 카테고리 배치                                       |
 | `prose`            | 읽기 본문, 삽화와 출처                              |
 | `compare`          | 버전 비교                                           |
-| `compose`          | 쓰기 프롬프트, 입력과 글자 수                       |
-| `coaching`         | AI 코칭 요청과 피드백                               |
 | `cadence`          | 최근 학습 리듬과 연속성                             |
 | `goal`             | 오늘·이번 주 목표와 남은 작업                       |
 | `mastery`          | 개념 숙련도 단계                                    |
@@ -74,12 +72,10 @@
 | `FILL_BLANK`      | `step` + `token` + `insight`    |
 | `SELECT`          | `step` + `segment` + `insight`  |
 | `ORDER`           | `step` + `sortable` + `insight` |
-| `WRITE`           | `step` + `compose`              |
-| `AI_FEEDBACK`     | `step` + `coaching`             |
 | `MATCH`           | `step` + `pair` + `insight`     |
 | `CATEGORIZE`      | `step` + `classify` + `insight` |
 
-읽기와 쓰기 본문을 카드로 다시 감싸지 않는다. `prose`와 `compose`는 캔버스의 주 콘텐츠로 직접 놓고 선택하거나 조작하는 영역만 표면 밀도와 경계로 구분한다. 새 타입은 기존 부품 조합으로 표현할 수 있는지 먼저 검토한다.
+읽기 본문을 카드로 다시 감싸지 않는다. `prose`는 캔버스의 주 콘텐츠로 직접 놓고 선택하거나 조작하는 영역만 표면 밀도와 경계로 구분한다. 새 타입은 기존 부품 조합으로 표현할 수 있는지 먼저 검토한다.
 
 ## 3. Selection, Grading & Feedback
 
@@ -93,12 +89,9 @@
 
 ## 4. Writing & AI Coaching
 
-- `compose`는 문장 자체의 정답을 임의로 판정하지 않고 명시된 글자 수와 제출 조건만 검사한다.
-- 글자 수 미터는 최소, 목표와 최대를 정밀한 meta typography로 보여 주고 제출 가능 여부를 과장된 성공색 없이 전달한다.
-- 입력 원문은 코칭 요청, 오류와 재시도 과정에서 보존한다.
-- AI 코칭은 점수나 가짜 정답을 만들지 않는다. 제안의 근거와 적용 범위를 구분하고 원문과 비교하거나 거절할 수 있게 한다.
-- 코칭 실패, 사용 한도나 연결 오류가 학습을 막지 않도록 피드백 없이 계속하기와 안전한 재시도 경로를 제공한다.
-- 채점과 코칭의 loading은 현재 작업을 보존하는 조용한 대기 상태로 표현한다.
+- 짧은 답은 `compose`, 장문은 `draft`다.
+- AI 첨삭 전 단계는 `hint-ladder`, 결과 적용은 `text-annotation`·`feedback-summary`다.
+- 채점과 첨삭의 loading은 현재 작업을 보존하는 조용한 대기 상태로 표현한다.
 
 AI 생성 결과와 source를 다루는 경우 `design/AI_AND_RISK.md`도 적용한다.
 
@@ -148,7 +141,7 @@ AI 생성 결과와 source를 다루는 경우 `design/AI_AND_RISK.md`도 적용
 
 ## 8. Review, Writing Studio & Growth Surfaces
 
-장문 글쓰기·평가·복습 표면은 `compose`·`coaching`을 대체하지 않고 확장한다. 짧은 답은 `compose`, 장문은 `draft`다. AI 첨삭 전 단계는 `hint-ladder`, 결과 적용은 `text-annotation`·`feedback-summary`다.
+장문 글쓰기·평가·복습 표면은 `compose`를 대체하지 않고 확장한다. 짧은 답은 `compose`, 장문은 `draft`다. AI 첨삭 전 단계는 `hint-ladder`, 결과 적용은 `text-annotation`·`feedback-summary`다.
 
 | 사용자 문제                 | Luma 표면                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------------ |
@@ -165,7 +158,7 @@ AI 생성 결과와 source를 다루는 경우 `design/AI_AND_RISK.md`도 적용
 
 - 마스코트, 폭죽, 스트릭 불꽃, 과도한 bounce와 원색 정답 폭발을 기본 피드백으로 사용하지 않는다.
 - 스텝 타입마다 전용 theme color나 별도의 card skin을 만들지 않는다.
-- `READING`과 `WRITE` 본문을 카드 더미 안에 가두지 않는다.
+- `READING` 본문을 카드 더미 안에 가두지 않는다.
 - 채점 전에 정답을 암시하거나 클라이언트가 만든 가짜 해설로 서버 피드백을 대체하지 않는다.
 - 진행감을 XP와 badge 나열로 대신하지 않는다. 경로 상태, 레슨 진행률, `cadence`·`goal`·`mastery`와 다음 할 일로 전달한다.
 - 오답을 lives로 처벌하거나 결제 유도용 하트 고갈을 학습 규칙처럼 쓰지 않는다.

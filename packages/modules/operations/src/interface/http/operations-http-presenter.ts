@@ -1,4 +1,3 @@
-import { aiFeedbackQualitySnapshotSchema } from "@workspace/contracts/ai-feedback/quality"
 import {
   adminAnalyticsDtoSchema,
   adminLessonAnalyticsPageDtoSchema,
@@ -13,7 +12,6 @@ import { adminMcpApprovalDtoSchema } from "@workspace/contracts/operations/admin
 import type { AdminMcpApproval } from "#operations/domain/admin-mcp-approval"
 import type { AuditEventPage } from "#operations/application/audit-trail"
 import type {
-  OperationsAiFeedbackQuality,
   OperationsAnalytics,
   OperationsDashboard,
   OperationsLessonAnalyticsPage,
@@ -34,12 +32,6 @@ export function toAdminLessonAnalyticsPageDto(
     items: value.items,
     pagination: toPagination(value),
   })
-}
-
-export function toAdminAiFeedbackQualityDto(
-  value: OperationsAiFeedbackQuality
-) {
-  return aiFeedbackQualitySnapshotSchema.parse(value)
 }
 
 export function toAdminMcpApprovalDto(value: AdminMcpApproval) {

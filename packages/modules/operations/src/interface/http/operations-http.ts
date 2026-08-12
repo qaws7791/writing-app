@@ -36,7 +36,6 @@ export function registerOperationsRoutes<TEnv extends OperationsHonoEnv>(
 
 export type { OperationsHonoEnv } from "#operations/interface/http/operations-http-auth"
 export {
-  toAdminAiFeedbackQualityDto,
   toAdminAnalyticsDto,
   toAdminDashboardDto,
   toAdminLessonAnalyticsPageDto,

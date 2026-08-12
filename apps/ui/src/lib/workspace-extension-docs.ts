@@ -57,37 +57,6 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     ],
   },
   {
-    slug: "ai-feedback-answer",
-    title: "AI Feedback Answer",
-    moduleTitle: "Components/Lesson/AiFeedbackAnswer",
-    description:
-      "작성한 답안에 AI 코칭을 요청하고 성공, 재시도, 일일 quota와 단계 limit를 표시합니다.",
-    importPath: "@workspace/ui/components/lesson/ai-feedback-answer",
-    props: [
-      { name: "focus", type: "string", description: "코칭 초점 label입니다." },
-      { name: "draftText", type: "string", description: "코칭 대상 작성 내용입니다." },
-      { name: "allowRetry", type: "boolean", description: "재시도 button을 허용합니다." },
-      {
-        name: "onRequest",
-        type: "() => Promise<AiFeedbackRequestOutcome>",
-        description: "코칭 요청 결과를 반환합니다.",
-      },
-      {
-        name: "onContinueWithoutFeedback",
-        type: "() => Promise<AiFeedbackContinueOutcome>",
-        description: "피드백 없이 계속하기 결과를 반환합니다.",
-      },
-    ],
-    usageNotes: [
-      "Request callback은 오류 원문을 전달하지 않고 오류 종류와 재시도 시각만 반환합니다.",
-      "오류 종류는 retryable, quota와 limit를 구분합니다.",
-    ],
-    accessibility: [
-      "Loading 상태는 진행 중임을 text로 알립니다.",
-      "오류에는 오류 종류와 가능한 다음 행동을 함께 표시합니다.",
-    ],
-  },
-  {
     slug: "categorize-answer",
     title: "Categorize Answer",
     moduleTitle: "Components/Lesson/CategorizeAnswer",
@@ -291,39 +260,6 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     accessibility: [
       "각 segment를 독립 button으로 조작할 수 있어야 합니다.",
       "선택과 채점 상태를 aria-pressed와 text로 알립니다.",
-    ],
-  },
-  {
-    slug: "write-answer",
-    title: "Write Answer",
-    moduleTitle: "Components/Lesson/WriteAnswer",
-    description:
-      "안내, 참고문, 주장, 글자 수 기준과 채점 뒤 sample을 가진 controlled 쓰기 입력입니다.",
-    importPath: "@workspace/ui/components/lesson/write-answer",
-    props: [
-      { name: "title", type: "string", description: "쓰기 단계 제목입니다." },
-      { name: "badge", type: "string", description: "제목 아래 badge text입니다." },
-      { name: "guide", type: "string", description: "Markdown 안내 문구입니다." },
-      { name: "reference", type: "string | undefined", description: "참고 원문입니다." },
-      { name: "structure", type: "string | undefined", description: "구조 guide입니다." },
-      { name: "claim", type: "string | undefined", description: "대상 주장입니다." },
-      { name: "claimLabel", type: "string | undefined", description: "주장 영역 label입니다." },
-      { name: "min", type: "number", description: "최소 글자 수입니다." },
-      { name: "max", type: "number", description: "최대 글자 수입니다." },
-      { name: "goal", type: "number | undefined", description: "목표 글자 수입니다." },
-      { name: "placeholder", type: "string", description: "입력 placeholder입니다." },
-      { name: "sample", type: "string | undefined", description: "채점 뒤 참고 답안입니다." },
-      { name: "text", type: "string", description: "현재 입력 본문입니다." },
-      checked,
-      onChange("본문이 바뀔 때 호출됩니다."),
-    ],
-    usageNotes: [
-      "Text와 onChange를 함께 제공하는 controlled contract입니다.",
-      "Claim mode와 reference mode는 필요한 정보만 표시합니다.",
-    ],
-    accessibility: [
-      "현재 글자 수와 제한을 입력과 연결합니다.",
-      "채점 뒤 sample은 입력 본문과 구분되는 heading을 가집니다.",
     ],
   },
 ];

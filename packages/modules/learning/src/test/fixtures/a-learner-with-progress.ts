@@ -96,7 +96,7 @@ export function aLearnerWithProgress(
         user_id, course_id, curriculum_version_id, lesson_id, step_id,
         answer_json, answered_at, updated_at
       ) VALUES (
-        ?1, ?2, ?3, ?4, ?5, '{"text":"answer","type":"WRITE"}', 1, 1
+        ?1, ?2, ?3, ?4, ?5, '{"selectedOptionId":"option-b","type":"MULTIPLE_CHOICE"}', 1, 1
       )`
     )
     .run(userId, course.courseId, course.curriculumVersionId, lessonId, stepId)
@@ -107,7 +107,7 @@ export function aLearnerWithProgress(
         user_id, course_id, curriculum_version_id, lesson_id, step_id,
         answer_json, version, updated_at
       ) VALUES (
-        ?1, ?2, ?3, ?4, ?5, '{"text":"draft","type":"WRITE"}', 0, 1
+        ?1, ?2, ?3, ?4, ?5, '{"selectedOptionId":"option-b","type":"MULTIPLE_CHOICE"}', 0, 1
       )`
     )
     .run(userId, course.courseId, course.curriculumVersionId, lessonId, stepId)

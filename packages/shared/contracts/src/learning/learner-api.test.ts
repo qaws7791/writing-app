@@ -50,7 +50,7 @@ describe("learner API wire invariants", () => {
 
   it("draft compare-and-swap version은 null 또는 0 이상의 정수만 허용한다", () => {
     const body = {
-      answer: { text: "저장 중인 글", type: "WRITE" },
+      answer: { selectedOptionId: "option-1", type: "MULTIPLE_CHOICE" },
       expectedCurriculumVersionId: "course-1-v1",
       expectedVersion: null,
     } as const

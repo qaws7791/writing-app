@@ -6,10 +6,6 @@ import {
   type ServerContext,
 } from "@modelcontextprotocol/server"
 import {
-  aiFeedbackQualityQuerySchema,
-  aiFeedbackQualitySnapshotSchema,
-} from "@workspace/contracts/ai-feedback/quality"
-import {
   adminMcpArchiveCourseResultSchema,
   adminMcpCourseLifecycleInputSchema,
   adminMcpCreateCourseInputSchema,
@@ -58,7 +54,6 @@ import {
 import type { ContentModule } from "@workspace/content/module"
 import type { IdentityModule } from "@workspace/identity/module"
 import {
-  toAdminAiFeedbackQualityDto,
   toAdminAnalyticsDto,
   toAdminDashboardDto,
   toAdminLessonAnalyticsPageDto,
@@ -104,12 +99,6 @@ const lessonAnalyticsInputSchema = createAdminMcpSchema(
 )
 const lessonAnalyticsOutputSchema = createAdminMcpSchema(
   adminLessonAnalyticsPageDtoSchema
-)
-const aiFeedbackQualityInputSchema = createAdminMcpSchema(
-  aiFeedbackQualityQuerySchema
-)
-const aiFeedbackQualityOutputSchema = createAdminMcpSchema(
-  aiFeedbackQualitySnapshotSchema
 )
 const auditEventsInputSchema = createAdminMcpSchema(
   adminAuditEventsQuerySchema.strict()
@@ -206,7 +195,6 @@ type AdminMcpToolName =
   | "admin_archive_course"
   | "admin_create_course_draft"
   | "admin_delete_user"
-  | "admin_get_ai_feedback_quality"
   | "admin_get_analytics"
   | "admin_get_course_editor"
   | "admin_get_dashboard"
@@ -372,37 +360,6 @@ export function createAdminMcpServer(
           return successResult(
             output,
             `레슨 분석 ${output.items.length}건을 조회했습니다.`
-          )
-        }
-      )
-  )
-
-  server.registerTool(
-    "admin_get_ai_feedback_quality",
-    {
-      annotations: toolAnnotations,
-      description:
-        "Read aggregate AI feedback quality without provider input or output text for a bounded half-open time range.",
-      inputSchema: aiFeedbackQualityInputSchema,
-      outputSchema: aiFeedbackQualityOutputSchema,
-      title: "Get AI feedback quality",
-    },
-    ({ from, to }, context) =>
-      executeTool(
-        dependencies,
-        "admin_get_ai_feedback_quality",
-        context,
-        async () => {
-          const result = await dependencies.reporting.readAiFeedbackQuality({
-            from: new Date(from),
-            to: new Date(to),
-          })
-          if (result.isErr()) {
-            throw new AdminMcpToolError("REPORTING_UNAVAILABLE")
-          }
-          return successResult(
-            toAdminAiFeedbackQualityDto(result.value),
-            "AI 코칭 품질 집계를 조회했습니다."
           )
         }
       )

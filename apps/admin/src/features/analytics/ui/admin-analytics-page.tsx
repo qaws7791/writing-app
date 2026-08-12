@@ -7,7 +7,6 @@ import type { AdminRequestResult } from "@/shared/http/admin-api-client"
 import type { AdminAnalyticsFilters } from "@/features/analytics/model/admin-analytics-filters"
 import { createGetFilterHref } from "@/shared/navigation/get-filter-url"
 import type {
-  AdminAiFeedbackQuality,
   AdminAnalytics,
   AdminLessonAnalyticsPage,
 } from "@/entities/admin-analytics/model/admin-analytics"
@@ -41,12 +40,10 @@ const fieldLabelClassName =
   "flex w-fit gap-2 text-sm leading-snug font-medium tracking-[-0.005em] text-foreground/90"
 
 export function AdminAnalyticsPage({
-  aiFeedbackQualityResult,
   analyticsResult,
   filters,
   lessonAnalyticsResult,
 }: {
-  readonly aiFeedbackQualityResult: AdminRequestResult<AdminAiFeedbackQuality>
   readonly analyticsResult: AdminRequestResult<AdminAnalytics>
   readonly filters: AdminAnalyticsFilters
   readonly lessonAnalyticsResult: AdminRequestResult<AdminLessonAnalyticsPage>
@@ -88,8 +85,6 @@ export function AdminAnalyticsPage({
           <DailyAnalyticsTable analytics={analytics} />
         </>
       )}
-      <AiFeedbackQualityPanel result={aiFeedbackQualityResult} />
-      <WorstAiFeedbackLessonsTable lessons={analytics.worstAiFeedbackLessons} />
       {lessonAnalyticsResult.status === "error" ? (
         <LessonAnalyticsError message={lessonAnalyticsResult.error.message} />
       ) : (
@@ -184,204 +179,6 @@ function DailyAnalyticsTable({
                   <TableNumber value={formatReturnValue(point)} />
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-const aiFeedbackFailureLabels = {
-  "pending-expired": "처리 중 만료",
-  "persistence-failed": "저장 실패",
-  "provider-response-invalid": "응답 형식 오류",
-  "provider-timeout": "제공자 timeout",
-  "provider-unavailable": "제공자 불가",
-  "request-aborted": "요청 중단",
-} as const satisfies Record<
-  AdminAiFeedbackQuality["failureCounts"][number]["code"],
-  string
->
-
-function AiFeedbackQualityPanel({
-  result,
-}: {
-  readonly result: AdminRequestResult<AdminAiFeedbackQuality>
-}) {
-  return (
-    <Card aria-label="AI 코칭 서비스 품질" className="mb-4" role="region">
-      <CardHeader>
-        <CardTitle>
-          <h2>AI 코칭 서비스 품질</h2>
-        </CardTitle>
-        <CardDescription>
-          조회 기간의 요청과 실패, 지연, token 사용량입니다. 답안과 피드백
-          원문은 포함하지 않습니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {result.status === "error" ? (
-          <Alert role="alert" variant="destructive">
-            <AlertDescription>{result.error.message}</AlertDescription>
-          </Alert>
-        ) : result.value.status === "empty" ? (
-          <p className="mt-4 font-semibold text-muted-foreground">
-            조회 기간에 AI 코칭 요청이 없습니다.
-          </p>
-        ) : (
-          <>
-            <dl className="grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
-              <QualityMetric
-                label="요청"
-                value={`${formatCount(result.value.requestCount)}건`}
-              />
-              <QualityMetric
-                label="성공"
-                value={`${formatCount(result.value.successCount)}건`}
-              />
-              <QualityMetric
-                label="성공률"
-                value={
-                  result.value.successRate === null
-                    ? "집계 중"
-                    : `${Math.round(result.value.successRate * 1_000) / 10}%`
-                }
-              />
-              <QualityMetric
-                label="실패"
-                value={`${formatCount(result.value.failureCount)}건`}
-              />
-              <QualityMetric
-                label="평균 지연"
-                value={
-                  result.value.latency.averageMs === null
-                    ? "표본 없음"
-                    : `${formatCount(Math.round(result.value.latency.averageMs))}ms`
-                }
-              />
-              <QualityMetric
-                label="재시도"
-                value={`${formatCount(result.value.retryCount)}건`}
-              />
-            </dl>
-            <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-              <QualityMetric
-                label="입력 token"
-                value={formatCount(result.value.tokens.input)}
-              />
-              <QualityMetric
-                label="출력 token"
-                value={formatCount(result.value.tokens.output)}
-              />
-            </dl>
-            <h3 className="mt-6 font-heading text-base font-semibold">
-              실패 원인
-            </h3>
-            {result.value.failureCounts.length === 0 ? (
-              <p className="mt-1 font-semibold text-muted-foreground">
-                조회 기간에 실패가 없습니다.
-              </p>
-            ) : (
-              <ul className="mt-2 grid list-none gap-1 p-0">
-                {result.value.failureCounts.map((failure) => (
-                  <li
-                    className="flex justify-between gap-4 font-semibold"
-                    key={failure.code}
-                  >
-                    <span>{aiFeedbackFailureLabels[failure.code]}</span>
-                    <span>{formatCount(failure.count)}건</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function QualityMetric({
-  label,
-  value,
-}: {
-  readonly label: string
-  readonly value: string
-}) {
-  return (
-    <div>
-      <dt className="text-xs font-semibold text-muted-foreground">{label}</dt>
-      <dd className="font-heading text-lg font-semibold">{value}</dd>
-    </div>
-  )
-}
-
-function WorstAiFeedbackLessonsTable({
-  lessons,
-}: {
-  readonly lessons: AdminAnalytics["worstAiFeedbackLessons"]
-}) {
-  return (
-    <Card className="mb-4">
-      <CardHeader>
-        <CardTitle>
-          <h2>AI 실패율 상위 레슨</h2>
-        </CardTitle>
-        <CardDescription>
-          조회 기간의 AI 코칭 요청 중 실패 비율이 높은 현재 레슨입니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table
-            aria-label="AI 실패율 상위 레슨"
-            className="w-full min-w-[720px] text-sm"
-          >
-            <thead>
-              <tr className="border-b border-border">
-                <TableHeading>레슨</TableHeading>
-                <TableHeading>강의</TableHeading>
-                <TableHeading>요청</TableHeading>
-                <TableHeading>실패</TableHeading>
-                <TableHeading>실패율</TableHeading>
-              </tr>
-            </thead>
-            <tbody>
-              {lessons.length === 0 ? (
-                <tr>
-                  <td
-                    className="px-4 py-10 text-center font-semibold text-muted-foreground"
-                    colSpan={5}
-                  >
-                    조회 기간에 AI 실패가 발생한 레슨이 없습니다.
-                  </td>
-                </tr>
-              ) : (
-                lessons.map((lesson) => (
-                  <tr
-                    className="border-b border-border last:border-0"
-                    key={`${lesson.courseId}:${lesson.lessonId}`}
-                  >
-                    <th
-                      className="px-4 py-3 text-left font-black text-foreground"
-                      scope="row"
-                    >
-                      {lesson.lessonTitle}
-                    </th>
-                    <td className="px-4 py-3 font-semibold text-muted-foreground">
-                      {lesson.courseTitle}
-                    </td>
-                    <TableNumber
-                      value={`${formatCount(lesson.requestCount)}건`}
-                    />
-                    <TableNumber
-                      value={`${formatCount(lesson.failureCount)}건`}
-                    />
-                    <TableNumber value={`${lesson.failureRate}%`} />
-                  </tr>
-                ))
-              )}
             </tbody>
           </table>
         </div>

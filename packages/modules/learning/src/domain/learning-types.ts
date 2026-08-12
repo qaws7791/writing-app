@@ -73,34 +73,6 @@ export type LearningStep =
       }>)
   | (LearningStepBase &
       Readonly<{
-        badge?: string
-        claim?: string
-        context?: string
-        draft?: boolean
-        goal?: number
-        guide?: string
-        max?: number
-        min: number
-        mode?: string
-        placeholder?: string
-        prompt?: string
-        reference?: string
-        sample?: string
-        structure?: string
-        title?: string
-        topic?: string
-        type: "WRITE"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        allowRetry: boolean
-        feedback: string
-        focus: string
-        target: LessonStepId
-        type: "AI_FEEDBACK"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
         explanation: string
         guide: string
         pairs: readonly Readonly<{
@@ -211,7 +183,6 @@ export type LearnerStepSubmission =
       }>[]
       type: "CATEGORIZE"
     }>
-  | Readonly<{ text: string; type: "WRITE" }>
 
 export type LearnerStepDraftAnswer =
   | Readonly<{
@@ -244,7 +215,6 @@ export type LearnerStepDraftAnswer =
       }>[]
       type: "CATEGORIZE"
     }>
-  | Readonly<{ text: string; type: "WRITE" }>
 
 export type LearnerStepDraft = Readonly<{
   answer: LearnerStepDraftAnswer
@@ -290,7 +260,6 @@ export type StepEvaluation =
       }>[]
       type: "CATEGORIZE"
     }>
-  | Readonly<{ accepted: true; type: "WRITE" }>
 
 export type CurriculumVersionRef = Readonly<{
   curriculumVersionId: CurriculumVersionId

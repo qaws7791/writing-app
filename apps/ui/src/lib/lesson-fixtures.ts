@@ -1,5 +1,3 @@
-import type { AiFeedbackViewModel } from "@workspace/ui/components/lesson/ai-feedback-answer";
-
 export const readingDefaults = {
   title: "명료성의 원칙",
   guide: "좋은 문장의 핵심 기준을 읽고, 내가 자주 쓰는 표현 중 모호한 것이 있는지 생각해보세요.",
@@ -110,35 +108,3 @@ export const categorizeDefaults = {
   explanation: "단락은 주제문 1개, 뒷받침 1~2개, 구체 예시로 구성하면 단단해집니다.",
   checked: false as const,
 } as const;
-
-export const writeDefaults = {
-  title: "띄어쓰기 교정",
-  badge: "🩹 띄어쓰기",
-  guide: "**힌트**: 조사 앞은 붙이고, 자립명사 뒤는 띄웁니다.",
-  reference: "그는회의내동료의발표를집중해서들었다.",
-  min: 20,
-  max: 2000,
-  placeholder: "여기에 작성하세요...",
-  sample: "그는 회의 내내 동료의 발표를 집중해서 들었다.",
-  checked: false as const,
-} as const;
-
-export const aiFeedbackDefaults = {
-  focus: "명확성",
-  draftText:
-    "꾸준한 글쓰기는 사고를 정돈합니다. 매일 쓰는 사람은 자기 생각을 더 명확히 표현합니다.",
-  allowRetry: true,
-  mockOutcome: "success" as const,
-} as const;
-
-export const aiFeedbackViewModel: AiFeedbackViewModel = {
-  summary:
-    "주장과 근거가 명확히 구분되어 있습니다. 근거에 구체적인 수치가 포함되어 설득력이 높습니다.",
-  strengths: [
-    "주제문이 한 문장에 하나의 생각만 담고 있습니다.",
-    "근거가 주장을 직접 뒷받침합니다.",
-  ],
-  improvements: ["두 번째 문장에 구체적인 예시를 추가하면 더 설득력이 높아집니다."],
-  nextAction: "근거 문장에 숫자나 사례를 하나 넣어 다시 작성해 보세요.",
-  remainingAttempts: 2,
-};

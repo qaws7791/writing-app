@@ -8,7 +8,6 @@ import {
   learnerCoursePageSchema,
   learnerProgressPageSchema,
 } from "@workspace/contracts/learning/learner-content"
-import type { LearnerAiFeedbackTransitionResult } from "@workspace/contracts/learning/learner-transition"
 import {
   completeLearnerStepResultSchema,
   type CompleteLearnerStepResult,
@@ -21,7 +20,6 @@ import { err, ok, type Result } from "@workspace/kernel/result"
 import type { LearnerId } from "@workspace/types/ids"
 
 import type {
-  LearningAiFeedbackTransition,
   LearningCommandError,
   LearningReadError,
 } from "#learning/application/learning-application"
@@ -164,19 +162,6 @@ export function presentCompleteStepResult(
   return completeLearnerStepResultSchema.parse(presented)
 }
 
-export function presentAiFeedbackResult(
-  result: LearningAiFeedbackTransition
-): LearnerAiFeedbackTransitionResult {
-  return {
-    feedback: {
-      ...result.feedback,
-      improvements: [...result.feedback.improvements],
-      strengths: [...result.feedback.strengths],
-    },
-    transition: presentCompleteStepResult(result.transition),
-  }
-}
-
 function mapLearningError(
   error: LearningCommandError | LearningReadError
 ): AppError {
@@ -194,12 +179,6 @@ function mapLearningError(
         "INTERNAL_SERVER_ERROR",
         "학습 요청을 완료하지 못했습니다."
       )
-    case "persistence-failed":
-      return httpError(
-        500,
-        "INTERNAL_SERVER_ERROR",
-        "AI 코칭 요청을 완료하지 못했습니다."
-      )
     case "lesson-not-found":
       return httpError(404, "LESSON_NOT_FOUND", "레슨을 찾을 수 없습니다.")
     case "lesson-locked":
@@ -209,18 +188,6 @@ function mapLearningError(
         409,
         "CURRICULUM_VERSION_CHANGED",
         "학습 콘텐츠 버전이 변경되었습니다."
-      )
-    case "feedback-answer-not-found":
-      return httpError(
-        409,
-        "AI_FEEDBACK_ANSWER_NOT_FOUND",
-        "코칭할 작성 답변을 찾을 수 없습니다."
-      )
-    case "feedback-target-invalid":
-      return httpError(
-        500,
-        "INTERNAL_SERVER_ERROR",
-        "AI 코칭 대상 설정이 올바르지 않습니다."
       )
     case "step-sequence-conflict":
       return httpError(
@@ -233,35 +200,6 @@ function mapLearningError(
         409,
         "STEP_DRAFT_VERSION_CONFLICT",
         "다른 변경으로 단계 초안 버전이 바뀌었습니다."
-      )
-    case "attempt-limit-exceeded":
-      return httpError(
-        429,
-        "ATTEMPT_LIMIT_EXCEEDED",
-        "AI 코칭 시도 횟수를 모두 사용했습니다."
-      )
-    case "attempt-in-progress":
-      return httpError(
-        409,
-        "ATTEMPT_IN_PROGRESS",
-        "AI 코칭 요청을 처리하고 있습니다.",
-        { "Retry-After": String(error.retryAfterSeconds) }
-      )
-    case "daily-quota-exceeded":
-      return httpError(
-        429,
-        "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED",
-        "오늘의 AI 코칭 요청 한도를 모두 사용했습니다.",
-        { "Retry-After": String(error.retryAfterSeconds) }
-      )
-    case "provider-response-invalid":
-    case "provider-timeout":
-    case "provider-unavailable":
-    case "request-aborted":
-      return httpError(
-        503,
-        "PROVIDER_UNAVAILABLE",
-        "AI 코칭을 잠시 사용할 수 없습니다."
       )
   }
 

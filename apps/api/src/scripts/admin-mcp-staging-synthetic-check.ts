@@ -10,7 +10,6 @@ const readToolNames = [
   "admin_get_dashboard",
   "admin_get_analytics",
   "admin_list_lesson_analytics",
-  "admin_get_ai_feedback_quality",
   "admin_list_audit_events",
 ] as const
 const readToolName = readToolNames[0]
@@ -97,7 +96,7 @@ export async function runAdminMcpSyntheticCheck(
     const listedToolNames = listedTools.tools.map((tool) => tool.name)
     if (!hasExactToolNames(listedToolNames, readToolNames)) {
       throw new AdminMcpSyntheticCheckError(
-        "관리자 MCP staging synthetic 도구 집합이 읽기 전용 7개 계약과 일치하지 않습니다."
+        "관리자 MCP staging synthetic 도구 집합이 읽기 전용 6개 계약과 일치하지 않습니다."
       )
     }
     if (listedTools.tools.some((tool) => !hasReadOnlyAnnotations(tool))) {
@@ -130,8 +129,9 @@ export async function runAdminMcpSyntheticCheck(
       // The primary check error determines this failure path.
     }
     if (error instanceof AdminMcpSyntheticCheckError) throw error
+    const detail = error instanceof Error ? error.message : String(error)
     throw new AdminMcpSyntheticCheckError(
-      `관리자 MCP staging synthetic check가 ${phase} 단계에서 실패했습니다.`
+      `관리자 MCP staging synthetic check가 ${phase} 단계에서 실패했습니다: ${detail}`
     )
   }
 

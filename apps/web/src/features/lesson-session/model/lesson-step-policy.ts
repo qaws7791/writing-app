@@ -11,8 +11,6 @@ export function isLessonStepSubmittable(
   payload: LessonStepDraftAnswer | undefined
 ): boolean {
   switch (step.type) {
-    case "AI_FEEDBACK":
-      return false
     case "CATEGORIZE":
       return (
         payload?.type === "CATEGORIZE" &&
@@ -39,8 +37,6 @@ export function isLessonStepSubmittable(
       )
     case "SELECT":
       return payload?.type === "SELECT" && payload.selectedItemIds.length > 0
-    case "WRITE":
-      return payload?.type === "WRITE" && payload.text.length >= step.min
     case "COMPARE":
     case "READING":
       return true
@@ -50,9 +46,7 @@ export function isLessonStepSubmittable(
 export function getLessonStepActionLabel(step: LessonStep): string {
   return step.type === "READING" || step.type === "COMPARE"
     ? "이해했어요"
-    : step.type === "AI_FEEDBACK"
-      ? "다음으로 →"
-      : "확인하기"
+    : "확인하기"
 }
 
 export function getLessonStepPendingLabel(step: LessonStep): string {
@@ -64,5 +58,5 @@ export function getLessonStepPendingLabel(step: LessonStep): string {
 export function isLessonStepCheckedCorrect(
   checked: LessonStepCheckedState
 ): boolean {
-  return "correct" in checked ? checked.correct : checked.accepted
+  return checked.correct
 }

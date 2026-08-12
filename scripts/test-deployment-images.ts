@@ -36,7 +36,6 @@ const runtimeSecrets = [
   "DELETION_MARKER_S3_SECRET_KEY",
   "GOOGLE_CLIENT_SECRET",
   "LEARNER_AUTH_SECRET",
-  "OPENAI_API_KEY",
   "RESEND_API_KEY",
 ] as const
 const routes = [
@@ -67,12 +66,6 @@ function createSpecs(
     ADMIN_ASSET_S3_REGION: "auto",
     ADMIN_ASSET_S3_SECRET_KEY: "asset-secret-key",
     ADMIN_AUTH_SECRET: adminSecret,
-    AI_FEEDBACK_GLOBAL_DAILY_REQUEST_LIMIT: "1000",
-    AI_FEEDBACK_GLOBAL_DAILY_SUCCESS_LIMIT: "500",
-    AI_FEEDBACK_PENDING_TTL_MS: "60000",
-    AI_FEEDBACK_PROVIDER_TIMEOUT_MS: "30000",
-    AI_FEEDBACK_USER_DAILY_REQUEST_LIMIT: "20",
-    AI_FEEDBACK_USER_DAILY_SUCCESS_LIMIT: "10",
     API_PORT: "4000",
     AUTH_EMAIL_FROM: "Writing App <auth@example.test>",
     AUTH_EMAIL_REPLY_TO: "support@example.test",
@@ -89,8 +82,6 @@ function createSpecs(
     GOOGLE_CLIENT_SECRET: "google-smoke-client-secret",
     LEARNER_AUTH_SECRET: learnerSecret,
     LOG_PRETTY: "false",
-    OPENAI_API_KEY: "openai-smoke-api-key",
-    OPENAI_MODEL: "gpt-5.2",
     RESEND_API_KEY: "resend-smoke-api-key",
   }
   const assetOrigins = publicEnvironment.CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS

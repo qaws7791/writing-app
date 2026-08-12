@@ -27,7 +27,6 @@ const validProductionEnvironment: Record<string, string | undefined> = {
   GOOGLE_CLIENT_SECRET: "google-production-client-secret",
   LEARNER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
   NODE_ENV: "production",
-  OPENAI_API_KEY: "openai-production-api-key",
   RESEND_API_KEY: "re_production_example",
   WEB_ORIGIN: "https://app.example.com",
 }
@@ -39,7 +38,6 @@ describe("production API 환경 검증", () => {
       { GOOGLE_CLIENT_ID: undefined, GOOGLE_CLIENT_SECRET: undefined },
       /GOOGLE_CLIENT_ID/u,
     ],
-    ["OpenAI", { OPENAI_API_KEY: undefined }, /OPENAI_API_KEY/u],
   ] as const)("%s provider 설정 누락을 거부한다", (_, override, error) => {
     expect(() =>
       parseApiEnv({ ...validProductionEnvironment, ...override })

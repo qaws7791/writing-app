@@ -42,14 +42,13 @@ const courseId = courseIdSchema.parse("course-1")
 const curriculumVersionId = curriculumVersionIdSchema.parse("curriculum-1")
 const lessonId = lessonIdSchema.parse("lesson-1")
 const createdAt = new Date("2026-08-10T00:00:00.000Z")
-const expiresAt = new Date("2026-08-11T00:00:00.000Z")
+const expiresAt = new Date("2030-01-01T00:00:00.000Z")
 const expectedReadToolNames = [
   "admin_list_courses",
   "admin_get_course_editor",
   "admin_get_dashboard",
   "admin_get_analytics",
   "admin_list_lesson_analytics",
-  "admin_get_ai_feedback_quality",
   "admin_list_audit_events",
 ]
 const configuration: AdminMcpConfiguration = {
@@ -130,7 +129,7 @@ describe("admin MCP staging synthetic check local integration", () => {
       expect(result).toEqual({
         protocolEra: "modern",
         readToolName: "admin_list_courses",
-        toolCount: 7,
+        toolCount: 6,
         toolNames: expectedReadToolNames,
       })
       expect(protocolVersions).toContain("2026-07-28")
@@ -194,7 +193,7 @@ describe("admin MCP staging synthetic check local integration", () => {
         )
       ).rejects.toThrow(
         new AdminMcpSyntheticCheckError(
-          "관리자 MCP staging synthetic 도구 집합이 읽기 전용 7개 계약과 일치하지 않습니다."
+          "관리자 MCP staging synthetic 도구 집합이 읽기 전용 6개 계약과 일치하지 않습니다."
         )
       )
       expect(tools.content.getCourses).not.toHaveBeenCalled()
@@ -381,28 +380,12 @@ function createToolDependencies(): RuntimeInput["tools"] {
     now: () => new Date("2026-08-10T00:00:00.000Z"),
     reportUnexpectedError: vi.fn(),
     reporting: {
-      readAiFeedbackQuality: vi.fn(async ({ from, to }) =>
-        ok({
-          failureCount: 0,
-          failureCounts: [],
-          from: from.toISOString(),
-          latency: { averageMs: null, sampleCount: 0, totalMs: 0 },
-          requestCount: 0,
-          retryCount: 0,
-          status: "empty" as const,
-          successCount: 0,
-          successRate: null,
-          to: to.toISOString(),
-          tokens: { input: 0, output: 0, sampleCount: 0 },
-        })
-      ),
       readAnalytics: vi.fn(async () =>
         ok({
           dailySeries: [],
           from: "2026-07-12",
           matureCohortThrough: "2026-08-02",
           to: "2026-08-10",
-          worstAiFeedbackLessons: [],
           worstLessons: [],
         })
       ),

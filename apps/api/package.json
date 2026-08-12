@@ -32,7 +32,6 @@
     "@hono/zod-openapi": "catalog:",
     "@modelcontextprotocol/server": "2.0.0",
     "@scalar/hono-api-reference": "catalog:",
-    "@workspace/ai-feedback": "workspace:*",
     "@workspace/auth": "workspace:*",
     "@workspace/content": "workspace:*",
     "@workspace/contracts": "workspace:*",

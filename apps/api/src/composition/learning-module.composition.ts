@@ -1,4 +1,3 @@
-import type { AiFeedbackApplication } from "@workspace/ai-feedback/ports"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { ContentApplication } from "@workspace/content/ports"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -11,7 +10,6 @@ import type { LearningIdentityQueryPort } from "@workspace/learning/ports"
 import type { Clock } from "@workspace/kernel/clock"
 
 export function composeLearningModule(input: {
-  readonly aiFeedback: AiFeedbackApplication
   readonly clock: Clock
   readonly content: ContentApplication
   readonly cursorSigningSecret: string
@@ -19,7 +17,6 @@ export function composeLearningModule(input: {
   readonly readIdentity: () => IdentityModule
 }): LearningModule {
   return createLearningModule({
-    aiFeedback: input.aiFeedback,
     clock: input.clock,
     content: input.content,
     cursorSigningSecret: input.cursorSigningSecret,

@@ -18,7 +18,7 @@
 - credential·session table은 auth infra가 소유하며 identity schema에 포함하지 않는다. identity profile은 인증 계정을 FK로 참조하고 credential의 물리 삭제에는 함께 삭제된다.
 - 상태 전이는 `active → suspended | deleted`, `suspended → active | deleted`만 허용한다. `deleted`는 종단 상태이며 정리 전까지 관리자 조회만 허용하고 상태 변경·재삭제와 보호 API 접근을 거부한다.
 - 삭제 command는 private object storage에 user ID와 요청 시각만 가진 marker 한 개를 먼저 기록한다. 기록 실패에는 profile이나 session을 변경하지 않는다. 기록 성공 뒤 profile을 비식별화하고 삭제 시각을 기록한 다음 해당 학습자의 모든 session을 즉시 폐기한다. 삭제 시각부터 5일 동안 사용자 소유 데이터는 보존한다.
-- 삭제 시각이 5일 이상 지난 사용자는 명시적 정리 command가 AI 시도·사용자별 quota, 학습 초안·답변·진행·활동, 인증 verification과 인증 사용자를 하나의 SQLite transaction에서 순서대로 삭제한다. 인증 verification은 이메일 식별자 또는 사용자 ID 연결로 삭제한다. 인증 사용자의 account·session·profile은 cascade로 함께 삭제하고 콘텐츠 revision과 사용자 식별자가 없는 전체 AI quota는 보존한다.
+- 삭제 시각이 5일 이상 지난 사용자는 명시적 정리 command가 학습 초안·답변·진행·활동, 인증 verification과 인증 사용자를 하나의 SQLite transaction에서 순서대로 삭제한다. 인증 verification은 이메일 식별자 또는 사용자 ID 연결로 삭제한다. 인증 사용자의 account·session·profile은 cascade로 함께 삭제하고 콘텐츠 revision은 보존한다.
 - backup 복원에서는 정확한 snapshot 시각 이후의 private marker를 사용자별 가장 이른 요청으로 축약해 삭제 상태와 session 폐기를 다시 적용하고, 이미 5일 경계를 지난 사용자는 같은 물리 삭제 경계로 정리한다. 반복 실행은 이미 적용·이미 삭제 상태로 수렴한다.
 - profile과 사용자 상태 변경은 version을 비교해 경쟁 변경을 명시적인 conflict로 반환한다.
 - 관리자 권한은 별도 제품 role 없이 유효한 관리자 session으로 판정하며, 관리자 계정은 seed CLI로만 만든다.
@@ -34,15 +34,6 @@
 - 승인된 MCP 콘텐츠 변경은 승인 ID와 실행 ID에 묶인 영수증을 콘텐츠 변경과 같은 transaction에 저장한다.
 - 같은 binding의 재시도는 저장된 영수증을 재생한다. 다른 binding은 충돌로 거부한다.
 - 현재 Drizzle schema와 trigger 정의는 content module이 소유한다. API의 현재 baseline과 이후 append-only migration은 이 최종 구조를 SQLite에 적용한다.
-
-## AI feedback 데이터 경계
-
-- ai-feedback module은 learner·course·curriculum version·lesson·step의 branded ID, idempotency key, attempt 번호·상태·lease와 coaching 결과를 저장한다. 각 attempt에는 model, prompt policy version, 입·출력 token 수, latency와 정규화한 실패 code를 함께 기록하며 usage metadata에는 답안·피드백 원문을 중복 저장하지 않는다.
-- 동일 사용자·curriculum version·lesson·step에는 pending attempt 한 건만 허용하고, 성공 attempt는 최대 3건으로 제한한다. 동일 idempotency key의 성공 결과는 provider 재호출 없이 재생한다.
-- 사용자별·전체 일일 request/success counter도 ai-feedback module이 소유하며 날짜는 `Asia/Seoul` 달력일로 계산한다. 예약된 provider 요청은 request counter에 남고 성공한 attempt만 success counter를 증가시키므로 provider 실패와 만료는 성공 quota를 소모하지 않는다.
-- 참조 무결성은 `RESTRICT` FK가 보장하고 runtime repository는 다른 module table을 조회하지 않는다.
-- attempt 예약과 terminal 저장은 짧은 개별 transaction이며 provider I/O 중에는 transaction을 열지 않는다. AI 결과 저장 뒤 learning 진행 전이가 실패하면 저장 결과를 권위 상태로 유지하고 같은 key 재시도에서 learning 전이만 다시 수행한다.
-- module schema는 최종 구조를, API migration 계보는 baseline 이후의 변경 순서를 소유한다.
 
 ## Learning 데이터 경계
 
@@ -86,7 +77,7 @@
 - operations module의 reporting repository는 각 module이 공개한 리포팅 읽기 뷰만 join·aggregate한다. 뷰는 소유 module의 `infrastructure/persistence/reporting-view.ts`가 이름과 컬럼을 선언하고 API의 append-only migration이 생성하므로, 원본 컬럼이 사라지면 배포 전 migration에서 실패한다. 원본 schema와 제품 불변식의 소유권은 각 module에 그대로 남으며 reporting projection은 원본을 변경하지 않는다.
 - 쓰기 지표는 writing module의 원문 없는 event reporting view만 사용한다.
 - API composition은 writer와 분리한 SQLite read-only connection을 주입하고 repository는 `query_only`를 확인한다. 보고 조회가 쓰기 transaction이나 다른 module command repository로 우회해서는 안 된다.
-- 집계 SQL은 필요한 projection과 aggregate만 반환한다. 전체 table row를 application memory로 읽어 join하지 않고, AI 답안·prompt·피드백 원문을 선택하거나 반환하지 않는다.
+- 집계 SQL은 필요한 projection과 aggregate만 반환한다. 전체 table row를 application memory로 읽어 join하지 않는다.
 - 삭제 상태 학습자는 모든 운영 지표에서 제외한다. 첫 레슨 시작, `Asia/Seoul` 날짜 경계, D7 성숙 cohort와 완료·이탈의 제품 의미는 `docs/product/metrics.md`가 소유한다.
 
 ## 변경 원칙

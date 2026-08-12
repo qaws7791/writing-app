@@ -55,7 +55,6 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
   if (session.hasStarted && session.currentStep !== null) {
     return (
       <LessonActiveScreen
-        aiFeedbackDraftText={session.aiFeedbackDraftText}
         answerError={session.answerError}
         answerPayload={session.currentAnswerPayload}
         checked={session.checked}
@@ -68,8 +67,6 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
         isLeaving={isLeaving}
         isSubmitting={session.isSubmitting}
         lesson={lesson}
-        onAiFeedbackRequest={session.requestAiFeedback}
-        onAiFeedbackSkip={session.skipAiFeedback}
         onAnswerPayloadChange={session.saveAnswer}
         onCancelExit={() => {
           setExitError(null)

@@ -8,7 +8,10 @@ import {
   lessonStepIdSchema,
   unitIdSchema,
 } from "@workspace/contracts/content/ids"
-import { learnerIdSchema } from "@workspace/contracts/learning/ids"
+import {
+  learnerIdSchema,
+  lessonStepItemIdSchema,
+} from "@workspace/contracts/learning/ids"
 import {
   courseCurriculumVersions,
   courses,
@@ -54,6 +57,9 @@ const occurredAt = new Date("2026-07-22T15:00:00.000Z")
 const updatedAt = new Date("2026-07-22T15:01:00.000Z")
 const staleAttemptedAt = new Date("2026-07-22T15:02:00.000Z")
 const secondPublishedAt = new Date("2026-07-23T00:00:00.000Z")
+
+const optionA = lessonStepItemIdSchema.parse("option-a")
+const optionB = lessonStepItemIdSchema.parse("option-b")
 
 const curriculum: LearningCurriculum = {
   category: "기초",
@@ -130,10 +136,16 @@ const writingCurriculum: LearningCurriculum = {
       ...firstCurriculumLesson,
       steps: [
         {
+          correct: "option-b",
+          explanation: "해설",
           id: firstStepId,
-          min: 1,
+          options: [
+            { id: "option-a", text: "첫째" },
+            { id: "option-b", text: "둘째" },
+          ],
+          question: "정답은?",
           sortOrder: 1,
-          type: "WRITE",
+          type: "MULTIPLE_CHOICE",
         },
       ],
     },
@@ -206,7 +218,10 @@ describe("learning SQLite transition repository", () => {
       await repository.startLesson(startFirstLesson, writingCurriculum)
       await repository.saveStepDraft(
         {
-          answer: { text: "제출할 초안", type: "WRITE" },
+          answer: {
+            selectedOptionId: optionB,
+            type: "MULTIPLE_CHOICE",
+          },
           expectedCurriculumVersionId: firstCurriculumVersionId,
           expectedVersion: null,
           lessonId: firstLessonId,
@@ -221,7 +236,10 @@ describe("learning SQLite transition repository", () => {
         {
           completion: {
             kind: "answer",
-            submission: { text: "제출할 답안", type: "WRITE" },
+            submission: {
+              selectedOptionId: optionB,
+              type: "MULTIPLE_CHOICE",
+            },
           },
           lessonId: firstLessonId,
           occurredAt,
@@ -235,8 +253,8 @@ describe("learning SQLite transition repository", () => {
         answers: [
           {
             answerJson: JSON.stringify({
-              text: "제출할 답안",
-              type: "WRITE",
+              selectedOptionId: "option-b",
+              type: "MULTIPLE_CHOICE",
             }),
           },
         ],
@@ -253,7 +271,7 @@ describe("learning SQLite transition repository", () => {
       await repository.startLesson(startFirstLesson, writingCurriculum)
       await repository.saveStepDraft(
         {
-          answer: { text: "보존할 초안", type: "WRITE" },
+          answer: { selectedOptionId: optionB, type: "MULTIPLE_CHOICE" },
           expectedCurriculumVersionId: firstCurriculumVersionId,
           expectedVersion: null,
           lessonId: firstLessonId,
@@ -276,7 +294,10 @@ describe("learning SQLite transition repository", () => {
           {
             completion: {
               kind: "answer",
-              submission: { text: "제출할 답안", type: "WRITE" },
+              submission: {
+                selectedOptionId: optionB,
+                type: "MULTIPLE_CHOICE",
+              },
             },
             lessonId: firstLessonId,
             occurredAt,
@@ -291,8 +312,8 @@ describe("learning SQLite transition repository", () => {
         drafts: [
           {
             answerJson: JSON.stringify({
-              text: "보존할 초안",
-              type: "WRITE",
+              selectedOptionId: "option-b",
+              type: "MULTIPLE_CHOICE",
             }),
             version: 0,
           },
@@ -343,7 +364,7 @@ describe("learning SQLite transition repository", () => {
       await repository.startLesson(startFirstLesson, writingCurriculum)
       await repository.saveStepDraft(
         {
-          answer: { text: "첫 초안", type: "WRITE" },
+          answer: { selectedOptionId: optionA, type: "MULTIPLE_CHOICE" },
           expectedCurriculumVersionId: firstCurriculumVersionId,
           expectedVersion: null,
           lessonId: firstLessonId,
@@ -355,7 +376,7 @@ describe("learning SQLite transition repository", () => {
       )
       await repository.saveStepDraft(
         {
-          answer: { text: "갱신한 초안", type: "WRITE" },
+          answer: { selectedOptionId: optionB, type: "MULTIPLE_CHOICE" },
           expectedCurriculumVersionId: firstCurriculumVersionId,
           expectedVersion: 0,
           lessonId: firstLessonId,
@@ -368,7 +389,7 @@ describe("learning SQLite transition repository", () => {
 
       const stale = await repository.saveStepDraft(
         {
-          answer: { text: "뒤늦은 초안", type: "WRITE" },
+          answer: { selectedOptionId: optionA, type: "MULTIPLE_CHOICE" },
           expectedCurriculumVersionId: firstCurriculumVersionId,
           expectedVersion: 0,
           lessonId: firstLessonId,
@@ -389,7 +410,7 @@ describe("learning SQLite transition repository", () => {
       })
       expect(restarted._unsafeUnwrap().drafts).toEqual([
         {
-          answer: { text: "갱신한 초안", type: "WRITE" },
+          answer: { selectedOptionId: optionB, type: "MULTIPLE_CHOICE" },
           stepId: firstStepId,
           updatedAt: updatedAt.toISOString(),
           version: 1,
@@ -465,7 +486,6 @@ function createLearningTestApplication(fixture: LearningFixture) {
   )
 
   return createLearningApplication({
-    aiFeedback: { requestFeedback: unusedDependency },
     clock,
     content,
     identity: {
@@ -477,10 +497,6 @@ function createLearningTestApplication(fixture: LearningFixture) {
     }),
     transitionRepository,
   })
-}
-
-function unusedDependency(): never {
-  throw new Error("Unexpected test dependency call")
 }
 
 function publishSecondCurriculumRevision(fixture: LearningFixture): void {

@@ -153,32 +153,6 @@ const learnerOrderStepSchema = learnerStepBaseSchema.extend({
   type: z.literal("ORDER"),
 })
 
-const learnerWriteStepSchema = learnerStepBaseSchema.extend({
-  badge: z.string().optional(),
-  claim: z.string().optional(),
-  context: z.string().optional(),
-  draft: z.boolean().optional(),
-  goal: nonNegativeIntegerSchema.optional(),
-  guide: z.string().optional(),
-  max: nonNegativeIntegerSchema.optional(),
-  min: nonNegativeIntegerSchema,
-  mode: z.string().optional(),
-  placeholder: z.string().optional(),
-  prompt: z.string().optional(),
-  reference: z.string().optional(),
-  sample: z.string().optional(),
-  structure: z.string().optional(),
-  title: z.string().optional(),
-  topic: z.string().optional(),
-  type: z.literal("WRITE"),
-})
-
-const learnerAiFeedbackStepSchema = learnerStepBaseSchema.extend({
-  focus: z.string(),
-  target: lessonStepIdSchema,
-  type: z.literal("AI_FEEDBACK"),
-})
-
 const learnerMatchStepSchema = learnerStepBaseSchema.extend({
   guide: z.string(),
   leftItems: z.array(learnerStepItemSchema).min(1),
@@ -202,8 +176,6 @@ export const learnerLessonStepSchema = z.discriminatedUnion("type", [
   learnerFillBlankStepSchema,
   learnerSelectStepSchema,
   learnerOrderStepSchema,
-  learnerWriteStepSchema,
-  learnerAiFeedbackStepSchema,
   learnerMatchStepSchema,
   learnerCategorizeStepSchema,
 ])

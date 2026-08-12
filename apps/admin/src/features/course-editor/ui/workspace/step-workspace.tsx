@@ -26,11 +26,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@workspace/ui/components/ui/field"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import {
   Select,
   SelectContent,
@@ -72,25 +68,11 @@ export function StepWorkspace({
   const [removeTarget, setRemoveTarget] = useState<EditorStep | null>(null)
   const [stepType, setStepType] = useState<LessonStepType>("READING")
   const workspaceRef = useRef<HTMLDivElement>(null)
-  const targetWriteStep = [...steps]
-    .reverse()
-    .find((step) => step.type === "WRITE")
-  const cannotAddAiFeedback =
-    stepType === "AI_FEEDBACK" && targetWriteStep === undefined
 
   const addStep = () => {
     const id = lessonStepIdSchema.parse(`step_${crypto.randomUUID()}`)
     const sortOrder = steps.length + 1
-    onAdd(
-      stepType === "AI_FEEDBACK"
-        ? createEditorStep({
-            id,
-            sortOrder,
-            targetStepId: targetWriteStep?.id ?? id,
-            type: stepType,
-          })
-        : createEditorStep({ id, sortOrder, type: stepType })
-    )
+    onAdd(createEditorStep({ id, sortOrder, type: stepType }))
   }
 
   return (
@@ -130,18 +112,8 @@ export function StepWorkspace({
               ))}
             </SelectContent>
           </Select>
-          {cannotAddAiFeedback ? (
-            <FieldDescription>
-              AI 피드백보다 앞선 쓰기 스텝을 먼저 추가해 주세요.
-            </FieldDescription>
-          ) : null}
         </Field>
-        <Button
-          disabled={cannotAddAiFeedback}
-          onClick={addStep}
-          type="button"
-          variant="outline"
-        >
+        <Button onClick={addStep} type="button" variant="outline">
           <PlusIcon aria-hidden="true" size={15} /> 스텝 추가
         </Button>
       </div>

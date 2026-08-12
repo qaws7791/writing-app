@@ -2,12 +2,7 @@
 
 import type { Ref } from "react"
 
-import type {
-  LessonAiFeedbackOutcome,
-  LessonAiFeedbackRequest,
-  LessonAiFeedbackSkipOutcome,
-  LessonStepAnswerPayload,
-} from "@/features/lesson-session/model/lesson-logic"
+import type { LessonStepAnswerPayload } from "@/features/lesson-session/model/lesson-logic"
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
 import {
   getLessonStepActionLabel,
@@ -35,7 +30,6 @@ import { LessonActions, LessonFooter } from "@workspace/ui/components/ui/lesson"
 type LessonCheckedState = false | LessonStepCheckedState
 
 export function LessonActiveScreen({
-  aiFeedbackDraftText,
   answerError,
   answerPayload,
   checked,
@@ -48,8 +42,6 @@ export function LessonActiveScreen({
   isLeaving,
   isSubmitting,
   lesson,
-  onAiFeedbackRequest,
-  onAiFeedbackSkip,
   onAnswerPayloadChange,
   onCancelExit,
   onConfirmExit,
@@ -61,7 +53,6 @@ export function LessonActiveScreen({
   showExit,
   visibleStepNumber,
 }: {
-  readonly aiFeedbackDraftText: string
   readonly answerError: null | string
   readonly answerPayload: LessonStepAnswerPayload | undefined
   readonly checked: LessonCheckedState
@@ -74,12 +65,6 @@ export function LessonActiveScreen({
   readonly isLeaving: boolean
   readonly isSubmitting: boolean
   readonly lesson: Lesson
-  readonly onAiFeedbackRequest: (
-    request: LessonAiFeedbackRequest
-  ) => Promise<LessonAiFeedbackOutcome>
-  readonly onAiFeedbackSkip: (
-    request: LessonAiFeedbackRequest
-  ) => Promise<LessonAiFeedbackSkipOutcome>
   readonly onAnswerPayloadChange: (change: {
     readonly payload: LessonStepAnswerPayload
     readonly stepId: string
@@ -128,17 +113,14 @@ export function LessonActiveScreen({
     >
       <div className="flex flex-col gap-4" onBlurCapture={onDraftFlush}>
         <LessonStepRenderer
-          aiFeedbackDraftText={aiFeedbackDraftText}
           answerError={answerError}
           checked={checked}
-          onAiFeedbackRequest={onAiFeedbackRequest}
-          onAiFeedbackSkip={onAiFeedbackSkip}
           onAnswerPayloadChange={onAnswerPayloadChange}
           key={`${currentStepIndex}:${renderRevision}`}
           step={currentStep}
           {...(answerPayload === undefined ? {} : { answerPayload })}
         />
-        {completeError === null || currentStep.type === "AI_FEEDBACK" ? null : (
+        {completeError === null ? null : (
           <Insight role="alert" tone="incorrect">
             <InsightEyebrow>답을 확인하지 못했어요</InsightEyebrow>
             <InsightDescription>{completeError}</InsightDescription>

@@ -6,18 +6,11 @@ export type EditorStep =
   AdminCourseDetail["units"][number]["lessons"][number]["steps"][number]
 type LessonStepId = EditorStep["id"]
 
-type EditorStepCreation =
-  | Readonly<{
-      id: LessonStepId
-      sortOrder: number
-      targetStepId: LessonStepId
-      type: "AI_FEEDBACK"
-    }>
-  | Readonly<{
-      id: LessonStepId
-      sortOrder: number
-      type: Exclude<LessonStepType, "AI_FEEDBACK">
-    }>
+type EditorStepCreation = Readonly<{
+  id: LessonStepId
+  sortOrder: number
+  type: LessonStepType
+}>
 
 export function createEditorStep(input: EditorStepCreation): EditorStep {
   const base = {
@@ -28,15 +21,6 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
   const itemId = (kind: string, index: number) => `${input.id}-${kind}-${index}`
 
   switch (input.type) {
-    case "AI_FEEDBACK":
-      return {
-        ...base,
-        allowRetry: true,
-        feedback: "",
-        focus: "",
-        target: input.targetStepId,
-        type: input.type,
-      }
     case "CATEGORIZE": {
       const categoryId = itemId("category", 1)
       return {
@@ -142,12 +126,5 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
         type: input.type,
       }
     }
-    case "WRITE":
-      return {
-        ...base,
-        min: 0,
-        prompt: "쓰기 안내를 입력하세요.",
-        type: input.type,
-      }
   }
 }

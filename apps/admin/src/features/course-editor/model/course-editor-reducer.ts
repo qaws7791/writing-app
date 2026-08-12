@@ -351,8 +351,6 @@ export function courseEditorReducer(
       return updateLessonSteps(state, action, (steps) => {
         const source = steps.find((step) => step.id === action.stepId)
 
-        // AI 코칭 사본은 같은 레슨의 같은 쓰기 스텝을 계속 가리키므로 target을
-        // 다시 매핑하지 않는다.
         return source === undefined
           ? steps
           : reorder([...steps, { ...source, id: action.newStepId }])
@@ -472,9 +470,7 @@ function reorder<TItem extends { readonly sortOrder: number }>(
 }
 
 /**
- * 레슨 사본은 스텝 ID가 모두 새로 발급되므로 AI 코칭 target을 사본 안의
- * 대응 스텝으로 다시 매핑한다. 매핑하지 않으면 사본의 AI 스텝이 원본 레슨의
- * 스텝을 가리켜 저장 검증에서 거절된다.
+ * 레슨 사본은 스텝 ID를 새로 발급한다.
  */
 function duplicateLesson(
   source: EditorLesson,
@@ -483,23 +479,13 @@ function duplicateLesson(
     newStepIds: readonly LessonStepId[]
   }>
 ): EditorLesson {
-  const newStepIdByOldId = new Map(
-    source.steps.map((step, index) => [step.id, action.newStepIds[index]])
-  )
-
   return {
     ...source,
     id: action.newLessonId,
-    steps: source.steps.map((step, index) => {
-      const id = action.newStepIds[index] ?? step.id
-      return step.type === "AI_FEEDBACK"
-        ? {
-            ...step,
-            id,
-            target: newStepIdByOldId.get(step.target) ?? step.target,
-          }
-        : { ...step, id }
-    }),
+    steps: source.steps.map((step, index) => ({
+      ...step,
+      id: action.newStepIds[index] ?? step.id,
+    })),
     title: `${source.title} 사본`,
   }
 }

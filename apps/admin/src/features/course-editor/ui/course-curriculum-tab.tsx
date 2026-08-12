@@ -35,7 +35,6 @@ import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type EditorUnit = AdminCourseDetail["units"][number]
 type EditorLesson = EditorUnit["lessons"][number]
-type LessonStepId = EditorLesson["steps"][number]["id"]
 
 function createLessonId() {
   return lessonIdSchema.parse(`lesson_${crypto.randomUUID()}`)
@@ -272,21 +271,6 @@ export function CourseCurriculumTab({
                         })
                       }
                     />
-                    <AiFeedbackTargetFields
-                      lesson={lesson}
-                      onTargetChange={(stepId, targetStepId) => {
-                        const step = lesson.steps.find(
-                          (candidate) => candidate.id === stepId
-                        )
-                        if (step?.type !== "AI_FEEDBACK") return
-                        dispatch({
-                          lessonId: lesson.id,
-                          step: { ...step, target: targetStepId },
-                          type: "step-changed",
-                          unitId: unit.id,
-                        })
-                      }}
-                    />
                     <StepWorkspace
                       assetUpload={{
                         assets: draft.assets,
@@ -434,68 +418,4 @@ function LessonInfoFields({
       </Field>
     </div>
   )
-}
-
-function AiFeedbackTargetFields({
-  lesson,
-  onTargetChange,
-}: {
-  readonly lesson: EditorLesson
-  readonly onTargetChange: (
-    stepId: LessonStepId,
-    targetStepId: LessonStepId
-  ) => void
-}) {
-  const aiSteps = lesson.steps.filter((step) => step.type === "AI_FEEDBACK")
-
-  if (aiSteps.length === 0) return null
-
-  return (
-    <div className="grid gap-4 rounded-3xl border border-border/70 bg-card p-4">
-      {aiSteps.map((aiStep) => {
-        const targets = lesson.steps
-          .filter(
-            (step) => step.type === "WRITE" && step.sortOrder < aiStep.sortOrder
-          )
-          .map((step) => ({
-            label: `${step.sortOrder}. ${getWriteStepLabel(step)}`,
-            value: step.id,
-          }))
-        const inputId = `${aiStep.id}-target-step`
-
-        return (
-          <Field key={aiStep.id}>
-            <FieldLabel htmlFor={inputId}>AI 코칭 대상 쓰기 스텝</FieldLabel>
-            <Select
-              items={targets}
-              onValueChange={(value) => {
-                if (value === null) return
-                onTargetChange(
-                  lessonStepIdSchema.parse(aiStep.id),
-                  lessonStepIdSchema.parse(value)
-                )
-              }}
-              value={aiStep.target}
-            >
-              <SelectTrigger id={inputId}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {targets.map((target) => (
-                  <SelectItem key={target.value} value={target.value}>
-                    {target.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        )
-      })}
-    </div>
-  )
-}
-
-function getWriteStepLabel(step: EditorLesson["steps"][number]): string {
-  if (step.type !== "WRITE") return "쓰기"
-  return step.title ?? step.prompt ?? "쓰기"
 }

@@ -16,10 +16,7 @@ import {
   lessonStepIdSchema,
   unitIdSchema,
 } from "#contracts/content/ids"
-import {
-  lessonStepDtoSchema,
-  validateAiFeedbackTargets,
-} from "#contracts/content/course"
+import { lessonStepDtoSchema } from "#contracts/content/course"
 import { contentStatusSchema } from "#contracts/content/status"
 import {
   nonNegativeIntegerSchema,
@@ -122,7 +119,6 @@ export const adminCourseEditorLessonSchema = z
   })
   .superRefine((lesson, context) => {
     validateContiguousSortOrders(lesson.steps, context)
-    validateAiFeedbackTargets(lesson.steps, context)
   })
 export const adminCourseEditorUnitSchema = z
   .strictObject({

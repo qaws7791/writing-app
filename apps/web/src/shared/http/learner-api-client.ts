@@ -41,12 +41,6 @@ export function readLearnerApiErrorCode(
   }
 }
 
-export function readLearnerApiRetryAfterSeconds(
-  error: GeneratedApiClientError
-): number | null {
-  return error.detail.kind === "http" ? error.detail.retryAfterSeconds : null
-}
-
 export function isLearnerApiAuthenticationError(
   error: GeneratedApiClientError
 ): boolean {
@@ -77,7 +71,6 @@ export type LearnerCourseSummaryDto = Awaited<
 >["items"][number]
 export type LearnerLessonDto = Awaited<ReturnType<typeof getLesson>>
 export type LearnerStepDraftDto = LearnerLessonDto["drafts"][number]
-export type LearnerStepDraftAnswerDto = LearnerStepDraftDto["answer"]
 export type LearnerProfileDto = Awaited<ReturnType<typeof getProfile>>
 export type LearnerProfileStatsDto = LearnerProfileDto["stats"]
 export type LearnerProgressPageDto = Awaited<ReturnType<typeof getProgress>>

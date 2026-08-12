@@ -14,7 +14,6 @@ export default defineConfig({
       path.join(repositoryRoot, "apps/web/vitest.config.ts"),
       path.join(repositoryRoot, "packages/shared/ui/vitest.config.ts"),
       ...[
-        ["@workspace/ai-feedback", "packages/modules/ai-feedback"],
         ["@workspace/auth", "packages/infra/auth"],
         ["@workspace/content", "packages/modules/content"],
         ["@workspace/contracts", "packages/shared/contracts"],

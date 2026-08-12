@@ -10,8 +10,6 @@ const nodeEnvSchema = z
   .default("development")
 const portSchema = z.coerce.number().int().min(1).max(65535)
 
-export const defaultOpenAiModel = "gpt-5.2"
-
 const appEnvBaseSchema = z.object({
   ADMIN_AUTH_SECRET: z.string().min(32),
   ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
@@ -22,8 +20,6 @@ const appEnvBaseSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   LEARNER_AUTH_SECRET: z.string().min(32),
   NODE_ENV: nodeEnvSchema,
-  OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_MODEL: z.string().min(1).default(defaultOpenAiModel),
   WEB_ORIGIN: z.url().default(localRuntimeDefaults.learnerWebOrigin),
 })
 

@@ -7,7 +7,6 @@ type ContentValidationReason =
   | "empty-lesson"
   | "empty-step-content"
   | "empty-unit"
-  | "invalid-ai-feedback-target"
   | "invalid-asset-reference"
   | "invalid-course-reference"
   | "invalid-lesson-reference"

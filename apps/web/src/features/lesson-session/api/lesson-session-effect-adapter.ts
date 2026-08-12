@@ -1,11 +1,8 @@
 import {
   completeLearnerStep,
-  createLearnerStepAiFeedback,
   startLearnerLesson,
 } from "@workspace/http-client/learner"
-import type { GeneratedApiClientError } from "@workspace/http-client/generated-fetch"
 
-import type { LessonAiFeedback } from "@/features/lesson-session/model/lesson-logic"
 import { getLessonUserMessage } from "@/features/lesson-session/model/lesson-user-message"
 import {
   toLessonCompleteStepResult,
@@ -16,7 +13,6 @@ import {
 } from "@/features/lesson-session/model/lesson-view-model"
 import {
   readLearnerApiErrorCode,
-  readLearnerApiRetryAfterSeconds,
   settleLearnerApiRequest,
 } from "@/shared/http/learner-api-client"
 
@@ -27,28 +23,11 @@ type TransitionEffectOutcome =
       readonly transition: LessonCompleteStepResult
     }
 
-type AiFeedbackEffectOutcome =
-  | {
-      readonly feedback: LessonAiFeedback
-      readonly status: "ok"
-      readonly transition: LessonCompleteStepResult
-    }
-  | {
-      readonly kind: "fatal" | "limit" | "quota" | "retryable"
-      readonly reuseIdempotencyKey: boolean
-      readonly retryAfterSeconds?: number
-      readonly status: "error"
-    }
-
 export type LessonSessionEffects = {
   readonly completeStep: (input: {
     readonly request: LessonCompleteStepBody
     readonly stepId: string
   }) => Promise<TransitionEffectOutcome>
-  readonly requestAiFeedback: (input: {
-    readonly idempotencyKey: string
-    readonly stepId: string
-  }) => Promise<AiFeedbackEffectOutcome>
   readonly start: () => Promise<
     | {
         readonly learning: LessonStartResult
@@ -81,22 +60,6 @@ export function createLessonSessionEffects(input: {
           }
         : { status: "ok", transition: toLessonCompleteStepResult(result.value) }
     },
-    async requestAiFeedback({ idempotencyKey, stepId }) {
-      const result = await settleLearnerApiRequest(
-        createLearnerStepAiFeedback(input.lessonId, stepId, {
-          headers: { "Idempotency-Key": idempotencyKey },
-          signal: input.readAbortSignal(),
-        })
-      )
-
-      return result.status === "error"
-        ? toAiFeedbackEffectError(result.error)
-        : {
-            feedback: result.value.feedback,
-            status: "ok",
-            transition: toLessonCompleteStepResult(result.value.transition),
-          }
-    },
     async start() {
       const result = await settleLearnerApiRequest(
         startLearnerLesson(
@@ -117,40 +80,5 @@ export function createLessonSessionEffects(input: {
           }
         : { learning: toLessonStartResult(result.value), status: "ok" }
     },
-  }
-}
-
-function toAiFeedbackEffectError(
-  error: GeneratedApiClientError
-): Extract<AiFeedbackEffectOutcome, { readonly status: "error" }> {
-  const classification = classifyAiFeedbackError(readLearnerApiErrorCode(error))
-  const retryAfterSeconds = readLearnerApiRetryAfterSeconds(error)
-
-  return {
-    ...classification,
-    ...(retryAfterSeconds === null ? {} : { retryAfterSeconds }),
-    status: "error",
-  }
-}
-
-function classifyAiFeedbackError(
-  code: string
-): Pick<
-  Extract<AiFeedbackEffectOutcome, { readonly status: "error" }>,
-  "kind" | "reuseIdempotencyKey"
-> {
-  switch (code) {
-    case "AI_FEEDBACK_DAILY_QUOTA_EXCEEDED":
-      return { kind: "quota", reuseIdempotencyKey: true }
-    case "ATTEMPT_LIMIT_EXCEEDED":
-      return { kind: "limit", reuseIdempotencyKey: false }
-    case "ATTEMPT_IN_PROGRESS":
-    case "NETWORK_ERROR":
-    case "REQUEST_ABORTED":
-      return { kind: "retryable", reuseIdempotencyKey: true }
-    case "PROVIDER_UNAVAILABLE":
-      return { kind: "retryable", reuseIdempotencyKey: false }
-    default:
-      return { kind: "fatal", reuseIdempotencyKey: false }
   }
 }

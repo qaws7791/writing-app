@@ -43,7 +43,7 @@ export function aPublishedCourse(
   const lessonId = options.lessonId ?? "lesson-1"
   const stepId = options.stepId ?? "step-1"
   const lessonTitle = options.lessonTitle ?? "레슨"
-  const stepType = options.stepType ?? "AI_FEEDBACK"
+  const stepType = options.stepType ?? "MULTIPLE_CHOICE"
   const courseTitle = options.courseTitle ?? "코스"
 
   sqlite

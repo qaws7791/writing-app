@@ -1,4 +1,3 @@
-import type { AiFeedbackResultDto } from "@workspace/contracts/ai-feedback/feedback"
 import {
   learnerLessonSchema,
   type LearnerLesson,
@@ -24,7 +23,6 @@ export type LessonStepEvaluation = StepEvaluation
 export type LessonCompleteStepBody = CompleteLearnerStepBody
 export type LessonCompleteStepResult = CompleteLearnerStepResult
 export type LessonStartResult = z.infer<typeof startLearnerLessonResponseSchema>
-export type LessonAiFeedback = AiFeedbackResultDto
 
 export function toLessonViewModel(wire: unknown): Lesson {
   return learnerLessonSchema.parse(wire)

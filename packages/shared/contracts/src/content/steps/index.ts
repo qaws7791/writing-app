@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-import { aiFeedbackStepDtoSchema } from "#contracts/content/steps/ai-feedback-step.dto"
 import { categorizeStepDtoSchema } from "#contracts/content/steps/categorize-step.dto"
 import { compareStepDtoSchema } from "#contracts/content/steps/compare-step.dto"
 import { fillBlankStepDtoSchema } from "#contracts/content/steps/fill-blank-step.dto"
@@ -9,7 +8,6 @@ import { multipleChoiceStepDtoSchema } from "#contracts/content/steps/multiple-c
 import { orderStepDtoSchema } from "#contracts/content/steps/order-step.dto"
 import { readingStepDtoSchema } from "#contracts/content/steps/reading-step.dto"
 import { selectStepDtoSchema } from "#contracts/content/steps/select-step.dto"
-import { writeStepDtoSchema } from "#contracts/content/steps/write-step.dto"
 
 export const lessonStepTypeValues = [
   "READING",
@@ -18,8 +16,6 @@ export const lessonStepTypeValues = [
   "FILL_BLANK",
   "SELECT",
   "ORDER",
-  "WRITE",
-  "AI_FEEDBACK",
   "MATCH",
   "CATEGORIZE",
 ] as const
@@ -29,7 +25,7 @@ export type LessonStepType = z.infer<typeof lessonStepTypeSchema>
 
 type LessonStepDefinition = {
   readonly answerable: boolean
-  readonly completion: "acknowledge" | "answer" | "ai-feedback"
+  readonly completion: "acknowledge" | "answer"
   readonly draftable: boolean
   readonly evaluatedByServer: boolean
   readonly schema: z.ZodType<unknown>
@@ -78,20 +74,6 @@ export const lessonStepDefinitions = {
     evaluatedByServer: true,
     schema: orderStepDtoSchema,
   },
-  WRITE: {
-    answerable: true,
-    completion: "answer",
-    draftable: true,
-    evaluatedByServer: true,
-    schema: writeStepDtoSchema,
-  },
-  AI_FEEDBACK: {
-    answerable: false,
-    completion: "ai-feedback",
-    draftable: false,
-    evaluatedByServer: true,
-    schema: aiFeedbackStepDtoSchema,
-  },
   MATCH: {
     answerable: true,
     completion: "answer",
@@ -115,8 +97,6 @@ export const lessonStepDtoSchema = z.discriminatedUnion("type", [
   lessonStepDefinitions.FILL_BLANK.schema,
   lessonStepDefinitions.SELECT.schema,
   lessonStepDefinitions.ORDER.schema,
-  lessonStepDefinitions.WRITE.schema,
-  lessonStepDefinitions.AI_FEEDBACK.schema,
   lessonStepDefinitions.MATCH.schema,
   lessonStepDefinitions.CATEGORIZE.schema,
 ])

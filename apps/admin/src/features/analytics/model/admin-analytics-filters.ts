@@ -14,17 +14,8 @@ export type AdminAnalyticsFilters = Readonly<{
 
 const defaultFilters = adminLessonAnalyticsQuerySchema.parse({})
 
-/** 추이 차트와 AI 품질 집계가 같은 기간을 보도록 하나의 창을 공유한다. */
+/** 추이 차트가 사용하는 기간 창입니다. */
 export const analyticsWindowDays = 30
-
-export function readAnalyticsWindow(
-  now: Date
-): Readonly<{ from: string; to: string }> {
-  const from = new Date(now)
-  from.setUTCDate(from.getUTCDate() - analyticsWindowDays)
-
-  return { from: from.toISOString(), to: now.toISOString() }
-}
 
 export function parseAdminAnalyticsFilters(
   searchParams: Record<string, string | string[] | undefined>

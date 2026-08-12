@@ -10,20 +10,7 @@ import { MatchAnswer } from "@workspace/ui/components/lesson/match-answer"
 import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-choice-answer"
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
-import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
-import {
-  Coaching,
-  CoachingFocus,
-  CoachingSource,
-  CoachingSourceBody,
-  CoachingSourceLabel,
-} from "@workspace/ui/components/ui/coaching"
-import {
-  Step,
-  StepBody,
-  StepHeader,
-  StepTitle,
-} from "@workspace/ui/components/ui/step"
+import { Step } from "@workspace/ui/components/ui/step"
 
 const OrderAnswer = dynamic(() =>
   import("@workspace/ui/components/lesson/order-answer").then(
@@ -138,52 +125,6 @@ function renderStepPreview(step: EditorStep): ReactNode {
           items={step.items}
           title={step.title}
         />
-      )
-    case "WRITE":
-      return (
-        <WriteAnswer
-          {...(step.badge === undefined ? {} : { badge: step.badge })}
-          {...(step.claim === undefined ? {} : { claim: step.claim })}
-          {...(step.goal === undefined ? {} : { goal: step.goal })}
-          {...(step.guide === undefined ? {} : { guide: step.guide })}
-          {...(step.max === undefined ? {} : { max: step.max })}
-          min={step.min}
-          {...(step.placeholder === undefined
-            ? {}
-            : { placeholder: step.placeholder })}
-          {...(step.reference === undefined
-            ? {}
-            : { reference: step.reference })}
-          {...(step.sample === undefined ? {} : { sample: step.sample })}
-          {...(step.structure === undefined
-            ? {}
-            : { structure: step.structure })}
-          title={step.title ?? step.prompt ?? "쓰기"}
-        />
-      )
-    case "AI_FEEDBACK":
-      return (
-        <>
-          <StepHeader>
-            <StepTitle>
-              <h2>AI 코칭</h2>
-            </StepTitle>
-          </StepHeader>
-          <StepBody>
-            <Coaching status="idle">
-              <CoachingFocus>
-                코칭 초점:{" "}
-                {step.focus.trim().length === 0 ? "미입력" : step.focus}
-              </CoachingFocus>
-              <CoachingSource>
-                <CoachingSourceLabel>작성 내용</CoachingSourceLabel>
-                <CoachingSourceBody>
-                  학습자는 앞선 쓰기 답안으로 AI 코칭을 요청합니다.
-                </CoachingSourceBody>
-              </CoachingSource>
-            </Coaching>
-          </StepBody>
-        </>
       )
   }
 }

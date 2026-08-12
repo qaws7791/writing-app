@@ -1,4 +1,3 @@
-import type { AiFeedbackMaintenance } from "@workspace/ai-feedback/ports"
 import {
   contentAssetOrphanRetentionMs,
   type CleanupOrphanedAssets,
@@ -17,7 +16,6 @@ const applicationRequestLogRetentionMs = 30 * dayMs
 const securityLogRetentionMs = 90 * dayMs
 
 type MaintenanceStage =
-  | "ai-pending"
   | "audit"
   | "content-assets"
   | "deleted-learners"
@@ -62,7 +60,6 @@ export type DailyMaintenanceResult = Readonly<{
   }>
   occurredAt: Date
   stages: Readonly<{
-    aiPending: BatchResult
     audit: BatchResult
     contentAssets: BatchResult & Readonly<{ retained: number }>
     deletedLearners: BatchResult
@@ -71,7 +68,6 @@ export type DailyMaintenanceResult = Readonly<{
 }>
 
 export function createDailyMaintenance(input: {
-  readonly aiFeedback: AiFeedbackMaintenance
   readonly auditTrail: AuditTrail
   readonly clock: Clock
   readonly contentAssets: CleanupOrphanedAssets
@@ -123,14 +119,6 @@ export function createDailyMaintenance(input: {
         )
       }
 
-      const aiPending = await input.aiFeedback.expireStalePending({
-        batchSize: command.batchSize,
-        dryRun: command.dryRun,
-      })
-      if (aiPending.isErr()) {
-        return maintenanceError("ai-pending", occurredAt, aiPending.error)
-      }
-
       const auditMatched = await input.auditTrail.inspectExpired({
         batchSize: command.batchSize,
         cutoff: occurredAt,
@@ -173,11 +161,6 @@ export function createDailyMaintenance(input: {
         }),
         occurredAt: new Date(occurredAt),
         stages: {
-          aiPending: batchResult({
-            affected: aiPending.value.expiredAttempts,
-            cutoff: aiPending.value.cutoff,
-            matched: aiPending.value.matchedAttempts,
-          }),
           audit: batchResult({
             affected: auditAffected.value,
             cutoff: occurredAt,

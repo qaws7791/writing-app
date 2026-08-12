@@ -27,19 +27,15 @@ test("학습자가 로그인해 서버가 확정한 레슨 완료를 다시 조�
   await page.getByRole("link", { name: "학습 시작하기" }).click()
   await page.getByRole("button", { name: "시작하기" }).click()
 
+  await page.getByRole("radio", { name: "클라이언트가 채점한다" }).click()
+  await page.getByRole("button", { name: "확인하기" }).click()
+  await page.getByRole("button", { name: "계속하기" }).click()
   await page.getByRole("radio", { name: "서버가 채점한다" }).click()
   await page.getByRole("button", { name: "확인하기" }).click()
-  await page.getByRole("button", { name: "계속하기" }).click()
-  await page
-    .getByRole("textbox")
-    .fill("서버가 모든 학습 상태를 일관되게 계산합니다.")
+  await page.getByRole("button", { name: "다음으로", exact: true }).click()
+  await page.getByRole("radio", { name: "서버가 상태를 계산한다" }).click()
   await page.getByRole("button", { name: "확인하기" }).click()
-  await page.getByRole("button", { name: "계속하기" }).click()
-  await page.getByRole("button", { name: "AI 코칭 받기" }).click()
-  await expect(
-    page.getByText("서버 상태 전이의 장점을 잘 설명했습니다.")
-  ).toBeVisible()
-  await page.getByRole("button", { name: "다음으로 →", exact: true }).click()
+  await page.getByRole("button", { name: "다음으로", exact: true }).click()
 
   const completionHeading = page.getByRole("heading", {
     name: "레슨을 완료했어요!",

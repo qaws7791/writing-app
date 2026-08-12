@@ -58,31 +58,10 @@ export type SaveLearnerStepDraftCommand = {
 
 export type LearnerStepCompletion =
   | { readonly kind: "acknowledge" }
-  | { readonly kind: "skip-ai-feedback" }
   | {
       readonly kind: "answer"
       readonly submission: LearnerStepSubmission
     }
-
-export type CompleteLearnerAiFeedbackCommand = {
-  readonly lessonId: LessonId
-  readonly occurredAt: Date
-  readonly stepId: LessonStepId
-  readonly userId: LearnerId
-}
-
-export type PrepareLearnerAiFeedbackCommand = Pick<
-  CompleteLearnerAiFeedbackCommand,
-  "lessonId" | "stepId" | "userId"
->
-
-export type LearnerAiFeedbackContext = {
-  readonly answer: string
-  readonly courseId: CourseId
-  readonly curriculumVersionId: CurriculumVersionId
-  readonly focus: string
-  readonly lessonTitle: string
-}
 
 export type LearnerTransitionError =
   | { readonly kind: "lesson-not-found"; readonly lessonId: LessonId }
@@ -105,18 +84,6 @@ export type LearnerTransitionError =
   | {
       readonly kind: "invalid-request"
       readonly lessonId: LessonId
-      readonly stepId: LessonStepId
-    }
-  | {
-      readonly kind: "feedback-answer-not-found"
-      readonly targetStepId: LessonStepId
-    }
-  | {
-      readonly kind: "feedback-target-invalid"
-      readonly reason:
-        | "target-step-not-before-feedback"
-        | "target-step-not-found"
-        | "target-step-not-write"
       readonly stepId: LessonStepId
     }
 

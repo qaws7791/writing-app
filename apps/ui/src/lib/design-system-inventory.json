@@ -1,8 +1,8 @@
 {
   "generatedAt": "2026-08-09",
   "counts": {
-    "modules": 39,
-    "stories": 154,
+    "modules": 37,
+    "stories": 144,
     "ciTestModules": 35,
     "playStories": 9,
     "mdx": 2
@@ -29,71 +29,6 @@
           "label": "EmptyResult",
           "description": "",
           "destination": "/docs/patterns/admin#story-empty-result",
-          "hasPlay": false
-        }
-      ]
-    },
-    {
-      "source": "legacy-catalog/stories/components/lesson/ai-feedback-answer.stories.tsx",
-      "title": "Components/Lesson/AiFeedbackAnswer",
-      "hasCiTest": true,
-      "hasArgs": true,
-      "hasArgTypes": true,
-      "stories": [
-        {
-          "id": "components-lesson-ai-feedback-answer--playground",
-          "exportName": "Playground",
-          "label": "Playground",
-          "description": "Controls로 초점·작성 내용·재시도·mock 결과를 조작할 수 있는 Playground입니다.",
-          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-playground",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-ai-feedback-answer--empty-draft",
-          "exportName": "EmptyDraft",
-          "label": "EmptyDraft",
-          "description": "작성 내용이 없을 때의 표시입니다.",
-          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-empty-draft",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-ai-feedback-answer--no-retry",
-          "exportName": "NoRetry",
-          "label": "NoRetry",
-          "description": "재시도가 비활성화된 상태입니다.",
-          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-no-retry",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-ai-feedback-answer--with-feedback",
-          "exportName": "WithFeedback",
-          "label": "WithFeedback",
-          "description": "AI 코칭 결과가 즉시 반환되는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
-          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-with-feedback",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-ai-feedback-answer--request-error",
-          "exportName": "RequestError",
-          "label": "RequestError",
-          "description": "AI 코칭 요청 실패 상태를 확인하는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
-          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-request-error",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-ai-feedback-answer--daily-quota",
-          "exportName": "DailyQuota",
-          "label": "DailyQuota",
-          "description": "오늘 받을 수 있는 AI 코칭 횟수와 서울 시간 기준 재시도 안내를 확인하는 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
-          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-daily-quota",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-ai-feedback-answer--attempt-limit",
-          "exportName": "AttemptLimit",
-          "label": "AttemptLimit",
-          "description": "한 스텝에서 성공한 AI 코칭 3회를 모두 사용한 영구 한도 예시입니다. 버튼을 눌러 결과 UI를 확인하세요.",
-          "destination": "/docs/extensions/lesson/ai-feedback-answer#story-attempt-limit",
           "hasPlay": false
         }
       ]
@@ -390,39 +325,6 @@
           "label": "CheckedWrong",
           "description": "오답 채점 후 시각 상태입니다.",
           "destination": "/docs/extensions/lesson/select-answer#story-checked-wrong",
-          "hasPlay": false
-        }
-      ]
-    },
-    {
-      "source": "legacy-catalog/stories/components/lesson/write-answer.stories.tsx",
-      "title": "Components/Lesson/WriteAnswer",
-      "hasCiTest": true,
-      "hasArgs": true,
-      "hasArgTypes": true,
-      "stories": [
-        {
-          "id": "components-lesson-write-answer--playground",
-          "exportName": "Playground",
-          "label": "Playground",
-          "description": "Controls로 제목·안내·참고문·글자 수 제한·채점 상태를 조작할 수 있는 Playground입니다.",
-          "destination": "/docs/extensions/lesson/write-answer#story-playground",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-write-answer--with-claim",
-          "exportName": "WithClaim",
-          "label": "WithClaim",
-          "description": "주장·반박 모드 예시입니다.",
-          "destination": "/docs/extensions/lesson/write-answer#story-with-claim",
-          "hasPlay": false
-        },
-        {
-          "id": "components-lesson-write-answer--checked-with-sample",
-          "exportName": "CheckedWithSample",
-          "label": "CheckedWithSample",
-          "description": "채점 후 참조 답안이 표시되는 상태입니다.",
-          "destination": "/docs/extensions/lesson/write-answer#story-checked-with-sample",
           "hasPlay": false
         }
       ]

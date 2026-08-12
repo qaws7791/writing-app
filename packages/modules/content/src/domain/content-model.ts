@@ -29,8 +29,6 @@ export const lessonStepTypeValues = Object.freeze([
   "FILL_BLANK",
   "SELECT",
   "ORDER",
-  "WRITE",
-  "AI_FEEDBACK",
   "MATCH",
   "CATEGORIZE",
 ] as const)

@@ -18,7 +18,6 @@ import {
   learnerStepSubmissionSchema,
   stepEvaluationSchema,
 } from "#contracts/learning/learner-step-answer"
-import { aiFeedbackResultDtoSchema } from "#contracts/ai-feedback/feedback"
 
 export {
   learnerStepDraftAnswerSchema,
@@ -46,7 +45,6 @@ export const completeLearnerStepParamsSchema = z.strictObject({
 
 export const completeLearnerStepBodySchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("acknowledge") }),
-  z.strictObject({ kind: z.literal("skip-ai-feedback") }),
   z.strictObject({
     answer: learnerStepSubmissionSchema,
     kind: z.literal("answer"),
@@ -84,11 +82,6 @@ export const startLearnerLessonResponseSchema = z.discriminatedUnion("status", [
 ])
 export const saveLearnerStepDraftResponseSchema = learnerStepDraftSchema
 
-export const learnerAiFeedbackTransitionResultSchema = z.strictObject({
-  feedback: aiFeedbackResultDtoSchema,
-  transition: completeLearnerStepResultSchema,
-})
-
 export type StartLearnerLessonBody = z.infer<
   typeof startLearnerLessonBodySchema
 >
@@ -97,7 +90,4 @@ export type CompleteLearnerStepBody = z.infer<
 >
 export type CompleteLearnerStepResult = z.infer<
   typeof completeLearnerStepResultSchema
->
-export type LearnerAiFeedbackTransitionResult = z.infer<
-  typeof learnerAiFeedbackTransitionResultSchema
 >

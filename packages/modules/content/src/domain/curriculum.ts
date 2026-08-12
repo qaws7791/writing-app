@@ -133,10 +133,6 @@ function validateLessonSteps(
   steps: readonly CurriculumStep[],
   documentIds: Set<string>
 ): Result<void, ContentError> {
-  const stepsById = new Map<string, CurriculumStep>(
-    steps.map((step) => [step.id, step])
-  )
-
   for (const step of steps) {
     if (!addUniqueId(documentIds, step.id)) {
       return validationError("duplicate-id")
@@ -146,19 +142,6 @@ function validateLessonSteps(
     }
     const content = parseJsonObject(step.contentJson)
     if (content === null) return validationError("invalid-step-content")
-
-    if (step.type === "AI_FEEDBACK") {
-      const targetId = content["target"]
-      const target =
-        typeof targetId === "string" ? stepsById.get(targetId) : undefined
-      if (
-        target === undefined ||
-        target.type !== "WRITE" ||
-        target.sortOrder >= step.sortOrder
-      ) {
-        return validationError("invalid-ai-feedback-target")
-      }
-    }
 
     if (!hasValidSelectableItemReferences(step.type, content)) {
       return validationError("invalid-selectable-item-reference")

@@ -5,10 +5,6 @@ import {
 } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
-import {
-  aAiFeedbackAttempt,
-  aAiFeedbackGlobalDailyCounter,
-} from "@workspace/ai-feedback/test-fixtures"
 import { aPublishedCourse } from "@workspace/content/test-fixtures"
 import { createDeletedLearnerPurgeRepository } from "@workspace/identity/module"
 import { deletedLearnerDisplayName } from "@workspace/identity/ports"
@@ -35,8 +31,6 @@ const learnerOwnedTableNames = [
   "learner_lesson_answers",
   "learner_step_drafts",
   "learner_activity_days",
-  "ai_feedback_attempts",
-  "ai_feedback_user_daily_counters",
   "writings",
   "writing_events",
 ] as const
@@ -68,7 +62,6 @@ describe("삭제 학습자 purge SQLite integration", () => {
       expect(readSharedRowCounts(client)).toEqual({
         courses: 1,
         curriculumVersions: 1,
-        globalAiQuotaCounters: 1,
         lessonSteps: 1,
       })
     } finally {
@@ -136,7 +129,6 @@ function preparePurgeDatabase(client: WritingAppDatabaseClient): void {
     deletedAt: purgeCutoff.getTime() + 1,
     id: "recent",
   })
-  aAiFeedbackGlobalDailyCounter(client.sqlite, "2026-07-19")
 }
 
 function seedDeletedLearner(
@@ -185,12 +177,6 @@ function seedDeletedLearner(
     )
   aLearnerWithProgress(client.sqlite, {
     course: input.course,
-    userId: input.id,
-  })
-  aAiFeedbackAttempt(client.sqlite, {
-    attemptId: `attempt-${input.id}`,
-    course: input.course,
-    idempotencyKey: `${input.id}-key`,
     userId: input.id,
   })
   aWriting(client.sqlite, {
@@ -250,10 +236,6 @@ function readSharedRowCounts(client: WritingAppDatabaseClient) {
   return {
     courses: readTableCount(client, "courses"),
     curriculumVersions: readTableCount(client, "course_curriculum_versions"),
-    globalAiQuotaCounters: readTableCount(
-      client,
-      "ai_feedback_global_daily_counters"
-    ),
     lessonSteps: readTableCount(client, "lesson_step_versions"),
   }
 }

@@ -22,7 +22,6 @@ export function createLearningAttempt(input: LearningAttempt): LearningAttempt {
 function cloneSubmission(submission: LessonSubmission): LessonSubmission {
   switch (submission.type) {
     case "MULTIPLE_CHOICE":
-    case "WRITE":
       return { ...submission }
     case "FILL_BLANK":
       return {

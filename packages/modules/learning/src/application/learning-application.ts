@@ -28,11 +28,7 @@ import type {
   LearnerStepDraftAnswer,
   LearnerStepSubmission,
 } from "#learning/domain/learning-types"
-import type {
-  LearningAiFeedbackError,
-  LearningAiFeedbackResult,
-  LearningApplicationDependencies,
-} from "#learning/application/ports/learning-ports"
+import type { LearningApplicationDependencies } from "#learning/application/ports/learning-ports"
 
 type StartLearningLessonCommand = Readonly<{
   expectedCurriculumVersionId: CurriculumVersionId
@@ -53,7 +49,7 @@ type SubmitLearningStepCommand = Readonly<{
         }>
       }>
     | Readonly<{
-        completion: Readonly<{ kind: "acknowledge" | "skip-ai-feedback" }>
+        completion: Readonly<{ kind: "acknowledge" }>
       }>
   )
 
@@ -61,13 +57,6 @@ type SaveLearningStepDraftCommand = Readonly<{
   answer: LearnerStepDraftAnswer
   expectedCurriculumVersionId: CurriculumVersionId
   expectedVersion: number | null
-  learnerId: LearnerId
-  lessonId: LessonId
-  stepId: LessonStepId
-}>
-
-type RequestLearningAiFeedbackCommand = Readonly<{
-  idempotencyKey: string
   learnerId: LearnerId
   lessonId: LessonId
   stepId: LessonStepId
@@ -81,17 +70,11 @@ type LearningCollaboratorError =
 export type LearningCommandError =
   | LearnerTransitionError
   | LearningCollaboratorError
-  | LearningAiFeedbackError
 
 export type LearningReadError =
   | Readonly<{ kind: "course-not-found" }>
   | Readonly<{ kind: "lesson-locked" }>
   | Readonly<{ kind: "lesson-not-found" }>
-
-export type LearningAiFeedbackTransition = Readonly<{
-  feedback: LearningAiFeedbackResult
-  transition: CompleteLearnerStepTransitionResult
-}>
 
 export type LearningApplication = Readonly<{
   readCourseCatalog: (
@@ -114,10 +97,6 @@ export type LearningApplication = Readonly<{
   ) => Promise<
     Result<CompleteLearnerStepTransitionResult, LearningCommandError>
   >
-  requestAiFeedback: (
-    command: RequestLearningAiFeedbackCommand,
-    options?: Readonly<{ signal?: AbortSignal }>
-  ) => Promise<Result<LearningAiFeedbackTransition, LearningCommandError>>
   saveStepDraft: (
     command: SaveLearningStepDraftCommand
   ) => Promise<Result<SaveLearnerStepDraftResult, LearningCommandError>>
@@ -163,52 +142,6 @@ export function createLearningApplication(
         case "not-found":
           return err({ kind: "lesson-not-found" })
       }
-    },
-    async requestAiFeedback(command, options) {
-      const authorization = await authorizeLearner(
-        dependencies,
-        command.learnerId
-      )
-      if (authorization.isErr()) return err(authorization.error)
-      const curriculum = await readLessonCurriculum(dependencies, command)
-      if (curriculum === null) {
-        return err({ kind: "lesson-not-found", lessonId: command.lessonId })
-      }
-      const prepared =
-        await dependencies.transitionRepository.prepareAiFeedback(
-          {
-            lessonId: command.lessonId,
-            stepId: command.stepId,
-            userId: command.learnerId,
-          },
-          curriculum
-        )
-      if (prepared.isErr()) return err(prepared.error)
-
-      const feedback = await dependencies.aiFeedback.requestFeedback(
-        {
-          ...prepared.value,
-          idempotencyKey: command.idempotencyKey,
-          learnerId: command.learnerId,
-          lessonId: command.lessonId,
-          stepId: command.stepId,
-        },
-        options ?? {}
-      )
-      if (feedback.isErr()) return err(feedback.error)
-
-      const committed =
-        await dependencies.transitionRepository.completeAiFeedbackStep(
-          {
-            lessonId: command.lessonId,
-            occurredAt: dependencies.clock.now(),
-            stepId: command.stepId,
-            userId: command.learnerId,
-          },
-          curriculum
-        )
-      if (committed.isErr()) return err(committed.error)
-      return ok({ feedback: feedback.value, transition: committed.value })
     },
     async saveStepDraft(command) {
       const authorization = await authorizeLearner(

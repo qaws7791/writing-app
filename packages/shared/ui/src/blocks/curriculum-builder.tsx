@@ -103,8 +103,6 @@ export type StepType =
   | "MATCH"
   | "CATEGORIZE"
   | "COMPARE"
-  | "WRITE"
-  | "AI_FEEDBACK"
 
 export type LessonStep = {
   id: string
@@ -125,13 +123,6 @@ export type LessonStep = {
   versionA?: string
   versionB?: string
   comparePoints?: string
-  minChars?: number
-  targetChars?: number
-  maxChars?: number
-  submitHint?: string
-  coachingPrompt?: string
-  rubricRef?: string
-  feedbackScope?: string
   insight?: string
   hint?: string
 }
@@ -228,8 +219,6 @@ export const STEP_TYPE_LABELS: Record<StepType, string> = {
   MATCH: "짝 맞추기",
   CATEGORIZE: "분류하기",
   COMPARE: "비교하기",
-  WRITE: "쓰기",
-  AI_FEEDBACK: "AI 코칭",
 }
 
 const STEP_TYPES = Object.keys(STEP_TYPE_LABELS) as StepType[]
@@ -243,7 +232,6 @@ const STATE_ITEMS = [
 const LEGACY_TYPE_MAP: Record<string, StepType> = {
   읽기: "READING",
   객관식: "MULTIPLE_CHOICE",
-  쓰기: "WRITE",
   READING: "READING",
   MULTIPLE_CHOICE: "MULTIPLE_CHOICE",
   FILL_BLANK: "FILL_BLANK",
@@ -252,8 +240,6 @@ const LEGACY_TYPE_MAP: Record<string, StepType> = {
   MATCH: "MATCH",
   CATEGORIZE: "CATEGORIZE",
   COMPARE: "COMPARE",
-  WRITE: "WRITE",
-  AI_FEEDBACK: "AI_FEEDBACK",
 }
 
 let idSeq = 0
@@ -298,13 +284,6 @@ function normalizeStep(
     versionA: raw.versionA,
     versionB: raw.versionB,
     comparePoints: raw.comparePoints,
-    minChars: raw.minChars ?? (type === "WRITE" ? 40 : undefined),
-    targetChars: raw.targetChars ?? (type === "WRITE" ? 120 : undefined),
-    maxChars: raw.maxChars ?? (type === "WRITE" ? 300 : undefined),
-    submitHint: raw.submitHint,
-    coachingPrompt: raw.coachingPrompt,
-    rubricRef: raw.rubricRef,
-    feedbackScope: raw.feedbackScope,
     insight: raw.insight,
     hint: raw.hint,
   }
@@ -653,26 +632,6 @@ function collectStepIssues(
         })
       }
     }
-  }
-
-  if (step.type === "WRITE" && !(step.rubricRef ?? "").trim()) {
-    issues.push({
-      id: `write-rubric-${step.id}`,
-      severity: "warning",
-      title: "채점 기준 없음",
-      detail: path,
-      selection,
-    })
-  }
-
-  if (step.type === "AI_FEEDBACK" && !(step.rubricRef ?? "").trim()) {
-    issues.push({
-      id: `ai-rubric-${step.id}`,
-      severity: "warning",
-      title: "루브릭 없음",
-      detail: path,
-      selection,
-    })
   }
 
   return issues
@@ -1850,82 +1809,7 @@ function StepTypeForm({
         </>
       ) : null}
 
-      {step.type === "WRITE" ? (
-        <>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))] gap-4">
-            <StepFieldText
-              id={`step-min-${step.id}`}
-              label="최소 글자"
-              value={String(step.minChars ?? "")}
-              onChange={(value) => onChange({ minChars: Number(value) || 0 })}
-            />
-            <StepFieldText
-              id={`step-target-${step.id}`}
-              label="목표 글자"
-              value={String(step.targetChars ?? "")}
-              onChange={(value) =>
-                onChange({ targetChars: Number(value) || 0 })
-              }
-            />
-            <StepFieldText
-              id={`step-max-${step.id}`}
-              label="최대 글자"
-              value={String(step.maxChars ?? "")}
-              onChange={(value) => onChange({ maxChars: Number(value) || 0 })}
-            />
-          </div>
-          <StepFieldText
-            id={`step-example-${step.id}`}
-            label="예시 답안"
-            value={step.insight ?? ""}
-            multiline
-            rows={2}
-            onChange={(value) => onChange({ insight: value })}
-          />
-          <StepFieldText
-            id={`step-rubric-${step.id}`}
-            label="채점 기준"
-            value={step.rubricRef ?? ""}
-            multiline
-            rows={2}
-            onChange={(value) => onChange({ rubricRef: value })}
-          />
-          <StepFieldText
-            id={`step-submit-${step.id}`}
-            label="제출 조건"
-            value={step.submitHint ?? ""}
-            onChange={(value) => onChange({ submitHint: value })}
-          />
-        </>
-      ) : null}
-
-      {step.type === "AI_FEEDBACK" ? (
-        <>
-          <StepFieldText
-            id={`step-coach-${step.id}`}
-            label="코칭 지시문"
-            value={step.coachingPrompt ?? ""}
-            multiline
-            onChange={(value) => onChange({ coachingPrompt: value })}
-          />
-          <StepFieldText
-            id={`step-rubric-${step.id}`}
-            label="루브릭 참조"
-            value={step.rubricRef ?? ""}
-            onChange={(value) => onChange({ rubricRef: value })}
-          />
-          <StepFieldText
-            id={`step-scope-${step.id}`}
-            label="피드백 범위"
-            value={step.feedbackScope ?? ""}
-            onChange={(value) => onChange({ feedbackScope: value })}
-          />
-        </>
-      ) : null}
-
-      {step.type !== "READING" &&
-      step.type !== "WRITE" &&
-      step.type !== "AI_FEEDBACK" ? (
+      {step.type !== "READING" ? (
         <StepFeedbackFields
           insight={step.insight}
           hint={step.hint}

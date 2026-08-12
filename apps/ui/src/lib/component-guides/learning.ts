@@ -524,7 +524,7 @@ export function Explanation() {
         description: "피드백의 역할에 맞는 표면 톤을 고릅니다.",
       },
     ],
-    related: ["step", "choice", "coaching"],
+    related: ["step", "choice"],
   },
   sortable: {
     slug: "sortable",
@@ -1072,88 +1072,7 @@ export function WriteStep() {
         description: "ComposeMeter의 현재·최소·목표·최대 글자 수입니다.",
       },
     ],
-    related: ["step", "coaching", "textarea"],
-  },
-  coaching: {
-    slug: "coaching",
-    summary:
-      "AI 코칭 스텝 표면입니다. 대상 쓰기, 요청 상태, 피드백 결과, 재시도·건너뛰기 행동을 구성합니다.",
-    examples: [
-      {
-        id: "request",
-        title: "요청 전",
-        description: "초점과 작성 내용을 보여 준 뒤 코칭을 요청합니다.",
-        preview: "default",
-        code: `import { Coaching, CoachingActions, CoachingFocus, CoachingMeta, CoachingSource, CoachingSourceBody, CoachingSourceLabel } from "@/components/ui/coaching"
-import { Button } from "@/components/ui/button"
-
-export function CoachingIdle() {
-  return (
-    <Coaching status="idle">
-      <CoachingFocus>코칭 초점 · 논리 연결</CoachingFocus>
-      <CoachingSource>
-        <CoachingSourceLabel>작성 내용</CoachingSourceLabel>
-        <CoachingSourceBody>학습자가 제출한 쓰기 답안…</CoachingSourceBody>
-      </CoachingSource>
-      <CoachingActions>
-        <CoachingMeta>남은 요청 2회</CoachingMeta>
-        <Button>AI 코칭 요청</Button>
-      </CoachingActions>
-    </Coaching>
-  )
-}`,
-      },
-      {
-        id: "loading",
-        title: "대기",
-        description: "요청 중에는 CoachingStatus로 조용히 기다립니다.",
-        code: `<Coaching status="loading">
-  <CoachingStatus>피드백을 준비하고 있습니다…</CoachingStatus>
-</Coaching>`,
-      },
-      {
-        id: "result",
-        title: "피드백 결과",
-        description: "요약·강점·개선점·다음 행동을 섹션으로 나눕니다.",
-        code: `<CoachingResult>
-  <CoachingSummary>주장과 근거의 연결이 또렷합니다.</CoachingSummary>
-  <CoachingSection>
-    <CoachingSectionTitle>강점</CoachingSectionTitle>
-    <CoachingList><CoachingItem>전제를 분명히 짚었습니다</CoachingItem></CoachingList>
-  </CoachingSection>
-  <CoachingSection>
-    <CoachingSectionTitle>개선점</CoachingSectionTitle>
-    <CoachingList><CoachingItem>반례를 한 문장 더 보강하세요</CoachingItem></CoachingList>
-  </CoachingSection>
-</CoachingResult>`,
-      },
-      {
-        id: "skip",
-        title: "건너뛰기",
-        description: "실패·한도에서도 피드백 없이 계속하기를 제공합니다.",
-        code: `<CoachingActions>
-  <Button variant="ghost">피드백 없이 계속하기</Button>
-  <Button>다시 요청</Button>
-</CoachingActions>`,
-      },
-    ],
-    usageNotes: [
-      "이 스텝은 자체 답안·점수를 만들지 않습니다. 앞선 쓰기 답안을 대상으로만 동작합니다.",
-      "같은 스텝에서 완료된 코칭은 최대 3회까지라는 제약을 Meta로 드러내세요.",
-    ],
-    accessibility: [
-      "로딩 상태는 role=status와 aria-live로 전달합니다.",
-      "재시도 불가·한도 도달 시 이유를 짧게 텍스트로 남기세요.",
-    ],
-    props: [
-      {
-        name: "status",
-        type: "CoachingPhase",
-        defaultValue: '"idle"',
-        description: "코칭 요청 생애주기를 나타냅니다.",
-      },
-    ],
-    related: ["step", "compose", "insight", "spinner"],
+    related: ["step", "textarea", "draft"],
   },
   path: {
     slug: "path",

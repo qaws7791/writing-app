@@ -1,4 +1,3 @@
-import { createAiFeedbackHeadersSchema } from "#contracts/ai-feedback/feedback"
 import { courseIdSchema, lessonIdSchema } from "#contracts/content/ids"
 import {
   learnerCourseCategoriesSchema,
@@ -11,7 +10,6 @@ import {
 } from "#contracts/learning/learner-content"
 import {
   completeLearnerStepResultSchema,
-  learnerAiFeedbackTransitionResultSchema,
   saveLearnerStepDraftResponseSchema,
   startLearnerLessonResponseSchema,
 } from "#contracts/learning/learner-transition"
@@ -27,8 +25,6 @@ export const learnerStartLessonResponseSchema = startLearnerLessonResponseSchema
 export const learnerSaveStepDraftResponseSchema =
   saveLearnerStepDraftResponseSchema
 export const learnerCompleteStepResponseSchema = completeLearnerStepResultSchema
-export const learnerAiFeedbackTransitionResponseSchema =
-  learnerAiFeedbackTransitionResultSchema
 
 export const learnerCourseParamsSchema = z.strictObject({
   courseId: courseIdSchema,
@@ -40,9 +36,6 @@ export const learnerLessonParamsSchema = z.strictObject({
 
 export const learnerCourseQuerySchema = learnerCourseListQuerySchema
 export const learnerProgressQuerySchema = learnerProgressListQuerySchema
-
-export const createLearnerAiFeedbackTransitionHeadersSchema =
-  createAiFeedbackHeadersSchema
 
 export type LearnerProgressResponse = z.infer<
   typeof learnerProgressResponseSchema

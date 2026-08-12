@@ -58,8 +58,6 @@ Course
 - `FILL_BLANK`: 문장 템플릿, stable ID가 있는 단어, 정답 ID 순서와 해설을 제공한다.
 - `SELECT`: stable ID가 있는 문장 구간, 정답 ID, 해설, `inline` 또는 `block` layout을 제공한다.
 - `ORDER`: stable ID가 있는 항목, 정답 ID 순서, 번호 표시 여부와 해설을 제공한다.
-- `WRITE`: 쓰기 안내, 최소 글자 수, 목표 글자 수, 최대 글자 수, 반박 쓰기 맥락, 참고 자료, 구조 가이드, 참조 답안을 제공한다.
-- `AI_FEEDBACK`: 같은 레슨에서 앞선 `WRITE` 스텝을 대상으로 피드백 초점과 재시도 허용 여부를 제공한다. 자체 답안·draft나 숫자 점수는 생성하거나 표시하지 않는다.
 - `MATCH`: 왼쪽 항목과 오른쪽 항목의 짝, 결정적 오른쪽 표시 순서, stable choice id 기반 선택 정책, 해설을 제공한다. 한쪽에 같은 표시 텍스트가 두 번 나오는 짝은 학습자가 화면에서 구분할 수 없으므로 계약이 거부한다.
 - `CATEGORIZE`: 카테고리, 항목, 정답 카테고리, 해설을 제공한다.
 
@@ -68,22 +66,6 @@ Course
 - `COPY`, `COMPLETION`, `ANNOTATE`, `SUMMARY`는 현재 표준 스텝 타입으로 사용하지 않는다.
 - 필사, 완료, 주석, 요약 활동이 필요해지면 새 스텝 타입 추가 절차에 따라 별도 제품 요구사항과 DTO 계약을 먼저 정의한다.
 - 레슨 완료 화면의 핵심 요약은 `SUMMARY` 스텝이 아니라 레슨의 `summary` 필드를 사용한다.
-
-## 쓰기 스텝 필드
-
-- 쓰기 스텝의 계약 기준 필드는 `id`, `sortOrder`, `type`, `title`, `guide`, `min`, `goal`, `max`, `badge`, `claim`, `context`, `mode`, `placeholder`, `prompt`, `reference`, `sample`, `structure`, `topic`, `draft`다.
-- `title` 또는 `prompt`는 쓰기 활동의 제목으로 사용할 수 있다.
-- `guide`, `context`, `topic`은 학습자가 작성 전에 읽는 안내 맥락으로 사용할 수 있다.
-- `min`, `goal`, `max`는 최소, 목표, 최대 글자 수 기준이다.
-- `mode`는 쓰기 활동의 변형을 나타내며 현재 화면이 의미를 부여하는 값은 `counter`, `self-rebut`이다.
-- `badge`는 쓰기 활동의 보조 라벨이다. 값이 없으면 `mode`에 따라 `반박 쓰기` 또는 `자기 반박` 라벨을 표시할 수 있다.
-- `claim`은 반박 또는 자기반박의 대상 주장이다.
-- `placeholder`는 입력 영역의 안내 문구다.
-- `reference`는 참고 원문이다.
-- `structure`는 작성 구조 가이드다.
-- `sample`은 답변 확인 뒤 보여줄 수 있는 참조 답안이다.
-- `draft`는 드래프트 저장 보조 행동을 화면에 표시할지 결정한다. 이 값은 답변 버전 히스토리나 서버 저장 초안을 의미하지 않는다.
-- 현재 웹 화면 타입에는 `claimLabel` 표시 보조 필드가 있으나, 콘텐츠 DTO 계약에는 포함되지 않는다. 제품 계약 필드로 승격하려면 계약을 먼저 갱신한다.
 
 ## 콘텐츠 변경과 발행
 
@@ -105,9 +87,9 @@ Course
 ## 학습 성취 보존
 
 - 학습자는 코스를 시작할 때의 published curriculum version에 고정된다.
-- 완료 레슨, 현재 스텝, 답변과 AI 피드백 시도는 해당 version 범위에 남는다.
+- 완료 레슨, 현재 스텝과 답변은 해당 version 범위에 남는다.
 - 진행률과 다음 레슨은 학습자에게 고정된 version의 active 계층을 기준으로 계산한다.
-- 새 revision 발행이나 코스 보관은 기존 진행, 답변과 AI 피드백 시도를 이동하거나 삭제하지 않는다.
+- 새 revision 발행이나 코스 보관은 기존 진행과 답변을 이동하거나 삭제하지 않는다.
 
 ## 삭제와 보관
 
@@ -115,12 +97,12 @@ Course
 - 보관은 `active`로 되돌릴 수 있다. 되돌리기는 상태만 바꾸며 published revision과 학습자 고정 version을 변경하지 않는다.
 - `active` 콘텐츠만 신규 학습 경로에 포함하고 `archived` 콘텐츠는 신규 경로에서 숨긴다.
 - 물리 삭제는 참조 무결성, 복구 기간과 운영 감사 요구를 확인한 별도 정리 작업에서만 수행한다.
-- 사용자 삭제 요청은 즉시 session을 폐기하고 앱 소유 프로필을 `deleted`로 전환한다. 삭제 시각 기준 5일이 지나면 학습 진행·초안·답변과 AI 피드백을 함께 삭제하고 콘텐츠 revision은 보존하며, backup 복원 시 외부 삭제 marker를 재적용한다.
+- 사용자 삭제 요청은 즉시 session을 폐기하고 앱 소유 프로필을 `deleted`로 전환한다. 삭제 시각 기준 5일이 지나면 학습 진행·초안·답변을 함께 삭제하고 콘텐츠 revision은 보존하며, backup 복원 시 외부 삭제 marker를 재적용한다.
 
 ## 답변과 학습 활동일
 
 - 상호작용형 스텝 답변은 코스, curriculum version, 레슨과 스텝 범위에 속한다.
-- `READING`과 `COMPARE`는 확인 동작만 가지며 답안·draft·평가 payload가 없다. `AI_FEEDBACK`은 대상 `WRITE`의 서버 저장 답안을 사용한다.
+- `READING`과 `COMPARE`는 확인 동작만 가지며 답안·draft·평가 payload가 없다.
 - 나머지 상호작용형 스텝은 타입별 최종 답안, 부분 draft와 서버 evaluation 계약을 가진다.
 - 중복 문구가 가능한 선택형 활동의 화면 identity와 정답 판정은 문구나 배열 위치가 아니라 stable item ID를 기준으로 한다.
 - 연속 학습일은 클라이언트 상태가 아니라 진행 저장, 답변 저장과 레슨 완료 같은 서버 이벤트로 계산한다.

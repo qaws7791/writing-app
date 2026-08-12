@@ -16,16 +16,6 @@ export const adminLessonAnalyticsItemDtoSchema = z.strictObject({
   started: adminNonNegativeIntegerSchema,
 })
 
-export const adminAiFeedbackLessonFailureDtoSchema = z.strictObject({
-  courseId: courseIdSchema,
-  courseTitle: z.string(),
-  failureCount: adminPositiveIntegerSchema,
-  failureRate: z.number().min(0).max(100),
-  lessonId: lessonIdSchema,
-  lessonTitle: z.string(),
-  requestCount: adminPositiveIntegerSchema,
-})
-
 export const adminAnalyticsDtoSchema = z.strictObject({
   dailySeries: z.array(
     z.strictObject({
@@ -40,7 +30,6 @@ export const adminAnalyticsDtoSchema = z.strictObject({
   from: z.iso.date(),
   matureCohortThrough: z.iso.date(),
   to: z.iso.date(),
-  worstAiFeedbackLessons: z.array(adminAiFeedbackLessonFailureDtoSchema),
   worstLessons: z.array(adminLessonAnalyticsItemDtoSchema),
 })
 
@@ -55,9 +44,6 @@ export const adminLessonAnalyticsPageDtoSchema = z.strictObject({
 })
 
 export type AdminAnalyticsDto = z.infer<typeof adminAnalyticsDtoSchema>
-export type AdminAiFeedbackLessonFailureDto = z.infer<
-  typeof adminAiFeedbackLessonFailureDtoSchema
->
 export type AdminLessonAnalyticsItemDto = z.infer<
   typeof adminLessonAnalyticsItemDtoSchema
 >

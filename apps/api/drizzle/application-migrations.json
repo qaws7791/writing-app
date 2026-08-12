@@ -40,5 +40,11 @@
     "fileName": "0006-admin-mcp-static-access-tokens.sql",
     "foreignKeys": "on",
     "id": "0006-admin-mcp-static-access-tokens"
+  },
+  {
+    "checksum": "d61e6ffe9f09a222637ede1ff1a7fb9e7720db6c928ccd444e965790f7d9ce4e",
+    "fileName": "0007-drop-ai-feedback.sql",
+    "foreignKeys": "on",
+    "id": "0007-drop-ai-feedback"
   }
 ]

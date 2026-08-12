@@ -43,8 +43,6 @@
 - 관리자 MCP credential 발급과 폐기는 append-only lifecycle event를 같은 DB transaction에 기록한다.
 - Lifecycle event는 관리 actor와 MCP credential ID만 provenance로 사용한다.
 
-AI 코칭 attempt metadata와 runtime 상태는 `@workspace/ai-feedback`이 소유하고, 기간별 품질 집계의 단일 조회 경계는 `@workspace/operations`의 read-only SQL repository가 소유한다. 이 조회는 request·success와 성공률, 정규화한 실패 code, latency, token 사용량과 재시도 횟수만 반환하며 답안, prompt와 feedback 원문을 조회하거나 응답에 포함하지 않는다. 운영 HTTP는 이 계약에 owner 인증과 `private, no-store`를 적용한다.
-
 ## 영속 감사와 security log
 
 - operations의 DB audit는 인증된 owner가 수행한 개인정보 조회와 고위험 작업의 장기 보존 원장이다. request log는 HTTP 결과와 지연을, `security.audit`는 인증·인가 거절과 보안 판단을 소유하며 같은 row나 payload를 서로 복제하지 않는다.

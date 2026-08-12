@@ -12,7 +12,6 @@ import { createOperationsModule } from "@workspace/operations/module"
 import { logEventNames } from "@workspace/observability/events"
 import type { ContentAssetId, CourseId } from "@workspace/types/ids"
 
-import { composeAiFeedbackModule } from "@/composition/ai-feedback-module.composition"
 import { composeContentModule } from "@/composition/content-module.composition"
 import { parseApiEnv } from "@/config/env"
 import {
@@ -167,19 +166,7 @@ export async function runDailyMaintenance(input: {
       // 유지보수 경로는 리포팅을 조회하지 않는다.
     },
   })
-  const aiFeedback = composeAiFeedbackModule({
-    attemptIdGenerator: uuidGenerator,
-    attemptPolicy: input.environment.aiFeedback.attemptPolicy,
-    clock: systemClock,
-    dailyQuotaPolicy: input.environment.aiFeedback.dailyQuotaPolicy,
-    database: input.client.db,
-    openAi: {
-      apiKey: input.environment.openAiApiKey,
-      model: input.environment.openAiModel,
-    },
-  })
   const maintenance = createDailyMaintenance({
-    aiFeedback: aiFeedback.maintenance,
     auditTrail: operations.auditTrail,
     clock: systemClock,
     contentAssets: content.maintenance,

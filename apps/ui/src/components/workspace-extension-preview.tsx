@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
-import { AiFeedbackAnswer } from "@workspace/ui/components/lesson/ai-feedback-answer";
-import type { AiFeedbackRequestOutcome } from "@workspace/ui/components/lesson/ai-feedback-answer";
 import { CategorizeAnswer } from "@workspace/ui/components/lesson/categorize-answer";
 import { CompareStepView } from "@workspace/ui/components/lesson/compare-step-view";
 import { FillBlankAnswer } from "@workspace/ui/components/lesson/fill-blank-answer";
@@ -12,13 +8,11 @@ import { MultipleChoiceAnswer } from "@workspace/ui/components/lesson/multiple-c
 import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer";
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view";
 import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer";
-import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer";
 import { ThemeSelector } from "@workspace/ui/components/ui/theme-selector";
 import type { ThemeValue } from "@workspace/ui/components/ui/theme-selector";
+import { useState } from "react";
 
 import {
-  aiFeedbackDefaults,
-  aiFeedbackViewModel,
   categorizeDefaults,
   compareDefaults,
   fillBlankDefaults,
@@ -27,7 +21,6 @@ import {
   orderDefaults,
   readingDefaults,
   selectDefaults,
-  writeDefaults,
 } from "@/src/lib/lesson-fixtures";
 
 type WorkspaceExtensionPreviewProps = {
@@ -52,46 +45,6 @@ const wrongConnections = matchDefaults.pairs.map((_, index, pairs) => ({
   rightChoiceId: `right-${((index + 1) % pairs.length) + 1}`,
   tone: "wrong" as const,
 }));
-
-function AiFeedbackPreview({ story }: { story: string }) {
-  const outcome =
-    story === "RequestError"
-      ? "error"
-      : story === "DailyQuota"
-        ? "quota"
-        : story === "AttemptLimit"
-          ? "limit"
-          : "success";
-  const request = async (): Promise<AiFeedbackRequestOutcome> => {
-    if (outcome === "error")
-      return {
-        kind: "retryable",
-        status: "error",
-      };
-    if (outcome === "quota")
-      return {
-        kind: "quota",
-        retryAfterSeconds: 3_600,
-        status: "error",
-      };
-    if (outcome === "limit")
-      return {
-        kind: "limit",
-        status: "error",
-      };
-    return { status: "ok", feedback: aiFeedbackViewModel };
-  };
-
-  return (
-    <AiFeedbackAnswer
-      focus={aiFeedbackDefaults.focus}
-      allowRetry={story !== "NoRetry"}
-      draftText={story === "EmptyDraft" ? "" : aiFeedbackDefaults.draftText}
-      onContinueWithoutFeedback={async () => ({ status: "ok" })}
-      onRequest={request}
-    />
-  );
-}
 
 function CategorizePreview({ story }: { story: string }) {
   const narrow = story === "NarrowWithLongTags";
@@ -226,26 +179,6 @@ function SelectPreview({ story }: { story: string }) {
   );
 }
 
-function WritePreview({ story }: { story: string }) {
-  const [text, setText] = useState("");
-  const withClaim = story === "WithClaim";
-  return (
-    <WriteAnswer
-      {...writeDefaults}
-      title={withClaim ? "반박 쓰기" : writeDefaults.title}
-      badge={withClaim ? "반박 쓰기" : writeDefaults.badge}
-      claim={withClaim ? "꾸준한 글쓰기는 사고를 정돈한다." : undefined}
-      claimLabel={withClaim ? "대상 주장" : undefined}
-      goal={withClaim ? 100 : undefined}
-      reference={withClaim ? undefined : writeDefaults.reference}
-      sample={withClaim ? undefined : writeDefaults.sample}
-      checked={story === "CheckedWithSample" ? "correct" : false}
-      text={text}
-      onChange={setText}
-    />
-  );
-}
-
 function ThemeSelectorPreview({ story }: { story: string }) {
   const [theme, setTheme] = useState<ThemeValue>("system");
   if (story === "SelectedStates") {
@@ -267,8 +200,6 @@ export default function WorkspaceExtensionPreview({ slug, story }: WorkspaceExte
     switch (slug) {
       case "theme-selector":
         return <ThemeSelectorPreview story={story} />;
-      case "ai-feedback-answer":
-        return <AiFeedbackPreview story={story} />;
       case "categorize-answer":
         return <CategorizePreview story={story} />;
       case "compare-step-view":
@@ -285,8 +216,6 @@ export default function WorkspaceExtensionPreview({ slug, story }: WorkspaceExte
         return <ReadingPreview story={story} />;
       case "select-answer":
         return <SelectPreview story={story} />;
-      case "write-answer":
-        return <WritePreview story={story} />;
       default:
         return <p>지원하지 않는 workspace extension입니다.</p>;
     }

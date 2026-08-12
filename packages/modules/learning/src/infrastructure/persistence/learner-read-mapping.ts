@@ -487,36 +487,6 @@ export function presentLearnerStep(
         title: step.title,
         type: "ORDER",
       }
-    case "WRITE":
-      return {
-        badge: step.badge,
-        claim: step.claim,
-        context: step.context,
-        draft: step.draft,
-        goal: step.goal,
-        guide: step.guide,
-        id: step.id,
-        max: step.max,
-        min: step.min,
-        mode: step.mode,
-        placeholder: step.placeholder,
-        prompt: step.prompt,
-        reference: step.reference,
-        sample: step.sample,
-        sortOrder: step.sortOrder,
-        structure: step.structure,
-        title: step.title,
-        topic: step.topic,
-        type: "WRITE",
-      }
-    case "AI_FEEDBACK":
-      return {
-        focus: step.focus,
-        id: step.id,
-        sortOrder: step.sortOrder,
-        target: step.target,
-        type: "AI_FEEDBACK",
-      }
     case "MATCH":
       return {
         guide: step.guide,

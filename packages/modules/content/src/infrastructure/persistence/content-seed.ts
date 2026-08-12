@@ -12,8 +12,6 @@ type ContentSeedStepType =
   | "fill_blank"
   | "select"
   | "order"
-  | "write"
-  | "ai_feedback"
   | "match"
   | "categorize"
 
@@ -24,19 +22,12 @@ type StandardLessonStepType =
   | "FILL_BLANK"
   | "SELECT"
   | "ORDER"
-  | "WRITE"
-  | "AI_FEEDBACK"
   | "MATCH"
   | "CATEGORIZE"
 
-type ContentSeedStep =
-  | {
-      readonly type: Exclude<ContentSeedStepType, "ai_feedback">
-    }
-  | {
-      readonly target: string
-      readonly type: "ai_feedback"
-    }
+type ContentSeedStep = {
+  readonly type: ContentSeedStepType
+}
 
 type ContentSeedLesson = {
   readonly id: string
@@ -117,8 +108,6 @@ const stepTypeMap = {
   fill_blank: "FILL_BLANK",
   select: "SELECT",
   order: "ORDER",
-  write: "WRITE",
-  ai_feedback: "AI_FEEDBACK",
   match: "MATCH",
   categorize: "CATEGORIZE",
 } satisfies Record<ContentSeedStepType, StandardLessonStepType>
@@ -207,40 +196,7 @@ function toLessonStepSeedRows(lesson: ContentSeedLesson): LessonStepSeedRow[] {
     }
   })
 
-  validateAiFeedbackSeedTargets(rows)
-
   return rows
-}
-
-function validateAiFeedbackSeedTargets(
-  rows: readonly LessonStepSeedRow[]
-): void {
-  const rowsById = new Map(rows.map((row) => [row.id, row]))
-
-  for (const row of rows) {
-    if (row.type !== "AI_FEEDBACK") continue
-
-    const content = JSON.parse(row.contentJson) as { readonly target?: unknown }
-    const targetId = content.target
-    const target =
-      typeof targetId === "string" ? rowsById.get(targetId) : undefined
-
-    if (target === undefined) {
-      throw new Error(
-        `Invalid AI feedback target for ${row.id}: target must exist in the same lesson`
-      )
-    }
-    if (target.type !== "WRITE") {
-      throw new Error(
-        `Invalid AI feedback target for ${row.id}: target must be a WRITE step`
-      )
-    }
-    if (target.sortOrder >= row.sortOrder) {
-      throw new Error(
-        `Invalid AI feedback target for ${row.id}: target must precede the AI feedback step`
-      )
-    }
-  }
 }
 
 function normalizeSeedStepContent(step: ContentSeedStep): string {

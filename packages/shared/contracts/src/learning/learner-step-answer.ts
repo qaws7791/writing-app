@@ -5,7 +5,6 @@ import {
   curriculumVersionIdSchema,
   lessonStepIdSchema,
 } from "#contracts/content/ids"
-import { learningAnswerTextMaxLength } from "#contracts/learning/answer"
 import { lessonStepItemIdSchema } from "#contracts/learning/ids"
 
 const answerItemIdListSchema = z.array(lessonStepItemIdSchema).min(1).max(100)
@@ -70,15 +69,6 @@ const categorizeDraftSchema = z.strictObject({
   type: z.literal("CATEGORIZE"),
 })
 
-const writeSubmissionSchema = z.strictObject({
-  text: z.string().min(1).max(learningAnswerTextMaxLength),
-  type: z.literal("WRITE"),
-})
-const writeDraftSchema = z.strictObject({
-  text: z.string().max(learningAnswerTextMaxLength),
-  type: z.literal("WRITE"),
-})
-
 export const stepItemVerdictSchema = z.enum(["correct", "incorrect", "missed"])
 
 const evaluatedItemSchema = z.strictObject({
@@ -131,10 +121,6 @@ const categorizeEvaluationSchema = z.strictObject({
   ),
   type: z.literal("CATEGORIZE"),
 })
-const writeEvaluationSchema = z.strictObject({
-  accepted: z.literal(true),
-  type: z.literal("WRITE"),
-})
 
 type LearnerStepInteractionDefinition = {
   readonly draftSchema: z.ZodType
@@ -163,11 +149,6 @@ const learnerStepInteractionDefinitions = {
     evaluationSchema: orderEvaluationSchema,
     submissionSchema: orderSubmissionSchema,
   },
-  WRITE: {
-    draftSchema: writeDraftSchema,
-    evaluationSchema: writeEvaluationSchema,
-    submissionSchema: writeSubmissionSchema,
-  },
   MATCH: {
     draftSchema: matchDraftSchema,
     evaluationSchema: matchEvaluationSchema,
@@ -188,7 +169,6 @@ export const learnerStepSubmissionSchema = z.discriminatedUnion("type", [
   learnerStepInteractionDefinitions.FILL_BLANK.submissionSchema,
   learnerStepInteractionDefinitions.SELECT.submissionSchema,
   learnerStepInteractionDefinitions.ORDER.submissionSchema,
-  learnerStepInteractionDefinitions.WRITE.submissionSchema,
   learnerStepInteractionDefinitions.MATCH.submissionSchema,
   learnerStepInteractionDefinitions.CATEGORIZE.submissionSchema,
 ])
@@ -198,7 +178,6 @@ export const learnerStepDraftAnswerSchema = z.discriminatedUnion("type", [
   learnerStepInteractionDefinitions.FILL_BLANK.draftSchema,
   learnerStepInteractionDefinitions.SELECT.draftSchema,
   learnerStepInteractionDefinitions.ORDER.draftSchema,
-  learnerStepInteractionDefinitions.WRITE.draftSchema,
   learnerStepInteractionDefinitions.MATCH.draftSchema,
   learnerStepInteractionDefinitions.CATEGORIZE.draftSchema,
 ])
@@ -208,7 +187,6 @@ export const stepEvaluationSchema = z.discriminatedUnion("type", [
   learnerStepInteractionDefinitions.FILL_BLANK.evaluationSchema,
   learnerStepInteractionDefinitions.SELECT.evaluationSchema,
   learnerStepInteractionDefinitions.ORDER.evaluationSchema,
-  learnerStepInteractionDefinitions.WRITE.evaluationSchema,
   learnerStepInteractionDefinitions.MATCH.evaluationSchema,
   learnerStepInteractionDefinitions.CATEGORIZE.evaluationSchema,
 ])

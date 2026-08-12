@@ -3,7 +3,6 @@ import { toPlatformDayKey } from "@workspace/kernel/day-boundary"
 
 import type { OperationsError } from "#operations/domain/operations-error"
 import type {
-  OperationsAiFeedbackQuality,
   OperationsAnalytics,
   OperationsDashboard,
   OperationsLessonAnalyticsPage,
@@ -13,7 +12,6 @@ import type {
 } from "#operations/application/ports/operations-reporting-repository"
 
 type OperationsReportingQueryName =
-  | "ai-feedback-quality"
   | "analytics"
   | "dashboard"
   | "lesson-analytics"
@@ -27,10 +25,6 @@ export type OperationsReportingFailureObserver = (
 ) => void
 
 export type OperationsReportingQueries = Readonly<{
-  readAiFeedbackQuality: (input: {
-    readonly from: Date
-    readonly to: Date
-  }) => Promise<Result<OperationsAiFeedbackQuality, OperationsError>>
   readAnalytics: (
     input: Readonly<{ days: number; now: Date }>
   ) => Promise<Result<OperationsAnalytics, OperationsError>>
@@ -53,11 +47,6 @@ export function createOperationsReportingQueries(input: {
   readonly repository: OperationsReportingRepository
 }): OperationsReportingQueries {
   return {
-    readAiFeedbackQuality(query) {
-      return executeReportingQuery(input, "ai-feedback-quality", () =>
-        input.repository.readAiFeedbackQuality(query)
-      )
-    },
     readAnalytics(query) {
       const to = toPlatformDayKey(query.now)
       return executeReportingQuery(input, "analytics", () =>

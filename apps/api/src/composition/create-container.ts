@@ -2,12 +2,6 @@ import { mkdirSync, writeFileSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import type { AiFeedbackModule } from "@workspace/ai-feedback/module"
-import type {
-  AiFeedbackAttemptTransition,
-  AiFeedbackProvider,
-  AiFeedbackUsageEvent,
-} from "@workspace/ai-feedback/ports"
 import {
   createAdminAuthRuntime,
   type AdminAuthRuntime,
@@ -50,11 +44,6 @@ import { createSecurityAuditLogger } from "@workspace/observability/security-aud
 import type { OperationsModule } from "@workspace/operations/module"
 import type { WritingModule } from "@workspace/writing/module"
 import type { WritingLearnerSessionPort } from "@workspace/writing/http"
-import {
-  logEventNames,
-  logRetentionClasses,
-  type AiUsageEvent,
-} from "@workspace/observability/events"
 import type { ContentAssetId, CourseId, WritingId } from "@workspace/types/ids"
 import { createS3PrivateObjectStorage } from "@workspace/storage/private-object-storage"
 
@@ -63,7 +52,6 @@ import {
   createLearnerAuthDatabase,
 } from "@/adapters/auth/auth-sqlite-database"
 import { createDrizzleAdminSessionRevoker } from "@/adapters/auth/admin-session-revoker"
-import { composeAiFeedbackModule } from "@/composition/ai-feedback-module.composition"
 import { composeContentModule } from "@/composition/content-module.composition"
 import {
   createContainerCleanupCoordinator,
@@ -111,7 +99,6 @@ export type ApiContainer = Readonly<{
     writingSession: WritingLearnerSessionPort
   }>
   modules: Readonly<{
-    aiFeedback: AiFeedbackModule
     content: ContentModule
     identity: IdentityModule
     learning: LearningModule
@@ -127,14 +114,11 @@ export type ApiContainer = Readonly<{
 }>
 
 export type CreateContainerOptions = Readonly<{
-  aiFeedbackProvider?: AiFeedbackProvider
   authEmailDelivery?: AuthEmailDeliveryPort
   clock?: Clock
   contentAssetStorage?: ContentAssetStoragePort
   idGenerator?: IdGenerator<string>
   localAuthMailboxPath?: string
-  onAiFeedbackAttemptTransition?: (event: AiFeedbackAttemptTransition) => void
-  onAiFeedbackUsage?: (event: AiFeedbackUsageEvent) => void
 }>
 
 export async function createContainer(
@@ -184,53 +168,7 @@ export async function createContainer(
       courseIdGenerator,
       database: database.db,
     })
-    const aiFeedback = composeAiFeedbackModule({
-      attemptIdGenerator: idGenerator,
-      attemptPolicy: env.aiFeedback.attemptPolicy,
-      clock,
-      dailyQuotaPolicy: env.aiFeedback.dailyQuotaPolicy,
-      database: database.db,
-      onAttemptTransition(event) {
-        options.onAiFeedbackAttemptTransition?.(event)
-        const write = event.toStatus === "failed" ? logger?.warn : logger?.info
-        write?.call(logger, event, "ai.feedback.attempt.transition")
-      },
-      onUsage(event) {
-        options.onAiFeedbackUsage?.(event)
-        const logEvent = {
-          durationMs: event.latencyMs,
-          event: logEventNames.aiUsage,
-          ...(event.failureCode === undefined
-            ? {}
-            : { failureCode: event.failureCode }),
-          ...(event.inputTokens === undefined
-            ? {}
-            : { inputTokens: event.inputTokens }),
-          model: event.model,
-          operation: "feedback",
-          outcome: event.outcome,
-          ...(event.outputTokens === undefined
-            ? {}
-            : { outputTokens: event.outputTokens }),
-          promptPolicyVersion: event.promptPolicyVersion,
-          provider: event.provider,
-          retentionClass: logRetentionClasses.aiUsage,
-          ...(event.inputTokens === undefined ||
-          event.outputTokens === undefined
-            ? {}
-            : { totalTokens: event.inputTokens + event.outputTokens }),
-        } satisfies AiUsageEvent
-        const write =
-          event.outcome === "succeeded" ? logger?.info : logger?.warn
-        write?.call(logger, logEvent, logEventNames.aiUsage)
-      },
-      openAi: { apiKey: env.openAiApiKey, model: env.openAiModel },
-      ...(options.aiFeedbackProvider === undefined
-        ? {}
-        : { provider: options.aiFeedbackProvider }),
-    })
     const learning = composeLearningModule({
-      aiFeedback: aiFeedback.application,
       clock,
       content: content.application,
       cursorSigningSecret: env.cursorSigningSecret,
@@ -340,7 +278,6 @@ export async function createContainer(
         writingSession: learnerSession,
       },
       modules: {
-        aiFeedback,
         content,
         identity,
         learning,

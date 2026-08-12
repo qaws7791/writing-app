@@ -1,4 +1,3 @@
-export * from "@workspace/ai-feedback/migration-schema"
 export * from "@workspace/auth/schema"
 export * from "@workspace/content/migration-schema"
 export * from "@workspace/identity/migration-schema"

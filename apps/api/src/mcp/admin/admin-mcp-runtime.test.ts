@@ -67,7 +67,7 @@ afterEach(async () => {
 })
 
 describe("admin MCP runtime", () => {
-  it("serves exactly seven read-only tools through the v2 MCP client", async () => {
+  it("serves exactly six read-only tools through the v2 MCP client", async () => {
     const requestLogs: unknown[] = []
     const securityLogs: unknown[] = []
     const tools = createToolDependencies()
@@ -119,7 +119,6 @@ describe("admin MCP runtime", () => {
         "admin_get_dashboard",
         "admin_get_analytics",
         "admin_list_lesson_analytics",
-        "admin_get_ai_feedback_quality",
         "admin_list_audit_events",
       ])
       for (const tool of listed.tools) {
@@ -140,10 +139,6 @@ describe("admin MCP runtime", () => {
       await expectSuccessfulCall(client, "admin_get_dashboard", {})
       await expectSuccessfulCall(client, "admin_get_analytics", { days: 30 })
       await expectSuccessfulCall(client, "admin_list_lesson_analytics", {})
-      await expectSuccessfulCall(client, "admin_get_ai_feedback_quality", {
-        from: "2026-08-01T00:00:00.000Z",
-        to: "2026-08-02T00:00:00.000Z",
-      })
       const auditResult = await expectSuccessfulCall(
         client,
         "admin_list_audit_events",
@@ -170,7 +165,6 @@ describe("admin MCP runtime", () => {
     expect(tools.reporting.readDashboard).toHaveBeenCalledOnce()
     expect(tools.reporting.readAnalytics).toHaveBeenCalledOnce()
     expect(tools.reporting.readLessonAnalytics).toHaveBeenCalledOnce()
-    expect(tools.reporting.readAiFeedbackQuality).toHaveBeenCalledOnce()
     expect(tools.auditTrail.readEvents).toHaveBeenCalledOnce()
     expect(securityLogs).toEqual([])
     expect(protocolRequests[0]).toEqual({
@@ -277,7 +271,6 @@ describe("admin MCP runtime", () => {
         "admin_get_dashboard",
         "admin_get_analytics",
         "admin_list_lesson_analytics",
-        "admin_get_ai_feedback_quality",
         "admin_list_audit_events",
         "admin_create_course_draft",
         "admin_save_course_draft",
@@ -515,7 +508,6 @@ describe("admin MCP runtime", () => {
         "admin_get_dashboard",
         "admin_get_analytics",
         "admin_list_lesson_analytics",
-        "admin_get_ai_feedback_quality",
         "admin_list_audit_events",
       ])
       await expectSuccessfulCall(client, "admin_list_courses", {})
@@ -560,7 +552,6 @@ describe("admin MCP runtime", () => {
         "admin_get_dashboard",
         "admin_get_analytics",
         "admin_list_lesson_analytics",
-        "admin_get_ai_feedback_quality",
         "admin_list_audit_events",
         "admin_archive_course",
         "admin_restore_course",
@@ -609,7 +600,6 @@ describe("admin MCP runtime", () => {
         "admin_get_dashboard",
         "admin_get_analytics",
         "admin_list_lesson_analytics",
-        "admin_get_ai_feedback_quality",
         "admin_list_audit_events",
         "admin_create_course_draft",
         "admin_save_course_draft",
@@ -1312,28 +1302,12 @@ function createToolDependencies(): RuntimeInput["tools"] {
     now: () => new Date("2026-08-10T00:00:00.000Z"),
     reportUnexpectedError: vi.fn(),
     reporting: {
-      readAiFeedbackQuality: vi.fn(async ({ from, to }) =>
-        ok({
-          failureCount: 0,
-          failureCounts: [],
-          from: from.toISOString(),
-          latency: { averageMs: null, sampleCount: 0, totalMs: 0 },
-          requestCount: 0,
-          retryCount: 0,
-          status: "empty" as const,
-          successCount: 0,
-          successRate: null,
-          to: to.toISOString(),
-          tokens: { input: 0, output: 0, sampleCount: 0 },
-        })
-      ),
       readAnalytics: vi.fn(async () =>
         ok({
           dailySeries: [],
           from: "2026-07-12",
           matureCohortThrough: "2026-08-02",
           to: "2026-08-10",
-          worstAiFeedbackLessons: [],
           worstLessons: [],
         })
       ),

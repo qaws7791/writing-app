@@ -31,7 +31,6 @@ const learnerDependencies = {
       readCourseDetail: contractOnly,
       readLearnerHome: contractOnly,
       readLesson: contractOnly,
-      requestAiFeedback: contractOnly,
       saveStepDraft: contractOnly,
       startLesson: contractOnly,
       submitStep: contractOnly,
@@ -114,7 +113,6 @@ const adminDependencies = {
     },
     now: contractOnly,
     reporting: {
-      readAiFeedbackQuality: contractOnly,
       readAnalytics: contractOnly,
       readDashboard: contractOnly,
       readLessonAnalytics: contractOnly,

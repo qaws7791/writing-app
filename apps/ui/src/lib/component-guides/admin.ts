@@ -526,7 +526,7 @@ export function CoachingPrompt() {
         description: "PromptBuilder 전체 너비·간격을 조정합니다.",
       },
     ],
-    related: ["provenance-panel", "coaching", "feedback-audit"],
+    related: ["provenance-panel", "feedback-audit"],
   },
   "rubric-editor": {
     slug: "rubric-editor",
@@ -1468,7 +1468,7 @@ export function InterventionPanel() {
         description: "InterventionItem의 개입 트리거 유형입니다.",
       },
     ],
-    related: ["admin-overview", "learner-record", "coaching"],
+    related: ["admin-overview", "learner-record"],
   },
   "learning-analytics": {
     slug: "learning-analytics",
@@ -1821,7 +1821,7 @@ export function FeedbackQuality() {
         description: "FeedbackAuditSample의 피드백 출처입니다.",
       },
     ],
-    related: ["provenance-panel", "audit-log", "coaching"],
+    related: ["provenance-panel", "audit-log"],
   },
   "audit-log": {
     slug: "audit-log",

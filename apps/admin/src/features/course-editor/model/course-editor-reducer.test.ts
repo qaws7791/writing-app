@@ -25,10 +25,10 @@ const document = adminCourseEditorSchema.parse(
 )
 
 describe("courseEditorReducer", () => {
-  it("레슨 복제는 AI target을 복제된 WRITE step으로 바꾸고 유효한 문서를 만든다", () => {
+  it("레슨 복제는 스텝 ID를 새로 발급하고 유효한 문서를 만든다", () => {
     const unitId = unitIdSchema.parse("unit-1")
     const lessonId = lessonIdSchema.parse("lesson-1")
-    const writeStepId = lessonStepIdSchema.parse("write-1")
+    const readingStepId = lessonStepIdSchema.parse("reading-1")
     const editableDocument = adminCourseEditorSchema.parse({
       ...document,
       units: [
@@ -44,22 +44,13 @@ describe("courseEditorReducer", () => {
               status: "active",
               steps: [
                 {
-                  id: writeStepId,
-                  min: 1,
-                  prompt: "쓰기",
+                  body: "본문",
+                  guide: "",
+                  id: readingStepId,
                   sortOrder: 1,
                   status: "active",
-                  type: "WRITE",
-                },
-                {
-                  allowRetry: true,
-                  feedback: "피드백",
-                  focus: "명확성",
-                  id: lessonStepIdSchema.parse("ai-1"),
-                  sortOrder: 2,
-                  status: "active",
-                  target: writeStepId,
-                  type: "AI_FEEDBACK",
+                  title: "읽기",
+                  type: "READING",
                 },
               ],
               summary: [],
@@ -78,19 +69,16 @@ describe("courseEditorReducer", () => {
       {
         lessonId,
         newLessonId: lessonIdSchema.parse("lesson-copy"),
-        newStepIds: [
-          lessonStepIdSchema.parse("write-copy"),
-          lessonStepIdSchema.parse("ai-copy"),
-        ],
+        newStepIds: [lessonStepIdSchema.parse("reading-copy")],
         type: "lesson-duplicated",
         unitId,
       }
     )
     const copy = duplicated.draft.units[0]?.lessons[1]
 
-    expect(copy?.steps[1]).toMatchObject({
-      id: "ai-copy",
-      target: "write-copy",
+    expect(copy?.steps[0]).toMatchObject({
+      id: "reading-copy",
+      type: "READING",
     })
     expect(adminCourseEditorSchema.safeParse(duplicated.draft).success).toBe(
       true

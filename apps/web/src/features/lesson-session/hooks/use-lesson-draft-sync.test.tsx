@@ -22,19 +22,30 @@ import {
   throwMswNetworkErrorFixture,
 } from "@workspace/http-client/msw-fixtures"
 
+import {
+  parseLessonStepDrafts,
+  type LessonStepDraftAnswer,
+} from "@/features/lesson-session/model/lesson-view-model"
 import { useLessonDraftSync } from "@/features/lesson-session/hooks/use-lesson-draft-sync"
-import { parseLessonStepDrafts } from "@/features/lesson-session/model/lesson-view-model"
 import type {
   LearnerLessonDto,
   LearnerSaveStepDraftBodyDto,
-  LearnerStepDraftAnswerDto,
   LearnerStepDraftDto,
 } from "@/shared/http/learner-api-client"
 import { createLearnerLessonWireFixture } from "@/test/learner-api-fixtures"
 
-const initialAnswer = { text: "서버 초안", type: "WRITE" } as const
-const localAnswer = { text: "로컬 수정", type: "WRITE" } as const
-const latestAnswer = { text: "후속 수정", type: "WRITE" } as const
+const initialAnswer = {
+  selectedOptionId: "option-1",
+  type: "MULTIPLE_CHOICE",
+} as LessonStepDraftAnswer
+const localAnswer = {
+  selectedOptionId: "option-2",
+  type: "MULTIPLE_CHOICE",
+} as LessonStepDraftAnswer
+const latestAnswer = {
+  selectedOptionId: "option-1",
+  type: "MULTIPLE_CHOICE",
+} as LessonStepDraftAnswer
 const server = setupServer()
 const nativeRequest = globalThis.Request
 
@@ -80,19 +91,19 @@ describe("useLessonDraftSync", () => {
           return firstSave.promise
         }
         secondRequestStarted.resolve()
-        return createDraft(body.answer, 3)
+        return createDraft(body.answer as LessonStepDraftAnswer, 3)
       })
     )
     const { result } = renderDraftSync()
 
     act(() => {
-      result.current.stageDraft("step-write", localAnswer)
+      result.current.stageDraft("step-mc", localAnswer)
       vi.advanceTimersByTime(800)
     })
     await firstRequestStarted.promise
 
     act(() => {
-      result.current.stageDraft("step-write", latestAnswer)
+      result.current.stageDraft("step-mc", latestAnswer)
     })
 
     expect(requests).toHaveLength(1)
@@ -118,17 +129,17 @@ describe("useLessonDraftSync", () => {
       getSaveLearnerStepDraftMockHandler200(async ({ request }) => {
         const body = await readJson<LearnerSaveStepDraftBodyDto>(request)
         retryRequests.push(body)
-        return createDraft(body.answer, 4)
+        return createDraft(body.answer as LessonStepDraftAnswer, 4)
       }),
       getGetLessonMockHandler200(createLesson([serverDraft]))
     )
     const { result } = renderDraftSync([createDraft(initialAnswer, 2)])
 
     act(() => {
-      result.current.stageDraft("step-write", localAnswer)
+      result.current.stageDraft("step-mc", localAnswer)
     })
     await act(async () => {
-      await result.current.flushStepDraft("step-write")
+      await result.current.flushStepDraft("step-mc")
     })
 
     expect(retryRequests).toEqual([
@@ -150,7 +161,7 @@ describe("useLessonDraftSync", () => {
     const { result } = renderDraftSync()
 
     act(() => {
-      result.current.stageDraft("step-write", localAnswer)
+      result.current.stageDraft("step-mc", localAnswer)
     })
 
     await expect(result.current.flushAll()).resolves.toEqual({
@@ -173,16 +184,16 @@ describe("useLessonDraftSync", () => {
       getSaveLearnerStepDraftMockHandler200(async ({ request }) => {
         const body = await readJson<LearnerSaveStepDraftBodyDto>(request)
         requests.push(body)
-        return createDraft(body.answer, 2)
+        return createDraft(body.answer as LessonStepDraftAnswer, 2)
       })
     )
     const { result } = renderDraftSync()
 
     act(() => {
-      result.current.stageDraft("step-write", localAnswer)
+      result.current.stageDraft("step-mc", localAnswer)
     })
     await act(async () => {
-      await result.current.flushStepDraft("step-write")
+      await result.current.flushStepDraft("step-mc")
     })
 
     expect(requests).toEqual([
@@ -215,7 +226,7 @@ function createLesson(
     id: "lesson-1",
     learning: {
       completedSteps: 0,
-      currentStepId: "step-write",
+      currentStepId: "step-mc",
       currentStepIndex: 0,
       progressPercent: 0,
       status: "in_progress",
@@ -227,22 +238,26 @@ function createLesson(
     },
     steps: [
       {
-        id: "step-write",
-        min: 1,
+        id: "step-mc",
+        options: [
+          { id: "option-1", text: "선택 1" },
+          { id: "option-2", text: "선택 2" },
+        ],
+        question: "질문",
         sortOrder: 1,
-        type: "WRITE",
+        type: "MULTIPLE_CHOICE",
       },
     ],
   })
 }
 
 function createDraft(
-  answer: LearnerStepDraftAnswerDto,
+  answer: LessonStepDraftAnswer,
   version: number
 ): LearnerStepDraftDto {
   return {
     answer,
-    stepId: "step-write",
+    stepId: "step-mc",
     updatedAt: `2026-07-24T00:00:0${version}.000Z`,
     version,
   }

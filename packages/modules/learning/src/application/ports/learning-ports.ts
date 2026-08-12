@@ -6,17 +6,13 @@ import type {
   CurriculumVersionId,
   LearnerId,
   LessonId,
-  LessonStepId,
   UserId,
 } from "@workspace/types/ids"
 
 import type {
-  CompleteLearnerAiFeedbackCommand,
   CompleteLearnerStepCommand,
   CompleteLearnerStepTransitionResult,
-  LearnerAiFeedbackContext,
   LearnerTransitionError,
-  PrepareLearnerAiFeedbackCommand,
   SaveLearnerStepDraftCommand,
   SaveLearnerStepDraftResult,
   StartLearnerLessonCommand,
@@ -59,56 +55,6 @@ export type LearningIdentityQueryPort = Readonly<{
   >
 }>
 
-export type LearningAiFeedbackResult = Readonly<{
-  improvements: readonly string[]
-  nextAction: string
-  remainingAttempts: number
-  strengths: readonly string[]
-  summary: string
-}>
-
-export type LearningAiFeedbackError =
-  | Readonly<{ kind: "attempt-limit-exceeded"; remainingAttempts: 0 }>
-  | Readonly<{
-      kind: "daily-quota-exceeded"
-      remainingAttempts: number
-      retryAfterSeconds: number
-    }>
-  | Readonly<{
-      kind: "attempt-in-progress"
-      remainingAttempts: number
-      retryAfterSeconds: number
-    }>
-  | Readonly<{
-      kind:
-        | "provider-response-invalid"
-        | "provider-timeout"
-        | "provider-unavailable"
-        | "request-aborted"
-      remainingAttempts: number
-    }>
-  | Readonly<{
-      kind: "persistence-failed"
-      operation: "fail-attempt" | "reserve-attempt" | "succeed-attempt"
-    }>
-
-type LearningAiFeedbackApplicationPort = Readonly<{
-  requestFeedback: (
-    input: Readonly<{
-      answer: string
-      courseId: CourseId
-      curriculumVersionId: CurriculumVersionId
-      focus: string
-      idempotencyKey: string
-      learnerId: LearnerId
-      lessonId: LessonId
-      lessonTitle: string
-      stepId: LessonStepId
-    }>,
-    options: Readonly<{ signal?: AbortSignal }>
-  ) => Promise<Result<LearningAiFeedbackResult, LearningAiFeedbackError>>
-}>
-
 type LearnerPinnedScope = Readonly<{
   courseId: CourseId
   curriculumVersionId: CurriculumVersionId
@@ -116,12 +62,6 @@ type LearnerPinnedScope = Readonly<{
 }>
 
 export type LearningTransitionRepository = Readonly<{
-  completeAiFeedbackStep: (
-    command: CompleteLearnerAiFeedbackCommand,
-    curriculum: LearningCurriculum
-  ) => Promise<
-    Result<CompleteLearnerStepTransitionResult, LearnerTransitionError>
-  >
   completeStep: (
     command: CompleteLearnerStepCommand,
     curriculum: LearningCurriculum
@@ -133,10 +73,6 @@ export type LearningTransitionRepository = Readonly<{
     readonly learnerId: LearnerId
     readonly lessonId: LessonId
   }) => Promise<LearnerPinnedScope | null>
-  prepareAiFeedback: (
-    command: PrepareLearnerAiFeedbackCommand,
-    curriculum: LearningCurriculum
-  ) => Promise<Result<LearnerAiFeedbackContext, LearnerTransitionError>>
   saveStepDraft: (
     command: SaveLearnerStepDraftCommand,
     curriculum: LearningCurriculum
@@ -148,7 +84,6 @@ export type LearningTransitionRepository = Readonly<{
 }>
 
 export type LearningApplicationDependencies = Readonly<{
-  aiFeedback: LearningAiFeedbackApplicationPort
   clock: Clock
   content: LearningContentQueryPort
   identity: LearningIdentityQueryPort

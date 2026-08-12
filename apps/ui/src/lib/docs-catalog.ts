@@ -90,7 +90,6 @@ const extensionItems: DocSearchRecord[] = [
     searchText: "activeTheme disabled onThemeChange",
   },
   ...[
-    ["ai-feedback-answer", "AI Feedback Answer", "AI 코칭 요청과 결과·오류·한도 상태"],
     ["categorize-answer", "Categorize Answer", "항목을 카테고리로 분류하는 답안"],
     ["compare-step-view", "Compare Step View", "여러 글 버전을 비교하는 읽기 뷰"],
     ["fill-blank-answer", "Fill Blank Answer", "문장 빈칸에 단어를 배치하는 답안"],
@@ -99,7 +98,6 @@ const extensionItems: DocSearchRecord[] = [
     ["order-answer", "Order Answer", "문장 조각의 순서를 정하는 답안"],
     ["reading-step-view", "Reading Step View", "마크다운 학습 본문과 출처"],
     ["select-answer", "Select Answer", "문장 안 텍스트 구간을 고르는 답안"],
-    ["write-answer", "Write Answer", "글자 수 기준과 참고 답안을 가진 쓰기 입력"],
   ].map(([slug, title, description]) => ({
     title,
     href: `/docs/extensions/lesson/${slug}`,
