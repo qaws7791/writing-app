@@ -25,32 +25,37 @@ export function gradeLearnerStep(
       ? { answer: null, evaluation: null, kind: "accepted" }
       : { kind: "invalid" }
   }
-  switch (completion.submission.type) {
-    case "MULTIPLE_CHOICE":
-      return step.type === completion.submission.type
-        ? gradeMultipleChoice(step, completion.submission)
-        : { kind: "invalid" }
-    case "FILL_BLANK":
-      return step.type === completion.submission.type
-        ? gradeFillBlank(step, completion.submission)
-        : { kind: "invalid" }
-    case "SELECT":
-      return step.type === completion.submission.type
-        ? gradeSelect(step, completion.submission)
-        : { kind: "invalid" }
-    case "ORDER":
-      return step.type === completion.submission.type
-        ? gradeOrder(step, completion.submission)
-        : { kind: "invalid" }
-    case "MATCH":
-      return step.type === completion.submission.type
-        ? gradeMatch(step, completion.submission)
-        : { kind: "invalid" }
-    case "CATEGORIZE":
-      return step.type === completion.submission.type
-        ? gradeCategorize(step, completion.submission)
-        : { kind: "invalid" }
-  }
+  const graded: StepGradingResult = (() => {
+    switch (completion.submission.type) {
+      case "MULTIPLE_CHOICE":
+        return step.type === completion.submission.type
+          ? gradeMultipleChoice(step, completion.submission)
+          : { kind: "invalid" }
+      case "FILL_BLANK":
+        return step.type === completion.submission.type
+          ? gradeFillBlank(step, completion.submission)
+          : { kind: "invalid" }
+      case "SELECT":
+        return step.type === completion.submission.type
+          ? gradeSelect(step, completion.submission)
+          : { kind: "invalid" }
+      case "ORDER":
+        return step.type === completion.submission.type
+          ? gradeOrder(step, completion.submission)
+          : { kind: "invalid" }
+      case "MATCH":
+        return step.type === completion.submission.type
+          ? gradeMatch(step, completion.submission)
+          : { kind: "invalid" }
+      case "CATEGORIZE":
+        return step.type === completion.submission.type
+          ? gradeCategorize(step, completion.submission)
+          : { kind: "invalid" }
+      default:
+        return { kind: "invalid" }
+    }
+  })()
+  return finalizeGradingResult(graded, completion)
 }
 
 function gradeMultipleChoice(
@@ -262,6 +267,20 @@ function evaluatedResult(
   return correct
     ? { answer, evaluation, kind: "accepted" }
     : { evaluation, kind: "retry" }
+}
+
+function finalizeGradingResult(
+  result: StepGradingResult,
+  completion: Extract<LearnerStepCompletion, { readonly kind: "answer" }>
+): StepGradingResult {
+  if (completion.acceptIncorrect !== true || result.kind !== "retry") {
+    return result
+  }
+  return {
+    answer: completion.submission,
+    evaluation: result.evaluation,
+    kind: "accepted",
+  }
 }
 
 function itemVerdict(selected: boolean, expected: boolean): StepItemVerdict {

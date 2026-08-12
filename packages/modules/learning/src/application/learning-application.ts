@@ -44,6 +44,7 @@ type SubmitLearningStepCommand = Readonly<{
   (
     | Readonly<{
         completion: Readonly<{
+          acceptIncorrect?: boolean
           kind: "answer"
           submission: LearnerStepSubmission
         }>

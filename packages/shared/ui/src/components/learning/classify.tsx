@@ -93,7 +93,7 @@ const classifyItemVariants = cva(
         idle: "border-border/80 bg-card text-foreground shadow-2xs hover:bg-accent/40",
         active: "border-primary/35 bg-accent/55 text-foreground shadow-2xs",
         placed: "border-border bg-surface/80 text-foreground",
-        correct: "border-foreground/20 bg-foreground/[0.035] text-foreground",
+        correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         locked: "border-border/60 bg-muted/40 text-muted-foreground",
       },
@@ -148,7 +148,7 @@ function ClassifyItemTag({
     <span
       data-slot="classify-item-tag"
       className={cn(
-        "inline-flex shrink-0 items-center rounded-full border border-border/70 bg-card px-2.5 py-0.5 text-xs font-medium text-muted-foreground group-data-[state=correct]/classify-item:border-foreground/20 group-data-[state=correct]/classify-item:text-foreground group-data-[state=incorrect]/classify-item:border-destructive/30 group-data-[state=incorrect]/classify-item:text-destructive",
+        "inline-flex shrink-0 items-center rounded-full border border-border/70 bg-card px-2.5 py-0.5 text-xs font-medium text-muted-foreground group-data-[state=correct]/classify-item:border-success/30 group-data-[state=correct]/classify-item:text-success group-data-[state=incorrect]/classify-item:border-destructive/30 group-data-[state=incorrect]/classify-item:text-destructive",
         className
       )}
       {...props}

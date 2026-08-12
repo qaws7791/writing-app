@@ -118,4 +118,23 @@ describe("학습 단계 서버 채점 정책", () => {
       expect(result.kind).toBe(expectedKind)
     }
   )
+
+  it("오답 제출에 acceptIncorrect가 있으면 accepted로 판정한다", () => {
+    const result = gradeLearnerStep(
+      lessonStepDtoSchema.parse(multipleChoiceStep),
+      {
+        acceptIncorrect: true,
+        kind: "answer",
+        submission: learnerStepSubmissionSchema.parse({
+          selectedOptionId: "option-a",
+          type: "MULTIPLE_CHOICE",
+        }),
+      }
+    )
+
+    expect(result.kind).toBe("accepted")
+    if (result.kind === "accepted") {
+      expect(result.evaluation?.correct).toBe(false)
+    }
+  })
 })

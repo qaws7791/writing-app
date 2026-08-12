@@ -2,11 +2,6 @@
 
 import { useState } from "react"
 
-import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
 import {
   Token,
@@ -25,7 +20,7 @@ export function SentenceBuildAnswer<TId extends string>({
   checked = false,
   correctTileIds,
   defaultSelectedTileIds = [],
-  explanation,
+  explanation: _explanation,
   onChange,
   prompt,
   tiles,
@@ -64,11 +59,6 @@ export function SentenceBuildAnswer<TId extends string>({
     setSelectedTileIds(nextIds)
     emitChange(nextIds)
   }
-
-  const builtCorrect =
-    checked !== false &&
-    selectedTileIds.length === correctTileIds.length &&
-    selectedTileIds.every((id, index) => id === correctTileIds[index])
 
   return (
     <>
@@ -128,22 +118,6 @@ export function SentenceBuildAnswer<TId extends string>({
             )
           })}
         </TokenBank>
-        {checked !== false ? (
-          <Insight tone={builtCorrect ? "correct" : "incorrect"}>
-            <InsightEyebrow>정답 문장</InsightEyebrow>
-            <InsightDescription>
-              <p>
-                {correctTileIds
-                  .flatMap((id) => {
-                    const tile = tiles.find((candidate) => candidate.id === id)
-                    return tile === undefined ? [] : [tile.text]
-                  })
-                  .join(" ")}
-              </p>
-              {explanation ? <p>{explanation}</p> : null}
-            </InsightDescription>
-          </Insight>
-        ) : null}
       </StepBody>
     </>
   )

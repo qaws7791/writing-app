@@ -6,22 +6,21 @@ import {
   isLessonStepCheckedCorrect,
   type LessonStepCheckedState,
 } from "@/features/lesson-session/model/lesson-step-policy"
-import { Button } from "@workspace/ui/components/primitives/button"
-import {
-  Insight,
-  InsightDescription,
-  InsightTitle,
-} from "@workspace/ui/components/learning/insight"
 import {
   Lesson,
-  LessonActions,
+  LessonFeedback,
+  LessonFeedbackActions,
+  LessonFeedbackBody,
+  LessonFeedbackContinueButton,
+  LessonFeedbackDescription,
+  LessonFeedbackRetryButton,
+  LessonFeedbackTitle,
   LessonClose,
   LessonFooter,
   LessonHeader,
   LessonMeta,
   LessonProgress,
 } from "@workspace/ui/components/learning/lesson"
-import { cn } from "@workspace/ui/lib/utils"
 
 type LessonCheckedState = false | LessonStepCheckedState
 
@@ -29,7 +28,6 @@ export function LessonShell({
   children,
   contentLabelledBy,
   contentRef,
-  fixedFooter = false,
   footer,
   header,
 }: {
@@ -41,20 +39,15 @@ export function LessonShell({
   readonly header: ReactNode
 }) {
   return (
-    <div
-      className={cn(
-        "h-dvh min-h-screen w-full overflow-hidden bg-background text-foreground",
-        fixedFooter && "fixed inset-0 z-50"
-      )}
-    >
-      <Lesson className="h-full px-4 sm:px-6">
+    <div className="fixed inset-0 z-50 h-dvh w-full min-w-0 overflow-hidden bg-background text-foreground">
+      <Lesson className="h-full">
         {header}
         <main
           aria-label={
             contentLabelledBy === undefined ? "레슨 콘텐츠" : undefined
           }
           aria-labelledby={contentLabelledBy}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          className="mx-auto min-h-0 w-full min-w-0 max-w-2xl flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6"
           ref={contentRef}
         >
           <div className="flex min-h-full flex-col pt-2 pb-8 sm:pt-4 sm:pb-10">
@@ -99,28 +92,58 @@ export function LessonProgressHeader({
 
 export function LessonCheckedFooter({
   checked,
-  onNext,
+  isSubmitting,
+  onContinue,
+  onRetry,
 }: {
   readonly checked: Exclude<LessonCheckedState, false>
-  readonly onNext: () => void
+  readonly isSubmitting: boolean
+  readonly onContinue: () => void
+  readonly onRetry: () => void
 }) {
   const feedback = getCheckedFeedback(checked)
+  const tone = feedback.isCorrect ? "correct" : "incorrect"
 
   return (
-    <LessonFooter aria-label="레슨 행동">
-      <div className="flex flex-col gap-3">
-        <Insight tone={feedback.isCorrect ? "correct" : "incorrect"}>
-          <InsightTitle>{feedback.title}</InsightTitle>
-          {feedback.body === "" ? null : (
-            <InsightDescription>{feedback.body}</InsightDescription>
+    <LessonFooter
+      aria-label="레슨 행동"
+      className="bg-transparent pt-0 pb-0 backdrop-blur-none"
+    >
+      <LessonFeedback tone={tone}>
+        <LessonFeedbackBody>
+          <div className="flex flex-col gap-1.5">
+            <LessonFeedbackTitle>{feedback.title}</LessonFeedbackTitle>
+            {feedback.body === "" ? null : (
+              <LessonFeedbackDescription>
+                {feedback.body}
+              </LessonFeedbackDescription>
+            )}
+          </div>
+          {feedback.isCorrect ? (
+            <LessonFeedbackContinueButton
+              disabled={isSubmitting}
+              onClick={onContinue}
+              tone="correct"
+            >
+              {isSubmitting ? "계속하는 중…" : "계속하기"}
+            </LessonFeedbackContinueButton>
+          ) : (
+            <LessonFeedbackActions>
+              <LessonFeedbackRetryButton
+                disabled={isSubmitting}
+                onClick={onRetry}
+              />
+              <LessonFeedbackContinueButton
+                disabled={isSubmitting}
+                onClick={onContinue}
+                tone="incorrect"
+              >
+                {isSubmitting ? "계속하는 중…" : "계속하기"}
+              </LessonFeedbackContinueButton>
+            </LessonFeedbackActions>
           )}
-        </Insight>
-        <LessonActions>
-          <Button onClick={onNext} size="lg">
-            계속하기
-          </Button>
-        </LessonActions>
-      </div>
+        </LessonFeedbackBody>
+      </LessonFeedback>
     </LessonFooter>
   )
 }

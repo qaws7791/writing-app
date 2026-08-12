@@ -1296,26 +1296,46 @@ export function LessonSession() {
         code: `<LessonProgress value={60} label="레슨 진행" />`,
       },
       {
-        id: "sticky-footer",
-        title: "고정 하단",
-        description:
-          "LessonFooter는 상단 구분선 없이 sticky로 유지되며, 스크롤해도 행동이 보입니다.",
-        code: `<LessonFooter>
-  <LessonActions>
-    <Button variant="outline">계속하기</Button>
-    <Button>확인하기</Button>
-  </LessonActions>
+        id: "feedback-correct",
+        title: "정답 피드백 오버레이",
+        description: "채점 후 평가 문구와 계속하기 CTA를 하단 success 오버레이로 표시합니다.",
+        code: `<LessonFooter className="bg-transparent pt-0 pb-0 backdrop-blur-none">
+  <LessonFeedback tone="correct">
+    <LessonFeedbackBody>
+      <LessonFeedbackTitle>완벽해요!</LessonFeedbackTitle>
+      <LessonFeedbackDescription>주어와 서술어가 일치해야 합니다.</LessonFeedbackDescription>
+      <LessonFeedbackContinueButton tone="correct">계속하기</LessonFeedbackContinueButton>
+    </LessonFeedbackBody>
+  </LessonFeedback>
+</LessonFooter>`,
+      },
+      {
+        id: "feedback-incorrect",
+        title: "오답 피드백 오버레이",
+        description: "오답은 warning 오버레이와 다시 시도 아이콘, 계속하기 CTA를 함께 둡니다.",
+        code: `<LessonFooter className="bg-transparent pt-0 pb-0 backdrop-blur-none">
+  <LessonFeedback tone="incorrect">
+    <LessonFeedbackBody>
+      <LessonFeedbackTitle>다시 확인해보세요</LessonFeedbackTitle>
+      <LessonFeedbackDescription>근거는 주장을 뒷받침하는 사실이어야 합니다.</LessonFeedbackDescription>
+      <LessonFeedbackActions>
+        <LessonFeedbackRetryButton />
+        <LessonFeedbackContinueButton tone="incorrect">계속하기</LessonFeedbackContinueButton>
+      </LessonFeedbackActions>
+    </LessonFeedbackBody>
+  </LessonFeedback>
 </LessonFooter>`,
       },
     ],
     usageNotes: [
       "Lesson은 세션 크롬이고, 활동 콘텐츠는 Step과 도메인 표면이 담당합니다.",
       "완료 요약은 레슨 필드에서 오며 별도 SUMMARY 스텝을 만들지 않습니다.",
-      "하단 CTA는 전체 너비의 큰 버튼을 기본으로 두고, 확인·제출 뒤에는 초기화로 다시 연습할 수 있게 합니다.",
+      "하단 CTA는 전체 너비의 큰 버튼을 기본으로 두고, 채점 후에는 LessonFeedback 오버레이로 평가와 다음 행동을 표시합니다.",
+      "LessonFeedback 배경은 레슨 shell 전체 너비입니다. 평가 문구와 CTA는 헤더·본문과 같은 max-w-2xl 열과 같은 수평 패딩을 씁니다.",
     ],
     accessibility: [
       "닫기 버튼에 접근 가능한 이름을 유지하세요.",
-      "진행률은 ProgressLabel/Value로 보조 기술에 전달합니다.",
+      "채점 피드백 오버레이는 role=status로 평가 문구를 전달합니다.",
     ],
     props: [
       {

@@ -1,11 +1,6 @@
 "use client"
 
 import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
-import {
   PairBoard,
   PairColumn,
   PairConnections,
@@ -58,7 +53,7 @@ function getPairState({
 export function MatchAnswer({
   checked = false,
   connections,
-  explanation,
+  explanation: _explanation,
   leftChoices,
   onChoiceSelect,
   pendingChoice = null,
@@ -153,12 +148,6 @@ export function MatchAnswer({
             })}
           </PairColumn>
         </PairBoard>
-        {checked !== false && explanation ? (
-          <Insight tone="think">
-            <InsightEyebrow>해설</InsightEyebrow>
-            <InsightDescription>{explanation}</InsightDescription>
-          </Insight>
-        ) : null}
       </StepBody>
     </>
   )

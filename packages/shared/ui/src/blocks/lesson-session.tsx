@@ -37,7 +37,6 @@ import {
   Insight,
   InsightDescription,
   InsightEyebrow,
-  InsightTitle,
 } from "#ui/components/learning/insight"
 import {
   Lesson,
@@ -47,6 +46,13 @@ import {
   LessonComplete,
   LessonCompleteDescription,
   LessonCompleteTitle,
+  LessonFeedback,
+  LessonFeedbackActions,
+  LessonFeedbackBody,
+  LessonFeedbackContinueButton,
+  LessonFeedbackDescription,
+  LessonFeedbackRetryButton,
+  LessonFeedbackTitle,
   LessonFooter,
   LessonHeader,
   LessonMeta,
@@ -222,6 +228,44 @@ type SessionChromeProps = {
   onReset?: () => void
   secondaryLabel?: string
   onSecondary?: () => void
+  footer?: React.ReactNode
+}
+
+function renderCheckedFeedbackFooter({
+  correct,
+  explanation,
+  onContinue,
+  onRetry,
+}: {
+  correct: boolean
+  explanation: string
+  onContinue: () => void
+  onRetry: () => void
+}) {
+  const tone = correct ? "correct" : "incorrect"
+
+  return (
+    <LessonFeedback tone={tone}>
+      <LessonFeedbackBody>
+        <LessonFeedbackTitle>
+          {correct ? "완벽해요!" : "다시 확인해보세요"}
+        </LessonFeedbackTitle>
+        <LessonFeedbackDescription>{explanation}</LessonFeedbackDescription>
+        {correct ? (
+          <LessonFeedbackContinueButton onClick={onContinue} tone="correct">
+            계속하기
+          </LessonFeedbackContinueButton>
+        ) : (
+          <LessonFeedbackActions>
+            <LessonFeedbackRetryButton onClick={onRetry} />
+            <LessonFeedbackContinueButton onClick={onContinue} tone="incorrect">
+              계속하기
+            </LessonFeedbackContinueButton>
+          </LessonFeedbackActions>
+        )}
+      </LessonFeedbackBody>
+    </LessonFeedback>
+  )
 }
 
 function SessionChrome({
@@ -236,11 +280,12 @@ function SessionChrome({
   onReset,
   secondaryLabel,
   onSecondary,
+  footer,
 }: SessionChromeProps) {
   const progress = Math.round((stepIndex / total) * 100)
 
   return (
-    <Lesson className="min-h-0 w-full flex-1 px-4 pt-4 sm:px-6">
+    <Lesson className="min-h-0 w-full flex-1 pt-4">
       <LessonHeader>
         <LessonClose onClick={onClose} />
         <LessonProgress value={progress} label="레슨 진행" />
@@ -249,27 +294,35 @@ function SessionChrome({
         </LessonMeta>
       </LessonHeader>
       <LessonBody className="gap-6">{children}</LessonBody>
-      <LessonFooter>
-        <LessonActions>
-          {showReset && onReset ? (
-            <Button type="button" variant="outline" onClick={onReset}>
-              초기화
+      <LessonFooter
+        className={
+          footer === undefined
+            ? undefined
+            : "bg-transparent pt-0 pb-0 backdrop-blur-none"
+        }
+      >
+        {footer ?? (
+          <LessonActions>
+            {showReset && onReset ? (
+              <Button type="button" variant="outline" onClick={onReset}>
+                초기화
+              </Button>
+            ) : null}
+            {secondaryLabel && onSecondary ? (
+              <Button type="button" variant="ghost" onClick={onSecondary}>
+                {secondaryLabel}
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              size="lg"
+              disabled={primaryDisabled}
+              onClick={onPrimary}
+            >
+              {primaryLabel}
             </Button>
-          ) : null}
-          {secondaryLabel && onSecondary ? (
-            <Button type="button" variant="ghost" onClick={onSecondary}>
-              {secondaryLabel}
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            size="lg"
-            disabled={primaryDisabled}
-            onClick={onPrimary}
-          >
-            {primaryLabel}
-          </Button>
-        </LessonActions>
+          </LessonActions>
+        )}
       </LessonFooter>
     </Lesson>
   )
@@ -351,27 +404,23 @@ function ChoiceStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={!selected}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "설득문은 주장을 먼저 두고 근거로 뒷받침할 때 읽기 쉬워집니다.",
+              onContinue: onComplete,
+              onRetry: () => {
+                setSelected(null)
+                setPhase("answering")
+              },
+            })
       }
-      primaryDisabled={phase === "answering" && !selected}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          setSelected(null)
-          setPhase("answering")
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={() => {
-        setSelected(null)
-        setPhase("answering")
-      }}
       onClose={onClose}
     >
       <Step>
@@ -394,17 +443,6 @@ function ChoiceStep({
               </Choice>
             ))}
           </ChoiceGroup>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightEyebrow>해설</InsightEyebrow>
-              <InsightTitle>
-                {correct ? "정답입니다" : "다시 살펴보세요"}
-              </InsightTitle>
-              <InsightDescription>
-                설득문은 주장을 먼저 두고 근거로 뒷받침할 때 읽기 쉬워집니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </SessionChrome>
@@ -427,27 +465,23 @@ function TokenStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={!slot}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.",
+              onContinue: onComplete,
+              onRetry: () => {
+                setSlot(null)
+                setPhase("answering")
+              },
+            })
       }
-      primaryDisabled={phase === "answering" && !slot}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          setSlot(null)
-          setPhase("answering")
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={() => {
-        setSlot(null)
-        setPhase("answering")
-      }}
       onClose={onClose}
     >
       <Step>
@@ -494,16 +528,6 @@ function TokenStep({
               </Token>
             ))}
           </TokenBank>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightTitle>
-                {correct ? "정답입니다" : "다시 채워보세요"}
-              </InsightTitle>
-              <InsightDescription>
-                반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </SessionChrome>
@@ -548,27 +572,23 @@ function SegmentStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={selected.length === 0}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "“개인의 습관만으로”가 문제의 범위를 너무 좁히는 전제입니다.",
+              onContinue: onComplete,
+              onRetry: () => {
+                setSelected([])
+                setPhase("answering")
+              },
+            })
       }
-      primaryDisabled={phase === "answering" && selected.length === 0}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          setSelected([])
-          setPhase("answering")
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={() => {
-        setSelected([])
-        setPhase("answering")
-      }}
       onClose={onClose}
     >
       <Step>
@@ -588,13 +608,6 @@ function SegmentStep({
               </Segment>
             ))}
           </SegmentGroup>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                “개인의 습관만으로”가 문제의 범위를 너무 좁히는 전제입니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </SessionChrome>
@@ -624,25 +637,22 @@ function OrderStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.",
+              onContinue: onComplete,
+              onRetry: () => {
+                setOrder([...ORDER_INITIAL])
+                setPhase("answering")
+              },
+            })
       }
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          setPhase("answering")
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={() => {
-        setOrder([...ORDER_INITIAL])
-        setPhase("answering")
-      }}
       onClose={onClose}
     >
       <Step>
@@ -670,13 +680,6 @@ function OrderStep({
               )
             })}
           </Sortable>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </SessionChrome>
@@ -751,23 +754,19 @@ function MatchStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={!complete}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "주장은 “무엇을”, 근거는 “왜”에 답하는 짝입니다.",
+              onContinue: onComplete,
+              onRetry: reset,
+            })
       }
-      primaryDisabled={phase === "answering" && !complete}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          reset()
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
       onClose={onClose}
     >
       <Step>
@@ -821,13 +820,6 @@ function MatchStep({
               ))}
             </PairColumn>
           </PairBoard>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                주장은 “무엇을”, 근거는 “왜”에 답하는 짝입니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </SessionChrome>
@@ -882,23 +874,20 @@ function CategorizeStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={!complete}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "주장은 의견을, 근거는 그 의견을 받치는 사실을 담습니다.",
+              onContinue: onComplete,
+              onRetry: reset,
+            })
       }
-      primaryDisabled={phase === "answering" && !complete}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          reset()
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
       onClose={onClose}
     >
       <Step>
@@ -944,13 +933,6 @@ function CategorizeStep({
               })}
             </ClassifyPool>
           </Classify>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                주장은 의견을, 근거는 그 의견을 받치는 사실을 담습니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </SessionChrome>
@@ -1035,23 +1017,20 @@ function TrueFalseStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={selected === null}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.",
+              onContinue: onComplete,
+              onRetry: retry,
+            })
       }
-      primaryDisabled={phase === "answering" && selected === null}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          retry()
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={retry}
       onClose={onClose}
     >
       <Step>
@@ -1065,16 +1044,6 @@ function TrueFalseStep({
           prompt="[TRUE_FALSE] 참인지 거짓인지 판단하세요"
           statement={TRUE_FALSE_STATEMENT}
         />
-        {phase !== "answering" ? (
-          <Insight tone={correct ? "correct" : "incorrect"}>
-            <InsightTitle>
-              {correct ? "정답입니다" : "다시 살펴보세요"}
-            </InsightTitle>
-            <InsightDescription>
-              근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.
-            </InsightDescription>
-          </Insight>
-        ) : null}
       </Step>
     </SessionChrome>
   )
@@ -1106,23 +1075,20 @@ function SentenceBuildStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={selected.length === 0}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "주장을 짧고 분명한 한 문장으로 두는 것이 기본입니다.",
+              onContinue: onComplete,
+              onRetry: retry,
+            })
       }
-      primaryDisabled={phase === "answering" && selected.length === 0}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          retry()
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={retry}
       onClose={onClose}
     >
       <Step>
@@ -1167,23 +1133,19 @@ function TranscribeStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={value.trim() === ""}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "맞춤법·띄어쓰기·문장부호까지 원문과 같아야 합니다.",
+              onContinue: onComplete,
+              onRetry: retry,
+            })
       }
-      primaryDisabled={phase === "answering" && value.trim() === ""}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          retry()
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={retry}
       onClose={onClose}
     >
       <Step>
@@ -1232,25 +1194,20 @@ function ErrorCorrectStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={errorSegmentId === null || fixId === null}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "“주장을 되풀이하며”가 오류이고, “사실과 사례로”가 바른 교정입니다.",
+              onContinue: onComplete,
+              onRetry: retry,
+            })
       }
-      primaryDisabled={
-        phase === "answering" && (errorSegmentId === null || fixId === null)
-      }
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          retry()
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={retry}
       onClose={onClose}
     >
       <Step>
@@ -1268,16 +1225,6 @@ function ErrorCorrectStep({
           }}
           segments={[...ERROR_SEGMENTS]}
         />
-        {phase !== "answering" ? (
-          <Insight tone={correct ? "correct" : "incorrect"}>
-            <InsightTitle>
-              {correct ? "정답입니다" : "다시 고쳐 보세요"}
-            </InsightTitle>
-            <InsightDescription>
-              “주장을 되풀이하며”가 오류이고, “사실과 사례로”가 바른 교정입니다.
-            </InsightDescription>
-          </Insight>
-        ) : null}
       </Step>
     </SessionChrome>
   )
@@ -1309,23 +1256,20 @@ function ParagraphOrganizeStep({
   return (
     <SessionChrome
       stepIndex={stepIndex}
-      primaryLabel={
-        phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"
+      primaryLabel="확인하기"
+      primaryDisabled={selected.length === 0}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation:
+                "주제문 → 근거 → 결론 순으로 이어지고, 주제와 무관한 문장은 제외합니다.",
+              onContinue: onComplete,
+              onRetry: retry,
+            })
       }
-      primaryDisabled={phase === "answering" && selected.length === 0}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked")
-          return
-        }
-        if (!correct) {
-          retry()
-          return
-        }
-        onComplete()
-      }}
-      showReset={phase !== "answering"}
-      onReset={retry}
       onClose={onClose}
     >
       <Step>
@@ -1496,7 +1440,7 @@ function LessonSession({ className, ...props }: React.ComponentProps<"div">) {
       {...props}
     >
       {finished ? (
-        <Lesson className="min-h-0 w-full flex-1 px-4 pt-4 sm:px-6">
+        <Lesson className="min-h-0 w-full flex-1 pt-4">
           <LessonHeader>
             <LessonClose onClick={resetAll} />
             <LessonProgress value={100} label="레슨 진행" />

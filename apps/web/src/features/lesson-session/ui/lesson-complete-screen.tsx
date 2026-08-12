@@ -40,7 +40,7 @@ export function LessonCompleteScreen({
 
   return (
     <div className="fixed inset-0 z-50 h-dvh overflow-hidden bg-background text-foreground">
-      <Lesson className="h-full px-4 sm:px-6">
+      <Lesson className="h-full">
         <LessonBody className="overflow-y-auto">
           <LessonComplete className="my-auto">
             <Badge variant="success">완료</Badge>

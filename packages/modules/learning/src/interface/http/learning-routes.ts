@@ -331,7 +331,13 @@ function registerCompleteStepRoute<TEnv extends LearningHonoEnv>(
       body.kind === "answer"
         ? await input.application.submitStep({
             ...command,
-            completion: { kind: "answer", submission: body.answer },
+            completion: {
+              ...(body.acceptIncorrect === true
+                ? { acceptIncorrect: true }
+                : {}),
+              kind: "answer",
+              submission: body.answer,
+            },
           })
         : await input.application.submitStep({
             ...command,

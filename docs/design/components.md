@@ -60,7 +60,7 @@ Block은 조합과 상태 표현 예제다. 제품 화면은 fixture, 임시 lin
 
 Button은 `rounded-2xl`, 125ms press motion과 3px focus ring을 하나의 계약으로 제공한다.
 
-정답, 오답과 성공 상태는 Button variant로 표현하지 않는다. 별도 상태 메시지와 semantic surface를 사용한다.
+정답, 오답과 성공 상태는 일반 Button variant로 표현하지 않는다. 레슨 채점 오버레이 CTA만 `success`·`warning` variant를 사용한다. 그 밖의 상태 메시지는 semantic surface를 사용한다.
 
 ## Card
 
@@ -233,7 +233,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 - `packages/shared/ui/src/components/learning/compose.tsx`
 - `packages/shared/ui/src/components/learning/coaching.tsx`
 
-`Lesson`은 진행 헤더, 중앙 스크롤 본문과 하단 행동을 같은 `max-w-2xl` 열에 배치한다. 나가기 아이콘은 hit area를 유지한 채 글리프를 본문 왼쪽 엣지에 광학 정렬한다. 진행 헤더의 닫기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다. 하단 `LessonFooter`는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다. 완료 화면은 같은 `max-w-2xl` 열 폭을 유지한다. `Step`은 각 학습 활동의 제목, 본문과 보조 상태를 조합한다. `StepEyebrow`는 한국어에 Latin `uppercase`와 과도한 letter-spacing을 쓰지 않는다. 채점 결과와 해설은 `Insight` tone으로 표현한다.
+`Lesson`은 진행 헤더, 중앙 스크롤 본문과 하단 행동을 같은 `max-w-2xl` 열에 배치한다. 나가기 아이콘은 hit area를 유지한 채 글리프를 본문 왼쪽 엣지에 광학 정렬한다. 진행 헤더의 닫기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다. 하단 `LessonFooter`는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다. 완료 화면은 같은 `max-w-2xl` 열 폭을 유지한다. `Step`은 각 학습 활동의 제목, 본문과 보조 상태를 조합한다. `StepEyebrow`는 한국어에 Latin `uppercase`와 과도한 letter-spacing을 쓰지 않는다. 채점 평가와 해설은 하단 `LessonFeedback` 오버레이가 담당한다. `LessonFeedback` 배경은 레슨 shell 전체 너비이고, 문구와 CTA는 헤더·본문과 같은 `max-w-2xl` 열과 같은 수평 패딩을 쓴다.
 
 선택형 상태는 `Choice`, `Verdict`, `Token`과 `Segment`의 `data-state`로 표현한다. `TRUE_FALSE`는 본문 주장 아래 1행 2열 O·X 버튼인 `Verdict`를 사용한다. 이동형 상태는 `Sortable`, `Pair`와 `Classify`로 표현한다. 서술형 상태는 `Compose`와 `Coaching`으로 표현한다. 앱은 서버 evaluation을 이 상태로 변환하며 공유 UI는 정답을 계산하지 않는다.
 
@@ -321,7 +321,8 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 중앙 `main`만 `overflow-y-auto`로 스크롤한다.
 - 하단 CTA는 `LessonActions` 안의 `Button`을 사용한다.
 - 하단 `LessonFooter`는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다.
-- 정답과 오답 피드백은 `Insight`의 `correct`와 `incorrect` tone을 사용한다.
+- 정답과 오답 피드백은 `LessonFeedback` 오버레이가 담당한다. 정답은 `success`, 오답은 `warning` 톤온톤을 사용한다.
+- `LessonFeedback` 배경은 shell 전체 너비이고, 문구와 CTA는 본문과 같은 `max-w-2xl` 열을 쓴다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant다.
 - markdown 본문은 `MarkdownContent`가 `ReactMarkdown` 결과를 `ProseBody` 안에 렌더링한다.
 - `ORDER`와 `COMPARE` renderer는 동적 경계로 분리한다. 이 경계는 drag-and-drop과 Tabs 코드를 해당 활동에서만 불러온다.

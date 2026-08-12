@@ -203,7 +203,7 @@ function SortableItem({
         className={cn(
           "group/sortable-item flex items-center gap-2 rounded-3xl border px-2 py-1.5 text-sm transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none",
           state === "idle" && "border-border/80 bg-card shadow-2xs",
-          state === "correct" && "border-foreground/20 bg-foreground/[0.035]",
+          state === "correct" && "border-success/30 bg-success/10 text-success",
           state === "incorrect" &&
             "border-destructive/30 bg-destructive/6 text-destructive",
           state === "locked" &&

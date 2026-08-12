@@ -59,6 +59,7 @@ export type SaveLearnerStepDraftCommand = {
 export type LearnerStepCompletion =
   | { readonly kind: "acknowledge" }
   | {
+      readonly acceptIncorrect?: boolean
       readonly kind: "answer"
       readonly submission: LearnerStepSubmission
     }

@@ -23,6 +23,29 @@ type TransitionEffectOutcome =
       readonly transition: LessonCompleteStepResult
     }
 
+type ApiCompleteLearnerStepBody = Parameters<typeof completeLearnerStep>[2]
+
+function toApiCompleteLearnerStepBody(
+  request: LessonCompleteStepBody
+): ApiCompleteLearnerStepBody {
+  if (request.kind === "acknowledge") {
+    return { kind: "acknowledge" }
+  }
+
+  if (request.acceptIncorrect === true) {
+    return {
+      acceptIncorrect: true,
+      answer: request.answer,
+      kind: "answer",
+    }
+  }
+
+  return {
+    answer: request.answer,
+    kind: "answer",
+  }
+}
+
 export type LessonSessionEffects = {
   readonly completeStep: (input: {
     readonly request: LessonCompleteStepBody
@@ -45,9 +68,14 @@ export function createLessonSessionEffects(input: {
   return {
     async completeStep({ request, stepId }) {
       const result = await settleLearnerApiRequest(
-        completeLearnerStep(input.lessonId, stepId, request, {
-          signal: input.readAbortSignal(),
-        })
+        completeLearnerStep(
+          input.lessonId,
+          stepId,
+          toApiCompleteLearnerStepBody(request),
+          {
+            signal: input.readAbortSignal(),
+          }
+        )
       )
 
       return result.status === "error"

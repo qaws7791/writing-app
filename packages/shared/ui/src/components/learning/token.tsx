@@ -34,7 +34,7 @@ const tokenSlotVariants = cva(
         empty:
           "border-dashed border-border bg-surface/70 text-muted-foreground hover:border-border hover:bg-accent/40",
         filled: "border-border/80 bg-card text-foreground shadow-2xs",
-        correct: "border-foreground/20 bg-foreground/[0.035] text-foreground",
+        correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         locked: "border-border/60 bg-muted/40 text-muted-foreground",
       },
@@ -79,7 +79,7 @@ const tokenVariants = cva(
         idle: "border-border/80 bg-card text-foreground shadow-2xs hover:bg-accent/50",
         selected: "border-primary/35 bg-accent/60 text-foreground shadow-2xs",
         used: "border-transparent bg-muted/50 text-muted-foreground opacity-45",
-        correct: "border-foreground/20 bg-foreground/[0.035] text-foreground",
+        correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         locked:
           "pointer-events-none border-border/60 bg-muted/40 text-muted-foreground",

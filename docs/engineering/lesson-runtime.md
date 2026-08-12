@@ -32,6 +32,7 @@
 - 레슨 시작은 `startLesson`, 현재 단계 초안 저장은 `saveStepDraft`, 일반 단계 제출은 `submitStep`으로 수행한다.
 - 레슨 조회와 시작 응답은 해당 학습자와 고정 curriculum revision의 드래프트를 포함한다. 새 드래프트는 `expectedVersion: null`로 version 0을 만들고, 이후 저장은 현재 version이 일치할 때만 version을 증가시킨다.
 - 웹은 서버의 `retry`, `advanced`, `lesson_completed` 결과와 `learning.currentStepId`를 그대로 소비한다.
+- 오답 첫 제출은 `retry`로 머문다. 오답 오버레이의 `계속하기`는 같은 답안을 `acceptIncorrect: true`로 재제출해 `advanced` 또는 `lesson_completed`를 받는다.
 - 정답, 해설, 진도율, 다음 레슨과 완료 여부를 프론트엔드에서 다시 계산하지 않는다.
 - 낙관적 UI는 사용자 입력과 요청 중 상태에만 적용한다. 응답을 받으면 서버의 evaluation, learning state와 draft version으로 조정하며, 충돌이나 네트워크 실패에서도 로컬 미전송 입력을 보존한다.
 - 입력 변경은 800ms debounce로 저장하고 blur, hidden, pagehide, 레슨 나가기와 답안 제출에서는 대기 중인 저장을 즉시 flush한다. focus·reconnect에서는 서버를 다시 읽으며 visible 상태에서만 30초 간격으로 조정한다. 같은 스텝의 진행 중 저장은 한 건으로 제한하고 후속 변경을 합친다.

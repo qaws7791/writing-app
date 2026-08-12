@@ -147,17 +147,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     const state = sessionStateRef.current
     if (state.status !== "active" || state.activity !== "idle") return
     const step = getLessonStep(lesson, state.currentStepIndex)
-    if (step === null) return
-
-    if (state.pendingTransition !== null) {
-      send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
-      return
-    }
-
-    if (state.checked !== false) {
-      send({ stepId: step.id, type: "RETRY_EDIT_REQUESTED" })
-      return
-    }
+    if (step === null || state.checked !== false) return
 
     const request = createCompleteStepRequest(
       step,
@@ -165,9 +155,48 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     )
     if (request === null) return
 
-    await flushStepDraft(step.id)
+    await completeStepRequest(step.id, request)
+  }
+
+  function continueLessonStep(): void {
+    const state = sessionStateRef.current
+    if (state.status !== "active" || state.activity !== "idle") return
+    if (state.pendingTransition === null) return
+    send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
+  }
+
+  function retryLessonStep(): void {
+    const state = sessionStateRef.current
+    if (state.status !== "active" || state.activity !== "idle") return
+    const step = getLessonStep(lesson, state.currentStepIndex)
+    if (step === null || state.checked === false) return
+    send({ stepId: step.id, type: "RETRY_EDIT_REQUESTED" })
+  }
+
+  async function skipIncorrectLessonStep(): Promise<void> {
+    const state = sessionStateRef.current
+    if (state.status !== "active" || state.activity !== "idle") return
+    const step = getLessonStep(lesson, state.currentStepIndex)
+    if (step === null || state.checked === false) return
+
+    const request = createCompleteStepRequest(
+      step,
+      state.answerPayloads[step.id],
+      true
+    )
+    if (request === null) return
+
+    await completeStepRequest(step.id, request, { autoContinue: true })
+  }
+
+  async function completeStepRequest(
+    stepId: string,
+    request: LessonCompleteStepBody,
+    options?: { readonly autoContinue?: boolean }
+  ): Promise<void> {
+    await flushStepDraft(stepId)
     send({ type: "SUBMIT_REQUESTED" })
-    const result = await effects.completeStep({ request, stepId: step.id })
+    const result = await effects.completeStep({ request, stepId })
     if (!isMountedRef.current) return
 
     if (result.status === "error") {
@@ -183,9 +212,12 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
       return
     }
 
-    discardSubmittedDraft(step.id)
+    discardSubmittedDraft(stepId)
     send({ transition: result.transition, type: "STEP_ACCEPTED" })
-    if (result.transition.evaluation === null) {
+    if (
+      options?.autoContinue === true ||
+      result.transition.evaluation === null
+    ) {
       send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
     }
   }
@@ -215,6 +247,9 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     startError:
       sessionState.status === "not-started" ? sessionState.startError : null,
     startLesson,
+    continueLessonStep,
+    retryLessonStep,
+    skipIncorrectLessonStep,
     submitCurrentStep,
     visibleStepNumber,
   }
@@ -241,7 +276,8 @@ function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
 
 function createCompleteStepRequest(
   step: LessonStep,
-  answer: LessonStepAnswerPayload | undefined
+  answer: LessonStepAnswerPayload | undefined,
+  acceptIncorrect = false
 ): LessonCompleteStepBody | null {
   if (step.type === "READING" || step.type === "COMPARE") {
     return { kind: "acknowledge" as const }
@@ -249,7 +285,13 @@ function createCompleteStepRequest(
 
   const submission = learnerStepSubmissionSchema.safeParse(answer)
   if (!submission.success) return null
-  return { answer: submission.data, kind: "answer" as const }
+  return acceptIncorrect
+    ? {
+        acceptIncorrect: true,
+        answer: submission.data,
+        kind: "answer" as const,
+      }
+    : { answer: submission.data, kind: "answer" as const }
 }
 
 function toDraftAnswerPayloads(

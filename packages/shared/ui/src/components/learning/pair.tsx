@@ -68,7 +68,7 @@ const pairItemVariants = cva(
         active:
           "border-primary/35 bg-accent/55 text-foreground shadow-2xs ring-1 ring-primary/10",
         paired: "border-border bg-surface/80 text-foreground",
-        correct: "border-foreground/20 bg-foreground/[0.035] text-foreground",
+        correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         locked: "border-border/60 bg-muted/40 text-muted-foreground",
       },
@@ -108,7 +108,7 @@ function PairMarker({ className, ...props }: React.ComponentProps<"span">) {
       aria-hidden
       data-slot="pair-marker"
       className={cn(
-        "flex size-2.5 shrink-0 rounded-full bg-border transition-colors group-data-[state=active]/pair-item:bg-primary group-data-[state=paired]/pair-item:bg-foreground/45 group-data-[state=correct]/pair-item:bg-foreground group-data-[state=incorrect]/pair-item:bg-destructive",
+        "flex size-2.5 shrink-0 rounded-full bg-border transition-colors group-data-[state=active]/pair-item:bg-primary group-data-[state=paired]/pair-item:bg-foreground/45 group-data-[state=correct]/pair-item:bg-success group-data-[state=incorrect]/pair-item:bg-destructive",
         className
       )}
       {...props}
@@ -234,7 +234,7 @@ function PairConnections({
               "transition-[stroke,opacity] duration-200",
               line.state === "active" && "stroke-primary/45",
               line.state === "paired" && "stroke-foreground/25",
-              line.state === "correct" && "stroke-foreground/55",
+              line.state === "correct" && "stroke-success/55",
               line.state === "incorrect" && "stroke-destructive/55"
             )}
           />

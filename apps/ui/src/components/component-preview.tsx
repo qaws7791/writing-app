@@ -195,9 +195,13 @@ import { Kbd, KbdGroup } from "@workspace/ui/components/primitives/kbd";
 import { Label } from "@workspace/ui/components/primitives/label";
 import {
   Lesson,
-  LessonActions,
   LessonBody,
   LessonClose,
+  LessonFeedback,
+  LessonFeedbackBody,
+  LessonFeedbackContinueButton,
+  LessonFeedbackDescription,
+  LessonFeedbackTitle,
   LessonFooter,
   LessonHeader,
   LessonMeta,
@@ -847,7 +851,7 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
       );
     case "lesson":
       return (
-        <Lesson className="w-full max-w-md rounded-4xl border border-border/70 px-4 py-4">
+        <Lesson className="w-full max-w-md overflow-hidden rounded-4xl border border-border/70 pt-4">
           <LessonHeader>
             <LessonClose />
             <LessonProgress value={40} />
@@ -860,10 +864,16 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
               </StepHeader>
             </Step>
           </LessonBody>
-          <LessonFooter className="border-0 bg-transparent px-0 py-0 backdrop-blur-none">
-            <LessonActions>
-              <Button size="sm">확인하기</Button>
-            </LessonActions>
+          <LessonFooter className="bg-transparent pt-0 pb-0 backdrop-blur-none">
+            <LessonFeedback tone="correct">
+              <LessonFeedbackBody>
+                <LessonFeedbackTitle>완벽해요!</LessonFeedbackTitle>
+                <LessonFeedbackDescription>
+                  반박은 상대 주장의 전제를 드러낼 때 설득력이 커집니다.
+                </LessonFeedbackDescription>
+                <LessonFeedbackContinueButton tone="correct">계속하기</LessonFeedbackContinueButton>
+              </LessonFeedbackBody>
+            </LessonFeedback>
           </LessonFooter>
         </Lesson>
       );

@@ -46,6 +46,7 @@ export const completeLearnerStepParamsSchema = z.strictObject({
 export const completeLearnerStepBodySchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("acknowledge") }),
   z.strictObject({
+    acceptIncorrect: z.boolean().optional(),
     answer: learnerStepSubmissionSchema,
     kind: z.literal("answer"),
   }),

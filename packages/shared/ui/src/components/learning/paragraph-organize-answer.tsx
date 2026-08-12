@@ -3,11 +3,6 @@
 import { useState } from "react"
 
 import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
-import {
   Segment,
   SegmentGroup,
   type SegmentState,
@@ -32,7 +27,7 @@ export function ParagraphOrganizeAnswer<TId extends string>({
   checked = false,
   correctCardIds,
   defaultSelectedCardIds = [],
-  explanation,
+  explanation: _explanation,
   onChange,
   prompt,
 }: {
@@ -147,22 +142,6 @@ export function ParagraphOrganizeAnswer<TId extends string>({
               })}
             </Sortable>
           </div>
-        ) : null}
-        {checked !== false ? (
-          <Insight tone="think">
-            <InsightEyebrow>정답 문단</InsightEyebrow>
-            <InsightDescription>
-              <p>
-                {correctCardIds
-                  .flatMap((id) => {
-                    const card = cards.find((candidate) => candidate.id === id)
-                    return card === undefined ? [] : [card.text]
-                  })
-                  .join(" → ")}
-              </p>
-              {explanation ? <p>{explanation}</p> : null}
-            </InsightDescription>
-          </Insight>
         ) : null}
       </StepBody>
     </>

@@ -50,7 +50,7 @@ const segmentVariants = cva(
       state: {
         idle: "",
         selected: "border-primary/35 bg-accent/55 shadow-2xs",
-        correct: "border-foreground/20 bg-foreground/[0.035]",
+        correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         missed:
           "border-dashed border-border/80 bg-transparent text-muted-foreground",
@@ -67,7 +67,7 @@ const segmentVariants = cva(
       {
         layout: "inline",
         state: "correct",
-        class: "border-foreground/15",
+        class: "border-success/25",
       },
       {
         layout: "inline",

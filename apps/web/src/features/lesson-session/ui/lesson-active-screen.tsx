@@ -50,6 +50,9 @@ export function LessonActiveScreen({
   onConfirmExit,
   onDraftFlush,
   onExit,
+  onContinueLessonStep,
+  onRetryLessonStep,
+  onSkipIncorrectLessonStep,
   onSubmitCurrentStep,
   progress,
   renderRevision,
@@ -74,8 +77,11 @@ export function LessonActiveScreen({
   }) => void
   readonly onCancelExit: () => void
   readonly onConfirmExit: () => void
+  readonly onContinueLessonStep: () => void
   readonly onDraftFlush: () => void
   readonly onExit: () => void
+  readonly onRetryLessonStep: () => void
+  readonly onSkipIncorrectLessonStep: () => void
   readonly onSubmitCurrentStep: () => void
   readonly progress: number
   readonly renderRevision: number
@@ -102,7 +108,18 @@ export function LessonActiveScreen({
             </LessonActions>
           </LessonFooter>
         ) : (
-          <LessonCheckedFooter checked={checked} onNext={onSubmitCurrentStep} />
+          <LessonCheckedFooter
+            checked={checked}
+            isSubmitting={isSubmitting}
+            onContinue={() => {
+              if (checked.correct) {
+                onContinueLessonStep()
+                return
+              }
+              void onSkipIncorrectLessonStep()
+            }}
+            onRetry={onRetryLessonStep}
+          />
         )
       }
       header={

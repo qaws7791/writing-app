@@ -69,7 +69,6 @@ import {
   Insight,
   InsightDescription,
   InsightEyebrow,
-  InsightTitle,
 } from "@workspace/ui/components/learning/insight";
 import {
   Lesson,
@@ -79,6 +78,13 @@ import {
   LessonComplete,
   LessonCompleteDescription,
   LessonCompleteTitle,
+  LessonFeedback,
+  LessonFeedbackActions,
+  LessonFeedbackBody,
+  LessonFeedbackContinueButton,
+  LessonFeedbackDescription,
+  LessonFeedbackRetryButton,
+  LessonFeedbackTitle,
   LessonFooter,
   LessonHeader,
   LessonMeta,
@@ -187,6 +193,41 @@ const TOTAL_STEPS = 5;
 
 type Phase = "answering" | "checked" | "done";
 
+function renderCheckedFeedbackFooter({
+  correct,
+  explanation,
+  onContinue,
+  onRetry,
+}: {
+  correct: boolean;
+  explanation: string;
+  onContinue: () => void;
+  onRetry: () => void;
+}) {
+  const tone = correct ? "correct" : "incorrect";
+
+  return (
+    <LessonFeedback tone={tone}>
+      <LessonFeedbackBody>
+        <LessonFeedbackTitle>{correct ? "완벽해요!" : "다시 확인해보세요"}</LessonFeedbackTitle>
+        <LessonFeedbackDescription>{explanation}</LessonFeedbackDescription>
+        {correct ? (
+          <LessonFeedbackContinueButton onClick={onContinue} tone="correct">
+            계속하기
+          </LessonFeedbackContinueButton>
+        ) : (
+          <LessonFeedbackActions>
+            <LessonFeedbackRetryButton onClick={onRetry} />
+            <LessonFeedbackContinueButton onClick={onContinue} tone="incorrect">
+              계속하기
+            </LessonFeedbackContinueButton>
+          </LessonFeedbackActions>
+        )}
+      </LessonFeedbackBody>
+    </LessonFeedback>
+  );
+}
+
 function DemoFrame({
   stepIndex,
   total = TOTAL_STEPS,
@@ -199,6 +240,7 @@ function DemoFrame({
   showReset,
   secondaryLabel,
   onSecondary,
+  footer,
 }: {
   stepIndex: number;
   total?: number;
@@ -211,11 +253,12 @@ function DemoFrame({
   showReset?: boolean;
   secondaryLabel?: string;
   onSecondary?: () => void;
+  footer?: ReactNode;
 }) {
   const progress = Math.round((stepIndex / total) * 100);
 
   return (
-    <Lesson className="min-h-140 w-full max-w-md rounded-[2rem] border border-border/80 px-4 pt-4 shadow-xs sm:px-5">
+    <Lesson className="min-h-140 w-full max-w-md overflow-hidden rounded-[2rem] border border-border/80 pt-4 shadow-xs">
       <LessonHeader>
         <LessonClose onClick={onClose} />
         <LessonProgress value={progress} label="레슨 진행" />
@@ -224,22 +267,26 @@ function DemoFrame({
         </LessonMeta>
       </LessonHeader>
       <LessonBody className="gap-6">{children}</LessonBody>
-      <LessonFooter>
-        <LessonActions>
-          {showReset && onReset ? (
-            <Button type="button" variant="outline" onClick={onReset}>
-              초기화
+      <LessonFooter
+        className={footer === undefined ? undefined : "bg-transparent pt-0 pb-0 backdrop-blur-none"}
+      >
+        {footer ?? (
+          <LessonActions>
+            {showReset && onReset ? (
+              <Button type="button" variant="outline" onClick={onReset}>
+                초기화
+              </Button>
+            ) : null}
+            {secondaryLabel && onSecondary ? (
+              <Button type="button" variant="ghost" onClick={onSecondary}>
+                {secondaryLabel}
+              </Button>
+            ) : null}
+            <Button type="button" size="lg" disabled={primaryDisabled} onClick={onPrimary}>
+              {primaryLabel}
             </Button>
-          ) : null}
-          {secondaryLabel && onSecondary ? (
-            <Button type="button" variant="ghost" onClick={onSecondary}>
-              {secondaryLabel}
-            </Button>
-          ) : null}
-          <Button type="button" size="lg" disabled={primaryDisabled} onClick={onPrimary}>
-            {primaryLabel}
-          </Button>
-        </LessonActions>
+          </LessonActions>
+        )}
       </LessonFooter>
     </Lesson>
   );
@@ -362,22 +409,19 @@ function ChoiceDemo() {
   return (
     <DemoFrame
       stepIndex={2}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && !selected}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          setSelected(null);
-          setPhase("answering");
-          return;
-        }
-        setPhase("done");
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
+      primaryLabel="확인하기"
+      primaryDisabled={!selected}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "설득문은 주장을 먼저 두고 근거로 뒷받침할 때 읽기 쉬워집니다.",
+              onContinue: () => setPhase("done"),
+              onRetry: reset,
+            })
+      }
       onClose={reset}
     >
       <Step>
@@ -400,15 +444,6 @@ function ChoiceDemo() {
               </Choice>
             ))}
           </ChoiceGroup>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightEyebrow>해설</InsightEyebrow>
-              <InsightTitle>{correct ? "정답입니다" : "다시 살펴보세요"}</InsightTitle>
-              <InsightDescription>
-                설득문은 주장을 먼저 두고 근거로 뒷받침할 때 읽기 쉬워집니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -436,21 +471,19 @@ function VerdictDemo() {
   return (
     <DemoFrame
       stepIndex={2}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && selected === null}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          reset();
-          return;
-        }
-        setPhase("done");
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
+      primaryLabel="확인하기"
+      primaryDisabled={selected === null}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.",
+              onContinue: () => setPhase("done"),
+              onRetry: reset,
+            })
+      }
       onClose={reset}
     >
       <Step>
@@ -475,15 +508,6 @@ function VerdictDemo() {
               />
             </Verdict>
           </div>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightEyebrow>해설</InsightEyebrow>
-              <InsightTitle>{correct ? "정답입니다" : "다시 살펴보세요"}</InsightTitle>
-              <InsightDescription>
-                근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -532,22 +556,19 @@ function TokenDemo() {
   return (
     <DemoFrame
       stepIndex={3}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && !filled}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          setSlots([null]);
-          setPhase("answering");
-          return;
-        }
-        setPhase("done");
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
+      primaryLabel="확인하기"
+      primaryDisabled={!filled}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.",
+              onContinue: () => setPhase("done"),
+              onRetry: reset,
+            })
+      }
       onClose={reset}
     >
       <Step>
@@ -584,14 +605,6 @@ function TokenDemo() {
               </Token>
             ))}
           </TokenBank>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightTitle>{correct ? "정답입니다" : "다시 채워보세요"}</InsightTitle>
-              <InsightDescription>
-                반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -639,22 +652,19 @@ function SegmentDemo() {
   return (
     <DemoFrame
       stepIndex={3}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && selected.length === 0}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          setSelected([]);
-          setPhase("answering");
-          return;
-        }
-        setPhase("done");
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
+      primaryLabel="확인하기"
+      primaryDisabled={selected.length === 0}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "“개인의 습관만으로”가 문제의 범위를 너무 좁히는 전제입니다.",
+              onContinue: () => setPhase("done"),
+              onRetry: reset,
+            })
+      }
       onClose={reset}
     >
       <Step>
@@ -674,13 +684,6 @@ function SegmentDemo() {
               </Segment>
             ))}
           </SegmentGroup>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                “개인의 습관만으로”가 문제의 범위를 너무 좁히는 전제입니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -713,20 +716,18 @@ function SortableDemo() {
   return (
     <DemoFrame
       stepIndex={4}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          setPhase("answering");
-          return;
-        }
-        setPhase("done");
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
+      primaryLabel="확인하기"
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.",
+              onContinue: () => setPhase("done"),
+              onRetry: reset,
+            })
+      }
       onClose={reset}
     >
       <Step>
@@ -751,13 +752,6 @@ function SortableDemo() {
               );
             })}
           </Sortable>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -832,21 +826,19 @@ function PairDemo() {
   return (
     <DemoFrame
       stepIndex={4}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && !complete}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          reset();
-          return;
-        }
-        setPhase("done");
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
+      primaryLabel="확인하기"
+      primaryDisabled={!complete}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "주장은 “무엇을”, 근거는 “왜”에 답하는 짝입니다.",
+              onContinue: () => setPhase("done"),
+              onRetry: reset,
+            })
+      }
       onClose={reset}
     >
       <Step>
@@ -897,13 +889,6 @@ function PairDemo() {
               ))}
             </PairColumn>
           </PairBoard>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                주장은 “무엇을”, 근거는 “왜”에 답하는 짝입니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -957,21 +942,19 @@ function ClassifyDemo() {
   return (
     <DemoFrame
       stepIndex={4}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && !complete}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          reset();
-          return;
-        }
-        setPhase("done");
-      }}
-      showReset={phase !== "answering"}
-      onReset={reset}
+      primaryLabel="확인하기"
+      primaryDisabled={!complete}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "주장은 의견을, 근거는 그 의견을 받치는 사실을 담습니다.",
+              onContinue: () => setPhase("done"),
+              onRetry: reset,
+            })
+      }
       onClose={reset}
     >
       <Step>
@@ -1015,13 +998,6 @@ function ClassifyDemo() {
               })}
             </ClassifyPool>
           </Classify>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                주장은 의견을, 근거는 그 의견을 받치는 사실을 담습니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -1378,7 +1354,7 @@ function LessonSessionDemo() {
 
   if (finished) {
     return (
-      <Lesson className="min-h-140 w-full max-w-md rounded-[2rem] border border-border/80 px-4 pt-4 shadow-xs sm:px-5">
+      <Lesson className="min-h-140 w-full max-w-md overflow-hidden rounded-[2rem] border border-border/80 pt-4 shadow-xs">
         <LessonHeader>
           <LessonClose onClick={resetAll} />
           <LessonProgress value={100} />
@@ -1555,26 +1531,23 @@ function FlowChoice({
   return (
     <DemoFrame
       stepIndex={stepIndex}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && !selected}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          setSelected(null);
-          setPhase("answering");
-          return;
-        }
-        onComplete();
-      }}
-      showReset={phase !== "answering"}
-      onReset={() => {
-        setSelected(null);
-        setPhase("answering");
-        onReset();
-      }}
+      primaryLabel="확인하기"
+      primaryDisabled={!selected}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "주장을 먼저 두고 근거로 뒷받침하는 구조가 기본입니다.",
+              onContinue: onComplete,
+              onRetry: () => {
+                setSelected(null);
+                setPhase("answering");
+                onReset();
+              },
+            })
+      }
       onClose={onClose}
     >
       <Step>
@@ -1605,13 +1578,6 @@ function FlowChoice({
               );
             })}
           </ChoiceGroup>
-          {phase !== "answering" ? (
-            <Insight tone={correct ? "correct" : "incorrect"}>
-              <InsightDescription>
-                주장을 먼저 두고 근거로 뒷받침하는 구조가 기본입니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
         </StepBody>
       </Step>
     </DemoFrame>
@@ -1636,26 +1602,23 @@ function FlowToken({
   return (
     <DemoFrame
       stepIndex={stepIndex}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      primaryDisabled={phase === "answering" && !slot}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          setSlot(null);
-          setPhase("answering");
-          return;
-        }
-        onComplete();
-      }}
-      showReset={phase !== "answering"}
-      onReset={() => {
-        setSlot(null);
-        setPhase("answering");
-        onReset();
-      }}
+      primaryLabel="확인하기"
+      primaryDisabled={!slot}
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.",
+              onContinue: onComplete,
+              onRetry: () => {
+                setSlot(null);
+                setPhase("answering");
+                onReset();
+              },
+            })
+      }
       onClose={onClose}
     >
       <Step>
@@ -1716,24 +1679,22 @@ function FlowSortable({
   return (
     <DemoFrame
       stepIndex={stepIndex}
-      primaryLabel={phase === "answering" ? "확인하기" : correct ? "다음으로" : "계속하기"}
-      onPrimary={() => {
-        if (phase === "answering") {
-          setPhase("checked");
-          return;
-        }
-        if (!correct) {
-          setPhase("answering");
-          return;
-        }
-        onComplete();
-      }}
-      showReset={phase !== "answering"}
-      onReset={() => {
-        setOrder(["reason", "close", "claim"]);
-        setPhase("answering");
-        onReset();
-      }}
+      primaryLabel="확인하기"
+      onPrimary={() => setPhase("checked")}
+      footer={
+        phase === "answering"
+          ? undefined
+          : renderCheckedFeedbackFooter({
+              correct,
+              explanation: "주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.",
+              onContinue: onComplete,
+              onRetry: () => {
+                setOrder(["reason", "close", "claim"]);
+                setPhase("answering");
+                onReset();
+              },
+            })
+      }
       onClose={onClose}
     >
       <Step>

@@ -2,11 +2,6 @@
 
 import { useState } from "react"
 
-import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
 import {
   Verdict,
@@ -27,7 +22,7 @@ export function TrueFalseAnswer({
   checked = false,
   correctAnswer,
   defaultSelected = null,
-  explanation,
+  explanation: _explanation,
   onSelect,
   prompt,
   statement,
@@ -85,12 +80,6 @@ export function TrueFalseAnswer({
             })}
           </Verdict>
         </div>
-        {checked !== false && explanation ? (
-          <Insight tone="think">
-            <InsightEyebrow>해설</InsightEyebrow>
-            <InsightDescription>{explanation}</InsightDescription>
-          </Insight>
-        ) : null}
       </StepBody>
     </>
   )

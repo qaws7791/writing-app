@@ -10,8 +10,7 @@ const insightVariants = cva(
       tone: {
         neutral: "border-border/80 bg-card text-card-foreground",
         think: "border-border/70 bg-surface/80 text-foreground",
-        correct:
-          "border-foreground/15 bg-foreground/[0.03] text-foreground dark:bg-foreground/[0.05]",
+        correct: "border-success/25 bg-success/8 text-success",
         incorrect: "border-destructive/25 bg-destructive/6 text-destructive",
         coaching: "border-border/80 bg-card text-card-foreground",
       },

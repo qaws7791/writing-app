@@ -48,8 +48,11 @@
 
 ### 정답과 오답 피드백
 
-- 정답과 오답은 `Insight`의 `correct`와 `incorrect` tone으로 표시한다.
-- 피드백과 다음 행동은 `LessonFooter`, `LessonFeedback`과 `LessonActions`로 표시한다. 다음 행동은 `계속하기`로 유지한다.
+- 콘텐츠 영역은 항목별 `correct`·`incorrect`·`missed` 상태를 `success`·`destructive` 톤온톤으로 표시한다.
+- 평가 문구와 해설은 하단 `LessonFeedback` 오버레이가 담당한다. 정답은 `success`, 오답은 `warning` 톤온톤을 사용한다.
+- 오버레이 배경은 레슨 shell 전체 너비다. 문구와 CTA는 헤더·본문과 같은 `max-w-2xl` 열과 같은 수평 패딩을 쓴다.
+- 오버레이 CTA는 확인하기 버튼과 같은 하단 슬롯·같은 높이를 유지한다. 정답은 `계속하기` 하나, 오답은 `다시 시도` 아이콘 버튼과 `계속하기`를 둔다.
+- 오답 `계속하기`는 `acceptIncorrect: true` 재제출로 다음 스텝으로 전진한다. 오답 `다시 시도`는 피드백을 닫고 같은 스텝을 다시 풀게 한다.
 
 ### 빈 상태
 

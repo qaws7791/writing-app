@@ -180,6 +180,7 @@
 - 코스 상세는 유닛별 커리큘럼과 레슨의 완료, 진행 가능, 잠금 상태를 보여준다.
 - 레슨은 시작 화면을 먼저 보여주고 사용자가 시작한 뒤 첫 스텝으로 진입한다.
 - 답변 가능 스텝은 stable item ID 기반 제출을 `completeStep`으로 보내며, 서버의 `retry | advanced | lesson_completed` 결과를 세션 event로 소비한다.
+- 오답 오버레이의 `계속하기`는 같은 답안을 `acceptIncorrect: true`로 재제출한다.
 - 답변 가능한 스텝의 입력은 가까운 reducer에 유지하고 서버 초안 version과 조정한다. 800ms debounce와 blur·hidden·나가기·제출 flush를 사용한다.
 - stale 충돌은 최신 서버 version에 현재 입력을 한 번 다시 적용한다. 재시도가 실패하면 미전송 입력을 유지하고 다음 입력, focus 또는 online 시점에 다시 시도한다.
 - 레슨 화면은 saving, saved, offline, version과 conflict를 표시하지 않는다.

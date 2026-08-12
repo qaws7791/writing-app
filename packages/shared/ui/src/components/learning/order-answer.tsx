@@ -3,11 +3,6 @@
 import { useEffect, useState } from "react"
 
 import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
-import {
   Sortable,
   SortableContent,
   SortableHandle,
@@ -69,7 +64,7 @@ export function OrderAnswer<TId extends string>({
   checked = false,
   correctItemIds,
   defaultOrderedItemIds,
-  explanation,
+  explanation: _explanation,
   items,
   onChange,
   seed,
@@ -151,22 +146,6 @@ export function OrderAnswer<TId extends string>({
             )
           })}
         </Sortable>
-        {checked !== false ? (
-          <Insight tone="think">
-            <InsightEyebrow>정답 순서</InsightEyebrow>
-            <InsightDescription>
-              <p>
-                {correctItemIds
-                  .flatMap((id) => {
-                    const item = items.find((candidate) => candidate.id === id)
-                    return item === undefined ? [] : [item.text]
-                  })
-                  .join(" → ")}
-              </p>
-              {explanation ? <p>{explanation}</p> : null}
-            </InsightDescription>
-          </Insight>
-        ) : null}
       </StepBody>
     </>
   )

@@ -10,11 +10,6 @@ import {
   type ChoiceState,
 } from "#ui/components/learning/choice"
 import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
-import {
   Segment,
   SegmentGroup,
   type SegmentState,
@@ -38,7 +33,7 @@ export function ErrorCorrectAnswer({
   correctFixId,
   defaultErrorSegmentId = null,
   defaultFixId = null,
-  explanation,
+  explanation: _explanation,
   fixes,
   onChange,
   prompt,
@@ -150,12 +145,6 @@ export function ErrorCorrectAnswer({
               ))}
             </ChoiceGroup>
           </div>
-        ) : null}
-        {checked !== false && explanation ? (
-          <Insight tone="think">
-            <InsightEyebrow>해설</InsightEyebrow>
-            <InsightDescription>{explanation}</InsightDescription>
-          </Insight>
         ) : null}
       </StepBody>
     </>

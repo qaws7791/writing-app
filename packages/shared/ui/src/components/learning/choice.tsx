@@ -40,7 +40,7 @@ const choiceVariants = cva(
         selected:
           "border-primary/35 bg-accent/55 text-foreground shadow-2xs ring-1 ring-primary/10",
         correct:
-          "border-foreground/20 bg-foreground/[0.035] text-foreground shadow-none dark:bg-foreground/[0.06]",
+          "border-success/30 bg-success/10 text-success shadow-none dark:bg-success/12",
         incorrect:
           "border-destructive/30 bg-destructive/6 text-destructive shadow-none",
         missed:

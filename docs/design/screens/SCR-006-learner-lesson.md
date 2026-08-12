@@ -24,7 +24,7 @@
 ## UI 기준
 
 - `AppShell`을 사용하지 않는 몰입형 전체 화면이다.
-- root는 `h-dvh min-h-screen overflow-hidden bg-background text-foreground`이다.
+- root는 `fixed inset-0 h-dvh overflow-hidden bg-background text-foreground`이다.
 - 상단 헤더·본문·하단 CTA는 동일 콘텐츠 열(`max-w-2xl`)과 동일 수평 패딩을 쓴다.
 - 나가기 아이콘 글리프는 본문 왼쪽 엣지에 광학 정렬한다. hit area는 최소 터치 목표를 유지한다.
 - 진행 헤더의 나가기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다.
@@ -57,7 +57,12 @@
 - 순서 스텝의 드래그 핸들은 항목 이름과 현재 위치를 이해할 수 있는 한국어 접근성 이름과 이동 안내를 제공한다.
 - 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`, `MULTIPLE_CHOICE`의 `Choice`, `TRUE_FALSE`의 `Verdict`, `FILL_BLANK`·`SENTENCE_BUILD`의 `Token`, `SELECT`·`ERROR_CORRECT`의 `Segment`, `ORDER`·`PARAGRAPH_ORGANIZE`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify`, `TRANSCRIBE`의 `Compose`, `ERROR_CORRECT`의 `Choice` 조합을 사용한다.
 - 참거짓 스텝은 본문 주장 아래에 1행 2열 O·X 버튼을 둔다. O는 참, X는 거짓이다. 보이는 텍스트 레이블은 두지 않고 접근 가능한 이름으로 참·거짓을 제공한다.
-- 채점 가능 스텝(퀴즈)에서 오답인 경우 '계속하기'를 누르면 다음 스텝으로 넘어가지 않고, 정오답 피드백 바가 닫히며 사용자가 다시 답을 입력하고 재채점("확인하기")할 수 있는 상태로 돌아간다. 정답인 경우에만 다음 스텝으로 진행한다.
+- 채점 가능 스텝(퀴즈)에서 확인 후 콘텐츠 영역은 항목별 `correct`·`incorrect`·`missed` 상태만 표시한다. 평가 문구와 해설은 하단 `LessonFeedback` 오버레이가 담당한다.
+- `LessonFeedback` 배경은 레슨 shell 전체 너비다. 평가 문구와 CTA는 헤더·본문과 같은 `max-w-2xl` 열과 같은 수평 패딩을 쓴다.
+- 정답 오버레이는 `success` 톤온톤, 오답 오버레이는 `warning` 톤온톤을 사용한다. 오버레이 CTA는 확인하기 버튼과 같은 하단 슬롯·같은 높이(`h-12`)를 유지한다.
+- 정답 오버레이에는 `계속하기` CTA 하나를 둔다. 오답 오버레이에는 왼쪽 `다시 시도` 아이콘 버튼과 오른쪽 `계속하기` CTA를 둔다.
+- 오답에서 `다시 시도`는 피드백을 닫고 같은 스텝을 다시 풀 수 있게 한다. 오답에서 `계속하기`는 같은 답안을 `acceptIncorrect: true`로 재제출해 다음 스텝으로 전진한다.
+- 정답에서 `계속하기`는 서버가 이미 확정한 `advanced` 또는 `lesson_completed` 전이를 클라이언트에서 이어 받는다.
 - 정오답, 해설, 다음 스텝과 완료 화면은 서버 evaluation과 transition 결과로만 표시한다. 클라이언트는 표시 문자열이나 배열 위치로 정답을 추론하지 않는다.
 - 저장, 동기화, 오프라인, version과 충돌 상태는 레슨에 표시하지 않는다. 진행 중 문구는 학습자가 실행한 행동을 설명한다.
 

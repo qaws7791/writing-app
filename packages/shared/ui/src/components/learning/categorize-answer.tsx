@@ -12,11 +12,6 @@ import {
   ClassifyPool,
   type ClassifyState,
 } from "#ui/components/learning/classify"
-import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
 import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 
@@ -29,7 +24,7 @@ export function CategorizeAnswer({
   categories,
   checked = false,
   defaultPlacements,
-  explanation,
+  explanation: _explanation,
   items,
   onChange,
   title,
@@ -157,12 +152,6 @@ export function CategorizeAnswer({
             })}
           </ClassifyPool>
         </Classify>
-        {checked !== false && explanation ? (
-          <Insight tone="think">
-            <InsightEyebrow>해설</InsightEyebrow>
-            <InsightDescription>{explanation}</InsightDescription>
-          </Insight>
-        ) : null}
       </StepBody>
     </>
   )

@@ -7,11 +7,6 @@ import {
   ComposeEditor,
   ComposeReference,
 } from "#ui/components/learning/compose"
-import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
 import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 import { cn } from "#ui/lib/utils"
@@ -19,7 +14,7 @@ import { cn } from "#ui/lib/utils"
 export function TranscribeAnswer({
   checked = false,
   defaultValue = "",
-  explanation,
+  explanation: _explanation,
   onChange,
   prompt,
   sourceText,
@@ -49,7 +44,7 @@ export function TranscribeAnswer({
             aria-invalid={isWrong || undefined}
             aria-label="받아쓰기 입력"
             className={cn(
-              isCorrect && "border-foreground/20 bg-foreground/[0.035]",
+              isCorrect && "border-success/30 bg-success/10",
               isWrong && "border-destructive/30 bg-destructive/6"
             )}
             disabled={checked !== false}
@@ -62,21 +57,6 @@ export function TranscribeAnswer({
             value={value}
           />
         </Compose>
-        {checked !== false ? (
-          <Insight tone={isCorrect ? "correct" : "incorrect"}>
-            <InsightEyebrow>
-              {isCorrect ? "정확히 입력했습니다" : "다시 확인해 보세요"}
-            </InsightEyebrow>
-            <InsightDescription>
-              {explanation ? <p>{explanation}</p> : null}
-              {!isCorrect ? (
-                <p>
-                  정답: <span className="text-foreground">{sourceText}</span>
-                </p>
-              ) : null}
-            </InsightDescription>
-          </Insight>
-        ) : null}
       </StepBody>
     </>
   )

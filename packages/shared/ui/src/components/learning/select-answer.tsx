@@ -3,11 +3,6 @@
 import { useState } from "react"
 
 import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
-import {
   Segment,
   SegmentGroup,
   type SegmentState,
@@ -19,7 +14,7 @@ export function SelectAnswer({
   checked = false,
   correctIndexes,
   defaultSelectedIndexes = [],
-  explanation,
+  explanation: _explanation,
   layout,
   onChange,
   question,
@@ -89,12 +84,6 @@ export function SelectAnswer({
             )
           })}
         </SegmentGroup>
-        {checked !== false && explanation ? (
-          <Insight tone="think">
-            <InsightEyebrow>해설</InsightEyebrow>
-            <InsightDescription>{explanation}</InsightDescription>
-          </Insight>
-        ) : null}
       </StepBody>
     </>
   )
