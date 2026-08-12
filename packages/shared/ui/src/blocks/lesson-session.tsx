@@ -299,7 +299,7 @@ function ReadingStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>주장과 근거의 거리</StepTitle>
+          <StepTitle>[READING] 주장과 근거의 거리</StepTitle>
           <StepGuide>
             아래 글을 읽고, 주장이 근거와 얼마나 맞닿아 있는지 살펴보세요.
           </StepGuide>
@@ -381,7 +381,7 @@ function ChoiceStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>설득문의 기본 구조를 고르세요</StepTitle>
+          <StepTitle>[MULTIPLE_CHOICE] 설득문의 기본 구조를 고르세요</StepTitle>
           <StepGuide>확인하기 전까지는 선택만 강조됩니다.</StepGuide>
         </StepHeader>
         <StepBody>
@@ -458,7 +458,7 @@ function TokenStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>빈칸을 채워보세요</StepTitle>
+          <StepTitle>[FILL_BLANK] 빈칸을 채워보세요</StepTitle>
           <StepGuide>문장에 가장 알맞은 표현을 고르세요.</StepGuide>
         </StepHeader>
         <StepBody>
@@ -580,7 +580,7 @@ function SegmentStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>과장된 전제가 담긴 구간을 고르세요</StepTitle>
+          <StepTitle>[SELECT] 과장된 전제가 담긴 구간을 고르세요</StepTitle>
         </StepHeader>
         <StepBody>
           <SegmentGroup layout="inline">
@@ -654,7 +654,7 @@ function OrderStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>설득문의 순서를 맞춰보세요</StepTitle>
+          <StepTitle>[ORDER] 설득문의 순서를 맞춰보세요</StepTitle>
           <StepGuide>오른쪽 핸들로 항목을 드래그해 재정렬하세요.</StepGuide>
         </StepHeader>
         <StepBody>
@@ -781,7 +781,7 @@ function MatchStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>개념과 설명을 짝 지으세요</StepTitle>
+          <StepTitle>[MATCH] 개념과 설명을 짝 지으세요</StepTitle>
           <StepGuide>한쪽을 고른 뒤 다른 쪽을 누르면 연결됩니다.</StepGuide>
         </StepHeader>
         <StepBody>
@@ -913,7 +913,7 @@ function CategorizeStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>문장을 알맞은 카테고리에 넣으세요</StepTitle>
+          <StepTitle>[CATEGORIZE] 문장을 알맞은 카테고리에 넣으세요</StepTitle>
           <StepGuide>카테고리를 고른 뒤 항목을 누릅니다.</StepGuide>
         </StepHeader>
         <StepBody>
@@ -990,7 +990,7 @@ function CompareStep({
     >
       <Step>
         <StepHeader>
-          <StepTitle>어느 버전이 더 설득력 있나요?</StepTitle>
+          <StepTitle>[COMPARE] 어느 버전이 더 설득력 있나요?</StepTitle>
           <StepGuide>
             두 버전을 전환하며 어조와 구조의 차이를 비교해 보세요.
           </StepGuide>
@@ -1076,6 +1076,7 @@ function TrueFalseStep({
           }
           correctAnswer={TRUE_FALSE_ANSWER}
           onSelect={setSelected}
+          prompt="[TRUE_FALSE] 참인지 거짓인지 판단하세요"
           statement={TRUE_FALSE_STATEMENT}
         />
         {phase !== "answering" ? (
@@ -1147,7 +1148,7 @@ function SentenceBuildStep({
           correctTileIds={[...SENTENCE_ANSWER]}
           explanation="주장을 짧고 분명한 한 문장으로 두는 것이 기본입니다."
           onChange={setSelected}
-          prompt="타일을 모아 완전한 문장을 만드세요"
+          prompt="[SENTENCE_BUILD] 타일을 모아 완전한 문장을 만드세요"
           tiles={[...SENTENCE_TILES]}
         />
       </Step>
@@ -1207,6 +1208,7 @@ function TranscribeStep({
           }
           explanation="맞춤법·띄어쓰기·문장부호까지 원문과 같아야 합니다."
           onChange={setValue}
+          prompt="[TRANSCRIBE] 아래 문장을 그대로 입력하세요"
           sourceText={TRANSCRIBE_SOURCE}
         />
       </Step>
@@ -1350,6 +1352,7 @@ function ParagraphOrganizeStep({
           correctCardIds={[...PARAGRAPH_ANSWER]}
           explanation="주제문 → 근거 → 결론 순으로 이어지고, 주제와 무관한 문장은 제외합니다."
           onChange={setSelected}
+          prompt="[PARAGRAPH_ORGANIZE] 문단에 넣을 문장을 고르고 순서를 맞추세요"
         />
       </Step>
     </SessionChrome>

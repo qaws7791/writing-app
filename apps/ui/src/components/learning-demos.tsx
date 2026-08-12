@@ -1453,7 +1453,7 @@ function FlowReading({
     >
       <Step>
         <StepHeader>
-          <StepTitle>주장과 근거의 거리</StepTitle>
+          <StepTitle>[READING] 주장과 근거의 거리</StepTitle>
           <StepGuide>글을 읽고 확인을 누르면 다음 활동으로 넘어갑니다.</StepGuide>
         </StepHeader>
         <StepBody>
@@ -1513,7 +1513,7 @@ function FlowChoice({
     >
       <Step>
         <StepHeader>
-          <StepTitle>설득문의 기본 구조를 고르세요</StepTitle>
+          <StepTitle>[MULTIPLE_CHOICE] 설득문의 기본 구조를 고르세요</StepTitle>
         </StepHeader>
         <StepBody>
           <ChoiceGroup type="single">
@@ -1594,7 +1594,7 @@ function FlowToken({
     >
       <Step>
         <StepHeader>
-          <StepTitle>빈칸을 채워보세요</StepTitle>
+          <StepTitle>[FILL_BLANK] 빈칸을 채워보세요</StepTitle>
         </StepHeader>
         <StepBody>
           <TokenSentence>
@@ -1672,7 +1672,7 @@ function FlowSortable({
     >
       <Step>
         <StepHeader>
-          <StepTitle>설득문의 순서를 맞춰보세요</StepTitle>
+          <StepTitle>[ORDER] 설득문의 순서를 맞춰보세요</StepTitle>
         </StepHeader>
         <StepBody>
           <Sortable
@@ -1743,7 +1743,7 @@ function FlowCompose({
     >
       <Step>
         <StepHeader>
-          <StepTitle>반박 문단을 작성하세요</StepTitle>
+          <StepTitle>[COMPOSE] 반박 문단을 작성하세요</StepTitle>
         </StepHeader>
         <StepBody>
           <Compose>

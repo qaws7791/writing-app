@@ -30,6 +30,7 @@ export function TrueFalseAnswer({
   defaultSelected = null,
   explanation,
   onSelect,
+  prompt,
   statement,
 }: {
   readonly checked?: LessonStepCheckedVisual
@@ -37,6 +38,7 @@ export function TrueFalseAnswer({
   readonly defaultSelected?: TrueFalseValue | null
   readonly explanation?: string
   readonly onSelect?: (value: TrueFalseValue) => void
+  readonly prompt?: string
   readonly statement: string
 }) {
   const [selected, setSelected] = useState<TrueFalseValue | null>(
@@ -47,7 +49,7 @@ export function TrueFalseAnswer({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>참인지 거짓인지 판단하세요</h2>
+          <h2>{prompt ?? "참인지 거짓인지 판단하세요"}</h2>
         </StepTitle>
       </StepHeader>
       <StepBody>
