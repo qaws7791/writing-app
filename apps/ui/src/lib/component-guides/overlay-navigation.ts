@@ -2563,7 +2563,7 @@ export function TabsControlled() {
         name: "TabsList.variant",
         type: '"default" | "line"',
         defaultValue: '"default"',
-        description: "squircle 표면 또는 line 표현입니다.",
+        description: "surface 트랙 또는 line 표현입니다.",
       },
       {
         name: "TabsTrigger.value",

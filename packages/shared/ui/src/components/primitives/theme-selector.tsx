@@ -31,7 +31,7 @@ export function ThemeSelector({
     <div
       aria-label="화면 테마"
       className={cn(
-        "grid grid-cols-3 gap-1.5 rounded-3xl bg-muted/70 p-1.5",
+        "grid grid-cols-3 gap-1.5 rounded-3xl bg-muted/70 p-1",
         className
       )}
       role="group"

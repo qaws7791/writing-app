@@ -944,7 +944,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
   button: {
     slug: "button",
     summary:
-      "작업 실행, 이동, 선택을 squircle 라운드와 일관된 포커스·비활성 상태로 제공하는 기본 액션 컨트롤입니다.",
+      "작업 실행, 이동, 선택을 중간 라운드와 일관된 포커스·비활성 상태로 제공하는 기본 액션 컨트롤입니다.",
     examples: [
       {
         id: "basic",
@@ -3527,7 +3527,7 @@ export const displayFeedbackGuides: ComponentGuideMap = {
     ],
     usageNotes: [
       "variant와 size는 Toggle과 같은 default/outline, sm/default/lg이며 그룹 값은 단일 선택에서도 배열입니다.",
-      "spacing 기본값은 2입니다. spacing=0은 연결된 도구, 양수는 독립된 squircle 토글에 사용합니다.",
+      "spacing 기본값은 2입니다. spacing=0은 연결된 도구, 양수는 독립된 토글에 사용합니다.",
       "orientation은 horizontal 또는 vertical, multiple 기본값은 false, loopFocus 기본값은 true입니다.",
     ],
     accessibility: [

@@ -244,7 +244,7 @@ function ComboboxChips({
     <ComboboxPrimitive.Chips
       data-slot="combobox-chips"
       className={cn(
-        "squircle flex min-h-10 flex-wrap items-center gap-1.5 rounded-xl border border-border/70 bg-input/35 bg-clip-padding px-4 py-2 text-sm shadow-2xs transition-[color,box-shadow,background-color,border-color] hover:border-border hover:bg-input/50 focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/25 has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 has-data-[slot=combobox-chip]:px-1.5 dark:bg-input/25 dark:hover:bg-input/35 dark:focus-within:bg-input/20 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40",
+        "flex min-h-10 flex-wrap items-center gap-1.5 rounded-xl border border-border/70 bg-input/35 bg-clip-padding px-4 py-2 text-sm shadow-2xs transition-[color,box-shadow,background-color,border-color] hover:border-border hover:bg-input/50 focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/25 has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 has-data-[slot=combobox-chip]:px-1.5 dark:bg-input/25 dark:hover:bg-input/35 dark:focus-within:bg-input/20 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40",
         className
       )}
       {...props}

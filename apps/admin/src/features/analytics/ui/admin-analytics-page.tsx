@@ -384,7 +384,7 @@ function LessonAnalyticsFilter({
           페이지당 행
         </label>
         <select
-          className="squircle h-10 w-full rounded-2xl border border-border/70 bg-input/35 px-4 py-1 text-sm font-medium shadow-2xs outline-none transition-[color,box-shadow,background-color,border-color] hover:border-border hover:bg-input/50 focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/25 dark:bg-input/25 dark:hover:bg-input/35 dark:focus-visible:bg-input/20"
+          className="h-10 w-full rounded-2xl border border-border/70 bg-input/35 px-4 py-1 text-sm font-medium shadow-2xs outline-none transition-[color,box-shadow,background-color,border-color] hover:border-border hover:bg-input/50 focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/25 dark:bg-input/25 dark:hover:bg-input/35 dark:focus-visible:bg-input/20"
           defaultValue={String(filters.pageSize)}
           id="lesson-analytics-page-size"
           name="pageSize"

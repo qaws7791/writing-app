@@ -24,7 +24,7 @@
 - 콘텐츠는 Canvas에 직접 놓을 수 있어야 한다.
 - Surface는 관계를 설명할 때만 사용한다.
 - Border와 elevation은 구조를 설명하는 최소 강도로 사용한다.
-- Control은 squircle과 중간 radius를 기본으로 사용한다.
+- Control은 중간 radius를 기본으로 사용한다.
 - Pill은 badge, chip, tag와 작은 segment에만 사용한다.
 - 한 작업 영역은 한 개의 Primary 행동만 강조한다.
 - 상태는 색상 외에 text, icon, shape와 semantic 중 하나 이상을 함께 사용한다.
@@ -113,10 +113,6 @@ Pretendard Variable과 시스템 font stack을 사용한다.
 | `radius-3xl` | 22 px | 큰 Surface              |
 | `radius-4xl` | 26 px | card와 modal            |
 | `radius-5xl` | 32 px | 큰 editorial Surface    |
-
-Squircle은 progressive enhancement로 적용한다.
-
-지원하지 않는 browser는 일반 radius를 사용한다.
 
 ## Control 크기
 

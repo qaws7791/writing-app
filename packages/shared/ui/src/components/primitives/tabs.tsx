@@ -39,7 +39,7 @@ function TabsList({
         "relative z-0 flex w-fit items-center justify-center gap-x-0.5 text-muted-foreground",
         "data-[orientation=vertical]:flex-col",
         variant === "default"
-          ? "squircle rounded-2xl bg-secondary p-1 text-muted-foreground"
+          ? "rounded-2xl bg-secondary p-1 text-muted-foreground"
           : "data-[orientation=horizontal]:py-1 data-[orientation=vertical]:px-1 *:data-[slot=tabs-trigger]:hover:bg-accent",
         className
       )}
@@ -53,7 +53,7 @@ function TabsList({
           "absolute duration-200 ease-in-out motion-reduce:transition-none",
           variant === "line"
             ? "bottom-0 left-0 z-10 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-(--active-tab-bottom) bg-foreground transition-[width,translate] data-[orientation=horizontal]:h-0.5 data-[orientation=horizontal]:translate-y-px data-[orientation=vertical]:w-0.5 data-[orientation=vertical]:-translate-x-px"
-            : "squircle top-(--active-tab-top) right-(--active-tab-right) bottom-(--active-tab-bottom) left-(--active-tab-left) -z-1 rounded-xl bg-card shadow-sm transition-[top,right,bottom,left]"
+            : "top-(--active-tab-top) right-(--active-tab-right) bottom-(--active-tab-bottom) left-(--active-tab-left) -z-1 rounded-xl bg-card shadow-sm transition-[top,right,bottom,left]"
         )}
       />
     </TabsPrimitive.List>
@@ -68,7 +68,7 @@ function TabsTrigger({
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "squircle relative flex h-9 shrink-0 grow cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-transparent px-4 text-sm font-medium whitespace-nowrap outline-none transition-[color,background-color,box-shadow] hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-active:text-foreground data-disabled:pointer-events-none data-disabled:opacity-45 data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start sm:h-8 sm:px-3.5 sm:text-sm [&_svg]:pointer-events-none [&_svg]:-mx-0.5 [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
+        "relative flex h-9 shrink-0 grow cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-transparent px-4 text-sm font-medium whitespace-nowrap outline-none transition-[color,background-color,box-shadow] hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-active:text-foreground data-disabled:pointer-events-none data-disabled:opacity-45 data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start sm:h-8 sm:px-3.5 sm:text-sm [&_svg]:pointer-events-none [&_svg]:-mx-0.5 [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

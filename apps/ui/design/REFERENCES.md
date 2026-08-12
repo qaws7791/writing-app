@@ -39,7 +39,7 @@ Landing page와 정적 screenshot보다 실제 flow, keyboard, touch, loading, e
 - **Source:** [shadcn/ui Carousel](https://ui.shadcn.com/docs/components/radix/carousel), [HeroUI Button](https://heroui.com/docs/react/components/button)의 웹 React 문서.
 - **관찰:** 두 문서는 프리뷰와 대응 코드를 한 프레임 안에서 연속된 층으로 보여 주며, `View Code` 또는 `Expand code` 행동으로 긴 코드를 점진적으로 공개한다. 이는 2026-08-04 웹 문서와 사용자가 제공한 화면을 기준으로 한 product screen 관찰이다.
 - **가져올 원리:** 프리뷰 우선 위계, 프리뷰와 source의 인접성, 전체 코드 복사를 유지한 접힘 상태, 명시적인 펼침·접힘 상태와 keyboard 접근.
-- **가져오지 않을 표현:** 해당 제품의 radius, 색상, syntax theme, 버튼 문구와 고유 아이콘 배치를 복제하지 않는다. Luma의 paper-and-ink 표면, squircle control과 한국어 행동 문구로 번역한다.
+- **가져오지 않을 표현:** 해당 제품의 radius, 색상, syntax theme, 버튼 문구와 고유 아이콘 배치를 복제하지 않는다. Luma의 paper-and-ink 표면, 중간 radius control과 한국어 행동 문구로 번역한다.
 - **검증:** 데스크톱과 320px에서 프리뷰·코드 경계, 전체 코드 노출, 복사, focus 유지와 가로 overflow를 확인한다. 코드 탐색 시간이 줄지 않거나 첫 상호작용이 느려지면 기본 노출 행 수와 전환 구조를 재검토한다.
 
 ## Applied Evidence: Sliding Tabs Indicator
@@ -49,7 +49,7 @@ Landing page와 정적 screenshot보다 실제 flow, keyboard, touch, loading, e
 - **Source:** [coss.com UI Tabs](https://coss.com/ui/docs/components/tabs)와 [cosscom/coss Tabs source](https://github.com/cosscom/coss/blob/main/apps/ui/registry/default/ui/tabs.tsx)의 웹 React 구현.
 - **관찰:** Base UI `Tabs.Indicator`가 활성 탭의 위치·크기 CSS 변수를 제공하고, 하나의 indicator가 `width`와 `translate`를 전환하며 가로·세로 및 underline 표현을 공유한다. List는 `data-[orientation]`으로 배치하고, default 트랙은 muted 위에 background indicator, underline은 얇은 활성 선을 쓴다. 이는 2026-08-04 웹 문서와 공개 source를 기준으로 한 구현 관찰이다.
 - **가져올 원리:** Coss Tabs의 anatomy와 indicator 동작 전체를 기반으로 하고, 활성 항목을 따라 이동하는 단일 상태 레이어, orientation-native selector, reduced motion fallback을 유지한다.
-- **가져오지 않을 표현:** Coss의 `underline` API 이름과 `bg-primary` underline은 복제하지 않는다. Luma는 공개 API를 `line`으로 유지하고, squircle·`shadow-xs`·180ms cubic motion·disabled opacity 45·`bg-foreground` line indicator로 번역한다.
+- **가져오지 않을 표현:** Coss의 `underline` API 이름과 `bg-primary` underline은 복제하지 않는다. Luma는 공개 API를 `line`으로 유지하고, `shadow-xs`·180ms cubic motion·disabled opacity 45·`bg-foreground` line indicator로 번역한다.
 - **검증:** 폭이 다른 label, 가로·세로 방향, default·line variant, keyboard 전환, resize, light·dark와 reduced motion에서 indicator 위치와 선택 semantic을 확인한다.
 
 ## Translation Workflow

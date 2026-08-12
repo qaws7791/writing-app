@@ -57,7 +57,7 @@ export default function CodeBlock({
           type="button"
           onClick={copy}
           aria-label={copied ? "전체 코드 복사됨" : "전체 코드 복사"}
-          className="squircle inline-flex min-h-8 items-center gap-1.5 rounded-xl px-2.5 transition-colors hover:bg-background hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/25"
+          className="inline-flex min-h-8 items-center gap-1.5 rounded-xl px-2.5 transition-colors hover:bg-background hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/25"
         >
           <HugeiconsIcon
             icon={copied ? Tick02Icon : Copy01Icon}
@@ -98,7 +98,7 @@ export default function CodeBlock({
             aria-expanded={expanded}
             aria-controls={codeId}
             onClick={() => setExpanded((value) => !value)}
-            className="squircle pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-xl border bg-background px-3 text-xs font-medium text-foreground shadow-xs transition-[background-color,border-color,box-shadow] hover:bg-accent/70 focus-visible:ring-3 focus-visible:ring-ring/25 active:shadow-none"
+            className="pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-xl border bg-background px-3 text-xs font-medium text-foreground shadow-xs transition-[background-color,border-color,box-shadow] hover:bg-accent/70 focus-visible:ring-3 focus-visible:ring-ring/25 active:shadow-none"
           >
             {expanded ? "코드 접기" : "코드 전체 보기"}
             <HugeiconsIcon

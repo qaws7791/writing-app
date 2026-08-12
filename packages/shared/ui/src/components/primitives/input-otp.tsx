@@ -31,7 +31,7 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="input-otp-group"
       className={cn(
-        "squircle flex items-center overflow-hidden rounded-2xl shadow-2xs has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40",
+        "flex items-center overflow-hidden rounded-2xl shadow-2xs has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40",
         className
       )}
       {...props}
@@ -54,7 +54,7 @@ function InputOTPSlot({
       data-slot="input-otp-slot"
       data-active={isActive}
       className={cn(
-        "squircle relative flex size-10 items-center justify-center border-y border-r border-border/70 bg-input/35 text-sm font-medium tabular-nums transition-[color,box-shadow,background-color,border-color] outline-none first:rounded-l-xl first:border-l last:rounded-r-xl aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-ring data-[active=true]:bg-card data-[active=true]:ring-3 data-[active=true]:ring-ring/25 data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/25 dark:data-[active=true]:bg-input/20 dark:data-[active=true]:aria-invalid:ring-destructive/40",
+        "relative flex size-10 items-center justify-center border-y border-r border-border/70 bg-input/35 text-sm font-medium tabular-nums transition-[color,box-shadow,background-color,border-color] outline-none first:rounded-l-xl first:border-l last:rounded-r-xl aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-ring data-[active=true]:bg-card data-[active=true]:ring-3 data-[active=true]:ring-ring/25 data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/25 dark:data-[active=true]:bg-input/20 dark:data-[active=true]:aria-invalid:ring-destructive/40",
         className
       )}
       {...props}

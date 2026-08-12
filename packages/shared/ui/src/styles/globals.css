@@ -103,18 +103,6 @@
   }
 }
 
-@utility squircle {
-  @supports (corner-shape: squircle) {
-    corner-shape: squircle;
-  }
-}
-
-@utility squircle-soft {
-  @supports (corner-shape: superellipse(1.5)) {
-    corner-shape: superellipse(1.5);
-  }
-}
-
 @utility no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;

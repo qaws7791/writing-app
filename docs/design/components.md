@@ -58,7 +58,7 @@ Block은 조합과 상태 표현 예제다. 제품 화면은 fixture, 임시 lin
 
 버튼과 버튼처럼 보이는 링크·trigger는 `buttonVariants`를 재사용한다.
 
-Button은 squircle, `rounded-2xl`, 125ms press motion과 3px focus ring을 하나의 계약으로 제공한다.
+Button은 `rounded-2xl`, 125ms press motion과 3px focus ring을 하나의 계약으로 제공한다.
 
 정답, 오답과 성공 상태는 Button variant로 표현하지 않는다. 별도 상태 메시지와 semantic surface를 사용한다.
 
@@ -106,7 +106,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 구현 위치: `packages/shared/ui/src/components/primitives/input.tsx`
 
 - 높이는 40px이다.
-- `bg-input`, `border-border`, `rounded-2xl`, squircle, hover/focus surface와 `focus-visible:ring-3`을 사용한다.
+- `bg-input`, `border-border`, `rounded-2xl`, hover/focus surface와 `focus-visible:ring-3`을 사용한다.
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -130,7 +130,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 - Input과 동일한 Luma field surface를 사용한다.
 - 최소 높이는 96px이다.
-- squircle, `rounded-2xl`과 3px focus ring을 사용한다.
+- `rounded-2xl`과 3px focus ring을 사용한다.
 - 긴 본문 편집처럼 화면별 높이가 필요한 경우 `className`으로 `min-h-*`를 조정한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -171,7 +171,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ### `default` 스타일
 
-- `TabsList`는 squircle, `rounded-2xl`, `bg-secondary`, `p-1` 트랙을 사용한다.
+- `TabsList`는 `rounded-2xl`, `bg-secondary`, `p-1` 트랙을 사용한다.
 - `TabsTrigger`는 기본 높이 36px와 모바일 이후 높이 32px를 사용한다.
 - 활성 indicator는 `bg-card`, `shadow-sm`, `rounded-xl`을 사용한다.
 - indicator 전환 시간은 200ms다.

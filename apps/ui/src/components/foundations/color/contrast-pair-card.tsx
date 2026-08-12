@@ -57,7 +57,7 @@ export function ContrastPairCard({ pair }: ContrastPairCardProps) {
           <span className="text-xs font-semibold">미리보기</span>
           <strong className="font-heading text-lg font-semibold">{pair.label}</strong>
           <p className="text-sm font-medium">전경과 배경을 함께 쓰는 semantic pair다.</p>
-          <span className="squircle inline-flex w-fit rounded-xl border border-current/20 px-3 py-1.5 text-sm font-semibold">
+          <span className="inline-flex w-fit rounded-xl border border-current/20 px-3 py-1.5 text-sm font-semibold">
             샘플 버튼
           </span>
         </div>

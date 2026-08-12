@@ -94,7 +94,7 @@ Luma는 다음과 같이 느껴져야 한다.
 
 - 콘텐츠는 Canvas에 직접 놓일 수 있어야 한다. 모든 것을 카드로 감싸지 않는다.
 - Surface와 Floating layer는 기능 관계로 구분하고 glass는 일시적 기능층에만 제한한다.
-- Control은 `squircle`과 중간 radius를 기본으로 한다. Pill은 badge, chip, tag와 작은 hardware형 요소에 제한한다.
+- Control은 중간 radius를 기본으로 한다. Pill은 badge, chip, tag와 작은 hardware형 요소에 제한한다.
 - 같은 화면의 모든 component에 같은 radius, shadow와 accent color를 반복하지 않는다.
 
 ### State & interaction

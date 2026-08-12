@@ -48,7 +48,7 @@ function ButtonGroupText({
     props: mergeProps<"div">(
       {
         className: cn(
-          "squircle flex items-center gap-2 rounded-2xl border border-border bg-muted px-3 text-sm font-medium tracking-[-0.005em] text-foreground/85 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+          "flex items-center gap-2 rounded-2xl border border-border bg-muted px-3 text-sm font-medium tracking-[-0.005em] text-foreground/85 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
           className
         ),
       },

@@ -58,10 +58,9 @@ Pretendard Variable과 시스템 폰트 스택을 기본으로 사용한다. 한
 | `radius-4xl` | 26px  | 카드와 모달                |
 | `radius-5xl` | 32px  | 큰 에디토리얼 표면         |
 
-- 버튼, 토글, 탭과 입력은 `squircle`과 중간 라운드를 기본으로 한다.
+- 버튼, 토글, 탭과 입력은 중간 라운드를 기본으로 한다.
 - Pill은 배지, 칩, 태그, 세그먼트와 작은 하드웨어형 요소에 제한한다.
 - 중첩된 모서리는 바깥 반경과 padding을 고려해 동심성을 유지한다.
-- Squircle은 progressive enhancement이며 미지원 환경에서는 일반 radius로 대체한다.
 - 입력, 테이블, 카드, 이미지와 모달에 같은 radius를 일괄 적용하지 않는다.
 
 ### Color, border & icon
