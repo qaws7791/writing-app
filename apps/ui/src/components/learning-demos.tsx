@@ -170,13 +170,7 @@ import {
   StandingRow,
   StandingTitle,
 } from "@workspace/ui/components/learning/standing";
-import {
-  Step,
-  StepBody,
-  StepGuide,
-  StepHeader,
-  StepTitle,
-} from "@workspace/ui/components/learning/step";
+import { Step, StepBody, StepHeader, StepTitle } from "@workspace/ui/components/learning/step";
 import {
   Token,
   TokenBank,
@@ -263,7 +257,6 @@ function ReadingDemo() {
       <Step>
         <StepHeader>
           <StepTitle>주장과 근거의 거리</StepTitle>
-          <StepGuide>아래 글을 읽고, 주장이 근거와 얼마나 맞닿아 있는지 살펴보세요.</StepGuide>
         </StepHeader>
         <StepBody>
           <Prose>
@@ -305,7 +298,6 @@ function CompareDemo() {
       <Step>
         <StepHeader>
           <StepTitle>어느 버전이 더 설득력 있나요?</StepTitle>
-          <StepGuide>두 버전을 전환하며 어조와 구조의 차이를 비교해 보세요.</StepGuide>
         </StepHeader>
         <StepBody>
           <Compare>
@@ -481,7 +473,6 @@ function TokenDemo() {
       <Step>
         <StepHeader>
           <StepTitle>빈칸을 채워보세요</StepTitle>
-          <StepGuide>문장에 가장 알맞은 표현을 고르세요.</StepGuide>
         </StepHeader>
         <StepBody>
           <TokenSentence>
@@ -661,7 +652,6 @@ function SortableDemo() {
       <Step>
         <StepHeader>
           <StepTitle>설득문의 순서를 맞춰보세요</StepTitle>
-          <StepGuide>오른쪽 핸들로 항목을 드래그해 재정렬하세요.</StepGuide>
         </StepHeader>
         <StepBody>
           <Sortable
@@ -783,7 +773,6 @@ function PairDemo() {
       <Step>
         <StepHeader>
           <StepTitle>개념과 설명을 짝 지으세요</StepTitle>
-          <StepGuide>한쪽을 고른 뒤 다른 쪽을 누르면 연결됩니다.</StepGuide>
         </StepHeader>
         <StepBody>
           <PairBoard>
@@ -909,7 +898,6 @@ function ClassifyDemo() {
       <Step>
         <StepHeader>
           <StepTitle>문장을 알맞은 카테고리에 넣으세요</StepTitle>
-          <StepGuide>카테고리를 고른 뒤 항목을 누릅니다.</StepGuide>
         </StepHeader>
         <StepBody>
           <Classify>
@@ -1454,7 +1442,6 @@ function FlowReading({
       <Step>
         <StepHeader>
           <StepTitle>[READING] 주장과 근거의 거리</StepTitle>
-          <StepGuide>글을 읽고 확인을 누르면 다음 활동으로 넘어갑니다.</StepGuide>
         </StepHeader>
         <StepBody>
           <Prose>

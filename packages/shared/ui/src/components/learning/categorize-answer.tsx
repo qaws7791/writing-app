@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 
-import { MarkdownContent } from "#ui/components/learning/markdown-content"
 import {
   Classify,
   ClassifyCategories,
@@ -31,7 +30,6 @@ export function CategorizeAnswer({
   checked = false,
   defaultPlacements,
   explanation,
-  guide,
   items,
   onChange,
   title,
@@ -43,7 +41,6 @@ export function CategorizeAnswer({
   readonly checked?: LessonStepCheckedVisual
   readonly defaultPlacements?: Readonly<Record<string, string>>
   readonly explanation?: string
-  readonly guide: string
   readonly items: readonly {
     readonly categoryId: string
     readonly id: string
@@ -102,11 +99,6 @@ export function CategorizeAnswer({
         <StepTitle>
           <h2>{title || "항목을 분류하세요"}</h2>
         </StepTitle>
-        {guide ? (
-          <MarkdownContent className="text-sm leading-6 text-muted-foreground [&_p]:leading-6">
-            {guide}
-          </MarkdownContent>
-        ) : null}
       </StepHeader>
       <StepBody>
         <Classify>

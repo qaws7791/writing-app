@@ -1,6 +1,5 @@
 "use client"
 
-import { MarkdownContent } from "#ui/components/learning/markdown-content"
 import {
   Insight,
   InsightDescription,
@@ -60,7 +59,6 @@ export function MatchAnswer({
   checked = false,
   connections,
   explanation,
-  guide,
   leftChoices,
   onChoiceSelect,
   pendingChoice = null,
@@ -70,7 +68,6 @@ export function MatchAnswer({
   readonly checked?: LessonStepCheckedVisual
   readonly connections: readonly MatchAnswerConnection[]
   readonly explanation?: string
-  readonly guide: string
   readonly leftChoices: readonly MatchAnswerChoice[]
   readonly onChoiceSelect?: (selection: MatchAnswerChoiceSelection) => void
   readonly pendingChoice?: MatchAnswerChoiceSelection | null
@@ -90,16 +87,6 @@ export function MatchAnswer({
         <StepTitle>
           <h2>{title || "짝을 맞춰보세요"}</h2>
         </StepTitle>
-        {guide ? (
-          <MarkdownContent className="text-sm leading-6 text-muted-foreground [&_p]:leading-6">
-            {guide}
-          </MarkdownContent>
-        ) : (
-          <p className="text-sm leading-6 text-muted-foreground">
-            양쪽 항목을 차례로 선택해 짝을 맞추세요. 같은 항목을 다시 선택하면
-            선택을 취소할 수 있습니다.
-          </p>
-        )}
       </StepHeader>
       <StepBody>
         <PairBoard>

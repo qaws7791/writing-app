@@ -323,7 +323,6 @@ import {
   Step,
   StepActions,
   StepBody,
-  StepGuide,
   StepHeader,
   StepTitle,
 } from "@workspace/ui/components/learning/step";
@@ -1348,7 +1347,6 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
         <Step className="w-full max-w-md">
           <StepHeader>
             <StepTitle>주장과 근거의 거리</StepTitle>
-            <StepGuide>아래 글을 읽고, 주장이 근거와 얼마나 맞닿아 있는지 살펴보세요.</StepGuide>
           </StepHeader>
           <StepBody>
             <p className="text-sm leading-6 text-muted-foreground">

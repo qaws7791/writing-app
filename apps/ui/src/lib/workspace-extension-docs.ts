@@ -64,7 +64,6 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     importPath: "@workspace/ui/components/learning/categorize-answer",
     props: [
       { name: "title", type: "string", description: "분류 단계 제목입니다." },
-      { name: "guide", type: "string", description: "Markdown 안내 문구입니다." },
       { name: "categories", type: "Category[]", description: "분류 카테고리 목록입니다." },
       { name: "items", type: "CategorizeItem[]", description: "분류할 항목 목록입니다." },
       { name: "explanation", type: "string", description: "채점 뒤 표시할 해설입니다." },
@@ -134,7 +133,6 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     importPath: "@workspace/ui/components/learning/match-answer",
     props: [
       { name: "title", type: "string", description: "매칭 단계 제목입니다." },
-      { name: "guide", type: "string", description: "Markdown 안내 문구입니다." },
       { name: "leftChoices", type: "MatchChoice[]", description: "왼쪽 선택지입니다." },
       { name: "rightChoices", type: "MatchChoice[]", description: "오른쪽 선택지입니다." },
       { name: "connections", type: "MatchConnection[]", description: "현재 연결과 tone입니다." },
@@ -217,11 +215,10 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     slug: "reading-step-view",
     title: "Reading Step View",
     moduleTitle: "Components/Lesson/ReadingStepView",
-    description: "학습 안내, Markdown 본문과 선택적 출처를 읽기 좋은 폭으로 표시합니다.",
+    description: "Markdown 본문과 선택적 출처를 읽기 좋은 폭으로 표시합니다.",
     importPath: "@workspace/ui/components/learning/reading-step-view",
     props: [
       { name: "title", type: "string", description: "읽기 단계 제목입니다." },
-      { name: "guide", type: "string", description: "학습자 안내 Markdown입니다." },
       { name: "body", type: "string", description: "본문 Markdown입니다." },
       { name: "source", type: "string | undefined", description: "비어 있으면 숨기는 출처입니다." },
     ],

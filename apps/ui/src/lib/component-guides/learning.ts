@@ -4,14 +4,14 @@ export const learningGuides: ComponentGuideMap = {
   step: {
     slug: "step",
     summary:
-      "레슨 안 활동 단위의 공통 프레임입니다. 읽기·객관식·쓰기 등 모든 스텝이 Step으로 제목·안내·본문·행동을 구성합니다.",
+      "레슨 안 활동 단위의 공통 프레임입니다. 읽기·객관식·쓰기 등 모든 스텝이 Step으로 제목·본문·행동을 구성합니다.",
     examples: [
       {
         id: "reading-frame",
         title: "읽기 프레임",
-        description: "제목, 안내, 본문 영역으로 읽기 스텝의 골격을 만듭니다.",
+        description: "제목과 본문 영역으로 읽기 스텝의 골격을 만듭니다.",
         preview: "default",
-        code: `import { Step, StepActions, StepBody, StepGuide, StepHeader, StepTitle } from "@/components/learning/step"
+        code: `import { Step, StepActions, StepBody, StepHeader, StepTitle } from "@/components/learning/step"
 import { Button } from "@/components/primitives/button"
 
 export function ReadingStep() {
@@ -19,7 +19,6 @@ export function ReadingStep() {
     <Step>
       <StepHeader>
         <StepTitle>주장과 근거의 거리</StepTitle>
-        <StepGuide>아래 글을 읽고, 주장이 근거와 얼마나 맞닿아 있는지 살펴보세요.</StepGuide>
       </StepHeader>
       <StepBody>본문 콘텐츠</StepBody>
       <StepActions>

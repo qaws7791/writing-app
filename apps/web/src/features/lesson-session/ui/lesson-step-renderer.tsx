@@ -104,7 +104,6 @@ function renderStep({
       return (
         <StepRenderer
           body={step.body}
-          guide={step.guide}
           {...(step.illustration === undefined
             ? {}
             : {
@@ -246,7 +245,6 @@ function renderStep({
             ? { evaluationItems: checked.items }
             : {})}
           explanation={getLessonStepEvaluationExplanation(checked)}
-          guide={step.guide}
           initialPairs={
             answerPayload?.type === "MATCH" ? answerPayload.pairs : []
           }
@@ -301,7 +299,6 @@ function renderStep({
               : {}
           }
           explanation={getLessonStepEvaluationExplanation(checked)}
-          guide={step.guide}
           items={step.items.map((item) => ({
             categoryId: expectedCategoryByItemId.get(item.id) ?? "",
             id: item.id,

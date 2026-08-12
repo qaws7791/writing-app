@@ -21,7 +21,6 @@ export function LessonMatchAnswer({
   checked,
   evaluationItems,
   explanation,
-  guide,
   initialPairs = [],
   leftItems,
   onChange,
@@ -31,7 +30,6 @@ export function LessonMatchAnswer({
   readonly checked: LessonStepCheckedVisual
   readonly evaluationItems?: readonly MatchEvaluationItemInput[]
   readonly explanation?: string
-  readonly guide: string
   readonly initialPairs?: readonly Readonly<{
     leftItemId: string
     rightItemId: string
@@ -80,7 +78,6 @@ export function LessonMatchAnswer({
       checked={checked}
       connections={connections}
       {...(explanation === undefined ? {} : { explanation })}
-      guide={guide}
       leftChoices={presentation.leftChoices}
       onChoiceSelect={handleChoiceSelect}
       pendingChoice={interaction.pendingChoice}

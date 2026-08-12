@@ -58,19 +58,6 @@ function StepPrompt({ className, ...props }: React.ComponentProps<"p">) {
   )
 }
 
-function StepGuide({ className, ...props }: React.ComponentProps<"p">) {
-  return (
-    <p
-      data-slot="step-guide"
-      className={cn(
-        "text-sm leading-6 text-pretty text-muted-foreground",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
 function StepMedia({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -123,7 +110,6 @@ export {
   StepBody,
   StepEyebrow,
   StepFooter,
-  StepGuide,
   StepHeader,
   StepMedia,
   StepPrompt,

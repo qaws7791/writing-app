@@ -6,13 +6,11 @@ import { StepHeader, StepTitle } from "#ui/components/learning/step"
 
 export function ReadingStepView({
   body,
-  guide,
   illustration,
   source,
   title,
 }: {
   readonly body: string
-  readonly guide: string
   readonly illustration?: ReactNode
   readonly source?: string
   readonly title: string
@@ -23,11 +21,6 @@ export function ReadingStepView({
         <StepTitle>
           <h2>{title}</h2>
         </StepTitle>
-        {guide === "" ? null : (
-          <MarkdownContent className="text-sm leading-6 text-muted-foreground [&_p]:leading-6">
-            {guide}
-          </MarkdownContent>
-        )}
       </StepHeader>
       <Prose>
         {illustration === undefined ? null : (

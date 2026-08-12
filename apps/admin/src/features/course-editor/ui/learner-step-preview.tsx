@@ -42,7 +42,6 @@ function renderStepPreview(step: EditorStep): ReactNode {
       return (
         <ReadingStepView
           body={step.body}
-          guide={step.guide}
           {...(step.source === undefined ? {} : { source: step.source })}
           title={step.title}
         />
@@ -105,7 +104,6 @@ function renderStepPreview(step: EditorStep): ReactNode {
       return (
         <MatchAnswer
           connections={[]}
-          guide={step.guide}
           leftChoices={step.pairs.map((pair) => ({
             id: pair.leftId,
             text: pair.left,
@@ -121,7 +119,6 @@ function renderStepPreview(step: EditorStep): ReactNode {
       return (
         <CategorizeAnswer
           categories={step.categories}
-          guide={step.guide}
           items={step.items}
           title={step.title}
         />

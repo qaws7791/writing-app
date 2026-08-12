@@ -1,6 +1,5 @@
 export const readingDefaults = {
   title: "명료성의 원칙",
-  guide: "좋은 문장의 핵심 기준을 읽고, 내가 자주 쓰는 표현 중 모호한 것이 있는지 생각해보세요.",
   body: "좋은 문장은 **한 가지 의미만을 분명히** 전달합니다.\n\n모호한 수식어와 중복 표현을 줄이는 것이 시작입니다.\n\n**나쁜 예시**\n> 어느 정도 괜찮은 결과가 나왔던 것 같습니다.\n\n**좋은 예시**\n> 목표치를 달성했습니다.",
   source: "글쓰기 입문 교재",
 } as const;
@@ -68,7 +67,6 @@ export const orderDefaults = {
 
 export const matchDefaults = {
   title: "접속사와 기능 짝짓기",
-  guide: "왼쪽 접속사와 오른쪽 기능을 짝지어 보세요.",
   pairs: [
     { left: "그러나", right: "역접" },
     { left: "따라서", right: "인과" },
@@ -81,7 +79,6 @@ export const matchDefaults = {
 
 export const categorizeDefaults = {
   title: "문장 분류하기",
-  guide: "각 문장이 단락에서 어떤 역할을 하는지 분류하세요.",
   categories: [
     { id: "A", label: "주제문" },
     { id: "B", label: "뒷받침" },
