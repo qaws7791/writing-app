@@ -22,13 +22,14 @@ import {
   DropdownMenuTrigger,
 } from "#ui/components/primitives/dropdown-menu"
 
-export type LearnerNavId = "home" | "learn"
+export type LearnerNavId = "home" | "learn" | "write"
 
 export type LearnerProfileAction = "profile" | "history" | "settings" | "logout"
 
 const NAV_ITEMS: { id: LearnerNavId; href: string; label: string }[] = [
   { id: "home", href: "#home", label: "홈" },
   { id: "learn", href: "#learn", label: "학습" },
+  { id: "write", href: "#write", label: "쓰기" },
 ]
 
 function preventNav(event: React.MouseEvent | React.SyntheticEvent) {

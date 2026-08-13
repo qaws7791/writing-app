@@ -20,6 +20,11 @@ import { LoginWorkspace } from "@workspace/ui/blocks/login-workspace";
 import { ProfileLearner } from "@workspace/ui/blocks/profile-learner";
 import { UserAdmin } from "@workspace/ui/blocks/user-admin";
 import { UsersAdmin } from "@workspace/ui/blocks/users-admin";
+import { WritingCatalog } from "@workspace/ui/blocks/writing-catalog";
+import { WritingHome } from "@workspace/ui/blocks/writing-home";
+import { WritingStudio } from "@workspace/ui/blocks/writing-studio";
+import { WritingTaskAdmin } from "@workspace/ui/blocks/writing-task-admin";
+import { WritingTasksAdmin } from "@workspace/ui/blocks/writing-tasks-admin";
 
 const demos = {
   "home-learner": HomeLearner,
@@ -37,6 +42,11 @@ const demos = {
   "course-detail": CourseDetail,
   "lesson-session": LessonSession,
   "profile-learner": ProfileLearner,
+  "writing-home": WritingHome,
+  "writing-catalog": WritingCatalog,
+  "writing-studio": WritingStudio,
+  "writing-tasks-admin": WritingTasksAdmin,
+  "writing-task-admin": WritingTaskAdmin,
   "login-split": LoginSplit,
   "login-quiet": LoginQuiet,
   "login-otp": LoginOtp,

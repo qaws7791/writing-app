@@ -22,6 +22,7 @@
 | 2026-08-10 관리자 MCP 콘텐츠 변경       | [`plan.md`](./2026-08-10-admin-mcp-approved-content-changes/plan.md), [`report.md`](./2026-08-10-admin-mcp-approved-content-changes/report.md)                                                | 2A 로컬 구현·검증 완료, 외부 staging 결정 대기            |
 | 2026-08-10 관리자 MCP 1~3단계 전체 Tool | [`plan.md`](./2026-08-10-admin-mcp-full-admin-tools/plan.md)                                                                                                                                  | 로컬 구현 완료, 저장소 기준선 gate 장애 확인              |
 | 2026-08-11 course-admin 블록 재설계     | [`plan.md`](./2026-08-11-course-admin-redesign/plan.md)                                                                                                                                       | 레지스트리 블록 프로토타입 구현 완료 (SCR-104 비권위)     |
+| 2026-08-13 목적이 정해진 글쓰기         | [`plan.md`](./2026-08-13-purpose-writing-tasks/plan.md)                                                                                                                                       | 기획 합의 닫힘, UI 문서 블록 프로토타입 등록됨            |
 
 ## 사용 기준
 

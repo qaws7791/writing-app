@@ -81,6 +81,27 @@ export const learnerBlocks: BlockDoc[] = [
       "학습자 프로필입니다. 정체성·리듬·숙련·작품을 보고, 학습 기록과 설정으로 들어갑니다.",
     installName: "profile-learner",
   },
+  {
+    slug: "writing-home",
+    title: "Writing Home",
+    description:
+      "쓰기 홈입니다. 작성 중·완료 글 목록에서 이어 쓰고, 과제 카탈로그로 새 글을 시작합니다.",
+    installName: "writing-home",
+  },
+  {
+    slug: "writing-catalog",
+    title: "Writing Catalog",
+    description:
+      "쓰기 과제 카탈로그입니다. 상단 도메인·유형 칩으로 과제를 좁히고, 미리보기에서 시작합니다.",
+    installName: "writing-catalog",
+  },
+  {
+    slug: "writing-studio",
+    title: "Writing Studio",
+    description:
+      "몰입형 작성 세션입니다. 과제를 접고 본문을 쓴 뒤, 같은 화면에서 AI 점검과 마치기를 합니다.",
+    installName: "writing-studio",
+  },
 ];
 
 export const adminBlocks: BlockDoc[] = [
@@ -104,6 +125,20 @@ export const adminBlocks: BlockDoc[] = [
     description:
       "통합 운영자용 코스 상세입니다. 코스 정보·커리큘럼 빌더·검증·게시를 탭으로 나눠 편집합니다.",
     installName: "course-admin",
+  },
+  {
+    slug: "writing-tasks-admin",
+    title: "Writing Tasks Admin",
+    description:
+      "통합 운영자용 쓰기 과제 목록입니다. 도메인·상태 필터와 표에서 과제를 찾고 발행 상태를 봅니다.",
+    installName: "writing-tasks-admin",
+  },
+  {
+    slug: "writing-task-admin",
+    title: "Writing Task Admin",
+    description:
+      "통합 운영자용 쓰기 과제 편집입니다. 도메인·유형·브리프·분량을 초안에 저장하고 발행합니다.",
+    installName: "writing-task-admin",
   },
   {
     slug: "users-admin",

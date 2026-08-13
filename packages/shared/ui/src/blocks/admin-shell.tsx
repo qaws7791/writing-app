@@ -12,6 +12,7 @@ import {
   LinkSquare02Icon,
   Logout03Icon,
   MoonIcon,
+  Note01Icon,
   Robot01Icon,
   Settings02Icon,
   Sun03Icon,
@@ -65,6 +66,7 @@ export type AdminBreadcrumbItem = {
 export type AdminNavId =
   | "home"
   | "courses"
+  | "writing-tasks"
   | "users"
   | "analytics"
   | "settings"
@@ -105,7 +107,10 @@ const NAV_GROUPS: NavGroup[] = [
   {
     id: "content",
     label: "콘텐츠",
-    items: [{ id: "courses", label: "코스", icon: BookOpen01Icon }],
+    items: [
+      { id: "courses", label: "코스", icon: BookOpen01Icon },
+      { id: "writing-tasks", label: "쓰기 과제", icon: Note01Icon },
+    ],
   },
   {
     id: "learners",
