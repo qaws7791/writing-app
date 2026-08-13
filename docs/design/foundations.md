@@ -141,6 +141,8 @@ Pretendard Variable과 시스템 font stack을 사용한다.
 - Focus indicator는 `ring`을 사용한다.
 - Light theme의 elevation은 멀어지는 거리를 표현하는 낮은 shadow를 사용한다.
 - Dark theme의 elevation은 넓은 shadow보다 얇은 상단 highlight를 우선한다.
+- Dark theme의 바깥 그림자는 인접 spacing을 잠식하지 않을 만큼 상자에 붙인다.
+- Dark theme의 상단 inset highlight는 상자 안에서만 그린다.
 - 한 화면의 elevation 단계는 가능한 세 단계 이하로 유지한다.
 - 클릭·터치 가능한 버튼과 타일 카드는 작은 elevation(`shadow-xs`)으로 조작 가능함을 드러낸다. 채점 후 잠긴 항목에는 이 그림자를 쓰지 않는다.
 
