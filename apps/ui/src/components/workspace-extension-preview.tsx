@@ -70,7 +70,13 @@ function CategorizePreview({ story }: { story: string }) {
               ? "correct"
               : false
         }
-        defaultPlacements={narrow ? { i1: "A", i2: "B", i3: "C" } : undefined}
+        defaultPlacements={
+          story === "CheckedWrong"
+            ? { i1: "B", i2: "A", i3: "C", i4: "B" }
+            : story === "CheckedCorrect" || narrow
+              ? { i1: "A", i2: "B", i3: "C", ...(narrow ? {} : { i4: "B" }) }
+              : undefined
+        }
         onChange={() => undefined}
       />
     </div>

@@ -883,32 +883,31 @@ export function MatchStep() {
   classify: {
     slug: "classify",
     summary:
-      "분류 활동입니다. 카테고리를 고른 뒤 항목에 붙이고, 같은 카테고리를 다시 누르면 해제합니다.",
+      "분류 활동입니다. 남은 항목을 카테고리 바구니에 담습니다. 항목을 고른 뒤 바구니를 누르거나, 항목을 바구니로 끌어다 놓습니다.",
     examples: [
       {
         id: "categorize",
         title: "분류 보드",
-        description: "카테고리 칩과 항목 목록을 구성합니다.",
+        description: "남은 항목 쟁반과 카테고리 바구니를 구성합니다.",
         preview: "default",
-        code: `import { Classify, ClassifyCategories, ClassifyCategory, ClassifyItem, ClassifyItemLabel, ClassifyItemTag, ClassifyPool } from "@/components/learning/classify"
+        code: `import { Classify, ClassifyBasket, ClassifyBaskets, ClassifyItem, ClassifyItemLabel, ClassifyPool } from "@/components/learning/classify"
 
 export function CategorizeStep() {
   return (
     <Classify>
-      <ClassifyCategories>
-        <ClassifyCategory series={1} state="active">주장</ClassifyCategory>
-        <ClassifyCategory series={2}>근거</ClassifyCategory>
-        <ClassifyCategory series={3}>예시</ClassifyCategory>
-      </ClassifyCategories>
       <ClassifyPool>
-        <ClassifyItem state="placed">
-          <ClassifyItemLabel>학교는 토론을 늘려야 한다</ClassifyItemLabel>
-          <ClassifyItemTag series={1}>주장</ClassifyItemTag>
-        </ClassifyItem>
-        <ClassifyItem>
+        <ClassifyItem id="evidence">
           <ClassifyItemLabel>참여 학생이 늘었다는 조사</ClassifyItemLabel>
         </ClassifyItem>
       </ClassifyPool>
+      <ClassifyBaskets>
+        <ClassifyBasket id="claim" label="주장" series={1}>
+          <ClassifyItem id="claim-item" state="placed">
+            <ClassifyItemLabel>학교는 토론을 늘려야 한다</ClassifyItemLabel>
+          </ClassifyItem>
+        </ClassifyBasket>
+        <ClassifyBasket id="evidence" label="근거" series={2} />
+      </ClassifyBaskets>
     </Classify>
   )
 }`,
@@ -916,50 +915,56 @@ export function CategorizeStep() {
       {
         id: "graded",
         title: "채점 후",
-        description: "맞춘·틀린 배치를 상태와 태그로 함께 보여줍니다.",
-        code: `<ClassifyItem state="correct">
-  <ClassifyItemLabel>항목</ClassifyItemLabel>
-  <ClassifyItemTag series={2}>근거</ClassifyItemTag>
-</ClassifyItem>`,
+        description: "맞춘·틀린 배치는 바구니 안 항목 상태로 보여 줍니다.",
+        code: `<ClassifyBasket id="evidence" label="근거" series={2} state="locked">
+  <ClassifyItem id="item" state="correct">
+    <ClassifyItemLabel>참여 학생이 늘었다는 조사</ClassifyItemLabel>
+  </ClassifyItem>
+</ClassifyBasket>`,
       },
       {
-        id: "locked-categories",
-        title: "카테고리 잠금",
-        description: "제출 후 카테고리 선택을 막을 때 locked를 씁니다.",
-        code: `<ClassifyCategory series={1} state="locked">주장</ClassifyCategory>`,
+        id: "locked-baskets",
+        title: "바구니 잠금",
+        description: "제출 후 담기와 되돌리기를 막을 때 locked를 씁니다.",
+        code: `<ClassifyBasket id="claim" label="주장" series={1} state="locked" />`,
       },
       {
-        id: "empty-item",
-        title: "미배치 항목",
-        description: "아직 카테고리가 없는 항목은 태그를 생략합니다.",
-        code: `<ClassifyItem>
-  <ClassifyItemLabel>감정에 호소하는 문장</ClassifyItemLabel>
-</ClassifyItem>`,
+        id: "empty-basket",
+        title: "빈 바구니",
+        description: "아직 항목이 없는 바구니는 이름과 빈 칸만 남깁니다.",
+        code: `<ClassifyBasket id="example" label="예시" series={3} />`,
       },
     ],
     usageNotes: [
-      "모든 항목이 배치되어야 제출 가능합니다. 미배치는 UI에서 분명히 남기세요.",
-      "카테고리 선택은 toolbar로, 항목은 list로 역할을 나눕니다.",
-      "분류를 고르기 전에는 카테고리 칩 아래에만 짧은 대기 안내를 두고, 고르면 바로 걷습니다.",
-      "카테고리마다 series와 점을 함께 두어 글자를 다시 읽지 않고도 구분되게 하세요.",
-      "채점 후에도 태그 정체 색은 유지하고, 정오답은 항목 본문에만 올리세요.",
+      "모든 항목이 바구니에 담겨야 제출 가능합니다. 남은 항목 쟁반이 비어 있지 않으면 미배치입니다.",
+      "항목을 누른 뒤 바구니 이름을 누르면 담깁니다. 바구니 안 항목을 다시 누르면 남은 항목으로 돌아갑니다.",
+      "포인터로는 항목을 집어 바구니나 남은 항목 쟁반으로 끌어다 놓을 수 있습니다.",
+      "바구니마다 series 점과 이름을 헤더에 두어 글자를 다시 읽지 않고도 구분되게 하세요. 헤더를 칩으로 다시 감싸지 마세요.",
+      "채점 후에도 바구니 헤더 정체 색은 유지하고, 정오답은 항목 본문에만 올리세요.",
     ],
     accessibility: [
-      "활성 카테고리는 시각과 상태 텍스트로 함께 전달하세요.",
-      "항목 버튼에 현재 배치된 카테고리 이름을 접근 가능 이름에 포함하세요.",
+      "선택한 항목과 활성 바구니는 시각과 aria-pressed로 함께 전달하세요.",
+      "항목 버튼의 접근 가능 이름에 현재 위치(남은 항목 또는 바구니 이름)를 포함하세요.",
+      "키보드 사용자는 항목을 선택한 뒤 바구니 이름을 활성화해 담습니다. 드래그 핸들에 의존하지 마세요.",
     ],
     props: [
       {
         name: "state",
         type: "ClassifyState",
         defaultValue: '"idle"',
-        description: "카테고리·항목의 선택·배치·채점 상태입니다.",
+        description: "항목의 선택·배치·채점 상태입니다.",
       },
       {
         name: "series",
         type: "1 | 2 | 3 | 4",
         defaultValue: "—",
-        description: "카테고리 정체 색입니다. 점과 라벨과 함께 씁니다.",
+        description: "바구니 정체 색입니다. 점과 라벨과 함께 씁니다.",
+      },
+      {
+        name: "onPlace",
+        type: "(itemId: string, categoryId: string | null) => void",
+        defaultValue: "—",
+        description: "항목을 바구니에 담거나 남은 항목으로 되돌릴 때 호출합니다.",
       },
     ],
     related: ["step", "pair", "insight"],

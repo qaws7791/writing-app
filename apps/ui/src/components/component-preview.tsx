@@ -96,11 +96,10 @@ import {
 } from "@workspace/ui/components/learning/choice";
 import {
   Classify,
-  ClassifyCategories,
-  ClassifyCategory,
+  ClassifyBasket,
+  ClassifyBaskets,
   ClassifyItem,
   ClassifyItemLabel,
-  ClassifyItemTag,
   ClassifyPool,
 } from "@workspace/ui/components/learning/classify";
 import {
@@ -634,21 +633,19 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
     case "classify":
       return (
         <Classify className="w-full max-w-md">
-          <ClassifyCategories>
-            <ClassifyCategory series={1} state="active">
-              주장
-            </ClassifyCategory>
-            <ClassifyCategory series={2}>근거</ClassifyCategory>
-          </ClassifyCategories>
           <ClassifyPool>
-            <ClassifyItem state="placed">
-              <ClassifyItemLabel>학교는 토론을 늘려야 한다</ClassifyItemLabel>
-              <ClassifyItemTag series={1}>주장</ClassifyItemTag>
-            </ClassifyItem>
-            <ClassifyItem>
+            <ClassifyItem id="evidence">
               <ClassifyItemLabel>참여 학생이 늘었다는 조사</ClassifyItemLabel>
             </ClassifyItem>
           </ClassifyPool>
+          <ClassifyBaskets>
+            <ClassifyBasket id="claim" label="주장" series={1}>
+              <ClassifyItem id="claim-item" state="placed">
+                <ClassifyItemLabel>학교는 토론을 늘려야 한다</ClassifyItemLabel>
+              </ClassifyItem>
+            </ClassifyBasket>
+            <ClassifyBasket id="evidence" label="근거" series={2} />
+          </ClassifyBaskets>
         </Classify>
       );
     case "collapsible":

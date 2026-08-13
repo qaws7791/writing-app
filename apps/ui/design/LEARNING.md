@@ -36,7 +36,7 @@
 | `segment`          | 문장·단락 구간 선택                                 |
 | `sortable`         | 순서 재정렬                                         |
 | `pair`             | 좌·우 짝 맞추기                                     |
-| `classify`         | 카테고리 배치                                       |
+| `classify`         | 카테고리 바구니에 담기                              |
 | `prose`            | 읽기 본문, 삽화와 출처                              |
 | `compare`          | 버전 비교                                           |
 | `cadence`          | 최근 학습 리듬과 연속성                             |

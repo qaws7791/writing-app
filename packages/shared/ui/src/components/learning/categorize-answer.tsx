@@ -4,11 +4,10 @@ import { useState } from "react"
 
 import {
   Classify,
-  ClassifyCategories,
-  ClassifyCategory,
+  ClassifyBasket,
+  ClassifyBaskets,
   ClassifyItem,
   ClassifyItemLabel,
-  ClassifyItemTag,
   ClassifyPool,
   type ClassifyState,
 } from "#ui/components/learning/classify"
@@ -48,7 +47,6 @@ export function CategorizeAnswer({
   const [placements, setPlacements] = useState<
     Readonly<Record<string, string>>
   >(() => defaultPlacements ?? {})
-  const [activeCategoryId, setActiveCategoryId] = useState<null | string>(null)
 
   function emitChange(nextPlacements: Readonly<Record<string, string>>) {
     onChange?.(
@@ -67,26 +65,33 @@ export function CategorizeAnswer({
     )
   }
 
-  function handleCategorySelect(categoryId: string) {
+  function handlePlace(itemId: string, categoryId: string | null) {
     if (checked !== false) return
-    setActiveCategoryId((previous) =>
-      previous === categoryId ? null : categoryId
-    )
-  }
-
-  function handleItemSelect(itemId: string) {
-    if (checked !== false || activeCategoryId === null) return
 
     const nextPlacements: Record<string, string> = { ...placements }
 
-    if (nextPlacements[itemId] === activeCategoryId) {
+    if (categoryId === null) {
       delete nextPlacements[itemId]
     } else {
-      nextPlacements[itemId] = activeCategoryId
+      nextPlacements[itemId] = categoryId
     }
 
     setPlacements(nextPlacements)
     emitChange(nextPlacements)
+  }
+
+  function itemState(
+    itemId: string,
+    assignedCategoryId?: string
+  ): ClassifyState {
+    if (checked === false) {
+      return assignedCategoryId === undefined ? "idle" : "placed"
+    }
+
+    if (assignedCategoryId === undefined) return "locked"
+
+    const item = items.find((candidate) => candidate.id === itemId)
+    return item?.categoryId === assignedCategoryId ? "correct" : "incorrect"
   }
 
   return (
@@ -97,73 +102,53 @@ export function CategorizeAnswer({
         </StepTitle>
       </StepHeader>
       <StepBody>
-        <Classify>
-          <div className="flex flex-col gap-2">
-            <ClassifyCategories>
-              {categories.map((category, index) => (
-                <ClassifyCategory
-                  aria-pressed={activeCategoryId === category.id}
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category.id)}
-                  series={learningSeriesAt(index)}
-                  state={
-                    checked !== false
-                      ? "locked"
-                      : activeCategoryId === category.id
-                        ? "active"
-                        : "idle"
-                  }
-                >
-                  {category.label}
-                </ClassifyCategory>
-              ))}
-            </ClassifyCategories>
-            {checked === false && activeCategoryId === null ? (
-              <p className="text-xs text-muted-foreground">
-                분류를 고르면 아래 항목을 넣을 수 있습니다
-              </p>
-            ) : null}
-          </div>
+        <Classify
+          disabled={checked !== false}
+          getCategoryLabel={(categoryId) =>
+            categories.find((category) => category.id === categoryId)?.label ??
+            categoryId
+          }
+          getItemLabel={(itemId) =>
+            items.find((item) => item.id === itemId)?.text ?? itemId
+          }
+          onPlace={handlePlace}
+        >
           <ClassifyPool>
-            {items.map((item) => {
-              const assignedCategoryId = placements[item.id]
-              const categoryIndex = categories.findIndex(
-                (candidate) => candidate.id === assignedCategoryId
-              )
-              const category =
-                categoryIndex === -1 ? undefined : categories[categoryIndex]
-              const state: ClassifyState =
-                checked === false
-                  ? assignedCategoryId === undefined
-                    ? "idle"
-                    : "placed"
-                  : assignedCategoryId === undefined
-                    ? "locked"
-                    : item.categoryId === assignedCategoryId
-                      ? "correct"
-                      : "incorrect"
-
-              return (
+            {items
+              .filter((item) => placements[item.id] === undefined)
+              .map((item) => (
                 <ClassifyItem
-                  aria-pressed={
-                    activeCategoryId !== null &&
-                    assignedCategoryId === activeCategoryId
-                  }
-                  disabled={checked !== false || activeCategoryId === null}
+                  id={item.id}
                   key={item.id}
-                  onClick={() => handleItemSelect(item.id)}
-                  state={state}
+                  state={itemState(item.id)}
                 >
                   <ClassifyItemLabel>{item.text}</ClassifyItemLabel>
-                  {category === undefined ? null : (
-                    <ClassifyItemTag series={learningSeriesAt(categoryIndex)}>
-                      {category.label}
-                    </ClassifyItemTag>
-                  )}
                 </ClassifyItem>
-              )
-            })}
+              ))}
           </ClassifyPool>
+          <ClassifyBaskets>
+            {categories.map((category, index) => (
+              <ClassifyBasket
+                id={category.id}
+                key={category.id}
+                label={category.label}
+                series={learningSeriesAt(index)}
+                state={checked !== false ? "locked" : "idle"}
+              >
+                {items
+                  .filter((item) => placements[item.id] === category.id)
+                  .map((item) => (
+                    <ClassifyItem
+                      id={item.id}
+                      key={item.id}
+                      state={itemState(item.id, category.id)}
+                    >
+                      <ClassifyItemLabel>{item.text}</ClassifyItemLabel>
+                    </ClassifyItem>
+                  ))}
+              </ClassifyBasket>
+            ))}
+          </ClassifyBaskets>
         </Classify>
       </StepBody>
     </>

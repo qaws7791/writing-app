@@ -72,11 +72,11 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     ],
     usageNotes: [
       "Category와 item ID는 session 전체에서 안정적으로 유지합니다.",
-      "320 CSS px에서도 긴 label과 item 본문을 잘라내지 않습니다.",
+      "320 CSS px에서도 긴 바구니 이름과 item 본문을 잘라내지 않습니다.",
     ],
     accessibility: [
       "분류 결과를 색상만으로 구분하지 않습니다.",
-      "Pointer 없이 항목을 선택하고 category에 배치할 수 있어야 합니다.",
+      "Pointer 없이 항목을 선택하고 바구니에 담을 수 있어야 합니다.",
     ],
   },
   {

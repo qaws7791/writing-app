@@ -55,7 +55,7 @@ const definitions = [
   ],
   ["checkbox", "Checkbox", "하나 이상의 선택 항목을 켜거나 끕니다.", "Forms"],
   ["choice", "Choice", "객관식·선택형 활동에서 선택지와 정오답 상태를 표현합니다.", "Learning"],
-  ["classify", "Classify", "항목을 카테고리에 배치하는 분류 활동을 구성합니다.", "Learning"],
+  ["classify", "Classify", "항목을 카테고리 바구니에 담는 분류 활동을 구성합니다.", "Learning"],
   ["collapsible", "Collapsible", "하나의 콘텐츠 영역을 접고 펼칩니다.", "Disclosure"],
   ["combobox", "Combobox", "검색 가능한 목록에서 하나 이상의 값을 선택합니다.", "Forms"],
   ["command", "Command", "검색과 키보드 탐색을 지원하는 명령 메뉴입니다.", "Navigation"],

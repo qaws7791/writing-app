@@ -46,7 +46,7 @@
 - markdown 본문은 앱의 `ReactMarkdown` 결과를 `ProseBody`로 감싼다.
 - 선택형 UI는 `Choice`와 `Verdict`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `incorrect`, `missed`, `locked` 상태를 표현한다. `TRUE_FALSE`는 `missed`를 쓰지 않는다.
 - 확인 전 선택은 `info` 톤온톤으로 표시한다. 대기 상태의 O·X에 정답·오답 색을 입히지 않는다.
-- `CATEGORIZE` 카테고리 칩과 항목 태그는 `series-*`와 점으로 구분한다. 채점 후에도 태그 정체 색은 유지한다.
+- `CATEGORIZE` 바구니 헤더는 `series-*`와 점으로 구분한다. 채점 후에도 헤더 정체 색은 유지한다.
 - `MATCH` 짝은 점과 연결선에 `series-*`를 쓴다. 채점 후 카드는 정오답, 점과 선은 짝 정체를 유지한다.
 - `ERROR_CORRECT`의 오류 구간 선택은 `warning` 톤으로 표시한다.
 - 완료 화면은 레슨 요약이 있으면 `이번 레슨 요약` 목록을 표시한다.
@@ -59,10 +59,12 @@
 - 순서 스텝은 `Sortable` 항목 목록과 드래그 핸들을 제공한다.
 - 순서 스텝의 드래그 핸들은 pointer와 keyboard 입력을 모두 지원한다.
 - 순서 스텝의 드래그 핸들은 항목 이름과 현재 위치를 이해할 수 있는 한국어 접근성 이름과 이동 안내를 제공한다.
+- 분류 스텝은 남은 항목 쟁반과 카테고리 바구니를 제공한다.
+- 분류 스텝은 항목을 고른 뒤 바구니를 누르는 클릭-클릭과, 항목을 바구니로 끌어다 놓는 드래그를 모두 지원한다.
 - 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`, `MULTIPLE_CHOICE`의 `Choice`, `TRUE_FALSE`의 `Verdict`, `FILL_BLANK`·`SENTENCE_BUILD`의 `Token`, `SELECT`·`ERROR_CORRECT`의 `Segment`, `ORDER`·`PARAGRAPH_ORGANIZE`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify`, `TRANSCRIBE`의 `Compose`, `ERROR_CORRECT`의 `Choice` 조합을 사용한다.
 - 제목 아래에 사용법 문구를 두지 않는다. 클릭·터치 가능한 선택 타일·칩·카드는 작은 그림자(`shadow-xs`)로 조작 가능함을 드러낸다.
 - `SELECT`의 `inline` 구간은 문장 안에서도 작은 칩 표면으로 누를 수 있음을 드러낸다.
-- `CATEGORIZE`는 분류를 고르기 전에만 카테고리 칩 아래에 짧은 대기 안내를 둔다. 분류를 고르면 이 안내는 사라진다.
+- `CATEGORIZE`는 제목 아래에 사용법 문구를 두지 않는다. 남은 항목 쟁반과 바구니 헤더가 담을 곳을 드러낸다.
 - 참거짓 스텝은 본문 주장 아래에 1행 2열 O·X 버튼을 둔다. O는 참, X는 거짓이다. 보이는 텍스트 레이블은 두지 않고 접근 가능한 이름으로 참·거짓을 제공한다.
 - 채점 가능 스텝(퀴즈)에서 확인 후 콘텐츠 영역은 항목별 `correct`·`incorrect`·`missed` 상태만 표시한다. 평가 문구와 해설은 하단 `LessonFeedback` 오버레이가 담당한다.
 - `LessonFeedback` 배경은 레슨 shell 전체 너비다. 평가 문구와 CTA는 헤더·본문과 같은 `max-w-2xl` 열과 같은 수평 패딩을 쓴다.
@@ -98,4 +100,5 @@
 - 행동 영역은 `aria-label="레슨 행동"`을 사용한다.
 - 나가기 버튼은 `aria-label="나가기"`를 제공한다.
 - 순서 스텝은 드래그 핸들에서 Space 또는 Enter로 항목을 들고 방향키로 이동한 뒤 Space 또는 Enter로 놓을 수 있어야 한다.
+- 분류 스텝은 항목을 선택한 뒤 바구니 이름을 활성화해 담을 수 있어야 한다. 선택한 항목을 다시 활성화하면 남은 항목으로 돌아간다.
 - 오류는 한국어로 화면에 표시한다.

@@ -19,11 +19,10 @@ import {
 } from "#ui/components/learning/choice"
 import {
   Classify,
-  ClassifyCategories,
-  ClassifyCategory,
+  ClassifyBasket,
+  ClassifyBaskets,
   ClassifyItem,
   ClassifyItemLabel,
-  ClassifyItemTag,
   ClassifyPool,
   type ClassifyState,
 } from "#ui/components/learning/classify"
@@ -855,14 +854,10 @@ function CategorizeStep({
   onComplete: () => void
   onClose: () => void
 }) {
-  const [activeCategory, setActiveCategory] = React.useState<string | null>(
-    "claim"
-  )
   const [placements, setPlacements] = React.useState<Record<string, string>>({})
   const [phase, setPhase] = React.useState<GradePhase>("answering")
 
   const reset = () => {
-    setActiveCategory("claim")
     setPlacements({})
     setPhase("answering")
   }
@@ -872,23 +867,15 @@ function CategorizeStep({
     phase !== "answering" &&
     CLASSIFY_ITEMS.every((item) => placements[item.id] === item.answer)
 
-  const place = (itemId: string) => {
-    if (phase !== "answering" || !activeCategory) return
-    setPlacements((prev) => {
-      if (prev[itemId] === activeCategory) {
-        const next = { ...prev }
-        delete next[itemId]
-        return next
-      }
-      return { ...prev, [itemId]: activeCategory }
-    })
-  }
-
-  const itemState = (itemId: string): ClassifyState => {
-    const placed = placements[itemId]
-    if (phase === "answering") return placed ? "placed" : "idle"
+  const itemState = (
+    itemId: string,
+    assignedCategoryId?: string
+  ): ClassifyState => {
+    if (phase === "answering") {
+      return assignedCategoryId === undefined ? "idle" : "placed"
+    }
     const answer = CLASSIFY_ITEMS.find((item) => item.id === itemId)?.answer
-    return placed === answer ? "correct" : "incorrect"
+    return assignedCategoryId === answer ? "correct" : "incorrect"
   }
 
   return (
@@ -915,52 +902,63 @@ function CategorizeStep({
           <StepTitle>[CATEGORIZE] 문장을 알맞은 카테고리에 넣으세요</StepTitle>
         </StepHeader>
         <StepBody>
-          <Classify>
-            <ClassifyCategories>
-              {CATEGORIES.map((category, index) => (
-                <ClassifyCategory
-                  key={category.id}
-                  series={learningSeriesAt(index)}
-                  state={
-                    phase !== "answering"
-                      ? "locked"
-                      : activeCategory === category.id
-                        ? "active"
-                        : "idle"
-                  }
-                  onClick={() =>
-                    phase === "answering" && setActiveCategory(category.id)
-                  }
-                >
-                  {category.label}
-                </ClassifyCategory>
-              ))}
-            </ClassifyCategories>
+          <Classify
+            disabled={phase !== "answering"}
+            getCategoryLabel={(categoryId) =>
+              CATEGORIES.find((category) => category.id === categoryId)
+                ?.label ?? categoryId
+            }
+            getItemLabel={(itemId) =>
+              CLASSIFY_ITEMS.find((item) => item.id === itemId)?.label ?? itemId
+            }
+            onPlace={(itemId, categoryId) => {
+              setPlacements((previous) => {
+                const next = { ...previous }
+                if (categoryId === null) {
+                  delete next[itemId]
+                } else {
+                  next[itemId] = categoryId
+                }
+                return next
+              })
+            }}
+          >
             <ClassifyPool>
-              {CLASSIFY_ITEMS.map((item) => {
-                const categoryIndex = CATEGORIES.findIndex(
-                  (category) => category.id === placements[item.id]
-                )
-                const tag =
-                  categoryIndex === -1
-                    ? undefined
-                    : CATEGORIES[categoryIndex]?.label
-                return (
-                  <ClassifyItem
-                    key={item.id}
-                    state={itemState(item.id)}
-                    onClick={() => place(item.id)}
-                  >
-                    <ClassifyItemLabel>{item.label}</ClassifyItemLabel>
-                    {tag ? (
-                      <ClassifyItemTag series={learningSeriesAt(categoryIndex)}>
-                        {tag}
-                      </ClassifyItemTag>
-                    ) : null}
-                  </ClassifyItem>
-                )
-              })}
+              {CLASSIFY_ITEMS.filter(
+                (item) => placements[item.id] === undefined
+              ).map((item) => (
+                <ClassifyItem
+                  id={item.id}
+                  key={item.id}
+                  state={itemState(item.id)}
+                >
+                  <ClassifyItemLabel>{item.label}</ClassifyItemLabel>
+                </ClassifyItem>
+              ))}
             </ClassifyPool>
+            <ClassifyBaskets>
+              {CATEGORIES.map((category, index) => (
+                <ClassifyBasket
+                  id={category.id}
+                  key={category.id}
+                  label={category.label}
+                  series={learningSeriesAt(index)}
+                  state={phase !== "answering" ? "locked" : "idle"}
+                >
+                  {CLASSIFY_ITEMS.filter(
+                    (item) => placements[item.id] === category.id
+                  ).map((item) => (
+                    <ClassifyItem
+                      id={item.id}
+                      key={item.id}
+                      state={itemState(item.id, category.id)}
+                    >
+                      <ClassifyItemLabel>{item.label}</ClassifyItemLabel>
+                    </ClassifyItem>
+                  ))}
+                </ClassifyBasket>
+              ))}
+            </ClassifyBaskets>
           </Classify>
         </StepBody>
       </Step>
