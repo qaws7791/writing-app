@@ -130,7 +130,7 @@ const definitions = [
   ["segment", "Segment", "문장이나 단락의 구간을 선택 가능한 조각으로 제공합니다.", "Learning"],
   ["select", "Select", "목록에서 하나의 값을 선택하는 팝업 컨트롤입니다.", "Forms"],
   ["separator", "Separator", "콘텐츠 그룹 사이의 시각적 또는 의미적 경계를 표시합니다.", "Layout"],
-  ["sheet", "Sheet", "화면 가장자리에서 열리는 보조 대화상자입니다.", "Overlay"],
+  ["sheet", "Sheet", "화면 가장자리 또는 중앙에서 열리는 보조 대화상자입니다.", "Overlay"],
   [
     "sidebar",
     "Sidebar",

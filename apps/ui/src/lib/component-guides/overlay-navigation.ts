@@ -1942,7 +1942,7 @@ export function PopoverControlled() {
   sheet: {
     slug: "sheet",
     summary:
-      "화면 가장자리에서 나타나는 보조 Dialog입니다. 데스크톱의 설정, 필터, 세부 정보처럼 제스처보다 안정된 패널 흐름에 적합합니다.",
+      "화면 가장자리 또는 중앙에 나타나는 보조 Dialog입니다. 설정, 필터, 세부 정보처럼 제스처보다 안정된 패널 흐름에 적합합니다.",
     examples: [
       {
         id: "sheet-basic",
@@ -1968,11 +1968,12 @@ export function SheetBasic() {
       {
         id: "sheet-side",
         title: "열리는 면",
-        description: "side로 top, right, bottom, left 중 정보 구조에 자연스러운 방향을 선택합니다.",
+        description:
+          "side로 top, right, bottom, left, center 중 정보 구조에 자연스러운 위치를 선택합니다.",
         code: `import { Button } from "@/components/primitives/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/primitives/sheet"
 
-const sides = ["top", "right", "bottom", "left"] as const
+const sides = ["top", "right", "bottom", "left", "center"] as const
 
 export function SheetSides() {
   return (
@@ -2035,7 +2036,7 @@ export function SheetControlled() {
       },
     ],
     usageNotes: [
-      "오른쪽과 왼쪽 Sheet는 기본 75% 너비이며 sm 이상에서 max-w-sm입니다. className으로 제품 흐름에 맞게 확장합니다.",
+      "오른쪽과 왼쪽 Sheet는 기본 75% 너비이며 sm 이상에서 max-w-sm입니다. center는 화면 중앙에 두며 sm 이상에서 max-w-md입니다. className으로 제품 흐름에 맞게 확장합니다.",
       "showCloseButton=false를 사용할 때는 SheetClose 또는 제어 상태로 동등한 닫기 행동을 반드시 제공합니다.",
     ],
     accessibility: [
@@ -2065,9 +2066,9 @@ export function SheetControlled() {
       },
       {
         name: "SheetContent.side",
-        type: '"top" | "right" | "bottom" | "left"',
+        type: '"top" | "right" | "bottom" | "left" | "center"',
         defaultValue: '"right"',
-        description: "패널이 나타날 화면 가장자리입니다.",
+        description: "패널이 나타날 화면 가장자리 또는 중앙입니다.",
       },
       {
         name: "SheetContent.showCloseButton",

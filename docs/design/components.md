@@ -196,6 +196,12 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 기반은 `@base-ui/react/dialog`다. 일반 설정과 정보 입력처럼 사용자의 확인이 필요한 overlay에 사용한다. 패널은 `rounded-4xl`, `bg-popover`, 28px padding을 사용한다. 닫기 버튼의 접근 가능한 이름은 `닫기`다. 위험한 전이는 일반 Dialog 대신 AlertDialog를 사용한다.
 
+## Sheet
+
+구현 위치: `packages/shared/ui/src/components/primitives/sheet.tsx`
+
+기반은 `@base-ui/react/dialog`다. 설정, 필터, 세부 정보처럼 화면 가장자리 또는 중앙에서 여는 보조 패널에 사용한다. `side`는 `top`, `right`, `bottom`, `left`, `center`다. `center`는 화면 중앙에 두며 패널은 `rounded-4xl`과 `bg-popover`를 사용한다. Header와 Footer anatomy를 유지한다.
+
 ## Popover
 
 구현 위치: `packages/shared/ui/src/components/primitives/popover.tsx`

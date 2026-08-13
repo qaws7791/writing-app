@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { useIsMobile } from "#ui/hooks/use-mobile"
 import { cn } from "#ui/lib/utils"
 import { LearnerShell } from "#ui/blocks/learner-shell"
 import { Badge } from "#ui/components/primitives/badge"
@@ -174,6 +175,7 @@ export function WritingCatalog({
   const [domain, setDomain] = React.useState<string | null>(null)
   const [typeName, setTypeName] = React.useState<string | null>(null)
   const [previewId, setPreviewId] = React.useState<string | null>(null)
+  const isMobile = useIsMobile()
 
   const domainsWithTasks = DOMAINS.filter((item) =>
     published.some((task) => task.domain === item)
@@ -307,17 +309,20 @@ export function WritingCatalog({
           if (!open) setPreviewId(null)
         }}
       >
-        <SheetContent side="right" className="sm:max-w-md">
+        <SheetContent
+          className="max-h-[min(80dvh,100%)] overflow-hidden"
+          side={isMobile ? "bottom" : "center"}
+        >
           {preview ? (
             <>
-              <SheetHeader>
+              <SheetHeader className="border-b-0">
                 <p className="text-xs text-muted-foreground">
                   {preview.domain} · {preview.typeName} · {preview.difficulty}
                 </p>
                 <SheetTitle>{preview.title}</SheetTitle>
                 <SheetDescription>{preview.situation}</SheetDescription>
               </SheetHeader>
-              <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 px-6 py-4 text-sm">
+              <dl className="grid min-h-0 flex-1 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 overflow-y-auto px-6 py-4 text-sm">
                 <dt className="text-muted-foreground">독자</dt>
                 <dd>{preview.audience}</dd>
                 <dt className="text-muted-foreground">분량</dt>
@@ -327,7 +332,7 @@ export function WritingCatalog({
                 <dt className="text-muted-foreground">난이도</dt>
                 <dd>{preview.difficulty}</dd>
               </dl>
-              <SheetFooter>
+              <SheetFooter className="border-t-0 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                 <Button type="button" size="lg" className="w-full">
                   시작하기
                 </Button>
