@@ -98,25 +98,32 @@ export function CategorizeAnswer({
       </StepHeader>
       <StepBody>
         <Classify>
-          <ClassifyCategories>
-            {categories.map((category, index) => (
-              <ClassifyCategory
-                aria-pressed={activeCategoryId === category.id}
-                key={category.id}
-                onClick={() => handleCategorySelect(category.id)}
-                series={learningSeriesAt(index)}
-                state={
-                  checked !== false
-                    ? "locked"
-                    : activeCategoryId === category.id
-                      ? "active"
-                      : "idle"
-                }
-              >
-                {category.label}
-              </ClassifyCategory>
-            ))}
-          </ClassifyCategories>
+          <div className="flex flex-col gap-2">
+            <ClassifyCategories>
+              {categories.map((category, index) => (
+                <ClassifyCategory
+                  aria-pressed={activeCategoryId === category.id}
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category.id)}
+                  series={learningSeriesAt(index)}
+                  state={
+                    checked !== false
+                      ? "locked"
+                      : activeCategoryId === category.id
+                        ? "active"
+                        : "idle"
+                  }
+                >
+                  {category.label}
+                </ClassifyCategory>
+              ))}
+            </ClassifyCategories>
+            {checked === false && activeCategoryId === null ? (
+              <p className="text-xs text-muted-foreground">
+                분류를 고르면 아래 항목을 넣을 수 있습니다
+              </p>
+            ) : null}
+          </div>
           <ClassifyPool>
             {items.map((item) => {
               const assignedCategoryId = placements[item.id]

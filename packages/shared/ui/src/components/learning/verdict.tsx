@@ -37,9 +37,9 @@ const verdictOptionVariants = cva(
   {
     variants: {
       state: {
-        idle: "border-border/80 bg-card text-foreground shadow-2xs hover:border-border hover:bg-accent/40",
+        idle: "border-border/80 bg-card text-foreground shadow-xs hover:border-border hover:bg-accent/40",
         selected:
-          "border-info/35 bg-info/10 text-foreground shadow-2xs ring-1 ring-info/15",
+          "border-info/35 bg-info/10 text-foreground shadow-xs ring-1 ring-info/15",
         correct:
           "border-success/30 bg-success/10 text-success shadow-none dark:bg-success/12",
         incorrect:

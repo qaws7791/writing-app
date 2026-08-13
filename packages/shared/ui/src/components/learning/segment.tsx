@@ -43,13 +43,13 @@ const segmentVariants = cva(
     variants: {
       layout: {
         inline:
-          "inline rounded-lg border border-transparent px-1.5 py-0.5 text-left hover:bg-accent/55 focus-visible:border-ring",
+          "inline rounded-lg border border-border/60 bg-card px-1.5 py-0.5 text-left shadow-2xs hover:border-border hover:bg-accent/55 focus-visible:border-ring",
         block:
-          "flex w-full rounded-3xl border border-border/80 bg-card px-4 py-3.5 text-left text-sm leading-6 shadow-2xs hover:bg-accent/40 focus-visible:border-ring",
+          "flex w-full rounded-3xl border border-border/80 bg-card px-4 py-3.5 text-left text-sm leading-6 shadow-xs hover:bg-accent/40 focus-visible:border-ring",
       },
       state: {
         idle: "",
-        selected: "border-info/35 bg-info/12 shadow-2xs",
+        selected: "border-info/35 bg-info/12 shadow-xs",
         correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         missed:
@@ -71,7 +71,7 @@ const segmentVariants = cva(
       {
         intent: "fault",
         state: "selected",
-        class: "border-warning/35 bg-warning/12 text-foreground shadow-2xs",
+        class: "border-warning/35 bg-warning/12 text-foreground shadow-xs",
       },
       {
         layout: "inline",

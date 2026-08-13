@@ -71,6 +71,7 @@ import { Button } from "@/components/primitives/button"
     usageNotes: [
       "스텝 타입마다 새 프레임을 만들지 말고 Step 위에 도메인 표면(Prose, Choice, Compose 등)을 올립니다.",
       "한 스텝의 Primary 행동은 LessonActions 안 전체 너비 버튼 하나로 유지합니다.",
+      "제목 아래에 사용법 문구를 두지 않습니다. 조작 가능함은 타일·칩의 작은 그림자와 컨트롤 상태로 드러냅니다.",
     ],
     accessibility: [
       "StepTitle은 해당 활동의 접근 가능한 제목으로 사용하세요.",
@@ -155,6 +156,7 @@ export function MultipleChoice() {
       "Segment·Token의 상태 언어와 맞춰 학습자가 피드백을 재학습하지 않게 합니다.",
       "선택은 배경·테두리로 전달하고, 앞쪽 라디오 표시는 두지 않습니다.",
       "확인 전 선택은 info 톤으로 표시하고, 확인 전 success는 쓰지 않습니다.",
+      "대기·선택 상태의 선택지는 작은 그림자(shadow-xs)로 누를 수 있음을 드러냅니다.",
     ],
     accessibility: [
       "단일 선택은 role=radiogroup/radio, 다중은 group/checkbox를 사용합니다.",
@@ -512,6 +514,7 @@ export function MultiSelect() {
     ],
     usageNotes: [
       "배치 기본값은 inline입니다. 콘텐츠에 layout이 없으면 inline으로 두세요.",
+      "inline 대기구간은 작은 칩 표면으로 누를 수 있음을 드러냅니다. 제목 아래 사용법 문구로 대체하지 마세요.",
       "구간 문구가 같아도 ID로 채점합니다.",
       '확인 전 선택은 info 톤입니다. ERROR_CORRECT의 오류 구간은 intent="fault"로 warning 톤을 씁니다.',
     ],
@@ -937,6 +940,7 @@ export function CategorizeStep() {
     usageNotes: [
       "모든 항목이 배치되어야 제출 가능합니다. 미배치는 UI에서 분명히 남기세요.",
       "카테고리 선택은 toolbar로, 항목은 list로 역할을 나눕니다.",
+      "분류를 고르기 전에는 카테고리 칩 아래에만 짧은 대기 안내를 두고, 고르면 바로 걷습니다.",
       "카테고리마다 series와 점을 함께 두어 글자를 다시 읽지 않고도 구분되게 하세요.",
       "채점 후에도 태그 정체 색은 유지하고, 정오답은 항목 본문에만 올리세요.",
     ],

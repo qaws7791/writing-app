@@ -49,11 +49,11 @@ const classifyCategoryVariants = cva(
   {
     variants: {
       state: {
-        idle: "border-border/80 bg-card text-foreground/85 shadow-2xs hover:bg-accent/50",
+        idle: "border-border/80 bg-card text-foreground/85 shadow-xs hover:bg-accent/50",
         active:
-          "border-info/35 bg-info/10 text-foreground shadow-2xs ring-1 ring-info/15",
+          "border-info/35 bg-info/10 text-foreground shadow-xs ring-1 ring-info/15",
         locked: "border-border/60 bg-muted/40 text-muted-foreground",
-        series: "shadow-2xs",
+        series: "shadow-xs",
       },
     },
     defaultVariants: {
@@ -132,9 +132,9 @@ const classifyItemVariants = cva(
   {
     variants: {
       state: {
-        idle: "border-border/80 bg-card text-foreground shadow-2xs hover:bg-accent/40",
-        active: "border-info/35 bg-info/10 text-foreground shadow-2xs",
-        placed: "border-border bg-surface/80 text-foreground",
+        idle: "border-border/80 bg-card text-foreground shadow-xs hover:bg-accent/40",
+        active: "border-info/35 bg-info/10 text-foreground shadow-xs",
+        placed: "border-border bg-surface/80 text-foreground shadow-xs",
         correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         locked: "border-border/60 bg-muted/40 text-muted-foreground",
