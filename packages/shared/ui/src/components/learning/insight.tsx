@@ -9,7 +9,7 @@ const insightVariants = cva(
     variants: {
       tone: {
         neutral: "border-border/80 bg-card text-card-foreground",
-        think: "border-border/70 bg-surface/80 text-foreground",
+        think: "border-info/25 bg-info/8 text-foreground",
         correct: "border-success/25 bg-success/8 text-success",
         incorrect: "border-destructive/25 bg-destructive/6 text-destructive",
         coaching: "border-border/80 bg-card text-card-foreground",
@@ -41,7 +41,7 @@ function InsightEyebrow({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="insight-eyebrow"
       className={cn(
-        "text-xs font-medium text-muted-foreground group-data-[tone=incorrect]/insight:text-destructive/75",
+        "text-xs font-medium text-muted-foreground group-data-[tone=think]/insight:text-info group-data-[tone=incorrect]/insight:text-destructive/75",
         className
       )}
       {...props}

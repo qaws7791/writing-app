@@ -635,13 +635,15 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
       return (
         <Classify className="w-full max-w-md">
           <ClassifyCategories>
-            <ClassifyCategory state="active">주장</ClassifyCategory>
-            <ClassifyCategory>근거</ClassifyCategory>
+            <ClassifyCategory series={1} state="active">
+              주장
+            </ClassifyCategory>
+            <ClassifyCategory series={2}>근거</ClassifyCategory>
           </ClassifyCategories>
           <ClassifyPool>
             <ClassifyItem state="placed">
               <ClassifyItemLabel>학교는 토론을 늘려야 한다</ClassifyItemLabel>
-              <ClassifyItemTag>주장</ClassifyItemTag>
+              <ClassifyItemTag series={1}>주장</ClassifyItemTag>
             </ClassifyItem>
             <ClassifyItem>
               <ClassifyItemLabel>참여 학생이 늘었다는 조사</ClassifyItemLabel>
@@ -999,7 +1001,7 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
               <PairLabel>무엇을 말하려는가</PairLabel>
             </PairItem>
             <PairItem state="paired">
-              <PairMarker />
+              <PairMarker series={2} />
               <PairLabel>왜 믿을 수 있는가</PairLabel>
             </PairItem>
           </PairColumn>

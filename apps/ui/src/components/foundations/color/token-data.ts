@@ -1,4 +1,4 @@
-export type TokenGroup = "surface" | "content" | "action" | "status";
+export type TokenGroup = "surface" | "content" | "action" | "status" | "identity";
 
 type SwatchKind = "fill" | "text";
 
@@ -43,6 +43,11 @@ export const tokenGroups: {
     id: "status",
     title: "Status",
     description: "오류, 성공, 주의, 정보와 provenance 상태",
+  },
+  {
+    id: "identity",
+    title: "Identity",
+    description: "병렬 항목을 구분하는 정체 색. 평가 상태와 겹치지 않는다",
   },
 ];
 
@@ -215,6 +220,38 @@ export const semanticTokens: SemanticToken[] = [
     kind: "text",
     usage: "정의된 provenance 상태",
   },
+  {
+    token: "series-1",
+    cssVar: "--series-1",
+    label: "Series 1",
+    group: "identity",
+    kind: "text",
+    usage: "병렬 항목 정체 1",
+  },
+  {
+    token: "series-2",
+    cssVar: "--series-2",
+    label: "Series 2",
+    group: "identity",
+    kind: "text",
+    usage: "병렬 항목 정체 2",
+  },
+  {
+    token: "series-3",
+    cssVar: "--series-3",
+    label: "Series 3",
+    group: "identity",
+    kind: "text",
+    usage: "병렬 항목 정체 3",
+  },
+  {
+    token: "series-4",
+    cssVar: "--series-4",
+    label: "Series 4",
+    group: "identity",
+    kind: "text",
+    usage: "병렬 항목 정체 4",
+  },
 ];
 
 export const contrastPairs: ContrastPair[] = [
@@ -266,6 +303,7 @@ export const colorRules = [
   "따뜻한 paper와 ink 뉴트럴을 기본으로 사용한다.",
   "한 작업 영역은 Primary 행동 하나만 강하게 표시한다.",
   "상태는 색상 외에 text, icon, shape와 semantic 중 하나 이상을 함께 사용한다.",
+  "병렬 항목 정체는 series 토큰과 점·라벨을 함께 쓴다. 평가 색과 겹치지 않게 한다.",
   "Border는 관계를 설명할 때만 사용한다.",
   "Raw color는 reference token 밖에 추가하지 않는다.",
 ] as const;

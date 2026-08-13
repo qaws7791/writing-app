@@ -32,6 +32,10 @@
   --ref-chart-3: oklch(0.5989 0.0108 72);
   --ref-chart-4: oklch(0.4571 0.0119 68);
   --ref-chart-5: oklch(0.3288 0.0112 66);
+  --ref-series-1: oklch(0.46 0.09 195);
+  --ref-series-2: oklch(0.46 0.09 275);
+  --ref-series-3: oklch(0.45 0.08 115);
+  --ref-series-4: oklch(0.48 0.09 350);
   --ref-sidebar: oklch(0.968 0.0042 92);
   --ref-sidebar-foreground: var(--ref-foreground);
   --ref-sidebar-primary: oklch(0.2712 0.0104 67);
@@ -89,6 +93,10 @@
   --ref-surface-foreground: var(--ref-foreground);
   --ref-selection: oklch(0.9247 0.0035 92);
   --ref-selection-foreground: oklch(0.2276 0.0048 72);
+  --ref-series-1: oklch(0.78 0.08 195);
+  --ref-series-2: oklch(0.78 0.08 275);
+  --ref-series-3: oklch(0.78 0.07 115);
+  --ref-series-4: oklch(0.8 0.08 350);
   --ref-sidebar: oklch(0.2135 0.0045 72);
   --ref-sidebar-foreground: var(--ref-foreground);
   --ref-sidebar-primary: oklch(0.9247 0.0035 92);

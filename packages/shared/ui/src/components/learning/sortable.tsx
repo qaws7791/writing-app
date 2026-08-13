@@ -201,7 +201,7 @@ function SortableItem({
         data-drop-target={isDropTarget || undefined}
         data-disabled={isDisabled || undefined}
         className={cn(
-          "group/sortable-item flex items-center gap-2 rounded-3xl border px-2 py-1.5 text-sm transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none",
+          "flex items-center gap-2 rounded-3xl border px-2 py-1.5 text-sm transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none",
           state === "idle" && "border-border/80 bg-card shadow-2xs",
           state === "correct" && "border-success/30 bg-success/10 text-success",
           state === "incorrect" &&
@@ -255,27 +255,6 @@ function SortableHandle({
   )
 }
 
-function SortableIndex({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"span">) {
-  const item = React.useContext(SortableItemContext)
-
-  return (
-    <span
-      data-slot="sortable-index"
-      className={cn(
-        "flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium tabular-nums text-muted-foreground",
-        className
-      )}
-      {...props}
-    >
-      {children ?? (item ? item.index + 1 : null)}
-    </span>
-  )
-}
-
 function SortableContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -286,11 +265,5 @@ function SortableContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-export {
-  Sortable,
-  SortableContent,
-  SortableHandle,
-  SortableIndex,
-  SortableItem,
-}
+export { Sortable, SortableContent, SortableHandle, SortableItem }
 export type { SortableItemProps, SortableProps, SortableState, SortableValue }

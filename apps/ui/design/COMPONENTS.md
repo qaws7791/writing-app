@@ -66,7 +66,7 @@ Pretendard Variable과 시스템 폰트 스택을 기본으로 사용한다. 한
 ### Color, border & icon
 
 - 완전한 흰색과 검정색 대신 따뜻한 paper-and-ink 뉴트럴을 사용한다.
-- 색상은 OKLCH로 관리하며 `background`, `foreground`, `card`, `popover`, `surface`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`, `info`, `purple`, `border`, `input`, `ring`, `selection` semantic을 유지한다.
+- 색상은 OKLCH로 관리하며 `background`, `foreground`, `card`, `popover`, `surface`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`, `info`, `purple`, `series-1`~`series-4`, `border`, `input`, `ring`, `selection` semantic을 유지한다.
 - 강조색은 primary 행동이나 기능적으로 특별한 상태에 제한한다.
 - 성공, 경고, 오류와 정보는 색만으로 구분하지 않는다.
 - dark theme은 light theme의 단순 반전이 아니며 표면과 elevation을 따로 조정한다.

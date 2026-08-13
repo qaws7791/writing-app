@@ -3,6 +3,12 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
+import {
+  learningSeriesActiveClass,
+  learningSeriesDotClass,
+  learningSeriesSurfaceClass,
+  type LearningSeries,
+} from "#ui/lib/learning-series"
 import { cn } from "#ui/lib/utils"
 
 type ClassifyState =
@@ -39,14 +45,15 @@ function ClassifyCategories({
 }
 
 const classifyCategoryVariants = cva(
-  "inline-flex h-9 items-center justify-center rounded-full border px-3.5 text-sm font-medium tracking-[-0.005em] transition-[background-color,border-color,color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-3.5 text-sm font-medium tracking-[-0.005em] transition-[background-color,border-color,color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       state: {
         idle: "border-border/80 bg-card text-foreground/85 shadow-2xs hover:bg-accent/50",
         active:
-          "border-primary/35 bg-accent/60 text-foreground shadow-2xs ring-1 ring-primary/10",
+          "border-info/35 bg-info/10 text-foreground shadow-2xs ring-1 ring-info/15",
         locked: "border-border/60 bg-muted/40 text-muted-foreground",
+        series: "shadow-2xs",
       },
     },
     defaultVariants: {
@@ -55,23 +62,58 @@ const classifyCategoryVariants = cva(
   }
 )
 
+function ClassifySeriesDot({
+  className,
+  series,
+}: {
+  className?: string
+  series: LearningSeries
+}) {
+  return (
+    <span
+      aria-hidden
+      data-slot="classify-series-dot"
+      className={cn(
+        "size-1.5 shrink-0 rounded-full",
+        learningSeriesDotClass[series],
+        className
+      )}
+    />
+  )
+}
+
 function ClassifyCategory({
   className,
+  series,
   state = "idle",
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof classifyCategoryVariants> & {
+    series?: LearningSeries
     state?: "idle" | "active" | "locked"
   }) {
+  const toneState =
+    series !== undefined && state !== "locked" ? "series" : state
+
   return (
     <button
       type="button"
       data-slot="classify-category"
+      data-series={series}
       data-state={state}
       disabled={state === "locked"}
-      className={cn(classifyCategoryVariants({ state }), className)}
+      className={cn(
+        classifyCategoryVariants({ state: toneState }),
+        series && state === "idle" && learningSeriesSurfaceClass[series],
+        series && state === "active" && learningSeriesActiveClass[series],
+        className
+      )}
       {...props}
-    />
+    >
+      {series === undefined ? null : <ClassifySeriesDot series={series} />}
+      {children}
+    </button>
   )
 }
 
@@ -91,7 +133,7 @@ const classifyItemVariants = cva(
     variants: {
       state: {
         idle: "border-border/80 bg-card text-foreground shadow-2xs hover:bg-accent/40",
-        active: "border-primary/35 bg-accent/55 text-foreground shadow-2xs",
+        active: "border-info/35 bg-info/10 text-foreground shadow-2xs",
         placed: "border-border bg-surface/80 text-foreground",
         correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
@@ -142,17 +184,28 @@ function ClassifyItemLabel({
 
 function ClassifyItemTag({
   className,
+  series,
+  children,
   ...props
-}: React.ComponentProps<"span">) {
+}: React.ComponentProps<"span"> & {
+  series?: LearningSeries
+}) {
   return (
     <span
       data-slot="classify-item-tag"
+      data-series={series}
       className={cn(
-        "inline-flex shrink-0 items-center rounded-full border border-border/70 bg-card px-2.5 py-0.5 text-xs font-medium text-muted-foreground group-data-[state=correct]/classify-item:border-success/30 group-data-[state=correct]/classify-item:text-success group-data-[state=incorrect]/classify-item:border-destructive/30 group-data-[state=incorrect]/classify-item:text-destructive",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        series
+          ? learningSeriesSurfaceClass[series]
+          : "border-border/70 bg-card text-muted-foreground",
         className
       )}
       {...props}
-    />
+    >
+      {series === undefined ? null : <ClassifySeriesDot series={series} />}
+      {children}
+    </span>
   )
 }
 

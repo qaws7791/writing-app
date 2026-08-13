@@ -37,6 +37,10 @@
   --chart-3: var(--ref-chart-3);
   --chart-4: var(--ref-chart-4);
   --chart-5: var(--ref-chart-5);
+  --series-1: var(--ref-series-1);
+  --series-2: var(--ref-series-2);
+  --series-3: var(--ref-series-3);
+  --series-4: var(--ref-series-4);
   --sidebar: var(--ref-sidebar);
   --sidebar-foreground: var(--ref-sidebar-foreground);
   --sidebar-primary: var(--ref-sidebar-primary);

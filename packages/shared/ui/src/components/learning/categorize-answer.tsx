@@ -13,6 +13,7 @@ import {
   type ClassifyState,
 } from "#ui/components/learning/classify"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
+import { learningSeriesAt } from "#ui/lib/learning-series"
 import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 
 export type CategorizePlacement = {
@@ -98,11 +99,12 @@ export function CategorizeAnswer({
       <StepBody>
         <Classify>
           <ClassifyCategories>
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <ClassifyCategory
                 aria-pressed={activeCategoryId === category.id}
                 key={category.id}
                 onClick={() => handleCategorySelect(category.id)}
+                series={learningSeriesAt(index)}
                 state={
                   checked !== false
                     ? "locked"
@@ -118,9 +120,11 @@ export function CategorizeAnswer({
           <ClassifyPool>
             {items.map((item) => {
               const assignedCategoryId = placements[item.id]
-              const category = categories.find(
+              const categoryIndex = categories.findIndex(
                 (candidate) => candidate.id === assignedCategoryId
               )
+              const category =
+                categoryIndex === -1 ? undefined : categories[categoryIndex]
               const state: ClassifyState =
                 checked === false
                   ? assignedCategoryId === undefined
@@ -145,7 +149,9 @@ export function CategorizeAnswer({
                 >
                   <ClassifyItemLabel>{item.text}</ClassifyItemLabel>
                   {category === undefined ? null : (
-                    <ClassifyItemTag>{category.label}</ClassifyItemTag>
+                    <ClassifyItemTag series={learningSeriesAt(categoryIndex)}>
+                      {category.label}
+                    </ClassifyItemTag>
                   )}
                 </ClassifyItem>
               )

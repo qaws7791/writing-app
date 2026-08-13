@@ -11,7 +11,6 @@ import {
   Sortable,
   SortableContent,
   SortableHandle,
-  SortableIndex,
   SortableItem,
 } from "#ui/components/learning/sortable"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
@@ -134,7 +133,6 @@ export function ParagraphOrganizeAnswer<TId extends string>({
                     }
                     value={cardId}
                   >
-                    <SortableIndex />
                     <SortableContent>{card?.text ?? cardId}</SortableContent>
                     <SortableHandle />
                   </SortableItem>

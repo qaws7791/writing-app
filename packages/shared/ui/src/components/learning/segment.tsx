@@ -49,12 +49,16 @@ const segmentVariants = cva(
       },
       state: {
         idle: "",
-        selected: "border-primary/35 bg-accent/55 shadow-2xs",
+        selected: "border-info/35 bg-info/12 shadow-2xs",
         correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
         missed:
           "border-dashed border-border/80 bg-transparent text-muted-foreground",
         locked: "border-border/60 bg-muted/40 text-muted-foreground",
+      },
+      intent: {
+        choice: "",
+        fault: "",
       },
     },
     compoundVariants: [
@@ -62,7 +66,18 @@ const segmentVariants = cva(
       {
         layout: "inline",
         state: "selected",
-        class: "border-primary/30",
+        class: "border-info/30",
+      },
+      {
+        intent: "fault",
+        state: "selected",
+        class: "border-warning/35 bg-warning/12 text-foreground shadow-2xs",
+      },
+      {
+        layout: "inline",
+        intent: "fault",
+        state: "selected",
+        class: "border-warning/30",
       },
       {
         layout: "inline",
@@ -78,18 +93,21 @@ const segmentVariants = cva(
     defaultVariants: {
       layout: "inline",
       state: "idle",
+      intent: "choice",
     },
   }
 )
 
 function Segment({
   className,
+  intent = "choice",
   layout = "inline",
   state = "idle",
   selected = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof segmentVariants> & {
+    intent?: "choice" | "fault"
     state?: SegmentState
     selected?: boolean
   }) {
@@ -102,12 +120,13 @@ function Segment({
         selected || resolvedState === "correct" || resolvedState === "incorrect"
       }
       data-slot="segment"
+      data-intent={intent}
       data-layout={layout}
       data-state={resolvedState}
       data-selected={selected || undefined}
       disabled={resolvedState === "locked"}
       className={cn(
-        segmentVariants({ layout, state: resolvedState }),
+        segmentVariants({ intent, layout, state: resolvedState }),
         className
       )}
       {...props}

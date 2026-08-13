@@ -44,24 +44,33 @@ Astro UI 문서 `/docs/foundations/color`는 runtime 값을 해석해서 보여 
 
 ## Semantic Color
 
-| token                               | 용도                                         |
-| ----------------------------------- | -------------------------------------------- |
-| `background`, `foreground`          | 앱 Canvas와 기본 text                        |
-| `card`, `card-foreground`           | 독립 콘텐츠 Surface                          |
-| `popover`, `popover-foreground`     | menu, popover와 dialog Surface               |
-| `surface`, `surface-foreground`     | 낮은 강조의 구조 Surface                     |
-| `primary`, `primary-foreground`     | 한 작업 영역의 Primary 행동                  |
-| `secondary`, `secondary-foreground` | Primary를 보조하는 행동과 Surface            |
-| `muted`, `muted-foreground`         | 후퇴한 정보와 metadata                       |
-| `accent`, `accent-foreground`       | selected, hover와 조용한 강조                |
-| `destructive`                       | 실제 위험과 오류                             |
-| `success`                           | 성공과 완료                                  |
-| `warning`                           | 주의와 확인 필요                             |
-| `info`                              | 중립 정보                                    |
-| `purple`                            | provenance 또는 별도 의미가 정의된 특수 상태 |
-| `border`, `input`, `ring`           | 구조 경계, 입력 경계와 focus indicator       |
-| `selection`, `selection-foreground` | text selection과 선택 상태                   |
-| `chart-1`부터 `chart-5`             | 순서가 있는 중립 chart 계열                  |
+| token                               | 용도                                                   |
+| ----------------------------------- | ------------------------------------------------------ |
+| `background`, `foreground`          | 앱 Canvas와 기본 text                                  |
+| `card`, `card-foreground`           | 독립 콘텐츠 Surface                                    |
+| `popover`, `popover-foreground`     | menu, popover와 dialog Surface                         |
+| `surface`, `surface-foreground`     | 낮은 강조의 구조 Surface                               |
+| `primary`, `primary-foreground`     | 한 작업 영역의 Primary 행동                            |
+| `secondary`, `secondary-foreground` | Primary를 보조하는 행동과 Surface                      |
+| `muted`, `muted-foreground`         | 후퇴한 정보와 metadata                                 |
+| `accent`, `accent-foreground`       | selected, hover와 조용한 강조                          |
+| `destructive`                       | 실제 위험과 오류                                       |
+| `success`                           | 성공과 완료                                            |
+| `warning`                           | 주의와 확인 필요                                       |
+| `info`                              | 중립 정보                                              |
+| `purple`                            | provenance 또는 별도 의미가 정의된 특수 상태           |
+| `border`, `input`, `ring`           | 구조 경계, 입력 경계와 focus indicator                 |
+| `selection`, `selection-foreground` | text selection과 선택 상태                             |
+| `chart-1`부터 `chart-5`             | 순서가 있는 중립 chart 계열                            |
+| `series-1`부터 `series-4`           | 병렬 항목 정체. 평가 상태와 겹치지 않는 낮은 채도 구분 |
+
+상태 token은 단독 text 또는 낮은 opacity Surface와 조합한다.
+
+넓은 원색 상태 Surface를 기본값으로 사용하지 않는다.
+
+확인 전 선택은 `info` 톤온톤으로 표시한다. `success`는 확인 후 정답에만 쓴다.
+
+`series-*`는 카테고리·짝처럼 같은 종류의 병렬 항목을 구분할 때만 쓴다. 점·라벨 등 비색 단서와 함께 쓰고, 정답·오답·선택 상태에는 쓰지 않는다.
 
 상태 token은 단독 text 또는 낮은 opacity Surface와 조합한다.
 

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { learningSeriesAt } from "#ui/lib/learning-series"
 import { cn } from "#ui/lib/utils"
 import { ErrorCorrectAnswer } from "#ui/components/learning/error-correct-answer"
 import { ParagraphOrganizeAnswer } from "#ui/components/learning/paragraph-organize-answer"
@@ -779,6 +780,9 @@ function MatchStep({
               connections={Object.entries(pairs).map(([from, to]) => ({
                 from,
                 to,
+                series: learningSeriesAt(
+                  PAIR_LEFT.findIndex((item) => item.id === from)
+                ),
                 state:
                   phase === "answering"
                     ? "paired"
@@ -794,30 +798,46 @@ function MatchStep({
               )}
             />
             <PairColumn side="left">
-              {PAIR_LEFT.map((item) => (
+              {PAIR_LEFT.map((item, index) => (
                 <PairItem
                   key={item.id}
                   pairId={item.id}
                   state={leftState(item.id)}
                   onClick={() => selectLeft(item.id)}
                 >
-                  <PairMarker />
+                  <PairMarker
+                    {...(pairs[item.id]
+                      ? { series: learningSeriesAt(index) }
+                      : {})}
+                  />
                   <PairLabel>{item.label}</PairLabel>
                 </PairItem>
               ))}
             </PairColumn>
             <PairColumn side="right">
-              {PAIR_RIGHT.map((item) => (
-                <PairItem
-                  key={item.id}
-                  pairId={item.id}
-                  state={rightState(item.id)}
-                  onClick={() => selectRight(item.id)}
-                >
-                  <PairMarker />
-                  <PairLabel>{item.label}</PairLabel>
-                </PairItem>
-              ))}
+              {PAIR_RIGHT.map((item) => {
+                const leftId = Object.entries(pairs).find(
+                  ([, right]) => right === item.id
+                )?.[0]
+                const leftIndex = PAIR_LEFT.findIndex(
+                  (left) => left.id === leftId
+                )
+                return (
+                  <PairItem
+                    key={item.id}
+                    pairId={item.id}
+                    state={rightState(item.id)}
+                    onClick={() => selectRight(item.id)}
+                  >
+                    <PairMarker
+                      {...(leftIndex >= 0
+                        ? { series: learningSeriesAt(leftIndex) }
+                        : {})}
+                    />
+                    <PairLabel>{item.label}</PairLabel>
+                  </PairItem>
+                )
+              })}
             </PairColumn>
           </PairBoard>
         </StepBody>
@@ -897,9 +917,10 @@ function CategorizeStep({
         <StepBody>
           <Classify>
             <ClassifyCategories>
-              {CATEGORIES.map((category) => (
+              {CATEGORIES.map((category, index) => (
                 <ClassifyCategory
                   key={category.id}
+                  series={learningSeriesAt(index)}
                   state={
                     phase !== "answering"
                       ? "locked"
@@ -917,9 +938,13 @@ function CategorizeStep({
             </ClassifyCategories>
             <ClassifyPool>
               {CLASSIFY_ITEMS.map((item) => {
-                const tag = CATEGORIES.find(
+                const categoryIndex = CATEGORIES.findIndex(
                   (category) => category.id === placements[item.id]
-                )?.label
+                )
+                const tag =
+                  categoryIndex === -1
+                    ? undefined
+                    : CATEGORIES[categoryIndex]?.label
                 return (
                   <ClassifyItem
                     key={item.id}
@@ -927,7 +952,11 @@ function CategorizeStep({
                     onClick={() => place(item.id)}
                   >
                     <ClassifyItemLabel>{item.label}</ClassifyItemLabel>
-                    {tag ? <ClassifyItemTag>{tag}</ClassifyItemTag> : null}
+                    {tag ? (
+                      <ClassifyItemTag series={learningSeriesAt(categoryIndex)}>
+                        {tag}
+                      </ClassifyItemTag>
+                    ) : null}
                   </ClassifyItem>
                 )
               })}

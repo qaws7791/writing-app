@@ -154,6 +154,7 @@ export function MultipleChoice() {
       "정답 ID는 UI 위치가 아니라 서버 채점 결과로만 표시하세요.",
       "Segment·Token의 상태 언어와 맞춰 학습자가 피드백을 재학습하지 않게 합니다.",
       "선택은 배경·테두리로 전달하고, 앞쪽 라디오 표시는 두지 않습니다.",
+      "확인 전 선택은 info 톤으로 표시하고, 확인 전 success는 쓰지 않습니다.",
     ],
     accessibility: [
       "단일 선택은 role=radiogroup/radio, 다중은 group/checkbox를 사용합니다.",
@@ -233,7 +234,7 @@ export function TrueFalseButtons() {
     usageNotes: [
       "객관식 Choice 목록을 재사용하지 마세요. 참거짓은 주장 본문과 O·X 판정으로 구성합니다.",
       "O와 X는 도형으로 구분하고, 보이는 텍스트 대신 aria-label로 참·거짓을 제공합니다.",
-      "채점 전에는 정답을 색이나 위치로 암시하지 마세요.",
+      "채점 전에는 정답을 색이나 위치로 암시하지 마세요. 대기 상태의 O·X에 정답·오답 색을 입히지 않습니다.",
     ],
     accessibility: [
       "그룹은 role=radiogroup, 각 버튼은 role=radio와 aria-checked를 사용합니다.",
@@ -312,6 +313,7 @@ export function FillBlank() {
     usageNotes: [
       "빈칸은 문구가 같아도 단어 ID로 구분하세요.",
       "채우기 순서는 앱 상태에서 관리하고, Token은 표시와 상호작용만 담당합니다.",
+      "빈 슬롯은 info 점선으로 아직 비어 있음을 표시합니다. 단어마다 다른 색은 두지 않습니다.",
     ],
     accessibility: [
       "빈 TokenSlot에는 자리를 알리는 접근 가능 이름을 주세요.",
@@ -511,6 +513,7 @@ export function MultiSelect() {
     usageNotes: [
       "배치 기본값은 inline입니다. 콘텐츠에 layout이 없으면 inline으로 두세요.",
       "구간 문구가 같아도 ID로 채점합니다.",
+      '확인 전 선택은 info 톤입니다. ERROR_CORRECT의 오류 구간은 intent="fault"로 warning 톤을 씁니다.',
     ],
     accessibility: [
       "각 Segment는 aria-pressed로 선택 상태를 전달합니다.",
@@ -528,6 +531,12 @@ export function MultiSelect() {
         type: '"idle" | "selected" | "correct" | "incorrect" | "missed" | "locked"',
         defaultValue: '"idle"',
         description: "선택·채점 상태입니다.",
+      },
+      {
+        name: "intent",
+        type: '"choice" | "fault"',
+        defaultValue: '"choice"',
+        description: "일반 선택은 choice, 오류 표시는 fault입니다.",
       },
     ],
     related: ["step", "choice", "insight"],
@@ -647,13 +656,16 @@ export function OrderStep() {
 }`,
       },
       {
-        id: "with-index",
-        title: "문단 순서 번호",
-        description: "PARAGRAPH_ORGANIZE처럼 문단 순서를 맞출 때만 SortableIndex를 둡니다.",
-        code: `<Sortable value={["intro"]} onValueChange={() => {}}>
-  <SortableItem value="intro">
-    <SortableIndex />
-    <SortableContent>서론</SortableContent>
+        id: "paragraph-order",
+        title: "문단 문장 순서",
+        description: "PARAGRAPH_ORGANIZE에서 고른 문장을 재배치합니다. 순번은 두지 않습니다.",
+        code: `<Sortable value={["claim", "reason"]} onValueChange={() => {}} aria-label="문단 문장 순서">
+  <SortableItem value="claim">
+    <SortableContent>학교는 토론을 늘려야 한다</SortableContent>
+    <SortableHandle />
+  </SortableItem>
+  <SortableItem value="reason">
+    <SortableContent>토론은 근거를 점검하게 한다</SortableContent>
     <SortableHandle />
   </SortableItem>
 </Sortable>`,
@@ -682,7 +694,7 @@ export function OrderStep() {
     ],
     usageNotes: [
       "Sortable은 value와 onValueChange로 순서를 제어하며 각 SortableItem에는 안정적인 value를 제공하세요.",
-      "ORDER는 항목 앞에 순번을 두지 않습니다. PARAGRAPH_ORGANIZE만 SortableIndex를 사용합니다.",
+      "ORDER와 PARAGRAPH_ORGANIZE는 항목 앞에 순번을 두지 않습니다.",
       "핸들은 항목 오른쪽에 두어 오른손 엄지 도달 범위를 맞춥니다.",
     ],
     accessibility: [
@@ -837,6 +849,7 @@ export function MatchStep() {
       "한쪽 열에 같은 표시 문구가 두 번 있으면 콘텐츠로 허용하지 마세요.",
       "연결된 관계는 PairLinks 목록보다 PairConnections 곡선과 항목 state로 드러내세요.",
       "PairItem에는 pairId를 주고, 보조 기술용 요약이 필요하면 PairConnections의 labels를 사용하세요.",
+      "짝이 생기면 점과 연결선에 series를 두어 짝 정체를 유지하세요. 채점 후 카드는 정오답, 점과 선은 짝 색을 남깁니다.",
     ],
     accessibility: [
       "열과 항목에 명확한 레이블을 제공하세요.",
@@ -857,7 +870,7 @@ export function MatchStep() {
       },
       {
         name: "connections",
-        type: '{ from: string; to: string; state?: "paired" | "correct" | "incorrect" | "active" }[]',
+        type: '{ from: string; to: string; series?: 1 | 2 | 3 | 4; state?: "paired" | "correct" | "incorrect" | "active" }[]',
         defaultValue: "-",
         description: "PairConnections에 넘기는 좌·우 연결 목록입니다.",
       },
@@ -880,14 +893,14 @@ export function CategorizeStep() {
   return (
     <Classify>
       <ClassifyCategories>
-        <ClassifyCategory state="active">주장</ClassifyCategory>
-        <ClassifyCategory>근거</ClassifyCategory>
-        <ClassifyCategory>예시</ClassifyCategory>
+        <ClassifyCategory series={1} state="active">주장</ClassifyCategory>
+        <ClassifyCategory series={2}>근거</ClassifyCategory>
+        <ClassifyCategory series={3}>예시</ClassifyCategory>
       </ClassifyCategories>
       <ClassifyPool>
         <ClassifyItem state="placed">
           <ClassifyItemLabel>학교는 토론을 늘려야 한다</ClassifyItemLabel>
-          <ClassifyItemTag>주장</ClassifyItemTag>
+          <ClassifyItemTag series={1}>주장</ClassifyItemTag>
         </ClassifyItem>
         <ClassifyItem>
           <ClassifyItemLabel>참여 학생이 늘었다는 조사</ClassifyItemLabel>
@@ -903,14 +916,14 @@ export function CategorizeStep() {
         description: "맞춘·틀린 배치를 상태와 태그로 함께 보여줍니다.",
         code: `<ClassifyItem state="correct">
   <ClassifyItemLabel>항목</ClassifyItemLabel>
-  <ClassifyItemTag>근거</ClassifyItemTag>
+  <ClassifyItemTag series={2}>근거</ClassifyItemTag>
 </ClassifyItem>`,
       },
       {
         id: "locked-categories",
         title: "카테고리 잠금",
         description: "제출 후 카테고리 선택을 막을 때 locked를 씁니다.",
-        code: `<ClassifyCategory state="locked">주장</ClassifyCategory>`,
+        code: `<ClassifyCategory series={1} state="locked">주장</ClassifyCategory>`,
       },
       {
         id: "empty-item",
@@ -924,6 +937,8 @@ export function CategorizeStep() {
     usageNotes: [
       "모든 항목이 배치되어야 제출 가능합니다. 미배치는 UI에서 분명히 남기세요.",
       "카테고리 선택은 toolbar로, 항목은 list로 역할을 나눕니다.",
+      "카테고리마다 series와 점을 함께 두어 글자를 다시 읽지 않고도 구분되게 하세요.",
+      "채점 후에도 태그 정체 색은 유지하고, 정오답은 항목 본문에만 올리세요.",
     ],
     accessibility: [
       "활성 카테고리는 시각과 상태 텍스트로 함께 전달하세요.",
@@ -935,6 +950,12 @@ export function CategorizeStep() {
         type: "ClassifyState",
         defaultValue: '"idle"',
         description: "카테고리·항목의 선택·배치·채점 상태입니다.",
+      },
+      {
+        name: "series",
+        type: "1 | 2 | 3 | 4",
+        defaultValue: "—",
+        description: "카테고리 정체 색입니다. 점과 라벨과 함께 씁니다.",
       },
     ],
     related: ["step", "pair", "insight"],

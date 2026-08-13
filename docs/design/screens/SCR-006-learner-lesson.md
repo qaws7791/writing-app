@@ -45,6 +45,10 @@
 - 완료 화면은 semantic `background` 위에 `LessonComplete` anatomy를 사용한다.
 - markdown 본문은 앱의 `ReactMarkdown` 결과를 `ProseBody`로 감싼다.
 - 선택형 UI는 `Choice`와 `Verdict`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `incorrect`, `missed`, `locked` 상태를 표현한다. `TRUE_FALSE`는 `missed`를 쓰지 않는다.
+- 확인 전 선택은 `info` 톤온톤으로 표시한다. 대기 상태의 O·X에 정답·오답 색을 입히지 않는다.
+- `CATEGORIZE` 카테고리 칩과 항목 태그는 `series-*`와 점으로 구분한다. 채점 후에도 태그 정체 색은 유지한다.
+- `MATCH` 짝은 점과 연결선에 `series-*`를 쓴다. 채점 후 카드는 정오답, 점과 선은 짝 정체를 유지한다.
+- `ERROR_CORRECT`의 오류 구간 선택은 `warning` 톤으로 표시한다.
 - 완료 화면은 레슨 요약이 있으면 `이번 레슨 요약` 목록을 표시한다.
 - 레슨 요약이 없으면 완료 화면의 핵심 요약 영역을 표시하지 않는다.
 - 레슨 화면 구현은 시작, 진행, 완료 화면 파일을 분리하고, 다음 레슨 탐색은 `lesson-next-course-lesson.ts` selector가 담당한다.

@@ -10,6 +10,7 @@ import {
   type PairState,
 } from "#ui/components/learning/pair"
 import { StepBody, StepHeader, StepTitle } from "#ui/components/learning/step"
+import { learningSeriesAt, type LearningSeries } from "#ui/lib/learning-series"
 import type { LessonStepCheckedVisual } from "#ui/lib/lesson-step-checked-visual"
 
 export type MatchAnswerChoice = {
@@ -88,6 +89,11 @@ export function MatchAnswer({
           <PairConnections
             connections={connections.map((connection) => ({
               from: `left:${connection.leftChoiceId}`,
+              series: learningSeriesAt(
+                leftChoices.findIndex(
+                  (choice) => choice.id === connection.leftChoiceId
+                )
+              ),
               state:
                 connection.tone === "default"
                   ? "paired"
@@ -114,6 +120,15 @@ export function MatchAnswer({
                   isPaired={connection !== undefined}
                   key={choice.id}
                   {...(onChoiceSelect === undefined ? {} : { onChoiceSelect })}
+                  {...(connection === undefined
+                    ? {}
+                    : {
+                        series: learningSeriesAt(
+                          leftChoices.findIndex(
+                            (candidate) => candidate.id === choice.id
+                          )
+                        ),
+                      })}
                   side="left"
                   {...(connection === undefined
                     ? {}
@@ -139,6 +154,16 @@ export function MatchAnswer({
                   isPaired={connection !== undefined}
                   key={choice.id}
                   {...(onChoiceSelect === undefined ? {} : { onChoiceSelect })}
+                  {...(connection === undefined
+                    ? {}
+                    : {
+                        series: learningSeriesAt(
+                          leftChoices.findIndex(
+                            (candidate) =>
+                              candidate.id === connection.leftChoiceId
+                          )
+                        ),
+                      })}
                   side="right"
                   {...(connection === undefined
                     ? {}
@@ -159,6 +184,7 @@ function PairChoiceButton({
   isActive,
   isPaired,
   onChoiceSelect,
+  series,
   side,
   tone,
 }: {
@@ -167,6 +193,7 @@ function PairChoiceButton({
   readonly isActive: boolean
   readonly isPaired: boolean
   readonly onChoiceSelect?: (selection: MatchAnswerChoiceSelection) => void
+  readonly series?: LearningSeries
   readonly side: "left" | "right"
   readonly tone?: MatchAnswerConnection["tone"]
 }) {
@@ -185,7 +212,7 @@ function PairChoiceButton({
         ...(tone === undefined ? {} : { tone }),
       })}
     >
-      <PairMarker />
+      <PairMarker {...(series === undefined ? {} : { series })} />
       <PairLabel>{choice.text}</PairLabel>
     </PairItem>
   )

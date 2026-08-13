@@ -18,6 +18,7 @@
 - `accent` 위에는 `accent-foreground`를 사용한다.
 - `muted-foreground`는 긴 본문보다 보조 정보에 사용한다.
 - 성공, 경고, 오류와 정보는 색상만으로 구분하지 않는다.
+- 병렬 항목 정체는 `series-*` 색과 점·라벨을 함께 사용한다.
 - 위험 버튼은 `destructive` semantic token과 `Button variant="destructive"`를 사용한다.
 
 색 조합을 새로 만들 때는 구현 전 대비를 확인한다.

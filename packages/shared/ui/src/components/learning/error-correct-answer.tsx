@@ -113,6 +113,7 @@ export function ErrorCorrectAnswer({
             {segments.map((segment) => (
               <Segment
                 disabled={checked !== false}
+                intent="fault"
                 key={segment.id}
                 onClick={() => handleSegmentClick(segment.id)}
                 selected={errorSegmentId === segment.id}
