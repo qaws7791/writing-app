@@ -50,7 +50,7 @@ export const learnerBlocks: BlockDoc[] = [
     slug: "home-learner",
     title: "Home Learner",
     description:
-      "로그인한 학습자 홈입니다. 인사와 학습 요약, 진행중·완료 탭의 코스 카드에서 다음 레슨을 이어갑니다.",
+      "로그인한 학습자 홈입니다. 인사와 학습 요약, 최근 5일 학습 기록, 진행중·완료 탭의 코스 카드에서 다음 레슨을 이어갑니다.",
     installName: "home-learner",
   },
   {
