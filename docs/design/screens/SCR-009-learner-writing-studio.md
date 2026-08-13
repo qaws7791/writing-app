@@ -27,14 +27,16 @@
 ## UI 기준
 
 - `AppShell`을 사용하지 않는 몰입 화면이다.
+- 헤더·브리프·본문·푸터를 구분선으로 나누지 않는다. 바깥 여백과 열 간격, 본문 표면으로 구조를 설명한다.
+- 본문은 캔버스 위의 editorial 종이 표면이다. `bg-card`, `rounded-4xl`/`rounded-5xl`, 낮은 대비 `border`를 사용한다. 입력 중 포커스는 control `ring-3`이 아니라 캐럿과 종이 경계 변화로 전달한다.
 - 본문은 Luma `ComposeEditor`에 일반 텍스트만 입력한다.
-- 브리프는 Luma `WritingBrief` anatomy를 사용한다.
-- 점검 결과는 Luma `FeedbackSummary`와 `Insight`를 사용한다.
+- 브리프는 Luma `WritingBrief` anatomy를 사용한다. 브리프 열은 카드로 다시 감싸지 않는다.
+- 점검 결과는 Luma `FeedbackSummary`와 `Insight`를 사용한다. 점검 열도 구분선 없이 후퇴한다.
 - 저장 상태는 `Badge` 또는 `role="status"`로 표시한다.
 - 글자 수는 `ComposeMeter`로 최소·목표 글자 수를 함께 표시한다.
 - 저장 충돌과 실패, 점검 실패는 Luma `Insight`로 표시한다.
-- 데스크톱에서 브리프는 접을 수 있는 옆 열이다. 좁은 화면에서는 하단 `Sheet`로 연다.
-- 하단 주요 행동은 모바일 safe area와 소프트 키보드를 가리지 않아야 한다.
+- 데스크톱에서 브리프는 접을 수 있는 옆 열이다. 접으면 본문 열은 가운데 `max-w-3xl`로 모인다. 좁은 화면에서는 하단 `Sheet`로 연다.
+- 하단 주요 행동은 상단 구분선 없이 본문과 이어지며, 모바일 safe area와 소프트 키보드를 가리지 않아야 한다.
 - 저장하지 않은 입력이 있으면 쓰기 홈 이동 전에 저장을 시도한다.
 
 ## 상태

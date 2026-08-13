@@ -212,6 +212,8 @@ export function WritingStudio({
     }, 900)
   }
 
+  const centerWriting = !briefOpen && !showFeedback
+
   return (
     <div
       data-slot="writing-studio"
@@ -221,122 +223,142 @@ export function WritingStudio({
       )}
       {...props}
     >
-      <header className="flex shrink-0 items-center gap-3 border-b border-border/50 px-4 py-3 sm:px-6">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="rounded-full"
-          aria-label="쓰기 홈으로"
-        >
-          <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-        </Button>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium tracking-[-0.01em]">
-            {TASK.title}
-          </p>
-          <p className="text-xs tabular-nums text-muted-foreground">
-            {TASK.difficulty} · 목표 {TASK.goalChars.toLocaleString("ko-KR")}자
-          </p>
-        </div>
-        <Badge variant="outline">저장됨</Badge>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="hidden sm:inline-flex"
-          onClick={() => setBriefOpen((open) => !open)}
-        >
-          과제 {briefOpen ? "접기" : "보기"}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="rounded-full sm:hidden"
-          aria-label="과제 보기"
-          onClick={() => setBriefSheetOpen(true)}
-        >
-          <HugeiconsIcon icon={BookOpen01Icon} strokeWidth={2} />
-        </Button>
-      </header>
-
-      <div
-        className={cn(
-          "grid min-h-0 flex-1 grid-cols-1",
-          briefOpen && "lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]",
-          showFeedback && "xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]",
-          briefOpen &&
-            showFeedback &&
-            "xl:grid-cols-[minmax(16rem,18rem)_minmax(0,1fr)_minmax(16rem,20rem)]"
-        )}
-      >
-        {briefOpen ? (
-          <aside className="hidden min-h-0 overflow-auto border-r border-border/50 p-5 lg:block">
-            <BriefBody />
-          </aside>
-        ) : null}
-
-        <Compose className="flex h-full min-h-0 flex-col gap-0">
-          <label className="sr-only" htmlFor="writing-studio-editor">
-            본문
-          </label>
-          <ComposeEditor
-            id="writing-studio-editor"
-            value={text}
-            onChange={handleTextChange}
-            placeholder="여기에 글을 씁니다."
-            className="min-h-0 flex-1 resize-none rounded-none border-0 px-5 py-5 shadow-none sm:px-8 sm:py-6"
-            disabled={phase === "checking"}
-          />
-        </Compose>
-
-        {showFeedback ? (
-          <aside className="hidden min-h-0 border-l border-border/50 p-5 xl:block">
-            <FeedbackPanel />
-          </aside>
-        ) : null}
-      </div>
-
-      {showFeedback ? (
-        <div className="border-t border-border/50 p-4 xl:hidden">
-          <FeedbackPanel />
-        </div>
-      ) : null}
-
-      <footer className="flex shrink-0 flex-wrap items-center gap-3 border-t border-border/50 px-4 py-3 sm:px-6">
-        <ComposeMeter
-          value={charCount}
-          min={TASK.minChars}
-          goal={TASK.goalChars}
-        />
-        <span className="text-xs text-muted-foreground" role="status">
-          {phase === "checking" ? "글을 검토하는 중입니다." : "저장됨"}
-        </span>
-        <div className="ml-auto flex items-center gap-2">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:gap-4 sm:px-6 sm:pt-5 sm:pb-5">
+        <header className="flex shrink-0 items-center gap-3 px-1 py-1 sm:px-2">
           <Button
             type="button"
-            variant="outline"
-            disabled={phase !== "feedback"}
-            onClick={() => setPhase("complete")}
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-full"
+            aria-label="쓰기 홈으로"
           >
-            마치기
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
           </Button>
-          <Button type="button" disabled={!canCheck} onClick={requestCheck}>
-            {phase === "checking" ? "검토 중…" : "점검하기"}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium tracking-[-0.01em]">
+              {TASK.title}
+            </p>
+            <p className="text-xs tabular-nums text-muted-foreground">
+              {TASK.difficulty} · 목표 {TASK.goalChars.toLocaleString("ko-KR")}
+              자
+            </p>
+          </div>
+          <Badge variant="outline">저장됨</Badge>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+            onClick={() => setBriefOpen((open) => !open)}
+          >
+            과제 {briefOpen ? "접기" : "보기"}
           </Button>
-        </div>
-      </footer>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-full sm:hidden"
+            aria-label="과제 보기"
+            onClick={() => setBriefSheetOpen(true)}
+          >
+            <HugeiconsIcon icon={BookOpen01Icon} strokeWidth={2} />
+          </Button>
+        </header>
 
-      {phase === "complete" ? (
-        <Insight tone="correct" className="mx-4 mb-4 sm:mx-6">
-          <InsightTitle>이 글을 마쳤습니다</InsightTitle>
-          <InsightDescription>
-            본문을 고치면 다시 작성 중이 되고, 점검을 한 번 더 해야 마칠 수
-            있습니다.
-          </InsightDescription>
-        </Insight>
-      ) : null}
+        <div
+          className={cn(
+            "grid min-h-0 flex-1 grid-cols-1 gap-3 sm:gap-4",
+            briefOpen && "lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]",
+            showFeedback && "xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]",
+            briefOpen &&
+              showFeedback &&
+              "xl:grid-cols-[minmax(16rem,18rem)_minmax(0,1fr)_minmax(16rem,20rem)]"
+          )}
+        >
+          {briefOpen ? (
+            <aside className="hidden min-h-0 overflow-auto px-3 py-3 lg:block sm:px-4">
+              <BriefBody />
+            </aside>
+          ) : null}
+
+          <div
+            className={cn(
+              "flex min-h-0 min-w-0",
+              centerWriting && "justify-center"
+            )}
+          >
+            <Compose
+              className={cn(
+                "flex h-full min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl",
+                centerWriting && "w-full max-w-3xl"
+              )}
+            >
+              <label className="sr-only" htmlFor="writing-studio-editor">
+                본문
+              </label>
+              <ComposeEditor
+                id="writing-studio-editor"
+                value={text}
+                onChange={handleTextChange}
+                placeholder="여기에 글을 씁니다."
+                className="min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-5 py-5 shadow-none hover:border-transparent hover:bg-transparent focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0 sm:px-8 sm:py-8"
+                disabled={phase === "checking"}
+              />
+            </Compose>
+          </div>
+
+          {showFeedback ? (
+            <aside className="hidden min-h-0 overflow-auto px-3 py-3 xl:block sm:px-4">
+              <FeedbackPanel />
+            </aside>
+          ) : null}
+        </div>
+
+        {showFeedback ? (
+          <div className="min-h-0 overflow-auto px-3 xl:hidden">
+            <FeedbackPanel />
+          </div>
+        ) : null}
+
+        {phase === "complete" ? (
+          <Insight className="px-1 sm:px-2" tone="correct">
+            <InsightTitle>이 글을 마쳤습니다</InsightTitle>
+            <InsightDescription>
+              본문을 고치면 다시 작성 중이 되고, 점검을 한 번 더 해야 마칠 수
+              있습니다.
+            </InsightDescription>
+          </Insight>
+        ) : null}
+
+        <footer
+          className={cn(
+            "flex shrink-0 flex-wrap items-center gap-3 px-1 py-1 sm:px-2",
+            centerWriting && "mx-auto w-full max-w-3xl"
+          )}
+        >
+          <ComposeMeter
+            value={charCount}
+            min={TASK.minChars}
+            goal={TASK.goalChars}
+          />
+          <span className="text-xs text-muted-foreground" role="status">
+            {phase === "checking" ? "글을 검토하는 중입니다." : "저장됨"}
+          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={phase !== "feedback"}
+              onClick={() => setPhase("complete")}
+            >
+              마치기
+            </Button>
+            <Button type="button" disabled={!canCheck} onClick={requestCheck}>
+              {phase === "checking" ? "검토 중…" : "점검하기"}
+            </Button>
+          </div>
+        </footer>
+      </div>
 
       <Sheet open={briefSheetOpen} onOpenChange={setBriefSheetOpen}>
         <SheetContent side="bottom" className="max-h-[80vh] overflow-auto">

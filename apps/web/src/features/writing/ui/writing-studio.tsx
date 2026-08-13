@@ -308,11 +308,7 @@ export function WritingStudio({
         notice={
           <>
             {autosave.status.kind === "conflict" ? (
-              <Insight
-                className="mx-4 mt-4 sm:mx-6"
-                role="alert"
-                tone="incorrect"
-              >
+              <Insight className="px-1 sm:px-2" role="alert" tone="incorrect">
                 <InsightTitle>
                   다른 화면에서 이 글이 변경되었습니다.
                 </InsightTitle>
@@ -335,16 +331,12 @@ export function WritingStudio({
               </Insight>
             ) : null}
             {actionError === null ? null : (
-              <Insight
-                className="mx-4 mt-4 sm:mx-6"
-                role="alert"
-                tone="incorrect"
-              >
+              <Insight className="px-1 sm:px-2" role="alert" tone="incorrect">
                 <InsightDescription>{actionError}</InsightDescription>
               </Insight>
             )}
             {writing.status === "complete" && !autosave.dirty ? (
-              <Insight className="mx-4 mt-4 sm:mx-6" tone="correct">
+              <Insight className="px-1 sm:px-2" tone="correct">
                 <InsightTitle>이 글을 마쳤습니다</InsightTitle>
                 <InsightDescription>
                   본문을 고치면 다시 작성 중이 되고, 점검을 한 번 더 해야 마칠
@@ -355,12 +347,12 @@ export function WritingStudio({
           </>
         }
       >
-        <Compose className="flex h-full min-h-0 flex-col gap-0">
+        <Compose className="flex h-full min-h-0 flex-1 flex-col gap-0">
           <label className="sr-only" htmlFor="writing-studio-editor">
             본문
           </label>
           <ComposeEditor
-            className="min-h-0 flex-1 resize-none rounded-none border-0 px-5 py-5 shadow-none sm:px-8 sm:py-6"
+            className="min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-5 py-5 shadow-none hover:border-transparent hover:bg-transparent focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0 sm:px-8 sm:py-8"
             disabled={busy}
             id="writing-studio-editor"
             onBlur={() => void autosave.flushWriting()}
