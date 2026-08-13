@@ -64,21 +64,21 @@ export function AdminDashboardPage({
           value={formatCount(metrics.activeUsersLast7Days)}
         />
         <DashboardMetric
-          detail={`${formatCount(metrics.writingSelfCheckStartRate.numerator)} / ${formatCount(metrics.writingSelfCheckStartRate.denominator)}개 글`}
+          detail={`${formatCount(metrics.writingCheckSuccessRate.numerator)} / ${formatCount(metrics.writingCheckSuccessRate.denominator)}개 글`}
           icon={<FileTextIcon aria-hidden="true" size={20} />}
-          label="자기 점검 시작률"
+          label="점검 성공률"
           value={formatRate(
-            metrics.writingSelfCheckStartRate.percentage,
-            metrics.writingSelfCheckStartRate.status
+            metrics.writingCheckSuccessRate.percentage,
+            metrics.writingCheckSuccessRate.status
           )}
         />
         <DashboardMetric
-          detail={`${formatCount(metrics.writingRevisionAfterSelfCheckRate.numerator)} / ${formatCount(metrics.writingRevisionAfterSelfCheckRate.denominator)}개 점검 시작 글`}
+          detail={`${formatCount(metrics.writingRevisionAfterCheckRate.numerator)} / ${formatCount(metrics.writingRevisionAfterCheckRate.denominator)}개 점검 성공 글`}
           icon={<CheckCircleIcon aria-hidden="true" size={20} />}
           label="점검 뒤 수정률"
           value={formatRate(
-            metrics.writingRevisionAfterSelfCheckRate.percentage,
-            metrics.writingRevisionAfterSelfCheckRate.status
+            metrics.writingRevisionAfterCheckRate.percentage,
+            metrics.writingRevisionAfterCheckRate.status
           )}
         />
       </section>

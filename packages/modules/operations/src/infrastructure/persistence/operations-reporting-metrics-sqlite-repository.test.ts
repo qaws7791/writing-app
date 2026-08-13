@@ -49,17 +49,16 @@ describe("operations writing reporting", () => {
         .get(activeLearnerId)
 
       expect({
-        revisionAfterSelfCheck:
-          dashboard.metrics.writingRevisionAfterSelfCheckRate,
-        selfCheckStart: dashboard.metrics.writingSelfCheckStartRate,
+        revisionAfterCheck: dashboard.metrics.writingRevisionAfterCheckRate,
+        checkSuccess: dashboard.metrics.writingCheckSuccessRate,
       }).toEqual({
-        revisionAfterSelfCheck: {
+        revisionAfterCheck: {
           denominator: 1,
           numerator: 1,
           percentage: 100,
           status: "available",
         },
-        selfCheckStart: {
+        checkSuccess: {
           denominator: 1,
           numerator: 1,
           percentage: 100,
@@ -148,11 +147,7 @@ function seedWritingReporting(sqlite: WritingAppSqlite): void {
     { id: "deleted-writing", userId: deletedLearnerId },
   ]) {
     aWriting(sqlite, {
-      eventTypes: [
-        "writing_created",
-        "self_check_started",
-        "revised_after_self_check",
-      ],
+      eventTypes: ["writing_created", "check_succeeded", "revised_after_check"],
       ...writing,
     })
   }

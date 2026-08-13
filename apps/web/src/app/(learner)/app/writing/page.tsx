@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { getWritings } from "@workspace/http-client/learner"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
-import { WritingHomePage } from "@/features/focused-writing/ui/writing-home-page"
+import { WritingHomePage } from "@/features/writing/ui/writing-home-page"
 import {
   isLearnerApiAuthenticationError,
   settleLearnerApiRequest,

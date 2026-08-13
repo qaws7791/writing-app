@@ -287,7 +287,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 배경은 `bg-background`, 텍스트는 `text-foreground`.
 - 데스크톱 상단 `GlobalNav`와 모바일 하단 `MobileNav`를 포함한다.
 - 본문은 `max-w-6xl`, `px-4 md:px-12`, `pb-24`를 사용한다.
-- 레슨, 글 편집과 자기 점검은 몰입형 route group으로 분리되어 `AppShell`을 사용하지 않는다.
+- 레슨과 작성 세션은 몰입형 route group으로 분리되어 `AppShell`을 사용하지 않는다.
 
 ### GlobalNav와 MobileNav
 
@@ -304,7 +304,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - `홈`, `배우기`, `쓰기`, `프로필`의 활성 상태는 `aria-current="page"`로 표시한다.
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
-- 쓰기 홈에서는 `쓰기`가 활성화된다.
+- `/app/writing`과 하위 카탈로그·작성 세션에서는 `쓰기`가 활성화된다.
 - 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
 - 이모지만 표시하는 계정 메뉴 trigger의 접근성 이름은 `계정 메뉴`로 제공한다.
 - 계정 메뉴 드롭다운은 `bg-popover`, `border-border`, `rounded-3xl`과 elevation token을 사용한다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
@@ -327,16 +327,16 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - markdown 본문은 `MarkdownContent`가 `ReactMarkdown` 결과를 `ProseBody` 안에 렌더링한다.
 - `ORDER`와 `COMPARE` renderer는 동적 경계로 분리한다. 이 경계는 drag-and-drop과 Tabs 코드를 해당 활동에서만 불러온다.
 
-### WritingFocusShell
+### WritingStudioShell
 
-구현 위치: `apps/web/src/features/focused-writing/ui/writing-focus-shell.tsx`
+구현 위치: `apps/web/src/features/writing/ui/writing-studio-shell.tsx`
 
-- 전체 viewport를 사용하는 한 열 집중 shell이다.
-- 글로벌 내비게이션, 도구 모음과 사이드바를 포함하지 않는다.
-- 상단에는 현재 단계의 최소 문맥과 상태만 둔다.
-- 편집 form은 `Compose`, `Field`, `ComposeEditor`와 `ComposeMeter`를 사용한다.
-- 자기 점검은 `Prose`, `Card`, `Badge`와 `Insight`를 사용한다.
-- 자동 저장 상태는 `Badge`로 표시한다.
+- 전체 viewport를 사용하는 몰입 화면이다.
+- 글로벌 내비게이션을 포함하지 않는다.
+- 상단에는 과제 제목, 저장 상태, 과제 보기 행동만 둔다.
+- 본문은 `Compose`, `ComposeEditor`와 `ComposeMeter`를 사용한다.
+- 브리프는 `WritingBrief` anatomy를 사용한다.
+- 점검 결과는 `FeedbackSummary`와 `Insight`를 사용한다.
 - 저장 충돌과 실패는 `Insight tone="incorrect"`로 표시한다.
 - 하단 주요 행동은 모바일 safe area를 반영한다.
 

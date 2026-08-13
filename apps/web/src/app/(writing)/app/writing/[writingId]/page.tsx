@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { getWriting } from "@workspace/http-client/learner"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
-import { WritingEditor } from "@/features/focused-writing/ui/writing-editor"
+import { WritingStudio } from "@/features/writing/ui/writing-studio"
 import {
   isLearnerApiAuthenticationError,
   settleLearnerApiRequest,
@@ -10,7 +10,7 @@ import {
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
-export default async function WritingEditorRoute({
+export default async function WritingStudioRoute({
   params,
 }: {
   readonly params: Promise<{ readonly writingId: string }>
@@ -19,10 +19,10 @@ export default async function WritingEditorRoute({
     params,
     getServerLearnerRequestOptions({ cache: "no-store" }),
   ])
-  const editorPath = `/app/writing/${encodeURIComponent(writingId)}`
+  const studioPath = `/app/writing/${encodeURIComponent(writingId)}`
 
   if (requestOptions === null) {
-    redirect(createLoginPagePath(editorPath))
+    redirect(createLoginPagePath(studioPath))
   }
 
   const result = await settleLearnerApiRequest(
@@ -30,7 +30,7 @@ export default async function WritingEditorRoute({
   )
   if (result.status === "error") {
     if (isLearnerApiAuthenticationError(result.error)) {
-      redirect(createLoginPagePath(editorPath))
+      redirect(createLoginPagePath(studioPath))
     }
 
     return (
@@ -43,5 +43,5 @@ export default async function WritingEditorRoute({
     )
   }
 
-  return <WritingEditor initialWriting={result.value} />
+  return <WritingStudio initialWriting={result.value} />
 }

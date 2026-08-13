@@ -6,9 +6,12 @@ import {
 import type { MiddlewareHandler } from "hono"
 import { apiErrorSchema } from "@workspace/contracts/api-error"
 import {
+  acknowledgeWritingAiNoticeResponseSchema,
   createWritingBodySchema,
   deleteWritingResponseSchema,
   saveWritingBodySchema,
+  writingCatalogQuerySchema,
+  writingCatalogResponseSchema,
   writingDetailSchema,
   writingListResponseSchema,
   writingParamsSchema,
@@ -25,7 +28,8 @@ import {
 
 import type { WritingApplication } from "#writing/application/ports/writing-ports"
 import {
-  presentWriting,
+  presentWritingCatalogItem,
+  presentWritingSession,
   presentWritingSummary,
   unwrapWritingResult,
 } from "#writing/interface/http/writing-http-mapper"
@@ -56,13 +60,46 @@ export function registerWritingRoutes<TEnv extends WritingHonoEnv>(
     security: [{ learnerSessionCookie: [] }],
   }
 
+  registerCatalogRoute(app, input.application, authenticated)
   registerListWritingsRoute(app, input.application, authenticated)
   registerCreateWritingRoute(app, input.application, authenticated)
+  registerAcknowledgeAiNoticeRoute(app, input.application, authenticated)
   registerGetWritingRoute(app, input.application, authenticated)
   registerSaveWritingRoute(app, input.application, authenticated)
-  registerStartSelfCheckRoute(app, input.application, authenticated)
-  registerCompleteSelfCheckRoute(app, input.application, authenticated)
+  registerCheckWritingRoute(app, input.application, authenticated)
+  registerCompleteWritingRoute(app, input.application, authenticated)
   registerDeleteWritingRoute(app, input.application, authenticated)
+}
+
+function registerCatalogRoute<TEnv extends WritingHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  application: WritingApplication,
+  authenticated: AuthenticatedRouteOptions
+): void {
+  const route = createRoute({
+    method: "get",
+    operationId: "getWritingTaskCatalog",
+    path: "/writing-tasks/catalog",
+    request: { query: writingCatalogQuerySchema },
+    responses: authenticatedResponses(
+      jsonResponse("발행된 쓰기 과제 목록입니다.", writingCatalogResponseSchema)
+    ),
+    summary: "쓰기 과제 카탈로그",
+    ...authenticated,
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const query = context.req.valid("query")
+    const items = await application.listCatalog({
+      ...(query.domain === undefined ? {} : { domain: query.domain }),
+      ...(query.typeName === undefined ? {} : { typeName: query.typeName }),
+    })
+    return context.json(
+      writingCatalogResponseSchema.parse({
+        items: items.map(presentWritingCatalogItem),
+      }),
+      200
+    )
+  })
 }
 
 function registerListWritingsRoute<TEnv extends WritingHonoEnv>(
@@ -113,16 +150,49 @@ function registerCreateWritingRoute<TEnv extends WritingHonoEnv>(
     responses: {
       201: jsonResponse("새 글입니다.", writingDetailSchema),
       ...authenticationErrorResponses,
+      409: errorResponse("과제가 발행되지 않았습니다."),
     },
     summary: "글 생성",
     ...authenticated,
   } satisfies RouteConfig)
   app.openapi(route, async (context) => {
-    const writing = await application.create({
-      learnerId: context.var.writingLearner.learnerId,
-      mode: context.req.valid("json").mode,
-    })
-    return context.json(writingDetailSchema.parse(presentWriting(writing)), 201)
+    const session = unwrapWritingResult(
+      await application.create({
+        learnerId: context.var.writingLearner.learnerId,
+        taskId: context.req.valid("json").taskId,
+      })
+    )
+    return context.json(
+      writingDetailSchema.parse(presentWritingSession(session)),
+      201
+    )
+  })
+}
+
+function registerAcknowledgeAiNoticeRoute<TEnv extends WritingHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  application: WritingApplication,
+  authenticated: AuthenticatedRouteOptions
+): void {
+  const route = createRoute({
+    method: "post",
+    operationId: "acknowledgeWritingAiNotice",
+    path: "/writings/ai-notice",
+    responses: authenticatedResponses(
+      jsonResponse(
+        "AI 점검 고지를 확인했습니다.",
+        acknowledgeWritingAiNoticeResponseSchema
+      )
+    ),
+    summary: "AI 점검 고지 확인",
+    ...authenticated,
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    await application.acknowledgeAiNotice(context.var.writingLearner.learnerId)
+    return context.json(
+      acknowledgeWritingAiNoticeResponseSchema.parse({ acknowledged: true }),
+      200
+    )
   })
 }
 
@@ -144,13 +214,16 @@ function registerGetWritingRoute<TEnv extends WritingHonoEnv>(
     ...authenticated,
   } satisfies RouteConfig)
   app.openapi(route, async (context) => {
-    const writing = unwrapWritingResult(
+    const session = unwrapWritingResult(
       await application.get({
         learnerId: context.var.writingLearner.learnerId,
         writingId: context.req.valid("param").writingId,
       })
     )
-    return context.json(writingDetailSchema.parse(presentWriting(writing)), 200)
+    return context.json(
+      writingDetailSchema.parse(presentWritingSession(session)),
+      200
+    )
   })
 }
 
@@ -184,80 +257,89 @@ function registerSaveWritingRoute<TEnv extends WritingHonoEnv>(
   } satisfies RouteConfig)
   app.openapi(route, async (context) => {
     const body = context.req.valid("json")
-    const writing = unwrapWritingResult(
+    const session = unwrapWritingResult(
       await application.save({
         body: body.body,
         expectedVersion: body.expectedVersion,
         learnerId: context.var.writingLearner.learnerId,
-        title: body.title,
         writingId: context.req.valid("param").writingId,
       })
     )
-    return context.json(writingDetailSchema.parse(presentWriting(writing)), 200)
+    return context.json(
+      writingDetailSchema.parse(presentWritingSession(session)),
+      200
+    )
   })
 }
 
-function registerStartSelfCheckRoute<TEnv extends WritingHonoEnv>(
+function registerCheckWritingRoute<TEnv extends WritingHonoEnv>(
   app: OpenAPIHono<TEnv>,
   application: WritingApplication,
   authenticated: AuthenticatedRouteOptions
 ): void {
   const route = createRoute({
     method: "post",
-    operationId: "startWritingSelfCheck",
-    path: "/writings/{writingId}/self-check",
-    request: writingVersionRequest,
+    operationId: "checkWriting",
+    path: "/writings/{writingId}/checks",
+    request: { params: writingParamsSchema },
     responses: authenticatedResponses(
-      jsonResponse("자기 점검을 시작한 글입니다.", writingDetailSchema),
+      jsonResponse("점검 결과입니다.", writingDetailSchema),
       {
         404: errorResponse("글을 찾을 수 없습니다."),
-        409: errorResponse("글 version이 충돌했습니다."),
+        409: errorResponse("점검을 시작할 수 없습니다."),
+        429: errorResponse("하루 점검 한도를 넘었습니다."),
+        503: errorResponse("점검을 준비하지 못했습니다."),
       }
     ),
-    summary: "자기 점검 시작",
+    summary: "글 점검",
     ...authenticated,
   } satisfies RouteConfig)
   app.openapi(route, async (context) => {
-    const writing = unwrapWritingResult(
-      await application.startSelfCheck({
-        expectedVersion: context.req.valid("json").expectedVersion,
+    const session = unwrapWritingResult(
+      await application.check({
         learnerId: context.var.writingLearner.learnerId,
         writingId: context.req.valid("param").writingId,
       })
     )
-    return context.json(writingDetailSchema.parse(presentWriting(writing)), 200)
+    return context.json(
+      writingDetailSchema.parse(presentWritingSession(session)),
+      200
+    )
   })
 }
 
-function registerCompleteSelfCheckRoute<TEnv extends WritingHonoEnv>(
+function registerCompleteWritingRoute<TEnv extends WritingHonoEnv>(
   app: OpenAPIHono<TEnv>,
   application: WritingApplication,
   authenticated: AuthenticatedRouteOptions
 ): void {
   const route = createRoute({
     method: "post",
-    operationId: "completeWritingSelfCheck",
-    path: "/writings/{writingId}/self-check/complete",
+    operationId: "completeWriting",
+    path: "/writings/{writingId}/complete",
     request: writingVersionRequest,
     responses: authenticatedResponses(
-      jsonResponse("자기 점검을 마친 글입니다.", writingDetailSchema),
+      jsonResponse("마친 글입니다.", writingDetailSchema),
       {
         404: errorResponse("글을 찾을 수 없습니다."),
-        409: errorResponse("자기 점검 상태가 충돌했습니다."),
+        409: errorResponse("글을 마칠 수 없습니다."),
       }
     ),
-    summary: "자기 점검 완료",
+    summary: "글 마치기",
     ...authenticated,
   } satisfies RouteConfig)
   app.openapi(route, async (context) => {
-    const writing = unwrapWritingResult(
-      await application.completeSelfCheck({
+    const session = unwrapWritingResult(
+      await application.complete({
         expectedVersion: context.req.valid("json").expectedVersion,
         learnerId: context.var.writingLearner.learnerId,
         writingId: context.req.valid("param").writingId,
       })
     )
-    return context.json(writingDetailSchema.parse(presentWriting(writing)), 200)
+    return context.json(
+      writingDetailSchema.parse(presentWritingSession(session)),
+      200
+    )
   })
 }
 

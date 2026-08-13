@@ -27,6 +27,7 @@ const validProductionEnvironment: Record<string, string | undefined> = {
   GOOGLE_CLIENT_SECRET: "google-production-client-secret",
   LEARNER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
   NODE_ENV: "production",
+  OPENAI_API_KEY: "sk-production-openai-key",
   RESEND_API_KEY: "re_production_example",
   WEB_ORIGIN: "https://app.example.com",
 }

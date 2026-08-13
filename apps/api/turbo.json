@@ -51,8 +51,13 @@
         "LEARNER_DELETION_RETENTION_DAYS",
         "LOG_PRETTY",
         "NODE_ENV",
+        "OPENAI_API_KEY",
+        "OPENAI_MAX_RETRIES",
+        "OPENAI_MODEL",
+        "OPENAI_TIMEOUT_MS",
         "RESEND_API_KEY",
-        "WEB_ORIGIN"
+        "WEB_ORIGIN",
+        "WRITING_DAILY_SUCCESSFUL_CHECK_LIMIT"
       ]
     },
     "maintenance:daily": {

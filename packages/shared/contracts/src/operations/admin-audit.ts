@@ -21,6 +21,9 @@ export const adminAuditActionSchema = z.enum([
   "course.publish",
   "course.archive",
   "course.restore",
+  "writing-task.create",
+  "writing-task.draft.save",
+  "writing-task.publish",
 ])
 
 export const adminAuditOutcomeSchema = z.enum([
@@ -52,6 +55,9 @@ export const adminAuditEventDtoSchema = z
     target: z.discriminatedUnion("type", [
       z.object({ id: z.string().min(1), type: z.literal("learner") }).strict(),
       z.object({ id: z.string().min(1), type: z.literal("course") }).strict(),
+      z
+        .object({ id: z.string().min(1), type: z.literal("writing-task") })
+        .strict(),
     ]),
   })
   .strict()

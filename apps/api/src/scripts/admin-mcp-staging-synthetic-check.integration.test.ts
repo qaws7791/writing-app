@@ -409,13 +409,13 @@ function createToolDependencies(): RuntimeInput["tools"] {
               percentage: null,
               status: "empty" as const,
             },
-            writingRevisionAfterSelfCheckRate: {
+            writingCheckSuccessRate: {
               denominator: 0,
               numerator: 0,
               percentage: null,
               status: "empty" as const,
             },
-            writingSelfCheckStartRate: {
+            writingRevisionAfterCheckRate: {
               denominator: 0,
               numerator: 0,
               percentage: null,

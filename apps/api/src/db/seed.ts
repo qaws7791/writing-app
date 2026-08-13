@@ -1,6 +1,7 @@
 import { seedLearnerAuth } from "@workspace/auth/seed"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { seedContentDatabase } from "@workspace/content/module"
+import { seedWritingDatabase } from "@workspace/writing/module"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { seedLearnerIdentity } from "@workspace/identity/module"
 
@@ -20,6 +21,7 @@ export async function seedApplicationDatabase(
     userId: seedLearnerId,
   })
   await seedContentDatabase(client.db)
+  seedWritingDatabase(client.db)
   seedLearnerIdentity(client.db, {
     displayName: "글쓰기 탐험가",
     userId: seedLearnerId,

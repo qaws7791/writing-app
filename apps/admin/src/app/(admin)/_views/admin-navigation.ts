@@ -3,6 +3,7 @@ import type { ComponentType } from "react"
 import {
   BarChartIcon,
   BookOpenIcon,
+  FileTextIcon,
   LayoutDashboardIcon,
   ShieldCheckIcon,
   UsersIcon,
@@ -47,6 +48,12 @@ export const adminNavigationGroups = [
         href: "/courses",
         icon: BookOpenIcon,
         label: "콘텐츠 관리",
+      },
+      {
+        end: false,
+        href: "/writing-tasks",
+        icon: FileTextIcon,
+        label: "쓰기 과제",
       },
     ],
   },
@@ -99,6 +106,7 @@ export type AdminShellChromeValue = {
 }
 
 const COURSE_DETAIL_PATH = /^\/courses\/[^/]+$/
+const WRITING_TASK_DETAIL_PATH = /^\/writing-tasks\/[^/]+$/
 const USER_DETAIL_PATH = /^\/users\/[^/]+$/
 
 export function resolveAdminShellChrome(
@@ -116,6 +124,17 @@ export function resolveAdminShellChrome(
     return {
       breadcrumb: [{ href: "/courses", label: "콘텐츠 관리" }],
       title: "코스 편집",
+    }
+  }
+
+  if (pathname === "/writing-tasks") {
+    return { title: "쓰기 과제" }
+  }
+
+  if (WRITING_TASK_DETAIL_PATH.test(pathname)) {
+    return {
+      breadcrumb: [{ href: "/writing-tasks", label: "쓰기 과제" }],
+      title: "과제 편집",
     }
   }
 

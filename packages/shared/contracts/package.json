@@ -40,6 +40,7 @@
     "./operations/admin-mcp-approvals": "./src/operations/admin-mcp-approvals.ts",
     "./operations/admin-mcp-executions": "./src/operations/admin-mcp-executions.ts",
     "./operations/analytics-query": "./src/operations/analytics-query.ts",
+    "./writing/admin-writing-tasks": "./src/writing/admin-writing-tasks.ts",
     "./writing/writing": "./src/writing/writing.ts"
   },
   "scripts": {

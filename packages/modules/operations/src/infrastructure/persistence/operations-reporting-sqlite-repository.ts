@@ -16,9 +16,9 @@ type DashboardRow = Readonly<{
   createdWritings: number
   firstLessonStarts: number
   matureCohortLearners: number
-  revisedAfterSelfCheckWritings: number
+  revisedAfterCheckWritings: number
   returnedLearners: number
-  selfCheckStartedWritings: number
+  checkSucceededWritings: number
   totalUsers: number
 }>
 
@@ -109,16 +109,16 @@ const dashboardSql = `
       FROM writing_reporting_events AS event
       INNER JOIN eligible_learners
         ON eligible_learners.id = event.user_id
-      WHERE event.event_type = 'revised_after_self_check'
-    ) AS revisedAfterSelfCheckWritings,
+      WHERE event.event_type = 'revised_after_check'
+    ) AS revisedAfterCheckWritings,
     (SELECT count(*) FROM returned_cohort) AS returnedLearners,
     (
       SELECT count(*)
       FROM writing_reporting_events AS event
       INNER JOIN eligible_learners
         ON eligible_learners.id = event.user_id
-      WHERE event.event_type = 'self_check_started'
-    ) AS selfCheckStartedWritings,
+      WHERE event.event_type = 'check_succeeded'
+    ) AS checkSucceededWritings,
     (SELECT count(*) FROM eligible_learners) AS totalUsers
 `
 
@@ -348,19 +348,19 @@ export function createSqliteOperationsReportingRepository(
               row.matureCohortLearners
             ),
           },
-          writingRevisionAfterSelfCheckRate: {
+          writingCheckSuccessRate: {
             ...createMetricRate(
-              row.revisedAfterSelfCheckWritings,
-              row.selfCheckStartedWritings
-            ),
-            status: row.selfCheckStartedWritings === 0 ? "empty" : "available",
-          },
-          writingSelfCheckStartRate: {
-            ...createMetricRate(
-              row.selfCheckStartedWritings,
+              row.checkSucceededWritings,
               row.createdWritings
             ),
             status: row.createdWritings === 0 ? "empty" : "available",
+          },
+          writingRevisionAfterCheckRate: {
+            ...createMetricRate(
+              row.revisedAfterCheckWritings,
+              row.checkSucceededWritings
+            ),
+            status: row.checkSucceededWritings === 0 ? "empty" : "available",
           },
         },
       } satisfies OperationsDashboard

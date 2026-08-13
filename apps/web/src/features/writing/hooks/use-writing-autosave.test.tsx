@@ -22,13 +22,13 @@ import {
   throwMswNetworkErrorFixture,
 } from "@workspace/http-client/msw-fixtures"
 
-import { useWritingAutosave } from "@/features/focused-writing/hooks/use-writing-autosave"
+import { useWritingAutosave } from "@/features/writing/hooks/use-writing-autosave"
 import type {
   LearnerSaveWritingBodyDto,
   LearnerWritingDetailDto,
 } from "@/shared/http/learner-api-client"
 
-const localDraft = { body: "로컬 본문", title: "로컬 제목" } as const
+const localDraft = { body: "로컬 본문" } as const
 const server = setupServer()
 const nativeRequest = globalThis.Request
 
@@ -74,7 +74,6 @@ describe("useWritingAutosave", () => {
         }
         return createWriting({
           body: body.body,
-          title: body.title,
           version: 3,
         })
       })
@@ -82,7 +81,7 @@ describe("useWritingAutosave", () => {
     const { result } = renderWritingAutosave()
 
     act(() => {
-      result.current.stageWriting({ body: "첫 수정", title: "로컬 제목" })
+      result.current.stageWriting({ body: "첫 수정" })
       vi.advanceTimersByTime(800)
     })
     await firstRequestStarted.promise
@@ -90,16 +89,13 @@ describe("useWritingAutosave", () => {
     act(() => {
       result.current.stageWriting({
         body: "두 번째 수정",
-        title: "로컬 제목",
       })
     })
 
     expect(requests).toHaveLength(1)
 
     await act(async () => {
-      firstSave.resolve(
-        createWriting({ body: "첫 수정", title: "로컬 제목", version: 2 })
-      )
+      firstSave.resolve(createWriting({ body: "첫 수정", version: 2 }))
       await result.current.flushWriting()
     })
 
@@ -113,7 +109,6 @@ describe("useWritingAutosave", () => {
   it("409은 로컬 입력과 최신 server 글을 함께 보존한다", async () => {
     const latestWriting = createWriting({
       body: "다른 화면의 본문",
-      title: "다른 화면의 제목",
       version: 3,
     })
     server.use(
@@ -134,7 +129,6 @@ describe("useWritingAutosave", () => {
   it("로컬 재시도는 최신 server version으로 로컬 입력을 저장한다", async () => {
     const latestWriting = createWriting({
       body: "다른 화면의 본문",
-      title: "다른 화면의 제목",
       version: 3,
     })
     const retryRequests: LearnerSaveWritingBodyDto[] = []
@@ -145,7 +139,6 @@ describe("useWritingAutosave", () => {
         retryRequests.push(body)
         return createWriting({
           body: body.body,
-          title: body.title,
           version: 4,
         })
       }),
@@ -172,7 +165,6 @@ describe("useWritingAutosave", () => {
   it("server 선택은 server 글을 적용하고 로컬 dirty 상태를 해제한다", async () => {
     const latestWriting = createWriting({
       body: "다른 화면의 본문",
-      title: "다른 화면의 제목",
       version: 3,
     })
     const onServerWritingApplied = vi.fn()
@@ -209,7 +201,6 @@ describe("useWritingAutosave", () => {
         recoveredRequests.push(body)
         return createWriting({
           body: body.body,
-          title: body.title,
           version: 2,
         })
       }),
@@ -260,14 +251,28 @@ function createWriting(
   overrides: Partial<LearnerWritingDetailDto> = {}
 ): LearnerWritingDetailDto {
   return {
+    aiNoticeAcknowledged: false,
     body: "서버 본문",
-    checkedAt: null,
+    brief: {
+      audience: "친구",
+      difficulty: "입문",
+      domain: "일상·실용문",
+      goalChars: 120,
+      minChars: 40,
+      publicationId: "pub-1",
+      requiredElements: ["초대 이유"],
+      situation: "주말에 가까운 사람을 공원 소풍에 초대합니다.",
+      taskId: "task-1",
+      title: "주말 소풍 초대 메시지",
+      typeName: "초대장",
+    },
+    canComplete: false,
+    check: null,
+    completedAt: null,
     createdAt: "2026-08-08T00:00:00.000Z",
+    dailyChecksRemaining: 5,
     id: "writing-1",
-    mode: "free",
-    selfCheckStartedAt: null,
     status: "drafting",
-    title: "서버 제목",
     updatedAt: `2026-08-08T00:00:0${overrides.version ?? 1}.000Z`,
     version: 1,
     ...overrides,

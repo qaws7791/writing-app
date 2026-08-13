@@ -7,6 +7,7 @@ import type {
   getProgress,
   getWriting,
   getWritings,
+  getWritingTaskCatalog,
   saveLearnerStepDraft,
   saveWriting,
 } from "@workspace/http-client/learner"
@@ -84,6 +85,9 @@ export type LearnerSaveStepDraftBodyDto = Parameters<
 export type LearnerWritingDetailDto = Awaited<ReturnType<typeof getWriting>>
 export type LearnerWritingSummaryDto = Awaited<
   ReturnType<typeof getWritings>
+>["items"][number]
+export type LearnerWritingCatalogItemDto = Awaited<
+  ReturnType<typeof getWritingTaskCatalog>
 >["items"][number]
 export type LearnerSaveWritingBodyDto = Parameters<typeof saveWriting>[1]
 export type LearnerSaveWritingResultDto = Awaited<

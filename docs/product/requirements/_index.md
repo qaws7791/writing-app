@@ -32,15 +32,16 @@
 | [REQ-LRN-8](./platform/req-lrn-8-public-landing.md)         | 공개 랜딩            | `US-LRN-9`             | `SCR-001`                       | 기준 |
 | [REQ-LRN-9](./platform/req-lrn-9-learner-navigation.md)     | 학습자 앱 내비게이션 | `US-LRN-10`            | `SCR-003`, `SCR-004`, `SCR-007` | 기준 |
 | [REQ-LRN-10](./platform/req-lrn-10-checkable-activities.md) | 정답 확인형 활동     | `US-LRN-11`            | `SCR-006`                       | 기준 |
-| [REQ-LRN-11](./platform/req-lrn-11-focused-writing.md)      | 집중형 쓰기          | `US-LRN-12`            | `SCR-008`, `SCR-009`, `SCR-010` | 기준 |
+| [REQ-LRN-11](./platform/req-lrn-11-purpose-writing.md)      | 목적 과제 글쓰기     | `US-LRN-12`            | `SCR-008`, `SCR-011`, `SCR-009` | 기준 |
 
 ## 어드민
 
-| ID                                                    | 제목              | 출처 유저 스토리 | 관련 화면                                  | 상태 |
-| ----------------------------------------------------- | ----------------- | ---------------- | ------------------------------------------ | ---- |
-| [REQ-ADM-1](./admin/req-adm-1-admin-login.md)         | 어드민 로그인     | `US-ADM-1`       | `SCR-101`                                  | 기준 |
-| [REQ-ADM-2](./admin/req-adm-2-dashboard-analytics.md) | 운영 지표와 분석  | `US-ADM-2`       | `SCR-102`, `SCR-107`                       | 기준 |
-| [REQ-ADM-3](./admin/req-adm-3-content-operations.md)  | 콘텐츠 운영       | `US-ADM-3`       | `SCR-103`, `SCR-104`                       | 기준 |
-| [REQ-ADM-4](./admin/req-adm-4-user-operations.md)     | 사용자 운영       | `US-ADM-4`       | `SCR-105`, `SCR-106`                       | 기준 |
-| [REQ-ADM-6](./admin/req-adm-6-admin-navigation.md)    | 어드민 내비게이션 | `US-ADM-6`       | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107` | 기준 |
-| [REQ-ADM-7](./admin/req-adm-7-audit-review.md)        | 감사 이력 조회    | `US-ADM-7`       | `SCR-108`                                  | 기준 |
+| ID                                                        | 제목              | 출처 유저 스토리 | 관련 화면                                  | 상태 |
+| --------------------------------------------------------- | ----------------- | ---------------- | ------------------------------------------ | ---- |
+| [REQ-ADM-1](./admin/req-adm-1-admin-login.md)             | 어드민 로그인     | `US-ADM-1`       | `SCR-101`                                  | 기준 |
+| [REQ-ADM-2](./admin/req-adm-2-dashboard-analytics.md)     | 운영 지표와 분석  | `US-ADM-2`       | `SCR-102`, `SCR-107`                       | 기준 |
+| [REQ-ADM-3](./admin/req-adm-3-content-operations.md)      | 콘텐츠 운영       | `US-ADM-3`       | `SCR-103`, `SCR-104`                       | 기준 |
+| [REQ-ADM-4](./admin/req-adm-4-user-operations.md)         | 사용자 운영       | `US-ADM-4`       | `SCR-105`, `SCR-106`                       | 기준 |
+| [REQ-ADM-6](./admin/req-adm-6-admin-navigation.md)        | 어드민 내비게이션 | `US-ADM-6`       | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107` | 기준 |
+| [REQ-ADM-7](./admin/req-adm-7-audit-review.md)            | 감사 이력 조회    | `US-ADM-7`       | `SCR-108`                                  | 기준 |
+| [REQ-ADM-8](./admin/req-adm-8-writing-task-operations.md) | 쓰기 과제 운영    | `US-ADM-8`       | `SCR-110`, `SCR-111`                       | 기준 |

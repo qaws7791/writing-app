@@ -33,6 +33,7 @@ const learnerOwnedTableNames = [
   "learner_activity_days",
   "writings",
   "writing_events",
+  "writing_ai_notices",
 ] as const
 
 describe("삭제 학습자 purge SQLite integration", () => {
@@ -183,6 +184,11 @@ function seedDeletedLearner(
     id: `writing-${input.id}`,
     userId: input.id,
   })
+  client.sqlite
+    .query<void, [string]>(
+      `INSERT INTO writing_ai_notices (user_id, acknowledged_at) VALUES (?1, 1)`
+    )
+    .run(input.id)
 }
 
 function expectedRowCounts(count: number): Readonly<Record<string, number>> {

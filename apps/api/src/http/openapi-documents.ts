@@ -40,13 +40,15 @@ const learnerDependencies = {
   },
   writing: {
     application: {
-      completeSelfCheck: contractOnly,
+      acknowledgeAiNotice: contractOnly,
+      check: contractOnly,
+      complete: contractOnly,
       create: contractOnly,
       delete: contractOnly,
       get: contractOnly,
       list: contractOnly,
+      listCatalog: contractOnly,
       save: contractOnly,
-      startSelfCheck: contractOnly,
     },
     session: { resolveLearner: contractOnly },
   },
@@ -118,6 +120,16 @@ const adminDependencies = {
       readLessonAnalytics: contractOnly,
     },
     session: { resolveActor: contractOnly },
+  },
+  writing: {
+    application: {
+      createTask: contractOnly,
+      getTask: contractOnly,
+      listTasks: contractOnly,
+      publishTask: contractOnly,
+      saveTask: contractOnly,
+    },
+    sessionPort: { resolveAdminId: contractOnly },
   },
 } satisfies AdminContractRouteDependencies
 

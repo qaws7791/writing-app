@@ -14,6 +14,7 @@ import adminMcpApprovedContentChangesSql from "../../drizzle/0004-admin-mcp-appr
 import adminMcpFullAdminToolsSql from "../../drizzle/0005-admin-mcp-full-admin-tools.sql" with { type: "text" }
 import adminMcpStaticAccessTokensSql from "../../drizzle/0006-admin-mcp-static-access-tokens.sql" with { type: "text" }
 import dropAiFeedbackSql from "../../drizzle/0007-drop-ai-feedback.sql" with { type: "text" }
+import purposeWritingTasksSql from "../../drizzle/0008-purpose-writing-tasks.sql" with { type: "text" }
 import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 
 const migrationSqlByFileName = {
@@ -26,6 +27,7 @@ const migrationSqlByFileName = {
   "0005-admin-mcp-full-admin-tools.sql": adminMcpFullAdminToolsSql,
   "0006-admin-mcp-static-access-tokens.sql": adminMcpStaticAccessTokensSql,
   "0007-drop-ai-feedback.sql": dropAiFeedbackSql,
+  "0008-purpose-writing-tasks.sql": purposeWritingTasksSql,
 } as const
 
 const migrationSources = applicationMigrationManifest.map((migration) => ({

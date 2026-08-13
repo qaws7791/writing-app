@@ -46,5 +46,11 @@
     "fileName": "0007-drop-ai-feedback.sql",
     "foreignKeys": "on",
     "id": "0007-drop-ai-feedback"
+  },
+  {
+    "checksum": "1ad92520bd702434f74f100e0006bd493c5562b83d2a30f428605f433ec4f24d",
+    "fileName": "0008-purpose-writing-tasks.sql",
+    "foreignKeys": "on",
+    "id": "0008-purpose-writing-tasks"
   }
 ]

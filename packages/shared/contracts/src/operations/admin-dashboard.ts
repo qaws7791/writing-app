@@ -24,10 +24,10 @@ export const adminDashboardDtoSchema = z.strictObject({
       matureCohortThrough: z.iso.date(),
       status: z.enum(["available", "empty", "immature"]),
     }),
-    writingRevisionAfterSelfCheckRate: adminMetricRateSchema.extend({
+    writingCheckSuccessRate: adminMetricRateSchema.extend({
       status: z.enum(["available", "empty"]),
     }),
-    writingSelfCheckStartRate: adminMetricRateSchema.extend({
+    writingRevisionAfterCheckRate: adminMetricRateSchema.extend({
       status: z.enum(["available", "empty"]),
     }),
   }),

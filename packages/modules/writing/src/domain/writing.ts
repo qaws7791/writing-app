@@ -1,115 +1,97 @@
+import type { WritingStatus } from "@workspace/contracts/writing/writing"
 import type {
-  WritingMode,
-  WritingStatus,
-} from "@workspace/contracts/writing/writing"
-import type { LearnerId, WritingId } from "@workspace/types/ids"
+  LearnerId,
+  WritingId,
+  WritingTaskPublicationId,
+} from "@workspace/types/ids"
 
 export const writingEventTypes = {
+  checkSucceeded: "check_succeeded",
+  completed: "writing_completed",
   created: "writing_created",
   deleted: "writing_deleted",
-  revisedAfterSelfCheck: "revised_after_self_check",
-  selfCheckCompleted: "self_check_completed",
-  selfCheckStarted: "self_check_started",
+  revisedAfterCheck: "revised_after_check",
 } as const
 
 export type WritingEventType =
   (typeof writingEventTypes)[keyof typeof writingEventTypes]
 
-export type Writing = Readonly<{
+export type WritingPiece = Readonly<{
   body: string
-  checkedAt: Date | null
+  completedAt: Date | null
   createdAt: Date
   id: WritingId
   learnerId: LearnerId
-  mode: WritingMode
-  selfCheckStartedAt: Date | null
+  publicationId: WritingTaskPublicationId
   status: WritingStatus
-  title: string
   updatedAt: Date
   version: number
 }>
 
-export function createWriting(input: {
+export function countWritingChars(body: string): number {
+  return [...body].length
+}
+
+export function createWritingPiece(input: {
   readonly id: WritingId
   readonly learnerId: LearnerId
-  readonly mode: WritingMode
   readonly now: Date
-}): Writing {
+  readonly publicationId: WritingTaskPublicationId
+}): WritingPiece {
   return {
     body: "",
-    checkedAt: null,
+    completedAt: null,
     createdAt: input.now,
     id: input.id,
     learnerId: input.learnerId,
-    mode: input.mode,
-    selfCheckStartedAt: null,
+    publicationId: input.publicationId,
     status: "drafting",
-    title: "",
     updatedAt: input.now,
     version: 0,
   }
 }
 
-export function reviseWriting(
-  writing: Writing,
-  input: Readonly<{ body: string; now: Date; title: string }>
+export function reviseWritingPiece(
+  writing: WritingPiece,
+  input: Readonly<{
+    body: string
+    hasSucceededCheck: boolean
+    now: Date
+  }>
 ): Readonly<{
   eventTypes: readonly WritingEventType[]
-  writing: Writing
+  writing: WritingPiece
 }> {
   const bodyChanged = input.body !== writing.body
-  const revisedAfterSelfCheck =
-    bodyChanged && writing.selfCheckStartedAt !== null
+  const revisedAfterCheck = bodyChanged && input.hasSucceededCheck
 
   return {
-    eventTypes: revisedAfterSelfCheck
-      ? [writingEventTypes.revisedAfterSelfCheck]
-      : [],
+    eventTypes: revisedAfterCheck ? [writingEventTypes.revisedAfterCheck] : [],
     writing: {
       ...writing,
       body: input.body,
-      checkedAt: bodyChanged ? null : writing.checkedAt,
+      completedAt: bodyChanged ? null : writing.completedAt,
       status: bodyChanged ? "drafting" : writing.status,
-      title: input.title,
       updatedAt: input.now,
       version: writing.version + 1,
     },
   }
 }
 
-export function startWritingSelfCheck(
-  writing: Writing,
+export function completeWritingPiece(
+  writing: WritingPiece,
   now: Date
 ): Readonly<{
   eventTypes: readonly WritingEventType[]
-  writing: Writing
+  writing: WritingPiece
 }> {
   return {
-    eventTypes: [writingEventTypes.selfCheckStarted],
+    eventTypes: [writingEventTypes.completed],
     writing: {
       ...writing,
-      selfCheckStartedAt: now,
+      completedAt: now,
+      status: "complete",
       updatedAt: now,
-      version: writing.version + 1,
-    },
-  }
-}
-
-export function completeWritingSelfCheck(
-  writing: Writing,
-  now: Date
-): Readonly<{
-  eventTypes: readonly WritingEventType[]
-  writing: Writing
-}> {
-  return {
-    eventTypes: [writingEventTypes.selfCheckCompleted],
-    writing: {
-      ...writing,
-      checkedAt: now,
-      status: "checked",
-      updatedAt: now,
-      version: writing.version + 1,
     },
   }
 }

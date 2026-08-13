@@ -6,6 +6,7 @@ import type {
   AdminMcpExecutionId,
   CourseId,
   UserId,
+  WritingTaskId,
 } from "@workspace/types/ids"
 
 declare const auditEventIdBrand: unique symbol
@@ -32,6 +33,9 @@ export const auditActionValues = [
   "course.publish",
   "course.archive",
   "course.restore",
+  "writing-task.create",
+  "writing-task.draft.save",
+  "writing-task.publish",
 ] as const
 
 export type AuditAction = (typeof auditActionValues)[number]
@@ -40,11 +44,16 @@ export const auditOutcomeValues = ["started", "succeeded", "failed"] as const
 
 type AuditOutcome = (typeof auditOutcomeValues)[number]
 
-export const auditTargetTypeValues = ["learner", "course"] as const
+export const auditTargetTypeValues = [
+  "learner",
+  "course",
+  "writing-task",
+] as const
 
 export type AuditTarget =
   | Readonly<{ id: CourseId; type: "course" }>
   | Readonly<{ id: UserId; type: "learner" }>
+  | Readonly<{ id: WritingTaskId; type: "writing-task" }>
 
 type AuditMcpProvenance = Readonly<{
   approvalId: AdminMcpApprovalId | null
@@ -113,6 +122,21 @@ const auditPolicies = {
     category: "content-mutation",
     retentionMs: applicationAuditRetentionMs,
     targetType: "course",
+  },
+  "writing-task.create": {
+    category: "content-mutation",
+    retentionMs: applicationAuditRetentionMs,
+    targetType: "writing-task",
+  },
+  "writing-task.draft.save": {
+    category: "content-mutation",
+    retentionMs: applicationAuditRetentionMs,
+    targetType: "writing-task",
+  },
+  "writing-task.publish": {
+    category: "content-mutation",
+    retentionMs: applicationAuditRetentionMs,
+    targetType: "writing-task",
   },
   "learner.delete": {
     category: "identity-mutation",

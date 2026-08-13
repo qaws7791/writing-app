@@ -44,12 +44,14 @@
 
 ## Writing 데이터 경계
 
-- writing module은 레슨과 독립된 학습자 글과 쓰기 event schema·repository를 소유한다.
-- 글은 학습자, 쓰기 방식, 제목, 일반 텍스트 본문, `drafting | checked` 상태, 음수가 아닌 version과 생성·수정·자기 점검 시작·완료 시각을 가진다.
+- writing module은 쓰기 과제 초안·발행본, 학습자 글, 점검, 고지 확인, 원문 없는 쓰기 event schema·repository를 소유한다.
+- 과제는 초안 필드, 음수가 아닌 `editVersion`, 최신 발행 참조를 가진다. 발행본은 제목, 도메인, 유형, 난이도, 상황, 독자, 최소·목표 글자 수, 필수 요소를 불변 스냅샷으로 가진다.
+- 글은 학습자, 시작 시점 발행본, 일반 텍스트 본문, `drafting | complete` 상태, 음수가 아닌 version과 생성·수정·완료 시각을 가진다.
 - 저장은 학습자와 글 ID를 함께 확인하고 expected version이 현재 version과 같을 때만 version을 증가시킨다.
-- 점검 완료 뒤 본문이 바뀌면 상태를 `drafting`으로 바꾸고 점검 완료 시각을 제거한다.
-- 쓰기 event는 글 생성, 자기 점검 시작, 자기 점검 뒤 본문 수정, 자기 점검 완료와 글 삭제만 저장한다. event는 제목과 본문을 저장하지 않는다.
-- 학습자 삭제 정리는 글과 쓰기 event를 auth 사용자 삭제보다 먼저 같은 transaction에서 제거한다.
+- 본문이 바뀌면 상태를 `drafting`으로 바꾸고 현재 본문에 묶인 점검을 무효로 본다.
+- 유효한 점검은 글 ID와 본문 version에 묶인다. 하루 성공 한도는 성공한 점검 시각의 `Asia/Seoul` 논리 날짜로 센다.
+- 쓰기 event는 글 생성, 점검 성공, 점검 뒤 본문 수정, 글 완료, 글 삭제만 저장한다. event는 본문과 점검 원문을 저장하지 않는다.
+- 학습자 삭제 정리는 글, 점검, 고지 확인, 쓰기 event를 auth 사용자 삭제보다 먼저 같은 transaction에서 제거한다. 과제와 발행본은 남긴다.
 
 ## 관리자 MCP credential 데이터 경계
 

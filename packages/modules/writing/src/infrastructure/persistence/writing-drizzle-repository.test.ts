@@ -25,13 +25,12 @@ describe("writing SQLite repository", () => {
       const firstSnapshot = await readWriting(repository)
       const staleSnapshot = await readWriting(repository)
 
-      const firstResult = await repository.save({
+      const firstResult = await repository.savePiece({
         eventTypes: [],
         expectedVersion: firstSnapshot.version,
         writing: {
           ...firstSnapshot,
           body: "서버에 먼저 저장된 본문",
-          title: "서버에 먼저 저장된 제목",
           updatedAt: firstSaveAt,
           version: firstSnapshot.version + 1,
         },
@@ -40,13 +39,12 @@ describe("writing SQLite repository", () => {
         throw new Error(`첫 저장이 실패했습니다: ${firstResult.error.kind}`)
       }
 
-      const staleResult = await repository.save({
+      const staleResult = await repository.savePiece({
         eventTypes: [],
         expectedVersion: staleSnapshot.version,
         writing: {
           ...staleSnapshot,
           body: "뒤늦게 도착한 본문",
-          title: "뒤늦게 도착한 제목",
           updatedAt: staleSaveAt,
           version: staleSnapshot.version + 1,
         },
@@ -57,7 +55,6 @@ describe("writing SQLite repository", () => {
       })
       await expect(readWriting(repository)).resolves.toMatchObject({
         body: "서버에 먼저 저장된 본문",
-        title: "서버에 먼저 저장된 제목",
         updatedAt: firstSaveAt,
         version: 1,
       })
@@ -77,7 +74,7 @@ describe("writing SQLite repository", () => {
       `)
 
       await expect(
-        repository.delete({
+        repository.deletePiece({
           eventType: "writing_deleted",
           expectedVersion: 0,
           learnerId,
@@ -101,7 +98,6 @@ describe("writing SQLite repository", () => {
         writing: expect.objectContaining({
           body: "Test writing body",
           id: writingId,
-          title: "Test writing",
           version: 0,
         }),
       })
@@ -112,7 +108,7 @@ describe("writing SQLite repository", () => {
 type WritingRepository = ReturnType<typeof createDrizzleWritingRepository>
 
 async function readWriting(repository: WritingRepository) {
-  const writing = await repository.findById({ learnerId, writingId })
+  const writing = await repository.findPieceById({ learnerId, writingId })
   if (writing === null) throw new Error("쓰기 fixture를 찾을 수 없습니다.")
   return writing
 }

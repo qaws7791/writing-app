@@ -12,6 +12,7 @@ const validProductionEnvironment: AppEnvInput = {
   DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
   LEARNER_AUTH_SECRET: learnerProductionSecret,
   NODE_ENV: "production",
+  OPENAI_API_KEY: "sk-test-openai-key",
   WEB_ORIGIN: "https://app.example.com",
 }
 

@@ -11,7 +11,11 @@ import { registerLearningRoutes } from "@workspace/learning/http"
 import { createRequestLogger } from "@workspace/observability/request-logger"
 import { createSecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 import { registerOperationsRoutes } from "@workspace/operations/http"
-import { registerWritingRoutes } from "@workspace/writing/http"
+import {
+  registerWritingAdminRoutes,
+  registerWritingRoutes,
+} from "@workspace/writing/http"
+import type { WritingAdminSessionPort } from "@workspace/writing/http"
 
 import { registerAdminFoundationRoutes } from "@/http/admin-foundation.routes"
 import type { AdminHonoEnv } from "@/http/admin-hono-env"
@@ -43,6 +47,7 @@ export type AdminContractRouteDependencies = Readonly<{
   foundation: Parameters<typeof registerAdminFoundationRoutes>[1]
   identity: Parameters<typeof registerAdminIdentityRoutes>[1]
   operations: Parameters<typeof registerOperationsRoutes>[1]
+  writing: Parameters<typeof registerWritingAdminRoutes>[1]
 }>
 
 export function createApp(container: ApiContainer) {
@@ -126,6 +131,12 @@ export function createApp(container: ApiContainer) {
       reporting: container.modules.operations.reporting,
       session: adminSession,
     },
+    writing: {
+      application: container.modules.writing.adminApplication,
+      sessionPort: createWritingAdminSessionPort(
+        container.admin.sessionResolver
+      ),
+    },
   })
   registerAdminAuthRoutes(admin, container.admin.authHandler)
   registerAdminApiDocumentation(admin, { enabled: env.enableApiDocs })
@@ -166,11 +177,23 @@ export function registerAdminContractRoutes(
   registerContentRoutes(app, dependencies.content)
   registerAdminIdentityRoutes(app, dependencies.identity)
   registerOperationsRoutes(app, dependencies.operations)
+  registerWritingAdminRoutes(app, dependencies.writing)
 }
 
 function createContentAdminSessionPort(
   sessionResolver: AdminSessionResolver
 ): ContentAdminSessionPort {
+  return {
+    async resolveAdminId(headers) {
+      const session = await sessionResolver.resolveSession(headers)
+      return session?.admin.id ?? null
+    },
+  }
+}
+
+function createWritingAdminSessionPort(
+  sessionResolver: AdminSessionResolver
+): WritingAdminSessionPort {
   return {
     async resolveAdminId(headers) {
       const session = await sessionResolver.resolveSession(headers)

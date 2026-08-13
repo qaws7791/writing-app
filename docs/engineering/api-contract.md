@@ -62,7 +62,7 @@
 - 레슨별 분석의 검색·정렬·페이지 이동은 서버 query로 실행한다. 기간, 검색 문자열, page, page size와 정렬 값은 공개 contract의 bounded schema로 검증한다.
 - AI 품질 분석은 반개구간 `[from, to)`의 aggregate만 반환한다. 성공·실패·latency·token·retry를 집계하되 답안, prompt와 피드백 원문은 wire 응답에 포함하지 않는다.
 - 모든 운영 reporting 응답은 관리자 session을 요구하고 private cache 정책을 사용한다.
-- 쓰기 성공 지표는 원문 없는 쓰기 event projection으로 계산하며 제목과 본문을 조회하거나 반환하지 않는다.
+- 쓰기 성공 지표는 원문 없는 쓰기 event projection으로 계산하며 본문과 점검 원문을 조회하거나 반환하지 않는다.
 
 콘텐츠 asset 업로드는 multipart 경계에서 필수 필드와 파일 크기를 먼저 검증하고 application 경계에서 signature, decode, MIME 일치를 다시 검증한다. 처리한 object를 S3 호환 storage에 저장한 뒤에만 `active` row를 등록하며, 등록 실패에는 object 보상 삭제를 시도한다. 따라서 storage·처리 실패가 `active` row를 남겨서는 안 된다.
 

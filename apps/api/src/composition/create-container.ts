@@ -44,7 +44,14 @@ import { createSecurityAuditLogger } from "@workspace/observability/security-aud
 import type { OperationsModule } from "@workspace/operations/module"
 import type { WritingModule } from "@workspace/writing/module"
 import type { WritingLearnerSessionPort } from "@workspace/writing/http"
-import type { ContentAssetId, CourseId, WritingId } from "@workspace/types/ids"
+import type {
+  ContentAssetId,
+  CourseId,
+  WritingCheckId,
+  WritingId,
+  WritingTaskId,
+  WritingTaskPublicationId,
+} from "@workspace/types/ids"
 import { createS3PrivateObjectStorage } from "@workspace/storage/private-object-storage"
 
 import {
@@ -214,10 +221,25 @@ export async function createContainer(
       reportingDatabase: reportingDatabase.sqlite,
     })
     const writing = composeWritingModule({
+      checkIdGenerator: createPrefixedIdGenerator<WritingCheckId>(
+        "writing-check-",
+        idGenerator
+      ),
       clock,
+      dailySuccessfulCheckLimit: env.writingDailySuccessfulCheckLimit,
       database: database.db,
       idGenerator: createPrefixedIdGenerator<WritingId>(
         "writing-",
+        idGenerator
+      ),
+      openAi: env.openAi,
+      publicationIdGenerator:
+        createPrefixedIdGenerator<WritingTaskPublicationId>(
+          "writing-pub-",
+          idGenerator
+        ),
+      taskIdGenerator: createPrefixedIdGenerator<WritingTaskId>(
+        "writing-task-",
         idGenerator
       ),
     })

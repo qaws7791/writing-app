@@ -6,7 +6,7 @@ import { getWriting } from "@workspace/http-client/learner"
 import {
   saveWritingDraft,
   type WritingSaveTransport,
-} from "@/features/focused-writing/api/writing-transport"
+} from "@/features/writing/api/writing-transport"
 import {
   isLearnerApiAbortedError,
   isLearnerApiNetworkError,
@@ -20,7 +20,6 @@ const autosaveDelayMs = 800
 
 export type WritingDraftValues = Readonly<{
   body: string
-  title: string
 }>
 
 export type WritingAutosaveStatus =
@@ -49,9 +48,11 @@ type WritingRecord = {
 
 export function useWritingAutosave({
   initialWriting,
+  onPersistedWriting,
   onServerWritingApplied,
 }: {
   readonly initialWriting: LearnerWritingDetailDto
+  readonly onPersistedWriting?: (writing: LearnerWritingDetailDto) => void
   readonly onServerWritingApplied: (writing: LearnerWritingDetailDto) => void
 }) {
   const recordRef = useRef<WritingRecord | null>(null)
@@ -64,6 +65,7 @@ export function useWritingAutosave({
   const unloadRequestedRef = useRef(false)
   const mountedRef = useRef(false)
   const readAbortSignal = useUnmountAbortSignal()
+  const onPersistedWritingRef = useRef(onPersistedWriting)
   const onServerWritingAppliedRef = useRef(onServerWritingApplied)
   const [dirty, setDirty] = useState(false)
   const [status, setStatus] = useState<WritingAutosaveStatus>({
@@ -81,6 +83,10 @@ export function useWritingAutosave({
       mountedRef.current = false
     }
   }, [])
+
+  useEffect(() => {
+    onPersistedWritingRef.current = onPersistedWriting
+  }, [onPersistedWriting])
 
   useEffect(() => {
     onServerWritingAppliedRef.current = onServerWritingApplied
@@ -244,6 +250,7 @@ export function useWritingAutosave({
               kind: "saved",
               updatedAt: result.value.updatedAt,
             })
+            onPersistedWritingRef.current?.(result.value)
             return
           }
         }
@@ -425,7 +432,7 @@ function readWritingRecord(
 }
 
 function readDraft(writing: LearnerWritingDetailDto): WritingDraftValues {
-  return { body: writing.body, title: writing.title }
+  return { body: writing.body }
 }
 
 function updateRecordFromServer(
@@ -446,7 +453,7 @@ function sameDraft(
   left: WritingDraftValues,
   right: WritingDraftValues
 ): boolean {
-  return left.title === right.title && left.body === right.body
+  return left.body === right.body
 }
 
 function browserIsOnline(): boolean {

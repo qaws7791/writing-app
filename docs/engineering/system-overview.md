@@ -13,7 +13,7 @@
 - 여러 runtime이 공유하는 인증 vendor integration과 credential·session schema는 좁은 auth infra package가 소유한다. identity module은 학습자 profile·사용자 상태와 관리자 session 해석을 소유하며, API의 auth adapter가 vendor-neutral identity directory port를 구현한다. 관리자 권한은 별도 관리자 인증 경계의 유효한 session으로 결정하고 제품 role profile을 두지 않는다.
 - content module은 draft 편집, immutable published revision, 발행·보관과 콘텐츠 schema·seed를 함께 소유한다.
 - learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query와 identity의 상태 query는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
-- writing module은 레슨과 독립된 글의 생성·조회·version 저장·자기 점검·삭제, 원문 없는 쓰기 event와 학습자 HTTP interface를 소유한다. 다른 module table을 직접 읽지 않는다.
+- writing module은 레슨과 독립된 쓰기 과제·발행본, 학습자 글의 생성·조회·version 저장·AI 점검·마치기·삭제, 원문 없는 쓰기 event와 학습자·관리자 HTTP interface를 소유한다. 다른 module table을 직접 읽지 않는다.
 - operations module은 대시보드·분석용 읽기 전용 reporting, 관리자 MCP 승인 lifecycle과 관리자 HTTP interface를 소유한다. reporting SQL은 같은 SQLite의 여러 module table을 join할 수 있지만 다른 module의 command나 repository를 대신하지 않는다.
 - content module은 자동 또는 승인 MCP 콘텐츠 변경과 실행 영수증을 하나의 transaction에서 확정한다.
 - identity module은 승인된 MCP 사용자 변경을 기존 application use case로 실행한다.

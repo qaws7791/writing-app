@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from "hono"
 import { courseIdSchema } from "@workspace/contracts/content/ids"
+import { writingTaskIdSchema } from "@workspace/contracts/writing/writing"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerOperationalStatusSchema } from "@workspace/contracts/identity/status"
 import { AppError } from "@workspace/http-platform/errors"
@@ -135,6 +136,31 @@ async function readAdminAuditDescriptor(
     return {
       action: segments[2] === "publish" ? "course.publish" : "course.restore",
       target: { id: courseId.data, type: "course" },
+    }
+  }
+
+  if (segments[0] === "writing-tasks" && segments.length === 2) {
+    const writingTaskId = writingTaskIdSchema.safeParse(segments[1])
+    if (!writingTaskId.success) return null
+    if (request.method === "PUT") {
+      return {
+        action: "writing-task.draft.save",
+        target: { id: writingTaskId.data, type: "writing-task" },
+      }
+    }
+  }
+
+  if (
+    request.method === "POST" &&
+    segments[0] === "writing-tasks" &&
+    segments.length === 3 &&
+    segments[2] === "publish"
+  ) {
+    const writingTaskId = writingTaskIdSchema.safeParse(segments[1])
+    if (!writingTaskId.success) return null
+    return {
+      action: "writing-task.publish",
+      target: { id: writingTaskId.data, type: "writing-task" },
     }
   }
 

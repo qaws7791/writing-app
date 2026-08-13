@@ -21,37 +21,39 @@
 
 ## 파일 지도
 
-| 파일                                            | 목적                                                                                  |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `_index.md`                                     | 디자인 문서 전체의 진입점과 탐색 지도를 제공한다.                                     |
-| `design-brief.md`                               | 제품 정체성, 브랜드 톤, 아트 디렉션, 앱별 디자인 방향을 정의한다.                     |
-| `ia-spec.md`                                    | 학습자 앱과 어드민 앱의 라우트, 네비게이션, 사이트맵을 정의한다.                      |
-| `foundations.md`                                | 색상, 타이포그래피, 간격, radius, shadow, motion 같은 디자인 토큰 기준을 정의한다.    |
-| `components.md`                                 | Button, Card, Input, Progress, Shell, Admin Table 같은 공통 컴포넌트 기준을 정의한다. |
-| `patterns.md`                                   | 학습자와 어드민 화면에서 반복되는 UI 패턴과 상태 표현 방식을 정의한다.                |
-| `accessibility.md`                              | 키보드 탐색, 레슨 접근성, Form, motion, 언어 기준을 정의한다.                         |
-| `assets.md`                                     | 아이콘, 이미지, SVG, 어드민 에셋, 파일 관리 기준을 정의한다.                          |
-| `text-localization-policy.md`                   | 화면 문구의 한국어 현지화 원칙, 적용 범위, 예외, 구현 규칙을 정의한다.                |
-| `ui-documentation.md`                           | Astro UI 예제의 작성, interaction과 접근성 검증 기준을 정의한다.                      |
-| `screens/SCR-001-learner-landing.md`            | 학습자 랜딩 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
-| `screens/SCR-002-learner-login.md`              | 학습자 로그인 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
-| `screens/SCR-003-learner-home.md`               | 학습 홈 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                     |
-| `screens/SCR-004-learner-courses.md`            | 코스 목록 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
-| `screens/SCR-005-learner-course-detail.md`      | 코스 상세 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
-| `screens/SCR-006-learner-lesson.md`             | 레슨 진행 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
-| `screens/SCR-007-learner-profile.md`            | 프로필 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                      |
-| `screens/SCR-008-learner-writing-home.md`       | 쓰기 홈과 방식 선택의 목적, 상태, 접근성을 정의한다.                                  |
-| `screens/SCR-009-learner-writing-editor.md`     | 집중형 편집 화면의 목적, 자동 저장 상태와 접근성을 정의한다.                          |
-| `screens/SCR-010-learner-writing-self-check.md` | 자기 점검 화면의 질문, 전이와 접근성을 정의한다.                                      |
-| `screens/SCR-101-admin-login.md`                | 관리자 로그인 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
-| `screens/SCR-102-admin-dashboard.md`            | 어드민 대시보드 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.             |
-| `screens/SCR-103-admin-courses.md`              | 콘텐츠 관리 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
-| `screens/SCR-104-admin-course-detail.md`        | 코스 편집 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
-| `screens/SCR-105-admin-users.md`                | 사용자 관리 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
-| `screens/SCR-106-admin-user-detail.md`          | 사용자 상세 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
-| `screens/SCR-107-admin-analytics.md`            | 분석 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                        |
-| `screens/SCR-108-admin-audit.md`                | 감사 이력 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
-| `screens/SCR-109-admin-mcp-approval.md`         | MCP 변경 승인 화면의 목적, 정보 구조, 상태와 접근성을 정의한다.                       |
+| 파일                                         | 목적                                                                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `_index.md`                                  | 디자인 문서 전체의 진입점과 탐색 지도를 제공한다.                                     |
+| `design-brief.md`                            | 제품 정체성, 브랜드 톤, 아트 디렉션, 앱별 디자인 방향을 정의한다.                     |
+| `ia-spec.md`                                 | 학습자 앱과 어드민 앱의 라우트, 네비게이션, 사이트맵을 정의한다.                      |
+| `foundations.md`                             | 색상, 타이포그래피, 간격, radius, shadow, motion 같은 디자인 토큰 기준을 정의한다.    |
+| `components.md`                              | Button, Card, Input, Progress, Shell, Admin Table 같은 공통 컴포넌트 기준을 정의한다. |
+| `patterns.md`                                | 학습자와 어드민 화면에서 반복되는 UI 패턴과 상태 표현 방식을 정의한다.                |
+| `accessibility.md`                           | 키보드 탐색, 레슨 접근성, Form, motion, 언어 기준을 정의한다.                         |
+| `assets.md`                                  | 아이콘, 이미지, SVG, 어드민 에셋, 파일 관리 기준을 정의한다.                          |
+| `text-localization-policy.md`                | 화면 문구의 한국어 현지화 원칙, 적용 범위, 예외, 구현 규칙을 정의한다.                |
+| `ui-documentation.md`                        | Astro UI 예제의 작성, interaction과 접근성 검증 기준을 정의한다.                      |
+| `screens/SCR-001-learner-landing.md`         | 학습자 랜딩 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
+| `screens/SCR-002-learner-login.md`           | 학습자 로그인 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
+| `screens/SCR-003-learner-home.md`            | 학습 홈 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                     |
+| `screens/SCR-004-learner-courses.md`         | 코스 목록 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
+| `screens/SCR-005-learner-course-detail.md`   | 코스 상세 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
+| `screens/SCR-006-learner-lesson.md`          | 레슨 진행 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
+| `screens/SCR-007-learner-profile.md`         | 프로필 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                      |
+| `screens/SCR-008-learner-writing-home.md`    | 쓰기 홈의 작성 중·완료 탭과 카탈로그 경로를 정의한다.                                 |
+| `screens/SCR-009-learner-writing-studio.md`  | 작성 세션의 브리프, 본문, 점검, 마치기와 접근성을 정의한다.                           |
+| `screens/SCR-011-learner-writing-catalog.md` | 쓰기 카탈로그의 도메인·유형 필터, 미리보기와 시작 행동을 정의한다.                    |
+| `screens/SCR-101-admin-login.md`             | 관리자 로그인 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
+| `screens/SCR-102-admin-dashboard.md`         | 어드민 대시보드 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.             |
+| `screens/SCR-103-admin-courses.md`           | 콘텐츠 관리 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
+| `screens/SCR-104-admin-course-detail.md`     | 코스 편집 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
+| `screens/SCR-105-admin-users.md`             | 사용자 관리 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
+| `screens/SCR-106-admin-user-detail.md`       | 사용자 상세 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
+| `screens/SCR-107-admin-analytics.md`         | 분석 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                        |
+| `screens/SCR-108-admin-audit.md`             | 감사 이력 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
+| `screens/SCR-109-admin-mcp-approval.md`      | MCP 변경 승인 화면의 목적, 정보 구조, 상태와 접근성을 정의한다.                       |
+| `screens/SCR-110-admin-writing-tasks.md`     | 쓰기 과제 목록의 필터, 표와 생성 행동을 정의한다.                                     |
+| `screens/SCR-111-admin-writing-task.md`      | 쓰기 과제 초안 저장과 발행 편집을 정의한다.                                           |
 
 ## 관리 기준
 

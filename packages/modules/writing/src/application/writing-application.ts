@@ -1,59 +1,123 @@
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
+import { toPlatformDayKey } from "@workspace/kernel/day-boundary"
 import { err, ok, type Result } from "@workspace/kernel/result"
-import type { WritingId } from "@workspace/types/ids"
+import type { WritingCheckId, WritingId } from "@workspace/types/ids"
 
 import type {
   WritingApplication,
   WritingApplicationError,
+  WritingCheckProvider,
   WritingRepository,
+  WritingSession,
 } from "#writing/application/ports/writing-ports"
 import {
-  completeWritingSelfCheck,
-  createWriting,
-  reviseWriting,
-  startWritingSelfCheck,
+  canCompleteWriting,
+  readWritingCheckGate,
+} from "#writing/domain/writing-check"
+import {
+  completeWritingPiece,
+  createWritingPiece,
+  reviseWritingPiece,
   writingEventTypes,
-  type Writing,
+  type WritingPiece,
 } from "#writing/domain/writing"
 
 export function createWritingApplication(input: {
+  readonly checkProvider: WritingCheckProvider
   readonly clock: Clock
+  readonly dailySuccessfulCheckLimit: number
   readonly idGenerator: IdGenerator<WritingId>
+  readonly checkIdGenerator: IdGenerator<WritingCheckId>
   readonly repository: WritingRepository
 }): WritingApplication {
   return {
-    async completeSelfCheck(command) {
-      const current = await readCurrentWriting(input.repository, command)
-      if (current.isErr()) return current
+    acknowledgeAiNotice(learnerId) {
+      return input.repository.acknowledgeAiNotice({
+        learnerId,
+        now: input.clock.now(),
+      })
+    },
+    async check(command) {
+      const session = await readSession(input, command)
+      if (session.isErr()) return err(session.error)
+
+      const gate = readWritingCheckGate({
+        acknowledgedNotice: session.value.aiNoticeAcknowledged,
+        body: session.value.writing.body,
+        dailyChecksRemaining: session.value.dailyChecksRemaining,
+        minChars: session.value.brief.minChars,
+      })
+      if (gate !== null) return err(gate)
+
+      const checked = await input.checkProvider.check({
+        body: session.value.writing.body,
+        brief: session.value.brief,
+      })
+      if (checked.isErr()) {
+        return err({
+          kind:
+            checked.error.kind === "not-configured"
+              ? "writing-check-not-configured"
+              : "writing-check-provider-unavailable",
+        })
+      }
+
+      await input.repository.createCheck({
+        bodyVersion: session.value.writing.version,
+        eventType: writingEventTypes.checkSucceeded,
+        id: input.checkIdGenerator.next(),
+        now: input.clock.now(),
+        result: checked.value,
+        writing: session.value.writing,
+      })
+      return readSession(input, command)
+    },
+    async complete(command) {
+      const current = await readOwnedPiece(input.repository, command)
+      if (current.isErr()) return err(current.error)
       if (current.value.version !== command.expectedVersion) {
         return err({ kind: "writing-version-conflict" })
       }
-      if (current.value.selfCheckStartedAt === null) {
-        return err({ kind: "writing-self-check-not-started" })
+
+      const validCheck = await input.repository.findValidCheck({
+        bodyVersion: current.value.version,
+        writingId: current.value.id,
+      })
+      if (!canCompleteWriting({ hasValidCheck: validCheck !== null })) {
+        return err({ kind: "writing-check-not-valid" })
       }
 
-      const transition = completeWritingSelfCheck(
-        current.value,
-        input.clock.now()
-      )
-      return input.repository.save({
+      const transition = completeWritingPiece(current.value, input.clock.now())
+      const saved = await input.repository.savePiece({
         eventTypes: transition.eventTypes,
         expectedVersion: command.expectedVersion,
         writing: transition.writing,
       })
+      if (saved.isErr()) return err(saved.error)
+      return readSession(input, command)
     },
     async create(command) {
-      const writing = createWriting({
+      const publication = await input.repository.findLatestPublicationByTaskId(
+        command.taskId
+      )
+      if (publication === null) {
+        return err({ kind: "writing-task-unpublished" })
+      }
+
+      const writing = createWritingPiece({
         id: input.idGenerator.next(),
         learnerId: command.learnerId,
-        mode: command.mode,
         now: input.clock.now(),
+        publicationId: publication.id,
       })
-      await input.repository.create(writing, writingEventTypes.created)
-      return writing
+      await input.repository.createPiece(writing, writingEventTypes.created)
+      return readSession(input, {
+        learnerId: command.learnerId,
+        writingId: writing.id,
+      })
     },
     delete(command) {
-      return input.repository.delete({
+      return input.repository.deletePiece({
         eventType: writingEventTypes.deleted,
         expectedVersion: command.expectedVersion,
         learnerId: command.learnerId,
@@ -62,50 +126,102 @@ export function createWritingApplication(input: {
       })
     },
     get(command) {
-      return readCurrentWriting(input.repository, command)
+      return readSession(input, command)
     },
     list(learnerId) {
-      return input.repository.listByLearner(learnerId)
+      return input.repository.listPiecesByLearner(learnerId)
+    },
+    listCatalog(filter) {
+      return input.repository.listCatalog(filter)
     },
     async save(command) {
-      const current = await readCurrentWriting(input.repository, command)
-      if (current.isErr()) return current
+      const current = await readOwnedPiece(input.repository, command)
+      if (current.isErr()) return err(current.error)
       if (current.value.version !== command.expectedVersion) {
         return err({ kind: "writing-version-conflict" })
       }
 
-      const transition = reviseWriting(current.value, {
+      const hasSucceededCheck = await input.repository.hasSucceededCheck(
+        current.value.id
+      )
+      const transition = reviseWritingPiece(current.value, {
         body: command.body,
+        hasSucceededCheck,
         now: input.clock.now(),
-        title: command.title,
       })
-      return input.repository.save({
+      const saved = await input.repository.savePiece({
         eventTypes: transition.eventTypes,
         expectedVersion: command.expectedVersion,
         writing: transition.writing,
       })
-    },
-    async startSelfCheck(command) {
-      const current = await readCurrentWriting(input.repository, command)
-      if (current.isErr()) return current
-      if (current.value.version !== command.expectedVersion) {
-        return err({ kind: "writing-version-conflict" })
-      }
-
-      const transition = startWritingSelfCheck(current.value, input.clock.now())
-      return input.repository.save({
-        eventTypes: transition.eventTypes,
-        expectedVersion: command.expectedVersion,
-        writing: transition.writing,
-      })
+      if (saved.isErr()) return err(saved.error)
+      return readSession(input, command)
     },
   }
 }
 
-async function readCurrentWriting(
+async function readOwnedPiece(
   repository: WritingRepository,
-  input: Parameters<WritingRepository["findById"]>[0]
-): Promise<Result<Writing, WritingApplicationError>> {
-  const writing = await repository.findById(input)
+  input: Parameters<WritingRepository["findPieceById"]>[0]
+): Promise<Result<WritingPiece, WritingApplicationError>> {
+  const writing = await repository.findPieceById(input)
   return writing === null ? err({ kind: "writing-not-found" }) : ok(writing)
+}
+
+async function readSession(
+  input: {
+    readonly clock: Clock
+    readonly dailySuccessfulCheckLimit: number
+    readonly repository: WritingRepository
+  },
+  command: Parameters<WritingRepository["findPieceById"]>[0]
+): Promise<Result<WritingSession, WritingApplicationError>> {
+  const writing = await input.repository.findPieceById(command)
+  if (writing === null) return err({ kind: "writing-not-found" })
+
+  const brief = await input.repository.findPublicationById(
+    writing.publicationId
+  )
+  if (brief === null) return err({ kind: "writing-not-found" })
+
+  const [check, aiNoticeAcknowledged, usedToday] = await Promise.all([
+    input.repository.findValidCheck({
+      bodyVersion: writing.version,
+      writingId: writing.id,
+    }),
+    input.repository.hasAcknowledgedAiNotice(writing.learnerId),
+    countSuccessfulChecksToday(input, writing.learnerId),
+  ])
+
+  return ok({
+    aiNoticeAcknowledged,
+    brief,
+    canComplete: canCompleteWriting({ hasValidCheck: check !== null }),
+    check,
+    dailyChecksRemaining: Math.max(
+      0,
+      input.dailySuccessfulCheckLimit - usedToday
+    ),
+    writing,
+  })
+}
+
+function countSuccessfulChecksToday(
+  input: {
+    readonly clock: Clock
+    readonly repository: WritingRepository
+  },
+  learnerId: Parameters<
+    WritingRepository["countSuccessfulChecksInRange"]
+  >[0]["learnerId"]
+): Promise<number> {
+  const now = input.clock.now()
+  const dayKey = toPlatformDayKey(now)
+  const from = new Date(`${dayKey}T00:00:00+09:00`)
+  const to = new Date(from.getTime() + 24 * 60 * 60 * 1_000)
+  return input.repository.countSuccessfulChecksInRange({
+    from,
+    learnerId,
+    to,
+  })
 }

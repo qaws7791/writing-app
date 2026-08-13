@@ -32,8 +32,15 @@ export type ApiEnv = {
   readonly logLevel: string
   readonly logPretty: boolean
   readonly nodeEnv: "development" | "test" | "production"
+  readonly openAi: Readonly<{
+    apiKey: string | undefined
+    maxRetries: number
+    model: string
+    timeoutMs: number
+  }>
   readonly port: number
   readonly webOrigin: string
+  readonly writingDailySuccessfulCheckLimit: number
 }
 
 type AuthEmailEnv =
@@ -129,8 +136,17 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
       NODE_ENV: env.NODE_ENV,
     }),
     nodeEnv: env.NODE_ENV,
+    openAi: {
+      apiKey: env.OPENAI_API_KEY,
+      maxRetries: env.OPENAI_MAX_RETRIES,
+      model: env.OPENAI_MODEL,
+      timeoutMs: env.OPENAI_TIMEOUT_MS,
+    },
     port: env.API_PORT,
     webOrigin: env.WEB_ORIGIN,
+    writingDailySuccessfulCheckLimit: readWritingDailySuccessfulCheckLimit(
+      input["WRITING_DAILY_SUCCESSFUL_CHECK_LIMIT"]
+    ),
   }
 }
 
@@ -410,6 +426,24 @@ export function readDeletedLearnerRetentionDays(
   if (!parsed.success) {
     throw new Error(
       "Invalid environment variables: LEARNER_DELETION_RETENTION_DAYS: 1일 이상 365일 이하의 정수여야 합니다."
+    )
+  }
+
+  return parsed.data
+}
+
+function readWritingDailySuccessfulCheckLimit(
+  value: string | undefined
+): number {
+  const normalized = value?.trim()
+  if (normalized === undefined || normalized.length === 0) {
+    return 5
+  }
+
+  const parsed = z.coerce.number().int().min(1).max(50).safeParse(normalized)
+  if (!parsed.success) {
+    throw new Error(
+      "Invalid environment variables: WRITING_DAILY_SUCCESSFUL_CHECK_LIMIT: 1 이상 50 이하의 정수여야 합니다."
     )
   }
 

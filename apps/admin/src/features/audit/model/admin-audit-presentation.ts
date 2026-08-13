@@ -10,6 +10,9 @@ const actionLabels = {
   "learner.detail.read": "학습자 상세 조회",
   "learner.status.activate": "학습자 활성화",
   "learner.status.suspend": "학습자 정지",
+  "writing-task.create": "쓰기 과제 생성",
+  "writing-task.draft.save": "쓰기 과제 초안 저장",
+  "writing-task.publish": "쓰기 과제 발행",
 } as const satisfies Record<AdminAuditEvent["action"], string>
 
 const categoryLabels = {
@@ -21,6 +24,7 @@ const categoryLabels = {
 const targetLabels = {
   course: "코스",
   learner: "학습자",
+  "writing-task": "쓰기 과제",
 } as const satisfies Record<AdminAuditEvent["target"]["type"], string>
 
 const outcomeLabels = {

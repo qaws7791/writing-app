@@ -143,7 +143,7 @@ export const auditEvents = sqliteTable(
     ),
     check(
       "audit_events_action_check",
-      sql`${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete', 'course.create', 'course.draft.save', 'course.publish', 'course.archive', 'course.restore')`
+      sql`${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete', 'course.create', 'course.draft.save', 'course.publish', 'course.archive', 'course.restore', 'writing-task.create', 'writing-task.draft.save', 'writing-task.publish')`
     ),
     check(
       "audit_events_outcome_check",
@@ -151,15 +151,15 @@ export const auditEvents = sqliteTable(
     ),
     check(
       "audit_events_target_type_check",
-      sql`${table.targetType} IN ('learner', 'course')`
+      sql`${table.targetType} IN ('learner', 'course', 'writing-task')`
     ),
     check(
       "audit_events_target_action_check",
-      sql`(${table.targetType} = 'learner' AND ${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.targetType} = 'course' AND ${table.action} IN ('course.create', 'course.draft.save', 'course.publish', 'course.archive', 'course.restore'))`
+      sql`(${table.targetType} = 'learner' AND ${table.action} IN ('learner.detail.read', 'learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.targetType} = 'course' AND ${table.action} IN ('course.create', 'course.draft.save', 'course.publish', 'course.archive', 'course.restore')) OR (${table.targetType} = 'writing-task' AND ${table.action} IN ('writing-task.create', 'writing-task.draft.save', 'writing-task.publish'))`
     ),
     check(
       "audit_events_category_action_check",
-      sql`(${table.category} = 'privacy-access' AND ${table.action} = 'learner.detail.read') OR (${table.category} = 'identity-mutation' AND ${table.action} IN ('learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.category} = 'content-mutation' AND ${table.action} IN ('course.create', 'course.draft.save', 'course.publish', 'course.archive', 'course.restore'))`
+      sql`(${table.category} = 'privacy-access' AND ${table.action} = 'learner.detail.read') OR (${table.category} = 'identity-mutation' AND ${table.action} IN ('learner.status.suspend', 'learner.status.activate', 'learner.delete')) OR (${table.category} = 'content-mutation' AND ${table.action} IN ('course.create', 'course.draft.save', 'course.publish', 'course.archive', 'course.restore', 'writing-task.create', 'writing-task.draft.save', 'writing-task.publish'))`
     ),
     check(
       "audit_events_identifier_check",
