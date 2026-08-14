@@ -71,6 +71,10 @@ import {
 } from "@workspace/ui/components/learning/writing-brief"
 
 import { useWritingAutosave } from "@/features/writing/hooks/use-writing-autosave"
+import {
+  calculateKoreanWritingMetrics,
+  WritingStatsPopover,
+} from "@/features/writing/ui/writing-stats-popover"
 import { WritingStudioShell } from "@/features/writing/ui/writing-studio-shell"
 import {
   readLearnerApiErrorCode,
@@ -117,7 +121,6 @@ export function WritingStudio({
     onServerWritingApplied: applyWriting,
   })
 
-  const charCount = [...body].length
   const hasCheck = writing.check !== null
   const drawerSide = useStudioDrawerSide()
 
@@ -193,13 +196,20 @@ export function WritingStudio({
     await runCheck()
   }
 
+  const koreanMetrics = calculateKoreanWritingMetrics(body)
   const meter = (
-    <ComposeMeter
-      {...(charCount < writing.brief.minChars
-        ? { min: writing.brief.minChars }
-        : {})}
-      value={charCount}
-    />
+    <WritingStatsPopover
+      metrics={koreanMetrics}
+      minChars={writing.brief.minChars}
+    >
+      <ComposeMeter
+        eojeol={koreanMetrics.eojeolCount}
+        {...(koreanMetrics.charCountWithSpaces < writing.brief.minChars
+          ? { min: writing.brief.minChars }
+          : {})}
+        value={koreanMetrics.charCountWithSpaces}
+      />
+    </WritingStatsPopover>
   )
   const checkButton = (
     <Button

@@ -101,16 +101,18 @@ function ComposeEditor({
 
 function ComposeMeter({
   className,
-  value = 0,
-  min,
+  eojeol,
   goal,
   max,
+  min,
+  value = 0,
   ...props
 }: React.ComponentProps<"div"> & {
-  value?: number
-  min?: number
+  eojeol?: number
   goal?: number
   max?: number
+  min?: number
+  value?: number
 }) {
   const meetsMin = min === undefined || value >= min
   const overMax = max !== undefined && value > max
@@ -133,6 +135,11 @@ function ComposeMeter({
         )}
       >
         {value.toLocaleString("ko-KR")}자
+        {eojeol !== undefined ? (
+          <span className="ml-1 font-normal text-muted-foreground/80">
+            ({eojeol.toLocaleString("ko-KR")}어절)
+          </span>
+        ) : null}
       </span>
       {min !== undefined && <span>최소 {min.toLocaleString("ko-KR")}</span>}
       {goal !== undefined && <span>목표 {goal.toLocaleString("ko-KR")}</span>}
