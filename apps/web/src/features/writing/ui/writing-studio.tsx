@@ -286,7 +286,7 @@ export function WritingStudio({
             >
               <ChevronLeftIcon aria-hidden="true" />
             </Button>
-            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em]">
+            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em] pr-1">
               {writing.brief.title}
             </p>
             <WritingSaveStatus status={autosave.status} />

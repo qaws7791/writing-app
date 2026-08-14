@@ -314,7 +314,7 @@ export function WritingStudio({
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
             </Button>
-            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em]">
+            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em] pr-1">
               {TASK.title}
             </p>
             <span className="sr-only" role="status">

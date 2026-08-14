@@ -24,7 +24,7 @@ export const writingStudioCanvasContentClassName =
   "mx-auto w-full max-w-3xl pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] sm:pt-[4.75rem] sm:pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:pt-20 lg:pb-10"
 
 export const writingStudioCanvasPlaceholderClassName =
-  "top-[4.75rem] sm:top-[4.75rem] lg:top-20"
+  "pt-[4.75rem] sm:pt-[4.75rem] lg:pt-20"
 
 export function WritingStudioShell({
   children,

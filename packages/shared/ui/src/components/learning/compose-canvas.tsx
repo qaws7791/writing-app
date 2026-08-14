@@ -64,44 +64,50 @@ export function ComposeCanvas({
     >
       <LexicalComposer initialConfig={initialConfig}>
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <RichTextPlugin
-            ErrorBoundary={LexicalErrorBoundary}
-            contentEditable={
-              <ContentEditable
-                aria-multiline="true"
-                aria-readonly={disabled || undefined}
-                className={cn(
-                  "relative min-h-full px-5 pt-5 pb-5 text-base leading-7 text-foreground outline-none sm:px-8 sm:pt-8 sm:pb-8",
-                  disabled && "cursor-not-allowed opacity-45",
-                  contentClassName
-                )}
-                id={id}
-                role="textbox"
-                spellCheck={false}
-                {...(ariaLabel === undefined
-                  ? {}
-                  : { "aria-label": ariaLabel })}
-                {...(ariaLabelledBy === undefined
-                  ? {}
-                  : { "aria-labelledby": ariaLabelledBy })}
-                {...(placeholder === undefined
-                  ? { placeholder: null }
-                  : {
-                      "aria-placeholder": placeholder,
-                      placeholder: (
-                        <div
-                          className={cn(
-                            "pointer-events-none absolute top-5 left-5 text-base leading-7 text-muted-foreground/80 sm:top-8 sm:left-8",
-                            placeholderClassName
-                          )}
-                        >
-                          {placeholder}
-                        </div>
-                      ),
-                    })}
-              />
-            }
-          />
+          <div
+            className={cn(
+              "relative mx-auto min-h-full w-full px-5 pt-5 pb-5 sm:px-8 sm:pt-8 sm:pb-8",
+              contentClassName
+            )}
+          >
+            <RichTextPlugin
+              ErrorBoundary={LexicalErrorBoundary}
+              contentEditable={
+                <ContentEditable
+                  aria-multiline="true"
+                  aria-readonly={disabled || undefined}
+                  className={cn(
+                    "min-h-full text-base leading-7 text-foreground outline-none",
+                    disabled && "cursor-not-allowed opacity-45"
+                  )}
+                  id={id}
+                  role="textbox"
+                  spellCheck={false}
+                  {...(ariaLabel === undefined
+                    ? {}
+                    : { "aria-label": ariaLabel })}
+                  {...(ariaLabelledBy === undefined
+                    ? {}
+                    : { "aria-labelledby": ariaLabelledBy })}
+                  {...(placeholder === undefined
+                    ? { placeholder: null }
+                    : {
+                        "aria-placeholder": placeholder,
+                        placeholder: (
+                          <div
+                            className={cn(
+                              "pointer-events-none absolute inset-x-0 top-0 px-5 pt-5 text-base leading-7 text-muted-foreground/80 sm:px-8 sm:pt-8",
+                              placeholderClassName
+                            )}
+                          >
+                            {placeholder}
+                          </div>
+                        ),
+                      })}
+                />
+              }
+            />
+          </div>
         </div>
         <HistoryPlugin />
         <PastePlainTextPlugin />
