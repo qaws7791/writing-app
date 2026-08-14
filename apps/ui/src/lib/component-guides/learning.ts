@@ -1165,14 +1165,36 @@ export function WriteStep() {
   <p>…</p>
 </ComposeReference>`,
       },
+      {
+        id: "canvas",
+        title: "작성 캔버스",
+        description: "긴 글은 ComposeCanvas를 씁니다. 문단 간격을 제공합니다.",
+        code: `import { useState } from "react"
+import { Compose } from "@/components/learning/compose"
+import { ComposeCanvas } from "@/components/learning/compose-canvas"
+
+export function WritingCanvas() {
+  const [value, setValue] = useState("첫 문단입니다.\\n\\n둘째 문단입니다.")
+  return (
+    <Compose className="min-h-80">
+      <ComposeCanvas
+        id="compose-canvas-demo"
+        onChange={setValue}
+        placeholder="여기에 글을 씁니다."
+        value={value}
+      />
+    </Compose>
+  )
+}`,
+      },
     ],
     usageNotes: [
       "서버는 문장 정답이 아니라 글자 수 기준만 판정합니다. ComposeMeter의 ready/short/over를 제출 조건에 연결하세요.",
-      "모드(counter, self-rebut)는 배지·주장 유무로 표현하고 별도 테마를 만들지 않습니다.",
+      "짧은 입력은 ComposeEditor, 작성 세션처럼 긴 본문은 ComposeCanvas를 씁니다. ComposeCanvas의 value와 onChange는 일반 텍스트입니다.",
     ],
     accessibility: [
       "편집기와 글자 수 미터를 레이블로 연결하세요.",
-      "최소 글자 미달로 제출이 막힐 때 이유를 텍스트로 알리세요.",
+      "ComposeCanvas는 role=textbox와 aria-multiline을 제공합니다.",
     ],
     props: [
       {

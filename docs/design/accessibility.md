@@ -50,6 +50,7 @@
 ## 쓰기 접근성
 
 - 본문에는 보이는 한국어 label을 제공한다.
+- 작성 세션 본문 캔버스는 `role="textbox"`와 `aria-multiline="true"`를 제공한다. 접근 이름은 `sr-only` 「본문」이다. Tab은 본문에서 다음 chrome으로 나간다.
 - 작성 세션의 본문 종이 표면은 입력 중에도 `:focus-visible`이 유지되므로 control용 `ring-3`을 쓰지 않는다. 포커스는 캐럿과 종이 경계의 낮은 대비 변화로 전달한다. 플로팅 chrome control은 공통 `focus-visible:ring-3`을 유지한다.
 - 레슨은 저장과 동기화 상태를 live region으로 전달하지 않는다.
 - 학습자가 실행한 행동이 실패하면 작성한 내용과 다음 행동을 `role="alert"`로 전달한다.

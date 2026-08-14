@@ -28,10 +28,10 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/primitives/alert-dialog"
 import { Button } from "@workspace/ui/components/primitives/button"
+import { ComposeCanvas } from "@workspace/ui/components/learning/compose-canvas"
 import {
   Compose,
   ComposeActions,
-  ComposeEditor,
   ComposeMeter,
 } from "@workspace/ui/components/learning/compose"
 import {
@@ -305,15 +305,20 @@ export function WritingStudio({
         }
       >
         <Compose className="flex h-full min-h-0 flex-1 flex-col gap-0">
-          <label className="sr-only" htmlFor="writing-studio-editor">
+          <label
+            className="sr-only"
+            htmlFor="writing-studio-editor"
+            id="writing-studio-editor-label"
+          >
             본문
           </label>
-          <ComposeEditor
-            className="min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-5 py-5 shadow-none hover:border-transparent hover:bg-transparent focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0 sm:px-8 sm:py-8"
+          <ComposeCanvas
+            aria-labelledby="writing-studio-editor-label"
+            className="min-h-0 flex-1 bg-transparent"
             disabled={checking}
             id="writing-studio-editor"
             onBlur={() => void autosave.flushWriting()}
-            onChange={(event) => handleBodyChange(event.target.value)}
+            onChange={handleBodyChange}
             placeholder="여기에 글을 씁니다."
             value={body}
           />

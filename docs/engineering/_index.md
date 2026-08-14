@@ -54,6 +54,7 @@
 | `adr/ADR-0029-*.md`                     | Astro UI 문서 통합 결정(registry 부분은 ADR-0035가 대체). |
 | `adr/ADR-0035-*.md`                     | `@workspace/ui` 단일 소스와 내부 UI 문서 결정.            |
 | `adr/ADR-0036-*.md`                     | 쓰기 탭을 목적 과제와 AI 점검으로 교체.                   |
+| `adr/ADR-0037-*.md`                     | 작성 세션 본문에 Lexical 캔버스를 도입.                   |
 | `adr/ADR-0030-*.md`                     | ADR-0033이 대체한 초기 관리자 MCP OAuth 결정.             |
 | `adr/ADR-0031-*.md`                     | owner 승인 기반 관리자 MCP 콘텐츠 변경 결정.              |
 | `adr/ADR-0032-*.md`                     | 관리자 MCP 단계별 실행 정책과 전체 변경 범위 결정.        |

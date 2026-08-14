@@ -23,6 +23,7 @@
 | 2026-08-10 관리자 MCP 1~3단계 전체 Tool | [`plan.md`](./2026-08-10-admin-mcp-full-admin-tools/plan.md)                                                                                                                                  | 로컬 구현 완료, 저장소 기준선 gate 장애 확인               |
 | 2026-08-11 course-admin 블록 재설계     | [`plan.md`](./2026-08-11-course-admin-redesign/plan.md)                                                                                                                                       | 레지스트리 블록 프로토타입 구현 완료 (SCR-104 비권위)      |
 | 2026-08-14 프로덕션 배포 종합 감사      | [`production-readiness-audit.md`](./2026-08-14-production-readiness-audit/production-readiness-audit.md)                                                                                      | 플랫폼 전체 기능 검토 완료, 프로덕션 준비 보고서 작성 완료 |
+| 2026-08-14 Lexical 작성 캔버스          | [`plan.md`](./2026-08-14-lexical-compose-editor/plan.md)                                                                                                                                      | 구현 중                                                    |
 
 ## 사용 기준
 

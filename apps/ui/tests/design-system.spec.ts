@@ -53,3 +53,17 @@ test("focus한 tab을 Enter로 활성화한다", async ({ page }) => {
   await expect(completed).toHaveAttribute("aria-selected", "true");
   await expect(page.getByText("완료한 학습 목록")).toBeVisible();
 });
+
+test("compose canvas는 평문을 전달하고 Tab으로 에디터를 나간다", async ({ page }) => {
+  await page.goto("/preview/interactions/compose-canvas");
+  const editor = page.getByRole("textbox", { name: "본문" });
+  await editor.click();
+  await page.keyboard.type("첫번째 문단");
+
+  await expect(page.getByTestId("compose-canvas-value")).toHaveText("첫번째 문단");
+
+  await page.keyboard.press("Tab");
+
+  await expect(page.getByTestId("compose-canvas-value")).toHaveText("첫번째 문단");
+  await expect(editor).not.toBeFocused();
+});

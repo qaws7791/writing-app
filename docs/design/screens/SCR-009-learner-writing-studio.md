@@ -31,7 +31,7 @@
 - `AppShell`을 사용하지 않는 몰입 화면이다.
 - 기본 상태는 본문 종이다. 과제와 점검 결과는 한 번에 하나만 연다.
 - 본문은 캔버스 위의 editorial 종이 표면이다. `bg-card`, `rounded-4xl`/`rounded-5xl`, 낮은 대비 `border`를 사용한다. 입력 중 포커스는 control `ring-3`이 아니라 캐럿과 종이 경계 변화로 전달한다.
-- 본문은 Luma `ComposeEditor`에 일반 텍스트만 입력한다.
+- 본문은 Luma `ComposeCanvas`에 일반 텍스트만 입력한다. 문단 간격을 제공한다.
 - 브리프는 Luma `WritingBrief` anatomy를 사용한다. 서랍 안을 카드로 다시 감싸지 않는다.
 - 점검 결과는 Luma `FeedbackSummary`와 `Insight`를 사용한다.
 - 평시 헤더는 3구역(Left/Center/Right) 극미니멀 구조다. 왼쪽은 나가기·과제 제목, 가운데는 글자 수, 오른쪽은 과제/피드백 세그먼트 서랍 캡슐 및 초슬림 점검 버튼이다. 제목은 누르지 않는다.

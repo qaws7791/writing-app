@@ -62,10 +62,13 @@ import {
   SelectValue,
 } from "@workspace/ui/components/primitives/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/primitives/tabs";
+import { ComposeCanvas } from "@workspace/ui/components/learning/compose-canvas";
+import { useState } from "react";
 
 export const interactionContracts = [
   "accordion",
   "alert-dialog",
+  "compose-canvas",
   "dialog",
   "dropdown-menu",
   "field",
@@ -109,6 +112,8 @@ export default function InteractionContractPreview({
           </AlertDialogContent>
         </AlertDialog>
       );
+    case "compose-canvas":
+      return <ComposeCanvasContract />;
     case "dialog":
       return (
         <Dialog>
@@ -211,4 +216,23 @@ export default function InteractionContractPreview({
         </Tabs>
       );
   }
+}
+
+function ComposeCanvasContract() {
+  const [value, setValue] = useState("");
+
+  return (
+    <div className="flex w-full max-w-xl flex-col gap-4">
+      <ComposeCanvas
+        aria-label="본문"
+        className="min-h-64 rounded-3xl border border-border/40 bg-card"
+        id="compose-canvas-contract"
+        onChange={setValue}
+        placeholder="여기에 글을 씁니다."
+        value={value}
+      />
+      <p data-testid="compose-canvas-value">{value}</p>
+      <Button type="button">다음 칸</Button>
+    </div>
+  );
 }

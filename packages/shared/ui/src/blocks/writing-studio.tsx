@@ -20,11 +20,8 @@ import {
   AlertDialogTitle,
 } from "#ui/components/primitives/alert-dialog"
 import { Button } from "#ui/components/primitives/button"
-import {
-  Compose,
-  ComposeEditor,
-  ComposeMeter,
-} from "#ui/components/learning/compose"
+import { ComposeCanvas } from "#ui/components/learning/compose-canvas"
+import { Compose, ComposeMeter } from "#ui/components/learning/compose"
 import {
   FeedbackSummary,
   FeedbackSummaryHeader,
@@ -279,14 +276,19 @@ export function WritingStudio({
       <div className="h-full min-h-0 px-4 pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:px-6 lg:pt-20 lg:pb-6">
         <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col">
           <Compose className="flex h-full min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl">
-            <label className="sr-only" htmlFor="writing-studio-editor">
+            <label
+              className="sr-only"
+              htmlFor="writing-studio-editor"
+              id="writing-studio-editor-label"
+            >
               본문
             </label>
-            <ComposeEditor
-              className="min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-5 py-5 shadow-none hover:border-transparent hover:bg-transparent focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0 sm:px-8 sm:py-8"
+            <ComposeCanvas
+              aria-labelledby="writing-studio-editor-label"
+              className="min-h-0 flex-1 bg-transparent"
               disabled={checking}
               id="writing-studio-editor"
-              onChange={(event) => setText(event.target.value)}
+              onChange={setText}
               placeholder="여기에 글을 씁니다."
               value={text}
             />

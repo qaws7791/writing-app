@@ -339,13 +339,13 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 - 전체 viewport를 사용하는 몰입 화면이다.
 - 글로벌 내비게이션을 포함하지 않는다.
-- 바깥 여백과 열 간격으로 구조를 두고, 헤더·브리프·본문·푸터 사이 구분선은 두지 않는다.
-- 상단에는 과제 제목, 저장 상태, 과제 보기 행동만 둔다. 헤더는 하단 구분선 없이 떠 있다.
-- 본문은 캔버스 위의 editorial 종이 표면(`bg-card`, `rounded-4xl`/`rounded-5xl`)이다. `Compose`, `ComposeEditor`와 `ComposeMeter`를 사용한다. 입력 중 포커스는 control `ring-3`이 아니라 캐럿과 종이 경계 변화로 전달한다.
-- 브리프는 `WritingBrief` anatomy를 사용한다. 옆 열은 카드로 다시 감싸지 않는다. 접으면 본문 열은 가운데 `max-w-3xl`로 모인다.
-- 점검 결과는 `FeedbackSummary`와 `Insight`를 사용한다. 점검 열은 구분선 없이 후퇴한다.
+- 바깥 여백으로 구조를 두고, 헤더·본문·푸터 사이 구분선은 두지 않는다.
+- 평시 헤더는 3구역이다. 왼쪽은 나가기·과제 제목과 저장 점, 가운데는 글자 수, 오른쪽은 과제/결과 서랍 트리거와 점검 버튼이다. 헤더는 하단 구분선 없이 떠 있다.
+- 본문은 캔버스 위의 editorial 종이 표면(`bg-card`, `rounded-4xl`/`rounded-5xl`)이다. `Compose`, `ComposeCanvas`와 `ComposeMeter`를 사용한다. 입력 중 포커스는 control `ring-3`이 아니라 캐럿과 종이 경계 변화로 전달한다.
+- 과제 브리프와 점검 결과는 한 번에 하나만 여는 서랍이다. 서랍은 본문을 거의 가린다. 서랍 안을 카드로 다시 감싸지 않는다.
+- 브리프는 `WritingBrief` anatomy를 사용한다. 점검 결과는 `FeedbackSummary`와 `Insight`를 사용한다.
 - 저장 충돌과 실패는 `Insight tone="incorrect"`로 표시한다.
-- 하단 주요 행동은 상단 구분선 없이 본문과 이어지며 모바일 safe area를 반영한다.
+- `lg` 미만은 상단 플로팅과 하단 플로팅을 나눈다. 하단은 글자 수와 점검을 두고 소프트 키보드 위로 올린다.
 
 ### CompareStepView와 Insight
 
