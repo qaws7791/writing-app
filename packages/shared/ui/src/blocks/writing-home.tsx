@@ -18,21 +18,12 @@ import {
 } from "#ui/components/primitives/alert-dialog"
 import { Badge } from "#ui/components/primitives/badge"
 import { Button } from "#ui/components/primitives/button"
-import { Card } from "#ui/components/primitives/card"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
 } from "#ui/components/primitives/empty"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "#ui/components/primitives/tabs"
-
-type WritingStatus = "draft" | "complete"
 
 type WritingPiece = {
   id: string
@@ -40,7 +31,6 @@ type WritingPiece = {
   domain: string
   typeName: string
   difficulty: "입문" | "기본" | "심화"
-  status: WritingStatus
   charCount: number
   startedAt: string
 }
@@ -52,7 +42,6 @@ const PIECES: WritingPiece[] = [
     domain: "일상·실용문",
     typeName: "초대장",
     difficulty: "입문",
-    status: "draft",
     charCount: 86,
     startedAt: "오늘 14:20",
   },
@@ -62,7 +51,6 @@ const PIECES: WritingPiece[] = [
     domain: "자기서사·기록",
     typeName: "자기소개서",
     difficulty: "기본",
-    status: "draft",
     charCount: 240,
     startedAt: "어제 21:08",
   },
@@ -72,7 +60,6 @@ const PIECES: WritingPiece[] = [
     domain: "설득·의견문",
     typeName: "칼럼",
     difficulty: "심화",
-    status: "complete",
     charCount: 612,
     startedAt: "8월 11일",
   },
@@ -130,7 +117,7 @@ function cardLike() {
 }
 
 /**
- * Learner writing home: in-progress and completed pieces, plus a path to the task catalog.
+ * Learner writing home: a single list of pieces, plus a path to the task catalog.
  */
 export function WritingHome({
   className,
@@ -140,9 +127,6 @@ export function WritingHome({
   const [pendingDelete, setPendingDelete] = React.useState<WritingPiece | null>(
     null
   )
-
-  const drafts = pieces.filter((piece) => piece.status === "draft")
-  const completed = pieces.filter((piece) => piece.status === "complete")
 
   return (
     <LearnerShell
@@ -158,7 +142,7 @@ export function WritingHome({
               쓰기
             </h1>
             <p className="text-sm leading-6 text-pretty text-muted-foreground">
-              작성 중인 글을 이어 쓰거나, 과제를 골라 새 글을 시작합니다.
+              글을 이어 쓰거나, 과제를 골라 새 글을 시작합니다.
             </p>
           </div>
           <Button type="button">
@@ -171,51 +155,26 @@ export function WritingHome({
           </Button>
         </header>
 
-        <Tabs defaultValue="draft">
-          <TabsList>
-            <TabsTrigger value="draft">작성 중 {drafts.length}</TabsTrigger>
-            <TabsTrigger value="complete">완료 {completed.length}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="draft" className="mt-4 flex flex-col gap-3">
-            {drafts.length > 0 ? (
-              drafts.map((piece) => (
-                <WritingPieceCard
-                  key={piece.id}
-                  piece={piece}
-                  onDelete={setPendingDelete}
-                />
-              ))
-            ) : (
-              <Empty variant="frame">
-                <EmptyHeader>
-                  <EmptyTitle>작성 중인 글이 없습니다</EmptyTitle>
-                  <EmptyDescription>
-                    과제를 고르면 목적이 정해진 글을 시작할 수 있습니다.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            )}
-          </TabsContent>
-          <TabsContent value="complete" className="mt-4 flex flex-col gap-3">
-            {completed.length > 0 ? (
-              completed.map((piece) => (
-                <WritingPieceCard
-                  key={piece.id}
-                  piece={piece}
-                  onDelete={setPendingDelete}
-                />
-              ))
-            ) : (
-              <Card
-                variant="muted"
-                size="sm"
-                className="rounded-[1.75rem] px-(--card-spacing) py-8 text-sm text-muted-foreground"
-              >
-                마친 글이 없습니다.
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+        <div className="flex flex-col gap-3">
+          {pieces.length > 0 ? (
+            pieces.map((piece) => (
+              <WritingPieceCard
+                key={piece.id}
+                piece={piece}
+                onDelete={setPendingDelete}
+              />
+            ))
+          ) : (
+            <Empty variant="frame">
+              <EmptyHeader>
+                <EmptyTitle>아직 글이 없습니다</EmptyTitle>
+                <EmptyDescription>
+                  과제를 고르면 목적이 정해진 글을 시작할 수 있습니다.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </div>
       </main>
 
       <AlertDialog

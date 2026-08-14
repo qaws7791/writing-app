@@ -7,12 +7,10 @@ import {
 } from "@workspace/contracts/writing/writing"
 
 import {
-  canCompleteWriting,
   parseWritingCheckResult,
   readWritingCheckGate,
 } from "#writing/domain/writing-check"
 import {
-  completeWritingPiece,
   countWritingChars,
   createWritingPiece,
   reviseWritingPiece,
@@ -86,32 +84,28 @@ describe("쓰기 과제 발행", () => {
   })
 })
 
-describe("글 점검과 마치기", () => {
-  it("본문이 바뀌면 점검을 무효로 보고 작성 중으로 되돌린다", () => {
+describe("글 점검", () => {
+  it("본문이 바뀌면 점검 뒤 수정 event를 남긴다", () => {
     const writing = createWritingPiece({
       id: writingId,
       learnerId,
       now,
       publicationId,
     })
-    const completed = completeWritingPiece(
+    const revised = reviseWritingPiece(
       { ...writing, body: "충분한 본문", version: 1 },
-      later
+      {
+        body: "고친 본문",
+        hasSucceededCheck: true,
+        now: later,
+      }
     )
-    const revised = reviseWritingPiece(completed.writing, {
-      body: "고친 본문",
-      hasSucceededCheck: true,
-      now: later,
-    })
 
     expect(revised.eventTypes).toEqual([writingEventTypes.revisedAfterCheck])
     expect(revised.writing).toMatchObject({
-      completedAt: null,
-      status: "drafting",
-      version: completed.writing.version + 1,
+      body: "고친 본문",
+      version: 2,
     })
-    expect(canCompleteWriting({ hasValidCheck: false })).toBe(false)
-    expect(canCompleteWriting({ hasValidCheck: true })).toBe(true)
   })
 
   it("최소 글자, 하루 한도, 고지 확인 전에는 점검을 시작하지 않는다", () => {

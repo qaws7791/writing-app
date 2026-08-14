@@ -1,7 +1,10 @@
 import { eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
-import { writingIdSchema } from "@workspace/contracts/writing/writing"
+import {
+  writingCheckIdSchema,
+  writingIdSchema,
+} from "@workspace/contracts/writing/writing"
 import {
   createInMemoryWritingAppDatabase,
   type WritingAppDatabaseClient,
@@ -101,6 +104,70 @@ describe("writing SQLite repository", () => {
           version: 0,
         }),
       })
+    })
+  })
+
+  it("본문이 바뀌어도 최근 점검을 조회하고 새 점검이 그 1건을 바꾼다", async () => {
+    await withWritingDatabase(async (client) => {
+      const repository = createDrizzleWritingRepository(client.db)
+      const writing = await readWriting(repository)
+      const firstResult = {
+        revisions: [],
+        strengths: ["첫 점검"],
+        unmetRequirements: [],
+      }
+      const secondResult = {
+        revisions: [],
+        strengths: ["둘째 점검"],
+        unmetRequirements: [],
+      }
+
+      await repository.createCheck({
+        bodyVersion: writing.version,
+        eventType: "check_succeeded",
+        id: writingCheckIdSchema.parse("check-first"),
+        now: firstSaveAt,
+        result: firstResult,
+        writing,
+      })
+
+      const saved = await repository.savePiece({
+        eventTypes: ["revised_after_check"],
+        expectedVersion: writing.version,
+        writing: {
+          ...writing,
+          body: "고친 본문",
+          updatedAt: staleSaveAt,
+          version: writing.version + 1,
+        },
+      })
+      if (saved.isErr()) {
+        throw new Error(`본문 저장이 실패했습니다: ${saved.error.kind}`)
+      }
+
+      await expect(repository.findLatestCheck(writingId)).resolves.toEqual(
+        firstResult
+      )
+
+      await repository.createCheck({
+        bodyVersion: saved.value.version,
+        eventType: "check_succeeded",
+        id: writingCheckIdSchema.parse("check-second"),
+        now: staleSaveAt,
+        result: secondResult,
+        writing: saved.value,
+      })
+
+      await expect(repository.findLatestCheck(writingId)).resolves.toEqual(
+        secondResult
+      )
+      expect(
+        client.sqlite
+          .query<{ count: number }, []>(
+            `SELECT COUNT(*) AS count FROM writing_checks WHERE writing_id = '${writingId}'`
+          )
+          .get()
+      ).toEqual({ count: 1 })
     })
   })
 })

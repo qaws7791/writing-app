@@ -1,13 +1,21 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import {
+  useCallback,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react"
 import { useRouter } from "next/navigation"
 import {
   acknowledgeWritingAiNotice,
   checkWriting,
-  completeWriting,
 } from "@workspace/http-client/learner"
-import { BookOpenIcon, ChevronLeftIcon } from "@workspace/ui/components/icons"
+import {
+  BookOpenIcon,
+  ChevronLeftIcon,
+  MessageIcon,
+} from "@workspace/ui/components/icons"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,6 +78,8 @@ import {
   type LearnerWritingDetailDto,
 } from "@/shared/http/learner-api-client"
 
+type StudioPanel = "brief" | "closed" | "feedback"
+
 export function WritingStudio({
   initialWriting,
 }: {
@@ -78,12 +88,10 @@ export function WritingStudio({
   const router = useRouter()
   const [writing, setWriting] = useState(initialWriting)
   const [body, setBody] = useState(initialWriting.body)
-  const [briefOpen, setBriefOpen] = useState(true)
-  const [briefSheetOpen, setBriefSheetOpen] = useState(false)
+  const [panel, setPanel] = useState<StudioPanel>("closed")
   const [noticeOpen, setNoticeOpen] = useState(false)
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false)
   const [checking, setChecking] = useState(false)
-  const [completing, setCompleting] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
   const applyWriting = useCallback((next: LearnerWritingDetailDto) => {
@@ -96,11 +104,8 @@ export function WritingStudio({
     setWriting((current) => ({
       ...current,
       aiNoticeAcknowledged: next.aiNoticeAcknowledged,
-      canComplete: next.canComplete,
       check: next.check,
-      completedAt: next.completedAt,
       dailyChecksRemaining: next.dailyChecksRemaining,
-      status: next.status,
       updatedAt: next.updatedAt,
       version: next.version,
     }))
@@ -112,11 +117,11 @@ export function WritingStudio({
     onServerWritingApplied: applyWriting,
   })
 
-  const showFeedback = writing.check !== null && !autosave.dirty
-  const busy = checking || completing
+  const charCount = [...body].length
+  const hasCheck = writing.check !== null
+  const drawerSide = useStudioDrawerSide()
 
   const handleBodyChange = (nextBody: string) => {
-    if (body.length === 0 && nextBody.length > 0) setBriefOpen(false)
     setBody(nextBody)
     autosave.stageWriting({ body: nextBody })
   }
@@ -158,10 +163,11 @@ export function WritingStudio({
     }
 
     applyWriting(result.value)
+    setPanel("feedback")
   }
 
   const handleCheck = async () => {
-    if (busy || autosave.status.kind === "conflict") return
+    if (checking || autosave.status.kind === "conflict") return
     await autosave.flushWriting()
     if (autosave.hasUnsavedChanges()) {
       setActionError(
@@ -187,78 +193,35 @@ export function WritingStudio({
     await runCheck()
   }
 
-  const handleComplete = async () => {
-    if (busy || !writing.canComplete || autosave.dirty) return
-    setCompleting(true)
-    setActionError(null)
-    await autosave.flushWriting()
-
-    if (autosave.hasUnsavedChanges()) {
-      setCompleting(false)
-      setActionError(
-        "입력한 내용은 이 화면에 남아 있습니다. 저장 문제를 해결한 뒤 다시 마쳐 주세요."
-      )
-      return
-    }
-
-    const result = await settleLearnerApiRequest(
-      completeWriting(writing.id, {
-        expectedVersion: autosave.readExpectedVersion(),
-      })
-    )
-    setCompleting(false)
-
-    if (result.status === "error") {
-      setActionError(
-        readCompleteErrorMessage(readLearnerApiErrorCode(result.error))
-      )
-      return
-    }
-
-    applyWriting(result.value)
-  }
+  const meter = (
+    <ComposeMeter
+      {...(charCount < writing.brief.minChars
+        ? { min: writing.brief.minChars }
+        : {})}
+      value={charCount}
+    />
+  )
+  const checkButton = (
+    <Button
+      disabled={checking || autosave.status.kind === "conflict"}
+      onClick={() => void handleCheck()}
+      type="button"
+    >
+      {checking ? "검토 중…" : "점검하기"}
+    </Button>
+  )
 
   const brief = <WritingTaskBrief writing={writing} />
   const feedback =
-    showFeedback && writing.check !== null ? (
-      <WritingCheckPanel check={writing.check} />
-    ) : undefined
+    writing.check === null ? null : <WritingCheckPanel check={writing.check} />
 
   return (
     <>
       <WritingStudioShell
-        brief={brief}
-        briefOpen={briefOpen}
-        feedback={feedback}
         footer={
           <>
-            <ComposeMeter
-              goal={writing.brief.goalChars}
-              min={writing.brief.minChars}
-              value={[...body].length}
-            />
-            <span className="text-xs text-muted-foreground" role="status">
-              {checking
-                ? "글을 검토하는 중입니다."
-                : readSaveStatusLabel(autosave.status.kind)}
-            </span>
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                disabled={busy || !writing.canComplete || autosave.dirty}
-                onClick={() => void handleComplete()}
-                type="button"
-                variant="outline"
-              >
-                {completing ? "마치는 중" : "마치기"}
-              </Button>
-              <Button
-                disabled={busy || autosave.status.kind === "conflict"}
-                onClick={() => void handleCheck()}
-                type="button"
-              >
-                {checking ? "검토 중…" : "점검하기"}
-              </Button>
-            </div>
+            {meter}
+            <div className="ml-auto">{checkButton}</div>
           </>
         }
         header={
@@ -266,7 +229,7 @@ export function WritingStudio({
             <Button
               aria-label="쓰기 홈으로"
               className="rounded-full"
-              disabled={busy}
+              disabled={checking}
               onClick={() => void handleLeave()}
               size="icon-sm"
               type="button"
@@ -274,35 +237,48 @@ export function WritingStudio({
             >
               <ChevronLeftIcon aria-hidden="true" />
             </Button>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium tracking-[-0.01em]">
-                {writing.brief.title}
-              </p>
-              <p className="text-xs tabular-nums text-muted-foreground">
-                {writing.brief.difficulty} · 목표{" "}
-                {writing.brief.goalChars.toLocaleString("ko-KR")}자
-              </p>
-            </div>
+            <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em] lg:flex-none lg:max-w-56">
+              {writing.brief.title}
+            </p>
             <WritingSaveStatus status={autosave.status} />
-            <Button
-              className="hidden sm:inline-flex"
-              onClick={() => setBriefOpen((open) => !open)}
-              type="button"
-              variant="ghost"
-              size="sm"
-            >
-              과제 {briefOpen ? "접기" : "보기"}
-            </Button>
-            <Button
-              aria-label="과제 보기"
-              className="rounded-full sm:hidden"
-              onClick={() => setBriefSheetOpen(true)}
-              size="icon-sm"
-              type="button"
-              variant="ghost"
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
+              <PanelIconButton
+                label="과제 보기"
+                onClick={() => setPanel("brief")}
+                pressed={panel === "brief"}
+              >
+                <BookOpenIcon aria-hidden="true" />
+              </PanelIconButton>
+              {hasCheck ? (
+                <PanelIconButton
+                  label="점검 결과 보기"
+                  onClick={() => setPanel("feedback")}
+                  pressed={panel === "feedback"}
+                >
+                  <MessageIcon aria-hidden="true" />
+                </PanelIconButton>
+              ) : null}
+              {meter}
+            </div>
+            <PanelIconButton
+              className="lg:hidden"
+              label="과제 보기"
+              onClick={() => setPanel("brief")}
+              pressed={panel === "brief"}
             >
               <BookOpenIcon aria-hidden="true" />
-            </Button>
+            </PanelIconButton>
+            {hasCheck ? (
+              <PanelIconButton
+                className="lg:hidden"
+                label="점검 결과 보기"
+                onClick={() => setPanel("feedback")}
+                pressed={panel === "feedback"}
+              >
+                <MessageIcon aria-hidden="true" />
+              </PanelIconButton>
+            ) : null}
+            <div className="hidden lg:block">{checkButton}</div>
           </>
         }
         notice={
@@ -335,15 +311,6 @@ export function WritingStudio({
                 <InsightDescription>{actionError}</InsightDescription>
               </Insight>
             )}
-            {writing.status === "complete" && !autosave.dirty ? (
-              <Insight className="px-1 sm:px-2" tone="correct">
-                <InsightTitle>이 글을 마쳤습니다</InsightTitle>
-                <InsightDescription>
-                  본문을 고치면 다시 작성 중이 되고, 점검을 한 번 더 해야 마칠
-                  수 있습니다.
-                </InsightDescription>
-              </Insight>
-            ) : null}
           </>
         }
       >
@@ -353,7 +320,7 @@ export function WritingStudio({
           </label>
           <ComposeEditor
             className="min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-5 py-5 shadow-none hover:border-transparent hover:bg-transparent focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0 sm:px-8 sm:py-8"
-            disabled={busy}
+            disabled={checking}
             id="writing-studio-editor"
             onBlur={() => void autosave.flushWriting()}
             onChange={(event) => handleBodyChange(event.target.value)}
@@ -363,13 +330,29 @@ export function WritingStudio({
         </Compose>
       </WritingStudioShell>
 
-      <Sheet onOpenChange={setBriefSheetOpen} open={briefSheetOpen}>
-        <SheetContent className="max-h-[80vh] overflow-auto" side="bottom">
+      <Sheet
+        onOpenChange={(open) => {
+          if (!open) setPanel("closed")
+        }}
+        open={panel !== "closed"}
+      >
+        <SheetContent
+          className="overflow-auto data-[side=bottom]:h-[92dvh] data-[side=bottom]:max-h-[92dvh] data-[side=center]:h-[92dvh] data-[side=center]:max-h-[92dvh] data-[side=center]:max-w-[min(48rem,calc(100%-2rem))] data-[side=center]:sm:max-w-[min(48rem,calc(100%-2rem))]"
+          side={drawerSide}
+        >
           <SheetHeader>
-            <SheetTitle>과제</SheetTitle>
-            <SheetDescription>쓰면서 다시 확인할 조건입니다.</SheetDescription>
+            <SheetTitle>
+              {panel === "feedback" ? "이번 점검" : "과제"}
+            </SheetTitle>
+            <SheetDescription>
+              {panel === "feedback"
+                ? "최근 점검 결과입니다."
+                : "쓰면서 다시 확인할 조건입니다."}
+            </SheetDescription>
           </SheetHeader>
-          <div className="px-6 pb-6">{brief}</div>
+          <div className="px-6 pb-6">
+            {panel === "feedback" ? feedback : brief}
+          </div>
         </SheetContent>
       </Sheet>
 
@@ -414,6 +397,34 @@ export function WritingStudio({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  )
+}
+
+function PanelIconButton({
+  children,
+  className,
+  label,
+  onClick,
+  pressed,
+}: {
+  readonly children: ReactNode
+  readonly className?: string
+  readonly label: string
+  readonly onClick: () => void
+  readonly pressed: boolean
+}) {
+  return (
+    <Button
+      aria-label={label}
+      aria-pressed={pressed}
+      className={className}
+      onClick={onClick}
+      size="icon-sm"
+      type="button"
+      variant="ghost"
+    >
+      {children}
+    </Button>
   )
 }
 
@@ -519,9 +530,9 @@ function WritingSaveStatus({
       )
     case "saved":
       return (
-        <Badge aria-live="polite" role="status" variant="success">
+        <span className="sr-only" role="status">
           저장됨
-        </Badge>
+        </span>
       )
     case "offline":
       return (
@@ -544,23 +555,6 @@ function WritingSaveStatus({
   }
 }
 
-function readSaveStatusLabel(
-  kind: ReturnType<typeof useWritingAutosave>["status"]["kind"]
-): string {
-  switch (kind) {
-    case "saving":
-      return "저장 중"
-    case "saved":
-      return "저장됨"
-    case "offline":
-      return "오프라인 · 입력 보존 중"
-    case "error":
-      return "저장하지 못함"
-    case "conflict":
-      return "저장 충돌"
-  }
-}
-
 function readCheckErrorMessage(code: string): string {
   switch (code) {
     case "WRITING_CHECK_DAILY_LIMIT":
@@ -578,13 +572,30 @@ function readCheckErrorMessage(code: string): string {
   }
 }
 
-function readCompleteErrorMessage(code: string): string {
-  switch (code) {
-    case "WRITING_CHECK_NOT_VALID":
-      return "현재 본문에 유효한 점검이 없습니다. 점검한 뒤 마쳐 주세요."
-    case "WRITING_VERSION_CONFLICT":
-      return "다른 화면에서 글이 변경되었습니다. 내용을 확인한 뒤 다시 마쳐 주세요."
-    default:
-      return "글을 마치지 못했습니다. 입력한 내용은 이 화면에 남아 있습니다."
-  }
+const STUDIO_OVERLAY_MIN_WIDTH_PX = 1024
+
+function useStudioDrawerSide(): "bottom" | "center" {
+  const isOverlay = useSyncExternalStore(
+    subscribeStudioOverlay,
+    readStudioOverlay,
+    readStudioCompact
+  )
+  return isOverlay ? "center" : "bottom"
+}
+
+function subscribeStudioOverlay(onStoreChange: () => void) {
+  const media = window.matchMedia(
+    `(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`
+  )
+  media.addEventListener("change", onStoreChange)
+  return () => media.removeEventListener("change", onStoreChange)
+}
+
+function readStudioOverlay() {
+  return window.matchMedia(`(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`)
+    .matches
+}
+
+function readStudioCompact() {
+  return false
 }

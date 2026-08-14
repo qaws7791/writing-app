@@ -3,7 +3,6 @@ import type { WritingAppSqlite } from "@workspace/db/test-support/sqlite-types"
 type WritingFixtureEventType =
   | "check_succeeded"
   | "revised_after_check"
-  | "writing_completed"
   | "writing_created"
   | "writing_deleted"
 
@@ -153,11 +152,10 @@ export function aWriting(
         user_id,
         publication_id,
         body,
-        status,
         version,
         created_at,
         updated_at
-      ) VALUES (?1, ?2, ?3, 'Test writing body', 'drafting', 0, 1, 1)
+      ) VALUES (?1, ?2, ?3, 'Test writing body', 0, 1, 1)
     `
     )
     .run(input.id, input.userId, publicationId)

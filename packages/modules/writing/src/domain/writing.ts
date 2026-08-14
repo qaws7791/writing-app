@@ -1,4 +1,3 @@
-import type { WritingStatus } from "@workspace/contracts/writing/writing"
 import type {
   LearnerId,
   WritingId,
@@ -7,7 +6,6 @@ import type {
 
 export const writingEventTypes = {
   checkSucceeded: "check_succeeded",
-  completed: "writing_completed",
   created: "writing_created",
   deleted: "writing_deleted",
   revisedAfterCheck: "revised_after_check",
@@ -18,12 +16,10 @@ export type WritingEventType =
 
 export type WritingPiece = Readonly<{
   body: string
-  completedAt: Date | null
   createdAt: Date
   id: WritingId
   learnerId: LearnerId
   publicationId: WritingTaskPublicationId
-  status: WritingStatus
   updatedAt: Date
   version: number
 }>
@@ -40,12 +36,10 @@ export function createWritingPiece(input: {
 }): WritingPiece {
   return {
     body: "",
-    completedAt: null,
     createdAt: input.now,
     id: input.id,
     learnerId: input.learnerId,
     publicationId: input.publicationId,
-    status: "drafting",
     updatedAt: input.now,
     version: 0,
   }
@@ -70,28 +64,8 @@ export function reviseWritingPiece(
     writing: {
       ...writing,
       body: input.body,
-      completedAt: bodyChanged ? null : writing.completedAt,
-      status: bodyChanged ? "drafting" : writing.status,
       updatedAt: input.now,
       version: writing.version + 1,
-    },
-  }
-}
-
-export function completeWritingPiece(
-  writing: WritingPiece,
-  now: Date
-): Readonly<{
-  eventTypes: readonly WritingEventType[]
-  writing: WritingPiece
-}> {
-  return {
-    eventTypes: [writingEventTypes.completed],
-    writing: {
-      ...writing,
-      completedAt: now,
-      status: "complete",
-      updatedAt: now,
     },
   }
 }

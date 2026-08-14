@@ -4,7 +4,6 @@ import {
   writingDifficultySchema,
   writingDomainSchema,
   writingIdSchema,
-  writingStatusSchema,
   writingTaskIdSchema,
   writingTaskPublicationIdSchema,
 } from "@workspace/contracts/writing/writing"
@@ -70,11 +69,12 @@ export function createDrizzleWritingRepository(
           })
           .onConflictDoUpdate({
             set: {
+              bodyVersion: input.bodyVersion,
               id: input.id,
               resultJson: JSON.stringify(input.result),
               succeededAt: input.now,
             },
-            target: [writingChecks.writingId, writingChecks.bodyVersion],
+            target: writingChecks.writingId,
           })
           .run()
         insertEvents(transaction, input.writing, [input.eventType], input.now)
@@ -165,16 +165,12 @@ export function createDrizzleWritingRepository(
         .get()
       return row === undefined ? null : toTask(row)
     },
-    async findValidCheck(input) {
+    async findLatestCheck(writingId) {
       const row = database
         .select()
         .from(writingChecks)
-        .where(
-          and(
-            eq(writingChecks.writingId, input.writingId),
-            eq(writingChecks.bodyVersion, input.bodyVersion)
-          )
-        )
+        .where(eq(writingChecks.writingId, writingId))
+        .orderBy(desc(writingChecks.succeededAt), desc(writingChecks.id))
         .get()
       return row === undefined ? null : parseCheckResult(row.resultJson)
     },
@@ -435,11 +431,9 @@ function taskExists(database: WritingAppDatabase, taskId: string): boolean {
 function toWritingValues(writing: WritingPiece) {
   return {
     body: writing.body,
-    completedAt: writing.completedAt,
     createdAt: writing.createdAt,
     id: writing.id,
     publicationId: writing.publicationId,
-    status: writing.status,
     updatedAt: writing.updatedAt,
     userId: writing.learnerId,
     version: writing.version,
@@ -449,12 +443,10 @@ function toWritingValues(writing: WritingPiece) {
 function toWriting(row: typeof writings.$inferSelect): WritingPiece {
   return {
     body: row.body,
-    completedAt: row.completedAt,
     createdAt: row.createdAt,
     id: writingIdSchema.parse(row.id),
     learnerId: learnerIdSchema.parse(row.userId),
     publicationId: writingTaskPublicationIdSchema.parse(row.publicationId),
-    status: writingStatusSchema.parse(row.status),
     updatedAt: row.updatedAt,
     version: row.version,
   }

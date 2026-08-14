@@ -38,11 +38,9 @@ export const writingDomainValues = [
 ] as const
 
 export const writingDifficultyValues = ["입문", "기본", "심화"] as const
-export const writingStatusValues = ["drafting", "complete"] as const
 
 export const writingDomainSchema = z.enum(writingDomainValues)
 export const writingDifficultySchema = z.enum(writingDifficultyValues)
-export const writingStatusSchema = z.enum(writingStatusValues)
 
 export const writingBriefSchema = z.strictObject({
   audience: z.string(),
@@ -101,7 +99,6 @@ export const writingSummarySchema = z.strictObject({
   difficulty: writingDifficultySchema,
   domain: writingDomainSchema,
   id: writingIdSchema,
-  status: writingStatusSchema,
   title: z.string(),
   typeName: z.string(),
   updatedAt: z.iso.datetime(),
@@ -112,13 +109,10 @@ export const writingDetailSchema = z.strictObject({
   aiNoticeAcknowledged: z.boolean(),
   body: z.string(),
   brief: writingBriefSchema,
-  canComplete: z.boolean(),
   check: writingCheckResultSchema.nullable(),
-  completedAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   dailyChecksRemaining: nonNegativeIntegerSchema,
   id: writingIdSchema,
-  status: writingStatusSchema,
   updatedAt: z.iso.datetime(),
   version: nonNegativeIntegerSchema,
 })
@@ -151,7 +145,6 @@ export const acknowledgeWritingAiNoticeResponseSchema = z.strictObject({
 
 export type WritingDomain = z.infer<typeof writingDomainSchema>
 export type WritingDifficulty = z.infer<typeof writingDifficultySchema>
-export type WritingStatus = z.infer<typeof writingStatusSchema>
 export type WritingBriefDto = z.infer<typeof writingBriefSchema>
 export type WritingCheckResultDto = z.infer<typeof writingCheckResultSchema>
 export type WritingSummaryDto = z.infer<typeof writingSummarySchema>

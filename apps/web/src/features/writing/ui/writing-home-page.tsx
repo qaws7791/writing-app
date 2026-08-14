@@ -18,7 +18,6 @@ import {
   Button,
   buttonVariants,
 } from "@workspace/ui/components/primitives/button"
-import { Card } from "@workspace/ui/components/primitives/card"
 import {
   Empty,
   EmptyDescription,
@@ -29,12 +28,6 @@ import {
   Insight,
   InsightDescription,
 } from "@workspace/ui/components/learning/insight"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/primitives/tabs"
 import { cn } from "@workspace/ui/lib/utils"
 
 import { formatWritingStartedAt } from "@/features/writing/model/writing-copy"
@@ -60,9 +53,6 @@ export function WritingHomePage({
   const [deleting, setDeleting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
-
-  const drafts = writings.filter((writing) => writing.status === "drafting")
-  const completed = writings.filter((writing) => writing.status === "complete")
 
   const handleDelete = async () => {
     if (deleteTarget === null) return
@@ -103,7 +93,7 @@ export function WritingHomePage({
             쓰기
           </h1>
           <p className="text-sm leading-6 text-pretty text-muted-foreground">
-            작성 중인 글을 이어 쓰거나, 과제를 골라 새 글을 시작합니다.
+            글을 이어 쓰거나, 과제를 골라 새 글을 시작합니다.
           </p>
         </div>
         <Link className={buttonVariants()} href="/app/writing/catalog">
@@ -123,53 +113,27 @@ export function WritingHomePage({
         </Insight>
       )}
 
-      <Tabs defaultValue="drafting">
-        <TabsList>
-          <TabsTrigger value="drafting">작성 중 {drafts.length}</TabsTrigger>
-          <TabsTrigger value="complete">완료 {completed.length}</TabsTrigger>
-        </TabsList>
-        <TabsContent className="mt-4 flex flex-col gap-3" value="drafting">
-          {drafts.length > 0 ? (
-            drafts.map((writing) => (
-              <WritingPieceCard
-                interactive={interactive}
-                key={writing.id}
-                onDelete={setDeleteTarget}
-                writing={writing}
-              />
-            ))
-          ) : (
-            <Empty variant="frame">
-              <EmptyHeader>
-                <EmptyTitle>작성 중인 글이 없습니다</EmptyTitle>
-                <EmptyDescription>
-                  과제를 고르면 목적이 정해진 글을 시작할 수 있습니다.
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          )}
-        </TabsContent>
-        <TabsContent className="mt-4 flex flex-col gap-3" value="complete">
-          {completed.length > 0 ? (
-            completed.map((writing) => (
-              <WritingPieceCard
-                interactive={interactive}
-                key={writing.id}
-                onDelete={setDeleteTarget}
-                writing={writing}
-              />
-            ))
-          ) : (
-            <Card
-              className="rounded-[1.75rem] px-(--card-spacing) py-8 text-sm text-muted-foreground"
-              size="sm"
-              variant="muted"
-            >
-              마친 글이 없습니다.
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+      <div className="flex flex-col gap-3">
+        {writings.length > 0 ? (
+          writings.map((writing) => (
+            <WritingPieceCard
+              interactive={interactive}
+              key={writing.id}
+              onDelete={setDeleteTarget}
+              writing={writing}
+            />
+          ))
+        ) : (
+          <Empty variant="frame">
+            <EmptyHeader>
+              <EmptyTitle>아직 글이 없습니다</EmptyTitle>
+              <EmptyDescription>
+                과제를 고르면 목적이 정해진 글을 시작할 수 있습니다.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
+      </div>
 
       <AlertDialog
         onOpenChange={(open) => {

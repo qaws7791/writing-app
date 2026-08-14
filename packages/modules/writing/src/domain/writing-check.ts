@@ -41,9 +41,3 @@ export function readWritingCheckGate(input: {
   }
   return null
 }
-
-export function canCompleteWriting(input: {
-  readonly hasValidCheck: boolean
-}): boolean {
-  return input.hasValidCheck
-}

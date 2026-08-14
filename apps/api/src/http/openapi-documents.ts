@@ -42,7 +42,6 @@ const learnerDependencies = {
     application: {
       acknowledgeAiNotice: contractOnly,
       check: contractOnly,
-      complete: contractOnly,
       create: contractOnly,
       delete: contractOnly,
       get: contractOnly,

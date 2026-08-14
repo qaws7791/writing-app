@@ -84,8 +84,7 @@ export const learnerBlocks: BlockDoc[] = [
   {
     slug: "writing-home",
     title: "Writing Home",
-    description:
-      "쓰기 홈입니다. 작성 중·완료 글 목록에서 이어 쓰고, 과제 카탈로그로 새 글을 시작합니다.",
+    description: "쓰기 홈입니다. 하나의 글 목록에서 이어 쓰고, 과제 카탈로그로 새 글을 시작합니다.",
     installName: "writing-home",
   },
   {
@@ -99,7 +98,7 @@ export const learnerBlocks: BlockDoc[] = [
     slug: "writing-studio",
     title: "Writing Studio",
     description:
-      "몰입형 작성 세션입니다. 과제를 접고 본문을 쓴 뒤, 같은 화면에서 AI 점검과 마치기를 합니다.",
+      "몰입형 작성 세션입니다. 본문 종이를 기본으로 두고, 과제와 최근 점검 결과는 서랍으로 엽니다.",
     installName: "writing-studio",
   },
 ];

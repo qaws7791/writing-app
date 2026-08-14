@@ -40,8 +40,8 @@
 | `screens/SCR-005-learner-course-detail.md`   | 코스 상세 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
 | `screens/SCR-006-learner-lesson.md`          | 레슨 진행 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
 | `screens/SCR-007-learner-profile.md`         | 프로필 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                      |
-| `screens/SCR-008-learner-writing-home.md`    | 쓰기 홈의 작성 중·완료 탭과 카탈로그 경로를 정의한다.                                 |
-| `screens/SCR-009-learner-writing-studio.md`  | 작성 세션의 브리프, 본문, 점검, 마치기와 접근성을 정의한다.                           |
+| `screens/SCR-008-learner-writing-home.md`    | 쓰기 홈의 단일 글 목록과 카탈로그 경로를 정의한다.                                    |
+| `screens/SCR-009-learner-writing-studio.md`  | 작성 세션의 브리프, 본문, 점검과 접근성을 정의한다.                                   |
 | `screens/SCR-011-learner-writing-catalog.md` | 쓰기 카탈로그의 도메인·유형 필터, 미리보기와 시작 행동을 정의한다.                    |
 | `screens/SCR-101-admin-login.md`             | 관리자 로그인 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
 | `screens/SCR-102-admin-dashboard.md`         | 어드민 대시보드 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.             |

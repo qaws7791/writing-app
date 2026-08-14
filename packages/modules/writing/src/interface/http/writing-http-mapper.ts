@@ -24,13 +24,10 @@ export function presentWritingSession(session: WritingSession) {
       title: session.brief.title,
       typeName: session.brief.typeName,
     },
-    canComplete: session.canComplete,
     check: session.check,
-    completedAt: session.writing.completedAt?.toISOString() ?? null,
     createdAt: session.writing.createdAt.toISOString(),
     dailyChecksRemaining: session.dailyChecksRemaining,
     id: session.writing.id,
-    status: session.writing.status,
     updatedAt: session.writing.updatedAt.toISOString(),
     version: session.writing.version,
   }
@@ -43,7 +40,6 @@ export function presentWritingSummary(record: WritingSummaryRecord) {
     difficulty: record.brief.difficulty,
     domain: record.brief.domain,
     id: record.writing.id,
-    status: record.writing.status,
     title: record.brief.title,
     typeName: record.brief.typeName,
     updatedAt: record.writing.updatedAt.toISOString(),
@@ -157,12 +153,6 @@ function mapWritingError(error: WritingApplicationError): AppError {
       return new AppError({
         code: "WRITING_CHECK_MIN_CHARS",
         message: `최소 ${error.minChars}자 이상 쓴 뒤에 점검할 수 있습니다.`,
-        status: 409,
-      })
-    case "writing-check-not-valid":
-      return new AppError({
-        code: "WRITING_CHECK_NOT_VALID",
-        message: "현재 본문에 유효한 점검이 있어야 글을 마칠 수 있습니다.",
         status: 409,
       })
     case "writing-check-not-configured":

@@ -2,7 +2,11 @@
 
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeft01Icon, BookOpen01Icon } from "@hugeicons/core-free-icons"
+import {
+  ArrowLeft01Icon,
+  BookOpen02Icon,
+  Message01Icon,
+} from "@hugeicons/core-free-icons"
 
 import { cn } from "#ui/lib/utils"
 import {
@@ -15,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "#ui/components/primitives/alert-dialog"
-import { Badge } from "#ui/components/primitives/badge"
 import { Button } from "#ui/components/primitives/button"
 import {
   Compose,
@@ -60,7 +63,6 @@ import {
 
 const TASK = {
   title: "숙제 폐지 찬반 칼럼",
-  difficulty: "심화" as const,
   audience: "학교 신문 독자",
   minChars: 200,
   goalChars: 500,
@@ -98,7 +100,7 @@ const SAMPLE_FIXES = [
   },
 ] as const
 
-type StudioPhase = "writing" | "checking" | "feedback" | "complete"
+type StudioPanel = "brief" | "closed" | "feedback"
 
 function BriefBody() {
   return (
@@ -162,37 +164,58 @@ function FeedbackPanel() {
   )
 }
 
+function PanelIconButton({
+  children,
+  className,
+  label,
+  onClick,
+  pressed,
+}: {
+  readonly children: React.ReactNode
+  readonly className?: string
+  readonly label: string
+  readonly onClick: () => void
+  readonly pressed: boolean
+}) {
+  return (
+    <Button
+      aria-label={label}
+      aria-pressed={pressed}
+      className={className}
+      onClick={onClick}
+      size="icon-sm"
+      type="button"
+      variant="ghost"
+    >
+      {children}
+    </Button>
+  )
+}
+
 /**
- * Immersive writing session: collapsing brief, compose, in-place AI check, finish.
+ * Immersive writing session: floating chrome, a single drawer, and in-place AI check.
  */
 export function WritingStudio({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [text, setText] = React.useState("")
-  const [briefOpen, setBriefOpen] = React.useState(true)
-  const [briefSheetOpen, setBriefSheetOpen] = React.useState(false)
+  const [panel, setPanel] = React.useState<StudioPanel>("closed")
   const [noticeOpen, setNoticeOpen] = React.useState(false)
   const [noticed, setNoticed] = React.useState(false)
-  const [phase, setPhase] = React.useState<StudioPhase>("writing")
+  const [checking, setChecking] = React.useState(false)
+  const [hasCheck, setHasCheck] = React.useState(false)
   const checkTimer = React.useRef<number | null>(null)
 
   const charCount = [...text].length
-  const canCheck = charCount >= TASK.minChars && phase !== "checking"
-  const showFeedback = phase === "feedback"
+  const canCheck = charCount >= TASK.minChars && !checking
+  const drawerSide = useStudioDrawerSide()
 
   React.useEffect(() => {
     return () => {
       if (checkTimer.current !== null) window.clearTimeout(checkTimer.current)
     }
   }, [])
-
-  function handleTextChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    const next = event.target.value
-    if (text.length === 0 && next.length > 0) setBriefOpen(false)
-    if (phase === "feedback" || phase === "complete") setPhase("writing")
-    setText(next)
-  }
 
   function requestCheck() {
     if (!canCheck) return
@@ -204,175 +227,135 @@ export function WritingStudio({
   }
 
   function runCheck() {
-    setPhase("checking")
+    setChecking(true)
     if (checkTimer.current !== null) window.clearTimeout(checkTimer.current)
     checkTimer.current = window.setTimeout(() => {
-      setPhase("feedback")
+      setChecking(false)
+      setHasCheck(true)
+      setPanel("feedback")
       checkTimer.current = null
     }, 900)
   }
 
-  const centerWriting = !briefOpen && !showFeedback
+  const meter = (
+    <ComposeMeter
+      {...(charCount < TASK.minChars ? { min: TASK.minChars } : {})}
+      value={charCount}
+    />
+  )
+  const checkButton = (
+    <Button disabled={!canCheck} onClick={requestCheck} type="button">
+      {checking ? "검토 중…" : "점검하기"}
+    </Button>
+  )
+  const briefTrigger = (
+    <PanelIconButton
+      label="과제 보기"
+      onClick={() => setPanel("brief")}
+      pressed={panel === "brief"}
+    >
+      <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />
+    </PanelIconButton>
+  )
+  const feedbackTrigger = hasCheck ? (
+    <PanelIconButton
+      label="점검 결과 보기"
+      onClick={() => setPanel("feedback")}
+      pressed={panel === "feedback"}
+    >
+      <HugeiconsIcon icon={Message01Icon} strokeWidth={2} />
+    </PanelIconButton>
+  ) : null
 
   return (
     <div
       data-slot="writing-studio"
       className={cn(
-        "flex h-full min-h-0 w-full flex-col bg-background text-foreground",
+        "relative isolate h-full min-h-0 w-full bg-background text-foreground",
         className
       )}
       {...props}
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:gap-4 sm:px-6 sm:pt-5 sm:pb-5">
-        <header className="flex shrink-0 items-center gap-3 px-1 py-1 sm:px-2">
+      <div className="h-full min-h-0 px-4 pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:px-6 lg:pt-20 lg:pb-6">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col">
+          <Compose className="flex h-full min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl">
+            <label className="sr-only" htmlFor="writing-studio-editor">
+              본문
+            </label>
+            <ComposeEditor
+              className="min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-5 py-5 shadow-none hover:border-transparent hover:bg-transparent focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0 sm:px-8 sm:py-8"
+              disabled={checking}
+              id="writing-studio-editor"
+              onChange={(event) => setText(event.target.value)}
+              placeholder="여기에 글을 씁니다."
+              value={text}
+            />
+          </Compose>
+        </div>
+      </div>
+
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
+        <div className="pointer-events-auto mx-auto flex max-w-5xl items-center gap-2 rounded-full border border-border/40 bg-card px-2 py-1.5 shadow-2xs">
           <Button
+            aria-label="쓰기 홈으로"
+            className="rounded-full"
+            size="icon-sm"
             type="button"
             variant="ghost"
-            size="icon-sm"
-            className="rounded-full"
-            aria-label="쓰기 홈으로"
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
           </Button>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium tracking-[-0.01em]">
-              {TASK.title}
-            </p>
-            <p className="text-xs tabular-nums text-muted-foreground">
-              {TASK.difficulty} · 목표 {TASK.goalChars.toLocaleString("ko-KR")}
-              자
-            </p>
-          </div>
-          <Badge variant="outline">저장됨</Badge>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="hidden sm:inline-flex"
-            onClick={() => setBriefOpen((open) => !open)}
-          >
-            과제 {briefOpen ? "접기" : "보기"}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full sm:hidden"
-            aria-label="과제 보기"
-            onClick={() => setBriefSheetOpen(true)}
-          >
-            <HugeiconsIcon icon={BookOpen01Icon} strokeWidth={2} />
-          </Button>
-        </header>
-
-        <div
-          className={cn(
-            "grid min-h-0 flex-1 grid-cols-1 gap-3 sm:gap-4",
-            briefOpen && "lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]",
-            showFeedback && "xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]",
-            briefOpen &&
-              showFeedback &&
-              "xl:grid-cols-[minmax(16rem,18rem)_minmax(0,1fr)_minmax(16rem,20rem)]"
-          )}
-        >
-          {briefOpen ? (
-            <aside className="hidden min-h-0 overflow-auto px-3 py-3 lg:block sm:px-4">
-              <BriefBody />
-            </aside>
-          ) : null}
-
-          <div
-            className={cn(
-              "flex min-h-0 min-w-0",
-              centerWriting && "justify-center"
-            )}
-          >
-            <Compose
-              className={cn(
-                "flex h-full min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl",
-                centerWriting && "w-full max-w-3xl"
-              )}
-            >
-              <label className="sr-only" htmlFor="writing-studio-editor">
-                본문
-              </label>
-              <ComposeEditor
-                id="writing-studio-editor"
-                value={text}
-                onChange={handleTextChange}
-                placeholder="여기에 글을 씁니다."
-                className="min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-5 py-5 shadow-none hover:border-transparent hover:bg-transparent focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0 sm:px-8 sm:py-8"
-                disabled={phase === "checking"}
-              />
-            </Compose>
-          </div>
-
-          {showFeedback ? (
-            <aside className="hidden min-h-0 overflow-auto px-3 py-3 xl:block sm:px-4">
-              <FeedbackPanel />
-            </aside>
-          ) : null}
-        </div>
-
-        {showFeedback ? (
-          <div className="min-h-0 overflow-auto px-3 xl:hidden">
-            <FeedbackPanel />
-          </div>
-        ) : null}
-
-        {phase === "complete" ? (
-          <Insight className="px-1 sm:px-2" tone="correct">
-            <InsightTitle>이 글을 마쳤습니다</InsightTitle>
-            <InsightDescription>
-              본문을 고치면 다시 작성 중이 되고, 점검을 한 번 더 해야 마칠 수
-              있습니다.
-            </InsightDescription>
-          </Insight>
-        ) : null}
-
-        <footer
-          className={cn(
-            "flex shrink-0 flex-wrap items-center gap-3 px-1 py-1 sm:px-2",
-            centerWriting && "mx-auto w-full max-w-3xl"
-          )}
-        >
-          <ComposeMeter
-            value={charCount}
-            min={TASK.minChars}
-            goal={TASK.goalChars}
-          />
-          <span className="text-xs text-muted-foreground" role="status">
-            {phase === "checking" ? "글을 검토하는 중입니다." : "저장됨"}
+          <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em] lg:flex-none lg:max-w-56">
+            {TASK.title}
+          </p>
+          <span className="sr-only" role="status">
+            {checking ? "글을 검토하는 중입니다." : "저장됨"}
           </span>
-          <div className="ml-auto flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={phase !== "feedback"}
-              onClick={() => setPhase("complete")}
-            >
-              마치기
-            </Button>
-            <Button type="button" disabled={!canCheck} onClick={requestCheck}>
-              {phase === "checking" ? "검토 중…" : "점검하기"}
-            </Button>
+          <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
+            {briefTrigger}
+            {feedbackTrigger}
+            {meter}
           </div>
-        </footer>
-      </div>
+          <div className="lg:hidden">{briefTrigger}</div>
+          {hasCheck ? <div className="lg:hidden">{feedbackTrigger}</div> : null}
+          <div className="hidden lg:block">{checkButton}</div>
+        </div>
+      </header>
 
-      <Sheet open={briefSheetOpen} onOpenChange={setBriefSheetOpen}>
-        <SheetContent side="bottom" className="max-h-[80vh] overflow-auto">
+      <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="pointer-events-auto mx-auto flex max-w-3xl items-center gap-3 rounded-full border border-border/40 bg-card px-3 py-2 shadow-2xs">
+          {meter}
+          <div className="ml-auto">{checkButton}</div>
+        </div>
+      </footer>
+
+      <Sheet
+        onOpenChange={(open) => {
+          if (!open) setPanel("closed")
+        }}
+        open={panel !== "closed"}
+      >
+        <SheetContent
+          className="overflow-auto data-[side=bottom]:h-[92dvh] data-[side=bottom]:max-h-[92dvh] data-[side=center]:h-[92dvh] data-[side=center]:max-h-[92dvh] data-[side=center]:max-w-[min(48rem,calc(100%-2rem))] data-[side=center]:sm:max-w-[min(48rem,calc(100%-2rem))]"
+          side={drawerSide}
+        >
           <SheetHeader>
-            <SheetTitle>과제</SheetTitle>
-            <SheetDescription>쓰면서 다시 확인할 조건입니다.</SheetDescription>
+            <SheetTitle>
+              {panel === "feedback" ? "이번 점검" : "과제"}
+            </SheetTitle>
+            <SheetDescription>
+              {panel === "feedback"
+                ? "최근 점검 결과입니다."
+                : "쓰면서 다시 확인할 조건입니다."}
+            </SheetDescription>
           </SheetHeader>
           <div className="px-6 pb-6">
-            <BriefBody />
+            {panel === "feedback" ? <FeedbackPanel /> : <BriefBody />}
           </div>
         </SheetContent>
       </Sheet>
 
-      <AlertDialog open={noticeOpen} onOpenChange={setNoticeOpen}>
+      <AlertDialog onOpenChange={setNoticeOpen} open={noticeOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>점검을 위해 글을 보냅니다</AlertDialogTitle>
@@ -397,6 +380,34 @@ export function WritingStudio({
       </AlertDialog>
     </div>
   )
+}
+
+const STUDIO_OVERLAY_MIN_WIDTH_PX = 1024
+
+function useStudioDrawerSide(): "bottom" | "center" {
+  const isOverlay = React.useSyncExternalStore(
+    subscribeStudioOverlay,
+    readStudioOverlay,
+    readStudioCompact
+  )
+  return isOverlay ? "center" : "bottom"
+}
+
+function subscribeStudioOverlay(onStoreChange: () => void) {
+  const media = window.matchMedia(
+    `(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`
+  )
+  media.addEventListener("change", onStoreChange)
+  return () => media.removeEventListener("change", onStoreChange)
+}
+
+function readStudioOverlay() {
+  return window.matchMedia(`(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`)
+    .matches
+}
+
+function readStudioCompact() {
+  return false
 }
 
 export default WritingStudio

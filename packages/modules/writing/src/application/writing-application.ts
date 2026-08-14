@@ -10,12 +10,8 @@ import type {
   WritingRepository,
   WritingSession,
 } from "#writing/application/ports/writing-ports"
+import { readWritingCheckGate } from "#writing/domain/writing-check"
 import {
-  canCompleteWriting,
-  readWritingCheckGate,
-} from "#writing/domain/writing-check"
-import {
-  completeWritingPiece,
   createWritingPiece,
   reviseWritingPiece,
   writingEventTypes,
@@ -70,30 +66,6 @@ export function createWritingApplication(input: {
         result: checked.value,
         writing: session.value.writing,
       })
-      return readSession(input, command)
-    },
-    async complete(command) {
-      const current = await readOwnedPiece(input.repository, command)
-      if (current.isErr()) return err(current.error)
-      if (current.value.version !== command.expectedVersion) {
-        return err({ kind: "writing-version-conflict" })
-      }
-
-      const validCheck = await input.repository.findValidCheck({
-        bodyVersion: current.value.version,
-        writingId: current.value.id,
-      })
-      if (!canCompleteWriting({ hasValidCheck: validCheck !== null })) {
-        return err({ kind: "writing-check-not-valid" })
-      }
-
-      const transition = completeWritingPiece(current.value, input.clock.now())
-      const saved = await input.repository.savePiece({
-        eventTypes: transition.eventTypes,
-        expectedVersion: command.expectedVersion,
-        writing: transition.writing,
-      })
-      if (saved.isErr()) return err(saved.error)
       return readSession(input, command)
     },
     async create(command) {
@@ -185,10 +157,7 @@ async function readSession(
   if (brief === null) return err({ kind: "writing-not-found" })
 
   const [check, aiNoticeAcknowledged, usedToday] = await Promise.all([
-    input.repository.findValidCheck({
-      bodyVersion: writing.version,
-      writingId: writing.id,
-    }),
+    input.repository.findLatestCheck(writing.id),
     input.repository.hasAcknowledgedAiNotice(writing.learnerId),
     countSuccessfulChecksToday(input, writing.learnerId),
   ])
@@ -196,7 +165,6 @@ async function readSession(
   return ok({
     aiNoticeAcknowledged,
     brief,
-    canComplete: canCompleteWriting({ hasValidCheck: check !== null }),
     check,
     dailyChecksRemaining: Math.max(
       0,

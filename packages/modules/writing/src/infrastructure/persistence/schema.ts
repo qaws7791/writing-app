@@ -3,7 +3,6 @@ import { authUsers } from "@workspace/auth/schema"
 import {
   writingDifficultyValues,
   writingDomainValues,
-  writingStatusValues,
 } from "@workspace/contracts/writing/writing"
 import {
   check,
@@ -19,7 +18,6 @@ export const writingEventTypeValues = Object.freeze([
   "writing_created",
   "check_succeeded",
   "revised_after_check",
-  "writing_completed",
   "writing_deleted",
 ] as const)
 
@@ -124,15 +122,11 @@ export const writings = sqliteTable(
   "writings",
   {
     body: text("body").notNull(),
-    completedAt: integer("completed_at", { mode: "timestamp_ms" }),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     id: text("id").primaryKey(),
     publicationId: text("publication_id")
       .notNull()
       .references(() => writingTaskPublications.id, { onDelete: "restrict" }),
-    status: text("status", { enum: writingStatusValues })
-      .notNull()
-      .default("drafting"),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
     userId: text("user_id")
       .notNull()
@@ -140,15 +134,7 @@ export const writings = sqliteTable(
     version: integer("version").notNull().default(0),
   },
   (table) => [
-    check(
-      "writings_status_check",
-      sql`${table.status} IN ('drafting', 'complete')`
-    ),
     check("writings_version_check", sql`${table.version} >= 0`),
-    check(
-      "writings_completed_at_check",
-      sql`(${table.status} = 'drafting' AND ${table.completedAt} IS NULL) OR (${table.status} = 'complete' AND ${table.completedAt} IS NOT NULL)`
-    ),
     index("writings_user_updated_idx").on(
       table.userId,
       table.updatedAt,
@@ -175,10 +161,7 @@ export const writingChecks = sqliteTable(
       "writing_checks_result_check",
       sql`json_valid(${table.resultJson}) AND json_type(${table.resultJson}) = 'object'`
     ),
-    uniqueIndex("writing_checks_writing_version_idx").on(
-      table.writingId,
-      table.bodyVersion
-    ),
+    uniqueIndex("writing_checks_writing_idx").on(table.writingId),
     index("writing_checks_succeeded_idx").on(table.succeededAt, table.id),
   ]
 )
@@ -206,7 +189,7 @@ export const writingEvents = sqliteTable(
     primaryKey({ columns: [table.userId, table.writingId, table.eventType] }),
     check(
       "writing_events_type_check",
-      sql`${table.eventType} IN ('writing_created', 'check_succeeded', 'revised_after_check', 'writing_completed', 'writing_deleted')`
+      sql`${table.eventType} IN ('writing_created', 'check_succeeded', 'revised_after_check', 'writing_deleted')`
     ),
     index("writing_events_type_recorded_idx").on(
       table.eventType,

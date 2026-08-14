@@ -67,7 +67,6 @@ export function registerWritingRoutes<TEnv extends WritingHonoEnv>(
   registerGetWritingRoute(app, input.application, authenticated)
   registerSaveWritingRoute(app, input.application, authenticated)
   registerCheckWritingRoute(app, input.application, authenticated)
-  registerCompleteWritingRoute(app, input.application, authenticated)
   registerDeleteWritingRoute(app, input.application, authenticated)
 }
 
@@ -297,41 +296,6 @@ function registerCheckWritingRoute<TEnv extends WritingHonoEnv>(
   app.openapi(route, async (context) => {
     const session = unwrapWritingResult(
       await application.check({
-        learnerId: context.var.writingLearner.learnerId,
-        writingId: context.req.valid("param").writingId,
-      })
-    )
-    return context.json(
-      writingDetailSchema.parse(presentWritingSession(session)),
-      200
-    )
-  })
-}
-
-function registerCompleteWritingRoute<TEnv extends WritingHonoEnv>(
-  app: OpenAPIHono<TEnv>,
-  application: WritingApplication,
-  authenticated: AuthenticatedRouteOptions
-): void {
-  const route = createRoute({
-    method: "post",
-    operationId: "completeWriting",
-    path: "/writings/{writingId}/complete",
-    request: writingVersionRequest,
-    responses: authenticatedResponses(
-      jsonResponse("마친 글입니다.", writingDetailSchema),
-      {
-        404: errorResponse("글을 찾을 수 없습니다."),
-        409: errorResponse("글을 마칠 수 없습니다."),
-      }
-    ),
-    summary: "글 마치기",
-    ...authenticated,
-  } satisfies RouteConfig)
-  app.openapi(route, async (context) => {
-    const session = unwrapWritingResult(
-      await application.complete({
-        expectedVersion: context.req.valid("json").expectedVersion,
         learnerId: context.var.writingLearner.learnerId,
         writingId: context.req.valid("param").writingId,
       })

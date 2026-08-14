@@ -3,87 +3,47 @@ import type { ReactNode } from "react"
 import { cn } from "@workspace/ui/lib/utils"
 
 export function WritingStudioShell({
-  brief,
-  briefOpen,
   children,
   className,
-  feedback,
   footer,
   header,
   notice,
 }: {
-  readonly brief?: ReactNode
-  readonly briefOpen: boolean
   readonly children: ReactNode
   readonly className?: string
-  readonly feedback?: ReactNode
   readonly footer: ReactNode
   readonly header: ReactNode
   readonly notice?: ReactNode
 }) {
-  const showFeedback = feedback !== undefined
-  const centerWriting = !briefOpen && !showFeedback
-
   return (
     <div
       className={cn(
-        "flex h-dvh min-h-0 w-full flex-col bg-background text-foreground",
+        "relative isolate h-dvh min-h-0 w-full bg-background text-foreground",
         className
       )}
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:gap-4 sm:px-6 sm:pt-5 sm:pb-5">
-        <header className="flex shrink-0 items-center gap-3 px-1 py-1 sm:px-2">
-          {header}
-        </header>
-        <div
-          className={cn(
-            "grid min-h-0 flex-1 grid-cols-1 gap-3 sm:gap-4",
-            briefOpen && "lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]",
-            showFeedback && "xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]",
-            briefOpen &&
-              showFeedback &&
-              "xl:grid-cols-[minmax(16rem,18rem)_minmax(0,1fr)_minmax(16rem,20rem)]"
-          )}
-        >
-          {briefOpen ? (
-            <aside className="hidden min-h-0 overflow-auto px-3 py-3 lg:block sm:px-4">
-              {brief}
-            </aside>
-          ) : null}
-          <div
-            className={cn(
-              "flex min-h-0 min-w-0",
-              centerWriting && "justify-center"
-            )}
-          >
-            <div
-              className={cn(
-                "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl",
-                centerWriting && "w-full max-w-3xl"
-              )}
-            >
-              {children}
-            </div>
+      <div className="h-full min-h-0 px-4 pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:px-6 lg:pt-20 lg:pb-6">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col">
+          <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl">
+            {children}
           </div>
-          {showFeedback ? (
-            <aside className="hidden min-h-0 overflow-auto px-3 py-3 xl:block sm:px-4">
-              {feedback}
-            </aside>
-          ) : null}
         </div>
-        {showFeedback ? (
-          <div className="min-h-0 overflow-auto px-3 xl:hidden">{feedback}</div>
-        ) : null}
-        {notice}
-        <footer
-          className={cn(
-            "flex shrink-0 flex-wrap items-center gap-3 px-1 py-1 sm:px-2",
-            centerWriting && "mx-auto w-full max-w-3xl"
-          )}
-        >
-          {footer}
-        </footer>
       </div>
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
+        <div className="pointer-events-auto mx-auto flex max-w-5xl items-center gap-2 rounded-full border border-border/40 bg-card px-2 py-1.5 shadow-2xs">
+          {header}
+        </div>
+      </header>
+      {notice === undefined || notice === null ? null : (
+        <div className="pointer-events-none absolute inset-x-0 top-[4.75rem] z-20 px-4 sm:px-6">
+          <div className="pointer-events-auto mx-auto max-w-3xl">{notice}</div>
+        </div>
+      )}
+      <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="pointer-events-auto mx-auto flex max-w-3xl items-center gap-3 rounded-full border border-border/40 bg-card px-3 py-2 shadow-2xs">
+          {footer}
+        </div>
+      </footer>
     </div>
   )
 }

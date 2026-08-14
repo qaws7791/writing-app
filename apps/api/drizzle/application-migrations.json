@@ -52,5 +52,11 @@
     "fileName": "0008-purpose-writing-tasks.sql",
     "foreignKeys": "on",
     "id": "0008-purpose-writing-tasks"
+  },
+  {
+    "checksum": "ce3db64034064f42caa2d5dd26609b980fe963b87577e8d36bb138dd9c1333c0",
+    "fileName": "0009-remove-writing-complete.sql",
+    "foreignKeys": "off",
+    "id": "0009-remove-writing-complete"
   }
 ]

@@ -31,7 +31,6 @@ export type WritingApplicationError =
   | Readonly<{ kind: "writing-check-daily-limit" }>
   | Readonly<{ kind: "writing-check-invalid-result" }>
   | Readonly<{ kind: "writing-check-min-chars"; minChars: number }>
-  | Readonly<{ kind: "writing-check-not-valid" }>
   | Readonly<{ kind: "writing-check-not-configured" }>
   | Readonly<{ kind: "writing-check-provider-unavailable" }>
   | Readonly<{ kind: "writing-task-not-ready-to-publish"; reason: string }>
@@ -41,7 +40,6 @@ type WritingBrief = WritingTaskPublication
 export type WritingSession = Readonly<{
   aiNoticeAcknowledged: boolean
   brief: WritingBrief
-  canComplete: boolean
   check: WritingCheckResult | null
   dailyChecksRemaining: number
   writing: WritingPiece
@@ -135,10 +133,7 @@ export type WritingRepository = Readonly<{
     publicationId: WritingTaskPublicationId
   ) => Promise<WritingTaskPublication | null>
   findTaskById: (taskId: WritingTaskId) => Promise<WritingTaskDraft | null>
-  findValidCheck: (input: {
-    readonly bodyVersion: number
-    readonly writingId: WritingId
-  }) => Promise<WritingCheckResult | null>
+  findLatestCheck: (writingId: WritingId) => Promise<WritingCheckResult | null>
   hasAcknowledgedAiNotice: (learnerId: LearnerId) => Promise<boolean>
   hasSucceededCheck: (writingId: WritingId) => Promise<boolean>
   listCatalog: (input: {
@@ -168,11 +163,6 @@ export type WritingRepository = Readonly<{
 export type WritingApplication = Readonly<{
   acknowledgeAiNotice: (learnerId: LearnerId) => Promise<void>
   check: (input: {
-    readonly learnerId: LearnerId
-    readonly writingId: WritingId
-  }) => Promise<Result<WritingSession, WritingApplicationError>>
-  complete: (input: {
-    readonly expectedVersion: number
     readonly learnerId: LearnerId
     readonly writingId: WritingId
   }) => Promise<Result<WritingSession, WritingApplicationError>>
