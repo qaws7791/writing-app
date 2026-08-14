@@ -37,13 +37,7 @@ import {
   InsightDescription,
   InsightTitle,
 } from "#ui/components/learning/insight"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "#ui/components/primitives/sheet"
+import { WritingStudioShell } from "#ui/components/learning/writing-studio-shell"
 import {
   WritingBrief,
   WritingBriefCriteria,
@@ -190,7 +184,7 @@ function PanelIconButton({
 }
 
 /**
- * Immersive writing session: floating chrome, a single drawer, and in-place AI check.
+ * Immersive writing session: floating chrome, a docked companion pane, and in-place AI check.
  */
 export function WritingStudio({
   className,
@@ -206,7 +200,6 @@ export function WritingStudio({
 
   const charCount = [...text].length
   const canCheck = charCount >= TASK.minChars && !checking
-  const drawerSide = useStudioDrawerSide()
 
   React.useEffect(() => {
     return () => {
@@ -248,7 +241,9 @@ export function WritingStudio({
   const briefTrigger = (
     <PanelIconButton
       label="과제 보기"
-      onClick={() => setPanel("brief")}
+      onClick={() =>
+        setPanel((current) => (current === "brief" ? "closed" : "brief"))
+      }
       pressed={panel === "brief"}
     >
       <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />
@@ -257,106 +252,95 @@ export function WritingStudio({
   const feedbackTrigger = hasCheck ? (
     <PanelIconButton
       label="점검 결과 보기"
-      onClick={() => setPanel("feedback")}
+      onClick={() =>
+        setPanel((current) => (current === "feedback" ? "closed" : "feedback"))
+      }
       pressed={panel === "feedback"}
     >
       <HugeiconsIcon icon={Message01Icon} strokeWidth={2} />
     </PanelIconButton>
   ) : null
 
+  const brief = <BriefBody />
+  const feedback = hasCheck ? <FeedbackPanel /> : null
+
   return (
     <div
       data-slot="writing-studio"
-      className={cn(
-        "relative isolate h-full min-h-0 w-full bg-background text-foreground",
-        className
-      )}
+      className={cn("h-full min-h-0 w-full", className)}
       {...props}
     >
-      <div className="h-full min-h-0 px-4 pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:px-6 lg:pt-20 lg:pb-6">
-        <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col">
-          <Compose className="flex h-full min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl">
-            <label
-              className="sr-only"
-              htmlFor="writing-studio-editor"
-              id="writing-studio-editor-label"
-            >
-              본문
-            </label>
-            <ComposeCanvas
-              aria-labelledby="writing-studio-editor-label"
-              className="min-h-0 flex-1 bg-transparent"
-              disabled={checking}
-              id="writing-studio-editor"
-              onChange={setText}
-              placeholder="여기에 글을 씁니다."
-              value={text}
-            />
-          </Compose>
-        </div>
-      </div>
-
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
-        <div className="pointer-events-auto mx-auto flex max-w-5xl items-center gap-2 rounded-full border border-border/40 bg-card px-2 py-1.5 shadow-2xs">
-          <Button
-            aria-label="쓰기 홈으로"
-            className="rounded-full"
-            size="icon-sm"
-            type="button"
-            variant="ghost"
-          >
-            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-          </Button>
-          <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em] lg:flex-none lg:max-w-56">
-            {TASK.title}
-          </p>
-          <span className="sr-only" role="status">
-            {checking ? "글을 검토하는 중입니다." : "저장됨"}
-          </span>
-          <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
-            {briefTrigger}
-            {feedbackTrigger}
+      <WritingStudioShell
+        className="h-full"
+        companion={
+          panel === "closed"
+            ? undefined
+            : panel === "feedback"
+              ? feedback
+              : brief
+        }
+        companionDescription={
+          panel === "feedback"
+            ? "최근 점검 결과입니다."
+            : "쓰면서 다시 확인할 조건입니다."
+        }
+        companionTitle={panel === "feedback" ? "이번 점검" : "과제"}
+        footer={
+          <>
             {meter}
-          </div>
-          <div className="lg:hidden">{briefTrigger}</div>
-          {hasCheck ? <div className="lg:hidden">{feedbackTrigger}</div> : null}
-          <div className="hidden lg:block">{checkButton}</div>
-        </div>
-      </header>
-
-      <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="pointer-events-auto mx-auto flex max-w-3xl items-center gap-3 rounded-full border border-border/40 bg-card px-3 py-2 shadow-2xs">
-          {meter}
-          <div className="ml-auto">{checkButton}</div>
-        </div>
-      </footer>
-
-      <Sheet
-        onOpenChange={(open) => {
-          if (!open) setPanel("closed")
-        }}
-        open={panel !== "closed"}
+            <div className="ml-auto">{checkButton}</div>
+          </>
+        }
+        header={
+          <>
+            <Button
+              aria-label="쓰기 홈으로"
+              className="rounded-full"
+              size="icon-sm"
+              type="button"
+              variant="ghost"
+            >
+              <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
+            </Button>
+            <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em] lg:flex-none lg:max-w-56">
+              {TASK.title}
+            </p>
+            <span className="sr-only" role="status">
+              {checking ? "글을 검토하는 중입니다." : "저장됨"}
+            </span>
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
+              {briefTrigger}
+              {feedbackTrigger}
+              {meter}
+            </div>
+            <div className="lg:hidden">{briefTrigger}</div>
+            {hasCheck ? (
+              <div className="lg:hidden">{feedbackTrigger}</div>
+            ) : null}
+            <div className="hidden lg:block">{checkButton}</div>
+          </>
+        }
+        onCompanionClose={() => setPanel("closed")}
       >
-        <SheetContent
-          className="overflow-auto data-[side=bottom]:h-[92dvh] data-[side=bottom]:max-h-[92dvh] data-[side=center]:h-[92dvh] data-[side=center]:max-h-[92dvh] data-[side=center]:max-w-[min(48rem,calc(100%-2rem))] data-[side=center]:sm:max-w-[min(48rem,calc(100%-2rem))]"
-          side={drawerSide}
-        >
-          <SheetHeader>
-            <SheetTitle>
-              {panel === "feedback" ? "이번 점검" : "과제"}
-            </SheetTitle>
-            <SheetDescription>
-              {panel === "feedback"
-                ? "최근 점검 결과입니다."
-                : "쓰면서 다시 확인할 조건입니다."}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="px-6 pb-6">
-            {panel === "feedback" ? <FeedbackPanel /> : <BriefBody />}
-          </div>
-        </SheetContent>
-      </Sheet>
-
+        <Compose className="flex h-full min-h-0 flex-1 flex-col gap-0">
+          <label
+            className="sr-only"
+            htmlFor="writing-studio-editor"
+            id="writing-studio-editor-label"
+          >
+            본문
+          </label>
+          <ComposeCanvas
+            aria-labelledby="writing-studio-editor-label"
+            className="min-h-0 flex-1 bg-transparent"
+            disabled={checking}
+            id="writing-studio-editor"
+            onChange={setText}
+            placeholder="여기에 글을 씁니다."
+            value={text}
+          />
+        </Compose>
+      </WritingStudioShell>
       <AlertDialog onOpenChange={setNoticeOpen} open={noticeOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -382,34 +366,6 @@ export function WritingStudio({
       </AlertDialog>
     </div>
   )
-}
-
-const STUDIO_OVERLAY_MIN_WIDTH_PX = 1024
-
-function useStudioDrawerSide(): "bottom" | "center" {
-  const isOverlay = React.useSyncExternalStore(
-    subscribeStudioOverlay,
-    readStudioOverlay,
-    readStudioCompact
-  )
-  return isOverlay ? "center" : "bottom"
-}
-
-function subscribeStudioOverlay(onStoreChange: () => void) {
-  const media = window.matchMedia(
-    `(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`
-  )
-  media.addEventListener("change", onStoreChange)
-  return () => media.removeEventListener("change", onStoreChange)
-}
-
-function readStudioOverlay() {
-  return window.matchMedia(`(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`)
-    .matches
-}
-
-function readStudioCompact() {
-  return false
 }
 
 export default WritingStudio

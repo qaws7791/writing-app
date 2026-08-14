@@ -98,7 +98,7 @@ export const learnerBlocks: BlockDoc[] = [
     slug: "writing-studio",
     title: "Writing Studio",
     description:
-      "몰입형 작성 세션입니다. 본문 종이를 기본으로 두고, 과제와 최근 점검 결과는 서랍으로 엽니다.",
+      "몰입형 작성 세션입니다. 본문 종이를 기본으로 두고, 과제와 최근 점검 결과는 본문 옆 또는 아래 패널로 엽니다.",
     installName: "writing-studio",
   },
 ];

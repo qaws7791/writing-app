@@ -1,11 +1,6 @@
 "use client"
 
-import {
-  useCallback,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react"
+import { useCallback, useState, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import {
   acknowledgeWritingAiNotice,
@@ -49,13 +44,7 @@ import {
   InsightDescription,
   InsightTitle,
 } from "@workspace/ui/components/learning/insight"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@workspace/ui/components/primitives/sheet"
+import { WritingStudioShell } from "@workspace/ui/components/learning/writing-studio-shell"
 import {
   WritingBrief,
   WritingBriefCriteria,
@@ -75,7 +64,6 @@ import {
   calculateKoreanWritingMetrics,
   WritingStatsPopover,
 } from "@/features/writing/ui/writing-stats-popover"
-import { WritingStudioShell } from "@/features/writing/ui/writing-studio-shell"
 import {
   readLearnerApiErrorCode,
   settleLearnerApiRequest,
@@ -122,7 +110,6 @@ export function WritingStudio({
   })
 
   const hasCheck = writing.check !== null
-  const drawerSide = useStudioDrawerSide()
 
   const handleBodyChange = (nextBody: string) => {
     setBody(nextBody)
@@ -230,6 +217,20 @@ export function WritingStudio({
   return (
     <>
       <WritingStudioShell
+        companion={
+          panel === "closed"
+            ? undefined
+            : panel === "feedback"
+              ? feedback
+              : brief
+        }
+        companionDescription={
+          panel === "feedback"
+            ? "최근 점검 결과입니다."
+            : "쓰면서 다시 확인할 조건입니다."
+        }
+        companionTitle={panel === "feedback" ? "이번 점검" : "과제"}
+        onCompanionClose={() => setPanel("closed")}
         footer={
           <>
             {meter}
@@ -262,7 +263,11 @@ export function WritingStudio({
               <div className="flex items-center rounded-full border border-border/40 bg-muted/40 p-0.5">
                 <PanelIconButton
                   label="과제 보기"
-                  onClick={() => setPanel("brief")}
+                  onClick={() =>
+                    setPanel((current) =>
+                      current === "brief" ? "closed" : "brief"
+                    )
+                  }
                   pressed={panel === "brief"}
                 >
                   <BookOpenIcon aria-hidden="true" />
@@ -270,7 +275,11 @@ export function WritingStudio({
                 {hasCheck ? (
                   <PanelIconButton
                     label="점검 결과 보기"
-                    onClick={() => setPanel("feedback")}
+                    onClick={() =>
+                      setPanel((current) =>
+                        current === "feedback" ? "closed" : "feedback"
+                      )
+                    }
                     pressed={panel === "feedback"}
                   >
                     <MessageIcon aria-hidden="true" />
@@ -334,32 +343,6 @@ export function WritingStudio({
           />
         </Compose>
       </WritingStudioShell>
-
-      <Sheet
-        onOpenChange={(open) => {
-          if (!open) setPanel("closed")
-        }}
-        open={panel !== "closed"}
-      >
-        <SheetContent
-          className="overflow-auto data-[side=bottom]:h-[92dvh] data-[side=bottom]:max-h-[92dvh] data-[side=center]:h-[92dvh] data-[side=center]:max-h-[92dvh] data-[side=center]:max-w-[min(48rem,calc(100%-2rem))] data-[side=center]:sm:max-w-[min(48rem,calc(100%-2rem))]"
-          side={drawerSide}
-        >
-          <SheetHeader>
-            <SheetTitle>
-              {panel === "feedback" ? "이번 점검" : "과제"}
-            </SheetTitle>
-            <SheetDescription>
-              {panel === "feedback"
-                ? "최근 점검 결과입니다."
-                : "쓰면서 다시 확인할 조건입니다."}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="px-6 pb-6">
-            {panel === "feedback" ? feedback : brief}
-          </div>
-        </SheetContent>
-      </Sheet>
 
       <AlertDialog onOpenChange={setNoticeOpen} open={noticeOpen}>
         <AlertDialogContent>
@@ -571,32 +554,4 @@ function readCheckErrorMessage(code: string): string {
     default:
       return "글 점검을 시작하지 못했습니다. 입력한 내용은 이 화면에 남아 있습니다."
   }
-}
-
-const STUDIO_OVERLAY_MIN_WIDTH_PX = 1024
-
-function useStudioDrawerSide(): "bottom" | "center" {
-  const isOverlay = useSyncExternalStore(
-    subscribeStudioOverlay,
-    readStudioOverlay,
-    readStudioCompact
-  )
-  return isOverlay ? "center" : "bottom"
-}
-
-function subscribeStudioOverlay(onStoreChange: () => void) {
-  const media = window.matchMedia(
-    `(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`
-  )
-  media.addEventListener("change", onStoreChange)
-  return () => media.removeEventListener("change", onStoreChange)
-}
-
-function readStudioOverlay() {
-  return window.matchMedia(`(min-width: ${STUDIO_OVERLAY_MIN_WIDTH_PX}px)`)
-    .matches
-}
-
-function readStudioCompact() {
-  return false
 }
