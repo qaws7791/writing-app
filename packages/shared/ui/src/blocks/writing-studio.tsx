@@ -37,7 +37,11 @@ import {
   InsightDescription,
   InsightTitle,
 } from "#ui/components/learning/insight"
-import { WritingStudioShell } from "#ui/components/learning/writing-studio-shell"
+import {
+  WritingStudioShell,
+  writingStudioCanvasContentClassName,
+  writingStudioCanvasPlaceholderClassName,
+} from "#ui/components/learning/writing-studio-shell"
 import {
   WritingBrief,
   WritingBriefCriteria,
@@ -291,33 +295,31 @@ export function WritingStudio({
             <div className="ml-auto">{checkButton}</div>
           </>
         }
-        header={
+        headerCenter={meter}
+        headerEnd={
+          <>
+            {briefTrigger}
+            {feedbackTrigger}
+            <div className="hidden lg:block">{checkButton}</div>
+          </>
+        }
+        headerStart={
           <>
             <Button
               aria-label="쓰기 홈으로"
-              className="rounded-full"
+              className="rounded-full shrink-0"
               size="icon-sm"
               type="button"
               variant="ghost"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
             </Button>
-            <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em] lg:flex-none lg:max-w-56">
+            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em]">
               {TASK.title}
             </p>
             <span className="sr-only" role="status">
               {checking ? "글을 검토하는 중입니다." : "저장됨"}
             </span>
-            <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
-              {briefTrigger}
-              {feedbackTrigger}
-              {meter}
-            </div>
-            <div className="lg:hidden">{briefTrigger}</div>
-            {hasCheck ? (
-              <div className="lg:hidden">{feedbackTrigger}</div>
-            ) : null}
-            <div className="hidden lg:block">{checkButton}</div>
           </>
         }
         onCompanionClose={() => setPanel("closed")}
@@ -333,10 +335,12 @@ export function WritingStudio({
           <ComposeCanvas
             aria-labelledby="writing-studio-editor-label"
             className="min-h-0 flex-1 bg-transparent"
+            contentClassName={writingStudioCanvasContentClassName}
             disabled={checking}
             id="writing-studio-editor"
             onChange={setText}
             placeholder="여기에 글을 씁니다."
+            placeholderClassName={writingStudioCanvasPlaceholderClassName}
             value={text}
           />
         </Compose>

@@ -24,11 +24,13 @@ import { PastePlainTextPlugin } from "./compose-canvas/plugins/paste-plain-text-
 
 export function ComposeCanvas({
   className,
+  contentClassName,
   disabled = false,
   id,
   onBlur,
   onChange,
   placeholder,
+  placeholderClassName,
   value,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
@@ -36,11 +38,13 @@ export function ComposeCanvas({
   readonly "aria-label"?: string
   readonly "aria-labelledby"?: string
   readonly className?: string
+  readonly contentClassName?: string
   readonly disabled?: boolean
   readonly id?: string
   readonly onBlur?: () => void
   readonly onChange?: (value: string) => void
   readonly placeholder?: string
+  readonly placeholderClassName?: string
   readonly value: string
 }) {
   const [initialConfig] = useState(() =>
@@ -67,8 +71,9 @@ export function ComposeCanvas({
                 aria-multiline="true"
                 aria-readonly={disabled || undefined}
                 className={cn(
-                  "relative min-h-full px-5 py-5 text-base leading-7 text-foreground outline-none sm:px-8 sm:py-8",
-                  disabled && "cursor-not-allowed opacity-45"
+                  "relative min-h-full px-5 pt-5 pb-5 text-base leading-7 text-foreground outline-none sm:px-8 sm:pt-8 sm:pb-8",
+                  disabled && "cursor-not-allowed opacity-45",
+                  contentClassName
                 )}
                 id={id}
                 role="textbox"
@@ -84,7 +89,12 @@ export function ComposeCanvas({
                   : {
                       "aria-placeholder": placeholder,
                       placeholder: (
-                        <div className="pointer-events-none absolute top-5 left-5 text-base leading-7 text-muted-foreground/80 sm:top-8 sm:left-8">
+                        <div
+                          className={cn(
+                            "pointer-events-none absolute top-5 left-5 text-base leading-7 text-muted-foreground/80 sm:top-8 sm:left-8",
+                            placeholderClassName
+                          )}
+                        >
                           {placeholder}
                         </div>
                       ),

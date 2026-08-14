@@ -44,7 +44,11 @@ import {
   InsightDescription,
   InsightTitle,
 } from "@workspace/ui/components/learning/insight"
-import { WritingStudioShell } from "@workspace/ui/components/learning/writing-studio-shell"
+import {
+  WritingStudioShell,
+  writingStudioCanvasContentClassName,
+  writingStudioCanvasPlaceholderClassName,
+} from "@workspace/ui/components/learning/writing-studio-shell"
 import {
   WritingBrief,
   WritingBriefCriteria,
@@ -237,57 +241,55 @@ export function WritingStudio({
             <div className="ml-auto">{checkButton}</div>
           </>
         }
-        header={
+        headerCenter={meter}
+        headerEnd={
           <>
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <Button
-                aria-label="쓰기 홈으로"
-                className="rounded-full shrink-0"
-                disabled={checking}
-                onClick={() => void handleLeave()}
-                size="icon-sm"
-                type="button"
-                variant="ghost"
+            <div className="flex items-center rounded-full border border-border/40 bg-muted/40 p-0.5">
+              <PanelIconButton
+                label="과제 보기"
+                onClick={() =>
+                  setPanel((current) =>
+                    current === "brief" ? "closed" : "brief"
+                  )
+                }
+                pressed={panel === "brief"}
               >
-                <ChevronLeftIcon aria-hidden="true" />
-              </Button>
-              <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em]">
-                {writing.brief.title}
-              </p>
-              <WritingSaveStatus status={autosave.status} />
-            </div>
-            <div className="hidden min-w-0 items-center justify-center lg:flex">
-              {meter}
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="flex items-center rounded-full border border-border/40 bg-muted/40 p-0.5">
+                <BookOpenIcon aria-hidden="true" />
+              </PanelIconButton>
+              {hasCheck ? (
                 <PanelIconButton
-                  label="과제 보기"
+                  label="점검 결과 보기"
                   onClick={() =>
                     setPanel((current) =>
-                      current === "brief" ? "closed" : "brief"
+                      current === "feedback" ? "closed" : "feedback"
                     )
                   }
-                  pressed={panel === "brief"}
+                  pressed={panel === "feedback"}
                 >
-                  <BookOpenIcon aria-hidden="true" />
+                  <MessageIcon aria-hidden="true" />
                 </PanelIconButton>
-                {hasCheck ? (
-                  <PanelIconButton
-                    label="점검 결과 보기"
-                    onClick={() =>
-                      setPanel((current) =>
-                        current === "feedback" ? "closed" : "feedback"
-                      )
-                    }
-                    pressed={panel === "feedback"}
-                  >
-                    <MessageIcon aria-hidden="true" />
-                  </PanelIconButton>
-                ) : null}
-              </div>
-              <div className="hidden lg:block">{checkButton}</div>
+              ) : null}
             </div>
+            <div className="hidden lg:block">{checkButton}</div>
+          </>
+        }
+        headerStart={
+          <>
+            <Button
+              aria-label="쓰기 홈으로"
+              className="rounded-full shrink-0"
+              disabled={checking}
+              onClick={() => void handleLeave()}
+              size="icon-sm"
+              type="button"
+              variant="ghost"
+            >
+              <ChevronLeftIcon aria-hidden="true" />
+            </Button>
+            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em]">
+              {writing.brief.title}
+            </p>
+            <WritingSaveStatus status={autosave.status} />
           </>
         }
         notice={
@@ -334,11 +336,13 @@ export function WritingStudio({
           <ComposeCanvas
             aria-labelledby="writing-studio-editor-label"
             className="min-h-0 flex-1 bg-transparent"
+            contentClassName={writingStudioCanvasContentClassName}
             disabled={checking}
             id="writing-studio-editor"
             onBlur={() => void autosave.flushWriting()}
             onChange={handleBodyChange}
             placeholder="여기에 글을 씁니다."
+            placeholderClassName={writingStudioCanvasPlaceholderClassName}
             value={body}
           />
         </Compose>

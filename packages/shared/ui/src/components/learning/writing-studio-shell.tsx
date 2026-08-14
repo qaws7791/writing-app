@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useSyncExternalStore,
+  type CSSProperties,
   type ReactNode,
   type RefObject,
 } from "react"
@@ -16,6 +17,15 @@ const STUDIO_WIDE_MIN_WIDTH_PX = 1024
 const KEYBOARD_INSET_PX = 80
 const COMPANION_TITLE_ID = "writing-studio-companion-title"
 
+const CHROME_CLUSTER_CLASS =
+  "pointer-events-auto flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-popover px-2 py-1.5 shadow-2xs supports-backdrop-filter:bg-popover/85 supports-backdrop-filter:backdrop-blur-2xl"
+
+export const writingStudioCanvasContentClassName =
+  "mx-auto w-full max-w-3xl pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] sm:pt-[4.75rem] sm:pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:pt-20 lg:pb-10"
+
+export const writingStudioCanvasPlaceholderClassName =
+  "top-[4.75rem] sm:top-[4.75rem] lg:top-20"
+
 export function WritingStudioShell({
   children,
   className,
@@ -24,7 +34,9 @@ export function WritingStudioShell({
   companionTitle,
   editorId = "writing-studio-editor",
   footer,
-  header,
+  headerCenter,
+  headerEnd,
+  headerStart,
   notice,
   onCompanionClose,
 }: {
@@ -35,13 +47,15 @@ export function WritingStudioShell({
   readonly companionTitle?: string
   readonly editorId?: string
   readonly footer: ReactNode
-  readonly header: ReactNode
+  readonly headerCenter?: ReactNode
+  readonly headerEnd: ReactNode
+  readonly headerStart: ReactNode
   readonly notice?: ReactNode
   readonly onCompanionClose?: () => void
 }) {
   const hasCompanion = companion !== undefined && companion !== null
-  const keyboardPeek = useStudioKeyboardPeek()
-  const peek = hasCompanion && keyboardPeek
+  const layout = useStudioLayout()
+  const peek = hasCompanion && layout.keyboardPeek
   const titleRef = useRef<HTMLHeadingElement>(null)
   const previousTitleRef = useRef<string | null>(null)
 
@@ -57,8 +71,8 @@ export function WritingStudioShell({
     const nextTitle = companionTitle ?? ""
     if (previousTitleRef.current === nextTitle) return
     previousTitleRef.current = nextTitle
-    if (!keyboardPeek) titleRef.current?.focus()
-  }, [companionTitle, editorId, hasCompanion, keyboardPeek])
+    if (!layout.keyboardPeek) titleRef.current?.focus()
+  }, [companionTitle, editorId, hasCompanion, layout.keyboardPeek])
 
   useEffect(() => {
     if (!hasCompanion || onCompanionClose === undefined) return
@@ -78,53 +92,77 @@ export function WritingStudioShell({
   return (
     <div
       className={cn(
-        "relative isolate h-dvh min-h-0 w-full bg-background text-foreground",
+        "relative isolate min-h-0 w-full bg-background text-foreground",
+        layout.viewportHeight === null ? "h-dvh" : null,
         className
       )}
       data-slot="writing-studio-shell"
+      style={studioViewportStyle(layout)}
     >
-      <div className="h-full min-h-0 px-4 pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:px-6 lg:pt-20 lg:pb-6">
-        <div
-          className={cn(
-            "mx-auto flex h-full min-h-0 w-full flex-col overflow-hidden rounded-4xl border border-border/40 bg-card has-[:focus-visible]:border-border sm:rounded-5xl",
-            hasCompanion ? "max-w-5xl lg:flex-row" : "max-w-3xl"
+      <div
+        className={cn(
+          "flex h-full min-h-0 w-full flex-col",
+          hasCompanion && "lg:flex-row"
+        )}
+      >
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          {children}
+          <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
+            <div className="relative flex min-w-0 items-start justify-between gap-2">
+              <StudioChromeCluster className="max-w-[calc(100%-5.5rem)] overflow-hidden lg:max-w-[calc(50%-1rem)]">
+                {headerStart}
+              </StudioChromeCluster>
+              {headerCenter === undefined || headerCenter === null ? null : (
+                <div className="pointer-events-none absolute inset-x-0 top-0 hidden justify-center lg:flex">
+                  <StudioChromeCluster>{headerCenter}</StudioChromeCluster>
+                </div>
+              )}
+              <StudioChromeCluster className="shrink-0">
+                {headerEnd}
+              </StudioChromeCluster>
+            </div>
+          </header>
+          {notice === undefined || notice === null ? null : (
+            <div className="pointer-events-none absolute inset-x-0 top-[4.75rem] z-20 px-4 sm:px-6">
+              <div className="pointer-events-auto mx-auto max-w-3xl">
+                {notice}
+              </div>
+            </div>
           )}
-        >
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
-          {hasCompanion ? (
-            <StudioCompanionPane
-              peek={peek}
-              title={companionTitle ?? "과제"}
-              titleRef={titleRef}
-              {...(companionDescription === undefined
-                ? {}
-                : { description: companionDescription })}
-              {...(onCompanionClose === undefined
-                ? {}
-                : { onClose: onCompanionClose })}
-            >
-              {companion}
-            </StudioCompanionPane>
-          ) : null}
+          <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+            <StudioChromeCluster className="mx-auto w-full max-w-3xl gap-3 px-3 py-2">
+              {footer}
+            </StudioChromeCluster>
+          </footer>
         </div>
+        {hasCompanion ? (
+          <StudioCompanionPane
+            peek={peek}
+            title={companionTitle ?? "과제"}
+            titleRef={titleRef}
+            {...(companionDescription === undefined
+              ? {}
+              : { description: companionDescription })}
+            {...(onCompanionClose === undefined
+              ? {}
+              : { onClose: onCompanionClose })}
+          >
+            {companion}
+          </StudioCompanionPane>
+        ) : null}
       </div>
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
-        <div className="pointer-events-auto mx-auto flex max-w-5xl items-center gap-2 rounded-full border border-border/40 bg-card px-2 py-1.5 shadow-2xs">
-          {header}
-        </div>
-      </header>
-      {notice === undefined || notice === null ? null : (
-        <div className="pointer-events-none absolute inset-x-0 top-[4.75rem] z-20 px-4 sm:px-6">
-          <div className="pointer-events-auto mx-auto max-w-3xl">{notice}</div>
-        </div>
-      )}
-      <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="pointer-events-auto mx-auto flex max-w-3xl items-center gap-3 rounded-full border border-border/40 bg-card px-3 py-2 shadow-2xs">
-          {footer}
-        </div>
-      </footer>
     </div>
   )
+}
+
+function StudioChromeCluster({
+  children,
+  className,
+}: {
+  readonly children: ReactNode
+  readonly className?: string
+}) {
+  return <div className={cn(CHROME_CLUSTER_CLASS, className)}>{children}</div>
 }
 
 function StudioCompanionPane({
@@ -217,15 +255,29 @@ function StudioCompanionPane({
   )
 }
 
-function useStudioKeyboardPeek(): boolean {
+type StudioLayout = {
+  readonly keyboardPeek: boolean
+  readonly viewportHeight: number | null
+  readonly viewportOffsetTop: number
+}
+
+const STUDIO_LAYOUT_WIDE: StudioLayout = {
+  keyboardPeek: false,
+  viewportHeight: null,
+  viewportOffsetTop: 0,
+}
+
+let cachedStudioLayout: StudioLayout = STUDIO_LAYOUT_WIDE
+
+function useStudioLayout(): StudioLayout {
   return useSyncExternalStore(
-    subscribeStudioKeyboardPeek,
-    readStudioKeyboardPeek,
-    readStudioKeyboardPeekServer
+    subscribeStudioViewport,
+    readStudioLayout,
+    readStudioLayoutServer
   )
 }
 
-function subscribeStudioKeyboardPeek(onStoreChange: () => void) {
+function subscribeStudioViewport(onStoreChange: () => void) {
   const media = window.matchMedia(`(min-width: ${STUDIO_WIDE_MIN_WIDTH_PX}px)`)
   media.addEventListener("change", onStoreChange)
   window.addEventListener("resize", onStoreChange)
@@ -240,15 +292,49 @@ function subscribeStudioKeyboardPeek(onStoreChange: () => void) {
   }
 }
 
-function readStudioKeyboardPeek() {
+function readStudioLayout(): StudioLayout {
+  const next = measureStudioLayout()
+  if (isSameStudioLayout(cachedStudioLayout, next)) {
+    return cachedStudioLayout
+  }
+  cachedStudioLayout = next
+  return cachedStudioLayout
+}
+
+function measureStudioLayout(): StudioLayout {
   const isWide = window.matchMedia(
     `(min-width: ${STUDIO_WIDE_MIN_WIDTH_PX}px)`
   ).matches
-  if (isWide) return false
-  const visualHeight = window.visualViewport?.height ?? window.innerHeight
-  return window.innerHeight - visualHeight > KEYBOARD_INSET_PX
+  if (isWide) return STUDIO_LAYOUT_WIDE
+
+  const viewport = window.visualViewport
+  const visualHeight = viewport?.height ?? window.innerHeight
+  return {
+    keyboardPeek: window.innerHeight - visualHeight > KEYBOARD_INSET_PX,
+    viewportHeight: visualHeight,
+    viewportOffsetTop: viewport?.offsetTop ?? 0,
+  }
 }
 
-function readStudioKeyboardPeekServer() {
-  return false
+function isSameStudioLayout(left: StudioLayout, right: StudioLayout) {
+  return (
+    left.keyboardPeek === right.keyboardPeek &&
+    left.viewportHeight === right.viewportHeight &&
+    left.viewportOffsetTop === right.viewportOffsetTop
+  )
+}
+
+function readStudioLayoutServer(): StudioLayout {
+  return STUDIO_LAYOUT_WIDE
+}
+
+function studioViewportStyle(layout: StudioLayout): CSSProperties | undefined {
+  if (layout.viewportHeight === null) return undefined
+  return {
+    height: layout.viewportHeight,
+    transform:
+      layout.viewportOffsetTop === 0
+        ? undefined
+        : `translateY(${layout.viewportOffsetTop}px)`,
+  }
 }
