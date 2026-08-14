@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { type RefObject, useEffect, useRef, useState } from "react"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin"
 import {
+  $getRoot,
   COMMAND_PRIORITY_CRITICAL,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
@@ -47,6 +48,7 @@ export function ComposeCanvas({
   readonly placeholderClassName?: string
   readonly value: string
 }) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
   const [initialConfig] = useState(() =>
     createComposeCanvasConfig({
       editable: !disabled,
@@ -63,10 +65,16 @@ export function ComposeCanvas({
       data-slot="compose-canvas"
     >
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div
+          ref={scrollerRef}
+          className={cn(
+            "flex min-h-0 flex-1 flex-col overflow-y-auto",
+            !disabled && "cursor-text"
+          )}
+        >
           <div
             className={cn(
-              "relative mx-auto min-h-full w-full px-5 pt-5 pb-5 sm:px-8 sm:pt-8 sm:pb-8",
+              "relative mx-auto flex min-h-full w-full flex-1 flex-col px-5 pt-5 pb-5 sm:px-8 sm:pt-8 sm:pb-8",
               contentClassName
             )}
           >
@@ -77,7 +85,7 @@ export function ComposeCanvas({
                   aria-multiline="true"
                   aria-readonly={disabled || undefined}
                   className={cn(
-                    "min-h-full text-base leading-7 text-foreground outline-none",
+                    "flex-1 min-h-full text-base leading-7 text-foreground outline-none",
                     disabled && "cursor-not-allowed opacity-45"
                   )}
                   id={id}
@@ -114,6 +122,7 @@ export function ComposeCanvas({
         <EditablePlugin disabled={disabled} />
         <FormatGuardPlugin />
         <TabLeavePlugin />
+        <CanvasFocusPlugin disabled={disabled} scrollerRef={scrollerRef} />
         <ValueSyncPlugin
           value={value}
           {...(onBlur === undefined ? {} : { onBlur })}
@@ -122,6 +131,59 @@ export function ComposeCanvas({
       </LexicalComposer>
     </div>
   )
+}
+
+function CanvasFocusPlugin({
+  disabled,
+  scrollerRef,
+}: {
+  readonly disabled: boolean
+  readonly scrollerRef: RefObject<HTMLDivElement | null>
+}) {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (scroller === null || disabled) {
+      return
+    }
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target
+      if (!(target instanceof HTMLElement)) {
+        return
+      }
+
+      const rootElement = editor.getRootElement()
+      if (
+        rootElement !== null &&
+        (rootElement === target || rootElement.contains(target))
+      ) {
+        return
+      }
+
+      if (
+        target.closest(
+          "button, a, input, select, textarea, [role='button'], [role='dialog'], [role='alertdialog']"
+        ) !== null
+      ) {
+        return
+      }
+
+      editor.update(() => {
+        const root = $getRoot()
+        root.selectEnd()
+      })
+      rootElement?.focus()
+    }
+
+    scroller.addEventListener("click", handleClick)
+    return () => {
+      scroller.removeEventListener("click", handleClick)
+    }
+  }, [disabled, editor, scrollerRef])
+
+  return null
 }
 
 function EditablePlugin({ disabled }: { readonly disabled: boolean }) {
