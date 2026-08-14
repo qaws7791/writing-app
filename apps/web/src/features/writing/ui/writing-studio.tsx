@@ -15,6 +15,7 @@ import {
   BookOpenIcon,
   ChevronLeftIcon,
   MessageIcon,
+  SparklesIcon,
 } from "@workspace/ui/components/icons"
 import {
   AlertDialog,
@@ -26,7 +27,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/primitives/alert-dialog"
-import { Badge } from "@workspace/ui/components/primitives/badge"
 import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Compose,
@@ -205,9 +205,11 @@ export function WritingStudio({
     <Button
       disabled={checking || autosave.status.kind === "conflict"}
       onClick={() => void handleCheck()}
+      size="sm"
       type="button"
     >
-      {checking ? "검토 중…" : "점검하기"}
+      <SparklesIcon aria-hidden="true" />
+      {checking ? "검토 중…" : "점검"}
     </Button>
   )
 
@@ -226,59 +228,47 @@ export function WritingStudio({
         }
         header={
           <>
-            <Button
-              aria-label="쓰기 홈으로"
-              className="rounded-full"
-              disabled={checking}
-              onClick={() => void handleLeave()}
-              size="icon-sm"
-              type="button"
-              variant="ghost"
-            >
-              <ChevronLeftIcon aria-hidden="true" />
-            </Button>
-            <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em] lg:flex-none lg:max-w-56">
-              {writing.brief.title}
-            </p>
-            <WritingSaveStatus status={autosave.status} />
-            <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
-              <PanelIconButton
-                label="과제 보기"
-                onClick={() => setPanel("brief")}
-                pressed={panel === "brief"}
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <Button
+                aria-label="쓰기 홈으로"
+                className="rounded-full shrink-0"
+                disabled={checking}
+                onClick={() => void handleLeave()}
+                size="icon-sm"
+                type="button"
+                variant="ghost"
               >
-                <BookOpenIcon aria-hidden="true" />
-              </PanelIconButton>
-              {hasCheck ? (
-                <PanelIconButton
-                  label="점검 결과 보기"
-                  onClick={() => setPanel("feedback")}
-                  pressed={panel === "feedback"}
-                >
-                  <MessageIcon aria-hidden="true" />
-                </PanelIconButton>
-              ) : null}
+                <ChevronLeftIcon aria-hidden="true" />
+              </Button>
+              <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em]">
+                {writing.brief.title}
+              </p>
+              <WritingSaveStatus status={autosave.status} />
+            </div>
+            <div className="hidden min-w-0 items-center justify-center lg:flex">
               {meter}
             </div>
-            <PanelIconButton
-              className="lg:hidden"
-              label="과제 보기"
-              onClick={() => setPanel("brief")}
-              pressed={panel === "brief"}
-            >
-              <BookOpenIcon aria-hidden="true" />
-            </PanelIconButton>
-            {hasCheck ? (
-              <PanelIconButton
-                className="lg:hidden"
-                label="점검 결과 보기"
-                onClick={() => setPanel("feedback")}
-                pressed={panel === "feedback"}
-              >
-                <MessageIcon aria-hidden="true" />
-              </PanelIconButton>
-            ) : null}
-            <div className="hidden lg:block">{checkButton}</div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center rounded-full border border-border/40 bg-muted/40 p-0.5">
+                <PanelIconButton
+                  label="과제 보기"
+                  onClick={() => setPanel("brief")}
+                  pressed={panel === "brief"}
+                >
+                  <BookOpenIcon aria-hidden="true" />
+                </PanelIconButton>
+                {hasCheck ? (
+                  <PanelIconButton
+                    label="점검 결과 보기"
+                    onClick={() => setPanel("feedback")}
+                    pressed={panel === "feedback"}
+                  >
+                    <MessageIcon aria-hidden="true" />
+                  </PanelIconButton>
+                ) : null}
+              </div>
+              <div className="hidden lg:block">{checkButton}</div>
+            </div>
           </>
         }
         notice={
@@ -524,9 +514,12 @@ function WritingSaveStatus({
   switch (status.kind) {
     case "saving":
       return (
-        <Badge aria-live="polite" role="status" variant="secondary">
-          저장 중
-        </Badge>
+        <span
+          aria-live="polite"
+          className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary animate-pulse"
+          role="status"
+          title="저장 중"
+        />
       )
     case "saved":
       return (
@@ -535,22 +528,15 @@ function WritingSaveStatus({
         </span>
       )
     case "offline":
-      return (
-        <Badge aria-live="assertive" role="alert" variant="destructive">
-          오프라인 · 입력 보존 중
-        </Badge>
-      )
     case "error":
-      return (
-        <Badge aria-live="assertive" role="alert" variant="destructive">
-          저장하지 못함 · 입력 보존 중
-        </Badge>
-      )
     case "conflict":
       return (
-        <Badge aria-live="assertive" role="alert" variant="destructive">
-          저장 충돌 · 입력 보존 중
-        </Badge>
+        <span
+          aria-live="assertive"
+          className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
+          role="alert"
+          title="저장하지 못함"
+        />
       )
   }
 }
