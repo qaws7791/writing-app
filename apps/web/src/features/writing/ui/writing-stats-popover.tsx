@@ -2,6 +2,11 @@
 
 import type { ReactNode } from "react"
 import {
+  CheckIcon,
+  SparklesIcon,
+  WarningIcon,
+} from "@workspace/ui/components/icons"
+import {
   Popover,
   PopoverContent,
   PopoverHeader,
@@ -83,93 +88,154 @@ export function WritingStatsPopover({
       >
         {children}
       </PopoverTrigger>
-      <PopoverContent align="center" className="w-80 p-4" side="bottom">
-        <PopoverHeader className="pb-1">
+      <PopoverContent align="center" className="w-80 p-4 gap-3.5" side="bottom">
+        <PopoverHeader className="pb-0">
           <PopoverTitle className="text-sm font-semibold">
-            집필 현황 및 한국어 가독성
+            집필 통계
           </PopoverTitle>
         </PopoverHeader>
+
         <div className="flex flex-col gap-3">
-          <div className="rounded-2xl border border-border/60 bg-muted/30 p-3">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>목표 달성도</span>
-              <span className="font-medium tabular-nums text-foreground">
-                {minChars !== undefined
-                  ? `${metrics.charCountWithSpaces.toLocaleString("ko-KR")} / 최소 ${minChars.toLocaleString("ko-KR")}자`
-                  : `${metrics.charCountWithSpaces.toLocaleString("ko-KR")}자`}
-              </span>
+          {/* Material You Hero Card */}
+          <div className="rounded-2xl bg-primary p-3.5 text-primary-foreground shadow-xs flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              {minChars !== undefined ? (
+                meetsMin ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/20 px-2 py-0.5 text-[11px] font-medium tracking-tight text-primary-foreground">
+                    <CheckIcon className="size-3" />
+                    목표 달성
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[11px] font-medium tracking-tight text-primary-foreground/90">
+                    진행 중
+                  </span>
+                )
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/20 px-2 py-0.5 text-[11px] font-medium tracking-tight text-primary-foreground">
+                  <SparklesIcon className="size-3" />
+                  작성 현황
+                </span>
+              )}
+              {minChars !== undefined ? (
+                <span className="text-[11px] font-medium text-primary-foreground/80">
+                  최소 {minChars.toLocaleString("ko-KR")}자
+                </span>
+              ) : null}
             </div>
-            {minChars !== undefined ? (
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    meetsMin ? "bg-primary" : "bg-destructive"
-                  }`}
-                  style={{
-                    width: `${Math.min(100, Math.round((metrics.charCountWithSpaces / minChars) * 100))}%`,
-                  }}
-                />
+
+            <div>
+              <div className="text-2xl font-bold tracking-tight">
+                {metrics.charCountWithSpaces.toLocaleString("ko-KR")}자
               </div>
-            ) : null}
+              <p className="mt-0.5 text-xs text-primary-foreground/85">
+                {minChars !== undefined
+                  ? meetsMin
+                    ? metrics.charCountWithSpaces > minChars
+                      ? `최소 목표를 ${(metrics.charCountWithSpaces - minChars).toLocaleString("ko-KR")}자 초과했어요`
+                      : "최소 분량 목표를 달성했어요"
+                    : `최소 목표까지 ${(minChars - metrics.charCountWithSpaces).toLocaleString("ko-KR")}자 남았어요`
+                  : `공백 포함 ${metrics.charCountWithSpaces.toLocaleString("ko-KR")}자 작성 중이에요`}
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <StatCard
-              label="어절 수"
-              value={`${metrics.eojeolCount.toLocaleString("ko-KR")}어절`}
-            />
-            <StatCard
-              label="공백 제외 글자"
-              value={`${metrics.charCountWithoutSpaces.toLocaleString("ko-KR")}자`}
-            />
-            <StatCard
-              label="문단 구성"
-              sub={`${metrics.avgParagraphLength}자/문단`}
-              value={`${metrics.paragraphCount}개 문단`}
-            />
-            <StatCard
-              label="문장 호흡"
-              sub={
-                metrics.longSentenceCount > 0
-                  ? `긴 문장 ${metrics.longSentenceCount}개`
-                  : "적정 호흡"
-              }
-              value={`평균 ${metrics.avgSentenceLength}자`}
-            />
+          {/* Unified Single Surface Metrics Container */}
+          <div className="rounded-2xl border border-border/50 bg-muted/40 p-3.5 flex flex-col">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  어절 수
+                </span>
+                <span className="mt-0.5 text-sm font-semibold tracking-tight text-foreground">
+                  {metrics.eojeolCount.toLocaleString("ko-KR")}개
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  공백 제외
+                </span>
+                <span className="mt-0.5 text-sm font-semibold tracking-tight text-foreground">
+                  {metrics.charCountWithoutSpaces.toLocaleString("ko-KR")}자
+                </span>
+              </div>
+            </div>
+
+            <div className="my-2.5 h-px bg-border/40" />
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  문단 구성
+                </span>
+                <span className="mt-0.5 text-sm font-semibold tracking-tight text-foreground">
+                  {metrics.paragraphCount.toLocaleString("ko-KR")}개
+                  <span className="ml-1 text-[11px] font-normal text-muted-foreground">
+                    (평균 {metrics.avgParagraphLength}자)
+                  </span>
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  예상 읽기 시간
+                </span>
+                <span className="mt-0.5 text-sm font-semibold tracking-tight text-foreground">
+                  약 {metrics.estimatedReadTimeMinutes}분
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-xl bg-card px-3 py-2 text-xs text-muted-foreground border border-border/40">
-            <span>예상 소요 읽기 시간</span>
-            <span className="font-medium text-foreground tabular-nums">
-              약 {metrics.estimatedReadTimeMinutes}분
-            </span>
-          </div>
+          {/* Contextual Writing Insight Chip */}
+          <WritingInsightBanner metrics={metrics} />
         </div>
       </PopoverContent>
     </Popover>
   )
 }
 
-function StatCard({
-  label,
-  sub,
-  value,
+function WritingInsightBanner({
+  metrics,
 }: {
-  readonly label: string
-  readonly sub?: string
-  readonly value: string
+  readonly metrics: KoreanWritingMetrics
 }) {
+  if (metrics.longSentenceCount > 0) {
+    return (
+      <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+        <WarningIcon className="size-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+        <div className="flex flex-col gap-0.5">
+          <span className="font-semibold leading-tight">
+            긴 문장 {metrics.longSentenceCount}개
+          </span>
+          <span className="text-[11px] font-medium leading-relaxed">
+            100자가 넘는 문장이 있어요. 두 문장으로 나눠보는 걸 추천해요.
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  if (metrics.paragraphCount === 1 && metrics.charCountWithSpaces >= 300) {
+    return (
+      <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+        <WarningIcon className="size-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+        <div className="flex flex-col gap-0.5">
+          <span className="font-semibold leading-tight">문단 구분 권장</span>
+          <span className="text-[11px] font-medium leading-relaxed">
+            한 문단이 길어져 가독성이 떨어질 수 있어요. 문단을 나눠보세요.
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex flex-col gap-0.5 rounded-2xl border border-border/50 bg-card p-2.5">
-      <span className="text-[11px] font-medium text-muted-foreground">
-        {label}
+    <div className="rounded-2xl border border-border/40 bg-muted/20 px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
+      <SparklesIcon className="size-3.5 shrink-0 text-primary" />
+      <span className="text-[11px] font-medium leading-relaxed">
+        {metrics.charCountWithSpaces === 0
+          ? "글을 작성하면 실시간 통계가 표시돼요."
+          : `평균 문장 길이 ${metrics.avgSentenceLength}자로 읽기 편한 호흡이에요.`}
       </span>
-      <span className="text-xs font-semibold tabular-nums text-foreground">
-        {value}
-      </span>
-      {sub !== undefined ? (
-        <span className="text-[10px] text-muted-foreground">{sub}</span>
-      ) : null}
     </div>
   )
 }
