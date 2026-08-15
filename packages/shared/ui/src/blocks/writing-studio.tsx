@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -9,6 +7,7 @@ import {
 } from "@hugeicons/core-free-icons"
 
 import { cn } from "#ui/lib/utils"
+import { SparklesIcon } from "#ui/components/icons/action-icons"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +36,12 @@ import {
   InsightDescription,
   InsightTitle,
 } from "#ui/components/learning/insight"
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+} from "#ui/components/primitives/popover"
 import {
   WritingStudioShell,
   writingStudioCanvasContentClassName,
@@ -200,19 +205,54 @@ export function WritingStudio({
   const [noticed, setNoticed] = React.useState(false)
   const [checking, setChecking] = React.useState(false)
   const [hasCheck, setHasCheck] = React.useState(false)
+  const [checkGuideAnchor, setCheckGuideAnchor] =
+    React.useState<HTMLElement | null>(null)
   const checkTimer = React.useRef<number | null>(null)
+  const checkGuideTimerRef = React.useRef<number | null>(null)
 
   const charCount = [...text].length
-  const canCheck = charCount >= TASK.minChars && !checking
+
+  const showCheckGuide = React.useCallback((anchor: HTMLElement) => {
+    if (checkGuideTimerRef.current !== null) {
+      window.clearTimeout(checkGuideTimerRef.current)
+    }
+    setCheckGuideAnchor(anchor)
+    checkGuideTimerRef.current = window.setTimeout(() => {
+      setCheckGuideAnchor(null)
+      checkGuideTimerRef.current = null
+    }, 3500)
+  }, [])
+
+  const closeCheckGuide = React.useCallback(() => {
+    if (checkGuideTimerRef.current !== null) {
+      window.clearTimeout(checkGuideTimerRef.current)
+      checkGuideTimerRef.current = null
+    }
+    setCheckGuideAnchor(null)
+  }, [])
 
   React.useEffect(() => {
     return () => {
       if (checkTimer.current !== null) window.clearTimeout(checkTimer.current)
+      if (checkGuideTimerRef.current !== null)
+        window.clearTimeout(checkGuideTimerRef.current)
     }
   }, [])
 
-  function requestCheck() {
-    if (!canCheck) return
+  function handleTextChange(nextText: string) {
+    setText(nextText)
+    if (checkGuideAnchor !== null) {
+      closeCheckGuide()
+    }
+  }
+
+  function requestCheck(event: React.MouseEvent<HTMLButtonElement>) {
+    if (checking) return
+    if (charCount < TASK.minChars) {
+      showCheckGuide(event.currentTarget)
+      return
+    }
+    closeCheckGuide()
     if (!noticed) {
       setNoticeOpen(true)
       return
@@ -238,8 +278,14 @@ export function WritingStudio({
     />
   )
   const checkButton = (
-    <Button disabled={!canCheck} onClick={requestCheck} type="button">
-      {checking ? "검토 중…" : "점검하기"}
+    <Button
+      disabled={checking}
+      onClick={(e) => requestCheck(e)}
+      size="sm"
+      type="button"
+    >
+      <SparklesIcon aria-hidden="true" />
+      {checking ? "검토 중…" : "점검"}
     </Button>
   )
   const briefTrigger = (
@@ -338,13 +384,24 @@ export function WritingStudio({
             contentClassName={writingStudioCanvasContentClassName}
             disabled={checking}
             id="writing-studio-editor"
-            onChange={setText}
+            onChange={handleTextChange}
             placeholder="여기에 글을 씁니다."
             placeholderClassName={writingStudioCanvasPlaceholderClassName}
             value={text}
           />
         </Compose>
       </WritingStudioShell>
+
+      <WritingStudioCheckGuidePopover
+        anchor={checkGuideAnchor}
+        charCount={charCount}
+        minChars={TASK.minChars}
+        onOpenChange={(open) => {
+          if (!open) closeCheckGuide()
+        }}
+        open={checkGuideAnchor !== null}
+      />
+
       <AlertDialog onOpenChange={setNoticeOpen} open={noticeOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -369,6 +426,51 @@ export function WritingStudio({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+function WritingStudioCheckGuidePopover({
+  anchor,
+  charCount,
+  minChars,
+  onOpenChange,
+  open,
+}: {
+  readonly anchor: HTMLElement | null
+  readonly charCount: number
+  readonly minChars: number
+  readonly onOpenChange: (open: boolean) => void
+  readonly open: boolean
+}) {
+  const remaining = Math.max(0, minChars - charCount)
+
+  return (
+    <Popover onOpenChange={onOpenChange} open={open && anchor !== null}>
+      <PopoverContent
+        align="end"
+        anchor={anchor}
+        aria-live="polite"
+        className="w-72 p-3.5 gap-2 shadow-xl"
+        side="top"
+        sideOffset={8}
+      >
+        <PopoverHeader className="pb-0 gap-1">
+          <div className="flex items-center gap-1.5 text-primary">
+            <SparklesIcon className="size-3.5 shrink-0" />
+            <span className="text-[11px] font-semibold tracking-tight">
+              점검 조건 안내
+            </span>
+          </div>
+          <PopoverTitle className="text-sm font-semibold tracking-tight text-foreground">
+            최소 분량까지 {remaining.toLocaleString("ko-KR")}자 남았어요
+          </PopoverTitle>
+        </PopoverHeader>
+        <p className="text-xs leading-5 text-pretty text-muted-foreground">
+          최소 {minChars.toLocaleString("ko-KR")}자부터 점검을 받을 수 있어요.
+          (현재 {charCount.toLocaleString("ko-KR")}자)
+        </p>
+      </PopoverContent>
+    </Popover>
   )
 }
 

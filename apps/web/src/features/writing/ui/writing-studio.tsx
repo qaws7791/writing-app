@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import {
   acknowledgeWritingAiNotice,
@@ -64,6 +64,7 @@ import {
 } from "@workspace/ui/components/learning/writing-brief"
 
 import { useWritingAutosave } from "@/features/writing/hooks/use-writing-autosave"
+import { WritingCheckGuidePopover } from "@/features/writing/ui/writing-check-guide-popover"
 import {
   calculateKoreanWritingMetrics,
   WritingStatsPopover,
@@ -89,6 +90,37 @@ export function WritingStudio({
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false)
   const [checking, setChecking] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [checkGuideAnchor, setCheckGuideAnchor] = useState<HTMLElement | null>(
+    null
+  )
+  const checkGuideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const showCheckGuide = useCallback((anchor: HTMLElement) => {
+    if (checkGuideTimerRef.current !== null) {
+      clearTimeout(checkGuideTimerRef.current)
+    }
+    setCheckGuideAnchor(anchor)
+    checkGuideTimerRef.current = setTimeout(() => {
+      setCheckGuideAnchor(null)
+      checkGuideTimerRef.current = null
+    }, 3500)
+  }, [])
+
+  const closeCheckGuide = useCallback(() => {
+    if (checkGuideTimerRef.current !== null) {
+      clearTimeout(checkGuideTimerRef.current)
+      checkGuideTimerRef.current = null
+    }
+    setCheckGuideAnchor(null)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (checkGuideTimerRef.current !== null) {
+        clearTimeout(checkGuideTimerRef.current)
+      }
+    }
+  }, [])
 
   const applyWriting = useCallback((next: LearnerWritingDetailDto) => {
     setWriting(next)
@@ -118,6 +150,9 @@ export function WritingStudio({
   const handleBodyChange = (nextBody: string) => {
     setBody(nextBody)
     autosave.stageWriting({ body: nextBody })
+    if (checkGuideAnchor !== null) {
+      closeCheckGuide()
+    }
   }
 
   const handleLeave = async () => {
@@ -130,7 +165,7 @@ export function WritingStudio({
     router.push("/app/writing")
   }
 
-  const runCheck = async () => {
+  const runCheck = async (anchor?: HTMLElement) => {
     setChecking(true)
     setActionError(null)
     await autosave.flushWriting()
@@ -152,6 +187,10 @@ export function WritingStudio({
         setNoticeOpen(true)
         return
       }
+      if (code === "WRITING_CHECK_MIN_CHARS") {
+        if (anchor) showCheckGuide(anchor)
+        return
+      }
       setActionError(readCheckErrorMessage(code))
       return
     }
@@ -160,8 +199,17 @@ export function WritingStudio({
     setPanel("feedback")
   }
 
-  const handleCheck = async () => {
+  const koreanMetrics = calculateKoreanWritingMetrics(body)
+
+  const handleCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     if (checking || autosave.status.kind === "conflict") return
+
+    if (koreanMetrics.charCountWithSpaces < writing.brief.minChars) {
+      showCheckGuide(event.currentTarget)
+      return
+    }
+
+    closeCheckGuide()
     await autosave.flushWriting()
     if (autosave.hasUnsavedChanges()) {
       setActionError(
@@ -173,7 +221,7 @@ export function WritingStudio({
       setNoticeOpen(true)
       return
     }
-    await runCheck()
+    await runCheck(event.currentTarget)
   }
 
   const handleAcknowledgeAndCheck = async () => {
@@ -187,7 +235,6 @@ export function WritingStudio({
     await runCheck()
   }
 
-  const koreanMetrics = calculateKoreanWritingMetrics(body)
   const meter = (
     <WritingStatsPopover
       metrics={koreanMetrics}
@@ -205,7 +252,7 @@ export function WritingStudio({
   const checkButton = (
     <Button
       disabled={checking || autosave.status.kind === "conflict"}
-      onClick={() => void handleCheck()}
+      onClick={(e) => void handleCheck(e)}
       size="sm"
       type="button"
     >
@@ -295,32 +342,36 @@ export function WritingStudio({
         notice={
           <>
             {autosave.status.kind === "conflict" ? (
-              <Insight className="px-1 sm:px-2" role="alert" tone="incorrect">
-                <InsightTitle>
-                  다른 화면에서 이 글이 변경되었습니다.
-                </InsightTitle>
-                <InsightDescription>
-                  입력한 내용은 이 화면에 남아 있습니다. 사용할 내용을 선택해
-                  주세요.
-                </InsightDescription>
-                <ComposeActions>
-                  <Button
-                    onClick={autosave.useServerWriting}
-                    type="button"
-                    variant="secondary"
-                  >
-                    서버 글 불러오기
-                  </Button>
-                  <Button onClick={autosave.retryLocalWriting} type="button">
-                    내 내용 다시 저장하기
-                  </Button>
-                </ComposeActions>
-              </Insight>
+              <div className="rounded-3xl bg-popover shadow-lg">
+                <Insight className="px-1 sm:px-2" role="alert" tone="incorrect">
+                  <InsightTitle>
+                    다른 화면에서 이 글이 변경되었습니다.
+                  </InsightTitle>
+                  <InsightDescription>
+                    입력한 내용은 이 화면에 남아 있습니다. 사용할 내용을 선택해
+                    주세요.
+                  </InsightDescription>
+                  <ComposeActions>
+                    <Button
+                      onClick={autosave.useServerWriting}
+                      type="button"
+                      variant="secondary"
+                    >
+                      서버 글 불러오기
+                    </Button>
+                    <Button onClick={autosave.retryLocalWriting} type="button">
+                      내 내용 다시 저장하기
+                    </Button>
+                  </ComposeActions>
+                </Insight>
+              </div>
             ) : null}
             {actionError === null ? null : (
-              <Insight className="px-1 sm:px-2" role="alert" tone="incorrect">
-                <InsightDescription>{actionError}</InsightDescription>
-              </Insight>
+              <div className="rounded-3xl bg-popover shadow-lg">
+                <Insight className="px-1 sm:px-2" role="alert" tone="incorrect">
+                  <InsightDescription>{actionError}</InsightDescription>
+                </Insight>
+              </div>
             )}
           </>
         }
@@ -347,6 +398,16 @@ export function WritingStudio({
           />
         </Compose>
       </WritingStudioShell>
+
+      <WritingCheckGuidePopover
+        anchor={checkGuideAnchor}
+        charCount={koreanMetrics.charCountWithSpaces}
+        minChars={writing.brief.minChars}
+        onOpenChange={(open) => {
+          if (!open) closeCheckGuide()
+        }}
+        open={checkGuideAnchor !== null}
+      />
 
       <AlertDialog onOpenChange={setNoticeOpen} open={noticeOpen}>
         <AlertDialogContent>
