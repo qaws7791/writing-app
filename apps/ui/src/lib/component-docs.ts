@@ -68,6 +68,7 @@ const definitions = [
     "Learning",
   ],
   ["dialog", "Dialog", "현재 화면 위에서 집중된 작업이나 정보를 표시합니다.", "Overlay"],
+  ["drawer", "Drawer", "화면 가장자리에서 스와이프와 스냅으로 여는 보조 패널입니다.", "Overlay"],
   ["dropdown-menu", "Dropdown Menu", "트리거에 연결된 작업 목록을 표시합니다.", "Overlay"],
   ["empty", "Empty", "데이터가 없거나 시작 작업이 필요한 상태를 안내합니다.", "Feedback"],
   ["field", "Field", "레이블, 설명, 입력, 오류를 접근성 있게 구성합니다.", "Forms"],
@@ -444,6 +445,7 @@ const disabledProp: PropDoc = {
 const overlayComponents = new Set([
   "alert-dialog",
   "dialog",
+  "drawer",
   "dropdown-menu",
   "popover",
   "select",
@@ -533,6 +535,7 @@ const baseUiApis = new Set([
   "collapsible",
   "combobox",
   "dialog",
+  "drawer",
   "label",
   "navigation-menu",
   "popover",

@@ -213,7 +213,7 @@ function PanelIconButton({
 }
 
 /**
- * Immersive writing session: floating chrome, a docked companion pane, and in-place AI check.
+ * Immersive writing session: floating chrome, a docked or Drawer companion pane, and in-place AI check.
  */
 export function WritingStudio({
   className,

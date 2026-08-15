@@ -95,7 +95,7 @@
   }
 
   body {
-    @apply min-h-svh bg-background text-foreground antialiased;
+    @apply relative min-h-svh bg-background text-foreground antialiased;
   }
 
   ::selection {

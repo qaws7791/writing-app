@@ -6,18 +6,33 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
   type RefObject,
 } from "react"
 
 import { XIcon } from "#ui/components/icons/control-icons"
 import { Button } from "#ui/components/primitives/button"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "#ui/components/primitives/drawer"
 import { cn } from "#ui/lib/utils"
+import {
+  COMPANION_SNAP_FRACTIONS,
+  COMPANION_SNAP_POINTS,
+  companionSnapFromPoint,
+  stepCompanionSnap,
+} from "./companion-snap"
 
 const STUDIO_WIDE_MIN_WIDTH_PX = 1024
 const KEYBOARD_INSET_PX = 80
+const COMPANION_PANE_ID = "writing-studio-companion"
 const COMPANION_TITLE_ID = "writing-studio-companion-title"
-const COMPANION_EXIT_DURATION_MS = 240
+const COMPANION_EXIT_DURATION_MS = 450
 
 const CHROME_CLUSTER_CLASS =
   "pointer-events-auto flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-popover px-2 py-1.5 shadow-2xs supports-backdrop-filter:bg-popover/85 supports-backdrop-filter:backdrop-blur-2xl"
@@ -63,8 +78,13 @@ export function WritingStudioShell({
   })
   const layout = useStudioLayout()
   const peek = hasCompanion && layout.keyboardPeek
+  const isWide = layout.viewportHeight === null
+  const [snapPoint, setSnapPoint] = useState<number>(
+    COMPANION_SNAP_FRACTIONS.split
+  )
   const titleRef = useRef<HTMLHeadingElement>(null)
   const previousTitleRef = useRef<string | null>(null)
+  const drawerOpen = isOpen && !isWide && !peek
 
   useEffect(() => {
     if (!hasCompanion) {
@@ -76,9 +96,10 @@ export function WritingStudioShell({
     }
 
     const nextTitle = companionTitle ?? ""
-    if (previousTitleRef.current === nextTitle) return
-    previousTitleRef.current = nextTitle
-    if (!layout.keyboardPeek) titleRef.current?.focus()
+    if (previousTitleRef.current !== nextTitle) {
+      previousTitleRef.current = nextTitle
+      if (!layout.keyboardPeek) titleRef.current?.focus()
+    }
   }, [companionTitle, editorId, hasCompanion, layout.keyboardPeek])
 
   useEffect(() => {
@@ -109,12 +130,12 @@ export function WritingStudioShell({
       <div
         className={cn(
           "flex h-full min-h-0 w-full flex-col overflow-hidden",
-          isMounted && "lg:flex-row"
+          isMounted && isWide && "flex-row"
         )}
       >
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {children}
-          <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
+          <header className="pointer-events-none absolute inset-x-0 top-0 z-[60] px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
             <div className="relative flex min-w-0 items-start justify-between gap-2">
               <StudioChromeCluster className="max-w-[calc(100%-5.5rem)] overflow-hidden lg:max-w-[calc(50%-1rem)]">
                 {headerStart}
@@ -130,24 +151,24 @@ export function WritingStudioShell({
             </div>
           </header>
           {notice === undefined || notice === null ? null : (
-            <div className="pointer-events-none absolute inset-x-0 top-[4.75rem] z-20 px-4 sm:px-6">
+            <div className="pointer-events-none absolute inset-x-0 top-[4.75rem] z-[60] px-4 sm:px-6">
               <div className="pointer-events-auto mx-auto max-w-3xl">
                 {notice}
               </div>
             </div>
           )}
-          <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+          <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[60] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
             <StudioChromeCluster className="mx-auto w-full max-w-3xl gap-3 px-3 py-2">
               {footer}
             </StudioChromeCluster>
           </footer>
         </div>
+        {peek ? <StudioCompanionPeek title={content.title} /> : null}
         {isMounted &&
+        isWide &&
         content.companion !== null &&
         content.companion !== undefined ? (
-          <StudioCompanionPane
-            isOpen={isOpen}
-            peek={peek}
+          <StudioCompanionDock
             title={content.title}
             titleRef={titleRef}
             {...(content.description === undefined
@@ -158,9 +179,30 @@ export function WritingStudioShell({
               : { onClose: onCompanionClose })}
           >
             {content.companion}
-          </StudioCompanionPane>
+          </StudioCompanionDock>
         ) : null}
       </div>
+      {isMounted &&
+      !isWide &&
+      content.companion !== null &&
+      content.companion !== undefined ? (
+        <StudioCompanionDrawer
+          onSnapPointChange={setSnapPoint}
+          open={drawerOpen}
+          peek={peek}
+          snapPoint={snapPoint}
+          title={content.title}
+          titleRef={titleRef}
+          {...(content.description === undefined
+            ? {}
+            : { description: content.description })}
+          {...(onCompanionClose === undefined
+            ? {}
+            : { onClose: onCompanionClose })}
+        >
+          {content.companion}
+        </StudioCompanionDrawer>
+      ) : null}
     </div>
   )
 }
@@ -249,99 +291,190 @@ function StudioChromeCluster({
   return <div className={cn(CHROME_CLUSTER_CLASS, className)}>{children}</div>
 }
 
-function StudioCompanionPane({
+function StudioCompanionPeek({ title }: { readonly title: string }) {
+  return (
+    <div className="z-30 flex h-11 shrink-0 items-center border-t border-border/40 bg-card px-2 lg:hidden">
+      <button
+        aria-label="패널 펼치기"
+        className="min-w-0 flex-1 truncate rounded-xl px-2 py-1 text-left text-sm font-medium tracking-[-0.01em] outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
+        onClick={() => {
+          const active = document.activeElement
+          if (active instanceof HTMLElement) active.blur()
+        }}
+        type="button"
+      >
+        {title}
+      </button>
+    </div>
+  )
+}
+
+function isEditableKeyboardTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.isContentEditable) return true
+  const name = target.tagName
+  return name === "INPUT" || name === "TEXTAREA" || name === "SELECT"
+}
+
+function StudioCompanionDock({
   children,
   description,
-  isOpen,
   onClose,
-  peek,
   title,
   titleRef,
 }: {
   readonly children: ReactNode
   readonly description?: string | undefined
-  readonly isOpen: boolean
   readonly onClose?: () => void
-  readonly peek: boolean
   readonly title: string
   readonly titleRef: RefObject<HTMLHeadingElement | null>
 }) {
   return (
     <aside
       aria-label={title}
-      className={cn(
-        "flex min-h-0 min-w-0 shrink-0 flex-col border-t border-border/40 bg-card",
-        "will-change-transform motion-reduce:animate-none motion-reduce:transition-none",
-        "transition-[height] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
-        isOpen ? "animate-slide-up" : "animate-slide-down pointer-events-none",
-        "lg:h-full lg:w-[min(22rem,38%)] lg:border-t-0 lg:border-l lg:animate-none lg:pointer-events-auto",
-        peek ? "h-11" : "h-[40%]"
-      )}
-      data-size={peek ? "peek" : "split"}
+      className="relative z-10 hidden min-h-0 min-w-0 shrink-0 flex-col overflow-hidden border-l border-border/40 bg-card lg:flex lg:h-full lg:w-[min(22rem,38%)]"
       data-slot="writing-studio-companion"
+      id={COMPANION_PANE_ID}
     >
-      {peek ? (
-        <div className="flex h-11 min-w-0 items-center gap-1 px-2">
-          <button
-            aria-label="패널 펼치기"
-            className="min-w-0 flex-1 truncate rounded-xl px-2 py-1 text-left text-sm font-medium tracking-[-0.01em] outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
-            onClick={() => {
-              const active = document.activeElement
-              if (active instanceof HTMLElement) active.blur()
-            }}
-            type="button"
+      <header className="flex shrink-0 items-start gap-2 border-b border-border/70 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <h2
+            className="font-heading text-base leading-6 font-semibold tracking-[-0.014em] text-foreground outline-none"
+            id={COMPANION_TITLE_ID}
+            ref={titleRef}
+            tabIndex={-1}
           >
             {title}
-          </button>
-          {onClose === undefined ? null : (
-            <Button
-              aria-label="닫기"
-              onClick={onClose}
-              size="icon-sm"
-              type="button"
-              variant="ghost"
-            >
-              <XIcon />
-            </Button>
+          </h2>
+          {description === undefined || description === "" ? null : (
+            <p className="text-sm leading-6 text-pretty text-muted-foreground">
+              {description}
+            </p>
           )}
         </div>
-      ) : (
-        <>
-          <header className="flex shrink-0 items-start gap-2 border-b border-border/70 px-4 py-3">
-            <div className="min-w-0 flex-1">
-              <h2
-                className="font-heading text-base leading-6 font-semibold tracking-[-0.014em] text-foreground outline-none"
-                id={COMPANION_TITLE_ID}
-                ref={titleRef}
-                tabIndex={-1}
-              >
-                {title}
-              </h2>
-              {description === undefined || description === "" ? null : (
-                <p className="text-sm leading-6 text-pretty text-muted-foreground">
-                  {description}
-                </p>
-              )}
-            </div>
-            {onClose === undefined ? null : (
-              <Button
-                aria-label="닫기"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={onClose}
-                size="icon-sm"
-                type="button"
-                variant="ghost"
-              >
-                <XIcon />
-              </Button>
+        {onClose === undefined ? null : (
+          <Button
+            aria-label="닫기"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={onClose}
+            size="icon-sm"
+            type="button"
+            variant="ghost"
+          >
+            <XIcon />
+          </Button>
+        )}
+      </header>
+      <div className="min-h-0 flex-1 overflow-auto px-4 py-4">{children}</div>
+    </aside>
+  )
+}
+
+function StudioCompanionDrawer({
+  children,
+  description,
+  onClose,
+  onSnapPointChange,
+  open,
+  peek,
+  snapPoint,
+  title,
+  titleRef,
+}: {
+  readonly children: ReactNode
+  readonly description?: string | undefined
+  readonly onClose?: () => void
+  readonly onSnapPointChange: (point: number) => void
+  readonly open: boolean
+  readonly peek: boolean
+  readonly snapPoint: number
+  readonly title: string
+  readonly titleRef: RefObject<HTMLHeadingElement | null>
+}) {
+  const snap = companionSnapFromPoint(snapPoint)
+
+  const handleSnapKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (isEditableKeyboardTarget(event.target)) return
+    if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+      event.preventDefault()
+      onSnapPointChange(COMPANION_SNAP_FRACTIONS[stepCompanionSnap(snap, 1)])
+      return
+    }
+    if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+      event.preventDefault()
+      if (snap === "compact") {
+        onSnapPointChange(COMPANION_SNAP_FRACTIONS.split)
+        if (onClose !== undefined) onClose()
+        return
+      }
+      onSnapPointChange(COMPANION_SNAP_FRACTIONS[stepCompanionSnap(snap, -1)])
+      return
+    }
+    if (event.key === "Home") {
+      event.preventDefault()
+      onSnapPointChange(COMPANION_SNAP_FRACTIONS.compact)
+      return
+    }
+    if (event.key === "End") {
+      event.preventDefault()
+      onSnapPointChange(COMPANION_SNAP_FRACTIONS.read)
+    }
+  }
+
+  return (
+    <Drawer
+      disablePointerDismissal
+      modal={false}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen || peek || onClose === undefined) return
+        onSnapPointChange(COMPANION_SNAP_FRACTIONS.split)
+        onClose()
+      }}
+      onSnapPointChange={(point) => {
+        if (typeof point === "number") onSnapPointChange(point)
+      }}
+      open={open}
+      showSwipeHandle
+      snapPoint={snapPoint}
+      snapPoints={COMPANION_SNAP_POINTS}
+      snapToSequentialPoints
+      swipeDirection="down"
+    >
+      <DrawerContent
+        aria-labelledby={COMPANION_TITLE_ID}
+        className="rounded-t-5xl rounded-b-none border-x-0 border-b-0 bg-card [--drawer-inset:0px] lg:hidden"
+        id={COMPANION_PANE_ID}
+        onKeyDown={handleSnapKeyDown}
+      >
+        <div
+          className="flex min-h-0 flex-1 flex-col"
+          data-size={snap}
+          data-slot="writing-studio-companion"
+        >
+          <DrawerHeader className="gap-0.5 p-4 pt-1 pb-3 text-left">
+            <DrawerTitle
+              className="font-heading text-base leading-6 font-semibold tracking-[-0.014em]"
+              id={COMPANION_TITLE_ID}
+              ref={titleRef}
+              tabIndex={-1}
+            >
+              {title}
+            </DrawerTitle>
+            {description === undefined || description === "" ? null : (
+              <DrawerDescription className="text-sm leading-6 text-pretty text-left">
+                {description}
+              </DrawerDescription>
             )}
-          </header>
-          <div className="min-h-0 flex-1 overflow-auto px-4 py-4">
+          </DrawerHeader>
+          <div
+            className="min-h-0 flex-1 overflow-auto px-4 py-4 pb-[max(5.75rem,env(safe-area-inset-bottom))]"
+            data-base-ui-swipe-ignore=""
+          >
             {children}
           </div>
-        </>
-      )}
-    </aside>
+        </div>
+      </DrawerContent>
+    </Drawer>
   )
 }
 

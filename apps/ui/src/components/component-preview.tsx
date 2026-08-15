@@ -141,6 +141,16 @@ import {
   DialogTrigger,
 } from "@workspace/ui/components/primitives/dialog";
 import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@workspace/ui/components/primitives/drawer";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -727,6 +737,23 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      );
+    case "drawer":
+      return (
+        <Drawer>
+          <DrawerTrigger render={<Button variant="outline" />}>과제 열기</DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>과제</DrawerTitle>
+              <DrawerDescription>숙제 폐지 찬반 칼럼의 요구를 확인합니다.</DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto p-4">한 문단 안에 주장과 근거를 연결합니다.</div>
+            <DrawerFooter>
+              <Button>확인</Button>
+              <DrawerClose render={<Button variant="outline" />}>닫기</DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       );
     case "dropdown-menu":
       return (

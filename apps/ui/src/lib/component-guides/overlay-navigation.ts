@@ -1137,7 +1137,187 @@ export function DialogScrollable() {
         description: "닫힐 때 복귀할 초점을 정합니다.",
       },
     ],
-    related: ["alert-dialog", "sheet"],
+    related: ["alert-dialog", "drawer", "sheet"],
+  },
+  drawer: {
+    slug: "drawer",
+    summary:
+      "화면 가장자리에서 스와이프와 스냅으로 여는 패널입니다. 작성 세션처럼 제스처 높이가 필요한 보조 정보에 쓰고, 제스처가 없으면 Sheet 또는 Dialog를 씁니다.",
+    examples: [
+      {
+        id: "drawer-basic",
+        title: "기본",
+        description: "아래쪽에서 열리는 패널에 Header, 본문, Footer를 구성합니다.",
+        preview: "default",
+        code: `import { Button } from "@/components/primitives/button"
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/primitives/drawer"
+
+export function DrawerBasic() {
+  return (
+    <Drawer>
+      <DrawerTrigger render={<Button variant="outline" />}>과제 열기</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>과제</DrawerTitle>
+          <DrawerDescription>숙제 폐지 찬반 칼럼의 요구를 확인합니다.</DrawerDescription>
+        </DrawerHeader>
+        <div className="flex-1 overflow-y-auto p-4">한 문단 안에 주장과 근거를 연결합니다.</div>
+        <DrawerFooter>
+          <Button>확인</Button>
+          <DrawerClose render={<Button variant="outline" />}>닫기</DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  )
+}`,
+      },
+      {
+        id: "drawer-direction",
+        title: "열리는 면",
+        description:
+          "swipeDirection으로 down, right, left, up 중 정보 구조에 자연스러운 가장자리를 선택합니다.",
+        code: `import { Button } from "@/components/primitives/button"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/primitives/drawer"
+
+const directions = ["down", "right", "left", "up"] as const
+
+export function DrawerDirections() {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {directions.map((direction) => (
+        <Drawer key={direction} swipeDirection={direction}>
+          <DrawerTrigger render={<Button variant="outline" />}>{direction}</DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>{direction} Drawer</DrawerTitle>
+            </DrawerHeader>
+          </DrawerContent>
+        </Drawer>
+      ))}
+    </div>
+  )
+}`,
+      },
+      {
+        id: "drawer-snap",
+        title: "스냅 높이",
+        description:
+          "세로 Drawer는 snapPoints로 높이를 맞춥니다. 숫자는 0–1이면 뷰포트 비율입니다.",
+        code: `import { Button } from "@/components/primitives/button"
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/primitives/drawer"
+
+export function DrawerSnap() {
+  return (
+    <Drawer showSwipeHandle snapPoints={[0.24, 0.4, 0.75]} snapToSequentialPoints>
+      <DrawerTrigger render={<Button variant="outline" />}>과제 열기</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>과제</DrawerTitle>
+          <DrawerDescription>핸들을 끌어 간단히, 나누기, 읽기 높이에 맞춥니다.</DrawerDescription>
+        </DrawerHeader>
+        <div className="flex-1 overflow-y-auto p-4" data-base-ui-swipe-ignore="">칼럼의 주장과 근거, 예상 반론을 확인합니다.</div>
+      </DrawerContent>
+    </Drawer>
+  )
+}`,
+      },
+      {
+        id: "drawer-non-modal",
+        title: "비모달",
+        description:
+          "배경 본문을 계속 조작하려면 modal={false}와 disablePointerDismissal을 함께 씁니다.",
+        code: `import { Button } from "@/components/primitives/button"
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/primitives/drawer"
+
+export function DrawerNonModal() {
+  return (
+    <Drawer disablePointerDismissal modal={false}>
+      <DrawerTrigger render={<Button variant="outline" />}>과제 열기</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>과제</DrawerTitle>
+          <DrawerDescription>패널이 열린 동안에도 본문을 입력할 수 있습니다.</DrawerDescription>
+        </DrawerHeader>
+        <div className="flex-1 overflow-y-auto p-4">과제를 옆에 두고 글을 씁니다.</div>
+      </DrawerContent>
+    </Drawer>
+  )
+}`,
+      },
+    ],
+    usageNotes: [
+      "스와이프와 스냅 높이가 필요할 때만 Drawer를 씁니다. 가장자리 보조 패널만 필요하면 Sheet를, 확인이 필요하면 Dialog를 씁니다.",
+      "세로 Drawer의 스크롤 영역은 flex 항목으로 두고 overflow-y-auto를 줍니다. 스크롤 영역에는 data-base-ui-swipe-ignore를 둡니다.",
+    ],
+    accessibility: [
+      "DrawerTitle과 DrawerDescription으로 패널의 목적을 알립니다.",
+      "닫기 버튼의 접근 가능한 이름은 닫기입니다. 작성 세션 모바일처럼 X를 두지 않을 때는 스와이프 닫기와 Escape를 제공합니다.",
+      "비모달 Drawer는 배경 본문 입력을 막지 않습니다. 초점 이동은 제품 흐름에 맞게 제목 또는 트리거로 정합니다.",
+    ],
+    props: [
+      { name: "open", type: "boolean", defaultValue: "—", description: "제어된 열림 상태입니다." },
+      {
+        name: "defaultOpen",
+        type: "boolean",
+        defaultValue: "false",
+        description: "비제어 초기 열림 상태입니다.",
+      },
+      {
+        name: "onOpenChange",
+        type: "(open, details) => void",
+        defaultValue: "—",
+        description: "열림 상태 변경 콜백입니다.",
+      },
+      {
+        name: "swipeDirection",
+        type: '"down" | "up" | "left" | "right"',
+        defaultValue: '"down"',
+        description: "패널이 나타나고 스와이프되는 방향입니다.",
+      },
+      {
+        name: "snapPoints",
+        type: "(number | string)[]",
+        defaultValue: "—",
+        description: "세로 Drawer의 스냅 높이입니다. 0–1은 뷰포트 비율입니다.",
+      },
+      {
+        name: "snapPoint",
+        type: "number | string | null",
+        defaultValue: "—",
+        description: "제어된 활성 스냅입니다.",
+      },
+      {
+        name: "onSnapPointChange",
+        type: "(snapPoint) => void",
+        defaultValue: "—",
+        description: "활성 스냅이 바뀔 때 호출됩니다.",
+      },
+      {
+        name: "snapToSequentialPoints",
+        type: "boolean",
+        defaultValue: "false",
+        description: "스와이프가 한 단계씩만 스냅에 붙게 합니다.",
+      },
+      {
+        name: "showSwipeHandle",
+        type: "boolean",
+        defaultValue: "false",
+        description: "스와이프 핸들을 표시합니다.",
+      },
+      {
+        name: "modal",
+        type: 'boolean | "trap-focus"',
+        defaultValue: "true",
+        description: "배경 상호작용과 초점 제한을 정합니다.",
+      },
+      {
+        name: "disablePointerDismissal",
+        type: "boolean",
+        defaultValue: "false",
+        description: "바깥 누름으로 닫히는 것을 막습니다.",
+      },
+    ],
+    related: ["dialog", "sheet"],
   },
   "dropdown-menu": {
     slug: "dropdown-menu",
@@ -2083,7 +2263,7 @@ export function SheetControlled() {
         description: "바깥 누름으로 닫히는 것을 막습니다.",
       },
     ],
-    related: ["dialog", "sidebar"],
+    related: ["dialog", "drawer", "sidebar"],
   },
   sidebar: {
     slug: "sidebar",

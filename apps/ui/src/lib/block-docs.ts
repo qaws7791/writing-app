@@ -98,7 +98,7 @@ export const learnerBlocks: BlockDoc[] = [
     slug: "writing-studio",
     title: "Writing Studio",
     description:
-      "몰입형 작성 세션입니다. 본문은 전면 캔버스에 두고, 상·하단 chrome은 떠 있는 클러스터입니다. 과제와 최근 점검 결과는 본문 옆 또는 아래 패널로 엽니다.",
+      "몰입형 작성 세션입니다. 본문은 전면 캔버스에 두고, 상·하단 chrome은 떠 있는 클러스터입니다. 과제와 최근 점검 결과는 본문 옆 도킹 패널 또는 아래 Drawer 바텀시트로 엽니다. 모바일 Drawer는 스와이프 핸들로 높이를 세 스냅에 맞춥니다.",
     installName: "writing-studio",
   },
 ];
