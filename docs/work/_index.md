@@ -25,6 +25,7 @@
 | 2026-08-14 프로덕션 배포 종합 감사      | [`production-readiness-audit.md`](./2026-08-14-production-readiness-audit/production-readiness-audit.md)                                                                                      | 플랫폼 전체 기능 검토 완료, 프로덕션 준비 보고서 작성 완료 |
 | 2026-08-14 Lexical 작성 캔버스          | [`plan.md`](./2026-08-14-lexical-compose-editor/plan.md)                                                                                                                                      | 구현 중                                                    |
 | 2026-08-14 작성 세션 참조 패널 가림     | [`research.md`](./2026-08-14-studio-companion-pane/research.md)                                                                                                                               | 구현 중                                                    |
+| 2026-08-15 AI 점검 인라인 마크          | [`plan.md`](./2026-08-15-inline-writing-check-marks/plan.md)                                                                                                                                  | 구현 중                                                    |
 
 ## 사용 기준
 

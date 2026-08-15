@@ -1,6 +1,12 @@
 "use client"
 
-import { type RefObject, useEffect, useRef, useState } from "react"
+import {
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
@@ -20,10 +26,21 @@ import { cn } from "#ui/lib/utils"
 
 import { createComposeCanvasConfig } from "./compose-canvas/editor-config"
 import { $exportPlainText, $importPlainText } from "./compose-canvas/plain-text"
+import { PLAIN_TEXT_IMPORTED_COMMAND } from "./compose-canvas/plain-text-imported-command"
 import { HistoryPlugin } from "./compose-canvas/plugins/history-plugin"
 import { PastePlainTextPlugin } from "./compose-canvas/plugins/paste-plain-text-plugin"
 
+export {
+  ComposeFeedbackMarksPlugin,
+  type ComposeFeedbackMark,
+} from "./compose-canvas/plugins/feedback-marks-plugin"
+export {
+  resolveComposeFeedbackQuote,
+  toComposeFeedbackMarks,
+} from "./compose-canvas/resolve-feedback-quote"
+
 export function ComposeCanvas({
+  children,
   className,
   contentClassName,
   disabled = false,
@@ -38,6 +55,7 @@ export function ComposeCanvas({
 }: {
   readonly "aria-label"?: string
   readonly "aria-labelledby"?: string
+  readonly children?: ReactNode
   readonly className?: string
   readonly contentClassName?: string
   readonly disabled?: boolean
@@ -128,6 +146,7 @@ export function ComposeCanvas({
           {...(onBlur === undefined ? {} : { onBlur })}
           {...(onChange === undefined ? {} : { onChange })}
         />
+        {children}
       </LexicalComposer>
     </div>
   )
@@ -292,6 +311,7 @@ function ValueSyncPlugin({
       { tag: HISTORY_MERGE_TAG }
     )
     lastEmittedRef.current = value
+    editor.dispatchCommand(PLAIN_TEXT_IMPORTED_COMMAND, undefined)
   }, [editor, value])
 
   useEffect(() => {

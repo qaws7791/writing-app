@@ -21,7 +21,7 @@
 - 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/shared/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
 - Better Auth integration과 credential·session schema는 auth infra, 학습자 profile·상태 repository와 관리자 session 해석은 identity module이 소유한다. API composition은 두 경계를 vendor-neutral port로 연결하며, Next.js 앱은 DB나 ORM에 직접 접근하지 않고 공개 HTTP API를 호출한다.
 - TanStack Query, Zustand, React Hook Form, `next-intl` 같은 라이브러리는 기본 전제가 아니다. 현재 feature의 요구와 기존 도구로 해결할 수 없는 문제가 확인되고 소유권·번들·운영 비용이 정당화될 때만 별도 결정으로 도입한다.
-- 작성 세션 본문 캔버스는 Lexical을 사용한다. 결정과 범위는 [ADR-0037](./adr/ADR-0037-lexical-compose-canvas.md)이 소유한다.
+- 작성 세션 본문 캔버스는 Lexical을 사용한다. 결정과 범위는 [ADR-0037](./adr/ADR-0037-lexical-compose-canvas.md)이 소유한다. 점검 고칠 일의 인라인 마크는 [ADR-0038](./adr/ADR-0038-inline-writing-check-marks.md)이 소유한다.
 
 ## 소스 구조와 의존성
 

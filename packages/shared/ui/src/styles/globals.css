@@ -25,6 +25,10 @@
   --color-series-2: var(--series-2);
   --color-series-3: var(--series-3);
   --color-series-4: var(--series-4);
+  --color-highlight-1: var(--highlight-1);
+  --color-highlight-2: var(--highlight-2);
+  --color-highlight-3: var(--highlight-3);
+  --color-highlight-4: var(--highlight-4);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -108,6 +112,39 @@
   kbd,
   [data-slot$="-value"] {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .compose-canvas-mark {
+    --compose-mark-tone: var(--highlight-1);
+    background-color: color-mix(
+      in oklch,
+      var(--compose-mark-tone) 78%,
+      transparent
+    );
+    padding-block: 0.06em;
+    padding-inline: 0.14em;
+  }
+
+  .compose-canvas-mark[data-compose-mark-tone="1"] {
+    --compose-mark-tone: var(--highlight-1);
+  }
+
+  .compose-canvas-mark[data-compose-mark-tone="2"] {
+    --compose-mark-tone: var(--highlight-2);
+  }
+
+  .compose-canvas-mark[data-compose-mark-tone="3"] {
+    --compose-mark-tone: var(--highlight-3);
+  }
+
+  .compose-canvas-mark[data-compose-mark-tone="4"] {
+    --compose-mark-tone: var(--highlight-4);
+  }
+
+  .compose-canvas-mark[data-compose-mark-active] {
+    background-color: var(--compose-mark-tone);
   }
 }
 

@@ -62,13 +62,17 @@ import {
   SelectValue,
 } from "@workspace/ui/components/primitives/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/primitives/tabs";
-import { ComposeCanvas } from "@workspace/ui/components/learning/compose-canvas";
+import {
+  ComposeCanvas,
+  ComposeFeedbackMarksPlugin,
+} from "@workspace/ui/components/learning/compose-canvas";
 import { useState } from "react";
 
 export const interactionContracts = [
   "accordion",
   "alert-dialog",
   "compose-canvas",
+  "compose-feedback-marks",
   "dialog",
   "dropdown-menu",
   "field",
@@ -114,6 +118,8 @@ export default function InteractionContractPreview({
       );
     case "compose-canvas":
       return <ComposeCanvasContract />;
+    case "compose-feedback-marks":
+      return <ComposeFeedbackMarksContract />;
     case "dialog":
       return (
         <Dialog>
@@ -233,6 +239,43 @@ function ComposeCanvasContract() {
       />
       <p data-testid="compose-canvas-value">{value}</p>
       <Button type="button">다음 칸</Button>
+    </div>
+  );
+}
+
+function ComposeFeedbackMarksContract() {
+  const [value, setValue] = useState("반대하는 사람도 있다. 그래서 저는 숙제를 줄여야 해요.");
+  const [items, setItems] = useState([
+    {
+      example: "어떤 부담인지 한 예를 붙입니다.",
+      id: "revision-0",
+      quote: "반대하는 사람도 있다.",
+      reason: "반론이 한 문장으로 끝납니다.",
+      title: "반론을 구체화하세요",
+    },
+    {
+      example: "격식체를 맞춥니다.",
+      id: "revision-1",
+      quote: "그래서 저는 숙제를 줄여야 해요.",
+      reason: "한 문장만 해요로 바뀝니다.",
+      title: "격식체를 맞추세요",
+    },
+  ]);
+
+  return (
+    <div className="flex w-full max-w-xl flex-col gap-4">
+      <ComposeCanvas
+        aria-label="본문"
+        className="min-h-64 rounded-3xl border border-border/40 bg-card"
+        id="compose-feedback-marks-contract"
+        onChange={setValue}
+        value={value}
+      >
+        <ComposeFeedbackMarksPlugin
+          items={items}
+          onDismiss={(id) => setItems((current) => current.filter((item) => item.id !== id))}
+        />
+      </ComposeCanvas>
     </div>
   );
 }

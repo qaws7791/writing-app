@@ -59,6 +59,7 @@ export const writingBriefSchema = z.strictObject({
 export const writingCheckRevisionSchema = z.strictObject({
   example: z.string().min(1),
   location: z.string().min(1),
+  quote: z.string().min(1).optional(),
   reason: z.string().min(1),
 })
 

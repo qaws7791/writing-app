@@ -153,6 +153,33 @@ describe("글 점검", () => {
     ).not.toBeNull()
     expect(
       parseWritingCheckResult({
+        revisions: [
+          {
+            example: "반론을 한 문장 더 씁니다.",
+            location: "둘째 문단",
+            quote: "반대하는 사람도 있다.",
+            reason: "반론이 한 문장으로 끝납니다.",
+          },
+        ],
+        strengths: ["첫 문장이 분명합니다."],
+        unmetRequirements: [],
+      })
+    ).not.toBeNull()
+    expect(
+      parseWritingCheckResult({
+        revisions: [
+          {
+            example: "반론을 한 문장 더 씁니다.",
+            location: "둘째 문단",
+            reason: "반론이 한 문장으로 끝납니다.",
+          },
+        ],
+        strengths: ["첫 문장이 분명합니다."],
+        unmetRequirements: [],
+      })
+    ).not.toBeNull()
+    expect(
+      parseWritingCheckResult({
         revisions: [],
         strengths: [],
         unmetRequirements: [],

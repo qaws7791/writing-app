@@ -15,7 +15,11 @@ import {
   AlertDialogTitle,
 } from "#ui/components/primitives/alert-dialog"
 import { Button } from "#ui/components/primitives/button"
-import { ComposeCanvas } from "#ui/components/learning/compose-canvas"
+import {
+  ComposeCanvas,
+  ComposeFeedbackMarksPlugin,
+  toComposeFeedbackMarks,
+} from "#ui/components/learning/compose-canvas"
 import { Compose, ComposeMeter } from "#ui/components/learning/compose"
 import {
   FeedbackSummary,
@@ -71,6 +75,14 @@ const TASK = {
   ],
 }
 
+const SAMPLE_BODY = `숙제를 줄이면 쉬는 시간이 늘고 자기 주도 학습이 살아나 성적이 오를 수 있다.
+
+반대하는 사람도 있다. 학교 신문 독자에게 그 부담을 구체적으로 말하기보다 한 문장으로 넘겼다.
+
+그래서 저는 숙제를 줄여야 해요. 쉬는 시간에 스스로 복습하면 성적도 따라올 수 있다고 본다. 숙제가 없는 교실에서도 교사는 핵심을 점검할 수 있다. 독자가 찬반을 가르려면 주장과 근거가 한 문단에 붙어야 한다.
+
+학교 신문은 짧은 칼럼으로 찬반을 가른다. 독자가 한 번에 읽도록 핵심만 남긴다.`
+
 const SAMPLE_STRENGTH =
   "첫 문장에서 입장을 바로 밝혀 독자가 칼럼의 방향을 빠르게 읽습니다."
 
@@ -96,6 +108,13 @@ const SAMPLE_FIXES = [
     after: "그래서 숙제를 줄여야 합니다.",
   },
 ] as const
+
+const SAMPLE_REVISIONS = SAMPLE_FIXES.map((item) => ({
+  example: item.after,
+  location: item.title,
+  quote: item.before,
+  reason: item.body,
+}))
 
 type StudioPanel = "brief" | "closed" | "feedback"
 
@@ -136,33 +155,57 @@ function BriefBody() {
 
 function FeedbackPanel({
   checking,
+  dismissedIds,
   onRecheck,
+  onSelectRevision,
 }: {
   readonly checking?: boolean
+  readonly dismissedIds: ReadonlySet<string>
   readonly onRecheck?: () => void
+  readonly onSelectRevision: (id: string) => void
 }) {
+  const visibleFixes = SAMPLE_FIXES.flatMap((item, index) => {
+    const id = `revision-${index}`
+    if (dismissedIds.has(id)) {
+      return []
+    }
+    return [{ id, item }]
+  })
+
   return (
     <FeedbackSummary className="min-h-0 overflow-auto">
       <FeedbackSummaryHeader>
         <FeedbackSummaryTitle>이번 점검</FeedbackSummaryTitle>
-        <FeedbackSummaryMeta>고칠 일 3</FeedbackSummaryMeta>
+        <FeedbackSummaryMeta>고칠 일 {visibleFixes.length}</FeedbackSummaryMeta>
       </FeedbackSummaryHeader>
       <Insight tone="think">
         <InsightTitle>잘된 점</InsightTitle>
         <InsightDescription>{SAMPLE_STRENGTH}</InsightDescription>
       </Insight>
-      <FeedbackSummaryPriority>
-        {SAMPLE_FIXES.map((item) => (
-          <FeedbackSummaryItem key={item.title} priority="high">
-            <FeedbackSummaryItemTitle>{item.title}</FeedbackSummaryItemTitle>
-            <FeedbackSummaryItemBody>{item.body}</FeedbackSummaryItemBody>
-            <p className="text-xs leading-5 text-muted-foreground">
-              지금: {item.before}
-            </p>
-            <p className="text-xs leading-5">이렇게 고쳐 보면: {item.after}</p>
-          </FeedbackSummaryItem>
-        ))}
-      </FeedbackSummaryPriority>
+      {visibleFixes.length > 0 ? (
+        <FeedbackSummaryPriority>
+          {visibleFixes.map(({ id, item }) => (
+            <FeedbackSummaryItem key={id} priority="high">
+              <button
+                className="flex w-full flex-col gap-1.5 text-left"
+                onClick={() => onSelectRevision(id)}
+                type="button"
+              >
+                <FeedbackSummaryItemTitle>
+                  {item.title}
+                </FeedbackSummaryItemTitle>
+                <FeedbackSummaryItemBody>{item.body}</FeedbackSummaryItemBody>
+                <p className="text-xs leading-5 text-muted-foreground">
+                  지금: {item.before}
+                </p>
+                <p className="text-xs leading-5">
+                  이렇게 고쳐 보면: {item.after}
+                </p>
+              </button>
+            </FeedbackSummaryItem>
+          ))}
+        </FeedbackSummaryPriority>
+      ) : null}
       {onRecheck ? (
         <FeedbackSummaryActions className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
           <Button
@@ -219,12 +262,20 @@ export function WritingStudio({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [text, setText] = React.useState("")
+  const [text, setText] = React.useState(SAMPLE_BODY)
   const [panel, setPanel] = React.useState<StudioPanel>("closed")
   const [noticeOpen, setNoticeOpen] = React.useState(false)
   const [noticed, setNoticed] = React.useState(false)
   const [checking, setChecking] = React.useState(false)
   const [hasCheck, setHasCheck] = React.useState(false)
+  const [checkAnnounce, setCheckAnnounce] = React.useState<string | null>(null)
+  const [activeMarkId, setActiveMarkId] = React.useState<string | null>(null)
+  const [dismissedMarkIds, setDismissedMarkIds] = React.useState(
+    () => new Set<string>()
+  )
+  const [feedbackMarks, setFeedbackMarks] = React.useState<
+    ReturnType<typeof toComposeFeedbackMarks>
+  >([])
   const [checkGuideAnchor, setCheckGuideAnchor] =
     React.useState<HTMLElement | null>(null)
   const checkTimer = React.useRef<number | null>(null)
@@ -281,12 +332,21 @@ export function WritingStudio({
   }
 
   function runCheck() {
+    const sourceBody = text
     setChecking(true)
     if (checkTimer.current !== null) window.clearTimeout(checkTimer.current)
     checkTimer.current = window.setTimeout(() => {
       setChecking(false)
       setHasCheck(true)
-      setPanel("feedback")
+      setActiveMarkId(null)
+      setDismissedMarkIds(new Set())
+      setFeedbackMarks(
+        toComposeFeedbackMarks({
+          body: sourceBody,
+          revisions: SAMPLE_REVISIONS,
+        })
+      )
+      setCheckAnnounce("고칠 일 3개를 본문에 표시했습니다.")
       checkTimer.current = null
     }, 900)
   }
@@ -297,6 +357,9 @@ export function WritingStudio({
       value={charCount}
     />
   )
+  const remainingFixCount = SAMPLE_FIXES.filter(
+    (_item, index) => !dismissedMarkIds.has(`revision-${index}`)
+  ).length
   const handleActionButtonClick = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -313,7 +376,7 @@ export function WritingStudio({
         hasCheck
           ? panel === "feedback"
             ? "점검 결과 닫기"
-            : "점검 결과 보기 (고칠 일 3개)"
+            : `점검 결과 보기 (고칠 일 ${remainingFixCount}개)`
           : "점검 받기"
       }
       aria-pressed={hasCheck && panel === "feedback"}
@@ -325,12 +388,12 @@ export function WritingStudio({
       variant={hasCheck && panel === "feedback" ? "secondary" : "default"}
     >
       <SparklesIcon aria-hidden="true" />
-      {hasCheck ? (
+      {hasCheck && remainingFixCount > 0 ? (
         <span
           aria-hidden="true"
           className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground px-1 shadow-sm"
         >
-          3
+          {remainingFixCount}
         </span>
       ) : null}
     </Button>
@@ -349,7 +412,12 @@ export function WritingStudio({
 
   const brief = <BriefBody />
   const feedback = hasCheck ? (
-    <FeedbackPanel checking={checking} onRecheck={() => runCheck()} />
+    <FeedbackPanel
+      checking={checking}
+      dismissedIds={dismissedMarkIds}
+      onRecheck={() => runCheck()}
+      onSelectRevision={setActiveMarkId}
+    />
   ) : null
 
   return (
@@ -401,7 +469,9 @@ export function WritingStudio({
               {TASK.title}
             </p>
             <span className="sr-only" role="status">
-              {checking ? "글을 검토하는 중입니다." : "저장됨"}
+              {checking
+                ? "글을 검토하는 중입니다."
+                : (checkAnnounce ?? "저장됨")}
             </span>
           </>
         }
@@ -425,7 +495,19 @@ export function WritingStudio({
             placeholder="여기에 글을 씁니다."
             placeholderClassName={writingStudioCanvasPlaceholderClassName}
             value={text}
-          />
+          >
+            <ComposeFeedbackMarksPlugin
+              activeMarkId={activeMarkId}
+              items={feedbackMarks}
+              onActiveMarkIdChange={setActiveMarkId}
+              onDismiss={(id) => {
+                setDismissedMarkIds((current) => new Set([...current, id]))
+                setFeedbackMarks((current) =>
+                  current.filter((item) => item.id !== id)
+                )
+              }}
+            />
+          </ComposeCanvas>
         </Compose>
       </WritingStudioShell>
 

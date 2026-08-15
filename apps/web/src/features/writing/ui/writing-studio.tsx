@@ -23,7 +23,11 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/primitives/alert-dialog"
 import { Button } from "@workspace/ui/components/primitives/button"
-import { ComposeCanvas } from "@workspace/ui/components/learning/compose-canvas"
+import {
+  ComposeCanvas,
+  ComposeFeedbackMarksPlugin,
+  toComposeFeedbackMarks,
+} from "@workspace/ui/components/learning/compose-canvas"
 import {
   Compose,
   ComposeActions,
@@ -91,6 +95,17 @@ export function WritingStudio({
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false)
   const [checking, setChecking] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [checkAnnounce, setCheckAnnounce] = useState<string | null>(null)
+  const [activeMarkId, setActiveMarkId] = useState<string | null>(null)
+  const [dismissedMarkIds, setDismissedMarkIds] = useState(
+    () => new Set<string>()
+  )
+  const [feedbackMarks, setFeedbackMarks] = useState(() =>
+    toComposeFeedbackMarks({
+      body: initialWriting.body,
+      revisions: initialWriting.check?.revisions ?? [],
+    })
+  )
   const [checkGuideAnchor, setCheckGuideAnchor] = useState<HTMLElement | null>(
     null
   )
@@ -127,6 +142,14 @@ export function WritingStudio({
     setWriting(next)
     setBody(next.body)
     setActionError(null)
+    setActiveMarkId(null)
+    setDismissedMarkIds(new Set())
+    setFeedbackMarks(
+      toComposeFeedbackMarks({
+        body: next.body,
+        revisions: next.check?.revisions ?? [],
+      })
+    )
   }, [])
 
   const applyPersistedWriting = useCallback((next: LearnerWritingDetailDto) => {
@@ -197,7 +220,15 @@ export function WritingStudio({
     }
 
     applyWriting(result.value)
-    setPanel("feedback")
+    const displayedCount = toComposeFeedbackMarks({
+      body: result.value.body,
+      revisions: result.value.check?.revisions ?? [],
+    }).length
+    setCheckAnnounce(
+      displayedCount > 0
+        ? `고칠 일 ${displayedCount}개를 본문에 표시했습니다.`
+        : "점검을 마쳤습니다."
+    )
   }
 
   const koreanMetrics = calculateKoreanWritingMetrics(body)
@@ -250,7 +281,12 @@ export function WritingStudio({
       />
     </WritingStatsPopover>
   )
-  const revisionCount = writing.check?.revisions.length ?? 0
+  const revisionCount =
+    writing.check === null
+      ? 0
+      : writing.check.revisions.filter(
+          (_item, index) => !dismissedMarkIds.has(`revision-${index}`)
+        ).length
 
   const handleActionButtonClick = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -302,8 +338,10 @@ export function WritingStudio({
         check={writing.check}
         checking={checking}
         dailyChecksRemaining={writing.dailyChecksRemaining}
+        dismissedIds={dismissedMarkIds}
         disabled={autosave.status.kind === "conflict"}
         onRecheck={(e) => void handleCheck(e)}
+        onSelectRevision={setActiveMarkId}
       />
     )
 
@@ -366,6 +404,11 @@ export function WritingStudio({
               {writing.brief.title}
             </p>
             <WritingSaveStatus status={autosave.status} />
+            {checkAnnounce === null ? null : (
+              <span className="sr-only" role="status">
+                {checkAnnounce}
+              </span>
+            )}
           </>
         }
         notice={
@@ -424,7 +467,19 @@ export function WritingStudio({
             placeholder="여기에 글을 씁니다."
             placeholderClassName={writingStudioCanvasPlaceholderClassName}
             value={body}
-          />
+          >
+            <ComposeFeedbackMarksPlugin
+              activeMarkId={activeMarkId}
+              items={feedbackMarks}
+              onActiveMarkIdChange={setActiveMarkId}
+              onDismiss={(id) => {
+                setDismissedMarkIds((current) => new Set([...current, id]))
+                setFeedbackMarks((current) =>
+                  current.filter((item) => item.id !== id)
+                )
+              }}
+            />
+          </ComposeCanvas>
         </Compose>
       </WritingStudioShell>
 
@@ -553,21 +608,33 @@ function WritingCheckPanel({
   check,
   checking,
   dailyChecksRemaining,
+  dismissedIds,
   disabled,
   onRecheck,
+  onSelectRevision,
 }: {
   readonly check: NonNullable<LearnerWritingDetailDto["check"]>
   readonly checking: boolean
   readonly dailyChecksRemaining: number
+  readonly dismissedIds: ReadonlySet<string>
   readonly disabled?: boolean
   readonly onRecheck: (event: React.MouseEvent<HTMLButtonElement>) => void
+  readonly onSelectRevision: (id: string) => void
 }) {
+  const visibleRevisions = check.revisions.flatMap((item, index) => {
+    const id = `revision-${index}`
+    if (dismissedIds.has(id)) {
+      return []
+    }
+    return [{ id, item }]
+  })
+
   return (
     <FeedbackSummary className="min-h-0 overflow-auto">
       <FeedbackSummaryHeader>
         <FeedbackSummaryTitle>이번 점검</FeedbackSummaryTitle>
         <FeedbackSummaryMeta>
-          고칠 일 {check.revisions.length}
+          고칠 일 {visibleRevisions.length}
         </FeedbackSummaryMeta>
       </FeedbackSummaryHeader>
       {check.strengths.map((strength) => (
@@ -584,20 +651,23 @@ function WritingCheckPanel({
           </InsightDescription>
         </Insight>
       ) : null}
-      {check.revisions.length > 0 ? (
+      {visibleRevisions.length > 0 ? (
         <FeedbackSummaryPriority>
-          {check.revisions.map((item) => (
-            <FeedbackSummaryItem
-              key={`${item.location}-${item.reason}`}
-              priority="high"
-            >
-              <FeedbackSummaryItemTitle>
-                {item.location}
-              </FeedbackSummaryItemTitle>
-              <FeedbackSummaryItemBody>{item.reason}</FeedbackSummaryItemBody>
-              <p className="text-xs leading-5">
-                이렇게 고쳐 보면: {item.example}
-              </p>
+          {visibleRevisions.map(({ id, item }) => (
+            <FeedbackSummaryItem key={id} priority="high">
+              <button
+                className="flex w-full flex-col gap-1.5 text-left"
+                onClick={() => onSelectRevision(id)}
+                type="button"
+              >
+                <FeedbackSummaryItemTitle>
+                  {item.location}
+                </FeedbackSummaryItemTitle>
+                <FeedbackSummaryItemBody>{item.reason}</FeedbackSummaryItemBody>
+                <p className="text-xs leading-5">
+                  이렇게 고쳐 보면: {item.example}
+                </p>
+              </button>
             </FeedbackSummaryItem>
           ))}
         </FeedbackSummaryPriority>

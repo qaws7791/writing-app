@@ -348,9 +348,9 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 본문은 `bg-background` Canvas를 뷰포트 가장자리까지 채운다. 헤더·본문·푸터 사이 구분선은 두지 않는다.
 - 평시 chrome은 본문 열 위에 떠 있는 분리된 pill 클러스터다. 왼쪽은 나가기·과제 제목과 저장 점, 가운데는 `lg` 이상에서 글자 수, 오른쪽은 과제/결과 패널 트리거와 점검 버튼이다.
 - 본문은 `Compose`, `ComposeCanvas`와 `ComposeMeter`를 사용한다. 읽기 폭은 가운데 `max-w-3xl`이다. 입력 중 포커스는 control `ring-3`이 아니라 캐럿으로 전달한다.
-- 과제 브리프와 점검 결과는 한 번에 하나만 여는 패널이다. `lg` 미만은 Base UI Drawer 바텀시트다. `lg` 이상은 본문 오른쪽 도킹 패널이다. 열린 동안 본문을 입력할 수 있다. 패널 안을 카드로 다시 감싸지 않는다. 플로팅 chrome은 열린 패널을 가리지 않는다.
+- 과제 브리프와 점검 개요는 한 번에 하나만 여는 패널이다. `lg` 미만은 Base UI Drawer 바텀시트다. `lg` 이상은 본문 오른쪽 도킹 패널이다. 열린 동안 본문을 입력할 수 있다. 패널 안을 카드로 다시 감싸지 않는다. 플로팅 chrome은 열린 패널을 가리지 않는다.
 - `lg` 미만 Drawer는 `modal={false}`와 `disablePointerDismissal`을 쓰고, `showSwipeHandle`로 높이를 `간단히` 24% · `나누기` 40% · `읽기` 75% 스냅에 맞춘다. 스와이프 핸들 아래로 내리면 닫힌다. X 버튼은 두지 않는다. `lg` 이상은 오른쪽 가로 분할과 패널 안 닫기를 유지한다.
-- 브리프는 `WritingBrief` anatomy를 사용한다. 점검 결과는 `FeedbackSummary`와 `Insight`를 사용한다.
+- 브리프는 `WritingBrief` anatomy를 사용한다. 점검 개요는 `FeedbackSummary`와 `Insight`를 사용한다. 고칠 일은 `ComposeCanvas` 본문 마크가 1차 표면이다. 연이은 마크는 `highlight-*` 형광펜으로 구간을 나누고, 열린 문장은 더 진한 같은 색 배경으로 표시한다.
 - 저장 충돌과 실패는 `Insight tone="incorrect"`로 표시한다.
 - `lg` 미만은 상단 왼쪽·오른쪽 클러스터와 하단 글자 수·점검 클러스터를 나눈다. 하단은 소프트 키보드 위로 올린다. 열린 Drawer는 키보드가 열리면 한 줄 미리보기로 접힌다. 키보드가 없을 때 높이는 Drawer `snapPoints`의 `간단히`·`나누기`·`읽기`다.
 

@@ -41,6 +41,10 @@
   --series-2: var(--ref-series-2);
   --series-3: var(--ref-series-3);
   --series-4: var(--ref-series-4);
+  --highlight-1: var(--ref-highlight-1);
+  --highlight-2: var(--ref-highlight-2);
+  --highlight-3: var(--ref-highlight-3);
+  --highlight-4: var(--ref-highlight-4);
   --sidebar: var(--ref-sidebar);
   --sidebar-foreground: var(--ref-sidebar-foreground);
   --sidebar-primary: var(--ref-sidebar-primary);

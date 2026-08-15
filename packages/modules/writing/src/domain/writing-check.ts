@@ -6,6 +6,7 @@ export type WritingCheckResult = Readonly<{
   revisions: readonly Readonly<{
     example: string
     location: string
+    quote?: string
     reason: string
   }>[]
   strengths: readonly string[]

@@ -63,6 +63,7 @@ Astro UI 문서 `/docs/foundations/color`는 runtime 값을 해석해서 보여 
 | `selection`, `selection-foreground` | text selection과 선택 상태                             |
 | `chart-1`부터 `chart-5`             | 순서가 있는 중립 chart 계열                            |
 | `series-1`부터 `series-4`           | 병렬 항목 정체. 평가 상태와 겹치지 않는 낮은 채도 구분 |
+| `highlight-1`부터 `highlight-4`     | 본문 형광펜. 평가 상태와 겹치지 않는 밝은 표시         |
 
 상태 token은 단독 text 또는 낮은 opacity Surface와 조합한다.
 
@@ -71,6 +72,8 @@ Astro UI 문서 `/docs/foundations/color`는 runtime 값을 해석해서 보여 
 확인 전 선택은 `info` 톤온톤으로 표시한다. `success`는 확인 후 정답에만 쓴다.
 
 `series-*`는 카테고리·짝처럼 같은 종류의 병렬 항목을 구분할 때만 쓴다. 점·라벨 등 비색 단서와 함께 쓰고, 정답·오답·선택 상태에는 쓰지 않는다.
+
+`highlight-*`는 본문 형광펜에만 쓴다. 밑줄·점선·테두리를 붙이지 않는다. 연이은 구간은 다른 highlight 색으로 나누고, 열린 문장은 같은 색의 더 진한 배경으로 표시한다.
 
 상태 token은 단독 text 또는 낮은 opacity Surface와 조합한다.
 

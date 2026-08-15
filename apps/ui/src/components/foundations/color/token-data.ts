@@ -1,4 +1,4 @@
-export type TokenGroup = "surface" | "content" | "action" | "status" | "identity";
+export type TokenGroup = "surface" | "content" | "action" | "status" | "identity" | "highlight";
 
 type SwatchKind = "fill" | "text";
 
@@ -48,6 +48,11 @@ export const tokenGroups: {
     id: "identity",
     title: "Identity",
     description: "병렬 항목을 구분하는 정체 색. 평가 상태와 겹치지 않는다",
+  },
+  {
+    id: "highlight",
+    title: "Highlight",
+    description: "본문 형광펜. 밑줄·테두리 없이 밝은 배경만 쓴다",
   },
 ];
 
@@ -251,6 +256,38 @@ export const semanticTokens: SemanticToken[] = [
     group: "identity",
     kind: "text",
     usage: "병렬 항목 정체 4",
+  },
+  {
+    token: "highlight-1",
+    cssVar: "--highlight-1",
+    label: "Highlight 1",
+    group: "highlight",
+    kind: "fill",
+    usage: "노란 형광펜",
+  },
+  {
+    token: "highlight-2",
+    cssVar: "--highlight-2",
+    label: "Highlight 2",
+    group: "highlight",
+    kind: "fill",
+    usage: "주황 형광펜",
+  },
+  {
+    token: "highlight-3",
+    cssVar: "--highlight-3",
+    label: "Highlight 3",
+    group: "highlight",
+    kind: "fill",
+    usage: "민트 형광펜",
+  },
+  {
+    token: "highlight-4",
+    cssVar: "--highlight-4",
+    label: "Highlight 4",
+    group: "highlight",
+    kind: "fill",
+    usage: "하늘 형광펜",
   },
 ];
 

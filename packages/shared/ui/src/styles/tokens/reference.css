@@ -36,6 +36,10 @@
   --ref-series-2: oklch(0.46 0.09 275);
   --ref-series-3: oklch(0.45 0.08 115);
   --ref-series-4: oklch(0.48 0.09 350);
+  --ref-highlight-1: oklch(0.93 0.14 95);
+  --ref-highlight-2: oklch(0.91 0.13 55);
+  --ref-highlight-3: oklch(0.92 0.12 145);
+  --ref-highlight-4: oklch(0.91 0.1 250);
   --ref-sidebar: oklch(0.968 0.0042 92);
   --ref-sidebar-foreground: var(--ref-foreground);
   --ref-sidebar-primary: oklch(0.2712 0.0104 67);
@@ -97,6 +101,10 @@
   --ref-series-2: oklch(0.78 0.08 275);
   --ref-series-3: oklch(0.78 0.07 115);
   --ref-series-4: oklch(0.8 0.08 350);
+  --ref-highlight-1: oklch(0.55 0.14 95);
+  --ref-highlight-2: oklch(0.53 0.14 55);
+  --ref-highlight-3: oklch(0.54 0.13 145);
+  --ref-highlight-4: oklch(0.54 0.12 250);
   --ref-sidebar: oklch(0.2135 0.0045 72);
   --ref-sidebar-foreground: var(--ref-foreground);
   --ref-sidebar-primary: oklch(0.9247 0.0035 92);

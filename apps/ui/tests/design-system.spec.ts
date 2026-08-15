@@ -67,3 +67,20 @@ test("compose canvas는 평문을 전달하고 Tab으로 에디터를 나간다"
   await expect(page.getByTestId("compose-canvas-value")).toHaveText("첫번째 문단");
   await expect(editor).not.toBeFocused();
 });
+
+test("compose canvas 점검 마크는 구간 색이 다르고 클릭한 문장을 강조한다", async ({ page }) => {
+  await page.goto("/preview/interactions/compose-feedback-marks");
+  const marks = page.locator("mark");
+  await expect(marks).toHaveCount(2);
+  await expect(marks.nth(0)).toHaveAttribute("data-compose-mark-tone", "1");
+  await expect(marks.nth(1)).toHaveAttribute("data-compose-mark-tone", "2");
+
+  await marks.nth(0).click();
+
+  await expect(marks.nth(0)).toHaveAttribute("data-compose-mark-active");
+  await expect(marks.nth(1)).not.toHaveAttribute("data-compose-mark-active");
+  await expect(page.getByText("반론을 구체화하세요")).toBeVisible();
+  await page.getByRole("button", { name: "제거" }).click();
+
+  await expect(page.locator("mark")).toHaveCount(1);
+});

@@ -1,4 +1,4 @@
-export const COMPANION_SNAP_ORDER = ["compact", "split", "read"] as const
+const COMPANION_SNAP_ORDER = ["compact", "split", "read"] as const
 
 export type CompanionSnap = (typeof COMPANION_SNAP_ORDER)[number]
 
@@ -13,12 +13,6 @@ export const COMPANION_SNAP_POINTS: number[] = [
   COMPANION_SNAP_FRACTIONS.split,
   COMPANION_SNAP_FRACTIONS.read,
 ]
-
-export const COMPANION_SNAP_LABELS = {
-  compact: "간단히",
-  split: "나누기",
-  read: "읽기",
-} as const satisfies Record<CompanionSnap, string>
 
 export function nearestCompanionSnap(fraction: number): CompanionSnap {
   let best: CompanionSnap = "split"

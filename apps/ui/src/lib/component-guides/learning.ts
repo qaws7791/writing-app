@@ -1187,14 +1187,67 @@ export function WritingCanvas() {
   )
 }`,
       },
+      {
+        id: "canvas-feedback",
+        title: "점검 마크",
+        description:
+          "고칠 일은 ComposeFeedbackMarksPlugin으로 본문 구절에 형광펜을 붙입니다. 연이은 마크는 노랑·주황·민트 배경이 다르고, 클릭한 문장은 더 진하게 표시됩니다.",
+        code: `import { useState } from "react"
+import { Compose } from "@/components/learning/compose"
+import {
+  ComposeCanvas,
+  ComposeFeedbackMarksPlugin,
+} from "@/components/learning/compose-canvas"
+
+export function WritingCanvasFeedback() {
+  const [value, setValue] = useState(
+    "반대하는 사람도 있다. 그래서 저는 숙제를 줄여야 해요."
+  )
+  const [items, setItems] = useState([
+    {
+      example: "어떤 부담인지 한 예를 붙입니다.",
+      id: "revision-0",
+      quote: "반대하는 사람도 있다.",
+      reason: "반론이 한 문장으로 끝납니다.",
+      title: "반론을 구체화하세요",
+    },
+    {
+      example: "격식체를 맞춥니다.",
+      id: "revision-1",
+      quote: "그래서 저는 숙제를 줄여야 해요.",
+      reason: "한 문장만 해요로 바뀝니다.",
+      title: "격식체를 맞추세요",
+    },
+  ])
+  return (
+    <Compose className="min-h-80">
+      <ComposeCanvas
+        id="compose-canvas-feedback-demo"
+        onChange={setValue}
+        placeholder="여기에 글을 씁니다."
+        value={value}
+      >
+        <ComposeFeedbackMarksPlugin
+          items={items}
+          onDismiss={(id) =>
+            setItems((current) => current.filter((item) => item.id !== id))
+          }
+        />
+      </ComposeCanvas>
+    </Compose>
+  )
+}`,
+      },
     ],
     usageNotes: [
       "서버는 문장 정답이 아니라 글자 수 기준만 판정합니다. ComposeMeter의 ready/short/over를 제출 조건에 연결하세요.",
       "짧은 입력은 ComposeEditor, 작성 세션처럼 긴 본문은 ComposeCanvas를 씁니다. ComposeCanvas의 value와 onChange는 일반 텍스트입니다.",
+      "점검 고칠 일은 ComposeFeedbackMarksPlugin으로 본문 인용 구절에 형광펜을 붙입니다. 연이은 마크는 highlight 색으로 구간을 나눕니다. 마크는 저장 형식에 들어가지 않습니다.",
     ],
     accessibility: [
       "편집기와 글자 수 미터를 레이블로 연결하세요.",
       "ComposeCanvas는 role=textbox와 aria-multiline을 제공합니다.",
+      "고칠 일 형광펜은 배경 색만 씁니다. 열린 문장은 더 진한 같은 색 배경으로 표시합니다. 키보드 사용자는 점검 개요 항목으로 같은 팝오버에 도달합니다.",
     ],
     props: [
       {
