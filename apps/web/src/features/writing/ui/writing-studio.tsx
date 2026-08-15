@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   acknowledgeWritingAiNotice,
@@ -308,22 +308,22 @@ export function WritingStudio({
           : "점검 받기"
       }
       aria-pressed={hasCheck && panel === "feedback"}
-      className="relative rounded-full"
+      className="relative size-8 rounded-full"
       disabled={checking || autosave.status.kind === "conflict"}
       onClick={handleActionButtonClick}
-      size="icon-sm"
+      size="icon-xs"
       type="button"
       variant={hasCheck && panel === "feedback" ? "secondary" : "default"}
     >
       {checking ? (
-        <LoadingIcon aria-hidden="true" className="animate-spin" />
+        <LoadingIcon aria-hidden="true" className="size-3.5 animate-spin" />
       ) : (
-        <SparklesIcon aria-hidden="true" />
+        <SparklesIcon aria-hidden="true" className="size-3.5" />
       )}
       {hasCheck && revisionCount > 0 ? (
         <span
           aria-hidden="true"
-          className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground px-1 shadow-sm"
+          className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-sm"
         >
           {revisionCount}
         </span>
@@ -371,19 +371,23 @@ export function WritingStudio({
         headerCenter={meter}
         headerEnd={
           <>
-            <div className="flex items-center rounded-full border border-border/40 bg-muted/40 p-0.5">
-              <PanelIconButton
-                label="과제 보기"
-                onClick={() =>
-                  setPanel((current) =>
-                    current === "brief" ? "closed" : "brief"
-                  )
-                }
-                pressed={panel === "brief"}
-              >
-                <BookOpenIcon aria-hidden="true" />
-              </PanelIconButton>
-            </div>
+            <Button
+              aria-label={panel === "brief" ? "과제 닫기" : "과제 정보 보기"}
+              aria-pressed={panel === "brief"}
+              className="h-8 gap-1.5 rounded-full border border-border/50 px-3 text-xs font-medium"
+              disabled={checking}
+              onClick={() =>
+                setPanel((current) =>
+                  current === "brief" ? "closed" : "brief"
+                )
+              }
+              size="sm"
+              type="button"
+              variant={panel === "brief" ? "secondary" : "ghost"}
+            >
+              <BookOpenIcon aria-hidden="true" className="size-3.5" />
+              <span>과제 정보</span>
+            </Button>
             <div className="hidden lg:block">{checkButton}</div>
           </>
         }
@@ -391,19 +395,21 @@ export function WritingStudio({
           <>
             <Button
               aria-label="쓰기 홈으로"
-              className="rounded-full shrink-0"
+              className="size-8 shrink-0 rounded-full"
               disabled={checking}
               onClick={() => void handleLeave()}
-              size="icon-sm"
+              size="icon-xs"
               type="button"
               variant="ghost"
             >
               <ChevronLeftIcon aria-hidden="true" />
             </Button>
-            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em] pr-1">
-              {writing.brief.title}
-            </p>
-            <WritingSaveStatus status={autosave.status} />
+            <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+              <p className="min-w-0 truncate text-sm font-semibold tracking-[-0.01em] text-foreground sm:text-base">
+                {writing.brief.title}
+              </p>
+              <WritingSaveStatus status={autosave.status} />
+            </div>
             {checkAnnounce === null ? null : (
               <span className="sr-only" role="status">
                 {checkAnnounce}
@@ -534,34 +540,6 @@ export function WritingStudio({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
-}
-
-function PanelIconButton({
-  children,
-  className,
-  label,
-  onClick,
-  pressed,
-}: {
-  readonly children: ReactNode
-  readonly className?: string
-  readonly label: string
-  readonly onClick: () => void
-  readonly pressed: boolean
-}) {
-  return (
-    <Button
-      aria-label={label}
-      aria-pressed={pressed}
-      className={className}
-      onClick={onClick}
-      size="icon-sm"
-      type="button"
-      variant="ghost"
-    >
-      {children}
-    </Button>
   )
 }
 

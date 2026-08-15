@@ -38,10 +38,9 @@ const CHROME_CLUSTER_CLASS =
   "pointer-events-auto flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-popover px-2 py-1.5 shadow-2xs supports-backdrop-filter:bg-popover/85 supports-backdrop-filter:backdrop-blur-2xl"
 
 export const writingStudioCanvasContentClassName =
-  "mx-auto w-full max-w-3xl pt-[4.75rem] pb-[max(5.75rem,env(safe-area-inset-bottom))] sm:pt-[4.75rem] sm:pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:pt-20 lg:pb-10"
+  "mx-auto w-full max-w-3xl pt-5 pb-[max(5.75rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:pt-8 lg:pb-10"
 
-export const writingStudioCanvasPlaceholderClassName =
-  "pt-[4.75rem] sm:pt-[4.75rem] lg:pt-20"
+export const writingStudioCanvasPlaceholderClassName = "pt-5 sm:pt-6 lg:pt-8"
 
 export function WritingStudioShell({
   children,
@@ -134,29 +133,29 @@ export function WritingStudioShell({
         )}
       >
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          {children}
-          <header className="pointer-events-none absolute inset-x-0 top-0 z-[60] px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
-            <div className="relative flex min-w-0 items-start justify-between gap-2">
-              <StudioChromeCluster className="max-w-[calc(100%-5.5rem)] overflow-hidden lg:max-w-[calc(50%-1rem)]">
+          <header className="z-30 shrink-0 border-b border-border/40 bg-background/95 backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
+            <div className="mx-auto flex h-12 w-full items-center justify-between gap-2.5 px-3 sm:px-4">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
                 {headerStart}
-              </StudioChromeCluster>
+              </div>
               {headerCenter === undefined || headerCenter === null ? null : (
-                <div className="pointer-events-none absolute inset-x-0 top-0 hidden justify-center lg:flex">
-                  <StudioChromeCluster>{headerCenter}</StudioChromeCluster>
+                <div className="hidden shrink-0 items-center justify-center lg:flex">
+                  {headerCenter}
                 </div>
               )}
-              <StudioChromeCluster className="shrink-0">
+              <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 {headerEnd}
-              </StudioChromeCluster>
+              </div>
             </div>
           </header>
           {notice === undefined || notice === null ? null : (
-            <div className="pointer-events-none absolute inset-x-0 top-[4.75rem] z-[60] px-4 sm:px-6">
+            <div className="pointer-events-none absolute inset-x-0 top-[calc(3rem+env(safe-area-inset-top,0px))] z-[60] px-4 pt-2 sm:px-6">
               <div className="pointer-events-auto mx-auto max-w-3xl">
                 {notice}
               </div>
             </div>
           )}
+          {children}
           <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[60] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
             <StudioChromeCluster className="mx-auto w-full max-w-3xl gap-3 px-3 py-2">
               {footer}

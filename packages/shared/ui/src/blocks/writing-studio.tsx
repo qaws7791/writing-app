@@ -227,34 +227,6 @@ function FeedbackPanel({
   )
 }
 
-function PanelIconButton({
-  children,
-  className,
-  label,
-  onClick,
-  pressed,
-}: {
-  readonly children: React.ReactNode
-  readonly className?: string
-  readonly label: string
-  readonly onClick: () => void
-  readonly pressed: boolean
-}) {
-  return (
-    <Button
-      aria-label={label}
-      aria-pressed={pressed}
-      className={className}
-      onClick={onClick}
-      size="icon-sm"
-      type="button"
-      variant="ghost"
-    >
-      {children}
-    </Button>
-  )
-}
-
 /**
  * Immersive writing session: floating chrome, a docked or Drawer companion pane, and in-place AI check.
  */
@@ -380,18 +352,18 @@ export function WritingStudio({
           : "점검 받기"
       }
       aria-pressed={hasCheck && panel === "feedback"}
-      className="relative rounded-full"
+      className="relative size-8 rounded-full"
       disabled={checking}
       onClick={handleActionButtonClick}
-      size="icon-sm"
+      size="icon-xs"
       type="button"
       variant={hasCheck && panel === "feedback" ? "secondary" : "default"}
     >
-      <SparklesIcon aria-hidden="true" />
+      <SparklesIcon aria-hidden="true" className="size-3.5" />
       {hasCheck && remainingFixCount > 0 ? (
         <span
           aria-hidden="true"
-          className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground px-1 shadow-sm"
+          className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-sm"
         >
           {remainingFixCount}
         </span>
@@ -399,15 +371,24 @@ export function WritingStudio({
     </Button>
   )
   const briefTrigger = (
-    <PanelIconButton
-      label="과제 보기"
+    <Button
+      aria-label={panel === "brief" ? "과제 닫기" : "과제 정보 보기"}
+      aria-pressed={panel === "brief"}
+      className="h-8 gap-1.5 rounded-full border border-border/50 px-3 text-xs font-medium"
       onClick={() =>
         setPanel((current) => (current === "brief" ? "closed" : "brief"))
       }
-      pressed={panel === "brief"}
+      size="sm"
+      type="button"
+      variant={panel === "brief" ? "secondary" : "ghost"}
     >
-      <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />
-    </PanelIconButton>
+      <HugeiconsIcon
+        className="size-3.5"
+        icon={BookOpen02Icon}
+        strokeWidth={2}
+      />
+      <span>과제 정보</span>
+    </Button>
   )
 
   const brief = <BriefBody />
@@ -458,16 +439,18 @@ export function WritingStudio({
           <>
             <Button
               aria-label="쓰기 홈으로"
-              className="rounded-full shrink-0"
-              size="icon-sm"
+              className="size-8 shrink-0 rounded-full"
+              size="icon-xs"
               type="button"
               variant="ghost"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
             </Button>
-            <p className="min-w-0 truncate text-sm font-medium tracking-[-0.01em] pr-1">
-              {TASK.title}
-            </p>
+            <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+              <p className="min-w-0 truncate text-sm font-semibold tracking-[-0.01em] text-foreground sm:text-base">
+                {TASK.title}
+              </p>
+            </div>
             <span className="sr-only" role="status">
               {checking
                 ? "글을 검토하는 중입니다."
