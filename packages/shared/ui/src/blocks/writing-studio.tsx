@@ -323,12 +323,22 @@ export function WritingStudio({
     }, 900)
   }
 
-  const meter = (
+  const desktopMeter = (
     <ComposeMeter
       {...(charCount < TASK.minChars ? { min: TASK.minChars } : {})}
       value={charCount}
     />
   )
+
+  const mobileMeterPill = (
+    <div className="pointer-events-auto inline-flex items-center rounded-full border border-border/40 bg-popover/85 px-3 py-1.5 shadow-sm backdrop-blur-2xl transition-colors hover:bg-popover">
+      <ComposeMeter
+        {...(charCount < TASK.minChars ? { min: TASK.minChars } : {})}
+        value={charCount}
+      />
+    </div>
+  )
+
   const remainingFixCount = SAMPLE_FIXES.filter(
     (_item, index) => !dismissedMarkIds.has(`revision-${index}`)
   ).length
@@ -342,7 +352,7 @@ export function WritingStudio({
     }
   }
 
-  const checkButton = (
+  const desktopCheckButton = (
     <Button
       aria-label={
         hasCheck
@@ -370,6 +380,36 @@ export function WritingStudio({
       ) : null}
     </Button>
   )
+
+  const mobileFabButton = (
+    <Button
+      aria-label={
+        hasCheck
+          ? panel === "feedback"
+            ? "점검 결과 닫기"
+            : `점검 결과 보기 (고칠 일 ${remainingFixCount}개)`
+          : "점검 받기"
+      }
+      aria-pressed={hasCheck && panel === "feedback"}
+      className="pointer-events-auto relative size-12 rounded-full shadow-lg shadow-primary/20 transition-all hover:shadow-xl active:scale-95"
+      disabled={checking}
+      onClick={handleActionButtonClick}
+      size="icon-lg"
+      type="button"
+      variant={hasCheck && panel === "feedback" ? "secondary" : "default"}
+    >
+      <SparklesIcon aria-hidden="true" className="size-5" />
+      {hasCheck && remainingFixCount > 0 ? (
+        <span
+          aria-hidden="true"
+          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[11px] font-bold text-destructive-foreground ring-2 ring-background shadow-xs"
+        >
+          {remainingFixCount}
+        </span>
+      ) : null}
+    </Button>
+  )
+
   const briefTrigger = (
     <Button
       aria-label={panel === "brief" ? "과제 닫기" : "과제 정보 보기"}
@@ -424,15 +464,15 @@ export function WritingStudio({
         companionTitle={panel === "feedback" ? "이번 점검" : "과제"}
         footer={
           <>
-            {meter}
-            <div className="ml-auto">{checkButton}</div>
+            {mobileMeterPill}
+            {mobileFabButton}
           </>
         }
-        headerCenter={meter}
+        headerCenter={desktopMeter}
         headerEnd={
           <>
             {briefTrigger}
-            <div className="hidden lg:block">{checkButton}</div>
+            <div className="hidden lg:block">{desktopCheckButton}</div>
           </>
         }
         headerStart={

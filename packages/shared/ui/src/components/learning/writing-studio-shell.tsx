@@ -34,9 +34,6 @@ const COMPANION_PANE_ID = "writing-studio-companion"
 const COMPANION_TITLE_ID = "writing-studio-companion-title"
 const COMPANION_EXIT_DURATION_MS = 450
 
-const CHROME_CLUSTER_CLASS =
-  "pointer-events-auto flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-popover px-2 py-1.5 shadow-2xs supports-backdrop-filter:bg-popover/85 supports-backdrop-filter:backdrop-blur-2xl"
-
 export const writingStudioCanvasContentClassName =
   "mx-auto w-full max-w-3xl pt-5 pb-[max(5.75rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-[max(5.75rem,env(safe-area-inset-bottom))] lg:pt-8 lg:pb-10"
 
@@ -156,10 +153,10 @@ export function WritingStudioShell({
             </div>
           )}
           {children}
-          <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[60] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
-            <StudioChromeCluster className="mx-auto w-full max-w-3xl gap-3 px-3 py-2">
+          <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[60] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden">
+            <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
               {footer}
-            </StudioChromeCluster>
+            </div>
           </footer>
         </div>
         {peek ? <StudioCompanionPeek title={content.title} /> : null}
@@ -278,16 +275,6 @@ function useCompanionPresence({
     isMounted,
     isOpen,
   }
-}
-
-function StudioChromeCluster({
-  children,
-  className,
-}: {
-  readonly children: ReactNode
-  readonly className?: string
-}) {
-  return <div className={cn(CHROME_CLUSTER_CLASS, className)}>{children}</div>
 }
 
 function StudioCompanionPeek({ title }: { readonly title: string }) {

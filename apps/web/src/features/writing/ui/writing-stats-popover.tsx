@@ -69,13 +69,21 @@ export function calculateKoreanWritingMetrics(
 }
 
 export function WritingStatsPopover({
+  align = "center",
   children,
   metrics,
   minChars,
+  side = "bottom",
+  sideOffset = 8,
+  triggerClassName,
 }: {
+  readonly align?: "start" | "center" | "end"
   readonly children: ReactNode
   readonly metrics: KoreanWritingMetrics
   readonly minChars?: number
+  readonly side?: "top" | "bottom" | "left" | "right"
+  readonly sideOffset?: number
+  readonly triggerClassName?: string
 }) {
   const meetsMin =
     minChars === undefined || metrics.charCountWithSpaces >= minChars
@@ -84,11 +92,19 @@ export function WritingStatsPopover({
     <Popover>
       <PopoverTrigger
         aria-label="집필 현황 및 가독성 통계 보기"
-        className="inline-flex items-center rounded-full px-2 py-0.5 text-left cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+        className={
+          triggerClassName ??
+          "inline-flex items-center rounded-full px-2 py-0.5 text-left cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+        }
       >
         {children}
       </PopoverTrigger>
-      <PopoverContent align="center" className="w-80 p-4 gap-3.5" side="bottom">
+      <PopoverContent
+        align={align}
+        className="w-80 p-4 gap-3.5"
+        side={side}
+        sideOffset={sideOffset}
+      >
         <PopoverHeader className="pb-0">
           <PopoverTitle className="text-sm font-semibold">
             집필 통계

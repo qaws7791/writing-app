@@ -267,10 +267,11 @@ export function WritingStudio({
     await runCheck()
   }
 
-  const meter = (
+  const desktopMeter = (
     <WritingStatsPopover
       metrics={koreanMetrics}
       minChars={writing.brief.minChars}
+      side="bottom"
     >
       <ComposeMeter
         eojeol={koreanMetrics.eojeolCount}
@@ -281,6 +282,27 @@ export function WritingStudio({
       />
     </WritingStatsPopover>
   )
+
+  const mobileMeterPill = (
+    <div className="pointer-events-auto inline-flex items-center rounded-full border border-border/40 bg-popover/85 px-3 py-1.5 shadow-sm backdrop-blur-2xl transition-colors hover:bg-popover">
+      <WritingStatsPopover
+        align="start"
+        metrics={koreanMetrics}
+        minChars={writing.brief.minChars}
+        side="top"
+        sideOffset={12}
+      >
+        <ComposeMeter
+          eojeol={koreanMetrics.eojeolCount}
+          {...(koreanMetrics.charCountWithSpaces < writing.brief.minChars
+            ? { min: writing.brief.minChars }
+            : {})}
+          value={koreanMetrics.charCountWithSpaces}
+        />
+      </WritingStatsPopover>
+    </div>
+  )
+
   const revisionCount =
     writing.check === null
       ? 0
@@ -298,7 +320,7 @@ export function WritingStudio({
     }
   }
 
-  const checkButton = (
+  const desktopCheckButton = (
     <Button
       aria-label={
         hasCheck
@@ -324,6 +346,39 @@ export function WritingStudio({
         <span
           aria-hidden="true"
           className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-sm"
+        >
+          {revisionCount}
+        </span>
+      ) : null}
+    </Button>
+  )
+
+  const mobileFabButton = (
+    <Button
+      aria-label={
+        hasCheck
+          ? panel === "feedback"
+            ? "점검 결과 닫기"
+            : `점검 결과 보기 (${revisionCount > 0 ? `고칠 일 ${revisionCount}개` : "결과 확인"})`
+          : "점검 받기"
+      }
+      aria-pressed={hasCheck && panel === "feedback"}
+      className="pointer-events-auto relative size-12 rounded-full shadow-lg shadow-primary/20 transition-all hover:shadow-xl active:scale-95"
+      disabled={checking || autosave.status.kind === "conflict"}
+      onClick={handleActionButtonClick}
+      size="icon-lg"
+      type="button"
+      variant={hasCheck && panel === "feedback" ? "secondary" : "default"}
+    >
+      {checking ? (
+        <LoadingIcon aria-hidden="true" className="size-5 animate-spin" />
+      ) : (
+        <SparklesIcon aria-hidden="true" className="size-5" />
+      )}
+      {hasCheck && revisionCount > 0 ? (
+        <span
+          aria-hidden="true"
+          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[11px] font-bold text-destructive-foreground ring-2 ring-background shadow-xs"
         >
           {revisionCount}
         </span>
@@ -364,11 +419,11 @@ export function WritingStudio({
         onCompanionClose={() => setPanel("closed")}
         footer={
           <>
-            {meter}
-            <div className="ml-auto">{checkButton}</div>
+            {mobileMeterPill}
+            {mobileFabButton}
           </>
         }
-        headerCenter={meter}
+        headerCenter={desktopMeter}
         headerEnd={
           <>
             <Button
@@ -388,7 +443,7 @@ export function WritingStudio({
               <BookOpenIcon aria-hidden="true" className="size-3.5" />
               <span>과제 정보</span>
             </Button>
-            <div className="hidden lg:block">{checkButton}</div>
+            <div className="hidden lg:block">{desktopCheckButton}</div>
           </>
         }
         headerStart={
