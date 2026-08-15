@@ -3,6 +3,7 @@
 import {
   useEffect,
   useRef,
+  useState,
   useSyncExternalStore,
   type CSSProperties,
   type ReactNode,
@@ -16,6 +17,7 @@ import { cn } from "#ui/lib/utils"
 const STUDIO_WIDE_MIN_WIDTH_PX = 1024
 const KEYBOARD_INSET_PX = 80
 const COMPANION_TITLE_ID = "writing-studio-companion-title"
+const COMPANION_EXIT_DURATION_MS = 240
 
 const CHROME_CLUSTER_CLASS =
   "pointer-events-auto flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-popover px-2 py-1.5 shadow-2xs supports-backdrop-filter:bg-popover/85 supports-backdrop-filter:backdrop-blur-2xl"
@@ -54,6 +56,11 @@ export function WritingStudioShell({
   readonly onCompanionClose?: () => void
 }) {
   const hasCompanion = companion !== undefined && companion !== null
+  const { content, isMounted, isOpen } = useCompanionPresence({
+    companion,
+    description: companionDescription,
+    title: companionTitle,
+  })
   const layout = useStudioLayout()
   const peek = hasCompanion && layout.keyboardPeek
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -101,8 +108,8 @@ export function WritingStudioShell({
     >
       <div
         className={cn(
-          "flex h-full min-h-0 w-full flex-col",
-          hasCompanion && "lg:flex-row"
+          "flex h-full min-h-0 w-full flex-col overflow-hidden",
+          isMounted && "lg:flex-row"
         )}
       >
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -135,24 +142,101 @@ export function WritingStudioShell({
             </StudioChromeCluster>
           </footer>
         </div>
-        {hasCompanion ? (
+        {isMounted &&
+        content.companion !== null &&
+        content.companion !== undefined ? (
           <StudioCompanionPane
+            isOpen={isOpen}
             peek={peek}
-            title={companionTitle ?? "과제"}
+            title={content.title}
             titleRef={titleRef}
-            {...(companionDescription === undefined
+            {...(content.description === undefined
               ? {}
-              : { description: companionDescription })}
+              : { description: content.description })}
             {...(onCompanionClose === undefined
               ? {}
               : { onClose: onCompanionClose })}
           >
-            {companion}
+            {content.companion}
           </StudioCompanionPane>
         ) : null}
       </div>
     </div>
   )
+}
+
+type CompanionContent = {
+  readonly companion: ReactNode
+  readonly description?: string | undefined
+  readonly title: string
+}
+
+function useCompanionPresence({
+  companion,
+  description,
+  title,
+}: {
+  readonly companion?: ReactNode
+  readonly description?: string | undefined
+  readonly title?: string | undefined
+}) {
+  const hasCompanion = companion !== undefined && companion !== null
+  const [isMounted, setIsMounted] = useState(hasCompanion)
+  const [isOpen, setIsOpen] = useState(false)
+  const [cachedContent, setCachedContent] = useState<CompanionContent>(() => ({
+    companion: companion ?? null,
+    description,
+    title: title ?? "과제",
+  }))
+
+  const nextTitle = title ?? "과제"
+
+  if (hasCompanion && !isMounted) {
+    setIsMounted(true)
+  }
+
+  if (
+    hasCompanion &&
+    (cachedContent.companion !== companion ||
+      cachedContent.description !== description ||
+      cachedContent.title !== nextTitle)
+  ) {
+    setCachedContent({
+      companion,
+      description,
+      title: nextTitle,
+    })
+  }
+
+  useEffect(() => {
+    if (hasCompanion) {
+      const frame = requestAnimationFrame(() => {
+        setIsOpen(true)
+      })
+      return () => cancelAnimationFrame(frame)
+    }
+
+    const timer = setTimeout(() => {
+      setIsMounted(false)
+    }, COMPANION_EXIT_DURATION_MS)
+
+    const frame = requestAnimationFrame(() => {
+      setIsOpen(false)
+    })
+
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(timer)
+    }
+  }, [hasCompanion])
+
+  return {
+    content: hasCompanion
+      ? { companion, description, title: nextTitle }
+      : cachedContent,
+    isMounted,
+    isOpen,
+  }
 }
 
 function StudioChromeCluster({
@@ -168,13 +252,15 @@ function StudioChromeCluster({
 function StudioCompanionPane({
   children,
   description,
+  isOpen,
   onClose,
   peek,
   title,
   titleRef,
 }: {
   readonly children: ReactNode
-  readonly description?: string
+  readonly description?: string | undefined
+  readonly isOpen: boolean
   readonly onClose?: () => void
   readonly peek: boolean
   readonly title: string
@@ -184,7 +270,11 @@ function StudioCompanionPane({
     <aside
       aria-label={title}
       className={cn(
-        "flex min-h-0 min-w-0 shrink-0 flex-col border-t border-border/40 bg-card lg:h-full lg:w-[min(22rem,38%)] lg:border-t-0 lg:border-l",
+        "flex min-h-0 min-w-0 shrink-0 flex-col border-t border-border/40 bg-card",
+        "will-change-transform motion-reduce:animate-none motion-reduce:transition-none",
+        "transition-[height] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        isOpen ? "animate-slide-up" : "animate-slide-down pointer-events-none",
+        "lg:h-full lg:w-[min(22rem,38%)] lg:border-t-0 lg:border-l lg:animate-none lg:pointer-events-auto",
         peek ? "h-11" : "h-[40%]"
       )}
       data-size={peek ? "peek" : "split"}

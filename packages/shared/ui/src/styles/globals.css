@@ -78,6 +78,10 @@
   --animate-skeleton: skeleton-breathe 2.4s cubic-bezier(0.32, 0.72, 0, 1)
     infinite;
   --animate-drift-in: drift-in 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  --animate-slide-up: slide-in-from-bottom 320ms cubic-bezier(0.32, 0.72, 0, 1)
+    both;
+  --animate-slide-down: slide-out-to-bottom 240ms
+    cubic-bezier(0.62, 0.04, 0.86, 0.4) both;
 }
 
 @layer base {
