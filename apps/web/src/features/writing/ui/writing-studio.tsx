@@ -9,7 +9,7 @@ import {
 import {
   BookOpenIcon,
   ChevronLeftIcon,
-  MessageIcon,
+  LoadingIcon,
   SparklesIcon,
 } from "@workspace/ui/components/icons"
 import {
@@ -31,6 +31,7 @@ import {
 } from "@workspace/ui/components/learning/compose"
 import {
   FeedbackSummary,
+  FeedbackSummaryActions,
   FeedbackSummaryHeader,
   FeedbackSummaryItem,
   FeedbackSummaryItemBody,
@@ -249,21 +250,62 @@ export function WritingStudio({
       />
     </WritingStatsPopover>
   )
+  const revisionCount = writing.check?.revisions.length ?? 0
+
+  const handleActionButtonClick = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    if (hasCheck) {
+      setPanel((current) => (current === "feedback" ? "closed" : "feedback"))
+    } else {
+      void handleCheck(event)
+    }
+  }
+
   const checkButton = (
     <Button
+      aria-label={
+        hasCheck
+          ? panel === "feedback"
+            ? "점검 결과 닫기"
+            : `점검 결과 보기 (${revisionCount > 0 ? `고칠 일 ${revisionCount}개` : "결과 확인"})`
+          : "점검 받기"
+      }
+      aria-pressed={hasCheck && panel === "feedback"}
+      className="relative rounded-full"
       disabled={checking || autosave.status.kind === "conflict"}
-      onClick={(e) => void handleCheck(e)}
-      size="sm"
+      onClick={handleActionButtonClick}
+      size="icon-sm"
       type="button"
+      variant={hasCheck && panel === "feedback" ? "secondary" : "default"}
     >
-      <SparklesIcon aria-hidden="true" />
-      {checking ? "검토 중…" : "점검"}
+      {checking ? (
+        <LoadingIcon aria-hidden="true" className="animate-spin" />
+      ) : (
+        <SparklesIcon aria-hidden="true" />
+      )}
+      {hasCheck && revisionCount > 0 ? (
+        <span
+          aria-hidden="true"
+          className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground px-1 shadow-sm"
+        >
+          {revisionCount}
+        </span>
+      ) : null}
     </Button>
   )
 
   const brief = <WritingTaskBrief writing={writing} />
   const feedback =
-    writing.check === null ? null : <WritingCheckPanel check={writing.check} />
+    writing.check === null ? null : (
+      <WritingCheckPanel
+        check={writing.check}
+        checking={checking}
+        dailyChecksRemaining={writing.dailyChecksRemaining}
+        disabled={autosave.status.kind === "conflict"}
+        onRecheck={(e) => void handleCheck(e)}
+      />
+    )
 
   return (
     <>
@@ -303,19 +345,6 @@ export function WritingStudio({
               >
                 <BookOpenIcon aria-hidden="true" />
               </PanelIconButton>
-              {hasCheck ? (
-                <PanelIconButton
-                  label="점검 결과 보기"
-                  onClick={() =>
-                    setPanel((current) =>
-                      current === "feedback" ? "closed" : "feedback"
-                    )
-                  }
-                  pressed={panel === "feedback"}
-                >
-                  <MessageIcon aria-hidden="true" />
-                </PanelIconButton>
-              ) : null}
             </div>
             <div className="hidden lg:block">{checkButton}</div>
           </>
@@ -522,8 +551,16 @@ function WritingTaskBrief({
 
 function WritingCheckPanel({
   check,
+  checking,
+  dailyChecksRemaining,
+  disabled,
+  onRecheck,
 }: {
   readonly check: NonNullable<LearnerWritingDetailDto["check"]>
+  readonly checking: boolean
+  readonly dailyChecksRemaining: number
+  readonly disabled?: boolean
+  readonly onRecheck: (event: React.MouseEvent<HTMLButtonElement>) => void
 }) {
   return (
     <FeedbackSummary className="min-h-0 overflow-auto">
@@ -565,6 +602,30 @@ function WritingCheckPanel({
           ))}
         </FeedbackSummaryPriority>
       ) : null}
+      <FeedbackSummaryActions className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
+        <Button
+          className="w-full justify-center gap-1.5"
+          disabled={checking || disabled}
+          onClick={onRecheck}
+          size="sm"
+          type="button"
+        >
+          {checking ? (
+            <>
+              <LoadingIcon aria-hidden="true" className="animate-spin" />
+              검토 중…
+            </>
+          ) : (
+            <>
+              <SparklesIcon aria-hidden="true" />
+              다시 점검 받기
+            </>
+          )}
+        </Button>
+        <p className="text-center text-[11px] text-muted-foreground">
+          오늘 남은 점검 {dailyChecksRemaining}회
+        </p>
+      </FeedbackSummaryActions>
     </FeedbackSummary>
   )
 }

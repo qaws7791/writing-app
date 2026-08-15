@@ -1,10 +1,6 @@
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  ArrowLeft01Icon,
-  BookOpen02Icon,
-  Message01Icon,
-} from "@hugeicons/core-free-icons"
+import { ArrowLeft01Icon, BookOpen02Icon } from "@hugeicons/core-free-icons"
 
 import { cn } from "#ui/lib/utils"
 import { SparklesIcon } from "#ui/components/icons/action-icons"
@@ -23,6 +19,7 @@ import { ComposeCanvas } from "#ui/components/learning/compose-canvas"
 import { Compose, ComposeMeter } from "#ui/components/learning/compose"
 import {
   FeedbackSummary,
+  FeedbackSummaryActions,
   FeedbackSummaryHeader,
   FeedbackSummaryItem,
   FeedbackSummaryItemBody,
@@ -137,7 +134,13 @@ function BriefBody() {
   )
 }
 
-function FeedbackPanel() {
+function FeedbackPanel({
+  checking,
+  onRecheck,
+}: {
+  readonly checking?: boolean
+  readonly onRecheck?: () => void
+}) {
   return (
     <FeedbackSummary className="min-h-0 overflow-auto">
       <FeedbackSummaryHeader>
@@ -160,6 +163,23 @@ function FeedbackPanel() {
           </FeedbackSummaryItem>
         ))}
       </FeedbackSummaryPriority>
+      {onRecheck ? (
+        <FeedbackSummaryActions className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
+          <Button
+            className="w-full justify-center gap-1.5"
+            disabled={checking}
+            onClick={onRecheck}
+            size="sm"
+            type="button"
+          >
+            <SparklesIcon aria-hidden="true" />
+            {checking ? "검토 중…" : "다시 점검 받기"}
+          </Button>
+          <p className="text-center text-[11px] text-muted-foreground">
+            오늘 남은 점검 4회
+          </p>
+        </FeedbackSummaryActions>
+      ) : null}
     </FeedbackSummary>
   )
 }
@@ -277,15 +297,42 @@ export function WritingStudio({
       value={charCount}
     />
   )
+  const handleActionButtonClick = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    if (hasCheck) {
+      setPanel((current) => (current === "feedback" ? "closed" : "feedback"))
+    } else {
+      requestCheck(event)
+    }
+  }
+
   const checkButton = (
     <Button
+      aria-label={
+        hasCheck
+          ? panel === "feedback"
+            ? "점검 결과 닫기"
+            : "점검 결과 보기 (고칠 일 3개)"
+          : "점검 받기"
+      }
+      aria-pressed={hasCheck && panel === "feedback"}
+      className="relative rounded-full"
       disabled={checking}
-      onClick={(e) => requestCheck(e)}
-      size="sm"
+      onClick={handleActionButtonClick}
+      size="icon-sm"
       type="button"
+      variant={hasCheck && panel === "feedback" ? "secondary" : "default"}
     >
       <SparklesIcon aria-hidden="true" />
-      {checking ? "검토 중…" : "점검"}
+      {hasCheck ? (
+        <span
+          aria-hidden="true"
+          className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground px-1 shadow-sm"
+        >
+          3
+        </span>
+      ) : null}
     </Button>
   )
   const briefTrigger = (
@@ -299,20 +346,11 @@ export function WritingStudio({
       <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />
     </PanelIconButton>
   )
-  const feedbackTrigger = hasCheck ? (
-    <PanelIconButton
-      label="점검 결과 보기"
-      onClick={() =>
-        setPanel((current) => (current === "feedback" ? "closed" : "feedback"))
-      }
-      pressed={panel === "feedback"}
-    >
-      <HugeiconsIcon icon={Message01Icon} strokeWidth={2} />
-    </PanelIconButton>
-  ) : null
 
   const brief = <BriefBody />
-  const feedback = hasCheck ? <FeedbackPanel /> : null
+  const feedback = hasCheck ? (
+    <FeedbackPanel checking={checking} onRecheck={() => runCheck()} />
+  ) : null
 
   return (
     <div
@@ -345,7 +383,6 @@ export function WritingStudio({
         headerEnd={
           <>
             {briefTrigger}
-            {feedbackTrigger}
             <div className="hidden lg:block">{checkButton}</div>
           </>
         }
