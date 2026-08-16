@@ -12,7 +12,7 @@ export function AppShell({ children, currentPath }: AppShellProps) {
   const navigationPathProps = currentPath === undefined ? {} : { currentPath }
 
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
+    <div className="flex min-h-svh flex-col overflow-x-clip bg-background text-foreground">
       <GlobalNav {...navigationPathProps} />
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 pt-10 pb-28 sm:px-8 sm:py-12">
         {children}

@@ -166,9 +166,19 @@ const TOPICS: CatalogTopic[] = [
 ]
 
 const catalogColumnClassName = "mx-auto w-full max-w-5xl px-5 sm:px-8"
-const catalogCarouselPadClassName =
-  "pl-[max(1.25rem,calc((100%-64rem)/2+1.25rem))] pr-5 sm:pl-[max(2rem,calc((100%-64rem)/2+2rem))] sm:pr-8"
-const catalogCourseSlideClassName = "basis-[min(21.25rem,calc(100%-1.5rem))]"
+const catalogCarouselTrackPadClassName =
+  "pl-[max(1.25rem,calc((100%-64rem)/2+1.25rem))] pr-[max(1.25rem,calc((100%-64rem)/2+1.25rem))] sm:pl-[max(2rem,calc((100%-64rem)/2+2rem))] sm:pr-[max(2rem,calc((100%-64rem)/2+2rem))]"
+const catalogCourseSlideClassName =
+  "basis-[min(19rem,calc(100vw-4.5rem))] sm:basis-[20rem]"
+
+function alignCatalogCarousel(
+  viewSize: number,
+  _snapSize: number,
+  _index: number
+) {
+  const baseInset = viewSize < 640 ? 20 : 32
+  return Math.max(baseInset, (viewSize - 1024) / 2 + baseInset)
+}
 
 function CoursePattern({ pattern }: { pattern: CatalogTopic["pattern"] }) {
   return (
@@ -309,8 +319,11 @@ export function LearnCatalog({
                 ) : null}
               </header>
 
-              <Carousel aria-labelledby={`learn-catalog-topic-${topic.id}`}>
-                <CarouselContent className={catalogCarouselPadClassName}>
+              <Carousel
+                aria-labelledby={`learn-catalog-topic-${topic.id}`}
+                opts={{ align: alignCatalogCarousel }}
+              >
+                <CarouselContent className={catalogCarouselTrackPadClassName}>
                   {topic.courses.map((course) => (
                     <CarouselItem
                       className={catalogCourseSlideClassName}
@@ -324,10 +337,10 @@ export function LearnCatalog({
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselControls className={catalogCarouselPadClassName}>
+                <CarouselControls className={catalogCarouselTrackPadClassName}>
                   <CarouselPrevious />
                   <CarouselNext />
-                  <CarouselProgress />
+                  <CarouselProgress className="max-w-xs sm:max-w-sm" />
                 </CarouselControls>
               </Carousel>
             </section>

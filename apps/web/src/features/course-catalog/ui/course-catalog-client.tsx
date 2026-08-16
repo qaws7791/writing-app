@@ -37,9 +37,21 @@ import {
 } from "@workspace/ui/components/primitives/empty"
 
 const eagerCourseImageCount = 3
-const catalogCarouselBleedClassName =
-  "w-[calc(100%+max(1.25rem,calc((100vw-64rem)/2+1.25rem)))] sm:w-[calc(100%+max(2rem,calc((100vw-64rem)/2+2rem)))]"
-const catalogCourseSlideClassName = "basis-[min(21.25rem,calc(100%-1.5rem))]"
+const catalogCarouselBreakoutClassName =
+  "-mx-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] w-[100vw] max-w-[100vw] sm:-mx-[max(2rem,calc((100vw-64rem)/2+2rem))]"
+const catalogCarouselTrackPadClassName =
+  "pl-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] pr-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] sm:pl-[max(2rem,calc((100vw-64rem)/2+2rem))] sm:pr-[max(2rem,calc((100vw-64rem)/2+2rem))]"
+const catalogCourseSlideClassName =
+  "basis-[min(19rem,calc(100vw-4.5rem))] sm:basis-[20rem]"
+
+function alignCatalogCarousel(
+  viewSize: number,
+  _snapSize: number,
+  _index: number
+) {
+  const baseInset = viewSize < 640 ? 20 : 32
+  return Math.max(baseInset, (viewSize - 1024) / 2 + baseInset)
+}
 
 export type CoursesPageProps = {
   readonly courses: readonly LearnerCourseSummaryDto[]
@@ -125,10 +137,10 @@ export function CourseCatalogClient({
             </header>
             <Carousel
               aria-labelledby={headingId}
-              className={catalogCarouselBleedClassName}
-              opts={{ watchDrag: true }}
+              className={catalogCarouselBreakoutClassName}
+              opts={{ align: alignCatalogCarousel, watchDrag: true }}
             >
-              <CarouselContent className="pr-5 sm:pr-8">
+              <CarouselContent className={catalogCarouselTrackPadClassName}>
                 {section.courses.map(({ course, imageIndex }) => (
                   <CarouselItem
                     className={catalogCourseSlideClassName}
@@ -142,10 +154,10 @@ export function CourseCatalogClient({
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselControls className="pr-5 sm:pr-8">
+              <CarouselControls className={catalogCarouselTrackPadClassName}>
                 <CarouselPrevious />
                 <CarouselNext />
-                <CarouselProgress />
+                <CarouselProgress className="max-w-xs sm:max-w-sm" />
               </CarouselControls>
             </Carousel>
           </section>
