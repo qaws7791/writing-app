@@ -28,7 +28,6 @@ import {
   Insight,
   InsightDescription,
 } from "@workspace/ui/components/learning/insight"
-import { cn } from "@workspace/ui/lib/utils"
 
 import { formatWritingStartedAt } from "@/features/writing/model/writing-copy"
 import {
@@ -178,29 +177,26 @@ function WritingPieceCard({
   readonly writing: LearnerWritingSummaryDto
 }) {
   return (
-    <article className="flex flex-col gap-3 rounded-[1.75rem] border border-border/70 bg-card px-4 py-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
+    <article className="flex flex-col gap-3 rounded-[1.75rem] border border-border/70 bg-card px-4 py-4 shadow-2xs transition-colors hover:bg-accent/40 sm:flex-row sm:items-center sm:justify-between">
       <Link
-        className={cn(
-          buttonVariants({ variant: "link" }),
-          "h-auto min-w-0 flex-1 items-start justify-start whitespace-normal p-0 text-left text-foreground"
-        )}
+        className="min-w-0 flex-1 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
         href={`/app/writing/${encodeURIComponent(writing.id)}`}
       >
-        <span className="block w-full">
-          <span className="block text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
             {writing.domain} · {writing.typeName}
           </span>
-          <span className="mt-1 block font-heading text-base font-semibold tracking-[-0.02em] text-balance">
-            {writing.title}
-          </span>
-          <span className="mt-1 block text-xs tabular-nums text-muted-foreground">
-            {formatWritingStartedAt(writing.createdAt)} ·{" "}
-            {writing.charCount.toLocaleString("ko-KR")}자
-          </span>
-        </span>
+          <Badge variant="outline">{writing.difficulty}</Badge>
+        </div>
+        <h2 className="mt-1 font-heading text-base font-semibold tracking-[-0.02em] text-foreground text-balance">
+          {writing.title}
+        </h2>
+        <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+          {formatWritingStartedAt(writing.createdAt)} ·{" "}
+          {writing.charCount.toLocaleString("ko-KR")}자
+        </p>
       </Link>
-      <div className="flex shrink-0 items-center gap-2">
-        <Badge variant="outline">{writing.difficulty}</Badge>
+      <div className="flex shrink-0 items-center justify-end">
         <Button
           aria-label={`${writing.title} 삭제`}
           disabled={!interactive}

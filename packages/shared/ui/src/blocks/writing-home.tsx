@@ -77,7 +77,7 @@ function WritingPieceCard({
       data-slot="writing-home-piece"
       className={cn(
         cardLike(),
-        "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        "flex flex-col gap-3 transition-colors hover:bg-accent/40 sm:flex-row sm:items-center sm:justify-between"
       )}
     >
       <a
@@ -85,9 +85,12 @@ function WritingPieceCard({
         className="min-w-0 flex-1 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
         onClick={(event) => event.preventDefault()}
       >
-        <p className="text-xs text-muted-foreground">
-          {piece.domain} · {piece.typeName}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            {piece.domain} · {piece.typeName}
+          </p>
+          <Badge variant="outline">{piece.difficulty}</Badge>
+        </div>
         <h2 className="mt-1 font-heading text-base font-semibold tracking-[-0.02em] text-balance">
           {piece.taskTitle}
         </h2>
@@ -95,8 +98,7 @@ function WritingPieceCard({
           {piece.startedAt} · {piece.charCount.toLocaleString("ko-KR")}자
         </p>
       </a>
-      <div className="flex shrink-0 items-center gap-2">
-        <Badge variant="outline">{piece.difficulty}</Badge>
+      <div className="flex shrink-0 items-center">
         <Button
           type="button"
           variant="ghost"
