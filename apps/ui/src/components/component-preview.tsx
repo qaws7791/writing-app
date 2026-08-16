@@ -83,6 +83,14 @@ import {
   CardTitle,
 } from "@workspace/ui/components/primitives/card";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselControls,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@workspace/ui/components/primitives/carousel";
+import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -603,6 +611,27 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
             <Button className="w-full">작업 보기</Button>
           </CardFooter>
         </Card>
+      );
+    case "carousel":
+      return (
+        <Carousel aria-label="추천 카드" className="w-full max-w-xl">
+          <CarouselContent>
+            {["문장 뼈대", "단락 요약", "주장과 근거", "독자 고려"].map((title) => (
+              <CarouselItem key={title}>
+                <div className="rounded-[2rem] bg-muted/55 p-6">
+                  <p className="font-heading text-lg font-semibold">{title}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    슬라이드를 넘겨 다음 카드를 봅니다.
+                  </p>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselControls>
+            <CarouselPrevious />
+            <CarouselNext />
+          </CarouselControls>
+        </Carousel>
       );
     case "chart":
       return (

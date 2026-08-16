@@ -47,6 +47,7 @@ const definitions = [
   ],
   ["calendar", "Calendar", "날짜 또는 날짜 범위를 탐색하고 선택합니다.", "Date & Time"],
   ["card", "Card", "관련된 정보와 작업을 하나의 표면에 그룹화합니다.", "Data Display"],
+  ["carousel", "Carousel", "한 줄로 넘치는 카드를 드래그와 버튼으로 탐색합니다.", "Navigation"],
   [
     "chart",
     "Chart",
@@ -521,6 +522,7 @@ export function getBlockImportCommand(slug: string) {
 
 const apiOverrides: Record<string, string> = {
   calendar: "https://react-day-picker.js.org",
+  carousel: "https://www.embla-carousel.com/get-started/react",
   command: "https://github.com/dip/cmdk",
   "dropdown-menu": "https://base-ui.com/react/components/menu.md",
   "input-otp": "https://input-otp.rodz.dev",

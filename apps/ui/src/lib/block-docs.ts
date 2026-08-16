@@ -57,7 +57,7 @@ export const learnerBlocks: BlockDoc[] = [
     slug: "learn-catalog",
     title: "Learn Catalog",
     description:
-      "로그인한 학습자의 코스 탐색 화면입니다. 주제별 섹션 아래 패턴 썸네일·제목·설명·레슨 수 목록만 보여 줍니다.",
+      "로그인한 학습자의 코스 탐색 화면입니다. 주제별 섹션 아래 가로 캐러셀로 큰 세로형 카드의 정사각 썸네일·카테고리·제목·설명·레슨 수를 보여 줍니다.",
     installName: "learn-catalog",
   },
   {

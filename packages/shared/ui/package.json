@@ -37,6 +37,8 @@
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "catalog:",
+    "embla-carousel": "catalog:",
+    "embla-carousel-react": "catalog:",
     "input-otp": "catalog:",
     "lexical": "0.49.0",
     "pretendard": "catalog:",

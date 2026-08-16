@@ -3154,4 +3154,202 @@ export function SeparatorList() {
     ],
     related: ["scroll-area", "dropdown-menu", "sidebar"],
   },
+  carousel: {
+    slug: "carousel",
+    summary:
+      "한 줄로 넘치는 카드를 터치 스와이프와 마우스 드래그로 탐색합니다. 이전·다음 버튼과 위치 막대를 함께 두고, 한 화면에 모두 보이면 컨트롤을 숨깁니다.",
+    examples: [
+      {
+        id: "carousel-basic",
+        title: "기본",
+        description: "여러 슬라이드를 가로로 나열하고 이전·다음 버튼으로 한 장씩 이동합니다.",
+        preview: "default",
+        code: `import {
+  Carousel,
+  CarouselContent,
+  CarouselControls,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/primitives/carousel"
+
+export function CarouselBasic() {
+  return (
+    <Carousel aria-label="추천 카드" className="w-full max-w-xl">
+      <CarouselContent>
+        {["문장 뼈대", "단락 요약", "주장과 근거", "독자 고려"].map((title) => (
+          <CarouselItem key={title}>
+            <div className="rounded-[2rem] bg-muted/55 p-6">
+              <p className="font-heading text-lg font-semibold">{title}</p>
+              <p className="mt-2 text-sm text-muted-foreground">슬라이드를 넘겨 다음 카드를 봅니다.</p>
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselControls>
+        <CarouselPrevious />
+        <CarouselNext />
+      </CarouselControls>
+    </Carousel>
+  )
+}`,
+      },
+      {
+        id: "carousel-progress",
+        title: "위치 막대",
+        description:
+          "CarouselProgress는 스크롤 위치를 muted 트랙 위의 foreground 구간으로 보여 줍니다.",
+        code: `import {
+  Carousel,
+  CarouselContent,
+  CarouselControls,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  CarouselProgress,
+} from "@/components/primitives/carousel"
+
+export function CarouselProgressExample() {
+  return (
+    <Carousel aria-label="주제 카드" className="w-full max-w-xl">
+      <CarouselContent>
+        {["읽기", "구성", "사고", "독자", "정보"].map((title) => (
+          <CarouselItem key={title}>
+            <div className="rounded-[2rem] bg-muted/55 p-6">
+              <p className="font-heading text-lg font-semibold">{title}</p>
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselControls>
+        <CarouselPrevious />
+        <CarouselNext />
+        <CarouselProgress />
+      </CarouselControls>
+    </Carousel>
+  )
+}`,
+      },
+      {
+        id: "carousel-peek",
+        title: "다음 카드 peek",
+        description:
+          "슬라이드 폭을 340px로 두고 다음 카드가 살짝 보이게 합니다. 코스 목록처럼 큰 세로형 카드에 맞습니다.",
+        code: `import {
+  Carousel,
+  CarouselContent,
+  CarouselControls,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  CarouselProgress,
+} from "@/components/primitives/carousel"
+
+export function CarouselPeek() {
+  return (
+    <Carousel aria-label="코스 카드" className="w-full max-w-3xl">
+      <CarouselContent>
+        {["어휘와 문장", "단락의 중심", "짧은 추론", "어조 읽기"].map((title) => (
+          <CarouselItem className="basis-[min(21.25rem,calc(100%-1.5rem))]" key={title}>
+            <article className="flex aspect-[340/520] h-full w-full flex-col overflow-hidden rounded-5xl bg-muted">
+              <div className="shrink-0 p-7">
+                <div className="aspect-square rounded-2xl bg-background" />
+              </div>
+              <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
+                <p className="text-sm font-medium leading-5 text-muted-foreground">읽기</p>
+                <h3 className="mt-2.5 font-heading text-xl font-normal leading-7">{title}</h3>
+                <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-muted-foreground">
+                  핵심만 남기고 짧게 정리하는 연습을 합니다.
+                </p>
+                <p className="mt-auto text-sm font-medium leading-5 text-muted-foreground">8개 레슨</p>
+              </div>
+            </article>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselControls>
+        <CarouselPrevious />
+        <CarouselNext />
+        <CarouselProgress />
+      </CarouselControls>
+    </Carousel>
+  )
+}`,
+      },
+      {
+        id: "carousel-fit",
+        title: "컨트롤 숨김",
+        description:
+          "한 화면에 모든 슬라이드가 들어가면 이전·다음 버튼과 위치 막대를 렌더링하지 않습니다.",
+        code: `import {
+  Carousel,
+  CarouselContent,
+  CarouselControls,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  CarouselProgress,
+} from "@/components/primitives/carousel"
+
+export function CarouselFit() {
+  return (
+    <Carousel aria-label="한 장의 카드" className="w-full max-w-sm">
+      <CarouselContent>
+        <CarouselItem>
+          <div className="rounded-[2rem] bg-muted/55 p-6">
+            <p className="font-heading text-lg font-semibold">단일 카드</p>
+            <p className="mt-2 text-sm text-muted-foreground">넘길 카드가 없으면 컨트롤이 없습니다.</p>
+          </div>
+        </CarouselItem>
+      </CarouselContent>
+      <CarouselControls>
+        <CarouselPrevious />
+        <CarouselNext />
+        <CarouselProgress />
+      </CarouselControls>
+    </Carousel>
+  )
+}`,
+      },
+    ],
+    usageNotes: [
+      "라우팅이나 조회가 섞인 카드는 앱 feature에서 조합하고, Carousel primitive에는 도메인 규칙을 넣지 않습니다.",
+      "슬라이드 안 Link는 useCarouselClickGuard로 드래그 후 클릭 이동을 막습니다.",
+      "한 줄 overflow 탐색에만 사용하고, 세로 문서 스크롤을 캐러셀로 대체하지 않습니다.",
+      "슬라이드 간격은 24px입니다. 이전·다음 버튼은 48px 분할 필이고, 바깥 radius는 50%, 안쪽 radius는 md입니다. 아이콘은 24px입니다.",
+      "첫 카드를 제목과 왼쪽 정렬한 채 트랙만 화면 끝까지 이어가려면 호출자가 패딩과 overflow를 조합합니다.",
+    ],
+    accessibility: [
+      "캐러셀 루트는 role=region과 aria-roledescription=캐러셀을 가지며, 호출자는 aria-label 또는 aria-labelledby로 이름을 제공합니다.",
+      "이전·다음 버튼의 접근 이름은 이전 카드, 다음 카드입니다. 포인터 드래그만으로 탐색이 끝나지 않게 합니다.",
+      "prefers-reduced-motion 또는 data-motion=reduced이면 스크롤 duration은 0입니다.",
+    ],
+    props: [
+      {
+        name: "opts",
+        type: "EmblaOptionsType",
+        defaultValue: "align start, containScroll trimSnaps",
+        description: "Embla 옵션입니다. axis는 orientation이 결정합니다.",
+      },
+      {
+        name: "orientation",
+        type: '"horizontal" | "vertical"',
+        defaultValue: '"horizontal"',
+        description: "스크롤 축입니다.",
+      },
+      {
+        name: "setApi",
+        type: "(api: CarouselApi) => void",
+        defaultValue: "—",
+        description: "Embla API를 호출자에게 전달합니다.",
+      },
+      {
+        name: "aria-label",
+        type: "string",
+        defaultValue: "—",
+        description: "캐러셀 영역의 접근 가능한 이름입니다.",
+      },
+    ],
+    related: ["button", "card", "scroll-area"],
+  },
 };

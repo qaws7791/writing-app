@@ -54,6 +54,33 @@ test("focus한 tab을 Enter로 활성화한다", async ({ page }) => {
   await expect(page.getByText("완료한 학습 목록")).toBeVisible();
 });
 
+test("캐러셀 다음 버튼으로 다음 슬라이드로 이동한다", async ({ page }) => {
+  await page.goto("/preview/interactions/carousel");
+  const next = page.getByRole("button", { name: "다음 카드" });
+  const previous = page.getByRole("button", { name: "이전 카드" });
+
+  await expect(previous).toBeDisabled();
+  await expect(next).toBeEnabled();
+
+  await next.click();
+
+  await expect(previous).toBeEnabled();
+  await expect(page.getByRole("progressbar", { name: "캐러셀 위치" })).toBeVisible();
+});
+
+test("캐러셀은 열린 상태에서도 접근성 위반이 없다", async ({ page }) => {
+  await page.goto("/preview/interactions/carousel");
+  await expect(page.getByRole("heading", { name: "관련 카드" })).toBeVisible();
+  await page.addScriptTag({ content: axe.source });
+
+  const results = await page.evaluate(async () => window.axe.run());
+
+  expect(
+    results.violations,
+    results.violations.map((violation) => `${violation.id}: ${violation.help}`).join("\n"),
+  ).toEqual([]);
+});
+
 test("compose canvas는 평문을 전달하고 Tab으로 에디터를 나간다", async ({ page }) => {
   await page.goto("/preview/interactions/compose-canvas");
   const editor = page.getByRole("textbox", { name: "본문" });

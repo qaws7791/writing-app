@@ -19,6 +19,15 @@ import {
 } from "@workspace/ui/components/primitives/alert-dialog";
 import { Button } from "@workspace/ui/components/primitives/button";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselControls,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  CarouselProgress,
+} from "@workspace/ui/components/primitives/carousel";
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -71,6 +80,7 @@ import { useState } from "react";
 export const interactionContracts = [
   "accordion",
   "alert-dialog",
+  "carousel",
   "compose-canvas",
   "compose-feedback-marks",
   "dialog",
@@ -115,6 +125,28 @@ export default function InteractionContractPreview({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      );
+    case "carousel":
+      return (
+        <div className="flex w-full max-w-xl flex-col gap-4">
+          <h1 className="font-heading text-2xl font-semibold">관련 카드</h1>
+          <Carousel aria-label="인터랙션 캐러셀">
+            <CarouselContent>
+              {["첫번째 카드", "두번째 카드", "세번째 카드", "네번째 카드"].map((title) => (
+                <CarouselItem key={title}>
+                  <div className="rounded-[2rem] bg-muted/55 p-6">
+                    <p className="font-heading text-lg font-semibold">{title}</p>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselControls>
+              <CarouselPrevious />
+              <CarouselNext />
+              <CarouselProgress />
+            </CarouselControls>
+          </Carousel>
+        </div>
       );
     case "compose-canvas":
       return <ComposeCanvasContract />;

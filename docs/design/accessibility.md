@@ -31,6 +31,7 @@
 - toggle 성격 버튼은 `aria-pressed`를 제공한다.
 - dialog는 닫기/취소/확인 동작을 키보드로 수행할 수 있어야 한다.
 - focus indicator를 제거하지 않는다. 공통 UI는 `focus-visible:ring-3`을 사용한다.
+- 가로 캐러셀은 이전·다음 버튼과 슬라이드 안 `Link`로 키보드 탐색을 제공한다. 포인터 드래그만으로 탐색이 끝나지 않게 한다. 캐러셀 영역 `aria-roledescription`은 `캐러셀`, 슬라이드는 `슬라이드`다.
 
 ## 레슨 접근성
 
@@ -81,6 +82,7 @@
 
 - Button press와 짧은 상태 전환만 기본 motion으로 사용한다.
 - 학습 흐름과 공개 랜딩의 핵심 정보는 motion에만 의존하지 않는다.
+- 캐러셀 스크롤은 `prefers-reduced-motion`에서 즉시 이동한다.
 - 새 장시간 반복 애니메이션을 추가할 때는 `prefers-reduced-motion` 대응을 함께 추가한다.
 
 ## 사용자 설정 접근성

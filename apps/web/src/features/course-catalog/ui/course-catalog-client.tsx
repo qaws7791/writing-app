@@ -20,6 +20,16 @@ import {
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 import { Button } from "@workspace/ui/components/primitives/button"
 import {
+  Carousel,
+  CarouselContent,
+  CarouselControls,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  CarouselProgress,
+  useCarouselClickGuard,
+} from "@workspace/ui/components/primitives/carousel"
+import {
   Empty,
   EmptyHeader,
   EmptyTitle,
@@ -27,6 +37,9 @@ import {
 } from "@workspace/ui/components/primitives/empty"
 
 const eagerCourseImageCount = 3
+const catalogCarouselBleedClassName =
+  "w-[calc(100%+max(1.25rem,calc((100vw-64rem)/2+1.25rem)))] sm:w-[calc(100%+max(2rem,calc((100vw-64rem)/2+2rem)))]"
+const catalogCourseSlideClassName = "basis-[min(21.25rem,calc(100%-1.5rem))]"
 
 export type CoursesPageProps = {
   readonly courses: readonly LearnerCourseSummaryDto[]
@@ -110,16 +123,31 @@ export function CourseCatalogClient({
                 {section.category}
               </h2>
             </header>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-3 @[40rem]:gap-4">
-              {section.courses.map(({ course, imageIndex }) => (
-                <CourseCard
-                  course={course}
-                  eager={imageIndex < eagerCourseImageCount}
-                  key={course.id}
-                  preload={imageIndex === 0}
-                />
-              ))}
-            </div>
+            <Carousel
+              aria-labelledby={headingId}
+              className={catalogCarouselBleedClassName}
+              opts={{ watchDrag: true }}
+            >
+              <CarouselContent className="pr-5 sm:pr-8">
+                {section.courses.map(({ course, imageIndex }) => (
+                  <CarouselItem
+                    className={catalogCourseSlideClassName}
+                    key={course.id}
+                  >
+                    <CourseCard
+                      course={course}
+                      eager={imageIndex < eagerCourseImageCount}
+                      preload={imageIndex === 0}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselControls className="pr-5 sm:pr-8">
+                <CarouselPrevious />
+                <CarouselNext />
+                <CarouselProgress />
+              </CarouselControls>
+            </Carousel>
           </section>
         )
       })}
@@ -168,32 +196,39 @@ function CourseCard({
   readonly preload: boolean
 }) {
   const image = resolveCourseImage(course)
+  const guardCarouselClick = useCarouselClickGuard()
 
   return (
     <Link
-      className="flex flex-col gap-4 rounded-[1.75rem] bg-muted/55 p-4 outline-none transition-colors hover:bg-muted/80 focus-visible:ring-3 focus-visible:ring-ring/25 sm:p-5"
+      className="flex aspect-[340/520] h-full w-full flex-col overflow-hidden rounded-5xl bg-muted shadow-xs outline-none transition-colors hover:bg-muted/80 focus-visible:ring-3 focus-visible:ring-ring/25"
       href={`/app/courses/${course.id}`}
+      onClick={guardCarouselClick}
     >
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-muted">
-        <Image
-          alt={image.alt}
-          className="object-cover select-none"
-          draggable="false"
-          fill
-          loading={eager ? "eager" : "lazy"}
-          preload={preload}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          src={image.src}
-        />
+      <div className="shrink-0 p-7">
+        <div className="relative aspect-square overflow-hidden rounded-5xl bg-background">
+          <Image
+            alt={image.alt}
+            className="object-cover select-none"
+            draggable="false"
+            fill
+            loading={eager ? "eager" : "lazy"}
+            preload={preload}
+            sizes="(max-width: 640px) calc(100vw - 4rem), 284px"
+            src={image.src}
+          />
+        </div>
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-2 px-0.5 pb-0.5">
-        <h3 className="font-heading text-base font-semibold tracking-[-0.02em] text-balance">
+      <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
+        <p className="text-sm font-medium leading-5 text-muted-foreground">
+          {course.category}
+        </p>
+        <h3 className="mt-2.5 line-clamp-3 font-heading text-xl font-normal leading-7 text-balance">
           {course.title}
         </h3>
-        <p className="line-clamp-2 text-sm leading-6 text-pretty text-muted-foreground">
+        <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-pretty text-muted-foreground">
           {course.description}
         </p>
-        <p className="mt-auto pt-1 text-xs tabular-nums text-muted-foreground">
+        <p className="mt-auto text-sm font-medium leading-5 tabular-nums text-muted-foreground">
           {course.lessonCount}개 레슨
         </p>
       </div>

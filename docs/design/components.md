@@ -91,6 +91,18 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 `CardTitle`은 시각 title wrapper다. 의미 있는 제목 계층은 `CardTitle` 안에 `h1`, `h2` 또는 `h3`를 배치한다.
 
+## Carousel
+
+구현 위치: `packages/shared/ui/src/components/primitives/carousel.tsx`
+
+기반은 Embla Carousel이다. 공개 구조는 `Carousel`, `CarouselContent`, `CarouselItem`, `CarouselPrevious`, `CarouselNext`, `CarouselProgress`, `CarouselControls`다. 가로 카드 스트립처럼 한 줄 overflow 탐색에 사용한다.
+
+기본 옵션은 `align: "start"`, `containScroll: "trimSnaps"`, loop 없음이다. 슬라이드 간격은 24px이다. 터치 스와이프와 데스크톱 마우스 드래그를 모두 허용한다. `prefers-reduced-motion` 또는 `data-motion="reduced"`이면 스크롤 duration은 0이다.
+
+이전·다음 버튼은 `Button` `size="icon-lg"`(48px), `variant="secondary"`다. 두 버튼은 2px 간격의 분할 필이다. 바깥 모서리는 50%, 안쪽 모서리는 `md` radius다. 아이콘은 24px다. 접근 이름은 `이전 카드`, `다음 카드`다. `CarouselProgress`는 `muted` 트랙 위에 `foreground` 인디케이터를 옮긴다. 한 화면에 모든 슬라이드가 보이면 `CarouselControls`와 `CarouselProgress`를 숨긴다.
+
+슬라이드 안 `Link`는 `useCarouselClickGuard`로 드래그 후 클릭 이동을 막는다. 키보드 사용자는 카드 `Link` Tab 이동과 이전·다음 버튼, 포커스된 캐러셀의 방향키로 탐색한다.
+
 ## Field
 
 구현 위치: `packages/shared/ui/src/components/primitives/field.tsx`
