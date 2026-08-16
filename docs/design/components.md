@@ -324,7 +324,9 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - `apps/web/src/app/(learner)/app/_views/global-nav-account-menu.tsx`: 계정 메뉴와 열림 상태
 - `apps/web/src/app/(learner)/app/_views/mobile-nav.tsx`: 모바일 하단 nav
 
-- 상단 브랜드는 `글결.`이다.
+- 상단 `GlobalNav`는 하단 테두리를 두지 않으며, 모바일 `h-14`, 데스크톱 `h-20`의 반응형 높이와 `gap-6 sm:gap-10`의 브랜드 간격을 가진다.
+- 상단 브랜드는 `글결.`이며 데스크톱 강조 타이포그래피(`text-xl font-bold tracking-tight`)를 적용한다.
+- `GlobalNavLinks`는 `14px medium`(`text-sm font-medium`), 항목 간 `6px` 간격(`gap-1.5`), 최소 너비(`min-w-12`)를 적용하여 1글자 탭의 클릭 접근성을 보장한다.
 - `홈`, `배우기`, `쓰기`, `프로필`의 활성 상태는 `aria-current="page"`로 표시한다.
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
