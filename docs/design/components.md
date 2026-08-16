@@ -70,6 +70,15 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 `variant`는 `surface`, `muted`, `frame`, `plain`을 제공한다.
 
+### Variant
+
+| variant   | 스타일 및 용도                                                                |
+| --------- | ----------------------------------------------------------------------------- |
+| `surface` | `border-border/80`, `bg-card`, `shadow-xs`를 사용해 독립된 콘텐츠를 띄운다.   |
+| `muted`   | `border-border/50`, `bg-muted`를 사용해 낮은 강조와 부드러운 경계를 제공한다. |
+| `frame`   | `border-border`, `bg-transparent`를 사용해 윤곽만 표시한다.                   |
+| `plain`   | 테두리와 배경 없이 열린 배치를 제공한다.                                      |
+
 ### 구조
 
 - `Card`

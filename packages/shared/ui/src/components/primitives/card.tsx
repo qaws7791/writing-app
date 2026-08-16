@@ -11,7 +11,7 @@ const cardVariants = cva(
       // weight the content asks for instead of boxing everything the same way.
       variant: {
         surface: "border border-border/80 bg-card shadow-xs",
-        muted: "border border-transparent bg-muted",
+        muted: "border border-border/50 bg-muted",
         frame: "border border-border bg-transparent",
         plain: "border border-transparent bg-transparent",
       },
