@@ -165,6 +165,7 @@ export function WritingStudioShell({
         content.companion !== null &&
         content.companion !== undefined ? (
           <StudioCompanionDock
+            isOpen={isOpen}
             title={content.title}
             titleRef={titleRef}
             {...(content.description === undefined
@@ -305,53 +306,72 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
 function StudioCompanionDock({
   children,
   description,
+  isOpen,
   onClose,
   title,
   titleRef,
 }: {
   readonly children: ReactNode
   readonly description?: string | undefined
+  readonly isOpen: boolean
   readonly onClose?: () => void
   readonly title: string
   readonly titleRef: RefObject<HTMLHeadingElement | null>
 }) {
   return (
     <aside
+      aria-hidden={!isOpen}
       aria-label={title}
-      className="relative z-10 hidden min-h-0 min-w-0 shrink-0 flex-col overflow-hidden border-l border-border/40 bg-card lg:flex lg:h-full lg:w-[min(22rem,38%)]"
+      className={cn(
+        "relative z-10 hidden min-h-0 min-w-0 shrink-0 flex-col overflow-hidden bg-card transition-[width,opacity,border-color] lg:flex lg:h-full",
+        isOpen
+          ? "w-[min(22rem,38%)] border-l border-border/40 opacity-100 duration-320 ease-quiet"
+          : "w-0 border-l border-transparent opacity-0 duration-240 ease-quiet-in pointer-events-none"
+      )}
       data-slot="writing-studio-companion"
+      data-state={isOpen ? "open" : "closed"}
       id={COMPANION_PANE_ID}
+      inert={!isOpen ? true : undefined}
     >
-      <header className="flex shrink-0 items-start gap-2 border-b border-border/70 px-4 py-3">
-        <div className="min-w-0 flex-1">
-          <h2
-            className="font-heading text-base leading-6 font-semibold tracking-[-0.014em] text-foreground outline-none"
-            id={COMPANION_TITLE_ID}
-            ref={titleRef}
-            tabIndex={-1}
-          >
-            {title}
-          </h2>
-          {description === undefined || description === "" ? null : (
-            <p className="text-sm leading-6 text-pretty text-muted-foreground">
-              {description}
-            </p>
-          )}
-        </div>
-        {onClose === undefined ? null : (
-          <Button
-            aria-label="닫기"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={onClose}
-            size="icon-sm"
-            type="button"
-            variant="ghost"
-          >
-            <XIcon />
-          </Button>
+      <div
+        className={cn(
+          "flex h-full min-h-0 w-[min(22rem,calc(100vw*0.38))] flex-col transition-transform",
+          isOpen
+            ? "translate-x-0 duration-320 ease-quiet"
+            : "translate-x-3 duration-240 ease-quiet-in"
         )}
-      </header>
-      <div className="min-h-0 flex-1 overflow-auto px-4 py-4">{children}</div>
+      >
+        <header className="flex shrink-0 items-start gap-2 border-b border-border/70 px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <h2
+              className="font-heading text-base leading-6 font-semibold tracking-[-0.014em] text-foreground outline-none"
+              id={COMPANION_TITLE_ID}
+              ref={titleRef}
+              tabIndex={-1}
+            >
+              {title}
+            </h2>
+            {description === undefined || description === "" ? null : (
+              <p className="text-sm leading-6 text-pretty text-muted-foreground">
+                {description}
+              </p>
+            )}
+          </div>
+          {onClose === undefined ? null : (
+            <Button
+              aria-label="닫기"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={onClose}
+              size="icon-sm"
+              type="button"
+              variant="ghost"
+            >
+              <XIcon />
+            </Button>
+          )}
+        </header>
+        <div className="min-h-0 flex-1 overflow-auto px-4 py-4">{children}</div>
+      </div>
     </aside>
   )
 }
