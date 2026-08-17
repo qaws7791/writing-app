@@ -41,6 +41,7 @@ const catalogCarouselBreakoutClassName =
   "-mx-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] w-[100vw] max-w-[100vw] sm:-mx-[max(2rem,calc((100vw-64rem)/2+2rem))]"
 const catalogCarouselTrackPadClassName =
   "pl-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] pr-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] sm:pl-[max(2rem,calc((100vw-64rem)/2+2rem))] sm:pr-[max(2rem,calc((100vw-64rem)/2+2rem))]"
+const catalogCarouselContentClassName = `${catalogCarouselTrackPadClassName} gap-3 sm:gap-6`
 const catalogCourseSlideClassName =
   "basis-[min(19rem,calc(100vw-4.5rem))] sm:basis-[20rem]"
 
@@ -140,7 +141,7 @@ export function CourseCatalogClient({
               className={catalogCarouselBreakoutClassName}
               opts={{ align: alignCatalogCarousel, watchDrag: true }}
             >
-              <CarouselContent className={catalogCarouselTrackPadClassName}>
+              <CarouselContent className={catalogCarouselContentClassName}>
                 {section.courses.map(({ course, imageIndex }) => (
                   <CarouselItem
                     className={catalogCourseSlideClassName}
