@@ -43,7 +43,7 @@ const catalogCarouselTrackPadClassName =
   "pl-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] pr-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] sm:pl-[max(2rem,calc((100vw-64rem)/2+2rem))] sm:pr-[max(2rem,calc((100vw-64rem)/2+2rem))]"
 const catalogCarouselContentClassName = `${catalogCarouselTrackPadClassName} gap-3 sm:gap-6`
 const catalogCourseSlideClassName =
-  "basis-[min(19rem,calc(100vw-4.5rem))] sm:basis-[20rem]"
+  "basis-[min(19rem,calc(100vw-4.5rem))] last:me-[max(1.25rem,calc((100vw-64rem)/2+1.25rem))] sm:basis-[20rem] sm:last:me-[max(2rem,calc((100vw-64rem)/2+2rem))]"
 
 function alignCatalogCarousel(
   viewSize: number,
