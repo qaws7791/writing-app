@@ -17,6 +17,10 @@ import {
   requestPasswordReset,
   requestVerificationEmail,
 } from "@/features/authentication/api/auth-client"
+import {
+  EmailCheckFeedback,
+  EmailCheckPanel,
+} from "@/features/authentication/ui/email-check-panel"
 import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 import { Button } from "@workspace/ui/components/primitives/button"
 import {
@@ -40,7 +44,7 @@ type AuthPageProps = {
   readonly verificationStatus?: "failed" | "verified" | undefined
 }
 
-type AuthMode = "login" | "reset-request" | "signup"
+type AuthMode = "check-email" | "login" | "reset-request" | "signup"
 
 type AuthFieldName = "email" | "form" | "password"
 
@@ -121,12 +125,7 @@ export function AuthPage({
         if (mode === "signup") {
           await requestEmailSignUp({ email, name, nextPath, password })
           setVerificationEmail(email)
-          setFeedback({
-            field: "form",
-            message:
-              "입력한 주소로 확인 메일을 보냈습니다. 이미 가입한 주소라면 로그인해 주세요.",
-            tone: "success",
-          })
+          setMode("check-email")
           return
         }
 
@@ -167,6 +166,33 @@ export function AuthPage({
 
   const loginWithGoogle = () => {
     void requestGoogleLogin(nextPath)
+  }
+
+  if (mode === "check-email" && verificationEmail !== null) {
+    return (
+      <main className="flex min-h-svh w-full bg-background">
+        <section className="mx-auto flex w-full max-w-[24rem] flex-col justify-center px-6 py-16">
+          <EmailCheckPanel
+            actionsDisabled={authActionsDisabled}
+            email={verificationEmail}
+            feedback={
+              formFeedback === null ? null : (
+                <EmailCheckFeedback
+                  message={formFeedback.message}
+                  tone={formFeedback.tone}
+                />
+              )
+            }
+            isPending={isPending}
+            onBackToLogin={() => {
+              setVerificationEmail(null)
+              selectMode("login")
+            }}
+            onResend={resendVerification}
+          />
+        </section>
+      </main>
+    )
   }
 
   return (
