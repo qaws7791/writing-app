@@ -70,9 +70,11 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             </Progress>
             {nextLesson === null ? null : (
               <div className="mt-8">
-                <p className="mb-4 text-sm font-medium text-muted-foreground">
-                  {completedLessonCount > 0 ? "다음 레슨" : "첫 번째 레슨"}:{" "}
-                  {nextLesson.title}
+                <p className="mb-4 text-sm font-medium leading-6 text-foreground">
+                  <span className="block">
+                    {completedLessonCount > 0 ? "다음 레슨" : "첫 번째 레슨"}
+                  </span>
+                  <span className="mt-1 block">{nextLesson.title}</span>
                 </p>
                 <Link
                   className={buttonVariants({
