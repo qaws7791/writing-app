@@ -31,18 +31,22 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
         <ChevronLeftIcon aria-hidden="true" className="size-4" />
         코스 목록으로
       </Link>
-      <Card className="mb-12" size="lg" variant="muted">
-        <CardContent className="grid gap-7 sm:grid-cols-[13rem_minmax(0,1fr)] sm:items-start">
+      <Card
+        className="mb-12 pt-0 dark:shadow-xs sm:pt-(--card-spacing)"
+        size="lg"
+        variant="muted"
+      >
+        <CardContent className="grid gap-7 px-0 sm:grid-cols-[minmax(13rem,16rem)_minmax(0,1fr)] sm:items-stretch sm:px-(--card-spacing)">
           <Image
             alt={resolveCourseImage(course).alt}
-            className="size-40 rounded-3xl object-cover sm:size-52"
-            height={208}
+            className="aspect-square h-auto w-full object-cover sm:aspect-auto sm:h-full sm:min-h-52 sm:rounded-3xl"
+            height={320}
             loading="eager"
-            sizes="(max-width: 640px) 160px, 208px"
+            sizes="(max-width: 640px) 100vw, 256px"
             src={resolveCourseImage(course).src}
-            width={208}
+            width={320}
           />
-          <div className="min-w-0">
+          <div className="min-w-0 px-(--card-spacing) sm:px-0">
             <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.01em] sm:text-4xl">
               {course.title}
             </h1>
