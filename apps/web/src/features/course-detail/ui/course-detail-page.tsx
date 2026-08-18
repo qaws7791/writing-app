@@ -21,6 +21,15 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
   const totalLessonCount = course.learning.totalLessons
   const progressPercent = course.learning.progressPercent
   const nextLesson = course.learning.nextLesson
+  const totalEstimatedMinutes = course.units.reduce(
+    (total, unit) =>
+      total +
+      unit.lessons.reduce(
+        (unitTotal, lesson) => unitTotal + lesson.estimatedMinutes,
+        0
+      ),
+    0
+  )
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -65,7 +74,14 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                 학습 진행
               </span>
               <span className="ml-auto text-sm font-medium text-foreground tabular-nums">
-                {completedLessonCount}/{totalLessonCount}
+                {completedLessonCount}/{totalLessonCount}개 레슨
+                <span
+                  aria-hidden="true"
+                  className="mx-1.5 font-normal text-muted-foreground"
+                >
+                  ·
+                </span>
+                약 {totalEstimatedMinutes}분
               </span>
             </Progress>
             {nextLesson === null ? null : (
