@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { HomeCourseMark } from "@/features/learner-home/ui/home-course-mark"
+import { HomeCourseImage } from "@/features/learner-home/ui/home-course-image"
 import type { LearnerProgressCourseDto } from "@/shared/http/learner-api-client"
 import { cardVariants } from "@workspace/ui/components/primitives/card"
 import { cn } from "@workspace/ui/lib/utils"
@@ -24,7 +24,7 @@ export function CompletedCourseCard({ course }: CompletedCourseCardProps) {
         className="flex w-full items-center gap-4 px-(--card-spacing) outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
         href={courseHref}
       >
-        <HomeCourseMark label={course.title} />
+        <HomeCourseImage course={course} />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-medium tracking-[0.04em] text-muted-foreground uppercase">
             <span className="tabular-nums normal-case tracking-normal">

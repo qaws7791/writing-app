@@ -14,7 +14,7 @@ import {
 } from "@workspace/ui/components/primitives/progress"
 import { cn } from "@workspace/ui/lib/utils"
 
-import { HomeCourseMark } from "@/features/learner-home/ui/home-course-mark"
+import { HomeCourseImage } from "@/features/learner-home/ui/home-course-image"
 
 export function StartCourseCta() {
   return (
@@ -69,7 +69,7 @@ export function ContinueCourseCard({
         className="flex items-start gap-4 px-(--card-spacing) outline-none focus-visible:ring-3 focus-visible:ring-ring/25 sm:gap-5"
         href={courseHref}
       >
-        <HomeCourseMark label={course.title} />
+        <HomeCourseImage course={course} />
         <div className="min-w-0 flex-1 pt-0.5">
           <h3 className="font-heading text-base font-semibold tracking-[-0.025em] text-balance sm:text-lg">
             {course.title}
