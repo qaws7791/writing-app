@@ -284,16 +284,13 @@ export function LearnCatalog({
           className={catalogColumnClassName}
           aria-labelledby="learn-catalog-title"
         >
-          <div className="flex max-w-xl flex-col gap-2">
+          <div className="flex max-w-xl flex-col">
             <h1
               id="learn-catalog-title"
               className="font-heading text-3xl font-semibold tracking-[-0.01em] sm:text-4xl sm:leading-[1.15]"
             >
               코스
             </h1>
-            <p className="text-sm leading-6 text-pretty text-muted-foreground sm:text-[0.9375rem]">
-              주제별로 코스를 살펴보세요
-            </p>
           </div>
         </header>
 
