@@ -2,23 +2,14 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useCallback, useState } from "react"
 
-import { getCourses } from "@workspace/http-client/learner"
 import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
 import {
   groupCoursesByCategory,
   type CourseCategoryGroup,
 } from "@/features/course-catalog/model/group-courses-by-category"
-import {
-  isLearnerApiAbortedError,
-  isLearnerApiAuthenticationError,
-  settleLearnerApiRequest,
-  type LearnerCourseSummaryDto,
-} from "@/shared/http/learner-api-client"
-import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
-import { Button } from "@workspace/ui/components/primitives/button"
+import { type LearnerCourseSummaryDto } from "@/shared/http/learner-api-client"
+import { buttonVariants } from "@workspace/ui/components/primitives/button"
 import { cardVariants } from "@workspace/ui/components/primitives/card"
 import {
   Carousel,
@@ -32,6 +23,7 @@ import {
 } from "@workspace/ui/components/primitives/carousel"
 import {
   Empty,
+  EmptyContent,
   EmptyHeader,
   EmptyTitle,
   EmptyDescription,
@@ -58,54 +50,12 @@ function alignCatalogCarousel(
 
 export type CoursesPageProps = {
   readonly courses: readonly LearnerCourseSummaryDto[]
-  readonly nextCursor?: string | null
 }
 
-export function CourseCatalogClient({
-  courses,
-  nextCursor: initialNextCursor = null,
-}: CoursesPageProps) {
-  const router = useRouter()
-  const readAbortSignal = useUnmountAbortSignal()
-  const [visibleCourses, setVisibleCourses] = useState(courses)
-  const [nextCursor, setNextCursor] = useState(initialNextCursor)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
+export function CourseCatalogClient({ courses }: CoursesPageProps) {
+  const sections = groupCoursesByCategory(courses)
 
-  const sections = groupCoursesByCategory(visibleCourses)
-
-  const loadMore = useCallback(async () => {
-    if (nextCursor === null || isLoadingMore) return
-    setIsLoadingMore(true)
-    setLoadMoreError(null)
-    const result = await settleLearnerApiRequest(
-      getCourses(
-        {
-          cursor: nextCursor,
-        },
-        { signal: readAbortSignal() }
-      )
-    )
-    setIsLoadingMore(false)
-    if (result.status === "error") {
-      if (isLearnerApiAbortedError(result.error)) return
-      if (isLearnerApiAuthenticationError(result.error)) {
-        router.refresh()
-        return
-      }
-      setLoadMoreError(result.error.message)
-      return
-    }
-    setVisibleCourses((current) => [
-      ...current,
-      ...result.value.items.filter(
-        (item) => !current.some((existing) => existing.id === item.id)
-      ),
-    ])
-    setNextCursor(result.value.nextCursor)
-  }, [isLoadingMore, nextCursor, readAbortSignal, router])
-
-  if (visibleCourses.length === 0) {
+  if (courses.length === 0) {
     return (
       <Empty role="status" variant="frame">
         <EmptyHeader>
@@ -114,6 +64,14 @@ export function CourseCatalogClient({
             새 코스가 공개되면 이곳에서 바로 이어갈 수 있습니다.
           </EmptyDescription>
         </EmptyHeader>
+        <EmptyContent>
+          <Link
+            className={buttonVariants({ variant: "secondary" })}
+            href="/app"
+          >
+            홈으로 돌아가기
+          </Link>
+        </EmptyContent>
       </Empty>
     )
   }
@@ -164,23 +122,6 @@ export function CourseCatalogClient({
           </section>
         )
       })}
-      {nextCursor === null ? null : (
-        <div className="flex flex-col items-center gap-2">
-          {loadMoreError === null ? null : (
-            <p className="text-sm font-medium text-destructive" role="alert">
-              {loadMoreError}
-            </p>
-          )}
-          <Button
-            disabled={isLoadingMore}
-            onClick={() => void loadMore()}
-            type="button"
-            variant="secondary"
-          >
-            {isLoadingMore ? "불러오는 중" : "코스 더 보기"}
-          </Button>
-        </div>
-      )}
     </div>
   )
 }
