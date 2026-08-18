@@ -238,6 +238,10 @@ function Carousel({
       }
 
       const firstVisibleNode = api.slideNodes()[firstVisibleIndex]
+      if (!firstVisibleNode) {
+        return
+      }
+
       const focusTarget = firstVisibleNode.querySelector<HTMLElement>(
         'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
       )
