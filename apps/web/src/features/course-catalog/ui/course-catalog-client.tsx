@@ -217,7 +217,7 @@ function CourseCard({
     <Link
       className={cn(
         cardVariants({ variant: "surface" }),
-        "aspect-[340/520] h-full w-full gap-0 rounded-5xl py-0 outline-none transition-colors hover:bg-accent/40 focus-visible:ring-3 focus-visible:ring-ring/25"
+        "aspect-[340/520] h-full w-full cursor-pointer gap-0 rounded-5xl py-0 outline-none transition-[background-color,transform] duration-125 ease-press hover:bg-accent/40 focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-[0.995]"
       )}
       href={`/app/courses/${course.id}`}
       onClick={guardCarouselClick}
