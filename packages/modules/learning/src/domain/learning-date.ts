@@ -7,7 +7,7 @@ export function toLearningDateKey(date: Date): LearningDateKey {
   return toPlatformDayKey(date) as LearningDateKey
 }
 
-export function addLearningCalendarDays(
+function addLearningCalendarDays(
   dateKey: LearningDateKey,
   days: number
 ): LearningDateKey {
@@ -44,14 +44,14 @@ export function groupLearningActivityDatesByUserId(
   return activityDatesByUserId
 }
 
-export const learningCadenceDayStates = [
+const learningCadenceDayStates = [
   "practiced",
   "rest",
   "today",
   "upcoming",
 ] as const
 
-export type LearningCadenceDayState = (typeof learningCadenceDayStates)[number]
+type LearningCadenceDayState = (typeof learningCadenceDayStates)[number]
 
 export type LearningCadenceDay = Readonly<{
   date: LearningDateKey
