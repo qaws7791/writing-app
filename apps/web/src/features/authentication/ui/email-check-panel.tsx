@@ -57,7 +57,7 @@ export function EmailCheckPanel({
         받은편지함을 확인해 주세요.
       </p>
       {feedback}
-      <div className="mt-8 flex flex-col gap-3">
+      <div className="mt-8 flex flex-col items-center gap-3">
         <Button
           className="w-full"
           disabled={actionsDisabled}
@@ -68,12 +68,10 @@ export function EmailCheckPanel({
           로그인으로 돌아가기
         </Button>
         <Button
-          className="w-full"
           disabled={actionsDisabled}
           onClick={onResend}
-          size="lg"
           type="button"
-          variant="secondary"
+          variant="link"
         >
           {isPending ? "처리 중…" : "확인 메일 다시 보내기"}
         </Button>
