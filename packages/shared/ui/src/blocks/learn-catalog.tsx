@@ -231,11 +231,9 @@ function CoursePattern({ pattern }: { pattern: CatalogTopic["pattern"] }) {
 }
 
 function CourseCard({
-  category,
   course,
   pattern,
 }: {
-  category: string
   course: CatalogCourse
   pattern: CatalogTopic["pattern"]
 }) {
@@ -251,10 +249,7 @@ function CourseCard({
         <CoursePattern pattern={pattern} />
       </div>
       <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
-        <p className="text-sm font-medium leading-5 text-muted-foreground">
-          {category}
-        </p>
-        <h3 className="mt-2.5 line-clamp-3 font-heading text-xl font-normal leading-7">
+        <h3 className="line-clamp-3 font-heading text-xl font-normal leading-7">
           {course.title}
         </h3>
         <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-pretty text-muted-foreground">
@@ -334,11 +329,7 @@ export function LearnCatalog({
                       className={catalogCourseSlideClassName}
                       key={course.id}
                     >
-                      <CourseCard
-                        category={topic.title}
-                        course={course}
-                        pattern={topic.pattern}
-                      />
+                      <CourseCard course={course} pattern={topic.pattern} />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
