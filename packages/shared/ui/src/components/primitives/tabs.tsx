@@ -39,7 +39,7 @@ function TabsList({
         "relative z-0 flex w-fit items-center justify-center gap-x-0.5 text-muted-foreground",
         "data-[orientation=vertical]:flex-col",
         variant === "default"
-          ? "rounded-2xl bg-secondary p-1 text-muted-foreground"
+          ? "rounded-2xl bg-muted p-1 text-muted-foreground"
           : "data-[orientation=horizontal]:py-1 data-[orientation=vertical]:px-1 *:data-[slot=tabs-trigger]:hover:bg-accent",
         className
       )}
@@ -68,7 +68,7 @@ function TabsTrigger({
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "relative flex h-9 shrink-0 grow cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-transparent px-4 text-sm font-medium whitespace-nowrap outline-none transition-[color,background-color,box-shadow] hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-active:text-foreground data-disabled:pointer-events-none data-disabled:opacity-45 data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start sm:h-8 sm:px-3.5 sm:text-sm [&_svg]:pointer-events-none [&_svg]:-mx-0.5 [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
+        "relative flex h-9 shrink-0 grow cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-transparent px-4 text-sm font-medium whitespace-nowrap outline-none transition-[color,background-color,box-shadow] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-active:text-foreground data-disabled:pointer-events-none data-disabled:opacity-45 data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start sm:h-8 sm:px-3.5 sm:text-sm [&_svg]:pointer-events-none [&_svg]:-mx-0.5 [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

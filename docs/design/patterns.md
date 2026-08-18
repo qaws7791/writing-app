@@ -72,7 +72,8 @@
 
 - 프로필의 테마 전환은 3분할 segmented control이다.
 - 옵션은 라이트, 다크, 시스템이다.
-- 활성 상태는 `aria-pressed="true"`와 `data-pressed`로 검증하며, 색상은 `accent`와 `foreground` token을 사용한다.
+- 트랙은 `muted`, 선택된 thumb는 `card`를 사용한다.
+- 활성 상태는 `aria-pressed="true"`와 `data-pressed`로 검증한다.
 
 ## 어드민 패턴
 

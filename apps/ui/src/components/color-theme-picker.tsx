@@ -206,7 +206,7 @@ export default function ColorThemePicker() {
             <legend className="sr-only">밝기 모드</legend>
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc((100%-0.25rem)/3)] rounded-full bg-background shadow-xs transition-transform duration-200 ease-out"
+              className="pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc((100%-0.25rem)/3)] rounded-full bg-card shadow-xs transition-transform duration-200 ease-out"
               style={{ transform: `translateX(${Math.max(themeIndex, 0) * 100}%)` }}
             />
             {THEME_MODES.map((mode) => {
@@ -238,7 +238,7 @@ export default function ColorThemePicker() {
             <legend className="sr-only">모서리 둥글기</legend>
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc((100%-0.25rem)/3)] rounded-full bg-background shadow-xs transition-transform duration-200 ease-out"
+              className="pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc((100%-0.25rem)/3)] rounded-full bg-card shadow-xs transition-transform duration-200 ease-out"
               style={{ transform: `translateX(${Math.max(radiusIndex, 0) * 100}%)` }}
             />
             {RADIUS_PRESETS.map((preset) => {

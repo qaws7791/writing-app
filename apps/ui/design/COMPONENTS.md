@@ -69,7 +69,7 @@ Pretendard Variable과 시스템 폰트 스택을 기본으로 사용한다. 한
 - 색상은 OKLCH로 관리하며 `background`, `foreground`, `card`, `popover`, `surface`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`, `info`, `purple`, `series-1`~`series-4`, `border`, `input`, `ring`, `selection` semantic을 유지한다.
 - 강조색은 primary 행동이나 기능적으로 특별한 상태에 제한한다.
 - 성공, 경고, 오류와 정보는 색만으로 구분하지 않는다.
-- dark theme은 light theme의 단순 반전이 아니며 표면과 elevation을 따로 조정한다.
+- dark theme은 light theme의 단순 반전이 아니며 표면과 elevation을 따로 조정한다. 라이트와 다크 모두 높은 면이 더 밝다. `muted`는 `card`보다 낮다. 다크에서는 캔버스보다 `muted`가 밝다.
 - 경계는 관계를 설명할 때만 낮은 대비의 1px 선으로 사용한다.
 - 기본 아이콘은 Hugeicons 계열로 통일하고 아이콘 전용 버튼에 접근 가능한 이름과 tooltip을 제공한다.
 

@@ -90,6 +90,14 @@ export const semanticTokens: SemanticToken[] = [
     usage: "낮은 강조의 구조 Surface",
   },
   {
+    token: "muted",
+    cssVar: "--muted",
+    label: "Muted",
+    group: "surface",
+    kind: "fill",
+    usage: "후퇴한 Surface. card보다 낮고 세그먼트 트랙에 쓴다. 다크에서는 캔버스보다 밝다",
+  },
+  {
     token: "foreground",
     cssVar: "--foreground",
     label: "Foreground",
@@ -300,6 +308,13 @@ export const contrastPairs: ContrastPair[] = [
     usage: "독립 콘텐츠 Surface",
   },
   {
+    role: "muted",
+    label: "Muted",
+    backgroundCssVar: "--muted",
+    foregroundCssVar: "--muted-foreground",
+    usage: "후퇴한 Surface",
+  },
+  {
     role: "popover",
     label: "Popover",
     backgroundCssVar: "--popover",
@@ -337,6 +352,7 @@ export const contrastPairs: ContrastPair[] = [
 ];
 
 export const colorRules = [
+  "라이트와 다크 모두 높은 면이 더 밝다. 다크에서는 캔버스, muted 트랙, card 순으로 밝아진다.",
   "따뜻한 paper와 ink 뉴트럴을 기본으로 사용한다.",
   "한 작업 영역은 Primary 행동 하나만 강하게 표시한다.",
   "상태는 색상 외에 text, icon, shape와 semantic 중 하나 이상을 함께 사용한다.",

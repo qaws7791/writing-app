@@ -192,9 +192,9 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 ### `default` 스타일
 
-- `TabsList`는 `rounded-2xl`, `bg-secondary`, `p-1` 트랙을 사용한다.
+- `TabsList`는 `rounded-2xl`, `bg-muted`, `p-1` 트랙을 사용한다.
 - `TabsTrigger`는 기본 높이 36px와 모바일 이후 높이 32px를 사용한다.
-- 활성 indicator는 `bg-card`, `shadow-sm`, `rounded-xl`을 사용한다.
+- 활성 indicator는 `bg-card`, `shadow-sm`, `rounded-xl`을 사용한다. 선택된 pill은 트랙보다 밝다.
 - indicator 전환 시간은 200ms다.
 - reduced motion에서는 indicator 전환을 제거한다.
 - focus는 `focus-visible:ring-2`를 사용한다.

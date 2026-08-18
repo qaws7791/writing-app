@@ -44,26 +44,26 @@ Astro UI 문서 `/docs/foundations/color`는 runtime 값을 해석해서 보여 
 
 ## Semantic Color
 
-| token                               | 용도                                                   |
-| ----------------------------------- | ------------------------------------------------------ |
-| `background`, `foreground`          | 앱 Canvas와 기본 text                                  |
-| `card`, `card-foreground`           | 독립 콘텐츠 Surface                                    |
-| `popover`, `popover-foreground`     | menu, popover와 dialog Surface                         |
-| `surface`, `surface-foreground`     | 낮은 강조의 구조 Surface                               |
-| `primary`, `primary-foreground`     | 한 작업 영역의 Primary 행동                            |
-| `secondary`, `secondary-foreground` | Primary를 보조하는 행동과 Surface                      |
-| `muted`, `muted-foreground`         | 후퇴한 정보와 metadata                                 |
-| `accent`, `accent-foreground`       | selected, hover와 조용한 강조                          |
-| `destructive`                       | 실제 위험과 오류                                       |
-| `success`                           | 성공과 완료                                            |
-| `warning`                           | 주의와 확인 필요                                       |
-| `info`                              | 중립 정보                                              |
-| `purple`                            | provenance 또는 별도 의미가 정의된 특수 상태           |
-| `border`, `input`, `ring`           | 구조 경계, 입력 경계와 focus indicator                 |
-| `selection`, `selection-foreground` | text selection과 선택 상태                             |
-| `chart-1`부터 `chart-5`             | 순서가 있는 중립 chart 계열                            |
-| `series-1`부터 `series-4`           | 병렬 항목 정체. 평가 상태와 겹치지 않는 낮은 채도 구분 |
-| `highlight-1`부터 `highlight-4`     | 본문 형광펜. 평가 상태와 겹치지 않는 밝은 표시         |
+| token                               | 용도                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------- |
+| `background`, `foreground`          | 앱 Canvas와 기본 text                                                                   |
+| `card`, `card-foreground`           | 독립 콘텐츠 Surface                                                                     |
+| `popover`, `popover-foreground`     | menu, popover와 dialog Surface                                                          |
+| `surface`, `surface-foreground`     | 낮은 강조의 구조 Surface                                                                |
+| `primary`, `primary-foreground`     | 한 작업 영역의 Primary 행동                                                             |
+| `secondary`, `secondary-foreground` | Primary를 보조하는 행동과 Surface                                                       |
+| `muted`, `muted-foreground`         | 후퇴한 Surface와 metadata. 라이트·다크 모두 `card`보다 낮다. 다크에서는 캔버스보다 밝다 |
+| `accent`, `accent-foreground`       | selected, hover와 조용한 강조                                                           |
+| `destructive`                       | 실제 위험과 오류                                                                        |
+| `success`                           | 성공과 완료                                                                             |
+| `warning`                           | 주의와 확인 필요                                                                        |
+| `info`                              | 중립 정보                                                                               |
+| `purple`                            | provenance 또는 별도 의미가 정의된 특수 상태                                            |
+| `border`, `input`, `ring`           | 구조 경계, 입력 경계와 focus indicator                                                  |
+| `selection`, `selection-foreground` | text selection과 선택 상태                                                              |
+| `chart-1`부터 `chart-5`             | 순서가 있는 중립 chart 계열                                                             |
+| `series-1`부터 `series-4`           | 병렬 항목 정체. 평가 상태와 겹치지 않는 낮은 채도 구분                                  |
+| `highlight-1`부터 `highlight-4`     | 본문 형광펜. 평가 상태와 겹치지 않는 밝은 표시                                          |
 
 상태 token은 단독 text 또는 낮은 opacity Surface와 조합한다.
 
@@ -146,6 +146,9 @@ Pretendard Variable과 시스템 font stack을 사용한다.
 - Dark theme의 elevation은 넓은 shadow보다 얇은 상단 highlight를 우선한다.
 - Dark theme의 바깥 그림자는 인접 spacing을 잠식하지 않을 만큼 상자에 붙인다.
 - Dark theme의 상단 inset highlight는 상자 안에서만 그린다.
+- 라이트와 다크 모두 높은 면이 더 밝다. `muted`는 후퇴한 우물이고 `card`는 올라온 콘텐츠 면이다.
+- 다크에서는 캔버스, `muted` 트랙, `card` pill 순으로 밝아진다.
+- 세그먼트 트랙은 `muted`를 쓰고, 선택된 thumb는 `card`를 쓴다.
 - 한 화면의 elevation 단계는 가능한 세 단계 이하로 유지한다.
 - 클릭·터치 가능한 버튼과 타일 카드는 작은 elevation(`shadow-xs`)으로 조작 가능함을 드러낸다. 채점 후 잠긴 항목에는 이 그림자를 쓰지 않는다.
 

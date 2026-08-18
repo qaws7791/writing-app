@@ -45,7 +45,7 @@ export function ThemeSelector({
             className={cn(
               "h-auto flex-col gap-2 rounded-2xl py-4",
               isActive
-                ? "bg-background text-foreground shadow-xs hover:bg-background"
+                ? "bg-card text-foreground shadow-xs hover:bg-card"
                 : "text-foreground/75 hover:bg-background/55 hover:text-foreground"
             )}
             disabled={disabled}
