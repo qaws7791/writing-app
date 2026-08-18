@@ -76,7 +76,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                 </p>
                 <Link
                   className={buttonVariants({
-                    className: "w-full sm:w-fit",
+                    className: "w-full",
                     size: "lg",
                   })}
                   href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}
