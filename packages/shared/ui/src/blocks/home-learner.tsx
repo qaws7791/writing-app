@@ -237,7 +237,7 @@ export function HomeLearner({
       currentNav="home"
       {...props}
     >
-      <main className="@container mx-auto grid w-full max-w-5xl flex-1 grid-cols-1 gap-10 px-5 py-10 sm:px-8 sm:py-12 @[48rem]/learner-shell:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] @[48rem]/learner-shell:items-start @[48rem]/learner-shell:gap-12">
+      <main className="@container mx-auto grid w-full max-w-5xl flex-1 grid-cols-1 gap-10 px-5 py-10 sm:px-8 sm:py-12 @[48rem]/learner-shell:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] @[48rem]/learner-shell:items-start @[48rem]/learner-shell:gap-8">
         <section
           data-slot="home-learner-greeting"
           className="flex flex-col gap-8"

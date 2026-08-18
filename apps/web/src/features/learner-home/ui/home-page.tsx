@@ -32,7 +32,7 @@ export function HomePage({
 
   return (
     <div className="@container w-full">
-      <div className="grid w-full grid-cols-1 gap-10 @[48rem]:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] @[48rem]:items-start @[48rem]:gap-12">
+      <div className="grid w-full grid-cols-1 gap-10 @[48rem]:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] @[48rem]:items-start @[48rem]:gap-8">
         <section
           aria-labelledby="home-learner-hello"
           className="flex flex-col gap-8"
