@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { FlameIcon } from "@workspace/ui/components/icons/learning-icons"
+import { CalendarIcon } from "@workspace/ui/components/icons/learning-icons"
 import { BookOpenIcon } from "@workspace/ui/components/icons/navigation-icons"
 import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 
@@ -43,7 +43,7 @@ export function HomePage({
             className="flex flex-col gap-3 @[32rem]:flex-row"
           >
             <HomeStat
-              icon={<FlameIcon size={16} />}
+              icon={<CalendarIcon size={16} />}
               label="연속 학습"
               value={`${profileStats.currentStreakDays}일`}
             />
@@ -71,8 +71,12 @@ function HomeStat({
   readonly value: string
 }) {
   return (
-    <Card className="min-w-0 flex-1 rounded-3xl" size="sm" variant="muted">
-      <CardContent className="flex flex-col gap-3">
+    <Card
+      className="min-w-0 flex-1 rounded-3xl py-3.5"
+      size="sm"
+      variant="muted"
+    >
+      <CardContent className="flex flex-row items-center gap-3">
         <span
           aria-hidden="true"
           className="grid size-9 shrink-0 place-items-center rounded-2xl bg-background text-muted-foreground"
@@ -80,7 +84,7 @@ function HomeStat({
           {icon}
         </span>
         <div className="min-w-0">
-          <p className="font-heading text-xl font-semibold tracking-[-0.02em] tabular-nums">
+          <p className="font-heading text-base font-semibold tracking-[-0.01em] tabular-nums">
             {value}
           </p>
           <p className="text-xs text-muted-foreground">{label}</p>
