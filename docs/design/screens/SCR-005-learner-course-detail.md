@@ -31,7 +31,7 @@
 - 코스 진행률은 공용 `Progress`, `ProgressLabel`, `ProgressValue`를 사용한다. indicator는 실제 비율 너비만 쓰고 최소 너비 캡슐을 만들지 않는다.
 - CTA는 공유 `Button`의 기본 조합을 사용하며 히어로 텍스트 열 전폭을 차지한다. 커리큘럼의 현재 레슨 행은 같은 목적지를 유지하되 primary 면은 CTA에만 두고, 현재 행은 왼쪽 위치 막대와 비-primary play로 ‘여기’만 표시한다.
 - `nextLesson`이 없으면 CTA를 표시하지 않는다.
-- 커리큘럼 disclosure는 공용 `Accordion`을 사용한다.
+- `learning.nextLesson`이 속한 유닛을 Accordion 기본 열림으로 둔다. 없으면 첫 유닛을 연다.
 - 유닛 패널은 Accordion의 height·opacity motion을 그대로 사용한다. 레슨 행 `Link`는 Accordion 본문 기본 밑줄을 덮어 끈다.
 - 유닛은 별도 배경 surface를 사용하지 않고 공용 `AccordionItem`의 `border`로 구분하며, 좌우 패딩을 제거(`px-0`)하여 커리큘럼 섹션 제목 텍스트와 광학 정렬을 맞춘다. 각 레슨 행은 패딩과 부드러운 모서리 셰이프(`rounded-2xl px-3 py-3`)를 통해 하이라이트 및 호버 배경을 단독 알약 셰이프로 형성한다.
 - 유닛 헤더는 제목과 `완료 수/전체 레슨 수`를 보여 주며, 모든 레슨 완료 시 완료 상태 텍스트(`X/X개 레슨 완료`)와 완료 아이콘을 강조하여 표시한다.

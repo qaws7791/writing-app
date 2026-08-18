@@ -30,6 +30,11 @@ export function CourseCurriculum({
   course,
   currentLessonId,
 }: CourseCurriculumProps) {
+  const openUnitId =
+    course.units.find((unit) =>
+      unit.lessons.some((lesson) => lesson.id === currentLessonId)
+    )?.id ?? course.units[0]?.id
+
   return (
     <section aria-labelledby="course-curriculum-title">
       <h2
@@ -38,10 +43,7 @@ export function CourseCurriculum({
       >
         커리큘럼
       </h2>
-      <Accordion
-        defaultValue={course.units[0] ? [course.units[0].id] : []}
-        multiple
-      >
+      <Accordion defaultValue={openUnitId ? [openUnitId] : []} multiple>
         {course.units.map((unit) => (
           <CurriculumUnit
             currentLessonId={currentLessonId}
