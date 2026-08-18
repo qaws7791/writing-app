@@ -44,9 +44,10 @@ export function CourseCurriculum({
         커리큘럼
       </h2>
       <Accordion defaultValue={openUnitId ? [openUnitId] : []} multiple>
-        {course.units.map((unit) => (
+        {course.units.map((unit, index) => (
           <CurriculumUnit
             currentLessonId={currentLessonId}
+            index={index}
             key={unit.id}
             unit={unit}
           />
@@ -58,9 +59,11 @@ export function CourseCurriculum({
 
 function CurriculumUnit({
   currentLessonId,
+  index,
   unit,
 }: {
   readonly currentLessonId: string | null
+  readonly index: number
   readonly unit: CourseUnit
 }) {
   const completedCount = unit.lessons.filter(
@@ -72,27 +75,32 @@ function CurriculumUnit({
   return (
     <AccordionItem className="min-w-0" value={unit.id}>
       <AccordionTrigger className="min-w-0 items-center px-0 py-5 **:data-[slot=accordion-trigger-icon]:mt-0">
-        <div className="flex min-w-0 flex-col pr-2">
-          <span className="block truncate font-heading text-base font-semibold tracking-[-0.01em] wrap-anywhere [word-break:keep-all]">
-            {unit.title}
+        <div className="flex min-w-0 items-center gap-3 pr-2">
+          <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-secondary text-xs font-medium tabular-nums text-muted-foreground">
+            {index + 1}
           </span>
-          <span
-            className={cn(
-              "mt-1 flex items-center gap-1 text-xs",
-              unitDone
-                ? "font-medium text-success"
-                : "font-normal text-muted-foreground"
-            )}
-          >
-            {unitDone ? (
-              <CheckIcon aria-hidden="true" className="size-3.5 shrink-0" />
-            ) : null}
-            <span>
-              {unitDone
-                ? `${completedCount}/${totalCount}개 레슨 완료`
-                : `${completedCount}/${totalCount}개 레슨`}
+          <div className="flex min-w-0 flex-col">
+            <span className="block truncate font-heading text-base font-semibold tracking-[-0.01em] wrap-anywhere [word-break:keep-all]">
+              {unit.title}
             </span>
-          </span>
+            <span
+              className={cn(
+                "mt-1 flex items-center gap-1 text-xs",
+                unitDone
+                  ? "font-medium text-success"
+                  : "font-normal text-muted-foreground"
+              )}
+            >
+              {unitDone ? (
+                <CheckIcon aria-hidden="true" className="size-3.5 shrink-0" />
+              ) : null}
+              <span>
+                {unitDone
+                  ? `${completedCount}/${totalCount}개 레슨 완료`
+                  : `${completedCount}/${totalCount}개 레슨`}
+              </span>
+            </span>
+          </div>
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-0 pb-3 [&_a]:no-underline [&_a]:hover:no-underline">
