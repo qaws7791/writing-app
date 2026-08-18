@@ -19,6 +19,7 @@ import {
 } from "@/shared/http/learner-api-client"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 import { Button } from "@workspace/ui/components/primitives/button"
+import { cardVariants } from "@workspace/ui/components/primitives/card"
 import {
   Carousel,
   CarouselContent,
@@ -35,6 +36,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@workspace/ui/components/primitives/empty"
+import { cn } from "@workspace/ui/lib/utils"
 
 const eagerCourseImageCount = 3
 const catalogCarouselBreakoutClassName =
@@ -213,7 +215,10 @@ function CourseCard({
 
   return (
     <Link
-      className="flex aspect-[340/520] h-full w-full flex-col overflow-hidden rounded-5xl bg-muted shadow-xs outline-none transition-colors hover:bg-muted/80 focus-visible:ring-3 focus-visible:ring-ring/25"
+      className={cn(
+        cardVariants({ variant: "surface" }),
+        "aspect-[340/520] h-full w-full gap-0 rounded-5xl py-0 outline-none transition-colors hover:bg-accent/40 focus-visible:ring-3 focus-visible:ring-ring/25"
+      )}
       href={`/app/courses/${course.id}`}
       onClick={guardCarouselClick}
     >

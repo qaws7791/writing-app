@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { LearnerShell } from "#ui/blocks/learner-shell"
+import { cardVariants } from "#ui/components/primitives/card"
 import {
   Carousel,
   CarouselContent,
@@ -12,6 +13,7 @@ import {
   CarouselPrevious,
   CarouselProgress,
 } from "#ui/components/primitives/carousel"
+import { cn } from "#ui/lib/utils"
 
 type CatalogCourse = {
   id: string
@@ -240,7 +242,10 @@ function CourseCard({
   return (
     <article
       data-slot="learn-catalog-course"
-      className="flex aspect-[340/520] h-full w-full flex-col overflow-hidden rounded-5xl bg-muted shadow-xs"
+      className={cn(
+        cardVariants({ variant: "surface" }),
+        "aspect-[340/520] h-full w-full gap-0 rounded-5xl py-0"
+      )}
     >
       <div className="shrink-0 p-7">
         <CoursePattern pattern={pattern} />
