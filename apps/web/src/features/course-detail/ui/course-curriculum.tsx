@@ -33,7 +33,7 @@ export function CourseCurriculum({
   return (
     <section aria-labelledby="course-curriculum-title">
       <h2
-        className="mb-5 font-heading text-2xl font-semibold tracking-[-0.025em]"
+        className="mb-5 font-heading text-2xl font-semibold tracking-[-0.01em]"
         id="course-curriculum-title"
       >
         커리큘럼
@@ -71,7 +71,7 @@ function CurriculumUnit({
     <AccordionItem className="min-w-0" value={unit.id}>
       <AccordionTrigger className="min-w-0 items-center px-0 py-5 **:data-[slot=accordion-trigger-icon]:mt-0">
         <div className="flex min-w-0 flex-col pr-2">
-          <span className="block truncate font-heading text-base font-semibold tracking-[-0.014em]">
+          <span className="block truncate font-heading text-base font-semibold tracking-[-0.01em] wrap-anywhere [word-break:keep-all]">
             {unit.title}
           </span>
           <span

@@ -43,7 +43,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             width={128}
           />
           <div className="min-w-0">
-            <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.035em] sm:text-4xl">
+            <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.01em] sm:text-4xl">
               {course.title}
             </h1>
             <p className="mt-4 text-base leading-7 text-muted-foreground">

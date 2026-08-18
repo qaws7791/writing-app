@@ -27,6 +27,7 @@
 ## UI 기준
 
 - 상세 hero는 `Card variant="muted"` 조합을 사용한다.
+- 코스 제목(`h1`), 커리큘럼 제목(`h2`), 유닛 제목은 `foundations.md`의 한국어 제목 tracking(`-0.01em` 이하)을 따른다. 유닛 제목은 heading이 아니므로 `word-break: keep-all`과 `overflow-wrap: anywhere`를 명시한다.
 - 코스 진행률은 공용 `Progress`, `ProgressLabel`, `ProgressValue`를 사용한다.
 - CTA는 공유 `Button`의 기본 조합을 사용한다. 커리큘럼의 현재 레슨 행은 같은 목적지를 시각적으로 맞춘다.
 - `nextLesson`이 없으면 CTA를 표시하지 않는다.
