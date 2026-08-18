@@ -26,10 +26,12 @@
 
 ## UI 기준
 
+- 상세 hero는 `Card variant="muted"` 조합을 사용한다.
 - 코스 썸네일은 모바일에서 히어로 상단 전폭 정사각으로 두고, 데스크톱에서는 텍스트 열 높이를 채우는 208–256px 미디어 열로 둔다. 다크 히어로는 `shadow-xs` inset highlight로 우물 윤곽을 읽히게 한다.
 - 코스 제목(`h1`), 커리큘럼 제목(`h2`), 유닛 제목은 `foundations.md`의 한국어 제목 tracking(`-0.01em` 이하)을 따른다. 유닛 제목은 heading이 아니므로 `word-break: keep-all`과 `overflow-wrap: anywhere`를 명시한다.
 - 코스 진행률은 공용 `Progress`, `ProgressLabel`, `ProgressValue`를 사용한다. indicator는 실제 비율 너비만 쓰고 최소 너비 캡슐을 만들지 않는다.
-- CTA는 공유 `Button`의 기본 조합을 사용하며 히어로 텍스트 열 전폭을 차지한다. 커리큘럼의 현재 레슨 행은 같은 목적지를 유지하되 primary 면은 CTA에만 두고, 현재 행은 왼쪽 위치 막대와 비-primary play로 ‘여기’만 표시한다.
+- CTA는 공유 `Button`의 기본 조합을 사용하며 히어로 텍스트 열 전폭을 차지한다. primary 면은 CTA에만 두고, 현재 행은 왼쪽 위치 막대와 비-primary play로 ‘여기’만 표시한다.
+- 히어로 CTA는 유지한다. 커리큘럼을 읽는 동안에도 현재 행이 `이어서 학습` 또는 `학습 시작` 라벨로 같은 과업을 제공한다.
 - `nextLesson`이 없으면 CTA를 표시하지 않는다.
 - `learning.nextLesson`이 속한 유닛을 Accordion 기본 열림으로 둔다. 없으면 첫 유닛을 연다.
 - 유닛 패널은 Accordion의 height·opacity motion을 그대로 사용한다. 레슨 행 `Link`는 Accordion 본문 기본 밑줄을 덮어 끈다.

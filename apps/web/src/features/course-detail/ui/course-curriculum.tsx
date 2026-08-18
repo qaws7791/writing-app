@@ -46,6 +46,9 @@ export function CourseCurriculum({
       <Accordion defaultValue={openUnitId ? [openUnitId] : []} multiple>
         {course.units.map((unit, index) => (
           <CurriculumUnit
+            currentActionLabel={
+              course.learning.completedLessons > 0 ? "이어서 학습" : "학습 시작"
+            }
             currentLessonId={currentLessonId}
             index={index}
             key={unit.id}
@@ -58,10 +61,12 @@ export function CourseCurriculum({
 }
 
 function CurriculumUnit({
+  currentActionLabel,
   currentLessonId,
   index,
   unit,
 }: {
+  readonly currentActionLabel: "이어서 학습" | "학습 시작"
   readonly currentLessonId: string | null
   readonly index: number
   readonly unit: CourseUnit
@@ -107,6 +112,7 @@ function CurriculumUnit({
         <div className="grid min-w-0 gap-1">
           {unit.lessons.map((lesson) => (
             <CurriculumLesson
+              currentActionLabel={currentActionLabel}
               isCurrent={currentLessonId === lesson.id}
               key={lesson.id}
               lesson={lesson}
@@ -120,10 +126,12 @@ function CurriculumUnit({
 }
 
 function CurriculumLesson({
+  currentActionLabel,
   isCurrent,
   lesson,
   status,
 }: {
+  readonly currentActionLabel: "이어서 학습" | "학습 시작"
   readonly isCurrent: boolean
   readonly lesson: CourseLessonSummary
   readonly status: CourseLessonSummary["learning"]["status"]
@@ -190,7 +198,17 @@ function CurriculumLesson({
           {lesson.title}
         </span>
         <span className="mt-0.5 block text-xs text-muted-foreground">
-          {lesson.estimatedMinutes}분
+          {isCurrent ? (
+            <>
+              <span className="font-medium text-foreground">
+                {currentActionLabel}
+              </span>
+              <span aria-hidden="true"> · </span>
+              {lesson.estimatedMinutes}분
+            </>
+          ) : (
+            `${lesson.estimatedMinutes}분`
+          )}
         </span>
       </span>
     </>
