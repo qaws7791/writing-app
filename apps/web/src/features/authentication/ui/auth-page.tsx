@@ -332,7 +332,7 @@ export function AuthPage({
               disabled={authActionsDisabled}
               size="lg"
               type="submit"
-              variant="default"
+              variant="outline"
             >
               {isPending
                 ? "처리 중…"
@@ -521,7 +521,7 @@ function GoogleSignInButton({
       onClick={onClick}
       size="lg"
       type="button"
-      variant="outline"
+      variant="default"
     >
       <GoogleGLogo aria-hidden="true" className="size-4 shrink-0" />
       Google로 계속하기
