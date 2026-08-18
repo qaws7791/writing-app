@@ -303,26 +303,34 @@ export function LearnCatalog({
               key={topic.id}
               data-slot="learn-catalog-topic"
               aria-labelledby={`learn-catalog-topic-${topic.id}`}
-              className="flex flex-col gap-5"
             >
-              <header
-                className={`${catalogColumnClassName} flex flex-col gap-1.5`}
-              >
-                <h2
-                  id={`learn-catalog-topic-${topic.id}`}
-                  className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
-                >
-                  {topic.title}
-                </h2>
-                {topic.lead ? (
-                  <p className="text-sm text-muted-foreground">{topic.lead}</p>
-                ) : null}
-              </header>
-
               <Carousel
                 aria-labelledby={`learn-catalog-topic-${topic.id}`}
+                className="gap-5"
                 opts={{ align: alignCatalogCarousel }}
               >
+                <header
+                  className={`${catalogColumnClassName} flex items-start gap-3`}
+                >
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <h2
+                      id={`learn-catalog-topic-${topic.id}`}
+                      className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
+                    >
+                      {topic.title}
+                    </h2>
+                    {topic.lead ? (
+                      <p className="text-sm text-muted-foreground">
+                        {topic.lead}
+                      </p>
+                    ) : null}
+                  </div>
+                  <CarouselControls>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                    <CarouselProgress className="max-w-32 sm:max-w-xs" />
+                  </CarouselControls>
+                </header>
                 <CarouselContent className={catalogCarouselTrackPadClassName}>
                   {topic.courses.map((course) => (
                     <CarouselItem
@@ -333,11 +341,6 @@ export function LearnCatalog({
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselControls className={catalogCarouselTrackPadClassName}>
-                  <CarouselPrevious />
-                  <CarouselNext />
-                  <CarouselProgress className="max-w-xs sm:max-w-sm" />
-                </CarouselControls>
               </Carousel>
             </section>
           ))}

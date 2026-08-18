@@ -125,24 +125,27 @@ export function CourseCatalogClient({
       {sectionViews.map((section) => {
         const headingId = `courses-catalog-topic-${section.category}`
         return (
-          <section
-            aria-labelledby={headingId}
-            className="flex flex-col gap-5"
-            key={section.category}
-          >
-            <header className="flex flex-col gap-1.5">
-              <h2
-                className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
-                id={headingId}
-              >
-                {section.category}
-              </h2>
-            </header>
+          <section aria-labelledby={headingId} key={section.category}>
             <Carousel
               aria-labelledby={headingId}
-              className={catalogCarouselBreakoutClassName}
+              className={`${catalogCarouselBreakoutClassName} gap-5`}
               opts={{ align: alignCatalogCarousel, watchDrag: true }}
             >
+              <header
+                className={`${catalogCarouselTrackPadClassName} flex items-center gap-3`}
+              >
+                <h2
+                  className="min-w-0 flex-1 font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
+                  id={headingId}
+                >
+                  {section.category}
+                </h2>
+                <CarouselControls>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                  <CarouselProgress className="max-w-32 sm:max-w-xs" />
+                </CarouselControls>
+              </header>
               <CarouselContent className={catalogCarouselContentClassName}>
                 {section.courses.map(({ course, imageIndex }) => (
                   <CarouselItem
@@ -157,11 +160,6 @@ export function CourseCatalogClient({
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselControls className={catalogCarouselTrackPadClassName}>
-                <CarouselPrevious />
-                <CarouselNext />
-                <CarouselProgress className="max-w-xs sm:max-w-sm" />
-              </CarouselControls>
             </Carousel>
           </section>
         )
