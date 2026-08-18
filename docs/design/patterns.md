@@ -30,7 +30,7 @@
 ### 진행률
 
 - 코스 진행률은 공용 `Progress`로 표시한다.
-- 수치가 필요한 곳은 `completed/total`처럼 명확한 분수를 같이 제공한다.
+- 수치가 필요한 곳은 `completed/total레슨`처럼 단위가 있는 분수를 같이 제공한다.
 - progress track은 공용 `Progress`의 `secondary` 색을 유지한다. 호출자는 track 색을 덮어쓰지 않는다.
 - 레슨 진행률은 `role="progressbar"`와 `aria-valuenow`, `aria-valuemin`, `aria-valuemax`를 제공한다.
 

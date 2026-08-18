@@ -150,7 +150,7 @@ function InProgressCourseCard({ course }: { course: CourseProgress }) {
               {course.title} 진행
             </ProgressLabel>
             <ProgressValue className="text-xs tabular-nums text-muted-foreground">
-              {() => `${course.completedLessons}/${course.totalLessons}`}
+              {() => `${course.completedLessons}/${course.totalLessons}레슨`}
             </ProgressValue>
           </Progress>
         </div>

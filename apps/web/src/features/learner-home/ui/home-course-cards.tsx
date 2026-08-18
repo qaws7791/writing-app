@@ -79,7 +79,7 @@ export function ContinueCourseCard({
               {course.title} 진행
             </ProgressLabel>
             <ProgressValue className="text-xs tabular-nums text-muted-foreground">
-              {() => `${completedLessonCount}/${totalLessonCount}`}
+              {() => `${completedLessonCount}/${totalLessonCount}레슨`}
             </ProgressValue>
           </Progress>
         </div>

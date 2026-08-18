@@ -10,6 +10,8 @@ function Progress({
   value,
   ...props
 }: ProgressPrimitive.Root.Props) {
+  const hasValue = typeof value === "number" && value > 0
+
   return (
     <ProgressPrimitive.Root
       value={value}
@@ -19,7 +21,7 @@ function Progress({
     >
       {children}
       <ProgressTrack>
-        <ProgressIndicator />
+        <ProgressIndicator className={hasValue ? "min-w-1" : undefined} />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   )
