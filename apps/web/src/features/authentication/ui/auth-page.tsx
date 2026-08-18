@@ -130,7 +130,18 @@ export function AuthPage({
     startTransition(async () => {
       try {
         if (mode === "signup") {
-          await requestEmailSignUp({ email, name, nextPath, password })
+          try {
+            await requestEmailSignUp({ email, name, nextPath, password })
+          } catch (error) {
+            if (
+              !(
+                isLearnerAuthClientError(error) &&
+                error.code === "duplicate-email"
+              )
+            ) {
+              throw error
+            }
+          }
           setVerificationEmail(email)
           setCheckEmailSource("signup")
           setMode("check-email")
@@ -638,7 +649,7 @@ function readAuthenticationFailureMessage(
 ): string {
   switch (code) {
     case "duplicate-email":
-      return "이미 가입된 이메일입니다. 로그인해 주세요."
+      return "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요."
     case "email-delivery-failed":
       return "확인 메일을 보내지 못했습니다. 잠시 후 다시 시도해 주세요."
     case "email-not-verified":

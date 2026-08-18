@@ -53,6 +53,9 @@ export function EmailCheckPanel({
         {source === "signup" ? "메일을 보냈습니다" : "메일 확인이 남았습니다"}
       </h1>
       <p className="mt-3 font-medium break-all text-foreground">{email}</p>
+      <p className="mt-2 text-sm leading-6 text-foreground">
+        받은편지함을 확인해 주세요.
+      </p>
       {feedback}
       <div className="mt-8 flex flex-col gap-3">
         <Button
