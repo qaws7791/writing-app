@@ -163,6 +163,13 @@ function createLearnerIdentityApp(
           currentStreakDays: 0,
           lastActiveDate: null,
           progressPercent: 0,
+          recentCadenceDays: [
+            { date: "2026-08-14", label: "금", state: "rest" },
+            { date: "2026-08-15", label: "토", state: "rest" },
+            { date: "2026-08-16", label: "일", state: "rest" },
+            { date: "2026-08-17", label: "월", state: "rest" },
+            { date: "2026-08-18", label: "화", state: "today" },
+          ],
           totalLessons: 0,
         }
       },

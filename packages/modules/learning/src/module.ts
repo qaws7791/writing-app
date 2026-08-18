@@ -65,6 +65,7 @@ export function createLearningModule(
     repository: createDrizzleLearningReportingRepository(input.database),
   })
   const profileStatsQuery = createLearningProfileStatsQuery({
+    clock: input.clock,
     reporting: reportingQuery,
   })
 

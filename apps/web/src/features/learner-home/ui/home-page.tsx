@@ -2,6 +2,15 @@ import type { ReactNode } from "react"
 
 import { CalendarIcon } from "@workspace/ui/components/icons/learning-icons"
 import { BookOpenIcon } from "@workspace/ui/components/icons/navigation-icons"
+import {
+  Cadence,
+  CadenceDay,
+  CadenceHeader,
+  CadenceHint,
+  CadenceSummary,
+  CadenceTitle,
+  CadenceWeek,
+} from "@workspace/ui/components/learning/cadence"
 import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 
 import { HomeProgressClient } from "@/features/learner-home/ui/home-progress-client"
@@ -38,26 +47,65 @@ export function HomePage({
             </h1>
           </header>
 
-          <div
-            aria-label="학습 현황"
-            className="flex flex-col gap-3 @[32rem]:flex-row"
-          >
-            <HomeStat
-              icon={<CalendarIcon size={16} />}
-              label="연속 학습"
-              value={`${profileStats.currentStreakDays}일`}
-            />
-            <HomeStat
-              icon={<BookOpenIcon size={16} />}
-              label="완료한 레슨"
-              value={`${profileStats.completedLessons}개`}
-            />
+          <div className="flex flex-col gap-3">
+            <div
+              aria-label="학습 현황"
+              className="flex flex-col gap-3 @[32rem]:flex-row"
+            >
+              <HomeStat
+                icon={<CalendarIcon size={16} />}
+                label="연속 학습"
+                value={`${profileStats.currentStreakDays}일`}
+              />
+              <HomeStat
+                icon={<BookOpenIcon size={16} />}
+                label="완료한 레슨"
+                value={`${profileStats.completedLessons}개`}
+              />
+            </div>
+            <HomeCadence days={profileStats.recentCadenceDays} />
           </div>
         </section>
 
         <HomeProgressClient inProgress={inProgress} />
       </div>
     </div>
+  )
+}
+
+function HomeCadence({
+  days,
+}: {
+  readonly days: LearnerProfileStatsDto["recentCadenceDays"]
+}) {
+  const practicedCount = days.filter((day) => day.state === "practiced").length
+  const todayIsOpen = days.some((day) => day.state === "today")
+
+  return (
+    <Card
+      className="overflow-visible rounded-3xl py-4"
+      size="sm"
+      variant="muted"
+    >
+      <CardContent>
+        <Cadence aria-label="최근 5일 학습 기록">
+          <CadenceHeader className="hidden @[48rem]:flex">
+            <CadenceTitle>최근 5일</CadenceTitle>
+            <CadenceSummary>{practicedCount}일 학습</CadenceSummary>
+          </CadenceHeader>
+          <CadenceWeek className="grid-cols-5">
+            {days.map((day) => (
+              <CadenceDay key={day.date} label={day.label} state={day.state} />
+            ))}
+          </CadenceWeek>
+          <CadenceHint className="hidden @[48rem]:block">
+            {todayIsOpen
+              ? "오늘은 짧게라도 한 레슨을 마치면 리듬이 이어집니다."
+              : "오늘의 학습이 리듬을 이어 줍니다."}
+          </CadenceHint>
+        </Cadence>
+      </CardContent>
+    </Card>
   )
 }
 

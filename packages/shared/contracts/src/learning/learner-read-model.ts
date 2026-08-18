@@ -3,11 +3,27 @@ import { z } from "zod"
 import { courseVisualKeySchema } from "#contracts/content/course"
 import { courseIdSchema, lessonIdSchema } from "#contracts/content/ids"
 
+export const learnerCadenceDayStateValues = [
+  "practiced",
+  "rest",
+  "today",
+  "upcoming",
+] as const
+
+export const learnerCadenceDayStateSchema = z.enum(learnerCadenceDayStateValues)
+
+export const learnerCadenceDayDtoSchema = z.strictObject({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  label: z.string().min(1),
+  state: learnerCadenceDayStateSchema,
+})
+
 export const learnerProfileStatsDtoSchema = z.strictObject({
   completedLessons: z.number().int().nonnegative(),
   currentStreakDays: z.number().int().nonnegative(),
   lastActiveDate: z.string().nullable(),
   progressPercent: z.number().int().min(0).max(100),
+  recentCadenceDays: z.array(learnerCadenceDayDtoSchema).length(5),
   totalLessons: z.number().int().nonnegative(),
 })
 

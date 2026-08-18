@@ -1,9 +1,15 @@
+import type { Clock } from "@workspace/kernel/clock"
 import type { UserId } from "@workspace/types/ids"
 
 import type {
   LearningContentQueryPort,
   LearningReportItem,
 } from "#learning/application/ports/learning-ports"
+import {
+  buildRecentCadenceDays,
+  toLearningDateKey,
+  type LearningCadenceDay,
+} from "#learning/domain/learning-date"
 
 export type LearningReportingRepository = Readonly<{
   readLearnerReports: (
@@ -23,6 +29,7 @@ export type LearningProfileStats = Readonly<{
   currentStreakDays: number
   lastActiveDate: string | null
   progressPercent: number
+  recentCadenceDays: readonly LearningCadenceDay[]
   totalLessons: number
 }>
 
@@ -46,6 +53,7 @@ export function createLearningReportingQuery(input: {
 }
 
 export function createLearningProfileStatsQuery(input: {
+  readonly clock: Clock
   readonly reporting: LearningReportingQuery
 }): LearningProfileStatsQuery {
   return {
@@ -65,6 +73,10 @@ export function createLearningProfileStatsQuery(input: {
           totalLessons === 0
             ? 0
             : Math.round((completedLessons / totalLessons) * 100),
+        recentCadenceDays: buildRecentCadenceDays(
+          report?.activityDates ?? [],
+          toLearningDateKey(input.clock.now())
+        ),
         totalLessons,
       }
     },

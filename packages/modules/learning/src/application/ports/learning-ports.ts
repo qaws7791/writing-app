@@ -22,6 +22,7 @@ import type {
   LearningCourseSummary,
   LearningCurriculum,
 } from "#learning/domain/learning-types"
+import type { LearningDateKey } from "#learning/domain/learning-date"
 import type { LearnerReadModelRepository } from "#learning/application/ports/learner-read-model-repository"
 import type { LearnerContentAssetReference } from "#learning/application/learning-read-model"
 
@@ -92,6 +93,7 @@ export type LearningApplicationDependencies = Readonly<{
 }>
 
 export type LearningReportItem = Readonly<{
+  activityDates: readonly LearningDateKey[]
   completedLessons: number
   currentStreakDays: number
   lastActive: string | null

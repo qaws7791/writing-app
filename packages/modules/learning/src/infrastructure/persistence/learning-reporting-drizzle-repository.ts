@@ -55,6 +55,7 @@ export function createDrizzleLearningReportingRepository(
       return userIds.map((userId) => {
         const dates = activityByUserId.get(userId) ?? []
         return {
+          activityDates: dates,
           completedLessons: completedByUserId.get(userId) ?? 0,
           currentStreakDays: calculateCurrentStreakDays(dates),
           lastActive: dates[0] ?? null,

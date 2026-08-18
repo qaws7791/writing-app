@@ -7,7 +7,7 @@ export function toLearningDateKey(date: Date): LearningDateKey {
   return toPlatformDayKey(date) as LearningDateKey
 }
 
-function addLearningCalendarDays(
+export function addLearningCalendarDays(
   dateKey: LearningDateKey,
   days: number
 ): LearningDateKey {
@@ -42,6 +42,70 @@ export function groupLearningActivityDatesByUserId(
   }
 
   return activityDatesByUserId
+}
+
+export const learningCadenceDayStates = [
+  "practiced",
+  "rest",
+  "today",
+  "upcoming",
+] as const
+
+export type LearningCadenceDayState = (typeof learningCadenceDayStates)[number]
+
+export type LearningCadenceDay = Readonly<{
+  date: LearningDateKey
+  label: string
+  state: LearningCadenceDayState
+}>
+
+const weekdayLabels = ["일", "월", "화", "수", "목", "금", "토"] as const
+
+export function buildRecentCadenceDays(
+  activityDates: readonly LearningDateKey[],
+  today: LearningDateKey,
+  dayCount = 5
+): readonly LearningCadenceDay[] {
+  if (!Number.isInteger(dayCount) || dayCount < 1) {
+    throw new Error(`Invalid cadence day count: ${dayCount}`)
+  }
+
+  const practiced = new Set(activityDates)
+  const start = addLearningCalendarDays(today, -(dayCount - 1))
+  const days: LearningCadenceDay[] = []
+  let cursor = start
+
+  for (let index = 0; index < dayCount; index += 1) {
+    const isToday = cursor === today
+    const didPractice = practiced.has(cursor)
+    let state: LearningCadenceDayState = "rest"
+    if (isToday && didPractice) {
+      state = "practiced"
+    } else if (isToday) {
+      state = "today"
+    } else if (didPractice) {
+      state = "practiced"
+    }
+
+    days.push({
+      date: cursor,
+      label: weekdayLabelForDateKey(cursor),
+      state,
+    })
+    cursor = addLearningCalendarDays(cursor, 1)
+  }
+
+  return days
+}
+
+function weekdayLabelForDateKey(dateKey: LearningDateKey): string {
+  const { day, month, year } = parseLearningDateKey(dateKey)
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay()
+  const label = weekdayLabels[weekday]
+  if (label === undefined) {
+    throw new Error(`Invalid weekday for learning date key: ${dateKey}`)
+  }
+  return label
 }
 
 export function calculateCurrentStreakDays(

@@ -134,6 +134,11 @@ type LearnerProfileStats = Readonly<{
   currentStreakDays: number
   lastActiveDate: string | null
   progressPercent: number
+  recentCadenceDays: readonly {
+    date: string
+    label: string
+    state: "practiced" | "rest" | "today" | "upcoming"
+  }[]
   totalLessons: number
 }>
 

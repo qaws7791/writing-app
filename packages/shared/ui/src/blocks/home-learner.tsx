@@ -265,7 +265,7 @@ export function HomeLearner({
               className="overflow-visible rounded-3xl px-(--card-spacing) py-4"
             >
               <Cadence aria-label="최근 5일 학습 기록">
-                <CadenceHeader>
+                <CadenceHeader className="hidden @[48rem]/learner-shell:flex">
                   <CadenceTitle>최근 5일</CadenceTitle>
                   <CadenceSummary>1일 학습</CadenceSummary>
                 </CadenceHeader>
@@ -276,7 +276,7 @@ export function HomeLearner({
                   <CadenceDay label="목" state="practiced" />
                   <CadenceDay label="금" state="today" />
                 </CadenceWeek>
-                <CadenceHint>
+                <CadenceHint className="hidden @[48rem]/learner-shell:block">
                   오늘은 짧게라도 한 레슨을 마치면 리듬이 이어집니다.
                 </CadenceHint>
               </Cadence>
