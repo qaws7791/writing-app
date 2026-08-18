@@ -159,8 +159,10 @@ function createLearnerIdentityApp(
     profileStatsQuery: {
       async readProfileStats() {
         return {
+          completedCourses: 0,
           completedLessons: 0,
           currentStreakDays: 0,
+          inProgressCourses: 0,
           lastActiveDate: null,
           progressPercent: 0,
           recentCadenceDays: [

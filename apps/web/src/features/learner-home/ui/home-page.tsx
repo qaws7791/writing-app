@@ -67,7 +67,11 @@ export function HomePage({
           </div>
         </section>
 
-        <HomeProgressClient inProgress={inProgress} />
+        <HomeProgressClient
+          completedCourseCount={profileStats.completedCourses}
+          inProgress={inProgress}
+          inProgressCourseCount={profileStats.inProgressCourses}
+        />
       </div>
     </div>
   )

@@ -25,8 +25,10 @@ export type LearningReportingQuery = Readonly<{
 }>
 
 export type LearningProfileStats = Readonly<{
+  completedCourses: number
   completedLessons: number
   currentStreakDays: number
+  inProgressCourses: number
   lastActiveDate: string | null
   progressPercent: number
   recentCadenceDays: readonly LearningCadenceDay[]
@@ -66,8 +68,10 @@ export function createLearningProfileStatsQuery(input: {
       const completedLessons = report?.completedLessons ?? 0
 
       return {
+        completedCourses: report?.completedCourses ?? 0,
         completedLessons,
         currentStreakDays: report?.currentStreakDays ?? 0,
+        inProgressCourses: report?.inProgressCourses ?? 0,
         lastActiveDate: report?.lastActive ?? null,
         progressPercent:
           totalLessons === 0

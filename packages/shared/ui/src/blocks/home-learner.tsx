@@ -284,12 +284,29 @@ export function HomeLearner({
           </div>
         </section>
 
-        <section data-slot="home-learner-courses" aria-label="학습 진행">
+        <section
+          data-slot="home-learner-courses"
+          aria-labelledby="home-learner-continue"
+        >
           <Tabs defaultValue="in-progress" className="gap-4">
-            <TabsList>
-              <TabsTrigger value="in-progress">진행중</TabsTrigger>
-              <TabsTrigger value="completed">완료</TabsTrigger>
-            </TabsList>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2
+                className="font-heading text-lg font-semibold tracking-[-0.01em]"
+                id="home-learner-continue"
+              >
+                이어서 학습하기
+              </h2>
+              <TabsList>
+                <TabsTrigger value="in-progress">
+                  진행중
+                  <span className="tabular-nums">1</span>
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  완료
+                  <span className="tabular-nums">1</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent
               value="in-progress"

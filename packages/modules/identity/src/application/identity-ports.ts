@@ -130,8 +130,10 @@ export type IdentityLearningReportPort = Readonly<{
 }>
 
 type LearnerProfileStats = Readonly<{
+  completedCourses: number
   completedLessons: number
   currentStreakDays: number
+  inProgressCourses: number
   lastActiveDate: string | null
   progressPercent: number
   recentCadenceDays: readonly {

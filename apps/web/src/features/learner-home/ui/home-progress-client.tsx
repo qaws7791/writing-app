@@ -32,10 +32,16 @@ import {
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 export type HomeProgressClientProps = {
+  readonly completedCourseCount: number
   readonly inProgress: LearnerProgressPageDto
+  readonly inProgressCourseCount: number
 }
 
-export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
+export function HomeProgressClient({
+  completedCourseCount,
+  inProgress,
+  inProgressCourseCount,
+}: HomeProgressClientProps) {
   const router = useRouter()
   const readAbortSignal = useUnmountAbortSignal()
   const [completedState, setCompletedState] = useState<CompletedCoursesState>({
@@ -193,16 +199,30 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
   )
 
   return (
-    <section aria-label="학습 진행" className="min-w-0">
+    <section className="min-w-0" aria-labelledby="home-continue-heading">
       <Tabs
         className="flex w-full flex-col gap-4"
         defaultValue="in_progress"
         onValueChange={handleTabChange}
       >
-        <TabsList className="w-fit shrink-0 self-start">
-          <TabsTrigger value="in_progress">진행중</TabsTrigger>
-          <TabsTrigger value="completed">완료</TabsTrigger>
-        </TabsList>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2
+            className="font-heading text-lg font-semibold tracking-[-0.01em]"
+            id="home-continue-heading"
+          >
+            이어서 학습하기
+          </h2>
+          <TabsList className="w-fit shrink-0">
+            <TabsTrigger value="in_progress">
+              진행중
+              <span className="tabular-nums">{inProgressCourseCount}</span>
+            </TabsTrigger>
+            <TabsTrigger value="completed">
+              완료
+              <span className="tabular-nums">{completedCourseCount}</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent
           className="flex w-full flex-col gap-3 outline-none"
           value="in_progress"

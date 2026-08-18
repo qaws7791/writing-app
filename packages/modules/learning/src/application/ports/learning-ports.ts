@@ -94,8 +94,10 @@ export type LearningApplicationDependencies = Readonly<{
 
 export type LearningReportItem = Readonly<{
   activityDates: readonly LearningDateKey[]
+  completedCourses: number
   completedLessons: number
   currentStreakDays: number
+  inProgressCourses: number
   lastActive: string | null
   userId: UserId
 }>

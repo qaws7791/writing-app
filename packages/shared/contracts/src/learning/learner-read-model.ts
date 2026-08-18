@@ -19,8 +19,10 @@ export const learnerCadenceDayDtoSchema = z.strictObject({
 })
 
 export const learnerProfileStatsDtoSchema = z.strictObject({
+  completedCourses: z.number().int().nonnegative(),
   completedLessons: z.number().int().nonnegative(),
   currentStreakDays: z.number().int().nonnegative(),
+  inProgressCourses: z.number().int().nonnegative(),
   lastActiveDate: z.string().nullable(),
   progressPercent: z.number().int().min(0).max(100),
   recentCadenceDays: z.array(learnerCadenceDayDtoSchema).length(5),
