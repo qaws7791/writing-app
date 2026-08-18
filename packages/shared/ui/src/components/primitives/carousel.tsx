@@ -210,6 +210,52 @@ function Carousel({
     }
   }, [api, onSelect])
 
+  React.useEffect(() => {
+    if (!api) {
+      return
+    }
+
+    const syncHiddenSlideTabOrder = () => {
+      const inView = new Set(api.slidesInView())
+      const active = document.activeElement
+      let hiddenSlideHasFocus = false
+
+      api.slideNodes().forEach((node, index) => {
+        const visible = inView.has(index)
+        node.toggleAttribute("inert", !visible)
+        if (!visible && active instanceof Node && node.contains(active)) {
+          hiddenSlideHasFocus = true
+        }
+      })
+
+      if (!hiddenSlideHasFocus) {
+        return
+      }
+
+      const firstVisibleIndex = api.slidesInView()[0]
+      if (firstVisibleIndex === undefined) {
+        return
+      }
+
+      const firstVisibleNode = api.slideNodes()[firstVisibleIndex]
+      const focusTarget = firstVisibleNode.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+      focusTarget?.focus()
+    }
+
+    syncHiddenSlideTabOrder()
+    api.on("reInit", syncHiddenSlideTabOrder)
+    api.on("select", syncHiddenSlideTabOrder)
+    api.on("slidesInView", syncHiddenSlideTabOrder)
+
+    return () => {
+      api.off("reInit", syncHiddenSlideTabOrder)
+      api.off("select", syncHiddenSlideTabOrder)
+      api.off("slidesInView", syncHiddenSlideTabOrder)
+    }
+  }, [api])
+
   return (
     <CarouselContext.Provider
       value={{
