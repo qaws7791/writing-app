@@ -373,7 +373,7 @@ export function AuthPage({
                           </AuthTextLink>
                         ) : null
                       }
-                      liveMinLength={mode === "signup" ? 12 : undefined}
+                      {...(mode === "signup" ? { liveMinLength: 12 } : {})}
                       maxLength={128}
                       name="password"
                     />
