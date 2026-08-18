@@ -252,10 +252,10 @@ function CourseCard({
         <h3 className="line-clamp-3 font-heading text-xl font-normal leading-7">
           {course.title}
         </h3>
-        <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-pretty text-muted-foreground">
+        <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-pretty text-foreground/80">
           {course.description}
         </p>
-        <p className="mt-auto text-sm font-medium leading-5 tabular-nums text-muted-foreground">
+        <p className="mt-auto text-xs font-medium leading-4 tabular-nums text-muted-foreground">
           {course.lessonCount}개 레슨
         </p>
       </div>
