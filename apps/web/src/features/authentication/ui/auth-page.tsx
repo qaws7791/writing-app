@@ -249,7 +249,7 @@ export function AuthPage({
             {successFeedback === null
               ? mode === "reset-request"
                 ? "가입한 이메일로 재설정 링크를 보내 드립니다."
-                : "Google 계정으로 빠르게 시작하거나 이메일로 이어가세요."
+                : "짧게 배우고 바로 쓰며 문장을 다듬습니다."
               : successFeedback.message}
           </p>
         </header>
@@ -257,6 +257,9 @@ export function AuthPage({
         <div className="flex flex-col gap-5">
           {mode === "reset-request" ? null : (
             <>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Google 계정이나 이메일로 이어가세요.
+              </p>
               <GoogleSignInButton
                 disabled={authActionsDisabled}
                 onClick={loginWithGoogle}
