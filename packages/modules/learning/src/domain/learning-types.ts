@@ -126,10 +126,16 @@ export type LearningCurriculum = Readonly<{
   title: string
   visualKey:
     | "basic-sentence-writing"
+    | "business-email"
+    | "business-writing"
     | "creative-writing"
+    | "emotion-writing"
     | "essay-writing"
     | "expression"
     | "grammar-complete"
+    | "reading-comprehension"
+    | "sentence-structure"
+    | "vocabulary-basics"
   units: readonly Readonly<{
     id: UnitId
     sortOrder: number

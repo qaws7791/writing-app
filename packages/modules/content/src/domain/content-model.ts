@@ -42,6 +42,12 @@ export const courseVisualKeyValues = Object.freeze([
   "essay-writing",
   "creative-writing",
   "expression",
+  "business-email",
+  "business-writing",
+  "emotion-writing",
+  "reading-comprehension",
+  "sentence-structure",
+  "vocabulary-basics",
 ] as const)
 
 export type CourseVisualKey = (typeof courseVisualKeyValues)[number]

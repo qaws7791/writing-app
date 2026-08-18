@@ -4,7 +4,7 @@
     "title": "어휘와 문장의 의미 정확히 읽기",
     "desc": "문맥, 문장 구조, 지시와 논리 관계를 함께 살펴 단어와 문장의 가능한 의미를 구별합니다.",
     "cat": "언어와 읽기",
-    "visualKey": "basic-sentence-writing",
+    "visualKey": "vocabulary-basics",
     "units": [
       {
         "id": "unit-word-context-and-use",
@@ -963,7 +963,7 @@
     "title": "글의 핵심과 구조 읽기",
     "desc": "글의 목적과 구조를 따라 핵심, 세부와 관계를 통합하고 이해가 끊긴 지점을 점검합니다.",
     "cat": "언어와 읽기",
-    "visualKey": "basic-sentence-writing",
+    "visualKey": "reading-comprehension",
     "units": [
       {
         "id": "unit-reading-purpose-map",
@@ -6538,7 +6538,7 @@
     "title": "독자와 목적에 맞춰 쓰기",
     "desc": "실제·예상 독자와 사회적 목적을 살펴 장르 관습과 표현 선택을 상황에 맞게 조정합니다.",
     "cat": "독자와 쓰기 과정",
-    "visualKey": "creative-writing",
+    "visualKey": "emotion-writing",
     "units": [
       {
         "id": "unit-audience-rhetorical-situation",
@@ -7637,7 +7637,7 @@
     "title": "독자가 이해하는 설명 쓰기",
     "desc": "독자가 개념, 과정과 관계를 재구성할 수 있도록 핵심, 구조, 근거와 예시를 조정합니다.",
     "cat": "구성과 표현",
-    "visualKey": "essay-writing",
+    "visualKey": "business-writing",
     "units": [
       {
         "id": "unit-explanation-question-concept",
@@ -8622,7 +8622,7 @@
     "title": "근거를 연결해 추론하기",
     "desc": "텍스트와 자료의 단서를 연결해 명시되지 않은 결론을 도출하고 근거와 불확실성을 구분합니다.",
     "cat": "언어와 읽기",
-    "visualKey": "basic-sentence-writing",
+    "visualKey": "sentence-structure",
     "units": [
       {
         "id": "unit-inference-explicit-gap",
@@ -9614,7 +9614,7 @@
     "title": "정보를 찾고 신뢰성을 판단하기",
     "desc": "정보 필요에 맞춰 검색 전략을 바꾸고 출처, 주장과 근거를 독립 자료와 비교해 신뢰 범위를 판단합니다.",
     "cat": "정보와 AI 문해",
-    "visualKey": "essay-writing",
+    "visualKey": "reading-comprehension",
     "units": [
       {
         "id": "unit-search-information-need",
@@ -10893,7 +10893,7 @@
     "title": "자료를 구조화해 비판적으로 판단하기",
     "desc": "자료의 요소와 관계를 목적에 맞게 분해·통합하고 가정, 대안과 근거의 한계를 점검합니다.",
     "cat": "사고와 발상",
-    "visualKey": "essay-writing",
+    "visualKey": "business-email",
     "units": [
       {
         "id": "unit-critical-purpose-elements",
@@ -12042,7 +12042,7 @@
     "title": "근거와 반론으로 주장 세우기",
     "desc": "주장과 근거, 보증, 반론의 관계를 세우고 결론이 성립하는 범위를 설명합니다.",
     "cat": "구성과 표현",
-    "visualKey": "essay-writing",
+    "visualKey": "basic-sentence-writing",
     "units": [
       {
         "id": "unit-argument-claim-scope",
@@ -13222,7 +13222,7 @@
     "title": "초고를 진단하고 개선하기",
     "desc": "목표와 기준으로 초고를 진단하고 자기·동료·도구의 피드백을 판단해 의미 있는 수정을 선택합니다.",
     "cat": "독자와 쓰기 과정",
-    "visualKey": "expression",
+    "visualKey": "essay-writing",
     "units": [
       {
         "id": "unit-revision-goal-diagnosis",

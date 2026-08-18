@@ -28,6 +28,12 @@ export const courseVisualKeyValues = [
   "essay-writing",
   "creative-writing",
   "expression",
+  "business-email",
+  "business-writing",
+  "emotion-writing",
+  "reading-comprehension",
+  "sentence-structure",
+  "vocabulary-basics",
 ] as const
 export const courseVisualKeySchema = z.enum(courseVisualKeyValues)
 
