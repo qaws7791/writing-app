@@ -186,7 +186,7 @@ function CoursePattern({ pattern }: { pattern: CatalogTopic["pattern"] }) {
   return (
     <div
       data-slot="learn-catalog-pattern"
-      className="relative aspect-square overflow-hidden rounded-2xl bg-background"
+      className="relative aspect-square overflow-hidden rounded-3xl"
       aria-hidden="true"
     >
       {pattern === "dots" ? (

@@ -223,7 +223,7 @@ function CourseCard({
       onClick={guardCarouselClick}
     >
       <div className="shrink-0 p-7">
-        <div className="relative aspect-square overflow-hidden rounded-5xl bg-background">
+        <div className="relative aspect-square overflow-hidden rounded-3xl">
           <Image
             alt={image.alt}
             className="object-cover select-none"
