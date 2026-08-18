@@ -9,6 +9,7 @@ import {
   type CourseCategoryGroup,
 } from "@/features/course-catalog/model/group-courses-by-category"
 import { type LearnerCourseSummaryDto } from "@/shared/http/learner-api-client"
+import { BookOpenIcon } from "@workspace/ui/components/icons/navigation-icons"
 import { buttonVariants } from "@workspace/ui/components/primitives/button"
 import { cardVariants } from "@workspace/ui/components/primitives/card"
 import {
@@ -174,13 +175,16 @@ function CourseCard({
         </div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
-        <h3 className="line-clamp-3 font-heading text-xl font-normal leading-7">
-          {course.title}
-        </h3>
-        <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-pretty text-foreground/80">
-          {course.description}
-        </p>
-        <p className="mt-auto text-xs font-medium leading-4 tabular-nums text-muted-foreground">
+        <div className="flex flex-col gap-2">
+          <h3 className="line-clamp-3 font-heading text-xl font-normal leading-7">
+            {course.title}
+          </h3>
+          <p className="line-clamp-2 text-sm font-normal leading-5 text-pretty text-foreground/80">
+            {course.description}
+          </p>
+        </div>
+        <p className="mt-auto flex items-center gap-1.5 pt-6 text-xs font-medium leading-4 tabular-nums text-muted-foreground">
+          <BookOpenIcon aria-hidden="true" className="size-3.5 shrink-0" />
           {course.lessonCount}개 레슨
         </p>
       </div>
