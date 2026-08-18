@@ -74,13 +74,13 @@ function CurriculumUnit({
 
   return (
     <AccordionItem className="min-w-0" value={unit.id}>
-      <AccordionTrigger className="min-w-0 items-center px-0 py-5 **:data-[slot=accordion-trigger-icon]:mt-0">
-        <div className="flex min-w-0 items-center gap-3 pr-2">
+      <AccordionTrigger className="min-w-0 items-start px-0 py-5 **:data-[slot=accordion-trigger-icon]:mt-1">
+        <div className="flex min-w-0 items-start gap-3 pr-2">
           <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-secondary text-xs font-medium tabular-nums text-muted-foreground">
             {index + 1}
           </span>
           <div className="flex min-w-0 flex-col">
-            <span className="block truncate font-heading text-base font-semibold tracking-[-0.01em] wrap-anywhere [word-break:keep-all]">
+            <span className="line-clamp-2 font-heading text-base font-semibold tracking-[-0.01em] [word-break:keep-all]">
               {unit.title}
             </span>
             <span
@@ -179,7 +179,7 @@ function CurriculumLesson({
       <span className="min-w-0 flex-1">
         <span
           className={cn(
-            "block truncate text-sm font-medium",
+            "line-clamp-2 text-sm font-medium [word-break:keep-all]",
             locked ? "text-muted-foreground" : "text-foreground"
           )}
         >
