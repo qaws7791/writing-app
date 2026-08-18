@@ -32,15 +32,15 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
         코스 목록으로
       </Link>
       <Card className="mb-12" size="lg" variant="muted">
-        <CardContent className="grid gap-7 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-start">
+        <CardContent className="grid gap-7 sm:grid-cols-[13rem_minmax(0,1fr)] sm:items-start">
           <Image
             alt={resolveCourseImage(course).alt}
-            className="size-24 rounded-3xl object-cover sm:size-32"
-            height={128}
+            className="size-40 rounded-3xl object-cover sm:size-52"
+            height={208}
             loading="eager"
-            sizes="(max-width: 640px) 96px, 128px"
+            sizes="(max-width: 640px) 160px, 208px"
             src={resolveCourseImage(course).src}
-            width={128}
+            width={208}
           />
           <div className="min-w-0">
             <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.01em] sm:text-4xl">
