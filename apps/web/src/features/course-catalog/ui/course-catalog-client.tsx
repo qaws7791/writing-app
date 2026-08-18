@@ -130,7 +130,7 @@ export function CourseCatalogClient({
           >
             <header className="flex flex-col gap-1.5">
               <h2
-                className="font-heading text-xl font-semibold tracking-[-0.03em] sm:text-2xl"
+                className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
                 id={headingId}
               >
                 {section.category}
@@ -235,7 +235,7 @@ function CourseCard({
         <p className="text-sm font-medium leading-5 text-muted-foreground">
           {course.category}
         </p>
-        <h3 className="mt-2.5 line-clamp-3 font-heading text-xl font-normal leading-7 text-balance">
+        <h3 className="mt-2.5 line-clamp-3 font-heading text-xl font-normal leading-7">
           {course.title}
         </h3>
         <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-pretty text-muted-foreground">

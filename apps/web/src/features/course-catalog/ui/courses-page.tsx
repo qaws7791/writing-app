@@ -11,7 +11,7 @@ export function CoursesPage(props: CoursesPageProps) {
         className="flex max-w-xl flex-col gap-2"
       >
         <h1
-          className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl sm:leading-[1.15]"
+          className="font-heading text-3xl font-semibold tracking-[-0.01em] sm:text-4xl sm:leading-[1.15]"
           id="courses-catalog-title"
         >
           코스

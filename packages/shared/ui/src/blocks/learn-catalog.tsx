@@ -249,7 +249,7 @@ function CourseCard({
         <p className="text-sm font-medium leading-5 text-muted-foreground">
           {category}
         </p>
-        <h3 className="mt-2.5 line-clamp-3 font-heading text-xl font-normal leading-7 text-balance">
+        <h3 className="mt-2.5 line-clamp-3 font-heading text-xl font-normal leading-7">
           {course.title}
         </h3>
         <p className="mt-2 line-clamp-2 text-sm font-normal leading-5 text-pretty text-muted-foreground">
@@ -287,7 +287,7 @@ export function LearnCatalog({
           <div className="flex max-w-xl flex-col gap-2">
             <h1
               id="learn-catalog-title"
-              className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl sm:leading-[1.15]"
+              className="font-heading text-3xl font-semibold tracking-[-0.01em] sm:text-4xl sm:leading-[1.15]"
             >
               코스
             </h1>
@@ -310,7 +310,7 @@ export function LearnCatalog({
               >
                 <h2
                   id={`learn-catalog-topic-${topic.id}`}
-                  className="font-heading text-xl font-semibold tracking-[-0.03em] sm:text-2xl"
+                  className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
                 >
                   {topic.title}
                 </h2>
