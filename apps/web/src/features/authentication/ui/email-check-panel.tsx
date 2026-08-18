@@ -4,11 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react"
 
 import { CheckCircleIcon } from "@workspace/ui/components/icons/authentication-icons"
 import { Button } from "@workspace/ui/components/primitives/button"
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-} from "@workspace/ui/components/primitives/field"
+import { Field, FieldError } from "@workspace/ui/components/primitives/field"
 
 type EmailCheckPanelProps = {
   readonly actionsDisabled: boolean
@@ -54,14 +50,9 @@ export function EmailCheckPanel({
         ref={headingRef}
         tabIndex={-1}
       >
-        {source === "signup" ? "가입을 마쳤습니다" : "메일 확인이 남았습니다"}
+        {source === "signup" ? "메일을 보냈습니다" : "메일 확인이 남았습니다"}
       </h1>
-      <p className="mt-4 font-medium break-all text-foreground">{email}</p>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        {source === "signup"
-          ? "이 주소로 확인 메일을 보냈습니다. 받은편지함의 링크를 열면 시작할 수 있습니다."
-          : "이 주소의 확인을 마치면 로그인할 수 있습니다. 메일이 없다면 다시 보내 주세요."}
-      </p>
+      <p className="mt-3 font-medium break-all text-foreground">{email}</p>
       {feedback}
       <div className="mt-8 flex flex-col gap-3">
         <Button
@@ -104,8 +95,8 @@ export function EmailCheckFeedback({
   }
 
   return (
-    <Field className="mt-5">
-      <FieldDescription role="status">{message}</FieldDescription>
-    </Field>
+    <p className="mt-5 text-sm leading-6 text-foreground" role="status">
+      {message}
+    </p>
   )
 }

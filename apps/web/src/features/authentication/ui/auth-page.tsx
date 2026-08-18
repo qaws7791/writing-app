@@ -83,6 +83,9 @@ export function AuthPage({
       : null
   const formFeedback =
     feedback?.field === "form" || feedback?.tone === "success" ? feedback : null
+  const successFeedback = formFeedback?.tone === "success" ? formFeedback : null
+  const dangerFormFeedback =
+    formFeedback?.tone === "danger" ? formFeedback : null
 
   function selectMode(nextMode: AuthMode) {
     setMode(nextMode)
@@ -214,16 +217,28 @@ export function AuthPage({
             글
           </div>
           <h1 className="font-heading text-2xl font-semibold tracking-[-0.03em] text-balance">
-            {mode === "reset-request"
-              ? "비밀번호 재설정"
-              : mode === "signup"
-                ? "글결. 시작하기"
-                : "글결.에 로그인"}
+            {successFeedback !== null && mode === "reset-request"
+              ? "메일을 보냈습니다"
+              : mode === "reset-request"
+                ? "비밀번호 재설정"
+                : mode === "signup"
+                  ? "글결. 시작하기"
+                  : "글결.에 로그인"}
           </h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {mode === "reset-request"
-              ? "가입한 이메일로 재설정 링크를 보내 드립니다."
-              : "Google 계정으로 빠르게 시작하거나 이메일로 이어가세요."}
+          <p
+            className={cn(
+              "mt-2 text-sm leading-6",
+              successFeedback === null
+                ? "text-muted-foreground"
+                : "text-foreground"
+            )}
+            role={successFeedback === null ? undefined : "status"}
+          >
+            {successFeedback === null
+              ? mode === "reset-request"
+                ? "가입한 이메일로 재설정 링크를 보내 드립니다."
+                : "Google 계정으로 빠르게 시작하거나 이메일로 이어가세요."
+              : successFeedback.message}
           </p>
         </header>
 
@@ -307,15 +322,9 @@ export function AuthPage({
                 name="password"
               />
             )}
-            {formFeedback === null ? null : formFeedback.tone === "danger" ? (
+            {dangerFormFeedback === null ? null : (
               <Field>
-                <FieldError>{formFeedback.message}</FieldError>
-              </Field>
-            ) : (
-              <Field>
-                <FieldDescription role="status">
-                  {formFeedback.message}
-                </FieldDescription>
+                <FieldError>{dangerFormFeedback.message}</FieldError>
               </Field>
             )}
             <Button
