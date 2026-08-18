@@ -9,6 +9,7 @@ import {
   EyeIcon as Eye,
   EyeOffIcon as EyeOff,
 } from "@workspace/ui/components/icons/authentication-icons"
+import { CheckIcon } from "@workspace/ui/components/icons/control-icons"
 
 import {
   requestEmailLogin,
@@ -301,11 +302,6 @@ export function AuthPage({
                 autoComplete={
                   mode === "signup" ? "new-password" : "current-password"
                 }
-                description={
-                  mode === "signup"
-                    ? "비밀번호는 12자 이상이어야 합니다."
-                    : null
-                }
                 error={passwordError}
                 label="비밀번호"
                 labelAction={
@@ -318,6 +314,7 @@ export function AuthPage({
                     </AuthTextLink>
                   ) : null
                 }
+                liveMinLength={mode === "signup" ? 12 : undefined}
                 maxLength={128}
                 name="password"
               />
@@ -437,28 +434,35 @@ function AuthInput({
 function AuthPasswordInput({
   actionsDisabled,
   autoComplete,
-  description,
   error,
   label,
   labelAction,
+  liveMinLength,
   maxLength,
   name,
 }: {
   readonly actionsDisabled: boolean
   readonly autoComplete: string
-  readonly description?: string | null
   readonly error?: string | null
   readonly label: string
   readonly labelAction?: ReactNode
+  readonly liveMinLength?: number
   readonly maxLength: number
   readonly name: string
 }) {
   const [showPassword, setShowPassword] = useState(false)
+  const [passwordLength, setPasswordLength] = useState(0)
   const inputId = `learner-auth-${name}`
+  const meetsLiveMin =
+    liveMinLength !== undefined && passwordLength >= liveMinLength
+  const liveDescription =
+    liveMinLength === undefined || error
+      ? null
+      : meetsLiveMin
+        ? `${liveMinLength}자 이상입니다.`
+        : `비밀번호는 ${liveMinLength}자 이상이어야 합니다.`
   const descriptionId =
-    description === null || description === undefined
-      ? undefined
-      : `${inputId}-description`
+    liveDescription === null ? undefined : `${inputId}-description`
   const errorId =
     error === null || error === undefined ? undefined : `${inputId}-error`
   const describedBy =
@@ -479,6 +483,7 @@ function AuthPasswordInput({
           id={inputId}
           maxLength={maxLength}
           name={name}
+          onChange={(event) => setPasswordLength(event.target.value.length)}
           required
           type={showPassword ? "text" : "password"}
         />
@@ -497,8 +502,17 @@ function AuthPasswordInput({
           )}
         </button>
       </div>
-      {descriptionId === undefined ? null : (
-        <FieldDescription id={descriptionId}>{description}</FieldDescription>
+      {descriptionId === undefined || liveDescription === null ? null : (
+        <FieldDescription id={descriptionId}>
+          {meetsLiveMin ? (
+            <span className="inline-flex items-center gap-1.5 text-foreground">
+              <CheckIcon aria-hidden="true" className="size-3.5 text-success" />
+              {liveDescription}
+            </span>
+          ) : (
+            liveDescription
+          )}
+        </FieldDescription>
       )}
       {errorId === undefined ? null : (
         <FieldError id={errorId}>{error}</FieldError>
