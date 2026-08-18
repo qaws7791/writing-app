@@ -93,7 +93,7 @@ function CurriculumUnit({
           </span>
         </div>
       </AccordionTrigger>
-      <AccordionContent className="px-0 pb-3">
+      <AccordionContent className="px-0 pb-3 [&_a]:no-underline [&_a]:hover:no-underline">
         <div className="grid min-w-0 gap-1">
           {unit.lessons.map((lesson) => (
             <CurriculumLesson
