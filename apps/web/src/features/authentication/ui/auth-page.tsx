@@ -66,6 +66,9 @@ export function AuthPage({
   const [verificationEmail, setVerificationEmail] = useState<string | null>(
     null
   )
+  const [checkEmailSource, setCheckEmailSource] = useState<
+    "signup" | "unverified"
+  >("signup")
   const isHydrated = useIsHydrated()
   const [isPending, startTransition] = useTransition()
   const authActionsDisabled = !isHydrated || isPending
@@ -125,6 +128,7 @@ export function AuthPage({
         if (mode === "signup") {
           await requestEmailSignUp({ email, name, nextPath, password })
           setVerificationEmail(email)
+          setCheckEmailSource("signup")
           setMode("check-email")
           return
         }
@@ -136,6 +140,9 @@ export function AuthPage({
           error.code === "email-not-verified"
         ) {
           setVerificationEmail(email)
+          setCheckEmailSource("unverified")
+          setMode("check-email")
+          return
         }
         setFeedback(readAuthenticationFailure(error))
       }
@@ -189,6 +196,7 @@ export function AuthPage({
               selectMode("login")
             }}
             onResend={resendVerification}
+            source={checkEmailSource}
           />
         </section>
       </main>
@@ -337,18 +345,6 @@ export function AuthPage({
               </AuthTextLink>
             </div>
           ) : null}
-
-          {verificationEmail === null ? null : (
-            <Button
-              className="w-full"
-              disabled={authActionsDisabled}
-              onClick={resendVerification}
-              type="button"
-              variant="secondary"
-            >
-              확인 메일 다시 보내기
-            </Button>
-          )}
         </div>
       </section>
     </main>

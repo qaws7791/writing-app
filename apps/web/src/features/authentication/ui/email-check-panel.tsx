@@ -17,6 +17,7 @@ type EmailCheckPanelProps = {
   readonly isPending: boolean
   readonly onBackToLogin: () => void
   readonly onResend: () => void
+  readonly source: "signup" | "unverified"
 }
 
 export function EmailCheckPanel({
@@ -26,6 +27,7 @@ export function EmailCheckPanel({
   isPending,
   onBackToLogin,
   onResend,
+  source,
 }: EmailCheckPanelProps) {
   const headingRef = useRef<HTMLHeadingElement>(null)
 
@@ -52,12 +54,13 @@ export function EmailCheckPanel({
         ref={headingRef}
         tabIndex={-1}
       >
-        가입을 마쳤습니다
+        {source === "signup" ? "가입을 마쳤습니다" : "메일 확인이 남았습니다"}
       </h1>
       <p className="mt-4 font-medium break-all text-foreground">{email}</p>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        이 주소로 확인 메일을 보냈습니다. 받은편지함의 링크를 열면 시작할 수
-        있습니다.
+        {source === "signup"
+          ? "이 주소로 확인 메일을 보냈습니다. 받은편지함의 링크를 열면 시작할 수 있습니다."
+          : "이 주소의 확인을 마치면 로그인할 수 있습니다. 메일이 없다면 다시 보내 주세요."}
       </p>
       {feedback}
       <div className="mt-8 flex flex-col gap-3">
