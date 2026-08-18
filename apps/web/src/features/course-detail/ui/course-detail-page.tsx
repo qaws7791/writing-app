@@ -55,7 +55,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             </p>
             <Progress
               aria-label={`${course.title} 진행률`}
-              className="mt-7"
+              className="mt-7 [&_[data-slot=progress-indicator]]:min-w-0"
               value={progressPercent}
             >
               <ProgressLabel className="sr-only">

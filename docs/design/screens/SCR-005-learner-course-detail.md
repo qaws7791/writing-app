@@ -28,7 +28,7 @@
 
 - 코스 썸네일은 모바일에서 히어로 상단 전폭 정사각으로 두고, 데스크톱에서는 텍스트 열 높이를 채우는 208–256px 미디어 열로 둔다. 다크 히어로는 `shadow-xs` inset highlight로 우물 윤곽을 읽히게 한다.
 - 코스 제목(`h1`), 커리큘럼 제목(`h2`), 유닛 제목은 `foundations.md`의 한국어 제목 tracking(`-0.01em` 이하)을 따른다. 유닛 제목은 heading이 아니므로 `word-break: keep-all`과 `overflow-wrap: anywhere`를 명시한다.
-- 코스 진행률은 공용 `Progress`, `ProgressLabel`, `ProgressValue`를 사용한다.
+- 코스 진행률은 공용 `Progress`, `ProgressLabel`, `ProgressValue`를 사용한다. indicator는 실제 비율 너비만 쓰고 최소 너비 캡슐을 만들지 않는다.
 - CTA는 공유 `Button`의 기본 조합을 사용하며 히어로 텍스트 열 전폭을 차지한다. 커리큘럼의 현재 레슨 행은 같은 목적지를 유지하되 primary 면은 CTA에만 두고, 현재 행은 왼쪽 위치 막대와 비-primary play로 ‘여기’만 표시한다.
 - `nextLesson`이 없으면 CTA를 표시하지 않는다.
 - 커리큘럼 disclosure는 공용 `Accordion`을 사용한다.
