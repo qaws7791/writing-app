@@ -65,7 +65,7 @@ test("캐러셀 다음 버튼으로 다음 슬라이드로 이동한다", async 
   await next.click();
 
   await expect(previous).toBeEnabled();
-  await expect(page.getByRole("progressbar", { name: "캐러셀 위치" })).toBeVisible();
+  await expect(page.getByText(/^\d+ \/ \d+$/)).toBeVisible();
 });
 
 test("캐러셀은 열린 상태에서도 접근성 위반이 없다", async ({ page }) => {

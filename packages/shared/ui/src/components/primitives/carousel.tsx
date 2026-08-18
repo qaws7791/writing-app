@@ -369,24 +369,26 @@ function CarouselProgress({
   ...props
 }: React.ComponentProps<"div">) {
   const { api, canScrollNext, canScrollPrev } = useCarousel()
-  const [progress, setProgress] = React.useState(0)
+  const [selectedIndex, setSelectedIndex] = React.useState(0)
+  const [snapCount, setSnapCount] = React.useState(0)
 
   React.useEffect(() => {
     if (!api) {
       return
     }
 
-    const onScroll = () => {
-      setProgress(api.scrollProgress())
+    const onSelect = () => {
+      setSelectedIndex(api.selectedScrollSnap())
+      setSnapCount(api.scrollSnapList().length)
     }
 
-    onScroll()
-    api.on("reInit", onScroll)
-    api.on("scroll", onScroll)
+    onSelect()
+    api.on("reInit", onSelect)
+    api.on("select", onSelect)
 
     return () => {
-      api.off("reInit", onScroll)
-      api.off("scroll", onScroll)
+      api.off("reInit", onSelect)
+      api.off("select", onSelect)
     }
   }, [api])
 
@@ -394,27 +396,31 @@ function CarouselProgress({
     return null
   }
 
+  const current = selectedIndex + 1
+  const trackProgress =
+    snapCount <= 1 ? 0 : selectedIndex / Math.max(snapCount - 1, 1)
+
   return (
     <div
-      aria-label="캐러셀 위치"
-      aria-valuemax={100}
-      aria-valuemin={0}
-      aria-valuenow={Math.round(progress * 100)}
-      className={cn(
-        "relative ml-4 h-0.5 min-w-16 flex-1 overflow-hidden rounded-full bg-muted",
-        className
-      )}
+      className={cn("ml-3 flex min-w-0 flex-1 items-center gap-3", className)}
       data-slot="carousel-progress"
-      role="progressbar"
       {...props}
     >
+      <p className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
+        {current} / {snapCount}
+      </p>
       <div
-        className="absolute inset-y-0 rounded-full bg-foreground"
-        style={{
-          left: `${progress * (100 - carouselProgressThumbPercent)}%`,
-          width: `${carouselProgressThumbPercent}%`,
-        }}
-      />
+        aria-hidden="true"
+        className="relative h-0.5 min-w-8 flex-1 overflow-hidden rounded-full bg-muted"
+      >
+        <div
+          className="absolute inset-y-0 rounded-full bg-foreground"
+          style={{
+            left: `${trackProgress * (100 - carouselProgressThumbPercent)}%`,
+            width: `${carouselProgressThumbPercent}%`,
+          }}
+        />
+      </div>
     </div>
   )
 }

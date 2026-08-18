@@ -108,7 +108,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 기본 옵션은 `align: "start"`, `containScroll: "trimSnaps"`, loop 없음이다. 슬라이드 간격은 24px이다. 터치 스와이프와 데스크톱 마우스 드래그를 모두 허용한다. `prefers-reduced-motion` 또는 `data-motion="reduced"`이면 스크롤 duration은 0이다.
 
-이전·다음 버튼은 `Button` `size="icon-lg"`(48px), `variant="secondary"`다. 두 버튼은 2px 간격의 분할 필이다. 바깥 모서리는 50%, 안쪽 모서리는 `md` radius다. 아이콘은 24px다. 접근 이름은 `이전 카드`, `다음 카드`다. `CarouselProgress`는 `muted` 트랙 위에 `foreground` 인디케이터를 옮긴다. 한 화면에 모든 슬라이드가 보이면 `CarouselControls`와 `CarouselProgress`를 숨긴다.
+이전·다음 버튼은 `Button` `size="icon-lg"`(48px), `variant="secondary"`다. 두 버튼은 2px 간격의 분할 필이다. 바깥 모서리는 50%, 안쪽 모서리는 `md` radius다. 아이콘은 24px다. 접근 이름은 `이전 카드`, `다음 카드`다. `CarouselProgress`는 현재 슬라이드와 전체 개수를 `3 / 4`처럼 보여 주고, 장식 트랙은 `aria-hidden`이다. 학습 진행률 `progressbar`로 쓰지 않는다. 한 화면에 모든 슬라이드가 보이면 `CarouselControls`와 `CarouselProgress`를 숨긴다.
 
 슬라이드 안 `Link`는 `useCarouselClickGuard`로 드래그 후 클릭 이동을 막는다. 키보드 사용자는 카드 `Link` Tab 이동과 이전·다음 버튼, 포커스된 캐러셀의 방향키로 탐색한다.
 

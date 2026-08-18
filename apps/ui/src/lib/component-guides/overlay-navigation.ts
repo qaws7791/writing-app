@@ -3196,9 +3196,9 @@ export function CarouselBasic() {
       },
       {
         id: "carousel-progress",
-        title: "위치 막대",
+        title: "위치 개수",
         description:
-          "CarouselProgress는 스크롤 위치를 muted 트랙 위의 foreground 구간으로 보여 줍니다.",
+          "CarouselProgress는 현재 슬라이드와 전체 개수를 보여 주고, 장식 트랙은 숨긴 시각 단서입니다.",
         code: `import {
   Carousel,
   CarouselContent,
