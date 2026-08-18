@@ -31,11 +31,10 @@ export function HomePage({
           <header className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">안녕하세요</p>
             <h1
-              className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl sm:leading-[1.15]"
+              className="font-heading text-3xl font-semibold tracking-[-0.01em] sm:text-4xl sm:leading-[1.15]"
               id="home-learner-hello"
             >
-              {firstName}님, 오늘도
-              <br className="hidden @[32rem]:block" /> 이어서 써 볼까요
+              {firstName}님, 오늘도 이어서 써 볼까요
             </h1>
           </header>
 

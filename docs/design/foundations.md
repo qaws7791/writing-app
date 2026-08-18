@@ -101,7 +101,9 @@ Pretendard Variable과 시스템 font stack을 사용한다.
 
 본문은 일반적으로 45자에서 75자 폭을 사용한다.
 
-한국어 본문은 과도한 음수 letter spacing을 사용하지 않는다.
+한국어 제목은 `word-break: keep-all`과 `overflow-wrap: anywhere`를 사용한다. 제목에 `text-balance`를 쓰지 않는다.
+
+한국어 본문은 과도한 음수 letter spacing을 사용하지 않는다. 한국어 제목의 tracking은 `-0.01em`을 넘기지 않는다.
 
 표, 시간과 counter의 숫자는 tabular numerals를 사용한다.
 
