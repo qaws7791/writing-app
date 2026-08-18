@@ -516,15 +516,18 @@ function GoogleSignInButton({
 }) {
   return (
     <Button
-      className="w-full justify-start gap-3"
+      className="w-full"
       disabled={disabled}
       onClick={onClick}
       size="lg"
       type="button"
       variant="default"
     >
-      <GoogleGLogo aria-hidden="true" className="size-4 shrink-0" />
-      Google로 계속하기
+      <span className="flex w-full items-center gap-3">
+        <GoogleGLogo aria-hidden="true" className="size-5 shrink-0" />
+        <span className="min-w-0 flex-1 text-center">Google로 로그인</span>
+        <span aria-hidden="true" className="size-5 shrink-0" />
+      </span>
     </Button>
   )
 }
