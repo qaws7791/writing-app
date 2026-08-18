@@ -144,7 +144,7 @@ function CurriculumLesson({
     locked
       ? "cursor-not-allowed opacity-60"
       : isCurrent
-        ? "bg-accent/70 hover:bg-accent"
+        ? "bg-card shadow-xs hover:bg-card"
         : "hover:bg-muted/55"
   )
   const content = (
