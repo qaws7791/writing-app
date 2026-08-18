@@ -10,6 +10,7 @@ import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 import {
   Progress,
   ProgressLabel,
+  ProgressValue,
 } from "@workspace/ui/components/primitives/progress"
 
 type CourseDetailPageProps = {
@@ -21,6 +22,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
   const totalLessonCount = course.learning.totalLessons
   const progressPercent = course.learning.progressPercent
   const nextLesson = course.learning.nextLesson
+  const courseImage = resolveCourseImage(course)
   const totalEstimatedMinutes = course.units.reduce(
     (total, unit) =>
       total +
@@ -47,12 +49,12 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
       >
         <CardContent className="grid gap-7 px-0 sm:grid-cols-[minmax(13rem,16rem)_minmax(0,1fr)] sm:items-stretch sm:px-(--card-spacing)">
           <Image
-            alt={resolveCourseImage(course).alt}
+            alt=""
             className="aspect-square h-auto w-full object-cover sm:aspect-auto sm:h-full sm:min-h-52 sm:rounded-3xl"
             height={320}
             loading="eager"
             sizes="(max-width: 640px) 100vw, 256px"
-            src={resolveCourseImage(course).src}
+            src={courseImage.src}
             width={320}
           />
           <div className="min-w-0 px-(--card-spacing) sm:px-0">
@@ -63,23 +65,15 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
               {course.description}
             </p>
             <Progress
-              aria-label={`${course.title} 진행률`}
               className="mt-7 [&_[data-slot=progress-indicator]]:min-w-0"
               value={progressPercent}
             >
-              <ProgressLabel className="sr-only">
-                {course.title} 진행률
-              </ProgressLabel>
-              <span aria-hidden="true" className="text-sm font-medium">
-                학습 진행
-              </span>
-              <span className="ml-auto text-sm font-medium text-muted-foreground tabular-nums">
-                {completedLessonCount}/{totalLessonCount}개 레슨
-                <span aria-hidden="true" className="mx-1.5 font-normal">
-                  ·
-                </span>
-                약 {totalEstimatedMinutes}분
-              </span>
+              <ProgressLabel>학습 진행</ProgressLabel>
+              <ProgressValue className="text-sm font-medium text-muted-foreground">
+                {() =>
+                  `${completedLessonCount}/${totalLessonCount}개 레슨 · 약 ${totalEstimatedMinutes}분`
+                }
+              </ProgressValue>
             </Progress>
             {nextLesson === null ? null : (
               <div className="mt-8">
