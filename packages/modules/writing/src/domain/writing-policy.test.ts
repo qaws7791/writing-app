@@ -13,6 +13,7 @@ import {
 import {
   countWritingChars,
   createWritingPiece,
+  previewWritingBody,
   reviseWritingPiece,
   writingEventTypes,
 } from "#writing/domain/writing"
@@ -185,6 +186,12 @@ describe("글 점검", () => {
         unmetRequirements: [],
       })
     ).toBeNull()
+  })
+
+  it("본문 미리보기는 공백을 접고 120자에서 자른다", () => {
     expect(countWritingChars("한글12")).toBe(4)
+    expect(previewWritingBody("  첫 줄\n\n둘째 줄  ")).toBe("첫 줄 둘째 줄")
+    expect(previewWritingBody("가".repeat(120))).toBe("가".repeat(120))
+    expect(previewWritingBody("가".repeat(121))).toBe(`${"가".repeat(120)}…`)
   })
 })

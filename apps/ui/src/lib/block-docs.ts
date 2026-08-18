@@ -84,7 +84,8 @@ export const learnerBlocks: BlockDoc[] = [
   {
     slug: "writing-home",
     title: "Writing Home",
-    description: "쓰기 홈입니다. 하나의 글 목록에서 이어 쓰고, 과제 카탈로그로 새 글을 시작합니다.",
+    description:
+      "쓰기 홈입니다. 과제별로 글을 묶고, 본문 미리보기에서 이어 쓰며, 카탈로그로 새 글을 시작합니다.",
     installName: "writing-home",
   },
   {

@@ -28,6 +28,18 @@ export function countWritingChars(body: string): number {
   return [...body].length
 }
 
+const writingPreviewMaxChars = 120
+
+export function previewWritingBody(body: string): string {
+  const collapsed = body.replace(/\s+/g, " ").trim()
+  if (collapsed.length === 0) return ""
+
+  const chars = [...collapsed]
+  if (chars.length <= writingPreviewMaxChars) return collapsed
+
+  return `${chars.slice(0, writingPreviewMaxChars).join("").trimEnd()}…`
+}
+
 export function createWritingPiece(input: {
   readonly id: WritingId
   readonly learnerId: LearnerId

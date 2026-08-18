@@ -3,6 +3,10 @@
 import { useState, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { deleteWriting } from "@workspace/http-client/learner"
+import {
+  ChevronRightIcon,
+  SparklesIcon,
+} from "@workspace/ui/components/icons/action-icons"
 import { PlusIcon, TrashIcon } from "@workspace/ui/components/icons"
 import {
   AlertDialog,
@@ -18,18 +22,17 @@ import {
   Button,
   buttonVariants,
 } from "@workspace/ui/components/primitives/button"
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@workspace/ui/components/primitives/empty"
+import { cardVariants } from "@workspace/ui/components/primitives/card"
 import {
   Insight,
   InsightDescription,
 } from "@workspace/ui/components/learning/insight"
+import { cn } from "@workspace/ui/lib/utils"
 
-import { formatWritingStartedAt } from "@/features/writing/model/writing-copy"
+import {
+  formatWritingTimestamp,
+  groupWritingsByTask,
+} from "@/features/writing/model/writing-copy"
 import {
   readLearnerApiErrorCode,
   settleLearnerApiRequest,
@@ -52,6 +55,7 @@ export function WritingHomePage({
   const [deleting, setDeleting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  const groups = groupWritingsByTask(writings)
 
   const handleDelete = async () => {
     if (deleteTarget === null) return
@@ -85,20 +89,20 @@ export function WritingHomePage({
   }
 
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex max-w-xl flex-col gap-2">
-          <h1 className="font-heading text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl sm:leading-[1.15]">
-            쓰기
-          </h1>
-          <p className="text-sm leading-6 text-pretty text-muted-foreground">
-            글을 이어 쓰거나, 과제를 골라 새 글을 시작합니다.
-          </p>
-        </div>
-        <Link className={buttonVariants()} href="/app/writing/catalog">
-          <PlusIcon aria-hidden="true" />
-          과제 둘러보기
-        </Link>
+    <div className="@container flex w-full max-w-2xl flex-col gap-10">
+      <header className="flex items-end justify-between gap-4">
+        <h1 className="font-heading text-3xl font-semibold tracking-[-0.01em] sm:text-4xl sm:leading-[1.15]">
+          이어 쓸 글
+        </h1>
+        {writings.length > 0 ? (
+          <Link
+            className={buttonVariants({ size: "sm", variant: "outline" })}
+            href="/app/writing/catalog"
+          >
+            <PlusIcon aria-hidden="true" />
+            과제 둘러보기
+          </Link>
+        ) : null}
       </header>
 
       {statusMessage === null ? null : (
@@ -112,27 +116,45 @@ export function WritingHomePage({
         </Insight>
       )}
 
-      <div className="flex flex-col gap-3">
-        {writings.length > 0 ? (
-          writings.map((writing) => (
-            <WritingPieceCard
-              interactive={interactive}
-              key={writing.id}
-              onDelete={setDeleteTarget}
-              writing={writing}
-            />
-          ))
-        ) : (
-          <Empty variant="frame">
-            <EmptyHeader>
-              <EmptyTitle>아직 글이 없습니다</EmptyTitle>
-              <EmptyDescription>
-                과제를 고르면 목적이 정해진 글을 시작할 수 있습니다.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-      </div>
+      {groups.length > 0 ? (
+        <div className="flex flex-col gap-10">
+          {groups.map((group) => (
+            <section
+              aria-labelledby={`writing-task-${group.taskId}`}
+              className="flex flex-col gap-3"
+              key={group.taskId}
+            >
+              <header className="flex flex-col gap-1.5 px-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {group.domain} · {group.typeName}
+                  </p>
+                  <Badge variant="outline">{group.difficulty}</Badge>
+                </div>
+                <h2
+                  className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl sm:leading-[1.2]"
+                  id={`writing-task-${group.taskId}`}
+                >
+                  {group.title}
+                </h2>
+              </header>
+              <ul className="flex flex-col gap-3">
+                {group.pieces.map((writing) => (
+                  <li key={writing.id}>
+                    <WritingPaper
+                      interactive={interactive}
+                      onDelete={setDeleteTarget}
+                      writing={writing}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <StartWritingCta />
+      )}
 
       <AlertDialog
         onOpenChange={(open) => {
@@ -167,7 +189,38 @@ export function WritingHomePage({
   )
 }
 
-function WritingPieceCard({
+function StartWritingCta() {
+  return (
+    <Link
+      className={cn(
+        cardVariants({ size: "lg", variant: "muted" }),
+        "gap-6 rounded-[1.75rem] px-8 outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
+      )}
+      href="/app/writing/catalog"
+    >
+      <div className="flex items-center gap-2">
+        <SparklesIcon
+          aria-hidden="true"
+          className="size-4 text-muted-foreground"
+        />
+        <span className="text-sm font-medium text-muted-foreground">
+          지금 써볼까요?
+        </span>
+      </div>
+      <h2 className="font-heading text-2xl leading-tight font-semibold tracking-[-0.01em]">
+        목적이 있는 글을
+        <br />
+        시작해 보세요
+      </h2>
+      <div className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-xs">
+        <span>과제 둘러보기</span>
+        <ChevronRightIcon aria-hidden="true" className="size-4" />
+      </div>
+    </Link>
+  )
+}
+
+function WritingPaper({
   interactive,
   onDelete,
   writing,
@@ -176,29 +229,36 @@ function WritingPieceCard({
   readonly onDelete: (writing: LearnerWritingSummaryDto) => void
   readonly writing: LearnerWritingSummaryDto
 }) {
+  const preview = writing.preview.trim()
+
   return (
-    <article className="flex flex-col gap-3 rounded-[1.75rem] border border-border/70 bg-card px-4 py-4 shadow-2xs transition-colors hover:bg-accent/40 sm:flex-row sm:items-center sm:justify-between">
+    <article
+      className={cn(
+        cardVariants({ size: "default", variant: "surface" }),
+        "relative gap-0 overflow-visible rounded-[1.75rem] py-0"
+      )}
+    >
       <Link
-        className="min-w-0 flex-1 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+        className="flex flex-col gap-4 rounded-[1.75rem] px-6 py-5 pr-14 outline-none focus-visible:ring-3 focus-visible:ring-ring/25"
         href={`/app/writing/${encodeURIComponent(writing.id)}`}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            {writing.domain} · {writing.typeName}
-          </span>
-          <Badge variant="outline">{writing.difficulty}</Badge>
-        </div>
-        <h2 className="mt-1 font-heading text-base font-semibold tracking-[-0.02em] text-foreground text-balance">
-          {writing.title}
-        </h2>
-        <p className="mt-1 text-xs tabular-nums text-muted-foreground">
-          {formatWritingStartedAt(writing.createdAt)} ·{" "}
+        <p
+          className={cn(
+            "line-clamp-3 min-h-[5.25rem] text-base leading-7",
+            preview.length > 0 ? "text-foreground/80" : "text-muted-foreground"
+          )}
+        >
+          {preview.length > 0 ? preview : "아직 본문이 없습니다"}
+        </p>
+        <p className="text-xs tabular-nums text-muted-foreground">
+          {formatWritingTimestamp(writing.updatedAt)} ·{" "}
           {writing.charCount.toLocaleString("ko-KR")}자
         </p>
       </Link>
-      <div className="flex shrink-0 items-center justify-end">
+      <div className="absolute top-2.5 right-2.5">
         <Button
-          aria-label={`${writing.title} 삭제`}
+          aria-label={`${writing.title}, ${formatWritingTimestamp(writing.updatedAt)} 삭제`}
+          className="text-muted-foreground hover:text-foreground"
           disabled={!interactive}
           onClick={() => onDelete(writing)}
           size="icon-sm"

@@ -46,7 +46,10 @@ export type WritingSession = Readonly<{
 }>
 
 export type WritingSummaryRecord = Readonly<{
-  brief: Pick<WritingBrief, "difficulty" | "domain" | "title" | "typeName">
+  brief: Pick<
+    WritingBrief,
+    "difficulty" | "domain" | "taskId" | "title" | "typeName"
+  >
   writing: WritingPiece
 }>
 

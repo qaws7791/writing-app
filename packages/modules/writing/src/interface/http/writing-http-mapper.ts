@@ -5,7 +5,7 @@ import type { WritingSession } from "#writing/application/ports/writing-ports"
 import type { WritingSummaryRecord } from "#writing/application/ports/writing-ports"
 import type { WritingCatalogItem } from "#writing/application/ports/writing-ports"
 import type { WritingTaskDraft } from "#writing/domain/writing-task"
-import { countWritingChars } from "#writing/domain/writing"
+import { countWritingChars, previewWritingBody } from "#writing/domain/writing"
 
 export function presentWritingSession(session: WritingSession) {
   return {
@@ -40,6 +40,8 @@ export function presentWritingSummary(record: WritingSummaryRecord) {
     difficulty: record.brief.difficulty,
     domain: record.brief.domain,
     id: record.writing.id,
+    preview: previewWritingBody(record.writing.body),
+    taskId: record.brief.taskId,
     title: record.brief.title,
     typeName: record.brief.typeName,
     updatedAt: record.writing.updatedAt.toISOString(),

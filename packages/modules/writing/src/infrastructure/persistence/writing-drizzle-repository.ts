@@ -253,6 +253,7 @@ export function createDrizzleWritingRepository(
         brief: {
           difficulty: writingDifficultySchema.parse(row.publication.difficulty),
           domain: writingDomainSchema.parse(row.publication.domain),
+          taskId: writingTaskIdSchema.parse(row.publication.taskId),
           title: row.publication.title,
           typeName: row.publication.typeName,
         },

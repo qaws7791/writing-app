@@ -100,6 +100,8 @@ export const writingSummarySchema = z.strictObject({
   difficulty: writingDifficultySchema,
   domain: writingDomainSchema,
   id: writingIdSchema,
+  preview: z.string(),
+  taskId: writingTaskIdSchema,
   title: z.string(),
   typeName: z.string(),
   updatedAt: z.iso.datetime(),
