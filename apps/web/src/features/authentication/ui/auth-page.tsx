@@ -223,7 +223,7 @@ export function AuthPage({
                 ? "비밀번호 재설정"
                 : mode === "signup"
                   ? "글결. 시작하기"
-                  : "글결.에 로그인"}
+                  : "글결에 로그인"}
           </h1>
           <p
             className={cn(
