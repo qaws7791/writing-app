@@ -89,20 +89,13 @@ export function CourseCatalogClient({ courses }: CoursesPageProps) {
               className={`${catalogCarouselBreakoutClassName} gap-5`}
               opts={{ align: alignCatalogCarousel, watchDrag: true }}
             >
-              <header
-                className={`${catalogCarouselTrackPadClassName} flex items-center gap-3`}
-              >
+              <header className={catalogCarouselTrackPadClassName}>
                 <h2
-                  className="min-w-0 flex-1 font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
+                  className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
                   id={headingId}
                 >
                   {section.category}
                 </h2>
-                <CarouselControls>
-                  <CarouselPrevious />
-                  <CarouselNext />
-                  <CarouselProgress className="max-w-32 sm:max-w-xs" />
-                </CarouselControls>
               </header>
               <CarouselContent className={catalogCarouselContentClassName}>
                 {section.courses.map(({ course, imageIndex }) => (
@@ -118,6 +111,11 @@ export function CourseCatalogClient({ courses }: CoursesPageProps) {
                   </CarouselItem>
                 ))}
               </CarouselContent>
+              <CarouselControls className={catalogCarouselTrackPadClassName}>
+                <CarouselPrevious />
+                <CarouselNext />
+                <CarouselProgress />
+              </CarouselControls>
             </Carousel>
           </section>
         )

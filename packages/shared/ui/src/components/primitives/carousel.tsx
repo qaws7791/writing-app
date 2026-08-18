@@ -452,7 +452,7 @@ function CarouselProgress({
 
   return (
     <div
-      className={cn("ml-3 flex min-w-0 flex-1 items-center gap-3", className)}
+      className={cn("ml-3 flex w-32 shrink-0 items-center gap-3", className)}
       data-slot="carousel-progress"
       {...props}
     >

@@ -306,27 +306,18 @@ export function LearnCatalog({
                 className="gap-5"
                 opts={{ align: alignCatalogCarousel }}
               >
-                <header
-                  className={`${catalogColumnClassName} flex items-start gap-3`}
-                >
-                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <h2
-                      id={`learn-catalog-topic-${topic.id}`}
-                      className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
-                    >
-                      {topic.title}
-                    </h2>
-                    {topic.lead ? (
-                      <p className="text-sm text-muted-foreground">
-                        {topic.lead}
-                      </p>
-                    ) : null}
-                  </div>
-                  <CarouselControls>
-                    <CarouselPrevious />
-                    <CarouselNext />
-                    <CarouselProgress className="max-w-32 sm:max-w-xs" />
-                  </CarouselControls>
+                <header className={catalogColumnClassName}>
+                  <h2
+                    id={`learn-catalog-topic-${topic.id}`}
+                    className="font-heading text-xl font-semibold tracking-[-0.01em] sm:text-2xl"
+                  >
+                    {topic.title}
+                  </h2>
+                  {topic.lead ? (
+                    <p className="mt-1.5 text-sm text-muted-foreground">
+                      {topic.lead}
+                    </p>
+                  ) : null}
                 </header>
                 <CarouselContent className={catalogCarouselTrackPadClassName}>
                   {topic.courses.map((course) => (
@@ -338,6 +329,11 @@ export function LearnCatalog({
                     </CarouselItem>
                   ))}
                 </CarouselContent>
+                <CarouselControls className={catalogColumnClassName}>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                  <CarouselProgress />
+                </CarouselControls>
               </Carousel>
             </section>
           ))}
