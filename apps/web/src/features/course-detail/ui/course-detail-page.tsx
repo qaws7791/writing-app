@@ -59,7 +59,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.01em] sm:text-4xl">
               {course.title}
             </h1>
-            <p className="mt-4 text-base leading-7 text-muted-foreground">
+            <p className="mt-4 text-base leading-7 text-foreground/80">
               {course.description}
             </p>
             <Progress
@@ -73,12 +73,9 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
               <span aria-hidden="true" className="text-sm font-medium">
                 학습 진행
               </span>
-              <span className="ml-auto text-sm font-medium text-foreground tabular-nums">
+              <span className="ml-auto text-sm font-medium text-muted-foreground tabular-nums">
                 {completedLessonCount}/{totalLessonCount}개 레슨
-                <span
-                  aria-hidden="true"
-                  className="mx-1.5 font-normal text-muted-foreground"
-                >
+                <span aria-hidden="true" className="mx-1.5 font-normal">
                   ·
                 </span>
                 약 {totalEstimatedMinutes}분
