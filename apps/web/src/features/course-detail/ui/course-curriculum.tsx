@@ -180,7 +180,11 @@ function CurriculumLesson({
         <span
           className={cn(
             "line-clamp-2 text-sm font-medium [word-break:keep-all]",
-            locked ? "text-muted-foreground" : "text-foreground"
+            locked || done
+              ? "text-muted-foreground"
+              : isCurrent
+                ? "text-foreground"
+                : "text-foreground/80"
           )}
         >
           {lesson.title}
