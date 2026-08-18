@@ -121,7 +121,7 @@ export function CourseCatalogClient({
   const sectionViews = buildSectionViews(sections)
 
   return (
-    <div className="flex flex-col gap-14">
+    <div className="flex flex-col gap-10">
       {sectionViews.map((section) => {
         const headingId = `courses-catalog-topic-${section.category}`
         return (
@@ -217,7 +217,7 @@ function CourseCard({
     <Link
       className={cn(
         cardVariants({ variant: "surface" }),
-        "aspect-[340/520] h-full w-full cursor-pointer gap-0 rounded-5xl py-0 outline-none transition-[background-color,transform] duration-125 ease-press hover:bg-accent/40 focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-[0.995]"
+        "h-full w-full cursor-pointer gap-0 rounded-5xl py-0 outline-none transition-[background-color,transform] duration-125 ease-press hover:bg-accent/40 focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-[0.995]"
       )}
       href={`/app/courses/${course.id}`}
       onClick={guardCarouselClick}

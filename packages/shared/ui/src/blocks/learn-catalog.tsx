@@ -242,7 +242,7 @@ function CourseCard({
       data-slot="learn-catalog-course"
       className={cn(
         cardVariants({ variant: "surface" }),
-        "aspect-[340/520] h-full w-full gap-0 rounded-5xl py-0"
+        "h-full w-full gap-0 rounded-5xl py-0"
       )}
     >
       <div className="shrink-0 p-7">
@@ -297,7 +297,7 @@ export function LearnCatalog({
           </div>
         </header>
 
-        <div className="flex flex-col gap-14">
+        <div className="flex flex-col gap-10">
           {TOPICS.map((topic) => (
             <section
               key={topic.id}
