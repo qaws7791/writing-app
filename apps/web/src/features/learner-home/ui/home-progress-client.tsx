@@ -237,12 +237,7 @@ export function HomeProgressClient({
               onLoadMore={() => {
                 void loadMoreInProgressCourses()
               }}
-              renderCard={(course, index) => (
-                <ContinueCourseCard
-                  course={course}
-                  variant={index === 0 ? "hero" : "default"}
-                />
-              )}
+              renderCard={(course) => <ContinueCourseCard course={course} />}
             />
           ) : (
             <StartCourseCta />

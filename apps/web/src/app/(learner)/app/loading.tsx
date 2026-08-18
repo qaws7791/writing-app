@@ -22,8 +22,8 @@ export default function LearnerAppHomeLoading() {
             <div className="h-7 w-36 animate-pulse rounded-full bg-muted" />
             <div className="h-9 w-40 animate-pulse rounded-2xl bg-muted" />
           </div>
-          <div className="h-44 animate-pulse rounded-[1.75rem] bg-muted" />
-          <div className="h-36 animate-pulse rounded-[1.75rem] bg-muted" />
+          <div className="h-40 animate-pulse rounded-[1.75rem] bg-muted" />
+          <div className="h-40 animate-pulse rounded-[1.75rem] bg-muted" />
         </div>
       </div>
     </div>
