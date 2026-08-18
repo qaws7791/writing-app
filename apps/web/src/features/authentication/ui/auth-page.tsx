@@ -24,6 +24,7 @@ import {
 } from "@/features/authentication/ui/email-check-panel"
 import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 import { Button } from "@workspace/ui/components/primitives/button"
+import { Card, CardContent } from "@workspace/ui/components/primitives/card"
 import {
   Field,
   FieldDescription,
@@ -255,7 +256,42 @@ export function AuthPage({
         </header>
 
         <div className="flex flex-col gap-5">
-          {mode === "reset-request" ? null : (
+          {mode === "reset-request" ? (
+            <>
+              <form className="grid gap-4" onSubmit={submitCredentials}>
+                <AuthInput
+                  autoComplete="email"
+                  error={emailError}
+                  label="이메일"
+                  maxLength={320}
+                  name="email"
+                  type="email"
+                />
+                {dangerFormFeedback === null ? null : (
+                  <Field>
+                    <FieldError>{dangerFormFeedback.message}</FieldError>
+                  </Field>
+                )}
+                <Button
+                  className="w-full"
+                  disabled={authActionsDisabled}
+                  size="lg"
+                  type="submit"
+                  variant="outline"
+                >
+                  {isPending ? "처리 중…" : "재설정 링크 받기"}
+                </Button>
+              </form>
+              <div className="text-center">
+                <AuthTextLink
+                  disabled={authActionsDisabled}
+                  onClick={() => selectMode("login")}
+                >
+                  로그인으로 돌아가기
+                </AuthTextLink>
+              </div>
+            </>
+          ) : (
             <>
               <p className="text-sm leading-6 text-muted-foreground">
                 Google 계정이나 이메일로 이어가세요.
@@ -265,106 +301,105 @@ export function AuthPage({
                 onClick={loginWithGoogle}
               />
               <FieldSeparator>또는</FieldSeparator>
-              <Tabs
-                onValueChange={(value) => {
-                  selectMode(value === "signup" ? "signup" : "login")
-                }}
-                value={tabValue}
+              <Card
+                aria-label="이메일로 계속하기"
+                className="overflow-visible"
+                role="group"
+                size="sm"
+                variant="frame"
               >
-                <TabsList className="w-full">
-                  <TabsTrigger disabled={authActionsDisabled} value="login">
-                    로그인
-                  </TabsTrigger>
-                  <TabsTrigger disabled={authActionsDisabled} value="signup">
-                    가입
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+                <CardContent className="flex flex-col gap-4">
+                  <Tabs
+                    onValueChange={(value) => {
+                      selectMode(value === "signup" ? "signup" : "login")
+                    }}
+                    value={tabValue}
+                  >
+                    <TabsList className="w-full">
+                      <TabsTrigger disabled={authActionsDisabled} value="login">
+                        로그인
+                      </TabsTrigger>
+                      <TabsTrigger
+                        disabled={authActionsDisabled}
+                        value="signup"
+                      >
+                        가입
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  <form className="grid gap-4" onSubmit={submitCredentials}>
+                    <div
+                      aria-hidden={mode === "signup" ? undefined : true}
+                      className={cn(
+                        "grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none",
+                        mode === "signup"
+                          ? "grid-rows-[1fr]"
+                          : "grid-rows-[0fr]"
+                      )}
+                    >
+                      <div className="min-h-0 overflow-hidden">
+                        <AuthInput
+                          autoComplete="name"
+                          label="이름"
+                          maxLength={100}
+                          name="name"
+                          {...(mode === "signup" ? {} : { tabIndex: -1 })}
+                          type="text"
+                        />
+                      </div>
+                    </div>
+                    <AuthInput
+                      autoComplete="email"
+                      error={emailError}
+                      label="이메일"
+                      maxLength={320}
+                      name="email"
+                      type="email"
+                    />
+                    <AuthPasswordInput
+                      actionsDisabled={authActionsDisabled}
+                      autoComplete={
+                        mode === "signup" ? "new-password" : "current-password"
+                      }
+                      error={passwordError}
+                      label="비밀번호"
+                      labelAction={
+                        mode === "login" ? (
+                          <AuthTextLink
+                            disabled={authActionsDisabled}
+                            onClick={() => selectMode("reset-request")}
+                          >
+                            비밀번호를 잊으셨나요?
+                          </AuthTextLink>
+                        ) : null
+                      }
+                      liveMinLength={mode === "signup" ? 12 : undefined}
+                      maxLength={128}
+                      name="password"
+                    />
+                    {dangerFormFeedback === null ? null : (
+                      <Field>
+                        <FieldError>{dangerFormFeedback.message}</FieldError>
+                      </Field>
+                    )}
+                    <Button
+                      className="w-full"
+                      disabled={authActionsDisabled}
+                      size="lg"
+                      type="submit"
+                      variant="outline"
+                    >
+                      {isPending
+                        ? "처리 중…"
+                        : mode === "signup"
+                          ? "이메일로 가입하기"
+                          : "이메일로 로그인하기"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
             </>
           )}
-
-          <form className="grid gap-4" onSubmit={submitCredentials}>
-            <div
-              aria-hidden={mode === "signup" ? undefined : true}
-              className={cn(
-                "grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none",
-                mode === "signup" ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-              )}
-            >
-              <div className="min-h-0 overflow-hidden">
-                <AuthInput
-                  autoComplete="name"
-                  label="이름"
-                  maxLength={100}
-                  name="name"
-                  {...(mode === "signup" ? {} : { tabIndex: -1 })}
-                  type="text"
-                />
-              </div>
-            </div>
-            <AuthInput
-              autoComplete="email"
-              error={emailError}
-              label="이메일"
-              maxLength={320}
-              name="email"
-              type="email"
-            />
-            {mode === "reset-request" ? null : (
-              <AuthPasswordInput
-                actionsDisabled={authActionsDisabled}
-                autoComplete={
-                  mode === "signup" ? "new-password" : "current-password"
-                }
-                error={passwordError}
-                label="비밀번호"
-                labelAction={
-                  mode === "login" ? (
-                    <AuthTextLink
-                      disabled={authActionsDisabled}
-                      onClick={() => selectMode("reset-request")}
-                    >
-                      비밀번호를 잊으셨나요?
-                    </AuthTextLink>
-                  ) : null
-                }
-                liveMinLength={mode === "signup" ? 12 : undefined}
-                maxLength={128}
-                name="password"
-              />
-            )}
-            {dangerFormFeedback === null ? null : (
-              <Field>
-                <FieldError>{dangerFormFeedback.message}</FieldError>
-              </Field>
-            )}
-            <Button
-              className="w-full"
-              disabled={authActionsDisabled}
-              size="lg"
-              type="submit"
-              variant="outline"
-            >
-              {isPending
-                ? "처리 중…"
-                : mode === "signup"
-                  ? "이메일로 가입하기"
-                  : mode === "reset-request"
-                    ? "재설정 링크 받기"
-                    : "이메일로 로그인하기"}
-            </Button>
-          </form>
-
-          {mode === "reset-request" ? (
-            <div className="text-center">
-              <AuthTextLink
-                disabled={authActionsDisabled}
-                onClick={() => selectMode("login")}
-              >
-                로그인으로 돌아가기
-              </AuthTextLink>
-            </div>
-          ) : null}
         </div>
       </section>
     </main>
