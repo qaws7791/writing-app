@@ -16,6 +16,13 @@ import { cn } from "@workspace/ui/lib/utils"
 
 import { HomeCourseImage } from "@/features/learner-home/ui/home-course-image"
 
+type ContinueLesson = NonNullable<
+  Extract<
+    LearnerProgressCourseDto["learning"],
+    { status: "in_progress" | "not_started" }
+  >["nextLesson"]
+>
+
 export function StartCourseCta() {
   return (
     <Link
@@ -49,29 +56,37 @@ export function StartCourseCta() {
 
 export function ContinueCourseCard({
   course,
+  variant = "default",
 }: {
   readonly course: LearnerProgressCourseDto
+  readonly variant?: "default" | "hero"
 }) {
   const completedLessonCount = course.learning.completedLessons
   const totalLessonCount = course.learning.totalLessons
   const progressPercent = course.learning.progressPercent
-  const nextLesson = course.learning.nextLesson
+  const continueLessons = readContinueLessons(course.learning)
+  const primaryLesson = continueLessons[0]
+  const followingLesson = continueLessons[1]
   const courseHref = `/app/courses/${course.id}`
+  const hideCourseLinkOnNarrow = followingLesson !== undefined
 
   return (
     <article
       className={cn(
         cardVariants({ size: "sm", variant: "surface" }),
-        "gap-5 rounded-[1.75rem]"
+        "gap-5 rounded-[1.75rem]",
+        variant === "hero" && "gap-6"
       )}
     >
-      <Link
-        className="flex items-start gap-4 px-(--card-spacing) outline-none focus-visible:ring-3 focus-visible:ring-ring/25 sm:gap-5"
-        href={courseHref}
-      >
+      <div className="flex items-start gap-4 px-(--card-spacing) sm:gap-5">
         <HomeCourseImage course={course} />
         <div className="min-w-0 flex-1 pt-0.5">
-          <h3 className="font-heading text-base font-semibold tracking-[-0.025em] text-balance sm:text-lg">
+          <h3
+            className={cn(
+              "font-heading font-semibold tracking-[-0.025em] text-balance",
+              variant === "hero" ? "text-lg sm:text-xl" : "text-base sm:text-lg"
+            )}
+          >
             {course.title}
           </h3>
           <Progress className="mt-3 gap-1.5" value={progressPercent}>
@@ -82,54 +97,103 @@ export function ContinueCourseCard({
               {() => `${completedLessonCount}/${totalLessonCount}레슨`}
             </ProgressValue>
           </Progress>
+          <Link
+            className={cn(
+              "mt-2 text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/25",
+              hideCourseLinkOnNarrow
+                ? "hidden @[48rem]:inline-flex"
+                : "inline-flex"
+            )}
+            href={courseHref}
+          >
+            코스 보기
+          </Link>
         </div>
-      </Link>
+      </div>
 
-      <div className="px-(--card-spacing)">
-        {nextLesson !== null ? (
-          <NextLessonLink lesson={nextLesson} />
-        ) : (
-          <p className="px-3.5 py-3 text-sm text-muted-foreground">
+      <div className="flex flex-col gap-1 px-(--card-spacing)">
+        {primaryLesson === undefined ? (
+          <p className="px-1 py-3 text-sm text-muted-foreground">
             모든 레슨을 완료했어요
           </p>
+        ) : (
+          <PrimaryLessonLink
+            emphasized={variant === "hero"}
+            lesson={primaryLesson}
+          />
+        )}
+        {followingLesson === undefined ? null : (
+          <FollowingLessonLink lesson={followingLesson} />
         )}
       </div>
     </article>
   )
 }
 
-function NextLessonLink({
+function readContinueLessons(
+  learning: LearnerProgressCourseDto["learning"]
+): readonly ContinueLesson[] {
+  if (learning.status === "completed") {
+    return []
+  }
+
+  return learning.followingLesson === null
+    ? [learning.nextLesson]
+    : [learning.nextLesson, learning.followingLesson]
+}
+
+function PrimaryLessonLink({
+  emphasized,
   lesson,
 }: {
-  readonly lesson: NonNullable<
-    LearnerProgressCourseDto["learning"]["nextLesson"]
-  >
+  readonly emphasized: boolean
+  readonly lesson: ContinueLesson
 }) {
   return (
     <Link
       aria-label={`${lesson.title} 시작, ${lesson.estimatedMinutes}분`}
       className={cn(
-        "flex w-full items-center gap-3.5 rounded-3xl px-3.5 py-3 text-left outline-none transition-[background-color,transform] duration-125 ease-press",
-        "hover:bg-accent active:scale-[0.995]",
-        "focus-visible:ring-3 focus-visible:ring-ring/25"
+        "flex w-full items-center gap-3.5 text-left outline-none transition-[background-color,transform] duration-125 ease-press",
+        "focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-[0.995]",
+        emphasized
+          ? "min-h-12 rounded-2xl bg-primary px-5 text-primary-foreground"
+          : "rounded-2xl px-1 py-2 hover:text-foreground"
       )}
       href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
     >
-      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground text-background">
-        <PlayIcon
-          aria-hidden="true"
-          className="size-4 translate-x-px"
-          fill="currentColor"
-        />
-      </span>
+      {emphasized ? null : (
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground text-background">
+          <PlayIcon
+            aria-hidden="true"
+            className="size-4 translate-x-px"
+            fill="currentColor"
+          />
+        </span>
+      )}
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium tracking-[-0.01em] text-pretty">
           {lesson.title}
         </span>
-        <span className="mt-0.5 block text-xs tabular-nums text-muted-foreground">
+        <span
+          className={cn(
+            "mt-0.5 block text-xs tabular-nums",
+            emphasized ? "text-primary-foreground/80" : "text-muted-foreground"
+          )}
+        >
           {lesson.estimatedMinutes}분
         </span>
       </span>
+    </Link>
+  )
+}
+
+function FollowingLessonLink({ lesson }: { readonly lesson: ContinueLesson }) {
+  return (
+    <Link
+      className="px-1 py-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/25"
+      href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
+    >
+      다음 · {lesson.title} · {lesson.estimatedMinutes}분
     </Link>
   )
 }

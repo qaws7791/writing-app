@@ -217,8 +217,11 @@ export function HomeProgressClient({ inProgress }: HomeProgressClientProps) {
               onLoadMore={() => {
                 void loadMoreInProgressCourses()
               }}
-              renderCard={(course) => (
-                <ContinueCourseCard course={course} key={course.id} />
+              renderCard={(course, index) => (
+                <ContinueCourseCard
+                  course={course}
+                  variant={index === 0 ? "hero" : "default"}
+                />
               )}
             />
           ) : (

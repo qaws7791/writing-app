@@ -298,6 +298,7 @@ export type LessonLearningState =
 export type CourseLearningState =
   | Readonly<{
       completedLessons: 0
+      followingLesson: LearningLessonReference | null
       nextLesson: LearningLessonReference
       progressPercent: 0
       status: "not_started"
@@ -306,6 +307,7 @@ export type CourseLearningState =
     }>
   | Readonly<{
       completedLessons: number
+      followingLesson: LearningLessonReference | null
       lastActivityAt: string
       nextLesson: LearningLessonReference
       progressPercent: number
@@ -324,7 +326,7 @@ export type CourseLearningState =
       version: CurriculumVersionRef
     }>
 
-type LearningLessonReference = Readonly<{
+export type LearningLessonReference = Readonly<{
   currentStepId: LessonStepId
   currentStepIndex: number
   estimatedMinutes: number

@@ -40,11 +40,13 @@ const courseLearningStateBaseSchema = z.strictObject({
 export const courseLearningStateSchema = z.discriminatedUnion("status", [
   courseLearningStateBaseSchema.extend({
     completedLessons: z.literal(0),
+    followingLesson: learnerLessonReferenceSchema.nullable(),
     nextLesson: learnerLessonReferenceSchema,
     progressPercent: z.literal(0),
     status: z.literal("not_started"),
   }),
   courseLearningStateBaseSchema.extend({
+    followingLesson: learnerLessonReferenceSchema.nullable(),
     lastActivityAt: z.string().datetime(),
     nextLesson: learnerLessonReferenceSchema,
     status: z.literal("in_progress"),

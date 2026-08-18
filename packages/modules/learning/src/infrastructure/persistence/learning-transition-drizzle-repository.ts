@@ -929,30 +929,30 @@ function readCourseLearningState(
     })
   }
 
-  const nextLesson = lessons.find(
+  const incompleteLessons = lessons.filter(
     (lesson) => progressByLessonId.get(lesson.id)?.status !== completedStatus
   )
+  const nextLesson = incompleteLessons[0]
   if (nextLesson === undefined) {
     throw new Error("In-progress course has no next lesson")
   }
-  const nextProgress = progressByLessonId.get(nextLesson.id)
-  const firstStepId = readFirstStepId(curriculum, nextLesson.id)
-  const currentStepId = nextProgress?.currentStepId ?? firstStepId
-  const currentStepIndex = readStepIndex(
-    curriculum,
-    nextLesson.id,
-    currentStepId
-  )
+  const followingLesson = incompleteLessons[1]
   return courseLearningStateSchema.parse({
     completedLessons,
+    followingLesson:
+      followingLesson === undefined
+        ? null
+        : toTransitionLessonReference(
+            followingLesson,
+            progressByLessonId.get(followingLesson.id),
+            curriculum
+          ),
     lastActivityAt: toIso(courseProgress.lastActivityAt),
-    nextLesson: {
-      currentStepId,
-      currentStepIndex,
-      estimatedMinutes: nextLesson.estimatedMinutes,
-      id: nextLesson.id,
-      title: nextLesson.title,
-    },
+    nextLesson: toTransitionLessonReference(
+      nextLesson,
+      progressByLessonId.get(nextLesson.id),
+      curriculum
+    ),
     progressPercent:
       lessons.length === 0
         ? 0
@@ -961,6 +961,27 @@ function readCourseLearningState(
     totalLessons: lessons.length,
     version,
   })
+}
+
+function toTransitionLessonReference(
+  lesson: OrderedLesson,
+  progress:
+    | {
+        readonly currentStepId: string | null
+      }
+    | undefined,
+  curriculum: LearningCurriculum
+) {
+  const firstStepId = readFirstStepId(curriculum, lesson.id)
+  const currentStepId = progress?.currentStepId ?? firstStepId
+  const currentStepIndex = readStepIndex(curriculum, lesson.id, currentStepId)
+  return {
+    currentStepId,
+    currentStepIndex,
+    estimatedMinutes: lesson.estimatedMinutes,
+    id: lesson.id,
+    title: lesson.title,
+  }
 }
 
 function readFirstStepId(

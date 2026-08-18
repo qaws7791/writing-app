@@ -17,6 +17,7 @@ import type {
 import type {
   CourseLearningState,
   CurriculumVersionRef,
+  LearningLessonReference,
   LessonLearningState,
   LearningStep,
 } from "#learning/domain/learning-types"
@@ -301,34 +302,32 @@ function projectLearnerCourseLearningState(input: {
     }
   }
 
-  const nextLesson = input.lessons.find(
+  const incompleteLessons = input.lessons.filter(
     (lesson) => input.lessonLearning.get(lesson.id)?.status !== "completed"
   )
+  const nextLesson = incompleteLessons[0]
   if (nextLesson === undefined) {
     throw new Error("In-progress curriculum must have a next lesson")
   }
-  const nextLearning = input.lessonLearning.get(nextLesson.id)
-  const steps = input.stepsByLessonId.get(nextLesson.id) ?? []
-  const currentStepIndex =
-    nextLearning?.status === "in_progress" ? nextLearning.currentStepIndex : 0
-  const currentStepId =
-    nextLearning?.status === "in_progress"
-      ? nextLearning.currentStepId
-      : steps[0]?.id
-  if (currentStepId === undefined) {
-    throw new Error("Published lesson must have at least one step")
-  }
-  const nextLessonReference = {
-    currentStepId: currentStepId as LessonStepId,
-    currentStepIndex,
-    estimatedMinutes: nextLesson.estimatedMinutes,
-    id: nextLesson.id as LessonId,
-    title: nextLesson.title,
-  }
+  const followingLesson = incompleteLessons[1]
+  const nextLessonReference = toLessonReference({
+    lesson: nextLesson,
+    lessonLearning: input.lessonLearning,
+    stepsByLessonId: input.stepsByLessonId,
+  })
+  const followingLessonReference =
+    followingLesson === undefined
+      ? null
+      : toLessonReference({
+          lesson: followingLesson,
+          lessonLearning: input.lessonLearning,
+          stepsByLessonId: input.stepsByLessonId,
+        })
 
   if (input.courseProgress === undefined) {
     return {
       completedLessons: 0,
+      followingLesson: followingLessonReference,
       nextLesson: nextLessonReference,
       progressPercent: 0,
       status: "not_started",
@@ -339,6 +338,7 @@ function projectLearnerCourseLearningState(input: {
 
   return {
     completedLessons,
+    followingLesson: followingLessonReference,
     lastActivityAt: toIso(input.courseProgress.lastActivityAt),
     nextLesson: nextLessonReference,
     progressPercent:
@@ -348,6 +348,33 @@ function projectLearnerCourseLearningState(input: {
     status: "in_progress",
     totalLessons,
     version: input.version,
+  }
+}
+
+function toLessonReference(input: {
+  readonly lesson: LearnerCourseProjectionLesson
+  readonly lessonLearning: ReadonlyMap<string, LessonLearningState>
+  readonly stepsByLessonId: ReadonlyMap<
+    string,
+    readonly LearnerCourseProjectionStep[]
+  >
+}): LearningLessonReference {
+  const learning = input.lessonLearning.get(input.lesson.id)
+  const steps = input.stepsByLessonId.get(input.lesson.id) ?? []
+  const currentStepIndex =
+    learning?.status === "in_progress" ? learning.currentStepIndex : 0
+  const currentStepId =
+    learning?.status === "in_progress" ? learning.currentStepId : steps[0]?.id
+  if (currentStepId === undefined) {
+    throw new Error("Published lesson must have at least one step")
+  }
+
+  return {
+    currentStepId: currentStepId as LessonStepId,
+    currentStepIndex,
+    estimatedMinutes: input.lesson.estimatedMinutes,
+    id: input.lesson.id as LessonId,
+    title: input.lesson.title,
   }
 }
 
