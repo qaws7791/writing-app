@@ -72,6 +72,7 @@ import { Button } from "@/components/primitives/button"
       "스텝 타입마다 새 프레임을 만들지 말고 Step 위에 도메인 표면(Prose, Choice, Compose 등)을 올립니다.",
       "한 스텝의 Primary 행동은 LessonActions 안 전체 너비 버튼 하나로 유지합니다.",
       "제목 아래에 사용법 문구를 두지 않습니다. 조작 가능함은 타일·칩의 작은 그림자와 컨트롤 상태로 드러냅니다.",
+      "StepPrompt는 레슨 약속 같은 본문 설명에 쓰고 Body foreground를 유지합니다. muted는 활동 수 같은 메타에만 씁니다.",
     ],
     accessibility: [
       "StepTitle은 해당 활동의 접근 가능한 제목으로 사용하세요.",

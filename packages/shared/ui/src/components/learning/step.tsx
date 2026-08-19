@@ -50,7 +50,7 @@ function StepPrompt({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="step-prompt"
       className={cn(
-        "text-base leading-7 text-pretty text-muted-foreground",
+        "text-base leading-[1.625rem] text-pretty text-foreground",
         className
       )}
       {...props}
