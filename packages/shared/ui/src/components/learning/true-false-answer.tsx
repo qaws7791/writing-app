@@ -43,7 +43,7 @@ export function TrueFalseAnswer({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{prompt ?? "참인지 거짓인지 판단하세요"}</h2>
+          <h1>{prompt ?? "참인지 거짓인지 판단하세요"}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

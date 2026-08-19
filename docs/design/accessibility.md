@@ -38,7 +38,7 @@
 ## 레슨 접근성
 
 - 레슨 진행 헤더의 진행률은 `role="progressbar"`와 `aria-valuemin`, `aria-valuemax`, `aria-valuenow`를 제공한다.
-- 레슨 콘텐츠 영역은 `aria-label="레슨 콘텐츠"`를 사용한다.
+- 레슨 진행 화면의 현재 스텝 제목은 `h1`이다.
 - 레슨 행동 영역은 `aria-label="레슨 행동"`을 사용한다.
 - 레슨 하단 CTA는 모바일 safe area inset을 반영한다.
 - 나가기 버튼은 `aria-label="나가기"`를 제공한다.

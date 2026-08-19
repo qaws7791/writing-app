@@ -102,7 +102,7 @@ export function OrderAnswer<TId extends string>({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{title || "올바른 순서로 배열하세요"}</h2>
+          <h1>{title || "올바른 순서로 배열하세요"}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

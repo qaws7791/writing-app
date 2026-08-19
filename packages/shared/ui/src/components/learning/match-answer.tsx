@@ -81,7 +81,7 @@ export function MatchAnswer({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{title || "짝을 맞춰보세요"}</h2>
+          <h1>{title || "짝을 맞춰보세요"}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

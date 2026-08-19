@@ -101,7 +101,7 @@ export function ErrorCorrectAnswer({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{prompt ?? "오류를 찾아 올바르게 고치세요"}</h2>
+          <h1>{prompt ?? "오류를 찾아 올바르게 고치세요"}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

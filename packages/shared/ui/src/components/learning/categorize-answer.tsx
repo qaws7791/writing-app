@@ -98,7 +98,7 @@ export function CategorizeAnswer({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{title || "항목을 분류하세요"}</h2>
+          <h1>{title || "항목을 분류하세요"}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

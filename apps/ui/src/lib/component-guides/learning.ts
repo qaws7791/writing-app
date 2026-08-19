@@ -75,7 +75,7 @@ import { Button } from "@/components/primitives/button"
       "StepPrompt는 레슨 약속 같은 본문 설명에 쓰고 Body foreground를 유지합니다. muted는 활동 수 같은 메타에만 씁니다.",
     ],
     accessibility: [
-      "StepTitle은 해당 활동의 접근 가능한 제목으로 사용하세요.",
+      "StepTitle은 해당 활동의 접근 가능한 제목으로 사용하세요. 진행 화면에서는 현재 스텝 제목을 h1로 둡니다.",
       "확인·제출 버튼은 비활성 이유를 텍스트로도 전달하세요.",
     ],
     props: [

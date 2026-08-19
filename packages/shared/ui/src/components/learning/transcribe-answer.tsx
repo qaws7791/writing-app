@@ -34,7 +34,7 @@ export function TranscribeAnswer({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{prompt ?? "아래 문장을 그대로 입력하세요"}</h2>
+          <h1>{prompt ?? "아래 문장을 그대로 입력하세요"}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

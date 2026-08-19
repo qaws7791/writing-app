@@ -71,7 +71,7 @@ export function ParagraphOrganizeAnswer<TId extends string>({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{prompt ?? "문단에 넣을 문장을 고르고 순서를 맞추세요"}</h2>
+          <h1>{prompt ?? "문단에 넣을 문장을 고르고 순서를 맞추세요"}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

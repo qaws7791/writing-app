@@ -64,7 +64,7 @@ export function SentenceBuildAnswer<TId extends string>({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{prompt}</h2>
+          <h1>{prompt}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

@@ -72,7 +72,7 @@ export function FillBlankAnswer<TId extends string>({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>빈칸을 채워보세요</h2>
+          <h1>빈칸을 채워보세요</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

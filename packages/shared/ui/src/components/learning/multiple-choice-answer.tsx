@@ -38,7 +38,7 @@ export function MultipleChoiceAnswer({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{question}</h2>
+          <h1>{question}</h1>
         </StepTitle>
       </StepHeader>
       <StepBody>

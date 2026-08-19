@@ -28,7 +28,7 @@ export function CompareStepView({
     <>
       <StepHeader>
         <StepTitle>
-          <h2>{title || "두 버전을 비교해보세요"}</h2>
+          <h1>{title || "두 버전을 비교해보세요"}</h1>
         </StepTitle>
       </StepHeader>
       <Compare>
