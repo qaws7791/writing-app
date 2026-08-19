@@ -1438,6 +1438,7 @@ export function LessonSession() {
       "하단 CTA는 전체 너비의 큰 버튼을 기본으로 두고, 채점 후에는 LessonFeedback 오버레이로 평가와 다음 행동을 표시합니다.",
       "LessonFeedback 배경은 레슨 shell 전체 너비입니다. 평가 문구와 CTA는 헤더·본문과 같은 max-w-2xl 열과 같은 수평 패딩을 씁니다.",
       "LessonClose는 40×40 hit area를 유지하고 글리프만 본문 왼쪽 엣지에 광학 정렬합니다.",
+      "LessonFooter 배경은 불투명 background입니다. 본문과 버튼을 블러로 겹치지 않게 합니다.",
     ],
     accessibility: [
       "닫기 버튼에 접근 가능한 이름을 유지하세요.",

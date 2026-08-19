@@ -128,7 +128,7 @@ function LessonFooter({ className, ...props }: React.ComponentProps<"footer">) {
     <footer
       data-slot="lesson-footer"
       className={cn(
-        "sticky bottom-0 mt-auto w-full min-w-0 shrink-0 bg-background/90 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md",
+        "sticky bottom-0 mt-auto w-full min-w-0 shrink-0 bg-background pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]",
         className
       )}
       {...props}

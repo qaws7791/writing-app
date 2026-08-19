@@ -40,7 +40,7 @@
 - 레슨 진행 헤더의 진행률은 `role="progressbar"`와 `aria-valuemin`, `aria-valuemax`, `aria-valuenow`를 제공한다.
 - 레슨 진행 화면의 현재 스텝 제목은 `h1`이다.
 - 레슨 행동 영역은 `aria-label="레슨 행동"`을 사용한다.
-- 레슨 하단 CTA는 모바일 safe area inset을 반영한다.
+- 레슨 하단 CTA는 모바일 safe area inset을 반영한다. Footer 배경은 불투명하다.
 - `READING`·`COMPARE`에서 본문이 넘치면 끝까지 내리기 전에는 `이해했어요`를 비활성으로 두고, 이유는 숨긴 텍스트로 전달한다.
 - 나가기 버튼은 `aria-label="나가기"`를 제공한다.
 - 순서 스텝의 항목 재정렬은 포인터 드래그에만 의존하지 않는다.
