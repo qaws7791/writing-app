@@ -1449,7 +1449,8 @@ export function LessonSession() {
         name: "value",
         type: "number",
         defaultValue: "—",
-        description: "LessonProgress의 0–100 진행 값입니다.",
+        description:
+          "LessonProgress의 0–100 값입니다. 완료한 스텝 비율이며 현재 위치 숫자와 역할을 나눕니다.",
       },
     ],
     related: ["step", "path", "progress", "button"],

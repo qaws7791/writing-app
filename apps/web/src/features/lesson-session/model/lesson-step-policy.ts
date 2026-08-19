@@ -60,3 +60,11 @@ export function isLessonStepCheckedCorrect(
 ): boolean {
   return checked.correct
 }
+
+export function lessonCompletedProgressPercent(
+  currentStepIndex: number,
+  totalStepCount: number
+): number {
+  if (totalStepCount <= 0) return 0
+  return Math.round((currentStepIndex / totalStepCount) * 100)
+}

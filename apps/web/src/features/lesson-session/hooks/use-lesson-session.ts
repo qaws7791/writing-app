@@ -13,7 +13,10 @@ import {
   transitionLessonSession,
   type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
-import { isLessonStepSubmittable } from "@/features/lesson-session/model/lesson-step-policy"
+import {
+  isLessonStepSubmittable,
+  lessonCompletedProgressPercent,
+} from "@/features/lesson-session/model/lesson-step-policy"
 import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/learner-transition"
 import type {
   Lesson,
@@ -94,11 +97,9 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
       isLessonStepSubmittable(currentStep, currentAnswerPayload))
   const visibleStepNumber = currentStepIndex + 1
   const progress =
-    sessionState.status === "active"
-      ? sessionState.progressPercent
-      : sessionState.status === "complete"
-        ? 100
-        : 0
+    sessionState.status === "complete"
+      ? 100
+      : lessonCompletedProgressPercent(currentStepIndex, lesson.steps.length)
 
   const startLesson = useCallback(async (): Promise<void> => {
     if (sessionStateRef.current.status !== "not-started") return
