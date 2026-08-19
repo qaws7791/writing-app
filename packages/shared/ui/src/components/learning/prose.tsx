@@ -46,7 +46,7 @@ function ProseBody({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="prose-body"
       className={cn(
-        "space-y-4 text-base leading-7 text-pretty text-foreground/90 [&_blockquote]:border-l [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted-foreground [&_h3]:font-heading [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:tracking-[-0.02em] [&_li]:leading-7 [&_ol]:list-decimal [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_p]:leading-7 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5",
+        "space-y-4 text-base leading-7 text-pretty text-foreground/90 [&_blockquote]:rounded-2xl [&_blockquote]:border [&_blockquote]:border-border/70 [&_blockquote]:border-l-2 [&_blockquote]:bg-surface/60 [&_blockquote]:px-4 [&_blockquote]:py-3 [&_blockquote]:text-foreground [&_h2]:mt-8 [&_h2]:font-heading [&_h2]:text-lg [&_h2]:leading-7 [&_h2]:font-semibold [&_h2]:tracking-[-0.01em] [&_h2:first-child]:mt-0 [&_h3]:mt-6 [&_h3]:font-heading [&_h3]:text-lg [&_h3]:leading-7 [&_h3]:font-semibold [&_h3]:tracking-[-0.01em] [&_li]:leading-7 [&_ol]:list-decimal [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_p]:leading-7 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5",
         className
       )}
       {...props}

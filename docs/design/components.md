@@ -359,7 +359,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 정답과 오답 피드백은 `LessonFeedback` 오버레이가 담당한다. 정답은 `success`, 오답은 `warning` 톤온톤을 사용한다.
 - `LessonFeedback` 배경은 shell 전체 너비이고, 문구와 CTA는 본문과 같은 `max-w-2xl` 열을 쓴다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant다.
-- markdown 본문은 `MarkdownContent`가 `ReactMarkdown` 결과를 `ProseBody` 안에 렌더링한다.
+- markdown 본문은 `MarkdownContent`가 `ReactMarkdown` 결과를 `ProseBody` 안에 렌더링한다. 소제목은 Subtitle이고 사례 인용은 낮은 `surface` 면이다.
 - `ORDER`와 `COMPARE` renderer는 동적 경계로 분리한다. 이 경계는 drag-and-drop과 Tabs 코드를 해당 활동에서만 불러온다.
 
 ### WritingStudioShell
