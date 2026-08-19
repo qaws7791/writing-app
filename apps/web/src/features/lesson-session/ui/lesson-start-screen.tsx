@@ -7,7 +7,6 @@ import {
   LessonShell,
 } from "@/features/lesson-session/ui/lesson-shell"
 import { LayersIcon } from "@workspace/ui/components/icons/navigation-icons"
-import { Badge } from "@workspace/ui/components/primitives/badge"
 import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Insight,
@@ -85,10 +84,10 @@ export function LessonStartScreen({
           )}
         </StepHeader>
         <StepBody>
-          <Badge variant="outline">
+          <p className="flex items-center gap-2 text-xs font-medium leading-[1.125rem] text-muted-foreground">
             <LayersIcon aria-hidden data-icon="inline-start" />
             {`${lesson.steps.length}개 활동`}
-          </Badge>
+          </p>
           <ul className="flex flex-col gap-1.5 text-sm leading-6 text-foreground">
             {listLessonActivityKindLabels(lesson.steps).map((label) => (
               <li key={label}>{label}</li>
