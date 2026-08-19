@@ -26,7 +26,7 @@
 - `AppShell`을 사용하지 않는 몰입형 전체 화면이다.
 - root는 `fixed inset-0 h-dvh overflow-hidden bg-background text-foreground`이다.
 - 상단 헤더·본문·하단 CTA는 동일 콘텐츠 열(`max-w-2xl`)과 동일 수평 패딩을 쓴다.
-- 나가기 아이콘 글리프는 본문 왼쪽 엣지에 광학 정렬한다. hit area는 최소 터치 목표를 유지한다.
+- 나가기 아이콘 글리프는 본문 왼쪽 엣지에 광학 정렬한다. hit area는 40×40 CSS px이다.
 - 진행 헤더의 나가기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다.
 - 하단 CTA는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다.
 - 완료 화면도 동일 `max-w-2xl` 열 폭을 유지한다.
@@ -41,7 +41,7 @@
 - 시작 화면 본문 블록은 콘텐츠 열 전체 폭을 쓰고 좌측 정렬을 유지한다. 제목은 열 폭에서 줄바꿈한다.
 - 카테고리는 한국어 eyebrow로 두고 Latin `uppercase`·과도한 letter-spacing을 쓰지 않는다.
 - 활동 수는 인라인 메타 행으로 표시하고, 이모지 대신 제품 아이콘을 쓴다.
-- 나가기는 X 아이콘만 사용하며 최소 터치 목표를 만족하는 hit area와 `aria-label="나가기"`를 제공한다.
+- 나가기는 X 아이콘만 사용하며 40×40 CSS px hit area와 `aria-label="나가기"`를 제공한다.
 - 시작 화면 콘텐츠 영역은 제목 `h1`과 `aria-labelledby`로 연결한다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 취소는 `계속 학습`, 확인은 `나가기`이며 확인 action은 `default`(charcoal) variant를 쓴다. 레슨은 입력을 보존할 수 있을 때만 코스로 이동한다.
 - 완료 화면은 semantic `background` 위에 `LessonComplete` anatomy를 사용한다.

@@ -63,7 +63,7 @@ function LessonClose({
       aria-label="레슨 나가기"
       className={cn("-ml-2.5", className)}
       data-slot="lesson-close"
-      size="icon-sm"
+      size="icon"
       type="button"
       variant="ghost"
       {...props}
