@@ -62,23 +62,33 @@ export function LessonCompleteScreen({
               </Insight>
             )}
 
-            <div className="flex w-full flex-col gap-2 sm:flex-row">
-              <Button
-                className="flex-1"
-                onClick={onCourse}
-                size="lg"
-                variant="secondary"
-              >
-                코스로 돌아가기
-              </Button>
-              {nextLesson === null ? null : (
-                <Button
-                  className="flex-1"
-                  onClick={() => onNext(nextLesson.id)}
-                  size="lg"
-                >
-                  다음 레슨
+            <div className="flex w-full flex-col gap-3">
+              {nextLesson === null ? (
+                <Button className="w-full" onClick={onCourse} size="lg">
+                  코스로 돌아가기
                 </Button>
+              ) : (
+                <>
+                  <p className="w-full text-left text-sm font-medium leading-6 text-foreground">
+                    <span className="block">다음 레슨</span>
+                    <span className="mt-1 block">{nextLesson.title}</span>
+                  </p>
+                  <Button
+                    className="w-full"
+                    onClick={() => onNext(nextLesson.id)}
+                    size="lg"
+                  >
+                    다음 레슨
+                  </Button>
+                  <Button
+                    className="w-full"
+                    onClick={onCourse}
+                    size="lg"
+                    variant="ghost"
+                  >
+                    코스로 돌아가기
+                  </Button>
+                </>
               )}
             </div>
           </LessonComplete>
