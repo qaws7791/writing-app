@@ -34,24 +34,25 @@ export function useLessonContentEndReached({
   useLayoutEffect(() => {
     if (!enabled) return
 
-    const element = readElement(contentRef)
-    if (element === null) return
+    const scroller = readElement(contentRef)
+    if (scroller === null) return
+    const target: HTMLElement = scroller
 
     function update() {
       setMeasurement({
-        reached: hasReachedScrollEnd(element),
+        reached: hasReachedScrollEnd(target),
         stepId,
       })
     }
 
     const frame = requestAnimationFrame(update)
-    element.addEventListener("scroll", update, { passive: true })
+    target.addEventListener("scroll", update, { passive: true })
     const observer = new ResizeObserver(update)
-    observer.observe(element)
+    observer.observe(target)
 
     return () => {
       cancelAnimationFrame(frame)
-      element.removeEventListener("scroll", update)
+      target.removeEventListener("scroll", update)
       observer.disconnect()
     }
   }, [contentRef, enabled, stepId])
