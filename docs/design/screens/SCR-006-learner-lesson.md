@@ -44,7 +44,7 @@
 - 나가기는 X 아이콘만 사용하며 40×40 CSS px hit area와 `aria-label="나가기"`를 제공한다.
 - 시작 화면 콘텐츠 영역은 제목 `h1`과 `aria-labelledby`로 연결한다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 취소는 `계속 학습`, 확인은 `나가기`이며 확인 action은 `default`(charcoal) variant를 쓴다. 레슨은 입력을 보존할 수 있을 때만 코스로 이동한다.
-- 완료 화면은 semantic `background` 위에 `LessonComplete` anatomy를 사용한다.
+- 완료 화면은 semantic `background` 위에 `LessonComplete` anatomy를 사용한다. 큰 완료 표식과 완료한 활동 수를 두고, 진입 모션은 `prefers-reduced-motion`에서 줄인다.
 - markdown 본문은 앱의 `ReactMarkdown` 결과를 `ProseBody`로 감싼다. 소제목은 Subtitle 18/28이다. 사례 인용(`blockquote`)은 왼쪽 악센트와 낮은 `surface` 면으로 자료임을 드러낸다.
 - 선택형 UI는 `Choice`와 `Verdict`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `incorrect`, `missed`, `locked` 상태를 표현한다. `TRUE_FALSE`는 `missed`를 쓰지 않는다.
 - 확인 전 선택은 `info` 톤온톤으로 표시한다. 대기 상태의 O·X에 정답·오답 색을 입히지 않는다.

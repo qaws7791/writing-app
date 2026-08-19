@@ -4,7 +4,7 @@ import type {
   Lesson as LessonViewModel,
   LessonCompleteStepResult,
 } from "@/features/lesson-session/model/lesson-view-model"
-import { Badge } from "@workspace/ui/components/primitives/badge"
+import { CheckCircleIcon } from "@workspace/ui/components/icons/authentication-icons"
 import { Button } from "@workspace/ui/components/primitives/button"
 import {
   Insight,
@@ -42,8 +42,33 @@ export function LessonCompleteScreen({
     <div className="fixed inset-0 z-50 h-dvh overflow-hidden bg-background text-foreground">
       <Lesson className="h-full">
         <LessonBody className="overflow-y-auto">
-          <LessonComplete className="my-auto">
-            <Badge variant="success">완료</Badge>
+          <LessonComplete className="my-auto motion-safe:animate-drift-in">
+            <div
+              aria-label="완료"
+              className="relative flex size-24 items-center justify-center"
+              role="img"
+            >
+              <span
+                aria-hidden
+                className="bg-success/50 absolute top-1 left-2 size-2 rounded-full motion-safe:animate-breathe"
+              />
+              <span
+                aria-hidden
+                className="bg-success/40 absolute top-3 right-1 size-1.5 rounded-full motion-safe:animate-breathe"
+              />
+              <span
+                aria-hidden
+                className="bg-success/35 absolute bottom-2 left-4 size-1.5 rounded-full motion-safe:animate-breathe"
+              />
+              <span
+                aria-hidden
+                className="bg-success/45 absolute right-3 bottom-1 size-2 rounded-full motion-safe:animate-breathe"
+              />
+              <CheckCircleIcon aria-hidden className="text-success size-16" />
+            </div>
+            <p className="text-success text-sm font-medium">
+              {`${lesson.steps.length}개 활동 완료`}
+            </p>
             <LessonCompleteTitle>
               <h1>레슨을 완료했어요!</h1>
             </LessonCompleteTitle>
