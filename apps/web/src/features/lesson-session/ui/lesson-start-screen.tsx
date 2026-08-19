@@ -71,12 +71,12 @@ export function LessonStartScreen({
       }
       header={<LessonIntroHeader onExit={onExit} />}
     >
-      <Step className="my-auto py-10">
-        <StepHeader>
+      <Step className="my-auto w-full min-w-0 py-10">
+        <StepHeader className="w-full">
           {lesson.category === null ? null : (
             <StepEyebrow>{lesson.category}</StepEyebrow>
           )}
-          <StepTitle>
+          <StepTitle className="w-full break-keep [text-wrap:wrap]">
             <h1 id={LESSON_TITLE_ID}>{lesson.title}</h1>
           </StepTitle>
           {lesson.description === null ? null : (
