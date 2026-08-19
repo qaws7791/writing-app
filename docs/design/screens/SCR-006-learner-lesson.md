@@ -46,6 +46,7 @@
 - 나가기 확인은 `AlertDialog`를 사용한다. 취소는 `계속 학습`, 확인은 `나가기`이며 확인 action은 `default`(charcoal) variant를 쓴다. 레슨은 입력을 보존할 수 있을 때만 코스로 이동한다.
 - 완료 화면은 semantic `background` 위에 `LessonComplete` anatomy를 사용한다. 큰 완료 표식과 완료한 활동 수를 두고, 진입 모션은 `prefers-reduced-motion`에서 줄인다.
 - markdown 본문은 앱의 `ReactMarkdown` 결과를 `ProseBody`로 감싼다. 소제목은 Subtitle 18/28이다. 사례 인용(`blockquote`)은 왼쪽 악센트와 낮은 `surface` 면으로 자료임을 드러낸다.
+- 읽기 출처는 외부 자료가 있을 때만 표시한다. `자체 집필`과 빈 값은 출처 행을 두지 않는다.
 - 선택형 UI는 `Choice`와 `Verdict`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `incorrect`, `missed`, `locked` 상태를 표현한다. `TRUE_FALSE`는 `missed`를 쓰지 않는다.
 - 확인 전 선택은 `info` 톤온톤으로 표시한다. 대기 상태의 O·X에 정답·오답 색을 입히지 않는다.
 - `CATEGORIZE` 바구니 헤더는 `series-*`와 점으로 구분한다. 채점 후에도 헤더 정체 색은 유지한다.

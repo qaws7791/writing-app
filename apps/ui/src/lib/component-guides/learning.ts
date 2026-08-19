@@ -1029,11 +1029,9 @@ export function ReadingBody() {
       "카드로 본문을 다시 감싸지 말고 Prose를 StepBody 안에 직접 두세요.",
       "마크다운 렌더 결과는 ProseBody children으로 넣습니다.",
       "소제목은 Subtitle 크기이고, 사례 인용은 surface 면으로 자료임을 드러냅니다.",
+      "출처는 외부 자료가 있을 때만 표시합니다. 자체 집필이나 빈 값은 렌더하지 않습니다.",
     ],
-    accessibility: [
-      "장식 이미지는 alt를 비우고, 의미 있는 이미지는 설명을 제공합니다.",
-      "출처는 본문과 구분되는 텍스트로 남겨 주세요.",
-    ],
+    accessibility: ["장식 이미지는 alt를 비우고, 의미 있는 이미지는 설명을 제공합니다."],
     props: [
       {
         name: "className",
