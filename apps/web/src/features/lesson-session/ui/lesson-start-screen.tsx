@@ -1,5 +1,6 @@
 "use client"
 
+import { listLessonActivityKindLabels } from "@/features/lesson-session/model/lesson-activity-labels"
 import type { Lesson } from "@/features/lesson-session/model/lesson-view-model"
 import {
   LessonIntroHeader,
@@ -88,6 +89,11 @@ export function LessonStartScreen({
             <LayersIcon aria-hidden data-icon="inline-start" />
             {`${lesson.steps.length}개 활동`}
           </Badge>
+          <ul className="flex flex-col gap-1.5 text-sm leading-6 text-foreground">
+            {listLessonActivityKindLabels(lesson.steps).map((label) => (
+              <li key={label}>{label}</li>
+            ))}
+          </ul>
           {startError === null ? null : (
             <Insight role="alert" tone="incorrect">
               <InsightEyebrow>레슨을 시작하지 못했어요</InsightEyebrow>
