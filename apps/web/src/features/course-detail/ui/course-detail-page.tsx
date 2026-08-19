@@ -42,22 +42,18 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
         <ChevronLeftIcon aria-hidden="true" className="size-4" />
         코스 목록으로
       </Link>
-      <Card
-        className="mb-12 pt-0 dark:shadow-xs sm:pt-(--card-spacing)"
-        size="lg"
-        variant="muted"
-      >
-        <CardContent className="grid gap-7 px-0 sm:grid-cols-[minmax(13rem,16rem)_minmax(0,1fr)] sm:items-stretch sm:px-(--card-spacing)">
+      <Card className="mb-12" size="lg" variant="muted">
+        <CardContent className="grid gap-7 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-start">
           <Image
             alt=""
-            className="aspect-square h-auto w-full object-cover sm:aspect-auto sm:h-full sm:min-h-52 sm:rounded-3xl"
-            height={320}
+            className="size-24 rounded-3xl object-cover sm:size-32"
+            height={128}
             loading="eager"
-            sizes="(max-width: 640px) 100vw, 256px"
+            sizes="(max-width: 640px) 96px, 128px"
             src={courseImage.src}
-            width={320}
+            width={128}
           />
-          <div className="min-w-0 px-(--card-spacing) sm:px-0">
+          <div className="min-w-0">
             <h1 className="font-heading text-3xl leading-tight font-semibold tracking-[-0.01em] sm:text-4xl">
               {course.title}
             </h1>
@@ -70,9 +66,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             >
               <ProgressLabel>학습 진행</ProgressLabel>
               <ProgressValue className="text-sm font-medium text-muted-foreground">
-                {() =>
-                  `${completedLessonCount}/${totalLessonCount}개 레슨 · 약 ${totalEstimatedMinutes}분`
-                }
+                {`${completedLessonCount}/${totalLessonCount}개 레슨 · 약 ${totalEstimatedMinutes}분`}
               </ProgressValue>
             </Progress>
             {nextLesson === null ? null : (

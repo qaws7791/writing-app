@@ -148,7 +148,7 @@ function CurriculumLesson({
   const accessibleName = `${lesson.title}, ${statusLabel}, ${lesson.estimatedMinutes}분`
 
   const className = cn(
-    "relative flex min-h-14 min-w-0 items-center gap-3 rounded-2xl px-3 py-3 outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/25",
+    "flex min-h-14 min-w-0 items-center gap-3 rounded-2xl px-3 py-3 outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/25",
     locked
       ? "cursor-not-allowed opacity-60"
       : isCurrent
@@ -157,12 +157,6 @@ function CurriculumLesson({
   )
   const content = (
     <>
-      {isCurrent ? (
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-2 left-1 w-1 rounded-full bg-foreground"
-        />
-      ) : null}
       <span
         aria-hidden="true"
         className={cn(
