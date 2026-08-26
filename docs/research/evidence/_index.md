@@ -58,17 +58,4 @@
 
 코스별 문서는 JSON 콘텐츠 ID와 설계 근거만 연결하며 학습자용 콘텐츠 값을 복제하지 않는다.
 
-- [`course-word-sentence-meaning.md`](./course-word-sentence-meaning.md) — 어휘와 문장의 의미 정확히 읽기
-- [`course-reading-structure-main-ideas.md`](./course-reading-structure-main-ideas.md) — 글의 핵심과 구조 읽기
-- [`course-clear-accurate-expression.md`](./course-clear-accurate-expression.md) — 의미를 살려 명료하게 쓰기
-- [`course-grammar-orthography.md`](./course-grammar-orthography.md) — 한국어 문법과 표기 판단하기
-- [`course-idea-topic-development.md`](./course-idea-topic-development.md) — 생각을 넓혀 쓸거리 만들기
-- [`course-organization-coherence.md`](./course-organization-coherence.md) — 정보를 조직해 글의 흐름 만들기
-- [`course-audience-purpose-genre.md`](./course-audience-purpose-genre.md) — 독자와 목적에 맞춰 쓰기
-- [`course-reader-centered-explanation.md`](./course-reader-centered-explanation.md) — 독자가 이해하는 설명 쓰기
-- [`course-evidence-based-inference.md`](./course-evidence-based-inference.md) — 근거를 연결해 추론하기
-- [`course-information-search-credibility.md`](./course-information-search-credibility.md) — 정보를 찾고 신뢰성을 판단하기
-- [`course-critical-analysis-integration.md`](./course-critical-analysis-integration.md) — 자료를 구조화해 비판적으로 판단하기
-- [`course-evidence-based-argumentation.md`](./course-evidence-based-argumentation.md) — 근거와 반론으로 주장 세우기
-- [`course-revision-feedback.md`](./course-revision-feedback.md) — 초고를 진단하고 개선하기
-- [`course-responsible-source-ai-use.md`](./course-responsible-source-ai-use.md) — 출처와 AI를 책임 있게 활용하기
+현재 코스별 근거 문서는 없다. 시드를 새 코스 골격으로 재구축할 때 이전 코스 ID를 가리키던 문서를 함께 제거했다. 새 코스별 근거 문서는 레슨 스텝을 집필하는 후속 작업에서 작성한다.

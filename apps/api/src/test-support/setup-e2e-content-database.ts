@@ -1,7 +1,10 @@
 import { rmSync } from "node:fs"
-import { eq } from "drizzle-orm"
+import { eq, max } from "drizzle-orm"
 
-import { createWritingAppDatabase } from "@workspace/db/client"
+import {
+  createWritingAppDatabase,
+  type WritingAppDatabase,
+} from "@workspace/db/client"
 import { normalizeVersionedStepContentOrThrow } from "@workspace/content/ports"
 import {
   courseCurriculumVersions,
@@ -42,7 +45,7 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
         createdAt: now,
         id: courseId,
         publishedCurriculumVersionId: null,
-        sortOrder: 6,
+        sortOrder: nextCourseSortOrder(database.db),
         status: "active",
       })
       .run()
@@ -166,7 +169,6 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
       curriculumVersionId: "curriculum:e2e-draft-course:1",
       description: "새로고침, 재로그인, 다른 탭에서 초안을 복구합니다.",
       lessonId: "e2e-draft-lesson",
-      sortOrder: 1,
       title: "서버 초안 이어 쓰기",
       unitId: "e2e-draft-unit",
     },
@@ -175,13 +177,13 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
       curriculumVersionId: "curriculum:e2e-unload-draft-course:1",
       description: "탭 종료 직전 초안 flush를 독립적으로 검증합니다.",
       lessonId: "e2e-unload-draft-lesson",
-      sortOrder: 2,
       title: "탭 종료 초안 보존하기",
       unitId: "e2e-unload-draft-unit",
     },
   ] as const
 
   try {
+    const firstSortOrder = nextCourseSortOrder(database.db)
     database.db
       .insert(courses)
       .values(
@@ -189,7 +191,7 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
           createdAt: now,
           id: fixture.courseId,
           publishedCurriculumVersionId: null,
-          sortOrder: 7 + index,
+          sortOrder: firstSortOrder + index,
           status: "active" as const,
         }))
       )
@@ -288,6 +290,16 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
   } finally {
     database.close()
   }
+}
+
+/** Keeps fixture courses after seeded courses without pinning the seed count. */
+function nextCourseSortOrder(database: WritingAppDatabase): number {
+  const highest = database
+    .select({ value: max(courses.sortOrder) })
+    .from(courses)
+    .get()?.value
+
+  return (highest ?? 0) + 1
 }
 
 function removeE2eDatabaseFiles(databasePath: string): void {
