@@ -13,37 +13,37 @@
           {
             "id": "lesson-sentence-subject-predicate-distance",
             "title": "주어와 서술어 사이가 멀어질 때",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-sentence-missing-object",
             "title": "목적어를 잃어버린 서술어",
-            "time": "10분",
+            "time": "22분",
             "steps": []
           },
           {
             "id": "lesson-sentence-adverb-predicate-demand",
             "title": "부사어가 요구하는 서술어 ('결코', '전혀', '조차')",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-honorific-mismatch",
             "title": "높임의 주체와 대상이 어긋날 때",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-sentence-tense-adverb-mismatch",
             "title": "시제와 시간 부사어의 불일치",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-omitted-subject-drift",
             "title": "생략한 주어가 다른 주어로 읽히는 문장",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -55,37 +55,37 @@
           {
             "id": "lesson-sentence-multiple-judgment-signal",
             "title": "한 문장에 판단이 둘 이상 들어간 신호",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-sentence-overlapping-conditions",
             "title": "조건이 겹칠 때 문장을 끊는 자리",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-sentence-triple-clause-chain",
             "title": "접속 어미로 이어 붙인 세 겹 문장",
-            "time": "10분",
+            "time": "22분",
             "steps": []
           },
           {
             "id": "lesson-sentence-stacked-modifier-clauses",
             "title": "관형절이 쌓이면 서술어가 늦어진다",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-sentence-information-order",
             "title": "앞으로 당길 정보와 뒤로 미룰 정보",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-sentence-do-not-split-criteria",
             "title": "나누면 나빠지는 문장: 분할하지 않을 기준",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -97,37 +97,37 @@
           {
             "id": "lesson-sentence-seems-like-hedge",
             "title": "'~것 같다'가 판단을 흐리는 자리",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-sentence-stacked-genitive",
             "title": "관형격 '-의'가 겹쳐 쌓인 명사구",
-            "time": "10분",
+            "time": "22분",
             "steps": []
           },
           {
             "id": "lesson-sentence-jeok-suffix-habit",
             "title": "접미사 '-적'이 필요한 자리와 습관인 자리",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-sentence-itda-replacing-predicate",
             "title": "'있다/있는'이 서술어를 대신할 때",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-sentence-plural-suffix-overlap",
             "title": "복수 '-들'과 뜻이 겹친 표현",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-deletion-test",
             "title": "삭제 검증: 지운 뒤 의미가 보존되는지 확인하기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -139,37 +139,37 @@
           {
             "id": "lesson-sentence-inanimate-subject",
             "title": "무생물이 주어 자리에 올 때",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-sentence-about-regarding",
             "title": "'~에 대하여'와 '~에 관하여'의 자리",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-sentence-in-doing-so",
             "title": "'~에 있어서'와 '~함에 있어'의 대체",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-through-for-overuse",
             "title": "'~을 통해'와 '~을 위해'의 획일화",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-gajida-flattening",
             "title": "'가지다'로 뭉개진 서술어 되살리기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-risk-signal-not-banned-word",
             "title": "위험 신호는 금칙어가 아니다: 문맥 판단 기준",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -181,37 +181,37 @@
           {
             "id": "lesson-sentence-passive-focus-choice",
             "title": "피동을 골라야 하는 경우: 정보의 초점",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-sentence-double-passive-structure",
             "title": "이중 피동이 만들어지는 결합 구조",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-sikida-displacing-transitive",
             "title": "'-시키다'가 타동사를 밀어낼 때",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-sentence-by-cause-selection",
             "title": "'~에 의해'와 '~로 인해'의 선별",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-nominal-ending-erases-agent",
             "title": "명사형 종결(~함, ~음)이 지우는 주체",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-finding-responsibility",
             "title": "행위자가 사라진 문장에서 책임 찾기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -223,37 +223,37 @@
           {
             "id": "lesson-sentence-simple-versus-complex",
             "title": "홑문장과 겹문장, 정보량으로 고르기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-sentence-coordinate-relations",
             "title": "이어진 문장으로 관계를 드러내기",
-            "time": "10분",
+            "time": "22분",
             "steps": []
           },
           {
             "id": "lesson-sentence-embedded-compression",
             "title": "안은 문장으로 정보를 압축하기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-sentence-length-controls-weight",
             "title": "문장 길이로 정보의 무게 조절하기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-sentence-parallel-antithesis-conditions",
             "title": "병렬 구조와 대구가 성립하는 조건",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-sentence-monotonous-endings",
             "title": "종결 어미가 단조로울 때 생기는 문제",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -265,37 +265,37 @@
           {
             "id": "lesson-sentence-two-readings-cause",
             "title": "두 가지로 읽히는 문장의 원인 분류",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-sentence-modifier-position-shift",
             "title": "수식어의 자리가 뜻을 바꾸는 순간",
-            "time": "10분",
+            "time": "22분",
             "steps": []
           },
           {
             "id": "lesson-sentence-overcompression-side-effect",
             "title": "과도하게 압축된 문장의 부작용",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-sentence-read-aloud-friction",
             "title": "소리 내어 읽었을 때 걸리는 지점",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-sentence-two-versions-style-versus-redundancy",
             "title": "같은 내용 두 판본: 문체와 군더더기 가르기",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-sentence-six-error-categories",
             "title": "문장 오류 여섯 갈래로 분류하기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -316,37 +316,37 @@
           {
             "id": "lesson-word-synonym-splits-by-usage",
             "title": "유의어는 뜻이 아니라 쓰임에서 갈린다",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-synonym-intensity",
             "title": "정도의 세기가 다른 유의어",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-word-synonym-emotional-grain",
             "title": "감정의 결이 다른 유의어",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-word-synonym-formality-layer",
             "title": "격식의 층이 다른 유의어",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-synonym-polarity-implicature",
             "title": "긍정·부정의 함축이 붙은 유의어",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-word-reading-split-from-definition",
             "title": "사전 뜻풀이에서 갈림점 읽어내기",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           }
         ]
@@ -358,31 +358,31 @@
           {
             "id": "lesson-word-polysemy-core-and-peripheral",
             "title": "다의어의 중심 뜻과 주변 뜻",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-context-fixes-meaning",
             "title": "문맥이 뜻을 확정하는 방식",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-word-homonym-misreading",
             "title": "동음이의어가 만드는 오해",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-word-dictionary-sense-numbers",
             "title": "사전의 뜻 번호와 용례 읽는 법",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-word-inferring-unfamiliar-meaning",
             "title": "낯선 단어의 뜻을 문맥으로 추론하기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -394,37 +394,37 @@
           {
             "id": "lesson-word-person-versus-object",
             "title": "사람에게 쓰는 말과 사물에 쓰는 말",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-word-lowering-abstraction",
             "title": "추상어를 검증 가능한 말로 내리기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-word-sino-korean-versus-native",
             "title": "한자어와 고유어, 무엇이 독자에게 쉬운가",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-word-keeping-or-unpacking-jargon",
             "title": "전문 용어를 남길 자리와 풀 자리",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-word-loanword-selection-criteria",
             "title": "외래어와 차용어를 고르는 기준",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-word-hypernym-hyponym-scope",
             "title": "상위어와 하위어로 진술의 범위 맞추기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           }
         ]
@@ -436,37 +436,37 @@
           {
             "id": "lesson-word-written-versus-spoken",
             "title": "문어체 어휘와 구어체 어휘",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-word-honorific-levels-and-excess",
             "title": "높임 어휘의 단계와 과잉 높임",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-word-slang-and-buzzwords",
             "title": "은어와 유행어가 글에서 걸리는 지점",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-word-euphemism-versus-directness",
             "title": "완곡어와 직설어의 선택 효과",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-word-tone-drift-signal",
             "title": "어휘 톤이 흔들리는 신호",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-ending-register-mismatch",
             "title": "종결 어미와 어휘 격의 어긋남",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -478,31 +478,31 @@
           {
             "id": "lesson-word-grammatical-but-unnatural",
             "title": "문법은 맞지만 어울리지 않는 결합",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-word-learning-collocations-in-bundles",
             "title": "자주 쓰이는 연어를 묶음으로 익히기",
-            "time": "10분",
+            "time": "22분",
             "steps": []
           },
           {
             "id": "lesson-word-idiom-exact-form",
             "title": "관용구의 정확한 형태",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-proverbs-in-context",
             "title": "속담과 고사성어를 문맥에 맞게 쓰기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-particle-predicate-demand",
             "title": "조사와 서술어가 요구하는 결합",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -514,37 +514,37 @@
           {
             "id": "lesson-word-redundant-meaning",
             "title": "뜻이 겹친 표현",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-keep-concept-terms-fixed",
             "title": "개념어는 바꿔 쓰지 않는다: 유의어 변주 억제",
-            "time": "10분",
+            "time": "29분",
             "steps": []
           },
           {
             "id": "lesson-word-conditions-for-replacing-repetition",
             "title": "반복되는 단어를 대체할 때의 조건",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-word-antonym-boundary-check",
             "title": "반의어로 어휘의 경계 확인하기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-word-one-word-changes-sentence",
             "title": "밋밋한 문장을 단어 하나로 바꾸기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-word-five-error-categories",
             "title": "어휘 오류 다섯 갈래로 분류하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -565,37 +565,37 @@
           {
             "id": "lesson-spelling-words-apart-particles-attached",
             "title": "단어는 띄고 조사는 붙인다",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-spelling-dependent-noun-spacing",
             "title": "의존명사를 띄우는 이유",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-spelling-auxiliary-verb-principle-allowance",
             "title": "보조 용언, 원칙과 허용의 경계",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-spelling-unit-noun-with-numeral",
             "title": "단위 명사와 숫자가 만날 때",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-numbers-by-ten-thousand",
             "title": "수는 만 단위로 띄어 쓴다",
-            "time": "10분",
+            "time": "34분",
             "steps": []
           },
           {
             "id": "lesson-spelling-name-title-proper-noun-unit",
             "title": "성명·직함·고유명사·전문 용어의 단위",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -607,37 +607,37 @@
           {
             "id": "lesson-spelling-part-of-speech-splits-spacing",
             "title": "품사가 갈리면 띄어쓰기도 갈린다",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-spelling-doe-dwae-an-anh",
             "title": "'되-'와 '돼', '안'과 '않'을 한 원리로 정리하기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-spelling-de-versus-dae",
             "title": "'-데'와 '-대': 경험과 전달",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-deunji-versus-deonji",
             "title": "'-든지'와 '-던지': 선택과 회상",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-spelling-roseo-versus-rosseo",
             "title": "'-로서'와 '-로써': 자격과 수단",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-spelling-ieyo-yeyo-io-yo",
             "title": "'이에요·예요'와 '-이오·요'의 결합",
-            "time": "10분",
+            "time": "34분",
             "steps": []
           }
         ]
@@ -649,37 +649,37 @@
           {
             "id": "lesson-spelling-sait-siot-conditions",
             "title": "사이시옷이 붙는 조건과 붙지 않는 조건",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-spelling-initial-sound-rule-exceptions",
             "title": "두음법칙과 그 예외",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-spelling-yul-ryul-nan-ran",
             "title": "'-율'과 '-률', '-난'과 '-란'",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-contraction-principles",
             "title": "준말이 만들어지는 원리",
-            "time": "10분",
+            "time": "34분",
             "steps": []
           },
           {
             "id": "lesson-spelling-double-final-consonant-inflection",
             "title": "겹받침과 활용형의 표기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-spelling-detecting-nonexistent-forms",
             "title": "없는 표기 가려내기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -691,37 +691,37 @@
           {
             "id": "lesson-spelling-comma-splits-sentence",
             "title": "쉼표 하나로 갈라지는 문장",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-spelling-middle-dot-and-colon",
             "title": "가운뎃점과 쌍점, 열거의 층위",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-spelling-quotation-marks-cite-emphasis",
             "title": "따옴표의 인용과 강조",
-            "time": "10분",
+            "time": "29분",
             "steps": []
           },
           {
             "id": "lesson-spelling-ellipsis-dash-tilde",
             "title": "줄임표·줄표·붙임표·물결표의 자리",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-spelling-parenthesis-types",
             "title": "괄호의 종류와 보충 설명의 층위",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-punctuation-resolves-ambiguity",
             "title": "문장부호로 중의성 해소하기",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           }
         ]
@@ -733,31 +733,31 @@
           {
             "id": "lesson-spelling-standard-language-and-plural-forms",
             "title": "표준어 사정 원칙과 복수 표준어",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-spelling-dialect-becoming-standard",
             "title": "방언이 표준어가 되는 경우",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-spelling-added-standard-and-convention",
             "title": "추가 사정된 표준어와 관용 표기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-norm-versus-style-preference",
             "title": "규범과 문체 취향을 구별하기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-spelling-unifying-allowed-forms",
             "title": "허용형을 문서 안에서 통일하기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -769,31 +769,31 @@
           {
             "id": "lesson-spelling-loanword-five-principles",
             "title": "외래어 표기의 다섯 가지 기본 원칙",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-spelling-frequent-loanword-errors",
             "title": "자주 틀리는 외래어 표기",
-            "time": "10분",
+            "time": "34분",
             "steps": []
           },
           {
             "id": "lesson-spelling-person-place-name-convention",
             "title": "인명·지명 표기와 관용",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-number-unit-period-consistency",
             "title": "숫자·단위·기간의 표기 일관성",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-roman-hangul-mixing",
             "title": "로마자와 한글이 섞일 때",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -805,37 +805,37 @@
           {
             "id": "lesson-spelling-what-checkers-miss",
             "title": "검사기가 잡는 오류와 놓치는 오류",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-spelling-document-wide-consistency",
             "title": "문서 전체의 표기 일관성 점검",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-spelling-public-language-versus-general",
             "title": "공공언어 표기 기준과 일반 글의 차이",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-spelling-four-judgment-criteria",
             "title": "규범·용례·장르·독자, 네 기준으로 판단하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-spelling-errors-that-change-meaning",
             "title": "표기 오류가 뜻을 바꾼 사례",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-spelling-six-error-categories",
             "title": "표기 오류 여섯 갈래로 분류하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -856,37 +856,37 @@
           {
             "id": "lesson-paragraph-bundle-is-not-paragraph",
             "title": "문장 묶음과 문단은 다르다",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-finding-topic-sentence",
             "title": "소주제문을 찾아내는 눈",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-topic-sentence-placement",
             "title": "두괄식·미괄식·양괄식의 효과 차이",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-unity-off-topic-sentence",
             "title": "통일성: 화제에서 벗어난 문장",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-sufficiency-missing-substance",
             "title": "충분성: 주장만 있고 살이 없는 문단",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-cohesion-interlocking",
             "title": "긴밀성: 문장이 서로 맞물리는 방식",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -898,37 +898,37 @@
           {
             "id": "lesson-paragraph-support-by-grounds",
             "title": "근거로 뒷받침한 문장",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-support-by-example",
             "title": "예시로 뒷받침한 문장",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-support-by-explanation-comparison",
             "title": "설명과 비교로 뒷받침한 문장",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-support-by-citation",
             "title": "인용으로 뒷받침할 때의 조건",
-            "time": "10분",
+            "time": "29분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-support-arrangement-order",
             "title": "뒷받침 문장의 배열 순서",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-fake-support-repetition",
             "title": "뒷받침을 흉내 낸 반복 문장",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -940,37 +940,37 @@
           {
             "id": "lesson-paragraph-bridge-expressions",
             "title": "문단 사이에 다리를 놓는 표현",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-so-what-test",
             "title": "'그래서 뭐?' 테스트로 다리 점검하기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-known-to-unknown",
             "title": "기지 정보에서 미지 정보로",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-reorder-signal",
             "title": "문단 순서를 바꿔야 하는 신호",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-splitting-long-paragraph",
             "title": "긴 문단을 쪼개는 기준",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-one-claim-per-paragraph",
             "title": "계단식 문단: 한 문단 한 주장",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -982,37 +982,37 @@
           {
             "id": "lesson-paragraph-traces-without-outline",
             "title": "개요 없이 쓴 글에 남는 흔적",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-keyword-versus-sentence-outline",
             "title": "키워드 개요와 문장 개요",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-time-logic-comparison-order",
             "title": "시간순·논리순·비교순의 선택 기준",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-reader-question-order",
             "title": "독자의 질문 순서로 정보 배치하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-reverse-outline",
             "title": "역개요로 완성 글의 구조 복원하기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-outline-balance-check",
             "title": "개요 항목 사이의 균형 점검",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           }
         ]
@@ -1024,37 +1024,37 @@
           {
             "id": "lesson-paragraph-four-jobs-of-introduction",
             "title": "서론이 하는 네 가지 일",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-first-sentence-pulls-next",
             "title": "첫 문장이 다음 문장을 끌어오는 방식",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-conclusion-three-functions",
             "title": "결론의 요약·의의·전망 구별하기",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-promise-versus-payoff",
             "title": "서론의 약속과 결론의 회수가 어긋날 때",
-            "time": "10분",
+            "time": "30분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-title-subheading-preview",
             "title": "제목과 소제목이 내용을 예고하는 방식",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-paragraph-whole-structure-on-one-page",
             "title": "글 전체 구조를 한 장으로 그리기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -1075,37 +1075,37 @@
           {
             "id": "lesson-cohesion-with-and-without-connective",
             "title": "접속어가 있을 때와 없을 때",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-additive-versus-adversative",
             "title": "순접과 역접의 경계",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-causal-connective-strength",
             "title": "인과를 나타내는 접속 표현의 강도",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-coordination-addition-restatement",
             "title": "대등·첨가·환언·예시의 표시",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-logic-without-connective",
             "title": "접속어 없이 논리가 이어지는 문장",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-connective-overuse",
             "title": "접속어 남용이 논리를 가리는 자리",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -1117,31 +1117,31 @@
           {
             "id": "lesson-cohesion-fixing-referent",
             "title": "지시어가 가리키는 대상 확정하기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-i-geu-jeo-distance",
             "title": "'이·그·저'의 거리와 쓰임",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-referring-to-whole-sentence",
             "title": "앞 문장 전체를 가리키는 표현",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-pronoun-overload",
             "title": "대명사가 늘어날 때 생기는 혼란",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-avoiding-repetition-shifts-concept",
             "title": "반복을 피하려다 개념이 흔들릴 때",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -1153,37 +1153,37 @@
           {
             "id": "lesson-cohesion-omitted-premise",
             "title": "두 문장 사이에 생략된 전제",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-list-versus-cause",
             "title": "나열인가 인과인가: 관계 오표시",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-information-order-creates-flow",
             "title": "정보 배열이 흐름을 만드는 방식",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-subject-chain-paragraph",
             "title": "주어 연쇄로 이어지는 문단",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-abrupt-topic-shift",
             "title": "화제 전환이 갑작스러운 지점",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-mapping-logic-relations",
             "title": "논리 관계를 도식으로 옮기기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -1195,31 +1195,31 @@
           {
             "id": "lesson-cohesion-reorder-to-check-flow",
             "title": "문장 순서를 바꿔 흐름 확인하기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-replacing-awkward-connective",
             "title": "어색한 연결어를 다른 말로 바꾸기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-versus-consistency",
             "title": "응집성과 일관성은 다른 문제다",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-cleaning-overlapping-markers",
             "title": "지시어와 접속어가 겹친 문단 정리하기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-cohesion-four-error-categories",
             "title": "연결 오류 네 갈래로 분류하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -1240,31 +1240,31 @@
           {
             "id": "lesson-explain-four-failure-reasons",
             "title": "설명이 실패하는 네 가지 이유",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-explain-versus-describe-versus-argue",
             "title": "설명·묘사·논증의 목적 차이",
-            "time": "10분",
+            "time": "29분",
             "steps": []
           },
           {
             "id": "lesson-explain-estimating-reader-knowledge",
             "title": "독자의 기지 정보를 가늠하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-explain-curse-of-knowledge",
             "title": "지식의 저주: 아는 사람이 못 보는 것",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-explain-descending-abstraction-order",
             "title": "추상도의 층위를 내려가는 순서",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -1276,37 +1276,37 @@
           {
             "id": "lesson-explain-genus-and-differentia",
             "title": "좋은 정의의 조건: 유와 종차",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-explain-circular-definition",
             "title": "순환에 빠진 정의",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-too-broad-or-narrow-definition",
             "title": "범위가 넘치거나 모자란 정의",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-operational-definition",
             "title": "조작적 정의가 필요한 자리",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-classification-consistency",
             "title": "분류 기준의 일관성과 층위",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-explain-definition-with-classification",
             "title": "정의와 분류를 결합한 설명 읽기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -1318,37 +1318,37 @@
           {
             "id": "lesson-explain-same-level-comparison",
             "title": "비교 대상이 같은 층위인가",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-explain-unstated-comparison-criterion",
             "title": "비교 기준을 밝히지 않은 대조",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-explain-unfair-comparison-target",
             "title": "불공정한 비교 대상 선정",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-representative-versus-extreme-example",
             "title": "대표성 있는 예시와 극단적 예시",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-example-outside-concept",
             "title": "예시가 개념을 벗어난 경우",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-comparison-with-example",
             "title": "비교와 예시를 결합한 설명 읽기",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           }
         ]
@@ -1360,37 +1360,37 @@
           {
             "id": "lesson-explain-multiple-causes",
             "title": "원인이 여럿인 현상의 설명",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-explain-correlation-swapped-for-cause",
             "title": "상관을 인과로 바꿔치기한 설명",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-necessary-versus-sufficient",
             "title": "필요조건과 충분조건의 혼동",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-analogy-power-and-limit",
             "title": "유추의 설명력과 그 한계",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-explain-metaphor-causing-misreading",
             "title": "비유가 오해를 부르는 지점",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-explain-causation-with-analogy",
             "title": "인과와 유추를 결합한 설명 읽기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -1402,31 +1402,31 @@
           {
             "id": "lesson-explain-key-term-shifts-meaning",
             "title": "핵심 용어가 도중에 뜻이 바뀔 때",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-explain-numbers-without-context",
             "title": "숫자와 데이터에 맥락이 없을 때",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-explain-jargon-to-plain-two-versions",
             "title": "전문 용어를 일상어로 바꾼 두 판본",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-explain-five-methods-mixed",
             "title": "다섯 가지 설명 방법이 섞인 글 분석",
-            "time": "10분",
+            "time": "30분",
             "steps": []
           },
           {
             "id": "lesson-explain-five-failure-categories",
             "title": "설명 실패 원인 다섯 갈래로 분류하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -1447,37 +1447,37 @@
           {
             "id": "lesson-argument-taste-versus-arguable-claim",
             "title": "취향의 표현과 논증할 수 있는 주장",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-four-layers-of-statement",
             "title": "사실·해석·가치판단·주장 네 층위",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-argument-refutability-condition",
             "title": "반박 가능성이 주장의 조건이다",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-overreaching-absolutes",
             "title": "'모두·항상·절대': 과도한 단정",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-non-contestable-claim",
             "title": "논쟁적이지 않은 주장의 문제",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-compressing-claim-to-one-sentence",
             "title": "늘어진 주장을 한 문장으로 압축하기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           }
         ]
@@ -1489,43 +1489,43 @@
           {
             "id": "lesson-argument-why-between-claim-and-reason",
             "title": "주장과 이유 사이의 '왜?'",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-argument-reason-is-not-ground",
             "title": "이유와 근거는 같지 않다",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-argument-four-kinds-of-ground",
             "title": "근거의 네 종류: 사실·통계·견해·사례",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-surfacing-hidden-warrant",
             "title": "숨은 전제(보증) 드러내기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-collapsed-warrant",
             "title": "보증이 무너지면 근거도 무너진다",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-qualifier-controls-strength",
             "title": "한정어로 주장의 강도 조절하기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-mapping-structure",
             "title": "논증 구조를 도식으로 옮기기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -1537,37 +1537,37 @@
           {
             "id": "lesson-argument-source-credibility-criteria",
             "title": "출처의 신뢰도를 따지는 기준",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-sample-size-and-representativeness",
             "title": "표본의 수와 대표성",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-denominator-and-period",
             "title": "통계 인용에서 분모와 기간",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-relevant-expert-authority",
             "title": "전문가 견해의 적합한 권위",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-argument-unrepresentative-case",
             "title": "사례가 주장을 대표하지 못할 때",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-argument-loose-ground-claim-link",
             "title": "근거와 주장의 연결이 헐거운 지점",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -1579,43 +1579,43 @@
           {
             "id": "lesson-argument-hasty-generalization",
             "title": "성급한 일반화",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-argument-false-dilemma",
             "title": "흑백 논리",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-false-cause",
             "title": "거짓 원인",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-circular-reasoning",
             "title": "순환 논증",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-argument-ad-hominem-and-straw-man",
             "title": "인신공격과 허수아비 공격",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-appeal-to-emotion-authority",
             "title": "감정과 권위에 기댄 호소",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-argument-mixed-fallacy-paragraph",
             "title": "오류가 섞여 있는 문단 가려내기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -1627,37 +1627,37 @@
           {
             "id": "lesson-argument-building-expected-objection",
             "title": "예상 반론을 세우는 방법",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-conceding-and-limiting-scope",
             "title": "반론을 인정하고 범위를 제한하는 문장",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-argument-concession-strengthens",
             "title": "양보가 논증을 강화하는 조건",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-argument-balanced-versus-biased-tone",
             "title": "균형 잡힌 논조와 편향된 논조",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-argument-choosing-added-ground",
             "title": "허술한 논증에 보탤 근거 고르기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-argument-six-review-questions",
             "title": "논증 점검 여섯 질문",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -1678,37 +1678,37 @@
           {
             "id": "lesson-describe-different-purpose-from-explain",
             "title": "설명과 묘사는 목적이 다르다",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-describe-which-sense-was-chosen",
             "title": "오감 가운데 무엇을 골랐는가",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-describe-touch-smell-taste",
             "title": "촉감·냄새·맛이 들어간 문장",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-describe-dominant-impression-first",
             "title": "지배적 인상을 먼저 잡은 묘사",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-describe-observation-versus-impression",
             "title": "관찰과 인상 평가를 가르기",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-describe-vague-to-concrete-stages",
             "title": "막연한 표현이 구체화되는 단계",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -1720,37 +1720,37 @@
           {
             "id": "lesson-describe-precise-versus-vague-adjective",
             "title": "정확한 형용사와 막연한 형용사",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-describe-what-adverbs-cannot-do",
             "title": "부사가 하는 일과 못 하는 일",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-describe-descending-to-number-color-shape",
             "title": "수치·색·형태로 내려가기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-describe-action-verbs-build-scene",
             "title": "동작 동사가 장면을 만드는 방식",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-describe-gaze-movement-order",
             "title": "시선의 이동 순서로 배치한 묘사",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-describe-detail-excess-hides-message",
             "title": "디테일 과잉이 메시지를 가릴 때",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -1762,37 +1762,37 @@
           {
             "id": "lesson-describe-simile-versus-metaphor",
             "title": "직유와 은유의 형식 차이",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-describe-ground-of-comparison",
             "title": "비유의 근거: 무엇이 닮았는가",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-describe-awkward-personification",
             "title": "의인법이 어색해지는 조건",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-describe-hyperbole-and-understatement",
             "title": "과장과 축소의 효과와 한계",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-describe-detecting-cliche-figures",
             "title": "진부한 비유를 가려내는 기준",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-describe-figure-distorts-meaning",
             "title": "비유가 뜻을 왜곡하는 지점",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           }
         ]
@@ -1804,37 +1804,37 @@
           {
             "id": "lesson-describe-telling-versus-showing-emotion",
             "title": "감정을 말한 문장과 보여준 문장",
-            "time": "10분",
+            "time": "29분",
             "steps": []
           },
           {
             "id": "lesson-describe-action-reveals-psychology",
             "title": "행동으로 심리를 드러낸 문장",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-describe-abstract-adjective-to-scene",
             "title": "관념적 형용사를 장면으로 바꾼 예",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-describe-showing-summarizing-balance",
             "title": "보여주기와 요약하기의 균형",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-describe-dialogue-carries-information",
             "title": "대화문이 정보를 전달하는 방식",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-describe-two-versions-trimmed-excess",
             "title": "과잉 표현을 덜어낸 두 판본",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           }
         ]
@@ -1855,37 +1855,37 @@
           {
             "id": "lesson-summary-versus-excerpt",
             "title": "요약과 발췌는 다르다",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-summary-core-versus-elaboration",
             "title": "핵심 문장과 부연 문장 가르기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-summary-criteria-for-deletable-information",
             "title": "삭제해도 되는 정보의 기준",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-summary-filtering-repetition-and-example",
             "title": "반복과 예시를 걸러내기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-summary-when-summary-changes-thesis",
             "title": "요약이 원문의 논지를 바꾸는 순간",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-summary-what-length-keeps",
             "title": "길이에 따라 남기는 정보",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           }
         ]
@@ -1897,37 +1897,37 @@
           {
             "id": "lesson-summary-bundling-sentences",
             "title": "여러 문장을 한 문장으로 묶기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-summary-outline-versus-narrative-form",
             "title": "개조식과 서술식의 선택",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-summary-keyword-centered-restructuring",
             "title": "핵심어 중심으로 재구성한 요약",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-summary-preserving-judgment-structure",
             "title": "판단 구조를 보존하는 압축",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-summary-one-line-and-three-sentence",
             "title": "한 줄 요약과 세 문장 요약",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-summary-checking-what-was-dropped",
             "title": "요약문에서 빠진 내용 확인하기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -1939,43 +1939,43 @@
           {
             "id": "lesson-summary-fact-versus-opinion-statement",
             "title": "사실 진술과 의견 진술 가르기",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-summary-finding-central-claim",
             "title": "글의 중심 주장 찾아내기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-summary-surfacing-author-premise",
             "title": "저자의 숨은 전제 드러내기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-summary-ground-validity-and-sufficiency",
             "title": "근거의 타당성과 충분성",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-summary-distorted-statistics",
             "title": "왜곡되어 인용된 통계",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-summary-context-time-and-position",
             "title": "글의 맥락: 시점과 필자의 위치",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-summary-rereading-from-opposing-view",
             "title": "반대 입장에서 다시 읽기",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           }
         ]
@@ -1987,31 +1987,31 @@
           {
             "id": "lesson-summary-direct-versus-indirect-quotation",
             "title": "직접 인용과 간접 인용의 경계",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-summary-paraphrase-versus-plagiarism",
             "title": "바꿔 쓰기와 표절의 갈림",
-            "time": "10분",
+            "time": "29분",
             "steps": []
           },
           {
             "id": "lesson-summary-conditions-for-secondary-citation",
             "title": "재인용이 허용되는 조건",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-summary-what-a-citation-contains",
             "title": "출처 표기에 들어가는 정보",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-summary-ranking-source-reliability",
             "title": "자료의 신뢰도 우선순위 매기기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -2023,37 +2023,37 @@
           {
             "id": "lesson-summary-clear-versus-unclear-provenance",
             "title": "출처가 분명한 정보와 불분명한 정보",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-summary-plausible-versus-verifiable",
             "title": "그럴듯함과 검증 가능함",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-summary-repeated-form-signals",
             "title": "생성된 문장에서 반복되는 형식 신호",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-summary-detecting-nonexistent-grounds",
             "title": "존재하지 않는 근거 가려내기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-summary-cross-checking-procedure",
             "title": "여러 출처를 교차 확인하는 절차",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           },
           {
             "id": "lesson-summary-five-judgment-categories",
             "title": "정보 판별 다섯 갈래로 분류하기",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
@@ -2074,37 +2074,37 @@
           {
             "id": "lesson-idea-procedure-not-talent",
             "title": "착수를 막는 것은 재능이 아니라 절차다",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-separating-generation-and-evaluation",
             "title": "생성과 평가를 분리하기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-keyword-matrix",
             "title": "키워드 매트릭스로 재료 벌리기",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-idea-layering-to-expand-thought",
             "title": "계층을 나눠 생각 늘리기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-traces-of-spoken-draft",
             "title": "말로 먼저 풀어낸 초안의 흔적",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-idea-criteria-for-discarding-material",
             "title": "재료가 많아졌을 때 버리는 기준",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           }
         ]
@@ -2116,43 +2116,43 @@
           {
             "id": "lesson-idea-observation-versus-interpretation",
             "title": "관찰 진술과 해석 진술 가르기",
-            "time": "10분",
+            "time": "25분",
             "steps": []
           },
           {
             "id": "lesson-idea-observe-compare-reason-judge",
             "title": "관찰→비교→이유→판단의 순서",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-idea-changing-comparison-changes-reading",
             "title": "비교 대상을 바꾸면 해석이 달라진다",
-            "time": "10분",
+            "time": "28분",
             "steps": []
           },
           {
             "id": "lesson-idea-multiple-readings-of-one-fact",
             "title": "하나의 사실에 붙은 여러 해석",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-naming-an-interpretation",
             "title": "해석에 이름 붙이기: 개념화",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-interpretation-with-falsifier",
             "title": "반증 조건을 붙인 해석",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-hasty-versus-suspended-conclusion",
             "title": "성급한 결론과 유보된 결론",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -2164,43 +2164,43 @@
           {
             "id": "lesson-idea-topic-versus-thesis",
             "title": "화제와 주제는 다르다",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-idea-two-requirements-of-good-topic",
             "title": "좋은 주제의 두 요건: 구체성과 논쟁성",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-narrowing-by-time-space-target-method",
             "title": "시간·공간·대상·방법으로 좁히기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-connecting-narrow-topic-to-context",
             "title": "좁힌 주제를 넓은 맥락에 잇기",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-idea-three-topic-types",
             "title": "문제 해결형·쟁점형·설명형 주제",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-idea-stating-thesis-in-one-sentence",
             "title": "주제문 한 문장으로 세우기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-signals-of-drifting-topic",
             "title": "주제가 흔들린 글의 신호",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           }
         ]
@@ -2212,37 +2212,37 @@
           {
             "id": "lesson-idea-answerable-versus-empty-question",
             "title": "답할 수 있는 질문과 공허한 질문",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-idea-question-that-unsettles-convention",
             "title": "통념을 흔드는 질문",
-            "time": "10분",
+            "time": "24분",
             "steps": []
           },
           {
             "id": "lesson-idea-introduction-showing-problem-awareness",
             "title": "문제의식이 드러난 서론과 그렇지 않은 서론",
-            "time": "10분",
+            "time": "33분",
             "steps": []
           },
           {
             "id": "lesson-idea-three-topics-from-one-subject",
             "title": "같은 소재에서 갈라진 세 가지 주제",
-            "time": "10분",
+            "time": "27분",
             "steps": []
           },
           {
             "id": "lesson-idea-matching-topic-and-material",
             "title": "주제와 자료의 아귀 맞추기",
-            "time": "10분",
+            "time": "23분",
             "steps": []
           },
           {
             "id": "lesson-idea-five-review-questions",
             "title": "발상 단계 점검 다섯 질문",
-            "time": "10분",
+            "time": "26분",
             "steps": []
           }
         ]
