@@ -10,20 +10,20 @@
 
 ## 다음 대상
 
-| 코스                                 | 레슨 | 상태        |
-| ------------------------------------ | ---- | ----------- |
-| `course-precise-powerful-sentence`   | 42   | 집필 완료   |
-| `course-accurate-word-choice`        | 34   | 집필 대기   |
-| `course-orthography-principles`      | 40   | 계약 대기\* |
-| `course-paragraph-text-design`       | 30   | 계약 대기\* |
-| `course-logical-connection-cohesion` | 22   | 집필 대기   |
-| `course-explanatory-power`           | 28   | 집필 대기   |
-| `course-argumentation-craft`         | 32   | 집필 대기   |
-| `course-observation-description`     | 24   | 집필 대기   |
-| `course-summary-critical-reading`    | 30   | 계약 대기\* |
-| `course-idea-topic-framing`          | 26   | 집필 대기   |
+| 코스                                 | 레슨 | 상태      |
+| ------------------------------------ | ---- | --------- |
+| `course-precise-powerful-sentence`   | 42   | 집필 완료 |
+| `course-accurate-word-choice`        | 34   | 집필 대기 |
+| `course-orthography-principles`      | 40   | 집필 대기 |
+| `course-paragraph-text-design`       | 30   | 집필 대기 |
+| `course-logical-connection-cohesion` | 22   | 집필 대기 |
+| `course-explanatory-power`           | 28   | 집필 대기 |
+| `course-argumentation-craft`         | 32   | 집필 대기 |
+| `course-observation-description`     | 24   | 집필 대기 |
+| `course-summary-critical-reading`    | 30   | 집필 대기 |
+| `course-idea-topic-framing`          | 26   | 집필 대기 |
 
-\* `TRANSCRIBE`와 `PARAGRAPH_ORGANIZE` 계약이 없어 해당 코스는 계약 구현 뒤에 집필한다. 아래 후속 절을 본다.
+`TRANSCRIBE`·`PARAGRAPH_ORGANIZE`는 계약하지 않기로 확정했다(`content-model.md`의 제외 스텝 타입). 두 유형을 쓰던 템플릿을 [`stage-2-step-templates.md`](./stage-2-step-templates.md)에서 확정 유형으로 다시 배치했으므로 코스 3·4·9도 계약 대기 없이 집필할 수 있다.
 
 코스 1의 마지막 유닛 `unit-sentence-diagnosis-synthesis`는 앞선 여섯 유닛의 판정을 묶는 종합 유닛이었다. 다른 코스에서도 종합 유닛은 앞 유닛을 모두 마친 뒤 집필한다.
 
@@ -75,6 +75,6 @@
 
 코스 2부터 같은 방식으로 이어 간다.
 
-`TRANSCRIBE`와 `PARAGRAPH_ORGANIZE`는 아직 계약이 없다. 두 유형을 쓰는 템플릿은 `A4` `A8` `C6` `G4` `I6` `D2` `D3` `D5` `I5` `I6`이며, 코스 3·4·9가 이 템플릿을 배정받았으므로 그 코스에 닿기 전에 계약을 구현해야 한다. 구현 방식은 코스 1에서 `TRUE_FALSE`·`SENTENCE_BUILD`·`ERROR_CORRECT`를 계약에 넣은 것과 같다.
+`TRANSCRIBE`와 `PARAGRAPH_ORGANIZE`는 계약하지 않기로 확정했다(`content-model.md`의 제외 스텝 타입). 두 유형을 쓰던 템플릿 `A4` `A8` `C6` `G4` `I6`(`Tr`)과 `D2` `D3` `D5` `I5` `I6`(`PO`)은 [`stage-2-step-templates.md`](./stage-2-step-templates.md)에서 같은 판별 지점을 확정 11개 유형으로 다시 확인하도록 배치를 바꿨다. 코스 3·4·9는 계약 대기 없이 이 배치대로 집필한다.
 
-`true_false`·`sentence_build`·`error_correct` 세 유형의 `shared/ui` 응답 컴포넌트가 `explanation` 값을 렌더하지 않는다. 세 유형의 스텝은 시드에 `explanation`을 담고 있으나 학습자 화면에서 보이지 않는다. `packages/shared/ui`는 요청 없이 수정하지 않는 경계이므로 승인을 받은 뒤 고친다.
+`true_false`·`sentence_build`·`error_correct` 세 유형의 `shared/ui` 응답 컴포넌트는 `explanation` prop을 받지만 렌더링하지 않는다. 다만 이는 결함이 아니다. 해설은 콘텐츠 영역이 아니라 `lesson-shell.tsx`의 `LessonFeedback` 하단 오버레이가 서버 evaluation의 `explanation`을 그대로 표시하며(`docs/design/screens/SCR-006-learner-lesson.md`), SELECT·ORDER·MATCH·CATEGORIZE 같은 기존 확정 유형도 같은 구조다. 세 유형의 시드 `explanation` 값은 학습자에게 정상적으로 전달되므로 `packages/shared/ui` 편집은 필요하지 않다.

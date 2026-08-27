@@ -8,21 +8,19 @@
 
 ## 스텝 유형 표기
 
-| 표기 | 유형                 | 채점 | 계약     |
-| ---- | -------------------- | ---- | -------- |
-| `Rd` | `reading`            | 확인 | 있음     |
-| `Cp` | `compare`            | 확인 | 있음     |
-| `MC` | `multiple_choice`    | 서버 | 있음     |
-| `Sl` | `select`             | 서버 | 있음     |
-| `Cg` | `categorize`         | 서버 | 있음     |
-| `Mt` | `match`              | 서버 | 있음     |
-| `Or` | `order`              | 서버 | 있음     |
-| `FB` | `fill_blank`         | 서버 | 있음     |
-| `TF` | `true_false`         | 서버 | **없음** |
-| `SB` | `sentence_build`     | 서버 | **없음** |
-| `Tr` | `transcribe`         | 서버 | **없음** |
-| `EC` | `error_correct`      | 서버 | **없음** |
-| `PO` | `paragraph_organize` | 서버 | **없음** |
+| 표기 | 유형              | 채점 | 계약 |
+| ---- | ----------------- | ---- | ---- |
+| `Rd` | `reading`         | 확인 | 있음 |
+| `Cp` | `compare`         | 확인 | 있음 |
+| `MC` | `multiple_choice` | 서버 | 있음 |
+| `Sl` | `select`          | 서버 | 있음 |
+| `Cg` | `categorize`      | 서버 | 있음 |
+| `Mt` | `match`           | 서버 | 있음 |
+| `Or` | `order`           | 서버 | 있음 |
+| `FB` | `fill_blank`      | 서버 | 있음 |
+| `TF` | `true_false`      | 서버 | 있음 |
+| `SB` | `sentence_build`  | 서버 | 있음 |
+| `EC` | `error_correct`   | 서버 | 있음 |
 
 ## 배정 규칙
 
@@ -50,11 +48,11 @@
 | `A1` | 조항을 사례에 적용해 근거를 댄다              | 19   | 코스 3 띄어쓰기      | `Rd Mt TF Mt MC TF Mt Rd TF Mt MC TF Mt Sl MC Mt TF Rd MC`    |
 | `A2` | 규범·허용·취향을 세 층으로 가른다             | 18   | 코스 3 표준어        | `Rd MC Cg Rd Cg TF Cg MC Cg Rd TF Cg MC Cg TF Cg Rd MC`       |
 | `A3` | 품사를 판정한 뒤 표기를 결정한다              | 19   | 코스 3 동형이의      | `Rd MC Sl Cg MC Sl Cg TF MC Sl Cg Rd MC Sl Cg TF MC Cg MC`    |
-| `A4` | 원문 재현으로 표기를 굳힌다                   | 19   | 코스 3 표기 심화     | `Rd Tr MC Tr TF Tr EC Tr MC Rd Tr TF Tr EC Tr MC Tr Rd Tr`    |
+| `A4` | 원문 재현으로 표기를 굳힌다                   | 19   | 코스 3 표기 심화     | `Rd FB MC FB TF FB EC FB MC Rd FB TF FB EC FB MC FB Rd FB`    |
 | `A5` | 소리와 표기가 어긋나는 조건과 예외를 진술한다 | 20   | 코스 3 사이시옷·두음 | `Rd MC TF Mt Rd FB TF Mt MC FB Cg TF Rd Mt FB MC TF Cg Rd MC` |
 | `A6` | 부호가 바꾸는 뜻을 전후로 확인한다            | 18   | 코스 3 문장부호      | `Rd Cp MC Sl Cp MC Sl TF Cp MC Sl Rd Cp MC Sl TF Cg MC`       |
 | `A7` | 검사기가 놓치는 오류를 스스로 잡는다          | 19   | 코스 3 종합          | `Rd MC Sl EC Sl EC MC TF Sl EC Rd Sl EC MC TF Sl EC Cg MC`    |
-| `A8` | 원칙과 관용을 함께 적용한다                   | 19   | 코스 3 외래어·숫자   | `Rd MC Mt Tr Cg MC Tr TF Mt Cg Rd Tr MC Cg Mt Tr TF Cg MC`    |
+| `A8` | 원칙과 관용을 함께 적용한다                   | 19   | 코스 3 외래어·숫자   | `Rd MC Mt FB Cg MC FB TF Mt Cg Rd FB MC Cg Mt FB TF Cg MC`    |
 
 ## B 문장 성분과 구조
 
@@ -77,17 +75,17 @@
 | `C3` | 문법은 맞지만 안 어울리는 결합을 잡는다    | 19   | 코스 2 연어       | `Rd MC Mt TF FB Mt MC TF FB Mt Rd TF Mt FB MC TF Mt Cg MC`       |
 | `C4` | 한 편의 글에서 톤이 흔들린 자리를 찾는다   | 21   | 코스 2 격과 톤    | `Rd MC Sl Cg Cp Sl MC Cg TF Sl Cp Cg MC Rd Sl Cg TF Sl MC Cg MC` |
 | `C5` | 추상어를 검증 가능한 말로 내린다           | 19   | 코스 2·6·8 추상도 | `Rd MC Or FB MC SB Or TF FB MC Rd Or SB FB MC Or TF SB MC`       |
-| `C6` | 관용구와 고사성어를 정확한 형태로 조립한다 | 19   | 코스 2 관용 표현  | `Rd MC Or Tr MC SB Or Tr TF MC Rd Or SB Tr MC Or TF MC Tr`       |
+| `C6` | 관용구와 고사성어를 정확한 형태로 조립한다 | 19   | 코스 2 관용 표현  | `Rd MC Or SB MC SB Or SB TF MC Rd Or SB SB MC Or TF MC SB`       |
 
 ## D 문단과 글 구조
 
 | ID   | 컨셉                                           | 스텝 | 자연스러운 자리    | 배치                                                          |
 | ---- | ---------------------------------------------- | ---- | ------------------ | ------------------------------------------------------------- |
 | `D1` | 통일성·충분성·긴밀성 중 무엇이 깨졌는지 말한다 | 19   | 코스 4 문단 요건   | `Rd MC Cg Sl MC Cg TF Sl Cg MC Rd Cg Sl TF Cg MC Sl Cg MC`    |
-| `D2` | 문단에서 무관한 문장을 걸러낸다                | 19   | 코스 4·9 통일성    | `Rd MC Sl PO MC PO Sl TF PO MC Rd Sl PO MC PO TF Sl PO MC`    |
-| `D3` | 논리 전개에 맞게 문단을 배열한다               | 19   | 코스 4·5 조직      | `Rd MC Or PO MC Or PO TF Or PO MC Rd Or PO MC PO TF MC PO`    |
+| `D2` | 문단에서 무관한 문장을 걸러낸다                | 19   | 코스 4·9 통일성    | `Rd MC Sl Cg MC Cg Sl TF Cg MC Rd Sl Cg MC Cg TF Sl Cg MC`    |
+| `D3` | 논리 전개에 맞게 문단을 배열한다               | 19   | 코스 4·5 조직      | `Rd MC Or FB MC Or Cg TF Or FB MC Rd Or Cg MC Or TF MC Or`    |
 | `D4` | 빠진 뒷받침의 종류를 지목한다                  | 20   | 코스 4 뒷받침      | `Rd MC Cg Mt MC Cg Sl TF Mt Cg MC Rd Cg Mt Sl TF Cg MC Cg MC` |
-| `D5` | 완성 글에서 개요를 복원한다                    | 19   | 코스 4 개요        | `Rd MC Or FB MC Or PO TF Or FB MC Rd Or PO FB MC TF MC Or`    |
+| `D5` | 완성 글에서 개요를 복원한다                    | 19   | 코스 4 개요        | `Rd MC Or FB MC Or Or TF Or FB MC Rd Or Or FB MC TF MC Or`    |
 | `D6` | 다리가 없는 지점을 찾아 이유를 댄다            | 20   | 코스 4·5 문단 잇기 | `Rd MC Sl FB Cp MC Sl FB TF Cp Sl MC Rd FB Sl Cp MC TF Cg MC` |
 | `D7` | 서론의 약속과 결론의 회수를 대조한다           | 20   | 코스 4 전체 구조   | `Rd Cp MC Sl Cp Mt MC Cp Sl TF Cp MC Rd Cp Sl Mt Cp MC Cg MC` |
 | `D8` | 접속어를 넣을 자리와 뺄 자리를 가른다          | 20   | 코스 5 접속 표현   | `Rd MC FB Sl TF Cg FB MC Sl TF FB Cg Rd MC FB Sl TF Cg FB MC` |
@@ -123,7 +121,7 @@
 | `G1` | 버릴 정보의 기준을 진술한다           | 20   | 코스 9 요약의 조건    | `Rd MC Sl Cg TF MC Sl Cg TF Sl Cg MC Rd Sl Cg TF Sl MC Cg MC`    |
 | `G2` | 판단 구조가 보존된 요약을 골라낸다    | 20   | 코스 9 압축           | `Rd Cp MC Sl SB Cp MC Sl TF SB Cp MC Rd Sl SB Cp MC TF Cg MC`    |
 | `G3` | 사실·의견·전제를 문장 단위로 가른다   | 21   | 코스 9·10 비판적 읽기 | `Rd MC Cg Sl MC Cg Sl TF Cg MC Sl Cg Rd MC Cg Sl TF Cg MC Cg MC` |
-| `G4` | 인용·바꿔 쓰기·표절의 경계를 판정한다 | 19   | 코스 9 출처와 인용    | `Rd MC Cg Cp Tr MC Cg TF Cp Tr Cg MC Rd Cg Cp Tr TF Cg MC`       |
+| `G4` | 인용·바꿔 쓰기·표절의 경계를 판정한다 | 19   | 코스 9 출처와 인용    | `Rd MC Cg Cp Sl MC Cg TF Cp Sl Cg MC Rd Cg Cp Sl TF Cg MC`       |
 | `G5` | 그럴듯함과 검증 가능함을 가른다       | 19   | 코스 9 AI 정보 판별   | `Rd MC Cg TF Sl Mt MC Cg TF Sl Cg Mt Rd MC Cg TF Sl Cg MC`       |
 | `G6` | 자료의 신뢰도에 우선순위를 매긴다     | 19   | 코스 9 출처           | `Rd MC Or Mt MC Cg Or TF Mt Or MC Cg Rd Or Mt TF Cg MC Or`       |
 
@@ -145,8 +143,8 @@
 | `I2` | 분류한 뒤 우선순위를 정한다      | 23   | 코스 1 종합       | `Rd MC Cg Or MC Cg Or Sl Cg TF Or Cg MC Rd Cg Or Sl Cg TF MC Cg MC Or`    |
 | `I3` | 점검 질문을 목록으로 세운다      | 22   | 코스 7·10 종합    | `Rd MC Mt Or TF Mt MC Or Cg TF Mt Or MC Rd Mt Or TF Cg Mt MC Or MC`       |
 | `I4` | 같은 내용 두 판본을 대조한다     | 22   | 코스 1·6·8 종합   | `Rd Cp MC Sl Cp MC Cg Cp Sl TF Cp MC Cg Rd Cp Sl MC Cp TF Cg Cp MC`       |
-| `I5` | 오류가 섞인 문단을 해부한다      | 23   | 코스 4·7 종합     | `Rd MC Sl EC Cg MC Sl EC PO TF Cg Sl EC MC Rd PO Sl EC Cg TF MC Cg MC`    |
-| `I6` | 여러 갈래를 한 자리에서 진단한다 | 24   | 코스 3·9 종합     | `Rd MC Sl Cg TF Mt FB Cp MC Or Tr Sl EC Cg SB PO TF Mt MC Cg Rd Or MC MC` |
+| `I5` | 오류가 섞인 문단을 해부한다      | 23   | 코스 4·7 종합     | `Rd MC Sl EC Cg MC Sl EC EC TF Cg Sl EC MC Rd EC Sl EC Cg TF MC Cg MC`    |
+| `I6` | 여러 갈래를 한 자리에서 진단한다 | 24   | 코스 3·9 종합     | `Rd MC Sl Cg TF Mt FB Cp MC Or EC Sl EC Cg SB SB TF Mt MC Cg Rd Or MC MC` |
 
 ---
 
@@ -154,55 +152,48 @@
 
 컨셉에서 스텝을 도출한 결과 유형별 등장량은 고르지 않다. 이것은 교정 대상이 아니다.
 
-`Tr`은 표기를 굳히는 `A4`에서 아홉 번 나오고 문단이나 논증 컨셉에는 한 번도 나오지 않는다. `PO`는 문단을 다루는 `D2`·`D3`에서 여섯 번씩 나오고 어휘 컨셉에는 없다. `SB`는 조립이 확인 수단인 `B2`에서 여덟 번 나온다. `Cp`는 대조가 축인 `I4`에서 일곱 번, `D7`에서 여섯 번, `F4`에서 다섯 번 나온다.
+`SB`는 조립이 확인 수단인 `B2`에서 여덟 번 나온다. `Cp`는 대조가 축인 `I4`에서 일곱 번, `D7`에서 여섯 번, `F4`에서 다섯 번 나온다. `FB`는 표기를 굳히는 `A4`에서 아홉 번 나온다.
 
-마지막 자리는 컨셉의 마무리 행위가 무엇인지에 따라 갈린다. 52개는 `MC`로 통과 여부를 한 문항으로 확인한다. 나머지 8개는 마무리 행위 자체가 확인이므로 그 유형으로 닫는다. `A4`·`C6`은 `Tr`로 정확히 옮겨 적어 닫고, `B2`·`H3`은 `SB`로 조립해 닫고, `D3`은 `PO`로 문단을 완성해 닫고, `D5`·`G6`·`I2`는 `Or`로 순서를 확정해 닫는다.
+마지막 자리는 컨셉의 마무리 행위가 무엇인지에 따라 갈린다. 52개는 `MC`로 통과 여부를 한 문항으로 확인한다. 나머지 8개는 마무리 행위 자체가 확인이므로 그 유형으로 닫는다. `A4`는 `FB`로 정확한 표기를 채워 닫고, `B2`·`H3`·`C6`은 `SB`로 조립해 닫고, `D3`·`D5`·`G6`·`I2`는 `Or`로 순서를 확정해 닫는다.
 
 스텝 수는 18부터 24까지다. 19스텝 24개, 20스텝 24개가 가장 많고 18스텝 4개, 21스텝 2개, 22스텝 3개, 23스텝 2개, 24스텝 1개다.
 
-한 템플릿이 쓰는 서로 다른 유형은 평균 6.0종, 최소 4종, 최대 13종이다. 컨셉이 좁을수록 유형 수가 적다. `A2`는 규범·허용·취향 세 층을 가르는 일만 하므로 `Rd` `MC` `Cg` `TF` 네 종으로 끝나고, `I6`은 여러 갈래를 한 자리에서 진단하므로 13종을 모두 쓴다.
+한 템플릿이 쓰는 서로 다른 유형은 평균 5.9종, 최소 4종, 최대 11종이다. 컨셉이 좁을수록 유형 수가 적다. `A2`는 규범·허용·취향 세 층을 가르는 일만 하므로 `Rd` `MC` `Cg` `TF` 네 종으로 끝나고, `I6`은 여러 갈래를 한 자리에서 진단하므로 11종을 모두 쓴다.
 
-이전 판에서 `Or`이 문단·논리 순서에만, `Tr`이 표기에만 묶여 있었다. `B2`(어절 조립), `C6`(관용구 조립), `C5`(추상도 계단), `F2`(구체화 계단), `G6`(신뢰도 우선순위)로 `Or`의 자리를 넓혔고, `C6`(관용구 형태)와 `G4`(정확한 인용)로 `Tr`을 표기 밖으로 냈다.
+이전 판에서 `Or`이 문단·논리 순서에만 묶여 있었다. `B2`(어절 조립), `C6`(관용구 조립), `C5`(추상도 계단), `F2`(구체화 계단), `G6`(신뢰도 우선순위)로 `Or`의 자리를 넓혔다.
 
-## 미계약 유형 의존성
+`TRANSCRIBE`(`Tr`)와 `PARAGRAPH_ORGANIZE`(`PO`)는 계약하지 않기로 확정했다(`content-model.md`의 제외 스텝 타입). 두 유형을 쓰던 `A4` `A8` `C6` `G4` `I6`(`Tr`)과 `D2` `D3` `D5` `I5` `I6`(`PO`)은 같은 판별 지점을 확정 유형으로 다시 확인하도록 배치를 바꿨다. `A4`·`A8`은 정확한 표기를 고르는 `FB`로, `C6`은 관용구를 조립하는 `SB`로, `G4`는 인용 구간을 고르는 `Sl`로, `I5`·`I6`은 `EC`로 옮겨 적기 대신 오류 교정으로 확인한다. `D2`는 무관한 문장을 분류하는 `Cg`로, `D3`·`D5`는 순서를 확정하는 `Or`로 문단 조립 대신 배열 판정을 쓴다.
 
-계약이 없는 유형은 DTO, 답안 판정, 시드 매퍼, 학습자 화면, 관리자 폼을 맞춘 뒤에만 시드에 넣는다. 현재 계약 상태는 [스텝 계약](../../../packages/shared/contracts/src/content/steps/index.ts)이 소유하고 타입별 정책은 [`content-model.md`](../../product/content-model.md)가 소유한다.
+## 유형 계약 현황
 
 | 유형 | 쓰는 템플릿 | 계약 |
 | ---- | ----------- | ---- |
 | `TF` | 60          | 있음 |
 | `SB` | 11          | 있음 |
 | `EC` | 8           | 있음 |
-| `Tr` | 5           | 없음 |
-| `PO` | 5           | 없음 |
 
-`TF`는 60개 템플릿 전부에 있다. 어느 컨셉이든 짧은 참·거짓 판정을 한 번은 거치는 것이 자연스러웠던 결과다. `TF` `SB` `EC` 세 유형은 계약을 마쳤으므로 이 세 유형만 쓰는 템플릿은 시드에 넣을 수 있다.
-
-`Tr`을 쓰는 템플릿은 `A4` `A8` `C6` `G4` `I6`, `PO`를 쓰는 템플릿은 `D2` `D3` `D5` `I5` `I6`이다. 이 두 유형은 해당 컨셉 밖에서는 쓰이지 않으며 아직 계약이 없다. 코스 1은 이 열 템플릿을 하나도 배정받지 않았다.
+11개 유형 모두 계약이 있으므로 어떤 템플릿도 시드 반영을 막지 않는다. `TRANSCRIBE`·`PARAGRAPH_ORGANIZE`는 `content-model.md`가 제외 스텝 타입으로 확정했으므로 이 저장소에서 계약을 추가하지 않는다.
 
 ## 레슨 time 산정
 
-레슨 `time`은 배정받은 템플릿에서 나온다. 스텝 유형마다 소요를 두고 배치를 합산한다. `Rd`는 3분, `Cp`와 `Tr`은 2분, 나머지 열 유형은 1분이다. `Rd`는 학습 문서 한 편을 읽는 자리이고, `Cp`는 두 판본을 견주는 자리이며, `Tr`은 원문을 옮겨 적는 자리이므로 짧은 판정 스텝보다 오래 걸린다.
+레슨 `time`은 배정받은 템플릿에서 나온다. 스텝 유형마다 소요를 두고 배치를 합산한다. `Rd`는 3분, `Cp`는 2분, 나머지 아홉 유형은 1분이다. `Rd`는 학습 문서 한 편을 읽는 자리이고, `Cp`는 두 판본을 견주는 자리이므로 짧은 판정 스텝보다 오래 걸린다.
 
-스텝 수만 세지 않는 이유는 같은 스텝 수에서도 읽기 부담이 갈리기 때문이다. `A4`와 `A8`은 둘 다 19스텝이지만 `Tr`이 각각 아홉 번과 네 번이라 34분과 27분으로 갈린다.
+| 분     | 템플릿                                                                                              |
+| ------ | --------------------------------------------------------------------------------------------------- |
+| `22분` | `B2`                                                                                                |
+| `23분` | `A3` `A7` `A8` `C2` `C3` `C5` `C6` `D1` `D2` `D3` `D5` `E2` `E4` `E7` `F2` `G5` `G6` `H1` `H3` `H5` |
+| `24분` | `B1` `B5` `B6` `D4` `D8` `E5` `E6` `E8` `F1` `G1` `H2` `H4`                                         |
+| `25분` | `A1` `A4` `G3`                                                                                      |
+| `26분` | `A2` `A6` `E1` `G4` `I1` `I3`                                                                       |
+| `27분` | `B3` `B4` `C1` `C4` `D6` `F3` `I2` `I5`                                                             |
+| `28분` | `A5` `B7` `E3` `E9` `F5` `G2`                                                                       |
+| `29분` | `F4` `I6`                                                                                           |
+| `30분` | `D7`                                                                                                |
+| `33분` | `I4`                                                                                                |
 
-| 분     | 템플릿                                                                                    |
-| ------ | ----------------------------------------------------------------------------------------- |
-| `22분` | `B2`                                                                                      |
-| `23분` | `A3` `A7` `C2` `C3` `C5` `D1` `D2` `D3` `D5` `E2` `E4` `E7` `F2` `G5` `G6` `H1` `H3` `H5` |
-| `24분` | `B1` `B5` `B6` `D4` `D8` `E5` `E6` `E8` `F1` `G1` `H2` `H4`                               |
-| `25분` | `A1` `G3`                                                                                 |
-| `26분` | `A2` `A6` `E1` `I1` `I3`                                                                  |
-| `27분` | `A8` `B3` `B4` `C1` `C4` `C6` `D6` `F3` `I2` `I5`                                         |
-| `28분` | `A5` `B7` `E3` `E9` `F5` `G2`                                                             |
-| `29분` | `F4` `G4`                                                                                 |
-| `30분` | `D7` `I6`                                                                                 |
-| `33분` | `I4`                                                                                      |
-| `34분` | `A4`                                                                                      |
-
-값은 22분부터 34분까지 열한 가지다. `분`을 떼어 정수로 읽는 파싱과 양의 정수 불변식은 [시드 로더](../../../packages/modules/content/src/infrastructure/persistence/content-seed.ts)가 소유한다.
+값은 22분부터 33분까지 열 가지다. `분`을 떼어 정수로 읽는 파싱과 양의 정수 불변식은 [시드 로더](../../../packages/modules/content/src/infrastructure/persistence/content-seed.ts)가 소유한다.
 
 ## 다음 결정
 
 - 스텝 집필은 [배정표](./stage-3-template-assignment.md)가 정한 템플릿을 따른다.
-- 미계약 유형 다섯 개의 제품 계약을 맞추기 전에는 어떤 레슨도 시드에 스텝을 넣을 수 없다.
+- 11개 확정 유형만 쓰므로 어떤 레슨도 계약 대기 없이 시드에 스텝을 넣을 수 있다.
