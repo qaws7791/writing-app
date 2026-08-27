@@ -14,6 +14,9 @@ type ContentSeedStepType =
   | "order"
   | "match"
   | "categorize"
+  | "true_false"
+  | "sentence_build"
+  | "error_correct"
 
 type StandardLessonStepType =
   | "READING"
@@ -24,6 +27,9 @@ type StandardLessonStepType =
   | "ORDER"
   | "MATCH"
   | "CATEGORIZE"
+  | "TRUE_FALSE"
+  | "SENTENCE_BUILD"
+  | "ERROR_CORRECT"
 
 type ContentSeedStep = {
   readonly type: ContentSeedStepType
@@ -110,6 +116,9 @@ const stepTypeMap = {
   order: "ORDER",
   match: "MATCH",
   categorize: "CATEGORIZE",
+  true_false: "TRUE_FALSE",
+  sentence_build: "SENTENCE_BUILD",
+  error_correct: "ERROR_CORRECT",
 } satisfies Record<ContentSeedStepType, StandardLessonStepType>
 
 function toStandardLessonStepType(

@@ -99,6 +99,35 @@ export type LearningStep =
         title: string
         type: "CATEGORIZE"
       }>)
+  | (LearningStepBase &
+      Readonly<{
+        correct: boolean
+        explanation: string
+        question: string
+        statement: string
+        type: "TRUE_FALSE"
+      }>)
+  | (LearningStepBase &
+      Readonly<{
+        correct: readonly string[]
+        explanation: string
+        question: string
+        tileIds: readonly string[]
+        tiles: readonly string[]
+        type: "SENTENCE_BUILD"
+      }>)
+  | (LearningStepBase &
+      Readonly<{
+        correctFix: string
+        correctSegment: string
+        explanation: string
+        fixIds: readonly string[]
+        fixes: readonly string[]
+        question: string
+        segmentIds: readonly string[]
+        segments: readonly string[]
+        type: "ERROR_CORRECT"
+      }>)
 
 type LearningCurriculumLesson = Readonly<{
   category: string | null
@@ -188,6 +217,19 @@ export type LearnerStepSubmission =
       }>[]
       type: "CATEGORIZE"
     }>
+  | Readonly<{
+      selectedAnswer: boolean
+      type: "TRUE_FALSE"
+    }>
+  | Readonly<{
+      selectedTileIds: readonly LessonStepItemId[]
+      type: "SENTENCE_BUILD"
+    }>
+  | Readonly<{
+      selectedFixId: LessonStepItemId
+      selectedSegmentId: LessonStepItemId
+      type: "ERROR_CORRECT"
+    }>
 
 export type LearnerStepDraftAnswer =
   | Readonly<{
@@ -220,6 +262,19 @@ export type LearnerStepDraftAnswer =
       }>[]
       type: "CATEGORIZE"
     }>
+  | Readonly<{
+      selectedAnswer: boolean | null
+      type: "TRUE_FALSE"
+    }>
+  | Readonly<{
+      selectedTileIds: readonly LessonStepItemId[]
+      type: "SENTENCE_BUILD"
+    }>
+  | Readonly<{
+      selectedFixId: LessonStepItemId | null
+      selectedSegmentId: LessonStepItemId | null
+      type: "ERROR_CORRECT"
+    }>
 
 export type LearnerStepDraft = Readonly<{
   answer: LearnerStepDraftAnswer
@@ -238,7 +293,7 @@ type ChoiceStepEvaluation = Readonly<{
     id: string
     verdict: StepItemVerdict
   }>[]
-  type: "FILL_BLANK" | "MULTIPLE_CHOICE" | "ORDER" | "SELECT"
+  type: "FILL_BLANK" | "MULTIPLE_CHOICE" | "ORDER" | "SELECT" | "SENTENCE_BUILD"
 }>
 
 export type StepEvaluation =
@@ -264,6 +319,19 @@ export type StepEvaluation =
         verdict: StepItemVerdict
       }>[]
       type: "CATEGORIZE"
+    }>
+  | Readonly<{
+      correct: boolean
+      correctAnswer: boolean
+      explanation: string
+      type: "TRUE_FALSE"
+    }>
+  | Readonly<{
+      correct: boolean
+      correctFixId: string
+      correctSegmentId: string
+      explanation: string
+      type: "ERROR_CORRECT"
     }>
 
 export type CurriculumVersionRef = Readonly<{

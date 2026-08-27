@@ -63,6 +63,41 @@ const orderStep = {
   type: "ORDER",
 } as const
 
+const trueFalseStep = {
+  correct: false,
+  explanation: "근거는 주장을 반복하지 않습니다.",
+  id: "true-false-stable-id",
+  question: "참인지 거짓인지 판단하세요.",
+  sortOrder: 1,
+  statement: "근거는 주장을 반복하는 문장으로 충분하다.",
+  type: "TRUE_FALSE",
+} as const
+
+const sentenceBuildStep = {
+  correct: ["tile-a", "tile-c"],
+  explanation: "방해 타일을 빼고 두 어절만 씁니다.",
+  id: "sentence-build-stable-id",
+  question: "어절을 모아 문장을 만드세요.",
+  sortOrder: 1,
+  tileIds: ["tile-a", "tile-b", "tile-c"],
+  tiles: ["나는", "아주", "쓴다"],
+  type: "SENTENCE_BUILD",
+} as const
+
+const errorCorrectStep = {
+  correctFix: "fix-b",
+  correctSegment: "segment-b",
+  explanation: "구간과 교정안을 모두 맞혀야 정답입니다.",
+  fixIds: ["fix-a", "fix-b"],
+  fixes: ["주장을 되풀이하며", "사실과 사례를 들며"],
+  id: "error-correct-stable-id",
+  question: "오류 구간을 찾아 고치세요.",
+  segmentIds: ["segment-a", "segment-b", "segment-c"],
+  segments: ["근거는", "주장을 되풀이하며", "독자를 설득한다."],
+  sortOrder: 1,
+  type: "ERROR_CORRECT",
+} as const
+
 describe("학습 단계 서버 채점 정책", () => {
   it.each([
     {
@@ -106,6 +141,66 @@ describe("학습 단계 서버 채점 정책", () => {
       expectedKind: "retry",
       name: "ORDER 유효하지만 잘못된 ID 순서",
       step: orderStep,
+    },
+    {
+      answer: { selectedAnswer: false, type: "TRUE_FALSE" },
+      expectedKind: "accepted",
+      name: "TRUE_FALSE 정답 판정",
+      step: trueFalseStep,
+    },
+    {
+      answer: { selectedAnswer: true, type: "TRUE_FALSE" },
+      expectedKind: "retry",
+      name: "TRUE_FALSE 반대로 판정한 오답",
+      step: trueFalseStep,
+    },
+    {
+      answer: { selectedTileIds: ["tile-a", "tile-c"], type: "SENTENCE_BUILD" },
+      expectedKind: "accepted",
+      name: "SENTENCE_BUILD 방해 타일을 제외한 정답 순서",
+      step: sentenceBuildStep,
+    },
+    {
+      answer: { selectedTileIds: ["tile-c", "tile-a"], type: "SENTENCE_BUILD" },
+      expectedKind: "retry",
+      name: "SENTENCE_BUILD 타일은 맞지만 순서가 어긋난 오답",
+      step: sentenceBuildStep,
+    },
+    {
+      answer: { selectedTileIds: ["tile-a", "tile-b"], type: "SENTENCE_BUILD" },
+      expectedKind: "retry",
+      name: "SENTENCE_BUILD 방해 타일을 넣은 오답",
+      step: sentenceBuildStep,
+    },
+    {
+      answer: {
+        selectedFixId: "fix-a",
+        selectedSegmentId: "segment-b",
+        type: "ERROR_CORRECT",
+      },
+      expectedKind: "retry",
+      name: "ERROR_CORRECT 구간은 맞고 교정안이 틀린 오답",
+      step: errorCorrectStep,
+    },
+    {
+      answer: {
+        selectedFixId: "fix-b",
+        selectedSegmentId: "segment-b",
+        type: "ERROR_CORRECT",
+      },
+      expectedKind: "accepted",
+      name: "ERROR_CORRECT 구간과 교정안을 모두 맞힌 정답",
+      step: errorCorrectStep,
+    },
+    {
+      answer: {
+        selectedFixId: "unknown",
+        selectedSegmentId: "segment-b",
+        type: "ERROR_CORRECT",
+      },
+      expectedKind: "invalid",
+      name: "ERROR_CORRECT 존재하지 않는 교정안 ID",
+      step: errorCorrectStep,
     },
   ] as const)(
     "$name 제출을 $expectedKind로 판정한다",

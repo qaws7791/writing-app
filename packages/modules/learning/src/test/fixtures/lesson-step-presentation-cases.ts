@@ -248,6 +248,81 @@ export const learnerStepPresentationCases = [
       type: "CATEGORIZE",
     }),
   },
+  {
+    expected: {
+      id: "true-false-1",
+      question: "참인지 거짓인지 판단하세요.",
+      sortOrder: 9,
+      statement: "근거는 주장을 반복하는 문장으로 충분하다.",
+      type: "TRUE_FALSE",
+    },
+    name: "TRUE_FALSE",
+    step: withFutureSecret({
+      correct: false,
+      explanation: "서버 전용 판정 해설",
+      id: "true-false-1",
+      question: "참인지 거짓인지 판단하세요.",
+      sortOrder: 9,
+      statement: "근거는 주장을 반복하는 문장으로 충분하다.",
+      type: "TRUE_FALSE",
+    }),
+  },
+  {
+    expected: {
+      id: "sentence-build-1",
+      question: "어절을 모아 문장을 만드세요.",
+      sortOrder: 10,
+      tileCount: 2,
+      tiles: [
+        { id: "tile-a", text: "나는" },
+        { id: "tile-b", text: "아주" },
+        { id: "tile-c", text: "쓴다" },
+      ],
+      type: "SENTENCE_BUILD",
+    },
+    name: "SENTENCE_BUILD",
+    step: withFutureSecret({
+      correct: ["tile-a", "tile-c"],
+      explanation: "서버 전용 조립 해설",
+      id: "sentence-build-1",
+      question: "어절을 모아 문장을 만드세요.",
+      sortOrder: 10,
+      tileIds: ["tile-a", "tile-b", "tile-c"],
+      tiles: ["나는", "아주", "쓴다"],
+      type: "SENTENCE_BUILD",
+    }),
+  },
+  {
+    expected: {
+      fixes: [
+        { id: "fix-a", text: "주장을 되풀이하며" },
+        { id: "fix-b", text: "사실과 사례를 들며" },
+      ],
+      id: "error-correct-1",
+      question: "오류 구간을 찾아 고치세요.",
+      segments: [
+        { id: "segment-a", text: "근거는" },
+        { id: "segment-b", text: "주장을 되풀이하며" },
+        { id: "segment-c", text: "독자를 설득한다." },
+      ],
+      sortOrder: 11,
+      type: "ERROR_CORRECT",
+    },
+    name: "ERROR_CORRECT",
+    step: withFutureSecret({
+      correctFix: "fix-b",
+      correctSegment: "segment-b",
+      explanation: "서버 전용 교정 해설",
+      fixIds: ["fix-a", "fix-b"],
+      fixes: ["주장을 되풀이하며", "사실과 사례를 들며"],
+      id: "error-correct-1",
+      question: "오류 구간을 찾아 고치세요.",
+      segmentIds: ["segment-a", "segment-b", "segment-c"],
+      segments: ["근거는", "주장을 되풀이하며", "독자를 설득한다."],
+      sortOrder: 11,
+      type: "ERROR_CORRECT",
+    }),
+  },
 ] as const
 
 function withFutureSecret(input: unknown) {

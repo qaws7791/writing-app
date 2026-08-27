@@ -553,6 +553,45 @@ export function presentLearnerStep(
         title: step.title,
         type: "CATEGORIZE",
       }
+    case "TRUE_FALSE":
+      return {
+        id: step.id,
+        question: step.question,
+        sortOrder: step.sortOrder,
+        statement: step.statement,
+        type: "TRUE_FALSE",
+      }
+    case "SENTENCE_BUILD":
+      return {
+        id: step.id,
+        question: step.question,
+        sortOrder: step.sortOrder,
+        tileCount: step.correct.length,
+        tiles: order(
+          step.tiles.map((text, index) => ({
+            id: requireParallelItemId(step.tileIds, index, step.id),
+            text,
+          }))
+        ),
+        type: "SENTENCE_BUILD",
+      }
+    case "ERROR_CORRECT":
+      return {
+        fixes: order(
+          step.fixes.map((text, index) => ({
+            id: requireParallelItemId(step.fixIds, index, step.id),
+            text,
+          }))
+        ),
+        id: step.id,
+        question: step.question,
+        segments: step.segments.map((text, index) => ({
+          id: requireParallelItemId(step.segmentIds, index, step.id),
+          text,
+        })),
+        sortOrder: step.sortOrder,
+        type: "ERROR_CORRECT",
+      }
   }
 
   return assertNever(step)

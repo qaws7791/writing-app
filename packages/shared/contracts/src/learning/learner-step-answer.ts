@@ -69,6 +69,35 @@ const categorizeDraftSchema = z.strictObject({
   type: z.literal("CATEGORIZE"),
 })
 
+const trueFalseSubmissionSchema = z.strictObject({
+  selectedAnswer: z.boolean(),
+  type: z.literal("TRUE_FALSE"),
+})
+const trueFalseDraftSchema = z.strictObject({
+  selectedAnswer: z.boolean().nullable(),
+  type: z.literal("TRUE_FALSE"),
+})
+
+const sentenceBuildSubmissionSchema = z.strictObject({
+  selectedTileIds: answerItemIdListSchema,
+  type: z.literal("SENTENCE_BUILD"),
+})
+const sentenceBuildDraftSchema = z.strictObject({
+  selectedTileIds: draftItemIdListSchema,
+  type: z.literal("SENTENCE_BUILD"),
+})
+
+const errorCorrectSubmissionSchema = z.strictObject({
+  selectedFixId: lessonStepItemIdSchema,
+  selectedSegmentId: lessonStepItemIdSchema,
+  type: z.literal("ERROR_CORRECT"),
+})
+const errorCorrectDraftSchema = z.strictObject({
+  selectedFixId: lessonStepItemIdSchema.nullable(),
+  selectedSegmentId: lessonStepItemIdSchema.nullable(),
+  type: z.literal("ERROR_CORRECT"),
+})
+
 export const stepItemVerdictSchema = z.enum(["correct", "incorrect", "missed"])
 
 const evaluatedItemSchema = z.strictObject({
@@ -121,6 +150,22 @@ const categorizeEvaluationSchema = z.strictObject({
   ),
   type: z.literal("CATEGORIZE"),
 })
+const trueFalseEvaluationSchema = z.strictObject({
+  correct: z.boolean(),
+  correctAnswer: z.boolean(),
+  explanation: z.string(),
+  type: z.literal("TRUE_FALSE"),
+})
+const sentenceBuildEvaluationSchema = choiceEvaluationBaseSchema.extend({
+  type: z.literal("SENTENCE_BUILD"),
+})
+const errorCorrectEvaluationSchema = z.strictObject({
+  correct: z.boolean(),
+  correctFixId: lessonStepItemIdSchema,
+  correctSegmentId: lessonStepItemIdSchema,
+  explanation: z.string(),
+  type: z.literal("ERROR_CORRECT"),
+})
 
 type LearnerStepInteractionDefinition = {
   readonly draftSchema: z.ZodType
@@ -159,6 +204,21 @@ const learnerStepInteractionDefinitions = {
     evaluationSchema: categorizeEvaluationSchema,
     submissionSchema: categorizeSubmissionSchema,
   },
+  TRUE_FALSE: {
+    draftSchema: trueFalseDraftSchema,
+    evaluationSchema: trueFalseEvaluationSchema,
+    submissionSchema: trueFalseSubmissionSchema,
+  },
+  SENTENCE_BUILD: {
+    draftSchema: sentenceBuildDraftSchema,
+    evaluationSchema: sentenceBuildEvaluationSchema,
+    submissionSchema: sentenceBuildSubmissionSchema,
+  },
+  ERROR_CORRECT: {
+    draftSchema: errorCorrectDraftSchema,
+    evaluationSchema: errorCorrectEvaluationSchema,
+    submissionSchema: errorCorrectSubmissionSchema,
+  },
 } as const satisfies Record<
   AnswerableLessonStepType,
   LearnerStepInteractionDefinition
@@ -171,6 +231,9 @@ export const learnerStepSubmissionSchema = z.discriminatedUnion("type", [
   learnerStepInteractionDefinitions.ORDER.submissionSchema,
   learnerStepInteractionDefinitions.MATCH.submissionSchema,
   learnerStepInteractionDefinitions.CATEGORIZE.submissionSchema,
+  learnerStepInteractionDefinitions.TRUE_FALSE.submissionSchema,
+  learnerStepInteractionDefinitions.SENTENCE_BUILD.submissionSchema,
+  learnerStepInteractionDefinitions.ERROR_CORRECT.submissionSchema,
 ])
 
 export const learnerStepDraftAnswerSchema = z.discriminatedUnion("type", [
@@ -180,6 +243,9 @@ export const learnerStepDraftAnswerSchema = z.discriminatedUnion("type", [
   learnerStepInteractionDefinitions.ORDER.draftSchema,
   learnerStepInteractionDefinitions.MATCH.draftSchema,
   learnerStepInteractionDefinitions.CATEGORIZE.draftSchema,
+  learnerStepInteractionDefinitions.TRUE_FALSE.draftSchema,
+  learnerStepInteractionDefinitions.SENTENCE_BUILD.draftSchema,
+  learnerStepInteractionDefinitions.ERROR_CORRECT.draftSchema,
 ])
 
 export const stepEvaluationSchema = z.discriminatedUnion("type", [
@@ -189,6 +255,9 @@ export const stepEvaluationSchema = z.discriminatedUnion("type", [
   learnerStepInteractionDefinitions.ORDER.evaluationSchema,
   learnerStepInteractionDefinitions.MATCH.evaluationSchema,
   learnerStepInteractionDefinitions.CATEGORIZE.evaluationSchema,
+  learnerStepInteractionDefinitions.TRUE_FALSE.evaluationSchema,
+  learnerStepInteractionDefinitions.SENTENCE_BUILD.evaluationSchema,
+  learnerStepInteractionDefinitions.ERROR_CORRECT.evaluationSchema,
 ])
 
 const learnerStepDraftVersionSchema = z

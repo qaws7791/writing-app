@@ -304,10 +304,13 @@ function toDraftAnswerPayloads(
 function isEvaluatedChoiceStep(step: LessonStep): boolean {
   return (
     step.type === "CATEGORIZE" ||
+    step.type === "ERROR_CORRECT" ||
     step.type === "FILL_BLANK" ||
     step.type === "MATCH" ||
     step.type === "MULTIPLE_CHOICE" ||
     step.type === "ORDER" ||
-    step.type === "SELECT"
+    step.type === "SELECT" ||
+    step.type === "SENTENCE_BUILD" ||
+    step.type === "TRUE_FALSE"
   )
 }

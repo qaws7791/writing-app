@@ -16,6 +16,12 @@ export function isLessonStepSubmittable(
         payload?.type === "CATEGORIZE" &&
         payload.assignments.length === step.items.length
       )
+    case "ERROR_CORRECT":
+      return (
+        payload?.type === "ERROR_CORRECT" &&
+        payload.selectedSegmentId !== null &&
+        payload.selectedFixId !== null
+      )
     case "FILL_BLANK":
       return (
         payload?.type === "FILL_BLANK" &&
@@ -37,6 +43,13 @@ export function isLessonStepSubmittable(
       )
     case "SELECT":
       return payload?.type === "SELECT" && payload.selectedItemIds.length > 0
+    case "SENTENCE_BUILD":
+      return (
+        payload?.type === "SENTENCE_BUILD" &&
+        payload.selectedTileIds.length === step.tileCount
+      )
+    case "TRUE_FALSE":
+      return payload?.type === "TRUE_FALSE" && payload.selectedAnswer !== null
     case "COMPARE":
     case "READING":
       return true

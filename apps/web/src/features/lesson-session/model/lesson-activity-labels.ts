@@ -2,15 +2,18 @@ import type { LessonStepType } from "@workspace/contracts/content/steps"
 
 import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 
-export const LESSON_STEP_ACTIVITY_LABELS: Record<LessonStepType, string> = {
+const LESSON_STEP_ACTIVITY_LABELS: Record<LessonStepType, string> = {
   CATEGORIZE: "분류하기",
   COMPARE: "비교하기",
+  ERROR_CORRECT: "오류 교정",
   FILL_BLANK: "빈칸 채우기",
   MATCH: "짝 맞추기",
   MULTIPLE_CHOICE: "객관식",
   ORDER: "순서 맞추기",
   READING: "읽기",
   SELECT: "구간 선택",
+  SENTENCE_BUILD: "문장 조립",
+  TRUE_FALSE: "참·거짓 판정",
 }
 
 export function listLessonActivityKindLabels(

@@ -170,6 +170,26 @@ const learnerCategorizeStepSchema = learnerStepBaseSchema.extend({
   type: z.literal("CATEGORIZE"),
 })
 
+const learnerTrueFalseStepSchema = learnerStepBaseSchema.extend({
+  question: z.string(),
+  statement: z.string(),
+  type: z.literal("TRUE_FALSE"),
+})
+
+const learnerSentenceBuildStepSchema = learnerStepBaseSchema.extend({
+  question: z.string(),
+  tileCount: z.number().int().positive(),
+  tiles: z.array(learnerStepItemSchema).min(1),
+  type: z.literal("SENTENCE_BUILD"),
+})
+
+const learnerErrorCorrectStepSchema = learnerStepBaseSchema.extend({
+  fixes: z.array(learnerStepItemSchema).min(2),
+  question: z.string(),
+  segments: z.array(learnerStepItemSchema).min(2),
+  type: z.literal("ERROR_CORRECT"),
+})
+
 export const learnerLessonStepSchema = z.discriminatedUnion("type", [
   learnerReadingStepSchema,
   learnerCompareStepSchema,
@@ -179,6 +199,9 @@ export const learnerLessonStepSchema = z.discriminatedUnion("type", [
   learnerOrderStepSchema,
   learnerMatchStepSchema,
   learnerCategorizeStepSchema,
+  learnerTrueFalseStepSchema,
+  learnerSentenceBuildStepSchema,
+  learnerErrorCorrectStepSchema,
 ])
 
 export const learnerCourseSummarySchema = z.strictObject({

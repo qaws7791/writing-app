@@ -145,6 +145,26 @@ export type LearnerLessonStep =
         title: string
         type: "CATEGORIZE"
       }>)
+  | (LearnerStepBase &
+      Readonly<{
+        question: string
+        statement: string
+        type: "TRUE_FALSE"
+      }>)
+  | (LearnerStepBase &
+      Readonly<{
+        question: string
+        tileCount: number
+        tiles: readonly LearnerStepItem[]
+        type: "SENTENCE_BUILD"
+      }>)
+  | (LearnerStepBase &
+      Readonly<{
+        fixes: readonly LearnerStepItem[]
+        question: string
+        segments: readonly LearnerStepItem[]
+        type: "ERROR_CORRECT"
+      }>)
 
 export type LearnerLesson = Readonly<{
   category: string | null

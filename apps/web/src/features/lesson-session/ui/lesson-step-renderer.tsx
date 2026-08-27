@@ -14,11 +14,14 @@ import {
   toLessonStepCheckedVisual,
 } from "@/features/lesson-session/model/lesson-step-presentation"
 import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
+import { ErrorCorrectAnswer } from "@workspace/ui/components/learning/error-correct-answer"
 import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer"
 import { LessonStepFrame } from "@workspace/ui/components/learning/lesson-step-frame"
 import { MultipleChoiceAnswer } from "@workspace/ui/components/learning/multiple-choice-answer"
 import { ReadingStepView } from "@workspace/ui/components/learning/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/learning/select-answer"
+import { SentenceBuildAnswer } from "@workspace/ui/components/learning/sentence-build-answer"
+import { TrueFalseAnswer } from "@workspace/ui/components/learning/true-false-answer"
 import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
 import type { LessonStepType } from "@workspace/contracts/content/steps"
 
@@ -48,12 +51,15 @@ export type LessonStepRendererProps = {
 const lessonStepRendererByType = {
   CATEGORIZE: CategorizeAnswer,
   COMPARE: CompareStepView,
+  ERROR_CORRECT: ErrorCorrectAnswer,
   FILL_BLANK: FillBlankAnswer,
   MATCH: LessonMatchAnswer,
   MULTIPLE_CHOICE: MultipleChoiceAnswer,
   ORDER: OrderAnswer,
   READING: ReadingStepView,
   SELECT: SelectAnswer,
+  SENTENCE_BUILD: SentenceBuildAnswer,
+  TRUE_FALSE: TrueFalseAnswer,
 } satisfies Record<LessonStepType, unknown>
 
 export function LessonStepRenderer({
@@ -314,6 +320,92 @@ function renderStep({
             })
           }
           title={step.title}
+        />
+      )
+    }
+    case "TRUE_FALSE": {
+      const StepRenderer = lessonStepRendererByType.TRUE_FALSE
+      return (
+        <StepRenderer
+          checked={checkedVisual}
+          correctAnswer={
+            checked !== false && checked.type === "TRUE_FALSE"
+              ? checked.correctAnswer
+              : false
+          }
+          defaultSelected={
+            answerPayload?.type === "TRUE_FALSE"
+              ? answerPayload.selectedAnswer
+              : null
+          }
+          explanation={getLessonStepEvaluationExplanation(checked)}
+          onSelect={(selectedAnswer) =>
+            emitAnswer({ selectedAnswer, type: "TRUE_FALSE" })
+          }
+          prompt={step.question}
+          statement={step.statement}
+        />
+      )
+    }
+    case "SENTENCE_BUILD": {
+      const StepRenderer = lessonStepRendererByType.SENTENCE_BUILD
+      return (
+        <StepRenderer
+          checked={checkedVisual}
+          correctTileIds={getCorrectLessonStepItemIds(checked).map((tileId) =>
+            findLessonStepItemId(step.tiles, tileId)
+          )}
+          defaultSelectedTileIds={
+            answerPayload?.type === "SENTENCE_BUILD"
+              ? answerPayload.selectedTileIds
+              : []
+          }
+          explanation={getLessonStepEvaluationExplanation(checked)}
+          onChange={(selectedTileIds) =>
+            emitAnswer({
+              selectedTileIds: [...selectedTileIds],
+              type: "SENTENCE_BUILD",
+            })
+          }
+          prompt={step.question}
+          tiles={step.tiles}
+        />
+      )
+    }
+    case "ERROR_CORRECT": {
+      const StepRenderer = lessonStepRendererByType.ERROR_CORRECT
+      const evaluation =
+        checked !== false && checked.type === "ERROR_CORRECT" ? checked : null
+      return (
+        <StepRenderer
+          checked={checkedVisual}
+          correctErrorSegmentId={evaluation?.correctSegmentId ?? ""}
+          correctFixId={evaluation?.correctFixId ?? ""}
+          defaultErrorSegmentId={
+            answerPayload?.type === "ERROR_CORRECT"
+              ? answerPayload.selectedSegmentId
+              : null
+          }
+          defaultFixId={
+            answerPayload?.type === "ERROR_CORRECT"
+              ? answerPayload.selectedFixId
+              : null
+          }
+          explanation={getLessonStepEvaluationExplanation(checked)}
+          fixes={step.fixes}
+          onChange={({ errorSegmentId, fixId }) =>
+            emitAnswer({
+              selectedFixId:
+                fixId === null ? null : findLessonStepItemId(step.fixes, fixId),
+              selectedSegmentId:
+                errorSegmentId === null
+                  ? null
+                  : findLessonStepItemId(step.segments, errorSegmentId),
+              type: "ERROR_CORRECT",
+            })
+          }
+          prompt={step.question}
+          segments={step.segments}
         />
       )
     }

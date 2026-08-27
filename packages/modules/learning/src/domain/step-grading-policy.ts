@@ -51,6 +51,18 @@ export function gradeLearnerStep(
         return step.type === completion.submission.type
           ? gradeCategorize(step, completion.submission)
           : { kind: "invalid" }
+      case "TRUE_FALSE":
+        return step.type === completion.submission.type
+          ? gradeTrueFalse(step, completion.submission)
+          : { kind: "invalid" }
+      case "SENTENCE_BUILD":
+        return step.type === completion.submission.type
+          ? gradeSentenceBuild(step, completion.submission)
+          : { kind: "invalid" }
+      case "ERROR_CORRECT":
+        return step.type === completion.submission.type
+          ? gradeErrorCorrect(step, completion.submission)
+          : { kind: "invalid" }
       default:
         return { kind: "invalid" }
     }
@@ -255,6 +267,69 @@ function gradeCategorize(
     correct,
     explanation: step.explanation,
     items,
+    type: step.type,
+  })
+}
+
+function gradeTrueFalse(
+  step: Extract<LearningStep, { readonly type: "TRUE_FALSE" }>,
+  answer: Extract<LearnerStepSubmission, { readonly type: "TRUE_FALSE" }>
+): StepGradingResult {
+  const correct = answer.selectedAnswer === step.correct
+  return evaluatedResult(answer, correct, {
+    correct,
+    correctAnswer: step.correct,
+    explanation: step.explanation,
+    type: step.type,
+  })
+}
+
+function gradeSentenceBuild(
+  step: Extract<LearningStep, { readonly type: "SENTENCE_BUILD" }>,
+  answer: Extract<LearnerStepSubmission, { readonly type: "SENTENCE_BUILD" }>
+): StepGradingResult {
+  const ids = step.tileIds
+  if (
+    answer.selectedTileIds.length !== step.correct.length ||
+    !hasUniqueValues(answer.selectedTileIds) ||
+    answer.selectedTileIds.some((id) => !ids.includes(id))
+  ) {
+    return { kind: "invalid" }
+  }
+
+  const correctIds = step.correct
+  const correct = equalValues(answer.selectedTileIds, correctIds)
+  return evaluatedResult(answer, correct, {
+    correct,
+    correctItemIds: correctIds,
+    explanation: step.explanation,
+    items: answer.selectedTileIds.map((id, index) => ({
+      id,
+      verdict: id === correctIds[index] ? "correct" : "incorrect",
+    })),
+    type: step.type,
+  })
+}
+
+function gradeErrorCorrect(
+  step: Extract<LearningStep, { readonly type: "ERROR_CORRECT" }>,
+  answer: Extract<LearnerStepSubmission, { readonly type: "ERROR_CORRECT" }>
+): StepGradingResult {
+  if (
+    !step.segmentIds.includes(answer.selectedSegmentId) ||
+    !step.fixIds.includes(answer.selectedFixId)
+  ) {
+    return { kind: "invalid" }
+  }
+
+  const correct =
+    answer.selectedSegmentId === step.correctSegment &&
+    answer.selectedFixId === step.correctFix
+  return evaluatedResult(answer, correct, {
+    correct,
+    correctFixId: step.correctFix,
+    correctSegmentId: step.correctSegment,
+    explanation: step.explanation,
     type: step.type,
   })
 }

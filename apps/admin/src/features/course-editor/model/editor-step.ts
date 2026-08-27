@@ -125,5 +125,43 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
         type: input.type,
       }
     }
+    case "TRUE_FALSE":
+      return {
+        ...base,
+        correct: true,
+        explanation: "",
+        question: "질문을 입력하세요.",
+        statement: "판정할 진술을 입력하세요.",
+        type: input.type,
+      }
+    case "SENTENCE_BUILD": {
+      const firstTileId = itemId("tile", 1)
+      const secondTileId = itemId("tile", 2)
+      return {
+        ...base,
+        correct: [firstTileId, secondTileId],
+        explanation: "",
+        question: "질문을 입력하세요.",
+        tileIds: [firstTileId, secondTileId],
+        tiles: ["첫 어절", "둘째 어절"],
+        type: input.type,
+      }
+    }
+    case "ERROR_CORRECT": {
+      const firstSegmentId = itemId("segment", 1)
+      const firstFixId = itemId("fix", 1)
+      return {
+        ...base,
+        correctFix: firstFixId,
+        correctSegment: firstSegmentId,
+        explanation: "",
+        fixIds: [firstFixId, itemId("fix", 2)],
+        fixes: ["첫 교정안", "둘째 교정안"],
+        question: "질문을 입력하세요.",
+        segmentIds: [firstSegmentId, itemId("segment", 2)],
+        segments: ["첫 구간", "둘째 구간"],
+        type: input.type,
+      }
+    }
   }
 }

@@ -31,6 +31,9 @@ export const lessonStepTypeValues = Object.freeze([
   "ORDER",
   "MATCH",
   "CATEGORIZE",
+  "TRUE_FALSE",
+  "SENTENCE_BUILD",
+  "ERROR_CORRECT",
 ] as const)
 
 export type LessonStepType = (typeof lessonStepTypeValues)[number]

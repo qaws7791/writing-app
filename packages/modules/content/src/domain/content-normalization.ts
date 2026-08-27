@@ -67,6 +67,42 @@ export function normalizeVersionedStepContent(
       case "CATEGORIZE":
         normalizeCategorize(stepId, parsed)
         break
+      case "SENTENCE_BUILD": {
+        const tiles = readArray(parsed, "tiles")
+        const tileIds = ensureIds(stepId, "tile", tiles, parsed["tileIds"])
+        parsed["tileIds"] = tileIds
+        parsed["correct"] = resolveStableIds(
+          tiles,
+          tileIds,
+          readArray(parsed, "correct")
+        )
+        break
+      }
+      case "ERROR_CORRECT": {
+        const segments = readArray(parsed, "segments")
+        const segmentIds = ensureIds(
+          stepId,
+          "segment",
+          segments,
+          parsed["segmentIds"]
+        )
+        parsed["segmentIds"] = segmentIds
+        parsed["correctSegment"] = resolveSingleStableId(
+          segments,
+          segmentIds,
+          parsed["correctSegment"]
+        )
+
+        const fixes = readArray(parsed, "fixes")
+        const fixIds = ensureIds(stepId, "fix", fixes, parsed["fixIds"])
+        parsed["fixIds"] = fixIds
+        parsed["correctFix"] = resolveSingleStableId(
+          fixes,
+          fixIds,
+          parsed["correctFix"]
+        )
+        break
+      }
     }
   } catch (cause) {
     return err({
@@ -188,6 +224,18 @@ function resolveStableIds(
     remaining.splice(index, 1)
     return item.stableId
   })
+}
+
+function resolveSingleStableId(
+  displayValues: readonly unknown[],
+  stableIds: readonly string[],
+  expectedValue: unknown
+): string {
+  const [resolved] = resolveStableIds(displayValues, stableIds, [expectedValue])
+  if (resolved === undefined) {
+    throw new Error("Expected value does not reference a stable item ID")
+  }
+  return resolved
 }
 
 function resolveIndexedOrStableIds(

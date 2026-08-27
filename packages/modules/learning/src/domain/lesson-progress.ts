@@ -50,5 +50,14 @@ function cloneSubmission(submission: LessonSubmission): LessonSubmission {
           ...assignment,
         })),
       }
+    case "TRUE_FALSE":
+      return { ...submission }
+    case "SENTENCE_BUILD":
+      return {
+        ...submission,
+        selectedTileIds: [...submission.selectedTileIds],
+      }
+    case "ERROR_CORRECT":
+      return { ...submission }
   }
 }
