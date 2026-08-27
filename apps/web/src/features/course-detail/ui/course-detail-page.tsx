@@ -66,7 +66,9 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             >
               <ProgressLabel>학습 진행</ProgressLabel>
               <ProgressValue className="text-sm font-medium text-muted-foreground">
-                {`${completedLessonCount}/${totalLessonCount}개 레슨 · 약 ${totalEstimatedMinutes}분`}
+                {() =>
+                  `${completedLessonCount}/${totalLessonCount}개 레슨 · 약 ${totalEstimatedMinutes}분`
+                }
               </ProgressValue>
             </Progress>
             {nextLesson === null ? null : (
