@@ -1,33 +1,31 @@
-# 5단계 진행 기록: 코스 1 스텝 집필
+# 5단계 진행 기록: 코스별 스텝 집필
 
 이 문서는 진행 중인 작업의 재개 지점을 적어 둔 기록이다. 현재 제품 사실의 권위 소스가 아니다. 채워진 스텝 값은 [`content-seed-data.json`](../../../packages/modules/content/src/infrastructure/persistence/content-seed-data.json)이, 스텝 계약은 [스텝 계약](../../../packages/shared/contracts/src/content/steps/index.ts)이 소유한다.
 
 ## 현재 상태
 
-코스 1 `course-precise-powerful-sentence`의 레슨 42개 가운데 28개를 집필해 시드에 병합했다. 병합한 스텝은 548개다. 남은 레슨은 14개이고 스텝 281개다. 코스 1의 스텝 합계는 829개다.
+코스 1 `course-precise-powerful-sentence`를 마쳤다. 유닛 7개, 레슨 42개, 스텝 829개를 집필해 시드에 병합했고 빈 레슨은 없다.
 
-남은 14개 레슨의 `steps`는 빈 배열로 남아 있다. 308개 레슨 전부가 빈 배열이던 상태와 같은 형태이므로 부분 병합이 기존 동작을 바꾸지 않는다.
+코스 2부터 코스 10까지 레슨 266개의 `steps`는 빈 배열로 남아 있다. 308개 레슨 전부가 빈 배열이던 상태와 같은 형태이므로 부분 병합이 기존 동작을 바꾸지 않는다.
 
-## 남은 레슨
+## 다음 대상
 
-| 유닛                                | 레슨 ID                                                | 템플릿 | 스텝 |
-| ----------------------------------- | ------------------------------------------------------ | ------ | ---- |
-| `unit-sentence-voice-agency`        | `lesson-sentence-sikida-displacing-transitive`         | `C1`   | 19   |
-| `unit-sentence-voice-agency`        | `lesson-sentence-nominal-ending-erases-agent`          | `C5`   | 19   |
-| `unit-sentence-structure-rhythm`    | `lesson-sentence-simple-versus-complex`                | `B3`   | 20   |
-| `unit-sentence-structure-rhythm`    | `lesson-sentence-coordinate-relations`                 | `B2`   | 18   |
-| `unit-sentence-structure-rhythm`    | `lesson-sentence-embedded-compression`                 | `G2`   | 20   |
-| `unit-sentence-structure-rhythm`    | `lesson-sentence-length-controls-weight`               | `B7`   | 20   |
-| `unit-sentence-structure-rhythm`    | `lesson-sentence-parallel-antithesis-conditions`       | `E3`   | 20   |
-| `unit-sentence-structure-rhythm`    | `lesson-sentence-monotonous-endings`                   | `C4`   | 21   |
-| `unit-sentence-diagnosis-synthesis` | `lesson-sentence-two-readings-cause`                   | `I1`   | 22   |
-| `unit-sentence-diagnosis-synthesis` | `lesson-sentence-modifier-position-shift`              | `B2`   | 18   |
-| `unit-sentence-diagnosis-synthesis` | `lesson-sentence-overcompression-side-effect`          | `B4`   | 20   |
-| `unit-sentence-diagnosis-synthesis` | `lesson-sentence-read-aloud-friction`                  | `A7`   | 19   |
-| `unit-sentence-diagnosis-synthesis` | `lesson-sentence-two-versions-style-versus-redundancy` | `I4`   | 22   |
-| `unit-sentence-diagnosis-synthesis` | `lesson-sentence-six-error-categories`                 | `I2`   | 23   |
+| 코스                                 | 레슨 | 상태        |
+| ------------------------------------ | ---- | ----------- |
+| `course-precise-powerful-sentence`   | 42   | 집필 완료   |
+| `course-accurate-word-choice`        | 34   | 집필 대기   |
+| `course-orthography-principles`      | 40   | 계약 대기\* |
+| `course-paragraph-text-design`       | 30   | 계약 대기\* |
+| `course-logical-connection-cohesion` | 22   | 집필 대기   |
+| `course-explanatory-power`           | 28   | 집필 대기   |
+| `course-argumentation-craft`         | 32   | 집필 대기   |
+| `course-observation-description`     | 24   | 집필 대기   |
+| `course-summary-critical-reading`    | 30   | 계약 대기\* |
+| `course-idea-topic-framing`          | 26   | 집필 대기   |
 
-`unit-sentence-diagnosis-synthesis`는 코스 1의 종합 유닛이므로 앞선 여섯 유닛의 판정을 묶는다. 앞 유닛을 모두 마친 뒤 집필한다.
+\* `TRANSCRIBE`와 `PARAGRAPH_ORGANIZE` 계약이 없어 해당 코스는 계약 구현 뒤에 집필한다. 아래 후속 절을 본다.
+
+코스 1의 마지막 유닛 `unit-sentence-diagnosis-synthesis`는 앞선 여섯 유닛의 판정을 묶는 종합 유닛이었다. 다른 코스에서도 종합 유닛은 앞 유닛을 모두 마친 뒤 집필한다.
 
 ## 작업 방식
 
@@ -51,17 +49,17 @@
 | `build-work-orders.ts` | 2단계와 3단계 문서와 시드에서 `work-orders.json`을 뽑아낸다                 |
 | `validate.ts`          | 스텝 수와 유형 순서가 배정 템플릿과 같은지, 스텝 계약을 통과하는지 확인한다 |
 | `merge-into-seed.ts`   | 집필을 마친 레슨을 시드에 병합한다. 파일이 없는 레슨은 건드리지 않는다      |
-| `<레슨 ID>.json`       | 레슨별 스텝 배열. 병합을 마친 28개는 시드에도 들어 있다                     |
+| `<레슨 ID>.json`       | 레슨별 스텝 배열. 코스 1의 42개 전부가 시드에도 들어 있다                   |
 
 `AUTHORING-BRIEF.md`의 역할과 목표는 [`stage-4-step-authoring-prompt.md`](./stage-4-step-authoring-prompt.md)의 시스템 프롬프트를 그대로 쓴다. `build-work-orders.ts`는 [`stage-2-step-templates.md`](./stage-2-step-templates.md)의 배치 표와 [`stage-3-template-assignment.md`](./stage-3-template-assignment.md)의 코스 1 배정 표를 파싱하고, 산정 규칙으로 `time`을 다시 계산해 시드 값과 어긋나지 않는지 확인한다.
 
 ## 검증
 
-레슨 단위 검증은 `bun .artifacts/course-1-steps/validate.ts <레슨 ID>`이고 인자를 비우면 42개를 모두 검사한다. 이 검증은 스텝 수, 유형 순서, `lessonStepDtoSchema` 통과, `fill_blank`의 빈칸 수와 정답 수 일치를 본다.
+레슨 단위 검증은 `bun .artifacts/course-1-steps/validate.ts <레슨 ID>`이고 인자를 비우면 42개를 모두 검사한다. 이 검증은 스텝 수, 유형 순서, `lessonStepDtoSchema` 통과, `fill_blank`의 빈칸 수와 정답 수 일치를 본다. 코스 1의 42개가 전부 통과한다.
 
 병합 뒤 검증은 content 모듈의 seed 테스트가 맡는다. 이 테스트가 `seedContentDatabase`를 호출하므로 시드 정규화 경로를 실제로 지나간다.
 
-현재 상태에서 `bun run ci:tests`는 54개 파일 245개 테스트와 저장소 테스트 15개가 통과하고, `bun run ci:static`은 typecheck 25/25와 lint·knip·dependencies·architecture가 통과한다. `format:check`만 저장소 루트의 추적되지 않은 파일 하나 때문에 실패하며 이번 작업과 무관하다.
+코스 1을 병합한 상태에서 `bun run ci:tests`는 54개 파일 245개 테스트와 저장소 테스트 15개가 통과하고, `bun run build`는 6개 작업이 통과한다. `bun run ci:static`은 typecheck 25/25와 lint·knip·dependencies·architecture가 통과한다. `format:check`만 저장소 루트의 추적되지 않은 파일 하나 때문에 실패하며 이번 작업과 무관하다.
 
 ## 집필 판단 기록
 
@@ -75,4 +73,8 @@
 
 ## 후속
 
-코스 1을 마치면 코스 2부터 같은 방식으로 이어 간다. `TRANSCRIBE`와 `PARAGRAPH_ORGANIZE`는 아직 계약이 없다. 두 유형을 쓰는 템플릿은 `A4` `A8` `C6` `G4` `I6` `D2` `D3` `D5` `I5` `I6`이며, 코스 3·4·9가 이 템플릿을 배정받았으므로 그 코스에 닿기 전에 계약을 구현해야 한다.
+코스 2부터 같은 방식으로 이어 간다.
+
+`TRANSCRIBE`와 `PARAGRAPH_ORGANIZE`는 아직 계약이 없다. 두 유형을 쓰는 템플릿은 `A4` `A8` `C6` `G4` `I6` `D2` `D3` `D5` `I5` `I6`이며, 코스 3·4·9가 이 템플릿을 배정받았으므로 그 코스에 닿기 전에 계약을 구현해야 한다. 구현 방식은 코스 1에서 `TRUE_FALSE`·`SENTENCE_BUILD`·`ERROR_CORRECT`를 계약에 넣은 것과 같다.
+
+`true_false`·`sentence_build`·`error_correct` 세 유형의 `shared/ui` 응답 컴포넌트가 `explanation` 값을 렌더하지 않는다. 세 유형의 스텝은 시드에 `explanation`을 담고 있으나 학습자 화면에서 보이지 않는다. `packages/shared/ui`는 요청 없이 수정하지 않는 경계이므로 승인을 받은 뒤 고친다.
