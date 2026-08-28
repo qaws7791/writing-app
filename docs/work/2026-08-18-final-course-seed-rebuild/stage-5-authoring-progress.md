@@ -6,14 +6,16 @@
 
 코스 1 `course-precise-powerful-sentence`를 마쳤다. 유닛 7개, 레슨 42개, 스텝 829개를 집필해 시드에 병합했고 빈 레슨은 없다.
 
-코스 2부터 코스 10까지 레슨 266개의 `steps`는 빈 배열로 남아 있다. 308개 레슨 전부가 빈 배열이던 상태와 같은 형태이므로 부분 병합이 기존 동작을 바꾸지 않는다.
+코스 2 `course-accurate-word-choice`를 마쳤다. 유닛 6개, 레슨 34개, 스텝 674개를 집필해 시드에 병합했고 빈 레슨은 없다.
+
+빈 배열로 남은 레슨은 모두 232개다. 308개 레슨 전부가 빈 배열이던 상태와 같은 형태이므로 부분 병합이 기존 동작을 바꾸지 않는다.
 
 ## 다음 대상
 
 | 코스                                 | 레슨 | 상태      |
 | ------------------------------------ | ---- | --------- |
 | `course-precise-powerful-sentence`   | 42   | 집필 완료 |
-| `course-accurate-word-choice`        | 34   | 집필 대기 |
+| `course-accurate-word-choice`        | 34   | 집필 완료 |
 | `course-orthography-principles`      | 40   | 집필 대기 |
 | `course-paragraph-text-design`       | 30   | 집필 대기 |
 | `course-logical-connection-cohesion` | 22   | 집필 대기 |
@@ -27,6 +29,12 @@
 
 코스 1의 마지막 유닛 `unit-sentence-diagnosis-synthesis`는 앞선 여섯 유닛의 판정을 묶는 종합 유닛이었다. 다른 코스에서도 종합 유닛은 앞 유닛을 모두 마친 뒤 집필한다.
 
+## 배치를 바꾸면 `time`도 다시 계산한다
+
+`Tr`을 확정 유형으로 재배치하면서 일부 배치의 소요 시간이 줄었는데 시드 `time`은 그대로였다. 코스 2에서 `C6`을 배정한 `lesson-word-idiom-exact-form`을 27분에서 23분으로, `G4`를 배정한 `lesson-word-keep-concept-terms-fixed`를 29분에서 26분으로 고쳤다.
+
+`build-work-orders.ts`가 산정 규칙으로 `time`을 다시 계산해 어긋난 레슨을 보고하므로, 코스를 집필하기 전에 먼저 실행해 확인한다. 같은 원인으로 코스 3·4·9의 `G4` 배정 레슨에서도 같은 불일치가 나타난다.
+
 ## 작업 방식
 
 레슨 하나를 서브에이전트 하나에 배정한다. 서브에이전트에게 주는 지시는 세 부분이다.
@@ -35,31 +43,46 @@
 2. 레슨 ID, 제목, 유닛, 유닛 통과 기준, 배정 템플릿, 스텝 수, 판별 지점, 형제 레슨 목록을 준다.
 3. 검증 명령을 통과할 때까지 고치게 한다.
 
-한 번에 다섯에서 여섯 레슨까지 병렬로 돌렸다. 그보다 늘리면 서브에이전트 실행이 고부하로 실패한다. 실패한 레슨은 같은 지시로 다시 돌리면 된다.
+한 번에 다섯에서 여섯 레슨까지 병렬로 돌렸다. 그보다 늘리면 서브에이전트 실행이 고부하로 실패한다. 실패한 레슨은 같은 지시로 다시 돌리면 된다. 코스 2에서는 여섯 병렬마다 한 건 정도가 응답 없이 끝났고, 한 레슨은 세 번째 시도에서 통과했다.
+
+서브에이전트에게 형제 레슨의 JSON 파일을 읽어 겹침을 확인하게 하면 토큰이 말라 실패 확률이 오른다. 금지할 낱말과 장면을 프롬프트나 공통 지시서에 직접 적고 파일 읽기를 막는 편이 안전하다.
 
 ## 작업 파일
 
-작업 파일은 `.artifacts/course-1-steps/`에 있고 `.artifacts`는 gitignore 대상이므로 커밋되지 않았다. 집필한 스텝 값 자체는 시드에 병합해 커밋했으므로 유실되지 않는다. 작업 파일을 잃으면 아래대로 다시 만든다.
+작업 파일은 코스별로 `.artifacts/course-<번호>-steps/`에 있고 `.artifacts`는 gitignore 대상이므로 커밋되지 않았다. 집필한 스텝 값 자체는 시드에 병합해 커밋했으므로 유실되지 않는다. 작업 파일을 잃으면 아래대로 다시 만든다.
 
 | 파일                   | 내용                                                                        |
 | ---------------------- | --------------------------------------------------------------------------- |
-| `AUTHORING-BRIEF.md`   | 역할, 목표, 코스 맥락, 배치 읽는 방침, 작업 절차, 계약 제약, 보고 형식      |
+| `AUTHORING-BRIEF.md`   | 역할, 목표, 코스 맥락, 이미 쓰인 소재, 배치 읽는 방침, 작업 절차, 계약 제약 |
 | `SEED-STEP-JSON.md`    | 유형 11종의 시드 JSON 형태와 제약, 산출물 경로, 검증 명령                   |
-| `work-orders.json`     | 레슨 42개의 유닛·통과 기준·템플릿·컨셉·배치·스텝 수·`time`                  |
+| `work-orders.json`     | 그 코스 레슨의 유닛·통과 기준·템플릿·컨셉·배치·스텝 수·`time`               |
 | `build-work-orders.ts` | 2단계와 3단계 문서와 시드에서 `work-orders.json`을 뽑아낸다                 |
 | `validate.ts`          | 스텝 수와 유형 순서가 배정 템플릿과 같은지, 스텝 계약을 통과하는지 확인한다 |
 | `merge-into-seed.ts`   | 집필을 마친 레슨을 시드에 병합한다. 파일이 없는 레슨은 건드리지 않는다      |
-| `<레슨 ID>.json`       | 레슨별 스텝 배열. 코스 1의 42개 전부가 시드에도 들어 있다                   |
+| `fix-times.ts`         | 배치의 산정 규칙으로 `time`을 다시 계산해 시드 값을 맞춘다                  |
+| `<레슨 ID>.json`       | 레슨별 스텝 배열. 병합을 마친 레슨은 시드에도 같은 값이 들어 있다           |
 
-`AUTHORING-BRIEF.md`의 역할과 목표는 [`stage-4-step-authoring-prompt.md`](./stage-4-step-authoring-prompt.md)의 시스템 프롬프트를 그대로 쓴다. `build-work-orders.ts`는 [`stage-2-step-templates.md`](./stage-2-step-templates.md)의 배치 표와 [`stage-3-template-assignment.md`](./stage-3-template-assignment.md)의 코스 1 배정 표를 파싱하고, 산정 규칙으로 `time`을 다시 계산해 시드 값과 어긋나지 않는지 확인한다.
+`AUTHORING-BRIEF.md`의 「이미 쓰인 소재」 절에는 앞선 레슨이 판정의 축이나 예문으로 쓴 낱말·장면·판정 축을 적어 둔다. 서브에이전트가 이 파일을 먼저 읽으므로 별도 지시 없이 겹침을 피한다. 이 절을 잃으면 시드에 병합된 스텝에서 다시 뽑아낸다.
+
+`AUTHORING-BRIEF.md`의 역할과 목표는 [`stage-4-step-authoring-prompt.md`](./stage-4-step-authoring-prompt.md)의 시스템 프롬프트를 그대로 쓴다. `build-work-orders.ts`는 [`stage-2-step-templates.md`](./stage-2-step-templates.md)의 배치 표와 [`stage-3-template-assignment.md`](./stage-3-template-assignment.md)의 해당 코스 배정 표를 파싱하고, 산정 규칙으로 `time`을 다시 계산해 시드 값과 어긋나지 않는지 확인한다. 코스 2 판은 유닛 안에서 템플릿이 중복 배정되지 않았는지도 함께 본다.
+
+코스 2 판에는 `fix-times.ts`가 하나 더 있다. 배치의 산정 규칙으로 `time`을 다시 계산해 시드 값을 맞춘다. 다음 코스에서는 코스 2 판에서 경로와 코스 ID만 바꿔 쓴다.
 
 ## 검증
 
-레슨 단위 검증은 `bun .artifacts/course-1-steps/validate.ts <레슨 ID>`이고 인자를 비우면 42개를 모두 검사한다. 이 검증은 스텝 수, 유형 순서, `lessonStepDtoSchema` 통과, `fill_blank`의 빈칸 수와 정답 수 일치를 본다. 코스 1의 42개가 전부 통과한다.
+레슨 단위 검증은 `bun .artifacts/course-<번호>-steps/validate.ts <레슨 ID>`이고 인자를 비우면 그 코스의 레슨을 모두 검사한다. 이 검증은 스텝 수, 유형 순서, `lessonStepDtoSchema` 통과, `fill_blank`의 빈칸 수와 정답 수 일치를 본다. 코스 1의 42개와 코스 2의 34개가 전부 통과한다.
 
 병합 뒤 검증은 content 모듈의 seed 테스트가 맡는다. 이 테스트가 `seedContentDatabase`를 호출하므로 시드 정규화 경로를 실제로 지나간다.
 
-코스 1을 병합한 상태에서 `bun run ci:tests`는 54개 파일 245개 테스트와 저장소 테스트 15개가 통과하고, `bun run build`는 6개 작업이 통과한다. `bun run ci:static`은 typecheck 25/25와 lint·knip·dependencies·architecture가 통과한다. `format:check`만 저장소 루트의 추적되지 않은 파일 하나 때문에 실패하며 이번 작업과 무관하다.
+`merge-into-seed.ts`는 `JSON.stringify`로 시드를 다시 쓰므로 병합 뒤에 시드 파일을 Oxfmt로 한 번 정렬해야 `format:check`를 통과한다.
+
+```sh
+bun oxfmt packages/modules/content/src/infrastructure/persistence/content-seed-data.json
+```
+
+코스 1과 코스 2를 병합한 상태에서 `bun run ci:tests:workspace`는 54개 파일 245개 테스트, `bun run ci:tests:repository`는 15개 테스트가 통과하고, `bun run build`는 6개 작업이 통과한다. `bun run ci:static`은 typecheck 25/25와 lint·knip·architecture·dependencies·oxlint-rules·workflow-scripts·release-input-contract가 통과한다. `format:check`만 저장소 루트의 추적되지 않은 파일 하나 때문에 실패하며 이번 작업과 무관하다.
+
+상위 `bun run ci:tests`는 두 하위 작업이 모두 통과해도 종료 코드 1을 낸다. `bun run --parallel --no-exit-on-error` 조합에서 생기는 결과이므로, 판정은 두 하위 명령을 따로 실행해 확인한다.
 
 ## 집필 판단 기록
 
@@ -69,11 +92,17 @@
 
 규범 조항을 인용한 스텝은 없다. 코스 1의 판별 지점은 문장 성분과 결합 관계여서 한글 맞춤법·표준어 규정이 조항으로 규정하는 대상이 아니다. 사전 뜻풀이에 기댄 스텝은 `source` 필드에 그 사실을 적었다. 예문은 전부 새로 지었고 전문가 검수를 받지 않았다.
 
+코스 2도 조항을 인용한 스텝이 없다. 어휘 선택은 어문 규범이 조항으로 정하는 대상이 아니어서, 규범에 기댄 스텝은 국립국어원 『표준국어대사전』에서 실제로 확인한 표제어와 뜻풀이만 `source`에 적었다. 서브에이전트가 어문규범 누리집(kornorms.korean.go.kr)에 접속하지 못해 외래어 표기법 조항 본문은 1차 자료로 확인하지 못했고, 그래서 그 레슨은 조항 대신 「사전에서 표기를 확인해 쓴다」는 절차로 다뤘다.
+
+사전 항목을 다루는 레슨은 실제 사전 문구를 옮기지 않고 구조만 살린 요약 항목을 새로 지었으며, 판본마다 문구와 배열이 다르다는 한계를 본문에 적었다.
+
 `sentence_build`와 `order`는 순서로 채점하므로 어순이 자유로운 부사어를 타일이나 항목으로 두지 않았다.
+
+코스 2에서는 종합 유닛의 마지막 레슨이 앞 다섯 레슨이 세운 조작을 갈래 안으로 불러 쓴다. 그 레슨의 프롬프트에는 갈래 목록과 각 갈래가 어느 판정을 담는지 적고, 앞 레슨의 조작을 다시 세우지 말라고 못 박았다.
 
 ## 후속
 
-코스 2부터 같은 방식으로 이어 간다.
+코스 3부터 같은 방식으로 이어 간다.
 
 `TRANSCRIBE`와 `PARAGRAPH_ORGANIZE`는 계약하지 않기로 확정했다(`content-model.md`의 제외 스텝 타입). 두 유형을 쓰던 템플릿 `A4` `A8` `C6` `G4` `I6`(`Tr`)과 `D2` `D3` `D5` `I5` `I6`(`PO`)은 [`stage-2-step-templates.md`](./stage-2-step-templates.md)에서 같은 판별 지점을 확정 11개 유형으로 다시 확인하도록 배치를 바꿨다. 코스 3·4·9는 계약 대기 없이 이 배치대로 집필한다.
 
