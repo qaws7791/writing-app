@@ -3,15 +3,11 @@ import Link from "next/link"
 
 import { resolveCourseImage } from "@/entities/course/model/course-visual-assets"
 import { CourseCurriculum } from "@/features/course-detail/ui/course-curriculum"
+import { CourseProgress } from "@/features/course-detail/ui/course-progress"
 import type { LearnerCourseDetailDto } from "@/shared/http/learner-api-client"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons/direction-icons"
 import { buttonVariants } from "@workspace/ui/components/primitives/button"
 import { Card, CardContent } from "@workspace/ui/components/primitives/card"
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@workspace/ui/components/primitives/progress"
 
 type CourseDetailPageProps = {
   readonly course: LearnerCourseDetailDto
@@ -60,17 +56,13 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             <p className="mt-4 text-base leading-7 text-foreground/80">
               {course.description}
             </p>
-            <Progress
+            <CourseProgress
               className="mt-7 [&_[data-slot=progress-indicator]]:min-w-0"
-              value={progressPercent}
-            >
-              <ProgressLabel>학습 진행</ProgressLabel>
-              <ProgressValue className="text-sm font-medium text-muted-foreground">
-                {() =>
-                  `${completedLessonCount}/${totalLessonCount}개 레슨 · 약 ${totalEstimatedMinutes}분`
-                }
-              </ProgressValue>
-            </Progress>
+              completedLessonCount={completedLessonCount}
+              progressPercent={progressPercent}
+              totalEstimatedMinutes={totalEstimatedMinutes}
+              totalLessonCount={totalLessonCount}
+            />
             {nextLesson === null ? null : (
               <div className="mt-8">
                 <p className="mb-4 text-sm font-medium leading-6 text-foreground">
