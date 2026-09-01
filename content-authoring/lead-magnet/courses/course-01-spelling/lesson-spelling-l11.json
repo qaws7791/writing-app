@@ -1,0 +1,114 @@
+[
+  {
+    "type": "reading",
+    "title": "접사와 의존명사 띄어쓰기 판정",
+    "body": "혼자 쓰이지 못하는 접사('-별', '-용', '-상', '-하')는 앞말에 착 붙여 씁니다. 반면 '중', '시' 같은 의존명사는 독립 단어이므로 반드시 띄어 씁니다. '부서별 업무용', '회의 중 승인 시'처럼 단독 사용 가능 여부만 3초 확인하세요."
+  },
+  {
+    "type": "compare",
+    "title": "시스템 권한 공지 띄어쓰기 비교",
+    "versions": [
+      {
+        "label": "바른 표기",
+        "text": "부서별 업무용 시스템 접근 권한을 오늘 중 신청해 주세요."
+      },
+      {
+        "label": "잘못된 표기",
+        "text": "부서 별 업무 용 시스템 접근 권한을 오늘 중 신청해 주세요."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "권한 공지에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "팀별 업무 분장 공지"
+      },
+      {
+        "id": "opt-b",
+        "text": "팀 별 업무 분장 공지"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "접미사 '-별'은 단독 불가하여 붙여 씁니다."
+  },
+  {
+    "type": "categorize",
+    "title": "접미사 결합 vs 의존명사 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "접미사(붙여쓰기)"
+      },
+      {
+        "id": "cat-2",
+        "label": "의존명사(띄어쓰기)"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "업무상 사유",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "보안용 계정",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "회의 중 승인",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "신청 시 유의",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "접사는 단독 불가하여 붙이고 의존명사는 띕니다."
+  },
+  {
+    "type": "select",
+    "question": "틀린 표기 구간을 고르세요.",
+    "segments": ["보안 권한은 ", "담당자 별로 ", "순차 부여됩니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "접미사 '-별'은 단독 불가하여 붙여 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 쓴 문장인가요?",
+    "statement": "권한 신청은 팀장님 지도하에 진행합니다.",
+    "correct": true,
+    "explanation": "접미사 '-하'는 단독 불가하여 붙여 씁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "사내 서버는 ___ 승인받아야 접속됩니다.",
+    "words": [
+      "업무상 사유로",
+      "업무 상 사유로",
+      "업무상 사유 로",
+      "업무 상 사유 로"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "접미사 '-상'은 단독 불가하여 붙여 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 고치세요.",
+    "segments": ["사내 포털에서 ", "첫 출근자 용 ", "계정을 신청하세요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["첫 출근자 용", "첫 출근자용"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "접미사 '-용'은 단독 불가하여 붙여 씁니다."
+  }
+]

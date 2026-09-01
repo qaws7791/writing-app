@@ -1,0 +1,129 @@
+[
+  {
+    "type": "reading",
+    "title": "복수 표준어와 단수 표준어 판별법",
+    "body": "메신저 대화에서 '짜장면/자장면', '소고기/쇠고기'는 둘 다 표준어입니다. 반면 입에 익은 '설레임'은 '설렘', '궁시렁'은 '구시렁거리다', '널부러지다'는 '널브러지다'만 맞습니다. 둘 다 맞는 복수 표준어와 규정상 단수 표준어를 구별해 보세요."
+  },
+  {
+    "type": "compare",
+    "title": "점심 메뉴 추천 메시지 대조",
+    "versions": [
+      {
+        "label": "복수 인정",
+        "text": "오늘 점심 메뉴는 쇠고기뭇국과 소고기볶음입니다."
+      },
+      {
+        "label": "단수 인정",
+        "text": "새 식당을 갈 생각에 설레임이 아닌 설렘이 가득합니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "점심 제안 중 올바른 설명은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "짜장면·자장면 둘 다 표준어"
+      },
+      {
+        "id": "opt-b",
+        "text": "자장면만 유일한 표준어"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'짜장면'과 '자장면'은 둘 다 표준어로 인정되었습니다."
+  },
+  {
+    "type": "categorize",
+    "title": "표준어 인정 유형별 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "복수 표준어"
+      },
+      {
+        "id": "cat-2",
+        "label": "단수 표준어"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "짜장면과 자장면",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "소고기와 쇠고기",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "설렘(설레임 X)",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "구시렁거리다",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "'짜장면/소고기'는 복수, '설렘/구시렁'은 단수 표준어입니다."
+  },
+  {
+    "type": "select",
+    "question": "메신저 대화의 오표기 구간은?",
+    "segments": ["첫 출근 때의 ", "설레임이 ", "아직도 생생합니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'설레다'의 명사형은 '설레임'이 아닌 '설렘'만 표준어입니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "공지 속 표준어가 올바른가요?",
+    "statement": "오늘 팀 회식 메뉴는 소고기구이입니다.",
+    "correct": true,
+    "explanation": "'소고기'와 '쇠고기'는 둘 다 인정되는 복수 표준어입니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "선배가 혼자서 ___ 불만을 털어놓았습니다.",
+    "words": ["구시렁거리며", "궁시렁거리며", "궁시렁대며", "수군거리며"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'궁시렁'은 비표준어이며 '구시렁거리다'가 단수 표준어입니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "휴식 대화 중 바른 표준어 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "방에 널부러진 짐 정리"
+      },
+      {
+        "id": "opt-b",
+        "text": "쌉싸름한 커피 한잔해요"
+      },
+      {
+        "id": "opt-c",
+        "text": "자꾸 궁시렁대지 마세요"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'쌉싸름하다'와 '쌉싸래하다'는 둘 다 복수 표준어입니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "메신저의 오표기를 바르게 고치세요.",
+    "segments": ["휴게실 탁자에 ", "널부러진 서류를 ", "말끔히 치웠습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["널부러진 서류를", "널브러진 서류를"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'널부러지다'는 비표준어이며 '널브러지다'가 표준어입니다."
+  }
+]

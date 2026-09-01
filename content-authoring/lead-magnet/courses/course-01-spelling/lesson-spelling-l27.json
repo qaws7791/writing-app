@@ -1,0 +1,121 @@
+[
+  {
+    "type": "reading",
+    "title": "3대 지뢰 어휘 3초 문맥 판별 공식",
+    "body": "발음이 같아 헷갈리는 어휘는 문맥과 핵심 기능을 대입합니다. 병이 치유되거나 우열을 가릴 때는 '낫다', 아이나 결과를 얻을 때는 '낳다'를 씁니다. 회의 안건이나 편지를 보낼 때는 '부치다', 물리적으로 닿게 할 때는 '붙이다'를 씁니다."
+  },
+  {
+    "type": "compare",
+    "title": "안부와 성과 메신저 문맥 대조",
+    "versions": [
+      {
+        "label": "바른 표기",
+        "text": "감기 얼른 낫길 바라고, 이번 TF가 좋은 결과를 낳았습니다."
+      },
+      {
+        "label": "틀린 표기",
+        "text": "감기 얼른 낳길 바라고, 이번 TF가 좋은 결과를 낫았습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "안부 답장의 올바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "감기 몸살이 다 낳았습니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "감기 몸살이 다 나았습니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'낫다'는 병의 회복을 뜻하므로 '나았습니다'가 맞습니다."
+  },
+  {
+    "type": "match",
+    "title": "3대 지뢰 어휘의 올바른 문맥 연결",
+    "pairs": [
+      {
+        "left": "낫다",
+        "leftId": "p-1-l",
+        "right": "병과 질환의 회복",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "부치다",
+        "leftId": "p-2-l",
+        "right": "회의 안건의 상정",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "가리키다",
+        "leftId": "p-3-l",
+        "right": "시계 바늘의 방향 지목",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "회복은 '낫다', 안건은 '부치다', 지목은 '가리키다'입니다."
+  },
+  {
+    "type": "select",
+    "question": "안건 보고 속 오표기 구간은?",
+    "segments": [
+      "기획팀 요청대로 ",
+      "안건을 표결에 붙여 ",
+      "결과를 공유하겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "문제를 회의나 결정에 넘길 때는 '부치다'를 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "인수인계 문장이 올바른가요?",
+    "statement": "신입 사원에게 업무 프로세스를 차근차근 가르쳤습니다.",
+    "correct": true,
+    "explanation": "지식이나 원리를 익히게 할 때는 '가르치다'가 맞습니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "성과 보고: 신규 전략이 긍정적 결과를 ___ 협업을 마쳤습니다.",
+    "words": ["낳았습니다", "낫았습니다", "나았습니다", "붙였습니다"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "어떤 결과를 가져오거나 생기게 할 때는 '낳다'를 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "메신저 속 바른 표기 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "우편물에 라벨을 붙여 발송"
+      },
+      {
+        "id": "opt-b",
+        "text": "안건을 회의에 붙이겠습니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "출구를 가르치며 안내 완료"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "물리적으로 닿아 떨어지지 않게 할 때는 '붙이다'를 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "안부 메시지의 오류를 고치세요.",
+    "segments": ["몸조리 잘하셔서 ", "얼른 낳으세요.", " 쾌유를 빕니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["얼른 낳으세요.", "얼른 나으세요."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'낫다'의 'ㅅ' 불규칙 활용으로 '나으세요'가 올바릅니다."
+  }
+]

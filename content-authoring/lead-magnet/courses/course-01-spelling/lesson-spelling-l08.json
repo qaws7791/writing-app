@@ -1,0 +1,125 @@
+[
+  {
+    "type": "reading",
+    "title": "품사로 가르는 '뿐·만큼·대로'",
+    "body": "명사 뒤에 붙는 '뿐·만큼·대로'는 조사이므로 앞말에 붙여 씁니다. 반면 용언을 꾸미는 말 뒤에 오거나, '지·만'처럼 시간의 흐름을 나타낼 때는 의존명사이므로 앞말과 띄어 씁니다. 앞 단어가 명사인지 꾸밈말인지 3초만 확인하세요."
+  },
+  {
+    "type": "compare",
+    "title": "성과 피드백 띄어쓰기 비교",
+    "versions": [
+      {
+        "label": "체언 뒤 조사",
+        "text": "이번 분기는 실적뿐 아니라 팀 기여도 역시 큽니다."
+      },
+      {
+        "label": "꾸밈말 뒤 명사",
+        "text": "목표를 달성했을 뿐 아니라 기대치도 넘겼습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "피드백 메신저에 알맞은 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "노력한만큼 성과 인정"
+      },
+      {
+        "id": "opt-b",
+        "text": "노력한 만큼 성과 인정"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "꾸밈말 뒤 '만큼'은 의존명사이므로 띄어 씁니다."
+  },
+  {
+    "type": "categorize",
+    "title": "품사별 띄어쓰기 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "체언 뒤 붙여쓰기"
+      },
+      {
+        "id": "cat-2",
+        "label": "꾸밈말 뒤 띄어쓰기"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "원칙대로 평가",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "실적만큼 인정",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "지시받은 대로 수행",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "기여한 만큼 보상",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "체언 뒤 조사는 붙이고 꾸밈말 뒤 명사는 띄어 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "틀린 표기 구간을 고르세요.",
+    "segments": ["입사한지 ", "벌써 1년이 ", "지났습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "시간 경과를 뜻하는 '지'는 의존명사이므로 띄어 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 쓴 문장인가요?",
+    "statement": "3년 만에 분기 최고 등급을 받았습니다.",
+    "correct": true,
+    "explanation": "시간 경과를 나타내는 '만'은 의존명사이므로 띄어 씁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "피드백 면담은 사내 ___ 진행합니다.",
+    "words": ["원칙대로", "원칙 대로", "규정 대로", "방침 대로"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "체언 '원칙' 뒤의 '대로'는 조사이므로 붙여 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "동료 피드백에 맞는 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "지켜볼 뿐입니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "지켜볼뿐입니다"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "꾸밈말 뒤 '뿐'은 의존명사이므로 띄어 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 고치세요.",
+    "segments": ["성과가 어떤지 ", "확인한지 ", "한 달 되었습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["확인한지", "확인한 지"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "시간 경과를 뜻하는 '지'는 의존명사이므로 띄어 씁니다."
+  }
+]

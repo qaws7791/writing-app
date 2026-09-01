@@ -1,0 +1,114 @@
+﻿[
+  {
+    "type": "reading",
+    "title": "말은 큰따옴표, 생각은 작은따옴표",
+    "body": "인터뷰 기사나 후기 글을 다듬을 때 따옴표 종류가 헷갈리곤 합니다. 입 밖으로 소리 내어 말한 대화나 직접 인용에는 큰따옴표(\"\")를 쓰고, 마음속 생각이나 단어 강조, 인용 안의 재인용에는 작은따옴표('')를 쓰면 3초 만에 문장의 격이 높아집니다."
+  },
+  {
+    "type": "compare",
+    "title": "인터뷰 원고의 따옴표 표기 대조",
+    "versions": [
+      {
+        "label": "직접 발언",
+        "text": "팀장님은 \"이번 분기에 꼭 해냅시다\"라고 말했습니다."
+      },
+      {
+        "label": "마음속 생각",
+        "text": "저는 속으로 '이번 분기에 꼭 해내자'라고 다짐했습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "인터뷰 발언 인용에 바른 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "\"올해 2배 성장\" 강조"
+      },
+      {
+        "id": "opt-b",
+        "text": "'올해 2배 성장' 강조"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "직접 소리 내어 말한 발언 인용에는 큰따옴표를 씁니다."
+  },
+  {
+    "type": "categorize",
+    "title": "문맥에 맞는 따옴표 종류 분류",
+    "categories": [
+      {
+        "id": "cat-double",
+        "label": "큰따옴표(\"\")"
+      },
+      {
+        "id": "cat-single",
+        "label": "작은따옴표('')"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "직접적인 대화",
+        "categoryId": "cat-double"
+      },
+      {
+        "id": "item-2",
+        "text": "직접 발언 인용",
+        "categoryId": "cat-double"
+      },
+      {
+        "id": "item-3",
+        "text": "마음속 생각과 독백",
+        "categoryId": "cat-single"
+      },
+      {
+        "id": "item-4",
+        "text": "핵심 단어의 강조",
+        "categoryId": "cat-single"
+      }
+    ],
+    "explanation": "직접 말은 큰따옴표, 마음속 생각·강조는 작은따옴표를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "고객 후기 중 따옴표 오용 구간은?",
+    "segments": ["후기를 쓰며 ", "\"정말 편하다\"고 ", "속으로 생각했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "마음속으로 한 생각이나 독백에는 작은따옴표를 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "단어를 알맞게 강조했나요?",
+    "statement": "이번 프로젝트의 핵심 가치는 '속도'입니다.",
+    "correct": true,
+    "explanation": "문장에서 특별히 드러내려는 강조 어구에는 작은따옴표를 씁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "그때 속으로 ___ 생각했습니다.",
+    "words": [
+      "'해낼 수 있다'고",
+      "\"해낼 수 있다\"고",
+      "'해낼 수 있다'라고",
+      "\"해낼 수 있다\"라고"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "마음속 생각이나 독백을 인용할 때는 작은따옴표를 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "인터뷰 인용 표기를 고치세요.",
+    "segments": ["대표는 ", "'출시일을 앞당깁시다'", "라고 외쳤습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["'출시일을 앞당깁시다'", "\"출시일을 앞당깁시다\""],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "직접 소리 내어 외친 대화 인용에는 큰따옴표를 씁니다."
+  }
+]

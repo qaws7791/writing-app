@@ -1,0 +1,92 @@
+﻿[
+  {
+    "type": "reading",
+    "title": "'웬'과 '왠지' 3초 판별 공식",
+    "body": "메신저로 대화할 때 '웬'과 '왠지'가 망설여진다면 딱 하나만 기억하세요. '왜인지'의 준말일 때만 '왠지'를 쓰고, '어찌 된'의 뜻일 때는 모두 관형사 '웬'('웬일', '웬 떡')을 씁니다. '왜인지'로 바꿔 어색하다면 무조건 '웬'을 쓰면 됩니다."
+  },
+  {
+    "type": "compare",
+    "title": "퇴근길 메신저 '웬' vs '왠지'",
+    "versions": [
+      {
+        "label": "'웬일' 사용",
+        "text": "오늘 웬일로 갑자기 번개 회식을 하자고 하실까요?"
+      },
+      {
+        "label": "'왠지' 사용",
+        "text": "퇴근길인데 오늘따라 왠지 피곤해서 쉬고 싶네요."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "단톡방 번개 질문에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "팀장님 오늘 왠일이세요?"
+      },
+      {
+        "id": "opt-b",
+        "text": "팀장님 오늘 웬일이세요?"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'어찌 된 일'의 뜻이므로 '웬일'을 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "메신저 대화의 오표기 구간은?",
+    "segments": ["오늘 왠일인지 ", "다들 정시에 ", "퇴근하네요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'어찌 된 일인지'의 뜻이므로 '웬일인지'를 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "오늘따라 ___ 퇴근 전 집중이 안 되네요.",
+    "words": ["왠지", "웬지", "웬", "왠"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'왜인지(왜 그런지)'의 준말이므로 '왠지'를 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "메신저 추천에 바른 문장인가요?",
+    "statement": "소고기 회식이라 웬 떡이냐 싶어 예약했습니다.",
+    "correct": true,
+    "explanation": "'어찌 된 떡'의 뜻인 관형사이므로 '웬 떡'을 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색하게 표기된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "왠 낯선 사람이 왔어요"
+      },
+      {
+        "id": "opt-b",
+        "text": "왠지 좋은 일이 생길 듯"
+      },
+      {
+        "id": "opt-c",
+        "text": "웬만하면 참석할게요"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'어찌 된 낯선 사람'의 뜻이므로 '웬 낯선 사람'을 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 바르게 고치세요.",
+    "segments": ["왠일로 팀장님이 ", "소고기 번개 회식을 ", "제안하셨습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["왠일로 팀장님이", "웬일로 팀장님이"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'어찌 된 일로'의 뜻이므로 '웬일로'로 고칩니다."
+  }
+]

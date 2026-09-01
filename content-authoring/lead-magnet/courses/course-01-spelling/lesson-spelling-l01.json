@@ -1,0 +1,92 @@
+[
+  {
+    "type": "reading",
+    "title": "'하/해' 대입으로 끝내는 '되/돼'",
+    "body": "슬랙으로 일정을 조율할 때 '되/돼'가 망설여진다면 '하/해'를 대입하세요. '하'가 어울리면 '되', '해'가 자연스러우면 '돼'입니다. '하면 하'는 어색하지만 '하면 해'는 통하므로 '하면 돼'가 맞습니다. 3초면 바로 판별할 수 있습니다."
+  },
+  {
+    "type": "compare",
+    "title": "슬랙 일정 조율 '되/돼' 비교",
+    "versions": [
+      {
+        "label": "'되' 사용",
+        "text": "일정이 확정되면 바로 슬랙에 공유하겠습니다."
+      },
+      {
+        "label": "'돼' 사용",
+        "text": "회의실 예약이 다 돼서 바로 시작할게요."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 답장에 알맞은 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "지금 참석하면 되요"
+      },
+      {
+        "id": "opt-b",
+        "text": "지금 참석하면 돼요"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'참석하면 해요'가 어울려 '돼요'가 맞습니다."
+  },
+  {
+    "type": "select",
+    "question": "잘못 표기된 구간을 고르세요.",
+    "segments": ["기획안 검토가 ", "끝나야 회의가 ", "진행되요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'진행해요'가 어울리므로 '진행돼요'가 맞습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "회의실 예약이 다 ___ 바로 시작하겠습니다.",
+    "words": ["돼서", "되서", "돼야", "되야"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'다 해서'가 자연스러우므로 '돼서'가 맞습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 쓴 문장인가요?",
+    "statement": "회의 전까지 기획안이 완료돼야 합니다.",
+    "correct": true,
+    "explanation": "'완료해야'가 자연스러워 '완료돼야'가 맞습니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색하게 표기된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "회의는 취소해도 되요"
+      },
+      {
+        "id": "opt-b",
+        "text": "조율이 잘 돼서 다행입니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "일정이 확정되면 알릴게요"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'취소해도 해요'가 어울려 '돼요'가 맞습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 바르게 고치세요.",
+    "segments": ["오늘 안으로 ", "결정되야 ", "회의가 열립니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["결정되야", "결정돼야"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'결정해야'가 어울리므로 '결정돼야'로 고칩니다."
+  }
+]

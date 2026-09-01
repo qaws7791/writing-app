@@ -1,0 +1,96 @@
+[
+  {
+    "type": "reading",
+    "title": "준말로 풀어내는 3초 맞춤법 공식",
+    "body": "'오랜만에'는 '오래간만에'가 줄어든 말이므로 사이시옷 없이 '오랜만에'로 씁니다. 한편 '어떻게 해'가 줄어든 말끝 종결형은 '어떡해'를 쓰고, 뒤따르는 동작이나 방법을 수식할 때는 '어떻게'를 씁니다. 본래 형태를 떠올리면 헷갈리지 않습니다."
+  },
+  {
+    "type": "compare",
+    "title": "메신저 대화로 보는 올바른 쓰임",
+    "versions": [
+      {
+        "label": "'오랜만에'",
+        "text": "전 동료님, 정말 오랜만에 메신저로 연락드려요."
+      },
+      {
+        "label": "'어떻게'",
+        "text": "서버 장애 오류를 어떻게 해결할지 논의합시다."
+      },
+      {
+        "label": "'어떡해'",
+        "text": "배포 중 서버가 멈췄는데 지금 어떡해!"
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "동료 안부 메신저에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "오랜만에 봬요"
+      },
+      {
+        "id": "opt-b",
+        "text": "오랫만에 봬요"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'오래간만에'가 줄어든 말이므로 '오랜만에'를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "장애 대응 대화의 오표기 구간은?",
+    "segments": ["배포 오류를 ", "어떡해 ", "해결하죠?"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'어떻게 해'의 준말이 아닌 방법 수식이므로 '어떻게'를 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "서버가 다운되면 지금 ___!",
+    "words": ["어떡해", "어떻게", "어떻해", "어떡게"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'어떻게 해'가 줄어든 문장 끝 종결형이므로 '어떡해'를 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "재회 약속 메신저에 바른 문장인가요?",
+    "statement": "오랜만에 다음 주에 점심 같이해요.",
+    "correct": true,
+    "explanation": "'오래간만에'의 준말이므로 사이시옷 없이 '오랜만에'가 맞습니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색하게 표기된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "어떻게 처리할까요?"
+      },
+      {
+        "id": "opt-b",
+        "text": "오랫만에 찾아뵙습니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "서버 장애면 지금 어떡해!"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'오래간만에'가 줄어든 말이므로 '오랜만에'를 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "서버 장애 공지의 오표기를 고치세요.",
+    "segments": ["장애 현상을 ", "어떡해 조치할지 ", "공유합니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["어떡해 조치할지", "어떻게 조치할지"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "방법을 나타내어 수식하므로 '어떻게 조치할지'로 고칩니다."
+  }
+]

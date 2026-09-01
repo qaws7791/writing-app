@@ -1,0 +1,134 @@
+[
+  {
+    "type": "reading",
+    "title": "본용언과 보조용언 띄어쓰기 기준",
+    "body": "본용언과 보조용언은 띄어 쓰는 것이 원칙이며, '-아/-어' 연결은 붙여쓰기도 허용됩니다. 단, 두 용언 사이에 조사가 끼어들거나 앞말이 합성용언이면 반드시 띄어 써야 합니다. 중간에 조사가 개입했는지만 3초 확인하세요."
+  },
+  {
+    "type": "compare",
+    "title": "업무 보고서 보조용언 표기 비교",
+    "versions": [
+      {
+        "label": "원칙 표기",
+        "text": "기획서 초안을 미리 작성해 두었습니다."
+      },
+      {
+        "label": "허용 표기",
+        "text": "기획서 초안을 미리 작성해두었습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서 교정에 맞는 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "초안 검토는해 보다"
+      },
+      {
+        "id": "opt-b",
+        "text": "초안 검토는 해 보다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "본용언 뒤에 조사가 결합하면 보조용언을 반드시 띄어 씁니다."
+  },
+  {
+    "type": "categorize",
+    "title": "보조용언 띄어쓰기 규정 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "붙여쓰기 허용"
+      },
+      {
+        "id": "cat-2",
+        "label": "반드시 띄어쓰기"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "회의록 적어 두다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "자료를 살펴 보다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "내용을 적어도 보다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "오류를 찾아내 버리다",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "단순 연결은 붙여 쓰나, 조사·합성어 뒤는 반드시 띕니다."
+  },
+  {
+    "type": "select",
+    "question": "틀린 표기 구간을 고르세요.",
+    "segments": ["기획서 초안을 ", "읽어도보지 않고 ", "결재를 올렸습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "조사 '도'가 개입한 보조용언은 반드시 띄어 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 표기 문장인가요?",
+    "statement": "오류 항목을 모두 적어 두었습니다.",
+    "correct": true,
+    "explanation": "띄어쓰기가 원칙이며, 조사가 없으면 붙여쓰기도 허용됩니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "주간 업무 실적을 파일에 ___.",
+    "words": [
+      "정리해 두었습니다",
+      "정리해는두었습니다",
+      "정리해도보았습니다",
+      "정리해만놓았습니다"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "띄어쓰기가 원칙이며, 조사가 붙으면 반드시 띄어 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "업무 메신저에 바른 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "초안을 적어만 보았다"
+      },
+      {
+        "id": "opt-b",
+        "text": "초안을 적어만보았다"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "보조사 '만'이 개입하면 보조용언을 반드시 띄어 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 고치세요.",
+    "segments": [
+      "추가 요청 사항을 ",
+      "반영해는보았으나 ",
+      "수정이 더 필요합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["반영해는보았으나", "반영해는 보았으나"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "조사 '는'이 개입한 보조용언은 반드시 띄어 씁니다."
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "type": "reading",
+    "title": "'뵈'와 '봬'의 3초 구별 공식",
+    "body": "'뵈어'로 풀어 쓸 수 있으면 축약형인 '봬'('봬요', '봬서')를 씁니다. '뵈어'로 풀 수 없거나 자음 어미가 이어질 땐 어간 '뵈'('뵈러', '뵐게요')를 씁니다. '해'가 어울리면 '봬', '하'가 어울리면 '뵈'를 넣으면 3초 만에 구분됩니다."
+  },
+  {
+    "type": "compare",
+    "title": "클라이언트 미팅 메신저 대조",
+    "versions": [
+      {
+        "label": "'봬'(뵈어)",
+        "text": "클라이언트님, 내일 오후 2시에 봬요."
+      },
+      {
+        "label": "'뵈'(어간)",
+        "text": "자료 전달차 오후에 뵈러 가겠습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "미팅 일정 확정 메신저 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "내일 2시에 봬요"
+      },
+      {
+        "id": "opt-b",
+        "text": "내일 2시에 뵈요"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'뵈어요'의 축약형이므로 '봬요'가 맞습니다."
+  },
+  {
+    "type": "select",
+    "question": "임원 보고 대화의 오표기 구간은?",
+    "segments": ["대표님을 ", "봬러 ", "회의실로 갑니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'뵈어로'가 성립하지 않아 '뵈러'로 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "어제 미팅에서 반갑게 ___ 인사드립니다.",
+    "words": ["봬서", "뵈서", "뵈어서", "봬어서"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'뵈어서'의 축약형이므로 '봬서'를 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "대면 보고 메신저에 바른 문장인가요?",
+    "statement": "자료 준비 후 3시에 뵐게요.",
+    "correct": true,
+    "explanation": "'뵈얼게요'가 아니므로 '뵐게요'로 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색하게 표기된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "내일 본사에서 봬요"
+      },
+      {
+        "id": "opt-b",
+        "text": "사무실로 뵈러 갑니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "내일 오후에 뵈요"
+      }
+    ],
+    "correct": "opt-c",
+    "explanation": "'뵈어'가 줄어든 자리이므로 '봬요'로 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "미팅 공지의 오표기를 고치세요.",
+    "segments": ["클라이언트사를 ", "직접 봬러 ", "가겠습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["직접 봬러", "직접 뵈러"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'뵈어' 결합이 아니므로 '뵈러'로 고쳐 씁니다."
+  }
+]

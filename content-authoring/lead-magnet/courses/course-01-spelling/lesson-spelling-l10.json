@@ -1,0 +1,92 @@
+[
+  {
+    "type": "reading",
+    "title": "수량 단위 명사와 숫자 띄어쓰기",
+    "body": "단위를 나타내는 명사는 한글 수사 뒤에서 띄어 쓰는 것이 원칙입니다('사과 세 개', '커피 한 잔'). 반면 아라비아 숫자 뒤('20개', '50캔')나 순서를 나타낼 때('제1차', '두 번째')는 붙여 쓸 수 있습니다. 한글 수사인지 숫자인지만 3초 확인하세요."
+  },
+  {
+    "type": "compare",
+    "title": "간식 주문 단위 명사 표기 비교",
+    "versions": [
+      {
+        "label": "한글 수사",
+        "text": "회의 다과로 샌드위치 스무 개와 캔커피 서른 캔을 주문합니다."
+      },
+      {
+        "label": "숫자 결합",
+        "text": "회의 다과로 샌드위치 20개와 캔커피 30캔을 주문합니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "메신저 주문에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "종이컵 세 박스"
+      },
+      {
+        "id": "opt-b",
+        "text": "종이컵 세박스"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "한글 수사 뒤 단위 명사는 원칙상 띄어 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "틀린 표기 구간을 고르세요.",
+    "segments": ["정산용 영수증 ", "다섯장 모두 ", "첨부했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "한글 수사 뒤 단위 명사이므로 '다섯 장'으로 띕니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "오후 회의 간식으로 샌드위치 ___ 주문했습니다.",
+    "words": ["스무 개", "스무개", "스물 개", "스물개"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "단위 명사 앞은 수관형사 '스무'이며 띄어 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 쓴 문장인가요?",
+    "statement": "탕비실 음료 50캔 결제가 완료되었습니다.",
+    "correct": true,
+    "explanation": "아라비아 숫자 뒤 단위 명사는 붙여 쓸 수 있습니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "비품 정산에 바른 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "종이컵 두상자 구매"
+      },
+      {
+        "id": "opt-b",
+        "text": "제1차 회의 다과 정산"
+      },
+      {
+        "id": "opt-c",
+        "text": "종이컵 둘상자 구매"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "순서를 나타내는 '제1차'는 붙여 쓸 수 있습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 고치세요.",
+    "segments": ["탕비실 간식으로 ", "과자 세봉지를 ", "추가 구매했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["과자 세봉지를", "과자 세 봉지를"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "한글 수사 뒤 단위 명사이므로 '세 봉지'로 띕니다."
+  }
+]

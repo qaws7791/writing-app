@@ -1,0 +1,139 @@
+[
+  {
+    "type": "reading",
+    "title": "사이시옷 장착 3초 판별 공식",
+    "body": "순우리말이 결합한 합성어는 뒷말이 된소리로 나면 사이시옷을 받칩니다('최댓값', '전셋집'). 반면 순수 한자어는 6개 예외('곳간·셋방·숫자·찻간·툇간·횟수')를 뺀 '개수·초점·대가' 등에는 사이시옷을 일절 쓰지 않습니다."
+  },
+  {
+    "type": "compare",
+    "title": "보고서 합성어 표기 비교",
+    "versions": [
+      {
+        "label": "우리말 포함",
+        "text": "이번 분기 실적의 최댓값과 전셋집 지원금입니다."
+      },
+      {
+        "label": "순수 한자어",
+        "text": "데이터 개수를 파악하고 핵심 초점을 정리했습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "통계 보고서에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "항목별 개수 집계"
+      },
+      {
+        "id": "opt-b",
+        "text": "항목별 갯수 집계"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "순수 한자어 '개수'는 사이시옷을 쓰지 않습니다."
+  },
+  {
+    "type": "categorize",
+    "title": "합성어 사이시옷 적용 분류",
+    "categories": [
+      {
+        "id": "cat-applied",
+        "label": "사이시옷 받침"
+      },
+      {
+        "id": "cat-none",
+        "label": "사이시옷 불가"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "최댓값",
+        "categoryId": "cat-applied"
+      },
+      {
+        "id": "item-2",
+        "text": "전셋집",
+        "categoryId": "cat-applied"
+      },
+      {
+        "id": "item-3",
+        "text": "숫자",
+        "categoryId": "cat-applied"
+      },
+      {
+        "id": "item-4",
+        "text": "개수",
+        "categoryId": "cat-none"
+      },
+      {
+        "id": "item-5",
+        "text": "초점",
+        "categoryId": "cat-none"
+      },
+      {
+        "id": "item-6",
+        "text": "대가",
+        "categoryId": "cat-none"
+      }
+    ],
+    "explanation": "우리말 결합과 한자 예외 6개에만 사이시옷을 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "사내 공지의 오표기 구간은?",
+    "segments": ["임직원 대상 ", "전세집 지원 ", "신청 안내입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "한자 '전세'와 순우리말 '집'이 만나 '전셋집'입니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "결재 문서에 바른 표기인가요?",
+    "statement": "야근에 대한 정당한 대가를 지급합니다.",
+    "correct": true,
+    "explanation": "순수 한자어 '대가'에는 사이시옷을 받치지 않습니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "데이터 분석 그래프의 ___을 먼저 확인하세요.",
+    "words": ["최댓값", "최대값", "최대", "최댓"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "한자 '최대'와 순우리말 '값'이 결합해 '최댓값'입니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색하게 표기된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "계약 횟수를 확인하세요"
+      },
+      {
+        "id": "opt-b",
+        "text": "곳간 물품을 정리합니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "품목 갯수를 파악하세요"
+      }
+    ],
+    "correct": "opt-c",
+    "explanation": "순수 한자어는 예외 6개 외에 사이시옷을 쓰지 않습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "공지문의 오표기를 고치세요.",
+    "segments": ["보고서의 ", "핵심 촛점을 ", "명확히 해주세요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["핵심 촛점을", "핵심 초점을"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "순수 한자어 '초점'은 사이시옷을 쓰지 않고 적습니다."
+  }
+]

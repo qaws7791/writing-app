@@ -1,0 +1,125 @@
+[
+  {
+    "type": "reading",
+    "title": "받침 유무로 가르는 '이에요/예요'",
+    "body": "앞말에 받침이 있으면 '-이에요', 받침이 없으면 '-예요'를 씁니다. '신입 사원이에요', '새 매니저예요'처럼 끝 글자의 받침만 확인하세요. 단, '아니다' 뒤에는 항상 '아니에요'로 적습니다. 3초면 명쾌하게 가려낼 수 있습니다."
+  },
+  {
+    "type": "compare",
+    "title": "온보딩 소개 '이에요/예요' 비교",
+    "versions": [
+      {
+        "label": "받침 있음",
+        "text": "이번에 입사한 신입 사원이에요."
+      },
+      {
+        "label": "받침 없음",
+        "text": "서비스 기획팀의 새 매니저예요."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "프로필 소개에 맞는 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "홍보팀 수습사원예요"
+      },
+      {
+        "id": "opt-b",
+        "text": "홍보팀 수습사원이에요"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "끝 글자 '원'에 받침이 있으므로 '-이에요'가 맞습니다."
+  },
+  {
+    "type": "categorize",
+    "title": "비품 목록 '이에요/예요' 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "받침 있음(-이에요)"
+      },
+      {
+        "id": "cat-2",
+        "label": "받침 없음(-예요)"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "신청 품목은 책상",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "배정받은 서랍",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "필요한 물품은 의자",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "지급 물품은 모니터",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "받침이 있으면 '-이에요', 없으면 '-예요'를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "잘못 표기된 구간을 고르세요.",
+    "segments": ["이 비품은 ", "공용 물품이 ", "아니예요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'아니다' 뒤에는 항상 '아니에요'로 고정됩니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 쓴 문장인가요?",
+    "statement": "비품 수령 후 확인증을 제출하시오.",
+    "correct": true,
+    "explanation": "문장을 끝맺는 종결 명령 어미이므로 '-오'가 맞습니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "필요한 비품은 모니터___ 마우스입니다.",
+    "words": ["요", "오", "로", "며"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "사물을 나열하는 연결 보조사이므로 '-요'를 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "사내 공지에 맞는 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "모두 착오 없으시오"
+      },
+      {
+        "id": "opt-b",
+        "text": "모두 착오 없으시요"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "문장을 맺는 종결 명령 어미는 '-오'를 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 바르게 고치세요.",
+    "segments": ["이 자리의 ", "새 주인예요. ", "잘 부탁드립니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["새 주인예요.", "새 주인이에요."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'주인' 끝 글자에 받침이 있어 '주인이에요'가 맞습니다."
+  }
+]

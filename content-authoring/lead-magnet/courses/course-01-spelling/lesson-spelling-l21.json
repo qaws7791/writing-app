@@ -1,0 +1,117 @@
+[
+  {
+    "type": "reading",
+    "title": "쌍점·가운뎃점·빗금 3초 공식",
+    "body": "공고문이나 행사 안내를 쓸 때 문장부호가 헷갈리곤 합니다. 항목 설명의 쌍점(:)은 앞말에 붙여 쓰고('일시: 14시'), 대등한 짝 나열에는 가운뎃점(·)('기획·마케팅'), 대비·선택에는 빗금(/)('합격/불합격')을 쓰면 3초 만에 깔끔해집니다."
+  },
+  {
+    "type": "compare",
+    "title": "채용 공고 세부 항목의 쌍점 표기",
+    "versions": [
+      {
+        "label": "앞말 붙임",
+        "text": "면접 일시: 2026년 10월 15일 14시"
+      },
+      {
+        "label": "앞말 띔",
+        "text": "면접 일시 : 2026년 10월 15일 14시"
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "타운홀 행사 공지에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "장소: 본사 대강당"
+      },
+      {
+        "id": "opt-b",
+        "text": "장소 : 본사 대강당"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "쌍점(:)은 앞말에 붙여 쓰고 뒷말과 띄어 씁니다."
+  },
+  {
+    "type": "match",
+    "title": "문장부호의 올바른 용도 연결",
+    "pairs": [
+      {
+        "left": "쌍점(:)",
+        "leftId": "p-1-l",
+        "right": "항목 열거와 설명",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "가운뎃점(·)",
+        "leftId": "p-2-l",
+        "right": "대등한 어구 나열",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "빗금(/)",
+        "leftId": "p-3-l",
+        "right": "대비와 선택·단위",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "각 문장부호의 고유 기능과 표기 규칙에 맞춥니다."
+  },
+  {
+    "type": "select",
+    "question": "메신저 대화 중 오표기 구간은?",
+    "segments": ["공고에 ", "서류 마감 : 18시", "로 적어 올렸습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "쌍점(:)은 앞말에 붙여서 '마감: 18시'로 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "지원 자격 표기가 올바른가요?",
+    "statement": "공고: 기획·마케팅 유경험자를 우대합니다.",
+    "correct": true,
+    "explanation": "대등한 자격 어구를 짝지어 나열할 때는 가운뎃점을 씁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "전형 결과는 합격___불합격으로 개별 통보합니다.",
+    "words": ["/", "·", ":", "및"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "대비되거나 선택되는 두 어구 사이에는 빗금을 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "타운홀 공지 중 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "참석 여부 : 참석·불참"
+      },
+      {
+        "id": "opt-b",
+        "text": "참석 여부: 참석/불참"
+      },
+      {
+        "id": "opt-c",
+        "text": "참석 여부: 참석 · 불참"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "쌍점은 앞말에 붙이고 대비되는 어구에는 빗금을 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "공지문의 쌍점 표기를 고치세요.",
+    "segments": ["타운홀 공지: ", "준비물 : 노트북", "을 지참하세요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["준비물 : 노트북", "준비물: 노트북"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "쌍점(:)은 앞말에 붙여 써야 하므로 '준비물:'입니다."
+  }
+]

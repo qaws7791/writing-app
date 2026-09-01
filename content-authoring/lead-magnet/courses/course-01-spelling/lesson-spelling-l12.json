@@ -1,0 +1,97 @@
+[
+  {
+    "type": "reading",
+    "title": "인명·호칭어·직함 띄어쓰기",
+    "body": "성과 이름은 한 단어처럼 착 붙여 씁니다('김민수', '이영희'). 반면 뒤에 붙는 직함('팀장', '대표')이나 호칭어('씨', '님')는 별개 단어이므로 반드시 한 칸 띕니다. '김민수 팀장님', '이영희 씨'처럼 성명 뒤에서만 3초 띄어쓰기하세요."
+  },
+  {
+    "type": "compare",
+    "title": "조직도 호칭 표기 비교",
+    "versions": [
+      {
+        "label": "바른 표기",
+        "text": "신규 프로젝트 총괄은 김민수 팀장님이 담당합니다."
+      },
+      {
+        "label": "잘못된 표기",
+        "text": "신규 프로젝트 총괄은 김민수팀장님이 담당합니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "메신저 호출에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "이영희 매니저님"
+      },
+      {
+        "id": "opt-b",
+        "text": "이영희매니저님"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "성과 이름은 붙이고 직함 '매니저'는 띄어 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "틀린 표기 구간을 고르세요.",
+    "segments": ["프로젝트 명단은 ", "박지훈씨에게 ", "전달해 주세요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "성과 이름은 붙이고 호칭어 '씨'는 띄어 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "새 프로젝트 총괄은 ___ 맡습니다.",
+    "words": [
+      "최원석 팀장님이",
+      "최원석팀장님이",
+      "최 원석 팀장님이",
+      "최 원석팀장님이"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "성과 이름은 붙여 쓰고 직함 '팀장'은 띄어 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 쓴 문장인가요?",
+    "statement": "협력 기관인 한국출판문화산업진흥원과 협의합니다.",
+    "correct": true,
+    "explanation": "기관명 및 전문용어는 단어별로 붙여 쓸 수 있습니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "사내 공지에 바른 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "강수진대표이사님 공지"
+      },
+      {
+        "id": "opt-b",
+        "text": "강수진 대표이사님 공지"
+      },
+      {
+        "id": "opt-c",
+        "text": "강 수진 대표이사님 공지"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "성과 이름은 붙여 쓰고 직함 '대표이사'는 띕니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 고치세요.",
+    "segments": ["조직 개편 안내는 ", "정민우과장님이 ", "공유할 예정입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["정민우과장님이", "정민우 과장님이"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "성과 이름은 붙이고 직함 '과장'은 띄어 씁니다."
+  }
+]

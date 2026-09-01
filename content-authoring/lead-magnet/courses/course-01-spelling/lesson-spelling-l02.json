@@ -1,0 +1,92 @@
+[
+  {
+    "type": "reading",
+    "title": "'아니/아니하다'로 가르는 '안/않'",
+    "body": "부정 표현이 헷갈릴 때는 '아니'와 '아니하-'를 대입하세요. 단독으로 '아니'를 대신하면 '안'을 쓰고, '아니하다'가 줄거나 '-지 않다'로 이어질 때는 '않-'을 씁니다. '안 마셔요'는 '아니 마셔요', '마시지 않아요'는 '마시지 아니해요'로 바로 판별됩니다."
+  },
+  {
+    "type": "compare",
+    "title": "점심·카페 메신저 '안/않' 비교",
+    "versions": [
+      {
+        "label": "'안' 사용",
+        "text": "저는 오늘 커피 안 마셔서 캐모마일로 할게요."
+      },
+      {
+        "label": "'않' 사용",
+        "text": "단 음료는 좋아하지 않아서 아메리카노로 할게요."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "점심 답장에 알맞은 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "점심 아직 안 먹었어요"
+      },
+      {
+        "id": "opt-b",
+        "text": "점심 아직 않 먹었어요"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'아니 먹었어요'로 치환할 수 있어 '안'이 맞습니다."
+  },
+  {
+    "type": "select",
+    "question": "잘못 표기된 구간을 고르세요.",
+    "segments": ["팀장님이 아직 ", "도착하지 ", "안으셨어요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'-지 아니하셨어요'의 준말이므로 '않으셨어요'가 맞습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "시럽은 넣지 ___ 라테로 주문해 주세요.",
+    "words": ["않고", "안고", "않아", "안아"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'-지 아니하고'의 준말 자리이므로 '않고'가 맞습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 쓴 문장인가요?",
+    "statement": "점심 예약 인원이 아직 확정되지 안았습니다.",
+    "correct": false,
+    "explanation": "'-지 아니했습니다'의 준말이므로 '않았습니다'가 맞습니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색하게 표기된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "점심 예약 아직 안 했어요"
+      },
+      {
+        "id": "opt-b",
+        "text": "식당 위치가 멀지 안아요"
+      },
+      {
+        "id": "opt-c",
+        "text": "후식은 따로 안 먹을게요"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'-지 아니해요'의 준말 자리이므로 '않아요'가 맞습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 곳을 찾아 바르게 고치세요.",
+    "segments": ["카페 주문 시 ", "영수증을 받지 안은 ", "분은 말씀해 주세요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["영수증을 받지 안은", "영수증을 받지 않은"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'-지 아니한'의 준말이므로 '받지 않은'으로 고칩니다."
+  }
+]

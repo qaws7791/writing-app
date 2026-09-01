@@ -1,0 +1,96 @@
+[
+  {
+    "type": "reading",
+    "title": "마침표와 줄임표의 올바른 사용 공식",
+    "body": "기획서나 메신저에서 문장부호를 어떻게 써야 할지 고민될 때가 많습니다. 서술어로 끝나는 완결된 문장에는 마침표(.)를 찍고, 제목이나 개조식 명사형 종결에는 마침표를 생략합니다. 말을 줄일 때는 '..' 대신 규정에 맞는 줄임표(…… 또는 …)를 씁니다."
+  },
+  {
+    "type": "compare",
+    "title": "기획서 실행 과제 문장부호 표기 대조",
+    "versions": [
+      {
+        "label": "명사형 목록",
+        "text": "1. 신규 서비스 기능 명세서 작성"
+      },
+      {
+        "label": "완결된 문장",
+        "text": "1. 신규 서비스 기능 명세서를 작성합니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "개조식 보고서에 어울리는 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "신규 기능 기획안 작성"
+      },
+      {
+        "id": "opt-b",
+        "text": "신규 기능 기획안 작성."
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "개조식 명사형 목록 끝에는 마침표를 쓰지 않는 것이 원칙입니다."
+  },
+  {
+    "type": "select",
+    "question": "메신저 대화 중 부호 오표기 구간은?",
+    "segments": [
+      "일정이 연기되어 ",
+      "정말 아쉽네요.. ",
+      "다음 주에 뵙겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "줄임표는 '..' 대신 3점(…)이나 6점(……)을 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "기획 요약: 다음 분기에 프로젝트를 조기 출시합니다___",
+    "words": [".", ",", "~", "……"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "서술어로 끝나는 완결된 문장 끝에는 마침표(.)를 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "회의록 목록에 바른 표기인가요?",
+    "statement": "결정 사항: 참석자 전원 승인 완료",
+    "correct": true,
+    "explanation": "명사형이나 명사구로 끝나는 개조식 항목 끝에는 마침표를 생략합니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "사내 공지문에서 바른 부호 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "문의는 메일로 주세요.."
+      },
+      {
+        "id": "opt-b",
+        "text": "문의는 메일로 주세요."
+      },
+      {
+        "id": "opt-c",
+        "text": "문의는 메일로 주세요..…"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "서술어로 종결되는 온전한 문장에는 마침표(.)를 쓰는 것이 맞습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "기획서 목차의 부호 오류를 고치세요.",
+    "segments": ["기획서 목차: ", "서비스 기획 배경.", " 및 추진 일정"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["서비스 기획 배경.", "서비스 기획 배경"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "문서의 제목이나 목차 항목 끝에는 마침표(.)를 붙이지 않습니다."
+  }
+]

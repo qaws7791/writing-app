@@ -1,0 +1,96 @@
+[
+  {
+    "type": "reading",
+    "title": "'-이'와 '-히' 3초 구분 공식",
+    "body": "부사 끝에 '-이'와 '-히'가 헷갈릴 때는 어근을 살핍니다. '깨끗-'처럼 'ㅅ' 받침으로 끝나거나 '틈틈-', '곰곰-'처럼 어근이 반복되는 첩어 뒤에는 '-이'를 씁니다. 반면 '꼼꼼하다', '솔직하다'처럼 '-하다'가 붙는 어근 뒤에는 '-히'를 씁니다."
+  },
+  {
+    "type": "compare",
+    "title": "결산 증빙 서류 표기 대조",
+    "versions": [
+      {
+        "label": "올바른 표기",
+        "text": "전표를 깨끗이 정리하고 증빙을 꼼꼼히 검토했습니다."
+      },
+      {
+        "label": "잘못된 표기",
+        "text": "전표를 깨끗히 정리하고 증빙을 꼼꼼이 검토했습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "스캔 요청의 올바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "증빙 자료를 깨끗이 스캔"
+      },
+      {
+        "id": "opt-b",
+        "text": "증빙 자료를 깨끗히 스캔"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'ㅅ' 받침 뒤에는 '-이'를 쓰므로 '깨끗이'가 맞습니다."
+  },
+  {
+    "type": "select",
+    "question": "감사 대화 속 오표기 구간은?",
+    "segments": ["영수증 내역을 ", "빠짐없이 꼼꼼이 ", "대조하여 마쳤습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'-하다' 어근 뒤에는 '-히'를 써서 '꼼꼼히'가 맞습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "지출 증빙 안내: 지출 내역을 ___ 검토해 주시기 바랍니다.",
+    "words": ["면밀히", "면밀이", "꼼꼼이", "깨끗히"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'-하다' 어근 뒤에는 '-히'를 써서 '면밀히'가 맞습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "서류 관리 문장이 올바른가요?",
+    "statement": "영수증을 틈틈이 모아 결산에 반영했습니다.",
+    "correct": true,
+    "explanation": "어근이 반복된 첩어 뒤에는 '-이'를 써서 '틈틈이'가 맞습니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "보고서 속 바르게 쓰인 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "감사 결과를 솔직이 보고"
+      },
+      {
+        "id": "opt-b",
+        "text": "소명 자료를 곰곰이 검토"
+      },
+      {
+        "id": "opt-c",
+        "text": "누락 건을 일일히 확인"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "첩어 뒤에는 '-이'를 쓰므로 '곰곰이'가 올바른 표기입니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "결산 공지의 오류를 바르게 고치세요.",
+    "segments": [
+      "제출 전 증빙 전표를 ",
+      "깨끗히 정리하여 ",
+      "재무팀에 전달 바랍니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["깨끗히 정리하여", "깨끗이 정리하여"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'ㅅ' 받침 어근 뒤에는 '-이'를 써 '깨끗이'가 맞습니다."
+  }
+]

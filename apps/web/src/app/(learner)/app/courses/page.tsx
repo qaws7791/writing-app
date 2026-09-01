@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { getCourses } from "@workspace/http-client/learner"
-import { courseCategoryValues } from "@workspace/contracts/content/category"
 
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { CoursesPage } from "@/features/course-catalog/ui/courses-page"
@@ -8,11 +7,10 @@ import { createLoginPagePath } from "@/features/authentication/model/auth-naviga
 import {
   isLearnerApiAuthenticationError,
   settleLearnerApiRequest,
-  type LearnerCourseSummaryDto,
 } from "@/shared/http/learner-api-client"
 import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
-const catalogCategoryPageLimit = 100
+const catalogPageLimit = 100
 
 export default async function CoursesRoute() {
   const requestOptions = await getServerLearnerRequestOptions({
@@ -23,38 +21,22 @@ export default async function CoursesRoute() {
     redirect(createLoginPagePath("/app/courses"))
   }
 
-  const categoryPages = await Promise.all(
-    courseCategoryValues.map((category) =>
-      settleLearnerApiRequest(
-        getCourses(
-          {
-            category,
-            limit: catalogCategoryPageLimit,
-          },
-          requestOptions
-        )
-      )
-    )
+  const coursesResult = await settleLearnerApiRequest(
+    getCourses({ limit: catalogPageLimit }, requestOptions)
   )
 
-  const courses: LearnerCourseSummaryDto[] = []
-
-  for (const page of categoryPages) {
-    if (page.status === "error") {
-      if (isLearnerApiAuthenticationError(page.error)) {
-        redirect(createLoginPagePath("/app/courses"))
-      }
-
-      return (
-        <AppRouteNotice
-          description={page.error.message}
-          title="코스 목록을 불러올 수 없습니다."
-        />
-      )
+  if (coursesResult.status === "error") {
+    if (isLearnerApiAuthenticationError(coursesResult.error)) {
+      redirect(createLoginPagePath("/app/courses"))
     }
 
-    courses.push(...page.value.items)
+    return (
+      <AppRouteNotice
+        description={coursesResult.error.message}
+        title="코스 목록을 불러올 수 없습니다."
+      />
+    )
   }
 
-  return <CoursesPage courses={courses} />
+  return <CoursesPage courses={coursesResult.value.items} />
 }

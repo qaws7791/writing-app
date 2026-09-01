@@ -1,0 +1,102 @@
+[
+  {
+    "type": "reading",
+    "title": "수식 범위를 가르는 쉼표 3초 공식",
+    "body": "계약 조항이나 공지문에서 수식어의 범위가 모호하면 법적 오독과 분쟁이 발생합니다. 앞에 놓인 수식어가 전체 어구를 꾸미거나 뒤의 특정 대상만을 한정할 때 쉼표(,)를 알맞게 찍으면 문장의 중의성을 3초 만에 해소할 수 있습니다."
+  },
+  {
+    "type": "compare",
+    "title": "제휴 계약 조항의 수식 범위 대조",
+    "versions": [
+      {
+        "label": "직접 수식",
+        "text": "경험이 풍부한, 개발팀의 팀장을 총괄로 선임합니다."
+      },
+      {
+        "label": "중의적",
+        "text": "경험이 풍부한 개발팀의 팀장을 총괄로 선임합니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "팀장을 직접 수식하는 조항은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "경험이 많은, 기획팀 팀장"
+      },
+      {
+        "id": "opt-b",
+        "text": "경험이 많은 기획팀 팀장"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "쉼표로 기획팀을 건너뛰고 팀장을 직접 수식합니다."
+  },
+  {
+    "type": "select",
+    "question": "쉼표 누락으로 모호한 구간은?",
+    "segments": [
+      "실무 역량이 뛰어난 ",
+      "운영팀의 팀장과 ",
+      "협의를 진행합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'뛰어난' 뒤에 쉼표를 찍어야 수식 대상이 명확해집니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "compare",
+    "title": "쉼표 유무에 따른 수식 범위 비교",
+    "versions": [
+      {
+        "label": "팀장 수식",
+        "text": "기술력이 뛰어나고, 꼼꼼한 제휴사의 팀장과 논의합니다."
+      },
+      {
+        "label": "중의적",
+        "text": "기술력이 뛰어나고 꼼꼼한 제휴사의 팀장과 논의합니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "명확하게 작성된 조항인가요?",
+    "statement": "서비스의 안정적 운영, 그리고 신속한 대응을 약속합니다.",
+    "correct": true,
+    "explanation": "짝을 이루는 어구를 쉼표로 갈라 문맥을 명료하게 만듭니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "중의성 없이 명확한 공지는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "친절한 고객센터 상담원"
+      },
+      {
+        "id": "opt-b",
+        "text": "노련한, 고객센터 상담원"
+      },
+      {
+        "id": "opt-c",
+        "text": "유능한 외주 개발팀 인력"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "쉼표를 찍어 상담원을 직접 꾸미도록 한정했습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "공지문의 모호한 표기를 고치세요.",
+    "segments": ["제휴 공지: ", "우수한 협력사의 ", "전문 인력을 파견합니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["우수한 협력사의 ", "우수한, 협력사의 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "쉼표로 앞말을 끊어 수식 대상을 명확히 한정합니다."
+  }
+]

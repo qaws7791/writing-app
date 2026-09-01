@@ -1,0 +1,92 @@
+[
+  {
+    "type": "reading",
+    "title": "모음·ㄴ 받침 뒤 '율/열' 3초 공식",
+    "body": "단어 앞말에 받침이 없거나(모음) 'ㄴ' 받침일 때만 '-율/-열'('비율', '전환율', '백분율')을 씁니다. 그 외 모든 받침(ㄱ·ㄹ·ㅁ·ㅂ·ㅇ 등) 뒤에서는 본래 소리대로 '-률/-렬'('클릭률', '이탈률', '달성률')로 적으면 3초 만에 해결됩니다."
+  },
+  {
+    "type": "compare",
+    "title": "마케팅 성과 지표 표기 대조",
+    "versions": [
+      {
+        "label": "모음·ㄴ",
+        "text": "광고 전환율과 도달 백분율이 크게 올랐습니다."
+      },
+      {
+        "label": "그 외 받침",
+        "text": "링크 클릭률과 페이지 이탈률을 집중 분석했습니다."
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "question": "메신저 보고에 바른 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "광고 전환율 상승"
+      },
+      {
+        "id": "opt-b",
+        "text": "광고 전환률 상승"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'전환'은 'ㄴ' 받침이므로 '-율'을 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "성과 대화의 오표기 구간은?",
+    "segments": ["소재별로 ", "광고 클릭율이 ", "상당히 높습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'클릭'은 'ㄱ' 받침이므로 '클릭률'로 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "상세 페이지 ___을 낮추는 방안이 필요합니다.",
+    "words": ["이탈률", "이탈율", "이탈", "이탈량"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'이탈'은 'ㄹ' 받침이므로 '이탈률'이 맞습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "실무 문장에 바른 표기인가요?",
+    "statement": "전체 데이터를 백분율로 환산해 공유합니다.",
+    "correct": true,
+    "explanation": "'백분'은 'ㄴ' 받침이므로 '백분율'을 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색하게 표기된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "캠페인 성공률 분석"
+      },
+      {
+        "id": "opt-b",
+        "text": "타깃 도달율 집계"
+      },
+      {
+        "id": "opt-c",
+        "text": "고객 반응률 확인"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'도달'은 'ㄹ' 받침이므로 '도달률'로 적습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "공지문의 오표기를 고치세요.",
+    "segments": ["이번 분기 ", "목표 달성율을 ", "초과 달성했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["목표 달성율을", "목표 달성률을"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'달성'은 'ㅇ' 받침이므로 '달성률'로 씁니다."
+  }
+]
