@@ -6,7 +6,6 @@ type LessonStepCheckedPresentation =
   | "correct"
   | "wrong"
   | {
-      readonly explanation: string
       readonly missed: readonly number[]
       readonly wrong: readonly number[]
     }
@@ -19,7 +18,6 @@ export function toLessonStepCheckedVisual(
   if (checked.type === "SELECT" && step.type === "SELECT") {
     const indexById = new Map(step.items.map((item, index) => [item.id, index]))
     return {
-      explanation: checked.explanation,
       missed: checked.items.flatMap((item) =>
         item.verdict === "missed" ? [indexById.get(item.id) ?? -1] : []
       ),
@@ -41,14 +39,6 @@ export function getCorrectLessonStepItemIds(
   return checked !== false && "correctItemIds" in checked
     ? checked.correctItemIds
     : []
-}
-
-export function getLessonStepEvaluationExplanation(
-  checked: LessonStepCheckedState | false
-): string {
-  return checked !== false && "explanation" in checked
-    ? checked.explanation
-    : ""
 }
 
 export function findLessonStepItemId<TId extends string>(

@@ -14,14 +14,12 @@ import { cn } from "#ui/lib/utils"
 export function TranscribeAnswer({
   checked = false,
   defaultValue = "",
-  explanation: _explanation,
   onChange,
   prompt,
   sourceText,
 }: {
   readonly checked?: LessonStepCheckedVisual
   readonly defaultValue?: string
-  readonly explanation?: string
   readonly onChange?: (value: string) => void
   readonly prompt?: string
   readonly sourceText: string

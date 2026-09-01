@@ -22,7 +22,6 @@ export function TrueFalseAnswer({
   checked = false,
   correctAnswer,
   defaultSelected = null,
-  explanation: _explanation,
   onSelect,
   prompt,
   statement,
@@ -30,7 +29,6 @@ export function TrueFalseAnswer({
   readonly checked?: LessonStepCheckedVisual
   readonly correctAnswer: TrueFalseValue
   readonly defaultSelected?: TrueFalseValue | null
-  readonly explanation?: string
   readonly onSelect?: (value: TrueFalseValue) => void
   readonly prompt?: string
   readonly statement: string

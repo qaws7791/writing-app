@@ -54,7 +54,6 @@ function getPairState({
 export function MatchAnswer({
   checked = false,
   connections,
-  explanation: _explanation,
   leftChoices,
   onChoiceSelect,
   pendingChoice = null,
@@ -63,7 +62,6 @@ export function MatchAnswer({
 }: {
   readonly checked?: LessonStepCheckedVisual
   readonly connections: readonly MatchAnswerConnection[]
-  readonly explanation?: string
   readonly leftChoices: readonly MatchAnswerChoice[]
   readonly onChoiceSelect?: (selection: MatchAnswerChoiceSelection) => void
   readonly pendingChoice?: MatchAnswerChoiceSelection | null

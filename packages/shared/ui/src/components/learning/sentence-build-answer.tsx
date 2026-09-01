@@ -20,7 +20,6 @@ export function SentenceBuildAnswer<TId extends string>({
   checked = false,
   correctTileIds,
   defaultSelectedTileIds = [],
-  explanation: _explanation,
   onChange,
   prompt,
   tiles,
@@ -28,7 +27,6 @@ export function SentenceBuildAnswer<TId extends string>({
   readonly checked?: LessonStepCheckedVisual
   readonly correctTileIds: readonly TId[]
   readonly defaultSelectedTileIds?: readonly TId[]
-  readonly explanation?: string
   readonly onChange?: (selectedTileIds: readonly TId[]) => void
   readonly prompt: string
   readonly tiles: readonly SentenceBuildTile<TId>[]

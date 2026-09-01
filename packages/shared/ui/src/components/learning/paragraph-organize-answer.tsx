@@ -26,7 +26,6 @@ export function ParagraphOrganizeAnswer<TId extends string>({
   checked = false,
   correctCardIds,
   defaultSelectedCardIds = [],
-  explanation: _explanation,
   onChange,
   prompt,
 }: {
@@ -34,7 +33,6 @@ export function ParagraphOrganizeAnswer<TId extends string>({
   readonly checked?: LessonStepCheckedVisual
   readonly correctCardIds: readonly TId[]
   readonly defaultSelectedCardIds?: readonly TId[]
-  readonly explanation?: string
   readonly onChange?: (selectedCardIds: readonly TId[]) => void
   readonly prompt?: string
 }) {

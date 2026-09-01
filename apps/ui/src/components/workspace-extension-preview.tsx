@@ -123,7 +123,6 @@ function MatchPreview({ story }: { story: string }) {
     <MatchAnswer
       checked={story === "CheckedWrong" ? "wrong" : story === "CheckedCorrect" ? "correct" : false}
       connections={connections}
-      explanation={matchDefaults.explanation}
       leftChoices={leftChoices}
       onChoiceSelect={() => undefined}
       pendingChoice={story === "PendingChoice" ? { id: "left-1", side: "left" } : null}

@@ -10,7 +10,6 @@ import type { LessonStepCheckedState } from "@/features/lesson-session/model/les
 import {
   findLessonStepItemId,
   getCorrectLessonStepItemIds,
-  getLessonStepEvaluationExplanation,
   toLessonStepCheckedVisual,
 } from "@/features/lesson-session/model/lesson-step-presentation"
 import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
@@ -196,7 +195,6 @@ function renderStep({
                 )
               : []
           }
-          explanation={getLessonStepEvaluationExplanation(checked)}
           {...(step.layout === undefined ? {} : { layout: step.layout })}
           onChange={(selectedIndexes) =>
             emitAnswer({
@@ -218,7 +216,6 @@ function renderStep({
         <StepRenderer
           checked={checkedVisual}
           correctItemIds={getCorrectLessonStepItemIds(checked)}
-          explanation={getLessonStepEvaluationExplanation(checked)}
           items={step.items}
           onChange={(orderedItemIds) =>
             emitAnswer({
@@ -245,7 +242,6 @@ function renderStep({
           {...(checked !== false && checked.type === "MATCH"
             ? { evaluationItems: checked.items }
             : {})}
-          explanation={getLessonStepEvaluationExplanation(checked)}
           initialPairs={
             answerPayload?.type === "MATCH" ? answerPayload.pairs : []
           }
@@ -299,7 +295,6 @@ function renderStep({
                 )
               : {}
           }
-          explanation={getLessonStepEvaluationExplanation(checked)}
           items={step.items.map((item) => ({
             categoryId: expectedCategoryByItemId.get(item.id) ?? "",
             id: item.id,
@@ -336,7 +331,6 @@ function renderStep({
               ? answerPayload.selectedAnswer
               : null
           }
-          explanation={getLessonStepEvaluationExplanation(checked)}
           onSelect={(selectedAnswer) =>
             emitAnswer({ selectedAnswer, type: "TRUE_FALSE" })
           }
@@ -358,7 +352,6 @@ function renderStep({
               ? answerPayload.selectedTileIds
               : []
           }
-          explanation={getLessonStepEvaluationExplanation(checked)}
           onChange={(selectedTileIds) =>
             emitAnswer({
               selectedTileIds: [...selectedTileIds],
@@ -389,7 +382,6 @@ function renderStep({
               ? answerPayload.selectedFixId
               : null
           }
-          explanation={getLessonStepEvaluationExplanation(checked)}
           fixes={step.fixes}
           onChange={({ errorSegmentId, fixId }) =>
             emitAnswer({

@@ -20,7 +20,6 @@ import type { LessonStepCheckedVisual } from "@workspace/ui/lib/lesson-step-chec
 export function LessonMatchAnswer({
   checked,
   evaluationItems,
-  explanation,
   initialPairs = [],
   leftItems,
   onChange,
@@ -29,7 +28,6 @@ export function LessonMatchAnswer({
 }: {
   readonly checked: LessonStepCheckedVisual
   readonly evaluationItems?: readonly MatchEvaluationItemInput[]
-  readonly explanation?: string
   readonly initialPairs?: readonly Readonly<{
     leftItemId: string
     rightItemId: string
@@ -77,7 +75,6 @@ export function LessonMatchAnswer({
     <MatchAnswer
       checked={checked}
       connections={connections}
-      {...(explanation === undefined ? {} : { explanation })}
       leftChoices={presentation.leftChoices}
       onChoiceSelect={handleChoiceSelect}
       pendingChoice={interaction.pendingChoice}

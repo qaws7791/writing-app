@@ -127,6 +127,7 @@ function createAdvancedTransitionFixture() {
 function createLessonCompletedTransitionFixture() {
   const completedAt = "2026-08-10T00:00:00.000Z"
   const transition = learnerCompleteStepResponseSchema.parse({
+    accuracyPercent: 100,
     courseLearning: {
       completedAt,
       completedLessons: 1,
@@ -137,9 +138,12 @@ function createLessonCompletedTransitionFixture() {
       totalLessons: 1,
       version: { curriculumVersionId: "version-1", revision: 1 },
     },
+    durationMinutes: 5,
     evaluation: null,
     lessonCompletion: { completedAt, totalSteps: 2 },
     status: "lesson_completed",
+    streakDays: 1,
+    streakIncreased: true,
   })
 
   if (transition.status !== "lesson_completed") {

@@ -14,7 +14,6 @@ export function SelectAnswer({
   checked = false,
   correctIndexes,
   defaultSelectedIndexes = [],
-  explanation: _explanation,
   layout,
   onChange,
   question,
@@ -23,7 +22,6 @@ export function SelectAnswer({
   readonly checked?: LessonStepCheckedVisual
   readonly correctIndexes: readonly number[]
   readonly defaultSelectedIndexes?: readonly number[]
-  readonly explanation?: string
   readonly layout?: string
   readonly onChange?: (selectedIndexes: readonly number[]) => void
   readonly question: string

@@ -24,7 +24,6 @@ export function CategorizeAnswer({
   categories,
   checked = false,
   defaultPlacements,
-  explanation: _explanation,
   items,
   onChange,
   title,
@@ -35,7 +34,6 @@ export function CategorizeAnswer({
   }[]
   readonly checked?: LessonStepCheckedVisual
   readonly defaultPlacements?: Readonly<Record<string, string>>
-  readonly explanation?: string
   readonly items: readonly {
     readonly categoryId: string
     readonly id: string

@@ -3,7 +3,6 @@ export type LessonStepCheckedVisual =
   | "correct"
   | "wrong"
   | {
-      readonly explanation?: string
       readonly missed: readonly number[]
       readonly wrong: readonly number[]
     }

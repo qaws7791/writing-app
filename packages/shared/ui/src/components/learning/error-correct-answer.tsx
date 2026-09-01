@@ -33,7 +33,6 @@ export function ErrorCorrectAnswer({
   correctFixId,
   defaultErrorSegmentId = null,
   defaultFixId = null,
-  explanation: _explanation,
   fixes,
   onChange,
   prompt,
@@ -44,7 +43,6 @@ export function ErrorCorrectAnswer({
   readonly correctFixId: string
   readonly defaultErrorSegmentId?: string | null
   readonly defaultFixId?: string | null
-  readonly explanation?: string
   readonly fixes: readonly ErrorCorrectFix[]
   readonly onChange?: (value: {
     readonly errorSegmentId: string | null

@@ -1128,7 +1128,6 @@ function SentenceBuildStep({
             phase === "answering" ? false : correct ? "correct" : "wrong"
           }
           correctTileIds={[...SENTENCE_ANSWER]}
-          explanation="주장을 짧고 분명한 한 문장으로 두는 것이 기본입니다."
           onChange={setSelected}
           prompt="[SENTENCE_BUILD] 타일을 모아 완전한 문장을 만드세요"
           tiles={[...SENTENCE_TILES]}
@@ -1184,7 +1183,6 @@ function TranscribeStep({
           checked={
             phase === "answering" ? false : correct ? "correct" : "wrong"
           }
-          explanation="맞춤법·띄어쓰기·문장부호까지 원문과 같아야 합니다."
           onChange={setValue}
           prompt="[TRANSCRIBE] 아래 문장을 그대로 입력하세요"
           sourceText={TRANSCRIBE_SOURCE}
@@ -1310,7 +1308,6 @@ function ParagraphOrganizeStep({
             phase === "answering" ? false : correct ? "correct" : "wrong"
           }
           correctCardIds={[...PARAGRAPH_ANSWER]}
-          explanation="주제문 → 근거 → 결론 순으로 이어지고, 주제와 무관한 문장은 제외합니다."
           onChange={setSelected}
           prompt="[PARAGRAPH_ORGANIZE] 문단에 넣을 문장을 고르고 순서를 맞추세요"
         />

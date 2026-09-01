@@ -64,7 +64,6 @@ export function OrderAnswer<TId extends string>({
   checked = false,
   correctItemIds,
   defaultOrderedItemIds,
-  explanation: _explanation,
   items,
   onChange,
   seed,
@@ -73,7 +72,6 @@ export function OrderAnswer<TId extends string>({
   readonly checked?: LessonStepCheckedVisual
   readonly correctItemIds: readonly TId[]
   readonly defaultOrderedItemIds?: readonly TId[]
-  readonly explanation?: string
   readonly items: readonly OrderAnswerItem<TId>[]
   readonly onChange?: (orderedItemIds: readonly TId[]) => void
   readonly seed?: string
