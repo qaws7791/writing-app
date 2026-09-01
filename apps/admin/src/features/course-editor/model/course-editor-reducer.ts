@@ -1,3 +1,4 @@
+import { DEFAULT_LESSON_ESTIMATED_MINUTES } from "@workspace/contracts/content/course"
 import type {
   AdminContentAsset,
   AdminCourseDetail,
@@ -245,7 +246,7 @@ export function courseEditorReducer(
                   {
                     category: null,
                     description: null,
-                    estimatedMinutes: 5,
+                    estimatedMinutes: DEFAULT_LESSON_ESTIMATED_MINUTES,
                     id: action.lessonId,
                     sortOrder: unit.lessons.length + 1,
                     status: "active" as const,

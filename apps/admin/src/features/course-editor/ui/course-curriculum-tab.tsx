@@ -22,7 +22,11 @@ import { StepWorkspace } from "@/features/course-editor/ui/workspace/step-worksp
 import { PlusIcon, TrashIcon } from "@workspace/ui/components/icons"
 import { Button } from "@workspace/ui/components/primitives/button"
 import { Card, CardContent } from "@workspace/ui/components/primitives/card"
-import { Field, FieldLabel } from "@workspace/ui/components/primitives/field"
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@workspace/ui/components/primitives/field"
 import { Input } from "@workspace/ui/components/primitives/input"
 import {
   Select,
@@ -385,6 +389,7 @@ function LessonInfoFields({
           type="number"
           value={lesson.estimatedMinutes}
         />
+        <FieldDescription>권장 5~10분 (기본 5분)</FieldDescription>
       </Field>
       <Field className="md:col-span-2">
         <FieldLabel htmlFor={`${lesson.id}-description`}>설명</FieldLabel>
