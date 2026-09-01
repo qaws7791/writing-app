@@ -1358,7 +1358,7 @@ export function CoursePath() {
         title: "세션 프레임",
         description: "진행률과 본문, 하단 확인 행동을 한 화면에 둡니다.",
         preview: "default",
-        code: `import { Lesson, LessonActions, LessonBody, LessonClose, LessonFooter, LessonHeader, LessonMeta, LessonProgress } from "@/components/learning/lesson"
+        code: `import { Lesson, LessonActions, LessonBody, LessonClose, LessonFooter, LessonHeader, LessonProgress } from "@/components/learning/lesson"
 import { Button } from "@/components/primitives/button"
 import { Step, StepTitle } from "@/components/learning/step"
 
@@ -1367,8 +1367,10 @@ export function LessonSession() {
     <Lesson>
       <LessonHeader>
         <LessonClose />
-        <LessonProgress value={40} />
-        <LessonMeta>2 / 5</LessonMeta>
+        <LessonProgress aria-valuetext="총 5단계 중 2단계 진행 중" value={40} />
+        <span className="sr-only" role="status">
+          총 5단계 중 2단계 진행 중
+        </span>
       </LessonHeader>
       <LessonBody>
         <Step><StepTitle>질문을 고르세요</StepTitle></Step>
@@ -1450,7 +1452,7 @@ export function LessonSession() {
         type: "number",
         defaultValue: "—",
         description:
-          "LessonProgress의 0–100 값입니다. 완료한 스텝 비율이며 현재 위치 숫자와 역할을 나눕니다.",
+          "LessonProgress의 0–100 값입니다. 완료한 스텝 비율을 나타내며, 시각적 숫자 카운터 없이 스크린리더를 위한 접근성 레이블과 함께 진행 상태를 전달합니다.",
       },
     ],
     related: ["step", "path", "progress", "button"],

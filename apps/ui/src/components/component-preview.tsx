@@ -221,7 +221,6 @@ import {
   LessonFeedbackTitle,
   LessonFooter,
   LessonHeader,
-  LessonMeta,
   LessonProgress,
 } from "@workspace/ui/components/learning/lesson";
 import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/components/primitives/marker";
@@ -909,8 +908,8 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
         <Lesson className="w-full max-w-md overflow-hidden rounded-4xl border border-border/70 pt-4">
           <LessonHeader>
             <LessonClose />
-            <LessonProgress value={40} />
-            <LessonMeta>2 / 5</LessonMeta>
+            <LessonProgress aria-valuetext="총 5단계 중 2단계 진행 중" value={40} />
+            <span className="sr-only">총 5단계 중 2단계 진행 중</span>
           </LessonHeader>
           <LessonBody>
             <Step>

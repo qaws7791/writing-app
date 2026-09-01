@@ -86,7 +86,6 @@ import {
   LessonFeedbackTitle,
   LessonFooter,
   LessonHeader,
-  LessonMeta,
   LessonProgress,
 } from "@workspace/ui/components/learning/lesson";
 import {
@@ -261,10 +260,12 @@ function DemoFrame({
     <Lesson className="min-h-140 w-full max-w-md overflow-hidden rounded-[2rem] border border-border/80 pt-4 shadow-xs">
       <LessonHeader>
         <LessonClose onClick={onClose} />
-        <LessonProgress value={progress} label="레슨 진행" />
-        <LessonMeta>
-          {stepIndex} / {total}
-        </LessonMeta>
+        <LessonProgress
+          aria-valuetext={`총 ${total}단계 중 ${stepIndex}단계 진행 중`}
+          value={progress}
+          label="레슨 진행"
+        />
+        <span className="sr-only">{`총 ${total}단계 중 ${stepIndex}단계 진행 중`}</span>
       </LessonHeader>
       <LessonBody className="gap-6">{children}</LessonBody>
       <LessonFooter
@@ -1364,10 +1365,12 @@ function LessonSessionDemo() {
       <Lesson className="min-h-140 w-full max-w-md overflow-hidden rounded-[2rem] border border-border/80 pt-4 shadow-xs">
         <LessonHeader>
           <LessonClose onClick={resetAll} />
-          <LessonProgress value={100} />
-          <LessonMeta>
-            {TOTAL_STEPS} / {TOTAL_STEPS}
-          </LessonMeta>
+          <LessonProgress
+            aria-valuetext={`총 ${TOTAL_STEPS}단계 중 ${TOTAL_STEPS}단계 완료`}
+            value={100}
+            label="레슨 진행"
+          />
+          <span className="sr-only">{`총 ${TOTAL_STEPS}단계 중 ${TOTAL_STEPS}단계 완료`}</span>
         </LessonHeader>
         <LessonBody>
           <LessonComplete>

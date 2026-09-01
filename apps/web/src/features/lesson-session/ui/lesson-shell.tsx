@@ -18,7 +18,6 @@ import {
   LessonClose,
   LessonFooter,
   LessonHeader,
-  LessonMeta,
   LessonProgress,
 } from "@workspace/ui/components/learning/lesson"
 
@@ -79,13 +78,17 @@ export function LessonProgressHeader({
   readonly progress: number
   readonly totalStepCount: number
 }) {
+  const accessibleProgressText = `총 ${totalStepCount}단계 중 ${currentStepNumber}단계 진행 중`
+
   return (
     <LessonHeader aria-label="레슨 진행" className="shrink-0 pt-4 sm:pt-6">
       <LessonClose aria-label="나가기" onClick={onExit} />
-      <LessonProgress label="레슨 진행률" value={progress} />
-      <LessonMeta>
-        {currentStepNumber}/{totalStepCount}
-      </LessonMeta>
+      <LessonProgress
+        aria-valuetext={accessibleProgressText}
+        label="레슨 진행률"
+        value={progress}
+      />
+      <span className="sr-only">{accessibleProgressText}</span>
     </LessonHeader>
   )
 }
