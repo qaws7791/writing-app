@@ -47,3 +47,4 @@
 | Result               | [`kernel/src/result.ts`](../packages/shared/kernel/src/result.ts)                                                                       | 성공 flag 형태의 결과 shape             |
 | 학습자 화면 모델     | [`apps/web/src/features/lesson-session/model/lesson-view-model.ts`](../apps/web/src/features/lesson-session/model/lesson-view-model.ts) | `Dto as Lesson` 등 전송 DTO 도메인 별칭 |
 | wire 스키마          | [`contracts/src`](../packages/shared/contracts/src)                                                                                     | 앱에서 요청·응답 스키마 재선언          |
+| 레슨 길이 계약       | [`contracts/src/content/course.ts`](../packages/shared/contracts/src/content/course.ts)                                                 | 레슨 길이·스텝 수 상하한 리터럴 재선언  |
