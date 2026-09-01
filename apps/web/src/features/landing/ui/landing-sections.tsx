@@ -66,8 +66,8 @@ export function HeroSection() {
           문장을 내 글로.
         </h1>
         <p className="mt-7 max-w-2xl text-base leading-7 text-pretty text-muted-foreground sm:text-lg sm:leading-8">
-          짧게 배우고 직접 쓴 뒤 AI 코칭으로 다듬어 보세요. 글결.은 한국어
-          글쓰기 연습을 한 흐름으로 이어 줍니다.
+          하루 5~10분 짧게 배우고 직접 쓴 뒤 AI 코칭으로 다듬어 보세요. 글결.은
+          한국어 글쓰기 연습을 한 흐름으로 이어 줍니다.
         </p>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link

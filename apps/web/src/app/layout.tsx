@@ -12,11 +12,11 @@ import { readWebOrigin } from "@/server/env/runtime-config"
 
 export const metadata: Metadata = {
   description:
-    "글결은 짧은 학습, 즉시 쓰기, AI 코칭으로 글쓰기 루틴을 만드는 학습 플랫폼입니다.",
+    "글결은 5~10분의 짧은 학습, 즉시 쓰기, AI 코칭으로 글쓰기 루틴을 만드는 학습 플랫폼입니다.",
   metadataBase: new URL(readWebOrigin()),
   openGraph: {
     description:
-      "짧은 학습과 즉시 쓰기로 매일 글쓰기 루틴을 만드는 학습 플랫폼",
+      "5~10분 짧은 학습과 즉시 쓰기로 매일 글쓰기 루틴을 만드는 학습 플랫폼",
     images: ["/course-thumbnails/basic-sentence-writing.png"],
     locale: "ko_KR",
     siteName: "글결",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     description:
-      "짧은 학습과 즉시 쓰기로 매일 글쓰기 루틴을 만드는 학습 플랫폼",
+      "5~10분 짧은 학습과 즉시 쓰기로 매일 글쓰기 루틴을 만드는 학습 플랫폼",
     images: ["/course-thumbnails/basic-sentence-writing.png"],
     title: "글결",
   },
