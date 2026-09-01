@@ -23,7 +23,6 @@ export function createLearnerLessonWireFixture(
     steps: [
       {
         body: "읽기 본문",
-        guide: "읽기 안내",
         id: "step-1",
         sortOrder: 1,
         title: "읽기",

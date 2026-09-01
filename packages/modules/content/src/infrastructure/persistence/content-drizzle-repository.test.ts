@@ -287,7 +287,6 @@ function completeDraft(draft: CurriculumDraft): CurriculumDraft {
               {
                 contentJson: JSON.stringify({
                   body: "본문",
-                  guide: "",
                   title: "읽기",
                   type: "reading",
                 }),

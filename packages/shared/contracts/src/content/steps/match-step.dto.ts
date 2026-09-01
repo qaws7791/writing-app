@@ -3,7 +3,6 @@ import { z } from "zod"
 import { authoringLimits } from "#contracts/content/authoring/authoring-limits"
 import {
   explanationSchema,
-  guideTextSchema,
   pairTextSchema,
   stepTitleSchema,
 } from "#contracts/content/authoring/authoring-text-schemas"
@@ -16,7 +15,6 @@ export const matchStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("MATCH"),
     title: stepTitleSchema,
-    guide: guideTextSchema,
     pairs: z
       .array(
         z.strictObject({

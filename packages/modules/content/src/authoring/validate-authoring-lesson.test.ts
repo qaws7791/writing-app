@@ -29,7 +29,6 @@ describe("validateAuthoringLessonSteps", () => {
       steps: [
         {
           body: "짧은 본문",
-          guide: "",
           title: "읽기 안내",
           type: "reading",
         },

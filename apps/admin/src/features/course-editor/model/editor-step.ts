@@ -27,7 +27,6 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
         ...base,
         categories: [{ id: categoryId, label: "새 카테고리" }],
         explanation: "",
-        guide: "",
         items: [
           {
             categoryId,
@@ -65,7 +64,6 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
       return {
         ...base,
         explanation: "",
-        guide: "",
         pairs: [
           {
             left: "왼쪽 항목",
@@ -107,7 +105,6 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
       return {
         ...base,
         body: "",
-        guide: "",
         title: "새 읽기",
         type: input.type,
       }

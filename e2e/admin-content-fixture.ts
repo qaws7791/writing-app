@@ -37,7 +37,6 @@ export function createE2eAdminContentFixture(
             steps: [
               {
                 body: "관리자가 발행한 본문입니다.",
-                guide: "발행된 내용을 확인하세요.",
                 id: id("e2e-publish-reading"),
                 sortOrder: 1,
                 status: "active",

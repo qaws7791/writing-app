@@ -442,7 +442,6 @@ export function presentLearnerStep(
     case "READING":
       return {
         body: step.body,
-        guide: step.guide,
         id: step.id,
         ...(step.illustrationAssetId === undefined
           ? {}
@@ -525,7 +524,6 @@ export function presentLearnerStep(
       }
     case "MATCH":
       return {
-        guide: step.guide,
         id: step.id,
         leftItems: order(
           step.pairs.map((pair) => ({
@@ -551,7 +549,6 @@ export function presentLearnerStep(
             text: category.label,
           }))
         ),
-        guide: step.guide,
         id: step.id,
         items: order(
           step.items.map((item) => ({

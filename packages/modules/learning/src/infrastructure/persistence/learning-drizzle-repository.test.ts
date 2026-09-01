@@ -79,7 +79,6 @@ const curriculum: LearningCurriculum = {
       steps: [
         {
           body: "본문",
-          guide: "읽기",
           id: firstStepId,
           sortOrder: 1,
           title: "첫 단계",
@@ -101,7 +100,6 @@ const curriculum: LearningCurriculum = {
       steps: [
         {
           body: "본문 2",
-          guide: "읽기",
           id: secondStepId,
           sortOrder: 1,
           title: "둘째 단계",
@@ -563,7 +561,6 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
       {
         contentJson: JSON.stringify({
           body: "개정 본문",
-          guide: "개정 읽기",
           title: "개정 첫 단계",
         }),
         curriculumVersionId: secondCurriculumVersionId,
@@ -576,7 +573,6 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
       {
         contentJson: JSON.stringify({
           body: "개정 본문 2",
-          guide: "개정 읽기",
           title: "개정 둘째 단계",
         }),
         curriculumVersionId: secondCurriculumVersionId,

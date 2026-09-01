@@ -18,7 +18,6 @@ export const learnerStepPresentationCases = [
   {
     expected: {
       body: "로서는 자격, 로써는 수단입니다. 헷갈리면 문맥에서 역할을 먼저 보세요.",
-      guide: "한 줄 앵커",
       id: "reading-1",
       sortOrder: 1,
       source: "공개 출처",
@@ -28,7 +27,6 @@ export const learnerStepPresentationCases = [
     name: "READING",
     step: withFutureSecret({
       body: "로서는 자격, 로써는 수단입니다. 헷갈리면 문맥에서 역할을 먼저 보세요.",
-      guide: "한 줄 앵커",
       id: "reading-1",
       sortOrder: 1,
       source: "공개 출처",
@@ -163,7 +161,6 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
-      guide: "연결하세요.",
       id: "match-1",
       leftItems: [
         { id: "left-a", text: "그러나" },
@@ -182,7 +179,6 @@ export const learnerStepPresentationCases = [
     name: "MATCH",
     step: withFutureSecret({
       explanation: "서버 전용 매칭 해설",
-      guide: "연결하세요.",
       id: "match-1",
       pairs: [
         {
@@ -216,7 +212,6 @@ export const learnerStepPresentationCases = [
         { id: "category-b", text: "근거" },
         { id: "category-c", text: "예시" },
       ],
-      guide: "분류하세요.",
       id: "categorize-1",
       items: [
         { id: "cat-item-a", text: "첫 문장" },
@@ -236,7 +231,6 @@ export const learnerStepPresentationCases = [
         { id: "category-c", label: "예시" },
       ],
       explanation: "서버 전용 분류 해설",
-      guide: "분류하세요.",
       id: "categorize-1",
       items: [
         { categoryId: "category-a", id: "cat-item-a", text: "첫 문장" },

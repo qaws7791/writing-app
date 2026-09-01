@@ -25,13 +25,6 @@ export function CategorizeStepForm({
         onChange={(title) => onChange({ ...step, title })}
         value={step.title}
       />
-      <StepTextField
-        id={`${step.id}-guide`}
-        label="안내"
-        multiline
-        onChange={(guide) => onChange({ ...step, guide })}
-        value={step.guide}
-      />
       <StepJsonField
         id={`${step.id}-categories`}
         label="카테고리"

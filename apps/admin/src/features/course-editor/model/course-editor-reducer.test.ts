@@ -45,7 +45,6 @@ describe("courseEditorReducer", () => {
               steps: [
                 {
                   body: "로서는 자격, 로써는 수단입니다. 헷갈리면 문맥에서 역할을 먼저 보세요.",
-                  guide: "",
                   id: readingStepId,
                   sortOrder: 1,
                   status: "active",

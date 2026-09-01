@@ -91,7 +91,6 @@ export type LearnerLessonStep =
   | (LearnerStepBase &
       Readonly<{
         body: string
-        guide: string
         illustration?: LearnerContentAssetReference
         source?: string
         title: string
@@ -131,7 +130,6 @@ export type LearnerLessonStep =
       }>)
   | (LearnerStepBase &
       Readonly<{
-        guide: string
         leftItems: readonly LearnerStepItem[]
         rightItems: readonly LearnerStepItem[]
         title: string
@@ -140,7 +138,6 @@ export type LearnerLessonStep =
   | (LearnerStepBase &
       Readonly<{
         categories: readonly LearnerStepItem[]
-        guide: string
         items: readonly LearnerStepItem[]
         title: string
         type: "CATEGORIZE"

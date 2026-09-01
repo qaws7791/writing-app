@@ -5,7 +5,6 @@ import {
   categorizeItemTextSchema,
   categoryLabelSchema,
   explanationSchema,
-  guideTextSchema,
   stepTitleSchema,
 } from "#contracts/content/authoring/authoring-text-schemas"
 import {
@@ -17,7 +16,6 @@ export const categorizeStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("CATEGORIZE"),
     title: stepTitleSchema,
-    guide: guideTextSchema,
     categories: z
       .array(
         z.strictObject({

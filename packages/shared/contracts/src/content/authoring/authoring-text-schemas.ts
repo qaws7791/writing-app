@@ -31,12 +31,6 @@ export const readingBodySchema = createBoundedKoreanTextSchema({
   min: authoringLimits.readingBody.min,
 })
 
-export const readingGuideSchema = createBoundedKoreanTextSchema({
-  fieldLabel: "READING 안내",
-  max: authoringLimits.readingGuide.max,
-  min: authoringLimits.readingGuide.min,
-})
-
 export const readingTitleSchema = createBoundedKoreanTextSchema({
   fieldLabel: "READING 제목",
   max: authoringLimits.readingTitle.max,
@@ -71,12 +65,6 @@ export const statementSchema = createBoundedKoreanTextSchema({
   fieldLabel: "판정 문장",
   max: authoringLimits.statement.max,
   min: authoringLimits.statement.min,
-})
-
-export const guideTextSchema = createBoundedKoreanTextSchema({
-  fieldLabel: "안내 문구",
-  max: authoringLimits.guideText.max,
-  min: authoringLimits.guideText.min,
 })
 
 export const wordTextSchema = createBoundedKoreanTextSchema({

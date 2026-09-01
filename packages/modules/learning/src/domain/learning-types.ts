@@ -17,7 +17,6 @@ export type LearningStep =
   | (LearningStepBase &
       Readonly<{
         body: string
-        guide: string
         illustrationAssetId?: ContentAssetId
         source?: string
         title: string
@@ -72,7 +71,6 @@ export type LearningStep =
   | (LearningStepBase &
       Readonly<{
         explanation: string
-        guide: string
         pairs: readonly Readonly<{
           left: string
           leftId: string
@@ -89,7 +87,6 @@ export type LearningStep =
           label: string
         }>[]
         explanation: string
-        guide: string
         items: readonly Readonly<{
           categoryId: string
           id: string

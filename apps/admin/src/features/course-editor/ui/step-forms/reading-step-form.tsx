@@ -25,13 +25,6 @@ export function ReadingStepForm({
         value={step.title}
       />
       <StepTextField
-        id={`${step.id}-guide`}
-        label="안내"
-        multiline
-        onChange={(guide) => onChange({ ...step, guide })}
-        value={step.guide}
-      />
-      <StepTextField
         id={`${step.id}-body`}
         label="본문"
         multiline

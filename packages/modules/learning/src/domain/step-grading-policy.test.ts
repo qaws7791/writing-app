@@ -31,7 +31,6 @@ const selectStep = {
 
 const matchWithDuplicateLabelsStep = {
   explanation: "표시 문자열이 같아도 ID로 짝을 구분합니다.",
-  guide: "짝을 연결하세요.",
   id: "match-duplicate-labels",
   pairs: [
     {

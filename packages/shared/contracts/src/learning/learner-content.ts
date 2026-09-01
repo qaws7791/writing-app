@@ -111,7 +111,6 @@ const learnerStepItemSchema = z.strictObject({
 
 const learnerReadingStepSchema = learnerStepBaseSchema.extend({
   body: z.string(),
-  guide: z.string(),
   illustration: contentAssetReferenceDtoSchema
     .extend({ kind: z.literal("reading-illustration") })
     .optional(),
@@ -155,7 +154,6 @@ const learnerOrderStepSchema = learnerStepBaseSchema.extend({
 })
 
 const learnerMatchStepSchema = learnerStepBaseSchema.extend({
-  guide: z.string(),
   leftItems: z.array(learnerStepItemSchema).min(1),
   rightItems: z.array(learnerStepItemSchema).min(1),
   title: z.string(),
@@ -164,7 +162,6 @@ const learnerMatchStepSchema = learnerStepBaseSchema.extend({
 
 const learnerCategorizeStepSchema = learnerStepBaseSchema.extend({
   categories: z.array(learnerStepItemSchema).min(1),
-  guide: z.string(),
   items: z.array(learnerStepItemSchema).min(1),
   title: z.string(),
   type: z.literal("CATEGORIZE"),
